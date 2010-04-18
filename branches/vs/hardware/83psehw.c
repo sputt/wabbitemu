@@ -19,7 +19,7 @@ static double timer_freq83pse[4] = {1.0/512.0, 1.0/227.0, 1.0/156.0, 1.0/108.0};
 
 
 void port0_83pse(CPU_t *cpu, device_t *dev) {
-	link_t * link = dev->aux;
+	link_t * link = (link_t *) dev->aux;
 
 	if (cpu->input) {
 		cpu->bus = ((link->host&0x03)|(link->client[0]&0x03))^0x03;
@@ -67,7 +67,7 @@ void port2_83pse(CPU_t *cpu, device_t *dev) {
 
 
 void port3_83pse(CPU_t *cpu, device_t *dev) {
-	STDINT_t * stdint = dev->aux;
+	STDINT_t * stdint = (STDINT_t *) dev->aux;
 
 	if (cpu->input) {
 		cpu->bus = stdint->intactive;
@@ -136,7 +136,7 @@ void port3_83pse(CPU_t *cpu, device_t *dev) {
 
 
 void port4_83pse(CPU_t *cpu, device_t *dev) {
-	STDINT_t * stdint = dev->aux;
+	STDINT_t * stdint = (STDINT_t *) dev->aux;
 	XTAL_t* xtal = &cpu->pio.se_aux->xtal;
 	if (cpu->input) {
 		unsigned char result = 0;
@@ -285,7 +285,7 @@ void port14_83pse(CPU_t *cpu, device_t *dev) {
 
 
 void port8_83pse(CPU_t *cpu, device_t *dev) {
-	LINKASSIST_t* assist = dev->aux;
+	LINKASSIST_t* assist = (LINKASSIST_t *) dev->aux;
 	
 	if (cpu->input) {
 		cpu->bus = assist->link_enable & 0x87;
@@ -305,8 +305,8 @@ void port8_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 void port9_83pse(CPU_t *cpu, device_t *dev) {
-	LINKASSIST_t* assist = dev->aux;
-	link_t * link = cpu->pio.link;
+	LINKASSIST_t* assist = (LINKASSIST_t *) dev->aux;
+	link_t * link = (link_t *) cpu->pio.link;
 	
 	if (!cpu->input && !cpu->output) {
 		if (!(assist->link_enable&0x80)) {
@@ -454,7 +454,7 @@ void port9_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 void port0A_83pse(CPU_t *cpu, device_t *dev) {
-	LINKASSIST_t* assist = dev->aux;
+	LINKASSIST_t* assist = (LINKASSIST_t *) dev->aux;
 	if (cpu->input) {
 		cpu->bus = assist->in;
 		assist->read = FALSE;
@@ -466,7 +466,7 @@ void port0A_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 void port0D_83pse(CPU_t *cpu, device_t *dev) {
-	LINKASSIST_t* assist = dev->aux;
+	LINKASSIST_t* assist = (LINKASSIST_t *) dev->aux;
 	if (cpu->input) {
 		cpu->bus = assist->out;
 		assist->ready = FALSE;
@@ -516,7 +516,7 @@ unsigned long calc_md5(MD5_t* md5) {
 
 
 void md5ports(CPU_t *cpu, device_t *dev) {
-	MD5_t* md5 = dev->aux;
+	MD5_t* md5 = (MD5_t *) dev->aux;
 	if (cpu->input) {
 		switch(DEV_INDEX(dev)) {
 			case 0x18:
@@ -615,7 +615,7 @@ void port23_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 void delay_ports(CPU_t *cpu, device_t *dev) {
-	DELAY_t* delay =  dev->aux;
+	DELAY_t* delay = (DELAY_t *) dev->aux;
 	if (cpu->input) {
 		cpu->bus = delay->reg[(DEV_INDEX(dev)-0x29)];
 		cpu->input = FALSE;
@@ -648,7 +648,7 @@ void mod_timer(CPU_t *cpu,XTAL_t* xtal) {
 }
 
 void port_chunk_remap_83pse(CPU_t *cpu, device_t *dev) {
-	int *count = dev->aux;
+	int *count = (int *) dev->aux;
 	
 	if (cpu->input) {
 		cpu->bus = *count;
@@ -661,7 +661,7 @@ void port_chunk_remap_83pse(CPU_t *cpu, device_t *dev) {
 
 
 void port30_83pse(CPU_t *cpu, device_t *dev) {
-	XTAL_t* xtal = dev->aux;
+	XTAL_t* xtal = (XTAL_t *) dev->aux;
 	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev)-0x30)/3];
 	
 	if (cpu->input) {
@@ -728,7 +728,7 @@ void port30_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 void port31_83pse(CPU_t *cpu, device_t *dev) {
-	XTAL_t* xtal = dev->aux;
+	XTAL_t* xtal = (XTAL_t *) dev->aux;
 	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev)-0x30)/3];
 	if (cpu->input) {
 		cpu->bus  = (timer->loop?1:0);
@@ -816,7 +816,7 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 }
 
 void port32_83pse(CPU_t *cpu, device_t *dev) {
-	XTAL_t* xtal = dev->aux;
+	XTAL_t* xtal = (XTAL_t *) dev->aux;
 	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev)-0x30)/3];
 	
 	
@@ -857,7 +857,7 @@ void port32_83pse(CPU_t *cpu, device_t *dev) {
 
 
 void clock_enable(CPU_t *cpu, device_t *dev) {
-	CLOCK_t* clock = dev->aux;
+	CLOCK_t* clock = (CLOCK_t *) dev->aux;
 	if (cpu->input) {
 		cpu->bus = clock->enable&0x03;
 		cpu->input = FALSE;
@@ -878,7 +878,7 @@ void clock_enable(CPU_t *cpu, device_t *dev) {
 }
 
 void clock_set(CPU_t *cpu, device_t *dev) {
-	CLOCK_t* clock = dev->aux;
+	CLOCK_t* clock = (CLOCK_t *) dev->aux;
 	if (cpu->input) {
 		cpu->bus = (clock->set>>((DEV_INDEX(dev)-0x41)*8))&0xFF;
 		cpu->input = FALSE;
@@ -893,7 +893,7 @@ void clock_set(CPU_t *cpu, device_t *dev) {
 	
 	
 void clock_read(CPU_t *cpu, device_t *dev) {
-	CLOCK_t* clock = dev->aux;
+	CLOCK_t* clock = (CLOCK_t *) dev->aux;
 	if (cpu->input) {
 		unsigned long time;
 		if (clock->enable&0x01) {
@@ -1071,7 +1071,7 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 
 
 STDINT_t* INT83PSE_init(CPU_t* cpu) {
-	STDINT_t * stdint = malloc(sizeof(STDINT_t));
+	STDINT_t * stdint = (STDINT_t *) malloc(sizeof(STDINT_t));
 	if (!stdint) {
 		printf("Couldn't allocate memory for standard interrupt\n");
 		exit(1);
@@ -1094,7 +1094,7 @@ STDINT_t* INT83PSE_init(CPU_t* cpu) {
 }
 
 link_t* link83pse_init(CPU_t* cpu) {
-	link_t * link = malloc(sizeof(link_t)); 
+	link_t * link = (link_t *) malloc(sizeof(link_t)); 
 	if (!link) {
 		printf("Couldn't allocate memory for link\n");
 		exit(1);
@@ -1110,7 +1110,7 @@ link_t* link83pse_init(CPU_t* cpu) {
 
 
 SE_AUX_t* SE_AUX_init(CPU_t* cpu) {
-	SE_AUX_t* se_aux = malloc(sizeof(SE_AUX_t));
+	SE_AUX_t* se_aux = (SE_AUX_t *) malloc(sizeof(SE_AUX_t));
 	if (!se_aux) {
 		printf("Couldn't allocate memory for SE structs\n");
 		exit(1);
@@ -1124,6 +1124,8 @@ SE_AUX_t* SE_AUX_init(CPU_t* cpu) {
 }
 
 int device_init_83pse(CPU_t *cpu) {
+	ClearDevices(cpu);
+
 /* link */
 	link_t * link = link83pse_init(cpu);
 	cpu->pio.devices[0x00].active = TRUE;
@@ -1142,101 +1144,205 @@ int device_init_83pse(CPU_t *cpu) {
 
 /* standard interrupts */
 	STDINT_t* stdint = INT83PSE_init(cpu);
-	cpu->pio.devices[0x03] = (device_t) {TRUE, NULL, stdint, (devp) &port3_83pse};
-	cpu->pio.devices[0x04] = (device_t) {TRUE, NULL, stdint, (devp) &port4_83pse};
+	cpu->pio.devices[0x03].active = TRUE;
+	cpu->pio.devices[0x03].aux = stdint;
+	cpu->pio.devices[0x03].code = (devp) port3_83pse;
+
+	cpu->pio.devices[0x04].active = TRUE;
+	cpu->pio.devices[0x04].aux = stdint;
+	cpu->pio.devices[0x04].code = (devp) port4_83pse;
 	
 	
 /* memory mapping */
-	cpu->pio.devices[0x05] = (device_t) {TRUE, NULL, NULL, (devp) &port5_83pse};
-	cpu->pio.devices[0x06] = (device_t) {TRUE, NULL, NULL, (devp) &port6_83pse};
-	cpu->pio.devices[0x07] = (device_t) {TRUE, NULL, NULL, (devp) &port7_83pse};
+	cpu->pio.devices[0x05].active = TRUE;
+	cpu->pio.devices[0x05].code = (devp) port5_83pse;
+
+	cpu->pio.devices[0x06].active = TRUE;
+	cpu->pio.devices[0x06].code = (devp) port6_83pse;
+
+	cpu->pio.devices[0x07].active = TRUE;
+	cpu->pio.devices[0x07].code = (devp) port7_83pse;
 	
 	
 	SE_AUX_t* se_aux = SE_AUX_init(cpu);
 	
-	
-// SE link assist 
-	cpu->pio.devices[0x08] = (device_t) {TRUE, NULL, &se_aux->linka, (devp) &port8_83pse};
-	cpu->pio.devices[0x09] = (device_t) {TRUE, NULL, &se_aux->linka, (devp) &port9_83pse};
-	cpu->pio.devices[0x0A] = (device_t) {TRUE, NULL, &se_aux->linka, (devp) &port0A_83pse};
-	cpu->pio.devices[0x0D] = (device_t) {TRUE, NULL, &se_aux->linka, (devp) &port0D_83pse};
+// SE link assist
+	cpu->pio.devices[0x08].active = TRUE;
+	cpu->pio.devices[0x08].aux = &se_aux->linka;
+	cpu->pio.devices[0x08].code = (devp) port8_83pse;
 
+	cpu->pio.devices[0x09].active = TRUE;
+	cpu->pio.devices[0x09].aux = &se_aux->linka;
+	cpu->pio.devices[0x09].code = (devp) port9_83pse;
+
+	cpu->pio.devices[0x0A].active = TRUE;
+	cpu->pio.devices[0x0A].aux = &se_aux->linka;
+	cpu->pio.devices[0x0A].code = (devp) port0A_83pse;
+
+	cpu->pio.devices[0x0D].active = TRUE;
+	cpu->pio.devices[0x0D].aux = &se_aux->linka;
+	cpu->pio.devices[0x0D].code = (devp) port0D_83pse;
 	
 /* LCD */
 	LCD_t *lcd = LCD_init(cpu,TI_83PSE);
-	cpu->pio.devices[0x10] = (device_t) {TRUE, NULL, lcd, (devp) &LCD_command};
-	cpu->pio.devices[0x11] = (device_t) {TRUE, NULL, lcd, (devp) &LCD_data};
+	cpu->pio.devices[0x10].active = TRUE;
+	cpu->pio.devices[0x10].aux = lcd;
+	cpu->pio.devices[0x10].code = (devp) LCD_command;
+
+	cpu->pio.devices[0x11].active = TRUE;
+	cpu->pio.devices[0x11].aux = lcd;
+	cpu->pio.devices[0x11].code = (devp) LCD_data;
 
 /* Flash locking */
-	cpu->pio.devices[0x14] = (device_t) {TRUE, NULL, NULL, (devp) &port14_83pse};
+	cpu->pio.devices[0x14].active = TRUE;
+	cpu->pio.devices[0x14].code = (devp) port14_83pse;
 	
 
-// MD5 
-	cpu->pio.devices[0x18] = (device_t) {TRUE, NULL, &se_aux->md5, (devp) &md5ports};
-	cpu->pio.devices[0x19] = (device_t) {TRUE, NULL, &se_aux->md5, (devp) &md5ports};
-	cpu->pio.devices[0x1A] = (device_t) {TRUE, NULL, &se_aux->md5, (devp) &md5ports};
-	cpu->pio.devices[0x1B] = (device_t) {TRUE, NULL, &se_aux->md5, (devp) &md5ports};
-	cpu->pio.devices[0x1C] = (device_t) {TRUE, NULL, &se_aux->md5, (devp) &md5ports};
-	cpu->pio.devices[0x1D] = (device_t) {TRUE, NULL, &se_aux->md5, (devp) &md5ports};
-	cpu->pio.devices[0x1E] = (device_t) {TRUE, NULL, &se_aux->md5, (devp) &md5ports};
-	cpu->pio.devices[0x1F] = (device_t) {TRUE, NULL, &se_aux->md5, (devp) &md5ports};
+// MD5
+	for (int i = 0x18; i <= 0x1F; i++) {
+		cpu->pio.devices[i].active = TRUE;
+		cpu->pio.devices[i].aux = &se_aux->md5;
+		cpu->pio.devices[i].code = (devp) md5ports;
+	}
 
-	
 /* speed */
-	cpu->pio.devices[0x20] = (device_t) {TRUE, NULL, NULL, (devp) &port20_83pse};
+	cpu->pio.devices[0x20].active = TRUE;
+	cpu->pio.devices[0x20].aux = NULL;
+	cpu->pio.devices[0x20].code = (devp) port20_83pse;
+
 	
 	
 /* page locking */
-	cpu->pio.devices[0x21] = (device_t) {TRUE, NULL, NULL, (devp) &port21_83pse};
-	cpu->pio.devices[0x22] = (device_t) {TRUE, NULL, NULL, (devp) &port22_83pse};
-	cpu->pio.devices[0x23] = (device_t) {TRUE, NULL, NULL, (devp) &port23_83pse};
+	cpu->pio.devices[0x21].active = TRUE;
+	cpu->pio.devices[0x21].aux = NULL;
+	cpu->pio.devices[0x21].code = (devp) port21_83pse;
+
+	cpu->pio.devices[0x22].active = TRUE;
+	cpu->pio.devices[0x22].aux = NULL;
+	cpu->pio.devices[0x22].code = (devp) port22_83pse;
+
+	cpu->pio.devices[0x23].active = TRUE;
+	cpu->pio.devices[0x23].aux = NULL;
+	cpu->pio.devices[0x23].code = (devp) port23_83pse;
+
 
 // weird ass remap stuff
-	cpu->pio.devices[0x27] = (device_t) {TRUE, NULL, &cpu->mem_c->port27_remap_count, (devp) &port_chunk_remap_83pse};
-	cpu->pio.devices[0x28] = (device_t) {TRUE, NULL, &cpu->mem_c->port28_remap_count, (devp) &port_chunk_remap_83pse};
-	
+	cpu->pio.devices[0x27].active = TRUE;
+	cpu->pio.devices[0x27].aux = &cpu->mem_c->port27_remap_count;
+	cpu->pio.devices[0x27].code = (devp) &port_chunk_remap_83pse;
+
+	cpu->pio.devices[0x28].active = TRUE;
+	cpu->pio.devices[0x28].aux = &cpu->mem_c->port28_remap_count;
+	cpu->pio.devices[0x28].code = (devp) &port_chunk_remap_83pse;
 	
 //delay ports
-	cpu->pio.devices[0x29] = (device_t) {TRUE, NULL, &se_aux->delay, (devp) &delay_ports};
-	cpu->pio.devices[0x2A] = (device_t) {TRUE, NULL, &se_aux->delay, (devp) &delay_ports};
-	cpu->pio.devices[0x2B] = (device_t) {TRUE, NULL, &se_aux->delay, (devp) &delay_ports};
-	cpu->pio.devices[0x2C] = (device_t) {TRUE, NULL, &se_aux->delay, (devp) &delay_ports};
-	cpu->pio.devices[0x2D] = (device_t) {TRUE, NULL, &se_aux->delay, (devp) &delay_ports};
-	cpu->pio.devices[0x2E] = (device_t) {TRUE, NULL, &se_aux->delay, (devp) &delay_ports};
-	cpu->pio.devices[0x2F] = (device_t) {TRUE, NULL, &se_aux->delay, (devp) &delay_ports};
-	
+	for (int i = 0x29; i <= 0x2F; i++) {
+		cpu->pio.devices[i].active = TRUE;
+		cpu->pio.devices[i].aux = &se_aux->delay;
+		cpu->pio.devices[i].code = (devp) delay_ports;
+	}
+
 // timer 1
-	cpu->pio.devices[0x30] = (device_t) {TRUE, NULL, &se_aux->xtal, (devp) &port30_83pse};
-	cpu->pio.devices[0x31] = (device_t) {TRUE, NULL, &se_aux->xtal, (devp) &port31_83pse};
-	cpu->pio.devices[0x32] = (device_t) {TRUE, NULL, &se_aux->xtal, (devp) &port32_83pse};
+	cpu->pio.devices[0x30].active = TRUE;
+	cpu->pio.devices[0x30].aux = &se_aux->xtal;
+	cpu->pio.devices[0x30].code = (devp) &port30_83pse;
+
+	cpu->pio.devices[0x31].active = TRUE;
+	cpu->pio.devices[0x31].aux = &se_aux->xtal;
+	cpu->pio.devices[0x31].code = (devp) &port31_83pse;
+
+	cpu->pio.devices[0x32].active = TRUE;
+	cpu->pio.devices[0x32].aux = &se_aux->xtal;
+	cpu->pio.devices[0x32].code = (devp) &port32_83pse;
+
 // timer 2
-	cpu->pio.devices[0x33] = (device_t) {TRUE, NULL, &se_aux->xtal, (devp) &port30_83pse};
-	cpu->pio.devices[0x34] = (device_t) {TRUE, NULL, &se_aux->xtal, (devp) &port31_83pse};
-	cpu->pio.devices[0x35] = (device_t) {TRUE, NULL, &se_aux->xtal, (devp) &port32_83pse};
+	cpu->pio.devices[0x33].active = TRUE;
+	cpu->pio.devices[0x33].aux = &se_aux->xtal;
+	cpu->pio.devices[0x33].code = (devp) &port30_83pse;
+
+	cpu->pio.devices[0x34].active = TRUE;
+	cpu->pio.devices[0x34].aux = &se_aux->xtal;
+	cpu->pio.devices[0x34].code = (devp) &port31_83pse;
+
+	cpu->pio.devices[0x35].active = TRUE;
+	cpu->pio.devices[0x35].aux = &se_aux->xtal;
+	cpu->pio.devices[0x35].code = (devp) &port32_83pse;
+
 // timer 3
-	cpu->pio.devices[0x36] = (device_t) {TRUE, NULL, &se_aux->xtal, (devp) &port30_83pse};
-	cpu->pio.devices[0x37] = (device_t) {TRUE, NULL, &se_aux->xtal, (devp) &port31_83pse};
-	cpu->pio.devices[0x38] = (device_t) {TRUE, NULL, &se_aux->xtal, (devp) &port32_83pse};
+	cpu->pio.devices[0x36].active = TRUE;
+	cpu->pio.devices[0x36].aux = &se_aux->xtal;
+	cpu->pio.devices[0x36].code = (devp) &port30_83pse;
+
+	cpu->pio.devices[0x37].active = TRUE;
+	cpu->pio.devices[0x37].aux = &se_aux->xtal;
+	cpu->pio.devices[0x37].code = (devp) &port31_83pse;
+
+	cpu->pio.devices[0x38].active = TRUE;
+	cpu->pio.devices[0x38].aux = &se_aux->xtal;
+	cpu->pio.devices[0x38].code = (devp) &port32_83pse;
+
 
 
 // Clock 
-	cpu->pio.devices[0x40] = (device_t) {TRUE, NULL, &se_aux->clock, (devp) &clock_enable};
-	cpu->pio.devices[0x41] = (device_t) {TRUE, NULL, &se_aux->clock, (devp) &clock_set};
-	cpu->pio.devices[0x42] = (device_t) {TRUE, NULL, &se_aux->clock, (devp) &clock_set};
-	cpu->pio.devices[0x43] = (device_t) {TRUE, NULL, &se_aux->clock, (devp) &clock_set};
-	cpu->pio.devices[0x44] = (device_t) {TRUE, NULL, &se_aux->clock, (devp) &clock_set};
-	cpu->pio.devices[0x45] = (device_t) {TRUE, NULL, &se_aux->clock, (devp) &clock_read};
-	cpu->pio.devices[0x46] = (device_t) {TRUE, NULL, &se_aux->clock, (devp) &clock_read};
-	cpu->pio.devices[0x47] = (device_t) {TRUE, NULL, &se_aux->clock, (devp) &clock_read};
-	cpu->pio.devices[0x48] = (device_t) {TRUE, NULL, &se_aux->clock, (devp) &clock_read};	
+	cpu->pio.devices[0x40].active = TRUE;
+	cpu->pio.devices[0x40].aux = &se_aux->clock;
+	cpu->pio.devices[0x40].code = (devp) &clock_enable;
+
+	cpu->pio.devices[0x41].active = TRUE;
+	cpu->pio.devices[0x41].aux = &se_aux->clock;
+	cpu->pio.devices[0x41].code = (devp) &clock_set;
+
+	cpu->pio.devices[0x42].active = TRUE;
+	cpu->pio.devices[0x42].aux = &se_aux->clock;
+	cpu->pio.devices[0x42].code = (devp) &clock_set;
+
+	cpu->pio.devices[0x43].active = TRUE;
+	cpu->pio.devices[0x43].aux = &se_aux->clock;
+	cpu->pio.devices[0x43].code = (devp) &clock_set;
+
+	cpu->pio.devices[0x44].active = TRUE;
+	cpu->pio.devices[0x44].aux = &se_aux->clock;
+	cpu->pio.devices[0x44].code = (devp) &clock_set;
+
+	cpu->pio.devices[0x45].active = TRUE;
+	cpu->pio.devices[0x45].aux = &se_aux->clock;
+	cpu->pio.devices[0x45].code = (devp) &clock_read;
+
+	cpu->pio.devices[0x46].active = TRUE;
+	cpu->pio.devices[0x46].aux = &se_aux->clock;
+	cpu->pio.devices[0x46].code = (devp) &clock_read;
+
+	cpu->pio.devices[0x47].active = TRUE;
+	cpu->pio.devices[0x47].aux = &se_aux->clock;
+	cpu->pio.devices[0x47].code = (devp) &clock_read;
+
+	cpu->pio.devices[0x48].active = TRUE;
+	cpu->pio.devices[0x48].aux = &se_aux->clock;
+	cpu->pio.devices[0x48].code = (devp) &clock_read;	
+
 
 
 /*Fake USB*/
-	cpu->pio.devices[0x4C] = (device_t) {TRUE, NULL, NULL, (devp) &fake_usb};	
-	cpu->pio.devices[0x4D] = (device_t) {TRUE, NULL, NULL, (devp) &fake_usb};
-	cpu->pio.devices[0x55] = (device_t) {TRUE, NULL, NULL, (devp) &fake_usb};
-	cpu->pio.devices[0x56] = (device_t) {TRUE, NULL, NULL, (devp) &fake_usb};
-	cpu->pio.devices[0x57] = (device_t) {TRUE, NULL, NULL, (devp) &fake_usb};
+	cpu->pio.devices[0x4C].active = TRUE;
+	cpu->pio.devices[0x4C].aux = NULL;
+	cpu->pio.devices[0x4C].code = (devp) &fake_usb;	
+
+	cpu->pio.devices[0x4D].active = TRUE;
+	cpu->pio.devices[0x4D].aux = NULL;
+	cpu->pio.devices[0x4D].code = (devp) &fake_usb;
+
+	cpu->pio.devices[0x55].active = TRUE;
+	cpu->pio.devices[0x55].aux = NULL;
+	cpu->pio.devices[0x55].code = (devp) &fake_usb;
+
+	cpu->pio.devices[0x56].active = TRUE;
+	cpu->pio.devices[0x56].aux = NULL;
+	cpu->pio.devices[0x56].code = (devp) &fake_usb;
+
+	cpu->pio.devices[0x57].active = TRUE;
+	cpu->pio.devices[0x57].aux = NULL;
+	cpu->pio.devices[0x57].code = (devp) &fake_usb;
+
 	
 	
 	cpu->pio.lcd		= lcd;
@@ -1269,13 +1375,13 @@ int memory_init_83pse(memc *mc) {
 	
 	
 	mc->flash_size = mc->flash_pages * PAGE_SIZE;
-	mc->flash = calloc(mc->flash_pages, PAGE_SIZE);
-	mc->flash_break = calloc(mc->flash_pages, PAGE_SIZE);
+	mc->flash = (u_char *) calloc(mc->flash_pages, PAGE_SIZE);
+	mc->flash_break = (u_char *) calloc(mc->flash_pages, PAGE_SIZE);
 	memset(mc->flash, 0xFF, mc->flash_size);
 	
 	mc->ram_size = mc->ram_pages * PAGE_SIZE;
-	mc->ram = calloc(mc->ram_pages, PAGE_SIZE);
-	mc->ram_break = calloc(mc->ram_pages, PAGE_SIZE);
+	mc->ram = (u_char *) calloc(mc->ram_pages, PAGE_SIZE);
+	mc->ram_break = (u_char *) calloc(mc->ram_pages, PAGE_SIZE);
 	
 	if (!mc->flash || !mc->ram ) {
 		printf("Couldn't allocate memory in memory_init_83pse\n");

@@ -77,7 +77,7 @@ static void port3(CPU_t *cpu, device_t *dev) {
 static void port4(CPU_t *cpu, device_t *dev) {
 
 	if (cpu->input) {
-		dev->aux = cpu->bus;
+		dev->aux = (void *) cpu->bus;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->bus = (uint8_t) dev->aux;
@@ -132,7 +132,7 @@ static void port6(CPU_t *cpu, device_t *dev) {
 }
 
 static void port7(CPU_t *cpu, device_t *dev) {
-	link_t * link = dev->aux;
+	link_t * link = (link_t *) dev->aux;
 	if (cpu->input) {
 		cpu->bus = (((link->host&0x03)|(link->client[0]&0x03))^0x03);
 		cpu->input = FALSE;
@@ -161,7 +161,7 @@ static void port10(CPU_t *cpu, device_t *dev) {
 
 
 static STDINT_t* INT86_init(CPU_t* cpu) {
-	STDINT_t * stdint = malloc(sizeof(STDINT_t));
+	STDINT_t * stdint = (STDINT_t *) malloc(sizeof(STDINT_t));
 	if (!stdint) {
 		printf("Couldn't allocate memory for standard interrupt\n");
 		return NULL;
@@ -177,7 +177,7 @@ static STDINT_t* INT86_init(CPU_t* cpu) {
 }
 
 static link_t* link_init(CPU_t* cpu) {
-	link_t * link = malloc(sizeof(link_t));
+	link_t * link = (link_t *) malloc(sizeof(link_t));
 	if (!link) {
 		printf("Couldn't allocate memory for link\n");
 		exit(1);
@@ -197,19 +197,48 @@ int device_init_86(CPU_t *cpu) {
 	link_t * link = link_init(cpu);
 	LCD_t *lcd = LCD_init(cpu, TI_86);
 	
-	cpu->pio.devices[0x00] = (device_t) {TRUE, NULL, lcd, (devp) &port0};
-	cpu->pio.devices[0x01] = (device_t) {TRUE, NULL, keyp, (devp) &keypad};
-	cpu->pio.devices[0x02] = (device_t) {TRUE, NULL, NULL, (devp) &port2};
-	cpu->pio.devices[0x03] = (device_t) {TRUE, NULL, stdint, (devp) &port3};
-	cpu->pio.devices[0x04] = (device_t) {TRUE, NULL, 0, (devp) &port4};
+	cpu->pio.devices[0x00].active = TRUE;
+	cpu->pio.devices[0x00].aux = lcd;
+	cpu->pio.devices[0x00].code = (devp) &port0;
+
+	cpu->pio.devices[0x01].active = TRUE;
+	cpu->pio.devices[0x01].aux = keyp;
+	cpu->pio.devices[0x01].code = (devp) &keypad;
+
+	cpu->pio.devices[0x02].active = TRUE;
+	cpu->pio.devices[0x02].aux = NULL;
+	cpu->pio.devices[0x02].code = (devp) &port2;
+
+	cpu->pio.devices[0x03].active = TRUE;
+	cpu->pio.devices[0x03].aux = stdint;
+	cpu->pio.devices[0x03].code = (devp) &port3;
+
+	cpu->pio.devices[0x04].active = TRUE;
+	cpu->pio.devices[0x04].aux = 0;
+	cpu->pio.devices[0x04].code = (devp) &port4;
+
 	// ROM page swap
-	cpu->pio.devices[0x05] = (device_t) {TRUE, NULL, stdint, (devp) &port5};
+	cpu->pio.devices[0x05].active = TRUE;
+	cpu->pio.devices[0x05].aux = stdint;
+	cpu->pio.devices[0x05].code = (devp) &port5;
+
 	// RAM page swap
-	cpu->pio.devices[0x06] = (device_t) {TRUE, NULL, NULL, (devp) &port6};
-	cpu->pio.devices[0x07] = (device_t) {TRUE, NULL, link, (devp) &port7};
-	cpu->pio.devices[0x10] = (device_t) {TRUE, NULL, lcd, (devp) &port10};
-	cpu->pio.devices[0x11] = (device_t) {TRUE, NULL, lcd, (devp) &LCD_data};
-	
+	cpu->pio.devices[0x06].active = TRUE;
+	cpu->pio.devices[0x06].aux = NULL;
+	cpu->pio.devices[0x06].code = (devp) &port6;
+
+	cpu->pio.devices[0x07].active = TRUE;
+	cpu->pio.devices[0x07].aux = link;
+	cpu->pio.devices[0x07].code = (devp) &port7;
+
+	cpu->pio.devices[0x10].active = TRUE;
+	cpu->pio.devices[0x10].aux = lcd;
+	cpu->pio.devices[0x10].code = (devp) &port10;
+
+	cpu->pio.devices[0x11].active = TRUE;
+	cpu->pio.devices[0x11].aux = lcd;
+	cpu->pio.devices[0x11].code = (devp) &LCD_data;
+
 	cpu->pio.lcd		= lcd;
 	cpu->pio.keypad		= keyp;
 	cpu->pio.link		= link;
@@ -237,13 +266,13 @@ int memory_init_86(memc *mc) {
 
 	mc->flash_version = 1;
 	mc->flash_size = mc->flash_pages * PAGE_SIZE;
-	mc->flash = calloc(mc->flash_pages, PAGE_SIZE);
-	mc->flash_break = calloc(mc->flash_pages, PAGE_SIZE);
+	mc->flash = (u_char *) calloc(mc->flash_pages, PAGE_SIZE);
+	mc->flash_break = (u_char *) calloc(mc->flash_pages, PAGE_SIZE);
 	memset(mc->flash, 0xFF, mc->flash_size);
 	
 	mc->ram_size = mc->ram_pages * PAGE_SIZE;
-	mc->ram = calloc(mc->ram_pages, PAGE_SIZE);
-	mc->ram_break = calloc(mc->ram_pages, PAGE_SIZE);
+	mc->ram = (u_char *) calloc(mc->ram_pages, PAGE_SIZE);
+	mc->ram_break = (u_char *) calloc(mc->ram_pages, PAGE_SIZE);
 
 	if (!mc->flash || !mc->ram) {
 		printf("Couldn't allocate memory in memory_init_86\n");

@@ -65,15 +65,15 @@ static BOOL calc_init_83(int slot, char* os) {
 
 /* 85 86 */
 static int calc_init_86(int slot) {
-#ifndef _WINDLL
-	/* INTIALIZE 83+ */ 
+
+	/* INTIALIZE 86 */ 
 	printf("initializing 86!\n");
 	memory_init_86(&calcs[slot].mem_c); 
 	tc_init(&calcs[slot].timer_c, MHZ_4_8); 
 	CPU_init(&calcs[slot].cpu, &calcs[slot].mem_c, &calcs[slot].timer_c);
 	ClearDevices(&calcs[slot].cpu);
 	device_init_86(&calcs[slot].cpu);
-	/* END INTIALIZE 83+ */
+	/* END INTIALIZE 86 */
 
 	calcs[slot].send			= FALSE;
 	#ifdef WINVER // FIXME: dirty cheater!
@@ -81,7 +81,6 @@ static int calc_init_86(int slot) {
 	calcs[slot].audio->enabled	= FALSE;
 	calcs[slot].audio->init		= FALSE;
 	#endif
-#endif
 	return 0;
 }
 
@@ -106,7 +105,6 @@ static int calc_init_83p(int slot) {
 
 /* 83+se */
 static int calc_init_83pse(int slot) {
-#ifndef _WINDLL
 	/* INTIALIZE 83+se */ 
 	memory_init_83pse(&calcs[slot].mem_c); 
 	
@@ -123,7 +121,6 @@ static int calc_init_83pse(int slot) {
 	calcs[slot].audio->enabled	= FALSE;
 	calcs[slot].audio->init		= FALSE;
 	#endif
-#endif
 	return 0;
 }
 
@@ -223,10 +220,10 @@ int rom_load(int slot, char * FileName) {
 				calcs[slot].mem_c.banks[2].addr = calcs[slot].mem_c.flash+0x3F*PAGE_SIZE;
 				calcs[slot].mem_c.banks[2].page = 0x3F;
 				calcs[slot].mem_c.flash_pages = 0x40;
-#ifndef _WINDLL
+
 				void port21_84p(CPU_t *cpu, device_t *dev);
 				calcs[slot].cpu.pio.devices[0x21].code = (devp) &port21_84p;
-#endif
+
 				
 				memcpy(	calcs[slot].cpu.mem_c->flash,
 						tifile->rom->data, 

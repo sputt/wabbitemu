@@ -262,7 +262,7 @@ static keyprog_t keygrps[] = {
 	{ VK_NUMPAD9 , 2 , 3 },
 	{ VK_DECIMAL , 3 , 0 },
 	{ VK_OEM_2, 2, 0 },
-	{ VK_F12, 20, 0}
+	{ VK_NUMPAD0, 20, 0}
 	#else
 	{ GDK_Return , 1 , 0 },
 	{ GDK_period , 3 , 0 },

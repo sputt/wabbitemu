@@ -54,7 +54,7 @@ HRESULT LoadRegistryDefaults(HKEY hkey) {
 	return S_OK;
 }
 
-LONG_PTR QueryWabbitKey(char *name) {
+INT_PTR QueryWabbitKey(char *name) {
 	HKEY hkeySoftware;
 	RegOpenKeyEx(HKEY_CURRENT_USER, "software", 0, KEY_ALL_ACCESS, &hkeySoftware);
 	
