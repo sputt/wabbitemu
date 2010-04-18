@@ -1,0 +1,347 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include <windows.h>
+#include "resource.h"
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+W                       ICON                    "tsmall.ico"
+A                       ICON                    "wabbitemu.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+CALCTI83P               BITMAP                  "TI83P.bmp"
+CALCTI83PSE             BITMAP                  "TI83PSE.bmp"
+TIVARICONS              BITMAP                  "TI-Icons.bmp"
+CLOSE                   BITMAP                  "small_close.bmp"
+TBLEFT                  BITMAP                  "left.bmp"
+TBBACK                  BITMAP                  "back.bmp"
+TBRIGHT                 BITMAP                  "right.bmp"
+TBHOTFRAME              BITMAP                  "buttonframe.bmp"
+TBFRAMELEFT             BITMAP                  "buttondownleft.bmp"
+TBFRAMERIGHT            BITMAP                  "buttondownright.bmp"
+TBHOTFRAMELEFT          BITMAP                  "buttonframeleft.bmp"
+DBSTEP                  BITMAP                  "step.bmp"
+DBSTEPOVER              BITMAP                  "stepover.bmp"
+DBBREAK                 BITMAP                  "break.bmp"
+DBRUN                   BITMAP                  "run.bmp"
+EXPANDPANEBUTTONS       BITMAP                  "expandpanebuttons.bmp"
+CHEVRON                 BITMAP                  "chevron.bmp"
+DBGOTO                  BITMAP                  "goto.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+Z80ACCEL ACCELERATORS
+BEGIN
+    VK_F7,          IDM_CALC_VARIABLES,     VIRTKEY, NOINVERT
+    "C",            IDM_COPY,               VIRTKEY, CONTROL, NOINVERT
+    VK_F11,         IDM_DEBUG_OPEN,         VIRTKEY, NOINVERT
+    VK_BACK,        IDM_FILE_GIF,           VIRTKEY, NOINVERT
+    VK_F10,         SEND_VAR_DIALOG,        VIRTKEY, NOINVERT
+END
+
+DISASMACCEL ACCELERATORS
+BEGIN
+    VK_F5,          DB_RUN,                 VIRTKEY, NOINVERT
+    VK_F7,          DB_STEP,                VIRTKEY, NOINVERT
+    "G",            DB_GOTO,                VIRTKEY, NOINVERT
+    VK_F8,          DB_STEPOVER,            VIRTKEY, NOINVERT
+    VK_F2,          DB_BREAKPOINT,          VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_GIFOPTIONS DIALOGEX 6, 12, 212, 170
+STYLE WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x1
+BEGIN
+    CONTROL         "Enable",IDC_CHKENABLEAUTOSAVE,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,16,34,9
+    CONTROL         "Use increasing numbers",IDC_CHKUSEINCREASING,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_GROUP | WS_TABSTOP,102,31,92,9
+    EDITTEXT        IDC_EDTGIFFILENAME,16,42,132,11,WS_DISABLED | NOT WS_BORDER,WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Browse...",IDC_BTNGIFBROWSE,154,42,42,13,WS_DISABLED
+    CONTROL         "",IDC_TRBGIFFPS,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,26,92,72,17
+    LTEXT           "Autosave Path",IDC_STCAUTOSAVE,16,31,72,9,WS_DISABLED | NOT WS_GROUP
+    LTEXT           "Output framerate",IDC_STC2,16,81,98,11,NOT WS_GROUP
+    GROUPBOX        "Autosave",IDC_GRPAUTOSAVE,6,3,202,59
+    GROUPBOX        "Animated GIF Options",IDC_GRP2,6,66,202,96
+    RTEXT           "9",IDC_STC3,16,96,8,9,NOT WS_GROUP
+    LTEXT           "48",IDC_STCGIFMAX,98,96,10,9,NOT WS_GROUP
+    GROUPBOX        "Colors",IDC_GRPCOLORS,122,81,74,44
+    CONTROL         "Screen palette",IDC_RBNSCREEN,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,128,92,62,13
+    CONTROL         "Grayscale",IDC_RBNGRAYSCALE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,128,107,62,13
+    CONTROL         "Double size",IDC_CHKGIF2X,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,114,80,13
+    LTEXT           "The number of shades in the GIF will match the shades for the display recorded.",IDC_STC1,16,136,182,17,NOT WS_GROUP
+END
+
+IDD_ROMOPTIONS DIALOGEX 6, 5, 216, 144
+STYLE WS_VISIBLE | WS_CAPTION
+CAPTION "IDD_DLG"
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x1
+BEGIN
+    PUSHBUTTON      "Load New ROM",IDC_BTNROMBROWSE,12,90,68,13
+    GROUPBOX        "Current ROM Attributes",IDC_GRP3,6,18,202,89
+    LTEXT           "Filename:",IDC_STC9,12,31,36,9,NOT WS_GROUP
+    LTEXT           "Version:",IDC_STC10,12,42,36,9,NOT WS_GROUP
+    LTEXT           "Model:",IDC_STC11,12,53,36,9,NOT WS_GROUP
+    EDITTEXT        IDC_EDTROMPATH,50,31,114,9,ES_READONLY | NOT WS_BORDER
+    CONTROL         "",IDC_STCROMIMAGE,"Static",SS_BITMAP,166,33,13,12
+    EDITTEXT        IDC_EDTROMVERSION,50,42,114,9,ES_READONLY | NOT WS_BORDER
+    EDITTEXT        IDC_EDTROMMODEL,50,53,114,9,ES_READONLY | NOT WS_BORDER
+    LTEXT           "Flash size:",IDC_STC12,12,64,36,9,NOT WS_GROUP
+    EDITTEXT        IDC_EDTROMSIZE,50,64,114,9,ES_READONLY | NOT WS_BORDER
+    PUSHBUTTON      "Export ROM...",IDC_BTN1,150,127,56,13
+    CONTROL         "",IDC_STC7,"Static",SS_ETCHEDHORZ,12,83,188,2
+END
+
+IDD_OFN DIALOGEX 6, 5, 138, 144
+STYLE DS_3DLOOK | DS_CONTROL | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
+CAPTION "hook"
+FONT 8, "Tahoma", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_IMGPREVIEW,"Static",SS_BITMAP | SS_CENTERIMAGE,4,12,124,67
+    EDITTEXT        IDC_EDTCOMMENT,8,108,114,30,ES_MULTILINE | ES_READONLY | NOT WS_BORDER
+    EDITTEXT        IDC_EDTAUTHOR,8,92,114,9,ES_READONLY | NOT WS_BORDER
+    GROUPBOX        "Preview",IDC_GRPPREVIEW,0,0,138,142
+END
+
+IDD_DLGGOTO DIALOGEX 6, 6, 160, 17
+STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Goto"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LTEXT           "Enter an address or label:",IDC_STC8,2,3,82,11,NOT WS_GROUP
+    EDITTEXT        IDC_EDTGOTOADDR,86,1,70,13,NOT WS_BORDER | NOT WS_TABSTOP,WS_EX_CLIENTEDGE
+END
+
+IDD_SKINOPTIONS DIALOGEX 6, 5, 216, 144
+STYLE WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
+CAPTION "IDD_DLG"
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Skin Options",IDC_GRP4,16,20,180,43
+    CONTROL         "Use cutout skin",IDC_CHKCUTOUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,35,132,17
+END
+
+IDD_VARLIST DIALOGEX 6, 5, 194, 163
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Calculator Variables"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_TRV1,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | WS_TABSTOP,3,18,186,141,WS_EX_CLIENTEDGE
+    PUSHBUTTON      "Refresh",IDC_REFRESH_VAR_LIST,4,1,53,15
+END
+
+IDD_DLGSAVESTATE DIALOGEX 6, 5, 229, 153
+STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Savestate Information"
+FONT 8, "Tahoma", 400, 0, 0x1
+BEGIN
+    EDITTEXT        IDC_EDTSAVEAUTHOR,56,66,102,13,NOT WS_BORDER,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_EDTSAVECOMMENT,56,83,102,39,ES_MULTILINE | NOT WS_BORDER,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_CBOSAVECOMPRESS,56,125,46,9,CBS_DROPDOWNLIST | WS_TABSTOP
+    CONTROL         "Read Only",IDC_CHKSAVEREADONLY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,110,127,48,11
+    DEFPUSHBUTTON   "OK",IDC_BTNSAVEOK,176,5,48,15
+    PUSHBUTTON      "Cancel",IDC_BTNSAVECANCEL,176,22,48,15
+    LTEXT           "Author:",IDC_STC14,14,68,34,9,NOT WS_GROUP
+    LTEXT           "Comment:",IDC_STC15,14,83,34,9,NOT WS_GROUP
+    CONTROL         "",IDC_IMGSAVEPREVIEW,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_SUNKEN,6,7,64,39
+    LTEXT           "Compress:",IDC_STC16,14,127,34,9,NOT WS_GROUP
+    GROUPBOX        "Savestate Configuration",IDC_GRP6,6,51,162,96
+    LTEXT           "Model:",IDC_STC17,78,7,34,9,NOT WS_GROUP
+    LTEXT           "ROM ver:",IDC_STC18,78,20,34,9,NOT WS_GROUP
+    LTEXT           "Filesize:",IDC_STC19,78,33,34,9,NOT WS_GROUP
+    EDITTEXT        IDC_EDTSAVEROMVER,114,20,54,9,ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+    EDITTEXT        IDC_EDTSAVEMODEL,114,7,56,9,ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
+END
+
+IDD_DISPLAYOPTIONS DIALOGEX 6, 5, 216, 166
+STYLE WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
+CAPTION "Display"
+FONT 8, "Microsoft Sans Serif", 400, 0, 0x1
+BEGIN
+    COMBOBOX        IDC_CBODISPLAYMODE,8,105,62,13,CBS_DROPDOWNLIST | WS_TABSTOP
+    CONTROL         "",IDC_TRBDISPLAYSHADES,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOOLTIPS,122,107,74,20
+    RTEXT           "2",IDC_STC4,114,110,8,9,NOT WS_GROUP
+    LTEXT           "12",IDC_STC22,196,110,12,9,NOT WS_GROUP
+    GROUPBOX        "Shades && Frequency",IDC_GRP7,80,94,130,65
+    CONTROL         "",IDC_IMGDISPLAYPREVIEW,"Static",SS_BITMAP | SS_CENTERIMAGE,4,7,128,81,WS_EX_CLIENTEDGE
+    GROUPBOX        "Mode",IDC_GRP8,4,94,70,33
+    CONTROL         "",IDC_TRBDISPLAYFPS,"msctls_trackbar32",0x0,142,62,66,20
+    GROUPBOX        "Preview Settings",IDC_GRP9,138,3,72,85
+    LTEXT           "FPS",IDC_STCDISPLAYOPTION,148,53,34,9,NOT WS_GROUP
+    LTEXT           "Source",IDC_STC21,146,18,42,9,NOT WS_GROUP
+    COMBOBOX        IDC_CBODISPLAYSOURCE,146,27,58,13,CBS_DROPDOWNLIST | WS_TABSTOP
+    LTEXT           "Shades",IDC_STC23,86,110,28,11,NOT WS_GROUP
+    LTEXT           "Freq.",IDC_STC24,86,136,28,11,NOT WS_GROUP
+    CONTROL         "",IDC_TRBDISPLAYFREQ,"msctls_trackbar32",TBS_TOOLTIPS,122,132,74,20
+    RTEXT           "30",IDC_STC25,114,136,8,9,NOT WS_GROUP
+    LTEXT           "120",IDC_STC26,196,136,12,9,NOT WS_GROUP
+END
+
+IDD_DLGTARGETMEM DIALOGEX 6, 6, 140, 28
+STYLE DS_3DLOOK | DS_CONTROL | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
+CAPTION "IDD_DLG"
+FONT 8, "Tahoma", 400, 0, 0x1
+BEGIN
+    CONTROL         "File settings",IDC_RBNFILESETTINGS,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,82,11,50,11
+    CONTROL         "Archive",IDC_RBNFILEARCHIVE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,38,11,38,11
+    CONTROL         "RAM",IDC_RBNFILERAM,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,4,11,30,11
+    GROUPBOX        "Target Memory",IDC_GRP1,0,0,138,26
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_FRAME_MENU MENU
+BEGIN
+    POPUP "Frame Context Menu"
+    BEGIN
+        MENUITEM "Toggle button lock",          IDM_FRAME_BTOGGLE
+        MENUITEM "Unlock all buttons",          IDM_FRAME_BUNLOCK
+    END
+END
+
+IDR_DISASM_HEADER_MENU MENU
+BEGIN
+    POPUP "Root"
+    BEGIN
+        MENUITEM "Addr",                        IDM_DISASMADDR, CHECKED, GRAYED
+        MENUITEM "Data",                        IDM_DISASMDATA
+        MENUITEM "Disassembly",                 IDM_DISASMDISASM
+        MENUITEM "Size",                        IDM_DISASMSIZE
+        MENUITEM "Clocks",                      IDM_DISASMCLOCKS
+    END
+END
+
+IDR_VARTREE_MENU MENU
+BEGIN
+    POPUP "Var right click"
+    BEGIN
+        MENUITEM "Export...",                   IDM_VARTREEEXPORT
+        MENUITEM "Properties",                  IDM_VARTREEPROPERTIES
+    END
+END
+
+IDR_DISASM_MENU MENU
+BEGIN
+    POPUP "Root"
+    BEGIN
+        MENUITEM "Set PC to selection",         IDM_DSETPC
+        MENUITEM "Goto Address...",             DB_DISASM_GOTO
+    END
+END
+
+IDR_MAIN_MENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "New\tCtrl+N",                 IDM_FILE_NEW
+        MENUITEM "Open...\tF10",                IDM_FILE_OPEN
+        MENUITEM "Save State...",               IDM_FILE_SAVE
+        MENUITEM SEPARATOR
+        MENUITEM "Record GIF\tBackspace",       IDM_FILE_GIF
+        MENUITEM SEPARATOR
+        MENUITEM "Close\tCtrl+W",               IDM_FILE_CLOSE
+        MENUITEM "Exit\tAlt+F4",                IDM_FILE_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "Copy\tCtrl+C",                IDM_EDIT_COPY
+        MENUITEM "Paste\tCtrl+V",               IDM_EDIT_PASTE, GRAYED
+    END
+    POPUP "&Calculator"
+    BEGIN
+        MENUITEM "Enable Skin",                 IDM_CALC_SKIN
+        MENUITEM "Enable Sound",                IDM_CALC_SOUND
+        MENUITEM SEPARATOR
+        MENUITEM "Connect To...",               IDM_CALC_CONNECT
+        MENUITEM SEPARATOR
+        MENUITEM "Variables...",                IDM_CALC_VARIABLES
+        MENUITEM "Options...",                  IDM_CALC_OPTIONS
+    END
+    POPUP "&Debug"
+    BEGIN
+        MENUITEM "Reset",                       IDM_DEBUG_RESET
+        MENUITEM "Open Debugger...\tF11",       IDM_DEBUG_OPEN
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "About (Website)",             IDM_HELP_ABOUT
+    END
+END
+
+IDR_REGPANE_MENU MENU
+BEGIN
+    POPUP "Root"
+    BEGIN
+        MENUITEM "Edit Value",                  IDM_REGPANE_EDIT
+        MENUITEM "View Address in Disassembly", IDM_REGPANE_VIEW_DISASM
+        MENUITEM "View Address in Memory",      IDM_REGPANE_VIEW_MEM
+    END
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
