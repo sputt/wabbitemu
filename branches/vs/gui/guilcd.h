@@ -18,8 +18,9 @@
 #define LCD_X	63
 #define LCD_Y	74
 
-LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-void PaintLCD(HWND hwnd, HDC hdcDest);
+LRESULT CALLBACK LCDProc(HWND, UINT, WPARAM, LPARAM);
+void PaintLCD(HWND, HDC);
+void SaveStateDialog(HWND);
 
 
 

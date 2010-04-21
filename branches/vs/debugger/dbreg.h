@@ -27,7 +27,6 @@
 #define IDC_LCD_CONTRAST	(IDC_LCD_ON+5)
 
 
-
 LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 void HandleEditMessages(HWND hwnd, WPARAM wParam, LPARAM lParam);
 

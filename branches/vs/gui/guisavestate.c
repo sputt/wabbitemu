@@ -1,7 +1,7 @@
 #include "guisavestate.h"
 
 #include <commctrl.h>
-#include "rsrc.h"
+#include "resource.h"
 #include "calc.h"
 
 extern HINSTANCE g_hInst;

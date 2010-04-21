@@ -1,6 +1,6 @@
 #include "dbcommon.h"
 #include "gui.h"
-#include "rsrc.h"
+#include "resource.h"
 #include <commctrl.h>
 #include "label.h"
 

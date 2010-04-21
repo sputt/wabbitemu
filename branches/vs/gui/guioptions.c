@@ -3,8 +3,10 @@
 #include <CommCtrl.h>
 #include "guioptions.h"
 
+#include <commdlg.h>
+#include "gui.h"
 #include "gif.h"
-#include "rsrc.h"
+#include "resource.h"
 #include "calc.h"
 #include "displayoptionstest.h"
 #include "lcd.h"
@@ -23,15 +25,15 @@ int PropPageLast = -1;
 static int SlotSave;
 
 void DoPropertySheet(HWND hwndOwner) {
-	
+
 	if (hwndProp != NULL) {
 		SwitchToThisWindow(hwndProp, TRUE);
 		return;
 	}
-	
-	PROPSHEETPAGE psp[4];
+
+	PROPSHEETPAGE psp[5];
 	PROPSHEETHEADER psh;
-	
+
 	psp[0].dwSize = sizeof(PROPSHEETPAGE);
 	psp[0].dwFlags = PSP_USEICONID | PSP_USETITLE;
 	psp[0].hInstance = g_hInst;
@@ -41,7 +43,7 @@ void DoPropertySheet(HWND hwndOwner) {
 	psp[0].pszTitle = "Screen Capture";
 	psp[0].lParam = 0;
 	psp[0].pfnCallback = NULL;
-	
+
 	psp[1].dwSize = sizeof(PROPSHEETPAGE);
 	psp[1].dwFlags = PSP_USEICONID | PSP_USETITLE;
 	psp[1].hInstance = g_hInst;
@@ -61,7 +63,7 @@ void DoPropertySheet(HWND hwndOwner) {
 	psp[2].pszTitle = "ROM";
 	psp[2].lParam = 0;
 	psp[2].pfnCallback = NULL;
-	
+
 	psp[3].dwSize = sizeof(PROPSHEETPAGE);
 	psp[3].dwFlags = PSP_USEICONID | PSP_USETITLE;
 	psp[3].hInstance = g_hInst;
@@ -71,7 +73,17 @@ void DoPropertySheet(HWND hwndOwner) {
 	psp[3].pszTitle = "Skin";
 	psp[3].lParam = 0;
 	psp[3].pfnCallback = NULL;
-	
+
+	psp[4].dwSize = sizeof(PROPSHEETPAGE);
+	psp[4].dwFlags = PSP_USEICONID | PSP_USETITLE;
+	psp[4].hInstance = g_hInst;
+	psp[4].pszTemplate = MAKEINTRESOURCE(IDD_KEYSOPTIONS);
+	psp[4].pszIcon = NULL;
+	psp[4].pfnDlgProc = KeysOptionsProc;
+	psp[4].pszTitle = "Keys";
+	psp[4].lParam = 0;
+	psp[4].pfnCallback = NULL;
+
 	psh.dwSize = sizeof(PROPSHEETHEADER);
 	psh.dwFlags = PSH_PROPSHEETPAGE | PSH_NOCONTEXTHELP | PSH_MODELESS;
 	psh.hwndParent = hwndOwner;
@@ -85,15 +97,15 @@ void DoPropertySheet(HWND hwndOwner) {
 	hwndProp = (HWND) PropertySheet(&psh);
 
 	if (IsRectEmpty(&PropRect) == FALSE) {
-		SetWindowPos(hwndProp, NULL, 
+		SetWindowPos(hwndProp, NULL,
 				PropRect.left, PropRect.top, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
 	}
-	
+
 	printf("PropPageLast: %d\n", PropPageLast);
 	if (PropPageLast != -1) {
 		PropSheet_SetCurSel(hwndProp, NULL, PropPageLast);
 	}
-	
+
 	SlotSave = gslot;
 	return;
 }
@@ -110,7 +122,7 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 	clock_t difference = 0;
 	for (;;) {
 		if (cpu->pio.lcd != calcs[gslot].cpu.pio.lcd) {
-			u_char *buffer;
+			u_char *buffer = NULL;
 			switch (cpu->imode) {
 			case 0: buffer = displayoptionstest_draw_bounce(4,displayFPS,Time); break;
 			case 1: buffer = displayoptionstest_draw_scroll(4,displayFPS,Time); break;
@@ -120,27 +132,27 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 			if (cpu->imode == 2) Time += 1/70.0f;
 			else Time += 1/displayFPS;
 		}
-		
+
 		HDC hdc = GetDC(imgDisplayPreview);
 		if (hdc == NULL) continue;
-		
-		
+
+
 		StretchDIBits(hdc, 0, 0, 192, 128,
 			0, 0, 96, 64,
 			LCD_image(cpu->pio.lcd),
 			bi,
 			DIB_RGB_COLORS,
 			SRCCOPY);
-		
+
 		ReleaseDC(imgDisplayPreview, hdc);
-		
+
 		for(i=0;i<16;i++) {
 			if (cpu->imode == 2) {
 				tc_add(cpu->timer_c,((MHZ_6/70.0f)-(67*768))/16);
 			} else {
 				tc_add(cpu->timer_c,((MHZ_6/displayFPS)-(67*768))/16);
 			}
-			
+
 			cpu->output = FALSE;
 			LCD_data(cpu,&(cpu->pio.devices[0x11]));
 		}
@@ -160,13 +172,13 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 			Sleep(displayTPF);
 		}
 	}
-} 
+}
 
 
 LCD_t *DupLCDConfig(LCD_t *lcd_dest, const LCD_t *lcd_source) {
 	if (lcd_dest == NULL || lcd_source == NULL) return lcd_dest;
 	if (lcd_dest == lcd_source) return lcd_dest;
-	
+
 	lcd_dest->time = lcd_source->time;
 	lcd_dest->write_last = lcd_source->write_last;
 	lcd_dest->write_avg = lcd_source->write_avg;
@@ -188,31 +200,31 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 		case WM_INITDIALOG: {
 
 			static timer_context_t timer_c;
-			
+
 			tc_init(&timer_c, MHZ_6);
-			
+
 			cpu.timer_c = &timer_c;
 			cpu.imode = 0;
-			
+
 			lcd = LCD_init(&cpu, TI_83P);
 			lcd_old = lcd;
-			
+
 			DupLCDConfig(lcd, calcs[gslot].cpu.pio.lcd);
 			lcd->active = TRUE;
 			lcd->word_len = 1;
 			lcd->contrast = 52;
 			lcd->time = 0.0;
-			
+
 			cpu.pio.devices[0x11].active = TRUE;
 			cpu.pio.devices[0x11].mem_c = NULL;
 			cpu.pio.devices[0x11].aux = lcd;
 			cpu.pio.devices[0x11].code = (devp) LCD_data;
-			
+
 			cpu.pio.lcd = lcd;
-			
+
 			cbMode = GetDlgItem(hwndDlg, IDC_CBODISPLAYMODE);
 			imgDisplayPreview = GetDlgItem(hwndDlg, IDC_IMGDISPLAYPREVIEW);
-			
+
 			SendMessage(cbMode, CB_ADDSTRING,  0, (LPARAM) "Perfect gray");
 			SendMessage(cbMode, CB_ADDSTRING,  0, (LPARAM) "Steady freq");
 			SendMessage(cbMode, CB_ADDSTRING,  0, (LPARAM) "Game gray");
@@ -222,15 +234,15 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 				SendMessage(cbMode, CB_SETCURSEL, 1, (LPARAM) lcd->mode);
 			else
 				SendMessage(cbMode, CB_SETCURSEL, 2, (LPARAM) lcd->mode);
-			
-			
+
+
 			cbSource = GetDlgItem(hwndDlg, IDC_CBODISPLAYSOURCE);
 			SendMessage(cbSource, CB_ADDSTRING, 0, (LPARAM) "Bounce");
 			SendMessage(cbSource, CB_ADDSTRING, 0, (LPARAM) "Scroll");
 			SendMessage(cbSource, CB_ADDSTRING, 0, (LPARAM) "Gradient");
 			SendMessage(cbSource, CB_ADDSTRING, 0 ,(LPARAM) "Live");
 			SendMessage(cbSource, CB_SETCURSEL, 0, (LPARAM) 0);
-			
+
 			trbShades = GetDlgItem(hwndDlg, IDC_TRBDISPLAYSHADES);
 			SendMessage(trbShades, TBM_SETRANGE,
 			    (WPARAM) TRUE,
@@ -238,24 +250,24 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			SendMessage(trbShades, TBM_SETTICFREQ, 1, 0);
 
 			SendMessage(trbShades, TBM_SETPOS, TRUE, lcd->shades + 1);
-			
+
 			trbSteady = GetDlgItem(hwndDlg, IDC_TRBDISPLAYFREQ);
 			SendMessage(trbSteady, TBM_SETRANGE,
 				(WPARAM) TRUE,
 				(LPARAM) MAKELONG(STEADY_FREQ_MIN, STEADY_FREQ_MAX));
 			SendMessage(trbSteady, TBM_SETPOS, TRUE, 1.0 / lcd->steady_frame);
 			EnableWindow(trbSteady, lcd->mode == MODE_STEADY);
-			
+
 			trbFPS = GetDlgItem(hwndDlg, IDC_TRBDISPLAYFPS);
 			SendMessage(trbFPS, TBM_SETRANGE,
 						    (WPARAM) TRUE,
 						    (LPARAM) MAKELONG(20, 80));
 			SendMessage(trbFPS, TBM_SETTICFREQ, 10, 0);
 			SendMessage(trbFPS, TBM_SETPOS, TRUE, displayFPS);
-			
+
 			SetWindowPos(imgDisplayPreview, NULL, 0, 0, 196, 132, SWP_NOMOVE | SWP_NOZORDER);
 			if (hdlThread != NULL) TerminateThread(hdlThread, 0);
-			hdlThread = CreateThread(NULL,0,ThreadDisplayPreview, &cpu, 0, NULL);  
+			hdlThread = CreateThread(NULL,0,ThreadDisplayPreview, &cpu, 0, NULL);
 			return FALSE;
 		}
 		case WM_NOTIFY:
@@ -341,7 +353,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 				return TRUE;
 			}
 			return FALSE;
-			
+
 	}
 	return FALSE;
 }
@@ -349,22 +361,31 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 
 
 void GIFOptionsToggleAutosave(HWND hwndDlg, BOOL bEnable) {
-	HWND 
+	HWND
 	hwndEdt 	= GetDlgItem(hwndDlg, IDC_EDTGIFFILENAME),
 	hwndChk 	= GetDlgItem(hwndDlg, IDC_CHKUSEINCREASING),
 	hwndStc 	= GetDlgItem(hwndDlg, IDC_STCAUTOSAVE),
 	hwndBtn		= GetDlgItem(hwndDlg, IDC_BTNGIFBROWSE);
-	
+
 	EnableWindow(hwndEdt, bEnable);
 	EnableWindow(hwndChk, bEnable);
 	EnableWindow(hwndStc, bEnable);
 	EnableWindow(hwndBtn, bEnable);
 }
 
-
+void SkinOptionsToggleCustomSkin(HWND hwndDlg, BOOL bEnable){
+	HWND hBrowseSkin = GetDlgItem(hwndDlg, IDC_BROWSESKIN),
+		hBrowseKey = GetDlgItem(hwndDlg, IDC_BROWSEKEY),
+		hSkinText = GetDlgItem(hwndDlg, IDC_SKNFILE),
+		hKeyText = GetDlgItem(hwndDlg, IDC_KEYFILE);
+	EnableWindow(hBrowseKey, bEnable);
+	EnableWindow(hBrowseSkin, bEnable);
+	EnableWindow(hSkinText, bEnable);
+	EnableWindow(hKeyText, bEnable);
+}
 
 /* 	Set bSave = TRUE if you are prompting for a file name to save to
- *	If you're fetching a filename otherwise, bSave = FALSE */	
+ *	If you're fetching a filename otherwise, bSave = FALSE */
 int SetGifName(BOOL bSave) {
 	OPENFILENAME ofn;
 
@@ -373,12 +394,12 @@ Graphics Interchange Format  (*.gif)\0*.gif\0\
 All Files (*.*)\0*.*\0\0";
 	char lpstrFile[MAX_PATH];
 	unsigned int Flags = 0;
-	
+
 	if (bSave) Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
 
 	int i;
 	for (i = strlen(gif_file_name)-1; i && gif_file_name[i] != '\\'; i--);
-	
+
 	if (i) {
 		strcpy(lpstrFile, gif_file_name + i + 1);
 	} else {
@@ -414,35 +435,106 @@ All Files (*.*)\0*.*\0\0";
 	return 0;
 }
 
-
-
-
+int BrowseBMPFile(char* lpstrFile[]){	OPENFILENAME ofn;
+	char lpstrFilter[] 	= "\	BMP  (*.bmp)\0*.bmp\0\	All Files (*.*)\0*.*\0\0";
+	unsigned int Flags = 0;
+	ofn.lStructSize			= sizeof(OPENFILENAME);
+	ofn.hwndOwner			= GetForegroundWindow();
+	ofn.hInstance			= NULL;
+	ofn.lpstrFilter			= (LPCTSTR) lpstrFilter;
+	ofn.lpstrCustomFilter	= NULL;
+	ofn.nMaxCustFilter		= 0;
+	ofn.nFilterIndex		= 0;
+	ofn.lpstrFile			= (LPSTR)lpstrFile;
+	ofn.nMaxFile			= sizeof(lpstrFile);
+	ofn.lpstrFileTitle		= NULL;
+	ofn.nMaxFileTitle		= 0;
+	ofn.lpstrInitialDir		= NULL;
+	ofn.lpstrTitle			= "Wabbitemu Open Bitmap";
+	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
+	ofn.lpstrDefExt			= "bmp";
+	ofn.lCustData			= 0;
+	ofn.lpfnHook			= NULL;
+	ofn.lpTemplateName		= NULL;
+	ofn.pvReserved			= NULL;
+	ofn.dwReserved			= 0;
+	ofn.FlagsEx				= 0;
+	if (!GetOpenFileName(&ofn)) {
+		return 1;
+	}
+	return 0;
+}
 
 INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND chkCutout;
+	static HWND chkCutout, chkCustom, hColorSelect, hBrowseSkin, hBrowseKey, hSkinText, hKeyText;
 	switch (Message) {
-		case WM_INITDIALOG:
+		case WM_INITDIALOG: {
 			chkCutout = GetDlgItem(hwndDlg, IDC_CHKCUTOUT);
+			chkCustom = GetDlgItem(hwndDlg, IDC_CHKCSTMSKIN);
+			hColorSelect = GetDlgItem(hwndDlg, IDC_COLORPICK);
+			hBrowseSkin = GetDlgItem(hwndDlg, IDC_BROWSESKIN);
+			hBrowseKey = GetDlgItem(hwndDlg, IDC_BROWSEKEY);
+			hSkinText = GetDlgItem(hwndDlg, IDC_SKNFILE);
+			hKeyText = GetDlgItem(hwndDlg, IDC_KEYFILE);
+			BOOL CustomSkinSetting = calcs[SlotSave].bCustomSkin;
+			SkinOptionsToggleCustomSkin(hwndDlg, CustomSkinSetting);
 			SendMessage(chkCutout, BM_SETCHECK, calcs[SlotSave].bCutout, 0);
+			SendMessage(hColorSelect, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) LoadBitmap(g_hInst, "SkinPicker"));
 			return 0;
-		case WM_NOTIFY:
-			
+		}
+		case WM_COMMAND: {
+			switch (HIWORD(wParam)) {
+				case CBN_SELCHANGE:	
+					PropSheet_Changed(GetParent(hwndDlg), hwndDlg);	
+					return TRUE;
+				case BN_CLICKED:
+					switch (LOWORD(wParam)) {
+						case IDC_BROWSESKIN:
+						case IDC_BROWSEKEY: {
+							//char lpstrFile[MAX_PATH];
+							//BrowseBMPFile(&lpstrFile);
+						}
+						case IDC_CHKCSTMSKIN: {
+							BOOL customSkinSetting;
+							customSkinSetting = SendMessage(chkCustom, BM_GETCHECK, 0, 0);
+							SkinOptionsToggleCustomSkin(hwndDlg, customSkinSetting);
+							break;
+						}
+						case IDC_COLORPICK: {
+							HDC hColorPicker = GetDC(hColorSelect);
+							POINT ptCursor;
+							GetCursorPos(&ptCursor);
+							RECT rc;
+							GetWindowRect(hColorSelect, &rc);
+							ptCursor.x -= rc.left;
+							ptCursor.y -= rc.top;
+							COLORREF selectedColor = GetPixel(hColorPicker, ptCursor.x, ptCursor.y);
+							calcs[SlotSave].FaceplateColor = selectedColor;
+							gui_frame_update(SlotSave);
+						}
+						default:
+							return FALSE;
+					}
+					PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
+					break;
+			}
+			//PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
+			//return TRUE;
+		}
+		case WM_NOTIFY: {
     		switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
-					
-					BOOL chkState = 
-					SendMessage(chkCutout, BM_GETSTATE, 0, 0) & 0x0003 ?
-						TRUE : FALSE;
-						
+					BOOL chkState = SendMessage(chkCutout, BM_GETSTATE, 0, 0) & 0x0003 ? TRUE : FALSE;
+
 					if (chkState != calcs[SlotSave].bCutout) {
 						calcs[SlotSave].bCutout = chkState;
-					
-						if (calcs[gslot].bCutout) {
-							EnableCutout(calcs[SlotSave].hwndFrame);
+						gui_frame_update(SlotSave);
+						/*if (calcs[gslot].bCutout) {
+							EnableCutout(calcs[SlotSave].hwndFrame, NULL);
 						} else {
-							DisableCutout(calcs[SlotSave].hwndFrame);	
-						}
-					}
+							DisableCutout(calcs[SlotSave].hwndFrame);
+						}*/					}
+					//SetWindowLong(hwndDlg, DWL_MSGRESULT, PSNRET_NOERROR);
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -451,27 +543,23 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 					return TRUE;
 			}
 			return TRUE;
-		case WM_COMMAND:
-			PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
-			return TRUE;
+		}
 	}
 	return FALSE;
 }
-
-
 
 INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndSpeed, chkAutosave, edtGIFFilename, chkUseIncreasing, chkSize;
 	static HWND rbnScreen, rbnGray;
 	switch (Message) {
 		case WM_INITDIALOG: {
-			
+
 			hwndSpeed = GetDlgItem(hwndDlg, IDC_TRBGIFFPS);
 			SendMessage(hwndSpeed, TBM_SETRANGE,
 			    (WPARAM) TRUE,
 			    (LPARAM) MAKELONG(0, TBRTICS));
 			SendMessage(hwndSpeed, TBM_SETTICFREQ, 1, 0);
-			
+
 			int speedPos = 0;
 			if (gif_base_delay_start != 0) {
 			 	speedPos = ((100/gif_base_delay_start)-9)/TBRSTEP;
@@ -485,22 +573,22 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 			TCHAR lpszMax[10];
 			sprintf(lpszMax, "%d", fpsMax);
 			SendMessage(hwndMaxSpeed, WM_SETTEXT, 0, (LPARAM) lpszMax);
-			
-			
+
+
 			chkAutosave = GetDlgItem(hwndDlg, IDC_CHKENABLEAUTOSAVE);
 			SendMessage(chkAutosave, BM_SETCHECK, gif_autosave, 0);
 			GIFOptionsToggleAutosave(hwndDlg, gif_autosave);
-			
+
 			edtGIFFilename = GetDlgItem(hwndDlg, IDC_EDTGIFFILENAME);
 			SendMessage(edtGIFFilename, WM_SETTEXT, 0, (LPARAM) gif_file_name);
-			
+
 			chkUseIncreasing = GetDlgItem(hwndDlg, IDC_CHKUSEINCREASING);
 			SendMessage(chkUseIncreasing, BM_SETCHECK, gif_use_increasing, 0);
-			
+
 			rbnScreen = GetDlgItem(hwndDlg, IDC_RBNSCREEN);
 			rbnGray = GetDlgItem(hwndDlg, IDC_RBNGRAYSCALE);
 			Button_SetCheck(gif_bw ? rbnGray : rbnScreen, BST_CHECKED);
-			
+
 			chkSize = GetDlgItem(hwndDlg, IDC_CHKGIF2X);
 			Button_SetCheck(chkSize, (gif_size == 2) ? BST_CHECKED : BST_UNCHECKED);
 			return TRUE;
@@ -511,29 +599,29 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 
 					int speedPos = SendMessage(hwndSpeed, TBM_GETPOS, 0, 0);
 					//printf("spedpos: %d\n",speedPos);
-					
+
 					if (gif_write_state == GIF_IDLE) {
 						gif_base_delay_start = 	//GIF_MINIMUM + (GIF_MAXIMUM=GIF_MINIMUM)/6
 												(100/(9+(speedPos * TBRSTEP)));
 					}
 					//printf("gifbasedelay: %d\n",gif_base_delay_start);
-					
+
 					gif_autosave =
 					SendMessage(chkAutosave, BM_GETSTATE, 0, 0) & 0x0003 ?
 						TRUE : FALSE;
-											
+
 					gif_use_increasing =
 					SendMessage(chkUseIncreasing, BM_GETSTATE, 0, 0) & 0x0003 ?
 						TRUE : FALSE;
-					
+
 					gif_bw = Button_GetCheck(rbnGray);
 
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
-					
+
 					gif_size =
 					SendMessage(chkSize, BM_GETSTATE, 0, 0) & 0x0003 ?
 						2 : 1;
-					
+
 					Edit_GetText(edtGIFFilename, gif_file_name, sizeof(gif_file_name));
 					return TRUE;
 				}
@@ -578,7 +666,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 			PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 			return TRUE;
 	}
-				
+
 	return FALSE;
 }
 
@@ -623,7 +711,7 @@ All Files (*.*)\0*.*\0\0";
 	ofn.lpstrFile		= lpstrFile;
 	ofn.nMaxFile		= MAX_PATH;
 	ofn.lpstrTitle		= "Wabbitemu Export Rom";
-	ofn.Flags			= OFN_PATHMUSTEXIST | OFN_EXPLORER | 
+	ofn.Flags			= OFN_PATHMUSTEXIST | OFN_EXPLORER |
 						  OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
 	ofn.lpstrDefExt		= "rom";
 	if (!GetSaveFileName(&ofn)) return 1;
@@ -641,7 +729,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			edtRom_model = GetDlgItem(hwnd, IDC_EDTROMMODEL);
 			edtRom_size = GetDlgItem(hwnd, IDC_EDTROMSIZE);
 			stcRom_image = GetDlgItem(hwnd, IDC_STCROMIMAGE);
-			
+
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
 		case WM_COMMAND:
@@ -676,7 +764,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					}
 			}
 			return TRUE;
-			
+
 		case WM_NOTIFY:
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
@@ -688,7 +776,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					return TRUE;
 			}
 			break;
-			
+
 		// Update all of the ROM attributes
 		case WM_USER:
 			SendMessage(edtRom_path, WM_SETTEXT, 0, (LPARAM) calcs[SlotSave].rom_path);
@@ -706,8 +794,310 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					hbmTI83P = LoadBitmap(g_hInst, "CalcTI83P");
 					break;
 			}
-			SendMessage(stcRom_image, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) hbmTI83P);	
+			SendMessage(stcRom_image, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) hbmTI83P);
 			return TRUE;
 	}
 	return FALSE;
+}
+ACCEL hInitialAccels[256],	// original tables not touched
+	hNewAccels[256];		// working copy
+HWND hListMenu;
+// all submenus of current category
+HWND hHotKey;
+HWND hListKeys; 			// shortcuts for currently selected command
+HMENU hMenu;
+int m_nCommands; 			// total commands listed (all categories)
+int nStore, nUsed; 			// how many ACCELs allocated and how many used already
+char *m_sCtrl, *m_sAlt, *m_sShift;
+int m_nInitialLen;
+DWORD m_dwCheckSum; 		// trivia for initial table
+static int cur_sel;
+INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+	switch(Message) {
+		case WM_INITDIALOG: {
+			int i;			
+			//char buffer[256];
+			HWND hComboBox = GetDlgItem(hwnd, IDC_COMBO_MENU);
+			//m_nStore = 2*m_nCommands + m_nAccel; 			// extreme: max 2 keys per command assigned
+			//hNewAccels = &ACCEL[m_nStore];
+			hMenu = LoadMenu(g_hInst, (LPCTSTR)IDR_MAIN_MENU);
+			hListMenu = GetDlgItem(hwnd, IDC_LIST_MENU);
+			hListKeys = GetDlgItem(hwnd, IDC_LIST_KEYS);
+			hHotKey = GetDlgItem(hwnd, IDC_HOTKEY);
+			int numEntries = CopyAcceleratorTable(haccelmain, NULL, 0);
+			nUsed = CopyAcceleratorTable(haccelmain, hNewAccels, numEntries);
+			nStore = 256;
+			int count = GetMenuItemCount(hMenu);
+			for (i = 0; i < count; i++) {
+				char* string = (char*)GetFriendlyMenuText(hMenu, i, 0);
+				ComboBox_AddString(hComboBox, string);
+				free(string);
+			}
+			ComboBox_SetCurSel(hComboBox, 0);
+			SendMessage(hwnd, WM_COMMAND, CBN_SELCHANGE << 16, 0);
+			return TRUE;
+		}
+		case WM_COMMAND: {
+			switch(HIWORD(wParam)) {
+				case EN_CHANGE: {
+					BOOL enable = SendMessage(hHotKey, HKM_GETHOTKEY, 0 , 0);
+					EnableWindow(GetDlgItem(hwnd, IDC_ASSIGN_ACCEL), enable);
+					break;
+				}
+				case CBN_SELCHANGE: {
+					HWND hSender = (HWND)lParam;
+					if (hSender == hListKeys) {
+						int sel = ListBox_GetCurSel(hListKeys);
+						EnableWindow(GetDlgItem(hwnd, IDC_REMOVE_ACCEL), sel >= 0);
+					} else {
+						ChangeMenuCommands(hSender);
+					}
+					break;
+				}
+				case BN_CLICKED: {
+					HWND hSender = (HWND)lParam;
+					if (hSender == GetDlgItem(hwnd, IDC_ASSIGN_ACCEL)) {
+						int i;
+						WORD wVirtualKeyCode, wModifiers;
+						DWORD key = SendMessage(hHotKey, HKM_GETHOTKEY, 0, 0);
+						wVirtualKeyCode = LOBYTE(LOWORD(key));
+						wModifiers = HIBYTE(LOWORD(key));
+						int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED);
+						if(wVirtualKeyCode && active >= 0) {
+							// i don't really understand that: is this ALWAYS a virt key? Looks like it!
+							BYTE fVirt = (wModifiers & (HOTKEYF_SHIFT| HOTKEYF_CONTROL| HOTKEYF_ALT)) << 2;
+							fVirt |= FVIRTKEY | FNOINVERT;							// various checks: valid range, not already assigned et cetera
+							LVITEM lvi;
+							lvi.iItem = active;
+							lvi.mask = LVIF_PARAM;
+							ListView_GetItem(hListMenu, &lvi);
+							int newCmd = lvi.lParam;
+							for (i=0; i < nUsed; i++)
+								if(hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == wVirtualKeyCode)
+									break;
+							if (i < nUsed) {								// cheeky: could this be the same item being assigned a double key?
+								if (newCmd == hNewAccels[i].cmd)
+									return 0; // no actions required
+								// ask for shortcut overwrite confirmation
+								if(MessageBox(hwnd, "This key combination is already in use.\nErase the old command assignment?",
+									"Overwrite?", MB_ICONQUESTION | MB_YESNO) == IDNO)
+									return 0;
+								hNewAccels[i].cmd = newCmd;
+							} else if(nUsed < nStore) { // i'm sure capacity will never be reached
+								hNewAccels[nUsed].fVirt = fVirt;
+								hNewAccels[nUsed].key = wVirtualKeyCode;
+								hNewAccels[nUsed].cmd = newCmd;
+								nUsed++;
+							}
+							ChangeCommand(hwnd); // reflect changes
+							// this key can only be clicked, and if it is default & disabled, the key navigation gets screwy
+							// so make something else default item
+							//SendMessage(DM_SETDEFID, IDOK);
+							SetFocus(hHotKey);
+						}
+					} else if (hSender == GetDlgItem(hwnd, IDC_REMOVE_ACCEL)) {
+						int idx = ListBox_GetCurSel(hListKeys);
+						LRESULT lr = ListBox_GetItemData(hListKeys, idx);
+						if(lr != LB_ERR) {
+							int i;
+							BYTE fVirt = (BYTE)LOWORD(lr);
+							WORD key = HIWORD(lr);
+							for(i = 0; i < nUsed; i++)
+								if(hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == key) {
+									ListBox_DeleteString(hListKeys, idx);
+									// pack working accelerator table too
+									int last = nUsed-1;
+									if(i < last)
+										hNewAccels[i] = hNewAccels[last];
+									nUsed--;
+									EnableWindow(GetDlgItem(hwnd, IDC_REMOVE_ACCEL), FALSE);
+									break;
+								}
+						}
+					}
+					break;
+				}
+			}
+			break;
+		}
+		case WM_NOTIFY: {
+			switch(((LPNMHDR)lParam)->code) {
+				case LVN_ITEMCHANGED: {
+					ChangeCommand(hwnd);
+					break;
+				}
+				case PSN_APPLY: {
+					DestroyAcceleratorTable(haccelmain);
+					haccelmain = CreateAcceleratorTable(hNewAccels, nUsed);
+					return TRUE;
+				}
+				case PSN_KILLACTIVE:
+					SetWindowLong(hwnd, DWL_MSGRESULT, FALSE);
+					return TRUE;
+			}
+		}
+	}
+	return FALSE;
+}
+
+void ChangeMenuCommands(HWND hSender) {
+	char buffer[256];
+	LVITEM li;
+	li.mask = LVIF_TEXT;
+	li.iSubItem = 0;
+	li.cchTextMax = 64;
+	cur_sel = SendMessage(hSender, CB_GETCURSEL, 0, 0);
+	HMENU hSubMenu = GetSubMenu(hMenu, cur_sel);
+	ListView_DeleteAllItems(hListMenu);
+	memset(buffer, 0, ARRAYSIZE(buffer));
+	RecurseAddItems(hSubMenu, (char*)&buffer);
+}
+
+char* NameFromVKey(UINT nVK) {
+	UINT nScanCode = MapVirtualKeyEx(nVK, 0, GetKeyboardLayout(0));
+	switch(nVK) {		// Keys which are "extended" (except for Return which is Numeric Enter as extended)	
+		case VK_INSERT:
+		case VK_DELETE:
+		case VK_HOME:
+		case VK_END:
+		case VK_NEXT:  // Page down
+		case VK_PRIOR: // Page up
+		case VK_LEFT:
+		case VK_RIGHT:
+		case VK_UP:
+		case VK_DOWN:
+			nScanCode |= 0x100; // Add extended bit	
+	}
+	// GetKeyNameText() expects the scan code to be on the same format as WM_KEYDOWN
+	// Hence the left shift
+	char* str = (char*)malloc(80);
+	memset(str, 0, 80);
+	GetKeyNameText(nScanCode << 16, str, 79);
+	// these key names are capitalized and look a bit daft
+	int len = strlen(str);
+	if(len > 1) {
+		LPTSTR p2 = CharNext(str);
+		CharLowerBuff(p2, len - (p2 - str) );
+	}
+	return str; // internationalization ready, sweet!
+}
+
+void ChangeCommand(HWND hwnd) {		// new command selected
+	int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED), idx;
+	char *name;
+	ListBox_ResetContent(hListKeys);
+	if(active != -1) {
+		int i;
+		LVITEM lvi;
+		lvi.mask = LVIF_PARAM;
+		lvi.iItem = active;
+		ListView_GetItem(hListMenu, &lvi);
+		UINT cmd = lvi.lParam;		// add all accelerators registered for this command
+		for(i = 0; i < nUsed; i++) {
+			if(hNewAccels[i].cmd == cmd) {
+				name = (char*)NameFromAccel(hNewAccels[i]);
+				idx = ListBox_AddString(hListKeys, name);
+				free(name);
+				lvi.lParam = MAKELPARAM(hNewAccels[i].fVirt, hNewAccels[i].key);
+				ListView_SetItem(hListKeys, &lvi);
+				ListBox_SetItemData(hListKeys, idx, MAKELPARAM(hNewAccels[i].fVirt, hNewAccels[i].key));
+			}
+		}
+		ListBox_SetCurSel(hListKeys, LB_ERR);
+	}
+	SendMessage(hHotKey, HKM_SETHOTKEY, 0, 0);
+	EnableWindow(GetDlgItem(hwnd, IDC_ASSIGN_ACCEL), FALSE);
+	EnableWindow(GetDlgItem(hwnd, IDC_REMOVE_ACCEL), FALSE);
+}
+
+char* NameFromAccel(ACCEL key) {
+	char* name = (char*)malloc(80);
+	memset(name, 0, 80);
+	if(key.fVirt & FCONTROL)
+		strcat(name, "Ctrl + ");
+	if(key.fVirt & FALT)
+		strcat(name, "Alt + ");
+	if(key.fVirt & FSHIFT)
+		strcat(name, "Shift + ");
+	// FNOINVERT is useless, backward compatibility
+	if(key.fVirt & FVIRTKEY) {
+		char* temp = (char*)NameFromVKey(key.key);
+		strcat(name, temp);
+		free(temp);
+	} else {
+		// key field is an ASCII key code. (i never saw one of these)
+#ifdef _UNICODE
+		char ca = (char)key.key;
+		wchar_t cu;
+		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, &ca, 1, &cu, 1);
+		name += cu;
+#else
+		name += (char)key.key;
+#endif
+	}
+	return name;
+}
+
+void RecurseAddItems(HMENU hMenu, char* base) {
+	int i;
+	LVITEM li; // lparam is command ID
+	li.mask = LVIF_TEXT | LVIF_PARAM;
+	li.iSubItem = 0;	// browse this menu checking for submenus
+	int nItems = GetMenuItemCount(hMenu);
+	MENUITEMINFO mi;
+	mi.cbSize = sizeof(MENUITEMINFO);
+	mi.fMask = MIIM_ID | MIIM_SUBMENU;
+	char *name, *temp;
+	for(i = 0; i < nItems; i++)	{
+		temp = (char*)malloc(64);
+		GetMenuItemInfo(hMenu, i, TRUE, &mi); 		// by position
+		if(!mi.wID) 								// separators excluded
+			continue;
+		name = (char*)GetFriendlyMenuText(hMenu, i, 0);
+		strcpy(temp, base);
+		strcat(temp, name);
+		free(name);
+		if(mi.hSubMenu) {
+			strcat(temp, " > ");
+			RecurseAddItems(mi.hSubMenu, temp);
+			free(temp);
+		} else {
+			if(!IsValidCmdRange(mi.wID))
+				continue;
+			li.pszText = (LPTSTR)(LPCTSTR)temp;
+			li.iItem = ListView_GetItemCount(hListMenu);
+			li.lParam = mi.wID;			// is this mixed icon/nie mode going to make listview funny?
+			ListView_InsertItem(hListMenu, &li);
+			free(temp);
+		}
+	}
+}
+
+BOOL IsValidCmdRange(WORD cmdid) {	// return FALSE to exclude certain commands from customization
+	return TRUE;
+}
+
+char* GetFriendlyMenuText(HMENU hMenu, int nItem, UINT uFlag) {
+	char buf[256];
+	uFlag = MF_BYPOSITION;
+	GetMenuString(hMenu, nItem, buf, ARRAYSIZE(buf), uFlag);	// strip ampersands and tab characters
+	char* str = (char*)malloc(strlen(buf) + 1);
+	char* start = str;
+	int i = 0;
+	while(1) {
+		char ch = buf[i++];
+		if (ch == '&')
+			continue;
+		else if (ch == '\t') {
+			*str++ = 0;
+			break;
+		} else
+			*str++ = ch; // multibytes not an issue
+		if(!ch)
+			break;
+	}	// finally remove any trailing dots (usually "...")
+	str -= 2;
+	while(*str == '.')
+		*str-- = 0;
+	return start;
 }

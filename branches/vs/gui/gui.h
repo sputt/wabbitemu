@@ -1,5 +1,7 @@
 #ifndef GUI_H
 #define GUI_H
+#include <Windows.h>
+#include <WindowsX.h>
 
 #define SKIN_WIDTH	314
 #define SKIN_HEIGHT	688
@@ -21,6 +23,7 @@
 
 #define ID_DISASM 	0
 #define ID_REG 		1
+#define ID_MEMTAB   2
 #define ID_MEM		3
 #define ID_STACK	4
 #define ID_WABBIT	5
@@ -56,5 +59,10 @@ int gui_debug(int);
 int gui_frame(int);
 int gui_frame_update(int);
 void gui_draw();
+INT_PTR CALLBACK AboutDialogProc(HWND, UINT, WPARAM, LPARAM);
+#ifdef USE_DIRECTX
+#include <d3d9.h>
+extern IDirect3DDevice9 *pd3dDevice; // Direct3D Rendering Device 
+#endif
 
 #endif

@@ -1,6 +1,5 @@
 // Microsoft Visual C++ generated resource script.
 //
-#include <windows.h>
 #include "resource.h"
 /////////////////////////////////////////////////////////////////////////////
 // English (United States) resources
@@ -24,6 +23,13 @@ A                       ICON                    "wabbitemu.ico"
 // Bitmap
 //
 
+TI-73KEYMAP             BITMAP                  "TI-83+Keymap.bmp"
+TI-82KEYMAP             BITMAP                  "TI-82Keymap.bmp"
+TI-83KEYMAP             BITMAP                  "TI-83Keymap.bmp"
+TI-83+KEYMAP            BITMAP                  "TI-83+Keymap.bmp"
+TI-83+SEKEYMAP          BITMAP                  "TI-83+Keymap.bmp"
+TI-84+KEYMAP            BITMAP                  "TI-84+SEKeymap.bmp"
+TI-84+SEKEYMAP          BITMAP                  "TI-84+SEKeymap.bmp"
 CALCTI83P               BITMAP                  "TI83P.bmp"
 CALCTI83PSE             BITMAP                  "TI83PSE.bmp"
 TIVARICONS              BITMAP                  "TI-Icons.bmp"
@@ -38,10 +44,22 @@ TBHOTFRAMELEFT          BITMAP                  "buttonframeleft.bmp"
 DBSTEP                  BITMAP                  "step.bmp"
 DBSTEPOVER              BITMAP                  "stepover.bmp"
 DBBREAK                 BITMAP                  "break.bmp"
+DBMEMBREAK              BITMAP                  "membreak.bmp"
 DBRUN                   BITMAP                  "run.bmp"
 EXPANDPANEBUTTONS       BITMAP                  "expandpanebuttons.bmp"
 CHEVRON                 BITMAP                  "chevron.bmp"
+TI-83+                  BITMAP                  "TI-83+.bmp"
+TI-73                   BITMAP                  "TI-73.bmp"
+TI-83+SE                BITMAP                  "TI-83+SE.bmp"
+TI-84+                  BITMAP                  "TI-84+.bmp"
+TI-84+SE                BITMAP                  "TI-84+SE.bmp"
+TI-83                   BITMAP                  "TI-83.bmp"
+TI-82                   BITMAP                  "TI-82.bmp"
 DBGOTO                  BITMAP                  "goto.bmp"
+SKINPICKER              BITMAP                  "SkinPicker.bmp"
+TBHOTFRAMEMIDDLE        BITMAP                  "buttonframemiddle.bmp"
+TBFRAMEMIDDLE           BITMAP                  "buttondownmiddle.bmp"
+TBDOWNARROW             BITMAP                  "downarrow.bmp"
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -51,17 +69,16 @@ DBGOTO                  BITMAP                  "goto.bmp"
 Z80ACCEL ACCELERATORS
 BEGIN
     VK_F7,          IDM_CALC_VARIABLES,     VIRTKEY, NOINVERT
-    "C",            IDM_COPY,               VIRTKEY, CONTROL, NOINVERT
+    "C",            IDM_EDIT_COPY,          VIRTKEY, CONTROL, NOINVERT
     VK_F11,         IDM_DEBUG_OPEN,         VIRTKEY, NOINVERT
     VK_BACK,        IDM_FILE_GIF,           VIRTKEY, NOINVERT
-    VK_F10,         SEND_VAR_DIALOG,        VIRTKEY, NOINVERT
+    VK_F10,         IDM_FILE_OPEN,          VIRTKEY, NOINVERT
 END
 
 DISASMACCEL ACCELERATORS
 BEGIN
     VK_F5,          DB_RUN,                 VIRTKEY, NOINVERT
     VK_F7,          DB_STEP,                VIRTKEY, NOINVERT
-    "G",            DB_GOTO,                VIRTKEY, NOINVERT
     VK_F8,          DB_STEPOVER,            VIRTKEY, NOINVERT
     VK_F2,          DB_BREAKPOINT,          VIRTKEY, NOINVERT
 END
@@ -73,12 +90,12 @@ END
 //
 
 IDD_GIFOPTIONS DIALOGEX 6, 12, 212, 170
-STYLE WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS
-FONT 8, "Microsoft Sans Serif", 400, 0, 0x1
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS
+FONT 8, "Tahoma", 400, 0, 0x1
 BEGIN
     CONTROL         "Enable",IDC_CHKENABLEAUTOSAVE,"Button",BS_AUTOCHECKBOX | BS_LEFTTEXT | WS_TABSTOP,16,16,34,9
     CONTROL         "Use increasing numbers",IDC_CHKUSEINCREASING,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_GROUP | WS_TABSTOP,102,31,92,9
-    EDITTEXT        IDC_EDTGIFFILENAME,16,42,132,11,WS_DISABLED | NOT WS_BORDER,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_EDTGIFFILENAME,16,42,132,11,ES_AUTOHSCROLL | ES_NOHIDESEL | WS_DISABLED | NOT WS_BORDER,WS_EX_CLIENTEDGE
     PUSHBUTTON      "Browse...",IDC_BTNGIFBROWSE,154,42,42,13,WS_DISABLED
     CONTROL         "",IDC_TRBGIFFPS,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,26,92,72,17
     LTEXT           "Autosave Path",IDC_STCAUTOSAVE,16,31,72,9,WS_DISABLED | NOT WS_GROUP
@@ -95,9 +112,9 @@ BEGIN
 END
 
 IDD_ROMOPTIONS DIALOGEX 6, 5, 216, 144
-STYLE WS_VISIBLE | WS_CAPTION
+STYLE DS_SETFONT | WS_VISIBLE | WS_CAPTION
 CAPTION "IDD_DLG"
-FONT 8, "Microsoft Sans Serif", 400, 0, 0x1
+FONT 8, "Tahoma", 400, 0, 0x1
 BEGIN
     PUSHBUTTON      "Load New ROM",IDC_BTNROMBROWSE,12,90,68,13
     GROUPBOX        "Current ROM Attributes",IDC_GRP3,6,18,202,89
@@ -115,7 +132,7 @@ BEGIN
 END
 
 IDD_OFN DIALOGEX 6, 5, 138, 144
-STYLE DS_3DLOOK | DS_CONTROL | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
+STYLE DS_SETFONT | DS_3DLOOK | DS_CONTROL | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
 CAPTION "hook"
 FONT 8, "Tahoma", 400, 0, 0x1
 BEGIN
@@ -126,7 +143,7 @@ BEGIN
 END
 
 IDD_DLGGOTO DIALOGEX 6, 6, 160, 17
-STYLE DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION
 EXSTYLE WS_EX_TOOLWINDOW
 CAPTION "Goto"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
@@ -135,26 +152,44 @@ BEGIN
     EDITTEXT        IDC_EDTGOTOADDR,86,1,70,13,NOT WS_BORDER | NOT WS_TABSTOP,WS_EX_CLIENTEDGE
 END
 
-IDD_SKINOPTIONS DIALOGEX 6, 5, 216, 144
-STYLE WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
+IDD_SKINOPTIONS DIALOGEX 6, 5, 216, 170
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
 CAPTION "IDD_DLG"
-FONT 8, "Microsoft Sans Serif", 400, 0, 0x1
+FONT 8, "Tahoma", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Skin Options",IDC_GRP4,16,20,180,43
-    CONTROL         "Use cutout skin",IDC_CHKCUTOUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,35,132,17
+    GROUPBOX        "Skin Options",IDC_GRP4,14,3,180,65
+    CONTROL         "Use cutout skin",IDC_CHKCUTOUT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,12,132,17
+    CONTROL         "Use custom Skin",IDC_CHKCSTMSKIN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,30,31,66,9
+    GROUPBOX        "Custom Skin Options",IDC_GRP5,14,73,180,74
+    PUSHBUTTON      "Browse...",IDC_BROWSEKEY,136,129,54,13,WS_DISABLED
+    PUSHBUTTON      "Browse...",IDC_BROWSESKIN,136,99,54,13,WS_DISABLED
+    EDITTEXT        IDC_SKNFILE,22,99,108,13,ES_AUTOHSCROLL | WS_DISABLED | NOT WS_BORDER,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_KEYFILE,22,129,108,13,ES_AUTOHSCROLL | WS_DISABLED | NOT WS_BORDER,WS_EX_CLIENTEDGE
+    CONTROL         "SKINPICKER",IDC_COLORPICK,"Static",SS_BITMAP | SS_NOTIFY | SS_CENTERIMAGE,94,44,86,20
+    LTEXT           "Bitmap File",IDC_STC5,24,86,54,9,NOT WS_GROUP
+    LTEXT           "Keymap File",IDC_STC6,26,116,54,9,NOT WS_GROUP
+    LTEXT           "Faceplate Color",IDC_STC13,26,49,52,11,NOT WS_GROUP
 END
 
-IDD_VARLIST DIALOGEX 6, 5, 194, 163
-STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+IDD_VARLIST DIALOGEX 6, 5, 194, 206
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Calculator Variables"
 FONT 8, "MS Sans Serif", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_TRV1,"SysTreeView32",TVS_HASBUTTONS | TVS_HASLINES | TVS_LINESATROOT | WS_TABSTOP,3,18,186,141,WS_EX_CLIENTEDGE
     PUSHBUTTON      "Refresh",IDC_REFRESH_VAR_LIST,4,1,53,15
+    PUSHBUTTON      "Export",IDC_EXPORT_VAR,62,1,54,15
+    LTEXT           "",IDC_VAR_NAME,6,164,84,9,NOT WS_GROUP
+    RTEXT           "In RAM:",IDC_STC31,98,179,32,9,NOT WS_GROUP
+    RTEXT           "Address:",IDC_STC32,6,179,36,9,NOT WS_GROUP
+    RTEXT           "Page:",IDC_STC33,6,192,36,9,NOT WS_GROUP
+    LTEXT           "",IDC_VAR_ADDRESS,48,179,46,9,NOT WS_GROUP
+    LTEXT           "",IDC_VAR_PAGE,48,192,46,9,NOT WS_GROUP
+    LTEXT           "",IDC_VAR_RAM,136,179,46,9,NOT WS_GROUP
 END
 
 IDD_DLGSAVESTATE DIALOGEX 6, 5, 229, 153
-STYLE WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
 CAPTION "Savestate Information"
 FONT 8, "Tahoma", 400, 0, 0x1
 BEGIN
@@ -177,9 +212,9 @@ BEGIN
 END
 
 IDD_DISPLAYOPTIONS DIALOGEX 6, 5, 216, 166
-STYLE WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
 CAPTION "Display"
-FONT 8, "Microsoft Sans Serif", 400, 0, 0x1
+FONT 8, "Segoe UI", 400, 0, 0x1
 BEGIN
     COMBOBOX        IDC_CBODISPLAYMODE,8,105,62,13,CBS_DROPDOWNLIST | WS_TABSTOP
     CONTROL         "",IDC_TRBDISPLAYSHADES,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOOLTIPS,122,107,74,20
@@ -201,7 +236,7 @@ BEGIN
 END
 
 IDD_DLGTARGETMEM DIALOGEX 6, 6, 140, 28
-STYLE DS_3DLOOK | DS_CONTROL | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
+STYLE DS_SETFONT | DS_3DLOOK | DS_CONTROL | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS | WS_CAPTION
 CAPTION "IDD_DLG"
 FONT 8, "Tahoma", 400, 0, 0x1
 BEGIN
@@ -209,6 +244,61 @@ BEGIN
     CONTROL         "Archive",IDC_RBNFILEARCHIVE,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,38,11,38,11
     CONTROL         "RAM",IDC_RBNFILERAM,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,4,11,30,11
     GROUPBOX        "Target Memory",IDC_GRP1,0,0,138,26
+END
+
+IDD_DLGABOUT DIALOGEX 6, 6, 134, 79
+STYLE DS_SETFONT | WS_POPUP | WS_VISIBLE | WS_CAPTION
+CAPTION "About"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LTEXT           "Wabbitemu",IDC_STC20,52,12,68,9,NOT WS_GROUP
+    LTEXT           "Revolution Software",IDC_STC27,52,35,68,9,NOT WS_GROUP
+    ICON            "A",IDC_IMG1,12,14,21,20,SS_CENTERIMAGE
+    PUSHBUTTON      "OK",IDC_BTN2,42,60,54,13
+    LTEXT           "Version 1.5",IDC_STC28,52,24,68,9,NOT WS_GROUP
+END
+
+IDD_DLGSPEED DIALOGEX 6, 5, 146, 68
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Set Speed"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_TRB1,"msctls_trackbar32",TBS_AUTOTICKS | TBS_TOOLTIPS | TBS_NOTIFYBEFOREMOVE,14,11,114,21
+    PUSHBUTTON      "OK",IDC_SPEED_OK,16,51,54,15
+    PUSHBUTTON      "Cancel",IDC_SPEED_CANCEL,74,51,54,15
+    CTEXT           "1600%",IDC_STC29,104,36,24,9,SS_CENTERIMAGE | NOT WS_GROUP
+    CTEXT           "5%",IDC_STC30,14,36,22,9,SS_CENTERIMAGE | NOT WS_GROUP
+END
+
+IDD_KEYSOPTIONS DIALOGEX 6, 12, 203, 161
+STYLE DS_SETFONT | WS_CHILD | WS_VISIBLE | WS_CLIPSIBLINGS
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    LISTBOX         IDC_LIST_KEYS,114,31,78,50,LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | NOT WS_BORDER | WS_TABSTOP,WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_LIST_MENU,"SysListView32",LVS_LIST | LVS_SINGLESEL | WS_TABSTOP,8,31,92,91,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_COMBO_MENU,102,9,86,50,CBS_DROPDOWNLIST | WS_TABSTOP
+    RTEXT           "Category:",IDC_STC34,38,11,54,9,NOT WS_GROUP
+    LTEXT           "Press new shortcut key:",IDC_STC35,116,86,76,9,NOT WS_GROUP
+    CONTROL         "",IDC_HOTKEY,"msctls_hotkey32",WS_TABSTOP,114,97,80,14
+    PUSHBUTTON      "Reset All",IDC_RESET_ACCEL,14,136,54,13
+    PUSHBUTTON      "Assign",IDC_ASSIGN_ACCEL,114,118,36,13,WS_DISABLED
+    PUSHBUTTON      "Remove",IDC_REMOVE_ACCEL,156,118,36,13,WS_DISABLED
+END
+
+IDD_DLGPROFILE DIALOGEX 6, 6, 188, 130
+STYLE DS_SETFONT | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_VISIBLE | WS_CAPTION | WS_SYSMENU | WS_THICKFRAME
+CAPTION "Profiler"
+FONT 8, "MS Sans Serif", 0, 0, 0x1
+BEGIN
+    PUSHBUTTON      "OK",IDC_PROFILE_OK,66,110,54,13
+    PUSHBUTTON      "Cancel",IDC_PROFILE_CANCEL,126,110,54,13
+    RTEXT           "Low Address:",IDC_STC36,32,24,54,9,NOT WS_GROUP
+    RTEXT           "High Address:",IDC_STC37,32,44,54,9,NOT WS_GROUP
+    RTEXT           "Block Size:",IDC_STC38,32,62,54,9,NOT WS_GROUP
+    EDITTEXT        IDC_LOW_EDT,96,22,54,13,NOT WS_BORDER,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_HIGH_EDT,96,40,54,13,NOT WS_BORDER,WS_EX_CLIENTEDGE
+    EDITTEXT        IDC_BLOCK_EDT,96,59,54,13,NOT WS_BORDER,WS_EX_CLIENTEDGE
 END
 
 
@@ -243,7 +333,6 @@ BEGIN
     POPUP "Var right click"
     BEGIN
         MENUITEM "Export...",                   IDM_VARTREEEXPORT
-        MENUITEM "Properties",                  IDM_VARTREEPROPERTIES
     END
 END
 
@@ -251,6 +340,10 @@ IDR_DISASM_MENU MENU
 BEGIN
     POPUP "Root"
     BEGIN
+        MENUITEM "Toggle Breakpoint...",        DB_BREAKPOINT
+        MENUITEM "Toggle Write Watchpoint...",  DB_MEMPOINT_WRITE
+        MENUITEM "Toggle Read Watchpoint...",   DB_MEMPOINT_READ
+        MENUITEM SEPARATOR
         MENUITEM "Set PC to selection",         IDM_DSETPC
         MENUITEM "Goto Address...",             DB_DISASM_GOTO
     END
@@ -279,6 +372,19 @@ BEGIN
         MENUITEM "Enable Skin",                 IDM_CALC_SKIN
         MENUITEM "Enable Sound",                IDM_CALC_SOUND
         MENUITEM SEPARATOR
+        MENUITEM "Pause Emulation",             IDM_CALC_PAUSE
+        POPUP "Speed"
+        BEGIN
+            MENUITEM "Set Speed...",                IDM_SPEED_SET
+            MENUITEM SEPARATOR
+            MENUITEM "25%",                         IDM_SPEED_QUARTER
+            MENUITEM "50%",                         IDM_SPEED_HALF
+            MENUITEM "100%",                        IDM_SPEED_NORMAL
+            MENUITEM "200%",                        IDM_SPEED_DOUBLE
+            MENUITEM "400%",                        IDM_SPEED_QUADRUPLE
+            MENUITEM "Max Speed",                   IDM_SPEED_MAX
+        END
+        MENUITEM SEPARATOR
         MENUITEM "Connect To...",               IDM_CALC_CONNECT
         MENUITEM SEPARATOR
         MENUITEM "Variables...",                IDM_CALC_VARIABLES
@@ -291,7 +397,8 @@ BEGIN
     END
     POPUP "&Help"
     BEGIN
-        MENUITEM "About (Website)",             IDM_HELP_ABOUT
+        MENUITEM "Website",                     IDM_HELP_WEBSITE
+        MENUITEM "About",                       IDM_HELP_ABOUT
     END
 END
 
@@ -302,6 +409,68 @@ BEGIN
         MENUITEM "Edit Value",                  IDM_REGPANE_EDIT
         MENUITEM "View Address in Disassembly", IDM_REGPANE_VIEW_DISASM
         MENUITEM "View Address in Memory",      IDM_REGPANE_VIEW_MEM
+    END
+END
+
+IDR_DISASM_WATCH_MENU MENU
+BEGIN
+    POPUP "Root"
+    BEGIN
+        MENUITEM "Break On Write",              DB_MEMPOINT_WRITE
+        MENUITEM "Break On Read",               DB_MEMPOINT_READ
+    END
+END
+
+IDR_DISASM_REWIND_MENU MENU
+BEGIN
+    POPUP "Root"
+    BEGIN
+        MENUITEM "0.5 Seconds",                 IDM_05SECOND
+        MENUITEM "1.0 Second",                  IDM_10SECOND
+        MENUITEM "1.5 Seconds",                 IDM_15SECOND
+        MENUITEM "2.0 Seconds",                 IDM_20SECOND
+        MENUITEM "2.5 Seconds",                 IDM_25SECOND
+        MENUITEM "3.0 Seconds",                 IDM_30SECOND
+        MENUITEM "3.5 Seconds",                 IDM_35SECOND
+        MENUITEM "4.0 Seconds",                 IDM_40SECOND
+        MENUITEM "4.5 Seconds",                 IDM_45SECOND
+        MENUITEM "5.0 Seconds",                 IDM_50SECOND
+    END
+END
+
+IDR_DEBUG_MENU MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "Exit",                        IDM_DEBUG_EXIT
+    END
+    POPUP "&View"
+    BEGIN
+        POPUP "Memory View"
+        BEGIN
+            MENUITEM "Add Mem View",                IDM_VIEW_ADDMEM
+            MENUITEM "Remove Mem View",             IDM_VIEW_DELMEM
+        END
+        POPUP "Disassembly"
+        BEGIN
+            MENUITEM "Add Disassembly",             IDM_VIEW_ADDDIS
+            MENUITEM "Remove Disassembly",          IDM_VIEW_DELDIS
+        END
+    END
+    POPUP "&Run"
+    BEGIN
+        MENUITEM "Run",                         IDM_RUN_RUN
+        MENUITEM "Run Timed",                   IDM_RUN_TIMED
+        MENUITEM SEPARATOR
+        MENUITEM "Step",                        IDM_RUN_STEP
+        MENUITEM "Step Over",                   IDM_RUN_STEPOVER
+        MENUITEM "Step Out",                    IDM_RUN_STEPOUT
+    END
+    POPUP "Tools"
+    BEGIN
+        MENUITEM "Dump Memory...",              IDM_TOOLS_DUMP
+        MENUITEM "Profiler...",                 IDM_TOOLS_PROFILE
+        MENUITEM "Rewind...",                   IDM_TOOLS_REWIND
     END
 END
 
@@ -328,6 +497,29 @@ BEGIN
     "\0"
 END
 
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_SKINOPTIONS, DIALOG
+    BEGIN
+    END
+
+    IDD_DISPLAYOPTIONS, DIALOG
+    BEGIN
+    END
+
+    IDD_DLGABOUT, DIALOG
+    BEGIN
+    END
+END
 #endif    // APSTUDIO_INVOKED
 
 #endif    // English (United States) resources

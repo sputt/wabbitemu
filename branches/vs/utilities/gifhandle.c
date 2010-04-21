@@ -3,7 +3,7 @@
 #include "calc.h"
 #ifdef WINVER // ...oops
 #include "gif.h"
-#include "rsrc.h"
+#include "resource.h"
 #endif
 #ifndef WINVER
 #include "types.h"

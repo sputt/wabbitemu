@@ -1,7 +1,7 @@
 #include <windows.h>
 #include <windowsx.h>
 #include "guifilepreview.h"
-#include "rsrc.h"
+#include "resource.h"
 #include "lcd.h"
 #include "savestate.h"
 

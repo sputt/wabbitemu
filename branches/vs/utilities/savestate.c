@@ -962,10 +962,10 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 		fputs(DETECT_CMP_STR,cfile);
 		switch(compress) {
 #ifndef _WINDLL
-			case ZLIB_CMP:
+/*			case ZLIB_CMP:
 				fputc(ZLIB_CMP,cfile);
 				def(ofile,cfile,9);
-				break;
+				break;*/
 #endif
 			default:
 				puts("Error bad compression format selected.");
@@ -1001,9 +1001,9 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 		#ifdef WINVER // FIXME! FIXME! FIXME!
 		switch(i) {
 #ifndef _WINDLL
-			case ZLIB_CMP:
+/*			case ZLIB_CMP:
 				inf(ifile,tmpfile);
-				break;
+				break;*/
 #endif
 			default:
 				puts("Compressed save is not compatible.");

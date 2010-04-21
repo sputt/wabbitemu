@@ -13,7 +13,7 @@
 #ifdef USE_COM
 #include "wbded.h"
 #endif
-#include "rsrc.h"
+#include "resource.h"
 
 static HWND g_hwndVarTree;
 extern HINSTANCE g_hInst;

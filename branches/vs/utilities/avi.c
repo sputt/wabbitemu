@@ -1,6 +1,6 @@
 #include <windows.h>
 #include <Aviriff.h>
-#include <strings.h>
+#include <string.h>
 #include <stdio.h>
 #include <mmsystem.h>
 

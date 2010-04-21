@@ -6,7 +6,7 @@
 
 
 typedef struct mempane_settings {
-	int addr;			// Top left address
+	int addr;						// Top left address
 	int mode;						// current display mode
 	int sel;						// current selection
 	int xSel, ySel;					// position
@@ -15,11 +15,11 @@ typedef struct mempane_settings {
 	double diff;
 	HWND hwndHeader;
 	HWND cmbMode;
-	HWND hwndTip;
+	HWND hwndTip;					// hWnd for the tooltip
 	int addrTrack;
-	BOOL bText;
+	BOOL bText;						// If in text mode
 	HFONT hfontAddr, hfontData;
-	int nRows, nCols;
+	int nRows, nCols;				// number of rows and cols
 	int cxMem;
 	int cyRow;
 } mempane_settings_t;

@@ -1,8 +1,9 @@
 #include <Windows.h>
+#include "core.h"
 #include <CommCtrl.h>
 #include "dbmem.h"
 #include "dbcommon.h"
-#include "rsrc.h"
+#include "resource.h"
 #include <windowsx.h>
 
 #define COLUMN_X_OFFSET 7
@@ -15,24 +16,24 @@ static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
 	mp_settings *mps = (mp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	RECT hr;
 	GetWindowRect(mps->hwndHeader, &hr);
-	
+
 	int cyHeader = hr.bottom - hr.top;
-	
+
 	TEXTMETRIC tm;
 	HDC hdc = GetDC(hwnd);
 	SelectObject(hdc, hfontLucida);
 	GetTextMetrics(hdc, &tm);
 	ReleaseDC(hwnd, hdc);
 
-	
+
 	int x = pt.x - tm.tmAveCharWidth*7 - COLUMN_X_OFFSET - (mps->diff - mps->cxMem - 2*tm.tmAveCharWidth)/2;
 	int y = pt.y - cyHeader;
-	
+
 	int row = y/mps->cyRow;
 	int col = x/mps->diff;
-	
+
 	int addr = mps->addr + ((col + (mps->nCols * row)) * mps->mode);
-	
+
 	if (r != NULL) {
 		r->left = tm.tmAveCharWidth*7 + COLUMN_X_OFFSET + (mps->diff * col);
 		r->right = r->left + mps->cxMem - 2*tm.tmAveCharWidth;
@@ -46,21 +47,21 @@ static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
 
 static void ScrollUp(HWND hwnd) {
 	mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	
+
 	if (mps->addr > 0)
 		mps->addr -= mps->nCols * mps->mode;
-	
+
 	InvalidateRect(hwnd, NULL, FALSE);
 	UpdateWindow(hwnd);
 }
 
 static void ScrollDown(HWND hwnd) {
 	mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-	
+
 	int data_length = mps->nCols * mps->nRows * mps->mode;
 	if (mps->addr + data_length - mps->nCols * mps->mode <= 0xFFFF)
 		mps->addr += mps->nCols * mps->mode;
-	
+
 	InvalidateRect(hwnd, NULL, FALSE);
 	UpdateWindow(hwnd);
 }
@@ -77,87 +78,87 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			mp_settings *mps;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
-			
+
 			HDC hdc = GetDC(hwnd);
 			SelectObject(hdc, hfontLucida);
 			GetTextMetrics(hdc, &tm);
-			
+
 			mps = (mp_settings *) ((CREATESTRUCT*)lParam)->lpCreateParams;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) mps);
-			
+
 			SelectObject(hdc, hfontSegoe);
-			
+
 			InitCommonControls();
-			
-			mps->hwndHeader = CreateWindowEx(0, WC_HEADER, (LPCTSTR) NULL, 
+
+			mps->hwndHeader = CreateWindowEx(0, WC_HEADER, (LPCTSTR) NULL,
 				WS_CHILD | WS_VISIBLE | HDS_HORZ |/* HDS_FULLDRAG | HDS_DRAGDROP |*/ WS_CLIPSIBLINGS,
-                0, 0, 1, 1, hwnd, (HMENU) ID_SIZE, g_hInst, 
+                0, 0, 1, 1, hwnd, (HMENU) ID_SIZE, g_hInst,
                 (LPVOID) NULL);
 
 			SendMessage(mps->hwndHeader, WM_SETFONT, (WPARAM) hfontSegoe, TRUE);
-			
+
 			WINDOWPOS wp;
 			HDLAYOUT hdl;
- 
+
 			hdl.prc = &rc;
 			hdl.pwpos = &wp;
 			SendMessage(mps->hwndHeader, HDM_LAYOUT, 0, (LPARAM) &hdl);
-			SetWindowPos(mps->hwndHeader, wp.hwndInsertAfter, wp.x, wp.y, 
+			SetWindowPos(mps->hwndHeader, wp.hwndInsertAfter, wp.x, wp.y,
 				wp.cx, wp.cy, wp.flags);
-			
-		    HDITEM hdi; 
-		    
+
+		    HDITEM hdi;
+
 		    hdi.mask = HDI_TEXT | HDI_FORMAT | HDI_WIDTH;
 			TCHAR pszText[32];
 			GetWindowText(hwnd, pszText, sizeof(pszText));
 		    hdi.pszText = pszText;
 		    hdi.cxy = 1;
-		    hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]); 
+		    hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]);
 		    hdi.fmt = HDF_LEFT | HDF_STRING;
 		    mps->iData = 1;
-		    
+
 		    Header_InsertItem(mps->hwndHeader, 0, &hdi);
 
-		
+
 		    hdi.pszText = "Addr";
 		    hdi.cxy = tm.tmAveCharWidth*7;
-		    hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]); 
+		    hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]);
 		    mps->iAddr = 0;
-		    
+
 		    Header_InsertItem(mps->hwndHeader, 0, &hdi);
-		    
+
 			if (mps->track == -1) {
 				mps->cmbMode = CreateWindow(
-					"COMBOBOX", 
+					"COMBOBOX",
 					"",
-					CBS_DROPDOWNLIST | WS_CHILD | WS_VISIBLE, 
+					CBS_DROPDOWNLIST | WS_CHILD | WS_VISIBLE,
 					0, 0, 1, 1,
 					//mps->hwndHeader,
 					hwnd,
-					(HMENU) 1001, g_hInst, NULL); 
-				
+					(HMENU) 1001, g_hInst, NULL);
+
 				ComboBox_AddString(mps->cmbMode, "Byte");
 				ComboBox_AddString(mps->cmbMode, "Word");
 				ComboBox_AddString(mps->cmbMode, "Text");
-				
+
 				ComboBox_SetCurSel(mps->cmbMode, 0);
 				SendMessage(mps->cmbMode, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
-			
+
 			}
-		    
+
 			/*
 			mps->hwndTip = CreateWindowEx(
-					NULL, 
-					TOOLTIPS_CLASS, 
+					NULL,
+					TOOLTIPS_CLASS,
 					NULL, WS_POPUP | TTS_ALWAYSTIP,
 					CW_USEDEFAULT, CW_USEDEFAULT,
 					CW_USEDEFAULT, CW_USEDEFAULT,
 					hwnd, NULL, g_hInst, NULL);
-			
+
 			SetWindowPos(mps->hwndTip, HWND_TOPMOST,0, 0, 0, 0,
 			             SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			SendMessage(mps->hwndTip, TTM_ACTIVATE, TRUE, 0);
-			
+
 			TOOLINFO toolInfo = {0};
 			toolInfo.cbSize = sizeof(toolInfo);
 		    toolInfo.hwnd = hwnd;
@@ -166,18 +167,18 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		    toolInfo.lpszText = LPSTR_TEXTCALLBACK;
 		    SendMessage(mps->hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 			*/
-			
-			
+
+
 		    RECT r;
 		    GetWindowRect(mps->hwndHeader, &r);
 		    cyHeader = r.bottom - r.top;
-		    
+
 		    mps->hfontData = hfontLucida;
 			mps->hfontAddr = hfontLucidaBold;
-			
+
 			mps->cyRow = 4*tm.tmHeight/3;
 			SendMessage(hwnd, WM_SIZE, 0, 0);
-	
+
 			return 0;
 		}
 		case WM_SIZE:
@@ -188,14 +189,14 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			WINDOWPOS wp;
 			HDLAYOUT hdl;
- 
+
 			hdl.prc = &rc;
 			hdl.pwpos = &wp;
 			SendMessage(mps->hwndHeader, HDM_LAYOUT, 0, (LPARAM) &hdl);
-			SetWindowPos(mps->hwndHeader, wp.hwndInsertAfter, wp.x, wp.y, 
+			SetWindowPos(mps->hwndHeader, wp.hwndInsertAfter, wp.x, wp.y,
 				wp.cx, wp.cy, wp.flags);
-			
-			
+
+
 			char szHeader[64];
 			sprintf(szHeader, "Memory (%d Columns)", mps->nCols);
 			HDITEM hdi;
@@ -204,11 +205,11 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			hdi.pszText = szHeader;
 			hdi.cxy = rc.right - tm.tmAveCharWidth*6;
 			Header_SetItem(mps->hwndHeader, mps->iData, &hdi);
-			
+
 			if (mps->cmbMode) {
 				DWORD dwBaseUnits = GetDialogBaseUnits();
-				SetWindowPos(mps->cmbMode, 
-						HWND_TOP, //mps->hwndHeader, 
+				SetWindowPos(mps->cmbMode,
+						HWND_TOP, //mps->hwndHeader,
 						wp.cx - COLUMN_X_OFFSET - (26 * LOWORD(dwBaseUnits))/4 + 2,
 						0,
 						(26 * LOWORD(dwBaseUnits))/4,
@@ -226,51 +227,51 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			PAINTSTRUCT ps;
 			RECT r, dr;
 			GetClientRect(hwnd, &r);
-						
+
 			hdcDest = BeginPaint(hwnd, &ps);
-			
+
 			mp_settings *mps = (mp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			
+
 			hdc = CreateCompatibleDC(hdcDest);
 			HBITMAP hbm = CreateCompatibleBitmap(hdcDest, r.right, r.bottom);
 			SelectObject(hdc, hbm);
 			SetBkMode(hdc, TRANSPARENT);
-			
+
 			r.top = cyHeader;
 			FillRect(hdc, &r, GetStockBrush(WHITE_BRUSH));
-			
+
 			SelectObject(hdc, GetStockObject(DC_PEN));
 			SetDCPenColor(hdc, GetSysColor(COLOR_BTNFACE));
-			
+
 			MoveToEx(hdc, tm.tmAveCharWidth*7-1, cyHeader, NULL);
 			LineTo(hdc, tm.tmAveCharWidth*7-1, r.bottom);
-			
+
 			if (mps->bText) {
 				kMemWidth = tm.tmAveCharWidth;
 			} else {
 				kMemWidth = tm.tmAveCharWidth*mps->mode*2;
 			}
-			
+
 			int i, j, 	rows = (r.bottom - r.top + mps->cyRow - 1)/mps->cyRow,
-						cols = 
+						cols =
 						(r.right - r.left - tm.tmAveCharWidth*7) /
 						(kMemWidth + 2*tm.tmAveCharWidth);
-					
-			
-			
+
+
+
 			mps->nRows = rows;
 			mps->nCols = cols;
 			mps->cxMem = kMemWidth + 2*tm.tmAveCharWidth;
-			
+
 			double diff = r.right - r.left - tm.tmAveCharWidth*7 - (cols * mps->cxMem);
 			if (cols != 1) {
 				diff /= cols - 1;
 			}
-			
+
 			diff += mps->cxMem;
-			
+
 			mps->diff = diff;
-			
+
 			int addr = mps->addr;
 			char memfmt[8];
 			if (mps->bText) {
@@ -279,7 +280,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				sprintf(memfmt, "%%0%dx", mps->mode*2);
 			}
 			unsigned int value;
-			
+
 			r.left = COLUMN_X_OFFSET;
 
 			for (	i = 0, r.bottom = r.top + mps->cyRow;
@@ -291,40 +292,40 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				} else {
 					sprintf(szVal, "%04X", addr);
 				}
-				
-				
+
+
 				if (addr < 0x10000) {
 					SelectObject(hdc, mps->hfontAddr);
-					
+
 					DrawText(hdc, szVal, -1, &r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 				}
-				
+
 				if (addr < 0) {
 					RECT tr;
 					CopyRect(&tr, &r);
 					DrawText(hdc, szVal, -1, &tr, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_CALCRECT);
 					OffsetRect(&tr, tm.tmAveCharWidth/3, 0);
 					InflateRect(&tr, 0, -tm.tmAveCharWidth/2);
-					if ((tr.bottom - tr.top) % 2 != 0) 
+					if ((tr.bottom - tr.top) % 2 != 0)
 						tr.bottom++;
-					
+
 					POINT pts[] = {
-							{tr.right, tr.top}, 
+							{tr.right, tr.top},
 							{tr.right + (tr.bottom - 1 - tr.top)/2+1, tr.top + (tr.bottom - 1 - tr.top)/2+1},
 							{tr.right, tr.bottom}};
-					
+
 					SelectObject(hdc, GetStockObject(DC_PEN));
 					SetDCPenColor(hdc, RGB(128, 128, 128));
 					SelectObject(hdc, GetStockObject(BLACK_BRUSH));
 					Polygon(hdc, pts, 3);
 				}
-				
+
 				for (j = 0; j < cols; j++) {
-					
+
 					CopyRect(&dr, &r);
 					dr.left = tm.tmAveCharWidth*7 + COLUMN_X_OFFSET + (diff * j);
 					dr.right = dr.left + kMemWidth;
-					
+
 					int b;
 					BOOL isSel = FALSE;
 					if (addr == mps->sel) isSel = TRUE;
@@ -336,40 +337,59 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						//DrawItemSelection(hdc, &dr, hwnd == GetFocus());
 						InflateRect(&dr, -2, 0);
 					}
-					
+
 					value = 0;
-					
+
 					if (addr >= 0x10000) break;
 					if (addr >= 0) {
 						int shift;
 						for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
-							value += mem_read(calcs[gslot].cpu.mem_c, addr++) << shift;
+							value += mem_read(calcs[gslot].cpu.mem_c, addr + b) << shift;
 						}
 						sprintf(szVal, memfmt, value);
-						
+#define COLOR_MEMPOINT_WRITE	(RGB(255, 177, 100))
+#define COLOR_MEMPOINT_READ		(RGB(255, 250, 145))
+						if (check_mem_write_break(calcs[gslot].cpu.mem_c, addr))
+						{
+							InflateRect(&dr, 2, 0);
+							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_WRITE, 255);
+							if (isSel)
+								DrawFocusRect(hdc, &dr);
+							InflateRect(&dr, -2, 0);
+						}
+						if (check_mem_read_break(calcs[gslot].cpu.mem_c, addr))
+						{
+							InflateRect(&dr, 2, 0);
+							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_READ , 255);
+							if (isSel)
+								DrawFocusRect(hdc, &dr);
+							InflateRect(&dr, -2, 0);
+						}
+						addr += mps->mode;
+
 						SelectObject(hdc, mps->hfontData);
 						DrawText(hdc, szVal, -1, &dr, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 					} else {
 						addr += mps->mode;
 					}
-					
+
 				}
-					
-				
+
+
 			}
-		
-			
+
+
 			GetClientRect(hwnd, &r);
 			BitBlt(hdcDest, 0, cyHeader, r.right, r.bottom, hdc, 0, cyHeader, SRCCOPY);
-			
+
 			EndPaint(hwnd, &ps);
-			
+
 			DeleteDC(hdc);
 			DeleteObject(hbm);
 			return 0;
 		}
-		
-		case WM_NOTIFY:
+
+		case WM_NOTIFY: {
 			switch (((NMHDR*) lParam)->code) {
 				case HDN_BEGINTRACK:
 				case HDN_ENDTRACK:
@@ -379,25 +399,26 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case TTN_GETDISPINFO:
 				{
 					NMTTDISPINFO *nmtdi = (NMTTDISPINFO *) lParam;
-					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					
+					mp_settings *mps = (mp_settings*) GetWindowLong(hwnd, GWL_USERDATA);
+
 					sprintf(nmtdi->szText, "%d", mem_read(&calcs[gslot].mem_c, mps->addrTrack));
 					return TRUE;
 				}
 			}
 			return FALSE;
+		}
 		case WM_MOUSEWHEEL:
 		{
 			int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
 
 			if (zDelta > 0) ScrollUp(hwnd);
 			else ScrollDown(hwnd);
-			
+
 			if (LOWORD(wParam) & MK_CONTROL) {
 				if (zDelta > 0) ScrollUp(hwnd);
 				else ScrollDown(hwnd);
 			}
-				
+
 			return 0;
 		}
 		case WM_KEYDOWN:
@@ -417,12 +438,12 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						mps->sel -= mps->nCols * mps->mode;
 					break;
 				case VK_RIGHT:
-				
+
 					if ((mps->sel - mps->addr)/mps->mode % mps->nCols == mps->nCols-1) {
 						mps->sel -= (mps->nCols - 1) * mps->mode;
 						break;
 					}
-				case VK_TAB:	
+				case VK_TAB:
 					if (mps->sel <= 0x10000 - mps->mode)
 						mps->sel+=mps->mode;
 					break;
@@ -443,11 +464,19 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case VK_RETURN:
 					SendMessage(hwnd, WM_LBUTTONDBLCLK, 0, MAKELPARAM(mps->xSel, mps->ySel));
 					break;
-				case 'G': {
+				/*case 'G': {
 					int result;
 					result = DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC)GotoDialogProc);
 					if (result == IDOK) mps->addr = goto_addr;
 					SetFocus(hwnd);
+					break;
+				}*/
+				case VK_F3: {
+					SendMessage(hwnd, WM_COMMAND, DB_MEMPOINT_WRITE, 0);
+					break;
+				}
+				case 'G': {
+					SendMessage(hwnd, WM_COMMAND, DB_GOTO, 0);
 					break;
 				}
 				default:
@@ -470,7 +499,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					for (i = 0; i < mps->mode; i++) {
 						mem_write(&calcs[gslot].mem_c, mps->sel + i, data[i]);
 					}
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);					
+					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					hwndVal = NULL;
 					if (HIWORD(wParam) != EN_KILLFOCUS) {
 						SendMessage(hwnd, WM_KEYDOWN, VK_TAB, 0);
@@ -490,16 +519,38 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					mps->mode = mode;
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					SetFocus(hwnd);
+					SendMessage(hwnd, WM_SIZE, 0, 0);
 					break;
 				}
-				case 0:
-				{
+			}
+			switch(LOWORD(wParam))
+			{
+				case DB_GOTO: {
 					int result;
-					printf("Going to!!!!!!\n");
 					result = DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC)GotoDialogProc);
 					if (result == IDOK) mps->addr = goto_addr;
 					SetFocus(hwnd);
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					break;
+				}
+				case DB_MEMPOINT_WRITE: {
+					bank_t *bank = &calcs[gslot].mem_c.banks[mps->sel >> 14];
+					if (check_mem_write_break(&calcs[gslot].mem_c, mps->sel)) {
+						clear_mem_write_break(&calcs[gslot].mem_c, bank->ram, bank->page, mps->sel);
+					} else {
+						set_mem_write_break(&calcs[gslot].mem_c, bank->ram, bank->page, mps->sel);
+					}
+					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					break;
+				}
+				case DB_MEMPOINT_READ: {
+					bank_t *bank = &calcs[gslot].mem_c.banks[mps->sel >> 14];
+					if (check_mem_read_break(&calcs[gslot].mem_c, mps->sel)) {
+						clear_mem_read_break(&calcs[gslot].mem_c, bank->ram, bank->page, mps->sel);
+					} else {
+						set_mem_read_break(&calcs[gslot].mem_c, bank->ram, bank->page, mps->sel);
+					}
+					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
 				}
 			}
@@ -509,43 +560,43 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_LBUTTONDOWN:
 		{
 			SetFocus(hwnd);
-			
+
 			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			RECT rc;
 			GetClientRect(hwnd, &rc);
-			
+
 			int x = GET_X_LPARAM(lParam);
 			int y = GET_Y_LPARAM(lParam);
-			
+
 			HWND oldVal = FindWindowEx(hwnd, NULL, "EDIT", NULL);
 			if (oldVal) {
 				SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) oldVal);
 			}
-			
+
 			POINT pt = {x, y};
 			RECT r;
 			int addr = AddrFromPoint(hwnd, pt, &r);
-			
+
 			if (addr != -1) {
 				mps->sel = addr;
 				if (Message == WM_LBUTTONDBLCLK) {
 					char szInitial[8];
-					
+
 					int value = 0;
 					int shift, b;
 					for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
 						value += mem_read(calcs[gslot].cpu.mem_c, mps->sel+b) << shift;
 					}
-					
+
 					char szFmt[8];
 					if (mps->bText)
 						strcpy(szFmt, "%c");
 					else
 						sprintf(szFmt, "%%0%dx", mps->mode*2);
-					
+
 					sprintf(szInitial, szFmt, value);
-					
-					hwndVal = 
+
+					hwndVal =
 					CreateWindow("EDIT", szInitial,
 						WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT | ES_MULTILINE,
 						r.left-2,
@@ -553,7 +604,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						r.right-r.left+4,
 						r.bottom - r.top +4,
 						hwnd, 0, g_hInst, NULL);
-						
+
 					VALUE_FORMAT format;
 					switch (mps->mode) {
 					case 1:
@@ -570,14 +621,14 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 			}
 			SendMessage(hwnd, WM_USER, DB_UPDATE, 1);
-			return 0;	
+			return 0;
 		}
 		/*
 		case WM_MOUSEMOVE:
 		{
 			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			static int addrTrackPrev = -1;
-			
+
 			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 			int thisAddr = AddrFromPoint(hwnd, pt, NULL);
 			if (thisAddr != addrTrackPrev) {

@@ -2,7 +2,7 @@
 #include "guifilepreview.h"
 #include "calc.h"
 #include <Dlgs.h>
-#include "rsrc.h"
+#include "resource.h"
 #include "sendfiles.h"
 
 #define OFN_PREVIEW_WIDTH ((96*2) + (96/6))
@@ -117,9 +117,10 @@ void GetOpenSendFileName(HWND hwnd, int defFilter) {
 	OPENFILENAME ofn;
 	int result;
 	char lpstrFilter[] 	= "\
-Known File Types\0*.73p;*.82*;*.83p*;*.8xp*;*.8xk;*.73k;*.sav;*.rom;*.lab\0\
+Known File Types\0*.73p;*.82*;*.83p*;*.8xp*;*.8xk;*.73k;*.sav;*.rom;*.lab;*.8xu\0\
 Calculator Program Files  (*.73p;*.82*;*.83p*;*.8xp*)\0*.73p;*.82*;*.83p*;*.8xp*\0\
 Calculator Applications  (*.8xk, *.73k)\0*.8xk;*.73k\0\
+Calculator OSes (*.8xu)\0*.8xu\0\
 Save States  (*.sav)\0*.sav\0\
 ROMS  (*.rom)\0*.rom\0\
 Label Files (*.lab)\0*.lab\0\

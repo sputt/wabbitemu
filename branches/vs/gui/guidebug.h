@@ -3,8 +3,9 @@
 
 #include <windows.h>
 
-LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-
+LRESULT CALLBACK DebugProc(HWND, UINT, WPARAM, LPARAM);
+LRESULT CALLBACK ProfileDialogProc(HWND, UINT, WPARAM, LPARAM);
+int xtoi(const char*, int*);
 #define REG_PANE_WIDTH 200
 
 

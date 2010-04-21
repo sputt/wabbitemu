@@ -1,6 +1,7 @@
 #ifndef CORE_H
 #define CORE_H
 
+#include <windows.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
@@ -103,7 +104,7 @@ typedef struct bank_state {
 	int page;					//Current 16kb page
 	BOOL read_only;				//You can not write to this page(not even if the flash is unlocked)
 	BOOL ram;					//This is on the ram chip(also effect write method for flash)
-	BOOL no_exec;				//You can not execute on this page	
+	BOOL no_exec;				//You can not execute on this page
 } bank_state_t, bank_t;
 
 /* Memory address translation */
@@ -122,7 +123,7 @@ typedef struct waddr {
 
 typedef struct memory_context {
 	/* to be defined */
-	//unsigned char (*flash)[PAGE_SIZE];		//Pointer to flash memory
+	//unsigned char (*flash)[PAGE_SIZE];	//Pointer to flash memory
 	//unsigned char (*ram)[PAGE_SIZE];		//Pointer to ram
 	u_char *flash;
 	u_char *ram;
@@ -133,32 +134,32 @@ typedef struct memory_context {
 		};
 		u_char *breaks[2];
 	};
-	
+
 	int flash_size;
 	int flash_pages;
 	int ram_size;
 	int ram_pages;
 	int step;					// These 3 are for flash programming
 	unsigned char cmd;			// step tells what cycle of the command you are on,
-								
+
 	bank_state_t banks[5];		//Current state of each bank
 								// structure 5 is used to preserve the 4th in boot map
 	BOOL boot_mapped;			//Special mapping used in boot that rotates location of pages
 	BOOL flash_locked;			//Whether flash is writeable or not.
-	
+
 	int flash_version;
-	
+
 	int read_OP_flash_tstates;	//These are for delays on SEs, typically they should be 0.
 	int read_NOP_flash_tstates;
 	int write_flash_tstates;
 	int read_OP_ram_tstates;
 	int read_NOP_ram_tstates;
 	int write_ram_tstates;
-	
+
 	unsigned char upper;
 	unsigned char lower;
-	
-	int port27_remap_count;		// amount of 64 byte chunks remapped from RAM page 0 to bank 3 
+
+	int port27_remap_count;		// amount of 64 byte chunks remapped from RAM page 0 to bank 3
 	int port28_remap_count;		// amount of 64 byte chunks remapped from RAM page 1 to bank 1
 } memory_context_t, memc;
 
@@ -180,7 +181,7 @@ typedef struct pio_context {
 	struct STDINT *stdint;
 	struct SE_AUX *se_aux;
 	/* list other cross model devices here */
-	
+
 	device_t devices[256];
 	int interrupt[256];
 	unsigned int skip_factor[256];
@@ -225,14 +226,21 @@ unsigned char mem_write(memc*, unsigned short, char);
 waddr_t addr_to_waddr(memc*, uint16_t);
 
 void set_break(memc *, BOOL, int, uint16_t);
-u_char check_break(memc *mem, uint16_t addr);
+void set_mem_write_break(memc *, BOOL, int, uint16_t);
+void set_mem_read_break(memc *, BOOL, int, uint16_t);
 void clear_break(memc *mem, BOOL ram, int page, uint16_t addr);
+void clear_mem_write_break(memc *, BOOL, int, uint16_t);
+void clear_mem_read_break(memc *, BOOL, int, uint16_t);
+u_char check_break(memc *, uint16_t);
+u_char check_mem_write_break(memc *, uint16_t);
+u_char check_mem_read_break(memc *, uint16_t);
 
 int tc_init(timerc*, int);
 int CPU_init(CPU_t*, memc*, timerc*);
 int CPU_step(CPU_t*);
 unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr);
 unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data);
+
 
 #ifdef DEBUG
 void displayreg(CPU_t *);
@@ -243,7 +251,7 @@ void displayreg(CPU_t *);
 #define tc_add( timer_z , num ) \
 	(timer_z)->tstates += num; \
 	(timer_z)->elapsed += ((double)(num))/((double)(timer_z)->freq);
-	
+
 #define tc_elapsed( timer_z ) \
 	((timer_z)->elapsed)
 
@@ -255,7 +263,7 @@ void displayreg(CPU_t *);
 	timer_z->tstates += num; \
 	timer_z->elapsed += ((double)(num))/((double)(timer_z)->freq);
 #else
-#define SEtc_add( timer_z , num )  
+#define SEtc_add( timer_z , num )
 #endif
 
 

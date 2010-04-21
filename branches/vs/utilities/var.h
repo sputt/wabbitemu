@@ -104,9 +104,10 @@ typedef struct TIFILE {
 #define BACKUP_TYPE	5		//Wabbit specific saves.
 #define LABEL_TYPE	6		//Lab file
 #define BREAKPOINT_TYPE 7	//breakpoint file
+#define SKIP_TYPE 	8	//breakpoint file
 
-int FindRomVersion(int ,char* ,unsigned char* ,int );
-TIFILE_t * importvar(char *);
+int FindRomVersion(int, char*, unsigned char*, int);
+TIFILE_t* importvar(char *, int, int);
 void FreeTiFile(TIFILE_t *);
 
 #endif

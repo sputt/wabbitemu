@@ -26,7 +26,7 @@ typedef enum {
 	LERR_MEM,					/* Not enough memory on calc */
 	LERR_MODEL,					/* Not the correct model for file */
 	LERR_FILE,					/* Invalid TIFILE in argument */
-	LERR_SYSTEM,				/* Something wrong in wabbitemu */
+	LERR_SYSTEM					/* Something wrong in wabbitemu */
 } LINK_ERR;
 
 // Destination flags
@@ -73,6 +73,14 @@ typedef struct _TI_PKTHDR {
 	uint8_t command_ID;			/* specifies the format of the rest of the pkt */
 	uint16_t data_len;			/* optional field */
 } TI_PKTHDR;
+
+typedef struct {
+	uint8_t size;
+	uint16_t address;
+	uint8_t type;
+	uint8_t data[256];
+	uint8_t chksum;
+} intelhex_t;
 
 /* Header describing variable that is
  * to send or received over the link */
@@ -141,5 +149,8 @@ typedef struct _TI_DATA {
 #define EquObj_3        0x63
 
 LINK_ERR link_send_var(CPU_t*, TIFILE_t*, SEND_FLAG);
+void Load_8xu(FILE*);
+int ReadIntelHex(FILE*, intelhex_t *);
+int link_connect(CPU_t *, CPU_t *);
 #endif
 
