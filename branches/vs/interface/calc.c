@@ -7,9 +7,7 @@
 #include "86hw.h"
 #include "device.h"
 #include "var.h"
-#ifdef WINVER
 #include "disassemble.h"
-#endif
 
 /* Determine the slot for a new calculator.  Return the slot if found,
  * otherwise, return -1.
@@ -328,6 +326,7 @@ int calc_run_tstates(int slot, time_t tstates) {
 
 	while(calcs[slot].running) {
 		if (check_break(&calcs[slot].mem_c, calcs[slot].cpu.pc) & 1) {
+#ifdef WINVER
 			calcs[slot].running = FALSE;
 			bank_t *bank = &calcs[slot].mem_c.banks[mc_bank(calcs[slot].cpu.pc)];
 
@@ -338,8 +337,11 @@ int calc_run_tstates(int slot, time_t tstates) {
 				PostMessage(calcs[slot].ole_callback, WM_USER, bank->ram<<16 | bank->page, z[0].size<<16 | calcs[slot].cpu.pc);
 				printf("postmessage called!\n");
 			} else {
+#endif
 				gui_debug(slot);
+#ifdef WINVER
 			}
+#endif
 			return 0;
 		}
 
@@ -465,7 +467,11 @@ void backups_init_83pse(int slot {
 #endif
 
 int calc_run_seconds(int slot, double seconds) {
+#ifdef MACVER
+	time_t time = (seconds * CLOCKS_PER_SEC) / 1000;
+#else
 	time_t time = (time_t ) (seconds * CLOCKS_PER_SEC);
+#endif
 	return calc_run_timed(slot, time);
 }
 
@@ -483,6 +489,7 @@ int calc_run_timed(int slot, time_t time) {
 	return 0;
 }
 
+#ifdef WINVER
 int calc_from_hwnd(HWND hwnd) {
 	if (hwnd == NULL)
 		return -1;
@@ -499,3 +506,4 @@ int calc_from_hwnd(HWND hwnd) {
 	}
 	return -1;
 }
+#endif

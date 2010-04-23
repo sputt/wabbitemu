@@ -1,6 +1,8 @@
 #include "lcd.h"
 #include "gifhandle.h"
+#ifdef WINVER
 #include "registry.h"
+#endif
 
 #include <math.h>
 #include "calc.h"
@@ -225,7 +227,6 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 			lcd->ufps_last = tc_elapsed(cpu->timer_c);
 			
 			if (lcd->mode == MODE_PERFECT_GRAY) {
-				printf("Screw up game gray encoding\n");
 				LCD_enqueue(lcd);
 				lcd->time = tc_elapsed(cpu->timer_c);
 			}

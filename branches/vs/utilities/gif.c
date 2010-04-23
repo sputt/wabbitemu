@@ -30,9 +30,7 @@
 #ifdef WINVER // FIXME: ...
 #include "gui.h"
 #else
-#define TRUE 1
-#define FALSE 0
-typedef int BOOL;
+#include "coretypes.h"
 #endif
 
 //#include "gif.h" // uhh...
@@ -43,9 +41,6 @@ typedef int BOOL;
 #define GIF_START 1
 #define GIF_FRAME 2
 #define GIF_END 3
-
-typedef uint16_t WORD;
-typedef uint8_t BYTE;
 
 #define SCRXSIZE 96
 #define SCRYSIZE 64

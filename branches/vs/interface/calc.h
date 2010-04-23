@@ -30,15 +30,12 @@
 #include <pthread.h>
 #endif
 
-#ifdef WINVER
 typedef enum {
 	GDS_IDLE,
 	GDS_STARTING,
 	GDS_RECORDING,
 	GDS_ENDING
 } gif_disp_states;
-
-#endif
 
 #define MIN_BLOCK_SIZE 16
 typedef struct profiler {
@@ -78,7 +75,7 @@ typedef struct calc {
 	DWORD Scale;
 	BOOL bCutout;
 	HANDLE hdlThread;
-	gif_disp_states gif_disp_state;
+	
 	clock_t sb_refresh;
 
 	HWND ole_callback;
@@ -105,12 +102,15 @@ typedef struct calc {
 	volatile int BytesSent;
 	volatile int SendSize;
 
+	gif_disp_states gif_disp_state;
+#ifdef WINVER
 	RECT rectSkin;
 	RECT rectLCD;
 	COLORREF FaceplateColor;
 	BOOL bCustomSkin;
 	char skin_path[256];
 	char keymap_path[256];
+#endif
 
 } calc_t;
 
@@ -158,7 +158,9 @@ GLOBAL calc_t calcs[MAX_CALCS];
 GLOBAL int gslot;
 GLOBAL debugger_backup backups/*[MAX_CALCS]*/[10];
 GLOBAL int frame_counter;
+#ifdef WINVER
 GLOBAL HACCEL haccelmain;
+#endif
 
 GLOBAL const char *CalcModelTxt[]
 #ifdef CALC_C

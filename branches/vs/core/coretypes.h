@@ -15,7 +15,11 @@
 #ifndef TRUE
 #define FALSE (0)
 #define TRUE (!FALSE)
+#ifdef WINVER
 typedef int BOOL;
+#else
+typedef signed char BOOL;
+#endif
 #endif
 
 #include <stdio.h>

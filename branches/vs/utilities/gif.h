@@ -11,6 +11,9 @@
 
 #ifdef WINVER
 #include "gui.h"
+#else
+#include "types.h"
+#endif
 
 extern int gif_write_state;
 extern int gif_file_size;
@@ -30,4 +33,3 @@ extern int gif_size;
 extern BOOL gif_bw;
 
 void gif_writer();
-#endif

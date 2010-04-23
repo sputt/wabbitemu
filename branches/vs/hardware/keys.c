@@ -375,9 +375,11 @@ keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk) {
 	int i;
 	keypad_t * keypad = cpu->pio.keypad;
 
-#ifndef WINVER
+	/*
+#if !defined(WINVER) || !defined(MACVER)
 	if (vk >= 'a' && vk <= 'z') vk += 'A' - 'a';
 #endif
+	 */
 	for(i=0; i < NumElm(keygrps); i++) {
 		if (keygrps[i].vk == vk) {
 			if (keygrps[i].group == 20) {
@@ -395,9 +397,11 @@ keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
 	int i;
 	keypad_t * keypad = cpu->pio.keypad;
 	
-#ifndef WINVER
+	/*
+#if !defined(WINVER) || !defined(MACVER)
 	if (vk >= 'a' && vk <= 'z') vk += 'A' - 'a';
 #endif
+	 */
 	
 	for(i=0; i < NumElm(keygrps); i++) {
 		if (keygrps[i].vk == vk) {

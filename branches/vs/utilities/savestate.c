@@ -947,7 +947,7 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 		fwrite(save->chunks[i]->data,1,save->chunks[i]->size,ofile);
 	}
 	fclose(ofile);
-	#ifdef WINVER // FIXME! FIXME! FIXME!
+	
 	if (compress) {
 		cfile = fopen(fn,"wb");
 		if (!cfile) {
@@ -962,10 +962,10 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 		fputs(DETECT_CMP_STR,cfile);
 		switch(compress) {
 #ifndef _WINDLL
-/*			case ZLIB_CMP:
+			case ZLIB_CMP:
 				fputc(ZLIB_CMP,cfile);
 				def(ofile,cfile,9);
-				break;*/
+				break;
 #endif
 			default:
 				puts("Error bad compression format selected.");
@@ -975,7 +975,6 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 		fclose(cfile);
 		remove(tmpfn);
 	}
-	#endif
 }
 
 SAVESTATE_t* ReadSave(FILE* ifile) {
@@ -998,12 +997,12 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 			puts("Could not open tmp file for write");
 			return NULL;
 		}
-		#ifdef WINVER // FIXME! FIXME! FIXME!
+		
 		switch(i) {
 #ifndef _WINDLL
-/*			case ZLIB_CMP:
+			case ZLIB_CMP:
 				inf(ifile,tmpfile);
-				break;*/
+				break;
 #endif
 			default:
 				puts("Compressed save is not compatible.");
@@ -1011,7 +1010,7 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 				remove(tmpfn);
 				return NULL;
 		}
-		#endif
+		
 		fclose(tmpfile);
 		ifile = fopen(tmpfn,"rb");	//this is not a leak, ifile gets closed
 									// outside of this routine.

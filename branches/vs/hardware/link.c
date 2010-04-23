@@ -78,10 +78,12 @@ static void link_send(CPU_t *cpu, u_char byte) {
 	link_t *link1, *link2;
 	link1 = cpu->pio.link;
 	link2 = cpu2->pio.link;
+#ifdef WINVER
 	if (calcs[1].hwndFrame != NULL) {
 		link1->client = &link2->host;
 		link2->client = &link1->host;
 	}
+#endif
 
 	for (bit = 0; bit < 8; bit++, byte >>= 1) {
 		vout = (byte & 1) + 1;

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include "calc.h"
-#ifdef WINVER // ...oops
 #include "gif.h"
+#ifdef WINVER // ...oops
 #include "resource.h"
 #endif
 #ifndef WINVER
@@ -10,7 +10,9 @@
 #endif
 #include "lcd.h"
 #include "gifhandle.h"
+#ifdef WINVER
 #include "guioptions.h"
+#endif
 
 
 char *generate_gif_name(char *fn, int num, char *dest) {

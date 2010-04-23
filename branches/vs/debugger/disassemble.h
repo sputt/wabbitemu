@@ -1,8 +1,8 @@
 #ifndef DISASSEMBLE_H
 #define DISASSEMBLE_H
 
-#include <Windows.h>
 #include "core.h"
+#include "types.h"
 
 #define mem_read16(mc, adr) (unsigned int) ((addr += 2, mem_read(memc, addr-2) + (mem_read(memc, addr-1) << 8)) & 0xFFFF)
 
