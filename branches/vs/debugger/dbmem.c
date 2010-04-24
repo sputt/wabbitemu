@@ -399,7 +399,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case TTN_GETDISPINFO:
 				{
 					NMTTDISPINFO *nmtdi = (NMTTDISPINFO *) lParam;
-					mp_settings *mps = (mp_settings*) GetWindowLong(hwnd, GWL_USERDATA);
+					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 					sprintf(nmtdi->szText, "%d", mem_read(&calcs[gslot].mem_c, mps->addrTrack));
 					return TRUE;

@@ -1,7 +1,7 @@
 //
 //	from DROPTARGET.CPP
 //
-//	By J Brown 2004
+//	By J Brown 2004 
 //
 //	www.catch22.net
 //
@@ -24,21 +24,21 @@ int DropMemoryTarget(HWND hwnd) {
 	RECT lr, rr;
 	POINT p;
 	int ram;
-
+	
 	GetClientRect(hwnd, &lr);
 	CopyRect(&rr, &lr);
-	lr.right /= 2;			//left half
+	lr.right /= 2;			//left half 
 	rr.left = lr.right;		//right half
 	p = drop_pt;			//DragQueryPoint((HDROP) wParam, &p);
 //	printf("p %d,%d\n",p.x,p.y);
 	SwitchToThisWindow(GetParent(hwnd), TRUE);
-
-	ScreenToClient(hwnd, (LPPOINT) &p);
+	
+	ScreenToClient(hwnd, (LPPOINT) &p); 
 
 	if (PtInRect(&rr, p)) ram = SEND_ARC;
 	else if (PtInRect(&lr, p)) ram = SEND_RAM;
 	else ram = SEND_CUR;
-
+	
 	return ram;
 }
 
@@ -49,13 +49,13 @@ int DropMemoryTarget(HWND hwnd) {
 
 static BOOL QueryDataObject (WB_IDataObject *pDataObject)
 {
-	FORMATETC fmtetcWabbitShot =
+	FORMATETC fmtetcWabbitShot = 
 		{RegisterClipboardFormat("WabbitShot"), 0, DVASPECT_CONTENT, 0, TYMED_NULL};
-
+	
 	// Don't let it accept its own screenshots
 	if (pDataObject->ido.lpVtbl->QueryGetData((LPDATAOBJECT)pDataObject, &fmtetcWabbitShot) == S_OK)
 		return FALSE;
-
+	
 	FORMATETC fmtetc[] = {
 			{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL},
 			{RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL}
@@ -66,9 +66,9 @@ static BOOL QueryDataObject (WB_IDataObject *pDataObject)
 		if (pDataObject->ido.lpVtbl->QueryGetData((LPDATAOBJECT)pDataObject, &fmtetc[i]) == S_OK)
 			return TRUE;
 	}
-
+	
 	return FALSE;
-
+	
 }
 
 //
@@ -79,7 +79,7 @@ static DWORD DropEffect(DWORD grfKeyState, POINTL pt, DWORD dwAllowed)
 	DWORD dwEffect = 0;
 
 	// 1. check "pt" -> do we allow a drop at the specified coordinates?
-
+	
 	// 2. work out that the drop-effect should be based on grfKeyState
 	if(grfKeyState & MK_CONTROL)
 	{
@@ -89,7 +89,7 @@ static DWORD DropEffect(DWORD grfKeyState, POINTL pt, DWORD dwAllowed)
 	{
 		dwEffect = dwAllowed & DROPEFFECT_MOVE;
 	}
-
+	
 	// 3. no key-modifiers were specified (or drop effect not allowed), so
 	//    base the effect on those allowed by the dropsource
 	if(dwEffect == 0)
@@ -97,14 +97,14 @@ static DWORD DropEffect(DWORD grfKeyState, POINTL pt, DWORD dwAllowed)
 		if(dwAllowed & DROPEFFECT_COPY) dwEffect = DROPEFFECT_COPY;
 		if(dwAllowed & DROPEFFECT_MOVE) dwEffect = DROPEFFECT_MOVE;
 	}
-
+	
 	return dwEffect;
 }
 
 //
 //	IUnknown::AddRef
 //
-static ULONG STDMETHODCALLTYPE
+static ULONG STDMETHODCALLTYPE 
 idt_addref(WB_IDropTarget *This)
 {
   return InterlockedIncrement(&This->m_lRefCount);
@@ -158,18 +158,18 @@ idt_release(WB_IDropTarget *This)
 //
 //
 //
-static HRESULT STDMETHODCALLTYPE
-idt_dragenter(	WB_IDropTarget *This,
-				IDataObject *pDataObject,
-				DWORD grfKeyState,
-				POINTL pt,
+static HRESULT STDMETHODCALLTYPE 
+idt_dragenter(	WB_IDropTarget *This, 
+				IDataObject *pDataObject, 
+				DWORD grfKeyState, 
+				POINTL pt, 
 				DWORD *pdwEffect )
 {
 	if (This->m_pdth) {
 		POINT p = {pt.x, pt.y};
 		This->m_pdth->lpVtbl->DragEnter(This->m_pdth, This->m_hWnd, (LPDATAOBJECT) pDataObject, &p, *pdwEffect);
 	}
-
+	
 	// does the dataobject contain data we want?
 	This->m_fAllowDrop = QueryDataObject((WB_IDataObject *) pDataObject);
 
@@ -182,21 +182,21 @@ idt_dragenter(	WB_IDropTarget *This,
 
 		drop_pt = pt;
 		calcs[This->m_slot].do_drag = TRUE;
-
+		
 		FORMATETC fmtetc[] = {{RegisterClipboardFormat("DropDescription"), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL }};
 		STGMEDIUM stgmed[] = {{0}};
-
+		
 		stgmed[0].tymed = TYMED_HGLOBAL;
 		stgmed[0].hGlobal = GlobalAlloc(GHND, sizeof(DROPDESCRIPTION));
-
+		
 		DROPDESCRIPTION *pdd = GlobalLock(stgmed[0].hGlobal);
-
+	    
 	    pdd->type = DROPIMAGE_COPY;
 	    wcscpy(pdd->szMessage, L"Transfer to %1");
 	    wcscpy(pdd->szInsert, L"Wabbitemu");
 
 		GlobalUnlock(stgmed[0].hGlobal);
-
+		
 		if (SUCCEEDED(pDataObject->lpVtbl->SetData(pDataObject, &fmtetc[0], &stgmed[0], TRUE))) {
 			;
 		} else {
@@ -207,20 +207,20 @@ idt_dragenter(	WB_IDropTarget *This,
 	{
 		FORMATETC fmtetc[] = {{RegisterClipboardFormat("DropDescription"), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL }};
 		STGMEDIUM stgmed[] = {{0}};
-
+		
 		stgmed[0].tymed = TYMED_HGLOBAL;
 		stgmed[0].hGlobal = GlobalAlloc(GHND, sizeof(DROPDESCRIPTION));
-
+		
 		DROPDESCRIPTION *pdd = GlobalLock(stgmed[0].hGlobal);
-
+	    
 	    pdd->type = DROPIMAGE_NONE;
 	    wcscpy(pdd->szMessage, L"Cannot transfer to %1");
 	    wcscpy(pdd->szInsert, L"Wabbitemu");
 
 		GlobalUnlock(stgmed[0].hGlobal);
-
+		
 		pDataObject->lpVtbl->SetData(pDataObject, &fmtetc[0], &stgmed[0], TRUE);
-
+		
 		*pdwEffect = DROPEFFECT_NONE;
 	}
 
@@ -232,21 +232,21 @@ idt_dragenter(	WB_IDropTarget *This,
 //
 //
 //
-static HRESULT STDMETHODCALLTYPE
-idt_dragover(	WB_IDropTarget *This,
-				DWORD grfKeyState,
-				POINTL pt,
+static HRESULT STDMETHODCALLTYPE 
+idt_dragover(	WB_IDropTarget *This, 
+				DWORD grfKeyState, 
+				POINTL pt, 
 				PDWORD pdwEffect )
-{
+{	
 	if (This->m_pdth) {
 		POINT p = {pt.x, pt.y};
 		This->m_pdth->lpVtbl->DragOver(This->m_pdth, &p, *pdwEffect);
 	}
-
+	
 	if(This->m_fAllowDrop)
 	{
 		drop_pt = pt;
-
+		
 		*pdwEffect = DropEffect(grfKeyState, pt, *pdwEffect);
 	}
 	else
@@ -260,7 +260,7 @@ idt_dragover(	WB_IDropTarget *This,
 //
 //	IDropTarget::DragLeave
 //
-static HRESULT STDMETHODCALLTYPE
+static HRESULT STDMETHODCALLTYPE 
 idt_dragleave(WB_IDropTarget *This)
 {
 	if (This->m_pdth) {
@@ -274,11 +274,11 @@ idt_dragleave(WB_IDropTarget *This)
 //	IDropTarget::Drop
 //
 //
-static HRESULT STDMETHODCALLTYPE
-idt_drop(	WB_IDropTarget *This,
-			IDataObject *pDataObject,
-			DWORD grfKeyState,
-			POINTL pt,
+static HRESULT STDMETHODCALLTYPE 
+idt_drop(	WB_IDropTarget *This, 
+			IDataObject *pDataObject, 
+			DWORD grfKeyState, 
+			POINTL pt, 
 			DWORD *pdwEffect)
 {
 	if (This->m_pdth) {
@@ -317,7 +317,7 @@ void DropData(HWND hwnd, IDataObject *pDataObject)
 	FORMATETC fmtetc[] = {
 			{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL},
 			{RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL},
-
+			
 	};
 	STGMEDIUM stgmed;
 
@@ -326,10 +326,10 @@ void DropData(HWND hwnd, IDataObject *pDataObject)
 		// Yippie! the data is there, so go get it!
 		if(pDataObject->lpVtbl->GetData(pDataObject, &fmtetc[0], &stgmed) == S_OK)
 		{
-
+			
 			// we asked for the data as a HGLOBAL, so access it appropriately
 			PVOID data = GlobalLock(stgmed.hGlobal);
-
+			
 			SendMessage(hwnd, WM_DROPFILES, (WPARAM) data, 0);
 
 			GlobalUnlock(stgmed.hGlobal);
@@ -350,8 +350,13 @@ void DropData(HWND hwnd, IDataObject *pDataObject)
 			for (i = 0; i < lpfgd->cItems; i++) {
 				char tmpfn[L_tmpnam];
 				tmpnam(tmpfn);
-				FILE *file = fopen(tmpfn, "wb");
-
+	
+				char fn[MAX_PATH];
+				strcpy(fn, getenv("appdata"));
+				strcat(fn, tmpfn);
+				
+				FILE *file = fopen(fn, "wb");
+				
 				FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
 				STGMEDIUM stgmedData;
 				if(pDataObject->lpVtbl->GetData(pDataObject, &fmtstm, &stgmedData) == S_OK)
@@ -364,17 +369,17 @@ void DropData(HWND hwnd, IDataObject *pDataObject)
 
 					fwrite(buffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
 					free(buffer);
-
+					
 					pstm->lpVtbl->Release(pstm);
-
+					
 					ReleaseStgMedium(&stgmedData);
 				}
-				filegroup = AppendName(filegroup, tmpfn);
+				filegroup = AppendName(filegroup, fn);
 				fclose(file);
 			}
-
+				
 			ThreadSend(filegroup, DropMemoryTarget(hwnd));
-
+			
 			GlobalUnlock(stgmed.hGlobal);
 			ReleaseStgMedium(&stgmed);
 
@@ -385,7 +390,7 @@ void DropData(HWND hwnd, IDataObject *pDataObject)
 void RegisterDropWindow(HWND hwnd, WB_IDropTarget **ppDropTarget)
 {
 	WB_IDropTarget *pDropTarget;
-
+	
 	CreateDropTarget(hwnd, &pDropTarget);
 
 	// acquire a strong lock (to make sure the object stays in memory)
@@ -411,7 +416,7 @@ void UnregisterDropWindow(HWND hwnd, IDropTarget *pDropTarget)
 	printf("Release our own reference \n");
 	// release our own reference
 	pDropTarget->lpVtbl->Release(pDropTarget);
-	printf("Done unregistering drop window\n");
+	printf("Done unregistering drop window\n");	
 }
 
 //	Constructor for the CDropTarget class
@@ -429,21 +434,21 @@ WB_IDropTarget *WB_IDropTarget_new(HWND hwnd)
   result->m_hWnd = hwnd;
   result->m_slot = gslot;
   result->m_fAllowDrop = FALSE;
-
+  
    /* This call might fail, in which case OLE sets m_pdth = NULL */
-   CoCreateInstance((REFCLSID) &CLSID_DragDropHelper,
-  		 			NULL,
+   CoCreateInstance((REFCLSID) &CLSID_DragDropHelper, 
+  		 			NULL, 
   		 			CLSCTX_INPROC_SERVER,
-                    (REFIID) &IID_IDropTargetHelper,
+                    (REFIID) &IID_IDropTargetHelper, 
                     (LPVOID*)&result->m_pdth);
-
+  
   if (result->m_pdth == NULL) {
 	  printf("Failed to create the DragDropHelper ... that's trouble\n");
   }
   return result;
 }
 
-HRESULT CreateDropTarget(HWND hwnd, WB_IDropTarget **ppDropTarget)
+HRESULT CreateDropTarget(HWND hwnd, WB_IDropTarget **ppDropTarget) 
 {
 	if(ppDropTarget == 0)
 		return E_INVALIDARG;

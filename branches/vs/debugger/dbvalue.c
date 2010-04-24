@@ -123,7 +123,7 @@ HWND CreateValueField(
 static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static TEXTMETRIC tm;
 
-	value_field_settings *vfs = (value_field_settings *) GetWindowLong(hwnd, GWL_USERDATA);
+	value_field_settings *vfs = (value_field_settings *) GetWindowLong(hwnd, GWLP_USERDATA);
 
 	switch (Message) {
 	case WM_CREATE:

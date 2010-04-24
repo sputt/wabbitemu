@@ -10,7 +10,7 @@
 #ifndef WBDED_INC
 #define WBDED_INC
 
-//#define COBJMACROS
+#define COBJMACROS
 
 #include <ole2.h>
 #include <shlobj.h>
@@ -202,7 +202,7 @@ DECLARE_VTBL(WB_IWabbitemu)
 	STDMETHOD(SetMemState)(THIS_ ULONG, MEMSTATE *) PURE;
 	STDMETHOD(Step)(THIS_ ULONG) PURE;
 	STDMETHOD(StepOver)(THIS_ ULONG) PURE;
-	STDMETHOD(StepOut)(THIS_ ULONG) PURE;
+	STDMETHOD(StepOut)(THIS_ ULONG) PURE;	
 };
 #undef INTERFACE
 
@@ -250,8 +250,6 @@ typedef WB_IDataObject* LPWBDATAOBJECT;
 typedef WB_IEnumFORMATETC* LPWBFORMATETC;
 
 WB_IEnumFORMATETC *WB_IEnumFORMATETC_new (UINT, DATAENTRY *);
-HRESULT RegisterClassObject();
-HRESULT RevokeClassObject();
 #endif
 
 

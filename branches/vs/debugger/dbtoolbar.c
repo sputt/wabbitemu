@@ -254,7 +254,7 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 }
 
 VOID CALLBACK ButtonFadeProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer) {
-	TBBTN *tbb = (TBBTN *) GetWindowLong(hwnd, GWL_USERDATA);
+	TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	InvalidateRect(hwnd, NULL, FALSE);
 	if (tbb->bHotLit) {
@@ -278,7 +278,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 	switch (Message) {
 		case WM_CREATE:
 		{
-			TBBTN *tbb = (TBBTN *) GetWindowLong(hwnd, GWL_USERDATA);
+			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			tbb->trans_state = 0;
 			tbb->bFading = FALSE;
 			break;
@@ -302,7 +302,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		}
 		case WM_MOUSEMOVE:
 		{
-			TBBTN *tbb = (TBBTN *) GetWindowLong(hwnd, GWL_USERDATA);
+			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			RECT wr;
 			GetWindowRect(hwnd, &wr);
 
@@ -338,7 +338,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		}
 		case WM_KEYDOWN:
 		{
-			TBBTN *tbb = (TBBTN *) GetWindowLong(hwnd, GWL_USERDATA);
+			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			if (tbb->MouseState != MOUSE_UP)
 				return 0;
@@ -374,7 +374,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		}
 		case WM_KEYUP:
 		{
-			TBBTN *tbb = (TBBTN *) GetWindowLong(hwnd, GWL_USERDATA);
+			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			switch (wParam) {
 				case VK_SPACE:
@@ -382,7 +382,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					tbb->MouseState = MOUSE_UP;
 					InvalidateRect(hwnd, NULL, TRUE);
 
-					int ID = GetWindowLong(hwnd, GWL_ID);
+					int ID = GetWindowLongPtr(hwnd, GWL_ID);
 					SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(ID, BN_CLICKED), (LPARAM) hwnd);
 					break;
 			}
@@ -396,7 +396,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		}
 		case WM_MOUSELEAVE:
 		{
-			TBBTN *tbb = (TBBTN *) GetWindowLong(hwnd, GWL_USERDATA);
+			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			tbb->bHotLit = FALSE;
 			if (tbb->bFading == FALSE) {
@@ -410,7 +410,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		case WM_LBUTTONDBLCLK:
 		case WM_LBUTTONDOWN:
 		{
-			TBBTN *tbb = (TBBTN *) GetWindowLong(hwnd, GWL_USERDATA);
+			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			HWND hTemp = GetFocus();
 			if (hTemp != hwnd)
 				hwndLastFocus = hTemp;
@@ -431,7 +431,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		}
 		case WM_SIZE:
 		{
-			TBBTN *tbb = (TBBTN *) GetWindowLong(hwnd, GWL_USERDATA);
+			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			if (tbb->next == NULL)
 				return 0;
@@ -482,7 +482,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		}
 		case WM_LBUTTONUP:
 		{
-			TBBTN *tbb = (TBBTN *) GetWindowLong(hwnd, GWL_USERDATA);
+			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			tbb->MouseState = MOUSE_UP;
 			ReleaseCapture();
 			InvalidateRect(hwnd, NULL, TRUE);
@@ -500,7 +500,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			ClientToScreen(hwnd, &p);
 
 			if (PtInRect(&wr, p)) {
-				int ID = GetWindowLong(hwnd, GWL_ID);
+				int ID = GetWindowLongPtr(hwnd, GWL_ID);
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(ID, BN_CLICKED), (LPARAM)hwnd);
 			}
 			if (PtInRect(&rect, p) && tbb->bSplitButton) {
@@ -514,7 +514,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		}
 		case WM_PAINT:
 		{
-			TBBTN *tbb = (TBBTN*)GetWindowLong(hwnd, (int)GWL_USERDATA);
+			TBBTN *tbb = (TBBTN*)GetWindowLongPtr(hwnd, (int)GWLP_USERDATA);
 			HDC hdc;
 			PAINTSTRUCT ps;
 
@@ -828,9 +828,9 @@ int CreateToolbarButton(HWND hwndParent, char *szCaption, char *szTooltip, char 
 	MoveWindow(hwndBtn, x, y, 4 + 16 + img_sz_seperator + splitSize + r.right + 4, 24, FALSE);
 	ShowWindow(hwndBtn, SW_SHOW);
 
-	OldButtonProc = (WNDPROC)GetWindowLong(hwndBtn, GWL_WNDPROC);
-	SetWindowLong(hwndBtn, GWL_WNDPROC, (LONG) ToolbarButtonProc);
-	SetWindowLong(hwndBtn, GWL_USERDATA, (LONG) tbb);
+	OldButtonProc = (WNDPROC)GetWindowLongPtr(hwndBtn, GWLP_WNDPROC);
+	SetWindowLongPtr(hwndBtn, GWLP_WNDPROC, (LONG_PTR) ToolbarButtonProc);
+	SetWindowLongPtr(hwndBtn, GWLP_USERDATA, (LONG_PTR) tbb);
 
 	if (hwndTip == NULL) {
 		hwndTip = CreateWindowEx(
@@ -984,7 +984,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					mii.dwItemData = 0;
 					mii.dwTypeData = WindowText;
 
-					TBBTN *tbb = (TBBTN *) GetWindowLong((HWND) lParam, GWL_USERDATA);
+					TBBTN *tbb = (TBBTN *) GetWindowLongPtr((HWND) lParam, GWLP_USERDATA);
 					//tbb->bMouseDown = TRUE;
 					tbb = tbb->prev;
 

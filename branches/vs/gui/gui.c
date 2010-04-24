@@ -1,8 +1,9 @@
 #include <tchar.h>
 #ifdef USE_DIRECTX
 #include <d3d9.h>
-#endif
 extern IDirect3DDevice9 *pd3dDevice = NULL; // Direct3D Rendering Device 
+#endif
+
 #include "gui.h"
 #include "resource.h"
 

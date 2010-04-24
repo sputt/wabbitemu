@@ -3,9 +3,6 @@
 
 #ifdef WINVER
 #include <windows.h>
-typedef BYTE uint8_t;
-typedef WORD uint16_t;
-typedef DWORD uint32_t;
 #else
 #include <sys/types.h>
 typedef unsigned char uint8_t;

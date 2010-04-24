@@ -380,7 +380,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			eps->bHot = FALSE;
 			eps->bExpanded = eps->ExpandState == EP_OPEN ? TRUE : FALSE;
 
-			OldButtonProc = (WNDPROC) GetWindowLongPtr(eps->hwndBtn, GWL_WNDPROC);
+			OldButtonProc = (WNDPROC) GetWindowLongPtr(eps->hwndBtn, GWLP_WNDPROC);
 			SetWindowLongPtr(eps->hwndBtn, GWLP_WNDPROC, (LONG_PTR) ExpandButtonProc);
 			SetWindowLongPtr(eps->hwndBtn, GWLP_USERDATA, (LONG_PTR) eps);
 
@@ -597,7 +597,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			return 0;
 		}
 		case WM_DESTROY: {
-			ep_settings *eps = (ep_settings*) GetWindowLong(hwnd, GWL_USERDATA);
+			ep_settings *eps = (ep_settings*) GetWindowLong(hwnd, GWLP_USERDATA);
 			char name[256];
 			GetWindowText(hwnd, name, ARRAYSIZE(name));
 			SaveDebugKey(name, (DWORD*)eps->ExpandState);

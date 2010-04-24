@@ -364,12 +364,12 @@ void GIFOptionsToggleAutosave(HWND hwndDlg, BOOL bEnable) {
 	HWND
 	hwndEdt 	= GetDlgItem(hwndDlg, IDC_EDTGIFFILENAME),
 	hwndChk 	= GetDlgItem(hwndDlg, IDC_CHKUSEINCREASING),
-	hwndStc 	= GetDlgItem(hwndDlg, IDC_STCAUTOSAVE),
+//	hwndStc 	= GetDlgItem(hwndDlg, IDC_STCAUTOSAVE),
 	hwndBtn		= GetDlgItem(hwndDlg, IDC_BTNGIFBROWSE);
 
 	EnableWindow(hwndEdt, bEnable);
 	EnableWindow(hwndChk, bEnable);
-	EnableWindow(hwndStc, bEnable);
+//	EnableWindow(hwndStc, bEnable);
 	EnableWindow(hwndBtn, bEnable);
 }
 
@@ -932,7 +932,7 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					return TRUE;
 				}
 				case PSN_KILLACTIVE:
-					SetWindowLong(hwnd, DWL_MSGRESULT, FALSE);
+					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FALSE);
 					return TRUE;
 			}
 		}
