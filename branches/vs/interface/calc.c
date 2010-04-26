@@ -138,6 +138,9 @@ void calc_erase_certificate( u_char* mem, int size) {
 	return;
 }
 
+#ifdef _WINDLL
+__declspec(dllexport)
+#endif
 int rom_load(int slot, char * FileName) {
 	if (slot == -1)
 		return -1;
@@ -366,6 +369,9 @@ int calc_run_tstates(int slot, time_t tstates) {
 
 
 #define FRAME_SUBDIVISIONS	1024
+#ifdef _WINDLL
+__declspec(dllexport)
+#endif
 int calc_run_all(void) {
 	int i,j;
 

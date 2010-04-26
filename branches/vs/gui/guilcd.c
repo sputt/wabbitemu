@@ -23,6 +23,8 @@
 #include <D3D9.h>
 #endif
 
+#include "DropTarget.h"
+
 extern POINT drop_pt;
 extern RECT db_rect;
 extern HINSTANCE g_hInst;
@@ -412,9 +414,14 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			HDC hdc = GetDC(hwnd);
 
 			SetBkMode(hdc, TRANSPARENT);
-#ifdef USE_COM
-            RegisterDropWindow(hwnd, &calcs[gslot].pDropTarget);
-#endif
+
+			FORMATETC fmtetc[] = {
+				{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL},
+				{RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL}
+			};
+			RegisterDropWindow(hwnd, (IDropTarget **) &calcs[gslot].pDropTarget);
+			calcs[gslot].pDropTarget->AddAcceptedFormat(&fmtetc[0]);
+			calcs[gslot].pDropTarget->AddAcceptedFormat(&fmtetc[1]);
 
             if (calc_count() == 1) {
 				bi = (BITMAPINFO *) malloc(sizeof(BITMAPINFOHEADER) + (MAX_SHADES+1)*sizeof(RGBQUAD));
@@ -707,7 +714,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 		}
 
-#ifdef USE_COM
 		case WM_DROPFILES:
 		{
 			char * FileNames = NULL;
@@ -720,12 +726,12 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				FileNames = AppendName( FileNames,fn);
 			}
 
-			ThreadSend(FileNames, DropMemoryTarget(hwnd));
+			ThreadSend(FileNames, SEND_CUR);
 
-			InvalidateRect(calcs[gslot].hwndFrame, NULL, FALSE);
+			//InvalidateRect(calcs[gslot].hwndFrame, NULL, FALSE);
 			return 0;
 		}
-#endif
+
 		case WM_KEYDOWN:
 		case WM_KEYUP:
 			SendMessage(calcs[gslot].hwndFrame, Message, wParam, lParam);

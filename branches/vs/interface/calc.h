@@ -9,9 +9,7 @@
 
 #ifdef WINVER
 #include "gui.h" // it would be nice to get this separated somehow
-#ifdef USE_COM
-#include "wbded.h"
-#endif
+#include "DropTarget.h"
 #endif
 #include "core.h"
 #include "lcd.h"
@@ -63,9 +61,7 @@ typedef struct calc {
 	AUDIO_t* audio; // FIXME: Bad!
 #endif
 #ifdef WINVER
-#ifdef USE_COM
-	IDropTarget *pDropTarget;
-#endif
+	CDropTarget *pDropTarget;
 	HWND hwndFrame;
 	HWND hwndLCD;
 	HWND hwndStatusBar;
@@ -134,11 +130,17 @@ int calc_reset(int);
 int calc_run_frame(int);
 int calc_run_seconds(int, double);
 int calc_run_timed(int, time_t);
+#ifdef _WINDLL
+__declspec(dllexport)
+#endif
 int calc_run_all(void);
 void do_backup(int);
 void restore_backup(int, int);
 void backups_init_83pse(int);
 
+#ifdef _WINDLL
+__declspec(dllexport)
+#endif
 int rom_load(int, char *);
 void calc_slot_free(int);
 #ifdef WINVER

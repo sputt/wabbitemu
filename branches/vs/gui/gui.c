@@ -45,6 +45,8 @@ extern IDirect3DDevice9 *pd3dDevice = NULL; // Direct3D Rendering Device
 #include "link.h"
 #include "uxtheme.h"
 
+#include "DropTarget.h"
+
 
 #include "expandpane.h"
 
@@ -485,10 +487,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	RegisterClassEx(&wc);
 
 	// initialize com events
-	OleInitialize(0);
-#ifdef USE_COM
-	RegisterClassObject();
-#endif
+	OleInitialize(NULL);
 
 	if (argv && argc>1) {
 		for (i=1;i<argc;i++) {
@@ -607,9 +606,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		handle_screenshot();
 	}
 
-#ifdef USE_COM
-    RevokeClassObject();
-#endif
 	// Shutdown COM
 	OleUninitialize();
 
@@ -628,6 +624,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
 				}
 			}*/
+			IDropTarget *pDropTarget = NULL;
+			RegisterDropWindow(hwnd, &pDropTarget);
 
 			// Force the current skin setting to be enacted
 			calcs[gslot].SkinEnabled = !calcs[gslot].SkinEnabled;
