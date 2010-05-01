@@ -43,7 +43,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 
 	DestroyWindow(calcs[gslot].hwndLCD);
 	BOOL disableTransition = TRUE;
-	DwmSetWindowAttribute(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+	//DwmSetWindowAttribute(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 	calcs[gslot].hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
@@ -219,7 +219,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
  */
 int DisableCutout(HWND hwndFrame) {
 	BOOL disableTransition = TRUE;
-	DwmSetWindowAttribute(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+	//DwmSetWindowAttribute(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 
 	int scale = calcs[gslot].Scale;
 	if (calcs[gslot].SkinEnabled)

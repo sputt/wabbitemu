@@ -138,19 +138,13 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 	
 	DROPDESCRIPTION *pdd = (DROPDESCRIPTION *) GlobalLock(stgmed[0].hGlobal);
 
-	if ((m_fAllowDrop == TRUE) || (m_nRequired == 0 && m_fAllowDrop == TRUE)) {
-		m_fAllowDrop = TRUE;
-
-		SetFocus(m_hwndTarget);
-
+	if (m_fAllowDrop == TRUE) {
 		pdd->type = DROPIMAGE_COPY;
 		wcscpy(pdd->szMessage, L"Transfer to %1");
 		wcscpy(pdd->szInsert, L"Wabbitemu");
 
 		*pdwEffect = *pdwEffect & DROPEFFECT_COPY;
 	} else {
-		m_fAllowDrop = FALSE;
-
 		pdd->type = DROPIMAGE_INVALID;
 		wcscpy(pdd->szMessage, L"Cannot transfer to %1");
 		wcscpy(pdd->szInsert, L"Wabbitemu");
