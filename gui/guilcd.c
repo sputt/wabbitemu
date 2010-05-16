@@ -13,9 +13,6 @@
 #include "guifilepreview.h"
 #include "guicontext.h"
 #include "guiopenfile.h"
-#ifdef USE_DIRECTX
-#include <D3D9.h>
-#endif
 
 #include "DropTarget.h"
 
@@ -389,19 +386,10 @@ All Files (*.*)\0*.*\0\0";
 
 }
 
-#ifdef USE_COM
-HRESULT CreateDropSource(WB_IDropSource **ppDropSource);
-HRESULT CreateDataObject(FORMATETC *fmtetc, STGMEDIUM *stgmeds, UINT count, WB_IDataObject **ppDataObject);
-void SetDropSourceDataObject(WB_IDropSource *pDropSource, WB_IDataObject *pDataObject);
-#endif
-
 LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 
 	static POINT ptOffset;
 
-#ifdef USE_DIRECTX
-	static IDirect3DSurface9 *pd3dSurface = NULL;
-#endif
     switch (Message) {
 		case WM_CREATE:
 		{
@@ -459,37 +447,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			PaintLCD(hwnd, hdcDest);
 			EndPaint(hwnd, &ps);
 
-
-#ifdef USE_DIRECTX
-			if (pd3dSurface == NULL) {
-				pd3dDevice->CreateOffscreenPlainSurface(
-					192,
-					128,
-					D3DFMT_X8R8G8B8,
-					D3DPOOL_DEFAULT,
-					&pd3dSurface,
-					NULL);
-			}
-
-			pd3dDevice->BeginScene();
-
-			HDC hdc;
-			pd3dSurface->GetDC(&hdc);
-			PaintLCD(hwnd, hdc);
-			pd3dSurface->ReleaseDC(hdc);
-
-			IDirect3DSurface9 *pd3dDest;
-			pd3dDevice->GetBackBuffer(0, 0, D3DBACKBUFFER_TYPE_MONO, &pd3dDest);
-
-			pd3dDevice->StretchRect(pd3dSurface, NULL, pd3dDest, NULL, D3DTEXF_NONE );
-
-			pd3dDest->Release();
-
-			pd3dDevice->EndScene();
-
-			pd3dDevice->Present(NULL, NULL, NULL, NULL );
-			ValidateRect(hwnd, NULL);
-#endif
 			if (calcs[gslot].hwndStatusBar) {
 				if (clock() > calcs[gslot].sb_refresh + CLOCKS_PER_SEC/2) {
 					char sz_status[32];
