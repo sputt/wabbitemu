@@ -24,6 +24,103 @@ extern HINSTANCE g_hInst;
 							{124,677},
 							{148,678}};*/
 
+static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_CREATE:
+		return 0;
+
+	case WM_PAINT:
+		{
+			BOOL fDown = (BOOL) GetWindowLong(hwnd, 0);
+
+			TCHAR szWindowName[256];
+			GetWindowText(hwnd, szWindowName, ARRAYSIZE(szWindowName));
+
+			PAINTSTRUCT ps = {0};
+			HDC hdc = BeginPaint(hwnd, &ps);
+
+			RECT rc;
+			GetClientRect(hwnd, &rc);
+			FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
+
+			if (!calcs[gslot].bCutout)
+				return 0;
+			
+			HBITMAP hbmButtons = LoadBitmap(g_hInst, "close");
+			HDC hdcButtons = CreateCompatibleDC(hdc);
+			SelectObject(hdcButtons, hbmButtons);
+
+			UINT col, row;
+			col = 0;
+			if (_tcsicmp(szWindowName, _T("wabbitminimize")) == 0) {
+				col = 13;
+			}
+			row = 0;
+			if (fDown == TRUE) {
+				row = 13;
+			}
+
+			RECT r;
+			GetWindowRect(hwnd, &r);
+			POINT p;
+			p.x = r.left;
+			p.y = r.top;
+
+			ScreenToClient(hwnd, &p);
+			BitBlt(hdc,0,0,13,13,calcs[gslot].hdcSkin,p.x,p.y,SRCCOPY);
+
+			BLENDFUNCTION bf;
+			bf.BlendOp = AC_SRC_OVER;
+			bf.BlendFlags = 0;
+			bf.SourceConstantAlpha = 160;
+			bf.AlphaFormat = 0;
+			AlphaBlend(hdc, 0, 0, 13, 13, hdcButtons, col, row, 13, 13, bf );
+
+			DeleteDC(hdcButtons);
+			DeleteObject(hbmButtons);
+
+			EndPaint(hwnd, &ps);
+
+			return 0;
+		}
+
+	case WM_LBUTTONDOWN:
+		{
+			
+			SetWindowLong(hwnd, 0, (LONG) TRUE);
+			SetCapture(hwnd);
+			InvalidateRect(hwnd, NULL, FALSE);
+			UpdateWindow(hwnd);
+			return 0;
+		}
+	case WM_LBUTTONUP:
+		{
+			TCHAR szWindowName[256];
+			GetWindowText(hwnd, szWindowName, ARRAYSIZE(szWindowName));
+
+			if (_tcsicmp(szWindowName, _T("wabbitminimize")) == 0) {
+				ShowWindow(calcs[gslot].hwndFrame, SW_MINIMIZE);
+			} else if (_tcsicmp(szWindowName, _T("wabbitclose")) == 0) {
+				PostQuitMessage(0);
+			}
+			SetWindowLong(hwnd, 0, (LONG) FALSE);
+			ReleaseCapture();
+			InvalidateRect(hwnd, NULL, FALSE);
+			UpdateWindow(hwnd);
+			return 0;
+		}
+
+	case WM_NCCALCSIZE:
+		return 0;
+
+	default:
+		return DefWindowProc(hwnd, uMsg, wParam, lParam);
+	}
+}
+
+
 /* Using a preset list of points, cut around the edges to make the
  * frame window transparent.  Also create buttons to allow minimize
  * and close while in skin mode
@@ -173,31 +270,42 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	if (result == 0) return 1;*/
 
 	// Create the two buttons that appear when the skin is cutout
+	WNDCLASS wc = {0};
+	wc.cbWndExtra = sizeof(BOOL) + sizeof(int);
+	wc.lpfnWndProc = SmallButtonProc;
+	wc.lpszClassName = _T("WABBITSMALLBUTTON");
+	wc.hInstance = g_hInst;
+	RegisterClass(&wc);
+
 	HWND hwndButton;
 	hwndButton = CreateWindow(
-		"BUTTON",
-		"close",
-		WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+		"WABBITSMALLBUTTON",
+		"wabbitclose",
+		WS_VISIBLE, // | BS_OWNERDRAW,
 		270, 19,
 		13, 13,
 		hwndFrame,
-		(HMENU) 0,
+		(HMENU) NULL,
 		g_hInst,
 		NULL);
 	if (hwndButton == NULL) return 1;
 
+	SetWindowLong(hwndButton, GWL_STYLE, WS_VISIBLE);
+
 	hwndButton = CreateWindowEx(
 		0,
-		"BUTTON",
-		"minimize",
-		WS_VISIBLE | WS_CHILD | BS_OWNERDRAW,
+		"WABBITSMALLBUTTON",
+		"wabbitminimize",
+		WS_VISIBLE, // | BS_OWNERDRAW,
 		254, 19,
 		13, 13,
 		hwndFrame,
-		(HMENU) 1,
+		(HMENU) NULL,
 		g_hInst,
 		NULL);
 	if (hwndButton == NULL) return 1;
+
+	SetWindowLong(hwndButton, GWL_STYLE, WS_VISIBLE);
 
 	if (calcs[gslot].SkinEnabled == FALSE) {
 		RECT wr;
@@ -261,10 +369,10 @@ int DisableCutout(HWND hwndFrame) {
 
 	HWND hwndButton;
 
-	hwndButton = FindWindowEx(hwndFrame, NULL, "BUTTON", "close");
+	hwndButton = FindWindowEx(NULL, NULL, "WABBITSMALLBUTTON", "wabbitclose");
 	if (hwndButton) DestroyWindow(hwndButton);
 
-	hwndButton = FindWindowEx(hwndFrame, NULL, "BUTTON", "minimize");
+	hwndButton = FindWindowEx(NULL, NULL, "WABBITSMALLBUTTON", "wabbitminimize");
 	if (hwndButton) DestroyWindow(hwndButton);
 
 	InvalidateRect(hwndFrame, NULL, TRUE);
