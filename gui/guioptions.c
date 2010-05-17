@@ -10,7 +10,6 @@
 #include "displayoptionstest.h"
 #include "lcd.h"
 #include "guicutout.h"
-#include "extcalc.h"
 
 extern HINSTANCE g_hInst;
 extern BITMAPINFO *bi;

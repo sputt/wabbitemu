@@ -5,7 +5,9 @@
 #include "lcd.h"
 #include "link.h"
 #include "calc.h"
+#ifdef USE_ZLIB
 #include "zlibcmp.h"
+#endif
 //#include "stdint.h"
 #include "83psehw.h"
 
