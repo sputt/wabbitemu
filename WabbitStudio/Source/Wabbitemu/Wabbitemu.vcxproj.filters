@@ -401,4 +401,117 @@
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="gui\back.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\left.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\right.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\small_close.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-82keymap.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-83+Keymap.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-83Keymap.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI83P.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI83PSE.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-84+sekeymap.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-Icons.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\break.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\buttondownleft.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\buttondownmiddle.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\buttondownright.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\buttonframe.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\buttonframeleft.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\buttonframemiddle.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\chevron.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\downarrow.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\expandpanebuttons.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\goto.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\membreak.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\run.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\SkinPicker.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\step.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\stepover.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-73.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-82.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-83.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-83+.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-83+SE.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-84+ SE.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-84+.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-84+SE.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\wabbitemu.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\tsmall.ico">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
 </Project>
