@@ -5,15 +5,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Z80MapEditor", "Source\Z80M
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wabbitemu", "Source\Wabbitemu\Wabbitemu.vcxproj", "{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASM", "Source\SPASM\SPASM.vcxproj", "{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 2
+		SccNumberOfProjects = 3
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs07.codeplex.com/
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = Source\\Wabbitemu\\Wabbitemu.vcxproj
 		SccProjectName1 = Source/Wabbitemu
 		SccLocalPath1 = Source\\Wabbitemu
+		SccProjectUniqueName2 = Source\\SPASM\\SPASM.vcxproj
+		SccProjectName2 = Source/SPASM
+		SccLocalPath2 = Source\\SPASM
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug DLL|Win32 = Debug DLL|Win32
@@ -56,6 +61,19 @@ Global
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release|Win32.Build.0 = Release|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release|x64.ActiveCfg = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release|x64.Build.0 = Release|x64
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug DLL|Win32.ActiveCfg = Debug|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug DLL|Win32.Build.0 = Debug|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug DLL|x64.ActiveCfg = Debug|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug|Win32.Build.0 = Debug|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug|x64.ActiveCfg = Debug|x64
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug|x64.Build.0 = Debug|x64
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Release DLL|Win32.ActiveCfg = Release|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Release DLL|Win32.Build.0 = Release|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Release DLL|x64.ActiveCfg = Release|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Release|Win32.ActiveCfg = Release|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Release|Win32.Build.0 = Release|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
