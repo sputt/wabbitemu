@@ -417,6 +417,14 @@ char *strup (const char *input) {
 	return new_string;
 }
 
+void release_file_contents(char *contents)
+{
+#ifdef USE_MEMORY_MAPPED_FILES
+	UnmapViewOfFile(contents);
+#else
+	free(contents);
+#endif
+}
 
 /*
  * Gets file contents,
@@ -427,6 +435,31 @@ char *strup (const char *input) {
  */
 
 char *get_file_contents (const char *filename) {
+#ifdef USE_MEMORY_MAPPED_FILES
+	HANDLE hFile = CreateFile(
+		filename,
+		GENERIC_READ,
+		FILE_SHARE_READ,
+		NULL,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		return NULL;
+	}
+
+	HANDLE hMapFile = CreateFileMapping(
+		hFile,
+		NULL,
+		PAGE_READONLY,
+		0L,
+		0L,
+		NULL);
+
+	LPBYTE lpData = (LPBYTE) MapViewOfFile(hMapFile, FILE_MAP_READ, 0, 0, 0);
+	return (char *) lpData;
+#else
 	FILE *file;
 	char *buffer, *p;
 	size_t size, read_size;
@@ -465,6 +498,7 @@ char *get_file_contents (const char *filename) {
 
 	p[size] = '\0';
 	return buffer;
+#endif
 }
 
 

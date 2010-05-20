@@ -26,6 +26,7 @@ char *fix_filename (char *filename);
 bool is_abs_path(const char *filename);
 char *strup (const char *input);
 char *get_file_contents (const char *filename);
+void release_file_contents(char *contents);
 char *change_extension (const char *filename, const char *new_ext);
 bool define_with_value (const char *name, const int value);
 #if defined(MACVER) || defined(WINVER)

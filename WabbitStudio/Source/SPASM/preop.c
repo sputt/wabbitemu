@@ -801,7 +801,8 @@ static char *handle_preop_include (char *ptr) {
 		}
 		
 		//and free up stuff
-		free (input_contents);
+		//free (input_contents);
+		release_file_contents(input_contents);
 
 		return ptr;
 	}

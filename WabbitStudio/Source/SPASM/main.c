@@ -117,7 +117,8 @@ int run_assembly() {
 	run_first_pass ((char *) input_contents);
 
 	//free include dirs when done
-	free(input_contents);
+	//free(input_contents);
+	release_file_contents(input_contents);
 	input_contents = NULL;
 	list_free (include_dirs, true);
 	include_dirs = NULL;
