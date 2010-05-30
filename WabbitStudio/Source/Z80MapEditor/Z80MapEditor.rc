@@ -1,0 +1,319 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MENUMAIN MENU
+BEGIN
+    POPUP "&File"
+    BEGIN
+        MENUITEM "New\tCtrl+N",                 ID_FILE_NEW
+        MENUITEM "Open...\tCtrl+O",             ID_FILE_OPEN
+        MENUITEM "Save\tCtrl+S",                ID_FILE_SAVE
+        MENUITEM "Save As...",                  ID_FILE_SAVEAS
+        MENUITEM SEPARATOR
+        MENUITEM "Properties",                  ID_FILE_PROPERTIES
+        MENUITEM SEPARATOR
+        MENUITEM "Exit\tAlt+F4",                ID_FILE_EXIT
+    END
+    POPUP "&Edit"
+    BEGIN
+        MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
+        MENUITEM "&Redo\tCtrl+Y",               ID_EDIT_REDO
+    END
+    POPUP "&Layer"
+    BEGIN
+        MENUITEM "Map overview\t1",             ID_LAYER_MAPOVERVIEW, CHECKED
+        MENUITEM "Map\t2",                      ID_LAYER_MAP
+        MENUITEM "Object\t3",                   ID_LAYER_OBJECT
+        MENUITEM "Enemy\t4",                    ID_LAYER_ENEMY
+        MENUITEM "Misc\t5",                     ID_LAYER_MISC
+        MENUITEM "Start locations\t6",          ID_LAYER_STARTLOCATIONS
+    END
+    POPUP "Map&set"
+    BEGIN
+        MENUITEM "&Choose start location...\t6", ID_SET_CHOOSESTARTLOCATION
+        MENUITEM "&Test\tF5",                   ID_MAP_TESTMAP
+    END
+    POPUP "&Map"
+    BEGIN
+        MENUITEM "New",                         ID_MAP_NEW
+        MENUITEM "Load &objects...",            ID_MAP_LOADOBJECTS
+        MENUITEM "Manage &order",               ID_OBJECT_MANAGEORDER
+        MENUITEM "Set tileset...",              ID_MAP_SETTILESET
+        MENUITEM "Properties",                  ID_MAP_PROPERTIES
+    END
+    POPUP "&Object"
+    BEGIN
+        MENUITEM "&Add",                        ID_OBJECT_ADD
+        MENUITEM "&Properties\tAlt+Enter",      ID_OBJECT_PROPERTIES
+    END
+    POPUP "&View"
+    BEGIN
+        MENUITEM "Show map padding",            ID_VIEW_SHOWGAP, CHECKED
+        MENUITEM "Show colors",                 ID_VIEW_SHOWCOLORS, CHECKED
+        MENUITEM "Show calc preview window",    ID_VIEW_SHOWCALCPREVIEW
+    END
+    POPUP "&Help"
+    BEGIN
+        MENUITEM "About",                       ID_HELP_ABOUT
+    END
+END
+
+IDR_MENUOBJECTCONTEXT MENU
+BEGIN
+    POPUP "misc"
+    BEGIN
+        MENUITEM "Delete",                      ID_OBJECT_DELETE
+        MENUITEM "Properties",                  ID_OBJECT_PROPERTIES
+    END
+END
+
+IDR_MENUMISCCONTEXT MENU
+BEGIN
+    POPUP "object"
+    BEGIN
+        MENUITEM "Delete",                      ID_OBJECT_DELETE
+        MENUITEM "Type",                        65535
+        MENUITEM "Properties",                  ID_OBJECT_PROPERTIES
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_ACCELERATORS ACCELERATORS
+BEGIN
+    "O",            ID_FILE_OPEN,           VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    "4",            ID_LAYER_ENEMY,         VIRTKEY, NOINVERT
+    "2",            ID_LAYER_MAP,           VIRTKEY, NOINVERT
+    "1",            ID_LAYER_MAPOVERVIEW,   VIRTKEY, NOINVERT
+    "5",            ID_LAYER_MISC,          VIRTKEY, NOINVERT
+    "3",            ID_LAYER_OBJECT,        VIRTKEY, NOINVERT
+    "6",            ID_LAYER_STARTLOCATIONS, VIRTKEY, NOINVERT
+    VK_F5,          ID_MAP_TESTMAP,         VIRTKEY, NOINVERT
+    VK_RETURN,      ID_OBJECT_PROPERTIES,   VIRTKEY, ALT, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DIALOGSETTILESET DIALOGEX 0, 0, 158, 114
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Set Tileset"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,101,7,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,101,24,50,14
+    LISTBOX         IDC_LISTTILESETS,7,7,85,100,LBS_SORT | LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_DIALOGMAPSETPROPERTIES DIALOGEX 0, 0, 160, 78
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Map Set Properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,49,57,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,103,57,50,14
+    LTEXT           "Mapset name:",IDC_STATIC,7,9,54,11
+    EDITTEXT        IDC_EDITMAPSETNAME,71,7,82,12,ES_AUTOHSCROLL
+    LTEXT           "Map width:",IDC_STATIC,7,23,49,12
+    LTEXT           "Map height:",IDC_STATIC,7,37,49,12
+    EDITTEXT        IDC_EDITMAPWIDTH,71,21,26,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    EDITTEXT        IDC_EDITMAPHEIGHT,71,35,26,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+END
+
+IDD_DIALOGMAPPROPERTIES DIALOGEX 0, 0, 160, 78
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Map Properties"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,49,57,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,103,57,50,14
+    LTEXT           "Map name:",-1,7,9,54,11
+    EDITTEXT        IDC_EDITMAPNAME,71,7,82,12,ES_AUTOHSCROLL
+END
+
+IDD_DIALOGOBJECTPROPERTIES DIALOGEX 0, 0, 139, 78
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Map Properties"
+FONT 8, "Segoe UI", 400, 0, 0x0
+BEGIN
+    LTEXT           "X Position:",IDC_STATICXPOSITION,7,9,67,10
+    EDITTEXT        IDC_EDITX,94,7,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Y Position:",IDC_STATIC,7,25,43,10
+    EDITTEXT        IDC_EDITY,94,23,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    DEFPUSHBUTTON   "OK",IDOK,27,57,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,82,57,50,14
+END
+
+IDD_DIALOGMISCPROPERTIES DIALOGEX 0, 0, 139, 131
+STYLE DS_SETFONT | WS_POPUP | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_TOOLWINDOW
+CAPTION "Misc Properties"
+FONT 8, "Segoe UI", 400, 0, 0x0
+BEGIN
+    LTEXT           "Type:",IDC_STATIC,7,9,27,9
+    COMBOBOX        IDC_COMBOTYPE,53,7,79,18,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "X Position:",IDC_STATICXPOSITION,7,26,67,10
+    EDITTEXT        IDC_EDITX,94,24,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Y Position:",IDC_STATIC,7,42,43,10
+    EDITTEXT        IDC_EDITY,94,40,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Width:",IDC_STATICXPOSITION2,7,57,67,10
+    EDITTEXT        IDC_EDITW,94,56,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Height:",IDC_STATIC,7,73,43,10
+    EDITTEXT        IDC_EDITH,94,72,38,12,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
+    DEFPUSHBUTTON   "OK",IDOK,27,110,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,82,110,50,14
+END
+
+IDD_DIALOGMANAGEOBJECTORDER DIALOGEX 0, 0, 172, 190
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Object order"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_TAB,"SysTabControl32",0x0,7,7,134,153
+    DEFPUSHBUTTON   "OK",IDOK,61,169,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,115,169,50,14
+    LISTBOX         IDC_LIST,16,26,116,126,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "^",IDC_BUTTONUP,148,41,17,17
+    PUSHBUTTON      "v",IDC_BUTTONDOWN,148,64,17,17
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_DIALOGSETTILESET, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 151
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 107
+    END
+
+    IDD_DIALOGMAPSETPROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 153
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 71
+    END
+
+    IDD_DIALOGMAPPROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 153
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 71
+    END
+
+    IDD_DIALOGOBJECTPROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 132
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 71
+    END
+
+    IDD_DIALOGMISCPROPERTIES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 132
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 124
+    END
+
+    IDD_DIALOGMANAGEOBJECTORDER, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 165
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 183
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_LAYERS              BITMAP                  "layers.bmp"
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

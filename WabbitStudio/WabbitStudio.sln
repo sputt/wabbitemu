@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Z80MapEditor", "Source\Z80MapEditor\Z80MapEditor.vcxproj", "{14CDF278-8F19-4E27-97EB-A66E59979F9F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB} = {9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940} = {4C00A4F7-EFAE-42D3-8188-D0312EDAE940}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wabbitemu", "Source\Wabbitemu\Wabbitemu.vcxproj", "{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}"
 EndProject
@@ -9,7 +13,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASM", "Source\SPASM\SPASM
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
+		SccNumberOfProjects = 4
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs07.codeplex.com/
 		SccLocalPath0 = .
@@ -19,6 +23,9 @@ Global
 		SccProjectUniqueName2 = Source\\SPASM\\SPASM.vcxproj
 		SccProjectName2 = Source/SPASM
 		SccLocalPath2 = Source\\SPASM
+		SccProjectUniqueName3 = Source\\Z80MapEditor\\Z80MapEditor.vcxproj
+		SccProjectName3 = Source/Z80MapEditor
+		SccLocalPath3 = Source\\Z80MapEditor
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug DLL|Win32 = Debug DLL|Win32
@@ -51,8 +58,8 @@ Global
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug DLL|x64.Build.0 = Debug DLL|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug|Win32.ActiveCfg = Debug|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug|Win32.Build.0 = Debug|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug|x64.ActiveCfg = Debug|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug|x64.Build.0 = Debug|x64
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug|x64.ActiveCfg = Debug DLL|x64
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Debug|x64.Build.0 = Debug DLL|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release DLL|Win32.ActiveCfg = Release DLL|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release DLL|Win32.Build.0 = Release DLL|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release DLL|x64.ActiveCfg = Release DLL|x64
@@ -63,11 +70,12 @@ Global
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Release|x64.Build.0 = Release|x64
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug DLL|Win32.ActiveCfg = Debug|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug DLL|Win32.Build.0 = Debug|Win32
-		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug DLL|x64.ActiveCfg = Debug|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug DLL|x64.ActiveCfg = Debug DLL|x64
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug DLL|x64.Build.0 = Debug DLL|x64
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug|Win32.ActiveCfg = Debug|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug|Win32.Build.0 = Debug|Win32
-		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug|x64.ActiveCfg = Debug|x64
-		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug|x64.Build.0 = Debug|x64
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug|x64.ActiveCfg = Debug DLL|x64
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Debug|x64.Build.0 = Debug DLL|x64
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Release DLL|Win32.ActiveCfg = Release|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Release DLL|Win32.Build.0 = Release|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Release DLL|x64.ActiveCfg = Release|Win32
