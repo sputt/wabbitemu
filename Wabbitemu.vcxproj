@@ -40,33 +40,85 @@
     <ClCompile Include="core\core.c" />
     <ClCompile Include="core\device.c" />
     <ClCompile Include="core\indexcb.c" />
-    <ClCompile Include="debugger\dbcommon.c" />
-    <ClCompile Include="debugger\dbdisasm.c" />
-    <ClCompile Include="debugger\dbmem.c" />
-    <ClCompile Include="debugger\dbreg.c" />
-    <ClCompile Include="debugger\dbsubbar.c" />
-    <ClCompile Include="debugger\dbtoolbar.c" />
-    <ClCompile Include="debugger\dbtrack.c" />
-    <ClCompile Include="debugger\dbvalue.c" />
+    <ClCompile Include="debugger\dbcommon.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="debugger\dbdisasm.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="debugger\dbmem.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="debugger\dbreg.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="debugger\dbsubbar.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="debugger\dbtoolbar.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="debugger\dbtrack.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="debugger\dbvalue.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="debugger\disassemble.c" />
-    <ClCompile Include="gui\DataObject.cpp" />
-    <ClCompile Include="gui\displayoptionstest.c" />
-    <ClCompile Include="gui\DropSource.cpp" />
-    <ClCompile Include="gui\DropTarget.cpp" />
-    <ClCompile Include="gui\gui.c" />
-    <ClCompile Include="gui\guibuttons.c" />
-    <ClCompile Include="gui\guicontext.c" />
-    <ClCompile Include="gui\guicutout.c" />
-    <ClCompile Include="gui\guidebug.c" />
-    <ClCompile Include="gui\guifaceplate.c" />
-    <ClCompile Include="gui\guifilepreview.c" />
-    <ClCompile Include="gui\guiglow.c" />
-    <ClCompile Include="gui\guilcd.c" />
-    <ClCompile Include="gui\guiopenfile.c" />
-    <ClCompile Include="gui\guioptions.c" />
-    <ClCompile Include="gui\guisavestate.c" />
-    <ClCompile Include="gui\guispeed.c" />
-    <ClCompile Include="gui\guivartree.c" />
+    <ClCompile Include="gui\DataObject.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\displayoptionstest.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\DropSource.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\DropTarget.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\gui.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guibuttons.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guicontext.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guicutout.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guidebug.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guifaceplate.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guifilepreview.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guiglow.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guilcd.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guiopenfile.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guioptions.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guisavestate.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guispeed.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\guivartree.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="gui\registry.c" />
     <ClCompile Include="hardware\83hw.c" />
     <ClCompile Include="hardware\83phw.c" />
@@ -76,9 +128,12 @@
     <ClCompile Include="hardware\lcd.c" />
     <ClCompile Include="hardware\link.c" />
     <ClCompile Include="interface\calc.c" />
+    <ClCompile Include="interface\mapeditor.c" />
     <ClCompile Include="interface\state.c" />
     <ClCompile Include="stdafx.cpp" />
-    <ClCompile Include="utilities\expandpane.c" />
+    <ClCompile Include="utilities\expandpane.c">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="utilities\exportvar.c" />
     <ClCompile Include="utilities\gif.c" />
     <ClCompile Include="utilities\gifhandle.c" />
@@ -90,7 +145,9 @@
     <ClCompile Include="utilities\var.c" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="gui\Wabbitemu.rc" />
+    <ResourceCompile Include="gui\Wabbitemu.rc">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\alu.h" />
@@ -365,16 +422,15 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>E:\wabbitemu\core;E:\wabbitemu\hardware;E:\wabbitemu\interface;E:\wabbitemu\utilities;E:\wabbitemu\debugger;E:\wabbitemu\gui</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;_CRT_SECURE_NO_WARNINGS;_WINDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
+      <CompileAs>CompileAsCpp</CompileAs>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <ModuleDefinitionFile>
       </ModuleDefinitionFile>
-      <OutputFile>$(SolutionDir)Debug\$(TargetName)$(TargetExt)</OutputFile>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
