@@ -269,6 +269,7 @@ BOOL LoadMapSet(HWND hwndParent, LPCTSTR szFilename) {
 	pXMLDocument->Release();
 
 	FlattenMapTree(hwndParent, (LPMAPVIEWSETTINGS **) &g_MapSet.MapHierarchy, &g_MapSet.cxMapHierarchy, NULL);
+	g_MapSet.fLoaded = TRUE;
 	return TRUE;
 }
 
@@ -423,6 +424,11 @@ static BOOL TilesetsCallback(TCHAR *szName, LPVOID lpParam) {
 }
 
 BOOL SaveMapSet(TCHAR *szFilename, LPMAPSETSETTINGS lpmss) {
+
+	if (g_MapSet.fLoaded == FALSE)
+	{
+		return FALSE;
+	}
 	TCHAR szTilesets[MAX_PATH * 8] = _T("");
 	FILE *defaults = _tfopen(MAP_DATA_FILENAME, _T("w"));
 	_ftprintf(defaults, _T(";; Assembly export for %s\n\n"), g_MapSet.szName);

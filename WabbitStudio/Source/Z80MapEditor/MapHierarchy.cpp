@@ -414,6 +414,10 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		}
 	case WM_MOUSEMOVE:
 		{
+			if (g_MapSet.fPendingAdd) {
+				SetCursor(LoadCursor(NULL, IDC_NO));
+
+			}
 			if (wParam & MK_RBUTTON) {
 				POINT ptDragEnd = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 

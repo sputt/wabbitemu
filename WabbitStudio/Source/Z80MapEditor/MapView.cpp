@@ -25,6 +25,7 @@ using namespace Gdiplus;
 #include "StartLocation.h"
 #include "ObjectProperties.h"
 #include "UndoRedo.h"
+#include "StatusBar.h"
 
 #define MAPVIEW_CLASS _T("ZME_MapView")
 extern HINSTANCE g_hInstance;
@@ -106,13 +107,28 @@ static struct {
 } DrawCache = {0.0, NULL, NULL};
 
 static void SelectObjectsInRect(LPMAPVIEWSETTINGS lpmvs, RECT *lpRect) {
-	for (int i = 0; i < MAX_OBJECT; i++) {
-		RemoveObjectFromSelection(&lpmvs->ObjectArray[i]);
+	if (g_Layer == ENEMY_LAYER)
+	{
+		for (int i = 0; i < MAX_ENEMY; i++) {
+			RemoveObjectFromSelection(&lpmvs->EnemyArray[i]);
+		}
+		for (int i = 0; i < MAX_ENEMY; i++) {
+			POINT pt = {lpmvs->EnemyArray[i].x + lpmvs->EnemyArray[i].w/2, lpmvs->EnemyArray[i].y + lpmvs->EnemyArray[i].h/2};
+			if (PtInRect(lpRect, pt) == TRUE) {
+				AddObjectToSelection(&lpmvs->EnemyArray[i]);
+			}
+		}
 	}
-	for (int i = 0; i < MAX_OBJECT; i++) {
-		POINT pt = {lpmvs->ObjectArray[i].x + lpmvs->ObjectArray[i].w/2, lpmvs->ObjectArray[i].y + lpmvs->ObjectArray[i].h/2};
-		if (PtInRect(lpRect, pt) == TRUE) {
-			AddObjectToSelection(&lpmvs->ObjectArray[i]);
+	else if (g_Layer == OBJECT_LAYER)
+	{
+		for (int i = 0; i < MAX_OBJECT; i++) {
+			RemoveObjectFromSelection(&lpmvs->ObjectArray[i]);
+		}
+		for (int i = 0; i < MAX_OBJECT; i++) {
+			POINT pt = {lpmvs->ObjectArray[i].x + lpmvs->ObjectArray[i].w/2, lpmvs->ObjectArray[i].y + lpmvs->ObjectArray[i].h/2};
+			if (PtInRect(lpRect, pt) == TRUE) {
+				AddObjectToSelection(&lpmvs->ObjectArray[i]);
+			}
 		}
 	}
 }
@@ -351,7 +367,12 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		{
 			LPMAPVIEWSETTINGS lpmvs = (LPMAPVIEWSETTINGS) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (g_Layer == MAP_OVERVIEW_LAYER) {
-				
+				TRACKMOUSEEVENT EventTrack = {0};
+				EventTrack.cbSize = sizeof(TRACKMOUSEEVENT);
+				EventTrack.dwFlags = TME_LEAVE;
+				EventTrack.hwndTrack = hwnd;
+
+				TrackMouseEvent(&EventTrack);
 			} else if (g_Layer == MAP_LAYER) {
 				int Index = PointToIndex(lpmvs, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
 				if (Index != lpmvs->iHot) {
@@ -362,11 +383,16 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 						InvalidateRect(hwnd, &r, FALSE);
 					}
 					IndexToRect(lpmvs, Index, &r);
+					SetStatusBarCoordinates((Index % g_MapSet.cx) * g_MapSet.cxTile,
+						(Index / g_MapSet.cy) * g_MapSet.cyTile, -1);
+
 					InvalidateRect(hwnd, &r, FALSE);
 					InflateRect(&r, 1, 1);
 
 					lpmvs->iHot = Index;
 					UpdateWindow(hwnd);
+
+					
 
 					TRACKMOUSEEVENT EventTrack = {0};
 					EventTrack.cbSize = sizeof(TRACKMOUSEEVENT);
@@ -376,48 +402,53 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 					TrackMouseEvent(&EventTrack);
 				}
 			} else if (g_Layer == MISC_LAYER) {
-				LPMISC lpm = NULL;
-				
-				if ((lpm = CheckMiscMouse(lpmvs, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) != NULL) {
-					if (GetCapture() != hwnd) {
-						int Edge = GetMiscEdge(lpm, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-						SetCursor(GetCursorFromEdge(Edge));
-					}
-				}
 
-				if (wParam & MK_LBUTTON) {
-					for (int i = 0; i < GetSelectedObjectCount(); i++) {
-						lpm = (LPMISC) GetSelectedObject(i);
-						if (lpm == NULL || lpm->MagicNum != MISC_MAGIC_NUM)
-							continue;
-
-						if (fFirstDrag == TRUE) {
-							lpm->DragStartX = lpm->x;
-							lpm->DragStartY = lpm->y;
-							lpm->DragStartW = lpm->w;
-							lpm->DragStartH = lpm->h;
+				if (g_MapSet.fPendingAdd == TRUE) {
+					SetCursor(LoadCursor(NULL, IDC_CROSS));
+				} else {
+					LPMISC lpm = NULL;
+					
+					if ((lpm = CheckMiscMouse(lpmvs, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam))) != NULL) {
+						if (GetCapture() != hwnd) {
+							int Edge = GetMiscEdge(lpm, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+							SetCursor(GetCursorFromEdge(Edge));
 						}
-						int next_x = lpm->DragStartX + (GET_X_LPARAM(lParam) - lpmvs->DragStartX) / g_MapSet.Scale;
-						int next_y = lpm->DragStartY + (GET_Y_LPARAM(lParam) - lpmvs->DragStartY) / g_MapSet.Scale;
+					}
+
+					if (wParam & MK_LBUTTON) {
+						for (int i = 0; i < GetSelectedObjectCount(); i++) {
+							lpm = (LPMISC) GetSelectedObject(i);
+							if (lpm == NULL || lpm->MagicNum != MISC_MAGIC_NUM)
+								continue;
+
+							if (fFirstDrag == TRUE) {
+								lpm->DragStartX = lpm->x;
+								lpm->DragStartY = lpm->y;
+								lpm->DragStartW = lpm->w;
+								lpm->DragStartH = lpm->h;
+							}
+							int next_x = lpm->DragStartX + (GET_X_LPARAM(lParam) - lpmvs->DragStartX) / g_MapSet.Scale;
+							int next_y = lpm->DragStartY + (GET_Y_LPARAM(lParam) - lpmvs->DragStartY) / g_MapSet.Scale;
 
 
-						// If they are holding shift, lock to the nearest 8
+							// If they are holding shift, lock to the nearest 8
 #define MISC_SNAP_RES	8
-						if ((wParam & MK_SHIFT) == 0) {
-							next_x = (next_x + (MISC_SNAP_RES/2)) / MISC_SNAP_RES * MISC_SNAP_RES;
-							next_y = (next_y + (MISC_SNAP_RES/2)) / MISC_SNAP_RES * MISC_SNAP_RES;
-						}
+							if ((wParam & MK_SHIFT) == 0) {
+								next_x = (next_x + (MISC_SNAP_RES/2)) / MISC_SNAP_RES * MISC_SNAP_RES;
+								next_y = (next_y + (MISC_SNAP_RES/2)) / MISC_SNAP_RES * MISC_SNAP_RES;
+							}
 
-						ApplyMiscResize(lpm->EdgeDrag, lpm, next_x, next_y);
+							ApplyMiscResize(lpm->EdgeDrag, lpm, next_x, next_y);
 
-						if ((wParam & MK_SHIFT) == 0) {
-							lpm->w = (lpm->w + (MISC_SNAP_RES/2)) / MISC_SNAP_RES * MISC_SNAP_RES;
-							lpm->h = (lpm->h + (MISC_SNAP_RES/2)) / MISC_SNAP_RES * MISC_SNAP_RES;
+							if ((wParam & MK_SHIFT) == 0) {
+								lpm->w = (lpm->w + (MISC_SNAP_RES/2)) / MISC_SNAP_RES * MISC_SNAP_RES;
+								lpm->h = (lpm->h + (MISC_SNAP_RES/2)) / MISC_SNAP_RES * MISC_SNAP_RES;
+							}
 						}
+						fFirstDrag = FALSE;
+						InvalidateRect(hwnd, NULL, FALSE);
+						UpdateWindow(hwnd);
 					}
-					fFirstDrag = FALSE;
-					InvalidateRect(hwnd, NULL, FALSE);
-					UpdateWindow(hwnd);
 				}
 			} else if (g_Layer == OBJECT_LAYER || g_Layer == ENEMY_LAYER) {
 				LPOBJECT lpo = NULL;
@@ -481,6 +512,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 						OutputDebugStringA("\n");
 						RunAssemblyWithArguments(szLine, (BYTE *) &zobj, sizeof(zobj));
 						
+						SetStatusBarCoordinates(zobj.x, zobj.y, lpo->z == 0 ? -1 : lpo->z);
 						lpo->x = zobj.x;
 						lpo->y = zobj.y;
 
@@ -506,12 +538,19 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 	case WM_MOUSELEAVE:
 		{
 			LPMAPVIEWSETTINGS lpmvs = (LPMAPVIEWSETTINGS) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			if (lpmvs->iHot != -1) {
-				RECT r;
-				IndexToRect(lpmvs, lpmvs->iHot, &r);
-				lpmvs->iHot = -1;
-				InvalidateRect(hwnd, &r, FALSE);
-				UpdateWindow(hwnd);
+			if (g_Layer == MAP_OVERVIEW_LAYER)
+			{
+				InvalidateRect(hwnd, NULL, FALSE);
+			}
+			else if (g_Layer == MAP_LAYER)
+			{
+				if (lpmvs->iHot != -1) {
+					RECT r;
+					IndexToRect(lpmvs, lpmvs->iHot, &r);
+					lpmvs->iHot = -1;
+					InvalidateRect(hwnd, &r, FALSE);
+					UpdateWindow(hwnd);
+				}
 			}
 			return 0;
 		}
@@ -598,6 +637,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 							CreateObjectProperties(GetParent(hwnd), lpo);
 						}
 					} else {
+						StatusBarPrintf(_T(""));
 						ClearObjectSelection();
 						InvalidateRect(hwnd, NULL, FALSE);
 
@@ -695,13 +735,14 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 									RemoveObjectFromSelection(lpo);
 								}
 
+								g_MapSet.hwndSelected = hwnd;
+
 								DWORD dwCount = GetSelectedObjectCount();
 								if (dwCount == 1) {
 									TCHAR szStatus[256];
 									SendMessage(hwndStatus, SB_SETTEXT, 0, (LPARAM) (lpo->lpType == NULL ? _T("") : lpo->lpType->szName));
 
-									StringCbPrintf(szStatus, sizeof(szStatus), _T("\t%1.lf, %1.lf"), lpo->x, lpo->y);
-									SendMessage(hwndStatus, SB_SETTEXT, 1, (LPARAM) szStatus);
+									SetStatusBarCoordinates(lpo->x, lpo->y, lpo->z == 0 ? -1 : lpo->z);
 								} else if (dwCount > 1) {
 									TCHAR szStatus[256];
 									StringCbPrintf(szStatus, sizeof(szStatus), _T("%d objects selected"), dwCount);
@@ -937,7 +978,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 							} else if (g_Layer == ENEMY_LAYER) {
 								idx = lpo - lpmvs->EnemyArray;
 								RemoveObjectFromSelection(lpo);
-								if (idx != lpmvs->EnemyCount - 1) {
+								if (idx < lpmvs->EnemyCount - 1) {
 									memmove(&lpmvs->EnemyArray[idx], &lpmvs->EnemyArray[idx + 1],
 										(lpmvs->EnemyCount - 1 - idx) * sizeof(OBJECT));
 								}

@@ -86,6 +86,7 @@ static void PopulateListBox(HWND hwndList, int iTab)
 }
 
 static INT_PTR CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	static int DRAGLISTMSG;
 	switch (uMsg)
 	{
 	case WM_INITDIALOG:
@@ -113,6 +114,9 @@ static INT_PTR CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			TabCtrl_SetCurSel(hwndTab, nTabSel);
 			PopulateObjectArray((LPMAPVIEWSETTINGS) lParam, nTabSel);
 			PopulateListBox(hwndList, nTabSel);
+
+			MakeDragList(hwndList);
+			DRAGLISTMSG = RegisterWindowMessage(DRAGLISTMSGSTRING);
 			return TRUE;
 		}
 
@@ -210,7 +214,48 @@ static INT_PTR CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 		return FALSE;
 
 	default:
-		return FALSE;
+		{
+			if (uMsg == DRAGLISTMSG)
+			{
+				static int iItemStart = -1;
+				LPDRAGLISTINFO lpdli = (LPDRAGLISTINFO) lParam;
+				HWND hwndList = GetDlgItem(hwnd, IDC_LIST);
+
+				switch (lpdli->uNotification)
+				{
+				case DL_BEGINDRAG:
+					{
+						iItemStart = LBItemFromPt(hwndList, lpdli->ptCursor, TRUE);
+						OutputDebugString(_T("Begin dragging...\n"));
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+						return TRUE;
+					}
+				case DL_DRAGGING:
+					{
+						int iItem = LBItemFromPt(hwndList, lpdli->ptCursor, TRUE);
+						DrawInsert(hwnd, hwndList, iItem);
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, DL_MOVECURSOR);
+						return TRUE;
+					}
+				case DL_DROPPED:
+					{
+						OutputDebugString(_T("THe item was dropped\n"));
+						int iItem = LBItemFromPt(hwndList, lpdli->ptCursor, TRUE);
+						if (iItem != iItemStart && iItem != -1)
+						{
+							LPOBJECT lpoBackup = (LPOBJECT) ObjectArray[iItemStart];
+							ObjectArray[iItemStart] = ObjectArray[iItem];
+							ObjectArray[iItem] = lpoBackup;
+
+							PopulateListBox(hwndList, TabCtrl_GetCurSel(GetDlgItem(hwnd, IDC_TAB)));
+							InvalidateRect(hwnd, NULL, FALSE);
+						}
+						return TRUE;
+					}
+				}
+			}
+			return FALSE;
+		}
 	}
 }
 

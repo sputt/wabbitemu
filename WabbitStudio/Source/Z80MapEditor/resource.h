@@ -67,13 +67,19 @@
 #define ID_OBJECT_TYPE40053             40053
 #define ID_OBJECT_MANAGEORDER           40054
 #define ID_EDIT_REDO40055               40055
+#define ID_VIEW_ERRORLIST               40057
+#define ID_MISC_COPY                    40058
+#define ID_MISC_COPYCODE                40059
+#define ID_OBJECT_COPY                  40060
+#define ID_OBJECT_COPYCODE              40061
+#define ID_EDIT_PASTE40062              40062
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        110
-#define _APS_NEXT_COMMAND_VALUE         40057
+#define _APS_NEXT_COMMAND_VALUE         40063
 #define _APS_NEXT_CONTROL_VALUE         1025
 #define _APS_NEXT_SYMED_VALUE           101
 #endif

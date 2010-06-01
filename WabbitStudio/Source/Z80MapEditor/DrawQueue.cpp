@@ -10,7 +10,7 @@
 #include "hash.h"
 #include "ObjectGraphics.h"
 
-#define MAX_DRAW_ENTRIES 16
+#define MAX_DRAW_ENTRIES 32
 
 #pragma pack(1)
 

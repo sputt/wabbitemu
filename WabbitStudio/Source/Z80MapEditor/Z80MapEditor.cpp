@@ -38,6 +38,7 @@ using namespace Gdiplus;
 #include "ObjectOrder.h"
 #include "utils.h"
 #include "UndoRedo.h"
+#include "ErrorList.h"
 
 #if defined(_M_IX86)
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -124,7 +125,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			InitAnimateKeys(_T("animatedef.inc"));
 			LoadAnimateTypes(_T("animatedef.inc"));
 
-			hwndStatus = CreateWindow(STATUSCLASSNAME, _T("Status bar"), SBARS_SIZEGRIP | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, NULL, g_hInstance, NULL);
+			hwndStatus = CreateWindow(STATUSCLASSNAME, _T(""), SBARS_SIZEGRIP | WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, hwnd, NULL, g_hInstance, NULL);
 			int iParts[] = {200, 300, -1};
 			SendMessage(hwndStatus, SB_SETPARTS, sizeof(iParts) / sizeof(iParts[0]), (LPARAM) iParts);
 
@@ -141,7 +142,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				{MAKELONG(2, 0), ID_LAYER_OBJECT, 			TBSTATE_ENABLED,BTNS_AUTOSIZE |  BTNS_CHECKGROUP,  {0}, 0,(INT_PTR) _T("Object")},
 				{MAKELONG(3, 0), ID_LAYER_ENEMY, 			TBSTATE_ENABLED,BTNS_AUTOSIZE |  BTNS_CHECKGROUP,  {0}, 0, (INT_PTR) _T("Enemy")},
 				{MAKELONG(4, 0), ID_LAYER_MISC, 			TBSTATE_ENABLED, BTNS_AUTOSIZE | BTNS_CHECKGROUP,  {0}, 0, (INT_PTR) _T("Misc")},
-				{MAKELONG(5, 0), ID_LAYER_STARTLOCATIONS,	TBSTATE_ENABLED, BTNS_AUTOSIZE | BTNS_CHECKGROUP,  {0}, 0, (INT_PTR) _T("Start")},
+				{MAKELONG(5, 0), ID_LAYER_STARTLOCATIONS,	TBSTATE_ENABLED, BTNS_AUTOSIZE | BTNS_CHECKGROUP,  {0}, 0, (INT_PTR) _T("Start location")},
 
 				{ MAKELONG(0, 0), 0, TBSTATE_ENABLED,
 				TBSTYLE_SEP, {0}, NULL, NULL},
@@ -470,6 +471,67 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 				return 0;
 			}
 
+		case ID_OBJECT_COPY:
+			{
+				DWORD dwCount = GetSelectedObjectCount();
+				for (DWORD i = 0; i < dwCount; i++)
+				{
+					LPOBJECT lpo = (LPOBJECT) GetSelectedObject(i);
+					switch (lpo->MagicNum)
+					{
+					case OBJECT_MAGIC_NUM:
+						{
+							if (OpenClipboard(hwnd) == TRUE)
+							{
+								UINT uFormat = RegisterClipboardFormat(_T("ZELDA_OBJECT"));
+
+								HANDLE hMem = GlobalAlloc(GMEM_MOVEABLE, sizeof(OBJECT));
+								LPOBJECT lpoClipboard = (LPOBJECT) GlobalLock(hMem);
+								*lpoClipboard = *lpo;
+								GlobalUnlock(hMem);
+								SetClipboardData(uFormat, hMem);
+								CloseClipboard();
+							}
+							break;
+						}
+					}
+
+				}
+				return 0;
+			}
+
+		case ID_EDIT_PASTE:
+			{
+				UINT uFormat = RegisterClipboardFormat(_T("ZELDA_OBJECT"));
+				if (IsClipboardFormatAvailable(uFormat) == TRUE)
+				{
+					if (OpenClipboard(hwnd) == TRUE)
+					{
+						HANDLE hMem = GetClipboardData(uFormat);
+						LPOBJECT lpoClipboard = (LPOBJECT) GlobalLock(hMem);
+
+						MAPVIEWSETTINGS mvs = {0};
+						GetMapViewSettings(g_MapSet.hwndSelected, &mvs);
+
+						int iObject = AddObject(&mvs, lpoClipboard->lpType, 0, 0);
+						if (iObject != -1)
+						{
+							LPOBJECT lpo = &mvs.ObjectArray[iObject];
+							*lpo = *lpoClipboard;
+							lpo->x = g_MapSet.cx * g_MapSet.cxTile / 2;
+							lpo->y = g_MapSet.cy * g_MapSet.cyTile / 2;
+						}
+
+						SetMapViewSettings(g_MapSet.hwndSelected, &mvs);
+
+						GlobalUnlock(hMem);
+						CloseClipboard();
+					}
+
+				}
+				return 0;
+			}
+
 		case ID_VIEW_SHOWGAP:
 			{
 				if (g_MapSet.cxMargin != 0) {
@@ -485,6 +547,12 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			}
 		case ID_VIEW_SHOWCALCPREVIEW:
 			{
+				break;
+			}
+
+		case ID_VIEW_ERRORLIST:
+			{
+				CreateErrorList(hwnd);
 				break;
 			}
 

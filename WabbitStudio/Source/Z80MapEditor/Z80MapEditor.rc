@@ -67,6 +67,8 @@ BEGIN
     BEGIN
         MENUITEM "&Undo\tCtrl+Z",               ID_EDIT_UNDO
         MENUITEM "&Redo\tCtrl+Y",               ID_EDIT_REDO
+        MENUITEM SEPARATOR
+        MENUITEM "&Paste\tCtrl+V",              ID_EDIT_PASTE
     END
     POPUP "&Layer"
     BEGIN
@@ -100,6 +102,7 @@ BEGIN
         MENUITEM "Show map padding",            ID_VIEW_SHOWGAP, CHECKED
         MENUITEM "Show colors",                 ID_VIEW_SHOWCOLORS, CHECKED
         MENUITEM "Show calc preview window",    ID_VIEW_SHOWCALCPREVIEW
+        MENUITEM "Error list",                  ID_VIEW_ERRORLIST
     END
     POPUP "&Help"
     BEGIN
@@ -109,10 +112,14 @@ END
 
 IDR_MENUOBJECTCONTEXT MENU
 BEGIN
-    POPUP "misc"
+    POPUP "Object"
     BEGIN
-        MENUITEM "Delete",                      ID_OBJECT_DELETE
-        MENUITEM "Properties",                  ID_OBJECT_PROPERTIES
+        MENUITEM "&Delete",                     ID_OBJECT_DELETE
+        MENUITEM SEPARATOR
+        MENUITEM "&Copy",                       ID_OBJECT_COPY
+        MENUITEM "Co&py code",                  ID_OBJECT_COPYCODE
+        MENUITEM SEPARATOR
+        MENUITEM "&Properties",                 ID_OBJECT_PROPERTIES
     END
 END
 

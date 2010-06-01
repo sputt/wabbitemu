@@ -134,15 +134,22 @@ int GetMiscEdge(LPMISC lpm, int x, int y) {
 
 
 LPMISC CheckMiscMouse(LPMAPVIEWSETTINGS lpmvs, int x, int y) {
+	int MaxSize = INT_MAX;
+	LPMISC lpm = NULL;
 	for (DWORD i = 0; i < lpmvs->MiscCount; i++) {
 		RECT r;
 		POINT p = {x, y};
 		GetMiscRealRect(&lpmvs->MiscArray[i], &r);
-		if (PtInRect(&r, p) == TRUE) {
-			return &lpmvs->MiscArray[i];
+		// Pick the smallest one that matches
+		int ThisSize = (r.right - r.left) * (r.bottom - r.top);
+		if (ThisSize < MaxSize) {
+			if (PtInRect(&r, p) == TRUE) {
+				lpm = &lpmvs->MiscArray[i];
+				MaxSize = ThisSize;
+			}
 		}
 	}
-	return NULL;
+	return lpm;
 }
 
 void DrawMapMisc(HDC hdc, LPMAPVIEWSETTINGS lpmvs) {

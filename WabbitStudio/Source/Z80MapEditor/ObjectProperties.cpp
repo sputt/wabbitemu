@@ -38,6 +38,8 @@ static void GetArgumentValue(LPOBJECT lpo, int i, TCHAR *szValue, int cbValue) {
 		StringCbPrintf(szValue, cbValue, _T("%1.lf"), lpo->w);
 	} else if (_tcsicmp(name, _T("h")) == 0) {
 		StringCbPrintf(szValue, cbValue, _T("%1.lf"), lpo->h);
+	} else if (_tcsicmp(name, _T("d")) == 0) {
+		StringCbPrintf(szValue, cbValue, _T("%1.lf"), lpo->d);
 	} else {
 		StringCbPrintf(szValue, cbValue, _T("%s"), lpo->szArgs[i]);
 	}
@@ -55,6 +57,8 @@ static void SetArgumentValue(LPOBJECT lpo, int i, const TCHAR *szValue) {
 		lpo->w = (double) _ttoi(szValue);
 	} else if (_tcsicmp(name, _T("h")) == 0) {
 		lpo->h = (double) _ttoi(szValue);
+	} else if (_tcsicmp(name, _T("d")) == 0) {
+		lpo->d = (double) _ttoi(szValue);
 	} else {
 		StringCbCopy(lpo->szArgs[i], sizeof(lpo->szArgs[i]), szValue);
 	}
