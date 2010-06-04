@@ -134,7 +134,7 @@ static char *parse_single_num (char *expr, int *value) {
 				show_error ("Error in local label's syntax (had leading +/- but no _)");
 				return NULL;
 			} else if (this_reusable >= get_num_reusables()) {
-				if (pass_one == false) show_error ("Forward reference to local label which doesn't exist");
+				if (pass_one == false) show_error ("Forward reference to local label which doesn't exist (total %d)", get_num_reusables());
 				parser_forward_ref_err = true;
 				return NULL;
 			}

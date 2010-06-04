@@ -597,7 +597,11 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPar
 			int oy = (int) (pt.y - wr.top);
 
 			OBJECT SizeObject;
-			CreateObject(lpot, 0, 0, &SizeObject);
+			if (uMsg == WM_CREATEENEMY) {
+				CreateEnemy(lpot, 0, 0, &SizeObject);
+			} else if (uMsg == WM_CREATEOBJECT) {
+				CreateObject(lpot, 0, 0, &SizeObject);
+			}
 
 			ox = round((double) ox / g_MapSet.Scale);
 			oy = round((double) oy / g_MapSet.Scale);
