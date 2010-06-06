@@ -16,7 +16,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         public DebugPanel()
         {
             InitializeComponent();
-            DockStateChanged += DebugPanel_DockStateChanged;
             afBox.ContextMenu = contextMenu1;
             afpBox.ContextMenu = contextMenu1;
             bcBox.ContextMenu = contextMenu1;
@@ -29,12 +28,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             iyBox.ContextMenu = contextMenu1;
             pcBox.ContextMenu = contextMenu1;
             spBox.ContextMenu = contextMenu1;
-        }
-
-        void DebugPanel_DockStateChanged(object sender, EventArgs e)
-        {
-            if (DockState != DockState.Unknown && DockState != DockState.Hidden)
-                Settings.Default.debugPanelLoc = DockState;
         }
 
         private void registersBox_TextChanged(object sender, EventArgs e)
@@ -98,12 +91,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             updating = false;
         }
 
-        private void DebugPanel_VisibleChanged(object sender, EventArgs e)
-        {
-            Settings.Default.debugPanel = DockHandler.DockState == DockState.Hidden ? false : true;
-            DockingService.MainForm.UpdateChecks();
-        }
-
         private void RegisterBox_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == (char)Keys.Enter)
@@ -133,11 +120,9 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 SetState(0, state);
 #else
 					DebuggerService.Debugger.setState(state);
-#endif 
+#endif
                 }
-                catch
-                {
-                }
+                catch { }
                 UpdateRegisters();
             }
             if (e.KeyChar == (char)Keys.Cancel || e.KeyChar == (char)Keys.Escape)
@@ -168,9 +153,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				DebuggerService.Debugger.setState(state);
 #endif
             }
-            catch
-            {
-            }
+            catch { }
             UpdateFlags();
         }
 
@@ -184,7 +167,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			Paste();
         }
 
-		public void Copy()
+		public override void Copy()
 		{
 			if (ActiveControl.GetType() == typeof(TextBox))
 				((TextBox)ActiveControl).Copy();
@@ -192,7 +175,15 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				Clipboard.SetImage(((PictureBox)ActiveControl).Image);
 		}
 
-		public void Paste()
+		public override void Cut()
+		{
+			if (ActiveControl.GetType() == typeof(TextBox))
+				((TextBox)ActiveControl).Cut();
+			else if (ActiveControl.GetType() == typeof(PictureBox))
+				Clipboard.SetImage(((PictureBox)ActiveControl).Image);
+		}
+
+		public override void Paste()
 		{
 			if (ActiveControl.GetType() == typeof(TextBox))
 				((TextBox)ActiveControl).Paste();

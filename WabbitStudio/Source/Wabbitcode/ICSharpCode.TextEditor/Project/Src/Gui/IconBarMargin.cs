@@ -75,7 +75,7 @@ namespace Revsoft.TextEditor
                 mark.Draw(this, g, new Point(0, yPos));
             }
 
-		    foreach (MarginIcon icon in textArea.Document.IconManager.iconsToDraw)
+		    foreach (MarginIcon icon in textArea.Document.IconManager.IconsToDraw)
 		        DrawIcon(g, rect, icon);
 		    base.Paint(g, rect);
 		}

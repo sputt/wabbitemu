@@ -21,6 +21,7 @@ using System.Threading;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Docking;
 using Revsoft.Wabbitcode.Services.Parser;
+using System.Reflection;
 
 namespace Revsoft.Wabbitcode
 {
@@ -41,6 +42,8 @@ namespace Revsoft.Wabbitcode
 		{
 			get
 			{
+				if (this.IsDisposed || this.Disposing)
+					return null;
 				if (editorBox.InvokeRequired)
 					return editorBox.Invoke(new GetFileNameDelegate(GetFileName)).ToString();
 				else
@@ -50,19 +53,7 @@ namespace Revsoft.Wabbitcode
 
         public newEditor()
         {
-            //
-            // Required for Windows Form Designer support
-            //
             InitializeComponent();
-            editorBox.ActiveTextAreaControl.TextArea.DragDrop += editorBox_DragDrop;
-            editorBox.ActiveTextAreaControl.TextArea.DragEnter += editorBox_DragEnter;
-            editorBox.ActiveTextAreaControl.TextArea.KeyPress += editorBox_KeyPress;
-            editorBox.ActiveTextAreaControl.TextArea.Caret.PositionChanged += Caret_PositionChanged;
-            editorBox.ActiveTextAreaControl.TextArea.MouseClick += editorBox_MouseClick;
-            editorBox.ActiveTextAreaControl.TextArea.AllowDrop = true;
-            editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
-            editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
-            editorBox.Document.BreakpointManager.Removed += BreakpointManager_Removed;
 
 			//fix this stuff so settings are applied on opening...what a concept :P
 			if (Settings.Default.antiAlias)
@@ -117,14 +108,15 @@ namespace Revsoft.Wabbitcode
 		{
 			while (true)
 			{
-				parseInfo = ParserService.ParseFile(FileName, EditorText);
-				if (FileName.ToLower() == DocumentService.ActiveFileName.ToLower() && RequestUpdate.UpdateLabels)
+				Thread.Sleep(200);
+				if (RequestUpdate.UpdateLabels && DocumentService.ActiveFileName != null &&
+								FileName.ToLower() == DocumentService.ActiveFileName.ToLower())
 				{
+					parseInfo = ParserService.ParseFile(FileName, EditorText);
 					UpdateLabelBoxDelegate updateLabelDelegate = new UpdateLabelBoxDelegate(UpdateLabelBox);
 					BeginInvoke(updateLabelDelegate, null);
 					RequestUpdate.UpdateLabels = false;
 				}
-				Thread.Sleep(5000);
 			}
 		}
 
@@ -150,13 +142,14 @@ namespace Revsoft.Wabbitcode
                    editorBox.ActiveTextAreaControl.Caret.Line;
         }
 
+		void TextArea_ToolTipRequest(object sender, TextEditor.ToolTipRequestEventArgs e)
+		{
+			
+		}
+
         void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
         {
-            //int start = editorBox.ActiveTextAreaControl.TextArea.Caret.Offset;
-            //List<TextMarker> markers = editorBox.ActiveTextAreaControl.TextArea.Document.MarkerStrategy.GetMarkers(start);
-            //foreach (TextMarker marker in markers)
-            //    editorBox.ActiveTextAreaControl.TextArea.Document.MarkerStrategy.RemoveMarker(marker);
-            if (ParentForm != null && e.Breakpoint.Anchor.IsDeleted == false)
+            if (e.Breakpoint.Anchor.IsDeleted == false)
                 DebuggerService.RemoveBreakpoint(e.Breakpoint.LineNumber, editorBox.FileName);
             if (DockingService.BreakManager != null)
                 DockingService.BreakManager.UpdateManager();
@@ -164,12 +157,9 @@ namespace Revsoft.Wabbitcode
 
         void BreakpointManager_Added(object sender, BreakpointEventArgs e)
         {
-            //if (GlobalClass.mainForm.breakpointExists(e.Breakpoint.LineNumber, editorBox.FileName))
-                DebuggerService.AddBreakpoint(e.Breakpoint.LineNumber, editorBox.FileName);
-            //else
-            //     editorBox.Document.BreakpointManager.RemoveMark(e.Breakpoint);
-				if (DockingService.BreakManager != null)
-					DockingService.BreakManager.UpdateManager();
+            DebuggerService.AddBreakpoint(e.Breakpoint.LineNumber, editorBox.FileName);
+			if (DockingService.BreakManager != null)
+				DockingService.BreakManager.UpdateManager();
         }
 
 		string codeInfoLines = "";
@@ -231,67 +221,40 @@ namespace Revsoft.Wabbitcode
 
         public void UpdateIcons()
         {
-            editorBox.ActiveTextAreaControl.TextArea.Document.IconManager.iconsToDraw.Clear();
-            foreach (Errors errorWarning in GlobalClass.errorsInFiles)
+            editorBox.ActiveTextAreaControl.TextArea.Document.IconManager.ClearIcons();
+            foreach (Errors errorWarning in AssemblerService.ErrorsInFiles)
             {
                 if (errorWarning.file != editorBox.FileName)
                     continue;
                 Bitmap newIcon;
                 if (errorWarning.isWarning)
-                    newIcon = new Bitmap(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(
-                                "Revsoft.Wabbitcode.Resources.Warning16.png"));
+                    newIcon = new Bitmap(Assembly.GetExecutingAssembly().
+								GetManifestResourceStream("Revsoft.Wabbitcode.Resources.Warning16.png"));
                 else
-                    newIcon = new Bitmap(System.Reflection.Assembly.GetExecutingAssembly().GetManifestResourceStream(
-                                "Revsoft.Wabbitcode.Resources.error.png"));
+                    newIcon = new Bitmap(Assembly.GetExecutingAssembly().
+								GetManifestResourceStream("Revsoft.Wabbitcode.Resources.error.png"));
                 MarginIcon marginIcon = new MarginIcon(newIcon, errorWarning.lineNum - 1, errorWarning.toolTip);
-                editorBox.Document.IconManager.addIcon(marginIcon);
+                editorBox.Document.IconManager.AddIcon(marginIcon);
             }
-        }
-
-        public Hashtable includeList = new Hashtable();
-        //private string[] includeList = new string[1];
-        //private int[] includeLoc = new int[1];
-        //private bool[] includeBools = new bool[1];
-        private void scanIncludeFile(string fileName)
-        {
-			try
-			{
-				FileStream stream = new FileStream(fileName, FileMode.Open);
-				StreamReader reader = new StreamReader(stream);
-				string[] lines = reader.ReadToEnd().Split('\n');
-				ArrayList temp = ProjectService.Project.getAllLabels(lines, true, fileName);
-				if (ParentForm != null)
-					ProjectService.Project.projectLabels.Add(temp);
-				stream.Flush();
-				stream.Close();
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show("Error scanning include file!\n" +ex.ToString());
-			}
-        }
+        }      
 
 		private ParserInformation parseInfo;
         public void OpenFile(string filename)
         {
-            //editorBox. = Properties.Settings.Default.wrapText;
-            //try
-            //{
-                editorBox.FileName = filename;
-                editorBox.LoadFile(filename, true, true);
-                editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(editorBox.FileName);
-            //}
-            //catch (Exception ex)
-            //{
-            //    //((Wabbitcode.MainFormRedone)(ParentForm)).errorConsoleBox.Text += ex.ToString() + '\n';
-            //    MessageBox.Show("Error: " + ex.ToString());
-            //}
+            editorBox.FileName = filename.ToLower();
+            editorBox.LoadFile(filename, true, true);
+            editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(editorBox.FileName);
             Text = filename;
             /*if (!GlobalClass.mainForm.staticLabelsParser.IsBusy && GlobalClass.mainForm.debugging && !GlobalClass.mainForm.IsDisposed && !GlobalClass.mainForm.Disposing)
                 GlobalClass.mainForm.staticLabelsParser.RunWorkerAsync(editorBox);*/
             docChanged = false;
 			UpdateTabText();
             UpdateIcons();
+			RequestUpdate.UpdateAll();
+			if (!ProjectService.IsInternal)
+				ProjectService.ActiveFileChanged();
+			if (ProjectService.CurrentFile != null)
+				editorBox.Document.FoldingManager.DeserializeFromString(ProjectService.CurrentFile.FileFoldings);
         }
 
         public bool SaveFile()
@@ -311,14 +274,10 @@ namespace Revsoft.Wabbitcode
                 //((Wabbitcode.frmMain)(MdiParent)).errorConsoleBox.Text = ex.ToString() + '\n';
                 MessageBox.Show("Error: " + ex);
             }
-            if (ParentForm != null)
-                if (ProjectService.IsInternal)
-                    findAllIncludeNames();
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(editorBox.FileName);
             TabText = Path.GetFileName(fileName);
             docChanged = false;
-            if (ParentForm != null) 
-                ((MainFormRedone)ParentForm).UpdateTitle();
+            DockingService.MainForm.UpdateTitle();
             return saved;
         }
 
@@ -331,19 +290,17 @@ namespace Revsoft.Wabbitcode
         {
 			parserThread.Abort();
 			codeInfoThread.Abort();
+			string fileName = editorBox.FileName;
             if (!ProjectService.IsInternal)
             {
-                if (editorBox.FileName != null && Path.GetDirectoryName(editorBox.FileName).StartsWith(ProjectService.ProjectDirectory))
+                if (ProjectService.ContainsFile(fileName))
                 {
-                    string tag = "File|" + editorBox.FileName.Remove(0, ProjectService.ProjectDirectory.Length) +
-                                      "|" + editorBox.Document.FoldingManager.SerializeToString();
-                    DockingService.ProjectViewer.updateNodeTag(DockingService.ProjectViewer.projViewer.Nodes[0],
-                                            editorBox.FileName.Remove(0, ProjectService.ProjectDirectory.Length), tag);
+					Revsoft.Wabbitcode.Services.Project.ProjectFile file = ProjectService.FindFile(fileName);
+					file.FileFoldings = editorBox.Document.FoldingManager.SerializeToString();
                 }
             }
             if (!DocumentChanged) 
                 return;
-			string fileName = editorBox.FileName;
 			if (string.IsNullOrEmpty(editorBox.FileName))
 				fileName = "New Document";
             DialogResult dlg = MessageBox.Show(this, "Document '" + fileName + "' has changed. Save changes?", "Wabbitcode", MessageBoxButtons.YesNoCancel);
@@ -361,10 +318,18 @@ namespace Revsoft.Wabbitcode
             }
         }
 
+		public void Undo()
+		{
+			editorBox.Undo();
+		}
+
+		public void Redo()
+		{
+			editorBox.Redo();
+		}
+
         private void editorBox_KeyPress(object sender, KeyPressEventArgs e)
         {
-        	if (File.Exists(editorBox.FileName) && editorBox.Text != "" && ProjectService.IsInternal)
-            	findAllIncludeNames();
 			editorBox.ActiveTextAreaControl.Document.FormattingStrategy.FormatLine(editorBox.ActiveTextAreaControl.TextArea, editorBox.ActiveTextAreaControl.Caret.Line, 0, e.KeyChar);
 		}
 
@@ -372,61 +337,20 @@ namespace Revsoft.Wabbitcode
         {
             if (keyData == Keys.F3)
                 DockingService.FindForm.FindNext(true, false, "Text not found");
-			if (GlobalClass.currentMacro != -1)
-				GlobalClass.macros[GlobalClass.currentMacro] += (char)keyData;
+			if (MacroService.IsRecording)
+				MacroService.RecordKeyData(keyData);
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
-        public ArrayList labelsInThisFile = new ArrayList();
         public void UpdateLabelBox()
         {
 			if (parseInfo != null)
 				DockingService.LabelList.AddLabels(parseInfo.LabelsList);
-            /*if (editorBox.FileName == null || editorBox.Text == "")
-                return;
-            string[] lines = editorBox.Text.Split('\n');
-            labelsInThisFile = ProjectService.Project.getAllLabels(lines, Settings.Default.showEquates, editorBox.FileName);
-			ArrayList labelsToAdd = ProjectService.Project.getAllLabels(lines, true, editorBox.FileName);
-            if (editorBox.FileName != null)
-				for (int i = 0; i < ProjectService.Project.projectLabels.Count; i++)
-                {
-					ArrayList array = (ArrayList)ProjectService.Project.projectLabels[i];
-                    if (array != null)
-                    {
-                        ArrayList props = (ArrayList) array[1];
-                        if (props == null || props.Count <= 0)
-                            continue;
-                        if (!props[0].ToString().Contains(editorBox.FileName))
-                            continue;
-                    }
-					ProjectService.Project.projectLabels[i] = labelsToAdd;
-                    break;
-                }
-            ListBox labelsBox = DockingService.LabelList.labelsBox;
-			GlobalClass.turnOffDrawing(labelsBox.Handle);
-			Point scrollPos = GlobalClass.getScrollPos(labelsBox.Handle);
-            object[] items = new object[labelsBox.Items.Count];
-            labelsBox.Items.CopyTo(items, 0);
-            ArrayList oldItems = new ArrayList(items);
-            ArrayList temp2 = (ArrayList)labelsInThisFile[0];
-            if (oldItems == temp2)
-                return;
-			labelsBox.Items.Clear();
-            if (temp2 != null)
-            {
-                ArrayList clone = (ArrayList)temp2.Clone();
-                if (Settings.Default.alphabetizeLabels)
-                    clone.Sort();
-                foreach (string label in clone)
-                    labelsBox.Items.Add(label);
-            }
-			GlobalClass.turnOnDrawing(labelsBox.Handle);
-			GlobalClass.saveScrollPos(labelsBox.Handle, scrollPos);*/
         }
 
         private void cutContext_Click(object sender, EventArgs e)
         {
-            editorBox.Cut();
+			Cut();
         }
 
         private void copyContext_Click(object sender, EventArgs e)
@@ -436,7 +360,7 @@ namespace Revsoft.Wabbitcode
 
         private void pasteContext_Click(object sender, EventArgs e)
         {
-            editorBox.Paste();
+			Paste();
         }
 
         private void selectAllContext_Click(object sender, EventArgs e)
@@ -650,81 +574,6 @@ namespace Revsoft.Wabbitcode
             editorBox.Document.MarkerStrategy.AddMarker(highlight);
         }
 #endif
-
-        public string[] names;
-        public void findAllIncludeNames()
-        {
-			ProjectService.Project.projectLabels.Clear();
-            int loc = 0;
-            string includeName = "";
-            string FileName = editorBox.FileName;
-            foreach(TextMarker marker in editorBox.Document.MarkerStrategy.GetMarkers(0, editorBox.Text.Length))
-            	if (marker.Tag == "Include")
-            		editorBox.Document.MarkerStrategy.RemoveMarker(marker);
-            while (loc != -1)
-            {
-                int includeLoc = editorBox.Text.IndexOf("#include", loc);
-                if (includeLoc == -1)
-                    break;
-                int firstQuote = editorBox.Text.IndexOf('"', includeLoc);
-                int lastQuote = editorBox.Text.IndexOf('"', firstQuote + 1);
-                int commentChar;
-                int counter = includeLoc;
-                bool isInComment = false;
-                if (editorBox.Text.IndexOf('\n', includeLoc + 1) > -1)
-                    commentChar = editorBox.Text.IndexOf(';', editorBox.Text.IndexOf('\n', includeLoc + 1));
-                else
-                    commentChar = -1;
-                while (counter >= 0 && editorBox.Text[counter] != '\n')
-                {
-                    if (editorBox.Text[counter] == ';')
-                        isInComment = true;
-                    counter--;
-                }
-                if (lastQuote != -1 && firstQuote != -1 && lastQuote < editorBox.Text.IndexOf('\n', includeLoc + 1) &&
-                    commentChar > includeLoc && !isInComment)
-                {
-                    string iname = editorBox.Text.Substring(firstQuote + 1, lastQuote - firstQuote - 1) + '\n';
-                    includeName += iname;
-                    TextMarker includeUnderline = new TextMarker(includeLoc, 8, TextMarkerType.WaveLine, Color.Red)
-                                                      {
-                                                          Tag = "Include",
-                                                          ToolTip = "File has not been saved"
-                                                      };
-                    if (FileName == "")
-                        editorBox.Document.MarkerStrategy.AddMarker(includeUnderline);
-                    bool fileExists = File.Exists(FileName.Substring(0, FileName.LastIndexOf('\\') + 1) + iname);
-                    if (!ProjectService.IsInternal)
-                        foreach (string includeDir in Settings.Default.includeDir.Split('\n'))
-                            if (File.Exists(includeDir))
-                                break;
-                            else if (!fileExists)
-                            {
-                                includeUnderline.ToolTip = "File not found";
-                                editorBox.Document.MarkerStrategy.AddMarker(includeUnderline);
-                            }
-                }
-                loc = includeLoc + 1;
-            }
-            if (editorBox.FileName != "")
-                includeName += editorBox.FileName + '\n';
-            names = includeName.Split('\n');
-            foreach (String name in names)
-            {
-                if (FileName.IndexOf('\\') == -1) 
-                    continue;
-                if (Path.IsPathRooted(FileName))
-                {
-                    string includeFile = Path.Combine(Path.GetDirectoryName(FileName), name);
-                     if (includeFile.IndexOfAny(Path.GetInvalidPathChars()) != -1)
-                        break;
-                    if (File.Exists(includeFile))
-                        scanIncludeFile(includeFile);
-                }
-                else
-                    scanIncludeFile(name);
-            }
-        }
 
         private void newEditor_DragEnter(object sender, DragEventArgs e)
         {
@@ -946,16 +795,19 @@ namespace Revsoft.Wabbitcode
             DebuggerService.SetPCToSelect(editorBox.FileName, editorBox.ActiveTextAreaControl.Caret.Line);
         }
 
-        private bool scrolling;
-        private bool needsUpdating;
-        private void newEditor_Scroll(object sender, ScrollEventArgs e)
-        {
-            scrolling = true;
-        }
+		internal void Cut()
+		{
+			editorBox.Cut();
+		}
 
 		internal void Copy()
 		{
 			editorBox.Copy();
+		}
+
+		internal void Paste()
+		{
+			editorBox.Paste();
 		}
 	}
 
@@ -1071,7 +923,7 @@ namespace Revsoft.Wabbitcode
             //return new ICompletionData[] {
             //	new DefaultCompletionData("Text", "Description", 1)
             //};
-            List<ICompletionData> resultList = new List<ICompletionData>();
+            /*List<ICompletionData> resultList = new List<ICompletionData>();
             int startOffset = editorBox.ActiveTextAreaControl.Caret.Offset;
             int lineNumber = editorBox.Document.GetLineNumberForOffset(startOffset);
             List<FoldMarker> foldings = editorBox.Document.FoldingManager.GetFoldingsContainsLineNumber(lineNumber);
@@ -1548,12 +1400,12 @@ namespace Revsoft.Wabbitcode
                                 resultList.Add(new CodeCompletionData(register, 2));
                             }
                         }
-                    }*/
+                    }
 						#endregion
 						break;
                     }
-            }
-            return resultList.ToArray();
+            }*/
+            return null;//resultList.ToArray();
         }
     }
 

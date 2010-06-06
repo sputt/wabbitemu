@@ -485,7 +485,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.ShowHint = Revsoft.Docking.DockState.DockRight;
 			this.TabText = "Debug";
 			this.Text = "Debug";
-			this.VisibleChanged += new System.EventHandler(this.DebugPanel_VisibleChanged);
 			this.panel.ResumeLayout(false);
 			this.screenBox.ResumeLayout(false);
 			((System.ComponentModel.ISupportInitialize)(this.screenPicBox)).EndInit();

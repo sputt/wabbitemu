@@ -71,11 +71,11 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                                        };
             dirViewer.Nodes.Add(projectNode);
             dirViewer.TopNode = projectNode;
-            findAllFilesDirectoryTree(files, projectNode);
+            FindAllFilesDirectoryTree(files, projectNode);
             dirViewer.TopNode.Expand();
         }
 
-        public static void findFoldersProjectTree(string[] directories, TreeNode project)
+        public static void FindFoldersProjectTree(string[] directories, TreeNode project)
         {
             foreach (string directory in directories)
             {
@@ -87,38 +87,35 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                     Tag = "Folder"
                 };
                 project.Nodes.Add(subFolder);
-                findFoldersProjectTree(Directory.GetDirectories(directory), subFolder);
+                FindFoldersProjectTree(Directory.GetDirectories(directory), subFolder);
                 string[] files = Directory.GetFiles(directory);
-                findAllFilesDirectoryTree(files, subFolder);
+                FindAllFilesDirectoryTree(files, subFolder);
             }
         }
 
-        public static void findAllFilesDirectoryTree(string[] files, TreeNode subFolder)
+        public static void FindAllFilesDirectoryTree(string[] files, TreeNode subFolder)
         {
-            foreach (String file in files)
-                if (file.ToLower().EndsWith(".asm") || file.ToLower().EndsWith(".z80") ||
-                    file.ToLower().EndsWith(".inc") || file.ToLower().EndsWith(".bmp"))
-                {
-                    TreeNode fileName = new TreeNode
-                    {
-                        Text = file.Remove(0, file.LastIndexOf('\\') + 1),
-                        ImageIndex = 4,
-                        SelectedImageIndex = 5,
-                        Tag = "File"
-                    };
-                    subFolder.Nodes.Add(fileName);
-                }
+			foreach (string file in files)
+			{
+				string extension = Path.GetExtension(file).ToLower();
+				if (extension == ".asm" || extension == ".z80" ||
+					extension == ".inc" || extension == ".bmp")
+				{
+					TreeNode fileName = new TreeNode
+					{
+						Text = Path.GetFileName(file),
+						ImageIndex = 4,
+						SelectedImageIndex = 5,
+						Tag = "File"
+					};
+					subFolder.Nodes.Add(fileName);
+				}
+			}
         }
 
         private void DirectoryViewer_VisibleChanged(object sender, EventArgs e)
         {
-            if (ParentForm == null)
-                return;
-            Settings.Default.directoryViewer = DockHandler.DockState == DockState.Hidden ? false : true;
-            if (ParentForm.GetType() != typeof(FloatWindow))
-                ((MainFormRedone)(ParentForm)).UpdateChecks();
-            else
-                ((MainFormRedone)(ParentForm.Owner)).UpdateChecks();
+			DockingService.MainForm.UpdateChecks();
         }
 
         private void directoryViewer_DoubleClick(object sender, EventArgs e)
@@ -132,8 +129,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             doc.TabText = Path.GetFileName(fileName);
             doc.Text = Path.GetFileName(fileName);
             doc.ToolTipText = fileName;
-            doc.Show(((MainFormRedone)ParentForm).dockPanel);
-            doc.OpenFile(fileName);
+			doc.OpenFile(fileName);
+			DockingService.ShowDockPanel(doc);
         }
 
         private void directoryViewer_BeforeExpand(object sender, TreeViewCancelEventArgs e)
@@ -167,21 +164,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void openMenuItem_Click(object sender, EventArgs e)
         {
-            MainFormRedone parent;
-            if (ParentForm == null)
-                return;
-            if (ParentForm.GetType() != typeof(FloatWindow))
-                parent = ((MainFormRedone)ParentForm);
-            else
-                parent = ((MainFormRedone)(ParentForm.Owner));
-            string projectLoc = ProjectService.ProjectDirectory;
-            string fileName = projectLoc.Substring(0, projectLoc.LastIndexOf('\\')) + '\\' + dirViewer.SelectedNode.FullPath;
+			string fileName = Path.GetDirectoryName(ProjectService.ProjectDirectory) +'\\' + dirViewer.SelectedNode.FullPath;
             newEditor doc = DocumentService.CreateNewDocument();
             doc.TabText = Path.GetFileName(fileName);
             doc.Text = Path.GetFileName(fileName);
             doc.ToolTipText = fileName;
-            doc.Show(parent.dockPanel);
             doc.OpenFile(fileName);
+			DockingService.ShowDockPanel(doc);
         }
 
         private void openWithMenuItem_Click(object sender, EventArgs e)

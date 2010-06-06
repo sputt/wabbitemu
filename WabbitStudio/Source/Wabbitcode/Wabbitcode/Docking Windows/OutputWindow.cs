@@ -15,17 +15,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             outputWindowBox.ContextMenu = contextMenu1;
         }
 
-        private void OutputWindow_VisibleChanged(object sender, EventArgs e)
-        {
-            if (ParentForm == null)
-                return;
-            Settings.Default.outputWindow = DockHandler.DockState == DockState.Hidden ? false : true;
-            if (ParentForm.GetType() != typeof (FloatWindow))
-                ((MainFormRedone) (ParentForm)).UpdateChecks();
-            else
-                ((MainFormRedone) (ParentForm.Owner)).UpdateChecks();
-        }
-
         private void outputWindowBox_DoubleClick(object sender, EventArgs e)
         {
 			int errorLine = outputWindowBox.GetLineFromCharIndex(outputWindowBox.SelectionStart);
@@ -82,7 +71,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			outputWindowBox.Font = font;
 		}
 
-		internal void Copy()
+		public override void Copy()
 		{
 			outputWindowBox.Copy();
 		}

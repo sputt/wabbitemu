@@ -1,6 +1,6 @@
 ﻿namespace Revsoft.Wabbitcode
 {
-    partial class templateForm : System.Windows.Forms.Form
+    partial class NewProjectDialog : System.Windows.Forms.Form
     {
         /// <summary>
         /// Required designer variable.

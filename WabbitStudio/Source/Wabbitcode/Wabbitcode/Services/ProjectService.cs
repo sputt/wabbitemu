@@ -10,11 +10,19 @@ using System.Collections;
 using Revsoft.Wabbitcode.Properties;
 using System.Threading;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Services.Project;
 
 namespace Revsoft.Wabbitcode.Services
 {
 	public static class ProjectService
 	{
+		private static ProjectFile currentFile;
+		public static ProjectFile CurrentFile
+		{
+			get { return currentFile; }
+			set { currentFile = value; }
+		}
+
 		private static ProjectClass project;
 		public static ProjectClass Project
 		{
@@ -24,7 +32,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public static string ProjectDirectory
 		{
-			get { return project.projectLoc; }
+			get { return project.ProjectDirectory; }
 		}
 
 		private static List<ParserInformation> parseInfo = new List<ParserInformation>();
@@ -35,27 +43,36 @@ namespace Revsoft.Wabbitcode.Services
 
 		public static string ProjectFile
 		{
-			get { return project.wcodeProjectFile; }
+			get { return project.ProjectFile; }
 		}
 
 		public static string ProjectName
 		{
-			get { return project.projectName; }
-			set { project.projectName = value; }
+			get { return project.ProjectName; }
+			set { project.ProjectName = value; }
 		}
 
+		private static bool isInternal = true;
 		public static bool IsInternal
+		{
+			get { return isInternal; }
+			set { isInternal = value; }
+		}
+
+		public static List<string> IncludeDirs {
+			get { return project.IncludeDir; }
+			set { project.IncludeDir = value; }
+		}
+
+		public static ProjectFolder MainFolder
 		{
 			get
 			{
 				if (project == null)
-					return true;
-				return project.isInternal; }
-		}
-
-		public static string[] IncludeDirs {
-			get { return project.getIncludeDirs(); }
-			set { project.setIncludeDirs(value); }
+					return null;
+				return project.MainFolder;
+			}
+			set { project.MainFolder = value; }
 		}
 
 		static FileSystemWatcher projectWatcher;
@@ -66,6 +83,7 @@ namespace Revsoft.Wabbitcode.Services
 		public static void OpenProject(string fileName)
 		{
 			OpenProject(fileName, false);
+			DockingService.MainForm.UpdateProjectMenu(true);
 		}
 
 		public static void OpenProject(string fileName, bool closeFiles)
@@ -74,31 +92,38 @@ namespace Revsoft.Wabbitcode.Services
 				foreach (Form mdiChild in DockingService.Documents)
 					mdiChild.Close();
 			project = new ProjectClass(fileName);
+			project.OpenProject(fileName);
 			DockingService.DirectoryViewer.buildDirectoryTree(Directory.GetFiles(ProjectDirectory));
-			InitWatcher(project.projectLoc);
+			InitWatcher(project.ProjectDirectory);
 			DockingService.ShowDockPanel(DockingService.ProjectViewer);
-			DockingService.ProjectViewer.buildProjTree(ProjectFile);
+			DockingService.ProjectViewer.BuildProjTree();
 			DockingService.MainForm.UpdateProjectMenu(true);
 
-			ThreadStart threadStart = new ThreadStart(GetIncludeDirectories);
-			Thread thread = new Thread(threadStart);
+			//ThreadStart threadStart = new ThreadStart(GetIncludeDirectories);
+			Thread thread = new Thread(ParseFiles);
+			thread.Priority = ThreadPriority.BelowNormal;
 			thread.Start();
 		}
 
-		private static void GetIncludeDirectories()
+		private static void ParseFiles()
 		{
-			string[] mainDirs = Directory.GetDirectories(ProjectService.ProjectDirectory);
-			Settings.Default.includeDir += getProjectIncludeDirectories(mainDirs);
-			ArrayList files = ProjectService.Project.getAllProjectFiles();
-			ProjectService.Project.getAllProjectLabels(files);
+			ParseFiles(MainFolder);
 		}
 
-		private static string getProjectIncludeDirectories(IEnumerable<string> directories)
+		private static void ParseFiles(ProjectFolder folder)
+		{
+			foreach (ProjectFolder subFolder in folder.Folders)
+				ParseFiles(subFolder);
+			foreach (ProjectFile file in folder.Files)
+				ParserService.ParseFile(file.FileFullPath);
+		}
+
+		private static string GetProjectIncludeDirectories(IEnumerable<string> directories)
 		{
 			string includeDir = "";
-			foreach (String directory in directories)
+			foreach (string directory in directories)
 			{
-				getProjectIncludeDirectories(Directory.GetDirectories(directory));
+				GetProjectIncludeDirectories(Directory.GetDirectories(directory));
 				includeDir += directory + "\n";
 			}
 			return includeDir;
@@ -170,37 +195,45 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static void CreateInternalProject()
 		{
-			project = new ProjectClass("");
+			project = new ProjectClass();
+			DockingService.MainForm.UpdateProjectMenu(false);
 		}
 
-		internal static void CreateNewProject(string projectFile)
+		internal static void CreateNewProject(string projectFile, string projectName)
 		{
-			project = new ProjectClass(projectFile);
+			project = new ProjectClass();
+			project.CreateNewProject(projectFile, projectName);
+			DockingService.ShowDockPanel(DockingService.ProjectViewer);
 		}
 
 		internal static void DeleteFolder(string parentDir, string dir)
 		{
-			project.deleteFolder(parentDir, dir);
+			//project.deleteFolder(parentDir, dir);
 		}
 
 		internal static void SaveProject()
 		{
-			project.saveProject();
+			project.BuildXMLFile();
+			DockingService.ProjectViewer.BuildProjTree();
 		}
 
-		internal static void AddDir(string dir, string parentDir, bool addchildren)
+		internal static ProjectFolder AddDir(string dir, ProjectFolder parentDir)
 		{
-			project.addDir(dir, parentDir, addchildren);
+			ProjectFolder folder = new ProjectFolder(project, dir);
+			parentDir.Folders.Add(folder);
+			return folder;
 		}
 
-		internal static void AddFile(string file, string dir, string fullPath)
+		internal static void AddFile(ProjectFolder parent, string fullPath)
 		{
-			project.addFile(file, dir, fullPath);
+			ProjectFile file = new ProjectFile(project, fullPath);
+			parent.Files.Add(file);
+			//project.addFile(file, dir, fullPath);
 		}
 
 		internal static void CloseProject()
 		{
-			project.CloseProject();
+			//project.CloseProject();
 		}
 
 		internal static ParserInformation GetParseInfo()
@@ -214,6 +247,59 @@ namespace Revsoft.Wabbitcode.Services
 				if (info.SourceFile.ToLower() == file.ToLower())
 					return info;
 			return null;
+		}
+
+
+
+		internal static System.Xml.XmlNodeList GetBuildConfigs()
+		{
+			throw new NotImplementedException();
+		}
+
+		internal static bool ContainsFile(string file)
+		{
+			return RecurseSearchFolders(MainFolder, Path.GetFileName(file));
+		}
+
+		private static ProjectFile fileFound;
+		private static bool RecurseSearchFolders(ProjectFolder folder, string file)
+		{
+			fileFound = folder.FindFile(file);
+				if (fileFound != null)
+					return true;
+			foreach (ProjectFolder subFolder in folder.Folders)
+				RecurseSearchFolders(subFolder, file);
+			return false;
+		}
+
+		internal static ProjectFile FindFile(string file)
+		{
+			if (fileFound.FileFullPath == file)
+				return fileFound;
+			if (ContainsFile(file))
+				return fileFound;
+			return null;
+		}
+
+		internal static void ActiveFileChanged()
+		{
+			if (ContainsFile(DocumentService.ActiveFileName))
+				currentFile = fileFound;
+		}
+
+		public static IList<BuildConfig> BuildConfigs
+		{
+			get { return project.BuildSystem.BuildConfigs; }
+		}
+
+		public static int CurrentConfigIndex
+		{
+			get { return project.BuildSystem.CurrentConfigIndex; }
+		}
+
+		public static BuildConfig CurrentBuildConfig
+		{
+			get { return project.BuildSystem.CurrentConfig; }
 		}
 	}
 }

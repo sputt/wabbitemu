@@ -14,7 +14,7 @@ namespace Revsoft.Wabbitcode.Classes
         readonly Process wabbit;
         public CWabbitemu(string file)
         {
-            GlobalClass.GetResource("Revsoft.Wabbitcode.Resources.Wabbitemu.exe", "Wabbitemu.exe");
+            Resources.GetResource("Revsoft.Wabbitcode.Resources.Wabbitemu.exe", "Wabbitemu.exe");
             wabbit = null;
             foreach (Process potential in Process.GetProcesses())
             {

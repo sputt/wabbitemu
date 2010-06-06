@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Resources;
 using System.Windows.Forms;
 
-namespace Revsoft.Docking
+namespace Revsoft.Docking.Resource
 {
 	internal static class ResourceHelper
 	{
@@ -15,7 +15,7 @@ namespace Revsoft.Docking
             get
             {
                 if (_resourceManager == null)
-                    _resourceManager = new ResourceManager("Revsoft.Docking.Strings", typeof(ResourceHelper).Assembly);
+                    _resourceManager = new ResourceManager("Revsoft.Docking", typeof(ResourceHelper).Assembly);
                 return _resourceManager;
             }
 

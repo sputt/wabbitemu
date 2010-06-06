@@ -27,7 +27,7 @@ namespace Revsoft.Wabbitcode
 
 		public EditorUpdateRequest()
 		{
-			UpdateAll();	
+			
 		}
 
 		internal void UpdateAll()

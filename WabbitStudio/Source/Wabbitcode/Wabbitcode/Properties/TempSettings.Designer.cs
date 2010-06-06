@@ -109,18 +109,6 @@ namespace Revsoft.Wabbitcode.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool labelsCaseSensitive {
-            get {
-                return ((bool)(this["labelsCaseSensitive"]));
-            }
-            set {
-                this["labelsCaseSensitive"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool sendFileEmu {
             get {
@@ -128,18 +116,6 @@ namespace Revsoft.Wabbitcode.Properties {
             }
             set {
                 this["sendFileEmu"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool outputWindow {
-            get {
-                return ((bool)(this["outputWindow"]));
-            }
-            set {
-                this["outputWindow"] = value;
             }
         }
         
@@ -649,30 +625,6 @@ namespace Revsoft.Wabbitcode.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string dockLayout {
-            get {
-                return ((string)(this["dockLayout"]));
-            }
-            set {
-                this["dockLayout"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool labelsList {
-            get {
-                return ((bool)(this["labelsList"]));
-            }
-            set {
-                this["labelsList"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool debugToolbar {
             get {
@@ -680,54 +632,6 @@ namespace Revsoft.Wabbitcode.Properties {
             }
             set {
                 this["debugToolbar"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool projectViewer {
-            get {
-                return ((bool)(this["projectViewer"]));
-            }
-            set {
-                this["projectViewer"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool directoryViewer {
-            get {
-                return ((bool)(this["directoryViewer"]));
-            }
-            set {
-                this["directoryViewer"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool errorList {
-            get {
-                return ((bool)(this["errorList"]));
-            }
-            set {
-                this["errorList"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool debugPanel {
-            get {
-                return ((bool)(this["debugPanel"]));
-            }
-            set {
-                this["debugPanel"] = value;
             }
         }
         
@@ -829,42 +733,6 @@ namespace Revsoft.Wabbitcode.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool findResults {
-            get {
-                return ((bool)(this["findResults"]));
-            }
-            set {
-                this["findResults"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool trackingViewer {
-            get {
-                return ((bool)(this["trackingViewer"]));
-            }
-            set {
-                this["trackingViewer"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("Float")]
-        public global::Revsoft.Docking.DockState debugPanelLoc {
-            get {
-                return ((global::Revsoft.Docking.DockState)(this["debugPanelLoc"]));
-            }
-            set {
-                this["debugPanelLoc"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool enableAutoTrigger {
             get {
@@ -901,18 +769,6 @@ namespace Revsoft.Wabbitcode.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool breakManager {
-            get {
-                return ((bool)(this["breakManager"]));
-            }
-            set {
-                this["breakManager"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("True")]
         public bool firstRun {
             get {
@@ -926,24 +782,60 @@ namespace Revsoft.Wabbitcode.Properties {
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool macroManager {
-            get {
-                return ((bool)(this["macroManager"]));
-            }
-            set {
-                this["macroManager"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool editorToolbar {
             get {
                 return ((bool)(this["editorToolbar"]));
             }
             set {
                 this["editorToolbar"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Normal")]
+        public global::System.Windows.Forms.FormWindowState WindowState {
+            get {
+                return ((global::System.Windows.Forms.FormWindowState)(this["WindowState"]));
+            }
+            set {
+                this["WindowState"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("500, 300")]
+        public global::System.Drawing.Size WindowSize {
+            get {
+                return ((global::System.Drawing.Size)(this["WindowSize"]));
+            }
+            set {
+                this["WindowSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool mouseWheelZoom {
+            get {
+                return ((bool)(this["mouseWheelZoom"]));
+            }
+            set {
+                this["mouseWheelZoom"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool recentlyUpdated {
+            get {
+                return ((bool)(this["recentlyUpdated"]));
+            }
+            set {
+                this["recentlyUpdated"] = value;
             }
         }
     }

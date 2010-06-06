@@ -74,6 +74,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.TabPageContextMenu = this.contextMenu;
 			this.TabText = "ToolWindow";
 			this.Text = "ToolWindow";
+			this.VisibleChanged += new System.EventHandler(ToolWindow_VisibleChanged);
 			this.ResumeLayout(false);
 
         }

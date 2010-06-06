@@ -13,6 +13,7 @@ using System.IO;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Docking_Windows;
+using Revsoft.Wabbitcode.Services.Project;
 
 namespace Revsoft.Wabbitcode
 {
@@ -179,7 +180,7 @@ namespace Revsoft.Wabbitcode
                 FindResultsWindow results = DockingService.FindResults;
                 if (!ProjectService.IsInternal)
                 {
-                    ArrayList files = ProjectService.Project.getProjFilesFullPaths();
+                    List<ProjectFile> files = ProjectService.Project.GetProjectFiles();
                     string[] lines;
                     string text;
                     int loc;
@@ -188,11 +189,11 @@ namespace Revsoft.Wabbitcode
 					{
 						StreamReader reader;
 						results.NewFindResults(txtLookFor.Text, ProjectService.ProjectName);
-						foreach (string file in files)
+						foreach (ProjectFile file in files)
 						{
-							if (!File.Exists(file))
+							if (!File.Exists(file.FileFullPath))
 								continue;
-							reader = new StreamReader(Path.Combine(ProjectService.ProjectDirectory, file));
+							reader = new StreamReader(Path.Combine(ProjectService.ProjectDirectory, file.FileFullPath));
 							lines = reader.ReadToEnd().Split('\n');
 							for (int i = 0; i < lines.Length; i++)
 							{
@@ -210,7 +211,7 @@ namespace Revsoft.Wabbitcode
 										continue;
 									if (chkMatchWholeWord.Checked && !char.IsWhiteSpace(text[loc]) && !char.IsWhiteSpace(text[loc - indexOfString - 2]))
 										continue;
-									results.AddFindResult(Path.Combine(ProjectService.ProjectDirectory, file), i, lines[i]);
+									results.AddFindResult(file.FileFullPath, i, lines[i]);
 								}
 							}
 						}

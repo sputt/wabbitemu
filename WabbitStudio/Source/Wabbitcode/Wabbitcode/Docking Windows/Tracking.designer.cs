@@ -162,7 +162,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.TabPageContextMenu = this.contextMenu;
 			this.TabText = "Variable Tracking";
 			this.Text = "Variable Tracking";
-			this.VisibleChanged += new System.EventHandler(this.Tracking_VisibleChanged);
 			((System.ComponentModel.ISupportInitialize)(this.variablesDataView)).EndInit();
 			this.ResumeLayout(false);
 

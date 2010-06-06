@@ -1,8 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Xml;
 using Revsoft.Wabbitcode.Services;
 
 namespace Revsoft.Wabbitcode.Classes
@@ -20,6 +18,15 @@ namespace Revsoft.Wabbitcode.Classes
 			return resized;
 		}
 
+		/// <summary>
+		/// Convert a Color to a hex string.
+		/// </summary>
+		/// <returns>ex: "#FFFFFF", "#AB12E9"</returns>
+		public static string ToHexString(this Color color)
+		{
+			return "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
+		}
+
 		public static bool TryGetKey(this IDictionary<ListFileKey, ListFileValue> lookup, ListFileValue value, out ListFileKey key)
 		{
 			key = null;
@@ -29,6 +36,20 @@ namespace Revsoft.Wabbitcode.Classes
 					key = pair.Key;
 			}
 			return key != null;
+		}
+
+		public static bool MoveToNextElement(this XmlTextReader reader)
+		{
+			if (!reader.Read())
+				return false;
+
+			while (reader.NodeType == XmlNodeType.EndElement)
+			{
+				if (!reader.Read())
+					return false;
+			}
+
+			return true;
 		}
 	}
 }

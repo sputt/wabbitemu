@@ -19,34 +19,56 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		public static ParserInformation ParseFile(string file)
 		{
 			string lines = null;
+			StreamReader reader = null;
 			try
 			{
-				StreamReader reader = new StreamReader(file);
+				reader = new StreamReader(file);
 				lines = reader.ReadToEnd();
 				return ParseFile(file, lines);
+			}
+			catch (FileNotFoundException ex)
+			{
+				DialogResult result = MessageBox.Show(ex.FileName + " not found, would you like to remove it from the project?",
+					"File not found", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+				if (result == DialogResult.Yes) { }
+					//ProjectService.RemoveFile(file);
+				return null;
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.ToString());
 				return null;
 			}
+			finally
+			{
+				if (reader != null)
+					reader.Close();
+			}
 		}
 
+		delegate void HideProgressDelegate();
+		delegate void ProgressDelegate(int percent);
 		internal static ParserInformation ParseFile(string file, string lines)
 		{
 			if (string.IsNullOrEmpty(file))
 				throw new Exception("No file name specified");
 			ParserInformation info = new ParserInformation(file);
-			int counter = 0;
+			int counter = 0, percent = 0, newPercent;
+			ProgressDelegate progressDelegate = new ProgressDelegate(DockingService.MainForm.SetProgress);
 			while (counter < lines.Length && counter >= 0)
 			{
+				newPercent = counter * 100 / lines.Length;
+				if (percent + 5 <= newPercent){
+					percent = newPercent;
+					DockingService.MainForm.Invoke(progressDelegate, percent);
+				}
 				//handle label other xx = 22 type define
 				if (IsValidLabelChar(lines[counter]))
 				{
 					string description = GetDescription(lines, counter);
 					int newCounter = GetWord(lines, counter);
 					string labelName = lines.Substring(counter, newCounter - counter);
-					if (lines[newCounter] == ':')
+					if (newCounter < lines.Length && lines[newCounter] == ':')
 					{
 						//its definitely a label
 						Label labelToAdd = new Label(counter, labelName, false, description, info);
@@ -55,7 +77,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					else
 					{
 						counter = SkipWhitespace(lines, newCounter);
-						if (lines[counter] == '=')
+						if (counter != -1 && lines[counter] == '=')
 						{
 							counter++;
 							counter = SkipWhitespace(lines, counter);
@@ -95,6 +117,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					Define defineToAdd = new Define(counter, defineName, contents, description, info);
 					info.DefinesList.Add(defineToAdd);
 					counter = SkipWhitespace(lines, newCounter);
+					counter = SkipToEOL(lines, counter);
 				}
 				else if (substring.StartsWith(macroString))
 				{
@@ -104,8 +127,12 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					counter = SkipWhitespace(lines, counter);
 					int newCounter = GetWord(lines, counter);
 					string macroName = lines.Substring(counter, newCounter - counter);
-					counter = FindChar(lines, newCounter, '(') + 1;
-					List<string> args = GetMacroArgs(lines, counter);
+					newCounter = FindChar(lines, newCounter, '(') + 1;
+					List<string> args;
+					if (counter == 0)
+						args = new List<string>();
+					else
+						args = GetMacroArgs(lines, newCounter);
 					counter = SkipToEOL(lines, counter);
 					newCounter = FindString(lines, counter, endMacroString);
 					string contents = lines.Substring(counter, newCounter - counter);
@@ -121,10 +148,15 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					//we need to find the quotes
 					counter = FindChar(lines, counter, '\"') + 1;
 					int newCounter = FindChar(lines, counter, '\"');
-					string includeFile = lines.Substring(counter, newCounter - counter);
-					IncludeFile includeToAdd = new IncludeFile(counter, includeFile, description, info);
-					info.IncludeFilesList.Add(includeToAdd);
-					counter = newCounter;
+					if (counter == -1 || newCounter == -1)
+						counter = SkipToEOL(lines, counter);
+					else
+					{
+						string includeFile = lines.Substring(counter, newCounter - counter);
+						IncludeFile includeToAdd = new IncludeFile(counter, includeFile, description, info);
+						info.IncludeFilesList.Add(includeToAdd);
+						counter = newCounter;
+					}
 				}
 				else
 				{
@@ -136,6 +168,8 @@ namespace Revsoft.Wabbitcode.Services.Parser
 				ProjectService.ParseInfo.Add(info);
 			else 
 				replaceMe = info;
+			HideProgressDelegate hideProgress = DockingService.MainForm.HideProgressBar;
+			DockingService.MainForm.Invoke(hideProgress);
 			return info;
 		}
 
@@ -181,7 +215,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			if (!IsValidIndex(substring, counter))
 				return -1;
 
-			while (IsValidLabelChar(substring[counter]))
+			while (counter < substring.Length && IsValidLabelChar(substring[counter]))
 			{
 				if (!IsValidIndex(substring, counter))
 					return -1;

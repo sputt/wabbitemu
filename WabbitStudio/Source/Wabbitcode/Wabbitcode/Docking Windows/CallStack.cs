@@ -1,6 +1,7 @@
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Services;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
@@ -12,12 +13,12 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             InitializeComponent();
         }
 
-        public void addStackData(int address, int data)
+        public void AddStackData(int address, int data)
         {
             string dataString = data.ToString("X4");
             /*if (data > 0x8000)
             {
-                List<string> possibles = GlobalClass.mainForm.symTable.findEntryByValue(data.ToString("X4"));
+                List<string> possibles = DebuggerService.symTable.findEntryByValue(data.ToString("X4"));
                 if (possibles.Count > 0)
                     foreach (string value in possibles)
                         dataString += " (" + value.ToLower() +")";
@@ -28,19 +29,24 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             callStackView.Rows[0].Cells[1].Value = dataString;
         }
 
-        public void removeLastRow()
+        public void RemoveLastRow()
         {
-            if (callStackView.Rows.Count == 0)
-                return;
+			if (callStackView.Rows.Count == 0)
+			{
+				throw new Exception("Stack underflow");
+				//uh oh
+				return;
+			}
             callStackView.Rows.Remove(callStackView.Rows[0]);
         }
 
         private void callStackView_DoubleClick(object sender, System.EventArgs e)
         {
-			if (callStackView.SelectedRows.Count != 0)
-				DebuggerService.GotoAddress(ushort.Parse(callStackView.Rows
-										[callStackView.SelectedRows[0].Index].Cells[1].Value.ToString(),
-											System.Globalization.NumberStyles.HexNumber));
+			if (callStackView.SelectedRows.Count == 0)
+				return;
+			ushort address = ushort.Parse(callStackView.Rows[callStackView.SelectedRows[0].Index].Cells[1].Value.ToString(),
+											NumberStyles.HexNumber);
+			DebuggerService.GotoAddress(address);
         }
 
         public void Copy()

@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using Revsoft.Docking.Resource;
 
 namespace Revsoft.Docking
 {

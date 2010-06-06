@@ -78,7 +78,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             this.ShowHint = Revsoft.Docking.DockState.DockBottomAutoHide;
             this.TabText = "Output";
             this.Text = "Output";
-            this.VisibleChanged += new System.EventHandler(this.OutputWindow_VisibleChanged);
             this.ResumeLayout(false);
 
 		}

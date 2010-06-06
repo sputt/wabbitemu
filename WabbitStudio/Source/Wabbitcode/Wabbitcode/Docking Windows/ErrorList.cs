@@ -52,7 +52,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			errors = 0;
 			warnings = 0;
 			errorGridView.Rows.Clear();
-			GlobalClass.errorsInFiles.Clear();
+			AssemblerService.ErrorsInFiles.Clear();
 			string[] lines = outputText.Split('\n');
 			foreach (string line in lines)
 			{
@@ -70,7 +70,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 					file = Path.Combine(startDir, line.Substring(0, firstColon));
 					lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
 					description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-					GlobalClass.errorsInFiles.Add(new Errors(file, Convert.ToInt32(lineNum), description, false));
+					AssemblerService.ErrorsInFiles.Add(new Errors(file, Convert.ToInt32(lineNum), description, false));
 					addError(description, file, lineNum, errorToolButton.Checked);
 				}
 				if (!line.Contains("warning"))
@@ -81,7 +81,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				file = Path.Combine(startDir, line.Substring(0, firstColon));
 				lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
 				description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-				GlobalClass.errorsInFiles.Add(new Errors(file, Convert.ToInt32(lineNum), description, true));
+				AssemblerService.ErrorsInFiles.Add(new Errors(file, Convert.ToInt32(lineNum), description, true));
 				addWarning(description, file, lineNum, warnToolButton.Checked);
 			}
 			errorToolButton.Text = errors + " Errors";
@@ -115,7 +115,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		private void ErrorList_VisibleChanged(object sender, EventArgs e)
 		{
-			Settings.Default.errorList = DockHandler.DockState == DockState.Hidden ? false : true;
 			if (Disposing == false)
 				DockingService.MainForm.UpdateChecks();
 		}
@@ -125,7 +124,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			Copy();
 		}
 
-		public void Copy()
+		public override void Copy()
 		{
 			Clipboard.SetDataObject(errorGridView.GetClipboardContent());
 		}

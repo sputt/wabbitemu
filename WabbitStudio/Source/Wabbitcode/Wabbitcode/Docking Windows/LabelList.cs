@@ -19,7 +19,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void LabelList_VisibleChanged(object sender, EventArgs e)
         {
-            Properties.Settings.Default.labelsList = DockHandler.DockState == DockState.Hidden ? false : true;
 			DockingService.MainForm.UpdateChecks();
         }
 
@@ -40,7 +39,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             Properties.Settings.Default.alphabetizeLabels = alphaBox.Checked;
         }
 
-		internal void Copy()
+		public override void Copy()
 		{
 			Clipboard.SetDataObject(labelsBox.Items[labelsBox.SelectedIndex].ToString());
 		}
@@ -61,6 +60,14 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		internal void ClearLabels()
 		{
 			labelsBox.Items.Clear();
+		}
+
+		private void labelsBox_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			if (e.KeyChar != (char)Keys.Enter)
+				return;
+			DocumentService.GotoLabel((ILabel)labelsBox.SelectedItem);
+			DockingService.ActiveDocument.Focus();
 		}
 	}
 }

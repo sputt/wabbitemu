@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -112,9 +112,43 @@
     <value>2.0</value>
   </resheader>
   <resheader name="reader">
-    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <resheader name="writer">
-    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <metadata name="contextMenu.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>141, 17</value>
+  </metadata>
+  <metadata name="addressCol.UserAddedColumn" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <metadata name="stackData.UserAddedColumn" type="System.Boolean, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+    <value>True</value>
+  </metadata>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="$this.Icon" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        AAABAAEAEBAAAAAAIABoBAAAFgAAACgAAAAQAAAAIAAAAAEAIAAAAAAAQAQAAAAAAAAAAAAAAAAAAAAA
+        AAD///8B////Af///wH///8B/5QA/////wH///8B////Af///wEAAAD//////wAAAP//////AAAA////
+        //8AAAD/////Af///wH///8B/5QA//+UAP//lAD/////Af///wH///8BAAAA/wAAAP//////AAAA////
+        //8AAAD/AAAA/////wH///8B/5QA//+UAP//lAD//5QA//+UAP////8B////AQAAAP//////AAAA////
+        //8AAAD//////wAAAP////8B/5QA//+UAP//lAD//5QA//+UAP//lAD//5QA/////wEAAAD/AAAA/wAA
+        AP8AAAD/AAAA/wAAAP8AAAD/////Af///wH///8B/5QA//+UAP//lAD/////Af///wH///8B////Af//
+        /wH///8B////Af///wH///8B////Af///wH///8B////Af+UAP//lAD//5QA/////wH///8B////AQAA
+        AP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP////8B////Af///wH/lAD//5QA//+UAP////8B////Af//
+        /wEAAAD//////wAAAP//////AAAA//////8AAAD/////Af///wH///8B/5QA//+UAP//lAD/////Af//
+        /wH///8BAAAA/wAAAP//////AAAA//////8AAAD/AAAA/////wH///8B////Af+UAP//lAD//5QA////
+        /wH///8B////AQAAAP//////AAAA//////8AAAD//////wAAAP////8B////Af///wH/lAD//5QA//+U
+        AP////8B////Af///wEAAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP8AAAD/////Af///wH///8B/5QA//+U
+        AP//lAD/////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af///wH///8B////Af+U
+        AP//lAD//5QA/////wH///8B////AQAAAP8AAAD/AAAA/wAAAP8AAAD/AAAA/wAAAP////8B////Af//
+        /wH/lAD//5QA//+UAP////8B////Af///wEAAAD//////wAAAP//////AAAA//////8AAAD/////Af//
+        /wH///8B/5QA//+UAP//lAD/////Af///wH///8BAAAA/wAAAP//////AAAA//////8AAAD/AAAA////
+        /wH///8B////Af+UAP//lAD//5QA/////wH///8B////AQAAAP//////AAAA//////8AAAD//////wAA
+        AP////8B////Af///wH/lAD//5QA//+UAP////8B////Af///wEAAAD/AAAA/wAAAP8AAAD/AAAA/wAA
+        AP8AAAD/AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA//8AAP//AAD//wAA
+        //8AAP//AAD//w==
+</value>
+  </data>
 </root>

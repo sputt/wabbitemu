@@ -66,6 +66,16 @@ namespace Revsoft.Wabbitcode
             this.editorBox.DragDrop += new System.Windows.Forms.DragEventHandler(this.editorBox_DragDrop);
             this.editorBox.DragEnter += new System.Windows.Forms.DragEventHandler(this.editorBox_DragEnter);
             this.editorBox.MouseClick += new System.Windows.Forms.MouseEventHandler(this.editorBox_MouseClick);
+			this.editorBox.ActiveTextAreaControl.TextArea.DragDrop += editorBox_DragDrop;
+			this.editorBox.ActiveTextAreaControl.TextArea.DragEnter += editorBox_DragEnter;
+			this.editorBox.ActiveTextAreaControl.TextArea.KeyPress += editorBox_KeyPress;
+			this.editorBox.ActiveTextAreaControl.TextArea.Caret.PositionChanged += Caret_PositionChanged;
+			this.editorBox.ActiveTextAreaControl.TextArea.MouseClick += editorBox_MouseClick;
+			this.editorBox.ActiveTextAreaControl.TextArea.AllowDrop = true;
+			this.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
+			this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += new TextEditor.ToolTipRequestEventHandler(TextArea_ToolTipRequest);
+			editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
+			editorBox.Document.BreakpointManager.Removed += BreakpointManager_Removed;
             // 
             // imageList1
             // 
@@ -196,13 +206,11 @@ namespace Revsoft.Wabbitcode
             this.Text = "frmDocument";
             this.Closing += new System.ComponentModel.CancelEventHandler(this.FormClosing);
             this.Closed += new System.EventHandler(this.FormClosed);
-            this.Scroll += new System.Windows.Forms.ScrollEventHandler(this.newEditor_Scroll);
             this.DragDrop += new System.Windows.Forms.DragEventHandler(this.newEditor_DragDrop);
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.newEditor_DragEnter);
             this.ResumeLayout(false);
 
         }
-
 
         #endregion
         public Revsoft.TextEditor.TextEditorControl editorBox;
