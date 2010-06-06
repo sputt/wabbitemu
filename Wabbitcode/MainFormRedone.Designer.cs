@@ -56,6 +56,7 @@
 			this.saveMenuItem = new System.Windows.Forms.MenuItem();
 			this.saveAsMenuItem = new System.Windows.Forms.MenuItem();
 			this.saveAllMenuItem = new System.Windows.Forms.MenuItem();
+			this.saveProjectMenuItem = new System.Windows.Forms.MenuItem();
 			this.closeMenuItem = new System.Windows.Forms.MenuItem();
 			this.menuItem17 = new System.Windows.Forms.MenuItem();
 			this.printMenuItem = new System.Windows.Forms.MenuItem();
@@ -111,7 +112,11 @@
 			this.macroManagerMenuItem = new System.Windows.Forms.MenuItem();
 			this.menuItem2 = new System.Windows.Forms.MenuItem();
 			this.breakManagerMenuItem = new System.Windows.Forms.MenuItem();
+			this.debugPanelsMenuItem = new System.Windows.Forms.MenuItem();
 			this.debugPanelMenuItem = new System.Windows.Forms.MenuItem();
+			this.callStackMenuItem = new System.Windows.Forms.MenuItem();
+			this.stackViewerMenuItem = new System.Windows.Forms.MenuItem();
+			this.varTrackMenuItem = new System.Windows.Forms.MenuItem();
 			this.menuItem46 = new System.Windows.Forms.MenuItem();
 			this.outWinMenuItem = new System.Windows.Forms.MenuItem();
 			this.errListMenuItem = new System.Windows.Forms.MenuItem();
@@ -180,6 +185,7 @@
 			this.toolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
 			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
 			this.findBox = new System.Windows.Forms.ToolStripComboBox();
+			this.configBox = new System.Windows.Forms.ToolStripComboBox();
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
 			this.mainToolBar = new System.Windows.Forms.ToolStrip();
 			this.newToolStripButton = new System.Windows.Forms.ToolStripButton();
@@ -235,6 +241,7 @@
             this.saveMenuItem,
             this.saveAsMenuItem,
             this.saveAllMenuItem,
+			this.saveProjectMenuItem,
             this.closeMenuItem,
             this.menuItem17,
             this.printMenuItem,
@@ -264,6 +271,7 @@
 			// newProjectMenuItem
 			// 
 			this.newProjectMenuItem.Index = 1;
+			this.newProjectMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftN;
 			this.newProjectMenuItem.Text = "Project";
 			this.newProjectMenuItem.Click += new System.EventHandler(this.newProjectMenuItem_Click);
 			// 
@@ -285,6 +293,7 @@
 			// openProjectMenuItem
 			// 
 			this.openProjectMenuItem.Index = 1;
+			this.openProjectMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftO;
 			this.openProjectMenuItem.Text = "Project";
 			this.openProjectMenuItem.Click += new System.EventHandler(this.openProjectMenuItem_Click);
 			// 
@@ -310,9 +319,15 @@
 			this.saveAllMenuItem.Text = "Save All";
 			this.saveAllMenuItem.Click += new System.EventHandler(this.saveAllToolButton_Click);
 			// 
+			// saveProjectMenuItem
+			// 
+			this.saveProjectMenuItem.Index = 5;
+			this.saveProjectMenuItem.Text = "Save Project";
+			this.saveProjectMenuItem.Click += new System.EventHandler(this.saveProjectMenuItem_Click);
+			// 
 			// closeMenuItem
 			// 
-			this.closeMenuItem.Index = 5;
+			this.closeMenuItem.Index = 6;
 			this.closeMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlW;
 			this.closeMenuItem.ShowShortcut = false;
 			this.closeMenuItem.Text = "Close";
@@ -320,46 +335,46 @@
 			// 
 			// menuItem17
 			// 
-			this.menuItem17.Index = 6;
+			this.menuItem17.Index = 7;
 			this.menuItem17.Text = "-";
 			// 
 			// printMenuItem
 			// 
 			this.printMenuItem.Enabled = false;
-			this.printMenuItem.Index = 7;
+			this.printMenuItem.Index = 8;
 			this.printMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlP;
 			this.printMenuItem.Text = "Print";
 			// 
 			// printPrevMenuItem
 			// 
 			this.printPrevMenuItem.Enabled = false;
-			this.printPrevMenuItem.Index = 8;
+			this.printPrevMenuItem.Index = 9;
 			this.printPrevMenuItem.Text = "Print Preview";
 			// 
 			// pageSetMenuItem
 			// 
 			this.pageSetMenuItem.Enabled = false;
-			this.pageSetMenuItem.Index = 9;
+			this.pageSetMenuItem.Index = 10;
 			this.pageSetMenuItem.Text = "Page Setup";
 			// 
 			// menuItem1
 			// 
-			this.menuItem1.Index = 10;
+			this.menuItem1.Index = 11;
 			this.menuItem1.Text = "-";
 			// 
 			// recentFilesMenuItem
 			// 
-			this.recentFilesMenuItem.Index = 11;
+			this.recentFilesMenuItem.Index = 12;
 			this.recentFilesMenuItem.Text = "Recent Files";
 			// 
 			// menuItem37
 			// 
-			this.menuItem37.Index = 12;
+			this.menuItem37.Index = 13;
 			this.menuItem37.Text = "-";
 			// 
 			// exitMenuItem
 			// 
-			this.exitMenuItem.Index = 13;
+			this.exitMenuItem.Index = 14;
 			this.exitMenuItem.Text = "Exit";
 			this.exitMenuItem.Click += new System.EventHandler(this.exitMenuItem_Click);
 			// 
@@ -618,7 +633,7 @@
             this.macroManagerMenuItem,
             this.menuItem2,
             this.breakManagerMenuItem,
-            this.debugPanelMenuItem,
+            this.debugPanelsMenuItem,
             this.menuItem46,
             this.outWinMenuItem,
             this.errListMenuItem,
@@ -706,10 +721,42 @@
 			// 
 			// debugPanelMenuItem
 			// 
-			this.debugPanelMenuItem.Index = 8;
+			this.debugPanelMenuItem.Index = 0;
 			this.debugPanelMenuItem.Tag = "debugPanel";
 			this.debugPanelMenuItem.Text = "Debug Panel";
 			this.debugPanelMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+			// 
+			// callStackMenuItem
+			// 
+			this.callStackMenuItem.Index = 1;
+			this.callStackMenuItem.Tag = "callStack";
+			this.callStackMenuItem.Text = "Call Stack";
+			this.callStackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+			// 
+			// stackViewerMenuItem
+			// 
+			this.stackViewerMenuItem.Index = 2;
+			this.stackViewerMenuItem.Tag = "stackViewer";
+			this.stackViewerMenuItem.Text = "Stack Viewer";
+			this.stackViewerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+			// 
+			// callStackMenuItem
+			// 
+			this.varTrackMenuItem.Index = 3;
+			this.varTrackMenuItem.Tag = "varTrack";
+			this.varTrackMenuItem.Text = "Variable Tracking";
+			this.varTrackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+			// 
+			// debugMenuItem
+			// 
+			this.debugPanelsMenuItem.Index = 8;
+			this.debugPanelsMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+				this.debugPanelMenuItem,
+				this.callStackMenuItem,
+				this.stackViewerMenuItem,
+				this.varTrackMenuItem,
+			});
+			this.debugPanelsMenuItem.Text = "Debug";
 			// 
 			// menuItem46
 			// 
@@ -1229,6 +1276,13 @@
 			this.toolStripSeparator2.Name = "toolStripSeparator2";
 			this.toolStripSeparator2.Size = new System.Drawing.Size(6, 23);
 			// 
+			// configBox
+			// 
+			this.configBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
+			this.configBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+			this.configBox.Name = "configBox";
+			this.configBox.Size = new System.Drawing.Size(135, 23);
+			// 
 			// mainToolBar
 			// 
 			this.mainToolBar.AllowItemReorder = true;
@@ -1247,12 +1301,13 @@
             this.toolStripSeparator3,
             this.findBox,
             this.toolStripSeparator2,
-            this.runToolButton});
-			this.mainToolBar.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.Flow;
+            this.runToolButton,
+			this.configBox});
+			this.mainToolBar.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
 			this.mainToolBar.Location = new System.Drawing.Point(0, 0);
 			this.mainToolBar.Name = "mainToolBar";
 			this.mainToolBar.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-			this.mainToolBar.Size = new System.Drawing.Size(691, 25);
+			this.mainToolBar.Size = new System.Drawing.Size(900, 25);
 			this.mainToolBar.TabIndex = 15;
 			this.mainToolBar.Text = "Main Toolbar";
 			// 
@@ -1535,7 +1590,6 @@
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainFormRedone_FormClosing);
 			this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainFormRedone_DragDrop);
 			this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainFormRedone_DragEnter);
-			this.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.MainFormRedone_KeyPress);
 			this.statusBar.ResumeLayout(false);
 			this.statusBar.PerformLayout();
 			this.debugToolStrip.ResumeLayout(false);
@@ -1568,6 +1622,7 @@
         private System.Windows.Forms.MenuItem helpMenuItem;
         private System.Windows.Forms.MenuItem saveMenuItem;
         private System.Windows.Forms.MenuItem saveAsMenuItem;
+		private System.Windows.Forms.MenuItem saveProjectMenuItem;
         private System.Windows.Forms.MenuItem closeMenuItem;
         private System.Windows.Forms.MenuItem menuItem17;
         private System.Windows.Forms.MenuItem printMenuItem;
@@ -1645,12 +1700,16 @@
         private System.Windows.Forms.MenuItem openFileMenuItem;
         private System.Windows.Forms.MenuItem openProjectMenuItem;
         private System.Windows.Forms.MenuItem saveAllMenuItem;
-        private System.Windows.Forms.MenuItem debugPanelMenuItem;
+        private System.Windows.Forms.MenuItem debugPanelsMenuItem;
+		private System.Windows.Forms.MenuItem debugPanelMenuItem;
+		private System.Windows.Forms.MenuItem callStackMenuItem;
+		private System.Windows.Forms.MenuItem stackViewerMenuItem;
+		private System.Windows.Forms.MenuItem varTrackMenuItem;
         private System.Windows.Forms.ImageList toolBarIcons;
         private System.Windows.Forms.ToolStrip debugToolStrip;
         private System.Windows.Forms.ToolStripButton runDebuggerToolButton;
         private System.Windows.Forms.ToolStripButton stepOverToolButton;
-        public Revsoft.Docking.DockPanel dockPanel;
+        private Revsoft.Docking.DockPanel dockPanel;
         private System.Windows.Forms.MenuItem menuItem5;
         private System.Windows.Forms.MenuItem includeDirButton;
         private System.Windows.Forms.ToolStripStatusLabel lineCodeInfo;
@@ -1669,6 +1728,7 @@
         private System.Windows.Forms.ToolStripButton pasteToolStripButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripComboBox findBox;
+		private System.Windows.Forms.ToolStripComboBox configBox;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton runToolButton;
         public System.ComponentModel.BackgroundWorker documentParser;

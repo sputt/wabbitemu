@@ -140,15 +140,4 @@ namespace Revsoft.Wabbitcode.Classes
 		//public int address;
 		//public byte value;
 	}
-
-	//TODO: finish maybe? :P
-	public struct BuildStep
-	{
-		public StepType type;
-		public string command;
-	}
-	public enum StepType
-	{
-
-	}
 }

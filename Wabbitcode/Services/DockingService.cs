@@ -96,6 +96,12 @@ namespace Revsoft.Wabbitcode.Services
 			get { return callStack; }
 		}
 
+		private static StackViewer stackViewer;
+		public static StackViewer StackViewer
+		{
+			get { return stackViewer; }
+		}
+
 		private static OutputWindow outputWindow;
 		public static OutputWindow OutputWindow
 		{
@@ -160,6 +166,7 @@ namespace Revsoft.Wabbitcode.Services
 			findResults = new FindResultsWindow();
 			macroManager = new MacroManager();
 			breakManager = new BreakpointManager();
+			stackViewer = new StackViewer();
 		}
 
 		static string configFile = Path.Combine(Application.UserAppDataPath, "DockPanel.config");
@@ -226,6 +233,11 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				MessageBox.Show("Error saving DockPanel.config file!\n" + ex);
 			}
+		}
+
+		public DialogResult RequestDialog(string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon)
+		{
+
 		}
 
 	}

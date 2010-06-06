@@ -241,7 +241,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.ShowHint = Revsoft.Docking.DockState.DockRightAutoHide;
 			this.TabText = "Project Viewer";
 			this.Text = "Project Viewer";
-			this.VisibleChanged += new System.EventHandler(this.ProjectViewer_VisibleChanged);
 			this.ResumeLayout(false);
 
 		}

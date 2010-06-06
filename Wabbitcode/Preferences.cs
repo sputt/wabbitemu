@@ -225,8 +225,7 @@ namespace Revsoft.Wabbitcode
 					HighlightingManager.Manager.AddSyntaxModeFileProvider(fsmProvider);
 				}
 				DockingService.OutputWindow.UpdateFont(Settings.Default.outputFont);
-				HighlightingClass highlighting = new HighlightingClass();
-				highlighting.makeHighlightingFile();
+				HighlightingClass.MakeHighlightingFile();
 				foreach (newEditor child in DockingService.Documents)
 				{
 					child.editorBox.TextEditorProperties.MouseWheelScrollDown = !inverseScrollingBox.Checked;

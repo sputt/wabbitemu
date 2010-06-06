@@ -52,12 +52,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             }
         }
 
-        private void Tracking_VisibleChanged(object sender, EventArgs e)
-        {
-            Settings.Default.trackingViewer = DockHandler.DockState == DockState.Hidden ? false : true;
-            DockingService.MainForm.UpdateChecks();
-        }
-
         private void variablesDataView_UserAddedRow(object sender, DataGridViewRowEventArgs e)
         {
             
@@ -408,12 +402,12 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			}
         }
 
-        public void Copy()
+        public override void Copy()
         {
             Clipboard.SetDataObject(variablesDataView.GetClipboardContent());
         }
 
-        public void Paste()
+        public override void Paste()
         {
             if (variablesDataView.EditingControl != null)
                 variablesDataView.EditingControl.Text = Clipboard.GetData(DataFormats.Text).ToString();

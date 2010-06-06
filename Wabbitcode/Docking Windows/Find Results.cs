@@ -15,7 +15,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void FindResults_VisibleChanged(object sender, EventArgs e)
         {
-            Settings.Default.findResults = DockHandler.DockState == DockState.Hidden ? false : true;
             DockingService.MainForm.UpdateChecks();
         }
 
@@ -42,7 +41,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             DocumentService.GotoLine(file, lineNum + 1);
         }
 
-		internal void Copy()
+		public override void Copy()
 		{
 			findResultsBox.Copy();
 		}

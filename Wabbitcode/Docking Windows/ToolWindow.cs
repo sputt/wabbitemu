@@ -1,5 +1,6 @@
 using System;
 using Revsoft.Docking;
+using Revsoft.Wabbitcode.Services;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
@@ -9,6 +10,11 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
             InitializeComponent();
         }
+		
+		private void ToolWindow_VisibleChanged(object sender, EventArgs e)
+		{
+			DockingService.MainForm.UpdateChecks();
+		}
 
         private void autoHideItem_Click(object sender, EventArgs e)
         {
@@ -40,6 +46,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                     break;
             }
         }
+
+		public virtual void Cut() { }
+		public virtual void Copy() { }
+		public virtual void Paste() { }
 
         private void floatingItem_Click(object sender, EventArgs e)
         {

@@ -282,7 +282,7 @@ namespace Revsoft.Wabbitcode.Services
 				//switch to back to us
 				NativeMethods.SetForegroundWindow(calculatorHandle);
 				DockingService.MainForm.UpdateDebugStuff();
-				DockingService.MainForm.UpdateStack();
+				UpdateStack();
 				DockingService.MainForm.UpdateTrackPanel();
 				DockingService.MainForm.UpdateDebugPanel();
 			}
@@ -290,7 +290,7 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				isBreakpointed = false;
 #if NEW_DEBUGGING
-                        RunDebugger(currentSlot);
+				RunDebugger(currentSlot);
 #else
 				debugger.run();
 #endif
@@ -418,9 +418,44 @@ namespace Revsoft.Wabbitcode.Services
             DocumentService.GotoLine(key.FileName, key.LineNumber);
         }
 
+		private static ushort oldSP = 0xFFFF;
+		public static void UpdateStack()
+		{
+#if NEW_DEBUGGING
+            int currentSP = GetState(currentSlot).SP;
+#else
+			int currentSP = debugger.getState().SP;
+#endif
+			//if someone has changed sp we dont want a really big callstack
+			if (currentSP < 0xFE66)
+				return;
+			int bytesToRead = 0xFFFF - currentSP;
+			while (oldSP != currentSP - 2)
+			{
+				if (oldSP > currentSP - 2)
+				{
+#if NEW_DEBUGGING
+                    callStack.addStackData(oldSP, ReadMem(currentSlot, oldSP) + ReadMem(currentSlot, (ushort)(oldSP + 1)) * 256);
+#else
+					DockingService.CallStack.AddStackData(oldSP, debugger.readMem(oldSP) + debugger.readMem(oldSP--) * 256);
+#endif
+					oldSP--;
+				}
+				else
+				{
+					DockingService.CallStack.RemoveLastRow();
+					oldSP += 2;
+				}
+			}
+		}
+
 		private static SymbolTableClass symTable;
+		public static SymbolTableClass SymbolTable
+		{
+			get { return symTable; }
+		}
 		//private static delegate void BeginDebugDelegate();
-		private delegate string AssembleProjectDelegate();
+		private delegate void AssembleProjectDelegate();
 		private delegate void StartDebugDelegate();
 		private delegate void UpdateBreaksDelegate();
 		internal static void StartDebug()
@@ -440,25 +475,15 @@ namespace Revsoft.Wabbitcode.Services
 				listName = Path.Combine(ProjectService.ProjectDirectory, ProjectService.ProjectName + ".lst");
 				symName = Path.Combine(ProjectService.ProjectDirectory, ProjectService.ProjectName + ".lab");
 				fileName = Path.Combine(ProjectService.ProjectDirectory, ProjectService.ProjectName + ".asm");
-				int outputType = ProjectService.Project.getOutputType();
+				int outputType = 5;// ProjectService.Project.getOutputType();
 				startAddress = outputType == 5 ? "4080" : "9D95";
-				XmlDocument doc = new XmlDocument();
-				doc.Load(ProjectService.ProjectFile);
-				XmlNodeList buildConfigs = doc.ChildNodes[1].ChildNodes[1].ChildNodes;
-				int counter = 0;
-				foreach (XmlNode config in buildConfigs)
-				{
+				bool configFound = false;
+				foreach (Services.Project.BuildConfig config in ProjectService.BuildConfigs)
 					if (config.Name.ToLower() == "debug")
-					{
-						Settings.Default.buildConfig = counter;
-						counter = -1;
-						break;
-					}
-					counter++;
-				}
-				if (counter == -1)
+						configFound = true;
+				if (configFound)
 				{
-					AssembleProjectDelegate assemblerDelegate = DockingService.MainForm.assembleProject;
+					AssembleProjectDelegate assemblerDelegate = AssemblerService.AssembleProject;
 					createdName = DockingService.MainForm.Invoke(assemblerDelegate).ToString();
 					//createdName = GlobalClass.mainForm.assembleProject();
 				}
@@ -492,8 +517,9 @@ namespace Revsoft.Wabbitcode.Services
 				//error &= createSymTable(fileName, Path.ChangeExtension(fileName, "lab"));
 				//if (error)
 				//    MessageBox.Show("Problem creating symtable");
-				error &= DockingService.MainForm.assembleCode(fileName, false,
-									  Path.ChangeExtension(fileName, DockingService.MainForm.GetExtension(Settings.Default.outputFile)));
+				error &= AssemblerService.AssembleFile(fileName, 
+							Path.ChangeExtension(fileName, AssemblerService.GetExtension(Settings.Default.outputFile)),
+								false);
 				//if (error)
 				//    MessageBox.Show("Problem creating 8xp file");
 				listName = Path.ChangeExtension(fileName, ".lst");
@@ -545,7 +571,7 @@ namespace Revsoft.Wabbitcode.Services
 			debugTable = new Dictionary<ListFileKey, ListFileValue>();
 			ParseListFile(listFileText, fileName, Path.GetDirectoryName(fileName));
 			symTable = new SymbolTableClass();
-			symTable.parseSymFile(symFileText);
+			symTable.ParseSymFile(symFileText);
 			if (startAddress == "4080")
 			{
 				isAnApp = true;
@@ -575,13 +601,12 @@ namespace Revsoft.Wabbitcode.Services
 				string appName = Path.GetFileNameWithoutExtension(createdName);
 				if (appName.Length > 8)
 					appName.Substring(0, 8);
-				//TODO: SEARCH FOR APP
 				foreach (CWabbitemu.AppEntry app in appList)
 				{
 					string name = new string(new char[] { app.name1, app.name2, app.name3, app.name4,
 															app.name5, app.name6, app.name7, app.name8 });
-
-					if (name.Trim() == appName)
+					//HACK: FIX SO THAT I CHECK THE ACTUAL 8XK BINARY
+					if (name.Trim().ToLower() == appName.ToLower())
 						break;
 					counter++;
 				}
@@ -625,12 +650,6 @@ namespace Revsoft.Wabbitcode.Services
 			
 			isDebugging = false;
 			isAnApp = false;
-			/*if (GlobalClass.breakpoints != null)
-			{
-				//foreach (GlobalClass.WabbitcodeBreakpoint breakpoint in GlobalClass.breakpoints)
-				//    debugger.clearBreakpoint(breakpoint.IsRam, breakpoint.Page, breakpoint.Address);
-				//GlobalClass.breakpoints.Clear();
-			}*/
 #if NEW_DEBUGGING
             FreeLibrary(wabbitDLLPointer);
 #else
@@ -639,10 +658,13 @@ namespace Revsoft.Wabbitcode.Services
 #endif
 			if (staticLabelMarkers != null)
 				staticLabelMarkers.Clear();
-			DockingService.MainForm.CancelDebug();
-			debugTable.Clear();
+
+			DockingService.MainForm.Invoke(new CancelDebugDelegate(DockingService.MainForm.CancelDebug));
+			if (debugTable != null)
+				debugTable.Clear();
 			debugTable = null;
 		}
+		private delegate void CancelDebugDelegate();
 
 		internal static ListFileValue GetListValue(string file, int lineNumber)
 		{

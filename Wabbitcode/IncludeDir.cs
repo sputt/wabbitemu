@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Properties;
+using System.Collections.Generic;
 
 namespace Revsoft.Wabbitcode
 {
@@ -11,7 +14,9 @@ namespace Revsoft.Wabbitcode
         {
             InitializeComponent();
             //includeDirList.Items.Clear();
-            string[] directories = ProjectService.IsInternal ? Properties.Settings.Default.includeDir.Split('\n') : ProjectService.IncludeDirs;
+            List<string> directories = ProjectService.IsInternal ?
+				Settings.Default.includeDir.Split('\n').ToList<string>() :
+				ProjectService.IncludeDirs;
             foreach (string dir in directories)
                 if (!string.IsNullOrEmpty(dir))
                     includeDirList.Items.Add(dir);
@@ -41,7 +46,7 @@ namespace Revsoft.Wabbitcode
             if (ProjectService.IsInternal)
                 Properties.Settings.Default.includeDir = temp;
             else
-                ProjectService.IncludeDirs = temp.Split('\n');
+                ProjectService.IncludeDirs = temp.Split('\n').ToList<string>();
         }
     }
 }

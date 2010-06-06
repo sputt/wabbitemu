@@ -1,5 +1,5 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Revsoft.Wabbitcode.Properties" GeneratedClassName="Settings">
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="Revsoft.Wabbitcode.Properties" GeneratedClassName="TempSettings">
   <Profiles />
   <Settings>
     <Setting Name="useSyntaxHighlighting" Type="System.Boolean" Scope="User">
@@ -23,14 +23,8 @@
     <Setting Name="editorFont" Type="System.Drawing.Font" Scope="User">
       <Value Profile="(Default)">Courier New, 9pt</Value>
     </Setting>
-    <Setting Name="labelsCaseSensitive" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
     <Setting Name="sendFileEmu" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
-    </Setting>
-    <Setting Name="outputWindow" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="mainToolBar" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
@@ -158,25 +152,7 @@
     <Setting Name="startupProject" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="dockLayout" Type="System.String" Scope="User">
-      <Value Profile="(Default)" />
-    </Setting>
-    <Setting Name="labelsList" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
     <Setting Name="debugToolbar" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="projectViewer" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="directoryViewer" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="errorList" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="debugPanel" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
     <Setting Name="antiAlias" Type="System.Boolean" Scope="User">
@@ -203,15 +179,6 @@
     <Setting Name="numRecentFiles" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">4</Value>
     </Setting>
-    <Setting Name="findResults" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="trackingViewer" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
-    <Setting Name="debugPanelLoc" Type="Revsoft.Docking.DockState" Scope="User">
-      <Value Profile="(Default)">Float</Value>
-    </Setting>
     <Setting Name="enableAutoTrigger" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
@@ -221,16 +188,22 @@
     <Setting Name="extraExtensions" Type="System.String" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
-    <Setting Name="breakManager" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">False</Value>
-    </Setting>
     <Setting Name="firstRun" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="macroManager" Type="System.Boolean" Scope="User">
+    <Setting Name="editorToolbar" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
-    <Setting Name="editorToolbar" Type="System.Boolean" Scope="User">
+    <Setting Name="WindowState" Type="System.Windows.Forms.FormWindowState" Scope="User">
+      <Value Profile="(Default)">Normal</Value>
+    </Setting>
+    <Setting Name="WindowSize" Type="System.Drawing.Size" Scope="User">
+      <Value Profile="(Default)">500, 300</Value>
+    </Setting>
+    <Setting Name="mouseWheelZoom" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="recentlyUpdated" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
     </Setting>
   </Settings>

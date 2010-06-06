@@ -7,13 +7,23 @@ namespace Revsoft.TextEditor.Document
 {
     public class IconManager
     {
-        public List<MarginIcon> iconsToDraw = new List<MarginIcon>();
-        public void addIcon(MarginIcon icon)
+        private List<MarginIcon> iconsToDraw = new List<MarginIcon>();
+		internal List<MarginIcon> IconsToDraw
+		{
+			get { return iconsToDraw; }
+		}
+
+		public void ClearIcons()
+		{
+			iconsToDraw.Clear();
+		}
+
+        public void AddIcon(MarginIcon icon)
         {
             iconsToDraw.Add(icon);
         }
 
-        public void removeIcon(MarginIcon icon)
+        public void RemoveIcon(MarginIcon icon)
         {
             iconsToDraw.Remove(icon);
         }

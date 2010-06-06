@@ -79,7 +79,6 @@ namespace Revsoft.Wabbitcode.Services
 				recentFileList.Add(filename);
 			SaveRecentFileList();
 			GetRecentFiles();
-			doc.findAllIncludeNames();
 			DockingService.MainForm.IncrementProgress(90);
 			DockingService.MainForm.HideProgressBar();
 			DockingService.ShowDockPanel(doc);
@@ -166,10 +165,10 @@ namespace Revsoft.Wabbitcode.Services
 				return doc;
 			}
 
-			if (fileToLower == ActiveFileName)
+			if (fileToLower == ActiveFileName.ToLower())
 				return editorBox;
 			foreach (newEditor child in DockingService.Documents)
-				if (child.ToolTipText != null && child.ToolTipText.ToLower() == fileToLower)
+				if (child.FileName != null && child.FileName.ToLower() == fileToLower)
 				{
 					child.Show();
 					return child;
