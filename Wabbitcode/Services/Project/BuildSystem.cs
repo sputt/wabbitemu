@@ -81,6 +81,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			int counter = 0;
 			writer.WriteStartElement("BuildSystem");
+			string includes = "";
+			foreach(string include in ProjectService.IncludeDirs)
+				if (!string.IsNullOrEmpty(include))
+				includes += include + ";";
+			writer.WriteAttributeString("IncludeDirs", includes);
 			foreach (BuildConfig config in buildConfigs)
 			{
 				writer.WriteStartElement(config.Name);
@@ -111,6 +116,10 @@ namespace Revsoft.Wabbitcode.Services.Project
 			reader.MoveToNextElement();
 			if (reader.Name != "BuildSystem")
 				throw new ArgumentException("Invalid XML Format");
+			string[] includeDirs = reader.GetAttribute("IncludeDirs").Split(';');
+			foreach (string include in includeDirs)
+				if (!string.IsNullOrEmpty(include))
+					ProjectService.IncludeDirs.Add(include);
 			while (reader.MoveToNextElement())
 			{
 				string configName = reader.Name;

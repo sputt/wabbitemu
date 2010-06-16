@@ -53,6 +53,10 @@ namespace Revsoft.Wabbitcode.Services.Project
 			filePath = fullPath;
 		}
 
+		public override string ToString()
+		{
+			return filePath;
+		}
 
 	}
 }

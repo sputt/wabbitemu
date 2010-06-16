@@ -93,10 +93,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 }
                 if (!error)
                 {
-                    /*if (GlobalClass.mainForm.symTable.staticLabels.Contains(address.ToUpper()))
-                        vartoadd.address =(ushort) (ushort.Parse(GlobalClass.mainForm.symTable.staticLabels[address.ToUpper()].ToString().
+                    if (DebuggerService.SymbolTable.staticLabels.Contains(address.ToUpper()))
+                        vartoadd.address =(ushort) (ushort.Parse(DebuggerService.SymbolTable.staticLabels[address.ToUpper()].ToString().
                                               Substring(1, 4), System.Globalization.NumberStyles.HexNumber) + offset);
-					else*/ if ("bc'de'hl'spixiypc".IndexOf(address.ToLower()) != -1)
+					else if ("bc'de'hl'spixiypc".IndexOf(address.ToLower()) != -1)
 					{
 						switch (address)
 						{

@@ -24,6 +24,8 @@ namespace Revsoft.Wabbitcode
 
         private void addDirButton_Click(object sender, EventArgs e)
         {
+			if (!ProjectService.IsInternal)
+				includeDirBrowser.SelectedPath = ProjectService.ProjectDirectory;
             DialogResult include = includeDirBrowser.ShowDialog();
             if (include == DialogResult.OK && !includeDirList.Items.Contains(includeDirBrowser.SelectedPath))
                 includeDirList.Items.Add(includeDirBrowser.SelectedPath);
@@ -47,6 +49,7 @@ namespace Revsoft.Wabbitcode
                 Properties.Settings.Default.includeDir = temp;
             else
                 ProjectService.IncludeDirs = temp.Split('\n').ToList<string>();
+			ProjectService.SaveProject();
         }
     }
 }

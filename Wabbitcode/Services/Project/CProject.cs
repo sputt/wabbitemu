@@ -52,6 +52,24 @@ namespace Revsoft.Wabbitcode.Services.Project
 			set { includeDir = value; }
 		}
 
+		List<string> projectOutputs = new List<string>();
+		public List<string> ProjectOutputs
+		{
+			get { return projectOutputs; }
+		}
+
+		List<string> listOutputs = new List<string>();
+		public List<string> ListOutputs
+		{
+			get { return listOutputs; }
+		}
+
+		List<string> labelOutputs = new List<string>();
+		public List<string> LabelOutputs
+		{
+			get { return labelOutputs; }
+		}
+
 		public ProjectClass()
 		{
 			
@@ -179,7 +197,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 		private void RecurseAddFiles(ref List<ProjectFile> files, ProjectFolder folder)
 		{
 			foreach (ProjectFolder subFolder in folder.Folders)
-				RecurseAddFiles(ref files, folder);
+				RecurseAddFiles(ref files, subFolder);
 			foreach (ProjectFile file in folder.Files)
 				files.Add(file);
 		}

@@ -235,9 +235,9 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		public DialogResult RequestDialog(string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon)
+		public static DialogResult RequestDialog(string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon)
 		{
-
+			return DialogResult.None;
 		}
 
 	}

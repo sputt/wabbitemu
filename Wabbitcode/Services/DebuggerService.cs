@@ -437,9 +437,9 @@ namespace Revsoft.Wabbitcode.Services
 #if NEW_DEBUGGING
                     callStack.addStackData(oldSP, ReadMem(currentSlot, oldSP) + ReadMem(currentSlot, (ushort)(oldSP + 1)) * 256);
 #else
-					DockingService.CallStack.AddStackData(oldSP, debugger.readMem(oldSP) + debugger.readMem(oldSP--) * 256);
+					DockingService.CallStack.AddStackData(oldSP, debugger.readMem(oldSP) + debugger.readMem((ushort)(oldSP - 1)) * 256);
 #endif
-					oldSP--;
+					oldSP-= 2;
 				}
 				else
 				{
@@ -484,8 +484,13 @@ namespace Revsoft.Wabbitcode.Services
 				if (configFound)
 				{
 					AssembleProjectDelegate assemblerDelegate = AssemblerService.AssembleProject;
-					createdName = DockingService.MainForm.Invoke(assemblerDelegate).ToString();
-					//createdName = GlobalClass.mainForm.assembleProject();
+					DockingService.MainForm.Invoke(assemblerDelegate);
+					while (ProjectService.Project.ProjectOutputs.Count == 0)
+						Application.DoEvents();
+					createdName = ProjectService.Project.ProjectOutputs[0];
+					if (!Path.IsPathRooted(createdName))
+						createdName = FileOperations.NormalizePath(Path.Combine(ProjectService.ProjectDirectory, createdName));
+					error = AssemblerService.ErrorsInFiles.Count == 0;
 				}
 				else
 				{
@@ -565,8 +570,10 @@ namespace Revsoft.Wabbitcode.Services
 			StreamReader reader = new StreamReader(listName);
 			//StreamReader breakReader = new StreamReader(fileName.Remove(fileName.Length - 3) + "brk");
 			string listFileText = reader.ReadToEnd();
+			reader.Close();
 			reader = new StreamReader(symName);
 			string symFileText = reader.ReadToEnd();
+			reader.Close();
 
 			debugTable = new Dictionary<ListFileKey, ListFileValue>();
 			ParseListFile(listFileText, fileName, Path.GetDirectoryName(fileName));
