@@ -47,6 +47,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			{
 				case Project.StepType.All:
 					errors |= AssemblerService.AssembleFile(input, output, true);
+					ProjectService.Project.ProjectOutputs.Add(output);
 					break;
 				case Project.StepType.Listing:
 
@@ -56,6 +57,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 					break;
 				default:
 					errors |= AssemblerService.AssembleFile(input, output, true);
+					ProjectService.Project.ProjectOutputs.Add(output);
 					break;
 			}
 			return errors;

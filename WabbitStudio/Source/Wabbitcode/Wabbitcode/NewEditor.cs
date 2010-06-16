@@ -38,23 +38,25 @@ namespace Revsoft.Wabbitcode
         public int[] labelsLoc = new int[1];
         public int debugEditAndCont;
 
+		private string fileName;
 		public string FileName
 		{
 			get
 			{
-				if (this.IsDisposed || this.Disposing)
-					return null;
-				if (editorBox.InvokeRequired)
-					return editorBox.Invoke(new GetFileNameDelegate(GetFileName)).ToString();
-				else
-					return editorBox.FileName; }
-			set { editorBox.FileName = value; }
+				return fileName;
+			}
+			set { 
+				editorBox.FileName = value;
+				Text = value;
+				fileName = value;
+			}
 		}
 
         public newEditor()
         {
             InitializeComponent();
 
+			textChangedTimer.Tick += new EventHandler(textChangedTimer_Tick);
 			//fix this stuff so settings are applied on opening...what a concept :P
 			if (Settings.Default.antiAlias)
 				editorBox.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
@@ -98,7 +100,7 @@ namespace Revsoft.Wabbitcode
 		delegate string GetFileNameDelegate();
 		private string GetFileName()
 		{
-			return editorBox.FileName;
+			return editorBox.FileName ?? "";
 		}
 
 
@@ -106,7 +108,7 @@ namespace Revsoft.Wabbitcode
 		delegate void UpdateLabelBoxDelegate();
 		private void ParseFile()
 		{
-			while (true)
+			while (!RequestUpdate.RequestQuit)
 			{
 				Thread.Sleep(200);
 				if (RequestUpdate.UpdateLabels && DocumentService.ActiveFileName != null &&
@@ -122,7 +124,7 @@ namespace Revsoft.Wabbitcode
 
 		private void GetCodeInfo()
 		{
-			while (true)
+			while (!RequestUpdate.RequestQuit)
 			{
 				if (RequestUpdate.UpdateCodeInfo)
 				{
@@ -136,7 +138,7 @@ namespace Revsoft.Wabbitcode
         {
             // Add extra information into the persist string for this document
             // so that it is available when deserialized.
-            return GetType() +  ";" + editorBox.FileName + ";" + editorBox.ActiveTextAreaControl.HorizontalScroll.Value + ";" +
+            return GetType() +  ";" + FileName + ";" + editorBox.ActiveTextAreaControl.HorizontalScroll.Value + ";" +
                    editorBox.ActiveTextAreaControl.VerticalScroll.Value + ";" +
                    editorBox.ActiveTextAreaControl.Caret.Column + ";" +
                    editorBox.ActiveTextAreaControl.Caret.Line;
@@ -150,14 +152,14 @@ namespace Revsoft.Wabbitcode
         void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
         {
             if (e.Breakpoint.Anchor.IsDeleted == false)
-                DebuggerService.RemoveBreakpoint(e.Breakpoint.LineNumber, editorBox.FileName);
+                DebuggerService.RemoveBreakpoint(e.Breakpoint.LineNumber, FileName);
             if (DockingService.BreakManager != null)
                 DockingService.BreakManager.UpdateManager();
         }
 
         void BreakpointManager_Added(object sender, BreakpointEventArgs e)
         {
-            DebuggerService.AddBreakpoint(e.Breakpoint.LineNumber, editorBox.FileName);
+            DebuggerService.AddBreakpoint(e.Breakpoint.LineNumber, FileName);
 			if (DockingService.BreakManager != null)
 				DockingService.BreakManager.UpdateManager();
         }
@@ -168,7 +170,7 @@ namespace Revsoft.Wabbitcode
             if (editorBox.Text != "")
             {
 				RequestUpdate.UpdateCodeInfo = true;
-				ListFileValue label = DebuggerService.GetListValue(editorBox.FileName, editorBox.ActiveTextAreaControl.Caret.Line);
+				ListFileValue label = DebuggerService.GetListValue(FileName, editorBox.ActiveTextAreaControl.Caret.Line);
 				if(label != null)
 					DockingService.MainForm.SetToolStripText("Page: " + label.Page.ToString() + " Address: " + label.Address.ToString("X4")); 
                 int start;
@@ -228,11 +230,9 @@ namespace Revsoft.Wabbitcode
                     continue;
                 Bitmap newIcon;
                 if (errorWarning.isWarning)
-                    newIcon = new Bitmap(Assembly.GetExecutingAssembly().
-								GetManifestResourceStream("Revsoft.Wabbitcode.Resources.Warning16.png"));
+                    newIcon = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.Warning16.png"));
                 else
-                    newIcon = new Bitmap(Assembly.GetExecutingAssembly().
-								GetManifestResourceStream("Revsoft.Wabbitcode.Resources.error.png"));
+                    newIcon = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.error.png"));
                 MarginIcon marginIcon = new MarginIcon(newIcon, errorWarning.lineNum - 1, errorWarning.toolTip);
                 editorBox.Document.IconManager.AddIcon(marginIcon);
             }
@@ -241,10 +241,9 @@ namespace Revsoft.Wabbitcode
 		private ParserInformation parseInfo;
         public void OpenFile(string filename)
         {
-            editorBox.FileName = filename.ToLower();
+            FileName = filename.ToLower();
             editorBox.LoadFile(filename, true, true);
-            editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(editorBox.FileName);
-            Text = filename;
+            editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
             /*if (!GlobalClass.mainForm.staticLabelsParser.IsBusy && GlobalClass.mainForm.debugging && !GlobalClass.mainForm.IsDisposed && !GlobalClass.mainForm.Disposing)
                 GlobalClass.mainForm.staticLabelsParser.RunWorkerAsync(editorBox);*/
             docChanged = false;
@@ -259,23 +258,24 @@ namespace Revsoft.Wabbitcode
 
         public bool SaveFile()
         {
+			DocumentService.InternalSave = true;
             bool saved = true;
-            string fileName = editorBox.FileName;
             stackTop = editorBox.Document.UndoStack.UndoItemCount;
             try
             {
 				//TODO: Fix spasm to allow for UTF-8
                 editorBox.Encoding = System.Text.Encoding.ASCII;
-                editorBox.SaveFile(fileName);
+                editorBox.SaveFile(FileName);
             }
             catch (Exception ex)
             {
+				DocumentService.InternalSave = false;
                 saved = false;
                 //((Wabbitcode.frmMain)(MdiParent)).errorConsoleBox.Text = ex.ToString() + '\n';
                 MessageBox.Show("Error: " + ex);
             }
-            editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(editorBox.FileName);
-            TabText = Path.GetFileName(fileName);
+            editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
+            TabText = Path.GetFileName(FileName);
             docChanged = false;
             DockingService.MainForm.UpdateTitle();
             return saved;
@@ -288,29 +288,29 @@ namespace Revsoft.Wabbitcode
 
         private new void FormClosing(object sender, CancelEventArgs e)
         {
+			RequestUpdate.RequestQuit = true;
 			parserThread.Abort();
 			codeInfoThread.Abort();
-			string fileName = editorBox.FileName;
             if (!ProjectService.IsInternal)
             {
-                if (ProjectService.ContainsFile(fileName))
+                if (ProjectService.ContainsFile(FileName))
                 {
-					Revsoft.Wabbitcode.Services.Project.ProjectFile file = ProjectService.FindFile(fileName);
+					Revsoft.Wabbitcode.Services.Project.ProjectFile file = ProjectService.FindFile(FileName);
 					file.FileFoldings = editorBox.Document.FoldingManager.SerializeToString();
                 }
             }
             if (!DocumentChanged) 
                 return;
-			if (string.IsNullOrEmpty(editorBox.FileName))
-				fileName = "New Document";
-            DialogResult dlg = MessageBox.Show(this, "Document '" + fileName + "' has changed. Save changes?", "Wabbitcode", MessageBoxButtons.YesNoCancel);
+			if (string.IsNullOrEmpty(FileName))
+				FileName = "New Document";
+            DialogResult dlg = MessageBox.Show(this, "Document '" + FileName + "' has changed. Save changes?", "Wabbitcode", MessageBoxButtons.YesNoCancel);
             switch (dlg)
             {
                 case DialogResult.Cancel:
                     e.Cancel = true;
                     break;
                 case DialogResult.Yes:
-                    if (string.IsNullOrEmpty(editorBox.FileName))
+                    if (string.IsNullOrEmpty(FileName))
 						DocumentService.SaveDocument(this);
                     else
                         SaveFile();
@@ -373,10 +373,25 @@ namespace Revsoft.Wabbitcode
 #if CHECK_CODE
         private List<TextMarker> codeCheckMarkers = new List<TextMarker>();
 #endif
+
+		private static void UpdateTimerCallback(object input)
+		{
+
+		}
+
         //private static Process wabbitspasm;
         private int stackTop;
+		private System.Windows.Forms.Timer textChangedTimer = new System.Windows.Forms.Timer()
+		{
+			Interval = 500,
+			Enabled = false
+		};
+
         private void editorBox_TextChanged(object sender, EventArgs e)
         {
+			//if (textChangedTimer.Enabled)
+			//	textChangedTimer.Stop();
+			//textChangedTimer.Start();
 			if (Settings.Default.enableFolding)
 			{
 				editorBox.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
@@ -387,7 +402,6 @@ namespace Revsoft.Wabbitcode
 				editorBox.Document.FoldingManager.FoldingStrategy = null;
 				editorBox.Document.FoldingManager.UpdateFoldings(new List<FoldMarker>());
 			}
-			RequestUpdate.UpdateAll();
             if (editorBox.Document.UndoStack.UndoItemCount != stackTop)
             {
                 docChanged = true;
@@ -401,11 +415,17 @@ namespace Revsoft.Wabbitcode
 			DockingService.MainForm.UpdateTitle();
         }
 
+		void  textChangedTimer_Tick(object sender, EventArgs e)
+		{
+			RequestUpdate.UpdateAll();
+			textChangedTimer.Enabled = false;
+		}
+
 		private void UpdateTabText()
 		{
 			string changedString = DocumentChanged ? "*" : "";
-			if (!string.IsNullOrEmpty(editorBox.FileName))
-				TabText = Path.GetFileName(editorBox.FileName) + changedString;
+			if (!string.IsNullOrEmpty(FileName))
+				TabText = Path.GetFileName(FileName) + changedString;
 			else
 				TabText = "New Document" + changedString;
 		}
@@ -603,7 +623,7 @@ namespace Revsoft.Wabbitcode
             string text = bgotoButton.Text.Substring(5, bgotoButton.Text.Length - 5);
             bool isMacro = text[text.Length - 1] == '(';
             if (isMacro)
-                text.Remove(text.Length - 2);
+                text = text.Remove(text.Length - 1);
             //if (!ProjectService.IsInternal)
             //    GlobalClass.outputWindow.outputWindowBox.Text = text + "\nProjectLabels:" + GlobalClass.project.projectLabels.Count +
             //                                "\nProjectLabels[1]:" + ((ArrayList)GlobalClass.project.projectLabels[1]).Count;
@@ -641,7 +661,7 @@ namespace Revsoft.Wabbitcode
                 if (Path.IsPathRooted(text))
                     DocumentService.GotoFile(text);
                 else
-                    DocumentService.GotoFile(Path.Combine(Path.GetDirectoryName(editorBox.FileName), text));
+                    DocumentService.GotoFile(FileOperations.NormalizePath(Path.Combine(Path.GetDirectoryName(FileName), text)));
             }
         }
 
@@ -669,28 +689,26 @@ namespace Revsoft.Wabbitcode
                     offset--;
                 offset++;
                 int length = 1;
-                while (offset + length != editorBox.Text.Length && " \t\r\n()+-*/,;".IndexOf(editorBox.Text.Substring(offset + length, 1)) == -1)
+                while (offset + length < editorBox.Text.Length && " \t\r\n()+-*/,;".IndexOf(editorBox.Text.Substring(offset + length, 1)) == -1)
                     length++;
                 string gotoLabel = "";
                 try
                 {
                     gotoLabel = editorBox.Document.GetText(offset, length);
-                    if (offset + length < editorBox.Text.Length && editorBox.Text[offset + length + 1] == '(')
+                    if (offset + length < editorBox.Text.Length && editorBox.Text[offset + length] == '(')
                         gotoLabel += "(";
                 }
                 catch (Exception ex)
                 {
                     MessageBox.Show("Somewhere I fucked up the offset:" + ex);
                 }
-                if (!Settings.Default.caseSensitive)
-                    gotoLabel = gotoLabel.ToLower();
                 int num;
                 if ("afbcdehlixiypcspnzncpm".IndexOf(gotoLabel) == -1 && !int.TryParse(gotoLabel, out num))
                 {
                     if (gotoLabel[0] == '\"' && gotoLabel[gotoLabel.Length - 1] == '\"')
                     {
                         gotoLabel = gotoLabel.Substring(1, gotoLabel.Length - 2);
-                        bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : File.Exists(Path.Combine(Path.GetDirectoryName(editorBox.FileName), gotoLabel));
+                        bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : File.Exists(Path.Combine(Path.GetDirectoryName(FileName), gotoLabel));
                         if (exists)
                         {
                             bgotoButton.Text = "Open " + gotoLabel;
@@ -730,14 +748,14 @@ namespace Revsoft.Wabbitcode
 
         private void copyPathMenuItem_Click(object sender, EventArgs e)
         {
-            Clipboard.SetText(editorBox.FileName);
+            Clipboard.SetText(FileName);
         }
 
         private void openFolderMenuItem_Click(object sender, EventArgs e)
         {
             Process explorer = new Process
                                    {
-                                       StartInfo = {FileName = Path.GetDirectoryName(editorBox.FileName)}
+                                       StartInfo = {FileName = Path.GetDirectoryName(FileName)}
                                    };
             explorer.Start();
         }
@@ -792,7 +810,7 @@ namespace Revsoft.Wabbitcode
 
         private void setNextStateMenuItem_Click(object sender, EventArgs e)
         {
-            DebuggerService.SetPCToSelect(editorBox.FileName, editorBox.ActiveTextAreaControl.Caret.Line);
+            DebuggerService.SetPCToSelect(FileName, editorBox.ActiveTextAreaControl.Caret.Line);
         }
 
 		internal void Cut()
@@ -1739,9 +1757,9 @@ namespace Revsoft.Wabbitcode
         {
             List<FoldMarker> list = new List<FoldMarker>();
 
-            Stack<int> regionLines = new Stack<int>();
-            Stack<int> ifLines = new Stack<int>();
-            Stack<int> macroLines = new Stack<int>();
+            Stack<FoldingItem> regionLines = new Stack<FoldingItem>();
+            Stack<FoldingItem> ifLines = new Stack<FoldingItem>();
+            Stack<FoldingItem> macroLines = new Stack<FoldingItem>();
             Stack<int> commentLines = new Stack<int>();
             // Create foldmarkers for the whole document, enumerate through every line.
             for (int i = 0; i < document.TotalNumberOfLines; i++)
@@ -1759,57 +1777,78 @@ namespace Revsoft.Wabbitcode
                 if (
                     document.GetCharAt(offs) != '#') 
                     continue;
-                string text = document.GetText(offs, seg.Length - spaceCount).ToLower();
+                string normalText = document.GetText(offs, seg.Length - spaceCount);
+				string text = normalText.ToLower();
                 if (text.StartsWith("#region"))
-                    regionLines.Push(i);
+                    regionLines.Push(new FoldingItem(i, normalText.Remove(0, "#region ".Length)));
                 if (text.StartsWith("#ifdef") || text.StartsWith("#if") || text.StartsWith("#ifndef"))
-                    ifLines.Push(i);
-                if (text.StartsWith("#macro"))
-                    macroLines.Push(i);
-                if (text.StartsWith("#comment"))
+                    ifLines.Push(new FoldingItem(i, normalText));
+				if (text.StartsWith("#macro"))
+				{
+					int paren = text.IndexOf('(');
+					if (paren == -1)
+						paren = text.Length - 1;
+					string substring = normalText.Substring(0, paren);
+					macroLines.Push(new FoldingItem(i, substring));
+				}
+				if (text.StartsWith("#comment"))
                     commentLines.Push(i);
                 if (text.StartsWith("#endregion") && regionLines.Count > 0)
                 {
                     // Add a new FoldMarker to the list.
-                    int start = regionLines.Pop();
-                    list.Add(new FoldMarker(document, start, document.GetLineSegment(start).Length, i,
-                                            spaceCount + "#endregion".Length));
+                    FoldingItem start = regionLines.Pop();
+                    list.Add(new FoldMarker(document, start.Offset, 0, i, spaceCount + "#endregion".Length, FoldType.Region, start.Text));
                 }
                 if (text.StartsWith("#else") && ifLines.Count > 0)
                 {
                     // Add a new FoldMarker to the list.
-                    int start = ifLines.Pop();
-                    list.Add(new FoldMarker(document, start,
-                                            document.GetLineSegment(start).Length,
-                                            i-1, spaceCount + "#else".Length));
-                    ifLines.Push(i);
+                    FoldingItem start = ifLines.Pop();
+					list.Add(new FoldMarker(document, start.Offset, 0, i - 1, document.GetLineSegment(i-1).Length, FoldType.TypeBody, start.Text));
+					int offset = spaceCount + "#else".Length;
+                    ifLines.Push(new FoldingItem(i, "#else"));
                 }
                 if (text.StartsWith("#endif") && ifLines.Count > 0)
                 {
                     // Add a new FoldMarker to the list.
-                    int start = ifLines.Pop();
-                    list.Add(new FoldMarker(document, start,
-                                            document.GetLineSegment(start).Length,
-                                            i, spaceCount + "#endif".Length));
+                    FoldingItem start = ifLines.Pop();
+                    list.Add(new FoldMarker(document, start.Offset, 0 /*document.GetLineSegment(start).Length*/,
+                                            i, spaceCount + "#endif".Length, FoldType.TypeBody, start.Text));
                 }
                 if (text.StartsWith("#endmacro") && macroLines.Count > 0)
                 {
                     // Add a new FoldMarker to the list.
-                    int start = macroLines.Pop();
-                    list.Add(new FoldMarker(document, start,
-                                            document.GetLineSegment(start).Length,
-                                            i, spaceCount + "#endregion".Length));
+                    FoldingItem start = macroLines.Pop();
+                    list.Add(new FoldMarker(document, start.Offset, 0,
+                                            i, spaceCount + "#endmacro".Length, FoldType.MemberBody, start.Text));
                 }
                 if (text.StartsWith("#endcomment") && commentLines.Count > 0)
                 {
                     // Add a new FoldMarker to the list.
                     int start = commentLines.Pop();
-                    list.Add(new FoldMarker(document, start,
-                                            document.GetLineSegment(start).Length,
-                                            i, spaceCount + "#endcomment".Length));
+                    list.Add(new FoldMarker(document, start, 0 /*document.GetLineSegment(start).Length*/,
+                                            i, spaceCount + "#endcomment".Length, FoldType.Region, "#comment"));
                 }
             }
             return list;
         }
     }
+
+	public class FoldingItem
+	{
+		int offset;
+		public int Offset
+		{
+			get { return offset; }
+		}
+		string text;
+		public string Text
+		{
+			get { return text; }
+		}
+		public FoldingItem(int offset, string text)
+		{
+			this.offset = offset;
+			this.text = text;
+		}
+	}
 }

@@ -147,14 +147,18 @@ namespace Revsoft.Wabbitcode.Classes
 
         public void clearBreakpoint(bool isInRAM, int page, int address)
         {
-            try
-            {
-                pWabbitemu.ClearBreakpoint(0, Convert.ToInt16(isInRAM), (byte)page, (ushort)address);
-            }
-            catch (COMException ex)
-            {
-                MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-            }
+			try
+			{
+				pWabbitemu.ClearBreakpoint(0, Convert.ToInt16(isInRAM), (byte)page, (ushort)address);
+			}
+			catch (COMException ex)
+			{
+				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
+			}
+			catch (Exception ex)
+			{
+				return;
+			}
         }
         public void clearBreakpoint(breakpoint breakpoint)
         {
@@ -214,19 +218,27 @@ namespace Revsoft.Wabbitcode.Classes
 			{
 				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
 			}
+			catch (Exception ex)
+			{
+				return;
+			}
 		}
 
         public void run()
         {
-            try
-            {
-                pWabbitemu.Step(0);
-                pWabbitemu.Run(0);
-            }
-            catch (COMException ex)
-            {
-                MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-            }
+			try
+			{
+				pWabbitemu.Step(0);
+				pWabbitemu.Run(0);
+			}
+			catch (COMException ex)
+			{
+				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
+			}
+			catch (Exception ex)
+			{
+				return;
+			}
         }
 
         public void getSymList()
@@ -237,16 +249,20 @@ namespace Revsoft.Wabbitcode.Classes
         readonly AppEntry[] temp = new AppEntry[96];
         public AppEntry[] getAppList()
         {
-            try
-            {
-                uint count;
-                pWabbitemu.GetAppList(0, temp, out count);
-                return temp;
-            }
-            catch (COMException ex)
-            {
-                return null;
-            }
+			try
+			{
+				uint count;
+				pWabbitemu.GetAppList(0, temp, out count);
+				return temp;
+			}
+			catch (COMException ex)
+			{
+				return null;
+			}
+			catch (Exception ex)
+			{
+				return null;
+			}
         }
 
         readonly byte[] screenArray = new byte[128 * 64];

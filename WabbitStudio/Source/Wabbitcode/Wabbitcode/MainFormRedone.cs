@@ -496,7 +496,7 @@ namespace Revsoft.Wabbitcode
 
 		private void Paste()
 		{
-			if (DockingService.ActiveContent.GetType() == typeof(ToolWindow))
+			if (DockingService.ActiveContent.GetType().BaseType == typeof(ToolWindow))
 				((ToolWindow)DockingService.ActiveContent).Paste();
 			else if (DockingService.ActiveDocument != null)
 				DockingService.ActiveDocument.Paste();
@@ -844,8 +844,8 @@ namespace Revsoft.Wabbitcode
 			if (DockingService.ActiveDocument == null)
                 return;
 			DockingService.ActiveDocument.SaveFile();
-			String text = DockingService.ActiveDocument.editorBox.FileName;
-            AssemblerService.CreateSymTable(text, Path.ChangeExtension(text, "lab"));
+			AssemblerService.CreateSymTable(DocumentService.ActiveFileName,
+											Path.ChangeExtension(DocumentService.ActiveFileName, "lab"));
         }
 
         private void countCodeMenuItem_Click(object sender, EventArgs e)
@@ -1714,16 +1714,16 @@ namespace Revsoft.Wabbitcode
 		internal void UpdateBreakpoints()
 		{
 			TextEditorControl editorBox;
-			foreach (newEditor child in MdiChildren)
+			foreach (newEditor child in DockingService.Documents)
 			{
 				editorBox = child.editorBox;
 				Breakpoint[] marks = new Breakpoint[editorBox.Document.BreakpointManager.Marks.Count];
 				editorBox.Document.BreakpointManager.Marks.CopyTo(marks, 0);
 				foreach (Breakpoint breakpoint in marks)
 				{
-					WabbitcodeBreakpoint newBreakpoint = DebuggerService.FindBreakpoint(editorBox.FileName, breakpoint.LineNumber);
+					WabbitcodeBreakpoint newBreakpoint = DebuggerService.FindBreakpoint(child.FileName, breakpoint.LineNumber);
 					//ListFileKey key = new ListFileKey(editorBox.FileName.ToLower(), breakpoint.LineNumber + 1);
-					ListFileValue value = DebuggerService.GetListValue(editorBox.FileName.ToLower(), breakpoint.LineNumber + 1);
+					ListFileValue value = DebuggerService.GetListValue(child.FileName.ToLower(), breakpoint.LineNumber + 1);
 					if (value != null && newBreakpoint != null)
 					{
 						newBreakpoint.Address = value.Address;
@@ -1732,7 +1732,7 @@ namespace Revsoft.Wabbitcode
 						else
 							newBreakpoint.Page = value.Page;
 						newBreakpoint.IsRam = newBreakpoint.Address > 0x8000;
-						newBreakpoint.file = editorBox.FileName;
+						newBreakpoint.file = child.FileName;
 						newBreakpoint.lineNumber = breakpoint.LineNumber;
 #if NEW_DEBUGGING
                         SetBreakpoint(0, Handle, newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);

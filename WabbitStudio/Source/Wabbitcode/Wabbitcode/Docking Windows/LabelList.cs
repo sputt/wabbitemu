@@ -37,6 +37,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private void alphaBox_CheckedChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.alphabetizeLabels = alphaBox.Checked;
+			//this is the retardedest thing ever :|
+			//
+			labelsBox.Sorted = alphaBox.Checked;
+			DocumentService.ActiveDocument.UpdateLabelBox();
         }
 
 		public override void Copy()

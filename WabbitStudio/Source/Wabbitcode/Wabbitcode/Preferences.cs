@@ -248,8 +248,8 @@ namespace Revsoft.Wabbitcode
 					else
 						child.editorBox.TextRenderingHint = TextRenderingHint.SingleBitPerPixel;
 					child.editorBox.Font = TempSettings.Default.editorFont;
-					if (child.editorBox.FileName != null)
-						child.editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(child.editorBox.FileName);
+					if (child.FileName != null)
+						child.editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(child.FileName);
 					child.editorBox.SetHighlighting("Z80 Assembly");
 
 				}

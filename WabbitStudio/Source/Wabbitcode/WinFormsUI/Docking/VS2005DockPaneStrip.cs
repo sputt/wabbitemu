@@ -422,7 +422,8 @@ namespace Revsoft.Docking
 
 			m_components = new Container();
 			m_toolTip = new ToolTip(Components);
-            m_selectMenu = new ContextMenuStrip(Components);
+            m_selectMenu = new ContextMenu();
+			vistaMenu = new VistaMenu();
 
 			ResumeLayout();
 		}
@@ -1332,8 +1333,9 @@ namespace Revsoft.Docking
 			}
 		}
 
-        private ContextMenuStrip m_selectMenu;
-        private ContextMenuStrip SelectMenu
+		private VistaMenu vistaMenu;
+        private ContextMenu m_selectMenu;
+        private ContextMenu SelectMenu
         {
             get { return m_selectMenu; }
         }
@@ -1342,21 +1344,23 @@ namespace Revsoft.Docking
         {
             int x = 0;
             int y = ButtonWindowList.Location.Y + ButtonWindowList.Height;
-
-            SelectMenu.Items.Clear();
+			
+            SelectMenu.MenuItems.Clear();
             foreach (TabVS2005 tab in Tabs)
             {
                 IDockContent content = tab.Content;
-                ToolStripItem item = SelectMenu.Items.Add(content.DockHandler.TabText, content.DockHandler.Icon.ToBitmap());
+				MenuItem item = new MenuItem(content.DockHandler.TabText, new EventHandler(ContextMenuItem_Click));
+				
+                this.vistaMenu.SetImage(item, (Image)content.DockHandler.Icon.ToBitmap());
                 item.Tag = tab.Content;
-                item.Click += new EventHandler(ContextMenuItem_Click);
+				SelectMenu.MenuItems.Add(item);
             }
-            SelectMenu.Show(ButtonWindowList, x, y);
+            SelectMenu.Show(ButtonWindowList, new Point(x, y));
         }
 
         private void ContextMenuItem_Click(object sender, EventArgs e)
         {
-            ToolStripMenuItem item = sender as ToolStripMenuItem;
+            MenuItem item = sender as MenuItem;
             if (item != null)
             {
                 IDockContent content = (IDockContent)item.Tag;

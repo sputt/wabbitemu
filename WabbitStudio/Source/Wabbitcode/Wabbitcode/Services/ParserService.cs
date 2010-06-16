@@ -87,6 +87,12 @@ namespace Revsoft.Wabbitcode.Services.Parser
 							Define defineToAdd = new Define(counter, labelName, contents, description, info);
 							info.DefinesList.Add(defineToAdd);
 						}
+						else if (lines[counter] == '(')
+						{
+							//must be a macro
+							SkipToEOL(lines, counter);
+							continue;
+						} 
 						else
 						{
 							//it must be a label with no colon
@@ -267,7 +273,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
 		private static bool IsValidIndex(string substring, int counter)
 		{
-			return counter < substring.Length ;
+			return counter > -1 && counter < substring.Length ;
 		}
 
 		private static bool IsValidLabelChar(char c)

@@ -200,6 +200,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
             foreach (TreeNode node in projViewer.SelectedNodes)
             {
+				OpenNode(node);
+				/*
                 string[] attributes = node.Tag.ToString().Split('|');
 				string file = attributes[1];
 				if (file.Length > 0 && file[0] == '\\')
@@ -208,7 +210,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 					file = Path.Combine(ProjectService.ProjectDirectory, file);
                 newEditor doc = DocumentService.GotoFile(file);
                 if (!string.IsNullOrEmpty(attributes[2]))
-                    doc.editorBox.Document.FoldingManager.DeserializeFromString(attributes[2]);
+                    doc.editorBox.Document.FoldingManager.DeserializeFromString(attributes[2]);*/
             }
         }
 
@@ -278,6 +280,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
             Point cursor = projViewer.PointToClient(new Point(e.X, e.Y));
             TreeNode newNode = projViewer.GetNodeAt(cursor);
+			if (newNode == null)
+				return;
             while (newNode.Tag.ToString() != "Folder")
                 newNode = newNode.Parent;
             foreach (TreeNode original in projViewer.SelectedNodes)

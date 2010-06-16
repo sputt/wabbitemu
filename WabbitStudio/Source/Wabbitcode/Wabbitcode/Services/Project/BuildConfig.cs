@@ -32,6 +32,9 @@ namespace Revsoft.Wabbitcode.Services.Project
 		public void Build()
 		{
 			SortSteps();
+			ProjectService.Project.ProjectOutputs.Clear();
+			ProjectService.Project.ListOutputs.Clear();
+			ProjectService.Project.LabelOutputs.Clear();
 			foreach (IBuildStep step in steps)
 				step.Build();
 		}

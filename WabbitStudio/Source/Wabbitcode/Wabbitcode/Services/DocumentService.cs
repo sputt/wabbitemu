@@ -107,15 +107,15 @@ namespace Revsoft.Wabbitcode.Services
 			};
 			if (ProjectService.ProjectWatcher != null)
 				ProjectService.ProjectWatcher.EnableRaisingEvents = false;
-			if (doc.editorBox.FileName == null)
+			if (doc.FileName == null)
 			{
 				if (saveFileDialog.ShowDialog() != DialogResult.OK)
 					return;
 				if (saveFileDialog.FileName == "")
 					return;
-				doc.editorBox.FileName = saveFileDialog.FileName;
+				doc.FileName = saveFileDialog.FileName;
 			}
-			if (doc.editorBox.FileName != "")
+			if (doc.FileName != "")
 				doc.SaveFile();
 			if (ProjectService.ProjectWatcher != null)
 				ProjectService.ProjectWatcher.EnableRaisingEvents = true;
@@ -233,8 +233,8 @@ namespace Revsoft.Wabbitcode.Services
 				DebuggerService.StepStack.Push(editor.Document.GetLineNumberForOffset(offset));
 				//DocumentService.HighlightLine(lineNumber, Color.Green);
 			}
-			if (line.Contains("ret"))
-				DebuggerService.StepStack.Pop();
+			//if (line.Contains("ret"))
+			//	DebuggerService.StepStack.Pop();
 		}
 
 		public static void HighlightLine(int newLineNumber, Color foregroundColor)
@@ -266,7 +266,8 @@ namespace Revsoft.Wabbitcode.Services
 			while (editorBox.Text[start + length] == ' ' || editorBox.Text[start + length] == '\t')
 				length--;
 			length++;
-			TextMarker highlight = new TextMarker(start, length, TextMarkerType.SolidBlock, foregroundColor, Color.Black) { Tag = editorBox.FileName };
+			TextMarker highlight = new TextMarker(start, length, TextMarkerType.SolidBlock, foregroundColor, Color.Black) 
+				{ Tag = DockingService.ActiveDocument.FileName };
 			editorBox.Document.MarkerStrategy.AddMarker(highlight);
 			highlights.Add(highlight);
 			editorBox.Refresh();
@@ -284,7 +285,7 @@ namespace Revsoft.Wabbitcode.Services
 				return;
 			TextMarker highlight = highlights[index];
 			foreach (newEditor child in DockingService.Documents)
-				if (child.editorBox.FileName == highlight.Tag)
+				if (child.FileName == highlight.Tag)
 				{
 					child.Show();
 					break;
@@ -318,5 +319,7 @@ namespace Revsoft.Wabbitcode.Services
 				DockingService.MainForm.AddRecentItem(file);
 			}
 		}
+
+		public static bool InternalSave { get; set; }
 	}
 }

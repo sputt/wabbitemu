@@ -25,9 +25,15 @@ namespace Revsoft.Wabbitcode
 			set;
 		}
 
+		public bool RequestQuit
+		{
+			get;
+			set;
+		}
+
 		public EditorUpdateRequest()
 		{
-			
+			RequestQuit = false;
 		}
 
 		internal void UpdateAll()

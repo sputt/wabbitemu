@@ -418,6 +418,12 @@
     <Compile Include="Docking\AutoHideStripBase.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Docking\Helpers\VistaMenu\OwnerDrawnMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Docking\Helpers\VistaMenu\VistaMenu.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Docking\InertButtonBase.cs">
       <SubType>Component</SubType>
     </Compile>

@@ -1024,8 +1024,8 @@ namespace Revsoft.Wabbitcode
 					// Flash node. In case the node selection is cancelled by the user, this gives the effect that it
 					// was selected and unselected again.
 					tnToFlash = tn;
-					System.Threading.Thread t = new System.Threading.Thread(new System.Threading.ThreadStart(FlashNode));
-					t.Start();
+					//System.Threading.Thread t = new System.Threading.Thread(new System.Threading.ThreadStart(FlashNode));
+					//t.Start();
 
 					blnNodeProcessedOnMouseDown = true;
 

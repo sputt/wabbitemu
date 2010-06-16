@@ -159,7 +159,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		static void projectWatcher_Deleted(object sender, FileSystemEventArgs e)
 		{
-			throw new NotImplementedException();
+			//throw new NotImplementedException();
 		}
 
 		delegate void FileChangedDelegate(newEditor doc, string fileName);
@@ -168,11 +168,11 @@ namespace Revsoft.Wabbitcode.Services
 			switch (e.ChangeType)
 			{
 				case WatcherChangeTypes.Changed:
-					if (!string.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
+					if (!DocumentService.InternalSave && !string.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
 					{
 						foreach (newEditor doc in DockingService.Documents)
 						{
-							if (doc.editorBox.FileName.Equals(e.FullPath, StringComparison.OrdinalIgnoreCase))
+							if (doc.FileName.Equals(e.FullPath, StringComparison.OrdinalIgnoreCase))
 							{
 								FileChangedDelegate fileChanged = UpdateFileChanged;
 								DockingService.MainForm.Invoke(fileChanged, new object[] { doc, e.FullPath });
