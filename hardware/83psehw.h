@@ -98,6 +98,7 @@ typedef struct SE_AUX {
 STDINT_t *INT83PSE_init(CPU_t*);
 int device_init_83pse(CPU_t*);
 int memory_init_83pse(memc *);
+int memory_init_84p(memc *);
 
 void port0_83pse(CPU_t *, device_t *);
 void port2_83pse(CPU_t *, device_t *);
@@ -106,6 +107,7 @@ void port4_83pse(CPU_t *, device_t *);
 void port6_83pse(CPU_t *, device_t *);
 void port7_83pse(CPU_t *, device_t *);
 void port14_83pse(CPU_t *, device_t *);
-void flashwrite83pse(CPU_t *, unsigned short , unsigned char );
+void flashwrite83pse(CPU_t *, unsigned short, unsigned char);
+void flashwrite84p(CPU_t *, unsigned short, unsigned char);
 
 #endif 

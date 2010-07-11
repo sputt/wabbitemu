@@ -549,7 +549,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			}
 
 			if (eps->ExpandState != EP_CLOSED)
-				dwHeight = tm.tmHeight*3/2 + eps->VisibleHeight;
+				dwHeight = tm.tmHeight*3/2 + (DWORD) eps->VisibleHeight;
 			PanesHeight += dwHeight;
 
 			RECT rc;

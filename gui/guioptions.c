@@ -10,6 +10,7 @@
 #include "displayoptionstest.h"
 #include "lcd.h"
 #include "guicutout.h"
+#include "keys.h"
 
 extern HINSTANCE g_hInst;
 extern BITMAPINFO *bi;
@@ -492,6 +493,9 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 							//char lpstrFile[MAX_PATH];
 							//BrowseBMPFile(&lpstrFile);
 						}
+						case IDC_CHKCUTOUT: {
+							break;
+						}
 						case IDC_CHKCSTMSKIN: {
 							BOOL customSkinSetting;
 							customSkinSetting = SendMessage(chkCustom, BM_GETCHECK, 0, 0);
@@ -509,6 +513,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 							COLORREF selectedColor = GetPixel(hColorPicker, ptCursor.x, ptCursor.y);
 							calcs[SlotSave].FaceplateColor = selectedColor;
 							gui_frame_update(SlotSave);
+							break;
 						}
 						default:
 							return FALSE;
@@ -517,7 +522,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 					break;
 			}
 			//PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
-			//return TRUE;
+			return TRUE;
 		}
 		case WM_NOTIFY: {
     		switch (((NMHDR FAR *) lParam)->code) {
@@ -718,7 +723,7 @@ All Files (*.*)\0*.*\0\0";
 
 
 INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND edtRom_path, edtRom_version, edtRom_model, edtRom_size, stcRom_image;
+	static HWND edtRom_path, edtRom_version, edtRom_model, edtRom_size, stcRom_image, saveState_check;
 	static HBITMAP hbmTI83P = NULL;
 	switch (Message) {
 		case WM_INITDIALOG: {
@@ -727,6 +732,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			edtRom_model = GetDlgItem(hwnd, IDC_EDTROMMODEL);
 			edtRom_size = GetDlgItem(hwnd, IDC_EDTROMSIZE);
 			stcRom_image = GetDlgItem(hwnd, IDC_STCROMIMAGE);
+			saveState_check = GetDlgItem(hwnd, IDC_CHKSAVE);
 
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
@@ -759,6 +765,9 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 							}
 							break;
 						}
+						case IDC_CHKSAVE:
+							PropSheet_Changed(GetParent(hwnd), hwnd);
+							break;
 					}
 			}
 			return TRUE;
@@ -766,6 +775,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		case WM_NOTIFY:
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
+					exit_save_state = SendMessage(saveState_check, BM_GETCHECK, 0, 0);
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -777,6 +787,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 
 		// Update all of the ROM attributes
 		case WM_USER:
+			SendMessage(saveState_check, BM_SETCHECK, exit_save_state, 0);
 			SendMessage(edtRom_path, WM_SETTEXT, 0, (LPARAM) calcs[SlotSave].rom_path);
 			SendMessage(edtRom_version, WM_SETTEXT, 0, (LPARAM) calcs[SlotSave].rom_version);
 			SendMessage(edtRom_model, WM_SETTEXT, 0, (LPARAM) CalcModelTxt[calcs[SlotSave].model]);
@@ -797,8 +808,8 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 	}
 	return FALSE;
 }
-ACCEL hInitialAccels[256],	// original tables not touched
-	hNewAccels[256];		// working copy
+//static ACCEL hInitialAccels[256];	// original tables not touched
+ACCEL hNewAccels[256];		// working copy
 HWND hListMenu;
 // all submenus of current category
 HWND hHotKey;
@@ -810,6 +821,7 @@ char *m_sCtrl, *m_sAlt, *m_sShift;
 int m_nInitialLen;
 DWORD m_dwCheckSum; 		// trivia for initial table
 static int cur_sel;
+bool accelerators = true;
 INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch(Message) {
 		case WM_INITDIALOG: {
@@ -831,6 +843,7 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 				ComboBox_AddString(hComboBox, string);
 				free(string);
 			}
+			ComboBox_AddString(hComboBox, "Emulator");
 			ComboBox_SetCurSel(hComboBox, 0);
 			SendMessage(hwnd, WM_COMMAND, CBN_SELCHANGE << 16, 0);
 			return TRUE;
@@ -912,7 +925,16 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 									break;
 								}
 						}
+					} else if (hSender == GetDlgItem(hwnd, IDC_RESET_ACCEL)) {
+						//reload whatever is packed in with us
+						HACCEL hAccelNew = LoadAccelerators(g_hInst, "Z80Accel");
+						int numEntries = CopyAcceleratorTable(hAccelNew, NULL, 0);
+						nUsed = CopyAcceleratorTable(hAccelNew, hNewAccels, numEntries);
+						//need to clean up :D
+						DestroyAcceleratorTable(hAccelNew);
+						ChangeCommand(hwnd);
 					}
+					PropSheet_Changed(GetParent(hwnd), hwnd);
 					break;
 				}
 			}
@@ -948,7 +970,14 @@ void ChangeMenuCommands(HWND hSender) {
 	HMENU hSubMenu = GetSubMenu(hMenu, cur_sel);
 	ListView_DeleteAllItems(hListMenu);
 	memset(buffer, 0, ARRAYSIZE(buffer));
-	RecurseAddItems(hSubMenu, (char*)&buffer);
+	if (hSubMenu == NULL) {
+		//assume that if we cant find the menu, then its the emulator keys
+		AddNormalKeys((char *) &buffer);
+		accelerators = false;
+	} else {
+		RecurseAddItems(hSubMenu, (char *) &buffer);
+		accelerators = true;
+	}
 }
 
 char* NameFromVKey(UINT nVK) {
@@ -1036,7 +1065,14 @@ char* NameFromAccel(ACCEL key) {
 	return name;
 }
 
-void RecurseAddItems(HMENU hMenu, char* base) {
+void AddNormalKeys(char *base) {
+	LVITEM li; // lparam is command ID
+	li.mask = LVIF_TEXT | LVIF_PARAM;
+	li.iSubItem = 0;	// browse this menu checking for submenus
+	//int nItems = ARRAYSIZE(keygrps);
+}
+
+void RecurseAddItems(HMENU hMenu, char *base) {
 	int i;
 	LVITEM li; // lparam is command ID
 	li.mask = LVIF_TEXT | LVIF_PARAM;

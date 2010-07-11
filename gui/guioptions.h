@@ -13,6 +13,7 @@ BOOL IsValidCmdRange(WORD);
 void DoPropertySheet(HWND);
 void ChangeCommand(HWND);
 char* NameFromAccel(ACCEL);
+void AddNormalKeys(char *);
 int SetGifName(BOOL);
 
 #define TBRTICS 4

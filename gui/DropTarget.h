@@ -35,4 +35,4 @@ private:
 };
 
 void RegisterDropWindow(HWND hwnd, IDropTarget **ppDropTarget);
-
+int DropMemoryTarget(HWND);

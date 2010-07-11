@@ -103,7 +103,8 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 			if (_tcsicmp(szWindowName, _T("wabbitminimize")) == 0) {
 				ShowWindow(calcs[gslot].hwndFrame, SW_MINIMIZE);
 			} else if (_tcsicmp(szWindowName, _T("wabbitclose")) == 0) {
-				PostQuitMessage(0);
+				DestroyWindow(calcs[gslot].hwndFrame);
+				//PostQuitMessage(0);
 			}
 			SetWindowLong(hwnd, 0, (LONG) FALSE);
 			ReleaseCapture();
@@ -120,6 +121,8 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 	}
 }
 
+typedef HRESULT (*SetThemeFunc)(HWND, LPCWSTR, LPCWSTR);
+typedef HRESULT (*DwmSetAttrib)(HWND, DWORD, LPCVOID, DWORD);
 
 /* Using a preset list of points, cut around the edges to make the
  * frame window transparent.  Also create buttons to allow minimize
@@ -138,8 +141,14 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 		scale = 2;
 
 	DestroyWindow(calcs[gslot].hwndLCD);
-	BOOL disableTransition = TRUE;
+	//BOOL disableTransition = TRUE;
 	//DwmSetWindowAttribute(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+	HMODULE hasDWM = LoadLibrary("dwmapi.dll");
+	if (hasDWM) {
+		bool disableTransition = true;
+		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, "DwmSetWindowAttribute");
+		SetAttrib(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(bool));
+	}
 	calcs[gslot].hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
@@ -182,6 +191,10 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 		lpbitmap,
 		(BITMAPINFO *)&bi, DIB_RGB_COLORS);
 
+	//this really sucked to figure out, but basically you can't fuck with
+	//the alpha channel in a bitmap unless you use GetDIBits to get it
+	//in an array, change the highest byte, then reset with SetDIBits
+	//This colors the faceplate that way
 	BYTE* pPixel = lpbitmap;
 	HRGN rgn = GetRegion();
 	int x,y;
@@ -190,9 +203,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 		for(x = 0; x < width; x++)
 		{
 			if (PtInRegion(rgn, x, height - y))
-			{
 				pPixel[3] = 0xFF;
-			}
 			pPixel+=4;
 		}
 	}
@@ -201,6 +212,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 			(UINT)height,
 			lpbitmap,
 			(BITMAPINFO *)&bi, DIB_RGB_COLORS);
+	free(lpbitmap);
 
 	RECT rc;
 	GetClientRect(hwndFrame, &rc);
@@ -271,7 +283,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 
 	// Create the two buttons that appear when the skin is cutout
 	WNDCLASS wc = {0};
-	wc.cbWndExtra = sizeof(BOOL) + sizeof(int);
+	wc.cbWndExtra = sizeof(bool) + sizeof(int);
 	wc.lpfnWndProc = SmallButtonProc;
 	wc.lpszClassName = _T("WABBITSMALLBUTTON");
 	wc.hInstance = g_hInst;
@@ -307,7 +319,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 
 	SetWindowLong(hwndButton, GWL_STYLE, WS_VISIBLE);
 
-	if (calcs[gslot].SkinEnabled == FALSE) {
+	if (calcs[gslot].SkinEnabled == false) {
 		RECT wr;
 		GetWindowRect(hwndFrame, &wr);
 		SetWindowPos(hwndFrame, NULL,
@@ -317,7 +329,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 				SWP_NOZORDER|SWP_NOSIZE);
 	}
 
-	InvalidateRect(hwndFrame, NULL, TRUE);
+	InvalidateRect(hwndFrame, NULL, true);
 	return 0;
 }
 
@@ -325,7 +337,13 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
  * the small minimize and close buttons
  */
 int DisableCutout(HWND hwndFrame) {
-	BOOL disableTransition = TRUE;
+	HMODULE hasDWM = LoadLibrary("dwmapi.dll");
+	if (hasDWM) {
+		bool disableTransition = true;
+		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, "DwmSetWindowAttribute");
+		SetAttrib(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(bool));
+	}
+	//BOOL disableTransition = TRUE;
 	//DwmSetWindowAttribute(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 
 	int scale = calcs[gslot].Scale;
@@ -343,7 +361,7 @@ int DisableCutout(HWND hwndFrame) {
 	SetWindowLong(hwndFrame, GWL_EXSTYLE, 0);
 	SetWindowLong(hwndFrame, GWL_STYLE, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));
 
-	if (calcs[gslot].SkinEnabled == FALSE) {
+	if (!calcs[gslot].SkinEnabled) {
 
 		//SetRect(&rectSkin, 0, 0, 314, 688);
 

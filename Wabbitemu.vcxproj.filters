@@ -207,9 +207,6 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="interface\mapeditor.c">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">

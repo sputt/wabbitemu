@@ -677,7 +677,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				FileNames = AppendName( FileNames,fn);
 			}
 
-			ThreadSend(FileNames, SEND_CUR);
+			ThreadSend(FileNames, DropMemoryTarget(hwnd));
 
 			//InvalidateRect(calcs[gslot].hwndFrame, NULL, FALSE);
 			return 0;
@@ -694,6 +694,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			if (calcs[gslot].pDropTarget != NULL)
 				; //UnregisterDropWindow(hwnd, (IDropTarget *) calcs[gslot].pDropTarget);
 #endif
+			if (calc_count() == 0)
+				free(bi);
 			return 0;
 		default:
 			if (Message == RegisterWindowMessage("ShellGetDragImage")) {

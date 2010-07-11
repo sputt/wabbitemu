@@ -62,5 +62,6 @@ INT_PTR CALLBACK AboutDialogProc(HWND, UINT, WPARAM, LPARAM);
 #include <d3d9.h>
 extern IDirect3DDevice9 *pd3dDevice; // Direct3D Rendering Device 
 #endif
+static HACCEL haccelmain;
 
 #endif

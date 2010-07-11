@@ -1,6 +1,9 @@
 #include "stdafx.h"
 
+#include "calc.h"
 #include "DropTarget.h"
+
+extern POINT drop_pt;
 
 CDropTarget::CDropTarget(HWND hwnd) {
 	m_hwndTarget = hwnd;
@@ -116,6 +119,8 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 
 	if (i > 0) {
 		m_fAllowDrop = TRUE;
+		drop_pt.x = pt.x;
+		drop_pt.y = pt.y;
 	}
 
 	for (i = 0; i < m_nAccepted; i++) {
@@ -140,12 +145,14 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 		pdd->type = DROPIMAGE_COPY;
 		wcscpy(pdd->szMessage, L"Transfer to %1");
 		wcscpy(pdd->szInsert, L"Wabbitemu");
+		calcs[gslot].do_drag = true;
 
 		*pdwEffect = *pdwEffect & DROPEFFECT_COPY;
 	} else {
 		pdd->type = DROPIMAGE_INVALID;
 		wcscpy(pdd->szMessage, L"Cannot transfer to %1");
 		wcscpy(pdd->szInsert, L"Wabbitemu");
+		calcs[gslot].do_drag = false;
 
 		*pdwEffect = DROPEFFECT_NONE;
 	}
@@ -162,6 +169,8 @@ HRESULT __stdcall CDropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdw
 
 	if (m_fAllowDrop == TRUE) {
 		*pdwEffect = *pdwEffect & DROPEFFECT_COPY;
+		drop_pt.x = pt.x;
+		drop_pt.y = pt.y;
 	} else {
 		*pdwEffect = DROPEFFECT_NONE;
 	}
@@ -172,6 +181,7 @@ HRESULT __stdcall CDropTarget::DragLeave() {
 	if (m_pDropTargetHelper != NULL) {
 		m_pDropTargetHelper->DragLeave();
 	}
+	calcs[gslot].do_drag = false;
 
 	return S_OK;
 }
@@ -210,5 +220,28 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 	} else {
 		*pdwEffect = DROPEFFECT_NONE;
 	}
+	calcs[gslot].do_drag = false;
 	return S_OK;
+}
+
+int DropMemoryTarget(HWND hwnd) {
+	RECT lr, rr;
+	POINT p;
+	int ram;
+
+	GetClientRect(hwnd, &lr);
+	CopyRect(&rr, &lr);
+	lr.right /= 2;			//left half
+	rr.left = lr.right;		//right half
+	p = drop_pt;			//DragQueryPoint((HDROP) wParam, &p);
+//	printf("p %d,%d\n",p.x,p.y);
+	SwitchToThisWindow(GetParent(hwnd), TRUE);
+
+	ScreenToClient(hwnd, (LPPOINT) &p);
+
+	if (PtInRect(&rr, p)) ram = SEND_ARC;
+	else if (PtInRect(&lr, p)) ram = SEND_RAM;
+	else ram = SEND_CUR;
+
+	return ram;
 }

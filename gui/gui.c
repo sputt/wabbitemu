@@ -203,7 +203,8 @@ int gui_frame(int slot) {
 
 	GetClientRect(calcs[slot].hwndFrame, &r);
 	calcs[slot].running = TRUE;
-	calcs[slot].speed = 1;	HMENU hmenu = GetMenu(calcs[slot].hwndFrame);
+	calcs[slot].speed = 100;
+	HMENU hmenu = GetMenu(calcs[slot].hwndFrame);
 	CheckMenuRadioItem(GetSubMenu(GetSubMenu(hmenu, 2),4), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
 	gui_frame_update(slot);
 	ReleaseDC(calcs[slot].hwndFrame, hdc);
@@ -211,33 +212,35 @@ int gui_frame(int slot) {
 }
 
 int gui_frame_update(int slot) {
-	BITMAP skinSize, keymapSize;	HDC hdc = GetDC(calcs[slot].hwndFrame);
+	BITMAP skinSize, keymapSize;
+	HDC hdc = GetDC(calcs[slot].hwndFrame);
 	calcs[slot].hdcKeymap = CreateCompatibleDC(hdc);
 	calcs[gslot].hdcSkin = CreateCompatibleDC(hdc);
 	HBITMAP hbmSkin = LoadBitmap(g_hInst, CalcModelTxt[calcs[slot].model]);
 	HBITMAP hbmOld = (HBITMAP)SelectObject(calcs[gslot].hdcSkin, hbmSkin);
 	GetObject(hbmSkin, sizeof(BITMAP), &skinSize);
-	char* name = (char*)malloc(strlen(CalcModelTxt[calcs[slot].model]) + 7);
+	char *name = (char *) malloc(strlen(CalcModelTxt[calcs[slot].model]) + 7);
 	strcpy(name, CalcModelTxt[calcs[slot].model]);
-	strcat(name, "Keymap");	HBITMAP hbmKeymap = LoadBitmap(g_hInst, name);
+	strcat(name, "Keymap");
+	HBITMAP hbmKeymap = LoadBitmap(g_hInst, name);
 	free(name);
-	HBITMAP hbmOldKeymap = (HBITMAP)SelectObject(calcs[slot].hdcKeymap, hbmKeymap);
+	HBITMAP hbmOldKeymap = (HBITMAP) SelectObject(calcs[slot].hdcKeymap, hbmKeymap);
 	GetObject(hbmKeymap, sizeof(BITMAP), &keymapSize);	//skin and keymap must match
-	int x,y, foundX = 0, foundY = 0;
-	BOOL foundScreen = FALSE;
+	int x, y, foundX = 0, foundY = 0;
+	bool foundScreen = FALSE;
 	if ((skinSize.bmWidth != keymapSize.bmWidth) || (skinSize.bmHeight != keymapSize.bmHeight)) {
 		calcs[slot].SkinEnabled = FALSE;
 		MessageBox(NULL, "Skin and Keymap are not the same size", "error",  MB_OK);
 	} else {
 		calcs[slot].rectSkin.right = skinSize.bmWidth;
 		calcs[slot].rectSkin.bottom = skinSize.bmHeight;		//find the screen size
-		for(y = 0; y < skinSize.bmHeight; y++) {
-			for (x = 0; x < skinSize.bmWidth; x++) {
+		for(y = 0; y < skinSize.bmHeight && foundScreen == false; y++) {
+			for (x = 0; x < skinSize.bmWidth && foundScreen == false; x++) {
 				COLORREF pixel = GetPixel(calcs[slot].hdcKeymap, x, y);
-				if (pixel == RGB(255, 0, 0) && foundScreen != TRUE)	{
+				if (pixel == RGB(255, 0, 0) && foundScreen != true)	{
 					foundX = x;
 					foundY = y;	
-					foundScreen = TRUE;	
+					foundScreen = true;	
 				}
 			}
 		}
@@ -254,6 +257,10 @@ int gui_frame_update(int slot) {
 			RECT rc;
 			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
 			// Create status bar
+			if (calcs[slot].hwndStatusBar != NULL) {
+				SendMessage(calcs[slot].hwndStatusBar, WM_DESTROY, 0, 0);
+				SendMessage(calcs[slot].hwndStatusBar, WM_CLOSE, 0, 0);
+			}
 			SetRect(&rc, 0, 0, 128*calcs[slot].Scale, 64*calcs[slot].Scale);
 			int iStatusWidths[] = {100, -1};
 			calcs[slot].hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, calcs[slot].hwndFrame, (HMENU)99, g_hInst, NULL);
@@ -602,6 +609,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// Shutdown COM
 	OleUninitialize();
+#if _DEBUG
+	_CrtDumpMemoryLeaks();
+#endif
 
     return Msg.wParam;
 }
@@ -639,12 +649,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			ReleaseDC(hwnd, hdc);*/			
 			return 0;
 		}
-		/*case WM_ACTIVATE: {
-			RECT rc;
-			GetClientRect(hwnd, &rc);
-			InvalidateRect(hwnd, &rc, FALSE);
+		case WM_ACTIVATE: {
+			//RECT rc;
+			//GetClientRect(hwnd, &rc);
+			//InvalidateRect(hwnd, &rc, FALSE);
+			if (wParam == WA_INACTIVE)
+				return 0;
+			
+			int temp = calc_from_hwnd(hwnd);
+			if (temp != -1)
+				gslot = temp;
 			return 0;
-		}*/
+		}
 		case WM_PAINT:
 		{
 #define GIFGRAD_PEAK 15
@@ -683,8 +699,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			if (calcs[gslot].gif_disp_state != GDS_IDLE) {
 				RECT screen, rc;
-				//screen = calcs[gslot].rectLCD;				GetWindowRect(calcs[gslot].hwndLCD, &screen);
-				GetWindowRect(calcs[gslot].hwndFrame, &rc);				//OffsetRect(&screen, rc.left, rc.top);
+				//screen = calcs[gslot].rectLCD;
+				GetWindowRect(calcs[gslot].hwndLCD, &screen);
+				GetWindowRect(calcs[gslot].hwndFrame, &rc);
+				//OffsetRect(&screen, rc.left, rc.top);
 				int orig_w = screen.right - screen.left;
 				int orig_h = screen.bottom - screen.top;
 
@@ -710,7 +728,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			hdc = BeginPaint(hwnd, &ps);
 			if (calcs[gslot].SkinEnabled)
 				BitBlt(hdc, 0, 0, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom,							
-				calcs[gslot].hdcSkin, 0, 0, SRCCOPY);			else			{				RECT rc;
+				calcs[gslot].hdcSkin, 0, 0, SRCCOPY);
+			else {
+				RECT rc;
 				GetClientRect(calcs[gslot].hwndFrame, &rc);
 				FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
 			}
@@ -867,10 +887,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					{					
 					HMENU hmenu = GetMenu(hwnd);					
 					if (calcs[gslot].running) {						
-						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_CHECKED);						
+						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_CHECKED);
 						calcs[gslot].running = FALSE;					
 					} else {						
-						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_UNCHECKED);						
+						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_UNCHECKED);
 						calcs[gslot].running = TRUE;					
 					}					
 					break;				
@@ -878,49 +898,52 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}				
 				case IDM_SPEED_QUARTER:				
 					{					
-					calcs[gslot].speed = .25f;					
-					HMENU hmenu = GetMenu(hwnd);					
-					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_QUARTER, MF_BYCOMMAND);					
+					calcs[gslot].speed = 25;										
+					CheckMenuRadioItem(GetSubMenu(GetMenu(hwnd), 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUARTER, MF_BYCOMMAND| MF_CHECKED);
 					break;				
 					}				
 				case IDM_SPEED_HALF:				
 					{					
-						calcs[gslot].speed = .50f;					
+						calcs[gslot].speed = 50;					
 						HMENU hmenu = GetMenu(hwnd);					
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_HALF, MF_BYCOMMAND | MF_CHECKED);					
+						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_HALF, MF_BYCOMMAND | MF_CHECKED);
 						break;				
 					}				
 				case IDM_SPEED_NORMAL:				
 					{					
-						calcs[gslot].speed = 1.0f;					
+						calcs[gslot].speed = 100;					
 						HMENU hmenu = GetMenu(hwnd);					
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND | MF_CHECKED);					
+						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_NORMAL, MF_BYCOMMAND | MF_CHECKED);
 						break;				
 					}				
 				case IDM_SPEED_DOUBLE:				
 					{					
-						calcs[gslot].speed = 2.0f;					
+						calcs[gslot].speed = 200;					
 						HMENU hmenu = GetMenu(hwnd);					
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_DOUBLE, MF_BYCOMMAND | MF_CHECKED);					
+						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_DOUBLE, MF_BYCOMMAND | MF_CHECKED);
 						break;				
 					}				
 				case IDM_SPEED_QUADRUPLE:				
 					{					
-						calcs[gslot].speed = 4.0f;					
+						calcs[gslot].speed = 400;					
 						HMENU hmenu = GetMenu(hwnd);					
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_QUADRUPLE, MF_BYCOMMAND | MF_CHECKED);					
+						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUADRUPLE, MF_BYCOMMAND | MF_CHECKED);
 						break;				
-					}				
+					}
 				case IDM_SPEED_MAX:				
-					{					
-						calcs[gslot].speed = 40.0f;					
-						HMENU hmenu = GetMenu(hwnd);					
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_MAX, MF_BYCOMMAND | MF_CHECKED);					
+					{
+						calcs[gslot].speed = 4000;
+						HMENU hmenu = GetMenu(hwnd);
+						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_MAX, MF_BYCOMMAND | MF_CHECKED);
 						break;				
-					}				
+					}
 				case IDM_SPEED_SET:				
-					{					
-						DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC)SetSpeedProc);				
+					{
+						HMENU hmenu = GetMenu(hwnd);					
+						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_SET, MF_BYCOMMAND | MF_CHECKED);
+						DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC)SetSpeedProc);
+						SetFocus(hwnd);
+						break;
 					}			
 }			
 switch (HIWORD(wParam)) {
@@ -939,7 +962,11 @@ switch (HIWORD(wParam)) {
 				SetCapture(hwnd);
 				pt.x	= GET_X_LPARAM(lParam);
 				pt.y	= GET_Y_LPARAM(lParam);
-				if (calcs[gslot].bCutout)				{					pt.y += GetSystemMetrics(SM_CYCAPTION);					pt.x += GetSystemMetrics(SM_CXSIZEFRAME);				}			} else {
+				if (calcs[gslot].bCutout) {
+					pt.y += GetSystemMetrics(SM_CYCAPTION);	
+					pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
+				}
+			} else {
 				ReleaseCapture();
 			}
 
@@ -1025,10 +1052,10 @@ finalize_buttons:
 		case WM_KEYDOWN: {
 			/* make this an accel*/
 			if (wParam == VK_F8) {
-				if (calcs[gslot].speed == 1.0f)
-					calcs[gslot].speed = 4.0f;
+				if (calcs[gslot].speed == 100)
+					SendMessage(hwnd, WM_COMMAND, IDM_SPEED_QUADRUPLE, 0);
 				else
-					calcs[gslot].speed = 1.0f;
+					SendMessage(hwnd, WM_COMMAND, IDM_SPEED_NORMAL, 0);
 			}
 
 			if (wParam == VK_SHIFT) {
@@ -1288,12 +1315,23 @@ finalize_buttons:
 			// If it's the last calc, delete the keymap also
 
 			if (calc_count() == 1) {
+				if (exit_save_state)
+				{
+					char temp_save[MAX_PATH];
+					strcpy(temp_save, getenv("appdata"));
+					strcat(temp_save, "\\wabbitemu.sav");
+					strcpy(calcs[gslot].rom_path, temp_save);
+					WriteSave(temp_save, SaveSlot(gslot), false);
+				}
+
 				printf("Releasing keymap\n");
 				DeleteDC(calcs[gslot].hdcKeymap);
 				printf("Saving registry settings\n");
 				SaveRegistrySettings();
 
 			}
+
+			UnregisterDropWindow(hwnd, calcs[gslot].pDropTarget);
 
 			printf("Freeing calculator slot\n");
 			calc_slot_free(gslot);

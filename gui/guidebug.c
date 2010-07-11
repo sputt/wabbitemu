@@ -394,6 +394,10 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		{
 			printf("Got a command\n");
 			switch (wParam) {
+			case IDM_FILE_EXIT: {
+				SendMessage(hwnd, WM_DESTROY, 0, 0);
+				SendMessage(hwnd, WM_CLOSE, 0, 0);
+			}
 			case IDM_TOOLS_PROFILE: {
 				calcs[gslot].profiler.running = !calcs[gslot].profiler.running;
 				HMENU hmenu = GetMenu(hwnd);

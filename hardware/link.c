@@ -490,7 +490,6 @@ LINK_ERR link_send_app(CPU_t *cpu, TIFILE_t *tifile) {
 		link_recv_pkt(cpu, &rpkt, data);
 		if (rpkt.command_ID != CID_ACK)
 			return LERR_LINK;
-
 		uint16_t page, offset;
 		for (page = 0; page < tifile->flash->pages; page++) {
 			for (offset = 0; offset < 0x4000 && offset
@@ -558,7 +557,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	state_userpages(cpu, &upages);
 	if (upages.start == -1)
 		return LERR_MODEL;
-
+	
 	u_int page;
 	for (page = upages.start; page >= upages.end + tifile->flash->pages
 			&& dest[page][0x00] == 0x80 && dest[page][0x01] == 0x0F; page
@@ -596,8 +595,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	link_send_app(cpu, tifile);
 	// Delay for a few seconds so the calc will be responsive
 	cpu->pio.link->vlink_size = 100;
-	for (cpu->pio.link->vlink_send = 0; cpu->pio.link->vlink_send < 100; cpu->pio.link->vlink_send
-			+= 20) {
+	for (cpu->pio.link->vlink_send = 0; cpu->pio.link->vlink_send < 100; cpu->pio.link->vlink_send += 20) {
 		link_wait(cpu, MHZ_6*1);
 	}
 	return LERR_SUCCESS;

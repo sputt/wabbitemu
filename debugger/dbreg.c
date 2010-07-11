@@ -1105,7 +1105,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			si.cbSize = sizeof(SCROLLINFO);
 			si.nMin = 0;
 			si.nMax = height;
-			si.nPos = percent * height;
+			si.nPos = (int) percent * height;
 			if (height != 0)
 				si.nPage = 40 - rc.bottom  / height;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);

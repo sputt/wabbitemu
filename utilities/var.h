@@ -93,7 +93,7 @@ typedef struct TIFILE {
 #pragma pack()
 
 #define TI_FLASH_HEADER_SIZE (8+2+1+1+4+1+8+23+1+1+24+4)	
-#define TI_FILE_HEADER_SIZE (8+3+42+2)	
+#define TI_FILE_HEADER_SIZE (8+3+42/*+2*/)	
 #define TI_VAR_HEADER_SIZE (2+2+1+8)
 
 
