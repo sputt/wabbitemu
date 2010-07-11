@@ -911,6 +911,7 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 	FILE* ofile;
 	FILE* cfile;
 	char tmpfn[L_tmpnam];
+	char temp_save[MAX_PATH];
 	
 	if (!save) {
 		puts("Save was null for write");
@@ -920,7 +921,9 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 		ofile = fopen(fn,"wb");
 	} else {
 		tmpnam(tmpfn);
-		ofile = fopen(tmpfn,"wb");
+		strcpy(temp_save, getenv("appdata"));
+		strcat(temp_save, tmpfn);
+		ofile = fopen(temp_save,"wb");
 	}
 		
 	if (!ofile) {
@@ -956,7 +959,7 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 			puts("Could not open compress file for write");
 			return;
 		}
-		ofile = fopen(tmpfn,"rb");
+		ofile = fopen(temp_save,"rb");
 		if (!ofile) {
 			puts("Could not open tmp file for read");
 			return;
@@ -985,6 +988,7 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 	int chunk_offset,chunk_count;
 	char string[128];
 	char tmpfn[L_tmpnam];
+	char temp_save[MAX_PATH];
 	SAVESTATE_t* save;
 	CHUNK_t* chunk;
 	FILE* tmpfile;
@@ -994,7 +998,9 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 	if (strncmp(DETECT_CMP_STR,string,8)==0) {
 		i = fgetc(ifile);
 		tmpnam(tmpfn);
-		tmpfile = fopen(tmpfn,"wb");
+		strcpy(temp_save, getenv("appdata"));
+		strcat(temp_save, tmpfn);
+		tmpfile = fopen(temp_save,"wb");
 		if (!tmpfile) {
 			puts("Could not open tmp file for write");
 			return NULL;
@@ -1016,8 +1022,8 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 		}
 		
 		fclose(tmpfile);
-		ifile = fopen(tmpfn,"rb");	//this is not a leak, ifile gets closed
-									// outside of this routine.
+		ifile = fopen(temp_save,"rb");	//this is not a leak, ifile gets closed
+										// outside of this routine.
 		if (!ifile) {
 			puts("Could not open tmp file for read");
 			return NULL;

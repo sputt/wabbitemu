@@ -9,16 +9,16 @@
 #include "guispeed.h"
 #include "resource.h"
 #include "calc.h"
-#define MIN_SPEED 5
+#define MIN_SPEED 1
 
-float originalSpeed;
+int originalSpeed;
 
 LRESULT CALLBACK SetSpeedProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch (Message) {
 			case WM_INITDIALOG:
 			{
-				originalSpeed = calcs[gslot].speed;
-				int speed = calcs[gslot].speed * 100;
+				int speed = calcs[gslot].speed;
+				originalSpeed = speed;
 				HWND hTrackbar = GetDlgItem(hwnd, IDC_TRB1);
 				SendMessage(hTrackbar, TBM_SETRANGE,
 				        (WPARAM) TRUE,					// redraw flag
@@ -41,7 +41,29 @@ LRESULT CALLBACK SetSpeedProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 					if (newPos == 0)
 						newPos = MIN_SPEED;
 					SendMessage(hTrackbar, TBM_SETPOS, TRUE, newPos);
-					calcs[gslot].speed = (float)newPos / 100.0;
+					calcs[gslot].speed = newPos;
+					HMENU hMenu = GetSubMenu(GetMenu(calcs[gslot].hwndFrame), 2);
+					switch(newPos)
+					{
+						case 25:
+							CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUARTER, MF_BYCOMMAND| MF_CHECKED);
+							break;
+						case 50:
+							CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_HALF, MF_BYCOMMAND| MF_CHECKED);
+							break;
+						case 100:
+							CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_NORMAL, MF_BYCOMMAND| MF_CHECKED);
+							break;
+						case 200:
+							CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_DOUBLE, MF_BYCOMMAND| MF_CHECKED);
+							break;
+						case 400:
+							CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUADRUPLE, MF_BYCOMMAND| MF_CHECKED);
+							break;
+						default:
+							CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_SET, MF_BYCOMMAND| MF_CHECKED);
+							break;
+					}
 				}
 				break;
 			}

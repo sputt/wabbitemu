@@ -109,7 +109,10 @@ int labels_app_load(int slot, char* fn) {
 					int page_offset = (equate >> 16) & 0xFF;
 					
 					label->IsRAM = FALSE;
-					label->page = calcs[slot].last_transferred_app->page - page_offset;
+					if (calcs[slot].last_transferred_app == NULL)
+						label->page = calcs[slot].mem_c.flash_pages - page_offset;
+					else
+						label->page = calcs[slot].last_transferred_app->page - page_offset;
 
 				} else {
 					label->IsRAM = TRUE;

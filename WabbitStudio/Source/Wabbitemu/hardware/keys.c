@@ -175,7 +175,8 @@ static keyprog_t keygrps[] = {
     {RIGHT, 0, 2} // Right Arrow
 };
 #else
-static keyprog_t keygrps[] = {
+keyprog_t *keygrps;
+static keyprog_t defaultkeys[] = {
 	{ 'A' , 5 , 6 },
 	{ 'B' , 4 , 6 },
 	{ 'C' , 3 , 6 },
@@ -251,7 +252,9 @@ static keyprog_t keygrps[] = {
 	{ VK_DELETE , 6 , 7 },
 	{ VK_HOME , 5 , 6 },
 	{ VK_END , 3 , 7 },
-	//{ VK_NUMPAD0 , 4 , 0 },
+#if !_DEBUG
+	{ VK_NUMPAD0 , 4 , 0 },
+#endif
 	{ VK_NUMPAD1 , 4 , 1 },
 	{ VK_NUMPAD2 , 3 , 1 },
 	{ VK_NUMPAD3 , 2 , 1 },
@@ -263,7 +266,152 @@ static keyprog_t keygrps[] = {
 	{ VK_NUMPAD9 , 2 , 3 },
 	{ VK_DECIMAL , 3 , 0 },
 	{ VK_OEM_2, 2, 0 },
+//so much better than harcoding the changes :P
+#ifdef _DEBUG
 	{ VK_NUMPAD0, 20, 0}
+#else
+	{ VK_F12, 20, 0}
+#endif
+	#else
+	{ GDK_Return , 1 , 0 },
+	{ GDK_period , 3 , 0 },
+	{ GDK_comma , 4 , 4 },
+	{ GDK_plus , 1 , 1 },
+	{ GDK_minus , 1 , 2 },
+	{ GDK_multiply , 1 , 3 },
+	{ GDK_division , 1 , 4 },
+	{ GDK_bracketleft , 3 , 4 },
+	{ GDK_bracketright , 2 , 4 },
+	{ GDK_F1 , 6 , 4 },
+	{ GDK_F2 , 6 , 3 },
+	{ GDK_F3 , 6 , 2 },
+	{ GDK_F4 , 6 , 1 },
+	{ GDK_F5 , 6 , 0 },
+	{ GDK_Escape , 6 , 6 },
+	{ GDK_Shift_L , 6 , 5 },
+	{ GDK_Control_L , 5 , 7 },
+	{ GDK_Shift_R , 1 , 6 },
+	{ GDK_hyphen , 2 , 0 },
+	{ GDK_equal , 4 , 7 },
+	{ GDK_Prior , 4 , 6 },
+	{ GDK_Next , 3 , 6 },
+	{ GDK_Insert , 2 , 6 },
+	{ GDK_Delete , 6 , 7 },
+	{ GDK_Home , 5 , 6 },
+	{ GDK_End , 3 , 7 },
+	/*
+	{ VK_NUMPAD0 , 4 , 0 },
+	{ VK_NUMPAD1 , 4 , 1 },
+	{ VK_NUMPAD2 , 3 , 1 },
+	{ VK_NUMPAD3 , 2 , 1 },
+	{ VK_NUMPAD4 , 4 , 2 },
+	{ VK_NUMPAD5 , 3 , 2 },
+	{ VK_NUMPAD6 , 2 , 2 },
+	{ VK_NUMPAD7 , 4 , 3 },
+	{ VK_NUMPAD8 , 3 , 3 },
+	{ VK_NUMPAD9 , 2 , 3 },
+	*/
+	{ GDK_decimalpoint , 3 , 0 },
+	{ GDK_Super_L, 2, 0 },
+	{ GDK_F12, 20, 0 }
+	#endif
+};
+static keyprog_t customkeys[] = {
+	{ 'A' , 5 , 6 },
+	{ 'B' , 4 , 6 },
+	{ 'C' , 3 , 6 },
+	{ 'D' , 5 , 5 },
+	{ 'E' , 4 , 5 },
+	{ 'F' , 3 , 5 },
+	{ 'G' , 2 , 5 },
+	{ 'H' , 1 , 5 },
+	{ 'I' , 5 , 4 },
+	{ 'J' , 4 , 4 },
+	{ 'K' , 3 , 4 },
+	{ 'L' , 2 , 4 },
+	{ 'M' , 1 , 4 },
+	{ 'N' , 5 , 3 },
+	{ 'O' , 4 , 3 },
+	{ 'P' , 3 , 3 },
+	{ 'Q' , 2 , 3 },
+	{ 'R' , 1 , 3 },
+	{ 'S' , 5 , 2 },
+	{ 'T' , 4 , 2 },
+	{ 'U' , 3 , 2 },
+	{ 'V' , 2 , 2 },
+	{ 'W' , 1 , 2 },
+	{ 'X' , 5 , 1 },
+	{ 'Y' , 4 , 1 },
+	{ 'Z' , 3 , 1 },
+	{ ' ' , 4 , 0 },
+	#ifdef WINVER // temporary
+	{ VK_DOWN , 0 , 0 },
+	{ VK_LEFT , 0 , 1 },
+	{ VK_RIGHT , 0 , 2 },
+	{ VK_UP , 0 , 3 },
+	#else
+	{ GDK_Down , 0 , 0 },
+	{ GDK_Left , 0 , 1 },
+	{ GDK_Right , 0 , 2 },
+	{ GDK_Up , 0 , 3 },
+	#endif
+	{ '0' , 4 , 0 },
+	{ '1' , 4 , 1 },
+	{ '2' , 3 , 1 },
+	{ '3' , 2 , 1 },
+	{ '4' , 4 , 2 },
+	{ '5' , 3 , 2 },
+	{ '6' , 2 , 2 },
+	{ '7' , 4 , 3 },
+	{ '8' , 3 , 3 },
+	{ '9' , 2 , 3 },
+	#ifdef WINVER
+	{ VK_RETURN , 1 , 0 },
+	{ VKF_PERIOD , 3 , 0 },
+	{ VKF_COMMA , 4 , 4 },
+	{ VK_ADD , 1 , 1 },
+	{ VK_SUBTRACT , 1 , 2 },
+	{ VK_MULTIPLY , 1 , 3 },
+	{ VK_DIVIDE , 1 , 4 },
+	{ VKF_LBRACKET , 3 , 4 },
+	{ VKF_RBRACKET , 2 , 4 },
+	{ VK_F1 , 6 , 4 },
+	{ VK_F2 , 6 , 3 },
+	{ VK_F3 , 6 , 2 },
+	{ VK_F4 , 6 , 1 },
+	{ VK_F5 , 6 , 0 },
+	{ VK_ESCAPE , 6 , 6 },
+	{ VK_LSHIFT , 6 , 5 },			// l shift
+	{ VK_CONTROL, 5 , 7 },			// l control
+	{ VK_RSHIFT , 1 , 6 },
+	{ VKF_MINUS , 2 , 0 },
+	{ VKF_EQUAL , 4 , 7 },
+	{ VK_PRIOR , 4 , 6 },
+	{ VK_NEXT , 3 , 6 },
+	{ VK_INSERT , 2 , 6 },
+	{ VK_DELETE , 6 , 7 },
+	{ VK_HOME , 5 , 6 },
+	{ VK_END , 3 , 7 },
+#if !_DEBUG
+	{ VK_NUMPAD0 , 4 , 0 },
+#endif
+	{ VK_NUMPAD1 , 4 , 1 },
+	{ VK_NUMPAD2 , 3 , 1 },
+	{ VK_NUMPAD3 , 2 , 1 },
+	{ VK_NUMPAD4 , 4 , 2 },
+	{ VK_NUMPAD5 , 3 , 2 },
+	{ VK_NUMPAD6 , 2 , 2 },
+	{ VK_NUMPAD7 , 4 , 3 },
+	{ VK_NUMPAD8 , 3 , 3 },
+	{ VK_NUMPAD9 , 2 , 3 },
+	{ VK_DECIMAL , 3 , 0 },
+	{ VK_OEM_2, 2, 0 },
+//so much better than harcoding the changes :P
+#ifdef _DEBUG
+	{ VK_NUMPAD0, 20, 0}
+#else
+	{ VK_F12, 20, 0}
+#endif
 	#else
 	{ GDK_Return , 1 , 0 },
 	{ GDK_period , 3 , 0 },
@@ -320,6 +468,7 @@ keypad_t *keypad_init(CPU_t *cpu) {
 		return NULL;
 	}
 
+	keygrps = customkeys;
 	for(b=0;b<8;b++) {
 		for(i=0;i<8;i++) {
 			keypad->keys[b][i]=0;
@@ -381,7 +530,7 @@ keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk) {
 	if (vk >= 'a' && vk <= 'z') vk += 'A' - 'a';
 #endif
 	 */
-	for(i=0; i < NumElm(keygrps); i++) {
+	for(i=0; i < NumElm(defaultkeys); i++) {
 		if (keygrps[i].vk == vk) {
 			if (keygrps[i].group == 20) {
 				keypad->on_pressed |= KEY_KEYBOARDPRESS;
@@ -404,7 +553,7 @@ keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
 #endif
 	 */
 	
-	for(i=0; i < NumElm(keygrps); i++) {
+	for(i=0; i < NumElm(defaultkeys); i++) {
 		if (keygrps[i].vk == vk) {
 			if (keygrps[i].group == 20) {
 				keypad->on_pressed &= (~KEY_KEYBOARDPRESS);

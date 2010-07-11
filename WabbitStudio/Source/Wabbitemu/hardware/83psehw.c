@@ -60,7 +60,7 @@ void port0_83pse(CPU_t *cpu, device_t *dev) {
 void port2_83pse(CPU_t *cpu, device_t *dev) {
 
 	if (cpu->input) {
-		cpu->bus = 0xC3 | ((cpu->mem_c->flash_locked)?4:0);
+		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE3 : 0xC3) | ((cpu->mem_c->flash_locked)?4:0);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
@@ -761,8 +761,8 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 
 	}
 */
-	xtal->ticks = tc_elapsed(cpu->timer_c)*32768.0f;
-	xtal->lastTime = ((double)xtal->ticks / 32768.0f);
+	xtal->ticks = (long long) (tc_elapsed(cpu->timer_c)*32768.0f);
+	xtal->lastTime = ((double) xtal->ticks / 32768.0f);
 	
 
 
@@ -792,9 +792,9 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 					break;
 				case 2:
 				case 3:
-					while( timer->lastTstates+((long long)timer->divsor) < tc_tstates(cpu->timer_c) ) {
+					while( timer->lastTstates+((long long) timer->divsor) < tc_tstates(cpu->timer_c) ) {
 						
-						timer->lastTstates+=timer->divsor;
+						timer->lastTstates+= (long long) timer->divsor;
 						timer->count--;
 						if (!timer->count) {
 							if (!timer->underflow) {
@@ -835,7 +835,7 @@ void port32_83pse(CPU_t *cpu, device_t *dev) {
 		timer->max = cpu->bus;
 		if (timer->clock&0xC0) timer->active = TRUE;
 		timer->lastTstates = tc_tstates(cpu->timer_c);
-		timer->lastTicks = xtal->ticks;
+		timer->lastTicks = (double) xtal->ticks;
 		mod_timer(cpu,xtal);
 		cpu->output = FALSE;
 	}
@@ -871,7 +871,7 @@ void clock_enable(CPU_t *cpu, device_t *dev) {
 			clock->lasttime = tc_elapsed(cpu->timer_c);
 		}
 		if ( (clock->enable&0x01)==1 && (cpu->bus&0x01)==0) {
-			clock->base = clock->base+(tc_elapsed(cpu->timer_c)-clock->lasttime);
+			clock->base = clock->base+((unsigned long) (tc_elapsed(cpu->timer_c)-clock->lasttime));
 		}
 		clock->enable= cpu->bus&0x03;
 
@@ -899,7 +899,7 @@ void clock_read(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		unsigned long time;
 		if (clock->enable&0x01) {
-			time = clock->base+(tc_elapsed(cpu->timer_c)-clock->lasttime);
+			time = clock->base+((unsigned long) (tc_elapsed(cpu->timer_c)-clock->lasttime));
 		} else {
 			time = clock->base;
 		}
@@ -1056,6 +1056,104 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			cpu->mem_c->step=6;
 			break;
 
+		default:
+			endflash(cpu);
+			break;
+	}
+}
+
+void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
+	int bank = addr>>14;
+	switch( cpu->mem_c->step ) {
+		case 0:
+			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
+				if ( data == 0xAA ) cpu->mem_c->step++;
+			}
+			break;
+		case 1:
+			if ( ( addr & 0x0FFF ) == 0x0555 ) {
+				if (data==0x55) cpu->mem_c->step++;
+				else endflash(cpu);
+			} else endflash(cpu);
+			break;
+		case 2:
+			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
+				if ( data == 0xA0 ) {
+					cpu->mem_c->cmd=0xA0;		//Program
+					cpu->mem_c->step++;
+				} else if ( data == 0x80 ) {
+					cpu->mem_c->cmd=0x80;		//Erase
+					cpu->mem_c->step++;
+				} else endflash(cpu);
+			} else endflash(cpu);
+			break;
+		case 3:
+			if ( cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
+				(*(cpu->mem_c->banks[bank].addr +(addr&0x3fff))) &= data;  //AND LOGIC!!
+//				if (cpu->mem_c->banks[bank].page == 0x1E) printf("\n");
+//				if (cpu->mem_c->banks[bank].page == 0x1E || cpu->mem_c->banks[bank].page == 0x08 ) {
+//					printf("Address: %02X:%04X  <- %02X  \n",cpu->mem_c->banks[bank].page ,addr&0x3fff,data);
+//				}
+//				if (cpu->mem_c->banks[bank].page == 0x1E) printf("\n");
+				endflash(cpu);
+			}
+			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
+				if (data==0xAA) cpu->mem_c->step++;
+			}
+			if (data == 0xF0) endflash(cpu);
+			break;
+		case 4:
+			if ( ( addr & 0x0FFF ) == 0x0555 ) {
+				if ( data == 0x55 ) cpu->mem_c->step++;
+			}
+			if (data == 0xF0) endflash(cpu);
+			break;
+		case 5:
+			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
+				if (data==0x10) {			//Erase entire chip...Im not sure if
+					int i;					//boot page is included, so I'll leave it off
+					for( i = 0; i < ( cpu->mem_c->flash_size - 16384 ) ; i++ ) {
+						cpu->mem_c->flash[i] = 0xFF;
+					}
+				}
+			}
+			if (data == 0xF0) endflash(cpu);
+			if (data == 0x30) {		//erase sectors
+				int i;
+				int spage = (cpu->mem_c->banks[bank].page<<1) + ((addr>>13)&0x01);
+//				printf("Spage = %03d , Page = %02X , Addr = %04X \n",spage, spage/2,( ( spage & 0x00F8 ) * 0x2000 ) );
+				if (spage<120) {
+					int startaddr = ( ( spage & 0x00F8 ) * 0x2000 );
+					int endaddr   = ( startaddr + 0x10000 );
+					for(i=startaddr; i<endaddr ;i++) {
+						cpu->mem_c->flash[i]=0xFF;
+					}
+				} else if (spage<124) {
+					for( i=0xF0000; i < 0xF8000; i++ ) {
+						cpu->mem_c->flash[i] = 0xFF;
+					}
+				} else if (spage<125) {
+//					printf("\nAddress: 1E:0000 -- ERASED\n");
+					for( i=0xF8000; i < 0xFA000; i++ ) {
+						cpu->mem_c->flash[i] = 0xFF;
+
+					}
+				} else if (spage<126) {
+//					printf("\nAddress: 1E:2000 -- ERASED\n");
+					for( i=0xFA000; i<0xFC000; i++ ) {
+						cpu->mem_c->flash[i]=0xFF;
+					}
+				} else if (spage<128) {
+/*
+// I comment this off because this is the boot page
+// it suppose to be write protected...
+					for(i=0x7C000;i<0x80000;i++) {
+						cpu->mem_c->flash[i]=0xFF;
+					}
+*/
+				}
+			}
+			break;
 		default:
 			endflash(cpu);
 			break;
@@ -1408,5 +1506,47 @@ int memory_init_83pse(memc *mc) {
 	return 0;
 }
 
+int memory_init_84p(memc *mc) {
+	memset(mc, 0, sizeof(memory_context_t));
+
+	/* Set Number of Pages here */
+	mc->flash_pages = 64;
+	mc->ram_pages = 8;
+
+	mc->flash_version = 3;
+	mc->upper = 0x60;
+	mc->lower = 0x10;
+
+	mc->flash_size = mc->flash_pages * PAGE_SIZE;
+	mc->flash = (u_char *) calloc(mc->flash_pages, PAGE_SIZE);
+	mc->flash_break = (u_char *) calloc(mc->flash_pages, PAGE_SIZE);
+	memset(mc->flash, 0xFF, mc->flash_size);
+
+	mc->ram_size = mc->ram_pages * PAGE_SIZE;
+	mc->ram = (u_char *) calloc(mc->ram_pages, PAGE_SIZE);
+	mc->ram_break = (u_char *) calloc(mc->ram_pages, PAGE_SIZE);
+
+	if (!mc->flash || !mc->ram ) {
+		printf("Couldn't allocate memory in memory_init_84p\n");
+		return 1;
+	}
+
+	mc->boot_mapped				= FALSE;
+	mc->flash_locked			= TRUE;
+
+	/* Organize bank states here */
+
+	/*	Address								page	write?	ram?	no exec?	*/
+	bank_state_t banks[5] = {
+		{mc->flash, 						0, 		FALSE,	FALSE, 	FALSE},
+		{mc->flash+0x3f*PAGE_SIZE,			0x3f, 	FALSE, 	FALSE, 	FALSE},
+		{mc->flash+0x3f*PAGE_SIZE,			0x3f, 	FALSE, 	FALSE, 	FALSE},
+		{mc->ram,							0,		FALSE,	TRUE,	TRUE},
+		{NULL,								0,		FALSE,	FALSE,	FALSE}
+	};
+
+	memcpy(mc->banks, banks, sizeof(banks));
+	return 0;
+}
 
 

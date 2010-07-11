@@ -169,19 +169,21 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 }
 
 unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
-#ifdef DATA_BREAK
 	if (check_mem_read_break(cpu->mem_c, addr))
 	{
 		calcs[gslot].running = FALSE;
+#ifdef WINVER
 		bank_t *bank = &calcs[gslot].mem_c.banks[mc_bank(calcs[gslot].cpu.pc)];
 		if (calcs[gslot].ole_callback != NULL) {
 			PostMessage(calcs[gslot].ole_callback, WM_USER, bank->ram<<16 | bank->page, calcs[gslot].cpu.pc);
 			printf("postmessage called!\n");
 		} else {
-			gui_debug(gslot);
-		}
-	}
 #endif
+			gui_debug(gslot);
+#ifdef WINVER
+		}
+#endif
+	}
 	cpu->bus = mem_read(cpu->mem_c, addr);
 
 	if (cpu->mem_c->banks[mc_bank(addr)].ram) {
@@ -197,19 +199,21 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 }
 
 unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
-#ifdef DATA_BREAK
 	if (check_mem_write_break(cpu->mem_c, addr))
 	{
 		calcs[gslot].running = FALSE;
+#ifdef WINVER
 		bank_t *bank = &calcs[gslot].mem_c.banks[mc_bank(calcs[gslot].cpu.pc)];
 		if (calcs[gslot].ole_callback != NULL) {
 			PostMessage(calcs[gslot].ole_callback, WM_USER, bank->ram<<16 | bank->page, calcs[gslot].cpu.pc);
 			printf("postmessage called!\n");
 		} else {
-			gui_debug(gslot);
-		}
-	}
 #endif
+			gui_debug(gslot);
+#ifdef WINVER
+		}
+#endif
+	}
 	int bank = mc_bank(addr);
 
 	if (cpu->mem_c->banks[bank].ram) {
@@ -228,6 +232,7 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 					flashwrite83pse(cpu,addr,data);	// in a seperate function for now, flash writes aren't the same across calcs
 					break;
 				case 03:	//TI84+
+					flashwrite84p(cpu, addr, data);
 					break;
 			}
 		}

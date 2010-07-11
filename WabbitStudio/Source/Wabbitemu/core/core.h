@@ -88,7 +88,7 @@ union { \
  *	to the CPU */
 typedef struct timer_context {
 	long long tstates;
-	long freq;
+	unsigned long freq;
 	double elapsed;		//this isn't used if using long long only
 	double lasttime; //<--this isn't used anymore
 } timer_context_t, timerc;

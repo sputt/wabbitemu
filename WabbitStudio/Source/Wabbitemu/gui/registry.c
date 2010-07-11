@@ -22,6 +22,8 @@ static struct {
 	{"lcd_mode",	REG_DWORD,	0}, // perfect gray
 	{"lcd_freq",	REG_DWORD,	FPS}, // steady freq
 	{"screen_scale",REG_DWORD,  2},
+	{"faceplate_color", REG_DWORD, 	0x838587},
+	{"exit_save_state", REG_DWORD,  0},
 	{NULL,			0,			0},
 };
 
@@ -115,6 +117,8 @@ HRESULT LoadRegistrySettings(void) {
 	calcs[gslot].SkinEnabled = QueryWabbitKey("skin");
 	calcs[gslot].bCutout = QueryWabbitKey("cutout");
 	calcs[gslot].Scale = QueryWabbitKey("screen_scale");
+	calcs[gslot].FaceplateColor = QueryWabbitKey("faceplate_color");
+	exit_save_state = QueryWabbitKey("exit_save_state");
 	/*
 	 * 		{"gif_path", 	REG_SZ,		"wabbitemu.gif"},
 		{"gif_autosave",REG_DWORD,	0},
@@ -160,6 +164,12 @@ HRESULT SaveRegistrySettings(void) {
 		SaveWabbitKey("gif_path", REG_SZ, &gif_file_name);
 		SaveWabbitKey("gif_autosave", REG_DWORD, &gif_autosave);
 		SaveWabbitKey("gif_useinc", REG_DWORD, &gif_use_increasing);
+		SaveWabbitKey("exit_save_state", REG_DWORD, &exit_save_state);
+
+		SaveWabbitKey("faceplate_color", REG_DWORD, &calcs[gslot].FaceplateColor);
+		SaveWabbitKey("custom_skin", REG_DWORD, &calcs[gslot].bCustomSkin);
+		SaveWabbitKey("skin_path", REG_SZ, &calcs[gslot].skin_path);
+		SaveWabbitKey("keymap_path", REG_SZ, &calcs[gslot].keymap_path);
 		
 		SaveWabbitKey("shades", REG_DWORD, &calcs[gslot].cpu.pio.lcd->shades);
 		SaveWabbitKey("lcd_mode", REG_DWORD, &calcs[gslot].cpu.pio.lcd->mode);
