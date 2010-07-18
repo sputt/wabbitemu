@@ -513,5 +513,32 @@
     <None Include="gui\tsmall.ico">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="gui\TI-73.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-84+sekeymap.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-82.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-82keymap.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-83+.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-83+Keymap.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-83+SE.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-84+.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-84+se.png">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

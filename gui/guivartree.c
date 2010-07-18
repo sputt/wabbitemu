@@ -356,7 +356,7 @@ void RefreshTreeView(BOOL New) {
 						}
 					}
 				}
-				free(sym);
+				//free(sym);
 			}
 			// If no children are found kill parent.
 			for(i=0;i<11;i++) {

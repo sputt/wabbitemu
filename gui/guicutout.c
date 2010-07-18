@@ -121,8 +121,8 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 	}
 }
 
-typedef HRESULT (*SetThemeFunc)(HWND, LPCWSTR, LPCWSTR);
-typedef HRESULT (*DwmSetAttrib)(HWND, DWORD, LPCVOID, DWORD);
+typedef HRESULT (WINAPI *SetThemeFunc)(HWND, LPCWSTR, LPCWSTR);
+typedef HRESULT (WINAPI *DwmSetAttrib)(HWND, DWORD, LPCVOID, DWORD);
 
 /* Using a preset list of points, cut around the edges to make the
  * frame window transparent.  Also create buttons to allow minimize
@@ -159,7 +159,6 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 
 	//SetParent(calcs[gslot].hwndLCD, NULL);
 	SetWindowTheme(calcs[gslot].hwndLCD, (LPCWSTR)TEXT (" "), (LPCWSTR)TEXT (" "));
-
 	HDC hScreen = GetDC(NULL);
 	BITMAP bmpInfo;
 

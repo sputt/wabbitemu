@@ -38,7 +38,9 @@ typedef struct TBBTN_tag{
 	int menuID;
 } TBBTN;
 
+#if !USE_GDIPLUS
 typedef DWORD ARGB;
+#endif
 
 
 void InitBitmapInfo(BITMAPINFO *pbmi, ULONG cbInfo, LONG cx, LONG cy, WORD bpp)

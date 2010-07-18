@@ -38,9 +38,11 @@
 #endif
 #include "link.h"
 #include "uxtheme.h"
+#ifdef USE_GDIPLUS
+#include "CGdiPlusBitmap.h"
+#endif
 
 #include "DropTarget.h"
-
 
 #include "expandpane.h"
 
@@ -66,8 +68,6 @@ BOOL silent_mode = FALSE;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
-void RegisterDropWindow(HWND hwnd,   IDropTarget **ppDropTarget);
-void UnregisterDropWindow(HWND hwnd, IDropTarget *pDropTarget);
 
 void gui_draw(int slot) {
 	gslot = slot;
@@ -211,6 +211,154 @@ int gui_frame(int slot) {
 	return 0;
 }
 
+#ifdef USE_GDIPLUS
+int gui_frame_update(int slot) {
+	HDC hdc = GetDC(calcs[slot].hwndFrame);
+	calcs[slot].hdcKeymap = CreateCompatibleDC(hdc);
+	calcs[gslot].hdcSkin = CreateCompatibleDC(hdc);
+	Graphics skinGraphics(calcs[gslot].hdcSkin);
+	Graphics keymapGraphics(calcs[slot].hdcKeymap);
+	CGdiPlusBitmapResource hbmSkin, hbmKeymap;
+	hbmSkin.Load(CalcModelTxt[calcs[slot].model],_T("PNG"), g_hInst);
+
+	switch(calcs[slot].model)
+	{
+		case TI_73:
+		case TI_83P:
+		case TI_83PSE:
+			hbmKeymap.Load("TI-83+Keymap", _T("PNG"), g_hInst);
+			break;
+		case TI_82:
+			hbmKeymap.Load("TI-82Keymap", _T("PNG"), g_hInst);
+			break;
+		case TI_83:
+			hbmKeymap.Load("TI-83Keymap", _T("PNG"), g_hInst);
+			break;
+		case TI_84P:
+		case TI_84PSE:
+			hbmKeymap.Load("TI-84+SEKeymap", _T("PNG"), g_hInst);
+			break;
+		default:
+			break;
+	}
+
+	int skinWidth = hbmSkin.m_pBitmap->GetWidth();
+	int skinHeight = hbmSkin.m_pBitmap->GetHeight();
+	int keymapWidth = hbmKeymap.m_pBitmap->GetWidth();
+	int keymapHeight = hbmKeymap.m_pBitmap->GetHeight();
+	int x, y, foundX = 0, foundY = 0;
+	bool foundScreen = FALSE;
+	if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight)) {
+		calcs[slot].SkinEnabled = false;
+		MessageBox(NULL, "Skin and Keymap are not the same size", "error",  MB_OK);
+	} else {
+		calcs[slot].rectSkin.right = skinWidth;
+		calcs[slot].rectSkin.bottom = skinHeight;			//find the screen size
+		Color pixel;
+		for(y = 0; y < skinHeight && !foundScreen; y++) {
+			for (x = 0; x < skinWidth && !foundScreen; x++) {
+				hbmKeymap.m_pBitmap->GetPixel(x, y, &pixel);
+				if (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0)	{
+					//81 92
+					foundX = x;
+					foundY = y;
+					foundScreen = true;
+				}
+			}
+		}
+	}
+	if (!foundScreen) {
+		MessageBox(NULL, "Unable to find the screen box", "error", MB_OK);
+		calcs[slot].SkinEnabled = false;
+	}
+	calcs[slot].rectLCD.left = foundX;
+	calcs[slot].rectLCD.top = foundY;
+	calcs[slot].rectLCD.right = foundX+192;
+	calcs[slot].rectLCD.bottom = foundY+128;
+	if (!calcs[slot].hwndFrame)
+		return 0;
+	HMENU hmenu = GetMenu(calcs[slot].hwndFrame);	
+	if (hmenu != NULL) {
+		if (!calcs[gslot].SkinEnabled) {
+			RECT rc;
+			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
+			// Create status bar
+			if (calcs[slot].hwndStatusBar != NULL) {
+				SendMessage(calcs[slot].hwndStatusBar, WM_DESTROY, 0, 0);
+				SendMessage(calcs[slot].hwndStatusBar, WM_CLOSE, 0, 0);
+			}
+			SetRect(&rc, 0, 0, 128*calcs[slot].Scale, 64*calcs[slot].Scale);
+			int iStatusWidths[] = {100, -1};
+			calcs[slot].hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, calcs[slot].hwndFrame, (HMENU)99, g_hInst, NULL);
+			SendMessage(calcs[slot].hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
+			SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
+			RECT src;
+			GetWindowRect(calcs[slot].hwndStatusBar, &src);
+			AdjustWindowRect(&rc, (WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~WS_MAXIMIZEBOX, FALSE);
+			rc.bottom += src.bottom - src.top;
+			if (hmenu)
+				rc.bottom += GetSystemMetrics(SM_CYMENU);
+			SetWindowPos(calcs[slot].hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+			GetClientRect(calcs[slot].hwndFrame, &rc);
+			SendMessage(calcs[slot].hwndStatusBar, WM_SIZE, 0, 0);
+			SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
+			//InvalidateRect(calcs[slot].hwndFrame, NULL, FALSE);
+		} else {
+			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_CHECKED);
+			SendMessage(calcs[slot].hwndStatusBar, WM_DESTROY, 0, 0);
+			SendMessage(calcs[slot].hwndStatusBar, WM_CLOSE, 0, 0);
+			calcs[gslot].hwndStatusBar = NULL;
+			//SetRect(&calcs[slot].rectSkin, 0, 0, 350, 725);
+			RECT rc;
+			CopyRect(&rc, &calcs[slot].rectSkin);
+			AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
+			rc.bottom += GetSystemMetrics(SM_CYMENU);
+			SetWindowPos(calcs[slot].hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
+			//InvalidateRect(hwnd, NULL, TRUE);
+		}
+	}
+	skinGraphics.DrawImage(hbmSkin, 0, 0);
+
+	if (calcs[slot].model == TI_84PSE) {
+		if (DrawFaceplateRegion(calcs[gslot].hdcSkin))
+			MessageBox(NULL, "Unable to draw faceplate", "error", MB_OK);
+	}
+	HDC hdcOverlay = CreateCompatibleDC(calcs[gslot].hdcSkin);
+	Graphics newSkinGraphics(hdcOverlay);
+	newSkinGraphics.DrawImage(hbmSkin, 0, 0);
+	BLENDFUNCTION bf;
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = 255;
+	bf.AlphaFormat = AC_SRC_ALPHA;
+	AlphaBlend(calcs[gslot].hdcSkin, 0, 0, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom, hdcOverlay,
+		calcs[gslot].rectSkin.left, calcs[gslot].rectSkin.top, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom, bf);
+		RECT rc;
+	GetClientRect(calcs[slot].hwndFrame, &rc);
+	if (!calcs[slot].SkinEnabled) {			//HACK: probably not the best solution for this :|
+		FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
+	}
+	HBITMAP skin;
+	if (calcs[slot].bCutout && calcs[slot].SkinEnabled)	{
+		hbmSkin.m_pBitmap->GetHBITMAP(Color::AlphaMask, &skin);
+		if (EnableCutout(calcs[slot].hwndFrame, skin) != 0) {
+			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
+		}
+	} else if (calcs[gslot].bCutout && !calcs[slot].SkinEnabled) {
+		DisableCutout(calcs[slot].hwndFrame);
+		calcs[gslot].bCutout = TRUE;
+	} else {
+		DisableCutout(calcs[slot].hwndFrame);
+	}
+	if (calcs[slot].hwndStatusBar != NULL)
+		SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
+
+	ReleaseDC(calcs[slot].hwndFrame, hdc);
+	DeleteObject(skin);
+	SendMessage(calcs[slot].hwndFrame, WM_SIZE, 0, 0);
+	return 0;
+}
+#else
 int gui_frame_update(int slot) {
 	BITMAP skinSize, keymapSize;
 	HDC hdc = GetDC(calcs[slot].hwndFrame);
@@ -223,13 +371,13 @@ int gui_frame_update(int slot) {
 	strcpy(name, CalcModelTxt[calcs[slot].model]);
 	strcat(name, "Keymap");
 	HBITMAP hbmKeymap = LoadBitmap(g_hInst, name);
-	free(name);
 	HBITMAP hbmOldKeymap = (HBITMAP) SelectObject(calcs[slot].hdcKeymap, hbmKeymap);
 	GetObject(hbmKeymap, sizeof(BITMAP), &keymapSize);	//skin and keymap must match
+	free(name);
 	int x, y, foundX = 0, foundY = 0;
 	bool foundScreen = FALSE;
 	if ((skinSize.bmWidth != keymapSize.bmWidth) || (skinSize.bmHeight != keymapSize.bmHeight)) {
-		calcs[slot].SkinEnabled = FALSE;
+		calcs[slot].SkinEnabled = false;
 		MessageBox(NULL, "Skin and Keymap are not the same size", "error",  MB_OK);
 	} else {
 		calcs[slot].rectSkin.right = skinSize.bmWidth;
@@ -332,6 +480,7 @@ int gui_frame_update(int slot) {
 	SendMessage(calcs[slot].hwndFrame, WM_SIZE, 0, 0);
 	return 0;
 }
+#endif
 
 char* LoadRomIntialDialog(void) {
 	OPENFILENAME ofn;
@@ -490,6 +639,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// initialize com events
 	OleInitialize(NULL);
 
+#ifdef USE_GDIPLUS
+	// Initialize GDI+.
+	GdiplusStartupInput gdiplusStartupInput;
+	ULONG_PTR gdiplusToken;
+	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+#endif
+
+
 	if (argv && argc>1) {
 		for (i=1;i<argc;i++) {
 			memset(tmpstring,0,512);
@@ -606,6 +763,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		gif_write_state = GIF_END;
 		handle_screenshot();
 	}
+	
+#ifdef USE_GDIPLUS
+	// Shutdown GDI+
+	GdiplusShutdown(gdiplusToken);
+#endif
 
 	// Shutdown COM
 	OleUninitialize();
@@ -734,24 +896,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				GetClientRect(calcs[gslot].hwndFrame, &rc);
 				FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
 			}
-			/*if (calcs[gslot].SkinEnabled == TRUE && calcs[gslot].bCutout) {
-				HDC hdcOverlay = CreateCompatibleDC(hdc);
-				HBITMAP bmpGray = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
-				SelectObject(hdcOverlay, bmpGray);
-				FillRect(hdcOverlay, &rc, GetStockObject(GRAY_BRUSH));
-				BLENDFUNCTION bf;
-				bf.BlendOp = AC_SRC_OVER;
-				bf.BlendFlags = 0;
-				bf.SourceConstantAlpha = 110;
-				bf.AlphaFormat = 0;
-				AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
-							hdcOverlay, 0, 0, rc.right, rc.bottom,
-							bf );
-
-				DeleteObject(bmpGray);
-				DeleteDC(hdcOverlay);
-
-			}*/
 			ReleaseDC(hwnd, hdc);
 			EndPaint(hwnd, &ps);
 
@@ -763,7 +907,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_FILE_NEW:
 				{
 					int slot = calc_slot_new();
-
 					rom_load(slot, calcs[gslot].rom_path);
 					gui_frame(slot);
 					break;
@@ -782,7 +925,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_FILE_GIF:
 				{
 					HMENU hmenu = GetMenu(hwnd);
-
 					if (gif_write_state == GIF_IDLE) {
 						gif_write_state = GIF_START;
 						calcs[gslot].gif_disp_state = GDS_STARTING;
@@ -822,10 +964,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_FILE_SAVE:
 					SaveStateDialog(hwnd);
 					break;
-				case IDM_EDIT_COPY:
-				{
+				case IDM_EDIT_COPY: {
 					HLOCAL ans;
-
 					ans = (HLOCAL) GetRealAns(&calcs[gslot].cpu);
 					OpenClipboard(hwnd);
 					EmptyClipboard();
@@ -834,13 +974,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					CloseClipboard();
 					break;
 				}
-				case IDM_DEBUG_RESET:
+				case IDM_EDIT_PASTE: {
+
+				}
+				case IDM_DEBUG_RESET: {
 					calc_reset(gslot);
 					calc_run_timed(gslot, 200);
 					calcs[gslot].cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
 					calc_run_timed(gslot, 300);
 					calcs[gslot].cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
 					break;
+				}
 				case IDM_DEBUG_OPEN:
 					gui_debug(gslot);
 					break;
@@ -856,8 +1000,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_FRAME_BTOGGLE:
 					SendMessage(hwnd, WM_MBUTTONDOWN, MK_MBUTTON, MAKELPARAM(ctxtPt.x, ctxtPt.y));
 					break;
-				case IDM_FRAME_BUNLOCK:
-				{
+				case IDM_FRAME_BUNLOCK: {
 					RECT rc;
 					keypad_t *kp = (keypad_t *) (&calcs[gslot].cpu)->pio.devices[1].aux;
 					int group,bit;
@@ -875,16 +1018,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					DeleteObject(oldSkin);
 					break;
 				}
-				case IDM_CALC_CONNECT:				
-					{					
-						if (link_connect(&calcs[0].cpu, &calcs[1].cpu))						
-							MessageBox(NULL, "Connection Failed", "Error", MB_OK);					
-						else						
-							MessageBox(NULL, "Connection Successful", "Success", MB_OK);					
-						break;				
-					}
-				case IDM_CALC_PAUSE:				
-					{					
+				case IDM_CALC_CONNECT: {					
+					if (link_connect(&calcs[0].cpu, &calcs[1].cpu))						
+						MessageBox(NULL, "Connection Failed", "Error", MB_OK);					
+					else						
+						MessageBox(NULL, "Connection Successful", "Success", MB_OK);					
+					break;
+				}
+				case IDM_CALC_PAUSE: {					
 					HMENU hmenu = GetMenu(hwnd);					
 					if (calcs[gslot].running) {						
 						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_CHECKED);
@@ -893,60 +1034,53 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_UNCHECKED);
 						calcs[gslot].running = TRUE;					
 					}					
-					break;				
-													
-					}				
-				case IDM_SPEED_QUARTER:				
-					{					
+					break;
+				}				
+				case IDM_SPEED_QUARTER: {					
 					calcs[gslot].speed = 25;										
 					CheckMenuRadioItem(GetSubMenu(GetMenu(hwnd), 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUARTER, MF_BYCOMMAND| MF_CHECKED);
 					break;				
-					}				
-				case IDM_SPEED_HALF:				
-					{					
-						calcs[gslot].speed = 50;					
-						HMENU hmenu = GetMenu(hwnd);					
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_HALF, MF_BYCOMMAND | MF_CHECKED);
-						break;				
-					}				
-				case IDM_SPEED_NORMAL:				
-					{					
-						calcs[gslot].speed = 100;					
-						HMENU hmenu = GetMenu(hwnd);					
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_NORMAL, MF_BYCOMMAND | MF_CHECKED);
-						break;				
-					}				
-				case IDM_SPEED_DOUBLE:				
-					{					
-						calcs[gslot].speed = 200;					
-						HMENU hmenu = GetMenu(hwnd);					
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_DOUBLE, MF_BYCOMMAND | MF_CHECKED);
-						break;				
-					}				
-				case IDM_SPEED_QUADRUPLE:				
-					{					
-						calcs[gslot].speed = 400;					
-						HMENU hmenu = GetMenu(hwnd);					
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUADRUPLE, MF_BYCOMMAND | MF_CHECKED);
-						break;				
-					}
-				case IDM_SPEED_MAX:				
-					{
-						calcs[gslot].speed = 4000;
-						HMENU hmenu = GetMenu(hwnd);
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_MAX, MF_BYCOMMAND | MF_CHECKED);
-						break;				
-					}
-				case IDM_SPEED_SET:				
-					{
-						HMENU hmenu = GetMenu(hwnd);					
-						CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_SET, MF_BYCOMMAND | MF_CHECKED);
-						DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC)SetSpeedProc);
-						SetFocus(hwnd);
-						break;
-					}			
-}			
-switch (HIWORD(wParam)) {
+				}
+				case IDM_SPEED_HALF: {					
+					calcs[gslot].speed = 50;
+					HMENU hmenu = GetMenu(hwnd);
+					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_HALF, MF_BYCOMMAND | MF_CHECKED);
+					break;				
+				}
+				case IDM_SPEED_NORMAL: {					
+					calcs[gslot].speed = 100;
+					HMENU hmenu = GetMenu(hwnd);
+					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_NORMAL, MF_BYCOMMAND | MF_CHECKED);
+					break;				
+				}
+				case IDM_SPEED_DOUBLE: {					
+					calcs[gslot].speed = 200;
+					HMENU hmenu = GetMenu(hwnd);
+					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_DOUBLE, MF_BYCOMMAND | MF_CHECKED);
+					break;
+				}
+				case IDM_SPEED_QUADRUPLE: {					
+					calcs[gslot].speed = 400;
+					HMENU hmenu = GetMenu(hwnd);
+					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUADRUPLE, MF_BYCOMMAND | MF_CHECKED);
+					break;
+				}
+				case IDM_SPEED_MAX: {
+					calcs[gslot].speed = 4000;
+					HMENU hmenu = GetMenu(hwnd);
+					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_MAX, MF_BYCOMMAND | MF_CHECKED);
+					break;				
+				}
+				case IDM_SPEED_SET: {
+					HMENU hmenu = GetMenu(hwnd);
+					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_SET, MF_BYCOMMAND | MF_CHECKED);
+					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC)SetSpeedProc);
+					SetFocus(hwnd);
+					break;
+				}
+			}			
+			switch (HIWORD(wParam)) {
+
 			}
 			return 0;
 		}
@@ -1029,14 +1163,14 @@ finalize_buttons:
 			group	= GetGValue(c)>>4;
 			bit		= GetBValue(c)>>4;
 
-			if (group== 0x20 && bit == 0x00) {
+			if (group== 0x05 && bit == 0x00) {
 				calcs[gslot].cpu.pio.keypad->on_pressed ^= KEY_LOCKPRESS;
-				if ( calcs[gslot].cpu.pio.keypad->on_pressed &  KEY_LOCKPRESS ) {
+				/*if ( calcs[gslot].cpu.pio.keypad->on_pressed &  KEY_LOCKPRESS ) {
 					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
 				} else {
 					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_LOCK | DBS_UP);
-				}
-			} else {
+				}*/
+			} //else {
 				kp->keys[group][bit] ^= KEY_LOCKPRESS;
 				if (kp->keys[group][bit] &  KEY_LOCKPRESS ) {
 					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
@@ -1044,7 +1178,7 @@ finalize_buttons:
 					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_LOCK | DBS_UP);
 				}
 
-			}
+			//}
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 			return 0;
 		}
