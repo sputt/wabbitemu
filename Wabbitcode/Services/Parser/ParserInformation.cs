@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
-	public class ParserInformation : IEnumerable<IParserData>
+	public class ParserInformation //: IEnumerable<IParserData>
 	{
 		private string sourceFile;
 		public string SourceFile
@@ -71,7 +71,42 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			set;
 		}
 
-		public IEnumerator<IParserData> GetEnumerator()
+        IParserData[] generatedList;
+        public IParserData[] GeneratedList
+        {
+            get
+            {
+                int counter = 0;
+                int size = LabelsList.Count + DefinesList.Count +
+                            IncludeFilesList.Count + MacrosList.Count;
+                generatedList = new IParserData[size];
+                foreach (IParserData label in LabelsList)
+                {
+                    generatedList[counter] = label;
+                    counter++;
+                }
+                foreach (IParserData define in DefinesList)
+                {
+                    generatedList[counter] = define;
+                    counter++;
+                }
+                foreach (IParserData include in IncludeFilesList)
+                {
+                    generatedList[counter] = include;
+                    counter++;
+                }
+                foreach (IParserData macro in MacrosList)
+                {
+                    generatedList[counter] = macro;
+                    counter++;
+                }
+                ParserDataSorter sorter = new ParserDataSorter();
+                Array.Sort(generatedList, sorter);
+                return generatedList;
+            }
+        }
+
+		/*public IEnumerator<IParserData> GetEnumerator()
 		{
 			return (IEnumerator<IParserData>)new IParserEnumerator(this);
 		}
@@ -79,7 +114,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return (IEnumerator)new IParserEnumerator(this);
-		}
+		}*/
 	}
 
 	public class IParserEnumerator : IEnumerator<IParserData>
@@ -88,30 +123,14 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		private int position = -1;
 		public IParserEnumerator(ParserInformation data)
 		{
-			parserData = data;
+			parserData = data;            
 		}
 
 		public IParserData Current
 		{
 			get
 			{
-				int count = 0;
-				int newCount = parserData.LabelsList.Count - 1;
-				if (position > newCount)
-				{
-					count = newCount;
-					newCount += parserData.DefinesList.Count - 1;
-					if (position > newCount)
-					{
-						count = newCount;
-						newCount += parserData.MacrosList.Count - 1;
-						if (position > newCount)
-							return null;
-						return parserData.MacrosList[position - count];
-					}
-					return parserData.DefinesList[position - count];
-				}
-				return parserData.LabelsList[position];
+                return parserData.GeneratedList[position];
 			}
 		}
 
@@ -127,19 +146,8 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
 		public bool MoveNext()
 		{
-			int count = parserData.LabelsList.Count - 1;
 			position++;
-			if (position > count)
-			{
-				count += parserData.DefinesList.Count - 1;
-				if (position > count)
-				{
-					count += parserData.MacrosList.Count - 1;
-					if (position >= count)
-						return false;
-				}
-			}
-			return true;
+            return position < parserData.GeneratedList.Length;
 		}
 
 		public void Reset()
@@ -147,4 +155,22 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			position = -1;
 		}
 	}
+
+    public class ParserDataSorter : IComparer
+    {
+        // Compare the length of the strings, or the strings
+        // themselves, if they are the same length.
+        public int Compare(object x, object y)
+        {
+            IParserData datax = x as IParserData;
+            IParserData datay = y as IParserData;
+
+            if (datax == null || datay == null || datax.Offset == datay.Offset)
+                return 0;
+            if (datax.Offset > datay.Offset)
+                return 1;
+            else
+                return -1;
+        }
+    }
 }

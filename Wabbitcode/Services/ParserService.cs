@@ -9,6 +9,13 @@ namespace Revsoft.Wabbitcode.Services.Parser
 {
 	public static class ParserService
 	{
+        internal static void RemoveParseData(string fullPath)
+        {
+            ParserInformation replaceMe = ProjectService.GetParseInfo(fullPath);
+            if (replaceMe != null)
+                ProjectService.ParseInfo.Remove(replaceMe);
+        }
+
 		const char commentChar = ';';
 		const string defineString = "#define";
 		const string macroString = "#macro";
@@ -20,30 +27,30 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		{
 			string lines = null;
 			StreamReader reader = null;
-			try
-			{
+			//try
+			//{
 				reader = new StreamReader(file);
 				lines = reader.ReadToEnd();
 				return ParseFile(file, lines);
-			}
+			/*}
 			catch (FileNotFoundException ex)
 			{
 				DialogResult result = MessageBox.Show(ex.FileName + " not found, would you like to remove it from the project?",
 					"File not found", MessageBoxButtons.YesNo, MessageBoxIcon.None);
-				if (result == DialogResult.Yes) { }
-					//ProjectService.RemoveFile(file);
+				if (result == DialogResult.Yes)
+					ProjectService.DeleteFile(file);
 				return null;
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show(ex.ToString());
+				MessageBox.Show("File: " + file + "\n" + ex.ToString());
 				return null;
 			}
 			finally
 			{
 				if (reader != null)
 					reader.Close();
-			}
+			}*/
 		}
 
 		delegate void HideProgressDelegate();
@@ -58,6 +65,8 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			while (counter < lines.Length && counter >= 0)
 			{
 				newPercent = counter * 100 / lines.Length;
+                if (newPercent < percent)
+                    throw new Exception("Repeat!");
 				if (percent + 5 <= newPercent){
 					percent = newPercent;
 					DockingService.MainForm.Invoke(progressDelegate, percent);
@@ -80,7 +89,11 @@ namespace Revsoft.Wabbitcode.Services.Parser
 						if (counter != -1 && lines[counter] == '=')
 						{
 							counter++;
-							counter = SkipWhitespace(lines, counter);
+							int temp = SkipWhitespace(lines, counter);
+							if (temp == -1)
+								continue;
+							else
+								counter = temp;
 							newCounter = SkipToEOCL(lines, counter);
 							string contents = lines.Substring(counter, newCounter - counter).Trim();
 							//its a define
@@ -104,13 +117,15 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					continue;
 				}
 				counter = SkipWhitespace(lines, counter);
-				string substring = lines.Substring(counter).ToLower();
-				if (substring.StartsWith(commentString))
+                if (counter < 0)
+                    break;
+				//string substring = lines.Substring(counter).ToLower();
+				if (string.Compare(lines, counter, commentString, 0, commentString.Length, true) == 0)
 				{
 					counter = FindString(lines, counter, endCommentString) + endCommentString.Length;
 				}
 				//handle macros, defines, and includes
-				else if (substring.StartsWith(defineString))
+                else if (string.Compare(lines, counter, defineString, 0, defineString.Length, true) == 0)
 				{
 					string description = GetDescription(lines, counter);
 					counter += defineString.Length;
@@ -125,7 +140,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					counter = SkipWhitespace(lines, newCounter);
 					counter = SkipToEOL(lines, counter);
 				}
-				else if (substring.StartsWith(macroString))
+                else if (string.Compare(lines, counter, macroString, 0, macroString.Length, true) == 0)
 				{
 					string description = GetDescription(lines, counter);
 					counter += macroString.Length;
@@ -141,19 +156,28 @@ namespace Revsoft.Wabbitcode.Services.Parser
 						args = GetMacroArgs(lines, newCounter);
 					counter = SkipToEOL(lines, counter);
 					newCounter = FindString(lines, counter, endMacroString);
-					string contents = lines.Substring(counter, newCounter - counter);
-					Macro macroToAdd = new Macro(counter, macroName, args, contents, description, info);
-					info.MacrosList.Add(macroToAdd);
-					counter = newCounter + endMacroString.Length;
+                    if (newCounter != -1)
+                    {
+                        string contents = lines.Substring(counter, newCounter - counter);
+                        Macro macroToAdd = new Macro(counter, macroName, args, contents, description, info);
+                        info.MacrosList.Add(macroToAdd);
+                        counter = newCounter + endMacroString.Length;
+                    }
 
 				}
-				else if (substring.StartsWith(includeString))
+                else if (string.Compare(lines, counter, includeString, 0, includeString.Length, true) == 0)
 				{
 					string description = GetDescription(lines, counter);
 					counter += includeString.Length;
 					//we need to find the quotes
-					counter = FindChar(lines, counter, '\"') + 1;
-					int newCounter = FindChar(lines, counter, '\"');
+					counter = FindChar(lines, counter, ' ') + 1;
+                    counter = SkipWhitespace(lines, counter);
+					int newCounter;
+                    if (lines[counter] == '\"')
+                        newCounter = FindChar(lines, ++counter, '\"');
+
+                    else
+                        newCounter = SkipToEOCL(lines, counter);
 					if (counter == -1 || newCounter == -1)
 						counter = SkipToEOL(lines, counter);
 					else
@@ -161,7 +185,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 						string includeFile = lines.Substring(counter, newCounter - counter);
 						IncludeFile includeToAdd = new IncludeFile(counter, includeFile, description, info);
 						info.IncludeFilesList.Add(includeToAdd);
-						counter = newCounter;
+                        counter = SkipToEOL(lines, newCounter);
 					}
 				}
 				else
@@ -169,11 +193,8 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					counter = SkipToEOL(lines, counter);
 				}
 			}
-			ParserInformation replaceMe = ProjectService.GetParseInfo(file);
-			if (replaceMe == null)
-				ProjectService.ParseInfo.Add(info);
-			else 
-				replaceMe = info;
+            RemoveParseData(file);
+			ProjectService.ParseInfo.Add(info);
 			HideProgressDelegate hideProgress = DockingService.MainForm.HideProgressBar;
 			DockingService.MainForm.Invoke(hideProgress);
 			return info;
@@ -190,7 +211,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
 		private static int SkipToEOCL(string substring, int counter)
 		{
-			while (IsValidIndex(substring, counter + Environment.NewLine.Length) &&
+			while (IsValidIndex(substring, counter) && IsValidIndex(substring, counter + Environment.NewLine.Length) &&
 				substring.Substring(counter, Environment.NewLine.Length) != Environment.NewLine && substring[counter] != commentChar)
 				counter++;
 			return !IsValidIndex(substring, counter) ? -1 : counter;
@@ -236,7 +257,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 				return -1;
 			while (substring[counter] != charToFind)
 			{
-				if (!IsValidIndex(substring, counter) ||
+				if (!IsValidIndex(substring, counter) || !IsValidIndex(substring, counter + Environment.NewLine.Length) ||
 					substring.Substring(counter, Environment.NewLine.Length) == Environment.NewLine ||
 					substring[counter] == commentChar)
 					return -1;
@@ -249,7 +270,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		{
 			if (!IsValidIndex(substring, counter))
 				return -1;
-			while (substring.Substring(counter, searchString.Length) != searchString)
+			while (counter+searchString.Length < substring.Length && substring.Substring(counter, searchString.Length) != searchString)
 			{
 				if (!IsValidIndex(substring, counter))
 					return -1;
@@ -257,6 +278,8 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					SkipToEOL(substring, counter);
 				counter++;
 			}
+            if (counter + searchString.Length > substring.Length)
+                counter = -1;
 			return counter;
 		}
 
@@ -407,5 +430,5 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			}
 			return includeFile;
 		}*/
-	}
+    }
 }

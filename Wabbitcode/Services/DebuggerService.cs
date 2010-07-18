@@ -242,7 +242,8 @@ namespace Revsoft.Wabbitcode.Services
 			byte page = GetPageNum(address);
 			WabbitcodeBreakpoint breakpoint = FindBreakpoint(address, (byte)(appPage - page), address > 0x8000);
 			if (breakpoint == null)
-				throw new Exception("Breakpoint not found!");
+				return;
+				//throw new Exception("Breakpoint not found!");
 			breakpoint.numberOfTimesHit++;
 			bool conditionsTrue = breakpoint.Enabled;
 			switch (breakpoint.hitCountCondition)
@@ -483,8 +484,9 @@ namespace Revsoft.Wabbitcode.Services
 						configFound = true;
 				if (configFound)
 				{
-					AssembleProjectDelegate assemblerDelegate = AssemblerService.AssembleProject;
-					DockingService.MainForm.Invoke(assemblerDelegate);
+					//AssembleProjectDelegate assemblerDelegate = AssemblerService.AssembleProject;
+					//DockingService.MainForm.Invoke(assemblerDelegate);
+                    ThreadPool.QueueUserWorkItem(AssemblerService.AssembleProject);
 					while (ProjectService.Project.ProjectOutputs.Count == 0)
 						Application.DoEvents();
 					createdName = ProjectService.Project.ProjectOutputs[0];
@@ -522,7 +524,7 @@ namespace Revsoft.Wabbitcode.Services
 				//error &= createSymTable(fileName, Path.ChangeExtension(fileName, "lab"));
 				//if (error)
 				//    MessageBox.Show("Problem creating symtable");
-				error &= AssemblerService.AssembleFile(fileName, 
+				error &= AssemblerService.AssembleFile(fileName,
 							Path.ChangeExtension(fileName, AssemblerService.GetExtension(Settings.Default.outputFile)),
 								false);
 				//if (error)
@@ -558,8 +560,8 @@ namespace Revsoft.Wabbitcode.Services
 			//if (!File.Exists(listName))
 			//    createListing(fileName, Path.ChangeExtension(fileName, "lst"));
 #if NEW_DEBUGGING
-                Process test = new Process();
-                wabbitDLLPointer = test.Handle;
+            Process test = new Process();
+            wabbitDLLPointer = test.Handle;
 #else
 			debugger = new CWabbitemu(createdName);
 #endif
@@ -583,15 +585,15 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				isAnApp = true;
 #if NEW_DEBUGGING
-                    AppList appList = new AppList();
+                AppList appList = new AppList();
 #else
 				CWabbitemu.AppEntry[] appList = new CWabbitemu.AppEntry[20];
 #endif
 #if NEW_DEBUGGING
-                    while (appList.count == 0)
-                    {
-                        appList = GetAppList(0);
-                        apppage = (byte)appList.apps[0].page;
+                while (appList.count == 0)
+                {
+                    appList = GetAppList(0);
+                    apppage = (byte)appList.apps[0].page;
 #else
 				while (appList[0].page_count == 0)
 				{
@@ -611,7 +613,7 @@ namespace Revsoft.Wabbitcode.Services
 				foreach (CWabbitemu.AppEntry app in appList)
 				{
 					string name = new string(new char[] { app.name1, app.name2, app.name3, app.name4,
-															app.name5, app.name6, app.name7, app.name8 });
+														app.name5, app.name6, app.name7, app.name8 });
 					//HACK: FIX SO THAT I CHECK THE ACTUAL 8XK BINARY
 					if (name.Trim().ToLower() == appName.ToLower())
 						break;
@@ -642,6 +644,8 @@ namespace Revsoft.Wabbitcode.Services
 			staticLabelMarkers = new List<TextMarker>();
 			UpdateBreaksDelegate updateBreaks = DockingService.MainForm.UpdateBreakpoints;
 			DockingService.MainForm.Invoke(updateBreaks);
+			UpdateBreaksDelegate updateDebugStuff = DockingService.MainForm.UpdateDebugStuff;
+			DockingService.MainForm.Invoke(updateDebugStuff);
 			staticLabelsParser.DoWork += new DoWorkEventHandler(staticLabelsParser_DoWork);
 			if (!staticLabelsParser.IsBusy && !DockingService.MainForm.IsDisposed && !DockingService.MainForm.Disposing)
 				staticLabelsParser.RunWorkerAsync();

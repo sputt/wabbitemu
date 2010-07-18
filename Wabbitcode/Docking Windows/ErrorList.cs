@@ -67,22 +67,36 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 					firstColon = line.IndexOf(':', 3);
 					secondColon = line.IndexOf(':', firstColon + 1);
 					thirdColon = line.IndexOf(':', secondColon + 1);
-					file = Path.Combine(startDir, line.Substring(0, firstColon));
-					lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
-					description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-					AssemblerService.ErrorsInFiles.Add(new Errors(file, Convert.ToInt32(lineNum), description, false));
-					addError(description, file, lineNum, errorToolButton.Checked);
+                    if (firstColon < 0 || secondColon < 0 || thirdColon < 0)
+                    {
+                        AssemblerService.ErrorsInFiles[AssemblerService.ErrorsInFiles.Count - 1].description += line;
+                    }
+                    else
+                    {
+                        file = Path.Combine(startDir, line.Substring(0, firstColon));
+                        lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
+                        description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
+                        AssemblerService.ErrorsInFiles.Add(new Errors(file, Convert.ToInt32(lineNum), description, false));
+                        addError(description, file, lineNum, errorToolButton.Checked);
+                    }
 				}
 				if (!line.Contains("warning"))
 					continue;
 				firstColon = line.IndexOf(':', 3);
 				secondColon = line.IndexOf(':', firstColon + 1);
 				thirdColon = line.IndexOf(':', secondColon + 1);
-				file = Path.Combine(startDir, line.Substring(0, firstColon));
-				lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
-				description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-				AssemblerService.ErrorsInFiles.Add(new Errors(file, Convert.ToInt32(lineNum), description, true));
-				addWarning(description, file, lineNum, warnToolButton.Checked);
+                if (firstColon < 0 || secondColon < 0 || thirdColon < 0)
+                {
+                    AssemblerService.ErrorsInFiles[AssemblerService.ErrorsInFiles.Count - 1].description += line;
+                }
+                else
+                {
+                    file = Path.Combine(startDir, line.Substring(0, firstColon));
+                    lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
+                    description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
+                    AssemblerService.ErrorsInFiles.Add(new Errors(file, Convert.ToInt32(lineNum), description, true));
+                    addWarning(description, file, lineNum, warnToolButton.Checked);
+                }
 			}
 			errorToolButton.Text = errors + " Errors";
 			warnToolButton.Text = warnings + " Warnings";

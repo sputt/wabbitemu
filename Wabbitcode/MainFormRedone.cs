@@ -20,6 +20,7 @@ using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Docking_Windows;
+using Revsoft.Wabbitcode.Services.Project;
 
 namespace Revsoft.Wabbitcode
 {
@@ -52,10 +53,11 @@ namespace Revsoft.Wabbitcode
 
 			DockingService.InitDocking(dockPanel);
 			DockingService.InitPanels();
-			if (ProjectService.IsInternal)
-				ProjectService.CreateInternalProject();
+            LoadStartupProject();
 			HighlightingClass.MakeHighlightingFile();
 			DockingService.LoadConfig();
+            if (!ProjectService.IsInternal)
+                DockingService.ProjectViewer.BuildProjTree();
 			HandleArgs(args);
 			UpdateMenus(false);
 			UpdateChecks();
@@ -70,6 +72,21 @@ namespace Revsoft.Wabbitcode
 			this.WindowState = Settings.Default.WindowState;
 			this.Size = Settings.Default.WindowSize;
 		}
+
+        private void LoadStartupProject()
+        {
+            if (string.IsNullOrEmpty(Settings.Default.startupProject))
+                return;
+            if (File.Exists(Settings.Default.startupProject))
+                ProjectService.OpenProject(Settings.Default.startupProject);
+            else
+            {
+                Settings.Default.startupProject = "";
+                MessageBox.Show("Error: Project file not found!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            if (ProjectService.IsInternal)
+                ProjectService.CreateInternalProject();
+        }
 
 		private void HandleArgs(string[] args)
 		{
@@ -99,14 +116,7 @@ namespace Revsoft.Wabbitcode
 								{
 									MessageBox.Show("Error: " + ex);
 								}
-			} else if (Settings.Default.startupProject != "")
-				if (File.Exists(Settings.Default.startupProject))
-					ProjectService.OpenProject(Settings.Default.startupProject);
-				else
-				{
-					Settings.Default.startupProject = "";
-					MessageBox.Show("Error: Project file not found!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-				}
+			}
 		}
         //[DllImport("libWabbitemu.dll")]
         //private static extern void ShowMessage();
@@ -244,8 +254,6 @@ namespace Revsoft.Wabbitcode
 				UpdateMenus(false);
 				DockingService.LabelList.ClearLabels();
             }
-			if (!ProjectService.IsInternal)
-				ProjectService.ActiveFileChanged();
             UpdateTitle();
         }
 
@@ -309,7 +317,7 @@ namespace Revsoft.Wabbitcode
 			{
 				CheckFileExists = true,
 				DefaultExt = "*.asm",
-				Filter = "All Know File Types | *.asm; *.z80;| Assembly Files (*.asm)|*.asm|Z80" +
+				Filter = "All Know File Types | *.asm; *.z80; *.inc; |Assembly Files (*.asm)|*.asm|*.z80" +
 						   " Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|All Files(*.*)|*.*",
 				FilterIndex = 0,
 				Multiselect = true,
@@ -322,18 +330,12 @@ namespace Revsoft.Wabbitcode
             TreeNode parent = DockingService.ProjectViewer.projViewer.SelectedNodes[0];
             if (parent == null)
                 parent = DockingService.ProjectViewer.projViewer.Nodes[0];
-            else if (parent.Tag.ToString().StartsWith("File"))
+            else if (parent.Tag.GetType() == typeof(ProjectFile))
                 parent = parent.Parent;
 			foreach (string file in openFileDialog.FileNames)
 			{
-				TreeNode node = new TreeNode
-									{
-										Tag = "File|" + file.Remove(0, ProjectService.ProjectDirectory.Length) + "|",
-										Text = Path.GetFileName(file),
-										ImageIndex = 4,
-										SelectedImageIndex = 5
-									};
-				parent.Nodes.Add(node);
+                ProjectFile fileAdded = ProjectService.AddFile((ProjectFolder)parent.Tag, file);
+                DockingService.ProjectViewer.AddFile(fileAdded, parent);
 			}
         }
 
@@ -357,10 +359,6 @@ namespace Revsoft.Wabbitcode
             NewProjectDialog template = new NewProjectDialog();
             if (template.ShowDialog() != DialogResult.OK) 
                 return;
-            //ProjectService.OpenProject(template.projectFile);
-
-			//ProjectService.CreateNewProject(@"C:\Users\Chris\Documents\Asm\Test.wcodeproj", "Test");
-
         }
 
         private void openFileMenuItem_Click(object sender, EventArgs e)
@@ -873,44 +871,6 @@ namespace Revsoft.Wabbitcode
         private void hexFileMenuItem_Click(object sender, EventArgs e)
         {
         }
-
-#if USE_DLL
-        //[DllImport("SPASM.dll")]
-        //public static extern int ShowMessage();
-
-        [DllImport("SPASM.dll")]
-        public static extern int SetInputFileA([In, MarshalAs(UnmanagedType.LPStr)] string name);
-
-        [DllImport("SPASM.dll")]
-        public static extern int SetOutputFileA([In, MarshalAs(UnmanagedType.LPStr)] string name);
-
-        [DllImport("SPASM.dll")]
-        public static extern int RunAssembly();
-
-        [DllImport("SPASM.dll")]
-        public static extern int ClearDefines();
-
-        [DllImport("SPASM.dll")]
-        public static extern int AddDefine([In, MarshalAs(UnmanagedType.LPStr)] string name,
-                                           [In, MarshalAs(UnmanagedType.LPStr)] string value);
-
-        [DllImport("SPASM.dll")]
-        public static extern int ClearIncludes();
-
-        [DllImport("SPASM.dll")]
-        public static extern int AddInclude([In, MarshalAs(UnmanagedType.LPStr)] string directory);
-
-        [DllImport("SPASM.dll")]
-        public static extern int SetMode(int mode);
-
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr GetStdHandle(uint nStdHandle);
-
-        [DllImport("Kernel32.dll")]//SetLastError = true
-        public static extern bool SetStdHandle(uint device, IntPtr handle);
-        //[DllImport("Kernel32.dll")]//SetLastError = true
-        //public static extern uint GetStdHandle(uint device);
-#endif
         private Process wabbitspasm;
 
 
@@ -974,9 +934,9 @@ namespace Revsoft.Wabbitcode
 
 #else
             string originalDir = filePath.Substring(0, filePath.LastIndexOf('\\'));
-            ClearIncludes();
-            ClearDefines();
-            AddInclude(originalDir);
+            SpasmMethods.ClearIncludes();
+            SpasmMethods.ClearDefines();
+            SpasmMethods.AddInclude(originalDir);
             //if the user has some include directories we need to format them
             if (Settings.Default.includeDir != "")
             {
@@ -984,7 +944,7 @@ namespace Revsoft.Wabbitcode
                 foreach (string dir in dirs)
                 {
                     if (dir != "")
-                        AddInclude(dir);
+                        SpasmMethods.AddInclude(dir);
                 }
             }
             //get the file name we'll use and use it to create the assembled name
@@ -992,8 +952,8 @@ namespace Revsoft.Wabbitcode
             //string assembledName = Path.ChangeExtension(fileName, outputFileExt);
             //now we can set the args for spasm
             int error = 0;
-            error |= SetInputFileA(Path.Combine(originalDir, fileName));
-            error |= SetOutputFileA(Path.Combine(originalDir, assembledName));
+            error |= SpasmMethods.SetInputFile(Path.Combine(originalDir, fileName));
+            error |= SpasmMethods.SetOutputFile(Path.Combine(originalDir, assembledName));
             //emulator setup
             //emulator.StartInfo.FileName = emuLoc;
             //assemble that fucker
@@ -1006,7 +966,7 @@ namespace Revsoft.Wabbitcode
             Console.SetOut(test);
             Console.SetError(test);
             //StreamReader reader = myprocess.StandardOutput;
-            RunAssembly();
+            SpasmMethods.RunAssembly();
             Console.WriteLine("test line");
             //string tryread = reader.ReadToEnd();
             //string output = myprocess.StandardOutput.ReadToEnd();
@@ -1580,6 +1540,7 @@ namespace Revsoft.Wabbitcode
 		private void saveProjectMenuItem_Click(object sender, EventArgs e)
 		{
 			ProjectService.SaveProject();
+            saveProjectMenuItem.Enabled = ProjectService.Project.NeedsSave;
 		}
 
         private void saveAllToolButton_Click(object sender, EventArgs e)

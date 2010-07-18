@@ -290,6 +290,9 @@ namespace Revsoft.Wabbitcode.Services
 					child.Show();
 					break;
 				}
+			highlights.Remove(highlight);
+			if (index <= debugIndex)
+				debugIndex--;
 			DockingService.ActiveDocument.editorBox.Document.MarkerStrategy.RemoveMarker(highlight);
 		}
 

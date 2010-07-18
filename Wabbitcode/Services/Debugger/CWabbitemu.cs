@@ -14,36 +14,43 @@ namespace Revsoft.Wabbitcode.Classes
         readonly Process wabbit;
         public CWabbitemu(string file)
         {
-            Resources.GetResource("Revsoft.Wabbitcode.Resources.Wabbitemu.exe", "Wabbitemu.exe");
-            wabbit = null;
-            foreach (Process potential in Process.GetProcesses())
-            {
-                if (!potential.ProcessName.ToLower().Contains("wabbitemu")) 
-                    continue;
-                wabbit = potential;
-                break;
-            }
-            if (wabbit == null)
-            {
-                wabbit = new Process
-                             {
-                                 StartInfo =
-                                     {
-                                         Arguments = "\"" + file + "\"",
-                                         FileName = "wabbitemu.exe"
-                                     },
-                                     EnableRaisingEvents = true
-                             };
-                wabbit.Start();
-            }
-            wabbit.Exited += wabbit_Exited;
-            wabbit.WaitForInputIdle();
-            Guid CLSID_Wabbitemu = new Guid("8cc953bc-a879-492b-ad22-a2f4dfcd0e19");
-            //Guid IID_IWabbitemu = new Guid("13b5c004-4377-4c94-a8f9-efc1fdaeb31c");
+			try
+			{
+				Resources.GetResource("Revsoft.Wabbitcode.Resources.Wabbitemu.exe", "Wabbitemu.exe");
+				wabbit = null;
+				foreach (Process potential in Process.GetProcesses())
+				{
+					if (!potential.ProcessName.ToLower().Contains("wabbitemu"))
+						continue;
+					wabbit = potential;
+					break;
+				}
+				if (wabbit == null)
+				{
+					wabbit = new Process
+								 {
+									 StartInfo =
+										 {
+											 Arguments = "\"" + file + "\"",
+											 FileName = "wabbitemu.exe"
+										 },
+									 EnableRaisingEvents = true
+								 };
+					wabbit.Start();
+				}
+				wabbit.Exited += wabbit_Exited;
+				wabbit.WaitForInputIdle();
+				Guid CLSID_Wabbitemu = new Guid("8cc953bc-a879-492b-ad22-a2f4dfcd0e19");
+				//Guid IID_IWabbitemu = new Guid("13b5c004-4377-4c94-a8f9-efc1fdaeb31c");
 
-            Type dcomType = Type.GetTypeFromCLSID(CLSID_Wabbitemu);
-            Object dcomObj = Activator.CreateInstance(dcomType);
-            pWabbitemu = (IWabbitemu)dcomObj;
+				Type dcomType = Type.GetTypeFromCLSID(CLSID_Wabbitemu);
+				Object dcomObj = Activator.CreateInstance(dcomType);
+				pWabbitemu = (IWabbitemu)dcomObj;
+			}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.ToString());
+			}
         }
 
         delegate void CancelDebugCallback();

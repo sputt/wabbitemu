@@ -8,6 +8,8 @@ using System.IO;
 using System.Windows.Forms;
 using System.Threading;
 using System.Xml;
+using System.Runtime.InteropServices;
+//using Revsoft.Wabbitcode.Extensions;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -38,7 +40,7 @@ namespace Revsoft.Wabbitcode.Services
 			};
 
 			//some strings we'll need to build 
-			string originaldir = ProjectService.IsInternal ? Path.GetDirectoryName(filePath) : ProjectService.ProjectDirectory;
+			string originalDir = ProjectService.IsInternal ? Path.GetDirectoryName(filePath) : ProjectService.ProjectDirectory;
 			string includedir = "-I \"" + Application.StartupPath + "\"";
 			if (Properties.Settings.Default.includeDir != "" || !ProjectService.IsInternal)
 			{
@@ -55,21 +57,21 @@ namespace Revsoft.Wabbitcode.Services
 			// filePath.Substring(filePath.LastIndexOf('\\') + 1, filePath.Length - filePath.LastIndexOf('\\') - 1);
 			//string assembledName = Path.ChangeExtension(fileName, outputFileExt);
 			wabbitspasm.StartInfo.Arguments = includedir + " -T -L " + quote + filePath + quote + " " + quote + assembledName + quote;
-			wabbitspasm.StartInfo.WorkingDirectory = originaldir;
+			wabbitspasm.StartInfo.WorkingDirectory = originalDir;
 			wabbitspasm.Start();
 #else
             string originalDir = filePath.Substring(0, filePath.LastIndexOf('\\'));
             //ShowMessage();
-            ClearIncludes();
-            ClearDefines();
-            AddInclude(originalDir);
+            SpasmMethods.ClearIncludes();
+            SpasmMethods.ClearDefines();
+            SpasmMethods.AddInclude(originalDir);
             //if the user has some include directories we need to format them
-            if (Settings.Default.includeDir != "")
+            if (Properties.Settings.Default.includeDir != "")
             {
-                string[] dirs = Settings.Default.includeDir.Split('\n');
+                string[] dirs = Properties.Settings.Default.includeDir.Split('\n');
                 foreach (string dir in dirs)
                     if (dir != "")
-                        AddInclude(dir);
+                        SpasmMethods.AddInclude(dir);
             }
             //get the file name we'll use and use it to create the assembled name
             string fileName = filePath.Substring(filePath.LastIndexOf('\\') + 1, filePath.Length - filePath.LastIndexOf('\\') - 1);
@@ -77,19 +79,20 @@ namespace Revsoft.Wabbitcode.Services
             //now we can set the args for spasm
             int error = 0;
             //SetMode((int)MODE.MODE_SYMTABLE);
-            error |= SetInputFileA(Path.Combine(originalDir, fileName));
-            error |= SetOutputFileA(Path.Combine(originalDir, assembledName));
+            error |= SpasmMethods.SetInputFile(filePath);
+            error |= SpasmMethods.SetOutputFile(assembledName);
             //emulator setup
             //emulator.StartInfo.FileName = emuLoc;
             //assemble that fucker
             uint STD_ERROR_HANDLE = 0xFFFFFFF4;
             uint STD_OUTPUT_HANDLE = 0xFFFFFFF5;
+            
 
-            StreamWriter test = new StreamWriter(Application.StartupPath + "\\test.txt");
+            //StreamWriter test = new StreamWriter(Application.StartupPath + "\\test.txt");
             //FileStream test = new FileStream(Application.StartupPath + "\\test.txt", FileMode.Create);
-            //SetStdHandle(STD_ERROR_HANDLE, test.Handle);
+            //NativeMethods.SetStdHandle(STD_ERROR_HANDLE, test.Handle);
             //IntPtr test2 = GetStdHandle(STD_OUTPUT_HANDLE);
-            //SetStdHandle(STD_OUTPUT_HANDLE, test.Handle);
+            //NativeMethods.SetStdHandle(STD_OUTPUT_HANDLE, test.Handle);
             //test2 = GetStdHandle(STD_OUTPUT_HANDLE);
             //Console.SetOut(test);
             //Console.SetError(test);
@@ -97,7 +100,7 @@ namespace Revsoft.Wabbitcode.Services
             //Console.WriteLine("test line1");
             try
             {
-                RunAssembly();
+                SpasmMethods.RunAssembly();
             }
             catch (Exception)
             {
@@ -107,21 +110,20 @@ namespace Revsoft.Wabbitcode.Services
             //string tryread = reader.ReadToEnd();
             //string output = myprocess.StandardOutput.ReadToEnd();
             //test2 = GetStdHandle(STD_OUTPUT_HANDLE);
-            test.Flush();
-            test.Close();            
+            //test.Flush();
+            //test.Close();            
 #endif
 			//lets write it to the output window so the user knows whats happening
-			string outputText = wabbitspasm.StartInfo.Arguments + "\n==================" +
-															fileName + "==================\r\n" +
-															"Assembling " + originaldir + "\\" + fileName + "\r\n" +
-#if USE_DLL == false
- 															wabbitspasm.StandardOutput.ReadToEnd();
+            string outputText = "==================" + fileName + "==================\r\n" +
+                                "Assembling " + originalDir + "\\" + fileName + "\r\n" +
+#if USE_DLL
+                                SpasmMethods.GetStdOut();
 #else
-															"";
+                                wabbitspasm.StandardOutput.ReadToEnd();
 #endif
 			bool errors = outputText.Contains("error");
 			showPanelDelegate showPanels = new showPanelDelegate(ShowErrorPanels);
-			DockingService.MainForm.Invoke(showPanels, new[] { outputText, originaldir });
+			DockingService.MainForm.Invoke(showPanels, new[] { outputText, originalDir });
 			if (errors)
 			{
 				
@@ -140,40 +142,49 @@ namespace Revsoft.Wabbitcode.Services
 		private delegate void showPanelDelegate(string text, string originaldir);
 		private static void ShowErrorPanels(string outputText, string originaldir)
 		{
-			DockingService.OutputWindow.SetText(outputText);
-			DockingService.OutputWindow.HighlightOutput();
-			//its more fun with colors
-			DockingService.ErrorList.ParseOutput(outputText, originaldir);
-			DockingService.ShowDockPanel(DockingService.ErrorList);
-			DockingService.ShowDockPanel(DockingService.OutputWindow);
-			if (DockingService.ActiveDocument != null)
-				DockingService.ActiveDocument.Refresh();
+			//try
+			//{
+				DockingService.OutputWindow.SetText(outputText);
+				DockingService.OutputWindow.HighlightOutput();
+				//its more fun with colors
+				DockingService.ErrorList.ParseOutput(outputText, originaldir);
+				DockingService.ShowDockPanel(DockingService.ErrorList);
+				DockingService.ShowDockPanel(DockingService.OutputWindow);
+				if (DockingService.ActiveDocument != null)
+					DockingService.ActiveDocument.Refresh();
+			/*}
+			catch (Exception ex)
+			{
+				MessageBox.Show(ex.ToString());
+			}*/
 		}
 
 		static Thread assemblerThread;
 		internal static void AssembleCurrentFile()
 		{
-			if (!ProjectService.IsInternal)
-				assemblerThread = new Thread(AssembleProject);
-			else if (DockingService.ActiveDocument != null)
-			{
-				bool saved = DockingService.ActiveDocument.SaveFile();
-				if (saved)
-					assemblerThread = new Thread(AssembleFile);
-			}
-			else
-				return;
-			assemblerThread.Priority = ThreadPriority.BelowNormal;
-			assemblerThread.Start();
+            if (!ProjectService.IsInternal)
+                ThreadPool.QueueUserWorkItem(new WaitCallback(AssembleProject));
+            //assemblerThread = new Thread(AssembleProject);
+            else if (DockingService.ActiveDocument != null)
+            {
+                bool saved = DockingService.ActiveDocument.SaveFile();
+                if (saved)
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(AssembleFile));
+                    //assemblerThread = new Thread(AssembleFile);
+            }
+            else
+                return;
+			//assemblerThread.Priority = ThreadPriority.BelowNormal;
+			//assemblerThread.Start();
 		}
 
-		private static void AssembleFile()
+		private static void AssembleFile(object data)
 		{
 			string text = DockingService.ActiveDocument.FileName;
 			AssembleFile(text, Path.ChangeExtension(text, GetExtension(Properties.Settings.Default.outputFile)), true);			
 		}
 
-		public static void AssembleProject()
+		public static void AssembleProject(object data)
 		{
 			ProjectService.Project.BuildSystem.Build();
 		}
@@ -201,7 +212,7 @@ namespace Revsoft.Wabbitcode.Services
 			//setup wabbitspasm to run silently
 
 			//some strings we'll need to build 
-			string originaldir = Path.GetDirectoryName(filePath);// filePath.Substring(0, filePath.LastIndexOf('\\'));
+			string originalDir = Path.GetDirectoryName(filePath);// filePath.Substring(0, filePath.LastIndexOf('\\'));
 			string includedir = "-I \"" + Application.StartupPath + "\"";
 			if (Properties.Settings.Default.includeDir != "")
 			{
@@ -216,22 +227,22 @@ namespace Revsoft.Wabbitcode.Services
 			// filePath.Substring(filePath.LastIndexOf('\\') + 1, filePath.Length - filePath.LastIndexOf('\\') - 1);
 			//string assembledName = Path.ChangeExtension(fileName, outputFileExt);
 			wabbitspasm.StartInfo.Arguments = includedir + " -L " + fileName + " " + quote + assembledName + quote;
-			wabbitspasm.StartInfo.WorkingDirectory = originaldir;
+			wabbitspasm.StartInfo.WorkingDirectory = originalDir;
 			wabbitspasm.Start();
 
 #else
             string originalDir = filePath.Substring(0, filePath.LastIndexOf('\\'));
-            ClearIncludes();
-            ClearDefines();
-            AddInclude(originalDir);
+            SpasmMethods.ClearIncludes();
+            SpasmMethods.ClearDefines();
+            SpasmMethods.AddInclude(originalDir);
             //if the user has some include directories we need to format them
-            if (Settings.Default.includeDir != "")
+            if (Properties.Settings.Default.includeDir != "")
             {
-                string[] dirs = Settings.Default.includeDir.Split('\n');
+                string[] dirs = Properties.Settings.Default.includeDir.Split('\n');
                 foreach (string dir in dirs)
                 {
                     if (dir != "")
-                        AddInclude(dir);
+                        SpasmMethods.AddInclude(dir);
                 }
             }
             //get the file name we'll use and use it to create the assembled name
@@ -239,8 +250,8 @@ namespace Revsoft.Wabbitcode.Services
             //string assembledName = Path.ChangeExtension(fileName, outputFileExt);
             //now we can set the args for spasm
             int error = 0;
-            error |= SetInputFileA(Path.Combine(originalDir, fileName));
-            error |= SetOutputFileA(Path.Combine(originalDir, assembledName));
+            error |= SpasmMethods.SetInputFile(Path.Combine(originalDir, fileName));
+            error |= SpasmMethods.SetOutputFile(Path.Combine(originalDir, assembledName));
             //emulator setup
             //emulator.StartInfo.FileName = emuLoc;
             //assemble that fucker
@@ -253,7 +264,7 @@ namespace Revsoft.Wabbitcode.Services
             Console.SetOut(test);
             Console.SetError(test);
             //StreamReader reader = myprocess.StandardOutput;
-            RunAssembly();
+            SpasmMethods.RunAssembly();
             Console.WriteLine("test line");
             //string tryread = reader.ReadToEnd();
             //string output = myprocess.StandardOutput.ReadToEnd();
@@ -262,9 +273,13 @@ namespace Revsoft.Wabbitcode.Services
 #endif
 			DockingService.ShowDockPanel(DockingService.OutputWindow);
 			//lets write it to the output window so the user knows whats happening
-			string outputText = "==================" + fileName + "==================\r\n" +
-												"SymTable for " + originaldir + "\\" + fileName + "\r\n" +
-												wabbitspasm.StandardOutput.ReadToEnd();
+            string outputText = "==================" + fileName + "==================\r\n" +
+                                                "SymTable for " + originalDir + "\\" + fileName + "\r\n"
+#if USE_DLL
+;
+#else
+                                                + wabbitspasm.StandardOutput.ReadToEnd();
+#endif
 			DockingService.OutputWindow.SetText(outputText);
 			//its more fun with colors
 			DockingService.OutputWindow.HighlightOutput();
@@ -273,7 +288,7 @@ namespace Revsoft.Wabbitcode.Services
 			if (errors)
 				DockingService.ShowDockPanel(DockingService.OutputWindow);
 			//its more fun with colors
-			DockingService.ErrorList.ParseOutput(outputText, originaldir);
+			DockingService.ErrorList.ParseOutput(outputText, originalDir);
 			if (errors)
 				DockingService.ShowDockPanel(DockingService.ErrorList);
 			//tell if the assembly was successful
