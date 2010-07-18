@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string.h>
-#include <stdbool.h>
+//#include <stdbool.h>
 #include "storage.h"
 #include "utils.h"
 #include "hash.h"
@@ -123,10 +123,14 @@ void write_defines_callback(define_t *define, list_t *label_list) {
 }
 
 void dump_defines_callback(define_t *define, void *reserved) {
+#ifdef WINVER
 	OutputDebugString(define->name);
 	OutputDebugString("---------\n");
 	OutputDebugString(define->contents);
 	OutputDebugString("\n---------\n\n");
+#else
+
+#endif
 }
 
 void dump_defines() {
@@ -145,10 +149,14 @@ static void destroy_define_value (define_t *define) {
 
 	if (define->contents)
 		free (define->contents);
+	if (define->name)
+		free (define->name);
 
 	for (curr_arg = 0; curr_arg < MAX_ARGS; curr_arg++) {
-		if (define->args[curr_arg] != NULL)
+		if (define->args[curr_arg] != NULL) {
+
 			free (define->args[curr_arg]);
+		}
 	}
 	free (define);
 }
@@ -195,8 +203,10 @@ void init_storage() {
 /*
  * Frees all storage for labels and defines
  */
-
-__declspec(dllexport) void free_storage() {
+#ifdef _WINDLL
+__declspec(dllexport)
+#endif
+	void free_storage() {
 	opcode *next_opcode = NULL, *last_opcode = NULL, *curr_opcode = all_opcodes;
 
 	hash_free(label_table);

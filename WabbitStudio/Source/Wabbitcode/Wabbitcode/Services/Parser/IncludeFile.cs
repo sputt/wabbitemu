@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
@@ -43,5 +44,10 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			get;
 			set;
 		}
+
+        public override string ToString()
+        {
+            return Path.GetFileName(Name);
+        }
 	}
 }

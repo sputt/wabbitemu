@@ -17,10 +17,10 @@ namespace Revsoft.Wabbitcode
         {
             InitializeComponent();
             if (!Directory.Exists(Path.Combine(Application.UserAppDataPath, "Templates")))
-                createTemplates();
+                CreateTemplates();
             getTemplates();
             calcOptions.SelectedIndex = 0;
-            getTemplatesInDir();
+            GetTemplatesInDir();
         }
 
         readonly string templatesdir = Path.Combine(Application.UserAppDataPath, "Templates");
@@ -31,14 +31,14 @@ namespace Revsoft.Wabbitcode
                 calcOptions.Items.Add(Path.GetFileName(dir));
         }
 
-        private void getTemplatesInDir()
+        private void GetTemplatesInDir()
         {
             string[] templates = Directory.GetDirectories(Path.Combine(templatesdir, calcOptions.Items[calcOptions.SelectedIndex].ToString()));
             foreach (string template in templates)
                 listView1.Items.Add(Path.GetFileName(template));
         }
 
-        private void createTemplates()
+        private void CreateTemplates()
         {
             Directory.CreateDirectory(templatesdir);
             Directory.CreateDirectory(Path.Combine(templatesdir, "TI-73"));
@@ -98,7 +98,7 @@ namespace Revsoft.Wabbitcode
             {
 				ProjectService.IncludeDirs.Add(dir);
 				string dirName = Path.GetFileName(dir);
-				ProjectFolder folderAdded = ProjectService.AddDir(dirName, currentFolder);
+				ProjectFolder folderAdded = ProjectService.AddFolder(dirName, currentFolder);
                 GetFiles(dir, ref folderAdded);
             }
             string[] files = Directory.GetFiles(directory);
@@ -120,7 +120,7 @@ namespace Revsoft.Wabbitcode
         private void calcOptions_SelectedIndexChanged(object sender, EventArgs e)
         {
             listView1.Items.Clear();
-            getTemplatesInDir();
+            GetTemplatesInDir();
         }
 
         private void projFromDirBox_CheckedChanged(object sender, EventArgs e)

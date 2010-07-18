@@ -9,7 +9,7 @@
 #ifndef WINVER
 #include <unistd.h>
 #endif
-#include <stdbool.h>
+//#include <stdbool.h>
 #include <math.h>
 #include "spasm.h"
 #include "utils.h"

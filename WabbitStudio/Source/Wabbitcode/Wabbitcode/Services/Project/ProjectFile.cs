@@ -47,6 +47,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 			set { fileFoldings = value; }
 		}
 
+        private ProjectFolder folder;
+        public ProjectFolder Folder
+        {
+            get { return folder; }
+            set { folder = value; }
+        }
+
+
 		public ProjectFile(IProject project, string fullPath)
 		{
 			parent = project;
@@ -58,5 +66,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 			return filePath;
 		}
 
-	}
+
+        internal void Remove()
+        {
+            folder.Files.Remove(this);
+            folder = null;
+        }
+    }
 }

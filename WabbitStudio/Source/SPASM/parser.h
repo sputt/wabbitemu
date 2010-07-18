@@ -1,7 +1,7 @@
 #ifndef __PARSER_H
 #define __PARSER_H
 
-#include <stdbool.h>
+//#include <stdbool.h>
 #include "storage.h"
 
 #define EXPR_DELIMS "+-/*&|<>%^"

@@ -16,13 +16,6 @@ namespace Revsoft.Wabbitcode.Services
 {
 	public static class ProjectService
 	{
-		private static ProjectFile currentFile;
-		public static ProjectFile CurrentFile
-		{
-			get { return currentFile; }
-			set { currentFile = value; }
-		}
-
 		private static ProjectClass project;
 		public static ProjectClass Project
 		{
@@ -93,19 +86,24 @@ namespace Revsoft.Wabbitcode.Services
 					mdiChild.Close();
 			project = new ProjectClass(fileName);
 			project.OpenProject(fileName);
-			DockingService.DirectoryViewer.buildDirectoryTree(Directory.GetFiles(ProjectDirectory));
 			InitWatcher(project.ProjectDirectory);
-			DockingService.ShowDockPanel(DockingService.ProjectViewer);
-			DockingService.ProjectViewer.BuildProjTree();
+            if (closeFiles)
+            {
+                DockingService.ShowDockPanel(DockingService.ProjectViewer);
+                DockingService.ProjectViewer.BuildProjTree();
+            }
+            DockingService.DirectoryViewer.buildDirectoryTree(Directory.GetFiles(ProjectDirectory));
 			DockingService.MainForm.UpdateProjectMenu(true);
 
 			//ThreadStart threadStart = new ThreadStart(GetIncludeDirectories);
-			Thread thread = new Thread(ParseFiles);
+            ThreadPool.QueueUserWorkItem(ParseFiles);
+            
+			/*Thread thread = new Thread(ParseFiles);
 			thread.Priority = ThreadPriority.BelowNormal;
-			thread.Start();
+			thread.Start();*/
 		}
 
-		private static void ParseFiles()
+		private static void ParseFiles(object data)
 		{
 			ParseFiles(MainFolder);
 		}
@@ -114,7 +112,9 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			foreach (ProjectFolder subFolder in folder.Folders)
 				ParseFiles(subFolder);
-			foreach (ProjectFile file in folder.Files)
+            ProjectFile[] filesToParse = new ProjectFile[folder.Files.Count];
+            folder.Files.CopyTo(filesToParse, 0);
+			foreach (ProjectFile file in filesToParse)
 				ParserService.ParseFile(file.FileFullPath);
 		}
 
@@ -206,34 +206,51 @@ namespace Revsoft.Wabbitcode.Services
 			DockingService.ShowDockPanel(DockingService.ProjectViewer);
 		}
 
-		internal static void DeleteFolder(string parentDir, string dir)
+		internal static void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir)
 		{
-			//project.deleteFolder(parentDir, dir);
+			project.DeleteFolder(parentDir, dir);
+            project.NeedsSave = true;
 		}
+
+        internal static void DeleteFile(string fullPath)
+        {
+            ProjectFile file = project.FindFile(fullPath);
+            DeleteFile(file.Folder, file);
+            project.NeedsSave = true;
+        }
+
+        internal static void DeleteFile(ProjectFolder parentDir, ProjectFile file)
+        {
+            ParserService.RemoveParseData(file.FileFullPath);
+            project.DeleteFile(parentDir, file);
+            project.NeedsSave = true;
+        }
 
 		internal static void SaveProject()
 		{
 			project.BuildXMLFile();
 			DockingService.ProjectViewer.BuildProjTree();
+            project.NeedsSave = false;
 		}
 
-		internal static ProjectFolder AddDir(string dir, ProjectFolder parentDir)
+		internal static ProjectFolder AddFolder(string dirName, ProjectFolder parentDir)
 		{
-			ProjectFolder folder = new ProjectFolder(project, dir);
-			parentDir.Folders.Add(folder);
-			return folder;
+            return project.AddFolder(dirName, parentDir);
 		}
 
-		internal static void AddFile(ProjectFolder parent, string fullPath)
+		internal static ProjectFile AddFile(ProjectFolder parent, string fullPath)
 		{
-			ProjectFile file = new ProjectFile(project, fullPath);
-			parent.Files.Add(file);
-			//project.addFile(file, dir, fullPath);
+            return project.AddFile(parent, fullPath);
 		}
 
 		internal static void CloseProject()
 		{
-			//project.CloseProject();
+            DialogResult result = DialogResult.No;
+            if (Project.NeedsSave)
+                result = MessageBox.Show("Would you like to save your changes to the project file?", "Save project?", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+            if (result == DialogResult.Yes)
+                SaveProject();
+            isInternal = true;
 		}
 
 		internal static ParserInformation GetParseInfo()
@@ -249,42 +266,9 @@ namespace Revsoft.Wabbitcode.Services
 			return null;
 		}
 
-
-
-		internal static System.Xml.XmlNodeList GetBuildConfigs()
-		{
-			throw new NotImplementedException();
-		}
-
 		internal static bool ContainsFile(string file)
 		{
-			return RecurseSearchFolders(MainFolder, Path.GetFileName(file));
-		}
-
-		private static ProjectFile fileFound;
-		private static bool RecurseSearchFolders(ProjectFolder folder, string file)
-		{
-			fileFound = folder.FindFile(file);
-				if (fileFound != null)
-					return true;
-			foreach (ProjectFolder subFolder in folder.Folders)
-				RecurseSearchFolders(subFolder, file);
-			return false;
-		}
-
-		internal static ProjectFile FindFile(string file)
-		{
-			if (fileFound.FileFullPath == file)
-				return fileFound;
-			if (ContainsFile(file))
-				return fileFound;
-			return null;
-		}
-
-		internal static void ActiveFileChanged()
-		{
-			if (ContainsFile(DocumentService.ActiveFileName))
-				currentFile = fileFound;
+            return project.ContainsFile(file);
 		}
 
 		public static IList<BuildConfig> BuildConfigs

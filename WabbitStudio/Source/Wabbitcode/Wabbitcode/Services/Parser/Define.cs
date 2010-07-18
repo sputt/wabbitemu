@@ -45,5 +45,10 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			get;
 			set;
 		}
+
+        public override string ToString()
+        {
+            return Name;
+        }
 	}
 }

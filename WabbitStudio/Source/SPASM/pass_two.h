@@ -1,7 +1,7 @@
 #ifndef __PASS_TWO_H
 #define __PASS_TWO_H
 
-#include <stdbool.h>
+//#include <stdbool.h>
 
 typedef enum {
 	ARG_NUM_8,

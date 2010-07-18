@@ -2,7 +2,7 @@
 #define __STORAGE_H
 
 #include "list.h"
-#include <stdbool.h>
+//#include <stdbool.h>
 #if !defined(MAX_PATH) && !defined(_MSC_VER)
 	#include <limits.h>
 	#define MAX_PATH PATH_MAX
@@ -37,7 +37,10 @@ typedef struct common_store {
 
 void write_labels (char *filename);
 void init_storage ();
-__declspec(dllexport) void free_storage();
+#ifdef _WINDLL
+__declspec(dllexport)
+#endif 
+	void free_storage();
 define_t *add_define (char *name, bool *redefined);
 define_t *search_defines (const char *name);
 void remove_define (char *name);

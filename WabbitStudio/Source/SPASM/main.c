@@ -1,8 +1,11 @@
 #define __MAIN_C
 
+#define _CRTDBG_MAP_ALLOC
+#include <stdlib.h>
+#include <crtdbg.h>
+
 #include <string.h>
 #include <stdio.h>
-#include <stdlib.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -19,6 +22,9 @@
 #include "big.h"
 #endif
 #include "console.h"
+
+
+
 
 #define LISTING_BUF_SIZE 65536	//initial size of buffer for output listing
 #define malloc_chk malloc
@@ -210,12 +216,12 @@ int run_assembly() {
 	printf("Assembly time: %0.3f seconds\n", (float) s_diff + ((float) ms_diff / 1000.0f));
 #endif
 	//free(output_filename);
-	//free_storage();
-	//_CrtDumpMemoryLeaks();
+	free_storage();
 	return exit_code;
 }
 
 int main (int argc, char **argv) {
+	 _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
 
 	int curr_arg = 1;
 	bool case_sensitive = false;
@@ -372,6 +378,9 @@ int main (int argc, char **argv) {
 			output_filename = change_extension (curr_input_file, "bin");
 	}
 
-	return run_assembly();
+	int error = run_assembly();
+	free(output_filename);
+	list_free(include_dirs, true);
+	return error;
 }
 

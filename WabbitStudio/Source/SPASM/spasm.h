@@ -4,11 +4,12 @@
 #ifdef _WIN32
 #include <Windows.h>
 #include <stdio.h>
-#include <crtdbg.h>
+#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
+#include <crtdbg.h>
 #endif
 
-#include <stdbool.h>
+//#include <stdbool.h>
 #include "storage.h"
 #include "list.h"
 #include "expand_buf.h"
@@ -80,6 +81,9 @@ GLOBAL bool use_colors;	//whether to use colors or not for messages
 GLOBAL EXIT_STATUS exit_code;
 #ifdef USE_REUSABLES
 GLOBAL int total_reusables, curr_reusable;
+#endif
+#ifdef _WINDLL
+GLOBAL char output_text[800000];
 #endif
 
 //make sure max and min are defined for *nix

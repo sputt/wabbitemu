@@ -27,8 +27,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             projViewer.TreeViewNodeSorter = new NodeSorter();
 			ProjectFolder folder = ProjectService.MainFolder;
 			RecurseAddNodes(folder, null);
-			if (projViewer.TopNode != null)
-				projViewer.TopNode.Expand();
+			if (projViewer.Nodes.Count > 0)
+                projViewer.Nodes[0].Expand();
             projViewer.Sort();
         }
 		
@@ -57,7 +57,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			return nodeFolder;
 		}
 
-		private void AddFile(ProjectFile file, TreeNode parent)
+		public void AddFile(ProjectFile file, TreeNode parent)
 		{
 			TreeNode nodeFile = new TreeNode
 			{
@@ -97,6 +97,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			if (dropNode == null || dropNode.Tag.GetType() == typeof(ProjectFolder) || !projViewer.SelectedNodes.Contains(dropNode))
 				return;
 			ProjectFile file = GetFileFromPath(dropNode.FullPath);
+            if (file == null)
+                return;
 			string filePath = file.FileFullPath;
 			if (File.Exists(filePath))
 				DocumentService.GotoFile(filePath);
@@ -194,6 +196,16 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private void renFMenuItem_Click(object sender, EventArgs e)
         {
 			//RenameFolder(projViewer.SelectedNodes[0]);
+            TreeNode node = projViewer.SelectedNodes[0];
+            string oldName = node.Text;
+            projViewer.LabelEdit = true;
+            node.BeginEdit();
+            projViewer.LabelEdit = false;
+            string newName = node.Text;
+            if (oldName == newName)
+                return;
+            ProjectFolder folder = (ProjectFolder)node.Tag;
+            folder.Name = newName;
         }
 
         private void openMenuItem_Click(object sender, EventArgs e)
@@ -282,14 +294,34 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             TreeNode newNode = projViewer.GetNodeAt(cursor);
 			if (newNode == null)
 				return;
-            while (newNode.Tag.ToString() != "Folder")
+            while (newNode.Tag.GetType() != typeof(ProjectFolder))
                 newNode = newNode.Parent;
             foreach (TreeNode original in projViewer.SelectedNodes)
             {
                 if (newNode == original)
                     break;
-                original.Remove();
-                newNode.Nodes.Add(original);
+                if (original.Tag.GetType() == typeof(ProjectFolder))
+                {
+                    ProjectFolder folder = original.Tag as ProjectFolder;
+                    ProjectFolder newParent = newNode.Tag as ProjectFolder;
+                    if (folder == newParent)
+                        continue;
+                    folder.Remove();
+                    newParent.AddFolder(folder);
+                    original.Remove();
+                    newNode.Nodes.Add(original);
+                }
+                else if (original.Tag.GetType() == typeof(ProjectFile))
+                {
+                    ProjectFile file = original.Tag as ProjectFile;
+                    ProjectFolder newParent = newNode.Tag as ProjectFolder;
+                    if (file.Folder == newParent)
+                        continue;
+                    file.Remove();
+                    newParent.AddFile(file);
+                    original.Remove();
+                    newNode.Nodes.Add(original);
+                }
                 newNode.Expand();
             }
             projViewer.Sort();
@@ -306,6 +338,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             {
                 if (node.Tag.ToString() == "Folder")
                     continue;
+                ProjectFile file = (ProjectFile)node.Tag;
+                ProjectService.DeleteFile(file.Folder, file);
                 node.Remove();
             }
             //ProjectService.Project.saveProject();

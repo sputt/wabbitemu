@@ -12,5 +12,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 		string ProjectName { get; set; }
 		ProjectFolder MainFolder { get; }
 		List<string> IncludeDir { get; }
+        bool NeedsSave { get; set; }
+
+        ProjectFolder AddFolder(string dirName, ProjectFolder parentFolder);
+        ProjectFile AddFile(ProjectFolder parentFolder, string fullPath);
+        void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir);
+        void DeleteFile(ProjectFolder parentDir, ProjectFile file);
 	}
 }

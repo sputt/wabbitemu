@@ -39,6 +39,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 			set { projectName = value; }
 		}
 
+        private bool needsSave = false;
+        public bool NeedsSave
+        {
+            get { return needsSave; }
+            set { needsSave = value; }
+        }
+
 		private BuildSystem buildSystem = new BuildSystem(false);
 		public BuildSystem BuildSystem
 		{
@@ -128,8 +135,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 			reader.Close();
 			stream.Close();
 		}
-
-		private void RecurseReadFolders(XmlTextReader reader, ref ProjectFolder folder)
+        #region XML
+        private void RecurseReadFolders(XmlTextReader reader, ref ProjectFolder folder)
 		{
 			if (reader.IsEmptyElement)
 				return;
@@ -140,13 +147,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 				if (reader.Name == "Folder")
 				{
 					ProjectFolder subFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
-					folder.Folders.Add(subFolder);
+					folder.AddFolder(subFolder);
 					RecurseReadFolders(reader, ref subFolder);
 				}
 				else if (reader.Name == "File")
 				{
 					ProjectFile file = new ProjectFile(this, reader.GetAttribute("Path"));
-					folder.Files.Add(file);
+					folder.AddFile(file);
 				} 
 				else
 					return;
@@ -186,8 +193,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 			writer.WriteEndElement();
 		}
-
-		internal List<ProjectFile> GetProjectFiles()
+        #endregion
+        internal List<ProjectFile> GetProjectFiles()
 		{
 			List<ProjectFile> files = new List<ProjectFile>();
 			RecurseAddFiles(ref files, mainFolder);
@@ -201,5 +208,60 @@ namespace Revsoft.Wabbitcode.Services.Project
 			foreach (ProjectFile file in folder.Files)
 				files.Add(file);
 		}
-	}
+
+
+        public ProjectFolder AddFolder(string dirName, ProjectFolder parentFolder)
+        {
+            ProjectFolder folder = new ProjectFolder(this, dirName);
+            parentFolder.AddFolder(folder);
+            return folder;
+        }
+
+        public ProjectFile AddFile(ProjectFolder parentFolder, string fullPath)
+        {
+            ProjectFile file = new ProjectFile(this, fullPath);
+            parentFolder.AddFile(file);
+            return file;
+        }
+
+        public bool ContainsFile(string fullPath)
+        {
+            return RecurseSearchFolders(MainFolder, Path.GetFileName(fullPath));
+        }
+
+        private ProjectFile fileFound;
+        private bool RecurseSearchFolders(ProjectFolder folder, string file)
+        {
+            if (fileFound == null)
+                fileFound = folder.FindFile(file);
+            if (fileFound != null)
+                return true;
+            bool returnVal = false;
+            foreach (ProjectFolder subFolder in folder.Folders)
+                returnVal |= RecurseSearchFolders(subFolder, file);
+            if (fileFound != null)
+                return true;
+            return returnVal;
+        }
+
+        public ProjectFile FindFile(string fullPath)
+        {
+            if (fileFound != null && fileFound.FileFullPath == fullPath)
+                return fileFound;
+            fileFound = null;
+            if (ContainsFile(fullPath))
+                return fileFound;
+            return null;
+        }
+
+        public void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir)
+        {
+            parentDir.Folders.Remove(dir);
+        }
+
+        public void DeleteFile(ProjectFolder parentDir, ProjectFile file)
+        {
+            file.Remove();
+        }
+    }
 }

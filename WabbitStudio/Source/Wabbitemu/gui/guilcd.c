@@ -696,6 +696,9 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 #endif
 			if (calc_count() == 0)
 				free(bi);
+			printf("Unregistering drop window\n");
+			if (calcs[gslot].pDropTarget != NULL)
+				UnregisterDropWindow(hwnd, (IDropTarget *) calcs[gslot].pDropTarget);
 			return 0;
 		default:
 			if (Message == RegisterWindowMessage("ShellGetDragImage")) {

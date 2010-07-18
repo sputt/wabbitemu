@@ -2,7 +2,7 @@
 #define __OPCODES_H
 
 #include <stdio.h>
-#include <stdbool.h>
+//#include <stdbool.h>
 
 typedef struct _instr {
 	char *args;

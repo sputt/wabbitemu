@@ -156,7 +156,7 @@ void run_second_pass () {
 		program_counter = expr_list->program_counter;
 		line_num = expr_list->line_num;
 		curr_input_file = expr_list->input_file;
-#ifdef USE_REUSABLE
+#ifdef USE_REUSABLES
 		set_curr_reusable(expr_list->curr_reusable);
 #endif
 
@@ -209,7 +209,9 @@ void run_second_pass () {
 				break;
 			}
 		}
+#ifdef DUMP_DEFINES && _DEBUG
 		dump_defines();
+#endif
 
 		free (output_list->expr);
 		old_output = output_list;

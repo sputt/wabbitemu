@@ -12,6 +12,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 		public string Name
 		{
 			get { return name; }
+            set { name = value; }
 		}
 
 		private IProject parent;
@@ -31,6 +32,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			get { return files; }
 		}
+
+        private ProjectFolder parentFolder;
+        public ProjectFolder ParentFolder
+        {
+            get { return parentFolder; }
+            set { parentFolder = value; }
+        }
 
 		public ProjectFolder(IProject parent, string folderName)
 		{
@@ -66,9 +74,30 @@ namespace Revsoft.Wabbitcode.Services.Project
 		internal ProjectFile FindFile(string file)
 		{
 			foreach (ProjectFile subFile in files)
-				if (Path.GetFileName(subFile.FileFullPath) == file)
+				if (Path.GetFileName(subFile.FileFullPath).ToLower() == file.ToLower())
 					return subFile;
 			return null;
 		}
-	}
+
+        internal void AddFile(ProjectFile file)
+        {
+            files.Add(file);
+            file.Folder = this;
+            parent.NeedsSave = true;
+        }
+
+        internal void AddFolder(ProjectFolder subFolder)
+        {
+            folders.Add(subFolder);
+            subFolder.ParentFolder = this;
+            parent.NeedsSave = true;
+        }
+
+        internal void Remove()
+        {
+            parentFolder.Folders.Remove(this);
+            parentFolder = null;
+            parent.NeedsSave = true;
+        }
+    }
 }

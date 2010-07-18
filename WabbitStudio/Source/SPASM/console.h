@@ -1,7 +1,7 @@
 #ifndef __CONSOLE_H
 #define __CONSOLE_H
 
-#include <stdbool.h>
+//#include <stdbool.h>
 
 #ifdef WINVER
 # define COLOR_RED			FOREGROUND_RED | FOREGROUND_INTENSITY

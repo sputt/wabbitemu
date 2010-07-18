@@ -24,6 +24,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void labelsBox_DoubleClick(object sender, EventArgs e)
         {
+            if (labelsBox.SelectedItem == null)
+                return;
 			DocumentService.GotoLabel((ILabel)labelsBox.SelectedItem);
 			DockingService.ActiveDocument.Focus();
         }
@@ -48,15 +50,33 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			Clipboard.SetDataObject(labelsBox.Items[labelsBox.SelectedIndex].ToString());
 		}
 
-		internal void AddLabels(List<ILabel> list)
+		internal void AddLabels(ParserInformation list)
 		{
 			NativeMethods.TurnOffDrawing(labelsBox.Handle);
 			bool ShowEquates = includeEquatesBox.Checked;
 			labelsBox.Items.Clear();
-			foreach (Revsoft.Wabbitcode.Services.Parser.Label label in list)
+			foreach (IParserData data in list.LabelsList)
 			{
-				if ((ShowEquates && label.IsEquate && !label.IsReusable) || (!label.IsReusable))
-					labelsBox.Items.Add(label);
+                Type dataType = data.GetType();
+                if (dataType == typeof(Services.Parser.Label))
+                {
+                    ILabel label = data as ILabel;
+                    if ((ShowEquates && label.IsEquate && !label.IsReusable) || (!label.IsReusable && !label.IsEquate))
+                        labelsBox.Items.Add(label);
+                }
+                else if (dataType == typeof(Macro))
+                {
+                    labelsBox.Items.Add(data);
+                }
+                else if (dataType == typeof(Define))
+                {
+                    if (ShowEquates)
+                        labelsBox.Items.Add(data);
+                }
+                else if (dataType == typeof(IncludeFile))
+                {
+                    labelsBox.Items.Add(data);
+                }					
 			}
 			NativeMethods.TurnOnDrawing(labelsBox.Handle);
 		}
