@@ -48,8 +48,10 @@ namespace Revsoft.Wabbitcode
             if (ProjectService.IsInternal)
                 Properties.Settings.Default.includeDir = temp;
             else
+            {
                 ProjectService.IncludeDirs = temp.Split('\n').ToList<string>();
-			ProjectService.SaveProject();
+                ProjectService.SaveProject();
+            }
         }
     }
 }

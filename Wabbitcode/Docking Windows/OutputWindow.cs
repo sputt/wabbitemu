@@ -87,5 +87,21 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		{
 			outputWindowBox.Text += outputText;
 		}
-	}
+
+        public IntPtr OutputBoxHandle { 
+            get 
+            {
+                if (outputWindowBox.InvokeRequired)
+                    return (IntPtr)outputWindowBox.Invoke(new GetHandleDelegate(GetHandle));
+                else
+                    return outputWindowBox.Handle; 
+            } 
+        }
+
+        private delegate IntPtr GetHandleDelegate();
+        private IntPtr GetHandle()
+        {
+            return outputWindowBox.Handle;
+        }
+    }
 }

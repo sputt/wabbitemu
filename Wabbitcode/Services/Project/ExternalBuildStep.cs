@@ -19,6 +19,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 		public string InputFile
 		{
 			get { return input; }
+            set { input = value; }
 		}
 
 		int stepNumber;

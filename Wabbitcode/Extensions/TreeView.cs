@@ -1732,7 +1732,9 @@ namespace Revsoft.Wabbitcode
             }
             nodePointedTo = dropNode;
             e.Effect = SelectedNodes.Contains(nodePointedTo)  ? DragDropEffects.None : DragDropEffects.All;
-            if (nodePointedTo.Tag == "File")
+            if (nodePointedTo == null)
+                return;
+            if (nodePointedTo.Tag.GetType() == typeof(Revsoft.Wabbitcode.Services.Project.ProjectFile))
                 nodePointedTo = nodePointedTo.Parent;
             oldBackColor = nodePointedTo.BackColor;
             oldForeColor = nodePointedTo.ForeColor;
@@ -1818,8 +1820,11 @@ namespace Revsoft.Wabbitcode
 
             // Disable timer for scrolling dragged item
             timer.Enabled = false;
-            nodePointedTo.BackColor = oldBackColor;
-            nodePointedTo.ForeColor = oldForeColor;
+            if (nodePointedTo != null)
+            {
+                nodePointedTo.BackColor = oldBackColor;
+                nodePointedTo.ForeColor = oldForeColor;
+            }
             base.OnDragLeave(e);
         }
 

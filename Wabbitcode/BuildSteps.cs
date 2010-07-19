@@ -153,5 +153,23 @@ namespace Revsoft.Wabbitcode
 					break;
 			}
 		}
+
+        private void inputBox_TextChanged(object sender, EventArgs e)
+        {
+            IBuildStep step = (IBuildStep)buildSeqList.SelectedItem;
+            step.InputFile = inputBox.Text;
+        }
+
+        private void outputBox_TextChanged(object sender, EventArgs e)
+        {
+            InternalBuildStep step = (InternalBuildStep)buildSeqList.SelectedItem;
+            step.OutputFile = outputBox.Text;
+        }
+
+        private void actionBox_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            InternalBuildStep step = (InternalBuildStep)buildSeqList.SelectedItem;
+            step.StepType = (StepType)actionBox.SelectedIndex;
+        }
     }
 }
