@@ -175,7 +175,7 @@ static keyprog_t keygrps[] = {
     {RIGHT, 0, 2} // Right Arrow
 };
 #else
-keyprog_t *keygrps;
+
 static keyprog_t defaultkeys[] = {
 	{ 'A' , 5 , 6 },
 	{ 'B' , 4 , 6 },
@@ -316,7 +316,7 @@ static keyprog_t defaultkeys[] = {
 	{ GDK_F12, 20, 0 }
 	#endif
 };
-static keyprog_t customkeys[] = {
+static keyprog_t keygrps[] = {
 	{ 'A' , 5 , 6 },
 	{ 'B' , 4 , 6 },
 	{ 'C' , 3 , 6 },
@@ -408,9 +408,9 @@ static keyprog_t customkeys[] = {
 	{ VK_OEM_2, 2, 0 },
 //so much better than harcoding the changes :P
 #ifdef _DEBUG
-	{ VK_NUMPAD0, 20, 0}
+	{ VK_NUMPAD0, 5, 0}
 #else
-	{ VK_F12, 20, 0}
+	{ VK_F12, 5, 0}
 #endif
 	#else
 	{ GDK_Return , 1 , 0 },
@@ -468,7 +468,7 @@ keypad_t *keypad_init(CPU_t *cpu) {
 		return NULL;
 	}
 
-	keygrps = customkeys;
+	//keygrps = customkeys;
 	for(b=0;b<8;b++) {
 		for(i=0;i<8;i++) {
 			keypad->keys[b][i]=0;
@@ -532,11 +532,11 @@ keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk) {
 	 */
 	for(i=0; i < NumElm(defaultkeys); i++) {
 		if (keygrps[i].vk == vk) {
-			if (keygrps[i].group == 20) {
+			if (keygrps[i].group == 5 && keygrps[i].bit == 0) {
 				keypad->on_pressed |= KEY_KEYBOARDPRESS;
-			} else {
-				keypad->keys[keygrps[i].group][keygrps[i].bit] |= KEY_KEYBOARDPRESS;
-			}
+			}// else {
+			keypad->keys[keygrps[i].group][keygrps[i].bit] |= KEY_KEYBOARDPRESS;
+			//}
 			return &keygrps[i];
 		}
 	}	
@@ -555,11 +555,11 @@ keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
 	
 	for(i=0; i < NumElm(defaultkeys); i++) {
 		if (keygrps[i].vk == vk) {
-			if (keygrps[i].group == 20) {
+			if (keygrps[i].group == 5 && keygrps[i].bit == 0) {
 				keypad->on_pressed &= (~KEY_KEYBOARDPRESS);
-			} else {			
-				keypad->keys[keygrps[i].group][keygrps[i].bit] &= (~KEY_KEYBOARDPRESS);
-			}
+			} //else {			
+			keypad->keys[keygrps[i].group][keygrps[i].bit] &= (~KEY_KEYBOARDPRESS);
+			//}
 			return &keygrps[i];
 		}
 	}

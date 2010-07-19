@@ -26,6 +26,14 @@ namespace Revsoft.Wabbitcode.Classes
 		[DllImport("user32.dll", CharSet = CharSet.Auto)]
 		private extern static int SendMessage(IntPtr hWnd, int msg, int wParam, ref Point lParam);
 
+        [DllImport("kernel32.dll")]
+        public static extern IntPtr GetStdHandle(uint nStdHandle);
+
+        [DllImport("Kernel32.dll")]//SetLastError = true
+        public static extern bool SetStdHandle(uint device, IntPtr handle);
+        //[DllImport("Kernel32.dll")]//SetLastError = true
+        //public static extern uint GetStdHandle(uint device);
+
 		public static void TurnOffDrawing(IntPtr handle)
 		{
 			Point temp = new Point(0, 0);
@@ -52,4 +60,39 @@ namespace Revsoft.Wabbitcode.Classes
 			SendMessage(handle, EM_SETSCROLLPOS, 0, ref scrollPos);
 		}
 	}
+
+    public static class SpasmMethods
+    {
+        [DllImport("SPASM.dll")]
+        public static extern int ShowMessage();
+
+        [DllImport("SPASM.dll")]
+        public static extern int SetInputFile([In, MarshalAs(UnmanagedType.LPStr)] string name);
+
+        [DllImport("SPASM.dll")]
+        public static extern int SetOutputFile([In, MarshalAs(UnmanagedType.LPStr)] string name);
+
+        [DllImport("SPASM.dll")]
+        public static extern int RunAssembly();
+
+        [DllImport("SPASM.dll")]
+        public static extern int ClearDefines();
+
+        [DllImport("SPASM.dll")]
+        public static extern int AddDefine([In, MarshalAs(UnmanagedType.LPStr)] string name,
+                                           [In, MarshalAs(UnmanagedType.LPStr)] string value);
+
+        [DllImport("SPASM.dll")]
+        public static extern int ClearIncludes();
+
+        [DllImport("SPASM.dll")]
+        public static extern int AddInclude([In, MarshalAs(UnmanagedType.LPStr)] string directory);
+
+        [DllImport("SPASM.dll")]
+        public static extern int SetMode(int mode);
+
+        [DllImport("SPASM.dll")]
+        [return: MarshalAs(UnmanagedType.LPStr)]
+        public static extern string GetStdOut();
+    }
 }

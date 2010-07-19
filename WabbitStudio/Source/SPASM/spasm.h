@@ -53,7 +53,7 @@ typedef enum {
 #define OUTPUT_BUF_SIZE 8000000	//size of output buffer for assembled code
 
 //make sure that MAX_PATH is max path length on *nix and Windows
-#if !defined(MAX_PATH) && !defined(_MSC_VER)
+#if !defined(MAX_PATH) || defined(UNIX_VER)
 	#include <limits.h>
 	#define MAX_PATH PATH_MAX
 #endif

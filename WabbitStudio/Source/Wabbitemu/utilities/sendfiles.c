@@ -235,6 +235,8 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 		return 0;
 	}
+	case WM_SIZING:
+		return 1;
 	case WM_SIZE:
 	{
 		RECT rc;

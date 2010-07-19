@@ -1,8 +1,12 @@
 #define __MAIN_C
 
+#ifdef WINVER
 #define _CRTDBG_MAP_ALLOC
+#endif
 #include <stdlib.h>
+#ifdef WINVER
 #include <crtdbg.h>
+#endif
 
 #include <string.h>
 #include <stdio.h>
@@ -221,7 +225,9 @@ int run_assembly() {
 }
 
 int main (int argc, char **argv) {
+#ifdef WINVER
 	 _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
+#endif
 
 	int curr_arg = 1;
 	bool case_sensitive = false;

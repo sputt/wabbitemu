@@ -10,8 +10,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 	public interface IBuildStep : ICloneable
 	{
 		int StepNumber { get; set; }
-		string InputFile { get; }
-		string Description { get; }
+        string InputFile { get; set; }
+        string Description { get; }
 		bool Build();
 	}
 }

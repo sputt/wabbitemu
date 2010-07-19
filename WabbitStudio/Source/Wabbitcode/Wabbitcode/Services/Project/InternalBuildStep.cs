@@ -19,17 +19,20 @@ namespace Revsoft.Wabbitcode.Services.Project
 		public string InputFile
 		{
 			get { return input; }
+            set { input = value; }
 		}
 		string output;
 		public string OutputFile
 		{
 			get { return output; }
+            set { output = value; }
 		}
 
 		StepType stepType;
 		public StepType StepType
 		{
 			get { return stepType; }
+            set { stepType = value; }
 		}
 
 		public InternalBuildStep(int number, StepType type, string inputFile, string outputFile)

@@ -395,7 +395,7 @@ void show_define (define_t *define) {
 		putchar (')');
 	}
 
-	printf (": %s\n", define->contents);
+	//printf (": %s\n", define->contents);
 }
 
 

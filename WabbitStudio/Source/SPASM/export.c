@@ -10,7 +10,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-//#include <openssl/md5.h> //NOTE: We used Openssl's MD5 generator, but any should do.
+#ifndef WINVER
+#include <openssl\md5.h>				//NOTE: We used Openssl's MD5 generator, but any should do.
+#endif
 #include <string.h>
 #ifndef USE_GMP
 #include "big.h"
@@ -19,6 +21,7 @@
 
 #ifdef WINVER
 #define strcasecmp _stricmp
+#include <WinCrypt.h>
 #endif
 
 #undef  show_fatal_error_prefix
@@ -97,7 +100,7 @@ int findfield ( unsigned char byte, const unsigned char* buffer );
 int siggen (const unsigned char* hashbuf, unsigned char* sigbuf, int* outf);
 void intelhex (FILE * outfile , const unsigned char* buffer, int size);
 void alphanumeric (char* namestring);
-void makeapp (const unsigned char *output_contents, int output_len, FILE *outfile, const char *prgmname);
+void makeapp (const unsigned char *output_contents, DWORD output_len, FILE *outfile, const char *prgmname);
 void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, const char *prgmname, int calc);
 
 void write_file (const unsigned char *output_contents, int output_len, const char *output_filename) {
@@ -143,7 +146,7 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 
 	//then decide how to write the contents
 	if (calc == 8) //8XK
-		makeapp (output_contents, output_len, outfile, prgmname);
+		makeapp (output_contents, (DWORD) output_len, outfile, prgmname);
 	else if (calc == 9) { //BIN
 		for (i = 0; i < output_len; i++)
 			fputc(output_contents[i], outfile);
@@ -154,9 +157,8 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 }
 
 
-void makeapp (const unsigned char *output_contents, int size, FILE *outfile, const char* prgmname) {
+void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, const char* prgmname) {
     unsigned char *buffer;
-    unsigned char hashbuf[16];
     int i,pnt,siglength,tempnum,f,pages;
     unsigned int total_size;
 
@@ -212,7 +214,19 @@ void makeapp (const unsigned char *output_contents, int size, FILE *outfile, con
     for (i=0; i < 8 ;i++) name[i]=buffer[i+pnt];
 
 /* Calculate MD5 */
-//    MD5 (buffer, size, hashbuf);  //This uses ssl but any good md5 should work fine.
+#ifdef WINVER
+	unsigned char hashbuf[64];
+	HCRYPTPROV hCryptProv; 
+    HCRYPTHASH hCryptHash;
+	DWORD sizebuf = ARRAYSIZE(hashbuf);
+	CryptAcquireContext(&hCryptProv, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_MACHINE_KEYSET);
+	CryptCreateHash(hCryptProv, CALG_MD5, 0, 0, &hCryptHash);
+	CryptHashData(hCryptHash, buffer, size, 0);
+	CryptGetHashParam(hCryptHash, HP_HASHVAL, hashbuf, &sizebuf, 0);
+#else
+	unsigned char hashbuf[16];
+    MD5 (buffer, size, hashbuf);  //This uses ssl but any good md5 should work fine.
+#endif
 
 /* Generate the signature to the buffer */
     siglength = siggen(hashbuf, buffer+size+3, &f );
@@ -247,6 +261,10 @@ void makeapp (const unsigned char *output_contents, int size, FILE *outfile, con
 /* Convert to 8xk */
     intelhex(outfile, buffer, total_size);
 
+#ifdef WINVER
+	if (hCryptHash)
+		CryptDestroyHash(hCryptHash);
+#endif
 //    if (pages==1) printf("%s (%d page",filename,pages);
 //    else printf("%s (%d pages",filename,pages);
 //	puts(") was successfully generated!");
