@@ -578,6 +578,15 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	if (page < upages.end)
 		return LERR_MEM;
 
+	//there is probably some logic here that im missing...
+	//the 83p wtf is up with that offset
+	int offset = 0x1E50;
+	if (cpu->pio.model == TI_83P)
+		offset = 0x1F18;
+	//erase the part of the certifcate that marks it as a trial app
+	dest[cpu->mem_c->flash_pages-2][offset + 2 * (upages.start - page)] = 0x80;
+	dest[cpu->mem_c->flash_pages-2][offset+1 + 2 * (upages.start - page)] = 0x00;
+
 	u_char *space = &dest[page][PAGE_SIZE - 1];
 	u_int i;
 	// Make sure the subsequent pages are empty
