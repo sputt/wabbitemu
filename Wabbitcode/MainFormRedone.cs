@@ -12,31 +12,26 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
-using System.Xml;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Classes;
+using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Docking_Windows;
-using Revsoft.Wabbitcode.Services.Project;
 
 namespace Revsoft.Wabbitcode
 {
     public partial class MainFormRedone : Form
-    {
-        //private ProjectClass project;
-        
+    {        
+        //TODO: remove this from here
         private readonly ToolbarManager.ToolBarManager toolBarManager;
-
-        //[DllImport("libWabbitemu.dll")]
-        //public static extern int ShowMessage();
 
         public MainFormRedone(string[] args)
         {
             InitializeComponent();
 			RestoreWindow();
+            FileLocations.InitDirs();
 			if (Settings.Default.firstRun)
 			{
 				Settings.Default.Upgrade();
@@ -53,86 +48,95 @@ namespace Revsoft.Wabbitcode
 
 			DockingService.InitDocking(dockPanel);
 			DockingService.InitPanels();
-            LoadStartupProject();
+            if (args.Length == 0)
+                LoadStartupProject();
 			HighlightingClass.MakeHighlightingFile();
 			DockingService.LoadConfig();
             if (!ProjectService.IsInternal)
                 DockingService.ProjectViewer.BuildProjTree();
 			HandleArgs(args);
-			UpdateMenus(false);
+			UpdateMenus(DockingService.ActiveDocument != null);
 			UpdateChecks();
-            Classes.Resources.GetResource("spasm.exe", "spasm.exe");
-			Classes.Resources.GetResource("wabbitemu.exe", "Wabbitemu.exe");
+            Classes.Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
+			Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
 
             DocumentService.GetRecentFiles();
         }
 
 		private void RestoreWindow()
 		{
-			this.WindowState = Settings.Default.WindowState;
-			this.Size = Settings.Default.WindowSize;
+#if !DEBUG
+            try
+            {
+#endif
+                this.WindowState = Settings.Default.WindowState;
+                this.Size = Settings.Default.WindowSize;
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error restoring the window size", ex);
+            }
+#endif
+
 		}
 
         private void LoadStartupProject()
         {
             if (string.IsNullOrEmpty(Settings.Default.startupProject))
                 return;
-            if (File.Exists(Settings.Default.startupProject))
-                ProjectService.OpenProject(Settings.Default.startupProject);
-            else
+#if !DEBUG
+            try
             {
-                Settings.Default.startupProject = "";
-                MessageBox.Show("Error: Project file not found!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+#endif
+                if (File.Exists(Settings.Default.startupProject))
+                    ProjectService.OpenProject(Settings.Default.startupProject);
+                else
+                {
+                    Settings.Default.startupProject = "";
+                    DockingService.ShowError("Error: Project file not found!");
+                }
+                if (ProjectService.IsInternal)
+                    ProjectService.CreateInternalProject();
+#if !DEBUG
             }
-            if (ProjectService.IsInternal)
-                ProjectService.CreateInternalProject();
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error loading startup project", ex);
+            }
+#endif
         }
 
 		private void HandleArgs(string[] args)
 		{
-			if (args.Length != 0)
-			{
-				foreach (string file in args)
-					if (File.Exists(file))
-						if (file.EndsWith(".wcodeproj"))
-						{
-							ProjectService.OpenProject(file);
-							return;
-						}
-						else
-							foreach (string arg in args)
-								try
-								{
-									newEditor doc = new newEditor();
-									if (string.IsNullOrEmpty(arg))
-										break;
-									DocumentService.OpenDocument(doc, arg);
-								}
-								catch (FileNotFoundException)
-								{
-									MessageBox.Show("Error: File not found!", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-								}
-								catch (Exception ex)
-								{
-									MessageBox.Show("Error: " + ex);
-								}
-			}
+            if (args.Length == 0)
+                return;
+			foreach (string file in args)
+				if (File.Exists(file))
+					if (Path.GetExtension(file) == ".wcodeproj")
+					{
+						ProjectService.OpenProject(file);
+						return;
+					}
+					else
+						foreach (string arg in args)
+							try
+							{
+								newEditor doc = new newEditor();
+								if (string.IsNullOrEmpty(arg))
+									break;
+								DocumentService.OpenDocument(doc, arg);
+							}
+							catch (FileNotFoundException)
+							{
+                                DockingService.ShowError("Error: File not found!");
+							}
+							catch (Exception ex)
+							{
+                                DockingService.ShowError("Error in loading startup args", ex);
+							}
 		}
-        //[DllImport("libWabbitemu.dll")]
-        //private static extern void ShowMessage();
         
-        /*[DllImport("libWabbitemu.dll")]
-        private static extern int newCalc();
-        [DllImport("libWabbitemu.dll")]
-        private static extern int calcCount();
-        [DllImport("libWabbitemu.dll")]
-        private static extern int romLoad(int slot, string FileName);
-        [DllImport("libWabbitemu.dll")]
-        private static extern int removeCalc(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern int resetCalc(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern int drawCalc(int slot, IntPtr handle);*/
         /// <summary>
         /// Updates all the menu items that depend on if there is an active child open. 
         /// </summary>
@@ -195,6 +199,9 @@ namespace Revsoft.Wabbitcode
 				startDebugMenuItem.Enabled = enabled;
 			else
 				startDebugMenuItem.Enabled = true;
+
+            //Window Menu
+            windowMenuItem.Enabled = enabled;
 		}
 
         /// <summary>
@@ -309,9 +316,10 @@ namespace Revsoft.Wabbitcode
 
         private void addNewFileMenuItem_Click(object sender, EventArgs e)
         {
+
         }
 
-        public void existingFileMenuItem_Click(object sender, EventArgs e)
+        private void existingFileMenuItem_Click(object sender, EventArgs e)
         {
 			OpenFileDialog openFileDialog = new OpenFileDialog()
 			{
@@ -327,16 +335,8 @@ namespace Revsoft.Wabbitcode
 			DialogResult result = openFileDialog.ShowDialog();
 			if (result != DialogResult.OK)
 				return;
-            TreeNode parent = DockingService.ProjectViewer.projViewer.SelectedNodes[0];
-            if (parent == null)
-                parent = DockingService.ProjectViewer.projViewer.Nodes[0];
-            else if (parent.Tag.GetType() == typeof(ProjectFile))
-                parent = parent.Parent;
-			foreach (string file in openFileDialog.FileNames)
-			{
-                ProjectFile fileAdded = ProjectService.AddFile((ProjectFolder)parent.Tag, file);
-                DockingService.ProjectViewer.AddFile(fileAdded, parent);
-			}
+            foreach (string file in openFileDialog.FileNames)
+                DockingService.ProjectViewer.AddExistingFile(file);
         }
 
         private void includeDirButton_Click(object sender, EventArgs e)
@@ -359,6 +359,7 @@ namespace Revsoft.Wabbitcode
             NewProjectDialog template = new NewProjectDialog();
             if (template.ShowDialog() != DialogResult.OK) 
                 return;
+            UpdateProjectMenu(true);
         }
 
         private void openFileMenuItem_Click(object sender, EventArgs e)
@@ -804,8 +805,8 @@ namespace Revsoft.Wabbitcode
 		private void CloseProject()
 		{
 			ProjectService.CloseProject();
-			DockingService.DirectoryViewer.dirViewer.Nodes.Clear();
-			DockingService.ProjectViewer.projViewer.Nodes.Clear();
+			DockingService.DirectoryViewer.CloseProject();
+			DockingService.ProjectViewer.CloseProject();
 			UpdateProjectMenu(false);
 		}
 
@@ -1213,9 +1214,9 @@ namespace Revsoft.Wabbitcode
 
         public void UpdateDebugStuff()
         {
-			DockingService.DebugPanel.Enabled = DebuggerService.IsBreakpointed;
-			DockingService.CallStack.Enabled = DebuggerService.IsBreakpointed;
-			DockingService.TrackWindow.Enabled = DebuggerService.IsBreakpointed;
+			//DockingService.DebugPanel.Enabled = DebuggerService.IsBreakpointed;
+			//DockingService.CallStack.Enabled = DebuggerService.IsBreakpointed;
+			//DockingService.TrackWindow.Enabled = DebuggerService.IsBreakpointed;
             runMenuItem.Enabled = true;
             runDebuggerToolButton.Enabled = true;
 			stepMenuItem.Enabled = DebuggerService.IsBreakpointed && DebuggerService.IsDebugging;
@@ -1245,21 +1246,19 @@ namespace Revsoft.Wabbitcode
         private void stepButton_Click(object sender, EventArgs e)
         {
 			DebuggerService.Step();
+            UpdateDebugStuff();
         }
 
 		private void stepOverMenuItem_Click(object sender, EventArgs e)
 		{
 			DebuggerService.StepOver();
+            UpdateDebugStuff();
 		}
 
 		private void stepOutMenuItem_Click(object sender, EventArgs e)
 		{
 			DebuggerService.StepOut();
-		}
-
-		private void stepOutToolButton_Click(object sender, EventArgs e)
-		{
-			DebuggerService.StepOut();
+            UpdateDebugStuff();
 		}
 
 		/*private bool editAndContinue()
@@ -1450,7 +1449,7 @@ namespace Revsoft.Wabbitcode
                               {
                                   StartInfo =
                                       {
-                                          FileName = "spasm.exe",
+                                          FileName = FileLocations.SpasmFile,
                                           RedirectStandardOutput = true,
                                           RedirectStandardError = true,
                                           UseShellExecute = false,
@@ -1459,7 +1458,7 @@ namespace Revsoft.Wabbitcode
                               };
 
             //some strings we'll need to build 
-            originaldir = Path.GetDirectoryName(filePath); //filePath.Substring(0, filePath.LastIndexOf('\\'));
+            originaldir = Path.GetDirectoryName(filePath);
             string includedir = "-I \"" + Application.StartupPath + "\"";
             if (Settings.Default.includeDir != "")
             {
@@ -1470,9 +1469,6 @@ namespace Revsoft.Wabbitcode
                         includedir += ";\"" + dir + "\"";
                 }
             }
-            //string fileName = Path.GetFileName(filePath);
-            // filePath.Substring(filePath.LastIndexOf('\\') + 1, filePath.Length - filePath.LastIndexOf('\\') - 1);
-            //string assembledName = Path.ChangeExtension(fileName, outputFileExt);
             wabbitspasm.StartInfo.Arguments = "-V " + includedir + " " + text;
             wabbitspasm.StartInfo.WorkingDirectory = originaldir == "" ? Application.StartupPath : originaldir;
             wabbitspasm.Start();
@@ -1713,6 +1709,7 @@ namespace Revsoft.Wabbitcode
 		internal void DoneStep(ListFileKey newKey)
 		{
 			UpdateStepOut();
+            UpdateDebugStuff();
 			DocumentService.RemoveDebugHighlight();
 			DebuggerService.UpdateStack();
 			DocumentService.GotoLine(newKey.FileName, newKey.LineNumber);

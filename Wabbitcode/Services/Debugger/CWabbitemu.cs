@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Services;
+using System.Text;
 
 namespace Revsoft.Wabbitcode.Classes
 {
@@ -16,7 +17,7 @@ namespace Revsoft.Wabbitcode.Classes
         {
 			try
 			{
-				Resources.GetResource("Revsoft.Wabbitcode.Resources.Wabbitemu.exe", "Wabbitemu.exe");
+				Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
 				wabbit = null;
 				foreach (Process potential in Process.GetProcesses())
 				{
@@ -32,7 +33,7 @@ namespace Revsoft.Wabbitcode.Classes
 									 StartInfo =
 										 {
 											 Arguments = "\"" + file + "\"",
-											 FileName = "wabbitemu.exe"
+											 FileName = FileLocations.WabbitemuFile,
 										 },
 									 EnableRaisingEvents = true
 								 };
@@ -364,7 +365,18 @@ namespace Revsoft.Wabbitcode.Classes
             char name11;
             char name12;
             //[MarshalAs(UnmanagedType.LPStr, SizeConst=12)]
-            //public string name;
+            /*public override string ToString()
+            {
+                StringBuilder sb = new StringBuilder(name1);
+                sb.Append(name2);
+                sb.Append(name3);
+                sb.Append(name4);
+                sb.Append(name5);
+                sb.Append(name6);
+                sb.Append(name7);
+                sb.Append(name8);
+                return sb.ToString();
+            }*/
             public int page;
             public int page_count;
         }

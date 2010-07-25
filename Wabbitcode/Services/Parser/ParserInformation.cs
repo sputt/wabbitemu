@@ -13,6 +13,13 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		{
 			get { return sourceFile; }
 		}
+
+        private bool isIncluded = false;
+        public bool IsIncluded
+        {
+            get { return isIncluded; }
+            set { isIncluded = value; }
+        }
 		public ParserInformation(string file)
 		{
 			sourceFile = file;

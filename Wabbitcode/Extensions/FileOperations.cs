@@ -18,6 +18,8 @@ namespace Revsoft.Wabbitcode
 
 		public static string GetRelativePath(string absolutePath, string relativeTo)
 		{
+            if (absolutePath == relativeTo)
+                return "";
 			string[] absoluteDirectories = absolutePath.Split('\\');
 			string[] relativeDirectories = relativeTo.Split('\\');
 			//Get the shortest of the two paths

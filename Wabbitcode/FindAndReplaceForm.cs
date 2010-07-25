@@ -76,11 +76,13 @@ namespace Revsoft.Wabbitcode
                 txtLookFor.Text = editor.Document.GetText(start, endAt - start);
             }
 
+            this.Owner = (Form)editor.TopLevelControl;
+            this.Show();
+
             ReplaceMode = replaceMode;
             BigSearch = bigSearch;
 
-            this.Owner = (Form)editor.TopLevelControl;
-            this.Show();
+            btnFindNext.Focus();
 
             txtLookFor.SelectAll();
             txtLookFor.Focus();
@@ -97,7 +99,6 @@ namespace Revsoft.Wabbitcode
                 this.txtReplaceWith.Visible = value;
                 this.btnHighlightAll.Visible = !value;
                 this.AcceptButton = value ? btnReplace : btnFindNext;
-                
             }
         }
 
@@ -107,14 +108,16 @@ namespace Revsoft.Wabbitcode
             set 
             {
                 if (value)
+                {
                     btnHighlightAll.Text = ReplaceMode ? "Replace all" : "Find all";
+                    btnReplace.Visible = btnReplaceAll.Visible = false;
+                    btnHighlightAll.Visible = true;
+                    btnFindNext.Visible = btnFindPrevious.Visible = false;
+                    this.AcceptButton = btnHighlightAll;
+                }
                 else
-                    btnHighlightAll.Text = "Find & Highlight All";
-                btnReplace.Visible = btnReplaceAll.Visible = false;
+                    btnHighlightAll.Text = "Find && Highlight All";
                 lblReplaceWith.Visible = txtReplaceWith.Visible = ReplaceMode;
-                btnHighlightAll.Visible = true;
-                btnFindNext.Visible = btnFindPrevious.Visible = !value;
-				this.AcceptButton = btnHighlightAll;
             }
         }
 

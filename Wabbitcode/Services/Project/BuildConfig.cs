@@ -66,6 +66,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 			return name;
 		}
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
 		public override bool Equals(object obj)
 		{
 			if (obj.GetType() != typeof(BuildConfig))

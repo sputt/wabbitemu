@@ -71,6 +71,7 @@
             this.listView1.Name = "listView1";
             this.listView1.Size = new System.Drawing.Size(343, 184);
             this.listView1.TabIndex = 1;
+            this.listView1.TileSize = new System.Drawing.Size(32, 32);
             this.listView1.UseCompatibleStateImageBehavior = false;
             // 
             // calcOptions
@@ -159,7 +160,7 @@
             this.fileTypesLabel.Text = "File Types:";
             this.fileTypesLabel.Visible = false;
             // 
-            // templateForm
+            // NewProjectDialog
             // 
             this.AcceptButton = this.okTemplate;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -181,7 +182,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Name = "templateForm";
+            this.Name = "NewProjectDialog";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;

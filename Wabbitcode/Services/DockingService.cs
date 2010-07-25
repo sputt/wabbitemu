@@ -6,6 +6,7 @@ using Revsoft.Docking;
 using System.IO;
 using Revsoft.Wabbitcode.Docking_Windows;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Classes;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -138,6 +139,12 @@ namespace Revsoft.Wabbitcode.Services
 			get { return breakManager; }
 		}
 
+        private static bool initialized;
+        public static bool HasBeenInited
+        {
+            get { return initialized; }
+        }
+
 		public static void ShowDockPanel(DockContent panel)
 		{
 			if (panel == null)
@@ -154,23 +161,33 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static void InitPanels()
 		{
-			projectViewer = new ProjectViewer();
-			directoryViewer = new DirectoryViewer();
-			errorList = new ErrorList();
-			trackWindow = new TrackingWindow();
-			debugPanel = new DebugPanel();
-			callStack = new CallStack();
-			labelList = new LabelList();
-			outputWindow = new OutputWindow();
-			findForm = new FindAndReplaceForm();
-			findResults = new FindResultsWindow();
-			macroManager = new MacroManager();
-			breakManager = new BreakpointManager();
-			stackViewer = new StackViewer();
+#if !DEBUG
+            try
+            {
+#endif
+                projectViewer = new ProjectViewer();
+                directoryViewer = new DirectoryViewer();
+                errorList = new ErrorList();
+                trackWindow = new TrackingWindow();
+                debugPanel = new DebugPanel();
+                callStack = new CallStack();
+                labelList = new LabelList();
+                outputWindow = new OutputWindow();
+                findForm = new FindAndReplaceForm();
+                findResults = new FindResultsWindow();
+                macroManager = new MacroManager();
+                breakManager = new BreakpointManager();
+                stackViewer = new StackViewer();
+                initialized = true;
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                ShowError("Error in InitPanels", ex);
+            }
+#endif
 		}
 
-		static string configFile = Path.Combine(Application.UserAppDataPath, "DockPanel.config");
-		//private readonly  dockContent;
 		internal static void InitDocking(DockPanel dockingPanel)
 		{
 			dockPanel = dockingPanel;
@@ -179,16 +196,20 @@ namespace Revsoft.Wabbitcode.Services
 		internal static void LoadConfig()
 		{
 			DeserializeDockContent dockContent = new DeserializeDockContent(GetContentFromPersistString);
-			//try
-			//{
-			if (File.Exists(configFile))
-				dockPanel.LoadFromXml(configFile, dockContent);
-			//}
-			/*catch (Exception ex)
+#if !DEBUG
+            try
 			{
-				MessageBox.Show("Error Loading the DockPanel Config File\n" + ex);
-			}*/
-		}
+#endif
+			if (File.Exists(FileLocations.ConfigFile))
+				dockPanel.LoadFromXml(FileLocations.ConfigFile, dockContent);
+#if !DEBUG
+			}
+			catch (Exception ex)
+			{
+                ShowError("Error Loading the DockPanel Config File", ex);
+			}
+#endif
+        }
 
 		private static IDockContent GetContentFromPersistString(string persistString)
 		{
@@ -223,16 +244,21 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static void Destroy()
 		{
+#if !DEBUG
 			try
 			{
-				if (File.Exists(configFile))
-					File.Delete(configFile);
-				dockPanel.SaveAsXml(configFile);
+#endif
+				if (File.Exists(FileLocations.ConfigFile))
+					File.Delete(FileLocations.ConfigFile);
+				dockPanel.SaveAsXml(FileLocations.ConfigFile);
+                initialized = false;
+#if !DEBUG
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Error saving DockPanel.config file!\n" + ex);
+                ShowError("Error saving DockPanel.config file!", ex);
 			}
+#endif
 		}
 
 		public static DialogResult RequestDialog(string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon)
@@ -240,5 +266,17 @@ namespace Revsoft.Wabbitcode.Services
 			return DialogResult.None;
 		}
 
-	}
+        public static void ShowError(string error)
+        {
+            MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+
+        public static void ShowError(string error, Exception ex)
+        {
+            StringBuilder sb = new StringBuilder(error);
+            sb.Append("\n");
+            sb.Append(ex.ToString());
+            MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+        }
+    }
 }

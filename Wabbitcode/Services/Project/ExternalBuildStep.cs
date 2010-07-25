@@ -81,7 +81,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		}
 
-		private static void externalProgramExit(object sender, EventArgs e)
+		private void externalProgramExit(object sender, EventArgs e)
 		{
 			Process cmd = (Process)sender;
 			DockingService.OutputWindow.AddText(cmd.StandardOutput.ReadToEnd());

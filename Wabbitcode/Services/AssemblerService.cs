@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Revsoft.Wabbitcode.Classes;
+﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Windows.Forms;
+using System.Linq;
 using System.Threading;
-using System.Xml;
-using System.Runtime.InteropServices;
+using System.Windows.Forms;
+using Revsoft.Wabbitcode.Classes;
+#if USE_DLL
+using SPASM;
+#endif
 //using Revsoft.Wabbitcode.Extensions;
 
 namespace Revsoft.Wabbitcode.Services
@@ -19,19 +18,19 @@ namespace Revsoft.Wabbitcode.Services
 		const string quote = "\"";
 		public static bool AssembleFile(string filePath, string assembledName, bool sendFileEmu)
 		{
-			Resources.GetResource("spasm.exe", "spasm.exe");
+			Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
 			//Clear any other assemblings
-			//outputWindow.outputWindowBox.Text = "";
+            DockingService.OutputWindow.ClearOutput();
 			//Get our emulator
-			Resources.GetResource("Wabbitemu.exe", "Wabbitemu.exe");
-#if USE_DLL == false
+			Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
+#if !USE_DLL
 			//create two new processes to run
 			//setup wabbitspasm to run silently
 			Process wabbitspasm = new Process
 			{
 				StartInfo =
 				{
-					FileName = Path.Combine(Application.StartupPath, "spasm.exe"),
+					FileName = FileLocations.SpasmFile,
 					RedirectStandardOutput = true,
 					RedirectStandardError = true,
 					UseShellExecute = false,
@@ -48,76 +47,56 @@ namespace Revsoft.Wabbitcode.Services
 							Properties.Settings.Default.includeDir.Split('\n').ToList<string>() :
 							ProjectService.Project.IncludeDir;
 				foreach (string dir in dirs)
-				{
 					if (dir != "")
 						includedir += ";\"" + dir + "\"";
-				}
 			}
 			string fileName = Path.GetFileName(filePath);
-			// filePath.Substring(filePath.LastIndexOf('\\') + 1, filePath.Length - filePath.LastIndexOf('\\') - 1);
-			//string assembledName = Path.ChangeExtension(fileName, outputFileExt);
-			wabbitspasm.StartInfo.Arguments = includedir + " -T -L " + quote + filePath + quote + " " + quote + assembledName + quote;
+            string caseSensitive = Properties.Settings.Default.caseSensitive ? " -A " : " ";
+			wabbitspasm.StartInfo.Arguments = includedir + caseSensitive + "-T -L " + quote + filePath + quote + " " + quote + assembledName + quote;
 			wabbitspasm.StartInfo.WorkingDirectory = originalDir;
 			wabbitspasm.Start();
 #else
+            AssemblerClass Assembler = new AssemblerClass();
             string originalDir = filePath.Substring(0, filePath.LastIndexOf('\\'));
             //ShowMessage();
-            SpasmMethods.ClearIncludes();
-            SpasmMethods.ClearDefines();
-            SpasmMethods.AddInclude(originalDir);
+            Assembler.ClearIncludeDirectories();
+            Assembler.ClearDefines();
+            Assembler.AddIncludeDirectory(originalDir);
             //if the user has some include directories we need to format them
             if (Properties.Settings.Default.includeDir != "")
             {
                 string[] dirs = Properties.Settings.Default.includeDir.Split('\n');
                 foreach (string dir in dirs)
                     if (dir != "")
-                        SpasmMethods.AddInclude(dir);
+                        Assembler.AddIncludeDirectory(dir);
             }
-            //get the file name we'll use and use it to create the assembled name
-            string fileName = filePath.Substring(filePath.LastIndexOf('\\') + 1, filePath.Length - filePath.LastIndexOf('\\') - 1);
-            //assembledName = Path.ChangeExtension(fileName, getExtension(fileName));
             //now we can set the args for spasm
-            int error = 0;
-            //SetMode((int)MODE.MODE_SYMTABLE);
-            error |= SpasmMethods.SetInputFile(filePath);
-            error |= SpasmMethods.SetOutputFile(assembledName);
-            //emulator setup
-            //emulator.StartInfo.FileName = emuLoc;
+            IStream pStream = Assembler.GetOutputStream();
+            CStreamWrapper TestStream = new CStreamWrapper(pStream);
+            StreamReader sr = new StreamReader(TestStream);
+
+            Assembler.SetInputFile(filePath);
+            Assembler.SetOutputFile(assembledName);
+
+            Assembler.SetFlags(SPASM.AssemblyFlags.MODE_NORMAL | AssemblyFlags.MODE_LIST);
             //assemble that fucker
-            uint STD_ERROR_HANDLE = 0xFFFFFFF4;
-            uint STD_OUTPUT_HANDLE = 0xFFFFFFF5;
-            
+            Assembler.Assemble();
 
-            //StreamWriter test = new StreamWriter(Application.StartupPath + "\\test.txt");
-            //FileStream test = new FileStream(Application.StartupPath + "\\test.txt", FileMode.Create);
-            //NativeMethods.SetStdHandle(STD_ERROR_HANDLE, test.Handle);
-            //IntPtr test2 = GetStdHandle(STD_OUTPUT_HANDLE);
-            //NativeMethods.SetStdHandle(STD_OUTPUT_HANDLE, test.Handle);
-            //test2 = GetStdHandle(STD_OUTPUT_HANDLE);
-            //Console.SetOut(test);
-            //Console.SetError(test);
-            //StreamReader reader = myprocess.StandardOutput;
-            //Console.WriteLine("test line1");
-            try
+            StringBuilder builder = new StringBuilder();
+            string line;
+            do
             {
-                SpasmMethods.RunAssembly();
-            }
-            catch (Exception)
-            {
-
-            }
-            //Console.WriteLine("test line2");
-            //string tryread = reader.ReadToEnd();
-            //string output = myprocess.StandardOutput.ReadToEnd();
-            //test2 = GetStdHandle(STD_OUTPUT_HANDLE);
-            //test.Flush();
-            //test.Close();            
+                line = sr.ReadLine();
+                builder.Append(line);
+                builder.Append("\n");
+            } while (line != null);
+                       
 #endif
 			//lets write it to the output window so the user knows whats happening
-            string outputText = "==================" + fileName + "==================\r\n" +
-                                "Assembling " + originalDir + "\\" + fileName + "\r\n" +
+            string outputText = "==================" + Path.GetFileName(filePath) + "==================\r\n" +
+                                "Assembling " + filePath + "\r\n" +
 #if USE_DLL
-                                SpasmMethods.GetStdOut();
+                                builder.ToString();
 #else
                                 wabbitspasm.StandardOutput.ReadToEnd();
 #endif
@@ -132,18 +111,16 @@ namespace Revsoft.Wabbitcode.Services
 			//if (Settings.Default.sendFileEmu && sendFileEmu && !errors)
 				//SendFileEmu(assembledName);
 			//tell if the assembly was successful
-			//if (error != 0)
-			//    return false;
-			//else
-			//    return true;
 			return !errors;
 		}
 
 		private delegate void showPanelDelegate(string text, string originaldir);
 		private static void ShowErrorPanels(string outputText, string originaldir)
 		{
-			//try
-			//{
+#if !DEBUG
+			try
+			{
+#endif
 				DockingService.OutputWindow.SetText(outputText);
 				DockingService.OutputWindow.HighlightOutput();
 				//its more fun with colors
@@ -152,14 +129,16 @@ namespace Revsoft.Wabbitcode.Services
 				DockingService.ShowDockPanel(DockingService.OutputWindow);
 				if (DockingService.ActiveDocument != null)
 					DockingService.ActiveDocument.Refresh();
-			/*}
+#if !DEBUG
+            }
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.ToString());
-			}*/
+			}
+#endif
 		}
 
-		static Thread assemblerThread;
+		//static Thread assemblerThread;
 		internal static void AssembleCurrentFile()
 		{
             if (!ProjectService.IsInternal)
@@ -186,23 +165,24 @@ namespace Revsoft.Wabbitcode.Services
 
 		public static void AssembleProject(object data)
 		{
+            DockingService.OutputWindow.ClearOutput();
 			ProjectService.Project.BuildSystem.Build();
 		}
 
 		public static bool CreateSymTable(string filePath, string assembledName)
 		{
-			Resources.GetResource("spasm.exe", "spasm.exe");
+			Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
 			//Clear any other assemblings
-			//outputWindow.outputWindowBox.Text = "";
+            DockingService.OutputWindow.ClearOutput();
 			//Get our emulator
-			Resources.GetResource("Wabbitemu.exe", "Wabbitemu.exe");
-#if USE_DLL == false
+			Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
+#if !USE_DLL
 			//create two new processes to run
 			Process wabbitspasm = new Process
 			{
 				StartInfo =
 				{
-					FileName = Path.Combine(Application.UserAppDataPath, "spasm.exe"),
+					FileName = FileLocations.SpasmFile,
 					RedirectStandardOutput = true,
 					RedirectStandardError = true,
 					UseShellExecute = false,
@@ -212,7 +192,7 @@ namespace Revsoft.Wabbitcode.Services
 			//setup wabbitspasm to run silently
 
 			//some strings we'll need to build 
-			string originalDir = Path.GetDirectoryName(filePath);// filePath.Substring(0, filePath.LastIndexOf('\\'));
+			string originalDir = Path.GetDirectoryName(filePath);
 			string includedir = "-I \"" + Application.StartupPath + "\"";
 			if (Properties.Settings.Default.includeDir != "")
 			{

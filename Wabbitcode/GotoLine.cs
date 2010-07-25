@@ -23,15 +23,15 @@ namespace Revsoft.Wabbitcode
 
 		private void inputBox_Validating(object sender, CancelEventArgs e)
 		{
-			Validate();
+			ValidateInput();
 		}
 
 		private void inputBox_TextChanged(object sender, EventArgs e)
 		{
-			Validate();
+			ValidateInput();
 		}
 
-		private bool Validate()
+		private bool ValidateInput()
 		{
 			int line = 0;
 			int.TryParse(inputBox.Text, out line);

@@ -61,6 +61,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.projViewer.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.projViewer.ImageIndex = 0;
 			this.projViewer.ImageList = this.projectIcons;
+            this.projViewer.LabelEdit = false;
 			this.projViewer.Location = new System.Drawing.Point(0, 2);
 			this.projViewer.Name = "projViewer";
 			this.projViewer.SelectedImageIndex = 0;
@@ -246,7 +247,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		}
 		#endregion
 
-        public TreeView projViewer;
+        private TreeView projViewer;
         private System.Windows.Forms.ImageList projectIcons;
         private System.Windows.Forms.ContextMenu folderContextMenu;
         private System.Windows.Forms.MenuItem renFMenuItem;

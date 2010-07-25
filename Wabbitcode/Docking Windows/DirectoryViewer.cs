@@ -7,6 +7,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Docking;
 using System.Runtime.InteropServices;
 using Revsoft.Wabbitcode.Services;
+using System.Diagnostics;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
@@ -18,7 +19,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         }
 
         // Code For OpenWithDialog Box
-        [DllImport("shell32.dll", SetLastError = true)]
+        /*[DllImport("shell32.dll", SetLastError = true)]
         extern public static bool ShellExecuteEx(ref ShellExecuteInfo lpExecInfo);
         public const uint SW_NORMAL = 1;
         [Serializable]
@@ -39,24 +40,32 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             public uint HotKey;
             public IntPtr Icon;
             public IntPtr Monitor;
-        }
+        }*/
         static void OpenAs(string file)
         {
-            ShellExecuteInfo sei = new ShellExecuteInfo();
+            /*ShellExecuteInfo sei = new ShellExecuteInfo();
             sei.Size = Marshal.SizeOf(sei);
             sei.Verb = "openas";
             sei.File = file;
             sei.Show = SW_NORMAL;
             if (!ShellExecuteEx(ref sei))
-                throw new Win32Exception();
+                throw new Win32Exception();*/
+            Process process = new Process()
+            {
+                StartInfo =
+                {
+                    FileName = file,
+                    UseShellExecute = true,
+                    Verb = "openas"
+                }
+            };
+            process.Start();
         }
 
         /// <summary>
         /// Use the projectViewer tree to display the contents of the project directory.
         /// </summary>
-#pragma warning disable 1574
         /// <param name="projectFile">Location of the .wcodeproj file</param>
-#pragma warning restore 1574
         public void buildDirectoryTree(string[] files)
         {
             dirViewer.Nodes.Clear();
@@ -121,7 +130,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private void directoryViewer_DoubleClick(object sender, EventArgs e)
         {
             string projectLoc = ProjectService.ProjectDirectory;
-            if (dirViewer.SelectedNode == null || dirViewer.SelectedNode.Tag.ToString() == "Folder") return;
+            if (dirViewer.SelectedNode == null || dirViewer.Tag == null || dirViewer.SelectedNode.Tag.ToString() == "Folder") return;
             string fileName = projectLoc.Substring(0, projectLoc.LastIndexOf('\\')) + '\\' + dirViewer.SelectedNode.FullPath;
             if (ParentForm == null)
                 return;
@@ -262,6 +271,11 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private void pasteFMenuItem_Click(object sender, EventArgs e)
         {
 
+        }
+
+        internal void CloseProject()
+        {
+            dirViewer.Nodes.Clear();
         }
     }
 }
