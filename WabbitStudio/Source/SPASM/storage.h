@@ -37,10 +37,7 @@ typedef struct common_store {
 
 void write_labels (char *filename);
 void init_storage ();
-#ifdef _WINDLL
-__declspec(dllexport)
-#endif 
-	void free_storage();
+EXPORT void free_storage();
 define_t *add_define (char *name, bool *redefined);
 define_t *search_defines (const char *name);
 void remove_define (char *name);

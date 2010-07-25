@@ -262,9 +262,16 @@ void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, c
     intelhex(outfile, buffer, total_size);
 
 #ifdef WINVER
-	if (hCryptHash)
+	if (hCryptHash) {
 		CryptDestroyHash(hCryptHash);
+		hCryptHash = NULL;
+	}
+	if (hCryptProv) {
+		CryptReleaseContext(hCryptProv,0);
+		hCryptProv = NULL;
+	}
 #endif
+	free(buffer);
 //    if (pages==1) printf("%s (%d page",filename,pages);
 //    else printf("%s (%d pages",filename,pages);
 //	puts(") was successfully generated!");

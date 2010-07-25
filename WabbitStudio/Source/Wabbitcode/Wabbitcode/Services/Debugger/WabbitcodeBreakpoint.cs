@@ -45,6 +45,11 @@ namespace Revsoft.Wabbitcode.Classes
 					(file == break2.file && lineNumber == break2.lineNumber);
 		}
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
 		public static bool operator ==(WabbitcodeBreakpoint break1, WabbitcodeBreakpoint break2)
 		{
 			if ((object)break1 == null || (object)break2 == null)

@@ -16,6 +16,23 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 ProjectService.ParseInfo.Remove(replaceMe);
         }
 
+        private static void FindIncludedFiles(string file)
+        {
+            if (!Path.IsPathRooted(file))
+                file = Path.Combine(ProjectService.ProjectDirectory, file);
+            ParserInformation fileInfo = null;
+            foreach (ParserInformation info in ProjectService.ParseInfo)
+                if (info.SourceFile.ToLower() == file.ToLower())
+                {
+                    info.IsIncluded = true;
+                    fileInfo = info;
+                }
+            if (!File.Exists(file) || fileInfo == null)
+                return;
+            foreach (IIncludeFile include in fileInfo.IncludeFilesList)
+                FindIncludedFiles(include.IncludedFile);
+        }
+
 		const char commentChar = ';';
 		const string defineString = "#define";
 		const string macroString = "#macro";
@@ -27,12 +44,18 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		{
 			string lines = null;
 			StreamReader reader = null;
-			//try
-			//{
+#if !DEBUG
+			try
+			{
+#endif
 				reader = new StreamReader(file);
 				lines = reader.ReadToEnd();
+#if DEBUG
+                reader.Close();
+#endif
 				return ParseFile(file, lines);
-			/*}
+#if !DEBUG
+			}
 			catch (FileNotFoundException ex)
 			{
 				DialogResult result = MessageBox.Show(ex.FileName + " not found, would you like to remove it from the project?",
@@ -50,15 +73,24 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			{
 				if (reader != null)
 					reader.Close();
-			}*/
+			}
+#endif
 		}
 
 		delegate void HideProgressDelegate();
 		delegate void ProgressDelegate(int percent);
 		internal static ParserInformation ParseFile(string file, string lines)
 		{
-			if (string.IsNullOrEmpty(file))
-				throw new Exception("No file name specified");
+            if (string.IsNullOrEmpty(file))
+            {
+                System.Diagnostics.Debug.WriteLine("No file name specified");
+                return null;
+            }
+            if (string.IsNullOrEmpty(lines))
+            {
+                System.Diagnostics.Debug.WriteLine("Lines were null or empty");
+                return null;
+            }
 			ParserInformation info = new ParserInformation(file);
 			int counter = 0, percent = 0, newPercent;
 			ProgressDelegate progressDelegate = new ProgressDelegate(DockingService.MainForm.SetProgress);
@@ -85,8 +117,10 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					}
 					else
 					{
-						counter = SkipWhitespace(lines, newCounter);
-						if (counter != -1 && lines[counter] == '=')
+						int tempCounter = SkipWhitespace(lines, newCounter);
+                        if (tempCounter == -1)
+                            break;
+						if (lines[counter] == '=')
 						{
 							counter++;
 							int temp = SkipWhitespace(lines, counter);
@@ -106,7 +140,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 							SkipToEOL(lines, counter);
 							continue;
 						} 
-						else
+						else 
 						{
 							//it must be a label with no colon
 							Label labelToAdd = new Label(counter, labelName, true, description, info);
@@ -195,6 +229,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			}
             RemoveParseData(file);
 			ProjectService.ParseInfo.Add(info);
+            FindIncludedFiles(ProjectService.Project.BuildSystem.MainFile);
 			HideProgressDelegate hideProgress = DockingService.MainForm.HideProgressBar;
 			DockingService.MainForm.Invoke(hideProgress);
 			return info;
@@ -255,10 +290,10 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		{
 			if (!IsValidIndex(substring, counter))
 				return -1;
-			while (substring[counter] != charToFind)
+			while (IsValidIndex(substring, counter) && substring[counter] != charToFind)
 			{
-				if (!IsValidIndex(substring, counter) || !IsValidIndex(substring, counter + Environment.NewLine.Length) ||
-					substring.Substring(counter, Environment.NewLine.Length) == Environment.NewLine ||
+				if (!IsValidIndex(substring, counter) || /*!IsValidIndex(substring, counter + Environment.NewLine.Length) ||
+					substring.Substring(counter, Environment.NewLine.Length) == Environment.NewLine ||*/
 					substring[counter] == commentChar)
 					return -1;
 				counter++;

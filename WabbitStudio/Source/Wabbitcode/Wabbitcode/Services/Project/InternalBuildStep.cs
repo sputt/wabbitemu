@@ -21,12 +21,31 @@ namespace Revsoft.Wabbitcode.Services.Project
 			get { return input; }
             set { input = value; }
 		}
+
+        public string InputFileRelative
+        {
+            get
+            {
+                return Path.Combine(FileOperations.GetRelativePath(Path.GetDirectoryName(input),
+                    ProjectService.ProjectDirectory), Path.GetFileName(input));
+            }
+        }
+
 		string output;
 		public string OutputFile
 		{
 			get { return output; }
             set { output = value; }
 		}
+
+        public string OutputFileRelative
+        {
+            get
+            {
+                return Path.Combine(FileOperations.GetRelativePath(Path.GetDirectoryName(output),
+                    ProjectService.ProjectDirectory), Path.GetFileName(output));
+            }
+        }
 
 		StepType stepType;
 		public StepType StepType
@@ -51,6 +70,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 				case Project.StepType.All:
 					errors |= AssemblerService.AssembleFile(input, output, true);
 					ProjectService.Project.ProjectOutputs.Add(output);
+                    ProjectService.Project.ListOutputs.Add(Path.ChangeExtension(output, "lst"));
+                    ProjectService.Project.LabelOutputs.Add(Path.ChangeExtension(output, "lab"));
 					break;
 				case Project.StepType.Listing:
 

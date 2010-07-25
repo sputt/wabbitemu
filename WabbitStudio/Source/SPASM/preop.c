@@ -940,9 +940,9 @@ static char *handle_preop_include (char *ptr) {
 		}
 	
 		set_define(img_map, "0", -1, NULL);
-		free(base_name);
 	}
-	
+	if (base_name)
+		free(base_name);
 	free (bmiColors);
 	fclose (file);
 	
@@ -1012,6 +1012,7 @@ char *handle_preop_if (char *ptr) {
 	expr = strndup (ptr, expr_end - ptr + 1);
 	
 	parse_num (expr, &condition);
+	free(expr);
 	
 	return do_if (expr_end + 1, condition);
 }

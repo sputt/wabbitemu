@@ -35,8 +35,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			if (stackView.Rows.Count == 0)
 			{
 				throw new Exception("Stack underflow");
-				//uh oh
-				return;
 			}
             stackView.Rows.Remove(stackView.Rows[0]);
         }

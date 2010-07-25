@@ -301,10 +301,13 @@ namespace Revsoft.Wabbitcode.Services
 		/// </summary>
 		private static void SaveRecentFileList()
 		{
-			string list = null;
-			foreach (String file in recentFileList)
-				list += file + '\n';
-			Settings.Default.recentFiles = list;
+            StringBuilder list = new StringBuilder();
+            foreach (string file in recentFileList)
+            {
+                list.Append(file);
+                list.Append("\n");
+            }
+			Settings.Default.recentFiles = list.ToString();
 		}
 
 		/// <summary>
@@ -315,7 +318,7 @@ namespace Revsoft.Wabbitcode.Services
 			String line = Settings.Default.recentFiles;
 			string[] list = line.Split('\n');
 
-			foreach (String file in list)
+			foreach (string file in list)
 			{
 				if (string.IsNullOrEmpty(file))
 					continue;

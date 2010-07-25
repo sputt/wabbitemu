@@ -77,6 +77,7 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			OpenProject(fileName, false);
 			DockingService.MainForm.UpdateProjectMenu(true);
+            DockingService.ProjectViewer.BuildProjTree();
 		}
 
 		public static void OpenProject(string fileName, bool closeFiles)
@@ -84,8 +85,19 @@ namespace Revsoft.Wabbitcode.Services
 			if (closeFiles)
 				foreach (Form mdiChild in DockingService.Documents)
 					mdiChild.Close();
-			project = new ProjectClass(fileName);
-			project.OpenProject(fileName);
+#if !DEBUG
+            try
+            {
+#endif
+                project = new ProjectClass(fileName);
+                project.OpenProject(fileName);
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error opening project\n" + ex.ToString());
+            }
+#endif
 			InitWatcher(project.ProjectDirectory);
             if (closeFiles)
             {
@@ -131,14 +143,25 @@ namespace Revsoft.Wabbitcode.Services
 
 		private static void InitWatcher(string location)
 		{
-			projectWatcher = new FileSystemWatcher(location);
-			projectWatcher.Changed += new FileSystemEventHandler(projectWatcher_Changed);
-			projectWatcher.Deleted += new FileSystemEventHandler(projectWatcher_Deleted);
-			projectWatcher.Renamed += new RenamedEventHandler(projectWatcher_Renamed);
-			projectWatcher.Created += new FileSystemEventHandler(projectWatcher_Created);
-			projectWatcher.EnableRaisingEvents = true;
-			projectWatcher.IncludeSubdirectories = true;
-			projectWatcher.Path = location;
+#if !DEBUG
+            try
+            {
+#endif
+                projectWatcher = new FileSystemWatcher(location);
+                projectWatcher.Changed += new FileSystemEventHandler(projectWatcher_Changed);
+                projectWatcher.Deleted += new FileSystemEventHandler(projectWatcher_Deleted);
+                projectWatcher.Renamed += new RenamedEventHandler(projectWatcher_Renamed);
+                projectWatcher.Created += new FileSystemEventHandler(projectWatcher_Created);
+                projectWatcher.EnableRaisingEvents = true;
+                projectWatcher.IncludeSubdirectories = true;
+                projectWatcher.Path = location;
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error in InitWatcher\n" + ex.ToString());
+            }
+#endif
 		}
 
 		static void projectWatcher_Created(object sender, FileSystemEventArgs e)
@@ -201,10 +224,22 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static void CreateNewProject(string projectFile, string projectName)
 		{
-			project = new ProjectClass();
-			project.CreateNewProject(projectFile, projectName);
-			DockingService.ShowDockPanel(DockingService.ProjectViewer);
-		}
+#if !DEBUG
+            try
+            {
+#endif
+                project = new ProjectClass();
+                project.CreateNewProject(projectFile, projectName);
+                isInternal = false;
+                DockingService.ShowDockPanel(DockingService.ProjectViewer);
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to create new project file\n" + ex.ToString());
+            }
+#endif
+        }
 
 		internal static void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir)
 		{
@@ -228,9 +263,21 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static void SaveProject()
 		{
-			project.BuildXMLFile();
-			DockingService.ProjectViewer.BuildProjTree();
-            project.NeedsSave = false;
+#if !DEBUG
+            try
+            {
+
+#endif
+                project.BuildXMLFile();
+                DockingService.ProjectViewer.BuildProjTree();
+                project.NeedsSave = false;
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Error saving project\n" + ex.ToString());
+            }
+#endif
 		}
 
 		internal static ProjectFolder AddFolder(string dirName, ProjectFolder parentDir)
@@ -268,7 +315,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static bool ContainsFile(string file)
 		{
-            return project.ContainsFile(file);
+            return file == null ? false :project.ContainsFile(file);
 		}
 
 		public static IList<BuildConfig> BuildConfigs

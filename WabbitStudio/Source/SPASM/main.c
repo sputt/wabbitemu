@@ -298,7 +298,7 @@ int main (int argc, char **argv) {
 				for (p = strtok (dir, ";,"); p; p = strtok (NULL, ";,")) {
 					include_dirs = list_append (include_dirs, strdup(p));
 				}
-
+				free(dir);
 				break;
 			}
 			//and the case-sensitive flag
@@ -349,6 +349,7 @@ int main (int argc, char **argv) {
 				mode |= MODE_COMMANDLINE;
 				curr_input_file = "-v";
 				input_contents = (char *) malloc_chk (strlen(line) + 1 + 2);
+				output_filename = change_extension (curr_input_file, "bin");
 					
 				strcpy(input_contents, " ");
 				strcat(input_contents, line);
@@ -360,10 +361,15 @@ int main (int argc, char **argv) {
 
 		} else {
 			//if it's not a flag, then it must be a filename
-			if (curr_input_file)
+			if (curr_input_file && !output_filename)
 				output_filename = strdup(argv[curr_arg]);
-			else
+			else if (!curr_input_file)
 				curr_input_file = strdup(argv[curr_arg]);
+			/*else {
+				puts("Too many input files");
+				return EXIT_FATAL_ERROR;
+			}*/
+
 		}
 		curr_arg++;
 	}
@@ -386,7 +392,10 @@ int main (int argc, char **argv) {
 
 	int error = run_assembly();
 	free(output_filename);
-	list_free(include_dirs, true);
+	if (curr_input_file && !(mode & MODE_COMMANDLINE))
+		free(curr_input_file);
+	if (include_dirs)
+		list_free(include_dirs, true);
 	return error;
 }
 

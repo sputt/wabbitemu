@@ -226,6 +226,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
         public bool ContainsFile(string fullPath)
         {
+            fileFound = null;
             return RecurseSearchFolders(MainFolder, Path.GetFileName(fullPath));
         }
 
@@ -262,6 +263,20 @@ namespace Revsoft.Wabbitcode.Services.Project
         public void DeleteFile(ProjectFolder parentDir, ProjectFile file)
         {
             file.Remove();
+        }
+
+        internal int GetOutputType()
+        {
+            foreach(IBuildStep step in buildSystem.CurrentConfig.Steps){
+                if (step.GetType() == typeof(InternalBuildStep))
+                {
+                    string outputFile = ((InternalBuildStep)step).OutputFile;
+                    if (Path.GetExtension(outputFile) == "8xk")
+                        return 5;
+                }
+            }
+            //otherwise we assume its a program
+            return 4;
         }
     }
 }

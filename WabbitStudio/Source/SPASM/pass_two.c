@@ -209,7 +209,7 @@ void run_second_pass () {
 				break;
 			}
 		}
-#ifdef DUMP_DEFINES && _DEBUG
+#if defined(DUMP_DEFINES) && defined(_DEBUG)
 		dump_defines();
 #endif
 

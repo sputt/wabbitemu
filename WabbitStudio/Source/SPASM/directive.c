@@ -349,6 +349,7 @@ char *handle_directive (char *ptr) {
 
 				define = add_define (define_name, NULL);
 				set_define (define, expr, -1, false);
+				free(expr);
 			}
 			break;
 		}

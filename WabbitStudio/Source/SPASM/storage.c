@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <string.h>
+#include "spasm.h"
 //#include <stdbool.h>
 #include "storage.h"
 #include "utils.h"
@@ -74,11 +75,10 @@ void write_labels (char *filename) {
 		
 		node = node->next;
 	}
-	
-	list_free_node (label_list.next);
-	
-	
+
 	fclose (symtable);
+	
+	list_free (label_list.next, true);
 }
 
 /*
@@ -86,14 +86,18 @@ void write_labels (char *filename) {
  */
 
 void write_labels_callback(label_t *label, list_t *label_list) {
-	
+	label_t *labelToAdd;
+
 	list_t * node = label_list->next, *prev = label_list;
 	while (node != NULL && strcasecmp (label->name, ((label_t *) node->data)->name) > 0) {
 		prev = node;
 		node = node->next;
 	}
-	
-	list_insert (prev, label);
+	//this is necessary since we have to free the define created labels
+	labelToAdd = (label_t *) malloc(sizeof(label_t));
+	labelToAdd->name = label->name;
+	labelToAdd->value = label->value;
+	list_insert (prev, labelToAdd);
 }
 
 /*
@@ -154,7 +158,6 @@ static void destroy_define_value (define_t *define) {
 
 	for (curr_arg = 0; curr_arg < MAX_ARGS; curr_arg++) {
 		if (define->args[curr_arg] != NULL) {
-
 			free (define->args[curr_arg]);
 		}
 	}
@@ -162,8 +165,10 @@ static void destroy_define_value (define_t *define) {
 }
 
 static void destroy_label_value (label_t *label) {
-	free (label->name);
-	free (label);
+	if (label->name)
+		free (label->name);
+	if (label)
+		free (label);
 }
 
 
@@ -203,10 +208,7 @@ void init_storage() {
 /*
  * Frees all storage for labels and defines
  */
-#ifdef _WINDLL
-__declspec(dllexport)
-#endif
-	void free_storage() {
+EXPORT void free_storage() {
 	opcode *next_opcode = NULL, *last_opcode = NULL, *curr_opcode = all_opcodes;
 
 	hash_free(label_table);

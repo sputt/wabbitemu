@@ -4,11 +4,14 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Drawing;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
+using System.Drawing;
+using System.Drawing.Text;
 using System.IO;
+using System.Linq;
+using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Revsoft.TextEditor;
@@ -16,12 +19,8 @@ using Revsoft.TextEditor.Document;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Properties;
-using System.Drawing.Text;
-using System.Threading;
 using Revsoft.Wabbitcode.Services;
-using Revsoft.Docking;
 using Revsoft.Wabbitcode.Services.Parser;
-using System.Reflection;
 using Revsoft.Wabbitcode.Services.Project;
 
 namespace Revsoft.Wabbitcode
@@ -50,6 +49,8 @@ namespace Revsoft.Wabbitcode
 				editorBox.FileName = value;
 				Text = value;
 				fileName = value;
+                TabText = Path.GetFileName(value);
+                ToolTipText = value;
 			}
 		}
 
@@ -69,6 +70,7 @@ namespace Revsoft.Wabbitcode
 			editorBox.LineViewerStyle = Settings.Default.lineEnabled ? LineViewerStyle.FullRow : LineViewerStyle.None;
             
             CodeCompletionKeyHandler.Attach(this, editorBox);
+            this.LostFocus += new EventHandler(newEditor_LostFocus);
 
 			/*parserThread = new Thread(ParseFile);
 			parserThread.Priority = ThreadPriority.Lowest;
@@ -79,14 +81,21 @@ namespace Revsoft.Wabbitcode
 			codeInfoThread.Start();*/
         }
 
+        void newEditor_LostFocus(object sender, EventArgs e)
+        {
+            
+        }
+
 		private string EditorText
 		{
 			get
 			{
-				if (editorBox.InvokeRequired)
-					return Invoke(new GetTextDelegate(GetText)).ToString();
-				else
-					return editorBox.Text;
+                if (!editorBox.IsHandleCreated)
+                    return null;
+                if (editorBox.InvokeRequired)
+                    return Invoke(new GetTextDelegate(GetText)).ToString();
+                else
+                    return editorBox.Text;
 			}
 		}
 
@@ -135,8 +144,11 @@ namespace Revsoft.Wabbitcode
         private void ParseFile(object data)
         {
             parseInfo = ParserService.ParseFile(FileName, EditorText);
-            UpdateLabelBoxDelegate updateLabelDelegate = new UpdateLabelBoxDelegate(UpdateLabelBox);
-            BeginInvoke(updateLabelDelegate, null);
+            if (DockingService.HasBeenInited)
+            {
+                UpdateLabelBoxDelegate updateLabelDelegate = new UpdateLabelBoxDelegate(UpdateLabelBox);
+                DockingService.MainForm.BeginInvoke(updateLabelDelegate, null);
+            }
         }
 
         protected override string GetPersistString()
@@ -174,8 +186,6 @@ namespace Revsoft.Wabbitcode
         {
             if (editorBox.Text != "")
             {
-                ThreadPool.QueueUserWorkItem(new WaitCallback(GetCodeInfo), codeInfoLines);
-				//RequestUpdate.UpdateCodeInfo = true;
 				ListFileValue label = DebuggerService.GetListValue(FileName, editorBox.ActiveTextAreaControl.Caret.Line);
 				if(label != null)
 					DockingService.MainForm.SetToolStripText("Page: " + label.Page.ToString() + " Address: " + label.Address.ToString("X4")); 
@@ -202,6 +212,8 @@ namespace Revsoft.Wabbitcode
                 if (start > end)
                     start = end;
                 codeInfoLines = editorBox.Text.Substring(start, end - start);
+                ThreadPool.QueueUserWorkItem(new WaitCallback(GetCodeInfo), codeInfoLines);
+                infoLinesQueued++;
             }
 
             ReadOnlyCollection<TextMarker> markers = (ReadOnlyCollection<TextMarker>)editorBox.Document.MarkerStrategy.TextMarker;
@@ -219,6 +231,7 @@ namespace Revsoft.Wabbitcode
 #endif
         }
 
+        static int infoLinesQueued = 0;
         void Caret_PositionChanged(object sender, EventArgs e)
         {
             DockingService.MainForm.SetLineAndColStatus(editorBox.ActiveTextAreaControl.Caret.Line.ToString(),
@@ -255,7 +268,6 @@ namespace Revsoft.Wabbitcode
             docChanged = false;
 			UpdateTabText();
             UpdateIcons();
-			//RequestUpdate.UpdateAll();
             UpdateAll();
             if (!ProjectService.IsInternal && ProjectService.ContainsFile(filename))
                 editorBox.Document.FoldingManager.DeserializeFromString(ProjectService.Project.FindFile(filename).FileFoldings);
@@ -266,19 +278,22 @@ namespace Revsoft.Wabbitcode
 			DocumentService.InternalSave = true;
             bool saved = true;
             stackTop = editorBox.Document.UndoStack.UndoItemCount;
+#if !DEBUG
             try
             {
+#endif
 				//TODO: Fix spasm to allow for UTF-8
-                editorBox.Encoding = System.Text.Encoding.ASCII;
+                editorBox.Encoding = System.Text.Encoding.UTF8;
                 editorBox.SaveFile(FileName);
+#if !DEBUG
             }
             catch (Exception ex)
             {
 				DocumentService.InternalSave = false;
                 saved = false;
-                //((Wabbitcode.frmMain)(MdiParent)).errorConsoleBox.Text = ex.ToString() + '\n';
-                MessageBox.Show("Error: " + ex);
+                DockingService.ShowError("Error saving the file", ex);
             }
+#endif
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
             TabText = Path.GetFileName(FileName);
             docChanged = false;
@@ -293,9 +308,6 @@ namespace Revsoft.Wabbitcode
 
         private new void FormClosing(object sender, CancelEventArgs e)
         {
-			//RequestUpdate.RequestQuit = true;
-			//parserThread.Abort();
-			//codeInfoThread.Abort();
             textChangedTimer.Enabled = false;
             if (!ProjectService.IsInternal)
             {
@@ -432,6 +444,7 @@ namespace Revsoft.Wabbitcode
         void UpdateAll()
         {
             ThreadPool.QueueUserWorkItem(new WaitCallback(GetCodeInfo));
+            infoLinesQueued++;
             ThreadPool.QueueUserWorkItem(new WaitCallback(ParseFile));
         }
 
@@ -681,7 +694,7 @@ namespace Revsoft.Wabbitcode
                 if (Path.IsPathRooted(text))
                     DocumentService.GotoFile(text);
                 else
-                    DocumentService.GotoFile(FileOperations.NormalizePath(Path.Combine(Path.GetDirectoryName(FileName), text)));
+                    DocumentService.GotoFile(FileOperations.NormalizePath(FindFilePathIncludes(text)));
             }
         }
 
@@ -754,7 +767,7 @@ namespace Revsoft.Wabbitcode
                     {
                         if (gotoLabel[0] == '\"')
                             gotoLabel = gotoLabel.Substring(1, gotoLabel.Length - 2);
-                        bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : File.Exists(Path.Combine(Path.GetDirectoryName(FileName), gotoLabel));
+                        bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : FindFileIncludes(gotoLabel);
                         if (exists)
                         {
                             bgotoButton.Text = "Open " + gotoLabel;
@@ -776,6 +789,24 @@ namespace Revsoft.Wabbitcode
                     bgotoButton.Text = "Goto ";
             }
             contextMenu.Show(editorBox, editorBox.PointToClient(MousePosition));
+        }
+
+        private bool FindFileIncludes(string gotoLabel)
+        {
+            return !string.IsNullOrEmpty(FindFilePathIncludes(gotoLabel));
+        }
+
+        private string FindFilePathIncludes(string gotoLabel)
+        {
+            List<string> includeDirs = ProjectService.IsInternal ?
+                        Settings.Default.includeDir.Split('\n').ToList<string>() : ProjectService.IncludeDirs;
+            foreach (string dir in includeDirs)
+                if (File.Exists(Path.Combine(dir, gotoLabel)))
+                    return Path.Combine(dir, gotoLabel);
+            if (File.Exists(Path.Combine(Path.GetDirectoryName(FileName), gotoLabel)))
+                return Path.Combine(Path.GetDirectoryName(FileName), gotoLabel);
+            else
+                return null;
         }
         #region TitleBarContext
         private void saveMenuItem_Click(object sender, EventArgs e)
@@ -813,10 +844,10 @@ namespace Revsoft.Wabbitcode
         #endregion
 
         private delegate void updateCodeInfo(string size, string min, string max);
-        private void GetCodeInfo(object input)
+        private static void GetCodeInfo(object input)
         {
             string lines = input as string;
-            if (lines == null)
+            if (lines == null || infoLinesQueued > 2)
                 return;
             try
             {
@@ -824,7 +855,7 @@ namespace Revsoft.Wabbitcode
                 {
                     StartInfo =
                     {
-                        FileName = "spasm.exe",
+                        FileName = FileLocations.SpasmFile,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
                         UseShellExecute = false,
@@ -836,8 +867,6 @@ namespace Revsoft.Wabbitcode
                 //setup wabbitspasm to run silently
 				if (!string.IsNullOrEmpty(lines))
 				{
-					//lines = lines.Replace('\n', '\\');
-					//lines = lines.Replace('\r', ' ');
 					wabbitspasm.StartInfo.Arguments = "-C -O -V \"" + lines + "\"";
 					wabbitspasm.Start();
 					while (!wabbitspasm.StartInfo.RedirectStandardError)
@@ -857,7 +886,8 @@ namespace Revsoft.Wabbitcode
 
 				updateCodeInfo update = DockingService.MainForm.UpdateCodeInfo;
 				DockingService.MainForm.Invoke(update, new[] { size, min, max });
-				//RequestUpdate.UpdateCodeInfo = false;
+                infoLinesQueued = infoLinesQueued > 1 ? 1 : 0;
+
             }
             catch (Exception) { }
         }
@@ -896,26 +926,17 @@ namespace Revsoft.Wabbitcode
 
         public ImageList ImageList
         {
-            get
-            {
-                return mainForm.imageList1;
-            }
+            get { return mainForm.imageList1; }
         }       
 
         public string PreSelection
         {
-            get
-            {
-                return null;
-            }
+            get { return null; }
         }
 
         public int DefaultIndex
         {
-            get
-            {
-                return -1;
-            }
+            get { return -1; }
         }
 
         public CompletionDataProviderKeyResult ProcessKey(char key)
@@ -942,12 +963,12 @@ namespace Revsoft.Wabbitcode
             return temp;
         }
 
-        private string getLine(int start)
+        private string GetLine(int start)
         {
             if (editorBox.Text == "" || start < 0)
                 return "";
             if (start == editorBox.Text.Length)
-                start-=2;
+                start -= 2;
             while (start >= 0 && editorBox.Text[start] != '\n')
                 start--;
             start++;
@@ -962,54 +983,84 @@ namespace Revsoft.Wabbitcode
             return line;
         }
 
-        private string getOpcodeOrMacro(string line)
+        private string GetOpcodeOrMacro(string line)
         {
             int start = 0;
-            while (start < line.Length && char.IsWhiteSpace(line[start]))
-                start++;
+            start = SkipWhitespace(line, start);
             int end = start + 1;
             while(end < line.Length && !char.IsWhiteSpace(line[end]))
                 end++;
             if (end > line.Length)
                 return "";
-            return line.Substring(start, end - start);
+            return line.Substring(start, end - start).Trim();
         }
 
-        private string getFirstArg(string line, int offset, char charTyped)
+        private string GetFirstArg(string line, int offset, char charTyped)
         {
             int start = 0;
-            while (start < line.Length && char.IsWhiteSpace(line[start]))
-                start++;
+            start = SkipWhitespace(line, start);
             start += offset;
             int end = start;
             while (end < line.Length && line[end] != ',')
                 end++;
             end--;
-            return (line[end] != ',' && "(),+-*/".IndexOf(charTyped) == -1) || end - start < 1 ? "" : line.Substring(start + 1, end - start);
+            return (line[end] != ',' && "(),+-*/\r".IndexOf(charTyped) == -1) || end - start < 1 ? "" : line.Substring(start + 1, end - start).Trim();
         }
 
-        public ICompletionData[] GenerateCompletionData(string fileName, TextArea textArea, char charTyped)
+        private int SkipWhitespace(string line, int start)
         {
-            // We can return code-completion items like this:
+            while (start < line.Length && char.IsWhiteSpace(line[start]))
+                start++;
+            return start;
+        }
 
-            //return new ICompletionData[] {
-            //	new DefaultCompletionData("Text", "Description", 1)
-            //};
-            /*List<ICompletionData> resultList = new List<ICompletionData>();
-            int startOffset = editorBox.ActiveTextAreaControl.Caret.Offset;
-            int lineNumber = editorBox.Document.GetLineNumberForOffset(startOffset);
-            List<FoldMarker> foldings = editorBox.Document.FoldingManager.GetFoldingsContainsLineNumber(lineNumber);
-            bool isInComment = false;
-            foreach (FoldMarker folder in foldings)
-                isInComment = folder.InnerText.ToLower().Contains("#endcomment");
-            string line = getLine(startOffset);
-            int start = editorBox.Document.OffsetToPosition(startOffset).Column;
-            if (line.Length == 0 || line.Length < start || isInComment || char.IsLetterOrDigit(line[0]))
-                return resultList.ToArray();
-            switch (charTyped)
+        private void Add16BitRegs(ref List<ICompletionData> resultList)
+        {
+            resultList.Add(new CodeCompletionData("bc", 3));
+            resultList.Add(new CodeCompletionData("de", 3));
+            resultList.Add(new CodeCompletionData("hl", 3));
+            resultList.Add(new CodeCompletionData("ix", 3));
+            resultList.Add(new CodeCompletionData("iy", 3));
+        }
+
+        private void Add8BitRegs(ref List<ICompletionData> resultList)
+        {
+            resultList.Add(new CodeCompletionData("a", 3));
+            resultList.Add(new CodeCompletionData("b", 3));
+            resultList.Add(new CodeCompletionData("d", 3));
+            resultList.Add(new CodeCompletionData("h", 3));
+            resultList.Add(new CodeCompletionData("ixl", 3));
+            resultList.Add(new CodeCompletionData("iyl", 3));
+            resultList.Add(new CodeCompletionData("c", 3));
+            resultList.Add(new CodeCompletionData("e", 3));
+            resultList.Add(new CodeCompletionData("l", 3));
+            resultList.Add(new CodeCompletionData("ixh", 3));
+            resultList.Add(new CodeCompletionData("iyh", 3));
+            resultList.Add(new CodeCompletionData("(hl)", 3));
+            resultList.Add(new CodeCompletionData("(ix+", 3));
+            resultList.Add(new CodeCompletionData("(iy+", 3));
+        }
+
+        private void AddParserData(ref List<ICompletionData> resultList)
+        {
+            foreach (ParserInformation info in ProjectService.ParseInfo)
             {
-                case '#':
-                    return new List<ICompletionData>
+                if (!info.IsIncluded)
+                    continue;
+                foreach (IParserData data in info.DefinesList)
+                    if (!string.IsNullOrEmpty(data.Name))
+                        resultList.Add(new CodeCompletionData(data.Name, 5, data.Description));
+                foreach (IParserData data in info.LabelsList)
+                {
+                    if (data.Name == "_")
+                        continue;
+                    resultList.Add(new CodeCompletionData(data.Name, 4, data.Description));
+                }
+            }
+        }
+
+        #region Predefined Data
+        ICompletionData[] preprocessors = new ICompletionData[]
                                {
                                    new CodeCompletionData("define", 0),
                                    new CodeCompletionData("ifdef", 0),
@@ -1025,9 +1076,8 @@ namespace Revsoft.Wabbitcode
                                    new CodeCompletionData("include", 0),
                                    new CodeCompletionData("region", 0),
                                    new CodeCompletionData("endregion", 0)
-                               }.ToArray();
-                case '.':
-                    return new List<ICompletionData>
+                               };
+        ICompletionData[] directives = new ICompletionData[]
                                {
                                    new CodeCompletionData("db", 1),
                                    new CodeCompletionData("dw", 1),
@@ -1044,23 +1094,40 @@ namespace Revsoft.Wabbitcode
                                    new CodeCompletionData("nolist", 1),
                                    new CodeCompletionData("equ", 1),
                                    new CodeCompletionData("option", 1)
-                               }.ToArray();
+                               };
+        #endregion
+        public ICompletionData[] GenerateCompletionData(string fileName, TextArea textArea, char charTyped)
+        {
+            List<ICompletionData> resultList = new List<ICompletionData>();
+            int startOffset = editorBox.ActiveTextAreaControl.Caret.Offset;
+            int lineNumber = editorBox.Document.GetLineNumberForOffset(startOffset);
+            List<FoldMarker> foldings = editorBox.Document.FoldingManager.GetFoldingsContainsLineNumber(lineNumber);
+            bool isInComment = false;
+            foreach (FoldMarker folder in foldings)
+                isInComment = folder.InnerText.ToLower().Contains("#endcomment");
+            string line = GetLine(startOffset);
+            int start = editorBox.Document.OffsetToPosition(startOffset).Column;
+            if (line.Length == 0 || line.Length < start || isInComment || char.IsLetterOrDigit(line[0]))
+                return resultList.ToArray();
+            switch (charTyped)
+            {
+                case '#':
+                    return preprocessors;
+                case '.':
+                    return directives;
                 default:
                     {
-                        string command = getOpcodeOrMacro(line);
-                        string firstArg = getFirstArg(line, command.Length, charTyped);
+                        string command = GetOpcodeOrMacro(line);
+                        string firstArg = GetFirstArg(line, command.Length, charTyped);
                         switch (command.ToLower())
                         {
                             case "ld":
                                 if (firstArg == "")
                                 {
-                                    resultList.Add(new CodeCompletionData("bc", 3));
-                                    resultList.Add(new CodeCompletionData("de", 3));
-                                    resultList.Add(new CodeCompletionData("hl", 3));
-                                    resultList.Add(new CodeCompletionData("ix", 3));
-                                    resultList.Add(new CodeCompletionData("iy", 3));
+                                    Add16BitRegs(ref resultList);
                                     resultList.Add(new CodeCompletionData("sp", 3));
-                                    goto registers8Bit;
+                                    Add8BitRegs(ref resultList);
+                                    return resultList.ToArray();
                                 }
                                 else
                                 {
@@ -1071,31 +1138,13 @@ namespace Revsoft.Wabbitcode
                                         case "bc":
                                         case "iy":
                                         case "ix":
-                                        case "sp":
-                                            if (firstArg == "sp")
-                                                resultList.Add(new CodeCompletionData("hl", 3));
-											foreach (ArrayList file in ProjectService.Project.projectLabels)
-                                            {
-                                                ArrayList labels = (ArrayList)file[0];
-                                                ArrayList props = (ArrayList)file[1];
-                                                ArrayList description = (ArrayList)file[2];
-                                                int counter = -1;
-                                                foreach (string label in labels)
-                                                {
-                                                    counter++;
-                                                    if (label == "_")
-                                                        continue;
-                                                    if (props[counter].ToString().Contains("|label|"))
-                                                        resultList.Add(new CodeCompletionData(label, 4,
-                                                                                              description[labels.IndexOf(label)].
-                                                                                                  ToString()));
-                                                    else if (props[counter].ToString().Contains("|equate|"))
-                                                        resultList.Add(new CodeCompletionData(label, 5,
-                                                                                              description[labels.IndexOf(label)].
-                                                                                                  ToString()));
-                                                }
-                                            }
+                                            AddParserData(ref resultList);
                                             break;
+                                        case "sp":
+                                            resultList.Add(new CodeCompletionData("hl", 3));
+                                            resultList.Add(new CodeCompletionData("ix", 3));
+                                            resultList.Add(new CodeCompletionData("iy", 3));
+                                            return resultList.ToArray();
                                         case "b":
                                         case "c":
                                         case "d":
@@ -1108,7 +1157,7 @@ namespace Revsoft.Wabbitcode
                                                 resultList.Add(new CodeCompletionData("i", 3));
                                                 resultList.Add(new CodeCompletionData("r", 3));
                                             }
-											foreach (ArrayList file in ProjectService.Project.projectLabels)
+											/*foreach (ArrayList file in ProjectService.Project.projectLabels)
                                             {
                                                 ArrayList labels = (ArrayList)file[0];
                                                 ArrayList props = (ArrayList)file[1];
@@ -1122,8 +1171,9 @@ namespace Revsoft.Wabbitcode
                                                     if (props[counter].ToString().Contains("|equate|"))
                                                         resultList.Add(new CodeCompletionData(label, 5, description[labels.IndexOf(label)].ToString()));
                                                 }
-                                            }
-                                            goto registers8Bit;
+                                            }*/
+                                            Add8BitRegs(ref resultList);
+                                            break;
                                         case "i":
                                         case "r":
                                             resultList.Add(new CodeCompletionData("a", 3));
@@ -1147,7 +1197,7 @@ namespace Revsoft.Wabbitcode
                             case "res":
                                 if (firstArg == "")
                                 {
-									foreach (ArrayList file in ProjectService.Project.projectLabels)
+									/*foreach (ArrayList file in ProjectService.Project.projectLabels)
                                     {
                                         ArrayList labels = (ArrayList)file[0];
                                         ArrayList props = (ArrayList)file[1];
@@ -1161,7 +1211,7 @@ namespace Revsoft.Wabbitcode
                                             if (props[counter].ToString().Contains("|equate|"))
                                                 resultList.Add(new CodeCompletionData(label, 5, description[labels.IndexOf(label)].ToString()));
                                         }
-                                    }
+                                    }*/
                                     resultList.Add(new CodeCompletionData("0", 6));
                                     resultList.Add(new CodeCompletionData("1", 6));
                                     resultList.Add(new CodeCompletionData("2", 6));
@@ -1172,7 +1222,7 @@ namespace Revsoft.Wabbitcode
                                     resultList.Add(new CodeCompletionData("7", 6));
                                 }
                                 else
-                                    goto registers8Bit;
+                                    Add8BitRegs(ref resultList);
                                 return resultList.ToArray();
                             case "add":
                             case "adc":
@@ -1190,7 +1240,7 @@ namespace Revsoft.Wabbitcode
                                 else
                                 {
                                     if (!(firstArg == "hl" || ((firstArg == "ix" || firstArg == "iy") && command == "add")))
-                                        goto registers8Bit;
+                                        Add8BitRegs(ref resultList);
                                 }
                                 return resultList.ToArray();
                             case "dec":
@@ -1208,21 +1258,7 @@ namespace Revsoft.Wabbitcode
                             case "or":
                             case "sub":
                             case "xor":
-                        registers8Bit:
-                                resultList.Add(new CodeCompletionData("a", 3));
-                                resultList.Add(new CodeCompletionData("b", 3));
-                                resultList.Add(new CodeCompletionData("d", 3));
-                                resultList.Add(new CodeCompletionData("h", 3));
-                                resultList.Add(new CodeCompletionData("ixl", 3));
-                                resultList.Add(new CodeCompletionData("iyl", 3));
-                                resultList.Add(new CodeCompletionData("c", 3));
-                                resultList.Add(new CodeCompletionData("e", 3));
-                                resultList.Add(new CodeCompletionData("l", 3));
-                                resultList.Add(new CodeCompletionData("ixh", 3));
-                                resultList.Add(new CodeCompletionData("iyh", 3));
-                                resultList.Add(new CodeCompletionData("(hl)", 3));
-                                resultList.Add(new CodeCompletionData("(ix+", 3));
-                                resultList.Add(new CodeCompletionData("(iy+", 3));
+                                
                                 return resultList.ToArray();
                             //16 bit only
                             case "push":
@@ -1261,7 +1297,7 @@ namespace Revsoft.Wabbitcode
                                 if (command == "ret")
                                     return resultList.ToArray();
 
-								foreach (ArrayList file in ProjectService.Project.projectLabels)
+								/*foreach (ArrayList file in ProjectService.Project.projectLabels)
                                 {
                                     ArrayList labels = (ArrayList) file[0];
                                     ArrayList props = (ArrayList) file[1];
@@ -1281,7 +1317,7 @@ namespace Revsoft.Wabbitcode
                                                                                   description[labels.IndexOf(label)].
                                                                                       ToString()));
                                     }
-                                }
+                                }*/
                                 return resultList.ToArray();
                             //special cases
                             case "im":
@@ -1343,8 +1379,7 @@ namespace Revsoft.Wabbitcode
                                 return resultList.ToArray();
 						}
 						#region OldAutoComplete
-						/*
-                        if (startOffset == editorBox.Text.Length)
+                        /*if (startOffset == editorBox.Text.Length)
                             startOffset--;
                         if (Control.ModifierKeys == Keys.Control)
                         {
@@ -1472,11 +1507,11 @@ namespace Revsoft.Wabbitcode
                                 resultList.Add(new CodeCompletionData(register, 2));
                             }
                         }
-                    }
+                    }*/
 						#endregion
 						break;
                     }
-            }*/
+            }
             return null;//resultList.ToArray();
         }
     }
@@ -1495,6 +1530,11 @@ namespace Revsoft.Wabbitcode
             this.member = member;//.Substring(1, member.Length - 1);
             this.type = type;
             this.description = description;
+        }
+
+        public override string ToString()
+        {
+            return member;
         }
 
         int overloads;

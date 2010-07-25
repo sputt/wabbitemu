@@ -240,7 +240,8 @@ namespace Revsoft.Wabbitcode.Services
 			ushort address = debugger.getState().PC;
 #endif
 			byte page = GetPageNum(address);
-			WabbitcodeBreakpoint breakpoint = FindBreakpoint(address, (byte)(appPage - page), address > 0x8000);
+            byte breakpointPage = isAnApp ? (byte)(appPage - page) : page;
+			WabbitcodeBreakpoint breakpoint = FindBreakpoint(address, breakpointPage, address > 0x8000);
 			if (breakpoint == null)
 				return;
 				//throw new Exception("Breakpoint not found!");
@@ -273,7 +274,12 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				ListFileValue value = new ListFileValue(address, page);
 				ListFileKey key;
-				debugTable.TryGetKey(value, out key);
+				debugTable.TryGetKey(value, out key);;
+                if (key == null)
+                {
+                    DockingService.ShowError("Unable to find breakpoint");
+                    return;
+                }
 				DocumentService.GotoLine(key.FileName, key.LineNumber);
 				DocumentService.HighlightDebugLine(key.LineNumber);
 				isBreakpointed = true;
@@ -301,6 +307,7 @@ namespace Revsoft.Wabbitcode.Services
 		private static Thread stepThread;
 		public static void StepOut()
 		{
+            isBreakpointed = false;
 			stepThread = new Thread(DebuggerService.DoStep);
 			stepThread.Start(StepType.StepOut	);
 			stepStack.Pop();
@@ -308,12 +315,14 @@ namespace Revsoft.Wabbitcode.Services
 
 		public static void StepOver()
 		{
+            isBreakpointed = false;
 			stepThread = new Thread(DebuggerService.DoStep);
 			stepThread.Start(StepType.StepOver);
 		}
 
 		public static void Step()
 		{
+            isBreakpointed = false;
 			DocumentService.HighlightCall();
 			stepThread = new Thread(DebuggerService.DoStep);
 			stepThread.Start(StepType.Step);
@@ -386,6 +395,7 @@ namespace Revsoft.Wabbitcode.Services
 					debugTable.TryGetKey(value, out newKey);
 				}
 			}
+            isBreakpointed = true;
 			DoneStep doneStep = new DoneStep(DockingService.MainForm.DoneStep);
 			DockingService.MainForm.Invoke(doneStep, new object[] { newKey });
 		}
@@ -400,8 +410,11 @@ namespace Revsoft.Wabbitcode.Services
 #endif
 			if (address < 0x4000)
 				page = memstate.page0;
-			if (address >= 0x4000 && address < 0x8000) // && memstate.ram1 == 0)
-				page = (byte)(appPage - memstate.page1);
+            if (address >= 0x4000 && address < 0x8000) // && memstate.ram1 == 0)
+                if (isAnApp)
+                    page = (byte)(appPage - memstate.page1);
+                else
+                    page = memstate.page1;
 			if (address >= 0x8000 && address < 0xC000) // && memstate.ram2 == 0)
 				page = memstate.page2;
 			if (address >= 0xC000)
@@ -476,7 +489,7 @@ namespace Revsoft.Wabbitcode.Services
 				listName = Path.Combine(ProjectService.ProjectDirectory, ProjectService.ProjectName + ".lst");
 				symName = Path.Combine(ProjectService.ProjectDirectory, ProjectService.ProjectName + ".lab");
 				fileName = Path.Combine(ProjectService.ProjectDirectory, ProjectService.ProjectName + ".asm");
-				int outputType = 5;// ProjectService.Project.getOutputType();
+				int outputType = ProjectService.Project.GetOutputType();
 				startAddress = outputType == 5 ? "4080" : "9D95";
 				bool configFound = false;
 				foreach (Services.Project.BuildConfig config in ProjectService.BuildConfigs)
@@ -607,22 +620,38 @@ namespace Revsoft.Wabbitcode.Services
 					Thread.Sleep(500);
 				}
 				int counter = 0;
-				string appName = Path.GetFileNameWithoutExtension(createdName);
-				if (appName.Length > 8)
-					appName.Substring(0, 8);
+                char[] buffer = new char[8];
+                StreamReader appReader = new StreamReader(createdName);
+                for (int i = 0; i < 17; i++)
+                    appReader.Read();
+                appReader.ReadBlock(buffer, 0, 8);
+                appReader.Close();
+                string appName = new string(buffer).Trim();
+				//string appName = Path.GetFileNameWithoutExtension(createdName);
 				foreach (CWabbitemu.AppEntry app in appList)
 				{
-					string name = new string(new char[] { app.name1, app.name2, app.name3, app.name4,
-														app.name5, app.name6, app.name7, app.name8 });
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append(app.name1);
+                    sb.Append(app.name2);
+                    sb.Append(app.name3);
+                    sb.Append(app.name4);
+                    sb.Append(app.name5);
+                    sb.Append(app.name6);
+                    sb.Append(app.name7);
+                    sb.Append(app.name8);
 					//HACK: FIX SO THAT I CHECK THE ACTUAL 8XK BINARY
-					if (name.Trim().ToLower() == appName.ToLower())
+					if (sb.ToString().Trim().ToLower() == appName.ToLower())
 						break;
 					counter++;
 				}
 				if (counter == appList.Length)
 				{
-					CancelDebug();
-					return;
+                    if (MessageBox.Show("Unable to find the app, would you like to try and continue and debug?", "Missing App", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
+                    {
+                        CancelDebug();
+                        return;
+                    }
+                    counter = 0;
 				}
 				appPage = (byte)appList[counter].page;
 				//apps key
@@ -664,8 +693,20 @@ namespace Revsoft.Wabbitcode.Services
 #if NEW_DEBUGGING
             FreeLibrary(wabbitDLLPointer);
 #else
-			if (debugger != null)
-				debugger.Close();
+#if !DEBUG
+            try
+            {
+#endif
+                if (debugger != null)
+                    debugger.Close();
+                debugger = null;
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error in closing the debugger");
+            }
+#endif
 #endif
 			if (staticLabelMarkers != null)
 				staticLabelMarkers.Clear();
@@ -679,7 +720,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static ListFileValue GetListValue(string file, int lineNumber)
 		{
-			if (debugTable == null)
+			if (debugTable == null || file == null)
 				return null;
 			ListFileValue value;
 			debugTable.TryGetValue(new ListFileKey(file.ToLower(), lineNumber), out value);
@@ -735,6 +776,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static void Pause()
 		{
+            isBreakpointed = false;
 			IntPtr calculatorHandle = DockingService.MainForm.Handle;
 			//switch to back to us
 			NativeMethods.SetForegroundWindow(calculatorHandle);
@@ -795,6 +837,11 @@ namespace Revsoft.Wabbitcode.Services
 			LineNumber = lineNumber;
 		}
 
+        public override string ToString()
+        {
+            return "File: " + FileName + " Line: " + LineNumber;
+        }
+
 		public override int GetHashCode()
 		{
 			return FileName.Length + LineNumber;
@@ -823,6 +870,11 @@ namespace Revsoft.Wabbitcode.Services
 			Address = address;
 			Page = page;
 		}
+
+        public override string ToString()
+        {
+            return "Page: " + Page + " Address: " + Address.ToString("X");
+        }
 
 		public override int GetHashCode()
 		{

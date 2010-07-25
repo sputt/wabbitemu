@@ -89,15 +89,14 @@ char *parse_define (define_t *define) {
 	char *ptr = define->contents;
 
 	//go through each line of the macro
-	while (ptr) {
+	while (ptr && *ptr != '\0') {
 		ptr = skip_whitespace (ptr);
 		//if it's a blank line, then skip it
 		if (is_end_of_code_line (ptr)) {
-			ptr = skip_to_next_line (ptr);
-			continue;
+			ptr++;
 		} else if (*ptr == '#') {
 			//if it's a preop, then handle that
-			ptr = skip_to_next_line (handle_preop (++ptr));
+			ptr = handle_preop (++ptr);
 		} else {
 			//otherwise, it must be a value, so return that
 			return strndup (ptr, skip_to_code_line_end (ptr) - ptr);

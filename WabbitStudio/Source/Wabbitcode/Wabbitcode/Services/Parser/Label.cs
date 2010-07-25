@@ -64,6 +64,11 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			return LabelName;
 		}
 
+        public override int GetHashCode()
+        {
+            return base.GetHashCode();
+        }
+
 		public override bool Equals(object obj)
 		{
 			if (obj.GetType() != typeof(Label))

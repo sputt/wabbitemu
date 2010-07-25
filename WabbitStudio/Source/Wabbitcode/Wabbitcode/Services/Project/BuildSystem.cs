@@ -29,6 +29,29 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 		}
 
+        public string MainFile
+        {
+            get
+            {
+                int counter = CurrentConfig.Steps.Count - 1;
+                if (counter < 0)
+                    return null;
+                InternalBuildStep step = null;
+                while (counter >= 0)
+                {
+                    if (CurrentConfig.Steps[counter].GetType() == typeof(InternalBuildStep))
+                    {
+                        step = (InternalBuildStep)CurrentConfig.Steps[counter];
+                        break;
+                    }
+                    counter--;
+                }
+                if (counter < 0)
+                    return null;
+                return step.InputFile;
+            }
+        }
+
 		public string MainOutput
 		{
 			get

@@ -226,7 +226,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private System.Windows.Forms.MenuItem cutFMenuItem;
         private System.Windows.Forms.MenuItem copyFMenuItem;
         private System.Windows.Forms.MenuItem pasteFMenuItem;
-        public System.Windows.Forms.TreeView dirViewer;
+        private System.Windows.Forms.TreeView dirViewer;
 
 
     }

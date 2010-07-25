@@ -318,6 +318,7 @@ char *handle_opcode_or_macro (char *ptr) {
 			}
 
 			ptr = parse_emit_string(++ptr, ES_FCREATE, eb_fcreate);
+			ptr++;
 			eb_append(eb_fcreate, NEWLINE, strlen(NEWLINE));
 		} else if (!strcasecmp (name, "run") && *ptr == '(') {
 			char *fcreate_string = eb_extract(eb_fcreate);

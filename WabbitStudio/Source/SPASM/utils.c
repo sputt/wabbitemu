@@ -417,6 +417,7 @@ char *strup (const char *input) {
 	return new_string;
 }
 
+
 void release_file_contents(char *contents)
 {
 #ifdef USE_MEMORY_MAPPED_FILES
@@ -481,9 +482,11 @@ char *get_file_contents (const char *filename) {
 
 	const unsigned char utf8_endian_mark[] = {0xEF, 0xBB, 0xBF};
 	fread(buffer, 1, sizeof(utf8_endian_mark), file);
-	if (memcmp(buffer, utf8_endian_mark, sizeof(utf8_endian_mark)) != 0) {
+	if (memcmp(buffer, &utf8_endian_mark, sizeof(utf8_endian_mark)) == 0) {
 		size -= sizeof(utf8_endian_mark);
-		p = buffer + sizeof(utf8_endian_mark);
+		p = (char *) malloc_chk (size + 1);
+		memcpy(p, buffer + sizeof(utf8_endian_mark), size);
+		free(buffer);
 	} else {
 		p = buffer;
 	}
@@ -497,7 +500,7 @@ char *get_file_contents (const char *filename) {
 	}
 
 	p[size] = '\0';
-	return buffer;
+	return p;
 #endif
 }
 

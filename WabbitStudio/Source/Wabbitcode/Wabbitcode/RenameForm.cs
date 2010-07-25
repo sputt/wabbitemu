@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
-//using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 
@@ -15,5 +14,7 @@ namespace Revsoft.Wabbitcode
         {
             InitializeComponent();
         }
+
+        public string NewText { get { return textBox.Text; } }
     }
 }

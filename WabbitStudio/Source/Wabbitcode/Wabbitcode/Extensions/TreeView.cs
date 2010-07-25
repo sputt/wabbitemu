@@ -257,7 +257,10 @@ namespace Revsoft.Wabbitcode
 			{
 				if (!blnInternalCall)
 				{
-					throw new NotSupportedException("Use SelectedNodes instead of SelectedNode.");
+                    if (SelectedNodes.Count > 0)
+                        return SelectedNodes[0];
+                    return null;
+					//throw new NotSupportedException("Use SelectedNodes instead of SelectedNode.");
 				}
 				else
 				{
@@ -1796,8 +1799,11 @@ namespace Revsoft.Wabbitcode
                 // Disable scroll timer
                 timer.Enabled = false;
             }
-            nodePointedTo.BackColor = oldBackColor;
-            nodePointedTo.ForeColor = oldForeColor;
+            if (nodePointedTo != null)
+            {
+                nodePointedTo.BackColor = oldBackColor;
+                nodePointedTo.ForeColor = oldForeColor;
+            }
 
             base.OnDragDrop(e);
         }

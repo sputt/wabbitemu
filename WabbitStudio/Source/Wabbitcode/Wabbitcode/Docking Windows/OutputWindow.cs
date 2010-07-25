@@ -103,5 +103,14 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
             return outputWindowBox.Handle;
         }
+
+        private delegate void ClearOutputDelegate();
+        internal void ClearOutput()
+        {
+            if (outputWindowBox.InvokeRequired)
+                outputWindowBox.Invoke(new ClearOutputDelegate(ClearOutput));
+            else
+                outputWindowBox.Clear();
+        }
     }
 }

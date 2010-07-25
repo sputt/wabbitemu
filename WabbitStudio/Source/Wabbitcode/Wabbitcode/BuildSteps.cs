@@ -52,9 +52,10 @@ namespace Revsoft.Wabbitcode
 			buildSeqList.Items.Remove(selectedItem);
         }
 
+        private bool needsSave = false;
         private void okButton_Click(object sender, EventArgs e)
         {
-			if (currentConfig != null && !currentConfig.Equals(ProjectService.BuildConfigs[currentIndex]))
+			if ((currentConfig != null && !currentConfig.Equals(ProjectService.BuildConfigs[currentIndex])) || needsSave)
 				if (MessageBox.Show("Would you like to save the current configuration?",
 										"Save?", MessageBoxButtons.YesNo, MessageBoxIcon.None) == DialogResult.Yes)
 					ProjectService.BuildConfigs[currentIndex] = currentConfig;
@@ -62,17 +63,17 @@ namespace Revsoft.Wabbitcode
 
         private void editButton_Click(object sender, EventArgs e)
         {
-            
+            needsSave = true;
         }
 
         private void moveUp_Click(object sender, EventArgs e)
         {
-            
+            needsSave = true;
         }
 
         private void moveDown_Click(object sender, EventArgs e)
         {
-            
+            needsSave = true;
         }
 
 		int currentIndex = 0;
@@ -95,12 +96,24 @@ namespace Revsoft.Wabbitcode
         /// <param name="e"></param>
         private void configBox_DropDown(object sender, EventArgs e)
         {
-            
+
         }
 
 		private void stepTypeBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			UpdateStepOptions();
+            IBuildStep step = null;
+            if (stepTypeBox.SelectedIndex == 0 && buildSeqList.SelectedItem.GetType() != typeof(InternalBuildStep))
+                step = new InternalBuildStep(buildSeqList.SelectedIndex, StepType.Assemble,
+                                        Path.ChangeExtension(ProjectService.ProjectFile, ".asm"), Path.ChangeExtension(ProjectService.ProjectFile, ".8xk"));
+            else if (stepTypeBox.SelectedIndex == 1 && buildSeqList.SelectedItem.GetType() != typeof(ExternalBuildStep))
+                step = new ExternalBuildStep(buildSeqList.SelectedIndex, "cmd.exe", "");
+            if (step != null)
+            {
+                currentConfig.Steps[configBox.SelectedIndex] = step;
+                buildSeqList.Items[buildSeqList.SelectedIndex] = step;
+                UpdateStepOptions();
+                needsSave = true;
+            }
 		}
 
 		private void buildSeqList_SelectedIndexChanged(object sender, EventArgs e)
@@ -138,8 +151,8 @@ namespace Revsoft.Wabbitcode
 					actionBox.Visible = true;
 					actionLabel.Visible = true;
 
-					inputBox.Text = step.InputFile;
-					outputBox.Text = intStep.OutputFile;
+                    inputBox.Text = intStep.InputFileRelative;
+                    outputBox.Text = intStep.OutputFileRelative;
 					actionBox.SelectedIndex = (int)intStep.StepType;
 					break;
 				case 1:
@@ -157,19 +170,28 @@ namespace Revsoft.Wabbitcode
         private void inputBox_TextChanged(object sender, EventArgs e)
         {
             IBuildStep step = (IBuildStep)buildSeqList.SelectedItem;
-            step.InputFile = inputBox.Text;
+            if (step.GetType() == typeof(InternalBuildStep))
+                step.InputFile = FileOperations.NormalizePath(Path.Combine(ProjectService.ProjectDirectory, inputBox.Text));
+            else if (step.GetType() == typeof(ExternalBuildStep))
+                step.InputFile = inputBox.Text;
+            needsSave = true;
         }
 
         private void outputBox_TextChanged(object sender, EventArgs e)
         {
             InternalBuildStep step = (InternalBuildStep)buildSeqList.SelectedItem;
-            step.OutputFile = outputBox.Text;
+            step.OutputFile = FileOperations.NormalizePath(Path.Combine(ProjectService.ProjectDirectory, outputBox.Text));
+            needsSave = true;
         }
 
         private void actionBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             InternalBuildStep step = (InternalBuildStep)buildSeqList.SelectedItem;
             step.StepType = (StepType)actionBox.SelectedIndex;
+            buildSeqList.Items[buildSeqList.SelectedIndex] = step;
+            currentConfig.Steps[buildSeqList.SelectedIndex] = step;
+            UpdateStepOptions();
+            needsSave = true;
         }
     }
 }

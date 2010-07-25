@@ -33,9 +33,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
 			if (callStackView.Rows.Count == 0)
 			{
+                //uh oh
 				throw new Exception("Stack underflow");
-				//uh oh
-				return;
 			}
             callStackView.Rows.Remove(callStackView.Rows[0]);
         }
@@ -49,7 +48,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			DebuggerService.GotoAddress(address);
         }
 
-        public void Copy()
+        public override void Copy()
         {
             Clipboard.SetDataObject(callStackView.GetClipboardContent());
         }
