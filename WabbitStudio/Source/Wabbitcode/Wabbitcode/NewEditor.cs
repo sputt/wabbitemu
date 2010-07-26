@@ -283,7 +283,7 @@ namespace Revsoft.Wabbitcode
             {
 #endif
 				//TODO: Fix spasm to allow for UTF-8
-                editorBox.Encoding = System.Text.Encoding.UTF8;
+                //editorBox.Encoding = System.Text.Encoding.UTF8;
                 editorBox.SaveFile(FileName);
 #if !DEBUG
             }
