@@ -418,8 +418,11 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 		// handle strings
 		if (word[0] == '"') {
 			char *next = next_expr (word, EXPR_DELIMS);
-			if (*next != '\0')
-				goto echo_error;
+			if (*next != '\0') {
+				if (echo_target != NULL)
+					fprintf ((FILE *) echo_target, "(error)");
+				break;
+			}
 			
 			reduce_string (word);
 			if (type == ES_ECHO) {
@@ -449,8 +452,11 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 					{
 						if (parser_forward_ref_err == false)
 							fprintf ((FILE *) echo_target, "%d", value);
-						else
-							goto echo_error;
+						else {
+							if (echo_target != NULL)
+								fprintf ((FILE *) echo_target, "(error)");
+							break;
+						}
 						break;
 					}
 #ifdef USE_BUILTIN_FCREATE
@@ -495,10 +501,8 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 				next = name_end;
 				read_expr (&next, NULL, ")");
 				
-				if (*next != '\0')
-					goto echo_error;
 				
-				if ((define = search_defines (name))) {
+				if (*next == '\0' && (define = search_defines (name))) {
 					char *expr;
 					list_t *args = NULL;
 	
@@ -519,7 +523,6 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 					}
 					remove_arg_set (args);
 				} else {
-				echo_error:
 					if (echo_target != NULL)
 						fprintf ((FILE *) echo_target, "(error)");
 				}

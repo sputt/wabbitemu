@@ -11,13 +11,15 @@
 #include <stdlib.h>
 #include <string.h>
 #ifndef WINVER
-#include <openssl\md5.h>				//NOTE: We used Openssl's MD5 generator, but any should do.
+#include <openssl/md5.h>				//NOTE: We used Openssl's MD5 generator, but any should do.
+typedef unsigned long       DWORD;
 #endif
 #include <string.h>
 #ifndef USE_GMP
 #include "big.h"
 #endif
 #include "utils.h"
+
 
 #ifdef WINVER
 #define strcasecmp _stricmp
