@@ -21,7 +21,13 @@ namespace Revsoft.Wabbitcode.Services.Parser
             if (!Path.IsPathRooted(file))
                 file = Path.Combine(ProjectService.ProjectDirectory, file);
             ParserInformation fileInfo = null;
-            foreach (ParserInformation info in ProjectService.ParseInfo)
+            ParserInformation[] array;
+            lock (ProjectService.ParseInfo)
+            {
+                array = new ParserInformation[ProjectService.ParseInfo.Count];
+                ProjectService.ParseInfo.CopyTo(array, 0);
+            }
+            foreach (ParserInformation info in array)
                 if (info.SourceFile.ToLower() == file.ToLower())
                 {
                     info.IsIncluded = true;
