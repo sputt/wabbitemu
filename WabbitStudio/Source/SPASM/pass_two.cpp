@@ -65,7 +65,7 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 		new_expr->type = type;
 		new_expr->input_file = curr_input_file;
 		new_expr->listing_on = listing_on;
-		new_expr->or = or_value;
+		new_expr->or_value = or_value;
 		new_expr->next = NULL;
 
 		if (expr_list_tail)
@@ -170,7 +170,7 @@ void run_second_pass () {
 
 			out_ptr = expr_list->out_ptr;
 			listing_on = expr_list->listing_on;
-			write_arg (value, expr_list->type, expr_list->or);
+			write_arg (value, expr_list->type, expr_list->or_value);
 		}
 		free (expr_list->expr);
 		old_expr = expr_list;

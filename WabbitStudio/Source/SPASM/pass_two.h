@@ -26,7 +26,7 @@ typedef struct tagexpr{
 	arg_type type;
 	char *input_file;
 	bool listing_on;
-	int or;
+	int or_value;
 	struct tagexpr *next;
 } expr_t;
 
