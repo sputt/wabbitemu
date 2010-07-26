@@ -305,24 +305,24 @@
     </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="console.c" />
-    <ClCompile Include="directive.c" />
-    <ClCompile Include="dll.c">
+    <ClCompile Include="console.cpp" />
+    <ClCompile Include="directive.cpp" />
+    <ClCompile Include="dll.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="expand_buf.c" />
-    <ClCompile Include="export.c" />
-    <ClCompile Include="hash.c" />
-    <ClCompile Include="list.c" />
-    <ClCompile Include="main.c" />
-    <ClCompile Include="opcodes.c" />
-    <ClCompile Include="parser.c" />
-    <ClCompile Include="pass_one.c" />
-    <ClCompile Include="pass_two.c" />
-    <ClCompile Include="preop.c" />
-    <ClCompile Include="storage.c" />
-    <ClCompile Include="utils.c" />
+    <ClCompile Include="expand_buf.cpp" />
+    <ClCompile Include="export.cpp" />
+    <ClCompile Include="hash.cpp" />
+    <ClCompile Include="list.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="opcodes.cpp" />
+    <ClCompile Include="parser.cpp" />
+    <ClCompile Include="pass_one.cpp" />
+    <ClCompile Include="pass_two.cpp" />
+    <ClCompile Include="preop.cpp" />
+    <ClCompile Include="storage.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="console.h" />

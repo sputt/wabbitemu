@@ -489,6 +489,7 @@ char *get_file_contents (const char *filename) {
 		free(buffer);
 	} else {
 		p = buffer;
+		rewind(file);
 	}
 
 	read_size = fread (p, 1, size, file);

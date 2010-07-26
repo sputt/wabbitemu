@@ -15,49 +15,49 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="console.c">
+    <ClCompile Include="console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="directive.c">
+    <ClCompile Include="directive.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dll.c">
+    <ClCompile Include="expand_buf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="expand_buf.c">
+    <ClCompile Include="dll.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="export.c">
+    <ClCompile Include="hash.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hash.c">
+    <ClCompile Include="export.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="list.c">
+    <ClCompile Include="list.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.c">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="opcodes.c">
+    <ClCompile Include="opcodes.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="parser.c">
+    <ClCompile Include="parser.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pass_one.c">
+    <ClCompile Include="pass_one.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pass_two.c">
+    <ClCompile Include="pass_two.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="preop.c">
+    <ClCompile Include="preop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="storage.c">
+    <ClCompile Include="storage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="utils.c">
+    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
