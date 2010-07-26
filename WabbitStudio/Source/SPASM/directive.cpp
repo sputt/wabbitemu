@@ -473,9 +473,17 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 					{
 						char buffer[256];
 						if (parser_forward_ref_err == false)
+#ifdef WINVER
 							sprintf_s(buffer, "%d", value);
+#else
+							sprintf(buffer, "%d", value);
+#endif
 						else
+#ifdef WINVER
 							sprintf_s(buffer, "(error)");
+#else
+							sprintf(buffer, "(error)");
+#endif
 						eb_append((expand_buf_t *) echo_target, buffer, strlen(buffer));
 						break;
 					}
