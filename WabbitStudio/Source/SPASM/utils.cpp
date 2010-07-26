@@ -707,8 +707,10 @@ void show_fatal_error(const char *text, ...) {
 		if (exit_code < EXIT_FATAL_ERROR) exit_code = EXIT_FATAL_ERROR;
 
 		show_error_prefix(curr_input_file, line_num);
+#ifdef WINVER
 		OutputDebugString(text);
 		OutputDebugString(TEXT("\n"));
+#endif
 
 		va_start(args, text);
 
@@ -729,8 +731,10 @@ void show_warning(const char *text, ...) {
 		if (exit_code < EXIT_WARNINGS) exit_code = EXIT_WARNINGS;
 
 		show_warning_prefix(curr_input_file, line_num);
+#ifdef WINVER
 		OutputDebugString(text);
 		OutputDebugString(TEXT("\n"));
+#endif
 
 		va_start(args, text);
 
