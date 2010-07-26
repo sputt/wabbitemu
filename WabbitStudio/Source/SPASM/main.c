@@ -15,6 +15,8 @@
 #include <direct.h>
 #include <sys/timeb.h>
 #include <time.h>
+#else
+#include <unistd.h>
 #endif
 
 #include "pass_one.h"

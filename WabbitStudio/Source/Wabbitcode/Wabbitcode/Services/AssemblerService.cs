@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -121,14 +122,14 @@ namespace Revsoft.Wabbitcode.Services
 			try
 			{
 #endif
-				DockingService.OutputWindow.SetText(outputText);
+                DockingService.OutputWindow.SetText(outputText);
 				DockingService.OutputWindow.HighlightOutput();
 				//its more fun with colors
 				DockingService.ErrorList.ParseOutput(outputText, originaldir);
 				DockingService.ShowDockPanel(DockingService.ErrorList);
 				DockingService.ShowDockPanel(DockingService.OutputWindow);
-				if (DockingService.ActiveDocument != null)
-					DockingService.ActiveDocument.Refresh();
+                if (DockingService.ActiveDocument != null)
+                    DockingService.ActiveDocument.Refresh();
 #if !DEBUG
             }
 			catch (Exception ex)

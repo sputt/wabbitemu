@@ -40,7 +40,7 @@ typedef struct output {
 	struct output *next;
 } output_t;
 
-void add_pass_two_expr (char *expr, arg_type type, int or);
+void add_pass_two_expr (char *expr, arg_type type, int or_value);
 void add_pass_two_output (char *expr, output_type type);
 void run_second_pass ();
 

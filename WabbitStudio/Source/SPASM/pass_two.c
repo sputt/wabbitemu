@@ -10,7 +10,7 @@
 #include "directive.h"
 #include "console.h"
 
-void write_arg (int value, arg_type type, int or);
+void write_arg (int value, arg_type type, int or_value);
 char *expand_expr (char *expr);
 
 expr_t *expr_list = NULL, *expr_list_tail = NULL;
@@ -25,7 +25,7 @@ output_t *output_list = NULL, *output_list_tail = NULL;
  * parsed in pass two
  */
 
-void add_pass_two_expr (char *expr, arg_type type, int or) {
+void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 	int value;
 
 	//if we're in code counter or stats mode, where we don't need actual expressions, then just skip this crap
@@ -65,7 +65,7 @@ void add_pass_two_expr (char *expr, arg_type type, int or) {
 		new_expr->type = type;
 		new_expr->input_file = curr_input_file;
 		new_expr->listing_on = listing_on;
-		new_expr->or = or;
+		new_expr->or = or_value;
 		new_expr->next = NULL;
 
 		if (expr_list_tail)
@@ -93,7 +93,7 @@ void add_pass_two_expr (char *expr, arg_type type, int or) {
 		// Reparse the value to generate errors
 		parse_num (expr, &value);
 		//write the value now
-		write_arg (value, type, or);
+		write_arg (value, type, or_value);
 	}
 }
 
@@ -228,7 +228,7 @@ void run_second_pass () {
  * for bit numbers
  */
 
-void write_arg (int value, arg_type type, int or) {
+void write_arg (int value, arg_type type, int or_value) {
 
 	switch (type) {
 		case ARG_NUM_8:
@@ -263,7 +263,7 @@ void write_arg (int value, arg_type type, int or) {
 				show_error ("Bit number can only range from 0 to 7");
 				value = 0;
 			}
-			write_out (((value & 0x07) << 3) | or);
+			write_out (((value & 0x07) << 3) | or_value);
 			break;
 	}
 }
