@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include <ctype.h>
 #include <string.h>
-
+#include <setjmp.h>
 #include <stdlib.h>
 #include "spasm.h"
 #include "directive.h"
@@ -410,7 +410,22 @@ void show_define (define_t *define) {
 char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 	static int level = 0;
 	char word[256];
+	jmp_buf error_buf;
+	int i;
 
+	i = setjmp(error_buf);
+	if (i != 0)
+	{
+		if (echo_target != NULL)
+			fprintf ((FILE *) echo_target, "(error)");
+		if (type == ES_ECHO && level == 1) {
+			if (echo_target == stdout) putchar ('\n');
+			else fclose ((FILE *) echo_target);
+		}
+	
+		level--;
+		return ptr;
+	}
 	level++;
 
 	// Handle the list portion
@@ -418,11 +433,8 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 		// handle strings
 		if (word[0] == '"') {
 			char *next = next_expr (word, EXPR_DELIMS);
-			if (*next != '\0') {
-				if (echo_target != NULL)
-					fprintf ((FILE *) echo_target, "(error)");
-				break;
-			}
+			if (*next != '\0') 
+				longjmp(error_buf, 1);
 			
 			reduce_string (word);
 			if (type == ES_ECHO) {
@@ -452,11 +464,8 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 					{
 						if (parser_forward_ref_err == false)
 							fprintf ((FILE *) echo_target, "%d", value);
-						else {
-							if (echo_target != NULL)
-								fprintf ((FILE *) echo_target, "(error)");
-							break;
-						}
+						else 
+							longjmp(error_buf, 1);
 						break;
 					}
 #ifdef USE_BUILTIN_FCREATE
@@ -501,8 +510,10 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 				next = name_end;
 				read_expr (&next, NULL, ")");
 				
-				
-				if (*next == '\0' && (define = search_defines (name))) {
+				if (*next != '\0')
+					longjmp(error_buf, 1);
+
+				if ((define = search_defines (name))) {
 					char *expr;
 					list_t *args = NULL;
 	
@@ -522,10 +533,8 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 						free (expr);
 					}
 					remove_arg_set (args);
-				} else {
-					if (echo_target != NULL)
-						fprintf ((FILE *) echo_target, "(error)");
-				}
+				} else
+					longjmp(error_buf, 1);
 			}
 			
 			
