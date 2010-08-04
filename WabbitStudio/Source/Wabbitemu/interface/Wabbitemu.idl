@@ -1,0 +1,149 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+enum PAGETYPE
+{
+	FLASH,
+	RAM,
+};
+
+[
+	uuid(36AE85E8-FE2A-41bc-85B5-105B32D8E181)
+]
+struct TIApplication
+{
+	BSTR Name;
+	int Page;
+	int PageCount;
+};
+
+enum SYMBOLTYPE
+{
+	SYM_REAL = 0x00,
+	SYM_LIST = 0x01,
+	SYM_MAT = 0x02,
+	SYM_EQU = 0x03,
+	SYM_STRNG = 0x04,
+	SYM_PROG = 0x05,
+	SYM_PROTPROG = 0x06,
+	SYM_PICT = 0x07,
+	SYM_GDB = 0x08,
+	SYM_UNKNOWN = 0x09,
+	SYM_UNKNOWNEQU = 0x0A,
+	SYM_NEWEQU = 0x0B,
+	SYM_CPLX = 0x0C,
+	SYM_CLIST = 0x0D,
+	SYM_UNDEF = 0x0E,
+	SYM_WINDOW = 0x0F,
+	SYM_ZSTO = 0x10,
+	SYM_TBLRNG = 0x11,
+	SYM_LCD = 0x12,
+	SYM_BACKUP = 0x13,
+	SYM_APP = 0x14,
+	SYM_APPVAR = 0x15,
+	SYM_TEMPPROG = 0x16,
+	SYM_GROUP = 0x17,
+	SYM_EQUOB = 0x23,
+
+	SYM_NONE = -1,
+};
+
+[
+	uuid(010A714D-CADA-400f-90F9-FC34B2A20752)
+]
+struct TISymbol {
+	enum SYMBOLTYPE Type;
+	BYTE Version;
+	WORD Address;
+	BYTE Page;
+	BSTR Name;
+};
+
+[
+	uuid(41C7B7BF-D390-4ba0-8075-462FD3565225),
+	object,
+]
+interface IZ80 : IUnknown
+{
+	[propget] HRESULT AF([out, retval] WORD *AF);
+	[propget] HRESULT A([out, retval] BYTE *A);
+	[propget] HRESULT F([out, retval] BYTE *F);
+	[propput] HRESULT AF([in] WORD AF);
+	[propput] HRESULT A([in] BYTE A);
+	[propput] HRESULT F([in] BYTE F);
+};
+
+[
+	uuid(B61370EF-8BEF-4bb9-AF88-FF7FFD0A012E),
+	object,
+]
+interface IPage : IUnknown
+{
+	[propget, helpstring("Index of this page")]
+	HRESULT Index([out, retval] int *pIndex);
+
+	[propget, helpstring("The memory type of this page")]
+	HRESULT Type([out, retval] enum PAGETYPE *pType);
+
+	HRESULT Read([in] WORD Address, [out, retval] BYTE *lpValue);
+	HRESULT Write([in] WORD Address, [in] BYTE Value);
+}
+
+[
+	uuid(020FB9D5-7F45-449b-B9DF-66CFC2482BD0),
+	object,
+]
+interface IWabbitemu : IUnknown
+{
+	[propput, helpstring("Whether or not the UI is visible.")]
+	HRESULT Visible([in] VARIANT_BOOL fVisible); 
+	[propget, helpstring("Whether or not the UI is visible.")]
+	HRESULT Visible([out, retval] VARIANT_BOOL *lpVisible); 
+
+	[propget, helpstring("The Z80 CPU of the calculator.")] 
+	HRESULT CPU([out, retval] IZ80 **ppZ80);
+
+	[helpstring("All RAM pages on the calculator.")] 
+	HRESULT RAM([in] int Index, [out, retval] IPage **ppPage);
+
+	[helpstring("All flash pages on the calculator.")] 
+	HRESULT Flash([in] int Index, [out, retval] IPage **ppPage);
+
+	HRESULT Step();
+	HRESULT StepOver();
+
+	[helpstring("Sets an execution breakpoint on a certain address.")]
+	HRESULT SetBreakpoint([in] IPage *Page, [in] WORD Address);
+
+	HRESULT Read([in] WORD Address, [out, retval] BYTE *lpValue);
+	HRESULT Write([in] WORD Address, [in] BYTE Value);
+
+	HRESULT LoadFile([in] BSTR FileName);
+
+	[propget, helpstring("List of applications on the calculator.")]
+	HRESULT Apps([out, retval] SAFEARRAY(struct TIApplication) *AppList);
+
+	[propget, helpstring("List of symbols (programs, lists, etc) on the calculator.")]
+	HRESULT Symbols([out, retval] SAFEARRAY(struct TISymbol) *SymList);
+};
+
+[
+	uuid(EDA903F6-7BB8-437f-978F-8F1A2B8B65DB),
+	version(1.0),
+]
+library WabbitemuLib
+{
+	importlib("stdole32.tlb");
+
+	interface IBank;
+	struct TIApplication;
+
+	[
+		uuid(1A03AFA2-C9C7-4d5b-9732-D78011D5009B),
+		version(1.0),
+	]
+	coclass Wabbitemu
+	{
+		[default] interface IWabbitemu;
+	}
+};
