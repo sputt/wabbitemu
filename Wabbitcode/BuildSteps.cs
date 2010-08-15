@@ -151,8 +151,8 @@ namespace Revsoft.Wabbitcode
 					actionBox.Visible = true;
 					actionLabel.Visible = true;
 
-                    inputBox.Text = intStep.InputFileRelative;
-                    outputBox.Text = intStep.OutputFileRelative;
+                    inputBox.Text = intStep.InputFile;
+                    outputBox.Text = intStep.OutputFile;
 					actionBox.SelectedIndex = (int)intStep.StepType;
 					break;
 				case 1:
@@ -192,6 +192,33 @@ namespace Revsoft.Wabbitcode
             currentConfig.Steps[buildSeqList.SelectedIndex] = step;
             UpdateStepOptions();
             needsSave = true;
+        }
+
+        private void browseInput_Click(object sender, EventArgs e)
+        {
+            inputBox.Text = DoOpenFileDialog();
+        }
+
+        private void browseOutput_Click(object sender, EventArgs e)
+        {
+            outputBox.Text = DoOpenFileDialog();
+        }
+
+        private string DoOpenFileDialog()
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog()
+            {
+                CheckFileExists = true,
+                DefaultExt = "*.asm",
+                Filter = "All Know File Types | *.asm; *.z80; *.inc; |Assembly Files (*.asm)|*.asm|*.z80" +
+                           " Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|All Files(*.*)|*.*",
+                FilterIndex = 0,
+                Multiselect = false,
+                RestoreDirectory = true,
+                Title = "Add Existing File",
+            };
+            DialogResult result = openFileDialog.ShowDialog();
+            return result != DialogResult.OK ? null : openFileDialog.FileName;
         }
     }
 }

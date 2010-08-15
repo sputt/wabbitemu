@@ -148,7 +148,7 @@ namespace Revsoft.Wabbitcode.Services
 			WabbitcodeBreakpoint newBreakpoint = FindBreakpoint(fileName, lineNumber);
 			if (newBreakpoint == null)
 				return;
-			if (isDebugging)
+			if (debugger != null)
 			{
 				//int page = newBreakpoint.Page;
 				//if (isAnApp)
@@ -173,9 +173,9 @@ namespace Revsoft.Wabbitcode.Services
 					return;
 				newBreakpoint.Address = value.Address;
 				newBreakpoint.Page = value.Page;
-				if (isAnApp)
+                newBreakpoint.IsRam = newBreakpoint.Address > 0x8000;
+				if (isAnApp && !newBreakpoint.IsRam)
 					newBreakpoint.Page = (byte)(appPage - newBreakpoint.Page);
-				newBreakpoint.IsRam = newBreakpoint.Address > 0x8000;
 #if NEW_DEBUGGING
                 SetBreakpoint(currentSlot, Handle, newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
 #else
@@ -195,7 +195,6 @@ namespace Revsoft.Wabbitcode.Services
 		}
 
 		private static Dictionary<ListFileKey, ListFileValue> debugTable;
-		private static List<TextMarker> staticLabelMarkers;
 		private static void ParseListFile(string listFileContents, string assembledFile, string projectPath)
 		{
 			string currentFile = assembledFile;
@@ -309,8 +308,9 @@ namespace Revsoft.Wabbitcode.Services
 		{
             isBreakpointed = false;
 			stepThread = new Thread(DebuggerService.DoStep);
-			stepThread.Start(StepType.StepOut	);
-			stepStack.Pop();
+			stepThread.Start(StepType.StepOut);
+            if (stepStack.Count > 0)
+                stepStack.Pop();
 		}
 
 		public static void StepOver()
@@ -400,7 +400,7 @@ namespace Revsoft.Wabbitcode.Services
 			DockingService.MainForm.Invoke(doneStep, new object[] { newKey });
 		}
 
-		private static byte GetPageNum(ushort address)
+		internal static byte GetPageNum(ushort address)
 		{
 			byte page = 0xFF;
 #if NEW_DEBUGGING
@@ -451,7 +451,7 @@ namespace Revsoft.Wabbitcode.Services
 #if NEW_DEBUGGING
                     callStack.addStackData(oldSP, ReadMem(currentSlot, oldSP) + ReadMem(currentSlot, (ushort)(oldSP + 1)) * 256);
 #else
-					DockingService.CallStack.AddStackData(oldSP, debugger.readMem(oldSP) + debugger.readMem((ushort)(oldSP - 1)) * 256);
+					DockingService.CallStack.AddStackData(oldSP, debugger.readMem(oldSP) + debugger.readMem((ushort)(oldSP + 1)) * 256);
 #endif
 					oldSP-= 2;
 				}
@@ -486,9 +486,6 @@ namespace Revsoft.Wabbitcode.Services
 			bool error = true;
 			if (!ProjectService.IsInternal)
 			{
-				listName = Path.Combine(ProjectService.ProjectDirectory, ProjectService.ProjectName + ".lst");
-				symName = Path.Combine(ProjectService.ProjectDirectory, ProjectService.ProjectName + ".lab");
-				fileName = Path.Combine(ProjectService.ProjectDirectory, ProjectService.ProjectName + ".asm");
 				int outputType = ProjectService.Project.GetOutputType();
 				startAddress = outputType == 5 ? "4080" : "9D95";
 				bool configFound = false;
@@ -500,16 +497,29 @@ namespace Revsoft.Wabbitcode.Services
 					//AssembleProjectDelegate assemblerDelegate = AssemblerService.AssembleProject;
 					//DockingService.MainForm.Invoke(assemblerDelegate);
                     ThreadPool.QueueUserWorkItem(AssemblerService.AssembleProject);
-					while (ProjectService.Project.ProjectOutputs.Count == 0)
+                    //wait till we notice that it is building
+                    while (!AssemblerService.IsBuildingProject)
+                        Application.DoEvents();
+                    //then wait till it builds
+					while (AssemblerService.IsBuildingProject)
 						Application.DoEvents();
+                    if (ProjectService.Project.ProjectOutputs.Count < 1)
+                    {
+                        DockingService.ShowError("No project outputs detected");
+                        isDebugging = false;
+                        return;
+                    }
 					createdName = ProjectService.Project.ProjectOutputs[0];
+                    fileName = ProjectService.Project.BuildSystem.MainFile;
 					if (!Path.IsPathRooted(createdName))
 						createdName = FileOperations.NormalizePath(Path.Combine(ProjectService.ProjectDirectory, createdName));
+                    listName = ProjectService.Project.ListOutputs[0];
+                    symName = ProjectService.Project.LabelOutputs[0];
 					error = AssemblerService.ErrorsInFiles.Count == 0;
 				}
 				else
 				{
-					MessageBox.Show("No build config named Debug was found!");
+					DockingService.ShowError("No build config named Debug was found. Make sure you have setup a debug build config");
 					isDebugging = false;
 					return;
 				}
@@ -670,26 +680,77 @@ namespace Revsoft.Wabbitcode.Services
 				debugger.releaseKeyPress(Keys.Enter);
 			}
 
-			staticLabelMarkers = new List<TextMarker>();
 			UpdateBreaksDelegate updateBreaks = DockingService.MainForm.UpdateBreakpoints;
 			DockingService.MainForm.Invoke(updateBreaks);
 			UpdateBreaksDelegate updateDebugStuff = DockingService.MainForm.UpdateDebugStuff;
 			DockingService.MainForm.Invoke(updateDebugStuff);
-			staticLabelsParser.DoWork += new DoWorkEventHandler(staticLabelsParser_DoWork);
-			if (!staticLabelsParser.IsBusy && !DockingService.MainForm.IsDisposed && !DockingService.MainForm.Disposing)
-				staticLabelsParser.RunWorkerAsync();
+			//staticLabelsParser.DoWork += new DoWorkEventHandler(staticLabelsParser_DoWork);
+			//if (!staticLabelsParser.IsBusy && !DockingService.MainForm.IsDisposed && !DockingService.MainForm.Disposing)
+			//	staticLabelsParser.RunWorkerAsync();
 		}
 
-		static void staticLabelsParser_DoWork(object sender, DoWorkEventArgs e)
-		{
-			
-		}
+        private delegate void AddMarkersDelegate(List<TextMarker> markers);
+        private static void staticLabelsParser_DoWork(object sender, DoWorkEventArgs e)
+        {
+            string text;
+            if (e.Argument == null)
+            {
+                foreach (newEditor child in DockingService.Documents)
+                {
+                    text = child.EditorText;
+                    List<TextMarker> markers = GetStaticLabels(text);
+                    AddMarkersDelegate markersDelegate = child.AddMarkers;
+                    DockingService.MainForm.Invoke(markersDelegate, markers);
+                }
+            }
+            else
+            {
+                newEditor child = ((newEditor)e.Argument);
+                text = child.EditorText;
+                List<TextMarker> markers = GetStaticLabels(text);
+                child.AddMarkers(markers);
+            }
+        }
+
+        private static List<TextMarker> GetStaticLabels(string editorText)
+        {
+            int counter = 0, newCounter, textLength = editorText.Length;
+            string possibleReference;
+            List<TextMarker> markersToAdd = new List<TextMarker>();
+            while (counter < textLength)
+            {
+                if (editorText[counter] == ';')
+                    while (editorText[counter] != '\n')
+                        counter++;
+                newCounter = Parser.ParserService.GetWord(editorText, counter);
+                if (newCounter == -1)
+                {
+                    counter++;
+                    continue;
+                }
+                possibleReference = editorText.Substring(counter, newCounter - counter);
+                if (!Settings.Default.caseSensitive)
+                    possibleReference = possibleReference.ToUpper();
+                if (!string.IsNullOrEmpty(possibleReference) && DebuggerService.SymbolTable.StaticLabels.Contains(possibleReference))
+                {
+                    TextMarker marker = new TextMarker(counter, newCounter - counter, TextMarkerType.Invisible) { Tag = "Static Label", ToolTip = DebuggerService.SymbolTable.StaticLabels[possibleReference].ToString() };
+                    markersToAdd.Add(marker);
+                }
+                counter += possibleReference.Length + 1;
+                while (counter < textLength && char.IsWhiteSpace(editorText[counter]))
+                    counter++;
+            }
+            return markersToAdd;
+        }
+
 		static BackgroundWorker staticLabelsParser = new BackgroundWorker();
 		public static void CancelDebug()
 		{
 			
 			isDebugging = false;
 			isAnApp = false;
+            oldSP = 0xFFFF;
+            DockingService.CallStack.Clear();
 #if NEW_DEBUGGING
             FreeLibrary(wabbitDLLPointer);
 #else
@@ -708,9 +769,6 @@ namespace Revsoft.Wabbitcode.Services
             }
 #endif
 #endif
-			if (staticLabelMarkers != null)
-				staticLabelMarkers.Clear();
-
 			DockingService.MainForm.Invoke(new CancelDebugDelegate(DockingService.MainForm.CancelDebug));
 			if (debugTable != null)
 				debugTable.Clear();
@@ -726,6 +784,16 @@ namespace Revsoft.Wabbitcode.Services
 			debugTable.TryGetValue(new ListFileKey(file.ToLower(), lineNumber), out value);
 			return value;
 		}
+
+        internal static ListFileKey GetListKey(ushort address, byte page)
+        {
+            if (debugTable == null)
+                return null;
+            ListFileKey key;
+            debugTable.TryGetKey(new ListFileValue(address, page), out key);
+            return key;
+        }
+
 		public static void SetPCToSelect(string fileName, int lineNumber)
 		{
 			ListFileKey key = new ListFileKey(fileName.ToLower(), lineNumber + 1);
@@ -822,7 +890,7 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				DockingService.MainForm.UpdateDebugStuff();
 				DocumentService.RemoveDebugHighlight();
-				DockingService.ActiveDocument.editorBox.Refresh();
+				DockingService.ActiveDocument.Refresh();
 			}
 		}
 	}

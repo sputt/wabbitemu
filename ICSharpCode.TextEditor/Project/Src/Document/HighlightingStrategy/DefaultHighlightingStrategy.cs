@@ -787,7 +787,6 @@ namespace Revsoft.TextEditor.Document
 						markNext = null;
 					}
 				}
-            skip:
 				currentOffset += currentLength;
 				currentLength = 0;
 			}

@@ -40,10 +40,10 @@ namespace Revsoft.Wabbitcode
                 fontSizeBox.Items.Add(num);
                 outFontSizeBox.Items.Add(num);
             }
-            updateOptions();
+            UpdateOptions();
         }
 
-        public void updateOptions()
+        public void UpdateOptions()
         {
             //editorbox font stuff
             changing = true;
@@ -75,6 +75,7 @@ namespace Revsoft.Wabbitcode
             inverseScrollingBox.Checked = Settings.Default.inverseScrolling;
             enableFoldingBox.Checked = Settings.Default.enableFolding;
             enableAutoTriggerBox.Checked = Settings.Default.enableAutoTrigger;
+            enableRefHighlighterBox.Checked = Settings.Default.referencesHighlighter;
             colorizeOutWinBox.Checked = Settings.Default.colorizeOutWin;
             //highlighting stuff
             highlightEnabled.Checked = Settings.Default.useSyntaxHighlighting;
@@ -85,9 +86,6 @@ namespace Revsoft.Wabbitcode
             {
                 if (control.GetType() == typeof (CheckBox))
                     ((CheckBox) control).Checked = (bool) Settings.Default[control.Name];
-            }
-            foreach (Control control in highlightBox.Controls)
-            {
                 if (control.GetType() == typeof (Button))
                     control.BackColor = (Color) Settings.Default[control.Name];
             }
@@ -191,6 +189,11 @@ namespace Revsoft.Wabbitcode
             }*/
         }
 
+        private void enableRefHighlighterBox_CheckedChanged(object sender, EventArgs e)
+        {
+            TempSettings.Default.referencesHighlighter = enableRefHighlighterBox.Checked;
+        }
+
         private void labelsEnabled_CheckedChanged(object sender, EventArgs e)
         {
             var box = (CheckBox) sender;
@@ -213,7 +216,7 @@ namespace Revsoft.Wabbitcode
             savesettings = true;
         }
 
-		private void updateSettings()
+		private void UpdateSettings()
 		{
 			if (savesettings)
 			{
@@ -228,29 +231,10 @@ namespace Revsoft.Wabbitcode
 				HighlightingClass.MakeHighlightingFile();
 				foreach (newEditor child in DockingService.Documents)
 				{
-					child.editorBox.TextEditorProperties.MouseWheelScrollDown = !inverseScrollingBox.Checked;
-					if (enableFoldingBox.Checked)
-					{
-						child.editorBox.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
-						child.editorBox.Document.FoldingManager.UpdateFoldings(null, null);
-					}
-					else
-					{
-						child.editorBox.Document.FoldingManager.FoldingStrategy = null;
-						child.editorBox.Document.FoldingManager.UpdateFoldings(new List<FoldMarker>());
-					}
-					if (autoIndentBox.Checked)
-						child.editorBox.IndentStyle = IndentStyle.Smart;
-					else
-						child.editorBox.IndentStyle = IndentStyle.None;
-					if (antiAliasBox.Checked)
-						child.editorBox.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
-					else
-						child.editorBox.TextRenderingHint = TextRenderingHint.SingleBitPerPixel;
-					child.editorBox.Font = TempSettings.Default.editorFont;
-					if (child.FileName != null)
-						child.editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(child.FileName);
-					child.editorBox.SetHighlighting("Z80 Assembly");
+                    child.UpdateOptions(TempSettings.Default);
+					//if (child.FileName != null)
+					//	child.editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(child.FileName);
+					child.SetHighlighting("Z80 Assembly");
 
 				}
 			}
@@ -264,7 +248,7 @@ namespace Revsoft.Wabbitcode
                 browsing = false;
                 e.Cancel = true;
 			} 
-			updateSettings();
+			UpdateSettings();
         }
 
         private void cancelButton_Click(object sender, EventArgs e)
@@ -329,7 +313,7 @@ namespace Revsoft.Wabbitcode
 		private void applyButton_Click(object sender, EventArgs e)
 		{
 			savesettings = true;
-			updateSettings();
+			UpdateSettings();
 			savesettings = false;
 		}
     }

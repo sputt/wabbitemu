@@ -78,6 +78,7 @@ namespace Revsoft.Wabbitcode
                 Directory.CreateDirectory(FileLocations.IncludesDir);
                 Resources.GetResource("TemplatesIncludes.ti73.inc", Path.Combine(FileLocations.IncludesDir, "ti73.inc"));
                 Resources.GetResource("TemplatesIncludes.ti83plus.inc", Path.Combine(FileLocations.IncludesDir, "ti83plus.inc"));
+                Resources.GetResource("TemplatesIncludes.relocate.inc", Path.Combine(FileLocations.IncludesDir, "relocate.inc"));
                 Resources.GetResource("TemplatesIncludes.app.inc", Path.Combine(FileLocations.IncludesDir, "app.inc"));
                 Resources.GetResource("TemplatesIncludes.z80ext.inc", Path.Combine(FileLocations.IncludesDir, "z80ext.inc"));
                 Resources.GetResource("TemplatesIncludes.var.inc", Path.Combine(FileLocations.IncludesDir, "var.inc"));
@@ -176,6 +177,8 @@ namespace Revsoft.Wabbitcode
         {
             foreach (string dir in Directory.GetDirectories(directory))
             {
+                if ((new DirectoryInfo(dir).Attributes & FileAttributes.Hidden) == FileAttributes.Hidden)
+                    continue;
 				ProjectService.IncludeDirs.Add(dir);
 				string dirName = Path.GetFileName(dir);
 				ProjectFolder folderAdded = ProjectService.AddFolder(dirName, currentFolder);

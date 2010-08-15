@@ -15,6 +15,11 @@ namespace Revsoft.Wabbitcode.Services
 {
 	public static class DocumentService
 	{
+        public enum FixableErrorType
+        {
+            RelativeJump,
+
+        }
 		/// <summary>
 		/// Each string is the path to a recently opened file. Is also stored in properties as a big long string.
 		/// </summary>
@@ -37,9 +42,8 @@ namespace Revsoft.Wabbitcode.Services
 
 		public static newEditor CreateNewDocument()
 		{
-			newEditor doc = new newEditor { Text = "New Document" };
-			doc.editorBox.SetHighlighting("Z80 Assembly");
-			doc.editorBox.Font = Settings.Default.editorFont;
+			newEditor doc = new newEditor { Text = "New Document", TabText = "New Document" };
+			doc.SetHighlighting("Z80 Assembly");
 			return doc;
 		}
 
@@ -63,8 +67,15 @@ namespace Revsoft.Wabbitcode.Services
 			if (extCheck == ".wcodeproj")
 				ProjectService.OpenProject(fileName);
 			else
-				OpenDocument(new newEditor(), fileName);
+				OpenDocument(fileName);
 		}
+
+        internal static newEditor OpenDocument(string filename)
+        {
+            newEditor doc = new newEditor();
+            OpenDocument(doc, filename);
+            return doc;
+        }
 
 		internal static void OpenDocument(newEditor doc, string filename)
 		{
@@ -155,57 +166,39 @@ namespace Revsoft.Wabbitcode.Services
 			string fileToLower = file.ToLower();
 			newEditor editorBox = ActiveDocument;
 			if (editorBox == null)
-			{
-				newEditor doc = CreateNewDocument();
-				DockingService.ShowDockPanel(doc);
-				doc.OpenFile(file);
-				doc.Text = Path.GetFileName(file);
-				doc.TabText = Path.GetFileName(file);
-				doc.ToolTipText = file;
-				return doc;
-			}
+                return OpenDocument(fileToLower);
 
 			if (fileToLower == ActiveFileName.ToLower())
-				return editorBox;
+				return ActiveDocument;
 			foreach (newEditor child in DockingService.Documents)
 				if (child.FileName != null && child.FileName.ToLower() == fileToLower)
 				{
 					child.Show();
-					return child;
+                    return child;
 				}
-			editorBox = CreateNewDocument();
-			DockingService.ShowDockPanel(editorBox);
-			editorBox.OpenFile(file);
-			editorBox.Text = Path.GetFileName(file);
-			editorBox.TabText = Path.GetFileName(file);
-			editorBox.ToolTipText = file;
-			return editorBox;
+            return OpenDocument(fileToLower);
 		}
 
 		public static void GotoLine(int scrollToLine)
 		{
-			newEditor doc = ActiveDocument;
-			doc.editorBox.ActiveTextAreaControl.ScrollTo(scrollToLine);
-			doc.editorBox.ActiveTextAreaControl.Caret.Line = scrollToLine - 1;
+            ActiveDocument.ScrollToLine(scrollToLine);
 		}
 
 		public static void GotoLine(string file, int scrollToLine)
 		{
-			newEditor doc = GotoFile(file);
-			doc.editorBox.ActiveTextAreaControl.ScrollTo(scrollToLine);
-			doc.editorBox.ActiveTextAreaControl.Caret.Line = scrollToLine - 1;
+			newEditor child = GotoFile(file);
+            child.ScrollToLine(scrollToLine);
 		}
 
 		public static void GotoLabel(IParserData item)
 		{
 			ParserInformation info = item.Parent;
 			string file = info.SourceFile;
-			newEditor doc = GotoFile(file);
-			int lineNum = doc.editorBox.Document.GetLineNumberForOffset(item.Offset);
-			GotoLine(file, lineNum + 1);
+			newEditor child = GotoFile(file);
+            child.ScrollToOffset(item.Offset);
 		}
 
-		private static List<TextMarker> highlights = new List<TextMarker>();
+		private static List<ListFileKey> highlights = new List<ListFileKey>();
 		private static int debugIndex;
 		public static void HighlightDebugLine(int newLineNumber)
 		{
@@ -213,87 +206,42 @@ namespace Revsoft.Wabbitcode.Services
 			debugIndex = highlights.Count - 1;
 		}
 
-		internal static int GetDebugOffset()
+		internal static int GetDebugLine()
 		{
-			return highlights[debugIndex].Offset;
+			return highlights[debugIndex].LineNumber;
 		}
 
 		internal static void HighlightCall()
 		{
-			int offset = GetDebugOffset();
-			TextEditorControl editor = DockingService.ActiveDocument.editorBox;
-			int startOffset = offset;
-			while ((offset + Environment.NewLine.Length < editor.Text.Length &&
-					editor.Text.Substring(offset, Environment.NewLine.Length) != Environment.NewLine) ||
-					editor.Text[offset] == ';')
-				offset++;
-			string line = editor.Text.Substring(startOffset, offset - startOffset).ToLower();
-			if (line.Contains("call") || line.Contains("bcall") || line.Contains("b_call") || line.Contains("rst"))
-			{
-				DebuggerService.StepStack.Push(editor.Document.GetLineNumberForOffset(offset));
-				//DocumentService.HighlightLine(lineNumber, Color.Green);
-			}
-			//if (line.Contains("ret"))
-			//	DebuggerService.StepStack.Pop();
+            GotoFile(highlights[debugIndex].FileName).HighlightCall(highlights[debugIndex].LineNumber);
 		}
 
 		public static void HighlightLine(int newLineNumber, Color foregroundColor)
 		{
-			//this code highlights the current line
-			//I KNOW IT WORKS DONT FUCK WITH IT
-			TextEditorControl editorBox = DockingService.ActiveDocument.editorBox;
-			TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
-			editorBox.ActiveTextAreaControl.ScrollTo(newLineNumber - 1);
-			editorBox.ActiveTextAreaControl.Caret.Line = newLineNumber - 1;
-			int start = textArea.Caret.Offset == editorBox.Text.Length ? textArea.Caret.Offset - 1 : textArea.Caret.Offset;
-			int length = editorBox.Document.TextContent.Split('\n')[textArea.Caret.Line].Length;
-			if (textArea.Document.TextContent[start] == '\n')
-				start--;
-			while (start > 0 && textArea.Document.TextContent[start] != '\n')
-				start--;
-			start++;
-			while (start < textArea.Document.TextContent.Length && (textArea.Document.TextContent[start] == ' ' || textArea.Document.TextContent[start] == '\t'))
-			{
-				start++;
-				length--;
-			}
-			if (length >= editorBox.Text.Length)
-				length += (editorBox.Text.Length - 1) - length;
-			if (editorBox.Text.IndexOf(';', start, length) != -1)
-				length = editorBox.Text.IndexOf(';', start, length) - start - 1;
-			if (editorBox.Text.Length <= start + length)
-				length--;
-			while (editorBox.Text[start + length] == ' ' || editorBox.Text[start + length] == '\t')
-				length--;
-			length++;
-			TextMarker highlight = new TextMarker(start, length, TextMarkerType.SolidBlock, foregroundColor, Color.Black) 
-				{ Tag = DockingService.ActiveDocument.FileName };
-			editorBox.Document.MarkerStrategy.AddMarker(highlight);
-			highlights.Add(highlight);
-			editorBox.Refresh();
+            ListFileKey value = new ListFileKey(ActiveFileName, newLineNumber);
+            highlights.Add(value);
+            ActiveDocument.HighlightLine(newLineNumber, foregroundColor);
 		}
 
 		public static void RemoveDebugHighlight()
 		{
-			RemoveHighlight(debugIndex);
-			
+            if (ActiveDocument == null || highlights.Count == 0)
+                return;
+            ListFileKey key = highlights[debugIndex];
+            GotoFile(key.FileName).RemoveDebugHighlight(key.LineNumber);
+            highlights.Remove(key);
+            debugIndex = -1;
 		}
 
 		public static void RemoveHighlight(int index)
 		{
-			if (DockingService.ActiveDocument == null || highlights.Count == 0)
+			if (ActiveDocument == null || highlights.Count == 0)
 				return;
-			TextMarker highlight = highlights[index];
-			foreach (newEditor child in DockingService.Documents)
-				if (child.FileName == highlight.Tag)
-				{
-					child.Show();
-					break;
-				}
-			highlights.Remove(highlight);
+			ListFileKey key = highlights[index];
+            GotoFile(key.FileName).RemoveHighlight(key.LineNumber);
+			highlights.Remove(key);
 			if (index <= debugIndex)
 				debugIndex--;
-			DockingService.ActiveDocument.editorBox.Document.MarkerStrategy.RemoveMarker(highlight);
 		}
 
 		/// <summary>
@@ -303,10 +251,7 @@ namespace Revsoft.Wabbitcode.Services
 		{
             StringBuilder list = new StringBuilder();
             foreach (string file in recentFileList)
-            {
-                list.Append(file);
-                list.Append("\n");
-            }
+                list.AppendLine(file);
 			Settings.Default.recentFiles = list.ToString();
 		}
 
@@ -315,9 +260,9 @@ namespace Revsoft.Wabbitcode.Services
 		/// </summary>
 		internal static void GetRecentFiles()
 		{
+            DockingService.MainForm.ClearRecentItems();
 			String line = Settings.Default.recentFiles;
 			string[] list = line.Split('\n');
-
 			foreach (string file in list)
 			{
 				if (string.IsNullOrEmpty(file))

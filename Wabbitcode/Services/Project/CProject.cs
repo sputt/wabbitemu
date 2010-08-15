@@ -271,7 +271,7 @@ namespace Revsoft.Wabbitcode.Services.Project
                 if (step.GetType() == typeof(InternalBuildStep))
                 {
                     string outputFile = ((InternalBuildStep)step).OutputFile;
-                    if (Path.GetExtension(outputFile) == "8xk")
+                    if (Path.GetExtension(outputFile) == ".8xk")
                         return 5;
                 }
             }

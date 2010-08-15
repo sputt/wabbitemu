@@ -55,8 +55,10 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		public bool Build()
 		{
+#if !DEBUG
 			try
 			{
+#endif
 				Process cmd = new Process
 				{
 					StartInfo =
@@ -73,12 +75,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 				cmd.Exited += new EventHandler(externalProgramExit);
 				cmd.Start();
 				return true;
+#if !DEBUG
 			}
 			catch (Exception ex)
 			{
 				return false;
 			}
-
+#endif
 		}
 
 		private void externalProgramExit(object sender, EventArgs e)

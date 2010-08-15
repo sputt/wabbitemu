@@ -281,6 +281,13 @@ namespace Revsoft.TextEditor.Document
 		/// number of characters to copy.
 		/// </param>
 		string GetText(int offset, int length);
+
+        /// <summary>
+        /// Fetches the string at counter, based off built-in delimeters
+        /// </summary>
+        /// <param name="counter"></param>
+        /// <returns></returns>
+        string GetWord(int counter);
 		#endregion
 		string GetText(ISegment segment);
 		
@@ -332,5 +339,5 @@ namespace Revsoft.TextEditor.Document
 		event DocumentEventHandler DocumentChanged;
 		
 		event EventHandler TextContentChanged;
-	}
+    }
 }

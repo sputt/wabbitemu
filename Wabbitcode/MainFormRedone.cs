@@ -19,6 +19,7 @@ using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Parser;
 
 namespace Revsoft.Wabbitcode
 {
@@ -38,6 +39,8 @@ namespace Revsoft.Wabbitcode
 				Settings.Default.firstRun = false;
 				Settings.Default.Save();
 			}
+            Classes.Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
+			Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
 
 			toolBarManager = new ToolbarManager.ToolBarManager(this, this);
 			if (Settings.Default.mainToolBar)
@@ -57,8 +60,6 @@ namespace Revsoft.Wabbitcode
 			HandleArgs(args);
 			UpdateMenus(DockingService.ActiveDocument != null);
 			UpdateChecks();
-            Classes.Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
-			Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
 
             DocumentService.GetRecentFiles();
         }
@@ -275,14 +276,7 @@ namespace Revsoft.Wabbitcode
                 return;
             string[] files = (string[]) e.Data.GetData(DataFormats.FileDrop);
             foreach (string file in files)
-            {
-                newEditor doc = DocumentService.CreateNewDocument();
-                doc.Text = Path.GetFileName(file);
-                doc.TabText = Path.GetFileName(file);
-                doc.ToolTipText = file;
-				DockingService.ShowDockPanel(doc);
-                doc.OpenFile(file);
-            }
+                DocumentService.OpenDocument(file);
         }
 
         private void findBox_KeyPress(object sender, KeyPressEventArgs e)
@@ -293,30 +287,17 @@ namespace Revsoft.Wabbitcode
                 return;
             if (!findBox.Items.Contains(findBox.Text))
                 findBox.Items.Add(findBox.Text);
-            TextEditorControl editorBox = ((newEditor) ActiveMdiChild).editorBox;
-			int startOffset = editorBox.ActiveTextAreaControl.Caret.Offset + findBox.Text.Length;
-			if (startOffset > editorBox.Text.Length)
-				startOffset = 0;
-			int newOffset = editorBox.Text.IndexOf(findBox.Text, startOffset);
-            if (newOffset == -1)
-                MessageBox.Show("Text Not Found");
-            else
-            {
-                int line =
-                    editorBox.ActiveTextAreaControl.Caret.Line =
-                    editorBox.Document.GetLineNumberForOffset(newOffset);
-                int col = editorBox.Text.Split('\n')[line].IndexOf(findBox.Text);
-                editorBox.ActiveTextAreaControl.Caret.Column = findBox.Text.Length + col;
-                TextLocation start = new TextLocation(col, line);
-                TextLocation end = new TextLocation(findBox.Text.Length + col, line);
-                editorBox.ActiveTextAreaControl.SelectionManager.SetSelection(start, end);
-                editorBox.ActiveTextAreaControl.ScrollTo(line);
-            }
+            DocumentService.ActiveDocument.Find(findBox.Text);
         }
 
         private void addNewFileMenuItem_Click(object sender, EventArgs e)
         {
-
+            RenameForm newNameForm = new RenameForm();
+            newNameForm.Text = "New File";
+            if (newNameForm.ShowDialog() != DialogResult.OK)
+                return;
+            string name = newNameForm.NewText;
+            DockingService.ProjectViewer.AddNewFile(name);
         }
 
         private void existingFileMenuItem_Click(object sender, EventArgs e)
@@ -350,8 +331,7 @@ namespace Revsoft.Wabbitcode
         private void newFileMenuItem_Click(object sender, EventArgs e)
         {
             newEditor doc = DocumentService.CreateNewDocument();
-            doc.TabText = "New Document";
-            doc.Show(dockPanel);
+            DockingService.ShowDockPanel(doc);
         }
 
         private void newProjectMenuItem_Click(object sender, EventArgs e)
@@ -426,18 +406,13 @@ namespace Revsoft.Wabbitcode
         /// <param name="e">Nobody cares about this arg.</param>
         private void openRecentDoc(object sender, EventArgs e)
         {
-            var button = (MenuItem) sender;
-            var doc = new newEditor();
-            String fileName = button.Text;
-            doc.Text = Path.GetFileName(fileName);
-            doc.TabText = Path.GetFileName(fileName);
-            doc.ToolTipText = fileName;
-            doc.MdiParent = this;
-            doc.editorBox.ShowLineNumbers = Settings.Default.lineNumbers;
-            doc.OpenFile(fileName);
-            doc.editorBox.Font = Settings.Default.editorFont;
-            doc.Show(dockPanel);
-            //doc.highlight();
+            MenuItem button = (MenuItem) sender;
+            DocumentService.OpenDocument(button.Text);
+        }
+
+        internal void ClearRecentItems()
+        {
+            recentFilesMenuItem.MenuItems.Clear();
         }
 
 		internal void AddRecentItem(string file)
@@ -505,83 +480,56 @@ namespace Revsoft.Wabbitcode
         {
             if (DockingService.ActiveDocument == null)
                 return;
-            TextEditorControl editorBox = DockingService.ActiveDocument.editorBox;
-            TextLocation selectStart = new TextLocation(0, 0);
-            TextLocation selectEnd =
-                new TextLocation(editorBox.Text.Split('\n')[editorBox.Document.TotalNumberOfLines - 1].Length,
-                                 editorBox.Document.TotalNumberOfLines - 1);
-            editorBox.ActiveTextAreaControl.SelectionManager.SetSelection(selectStart, selectEnd);
+            DocumentService.ActiveDocument.SelectAll();
         }
 
         private void findMenuItem_Click(object sender, EventArgs e)
         {
             if (DockingService.ActiveDocument == null)
                 return;
-            DockingService.FindForm.ShowFor(DockingService.ActiveDocument.editorBox, false, false);
+            DockingService.FindForm.ShowFor(DockingService.ActiveDocument.EditorBox, false, false);
         }
 
         private void findInFilesMenuItem_Click(object sender, EventArgs e)
         {
             if (DockingService.ActiveDocument == null)
                 return;
-            DockingService.FindForm.ShowFor(DockingService.ActiveDocument.editorBox, false, true);
+            DockingService.FindForm.ShowFor(DockingService.ActiveDocument.EditorBox, false, true);
         }
 
         private void replaceMenuItem_Click(object sender, EventArgs e)
         {
             if (DockingService.ActiveDocument == null)
                 return;
-            DockingService.FindForm.ShowFor(DockingService.ActiveDocument.editorBox, true, false);
+            DockingService.FindForm.ShowFor(DockingService.ActiveDocument.EditorBox, true, false);
         }
 
         private void replaceInFilesMenuItem_Click(object sender, EventArgs e)
         {
             if (DockingService.ActiveDocument == null)
                 return;
-            DockingService.FindForm.ShowFor(DockingService.ActiveDocument.editorBox, true, true);
+            DockingService.FindForm.ShowFor(DockingService.ActiveDocument.EditorBox, true, true);
         }
 
         private void makeUpperMenuItem_Click(object sender, EventArgs e)
         {
             if (DockingService.ActiveDocument == null)
                 return;
-            DockingService.ActiveDocument.editorBox.Document.UndoStack.StartUndoGroup();
-            string newText = DockingService.ActiveDocument.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectedText.ToUpper();
-            DockingService.ActiveDocument.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.RemoveSelectedText();
-            DockingService.ActiveDocument.editorBox.ActiveTextAreaControl.TextArea.InsertString(newText);
-            DockingService.ActiveDocument.editorBox.Document.UndoStack.EndUndoGroup();
+            DockingService.ActiveDocument.SelectedTextToUpper();
         }
 
         private void makeLowerMenuItem_Click(object sender, EventArgs e)
         {
             if (DockingService.ActiveDocument == null)
                 return;
-			newEditor child = DockingService.ActiveDocument;
-            child.editorBox.Document.UndoStack.StartUndoGroup();
-            string newText = child.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectedText.ToLower();
-            child.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.RemoveSelectedText();
-            child.editorBox.ActiveTextAreaControl.TextArea.InsertString(newText);
-            child.editorBox.Document.UndoStack.EndUndoGroup();
+            DockingService.ActiveDocument.SelectedTextToLower();
         }
 
         private void invertCaseMenuItem_Click(object sender, EventArgs e)
         {
 			if (DockingService.ActiveDocument == null)
 				return;
-			newEditor child = DockingService.ActiveDocument;
-            child.editorBox.Document.UndoStack.StartUndoGroup();
-            string text = child.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectedText;
-            char[] textarray = text.ToCharArray();
-            for (int i = 0; i < textarray.Length; i++)
-            {
-                if (textarray[i] >= 65 && textarray[i] <= 90)
-                    textarray[i] = (char) (textarray[i] + 32);
-                else if (textarray[i] >= 97 && textarray[i] <= 122)
-                    textarray[i] = (char) (textarray[i] - 32);
-            }
-            child.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.RemoveSelectedText();
-            child.editorBox.ActiveTextAreaControl.TextArea.InsertString(new string(textarray));
-            child.editorBox.Document.UndoStack.EndUndoGroup();
+            DockingService.ActiveDocument.SelectedTextInvertCase();            
         }
 
         private void sentenceCaseMenuItem_Click(object sender, EventArgs e)
@@ -589,43 +537,35 @@ namespace Revsoft.Wabbitcode
 			if (DockingService.ActiveDocument == null)
 				return;
 			newEditor child = DockingService.ActiveDocument;
-            child.editorBox.Document.UndoStack.StartUndoGroup();
-            string text = child.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectedText;
-            string newText = CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text);
-            child.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.RemoveSelectedText();
-            child.editorBox.ActiveTextAreaControl.TextArea.InsertString(newText);
-            child.editorBox.Document.UndoStack.EndUndoGroup();
+            DocumentService.ActiveDocument.SelectedTextToSentenceCase();
         }
 
         private void toggleBookmarkMenuItem_Click(object sender, EventArgs e)
         {
-			if (DockingService.ActiveDocument == null)
+			if (DocumentService.ActiveDocument == null)
 				return;
-            ToggleBookmark toggle = new ToggleBookmark();
-            toggle.Execute(DockingService.ActiveDocument.editorBox.ActiveTextAreaControl.TextArea);
+            DocumentService.ActiveDocument.ToggleBookmark();
         }
 
         private void prevBookmarkMenuItem_Click(object sender, EventArgs e)
         {
-			if (DockingService.ActiveDocument == null)
+			if (DocumentService.ActiveDocument == null)
 				return;
-			GotoPrevBookmark next = new GotoPrevBookmark(bookmark => true);
-			next.Execute(DockingService.ActiveDocument.editorBox.ActiveTextAreaControl.TextArea);
+            DocumentService.ActiveDocument.GotoPrevBookmark();
         }
 
         private void nextBookmarkMenuItem_Click(object sender, EventArgs e)
         {
-			if (DockingService.ActiveDocument == null)
+			if (DocumentService.ActiveDocument == null)
 				return;
-            GotoNextBookmark next = new GotoNextBookmark(bookmark => true);
-            next.Execute(DockingService.ActiveDocument.editorBox.ActiveTextAreaControl.TextArea);
+            DocumentService.ActiveDocument.GotoNextBookmark();
         }
 
         private void gLineMenuItem_Click(object sender, EventArgs e)
         {
             if (DockingService.ActiveDocument == null)
                 return;
-            GotoLine gotoBox = new GotoLine(DockingService.ActiveDocument.editorBox.Document.TotalNumberOfLines);
+            GotoLine gotoBox = new GotoLine(DockingService.ActiveDocument.TotalNumberOfLines);
             DialogResult gotoResult = gotoBox.ShowDialog();
             if (gotoResult != DialogResult.OK) 
                 return;
@@ -662,11 +602,11 @@ namespace Revsoft.Wabbitcode
             {
                 case "iconBar":
                     if (ActiveMdiChild != null)
-                        ((newEditor) ActiveMdiChild).editorBox.IsIconBarVisible = item.Checked;
+                        DocumentService.ActiveDocument.IsIconBarVisible = item.Checked;
                     break;
                 case "lineNumbers":
                     if (ActiveMdiChild != null)
-                        ((newEditor) ActiveMdiChild).editorBox.ShowLineNumbers = item.Checked;
+                        DocumentService.ActiveDocument.ShowLineNumbers = item.Checked;
                     break;
                 case "labelsList":
 					if (item.Checked)
@@ -785,12 +725,10 @@ namespace Revsoft.Wabbitcode
 			callStackMenuItem.Checked = DockingService.CallStack.Visible;
 			stackViewerMenuItem.Checked = DockingService.StackViewer.Visible;
 			varTrackMenuItem.Checked = DockingService.TrackWindow.Visible;
-
-
+            //misc stuff
 			statusBarMenuItem.Checked = this.statusBar.Visible;
 			lineNumMenuItem.Checked = Settings.Default.lineNumbers;
 			iconBarMenuItem.Checked = Settings.Default.iconBar;
-            
         }
 
         #endregion
@@ -1108,89 +1046,6 @@ namespace Revsoft.Wabbitcode
 				#endregion
         }
 
-        /*private void staticLabelsParser_DoWork(object sender, DoWorkEventArgs e)
-        {
-			if (GlobalClass.mainForm.IsDisposed || GlobalClass.mainForm.Disposing)
-				return;
-            if (e.Argument == null)
-            {
-                foreach (newEditor child in GlobalClass.mainForm.MdiChildren)
-                {
-                    currentEditorBox = child.editorBox;
-                    getEditorBoxText d = getTextForStaticLabels;
-                    string[] text = (string[])Invoke(d, new[] { currentEditorBox });
-                    addStaticLabels(text);
-                }
-            }
-            else
-            {
-                currentEditorBox = (TextEditorControl) e.Argument;
-                getEditorBoxText d = getTextForStaticLabels;
-                string[] text = (string[])Invoke(d, new[] { currentEditorBox });
-                addStaticLabels(text);
-            }
-        }
-
-        private delegate string[] getEditorBoxText(TextEditorControl editorBox);
-        private string[] getTextForStaticLabels(TextEditorControl editorBox)
-        {
-            return currentEditorBox.Text.ToUpper().Split('\n');
-        }
-
-        private TextEditorControl currentEditorBox;
-        private void addStaticLabel(int lineNum, int location, string label, string line, DictionaryEntry keyword)
-        {
-            TextMarker newMarker = new TextMarker(currentEditorBox.Document.GetOffsetForLineNumber(lineNum) + line.IndexOf(label, location), label.Length, TextMarkerType.Invisible) 
-                        { ToolTip = keyword.Value.ToString() };
-            staticLabelMarkers.Add(newMarker);
-            currentEditorBox.Document.MarkerStrategy.AddMarker(newMarker);
-        }
-
-        private delegate void AddStaticLabel(
-            int lineNum, int location, string label, string line, DictionaryEntry keyword);
-        private void addStaticLabels(string[] editorText)
-        {
-            string line;
-            foreach (DictionaryEntry keyword in symTable.staticLabels)
-            {
-                int lineNum = 0;
-                string label = keyword.Key.ToString();
-                while (lineNum < editorText.Length)
-                {
-                    int location = 0;
-                    int commentChar = editorText[lineNum].IndexOf(';');
-                    line = editorText[lineNum].Contains(";")
-                               ? editorText[lineNum].Remove(commentChar, editorText[lineNum].Length - commentChar)
-                               : editorText[lineNum];
-                    if (line.Length == 0 || !char.IsWhiteSpace(line[0]) || line.Contains("\""))
-                    {
-                        lineNum++;
-                        continue;
-                    }
-
-                    while (location < line.Length && Char.IsWhiteSpace(line[location]))
-                        location++;
-                    while (location < line.Length && Char.IsLetter(line[location]))
-                        location++;
-                    if (line.IndexOf(label, location) != -1)
-                    {
-                        int index = line.IndexOf(label, location);
-                        if (" \t\n\r,();+-".IndexOf(line[index - 1]) != -1 && index + label.Length < line.Length && " \t\n\r,();+-".IndexOf(line[index + label.Length]) != -1)
-                        {
-							try
-							{
-								AddStaticLabel d = addStaticLabel;
-								Invoke(d, new object[] { lineNum, location, label, line, keyword });
-							}
-							catch (Exception)
-							{ }
-                        }
-                    }
-                    lineNum++;
-                }
-            }
-        }*/
-
 		private const int WM_KEYDOWN = 0x0100;
         private const int VK_SHIFT = 16;
         private const int VK_LSHIFT = 0xA0;
@@ -1489,43 +1344,19 @@ namespace Revsoft.Wabbitcode
         }
 
         private readonly ArrayList errorsToAdd = new ArrayList();
-        private void addSquiggleLine(int newLineNumber, Color underlineColor, string description)
+        private void AddSquiggleLine(int newLineNumber, Color underlineColor, string description)
         {
-            //this code highlights the current line
-            //I KNOW IT WORKS DONT FUCK WITH IT
-            if (ActiveMdiChild == null) 
+            if (DocumentService.ActiveDocument == null) 
                 return;
-            TextEditorControl editorBox = ((newEditor)(ActiveMdiChild)).editorBox;
-            TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
-            editorBox.LineViewerStyle = LineViewerStyle.None;
-            editorBox.ActiveTextAreaControl.ScrollTo(newLineNumber - 1);
-            editorBox.ActiveTextAreaControl.Caret.Line = newLineNumber - 1;
-            int start = textArea.Caret.Offset;
-            int length =
-                editorBox.Document.TextContent.Split('\n')[textArea.Caret.Line].Length;
-            while (start > 0 && textArea.Document.TextContent[start] != '\n')
-                start--;
-            start++;
-            length--;
-            while (textArea.Document.TextContent[start] == ' ' || textArea.Document.TextContent[start] == '\t')
-            {
-                start++;
-                length--;
-            }
-            highlight = new TextMarker(start, length, TextMarkerType.WaveLine, underlineColor)
-                            {
-                                ToolTip = description,
-                                Tag = "Code Check"
-                            };
-            editorBox.Document.MarkerStrategy.AddMarker(highlight);
+            DocumentService.ActiveDocument.AddSquiggleLine(newLineNumber, underlineColor, description);
         }
 
         private void documentParser_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             foreach (ArrayList attributes in errorsToAdd)
-                addSquiggleLine((int)attributes[0], Color.Red, attributes[1].ToString());
-            if (ActiveMdiChild != null) 
-                ((newEditor)ActiveMdiChild).editorBox.Refresh();
+                AddSquiggleLine((int)attributes[0], Color.Red, attributes[1].ToString());
+            if (DocumentService.ActiveDocument != null)
+                DocumentService.ActiveDocument.Refresh();
         }
 
         private void refreshViewMenuItem_Click(object sender, EventArgs e)
@@ -1613,7 +1444,7 @@ namespace Revsoft.Wabbitcode
 		{
 			if (DockingService.ActiveDocument == null)
 				return;
-			DockingService.ActiveDocument.editorBox.Document.BreakpointManager.ToggleMarkAt(DockingService.ActiveDocument.editorBox.ActiveTextAreaControl.Caret.Position);
+            DockingService.ActiveDocument.ToggleBreakpoint();
 			DockingService.ActiveDocument.Refresh();
 
 		}
@@ -1622,44 +1453,16 @@ namespace Revsoft.Wabbitcode
 		{
 			if (DockingService.ActiveDocument == null)
 				return;
-			string[] lines = DockingService.ActiveDocument.editorBox.Text.Split('\n');
-			string indent = "\t";
-			string currentIndent = indent;
-			for (int i = 0; i < lines.Length; i++)
-			{
-				string line = lines[i];
-				string comment = "";
-				if (line.Trim().Length == 0)
-					continue;
-				
-				if (line.IndexOf(';') != -1)
-				{
-					comment = line.Substring(line.IndexOf(';'));
-					line = line.Remove(line.IndexOf(';'));
-				}
-				bool islabel = line != "" && (!char.IsWhiteSpace(line[0]) || line[0] == '_');
-				line = line.Trim();
-				if (line.StartsWith("push"))
-					currentIndent += indent;
-				if ((line.StartsWith("pop") || line.StartsWith("ret")) && currentIndent.Length > 1)
-					currentIndent = currentIndent.Remove(currentIndent.Length - 1);
-				if (!islabel)
-					line = currentIndent + line;
-				lines[i] = line + comment;
-			}
-			string newText = "";
-			foreach (string line in lines)
-				newText += line + '\n';
-			DockingService.ActiveDocument.editorBox.Text = newText;
+            DockingService.ActiveDocument.FormatLines();
 		}
 
 		internal void StartDebug()
 		{
 			showToolbar = Settings.Default.debugToolbar;
 			Settings.Default.debugToolbar = true;
-			UpdateDebugStuff();
 			if (!showToolbar)
 				toolBarManager.AddControl(debugToolStrip, DockStyle.Top, mainToolBar, DockStyle.Right);
+            UpdateDebugStuff();
 			debugToolStrip.Height = mainToolBar.Height;
 			UpdateChecks();
 			DockingService.ShowDockPanel(DockingService.DebugPanel);
@@ -1670,39 +1473,34 @@ namespace Revsoft.Wabbitcode
 
 		internal void UpdateBreakpoints()
 		{
-			TextEditorControl editorBox;
 			foreach (newEditor child in DockingService.Documents)
 			{
-				editorBox = child.editorBox;
-				Breakpoint[] marks = new Breakpoint[editorBox.Document.BreakpointManager.Marks.Count];
-				editorBox.Document.BreakpointManager.Marks.CopyTo(marks, 0);
-				foreach (Breakpoint breakpoint in marks)
+                Breakpoint[] marks = child.Breakpoints;
+                foreach (Breakpoint breakpoint in marks)
 				{
 					WabbitcodeBreakpoint newBreakpoint = DebuggerService.FindBreakpoint(child.FileName, breakpoint.LineNumber);
-					//ListFileKey key = new ListFileKey(editorBox.FileName.ToLower(), breakpoint.LineNumber + 1);
 					ListFileValue value = DebuggerService.GetListValue(child.FileName.ToLower(), breakpoint.LineNumber + 1);
-					if (value != null && newBreakpoint != null)
-					{
-						newBreakpoint.Address = value.Address;
-						if (DebuggerService.IsAnApp)
-							newBreakpoint.Page = (byte)(DebuggerService.AppPage - value.Page);
-						else
-							newBreakpoint.Page = value.Page;
-						newBreakpoint.IsRam = newBreakpoint.Address > 0x8000;
-						newBreakpoint.file = child.FileName;
-						newBreakpoint.lineNumber = breakpoint.LineNumber;
+                    if (value != null && newBreakpoint != null)
+                    {
+                        newBreakpoint.Address = value.Address;
+                        newBreakpoint.IsRam = newBreakpoint.Address > 0x8000;
+                        if (DebuggerService.IsAnApp && !newBreakpoint.IsRam)
+                            newBreakpoint.Page = (byte)(DebuggerService.AppPage - value.Page);
+                        else
+                            newBreakpoint.Page = value.Page;
+                        newBreakpoint.file = child.FileName;
+                        newBreakpoint.lineNumber = breakpoint.LineNumber;
 #if NEW_DEBUGGING
                         SetBreakpoint(0, Handle, newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
 #else
-						DebuggerService.Debugger.setBreakpoint(newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
+                        DebuggerService.Debugger.setBreakpoint(newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
 #endif
-					}
-					else
-					{
-						editorBox.Document.BreakpointManager.RemoveMark(breakpoint);
-					}
+                    }
+                    else
+                        child.RemoveBreakpoint(breakpoint.LineNumber);
+                        //editorBox.Document.BreakpointManager.RemoveMark(breakpoint);
 				}
-				child.setNextStateMenuItem.Visible = true;
+				child.CanSetNextStatement = true;
 			}
 		}
 
@@ -1750,9 +1548,8 @@ namespace Revsoft.Wabbitcode
 			DocumentService.RemoveDebugHighlight();
 			foreach (newEditor child in MdiChildren)
 			{
-				TextEditorControl editorBox = child.editorBox;
-				editorBox.Document.MarkerStrategy.RemoveAll(InvisibleMarkers);
-				child.setNextStateMenuItem.Visible = false;
+                child.RemoveInvisibleMarkers();
+				child.CanSetNextStatement = false;
 			}
 		}
 

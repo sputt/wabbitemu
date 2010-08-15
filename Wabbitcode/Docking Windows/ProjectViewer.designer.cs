@@ -38,6 +38,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.newFolderContextItem = new System.Windows.Forms.MenuItem();
 			this.renFMenuItem = new System.Windows.Forms.MenuItem();
 			this.delFMenuItem = new System.Windows.Forms.MenuItem();
+            this.openExplorerMenuItem = new System.Windows.Forms.MenuItem();
 			this.menuItem6 = new System.Windows.Forms.MenuItem();
 			this.cutFMenuItem = new System.Windows.Forms.MenuItem();
 			this.copyFMenuItem = new System.Windows.Forms.MenuItem();
@@ -96,6 +97,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             this.addContextItem,
             this.renFMenuItem,
             this.delFMenuItem,
+            this.openExplorerMenuItem,
             this.menuItem6,
             this.cutFMenuItem,
             this.copyFMenuItem,
@@ -114,6 +116,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			// 
 			this.newFileContextItem.Index = 0;
 			this.newFileContextItem.Text = "New File";
+            this.newFileContextItem.Click += new System.EventHandler(newFileContextItem_Click);
 			// 
 			// existingFileMenuItem
 			// 
@@ -138,25 +141,31 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.delFMenuItem.Index = 2;
 			this.delFMenuItem.Text = "Delete";
 			this.delFMenuItem.Click += new System.EventHandler(this.delFMenuItem_Click);
+            // 
+            // openExplorerMenuItem
+            // 
+            this.openExplorerMenuItem.Index = 3;
+            this.openExplorerMenuItem.Text = "Open in Explorer";
+            this.openExplorerMenuItem.Click += new System.EventHandler(this.openExplorerMenuItem_Click);
 			// 
 			// menuItem6
 			// 
-			this.menuItem6.Index = 3;
+			this.menuItem6.Index = 4;
 			this.menuItem6.Text = "-";
 			// 
 			// cutFMenuItem
 			// 
-			this.cutFMenuItem.Index = 4;
+			this.cutFMenuItem.Index = 5;
 			this.cutFMenuItem.Text = "Cut";
 			// 
 			// copyFMenuItem
 			// 
-			this.copyFMenuItem.Index = 5;
+			this.copyFMenuItem.Index = 6;
 			this.copyFMenuItem.Text = "Copy";
 			// 
 			// pasteFMenuItem
 			// 
-			this.pasteFMenuItem.Index = 6;
+			this.pasteFMenuItem.Index = 7;
 			this.pasteFMenuItem.Text = "Paste";
 			// 
 			// fileContextMenu
@@ -252,6 +261,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private System.Windows.Forms.ContextMenu folderContextMenu;
         private System.Windows.Forms.MenuItem renFMenuItem;
         private System.Windows.Forms.MenuItem delFMenuItem;
+        private System.Windows.Forms.MenuItem openExplorerMenuItem;
         private System.Windows.Forms.MenuItem menuItem6;
         private System.Windows.Forms.MenuItem cutFMenuItem;
         private System.Windows.Forms.MenuItem copyFMenuItem;

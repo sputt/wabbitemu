@@ -34,6 +34,18 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
             
         }
+
+        private void gotoSourceMenuItem_Click(object sender, EventArgs e)
+        {
+            ContextMenu menu = ((MenuItem) sender).GetContextMenu();
+            TextBox box = (TextBox) menu.SourceControl;
+            ushort address = ushort.Parse(box.Text, System.Globalization.NumberStyles.HexNumber);
+            byte page = DebuggerService.GetPageNum(address);
+            ListFileKey key = DebuggerService.GetListKey(address, page);
+            if (key == null)
+                return;
+            DocumentService.GotoLine(key.FileName, key.LineNumber);
+        }
 #if NEW_DEBUGGING
         [DllImport("libWabbitemu.dll")]
         private static extern CWabbitemu.Z80_State GetState(int slot);

@@ -51,14 +51,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 file = Path.Combine(ProjectService.ProjectDirectory, file);
             int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
             DocumentService.GotoFile(file);
-			TextEditor.Document.Breakpoint breakpoint = DockingService.ActiveDocument.editorBox.Document.BreakpointManager.GetNextMark(lineNum);
-			DockingService.ActiveDocument.editorBox.Document.BreakpointManager.RemoveMark(breakpoint);
+            DocumentService.ActiveDocument.RemoveBreakpoint(lineNum);
         }
 
         private void delAllBreakToolStripButton_Click(object sender, EventArgs e)
         {
-			foreach (newEditor child in DockingService.Documents)
-                child.editorBox.Document.BreakpointManager.Clear();
+            foreach (newEditor child in DockingService.Documents)
+                child.ClearBreakpoints();
             DebuggerService.Breakpoints.Clear();
             UpdateManager();
         }
@@ -88,10 +87,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 file = Path.Combine(ProjectService.ProjectDirectory, file);
             int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
             DocumentService.GotoFile(file);
-			TextEditor.Document.Breakpoint breakpoint = DockingService.ActiveDocument.editorBox.Document.BreakpointManager.GetNextMark(lineNum);
-			DockingService.ActiveDocument.editorBox.Document.BreakpointManager.RemoveMark(breakpoint);
-
-            //removeBreakpoint(lineNum, file);
+            DocumentService.ActiveDocument.RemoveBreakpoint(lineNum);
         }
 
         private void colButtonClick(object sender, EventArgs e)

@@ -93,12 +93,14 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 }
                 if (!error)
                 {
-                    if (DebuggerService.SymbolTable.staticLabels.Contains(address.ToUpper()))
-                        vartoadd.address =(ushort) (ushort.Parse(DebuggerService.SymbolTable.staticLabels[address.ToUpper()].ToString().
+                    if (!Settings.Default.caseSensitive)
+                        address = address.ToUpper();
+                    if (DebuggerService.SymbolTable.StaticLabels.Contains(address))
+                        vartoadd.address =(ushort) (ushort.Parse(DebuggerService.SymbolTable.StaticLabels[address].ToString().
                                               Substring(1, 4), System.Globalization.NumberStyles.HexNumber) + offset);
 					else if ("bc'de'hl'spixiypc".IndexOf(address.ToLower()) != -1)
 					{
-						switch (address)
+						switch (address.ToLower())
 						{
 							case "hl":
 								vartoadd.address = DebuggerService.Debugger.getState().HL;
@@ -179,15 +181,16 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 					if (variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value == null)
 						variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value = 0;
 					if (variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value.ToString() == "Grayscale Image")
-						isGrayscale = true;					
+						isGrayscale = true;	
                     string size = variablesDataView.Rows[vartoadd.rowNumber].Cells[2].Value.ToString();
                     if (!size.Contains("x"))
                     {
                         vartoadd.value = "Error: Size incorrect input use WidthxHeight";
                         return vartoadd;
                     }
-                    int width = Convert.ToInt16(size.Substring(0, size.IndexOf('x')));
-                    int height = Convert.ToInt16(size.Substring(size.IndexOf('x') + 1, size.Length - size.IndexOf('x') - 1));
+                    int xIndex = size.IndexOf('x');
+                    int width = Convert.ToInt16(size.Substring(0, xIndex));
+                    int height = Convert.ToInt16(size.Substring(xIndex + 1));
                     Bitmap screen = new Bitmap(width, height);
                     int row = 0, col = 0, grayscale = (width / 8) * height;
 					if (width % 8 != 0)
@@ -201,29 +204,28 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                         //HACK: I'm horrible, yall should shoot me
                         string abyte = Convert.ToString(ReadMem(0, (ushort)(vartoadd.address + i)), 2);
 #else
-                        string abyte = Convert.ToString(DebuggerService.Debugger.readMem((ushort)(vartoadd.address + i)), 2);
-						string anotherbyte = Convert.ToString(DebuggerService.Debugger.readMem((ushort)(vartoadd.address + grayscale + i)), 2);
+                        int anotherbyte = 0;
+                        int abyte = DebuggerService.Debugger.readMem((ushort)(vartoadd.address + i));
+                        if (isGrayscale)
+                            anotherbyte = DebuggerService.Debugger.readMem((ushort)(vartoadd.address + grayscale + i));
 #endif
-                        while (abyte.Length < 8)
+                        /*while (abyte.Length < 8)
                             abyte = '0' + abyte;
 						while (anotherbyte.Length < 8)
-							anotherbyte = '0' + anotherbyte;
-                        for (int bit = 0; bit < 8; bit++)
+							anotherbyte = '0' + anotherbyte;*/
+                        for (int bit = 128; bit > 0; bit /= 2)
                         {
 							if (isGrayscale)
 							{
-								if (abyte.Substring(bit, 1) == "1" && anotherbyte.Substring(bit, 1) == "1")
+								if ((abyte & bit) != 0 && (anotherbyte & bit) != 0)
 									screen.SetPixel(col, row, Color.Black);
-								if (abyte.Substring(bit, 1) == "1" && anotherbyte.Substring(bit, 1) == "0")
+                                else if ((abyte & bit) != 0 && (anotherbyte & bit) == 0)
 									screen.SetPixel(col, row, Color.DarkGray);
-								if (abyte.Substring(bit, 1) == "0" && anotherbyte.Substring(bit, 1) == "1")
+                                else if ((abyte & bit) == 0 && (anotherbyte & bit) != 0)
 									screen.SetPixel(col, row, Color.LightGray);
 							}
-							else
-							{
-								if (abyte.Substring(bit, 1) == "1")
-									screen.SetPixel(col, row, Color.Black);
-							}
+                            else if ((abyte & bit) != 0)
+								screen.SetPixel(col, row, Color.Black);
                             col++;
                         }
                         if (col < width)
@@ -275,7 +277,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 							convertMethod = 16;
 							break;
 					}
-                    for (int i = 0; i < vartoadd.numBytes; i++)
+                    for (int i = 0; i < vartoadd.numBytes * 2; i+=2)
 					{
 #if NEW_DEBUGGING
                         vartoadd.value += ReadMem(0, (ushort)(vartoadd.address + i + 1)).ToString("X2") + ReadMem(0, (ushort)(vartoadd.address + i)).ToString("X2") + " ";

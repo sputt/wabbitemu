@@ -40,10 +40,12 @@ namespace Revsoft.Wabbitcode
             this.menuItem4 = new System.Windows.Forms.MenuItem();
             this.selectAllContext = new System.Windows.Forms.MenuItem();
             this.setNextStateMenuItem = new System.Windows.Forms.MenuItem();
+            this.fixCaseContext = new System.Windows.Forms.MenuItem();
             this.bgotoButton = new System.Windows.Forms.MenuItem();
             this.contextMenu1 = new System.Windows.Forms.ContextMenu();
             this.saveMenuItem = new System.Windows.Forms.MenuItem();
             this.closeMenuItem = new System.Windows.Forms.MenuItem();
+            this.closeAllOtherMenuItem = new System.Windows.Forms.MenuItem();
             this.closeAllMenuItem = new System.Windows.Forms.MenuItem();
             this.menuItem5 = new System.Windows.Forms.MenuItem();
             this.copyPathMenuItem = new System.Windows.Forms.MenuItem();
@@ -99,6 +101,7 @@ namespace Revsoft.Wabbitcode
             this.menuItem4,
             this.selectAllContext,
             this.setNextStateMenuItem,
+            this.fixCaseContext,
             this.bgotoButton});
             // 
             // cutContext
@@ -137,10 +140,17 @@ namespace Revsoft.Wabbitcode
             this.setNextStateMenuItem.Visible = false;
             this.setNextStateMenuItem.Click += new System.EventHandler(this.setNextStateMenuItem_Click);
             // 
+            // fixCaseContext
+            // 
+            this.fixCaseContext.Index = 6;
+            this.fixCaseContext.Text = "Fix Case";
+            this.fixCaseContext.Visible = false;
+            this.fixCaseContext.Click += new System.EventHandler(this.fixCaseContext_Click);
+            // 
             // bgotoButton
             // 
             this.bgotoButton.Enabled = false;
-            this.bgotoButton.Index = 6;
+            this.bgotoButton.Index = 7;
             this.bgotoButton.Text = "Goto";
             this.bgotoButton.Click += new System.EventHandler(this.bgotoButton_Click);
             // 
@@ -148,6 +158,7 @@ namespace Revsoft.Wabbitcode
             // 
             this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.closeMenuItem,
+            this.closeAllOtherMenuItem,
             this.closeAllMenuItem,
             this.saveMenuItem,
             this.menuItem5,
@@ -166,10 +177,16 @@ namespace Revsoft.Wabbitcode
             this.closeMenuItem.Text = "Close";
             this.closeMenuItem.Click += new System.EventHandler(this.closeMenuItem_Click);
             // 
+            // closeAllOtherMenuItem
+            // 
+            this.closeAllOtherMenuItem.Index = 1;
+            this.closeAllOtherMenuItem.Text = "Close All Other";
+            this.closeAllOtherMenuItem.Click += new System.EventHandler(this.closeAllOtherMenuItem_Click);
+            // 
             // closeAllMenuItem
             // 
             this.closeAllMenuItem.Index = 1;
-            this.closeAllMenuItem.Text = "Close All Other";
+            this.closeAllMenuItem.Text = "Close All";
             this.closeAllMenuItem.Click += new System.EventHandler(this.closeAllMenuItem_Click);
             // 
             // menuItem5
@@ -213,22 +230,24 @@ namespace Revsoft.Wabbitcode
         }
 
         #endregion
-        public Revsoft.TextEditor.TextEditorControl editorBox;
+        private Revsoft.TextEditor.TextEditorControl editorBox;
         internal ImageList imageList1;
         private ContextMenu contextMenu;
         private MenuItem cutContext;
         private MenuItem copyContext;
         private MenuItem pasteContext;
+        private MenuItem fixCaseContext;
         private MenuItem menuItem4;
         private MenuItem selectAllContext;
         private ContextMenu contextMenu1;
         private MenuItem saveMenuItem;
         private MenuItem closeMenuItem;
+        private MenuItem closeAllOtherMenuItem;
         private MenuItem closeAllMenuItem;
         private MenuItem menuItem5;
         private MenuItem copyPathMenuItem;
         private MenuItem openFolderMenuItem;
-        public MenuItem setNextStateMenuItem;
+        private MenuItem setNextStateMenuItem;
         private MenuItem bgotoButton;
         private BackgroundWorker codeChecker;
     }

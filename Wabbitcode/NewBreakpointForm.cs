@@ -48,16 +48,8 @@ namespace Revsoft.Wabbitcode
 
 			if (DockingService.ActiveDocument == null) 
                 return;
-			TextEditorControl editorBox = DockingService.ActiveDocument.editorBox;
-            if (editorBox.Document.TotalNumberOfLines < lineNum)
-            {
-                MessageBox.Show("Invalid Line Number!");
-                return;
-            }
-            editorBox.ActiveTextAreaControl.ScrollTo(lineNum);
-            editorBox.ActiveTextAreaControl.Caret.Position = new TextLocation(0, lineNum);
-            TextEditor.Actions.IEditAction newBreakpoint = new TextEditor.Actions.ToggleBreakpoint();
-            newBreakpoint.Execute(editorBox.ActiveTextAreaControl.TextArea);
+            DockingService.ActiveDocument.ScrollToLine(lineNum);
+            DockingService.ActiveDocument.ToggleBreakpoint(lineNum);
         }
 
         private void browseButton_Click(object sender, EventArgs e)

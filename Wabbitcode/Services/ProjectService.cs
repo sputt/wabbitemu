@@ -117,6 +117,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		private static void ParseFiles(object data)
 		{
+            parseInfo.Clear();
 			ParseFiles(MainFolder);
 		}
 
