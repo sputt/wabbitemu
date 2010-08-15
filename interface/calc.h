@@ -78,6 +78,10 @@ typedef struct calc {
 	BOOL do_drag;
 	HDC hdcSkin;
 	HDC hdcKeymap;
+#ifdef USE_GDIPLUS
+	Graphics *skinGraphics;
+	Graphics *keymapGraphics;
+#endif
 #else
 	pthread_t hdlThread;
 #endif

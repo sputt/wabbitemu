@@ -215,9 +215,9 @@ int gui_frame(int slot) {
 int gui_frame_update(int slot) {
 	HDC hdc = GetDC(calcs[slot].hwndFrame);
 	calcs[slot].hdcKeymap = CreateCompatibleDC(hdc);
-	calcs[gslot].hdcSkin = CreateCompatibleDC(hdc);
-	Graphics skinGraphics(calcs[gslot].hdcSkin);
-	Graphics keymapGraphics(calcs[slot].hdcKeymap);
+	calcs[slot].hdcSkin = CreateCompatibleDC(hdc);
+	calcs[slot].skinGraphics = Graphics::FromHDC(hdc);
+	calcs[slot].keymapGraphics = Graphics::FromHDC(hdc);
 	CGdiPlusBitmapResource hbmSkin, hbmKeymap;
 	hbmSkin.Load(CalcModelTxt[calcs[slot].model],_T("PNG"), g_hInst);
 
@@ -317,7 +317,8 @@ int gui_frame_update(int slot) {
 			//InvalidateRect(hwnd, NULL, TRUE);
 		}
 	}
-	skinGraphics.DrawImage(hbmSkin, 0, 0);
+	calcs[slot].skinGraphics->Clear(Color::Gray);
+	calcs[slot].skinGraphics->DrawImage(hbmSkin, 0, 0, 0, 0, 725, 350, Unit::UnitPixel);
 
 	if (calcs[slot].model == TI_84PSE) {
 		if (DrawFaceplateRegion(calcs[gslot].hdcSkin))
