@@ -400,4 +400,3 @@ int main (int argc, char **argv) {
 		list_free(include_dirs, true);
 	return error;
 }
-

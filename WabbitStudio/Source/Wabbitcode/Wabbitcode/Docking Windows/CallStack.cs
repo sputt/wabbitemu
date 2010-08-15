@@ -15,15 +15,18 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         public void AddStackData(int address, int data)
         {
+            DataGridViewRow row = new DataGridViewRow();
             string dataString = data.ToString("X4");
-            /*if (data > 0x8000)
+            ListFileKey key = DebuggerService.GetListKey((ushort) data, DebuggerService.GetPageNum((ushort) address));
+            if (key != null)
+                dataString += " (Possible Call)";
+            if (data > 0x4000)
             {
-                List<string> possibles = DebuggerService.symTable.findEntryByValue(data.ToString("X4"));
+                List<string> possibles = DebuggerService.SymbolTable.FindEntryByValue(data.ToString("X4"));
                 if (possibles.Count > 0)
                     foreach (string value in possibles)
                         dataString += " (" + value.ToLower() +")";
-            }*/
-            DataGridViewRow row = new DataGridViewRow();
+            }
             callStackView.Rows.Insert(0, row);
             callStackView.Rows[0].Cells[0].Value = address.ToString("X4");
             callStackView.Rows[0].Cells[1].Value = dataString;
@@ -43,8 +46,9 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
 			if (callStackView.SelectedRows.Count == 0)
 				return;
-			ushort address = ushort.Parse(callStackView.Rows[callStackView.SelectedRows[0].Index].Cells[1].Value.ToString(),
-											NumberStyles.HexNumber);
+            string stackValue = callStackView.Rows[callStackView.SelectedRows[0].Index].Cells[1].Value.ToString();
+            stackValue = stackValue.TrimStart().Substring(0, 4);
+			ushort address = ushort.Parse(stackValue, NumberStyles.HexNumber);
 			DebuggerService.GotoAddress(address);
         }
 

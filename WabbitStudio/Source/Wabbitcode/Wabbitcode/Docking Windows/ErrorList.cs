@@ -157,19 +157,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			int line = (int)errorGridView.Rows[row].Cells[4].Value;
 			string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
 			string error = errorGridView.Rows[row].Cells[2].Value.ToString();
-			int offset = DockingService.ActiveDocument.editorBox.Document.GetOffsetForLineNumber(line - 1);
-			int endline = offset;
-			while (endline < DockingService.ActiveDocument.editorBox.Text.Length && DockingService.ActiveDocument.editorBox.Text[endline] != '\n')
-				endline++;
 			DocumentService.GotoLine(file, line);
 			if (error.Contains("Relative jump"))
 			{
-				string lineContent = DockingService.ActiveDocument.editorBox.Document.GetText(offset, endline - offset);
-				lineContent = lineContent.Replace("jr", "jp");
-				int scroll = DockingService.ActiveDocument.editorBox.ActiveTextAreaControl.VScrollBar.Value;
-				DockingService.ActiveDocument.editorBox.Text = DockingService.ActiveDocument.editorBox.Text.Remove(offset, endline - offset);
-				DockingService.ActiveDocument.editorBox.Text = DockingService.ActiveDocument.editorBox.Text.Insert(offset, lineContent);
-				DockingService.ActiveDocument.editorBox.ActiveTextAreaControl.VScrollBar.Value = scroll;
+                DocumentService.ActiveDocument.FixError(line, DocumentService.FixableErrorType.RelativeJump);
 				errorGridView.Rows.RemoveAt(row);
 			}
 		}

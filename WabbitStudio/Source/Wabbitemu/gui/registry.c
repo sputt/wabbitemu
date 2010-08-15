@@ -24,6 +24,7 @@ static struct {
 	{"screen_scale",REG_DWORD,  2},
 	{"faceplate_color", REG_DWORD, 	0x838587},
 	{"exit_save_state", REG_DWORD,  0},
+	{"num_keys",		REG_DWORD,  5},
 	{NULL,			0,			0},
 };
 
@@ -119,6 +120,16 @@ HRESULT LoadRegistrySettings(void) {
 	calcs[gslot].Scale = QueryWabbitKey("screen_scale");
 	calcs[gslot].FaceplateColor = QueryWabbitKey("faceplate_color");
 	exit_save_state = QueryWabbitKey("exit_save_state");
+	int num_entries = QueryWabbitKey("num_keys");
+	//need to load accelerators
+	// querywabbitkey doesnt work because its a REG_BINARY
+	ACCEL buf[256];
+	DWORD dwCount = sizeof(buf);
+	LONG res = RegQueryValueEx(hkeyWabbit, "accelerators", NULL, NULL, (LPBYTE)buf, &dwCount);
+	if (res == ERROR_SUCCESS){
+		DestroyAcceleratorTable(haccelmain);
+		haccelmain = CreateAcceleratorTable(buf, num_entries);
+	}
 	/*
 	 * 		{"gif_path", 	REG_SZ,		"wabbitemu.gif"},
 		{"gif_autosave",REG_DWORD,	0},
@@ -170,6 +181,15 @@ HRESULT SaveRegistrySettings(void) {
 		SaveWabbitKey("custom_skin", REG_DWORD, &calcs[gslot].bCustomSkin);
 		SaveWabbitKey("skin_path", REG_SZ, &calcs[gslot].skin_path);
 		SaveWabbitKey("keymap_path", REG_SZ, &calcs[gslot].keymap_path);
+		ACCEL buf[256];
+		DWORD dwCount = sizeof(buf);
+		DWORD dwType = NULL;
+		LONG res = RegQueryValueEx(hkeyWabbit, "accelerators", NULL, &dwType,
+			(LPBYTE)buf, &dwCount);
+		if (res == ERROR_SUCCESS){
+			DestroyAcceleratorTable(haccelmain);
+			haccelmain = CreateAcceleratorTable(buf, num_entries);
+		}
 		
 		SaveWabbitKey("shades", REG_DWORD, &calcs[gslot].cpu.pio.lcd->shades);
 		SaveWabbitKey("lcd_mode", REG_DWORD, &calcs[gslot].cpu.pio.lcd->mode);

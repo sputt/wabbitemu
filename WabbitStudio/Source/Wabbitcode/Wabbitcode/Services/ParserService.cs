@@ -16,10 +16,13 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 ProjectService.ParseInfo.Remove(replaceMe);
         }
 
+        private static string baseDir;
         private static void FindIncludedFiles(string file)
         {
+            if (file.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+                return;
             if (!Path.IsPathRooted(file))
-                file = Path.Combine(ProjectService.ProjectDirectory, file);
+                file = Path.Combine(baseDir, file);
             ParserInformation fileInfo = null;
             ParserInformation[] array;
             lock (ProjectService.ParseInfo)
@@ -113,7 +116,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 				if (IsValidLabelChar(lines[counter]))
 				{
 					string description = GetDescription(lines, counter);
-					int newCounter = GetWord(lines, counter);
+					int newCounter = GetLabel(lines, counter);
 					string labelName = lines.Substring(counter, newCounter - counter);
 					if (newCounter < lines.Length && lines[newCounter] == ':')
 					{
@@ -126,7 +129,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 						int tempCounter = SkipWhitespace(lines, newCounter);
                         if (tempCounter == -1)
                             break;
-						if (lines[counter] == '=')
+						if (lines[tempCounter] == '=')
 						{
 							counter++;
 							int temp = SkipWhitespace(lines, counter);
@@ -140,10 +143,10 @@ namespace Revsoft.Wabbitcode.Services.Parser
 							Define defineToAdd = new Define(counter, labelName, contents, description, info);
 							info.DefinesList.Add(defineToAdd);
 						}
-						else if (lines[counter] == '(')
+						else if (lines[tempCounter] == '(')
 						{
 							//must be a macro
-							SkipToEOL(lines, counter);
+							counter = SkipToEOL(lines, counter);
 							continue;
 						} 
 						else 
@@ -170,7 +173,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					string description = GetDescription(lines, counter);
 					counter += defineString.Length;
 					counter = SkipWhitespace(lines, counter);
-					int newCounter = GetWord(lines, counter);
+					int newCounter = GetLabel(lines, counter);
 					string defineName = lines.Substring(counter, newCounter - counter);
 					counter = SkipWhitespace(lines, newCounter);
 					newCounter = SkipToEOCL(lines, counter);
@@ -186,7 +189,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					counter += macroString.Length;
 					//skip any whitespace
 					counter = SkipWhitespace(lines, counter);
-					int newCounter = GetWord(lines, counter);
+					int newCounter = GetLabel(lines, counter);
 					string macroName = lines.Substring(counter, newCounter - counter);
 					newCounter = FindChar(lines, newCounter, '(') + 1;
 					List<string> args;
@@ -235,7 +238,16 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			}
             RemoveParseData(file);
 			ProjectService.ParseInfo.Add(info);
-            FindIncludedFiles(ProjectService.Project.BuildSystem.MainFile);
+            if (ProjectService.IsInternal)
+            {
+                baseDir = Path.GetDirectoryName(file);
+                FindIncludedFiles(file);
+            }
+            else
+            {
+                baseDir = ProjectService.ProjectDirectory;
+                FindIncludedFiles(ProjectService.Project.BuildSystem.MainFile);
+            }
 			HideProgressDelegate hideProgress = DockingService.MainForm.HideProgressBar;
 			DockingService.MainForm.Invoke(hideProgress);
 			return info;
@@ -265,7 +277,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			while (IsValidIndex(substring, counter) && substring[counter] != ')')
 			{
 				counter = SkipWhitespace(substring, counter);
-				newCounter = GetWord(substring, counter);
+				newCounter = GetLabel(substring, counter);
 				if (newCounter == -1)
 					return args;
 				args.Add(substring.Substring(counter, newCounter - counter));
@@ -278,7 +290,24 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			return args;
 		}
 
-		private static int GetWord(string substring, int counter)
+        const string delimeters = "&<>~!%^*()-+=|\\/{}[]:;\"' \n\t\r?,";
+        public static int GetWord(string text, int offset)
+        {
+            int newOffset = offset;
+            char test = text[offset];
+            while (offset > 0 && delimeters.IndexOf(test) == -1)
+                test = text[--offset];
+            if (offset > 0)
+                offset++;
+            test = text[newOffset];
+            while (newOffset + 1 < text.Length && delimeters.IndexOf(test) == -1)
+                test = text[++newOffset];
+            if (newOffset < offset)
+                return -1;
+            return newOffset;
+        }
+
+		private static int GetLabel(string substring, int counter)
 		{
 			if (!IsValidIndex(substring, counter))
 				return -1;

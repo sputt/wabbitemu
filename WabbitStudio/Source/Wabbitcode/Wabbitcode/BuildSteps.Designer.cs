@@ -48,6 +48,8 @@
             this.stepTypeLabel = new System.Windows.Forms.Label();
             this.stepTypeBox = new System.Windows.Forms.ComboBox();
             this.configManagerButton = new System.Windows.Forms.Button();
+            this.browseInput = new System.Windows.Forms.Button();
+            this.browseOutput = new System.Windows.Forms.Button();
             this.stepOptionsBox.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -159,6 +161,8 @@
             this.stepOptionsBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
                         | System.Windows.Forms.AnchorStyles.Left)
                         | System.Windows.Forms.AnchorStyles.Right)));
+            this.stepOptionsBox.Controls.Add(this.browseOutput);
+            this.stepOptionsBox.Controls.Add(this.browseInput);
             this.stepOptionsBox.Controls.Add(this.actionLabel);
             this.stepOptionsBox.Controls.Add(this.actionBox);
             this.stepOptionsBox.Controls.Add(this.outputLabel);
@@ -223,7 +227,7 @@
             // 
             this.outputBox.Location = new System.Drawing.Point(81, 72);
             this.outputBox.Name = "outputBox";
-            this.outputBox.Size = new System.Drawing.Size(312, 20);
+            this.outputBox.Size = new System.Drawing.Size(248, 20);
             this.outputBox.TabIndex = 3;
             this.outputBox.TextChanged += new System.EventHandler(this.outputBox_TextChanged);
             // 
@@ -231,7 +235,7 @@
             // 
             this.inputBox.Location = new System.Drawing.Point(81, 46);
             this.inputBox.Name = "inputBox";
-            this.inputBox.Size = new System.Drawing.Size(312, 20);
+            this.inputBox.Size = new System.Drawing.Size(248, 20);
             this.inputBox.TabIndex = 2;
             this.inputBox.TextChanged += new System.EventHandler(this.inputBox_TextChanged);
             // 
@@ -266,6 +270,28 @@
             this.configManagerButton.Size = new System.Drawing.Size(102, 23);
             this.configManagerButton.TabIndex = 5;
             this.configManagerButton.Text = "Config Manager";
+            // 
+            // browseInput
+            // 
+            this.browseInput.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            this.browseInput.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.browseInput.Location = new System.Drawing.Point(335, 44);
+            this.browseInput.Name = "browseInput";
+            this.browseInput.Size = new System.Drawing.Size(75, 23);
+            this.browseInput.TabIndex = 7;
+            this.browseInput.Text = "Browse...";
+            this.browseInput.Click += new System.EventHandler(this.browseInput_Click);
+            // 
+            // browseOutput
+            // 
+            this.browseOutput.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            this.browseOutput.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.browseOutput.Location = new System.Drawing.Point(335, 70);
+            this.browseOutput.Name = "browseOutput";
+            this.browseOutput.Size = new System.Drawing.Size(75, 23);
+            this.browseOutput.TabIndex = 7;
+            this.browseOutput.Text = "Browse...";
+            this.browseOutput.Click += new System.EventHandler(this.browseOutput_Click);
             // 
             // BuildSteps
             // 
@@ -318,5 +344,7 @@
 		private System.Windows.Forms.TextBox inputBox;
 		private System.Windows.Forms.Label actionLabel;
 		private System.Windows.Forms.ComboBox actionBox;
+        private System.Windows.Forms.Button browseOutput;
+        private System.Windows.Forms.Button browseInput;
     }
 }

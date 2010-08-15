@@ -15,8 +15,10 @@ namespace Revsoft.Wabbitcode.Classes
         readonly Process wabbit;
         public CWabbitemu(string file)
         {
+#if !DEBUG
 			try
 			{
+#endif
 				Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
 				wabbit = null;
 				foreach (Process potential in Process.GetProcesses())
@@ -47,11 +49,13 @@ namespace Revsoft.Wabbitcode.Classes
 				Type dcomType = Type.GetTypeFromCLSID(CLSID_Wabbitemu);
 				Object dcomObj = Activator.CreateInstance(dcomType);
 				pWabbitemu = (IWabbitemu)dcomObj;
+#if !DEBUG
 			}
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.ToString());
 			}
+#endif
         }
 
         delegate void CancelDebugCallback();
@@ -88,12 +92,16 @@ namespace Revsoft.Wabbitcode.Classes
 
         public void releaseKeyPress(Keys keyData)
         {
+#if !DEBUG
 			try
 			{
+#endif
 				pWabbitemu.KeyRelease(0, (uint)keyData);
+#if !DEBUG
 			}
 			catch (COMException)
 			{ }
+#endif
         }
         public void releaseKeyPress(int keyData)
         {
@@ -102,11 +110,14 @@ namespace Revsoft.Wabbitcode.Classes
 
         public Z80_State getState()
         {
+#if !DEBUG
 			try
 			{
+#endif
 				Z80_State state;
 				pWabbitemu.GetState(0, out state);
 				return state;
+#if !DEBUG
 			}
 			catch (COMException ex)
 			{
@@ -116,48 +127,64 @@ namespace Revsoft.Wabbitcode.Classes
 			catch (Exception)
 			{ }
 			return new Z80_State();
+#endif
         }
 
         public void setState(Z80_State state)
         {
+#if !DEBUG
             try
             {
+#endif
                 pWabbitemu.SetState(0, ref state);
+#if !DEBUG
             }
             catch (COMException ex)
             {
                 MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
             }
+#endif
         }
 
         public void setBreakpoint(bool isInRAM, int page, int address)
         {
+#if !DEBUG
             try
             {
+#endif
                 pWabbitemu.SetBreakpoint(0, DockingService.MainForm.Handle, Convert.ToInt16(isInRAM), (byte)page, (ushort)address);
+#if !DEBUG
             }
             catch (COMException ex)
             {
                 MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
             }
+#endif
         }
         public void setBreakpoint(breakpoint breakpoint)
         {
+#if !DEBUG
             try
             {
+#endif
 				pWabbitemu.SetBreakpoint(0, DockingService.MainForm.Handle, breakpoint.IsRam, breakpoint.Page, breakpoint.Address);
+#if !DEBUG
             }
             catch (COMException ex)
             {
                 MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
             }
+#endif
         }
 
         public void clearBreakpoint(bool isInRAM, int page, int address)
         {
+#if !DEBUG
 			try
 			{
+#endif
 				pWabbitemu.ClearBreakpoint(0, Convert.ToInt16(isInRAM), (byte)page, (ushort)address);
+#if !DEBUG
 			}
 			catch (COMException ex)
 			{
@@ -167,60 +194,80 @@ namespace Revsoft.Wabbitcode.Classes
 			{
 				return;
 			}
+#endif
         }
         public void clearBreakpoint(breakpoint breakpoint)
         {
+#if !DEBUG
             try
             {
+#endif
                 pWabbitemu.ClearBreakpoint(0, breakpoint.IsRam, breakpoint.Page, breakpoint.Address);
+#if !DEBUG
             }
             catch (COMException ex)
             {
                 MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
             }
+#endif
         }
 
         public void step()
         {
+#if !DEBUG
             try
             {
+#endif
                 pWabbitemu.Step(0);
+#if !DEBUG
             }
             catch (COMException ex)
             {
                 MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
             }
+#endif
         }
 
         public void stepOver()
         {
+#if !DEBUG
             try
             {
+#endif
                 pWabbitemu.StepOver(0);
+#if !DEBUG
             }
             catch (COMException ex)
             {
                 MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
             }
+#endif
         }
 
 		internal void stepOut()
 		{
+#if !DEBUG
 			try
 			{
+#endif
 				pWabbitemu.StepOut(0);
+#if !DEBUG
 			}
 			catch (COMException ex)
 			{
 				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
 			}
+#endif
 		}
 
 		public void pause()
 		{
+#if !DEBUG
 			try
 			{
+#endif
 				pWabbitemu.Pause(0);
+#if !DEBUG
 			}
 			catch (COMException ex)
 			{
@@ -230,14 +277,18 @@ namespace Revsoft.Wabbitcode.Classes
 			{
 				return;
 			}
+#endif
 		}
 
         public void run()
         {
+#if !DEBUG
 			try
 			{
+#endif
 				pWabbitemu.Step(0);
 				pWabbitemu.Run(0);
+#if !DEBUG
 			}
 			catch (COMException ex)
 			{
@@ -247,6 +298,7 @@ namespace Revsoft.Wabbitcode.Classes
 			{
 				return;
 			}
+#endif
         }
 
         public void getSymList()
@@ -257,11 +309,14 @@ namespace Revsoft.Wabbitcode.Classes
         readonly AppEntry[] temp = new AppEntry[96];
         public AppEntry[] getAppList()
         {
+#if !DEBUG
 			try
 			{
+#endif
 				uint count;
 				pWabbitemu.GetAppList(0, temp, out count);
 				return temp;
+#if !DEBUG
 			}
 			catch (COMException ex)
 			{
@@ -271,13 +326,16 @@ namespace Revsoft.Wabbitcode.Classes
 			{
 				return null;
 			}
+#endif
         }
 
         readonly byte[] screenArray = new byte[128 * 64];
         public Bitmap DrawScreen()
         {
+#if !DEBUG
             try
             {
+#endif
                 int counter = 0;
                 pWabbitemu.DrawScreen(0, screenArray);
                 Bitmap screen = new Bitmap(128, 64);
@@ -294,42 +352,51 @@ namespace Revsoft.Wabbitcode.Classes
                 }
                 Bitmap result = screen.ResizeImage(256, 128);
                 return result;
+#if !DEBUG
             }
             catch (COMException ex)
             {
                 MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
                 return null;
             }
+#endif
         }        
 
         public MEMSTATE getMemState()
         {
+#if !DEBUG
 			try
 			{
+#endif
 				MEMSTATE memstate;
 				pWabbitemu.GetMemState(0, out memstate);
 				return memstate;
+#if !DEBUG
 			}
 			catch (COMException ex)
 			{
 				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-				return new MEMSTATE();
 			}
 			catch (Exception)
 			{ }
 			return new MEMSTATE();
+#endif
         }
 
         public void setMemState(MEMSTATE state)
         {
+#if !DEBUG
             try
             {
+#endif
                 pWabbitemu.SetMemState(0, ref state);
+#if !DEBUG
             }
             catch (COMException ex)
             {
                 MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
             }
+#endif
         }
 
         public struct Z80_State

@@ -188,8 +188,10 @@ namespace Revsoft.Wabbitcode
                     string text;
                     int loc;
                     int indexOfString;
+#if !DEBUG
 					try
 					{
+#endif
 						StreamReader reader;
 						results.NewFindResults(txtLookFor.Text, ProjectService.ProjectName);
 						foreach (ProjectFile file in files)
@@ -198,6 +200,7 @@ namespace Revsoft.Wabbitcode
 								continue;
 							reader = new StreamReader(Path.Combine(ProjectService.ProjectDirectory, file.FileFullPath));
 							lines = reader.ReadToEnd().Split('\n');
+                            reader.Close();
 							for (int i = 0; i < lines.Length; i++)
 							{
 								text = lines[i];
@@ -212,17 +215,20 @@ namespace Revsoft.Wabbitcode
 									string phrase = text.Substring(indexOfString, txtLookFor.Text.Length);
 									if (chkMatchCase.Checked && string.Compare(txtLookFor.Text, phrase, false) != 0)
 										continue;
-									if (chkMatchWholeWord.Checked && !char.IsWhiteSpace(text[loc]) && !char.IsWhiteSpace(text[loc - indexOfString - 2]))
+									if (chkMatchWholeWord.Checked &&  ((loc + 1 < text.Length && !char.IsWhiteSpace(text[loc+1]))
+                                        || (indexOfString - 1 > 0 && !char.IsWhiteSpace(text[indexOfString - 1]))))
 										continue;
 									results.AddFindResult(file.FileFullPath, i, lines[i]);
 								}
 							}
 						}
+#if !DEBUG
 					}
 					catch (Exception ex)
 					{
 						MessageBox.Show("Error searching for text!\n" + ex);
 					}
+#endif
                 }
 				results.DoneSearching();
 				DockingService.ShowDockPanel(results);

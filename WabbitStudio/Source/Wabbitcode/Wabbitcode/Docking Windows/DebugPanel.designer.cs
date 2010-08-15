@@ -66,7 +66,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.contextMenu1 = new System.Windows.Forms.ContextMenu();
 			this.copyDebugMenuItem = new System.Windows.Forms.MenuItem();
 			this.pasteDebugMenuItem = new System.Windows.Forms.MenuItem();
-			this.menuItem3 = new System.Windows.Forms.MenuItem();
+			this.gotoSourceMenuItem = new System.Windows.Forms.MenuItem();
 			this.panel.SuspendLayout();
 			this.screenBox.SuspendLayout();
 			((System.ComponentModel.ISupportInitialize)(this.screenPicBox)).BeginInit();
@@ -451,7 +451,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.contextMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.copyDebugMenuItem,
             this.pasteDebugMenuItem,
-            this.menuItem3});
+            this.gotoSourceMenuItem});
 			// 
 			// copyDebugMenuItem
 			// 
@@ -469,8 +469,9 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			// 
 			// menuItem3
 			// 
-			this.menuItem3.Index = 2;
-			this.menuItem3.Text = "Goto Source Line";
+			this.gotoSourceMenuItem.Index = 2;
+			this.gotoSourceMenuItem.Text = "Goto Source Line";
+            this.gotoSourceMenuItem.Click += new System.EventHandler(gotoSourceMenuItem_Click);
 			// 
 			// DebugPanel
 			// 
@@ -495,7 +496,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.ResumeLayout(false);
 
         }
-
         #endregion
 
         private System.Windows.Forms.Label iyLabel;
@@ -536,6 +536,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private System.Windows.Forms.ContextMenu contextMenu1;
         private System.Windows.Forms.MenuItem copyDebugMenuItem;
         private System.Windows.Forms.MenuItem pasteDebugMenuItem;
-        private System.Windows.Forms.MenuItem menuItem3;
+        private System.Windows.Forms.MenuItem gotoSourceMenuItem;
     }
 }

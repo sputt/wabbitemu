@@ -11,7 +11,7 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Revolution Software")]
 [assembly: AssemblyProduct("Wabbitcode")]
-[assembly: AssemblyCopyright("2009")]
+[assembly: AssemblyCopyright("2010")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]		
 
@@ -26,7 +26,7 @@ using System.Runtime.CompilerServices;
 // You can specify all the values or you can default the Revision and Build Numbers 
 // by using the '*' as shown below:
 
-[assembly: AssemblyVersion("0.5.0.7")]
+[assembly: AssemblyVersion("0.5.0.8")]
 
 //
 // In order to sign your assembly you must specify a key to use. Refer to the 

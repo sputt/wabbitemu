@@ -140,7 +140,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
             if (e.Button != MouseButtons.Right) 
                 return;
-            if (string.IsNullOrEmpty(Path.GetExtension(e.Node.Text)))
+            openExplorerMenuItem.Enabled = Directory.Exists(Path.Combine(Path.GetDirectoryName(ProjectService.ProjectDirectory), e.Node.FullPath));    
+            if (e.Node.Tag.GetType() == typeof(ProjectFolder))
 				folderContextMenu.Show(projViewer, projViewer.PointToClient(MousePosition));
             else
                 fileContextMenu.Show(projViewer, projViewer.PointToClient(MousePosition));
@@ -224,6 +225,16 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private void renFMenuItem_Click(object sender, EventArgs e)
         {
 			RenameFolder(projViewer.SelectedNode);
+        }
+        
+        private void newFileContextItem_Click(object sender, System.EventArgs e)
+        {
+            RenameForm newNameForm = new RenameForm();
+            newNameForm.Text = "New File";
+            if (newNameForm.ShowDialog() != DialogResult.OK)
+                return;
+            string name = newNameForm.NewText;
+            AddNewFile(name);
         }
 
         private void openMenuItem_Click(object sender, EventArgs e)
@@ -355,10 +366,23 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			if (MessageBox.Show("Are you sure you want to remove this folder from the project?", "Delete Folder", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.No)
                 return;
             foreach (TreeNode original in projViewer.SelectedNodes)
+            {
+                ProjectFolder folder = original.Tag as ProjectFolder;
+                folder.Remove();
                 original.Remove();
+            }
 			//ProjectService.Project.saveProject();
             projViewer.Sort();
 
+        }
+
+        private void openExplorerMenuItem_Click(object sender, EventArgs e)
+        {
+            Process explorer = new Process
+            {
+                StartInfo = { FileName = Path.Combine(Path.GetDirectoryName(ProjectService.ProjectDirectory), projViewer.SelectedNode.FullPath) }
+            };
+            explorer.Start();
         }
 
         private void existingFileMenuItem_Click(object sender, EventArgs e)
@@ -379,6 +403,23 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 return;
             foreach(string file in openFileDialog.FileNames)
                 AddExistingFile(file);
+        }
+
+        internal void AddNewFile(string fileName)
+        {
+            TreeNode parent = projViewer.SelectedNode;
+            if (parent == null)
+                parent = projViewer.Nodes[0];
+            else if (parent.Tag.GetType() == typeof(ProjectFile))
+                parent = parent.Parent;
+            if (parent == null)
+                parent = projViewer.Nodes[0];
+            string file = Path.Combine(Path.Combine(Path.GetDirectoryName(ProjectService.ProjectDirectory), parent.FullPath), fileName);
+            StreamWriter writer = File.CreateText(file);
+            writer.Close();
+            ProjectFile fileAdded = ProjectService.AddFile((ProjectFolder)parent.Tag, file);
+            AddFile(fileAdded, parent);
+            DocumentService.OpenDocument(file);
         }
 
         internal void AddExistingFile(string file)

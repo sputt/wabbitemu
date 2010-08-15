@@ -5,7 +5,11 @@ namespace Revsoft.Wabbitcode.Classes
 {
     public class SymbolTableClass
     {
-        public Hashtable staticLabels;
+        private Hashtable staticLabels;
+        public Hashtable StaticLabels
+        {
+            get { return staticLabels;}
+        }
         public void ParseSymFile(string symFileContents)
         {
             staticLabels = new Hashtable();

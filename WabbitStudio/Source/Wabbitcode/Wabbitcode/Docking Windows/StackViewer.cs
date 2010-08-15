@@ -48,7 +48,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			DebuggerService.GotoAddress(address);
         }
 
-        public void Copy()
+        public override void Copy()
         {
             Clipboard.SetDataObject(stackView.GetClipboardContent());
         }

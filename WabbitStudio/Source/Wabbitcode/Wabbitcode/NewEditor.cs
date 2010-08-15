@@ -22,6 +22,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.TextEditor.Actions;
 
 namespace Revsoft.Wabbitcode
 {
@@ -54,6 +55,39 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
+        public Breakpoint[] Breakpoints
+        {
+            get
+            {
+                Breakpoint[] marks = new Breakpoint[editorBox.Document.BreakpointManager.Marks.Count];
+                editorBox.Document.BreakpointManager.Marks.CopyTo(marks, 0);
+                return marks;
+            }
+        }
+
+        public int TotalNumberOfLines
+        {
+            get { return editorBox.Document.TotalNumberOfLines; }
+        }
+
+        public bool IsIconBarVisible
+        {
+            get { return editorBox.IsIconBarVisible; }
+            set { editorBox.IsIconBarVisible = value; }
+        }
+
+        public bool ShowLineNumbers
+        {
+            get { return editorBox.ShowLineNumbers; }
+            set { editorBox.ShowLineNumbers = value; }
+        }
+
+        public bool CanSetNextStatement
+        {
+            get { return setNextStateMenuItem.Visible; }
+            set { setNextStateMenuItem.Visible = value; }
+        }
+
         public newEditor()
         {
             InitializeComponent();
@@ -68,9 +102,9 @@ namespace Revsoft.Wabbitcode
 			editorBox.ShowLineNumbers = Settings.Default.lineNumbers;
 			editorBox.Font = Settings.Default.editorFont;
 			editorBox.LineViewerStyle = Settings.Default.lineEnabled ? LineViewerStyle.FullRow : LineViewerStyle.None;
+            editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += new ToolTipRequestEventHandler(TextArea_ToolTipRequest);
             
             CodeCompletionKeyHandler.Attach(this, editorBox);
-            this.LostFocus += new EventHandler(newEditor_LostFocus);
 
 			/*parserThread = new Thread(ParseFile);
 			parserThread.Priority = ThreadPriority.Lowest;
@@ -81,12 +115,12 @@ namespace Revsoft.Wabbitcode
 			codeInfoThread.Start();*/
         }
 
-        void newEditor_LostFocus(object sender, EventArgs e)
+        public TextEditorControl EditorBox
         {
-            
+            get { return editorBox; }
         }
 
-		private string EditorText
+		public string EditorText
 		{
 			get
 			{
@@ -163,7 +197,17 @@ namespace Revsoft.Wabbitcode
 
 		void TextArea_ToolTipRequest(object sender, TextEditor.ToolTipRequestEventArgs e)
 		{
+            if (DebuggerService.SymbolTable == null || !e.InDocument)
+                return;
 			TextLocation loc = e.LogicalPosition;
+            int offset = editorBox.Document.GetOffsetForLineNumber(loc.Line);
+            string text = editorBox.Document.GetWord(offset + loc.Column);
+            if (!Settings.Default.caseSensitive)
+                text = text.ToUpper();
+            if (DebuggerService.SymbolTable.StaticLabels.Contains(text))
+            {
+                e.ShowToolTip(DebuggerService.SymbolTable.StaticLabels[text].ToString());
+            }
 		}
 
         void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
@@ -211,20 +255,12 @@ namespace Revsoft.Wabbitcode
                 end--;
                 if (start > end)
                     start = end;
-                codeInfoLines = editorBox.Text.Substring(start, end - start);
+                codeInfoLines = editorBox.Document.GetText(start, end - start);
                 ThreadPool.QueueUserWorkItem(new WaitCallback(GetCodeInfo), codeInfoLines);
                 infoLinesQueued++;
             }
 
-            ReadOnlyCollection<TextMarker> markers = (ReadOnlyCollection<TextMarker>)editorBox.Document.MarkerStrategy.TextMarker;
-            int i = 0;
-            while (i < markers.Count)
-            {
-                if (markers[i].Tag == "Code Check")
-                    editorBox.Document.MarkerStrategy.RemoveMarker(markers[i]);
-                markers = (ReadOnlyCollection<TextMarker>)editorBox.Document.MarkerStrategy.TextMarker;
-                i++;
-            }
+            editorBox.Document.MarkerStrategy.RemoveAll(marker => marker.Tag == "Code Check");
 #if CHECK_CODE
             if (!codeChecker.IsBusy)// && !ProjectService.IsInternal)
                 codeChecker.RunWorkerAsync(editorBox.Text.Split('\n')[editorBox.ActiveTextAreaControl.Caret.Line]);
@@ -232,14 +268,90 @@ namespace Revsoft.Wabbitcode
         }
 
         static int infoLinesQueued = 0;
+        static bool isUpdatingRefs = false;
         void Caret_PositionChanged(object sender, EventArgs e)
         {
             DockingService.MainForm.SetLineAndColStatus(editorBox.ActiveTextAreaControl.Caret.Line.ToString(),
 														editorBox.ActiveTextAreaControl.Caret.Column.ToString());
+            if (editorBox.Document.TextLength == 0)
+                return;
+            editorBox.Document.MarkerStrategy.RemoveAll(marker => marker.Tag == "Reference");
+            editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
+            if (!isUpdatingRefs)
+            {
+                isUpdatingRefs = true;
+                int offset = editorBox.ActiveTextAreaControl.Caret.Offset;
+                string word = editorBox.Document.GetWord(offset);
+                ThreadPool.QueueUserWorkItem(new WaitCallback(GetHighlightReferences), new ReferencesHighlightData(offset, word, editorBox.Document.TextContent));
+            }
             //update code info
             SelectionManager_SelectionChanged(sender, e);
         }
+        class ReferencesHighlightData {
+            public int Offset { get; private set; }
+            public string Word { get; private set; }
+            public string Text { get; private set; }
+            public ReferencesHighlightData(int offset, string word, string text)
+            {
+                Offset = offset;
+                Word = word;
+                Text = text;
+            }
+        }
 
+        private void GetHighlightReferences(object data)
+        {
+            ReferencesHighlightData highlightData = data as ReferencesHighlightData;
+            int offset = highlightData.Offset;
+            string word = highlightData.Word;
+            string text = highlightData.Text;
+            if (offset == text.Length)
+                offset--;
+            if (!Settings.Default.caseSensitive)
+                word = word.ToLower();
+            if (string.IsNullOrEmpty(word) || !Settings.Default.referencesHighlighter)
+            {
+                isUpdatingRefs = false;
+                return;
+            }
+            int counter = 0;
+            string possibleReference;
+            List<TextMarker> references = new List<TextMarker>();
+            while (counter < text.Length)
+            {
+                possibleReference = GetWord(text, counter);
+                if (!Settings.Default.caseSensitive)
+                    possibleReference = possibleReference.ToLower();
+                if (!string.IsNullOrEmpty(possibleReference) && possibleReference == word) 
+                    references.Add(new TextMarker(counter, word.Length, TextMarkerType.SolidBlock, Color.LightGray) { Tag = "Reference" });
+                counter += possibleReference.Length + 1;
+            }
+            this.Invoke(new ReferencesHighlighterDelegate(AddMarkers), references);
+            isUpdatingRefs = false;
+        }
+
+        delegate void ReferencesHighlighterDelegate(List<TextMarker> markers);
+        const string delimeters = "&<>~!%^*()-+=|\\/{}[]:;\"' \n\t\r?,";
+        string GetWord(string text, int offset)
+        {
+            if (offset >= text.Length)
+                return "";
+            int newOffset = offset;
+            char test = text[offset];
+            while (offset > 0 && delimeters.IndexOf(test) == -1)
+                test = text[--offset];
+            if (offset > 0)
+                offset++;
+            test = text[newOffset];
+            while (newOffset + 1 < text.Length && delimeters.IndexOf(test) == -1)
+                test = text[++newOffset];
+            if (newOffset < offset)
+                return "";
+            return text.Substring(offset, newOffset - offset);
+        }
+
+        private static Bitmap warningBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.Warning16.png"));
+        private static Bitmap errorBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.error.png"));
         public void UpdateIcons()
         {
             editorBox.ActiveTextAreaControl.TextArea.Document.IconManager.ClearIcons();
@@ -249,9 +361,9 @@ namespace Revsoft.Wabbitcode
                     continue;
                 Bitmap newIcon;
                 if (errorWarning.isWarning)
-                    newIcon = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.Warning16.png"));
+                    newIcon = warningBitmap;
                 else
-                    newIcon = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.error.png"));
+                    newIcon = errorBitmap;
                 MarginIcon marginIcon = new MarginIcon(newIcon, errorWarning.lineNum - 1, errorWarning.toolTip);
                 editorBox.Document.IconManager.AddIcon(marginIcon);
             }
@@ -282,8 +394,6 @@ namespace Revsoft.Wabbitcode
             try
             {
 #endif
-				//TODO: Fix spasm to allow for UTF-8
-                //editorBox.Encoding = System.Text.Encoding.UTF8;
                 editorBox.SaveFile(FileName);
 #if !DEBUG
             }
@@ -314,8 +424,7 @@ namespace Revsoft.Wabbitcode
                 if (ProjectService.ContainsFile(FileName))
                 {
 					ProjectFile file = ProjectService.Project.FindFile(FileName);
-                    if (file != null)                   //hack:figure out why
-					    file.FileFoldings = editorBox.Document.FoldingManager.SerializeToString();
+					file.FileFoldings = editorBox.Document.FoldingManager.SerializeToString();
                 }
             }
             if (!DocumentChanged) 
@@ -383,6 +492,11 @@ namespace Revsoft.Wabbitcode
         }
 
         private void selectAllContext_Click(object sender, EventArgs e)
+        {
+            SelectAll();
+        }
+
+        internal void SelectAll()
         {
             TextLocation selectStart = new TextLocation(0, 0);
             TextLocation selectEnd = new TextLocation(editorBox.Text.Split('\n')[editorBox.Document.TotalNumberOfLines - 1].Length, editorBox.Document.TotalNumberOfLines - 1);
@@ -656,20 +770,43 @@ namespace Revsoft.Wabbitcode
             //                                "\nProjectLabels[1]:" + ((ArrayList)GlobalClass.project.projectLabels[1]).Count;
             if (bgotoButton.Text.Substring(0, 4) == "Goto")
             {
-				List<IParserData> parserData = new List<IParserData>();
-				/*foreach (IParserData data in labelsCache)
-					if (data.Name.ToLower() == text.ToLower())
-					{
-						parserData.Add(data);
-						break;
-					}*/
-					foreach (ParserInformation info in ProjectService.ParseInfo)
-						foreach (IParserData data in info.GeneratedList)
-							if (data.Name.ToLower() == text.ToLower())
-							{
-								parserData.Add(data);
-								break;
-							}
+                List<IParserData> parserData = new List<IParserData>();
+                if (text[0] == '+' || text[0] == '-' || text == "_")
+                {
+                    bool negate = text[0] == '-';
+                    int steps = text == "_" ? 1 : 0;
+                    while (text != "_")
+                    {
+                        text = text.Remove(0, 1);
+                        steps++;
+                    }
+                    if (negate)
+                        steps *= -1;
+                    int i;
+                    for (i = 0; i < parseInfo.LabelsList.Count; i++)
+                        if (parseInfo.LabelsList[i].Name == "_")
+                            parserData.Add(parseInfo.LabelsList[i]);
+                    i = 0;
+                    while (i < parserData.Count && parserData[i].Offset < editorBox.ActiveTextAreaControl.Caret.Offset)
+                        i++;
+                    if (negate)
+                        i += steps;
+                    else
+                        i += steps - 1;
+                    IParserData data = parserData[i];
+                    parserData.Clear();
+                    parserData.Add(data);                        
+                }
+                else
+                {
+                    foreach (ParserInformation info in ProjectService.ParseInfo)
+                        foreach (IParserData data in info.GeneratedList)
+                            if (data.Name.ToLower() == text.ToLower())
+                            {
+                                parserData.Add(data);
+                                break;
+                            }
+                }
 				if (parserData.Count == 0)
 				{
 					MessageBox.Show("Unable to locate " + text);
@@ -698,6 +835,18 @@ namespace Revsoft.Wabbitcode
             }
         }
 
+        private void fixCaseContext_Click(object sender, EventArgs e)
+        {
+            MenuItem item = sender as MenuItem;
+            int offset = editorBox.ActiveTextAreaControl.Caret.Offset;
+            if (delimeters.Contains(editorBox.Document.GetCharAt(offset)))
+                offset--;
+            while (!delimeters.Contains(editorBox.Document.GetCharAt(offset)))
+                offset--;
+            offset++;
+            editorBox.Document.Replace(offset, item.Text.Length, item.Text);
+        }
+
         private void editorBox_MouseClick(object sender, MouseEventArgs e)
         {
             if (e.Button != MouseButtons.Right)
@@ -715,6 +864,31 @@ namespace Revsoft.Wabbitcode
             if (editorBox.Text != "")
             {
                 int offset = editorBox.ActiveTextAreaControl.Caret.Offset;
+                fixCaseContext.Visible = false;
+                string text = editorBox.Document.GetWord(offset);
+                if (!string.IsNullOrEmpty(text))
+                {
+                    List<IParserData> parserData = new List<IParserData>();
+                    foreach (ParserInformation info in ProjectService.ParseInfo)
+                        foreach (IParserData data in info.GeneratedList)
+                            if (data.Name.ToLower() == text.ToLower())
+                            {
+                                parserData.Add(data);
+                                break;
+                            }
+                    if (parserData.Count > 0)
+                    {
+                        fixCaseContext.MenuItems.Clear();
+                        foreach (IParserData data in parserData)
+                        {
+                            if (data.Name == text)
+                                continue;
+                            fixCaseContext.Visible = true;
+                            MenuItem item = new MenuItem(data.Name, new EventHandler(fixCaseContext_Click));
+                            fixCaseContext.MenuItems.Add(item);
+                        }
+                    }
+                }
                 //if the user clicked after the last char we need to catch this
                 if (offset == editorBox.Text.Length)
                     offset--;
@@ -755,6 +929,20 @@ namespace Revsoft.Wabbitcode
                     gotoLabel = editorBox.Document.GetText(offset, length).Trim();
                     if (offset + length < editorBox.Text.Length && editorBox.Text[offset + length] == '(')
                         gotoLabel += "(";
+                    if (gotoLabel == "_")
+                    {
+                        if (editorBox.Document.TextContent[offset] == '_')
+                            offset--;
+                        else
+                        {
+                            while (offset > 0 && editorBox.Document.TextContent[offset] != '_')
+                                offset--;
+                            offset--;
+                        }
+                        while (offset > 0 && (editorBox.Document.TextContent[offset] == '-' || editorBox.Document.TextContent[offset] == '+'))
+                        {   offset--; length++; }
+                        gotoLabel = editorBox.Document.GetText(++offset, length).Trim();
+                  }
                 }
                 catch (Exception ex)
                 {
@@ -782,11 +970,14 @@ namespace Revsoft.Wabbitcode
                     else
                     {
                         bgotoButton.Text = "Goto " + gotoLabel;
-                        bgotoButton.Enabled = true;
+                        bgotoButton.Enabled = string.IsNullOrEmpty(gotoLabel) ? false : true;
                     }
                 }
                 else
+                {
                     bgotoButton.Text = "Goto ";
+                    bgotoButton.Enabled = false;
+                }
             }
             contextMenu.Show(editorBox, editorBox.PointToClient(MousePosition));
         }
@@ -819,13 +1010,17 @@ namespace Revsoft.Wabbitcode
             Close();
         }
 
+        private void closeAllOtherMenuItem_Click(object sender, EventArgs e)
+        {
+            foreach (Form child in DockingService.Documents)
+                if (child != this)
+                    child.Close();
+        }
+
         private void closeAllMenuItem_Click(object sender, EventArgs e)
         {
             foreach (Form child in DockingService.Documents)
-            {
-                if (child != this)
-                    child.Close();
-            }
+                child.Close();
         }
 
         private void copyPathMenuItem_Click(object sender, EventArgs e)
@@ -847,8 +1042,11 @@ namespace Revsoft.Wabbitcode
         private static void GetCodeInfo(object input)
         {
             string lines = input as string;
-            if (lines == null || infoLinesQueued > 2)
+            if (lines == null || infoLinesQueued > 1)
+            {
+                infoLinesQueued--;
                 return;
+            }
             try
             {
                 Process wabbitspasm = new Process
@@ -911,7 +1109,344 @@ namespace Revsoft.Wabbitcode
 		{
 			editorBox.Paste();
 		}
-	}
+
+        internal void ScrollToLine(int scrollToLine)
+        {
+            editorBox.ActiveTextAreaControl.ScrollTo(scrollToLine);
+            editorBox.ActiveTextAreaControl.Caret.Line = scrollToLine - 1;
+        }
+
+        internal void ScrollToOffset(int offset)
+        {
+            int line = editorBox.Document.GetLineNumberForOffset(offset);
+            editorBox.ActiveTextAreaControl.ScrollTo(line);
+            editorBox.ActiveTextAreaControl.Caret.Line = line - 1;
+        }
+
+        internal void ToggleBreakpoint()
+        {
+            ToggleBreakpoint(editorBox.ActiveTextAreaControl.Caret.Line);
+        }
+
+        internal void ToggleBreakpoint(int lineNum)
+        {
+            TextEditor.Actions.IEditAction newBreakpoint = new TextEditor.Actions.ToggleBreakpoint();
+            newBreakpoint.Execute(editorBox.ActiveTextAreaControl.TextArea);
+        }
+
+        internal void RemoveBreakpoint(int lineNum)
+        {
+            TextEditor.Document.Breakpoint breakpoint = DockingService.ActiveDocument.editorBox.Document.BreakpointManager.GetNextMark(lineNum);
+            DockingService.ActiveDocument.editorBox.Document.BreakpointManager.RemoveMark(breakpoint);
+        }
+
+        internal void ClearBreakpoints()
+        {
+            editorBox.Document.BreakpointManager.Clear();
+        }
+
+        internal void FixError(int line, DocumentService.FixableErrorType type)
+        {
+            int offset = editorBox.Document.GetOffsetForLineNumber(line - 1);
+            int endline = offset;
+            while (endline < editorBox.Document.TextLength && editorBox.Document.GetCharAt(endline) != '\n')
+                endline++;
+            string lineContent = editorBox.Document.GetText(offset, endline - offset);
+            switch(type)
+            {
+                case DocumentService.FixableErrorType.RelativeJump:
+			        lineContent = lineContent.Replace("jr", "jp");
+			        int scroll = editorBox.ActiveTextAreaControl.VScrollBar.Value;
+			        editorBox.Document.Remove(offset, endline - offset);
+			        editorBox.Document.Insert(offset, lineContent);
+			        editorBox.ActiveTextAreaControl.VScrollBar.Value = scroll;
+                    break;
+            }
+        }
+
+        internal void SetHighlighting(string highlightString)
+        {
+            editorBox.SetHighlighting(highlightString);
+        }
+
+        internal void SetPosition(int horzVal, int vertVal, int caretCol, int caretLine)
+        {
+            editorBox.ActiveTextAreaControl.HorizontalScroll.Value = horzVal;
+			editorBox.ActiveTextAreaControl.VerticalScroll.Value = vertVal;
+            editorBox.ActiveTextAreaControl.Caret.Column = caretCol;
+			editorBox.ActiveTextAreaControl.Caret.Line = caretLine;
+        }
+
+        internal void SelectedTextToLower()
+        {
+            editorBox.Document.UndoStack.StartUndoGroup();
+            string newText = editorBox.ActiveTextAreaControl.SelectionManager.SelectedText.ToLower();
+            editorBox.ActiveTextAreaControl.SelectionManager.RemoveSelectedText();
+            editorBox.ActiveTextAreaControl.TextArea.InsertString(newText);
+            editorBox.Document.UndoStack.EndUndoGroup();
+        }
+
+        internal void SelectedTextToUpper()
+        {
+            editorBox.Document.UndoStack.StartUndoGroup();
+            string newText = editorBox.ActiveTextAreaControl.SelectionManager.SelectedText.ToUpper();
+            editorBox.ActiveTextAreaControl.SelectionManager.RemoveSelectedText();
+            editorBox.ActiveTextAreaControl.TextArea.InsertString(newText);
+            editorBox.Document.UndoStack.EndUndoGroup();
+        }
+
+        internal void SelectedTextInvertCase()
+        {
+            editorBox.Document.UndoStack.StartUndoGroup();
+            string text = editorBox.ActiveTextAreaControl.SelectionManager.SelectedText;
+            char[] textarray = text.ToCharArray();
+            for (int i = 0; i < textarray.Length; i++)
+            {
+                if (textarray[i] >= 65 && textarray[i] <= 90)
+                    textarray[i] = (char)(textarray[i] + 32);
+                else if (textarray[i] >= 97 && textarray[i] <= 122)
+                    textarray[i] = (char)(textarray[i] - 32);
+            }
+            editorBox.ActiveTextAreaControl.SelectionManager.RemoveSelectedText();
+            editorBox.ActiveTextAreaControl.TextArea.InsertString(new string(textarray));
+            editorBox.Document.UndoStack.EndUndoGroup();
+        }
+
+        internal void UpdateOptions(TempSettings settings)
+        {
+            editorBox.TextEditorProperties.MouseWheelScrollDown = !settings.inverseScrolling;
+            if (settings.enableFolding)
+            {
+                editorBox.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
+                editorBox.Document.FoldingManager.UpdateFoldings(null, null);
+            }
+            else
+            {
+                editorBox.Document.FoldingManager.FoldingStrategy = null;
+                editorBox.Document.FoldingManager.UpdateFoldings(new List<FoldMarker>());
+            }
+            if (settings.autoIndent)
+                editorBox.IndentStyle = IndentStyle.Smart;
+            else
+                editorBox.IndentStyle = IndentStyle.None;
+            if (settings.antiAlias)
+                editorBox.TextRenderingHint = TextRenderingHint.ClearTypeGridFit;
+            else
+                editorBox.TextRenderingHint = TextRenderingHint.SingleBitPerPixel;
+            editorBox.Font = settings.editorFont;
+        }
+
+        internal void SelectedTextToSentenceCase()
+        {
+            editorBox.Document.UndoStack.StartUndoGroup();
+            string text = editorBox.ActiveTextAreaControl.SelectionManager.SelectedText;
+            string newText = System.Globalization.CultureInfo.CurrentCulture.TextInfo.ToTitleCase(text);
+            editorBox.ActiveTextAreaControl.SelectionManager.RemoveSelectedText();
+            editorBox.ActiveTextAreaControl.TextArea.InsertString(newText);
+            editorBox.Document.UndoStack.EndUndoGroup();
+        }
+
+        internal void RemoveInvisibleMarkers()
+        {
+            editorBox.Document.MarkerStrategy.RemoveAll(match => match.TextMarkerType == TextMarkerType.Invisible);
+        }
+
+        internal void FormatLines()
+        {
+            string[] lines = editorBox.Text.Split('\n');
+            string indent = "\t";
+            string currentIndent = indent;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                string line = lines[i];
+                string comment = "";
+                if (line.Trim().Length == 0)
+                    continue;
+
+                if (line.IndexOf(';') != -1)
+                {
+                    comment = line.Substring(line.IndexOf(';'));
+                    line = line.Remove(line.IndexOf(';'));
+                }
+                bool islabel = line != "" && (!char.IsWhiteSpace(line[0]) || line[0] == '_');
+                line = line.Trim();
+                if (line.StartsWith("push"))
+                    currentIndent += indent;
+                if ((line.StartsWith("pop") || line.StartsWith("ret")) && currentIndent.Length > 1)
+                    currentIndent = currentIndent.Remove(currentIndent.Length - 1);
+                if (!islabel)
+                    line = currentIndent + line;
+                lines[i] = line + comment;
+            }
+            StringBuilder newText = new StringBuilder();
+            foreach (string line in lines)
+                newText.AppendLine(line);
+            editorBox.Document.TextContent = newText.ToString();
+        }
+
+        internal void GotoNextBookmark()
+        {
+            GotoNextBookmark next = new GotoNextBookmark(bookmark => true);
+            next.Execute(editorBox.ActiveTextAreaControl.TextArea);
+        }
+
+        internal void GotoPrevBookmark()
+        {
+            GotoPrevBookmark next = new GotoPrevBookmark(bookmark => true);
+            next.Execute(editorBox.ActiveTextAreaControl.TextArea);
+        }
+
+        internal void ToggleBookmark()
+        {
+            ToggleBookmark toggle = new ToggleBookmark();
+            toggle.Execute(editorBox.ActiveTextAreaControl.TextArea);
+        }
+
+        internal void Find(string textToFind)
+        {
+            int startOffset = editorBox.ActiveTextAreaControl.Caret.Offset + textToFind.Length;
+            if (startOffset > editorBox.Text.Length)
+                startOffset = 0;
+            int newOffset = editorBox.Text.IndexOf(textToFind, startOffset);
+            if (newOffset == -1)
+                MessageBox.Show("Text Not Found");
+            else
+            {
+                int line =
+                    editorBox.ActiveTextAreaControl.Caret.Line =
+                    editorBox.Document.GetLineNumberForOffset(newOffset);
+                int col = editorBox.Text.Split('\n')[line].IndexOf(textToFind);
+                editorBox.ActiveTextAreaControl.Caret.Column = textToFind.Length + col;
+                TextLocation start = new TextLocation(col, line);
+                TextLocation end = new TextLocation(textToFind.Length + col, line);
+                editorBox.ActiveTextAreaControl.SelectionManager.SetSelection(start, end);
+                editorBox.ActiveTextAreaControl.ScrollTo(line);
+            }
+        }
+
+        internal void AddSquiggleLine(int newLineNumber, Color underlineColor, string description)
+        {
+            TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
+            editorBox.ActiveTextAreaControl.ScrollTo(newLineNumber - 1);
+            editorBox.ActiveTextAreaControl.Caret.Line = newLineNumber - 1;
+            int start = textArea.Caret.Offset;
+            int length =
+                editorBox.Document.TextContent.Split('\n')[textArea.Caret.Line].Length;
+            while (start > 0 && textArea.Document.TextContent[start] != '\n')
+                start--;
+            start++;
+            length--;
+            while (char.IsWhiteSpace(textArea.Document.GetCharAt(start)))
+            {
+                start++;
+                length--;
+            }
+            TextMarker highlight = new TextMarker(start, length, TextMarkerType.WaveLine, underlineColor)
+            {
+                ToolTip = description,
+                Tag = "Code Check"
+            };
+            editorBox.Document.MarkerStrategy.AddMarker(highlight);
+        }
+
+        internal void HighlightLine(int newLineNumber, Color foregroundColor, string tag)
+        {
+            //this code highlights the current line
+            //I KNOW IT WORKS DONT FUCK WITH IT
+            TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
+            int start = textArea.Caret.Offset == editorBox.Text.Length ? textArea.Caret.Offset - 1 : textArea.Caret.Offset;
+            int length = editorBox.Document.TextContent.Split('\n')[textArea.Caret.Line].Length;
+            if (editorBox.Document.GetCharAt(start) == '\n')
+                start--;
+            while (start > 0 && editorBox.Document.GetCharAt(start) != '\n')
+                start--;
+            start++;
+            while (start < textArea.Document.TextContent.Length && char.IsWhiteSpace(editorBox.Document.GetCharAt(start++)))
+                length--;
+            if (length >= editorBox.Text.Length)
+                length += (editorBox.Text.Length - 1) - length;
+            if (editorBox.Text.IndexOf(';', start, length) != -1)
+                length = editorBox.Text.IndexOf(';', start, length) - start - 1;
+            if (editorBox.Text.Length <= start + length)
+                length--;
+            while (editorBox.Text[start + length] == ' ' || editorBox.Text[start + length] == '\t')
+                length--;
+            length++;
+            TextMarker highlight = new TextMarker(start, length, TextMarkerType.SolidBlock, foregroundColor, Color.Black) 
+            { Tag = DockingService.ActiveDocument.FileName };
+            editorBox.Document.MarkerStrategy.AddMarker(highlight);
+            editorBox.Refresh();
+            DocumentService.ActiveDocument.ScrollToLine(newLineNumber - 1);
+        }
+
+        internal void HighlightLine(int newLineNumber, Color foregroundColor)
+        {
+            //this code highlights the current line
+            //I KNOW IT WORKS DONT FUCK WITH IT
+            TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
+
+            int start = textArea.Caret.Offset == editorBox.Document.TextLength ? textArea.Caret.Offset - 1 : textArea.Caret.Offset;
+            int length = editorBox.Document.TextContent.Split('\n')[textArea.Caret.Line].Length;
+            if (editorBox.Document.GetCharAt(start) == '\n')
+                start--;
+            while (start > 0 && editorBox.Document.GetCharAt(start) != '\n')
+                start--;
+            start++;
+            while (start < editorBox.Document.TextLength && char.IsWhiteSpace(editorBox.Document.GetCharAt(start)))
+            {
+                start++;
+                length--;
+            }
+            if (length >= editorBox.Document.TextLength)
+                length += editorBox.Document.TextLength - 1 - length;
+            if (editorBox.Document.TextContent.IndexOf(';', start, length) != -1)
+                length = editorBox.Document.TextContent.IndexOf(';', start, length) - start - 1;
+            if (editorBox.Document.TextLength <= start + length)
+                length--;
+            while (char.IsWhiteSpace(editorBox.Document.GetCharAt(start+length)))
+                length--;
+            length++;
+            TextMarker highlight = new TextMarker(start, length, TextMarkerType.SolidBlock, foregroundColor, Color.Black) 
+                { Tag = DockingService.ActiveDocument.FileName };
+            editorBox.Document.MarkerStrategy.AddMarker(highlight);
+            editorBox.Refresh();
+            ScrollToLine(newLineNumber);
+        }
+
+        internal void HighlightCall(int lineNumber)
+        {
+            string line = editorBox.Document.TextContent.Split('\n')[lineNumber];
+            if (line.Contains(';'))
+                line = line.Remove(line.IndexOf(';'));
+            if (line.Contains("call") || line.Contains("bcall") || line.Contains("b_call") || line.Contains("rst"))
+            {
+                DebuggerService.StepStack.Push(lineNumber);
+                //DocumentService.HighlightLine(lineNumber, Color.Green);
+            }
+            //if (line.Contains("ret"))
+            //	DebuggerService.StepStack.Pop();
+        }
+
+        internal void RemoveHighlight(int line)
+        {
+            editorBox.Document.MarkerStrategy.RemoveAll(marker => editorBox.Document.GetLineNumberForOffset(marker.Offset) == line - 1);
+            editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
+        }
+
+        internal void RemoveDebugHighlight(int line)
+        {
+            editorBox.Document.MarkerStrategy.RemoveAll(marker => editorBox.Document.GetLineNumberForOffset(marker.Offset) == line - 1 && marker.Color == Color.Yellow);
+            editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
+        }
+
+        internal void AddMarkers(List<TextMarker> markers)
+        {
+            foreach (TextMarker marker in markers)
+                editorBox.Document.MarkerStrategy.AddMarker(marker);
+            editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
+            this.Refresh();
+        }
+    }
 
     class CodeCompletionProvider : ICompletionDataProvider
     {
@@ -921,7 +1456,7 @@ namespace Revsoft.Wabbitcode
         public CodeCompletionProvider(newEditor mainForm)
         {
             this.mainForm = mainForm;
-            editorBox = mainForm.editorBox;
+            editorBox = mainForm.EditorBox;
         }
 
         public ImageList ImageList
@@ -1145,6 +1680,7 @@ namespace Revsoft.Wabbitcode
                                             resultList.Add(new CodeCompletionData("ix", 3));
                                             resultList.Add(new CodeCompletionData("iy", 3));
                                             return resultList.ToArray();
+                                        case "a":
                                         case "b":
                                         case "c":
                                         case "d":
@@ -1157,21 +1693,6 @@ namespace Revsoft.Wabbitcode
                                                 resultList.Add(new CodeCompletionData("i", 3));
                                                 resultList.Add(new CodeCompletionData("r", 3));
                                             }
-											/*foreach (ArrayList file in ProjectService.Project.projectLabels)
-                                            {
-                                                ArrayList labels = (ArrayList)file[0];
-                                                ArrayList props = (ArrayList)file[1];
-                                                ArrayList description = (ArrayList)file[2];
-                                                int counter = -1;
-                                                foreach (string label in labels)
-                                                {
-                                                    counter++;
-                                                    if (label == "_")
-                                                        continue;
-                                                    if (props[counter].ToString().Contains("|equate|"))
-                                                        resultList.Add(new CodeCompletionData(label, 5, description[labels.IndexOf(label)].ToString()));
-                                                }
-                                            }*/
                                             Add8BitRegs(ref resultList);
                                             break;
                                         case "i":
@@ -1197,21 +1718,6 @@ namespace Revsoft.Wabbitcode
                             case "res":
                                 if (firstArg == "")
                                 {
-									/*foreach (ArrayList file in ProjectService.Project.projectLabels)
-                                    {
-                                        ArrayList labels = (ArrayList)file[0];
-                                        ArrayList props = (ArrayList)file[1];
-                                        ArrayList description = (ArrayList)file[2];
-                                        int counter = -1;
-                                        foreach (string label in labels)
-                                        {
-                                            counter++;
-                                            if (label == "_")
-                                                continue;
-                                            if (props[counter].ToString().Contains("|equate|"))
-                                                resultList.Add(new CodeCompletionData(label, 5, description[labels.IndexOf(label)].ToString()));
-                                        }
-                                    }*/
                                     resultList.Add(new CodeCompletionData("0", 6));
                                     resultList.Add(new CodeCompletionData("1", 6));
                                     resultList.Add(new CodeCompletionData("2", 6));
@@ -1264,11 +1770,7 @@ namespace Revsoft.Wabbitcode
                             case "push":
                             case "pop":
                                 resultList.Add(new CodeCompletionData("af", 3));
-                                resultList.Add(new CodeCompletionData("bc", 3));
-                                resultList.Add(new CodeCompletionData("de", 3));
-                                resultList.Add(new CodeCompletionData("hl", 3));
-                                resultList.Add(new CodeCompletionData("ix", 3));
-                                resultList.Add(new CodeCompletionData("iy", 3));
+                                Add16BitRegs(ref resultList);
                                 return resultList.ToArray();
                             //labels/equates and conditions
                             case "call":
@@ -1296,28 +1798,7 @@ namespace Revsoft.Wabbitcode
                                 }
                                 if (command == "ret")
                                     return resultList.ToArray();
-
-								/*foreach (ArrayList file in ProjectService.Project.projectLabels)
-                                {
-                                    ArrayList labels = (ArrayList) file[0];
-                                    ArrayList props = (ArrayList) file[1];
-                                    ArrayList description = (ArrayList) file[2];
-                                    int counter = -1;
-                                    foreach (string label in labels)
-                                    {
-                                        counter++;
-                                        if (label == "_")
-                                            continue;
-                                        if (props[counter].ToString().Contains("|label|"))
-                                            resultList.Add(new CodeCompletionData(label, 4,
-                                                                                  description[labels.IndexOf(label)].
-                                                                                      ToString()));
-                                        else if (props[counter].ToString().Contains("|equate|"))
-                                            resultList.Add(new CodeCompletionData(label, 5,
-                                                                                  description[labels.IndexOf(label)].
-                                                                                      ToString()));
-                                    }
-                                }*/
+                                AddParserData(ref resultList);
                                 return resultList.ToArray();
                             //special cases
                             case "im":

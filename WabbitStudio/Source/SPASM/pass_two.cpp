@@ -145,6 +145,7 @@ void run_second_pass () {
 	output_t *old_output;
 	unsigned char *saved_out_ptr = out_ptr;
 	int saved_listing_offset = listing_offset;
+	char* old_input_file = curr_input_file;
 
 	pass_one = false;
 
@@ -218,6 +219,7 @@ void run_second_pass () {
 		output_list = output_list->next;
 		free (old_output);
 	}
+	curr_input_file = old_input_file;
 }
 
 

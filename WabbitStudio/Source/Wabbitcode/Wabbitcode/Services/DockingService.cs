@@ -233,13 +233,10 @@ namespace Revsoft.Wabbitcode.Services
 			string[] parsedStrings = persistString.Split(';');
 			if (parsedStrings.Length != 6 || parsedStrings[0] != typeof(newEditor).ToString() || !File.Exists(parsedStrings[1]))
 				return null;
-			newEditor doc = new newEditor();
-			doc.OpenFile(parsedStrings[1]);
-			doc.editorBox.ActiveTextAreaControl.HorizontalScroll.Value = int.Parse(parsedStrings[2]);
-			doc.editorBox.ActiveTextAreaControl.VerticalScroll.Value = int.Parse(parsedStrings[3]);
-			doc.editorBox.ActiveTextAreaControl.Caret.Column = int.Parse(parsedStrings[4]);
-			doc.editorBox.ActiveTextAreaControl.Caret.Line = int.Parse(parsedStrings[5]);
-			return doc;
+            newEditor doc = DocumentService.OpenDocument(parsedStrings[1]);
+            doc.SetPosition(int.Parse(parsedStrings[2]), int.Parse(parsedStrings[3]),
+                                                        int.Parse(parsedStrings[4]), int.Parse(parsedStrings[5]));
+            return doc;
 		}
 
 		internal static void Destroy()
