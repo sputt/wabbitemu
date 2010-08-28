@@ -28,12 +28,32 @@ public:
 	};
 
 	// IZ80 methods
-	STDMETHODIMP get_AF(LPWORD lpAF) {*lpAF = m_cpu->af; return S_OK;};
-	STDMETHODIMP get_A(LPBYTE lpA)   {*lpA = m_cpu->a; return S_OK;};
-	STDMETHODIMP get_F(LPBYTE lpF)   {*lpF = m_cpu->f; return S_OK;};
-	STDMETHODIMP put_AF(WORD AF) {m_cpu->af = AF; return S_OK;};
-	STDMETHODIMP put_A(BYTE A)   {m_cpu->a = A; return S_OK;};
-	STDMETHODIMP put_F(BYTE F)   {m_cpu->f = F; return S_OK;};
+#define INTF_REGPAIR(zh, zl, zhl, zH, zL, zHL) \
+	STDMETHODIMP get_##zHL(LPWORD lp##zHL) {*lp##zHL = m_cpu->zhl; return S_OK;}; \
+	STDMETHODIMP get_##zH(LPBYTE lp##zH)   {*lp##zH = m_cpu->zh; return S_OK;}; \
+	STDMETHODIMP get_##zL(LPBYTE lp##zL)   {*lp##zL = m_cpu->zl; return S_OK;}; \
+	STDMETHODIMP put_##zHL(WORD zHL) {m_cpu->zhl = zHL; return S_OK;}; \
+	STDMETHODIMP put_##zH(BYTE zH)   {m_cpu->zh = zH; return S_OK;}; \
+	STDMETHODIMP put_##zL(BYTE zL)   {m_cpu->zl = zL; return S_OK;}
+
+	INTF_REGPAIR(a, f, af, A, F, AF);
+	INTF_REGPAIR(b, c, bc, B, C, BC);
+	INTF_REGPAIR(d, e, de, D, E, DE);
+	INTF_REGPAIR(h, l, hl, H, L, HL);
+
+	INTF_REGPAIR(ap, fp, afp, AP, FP, AFP);
+	INTF_REGPAIR(bp, cp, bcp, BP, CP, BCP);
+	INTF_REGPAIR(dp, ep, dep, DP, EP, DEP);
+	INTF_REGPAIR(hp, lp, hlp, HP, LP, HLP);
+
+	INTF_REGPAIR(ixh, ixl, ix, IXH, IXL, IX);
+	INTF_REGPAIR(iyh, iyl, iy, IYH, IYL, IY);
+
+	STDMETHODIMP get_PC(LPWORD lpPC) {*lpPC = m_cpu->pc; return S_OK;};
+	STDMETHODIMP put_PC(WORD PC) {m_cpu->pc = PC; return S_OK;};
+
+	STDMETHODIMP get_SP(LPWORD lpSP) {*lpSP = m_cpu->sp; return S_OK;};
+	STDMETHODIMP put_SP(WORD SP) {m_cpu->sp = SP; return S_OK;};
 
 	CZ80(CPU_t *cpu)
 	{
