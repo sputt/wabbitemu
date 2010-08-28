@@ -23,7 +23,7 @@ int calc_slot_new(void) {
 		if (calcs[i].active == FALSE) {
 			memset(&calcs[i], 0, sizeof(calc_t));
 			calcs[i].gif_disp_state = GDS_IDLE;
-			calcs[i].speed = 100;
+			calcs[i].speed = 1.0;
 			return i;
 		}
 	}
@@ -129,30 +129,6 @@ static int calc_init_83pse(int slot) {
 	return 0;
 }
 
-/* 84+ */
-static int calc_init_84p(int slot) {
-	/* INTIALIZE 84+ */
-	memory_init_84p(&calcs[slot].mem_c);
-	tc_init(&calcs[slot].timer_c, MHZ_6);
-	CPU_init(&calcs[slot].cpu, &calcs[slot].mem_c, &calcs[slot].timer_c);
-	ClearDevices(&calcs[slot].cpu);
-	device_init_83pse(&calcs[slot].cpu);
-	void port21_84p(CPU_t *cpu, device_t *dev);
-	calcs[slot].cpu.pio.devices[0x21].code = (devp) &port21_84p;
-#ifdef WITH_BACKUPS
-	backups_init_83pse(slot);
-#endif
-	/* END INTIALIZE 84+ */
-
-	calcs[slot].send			= FALSE;
-#ifdef WINVER // FIXME: dirty cheater!
-	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
-	calcs[slot].audio->enabled	= FALSE;
-	calcs[slot].audio->init		= FALSE;
-#endif
-	return 0;
-}
-
 
 void calc_erase_certificate( u_char* mem, int size) {
 	if (mem == NULL || size < 32768) return;
@@ -176,7 +152,7 @@ int rom_load(int slot, char * FileName) {
 	if (tifile == NULL)
 		return -1;
 
-	calcs[slot].speed = 100;
+	calcs[slot].speed = 1.0f;
 
 	if (calcs[slot].active)
 		calc_slot_free(slot);
@@ -206,9 +182,6 @@ int rom_load(int slot, char * FileName) {
 			case TI_84PSE:
 			case TI_83PSE:
 				calc_init_83pse(slot);
-				break;
-			case TI_84P:
-				calc_init_84p(slot);
 				break;
 			default:
 				puts("Unknown model");
@@ -247,7 +220,16 @@ int rom_load(int slot, char * FileName) {
 				calc_erase_certificate(calcs[slot].cpu.mem_c->flash,calcs[slot].cpu.mem_c->flash_size);
 				break;
 			case TI_84P:
-				calc_init_84p(slot);
+				calc_init_83pse(slot);
+				printf("Setting custom memory settings for the 84+\n");
+				calcs[slot].mem_c.banks[1].addr = calcs[slot].mem_c.flash+0x3F*PAGE_SIZE;
+				calcs[slot].mem_c.banks[1].page = 0x3F;
+				calcs[slot].mem_c.banks[2].addr = calcs[slot].mem_c.flash+0x3F*PAGE_SIZE;
+				calcs[slot].mem_c.banks[2].page = 0x3F;
+				calcs[slot].mem_c.flash_pages = 0x40;
+				void port21_84p(CPU_t *cpu, device_t *dev);
+				calcs[slot].cpu.pio.devices[0x21].code = (devp) &port21_84p;
+
 				memcpy(	calcs[slot].cpu.mem_c->flash,
 						tifile->rom->data,
 						(calcs[slot].cpu.mem_c->flash_size<=tifile->rom->size)?calcs[slot].cpu.mem_c->flash_size:tifile->rom->size);
@@ -297,8 +279,6 @@ void calc_slot_free(int slot) {
 		printf("Freeing memory\n");
 		free(calcs[slot].mem_c.flash);
 		free(calcs[slot].mem_c.ram);
-		free(calcs[slot].mem_c.flash_break);
-		free(calcs[slot].mem_c.ram_break);
 		printf("Freeing hardware\n");
 		free(calcs[slot].cpu.pio.link);
 		printf("freeing keypad\n");
@@ -343,7 +323,7 @@ int calc_run_frame(int slot) {
 		/* sync CPU */
 		if (tc_elapsed((&calcs[slot].timer_c)) - cpu_sync > (1.0f / FPS)) {
 			//if (!calcs[slot].warp) return 0;
-			if (tc_elapsed((&calcs[slot].timer_c)) - cpu_sync > ((float)(calcs[slot].speed / 100) / FPS)) return 0;
+			if (tc_elapsed((&calcs[slot].timer_c)) - cpu_sync > (calcs[slot].speed / FPS)) return 0;
 		}
 	}
 	return 0;
@@ -403,7 +383,7 @@ int calc_run_all(void) {
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active) {
-				int time = ((long long)calcs[j].timer_c.freq*calcs[j].speed/FPS/100)/FRAME_SUBDIVISIONS;
+				int time = (calcs[j].speed*calcs[j].timer_c.freq/FPS)/FRAME_SUBDIVISIONS;
 				calc_run_tstates(j, time);
 			}
 		}
@@ -496,9 +476,9 @@ int calc_run_seconds(int slot, double seconds) {
 int calc_run_timed(int slot, time_t time) {
 	int frames = (int) time / TPF;
 
-	int speed_backup = calcs[slot].speed;
+	float speed_backup = calcs[slot].speed;
 
-	calcs[slot].speed = 5000;
+	calcs[slot].speed = 50;
 	while (frames--) 
 		calc_run_frame(slot);
 	calcs[slot].speed = speed_backup;

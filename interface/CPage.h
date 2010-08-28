@@ -2,61 +2,50 @@
 
 #include <windows.h>
 #include <tchar.h>
+#include <atlbase.h>
+#include <atlcom.h>
+
 #include "Wabbitemu_h.h"
 #include "core.h"
 
-class CPage : IPage
+class CPage :
+	public IDispatchImpl<IPage, &IID_IPage, &LIBID_WabbitemuLib>,
+	public CComObjectRoot
 {
 public:
-	// IUnknown methods
-	STDMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject);
-	STDMETHODIMP_(ULONG) AddRef()
+	CPage()
 	{
-		return InterlockedIncrement(&m_lRefCount);
-	};
-	STDMETHODIMP_(ULONG) Release()
-	{
-		if (InterlockedDecrement(&m_lRefCount) == 0)
-		{
-			delete this;
-			return 0;
-		}
-		else
-		{
-			return m_lRefCount;
-		}
+		BOOL m_fIsFlash = FALSE;
+		int m_iPage = -1;
 	};
 
-	// IBank methods
+	BEGIN_COM_MAP(CPage)
+		COM_INTERFACE_ENTRY(IDispatch)
+		COM_INTERFACE_ENTRY(IPage)
+	END_COM_MAP( )
+
+	// IPage methods
 	STDMETHODIMP get_Index(int *lpIndex);
-	STDMETHODIMP get_Type(PAGETYPE *lpType);
+	STDMETHOD(get_IsFlash)(VARIANT_BOOL *pbIsFlash);
 	STDMETHODIMP Read(WORD Address, LPBYTE lpValue);
 	STDMETHODIMP Write(WORD Address, BYTE Value);
 
-	CPage(const memory_context_t *pMem, PAGETYPE Type, int iPage)
+	void Initialize(memory_context_t *mem, BOOL fIsFlash, int iPage)
 	{
-		m_lRefCount = 1;
-		
-		m_Type = Type;
+		m_fIsFlash = fIsFlash;
 		m_iPage = iPage;
-		if (Type == PAGETYPE::FLASH)
+		if (fIsFlash)
 		{
-			m_lpData = &pMem->flash[iPage * PAGE_SIZE];
-		}
-		else if (Type == PAGETYPE::RAM)
-		{
-			m_lpData = &pMem->ram[iPage * PAGE_SIZE];
+			m_lpData = &mem->flash[iPage * PAGE_SIZE];
 		}
 		else
 		{
-			m_lpData = NULL;
+			m_lpData = &mem->ram[iPage * PAGE_SIZE];
 		}
-	};
+	}
 
 private:
-	LONG m_lRefCount;
-
-	PAGETYPE m_Type;
+	BOOL m_fIsFlash;
 	int m_iPage;
 	LPBYTE m_lpData;
 };

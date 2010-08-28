@@ -78,15 +78,11 @@ typedef struct calc {
 	BOOL do_drag;
 	HDC hdcSkin;
 	HDC hdcKeymap;
-#ifdef USE_GDIPLUS
-	Graphics *skinGraphics;
-	Graphics *keymapGraphics;
-#endif
 #else
 	pthread_t hdlThread;
 #endif
 	BOOL running;
-	int speed;
+	float speed;
 	BYTE breakpoints[0x10000];
 	//BOOL warp;
 	label_struct labels[6000];
@@ -164,7 +160,9 @@ GLOBAL calc_t calcs[MAX_CALCS];
 GLOBAL int gslot;
 GLOBAL debugger_backup backups/*[MAX_CALCS]*/[10];
 GLOBAL int frame_counter;
-GLOBAL bool exit_save_state;
+#ifdef WINVER
+GLOBAL HACCEL haccelmain;
+#endif
 
 GLOBAL const char *CalcModelTxt[]
 #ifdef CALC_C

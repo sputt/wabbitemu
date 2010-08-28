@@ -2,36 +2,15 @@
 
 #include "CPage.h"
 
-STDMETHODIMP CPage::QueryInterface(REFIID riid, LPVOID *ppvObject)
-{
-	if (riid == IID_IUnknown)
-	{
-		this->AddRef();
-		*ppvObject = this;
-		return S_OK;
-	}
-	else if (riid == IID_IPage)
-	{
-		this->AddRef();
-		*ppvObject = this;
-		return S_OK;
-	}
-	else
-	{
-		*ppvObject = NULL;
-		return E_NOINTERFACE;
-	}
-}
-
 STDMETHODIMP CPage::get_Index(int *lpIndex)
 {
 	*lpIndex = m_iPage;
 	return S_OK;
 }
 
-STDMETHODIMP CPage::get_Type(PAGETYPE *lpType)
+STDMETHODIMP CPage::get_IsFlash(VARIANT_BOOL *pbIsFlash)
 {
-	*lpType = m_Type;
+	*pbIsFlash = (m_fIsFlash == TRUE) ? VARIANT_TRUE : VARIANT_FALSE;
 	return S_OK;
 }
 

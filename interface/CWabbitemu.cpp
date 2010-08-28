@@ -39,6 +39,11 @@ STDMETHODIMP CWabbitemu::get_CPU(IZ80 **ppZ80)
 	return m_pZ80->QueryInterface(IID_IZ80,(LPVOID *) ppZ80);
 }
 
+STDMETHODIMP CWabbitemu::get_LCD(ILCD **ppLCD)
+{
+	return m_pLCD->QueryInterface(IID_ILCD,(LPVOID *) ppLCD);
+}
+
 STDMETHODIMP CWabbitemu::Step()
 {
 	CPU_step(&m_lpCalc->cpu);
@@ -53,27 +58,37 @@ STDMETHODIMP CWabbitemu::StepOver()
 
 STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress)
 {
-	PAGETYPE PageType;
-	pPage->get_Type(&PageType);
+	VARIANT_BOOL IsFlash;
+	pPage->get_IsFlash(&IsFlash);
 
 	int iPage;
 	pPage->get_Index(&iPage);
 
-	set_break(&m_lpCalc->mem_c, (PageType == PAGETYPE::RAM), iPage, wAddress);
+	set_break(&m_lpCalc->mem_c, !IsFlash, iPage, wAddress);
 	return S_OK;
 }
 
 
 STDMETHODIMP CWabbitemu::RAM(int Index, IPage **ppPage)
 {
-	*ppPage = (IPage *) new CPage(&m_lpCalc->mem_c, PAGETYPE::RAM, Index);
-	return S_OK;   
+	CPage *pPage = new CComObject<CPage>();
+	HRESULT hr = pPage->QueryInterface(IID_IPage, (LPVOID *) ppPage);
+	if (SUCCEEDED(hr))
+	{
+		pPage->Initialize(&m_lpCalc->mem_c, FALSE, Index);
+	}
+	return hr;
 }
 
 STDMETHODIMP CWabbitemu::Flash(int Index, IPage **ppPage)
 {
-	*ppPage = (IPage *) new CPage(&m_lpCalc->mem_c, PAGETYPE::FLASH, Index);
-	return S_OK;   
+	CPage *pPage = new CComObject<CPage>();
+	HRESULT hr = pPage->QueryInterface(IID_IPage, (LPVOID *) ppPage);
+	if (SUCCEEDED(hr))
+	{
+		pPage->Initialize(&m_lpCalc->mem_c, TRUE, Index);
+	}
+	return hr;
 }
 
 STDMETHODIMP CWabbitemu::Read(WORD Address, LPBYTE lpValue)
@@ -124,7 +139,7 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 	state_build_applist(&m_lpCalc->cpu, &applist);
 
 	SAFEARRAYBOUND sab = {0};
-	sab.lLbound = 1;
+	sab.lLbound = 0;
 	sab.cElements = applist.count;
 	LPSAFEARRAY lpsa = SafeArrayCreateEx(VT_RECORD, 1, &sab, pRecordInfo);
 	pRecordInfo->Release();
@@ -138,7 +153,7 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 			MultiByteToWideChar(CP_ACP, 0, applist.apps[i].name, -1, wszAppName, ARRAYSIZE(wszAppName));
 
 			pvData[i].Name = SysAllocString((OLECHAR *) wszAppName);
-			pvData[i].Page = applist.apps[i].page;
+			this->Flash(applist.apps[i].page, &pvData[i].Page);
 			pvData[i].PageCount = applist.apps[i].page_count;
 		}
 
@@ -177,7 +192,7 @@ STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 	state_build_symlist_83P(&m_lpCalc->cpu, &symlist);
 
 	SAFEARRAYBOUND sab = {0};
-	sab.lLbound = 1;
+	sab.lLbound = 0;
 	sab.cElements = symlist.last - symlist.symbols + 1;
 	LPSAFEARRAY lpsa = SafeArrayCreateEx(VT_RECORD, 1, &sab, pRecordInfo);
 	pRecordInfo->Release();
@@ -208,4 +223,74 @@ STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 
 	*ppAppList = lpsa;
 	return S_OK;
+}
+
+
+static LRESULT CALLBACK  WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+	case WM_CREATE:
+		{
+			SetTimer(hwnd, 1, TPF, NULL);
+			return 0;
+		}
+	case WM_TIMER:
+		{
+			switch (wParam)
+			{
+			case 1:
+				{
+					static LONG difference;
+					static DWORD prevTimer;
+
+					DWORD dwTimer = GetTickCount();
+					// How different the timer is from where it should be
+					// guard from erroneous timer calls with an upper bound
+					// that's the limit of time it will take before the
+					// calc gives up and claims it lost time
+					difference += ((dwTimer - prevTimer) & 0x003F) - TPF;
+					prevTimer = dwTimer;
+
+					// Are we greater than Ticks Per Frame that would call for
+					// a frame skip?
+					if (difference > -TPF) {
+						calc_run_all();
+						while (difference >= TPF) {
+							calc_run_all();
+							difference -= TPF;
+						}
+					// Frame skip if we're too far ahead.
+					} else difference += TPF;
+					break;
+				}
+			}
+			return 0;
+		}
+	default:
+		{
+			return DefWindowProc(hwnd, uMsg, wParam, lParam);
+		}
+	}
+}
+
+DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
+{
+	CWabbitemu *pWabbitemu = (CWabbitemu *) lpParam;
+	WNDCLASS wc = {0};
+
+	wc.lpszClassName = _T("WabbitemuCOMListener");
+	wc.hInstance = GetModuleHandle(NULL);
+	wc.lpfnWndProc = WndProc;
+	RegisterClass(&wc);
+
+	pWabbitemu->m_hwnd = CreateWindowEx(0, _T("WabbitemuCOMListener"), _T(""), WS_CHILD, 0, 0, 0, 0, HWND_MESSAGE, 0, GetModuleHandle(NULL), NULL);
+
+	MSG Msg;
+	while (GetMessage(&Msg, NULL, 0, 0))
+	{
+		DispatchMessage(&Msg);
+	}
+
+	return 0;
 }
