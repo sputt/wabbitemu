@@ -53,7 +53,7 @@ STDMETHODIMP CWabbitemu::Step()
 STDMETHODIMP CWabbitemu::StepOver()
 {
 	//CPU_stepover(&m_lpCalc->cpu);
-	return S_OK;
+	return E_NOTIMPL;
 }
 
 STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress)
@@ -293,4 +293,9 @@ DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
 	}
 
 	return 0;
+}
+
+STDMETHODIMP CWabbitemu::get_Keypad(IKeypad **ppKeypad)
+{
+	return m_pKeypad->QueryInterface(IID_IKeypad, (LPVOID *) ppKeypad);
 }

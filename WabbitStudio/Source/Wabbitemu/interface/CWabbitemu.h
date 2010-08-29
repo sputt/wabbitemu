@@ -5,6 +5,7 @@
 #include "Wabbitemu_h.h"
 #include "CZ80.h"
 #include "CLCD.h"
+#include "CKeypad.h"
 #include "calc.h"
 
 class CWabbitemu : IWabbitemu
@@ -62,6 +63,7 @@ public:
 
 	STDMETHODIMP get_Apps(SAFEARRAY **ppAppList);
 	STDMETHODIMP get_Symbols(SAFEARRAY **ppAppList);
+	STDMETHOD(get_Keypad)(IKeypad **ppKeypad);
 
 	CWabbitemu()
 	{
@@ -70,6 +72,7 @@ public:
 		m_lpCalc = &calcs[slot];
 		m_pZ80 = new CZ80(&calcs[slot].cpu);
 		m_pLCD = new CLCD(&calcs[slot].cpu);
+		m_pKeypad = new CKeypad(&calcs[slot].cpu);
 
 		m_hThread = CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, NULL);
 	};
@@ -81,6 +84,7 @@ private:
 	calc_t *m_lpCalc;
 	CZ80 *m_pZ80;
 	CLCD *m_pLCD;
+	CKeypad *m_pKeypad;
 	HANDLE m_hThread;
 	HWND m_hwnd;
 };
