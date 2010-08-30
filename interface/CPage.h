@@ -29,6 +29,8 @@ public:
 	STDMETHOD(get_IsFlash)(VARIANT_BOOL *pbIsFlash);
 	STDMETHODIMP Read(WORD Address, LPBYTE lpValue);
 	STDMETHODIMP Write(WORD Address, BYTE Value);
+	STDMETHOD(ReadBlock)(WORD Address, int ByteCount, LPSAFEARRAY *ppsaBlock);
+	STDMETHOD(WriteBlock)(WORD Address, int ByteCount, LPSAFEARRAY psaBlock);
 
 	void Initialize(memory_context_t *mem, BOOL fIsFlash, int iPage)
 	{

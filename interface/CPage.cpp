@@ -26,5 +26,23 @@ STDMETHODIMP CPage::Write(WORD Address, BYTE Value)
 	return S_OK;
 }
 
+STDMETHODIMP CPage::ReadBlock(WORD Address, int ByteCount, LPSAFEARRAY *ppsaBlock)
+{
+	SAFEARRAYBOUND sab = {0};
+	sab.cElements = ByteCount;
+	sab.lLbound = 0;
+	LPSAFEARRAY psa = SafeArrayCreate(VT_UI1, 1, &sab);
 
+	LPBYTE lpData = NULL;
+	SafeArrayAccessData(psa, (LPVOID *) &lpData);
+	memcpy(lpData, &m_lpData[Address % PAGE_SIZE], ByteCount);
+	SafeArrayUnaccessData(psa);
 
+	*ppsaBlock = psa;
+	return S_OK;
+}
+
+STDMETHODIMP CPage::WriteBlock(WORD Address, int ByteCount, LPSAFEARRAY psaBlock)
+{
+	return E_NOTIMPL;
+}
