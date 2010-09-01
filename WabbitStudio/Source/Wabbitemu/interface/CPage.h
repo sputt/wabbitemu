@@ -27,10 +27,8 @@ public:
 	// IPage methods
 	STDMETHODIMP get_Index(int *lpIndex);
 	STDMETHOD(get_IsFlash)(VARIANT_BOOL *pbIsFlash);
-	STDMETHODIMP Read(WORD Address, LPBYTE lpValue);
-	STDMETHODIMP Write(WORD Address, BYTE Value);
-	STDMETHOD(ReadBlock)(WORD Address, int ByteCount, LPSAFEARRAY *ppsaBlock);
-	STDMETHOD(WriteBlock)(WORD Address, int ByteCount, LPSAFEARRAY psaBlock);
+	STDMETHODIMP Read(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult);
+	STDMETHODIMP Write(WORD Address, VARIANT varValue);
 
 	void Initialize(memory_context_t *mem, BOOL fIsFlash, int iPage)
 	{

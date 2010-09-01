@@ -56,8 +56,8 @@ public:
 
 	STDMETHODIMP SetBreakpoint(IPage *pPage, WORD wAddress);
 
-	STDMETHODIMP Read(WORD Address, LPBYTE lpValue);
-	STDMETHODIMP Write(WORD Address, BYTE Value);
+	STDMETHOD(Read)(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult);
+	STDMETHOD(Write)(WORD Address, VARIANT varValue);
 
 	STDMETHODIMP LoadFile(BSTR bstrFileName);
 
@@ -68,11 +68,11 @@ public:
 	CWabbitemu()
 	{
 		m_lRefCount = 1;
-		int slot = calc_slot_new();
-		m_lpCalc = &calcs[slot];
-		m_pZ80 = new CZ80(&calcs[slot].cpu);
-		m_pLCD = new CLCD(&calcs[slot].cpu);
-		m_pKeypad = new CKeypad(&calcs[slot].cpu);
+		m_iSlot = calc_slot_new();
+		m_lpCalc = &calcs[m_iSlot];
+		m_pZ80 = new CZ80(&calcs[m_iSlot].cpu);
+		m_pLCD = new CLCD(&calcs[m_iSlot].cpu);
+		m_pKeypad = new CKeypad(&calcs[m_iSlot].cpu);
 
 		m_hThread = CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, NULL);
 	};
@@ -81,6 +81,7 @@ private:
 	static DWORD CALLBACK WabbitemuThread(LPVOID lpParam);
 
 	LONG m_lRefCount;
+	int m_iSlot;
 	calc_t *m_lpCalc;
 	CZ80 *m_pZ80;
 	CLCD *m_pLCD;

@@ -72,34 +72,80 @@ STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress)
 STDMETHODIMP CWabbitemu::RAM(int Index, IPage **ppPage)
 {
 	CPage *pPage = new CComObject<CPage>();
-	HRESULT hr = pPage->QueryInterface(IID_IPage, (LPVOID *) ppPage);
-	if (SUCCEEDED(hr))
-	{
-		pPage->Initialize(&m_lpCalc->mem_c, FALSE, Index);
-	}
-	return hr;
+	pPage->AddRef();
+	pPage->Initialize(&m_lpCalc->mem_c, FALSE, Index);
+	*ppPage = (IPage *) pPage;
+	return S_OK;
 }
 
 STDMETHODIMP CWabbitemu::Flash(int Index, IPage **ppPage)
 {
 	CPage *pPage = new CComObject<CPage>();
-	HRESULT hr = pPage->QueryInterface(IID_IPage, (LPVOID *) ppPage);
-	if (SUCCEEDED(hr))
-	{
-		pPage->Initialize(&m_lpCalc->mem_c, TRUE, Index);
-	}
-	return hr;
-}
-
-STDMETHODIMP CWabbitemu::Read(WORD Address, LPBYTE lpValue)
-{
-	*lpValue = mem_read(&m_lpCalc->mem_c, Address);
+	pPage->AddRef();
+	pPage->Initialize(&m_lpCalc->mem_c, TRUE, Index);
+	*ppPage = (IPage *) pPage;
 	return S_OK;
 }
 
-STDMETHODIMP CWabbitemu::Write(WORD Address, BYTE Value)
+STDMETHODIMP CWabbitemu::Read(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult)
 {
-	mem_write(&m_lpCalc->mem_c, Address, Value);
+	int nBytes = 1;
+	if ((V_VT(&varByteCount) != VT_EMPTY) || (V_VT(&varByteCount) != VT_ERROR))
+	{
+		nBytes = V_I4(&varByteCount);
+	}
+
+	VARIANT varResult;
+	VariantInit(&varResult);
+	
+	if (nBytes == 1)
+	{
+		V_VT(&varResult) = VT_UI1;
+		V_UI1(&varResult) = mem_read(&m_lpCalc->mem_c, Address);
+	}
+	else
+	{
+		V_VT(&varResult) = VT_ARRAY | VT_UI1;
+
+		SAFEARRAYBOUND sab = {0};
+		sab.cElements = nBytes;
+		sab.lLbound = 0;
+		LPSAFEARRAY psa = SafeArrayCreate(VT_UI1, 1, &sab);
+
+		LPBYTE lpData = NULL;
+		SafeArrayAccessData(psa, (LPVOID *) &lpData);
+		for (int i = 0; i < nBytes; i++)
+		{
+			lpData[i] = mem_read(&m_lpCalc->mem_c, Address + i);
+		}
+		SafeArrayUnaccessData(psa);
+
+		V_ARRAY(&varResult) = psa;
+	}
+	*lpvarResult = varResult;
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::Write(WORD Address, VARIANT varValue)
+{
+	if (V_VT(&varValue) & VT_ARRAY)
+	{
+		LONG LBound, UBound;
+		SafeArrayGetLBound(V_ARRAY(&varValue), 1, &LBound);
+		SafeArrayGetUBound(V_ARRAY(&varValue), 1, &UBound);
+
+		LPBYTE lpData = NULL;
+		SafeArrayAccessData(V_ARRAY(&varValue), (LPVOID *) &lpData);
+		for (int i = 0; i < UBound - LBound + 1; i++)
+		{
+			mem_write(&m_lpCalc->mem_c, Address + i, lpData[i]);
+		}
+		SafeArrayUnaccessData(V_ARRAY(&varValue));
+	}
+	else
+	{
+		mem_write(&m_lpCalc->mem_c, Address, V_I4(&varValue));
+	}
 	return S_OK;
 }
 
@@ -107,7 +153,7 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 {
 	char szFileName[MAX_PATH];
 	WideCharToMultiByte(CP_ACP, 0, bstrFileName, -1, szFileName, sizeof(szFileName), NULL, NULL);
-	rom_load(m_lpCalc - calcs, szFileName);
+	rom_load(m_iSlot, szFileName);
 	return S_OK;
 }
 
