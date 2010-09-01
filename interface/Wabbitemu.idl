@@ -163,15 +163,11 @@ interface IPage : IDispatch
 	[id(1), propget, helpstring("Whether or not the page is flash")]
 	HRESULT IsFlash([out, retval] VARIANT_BOOL *IsFlash);
 
-	[id(2), helpstring("Read a byte from this page within addresses 0 - 16383")]
-	HRESULT Read([in] WORD Address, [out, retval] BYTE *lpValue);
-	[id(3), helpstring("Write a byte to this page within addresses 0 - 16383")]
-	HRESULT Write([in] WORD Address, [in] BYTE Value);
+	[id(2), helpstring("Read from this page within addresses 0 - 16383")]
+	HRESULT Read([in] WORD Address, [in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
 
-	[id(4), helpstring("Read a block of bytes from this page within addresses 0 - 16383")]
-	HRESULT ReadBlock([in] WORD Address, [in] int ByteCount, [out, retval] SAFEARRAY(BYTE) *Value);
-	[id(5), helpstring("Write a block of bytes from this page within addresses 0 - 16383")]
-	HRESULT WriteBlock([in] WORD Address, [in] int ByteCount, [in] SAFEARRAY(BYTE) Value);
+	[id(3), helpstring("Write to this page within addresses 0 - 16383")]
+	HRESULT Write([in] WORD Address, [in] VARIANT Value);
 }
 
 [
@@ -235,8 +231,8 @@ interface IWabbitemu : IUnknown
 	[helpstring("Sets an execution breakpoint on a certain address.")]
 	HRESULT SetBreakpoint([in] IPage *Page, [in] WORD Address);
 
-	HRESULT Read([in] WORD Address, [out, retval] BYTE *lpValue);
-	HRESULT Write([in] WORD Address, [in] BYTE Value);
+	HRESULT Read([in] WORD Address, [in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
+	HRESULT Write([in] WORD Address, [in] VARIANT Value);
 
 	HRESULT LoadFile([in] BSTR FileName);
 
