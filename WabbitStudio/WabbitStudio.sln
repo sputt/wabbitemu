@@ -24,7 +24,7 @@ Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
 		SccNumberOfProjects = 8
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs07.codeplex.com/
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = Source\\Wabbitcode\\Wabbitcode\\Revsoft.Wabbitcode.csproj
 		SccProjectName1 = Source/Wabbitcode/Wabbitcode
@@ -168,7 +168,6 @@ Global
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitemu Debug DLL|Any CPU.ActiveCfg = Debug|X64
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitemu Debug DLL|Win32.ActiveCfg = Debug|X64
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitemu Debug DLL|x64.ActiveCfg = Debug|X64
-		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitemu Debug DLL|x64.Build.0 = Debug|X64
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitemu Debug DLL|X86.ActiveCfg = Debug|X64
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitemu Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitemu Debug|Win32.ActiveCfg = Debug|X64
@@ -244,7 +243,6 @@ Global
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitemu Debug DLL|Any CPU.ActiveCfg = Debug|X64
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitemu Debug DLL|Win32.ActiveCfg = Debug|X64
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitemu Debug DLL|x64.ActiveCfg = Debug|X64
-		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitemu Debug DLL|x64.Build.0 = Debug|X64
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitemu Debug DLL|X86.ActiveCfg = Debug|X64
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitemu Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitemu Debug|Win32.ActiveCfg = Debug|X64
@@ -315,7 +313,6 @@ Global
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug DLL|Any CPU.ActiveCfg = Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug DLL|Win32.ActiveCfg = Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug DLL|x64.ActiveCfg = Debug|X64
-		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug DLL|x64.Build.0 = Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug DLL|X86.ActiveCfg = Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|Win32.ActiveCfg = Debug|X64
@@ -386,7 +383,6 @@ Global
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitemu Debug DLL|Any CPU.ActiveCfg = Debug|X64
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitemu Debug DLL|Win32.ActiveCfg = Debug|X64
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitemu Debug DLL|x64.ActiveCfg = Debug|X64
-		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitemu Debug DLL|x64.Build.0 = Debug|X64
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitemu Debug DLL|X86.ActiveCfg = Debug|X64
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitemu Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitemu Debug|Win32.ActiveCfg = Debug|X64
@@ -462,7 +458,6 @@ Global
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitemu Debug DLL|Any CPU.ActiveCfg = Debug|X64
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitemu Debug DLL|Win32.ActiveCfg = Debug|X64
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitemu Debug DLL|x64.ActiveCfg = Debug|X64
-		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitemu Debug DLL|x64.Build.0 = Debug|X64
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitemu Debug DLL|X86.ActiveCfg = Debug|X64
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitemu Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitemu Debug|Win32.ActiveCfg = Debug|X64
@@ -533,12 +528,12 @@ Global
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.SPASM Release|X86.Build.0 = Release|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|Any CPU.ActiveCfg = Debug DLL|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|Any CPU.Build.0 = Debug DLL|Win32
-		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|Win32.ActiveCfg = Debug|Win32
-		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|Win32.Build.0 = Debug|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|Win32.ActiveCfg = Debug DLL|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|Win32.Build.0 = Debug DLL|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|x64.ActiveCfg = Debug DLL|x64
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|x64.Build.0 = Debug DLL|x64
-		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|X86.ActiveCfg = Debug|Win32
-		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|X86.Build.0 = Debug|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|X86.ActiveCfg = Debug DLL|Win32
+		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Debug|X86.Build.0 = Debug DLL|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Release|Any CPU.ActiveCfg = Release|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Release|Any CPU.Build.0 = Release|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitcode Release|Win32.ActiveCfg = Release|Win32
@@ -550,7 +545,6 @@ Global
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Debug DLL|Win32.ActiveCfg = Debug DLL|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Debug DLL|Win32.Build.0 = Debug DLL|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Debug DLL|x64.ActiveCfg = Debug DLL|x64
-		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Debug DLL|x64.Build.0 = Debug DLL|x64
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Debug DLL|X86.ActiveCfg = Debug DLL|x64
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Debug|Any CPU.ActiveCfg = Debug|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Debug|Win32.ActiveCfg = Debug|Win32
@@ -563,7 +557,6 @@ Global
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Release DLL|X86.ActiveCfg = Release|x64
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Release|Any CPU.ActiveCfg = Release|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Release|Win32.ActiveCfg = Release|Win32
-		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Release|Win32.Build.0 = Release|Win32
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Release|x64.ActiveCfg = Release|x64
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Release|x64.Build.0 = Release|x64
 		{4C00A4F7-EFAE-42D3-8188-D0312EDAE940}.Wabbitemu Release|X86.ActiveCfg = Release|Win32
@@ -609,11 +602,14 @@ Global
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.SPASM Release|Win32.Build.0 = Release|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.SPASM Release|x64.ActiveCfg = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.SPASM Release|X86.ActiveCfg = Release|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Any CPU.ActiveCfg = Debug|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Win32.ActiveCfg = Debug|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Win32.Build.0 = Debug|Win32
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Any CPU.ActiveCfg = Debug DLL|Win32
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Any CPU.Build.0 = Debug DLL|Win32
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Win32.ActiveCfg = Debug DLL|Win32
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Win32.Build.0 = Debug DLL|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|x64.ActiveCfg = Debug DLL|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|X86.ActiveCfg = Debug|x64
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|x64.Build.0 = Debug DLL|x64
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|X86.ActiveCfg = Debug DLL|Win32
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|X86.Build.0 = Debug DLL|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Release|Any CPU.ActiveCfg = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Release|Win32.ActiveCfg = Release|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Release|Win32.Build.0 = Release|Win32
@@ -621,6 +617,7 @@ Global
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Release|x64.Build.0 = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Release|X86.ActiveCfg = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Debug DLL|Any CPU.ActiveCfg = Debug DLL|x64
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Debug DLL|Any CPU.Build.0 = Debug DLL|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Debug DLL|Win32.ActiveCfg = Debug DLL|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Debug DLL|Win32.Build.0 = Debug DLL|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Debug DLL|x64.ActiveCfg = Debug DLL|x64

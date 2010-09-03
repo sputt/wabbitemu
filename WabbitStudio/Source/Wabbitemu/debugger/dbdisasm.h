@@ -11,6 +11,8 @@ void sprint_command(HDC,Z80_info_t*,RECT*);
 void sprint_data(HDC,Z80_info_t*,RECT*);
 void sprint_size(HDC,Z80_info_t*,RECT*);
 void sprint_clocks(HDC,Z80_info_t*,RECT*);
+void CPU_stepout(CPU_t *);
+void CPU_stepover(CPU_t *);
 
 typedef struct disasmhdr {
 	int index;

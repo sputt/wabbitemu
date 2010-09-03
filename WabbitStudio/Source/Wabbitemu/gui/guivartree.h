@@ -57,6 +57,7 @@ enum {
 
 BOOL VarTreeOpen(BOOL refresh);
 HWND CreateVarTreeList();
+int SetVarName();
 void DeleteChildren(HWND hwnd, HTREEITEM parent);
 void RefreshTreeView(BOOL New);
 INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);

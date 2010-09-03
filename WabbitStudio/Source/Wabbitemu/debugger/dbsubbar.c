@@ -9,7 +9,7 @@ extern HFONT hfontSegoe;
 extern HINSTANCE g_hInst;
 
 void GetBankString(int i, char buffer[16]) {
-	bank_t *bank = &calcs[gslot].mem_c.banks[i];
+	bank_t *bank = &calcs[DebuggerSlot].mem_c.banks[i];
 	
 	char *base;
 	if (bank->ram)

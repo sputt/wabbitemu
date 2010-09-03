@@ -28,6 +28,14 @@ static void port0(CPU_t *cpu, device_t *dev) {
 
 // Contrast
 static void port2(CPU_t *cpu, device_t *dev) {
+	if (cpu->output) {
+		//HACK: i dont really no how this works...
+		LCD_t *lcd = cpu->pio.lcd;
+		lcd->contrast = lcd->base_level - 15 + cpu->bus;
+		if (lcd->contrast > 64)
+			lcd->contrast = 64;
+		cpu->output = FALSE;
+	}
 	return;
 }
 

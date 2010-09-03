@@ -161,7 +161,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 		int start_addr = result->addr = addr;
 
 
-		char* labelname = FindAddressLabel(gslot, calcs[gslot].cpu.mem_c->banks[addr>>14].ram, calcs[gslot].cpu.mem_c->banks[addr>>14].page, addr);
+		char* labelname = FindAddressLabel(gslot, calcs[DebuggerSlot].cpu.mem_c->banks[addr>>14].ram, calcs[DebuggerSlot].cpu.mem_c->banks[addr>>14].page, addr);
 
 		if (labelname) {
 			result->index = DA_LABEL;
@@ -207,8 +207,8 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				/* Special IY flags*/
 				if ((prefix == 0xFD) &&
 					(x!=0) &&
-					(calcs[gslot].cpu.iy == 0x89F0) &&
-					(calcs[gslot].model >= TI_83P) &&
+					(calcs[DebuggerSlot].cpu.iy == 0x89F0) &&
+					(calcs[DebuggerSlot].model >= TI_83P) &&
 					flagname && bitname) {
 					if (z == 6) {
 						result->index += (DA_BIT_IF - DA_BIT);
@@ -586,7 +586,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 						result->index = DA_CALL_X;
 						result->a1 = mem_read16(memc, addr);
 
-						if ((result->a1 == 0x0050) && calcs[gslot].model >= TI_83P) {
+						if ((result->a1 == 0x0050) && calcs[DebuggerSlot].model >= TI_83P) {
 							result->index = DA_BJUMP;
 							result->a1 = mem_read16(memc, addr);
 							char* Name = FindBcall((int) result->a1);
@@ -624,7 +624,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				result->a2 = (INT_PTR) mem_read(memc, addr++);
 			} else
 			if (z == 7) {
-				if ((y == 5) && (calcs[gslot].model >= TI_83P)) {
+				if ((y == 5) && (calcs[DebuggerSlot].model >= TI_83P)) {
 					result->index = DA_BCALL;
 					int tmp = mem_read16(memc, addr);
 					char* Name = FindBcall(tmp);

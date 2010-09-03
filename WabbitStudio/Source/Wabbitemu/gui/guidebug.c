@@ -23,6 +23,7 @@ static ep_state expand_pane_state = {0};
 static HWND hdisasm, hreg, hmem;
 static int total_mem_pane;
 static HWND hmemlist[MAX_TABS];
+static long long code_count_tstates = -1;
 
 
 BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
@@ -120,6 +121,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	switch (Message) {
 		case WM_CREATE:
 		{
+			DebuggerSlot = gslot;
 			LOGFONT lf;
 			memset(&lf, 0, sizeof(LOGFONT));
 			strcpy(lf.lfFaceName, "Lucida Console");
@@ -148,7 +150,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			/* Create diassembly window */
 
 			//ZeroMemory(&dps, sizeof(dps));
-			dps.nSel = calcs[gslot].cpu.pc;
+			dps.nSel = calcs[DebuggerSlot].cpu.pc;
 
 			hdisasm =
 			CreateWindow(
@@ -209,7 +211,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				(HMENU) ID_REG,
 				g_hInst, NULL);
 
-			mps[0].addr = calcs[gslot].cpu.sp;
+			mps[0].addr = calcs[DebuggerSlot].cpu.sp;
 			mps[0].mode = MEM_WORD;
 			mps[0].sel = mps[1].addr;
 			mps[0].track = offsetof(struct CPU, sp);
@@ -232,7 +234,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				SendMessage(hreg, WM_SIZE, 0, 0); // didn't help
 			}
 
-			if (calcs[gslot].profiler.running)
+			if (calcs[DebuggerSlot].profiler.running)
 				CheckMenuItem(GetSubMenu(GetMenu(hwnd), 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
 
 			hwndPrev = hdisasm;
@@ -394,16 +396,29 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		{
 			printf("Got a command\n");
 			switch (wParam) {
-			case IDM_FILE_EXIT: {
-				SendMessage(hwnd, WM_DESTROY, 0, 0);
-				SendMessage(hwnd, WM_CLOSE, 0, 0);
+			case IDM_DEBUG_EXIT:
+				DestroyWindow(hwnd);
+				break;
+			case IDM_TOOLS_COUNT: {
+				HMENU hmenu = GetMenu(hwnd);
+				if (code_count_tstates == -1) {
+					code_count_tstates = calcs[DebuggerSlot].cpu.timer_c->tstates;
+					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_CHECKED);
+				} else {
+					char buffer[256];
+					sprintf(buffer, "%i T-States", (int)(calcs[DebuggerSlot].cpu.timer_c->tstates - code_count_tstates));
+					MessageBox(NULL, buffer, "Code Counter", MB_OK);
+					code_count_tstates = -1;
+					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_UNCHECKED);
+				}
+				break;
 			}
 			case IDM_TOOLS_PROFILE: {
-				calcs[gslot].profiler.running = !calcs[gslot].profiler.running;
+				calcs[DebuggerSlot].profiler.running = !calcs[gslot].profiler.running;
 				HMENU hmenu = GetMenu(hwnd);
-				if (calcs[gslot].profiler.running) {
+				if (calcs[DebuggerSlot].profiler.running) {
 					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGPROFILE), hwnd, (DLGPROC)ProfileDialogProc);
-					memset(calcs[gslot].profiler.data, 0, MIN_BLOCK_SIZE * sizeof(long));
+					memset(calcs[DebuggerSlot].profiler.data, 0, MIN_BLOCK_SIZE * sizeof(long));
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
 				} else {
 					FILE* file;
@@ -413,13 +428,14 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					GetCurrentDirectory(ARRAYSIZE(buffer), (char*)&buffer);
 					strcat((char*)&buffer, "\\profile.txt");
 					file = fopen(buffer, "wb");
-					fprintf(file, "Total Tstates: %i\r\n", calcs[gslot].profiler.totalTime);
-					for(i = calcs[gslot].profiler.lowAddress / calcs[gslot].profiler.blockSize;
-							i < ARRAYSIZE(calcs[gslot].profiler.data) &&
-							i < (calcs[gslot].profiler.highAddress / calcs[gslot].profiler.blockSize); i++) {
-						data = (double)calcs[gslot].profiler.data[i] / (double)calcs[gslot].profiler.totalTime;
+					fprintf(file, "Total Tstates: %i\r\n", calcs[DebuggerSlot].profiler.totalTime);
+					for(i = calcs[DebuggerSlot].profiler.lowAddress / calcs[DebuggerSlot].profiler.blockSize;
+							i < ARRAYSIZE(calcs[DebuggerSlot].profiler.data) &&
+							i < (calcs[DebuggerSlot].profiler.highAddress / calcs[DebuggerSlot].profiler.blockSize); i++) {
+						data = (double)calcs[DebuggerSlot].profiler.data[i] / (double)calcs[DebuggerSlot].profiler.totalTime;
 						if (data != 0.0)
-							fprintf(file, "$%04X - $%04X: %f%% %d tstates\r\n", i * calcs[gslot].profiler.blockSize, ((i + 1) * calcs[gslot].profiler.blockSize) - 1, data, calcs[gslot].profiler.data[i]);
+							fprintf(file, "$%04X - $%04X: %f%% %d tstates\r\n", i * calcs[DebuggerSlot].profiler.blockSize, ((i + 1) *
+											calcs[DebuggerSlot].profiler.blockSize) - 1, data, calcs[DebuggerSlot].profiler.data[i]);
 					}
 					fclose(file);
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_UNCHECKED);
@@ -598,8 +614,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 			return 0;
 		case WM_DESTROY:
-			CPU_step((&calcs[gslot].cpu));
-			calcs[gslot].running = TRUE;
+			CPU_step((&calcs[DebuggerSlot].cpu));
+			calcs[DebuggerSlot].running = TRUE;
 			GetWindowRect(hwnd, &db_rect);
 
 			GetExpandPaneState(&expand_pane_state);
@@ -623,15 +639,15 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					hWndEdit = GetDlgItem(hwnd, IDC_LOW_EDT);
 					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
 					xtoi((const char*)&string, &output);
-					calcs[gslot].profiler.lowAddress = output;
+					calcs[DebuggerSlot].profiler.lowAddress = output;
 					hWndEdit = GetDlgItem(hwnd, IDC_HIGH_EDT);
 					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
 					xtoi((const char*)&string, &output);
-					calcs[gslot].profiler.highAddress = output;
+					calcs[DebuggerSlot].profiler.highAddress = output;
 					hWndEdit = GetDlgItem(hwnd, IDC_BLOCK_EDT);
 					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
 					output = atoi((const char*) &string);
-					calcs[gslot].profiler.blockSize = output;
+					calcs[DebuggerSlot].profiler.blockSize = output;
 					EndDialog(hwnd, IDOK);
 					break;
 				}

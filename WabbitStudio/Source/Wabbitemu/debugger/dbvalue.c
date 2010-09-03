@@ -150,6 +150,10 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 		SendMessage(hwnd, WM_USER, 0, 0);
 		return 0;
 	}
+	case WM_DESTROY: {
+		free(vfs);
+		return 0;
+	}
 	case WM_MOUSEMOVE:
 	{
 		POINT p = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};

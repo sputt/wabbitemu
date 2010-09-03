@@ -26,6 +26,7 @@ private:
 	BOOL m_fAllowDrop;
 	HWND m_hwndTarget;
 	IDropTargetHelper *m_pDropTargetHelper;
+	int m_slot;
 	
 	FORMATETC *m_pRequired;
 	UINT m_nRequired;

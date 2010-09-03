@@ -293,9 +293,20 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					break;
 #ifdef WITH_BACKUPS
 				case IDM_05SECOND:
-					restore_backup(0, gslot);
-					SendMessage(GetParent(hwnd), WM_COMMAND, DB_UPDATE, 0);
+				case IDM_10SECOND:
+				case IDM_15SECOND:
+				case IDM_20SECOND:
+				case IDM_25SECOND:
+				case IDM_30SECOND:
+				case IDM_35SECOND:
+				case IDM_40SECOND:
+				case IDM_45SECOND:
+				case IDM_50SECOND:
+				{
+					restore_backup(wParam - IDM_05SECOND, gslot);
+					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;
+				}
 #endif
 			}
 			break;
@@ -773,6 +784,11 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			EndPaint(hwnd, &ps);
 			return 0;
 		}
+		case WM_DESTROY: {
+			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			free(tbb);
+			return 0;
+		}
 		default:
 			return CallWindowProc(OldButtonProc, hwnd, Message, wParam, lParam);
 	}
@@ -866,7 +882,7 @@ BOOL CALLBACK EnumToolbarRedraw(HWND hwndChild, LPARAM lParam) {
 }
 
 waddr_t z80_to_waddr(uint16_t addr) {
-	bank_t *pb = &calcs[gslot].mem_c.banks[mc_bank(addr)];
+	bank_t *pb = &calcs[DebuggerSlot].mem_c.banks[mc_bank(addr)];
 
 	waddr_t waddr;
 	waddr.is_ram = pb->ram;
@@ -898,12 +914,21 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 #ifdef WITH_BACKUPS
-				case IDM_05SECOND: {
-					HWND test = GetParent(hwnd);
-					restore_backup(0, gslot);
-					SendMessage(test, WM_USER, DB_UPDATE, 0);
+				case IDM_05SECOND:
+				case IDM_10SECOND:
+				case IDM_15SECOND:
+				case IDM_20SECOND:
+				case IDM_25SECOND:
+				case IDM_30SECOND:
+				case IDM_35SECOND:
+				case IDM_40SECOND:
+				case IDM_45SECOND:
+				case IDM_50SECOND:
+				{
+					restore_backup(wParam - IDM_05SECOND, gslot);
+					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;
-					}
+				}
 #endif
 				case 999:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEP, 0);

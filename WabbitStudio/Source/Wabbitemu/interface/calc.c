@@ -60,18 +60,18 @@ static BOOL calc_init_83(int slot, char* os) {
 	/* END INTIALIZE 83 */
 
 	calcs[slot].send			= FALSE;
-	#ifdef WINVER // FIXME: dirty cheater!
+#ifdef WINVER // FIXME: dirty cheater!
 	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
 	calcs[slot].audio->enabled	= FALSE;
 	calcs[slot].audio->init		= FALSE;
-	#endif
+#endif
 	return TRUE;
 }
 
 /* 85 86 */
 static int calc_init_86(int slot) {
 
-	/* INTIALIZE 86 */ 
+	/* INTIALIZE 86 */
 	printf("initializing 86!\n");
 	memory_init_86(&calcs[slot].mem_c);
 	tc_init(&calcs[slot].timer_c, MHZ_4_8);
@@ -81,11 +81,11 @@ static int calc_init_86(int slot) {
 	/* END INTIALIZE 86 */
 
 	calcs[slot].send			= FALSE;
-	#ifdef WINVER // FIXME: dirty cheater!
+#ifdef WINVER // FIXME: dirty cheater!
 	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
 	calcs[slot].audio->enabled	= FALSE;
 	calcs[slot].audio->init		= FALSE;
-	#endif
+#endif
 	return 0;
 }
 
@@ -100,11 +100,11 @@ static int calc_init_83p(int slot) {
 	/* END INTIALIZE 83+ */
 
 	calcs[slot].send			= FALSE;
-	#ifdef WINVER // FIXME: dirty cheater!
+#ifdef WINVER // FIXME: dirty cheater!
 	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
 	calcs[slot].audio->enabled	= FALSE;
 	calcs[slot].audio->init		= FALSE;
-	#endif
+#endif
 	return 0;
 }
 
@@ -116,10 +116,31 @@ static int calc_init_83pse(int slot) {
 	CPU_init(&calcs[slot].cpu, &calcs[slot].mem_c, &calcs[slot].timer_c);
 	ClearDevices(&calcs[slot].cpu);
 	device_init_83pse(&calcs[slot].cpu);
-#ifdef WITH_BACKUPS
-	backups_init_83pse(slot);
-#endif	
 	/* END INTIALIZE 83+se */
+	calcs[slot].send			= FALSE;
+#ifdef WINVER // FIXME: dirty cheater!
+	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
+	calcs[slot].audio->enabled	= FALSE;
+	calcs[slot].audio->init		= FALSE;
+#endif
+	return 0;
+}
+
+/* 84+ */
+static int calc_init_84p(int slot) {
+	/* INTIALIZE 84+ */
+	memory_init_84p(&calcs[slot].mem_c);
+	tc_init(&calcs[slot].timer_c, MHZ_6);
+	CPU_init(&calcs[slot].cpu, &calcs[slot].mem_c, &calcs[slot].timer_c);
+	ClearDevices(&calcs[slot].cpu);
+	device_init_83pse(&calcs[slot].cpu);
+	void port21_84p(CPU_t *cpu, device_t *dev);
+	calcs[slot].cpu.pio.devices[0x21].code = (devp) &port21_84p;
+#ifdef WITH_BACKUPS
+	init_backups();
+#endif
+	/* END INTIALIZE 84+ */
+
 	calcs[slot].send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
 	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
@@ -152,7 +173,7 @@ int rom_load(int slot, char * FileName) {
 	if (tifile == NULL)
 		return -1;
 
-	calcs[slot].speed = 1.0f;
+	calcs[slot].speed = 100;
 
 	if (calcs[slot].active)
 		calc_slot_free(slot);
@@ -183,6 +204,13 @@ int rom_load(int slot, char * FileName) {
 			case TI_83PSE:
 				calc_init_83pse(slot);
 				break;
+			case TI_84P:
+				calc_init_84p(slot);
+				break;
+			case TI_85:
+			case TI_86:
+				calc_init_86(slot);
+				break;
 			default:
 				puts("Unknown model");
 				FreeTiFile(tifile);
@@ -205,6 +233,7 @@ int rom_load(int slot, char * FileName) {
 						tifile->rom->data,
 						(calcs[slot].cpu.mem_c->flash_size<=tifile->rom->size)?calcs[slot].cpu.mem_c->flash_size:tifile->rom->size);
 				break;
+			case TI_85:
 			case TI_86:
 				calc_init_86(slot);
 				memcpy(	calcs[slot].cpu.mem_c->flash,
@@ -220,16 +249,7 @@ int rom_load(int slot, char * FileName) {
 				calc_erase_certificate(calcs[slot].cpu.mem_c->flash,calcs[slot].cpu.mem_c->flash_size);
 				break;
 			case TI_84P:
-				calc_init_83pse(slot);
-				printf("Setting custom memory settings for the 84+\n");
-				calcs[slot].mem_c.banks[1].addr = calcs[slot].mem_c.flash+0x3F*PAGE_SIZE;
-				calcs[slot].mem_c.banks[1].page = 0x3F;
-				calcs[slot].mem_c.banks[2].addr = calcs[slot].mem_c.flash+0x3F*PAGE_SIZE;
-				calcs[slot].mem_c.banks[2].page = 0x3F;
-				calcs[slot].mem_c.flash_pages = 0x40;
-				void port21_84p(CPU_t *cpu, device_t *dev);
-				calcs[slot].cpu.pio.devices[0x21].code = (devp) &port21_84p;
-
+				calc_init_84p(slot);
 				memcpy(	calcs[slot].cpu.mem_c->flash,
 						tifile->rom->data,
 						(calcs[slot].cpu.mem_c->flash_size<=tifile->rom->size)?calcs[slot].cpu.mem_c->flash_size:tifile->rom->size);
@@ -255,7 +275,7 @@ int rom_load(int slot, char * FileName) {
 
 	} else slot = -1;
 	if (slot != -1) {
-		calcs[slot].cpu.pio.model =calcs[slot].model;
+		calcs[slot].cpu.pio.model = calcs[slot].model;
 	}
 
 	/*if (calcs[gslot].hwndFrame)
@@ -279,6 +299,8 @@ void calc_slot_free(int slot) {
 		printf("Freeing memory\n");
 		free(calcs[slot].mem_c.flash);
 		free(calcs[slot].mem_c.ram);
+		free(calcs[slot].mem_c.flash_break);
+		free(calcs[slot].mem_c.ram_break);
 		printf("Freeing hardware\n");
 		free(calcs[slot].cpu.pio.link);
 		printf("freeing keypad\n");
@@ -289,6 +311,11 @@ void calc_slot_free(int slot) {
 		free(calcs[slot].cpu.pio.se_aux);
 		printf("freeing lcd\n");
 		free(calcs[slot].cpu.pio.lcd);
+		printf("freeing backups\n");
+#ifdef WITH_BACKUPS
+		if (do_backups)
+			free_backups(slot);
+#endif
 		printf("Done freeing\n");
 	}
 
@@ -383,83 +410,104 @@ int calc_run_all(void) {
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active) {
-				int time = (calcs[j].speed*calcs[j].timer_c.freq/FPS)/FRAME_SUBDIVISIONS;
-				calc_run_tstates(j, time);
+				int time = ((long long)calcs[j].speed*calcs[j].timer_c.freq/FPS/100)/FRAME_SUBDIVISIONS;
+				calc_run_tstates(j, time / 2);
+				frame_counter += time;
+#ifdef WITH_BACKUPS
+				if (frame_counter >= calcs[j].timer_c.freq / 2) {
+					frame_counter = 0;
+					if (do_backups)
+						do_backup(j);
+				}
+#endif
+				calc_run_tstates(j, time / 2);
+				frame_counter += time;
+#ifdef WITH_BACKUPS
+				if (frame_counter >= calcs[j].timer_c.freq / 2) {
+					frame_counter = 0;
+					if (do_backups)
+						do_backup(j);
+				}
+#endif
 			}
 		}
 	}
+
 	return 0;
 }
 #ifdef WITH_BACKUPS
-void do_backup(int slot) {
+void do_backup(int slot)
+{
 	if (!calcs[slot].running)
 		return;
-	if (current_backup_index > 0) {
-		current_backup_index--;	
-	} else {
-		int i;
-		for(i = 9; i > 0; i--)
-			memcpy(&backups[i-1], &backups[i], sizeof(debugger_backup));
+	if (number_backup > MAX_BACKUPS)
+	{
+		debugger_backup* oldestBackup = backups[slot];
+		while(oldestBackup->prev != NULL)
+			oldestBackup = oldestBackup->prev;
+		oldestBackup->next->prev = NULL;
+		free_backup(oldestBackup);
 	}
-	memcpy(&backups[current_backup_index].cpu, &calcs[slot].cpu, sizeof(CPU_t));
-	u_char *flash = backups[current_backup_index].mem_c.flash, *ram = backups[current_backup_index].mem_c.ram;
-	memcpy(flash, calcs[slot].mem_c.flash, calcs[slot].mem_c.flash_size);
-	memcpy(ram, calcs[slot].mem_c.ram, calcs[slot].mem_c.ram_size);
-	memcpy(&backups[current_backup_index].mem_c, &calcs[slot].mem_c, sizeof(memory_context_t));
-	backups[current_backup_index].mem_c.flash = flash;
-	backups[current_backup_index].mem_c.ram = ram;
-	memcpy(&backups[current_backup_index].timer_c, &calcs[slot].timer_c, sizeof(timer_context_t));
-	//memcpy(&backups[current_backup_index].cpu.pio.lcd, &calcs[slot].cpu.pio.lcd, sizeof(LCD_t));
-	//backups[current_backup_index] = pointer;
+	debugger_backup *backup = (debugger_backup *) malloc(sizeof(debugger_backup));
+	backup->save = SaveSlot(slot);
+	backup->next = NULL;
+	backup->prev = backups[slot];
+	if (backups[slot] != NULL)
+		backups[slot]->next = backup;
+	backups[slot] = backup;
+	number_backup++;
 }
+
 void restore_backup(int index, int slot)
 {
-	memcpy(&calcs[slot].cpu, &backups[index].cpu, sizeof(CPU_t));
-	u_char *flash = calcs[slot].mem_c.flash, *ram = calcs[slot].mem_c.ram;
-	//u_char *flash_break = calcs[slot].mem_c.flash_break, *ram_break = calcs[slot].mem_c.ram_break;	
-	bank_state_t banks[5];
-	memcpy(&banks, &calcs[slot].mem_c.banks, sizeof(bank_state_t) * 4);
-	memcpy(flash, backups[current_backup_index].mem_c.flash, calcs[slot].mem_c.flash_size);
-	memcpy(ram, backups[current_backup_index].mem_c.ram, calcs[slot].mem_c.ram_size);
-	//memcpy(&calcs[slot].mem_c, &backups[index].cpu.mem_c, sizeof(memory_context_t));
-	//memcpy(&calcs[slot].mem_c.banks, &banks, sizeof(bank_state_t) * 4);
-	/*calcs[slot].mem_c.flash = flash;	calcs[slot].mem_c.ram = ram;
-	calcs[slot].mem_c.flash_break = flash_break;
-	calcs[slot].mem_c.ram_break = ram_break;
-	calcs[slot].mem_c.banks[0].addr = banks[0].addr;
-	calcs[slot].mem_c.banks[1].addr = banks[1].addr;
-	calcs[slot].mem_c.banks[2].addr = banks[2].addr;
-	calcs[slot].mem_c.banks[3].addr = banks[3].addr;*/
-	memcpy(&calcs[slot].timer_c, &backups[index].cpu.timer_c, sizeof(timer_context_t));
+	debugger_backup* backup = backups[slot];
+	while (index > 0) {
+		if (backup->prev == NULL)
+			break;
+		backup = backup->prev;
+		free_backup(backup->next);
+		index--;
+	}
+	//shouldnt happen
+	if (backup != NULL)
+		LoadSlot(backup->save, slot);
+	backups[slot] = backup;
 }
 
-void backups_init_83p(int slot) {
+void init_backups()
+{
 	int i;
-	for (i = 0; i <= 10; i++) {
-		memory_init_83p(&backups[i].mem_c);
-		tc_init(&calcs[slot].timer_c, MHZ_6);
-		CPU_init(&backups[i].cpu, &backups[i].mem_c, &backups[i].timer_c);
-		device_init_83p(&backups[i].cpu);
-	}
-	for (i = 1; i <= 9; i++) {
-		backups[i].prev = &backups[i-1];
-		backups[i].next = &backups[i-1];
-	}
+	number_backup = 0;
+	for(i = 0; i < MAX_CALCS; i++)
+		backups[i] = NULL;
 }
 
-void backups_init_83pse(int slot {
-	int i;
-	for (i = 0; i < 10; i++) {
-		memory_init_83pse(&backups[i].mem_c);
-		tc_init(&backups[i].timer_c, MHZ_15);
-		CPU_init(&backups[i].cpu, &backups[i].mem_c, &backups[i].timer_c);
-		device_init_83pse(&backups[i].cpu);	
-	}
-	for (i = 1; i <= 9; i++) {
-		backups[i].prev = &backups[i-1];
-		backups[i].next = &backups[i-1];
-	}
+void free_backup(debugger_backup* backup)
+{
+	if (backup == NULL)
+		return;
+	FreeSave(backup->save);
+	free(backup);
+	number_backup--;
 }
+
+/*
+ * Frees all backups from memory
+ */
+void free_backups(int slot)
+{
+	debugger_backup *backup_prev, *backup = backups[slot];
+	if (backup == NULL)
+		return;
+	do {
+		backup_prev = backup->prev;
+		free_backup(backup);
+		backup = backup_prev;
+	} while(backup != NULL);
+	backups[slot] = NULL;
+	number_backup = 0;
+}
+
 #endif
 
 int calc_run_seconds(int slot, double seconds) {

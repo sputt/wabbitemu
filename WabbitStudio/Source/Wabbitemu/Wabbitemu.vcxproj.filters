@@ -207,11 +207,9 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="gui\Wabbitemu.rc">
-      <Filter>Resource Files</Filter>
-    </ResourceCompile>
+    <ClCompile Include="interface\Wabbitemu_i.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -516,9 +514,6 @@
     <None Include="gui\TI-73.png">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="gui\ti-84+sekeymap.png">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="gui\TI-82.png">
       <Filter>Resource Files</Filter>
     </None>
@@ -540,5 +535,19 @@
     <None Include="gui\ti-84+se.png">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="gui\ti-84+sekeymap.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-86.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-86keymap.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="gui\Wabbitemu.rc">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

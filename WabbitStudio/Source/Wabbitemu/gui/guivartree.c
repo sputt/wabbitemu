@@ -74,7 +74,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			{
 				GetWindowRect(hwnd, &VTrc);
 				int width = (VTrc.right-VTrc.left)-14-6;
-				int height = (VTrc.bottom-VTrc.top)-38-30;
+				int height = (VTrc.bottom-VTrc.top)-38-30-73;
 				MoveWindow(g_hwndVarTree,6,30,width,height,TRUE);
 
 				break;
@@ -85,6 +85,11 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
                 case IDC_REFRESH_VAR_LIST:
 					RefreshTreeView(FALSE);
                     break;
+				case IDC_EXPORT_VAR:
+					if (SetVarName())
+						break;
+
+					break;
 				default:
 					break;
             }
@@ -182,6 +187,56 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
    return FALSE;
 }
 
+char export_file_name[512]="Zelda.8xk";
+int SetVarName() {
+	OPENFILENAME ofn;
+
+	char lpstrFilter[] 	= "\
+Programs  (*.8xp)\0*.8xp\0\
+App Vars (*.8xv)\0*.8xv\0\
+Lists  (*.8xl)\0*.8xl\0\
+Real/Complex Variables  (*.8xp)\0*.8xp\0\
+All Files (*.*)\0*.*\0\0";
+	char lpstrFile[MAX_PATH];
+	unsigned int Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+
+	int i;
+	for (i = strlen(export_file_name)-1; i && export_file_name[i] != '\\'; i--);
+
+	if (i) {
+		strcpy(lpstrFile, export_file_name + i + 1);
+	} else {
+		lpstrFile[0] = '\0';
+	}
+
+	ofn.lStructSize			= sizeof(OPENFILENAME);
+	ofn.hwndOwner			= GetForegroundWindow();
+	ofn.hInstance			= NULL;
+	ofn.lpstrFilter			= (LPCTSTR) lpstrFilter;
+	ofn.lpstrCustomFilter	= NULL;
+	ofn.nMaxCustFilter		= 0;
+	ofn.nFilterIndex		= 0;
+	ofn.lpstrFile			= lpstrFile;
+	ofn.nMaxFile			= sizeof(lpstrFile);
+	ofn.lpstrFileTitle		= NULL;
+	ofn.nMaxFileTitle		= 0;
+	ofn.lpstrInitialDir		= NULL;
+	ofn.lpstrTitle			= "Wabbitemu Export";
+	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
+	ofn.lpstrDefExt			= "8xp";
+	ofn.lCustData			= 0;
+	ofn.lpfnHook			= NULL;
+	ofn.lpTemplateName		= NULL;
+	ofn.pvReserved			= NULL;
+	ofn.dwReserved			= 0;
+	ofn.FlagsEx				= 0;
+
+	if (!GetSaveFileName(&ofn)) {
+		return 1;
+	}
+	strcpy(export_file_name, lpstrFile);
+	return 0;
+}
 
 
 /* deletes parent's children, not parent*/

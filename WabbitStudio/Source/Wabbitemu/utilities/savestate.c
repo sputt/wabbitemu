@@ -978,7 +978,7 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 		}
 		fclose(ofile);
 		fclose(cfile);
-		remove(tmpfn);
+		remove(temp_save);
 	}
 }
 
@@ -1085,7 +1085,7 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 	}
 	if (compressed == TRUE) {
 		fclose(ifile);
-		remove(tmpfn);
+		remove(temp_save);
 	}
 /* check for read errors... */
 	return save;

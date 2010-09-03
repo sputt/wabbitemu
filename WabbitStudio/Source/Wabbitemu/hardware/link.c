@@ -28,7 +28,7 @@ static jmp_buf exc_pkt, exc_byte; // Exceptions
 
 /* Prototypes of static functions*/
 static LINK_ERR forceload_app(CPU_t *, TIFILE_t *);
-#ifdef DEBUG
+#ifdef _DEBUG
 static void print_command_ID(uint8_t);
 #endif
 
@@ -136,6 +136,11 @@ static u_char link_recv(CPU_t *cpu) {
 	return byte;
 }
 
+BOOL link_connected()
+{
+	return calcs[gslot].cpu.pio.link->client != &vout;
+}
+
 /* Calculate a TI Link Protocol checksum
  *
  * checksum = 16-bit byte sum of all data bytes
@@ -199,7 +204,7 @@ static void link_send_pkt(CPU_t *cpu, u_char command_ID, void *data) {
 
 	hdr.machine_ID = link_target_ID(cpu);
 	hdr.command_ID = command_ID;
-#ifdef DEBUG
+#ifdef _DEBUG
 	printf("SEND: ");
 	print_command_ID(command_ID);
 	putchar(' ');
@@ -240,7 +245,7 @@ static void link_send_pkt(CPU_t *cpu, u_char command_ID, void *data) {
 		break;
 	}
 
-#ifdef DEBUG
+#ifdef _DEBUG
 	printf("(%d) ", data_len);
 	if (command_ID != CID_DATA) {
 		int i;
@@ -282,7 +287,7 @@ static void link_recv_pkt(CPU_t *cpu, TI_PKTHDR *hdr, u_char *data) {
 		hdr->machine_ID = link_recv(cpu);
 		hdr->command_ID = link_recv(cpu);
 		hdr->data_len = link_recv(cpu) + (link_recv(cpu) << 8);
-#ifdef DEBUG
+#ifdef _DEBUG
 		printf("RECV %02x: ", hdr->machine_ID);
 		print_command_ID(hdr->command_ID);
 		putchar('\n');
@@ -610,7 +615,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	return LERR_SUCCESS;
 }
 
-#ifdef DEBUG
+#ifdef _DEBUG
 static void print_command_ID(uint8_t command_ID) {
 	char buffer[256];
 	switch (command_ID) {

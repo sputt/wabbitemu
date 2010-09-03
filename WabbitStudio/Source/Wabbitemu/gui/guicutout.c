@@ -104,7 +104,6 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				ShowWindow(calcs[gslot].hwndFrame, SW_MINIMIZE);
 			} else if (_tcsicmp(szWindowName, _T("wabbitclose")) == 0) {
 				DestroyWindow(calcs[gslot].hwndFrame);
-				//PostQuitMessage(0);
 			}
 			SetWindowLong(hwnd, 0, (LONG) FALSE);
 			ReleaseCapture();
@@ -133,8 +132,8 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	if (calcs[gslot].SkinEnabled == FALSE)
 		return 1;
 
-	SetWindowLong(hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
-	SetWindowLong(hwndFrame, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+	SetWindowLongPtr(hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
+	SetWindowLongPtr(hwndFrame, GWL_STYLE, WS_VISIBLE | WS_POPUP);
 
 	int scale = calcs[gslot].Scale;
 	if (calcs[gslot].SkinEnabled)

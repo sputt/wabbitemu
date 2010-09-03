@@ -343,12 +343,12 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					if (addr >= 0) {
 						int shift;
 						for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
-							value += mem_read(calcs[gslot].cpu.mem_c, addr + b) << shift;
+							value += mem_read(calcs[DebuggerSlot].cpu.mem_c, addr + b) << shift;
 						}
 						sprintf(szVal, memfmt, value);
 #define COLOR_MEMPOINT_WRITE	(RGB(255, 177, 100))
 #define COLOR_MEMPOINT_READ		(RGB(255, 250, 145))
-						if (check_mem_write_break(calcs[gslot].cpu.mem_c, addr))
+						if (check_mem_write_break(calcs[DebuggerSlot].cpu.mem_c, addr))
 						{
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_WRITE, 255);
@@ -356,7 +356,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 								DrawFocusRect(hdc, &dr);
 							InflateRect(&dr, -2, 0);
 						}
-						if (check_mem_read_break(calcs[gslot].cpu.mem_c, addr))
+						if (check_mem_read_break(calcs[DebuggerSlot].cpu.mem_c, addr))
 						{
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_READ , 255);
@@ -400,7 +400,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					NMTTDISPINFO *nmtdi = (NMTTDISPINFO *) lParam;
 					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-					sprintf(nmtdi->szText, "%d", mem_read(&calcs[gslot].mem_c, mps->addrTrack));
+					sprintf(nmtdi->szText, "%d", mem_read(&calcs[DebuggerSlot].mem_c, mps->addrTrack));
 					return TRUE;
 				}
 			}
@@ -496,7 +496,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					ValueSubmit(hwndVal, (char *) data, mps->mode + (2 * mps->bText));
 					int i;
 					for (i = 0; i < mps->mode; i++) {
-						mem_write(&calcs[gslot].mem_c, mps->sel + i, data[i]);
+						mem_write(&calcs[DebuggerSlot].mem_c, mps->sel + i, data[i]);
 					}
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					hwndVal = NULL;
@@ -533,21 +533,21 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case DB_MEMPOINT_WRITE: {
-					bank_t *bank = &calcs[gslot].mem_c.banks[mps->sel >> 14];
-					if (check_mem_write_break(&calcs[gslot].mem_c, mps->sel)) {
-						clear_mem_write_break(&calcs[gslot].mem_c, bank->ram, bank->page, mps->sel);
+					bank_t *bank = &calcs[DebuggerSlot].mem_c.banks[mps->sel >> 14];
+					if (check_mem_write_break(&calcs[DebuggerSlot].mem_c, mps->sel)) {
+						clear_mem_write_break(&calcs[DebuggerSlot].mem_c, bank->ram, bank->page, mps->sel);
 					} else {
-						set_mem_write_break(&calcs[gslot].mem_c, bank->ram, bank->page, mps->sel);
+						set_mem_write_break(&calcs[DebuggerSlot].mem_c, bank->ram, bank->page, mps->sel);
 					}
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
 				}
 				case DB_MEMPOINT_READ: {
-					bank_t *bank = &calcs[gslot].mem_c.banks[mps->sel >> 14];
-					if (check_mem_read_break(&calcs[gslot].mem_c, mps->sel)) {
-						clear_mem_read_break(&calcs[gslot].mem_c, bank->ram, bank->page, mps->sel);
+					bank_t *bank = &calcs[DebuggerSlot].mem_c.banks[mps->sel >> 14];
+					if (check_mem_read_break(&calcs[DebuggerSlot].mem_c, mps->sel)) {
+						clear_mem_read_break(&calcs[DebuggerSlot].mem_c, bank->ram, bank->page, mps->sel);
 					} else {
-						set_mem_read_break(&calcs[gslot].mem_c, bank->ram, bank->page, mps->sel);
+						set_mem_read_break(&calcs[DebuggerSlot].mem_c, bank->ram, bank->page, mps->sel);
 					}
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
@@ -584,7 +584,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					int value = 0;
 					int shift, b;
 					for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
-						value += mem_read(calcs[gslot].cpu.mem_c, mps->sel+b) << shift;
+						value += mem_read(calcs[DebuggerSlot].cpu.mem_c, mps->sel+b) << shift;
 					}
 
 					char szFmt[8];
@@ -646,7 +646,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				{
 					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					if (mps->track != -1 && lParam == 0) {
-						mps->addr = ((unsigned short*) &calcs[gslot].cpu)[mps->track/2];
+						mps->addr = ((unsigned short*) &calcs[DebuggerSlot].cpu)[mps->track/2];
 					}
 					InvalidateRect(hwnd, NULL, FALSE);
 					UpdateWindow(hwnd);

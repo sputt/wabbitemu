@@ -42,7 +42,7 @@ void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
 
 	for (j = 0; j < zinf->size; j++) {
 		sprintf(s + (j*2), "%02x",
-			mem_read(calcs[gslot].cpu.mem_c, zinf->addr+j));
+			mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf->addr+j));
 	}
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -235,7 +235,6 @@ void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int o
 
 }
 
-
 void CPU_stepout(CPU_t *cpu) {
 	double time = tc_elapsed(cpu->timer_c);
 	uint16_t old_sp = cpu->sp;
@@ -383,7 +382,7 @@ static void cycle_pcs(dp_settings *dps) {
 		dps->nPCs[i] = dps->nPCs[i-1];
 	}
 
-	dps->nPCs[0] = calcs[gslot].cpu.pc;
+	dps->nPCs[0] = calcs[DebuggerSlot].cpu.pc;
 }
 
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -482,7 +481,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			cyHeader = hdrRect.bottom - hdrRect.top;
 
 
-			dps->nPCs[0] = calcs[gslot].cpu.pc;
+			dps->nPCs[0] = calcs[DebuggerSlot].cpu.pc;
 			for (i = 1; i < PC_TRAILS; i++) {
 				dps->nPCs[i] = -1;
 			}
@@ -750,7 +749,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						vert[0].Green = 0xFF00;
 						vert[0].Blue = 0xFF00;
 
-						if (calcs[gslot].cpu.halt && pc_i == 0) {
+						if (calcs[DebuggerSlot].cpu.halt && pc_i == 0) {
 							vert [1] .Red    = GetRValue(COLOR_HALT) << 8;
 							vert [1] .Green  = GetGValue(COLOR_HALT) << 8;
 							vert [1] .Blue   = GetBValue(COLOR_HALT) << 8;
@@ -767,15 +766,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					}
 				}
 				BOOL breakpoint = FALSE;
-
-				if (check_break(&calcs[gslot].mem_c, zinf[i].addr)) {
+				memory_context_t *calc_mem = &calcs[DebuggerSlot].mem_c;
+				if (check_break(calc_mem, zinf[i].addr)) {
 					vert [0] .Red    = GetRValue(COLOR_BREAKPOINT) << 8;
 					vert [0] .Green  = GetGValue(COLOR_BREAKPOINT) << 8;
 					vert [0] .Blue   = GetBValue(COLOR_BREAKPOINT) << 8;
 					breakpoint = TRUE;
 					do_gradient = TRUE;
 				}
-				if (check_mem_write_break(&calcs[gslot].mem_c, zinf[i].addr)) {
+				if (check_mem_write_break(calc_mem, zinf[i].addr)) {
 					if (breakpoint) {
 						vert [0] .Red    |= GetRValue(COLOR_MEMPOINT_WRITE) << 8;
 						vert [0] .Green  |= GetGValue(COLOR_MEMPOINT_WRITE) << 8;
@@ -788,7 +787,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					breakpoint = TRUE;
 					do_gradient = TRUE;
 				}
-				if (check_mem_read_break(&calcs[gslot].mem_c, zinf[i].addr)) {
+				if (check_mem_read_break(calc_mem, zinf[i].addr)) {
 					if (breakpoint) {
 						vert [0] .Red    |= GetRValue(COLOR_MEMPOINT_READ) << 8;
 						vert [0] .Green  |= GetGValue(COLOR_MEMPOINT_READ) << 8;
@@ -859,13 +858,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			switch (LOWORD(wParam)) {
 				case DB_DISASM: {
 					unsigned int addr = lParam;
-					disassemble(&calcs[gslot].mem_c, addr, dps->nRows, zinf);
+					disassemble(&calcs[DebuggerSlot].mem_c, addr, dps->nRows, zinf);
 					break;
 				}
 				case DB_RUN: {
 					//SendMessage(hwnd, WM_COMMAND, DB_STEP, 0);
-					CPU_step((&calcs[gslot].cpu));
-					calcs[gslot].running = TRUE;
+					CPU_step((&calcs[DebuggerSlot].cpu));
+					calcs[DebuggerSlot].running = TRUE;
 					/*GetWindowRect(hwnd, &db_rect);
 
 					GetExpandPaneState(&expand_pane_state)*/
@@ -876,16 +875,16 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					int past_last;
 					int before_first;
 
-					CPU_step((&calcs[gslot].cpu));
+					CPU_step((&calcs[DebuggerSlot].cpu));
 				db_step_finish:
-					past_last = calcs[gslot].cpu.pc - zinf[dps->nRows-1].addr + zinf[dps->nRows-1].size;
-					before_first = zinf[0].addr - calcs[gslot].cpu.pc;
+					past_last = calcs[DebuggerSlot].cpu.pc - zinf[dps->nRows-1].addr + zinf[dps->nRows-1].size;
+					before_first = zinf[0].addr - calcs[DebuggerSlot].cpu.pc;
 					//InvalidateSel(hwnd, dps->iPC);
 					InvalidateSel(hwnd, dps->iSel);
-					dps->nSel = (&calcs[gslot].cpu)->pc;
+					dps->nSel = (&calcs[DebuggerSlot].cpu)->pc;
 					if (past_last >= 0 || before_first > 0) {
 						int iQ1;
-						SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, calcs[gslot].cpu.pc), 0);
+						SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, calcs[DebuggerSlot].cpu.pc), 0);
 						iQ1 = dps->nRows/4;
 						if (iQ1 == 0) return 0;
 						while (iQ1--) SendMessage(hwnd, WM_VSCROLL, SB_LINEUP, 0);
@@ -903,7 +902,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_STEPOVER: {
-					CPU_stepover(&calcs[gslot].cpu);
+					CPU_stepover(&calcs[DebuggerSlot].cpu);
 					goto db_step_finish;
 				}
 				case DB_GOTO: {
@@ -915,35 +914,35 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					return 0;
 				}
 				case DB_BREAKPOINT: {
-					bank_t *bank = &calcs[gslot].mem_c.banks[mc_bank(dps->nSel)];
+					bank_t *bank = &calcs[DebuggerSlot].mem_c.banks[mc_bank(dps->nSel)];
 
-					if (check_break(&calcs[gslot].mem_c, dps->nSel)) {
-						clear_break(&calcs[gslot].mem_c, bank->ram, bank->page, dps->nSel);
+					if (check_break(&calcs[DebuggerSlot].mem_c, dps->nSel)) {
+						clear_break(&calcs[DebuggerSlot].mem_c, bank->ram, bank->page, dps->nSel);
 					} else {
-						set_break(&calcs[gslot].mem_c, bank->ram, bank->page, dps->nSel);
+						set_break(&calcs[DebuggerSlot].mem_c, bank->ram, bank->page, dps->nSel);
 					}
 					InvalidateSel(hwnd, dps->iSel);
 					break;
 				}
 				case DB_MEMPOINT_WRITE: {
-					bank_t *bank = &calcs[gslot].mem_c.banks[mc_bank(dps->nSel)];
+					bank_t *bank = &calcs[DebuggerSlot].mem_c.banks[mc_bank(dps->nSel)];
 
-					if (check_mem_write_break(&calcs[gslot].mem_c, dps->nSel)) {
-						clear_mem_write_break(&calcs[gslot].mem_c, bank->ram, bank->page, dps->nSel);
+					if (check_mem_write_break(&calcs[DebuggerSlot].mem_c, dps->nSel)) {
+						clear_mem_write_break(&calcs[DebuggerSlot].mem_c, bank->ram, bank->page, dps->nSel);
 					} else {
-						set_mem_write_break(&calcs[gslot].mem_c, bank->ram, bank->page, dps->nSel);
+						set_mem_write_break(&calcs[DebuggerSlot].mem_c, bank->ram, bank->page, dps->nSel);
 					}
 					InvalidateSel(hwnd, dps->iSel);
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
 				}
 				case DB_MEMPOINT_READ: {
-					bank_t *bank = &calcs[gslot].mem_c.banks[mc_bank(dps->nSel)];
+					bank_t *bank = &calcs[DebuggerSlot].mem_c.banks[mc_bank(dps->nSel)];
 
-					if (check_mem_read_break(&calcs[gslot].mem_c, dps->nSel)) {
-						clear_mem_read_break(&calcs[gslot].mem_c, bank->ram, bank->page, dps->nSel);
+					if (check_mem_read_break(&calcs[DebuggerSlot].mem_c, dps->nSel)) {
+						clear_mem_read_break(&calcs[DebuggerSlot].mem_c, bank->ram, bank->page, dps->nSel);
 					} else {
-						set_mem_read_break(&calcs[gslot].mem_c, bank->ram, bank->page, dps->nSel);
+						set_mem_read_break(&calcs[DebuggerSlot].mem_c, bank->ram, bank->page, dps->nSel);
 					}
 					InvalidateSel(hwnd, dps->iSel);
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
@@ -960,7 +959,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case IDM_DSETPC: {
-					calcs[gslot].cpu.pc = zinf[dps->iSel].addr;
+					calcs[DebuggerSlot].cpu.pc = zinf[dps->iSel].addr;
 					cycle_pcs(dps);
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
@@ -1218,7 +1217,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					// visible command
 
 					do {
-						disassemble(calcs[gslot].cpu.mem_c, --dps->nPane, LINEUP_DEPTH, zup);
+						disassemble(calcs[DebuggerSlot].cpu.mem_c, --dps->nPane, LINEUP_DEPTH, zup);
 					} while (zup[LINEUP_DEPTH-2].addr > zinf[0].addr && dps->nPane);
 
 

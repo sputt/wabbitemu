@@ -8,7 +8,11 @@
 #ifndef GUIFACEPLATE_H_
 #define GUIFACEPLATE_H_
 
+#ifdef USE_GDIPLUS
+int DrawFaceplateRegion(Graphics *graphics);
+#else
 int DrawFaceplateRegion(HDC);
+#endif
 HRGN GetRegion();
 
 #endif /* GUIFACEPLATE_H_ */
