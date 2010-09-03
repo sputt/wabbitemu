@@ -92,6 +92,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 		case TI_83:
 			lcd->base_level = BASE_LEVEL_83;
 			break;
+		case TI_85:
 		case TI_86:
 			lcd->base_level = BASE_LEVEL_83P;
 			lcd->contrast = lcd->base_level;

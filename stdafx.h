@@ -25,12 +25,22 @@
 #include <OleIdl.h>
 #include <ShObjIdl.h>
 #include <setjmp.h>
+#ifdef _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#endif
 #include <stdlib.h>
+#ifdef _DEBUG
+#include <crtdbg.h>
+#endif
 #include <stdio.h>
 #include <sys/types.h>
 #include <mmsystem.h>
 #include <stddef.h>
 #include <time.h>
+#ifdef USE_GDIPLUS
+#include <gdiplus.h>
+using namespace Gdiplus;
+#endif
 
 #include <atlbase.h>
 #include <atlcom.h>

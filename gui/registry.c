@@ -13,7 +13,7 @@ static struct {
 } regDefaults[] = {
 	{"cutout", 		REG_DWORD, 	0},
 	{"skin",		REG_DWORD,	0},
-	{"version", 	REG_SZ, 	(LONG_PTR) "1.1"},
+	{"version", 	REG_SZ, 	(LONG_PTR) "1.5"},
 	{"rom_path", 	REG_SZ, 	(LONG_PTR) "z.rom"},
 	{"shades",		REG_DWORD,	6},
 	{"gif_path", 	REG_SZ,		(LONG_PTR) "wabbitemu.gif"},
@@ -24,6 +24,8 @@ static struct {
 	{"screen_scale",REG_DWORD,  2},
 	{"faceplate_color", REG_DWORD, 	0x838587},
 	{"exit_save_state", REG_DWORD,  0},
+	{"load_files_first", REG_DWORD,  1},
+	{"do_backups", REG_DWORD,  0},
 	{"num_keys",		REG_DWORD,  5},
 	{NULL,			0,			0},
 };
@@ -120,16 +122,18 @@ HRESULT LoadRegistrySettings(void) {
 	calcs[gslot].Scale = QueryWabbitKey("screen_scale");
 	calcs[gslot].FaceplateColor = QueryWabbitKey("faceplate_color");
 	exit_save_state = QueryWabbitKey("exit_save_state");
+	load_files_first = QueryWabbitKey("load_files_first");
+	do_backups = QueryWabbitKey("do_backups");
 	int num_entries = QueryWabbitKey("num_keys");
 	//need to load accelerators
 	// querywabbitkey doesnt work because its a REG_BINARY
-	ACCEL buf[256];
+	/*ACCEL buf[256];
 	DWORD dwCount = sizeof(buf);
 	LONG res = RegQueryValueEx(hkeyWabbit, "accelerators", NULL, NULL, (LPBYTE)buf, &dwCount);
 	if (res == ERROR_SUCCESS){
 		DestroyAcceleratorTable(haccelmain);
 		haccelmain = CreateAcceleratorTable(buf, num_entries);
-	}
+	}*/
 	/*
 	 * 		{"gif_path", 	REG_SZ,		"wabbitemu.gif"},
 		{"gif_autosave",REG_DWORD,	0},
@@ -140,7 +144,8 @@ HRESULT LoadRegistrySettings(void) {
 	gif_autosave = QueryWabbitKey("gif_autosave");
 	gif_use_increasing = QueryWabbitKey("gif_useinc");
 	
-	RegCloseKey(hkeyWabbit);
+	//RegCloseKey(hkeyWabbit);
+	hkeyTarget = hkeyWabbit;
 	RegCloseKey(hkeySoftware);
 
 	calcs[gslot].bCutout = QueryWabbitKey("cutout");
@@ -163,6 +168,8 @@ void SaveWabbitKey(char *name, int type, void *value) {
 
 
 HRESULT SaveRegistrySettings(void) {
+	if (hkeyTarget)
+		RegCloseKey(hkeyTarget);
 	HKEY hkeyWabbit;
 	HRESULT res;
 	res = RegOpenKeyEx(HKEY_CURRENT_USER, "software\\Wabbitemu", 0, KEY_ALL_ACCESS, &hkeyWabbit);
@@ -176,20 +183,22 @@ HRESULT SaveRegistrySettings(void) {
 		SaveWabbitKey("gif_autosave", REG_DWORD, &gif_autosave);
 		SaveWabbitKey("gif_useinc", REG_DWORD, &gif_use_increasing);
 		SaveWabbitKey("exit_save_state", REG_DWORD, &exit_save_state);
+		SaveWabbitKey("load_files_first", REG_DWORD, &load_files_first);
+		SaveWabbitKey("do_backups", REG_DWORD, &do_backups);
 
 		SaveWabbitKey("faceplate_color", REG_DWORD, &calcs[gslot].FaceplateColor);
 		SaveWabbitKey("custom_skin", REG_DWORD, &calcs[gslot].bCustomSkin);
 		SaveWabbitKey("skin_path", REG_SZ, &calcs[gslot].skin_path);
 		SaveWabbitKey("keymap_path", REG_SZ, &calcs[gslot].keymap_path);
-		ACCEL buf[256];
+		/*ACCEL buf[256];
 		DWORD dwCount = sizeof(buf);
 		DWORD dwType = NULL;
 		LONG res = RegQueryValueEx(hkeyWabbit, "accelerators", NULL, &dwType,
 			(LPBYTE)buf, &dwCount);
 		if (res == ERROR_SUCCESS){
 			DestroyAcceleratorTable(haccelmain);
-			haccelmain = CreateAcceleratorTable(buf, num_entries);
-		}
+			haccelmain = CreateAcceleratorTable(buf, dwCount);
+		}*/
 		
 		SaveWabbitKey("shades", REG_DWORD, &calcs[gslot].cpu.pio.lcd->shades);
 		SaveWabbitKey("lcd_mode", REG_DWORD, &calcs[gslot].cpu.pio.lcd->mode);

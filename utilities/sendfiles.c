@@ -14,6 +14,7 @@
 
 
 static int SlotSave =-1;
+static HWND hwndMain = NULL;
 
 typedef struct SENDFILES {
 	char* FileNames;
@@ -49,8 +50,8 @@ char* AppendName(char* FileNames, char* fn) {
 	return FileNames;
 }
 
-
 void SendFile( char* FileName , int ram ) {
+	BOOL is_link_connected = link_connected();
 	TIFILE_t *var = importvar(FileName, gslot, ram);
 	LINK_ERR result;
 	if (var != NULL) {
@@ -118,9 +119,9 @@ void SendFile( char* FileName , int ram ) {
 				FreeTiFile(var);
 				var = NULL;
 				rom_load(gslot,FileName);
+				SendMessage(calcs[SlotSave].hwndFrame, WM_USER, 0, 0);
 				break;
-			case LABEL_TYPE:
-			{
+			case LABEL_TYPE: {
 				strcpy(calcs[gslot].labelfn,FileName);
 				printf("loading label file for slot %d: %s\n", gslot, FileName);
 				VoidLabels(gslot);
@@ -130,21 +131,21 @@ void SendFile( char* FileName , int ram ) {
 			}
 			case SKIP_TYPE:
 			case BREAKPOINT_TYPE:
-			{
 				break;
-			}
 			default:
-				#ifdef WINVER
+#ifdef WINVER
 				MessageBox(NULL, "The file was an invalid or unspecified type","Error",MB_OK);
-				#endif
+#endif
 				break;
 		}
 	if (var)
 		FreeTiFile(var);
+		if (is_link_connected)
+			link_connect(&calcs[0].cpu, &calcs[1].cpu);
 	} else {
-		#ifdef WINVER
+#ifdef WINVER
 		MessageBox(NULL, "Invalid file format","Error",MB_OK);
-		#endif
+#endif
 	}
 }
 
@@ -235,8 +236,20 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 		return 0;
 	}
-	case WM_SIZING:
-		return 1;
+	case WM_GETMINMAXINFO: {
+		MINMAXINFO *info = (MINMAXINFO *) lParam;
+		RECT rc;
+		GetWindowRect(calcs[SlotSave].hwndLCD, &rc);
+
+		DWORD SendWidth = (rc.right - rc.left) * 9 / 10;
+		DWORD SendHeight = 110;
+		AdjustWindowRect(&rc, WS_SIZEBOX | WS_POPUP, FALSE);
+		info->ptMinTrackSize.x = SendWidth;
+		info->ptMinTrackSize.y = SendHeight;
+		info->ptMaxTrackSize.x = SendWidth;
+		info->ptMaxTrackSize.y = SendHeight;
+		return 0;
+	}
 	case WM_SIZE:
 	{
 		RECT rc;
@@ -334,16 +347,11 @@ void ThreadSend( char* FileNames , int ram ) {
 
 	if (FileNames == NULL) return;
 
-	if (SlotSave == -1) {
-		SlotSave = gslot;
+	if (SlotSave != -1 || calcs[SlotSave].send == TRUE) {
+		MessageBox(NULL, "Currently sending files please wait...","Error",MB_OK);
+		return;
 	} else {
-		MessageBox(NULL, "Currently sending files please wait...","Error",MB_OK);
-		return;
-	}
-
-	if (calcs[SlotSave].send == TRUE)  {
-		MessageBox(NULL, "Currently sending files please wait...","Error",MB_OK);
-		return;
+		SlotSave = gslot;
 	}
 
 	if (hdlSend != NULL) {
@@ -384,7 +392,7 @@ void ThreadSend( char* FileNames , int ram ) {
 			r.left+(r.right - r.left - SendWidth)/2, r.top+(r.bottom - r.top - SendHeight)/2, SendWidth, SendHeight,
 			calcs[SlotSave].hwndLCD, NULL, g_hInst, 0
 	);
-
+	
     hdlSend = CreateThread(NULL,0,ThreadSendStart, sf, 0, NULL);
 
     if ( hdlSend  == NULL) {
@@ -394,6 +402,7 @@ void ThreadSend( char* FileNames , int ram ) {
 		MessageBox(NULL, "Could not create thread to send","Error",MB_OK);
 		return;
 	}
+
 	return;
 }
 #endif

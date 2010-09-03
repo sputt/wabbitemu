@@ -105,7 +105,7 @@ HRESULT __stdcall CDropTarget::QueryInterface(REFIID riid, LPVOID *ppvObject) {
 
 HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
 	DWORD i;
-
+	m_slot = calc_from_hwnd(m_hwndTarget);
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};
 		m_pDropTargetHelper->DragEnter(m_hwndTarget, pDataObject, &p, *pdwEffect);
@@ -145,14 +145,14 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 		pdd->type = DROPIMAGE_COPY;
 		wcscpy(pdd->szMessage, L"Transfer to %1");
 		wcscpy(pdd->szInsert, L"Wabbitemu");
-		calcs[gslot].do_drag = true;
+		calcs[m_slot].do_drag = true;
 
 		*pdwEffect = *pdwEffect & DROPEFFECT_COPY;
 	} else {
 		pdd->type = DROPIMAGE_INVALID;
 		wcscpy(pdd->szMessage, L"Cannot transfer to %1");
 		wcscpy(pdd->szInsert, L"Wabbitemu");
-		calcs[gslot].do_drag = false;
+		calcs[m_slot].do_drag = false;
 
 		*pdwEffect = DROPEFFECT_NONE;
 	}
@@ -162,6 +162,7 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 }
 
 HRESULT __stdcall CDropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
+	m_slot = calc_from_hwnd(m_hwndTarget);
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};
 		m_pDropTargetHelper->DragOver(&p, *pdwEffect);
@@ -178,15 +179,17 @@ HRESULT __stdcall CDropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdw
 }
 
 HRESULT __stdcall CDropTarget::DragLeave() {
+	m_slot = calc_from_hwnd(m_hwndTarget);
 	if (m_pDropTargetHelper != NULL) {
 		m_pDropTargetHelper->DragLeave();
 	}
-	calcs[gslot].do_drag = false;
+	calcs[m_slot].do_drag = false;
 
 	return S_OK;
 }
 
 HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
+	m_slot = calc_from_hwnd(m_hwndTarget);
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};
 		m_pDropTargetHelper->Drop(pDataObject, &p, *pdwEffect);
@@ -220,7 +223,7 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 	} else {
 		*pdwEffect = DROPEFFECT_NONE;
 	}
-	calcs[gslot].do_drag = false;
+	calcs[m_slot].do_drag = false;
 	return S_OK;
 }
 

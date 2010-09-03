@@ -90,7 +90,6 @@ HWND CreateExpandPane(HWND hwndParent, char *name, HWND contents) {
 
 
 	ExpandPanes[TotalPanes++] = hwndExp;
-
 	return hwndExp;
 }
 
@@ -596,6 +595,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			GetWindowText(hwnd, name, ARRAYSIZE(name));
 			SaveDebugKey(name, (DWORD*)eps->ExpandState);
 			ID--;
+			free(eps);
 		}
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);

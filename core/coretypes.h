@@ -4,6 +4,7 @@
 #define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
 
 #ifdef WINVER
+#include <stdint.h>
 #else
 #include <sys/types.h>
 #endif

@@ -78,11 +78,15 @@ typedef struct calc {
 	BOOL do_drag;
 	HDC hdcSkin;
 	HDC hdcKeymap;
+#ifdef USE_GDIPLUS
+	Graphics *skinGraphics;
+	Graphics *keymapGraphics;
+#endif
 #else
 	pthread_t hdlThread;
 #endif
 	BOOL running;
-	float speed;
+	int speed;
 	BYTE breakpoints[0x10000];
 	//BOOL warp;
 	label_struct labels[6000];
@@ -110,16 +114,11 @@ typedef struct calc {
 
 } calc_t;
 
+#ifdef WITH_BACKUPS
 typedef struct DEBUG_STATE {
-	int slot;
-	CPU_t cpu;
-	memory_context_t mem_c;
-	timer_context_t timer_c;
+	SAVESTATE_t* save;
 	struct DEBUG_STATE *next, *prev;
 } debugger_backup;
-
-#ifdef WITH_BACKUPS
-extern int current_backup_index;
 #endif
 
 #define MAX_CALCS	8
@@ -134,9 +133,13 @@ int calc_run_timed(int, time_t);
 __declspec(dllexport)
 #endif
 int calc_run_all(void);
+#ifdef WITH_BACKUPS
 void do_backup(int);
 void restore_backup(int, int);
-void backups_init_83pse(int);
+void init_backups();
+void free_backups(int);
+void free_backup(debugger_backup *);
+#endif
 
 #ifdef _WINDLL
 __declspec(dllexport)
@@ -148,21 +151,27 @@ int calc_from_hwnd(HWND);
 #endif
 #endif
 
-void calc_erase_certificate( u_char* mem, int size);
+void calc_erase_certificate(u_char* mem, int size);
 #ifdef CALC_C
 #define GLOBAL
 #else
 #define GLOBAL extern
 #endif
 
-
 GLOBAL calc_t calcs[MAX_CALCS];
 GLOBAL int gslot;
-GLOBAL debugger_backup backups/*[MAX_CALCS]*/[10];
-GLOBAL int frame_counter;
-#ifdef WINVER
-GLOBAL HACCEL haccelmain;
+GLOBAL int DebuggerSlot;
+#ifdef WITH_BACKUPS
+#define MAX_BACKUPS 10
+GLOBAL debugger_backup* backups[MAX_CALCS];
+GLOBAL int number_backup;
+GLOBAL int current_backup_index;
 #endif
+GLOBAL int frame_counter;
+GLOBAL BOOL exit_save_state;
+GLOBAL BOOL load_files_first;
+GLOBAL BOOL do_backups;
+
 
 GLOBAL const char *CalcModelTxt[]
 #ifdef CALC_C

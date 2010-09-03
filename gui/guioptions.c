@@ -11,6 +11,8 @@
 #include "lcd.h"
 #include "guicutout.h"
 #include "keys.h"
+#include "registry.h"
+
 
 extern HINSTANCE g_hInst;
 extern BITMAPINFO *bi;
@@ -30,58 +32,68 @@ void DoPropertySheet(HWND hwndOwner) {
 		return;
 	}
 
-	PROPSHEETPAGE psp[5];
+	PROPSHEETPAGE psp[6];
 	PROPSHEETHEADER psh;
 
 	psp[0].dwSize = sizeof(PROPSHEETPAGE);
 	psp[0].dwFlags = PSP_USEICONID | PSP_USETITLE;
 	psp[0].hInstance = g_hInst;
-	psp[0].pszTemplate = MAKEINTRESOURCE(IDD_GIFOPTIONS);
+	psp[0].pszTemplate = MAKEINTRESOURCE(IDD_GENERAL);
 	psp[0].pszIcon = NULL;
-	psp[0].pfnDlgProc = GIFOptionsProc;
-	psp[0].pszTitle = "Screen Capture";
+	psp[0].pfnDlgProc = GeneralOptionsProc;
+	psp[0].pszTitle = "General";
 	psp[0].lParam = 0;
 	psp[0].pfnCallback = NULL;
 
 	psp[1].dwSize = sizeof(PROPSHEETPAGE);
 	psp[1].dwFlags = PSP_USEICONID | PSP_USETITLE;
 	psp[1].hInstance = g_hInst;
-	psp[1].pszTemplate = MAKEINTRESOURCE(IDD_DISPLAYOPTIONS);
+	psp[1].pszTemplate = MAKEINTRESOURCE(IDD_GIFOPTIONS);
 	psp[1].pszIcon = NULL;
-	psp[1].pfnDlgProc = DisplayOptionsProc;
-	psp[1].pszTitle = "Display";
+	psp[1].pfnDlgProc = GIFOptionsProc;
+	psp[1].pszTitle = "Screen Capture";
 	psp[1].lParam = 0;
 	psp[1].pfnCallback = NULL;
 
 	psp[2].dwSize = sizeof(PROPSHEETPAGE);
 	psp[2].dwFlags = PSP_USEICONID | PSP_USETITLE;
 	psp[2].hInstance = g_hInst;
-	psp[2].pszTemplate = MAKEINTRESOURCE(IDD_ROMOPTIONS);
+	psp[2].pszTemplate = MAKEINTRESOURCE(IDD_DISPLAYOPTIONS);
 	psp[2].pszIcon = NULL;
-	psp[2].pfnDlgProc = ROMOptionsProc;
-	psp[2].pszTitle = "ROM";
+	psp[2].pfnDlgProc = DisplayOptionsProc;
+	psp[2].pszTitle = "Display";
 	psp[2].lParam = 0;
 	psp[2].pfnCallback = NULL;
 
 	psp[3].dwSize = sizeof(PROPSHEETPAGE);
 	psp[3].dwFlags = PSP_USEICONID | PSP_USETITLE;
 	psp[3].hInstance = g_hInst;
-	psp[3].pszTemplate = MAKEINTRESOURCE(IDD_SKINOPTIONS);
+	psp[3].pszTemplate = MAKEINTRESOURCE(IDD_ROMOPTIONS);
 	psp[3].pszIcon = NULL;
-	psp[3].pfnDlgProc = SkinOptionsProc;
-	psp[3].pszTitle = "Skin";
+	psp[3].pfnDlgProc = ROMOptionsProc;
+	psp[3].pszTitle = "ROM";
 	psp[3].lParam = 0;
 	psp[3].pfnCallback = NULL;
 
 	psp[4].dwSize = sizeof(PROPSHEETPAGE);
 	psp[4].dwFlags = PSP_USEICONID | PSP_USETITLE;
 	psp[4].hInstance = g_hInst;
-	psp[4].pszTemplate = MAKEINTRESOURCE(IDD_KEYSOPTIONS);
+	psp[4].pszTemplate = MAKEINTRESOURCE(IDD_SKINOPTIONS);
 	psp[4].pszIcon = NULL;
-	psp[4].pfnDlgProc = KeysOptionsProc;
-	psp[4].pszTitle = "Keys";
+	psp[4].pfnDlgProc = SkinOptionsProc;
+	psp[4].pszTitle = "Skin";
 	psp[4].lParam = 0;
 	psp[4].pfnCallback = NULL;
+
+	psp[5].dwSize = sizeof(PROPSHEETPAGE);
+	psp[5].dwFlags = PSP_USEICONID | PSP_USETITLE;
+	psp[5].hInstance = g_hInst;
+	psp[5].pszTemplate = MAKEINTRESOURCE(IDD_KEYSOPTIONS);
+	psp[5].pszIcon = NULL;
+	psp[5].pfnDlgProc = KeysOptionsProc;
+	psp[5].pszTitle = "Keys";
+	psp[5].lParam = 0;
+	psp[5].pfnCallback = NULL;
 
 	psh.dwSize = sizeof(PROPSHEETHEADER);
 	psh.dwFlags = PSH_PROPSHEETPAGE | PSH_NOCONTEXTHELP | PSH_MODELESS;
@@ -547,6 +559,68 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 			}
 			return TRUE;
 		}
+	}
+	return FALSE;
+}
+
+INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+	static HWND saveState_check, loadFiles_check, doBackups_check;
+	switch (Message) {
+		case WM_INITDIALOG: {
+			saveState_check = GetDlgItem(hwnd, IDC_CHKSAVE);
+			loadFiles_check = GetDlgItem(hwnd, IDC_CHKLOADFILES);
+			doBackups_check = GetDlgItem(hwnd, IDC_CHKREWINDING);
+
+			SendMessage(saveState_check, BM_SETCHECK, exit_save_state, 0);
+			SendMessage(loadFiles_check, BM_SETCHECK, load_files_first, 0);
+#ifdef WITH_BACKUPS
+			SendMessage(doBackups_check, BM_SETCHECK, do_backups, 0);
+#endif
+			return TRUE;
+		}
+		case WM_COMMAND: {
+			switch (HIWORD(wParam)) {
+				case CBN_SELCHANGE:
+					PropSheet_Changed(GetParent(hwnd), hwnd);
+					return TRUE;
+				case BN_CLICKED:
+					switch(LOWORD(wParam)) {
+						case IDC_CHKSAVE:
+							break;
+						case IDC_CHKLOADFILES:
+							break;
+						case IDC_CHKREWINDING:
+							break;
+					}
+					PropSheet_Changed(GetParent(hwnd), hwnd);
+					break;
+			}
+			return TRUE;
+		}
+
+		case WM_NOTIFY:
+			switch (((NMHDR FAR *) lParam)->code) {
+				case PSN_APPLY: {
+					int i;
+					exit_save_state = SendMessage(saveState_check, BM_GETCHECK, 0, 0);
+					load_files_first = SendMessage(loadFiles_check, BM_GETCHECK, 0, 0);
+					//we need to persist this immediately
+					SaveWabbitKey("load_files_first", REG_DWORD, &load_files_first);
+#ifdef WITH_BACKUPS
+					do_backups = SendMessage(doBackups_check, BM_GETCHECK, 0, 0);
+					if (!do_backups) {
+						for (i = 0; i < MAX_CALCS; i++)
+							free_backups(i);
+					}
+#endif
+					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
+					return TRUE;
+				}
+				case PSN_KILLACTIVE:
+					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FALSE);
+					return TRUE;
+			}
+			break;
 	}
 	return FALSE;
 }

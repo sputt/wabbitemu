@@ -78,9 +78,9 @@ void HandleEditMessages(HWND hwnd, WPARAM wParam, LPARAM lParam) {
 		default:
 		if (vi != -1) {
 			if (vi < REG16_ROWS*REG16_COLS) {
-				ValueSubmit(hwndVal, ((char*) (&calcs[gslot].cpu)) + reg_offset[vi].offset, 2);
+				ValueSubmit(hwndVal, ((char*) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 2);
 			} else {
-				ValueSubmit(hwndVal, ((char*) (&calcs[gslot].cpu)) + reg_offset[vi].offset, 1);
+				ValueSubmit(hwndVal, ((char*) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 1);
 
 			}
 			SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
@@ -160,12 +160,12 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	{
 		struct {char *name; void *data; size_t size;} reg[] =
 		{
-				{"af", &calcs[gslot].cpu.af, 2}, {"af'", &calcs[gslot].cpu.afp, 2},
-				{"bc", &calcs[gslot].cpu.bc, 2}, {"bc'", &calcs[gslot].cpu.bcp, 2},
-				{"de", &calcs[gslot].cpu.de, 2}, {"de'", &calcs[gslot].cpu.dep, 2},
-				{"hl", &calcs[gslot].cpu.hl, 2}, {"hl'", &calcs[gslot].cpu.hlp, 2},
-				{"ix", &calcs[gslot].cpu.ix, 2}, {"sp",  &calcs[gslot].cpu.sp, 2},
-				{"iy", &calcs[gslot].cpu.iy, 2}, {"pc",  &calcs[gslot].cpu.pc, 2},
+				{"af", &calcs[DebuggerSlot].cpu.af, 2}, {"af'", &calcs[DebuggerSlot].cpu.afp, 2},
+				{"bc", &calcs[DebuggerSlot].cpu.bc, 2}, {"bc'", &calcs[DebuggerSlot].cpu.bcp, 2},
+				{"de", &calcs[DebuggerSlot].cpu.de, 2}, {"de'", &calcs[DebuggerSlot].cpu.dep, 2},
+				{"hl", &calcs[DebuggerSlot].cpu.hl, 2}, {"hl'", &calcs[DebuggerSlot].cpu.hlp, 2},
+				{"ix", &calcs[DebuggerSlot].cpu.ix, 2}, {"sp",  &calcs[DebuggerSlot].cpu.sp, 2},
+				{"iy", &calcs[DebuggerSlot].cpu.iy, 2}, {"pc",  &calcs[DebuggerSlot].cpu.pc, 2},
 		};
 
 		// Create all of the value fields
@@ -179,7 +179,7 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	}
 	case WM_COMMAND:
 	{
-		SendMessage(calcs[gslot].hwndDebug, WM_USER, DB_UPDATE, 0);
+		SendMessage(calcs[DebuggerSlot].hwndDebug, WM_USER, DB_UPDATE, 0);
 		return 0;
 	}
 	case WM_PAINT:
@@ -231,7 +231,7 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 		{
 			int row_y = kRegRow/4 + kRegRow*(i+1);
 
-			hwndValue = CreateValueField(hwnd, "", 0, &calcs[gslot].cpu.mem_c->banks[i].page, 1, 3, DEC);
+			hwndValue = CreateValueField(hwnd, "", 0, &calcs[DebuggerSlot].cpu.mem_c->banks[i].page, 1, 3, DEC);
 			SetWindowPos(hwndValue, NULL, kRegAddr*4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 
@@ -272,16 +272,16 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 						BM_SETCHECK, BST_UNCHECKED, 0);
 				SendMessage(rdoType[((LOWORD(wParam)-20)/2) * 2 + 1],
 						BM_SETCHECK, BST_UNCHECKED, 0);
-				bank_state_t *bank = &calcs[gslot].mem_c.banks[(LOWORD(wParam)-20)/2];
+				bank_state_t *bank = &calcs[DebuggerSlot].mem_c.banks[(LOWORD(wParam)-20)/2];
 				bank->ram = !(LOWORD(wParam) % 2);
 			} else if (LOWORD(wParam) >= 30 && LOWORD(wParam) < 34) {
-				calcs[gslot].mem_c.banks[LOWORD(wParam)-30].read_only =
-					!calcs[gslot].mem_c.banks[LOWORD(wParam)-30].read_only;
+				calcs[DebuggerSlot].mem_c.banks[LOWORD(wParam)-30].read_only =
+					!calcs[DebuggerSlot].mem_c.banks[LOWORD(wParam)-30].read_only;
 			}
 			break;
 		}
 		SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
-		SendMessage(calcs[gslot].hwndDebug, WM_USER, DB_UPDATE, 0);
+		SendMessage(calcs[DebuggerSlot].hwndDebug, WM_USER, DB_UPDATE, 0);
 		return 0;
 	}
 	case WM_PAINT:
@@ -357,10 +357,10 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 			int i;
 			for (i = 0; i < 4; i++)
 			{
-				bank_state_t *bank = &calcs[gslot].mem_c.banks[i];
+				bank_state_t *bank = &calcs[DebuggerSlot].mem_c.banks[i];
 				SendMessage(rdoType[2*i + (bank->ram ? 0 : 1)], BM_SETCHECK, BST_CHECKED, 0);
 				SendMessage(chkRO[i], BM_SETCHECK, bank->read_only ? BST_CHECKED : BST_UNCHECKED, 0);
-				bank->addr = bank->ram ? calcs[gslot].mem_c.ram : calcs[gslot].mem_c.flash;
+				bank->addr = bank->ram ? calcs[DebuggerSlot].mem_c.ram : calcs[DebuggerSlot].mem_c.flash;
 				bank->addr += bank->page * PAGE_SIZE;
 			}
 			break;
@@ -386,12 +386,12 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	{
 
 		HWND hwndValue;
-		freq = ((double) calcs[gslot].cpu.timer_c->freq) / 1000000.0;
+		freq = ((double) calcs[DebuggerSlot].cpu.timer_c->freq) / 1000000.0;
 		hwndValue = CreateValueField(hwnd, "Freq.", kRegAddr*3/2, &freq, sizeof(double), 5, FLOAT2);
 		SetWindowPos(hwndValue, NULL, 0, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "Bus", kRegAddr*2 + kRegAddr/4, &calcs[gslot].cpu.bus, 1, 2, HEX2);
+		hwndValue = CreateValueField(hwnd, "Bus", kRegAddr*2 + kRegAddr/4, &calcs[DebuggerSlot].cpu.bus, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 0, kRegRow*2, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
@@ -412,10 +412,10 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			case BN_CLICKED:
 				switch (LOWORD(wParam)) {
 					case 1:
-						calcs[gslot].cpu.halt = !calcs[gslot].cpu.halt;
+						calcs[DebuggerSlot].cpu.halt = !calcs[DebuggerSlot].cpu.halt;
 						break;
 				}
-				SendMessage(calcs[gslot].hwndDebug, WM_USER, DB_UPDATE, 0);
+				SendMessage(calcs[DebuggerSlot].hwndDebug, WM_USER, DB_UPDATE, 0);
 		}
 		return 0;
 	}
@@ -448,7 +448,7 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		switch (wParam) {
 		case DB_UPDATE:
 			SendMessage(chkHalt, BM_SETCHECK,
-			calcs[gslot].cpu.halt ? BST_CHECKED : BST_UNCHECKED, 0);
+			calcs[DebuggerSlot].cpu.halt ? BST_CHECKED : BST_UNCHECKED, 0);
 			break;
 		case VF_DESELECT_CHILDREN:
 			EnumChildWindows(hwnd, EnumDeselectChildren, (LPARAM) hwnd);
@@ -487,15 +487,15 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			hwnd, (HMENU) 2, g_hInst, NULL);
 		SendMessage(chkIff2, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
 /*
-		hwndValue = CreateValueField(hwnd, "Mask", kRegAddr, &calcs[gslot].cpu.pio.stdint->intactive, 1, 2, HEX2);
+		hwndValue = CreateValueField(hwnd, "Mask", kRegAddr, &calcs[DebuggerSlot].cpu.pio.stdint->intactive, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 0, 1*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "i", kRegAddr, &calcs[gslot].cpu.i, 1, 2, HEX2);
+		hwndValue = CreateValueField(hwnd, "i", kRegAddr, &calcs[DebuggerSlot].cpu.i, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 0, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "r", kRegAddr, &calcs[gslot].cpu.r, 1, 2, HEX2);
+		hwndValue = CreateValueField(hwnd, "r", kRegAddr, &calcs[DebuggerSlot].cpu.r, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 0, 3*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 		*/
@@ -507,13 +507,13 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			case BN_CLICKED:
 				switch (LOWORD(wParam)) {
 					case 1:
-						calcs[gslot].cpu.iff1 = !calcs[gslot].cpu.iff1;
+						calcs[DebuggerSlot].cpu.iff1 = !calcs[DebuggerSlot].cpu.iff1;
 						break;
 					case 2:
-						calcs[gslot].cpu.iff2 = !calcs[gslot].cpu.iff2;
+						calcs[DebuggerSlot].cpu.iff2 = !calcs[DebuggerSlot].cpu.iff2;
 						break;
 				}
-				SendMessage(calcs[gslot].hwndDebug, WM_USER, DB_UPDATE, 0);
+				SendMessage(calcs[DebuggerSlot].hwndDebug, WM_USER, DB_UPDATE, 0);
 		}
 		return 0;
 	}
@@ -533,7 +533,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		double ntimer;
 		SetRect(&rc, 0, kRegRow*2, kRegAddr*3, kRegRow*3);
 
-		ntimer = tc_elapsed(&calcs[gslot].timer_c) - calcs[gslot].cpu.pio.stdint->lastchk1;
+		ntimer = tc_elapsed(&calcs[DebuggerSlot].timer_c) - calcs[DebuggerSlot].cpu.pio.stdint->lastchk1;
 		ntimer *= 1000;
 		sprintf(szRegVal, "%0.4lf ms", ntimer);
 		SelectObject(hdc, hfontSegoe);
@@ -547,7 +547,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		OffsetRect(&rc, -kRegAddr*3, kRegRow);
 		DrawTextA(hdc, "Timer1 dur.", -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-		ntimer = calcs[gslot].cpu.pio.stdint->timermax1;
+		ntimer = calcs[DebuggerSlot].cpu.pio.stdint->timermax1;
 		ntimer *= 1000;
 		sprintf(szRegVal, "%0.4lf ms", ntimer);
 
@@ -560,7 +560,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		OffsetRect(&rc, -kRegAddr*3, kRegRow*3/2);
 		DrawTextA(hdc, "Next Timer2", -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-		ntimer = tc_elapsed(&calcs[gslot].timer_c) - calcs[gslot].cpu.pio.stdint->lastchk2;
+		ntimer = tc_elapsed(&calcs[DebuggerSlot].timer_c) - calcs[DebuggerSlot].cpu.pio.stdint->lastchk2;
 		ntimer *= 1000;
 		sprintf(szRegVal, "%0.4lf ms", ntimer);
 
@@ -574,7 +574,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		OffsetRect(&rc, -kRegAddr*3, kRegRow);
 		DrawTextA(hdc, "Timer2 dur.", -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-		ntimer = calcs[gslot].cpu.pio.stdint->timermax2;
+		ntimer = calcs[DebuggerSlot].cpu.pio.stdint->timermax2;
 		ntimer *= 1000;
 		sprintf(szRegVal, "%0.4lf ms", ntimer);
 
@@ -599,9 +599,9 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		switch (wParam) {
 		case DB_UPDATE:
 			SendMessage(chkIff1, BM_SETCHECK,
-			calcs[gslot].cpu.iff1 ? BST_CHECKED : BST_UNCHECKED, 0);
+			calcs[DebuggerSlot].cpu.iff1 ? BST_CHECKED : BST_UNCHECKED, 0);
 			SendMessage(chkIff2, BM_SETCHECK,
-			calcs[gslot].cpu.iff2 ? BST_CHECKED : BST_UNCHECKED, 0);
+			calcs[DebuggerSlot].cpu.iff2 ? BST_CHECKED : BST_UNCHECKED, 0);
 
 			InvalidateRect(hwnd, NULL, FALSE);
 			break;
@@ -627,11 +627,11 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	{
 		/*struct {char *name; void *data; size_t size;} reg[] =
 		{
-				{"X", &calcs[gslot].cpu.pio.lcd->x, 1},
-				{"Y", &calcs[gslot].cpu.pio.lcd->y, 1},
-				{"Z", &calcs[gslot].cpu.pio.lcd->z, 1},
-				{"Contrast", &calcs[gslot].cpu.pio.lcd->contrast, 1},
-				{"Mode", &calcs[gslot].cpu.pio.lcd->mode, 1},
+				{"X", &calcs[DebuggerSlot].cpu.pio.lcd->x, 1},
+				{"Y", &calcs[DebuggerSlot].cpu.pio.lcd->y, 1},
+				{"Z", &calcs[DebuggerSlot].cpu.pio.lcd->z, 1},
+				{"Contrast", &calcs[DebuggerSlot].cpu.pio.lcd->contrast, 1},
+				{"Mode", &calcs[DebuggerSlot].cpu.pio.lcd->mode, 1},
 		};*/
 
 		/*
@@ -646,19 +646,19 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 		HWND hwndValue;
 
-		hwndValue = CreateValueField(hwnd, "X", kRegAddr, &calcs[gslot].cpu.pio.lcd->x, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, "X", kRegAddr, &calcs[DebuggerSlot].cpu.pio.lcd->x, 4, 2, DEC);
 		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, 0, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "Y", kRegAddr, &calcs[gslot].cpu.pio.lcd->y, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, "Y", kRegAddr, &calcs[DebuggerSlot].cpu.pio.lcd->y, 4, 2, DEC);
 		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "Z", kRegAddr, &calcs[gslot].cpu.pio.lcd->z, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, "Z", kRegAddr, &calcs[DebuggerSlot].cpu.pio.lcd->z, 4, 2, DEC);
 		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "Contrast", kRegAddr*2, &calcs[gslot].cpu.pio.lcd->contrast, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, "Contrast", kRegAddr*2, &calcs[DebuggerSlot].cpu.pio.lcd->contrast, 4, 2, DEC);
 		SetWindowPos(hwndValue, NULL, 0, 5*kRegRow/4, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
@@ -724,16 +724,16 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		switch (HIWORD(wParam)) {
 			case BN_CLICKED:
 				if ((HWND) lParam == chkOn)
-					calcs[gslot].cpu.pio.lcd->active = !calcs[gslot].cpu.pio.lcd->active;
+					calcs[DebuggerSlot].cpu.pio.lcd->active = !calcs[DebuggerSlot].cpu.pio.lcd->active;
 				else if ((HWND) lParam == rdoXinc)
-					calcs[gslot].cpu.pio.lcd->cursor_mode = X_DOWN;
+					calcs[DebuggerSlot].cpu.pio.lcd->cursor_mode = X_DOWN;
 				else if ((HWND) lParam == rdoXdec)
-					calcs[gslot].cpu.pio.lcd->cursor_mode = X_UP;
+					calcs[DebuggerSlot].cpu.pio.lcd->cursor_mode = X_UP;
 				else if ((HWND) lParam == rdoYdec)
-					calcs[gslot].cpu.pio.lcd->cursor_mode = Y_DOWN;
+					calcs[DebuggerSlot].cpu.pio.lcd->cursor_mode = Y_DOWN;
 				else if ((HWND) lParam == rdoYinc)
-					calcs[gslot].cpu.pio.lcd->cursor_mode = Y_UP;
-				SendMessage(calcs[gslot].hwndDebug, WM_USER, DB_UPDATE, 0);
+					calcs[DebuggerSlot].cpu.pio.lcd->cursor_mode = Y_UP;
+				SendMessage(calcs[DebuggerSlot].hwndDebug, WM_USER, DB_UPDATE, 0);
 		}
 		return 0;
 	}
@@ -766,14 +766,14 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		switch (wParam) {
 		case DB_UPDATE:
 			SendMessage(chkOn, BM_SETCHECK,
-			calcs[gslot].cpu.pio.lcd->active ? BST_CHECKED : BST_UNCHECKED, 0);
+			calcs[DebuggerSlot].cpu.pio.lcd->active ? BST_CHECKED : BST_UNCHECKED, 0);
 
 			SendMessage(rdoXdec, BM_SETCHECK, BST_UNCHECKED, 0);
 			SendMessage(rdoXinc, BM_SETCHECK, BST_UNCHECKED, 0);
 			SendMessage(rdoYinc, BM_SETCHECK, BST_UNCHECKED, 0);
 			SendMessage(rdoYdec, BM_SETCHECK, BST_UNCHECKED, 0);
 
-			switch (calcs[gslot].cpu.pio.lcd->cursor_mode)
+			switch (calcs[DebuggerSlot].cpu.pio.lcd->cursor_mode)
 			{
 			case X_UP:		SendMessage(rdoXdec, BM_SETCHECK, BST_CHECKED, 0); break;
 			case X_DOWN:	SendMessage(rdoXinc, BM_SETCHECK, BST_CHECKED, 0); break;
@@ -783,7 +783,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				break;
 			}
 
-			InvalidateRect(calcs[gslot].hwndLCD, NULL, FALSE);
+			InvalidateRect(calcs[DebuggerSlot].hwndLCD, NULL, FALSE);
 			break;
 		case VF_DESELECT_CHILDREN:
 			EnumChildWindows(hwnd, EnumDeselectChildren, (LPARAM) hwnd);
@@ -878,25 +878,25 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case BN_CLICKED:
 					switch (LOWORD(wParam)) {
 						case REG_CHK_Z:
-							calcs[gslot].cpu.f ^= ZERO_MASK;
+							calcs[DebuggerSlot].cpu.f ^= ZERO_MASK;
 							break;
 						case REG_CHK_C:
-							calcs[gslot].cpu.f ^= CARRY_MASK;
+							calcs[DebuggerSlot].cpu.f ^= CARRY_MASK;
 							break;
 						case REG_CHK_S:
-							calcs[gslot].cpu.f ^= SIGN_MASK;
+							calcs[DebuggerSlot].cpu.f ^= SIGN_MASK;
 							break;
 						case REG_CHK_PV:
-							calcs[gslot].cpu.f ^= PV_MASK;
+							calcs[DebuggerSlot].cpu.f ^= PV_MASK;
 							break;
 						case REG_CHK_HC:
-							calcs[gslot].cpu.f ^= HC_MASK;
+							calcs[DebuggerSlot].cpu.f ^= HC_MASK;
 							break;
 						case REG_CHK_N:
-							calcs[gslot].cpu.f ^= N_MASK;
+							calcs[DebuggerSlot].cpu.f ^= N_MASK;
 							break;
 					}
-					SendMessage(calcs[gslot].hwndDebug, WM_USER, DB_UPDATE, 0);
+					SendMessage(calcs[DebuggerSlot].hwndDebug, WM_USER, DB_UPDATE, 0);
 					return 0;
 			}
 
@@ -923,17 +923,17 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			switch (wParam) {
 			case DB_UPDATE: {
 				SendMessage(chk_z, BM_SETCHECK,
-				(calcs[gslot].cpu.f & ZERO_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
+				(calcs[DebuggerSlot].cpu.f & ZERO_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
 				SendMessage(chk_c, BM_SETCHECK,
-				(calcs[gslot].cpu.f & CARRY_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
+				(calcs[DebuggerSlot].cpu.f & CARRY_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
 				SendMessage(chk_s, BM_SETCHECK,
-				(calcs[gslot].cpu.f & SIGN_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
+				(calcs[DebuggerSlot].cpu.f & SIGN_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
 				SendMessage(chk_pv, BM_SETCHECK,
-				(calcs[gslot].cpu.f & PV_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
+				(calcs[DebuggerSlot].cpu.f & PV_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
 				SendMessage(chk_hc, BM_SETCHECK,
-				(calcs[gslot].cpu.f & HC_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
+				(calcs[DebuggerSlot].cpu.f & HC_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
 				SendMessage(chk_n, BM_SETCHECK,
-				(calcs[gslot].cpu.f & N_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
+				(calcs[DebuggerSlot].cpu.f & N_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
 				break;
 			}
 			}
@@ -1193,10 +1193,10 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (vi != -1) {
 					if (vi < REG16_ROWS*REG16_COLS) {
 						ValueSubmit(hwndVal,
-							((char*) (&calcs[gslot].cpu)) + reg_offset[vi].offset, 2);
+							((char*) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 2);
 					} else {
 						ValueSubmit(hwndVal,
-							((char*) (&calcs[gslot].cpu)) + reg_offset[vi].offset, 1);
+							((char*) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 1);
 
 					}
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);

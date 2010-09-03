@@ -17,21 +17,21 @@ static void port0(CPU_t *cpu, device_t *dev) {
 		cpu->bus = ((link->host&0x03)|(link->client[0]&0x03))^0x03;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		#ifdef WINVER // lazy me
+#ifdef WINVER // lazy me
 		if ((link->host&0x01) != (cpu->bus&0x01)) {
 			FlippedLeft(cpu,(cpu->bus&0x01));		//sound .. #$%# you
 		}
 		if ((link->host&0x02) != (cpu->bus&0x02)) {
 			FlippedRight(cpu,((cpu->bus&0x02)>>1));	//sound, not portable
 		}
-		#endif		
+#endif		
 
 		link->host = cpu->bus&0x03;
 		cpu->output = FALSE;
 	}
-	#ifdef WINVER // :P
+#ifdef WINVER // :P
 	if (link->audio.init && link->audio.enabled) nextsample(cpu);
-	#endif
+#endif
 }
 
 static void port2(CPU_t *cpu, device_t *dev) {

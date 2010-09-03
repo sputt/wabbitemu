@@ -62,7 +62,7 @@ static LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 				for (i = 0; i < curr_dt->dwSize; i++) {
 					waddr_t waddr = curr_dt->waddr;
 					waddr.addr += i;
-					dwValue |= wmem_read(&calcs[gslot].mem_c, waddr) << (8 * i);
+					dwValue |= wmem_read(&calcs[DebuggerSlot].mem_c, waddr) << (8 * i);
 				}
 				sprintf(szValue, curr_dt->szFmt, dwValue);
 				DrawText(hdc, szValue, -1, &dr, DT_SINGLELINE);
