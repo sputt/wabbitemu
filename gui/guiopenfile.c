@@ -115,6 +115,7 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 
 
 void GetOpenSendFileName(HWND hwnd, int defFilter) {
+	int slot =  calc_from_hwnd(hwnd);
 	OPENFILENAME ofn;
 	int result;
 	char lpstrFilter[] 	= "\
@@ -138,7 +139,7 @@ All Files (*.*)\0*.*\0\0";
 	ZeroMemory(filestr, sizeof(filepath));
 
 	ofn.lStructSize			= sizeof(OPENFILENAME);
-	ofn.hwndOwner			= calcs[gslot].hwndLCD;
+	ofn.hwndOwner			= calcs[slot].hwndLCD;
 	ofn.hInstance			= g_hInst;
 	ofn.lpstrFilter			= (LPCTSTR) lpstrFilter;
 	ofn.lpstrCustomFilter	= NULL;
@@ -179,11 +180,11 @@ All Files (*.*)\0*.*\0\0";
 
 	while(filename[0] != 0) {
 		int len;
-		strcpy(filestroffset,filename);
+		strcpy(filestroffset, filename);
 		len = strlen(filestroffset);
 		filestroffset[len] = 0;
 		filename +=(len+1);
-		FileNames = AppendName( FileNames,filestr);
+		FileNames = AppendName(FileNames, filestr);
 	}
 	
 	int send_mode = SEND_CUR;
@@ -192,5 +193,5 @@ All Files (*.*)\0*.*\0\0";
 		if (HookOptions.bArchive) send_mode = SEND_ARC;
 	}
 	
-	ThreadSend(FileNames, send_mode);
+	ThreadSend(FileNames, send_mode, slot);
 }

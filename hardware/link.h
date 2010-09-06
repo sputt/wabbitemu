@@ -153,5 +153,6 @@ void Load_8xu(FILE*);
 int ReadIntelHex(FILE*, intelhex_t *);
 int link_connect(CPU_t *, CPU_t *);
 BOOL link_connected();
+void writeboot(FILE* );
 #endif
 

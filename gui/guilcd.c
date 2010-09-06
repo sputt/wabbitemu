@@ -660,7 +660,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				char* FileNames = (char *) malloc(size);
 				memset(FileNames,0,size);
 				memcpy(FileNames,string,size);
-				ThreadSend(FileNames,ram);
+				ThreadSend(FileNames,ram, calc_from_hwnd(hwnd));
 			}
 			break;
 		}
@@ -677,7 +677,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				FileNames = AppendName( FileNames,fn);
 			}
 
-			ThreadSend(FileNames, DropMemoryTarget(hwnd));
+			ThreadSend(FileNames, DropMemoryTarget(hwnd), calc_from_hwnd(hwnd));
 
 			//InvalidateRect(calcs[gslot].hwndFrame, NULL, FALSE);
 			return 0;

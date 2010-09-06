@@ -26,6 +26,8 @@ static struct {
 	{"exit_save_state", REG_DWORD,  0},
 	{"load_files_first", REG_DWORD,  1},
 	{"do_backups", REG_DWORD,  0},
+	{"show_wizard", REG_DWORD,  1},
+	{"sync_cores", REG_DWORD,  0},
 	{"num_keys",		REG_DWORD,  5},
 	{NULL,			0,			0},
 };
@@ -124,6 +126,8 @@ HRESULT LoadRegistrySettings(void) {
 	exit_save_state = QueryWabbitKey("exit_save_state");
 	load_files_first = QueryWabbitKey("load_files_first");
 	do_backups = QueryWabbitKey("do_backups");
+	show_wizard = QueryWabbitKey("show_wizard");
+	sync_cores = QueryWabbitKey("sync_cores");
 	int num_entries = QueryWabbitKey("num_keys");
 	//need to load accelerators
 	// querywabbitkey doesnt work because its a REG_BINARY
@@ -185,6 +189,8 @@ HRESULT SaveRegistrySettings(void) {
 		SaveWabbitKey("exit_save_state", REG_DWORD, &exit_save_state);
 		SaveWabbitKey("load_files_first", REG_DWORD, &load_files_first);
 		SaveWabbitKey("do_backups", REG_DWORD, &do_backups);
+		SaveWabbitKey("show_wizard", REG_DWORD, &show_wizard);
+		SaveWabbitKey("sync_cores", REG_DWORD, &sync_cores);
 
 		SaveWabbitKey("faceplate_color", REG_DWORD, &calcs[gslot].FaceplateColor);
 		SaveWabbitKey("custom_skin", REG_DWORD, &calcs[gslot].bCustomSkin);

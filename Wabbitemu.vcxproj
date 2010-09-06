@@ -119,6 +119,7 @@
     <ClCompile Include="gui\guivartree.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="gui\guiwizard.c" />
     <ClCompile Include="gui\registry.c" />
     <ClCompile Include="hardware\83hw.c" />
     <ClCompile Include="hardware\83phw.c" />
@@ -128,10 +129,13 @@
     <ClCompile Include="hardware\lcd.c" />
     <ClCompile Include="hardware\link.c" />
     <ClCompile Include="interface\calc.c" />
+    <ClCompile Include="interface\CKeypad.cpp" />
+    <ClCompile Include="interface\CLCD.cpp" />
+    <ClCompile Include="interface\CPage.cpp" />
+    <ClCompile Include="interface\CWabbitemu.cpp" />
+    <ClCompile Include="interface\CZ80.cpp" />
     <ClCompile Include="interface\state.c" />
-    <ClCompile Include="interface\Wabbitemu_i.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
-    </ClCompile>
+    <ClCompile Include="interface\WabbitemuClassFactory.cpp" />
     <ClCompile Include="stdafx.cpp" />
     <ClCompile Include="utilities\expandpane.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
@@ -145,6 +149,9 @@
     <ClCompile Include="utilities\sendfiles.c" />
     <ClCompile Include="utilities\sound.c" />
     <ClCompile Include="utilities\var.c" />
+    <ClCompile Include="Wabbitemu_i.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\alu.h" />
@@ -181,6 +188,7 @@
     <ClInclude Include="gui\guisavestate.h" />
     <ClInclude Include="gui\guispeed.h" />
     <ClInclude Include="gui\guivartree.h" />
+    <ClInclude Include="gui\guiwizard.h" />
     <ClInclude Include="gui\linksprites.h" />
     <ClInclude Include="gui\map.h" />
     <ClInclude Include="gui\registry.h" />
@@ -194,7 +202,13 @@
     <ClInclude Include="hardware\link.h" />
     <ClInclude Include="hardware\ti_stdint.h" />
     <ClInclude Include="interface\calc.h" />
+    <ClInclude Include="interface\CKeypad.h" />
+    <ClInclude Include="interface\CLCD.h" />
+    <ClInclude Include="interface\CPage.h" />
+    <ClInclude Include="interface\CWabbitemu.h" />
+    <ClInclude Include="interface\CZ80.h" />
     <ClInclude Include="interface\state.h" />
+    <ClInclude Include="interface\WabbitemuClassFactory.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="utilities\bcalls.h" />
     <ClInclude Include="utilities\expandpane.h" />
@@ -212,6 +226,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\back.bmp" />
+    <None Include="gui\bf73.hex" />
+    <None Include="gui\bf83pbe.hex" />
+    <None Include="gui\bf83pse.hex" />
+    <None Include="gui\bf84pbe.hex" />
+    <None Include="gui\bf84pse.hex" />
     <None Include="gui\break.bmp" />
     <None Include="gui\buttondownleft.bmp" />
     <None Include="gui\buttondownmiddle.bmp" />
@@ -226,6 +245,12 @@
     <None Include="gui\left.bmp" />
     <None Include="gui\membreak.bmp" />
     <None Include="gui\right.bmp" />
+    <None Include="gui\ROM\G83PBE1.8XP" />
+    <None Include="gui\ROM\G83PSE1.8XP" />
+    <None Include="gui\ROM\G84PBE1.8XP" />
+    <None Include="gui\ROM\G84PBE2.8XP" />
+    <None Include="gui\ROM\G84PSE1.8XP" />
+    <None Include="gui\ROM\G84PSE2.8XP" />
     <None Include="gui\run.bmp" />
     <None Include="gui\SkinPicker.bmp" />
     <None Include="gui\small_close.bmp" />
@@ -244,7 +269,9 @@
     <None Include="gui\TI-83+SE.bmp" />
     <None Include="gui\TI-83+SE.png" />
     <None Include="gui\TI-83.bmp" />
+    <None Include="gui\TI-83.png" />
     <None Include="gui\TI-83Keymap.bmp" />
+    <None Include="gui\TI-83Keymap.png" />
     <None Include="gui\TI-84+ SE.bmp" />
     <None Include="gui\TI-84+.bmp" />
     <None Include="gui\ti-84+.png" />
@@ -253,15 +280,22 @@
     <None Include="gui\ti-84+sekeymap.bmp" />
     <None Include="gui\ti-84+sekeymap.png" />
     <None Include="gui\ti-86.bmp" />
+    <None Include="gui\ti-86.png" />
     <None Include="gui\ti-86keymap.bmp" />
+    <None Include="gui\ti-86keymap.png" />
     <None Include="gui\TI-Icons.bmp" />
     <None Include="gui\TI83P.bmp" />
     <None Include="gui\TI83PSE.bmp" />
     <None Include="gui\tsmall.ico" />
     <None Include="gui\wabbitemu.ico" />
+    <None Include="gui\Wabbitemu.tlb" />
+    <None Include="interface\Wabbitemu.def" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="interface\Wabbitemu.idl" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}</ProjectGuid>
@@ -372,7 +406,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)x64\Debug\</OutDir>
+    <OutDir>$(SolutionDir)$(Platform)\Debug\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -382,9 +416,11 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release DLL|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Release\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release DLL|x64'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\Release\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug DLL|Win32'">
     <ClCompile>
@@ -410,7 +446,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x601;strcasecmp=_stricmp;strncasecmp=_strnicmp;_CRT_SECURE_NO_WARNINGS;HIGH_SHADE_GIF;WITH_BACKUPS;USE_GDIPLUS2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x601;strcasecmp=_stricmp;strncasecmp=_strnicmp;_CRT_SECURE_NO_WARNINGS;HIGH_SHADE_GIF;WITH_BACKUPS;USE_GDIPLUS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -432,7 +468,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level1</WarningLevel>
       <Optimization>Full</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;_CRT_SECURE_NO_WARNINGS;HIGH_SHADE_GIF;WITH_BACKUPS;USE_GDIPLUS2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;_CRT_SECURE_NO_WARNINGS;HIGH_SHADE_GIF;WITH_BACKUPS;USE_GDIPLUS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>true</OmitFramePointers>
@@ -455,7 +491,7 @@
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
     </Link>
     <PostBuildEvent>
-      <Command>upx "$(OutDir)Wabbitemu.exe"</Command>
+      <Command>//upx "$(OutDir)Wabbitemu.exe"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Pack the executable</Message>

@@ -3,6 +3,7 @@
 
 #include "coretypes.h"
 
+//#define TI_81		0
 #define TI_82		1
 #define TI_83		2
 #define TI_85		3

@@ -12,6 +12,7 @@
 static HWND g_hwndVarTree;
 extern HINSTANCE g_hInst;
 extern unsigned char type_ext[][4];
+char export_file_name[512]="Zelda.8xk";
 
 static RECT VTrc = {-1, -1, -1, -1};
 static VARTREEVIEW_t Tree[MAX_CALCS];
@@ -85,11 +86,32 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
                 case IDC_REFRESH_VAR_LIST:
 					RefreshTreeView(FALSE);
                     break;
-				case IDC_EXPORT_VAR:
-					if (SetVarName())
+				case IDC_EXPORT_VAR: {
+					char *buf;
+					FILE *file;
+					HTREEITEM item = TreeView_GetSelection(g_hwndVarTree);
+					//HACK: yes i know FILEDESCRIPTOR is not meant for this.
+					//but i dont want to rework the routines to return the attributes differently
+					FILEDESCRIPTOR *fd;
+					fd = (FILEDESCRIPTOR *) malloc(sizeof(FILEDESCRIPTOR));
+					if (!FillDesc(item, fd)) {
+						free (fd);
 						break;
-
+					}
+					buf =  (char *) malloc(fd->nFileSizeLow);
+					FillFileBuffer(item, buf);
+					if (SetVarName(fd)) {
+						free(buf);
+						free (fd);
+						break;
+					}
+					file = fopen(export_file_name, "wb");
+					fwrite(buf, 1, fd->nFileSizeLow, file);
+					fclose(file);
+					free(buf);
+					free(fd);
 					break;
+				}
 				default:
 					break;
             }
@@ -187,26 +209,64 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
    return FALSE;
 }
 
-char export_file_name[512]="Zelda.8xk";
-int SetVarName() {
+int SetVarName(FILEDESCRIPTOR *fd) {
 	OPENFILENAME ofn;
-
+	char *defExt;
+	int filterIndex;
 	char lpstrFilter[] 	= "\
 Programs  (*.8xp)\0*.8xp\0\
+Applications (*.8xk)\0*.8xk\0\
 App Vars (*.8xv)\0*.8xv\0\
 Lists  (*.8xl)\0*.8xl\0\
-Real/Complex Variables  (*.8xp)\0*.8xp\0\
+Real/Complex Variables  (*.8xn)\0*.8xn\0\
+Pictures  (*.8xi)\0*.8xi\0\
+GDBs  (*.8xd)\0*.8xd\0\
+Matrices  (*.8xm)\0*.8xm\0\
+Strings  (*.8xs)\0*.8xs\0\
+Groups  (*.8xg)\0*.8xg\0\
 All Files (*.*)\0*.*\0\0";
 	char lpstrFile[MAX_PATH];
 	unsigned int Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
-
-	int i;
-	for (i = strlen(export_file_name)-1; i && export_file_name[i] != '\\'; i--);
-
-	if (i) {
-		strcpy(lpstrFile, export_file_name + i + 1);
-	} else {
-		lpstrFile[0] = '\0';
+	strcpy(lpstrFile, fd->cFileName);
+	int i = strlen(lpstrFile);
+	lpstrFile[i] = '\0';
+	defExt = &lpstrFile[i];
+	while (*defExt != '.')
+		defExt--;
+	switch (defExt[3]) {
+		case 'p':
+			filterIndex = 1;
+			break;
+		case 'k':
+			filterIndex = 2;
+			break;
+		case 'v':
+			filterIndex = 3;
+			break;
+		case 'l':
+			filterIndex = 4;
+			break;
+		case 'n':
+			filterIndex = 5;
+			break;
+		case 'i':
+			filterIndex = 6;
+			break;
+		case 'd':
+			filterIndex = 7;
+			break;
+		case 'm':
+			filterIndex = 8;
+			break;
+		case 's':
+			filterIndex = 9;
+			break;
+		case 'g':
+			filterIndex = 10;
+			break;
+		default:
+			filterIndex = 11;
+			break;
 	}
 
 	ofn.lStructSize			= sizeof(OPENFILENAME);
@@ -215,7 +275,7 @@ All Files (*.*)\0*.*\0\0";
 	ofn.lpstrFilter			= (LPCTSTR) lpstrFilter;
 	ofn.lpstrCustomFilter	= NULL;
 	ofn.nMaxCustFilter		= 0;
-	ofn.nFilterIndex		= 0;
+	ofn.nFilterIndex		= filterIndex;
 	ofn.lpstrFile			= lpstrFile;
 	ofn.nMaxFile			= sizeof(lpstrFile);
 	ofn.lpstrFileTitle		= NULL;
@@ -223,7 +283,7 @@ All Files (*.*)\0*.*\0\0";
 	ofn.lpstrInitialDir		= NULL;
 	ofn.lpstrTitle			= "Wabbitemu Export";
 	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
-	ofn.lpstrDefExt			= "8xp";
+	ofn.lpstrDefExt			= defExt;
 	ofn.lCustData			= 0;
 	ofn.lpfnHook			= NULL;
 	ofn.lpTemplateName		= NULL;
@@ -428,27 +488,27 @@ void RefreshTreeView(BOOL New) {
 	
 	
 FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
-	int slot,i,b;
+	int slot, i, b;
 	char string[MAX_PATH];
-	for(slot=0;slot<MAX_CALCS;slot++) {
+	for(slot = 0; slot < MAX_CALCS; slot++) {
 		if (Tree[slot].model) {
 			
-			for(i=0;i<Tree[slot].applist.count;i++) {
-				if (Tree[slot].hApps[i]==hSelect) {
-					printf("%s\n",Tree[slot].applist.apps[i].name);
+			for(i = 0; i < Tree[slot].applist.count; i++) {
+				if (Tree[slot].hApps[i] == hSelect) {
+					printf("%s\n", Tree[slot].applist.apps[i].name);
 					return NULL;
 				}
 			}
-			for(i=0;i<Tree[slot].sym.last - Tree[slot].sym.symbols + 1;i++) {
-				if (Tree[slot].hVars[i]==hSelect) {
+			for(i=0; i<Tree[slot].sym.last - Tree[slot].sym.symbols + 1; i++) {
+				if (Tree[slot].hVars[i] == hSelect) {
 					if (Symbol_Name_to_String(&Tree[slot].sym.symbols[i],string)) {
-						strcat(string,".");
+						strcat(string, ".");
 						strcat(string, (const char *) type_ext[Tree[slot].sym.symbols[i].type_ID]);
-						MFILE *outfile = ExportVar(slot,NULL, &Tree[slot].sym.symbols[i]);
+						MFILE *outfile = ExportVar(slot, NULL, &Tree[slot].sym.symbols[i]);
 						fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
 						fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 						fd->nFileSizeLow = msize(outfile);
-						strcpy(fd->cFileName,string);
+						strcpy(fd->cFileName, string);
 						mclose(outfile);
 						return fd;
 					}
