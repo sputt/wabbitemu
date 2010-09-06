@@ -666,6 +666,7 @@ static void print_command_ID(uint8_t command_ID) {
 }
 #endif
 
+
 void Load_8xu(FILE* infile) {
 	intelhex_t ihex;
 	if (!infile)
@@ -737,4 +738,37 @@ int ReadIntelHex(FILE* ifile, intelhex_t *ihex) {
 	ihex->chksum = byte;
 	return 1;
 }
+
+void writeboot(FILE* infile) {
+	intelhex_t ihex;
+	if (!infile) return;
+	int curpage = calcs[gslot].mem_c.flash_pages - 1;			//last page is boot page
+	unsigned char (*flash)[16384] = (uint8_t(*)[16384]) calcs[gslot].mem_c.flash;
+	while(1) {
+		if (!ReadIntelHex(infile,&ihex)) {
+			return;
+		}
+		switch(ihex.type) {
+			case 0x00:
+				memcpy(flash[curpage]+(ihex.address&0x3FFF),ihex.data,ihex.size);
+				break;
+			case 0x02:
+				break;
+			default:
+				return;
+		}
+	}
+}
+
+int FindField(unsigned char *data,unsigned char Field) {
+	int i;
+	for(i=6;i<128;) {
+		if (data[i++]!=0x80) return 0;
+		if ((data[i]&0xF0)==Field) return i+1;
+		i+=1+(data[i]&0x0F);
+	}
+	return 0;
+}
+
+
 

@@ -97,7 +97,7 @@ unsigned char* GIFGREYLCD() {
 #endif
 
 void handle_screenshot() {
-	#ifdef WINVER
+#ifdef WINVER
 	FILE* testfile;
 	int result;
 	LCD_t* lcd = calcs[gslot].cpu.pio.lcd;
@@ -137,12 +137,13 @@ void handle_screenshot() {
 				if (SetGifName(TRUE)) {
 					calcs[gslot].gif_disp_state = GDS_ENDING;
 					SendMessage(calcs[gslot].hwndFrame, WM_COMMAND, MAKEWPARAM(IDM_FILE_GIF, 0), 0);
+					gif_write_state = GIF_IDLE;
 					break;
 				}
 #endif
 			}
 #ifdef USE_GIF_SIZES
-			gif_xs = lcd->width*gif_size;
+			gif_xs = lcd->width*gif_size*calc_count();
 			//FIXME: Add in lcd height variable
 			gif_ys = 64*gif_size;
 #else
@@ -211,7 +212,7 @@ void handle_screenshot() {
 		gif_writer();
 		//WriteAVIFrame();
 	}
-	#endif
+#endif
 }
 
 

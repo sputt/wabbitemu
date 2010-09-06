@@ -446,7 +446,8 @@ All Files (*.*)\0*.*\0\0";
 	return 0;
 }
 
-int BrowseBMPFile(char* lpstrFile[]){	OPENFILENAME ofn;
+int BrowseBMPFile(char* lpstrFile[]) {
+	OPENFILENAME ofn;
 	char lpstrFilter[] 	= "	BMP  (*.bmp)\0*.bmp\0	All Files (*.*)\0*.*\0\0";
 	unsigned int Flags = 0;
 	ofn.lStructSize			= sizeof(OPENFILENAME);

@@ -419,6 +419,8 @@ void gif_writer() {
 			break;
 		}
 		case GIF_END: {
+			if (!fp)
+				break;
 			int i;
 			gif_img[4] = gif_delay;
 			gif_img[5] = gif_delay >> 8;

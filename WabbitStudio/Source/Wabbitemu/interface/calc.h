@@ -78,10 +78,6 @@ typedef struct calc {
 	BOOL do_drag;
 	HDC hdcSkin;
 	HDC hdcKeymap;
-#ifdef USE_GDIPLUS
-	Graphics *skinGraphics;
-	Graphics *keymapGraphics;
-#endif
 #else
 	pthread_t hdlThread;
 #endif
@@ -122,6 +118,7 @@ typedef struct DEBUG_STATE {
 #endif
 
 #define MAX_CALCS	8
+#define MAX_SPEED 100*50
 
 int calc_slot_new(void);
 u_int calc_count(void);
@@ -151,7 +148,11 @@ int calc_from_hwnd(HWND);
 #endif
 #endif
 
-void calc_erase_certificate(u_char* mem, int size);
+int calc_init_83p(int slot);
+int calc_init_84p(int slot);
+int calc_init_83pse(int slot);
+
+void calc_erase_certificate(u_char*, int);
 #ifdef CALC_C
 #define GLOBAL
 #else
@@ -171,11 +172,14 @@ GLOBAL int frame_counter;
 GLOBAL BOOL exit_save_state;
 GLOBAL BOOL load_files_first;
 GLOBAL BOOL do_backups;
+GLOBAL BOOL show_wizard;
+GLOBAL BOOL sync_cores;
 
 
 GLOBAL const char *CalcModelTxt[]
 #ifdef CALC_C
-= {	"???",
+= {	//"???",
+	"TI_81",
 	"TI-82",
 	"TI-83",
 	"TI-85",

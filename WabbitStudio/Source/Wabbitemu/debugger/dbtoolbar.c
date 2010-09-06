@@ -786,7 +786,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		}
 		case WM_DESTROY: {
 			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			free(tbb);
+			//free(tbb);
 			return 0;
 		}
 		default:

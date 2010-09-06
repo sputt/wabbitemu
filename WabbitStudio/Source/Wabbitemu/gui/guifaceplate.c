@@ -12,8 +12,7 @@ static POINT ptRgnEdge[] = {{75,675},
 							{37,273},
 							{37,568}};
 
-#ifdef USE_GDIPLUS
-int DrawFaceplateRegion(Graphics *graphics) {
+/*int DrawFaceplateRegion(Graphics *graphics) {
 	int nPoints = (sizeof(ptRgnEdge) / sizeof(Point)) * 2;
 	Point ptRgn[(sizeof(ptRgnEdge) / sizeof(POINT)) * 2];
 
@@ -32,8 +31,7 @@ int DrawFaceplateRegion(Graphics *graphics) {
 	Brush *brush = solidBrush.Clone();
 	graphics->FillPolygon(brush, (Point *) ptRgn, nPoints, FillMode::FillModeWinding);
 	return 0;
-}
-#else
+}*/
 int DrawFaceplateRegion(HDC hdc) {
 	unsigned int nPoints = (sizeof(ptRgnEdge) / sizeof(POINT)) * 2;
 	POINT ptRgn[(sizeof(ptRgnEdge) / sizeof(POINT)) * 2];
@@ -56,7 +54,6 @@ int DrawFaceplateRegion(HDC hdc) {
 	DeleteObject(hFaceplateColor);
 	return 0;
 }
-#endif
 
 HRGN GetRegion()
 {

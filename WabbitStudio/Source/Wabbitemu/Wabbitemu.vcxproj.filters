@@ -207,8 +207,29 @@
     <ClCompile Include="stdafx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="interface\Wabbitemu_i.c">
-      <Filter>Source Files</Filter>
+    <ClCompile Include="gui\guiwizard.c">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CKeypad.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CLCD.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CPage.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CWabbitemu.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CZ80.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\WabbitemuClassFactory.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="Wabbitemu_i.c">
+      <Filter>Source Files\Interface</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -398,6 +419,27 @@
     <ClInclude Include="utilities\var.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="gui\guiwizard.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CKeypad.h">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CLCD.h">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CWabbitemu.h">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CPage.h">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CZ80.h">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\WabbitemuClassFactory.h">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\back.bmp">
@@ -544,10 +586,58 @@
     <None Include="gui\ti-86keymap.bmp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="gui\bf73.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\G84PSE2.8XP">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\bf83pbe.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\bf83pse.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\bf84pbe.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\bf84pse.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\G83PBE1.8XP">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\G83PSE1.8XP">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\G84PBE1.8XP">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\G84PBE2.8XP">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\G84PSE1.8XP">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\Wabbitemu.tlb">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-83.png" />
+    <None Include="gui\TI-83Keymap.png" />
+    <None Include="gui\ti-86.png" />
+    <None Include="gui\ti-86keymap.png" />
+    <None Include="interface\Wabbitemu.def">
+      <Filter>Source Files\Interface</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="interface\Wabbitemu.idl">
+      <Filter>Source Files\Interface</Filter>
+    </Midl>
   </ItemGroup>
 </Project>

@@ -58,6 +58,7 @@ int gui_frame(int);
 int gui_frame_update(int);
 void gui_draw();
 INT_PTR CALLBACK AboutDialogProc(HWND, UINT, WPARAM, LPARAM);
+char* LoadRomIntialDialog();
 #ifdef USE_DIRECTX
 #include <d3d9.h>
 extern IDirect3DDevice9 *pd3dDevice; // Direct3D Rendering Device 

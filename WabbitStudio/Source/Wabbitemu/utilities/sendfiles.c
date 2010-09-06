@@ -52,16 +52,16 @@ char* AppendName(char* FileNames, char* fn) {
 
 void SendFile( char* FileName , int ram ) {
 	BOOL is_link_connected = link_connected();
-	TIFILE_t *var = importvar(FileName, gslot, ram);
+	TIFILE_t *var = importvar(FileName, SlotSave, ram);
 	LINK_ERR result;
 	if (var != NULL) {
 		switch(var->type) {
 			case BACKUP_TYPE:
 			case VAR_TYPE:
 			case FLASH_TYPE:
-				calcs[gslot].SendSize = var->length;
-				calcs[gslot].cpu.pio.link->vlink_send = 0;
-				result = link_send_var(&calcs[gslot].cpu, var, (SEND_FLAG) ram);
+				calcs[SlotSave].SendSize = var->length;
+				calcs[SlotSave].cpu.pio.link->vlink_send = 0;
+				result = link_send_var(&calcs[SlotSave].cpu, var, (SEND_FLAG) ram);
 #ifdef WINVER
 				switch (result) {
 				case LERR_MEM:
@@ -103,12 +103,12 @@ void SendFile( char* FileName , int ram ) {
 #endif
 				if (var->type == FLASH_TYPE) {
 					// Rebuild the applist
-					state_build_applist(&calcs[gslot].cpu, &calcs[gslot].applist);
+					state_build_applist(&calcs[SlotSave].cpu, &calcs[SlotSave].applist);
 
 					int i;
-					for (i = 0; i < calcs[gslot].applist.count; i++) {
-						if (strncmp((char *) var->flash->name, calcs[gslot].applist.apps[i].name, 8) == 0) {
-							calcs[gslot].last_transferred_app = &calcs[gslot].applist.apps[i];
+					for (i = 0; i < calcs[SlotSave].applist.count; i++) {
+						if (strncmp((char *) var->flash->name, calcs[SlotSave].applist.apps[i].name, 8) == 0) {
+							calcs[SlotSave].last_transferred_app = &calcs[SlotSave].applist.apps[i];
 							break;
 						}
 					}
@@ -118,14 +118,14 @@ void SendFile( char* FileName , int ram ) {
 			case SAV_TYPE:
 				FreeTiFile(var);
 				var = NULL;
-				rom_load(gslot,FileName);
+				rom_load(SlotSave ,FileName);
 				SendMessage(calcs[SlotSave].hwndFrame, WM_USER, 0, 0);
 				break;
 			case LABEL_TYPE: {
-				strcpy(calcs[gslot].labelfn,FileName);
-				printf("loading label file for slot %d: %s\n", gslot, FileName);
-				VoidLabels(gslot);
-				labels_app_load(gslot, calcs[gslot].labelfn);
+				strcpy(calcs[SlotSave].labelfn,FileName);
+				printf("loading label file for slot %d: %s\n", SlotSave, FileName);
+				VoidLabels(SlotSave);
+				labels_app_load(SlotSave, calcs[SlotSave].labelfn);
 
 				break;
 			}
@@ -138,8 +138,8 @@ void SendFile( char* FileName , int ram ) {
 #endif
 				break;
 		}
-	if (var)
-		FreeTiFile(var);
+		if (var)
+			FreeTiFile(var);
 		if (is_link_connected)
 			link_connect(&calcs[0].cpu, &calcs[1].cpu);
 	} else {
@@ -341,7 +341,7 @@ DWORD WINAPI ThreadSendStart( LPVOID lpParam ) {
 }
 
 
-void ThreadSend( char* FileNames , int ram ) {
+void ThreadSend(char *FileNames, int ram, int slot) {
 	static HANDLE hdlSend = NULL;
 	SENDFILES_t* sf;
 
@@ -351,7 +351,7 @@ void ThreadSend( char* FileNames , int ram ) {
 		MessageBox(NULL, "Currently sending files please wait...","Error",MB_OK);
 		return;
 	} else {
-		SlotSave = gslot;
+		SlotSave = slot;
 	}
 
 	if (hdlSend != NULL) {

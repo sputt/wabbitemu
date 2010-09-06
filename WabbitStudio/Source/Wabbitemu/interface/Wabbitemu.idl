@@ -1,0 +1,268 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+interface IPage;
+
+[
+	uuid(36AE85E8-FE2A-41bc-85B5-105B32D8E181)
+]
+struct TIApplication
+{
+	BSTR Name;
+	IPage *Page;
+	int PageCount;
+};
+
+enum SYMBOLTYPE
+{
+	SYM_REAL = 0x00,
+	SYM_LIST = 0x01,
+	SYM_MAT = 0x02,
+	SYM_EQU = 0x03,
+	SYM_STRNG = 0x04,
+	SYM_PROG = 0x05,
+	SYM_PROTPROG = 0x06,
+	SYM_PICT = 0x07,
+	SYM_GDB = 0x08,
+	SYM_UNKNOWN = 0x09,
+	SYM_UNKNOWNEQU = 0x0A,
+	SYM_NEWEQU = 0x0B,
+	SYM_CPLX = 0x0C,
+	SYM_CLIST = 0x0D,
+	SYM_UNDEF = 0x0E,
+	SYM_WINDOW = 0x0F,
+	SYM_ZSTO = 0x10,
+	SYM_TBLRNG = 0x11,
+	SYM_LCD = 0x12,
+	SYM_BACKUP = 0x13,
+	SYM_APP = 0x14,
+	SYM_APPVAR = 0x15,
+	SYM_TEMPPROG = 0x16,
+	SYM_GROUP = 0x17,
+	SYM_EQUOB = 0x23,
+
+	SYM_NONE = -1,
+};
+
+[
+	uuid(010A714D-CADA-400f-90F9-FC34B2A20752)
+]
+struct TISymbol {
+	enum SYMBOLTYPE Type;
+	BYTE Version;
+	WORD Address;
+	BYTE Page;
+	BSTR Name;
+};
+
+
+[
+	uuid(023D1C58-C323-43a7-860B-95FB9C204F91),
+	object,
+]
+interface ILCD : IUnknown
+{
+	[propget] HRESULT Display([out, retval] SAFEARRAY(BYTE) *Display);
+}
+
+[
+	uuid(41C7B7BF-D390-4ba0-8075-462FD3565225),
+	object,
+]
+interface IZ80 : IUnknown
+{
+	[propget, bindable] HRESULT AF([out, retval] WORD *AF);
+	[propget, bindable] HRESULT A([out, retval] BYTE *A);
+	[propget, bindable] HRESULT F([out, retval] BYTE *F);
+	[propput, bindable] HRESULT AF([in] WORD AF);
+	[propput, bindable] HRESULT A([in] BYTE A);
+	[propput, bindable] HRESULT F([in] BYTE F);
+
+	[propget, bindable] HRESULT BC([out, retval] WORD *BC);
+	[propget, bindable] HRESULT B([out, retval] BYTE *B);
+	[propget, bindable] HRESULT C([out, retval] BYTE *C);
+	[propput, bindable] HRESULT BC([in] WORD BC);
+	[propput, bindable] HRESULT B([in] BYTE B);
+	[propput, bindable] HRESULT C([in] BYTE C);
+
+	[propget, bindable] HRESULT DE([out, retval] WORD *DE);
+	[propget, bindable] HRESULT D([out, retval] BYTE *D);
+	[propget, bindable] HRESULT E([out, retval] BYTE *E);
+	[propput, bindable] HRESULT DE([in] WORD DE);
+	[propput, bindable] HRESULT D([in] BYTE D);
+	[propput, bindable] HRESULT E([in] BYTE E);
+
+	[propget, bindable] HRESULT HL([out, retval] WORD *HL);
+	[propget, bindable] HRESULT H([out, retval] BYTE *H);
+	[propget, bindable] HRESULT L([out, retval] BYTE *L);
+	[propput, bindable] HRESULT HL([in] WORD HL);
+	[propput, bindable] HRESULT H([in] BYTE H);
+	[propput, bindable] HRESULT L([in] BYTE L);
+
+	[propget, bindable] HRESULT AFP([out, retval] WORD *AFP);
+	[propget, bindable] HRESULT AP([out, retval] BYTE *AP);
+	[propget, bindable] HRESULT FP([out, retval] BYTE *FP);
+	[propput, bindable] HRESULT AFP([in] WORD AFP);
+	[propput, bindable] HRESULT AP([in] BYTE AP);
+	[propput, bindable] HRESULT FP([in] BYTE FP);
+
+	[propget, bindable] HRESULT BCP([out, retval] WORD *BCP);
+	[propget, bindable] HRESULT BP([out, retval] BYTE *BP);
+	[propget, bindable] HRESULT CP([out, retval] BYTE *CP);
+	[propput, bindable] HRESULT BCP([in] WORD BCP);
+	[propput, bindable] HRESULT BP([in] BYTE BP);
+	[propput, bindable] HRESULT CP([in] BYTE CP);
+
+	[propget, bindable] HRESULT DEP([out, retval] WORD *DEP);
+	[propget, bindable] HRESULT DP([out, retval] BYTE *DP);
+	[propget, bindable] HRESULT EP([out, retval] BYTE *EP);
+	[propput, bindable] HRESULT DEP([in] WORD DEP);
+	[propput, bindable] HRESULT DP([in] BYTE DP);
+	[propput, bindable] HRESULT EP([in] BYTE EP);
+
+	[propget, bindable] HRESULT HLP([out, retval] WORD *HLP);
+	[propget, bindable] HRESULT HP([out, retval] BYTE *HP);
+	[propget, bindable] HRESULT LP([out, retval] BYTE *LP);
+	[propput, bindable] HRESULT HLP([in] WORD HLP);
+	[propput, bindable] HRESULT HP([in] BYTE HP);
+	[propput, bindable] HRESULT LP([in] BYTE LP);
+
+	[propget, bindable] HRESULT IX([out, retval] WORD *IX);
+	[propget, bindable] HRESULT IXH([out, retval] BYTE *IXH);
+	[propget, bindable] HRESULT IXL([out, retval] BYTE *IXL);
+	[propput, bindable] HRESULT IX([in] WORD IX);
+	[propput, bindable] HRESULT IXH([in] BYTE IXH);
+	[propput, bindable] HRESULT IXL([in] BYTE IXL);
+
+	[propget, bindable] HRESULT IY([out, retval] WORD *IY);
+	[propget, bindable] HRESULT IYH([out, retval] BYTE *IYH);
+	[propget, bindable] HRESULT IYL([out, retval] BYTE *IYL);
+	[propput, bindable] HRESULT IY([in] WORD IY);
+	[propput, bindable] HRESULT IYH([in] BYTE IYH);
+	[propput, bindable] HRESULT IYL([in] BYTE IYL);
+
+	[propget, bindable] HRESULT PC([out, retval] WORD *IX);
+	[propput, bindable] HRESULT PC([in] WORD IX);
+
+	[propget, bindable] HRESULT SP([out, retval] WORD *IX);
+	[propput, bindable] HRESULT SP([in] WORD IX);
+
+};
+
+[
+	object,
+	uuid(B61370EF-8BEF-4bb9-AF88-FF7FFD0A012E),
+	pointer_default(unique),
+	dual,
+]
+interface IPage : IDispatch
+{
+	[id(0), propget, helpstring("Index of this page")]
+	HRESULT Index([out, retval] int *pIndex);
+
+	[id(1), propget, helpstring("Whether or not the page is flash")]
+	HRESULT IsFlash([out, retval] VARIANT_BOOL *IsFlash);
+
+	[id(2), helpstring("Read from this page within addresses 0 - 16383")]
+	HRESULT Read([in] WORD Address, [in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
+
+	[id(3), helpstring("Write to this page within addresses 0 - 16383")]
+	HRESULT Write([in] WORD Address, [in] VARIANT Value);
+}
+
+[
+	uuid(9BD2CC22-5E1D-41c1-A134-F24410EF6301),
+	object,
+]
+interface IKeypad : IUnknown
+{
+	typedef enum CalcKey
+	{
+		KEY_UP,
+		KEY_LEFT,
+		KEY_RIGHT,
+		KEY_DOWN,
+
+		KEY_2ND,
+		KEY_ALPHA,
+		KEY_DEL,
+
+		KEY_APPS,
+		KEY_PRGM,
+	} CalcKey;
+
+	HRESULT PressKey([in] enum CalcKey Key);
+	HRESULT ReleaseKey([in] enum CalcKey Key);
+	HRESULT IsKeyPressed([in] enum CalcKey Key, [out, retval] VARIANT_BOOL *IsPressed);
+}
+
+[
+	uuid(020FB9D5-7F45-449b-B9DF-66CFC2482BD0),
+	object,
+]
+interface IWabbitemu : IUnknown
+{
+	[propget, helpstring("Whether or not the UI is visible.")]
+	HRESULT Visible([out, retval] VARIANT_BOOL *lpVisible); 
+	[propput, helpstring("Whether or not the UI is visible.")]
+	HRESULT Visible([in] VARIANT_BOOL fVisible); 
+
+	[propget, helpstring("The Z80 CPU of the calculator.")] 
+	HRESULT CPU([out, retval] IZ80 **ppZ80);
+
+	[helpstring("All RAM pages on the calculator.")] 
+	HRESULT RAM([in] int Index, [out, retval] IPage **ppPage);
+
+	[helpstring("All flash pages on the calculator.")] 
+	HRESULT Flash([in] int Index, [out, retval] IPage **ppPage);
+
+	[propget, helpstring("The LCD device of the calculator.")]
+	HRESULT LCD([out, retval] ILCD **ppLCD);
+
+	[propget, helpstring("Whether or not the calculator is running.")]
+	HRESULT Running([out, retval] VARIANT_BOOL *lpfRunning);
+	[propput, helpstring("Whether or not the calculator is running.")]
+	HRESULT Running([in] VARIANT_BOOL fRunning);
+
+	[helpstring("Execute a single instruction.")]
+	HRESULT Step();
+	HRESULT StepOver();
+
+	[helpstring("Sets an execution breakpoint on a certain address.")]
+	HRESULT SetBreakpoint([in] IPage *Page, [in] WORD Address);
+
+	HRESULT Read([in] WORD Address, [in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
+	HRESULT Write([in] WORD Address, [in] VARIANT Value);
+
+	HRESULT LoadFile([in] BSTR FileName);
+
+	[propget, helpstring("List of applications on the calculator.")]
+	HRESULT Apps([out, retval] SAFEARRAY(struct TIApplication) *AppList);
+
+	[propget, helpstring("List of symbols (programs, lists, etc) on the calculator.")]
+	HRESULT Symbols([out, retval] SAFEARRAY(struct TISymbol) *SymList);
+
+	[propget, helpstring("Gets the keypad device on the calculator.")]
+	HRESULT Keypad([out, retval] IKeypad **Keypad);
+};
+
+[
+	uuid(EDA903F6-7BB8-437f-978F-8F1A2B8B65DB),
+	version(1.0),
+]
+library WabbitemuLib
+{
+	importlib("stdole32.tlb");
+
+	interface IBank;
+	struct TIApplication;
+
+	[
+		uuid(1A03AFA2-C9C7-4d5b-9732-D78011D5009B),
+		version(1.0),
+	]
+	coclass Wabbitemu
+	{
+		[default] interface IWabbitemu;
+	}
+};

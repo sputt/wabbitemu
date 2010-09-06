@@ -90,7 +90,7 @@ static int calc_init_86(int slot) {
 }
 
 /* 73 83+ */
-static int calc_init_83p(int slot) {
+int calc_init_83p(int slot) {
 	/* INTIALIZE 83+ */
 	memory_init_83p(&calcs[slot].mem_c);
 	tc_init(&calcs[slot].timer_c, MHZ_6);
@@ -109,7 +109,7 @@ static int calc_init_83p(int slot) {
 }
 
 /* 83+se */
-static int calc_init_83pse(int slot) {
+int calc_init_83pse(int slot) {
 	/* INTIALIZE 83+se */
 	memory_init_83pse(&calcs[slot].mem_c);
 	tc_init(&calcs[slot].timer_c, MHZ_6);
@@ -127,7 +127,7 @@ static int calc_init_83pse(int slot) {
 }
 
 /* 84+ */
-static int calc_init_84p(int slot) {
+int calc_init_84p(int slot) {
 	/* INTIALIZE 84+ */
 	memory_init_84p(&calcs[slot].mem_c);
 	tc_init(&calcs[slot].timer_c, MHZ_6);
@@ -349,7 +349,7 @@ int calc_run_frame(int slot) {
 
 		/* sync CPU */
 		if (tc_elapsed((&calcs[slot].timer_c)) - cpu_sync > (1.0f / FPS)) {
-			//if (!calcs[slot].warp) return 0;
+			if (calcs[slot].speed == MAX_SPEED) return 0;
 			if (tc_elapsed((&calcs[slot].timer_c)) - cpu_sync > (calcs[slot].speed / FPS)) return 0;
 		}
 	}
@@ -416,7 +416,7 @@ int calc_run_all(void) {
 #ifdef WITH_BACKUPS
 				if (frame_counter >= calcs[j].timer_c.freq / 2) {
 					frame_counter = 0;
-					if (do_backups)
+					if (do_backups && calcs[j].speed <= 100)
 						do_backup(j);
 				}
 #endif
@@ -425,7 +425,7 @@ int calc_run_all(void) {
 #ifdef WITH_BACKUPS
 				if (frame_counter >= calcs[j].timer_c.freq / 2) {
 					frame_counter = 0;
-					if (do_backups)
+					if (do_backups && calcs[j].speed <= 100)
 						do_backup(j);
 				}
 #endif
@@ -524,9 +524,9 @@ int calc_run_seconds(int slot, double seconds) {
 int calc_run_timed(int slot, time_t time) {
 	int frames = (int) time / TPF;
 
-	float speed_backup = calcs[slot].speed;
+	int speed_backup = calcs[slot].speed;
 
-	calcs[slot].speed = 50;
+	calcs[slot].speed = MAX_SPEED;
 	while (frames--) 
 		calc_run_frame(slot);
 	calcs[slot].speed = speed_backup;
