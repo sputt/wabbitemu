@@ -541,9 +541,11 @@ int calc_from_hwnd(HWND hwnd) {
 	int slot;
 	for (slot = 0; slot < MAX_CALCS; slot++) {
 		if (calcs[slot].active) {
-			if ((hwnd == calcs[slot].hwndFrame) ||
-				(hwnd == calcs[slot].hwndLCD) ||
-				(hwnd == calcs[slot].hwndStatusBar)) {
+			if (hwnd == calcs[slot].hwndFrame ||
+				hwnd == calcs[slot].hwndLCD ||
+				hwnd == calcs[slot].hwndStatusBar ||
+				hwnd == calcs[slot].hwndSmallClose ||
+				hwnd == calcs[slot].hwndSmallMinimize) {
 				return slot;
 			}
 		}

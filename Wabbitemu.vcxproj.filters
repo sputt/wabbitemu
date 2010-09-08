@@ -231,6 +231,9 @@
     <ClCompile Include="Wabbitemu_i.c">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
+    <ClCompile Include="interface\mapeditor.c">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

@@ -687,13 +687,15 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_KEYUP:
 			SendMessage(calcs[gslot].hwndFrame, Message, wParam, lParam);
 			break;
-		case WM_DESTROY:
+		case WM_DESTROY: {
+			calcs[gslot].hwndLCD = NULL;
 			if (calc_count() == 0)
 				free(bi);
 			printf("Unregistering drop window\n");
 			if (calcs[gslot].pDropTarget != NULL)
 				UnregisterDropWindow(hwnd, (IDropTarget *) calcs[gslot].pDropTarget);
 			return 0;
+		}
 		default:
 			if (Message == RegisterWindowMessage("ShellGetDragImage")) {
 				LPSHDRAGIMAGE pDragImage = (LPSHDRAGIMAGE) lParam;
