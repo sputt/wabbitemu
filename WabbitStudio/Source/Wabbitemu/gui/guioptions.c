@@ -129,7 +129,7 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 	CPU_t *cpu = (CPU_t *) lpParam;
 	double Time = 0.0f;
 	int i;
-	clock_t last_time = clock() - (1000/displayFPS);
+	clock_t last_time = (clock_t) (clock() - (1000/displayFPS));
 	clock_t difference = 0;
 	for (;;) {
 		if (cpu->pio.lcd != calcs[gslot].cpu.pio.lcd) {
@@ -137,7 +137,7 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 			switch (cpu->imode) {
 			case 0: buffer = displayoptionstest_draw_bounce(4,displayFPS,Time); break;
 			case 1: buffer = displayoptionstest_draw_scroll(4,displayFPS,Time); break;
-			case 2: buffer = displayoptionstest_draw_gradient(displayFPS/10.0f,displayFPS,Time);
+			case 2: buffer = displayoptionstest_draw_gradient((int) (displayFPS/10.0f),displayFPS,Time);
 			}
 			fastcopy(buffer, cpu);
 			if (cpu->imode == 2) Time += 1/70.0f;

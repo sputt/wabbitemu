@@ -443,6 +443,9 @@
     <ClInclude Include="interface\WabbitemuClassFactory.h">
       <Filter>Header Files\Interface</Filter>
     </ClInclude>
+    <ClInclude Include="gui\CGdiPlusBitmap.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\back.bmp">

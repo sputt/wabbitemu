@@ -55,14 +55,14 @@ unsigned char* GIFGREYLCD() {
 			
 			// Convert lcd shades to gif
 			u_char *scol = &temp_gif[row][col * 8];
-			scol[0] = p0;
-			scol[1] = p1;
-			scol[2] = p2;
-			scol[3] = p3;
-			scol[4] = p4;
-			scol[5] = p5;
-			scol[6] = p6;
-			scol[7] = p7;
+			scol[0] = (u_char) p0;
+			scol[1] = (u_char) p1;
+			scol[2] = (u_char) p2;
+			scol[3] = (u_char) p3;
+			scol[4] = (u_char) p4;
+			scol[5] = (u_char) p5;
+			scol[6] = (u_char) p6;
+			scol[7] = (u_char) p7;
 		}
 	}
 	

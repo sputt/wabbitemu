@@ -23,7 +23,7 @@ int calc_slot_new(void) {
 		if (calcs[i].active == FALSE) {
 			memset(&calcs[i], 0, sizeof(calc_t));
 			calcs[i].gif_disp_state = GDS_IDLE;
-			calcs[i].speed = 1.0;
+			calcs[i].speed = 100;
 			return i;
 		}
 	}
