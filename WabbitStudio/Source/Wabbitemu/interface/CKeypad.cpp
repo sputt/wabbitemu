@@ -11,8 +11,16 @@ static const struct {KEYS Key; WORD wVirtCode;} g_KeyMaps[] =
 	{KEY_2ND, VK_SHIFT},
 	{KEY_ALPHA, VK_LCONTROL},
 	{KEY_DEL, VK_DELETE},
-	{KEY_APPS, VK_PRIOR},
-	{KEY_PRGM, VK_NEXT},
+	{KEY_ON, VK_F12},
+	{KEY_MATH, 'A'},
+	{KEY_APPS, 'B'},
+	{KEY_PRGM, 'C'},
+	{KEY_VARS, VK_INSERT},
+	{KEY_CLEAR, VK_RSHIFT},
+	{KEY_MODE, VK_ESCAPE},
+	{KEY_XTON, VK_ADD},
+	{KEY_STAT, VK_END},
+
 };
 
 static int LookupVirtCode(KEYS Key)
@@ -68,6 +76,18 @@ STDMETHODIMP CKeypad::ReleaseKey(KEYS Key)
 		return E_NOTIMPL;
 	}
 	keypad_key_release(m_cpu, wVirtCode);
+	return S_OK;
+}
+
+STDMETHODIMP CKeypad::PressVirtKey(int Key)
+{
+	keypad_key_press(m_cpu, Key);
+	return S_OK;
+}
+
+STDMETHODIMP CKeypad::ReleaseVirtKey(int Key)
+{
+	keypad_key_release(m_cpu, Key);
 	return S_OK;
 }
 

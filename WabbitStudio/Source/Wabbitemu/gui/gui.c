@@ -362,25 +362,35 @@ int gui_frame_update(int slot) {
 	DeleteObject(skin);
 	SendMessage(calcs[slot].hwndFrame, WM_SIZE, 0, 0);
 	return 0;*/
-	//translate to gdi compatibility to simplify coding :/
 	HBITMAP hbmSkinOld, hbmKeymapOld;
-	hbmSkin->m_pBitmap->GetHBITMAP(Color::Gray, &hbmSkinOld);
+	//translate to gdi compatibility to simplify coding :/
 	hbmKeymap->m_pBitmap->GetHBITMAP(Color::White, &hbmKeymapOld);
-	//SelectObject(calcs[slot].hdcKeymap, hbmKeymapOld);
+	SelectObject(calcs[slot].hdcKeymap, hbmKeymapOld);
+	//get the HBITMAP for the skin DONT change the first value, it is necessary for transparency to work
+	if (calcs[slot].bCutout)
+		hbmSkin->m_pBitmap->GetHBITMAP(Color::AlphaMask, &hbmSkinOld);
+	else
+		hbmSkin->m_pBitmap->GetHBITMAP(Color::Gray, &hbmSkinOld);
+	//84+SE has custom faceplates :D, draw it to the background
+	HDC hdcOverlay = CreateCompatibleDC(calcs[slot].hdcSkin);
+	int error = FillRect(calcs[slot].hdcSkin, &calcs[slot].rectSkin, GetStockBrush(GRAY_BRUSH));
 	if (calcs[slot].model == TI_84PSE) {
 		if (DrawFaceplateRegion(calcs[slot].hdcSkin))
 			MessageBox(NULL, "Unable to draw faceplate", "error", MB_OK);
 	}
+	//ok maybe its just because 6am and i've been doing this all night but seriously, WTF
+	//this selectobject works but no other drawing does. GODDAMN
+
 	//this needs to be done so we can alphablend the screen
-	HDC hdcOverlay = CreateCompatibleDC(calcs[slot].hdcSkin);
-	//SelectObject(calcs[slot].hdcSkin, hbmSkinOld);
+	SelectObject(calcs[slot].hdcSkin, hbmSkinOld);
 	BLENDFUNCTION bf;
 	bf.BlendOp = AC_SRC_OVER;
 	bf.BlendFlags = 0;
 	bf.SourceConstantAlpha = 255;
 	bf.AlphaFormat = AC_SRC_ALPHA;
-	AlphaBlend(calcs[slot].hdcSkin, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, hdcOverlay,
+	error = AlphaBlend(calcs[slot].hdcSkin, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, hdcOverlay,
 		calcs[slot].rectSkin.left, calcs[slot].rectSkin.top, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, bf);
+	//BitBlt(calcs[slot].hdcSkin, 0, 0, 350, 725, hdcOverlay, 0, 0, SRCCOPY);
 	if (calcs[slot].bCutout && calcs[slot].SkinEnabled)	{
 		if (EnableCutout(calcs[slot].hwndFrame, hbmSkinOld) != 0)
 			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
@@ -392,12 +402,12 @@ int gui_frame_update(int slot) {
 		SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
 	SendMessage(calcs[slot].hwndFrame, WM_SIZE, 0, 0);
 
-	BOOL error = DeleteObject(hbmKeymapOld);
-	error = DeleteObject(hbmSkinOld);
 	delete hbmSkin;
 	delete hbmKeymap;
+	error = DeleteObject(hbmKeymapOld);
+	error = DeleteObject(hbmSkinOld);
+	//DeleteDC(hdcOverlay);
 	ReleaseDC(calcs[slot].hwndFrame, hdc);
-	ReleaseDC(calcs[slot].hwndFrame, hdcOverlay);
 	return 0;
 }
 #else
@@ -1494,11 +1504,8 @@ finalize_buttons:
 				RECT wr;
 				GetWindowRect(hwnd, &wr);
 
-				HWND hwnd;
-				hwnd = FindWindow(_T("WABBITSMALLBUTTON"), _T("wabbitminimize"));
-				DeferWindowPos(hdwp, hwnd, NULL, wr.left + 285, wr.top + 34, 13, 13, 0);
-				hwnd = FindWindow(_T("WABBITSMALLBUTTON"), _T("wabbitclose"));
-				DeferWindowPos(hdwp, hwnd, NULL,wr.left + 300, wr.top + 34, 13, 13, 0);
+				DeferWindowPos(hdwp, calcs[slot].hwndSmallMinimize, NULL, wr.left + 285, wr.top + 34, 13, 13, 0);
+				DeferWindowPos(hdwp, calcs[slot].hwndSmallClose, NULL, wr.left + 300, wr.top + 34, 13, 13, 0);
 
 				EndDeferWindowPos(hdwp);
 			}
@@ -1537,6 +1544,8 @@ finalize_buttons:
 		//	DestroyWindow(hwnd);
 		//	return 0;
 		case WM_CLOSE:
+			DestroyWindow(hwnd);
+			return 0;
 		case WM_DESTROY: {
 			if (calc_count() == 1) {
 				if (exit_save_state)
@@ -1561,6 +1570,7 @@ finalize_buttons:
 			//for some reason this fails...:/
 			if (!calcs[gslot].SkinEnabled || !calcs[gslot].bCutout)
 				UnregisterDropWindow(hwnd, calcs[gslot].pDropTarget);
+			calcs[gslot].pDropTarget = NULL;
 
 			printf("Freeing calculator slot\n");
 			calc_slot_free(gslot);

@@ -31,6 +31,8 @@ public:
 	STDMETHOD(PressKey)(KEYS Key);
 	STDMETHOD(ReleaseKey)(KEYS Key);
 	STDMETHOD(IsKeyPressed)(KEYS Key, VARIANT_BOOL *lpfIsPressed);
+	STDMETHOD(PressVirtKey)(int Key);
+	STDMETHOD(ReleaseVirtKey)(int Key);
 
 	CKeypad(CPU_t *cpu)
 	{

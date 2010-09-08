@@ -185,15 +185,33 @@ interface IKeypad : IUnknown
 
 		KEY_2ND,
 		KEY_ALPHA,
+		KEY_MODE,
 		KEY_DEL,
+		KEY_XTON,
+		KEY_STAT,
 
+		KEY_YEQU,
+		KEY_WINDOW,
+		KEY_ZOOM,
+		KEY_TRACE,
+		KEY_GRAPH,
+
+		KEY_MATH,
 		KEY_APPS,
 		KEY_PRGM,
+		KEY_VARS,
+		KEY_CLEAR,
+
+		KEY_ON,
+
+
 	} CalcKey;
 
 	HRESULT PressKey([in] enum CalcKey Key);
 	HRESULT ReleaseKey([in] enum CalcKey Key);
 	HRESULT IsKeyPressed([in] enum CalcKey Key, [out, retval] VARIANT_BOOL *IsPressed);
+	HRESULT PressVirtKey([in] int Key);
+	HRESULT ReleaseVirtKey([in] int Key);
 }
 
 [
@@ -287,7 +305,7 @@ library WabbitemuLib
 
 	[
 		uuid(1A03AFA2-C9C7-4d5b-9732-D78011D5009B),
-		version(1.0),
+		version(1.1),
 	]
 	coclass Wabbitemu
 	{

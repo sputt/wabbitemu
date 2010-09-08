@@ -66,6 +66,8 @@ typedef struct calc {
 	HWND hwndLCD;
 	HWND hwndStatusBar;
 	HWND hwndDebug;
+	HWND hwndSmallClose;
+	HWND hwndSmallMinimize;
 
 	BOOL SkinEnabled;
 	DWORD Scale;
