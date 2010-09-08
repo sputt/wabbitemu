@@ -197,6 +197,34 @@ interface IKeypad : IUnknown
 }
 
 [
+	uuid(8E5D1F9E-C487-48c9-A1AD-C9ACE44C1E3A),
+	object,
+	pointer_default(unique),
+	dual,
+]
+interface ILabel : IDispatch
+{
+	[id(0), propget, helpstring("Name of this label")]
+	HRESULT Name([out, retval] BSTR *Name);
+	[id(1), propget, helpstring("Page this label is on")]
+	HRESULT Page([out, retval] IPage **Page);
+	[id(2), propget, helpstring("The address of the label")]
+	HRESULT Address([out, retval] WORD *Address);
+}
+
+
+[
+	uuid(207CC027-41EE-4582-8430-C1D4FE910143),
+	pointer_default(unique),
+	dual,
+]
+interface ILabelServer : IDispatch
+{
+	[id(0), helpstring("Lookup a label based on name or address")]
+	HRESULT LookupLabel([in] VARIANT Criteria, [out, retval] ILabel **Label);
+}
+
+[
 	uuid(020FB9D5-7F45-449b-B9DF-66CFC2482BD0),
 	object,
 ]
