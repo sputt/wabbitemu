@@ -178,6 +178,7 @@
     <ClInclude Include="debugger\dbtrack.h" />
     <ClInclude Include="debugger\dbvalue.h" />
     <ClInclude Include="debugger\disassemble.h" />
+    <ClInclude Include="gui\CGdiPlusBitmap.h" />
     <ClInclude Include="gui\DataObject.h" />
     <ClInclude Include="gui\displayoptionstest.h" />
     <ClInclude Include="gui\DropSource.h" />

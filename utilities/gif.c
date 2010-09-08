@@ -319,13 +319,13 @@ void gif_writer() {
 #define LCD_HIGH_MUL 6
 				
 				if (gif_bw) {
-					gif_header[13 + i * 3] = 0xFF * color_ratio;
-					gif_header[14 + i * 3] = 0xFF * color_ratio;
-					gif_header[15 + i * 3] = 0xFF * color_ratio;	
+					gif_header[13 + i * 3] = (BYTE) (0xFF * color_ratio);
+					gif_header[14 + i * 3] = (BYTE) (0xFF * color_ratio);
+					gif_header[15 + i * 3] = (BYTE) (0xFF * color_ratio);
 				} else {
-					gif_header[13 + i * 3] = (0x9E - (0x9E/LCD_HIGH_MUL)) * color_ratio + (0x9E/LCD_HIGH_MUL);
-					gif_header[14 + i * 3] = (0xAB - (0xAB/LCD_HIGH_MUL)) * color_ratio + (0xAB/LCD_HIGH_MUL);
-					gif_header[15 + i * 3] = (0x88 - (0x88/LCD_HIGH_MUL)) * color_ratio + (0x88/LCD_HIGH_MUL);
+					gif_header[13 + i * 3] = (BYTE) ((0x9E - (0x9E/LCD_HIGH_MUL)) * color_ratio + (0x9E/LCD_HIGH_MUL));
+					gif_header[14 + i * 3] = (BYTE) ((0xAB - (0xAB/LCD_HIGH_MUL)) * color_ratio + (0xAB/LCD_HIGH_MUL));
+					gif_header[15 + i * 3] = (BYTE) ((0x88 - (0x88/LCD_HIGH_MUL)) * color_ratio + (0x88/LCD_HIGH_MUL));
 				}
 #else
 				gif_header[13 + i * 3] = 255 - i * 255 / (gif_colors-1);
