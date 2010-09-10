@@ -445,10 +445,11 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					GetCurrentDirectory(ARRAYSIZE(buffer), (char*)&buffer);
 #ifdef WINVER
 					strcat_s(buffer, "\\profile.txt");
+					fopen_s(&file, buffer, "wb");
 #else
 					strcat(buffer, "\\profile.txt");
-#endif
 					file = fopen(buffer, "wb");
+#endif
 					fprintf(file, "Total Tstates: %i\r\n", calcs[DebuggerSlot].profiler.totalTime);
 					for(i = calcs[DebuggerSlot].profiler.lowAddress / calcs[DebuggerSlot].profiler.blockSize;
 							i < ARRAYSIZE(calcs[DebuggerSlot].profiler.data) &&

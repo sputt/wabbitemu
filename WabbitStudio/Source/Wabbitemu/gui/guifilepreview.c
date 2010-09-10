@@ -96,7 +96,12 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 		{
 			if (lParam == 0) goto NoFilePreview;
 			
+#ifdef WINVER
+			FILE *prgFile;
+			fopen_s(&prgFile, (char*) lParam, "rb");
+#else
 			FILE *prgFile = fopen((char*) lParam, "rb");
+#endif
 			if (!prgFile) goto NoFilePreview;
 	
 			SAVESTATE_t *save = ReadSave(prgFile);

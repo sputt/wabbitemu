@@ -426,7 +426,10 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					void *data = LockResource(hGlobal);
 					char hexFile[MAX_PATH];
 #ifdef WINVER
-					strcpy_s(hexFile, getenv("appdata"));
+					char *env;
+					size_t envLen;
+					_dupenv_s(&env, &envLen, "appdata");
+					strcpy_s(hexFile, envLen, env);
 					strcat_s(hexFile, "\\boot.hex");
 #else
 					strcpy(hexFile, getenv("appdata"));
@@ -436,14 +439,22 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					DWORD writtenBytes;
 					WriteFile(hHexFile, data, size, &writtenBytes, NULL);
 					CloseHandle(hHexFile);
+#ifdef WINVER
 					FILE *file;
-					file = fopen(hexFile, "rb");
+					fopen_s(&file, hexFile, "rb");
+#else
+					FILE *file = fopen(hexFile, "rb");
+#endif
 					writeboot(file);
 					fclose(file);
 					remove(hexFile);
 					//if you dont want to load an OS, fine...
 					if (strlen(osPath) != 0) {
+#ifdef WINVER
+						fopen_s(&file, osPath, "rb");
+#else
 						file = fopen(osPath, "rb");
+#endif
 						Load_8xu(file);
 						fclose(file);
 						calcs[slot].mem_c.flash[0x56] = 0x5A;
@@ -460,7 +471,11 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					gui_frame(slot);
 					//write the output from file
-					file = fopen(buffer,"wb");
+#ifdef WINVER
+					fopen_s(&file, buffer, "wb");
+#else
+					file = fopen(buffer, "wb");
+#endif
 					char* rom = (char *) calcs[slot].mem_c.flash;
 					size = calcs[slot].mem_c.flash_size;
 					if (size != 0 && rom != NULL && file !=NULL) {
@@ -489,7 +504,10 @@ BOOL DownloadOS(BOOL version = 0)
 {
 	char downloaded_file[MAX_PATH];
 #ifdef WINVER
-	strcpy_s(downloaded_file, getenv("appdata"));
+	char *env;
+	size_t envLen;
+	_dupenv_s(&env, &envLen, "appdata");
+	strcpy_s(downloaded_file, env);
 	strcat_s(downloaded_file, _T("\\OS.8xu"));
 	strcpy_s(osPath, downloaded_file);
 #else
@@ -646,7 +664,10 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 void ExtractDumperProg() {
 	char dumperPath[MAX_PATH];
 #ifdef WINVER
-	strcpy_s(dumperPath, getenv("appdata"));
+	char *env;
+	size_t envLen;
+	_dupenv_s(&env, &envLen, "appdata");
+	strcpy_s(dumperPath, env);
 	strcat_s(dumperPath, "\\dumper");
 #else
 	strcpy(dumperPath, getenv("appdata"));

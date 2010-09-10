@@ -132,7 +132,11 @@ void handle_screenshot() {
 					
 					for (i = 0; test; i++) {
 						generate_gif_name(gif_file_name, i, fn);
+#ifdef WINVER
+						fopen_s(&test, fn, "r");
+#else
 						test = fopen(fn, "r");
+#endif
 						if (test) fclose(test);
 					}
 #ifdef WINVER

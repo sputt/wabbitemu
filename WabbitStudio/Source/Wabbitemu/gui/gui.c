@@ -626,15 +626,24 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		SendMessage(Findhwnd, WM_COMMAND, IDM_FILE_NEW, 0);
 
 	if (argv && argc>1) {
-		wcstombs(tmpstring,argv[1],512);
+#ifdef WINVER
+		size_t numConv;
+		wcstombs_s(&numConv, tmpstring, argv[1], 512);
+#else
+		wcstombs(tmpstring, argv[1], 512);
+#endif
 		if ( (tmpstring[0]=='-') && (tmpstring[1]=='n') ) loadfiles = TRUE;
 		else {
 			if (!loadfiles) {
 				COPYDATASTRUCT cds;
 				char* FileNames = NULL;
 				for(i=1;i<argc;i++) {
-					memset(tmpstring,0,512);
-					wcstombs(tmpstring,argv[i],512);
+					memset(tmpstring, 0, 512);
+#ifdef WINVER
+					wcstombs_s(&numConv, tmpstring, argv[i], 512);
+#else
+					wcstombs(tmpstring, argv[i], 512);
+#endif
 					if (tmpstring[0]!='-') {
 						//printf("%s \n",tmpstring);
 						FileNames = AppendName(FileNames,tmpstring);
@@ -742,8 +751,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	if (argv && argc>1) {
 		for (i=1;i<argc;i++) {
-			memset(tmpstring,0,512);
+			memset(tmpstring, 0, 512);
+#ifdef WINVER
+			size_t numConv;
+			wcstombs_s(&numConv, tmpstring,argv[i],512);
+#else
 			wcstombs(tmpstring,argv[i],512);
+#endif
 			if (tmpstring[0] == '/' || tmpstring[0] == '-') {
 				if (toupper(tmpstring[1]) == 'S') {
 					silent_mode = TRUE;
@@ -789,8 +803,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		if (argv && argc>1) {
 			char* FileNames = NULL;
 			for(i=1;i<argc;i++) {
-				memset(tmpstring,0,512);
+				memset(tmpstring, 0, 512);
+#ifdef WINVER
+				size_t numConv;
+				wcstombs_s(&numConv, tmpstring, argv[i], 512);
+#else
 				wcstombs(tmpstring,argv[i],512);
+#endif
 				if (tmpstring[0]!='-') {
 					printf("%s\n",tmpstring);
 					FileNames = AppendName(FileNames,tmpstring);
@@ -1550,7 +1569,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				{
 					char temp_save[MAX_PATH];
 #ifdef WINVER
-					strcpy_s(temp_save, getenv("appdata"));
+					size_t len;
+					char *path;
+					_dupenv_s(&path, &len, "appdata");
+					strcpy_s(temp_save, len, path);
 					strcat_s(temp_save, "\\wabbitemu.sav");
 					strcpy_s(calcs[gslot].rom_path, temp_save);
 #else

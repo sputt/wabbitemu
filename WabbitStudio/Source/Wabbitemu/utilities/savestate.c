@@ -49,10 +49,14 @@ SAVESTATE_t* CreateSave(char* author, char* comment , int model) {
 	save->version_build = CUR_BUILD;
 
 	memset(save->author, 0, sizeof(save->author));
-	strncpy(save->author, author, sizeof(save->author));
-
 	memset(save->comment, 0, sizeof(save->comment));
+#ifdef WINVER
+	strncpy_s(save->author, author, sizeof(save->author));
+	strncpy_s(save->comment, comment, sizeof(save->comment));
+#else
+	strncpy(save->author, author, sizeof(save->author));
 	strncpy(save->comment, comment, sizeof(save->comment));
+#endif
 	
 	save->model = model;
 	save->chunk_count = 0;
@@ -918,17 +922,26 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 		return;
 	}
 	if (compress == 0) {
-		ofile = fopen(fn,"wb");
-	} else {
-		tmpnam(tmpfn);
 #ifdef WINVER
-		strcpy_s(temp_save, getenv("appdata"));
-		strcat_s(temp_save, tmpfn);
+		fopen_s(&ofile, fn, "wb");
 #else
+		ofile = fopen(fn,"wb");
+#endif
+	} else {
+#ifdef WINVER
+		char *env;
+		size_t envLen;
+		tmpnam_s(tmpfn);
+		_dupenv_s(&env, &envLen, "appdata");
+		strcpy_s(temp_save, env);
+		strcat_s(temp_save, tmpfn);
+		fopen_s(&ofile, temp_save, "wb");
+#else
+		tmpnam(tmpfn);
 		strcpy(temp_save, getenv("appdata"));
 		strcat(temp_save, tmpfn);
-#endif
 		ofile = fopen(temp_save,"wb");
+#endif
 	}
 		
 	if (!ofile) {
@@ -959,12 +972,20 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 	fclose(ofile);
 	
 	if (compress) {
+#ifdef WINVER
+		fopen_s(&cfile, fn, "wb");
+#else
 		cfile = fopen(fn,"wb");
+#endif
 		if (!cfile) {
 			puts("Could not open compress file for write");
 			return;
 		}
+#ifdef WINVER
+		fopen_s(&ofile, temp_save, "rb");
+#else
 		ofile = fopen(temp_save,"rb");
+#endif
 		if (!ofile) {
 			puts("Could not open tmp file for read");
 			return;
@@ -1002,15 +1023,20 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 	string[8]=0;
 	if (strncmp(DETECT_CMP_STR,string,8)==0) {
 		i = fgetc(ifile);
-		tmpnam(tmpfn);
 #ifdef WINVER
-		strcpy_s(temp_save, getenv("appdata"));
+		tmpnam_s(tmpfn);
+		char *env;
+		size_t envLen;
+		_dupenv_s(&env, &envLen, "appdata");
+		strcpy_s(temp_save, env);
 		strcat_s(temp_save, tmpfn);
+		fopen_s(&tmpfile, temp_save, "wb");
 #else
+		tmpnam(tmpfn);
 		strcpy(temp_save, getenv("appdata"));
 		strcat(temp_save, tmpfn);
-#endif
 		tmpfile = fopen(temp_save,"wb");
+#endif
 		if (!tmpfile) {
 			puts("Could not open tmp file for write");
 			return NULL;
@@ -1032,8 +1058,13 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 		}
 		
 		fclose(tmpfile);
+#ifdef WINVER
+		fopen_s(&ifile, temp_save, "rb");	//this is not a leak, ifile gets closed
+										// outside of this routine.
+#else
 		ifile = fopen(temp_save,"rb");	//this is not a leak, ifile gets closed
 										// outside of this routine.
+#endif
 		if (!ifile) {
 			puts("Could not open tmp file for read");
 			return NULL;

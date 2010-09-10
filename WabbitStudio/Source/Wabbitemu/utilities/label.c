@@ -84,7 +84,12 @@ int labels_app_load(int slot, char* fn) {
 	unsigned int equate;
 	label_struct *label = &calcs[slot].labels[0];	
 
+#ifdef WINVER
+	fopen_s(&labelFile, fn,"r");
+	if (!labelFile) {
+#else
     if (!(labelFile = fopen(fn,"r"))) {
+#endif
         puts("Error opening label files.");
         return 1;
     }
@@ -96,7 +101,11 @@ int labels_app_load(int slot, char* fn) {
 		fgets(buffer,256,labelFile);
 		i = 0;
 		if (buffer[0] != ';')
+#ifdef WINVER
+			i = sscanf_s(buffer,"%s = $%X", name, &equate);
+#else
 			i = sscanf(buffer,"%s = $%X", name, &equate);
+#endif
 		if (i == 2) {
 			length = (int) strlen(name);
 			if (!label_search_tios(name,equate)) {
