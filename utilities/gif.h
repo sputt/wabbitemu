@@ -29,7 +29,7 @@ extern int gif_newframe;
 extern int gif_colors;
 extern int gif_base_delay_start;
 extern int gif_file_num;
-extern int gif_size;
+extern u_int gif_size;
 extern BOOL gif_bw;
 
 void gif_writer();

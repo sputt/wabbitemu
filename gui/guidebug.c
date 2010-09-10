@@ -36,7 +36,7 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 	if ((HWND) lParam != GetParent(hwndChild))
 		return TRUE;
 
-	idChild = GetWindowLongPtr(hwndChild, GWL_ID);
+	idChild = (int) GetWindowLongPtr(hwndChild, GWL_ID);
 	switch (idChild) {
 	case ID_TOOLBAR:
 		MoveWindow(hwndChild, 0, 0, rcParent->right, CY_TOOLBAR, TRUE);
@@ -124,7 +124,11 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			DebuggerSlot = gslot;
 			LOGFONT lf;
 			memset(&lf, 0, sizeof(LOGFONT));
+#ifdef WINVER
+			strcpy_s(lf.lfFaceName, "Lucida Console");
+#else
 			strcpy(lf.lfFaceName, "Lucida Console");
+#endif
 
 			EnumFontFamiliesEx(
 					GetDC(NULL),
@@ -140,10 +144,18 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			LOGFONT lfSegoe;
 			memset(&lfSegoe, 0, sizeof(LOGFONT));
+#ifdef WINVER
+			strcpy_s(lfSegoe.lfFaceName, "Segoe UI");
+#else
 			strcpy(lfSegoe.lfFaceName, "Segoe UI");
+#endif
 
 			if (EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
+#ifdef WINVER
+				strcpy_s(lfSegoe.lfFaceName, "Tahoma");
+#else
 				strcpy(lfSegoe.lfFaceName, "Tahoma");
+#endif
 				EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0);
 			}
 
@@ -267,7 +279,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				} else if (bottom_locked) {
 					cyDisasm = rc.bottom - cyGripper;
 				} else {
-					int y = ratioDisasm * rc.bottom;
+					u_int y = (u_int) (ratioDisasm * rc.bottom);
 					if (y < CY_TOOLBAR) y = CY_TOOLBAR;
 					if (y > rc.bottom - cyGripper) y = rc.bottom - cyGripper;
 					cyDisasm = y;
@@ -282,7 +294,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		}
 		case WM_MOUSEMOVE:
 		{
-			int y = GET_Y_LPARAM(lParam) + offset_click;
+			u_int y = GET_Y_LPARAM(lParam) + offset_click;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 
@@ -406,7 +418,11 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_CHECKED);
 				} else {
 					char buffer[256];
+#ifdef WINVER
+					sprintf_s(buffer, "%i T-States", (int)(calcs[DebuggerSlot].cpu.timer_c->tstates - code_count_tstates));
+#else
 					sprintf(buffer, "%i T-States", (int)(calcs[DebuggerSlot].cpu.timer_c->tstates - code_count_tstates));
+#endif
 					MessageBox(NULL, buffer, "Code Counter", MB_OK);
 					code_count_tstates = -1;
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_UNCHECKED);
@@ -425,8 +441,13 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					int i;
 					double data;
 					char buffer[256];
+					//TODO: browse for a directory
 					GetCurrentDirectory(ARRAYSIZE(buffer), (char*)&buffer);
-					strcat((char*)&buffer, "\\profile.txt");
+#ifdef WINVER
+					strcat_s(buffer, "\\profile.txt");
+#else
+					strcat(buffer, "\\profile.txt");
+#endif
 					file = fopen(buffer, "wb");
 					fprintf(file, "Total Tstates: %i\r\n", calcs[DebuggerSlot].profiler.totalTime);
 					for(i = calcs[DebuggerSlot].profiler.lowAddress / calcs[DebuggerSlot].profiler.blockSize;
@@ -462,7 +483,11 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					(HMENU) ID_MEM,
 					g_hInst, &mps[total_mem_pane + 1]);
 				char buffer[64];
+#ifdef WINVER
+				sprintf_s(buffer, "Mem %i", total_mem_pane + 1);
+#else
 				sprintf(buffer, "Mem %i", total_mem_pane + 1);
+#endif
 				TCITEM tie;
 				tie.mask = TCIF_TEXT | TCIF_IMAGE;
 				tie.iImage = -1;
@@ -663,8 +688,8 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 
 // Converts a hexadecimal string to integer
 int xtoi(const char* xs, int* result) {
-	size_t szlen = strlen(xs);
-	int i, xv, fact;
+	size_t i, szlen = strlen(xs);
+	int xv, fact;
 	if (szlen <= 0)
 		// Nothing to convert
 		return 1;
@@ -674,8 +699,8 @@ int xtoi(const char* xs, int* result) {
 	*result = 0;
 	fact = 1;
 	// Run until no more character to convert
-	for(i=szlen-1; i>=0 ;i--) {
-		if (isxdigit(*(xs+i))) {
+	for(i = szlen-1; i >= 0; i--) {
+		if (isxdigit(*(xs + i))) {
 			if (*(xs+i)>=97) {
 				xv = ( *(xs+i) - 97) + 10;
 			}

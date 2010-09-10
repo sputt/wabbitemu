@@ -72,7 +72,7 @@ int gif_colors=7;
 #endif
 
 int gif_base_delay_start = 4;
-int gif_size = 2;
+u_int gif_size = 2;
 
 WORD gif_base_delay;
 int gif_file_size = 0;
@@ -287,7 +287,7 @@ int gif_encode(FILE *fout, BYTE *pixels, int depth, int siz) {
 	buffer[-1] = pos - buffer;
 
 	fwrite(buffer - 1, pos - buffer + 1, 1, fout);
-	fsize += pos - buffer + 1;
+	fsize += (int) (pos - buffer + 1);
 	free(buffer - 1); free(first->node); free(baseNode);
 	return fsize;
 }
@@ -366,7 +366,7 @@ void gif_writer() {
 				gif_delay += gif_base_delay;
 			} else {
 				gif_img[3] = 5;
-				gif_img[4] = gif_delay;
+				gif_img[4] = (BYTE) gif_delay;
 				gif_img[5] = gif_delay >> 8;
 				gif_img[9] = gif_frame_x;
 				gif_img[10] = gif_frame_x >> 8;
@@ -422,7 +422,7 @@ void gif_writer() {
 			if (!fp)
 				break;
 			int i;
-			gif_img[4] = gif_delay;
+			gif_img[4] = (BYTE) gif_delay;
 			gif_img[5] = gif_delay >> 8;
 			gif_img[9] = gif_frame_x;
 			gif_img[10] = gif_frame_x >> 8;

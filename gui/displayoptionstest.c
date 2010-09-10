@@ -75,7 +75,7 @@ static void sprite(int x,int y,int w,int h,unsigned char * img) {
 }
 //BW shades = 2
 static void gradient(int shades,double framerate,double time) {
-	int frame = time*70.0f;
+	int frame = (int) (time*70.0f);
 	int x,y,c;
 	for(y=0;y<64;y++) {
 		for(x=0;x<96;x++) {
@@ -97,7 +97,7 @@ static void bounce(double time) {
 	double tmaxx= dx/vx;
 	double tx	= fmod(time,tmaxx);
 	double x	= (tx*vx)-7.0f;
-	sprite(x,y,8,8,ball);
+	sprite((int) x, (int) y, 8, 8, ball);
 }
 
 static void map() {

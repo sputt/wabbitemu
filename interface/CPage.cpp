@@ -65,7 +65,7 @@ STDMETHODIMP CPage::Write(WORD Address, VARIANT varValue)
 	}
 	else
 	{
-		m_lpData[Address % PAGE_SIZE] = V_I4(&varValue);
+		m_lpData[Address % PAGE_SIZE] = (BYTE) V_I4(&varValue);
 	}
 	return S_OK;
 }

@@ -170,7 +170,7 @@ GLOBAL debugger_backup* backups[MAX_CALCS];
 GLOBAL int number_backup;
 GLOBAL int current_backup_index;
 #endif
-GLOBAL int frame_counter;
+GLOBAL u_int frame_counter;
 GLOBAL BOOL exit_save_state;
 GLOBAL BOOL load_files_first;
 GLOBAL BOOL do_backups;

@@ -99,7 +99,7 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 			switch (((OFNOTIFY*) lParam)->hdr.code) {
 				case CDN_SELCHANGE: {
 					TCHAR szPath[MAX_PATH];
-					int result = SendMessage(GetParent(hwndDlg), CDM_GETFILEPATH,
+					int result = (int) SendMessage(GetParent(hwndDlg), CDM_GETFILEPATH,
 									sizeof(szPath), (LPARAM) szPath);
 					if (result < 0) break;
 					
@@ -180,8 +180,12 @@ All Files (*.*)\0*.*\0\0";
 
 	while(filename[0] != 0) {
 		int len;
+#ifdef WINVER
+		strcpy_s(filestroffset, strlen(filestroffset), filename);
+#else
 		strcpy(filestroffset, filename);
-		len = strlen(filestroffset);
+#endif
+		len = (int) strlen(filestroffset);
 		filestroffset[len] = 0;
 		filename +=(len+1);
 		FileNames = AppendName(FileNames, filestr);

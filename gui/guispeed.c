@@ -35,7 +35,7 @@ LRESULT CALLBACK SetSpeedProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 				HWND hTrackbar = GetDlgItem(hwnd, IDC_TRB1);
 				if (hTrackbar == (HWND)lParam)
 				{
-					int newPos = SendMessage(hTrackbar, TBM_GETPOS, 0, 0);
+					int newPos = (int) SendMessage(hTrackbar, TBM_GETPOS, 0, 0);
 					newPos = newPos / 50;
 					newPos = newPos * 50;
 					if (newPos == 0)

@@ -148,7 +148,7 @@ void DrawGlow(HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADWIDTH) {
 	
 	for (pPixel = pBits, y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
-			int res = 255*sqrt((double) ((x*x) + (y*y))) / height;
+			int res = (int) (255*sqrt((double) ((x*x) + (y*y))) / height);
 			if (res > 255) res = 255;
 			pPixel[3] = 255 - res;
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
@@ -166,7 +166,7 @@ void DrawGlow(HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADWIDTH) {
 	
 	for (pPixel = pBits, y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
-			int res = 256*sqrt((double) ((width - x - 1)*(width - x - 1)) + (y*y)) / height;
+			int res = (int) (256*sqrt((double) ((width - x - 1)*(width - x - 1)) + (y*y)) / height);
 			if (res > 255) res = 255;
 			pPixel[3] = 255 - res;
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
@@ -184,7 +184,7 @@ void DrawGlow(HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADWIDTH) {
 	
 	for (pPixel = pBits, y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
-			int res = 255*sqrt((double) (x*x) + ((height-y - 1)*(height-y - 1))) / height;
+			int res = (int) (255*sqrt((double) (x*x) + ((height-y - 1)*(height-y - 1))) / height);
 			if (res > 255) res = 255;
 			pPixel[3] = 255 - res;
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
@@ -202,7 +202,7 @@ void DrawGlow(HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADWIDTH) {
 	
 	for (pPixel = pBits, y = 0; y < height; y++) {
 		for (x = 0; x < width; x++, pPixel+=4) {
-			int res = 255*sqrt((double) ((width - x - 1)*(width - x - 1)) + ((height-y -1)*(height-y-1))) / height;
+			int res = (int) (255*sqrt((double) ((width - x - 1)*(width - x - 1)) + ((height-y -1)*(height-y-1))) / height);
 			if (res > 255) res = 255;
 			pPixel[3] = 255 - res;
 			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;

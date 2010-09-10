@@ -25,16 +25,16 @@ static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
 	ReleaseDC(hwnd, hdc);
 
 
-	int x = pt.x - tm.tmAveCharWidth*7 - COLUMN_X_OFFSET - (mps->diff - mps->cxMem - 2*tm.tmAveCharWidth)/2;
+	int x = pt.x - tm.tmAveCharWidth*7 - COLUMN_X_OFFSET - (int) (mps->diff - mps->cxMem - 2*tm.tmAveCharWidth)/2;
 	int y = pt.y - cyHeader;
 
 	int row = y/mps->cyRow;
-	int col = x/mps->diff;
+	int col = (int) (x/mps->diff);
 
 	int addr = mps->addr + ((col + (mps->nCols * row)) * mps->mode);
 
 	if (r != NULL) {
-		r->left = tm.tmAveCharWidth*7 + COLUMN_X_OFFSET + (mps->diff * col);
+		r->left = tm.tmAveCharWidth*7 + COLUMN_X_OFFSET + (int) (mps->diff * col);
 		r->right = r->left + mps->cxMem - 2*tm.tmAveCharWidth;
 		r->top = cyHeader + (row*mps->cyRow);
 		r->bottom = r->top + tm.tmHeight;
@@ -197,7 +197,11 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 
 			char szHeader[64];
+#ifdef WINVER
+			sprintf_s(szHeader, "Memory (%d Columns)", mps->nCols);
+#else
 			sprintf(szHeader, "Memory (%d Columns)", mps->nCols);
+#endif
 			HDITEM hdi;
 			hdi.mask = HDI_WIDTH;
 			//| HDI_TEXT;
@@ -274,9 +278,17 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			int addr = mps->addr;
 			char memfmt[8];
 			if (mps->bText) {
+#ifdef WINVER
+				strcpy_s(memfmt, "%c");
+#else
 				strcpy(memfmt, "%c");
+#endif
 			} else {
+#ifdef WINVER
+				sprintf_s(memfmt, "%%0%dx", mps->mode*2);
+#else
 				sprintf(memfmt, "%%0%dx", mps->mode*2);
+#endif
 			}
 			unsigned int value;
 
@@ -287,9 +299,17 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					i++, OffsetRect(&r, 0, mps->cyRow)) {
 				char szVal[16];
 				if (addr < 0) {
+#ifdef WINVER
+					strcpy_s(szVal, "0000");
+#else
 					strcpy(szVal, "0000");
+#endif
 				} else {
+#ifdef WINVER
+					sprintf_s(szVal, "%04X", addr);
+#else
 					sprintf(szVal, "%04X", addr);
+#endif
 				}
 
 
@@ -322,7 +342,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				for (j = 0; j < cols; j++) {
 
 					CopyRect(&dr, &r);
-					dr.left = tm.tmAveCharWidth*7 + COLUMN_X_OFFSET + (diff * j);
+					dr.left = tm.tmAveCharWidth*7 + COLUMN_X_OFFSET + (int) (diff * j);
 					dr.right = dr.left + kMemWidth;
 
 					int b;
@@ -345,7 +365,11 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
 							value += mem_read(calcs[DebuggerSlot].cpu.mem_c, addr + b) << shift;
 						}
+#ifdef WINVER
+						sprintf_s(szVal, memfmt, value);
+#else
 						sprintf(szVal, memfmt, value);
+#endif
 #define COLOR_MEMPOINT_WRITE	(RGB(255, 177, 100))
 #define COLOR_MEMPOINT_READ		(RGB(255, 250, 145))
 						if (check_mem_write_break(calcs[DebuggerSlot].cpu.mem_c, addr))
@@ -400,7 +424,11 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					NMTTDISPINFO *nmtdi = (NMTTDISPINFO *) lParam;
 					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
+#ifdef WINVER
+					sprintf_s(nmtdi->szText, "%d", mem_read(&calcs[DebuggerSlot].mem_c, mps->addrTrack));
+#else
 					sprintf(nmtdi->szText, "%d", mem_read(&calcs[DebuggerSlot].mem_c, mps->addrTrack));
+#endif
 					return TRUE;
 				}
 			}
@@ -526,7 +554,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			{
 				case DB_GOTO: {
 					int result;
-					result = DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC)GotoDialogProc);
+					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC)GotoDialogProc);
 					if (result == IDOK) mps->addr = goto_addr;
 					SetFocus(hwnd);
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
@@ -589,11 +617,17 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					char szFmt[8];
 					if (mps->bText)
-						strcpy(szFmt, "%c");
+#ifdef WINVER
+						strcpy_s(szFmt, "%c");
 					else
+						sprintf_s(szFmt, "%%0%dx", mps->mode*2);
+					sprintf_s(szInitial, szFmt, value);
+#else
+						strcpy(szFmt, "%c");
+					else						
 						sprintf(szFmt, "%%0%dx", mps->mode*2);
-
 					sprintf(szInitial, szFmt, value);
+#endif
 
 					hwndVal =
 					CreateWindow("EDIT", szInitial,

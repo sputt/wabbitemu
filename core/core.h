@@ -245,7 +245,7 @@ void displayreg(CPU_t *);
 
 
 #define tc_add( timer_z , num ) \
-	(timer_z)->tstates += num; \
+	(timer_z)->tstates += (long long) num; \
 	(timer_z)->elapsed += ((double)(num))/((double)(timer_z)->freq);
 
 #define tc_elapsed( timer_z ) \

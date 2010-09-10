@@ -19,28 +19,33 @@ void press_textA(char *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 	DrawText(hdc, szText, -1, &tr, DT_LEFT | DT_SINGLELINE | DT_CALCRECT);
 	r->right = r->left + tr.right;
 	
-	int index = mspf_size;
-	mspf_size += strlen(szText);
+	size_t index = mspf_size;
+	mspf_size += (int) strlen(szText);
 	if (calc_size == FALSE) {
 		const char *dot_strings[] = {".", "..", "..."};
 		char szNew[1024];
 		
 		if (index >= mspf_break || (index < mspf_break && index+strlen(szText) > mspf_break)) {
-			int break_index = max(index, mspf_break);
-			int break_string_index = break_index - index;
-			int str_left = strlen(&szText[break_string_index]);
+			int break_index = (int) (max(index, mspf_break));
+			int break_string_index = break_index - (int) index;
+			int str_left = (int) strlen(&szText[break_string_index]);
 			
 			if (str_left > 3)
 				str_left = 3;
 
 			if (index > mspf_break)
-				str_left -= (index - mspf_break);
+				str_left -= (int) (index - mspf_break);
 			
 			if (str_left < 1)
 				str_left = 1;
 			
+#ifdef WINVER
+			strcpy_s(szNew, szText);
+			strcpy_s(&szNew[break_string_index], strlen(&szNew[break_string_index]), dot_strings[str_left-1]);
+#else
 			strcpy(szNew, szText);
 			strcpy(&szNew[break_string_index], dot_strings[str_left-1]);
+#endif
 			
 			szText = szNew;
 		}
@@ -71,7 +76,7 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
     	RECT hr;
     	CopyRect(&hr, rc);
     	DrawText(hdc, szFilltext, -1, &hr, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_END_ELLIPSIS | DT_MODIFYSTRING);
-    	mspf_break = strlen(szFilltext);
+    	mspf_break = (int) strlen(szFilltext);
 
     	if (mspf_break < mspf_size) {
     		mspf_break -= 3;
@@ -98,17 +103,25 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 	            	break;
                 }
                 case 'h': {//offset
-                	int val	= va_arg(argp, INT_PTR);
+                	int val	= (int) va_arg(argp, INT_PTR);
                 	char szOffset[8];
+#ifdef WINVER
+					sprintf_s(szOffset, "%+d",val);
+#else
                 	sprintf(szOffset, "%+d",val);
+#endif
                 	press_text(szOffset, RGB(0, 0, 0));
 					break;
                 }
                 case 'd': //number
 				{
-					int val	= va_arg(argp, INT_PTR);
+					int val	= (int) va_arg(argp, INT_PTR);
 					char szAddr[16];
+#ifdef WINVER
+					sprintf_s(szAddr, "%d",val);
+#else
 					sprintf(szAddr, "%d",val);
+#endif
 					press_text(szAddr, RGB(0, 0, 0));		
                 	break;
 				}
@@ -137,7 +150,11 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 						press_text(name, RGB(0, 0, 0));
 					} else {
 						char szAddr[16];
+#ifdef WINVER
+						sprintf_s(szAddr, "$%04X",val);
+#else
 						sprintf(szAddr, "$%04X",val);
+#endif
 						press_text(szAddr, RGB(0, 0, 0));
 					}
                 	break;
@@ -147,7 +164,7 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 						unsigned short addr = zinf->addr + 2;
 						char *name;
 						int val;
-						val = va_arg(argp, INT_PTR);
+						val = (int) va_arg(argp, INT_PTR);
 
 						name = FindAddressLabel(gslot,calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].ram, calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].page,val);
 						
@@ -155,7 +172,11 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 							press_text(name, RGB(0, 0, 0));
 						} else {
 							char szAddr[16];
+#ifdef WINVER
+							sprintf_s(szAddr, "$%04X",val);
+#else
 							sprintf(szAddr, "$%04X",val);
+#endif
 							press_text(szAddr, RGB(0, 0, 0));
 						}
 	                	break;
@@ -173,9 +194,13 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 				}
 				case 'x':
 				{
-					int val	= va_arg(argp, INT_PTR);
+					int val	= (int) va_arg(argp, INT_PTR);
 					char szAddr[16];
+#ifdef WINVER
+					sprintf_s(szAddr, "$%02X", val);
+#else
 					sprintf(szAddr, "$%02X", val);
+#endif
 					press_text(szAddr, RGB(0, 0, 0));	
 					break;	
 				}

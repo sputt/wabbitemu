@@ -122,7 +122,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			NMTREEVIEW *nmtv = (LPNMTREEVIEW) lParam;
 			switch (((NMHDR*) lParam)->code) {
 				case NM_DBLCLK:	{
-					int slot,i;
+//					int slot;
 //					for(slot=0;slot<MAX_CALCS;slot++) {
 //						DispSymbols(&Tree[slot].sym);
 //					}
@@ -227,8 +227,12 @@ Groups  (*.8xg)\0*.8xg\0\
 All Files (*.*)\0*.*\0\0";
 	char lpstrFile[MAX_PATH];
 	unsigned int Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+#ifdef WINVER
+	strcpy_s(lpstrFile, fd->cFileName);
+#else
 	strcpy(lpstrFile, fd->cFileName);
-	int i = strlen(lpstrFile);
+#endif
+	int i = (int) strlen(lpstrFile);
 	lpstrFile[i] = '\0';
 	defExt = &lpstrFile[i];
 	while (*defExt != '.')
@@ -294,7 +298,11 @@ All Files (*.*)\0*.*\0\0";
 	if (!GetSaveFileName(&ofn)) {
 		return 1;
 	}
+#ifdef WINVER
+	strcpy_s(export_file_name, lpstrFile);
+#else
 	strcpy(export_file_name, lpstrFile);
+#endif
 	return 0;
 }
 
@@ -314,7 +322,7 @@ HTREEITEM InsertVar(HTREEITEM parent, char* Name, int icon) {
 	tvs.hInsertAfter		= TVI_SORT;
 	tvs.item.mask			= TVIF_IMAGE | TVIF_SELECTEDIMAGE |TVIF_TEXT;
 	tvs.item.pszText		= (LPTSTR)(Name);
-	tvs.item.cchTextMax		= strlen((char*)Name)+1;
+	tvs.item.cchTextMax		= (int) strlen(Name) + 1;
 	tvs.item.iImage			= icon;
 	tvs.item.iSelectedImage	= tvs.item.iImage;
 	return TreeView_InsertItem(g_hwndVarTree, &tvs);
@@ -322,7 +330,8 @@ HTREEITEM InsertVar(HTREEITEM parent, char* Name, int icon) {
 
 /* updates the tree view */
 void RefreshTreeView(BOOL New) {
-	int i,slot,b;
+	u_int i;
+	int slot;
 	float ver;
 	TVINSERTSTRUCT tvs;
 
@@ -332,7 +341,7 @@ void RefreshTreeView(BOOL New) {
 	}
 
 	/* run through all active calcs */
-	for(slot = 0;slot<MAX_CALCS;slot++) {
+	for(slot = 0;slot < MAX_CALCS;slot++) {
 
 
 		if (!calcs[slot].active && Tree[slot].model!=0) {
@@ -358,7 +367,7 @@ void RefreshTreeView(BOOL New) {
 				tvs.hInsertAfter		= TVI_ROOT;
 				tvs.item.mask			= TVIF_IMAGE | TVIF_SELECTEDIMAGE |TVIF_TEXT;
 				tvs.item.pszText		= (LPTSTR)CalcModelTxt[calcs[slot].model];
-				tvs.item.cchTextMax		= strlen((char*)tvs.item.pszText)+1;
+				tvs.item.cchTextMax		= (int) strlen(tvs.item.pszText) + 1;
 				tvs.item.iImage			= TI_ICON_84PSE;
 				tvs.item.iSelectedImage	= tvs.item.iImage;
 				Tree[slot].hRoot		= TreeView_InsertItem(g_hwndVarTree, &tvs);
@@ -414,7 +423,7 @@ void RefreshTreeView(BOOL New) {
 			
 			/* Apps are handled outside of the symbol table*/
 			state_build_applist(&calcs[slot].cpu,&Tree[slot].applist);
-			for(i=0;i<Tree[slot].applist.count;i++) {
+			for(i = 0; i < Tree[slot].applist.count; i++) {
 				Tree[slot].hApps[i] = InsertVar(Tree[slot].hApplication,Tree[slot].applist.apps[i].name,TI_ICON_FILE_ARC);
 			}
 			symlist_t* sym = state_build_symlist_83P(&calcs[slot].cpu,&Tree[slot].sym);
@@ -488,7 +497,8 @@ void RefreshTreeView(BOOL New) {
 	
 	
 FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
-	int slot, i, b;
+	int slot;
+	u_int i;
 	char string[MAX_PATH];
 	for(slot = 0; slot < MAX_CALCS; slot++) {
 		if (Tree[slot].model) {
@@ -502,13 +512,22 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 			for(i=0; i<Tree[slot].sym.last - Tree[slot].sym.symbols + 1; i++) {
 				if (Tree[slot].hVars[i] == hSelect) {
 					if (Symbol_Name_to_String(&Tree[slot].sym.symbols[i],string)) {
+#ifdef WINVER
+						strcat_s(string, ".");
+						strcat_s(string, (const char *) type_ext[Tree[slot].sym.symbols[i].type_ID]);
+#else
 						strcat(string, ".");
 						strcat(string, (const char *) type_ext[Tree[slot].sym.symbols[i].type_ID]);
+#endif
 						MFILE *outfile = ExportVar(slot, NULL, &Tree[slot].sym.symbols[i]);
 						fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
 						fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 						fd->nFileSizeLow = msize(outfile);
+#ifdef WINVER
+						strcpy_s(fd->cFileName, string);
+#else
 						strcpy(fd->cFileName, string);
+#endif
 						mclose(outfile);
 						return fd;
 					}
@@ -520,20 +539,20 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 }
 	
 void *FillFileBuffer(HTREEITEM hSelect, void *buf) {
-	int slot,i,b;
+	u_int slot, i, b;
 	unsigned char* buffer = (unsigned char *) buf;
 	char string[64];
 	printf("Fill file buffer\n");
-	for(slot=0;slot<MAX_CALCS;slot++) {
+	for(slot = 0; slot<MAX_CALCS; slot++) {
 		if (Tree[slot].model) {
 			printf("model found\n");
-			for(i=0;i<Tree[slot].applist.count;i++) {
+			for(i = 0; i < Tree[slot].applist.count; i++) {
 				if (Tree[slot].hApps[i]==hSelect) {
 					return NULL;
 				}
 			}
-			for(i=0;i<Tree[slot].sym.last - Tree[slot].sym.symbols+1;i++) {
-				if (Tree[slot].hVars[i]==hSelect) {
+			for(i = 0; i < Tree[slot].sym.last - Tree[slot].sym.symbols+1; i++) {
+				if (Tree[slot].hVars[i] == hSelect) {
 					if (Symbol_Name_to_String(&Tree[slot].sym.symbols[i],string)) {
 						MFILE *outfile = ExportVar(slot,NULL, &Tree[slot].sym.symbols[i]);
 						if(!outfile) puts("MFile not found");

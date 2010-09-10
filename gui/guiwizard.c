@@ -329,7 +329,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						LITEM item = pNMLink->item;
 						char buffer[1024];
 						memset(buffer, 0, ARRAYSIZE(buffer));
-						int length = wcslen(item.szUrl);
+						int length = (int) wcslen(item.szUrl);
 						WideCharToMultiByte(CP_ACP, 0, item.szUrl, length, buffer, length, NULL, NULL);
 						ShellExecute(NULL, _T("open"), buffer, NULL, NULL, SW_SHOWNORMAL);
 						break;
@@ -412,7 +412,11 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					gslot = slot;
 					//slot stuff
 					calcs[slot].active = TRUE;
+#ifdef WINVER
+					strcpy_s(calcs[slot].rom_path, buffer);
+#else
 					strcpy(calcs[slot].rom_path, buffer);
+#endif
 					calcs[slot].model = model;
 					calcs[slot].cpu.pio.model = model;
 
@@ -421,8 +425,13 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					DWORD size = SizeofResource(hModule, resource);
 					void *data = LockResource(hGlobal);
 					char hexFile[MAX_PATH];
+#ifdef WINVER
+					strcpy_s(hexFile, getenv("appdata"));
+					strcat_s(hexFile, "\\boot.hex");
+#else
 					strcpy(hexFile, getenv("appdata"));
 					strcat(hexFile, "\\boot.hex");
+#endif
 					HANDLE hHexFile = CreateFile(hexFile, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 					DWORD writtenBytes;
 					WriteFile(hHexFile, data, size, &writtenBytes, NULL);
@@ -455,8 +464,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					char* rom = (char *) calcs[slot].mem_c.flash;
 					size = calcs[slot].mem_c.flash_size;
 					if (size != 0 && rom != NULL && file !=NULL) {
-						int i;
-						for(i=0; i<size; i++) {
+						u_int i;
+						for(i = 0; i < size; i++) {
 							fputc(rom[i], file);
 						}
 						fclose(file);
@@ -479,9 +488,15 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 BOOL DownloadOS(BOOL version = 0)
 {
 	char downloaded_file[MAX_PATH];
+#ifdef WINVER
+	strcpy_s(downloaded_file, getenv("appdata"));
+	strcat_s(downloaded_file, _T("\\OS.8xu"));
+	strcpy_s(osPath, downloaded_file);
+#else
 	strcpy(downloaded_file, getenv("appdata"));
 	strcat(downloaded_file, _T("\\OS.8xu"));
 	strcpy(osPath, downloaded_file);
+#endif
 	char *url;
 	switch (model) {
 		case TI_73:
@@ -630,8 +645,13 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 
 void ExtractDumperProg() {
 	char dumperPath[MAX_PATH];
+#ifdef WINVER
+	strcpy_s(dumperPath, getenv("appdata"));
+	strcat_s(dumperPath, "\\dumper");
+#else
 	strcpy(dumperPath, getenv("appdata"));
 	strcat(dumperPath, "\\dumper");
+#endif
 	switch (model) {
 		case TI_83P:
 

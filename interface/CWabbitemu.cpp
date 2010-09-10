@@ -144,7 +144,7 @@ STDMETHODIMP CWabbitemu::Write(WORD Address, VARIANT varValue)
 	}
 	else
 	{
-		mem_write(&m_lpCalc->mem_c, Address, V_I4(&varValue));
+		mem_write(&m_lpCalc->mem_c, Address, (char) V_I4(&varValue));
 	}
 	return S_OK;
 }
@@ -193,7 +193,7 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 	TIApplication *pvData = NULL;
 	if (SUCCEEDED(SafeArrayAccessData(lpsa, (LPVOID *) &pvData)))
 	{
-		for (int i = 0; i < sab.cElements; i++)
+		for (u_int i = 0; i < sab.cElements; i++)
 		{
 			WCHAR wszAppName[ARRAYSIZE(applist.apps[i].name)];
 			MultiByteToWideChar(CP_ACP, 0, applist.apps[i].name, -1, wszAppName, ARRAYSIZE(wszAppName));
@@ -239,21 +239,19 @@ STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 
 	SAFEARRAYBOUND sab = {0};
 	sab.lLbound = 0;
-	sab.cElements = symlist.last - symlist.symbols + 1;
+	sab.cElements = (u_int) (symlist.last - symlist.symbols + 1);
 	LPSAFEARRAY lpsa = SafeArrayCreateEx(VT_RECORD, 1, &sab, pRecordInfo);
 	pRecordInfo->Release();
 
 	TISymbol *pvData = NULL;
 	if (SUCCEEDED(SafeArrayAccessData(lpsa, (LPVOID *) &pvData)))
 	{
-		for (int i = 0; i < sab.cElements; i++)
+		for (u_int i = 0; i < sab.cElements; i++)
 		{
 			char buffer[256];
 			WCHAR wszSymName[256];
 			if (Symbol_Name_to_String(&symlist.symbols[i], buffer) == NULL)
-			{
-				strcpy(buffer, "");
-			}
+				strcpy_s(buffer, "");
 			MultiByteToWideChar(CP_ACP, 0, buffer, -1, wszSymName, ARRAYSIZE(wszSymName));
 
 

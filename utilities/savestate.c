@@ -763,7 +763,7 @@ void LoadTIMER(SAVESTATE_t* save, timerc* time) {
 	CHUNK_t* chunk = FindChunk(save,TIMER_tag);
 	chunk->pnt = 0;
 	time->tstates	= ReadLong(chunk);
-	time->freq		= ReadLong(chunk);
+	time->freq		= (unsigned long) ReadLong(chunk);
 	time->elapsed	= ReadDouble(chunk);
 	time->lasttime	= ReadDouble(chunk);	// this isn't used.
 }
@@ -921,8 +921,13 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 		ofile = fopen(fn,"wb");
 	} else {
 		tmpnam(tmpfn);
+#ifdef WINVER
+		strcpy_s(temp_save, getenv("appdata"));
+		strcat_s(temp_save, tmpfn);
+#else
 		strcpy(temp_save, getenv("appdata"));
 		strcat(temp_save, tmpfn);
+#endif
 		ofile = fopen(temp_save,"wb");
 	}
 		
@@ -998,8 +1003,13 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 	if (strncmp(DETECT_CMP_STR,string,8)==0) {
 		i = fgetc(ifile);
 		tmpnam(tmpfn);
+#ifdef WINVER
+		strcpy_s(temp_save, getenv("appdata"));
+		strcat_s(temp_save, tmpfn);
+#else
 		strcpy(temp_save, getenv("appdata"));
 		strcat(temp_save, tmpfn);
+#endif
 		tmpfile = fopen(temp_save,"wb");
 		if (!tmpfile) {
 			puts("Could not open tmp file for write");

@@ -147,7 +147,8 @@ void NullTiFile(TIFILE_t* tifile) {
 TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 	FILE * infile = NULL;
 	TIFILE_t * tifile;
-	int i,tmp;
+	size_t i;
+	int tmp;
 	unsigned char * ptr;
 	char string[8];
 
@@ -324,7 +325,7 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 						for( i=0;(i < Record.DataSize) && (( i + Record.Address ) < 0x8000); i++) {
 							tifile->flash->data[CurrentPage][i+Record.Address - 0x4000] = Record.Data[i];
 						}
-						if ( HighestAddress < i+Record.Address ) HighestAddress = i+Record.Address;
+						if ( HighestAddress < i+Record.Address ) HighestAddress = (int) (i+Record.Address);
 					}
 					break;
 				case 01:

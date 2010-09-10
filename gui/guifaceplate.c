@@ -39,7 +39,7 @@ int DrawFaceplateRegion(HDC hdc) {
 	// Copy points and their reverses to the new array
 	memcpy(ptRgn, ptRgnEdge, (nPoints / 2) * sizeof(POINT));
 
-	int i;
+	u_int i;
 	for (i = nPoints/2; i < nPoints; i++) {
 		ptRgn[i].x = 350 - ptRgnEdge[nPoints - i - 1].x;
 		ptRgn[i].y = ptRgnEdge[nPoints - i - 1].y;
@@ -63,7 +63,7 @@ HRGN GetRegion()
 	// Copy points and their reverses to the new array
 	memcpy(ptRgn, ptRgnEdge, (nPoints / 2) * sizeof(POINT));
 
-	int i;
+	u_int i;
 	for (i = nPoints/2; i < nPoints; i++) {
 		ptRgn[i].x = 350 - ptRgnEdge[nPoints - i - 1].x;
 		ptRgn[i].y = ptRgnEdge[nPoints - i - 1].y;

@@ -169,8 +169,8 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 		}
 
 		clock_t this_time = clock();
-		clock_t displayTPF = 1000/displayFPS;
-		if (cpu->imode == 2) displayTPF = 1000/70.0f;
+		clock_t displayTPF = (clock_t) (1000/displayFPS);
+		if (cpu->imode == 2) displayTPF = (clock_t) (1000/70.0f);
 		// where we should be minus where we are
 		difference += ((last_time + displayTPF) - this_time);
 		last_time = this_time;
@@ -266,7 +266,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			SendMessage(trbSteady, TBM_SETRANGE,
 				(WPARAM) TRUE,
 				(LPARAM) MAKELONG(STEADY_FREQ_MIN, STEADY_FREQ_MAX));
-			SendMessage(trbSteady, TBM_SETPOS, TRUE, 1.0 / lcd->steady_frame);
+			SendMessage(trbSteady, TBM_SETPOS, TRUE, MAKELPARAM(1.0 / lcd->steady_frame, 0));
 			EnableWindow(trbSteady, lcd->mode == MODE_STEADY);
 
 			trbFPS = GetDlgItem(hwndDlg, IDC_TRBDISPLAYFPS);
@@ -274,7 +274,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 						    (WPARAM) TRUE,
 						    (LPARAM) MAKELONG(20, 80));
 			SendMessage(trbFPS, TBM_SETTICFREQ, 10, 0);
-			SendMessage(trbFPS, TBM_SETPOS, TRUE, displayFPS);
+			SendMessage(trbFPS, TBM_SETPOS, TRUE, MAKELPARAM(displayFPS, 0));
 
 			SetWindowPos(imgDisplayPreview, NULL, 0, 0, 196, 132, SWP_NOMOVE | SWP_NOZORDER);
 			if (hdlThread != NULL) TerminateThread(hdlThread, 0);
@@ -306,7 +306,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 						return TRUE;
 					case IDC_CBODISPLAYSOURCE: {
 						static int last_index = 0;
-						int index = SendMessage(cbSource, CB_GETCURSEL, 0, 0);
+						int index = (int) SendMessage(cbSource, CB_GETCURSEL, 0, 0);
 						BOOL bEnable = TRUE;
 						HWND stcDisplayOption = GetDlgItem(hwndDlg, IDC_STCDISPLAYOPTION);
 						switch (index) {
@@ -350,7 +350,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 		case WM_HSCROLL:
 		case WM_VSCROLL:
 			if ((HWND) lParam == trbShades) {
-				lcd->shades = SendMessage(trbShades, TBM_GETPOS, 0, 0) - 1;
+				lcd->shades = (u_int) SendMessage(trbShades, TBM_GETPOS, 0, 0) - 1;
 				PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 				return TRUE;
 			}
@@ -360,7 +360,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 				return TRUE;
 			}
 			if ((HWND) lParam == trbFPS) {
-				displayFPS = SendMessage(trbFPS, TBM_GETPOS, 0, 0);
+				displayFPS = (double) SendMessage(trbFPS, TBM_GETPOS, 0, 0);
 				return TRUE;
 			}
 			return FALSE;
@@ -409,10 +409,14 @@ All Files (*.*)\0*.*\0\0";
 	if (bSave) Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
 
 	int i;
-	for (i = strlen(gif_file_name)-1; i && gif_file_name[i] != '\\'; i--);
+	for (i = (int) strlen(gif_file_name)-1; i && gif_file_name[i] != '\\'; i--);
 
 	if (i) {
+#ifdef WINVER
+		strcpy_s(lpstrFile, gif_file_name + i + 1);
+#else
 		strcpy(lpstrFile, gif_file_name + i + 1);
+#endif
 	} else {
 		lpstrFile[0] = '\0';
 	}
@@ -442,7 +446,11 @@ All Files (*.*)\0*.*\0\0";
 	if (!GetSaveFileName(&ofn)) {
 		return 1;
 	}
+#ifdef WINVER
+	strcpy_s(gif_file_name, lpstrFile);
+#else
 	strcpy(gif_file_name, lpstrFile);
+#endif
 	return 0;
 }
 
@@ -511,7 +519,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 						}
 						case IDC_CHKCSTMSKIN: {
 							BOOL customSkinSetting;
-							customSkinSetting = SendMessage(chkCustom, BM_GETCHECK, 0, 0);
+							customSkinSetting = (BOOL) SendMessage(chkCustom, BM_GETCHECK, 0, 0);
 							SkinOptionsToggleCustomSkin(hwndDlg, customSkinSetting);
 							break;
 						}
@@ -603,12 +611,12 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
 					int i;
-					exit_save_state = SendMessage(saveState_check, BM_GETCHECK, 0, 0);
-					load_files_first = SendMessage(loadFiles_check, BM_GETCHECK, 0, 0);
+					exit_save_state = (BOOL) SendMessage(saveState_check, BM_GETCHECK, 0, 0);
+					load_files_first = (BOOL) SendMessage(loadFiles_check, BM_GETCHECK, 0, 0);
 					//we need to persist this immediately
 					SaveWabbitKey("load_files_first", REG_DWORD, &load_files_first);
 #ifdef WITH_BACKUPS
-					do_backups = SendMessage(doBackups_check, BM_GETCHECK, 0, 0);
+					do_backups = (BOOL) SendMessage(doBackups_check, BM_GETCHECK, 0, 0);
 					if (!do_backups) {
 						for (i = 0; i < MAX_CALCS; i++)
 							free_backups(i);
@@ -649,7 +657,11 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 			int fpsMax = 100/delayMin;
 			HWND hwndMaxSpeed = GetDlgItem(hwndDlg, IDC_STCGIFMAX);
 			TCHAR lpszMax[10];
+#ifdef WINVER
+			sprintf_s(lpszMax, "%d", fpsMax);
+#else
 			sprintf(lpszMax, "%d", fpsMax);
+#endif
 			SendMessage(hwndMaxSpeed, WM_SETTEXT, 0, (LPARAM) lpszMax);
 
 
@@ -675,7 +687,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
     		switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
 
-					int speedPos = SendMessage(hwndSpeed, TBM_GETPOS, 0, 0);
+					int speedPos = (int) SendMessage(hwndSpeed, TBM_GETPOS, 0, 0);
 					//printf("spedpos: %d\n",speedPos);
 
 					if (gif_write_state == GIF_IDLE) {
@@ -818,7 +830,11 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						case IDC_BTNROMBROWSE: {
 							char lpszFile[MAX_PATH] = "\0";
 							if (!GetROMName(lpszFile)) {
+#ifdef WINVER
+								strcpy_s(calcs[SlotSave].rom_path, lpszFile);
+#else
 								strcpy(calcs[SlotSave].rom_path, lpszFile);
+#endif
 								//SendMessage(calcs[gslot].hwndLCD, WM_COMMAND, ECM_CALCRELOAD, 0);
 								SendMessage(hwnd, WM_USER, 0, 0);
 							}
@@ -850,7 +866,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		case WM_NOTIFY:
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
-					exit_save_state = SendMessage(saveState_check, BM_GETCHECK, 0, 0);
+					exit_save_state = (BOOL) SendMessage(saveState_check, BM_GETCHECK, 0, 0);
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -867,7 +883,11 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			SendMessage(edtRom_version, WM_SETTEXT, 0, (LPARAM) calcs[SlotSave].rom_version);
 			SendMessage(edtRom_model, WM_SETTEXT, 0, (LPARAM) CalcModelTxt[calcs[SlotSave].model]);
 			char szRomSize[16];
+#ifdef WINVER
+			sprintf_s(szRomSize, "%0.1f KB", (float) calcs[SlotSave].cpu.mem_c->flash_size/1024.0f);
+#else
 			sprintf(szRomSize, "%0.1f KB", (float) calcs[SlotSave].cpu.mem_c->flash_size/1024.0f);
+#endif
 			SendMessage(edtRom_size, WM_SETTEXT, 0, (LPARAM) szRomSize);
 			if (hbmTI83P) DeleteObject(hbmTI83P);
 			switch (calcs[SlotSave].model) {
@@ -926,7 +946,7 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		case WM_COMMAND: {
 			switch(HIWORD(wParam)) {
 				case EN_CHANGE: {
-					BOOL enable = SendMessage(hHotKey, HKM_GETHOTKEY, 0 , 0);
+					BOOL enable = (BOOL) SendMessage(hHotKey, HKM_GETHOTKEY, 0 , 0);
 					EnableWindow(GetDlgItem(hwnd, IDC_ASSIGN_ACCEL), enable);
 					break;
 				}
@@ -945,7 +965,7 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					if (hSender == GetDlgItem(hwnd, IDC_ASSIGN_ACCEL)) {
 						int i;
 						WORD wVirtualKeyCode, wModifiers;
-						DWORD key = SendMessage(hHotKey, HKM_GETHOTKEY, 0, 0);
+						DWORD key = (DWORD) SendMessage(hHotKey, HKM_GETHOTKEY, 0, 0);
 						wVirtualKeyCode = LOBYTE(LOWORD(key));
 						wModifiers = HIBYTE(LOWORD(key));
 						int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED);
@@ -957,7 +977,7 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 							lvi.iItem = active;
 							lvi.mask = LVIF_PARAM;
 							ListView_GetItem(hListMenu, &lvi);
-							int newCmd = lvi.lParam;
+							int newCmd = (int) lvi.lParam;
 							for (i=0; i < nUsed; i++)
 								if(hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == wVirtualKeyCode)
 									break;
@@ -1041,7 +1061,7 @@ void ChangeMenuCommands(HWND hSender) {
 	li.mask = LVIF_TEXT;
 	li.iSubItem = 0;
 	li.cchTextMax = 64;
-	cur_sel = SendMessage(hSender, CB_GETCURSEL, 0, 0);
+	cur_sel = (int) SendMessage(hSender, CB_GETCURSEL, 0, 0);
 	HMENU hSubMenu = GetSubMenu(hMenu, cur_sel);
 	ListView_DeleteAllItems(hListMenu);
 	memset(buffer, 0, ARRAYSIZE(buffer));
@@ -1076,10 +1096,10 @@ char* NameFromVKey(UINT nVK) {
 	memset(str, 0, 80);
 	GetKeyNameText(nScanCode << 16, str, 79);
 	// these key names are capitalized and look a bit daft
-	int len = strlen(str);
+	int len = (int) strlen(str);
 	if(len > 1) {
 		LPTSTR p2 = CharNext(str);
-		CharLowerBuff(p2, len - (p2 - str) );
+		CharLowerBuff(p2, (DWORD) (len - (p2 - str)));
 	}
 	return str; // internationalization ready, sweet!
 }
@@ -1094,7 +1114,7 @@ void ChangeCommand(HWND hwnd) {		// new command selected
 		lvi.mask = LVIF_PARAM;
 		lvi.iItem = active;
 		ListView_GetItem(hListMenu, &lvi);
-		UINT cmd = lvi.lParam;		// add all accelerators registered for this command
+		u_int cmd = (u_int) lvi.lParam;		// add all accelerators registered for this command
 		for(i = 0; i < nUsed; i++) {
 			if(hNewAccels[i].cmd == cmd) {
 				name = (char*)NameFromAccel(hNewAccels[i]);
@@ -1113,18 +1133,34 @@ void ChangeCommand(HWND hwnd) {		// new command selected
 }
 
 char* NameFromAccel(ACCEL key) {
-	char* name = (char*)malloc(80);
+	char *name = (char*) malloc(80);
 	memset(name, 0, 80);
 	if(key.fVirt & FCONTROL)
+#ifdef WINVER
+		strcat_s(name, strlen(name), "Ctrl + ");
+#else
 		strcat(name, "Ctrl + ");
+#endif
 	if(key.fVirt & FALT)
+#ifdef WINVER
+		strcat_s(name, strlen(name), "Alt + ");
+#else
 		strcat(name, "Alt + ");
+#endif
 	if(key.fVirt & FSHIFT)
+#ifdef WINVER
+		strcat_s(name, strlen(name), "Shift + ");
+#else
 		strcat(name, "Shift + ");
+#endif
 	// FNOINVERT is useless, backward compatibility
 	if(key.fVirt & FVIRTKEY) {
-		char* temp = (char*)NameFromVKey(key.key);
+		char* temp = (char*) NameFromVKey(key.key);
+#ifdef WINVER
+		strcat_s(name, strlen(name), temp);
+#else
 		strcat(name, temp);
+#endif
 		free(temp);
 	} else {
 		// key field is an ASCII key code. (i never saw one of these)
@@ -1134,7 +1170,7 @@ char* NameFromAccel(ACCEL key) {
 		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, &ca, 1, &cu, 1);
 		name += cu;
 #else
-		name += (char)key.key;
+		name += key.key;
 #endif
 	}
 	return name;
@@ -1156,18 +1192,27 @@ void RecurseAddItems(HMENU hMenu, char *base) {
 	MENUITEMINFO mi;
 	mi.cbSize = sizeof(MENUITEMINFO);
 	mi.fMask = MIIM_ID | MIIM_SUBMENU;
-	char *name, *temp;
+	char *name, temp[64];
 	for(i = 0; i < nItems; i++)	{
-		temp = (char*)malloc(64);
+		//temp = (char*)malloc(64);
 		GetMenuItemInfo(hMenu, i, TRUE, &mi); 		// by position
 		if(!mi.wID) 								// separators excluded
 			continue;
-		name = (char*)GetFriendlyMenuText(hMenu, i, 0);
+		name = (char*) GetFriendlyMenuText(hMenu, i, 0);
+#ifdef WINVER
+		strcpy_s(temp, base);
+		strcat_s(temp, name);
+#else
 		strcpy(temp, base);
 		strcat(temp, name);
+#endif
 		free(name);
 		if(mi.hSubMenu) {
+#ifdef WINVER
+			strcat_s(temp, " > ");
+#else
 			strcat(temp, " > ");
+#endif
 			RecurseAddItems(mi.hSubMenu, temp);
 			free(temp);
 		} else {

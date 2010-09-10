@@ -26,11 +26,10 @@ extern HINSTANCE g_hInst;
 //creates a rect around the button
 static RECT FindButtonRect(HDC hdcKeymap, POINT *pt) {
 	RECT brect = {0,0,0,0};
-	RECT cr;
-	float mult;
-	int width,height,x,y,i;
-	int bit,group;
-	COLORREF colormatch,colortest;
+	int mult = 1;
+	int width,height, x, y;
+	int bit, group;
+	COLORREF colormatch, colortest;
 	
 
 	colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
@@ -41,12 +40,6 @@ static RECT FindButtonRect(HDC hdcKeymap, POINT *pt) {
 	bit		= GetBValue(colormatch)>>4;
 	group	= GetGValue(colormatch)>>4;
 
-	//if ((cr.bottom-cr.top)>=SKIN_HEIGHT-10) {
-		mult = 1.0f;
-	//} else {
-	//	mult = 0.75f;
-	//}
-	
 	
 	brect.right		= ButtonCenter[bit+(group<<3)].x*mult;
 	brect.left		= ButtonCenter[bit+(group<<3)].x*mult;
@@ -95,10 +88,9 @@ static RECT FindButtonRect(HDC hdcKeymap, POINT *pt) {
 	
 
 void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state) {
-	RECT r;
 	RECT brect;
 	COLORREF colormatch;
-	int x,y,width,height,w2,h2;
+	int x, y, width, height;
 
 	colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
 	if (GetRValue(colormatch) !=0) return;
@@ -161,12 +153,12 @@ void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state) {
 void DrawButtonLockAll(HDC hdcSkin, HDC hdcKeymap) {
 	keypad_t *keypad = calcs[gslot].cpu.pio.keypad;
 	int group,bit;
-	float mult;
+	int mult;
 	//RECT cr;
 	POINT pt;
 	//GetClientRect(hwnd, &cr);
 	//if ((cr.bottom-cr.top)>=SKIN_HEIGHT-10) 
-	mult = 1.0f;
+	mult = 1;
 	//else mult = 0.75f;
 	for(group=0;group<7;group++) {
 		for(bit=0;bit<8;bit++) {
