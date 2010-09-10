@@ -29,10 +29,18 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 					if (result[0] != '$') {
 						label_struct *label;
 						label = lookup_label(result);
+#ifdef WINVER
+						if (label == NULL) sscanf_s(result, "%x", &goto_addr);
+#else
 						if (label == NULL) sscanf(result, "%x", &goto_addr);
+#endif
 						else goto_addr = label->addr;
 					} else {
+#ifdef WINVER
+						sscanf_s(result+1, "%x", &goto_addr);
+#else
 						sscanf(result+1, "%x", &goto_addr);
+#endif
 					}
 					EndDialog(hwndDlg, IDOK);
 					return TRUE;
@@ -64,20 +72,38 @@ int ValueSubmit(HWND hwndDlg, char *loc, int size) {
 		switch (format) {
 		case HEX2:
 		case HEX4:
+#ifdef WINVER
+			sscanf_s(result, "%x", (int*) value);
+#else
 			sscanf(result, "%x", (int*) value);
+#endif
 			break;
 		case FLOAT2:
 		case FLOAT4:
 			if (size == sizeof(float))
+#ifdef WINVER
+				sscanf_s(result, "%f", (float *) value);
+			else
+				sscanf_s(result, "%lf", (double *) value);
+#else
 				sscanf(result, "%f", (float *) value);
 			else
 				sscanf(result, "%lf", (double *) value);
+#endif
 			break;
 		case DEC:
+#ifdef WINVER
+			sscanf_s(result, "%d", (int*) value);
+#else
 			sscanf(result, "%d", (int*) value);
+#endif
 			break;
 		case CHAR1:
+#ifdef WINVER
+			sscanf_s(result, "%c", (char*) value);
+#else
 			sscanf(result, "%c", (char*) value);
+#endif
 			break;
 		}
 	} else {

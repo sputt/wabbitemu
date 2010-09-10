@@ -843,7 +843,12 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						case IDC_BTN1: {
 							char lpszFile[MAX_PATH] = "\0";
 							if (!GetExportROMName(lpszFile)) {
+#ifdef WINVER
+								FILE* outfile;
+								fopen_s(&outfile, lpszFile,"wb");
+#else
 								FILE* outfile = fopen(lpszFile,"wb");
+#endif
 								char* rom = (char *) calcs[SlotSave].mem_c.flash;
 								int size = calcs[SlotSave].mem_c.flash_size;
 								if (size!=0 && rom!=NULL && outfile!=NULL) {

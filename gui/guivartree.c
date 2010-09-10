@@ -105,7 +105,11 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						free (fd);
 						break;
 					}
+#ifdef WINVER
+					fopen_s(&file, export_file_name, "wb");
+#else
 					file = fopen(export_file_name, "wb");
+#endif
 					fwrite(buf, 1, fd->nFileSizeLow, file);
 					fclose(file);
 					free(buf);
@@ -357,7 +361,11 @@ void RefreshTreeView(BOOL New) {
 		
 		/*It's an 83+ compatible with a known rom(hopefully)*/
 		if (calcs[slot].active && calcs[slot].model>=TI_83P &&
+#ifdef WINVER
+			sscanf_s(calcs[slot].rom_version, "%f", &ver) == 1) {
+#else
 			sscanf(calcs[slot].rom_version,"%f",&ver) == 1) {
+#endif
 				
 
 			/* This slot has not yet been initlised. */

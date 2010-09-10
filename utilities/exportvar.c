@@ -57,11 +57,15 @@ unsigned char type_ext[][4] = {
 
 
 
-MFILE *mopen(const char *filename,const char * mode ) {
+MFILE *mopen(const char *filename, const char * mode) {
 	MFILE* mf= (MFILE *) malloc(sizeof(MFILE));
-	memset(mf,0,sizeof(MFILE));
+	memset(mf, 0, sizeof(MFILE));
 	if (filename) {
+#ifdef WINVER
+		fopen_s(&mf->stream, filename, mode);
+#else
 		mf->stream = fopen(filename,mode);
+#endif
 		if (!mf->stream) {
 			free(mf);
 			return NULL;

@@ -336,7 +336,11 @@ static void link_RTS(CPU_t *cpu, TIFILE_t *tifile, int dest) {
 	var_hdr.length = link_endian(tifile->var->length);
 	var_hdr.type_ID = tifile->var->vartype;
 	memset(var_hdr.name, 0, sizeof(var_hdr.name));
+#ifdef WINVER
+	strncpy_s(var_hdr.name, (char *) tifile->var->name, 8);
+#else
 	strncpy(var_hdr.name, (char *) tifile->var->name, 8);
+#endif
 	var_hdr.version = tifile->var->version;
 	if (dest == SEND_RAM) {
 		var_hdr.type_ID2 = 0x00;
@@ -769,18 +773,30 @@ int ReadIntelHex(FILE* ifile, intelhex_t *ihex) {
 	if (!fgets((char*)str, 580, ifile))
 		return 0;
 	if (str[0] == 0) memcpy(str, str+1, 579);
+#ifdef WINVER
+	if (sscanf_s((const char*)str, ":%02X%04X%02X%*s", &size, &addr, &type) != 3)
+#else
 	if (sscanf((const char*)str, ":%02X%04X%02X%*s", &size, &addr, &type) != 3)
+#endif
 		return 0;
 	ihex->size = size;
 	ihex->address = addr;
 	ihex->type = type;
 	memset(ihex->data, 0x00, 256);
 	for (i = 0; i < size; i++) {
+#ifdef WINVER
+		if (sscanf_s((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
+#else
 		if (sscanf((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
+#endif
 			return 0;
 		ihex->data[i] = byte;
 	}
+#ifdef WINVER
+	if (sscanf_s((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
+#else
 	if (sscanf((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
+#endif
 		return 0;
 	ihex->chksum = byte;
 	return 1;

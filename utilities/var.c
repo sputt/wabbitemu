@@ -183,8 +183,11 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 	}
 
 
-
-	infile = fopen(FileName,"rb");
+#ifdef WINVER
+	fopen_s(&infile, FileName, "rb");
+#else
+	infile = fopen(FileName, "rb");
+#endif
 	if (infile == NULL) {
 		//puts("Couldn't open");
 		return NULL;
@@ -298,21 +301,33 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 				return NULL;
 			}
 			if (linebuf[0] == 0) memcpy(linebuf, linebuf+1, 579);
+#ifdef WINVER
+			reads = sscanf_s(linebuf,":%02X%04X%02X%*s",&Record.DataSize,&Record.Address,&Record.Type);
+#else
 			reads = sscanf(linebuf,":%02X%04X%02X%*s",&Record.DataSize,&Record.Address,&Record.Type);
+#endif
 			if (reads < 3) {
 				fclose(infile);
 				FreeTiFile(tifile);
 				return NULL;
 			}
 			for(i=0; i < Record.DataSize; i++) {
+#ifdef WINVER
+				reads = sscanf_s(linebuf+9+(i*2),"%02X",&Record.Data[i]);
+#else
 				reads = sscanf(linebuf+9+(i*2),"%02X",&Record.Data[i]);
+#endif
 				if (reads < 1) {
 					fclose(infile);
 					FreeTiFile(tifile);
 					return NULL;
 				}
 			}
+#ifdef WINVER
+			reads = sscanf_s(linebuf+9+(Record.DataSize*2),"%02X",&Record.CheckSum);
+#else
 			reads = sscanf(linebuf+9+(Record.DataSize*2),"%02X",&Record.CheckSum);
+#endif
 			if (reads < 1) {
 				fclose(infile);
 				FreeTiFile(tifile);
