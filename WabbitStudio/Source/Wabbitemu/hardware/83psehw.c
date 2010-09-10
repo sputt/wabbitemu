@@ -792,9 +792,9 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 					break;
 				case 2:
 				case 3:
-					while( timer->lastTstates+((long long) timer->divsor) < tc_tstates(cpu->timer_c) ) {
+					while( timer->lastTstates+((unsigned long long) timer->divsor) < (unsigned long long) tc_tstates(cpu->timer_c) ) {
 						
-						timer->lastTstates+= (long long) timer->divsor;
+						timer->lastTstates+= (unsigned long long) timer->divsor;
 						timer->count--;
 						if (!timer->count) {
 							if (!timer->underflow) {

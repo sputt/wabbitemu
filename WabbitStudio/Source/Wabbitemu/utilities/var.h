@@ -31,7 +31,7 @@ typedef struct TIFLASH {
 	unsigned char * data[256];
 //	unsigned short chksum;
 
-	int pages;		//total number of pages.
+	unsigned int pages;		//total number of pages.
 
 } TIFLASH_t;
 

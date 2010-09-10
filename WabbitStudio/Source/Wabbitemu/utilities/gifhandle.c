@@ -16,14 +16,18 @@
 
 
 char *generate_gif_name(char *fn, int num, char *dest) {
-	int i;
+	size_t i;
 	for (i = strlen(fn) - 1; 
 	 	 i && fn[i] != '.';
 	 	 i--);
 	 	 
 	if (i) fn[i] = '\0';
 	
+#ifdef WINVER
+	sprintf_s(dest, strlen(dest), "%s%d.gif", fn, num);
+#else
 	sprintf(dest, "%s%d.gif", fn, num);
+#endif
 	
 	if (i) fn[i] = '.';
 	return dest;
@@ -39,7 +43,7 @@ unsigned char* GIFGREYLCD() {
 	for (row = 0; row < LCD_HEIGHT; row++) {
 		for (col = 0; col < LCD_MEM_WIDTH; col++) {
 			double p0=0,p1=0,p2=0,p3=0,p4=0,p5=0,p6=0,p7=0;
-			int i;
+			u_int i;
 			
 			for (i = 0; i < lcd->shades; i++) {
 				u_int u = lcd->queue[i][row * 16 + col];
@@ -98,10 +102,8 @@ unsigned char* GIFGREYLCD() {
 
 void handle_screenshot() {
 #ifdef WINVER
-	FILE* testfile;
-	int result;
 	LCD_t* lcd = calcs[gslot].cpu.pio.lcd;
-	int i, j, s, marked;
+	int i, j;
 	static char gif_fn_backup[MAX_PATH];
 	BOOL running_backup = calcs[gslot].running;
 
@@ -116,7 +118,11 @@ void handle_screenshot() {
 		}
 		case GIF_START:
 		{
+#ifdef WINVER
+			strcpy_s(gif_fn_backup, gif_file_name);
+#else
 			strcpy(gif_fn_backup, gif_file_name);
+#endif
 			
 			if (gif_autosave) {
 				/* do file save */
@@ -129,8 +135,11 @@ void handle_screenshot() {
 						test = fopen(fn, "r");
 						if (test) fclose(test);
 					}
-					
+#ifdef WINVER
+					strcpy_s(gif_file_name, fn);
+#else
 					strcpy(gif_file_name, fn);
+#endif
 				}
 			} else {
 #ifndef _WINDLL
@@ -200,8 +209,11 @@ void handle_screenshot() {
 			//WriteRIFFIndex();
 			gif_newframe = 1;
 			gif_file_num++;
-			
+#ifdef WINVER
+			strcpy_s(gif_file_name, gif_fn_backup);
+#else
 			strcpy(gif_file_name, gif_fn_backup);
+#endif
 			break;
 		}
 	}

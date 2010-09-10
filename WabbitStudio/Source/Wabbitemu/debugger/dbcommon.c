@@ -52,7 +52,7 @@ int ValueSubmit(HWND hwndDlg, char *loc, int size) {
 	int got_line;
 	if (hwndDlg == NULL) return 0;
 	((WORD*)result)[0] = sizeof(result);	//string size
-	got_line = SendMessage(hwndDlg, EM_GETLINE, (WPARAM) 0, (LPARAM) result);
+	got_line = (int) SendMessage(hwndDlg, EM_GETLINE, (WPARAM) 0, (LPARAM) result);
 	
 	VALUE_FORMAT format = (VALUE_FORMAT) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	

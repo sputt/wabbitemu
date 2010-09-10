@@ -27,7 +27,11 @@ void sprint_addr(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	char s[64];
 
 	SetTextColor(hdc, RGB(0, 0, 0));
+#ifdef WINVER
+	sprintf_s(s, "%04X", zinf->addr);
+#else
 	sprintf(s, "%04X", zinf->addr);
+#endif
 
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -41,24 +45,29 @@ void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	if (zinf->size == 0) return;
 
 	for (j = 0; j < zinf->size; j++) {
-		sprintf(s + (j*2), "%02x",
-			mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf->addr+j));
+#ifdef WINVER
+		sprintf_s(s + (j*2), strlen(s + (j*2)), "%02x", mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf->addr+j));
+#else
+		sprintf(s + (j*2), "%02x", mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf->addr+j));
+#endif
 	}
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 }
 
 void sprint_command(HDC hdc, Z80_info_t *zinf, RECT *r) {
-
-	mysprintf(hdc, zinf, r, da_opcode[zinf->index].format,
-		zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+	mysprintf(hdc, zinf, r, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
 }
 
 void sprint_size(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	char s[64];
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (zinf->size == 0) return;
+#ifdef WINVER
+	sprintf_s(s, "%d", zinf->size);
+#else
 	sprintf(s, "%d", zinf->size);
+#endif
 
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -69,11 +78,17 @@ void sprint_clocks(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (da_opcode[zinf->index].clocks != -1) {
 		if (da_opcode[zinf->index].clocks_cond) {
-			sprintf(s, "%d/%d",
-				da_opcode[zinf->index].clocks,
-				da_opcode[zinf->index].clocks_cond);
+#ifdef WINVER
+			sprintf_s(s, "%d/%d", da_opcode[zinf->index].clocks, da_opcode[zinf->index].clocks_cond);
+#else
+			sprintf(s, "%d/%d", da_opcode[zinf->index].clocks, da_opcode[zinf->index].clocks_cond);
+#endif
 		} else {
+#ifdef WINVER
+			sprintf_s(s, "%d", da_opcode[zinf->index].clocks);
+#else
 			sprintf(s, "%d", da_opcode[zinf->index].clocks);
+#endif
 		}
 	} else {
 		*s = '\0';
@@ -300,7 +315,7 @@ void CPU_stepover(CPU_t *cpu) {
 
 void disasmhdr_show(HWND hwndHeader, disasmhdr_t* hdrs) {
 	int lpiNewArray[8];
-	int iSize = SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
+	int iSize = (int) SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
 	SendMessage(hwndHeader, HDM_GETORDERARRAY, (WPARAM) iSize, (LPARAM) lpiNewArray);
 }
 
@@ -320,13 +335,13 @@ int disasmhdr_insert(HWND hwndHeader, disasmhdr_t* dhdr) {
 	hdi.fmt = HDF_LEFT | HDF_STRING;
 	hdi.lParam = dhdr->index;
 
-	iSize = SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
+	iSize = (int) SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
 	return Header_InsertItem(hwndHeader, iSize + 1, &hdi);
 }
 
 int disasmhdr_find(HWND hwndHeader, int index) {
 	HDITEM hdi;
-	int iSize = SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
+	int iSize = (int) SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
 	int i;
 
 	hdi.mask = HDI_LPARAM;
@@ -354,7 +369,7 @@ static disasmpane_settings_t *dps;
 static Z80_info_t zinf[256];
 
 static int addr_to_index(int addr) {
-	int i = 0;
+	u_int i = 0;
 	for (i = 0; i < dps->nRows; i++) {
 		if (zinf[i].addr == addr)
 			return i;
@@ -541,7 +556,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_NOTIFY: {
-			int iSize = SendMessage(((NMHDR*) lParam)->hwndFrom, HDM_GETITEMCOUNT, 0, 0);
+			int iSize = (int) SendMessage(((NMHDR*) lParam)->hwndFrom, HDM_GETITEMCOUNT, 0, 0);
 			static int lpiArray[8];
 			HWND hwndHeader = ((NMHDR*)lParam)->hwndFrom;
 			switch (((NMHDR*) lParam)->code) {
@@ -567,7 +582,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 
  					GetClientRect(hwnd, &rc);
- 					iCol = hdi.lParam;
+ 					iCol = (int) hdi.lParam;
  					if (lphdi->cxy > rc.right - rc.left) lphdi->cxy = rc.right - rc.left - 6;
 
  					if (iCol == dpsDisasm && lphdi->cxy < COLUMN_X_OFFSET*5) {
@@ -657,7 +672,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			int iItem;
 			RECT tr;
 			TRIVERTEX vert[2];
-			int end_i;
+			u_int end_i;
 			GRADIENT_RECT gRect;
 
 			GetClientRect(hwnd, &rc);
@@ -671,7 +686,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
 
 
-			iSize = SendMessage(dps->hwndHeader, HDM_GETITEMCOUNT, 0, 0);
+			iSize = (int) SendMessage(dps->hwndHeader, HDM_GETITEMCOUNT, 0, 0);
 			if (iSize == 0) return 0;
 			SendMessage(dps->hwndHeader, HDM_GETORDERARRAY, (WPARAM) iSize, (LPARAM) lpiArray);
 
@@ -686,7 +701,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				int iCol;
 
 				SendMessage(dps->hwndHeader, HDM_GETITEM, SendMessage(dps->hwndHeader, HDM_ORDERTOINDEX, iItem, 0), (LPARAM) &hdi);
-				iCol = hdi.lParam;
+				iCol = (int) hdi.lParam;
 				if (iCol != -1) {
 					max_right += dps->hdrs[iCol].cx;
 					MoveToEx(hdc, max_right - 1, cyHeader, NULL);
@@ -814,7 +829,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
  				for (iItem = 0; iItem < iSize; iItem++, tr.left = tr.right) {
 					int iCol;
 					SendMessage(dps->hwndHeader, HDM_GETITEM, SendMessage(dps->hwndHeader, HDM_ORDERTOINDEX, iItem, 0), (LPARAM) &hdi);
-					iCol = hdi.lParam;
+					iCol = (int) hdi.lParam;
 					if (iCol != -1) {
 						tr.right = tr.left + dps->hdrs[iCol].cx;
 						SelectObject(hdc, dps->hdrs[iCol].hfont);
@@ -857,7 +872,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
 				case DB_DISASM: {
-					unsigned int addr = lParam;
+					u_int addr = (u_int) lParam;
 					disassemble(&calcs[DebuggerSlot].mem_c, addr, dps->nRows, zinf);
 					break;
 				}
@@ -907,7 +922,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case DB_GOTO: {
 					int result;
-					result = DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC)GotoDialogProc);
+					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC)GotoDialogProc);
 					if (result == IDOK) SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, goto_addr), 0);
 					dps->nSel = goto_addr;
 					SetFocus(hwnd);
@@ -1042,7 +1057,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dps->iHot = -1;
 				}
 			} else if (IsDragging == FALSE) {
-				if (++dwDragCountdown < GetSystemMetrics(SM_CXDRAG)) return 0;
+				if (++dwDragCountdown < (DWORD) GetSystemMetrics(SM_CXDRAG)) return 0;
 
 				IsDragging = TRUE;
 			}
@@ -1092,10 +1107,17 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					total_cond += da_opcode[zinf[j].index].clocks_cond;
 				}
 
+#ifdef WINVER
+				sprintf_s(szTip,"$%04X : $%04X\n%d bytes\n%d/%d clocks\n",
+						zinf[dps->iSel].addr, zinf[dps->iSel+dps->NumSel-1].addr,
+						total_bytes,
+						total, total + total_cond);
+#else
 				sprintf(szTip,"$%04X : $%04X\n%d bytes\n%d/%d clocks\n",
 						zinf[dps->iSel].addr, zinf[dps->iSel+dps->NumSel-1].addr,
 						total_bytes,
 						total, total + total_cond);
+#endif
 				toolInfo.lpszText = szTip;
 				SendMessage(hwndTip, TTM_SETTOOLINFO, 0, (LPARAM) &toolInfo);
 

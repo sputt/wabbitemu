@@ -117,7 +117,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	
 	// Set all values to the defaults
 #ifdef WINVER
-	lcd->shades = QueryWabbitKey("shades");
+	lcd->shades = (u_int) QueryWabbitKey("shades");
 	lcd->mode = (LCD_MODE) QueryWabbitKey("lcd_mode");
 	lcd->steady_frame = 1.0 / QueryWabbitKey("lcd_freq");
 #else
@@ -236,7 +236,7 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 		
 		if (lcd->mode == MODE_GAME_GRAY) {
 			if (lcd->x == 0 && lcd->y == 0) {
-				int i;
+				u_int i;
 				for (i = 0; i < lcd->shades; i++) {
 					if (memcmp(lcd->display, lcd->queue[i], DISPLAY_SIZE) == 0) {
 						LCD_update_image(lcd);
@@ -322,7 +322,7 @@ static void LCD_advance_cursor(LCD_t *lcd) {
 			{
 				lcd->y++;
 				u_int bound = lcd->word_len ? 15 : 19;
-				if (lcd->y >= bound) lcd->y = 0;
+				if (((u_int) lcd->y) >= bound) lcd->y = 0;
 				break;
 			}
 		case Y_DOWN:
@@ -391,7 +391,7 @@ u_char *LCD_update_image(LCD_t *lcd) {
 	for (row = 0; row < LCD_HEIGHT; row++) {
 		for (col = 0; col < LCD_MEM_WIDTH; col++) {
 			u_int p0=0,p1=0,p2=0,p3=0,p4=0,p5=0,p6=0,p7=0;
-			int i;
+			u_int i;
 			
 			for (i = 0; i < lcd->shades; i++) {
 				u_int u = lcd->queue[i][row * 16 + col];

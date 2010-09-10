@@ -218,7 +218,11 @@ int rom_load(int slot, char * FileName) {
 		}
 
 		LoadSlot(tifile->save,slot);
+#ifdef WINVER
+		strcpy_s(calcs[slot].rom_path, FileName);
+#else
 		strcpy(calcs[slot].rom_path, FileName);
+#endif
 		FindRomVersion(	tifile->model,
 						calcs[slot].rom_version,
 						calcs[slot].mem_c.flash,
@@ -270,7 +274,11 @@ int rom_load(int slot, char * FileName) {
 
 		calcs[slot].active = TRUE;
 		memcpy(calcs[slot].rom_version, tifile->rom->version, sizeof(calcs[slot].rom_version));
+#ifdef WINVER
+		strcpy_s(calcs[slot].rom_path, FileName);
+#else
 		strcpy(calcs[slot].rom_path, FileName);
+#endif
 		calc_reset(slot);
 
 	} else slot = -1;
@@ -385,10 +393,10 @@ int calc_run_tstates(int slot, time_t tstates) {
 			oldTStates= tc_tstates((&calcs[slot].timer_c));
 		CPU_step(&calcs[slot].cpu);
 		if (calcs[slot].profiler.running) {
-			int time = tc_tstates((&calcs[slot].timer_c)) - oldTStates;
+			long long time = tc_tstates((&calcs[slot].timer_c)) - oldTStates;
 			calcs[slot].profiler.totalTime += time;
 			if(calcs[slot].cpu.pc <= calcs[slot].profiler.highAddress && calcs[slot].cpu.pc >= calcs[slot].profiler.lowAddress )
-				calcs[slot].profiler.data[calcs[slot].cpu.pc / calcs[slot].profiler.blockSize] += time;
+				calcs[slot].profiler.data[calcs[slot].cpu.pc / calcs[slot].profiler.blockSize] += (long) time;
 		}
 		if (tc_tstates((&calcs[slot].timer_c)) >= time_end) {
 			calcs[slot].time_error = tc_tstates((&calcs[slot].timer_c)) - time_end;

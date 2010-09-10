@@ -31,7 +31,7 @@ int SizeofFileList(char* FileNames) {
 }
 
 char* AppendName(char* FileNames, char* fn) {
-	int length;
+	size_t length;
 	char* pnt;
 	int i;
 	length = strlen(fn);
@@ -46,7 +46,11 @@ char* AppendName(char* FileNames, char* fn) {
 		pnt = FileNames+i;
 		memset(pnt,0,length+2);
 	}
+#ifdef WINVER
+	strcpy_s(pnt, strlen(pnt), fn);
+#else
 	strcpy(pnt,fn);
+#endif
 	return FileNames;
 }
 
@@ -105,7 +109,7 @@ void SendFile( char* FileName , int ram ) {
 					// Rebuild the applist
 					state_build_applist(&calcs[SlotSave].cpu, &calcs[SlotSave].applist);
 
-					int i;
+					u_int i;
 					for (i = 0; i < calcs[SlotSave].applist.count; i++) {
 						if (strncmp((char *) var->flash->name, calcs[SlotSave].applist.apps[i].name, 8) == 0) {
 							calcs[SlotSave].last_transferred_app = &calcs[SlotSave].applist.apps[i];
@@ -122,7 +126,11 @@ void SendFile( char* FileName , int ram ) {
 				SendMessage(calcs[SlotSave].hwndFrame, WM_USER, 0, 0);
 				break;
 			case LABEL_TYPE: {
+#ifdef WINVER
+				strcpy_s(calcs[SlotSave].labelfn,FileName);
+#else
 				strcpy(calcs[SlotSave].labelfn,FileName);
+#endif
 				printf("loading label file for slot %d: %s\n", SlotSave, FileName);
 				VoidLabels(SlotSave);
 				labels_app_load(SlotSave, calcs[SlotSave].labelfn);
@@ -215,10 +223,18 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	{
 		LOGFONT lfSegoe;
 		memset(&lfSegoe, 0, sizeof(LOGFONT));
+#ifdef WINVER
+		strcpy_s(lfSegoe.lfFaceName, "Segoe UI");
+#else
 		strcpy(lfSegoe.lfFaceName, "Segoe UI");
+#endif
 
 		if (EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
-			strcpy(lfSegoe.lfFaceName, "Tahoma");
+#ifdef WINVER
+			strcpy_s(lfSegoe.lfFaceName, "Tahoma");
+#else
+			strcpy(lfSegoe.lfFaceName, "Segoe UI");
+#endif
 			EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0);
 		}
 
@@ -272,7 +288,11 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		SelectObject(hdc, hfontSegoe);
 
 		char szFile[256];
+#ifdef WINVER
+		sprintf_s(szFile, "Sending file %d of %d", calcs[SlotSave].CurrentFile, calcs[SlotSave].FileCnt);
+#else
 		sprintf(szFile, "Sending file %d of %d", calcs[SlotSave].CurrentFile, calcs[SlotSave].FileCnt);
+#endif
 		RECT r;
 		GetClientRect(hwnd, &r);
 		r.bottom = tm.tmHeight*5/2 + tm.tmHeight;

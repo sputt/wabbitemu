@@ -189,13 +189,7 @@
     <ClCompile Include="debugger\dbreg.c">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="debugger\dbsubbar.c">
-      <Filter>Source Files\Debugger</Filter>
-    </ClCompile>
     <ClCompile Include="debugger\dbtoolbar.c">
-      <Filter>Source Files\Debugger</Filter>
-    </ClCompile>
-    <ClCompile Include="debugger\dbtrack.c">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
     <ClCompile Include="debugger\dbvalue.c">
@@ -366,9 +360,6 @@
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>
     <ClInclude Include="debugger\dbreg.h">
-      <Filter>Header Files\Debugger</Filter>
-    </ClInclude>
-    <ClInclude Include="debugger\dbsubbar.h">
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>
     <ClInclude Include="debugger\dbtoolbar.h">

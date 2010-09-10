@@ -73,10 +73,14 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 							SendMessage(edtAuthor, WM_GETTEXT, 32, (LPARAM) savestate->author);
 							SendMessage(edtComment, WM_GETTEXT, 64, (LPARAM) savestate->comment);
 							
-							int compression = SendMessage(cmbCompress, CB_GETCURSEL, 0, 0);
+							int compression = (int) SendMessage(cmbCompress, CB_GETCURSEL, 0, 0);
 							
 							WriteSave(save_filename, savestate, compression);
+#ifdef WINVER
+							strcpy_s(calcs[gslot].rom_path, save_filename);
+#else
 							strcpy(calcs[gslot].rom_path, save_filename);
+#endif
 						}
 					case IDC_BTNSAVECANCEL:
 						EndDialog(hwndDlg, wParam);
@@ -96,7 +100,11 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 INT_PTR gui_savestate(HWND hwndParent, SAVESTATE_t *save, char *filename) {
 	InitCommonControls();
 	savestate = save;
+#ifdef WINVER
+	strcpy_s(save_filename, filename);
+#else
 	strcpy(save_filename, filename);
+#endif
 	return DialogBox(
     						g_hInst, 
     						MAKEINTRESOURCE(IDD_DLGSAVESTATE), 

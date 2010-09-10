@@ -456,7 +456,7 @@ LINK_ERR link_send_app(CPU_t *cpu, TIFILE_t *tifile) {
 		return LERR_FILE;
 
 	// Get the size of the whole APP
-	int i;
+	size_t i;
 	for (i = 0, cpu->pio.link->vlink_size = 0; i < tifile->flash->pages; i++)
 		cpu->pio.link->vlink_size += tifile->flash->pagesize[i];
 
@@ -618,6 +618,52 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 #ifdef _DEBUG
 static void print_command_ID(uint8_t command_ID) {
 	char buffer[256];
+#ifdef WINVER
+	switch (command_ID) {
+		case CID_ACK:
+		strcpy_s(buffer, "ACK");
+		break;
+		case CID_CTS:
+		strcpy_s(buffer, "CTS");
+		break;
+		case CID_DATA:
+		strcpy_s(buffer, "DATA");
+		break;
+		case CID_DEL:
+		strcpy_s(buffer, "DEL");
+		break;
+		case CID_EOT:
+		strcpy_s(buffer, "EOT");
+		break;
+		case CID_ERR:
+		strcpy_s(buffer, "ERR");
+		break;
+		case CID_EXIT:
+		strcpy_s(buffer, "SKIP/EXIT");
+		break;
+		case CID_RDY:
+		strcpy_s(buffer, "RDY");
+		break;
+		case CID_REQ:
+		strcpy_s(buffer, "REQ");
+		break;
+		case CID_RTS:
+		strcpy_s(buffer, "RTS");
+		break;
+		case CID_SCR:
+		strcpy_s(buffer, "SCR");
+		break;
+		case CID_VAR:
+		strcpy_s(buffer, "VAR");
+		break;
+		case CID_VER:
+		strcpy_s(buffer, "VER");
+		break;
+		default:
+		strcpy_s(buffer, "error");
+		break;
+	}
+#else
 	switch (command_ID) {
 		case CID_ACK:
 		strcpy(buffer, "ACK");
@@ -662,6 +708,7 @@ static void print_command_ID(uint8_t command_ID) {
 		strcpy(buffer, "error");
 		break;
 	}
+#endif
 	printf(buffer);
 }
 #endif

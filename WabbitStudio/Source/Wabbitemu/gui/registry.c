@@ -90,9 +90,9 @@ INT_PTR QueryWabbitKey(char *name) {
 		rqvx_res = RegQueryValueEx(hkeyWabbit, name, NULL, NULL, (LPBYTE) &result, &len);
 		if (rqvx_res == ERROR_FILE_NOT_FOUND) {
 			if (type == REG_DWORD)
-				result.dwResult = regDefaults[i].Value;
+				result.dwResult = (DWORD) regDefaults[i].Value;
 			else
-				strcpy(result.szResult, (char *) regDefaults[i].Value);
+				strcpy_s(result.szResult, (char *) regDefaults[i].Value);
 		}
 	} else {
 		MessageBox(NULL, "Could not find registry key", name, MB_OK);
@@ -118,17 +118,17 @@ HRESULT LoadRegistrySettings(void) {
 	if (dwDisposition == REG_CREATED_NEW_KEY)
 		LoadRegistryDefaults(hkeyWabbit);
 	
-	strcpy(calcs[gslot].rom_path, (char *) QueryWabbitKey("rom_path"));
-	calcs[gslot].SkinEnabled = QueryWabbitKey("skin");
-	calcs[gslot].bCutout = QueryWabbitKey("cutout");
-	calcs[gslot].Scale = QueryWabbitKey("screen_scale");
-	calcs[gslot].FaceplateColor = QueryWabbitKey("faceplate_color");
-	exit_save_state = QueryWabbitKey("exit_save_state");
-	load_files_first = QueryWabbitKey("load_files_first");
-	do_backups = QueryWabbitKey("do_backups");
-	show_wizard = QueryWabbitKey("show_wizard");
-	sync_cores = QueryWabbitKey("sync_cores");
-	int num_entries = QueryWabbitKey("num_keys");
+	strcpy_s(calcs[gslot].rom_path, (char *) QueryWabbitKey("rom_path"));
+	calcs[gslot].SkinEnabled = (BOOL) QueryWabbitKey("skin");
+	calcs[gslot].bCutout = (BOOL) QueryWabbitKey("cutout");
+	calcs[gslot].Scale = (int) QueryWabbitKey("screen_scale");
+	calcs[gslot].FaceplateColor = (COLORREF) QueryWabbitKey("faceplate_color");
+	exit_save_state = (BOOL) QueryWabbitKey("exit_save_state");
+	load_files_first = (BOOL) QueryWabbitKey("load_files_first");
+	do_backups = (BOOL) QueryWabbitKey("do_backups");
+	show_wizard = (BOOL) QueryWabbitKey("show_wizard");
+	sync_cores = (BOOL) QueryWabbitKey("sync_cores");
+	int num_entries = (int) QueryWabbitKey("num_keys");
 	//need to load accelerators
 	// querywabbitkey doesnt work because its a REG_BINARY
 	/*ACCEL buf[256];
@@ -144,15 +144,15 @@ HRESULT LoadRegistrySettings(void) {
 		{"gif_useinc",	REG_DWORD,	0},
 		*/
 	
-	strcpy(gif_file_name, (char *) QueryWabbitKey("gif_path"));
-	gif_autosave = QueryWabbitKey("gif_autosave");
-	gif_use_increasing = QueryWabbitKey("gif_useinc");
+	strcpy_s(gif_file_name, (char *) QueryWabbitKey("gif_path"));
+	gif_autosave = (BOOL) QueryWabbitKey("gif_autosave");
+	gif_use_increasing = (BOOL) QueryWabbitKey("gif_useinc");
 	
 	//RegCloseKey(hkeyWabbit);
 	hkeyTarget = hkeyWabbit;
 	RegCloseKey(hkeySoftware);
 
-	calcs[gslot].bCutout = QueryWabbitKey("cutout");
+	calcs[gslot].bCutout = (BOOL) QueryWabbitKey("cutout");
 	
 	return S_OK;
 }
@@ -163,7 +163,7 @@ void SaveWabbitKey(char *name, int type, void *value) {
 	if (type == REG_DWORD) {
 		len = sizeof(DWORD);
 	} else if (type == REG_SZ) {
-		len = strlen((char *) value) + 1;
+		len = (int) strlen((char *) value) + 1;
 	}
 	
 	RegSetValueEx(hkeyTarget, name, 0, type, (LPBYTE) value, len);

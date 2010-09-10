@@ -138,7 +138,6 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 
 	int width = calcs[gslot].rectSkin.right;
 	int height = calcs[gslot].rectSkin.bottom;
-	BITMAPFILEHEADER   bmfHeader;
 	BITMAPINFOHEADER   bi;
 	bi.biSize = sizeof(BITMAPINFOHEADER);
 	bi.biWidth = width;
@@ -152,7 +151,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	bi.biClrUsed = 0;
 	bi.biClrImportant = 0;
 	DWORD dwBmpSize = ((width * bi.biBitCount + 31) / 32) * 4 * height;
-	BYTE *lpbitmap = (BYTE*)malloc(dwBmpSize);
+	BYTE *lpbitmap = (BYTE*) malloc(dwBmpSize);
 
 	// Gets the "bits" from the bitmap and copies them into a buffer
 	// which is pointed to by lpbitmap.

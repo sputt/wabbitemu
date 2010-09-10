@@ -98,11 +98,15 @@ int labels_app_load(int slot, char* fn) {
 		if (buffer[0] != ';')
 			i = sscanf(buffer,"%s = $%X", name, &equate);
 		if (i == 2) {
-			length = strlen(name);
+			length = (int) strlen(name);
 			if (!label_search_tios(name,equate)) {
 				
 				label->name = (char *) malloc(length + 1);
+#ifdef WINVER
+				strcpy_s(label->name, strlen(label->name), name);
+#else
 				strcpy(label->name, name);
+#endif
 				label->addr = equate & 0xFFFF;
 
 				if ( (equate&0x0000FFFF)>=0x4000 && (equate&0x0000FFFF)<0x8000) {

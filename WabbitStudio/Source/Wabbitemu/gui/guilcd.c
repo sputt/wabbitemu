@@ -28,7 +28,6 @@ BITMAPINFO *bi = NULL;
 
 HDC DrawSending(HWND hwnd, HDC hdcDest) {
 	TCHAR Sendstr1[] = "Sending File(s)";
-	TCHAR Filecntstr[64];
 
 	static HBITMAP bmpSend = NULL;
 	RECT clientRect;
@@ -131,7 +130,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 		}
 
 		TCHAR txtArch[]="Archive";
-		if ( GetTextExtentPoint32(hdc,txtArch,strlen(txtArch),&TxtSize) ) {
+		if ( GetTextExtentPoint32(hdc,txtArch, (int) strlen(txtArch),&TxtSize) ) {
 			TxtPt.x = ((rr.right - rr.left)-TxtSize.cx)/2;
 			TxtPt.y = ((rr.bottom - rr.top)-TxtSize.cy)/2;
 			if ( TxtPt.x < 0 ) TxtPt.x =0;
@@ -140,7 +139,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 			TxtPt.x = rr.left+5;
 			TxtPt.y = rr.top+52;
 		}
-		TextOut(hdc, TxtPt.x+rr.left, TxtPt.y, txtArch, strlen(txtArch));
+		TextOut(hdc, TxtPt.x+rr.left, TxtPt.y, txtArch, (int) strlen(txtArch));
 	}
 
 	FillRect(hdc, &rl, hbrRAM);
@@ -178,7 +177,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	}
 
 	TCHAR txtRam[] ="RAM";
-	if ( GetTextExtentPoint32(hdc,txtRam,strlen(txtRam),&TxtSize) ) {
+	if ( GetTextExtentPoint32(hdc, txtRam, (int) strlen(txtRam), &TxtSize) ) {
 		TxtPt.x = ((rl.right - rl.left)-TxtSize.cx)/2;
 		TxtPt.y = ((rl.bottom - rl.top)-TxtSize.cy)/2;
 		if ( TxtPt.x < 0 ) TxtPt.x =0;
@@ -187,7 +186,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 		TxtPt.x = rl.left+5;
 		TxtPt.y = rl.top+52;
 	}
-	TextOut(hdc, TxtPt.x, TxtPt.y, txtRam, strlen(txtRam));
+	TextOut(hdc, TxtPt.x, TxtPt.y, txtRam, (int) strlen(txtRam));
 
 	DeleteObject(hbrRAM);
 	DeleteObject(hbrArchive);
@@ -451,9 +450,17 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (clock() > calcs[slot].sb_refresh + CLOCKS_PER_SEC/2) {
 					char sz_status[32];
 					if (lcd->active)
+#ifdef WINVER
+						sprintf_s(sz_status,"FPS: %0.2lf",lcd->ufps);
+#else
 						sprintf(sz_status,"FPS: %0.2lf",lcd->ufps);
+#endif
 					else
+#ifdef WINVER
+						sprintf_s(sz_status,"FPS: -");
+#else
 						sprintf(sz_status,"FPS: -");
+#endif
 
 					SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 0, (LPARAM) sz_status);
 					calcs[slot].sb_refresh = clock();

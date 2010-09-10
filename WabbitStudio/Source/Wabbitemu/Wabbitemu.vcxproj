@@ -52,13 +52,7 @@
     <ClCompile Include="debugger\dbreg.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="debugger\dbsubbar.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="debugger\dbtoolbar.c">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="debugger\dbtrack.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="debugger\dbvalue.c">
@@ -173,7 +167,6 @@
     <ClInclude Include="debugger\dbdisasm.h" />
     <ClInclude Include="debugger\dbmem.h" />
     <ClInclude Include="debugger\dbreg.h" />
-    <ClInclude Include="debugger\dbsubbar.h" />
     <ClInclude Include="debugger\dbtoolbar.h" />
     <ClInclude Include="debugger\dbtrack.h" />
     <ClInclude Include="debugger\dbvalue.h" />
@@ -545,7 +538,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
-      <WarningLevel>Level1</WarningLevel>
+      <WarningLevel>Level2</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;_CRT_SECURE_NO_WARNINGS;WITH_BACKUPS;HIGH_SHADE_GIF;USE_GDIPLUS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>

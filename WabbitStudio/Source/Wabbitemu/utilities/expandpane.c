@@ -53,7 +53,7 @@ HWND CreateExpandPane(HWND hwndParent, char *name, HWND contents) {
 	expand_pane_settings *eps = (expand_pane_settings *) malloc(sizeof(expand_pane_settings));
 	ZeroMemory(eps, sizeof(expand_pane_settings));
 
-	DWORD status = QueryDebugKey(name);
+	DWORD status = (DWORD) QueryDebugKey(name);
 	eps->contents = contents;
 	eps->ExpandState = (EXPAND_STATE)status;
 	//eps->bFading = TRUE;

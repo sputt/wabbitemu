@@ -143,15 +143,15 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 
 	if (m_fAllowDrop == TRUE) {
 		pdd->type = DROPIMAGE_COPY;
-		wcscpy(pdd->szMessage, L"Transfer to %1");
-		wcscpy(pdd->szInsert, L"Wabbitemu");
+		wcscpy_s(pdd->szMessage, L"Transfer to %1");
+		wcscpy_s(pdd->szInsert, L"Wabbitemu");
 		calcs[m_slot].do_drag = true;
 
 		*pdwEffect = *pdwEffect & DROPEFFECT_COPY;
 	} else {
 		pdd->type = DROPIMAGE_INVALID;
-		wcscpy(pdd->szMessage, L"Cannot transfer to %1");
-		wcscpy(pdd->szInsert, L"Wabbitemu");
+		wcscpy_s(pdd->szMessage, L"Cannot transfer to %1");
+		wcscpy_s(pdd->szInsert, L"Wabbitemu");
 		calcs[m_slot].do_drag = false;
 
 		*pdwEffect = DROPEFFECT_NONE;

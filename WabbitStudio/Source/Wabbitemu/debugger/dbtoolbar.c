@@ -232,7 +232,7 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 
 	BYTE * pPixel = pBits;
 	for (x = r->left; x < r->right; x++, pPixel+=4) {
-		pPixel[3] = 255*(x+1)/rc.right/8;
+		pPixel[3] = (BYTE) (255*(x+1)/rc.right/8);
 
 		pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 		pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
@@ -303,7 +303,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				case IDM_45SECOND:
 				case IDM_50SECOND:
 				{
-					restore_backup(wParam - IDM_05SECOND, gslot);
+					restore_backup(((int) wParam) - IDM_05SECOND, gslot);
 					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;
 				}
@@ -393,7 +393,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					tbb->MouseState = MOUSE_UP;
 					InvalidateRect(hwnd, NULL, TRUE);
 
-					int ID = GetWindowLongPtr(hwnd, GWL_ID);
+					int ID = (int) GetWindowLongPtr(hwnd, GWL_ID);
 					SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(ID, BN_CLICKED), (LPARAM) hwnd);
 					break;
 			}
@@ -511,7 +511,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			ClientToScreen(hwnd, &p);
 
 			if (PtInRect(&wr, p)) {
-				int ID = GetWindowLongPtr(hwnd, GWL_ID);
+				int ID = (int) GetWindowLongPtr(hwnd, GWL_ID);
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(ID, BN_CLICKED), (LPARAM)hwnd);
 			}
 			if (PtInRect(&rect, p) && tbb->bSplitButton) {
@@ -828,7 +828,7 @@ int CreateToolbarButton(HWND hwndParent, char *szCaption, char *szTooltip, char 
 	RECT r = {0, 0, 0, 0};
 
 	SelectObject(hdc, hfontSegoe);
-	DrawText(hdc, szCaption, strlen(szCaption), &r, DT_CALCRECT);
+	DrawText(hdc, szCaption, (int) strlen(szCaption), &r, DT_CALCRECT);
 
 	ReleaseDC(hwndBtn, hdc);
 
@@ -925,7 +925,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case IDM_45SECOND:
 				case IDM_50SECOND:
 				{
-					restore_backup(wParam - IDM_05SECOND, gslot);
+					restore_backup(((int) wParam) - IDM_05SECOND, gslot);
 					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;
 				}

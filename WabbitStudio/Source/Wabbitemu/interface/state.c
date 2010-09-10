@@ -156,7 +156,12 @@ void DispSymbol(SYMBOLS83P_t* sym) {
 char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 	const u_char ans_name[] = {tAns, 0x00, 0x00};
 	if (memcmp(sym->name, ans_name, 3) == 0) {
+#ifdef WINVER
+		strcpy_s(buffer, strlen(buffer), "Ans");
+		return buffer;
+#else
 		return strcpy(buffer, "Ans");
+#endif
 	}
 	
 	switch(sym->type_ID) {
@@ -165,31 +170,64 @@ char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 	case ProtProgObj:
 	case AppVarObj:
 	case GroupObj:
+#ifdef WINVER
+		strcpy_s(buffer, strlen(buffer), sym->name);
+		return buffer;
+#else
 		return strcpy(buffer, sym->name);
+#endif
 	case PictObj:
+#ifdef WINVER
+		sprintf_s(buffer, strlen(buffer), "Pic%d", circ10(sym->name[1]));
+#else
 		sprintf(buffer, "Pic%d", circ10(sym->name[1]));
+#endif
 		return buffer;
 	case GDBObj:
+#ifdef WINVER
+		sprintf_s(buffer, strlen(buffer), "GDB%d", circ10(sym->name[1]));
+#else
 		sprintf(buffer, "GDB%d", circ10(sym->name[1]));
+#endif
 		return buffer;
 	case StrngObj:
+#ifdef WINVER
+		sprintf_s(buffer, strlen(buffer), "Str%d", circ10(sym->name[1]));
+#else
 		sprintf(buffer, "Str%d", circ10(sym->name[1]));
+#endif
 		return buffer;		
 	case RealObj:
 	case CplxObj:
+#ifdef WINVER
+		sprintf_s(buffer, strlen(buffer), "%c", sym->name[0]);
+#else
 		sprintf(buffer, "%c", sym->name[0]);
+#endif
 		return buffer;
 	case ListObj:
 	case CListObj:
 		if ((u_char) sym->name[1] < 6) {
+#ifdef WINVER
+			sprintf_s(buffer, strlen(buffer), "L%d", sym->name[1] + 1); //L1...L6
+#else
 			sprintf(buffer, "L%d", sym->name[1] + 1); //L1...L6
+#endif
 		} else {
+#ifdef WINVER
+			sprintf_s(buffer, strlen(buffer), "%s", sym->name + 1); // No Little L
+#else
 			sprintf(buffer, "%s", sym->name + 1); // No Little L
+#endif
 		}
 		return buffer;
 	case MatObj:
 		if (sym->name[0] == 0x5C) {
+#ifdef WINVER
+			sprintf_s(buffer, strlen(buffer), "[%c]", 'A' + sym->name[1]);
+#else
 			sprintf(buffer, "[%c]", 'A' + sym->name[1]);
+#endif
 			return buffer;
 		}
 		return NULL;
@@ -204,20 +242,44 @@ char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 			switch(sym->name[1] & 0xF0) {
 			
 			case 0x10: //Y1
+#ifdef WINVER
+				sprintf_s(buffer, strlen(buffer), "Y%d",circ10(b));
+#else
 				sprintf(buffer,"Y%d",circ10(b));
+#endif
 				return buffer;
 			case 0x20: //X1t Y1t
+#ifdef WINVER
+				sprintf_s(buffer, strlen(buffer), "X%dT", ((b/2)+1)%6);
+#else
 				sprintf(buffer,"X%dT",((b/2)+1)%6);
+#endif
 				if (b%2) buffer[0] = 'Y';
 				return buffer;
 			case 0x40: //r1
+#ifdef WINVER
+				sprintf_s(buffer, strlen(buffer), "R%d",(b+1)%6);
+#else
 				sprintf(buffer,"R%d",(b+1)%6);
+#endif
 				return buffer;
 			case 0x80: //Y1
 				switch (b) {
-				case 0: return strcpy(buffer, "Un");
-				case 1: return strcpy(buffer, "Vn");												
-				case 2: return strcpy(buffer, "Wn");
+#ifdef WINVER
+					case 0: 
+						strcpy_s(buffer, strlen(buffer), "Un");
+						return buffer;
+					case 1: 
+						strcpy_s(buffer, strlen(buffer), "Vn");
+						return buffer;
+					case 2: 
+						strcpy_s(buffer, strlen(buffer), "Wn");
+						return buffer;
+#else
+					case 0: return strcpy(buffer, "Un");
+					case 1: return strcpy(buffer, "Vn");												
+					case 2: return strcpy(buffer, "Wn");
+#endif
 				}
 			default: 
 				return NULL;
@@ -279,7 +341,11 @@ char *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, char *buffer) {
 				*p++ = FP[i] + '0';
 				if ((i + 1) < sigdigs && i == 0) *p++ = '.';
 			}
+#ifdef WINVER
+			sprintf_s(p, strlen(p), "*10^%d", exp);
+#else
 			sprintf(p, "*10^%d", exp);
+#endif
 			p += strlen(p);
 		} else {
 			for (i = min(exp, 0); i < sigdigs || i < exp; i++) {
@@ -373,7 +439,11 @@ char *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, char *buffer) {
 	
 		
 	default:
+#ifdef WINVER
+		strcpy_s(buffer, strlen(buffer), "unsupported");
+#else
 		strcpy(buffer, "unsupported");
+#endif
 		return buffer;
 	}
 }

@@ -59,6 +59,7 @@
 
 char ExeDir[512];
 
+void FinalizeButtons();
 INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 HINSTANCE g_hInst;
 HACCEL hacceldebug;
@@ -80,7 +81,7 @@ void gui_draw(int slot) {
 		static int skip = 0;
 		if (skip == 0) {
 			gif_anim_advance = TRUE;
-			InvalidateRect(calcs[gslot].hwndFrame, NULL, FALSE);
+			InvalidateRect(calcs[slot].hwndFrame, NULL, FALSE);
 		}
 		skip = (skip + 1) % 4;
 	}
@@ -298,7 +299,7 @@ int gui_frame_update(int slot) {
 		return 0;
 	HMENU hmenu = GetMenu(calcs[slot].hwndFrame);	
 	if (hmenu != NULL) {
-		if (!calcs[gslot].SkinEnabled) {
+		if (!calcs[slot].SkinEnabled) {
 			RECT rc;
 			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
 			// Create status bar
@@ -775,7 +776,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 	}
 
+#ifdef WINVER
+	strcpy_s(calcs[slot].labelfn, "labels.lab");
+#else
 	strcpy(calcs[slot].labelfn, "labels.lab");
+#endif
 
 	state_build_applist(&calcs[gslot].cpu, &calcs[gslot].applist);
 	VoidLabels(slot);
@@ -876,7 +881,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	_CrtDumpMemoryLeaks();
 #endif
 
-    return Msg.wParam;
+    return (int) Msg.wParam;
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -965,7 +970,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						screen.left - rc.left + orig_w - 5,
 						screen.top - rc.top + orig_h - 5);
 
-				int grayred = (((double) GIFGRADWIDTH / GIFGRAD_PEAK) * 50);
+				int grayred = (int) (((double) GIFGRADWIDTH / GIFGRAD_PEAK) * 50);
 				HDC hWindow = GetDC(hwnd);
 				DrawGlow(hWindow, &screen, RGB(127-grayred, 127-grayred, 127+grayred), GIFGRADWIDTH);				
 				ReleaseDC(hwnd, hWindow);
@@ -1005,7 +1010,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_FILE_EXIT:
 					if (calc_count() > 1) {
 						char buf[256];
+#ifdef WINVER
+						sprintf_s(buf, "If you exit now, %d other running calculator(s) will be closed.  Are you sure you want to exit?", calc_count()-1);
+#else
 						sprintf(buf, "If you exit now, %d other running calculator(s) will be closed.  Are you sure you want to exit?", calc_count()-1);
+#endif
 						int res = MessageBoxA(NULL, buf, "Wabbitemu", MB_YESNO);
 						if (res == IDCANCEL || res == IDNO)
 							break;
@@ -1171,16 +1180,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 			}			
-			switch (HIWORD(wParam)) {
-
-			}
+			/*switch (HIWORD(wParam)) {
+			}*/
 			return 0;
 		}
 		//case WM_MOUSEMOVE:
 		case WM_LBUTTONUP:
 		case WM_LBUTTONDOWN:
 		{
-			int group,bit;
+			int group, bit;
 			static POINT pt;
 			keypad_t *kp = calcs[gslot].cpu.pio.keypad;
 
@@ -1204,10 +1212,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			calcs[gslot].cpu.pio.keypad->on_pressed &= ~KEY_MOUSEPRESS;
 
-			if (wParam != MK_LBUTTON) goto finalize_buttons;
+			if (wParam != MK_LBUTTON) {
+				FinalizeButtons();
+				return 0;
+			}
 
 			COLORREF c = GetPixel(calcs[gslot].hdcKeymap, pt.x, pt.y);
-			if (GetRValue(c) == 0xFF) goto finalize_buttons;
+			if (GetRValue(c) == 0xFF) {
+				FinalizeButtons();
+				return 0;
+			}
 
 			if ( (GetGValue(c)>>4)==0x05 && (GetBValue(c)>>4)==0x00){
 				calcs[gslot].cpu.pio.keypad->on_pressed |= KEY_MOUSEPRESS;
@@ -1222,23 +1236,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		//extern POINT ButtonCenter83[64];
 		//extern POINT ButtonCenter84[64];
-finalize_buttons:
-			kp = calcs[gslot].cpu.pio.keypad;
-			for(group=0;group<7;group++) {
-				for(bit=0;bit<8;bit++) {
-					if ((kp->keys[group][bit] & KEY_STATEDOWN) &&
-						((kp->keys[group][bit] & KEY_MOUSEPRESS) == 0) &&
-						((kp->keys[group][bit] & KEY_KEYBOARDPRESS) == 0)) {
-						/*if (calcs[gslot].model == TI_84P || calcs[gslot].model == TI_84PSE) {
-							DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter84[bit+(group<<3)], DBS_UP | DBS_PRESS);
-							} else {
-							DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter83[bit+(group<<3)], DBS_UP | DBS_PRESS);
-						}*/	
-							kp->keys[group][bit] &= (~KEY_STATEDOWN);
-							//SendMessage(hwnd, WM_SIZE, 0, 0);
-					}
-				}
-			}
 			return 0;
 		}
 		case WM_MBUTTONDOWN:
@@ -1292,7 +1289,7 @@ finalize_buttons:
 				}
 			}
 
-			keyprog_t *kp = keypad_key_press(&calcs[gslot].cpu, wParam);
+			keyprog_t *kp = keypad_key_press(&calcs[gslot].cpu, (unsigned int) wParam);
 			if (kp) {
 				extern POINT ButtonCenter83[64];
 				extern POINT ButtonCenter84[64];
@@ -1304,7 +1301,7 @@ finalize_buttons:
 					}*/
 					calcs[gslot].cpu.pio.keypad->keys[kp->group][kp->bit] |= KEY_STATEDOWN;
 					SendMessage(hwnd, WM_SIZE, 0, 0);
-					goto finalize_buttons;
+					FinalizeButtons();
 				}
 			}
 			return 0;
@@ -1314,9 +1311,10 @@ finalize_buttons:
 				keypad_key_release(&calcs[gslot].cpu, VK_LSHIFT);
 				keypad_key_release(&calcs[gslot].cpu, VK_RSHIFT);
 			} else {
-				keypad_key_release(&calcs[gslot].cpu, wParam);
+				keypad_key_release(&calcs[gslot].cpu, (unsigned int) wParam);
 			}
-			goto finalize_buttons;
+			FinalizeButtons();
+			return 0;
 		case WM_SIZING:
 		{
 			if (calcs[gslot].SkinEnabled)
@@ -1428,9 +1426,9 @@ finalize_buttons:
 			else
 				desired_height = 128;
 
-			double status_height;
+			int status_height;
 			if (calcs[gslot].hwndStatusBar == NULL) {
-				status_height = 0.0;
+				status_height = 0;
 			} else {
 				RECT src;
 				GetWindowRect(calcs[gslot].hwndStatusBar, &src);
@@ -1442,13 +1440,13 @@ finalize_buttons:
 
 			rc.bottom -= status_height;
 
-			double xc, yc;
+			int xc, yc;
 			if (calcs[gslot].SkinEnabled) {
 				xc = 1/*((double)rc.right)/calcs[gslot].rectSkin.right*/;
 				yc = 1/*((double)rc.bottom)/(calcs[gslot].rectSkin.bottom)*/;
 			} else {
-				xc = ((double)rc.right)/256.0;
-				yc = ((double)rc.bottom)/(128.0);
+				xc = rc.right/256;
+				yc = rc.bottom/128;
 			}
 			int width = calcs[gslot].rectLCD.right - calcs[gslot].rectLCD.left;
 			SetRect(&screen,
@@ -1551,9 +1549,15 @@ finalize_buttons:
 				if (exit_save_state)
 				{
 					char temp_save[MAX_PATH];
+#ifdef WINVER
+					strcpy_s(temp_save, getenv("appdata"));
+					strcat_s(temp_save, "\\wabbitemu.sav");
+					strcpy_s(calcs[gslot].rom_path, temp_save);
+#else
 					strcpy(temp_save, getenv("appdata"));
 					strcat(temp_save, "\\wabbitemu.sav");
 					strcpy(calcs[gslot].rom_path, temp_save);
+#endif
 					SAVESTATE_t *save = SaveSlot(gslot);
 					WriteSave(temp_save, save, false);
 					FreeSave(save);
@@ -1581,7 +1585,7 @@ finalize_buttons:
 		}
 		case WM_NCHITTEST:
 		{
-			int htRet = DefWindowProc(hwnd, Message, wParam, lParam);
+			int htRet = (int) DefWindowProc(hwnd, Message, wParam, lParam);
 			if (htRet != HTCLIENT) return htRet;
 
 			POINT pt;
@@ -1600,6 +1604,26 @@ finalize_buttons:
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
 	return 0;
+}
+
+void FinalizeButtons() {
+	int group, bit;
+	keypad_t *kp = calcs[gslot].cpu.pio.keypad;
+	for(group=0;group<7;group++) {
+		for(bit=0;bit<8;bit++) {
+			if ((kp->keys[group][bit] & KEY_STATEDOWN) &&
+				((kp->keys[group][bit] & KEY_MOUSEPRESS) == 0) &&
+				((kp->keys[group][bit] & KEY_KEYBOARDPRESS) == 0)) {
+				/*if (calcs[gslot].model == TI_84P || calcs[gslot].model == TI_84PSE) {
+					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter84[bit+(group<<3)], DBS_UP | DBS_PRESS);
+					} else {
+					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter83[bit+(group<<3)], DBS_UP | DBS_PRESS);
+				}*/	
+					kp->keys[group][bit] &= (~KEY_STATEDOWN);
+					//SendMessage(hwnd, WM_SIZE, 0, 0);
+			}
+		}
+	}
 }
 
 INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {

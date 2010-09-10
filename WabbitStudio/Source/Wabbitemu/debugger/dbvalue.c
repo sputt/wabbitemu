@@ -92,7 +92,11 @@ HWND CreateValueField(
 	vfs->format = format;
 	vfs->max_digits = max_digits;
 	vfs->hwndTip = hwndTip;
+#ifdef WINVER
+	strcpy_s(vfs->szName, name);
+#else
 	strcpy(vfs->szName, name);
+#endif
 
 	// Create the container window
 	HWND hwndValue =
@@ -307,7 +311,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			case EN_KILLFOCUS:
 				if (GetFocus() == hwnd) break;
 			case EN_SUBMIT:
-				ValueSubmit(vfs->hwndVal, (char *) vfs->data, vfs->size);
+				ValueSubmit(vfs->hwndVal, (char *) vfs->data, (int) vfs->size);
 				vfs->editing = FALSE;
 				SendMessage(GetParent(hwnd), WM_COMMAND, 0, 0);
 				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
@@ -331,31 +335,31 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 		case DB_UPDATE:
 			switch (vfs->format) {
 			case HEX2:
-				sprintf(vfs->szValue, "%02X", *((unsigned char *) vfs->data));
+				sprintf_s(vfs->szValue, "%02X", *((unsigned char *) vfs->data));
 				break;
 			case HEX4:
-				sprintf(vfs->szValue, "%04X", *((unsigned short *) vfs->data));
+				sprintf_s(vfs->szValue, "%04X", *((unsigned short *) vfs->data));
 				break;
 			case FLOAT2:
 				if (vfs->size == sizeof(float))
-					sprintf(vfs->szValue, "%*.2f", vfs->max_digits, *((float *) vfs->data));
+					sprintf_s(vfs->szValue, "%*.2f", vfs->max_digits, *((float *) vfs->data));
 				else
-					sprintf(vfs->szValue, "%*.2lf", vfs->max_digits, *((double *) vfs->data));
+					sprintf_s(vfs->szValue, "%*.2lf", vfs->max_digits, *((double *) vfs->data));
 				break;
 			case FLOAT4:
 				if (vfs->size == sizeof(float))
-					sprintf(vfs->szValue, "%*.4f", vfs->max_digits, *((float *) vfs->data));
+					sprintf_s(vfs->szValue, "%*.4f", vfs->max_digits, *((float *) vfs->data));
 				else
-					sprintf(vfs->szValue, "%*.4f", vfs->max_digits, *((double *) vfs->data));
+					sprintf_s(vfs->szValue, "%*.4f", vfs->max_digits, *((double *) vfs->data));
 				break;
 			case DEC:
-				sprintf(vfs->szValue, "%*d", vfs->max_digits, *((unsigned int *) vfs->data));
+				sprintf_s(vfs->szValue, "%*d", vfs->max_digits, *((unsigned int *) vfs->data));
 				break;
 			case CHAR1:
-				sprintf(vfs->szValue, "%c", *((unsigned char *) vfs->data));
+				sprintf_s(vfs->szValue, "%c", *((unsigned char *) vfs->data));
 				break;
 			default:
-				sprintf(vfs->szValue, "%d", *((unsigned int *) vfs->data));
+				sprintf_s(vfs->szValue, "%d", *((unsigned int *) vfs->data));
 				break;
 			}
 
@@ -366,7 +370,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			SendMessage(vfs->hwndTip, WM_SETFONT, (WPARAM) hfontLucida, TRUE);
 			SendMessage(vfs->hwndTip, TTM_SETDELAYTIME, TTDT_AUTOMATIC, MAKELONG(GetDoubleClickTime() * 5, 0));
 
-			sprintf(vfs->szTip, "%c: %3d (%s)\n%c: %3d (%s)",
+			sprintf_s(vfs->szTip, "%c: %3d (%s)\n%c: %3d (%s)",
 					vfs->szName[0], ((unsigned char *)vfs->data)[1], "01010100",
 					vfs->szName[1], ((unsigned char *)vfs->data)[0], "01010100");
 
