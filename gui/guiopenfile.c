@@ -171,9 +171,9 @@ All Files (*.*)\0*.*\0\0";
 	
 	if (!result) return;
 	
-	memcpy(filestr,filepath,ofn.nFileOffset);
+	memcpy(filestr, filepath, ofn.nFileOffset);
 	
-	for (filestroffset= filestr;filestroffset[0]!=0;filestroffset++);
+	for (filestroffset = filestr;filestroffset[0] != 0; filestroffset++);
 	filestroffset[0] = '\\';
 	filestroffset++;		/* DOUBLE CHECK THIS */
 	filename = filepath+ofn.nFileOffset;
@@ -181,13 +181,13 @@ All Files (*.*)\0*.*\0\0";
 	while(filename[0] != 0) {
 		int len;
 #ifdef WINVER
-		strcpy_s(filestroffset, strlen(filestroffset), filename);
+		strcpy_s(filestroffset, strlen(filename) + 1, filename);
 #else
 		strcpy(filestroffset, filename);
 #endif
 		len = (int) strlen(filestroffset);
 		filestroffset[len] = 0;
-		filename +=(len+1);
+		filename += len+1;
 		FileNames = AppendName(FileNames, filestr);
 	}
 	

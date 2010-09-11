@@ -595,6 +595,8 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	//erase the part of the certifcate that marks it as a trial app
 	dest[cpu->mem_c->flash_pages-2][offset + 2 * (upages.start - page)] = 0x80;
 	dest[cpu->mem_c->flash_pages-2][offset+1 + 2 * (upages.start - page)] = 0x00;
+	//force reset the applist says BrandonW. seems to work, apps show up :P
+	mem_write(cpu->mem_c, 0x9C87, 0x00);
 
 	u_char *space = &dest[page][PAGE_SIZE - 1];
 	u_int i;
