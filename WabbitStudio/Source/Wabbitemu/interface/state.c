@@ -49,9 +49,9 @@ symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 	// end marks the end of the symbol table
 	uint16_t 	end = mem_read16(mem, pTemp),
 	// prog denotes where programs start
-				prog = mem_read16(mem, progPtr),
+	prog = mem_read16(mem, progPtr),
 	// stp (symbol table pointer) marks the start
-				stp = symTable;
+	stp = symTable;
 	
 	// Verify VAT integrity
 	if (cpu->pio.model < TI_83P) return NULL;
@@ -157,7 +157,7 @@ char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 	const u_char ans_name[] = {tAns, 0x00, 0x00};
 	if (memcmp(sym->name, ans_name, 3) == 0) {
 #ifdef WINVER
-		strcpy_s(buffer, strlen(buffer), "Ans");
+		strcpy_s(buffer, 4, "Ans");
 		return buffer;
 #else
 		return strcpy(buffer, "Ans");
@@ -171,28 +171,28 @@ char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 	case AppVarObj:
 	case GroupObj:
 #ifdef WINVER
-		strcpy_s(buffer, strlen(buffer), sym->name);
+		strcpy_s(buffer, strlen(sym->name) + 1, sym->name);
 		return buffer;
 #else
 		return strcpy(buffer, sym->name);
 #endif
 	case PictObj:
 #ifdef WINVER
-		sprintf_s(buffer, strlen(buffer), "Pic%d", circ10(sym->name[1]));
+		sprintf_s(buffer, 5, "Pic%d", circ10(sym->name[1]));
 #else
 		sprintf(buffer, "Pic%d", circ10(sym->name[1]));
 #endif
 		return buffer;
 	case GDBObj:
 #ifdef WINVER
-		sprintf_s(buffer, strlen(buffer), "GDB%d", circ10(sym->name[1]));
+		sprintf_s(buffer, 5, "GDB%d", circ10(sym->name[1]));
 #else
 		sprintf(buffer, "GDB%d", circ10(sym->name[1]));
 #endif
 		return buffer;
 	case StrngObj:
 #ifdef WINVER
-		sprintf_s(buffer, strlen(buffer), "Str%d", circ10(sym->name[1]));
+		sprintf_s(buffer, 5, "Str%d", circ10(sym->name[1]));
 #else
 		sprintf(buffer, "Str%d", circ10(sym->name[1]));
 #endif
@@ -200,7 +200,7 @@ char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 	case RealObj:
 	case CplxObj:
 #ifdef WINVER
-		sprintf_s(buffer, strlen(buffer), "%c", sym->name[0]);
+		sprintf_s(buffer, 2, "%c", sym->name[0]);
 #else
 		sprintf(buffer, "%c", sym->name[0]);
 #endif
@@ -209,13 +209,13 @@ char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 	case CListObj:
 		if ((u_char) sym->name[1] < 6) {
 #ifdef WINVER
-			sprintf_s(buffer, strlen(buffer), "L%d", sym->name[1] + 1); //L1...L6
+			sprintf_s(buffer, strlen(sym->name) + 2, "L%d", sym->name[1] + 1); //L1...L6
 #else
 			sprintf(buffer, "L%d", sym->name[1] + 1); //L1...L6
 #endif
 		} else {
 #ifdef WINVER
-			sprintf_s(buffer, strlen(buffer), "%s", sym->name + 1); // No Little L
+			sprintf_s(buffer, strlen(sym->name), "%s", sym->name + 1); // No Little L
 #else
 			sprintf(buffer, "%s", sym->name + 1); // No Little L
 #endif
@@ -224,7 +224,7 @@ char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 	case MatObj:
 		if (sym->name[0] == 0x5C) {
 #ifdef WINVER
-			sprintf_s(buffer, strlen(buffer), "[%c]", 'A' + sym->name[1]);
+			sprintf_s(buffer, 5, "[%c]", 'A' + sym->name[1]);
 #else
 			sprintf(buffer, "[%c]", 'A' + sym->name[1]);
 #endif
@@ -243,14 +243,14 @@ char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 			
 			case 0x10: //Y1
 #ifdef WINVER
-				sprintf_s(buffer, strlen(buffer), "Y%d",circ10(b));
+				sprintf_s(buffer, 3, "Y%d",circ10(b));
 #else
 				sprintf(buffer,"Y%d",circ10(b));
 #endif
 				return buffer;
 			case 0x20: //X1t Y1t
 #ifdef WINVER
-				sprintf_s(buffer, strlen(buffer), "X%dT", ((b/2)+1)%6);
+				sprintf_s(buffer, 4, "X%dT", ((b/2)+1)%6);
 #else
 				sprintf(buffer,"X%dT",((b/2)+1)%6);
 #endif
@@ -258,22 +258,22 @@ char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 				return buffer;
 			case 0x40: //r1
 #ifdef WINVER
-				sprintf_s(buffer, strlen(buffer), "R%d",(b+1)%6);
+				sprintf_s(buffer, 3, "R%d",(b+1)%6);
 #else
-				sprintf(buffer,"R%d",(b+1)%6);
+				sprintf(buffer, "R%d", (b+1)%6);
 #endif
 				return buffer;
 			case 0x80: //Y1
 				switch (b) {
 #ifdef WINVER
 					case 0: 
-						strcpy_s(buffer, strlen(buffer), "Un");
+						strcpy_s(buffer, 3, "Un");
 						return buffer;
 					case 1: 
-						strcpy_s(buffer, strlen(buffer), "Vn");
+						strcpy_s(buffer, 3, "Vn");
 						return buffer;
 					case 2: 
-						strcpy_s(buffer, strlen(buffer), "Wn");
+						strcpy_s(buffer, 3, "Wn");
 						return buffer;
 #else
 					case 0: return strcpy(buffer, "Un");

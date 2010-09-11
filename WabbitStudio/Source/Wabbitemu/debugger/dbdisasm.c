@@ -46,7 +46,7 @@ void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
 
 	for (j = 0; j < zinf->size; j++) {
 #ifdef WINVER
-		sprintf_s(s + (j*2), strlen(s + (j*2)), "%02x", mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf->addr+j));
+		sprintf_s(s + (j*2), 3, "%02x", mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf->addr+j));
 #else
 		sprintf(s + (j*2), "%02x", mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf->addr+j));
 #endif

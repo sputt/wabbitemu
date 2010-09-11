@@ -434,7 +434,7 @@ void RefreshTreeView(BOOL New) {
 			for(i = 0; i < Tree[slot].applist.count; i++) {
 				Tree[slot].hApps[i] = InsertVar(Tree[slot].hApplication,Tree[slot].applist.apps[i].name,TI_ICON_FILE_ARC);
 			}
-			symlist_t* sym = state_build_symlist_83P(&calcs[slot].cpu,&Tree[slot].sym);
+			symlist_t* sym = state_build_symlist_83P(&calcs[slot].cpu, &Tree[slot].sym);
 			if (sym) {
 				// FIXME
 				for(i=0;(&sym->symbols[i])<=(sym->last);i++) {
@@ -449,7 +449,7 @@ void RefreshTreeView(BOOL New) {
 						icon = TI_ICON_FILE_RAM;  //green
 					}
 					
-					if (Symbol_Name_to_String(&sym->symbols[i],tmpstring)) {
+					if (Symbol_Name_to_String(&sym->symbols[i], tmpstring)) {
 						switch(sym->symbols[i].type_ID) {
 							case ProgObj:
 							case ProtProgObj:

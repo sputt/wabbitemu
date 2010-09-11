@@ -47,7 +47,7 @@ char* AppendName(char* FileNames, char* fn) {
 		memset(pnt,0,length+2);
 	}
 #ifdef WINVER
-	strcpy_s(pnt, strlen(pnt), fn);
+	strcpy_s(pnt, length+1, fn);
 #else
 	strcpy(pnt,fn);
 #endif
@@ -122,7 +122,7 @@ void SendFile( char* FileName , int ram ) {
 			case SAV_TYPE:
 				FreeTiFile(var);
 				var = NULL;
-				rom_load(SlotSave ,FileName);
+				rom_load(SlotSave, FileName);
 				SendMessage(calcs[SlotSave].hwndFrame, WM_USER, 0, 0);
 				break;
 			case LABEL_TYPE: {
@@ -178,7 +178,7 @@ void SendFiles( char* FileNames , int ram ) {
 		calcs[SlotSave].FileCnt++;
 	}
 
-	while (fn[0]!=0) {
+	while (fn[0] != 0) {
 		modelsave = calcs[SlotSave].model;
 		calcs[SlotSave].CurrentFile++;
 		current_file_sending = (char *) fn;
@@ -350,7 +350,7 @@ DWORD WINAPI ThreadSendStart( LPVOID lpParam ) {
 	}
 
 
-	SendFiles(sf->FileNames,sf->ram);
+	SendFiles(sf->FileNames, sf->ram);
 	if (save==1) playsound();
 	free(sf);
 	SlotSave = -1;
