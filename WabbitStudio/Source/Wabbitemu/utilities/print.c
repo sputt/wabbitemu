@@ -41,7 +41,7 @@ void press_textA(char *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 			
 #ifdef WINVER
 			strcpy_s(szNew, szText);
-			strcpy_s(&szNew[break_string_index], strlen(&szNew[break_string_index]), dot_strings[str_left-1]);
+			strcpy_s(&szNew[break_string_index], strlen(dot_strings[str_left-1]) + 1, dot_strings[str_left-1]);
 #else
 			strcpy(szNew, szText);
 			strcpy(&szNew[break_string_index], dot_strings[str_left-1]);

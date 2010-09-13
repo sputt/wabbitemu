@@ -297,6 +297,12 @@ int gui_frame_update(int slot) {
 	}
 	if (!calcs[slot].hwndFrame)
 		return 0;
+
+	//this is moved here so going from cutout->skinless creates the lcd now
+	if (calcs[gslot].bCutout && !calcs[slot].SkinEnabled) {
+		DisableCutout(calcs[slot].hwndFrame);
+		calcs[gslot].bCutout = TRUE;
+	} else DisableCutout(calcs[slot].hwndFrame);
 	HMENU hmenu = GetMenu(calcs[slot].hwndFrame);	
 	if (hmenu != NULL) {
 		if (!calcs[slot].SkinEnabled) {
@@ -350,11 +356,6 @@ int gui_frame_update(int slot) {
 		if (EnableCutout(calcs[slot].hwndFrame, skin) != 0) {
 			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
 		}
-	} else if (calcs[gslot].bCutout && !calcs[slot].SkinEnabled) {
-		DisableCutout(calcs[slot].hwndFrame);
-		calcs[gslot].bCutout = TRUE;
-	} else {
-		DisableCutout(calcs[slot].hwndFrame);
 	}
 	if (calcs[slot].hwndStatusBar != NULL)
 		SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
@@ -395,10 +396,7 @@ int gui_frame_update(int slot) {
 	if (calcs[slot].bCutout && calcs[slot].SkinEnabled)	{
 		if (EnableCutout(calcs[slot].hwndFrame, hbmSkinOld) != 0)
 			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
-	} else if (calcs[gslot].bCutout && !calcs[slot].SkinEnabled) {
-		DisableCutout(calcs[slot].hwndFrame);
-		calcs[gslot].bCutout = TRUE;
-	} else DisableCutout(calcs[slot].hwndFrame);
+	}
 	if (calcs[slot].hwndStatusBar != NULL)
 		SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
 	SendMessage(calcs[slot].hwndFrame, WM_SIZE, 0, 0);
@@ -942,9 +940,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			static int GIFGRADWIDTH = 1;
 			static int GIFADD = 1;
-
+			int slot = calc_from_hwnd(hwnd);
 			if (gif_anim_advance) {
-				switch (calcs[gslot].gif_disp_state) {
+				switch (calcs[slot].gif_disp_state) {
 					case GDS_STARTING:
 						if (GIFGRADWIDTH > 15) {
 							calcs[gslot].gif_disp_state = GDS_RECORDING;
@@ -961,8 +959,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					case GDS_ENDING:
 						if (GIFGRADWIDTH) GIFGRADWIDTH--;
 						else {
-							calcs[gslot].gif_disp_state = GDS_IDLE;							
-							gui_frame_update(gslot);						
+							calcs[slot].gif_disp_state = GDS_IDLE;							
+							gui_frame_update(slot);						
 						}						
 						break;
 					case GDS_IDLE:
@@ -971,11 +969,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				gif_anim_advance = FALSE;
 			}
 
-			if (calcs[gslot].gif_disp_state != GDS_IDLE) {
+			if (calcs[slot].gif_disp_state != GDS_IDLE) {
 				RECT screen, rc;
 				//screen = calcs[gslot].rectLCD;
-				GetWindowRect(calcs[gslot].hwndLCD, &screen);
-				GetWindowRect(calcs[gslot].hwndFrame, &rc);
+				GetWindowRect(calcs[slot].hwndLCD, &screen);
+				GetWindowRect(calcs[slot].hwndFrame, &rc);
 				//OffsetRect(&screen, rc.left, rc.top);
 				int orig_w = screen.right - screen.left;
 				int orig_h = screen.bottom - screen.top;
@@ -1000,11 +998,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			PAINTSTRUCT ps;
 			HDC hdc;
 			hdc = BeginPaint(hwnd, &ps);
-			if (calcs[gslot].SkinEnabled) {
-				BitBlt(hdc, 0, 0, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom, calcs[gslot].hdcSkin, 0, 0, SRCCOPY);
+			if (calcs[slot].SkinEnabled) {
+				BitBlt(hdc, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, calcs[slot].hdcSkin, 0, 0, SRCCOPY);
 			} else {
 				RECT rc;
-				GetClientRect(calcs[gslot].hwndFrame, &rc);
+				GetClientRect(calcs[slot].hwndFrame, &rc);
 				FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
 			}
 			ReleaseDC(hwnd, hdc);
@@ -1044,13 +1042,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_FILE_GIF:
 				{
 					HMENU hmenu = GetMenu(hwnd);
+					ScreenshotSlot = calc_from_hwnd(hwnd);
 					if (gif_write_state == GIF_IDLE) {
 						gif_write_state = GIF_START;
-						calcs[gslot].gif_disp_state = GDS_STARTING;
+						calcs[ScreenshotSlot].gif_disp_state = GDS_STARTING;
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_CHECKED);
 					} else {
 						gif_write_state = GIF_END;
-						calcs[gslot].gif_disp_state = GDS_ENDING;
+						calcs[ScreenshotSlot].gif_disp_state = GDS_ENDING;
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
 					}
 					break;
@@ -1114,8 +1113,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					calcs[gslot].running = TRUE;					
 					break;				
 				case IDM_HELP_WEBSITE:					
-					ShellExecute(NULL, "open", g_szWebPage,
-					    NULL, NULL, SW_SHOWNORMAL);
+					ShellExecute(NULL, "open", g_szWebPage, NULL, NULL, SW_SHOWNORMAL);
 					break;
 				case IDM_FRAME_BTOGGLE:
 					SendMessage(hwnd, WM_MBUTTONDOWN, MK_MBUTTON, MAKELPARAM(ctxtPt.x, ctxtPt.y));
@@ -1428,6 +1426,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_SIZE:
 		{
+			int slot = calc_from_hwnd(hwnd);
 			RECT rc, screen;
 			GetClientRect(hwnd, &rc);
 			HMENU hmenu = GetMenu(hwnd);
@@ -1437,20 +1436,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			} else {
 				cyMenu = GetSystemMetrics(SM_CYMENU);
 			}
-			if ((calcs[gslot].bCutout && calcs[gslot].SkinEnabled))	
+			if ((calcs[slot].bCutout && calcs[slot].SkinEnabled))	
 				rc.bottom += cyMenu;
 			int desired_height;
-			if (calcs[gslot].SkinEnabled)
-				desired_height = calcs[gslot].rectSkin.bottom;
+			if (calcs[slot].SkinEnabled)
+				desired_height = calcs[slot].rectSkin.bottom;
 			else
 				desired_height = 128;
 
 			int status_height;
-			if (calcs[gslot].hwndStatusBar == NULL) {
+			if (calcs[slot].hwndStatusBar == NULL) {
 				status_height = 0;
 			} else {
 				RECT src;
-				GetWindowRect(calcs[gslot].hwndStatusBar, &src);
+				GetWindowRect(calcs[slot].hwndStatusBar, &src);
 
 				status_height = src.bottom - src.top;
 				desired_height += status_height;
@@ -1459,24 +1458,24 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			rc.bottom -= status_height;
 
-			int xc, yc;
-			if (calcs[gslot].SkinEnabled) {
-				xc = 1/*((double)rc.right)/calcs[gslot].rectSkin.right*/;
-				yc = 1/*((double)rc.bottom)/(calcs[gslot].rectSkin.bottom)*/;
+			float xc, yc;
+			if (calcs[slot].SkinEnabled) {
+				xc = 1/*((float)rc.right)/calcs[slot].rectSkin.right*/;
+				yc = 1/*((float)rc.bottom)/(calcs[slot].rectSkin.bottom)*/;
 			} else {
-				xc = rc.right/256;
-				yc = rc.bottom/128;
+				xc = (float) rc.right / 256.0;
+				yc = (float) rc.bottom / 128.0;
 			}
-			int width = calcs[gslot].rectLCD.right - calcs[gslot].rectLCD.left;
+			int width = calcs[slot].rectLCD.right - calcs[slot].rectLCD.left;
 			SetRect(&screen,
 				0, 0,
-				width*xc,
-				64*2*yc);
+				(int) (width*xc),
+				(int) (64*2*yc));
 
-			if (calcs[gslot].SkinEnabled)
-				OffsetRect(&screen, calcs[gslot].rectLCD.left, calcs[gslot].rectLCD.top);
+			if (calcs[slot].SkinEnabled)
+				OffsetRect(&screen, calcs[slot].rectLCD.left, calcs[slot].rectLCD.top);
 			else
-				OffsetRect(&screen, ((rc.right - width*xc)/2), 0);
+				OffsetRect(&screen, (int) ((rc.right - width*xc)/2), 0);
 
 			if ((rc.right - rc.left) & 1) rc.right++;
 			if ((rc.bottom - rc.top) & 1) rc.bottom++;
@@ -1484,10 +1483,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			RECT client;
 			client.top = 0;
 			client.left = 0;
-			if (calcs[gslot].SkinEnabled && calcs[gslot].bCutout)
+			if (calcs[slot].SkinEnabled && calcs[slot].bCutout)
 				GetWindowRect(hwnd, &client);
-			if (calcs[gslot].SkinEnabled) {
-				RECT correctSize = calcs[gslot].rectSkin;
+			if (calcs[slot].SkinEnabled) {
+				RECT correctSize = calcs[slot].rectSkin;
 				AdjustWindowRect(&correctSize, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX), cyMenu);
 				if (correctSize.left < 0)
 					correctSize.right -= correctSize.left;
@@ -1495,14 +1494,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					correctSize.bottom -= correctSize.top;
 				SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, correctSize.right, correctSize.bottom , SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
 			}
-			MoveWindow(calcs[gslot].hwndLCD, screen.left + client.left, screen.top + client.top,
+			MoveWindow(calcs[slot].hwndLCD, screen.left + client.left, screen.top + client.top,
 				screen.right-screen.left, screen.bottom-screen.top, FALSE);
 			ValidateRect(hwnd, &screen);
 			//printf("screen: %d\n", screen.right - screen.left);
-			if (calcs[gslot].hwndStatusBar != NULL)
-				SendMessage(calcs[gslot].hwndStatusBar, WM_SIZE, 0, 0);
+			if (calcs[slot].hwndStatusBar != NULL)
+				SendMessage(calcs[slot].hwndStatusBar, WM_SIZE, 0, 0);
 
-			UpdateWindow(calcs[gslot].hwndLCD);
+			//force little buttons to be correct
+			PositionLittleButtons(hwnd, slot);
+			UpdateWindow(calcs[slot].hwndLCD);
 			//InvalidateRect(hwnd, NULL, FALSE);
 			return 0;
 		}
@@ -1510,21 +1511,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		//case WM_MOVING:
 		{
 			int slot = calc_from_hwnd(hwnd);
-			if (calcs[slot].bCutout && calcs[slot].SkinEnabled)
-			{
+			if (calcs[slot].bCutout && calcs[slot].SkinEnabled) {
 				HDWP hdwp = BeginDeferWindowPos(3);
-
 				RECT rc;
 				GetWindowRect(hwnd, &rc);
 				OffsetRect(&rc, calcs[slot].rectLCD.left, calcs[slot].rectLCD.top);
 				DeferWindowPos(hdwp, calcs[slot].hwndLCD, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE);
-				RECT wr;
-				GetWindowRect(hwnd, &wr);
-
-				DeferWindowPos(hdwp, calcs[slot].hwndSmallMinimize, NULL, wr.left + 285, wr.top + 34, 13, 13, 0);
-				DeferWindowPos(hdwp, calcs[slot].hwndSmallClose, NULL, wr.left + 300, wr.top + 34, 13, 13, 0);
-
 				EndDeferWindowPos(hdwp);
+				PositionLittleButtons(hwnd, slot);
 			}
 			return 0;
 		}
@@ -1557,9 +1551,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			info->ptMaxTrackSize.y = rc.bottom - rc.top;
 			return 0;
 		}
-		//case WM_CLOSE:
-		//	DestroyWindow(hwnd);
-		//	return 0;
 		case WM_CLOSE:
 			DestroyWindow(hwnd);
 			return 0;

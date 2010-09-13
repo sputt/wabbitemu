@@ -4,6 +4,7 @@
 #include "dbmem.h"
 #include "dbcommon.h"
 #include "resource.h"
+#include "expandpane.h"
 
 #define COLUMN_X_OFFSET 7
 
@@ -178,6 +179,14 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			mps->cyRow = 4*tm.tmHeight/3;
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 
+			char buffer[64];
+#ifdef WINVER
+			sprintf_s(buffer, "Mem%i", mps->memNum);
+#else
+			sprintf(buffer, "Mem%i", mps->memNum);
+#endif
+			int value = (int) QueryDebugKey(buffer);
+			mps->addr = value;
 			return 0;
 		}
 		case WM_SIZE:
@@ -688,6 +697,21 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 			}
 			return 0;
+		case WM_DESTROY: {
+			mp_settings *mps = (mp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			if (mps->memNum != -1)
+			{
+				char buffer[64];
+#ifdef WINVER
+				sprintf_s(buffer, "Mem%i", mps->memNum);
+#else
+				sprintf(buffer, "Mem%i", mps->memNum);
+#endif
+				DWORD value = mps->addr;
+				SaveDebugKey(buffer, (DWORD *) value);
+			}
+			return 0;
+		}
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}

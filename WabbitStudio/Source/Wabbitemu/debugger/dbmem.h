@@ -5,6 +5,7 @@
 #include "calc.h"
 
 typedef struct mempane_settings {
+	int memNum;						// mempane number
 	int addr;						// Top left address
 	int mode;						// current display mode
 	int sel;						// current selection

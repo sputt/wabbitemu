@@ -88,13 +88,24 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				UpdateWindow(hwnd);
 				return 0;
 		}
-
+		case WM_CLOSE:
+			SendMessage(calcs[gslot].hwndFrame, uMsg, wParam, lParam);
 		case WM_NCCALCSIZE:
 			return 0;
 
 		default:
 			return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}
+}
+
+void PositionLittleButtons(HWND hwnd, int slot)
+{
+	HDWP hdwp = BeginDeferWindowPos(3);
+	RECT wr;
+	GetWindowRect(hwnd, &wr);
+	DeferWindowPos(hdwp, calcs[slot].hwndSmallMinimize, NULL, wr.left + 285, wr.top + 34, 13, 13, 0);
+	DeferWindowPos(hdwp, calcs[slot].hwndSmallClose, NULL, wr.left + 300, wr.top + 34, 13, 13, 0);
+	EndDeferWindowPos(hdwp);
 }
 
 typedef HRESULT (WINAPI *SetThemeFunc)(HWND, LPCWSTR, LPCWSTR);
@@ -151,20 +162,20 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	bi.biClrUsed = 0;
 	bi.biClrImportant = 0;
 	DWORD dwBmpSize = ((width * bi.biBitCount + 31) / 32) * 4 * height;
-	BYTE *lpbitmap = (BYTE*) malloc(dwBmpSize);
+	BYTE *bitmap = (BYTE*) malloc(dwBmpSize);
 
 	// Gets the "bits" from the bitmap and copies them into a buffer
 	// which is pointed to by lpbitmap.
 	GetDIBits(calcs[gslot].hdcSkin, hbmSkin, 0,
 		(UINT)height,
-		lpbitmap,
+		bitmap,
 		(BITMAPINFO *)&bi, DIB_RGB_COLORS);
 
 	//this really sucked to figure out, but basically you can't fuck with
 	//the alpha channel in a bitmap unless you use GetDIBits to get it
 	//in an array, change the highest byte, then reset with SetDIBits
 	//This colors the faceplate that way
-	BYTE* pPixel = lpbitmap;
+	BYTE* pPixel = bitmap;
 	HRGN rgn = GetRegion();
 	int x,y;
 	for(y = 0; y < height; y++) {
@@ -177,9 +188,9 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 
 	SetDIBits(calcs[gslot].hdcSkin, hbmSkin, 0,
 			(UINT)height,
-			lpbitmap,
+			bitmap,
 			(BITMAPINFO *)&bi, DIB_RGB_COLORS);
-	free(lpbitmap);
+	free(bitmap);
 
 	RECT rc;
 	GetClientRect(hwndFrame, &rc);

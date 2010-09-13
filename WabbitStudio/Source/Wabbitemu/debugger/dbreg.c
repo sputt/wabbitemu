@@ -1124,18 +1124,17 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			int height = GetExpandPanesHeight() + 50;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
-			si.cbSize = sizeof (si);
+			si.cbSize = sizeof(si);
 			si.fMask  = SIF_ALL;
 			GetScrollInfo (hwnd, SB_VERT, &si);
-			float percent;
+			double percent;
 			if (si.nMax != 0)
-				percent = (float)si.nPos / (float)si.nMax;
+				percent = (double) si.nPos / (double) si.nMax;
 			else
 				percent = 0;
 
 			si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
 			if (height < rc.bottom) {
-				//si.fMask = SIF_RANGE;
 				si.nPage = rc.bottom;
 				height = 0;
 			}
@@ -1144,15 +1143,17 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			si.cbSize = sizeof(SCROLLINFO);
 			si.nMin = 0;
 			si.nMax = height;
-			si.nPos = (int) percent * height;
+			si.nPos = 0;
+			si.nPos = 0;//(int) (percent * height);
 			if (height != 0)
 				si.nPage = 40 - rc.bottom  / height;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-			if (percent != 0){
+			if (percent != 0.0) {
 				ScrollWindow(hwnd, 0, -si.nPos, NULL, NULL);
 			}
 
-			InvalidateRect(hwnd, NULL, FALSE);
+			DrawExpandPanes();
+			InvalidateRect(hwnd, NULL, TRUE);
 			UpdateWindow(hwnd);
 			return 0;
 		}
@@ -1169,37 +1170,30 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				 case SB_TOP:
 					  si.nPos = si.nMin;
 					  break;
-
 				 // user clicked the END keyboard key
 				 case SB_BOTTOM:
 					  si.nPos = si.nMax;
 					  break;
-
 				 // user clicked the top arrow
 				 case SB_LINEUP:
 					  si.nPos -= 10;
 					  break;
-
 				 // user clicked the bottom arrow
 				 case SB_LINEDOWN:
 					  si.nPos += 10;
 					  break;
-
 				 // user clicked the scroll bar shaft above the scroll box
 				 case SB_PAGEUP:
 					  si.nPos -= si.nPage;
 					  break;
-
 				 // user clicked the scroll bar shaft below the scroll box
 				 case SB_PAGEDOWN:
 					  si.nPos += si.nPage;
 					  break;
-
 				 // user dragged the scroll box
 				 case SB_THUMBTRACK:
 					  si.nPos = si.nTrackPos;
 					  break;
-
 				 default:
 					  break;
 			 }
@@ -1212,7 +1206,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			 if (si.nPos != yPos)
 			 {
 				  ScrollWindow(hwnd, 0, yPos - si.nPos, NULL, NULL);
-				  UpdateWindow (hwnd);
+				  UpdateWindow(hwnd);
 			 }
 			break;
 		}
@@ -1251,6 +1245,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			hdcDest = BeginPaint(hwnd, &ps);
 			RECT r;
 			GetClientRect(hwnd, &r);
+			//InvalidateRect(hwnd, &r, true);
 			FillRect(hdcDest, &r, GetStockBrush(WHITE_BRUSH));
 			DrawEdge(hdcDest, &r,EDGE_ETCHED, BF_LEFT);
 			EndPaint(hwnd, &ps);

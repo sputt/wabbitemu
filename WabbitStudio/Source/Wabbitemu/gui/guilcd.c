@@ -480,7 +480,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			HMENU hmenuContext = CreatePopupMenu();
 			int i;
-			for (i = 0; i < 4; i++)
+			for (i = 0; i < 5; i++)
 				InsertMenu(hmenuContext, -1, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), (LPCTSTR) names[i]);
 
 			if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenuContext)) {
@@ -490,8 +490,9 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			//DestroyMenu(hmenuContext);
 			return 0;
 		}
+		case WM_CLOSE:
 		case WM_COMMAND: {
-			SendMessage(calcs[gslot].hwndFrame, Message, wParam, lParam);
+			SendMessage(calcs[calc_from_hwnd(hwnd)].hwndFrame, Message, wParam, lParam);
 			return 0;
 		}
 		case WM_LBUTTONDOWN:
@@ -502,7 +503,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			static DWORD dwDragCountdown = 0;
 				dwDragCountdown = 0;
 			break;
-			}
+		}
 
 #ifdef USE_COM	
 		case WM_MOUSEMOVE:
@@ -691,9 +692,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 
 		case WM_KEYDOWN:
-		case WM_KEYUP:
+		case WM_KEYUP: {
 			SendMessage(calcs[gslot].hwndFrame, Message, wParam, lParam);
+			SetFocus(hwnd);
 			break;
+		}
 		case WM_DESTROY: {
 			calcs[gslot].hwndLCD = NULL;
 			if (calc_count() == 0)

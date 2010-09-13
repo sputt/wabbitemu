@@ -98,7 +98,13 @@ void ArrangeExpandPanes(void) {
 	for (i = 0; i < TotalPanes; i++) {
 		SendMessage(ExpandPanes[i], WM_SIZE, 0, 0);
 	}
+}
 
+void DrawExpandPanes(void) {
+	int i;
+	for (i = 0; i < TotalPanes; i++) {
+		SendMessage(ExpandPanes[i], WM_PAINT, 0, 0);
+	}
 }
 
 int GetExpandPanesHeight(void) {
@@ -192,13 +198,13 @@ static LRESULT CALLBACK HeaderProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					eps->ExpandState = EP_OPENING;
 					SetTimer(GetParent(hwnd), 0, 20, NULL);
 					eps->SlideSpeed = 0.0;
-					SendMessage(GetParent(GetParent(hwnd)), WM_SIZE, 0, 0);
+					//SendMessage(GetParent(GetParent(hwnd)), WM_SIZE, 0, 0);
 					break;
 				case EP_OPEN:
 					eps->ExpandState = EP_CLOSING;
 					SetTimer(GetParent(hwnd), 0, 20, NULL);
 					eps->SlideSpeed = 0.0;
-					SendMessage(GetParent(GetParent(hwnd)), WM_SIZE, 0, 0);
+					//SendMessage(GetParent(GetParent(hwnd)), WM_SIZE, 0, 0);
 					break;
 				case EP_OPENING:
 					eps->ExpandState = EP_CLOSING;
@@ -529,17 +535,17 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					eps->ExpandState = EP_OPEN;
 					eps->VisibleHeight = eps->dwHeight - tm.tmHeight*3/2;
 					printf("Pane is open\n");
-					/*HWND hParent = GetParent(hwnd);
+					HWND hParent = GetParent(hwnd);
 					if (hParent != NULL)
-						SendMessage(hParent, WM_SIZE, 0, 0);*/
+						SendMessage(hParent, WM_SIZE, 0, 0);
 				} else if ((eps->ExpandState == EP_CLOSING) && (eps->VisibleHeight <= 0)) {
 					KillTimer(hwnd, 0);
 					eps->ExpandState = EP_CLOSED;
 					eps->VisibleHeight = 0;
 					printf("Pane is closed\n");
-					/*HWND hParent = GetParent(hwnd);
+					HWND hParent = GetParent(hwnd);
 					if (hParent != NULL)
-						SendMessage(hParent, WM_SIZE, 0, 0);*/
+						SendMessage(hParent, WM_SIZE, 0, 0);
 				}
 
 				SetWindowPos(eps->contents, HWND_BOTTOM, 16, tm.tmHeight*3 + (int) eps->VisibleHeight - eps->dwHeight, 0, 0, SWP_NOSIZE);
@@ -642,7 +648,7 @@ void SaveDebugKey(char *name, DWORD *value) {
 		printf("Failed opening Debug registry");
 		return;
 	}
-	int error = RegSetValueEx(hkeyDebugger, name, 0, REG_DWORD, (const BYTE*)&value, sizeof(REG_DWORD));
+	int error = RegSetValueEx(hkeyDebugger, name, 0, REG_DWORD, (const BYTE*) &value, sizeof(REG_DWORD));
 	if (error != ERROR_SUCCESS)
 		error +=1;
 }

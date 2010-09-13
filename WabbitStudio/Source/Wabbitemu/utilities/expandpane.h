@@ -18,6 +18,7 @@ void GetExpandPaneState(ep_state *);
 void SetExpandPaneState(const ep_state *);
 void ArrangeExpandPanes(void);
 int GetExpandPanesHeight(void);
+void DrawExpandPanes(void);
 
 #define WM_SHIFT (WM_USER) //wParam = position to move to
 
