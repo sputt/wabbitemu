@@ -118,11 +118,7 @@ void handle_screenshot() {
 		}
 		case GIF_START:
 		{
-#ifdef WINVER
 			strcpy_s(gif_fn_backup, gif_file_name);
-#else
-			strcpy(gif_fn_backup, gif_file_name);
-#endif
 			
 			if (gif_autosave) {
 				/* do file save */
@@ -132,24 +128,16 @@ void handle_screenshot() {
 					
 					for (i = 0; test; i++) {
 						generate_gif_name(gif_file_name, i, fn);
-#ifdef WINVER
 						fopen_s(&test, fn, "r");
-#else
-						test = fopen(fn, "r");
-#endif
 						if (test) fclose(test);
 					}
-#ifdef WINVER
 					strcpy_s(gif_file_name, fn);
-#else
-					strcpy(gif_file_name, fn);
-#endif
 				}
 			} else {
 #ifndef _WINDLL
 				if (SetGifName(TRUE)) {
-					calcs[gslot].gif_disp_state = GDS_ENDING;
-					SendMessage(calcs[gslot].hwndFrame, WM_COMMAND, MAKEWPARAM(IDM_FILE_GIF, 0), 0);
+					calcs[ScreenshotSlot].gif_disp_state = GDS_ENDING;
+					SendMessage(calcs[ScreenshotSlot].hwndFrame, WM_COMMAND, MAKEWPARAM(IDM_FILE_GIF, 0), 0);
 					gif_write_state = GIF_IDLE;
 					break;
 				}
@@ -213,11 +201,7 @@ void handle_screenshot() {
 			//WriteRIFFIndex();
 			gif_newframe = 1;
 			gif_file_num++;
-#ifdef WINVER
 			strcpy_s(gif_file_name, gif_fn_backup);
-#else
-			strcpy(gif_file_name, gif_fn_backup);
-#endif
 			break;
 		}
 	}
