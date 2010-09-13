@@ -310,7 +310,7 @@ void gif_writer() {
 			break;
 		case GIF_START: {
 			int i;
-			gif_colors = calcs[gslot].cpu.pio.lcd->shades + 1;
+			gif_colors = calcs[ScreenshotSlot].cpu.pio.lcd->shades + 1;
 			for (i = 0; i < gif_colors; i++) {
 #ifdef HIGH_SHADE_GIF
 				double color_ratio = 1.0 - ((double) i / (double) (gif_colors - 1));
