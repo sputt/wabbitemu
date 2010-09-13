@@ -222,10 +222,10 @@
     <ClCompile Include="interface\WabbitemuClassFactory.cpp">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
-    <ClCompile Include="Wabbitemu_i.c">
+    <ClCompile Include="interface\mapeditor.c">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
-    <ClCompile Include="interface\mapeditor.c">
+    <ClCompile Include="Wabbitemu_i.c">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
   </ItemGroup>

@@ -218,45 +218,45 @@ int gui_frame_update(int slot) {
 	int skinWidth = 0, skinHeight = 0, keymapWidth = -1, keymapHeight = -1;
 	HDC hdc = GetDC(calcs[slot].hwndFrame);
 	if (calcs[slot].hdcKeymap)
-		ReleaseDC(calcs[slot].hwndFrame, calcs[slot].hdcKeymap);
+		DeleteDC(calcs[slot].hdcKeymap);
 	if (calcs[gslot].hdcSkin)
-		ReleaseDC(calcs[slot].hwndFrame, calcs[gslot].hdcSkin);
+		DeleteDC(calcs[slot].hdcSkin);
 	calcs[slot].hdcKeymap = CreateCompatibleDC(hdc);
 	calcs[slot].hdcSkin = CreateCompatibleDC(hdc);
 	//load skin and keymap
-	CGdiPlusBitmapResource *hbmSkin = new CGdiPlusBitmapResource(CalcModelTxt[calcs[slot].model],_T("PNG"), g_hInst);
-	CGdiPlusBitmapResource *hbmKeymap = new CGdiPlusBitmapResource();
+	CGdiPlusBitmapResource hbmSkin(CalcModelTxt[calcs[slot].model],_T("PNG"), g_hInst);
+	CGdiPlusBitmapResource hbmKeymap;
 	switch(calcs[slot].model)
 	{
 		case TI_73:
 		case TI_83P:
 		case TI_83PSE:
-			hbmKeymap->Load("TI-83+Keymap", _T("PNG"), g_hInst);
+			hbmKeymap.Load("TI-83+Keymap", _T("PNG"), g_hInst);
 			break;
 		case TI_82:
-			hbmKeymap->Load("TI-82Keymap", _T("PNG"), g_hInst);
+			hbmKeymap.Load("TI-82Keymap", _T("PNG"), g_hInst);
 			break;
 		case TI_83:
-			hbmKeymap->Load("TI-83Keymap", _T("PNG"), g_hInst);
+			hbmKeymap.Load("TI-83Keymap", _T("PNG"), g_hInst);
 			break;
 		case TI_84P:
 		case TI_84PSE:
-			hbmKeymap->Load("TI-84+SEKeymap", _T("PNG"), g_hInst);
+			hbmKeymap.Load("TI-84+SEKeymap", _T("PNG"), g_hInst);
 			break;
 		case TI_85:
 		case TI_86:
-			hbmKeymap->Load("TI-86Keymap", _T("PNG"), g_hInst);
+			hbmKeymap.Load("TI-86Keymap", _T("PNG"), g_hInst);
 		default:
 			break;
 	}
 
 	if (hbmSkin) {
-		skinWidth = hbmSkin->m_pBitmap->GetWidth();
-		skinHeight = hbmSkin->m_pBitmap->GetHeight();
+		skinWidth = hbmSkin.m_pBitmap->GetWidth();
+		skinHeight = hbmSkin.m_pBitmap->GetHeight();
 	}
 	if (hbmKeymap) {
-		keymapWidth = hbmKeymap->m_pBitmap->GetWidth();
-		keymapHeight = hbmKeymap->m_pBitmap->GetHeight();
+		keymapWidth = hbmKeymap.m_pBitmap->GetWidth();
+		keymapHeight = hbmKeymap.m_pBitmap->GetHeight();
 	}
 	int x, y, foundX = 0, foundY = 0;
 	bool foundScreen = FALSE;
@@ -269,7 +269,7 @@ int gui_frame_update(int slot) {
 		Color pixel;
 		for(y = 0; y < skinHeight && foundScreen == false; y++) {
 			for (x = 0; x < skinWidth && foundScreen == false; x++) {
-				hbmKeymap->m_pBitmap->GetPixel(x, y, &pixel);
+				hbmKeymap.m_pBitmap->GetPixel(x, y, &pixel);
 				if (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0)	{
 					//81 92
 					foundX = x;
@@ -282,12 +282,12 @@ int gui_frame_update(int slot) {
 		calcs[slot].rectLCD.top = foundY;
 		do {
 			foundX++;
-			hbmKeymap->m_pBitmap->GetPixel(foundX, foundY, &pixel);
+			hbmKeymap.m_pBitmap->GetPixel(foundX, foundY, &pixel);
 		} while (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0);
 		calcs[slot].rectLCD.right = foundX--;
 		do { 
 			foundY++;
-			hbmKeymap->m_pBitmap->GetPixel(foundX, foundY, &pixel);
+			hbmKeymap.m_pBitmap->GetPixel(foundX, foundY, &pixel);
 		} while (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0);
 		calcs[slot].rectLCD.bottom = foundY;
 	}
@@ -366,47 +366,48 @@ int gui_frame_update(int slot) {
 	return 0;*/
 	HBITMAP hbmSkinOld, hbmKeymapOld;
 	//translate to gdi compatibility to simplify coding :/
-	hbmKeymap->m_pBitmap->GetHBITMAP(Color::White, &hbmKeymapOld);
+	hbmKeymap.m_pBitmap->GetHBITMAP(Color::White, &hbmKeymapOld);
 	SelectObject(calcs[slot].hdcKeymap, hbmKeymapOld);
 	//get the HBITMAP for the skin DONT change the first value, it is necessary for transparency to work
-	if (calcs[slot].bCutout)
-		hbmSkin->m_pBitmap->GetHBITMAP(Color::AlphaMask, &hbmSkinOld);
-	else
-		hbmSkin->m_pBitmap->GetHBITMAP(Color::Gray, &hbmSkinOld);
+	hbmSkin.m_pBitmap->GetHBITMAP(Color::AlphaMask, &hbmSkinOld);
 	//84+SE has custom faceplates :D, draw it to the background
+	//thanks MSDN your documentation rules :))))
 	HDC hdcOverlay = CreateCompatibleDC(calcs[slot].hdcSkin);
-	int error = FillRect(calcs[slot].hdcSkin, &calcs[slot].rectSkin, GetStockBrush(GRAY_BRUSH));
+	HBITMAP blankBitmap = CreateCompatibleBitmap(hdc, skinWidth, skinHeight);
+	SelectObject(calcs[slot].hdcSkin, blankBitmap);
+	if (!calcs[slot].bCutout || !calcs[slot].SkinEnabled)
+		FillRect(calcs[slot].hdcSkin, &calcs[slot].rectSkin, GetStockBrush(GRAY_BRUSH));
 	if (calcs[slot].model == TI_84PSE) {
-		if (DrawFaceplateRegion(calcs[slot].hdcSkin))
+		if (DrawFaceplateRegion(calcs[slot].hdcSkin, calcs[slot].FaceplateColor))
 			MessageBox(NULL, "Unable to draw faceplate", "error", MB_OK);
 	}
 	//ok maybe its just because 6am and i've been doing this all night but seriously, WTF
 	//this selectobject works but no other drawing does. GODDAMN
 
 	//this needs to be done so we can alphablend the screen
-	SelectObject(calcs[slot].hdcSkin, hbmSkinOld);
+	HBITMAP oldSkin = (HBITMAP) SelectObject(hdcOverlay, hbmSkinOld);
 	BLENDFUNCTION bf;
 	bf.BlendOp = AC_SRC_OVER;
 	bf.BlendFlags = 0;
 	bf.SourceConstantAlpha = 255;
 	bf.AlphaFormat = AC_SRC_ALPHA;
-	error = AlphaBlend(calcs[slot].hdcSkin, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, hdcOverlay,
+	AlphaBlend(calcs[slot].hdcSkin, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, hdcOverlay,
 		calcs[slot].rectSkin.left, calcs[slot].rectSkin.top, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, bf);
-	//BitBlt(calcs[slot].hdcSkin, 0, 0, 350, 725, hdcOverlay, 0, 0, SRCCOPY);
 	if (calcs[slot].bCutout && calcs[slot].SkinEnabled)	{
-		if (EnableCutout(calcs[slot].hwndFrame, hbmSkinOld) != 0)
+		if (EnableCutout(calcs[slot].hwndFrame, oldSkin) != 0)
 			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
 	}
 	if (calcs[slot].hwndStatusBar != NULL)
 		SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
 	SendMessage(calcs[slot].hwndFrame, WM_SIZE, 0, 0);
 
-	delete hbmSkin;
-	delete hbmKeymap;
-	error = DeleteObject(hbmKeymapOld);
-	error = DeleteObject(hbmSkinOld);
-	//DeleteDC(hdcOverlay);
+	DeleteObject(hbmKeymapOld);
+	DeleteObject(hbmSkinOld);
+	DeleteObject(blankBitmap);
+	DeleteDC(hdcOverlay);
 	ReleaseDC(calcs[slot].hwndFrame, hdc);
+	/*delete hbmSkin;
+	delete hbmKeymap;*/
 	return 0;
 }
 #else

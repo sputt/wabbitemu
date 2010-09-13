@@ -514,9 +514,8 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 							//char lpstrFile[MAX_PATH];
 							//BrowseBMPFile(&lpstrFile);
 						}
-						case IDC_CHKCUTOUT: {
+						case IDC_CHKCUTOUT:
 							break;
-						}
 						case IDC_CHKCSTMSKIN: {
 							BOOL customSkinSetting;
 							customSkinSetting = (BOOL) SendMessage(chkCustom, BM_GETCHECK, 0, 0);
@@ -553,12 +552,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 					if (chkState != calcs[SlotSave].bCutout) {
 						calcs[SlotSave].bCutout = chkState;
 						gui_frame_update(SlotSave);
-						/*if (calcs[gslot].bCutout) {
-							EnableCutout(calcs[SlotSave].hwndFrame, NULL);
-						} else {
-							DisableCutout(calcs[SlotSave].hwndFrame);
-						}*/					}
-					//SetWindowLong(hwndDlg, DWL_MSGRESULT, PSNRET_NOERROR);
+					}
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -573,18 +567,20 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 }
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND saveState_check, loadFiles_check, doBackups_check;
+	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			saveState_check = GetDlgItem(hwnd, IDC_CHKSAVE);
 			loadFiles_check = GetDlgItem(hwnd, IDC_CHKLOADFILES);
 			doBackups_check = GetDlgItem(hwnd, IDC_CHKREWINDING);
+			wizard_check = GetDlgItem(hwnd, IDC_CHKSHOWWIZARD);
 
 			SendMessage(saveState_check, BM_SETCHECK, exit_save_state, 0);
 			SendMessage(loadFiles_check, BM_SETCHECK, load_files_first, 0);
 #ifdef WITH_BACKUPS
 			SendMessage(doBackups_check, BM_SETCHECK, do_backups, 0);
 #endif
+			SendMessage(wizard_check, BM_SETCHECK, show_wizard, 0);
 			return TRUE;
 		}
 		case WM_COMMAND: {
@@ -600,6 +596,8 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 							break;
 						case IDC_CHKREWINDING:
 							break;
+						case IDC_CHKSHOWWIZARD:
+							break;
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
 					break;
@@ -613,6 +611,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					int i;
 					exit_save_state = (BOOL) SendMessage(saveState_check, BM_GETCHECK, 0, 0);
 					load_files_first = (BOOL) SendMessage(loadFiles_check, BM_GETCHECK, 0, 0);
+					show_wizard = (BOOL) SendMessage(wizard_check, BM_GETCHECK, 0, 0);;
 					//we need to persist this immediately
 					SaveWabbitKey("load_files_first", REG_DWORD, &load_files_first);
 #ifdef WITH_BACKUPS
@@ -1219,7 +1218,7 @@ void RecurseAddItems(HMENU hMenu, char *base) {
 			strcat(temp, " > ");
 #endif
 			RecurseAddItems(mi.hSubMenu, temp);
-			free(temp);
+			//free(temp);
 		} else {
 			if(!IsValidCmdRange(mi.wID))
 				continue;
@@ -1227,7 +1226,7 @@ void RecurseAddItems(HMENU hMenu, char *base) {
 			li.iItem = ListView_GetItemCount(hListMenu);
 			li.lParam = mi.wID;			// is this mixed icon/nie mode going to make listview funny?
 			ListView_InsertItem(hListMenu, &li);
-			free(temp);
+			//free(temp);
 		}
 	}
 }

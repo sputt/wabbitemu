@@ -11,7 +11,7 @@
 #ifdef USE_GDIPLUS2
 int DrawFaceplateRegion(Graphics *graphics);
 #else
-int DrawFaceplateRegion(HDC);
+int DrawFaceplateRegion(HDC, COLORREF);
 #endif
 HRGN GetRegion();
 

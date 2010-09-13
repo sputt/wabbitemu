@@ -28,6 +28,7 @@ static jmp_buf exc_pkt, exc_byte; // Exceptions
 
 /* Prototypes of static functions*/
 static LINK_ERR forceload_app(CPU_t *, TIFILE_t *);
+static LINK_ERR link_send_app(CPU_t *, TIFILE_t *);
 #ifdef _DEBUG
 static void print_command_ID(uint8_t);
 #endif
