@@ -32,7 +32,7 @@ static POINT ptRgnEdge[] = {{75,675},
 	graphics->FillPolygon(brush, (Point *) ptRgn, nPoints, FillMode::FillModeWinding);
 	return 0;
 }*/
-int DrawFaceplateRegion(HDC hdc) {
+int DrawFaceplateRegion(HDC hdc, COLORREF ref) {
 	unsigned int nPoints = (sizeof(ptRgnEdge) / sizeof(POINT)) * 2;
 	POINT ptRgn[(sizeof(ptRgnEdge) / sizeof(POINT)) * 2];
 
@@ -48,8 +48,8 @@ int DrawFaceplateRegion(HDC hdc) {
 	HRGN hrgn = CreatePolygonRgn(ptRgn, nPoints, WINDING);
 	if (hrgn == NULL)
 		return 1;
-	int color = calcs[gslot].FaceplateColor;
-	HBRUSH hFaceplateColor = CreateSolidBrush(color);
+	//int color = calcs[gslot].FaceplateColor;
+	HBRUSH hFaceplateColor = CreateSolidBrush(ref);
 	FillRgn(hdc, hrgn, hFaceplateColor);
 	DeleteObject(hFaceplateColor);
 	return 0;

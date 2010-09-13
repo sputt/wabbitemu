@@ -117,80 +117,86 @@ typedef HRESULT (WINAPI *DwmSetAttrib)(HWND, DWORD, LPCVOID, DWORD);
  */
 int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	if (hwndFrame == NULL) return 1;
-	if (calcs[gslot].SkinEnabled == FALSE)
+	int slot = calc_from_hwnd(hwndFrame);
+	if (calcs[slot].SkinEnabled == FALSE)
 		return 1;
+
+	u_int width = calcs[slot].rectSkin.right;
+	u_int height = calcs[slot].rectSkin.bottom;
 
 	SetWindowLongPtr(hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
 	SetWindowLongPtr(hwndFrame, GWL_STYLE, WS_VISIBLE | WS_POPUP);
 
-	int scale = calcs[gslot].Scale;
-	if (calcs[gslot].SkinEnabled)
+	int scale = calcs[slot].Scale;
+	if (calcs[slot].SkinEnabled)
 		scale = 2;
 
-	DestroyWindow(calcs[gslot].hwndLCD);
+	DestroyWindow(calcs[slot].hwndLCD);
 	//BOOL disableTransition = TRUE;
-	//DwmSetWindowAttribute(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+	//DwmSetWindowAttribute(calcs[slot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 	HMODULE hasDWM = LoadLibrary("dwmapi.dll");
 	if (hasDWM) {
 		BOOL disableTransition = TRUE;
 		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, "DwmSetWindowAttribute");
-		SetAttrib(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+		SetAttrib(calcs[slot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 	}
-	calcs[gslot].hwndLCD = CreateWindowEx(
+	calcs[slot].hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
 			"Wabbitemu",
 			WS_VISIBLE,
-			0, 0, calcs[gslot].cpu.pio.lcd->width*scale, 64*scale,
-			calcs[gslot].hwndFrame, NULL, g_hInst,  NULL);
+			0, 0, calcs[slot].cpu.pio.lcd->width*scale, 64*scale,
+			calcs[slot].hwndFrame, NULL, g_hInst,  NULL);
 
-	SetWindowTheme(calcs[gslot].hwndLCD, (LPCWSTR)_T(" "), (LPCWSTR)_T(" "));
+	SetWindowTheme(calcs[slot].hwndLCD, (LPCWSTR)_T(" "), (LPCWSTR)_T(" "));
 	HDC hScreen = GetDC(NULL);
 
-	int width = calcs[gslot].rectSkin.right;
-	int height = calcs[gslot].rectSkin.bottom;
-	BITMAPINFOHEADER   bi;
-	bi.biSize = sizeof(BITMAPINFOHEADER);
-	bi.biWidth = width;
-	bi.biHeight = height;
-	bi.biPlanes = 1;
-	bi.biBitCount = 32;
-	bi.biCompression = BI_RGB;
-	bi.biSizeImage = 0;
-	bi.biXPelsPerMeter = 0;
-	bi.biYPelsPerMeter = 0;
-	bi.biClrUsed = 0;
-	bi.biClrImportant = 0;
-	DWORD dwBmpSize = ((width * bi.biBitCount + 31) / 32) * 4 * height;
-	BYTE *bitmap = (BYTE*) malloc(dwBmpSize);
+	if (calcs[slot].model == TI_84PSE) {
+			BITMAPINFOHEADER bih;
+			bih.biSize = sizeof(BITMAPINFOHEADER);
+			bih.biWidth = width;
+			bih.biHeight = height;
+			bih.biPlanes = 1;
+			bih.biBitCount = 32;
+			bih.biCompression = BI_RGB;
+			bih.biSizeImage = 0;
+			bih.biXPelsPerMeter = 0;
+			bih.biYPelsPerMeter = 0;
+			bih.biClrUsed = 0;
+			bih.biClrImportant = 0;
+			DWORD dwBmpSize = ((width * bih.biBitCount + 31) / 32) * 4 * height;
+			BITMAPINFO bi;
+			bi.bmiHeader = bih;
+			BYTE *bitmap = (BYTE*) malloc(dwBmpSize);
 
-	// Gets the "bits" from the bitmap and copies them into a buffer
-	// which is pointed to by lpbitmap.
-	GetDIBits(calcs[gslot].hdcSkin, hbmSkin, 0,
-		(UINT)height,
-		bitmap,
-		(BITMAPINFO *)&bi, DIB_RGB_COLORS);
+			// Gets the "bits" from the bitmap and copies them into a buffer
+			// which is pointed to by lpbitmap.
+			GetDIBits(calcs[slot].hdcSkin, hbmSkin, 0,
+				height,
+				bitmap,
+				&bi, DIB_RGB_COLORS);
 
-	//this really sucked to figure out, but basically you can't fuck with
-	//the alpha channel in a bitmap unless you use GetDIBits to get it
-	//in an array, change the highest byte, then reset with SetDIBits
-	//This colors the faceplate that way
-	BYTE* pPixel = bitmap;
-	HRGN rgn = GetRegion();
-	int x,y;
-	for(y = 0; y < height; y++) {
-		for(x = 0; x < width; x++) {
-			if (PtInRegion(rgn, x, height - y))
-				pPixel[3] = 0xFF;
-			pPixel+=4;
-		}
+			//this really sucked to figure out, but basically you can't fuck with
+			//the alpha channel in a bitmap unless you use GetDIBits to get it
+			//in an array, change the highest byte, then reset with SetDIBits
+			//This colors the faceplate that way
+			BYTE* pPixel = bitmap;
+			HRGN rgn = GetRegion();
+			int x,y;
+			for(y = 0; y < height; y++) {
+				for(x = 0; x < width; x++) {
+					if (PtInRegion(rgn, x, height - y))
+						pPixel[3] = 0xFF;
+					pPixel+=4;
+				}
+			}
+
+			SetDIBits(calcs[slot].hdcSkin, hbmSkin, 0,
+					height,
+					bitmap,
+					&bi, DIB_RGB_COLORS);
+			free(bitmap);
 	}
-
-	SetDIBits(calcs[gslot].hdcSkin, hbmSkin, 0,
-			(UINT)height,
-			bitmap,
-			(BITMAPINFO *)&bi, DIB_RGB_COLORS);
-	free(bitmap);
 
 	RECT rc;
 	GetClientRect(hwndFrame, &rc);
@@ -208,15 +214,15 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	SIZE size;
 	size.cx = width;
 	size.cy = height;
-	SetBkColor(calcs[gslot].hdcSkin, 0xFF0000);
+	SetBkColor(calcs[slot].hdcSkin, 0xFF0000);
 
-	int done = UpdateLayeredWindow(hwndFrame, hScreen, NULL, &size, calcs[gslot].hdcSkin, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
+	int done = UpdateLayeredWindow(hwndFrame, hScreen, NULL, &size, calcs[slot].hdcSkin, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
 	int error;
 	if (!done)
 		error = GetLastError();
 
 	ReleaseDC(0, hScreen);
-	UpdateWindow(calcs[gslot].hwndLCD);
+	UpdateWindow(calcs[slot].hwndLCD);
 	SendMessage(hwndFrame, WM_MOVE, 0, 0);
 
 	// If there's a menu bar, include its height in the skin offset
@@ -236,7 +242,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	wc.hInstance = g_hInst;
 	RegisterClass(&wc);
 
-	calcs[gslot].hwndSmallClose = CreateWindow(
+	calcs[slot].hwndSmallClose = CreateWindow(
 		"WABBITSMALLBUTTON",
 		"wabbitclose",
 		WS_VISIBLE, // | BS_OWNERDRAW,
@@ -246,10 +252,10 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 		(HMENU) NULL,
 		g_hInst,
 		NULL);
-	if (calcs[gslot].hwndSmallClose == NULL) return 1;
-	SetWindowLong(calcs[gslot].hwndSmallClose, GWL_STYLE, WS_VISIBLE);
+	if (calcs[slot].hwndSmallClose == NULL) return 1;
+	SetWindowLong(calcs[slot].hwndSmallClose, GWL_STYLE, WS_VISIBLE);
 
-	calcs[gslot].hwndSmallMinimize = CreateWindowEx(
+	calcs[slot].hwndSmallMinimize = CreateWindowEx(
 		0,
 		"WABBITSMALLBUTTON",
 		"wabbitminimize",
@@ -260,10 +266,10 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 		(HMENU) NULL,
 		g_hInst,
 		NULL);
-	if (calcs[gslot].hwndSmallMinimize == NULL) return 1;
-	SetWindowLong(calcs[gslot].hwndSmallMinimize, GWL_STYLE, WS_VISIBLE);
+	if (calcs[slot].hwndSmallMinimize == NULL) return 1;
+	SetWindowLong(calcs[slot].hwndSmallMinimize, GWL_STYLE, WS_VISIBLE);
 
-	if (!calcs[gslot].SkinEnabled) {
+	if (!calcs[slot].SkinEnabled) {
 		RECT wr;
 		GetWindowRect(hwndFrame, &wr);
 		SetWindowPos(hwndFrame, NULL,
