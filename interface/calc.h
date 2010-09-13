@@ -163,6 +163,7 @@ void calc_erase_certificate(u_char*, int);
 
 GLOBAL calc_t calcs[MAX_CALCS];
 GLOBAL int gslot;
+GLOBAL int ScreenshotSlot;
 GLOBAL int DebuggerSlot;
 #ifdef WITH_BACKUPS
 #define MAX_BACKUPS 10

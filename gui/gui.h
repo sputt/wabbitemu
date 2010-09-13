@@ -6,7 +6,7 @@
 
 #define WABBITVER		"1.1"
 
-#define g_szWebPage		"http://www.revsoft.org/emu"
+#define g_szWebPage		"http://wabbit.codeplex.com"//"http://www.revsoft.org/emu"
 
 #define g_szAppName 	"z80"
 #define g_szDebugName 	"debug"

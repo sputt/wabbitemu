@@ -46,8 +46,6 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 		break;
 	case ID_MEMTAB: {
 		MoveWindow(hwndChild, 3, cyDisasm + cyGripper, rcParent->right - 103 - REG_PANE_WIDTH - 3, cyMem - cyGripper - 3, TRUE);
-		//TabCtrl_AdjustRect(hwndChild, FALSE, &rcParent);
-		//SetWindowPos(hmem, HWND_TOP, rcParent->left, rcParent->top, rcParent->right - rcParent->left, rcParent->bottom - rcParent->top, 0);
 		HWND curTab = hmemlist[TabCtrl_GetCurSel(hwndChild)];
 		MoveWindow(curTab, 3, 26, rcParent->right - REG_PANE_WIDTH - 113, rcParent->bottom, TRUE);
 		SendMessage(curTab, WM_SIZE, 0, 0);
@@ -116,7 +114,10 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	static BOOL top_locked = FALSE;
 	static BOOL bottom_locked = FALSE;
 
-
+	static const char* MemPaneString = "NumMemPane";
+	static const char* DisasmPaneString = "NumDisasmPane";
+	static const char* MemSelIndexString = "MemSelIndex";
+	static const char* DisasmSelString = "DiasmSelIndex";
 
 	switch (Message) {
 		case WM_CREATE:
@@ -205,13 +206,21 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				hmem,
 				(HMENU) ID_MEM,
 				g_hInst, &mps[1]);
+			total_mem_pane = 1;
+			int panes_to_add = (int) (QueryDebugKey((char *) MemPaneString) - 1);
+			while (panes_to_add > 0) {
+				SendMessage(hwnd, WM_COMMAND, IDM_VIEW_ADDMEM, 0);
+				panes_to_add--;
+			}
 			TCITEM tie;
 			tie.mask = TCIF_TEXT | TCIF_IMAGE;
 			tie.iImage = -1;
 			tie.pszText = "Mem 1";
 			tie.lParam = (LPARAM)hmem;
 			TabCtrl_InsertItem(hmem, 0, &tie);
-			total_mem_pane = 1;
+
+			int selIndex = (int) QueryDebugKey((char *) MemSelIndexString);
+			TabCtrl_SetCurSel(hmem, selIndex);
 
 			hreg =
 			CreateWindow(
@@ -227,6 +236,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			mps[0].mode = MEM_WORD;
 			mps[0].sel = mps[1].addr;
 			mps[0].track = offsetof(struct CPU, sp);
+			mps[0].memNum = -1;
 
 			CreateWindow(
 				g_szMemName,
@@ -248,6 +258,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			if (calcs[DebuggerSlot].profiler.running)
 				CheckMenuItem(GetSubMenu(GetMenu(hwnd), 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
+			if (code_count_tstates != -1)
+				CheckMenuItem(GetSubMenu(GetMenu(hwnd), 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_CHECKED);
 
 			hwndPrev = hdisasm;
 			SetFocus(hdisasm);
@@ -474,6 +486,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				mps[total_mem_pane + 1].mode = MEM_BYTE;
 				mps[total_mem_pane + 1].sel = 0x000;
 				mps[total_mem_pane + 1].track = -1;
+				mps[total_mem_pane + 1].memNum = total_mem_pane;
 
 				hmemlist[total_mem_pane] = CreateWindow(
 					g_szMemName,
@@ -639,13 +652,17 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					break;
 			}
 			return 0;
-		case WM_DESTROY:
+		case WM_DESTROY: {
 			CPU_step((&calcs[DebuggerSlot].cpu));
 			calcs[DebuggerSlot].running = TRUE;
 			GetWindowRect(hwnd, &db_rect);
 
+			int selIndex = TabCtrl_GetCurSel(hmem);
+			SaveDebugKey((char *) MemPaneString, (DWORD *) total_mem_pane);
+			SaveDebugKey((char *) MemSelIndexString, (DWORD *) selIndex);
 			GetExpandPaneState(&expand_pane_state);
 			return 0;
+		}
 	}
 	return DefWindowProc(hwnd, Message, wParam, lParam);
 }

@@ -62,6 +62,12 @@ int link_connect(CPU_t *cpu1, CPU_t *cpu2) {
 	return 0;
 }
 
+int link_disconnect(CPU_t *cpu1, CPU_t *cpu2) {
+	link_init(cpu1);
+	link_init(cpu2);
+	return 0;
+}
+
 /* Run a number of tstates */
 static void link_wait(CPU_t *cpu, time_t tstates) {
 	long long time_end = tc_tstates(cpu->timer_c) + tstates;
@@ -514,6 +520,7 @@ LINK_ERR link_send_app(CPU_t *cpu, TIFILE_t *tifile) {
 				link_send_pkt(cpu, CID_VAR, &flash_hdr);
 
 				// Receive the ACK
+				//WORK ITEM 7140 FAILS HERE!!! umm sometimes...
 				link_recv_pkt(cpu, &rpkt, data);
 				if (rpkt.command_ID != CID_ACK)
 					return LERR_LINK;
@@ -572,6 +579,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 			&& dest[page][0x00] == 0x80 && dest[page][0x01] == 0x0F; page
 			-= dest[page][0x1C]) {
 
+		//different size app need to send the long way
 		if (!memcmp(&dest[page][0x12], &tifile->flash->data[0][0x12], 8)) {
 			if (dest[page][0x1C] != tifile->flash->pages)
 				return link_send_app(cpu, tifile);
