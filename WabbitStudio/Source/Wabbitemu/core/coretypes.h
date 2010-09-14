@@ -4,7 +4,9 @@
 #define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
 
 #ifdef WINVER
-#include <stdint.h>
+typedef BYTE uint8_t;
+typedef WORD uint16_t;
+typedef DWORD uint32_t;
 #else
 #include <sys/types.h>
 #endif

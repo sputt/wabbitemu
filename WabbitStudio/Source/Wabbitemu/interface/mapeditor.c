@@ -1,20 +1,30 @@
 #include "stdafx.h"
 
+#include "Wabbitemu_h.h"
 #include "WabbitemuClassFactory.h"
 #include "calc.h"
 #include "label.h"
 #include "lcd.h"
 #include "keys.h"
 
-extern HINSTANCE g_hInst;
+HINSTANCE g_hInst;
 
 static void (*fnFrameCallback)(void) = NULL;
 static int BasePage = 0;
+
+class CWabbitemuModule : public CAtlDllModuleT< CWabbitemuModule >
+{
+public :
+	DECLARE_LIBID(LIBID_WabbitemuLib)
+};
+
+CWabbitemuModule _AtlModule;
 
 #ifdef _WINDLL
 __declspec (dllexport) BOOL WINAPI DllMain(HINSTANCE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
 {
 	g_hInst = hModule;
+	 _AtlModule.DllMain(ul_reason_for_call, lpReserved);
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
@@ -74,11 +84,7 @@ int FindAnimationInfo(int type, unsigned short addr, int *frame, unsigned short 
 	}
 	
 	char label_name[64];
-#ifdef WINVER
-	sprintf_s(label_name, "%s_ANIM_PAGE", name);
-#else
 	sprintf(label_name, "%s_ANIM_PAGE", name);
-#endif
 	label_struct *lab = lookup_label(label_name);
 	if (lab == NULL) {
 		return 0;
@@ -188,7 +194,7 @@ void HookZelda(void (*fnCallback)(void) ) {
 	if (lab == NULL) {
 		return;
 	}
-	u_int i;
+	int i;
 	for (i = 0; i < calcs[0].applist.count; i++) {
 		if (_strnicmp(calcs[0].applist.apps[i].name, "ZELDA", 5) == 0) {
 			BasePage = calcs[0].applist.apps[i].page;
@@ -226,11 +232,11 @@ int ReadVariable(char *name, void *data, int bytes) {
 	return bytes;
 }
 
-/*int gui_debug(int slot) {
+int gui_debug(int slot) {
 	if (fnFrameCallback != NULL) {
 		fnFrameCallback();
 	}
 	CPU_step(&calcs[0].cpu);
 	calcs[0].running = TRUE;
 	return 0;
-}*/
+}

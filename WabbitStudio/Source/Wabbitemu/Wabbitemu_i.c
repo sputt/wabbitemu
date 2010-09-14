@@ -5,18 +5,18 @@
 /* link this file in with the server and any clients */
 
 
- /* File created by MIDL compiler version 7.00.0555 */
-/* at Mon Sep 06 01:14:33 2010
+ /* File created by MIDL compiler version 7.00.0500 */
+/* at Tue Sep 07 22:54:19 2010
  */
-/* Compiler settings for interface\Wabbitemu.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
+/* Compiler settings for .\interface\Wabbitemu.idl:
+    Oicf, W1, Zp8, env=Win32 (32b run)
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
          __declspec(uuid()), __declspec(selectany), __declspec(novtable)
          DECLSPEC_UUID(), MIDL_INTERFACE()
 */
-/* @@MIDL_FILE_HEADING(  ) */
+//@@MIDL_FILE_HEADING(  )
 
 #pragma warning( disable: 4049 )  /* more than 64k source lines */
 
@@ -77,6 +77,12 @@ MIDL_DEFINE_GUID(IID, IID_IPage,0xB61370EF,0x8BEF,0x4bb9,0xAF,0x88,0xFF,0x7F,0xF
 
 
 MIDL_DEFINE_GUID(IID, IID_IKeypad,0x9BD2CC22,0x5E1D,0x41c1,0xA1,0x34,0xF2,0x44,0x10,0xEF,0x63,0x01);
+
+
+MIDL_DEFINE_GUID(IID, IID_ILabel,0x8E5D1F9E,0xC487,0x48c9,0xA1,0xAD,0xC9,0xAC,0xE4,0x4C,0x1E,0x3A);
+
+
+MIDL_DEFINE_GUID(IID, IID_ILabelServer,0x207CC027,0x41EE,0x4582,0x84,0x30,0xC1,0xD4,0xFE,0x91,0x01,0x43);
 
 
 MIDL_DEFINE_GUID(IID, IID_IWabbitemu,0x020FB9D5,0x7F45,0x449b,0xB9,0xDF,0x66,0xCF,0xC2,0x48,0x2B,0xD0);

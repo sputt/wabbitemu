@@ -6,6 +6,7 @@
 #include "sendfiles.h"
 #include "sound.h"
 #include "gif.h"
+#include "gifhandle.h"
 #include "guioptions.h"
 #include "link.h"
 #include "resource.h"
@@ -14,7 +15,9 @@
 #include "guicontext.h"
 #include "guiopenfile.h"
 
+#include "DropSource.h"
 #include "DropTarget.h"
+#include "DataObject.h"
 
 extern POINT drop_pt;
 extern RECT db_rect;
@@ -505,159 +508,159 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 		}
 
-#ifdef USE_COM	
 		case WM_MOUSEMOVE:
-			if (wParam != MK_LBUTTON) { // || calcs[gslot].cpu.pio.lcd->active == FALSE) {
-				dwDragCountdown = 0;
-			} else if (gif_write_state == GIF_IDLE) {
-				if (++dwDragCountdown < GetSystemMetrics(SM_CXDRAG)) return 0;
+			{
+				static DWORD dwDragCountdown = 0;
+				if (wParam != MK_LBUTTON) { // || calcs[gslot].cpu.pio.lcd->active == FALSE) {
+					dwDragCountdown = 0;
+				} else if (gif_write_state == GIF_IDLE) {
+					if (++dwDragCountdown < GetSystemMetrics(SM_CXDRAG)) return 0;
 
-				WB_IDataObject *pDataObject;
-				WB_IDropSource *pDropSource;
-				IDragSourceHelper2 *pDragSourceHelper;
+					CDataObject *pDataObject;
+					CDropSource *pDropSource;
+					IDragSourceHelper2 *pDragSourceHelper;
 
-				RECT rc;
-				GetClientRect(hwnd, &rc);
+					RECT rc;
+					GetClientRect(hwnd, &rc);
 
-				ptOffset.x = GET_X_LPARAM(lParam);
-				ptOffset.y = GET_Y_LPARAM(lParam);
+					ptOffset.x = GET_X_LPARAM(lParam);
+					ptOffset.y = GET_Y_LPARAM(lParam);
 
-				// Create the GIF that is going to be produced by the drag
-				char temp_fn[L_tmpnam];
-				char fn[MAX_PATH];
-				strcpy(fn, getenv("appdata"));
-				strcat(fn, "\\wabbitemu.gif");
+					// Create the GIF that is going to be produced by the drag
+					char temp_fn[L_tmpnam];
+					char fn[MAX_PATH];
+					strcpy(fn, getenv("appdata"));
+					strcat(fn, "\\wabbitemu.gif");
 
-				strcpy(gif_file_name, fn);
+					strcpy(gif_file_name, fn);
 
-				gif_xs = SCRXSIZE*gif_size;
-				gif_ys = SCRYSIZE*gif_size;
+					gif_xs = SCRXSIZE*gif_size;
+					gif_ys = SCRYSIZE*gif_size;
 
-				GIFGREYLCD();
+					GIFGREYLCD();
 
-				int i, j;
-				for (i = 0; i < SCRYSIZE*gif_size; i++)
-					for (j = 0; j < SCRXSIZE*gif_size; j++)
-						gif_frame[i * gif_xs + j] = calcs[gslot].cpu.pio.lcd->gif[i][j];
+					int i, j;
+					for (i = 0; i < SCRYSIZE*gif_size; i++)
+						for (j = 0; j < SCRXSIZE*gif_size; j++)
+							gif_frame[i * gif_xs + j] = calcs[gslot].cpu.pio.lcd->gif[i][j];
 
-				gif_write_state = GIF_START;
-				gif_writer();
+					gif_write_state = GIF_START;
+					gif_writer();
 
-				gif_write_state = GIF_END;
-				gif_writer();
+					gif_write_state = GIF_END;
+					gif_writer();
 
-				FORMATETC fmtetc[] = {
-					{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
-					{RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL },
-					{RegisterClipboardFormat("WabbitShot"), 0, DVASPECT_CONTENT, 0, TYMED_NULL},
-					{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
-				};
+					FORMATETC fmtetc[] = {
+						{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
+						{RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL },
+						{RegisterClipboardFormat("WabbitShot"), 0, DVASPECT_CONTENT, 0, TYMED_NULL},
+						{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
+					};
 
-				STGMEDIUM stgmed[NumElm(fmtetc)];
-				ZeroMemory(stgmed, sizeof(stgmed));
+					STGMEDIUM stgmed[NumElm(fmtetc)];
+					ZeroMemory(stgmed, sizeof(stgmed));
 
-				// Do the file group descriptor
-				stgmed[0].hGlobal = GlobalAlloc(GHND,
-									sizeof(FILEGROUPDESCRIPTOR) + sizeof(FILEDESCRIPTOR));
-				stgmed[0].tymed = TYMED_HGLOBAL;
+					// Do the file group descriptor
+					stgmed[0].hGlobal = GlobalAlloc(GHND,
+										sizeof(FILEGROUPDESCRIPTOR) + sizeof(FILEDESCRIPTOR));
+					stgmed[0].tymed = TYMED_HGLOBAL;
 
-				FILEGROUPDESCRIPTOR *fgd = GlobalLock(stgmed[0].hGlobal);
-				fgd->cItems = 1;
+					FILEGROUPDESCRIPTOR *fgd = (FILEGROUPDESCRIPTOR *) GlobalLock(stgmed[0].hGlobal);
+					fgd->cItems = 1;
 
-				FILEDESCRIPTOR *fd = fgd->fgd;
+					FILEDESCRIPTOR *fd = fgd->fgd;
 
-				ZeroMemory(fd, sizeof(FILEDESCRIPTOR));
+					ZeroMemory(fd, sizeof(FILEDESCRIPTOR));
 
-				fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
-				fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
-				fd->nFileSizeLow = gif_file_size;
-				strcpy(fd->cFileName, "wabbitemu.gif");
+					fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
+					fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+					fd->nFileSizeLow = gif_file_size;
+					strcpy(fd->cFileName, "wabbitemu.gif");
 
-				GlobalUnlock(stgmed[0].hGlobal);
+					GlobalUnlock(stgmed[0].hGlobal);
 
 
-				// Now do file contents
-				stgmed[1].hGlobal = GlobalAlloc(GHND, gif_file_size);
-				stgmed[1].tymed = TYMED_HGLOBAL;
+					// Now do file contents
+					stgmed[1].hGlobal = GlobalAlloc(GHND, gif_file_size);
+					stgmed[1].tymed = TYMED_HGLOBAL;
 
-				FILE *fgif = fopen(fn, "rb");
-				if (fgif != NULL) {
-					char *buf = GlobalLock(stgmed[1].hGlobal);
+					FILE *fgif = fopen(fn, "rb");
+					if (fgif != NULL) {
+						char *buf = (char *) GlobalLock(stgmed[1].hGlobal);
 
-					fread(buf, gif_file_size, 1, fgif);
-					fclose(fgif);
+						fread(buf, gif_file_size, 1, fgif);
+						fclose(fgif);
 
-					GlobalUnlock(stgmed[1].hGlobal);
-				} else {
-					MessageBox(NULL, "Opening the GIF failed\n", "Wabbitemu", MB_OK);
+						GlobalUnlock(stgmed[1].hGlobal);
+					} else {
+						MessageBox(NULL, "Opening the GIF failed\n", "Wabbitemu", MB_OK);
+					}
+
+
+					// Create the CH_DROP that many apps can use
+					stgmed[3].hGlobal = GlobalAlloc(GHND, sizeof(DROPFILES) + strlen(fn) + 2);
+					stgmed[3].tymed = TYMED_HGLOBAL;
+
+					DROPFILES *df = (DROPFILES *) GlobalLock(stgmed[3].hGlobal);
+
+					df[0].fWide = FALSE;
+					df[0].pFiles = sizeof(DROPFILES);
+					df[0].fNC = FALSE;
+
+					memset(&df[1], 0, strlen(fn) + 2);
+					strcpy((char*) &df[1], fn);
+
+					GlobalUnlock(stgmed[3].hGlobal);
+
+					// Create IDataObject and IDropSource COM objects
+					pDropSource = new CDropSource();
+					CreateDataObject(fmtetc, stgmed, NumElm(fmtetc), (IDataObject **) &pDataObject);
+
+					//((IDataObject *)pDataObject)->lpVtbl->QueryInterface(pDataObject, &IID_IDataObject,
+					//		(LPVOID *) &((WB_IDropSource*)pDropSource)->pDataObject);
+
+					IID IID_IDragSourceHelper2;
+					CLSIDFromString((LPOLESTR) L"{83E07D0D-0C5F-4163-BF1A-60B274051E40}", &IID_IDragSourceHelper2);
+
+					HRESULT result, hres;
+					result = CoCreateInstance(
+            			CLSID_DragDropHelper,
+            			NULL,
+            			CLSCTX_INPROC_SERVER,
+            			IID_IDragSourceHelper,
+            			(LPVOID*) &pDragSourceHelper);
+
+					/*
+					if (SUCCEEDED(result)) {
+	            		IDragSourceHelper2 *pDragSourceHelper2;
+	            		pDragSourceHelper->lpVtbl->QueryInterface(pDragSourceHelper, &IID_IDragSourceHelper2, &pDragSourceHelper2);
+
+	            		if (pDragSourceHelper2) {
+	            			printf("Created dragsourcehelper2\n");
+	            			pDragSourceHelper = pDragSourceHelper2;
+	            			pDragSourceHelper->lpVtbl->SetFlags(pDragSourceHelper, DSH_ALLOWDROPDESCRIPTIONTEXT);
+	            		} else {
+	            			printf("Couldn't even create IDragSourceHelper2\n");
+	            		}
+
+					} else {
+	            		printf("Failed to create drop helper at all\n");
+					}
+					*/
+					//hres = pDragSourceHelper->lpVtbl->InitializeFromWindow(pDragSourceHelper, hwnd, &ptOffset, (IDataObject *) pDataObject);
+
+					//SetDropSourceDataObject(pDropSource, pDataObject);
+					DWORD dwEffect = DROPEFFECT_NONE;
+					//if (SUCCEEDED(hres))
+						DoDragDrop((IDataObject*) pDataObject, (IDropSource*) pDropSource,  DROPEFFECT_COPY, &dwEffect);
+
+
+					pDragSourceHelper->Release();
+					pDataObject->Release();
+					pDropSource->Release();
 				}
-
-
-				// Create the CH_DROP that many apps can use
-				stgmed[3].hGlobal = GlobalAlloc(GHND, sizeof(DROPFILES) + strlen(fn) + 2);
-				stgmed[3].tymed = TYMED_HGLOBAL;
-
-				DROPFILES *df = GlobalLock(stgmed[3].hGlobal);
-
-				df[0].fWide = FALSE;
-				df[0].pFiles = sizeof(DROPFILES);
-				df[0].fNC = FALSE;
-
-				memset(&df[1], 0, strlen(fn) + 2);
-				strcpy((char*) &df[1], fn);
-
-				GlobalUnlock(stgmed[3].hGlobal);
-
-				// Create IDataObject and IDropSource COM objects
-				CreateDropSource(&pDropSource);
-				CreateDataObject(fmtetc, stgmed, NumElm(fmtetc), &pDataObject);
-
-				//((IDataObject *)pDataObject)->lpVtbl->QueryInterface(pDataObject, &IID_IDataObject,
-				//		(LPVOID *) &((WB_IDropSource*)pDropSource)->pDataObject);
-
-				IID IID_IDragSourceHelper2;
-				CLSIDFromString((LPOLESTR) L"{83E07D0D-0C5F-4163-BF1A-60B274051E40}", &IID_IDragSourceHelper2);
-
-	            HRESULT result, hres;
-	            result = CoCreateInstance(
-            		(REFCLSID) &CLSID_DragDropHelper,
-            		NULL,
-            		CLSCTX_INPROC_SERVER,
-            		(REFIID) &IID_IDragSourceHelper,
-            		(LPVOID*) &pDragSourceHelper);
-
-	            /*
-	            if (SUCCEEDED(result)) {
-	            	IDragSourceHelper2 *pDragSourceHelper2;
-	            	pDragSourceHelper->lpVtbl->QueryInterface(pDragSourceHelper, &IID_IDragSourceHelper2, &pDragSourceHelper2);
-
-	            	if (pDragSourceHelper2) {
-	            		printf("Created dragsourcehelper2\n");
-	            		pDragSourceHelper = pDragSourceHelper2;
-	            		pDragSourceHelper->lpVtbl->SetFlags(pDragSourceHelper, DSH_ALLOWDROPDESCRIPTIONTEXT);
-	            	} else {
-	            		printf("Couldn't even create IDragSourceHelper2\n");
-	            	}
-
-	            } else {
-	            	printf("Failed to create drop helper at all\n");
-	            }
-	            */
-	            //hres = pDragSourceHelper->lpVtbl->InitializeFromWindow(pDragSourceHelper, hwnd, &ptOffset, (IDataObject *) pDataObject);
-
-	            SetDropSourceDataObject(pDropSource, pDataObject);
-	            DWORD dwEffect = DROPEFFECT_NONE;
-				if (SUCCEEDED(hres))
-					DoDragDrop((IDataObject*) pDataObject, (IDropSource*) pDropSource,  DROPEFFECT_COPY, &dwEffect);
-
-
-				pDragSourceHelper->lpVtbl->Release(pDragSourceHelper);
-				((IDataObject *)pDataObject)->lpVtbl->Release((IDataObject *)pDataObject);
-				((IDropSource *)pDropSource)->lpVtbl->Release((IDropSource *)pDropSource);
-			}
-			return 0;
+				return 0;
 		}
-#endif
 		case WM_COPYDATA:
 		{
 			int size = (int)((PCOPYDATASTRUCT)lParam)->cbData;
