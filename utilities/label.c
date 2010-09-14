@@ -11,7 +11,7 @@
 label_struct *lookup_label(char *label_name) {
 	int i;
 	for (i = 0; calcs[gslot].labels[i].name != NULL; i++) {
-		if (strcasecmp(calcs[gslot].labels[i].name, label_name) == 0)
+		if (stricmp(calcs[gslot].labels[i].name, label_name) == 0)
 			return &calcs[gslot].labels[i];
 	}
 	return NULL;
@@ -51,7 +51,7 @@ BOOL label_search_tios(char *label,int equate) {
 	if (!label) return FALSE;
 
 	for(i=0;bcalls[i].address != -1; i++ ) {
-		if (strcasecmp(label,bcalls[i].name) == 0) {
+		if (stricmp(label,bcalls[i].name) == 0) {
 			if (bcalls[i].address == (equate&0xFFFF) ) {
 				return TRUE;
 			}
@@ -59,13 +59,13 @@ BOOL label_search_tios(char *label,int equate) {
 	}
 	
 	for(i=0; flags83p[i].flag != -1; i++ ) {
-		if (strcasecmp(label,flags83p[i].name) == 0) {
+		if (stricmp(label,flags83p[i].name) == 0) {
 			if (flags83p[i].flag == (equate&0xFFFF)) {
 				return TRUE;
 			}
 		}
 		for(b=0;b<8;b++) {
-			if (strcasecmp(label,flags83p[i].bits[b].name) == 0) {
+			if (stricmp(label,flags83p[i].bits[b].name) == 0) {
 				if (flags83p[i].bits[b].bit == (equate&0xFFFF)) {
 					return TRUE;
 				}

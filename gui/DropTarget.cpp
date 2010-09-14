@@ -2,6 +2,7 @@
 
 #include "calc.h"
 #include "DropTarget.h"
+#include "SendFiles.h"
 
 extern POINT drop_pt;
 
@@ -188,6 +189,11 @@ HRESULT __stdcall CDropTarget::DragLeave() {
 	return S_OK;
 }
 
+static BOOL WriteStreamToFile(IStream *pStream, LPCTSTR lpszFileName)
+{
+	//pStream->g
+}
+
 HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
 	m_slot = calc_from_hwnd(m_hwndTarget);
 	if (m_pDropTargetHelper != NULL) {
@@ -212,10 +218,60 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 						SendMessage(m_hwndTarget, WM_DROPFILES, (WPARAM) pData, NULL);
 
 						GlobalUnlock(stgmed.hGlobal);
-						ReleaseStgMedium(&stgmed);
+						break;
+					}
+				default:
+					{
+						if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW))
+						{
+							LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
+							LPTSTR lpszFileGroup = NULL;
+
+							for (int i = 0; i < lpfgd->cItems; i++)
+							{
+								TCHAR szFileName[MAX_PATH];
+
+								TCHAR szTemp[L_tmpnam_s];
+								_ttmpnam_s(szTemp);
+
+								StringCbCopy(szFileName, sizeof(szFileName), _tgetenv(_T("appdata")));
+								StringCbCat(szFileName, sizeof(szFileName), szTemp);
+
+								FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
+								STGMEDIUM stgmedData = {0};
+								if (SUCCEEDED(pDataObject->GetData(&fmtstm, &stgmedData)))
+								{
+									LPBYTE lpBuffer = (LPBYTE) malloc(lpfgd->fgd[i].nFileSizeLow);
+
+									ULONG cbRead = 0;
+									if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead)))
+									{
+										FILE *file = _tfopen(szFileName, _T("wb"));
+										if (file != NULL)
+										{
+											fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
+											fclose(file);
+											lpszFileGroup = AppendName(lpszFileGroup, szFileName);
+										}
+									}
+									free(lpBuffer);
+
+									ReleaseStgMedium(&stgmedData);
+								}
+							}
+							GlobalUnlock(stgmed.hGlobal);
+
+							if (lpszFileGroup != NULL)
+							{
+								ThreadSend(lpszFileGroup, DropMemoryTarget(m_hwndTarget), 0);
+							}
+						}
+
 						break;
 					}
 				}
+
+				ReleaseStgMedium(&stgmed);
 			}
 
 		}

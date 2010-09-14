@@ -37,12 +37,14 @@
 #include <mmsystem.h>
 #include <stddef.h>
 #include <time.h>
+
+#ifdef __cplusplus
 #ifdef USE_GDIPLUS
 #include <gdiplus.h>
 using namespace Gdiplus;
 #endif
-
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
 using namespace ATL;
+#endif

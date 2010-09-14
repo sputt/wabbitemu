@@ -37,3 +37,5 @@ private:
 	HRESULT LookupFormatEtc(FORMATETC *pFormatEtc, LPDATAENTRY *pDataEntry, BOOL fAdd);
 	HRESULT AddRefStgMedium(STGMEDIUM *pStgMediumIn, STGMEDIUM *pStgMediumOut, BOOL fCopyIn);
 };
+
+HRESULT CreateDataObject(FORMATETC *pFormatEtc, STGMEDIUM *pStgMedium, DWORD dwCount, IDataObject **ppDataObject);

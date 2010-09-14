@@ -19,7 +19,7 @@ char txt86[] = "Already Installed";
 
 
 int CmpStringCase(char* str1,unsigned char* str2) {
-	return strncasecmp(str1,(char *) str2,strlen(str1));
+	return strnicmp(str1,(char *) str2,strlen(str1));
 }
 
 
