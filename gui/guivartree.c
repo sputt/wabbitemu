@@ -513,13 +513,31 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 			
 			for(i = 0; i < Tree[slot].applist.count; i++) {
 				if (Tree[slot].hApps[i] == hSelect) {
+					if (App_Name_to_String(&Tree[slot].applist.apps[i], string)) {
+#ifdef WINVER
+						strcat_s(string, ".8xk");
+#else
+						strcat(string, ".8xk");
+#endif
+						MFILE *outfile = ExportApp(slot, NULL, &Tree[slot].applist.apps[i]);
+						fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
+						fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
+						fd->nFileSizeLow = msize(outfile);
+#ifdef WINVER
+						strcpy_s(fd->cFileName, string);
+#else
+						strcpy(fd->cFileName, string);
+#endif
+						mclose(outfile);
+						return fd;
+					}
 					printf("%s\n", Tree[slot].applist.apps[i].name);
 					return NULL;
 				}
 			}
 			for(i=0; i<Tree[slot].sym.last - Tree[slot].sym.symbols + 1; i++) {
 				if (Tree[slot].hVars[i] == hSelect) {
-					if (Symbol_Name_to_String(&Tree[slot].sym.symbols[i],string)) {
+					if (Symbol_Name_to_String(&Tree[slot].sym.symbols[i], string)) {
 #ifdef WINVER
 						strcat_s(string, ".");
 						strcat_s(string, (const char *) type_ext[Tree[slot].sym.symbols[i].type_ID]);
@@ -556,7 +574,16 @@ void *FillFileBuffer(HTREEITEM hSelect, void *buf) {
 			printf("model found\n");
 			for(i = 0; i < Tree[slot].applist.count; i++) {
 				if (Tree[slot].hApps[i]==hSelect) {
-					return NULL;
+					MFILE *outfile = ExportApp(slot, NULL, &Tree[slot].applist.apps[i]);
+					if(!outfile) puts("MFile not found");
+					printf("size: %d\n",outfile->size);
+					for(b=0;b<outfile->size;b++) {
+						printf("%02X",outfile->data[b]);
+						buffer[b] = outfile->data[b];
+					}
+					printf("\n");
+					mclose(outfile);
+					return buffer;
 				}
 			}
 			for(i = 0; i < Tree[slot].sym.last - Tree[slot].sym.symbols+1; i++) {

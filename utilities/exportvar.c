@@ -5,9 +5,12 @@
 #include "link.h"
 #include "exportvar.h"
 
+void intelhex (MFILE*, const unsigned char*, int);
 
 const char fileheader[]= {
     '*','*','T','I','8','3','F','*',0x1A,0x0A,0x00};
+const char flashheader[] = {
+	'*','*','T','I','F','L','*','*'} ;
 
 const char comment[42]="File Exported by Wabbitemu.";
 
@@ -107,7 +110,7 @@ int mgetc(MFILE* mf) {
 	}
 }
 
-int mputc(int c,MFILE* mf) {
+int mputc(int c, MFILE* mf) {
 	unsigned char *temp;
 	if (!mf) return EOF;
 	if (mf->stream) {
@@ -125,6 +128,39 @@ int mputc(int c,MFILE* mf) {
 	}
 }
 
+int mprintf(MFILE* mf, const char *format, ...) {
+	unsigned char *temp;
+	if (!mf) return EOF;
+	va_list list;
+	va_start(list, format);
+	if (mf->stream) {
+		int temp = fprintf(mf->stream, list);
+		va_end(list);
+		return temp;
+	} else {
+		char buffer[1024];
+		int i;
+#ifdef WINVER
+		vsprintf_s(buffer, format, list);
+#else
+		vsprintf(buffer, format, list);
+#endif
+		size_t sz_length = strlen(buffer);
+		if (mf->pnt >= mf->size) {
+			temp = (unsigned char *) realloc(mf->data, mf->size+sz_length);
+			if (!temp) return EOF;
+			mf->size += sz_length;
+			mf->data = temp;
+		}
+		for (i = 0; i < (int) sz_length; i++) {
+			if (!mputc(buffer[i], mf))
+				break;
+		}
+		va_end(list);
+		return i;
+	}
+}
+
 int msize(MFILE* mf) {
 	if (!mf) return EOF;
 /*
@@ -139,7 +175,7 @@ int msize(MFILE* mf) {
 }
 
 		
-void AddrOffset(int *page,unsigned int *address,int offset) {
+void AddrOffset(int *page,unsigned int *address, int offset) {
 	if (*page) {
 		int pi = (offset>=0)?1:-1;
 		*address += offset;
@@ -174,7 +210,99 @@ int VarRead(int slot, int page, unsigned int address) {
 	}
 	return mem;
 }
-	
+
+
+MFILE *ExportApp(int slot, char *fn, apphdr_t *app) {
+	MFILE *outfile;
+	int i, tempnum;
+	int data_size = PAGE_SIZE * app->page_count;
+	unsigned char *buffer = (unsigned char *) malloc(data_size);
+	memset(buffer, 0, data_size);
+	unsigned char *temp_point = buffer;
+	for (tempnum = app->page; tempnum > app->page - app->page_count; tempnum--) {
+		u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) calcs[slot].cpu.mem_c->flash;
+		memcpy(temp_point, &dest[tempnum], PAGE_SIZE);
+		temp_point += PAGE_SIZE;
+	}
+	outfile = mopen(fn, "wb");
+	// Lots of pointless header crap 
+    for(i = 0; i < 8; i++) mputc(flashheader[i], outfile);
+    //version, major.minor
+	mputc(0x01, outfile);
+	mputc(0x01, outfile);
+	//flags
+	mputc(0x01, outfile);
+	//object type
+	mputc(0x88, outfile);
+	//date
+	mputc(0x01, outfile);
+	mputc(0x01, outfile);
+	mputc(0x19, outfile);
+	mputc(0x97, outfile);
+	//name length...wtf? its always 8
+	mputc(0x08, outfile);
+	//name
+	for (i = 0; i < 8; i++) mputc(app->name[i], outfile);
+	//filler
+	for (i = 0; i < 23; i++) mputc(0x00, outfile);
+	//device
+	mputc(0x73, outfile);
+	//its an app not an OS/cert/license
+	mputc(0x24, outfile);
+	//filler
+	for (i = 0; i < 24; i++) mputc(0x00, outfile);
+	//size of intel hex
+	tempnum =  77 * (data_size>>5) + app->page_count * 17 + 11;
+	int size = data_size & 0x1F;
+    if (size) tempnum += (size<<1) + 13;
+	mputc( tempnum & 0xFF, outfile); //little endian
+    mputc((tempnum >> 8) & 0xFF, outfile);
+    mputc((tempnum >> 16)& 0xFF, outfile);
+    mputc( tempnum >> 24, outfile);
+	//data
+	intelhex(outfile, buffer, data_size);
+	//checksum
+
+	//DONE :D
+	return outfile;
+}
+
+/* Convert binary buffer to intel hex in ti format
+ * All pages addressed to $4000 and are only $4000
+ * bytes long. 
+ * stolen from spasm's export.c  to make my 1/2 hour deadline
+ */
+void intelhex (MFILE* outfile, const unsigned char* buffer, int size) {
+    const char hexstr[] = "0123456789ABCDEF";
+    int page = 0;
+    int bpnt = 0;
+    unsigned int address,ci,temp,i;
+    unsigned char chksum;
+    unsigned char outbuf[128];
+    
+    //We are in binary mode, we must handle carridge return ourselves.
+   
+    while (bpnt < size){
+        mprintf(outfile, ":02000002%04X%02X\r\n", page, (unsigned char) ((~(0x04 + page)) + 1));
+        page++;
+        address = 0x4000;   
+        for (i = 0; bpnt < size && i < 512; i++) {
+             chksum = (address>>8) + (address & 0xFF);
+             for(ci = 0; ((ci < 64) && (bpnt < size)); ci++) {
+                temp = buffer[bpnt++];
+                outbuf[ci++] = hexstr[temp>>4];
+                outbuf[ci] = hexstr[temp&0x0F];
+                chksum += temp;
+            }
+            outbuf[ci] = 0;
+            ci>>=1;
+            mprintf(outfile,":%02X%04X00%s%02X\r\n",ci,address,outbuf,(unsigned char)( ~(chksum + ci)+1));
+            address +=0x20;
+        }         
+    }
+    mprintf(outfile,":00000001FF");
+}
+
 //Prog’s, List AppVar and Group
 
 MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
@@ -188,10 +316,10 @@ MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
     //Technically no variable can be larger than 65536 bytes,
     //to make reading easier I'm gonna copy all the max file size 
     //into mem.
-    for(i=0;i<0x10020 && (b=VarRead(slot,page,a))!=-1;i++) {
-		mem[i] =b;
+    for(i = 0; i < 0x10020 && (b = VarRead(slot, page, a)) != -1; i++) {
+		mem[i] = b;
 		AddrOffset(&page,&a,1);
-	}   
+	}
 
     a = 0;
     if (sym->page) {
@@ -208,7 +336,6 @@ MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
 	
 	}
 
-	
 	switch(sym->type_ID) {
 		case RealObj:
 			size = 9;

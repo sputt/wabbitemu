@@ -7,9 +7,6 @@
     <Filter Include="Source Files\Core">
       <UniqueIdentifier>{3851b259-ea50-4e42-8231-6a1d1178e72e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Utilities">
-      <UniqueIdentifier>{2ff14b6f-9293-4268-9141-c395b32358ba}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\GUI">
       <UniqueIdentifier>{0b7b6b3c-307a-418d-ac7a-e5ac48133edf}</UniqueIdentifier>
     </Filter>
@@ -45,6 +42,9 @@
     </Filter>
     <Filter Include="Header Files\Utilities">
       <UniqueIdentifier>{ec2bb309-99f4-4a6f-a1fc-0c3a40a09b18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utilities">
+      <UniqueIdentifier>{2ff14b6f-9293-4268-9141-c395b32358ba}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -227,6 +227,9 @@
     </ClCompile>
     <ClCompile Include="Wabbitemu_i.c">
       <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\zpipe.c">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -437,6 +440,12 @@
     <ClInclude Include="gui\CGdiPlusBitmap.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="utilities\zlib.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\zconf.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\back.bmp">
@@ -619,12 +628,23 @@
     <None Include="gui\Wabbitemu.tlb">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="gui\TI-83.png" />
-    <None Include="gui\TI-83Keymap.png" />
-    <None Include="gui\ti-86.png" />
-    <None Include="gui\ti-86keymap.png" />
     <None Include="interface\Wabbitemu.def">
       <Filter>Source Files\Interface</Filter>
+    </None>
+    <None Include="gui\TI-83.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-86keymap.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\TI-83Keymap.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-86.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ti-85.png">
+      <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -153,6 +153,15 @@ void DispSymbol(SYMBOLS83P_t* sym) {
 	printf("\n");
 }*/
 
+char *App_Name_to_String(apphdr_t *app, char *buffer) {
+#ifdef WINVER
+	strcpy_s(buffer, strlen(app->name) + 1, app->name);
+	return buffer;
+#else
+	return strcpy_s(buffer, app->name);
+#endif
+}
+
 char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer) {
 	const u_char ans_name[] = {tAns, 0x00, 0x00};
 	if (memcmp(sym->name, ans_name, 3) == 0) {

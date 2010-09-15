@@ -529,10 +529,18 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					// Create the GIF that is going to be produced by the drag
 					char temp_fn[L_tmpnam];
 					char fn[MAX_PATH];
+#ifdef WINVER
+					char *env;
+					size_t envLen;
+					_dupenv_s(&env, &envLen, "appdata");
+					strcpy_s(fn, env);
+					strcat_s(fn, "\\wabbitemu.gif");
+					strcpy_s(gif_file_name, fn);
+#else
 					strcpy(fn, getenv("appdata"));
 					strcat(fn, "\\wabbitemu.gif");
-
 					strcpy(gif_file_name, fn);
+#endif
 
 					gif_xs = SCRXSIZE*gif_size;
 					gif_ys = SCRYSIZE*gif_size;

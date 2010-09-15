@@ -502,26 +502,30 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		SendMessage(chkIff1, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
 
 		chkIff2 =
-		CreateWindow(
+		CreateWindowEx(
+			WS_EX_TRANSPARENT,
 			"BUTTON",
 			"iff2",
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 			2*kRegAddr, 0, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 2, g_hInst, NULL);
 		SendMessage(chkIff2, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
-/*
-		hwndValue = CreateValueField(hwnd, "Mask", kRegAddr, &calcs[DebuggerSlot].cpu.pio.stdint->intactive, 1, 2, HEX2);
-		SetWindowPos(hwndValue, NULL, 0, 1*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+
+		HWND hwndValue = CreateValueField(hwnd, "IM", kRegAddr, &calcs[DebuggerSlot].cpu.imode, 1, 2, HEX2);
+		SetWindowPos(hwndValue, NULL, 0, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
 		hwndValue = CreateValueField(hwnd, "i", kRegAddr, &calcs[DebuggerSlot].cpu.i, 1, 2, HEX2);
+		SetWindowPos(hwndValue, NULL, 2*kRegAddr, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		SendMessage(hwndValue, WM_SIZE, 0, 0);
+
+		hwndValue = CreateValueField(hwnd, "Mask", kRegAddr, &calcs[DebuggerSlot].cpu.pio.stdint->intactive, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 0, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
 		hwndValue = CreateValueField(hwnd, "r", kRegAddr, &calcs[DebuggerSlot].cpu.r, 1, 2, HEX2);
-		SetWindowPos(hwndValue, NULL, 0, 3*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		SetWindowPos(hwndValue, NULL, 2*kRegAddr, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
-		*/
 		return 0;
 	}
 	case WM_COMMAND:
@@ -554,7 +558,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 		char szRegVal[16];
 		double ntimer;
-		SetRect(&rc, 0, kRegRow*2, kRegAddr*3, kRegRow*3);
+		SetRect(&rc, 0, kRegRow*3, kRegAddr*3, kRegRow*4);
 
 		ntimer = tc_elapsed(&calcs[DebuggerSlot].timer_c) - calcs[DebuggerSlot].cpu.pio.stdint->lastchk1;
 		ntimer *= 1000;
@@ -603,8 +607,6 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		OffsetRect(&rc, kRegAddr*3, 0);
 		DrawTextA(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-
-
 		SelectObject(hdc, hfontSegoe);
 		OffsetRect(&rc, -kRegAddr*3, kRegRow);
 		DrawTextA(hdc, "Timer2 dur.", -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
@@ -626,7 +628,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	}
 	case WM_SIZE:
 	{
-		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr*6, kRegRow * 2 + kRegRow*6 + kRegRow/2, SWP_NOMOVE | SWP_NOZORDER);
+		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr*6, kRegRow*2 + kRegRow*6 + kRegRow/2 + kRegRow, SWP_NOMOVE | SWP_NOZORDER);
 		return 0;
 	}
 	case WM_CTLCOLORSTATIC:
