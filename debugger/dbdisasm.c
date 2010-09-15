@@ -1229,7 +1229,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				case SB_LINEUP:
 				{
-					#define LINEUP_DEPTH	12
+#define LINEUP_DEPTH	12
 					Z80_info_t zup[LINEUP_DEPTH];
 					unsigned int i;
 					int nPane_old = dps->nPane;
@@ -1282,7 +1282,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 			{
-				Z80_info_t 	*zfirst 	= &zinf[0],
+				Z80_info_t 	*zfirst = &zinf[0],
 							*zlast 	= &zinf[dps->nRows-1];
 
 				dps->nPage = zlast->addr + zlast->size - zfirst->addr;

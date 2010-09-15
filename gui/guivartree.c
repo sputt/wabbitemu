@@ -535,7 +535,7 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 					return NULL;
 				}
 			}
-			for(i=0; i<Tree[slot].sym.last - Tree[slot].sym.symbols + 1; i++) {
+			for(i = 0; i < (u_int) (Tree[slot].sym.last - Tree[slot].sym.symbols + 1); i++) {
 				if (Tree[slot].hVars[i] == hSelect) {
 					if (Symbol_Name_to_String(&Tree[slot].sym.symbols[i], string)) {
 #ifdef WINVER
@@ -586,7 +586,7 @@ void *FillFileBuffer(HTREEITEM hSelect, void *buf) {
 					return buffer;
 				}
 			}
-			for(i = 0; i < Tree[slot].sym.last - Tree[slot].sym.symbols+1; i++) {
+			for(i = 0; i < (u_int) (Tree[slot].sym.last - Tree[slot].sym.symbols + 1); i++) {
 				if (Tree[slot].hVars[i] == hSelect) {
 					if (Symbol_Name_to_String(&Tree[slot].sym.symbols[i],string)) {
 						MFILE *outfile = ExportVar(slot,NULL, &Tree[slot].sym.symbols[i]);

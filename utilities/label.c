@@ -102,17 +102,18 @@ int labels_app_load(int slot, char* fn) {
 		i = 0;
 		if (buffer[0] != ';')
 #ifdef WINVER
-			i = sscanf_s(buffer,"%s = $%X", name, &equate);
+			i = sscanf(buffer,"%s = $%X", name, &equate);
+			//i = sscanf_s(buffer,"%s = $%X", name, &equate);
 #else
 			i = sscanf(buffer,"%s = $%X", name, &equate);
 #endif
 		if (i == 2) {
 			length = (int) strlen(name);
-			if (!label_search_tios(name,equate)) {
+			if (!label_search_tios(name, equate)) {
 				
 				label->name = (char *) malloc(length + 1);
 #ifdef WINVER
-				strcpy_s(label->name, strlen(label->name), name);
+				strcpy_s(label->name, length + 1, name);
 #else
 				strcpy(label->name, name);
 #endif
