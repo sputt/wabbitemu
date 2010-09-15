@@ -1159,6 +1159,20 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			UpdateWindow(hwnd);
 			return 0;
 		}
+		case WM_MOUSEWHEEL: {
+			int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+			int i;
+
+			WPARAM sbtype;
+			if (zDelta > 0) sbtype = SB_LINEUP;
+			else sbtype = SB_LINEDOWN;
+
+
+			for (i = 0; i < abs(zDelta); i += WHEEL_DELTA)
+				SendMessage(hwnd, WM_VSCROLL, sbtype, 0);
+
+			return 0;
+		}
 		case WM_VSCROLL: {
 			// Get all the vertial scroll bar information
 			 si.cbSize = sizeof (si);
@@ -1258,6 +1272,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_LBUTTONDBLCLK:
 		case WM_LBUTTONDOWN:
 		{
+			SetFocus(hwnd);
 			return 0;
 		}
 		default:

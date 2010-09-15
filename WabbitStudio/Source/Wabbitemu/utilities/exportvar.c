@@ -214,8 +214,8 @@ int VarRead(int slot, int page, unsigned int address) {
 
 MFILE *ExportApp(int slot, char *fn, apphdr_t *app) {
 	MFILE *outfile;
-	int i, tempnum;
-	int data_size = PAGE_SIZE * app->page_count;
+	unsigned int tempnum;
+	int i, data_size = PAGE_SIZE * app->page_count;
 	unsigned char *buffer = (unsigned char *) malloc(data_size);
 	memset(buffer, 0, data_size);
 	unsigned char *temp_point = buffer;

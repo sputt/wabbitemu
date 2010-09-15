@@ -1,4 +1,5 @@
-﻿using System;
+﻿#define WABBITEMU
+using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
@@ -15,6 +16,10 @@ namespace Revsoft.AutoUpdater
 	{
 		static void Main(string[] args)
 		{
+            string filePath;
+#if WABBITEMU
+            filePath = "Wabbitemu.exe";
+#endif
             bool isElevated;
             WindowsPrincipal principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
@@ -40,7 +45,12 @@ namespace Revsoft.AutoUpdater
                 if (stream != null)
                     stream.Close();
             }
-            if (requiresAdmin && (!isElevated || (args.Length > 0 && args[0] != "-A")))
+            foreach (string arg in args)
+                if (arg == "-A" && !isElevated)
+                    requiresAdmin = true;
+                else
+                    filePath = arg;
+            if (requiresAdmin)
             {
                 Process process = new Process()
                 {
@@ -65,7 +75,7 @@ namespace Revsoft.AutoUpdater
 			Thread.Sleep(5000);
             try
             {
-                bool succeeded = DownloadAndUpdate();
+                bool succeeded = DownloadAndUpdate(filePath);
                 if (succeeded)
                     MessageBox.Show("Update Successful");
                 else
@@ -85,9 +95,10 @@ namespace Revsoft.AutoUpdater
 			}
 		}
 
-        static bool DownloadAndUpdate()
+        static bool DownloadAndUpdate(string filePath)
         {
             bool succeeded = true;
+#if WABBITCODE
             WebClient Client = new WebClient();
             try
             {
@@ -137,6 +148,21 @@ namespace Revsoft.AutoUpdater
                 MessageBox.Show(ex.ToString());
                 succeeded = false;
             }
+#elif WABBITEMU
+            WebClient Client = new WebClient();
+            try
+            {
+                Console.WriteLine("Downloading Wabbitemu.exe");
+                Client.DownloadFile("http://wabbit.codeplex.com/releases/view/44625#DownloadId=122222", Path.Combine(Application.UserAppDataPath, "Revsoft.Wabbitcode.exe"));
+                File.Delete(filePath);
+                File.Move(Path.Combine(Application.UserAppDataPath, "Wabbitemu.exe"), filePath);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+                succeeded = false;
+            }
+#endif
             return succeeded;
         }
 	}

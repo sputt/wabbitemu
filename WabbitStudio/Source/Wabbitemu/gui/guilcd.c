@@ -514,7 +514,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (wParam != MK_LBUTTON) { // || calcs[gslot].cpu.pio.lcd->active == FALSE) {
 					dwDragCountdown = 0;
 				} else if (gif_write_state == GIF_IDLE) {
-					if (++dwDragCountdown < GetSystemMetrics(SM_CXDRAG)) return 0;
+					if (++dwDragCountdown < (u_int) GetSystemMetrics(SM_CXDRAG)) return 0;
 
 					CDataObject *pDataObject;
 					CDropSource *pDropSource;
@@ -547,7 +547,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					GIFGREYLCD();
 
-					int i, j;
+					unsigned int i, j;
 					for (i = 0; i < SCRYSIZE*gif_size; i++)
 						for (j = 0; j < SCRXSIZE*gif_size; j++)
 							gif_frame[i * gif_xs + j] = calcs[gslot].cpu.pio.lcd->gif[i][j];
@@ -583,7 +583,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
 					fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 					fd->nFileSizeLow = gif_file_size;
+#ifdef WINVER
+					strcpy_s(fd->cFileName, "wabbitemu.gif");
+#else
 					strcpy(fd->cFileName, "wabbitemu.gif");
+#endif
 
 					GlobalUnlock(stgmed[0].hGlobal);
 
@@ -592,7 +596,12 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					stgmed[1].hGlobal = GlobalAlloc(GHND, gif_file_size);
 					stgmed[1].tymed = TYMED_HGLOBAL;
 
+#ifdef WINVER
+					FILE *fgif;
+					fopen_s(&fgif, fn, "rb");
+#else
 					FILE *fgif = fopen(fn, "rb");
+#endif
 					if (fgif != NULL) {
 						char *buf = (char *) GlobalLock(stgmed[1].hGlobal);
 
@@ -616,7 +625,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					df[0].fNC = FALSE;
 
 					memset(&df[1], 0, strlen(fn) + 2);
+#ifdef WINVER
+					strcpy_s((char*) &df[1], strlen(fn), fn);
+#else
 					strcpy((char*) &df[1], fn);
+#endif
 
 					GlobalUnlock(stgmed[3].hGlobal);
 

@@ -36,19 +36,19 @@ int FindRomVersion(int calc,char* string,unsigned char* rom,int size) {
 			return -1;
 		}
 	}
-	switch(calc) {
+	switch (calc) {
 		case TI_82:
-			for(i=0;i<(size-strlen(catalog)-10);i++) {
-				if (CmpStringCase(catalog,rom+i)==0) {
+			for(i = 0; i < (size-strlen(catalog) - 10); i++) {
+				if (CmpStringCase(catalog, rom+i)==0) {
 					calc = TI_85;
-						for(i=0;i<(size-strlen(self_test)-10);i++) {
-							if (CmpStringCase(self_test,rom+i)==0) break;
+						for(i = 0; i < (size - strlen(self_test) - 10); i++) {
+							if (CmpStringCase(self_test, rom + i) == 0) break;
 						}
-						for(;i<(size-40);i++) {
+						for(; i < (size - 40); i++) {
 							if (isdigit(rom[i])) break;
 						}
-						if (i<(size-40)) {
-							for(b=0;(b+i)<(size-4) && b<32;b++) {
+						if (i < (size - 40)) {
+							for(b = 0; (b + i) < (size-4) && b  <32; b++) {
 								if (rom[b+i] != ' ') string[b] = rom[b+i];
 								else string[b] = 0;
 							}

@@ -187,6 +187,9 @@ static LRESULT CALLBACK HeaderProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		EndPaint(hwnd, &ps);
 		return 0;
 	}
+	case WM_MOUSEWHEEL:
+		SendMessage(GetParent(hwnd), Message, wParam, lParam);
+		break;
 	case WM_COMMAND: {
 		ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (HIWORD(wParam)) {
@@ -391,9 +394,12 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 			return 0;
 		}
+		case WM_MOUSEWHEEL:
+			SendMessage(GetParent(hwnd), Message, wParam, lParam);
+			break;
 		case WM_VSCROLL:
-				SendMessage(GetParent(hwnd), Message, wParam, lParam);
-				break;
+			SendMessage(GetParent(hwnd), Message, wParam, lParam);
+			break;
 
 		/*
 		case WM_MOUSEMOVE: {
