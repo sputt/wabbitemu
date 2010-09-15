@@ -656,7 +656,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 					cds.dwData = SEND_CUR;
 					cds.cbData = i;
 					cds.lpData = FileNames;
-					SendMessage(FindChildhwnd, WM_COPYDATA, (WPARAM)NULL, (LPARAM)&cds);
+					SendMessage(FindChildhwnd, WM_COPYDATA, (WPARAM) NULL, (LPARAM) &cds);
 					free(FileNames);
 				}
 			}
@@ -1464,8 +1464,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				xc = 1/*((float)rc.right)/calcs[slot].rectSkin.right*/;
 				yc = 1/*((float)rc.bottom)/(calcs[slot].rectSkin.bottom)*/;
 			} else {
-				xc = (float) rc.right / 256.0;
-				yc = (float) rc.bottom / 128.0;
+				xc = ((float) rc.right) / 256.0;
+				yc = ((float) rc.bottom) / 128.0;
 			}
 			int width = calcs[slot].rectLCD.right - calcs[slot].rectLCD.left;
 			SetRect(&screen,

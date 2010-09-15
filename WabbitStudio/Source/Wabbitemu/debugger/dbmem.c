@@ -10,6 +10,7 @@
 
 extern HINSTANCE g_hInst;
 extern unsigned short goto_addr;
+extern int find_value;
 extern HFONT hfontLucida, hfontLucidaBold, hfontSegoe;
 
 static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
@@ -500,21 +501,15 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case VK_RETURN:
 					SendMessage(hwnd, WM_LBUTTONDBLCLK, 0, MAKELPARAM(mps->xSel, mps->ySel));
 					break;
-				/*case 'G': {
-					int result;
-					result = DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC)GotoDialogProc);
-					if (result == IDOK) mps->addr = goto_addr;
-					SetFocus(hwnd);
-					break;
-				}*/
-				case VK_F3: {
+				case VK_F3:
 					SendMessage(hwnd, WM_COMMAND, DB_MEMPOINT_WRITE, 0);
 					break;
-				}
-				case 'G': {
+				case 'G':
 					SendMessage(hwnd, WM_COMMAND, DB_GOTO, 0);
 					break;
-				}
+				case 'F':
+					SendMessage(hwnd, WM_COMMAND, DB_OPEN_FIND, 0);
+					break;
 				default:
 					return 0;
 			}
@@ -559,8 +554,26 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 			}
+			HWND hwndDialog;
 			switch(LOWORD(wParam))
 			{
+				case DB_OPEN_FIND:
+					hwndDialog = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC)FindDialogProc);
+					ShowWindow(hwndDialog, SW_SHOW);
+					break;
+				case DB_FIND_NEXT: {
+					int addr = mps->addr;
+					while (addr < 0xFFFF && mem_read(&calcs[DebuggerSlot].mem_c, addr) != find_value)
+						addr++;
+					if (addr > 0xFFFF) {
+						MessageBox(NULL, "Value not found", "Find results", MB_OK);
+						break;
+					}
+					mps->addr = addr;
+					SetFocus(hwnd);
+					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					break;
+				}
 				case DB_GOTO: {
 					int result;
 					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC)GotoDialogProc);

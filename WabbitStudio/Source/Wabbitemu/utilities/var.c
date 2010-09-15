@@ -752,7 +752,7 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 		}
 Done_Group:
 		fclose(infile);
-		free(tifile->var);
+		tifile->var->data = NULL;
 		tifile->type = SKIP_TYPE;
 		return tifile;
 	}

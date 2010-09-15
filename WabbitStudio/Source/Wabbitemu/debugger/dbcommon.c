@@ -8,6 +8,8 @@
 extern HINSTANCE g_hInst;
 
 unsigned short goto_addr;
+int find_value;
+BOOL search_backwards;
 
 extern HFONT hfontLucida;
 HWND hwndPrev;
@@ -23,8 +25,8 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDOK: {
-					char result[32];
-					GetDlgItemText(hwndDlg, IDC_EDTGOTOADDR, result, 32);
+					char result[64];
+					GetDlgItemText(hwndDlg, IDC_EDTGOTOADDR, result, 64);
 					
 					if (result[0] != '$') {
 						label_struct *label;
@@ -47,6 +49,40 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 				}
 				case IDCANCEL:
 					EndDialog(hwndDlg, IDCANCEL);
+					break;
+			}
+			break;
+	}
+	return FALSE;
+}
+
+INT_PTR CALLBACK FindDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
+	static HWND edtAddr, forwardsCheck, backwardsCheck;
+	switch (Message) {
+		case WM_INITDIALOG:
+			edtAddr = GetDlgItem(hwndDlg, IDC_EDT_FIND);
+			forwardsCheck = GetDlgItem(hwndDlg, IDC_RADIO_FORWARDS);
+			backwardsCheck = GetDlgItem(hwndDlg, IDC_RADIO_BACKWARDS);
+			SetFocus(GetDlgItem(hwndDlg, IDC_EDT_FIND));
+			hwndPrev = GetParent(hwndDlg);
+			Button_SetCheck(forwardsCheck, TRUE);
+			return FALSE;
+		case WM_COMMAND:
+			switch (LOWORD(wParam)) {
+				case IDC_FIND_NEXT: {
+					char result[32];
+					GetDlgItemText(hwndDlg, IDC_EDT_FIND, result, 32);
+					sscanf_s(result, "%x", &find_value);
+					SendMessage(hwndPrev, WM_COMMAND, DB_FIND_NEXT, 0);
+					return TRUE;
+				}
+				case IDCANCEL:
+					EndDialog(hwndDlg, IDCANCEL);
+					break;
+			}
+			switch(HIWORD(wParam)) {
+				case BN_CLICKED:
+					search_backwards = LOWORD(wParam) == IDC_RADIO_BACKWARDS;
 					break;
 			}
 			break;

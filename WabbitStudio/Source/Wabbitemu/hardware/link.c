@@ -346,7 +346,7 @@ static void link_RTS(CPU_t *cpu, TIFILE_t *tifile, int dest) {
 	var_hdr.type_ID = tifile->var->vartype;
 	memset(var_hdr.name, 0, sizeof(var_hdr.name));
 #ifdef WINVER
-	strncpy_s(var_hdr.name, (char *) tifile->var->name, 8);
+	strncpy(var_hdr.name, (char *) tifile->var->name, 8);
 #else
 	strncpy(var_hdr.name, (char *) tifile->var->name, 8);
 #endif
@@ -523,7 +523,6 @@ LINK_ERR link_send_app(CPU_t *cpu, TIFILE_t *tifile) {
 				link_send_pkt(cpu, CID_VAR, &flash_hdr);
 
 				// Receive the ACK
-				//WORK ITEM 7140 FAILS HERE!!! umm sometimes...
 				link_recv_pkt(cpu, &rpkt, data);
 				if (rpkt.command_ID != CID_ACK)
 					return LERR_LINK;
@@ -562,6 +561,19 @@ LINK_ERR link_send_app(CPU_t *cpu, TIFILE_t *tifile) {
 	}
 }
 
+BOOL check_flashpage_empty(u_char (*dest)[PAGE_SIZE], u_int page, u_int num_pages) {
+	u_char *space = &dest[page][PAGE_SIZE - 1];
+	u_int i;
+	// Make sure the subsequent pages are empty
+	for (i = 0; i < num_pages * PAGE_SIZE; i++, space--) {
+		if (*space != 0xFF) {
+			printf("Subsequent pages not empty\n");
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
 /* Forceload a TI-83+ series APP
  * On error: Returns an error code */
 static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
@@ -579,13 +591,32 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	
 	u_int page;
 	for (page = upages.start; page >= upages.end + tifile->flash->pages
-			&& dest[page][0x00] == 0x80 && dest[page][0x01] == 0x0F; page
-			-= dest[page][0x1C]) {
+			&& dest[page][0x00] == 0x80 && dest[page][0x01] == 0x0F; 
+			page -= dest[page][0x1C]) {
 
 		//different size app need to send the long way
 		if (!memcmp(&dest[page][0x12], &tifile->flash->data[0][0x12], 8)) {
 			if (dest[page][0x1C] != tifile->flash->pages)
-				return link_send_app(cpu, tifile);
+			{
+				//or we can forceload it still ;D
+				//theres probably some good reason jim didnt write this code :|
+				int pageDiff = tifile->flash->pages - dest[page][0x1C];
+				int currentPage = page - tifile->flash->pages;
+				while (!check_flashpage_empty(dest, currentPage, tifile->flash->pages) && currentPage >= upages.end)
+					currentPage--;
+				if (currentPage - pageDiff < upages.end)
+					return LERR_MEM;
+				if (pageDiff > 0) {
+					while (++currentPage < page)
+						memcpy(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE);
+				} else {
+					//need to copy the other way
+					int tempPage = currentPage;
+					currentPage = page - tifile->flash->pages;
+					while (--currentPage >= tempPage)
+						memcpy(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE);
+				}
+			}
 			u_int i;
 			for (i = 0; i < tifile->flash->pages; i++, page--) {
 				memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
@@ -612,12 +643,8 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	u_char *space = &dest[page][PAGE_SIZE - 1];
 	u_int i;
 	// Make sure the subsequent pages are empty
-	for (i = 0; i < tifile->flash->pages * PAGE_SIZE; i++, space--) {
-		if (*space != 0xFF) {
-			printf("Subsequent pages not empty\n");
-			return LERR_MEM;
-		}
-	}
+	if (!check_flashpage_empty(dest, page, tifile->flash->pages))
+		return LERR_MEM;
 	for (i = 0; i < tifile->flash->pages; i++, page--) {
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 	}
