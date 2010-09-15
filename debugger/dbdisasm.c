@@ -22,6 +22,8 @@ extern Z80_com_t da_opcode[256];
 
 extern HINSTANCE g_hInst;
 extern unsigned short goto_addr;
+extern int find_value;
+extern BOOL search_backwards;
 
 void sprint_addr(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	char s[64];
@@ -870,6 +872,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_COMMAND: {
+			HWND hwndDialog;
 			switch (LOWORD(wParam)) {
 				case DB_DISASM: {
 					u_int addr = (u_int) lParam;
@@ -928,6 +931,29 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					SetFocus(hwnd);
 					return 0;
 				}
+				case DB_FIND_NEXT: {
+					int addr = search_backwards ? dps->nSel - 1 : dps->nSel + 1;
+					while (addr < 0xFFFF && mem_read(&calcs[DebuggerSlot].mem_c, addr) != find_value) {
+						if (search_backwards)
+							addr--;
+						else
+							addr++;
+					}
+					if (addr > 0xFFFF || addr < 0x0000) {
+						MessageBox(NULL, "Value not found", "Find results", MB_OK);
+						break;
+					}
+					dps->nSel = addr;
+					SetFocus(hwnd);
+					SendMessage(hwnd, WM_COMMAND, DB_DISASM, addr);
+					InvalidateRect(hwnd, NULL, FALSE);
+					UpdateWindow(hwnd);
+					return 0;
+				}
+				case DB_OPEN_FIND:
+					hwndDialog = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC)FindDialogProc);
+					ShowWindow(hwndDialog, SW_SHOW);
+					break;
 				case DB_BREAKPOINT: {
 					bank_t *bank = &calcs[DebuggerSlot].mem_c.banks[mc_bank(dps->nSel)];
 
@@ -1176,14 +1202,16 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case VK_PRIOR:
 					SendMessage(hwnd, WM_VSCROLL, SB_PAGEUP, 0);
 					break;
-				case VK_F3: {
+				case VK_F3:
 					SendMessage(hwnd, WM_COMMAND, DB_MEMPOINT_WRITE, 0);
 					break;
-				}
-				case 'G': {
+				case 'G':
 					SendMessage(hwnd, WM_COMMAND, DB_GOTO, 0);
 					break;
-				}
+				case 'F':
+					SendMessage(hwnd, WM_COMMAND, DB_OPEN_FIND, 0);
+					break;
+
 			}
 
 			if (bCenter && (dps->nSel < dps->nPane || dps->nSel > dps->nPane + dps->nPage)) {

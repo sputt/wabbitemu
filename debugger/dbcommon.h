@@ -8,6 +8,7 @@
 
 int get_value(HWND hwndParent);
 INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam);
+INT_PTR CALLBACK FindDialogProc(HWND, UINT, WPARAM, LPARAM);
 int ValueSubmit(HWND hwndDlg, char *loc, int size);
 LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int opacity);
