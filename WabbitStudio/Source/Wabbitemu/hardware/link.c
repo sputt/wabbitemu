@@ -143,9 +143,11 @@ static u_char link_recv(CPU_t *cpu) {
 	return byte;
 }
 
-BOOL link_connected()
+BOOL link_connected(int slot)
 {
-	return calcs[gslot].cpu.pio.link->client != &vout;
+	if (slot > 1)
+		return FALSE;
+	return calcs[0].cpu.pio.link->client == &calcs[1].cpu.pio.link->host;
 }
 
 /* Calculate a TI Link Protocol checksum

@@ -55,7 +55,7 @@ char* AppendName(char* FileNames, char* fn) {
 }
 
 void SendFile( char* FileName , int ram ) {
-	BOOL is_link_connected = link_connected();
+	BOOL is_link_connected = link_connected(SlotSave);
 	TIFILE_t *var = importvar(FileName, SlotSave, ram);
 	LINK_ERR result;
 	if (var != NULL) {

@@ -1573,7 +1573,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					strcpy(calcs[gslot].rom_path, temp_save);
 #endif
 					SAVESTATE_t *save = SaveSlot(gslot);
-					WriteSave(temp_save, save, false);
+					WriteSave(temp_save, save, true);
 					FreeSave(save);
 				}
 

@@ -15,12 +15,13 @@ typedef struct {
 	int eof;
 } MFILE;
 
-MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym);
-MFILE *mopen(const char * filename,const char * mode );
-int mclose(MFILE* mf);
-int meof(MFILE* mf);
-int mgetc(MFILE* mf);
-int mputc(int c,MFILE* mf);
-int msize(MFILE* mf);
+MFILE *ExportVar(int, char *, symbol83P_t *);
+MFILE *ExportApp(int, char *, apphdr_t *); 
+MFILE *mopen(const char *, const char *);
+int mclose(MFILE *);
+int meof(MFILE *);
+int mgetc(MFILE *);
+int mputc(int, MFILE *);
+int msize(MFILE *);
 
 #endif

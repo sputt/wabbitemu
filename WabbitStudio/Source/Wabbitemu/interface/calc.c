@@ -311,7 +311,7 @@ void calc_slot_free(int slot) {
 		free(calcs[slot].mem_c.ram_break);
 		printf("Freeing hardware\n");
 		//HACK: needs to disconnect if connected, but since this is all we support for now
-		if (link_connected() && slot < 2)
+		if (link_connected(slot))
 			link_disconnect(&calcs[0].cpu, &calcs[1].cpu);
 		free(calcs[slot].cpu.pio.link);
 		printf("freeing keypad\n");

@@ -45,6 +45,7 @@ void state_build_applist(CPU_t *, applist_t *);
 void state_userpages(CPU_t *, upages_t *);
 symlist_t* state_build_symlist_83P(CPU_t *, symlist_t *);
 char *GetRealAns(CPU_t*);
-char *Symbol_Name_to_String(symbol83P_t *sym, char *buffer);
+char *Symbol_Name_to_String(symbol83P_t *, char *);
+char *App_Name_to_String(apphdr_t *, char *);
 
 #endif /*STATE_H_*/

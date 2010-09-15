@@ -5,11 +5,11 @@
 #include "lcd.h"
 #include "link.h"
 #include "calc.h"
-#ifdef USE_ZLIB
-#include "zlibcmp.h"
-#endif
 //#include "stdint.h"
 #include "83psehw.h"
+
+extern int def(FILE *, FILE *, int);
+extern int inf(FILE *, FILE *);
 
 BOOL cmpTags(char* str1,char* str2) {
 	int i;
@@ -990,12 +990,13 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 			puts("Could not open tmp file for read");
 			return;
 		}
+		int error;
 		fputs(DETECT_CMP_STR,cfile);
 		switch(compress) {
-#ifdef USE_ZLIB
+#ifdef ZLIB_WINAPI
 			case ZLIB_CMP:
 				fputc(ZLIB_CMP,cfile);
-				def(ofile,cfile,9);
+				error = def(ofile,cfile,9);
 				break;
 #endif
 			default:
@@ -1041,14 +1042,12 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 			puts("Could not open tmp file for write");
 			return NULL;
 		}
-		
+		int error;
 		switch(i) {
-#ifndef _WINDLL
-#ifdef USE_ZLIB
+#ifdef ZLIB_WINAPI
 			case ZLIB_CMP:
-				inf(ifile,tmpfile);
+				error = inf(ifile,tmpfile);
 				break;
-#endif
 #endif
 			default:
 				puts("Compressed save is not compatible.");
@@ -1060,7 +1059,7 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 		fclose(tmpfile);
 #ifdef WINVER
 		fopen_s(&ifile, temp_save, "rb");	//this is not a leak, ifile gets closed
-										// outside of this routine.
+											// outside of this routine.
 #else
 		ifile = fopen(temp_save,"rb");	//this is not a leak, ifile gets closed
 										// outside of this routine.

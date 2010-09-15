@@ -452,16 +452,19 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					FILE* file;
 					int i;
 					double data;
-					char buffer[256];
-					//TODO: browse for a directory
-					GetCurrentDirectory(ARRAYSIZE(buffer), (char*)&buffer);
+					char *buffer = (char *) malloc(MAX_PATH);
+					if (BrowseTxtFile(buffer)) {
+						free(buffer);
+						//make the profiler running again
+						calcs[DebuggerSlot].profiler.running = TRUE;
+						break;
+					}
 #ifdef WINVER
-					strcat_s(buffer, "\\profile.txt");
 					fopen_s(&file, buffer, "wb");
 #else
-					strcat(buffer, "\\profile.txt");
 					file = fopen(buffer, "wb");
 #endif
+					free(buffer);
 					fprintf(file, "Total Tstates: %i\r\n", calcs[DebuggerSlot].profiler.totalTime);
 					for(i = calcs[DebuggerSlot].profiler.lowAddress / calcs[DebuggerSlot].profiler.blockSize;
 							i < ARRAYSIZE(calcs[DebuggerSlot].profiler.data) &&
@@ -540,7 +543,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			break;
 		}
 		case WM_NOTIFY: {
-			LPNMHDR header = (LPNMHDR)lParam;
+			LPNMHDR header = (LPNMHDR) lParam;
 			switch (header->code) {
 				case TCN_SELCHANGE: {
 					if(header->hwndFrom == hmem) {
@@ -704,9 +707,41 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 	return DefWindowProc(hwnd, Message, wParam, lParam);
 }
 
+int BrowseTxtFile(char* lpstrFile) {
+	lpstrFile[0] = '\0';
+	OPENFILENAME ofn;
+	char lpstrFilter[] = "	Text file  (*.txt)\0*.txt\0	All Files (*.*)\0*.*\0\0";
+	unsigned int Flags = 0;
+	ofn.lStructSize			= sizeof(OPENFILENAME);
+	ofn.hwndOwner			= GetForegroundWindow();
+	ofn.hInstance			= NULL;
+	ofn.lpstrFilter			= (LPCTSTR) lpstrFilter;
+	ofn.lpstrCustomFilter	= NULL;
+	ofn.nMaxCustFilter		= 0;
+	ofn.nFilterIndex		= 0;
+	ofn.lpstrFile			= (LPSTR) lpstrFile;
+	ofn.nMaxFile			= 512;
+	ofn.lpstrFileTitle		= NULL;
+	ofn.nMaxFileTitle		= 0;
+	ofn.lpstrInitialDir		= NULL;
+	ofn.lpstrTitle			= "Wabbitemu Save Profile";
+	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
+	ofn.lpstrDefExt			= "txt";
+	ofn.lCustData			= 0;
+	ofn.lpfnHook			= NULL;
+	ofn.lpTemplateName		= NULL;
+	ofn.pvReserved			= NULL;
+	ofn.dwReserved			= 0;
+	ofn.FlagsEx				= 0;
+	if (!GetSaveFileName(&ofn)) {
+		return 1;
+	}
+	return 0;
+}
+
 // Converts a hexadecimal string to integer
 int xtoi(const char* xs, int* result) {
-	size_t i, szlen = strlen(xs);
+	int i, szlen = (int) strlen(xs);
 	int xv, fact;
 	if (szlen <= 0)
 		// Nothing to convert
