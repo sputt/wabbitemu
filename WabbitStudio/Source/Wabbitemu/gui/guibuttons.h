@@ -6,6 +6,9 @@
 #define	DBS_LOCK	0x02
 #define DBS_PRESS	0x04
 
-void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state);
+void FinalizeButtons();
+void HandleKeyDown(unsigned int);
+void HandleKeyUp(unsigned int);
+void DrawButtonState(HDC, HDC, POINT *, UINT);
 
 #endif /* GUIBUTTONS_H */

@@ -2,6 +2,7 @@
 
 #include "calc.h"
 #include "guifaceplate.h"
+#include "guibuttons.h"
 
 extern HINSTANCE g_hInst;
 
@@ -88,11 +89,16 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				UpdateWindow(hwnd);
 				return 0;
 		}
+		case WM_KEYDOWN:
+			HandleKeyDown((unsigned int) wParam);
+			return 0;
+		case WM_KEYUP:
+			HandleKeyUp((unsigned int) wParam);
+			return 0;
 		case WM_CLOSE:
 			SendMessage(calcs[gslot].hwndFrame, uMsg, wParam, lParam);
 		case WM_NCCALCSIZE:
 			return 0;
-
 		default:
 			return DefWindowProc(hwnd, uMsg, wParam, lParam);
 	}

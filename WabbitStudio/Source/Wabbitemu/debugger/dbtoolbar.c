@@ -14,7 +14,8 @@ extern int gslot;
 
 static WNDPROC OldButtonProc;
 
-static HWND hwndLastFocus;
+HWND hwndLastFocus;
+
 
 #define FADE_SOLID 10
 #define FADE_SPEED 20
@@ -287,6 +288,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		{
 			switch(wParam)
 			{
+				case DB_GOTO:
 				case DB_MEMPOINT_READ:
 				case DB_MEMPOINT_WRITE:
 					SendMessage(hwndLastFocus, WM_COMMAND, wParam, 0);
@@ -422,9 +424,6 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		case WM_LBUTTONDOWN:
 		{
 			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			HWND hTemp = GetFocus();
-			if (hTemp != hwnd)
-				hwndLastFocus = hTemp;
 
 			int xPos = GET_X_LPARAM(lParam);
 			RECT rc;
@@ -899,20 +898,24 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 			SelectObject(GetDC(hwnd), hfontSegoe);
 			int next = 4;
-			next = CreateToolbarButton(hwnd, "Run", "Run the calculator.", "DBRun", next, 4, 1001, FALSE, (int)NULL);
-			next = CreateToolbarButton(hwnd, "Toggle Breakpoint", "Toggle the breakpoint on the current selection.", "DBBreak", next, 4, 1002, FALSE, (int)NULL);
-			next = CreateToolbarButton(hwnd, "Toggle Watchpoint", "Toggle a memory breakpoint at the current selection.", "DBMemBreak", next, 4, 1005, TRUE, IDR_DISASM_WATCH_MENU);
-			next = CreateToolbarButton(hwnd, "Step", "Run a single command.", "DBStep", next, 4, 999, FALSE, (int)NULL);
-			next = CreateToolbarButton(hwnd, "Step Over", "Run a single line.", "DBStepOver", next, 4, 1000, FALSE, (int)NULL);
-			next = CreateToolbarButton(hwnd, "Goto", "Goto an address in RAM or Flash.", "DBGoto", next, 4, 1003, FALSE, (int)NULL);
-			next = CreateToolbarButton(hwnd, "Rewind", "Restores to a previous state.", NULL, next, 4, 1006, TRUE, (int)IDR_DISASM_REWIND_MENU);
+			next = CreateToolbarButton(hwnd, "Run", "Run the calculator.", "DBRun", next, 4, 999, FALSE, (int)NULL);
+			next = CreateToolbarButton(hwnd, "Toggle Breakpoint", "Toggle the breakpoint on the current selection.", "DBBreak", next, 4, 1000, FALSE, (int)NULL);
+			next = CreateToolbarButton(hwnd, "Toggle Watchpoint", "Toggle a memory breakpoint at the current selection.", "DBMemBreak", next, 4, 1001, TRUE, IDR_DISASM_WATCH_MENU);
+			next = CreateToolbarButton(hwnd, "Step", "Run a single command.", "DBStep", next, 4, 1002, FALSE, (int)NULL);
+			next = CreateToolbarButton(hwnd, "Step Over", "Run a single line.", "DBStepOver", next, 4, 1003, FALSE, (int)NULL);
+			next = CreateToolbarButton(hwnd, "Goto", "Goto an address in RAM or Flash.", "DBGoto", next, 4, 1004, FALSE, (int)NULL);
+			next = CreateToolbarButton(hwnd, "Rewind", "Restores to a previous state.", NULL, next, 4, 1005, TRUE, (int)IDR_DISASM_REWIND_MENU);
 			//next = CreateToolbarButton(hwnd, "Track", "Create a variable track window.", "DBGoto", next, 4, 1005);
-			next = CreateToolbarButton(hwnd, "", "Display additional commands.", "Chevron", next, 4, 1004, FALSE, (int)NULL);
+			next = CreateToolbarButton(hwnd, "", "Display additional commands.", "Chevron", next, 4, 1006, FALSE, (int)NULL);
 
 			return 0;
 		}
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
+				case DB_MEMPOINT_READ:
+				case DB_MEMPOINT_WRITE:
+					SendMessage(hwndLastFocus, WM_COMMAND, wParam, 0);
+					break;
 #ifdef WITH_BACKUPS
 				case IDM_05SECOND:
 				case IDM_10SECOND:
@@ -931,50 +934,24 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				}
 #endif
 				case 999:
-					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEP, 0);
-					break;
-				case 1000:
-					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEPOVER, 0);
-					break;
-				case 1001:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_RUN, 0);
 					break;
-				case 1002:
+				case 1000:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_BREAKPOINT, 0);
 					break;
-				case 1003:
-					SendMessage(hwndLastFocus, WM_COMMAND, DB_GOTO, 0);
-					break;
-				case 1005:
+				case 1001:
 					SendMessage(hwndLastFocus, WM_COMMAND, DB_MEMPOINT_WRITE, 0);
 					break;
-				case 1006:
-					//SendMessage(GetParent(hwnd), WM_COMMAND, 0, 0);
+				case 1002:
+					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEP, 0);
 					break;
-				/*case 1005:
-				{
-					label_struct *label;
-					waddr_t waddr;
-#define ADDTRACK(zz, ss, ff) \
-	if (label) { \
-		waddr = z80_to_waddr(label->addr); \
-		AddDebugTrack(gslot, zz, waddr, ss, ff); \
-	}
-
-					ADDTRACK("screen_xc", 1, "%d");
-					ADDTRACK("screen_xc_e", 1, "%d");
-					ADDTRACK("screen_yc", 1, "%d");
-					ADDTRACK("screen_yc_e", 1, "%d");
-
-					ADDTRACK("screen_w", 1, "%d");
-					ADDTRACK("screen_h", 1, "%d");
-					ADDTRACK("draw_queue_ptr", 2, "%04X");
-					ADDTRACK("draw_count", 1, "%d");
-
-
+				case 1003:
+					SendMessage(GetParent(hwnd), WM_COMMAND, DB_STEPOVER, 0);
 					break;
-				}*/
 				case 1004:
+					SendMessage(hwndLastFocus, WM_COMMAND, DB_GOTO, 0);
+					break;
+				case 1006:
 				{
 					HMENU hmenu = CreatePopupMenu();
 					MENUITEMINFO mii;
@@ -1044,7 +1021,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 						} else {
 							mii.cch = GetWindowText(tbb->hwnd, WindowText, sizeof(WindowText));
-							mii.wID = 100+i;
+							mii.wID = 1005-i;
 
 							HBITMAP hbmDIB = CreateDIBSection(
 									GetDC(hwnd),

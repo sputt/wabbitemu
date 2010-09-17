@@ -231,6 +231,9 @@
     <ClCompile Include="utilities\zpipe.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="fileutilities.c">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -446,6 +449,9 @@
     <ClInclude Include="utilities\zconf.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="fileutilities.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\back.bmp">
@@ -460,22 +466,10 @@
     <None Include="gui\small_close.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="gui\ti-82keymap.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-83+Keymap.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-83Keymap.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="gui\TI83P.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="gui\TI83PSE.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ti-84+sekeymap.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="gui\TI-Icons.bmp">
@@ -529,30 +523,6 @@
     <None Include="gui\stepover.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="gui\TI-73.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-82.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-83.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-83+.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-83+SE.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-84+ SE.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-84+.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-84+SE.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="gui\wabbitemu.ico">
       <Filter>Resource Files</Filter>
     </None>
@@ -586,45 +556,6 @@
     <None Include="gui\ti-84+sekeymap.png">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="gui\ti-86.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ti-86keymap.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\bf73.hex">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ROM\G84PSE2.8XP">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\bf83pbe.hex">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\bf83pse.hex">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\bf84pbe.hex">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\bf84pse.hex">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ROM\G83PBE1.8XP">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ROM\G83PSE1.8XP">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ROM\G84PBE1.8XP">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ROM\G84PBE2.8XP">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ROM\G84PSE1.8XP">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="gui\Wabbitemu.tlb">
       <Filter>Resource Files</Filter>
     </None>
@@ -644,6 +575,30 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="gui\ti-85.png">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\bf73.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\rom8x.8xp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\bf83pbe.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\bf83pse.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\bf84pbe.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\bf84pse.hex">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\Catalog.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\homescreen.bmp">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
