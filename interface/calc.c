@@ -303,25 +303,35 @@ void calc_slot_free(int slot) {
 		/* don't forget to change this when audio for non-Windows
 		 * builds is implemented, or bad things happen! */
 		KillSound(calcs[slot].audio);
+		calcs[slot].audio = NULL;
 #endif
 		printf("Freeing memory\n");
 		free(calcs[slot].mem_c.flash);
+		calcs[slot].mem_c.flash = NULL;
 		free(calcs[slot].mem_c.ram);
+		calcs[slot].mem_c.ram = NULL;
 		free(calcs[slot].mem_c.flash_break);
+		calcs[slot].mem_c.flash_break = NULL;
 		free(calcs[slot].mem_c.ram_break);
+		calcs[slot].mem_c.ram_break = NULL;
 		printf("Freeing hardware\n");
 		//HACK: needs to disconnect if connected, but since this is all we support for now
 		if (link_connected(slot))
-			link_disconnect(&calcs[0].cpu, &calcs[1].cpu);
+			link_disconnect(&calcs[slot].cpu);
 		free(calcs[slot].cpu.pio.link);
+		calcs[slot].cpu.pio.link = NULL;
 		printf("freeing keypad\n");
 		free(calcs[slot].cpu.pio.keypad);
+		calcs[slot].cpu.pio.keypad = NULL;
 		printf("freeing stdint\n");
 		free(calcs[slot].cpu.pio.stdint);
+		calcs[slot].cpu.pio.stdint = NULL;
 		printf("freeing se aux %p\n", calcs[slot].cpu.pio.se_aux);
 		free(calcs[slot].cpu.pio.se_aux);
+		calcs[slot].cpu.pio.se_aux = NULL;
 		printf("freeing lcd\n");
 		free(calcs[slot].cpu.pio.lcd);
+		calcs[slot].cpu.pio.lcd = NULL;
 		printf("freeing backups\n");
 #ifdef WITH_BACKUPS
 		if (do_backups)

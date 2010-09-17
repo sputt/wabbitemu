@@ -2,6 +2,7 @@
 
 #include "gui.h"
 #include "guilcd.h"
+#include "guibuttons.h"
 #include "calc.h"
 #include "sendfiles.h"
 #include "sound.h"
@@ -626,7 +627,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					memset(&df[1], 0, strlen(fn) + 2);
 #ifdef WINVER
-					strcpy_s((char*) &df[1], strlen(fn), fn);
+					strcpy_s((char*) &df[1], strlen(fn) + 1, fn);
 #else
 					strcpy((char*) &df[1], fn);
 #endif
@@ -716,10 +717,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 
 		case WM_KEYDOWN:
+			HandleKeyDown((unsigned int) wParam);
+			return 0;
 		case WM_KEYUP: {
-			SendMessage(calcs[gslot].hwndFrame, Message, wParam, lParam);
-			SetFocus(hwnd);
-			break;
+			HandleKeyUp((unsigned int) wParam);
+			return 0;
 		}
 		case WM_DESTROY: {
 			calcs[gslot].hwndLCD = NULL;

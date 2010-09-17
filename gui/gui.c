@@ -59,7 +59,6 @@
 
 char ExeDir[512];
 
-void FinalizeButtons();
 INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 HINSTANCE g_hInst;
 HACCEL hacceldebug;
@@ -1137,14 +1136,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					DeleteObject(oldSkin);
 					break;
 				}
-				case IDM_CALC_CONNECT: {					
-					if (link_connect(&calcs[0].cpu, &calcs[1].cpu))						
+				case IDM_CALC_CONNECT: {
+					if (!calcs[0].active || !calcs[1].active || link_connect(&calcs[0].cpu, &calcs[1].cpu))						
 						MessageBox(NULL, "Connection Failed", "Error", MB_OK);					
 					else						
 						MessageBox(NULL, "Connection Successful", "Success", MB_OK);					
 					break;
 				}
-				case IDM_CALC_PAUSE: {					
+				case IDM_CALC_PAUSE: {
 					HMENU hmenu = GetMenu(hwnd);					
 					if (calcs[gslot].running) {						
 						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_CHECKED);
@@ -1291,47 +1290,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 
 		case WM_KEYDOWN: {
-			/* make this an accel*/
-			if (wParam == VK_F8) {
-				if (calcs[gslot].speed == 100)
-					SendMessage(hwnd, WM_COMMAND, IDM_SPEED_QUADRUPLE, 0);
-				else
-					SendMessage(hwnd, WM_COMMAND, IDM_SPEED_NORMAL, 0);
-			}
-
-			if (wParam == VK_SHIFT) {
-				if (GetKeyState(VK_LSHIFT) & 0xFF00) {
-					wParam = VK_LSHIFT;
-				} else {
-					wParam = VK_RSHIFT;
-				}
-			}
-
-			keyprog_t *kp = keypad_key_press(&calcs[gslot].cpu, (unsigned int) wParam);
-			if (kp) {
-				extern POINT ButtonCenter83[64];
-				extern POINT ButtonCenter84[64];
-				if ((calcs[gslot].cpu.pio.keypad->keys[kp->group][kp->bit] & KEY_STATEDOWN) == 0) {
-					/*if (calcs[gslot].model == TI_84P || calcs[gslot].model == TI_84PSE) {
-						DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter84[kp->bit+(kp->group<<3)], DBS_DOWN | DBS_PRESS);
-					} else {
-						DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter83[kp->bit+(kp->group<<3)], DBS_DOWN | DBS_PRESS);
-					}*/
-					calcs[gslot].cpu.pio.keypad->keys[kp->group][kp->bit] |= KEY_STATEDOWN;
-					SendMessage(hwnd, WM_SIZE, 0, 0);
-					FinalizeButtons();
-				}
-			}
+			HandleKeyDown((unsigned int) wParam);
 			return 0;
 		}
 		case WM_KEYUP:
-			if (wParam == VK_SHIFT) {
-				keypad_key_release(&calcs[gslot].cpu, VK_LSHIFT);
-				keypad_key_release(&calcs[gslot].cpu, VK_RSHIFT);
-			} else {
-				keypad_key_release(&calcs[gslot].cpu, (unsigned int) wParam);
-			}
-			FinalizeButtons();
+			HandleKeyUp((unsigned int) wParam);
 			return 0;
 		case WM_SIZING:
 		{
@@ -1584,6 +1547,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			printf("Releasing skin and keymap\n");
 			DeleteDC(calcs[gslot].hdcKeymap);
 			DeleteDC(calcs[gslot].hdcSkin);
+			calcs[gslot].hdcKeymap = NULL;
+			calcs[gslot].hdcSkin = NULL;
+
+			if (calcs[gslot].hwndStatusBar)
+				DestroyWindow(calcs[gslot].hwndStatusBar);
+			calcs[gslot].hwndStatusBar = NULL;
 
 			//for some reason this fails...:/
 			if (!calcs[gslot].SkinEnabled || !calcs[gslot].bCutout)
@@ -1592,6 +1561,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			printf("Freeing calculator slot\n");
 			calc_slot_free(gslot);
+			printf("freeing labels\n");
+			VoidLabels(gslot);
+			calcs[gslot].hwndFrame = NULL;
 
 			if (calc_count() == 0)
 				PostQuitMessage(0);
@@ -1618,26 +1590,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
 	return 0;
-}
-
-void FinalizeButtons() {
-	int group, bit;
-	keypad_t *kp = calcs[gslot].cpu.pio.keypad;
-	for(group=0;group<7;group++) {
-		for(bit=0;bit<8;bit++) {
-			if ((kp->keys[group][bit] & KEY_STATEDOWN) &&
-				((kp->keys[group][bit] & KEY_MOUSEPRESS) == 0) &&
-				((kp->keys[group][bit] & KEY_KEYBOARDPRESS) == 0)) {
-				/*if (calcs[gslot].model == TI_84P || calcs[gslot].model == TI_84PSE) {
-					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter84[bit+(group<<3)], DBS_UP | DBS_PRESS);
-					} else {
-					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter83[bit+(group<<3)], DBS_UP | DBS_PRESS);
-				}*/	
-					kp->keys[group][bit] &= (~KEY_STATEDOWN);
-					//SendMessage(hwnd, WM_SIZE, 0, 0);
-			}
-		}
-	}
 }
 
 INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
