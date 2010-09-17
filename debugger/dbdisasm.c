@@ -18,6 +18,7 @@
 #define COLOR_MEMPOINT_READ		(RGB(255, 250, 145))
 #define COLOR_HALT				(RGB(200, 200, 100))
 
+extern HWND hwndLastFocus;
 extern Z80_com_t da_opcode[256];
 
 extern HINSTANCE g_hInst;
@@ -413,7 +414,12 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 	static int nClick;
 
 	switch (Message) {
-		case WM_SETFOCUS:
+		case WM_SETFOCUS: {
+			hwndLastFocus = hwnd;
+			InvalidateSel(hwnd, dps->iSel);
+			UpdateWindow(hwnd);
+			return 0;
+		}
 		case WM_KILLFOCUS: {
 			InvalidateSel(hwnd, dps->iSel);
 			UpdateWindow(hwnd);
@@ -872,7 +878,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_COMMAND: {
-			HWND hwndDialog;
 			switch (LOWORD(wParam)) {
 				case DB_DISASM: {
 					u_int addr = (u_int) lParam;
@@ -923,6 +928,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					CPU_stepover(&calcs[DebuggerSlot].cpu);
 					goto db_step_finish;
 				}
+				case DB_DISASM_GOTO:
 				case DB_GOTO: {
 					int result;
 					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC)GotoDialogProc);
@@ -950,10 +956,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					UpdateWindow(hwnd);
 					return 0;
 				}
-				case DB_OPEN_FIND:
-					hwndDialog = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC)FindDialogProc);
+				case DB_OPEN_FIND: {
+					HWND hwndDialog = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC)FindDialogProc);
 					ShowWindow(hwndDialog, SW_SHOW);
 					break;
+				}
 				case DB_BREAKPOINT: {
 					bank_t *bank = &calcs[DebuggerSlot].mem_c.banks[mc_bank(dps->nSel)];
 
@@ -999,7 +1006,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
 				}
-				case IDM_DSETPC: {
+				case DB_SET_PC: {
 					calcs[DebuggerSlot].cpu.pc = zinf[dps->iSel].addr;
 					cycle_pcs(dps);
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);

@@ -10,5 +10,6 @@ BOOL DownloadOS(int);
 BOOL DoWizardSheet(HWND);
 int BrowseOSFile(char* );
 void ExtractDumperProg();
+void ExtractResource(char *, HRSRC);
 
 #endif

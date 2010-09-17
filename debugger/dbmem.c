@@ -8,6 +8,7 @@
 
 #define COLUMN_X_OFFSET 7
 
+extern HWND hwndLastFocus;
 extern HINSTANCE g_hInst;
 extern unsigned short goto_addr;
 extern int find_value;
@@ -74,6 +75,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	int kMemWidth;
 	static int cyHeader;
 	switch (Message) {
+		case WM_SETFOCUS:
+			hwndLastFocus = hwnd;
+			return 0;
 		case WM_CREATE:
 		{
 			mp_settings *mps;

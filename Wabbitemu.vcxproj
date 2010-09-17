@@ -59,6 +59,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="debugger\disassemble.c" />
+    <ClCompile Include="fileutilities.c" />
     <ClCompile Include="gui\DataObject.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -172,6 +173,7 @@
     <ClInclude Include="debugger\dbtrack.h" />
     <ClInclude Include="debugger\dbvalue.h" />
     <ClInclude Include="debugger\disassemble.h" />
+    <ClInclude Include="fileutilities.h" />
     <ClInclude Include="gui\CGdiPlusBitmap.h" />
     <ClInclude Include="gui\DataObject.h" />
     <ClInclude Include="gui\displayoptionstest.h" />
@@ -231,11 +233,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\back.bmp" />
-    <None Include="gui\bf73.hex" />
-    <None Include="gui\bf83pbe.hex" />
-    <None Include="gui\bf83pse.hex" />
-    <None Include="gui\bf84pbe.hex" />
-    <None Include="gui\bf84pse.hex" />
     <None Include="gui\break.bmp" />
     <None Include="gui\buttondownleft.bmp" />
     <None Include="gui\buttondownmiddle.bmp" />
@@ -243,51 +240,39 @@
     <None Include="gui\buttonframe.bmp" />
     <None Include="gui\buttonframeleft.bmp" />
     <None Include="gui\buttonframemiddle.bmp" />
+    <None Include="gui\Catalog.bmp" />
     <None Include="gui\chevron.bmp" />
     <None Include="gui\downarrow.bmp" />
     <None Include="gui\expandpanebuttons.bmp" />
     <None Include="gui\goto.bmp" />
+    <None Include="gui\homescreen.bmp" />
     <None Include="gui\left.bmp" />
     <None Include="gui\membreak.bmp" />
     <None Include="gui\right.bmp" />
-    <None Include="gui\ROM\G83PBE1.8XP" />
-    <None Include="gui\ROM\G83PSE1.8XP" />
-    <None Include="gui\ROM\G84PBE1.8XP" />
-    <None Include="gui\ROM\G84PBE2.8XP" />
-    <None Include="gui\ROM\G84PSE1.8XP" />
-    <None Include="gui\ROM\G84PSE2.8XP" />
+    <None Include="gui\ROM\bf73.hex" />
+    <None Include="gui\ROM\bf83pbe.hex" />
+    <None Include="gui\ROM\bf83pse.hex" />
+    <None Include="gui\ROM\bf84pbe.hex" />
+    <None Include="gui\ROM\bf84pse.hex" />
+    <None Include="gui\ROM\rom8x.8xp" />
     <None Include="gui\run.bmp" />
     <None Include="gui\SkinPicker.bmp" />
     <None Include="gui\small_close.bmp" />
     <None Include="gui\step.bmp" />
     <None Include="gui\stepover.bmp" />
-    <None Include="gui\TI-73.bmp" />
     <None Include="gui\TI-73.png" />
-    <None Include="gui\TI-82.bmp" />
     <None Include="gui\TI-82.png" />
-    <None Include="gui\ti-82keymap.bmp" />
     <None Include="gui\ti-82keymap.png" />
-    <None Include="gui\TI-83+.bmp" />
     <None Include="gui\TI-83+.png" />
-    <None Include="gui\TI-83+Keymap.bmp" />
     <None Include="gui\TI-83+Keymap.png" />
-    <None Include="gui\TI-83+SE.bmp" />
     <None Include="gui\TI-83+SE.png" />
-    <None Include="gui\TI-83.bmp" />
     <None Include="gui\TI-83.png" />
-    <None Include="gui\TI-83Keymap.bmp" />
     <None Include="gui\TI-83Keymap.png" />
-    <None Include="gui\TI-84+ SE.bmp" />
-    <None Include="gui\TI-84+.bmp" />
     <None Include="gui\ti-84+.png" />
-    <None Include="gui\TI-84+SE.bmp" />
     <None Include="gui\ti-84+se.png" />
-    <None Include="gui\ti-84+sekeymap.bmp" />
     <None Include="gui\ti-84+sekeymap.png" />
     <None Include="gui\ti-85.png" />
-    <None Include="gui\ti-86.bmp" />
     <None Include="gui\ti-86.png" />
-    <None Include="gui\ti-86keymap.bmp" />
     <None Include="gui\ti-86keymap.png" />
     <None Include="gui\TI-Icons.bmp" />
     <None Include="gui\TI83P.bmp" />
@@ -526,7 +511,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level2</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN64;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -547,7 +532,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level2</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;HIGH_SHADE_GIF;USE_GDIPLUS;ZLIB_WINAPI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN64;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;HIGH_SHADE_GIF;USE_GDIPLUS;ZLIB_WINAPI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -573,7 +558,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>Level2</WarningLevel>
       <Optimization>Full</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;HIGH_SHADE_GIF;USE_GDIPLUS;ZLIB_WINAPI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN64;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;HIGH_SHADE_GIF;USE_GDIPLUS;ZLIB_WINAPI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <ExceptionHandling>false</ExceptionHandling>
@@ -635,7 +620,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;USE_GDIPLUS;HIGH_SHADE_GIF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN64;NDEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;USE_GDIPLUS;HIGH_SHADE_GIF;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
