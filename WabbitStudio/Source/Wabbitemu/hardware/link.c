@@ -55,17 +55,14 @@ int link_connect(CPU_t *cpu1, CPU_t *cpu2) {
 	if (link1 == NULL || link2 == NULL)
 		return 1;
 
-	//link1->host = &link2->client;
-	//link2->host = &link1->client;
 	link1->client = &link2->host;
 	link2->client = &link1->host;
 
 	return 0;
 }
 
-int link_disconnect(CPU_t *cpu1, CPU_t *cpu2) {
-	link_init(cpu1);
-	link_init(cpu2);
+int link_disconnect(CPU_t *cpu) {
+	cpu->pio.link->client = NULL;
 	return 0;
 }
 
@@ -574,6 +571,24 @@ BOOL check_flashpage_empty(u_char (*dest)[PAGE_SIZE], u_int page, u_int num_page
 	return TRUE;
 }
 
+/* Fixes the certificate page so that the app is no longer marked as a trial
+ * cpu: cpu for the core the application is on
+ * page: the page the application you want to mark is on
+ */
+void fix_certificate(CPU_t *cpu, u_int page) {
+	u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) cpu->mem_c->flash;
+	upages_t upages;
+	state_userpages(cpu, &upages);
+	//there is probably some logic here that im missing...
+	//the 83p wtf is up with that offset
+	int offset = 0x1E50;
+	if (cpu->pio.model == TI_83P)
+		offset = 0x1F18;
+	//erase the part of the certifcate that marks it as a trial app
+	dest[cpu->mem_c->flash_pages-2][offset + 2 * (upages.start - page)] = 0x80;
+	dest[cpu->mem_c->flash_pages-2][offset+1 + 2 * (upages.start - page)] = 0x00;
+}
+
 /* Forceload a TI-83+ series APP
  * On error: Returns an error code */
 static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
@@ -621,6 +636,13 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 			for (i = 0; i < tifile->flash->pages; i++, page--) {
 				memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 			}
+			//note that this does not fix the old marks, only ensures that
+			//the new order of apps has the correct parts marked
+			applist_t applist;
+			state_build_applist(cpu, &applist);
+			for (i = 0; i < applist.count; i++) {
+				fix_certificate(cpu, applist.apps[i].page);
+			}
 			printf("Found already\n");
 			return LERR_SUCCESS;
 		}
@@ -629,14 +651,8 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	if (page < upages.end)
 		return LERR_MEM;
 
-	//there is probably some logic here that im missing...
-	//the 83p wtf is up with that offset
-	int offset = 0x1E50;
-	if (cpu->pio.model == TI_83P)
-		offset = 0x1F18;
-	//erase the part of the certifcate that marks it as a trial app
-	dest[cpu->mem_c->flash_pages-2][offset + 2 * (upages.start - page)] = 0x80;
-	dest[cpu->mem_c->flash_pages-2][offset+1 + 2 * (upages.start - page)] = 0x00;
+	//mark the app as non trial
+	fix_certificate(cpu, page);
 	//force reset the applist says BrandonW. seems to work, apps show up :P
 	mem_write(cpu->mem_c, 0x9C87, 0x00);
 
@@ -842,10 +858,11 @@ int ReadIntelHex(FILE* ifile, intelhex_t *ihex) {
 	return 1;
 }
 
-void writeboot(FILE* infile) {
+void writeboot(FILE* infile, int page) {
 	intelhex_t ihex;
 	if (!infile) return;
-	int curpage = calcs[gslot].mem_c.flash_pages - 1;			//last page is boot page
+	if (page == -1)
+		page += calcs[gslot].mem_c.flash_pages;			//last page is boot page
 	unsigned char (*flash)[16384] = (uint8_t(*)[16384]) calcs[gslot].mem_c.flash;
 	while(1) {
 		if (!ReadIntelHex(infile,&ihex)) {
@@ -853,7 +870,7 @@ void writeboot(FILE* infile) {
 		}
 		switch(ihex.type) {
 			case 0x00:
-				memcpy(flash[curpage]+(ihex.address&0x3FFF),ihex.data,ihex.size);
+				memcpy(flash[page]+(ihex.address&0x3FFF),ihex.data,ihex.size);
 				break;
 			case 0x02:
 				break;

@@ -152,8 +152,8 @@ LINK_ERR link_send_var(CPU_t*, TIFILE_t*, SEND_FLAG);
 void Load_8xu(FILE*);
 int ReadIntelHex(FILE*, intelhex_t *);
 int link_connect(CPU_t *, CPU_t *);
-int link_disconnect(CPU_t *, CPU_t *);
+int link_disconnect(CPU_t *);
 BOOL link_connected(int);
-void writeboot(FILE* );
+void writeboot(FILE* , int page = -1);
 #endif
 

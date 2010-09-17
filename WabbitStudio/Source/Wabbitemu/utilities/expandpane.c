@@ -189,7 +189,7 @@ static LRESULT CALLBACK HeaderProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 	}
 	case WM_MOUSEWHEEL:
 		SendMessage(GetParent(hwnd), Message, wParam, lParam);
-		break;
+		return 0;
 	case WM_COMMAND: {
 		ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (HIWORD(wParam)) {
@@ -201,13 +201,11 @@ static LRESULT CALLBACK HeaderProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					eps->ExpandState = EP_OPENING;
 					SetTimer(GetParent(hwnd), 0, 20, NULL);
 					eps->SlideSpeed = 0.0;
-					//SendMessage(GetParent(GetParent(hwnd)), WM_SIZE, 0, 0);
 					break;
 				case EP_OPEN:
 					eps->ExpandState = EP_CLOSING;
 					SetTimer(GetParent(hwnd), 0, 20, NULL);
 					eps->SlideSpeed = 0.0;
-					//SendMessage(GetParent(GetParent(hwnd)), WM_SIZE, 0, 0);
 					break;
 				case EP_OPENING:
 					eps->ExpandState = EP_CLOSING;

@@ -160,6 +160,11 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0);
 			}
 
+			//need to do this before we add the tabs (sizes)
+			RECT rc;
+			GetClientRect(hwnd, &rc);
+			ratioDisasm = (double) cyDisasm / rc.bottom;
+
 			/* Create diassembly window */
 
 			//ZeroMemory(&dps, sizeof(dps));
@@ -221,6 +226,12 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			int selIndex = (int) QueryDebugKey((char *) MemSelIndexString);
 			TabCtrl_SetCurSel(hmem, selIndex);
+			NMHDR hdr;
+			hdr.code = TCN_SELCHANGE;
+			hdr.idFrom = 1; // not needed
+			hdr.hwndFrom = hmem;
+			SendMessage(hwnd, WM_NOTIFY, MAKEWPARAM(0, 0), (LPARAM) &hdr);
+
 
 			hreg =
 			CreateWindow(
@@ -246,10 +257,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				hwnd,
 				(HMENU) ID_STACK,
 				g_hInst, &mps[0]);
-
-			RECT rc;
-			GetClientRect(hwnd, &rc);
-			ratioDisasm = (double) cyDisasm / rc.bottom;
 
 			if (expand_pane_state.total != 0) {
 				SetExpandPaneState(&expand_pane_state);
