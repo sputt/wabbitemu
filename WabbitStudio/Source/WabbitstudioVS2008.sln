@@ -3,25 +3,77 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wabbitemu", "Wabbitemu\WabbitemuVS2008.vcproj", "{C0E0E7D4-49B5-4709-A132-69165EFF89DF}"
 EndProject
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "ConsoleApplication1", "ConsoleApplication1\ConsoleApplication1.vbproj", "{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug DLL|Any CPU = Debug DLL|Any CPU
+		Debug DLL|Mixed Platforms = Debug DLL|Mixed Platforms
 		Debug DLL|Win32 = Debug DLL|Win32
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|Win32 = Debug|Win32
+		MapEditor Release|Any CPU = MapEditor Release|Any CPU
+		MapEditor Release|Mixed Platforms = MapEditor Release|Mixed Platforms
 		MapEditor Release|Win32 = MapEditor Release|Win32
+		Release DLL|Any CPU = Release DLL|Any CPU
+		Release DLL|Mixed Platforms = Release DLL|Mixed Platforms
 		Release DLL|Win32 = Release DLL|Win32
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|Win32 = Release|Win32
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Debug DLL|Any CPU.ActiveCfg = Debug DLL|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Debug DLL|Mixed Platforms.ActiveCfg = Debug DLL|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Debug DLL|Mixed Platforms.Build.0 = Debug DLL|Win32
 		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Debug DLL|Win32.ActiveCfg = Debug DLL|Win32
 		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Debug DLL|Win32.Build.0 = Debug DLL|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Debug|Win32.ActiveCfg = Debug|Win32
 		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Debug|Win32.Build.0 = Debug|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.MapEditor Release|Any CPU.ActiveCfg = MapEditor Release|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.MapEditor Release|Mixed Platforms.ActiveCfg = MapEditor Release|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.MapEditor Release|Mixed Platforms.Build.0 = MapEditor Release|Win32
 		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.MapEditor Release|Win32.ActiveCfg = MapEditor Release|Win32
 		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.MapEditor Release|Win32.Build.0 = MapEditor Release|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Release DLL|Any CPU.ActiveCfg = Release DLL|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Release DLL|Mixed Platforms.ActiveCfg = Release DLL|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Release DLL|Mixed Platforms.Build.0 = Release DLL|Win32
 		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Release DLL|Win32.ActiveCfg = Release DLL|Win32
 		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Release DLL|Win32.Build.0 = Release DLL|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Release|Any CPU.ActiveCfg = Release|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Release|Win32.ActiveCfg = Release|Win32
 		{C0E0E7D4-49B5-4709-A132-69165EFF89DF}.Release|Win32.Build.0 = Release|Win32
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Debug DLL|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Debug DLL|Any CPU.Build.0 = Debug|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Debug DLL|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Debug DLL|Mixed Platforms.Build.0 = Debug|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Debug DLL|Win32.ActiveCfg = Debug|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.MapEditor Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.MapEditor Release|Any CPU.Build.0 = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.MapEditor Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.MapEditor Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.MapEditor Release|Win32.ActiveCfg = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Release DLL|Any CPU.ActiveCfg = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Release DLL|Any CPU.Build.0 = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Release DLL|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Release DLL|Mixed Platforms.Build.0 = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Release DLL|Win32.ActiveCfg = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{EAF9ADD6-CDF8-4384-829C-4214DA8830E4}.Release|Win32.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
