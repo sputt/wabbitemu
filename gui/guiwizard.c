@@ -10,6 +10,8 @@
 
 INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
+static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version);
+
 extern HINSTANCE g_hInst;
 static HWND hwndWiz = NULL;
 static BOOL use_bootfree = FALSE;
@@ -29,7 +31,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psp.hInstance = g_hInst;
 	psp.dwFlags = PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
 	psp.lParam = 0;
-	psp.pszHeaderTitle = "Wabbitemu";
+	psp.pszHeaderTitle = "Wabbitemu ROM Selection";
 	psp.pszHeaderSubTitle = "Setup";
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_SETUP_START);
 	psp.pfnDlgProc = SetupStartProc;
@@ -39,8 +41,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psp.hInstance = g_hInst;
 	psp.dwFlags = PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
 	psp.lParam = 0;
-	psp.pszHeaderTitle = "Wabbitemu";
-	psp.pszHeaderSubTitle = "Calculator Type";
+	psp.pszHeaderTitle = "Calculator Type";
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_SETUP_TYPE);
 	psp.pfnDlgProc = SetupTypeProc;
 	hPropSheet[1] = CreatePropertySheetPage(&psp);
@@ -49,8 +50,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psp.hInstance = g_hInst;
 	psp.dwFlags = PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
 	psp.lParam = 0;
-	psp.pszHeaderTitle = "Wabbitemu";
-	psp.pszHeaderSubTitle = "OS Selection";
+	psp.pszHeaderTitle = "OS Selection";
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_SETUP_TIOS);
 	psp.pfnDlgProc = SetupOSProc;
 	hPropSheet[2] = CreatePropertySheetPage(&psp);
@@ -59,8 +59,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psp.hInstance = g_hInst;
 	psp.dwFlags = PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
 	psp.lParam = 0;
-	psp.pszHeaderTitle = "Wabbitemu";
-	psp.pszHeaderSubTitle = "Send ROM Dumper";
+	psp.pszHeaderTitle = "Send ROM Dumper";
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_SETUP_LOADFILE);
 	psp.pfnDlgProc = SetupROMDumperProc;
 	hPropSheet[3] = CreatePropertySheetPage(&psp);
@@ -69,8 +68,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psp.hInstance = g_hInst;
 	psp.dwFlags = PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
 	psp.lParam = 0;
-	psp.pszHeaderTitle = "Wabbitemu";
-	psp.pszHeaderSubTitle = "Make ROM";
+	psp.pszHeaderTitle = "Make ROM";
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_SETUP_GETFILE);
 	psp.pfnDlgProc = SetupMakeROMProc;
 	hPropSheet[4] = CreatePropertySheetPage(&psp);
@@ -110,6 +108,7 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			hDumpRom = GetDlgItem(hwnd, IDC_RADIO_DUMP_ROM);
 			hOwnRom = GetDlgItem(hwnd, IDC_RADIO_OWN_ROM);
 			hInfoText = GetDlgItem(hwnd, IDC_INFO_TEXT);
+			Button_SetCheck(hOwnRom, BST_CHECKED);
 			return FALSE;
 		}
 		case WM_COMMAND: {
@@ -204,6 +203,9 @@ INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 			hTI84PSE = GetDlgItem(hwnd, IDC_RADIO_TI84PSE);
 			hTI85 = GetDlgItem(hwnd, IDC_RADIO_TI85);
 			hTI86 = GetDlgItem(hwnd, IDC_RADIO_TI86);
+
+			Button_SetCheck(hTI83P, BST_CHECKED);
+			PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_BACK | PSWIZB_NEXT);
 			return FALSE;
 		case WM_COMMAND: {
 			switch(HIWORD(wParam)) {
@@ -234,7 +236,7 @@ INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 			switch(pnmh->code) {
 				case PSN_SETACTIVE: {
 					//TODO: make all the calcs rom dumping work
-					if (use_bootfree || true) {
+					if (use_bootfree) {
 						Static_SetText(hQuestion, "What type of calculator would you like to emulate?");
 						Button_Enable(hTI82, FALSE);
 						Button_Enable(hTI83, FALSE);
@@ -247,12 +249,8 @@ INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 						Button_Enable(hTI85, TRUE);
 						Button_Enable(hTI86, TRUE);
 					}
-					if (inited)
-						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_BACK | PSWIZB_NEXT);
-					else {
-						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_BACK);
-						inited = TRUE;
-					}
+
+					PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_BACK | PSWIZB_NEXT);
 					break;
 				}
 				case PSN_WIZNEXT: {
@@ -299,22 +297,30 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			hProgressBar = GetDlgItem(hwnd, IDC_PROGRESS);
 			hRadioBrowse = GetDlgItem(hwnd, IDC_RADIO_BROWSE_OS);
 			hRadioDownload = GetDlgItem(hwnd, IDC_RADIO_DOWNLOAD_OS);
-			return FALSE;
+
+			//WCHAR *wszPath = NULL;
+			//SHGetKnownFolderPath(FOLDERID_Downloads, 0, NULL, &wszPath);
+			//char szPath[MAX_PATH];
+			//WideCharToMultiByte(CP_ACP, 0, wszPath, -1, szPath, sizeof(szPath), NULL, NULL);
+			//CoTaskMemFree(wszPath);
+
+			//SetDlgItemText(hwnd, IDC_EDITDOWNLOADPATH, szPath);
+			return TRUE;
 		}
 		case WM_COMMAND: {
 			switch(HIWORD(wParam)) {
 				case BN_CLICKED: {
 					switch(LOWORD(wParam)) {
 						case IDC_RADIO_BROWSE_OS: {
-							ShowWindow(hEditOSPath, SW_SHOWNORMAL);
-							ShowWindow(hBrowseOS, SW_SHOWNORMAL);
-							ShowWindow(hComboOS, SW_HIDE);
+							//ShowWindow(hEditOSPath, SW_SHOWNORMAL);
+							//ShowWindow(hBrowseOS, SW_SHOWNORMAL);
+							//ShowWindow(hComboOS, SW_HIDE);
 							break;
 						}
 						case IDC_RADIO_DOWNLOAD_OS: {
-							ShowWindow(hEditOSPath, SW_HIDE);
-							ShowWindow(hBrowseOS, SW_HIDE);
-							ShowWindow(hComboOS, SW_SHOWNORMAL);
+							//ShowWindow(hEditOSPath, SW_HIDE);
+							//ShowWindow(hBrowseOS, SW_HIDE);
+							//ShowWindow(hComboOS, SW_SHOWNORMAL);
 							ComboBox_ResetContent(hComboOS);
 							switch(model) {
 								case TI_73:
@@ -338,7 +344,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							char buf[512];
 							if (!BrowseFile(buf,			//output
 								"	83 Plus Series OS  (*.8xu)\0*.8xu\0	73 OS  (*.73u)\0*.73u\0	All Files (*.*)\0*.*\0\0", //filter
-								"Wabbitemu Open OS",		//title
+								"Open Calculator OS File",		//title
 								"8xu"))						//def ext
 								Edit_SetText(hEditOSPath, buf);
 							break;
@@ -391,7 +397,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case PSN_WIZNEXT: {
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
 						Static_SetText(hStaticProgress, _T("Downloading OS..."));
-						DownloadOS(ComboBox_GetCurSel(hComboOS) == 0);
+						DownloadOS(_T(""), ComboBox_GetCurSel(hComboOS) == 0);
 					} else {
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
@@ -406,7 +412,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
 						Static_SetText(hStaticProgress, _T("Downloading OS..."));
-						DownloadOS(ComboBox_GetCurSel(hComboOS) == 0);
+						DownloadOS(_T(""), ComboBox_GetCurSel(hComboOS) == 0);
 					} else {
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
@@ -524,7 +530,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-BOOL DownloadOS(BOOL version = 0)
+static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version)
 {
 	char downloaded_file[MAX_PATH];
 #ifdef WINVER
@@ -567,7 +573,7 @@ DWORD WINAPI StartTIConnect( LPVOID lpParam ) {
 	char *path = (char *) lpParam;
 	char argBuf[MAX_PATH];
 	sprintf_s(argBuf, "\"%s\" \"%s\"", TIConnectPath, path);
-	STARTUPINFO si; 
+	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 	memset(&si, 0, sizeof(si)); 
 	memset(&pi, 0, sizeof(pi)); 
