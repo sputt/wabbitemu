@@ -101,13 +101,14 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 
 INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static BOOL inited = FALSE;
-	static HWND hBootFree, hDumpRom, hOwnRom, hInfoText;
+	static HWND hBootFree, hDumpRom, hOwnRom, hInfoText, hEditRom;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			hBootFree = GetDlgItem(hwnd, IDC_RADIO_BOOTFREE);
 			hDumpRom = GetDlgItem(hwnd, IDC_RADIO_DUMP_ROM);
 			hOwnRom = GetDlgItem(hwnd, IDC_RADIO_OWN_ROM);
 			hInfoText = GetDlgItem(hwnd, IDC_INFO_TEXT);
+			hEditRom = GetDlgItem(hwnd, IDC_EDT_ROM);
 			Button_SetCheck(hOwnRom, BST_CHECKED);
 			return FALSE;
 		}
@@ -115,18 +116,43 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			switch(HIWORD(wParam)) {
 				case BN_CLICKED:
 					switch (LOWORD(wParam)) {
+						case IDC_BUTTON_BROWSE:
+							char buffer[MAX_PATH];
+							if (!BrowseFile(buffer, "Known types ( *.sav; *.rom) \0*.sav;*.rom\0Save States  (*.sav)\0*.sav\0\
+										ROMs  (*.rom)\0*.rom\0All Files (*.*)\0*.*\0\0", "Please select a ROM or save state", "rom"))
+										Edit_SetText(hEditRom, buffer);
+							break;
 						case IDC_CHECK_NOSHOW:
 							show_wizard = !Button_GetCheck(GetDlgItem(hwnd, IDC_CHECK_NOSHOW));
 							break;
-						case IDC_RADIO_OWN_ROM:
-							PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_FINISH);
+						case IDC_RADIO_OWN_ROM: {
+							Button_Enable(GetDlgItem(hwnd, IDC_BUTTON_BROWSE), TRUE);
+							Edit_Enable(hEditRom, TRUE);
+							char buffer[MAX_PATH];
+							Edit_GetText(hEditRom, buffer, MAX_PATH);
+							if (ValidPath(buffer))
+								PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_FINISH);
+							else
+								PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_DISABLEDFINISH);
 							break;
+						}
 						case IDC_RADIO_BOOTFREE:
 						case IDC_RADIO_DUMP_ROM:
+							Button_Enable(GetDlgItem(hwnd, IDC_BUTTON_BROWSE), FALSE);
+							Edit_Enable(hEditRom, FALSE);
 							PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_NEXT);
 							break;
 					}
 					break;
+				case EN_CHANGE: {
+					char buffer[MAX_PATH];
+					Edit_GetText(hEditRom, buffer, MAX_PATH);
+					if (ValidPath(buffer))
+						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_FINISH);
+					else
+						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_DISABLEDFINISH);
+					break;
+				}
 			}
 			return TRUE;
 		}
@@ -146,13 +172,11 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					use_bootfree = Button_GetCheck(hBootFree) == BST_CHECKED; 
 					break;
 				case PSN_WIZFINISH: {
-					char* string = LoadRomIntialDialog();
-					if (string) {
-						int slot = calc_slot_new();
-						slot = rom_load(slot, string);
-						if (slot != -1) gui_frame(slot);
-						break;
-					} else error = TRUE;
+					char string[MAX_PATH];
+					Edit_GetText(hEditRom, string, MAX_PATH);
+					int slot = calc_slot_new();
+					slot = rom_load(slot, string);
+					if (slot != -1) gui_frame(slot);
 					break;
 				}
 				case PSN_QUERYCANCEL:
@@ -297,6 +321,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			hProgressBar = GetDlgItem(hwnd, IDC_PROGRESS);
 			hRadioBrowse = GetDlgItem(hwnd, IDC_RADIO_BROWSE_OS);
 			hRadioDownload = GetDlgItem(hwnd, IDC_RADIO_DOWNLOAD_OS);
+			ComboBox_ResetContent(hComboOS);
 
 			//WCHAR *wszPath = NULL;
 			//SHGetKnownFolderPath(FOLDERID_Downloads, 0, NULL, &wszPath);
@@ -312,15 +337,15 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case BN_CLICKED: {
 					switch(LOWORD(wParam)) {
 						case IDC_RADIO_BROWSE_OS: {
-							//ShowWindow(hEditOSPath, SW_SHOWNORMAL);
-							//ShowWindow(hBrowseOS, SW_SHOWNORMAL);
-							//ShowWindow(hComboOS, SW_HIDE);
+							ComboBox_Enable(hComboOS, FALSE);
+							Edit_Enable(hEditOSPath, TRUE);
+							Button_Enable(hBrowseOS, TRUE);
 							break;
 						}
 						case IDC_RADIO_DOWNLOAD_OS: {
-							//ShowWindow(hEditOSPath, SW_HIDE);
-							//ShowWindow(hBrowseOS, SW_HIDE);
-							//ShowWindow(hComboOS, SW_SHOWNORMAL);
+							Edit_Enable(hEditOSPath, FALSE);
+							Button_Enable(hBrowseOS, FALSE);
+							ComboBox_Enable(hComboOS, TRUE);
 							ComboBox_ResetContent(hComboOS);
 							switch(model) {
 								case TI_73:
@@ -382,11 +407,14 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						case TI_84PSE: {
 							Button_Enable(hRadioDownload, TRUE);
 							Button_SetCheck(hRadioDownload, BST_CHECKED);
+							Button_SetCheck(hRadioBrowse, BST_UNCHECKED);
 							SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_RADIO_DOWNLOAD_OS ,BN_CLICKED), 0);
 							break;
 						}
 						default: {
 							Button_Enable(hRadioDownload, FALSE);
+							ComboBox_Enable(hComboOS, FALSE);
+							Button_SetCheck(hRadioDownload, BST_UNCHECKED);
 							Button_SetCheck(hRadioBrowse, BST_CHECKED);
 							SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(IDC_RADIO_BROWSE_OS ,BN_CLICKED), 0);
 							break;
@@ -447,44 +475,27 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					gslot = slot;
 					//slot stuff
 					calcs[slot].active = TRUE;
-#ifdef WINVER
 					strcpy_s(calcs[slot].rom_path, buffer);
-#else
-					strcpy(calcs[slot].rom_path, buffer);
-#endif
 					calcs[slot].model = model;
 					calcs[slot].cpu.pio.model = model;
 
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					char hexFile[MAX_PATH];
-#ifdef WINVER
 					char *env;
 					size_t envLen;
 					_dupenv_s(&env, &envLen, "appdata");
 					strcpy_s(hexFile, envLen, env);
 					free(env);
 					strcat_s(hexFile, "\\boot.hex");
-#else
-					strcpy(hexFile, getenv("appdata"));
-					strcat(hexFile, "\\boot.hex");
-#endif
 					ExtractResource(hexFile, resource);
-#ifdef WINVER
 					FILE *file;
 					fopen_s(&file, hexFile, "rb");
-#else
-					FILE *file = fopen(hexFile, "rb");
-#endif
 					writeboot(file);
 					fclose(file);
 					remove(hexFile);
 					//if you dont want to load an OS, fine...
 					if (strlen(osPath) > 0) {
-#ifdef WINVER
 						fopen_s(&file, osPath, "rb");
-#else
-						file = fopen(osPath, "rb");
-#endif
 						Load_8xu(file);
 						fclose(file);
 						calcs[slot].mem_c.flash[0x56] = 0x5A;
@@ -501,11 +512,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					gui_frame(slot);
 					//write the output from file
-#ifdef WINVER
 					fopen_s(&file, buffer, "wb");
-#else
-					file = fopen(buffer, "wb");
-#endif
 					char* rom = (char *) calcs[slot].mem_c.flash;
 					int size = calcs[slot].mem_c.flash_size;
 					if (size != 0 && rom != NULL && file !=NULL) {
@@ -533,7 +540,6 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version)
 {
 	char downloaded_file[MAX_PATH];
-#ifdef WINVER
 	char *env;
 	size_t envLen;
 	_dupenv_s(&env, &envLen, "appdata");
@@ -541,11 +547,6 @@ static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version)
 	free(env);
 	strcat_s(downloaded_file, _T("\\OS.8xu"));
 	strcpy_s(osPath, downloaded_file);
-#else
-	strcpy(downloaded_file, getenv("appdata"));
-	strcat(downloaded_file, _T("\\OS.8xu"));
-	strcpy(osPath, downloaded_file);
-#endif
 	char *url;
 	switch (model) {
 		case TI_73:
@@ -915,6 +916,7 @@ void ExtractDumperProg() {
 	size_t envLen;
 	_dupenv_s(&env, &envLen, "appdata");
 	strcpy_s(dumperPath, env);
+	free(env);
 	strcat_s(dumperPath, "\\dumper");
 #else
 	strcpy(dumperPath, getenv("appdata"));

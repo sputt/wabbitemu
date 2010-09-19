@@ -414,8 +414,10 @@ Global
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|Mixed Platforms.ActiveCfg = Wabbitemu Release|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|Mixed Platforms.Build.0 = Wabbitemu Release|X64
-		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|Win32.ActiveCfg = Debug|X64
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|Win32.ActiveCfg = Debug|X86
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|Win32.Build.0 = Debug|X86
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|x64.ActiveCfg = Debug|X64
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|x64.Build.0 = Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Debug|X86.ActiveCfg = Debug|X86
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release DLL|Any CPU.ActiveCfg = Release|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release DLL|Mixed Platforms.ActiveCfg = Wabbitemu Release|X64
@@ -426,8 +428,10 @@ Global
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release|Any CPU.ActiveCfg = Wabbitemu Release|Any CPU
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release|Mixed Platforms.ActiveCfg = Wabbitemu Release|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release|Mixed Platforms.Build.0 = Wabbitemu Release|X64
-		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release|Win32.ActiveCfg = Wabbitemu Release|X64
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release|Win32.ActiveCfg = Wabbitemu Release|X86
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release|Win32.Build.0 = Wabbitemu Release|X86
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release|x64.ActiveCfg = Wabbitemu Release|X64
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release|x64.Build.0 = Wabbitemu Release|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitemu Release|X86.ActiveCfg = Wabbitemu Release|X86
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Debug DLL|Any CPU.ActiveCfg = SPASM Debug DLL|Any CPU
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Debug DLL|Any CPU.Build.0 = SPASM Debug DLL|Any CPU

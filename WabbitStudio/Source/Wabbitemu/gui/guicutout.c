@@ -130,9 +130,6 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	u_int width = calcs[slot].rectSkin.right;
 	u_int height = calcs[slot].rectSkin.bottom;
 
-	SetWindowLongPtr(hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
-	SetWindowLongPtr(hwndFrame, GWL_STYLE, WS_VISIBLE | WS_POPUP);
-
 	int scale = calcs[slot].Scale;
 	if (calcs[slot].SkinEnabled)
 		scale = 2;
@@ -221,6 +218,9 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	size.cx = width;
 	size.cy = height;
 	SetBkColor(calcs[slot].hdcSkin, 0xFF0000);
+
+	SetWindowLongPtr(hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
+	SetWindowLongPtr(hwndFrame, GWL_STYLE, WS_VISIBLE | WS_POPUP);
 
 	int done = UpdateLayeredWindow(hwndFrame, hScreen, NULL, &size, calcs[slot].hdcSkin, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
 	int error;

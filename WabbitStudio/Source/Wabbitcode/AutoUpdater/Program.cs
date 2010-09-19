@@ -9,25 +9,106 @@ using System.Security.Principal;
 using System.Security;
 using System.Security.AccessControl;
 using System.Security.Permissions;
+using System.Collections.Generic;
 
 namespace Revsoft.AutoUpdater
 {
 	class Program
 	{
+        static string processName = "";
 		static void Main(string[] args)
 		{
-            string filePath;
-#if WABBITEMU
-            filePath = "Wabbitemu.exe";
-#endif
+            List<string> filePaths = new List<string>(), downloadPaths = new List<string>();
             bool isElevated;
             WindowsPrincipal principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
             isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
             bool requiresAdmin = false;
+            for (int i = 0; i < args.Length; i++)
+            {
+                string arg = args[i];
+                if (arg == "-A" && !isElevated)
+                    requiresAdmin = true;
+                else if (arg == "-R")
+                    processName = args[++i];
+                else
+                {
+                    requiresAdmin |= CheckNeedAdmin(arg);
+                    filePaths.Add(arg);
+                    downloadPaths.Add(args[++i]);
+                }
+            }
+            if (requiresAdmin)
+            {
+                Process process = new Process()
+                {
+                    StartInfo =
+                    {
+                        UseShellExecute = true,
+                        Verb = "runas",
+                        FileName = "Revsoft.AutoUpdater.exe",
+                        Arguments = "-A"
+                    }
+                };
+                process.Start();
+                return;
+            }
+            bool closedProcess = false;
+			Process[] wabbitcode = Process.GetProcesses();
+			foreach (Process openWabbit in wabbitcode) {
+                foreach (string file in filePaths)
+                {
+                    if (openWabbit.ProcessName == Path.GetFileName(file))
+                    {
+                        openWabbit.Close();
+                        closedProcess = true;
+                    }
+                }
+			}
+            if (closedProcess)
+                Thread.Sleep(5000);
+            for (int i = 0; i < filePaths.Count; i++)
+            {
+                string filePath = filePaths[i];
+                string downloadPath = downloadPaths[i];
+                try
+                {
+                    bool succeeded = DownloadTempFile(downloadPath, filePath);
+                    if (!succeeded)
+                    {
+                        Console.WriteLine("Error downloading temporary file");
+                        continue;
+                    }
+                    bool needsUpdate = NeedsUpdate(filePath);
+                    if (needsUpdate)
+                        Update(filePath);
+                    else
+                    {
+                        Console.WriteLine(Path.GetFileName(filePath) + " is up to date");
+                        File.Delete(Path.Combine(Application.UserAppDataPath, Path.GetFileName(filePath)));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToString());
+                }
+            }
+            if (!string.IsNullOrEmpty(processName))
+            {
+                Process process = new Process();
+                process.StartInfo.FileName = processName;
+                process.Start();
+            }
+            Thread.Sleep(2000);
+            
+		}
+
+        static bool CheckNeedAdmin(string filePath)
+        {
+            bool requiresAdmin = false;
             FileStream stream = null;
             try
             {
-                string tempFile = Path.Combine(Application.StartupPath, "temp.txt");
+                string tempFile = Path.Combine(Path.GetDirectoryName(filePath), Path.GetRandomFileName());
                 stream = File.Create(tempFile);
                 if (stream != null)
                 {
@@ -45,125 +126,55 @@ namespace Revsoft.AutoUpdater
                 if (stream != null)
                     stream.Close();
             }
-            foreach (string arg in args)
-                if (arg == "-A" && !isElevated)
-                    requiresAdmin = true;
-                else
-                    filePath = arg;
-            if (requiresAdmin)
-            {
-                Process process = new Process()
-                {
-                    StartInfo =
-                    {
-                        UseShellExecute = true,
-                        Verb = "runas",
-                        FileName = "Revsoft.AutoUpdater.exe",
-                        Arguments = "-A"
-                    }
-                };
-                process.Start();
-                return;
-            }
-			if (args.Length > 0 && string.IsNullOrEmpty(args[0]))
-			{
-				Process[] wabbitcode = Process.GetProcesses();
-				foreach (Process openWabbit in wabbitcode)
-					if (openWabbit.ProcessName.ToLower().Contains("wabbitcode"))
-						openWabbit.Close();
-			}
-			Thread.Sleep(5000);
-            try
-            {
-                bool succeeded = DownloadAndUpdate(filePath);
-                if (succeeded)
-                    MessageBox.Show("Update Successful");
-                else
-                    MessageBox.Show("Update Failed");
-				Process newWabbit = new Process
-										{
-											StartInfo =
-											{
-												FileName = "Revsoft.Wabbitcode.exe",
-											}
-										};
-				newWabbit.Start();
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show(ex.ToString());
-			}
-		}
+            return requiresAdmin;
+        }
 
-        static bool DownloadAndUpdate(string filePath)
+        static bool DownloadTempFile(string downloadPath, string filePath)
         {
             bool succeeded = true;
-#if WABBITCODE
-            WebClient Client = new WebClient();
+            WebClient Client;
             try
             {
-                Console.WriteLine("Downloading Revsoft.Wabbitcode.exe");
-                Client.DownloadFile("http://group.revsoft.org/Wabbitcode/Revsoft.Wabbitcode.exe", Path.Combine(Application.UserAppDataPath, "Revsoft.Wabbitcode.exe"));
-                File.Delete("Revsoft.Wabbitcode.exe");
-                File.Move(Path.Combine(Application.UserAppDataPath, "Revsoft.Wabbitcode.exe"), "Revsoft.Wabbitcode.exe");
+                string fileName = Path.GetFileName(filePath);
+                string tempPath = Path.Combine(Application.UserAppDataPath, fileName);
+                Client = new WebClient();
+                Client.DownloadFile(downloadPath, tempPath);
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.ToString());
+                Console.WriteLine(ex.ToString());
                 succeeded = false;
             }
-            try
-            {
-                Console.WriteLine("Downloading Revsoft.TextEditor.dll");
-                Client.DownloadFile("http://group.revsoft.org/Wabbitcode/Revsoft.TextEditor.dll", Path.Combine(Application.UserAppDataPath, "Revsoft.TextEditor.dll"));
-                File.Delete("Revsoft.TextEditor.dll");
-                File.Move(Path.Combine(Application.UserAppDataPath, "Revsoft.TextEditor.dll"), "Revsoft.TextEditor.dll");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-                succeeded = false;
-            }
-            try
-            {
-                Console.WriteLine("Downloading Revsoft.Docking.dll");
-                Client.DownloadFile("http://group.revsoft.org/Wabbitcode/Revsoft.Docking.dll", Path.Combine(Application.UserAppDataPath, "Revsoft.Docking.dll"));
-                File.Delete("Revsoft.Docking.dll");
-                File.Move(Path.Combine(Application.UserAppDataPath, "Revsoft.Docking.dll"), "Revsoft.Docking.dll");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-                succeeded = false;
-            }
-            try
-            {
-                Console.WriteLine("Downloading IWabbitemu.dll");
-                Client.DownloadFile("http://group.revsoft.org/Wabbitcode/IWabbitemu.dll", Path.Combine(Application.UserAppDataPath, "IWabbitemu.dll"));
-                File.Delete("IWabbitemu.dll");
-                File.Move(Path.Combine(Application.UserAppDataPath, "IWabbitemu.dll"), "IWabbitemu.dll");
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-                succeeded = false;
-            }
-#elif WABBITEMU
-            WebClient Client = new WebClient();
-            try
-            {
-                Console.WriteLine("Downloading Wabbitemu.exe");
-                Client.DownloadFile("http://wabbit.codeplex.com/releases/view/44625#DownloadId=122222", Path.Combine(Application.UserAppDataPath, "Revsoft.Wabbitcode.exe"));
-                File.Delete(filePath);
-                File.Move(Path.Combine(Application.UserAppDataPath, "Wabbitemu.exe"), filePath);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-                succeeded = false;
-            }
-#endif
             return succeeded;
+        }
+
+        static bool NeedsUpdate(string filePath)
+        {
+            string tempPath = Path.Combine(Application.UserAppDataPath, Path.GetFileName(filePath));
+            if (!File.Exists(filePath))
+                return true;
+            FileVersionInfo info = FileVersionInfo.GetVersionInfo(filePath);
+            FileVersionInfo newInfo = FileVersionInfo.GetVersionInfo(tempPath);
+            Console.WriteLine(info.FileVersion);
+            Console.WriteLine(newInfo.FileVersion);
+            if (info.FileMajorPart < newInfo.FileMajorPart)
+                return true;
+            if (info.FileMajorPart > newInfo.FileMajorPart)
+                return false;
+            if (info.FileMinorPart < newInfo.FileMinorPart)
+                return true;
+            if (info.FileMinorPart > newInfo.FileMinorPart)
+                return false;
+            return info.FileBuildPart < newInfo.FileBuildPart;
+        }
+
+        static void Update(string filePath)
+        {
+            string fileName =  Path.GetFileName(filePath);
+            string tempPath = Path.Combine(Application.UserAppDataPath, fileName);
+            File.Delete(filePath);
+            File.Move(tempPath, filePath);
+            Console.WriteLine(fileName + " successfully updated");
         }
 	}
 }

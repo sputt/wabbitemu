@@ -1070,10 +1070,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case IDM_HELP_WIZARD:
-					DoWizardSheet(NULL);
+					DoWizardSheet(hwnd);
 					break;
 				case IDM_CALC_OPTIONS:
-					DoPropertySheet(NULL);
+					DoPropertySheet(hwnd);
 					break;
 				case IDM_FILE_OPEN:
 					GetOpenSendFileName(hwnd, 0);
@@ -1144,40 +1144,40 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case IDM_CALC_PAUSE: {
-					HMENU hmenu = GetMenu(hwnd);					
-					if (calcs[gslot].running) {						
+					HMENU hmenu = GetMenu(hwnd);
+					if (calcs[gslot].running) {
 						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_CHECKED);
-						calcs[gslot].running = FALSE;					
-					} else {						
+						calcs[gslot].running = FALSE;
+					} else {
 						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_UNCHECKED);
-						calcs[gslot].running = TRUE;					
-					}					
+						calcs[gslot].running = TRUE;
+					}
 					break;
 				}				
-				case IDM_SPEED_QUARTER: {					
-					calcs[gslot].speed = 25;										
+				case IDM_SPEED_QUARTER: {
+					calcs[gslot].speed = 25;
 					CheckMenuRadioItem(GetSubMenu(GetMenu(hwnd), 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUARTER, MF_BYCOMMAND| MF_CHECKED);
-					break;				
+					break;
 				}
-				case IDM_SPEED_HALF: {					
+				case IDM_SPEED_HALF: {
 					calcs[gslot].speed = 50;
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_HALF, MF_BYCOMMAND | MF_CHECKED);
-					break;				
+					break;
 				}
-				case IDM_SPEED_NORMAL: {					
+				case IDM_SPEED_NORMAL: {
 					calcs[gslot].speed = 100;
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_NORMAL, MF_BYCOMMAND | MF_CHECKED);
-					break;				
+					break;
 				}
-				case IDM_SPEED_DOUBLE: {					
+				case IDM_SPEED_DOUBLE: {
 					calcs[gslot].speed = 200;
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_DOUBLE, MF_BYCOMMAND | MF_CHECKED);
 					break;
 				}
-				case IDM_SPEED_QUADRUPLE: {					
+				case IDM_SPEED_QUADRUPLE: {
 					calcs[gslot].speed = 400;
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUADRUPLE, MF_BYCOMMAND | MF_CHECKED);
@@ -1187,16 +1187,45 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					calcs[gslot].speed = MAX_SPEED;
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_MAX, MF_BYCOMMAND | MF_CHECKED);
-					break;				
+					break;
 				}
 				case IDM_SPEED_SET: {
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_SET, MF_BYCOMMAND | MF_CHECKED);
-					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC)SetSpeedProc);
+					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC) SetSpeedProc);
 					SetFocus(hwnd);
 					break;
 				}
-			}			
+				case IDM_HELP_UPDATE: {
+					char buffer[MAX_PATH];
+					char *env;
+					size_t envLen;
+					_dupenv_s(&env, &envLen, "appdata");
+					strcpy_s(buffer, env);
+					free(env);
+					strcat_s(buffer, "\\Revsoft.Autoupdater.exe");
+					HRSRC hrDumpProg = FindResource(GetModuleHandle(NULL), MAKEINTRESOURCE(UPDATER), _T("EXE"));
+					ExtractResource(buffer, hrDumpProg);
+
+					char argBuf[MAX_PATH * 3];
+					char filePath[MAX_PATH];
+					GetModuleFileName(NULL, filePath, MAX_PATH);
+					sprintf_s(argBuf, "\"%s\" -R \"%s\" \"%s\" \"%s\"", buffer, filePath, filePath, g_szDownload);
+					STARTUPINFO si;
+					PROCESS_INFORMATION pi;
+					memset(&si, 0, sizeof(si)); 
+					memset(&pi, 0, sizeof(pi)); 
+					si.cb = sizeof(si);
+					if (!CreateProcess(NULL, argBuf,
+						NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, 
+						NULL, NULL, &si, &pi)) {
+						MessageBox(NULL, "Unable to start the process. Try manually sending the file.", "Error", MB_OK);
+						return FALSE;
+					}
+					exit(0);
+					break;
+				}
+			}
 			/*switch (HIWORD(wParam)) {
 			}*/
 			return 0;

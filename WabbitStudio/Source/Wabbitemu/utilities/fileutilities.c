@@ -61,3 +61,18 @@ int SaveFile(char* lpstrFile, char *lpstrFilter, char *lpstrTitle, char *lpstrDe
 	}
 	return 0;
 }
+
+BOOL ValidPath(char *lpstrFile) {
+	FILE *file;
+#ifdef WINVER
+	errno_t error = fopen_s(&file, lpstrFile, "r");
+	if (file)
+		fclose(file);
+	return error == 0;
+#else
+	file = fopen(lpstrFile, "r");
+	BOOL error = file == NULL;
+	fclose(file);
+	return error;
+#endif
+}
