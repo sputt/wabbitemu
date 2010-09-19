@@ -4,9 +4,14 @@
 #define SKIN_WIDTH	314
 #define SKIN_HEIGHT	688
 
-#define WABBITVER		"1.1"
+#define WABBITVER		"1.5"
 
 #define g_szWebPage		"http://wabbit.codeplex.com"//"http://www.revsoft.org/emu"
+#ifdef _WIN64
+#define g_szDownload	"http://group.revsoft.org/wabbitemu64.exe"//"http://wabbit.codeplex.com/releases/view/44625#DownloadId=122222"
+#else
+#define g_szDownload	"http://group.revsoft.org/wabbitemu.exe"//"http://wabbit.codeplex.com/releases/view/44625#DownloadId=122222"
+#endif
 
 #define g_szAppName 	"z80"
 #define g_szDebugName 	"debug"

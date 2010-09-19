@@ -934,6 +934,7 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 		tmpnam_s(tmpfn);
 		_dupenv_s(&env, &envLen, "appdata");
 		strcpy_s(temp_save, env);
+		free(env);
 		strcat_s(temp_save, tmpfn);
 		fopen_s(&ofile, temp_save, "wb");
 #else
@@ -1030,6 +1031,7 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 		size_t envLen;
 		_dupenv_s(&env, &envLen, "appdata");
 		strcpy_s(temp_save, env);
+		free(env);
 		strcat_s(temp_save, tmpfn);
 		fopen_s(&tmpfile, temp_save, "wb");
 #else

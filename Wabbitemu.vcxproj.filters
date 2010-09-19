@@ -231,7 +231,7 @@
     <ClCompile Include="utilities\zpipe.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="fileutilities.c">
+    <ClCompile Include="utilities\fileutilities.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
@@ -449,7 +449,7 @@
     <ClInclude Include="utilities\zconf.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="fileutilities.h">
+    <ClInclude Include="utilities\fileutilities.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
@@ -601,6 +601,7 @@
     <None Include="gui\homescreen.bmp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\..\Release\Revsoft.AutoUpdater.exe" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">

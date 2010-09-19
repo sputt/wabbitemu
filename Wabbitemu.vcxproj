@@ -59,7 +59,6 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="debugger\disassemble.c" />
-    <ClCompile Include="fileutilities.c" />
     <ClCompile Include="gui\DataObject.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -137,6 +136,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="utilities\exportvar.c" />
+    <ClCompile Include="utilities\fileutilities.c" />
     <ClCompile Include="utilities\gif.c" />
     <ClCompile Include="utilities\gifhandle.c" />
     <ClCompile Include="utilities\label.c" />
@@ -173,7 +173,6 @@
     <ClInclude Include="debugger\dbtrack.h" />
     <ClInclude Include="debugger\dbvalue.h" />
     <ClInclude Include="debugger\disassemble.h" />
-    <ClInclude Include="fileutilities.h" />
     <ClInclude Include="gui\CGdiPlusBitmap.h" />
     <ClInclude Include="gui\DataObject.h" />
     <ClInclude Include="gui\displayoptionstest.h" />
@@ -218,6 +217,7 @@
     <ClInclude Include="utilities\bcalls.h" />
     <ClInclude Include="utilities\expandpane.h" />
     <ClInclude Include="utilities\exportvar.h" />
+    <ClInclude Include="utilities\fileutilities.h" />
     <ClInclude Include="utilities\flags.h" />
     <ClInclude Include="utilities\gif.h" />
     <ClInclude Include="utilities\gifhandle.h" />
@@ -232,6 +232,7 @@
     <ClInclude Include="utilities\zlib.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\..\Release\Revsoft.AutoUpdater.exe" />
     <None Include="gui\back.bmp" />
     <None Include="gui\break.bmp" />
     <None Include="gui\buttondownleft.bmp" />
