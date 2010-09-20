@@ -431,8 +431,8 @@ int calc_run_all(void) {
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active) {
-				int time = ((long long)calcs[j].speed*calcs[j].timer_c.freq/FPS/100)/FRAME_SUBDIVISIONS;
-				calc_run_tstates(j, time / 2);
+				int time = ((long long)calcs[j].speed*calcs[j].timer_c.freq/FPS/100)/FRAME_SUBDIVISIONS/2;
+				calc_run_tstates(j, time);
 				frame_counter += time;
 #ifdef WITH_BACKUPS
 				if (frame_counter >= calcs[j].timer_c.freq / 2) {
@@ -441,7 +441,7 @@ int calc_run_all(void) {
 						do_backup(j);
 				}
 #endif
-				calc_run_tstates(j, time / 2);
+				calc_run_tstates(j, time);
 				frame_counter += time;
 #ifdef WITH_BACKUPS
 				if (frame_counter >= calcs[j].timer_c.freq / 2) {

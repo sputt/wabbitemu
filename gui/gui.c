@@ -1557,6 +1557,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					char *path;
 					_dupenv_s(&path, &len, "appdata");
 					strcpy_s(temp_save, len, path);
+					free(path);
 					strcat_s(temp_save, "\\wabbitemu.sav");
 					strcpy_s(calcs[gslot].rom_path, temp_save);
 #else
