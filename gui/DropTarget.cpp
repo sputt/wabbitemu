@@ -8,7 +8,7 @@ extern POINT drop_pt;
 
 CDropTarget::CDropTarget(HWND hwnd) {
 	m_hwndTarget = hwnd;
-	m_lRefCount = 1;
+	m_lRefCount = 0;
 	m_fAllowDrop = FALSE;
 
 	m_nRequired = 0;
