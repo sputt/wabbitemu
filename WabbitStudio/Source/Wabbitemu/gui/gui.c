@@ -73,7 +73,7 @@ LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 void gui_draw(int slot) {
 	gslot = slot;
 	InvalidateRect(calcs[slot].hwndLCD, NULL, FALSE);
-	UpdateWindow(calcs[slot].hwndLCD);
+	//UpdateWindow(calcs[slot].hwndLCD);
 
 	//UpdateDebugTrack();
 	if (calcs[gslot].gif_disp_state != GDS_IDLE) {
@@ -699,11 +699,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	wc.style = 0;
 	RegisterClassEx(&wc);
 
-/*	// subbar
-	wc.lpszClassName = g_szSubbar;
-	wc.lpfnWndProc = SubBarProc;
-	RegisterClassEx(&wc);*/
-
 	wc.lpfnWndProc = DebugProc;
 	wc.style = CS_DBLCLKS;
 	wc.lpszClassName = g_szDebugName;
@@ -840,7 +835,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 #endif
 
-	// Set the one global timer for all calcs
+	// Set the one global timer for all calcs7
 	SetTimer(NULL, 0, TPF, TimerProc);
 
 	hacceldebug = LoadAccelerators(g_hInst, "DisasmAccel");
@@ -915,7 +910,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			calcs[gslot].SkinEnabled = !calcs[gslot].SkinEnabled;
 			SendMessage(hwnd, WM_COMMAND, IDM_CALC_SKIN, 0);
 
-			SetWindowText(hwnd, "Wabbitemu");		
+			SetWindowText(hwnd, "Wabbitemu");
 			return 0;
 		}
 		case WM_USER:
@@ -1024,20 +1019,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					gui_frame(slot);
 					break;
 				}
-				case IDM_FILE_EXIT:
-					if (calc_count() > 1) {
-						char buf[256];
-#ifdef WINVER
-						sprintf_s(buf, "If you exit now, %d other running calculator(s) will be closed.  Are you sure you want to exit?", calc_count()-1);
-#else
-						sprintf(buf, "If you exit now, %d other running calculator(s) will be closed.  Are you sure you want to exit?", calc_count()-1);
-#endif
-						int res = MessageBoxA(NULL, buf, "Wabbitemu", MB_YESNO);
-						if (res == IDCANCEL || res == IDNO)
-							break;
-						PostQuitMessage(0);
-					}
-					SendMessage(hwnd, WM_CLOSE, 0, 0);
+				case IDM_FILE_OPEN:
+					GetOpenSendFileName(hwnd, 0);
+					//no point, the rom will be sent on a separate thread...
+					//gui_frame_update(gslot);
+					break;
+				case IDM_FILE_SAVE:
+					SaveStateDialog(hwnd);
 					break;
 				case IDM_FILE_GIF:
 				{
@@ -1056,32 +1044,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case IDM_FILE_CLOSE:
 					return DestroyWindow(hwnd);
-				case IDM_CALC_VARIABLES:
-					CreateVarTreeList();
-					break;
-				case IDM_CALC_SKIN: {
-					calcs[gslot].SkinEnabled = !calcs[gslot].SkinEnabled;
-					gui_frame_update(gslot);
-					break;
-				}
-				case IDM_CALC_SOUND: {
-					togglesound();
-					CheckMenuItem(GetSubMenu(GetMenu(hwnd), 2), IDM_CALC_SOUND, MF_BYCOMMAND | (calcs[gslot].audio->enabled ? MF_CHECKED : MF_UNCHECKED));
-					break;
-				}
-				case IDM_HELP_WIZARD:
-					DoWizardSheet(hwnd);
-					break;
-				case IDM_CALC_OPTIONS:
-					DoPropertySheet(hwnd);
-					break;
-				case IDM_FILE_OPEN:
-					GetOpenSendFileName(hwnd, 0);
-					//no point, the rom will be sent on a separate thread...
-					//gui_frame_update(gslot);
-					break;
-				case IDM_FILE_SAVE:
-					SaveStateDialog(hwnd);
+					case IDM_FILE_EXIT:
+					if (calc_count() > 1) {
+						char buf[256];
+#ifdef WINVER
+						sprintf_s(buf, "If you exit now, %d other running calculator(s) will be closed.  Are you sure you want to exit?", calc_count()-1);
+#else
+						sprintf(buf, "If you exit now, %d other running calculator(s) will be closed.  Are you sure you want to exit?", calc_count()-1);
+#endif
+						int res = MessageBoxA(NULL, buf, "Wabbitemu", MB_YESNO);
+						if (res == IDCANCEL || res == IDNO)
+							break;
+						PostQuitMessage(0);
+					}
+					SendMessage(hwnd, WM_CLOSE, 0, 0);
 					break;
 				case IDM_EDIT_COPY: {
 					HLOCAL ans;
@@ -1096,6 +1072,40 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					
 					break;
 				}
+				case IDM_CALC_SKIN: {
+					calcs[gslot].SkinEnabled = !calcs[gslot].SkinEnabled;
+					gui_frame_update(gslot);
+					break;
+				}
+				case IDM_CALC_SOUND: {
+					togglesound();
+					CheckMenuItem(GetSubMenu(GetMenu(hwnd), 2), IDM_CALC_SOUND, MF_BYCOMMAND | (calcs[gslot].audio->enabled ? MF_CHECKED : MF_UNCHECKED));
+					break;
+				}
+				case IDM_CALC_CONNECT: {
+					if (!calcs[0].active || !calcs[1].active || link_connect(&calcs[0].cpu, &calcs[1].cpu))						
+						MessageBox(NULL, "Connection Failed", "Error", MB_OK);					
+					else						
+						MessageBox(NULL, "Connection Successful", "Success", MB_OK);					
+					break;
+				}
+				case IDM_CALC_PAUSE: {
+					HMENU hmenu = GetMenu(hwnd);
+					if (calcs[gslot].running) {
+						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_CHECKED);
+						calcs[gslot].running = FALSE;
+					} else {
+						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_UNCHECKED);
+						calcs[gslot].running = TRUE;
+					}
+					break;
+				}
+				case IDM_CALC_VARIABLES:
+					CreateVarTreeList();
+					break;
+				case IDM_CALC_OPTIONS:
+					DoPropertySheet(hwnd);
+					break;
 				case IDM_DEBUG_RESET: {
 					calc_reset(gslot);
 					calc_run_timed(gslot, 200);
@@ -1111,7 +1121,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					calcs[gslot].running = FALSE;
 					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGABOUT), hwnd, (DLGPROC)AboutDialogProc);					
 					calcs[gslot].running = TRUE;					
-					break;				
+					break;
+				case IDM_HELP_WIZARD:
+					DoWizardSheet(hwnd);
+					break;
 				case IDM_HELP_WEBSITE:					
 					ShellExecute(NULL, "open", g_szWebPage, NULL, NULL, SW_SHOWNORMAL);
 					break;
@@ -1136,24 +1149,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					DeleteObject(oldSkin);
 					break;
 				}
-				case IDM_CALC_CONNECT: {
-					if (!calcs[0].active || !calcs[1].active || link_connect(&calcs[0].cpu, &calcs[1].cpu))						
-						MessageBox(NULL, "Connection Failed", "Error", MB_OK);					
-					else						
-						MessageBox(NULL, "Connection Successful", "Success", MB_OK);					
-					break;
-				}
-				case IDM_CALC_PAUSE: {
-					HMENU hmenu = GetMenu(hwnd);
-					if (calcs[gslot].running) {
-						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_CHECKED);
-						calcs[gslot].running = FALSE;
-					} else {
-						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_UNCHECKED);
-						calcs[gslot].running = TRUE;
-					}
-					break;
-				}				
 				case IDM_SPEED_QUARTER: {
 					calcs[gslot].speed = 25;
 					CheckMenuRadioItem(GetSubMenu(GetMenu(hwnd), 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUARTER, MF_BYCOMMAND| MF_CHECKED);

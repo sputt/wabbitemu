@@ -334,7 +334,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 #include "guisavestate.h"
 
-void SaveStateDialog(HWND hwnd){
+void SaveStateDialog(HWND hwnd) {
 	OPENFILENAME ofn;
 	char FileName[MAX_PATH];
 	char lpstrFilter[] 	= "\
@@ -394,6 +394,7 @@ All Files (*.*)\0*.*\0\0";
 
 }
 
+static char sz_status[32];
 LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 
 	static POINT ptOffset;
@@ -444,15 +445,13 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			HDC hdcDest;
 			int slot = calc_from_hwnd(hwnd);
 			LCD_t *lcd = calcs[slot].cpu.pio.lcd;
-
 			PAINTSTRUCT ps;
 			hdcDest = BeginPaint(hwnd, &ps);
 			PaintLCD(hwnd, hdcDest);
-			EndPaint(hwnd, &ps);
-
+			EndPaint(hwnd, &ps);	
+			
 			if (calcs[slot].hwndStatusBar) {
 				if (clock() > calcs[slot].sb_refresh + CLOCKS_PER_SEC/2) {
-					char sz_status[32];
 					if (lcd->active)
 #ifdef WINVER
 						sprintf_s(sz_status,"FPS: %0.2lf",lcd->ufps);
@@ -465,7 +464,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 #else
 						sprintf(sz_status,"FPS: -");
 #endif
-
 					SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 0, (LPARAM) sz_status);
 					calcs[slot].sb_refresh = clock();
 				}

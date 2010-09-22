@@ -783,9 +783,12 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			EndPaint(hwnd, &ps);
 			return 0;
 		}
+		case WM_CLOSE:
+			DestroyWindow(hwnd);
+			return 0;
 		case WM_DESTROY: {
 			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			//free(tbb);
+			free(tbb);
 			return 0;
 		}
 		default:
@@ -799,7 +802,7 @@ int CreateToolbarButton(HWND hwndParent, char *szCaption, char *szTooltip, char 
 	static HWND hwndTip = NULL;
 	static TBBTN *prevBtn = NULL;
 
-	TBBTN *tbb = (TBBTN*)malloc(sizeof(TBBTN));
+	TBBTN *tbb = (TBBTN *) malloc(sizeof(TBBTN));
 
 	memset(tbb, 0, sizeof(TBBTN));
 
