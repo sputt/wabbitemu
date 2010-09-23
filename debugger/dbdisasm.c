@@ -315,7 +315,6 @@ void CPU_stepover(CPU_t *cpu) {
 }
 
 
-
 void disasmhdr_show(HWND hwndHeader, disasmhdr_t* hdrs) {
 	int lpiNewArray[8];
 	int iSize = (int) SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
@@ -825,9 +824,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 
 				if (do_gradient) {
+					int i, width = 0;
+					for (i = 0; i < ARRAYSIZE(dps->hdrs); i++) {
+						width += dps->hdrs[i].cx;
+					}
 					vert[0].x      = tr.left;
 					vert[0].y      = tr.top;
-					vert[1].x      = tr.right;
+					vert[1].x      = width;
 					vert[1].y      = tr.bottom;
 					GradientFill(hdc,vert,2,&gRect,1,GRADIENT_FILL_RECT_H);
 				}
@@ -884,6 +887,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					disassemble(&calcs[DebuggerSlot].mem_c, addr, dps->nRows, zinf);
 					break;
 				}
+				case IDM_RUN_RUN:
 				case DB_RUN: {
 					//SendMessage(hwnd, WM_COMMAND, DB_STEP, 0);
 					CPU_step((&calcs[DebuggerSlot].cpu));
@@ -894,6 +898,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					//DestroyWindow(GetParent(hwnd));
 					break;
 				}
+				case IDM_RUN_STEP:
 				case DB_STEP: {
 					int past_last;
 					int before_first;
@@ -924,8 +929,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
 				}
+				case IDM_RUN_STEPOVER:
 				case DB_STEPOVER: {
 					CPU_stepover(&calcs[DebuggerSlot].cpu);
+					goto db_step_finish;
+				}
+				case IDM_RUN_STEPOUT: {
+					CPU_stepout(&calcs[DebuggerSlot].cpu);
 					goto db_step_finish;
 				}
 				case DB_DISASM_GOTO:

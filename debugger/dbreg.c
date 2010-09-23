@@ -250,7 +250,7 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 		{
 			int row_y = kRegRow/4 + kRegRow*(i+1);
 
-			hwndValue = CreateValueField(hwnd, "", 0, &calcs[DebuggerSlot].cpu.mem_c->banks[i].page, 1, 3, DEC);
+			hwndValue = CreateValueField(hwnd, "", 0, &calcs[DebuggerSlot].cpu.mem_c->banks[i].page, 1, 3, HEX2);
 			SetWindowPos(hwndValue, NULL, kRegAddr*4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 

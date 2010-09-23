@@ -214,17 +214,17 @@ void HandleKeyDown(unsigned int key) {
 			key = VK_RSHIFT;
 		}
 	}
-
+	//CopySkinToButtons();
 	keyprog_t *kp = keypad_key_press(&calcs[gslot].cpu, key);
 	if (kp) {
 		extern POINT ButtonCenter83[64];
 		extern POINT ButtonCenter84[64];
 		if ((calcs[gslot].cpu.pio.keypad->keys[kp->group][kp->bit] & KEY_STATEDOWN) == 0) {
-			/*if (calcs[gslot].model == TI_84P || calcs[gslot].model == TI_84PSE) {
-				DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter84[kp->bit+(kp->group<<3)], DBS_DOWN | DBS_PRESS);
+			if (calcs[gslot].model == TI_84P || calcs[gslot].model == TI_84PSE) {
+				DrawButtonState(calcs[gslot].hdcButtons, calcs[gslot].hdcKeymap, &ButtonCenter84[kp->bit+(kp->group<<3)], DBS_DOWN | DBS_PRESS);
 			} else {
-				DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter83[kp->bit+(kp->group<<3)], DBS_DOWN | DBS_PRESS);
-			}*/
+				DrawButtonState(calcs[gslot].hdcButtons, calcs[gslot].hdcKeymap, &ButtonCenter83[kp->bit+(kp->group<<3)], DBS_DOWN | DBS_PRESS);
+			}
 			calcs[gslot].cpu.pio.keypad->keys[kp->group][kp->bit] |= KEY_STATEDOWN;
 			SendMessage(calcs[gslot].hwndFrame, WM_SIZE, 0, 0);
 			FinalizeButtons();
@@ -239,6 +239,7 @@ void HandleKeyUp(unsigned int key) {
 	} else {
 		keypad_key_release(&calcs[gslot].cpu, key);
 	}
+	//CopySkinToButtons();
 	FinalizeButtons();
 }
 
@@ -251,13 +252,15 @@ void FinalizeButtons() {
 				((kp->keys[group][bit] & KEY_MOUSEPRESS) == 0) &&
 				((kp->keys[group][bit] & KEY_KEYBOARDPRESS) == 0)) {
 				/*if (calcs[gslot].model == TI_84P || calcs[gslot].model == TI_84PSE) {
-					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter84[bit+(group<<3)], DBS_UP | DBS_PRESS);
+					DrawButtonState(calcs[gslot].hdcButtons, calcs[gslot].hdcKeymap, &ButtonCenter84[bit+(group<<3)], DBS_UP | DBS_PRESS);
 					} else {
-					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &ButtonCenter83[bit+(group<<3)], DBS_UP | DBS_PRESS);
-				}*/	
+					DrawButtonState(calcs[gslot].hdcButtons, calcs[gslot].hdcKeymap, &ButtonCenter83[bit+(group<<3)], DBS_UP | DBS_PRESS);
+				}*/
 					kp->keys[group][bit] &= (~KEY_STATEDOWN);
 					//SendMessage(hwnd, WM_SIZE, 0, 0);
 			}
 		}
 	}
+	InvalidateRect(calcs[gslot].hwndFrame, &calcs[gslot].rectSkin, TRUE);
+	UpdateWindow(calcs[gslot].hwndFrame);
 }

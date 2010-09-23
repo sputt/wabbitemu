@@ -68,6 +68,7 @@ symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 		sym->version		= mem_read(mem, stp--);
 		sym->address		= mem_read(mem, stp--) + (mem_read(mem, stp--) << 8);
 		sym->page			= mem_read(mem, stp--);
+		sym->length			= mem_read(mem, sym->address - 1) + (mem_read(mem, sym->address) << 8);
 		
 		u_int i;
 		// Variables, pics, etc

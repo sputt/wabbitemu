@@ -7,7 +7,7 @@
 #include "lcd.h"
 #include "keys.h"
 
-HINSTANCE g_hInst;
+extern HINSTANCE g_hInst;
 
 static void (*fnFrameCallback)(void) = NULL;
 static int BasePage = 0;
@@ -232,11 +232,11 @@ int ReadVariable(char *name, void *data, int bytes) {
 	return bytes;
 }
 
-int gui_debug(int slot) {
+/*int gui_debug(int slot) {
 	if (fnFrameCallback != NULL) {
 		fnFrameCallback();
 	}
 	CPU_step(&calcs[0].cpu);
 	calcs[0].running = TRUE;
 	return 0;
-}
+}*/

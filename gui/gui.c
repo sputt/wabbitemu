@@ -133,13 +133,21 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 }
 
 
-extern RECT db_rect;
+extern WINDOWPLACEMENT db_placement;
 
 int gui_debug(int slot) {
 	pausesound();
 	HWND hdebug;
+	BOOL set_place = TRUE;
+	int flags = 0;
 	RECT pos = {CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT+600, CW_USEDEFAULT+400};
-	if (db_rect.left != -1) CopyRect(&pos, &db_rect);
+	if (!db_placement.length) {
+		db_placement.flags = SW_SHOWNORMAL;
+		db_placement.length = sizeof(WINDOWPLACEMENT);
+		CopyRect(&db_placement.rcNormalPosition, &pos);
+		set_place = FALSE;
+		flags = WS_VISIBLE;
+	}
 
 	pos.right -= pos.left;
 	pos.bottom -= pos.top;
@@ -148,14 +156,16 @@ int gui_debug(int slot) {
 		SwitchToThisWindow(hdebug, TRUE);
 		return -1;
 	}
-	calcs[gslot].running = FALSE;
+	calcs[slot].running = FALSE;
 	hdebug = CreateWindowEx(
 		WS_EX_APPWINDOW,
 		g_szDebugName,
         "Debugger",
-		WS_VISIBLE | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
+		flags | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
         pos.left, pos.top, pos.right, pos.bottom,
         0, 0, g_hInst, NULL);
+	if (set_place)
+		SetWindowPlacement(hdebug, &db_placement);
 
 	calcs[slot].hwndDebug = hdebug;
 	SendMessage(hdebug, WM_SIZE, 0, 0);
@@ -220,8 +230,11 @@ int gui_frame_update(int slot) {
 		DeleteDC(calcs[slot].hdcKeymap);
 	if (calcs[gslot].hdcSkin)
 		DeleteDC(calcs[slot].hdcSkin);
+	if (calcs[gslot].hdcButtons)
+		DeleteDC(calcs[gslot].hdcButtons);
 	calcs[slot].hdcKeymap = CreateCompatibleDC(hdc);
 	calcs[slot].hdcSkin = CreateCompatibleDC(hdc);
+	calcs[slot].hdcButtons = CreateCompatibleDC(hdc);
 	//load skin and keymap
 	CGdiPlusBitmapResource hbmSkin(CalcModelTxt[calcs[slot].model],_T("PNG"), g_hInst);
 	CGdiPlusBitmapResource hbmKeymap;
@@ -297,6 +310,9 @@ int gui_frame_update(int slot) {
 	if (!calcs[slot].hwndFrame)
 		return 0;
 
+	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom);
+	SelectObject(calcs[gslot].hdcButtons, hbmTemp);
+	DeleteObject(hbmTemp);
 	//this is moved here so going from cutout->skinless creates the lcd now
 	if (calcs[gslot].bCutout && !calcs[slot].SkinEnabled) {
 		DisableCutout(calcs[slot].hwndFrame);
@@ -392,6 +408,7 @@ int gui_frame_update(int slot) {
 	bf.AlphaFormat = AC_SRC_ALPHA;
 	AlphaBlend(calcs[slot].hdcSkin, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, hdcOverlay,
 		calcs[slot].rectSkin.left, calcs[slot].rectSkin.top, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, bf);
+	BitBlt(calcs[gslot].hdcButtons, 0, 0, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom, calcs[gslot].hdcSkin, 0, 0, SRCCOPY);
 	if (calcs[slot].bCutout && calcs[slot].SkinEnabled)	{
 		if (EnableCutout(calcs[slot].hwndFrame, oldSkin) != 0)
 			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
@@ -405,8 +422,6 @@ int gui_frame_update(int slot) {
 	DeleteObject(blankBitmap);
 	DeleteDC(hdcOverlay);
 	ReleaseDC(calcs[slot].hwndFrame, hdc);
-	/*delete hbmSkin;
-	delete hbmKeymap;*/
 	return 0;
 }
 #else
@@ -835,7 +850,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 #endif
 
-	// Set the one global timer for all calcs7
+	// Set the one global timer for all calcs
 	SetTimer(NULL, 0, TPF, TimerProc);
 
 	hacceldebug = LoadAccelerators(g_hInst, "DisasmAccel");
@@ -994,7 +1009,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			HDC hdc;
 			hdc = BeginPaint(hwnd, &ps);
 			if (calcs[slot].SkinEnabled) {
-				BitBlt(hdc, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, calcs[slot].hdcSkin, 0, 0, SRCCOPY);
+				BitBlt(hdc, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, calcs[slot].hdcButtons, 0, 0, SRCCOPY);
+				BitBlt(calcs[gslot].hdcButtons, 0, 0, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom, calcs[gslot].hdcSkin, 0, 0, SRCCOPY);
 			} else {
 				RECT rc;
 				GetClientRect(calcs[slot].hwndFrame, &rc);
@@ -1130,6 +1146,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				case IDM_FRAME_BTOGGLE:
 					SendMessage(hwnd, WM_MBUTTONDOWN, MK_MBUTTON, MAKELPARAM(ctxtPt.x, ctxtPt.y));
+					InvalidateRect(calcs[gslot].hwndFrame, &calcs[gslot].rectSkin, TRUE);
+					UpdateWindow(calcs[gslot].hwndFrame);
 					break;
 				case IDM_FRAME_BUNLOCK: {
 					RECT rc;
@@ -1143,10 +1161,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}
 					calcs[gslot].cpu.pio.keypad->on_pressed &=(~KEY_LOCKPRESS);
 
-					HBITMAP hbmSkin = LoadBitmap(g_hInst, "Skin");
-					HBITMAP oldSkin = (HBITMAP) SelectObject(calcs[gslot].hdcSkin, hbmSkin);
+					InvalidateRect(calcs[gslot].hwndFrame, &calcs[gslot].rectSkin, TRUE);
+					UpdateWindow(calcs[gslot].hwndFrame);
 					SendMessage(hwnd, WM_SIZE, 0, 0);
-					DeleteObject(oldSkin);
 					break;
 				}
 				case IDM_SPEED_QUARTER: {
@@ -1233,6 +1250,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			static POINT pt;
 			keypad_t *kp = calcs[gslot].cpu.pio.keypad;
 
+			//CopySkinToButtons();
 			if (Message == WM_LBUTTONDOWN) {
 				SetCapture(hwnd);
 				pt.x	= GET_X_LPARAM(lParam);
@@ -1269,11 +1287,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			} else {
 				kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] |= KEY_MOUSEPRESS;
 				if ((kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] & KEY_STATEDOWN) == 0) {
-					//DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_PRESS);
+					DrawButtonState(calcs[gslot].hdcButtons, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_PRESS);
 					kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] |= KEY_STATEDOWN;
 					//SendMessage(hwnd, WM_SIZE, 0, 0);
 				}
 			}
+		InvalidateRect(calcs[gslot].hwndFrame, &calcs[gslot].rectSkin, TRUE);
+		UpdateWindow(calcs[gslot].hwndFrame);
 
 		//extern POINT ButtonCenter83[64];
 		//extern POINT ButtonCenter84[64];
@@ -1295,20 +1315,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			if (group== 0x05 && bit == 0x00) {
 				calcs[gslot].cpu.pio.keypad->on_pressed ^= KEY_LOCKPRESS;
-				/*if ( calcs[gslot].cpu.pio.keypad->on_pressed &  KEY_LOCKPRESS ) {
-					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
+				if ( calcs[gslot].cpu.pio.keypad->on_pressed &  KEY_LOCKPRESS ) {
+					DrawButtonState(calcs[gslot].hdcButtons, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
 				} else {
-					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_LOCK | DBS_UP);
-				}*/
-			} //else {
-				kp->keys[group][bit] ^= KEY_LOCKPRESS;
-				if (kp->keys[group][bit] &  KEY_LOCKPRESS ) {
-					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
-				} else {
-					DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_LOCK | DBS_UP);
+					DrawButtonState(calcs[gslot].hdcButtons, calcs[gslot].hdcKeymap, &pt, DBS_LOCK | DBS_UP);
 				}
-
-			//}
+			}
+			kp->keys[group][bit] ^= KEY_LOCKPRESS;
+			if (kp->keys[group][bit] &  KEY_LOCKPRESS ) {
+				DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
+			} else {
+				DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_LOCK | DBS_UP);
+			}
+			InvalidateRect(calcs[gslot].hwndFrame, &calcs[gslot].rectSkin, TRUE);
+			UpdateWindow(calcs[gslot].hwndFrame);
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 			return 0;
 		}
@@ -1574,6 +1594,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			DeleteDC(calcs[gslot].hdcSkin);
 			calcs[gslot].hdcKeymap = NULL;
 			calcs[gslot].hdcSkin = NULL;
+
+			if (calcs[gslot].hwndDebug)
+				DestroyWindow(calcs[gslot].hwndDebug);
+			calcs[gslot].hwndDebug = NULL;
 
 			if (calcs[gslot].hwndStatusBar)
 				DestroyWindow(calcs[gslot].hwndStatusBar);

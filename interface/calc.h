@@ -79,6 +79,7 @@ typedef struct calc {
 	HWND ole_callback;
 	BOOL do_drag;
 	HDC hdcSkin;
+	HDC hdcButtons;
 	HDC hdcKeymap;
 #else
 	pthread_t hdlThread;

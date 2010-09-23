@@ -533,6 +533,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					size_t envLen;
 					_dupenv_s(&env, &envLen, "appdata");
 					strcpy_s(fn, env);
+					free(env);
 					strcat_s(fn, "\\wabbitemu.gif");
 					strcpy_s(gif_file_name, fn);
 #else

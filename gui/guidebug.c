@@ -11,7 +11,8 @@
 
 extern HINSTANCE g_hInst;
 
-RECT db_rect = {-1, -1, -1, -1};
+WINDOWPLACEMENT db_placement = { NULL };
+BOOL db_maximized = FALSE;
 HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
 
 #define CY_TOOLBAR 32
@@ -452,9 +453,13 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				calcs[DebuggerSlot].profiler.running = !calcs[gslot].profiler.running;
 				HMENU hmenu = GetMenu(hwnd);
 				if (calcs[DebuggerSlot].profiler.running) {
-					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGPROFILE), hwnd, (DLGPROC)ProfileDialogProc);
-					memset(calcs[DebuggerSlot].profiler.data, 0, MIN_BLOCK_SIZE * sizeof(long));
-					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
+					int result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGPROFILE), hwnd, (DLGPROC)ProfileDialogProc);
+					if (result == IDCANCEL)
+						calcs[DebuggerSlot].profiler.running = !calcs[gslot].profiler.running;
+					else {
+						memset(calcs[DebuggerSlot].profiler.data, 0, MIN_BLOCK_SIZE * sizeof(long));
+						CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
+					}
 				} else {
 					FILE* file;
 					int i;
@@ -476,7 +481,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					for(i = calcs[DebuggerSlot].profiler.lowAddress / calcs[DebuggerSlot].profiler.blockSize;
 							i < ARRAYSIZE(calcs[DebuggerSlot].profiler.data) &&
 							i < (calcs[DebuggerSlot].profiler.highAddress / calcs[DebuggerSlot].profiler.blockSize); i++) {
-						data = (double)calcs[DebuggerSlot].profiler.data[i] / (double)calcs[DebuggerSlot].profiler.totalTime;
+						data = (double) calcs[DebuggerSlot].profiler.data[i] / (double) calcs[DebuggerSlot].profiler.totalTime;
 						if (data != 0.0)
 							fprintf(file, "$%04X - $%04X: %f%% %d tstates\r\n", i * calcs[DebuggerSlot].profiler.blockSize, ((i + 1) *
 											calcs[DebuggerSlot].profiler.blockSize) - 1, data, calcs[DebuggerSlot].profiler.data[i]);
@@ -665,7 +670,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		case WM_DESTROY: {
 			CPU_step((&calcs[DebuggerSlot].cpu));
 			calcs[DebuggerSlot].running = TRUE;
-			GetWindowRect(hwnd, &db_rect);
+			GetWindowPlacement(hwnd, &db_placement);
+			db_maximized = IsMaximized(hwnd);
 
 			int selIndex = TabCtrl_GetCurSel(hmem);
 			SaveDebugKey((char *) MemPaneString, (DWORD *) total_mem_pane);
@@ -710,6 +716,9 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			}
 			break;
 		}
+		case WM_CLOSE:
+			EndDialog(hwnd, IDCANCEL);
+			return 0;
 	}
 	return DefWindowProc(hwnd, Message, wParam, lParam);
 }
