@@ -21,6 +21,7 @@ typedef struct {
 	uint16_t address;
 	uint8_t page;
 	uint8_t name_len;
+	uint8_t length;
 	char name[9];
 } symbol83P_t;
 
