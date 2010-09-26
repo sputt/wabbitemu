@@ -17,7 +17,7 @@ STDMETHODIMP CPage::get_IsFlash(VARIANT_BOOL *pbIsFlash)
 STDMETHODIMP CPage::Read(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult)
 {
 	int nBytes = 1;
-	if ((V_VT(&varByteCount) != VT_EMPTY) || (V_VT(&varByteCount) != VT_ERROR))
+	if ((V_VT(&varByteCount) != VT_EMPTY) && (V_VT(&varByteCount) != VT_ERROR))
 	{
 		nBytes = V_I4(&varByteCount);
 	}

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "guibuttons.h"
-#include "calc.h"
+#include "gui.h"
 #include "resource.h"
 
 POINT ButtonCenter83[64] = {

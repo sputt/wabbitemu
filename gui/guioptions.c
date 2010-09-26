@@ -532,7 +532,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 							ptCursor.y -= rc.top;
 							COLORREF selectedColor = GetPixel(hColorPicker, ptCursor.x, ptCursor.y);
 							calcs[SlotSave].FaceplateColor = selectedColor;
-							gui_frame_update(SlotSave);
+							gui_frame_update(&calcs[SlotSave]);
 							break;
 						}
 						default:
@@ -551,7 +551,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 
 					if (chkState != calcs[SlotSave].bCutout) {
 						calcs[SlotSave].bCutout = chkState;
-						gui_frame_update(SlotSave);
+						gui_frame_update(&calcs[SlotSave]);
 					}
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;

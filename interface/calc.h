@@ -8,7 +8,7 @@
 #include "coretypes.h"
 
 #ifdef WINVER
-#include "gui.h" // it would be nice to get this separated somehow
+//#include "gui.h" // it would be nice to get this separated somehow
 #include "DropTarget.h"
 #endif
 #include "core.h"

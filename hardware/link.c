@@ -144,7 +144,14 @@ BOOL link_connected(int slot)
 {
 	if (slot > 1)
 		return FALSE;
-	return calcs[0].cpu.pio.link->client == &calcs[1].cpu.pio.link->host;
+	if (calcs[0].cpu.pio.link != NULL && calcs[1].cpu.pio.link != NULL)
+	{
+		return calcs[0].cpu.pio.link->client == &calcs[1].cpu.pio.link->host;
+	}
+	else
+	{
+		return FALSE;
+	}
 }
 
 /* Calculate a TI Link Protocol checksum

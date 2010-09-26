@@ -1,6 +1,8 @@
 #ifndef GUI_H
 #define GUI_H
 
+#include "calc.h"
+
 #define SKIN_WIDTH	314
 #define SKIN_HEIGHT	688
 
@@ -58,10 +60,10 @@
 #define MEM_WORD		2
 #define MEM_DWORD		4
 
-int gui_debug(int);
-int gui_frame(int);
-int gui_frame_update(int);
-void gui_draw();
+int gui_debug(calc_t *lpCalc);
+int gui_frame(calc_t *lpCalc);
+int gui_frame_update(calc_t *lpCalc);
+void gui_draw(calc_t *lpCalc);
 INT_PTR CALLBACK AboutDialogProc(HWND, UINT, WPARAM, LPARAM);
 char* LoadRomIntialDialog();
 #ifdef USE_DIRECTX
@@ -69,5 +71,8 @@ char* LoadRomIntialDialog();
 extern IDirect3DDevice9 *pd3dDevice; // Direct3D Rendering Device 
 #endif
 static HACCEL haccelmain;
+
+void RegisterWindowClasses(void);
+VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer);
 
 #endif

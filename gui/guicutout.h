@@ -3,6 +3,6 @@
 
 int EnableCutout(HWND, HBITMAP);
 int DisableCutout(HWND);
-void PositionLittleButtons(HWND, int);
+void PositionLittleButtons(HWND);
 
 #endif /*GUI_CUTOUT_H_*/

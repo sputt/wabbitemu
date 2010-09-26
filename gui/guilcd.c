@@ -66,11 +66,12 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	SIZE TxtSize;
 	POINT TxtPt;
 
+	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
 	CopyRect(&rl, &clientRect);
 	CopyRect(&rr, &clientRect);
 
-	int slot = calc_from_hwnd(hwnd);
-	if (calcs[slot].model >= TI_83P) {
+	if (lpCalc->model >= TI_83P) {
 		rl.right = rr.left = rr.right/2;
 	}
 
@@ -97,7 +98,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	TRIVERTEX vert[4];
 	GRADIENT_RECT gRect[2];
 
-	if (calcs[slot].model >= TI_83P) {
+	if (lpCalc->model >= TI_83P) {
 
 		FillRect(hdc, &rr, hbrArchive);
 
@@ -200,10 +201,10 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 
 void PaintLCD(HWND hwnd, HDC hdcDest) {
 	unsigned char * screen;
-	int slot = calc_from_hwnd(hwnd);
-	LCD_t *lcd = calcs[slot].cpu.pio.lcd;
+	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LCD_t *lcd = lpCalc->cpu.pio.lcd;
 	RECT rc;
-	GetClientRect(calcs[slot].hwndLCD, &rc);
+	GetClientRect(hwnd, &rc);
 
 	HDC hdcOverlay, hdc = CreateCompatibleDC(hdcDest);
 	HBITMAP bmpBuf;
@@ -235,7 +236,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			printf("error in SetDIBitsToDevice\n");
 		}
 
-		if (calcs[slot].do_drag == TRUE) {
+		if (lpCalc->do_drag == TRUE) {
 
 			hdcOverlay = DrawDragPanes(hwnd, hdcDest, 0);
 			BLENDFUNCTION bf;
@@ -256,10 +257,10 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			hdc, 0, 0, SRCCOPY ) == FALSE) printf("BitBlt failed\n");
 
 	} else {
-		screen = LCD_image( calcs[slot].cpu.pio.lcd ) ;
+		screen = LCD_image(lcd) ;
 		//screen = GIFGREYLCD();
 
-		if (lcd->width * calcs[slot].Scale != (rc.right - rc.left))
+		if (lcd->width * lpCalc->Scale != (rc.right - rc.left))
 			SetStretchBltMode(hdc, HALFTONE);
 		else
 			SetStretchBltMode(hdc, BLACKONWHITE);
@@ -280,7 +281,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		bf.SourceConstantAlpha = 160;
 		bf.AlphaFormat = 0;
 
-		if (calcs[slot].do_drag == TRUE) {
+		if (lpCalc->do_drag == TRUE) {
 
 			hdcOverlay = DrawDragPanes(hwnd, hdcDest, 0);
 
@@ -293,7 +294,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		}
 
 
-		if (calcs[slot].send == TRUE) {
+		if (lpCalc->send == TRUE) {
 			bf.SourceConstantAlpha = 192;
 			hdcOverlay = DrawSending(hwnd, hdcDest);
 
@@ -314,9 +315,9 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 		if (alphablendfail<100) {
 			if (AlphaBlend(	hdc, rc.left, rc.top, rc.right,  rc.bottom,
-				calcs[slot].hdcSkin, calcs[slot].rectLCD.left, calcs[slot].rectLCD.top,
-				calcs[slot].rectLCD.right - calcs[slot].rectLCD.left,
-				calcs[slot].rectLCD.bottom - calcs[slot].rectLCD.top, bf )  == FALSE) {
+				lpCalc->hdcSkin, lpCalc->rectLCD.left, lpCalc->rectLCD.top,
+				lpCalc->rectLCD.right - lpCalc->rectLCD.left,
+				lpCalc->rectLCD.bottom - lpCalc->rectLCD.top, bf )  == FALSE) {
 				//printf("alpha blend 2 failed\n");
 				alphablendfail++;
 			}
@@ -403,17 +404,20 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_CREATE:
 		{
 			HDC hdc = GetDC(hwnd);
+			calc_t *lpCalc = (calc_t *) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) ((LPCREATESTRUCT) lParam)->lpCreateParams);
+
 			SetBkMode(hdc, TRANSPARENT);
 
 			FORMATETC fmtetc[] = {
 				{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL},
 				{RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL}
 			};
-			RegisterDropWindow(hwnd, (IDropTarget **) &calcs[gslot].pDropTarget);
-			calcs[gslot].pDropTarget->AddAcceptedFormat(&fmtetc[0]);
-			calcs[gslot].pDropTarget->AddAcceptedFormat(&fmtetc[1]);
+			RegisterDropWindow(hwnd, (IDropTarget **) &lpCalc->pDropTarget);
+			lpCalc->pDropTarget->AddAcceptedFormat(&fmtetc[0]);
+			lpCalc->pDropTarget->AddAcceptedFormat(&fmtetc[1]);
 
-            if (calc_count() == 1 && bi == NULL) {
+            if (bi == NULL) {
 				bi = (BITMAPINFO *) malloc(sizeof(BITMAPINFOHEADER) + (MAX_SHADES+1)*sizeof(RGBQUAD));
 				bi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 				bi->bmiHeader.biWidth = 128;
@@ -443,15 +447,15 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_PAINT:
 		{
 			HDC hdcDest;
-			int slot = calc_from_hwnd(hwnd);
-			LCD_t *lcd = calcs[slot].cpu.pio.lcd;
+			calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LCD_t *lcd = lpCalc->cpu.pio.lcd;
 			PAINTSTRUCT ps;
 			hdcDest = BeginPaint(hwnd, &ps);
 			PaintLCD(hwnd, hdcDest);
 			EndPaint(hwnd, &ps);	
 			
-			if (calcs[slot].hwndStatusBar) {
-				if (clock() > calcs[slot].sb_refresh + CLOCKS_PER_SEC/2) {
+			if (lpCalc->hwndStatusBar) {
+				if (clock() > lpCalc->sb_refresh + CLOCKS_PER_SEC/2) {
 					if (lcd->active)
 #ifdef WINVER
 						sprintf_s(sz_status,"FPS: %0.2lf",lcd->ufps);
@@ -464,8 +468,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 #else
 						sprintf(sz_status,"FPS: -");
 #endif
-					SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 0, (LPARAM) sz_status);
-					calcs[slot].sb_refresh = clock();
+					SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 0, (LPARAM) sz_status);
+					lpCalc->sb_refresh = clock();
 				}
 			}
 			return 0;
@@ -476,25 +480,29 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			InvalidateRect(hwnd, NULL, TRUE);
 			return 0;
 		}
-		case WM_CONTEXTMENU: {
-			const char names[][32] = {"File", "Edit", "Calculator", "Debug", "About"};
-			HMENU hmenuMain = GetMenu(calcs[gslot].hwndFrame);
+		case WM_CONTEXTMENU:
+			{
+				const char names[][32] = {"File", "Edit", "Calculator", "Debug", "About"};
+				HMENU hmenuMain = GetMenu(GetParent(hwnd));
+				if (hmenuMain == NULL)
+				{
+					return 0;
+				}
+				HMENU hmenuContext = CreatePopupMenu();
+				int i;
+				for (i = 0; i < 5; i++)
+					InsertMenu(hmenuContext, -1, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), (LPCTSTR) names[i]);
 
-			HMENU hmenuContext = CreatePopupMenu();
-			int i;
-			for (i = 0; i < 5; i++)
-				InsertMenu(hmenuContext, -1, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), (LPCTSTR) names[i]);
+				if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenuContext)) {
+					DefWindowProc(hwnd, Message, wParam, lParam);
+				}
 
-			if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenuContext)) {
-				DefWindowProc(hwnd, Message, wParam, lParam);
+				//DestroyMenu(hmenuContext);
+				return 0;
 			}
-
-			//DestroyMenu(hmenuContext);
-			return 0;
-		}
 		case WM_CLOSE:
 		case WM_COMMAND: {
-			SendMessage(calcs[calc_from_hwnd(hwnd)].hwndFrame, Message, wParam, lParam);
+			SendMessage(GetParent(hwnd), Message, wParam, lParam);
 			return 0;
 		}
 		case WM_LBUTTONDOWN:
@@ -547,10 +555,12 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					GIFGREYLCD();
 
+					calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
 					unsigned int i, j;
 					for (i = 0; i < SCRYSIZE*gif_size; i++)
 						for (j = 0; j < SCRXSIZE*gif_size; j++)
-							gif_frame[i * gif_xs + j] = calcs[gslot].cpu.pio.lcd->gif[i][j];
+							gif_frame[i * gif_xs + j] = lpCalc->cpu.pio.lcd->gif[i][j];
 
 					gif_write_state = GIF_START;
 					gif_writer();
@@ -722,15 +732,19 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			HandleKeyUp((unsigned int) wParam);
 			return 0;
 		}
-		case WM_DESTROY: {
-			calcs[gslot].hwndLCD = NULL;
-			if (calc_count() == 0)
-				free(bi);
-			printf("Unregistering drop window\n");
-			if (calcs[gslot].pDropTarget != NULL)
-				UnregisterDropWindow(hwnd, (IDropTarget *) calcs[gslot].pDropTarget);
-			return 0;
-		}
+		case WM_DESTROY: 
+			{
+				calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				lpCalc->hwndLCD = NULL;
+				if (calc_count() == 0)
+					free(bi);
+				printf("Unregistering drop window\n");
+				if (lpCalc->pDropTarget != NULL)
+				{
+					UnregisterDropWindow(hwnd, (IDropTarget *) lpCalc->pDropTarget);
+				}
+				return 0;
+			}
 		default:
 			if (Message == RegisterWindowMessage("ShellGetDragImage")) {
 				LPSHDRAGIMAGE pDragImage = (LPSHDRAGIMAGE) lParam;
@@ -761,7 +775,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 				HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmDrag);
 
-				u_char *screen = LCD_image( calcs[gslot].cpu.pio.lcd ) ;
+				calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				u_char *screen = LCD_image( lpCalc->cpu.pio.lcd ) ;
 				FillRect(hdc, &rc, (HBRUSH) GetStockObject(BLACK_BRUSH));
 
 				//screen = GIFGREYLCD();

@@ -1,8 +1,11 @@
 #include "stdafx.h"
 
-#include "calc.h"
+#include "gui.h"
 #include "guifaceplate.h"
 #include "guibuttons.h"
+
+#define IDC_SMALLCLOSE		45
+#define IDC_SMALLMINIMIZE	46
 
 extern HINSTANCE g_hInst;
 
@@ -104,13 +107,14 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 	}
 }
 
-void PositionLittleButtons(HWND hwnd, int slot)
+void PositionLittleButtons(HWND hwnd)
 {
+	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	HDWP hdwp = BeginDeferWindowPos(3);
 	RECT wr;
 	GetWindowRect(hwnd, &wr);
-	DeferWindowPos(hdwp, calcs[slot].hwndSmallMinimize, NULL, wr.left + 285, wr.top + 34, 13, 13, 0);
-	DeferWindowPos(hdwp, calcs[slot].hwndSmallClose, NULL, wr.left + 300, wr.top + 34, 13, 13, 0);
+	DeferWindowPos(hdwp, lpCalc->hwndSmallMinimize, NULL, wr.left + 285, wr.top + 34, 13, 13, 0);
+	DeferWindowPos(hdwp, lpCalc->hwndSmallClose, NULL, wr.left + 300, wr.top + 34, 13, 13, 0);
 	EndDeferWindowPos(hdwp);
 }
 
@@ -123,38 +127,39 @@ typedef HRESULT (WINAPI *DwmSetAttrib)(HWND, DWORD, LPCVOID, DWORD);
  */
 int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	if (hwndFrame == NULL) return 1;
-	int slot = calc_from_hwnd(hwndFrame);
-	if (calcs[slot].SkinEnabled == FALSE)
+	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwndFrame, GWLP_USERDATA);
+	if (lpCalc->SkinEnabled == FALSE)
 		return 1;
 
-	u_int width = calcs[slot].rectSkin.right;
-	u_int height = calcs[slot].rectSkin.bottom;
+	u_int width = lpCalc->rectSkin.right;
+	u_int height = lpCalc->rectSkin.bottom;
 
-	int scale = calcs[slot].Scale;
-	if (calcs[slot].SkinEnabled)
+	int scale = lpCalc->Scale;
+	if (lpCalc->SkinEnabled)
 		scale = 2;
 
-	DestroyWindow(calcs[slot].hwndLCD);
+	DestroyWindow(lpCalc->hwndLCD);
 	//BOOL disableTransition = TRUE;
-	//DwmSetWindowAttribute(calcs[slot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+	//DwmSetWindowAttribute(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 	HMODULE hasDWM = LoadLibrary("dwmapi.dll");
 	if (hasDWM) {
 		BOOL disableTransition = TRUE;
 		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, "DwmSetWindowAttribute");
-		SetAttrib(calcs[slot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+		SetAttrib(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+		FreeLibrary(hasDWM);
 	}
-	calcs[slot].hwndLCD = CreateWindowEx(
+	lpCalc->hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
 			"Wabbitemu",
 			WS_VISIBLE,
-			0, 0, calcs[slot].cpu.pio.lcd->width*scale, 64*scale,
-			calcs[slot].hwndFrame, NULL, g_hInst,  NULL);
+			0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
+			hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
 
-	SetWindowTheme(calcs[slot].hwndLCD, (LPCWSTR)_T(" "), (LPCWSTR)_T(" "));
+	SetWindowTheme(lpCalc->hwndLCD, (LPCWSTR)_T(" "), (LPCWSTR)_T(" "));
 	HDC hScreen = GetDC(NULL);
 
-	if (calcs[slot].model == TI_84PSE) {
+	if (lpCalc->model == TI_84PSE) {
 			BITMAPINFOHEADER bih;
 			bih.biSize = sizeof(BITMAPINFOHEADER);
 			bih.biWidth = width;
@@ -174,7 +179,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 
 			// Gets the "bits" from the bitmap and copies them into a buffer
 			// which is pointed to by lpbitmap.
-			GetDIBits(calcs[slot].hdcSkin, hbmSkin, 0,
+			GetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
 				height,
 				bitmap,
 				&bi, DIB_RGB_COLORS);
@@ -194,7 +199,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 				}
 			}
 
-			SetDIBits(calcs[slot].hdcSkin, hbmSkin, 0,
+			SetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
 					height,
 					bitmap,
 					&bi, DIB_RGB_COLORS);
@@ -217,18 +222,18 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	SIZE size;
 	size.cx = width;
 	size.cy = height;
-	SetBkColor(calcs[slot].hdcSkin, 0xFF0000);
+	SetBkColor(lpCalc->hdcSkin, 0xFF0000);
 
 	SetWindowLongPtr(hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
 	SetWindowLongPtr(hwndFrame, GWL_STYLE, WS_VISIBLE | WS_POPUP);
 
-	int done = UpdateLayeredWindow(hwndFrame, hScreen, NULL, &size, calcs[slot].hdcSkin, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
+	int done = UpdateLayeredWindow(hwndFrame, hScreen, NULL, &size, lpCalc->hdcSkin, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
 	int error;
 	if (!done)
 		error = GetLastError();
 
 	ReleaseDC(0, hScreen);
-	UpdateWindow(calcs[slot].hwndLCD);
+	UpdateWindow(lpCalc->hwndLCD);
 	SendMessage(hwndFrame, WM_MOVE, 0, 0);
 
 	// If there's a menu bar, include its height in the skin offset
@@ -248,20 +253,20 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	wc.hInstance = g_hInst;
 	RegisterClass(&wc);
 
-	calcs[slot].hwndSmallClose = CreateWindow(
+	lpCalc->hwndSmallClose = CreateWindow(
 		"WABBITSMALLBUTTON",
 		"wabbitclose",
 		WS_VISIBLE, // | BS_OWNERDRAW,
 		270, 19,
 		13, 13,
 		hwndFrame,
-		(HMENU) NULL,
+		(HMENU) IDC_SMALLCLOSE,
 		g_hInst,
 		NULL);
-	if (calcs[slot].hwndSmallClose == NULL) return 1;
-	SetWindowLong(calcs[slot].hwndSmallClose, GWL_STYLE, WS_VISIBLE);
+	if (lpCalc->hwndSmallClose == NULL) return 1;
+	SetWindowLong(lpCalc->hwndSmallClose, GWL_STYLE, WS_VISIBLE);
 
-	calcs[slot].hwndSmallMinimize = CreateWindowEx(
+	lpCalc->hwndSmallMinimize = CreateWindowEx(
 		0,
 		"WABBITSMALLBUTTON",
 		"wabbitminimize",
@@ -269,13 +274,13 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 		254, 19,
 		13, 13,
 		hwndFrame,
-		(HMENU) NULL,
+		(HMENU) IDC_SMALLMINIMIZE,
 		g_hInst,
 		NULL);
-	if (calcs[slot].hwndSmallMinimize == NULL) return 1;
-	SetWindowLong(calcs[slot].hwndSmallMinimize, GWL_STYLE, WS_VISIBLE);
+	if (lpCalc->hwndSmallMinimize == NULL) return 1;
+	SetWindowLong(lpCalc->hwndSmallMinimize, GWL_STYLE, WS_VISIBLE);
 
-	if (!calcs[slot].SkinEnabled) {
+	if (!lpCalc->SkinEnabled) {
 		RECT wr;
 		GetWindowRect(hwndFrame, &wr);
 		SetWindowPos(hwndFrame, NULL,
@@ -285,7 +290,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 				SWP_NOZORDER|SWP_NOSIZE);
 	}
 
-	InvalidateRect(hwndFrame, NULL, true);
+	InvalidateRect(hwndFrame, NULL, TRUE);
 	return 0;
 }
 
@@ -294,31 +299,36 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
  */
 int DisableCutout(HWND hwndFrame) {
 	HMODULE hasDWM = LoadLibrary("dwmapi.dll");
+	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwndFrame, GWLP_USERDATA);
 	if (hasDWM) {
 		BOOL disableTransition = TRUE;
 		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, "DwmSetWindowAttribute");
-		SetAttrib(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+		if (SetAttrib != NULL)
+		{
+			SetAttrib(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+		}
+		FreeLibrary(hasDWM);
 	}
 	//BOOL disableTransition = TRUE;
-	//DwmSetWindowAttribute(calcs[gslot].hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
+	//DwmSetWindowAttribute(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 
-	int scale = calcs[gslot].Scale;
-	if (calcs[gslot].SkinEnabled)
+	int scale = lpCalc->Scale;
+	if (lpCalc->SkinEnabled)
 		scale = 2;
-	if (calcs[gslot].hwndLCD)
-		DestroyWindow(calcs[gslot].hwndLCD);
-	calcs[gslot].hwndLCD = CreateWindowEx(
+	if (lpCalc->hwndLCD)
+		DestroyWindow(lpCalc->hwndLCD);
+	lpCalc->hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
 			"LCD",
 			WS_VISIBLE |  WS_CHILD,
-			0, 0, calcs[gslot].cpu.pio.lcd->width* scale, 64*scale,
-			calcs[gslot].hwndFrame, (HMENU) 99, g_hInst,  NULL);
+			0, 0, lpCalc->cpu.pio.lcd->width* scale, 64*scale,
+			hwndFrame, (HMENU) 99, g_hInst,  (LPVOID) GetWindowLongPtr(hwndFrame, GWLP_USERDATA));
 
 	SetWindowLong(hwndFrame, GWL_EXSTYLE, 0);
 	SetWindowLong(hwndFrame, GWL_STYLE, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));
 
-	if (!calcs[gslot].SkinEnabled) {
+	if (!lpCalc->SkinEnabled) {
 		// If there's a menu bar, include its height in the skin offset
 		HMENU hmenu = GetMenu(hwndFrame);
 		int cyMenu;
@@ -329,9 +339,9 @@ int DisableCutout(HWND hwndFrame) {
 		}
 	}
 
-	if (calcs[gslot].hwndSmallClose) DestroyWindow(calcs[gslot].hwndSmallClose);
+	if (lpCalc->hwndSmallClose) DestroyWindow(lpCalc->hwndSmallClose);
 
-	if (calcs[gslot].hwndSmallMinimize) DestroyWindow(calcs[gslot].hwndSmallMinimize);
+	if (lpCalc->hwndSmallMinimize) DestroyWindow(lpCalc->hwndSmallMinimize);
 
 	InvalidateRect(hwndFrame, NULL, TRUE);
 	return 0;

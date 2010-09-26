@@ -176,7 +176,7 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					Edit_GetText(hEditRom, string, MAX_PATH);
 					int slot = calc_slot_new();
 					slot = rom_load(slot, string);
-					if (slot != -1) gui_frame(slot);
+					if (slot != -1) gui_frame(&calcs[slot]);
 					break;
 				}
 				case PSN_QUERYCANCEL:
@@ -510,7 +510,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					calc_run_timed(gslot, 300);
 					calcs[slot].cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
-					gui_frame(slot);
+					gui_frame(&calcs[slot]);
 					//write the output from file
 					fopen_s(&file, buffer, "wb");
 					char* rom = (char *) calcs[slot].mem_c.flash;
@@ -851,7 +851,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					calcs[slot].cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
 					calc_run_timed(gslot, 300);
 					calcs[slot].cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
-					gui_frame(slot);
+					gui_frame(&calcs[slot]);
 					//write the output from file
 					fopen_s(&file, buffer, "wb");
 					char* rom = (char *) calcs[slot].mem_c.flash;

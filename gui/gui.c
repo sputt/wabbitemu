@@ -70,17 +70,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 
-void gui_draw(int slot) {
-	gslot = slot;
-	InvalidateRect(calcs[slot].hwndLCD, NULL, FALSE);
-	//UpdateWindow(calcs[slot].hwndLCD);
+void gui_draw(calc_t *lpCalc)
+{
+	if (lpCalc->hwndLCD != NULL)
+	{
+		InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
+	}
 
-	//UpdateDebugTrack();
-	if (calcs[gslot].gif_disp_state != GDS_IDLE) {
+	if (lpCalc->gif_disp_state != GDS_IDLE)
+	{
 		static int skip = 0;
-		if (skip == 0) {
+		if (skip == 0)
+		{
 			gif_anim_advance = TRUE;
-			InvalidateRect(calcs[slot].hwndFrame, NULL, FALSE);
+			if (lpCalc->hwndFrame != NULL)
+			{
+				InvalidateRect(lpCalc->hwndFrame, NULL, FALSE);
+			}
 		}
 		skip = (skip + 1) % 4;
 	}
@@ -125,7 +131,7 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 		int i;
 		for (i = 0; i < MAX_CALCS; i++) {
 			if (calcs[i].active) {
-				gui_draw(i);
+				gui_draw(&calcs[i]);
 			}
 		}
 	// Frame skip if we're too far ahead.
@@ -135,7 +141,7 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 
 extern WINDOWPLACEMENT db_placement;
 
-int gui_debug(int slot) {
+int gui_debug(calc_t *lpCalc) {
 	pausesound();
 	HWND hdebug;
 	BOOL set_place = TRUE;
@@ -156,7 +162,7 @@ int gui_debug(int slot) {
 		SwitchToThisWindow(hdebug, TRUE);
 		return -1;
 	}
-	calcs[slot].running = FALSE;
+	lpCalc->running = FALSE;
 	hdebug = CreateWindowEx(
 		WS_EX_APPWINDOW,
 		g_szDebugName,
@@ -167,78 +173,76 @@ int gui_debug(int slot) {
 	if (set_place)
 		SetWindowPlacement(hdebug, &db_placement);
 
-	calcs[slot].hwndDebug = hdebug;
+	lpCalc->hwndDebug = hdebug;
 	SendMessage(hdebug, WM_SIZE, 0, 0);
 	return 0;
 }
 
 void SkinCutout(HWND hwnd);
 
-int gui_frame(int slot) {
+int gui_frame(calc_t *lpCalc) {
  	RECT r;
 
- 	if (!calcs[slot].Scale)
-		calcs[slot].Scale = 2;
-	if (calcs[slot].SkinEnabled) {
- 		SetRect(&r, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom);
+ 	if (!lpCalc->Scale)
+		lpCalc->Scale = 2;
+	if (lpCalc->SkinEnabled) {
+ 		SetRect(&r, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
  	} else {
- 		SetRect(&r, 0, 0, 128*calcs[slot].Scale, 64*calcs[slot].Scale);
+ 		SetRect(&r, 0, 0, 128*lpCalc->Scale, 64*lpCalc->Scale);
  	}
 	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 	r.bottom += GetSystemMetrics(SM_CYMENU);
 
-	// Set gslot so the CreateWindow functions operate on the correct calc
-	gslot = slot;
-	calcs[slot].hwndFrame = CreateWindowEx(
+	lpCalc->hwndFrame = CreateWindowEx(
 		0, //WS_EX_APPWINDOW,
 		g_szAppName,
         "Z80",
 		(WS_TILEDWINDOW |  (silent_mode ? 0 : WS_VISIBLE) | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */),
         CW_USEDEFAULT, CW_USEDEFAULT, r.right - r.left, r.bottom - r.top,
-        NULL, 0, g_hInst, NULL);
+        NULL, 0, g_hInst, (LPVOID) lpCalc);
 
-	HDC hdc = GetDC(calcs[slot].hwndFrame);
-	//HBITMAP hbmSkin = LoadBitmap(g_hInst, calcs[slot].model);
-	calcs[slot].hdcSkin = CreateCompatibleDC(hdc);
-	//SelectObject(calcs[gslot].hdcSkin, hbmSkin);
+	HDC hdc = GetDC(lpCalc->hwndFrame);
+	//HBITMAP hbmSkin = LoadBitmap(g_hInst, lpCalc->model);
+	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
+	//SelectObject(lpCalc->hdcSkin, hbmSkin);
 
-	/*calcs[slot].hwndLCD = CreateWindowEx(
+	/*lpCalc->hwndLCD = CreateWindowEx(
 		0,
 		g_szLCDName,
 		"LCD",
 		WS_VISIBLE |  WS_CHILD,
-		0, 0, calcs[slot].cpu.pio.lcd->width*calcs[slot].Scale, 64*calcs[slot].Scale,
-		calcs[slot].hwndFrame, (HMENU) 99, g_hInst,  NULL);*/
+		0, 0, lpCalc->cpu.pio.lcd->width*lpCalc->Scale, 64*lpCalc->Scale,
+		lpCalc->hwndFrame, (HMENU) 99, g_hInst,  NULL);*/
 
-	if (calcs[slot].hwndFrame == NULL /*|| calcs[slot].hwndLCD == NULL*/) return -1;
+	if (lpCalc->hwndFrame == NULL /*|| lpCalc->hwndLCD == NULL*/) return -1;
 
-	GetClientRect(calcs[slot].hwndFrame, &r);
-	calcs[slot].running = TRUE;
-	calcs[slot].speed = 100;
-	HMENU hmenu = GetMenu(calcs[slot].hwndFrame);
+	GetClientRect(lpCalc->hwndFrame, &r);
+	lpCalc->running = TRUE;
+	lpCalc->speed = 100;
+	HMENU hmenu = GetMenu(lpCalc->hwndFrame);
 	CheckMenuRadioItem(GetSubMenu(GetSubMenu(hmenu, 2),4), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
-	gui_frame_update(slot);
-	ReleaseDC(calcs[slot].hwndFrame, hdc);
+	gui_frame_update(lpCalc);
+	ReleaseDC(lpCalc->hwndFrame, hdc);
 	return 0;
 }
 
 #ifdef USE_GDIPLUS
-int gui_frame_update(int slot) {
+int gui_frame_update(calc_t *lpCalc) {
 	int skinWidth = 0, skinHeight = 0, keymapWidth = -1, keymapHeight = -1;
-	HDC hdc = GetDC(calcs[slot].hwndFrame);
-	if (calcs[slot].hdcKeymap)
-		DeleteDC(calcs[slot].hdcKeymap);
-	if (calcs[gslot].hdcSkin)
-		DeleteDC(calcs[slot].hdcSkin);
-	if (calcs[gslot].hdcButtons)
-		DeleteDC(calcs[gslot].hdcButtons);
-	calcs[slot].hdcKeymap = CreateCompatibleDC(hdc);
-	calcs[slot].hdcSkin = CreateCompatibleDC(hdc);
-	calcs[slot].hdcButtons = CreateCompatibleDC(hdc);
+	HDC hdc = GetDC(lpCalc->hwndFrame);
+	if (lpCalc->hdcKeymap)
+		DeleteDC(lpCalc->hdcKeymap);
+	if (lpCalc->hdcSkin)
+		DeleteDC(lpCalc->hdcSkin);
+	if (lpCalc->hdcButtons)
+		DeleteDC(lpCalc->hdcButtons);
+	lpCalc->hdcKeymap = CreateCompatibleDC(hdc);
+	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
+	lpCalc->hdcButtons = CreateCompatibleDC(hdc);
 	//load skin and keymap
-	CGdiPlusBitmapResource hbmSkin(CalcModelTxt[calcs[slot].model],_T("PNG"), g_hInst);
+	CGdiPlusBitmapResource hbmSkin(CalcModelTxt[lpCalc->model],_T("PNG"), g_hInst);
 	CGdiPlusBitmapResource hbmKeymap;
-	switch(calcs[slot].model)
+	switch(lpCalc->model)
 	{
 		case TI_73:
 		case TI_83P:
@@ -273,11 +277,11 @@ int gui_frame_update(int slot) {
 	int x, y, foundX = 0, foundY = 0;
 	bool foundScreen = FALSE;
 	if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight)) {
-		calcs[slot].SkinEnabled = false;
+		lpCalc->SkinEnabled = false;
 		MessageBox(NULL, "Skin and Keymap are not the same size", "error",  MB_OK);
 	} else {
-		calcs[slot].rectSkin.right = skinWidth;
-		calcs[slot].rectSkin.bottom = skinHeight;		//find the screen size
+		lpCalc->rectSkin.right = skinWidth;
+		lpCalc->rectSkin.bottom = skinHeight;		//find the screen size
 		Color pixel;
 		for(y = 0; y < skinHeight && foundScreen == false; y++) {
 			for (x = 0; x < skinWidth && foundScreen == false; x++) {
@@ -290,110 +294,110 @@ int gui_frame_update(int slot) {
 				}
 			}
 		}
-		calcs[slot].rectLCD.left = foundX;
-		calcs[slot].rectLCD.top = foundY;
+		lpCalc->rectLCD.left = foundX;
+		lpCalc->rectLCD.top = foundY;
 		do {
 			foundX++;
 			hbmKeymap.m_pBitmap->GetPixel(foundX, foundY, &pixel);
 		} while (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0);
-		calcs[slot].rectLCD.right = foundX--;
+		lpCalc->rectLCD.right = foundX--;
 		do { 
 			foundY++;
 			hbmKeymap.m_pBitmap->GetPixel(foundX, foundY, &pixel);
 		} while (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0);
-		calcs[slot].rectLCD.bottom = foundY;
+		lpCalc->rectLCD.bottom = foundY;
 	}
 	if (!foundScreen) {
 		MessageBox(NULL, "Unable to find the screen box", "error", MB_OK);
-		calcs[slot].SkinEnabled = false;
+		lpCalc->SkinEnabled = false;
 	}
-	if (!calcs[slot].hwndFrame)
+	if (!lpCalc->hwndFrame)
 		return 0;
 
-	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom);
-	SelectObject(calcs[gslot].hdcButtons, hbmTemp);
+	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
+	SelectObject(lpCalc->hdcButtons, hbmTemp);
 	DeleteObject(hbmTemp);
 	//this is moved here so going from cutout->skinless creates the lcd now
-	if (calcs[gslot].bCutout && !calcs[slot].SkinEnabled) {
-		DisableCutout(calcs[slot].hwndFrame);
-		calcs[gslot].bCutout = TRUE;
-	} else DisableCutout(calcs[slot].hwndFrame);
-	HMENU hmenu = GetMenu(calcs[slot].hwndFrame);	
+	if (lpCalc->bCutout && !lpCalc->SkinEnabled) {
+		DisableCutout(lpCalc->hwndFrame);
+		lpCalc->bCutout = TRUE;
+	} else DisableCutout(lpCalc->hwndFrame);
+	HMENU hmenu = GetMenu(lpCalc->hwndFrame);	
 	if (hmenu != NULL) {
-		if (!calcs[slot].SkinEnabled) {
+		if (!lpCalc->SkinEnabled) {
 			RECT rc;
 			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
 			// Create status bar
-			if (calcs[slot].hwndStatusBar != NULL) {
-				SendMessage(calcs[slot].hwndStatusBar, WM_DESTROY, 0, 0);
-				SendMessage(calcs[slot].hwndStatusBar, WM_CLOSE, 0, 0);
+			if (lpCalc->hwndStatusBar != NULL) {
+				SendMessage(lpCalc->hwndStatusBar, WM_DESTROY, 0, 0);
+				SendMessage(lpCalc->hwndStatusBar, WM_CLOSE, 0, 0);
 			}
-			SetRect(&rc, 0, 0, 128*calcs[slot].Scale, 64*calcs[slot].Scale);
+			SetRect(&rc, 0, 0, 128*lpCalc->Scale, 64*lpCalc->Scale);
 			int iStatusWidths[] = {100, -1};
-			calcs[slot].hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, calcs[slot].hwndFrame, (HMENU)99, g_hInst, NULL);
-			SendMessage(calcs[slot].hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
-			SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
+			lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, lpCalc->hwndFrame, (HMENU)99, g_hInst, NULL);
+			SendMessage(lpCalc->hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
+			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 			RECT src;
-			GetWindowRect(calcs[slot].hwndStatusBar, &src);
+			GetWindowRect(lpCalc->hwndStatusBar, &src);
 			AdjustWindowRect(&rc, (WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~WS_MAXIMIZEBOX, FALSE);
 			rc.bottom += src.bottom - src.top;
 			if (hmenu)
 				rc.bottom += GetSystemMetrics(SM_CYMENU);
-			SetWindowPos(calcs[slot].hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
-			GetClientRect(calcs[slot].hwndFrame, &rc);
-			SendMessage(calcs[slot].hwndStatusBar, WM_SIZE, 0, 0);
-			SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
+			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+			GetClientRect(lpCalc->hwndFrame, &rc);
+			SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
+			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 		} else {
 			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_CHECKED);
-			SendMessage(calcs[slot].hwndStatusBar, WM_DESTROY, 0, 0);
-			SendMessage(calcs[slot].hwndStatusBar, WM_CLOSE, 0, 0);
-			calcs[gslot].hwndStatusBar = NULL;
+			SendMessage(lpCalc->hwndStatusBar, WM_DESTROY, 0, 0);
+			SendMessage(lpCalc->hwndStatusBar, WM_CLOSE, 0, 0);
+			lpCalc->hwndStatusBar = NULL;
 			RECT rc;
-			CopyRect(&rc, &calcs[slot].rectSkin);
+			CopyRect(&rc, &lpCalc->rectSkin);
 			AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
 			rc.bottom += GetSystemMetrics(SM_CYMENU);
-			SetWindowPos(calcs[slot].hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
+			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
 		}
 	}
-	/*calcs[slot].skinGraphics->Clear(Color::Gray);
-	if (calcs[slot].model == TI_84PSE) {
-		if (DrawFaceplateRegion(calcs[slot].skinGraphics))
+	/*lpCalc->skinGraphics->Clear(Color::Gray);
+	if (lpCalc->model == TI_84PSE) {
+		if (DrawFaceplateRegion(lpCalc->skinGraphics))
 			MessageBox(NULL, "Unable to draw faceplate", "error", MB_OK);
 	}
-	calcs[slot].skinGraphics->DrawImage(hbmSkin, 0, 0, skinWidth, skinHeight);
-	calcs[slot].skinGraphics->Flush();
+	lpCalc->skinGraphics->DrawImage(hbmSkin, 0, 0, skinWidth, skinHeight);
+	lpCalc->skinGraphics->Flush();
 	
 	RECT rc;
-	GetClientRect(calcs[slot].hwndFrame, &rc);
+	GetClientRect(lpCalc->hwndFrame, &rc);
 	HBITMAP skin;
-	if (calcs[slot].bCutout && calcs[slot].SkinEnabled)	{
+	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
 		hbmSkin.m_pBitmap->GetHBITMAP(Color::AlphaMask, &skin);
-		if (EnableCutout(calcs[slot].hwndFrame, skin) != 0) {
+		if (EnableCutout(lpCalc->hwndFrame, skin) != 0) {
 			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
 		}
 	}
-	if (calcs[slot].hwndStatusBar != NULL)
-		SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
+	if (lpCalc->hwndStatusBar != NULL)
+		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 
-	ReleaseDC(calcs[slot].hwndFrame, hdc);
+	ReleaseDC(lpCalc->hwndFrame, hdc);
 	DeleteObject(skin);
-	SendMessage(calcs[slot].hwndFrame, WM_SIZE, 0, 0);
+	SendMessage(lpCalc->hwndFrame, WM_SIZE, 0, 0);
 	return 0;*/
 	HBITMAP hbmSkinOld, hbmKeymapOld;
 	//translate to gdi compatibility to simplify coding :/
 	hbmKeymap.m_pBitmap->GetHBITMAP(Color::White, &hbmKeymapOld);
-	SelectObject(calcs[slot].hdcKeymap, hbmKeymapOld);
+	SelectObject(lpCalc->hdcKeymap, hbmKeymapOld);
 	//get the HBITMAP for the skin DONT change the first value, it is necessary for transparency to work
 	hbmSkin.m_pBitmap->GetHBITMAP(Color::AlphaMask, &hbmSkinOld);
 	//84+SE has custom faceplates :D, draw it to the background
 	//thanks MSDN your documentation rules :))))
-	HDC hdcOverlay = CreateCompatibleDC(calcs[slot].hdcSkin);
+	HDC hdcOverlay = CreateCompatibleDC(lpCalc->hdcSkin);
 	HBITMAP blankBitmap = CreateCompatibleBitmap(hdc, skinWidth, skinHeight);
-	SelectObject(calcs[slot].hdcSkin, blankBitmap);
-	if (!calcs[slot].bCutout || !calcs[slot].SkinEnabled)
-		FillRect(calcs[slot].hdcSkin, &calcs[slot].rectSkin, GetStockBrush(GRAY_BRUSH));
-	if (calcs[slot].model == TI_84PSE) {
-		if (DrawFaceplateRegion(calcs[slot].hdcSkin, calcs[slot].FaceplateColor))
+	SelectObject(lpCalc->hdcSkin, blankBitmap);
+	if (!lpCalc->bCutout || !lpCalc->SkinEnabled)
+		FillRect(lpCalc->hdcSkin, &lpCalc->rectSkin, GetStockBrush(GRAY_BRUSH));
+	if (lpCalc->model == TI_84PSE) {
+		if (DrawFaceplateRegion(lpCalc->hdcSkin, lpCalc->FaceplateColor))
 			MessageBox(NULL, "Unable to draw faceplate", "error", MB_OK);
 	}
 	//ok maybe its just because 6am and i've been doing this all night but seriously, WTF
@@ -406,66 +410,66 @@ int gui_frame_update(int slot) {
 	bf.BlendFlags = 0;
 	bf.SourceConstantAlpha = 255;
 	bf.AlphaFormat = AC_SRC_ALPHA;
-	AlphaBlend(calcs[slot].hdcSkin, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, hdcOverlay,
-		calcs[slot].rectSkin.left, calcs[slot].rectSkin.top, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, bf);
-	BitBlt(calcs[gslot].hdcButtons, 0, 0, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom, calcs[gslot].hdcSkin, 0, 0, SRCCOPY);
-	if (calcs[slot].bCutout && calcs[slot].SkinEnabled)	{
-		if (EnableCutout(calcs[slot].hwndFrame, oldSkin) != 0)
+	AlphaBlend(lpCalc->hdcSkin, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, hdcOverlay,
+		lpCalc->rectSkin.left, lpCalc->rectSkin.top, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, bf);
+	BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
+	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
+		if (EnableCutout(lpCalc->hwndFrame, oldSkin) != 0)
 			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
 	}
-	if (calcs[slot].hwndStatusBar != NULL)
-		SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
-	SendMessage(calcs[slot].hwndFrame, WM_SIZE, 0, 0);
+	if (lpCalc->hwndStatusBar != NULL)
+		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
+	SendMessage(lpCalc->hwndFrame, WM_SIZE, 0, 0);
 
 	DeleteObject(hbmKeymapOld);
 	DeleteObject(hbmSkinOld);
 	DeleteObject(blankBitmap);
 	DeleteDC(hdcOverlay);
-	ReleaseDC(calcs[slot].hwndFrame, hdc);
+	ReleaseDC(lpCalc->hwndFrame, hdc);
 	return 0;
 }
 #else
 int gui_frame_update(int slot) {
 	BITMAP skinSize, keymapSize;
 	HBITMAP hbmOldKeymap, hbmKeymap, hbmSkin, hbmOldSkin;
-	HDC hdc = GetDC(calcs[slot].hwndFrame);
-	if (calcs[slot].hdcKeymap)
-		ReleaseDC(calcs[slot].hwndFrame, calcs[slot].hdcKeymap);
-	if (calcs[gslot].hdcSkin)
-		ReleaseDC(calcs[slot].hwndFrame, calcs[gslot].hdcSkin);
+	HDC hdc = GetDC(lpCalc->hwndFrame);
+	if (lpCalc->hdcKeymap)
+		ReleaseDC(lpCalc->hwndFrame, lpCalc->hdcKeymap);
+	if (lpCalc->hdcSkin)
+		ReleaseDC(lpCalc->hwndFrame, lpCalc->hdcSkin);
 
-	calcs[slot].hdcKeymap = CreateCompatibleDC(hdc);
-	calcs[gslot].hdcSkin = CreateCompatibleDC(hdc);
-	hbmSkin = LoadBitmap(g_hInst, CalcModelTxt[calcs[slot].model]);
+	lpCalc->hdcKeymap = CreateCompatibleDC(hdc);
+	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
+	hbmSkin = LoadBitmap(g_hInst, CalcModelTxt[lpCalc->model]);
 	if (hbmSkin) {
-		hbmOldSkin = (HBITMAP)SelectObject(calcs[gslot].hdcSkin, hbmSkin);
+		hbmOldSkin = (HBITMAP)SelectObject(lpCalc->hdcSkin, hbmSkin);
 		GetObject(hbmSkin, sizeof(BITMAP), &skinSize);
 	}
-	char *name = (char *) malloc(strlen(CalcModelTxt[calcs[slot].model]) + 7);
-	strcpy(name, CalcModelTxt[calcs[slot].model]);
+	char *name = (char *) malloc(strlen(CalcModelTxt[lpCalc->model]) + 7);
+	strcpy(name, CalcModelTxt[lpCalc->model]);
 	strcat(name, "Keymap");
 	hbmKeymap = LoadBitmap(g_hInst, name);
 	if (hbmKeymap) {
-		hbmOldKeymap = (HBITMAP) SelectObject(calcs[slot].hdcKeymap, hbmKeymap);
+		hbmOldKeymap = (HBITMAP) SelectObject(lpCalc->hdcKeymap, hbmKeymap);
 		GetObject(hbmKeymap, sizeof(BITMAP), &keymapSize);	//skin and keymap must match
 	}
 	free(name);
 	int x, y, foundX = 0, foundY = 0;
 	bool foundScreen = FALSE;
 	if (hbmSkin == NULL || skinSize.bmWidth != keymapSize.bmWidth || skinSize.bmHeight != keymapSize.bmHeight) {
-		calcs[slot].SkinEnabled = false;
+		lpCalc->SkinEnabled = false;
 		MessageBox(NULL, "Skin and Keymap are not the same size", "error",  MB_OK);
 		//load default data
-		calcs[slot].rectLCD.left = 0;
-		calcs[slot].rectLCD.top = 0;
-		calcs[slot].rectLCD.right = calcs[slot].cpu.pio.lcd->width*2;
-		calcs[slot].rectLCD.bottom = 128;
+		lpCalc->rectLCD.left = 0;
+		lpCalc->rectLCD.top = 0;
+		lpCalc->rectLCD.right = lpCalc->cpu.pio.lcd->width*2;
+		lpCalc->rectLCD.bottom = 128;
 	} else {
-		calcs[slot].rectSkin.right = skinSize.bmWidth;
-		calcs[slot].rectSkin.bottom = skinSize.bmHeight;		//find the screen size
+		lpCalc->rectSkin.right = skinSize.bmWidth;
+		lpCalc->rectSkin.bottom = skinSize.bmHeight;		//find the screen size
 		for(y = 0; y < skinSize.bmHeight && foundScreen == false; y++) {
 			for (x = 0; x < skinSize.bmWidth && foundScreen == false; x++) {
-				COLORREF pixel = GetPixel(calcs[slot].hdcKeymap, x, y);
+				COLORREF pixel = GetPixel(lpCalc->hdcKeymap, x, y);
 				if (pixel == RGB(255, 0, 0) && foundScreen != true)	{
 					foundX = x;
 					foundY = y;	
@@ -473,98 +477,98 @@ int gui_frame_update(int slot) {
 				}
 			}
 		}
-		calcs[slot].rectLCD.left = foundX;
-		calcs[slot].rectLCD.top = foundY;
+		lpCalc->rectLCD.left = foundX;
+		lpCalc->rectLCD.top = foundY;
 		COLORREF pixel;
 		do {
 			foundX++;
-			pixel = GetPixel(calcs[slot].hdcKeymap, foundX, foundY);
+			pixel = GetPixel(lpCalc->hdcKeymap, foundX, foundY);
 		} while (pixel == RGB(255, 0, 0));
-		calcs[slot].rectLCD.right = foundX--;
+		lpCalc->rectLCD.right = foundX--;
 		do { 
 			foundY++;
-			pixel = GetPixel(calcs[slot].hdcKeymap, foundX, foundY);
+			pixel = GetPixel(lpCalc->hdcKeymap, foundX, foundY);
 		} while (pixel == RGB(255, 0, 0));
-		calcs[slot].rectLCD.bottom = foundY;
+		lpCalc->rectLCD.bottom = foundY;
 	}
-	if (!calcs[slot].hwndFrame)
+	if (!lpCalc->hwndFrame)
 		return 0;
-	HMENU hmenu = GetMenu(calcs[slot].hwndFrame);
+	HMENU hmenu = GetMenu(lpCalc->hwndFrame);
 	if (hmenu != NULL) {
-		if (!calcs[gslot].SkinEnabled) {
+		if (!lpCalc->SkinEnabled) {
 			RECT rc;
 			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
 			// Create status bar
-			if (!calcs[slot].hwndStatusBar) {
-				SendMessage(calcs[slot].hwndStatusBar, WM_DESTROY, 0, 0);
-				SendMessage(calcs[slot].hwndStatusBar, WM_CLOSE, 0, 0);
+			if (!lpCalc->hwndStatusBar) {
+				SendMessage(lpCalc->hwndStatusBar, WM_DESTROY, 0, 0);
+				SendMessage(lpCalc->hwndStatusBar, WM_CLOSE, 0, 0);
 			}
-			SetRect(&rc, 0, 0, 128*calcs[slot].Scale, 64*calcs[slot].Scale);
+			SetRect(&rc, 0, 0, 128*lpCalc->Scale, 64*lpCalc->Scale);
 			int iStatusWidths[] = {100, -1};
-			calcs[slot].hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, calcs[slot].hwndFrame, (HMENU)99, g_hInst, NULL);
-			SendMessage(calcs[slot].hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
-			SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
+			lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, lpCalc->hwndFrame, (HMENU)99, g_hInst, NULL);
+			SendMessage(lpCalc->hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
+			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 			RECT src;
-			GetWindowRect(calcs[slot].hwndStatusBar, &src);
+			GetWindowRect(lpCalc->hwndStatusBar, &src);
 			AdjustWindowRect(&rc, (WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~WS_MAXIMIZEBOX, FALSE);
 			rc.bottom += src.bottom - src.top;
 			if (hmenu)
 				rc.bottom += GetSystemMetrics(SM_CYMENU);
-			SetWindowPos(calcs[slot].hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
-			GetClientRect(calcs[slot].hwndFrame, &rc);
-			SendMessage(calcs[slot].hwndStatusBar, WM_SIZE, 0, 0);
-			SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
-			//InvalidateRect(calcs[slot].hwndFrame, NULL, FALSE);
+			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+			GetClientRect(lpCalc->hwndFrame, &rc);
+			SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
+			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
+			//InvalidateRect(lpCalc->hwndFrame, NULL, FALSE);
 		} else {
 			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_CHECKED);
-			SendMessage(calcs[slot].hwndStatusBar, WM_DESTROY, 0, 0);
-			SendMessage(calcs[slot].hwndStatusBar, WM_CLOSE, 0, 0);
-			calcs[gslot].hwndStatusBar = NULL;
-			//SetRect(&calcs[slot].rectSkin, 0, 0, 350, 725);
+			SendMessage(lpCalc->hwndStatusBar, WM_DESTROY, 0, 0);
+			SendMessage(lpCalc->hwndStatusBar, WM_CLOSE, 0, 0);
+			lpCalc->hwndStatusBar = NULL;
+			//SetRect(&lpCalc->rectSkin, 0, 0, 350, 725);
 			RECT rc;
-			CopyRect(&rc, &calcs[slot].rectSkin);
+			CopyRect(&rc, &lpCalc->rectSkin);
 			AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
 			rc.bottom += GetSystemMetrics(SM_CYMENU);
-			SetWindowPos(calcs[slot].hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
+			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
 			//InvalidateRect(hwnd, NULL, TRUE);
 		}
 	}
 	RECT rc;
-	GetClientRect(calcs[slot].hwndFrame, &rc);
-	if (!calcs[slot].SkinEnabled || !calcs[slot].bCutout)
-		FillRect(calcs[slot].hdcSkin, &rc, GetStockBrush(GRAY_BRUSH));
-	if (calcs[slot].model == TI_84PSE) {
-		if (DrawFaceplateRegion(calcs[slot].hdcSkin))
+	GetClientRect(lpCalc->hwndFrame, &rc);
+	if (!lpCalc->SkinEnabled || !lpCalc->bCutout)
+		FillRect(lpCalc->hdcSkin, &rc, GetStockBrush(GRAY_BRUSH));
+	if (lpCalc->model == TI_84PSE) {
+		if (DrawFaceplateRegion(lpCalc->hdcSkin))
 			MessageBox(NULL, "Unable to draw faceplate", "error", MB_OK);
 	}
 	//this needs to be done so we can alphablend the screen
-	HDC hdcOverlay = CreateCompatibleDC(calcs[gslot].hdcSkin);
-	HBITMAP bmpGray = LoadBitmap(g_hInst, CalcModelTxt[calcs[gslot].model]);
+	HDC hdcOverlay = CreateCompatibleDC(lpCalc->hdcSkin);
+	HBITMAP bmpGray = LoadBitmap(g_hInst, CalcModelTxt[lpCalc->model]);
 	SelectObject(hdcOverlay, bmpGray);
 	BLENDFUNCTION bf;
 	bf.BlendOp = AC_SRC_OVER;
 	bf.BlendFlags = 0;
 	bf.SourceConstantAlpha = 255;
 	bf.AlphaFormat = AC_SRC_ALPHA;
-	AlphaBlend(calcs[gslot].hdcSkin, 0, 0, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom, hdcOverlay,
-		calcs[gslot].rectSkin.left, calcs[gslot].rectSkin.top, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom, bf);
-	if (calcs[slot].bCutout && calcs[slot].SkinEnabled)	{
-		if (EnableCutout(calcs[slot].hwndFrame, hbmSkin) != 0) {
+	AlphaBlend(lpCalc->hdcSkin, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, hdcOverlay,
+		lpCalc->rectSkin.left, lpCalc->rectSkin.top, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, bf);
+	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
+		if (EnableCutout(lpCalc->hwndFrame, hbmSkin) != 0) {
 			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
 		}
-	} else if (calcs[gslot].bCutout && !calcs[slot].SkinEnabled) {
-		DisableCutout(calcs[slot].hwndFrame);
-		calcs[gslot].bCutout = TRUE;
+	} else if (lpCalc->bCutout && !lpCalc->SkinEnabled) {
+		DisableCutout(lpCalc->hwndFrame);
+		lpCalc->bCutout = TRUE;
 	} else {
-		DisableCutout(calcs[slot].hwndFrame);
+		DisableCutout(lpCalc->hwndFrame);
 	}
-	if (calcs[slot].hwndStatusBar != NULL)
-		SendMessage(calcs[slot].hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[calcs[slot].model]);
+	if (lpCalc->hwndStatusBar != NULL)
+		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 
-	ReleaseDC(calcs[slot].hwndFrame, hdc);
+	ReleaseDC(lpCalc->hwndFrame, hdc);
 	DeleteObject(hbmOldKeymap);
 	DeleteObject(hbmOldSkin);
-	SendMessage(calcs[slot].hwndFrame, WM_SIZE, 0, 0);
+	SendMessage(lpCalc->hwndFrame, WM_SIZE, 0, 0);
 	return 0;
 }
 #endif
@@ -609,11 +613,76 @@ extern HWND hwndProp;
 extern RECT PropRect;
 extern int PropPageLast;
 
+void RegisterWindowClasses(void)
+{
+	WNDCLASSEX wc;
+
+	wc.cbSize = sizeof(wc);
+	wc.style = 0;
+	wc.lpfnWndProc = WndProc;
+	wc.cbClsExtra = 0;
+	wc.cbWndExtra = 0;
+	wc.hInstance = g_hInst;
+	wc.hIcon = LoadIcon(g_hInst, "W");
+	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
+	wc.hbrBackground = NULL;
+	wc.lpszMenuName = MAKEINTRESOURCE(IDR_MAIN_MENU);
+	wc.lpszClassName = g_szAppName;
+	wc.hIconSm = LoadIcon(g_hInst, "W");
+
+	RegisterClassEx(&wc);
+
+	// LCD
+	wc.lpszClassName = g_szLCDName;
+	wc.lpfnWndProc = LCDProc;
+	wc.lpszMenuName = NULL;
+	RegisterClassEx(&wc);
+
+	// Toolbar
+	wc.lpszClassName = g_szToolbar;
+	wc.lpfnWndProc = ToolBarProc;
+	wc.lpszMenuName = NULL;
+	wc.style = 0;
+	RegisterClassEx(&wc);
+
+	wc.lpfnWndProc = DebugProc;
+	wc.style = CS_DBLCLKS;
+	wc.lpszClassName = g_szDebugName;
+	wc.lpszMenuName = MAKEINTRESOURCE(IDR_DEBUG_MENU); //MAKEINTRESOURCE(IDR_DB_MENU);
+	wc.hbrBackground = (HBRUSH) (COLOR_BTNFACE+1);
+	RegisterClassEx(&wc);
+
+	wc.lpszMenuName = NULL;
+	wc.style = 0;
+	wc.lpfnWndProc = DisasmProc;
+	wc.lpszClassName = g_szDisasmName;
+	wc.hbrBackground = (HBRUSH) NULL;
+	RegisterClassEx(&wc);
+
+	// Registers
+	wc.style = CS_DBLCLKS;
+	wc.lpfnWndProc = RegProc;
+	wc.lpszClassName = g_szRegName;
+	wc.hbrBackground = NULL;
+	RegisterClassEx(&wc);
+
+	wc.style = 0;
+	wc.lpfnWndProc = ExpandPaneProc;
+	wc.lpszClassName = g_szExpandPane;
+	RegisterClassEx(&wc);
+
+	wc.style = CS_DBLCLKS;
+	wc.lpfnWndProc = MemProc;
+	wc.lpszClassName = g_szMemName;
+	wc.hbrBackground = NULL;
+	RegisterClassEx(&wc);
+}
+
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
    LPSTR lpszCmdParam, int nCmdShow) {
 
 	MSG Msg;
-	WNDCLASSEX wc;
+	
 	LPWSTR *argv;
 	int argc;
 	char tmpstring[512];
@@ -686,65 +755,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
     g_hInst = hInstance;
 
-	wc.cbSize = sizeof(wc);
-	wc.style = 0;
-	wc.lpfnWndProc = WndProc;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = hInstance;
-	wc.hIcon = LoadIcon(g_hInst, "W");
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = NULL;
-	wc.lpszMenuName = MAKEINTRESOURCE(IDR_MAIN_MENU);
-	wc.lpszClassName = g_szAppName;
-	wc.hIconSm = LoadIcon(g_hInst, "W");
-
-	RegisterClassEx(&wc);
-
-	// LCD
-	wc.lpszClassName = g_szLCDName;
-	wc.lpfnWndProc = LCDProc;
-	wc.lpszMenuName = NULL;
-	RegisterClassEx(&wc);
-
-	// Toolbar
-	wc.lpszClassName = g_szToolbar;
-	wc.lpfnWndProc = ToolBarProc;
-	wc.lpszMenuName = NULL;
-	wc.style = 0;
-	RegisterClassEx(&wc);
-
-	wc.lpfnWndProc = DebugProc;
-	wc.style = CS_DBLCLKS;
-	wc.lpszClassName = g_szDebugName;
-	wc.lpszMenuName = MAKEINTRESOURCE(IDR_DEBUG_MENU); //MAKEINTRESOURCE(IDR_DB_MENU);
-	wc.hbrBackground = (HBRUSH) (COLOR_BTNFACE+1);
-	RegisterClassEx(&wc);
-
-	wc.lpszMenuName = NULL;
-	wc.style = 0;
-	wc.lpfnWndProc = DisasmProc;
-	wc.lpszClassName = g_szDisasmName;
-	wc.hbrBackground = (HBRUSH) NULL;
-	RegisterClassEx(&wc);
-
-	// Registers
-	wc.style = CS_DBLCLKS;
-	wc.lpfnWndProc = RegProc;
-	wc.lpszClassName = g_szRegName;
-	wc.hbrBackground = NULL;
-	RegisterClassEx(&wc);
-
-	wc.style = 0;
-	wc.lpfnWndProc = ExpandPaneProc;
-	wc.lpszClassName = g_szExpandPane;
-	RegisterClassEx(&wc);
-
-	wc.style = CS_DBLCLKS;
-	wc.lpfnWndProc = MemProc;
-	wc.lpszClassName = g_szMemName;
-	wc.hbrBackground = NULL;
-	RegisterClassEx(&wc);
+	RegisterWindowClasses();
 
 	// initialize com events
 	OleInitialize(NULL);
@@ -777,8 +788,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	int slot = calc_slot_new();
 	LoadRegistrySettings();
 
-	slot = rom_load(slot, calcs[gslot].rom_path);
-	if (slot != -1) gui_frame(slot);
+	slot = rom_load(slot, calcs[slot].rom_path);
+	if (slot != -1) gui_frame(&calcs[slot]);
 	else {
 		if (show_wizard) {
 			BOOL wizardError = DoWizardSheet(NULL);
@@ -792,7 +803,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			if (string) {
 				slot = calc_slot_new();
 				slot = rom_load(slot, string);
-				if (slot != -1) gui_frame(slot);
+				if (slot != -1) gui_frame(&calcs[slot]);
 				else return EXIT_FAILURE;
 			} else return EXIT_FAILURE;
 		}
@@ -801,10 +812,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #ifdef WINVER
 	strcpy_s(calcs[slot].labelfn, "labels.lab");
 #else
-	strcpy(calcs[slot].labelfn, "labels.lab");
+	strcpy(lpCalc->labelfn, "labels.lab");
 #endif
 
-	state_build_applist(&calcs[gslot].cpu, &calcs[gslot].applist);
+	state_build_applist(&calcs[slot].cpu, &calcs[slot].applist);
 	VoidLabels(slot);
 
 	if (loadfiles) {
@@ -841,7 +852,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	if (pD3D->CreateDevice(
 			D3DADAPTER_DEFAULT,
 			D3DDEVTYPE_HAL,
-			calcs[gslot].hwndLCD,
+			lpCalc->hwndLCD,
 			D3DCREATE_SOFTWARE_VERTEXPROCESSING|D3DCREATE_FPU_PRESERVE ,
 			&d3dpp,
 			&pd3dDevice) != D3D_OK) {
@@ -914,22 +925,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	//static HDC hdcKeymap;
 	static POINT ctxtPt;
+	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	switch (Message) {
 		case WM_CREATE:
 		{
+			calc_t *lpCalc = (calc_t *) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+
 			IDropTarget *pDropTarget = NULL;
 			RegisterDropWindow(hwnd, &pDropTarget);
 
 			// Force the current skin setting to be enacted
-			calcs[gslot].SkinEnabled = !calcs[gslot].SkinEnabled;
+			lpCalc->SkinEnabled = !lpCalc->SkinEnabled;
 			SendMessage(hwnd, WM_COMMAND, IDM_CALC_SKIN, 0);
 
 			SetWindowText(hwnd, "Wabbitemu");
 			return 0;
 		}
 		case WM_USER:
-			gui_frame_update(calc_from_hwnd(hwnd));
+			gui_frame_update(lpCalc);
 			break;
 		/*case WM_ACTIVATE: {
 			//RECT rc;
@@ -950,12 +965,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			static int GIFGRADWIDTH = 1;
 			static int GIFADD = 1;
-			int slot = calc_from_hwnd(hwnd);
+
 			if (gif_anim_advance) {
-				switch (calcs[slot].gif_disp_state) {
+				switch (lpCalc->gif_disp_state) {
 					case GDS_STARTING:
 						if (GIFGRADWIDTH > 15) {
-							calcs[gslot].gif_disp_state = GDS_RECORDING;
+							lpCalc->gif_disp_state = GDS_RECORDING;
 							GIFADD = -1;
 						} else {
 							GIFGRADWIDTH ++;
@@ -969,8 +984,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					case GDS_ENDING:
 						if (GIFGRADWIDTH) GIFGRADWIDTH--;
 						else {
-							calcs[slot].gif_disp_state = GDS_IDLE;							
-							gui_frame_update(slot);						
+							lpCalc->gif_disp_state = GDS_IDLE;							
+							gui_frame_update(lpCalc);						
 						}						
 						break;
 					case GDS_IDLE:
@@ -979,11 +994,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				gif_anim_advance = FALSE;
 			}
 
-			if (calcs[slot].gif_disp_state != GDS_IDLE) {
+			if (lpCalc->gif_disp_state != GDS_IDLE) {
 				RECT screen, rc;
-				//screen = calcs[gslot].rectLCD;
-				GetWindowRect(calcs[slot].hwndLCD, &screen);
-				GetWindowRect(calcs[slot].hwndFrame, &rc);
+				//screen = lpCalc->rectLCD;
+				GetWindowRect(lpCalc->hwndLCD, &screen);
+				GetWindowRect(lpCalc->hwndFrame, &rc);
 				//OffsetRect(&screen, rc.left, rc.top);
 				int orig_w = screen.right - screen.left;
 				int orig_h = screen.bottom - screen.top;
@@ -1008,12 +1023,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			PAINTSTRUCT ps;
 			HDC hdc;
 			hdc = BeginPaint(hwnd, &ps);
-			if (calcs[slot].SkinEnabled) {
-				BitBlt(hdc, 0, 0, calcs[slot].rectSkin.right, calcs[slot].rectSkin.bottom, calcs[slot].hdcButtons, 0, 0, SRCCOPY);
-				BitBlt(calcs[gslot].hdcButtons, 0, 0, calcs[gslot].rectSkin.right, calcs[gslot].rectSkin.bottom, calcs[gslot].hdcSkin, 0, 0, SRCCOPY);
+			if (lpCalc->SkinEnabled) {
+				BitBlt(hdc, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcButtons, 0, 0, SRCCOPY);
+				BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
 			} else {
 				RECT rc;
-				GetClientRect(calcs[slot].hwndFrame, &rc);
+				GetClientRect(lpCalc->hwndFrame, &rc);
 				FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
 			}
 			ReleaseDC(hwnd, hdc);
@@ -1027,12 +1042,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_FILE_NEW:
 				{
 					int slot = calc_slot_new();
-					rom_load(slot, calcs[gslot].rom_path);
-					calcs[slot].SkinEnabled = calcs[gslot].SkinEnabled;
-					calcs[slot].bCutout = calcs[gslot].bCutout;
-					calcs[slot].Scale = calcs[gslot].Scale;
-					calcs[slot].FaceplateColor = calcs[gslot].FaceplateColor;
-					gui_frame(slot);
+					rom_load(slot, lpCalc->rom_path);
+					calcs[slot].SkinEnabled = lpCalc->SkinEnabled;
+					calcs[slot].bCutout = lpCalc->bCutout;
+					calcs[slot].Scale = lpCalc->Scale;
+					calcs[slot].FaceplateColor = lpCalc->FaceplateColor;
+					gui_frame(&calcs[slot]);
 					break;
 				}
 				case IDM_FILE_OPEN:
@@ -1046,14 +1061,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_FILE_GIF:
 				{
 					HMENU hmenu = GetMenu(hwnd);
-					ScreenshotSlot = calc_from_hwnd(hwnd);
 					if (gif_write_state == GIF_IDLE) {
 						gif_write_state = GIF_START;
-						calcs[ScreenshotSlot].gif_disp_state = GDS_STARTING;
+						lpCalc->gif_disp_state = GDS_STARTING;
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_CHECKED);
 					} else {
 						gif_write_state = GIF_END;
-						calcs[ScreenshotSlot].gif_disp_state = GDS_ENDING;
+						lpCalc->gif_disp_state = GDS_ENDING;
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
 					}
 					break;
@@ -1077,7 +1091,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				case IDM_EDIT_COPY: {
 					HLOCAL ans;
-					ans = (HLOCAL) GetRealAns(&calcs[gslot].cpu);
+					ans = (HLOCAL) GetRealAns(&lpCalc->cpu);
 					OpenClipboard(hwnd);
 					EmptyClipboard();
 					SetClipboardData(CF_TEXT, ans);
@@ -1089,13 +1103,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case IDM_CALC_SKIN: {
-					calcs[gslot].SkinEnabled = !calcs[gslot].SkinEnabled;
-					gui_frame_update(gslot);
+					lpCalc->SkinEnabled = !lpCalc->SkinEnabled;
+					gui_frame_update(lpCalc);
 					break;
 				}
 				case IDM_CALC_SOUND: {
 					togglesound();
-					CheckMenuItem(GetSubMenu(GetMenu(hwnd), 2), IDM_CALC_SOUND, MF_BYCOMMAND | (calcs[gslot].audio->enabled ? MF_CHECKED : MF_UNCHECKED));
+					CheckMenuItem(GetSubMenu(GetMenu(hwnd), 2), IDM_CALC_SOUND, MF_BYCOMMAND | (lpCalc->audio->enabled ? MF_CHECKED : MF_UNCHECKED));
 					break;
 				}
 				case IDM_CALC_CONNECT: {
@@ -1107,12 +1121,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case IDM_CALC_PAUSE: {
 					HMENU hmenu = GetMenu(hwnd);
-					if (calcs[gslot].running) {
+					if (lpCalc->running) {
 						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_CHECKED);
-						calcs[gslot].running = FALSE;
+						lpCalc->running = FALSE;
 					} else {
 						CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_PAUSE, MF_BYCOMMAND | MF_UNCHECKED);
-						calcs[gslot].running = TRUE;
+						lpCalc->running = TRUE;
 					}
 					break;
 				}
@@ -1125,18 +1139,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_DEBUG_RESET: {
 					calc_reset(gslot);
 					calc_run_timed(gslot, 200);
-					calcs[gslot].cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
+					lpCalc->cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
 					calc_run_timed(gslot, 300);
-					calcs[gslot].cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
+					lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
 					break;
 				}
 				case IDM_DEBUG_OPEN:
-					gui_debug(gslot);
+					gui_debug(lpCalc);
 					break;
 				case IDM_HELP_ABOUT:
-					calcs[gslot].running = FALSE;
+					lpCalc->running = FALSE;
 					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGABOUT), hwnd, (DLGPROC)AboutDialogProc);					
-					calcs[gslot].running = TRUE;					
+					lpCalc->running = TRUE;					
 					break;
 				case IDM_HELP_WIZARD:
 					DoWizardSheet(hwnd);
@@ -1146,12 +1160,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				case IDM_FRAME_BTOGGLE:
 					SendMessage(hwnd, WM_MBUTTONDOWN, MK_MBUTTON, MAKELPARAM(ctxtPt.x, ctxtPt.y));
-					InvalidateRect(calcs[gslot].hwndFrame, &calcs[gslot].rectSkin, TRUE);
-					UpdateWindow(calcs[gslot].hwndFrame);
+					InvalidateRect(hwnd, &lpCalc->rectSkin, TRUE);
+					UpdateWindow(hwnd);
 					break;
 				case IDM_FRAME_BUNLOCK: {
 					RECT rc;
-					keypad_t *kp = (keypad_t *) (&calcs[gslot].cpu)->pio.devices[1].aux;
+					keypad_t *kp = (keypad_t *) (&lpCalc->cpu)->pio.devices[1].aux;
 					int group,bit;
 					GetClientRect(hwnd, &rc);
 					for(group=0;group<7;group++) {
@@ -1159,44 +1173,44 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							kp->keys[group][bit] &=(~KEY_LOCKPRESS);
 						}
 					}
-					calcs[gslot].cpu.pio.keypad->on_pressed &=(~KEY_LOCKPRESS);
+					lpCalc->cpu.pio.keypad->on_pressed &=(~KEY_LOCKPRESS);
 
-					InvalidateRect(calcs[gslot].hwndFrame, &calcs[gslot].rectSkin, TRUE);
-					UpdateWindow(calcs[gslot].hwndFrame);
+					InvalidateRect(hwnd, &lpCalc->rectSkin, TRUE);
+					UpdateWindow(hwnd);
 					SendMessage(hwnd, WM_SIZE, 0, 0);
 					break;
 				}
 				case IDM_SPEED_QUARTER: {
-					calcs[gslot].speed = 25;
+					lpCalc->speed = 25;
 					CheckMenuRadioItem(GetSubMenu(GetMenu(hwnd), 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUARTER, MF_BYCOMMAND| MF_CHECKED);
 					break;
 				}
 				case IDM_SPEED_HALF: {
-					calcs[gslot].speed = 50;
+					lpCalc->speed = 50;
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_HALF, MF_BYCOMMAND | MF_CHECKED);
 					break;
 				}
 				case IDM_SPEED_NORMAL: {
-					calcs[gslot].speed = 100;
+					lpCalc->speed = 100;
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_NORMAL, MF_BYCOMMAND | MF_CHECKED);
 					break;
 				}
 				case IDM_SPEED_DOUBLE: {
-					calcs[gslot].speed = 200;
+					lpCalc->speed = 200;
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_DOUBLE, MF_BYCOMMAND | MF_CHECKED);
 					break;
 				}
 				case IDM_SPEED_QUADRUPLE: {
-					calcs[gslot].speed = 400;
+					lpCalc->speed = 400;
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUADRUPLE, MF_BYCOMMAND | MF_CHECKED);
 					break;
 				}
 				case IDM_SPEED_MAX: {
-					calcs[gslot].speed = MAX_SPEED;
+					lpCalc->speed = MAX_SPEED;
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_MAX, MF_BYCOMMAND | MF_CHECKED);
 					break;
@@ -1248,14 +1262,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		{
 			int group, bit;
 			static POINT pt;
-			keypad_t *kp = calcs[gslot].cpu.pio.keypad;
+			keypad_t *kp = lpCalc->cpu.pio.keypad;
 
 			//CopySkinToButtons();
 			if (Message == WM_LBUTTONDOWN) {
 				SetCapture(hwnd);
 				pt.x	= GET_X_LPARAM(lParam);
 				pt.y	= GET_Y_LPARAM(lParam);
-				if (calcs[gslot].bCutout) {
+				if (lpCalc->bCutout) {
 					pt.y += GetSystemMetrics(SM_CYCAPTION);	
 					pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
 				}
@@ -1269,31 +1283,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 			}
 
-			calcs[gslot].cpu.pio.keypad->on_pressed &= ~KEY_MOUSEPRESS;
+			lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_MOUSEPRESS;
 
 			if (wParam != MK_LBUTTON) {
 				FinalizeButtons();
 				return 0;
 			}
 
-			COLORREF c = GetPixel(calcs[gslot].hdcKeymap, pt.x, pt.y);
+			COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
 			if (GetRValue(c) == 0xFF) {
 				FinalizeButtons();
 				return 0;
 			}
 
 			if ( (GetGValue(c)>>4)==0x05 && (GetBValue(c)>>4)==0x00){
-				calcs[gslot].cpu.pio.keypad->on_pressed |= KEY_MOUSEPRESS;
+				lpCalc->cpu.pio.keypad->on_pressed |= KEY_MOUSEPRESS;
 			} else {
 				kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] |= KEY_MOUSEPRESS;
 				if ((kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] & KEY_STATEDOWN) == 0) {
-					DrawButtonState(calcs[gslot].hdcButtons, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_PRESS);
+					DrawButtonState(lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_PRESS);
 					kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] |= KEY_STATEDOWN;
 					//SendMessage(hwnd, WM_SIZE, 0, 0);
 				}
 			}
-		InvalidateRect(calcs[gslot].hwndFrame, &calcs[gslot].rectSkin, TRUE);
-		UpdateWindow(calcs[gslot].hwndFrame);
+		InvalidateRect(hwnd, &lpCalc->rectSkin, TRUE);
+		UpdateWindow(hwnd);
 
 		//extern POINT ButtonCenter83[64];
 		//extern POINT ButtonCenter84[64];
@@ -1303,32 +1317,32 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		{
 			int group,bit;
 			POINT pt;
-			keypad_t *kp = (keypad_t *) (&calcs[gslot].cpu)->pio.devices[1].aux;
+			keypad_t *kp = (keypad_t *) (&lpCalc->cpu)->pio.devices[1].aux;
 
 			pt.x	= GET_X_LPARAM(lParam);
 			pt.y	= GET_Y_LPARAM(lParam);
 
-			COLORREF c = GetPixel(calcs[gslot].hdcKeymap, pt.x, pt.y);
+			COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
 			if (GetRValue(c) == 0xFF) return 0;
 			group	= GetGValue(c)>>4;
 			bit		= GetBValue(c)>>4;
 
 			if (group== 0x05 && bit == 0x00) {
-				calcs[gslot].cpu.pio.keypad->on_pressed ^= KEY_LOCKPRESS;
-				if ( calcs[gslot].cpu.pio.keypad->on_pressed &  KEY_LOCKPRESS ) {
-					DrawButtonState(calcs[gslot].hdcButtons, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
+				lpCalc->cpu.pio.keypad->on_pressed ^= KEY_LOCKPRESS;
+				if ( lpCalc->cpu.pio.keypad->on_pressed &  KEY_LOCKPRESS ) {
+					DrawButtonState(lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
 				} else {
-					DrawButtonState(calcs[gslot].hdcButtons, calcs[gslot].hdcKeymap, &pt, DBS_LOCK | DBS_UP);
+					DrawButtonState(lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_LOCK | DBS_UP);
 				}
 			}
 			kp->keys[group][bit] ^= KEY_LOCKPRESS;
 			if (kp->keys[group][bit] &  KEY_LOCKPRESS ) {
-				DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
+				DrawButtonState(lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
 			} else {
-				DrawButtonState(calcs[gslot].hdcSkin, calcs[gslot].hdcKeymap, &pt, DBS_LOCK | DBS_UP);
+				DrawButtonState(lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_LOCK | DBS_UP);
 			}
-			InvalidateRect(calcs[gslot].hwndFrame, &calcs[gslot].rectSkin, TRUE);
-			UpdateWindow(calcs[gslot].hwndFrame);
+			InvalidateRect(hwnd, &lpCalc->rectSkin, TRUE);
+			UpdateWindow(hwnd);
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 			return 0;
 		}
@@ -1342,7 +1356,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		case WM_SIZING:
 		{
-			if (calcs[gslot].SkinEnabled)
+			if (lpCalc->SkinEnabled)
 				return TRUE;
 			RECT *prc = (RECT *) lParam;
 			LONG ClientAdjustWidth, ClientAdjustHeight;
@@ -1351,11 +1365,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			// Adjust for border and menu
 			RECT rc = {0, 0, 0, 0};
 			AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW, FALSE);
-			rc.bottom += GetSystemMetrics(SM_CYMENU);
+			if (GetMenu(hwnd) != NULL)
+			{
+				rc.bottom += GetSystemMetrics(SM_CYMENU);
+			}
 
 			RECT src;
-			if (calcs[gslot].hwndStatusBar != NULL) {
-				GetWindowRect(calcs[gslot].hwndStatusBar, &src);
+			if (lpCalc->hwndStatusBar != NULL) {
+				GetWindowRect(lpCalc->hwndStatusBar, &src);
 				rc.bottom += src.bottom - src.top;
 			}
 
@@ -1388,7 +1405,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			// Make sure the width is a nice clean proportional sizing
 			AdjustWidth = (prc->right - prc->left - ClientAdjustWidth) % 128;
-			//AdjustHeight = (prc->bottom - prc->top) % calcs[gslot].cpu.pio.lcd->height;
+			//AdjustHeight = (prc->bottom - prc->top) % lpCalc->cpu.pio.lcd->height;
 			AdjustHeight = (prc->bottom - prc->top - ClientAdjustHeight) % 64;
 
 			int cx_mult = (prc->right - prc->left - ClientAdjustWidth) / 128;
@@ -1404,7 +1421,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			else if (cy_mult > cx_mult)
 				AdjustHeight += (cy_mult - cx_mult) * 64;
 
-			calcs[gslot].Scale = max(cx_mult, cy_mult);
+			lpCalc->Scale = max(cx_mult, cy_mult);
 
 			switch (wParam) {
 			case WMSZ_BOTTOMLEFT:
@@ -1434,7 +1451,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_SIZE:
 		{
-			int slot = calc_from_hwnd(hwnd);
 			RECT rc, screen;
 			GetClientRect(hwnd, &rc);
 			HMENU hmenu = GetMenu(hwnd);
@@ -1444,20 +1460,20 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			} else {
 				cyMenu = GetSystemMetrics(SM_CYMENU);
 			}
-			if ((calcs[slot].bCutout && calcs[slot].SkinEnabled))	
+			if ((lpCalc->bCutout && lpCalc->SkinEnabled))	
 				rc.bottom += cyMenu;
 			int desired_height;
-			if (calcs[slot].SkinEnabled)
-				desired_height = calcs[slot].rectSkin.bottom;
+			if (lpCalc->SkinEnabled)
+				desired_height = lpCalc->rectSkin.bottom;
 			else
 				desired_height = 128;
 
 			int status_height;
-			if (calcs[slot].hwndStatusBar == NULL) {
+			if (lpCalc->hwndStatusBar == NULL) {
 				status_height = 0;
 			} else {
 				RECT src;
-				GetWindowRect(calcs[slot].hwndStatusBar, &src);
+				GetWindowRect(lpCalc->hwndStatusBar, &src);
 
 				status_height = src.bottom - src.top;
 				desired_height += status_height;
@@ -1467,21 +1483,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			rc.bottom -= status_height;
 
 			float xc, yc;
-			if (calcs[slot].SkinEnabled) {
-				xc = 1/*((float)rc.right)/calcs[slot].rectSkin.right*/;
-				yc = 1/*((float)rc.bottom)/(calcs[slot].rectSkin.bottom)*/;
+			if (lpCalc->SkinEnabled) {
+				xc = 1/*((float)rc.right)/lpCalc->rectSkin.right*/;
+				yc = 1/*((float)rc.bottom)/(lpCalc->rectSkin.bottom)*/;
 			} else {
 				xc = ((float) rc.right) / 256.0;
 				yc = ((float) rc.bottom) / 128.0;
 			}
-			int width = calcs[slot].rectLCD.right - calcs[slot].rectLCD.left;
+			int width = lpCalc->rectLCD.right - lpCalc->rectLCD.left;
 			SetRect(&screen,
 				0, 0,
 				(int) (width*xc),
 				(int) (64*2*yc));
 
-			if (calcs[slot].SkinEnabled)
-				OffsetRect(&screen, calcs[slot].rectLCD.left, calcs[slot].rectLCD.top);
+			if (lpCalc->SkinEnabled)
+				OffsetRect(&screen, lpCalc->rectLCD.left, lpCalc->rectLCD.top);
 			else
 				OffsetRect(&screen, (int) ((rc.right - width*xc)/2), 0);
 
@@ -1491,10 +1507,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			RECT client;
 			client.top = 0;
 			client.left = 0;
-			if (calcs[slot].SkinEnabled && calcs[slot].bCutout)
+			if (lpCalc->SkinEnabled && lpCalc->bCutout)
 				GetWindowRect(hwnd, &client);
-			if (calcs[slot].SkinEnabled) {
-				RECT correctSize = calcs[slot].rectSkin;
+			if (lpCalc->SkinEnabled) {
+				RECT correctSize = lpCalc->rectSkin;
 				AdjustWindowRect(&correctSize, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX), cyMenu);
 				if (correctSize.left < 0)
 					correctSize.right -= correctSize.left;
@@ -1502,16 +1518,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					correctSize.bottom -= correctSize.top;
 				SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, correctSize.right, correctSize.bottom , SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
 			}
-			MoveWindow(calcs[slot].hwndLCD, screen.left + client.left, screen.top + client.top,
+			MoveWindow(lpCalc->hwndLCD, screen.left + client.left, screen.top + client.top,
 				screen.right-screen.left, screen.bottom-screen.top, FALSE);
 			ValidateRect(hwnd, &screen);
 			//printf("screen: %d\n", screen.right - screen.left);
-			if (calcs[slot].hwndStatusBar != NULL)
-				SendMessage(calcs[slot].hwndStatusBar, WM_SIZE, 0, 0);
+			if (lpCalc->hwndStatusBar != NULL)
+				SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
 
 			//force little buttons to be correct
-			PositionLittleButtons(hwnd, slot);
-			UpdateWindow(calcs[slot].hwndLCD);
+			PositionLittleButtons(hwnd);
+			UpdateWindow(lpCalc->hwndLCD);
 			//InvalidateRect(hwnd, NULL, FALSE);
 			return 0;
 		}
@@ -1519,14 +1535,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		//case WM_MOVING:
 		{
 			int slot = calc_from_hwnd(hwnd);
-			if (calcs[slot].bCutout && calcs[slot].SkinEnabled) {
+			if (lpCalc->bCutout && lpCalc->SkinEnabled) {
 				HDWP hdwp = BeginDeferWindowPos(3);
 				RECT rc;
 				GetWindowRect(hwnd, &rc);
-				OffsetRect(&rc, calcs[slot].rectLCD.left, calcs[slot].rectLCD.top);
-				DeferWindowPos(hdwp, calcs[slot].hwndLCD, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE);
+				OffsetRect(&rc, lpCalc->rectLCD.left, lpCalc->rectLCD.top);
+				DeferWindowPos(hdwp, lpCalc->hwndLCD, HWND_TOP, rc.left, rc.top, 0, 0, SWP_NOSIZE);
 				EndDeferWindowPos(hdwp);
-				PositionLittleButtons(hwnd, slot);
+				PositionLittleButtons(hwnd);
 			}
 			return 0;
 		}
@@ -1548,7 +1564,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_GETMINMAXINFO: {
-			if (!calcs[gslot].SkinEnabled)
+			if (!lpCalc->SkinEnabled)
 				break;
 			MINMAXINFO *info = (MINMAXINFO *) lParam;
 			RECT rc = { 0, 0, 350, 725 };
@@ -1560,9 +1576,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_CLOSE:
-			DestroyWindow(hwnd);
-			return 0;
-		case WM_DESTROY: {
 			if (calc_count() == 1) {
 				if (exit_save_state)
 				{
@@ -1574,11 +1587,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					strcpy_s(temp_save, len, path);
 					free(path);
 					strcat_s(temp_save, "\\wabbitemu.sav");
-					strcpy_s(calcs[gslot].rom_path, temp_save);
+					strcpy_s(lpCalc->rom_path, temp_save);
 #else
 					strcpy(temp_save, getenv("appdata"));
 					strcat(temp_save, "\\wabbitemu.sav");
-					strcpy(calcs[gslot].rom_path, temp_save);
+					strcpy(lpCalc->rom_path, temp_save);
 #endif
 					SAVESTATE_t *save = SaveSlot(gslot);
 					WriteSave(temp_save, save, true);
@@ -1589,35 +1602,38 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				SaveRegistrySettings();
 
 			}
-			printf("Releasing skin and keymap\n");
-			DeleteDC(calcs[gslot].hdcKeymap);
-			DeleteDC(calcs[gslot].hdcSkin);
-			calcs[gslot].hdcKeymap = NULL;
-			calcs[gslot].hdcSkin = NULL;
-
-			if (calcs[gslot].hwndDebug)
-				DestroyWindow(calcs[gslot].hwndDebug);
-			calcs[gslot].hwndDebug = NULL;
-
-			if (calcs[gslot].hwndStatusBar)
-				DestroyWindow(calcs[gslot].hwndStatusBar);
-			calcs[gslot].hwndStatusBar = NULL;
-
-			//for some reason this fails...:/
-			if (!calcs[gslot].SkinEnabled || !calcs[gslot].bCutout)
-				UnregisterDropWindow(hwnd, calcs[gslot].pDropTarget);
-			calcs[gslot].pDropTarget = NULL;
-
+			DestroyWindow(hwnd);
 			printf("Freeing calculator slot\n");
 			calc_slot_free(gslot);
 			printf("freeing labels\n");
 			VoidLabels(gslot);
-			calcs[gslot].hwndFrame = NULL;
-
 			if (calc_count() == 0)
 				PostQuitMessage(0);
 			return 0;
-		}
+		case WM_DESTROY:
+			{
+				printf("Releasing skin and keymap\n");
+				DeleteDC(lpCalc->hdcKeymap);
+				DeleteDC(lpCalc->hdcSkin);
+				lpCalc->hdcKeymap = NULL;
+				lpCalc->hdcSkin = NULL;
+
+				if (lpCalc->hwndDebug)
+					DestroyWindow(lpCalc->hwndDebug);
+				lpCalc->hwndDebug = NULL;
+
+				if (lpCalc->hwndStatusBar)
+					DestroyWindow(lpCalc->hwndStatusBar);
+				lpCalc->hwndStatusBar = NULL;
+
+				//for some reason this fails...:/
+				if (!lpCalc->SkinEnabled || !lpCalc->bCutout)
+					UnregisterDropWindow(hwnd, lpCalc->pDropTarget);
+				lpCalc->pDropTarget = NULL;
+
+				lpCalc->hwndFrame = NULL;
+				return 0;
+			}
 		case WM_NCHITTEST:
 		{
 			int htRet = (int) DefWindowProc(hwnd, Message, wParam, lParam);
@@ -1626,12 +1642,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			POINT pt;
 			pt.x = GET_X_LPARAM(lParam);
 			pt.y = GET_Y_LPARAM(lParam);
-			if (calcs[gslot].bCutout && calcs[gslot].SkinEnabled) {
+			if (lpCalc->bCutout && lpCalc->SkinEnabled) {
 				pt.y += GetSystemMetrics(SM_CYCAPTION);
 				pt.x += GetSystemMetrics(SM_CXFIXEDFRAME);
 			}
 			ScreenToClient(hwnd, &pt);
-			if (GetRValue(GetPixel(calcs[gslot].hdcKeymap, pt.x, pt.y)) != 0xFF)
+			if (GetRValue(GetPixel(lpCalc->hdcKeymap, pt.x, pt.y)) != 0xFF)
 				return htRet;
 			return HTCAPTION;
 		}

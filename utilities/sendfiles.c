@@ -434,7 +434,8 @@ void NoThreadSend(const char* FileNames, int ram) {
 		// error;
 	}
 
-	SendFiles((char*) FileNames, ram);
+	SendFile((char *) FileNames, ram);
+	SlotSave = -1;
 }
 
 

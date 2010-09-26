@@ -1,7 +1,14 @@
 #include "stdafx.h"
 
+#include "gui.h"
+#include "SendFiles.h"
 #include "CWabbitemu.h"
 #include "CPage.h"
+
+#define WM_ADDFRAME	(WM_USER+5)
+#define WM_REMOVEFRAME (WM_USER+6)
+
+HANDLE CWabbitemu::m_hThread = NULL;
 
 STDMETHODIMP CWabbitemu::QueryInterface(REFIID riid, LPVOID *ppvObject)
 {
@@ -26,11 +33,20 @@ STDMETHODIMP CWabbitemu::QueryInterface(REFIID riid, LPVOID *ppvObject)
 
 STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 {
+	if (fVisible == VARIANT_TRUE)
+	{
+		PostThreadMessage(GetThreadId(m_hThread), WM_ADDFRAME, m_iSlot, (LPARAM) m_lpCalc);
+	}
+	else
+	{
+		PostThreadMessage(GetThreadId(m_hThread), WM_REMOVEFRAME, m_iSlot, (LPARAM) m_lpCalc);
+	}
 	return S_OK;
 }
 
 STDMETHODIMP CWabbitemu::get_Visible(VARIANT_BOOL *lpVisible)
 {
+	*lpVisible = m_fVisible;
 	return S_OK;
 }
 
@@ -90,7 +106,7 @@ STDMETHODIMP CWabbitemu::Flash(int Index, IPage **ppPage)
 STDMETHODIMP CWabbitemu::Read(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult)
 {
 	int nBytes = 1;
-	if ((V_VT(&varByteCount) != VT_EMPTY) || (V_VT(&varByteCount) != VT_ERROR))
+	if ((V_VT(&varByteCount) != VT_EMPTY) && (V_VT(&varByteCount) != VT_ERROR))
 	{
 		nBytes = V_I4(&varByteCount);
 	}
@@ -153,7 +169,10 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 {
 	char szFileName[MAX_PATH];
 	WideCharToMultiByte(CP_ACP, 0, bstrFileName, -1, szFileName, sizeof(szFileName), NULL, NULL);
-	rom_load(m_iSlot, szFileName);
+
+	gslot = m_iSlot;
+	NoThreadSend(szFileName, SEND_CUR);
+	
 	return S_OK;
 }
 
@@ -306,6 +325,12 @@ static LRESULT CALLBACK  WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 						}
 					// Frame skip if we're too far ahead.
 					} else difference += TPF;
+					int i;
+					for (i = 0; i < MAX_CALCS; i++) {
+						if (calcs[i].active) {
+							gui_draw(&calcs[i]);
+						}
+					}
 					break;
 				}
 			}
@@ -323,6 +348,7 @@ DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
 	CWabbitemu *pWabbitemu = (CWabbitemu *) lpParam;
 	WNDCLASS wc = {0};
 
+	RegisterWindowClasses();
 	wc.lpszClassName = _T("WabbitemuCOMListener");
 	wc.hInstance = GetModuleHandle(NULL);
 	wc.lpfnWndProc = WndProc;
@@ -330,10 +356,39 @@ DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
 
 	pWabbitemu->m_hwnd = CreateWindowEx(0, _T("WabbitemuCOMListener"), _T(""), WS_CHILD, 0, 0, 0, 0, HWND_MESSAGE, 0, GetModuleHandle(NULL), NULL);
 
+#ifdef USE_GDIPLUS
+	// Initialize GDI+.
+	GdiplusStartupInput gdiplusStartupInput;
+	ULONG_PTR gdiplusToken;
+	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+#endif
+
+	//SetTimer(NULL, 0, TPF, TimerProc);
+
 	MSG Msg;
 	while (GetMessage(&Msg, NULL, 0, 0))
 	{
-		DispatchMessage(&Msg);
+		if (Msg.message == WM_ADDFRAME)
+		{
+			calc_t *lpCalc = (calc_t *) Msg.lParam;
+			gui_frame(lpCalc);
+			HMENU hMenu = GetSystemMenu(lpCalc->hwndFrame, FALSE);
+			EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+			SetMenu(lpCalc->hwndFrame, NULL);
+			RECT wr;
+			GetWindowRect(lpCalc->hwndFrame, &wr);
+			SendMessage(lpCalc->hwndFrame, WM_SIZING, WMSZ_BOTTOMRIGHT, (LPARAM) &wr);
+			SetWindowPos(lpCalc->hwndFrame, NULL, wr.left, wr.top, wr.right - wr.left, wr.bottom - wr.top, SWP_NOZORDER);
+		}
+		else if (Msg.message == WM_REMOVEFRAME)
+		{
+			DestroyWindow(((calc_t *) Msg.lParam)->hwndFrame);
+		}
+		else
+		{
+			TranslateMessage(&Msg);
+			DispatchMessage(&Msg);
+		}
 	}
 
 	return 0;
@@ -342,4 +397,9 @@ DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
 STDMETHODIMP CWabbitemu::get_Keypad(IKeypad **ppKeypad)
 {
 	return m_pKeypad->QueryInterface(IID_IKeypad, (LPVOID *) ppKeypad);
+}
+
+STDMETHODIMP CWabbitemu::get_Labels(ILabelServer **ppLabelServer)
+{
+	return m_LabelServer.QueryInterface(IID_ILabelServer, (LPVOID *) ppLabelServer);
 }

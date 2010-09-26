@@ -141,11 +141,11 @@ interface IZ80 : IUnknown
 	[propput, bindable] HRESULT IYH([in] BYTE IYH);
 	[propput, bindable] HRESULT IYL([in] BYTE IYL);
 
-	[propget, bindable] HRESULT PC([out, retval] WORD *IX);
-	[propput, bindable] HRESULT PC([in] WORD IX);
+	[propget, bindable] HRESULT PC([out, retval] WORD *PC);
+	[propput, bindable] HRESULT PC([in] WORD PC);
 
-	[propget, bindable] HRESULT SP([out, retval] WORD *IX);
-	[propput, bindable] HRESULT SP([in] WORD IX);
+	[propget, bindable] HRESULT SP([out, retval] WORD *SP);
+	[propput, bindable] HRESULT SP([in] WORD SP);
 
 };
 
@@ -214,20 +214,45 @@ interface IKeypad : IUnknown
 	HRESULT ReleaseVirtKey([in] int Key);
 }
 
+interface IWabbitemu;
+
 [
-	uuid(8E5D1F9E-C487-48c9-A1AD-C9ACE44C1E3A),
 	object,
+	uuid(A24DA6E6-BD47-444d-891F-BB368872C34F),
 	pointer_default(unique),
 	dual,
+	version(2.5)
 ]
-interface ILabel : IDispatch
+interface ICalcAddress : IDispatch
 {
-	[id(0), propget, helpstring("Name of this label")]
-	HRESULT Name([out, retval] BSTR *Name);
-	[id(1), propget, helpstring("Page this label is on")]
+	// Properties
+	[propget, helpstring("Calculator this address is on")]
+	HRESULT Calc([out, retval] IWabbitemu **Calc);
+
+	[propget, helpstring("Page this address is on")]
 	HRESULT Page([out, retval] IPage **Page);
-	[id(2), propget, helpstring("The address of the label")]
+
+	[propget, helpstring("The memory address")]
 	HRESULT Address([out, retval] WORD *Address);
+
+	// Methods
+	[helpstring("Read from this address")]
+	HRESULT Read([in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
+	[helpstring("Write to this address")]
+	HRESULT Write([in] VARIANT Value);
+}
+
+[
+	object,
+	uuid(8E5D1F9E-C487-48c9-A1AD-C9ACE44C1E3A),
+	pointer_default(unique),
+	dual,
+	version(2.5)
+]
+interface ILabel : ICalcAddress
+{
+	[propget, helpstring("Name of this label")]
+	HRESULT Name([out, retval] BSTR *Name);
 }
 
 
@@ -235,16 +260,27 @@ interface ILabel : IDispatch
 	uuid(207CC027-41EE-4582-8430-C1D4FE910143),
 	pointer_default(unique),
 	dual,
+	version(1.0)
 ]
 interface ILabelServer : IDispatch
 {
-	[id(0), helpstring("Lookup a label based on name or address")]
-	HRESULT LookupLabel([in] VARIANT Criteria, [out, retval] ILabel **Label);
+	// Properties
+	[propget, helpstring("Whether or not lookups are case sensitive")]
+	HRESULT CaseSensitive([out, retval] VARIANT_BOOL *IsCaseSensitive);
+	[propput, helpstring("Whether or not lookups are case sensitive")]
+	HRESULT CaseSensitive([in] VARIANT_BOOL IsCaseSensitive);
+
+	// Methods
+	[helpstring("Lookup a label based on name or address")]
+	HRESULT Find([in] VARIANT Criteria, [out, retval] ILabel **Label);
+	[helpstring("Loads labels from a file")]
+	HRESULT Load([in] BSTR FileName);
 }
 
 [
 	uuid(020FB9D5-7F45-449b-B9DF-66CFC2482BD0),
 	object,
+	version(2.0),
 ]
 interface IWabbitemu : IUnknown
 {
@@ -290,11 +326,14 @@ interface IWabbitemu : IUnknown
 
 	[propget, helpstring("Gets the keypad device on the calculator.")]
 	HRESULT Keypad([out, retval] IKeypad **Keypad);
+	
+	[propget, helpstring("Gets the list of labels loaded on this calculator.")]
+	HRESULT Labels([out, retval] ILabelServer **Labels);
 };
 
 [
 	uuid(EDA903F6-7BB8-437f-978F-8F1A2B8B65DB),
-	version(1.0),
+	version(3.0),
 ]
 library WabbitemuLib
 {
@@ -305,7 +344,7 @@ library WabbitemuLib
 
 	[
 		uuid(1A03AFA2-C9C7-4d5b-9732-D78011D5009B),
-		version(1.1),
+		version(3.0),
 	]
 	coclass Wabbitemu
 	{
