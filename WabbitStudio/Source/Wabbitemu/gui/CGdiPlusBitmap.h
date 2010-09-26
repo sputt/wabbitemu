@@ -83,6 +83,7 @@ bool CGdiPlusBitmapResource::Load(LPCTSTR pName, LPCTSTR pType, HMODULE hInst)
 		if (pBuffer)
 		{
 			CopyMemory(pBuffer, pResourceData, imageSize);
+			::GlobalUnlock(m_hBuffer);
 
 			IStream* pStream = NULL;
 			if (::CreateStreamOnHGlobal(m_hBuffer, FALSE, &pStream) == S_OK)
@@ -98,7 +99,6 @@ bool CGdiPlusBitmapResource::Load(LPCTSTR pName, LPCTSTR pType, HMODULE hInst)
 					m_pBitmap = NULL;
 				}
 			}
-			::GlobalUnlock(m_hBuffer);
 		}
 		::GlobalFree(m_hBuffer);
 		m_hBuffer = NULL;

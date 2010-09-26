@@ -710,7 +710,10 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 				}
 				groupFile->var->data[i] =tmp;
 			}
-			link_send_var(&calcs[SlotSave].cpu, groupFile, (SEND_FLAG)ram);
+			if (SlotSave != -1)
+			{
+				link_send_var(&calcs[SlotSave].cpu, groupFile, (SEND_FLAG)ram);
+			}
 
 			//groupFile->chksum = ( fgetc(infile) & 0xFF ) + ( (  fgetc(infile) & 0xFF ) << 8 );
 			length2 -= length + headersize;

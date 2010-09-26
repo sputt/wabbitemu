@@ -7,6 +7,7 @@
 #include "CLCD.h"
 #include "CKeypad.h"
 #include "calc.h"
+#include "CLabelServer.h"
 
 class CWabbitemu : IWabbitemu
 {
@@ -64,6 +65,7 @@ public:
 	STDMETHODIMP get_Apps(SAFEARRAY **ppAppList);
 	STDMETHODIMP get_Symbols(SAFEARRAY **ppAppList);
 	STDMETHOD(get_Keypad)(IKeypad **ppKeypad);
+	STDMETHODIMP get_Labels(ILabelServer **ppLabelServer);
 
 	CWabbitemu()
 	{
@@ -73,19 +75,31 @@ public:
 		m_pZ80 = new CZ80(&calcs[m_iSlot].cpu);
 		m_pLCD = new CLCD(&calcs[m_iSlot].cpu);
 		m_pKeypad = new CKeypad(&calcs[m_iSlot].cpu);
+		m_fVisible = VARIANT_FALSE;
 
-		m_hThread = CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, NULL);
+		m_LabelServer.AddRef();
+		m_LabelServer.Initialize(this);
+
+		if (m_hThread == NULL)
+		{
+			m_hThread = CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, NULL);
+		}
 	};
 
+	
+
 private:
+	static HANDLE m_hThread;
+
 	static DWORD CALLBACK WabbitemuThread(LPVOID lpParam);
 
 	LONG m_lRefCount;
 	int m_iSlot;
+	VARIANT_BOOL m_fVisible;
 	calc_t *m_lpCalc;
 	CZ80 *m_pZ80;
 	CLCD *m_pLCD;
 	CKeypad *m_pKeypad;
-	HANDLE m_hThread;
 	HWND m_hwnd;
+	CComObject<CLabelServer> m_LabelServer;
 };

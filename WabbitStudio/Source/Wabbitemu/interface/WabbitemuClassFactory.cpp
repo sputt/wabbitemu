@@ -3,6 +3,9 @@
 #include "Wabbitemu_h.h"
 #include "WabbitemuClassFactory.h"
 #include "CWabbitemu.h"
+#include "CLabelServer.h"
+
+static CComObject<CLabelServer> g_pLabelServer;
 
 STDMETHODIMP CWabbitemuClassFactory::QueryInterface(REFIID riid, LPVOID *ppvObject)
 {
@@ -27,8 +30,10 @@ STDMETHODIMP CWabbitemuClassFactory::QueryInterface(REFIID riid, LPVOID *ppvObje
 
 STDMETHODIMP CWabbitemuClassFactory::CreateInstance(IUnknown *pUnkOuter, REFIID riid, LPVOID *ppvObject)
 {
-	*ppvObject = (LPVOID) new CWabbitemu();
-	return S_OK;
+	CWabbitemu *pWabbitemu = new CWabbitemu();
+	HRESULT hr = pWabbitemu->QueryInterface(riid, ppvObject);
+	pWabbitemu->Release();
+	return hr;
 }
 
 STDMETHODIMP CWabbitemuClassFactory::LockServer(BOOL fLock)

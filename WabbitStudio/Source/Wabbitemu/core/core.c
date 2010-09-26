@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "core.h"
+#include "gui.h"
 #include "calc.h"
 #include "device.h"
 #include "alu.h"
@@ -179,7 +180,7 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 			printf("postmessage called!\n");
 		} else {
 #endif
-			gui_debug(gslot);
+			gui_debug(&calcs[gslot]);
 #ifdef WINVER
 		}
 #endif
@@ -209,7 +210,7 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 			printf("postmessage called!\n");
 		} else {
 #endif
-			gui_debug(gslot);
+			gui_debug(&calcs[gslot]);
 #ifdef WINVER
 		}
 #endif

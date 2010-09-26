@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #define CALC_C
-#include "calc.h"
+#include "gui.h"
 #include "core.h"
 #include "83hw.h"
 #include "83phw.h"
@@ -394,7 +394,7 @@ int calc_run_tstates(int slot, time_t tstates) {
 				printf("postmessage called!\n");
 			} else {
 #endif
-				gui_debug(slot);
+				gui_debug(&calcs[slot]);
 #ifdef WINVER
 			}
 #endif

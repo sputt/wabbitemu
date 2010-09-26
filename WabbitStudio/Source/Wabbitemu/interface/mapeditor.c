@@ -3,6 +3,8 @@
 #include "Wabbitemu_h.h"
 #include "WabbitemuClassFactory.h"
 #include "calc.h"
+#include "gui.h"
+#include "Registry.h"
 #include "label.h"
 #include "lcd.h"
 #include "keys.h"
@@ -28,6 +30,7 @@ __declspec (dllexport) BOOL WINAPI DllMain(HINSTANCE hModule, DWORD  ul_reason_f
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
+		LoadRegistrySettings();
 		ZeroMemory(calcs, sizeof(calcs));
 		break;
 	}
