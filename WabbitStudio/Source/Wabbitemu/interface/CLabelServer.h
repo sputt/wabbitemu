@@ -43,7 +43,7 @@ public:
 
 	void Initialize(IWabbitemu *pWabbitemu)
 	{
-		pWabbitemu->QueryInterface(IID_IWabbitemu, (LPVOID *) &m_pWabbitemu);
+		m_pWabbitemu = pWabbitemu;
 	};
 
 private:

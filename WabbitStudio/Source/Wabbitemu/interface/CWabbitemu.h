@@ -2,6 +2,9 @@
 
 #include <windows.h>
 #include <tchar.h>
+#include <atlbase.h>
+#include <atlcom.h>
+
 #include "Wabbitemu_h.h"
 #include "CZ80.h"
 #include "CLCD.h"
@@ -9,27 +12,15 @@
 #include "calc.h"
 #include "CLabelServer.h"
 
-class CWabbitemu : IWabbitemu
+class CWabbitemu :
+	public IDispatchImpl<IWabbitemu, &IID_IWabbitemu, &LIBID_WabbitemuLib>,
+	public CComObjectRoot
 {
 public:
-	// IUnknown methods
-	STDMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject);
-	STDMETHODIMP_(ULONG) AddRef()
-	{
-		return InterlockedIncrement(&m_lRefCount);
-	};
-	STDMETHODIMP_(ULONG) Release()
-	{
-		if (InterlockedDecrement(&m_lRefCount) == 0)
-		{
-			delete this;
-			return 0;
-		}
-		else
-		{
-			return m_lRefCount;
-		}
-	};
+	BEGIN_COM_MAP(CWabbitemu)
+		COM_INTERFACE_ENTRY(IDispatch)
+		COM_INTERFACE_ENTRY(IWabbitemu)
+	END_COM_MAP()
 
 	// IWabbitemu methods
 	STDMETHODIMP put_Visible(VARIANT_BOOL fVisible);
@@ -55,7 +46,7 @@ public:
 	STDMETHODIMP Step();
 	STDMETHODIMP StepOver();
 
-	STDMETHODIMP SetBreakpoint(IPage *pPage, WORD wAddress);
+	STDMETHODIMP SetBreakpoint(IPage *pPage, WORD wAddress, VARIANT varCalcNotify);
 
 	STDMETHOD(Read)(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult);
 	STDMETHOD(Write)(WORD Address, VARIANT varValue);
@@ -69,7 +60,6 @@ public:
 
 	CWabbitemu()
 	{
-		m_lRefCount = 1;
 		m_iSlot = calc_slot_new();
 		m_lpCalc = &calcs[m_iSlot];
 		m_pZ80 = new CZ80(&calcs[m_iSlot].cpu);
@@ -79,6 +69,8 @@ public:
 
 		m_LabelServer.AddRef();
 		m_LabelServer.Initialize(this);
+
+		m_lpCalc->pWabbitemu = this;
 
 		if (m_hThread == NULL)
 		{
@@ -93,7 +85,6 @@ private:
 
 	static DWORD CALLBACK WabbitemuThread(LPVOID lpParam);
 
-	LONG m_lRefCount;
 	int m_iSlot;
 	VARIANT_BOOL m_fVisible;
 	calc_t *m_lpCalc;

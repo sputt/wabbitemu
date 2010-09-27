@@ -72,7 +72,7 @@ STDMETHODIMP CWabbitemu::StepOver()
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress)
+STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress, VARIANT varCalcNotify)
 {
 	VARIANT_BOOL IsFlash;
 	pPage->get_IsFlash(&IsFlash);
@@ -81,6 +81,15 @@ STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress)
 	pPage->get_Index(&iPage);
 
 	set_break(&m_lpCalc->mem_c, !IsFlash, iPage, wAddress);
+
+	if (V_VT(&varCalcNotify) == VT_UNKNOWN)
+	{
+		if (m_lpCalc->pCalcNotify != NULL)
+		{
+			m_lpCalc->pCalcNotify->Release();
+		}
+		V_UNKNOWN(&varCalcNotify)->QueryInterface(IID_ICalcNotify, (LPVOID *) &m_lpCalc->pCalcNotify);
+	}
 	return S_OK;
 }
 

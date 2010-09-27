@@ -6,9 +6,10 @@
  */
 #include "stdafx.h"
 
+#include "calc.h"
 #include "guispeed.h"
 #include "resource.h"
-#include "calc.h"
+
 #define MIN_SPEED 1
 
 int originalSpeed;

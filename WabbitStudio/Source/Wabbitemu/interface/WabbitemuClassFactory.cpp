@@ -30,9 +30,9 @@ STDMETHODIMP CWabbitemuClassFactory::QueryInterface(REFIID riid, LPVOID *ppvObje
 
 STDMETHODIMP CWabbitemuClassFactory::CreateInstance(IUnknown *pUnkOuter, REFIID riid, LPVOID *ppvObject)
 {
-	CWabbitemu *pWabbitemu = new CWabbitemu();
+	CComObject<CWabbitemu> *pWabbitemu = new CComObject<CWabbitemu>();
+	pWabbitemu->AddRef();
 	HRESULT hr = pWabbitemu->QueryInterface(riid, ppvObject);
-	pWabbitemu->Release();
 	return hr;
 }
 

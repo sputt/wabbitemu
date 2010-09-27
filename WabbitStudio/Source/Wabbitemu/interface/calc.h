@@ -8,13 +8,13 @@
 #include "coretypes.h"
 
 #ifdef WINVER
-//#include "gui.h" // it would be nice to get this separated somehow
 #include "DropTarget.h"
 #endif
 #include "core.h"
 #include "lcd.h"
 #include "keys.h"
 #ifdef WINVER
+#include "Wabbitemu_h.h"
 #include "sound.h" // FIXME: sound is nice
 #endif
 #include "savestate.h"
@@ -109,6 +109,8 @@ typedef struct calc {
 	BOOL bCustomSkin;
 	char skin_path[256];
 	char keymap_path[256];
+	IWabbitemu *pWabbitemu;
+	ICalcNotify *pCalcNotify;
 #endif
 
 } calc_t;
