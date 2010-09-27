@@ -11,6 +11,11 @@
 #include "var.h"
 #include "disassemble.h"
 
+#ifdef _WINDOWS
+#include "CCalcAddress.h"
+#include "CPage.h"
+#endif
+
 /* Determine the slot for a new calculator.  Return the slot if found,
  * otherwise, return -1.
  */
@@ -382,16 +387,14 @@ int calc_run_tstates(int slot, time_t tstates) {
 
 	while(calcs[slot].running) {
 		if (check_break(&calcs[slot].mem_c, calcs[slot].cpu.pc) & 1) {
-#ifdef WINVER
 			calcs[slot].running = FALSE;
-			bank_t *bank = &calcs[slot].mem_c.banks[mc_bank(calcs[slot].cpu.pc)];
-
-			Z80_info_t z[2];
-			disassemble(&calcs[slot].mem_c, calcs[slot].cpu.pc, 1, z);
-
-			if (calcs[slot].ole_callback != NULL) {
-				PostMessage(calcs[slot].ole_callback, WM_USER, bank->ram<<16 | bank->page, z[0].size<<16 | calcs[slot].cpu.pc);
-				printf("postmessage called!\n");
+#ifdef WINVER
+			if (calcs[slot].pCalcNotify != NULL) {
+				CComObject<CCalcAddress> *pCalcAddress = new CComObject<CCalcAddress>();
+				pCalcAddress->AddRef();
+				bank_t *bank = &calcs[slot].mem_c.banks[mc_bank(calcs[slot].cpu.pc)];
+				pCalcAddress->Initialize(calcs[slot].pWabbitemu, !bank->ram, bank->page, calcs[slot].cpu.pc);
+				calcs[slot].pCalcNotify->Breakpoint(pCalcAddress);
 			} else {
 #endif
 				gui_debug(&calcs[slot]);

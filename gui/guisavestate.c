@@ -1,8 +1,9 @@
 #include "stdafx.h"
 
+#include "calc.h"
 #include "guisavestate.h"
 #include "resource.h"
-#include "calc.h"
+
 
 extern HINSTANCE g_hInst;
 extern BITMAPINFO *bi;

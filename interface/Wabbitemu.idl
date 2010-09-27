@@ -278,11 +278,22 @@ interface ILabelServer : IDispatch
 }
 
 [
+	version(1.0),
+	object,
+	uuid(AF1EF43E-EDA2-4de4-A09C-C90627E2DAE3),
+]
+interface ICalcNotify : IUnknown
+{
+	[helpstring("Notifies a client when a breakpoint has been hit.")]
+	HRESULT Breakpoint(ICalcAddress *pCalcAddress);
+}
+
+[
 	uuid(020FB9D5-7F45-449b-B9DF-66CFC2482BD0),
 	object,
 	version(2.0),
 ]
-interface IWabbitemu : IUnknown
+interface IWabbitemu : IDispatch
 {
 	[propget, helpstring("Whether or not the UI is visible.")]
 	HRESULT Visible([out, retval] VARIANT_BOOL *lpVisible); 
@@ -311,7 +322,7 @@ interface IWabbitemu : IUnknown
 	HRESULT StepOver();
 
 	[helpstring("Sets an execution breakpoint on a certain address.")]
-	HRESULT SetBreakpoint([in] IPage *Page, [in] WORD Address);
+	HRESULT SetBreakpoint([in] IPage *Page, [in] WORD Address, [in, optional] VARIANT CalcNotify);
 
 	HRESULT Read([in] WORD Address, [in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
 	HRESULT Write([in] WORD Address, [in] VARIANT Value);
@@ -340,6 +351,7 @@ library WabbitemuLib
 	importlib("stdole32.tlb");
 
 	interface IBank;
+	interface ICalcNotify;
 	struct TIApplication;
 
 	[
