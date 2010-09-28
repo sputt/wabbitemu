@@ -78,8 +78,8 @@ union { \
 #define regpair(name1,name2,fullname) \
 union { \
 	struct { \
-		unsigned char name2; \
-		unsigned char name1; \
+		_TUCHAR name2; \
+		_TUCHAR name1; \
 	}; \
 	unsigned short fullname; \
 }
@@ -96,7 +96,7 @@ typedef struct timer_context {
 
 /* Bank unit for a partition */
 typedef struct bank_state {
-	unsigned char * addr;		//Pointer to offset of memory.(already paged)
+	unsigned char *addr;		//Pointer to offset of memory.(already paged)
 	int page;					//Current 16kb page
 	BOOL read_only;				//You can not write to this page(not even if the flash is unlocked)
 	BOOL ram;					//This is on the ram chip(also effect write method for flash)

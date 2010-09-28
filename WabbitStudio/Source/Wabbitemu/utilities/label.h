@@ -4,18 +4,18 @@
 #include "coretypes.h"
 
 typedef struct {
-    char *name;
+    TCHAR *name;
     BOOL IsRAM;
     uint8_t page;
     uint16_t addr;
 } label_struct;
 
-char* FindAddressLabel( int slot, BOOL IsRAM, uint8_t page, uint16_t addr);
+TCHAR* FindAddressLabel( int slot, BOOL IsRAM, uint8_t page, uint16_t addr);
 //void ImportBcalls(char* fn);
-char* FindBcall(int address);
-void FindFlags(int flag,int bit, char **flagstring, char **bitstring);
+TCHAR* FindBcall(int address);
+void FindFlags(int flag,int bit, TCHAR **flagstring, TCHAR **bitstring);
 void VoidLabels(int slot);
-label_struct *lookup_label(char *label);
-int labels_app_load(int slot, char* fn);
+label_struct *lookup_label(TCHAR *label);
+int labels_app_load(int slot, TCHAR* fn);
 #endif
 

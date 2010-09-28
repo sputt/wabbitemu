@@ -147,7 +147,7 @@ int soundinit() {
 					) != MMSYSERR_NOERROR ) {
 
 		audio->enabled		= 0;
-	    MessageBox(NULL, "Unable to open audio device.","Error",MB_OK);
+	    MessageBox(NULL, _T("Unable to open audio device."), _T("Error"), MB_OK);
 	    return 1;
 	}
 	

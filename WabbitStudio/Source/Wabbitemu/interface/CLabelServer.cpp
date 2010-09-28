@@ -21,10 +21,13 @@ STDMETHODIMP CLabelServer::Find(VARIANT varCriteria, ILabel **ppLabel)
 {
 	if (V_VT(&varCriteria) == VT_BSTR)
 	{
-		char szLabelName[256];
+#ifdef _UNICODE
+		label_struct *lab = lookup_label(V_BSTR(&varCriteria));
+#else
+		TCHAR szLabelName[256];
 		WideCharToMultiByte(CP_ACP, 0, V_BSTR(&varCriteria), -1, szLabelName, sizeof(szLabelName), NULL, NULL);
-
 		label_struct *lab = lookup_label(szLabelName);
+#endif
 		if (lab == NULL)
 		{
 			*ppLabel = NULL;
@@ -55,9 +58,13 @@ STDMETHODIMP CLabelServer::Find(VARIANT varCriteria, ILabel **ppLabel)
 
 STDMETHODIMP CLabelServer::Load(BSTR bstrFileName)
 {
-	char szFileName[MAX_PATH];
+#ifdef _UNICODE
+	labels_app_load(0, bstrFileName);
+#else
+	TCHAR szFileName[MAX_PATH];
 	WideCharToMultiByte(CP_ACP, 0, bstrFileName, -1, szFileName, sizeof(szFileName), NULL, NULL);
 	labels_app_load(0, szFileName);
+#endif
 	return S_OK;
 }
 

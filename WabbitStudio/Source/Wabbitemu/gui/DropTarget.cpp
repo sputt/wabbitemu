@@ -8,7 +8,7 @@ extern POINT drop_pt;
 
 CDropTarget::CDropTarget(HWND hwnd) {
 	m_hwndTarget = hwnd;
-	m_lRefCount = 0;
+	m_lRefCount = 1;
 	m_fAllowDrop = FALSE;
 
 	m_nRequired = 0;
@@ -134,7 +134,7 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 	}
 
 
-	FORMATETC fmtetc[] = {{RegisterClipboardFormat("DropDescription"), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL }};
+	FORMATETC fmtetc[] = {{RegisterClipboardFormat(_T("DropDescription")), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL }};
 	STGMEDIUM stgmed[] = {{0}};
 	
 	stgmed[0].tymed = TYMED_HGLOBAL;

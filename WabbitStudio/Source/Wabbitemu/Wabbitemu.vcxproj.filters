@@ -234,6 +234,12 @@
     <ClCompile Include="utilities\fileutilities.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="interface\CCalcAddress.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CLabelServer.cpp">
+      <Filter>Source Files\Interface</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -452,6 +458,12 @@
     <ClInclude Include="utilities\fileutilities.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="interface\CCalcAddress.h">
+      <Filter>Source Files\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CLabelServer.h">
+      <Filter>Source Files\Interface</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\back.bmp">
@@ -602,6 +614,7 @@
       <Filter>Resource Files</Filter>
     </None>
     <None Include="..\..\Release\Revsoft.AutoUpdater.exe" />
+    <None Include="Wabbitemu.tlb" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">

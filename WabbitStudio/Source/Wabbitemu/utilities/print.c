@@ -12,7 +12,7 @@ static BOOL calc_size = FALSE;
 static size_t mspf_size = 0;
 static int mspf_break = 9999;
 
-void press_textA(char *szText, COLORREF zcolor, RECT *r, HDC hdc) {
+void press_textA(TCHAR *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 	RECT tr;
 	tr.left = 0; tr.right = 1;
 	SetTextColor(hdc, zcolor);
@@ -20,15 +20,15 @@ void press_textA(char *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 	r->right = r->left + tr.right;
 	
 	size_t index = mspf_size;
-	mspf_size += (int) strlen(szText);
+	mspf_size += (int) _tcslen(szText);
 	if (calc_size == FALSE) {
-		const char *dot_strings[] = {".", "..", "..."};
-		char szNew[1024];
+		const TCHAR *dot_strings[] = {_T("."), _T(".."), _T("...")};
+		TCHAR szNew[1024];
 		
-		if (index >= mspf_break || (index < mspf_break && index+strlen(szText) > mspf_break)) {
+		if (index >= mspf_break || (index < mspf_break && index+_tcslen(szText) > mspf_break)) {
 			int break_index = (int) (max(index, mspf_break));
 			int break_string_index = break_index - (int) index;
-			int str_left = (int) strlen(&szText[break_string_index]);
+			int str_left = (int) _tclen(&szText[break_string_index]);
 			
 			if (str_left > 3)
 				str_left = 3;
@@ -40,8 +40,8 @@ void press_textA(char *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 				str_left = 1;
 			
 #ifdef WINVER
-			strcpy_s(szNew, szText);
-			strcpy_s(&szNew[break_string_index], strlen(dot_strings[str_left-1]) + 1, dot_strings[str_left-1]);
+			StringCbCopy(szNew, sizeof(szNew), szText);
+			StringCbCopy(&szNew[break_string_index], _tcslen(dot_strings[str_left-1]) + 1, dot_strings[str_left-1]);
 #else
 			strcpy(szNew, szText);
 			strcpy(&szNew[break_string_index], dot_strings[str_left-1]);
@@ -56,8 +56,9 @@ void press_textA(char *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 
 }
 
-void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
-    char *p;
+
+void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const TCHAR *fmt, ...) {
+    TCHAR *p;
     va_list argp;
     RECT r = *rc;
     
@@ -69,14 +70,14 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
     	
     	mysprintf(hdc, zinf, rc, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
     	
-    	char szFilltext[1024];
+    	TCHAR szFilltext[1024];
     	memset(szFilltext, 'A', mspf_size);
     	szFilltext[mspf_size] = '\0';
 
     	RECT hr;
     	CopyRect(&hr, rc);
     	DrawText(hdc, szFilltext, -1, &hr, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_END_ELLIPSIS | DT_MODIFYSTRING);
-    	mspf_break = (int) strlen(szFilltext);
+    	mspf_break = (int) _tcslen(szFilltext);
 
     	if (mspf_break < mspf_size) {
     		mspf_break -= 3;
@@ -90,23 +91,23 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
     
     // Initialize arguments
     va_start(argp, fmt);
-    for (p = (char*) fmt; *p && (mspf_size < mspf_break+3); p++) {
+    for (p = (TCHAR *) fmt; *p && (mspf_size < mspf_break+3); p++) {
         if(*p != '%') {
-            char szChar[2] = "x";
+            TCHAR szChar[2] = _T("x");
             szChar[0] = *p;
             press_text(szChar, DBCOLOR_BASE);
         } else {
             switch(*++p) {
                 case 'c': {//condition
-					char *s = va_arg(argp, char *);
+					TCHAR *s = va_arg(argp, TCHAR *);
 					press_text(s, DBCOLOR_CONDITION);
 	            	break;
                 }
                 case 'h': {//offset
                 	int val	= (int) va_arg(argp, INT_PTR);
-                	char szOffset[8];
+                	TCHAR szOffset[8];
 #ifdef WINVER
-					sprintf_s(szOffset, "%+d",val);
+					_stprintf_s(szOffset, _T("%+d"),val);
 #else
                 	sprintf(szOffset, "%+d",val);
 #endif
@@ -116,9 +117,9 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
                 case 'd': //number
 				{
 					int val	= (int) va_arg(argp, INT_PTR);
-					char szAddr[16];
+					TCHAR szAddr[16];
 #ifdef WINVER
-					sprintf_s(szAddr, "%d",val);
+					_stprintf_s(szAddr, _T("%d"), val);
 #else
 					sprintf(szAddr, "%d",val);
 #endif
@@ -127,20 +128,20 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 				}
 				case 'l':
 				{
-					char *s = va_arg(argp, char *);
+					TCHAR *s = va_arg(argp, TCHAR *);
 					press_text(s, RGB(0, 0, 0));
                 	break;
 				}		
                 case 's':
 				{
-					char *s = va_arg(argp, char *);
+					TCHAR *s = va_arg(argp, TCHAR *);
 					press_text(s, DBCOLOR_BASE);
                 	break;
 				}
                 case 'g':
 				{
 					unsigned short addr = zinf->addr + 2;
-					char *name;
+					TCHAR *name;
 					int val;
 					
 					val = (addr + ((char) va_arg(argp, INT_PTR)));
@@ -149,9 +150,9 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 					if (name) {
 						press_text(name, RGB(0, 0, 0));
 					} else {
-						char szAddr[16];
+						TCHAR szAddr[16];
 #ifdef WINVER
-						sprintf_s(szAddr, "$%04X",val);
+						_stprintf_s(szAddr, _T("$%04X"),val);
 #else
 						sprintf(szAddr, "$%04X",val);
 #endif
@@ -162,7 +163,7 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 				case 'a': //address
 					{
 						unsigned short addr = zinf->addr + 2;
-						char *name;
+						TCHAR *name;
 						int val;
 						val = (int) va_arg(argp, INT_PTR);
 
@@ -171,9 +172,9 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 						if (name) {
 							press_text(name, RGB(0, 0, 0));
 						} else {
-							char szAddr[16];
+							TCHAR szAddr[16];
 #ifdef WINVER
-							sprintf_s(szAddr, "$%04X",val);
+							_stprintf_s(szAddr, _T("$%04X"), val);
 #else
 							sprintf(szAddr, "$%04X",val);
 #endif
@@ -183,11 +184,11 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 					}
                 case 'r':
 				{
-					char *szReg = va_arg(argp, char *);
-					if (!strcmp(szReg, "(hl)")) {
-						press_text("(", DBCOLOR_BASE);
-						press_text("hl", DBCOLOR_HILIGHT);
-						press_text(")", DBCOLOR_BASE);
+					TCHAR *szReg = va_arg(argp, TCHAR *);
+					if (!_tcscmp(szReg, _T("(hl)"))) {
+						press_text(_T("("), DBCOLOR_BASE);
+						press_text(_T("hl"), DBCOLOR_HILIGHT);
+						press_text(_T(")"), DBCOLOR_BASE);
 					} else
 					press_text(szReg, DBCOLOR_HILIGHT);
 					break;
@@ -195,9 +196,9 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const char *fmt, ...) {
 				case 'x':
 				{
 					int val	= (int) va_arg(argp, INT_PTR);
-					char szAddr[16];
+					TCHAR szAddr[16];
 #ifdef WINVER
-					sprintf_s(szAddr, "$%02X", val);
+					StringCbPrintf(szAddr, sizeof(szAddr), _T("$%02X"), val);
 #else
 					sprintf(szAddr, "$%02X", val);
 #endif

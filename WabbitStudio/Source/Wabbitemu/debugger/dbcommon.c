@@ -25,21 +25,21 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDOK: {
-					char result[64];
+					TCHAR result[64];
 					GetDlgItemText(hwndDlg, IDC_EDTGOTOADDR, result, 64);
 					
 					if (result[0] != '$') {
 						label_struct *label;
 						label = lookup_label(result);
 #ifdef WINVER
-						if (label == NULL) sscanf_s(result, "%x", &goto_addr);
+						if (label == NULL) _stscanf_s(result, _T("%x"), &goto_addr);
 #else
 						if (label == NULL) sscanf(result, "%x", &goto_addr);
 #endif
 						else goto_addr = label->addr;
 					} else {
 #ifdef WINVER
-						sscanf_s(result+1, "%x", &goto_addr);
+						_stscanf_s(result+1, _T("%x"), &goto_addr);
 #else
 						sscanf(result+1, "%x", &goto_addr);
 #endif
@@ -70,9 +70,9 @@ INT_PTR CALLBACK FindDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
 				case IDC_FIND_NEXT: {
-					char result[32];
+					TCHAR result[32];
 					GetDlgItemText(hwndDlg, IDC_EDT_FIND, result, 32);
-					sscanf_s(result, "%x", &find_value);
+					_stscanf_s(result, _T("%x"), &find_value);
 					SendMessage(hwndPrev, WM_COMMAND, DB_FIND_NEXT, 0);
 					return TRUE;
 				}
@@ -91,12 +91,12 @@ INT_PTR CALLBACK FindDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 }
 
 
-int ValueSubmit(HWND hwndDlg, char *loc, int size) {
-	char result[32];
+int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value) {
+	TCHAR result[32];
 	int got_line;
 	if (hwndDlg == NULL) return 0;
 	((WORD*)result)[0] = sizeof(result);	//string size
-	got_line = (int) SendMessage(hwndDlg, EM_GETLINE, (WPARAM) 0, (LPARAM) result);
+	got_line = (int) Edit_GetLine(hwndDlg, 0, result, sizeof(result));//SendMessage(hwndDlg, EM_GETLINE, (WPARAM) 0, (LPARAM) result);
 	
 	VALUE_FORMAT format = (VALUE_FORMAT) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	
@@ -109,37 +109,45 @@ int ValueSubmit(HWND hwndDlg, char *loc, int size) {
 		case HEX2:
 		case HEX4:
 #ifdef WINVER
-			sscanf_s(result, "%x", (int*) value);
+			_stscanf_s(result, _T("%x"), (int*) value);
 #else
 			sscanf(result, "%x", (int*) value);
 #endif
+			if (*((int *) value) > max_value)
+				*((int *) value) = max_value;
 			break;
 		case FLOAT2:
 		case FLOAT4:
 			if (size == sizeof(float))
 #ifdef WINVER
-				sscanf_s(result, "%f", (float *) value);
+				_stscanf_s(result, _T("%f"), (float *) value);
 			else
-				sscanf_s(result, "%lf", (double *) value);
+				_stscanf_s(result, _T("%lf"), (double *) value);
 #else
 				sscanf(result, "%f", (float *) value);
 			else
 				sscanf(result, "%lf", (double *) value);
 #endif
+			if (*((float *) value) > max_value)
+				*((float *) value) = max_value;
 			break;
 		case DEC:
 #ifdef WINVER
-			sscanf_s(result, "%d", (int*) value);
+			_stscanf_s(result, _T("%d"), (int*) value);
 #else
 			sscanf(result, "%d", (int*) value);
 #endif
+			if (*((int *) value) > max_value)
+				*((int *) value) = max_value;
 			break;
 		case CHAR1:
 #ifdef WINVER
-			sscanf_s(result, "%c", (char*) value);
+			_stscanf_s(result, _T("%c"), (char*) value);
 #else
 			sscanf(result, "%c", (char*) value);
 #endif
+			if (*((char *) value) > max_value)
+				*((char *) value) = max_value;
 			break;
 		}
 	} else {
