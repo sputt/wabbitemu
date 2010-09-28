@@ -11,9 +11,7 @@
    1.4  11 Dec 2005  Add hack to avoid MSDOS end-of-line conversions
                      Avoid some compiler warnings for input and output buffers
  */
-
-#include <stdio.h>
-#include <string.h>
+#include "stdafx.h"
 #include <assert.h>
 #include "zlib.h"
 

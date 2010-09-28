@@ -15,16 +15,16 @@
 #endif
 
 
-char *generate_gif_name(char *fn, int num, char *dest) {
+TCHAR *generate_gif_name(TCHAR *fn, int num, TCHAR *dest) {
 	size_t i;
-	for (i = strlen(fn) - 1; 
+	for (i = _tcslen(fn) - 1; 
 	 	 i && fn[i] != '.';
 	 	 i--);
 	 	 
 	if (i) fn[i] = '\0';
 	
 #ifdef WINVER
-	sprintf_s(dest, strlen(dest), "%s%d.gif", fn, num);
+	StringCbPrintf(dest, _tcslen(dest), _T("%s%d.gif"), fn, num);
 #else
 	sprintf(dest, "%s%d.gif", fn, num);
 #endif
@@ -104,7 +104,7 @@ void handle_screenshot() {
 #ifdef WINVER
 	LCD_t* lcd = calcs[gslot].cpu.pio.lcd;
 	int i, j;
-	static char gif_fn_backup[MAX_PATH];
+	static TCHAR gif_fn_backup[MAX_PATH];
 	BOOL running_backup = calcs[gslot].running;
 
 	if ((gif_write_state != GIF_IDLE) && (!calcs[gslot].running)) gif_write_state = GIF_END;
@@ -118,20 +118,20 @@ void handle_screenshot() {
 		}
 		case GIF_START:
 		{
-			strcpy_s(gif_fn_backup, gif_file_name);
+			StringCbCopy(gif_fn_backup, sizeof(gif_fn_backup), gif_file_name);
 			
 			if (gif_autosave) {
 				/* do file save */
 				if (gif_use_increasing) {
-					char fn[MAX_PATH];
+					TCHAR fn[MAX_PATH];
 					FILE *test = (FILE*) 1;
 					
 					for (i = 0; test; i++) {
 						generate_gif_name(gif_file_name, i, fn);
-						fopen_s(&test, fn, "r");
+						_tfopen_s(&test, fn, _T("r"));
 						if (test) fclose(test);
 					}
-					strcpy_s(gif_file_name, fn);
+					StringCbCopy(gif_file_name, sizeof(gif_file_name), fn);
 				}
 			} else {
 #ifndef _WINDLL
@@ -162,7 +162,7 @@ void handle_screenshot() {
 #ifdef USE_GIF_SIZES
 			for (i = 0; i < gif_ys; i++)
 				for (j = 0; j < gif_xs; j++)
-					gif_frame[i * gif_xs + j] = lcd->gif[i][j];		
+					gif_frame[i * gif_xs + j] = lcd->gif[i][j];	
 #else
 			for (i = 0; i < SCRYSIZE; i++) {
 				for (j = 0; j < SCRXSIZE; j++) {
@@ -201,7 +201,7 @@ void handle_screenshot() {
 			//WriteRIFFIndex();
 			gif_newframe = 1;
 			gif_file_num++;
-			strcpy_s(gif_file_name, gif_fn_backup);
+			StringCbCopy(gif_file_name, sizeof(gif_file_name), gif_fn_backup);
 			break;
 		}
 	}

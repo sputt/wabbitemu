@@ -7,10 +7,12 @@
 #include "print.h"
 #include "expandpane.h"
 #include "dbvalue.h"
+#include "dbdisasm.h"
 
 
 extern HINSTANCE g_hInst;
 extern HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
+extern HWND hdisasm;
 
 #define DBREG_ORGX	12
 #define DBREG_ORGY	0
@@ -35,11 +37,11 @@ static RECT val_locs[NumElm(reg_offset)];
 static int kRegRow, kRegAddr;
 
 void ValueDraw(HDC hdc, RECT *dr, int i) {
-	char szRegVal[16];
+	TCHAR szRegVal[16];
 
 	dr->right = dr->left + kRegAddr;
 #ifdef WINVER
-	sprintf_s(szRegVal, "%s", reg_offset[i].name);
+	StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%s"), reg_offset[i].name);
 #else
 	sprintf(szRegVal, "%s", reg_offset[i].name);
 #endif
@@ -54,13 +56,13 @@ void ValueDraw(HDC hdc, RECT *dr, int i) {
 
 	if (i < REG16_ROWS * REG16_COLS) {
 #ifdef WINVER
-		sprintf_s(szRegVal, "%04X", reg16(reg_offset[i].offset));
+		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%04X"), reg16(reg_offset[i].offset));
 #else
 		sprintf(szRegVal, "%04X", reg16(reg_offset[i].offset));
 #endif
 		DrawText(hdc, szRegVal, -1, dr, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 #ifdef WINVER
-		sprintf_s(szRegVal, "%02X", reg8(reg_offset[i].offset));
+		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%02X"), reg8(reg_offset[i].offset));
 #else
 		sprintf(szRegVal, "%02X", reg8(reg_offset[i].offset));
 #endif
@@ -89,9 +91,9 @@ void HandleEditMessages(HWND hwnd, WPARAM wParam, LPARAM lParam) {
 		default:
 		if (vi != -1) {
 			if (vi < REG16_ROWS*REG16_COLS) {
-				ValueSubmit(hwndVal, ((char*) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 2);
+				ValueSubmit(hwndVal, ((TCHAR *) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 2);
 			} else {
-				ValueSubmit(hwndVal, ((char*) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 1);
+				ValueSubmit(hwndVal, ((TCHAR *) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 1);
 
 			}
 			SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
@@ -132,18 +134,18 @@ void CreateEditField(HWND hwnd, POINT p) {
 	GetClientRect(hwnd, &r);
 
 	hwndVal = NULL;
-	char rval[8];
+	TCHAR rval[8];
 	int edit_width = 4;
 	if (vi < REG16_ROWS*REG16_COLS) {
 #ifdef WINVER
-		sprintf_s(rval, "%04X", reg16(reg_offset[vi].offset));
+		StringCbPrintf(rval, sizeof(rval), _T("%04X"), reg16(reg_offset[vi].offset));
 #else
 		sprintf(rval, "%04X", reg16(reg_offset[vi].offset));
 #endif
 		edit_width = 4;
 	} else {
 #ifdef WINVER
-		sprintf_s(rval, "%02X", reg8(reg_offset[vi].offset));
+		StringCbPrintf(rval, sizeof(rval), _T("%02X"), reg8(reg_offset[vi].offset));
 #else
 		sprintf(rval, "%02X", reg8(reg_offset[vi].offset));
 #endif
@@ -155,7 +157,7 @@ void CreateEditField(HWND hwnd, POINT p) {
 	GetWindowRect(hwnd, &rrc);
 
 	hwndVal =
-	CreateWindow("EDIT", rval,
+	CreateWindow(_T("EDIT"), rval,
 		WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT | ES_MULTILINE,
 		val_locs[vi].left-2,
 		val_locs[vi].top,
@@ -177,14 +179,14 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	switch (Message) {
 	case WM_CREATE:
 	{
-		struct {char *name; void *data; size_t size;} reg[] =
+		struct {TCHAR *name; void *data; size_t size;} reg[] =
 		{
-				{"af", &calcs[DebuggerSlot].cpu.af, 2}, {"af'", &calcs[DebuggerSlot].cpu.afp, 2},
-				{"bc", &calcs[DebuggerSlot].cpu.bc, 2}, {"bc'", &calcs[DebuggerSlot].cpu.bcp, 2},
-				{"de", &calcs[DebuggerSlot].cpu.de, 2}, {"de'", &calcs[DebuggerSlot].cpu.dep, 2},
-				{"hl", &calcs[DebuggerSlot].cpu.hl, 2}, {"hl'", &calcs[DebuggerSlot].cpu.hlp, 2},
-				{"ix", &calcs[DebuggerSlot].cpu.ix, 2}, {"sp",  &calcs[DebuggerSlot].cpu.sp, 2},
-				{"iy", &calcs[DebuggerSlot].cpu.iy, 2}, {"pc",  &calcs[DebuggerSlot].cpu.pc, 2},
+				{_T("af"), &calcs[DebuggerSlot].cpu.af, 2}, {_T("af'"), &calcs[DebuggerSlot].cpu.afp, 2},
+				{_T("bc"), &calcs[DebuggerSlot].cpu.bc, 2}, {_T("bc'"), &calcs[DebuggerSlot].cpu.bcp, 2},
+				{_T("de"), &calcs[DebuggerSlot].cpu.de, 2}, {_T("de'"), &calcs[DebuggerSlot].cpu.dep, 2},
+				{_T("hl"), &calcs[DebuggerSlot].cpu.hl, 2}, {_T("hl'"), &calcs[DebuggerSlot].cpu.hlp, 2},
+				{_T("ix"), &calcs[DebuggerSlot].cpu.ix, 2}, {_T("sp"),  &calcs[DebuggerSlot].cpu.sp, 2},
+				{_T("iy"), &calcs[DebuggerSlot].cpu.iy, 2}, {_T("pc"),  &calcs[DebuggerSlot].cpu.pc, 2},
 		};
 
 		// Create all of the value fields
@@ -198,6 +200,10 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	}
 	case WM_COMMAND:
 	{
+		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr((HWND) lParam, GWLP_USERDATA);
+		dp_settings *dps = (dp_settings *) GetWindowLongPtr(hdisasm, GWLP_USERDATA);
+		if (!_tcscmp(vfs->szName, _T("pc")))
+			cycle_pcs(dps);
 		SendMessage(calcs[DebuggerSlot].hwndDebug, WM_USER, DB_UPDATE, 0);
 		return 0;
 	}
@@ -250,21 +256,21 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 		{
 			int row_y = kRegRow/4 + kRegRow*(i+1);
 
-			hwndValue = CreateValueField(hwnd, "", 0, &calcs[DebuggerSlot].cpu.mem_c->banks[i].page, 1, 3, HEX2);
+			hwndValue = CreateValueField(hwnd, _T(""), 0, &calcs[DebuggerSlot].cpu.mem_c->banks[i].page, 1, 3, HEX2, calcs[DebuggerSlot].mem_c.flash_pages - 1);
 			SetWindowPos(hwndValue, NULL, kRegAddr*4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 
 			rdoType[2*i] =
 				CreateWindow(
-					"BUTTON",
-					"",
+					_T("BUTTON"),
+					_T(""),
 					WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON | WS_GROUP,
 					kRegAddr*3/2+kRegAddr/8, row_y, kRegAddr/2, kRegRow,
 					hwnd, (HMENU) (20+2*i), g_hInst, NULL);
 			rdoType[2*i+1] =
 				CreateWindow(
-					"BUTTON",
-					"",
+					_T("BUTTON"),
+					_T(""),
 					WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
 					kRegAddr*5/2-kRegAddr/8, row_y, kRegAddr/2, kRegRow,
 					hwnd, (HMENU) (20+2*i+1), g_hInst, NULL);
@@ -272,8 +278,8 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 			DWORD check_width = GetSystemMetrics(SM_CYMENUCHECK);
 			chkRO[i] =
 			CreateWindow(
-				"BUTTON",
-				"",
+				_T("BUTTON"),
+				_T(""),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				kRegAddr*3+((kRegAddr-check_width)/2), row_y, kRegAddr/2, kRegRow,
 				hwnd, (HMENU) (30+i), g_hInst, NULL);
@@ -410,18 +416,18 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 		HWND hwndValue;
 		freq = ((double) calcs[DebuggerSlot].cpu.timer_c->freq) / 1000000.0;
-		hwndValue = CreateValueField(hwnd, "Freq.", kRegAddr*3/2, &freq, sizeof(double), 5, FLOAT2);
+		hwndValue = CreateValueField(hwnd, _T("Freq."), kRegAddr*3/2, &freq, sizeof(double), 5, FLOAT2);
 		SetWindowPos(hwndValue, NULL, 0, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "Bus", kRegAddr*2 + kRegAddr/4, &calcs[DebuggerSlot].cpu.bus, 1, 2, HEX2);
+		hwndValue = CreateValueField(hwnd, _T("Bus"), kRegAddr*2 + kRegAddr/4, &calcs[DebuggerSlot].cpu.bus, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 0, kRegRow*2, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
 		chkHalt =
 		CreateWindow(
-			"BUTTON",
-			"Halt",
+			_T("BUTTON"),
+			_T("Halt"),
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 			0, 0, 3*kRegAddr, kRegRow,
 			hwnd, (HMENU) 1, g_hInst, NULL);
@@ -494,8 +500,8 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	{
 		chkIff1 =
 		CreateWindow(
-			"BUTTON",
-			"iff1",
+			_T("BUTTON"),
+			_T("iff1"),
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 			0, 0, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 1, g_hInst, NULL);
@@ -504,26 +510,26 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		chkIff2 =
 		CreateWindowEx(
 			WS_EX_TRANSPARENT,
-			"BUTTON",
-			"iff2",
+			_T("BUTTON"),
+			_T("iff2"),
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 			2*kRegAddr, 0, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 2, g_hInst, NULL);
 		SendMessage(chkIff2, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
 
-		HWND hwndValue = CreateValueField(hwnd, "IM", kRegAddr, &calcs[DebuggerSlot].cpu.imode, 1, 2, HEX2);
+		HWND hwndValue = CreateValueField(hwnd, _T("IM"), kRegAddr, &calcs[DebuggerSlot].cpu.imode, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 0, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "i", kRegAddr, &calcs[DebuggerSlot].cpu.i, 1, 2, HEX2);
+		hwndValue = CreateValueField(hwnd, _T("i"), kRegAddr, &calcs[DebuggerSlot].cpu.i, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 2*kRegAddr, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "Mask", kRegAddr, &calcs[DebuggerSlot].cpu.pio.stdint->intactive, 1, 2, HEX2);
+		hwndValue = CreateValueField(hwnd, _T("Mask"), kRegAddr, &calcs[DebuggerSlot].cpu.pio.stdint->intactive, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 0, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "r", kRegAddr, &calcs[DebuggerSlot].cpu.r, 1, 2, HEX2);
+		hwndValue = CreateValueField(hwnd, _T("r"), kRegAddr, &calcs[DebuggerSlot].cpu.r, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 2*kRegAddr, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 		return 0;
@@ -556,72 +562,72 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 		FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
 
-		char szRegVal[16];
+		TCHAR szRegVal[16];
 		double ntimer;
 		SetRect(&rc, 0, kRegRow*3, kRegAddr*3, kRegRow*4);
 
 		ntimer = tc_elapsed(&calcs[DebuggerSlot].timer_c) - calcs[DebuggerSlot].cpu.pio.stdint->lastchk1;
 		ntimer *= 1000;
 #ifdef WINVER
-		sprintf_s(szRegVal, "%0.4lf ms", ntimer);
+		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 #else
 		sprintf(szRegVal, "%0.4lf ms", ntimer);
 #endif
 		SelectObject(hdc, hfontSegoe);
-		DrawTextA(hdc, "Next Timer1", -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+		DrawText(hdc, _T("Next Timer1"), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
 		SelectObject(hdc, hfontLucida);
 		OffsetRect(&rc, kRegAddr*3, 0);
-		DrawTextA(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+		DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
 		SelectObject(hdc, hfontSegoe);
 		OffsetRect(&rc, -kRegAddr*3, kRegRow);
-		DrawTextA(hdc, "Timer1 dur.", -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+		DrawText(hdc, _T("Timer1 dur."), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
 		ntimer = calcs[DebuggerSlot].cpu.pio.stdint->timermax1;
 		ntimer *= 1000;
 #ifdef WINVER
-		sprintf_s(szRegVal, "%0.4lf ms", ntimer);
+		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 #else
 		sprintf(szRegVal, "%0.4lf ms", ntimer);
 #endif
 
 		SelectObject(hdc, hfontLucida);
 		OffsetRect(&rc, kRegAddr*3, 0);
-		DrawTextA(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+		DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
 
 		SelectObject(hdc, hfontSegoe);
 		OffsetRect(&rc, -kRegAddr*3, kRegRow*3/2);
-		DrawTextA(hdc, "Next Timer2", -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+		DrawText(hdc, _T("Next Timer2"), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
 		ntimer = tc_elapsed(&calcs[DebuggerSlot].timer_c) - calcs[DebuggerSlot].cpu.pio.stdint->lastchk2;
 		ntimer *= 1000;
 #ifdef WINVER
-		sprintf_s(szRegVal, "%0.4lf ms", ntimer);
+		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 #else
 		sprintf(szRegVal, "%0.4lf ms", ntimer);
 #endif
 
 		SelectObject(hdc, hfontLucida);
 		OffsetRect(&rc, kRegAddr*3, 0);
-		DrawTextA(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+		DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
 		SelectObject(hdc, hfontSegoe);
 		OffsetRect(&rc, -kRegAddr*3, kRegRow);
-		DrawTextA(hdc, "Timer2 dur.", -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+		DrawText(hdc, _T("Timer2 dur."), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
 		ntimer = calcs[DebuggerSlot].cpu.pio.stdint->timermax2;
 		ntimer *= 1000;
 #ifdef WINVER
-		sprintf_s(szRegVal, "%0.4lf ms", ntimer);
+		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 #else
 		sprintf(szRegVal, "%0.4lf ms", ntimer);
 #endif
 
 		SelectObject(hdc, hfontLucida);
 		OffsetRect(&rc, kRegAddr*3, 0);
-		DrawTextA(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+		DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
 		EndPaint(hwnd, &ps);
 		return 0;
@@ -687,26 +693,26 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 		HWND hwndValue;
 
-		hwndValue = CreateValueField(hwnd, "X", kRegAddr, &calcs[DebuggerSlot].cpu.pio.lcd->x, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, _T("X"), kRegAddr, &calcs[DebuggerSlot].cpu.pio.lcd->x, 4, 2, DEC);
 		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, 0, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "Y", kRegAddr, &calcs[DebuggerSlot].cpu.pio.lcd->y, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, _T("Y"), kRegAddr, &calcs[DebuggerSlot].cpu.pio.lcd->y, 4, 2, DEC);
 		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "Z", kRegAddr, &calcs[DebuggerSlot].cpu.pio.lcd->z, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, _T("Z"), kRegAddr, &calcs[DebuggerSlot].cpu.pio.lcd->z, 4, 2, DEC);
 		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, "Contrast", kRegAddr*2, &calcs[DebuggerSlot].cpu.pio.lcd->contrast, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, _T("Contrast"), kRegAddr*2, &calcs[DebuggerSlot].cpu.pio.lcd->contrast, 4, 2, DEC);
 		SetWindowPos(hwndValue, NULL, 0, 5*kRegRow/4, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
 		chkOn =
 		CreateWindow(
-			"BUTTON",
-			"Powered",
+			_T("BUTTON"),
+			_T("Powered"),
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 			0, 0, 3*kRegAddr, kRegRow,
 			hwnd, (HMENU) IDC_LCD_ON, g_hInst, NULL);
@@ -714,8 +720,8 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 		grpMode =
 		CreateWindow(
-			"BUTTON",
-			"Cursor Mode",
+			_T("BUTTON"),
+			_T("Cursor Mode"),
 			WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
 			0, 3*kRegRow, 5*kRegAddr, 7*kRegRow/2,
 			hwnd, (HMENU) 34234, g_hInst, NULL);
@@ -724,8 +730,8 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 		rdoXinc =
 		CreateWindow(
-			"BUTTON",
-			"X-Inc.",
+			_T("BUTTON"),
+			_T("X-Inc."),
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON | WS_GROUP,
 			kRegAddr/2, 4*kRegRow, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 84354, g_hInst, NULL);
@@ -733,8 +739,8 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 		rdoYinc =
 		CreateWindow(
-			"BUTTON",
-			"Y-Inc.",
+			_T("BUTTON"),
+			_T("Y-Inc."),
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON ,
 			2*kRegAddr + kRegAddr*2/3, 4*kRegRow, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 84355, g_hInst, NULL);
@@ -742,8 +748,8 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 		rdoXdec =
 		CreateWindow(
-			"BUTTON",
-			"X-Dec.",
+			_T("BUTTON"),
+			_T("X-Dec."),
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON ,
 			kRegAddr/2, 5*kRegRow, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 84356, g_hInst, NULL);
@@ -751,8 +757,8 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 		rdoYdec =
 		CreateWindow(
-			"BUTTON",
-			"Y-Dec.",
+			_T("BUTTON"),
+			_T("Y-Dec."),
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON ,
 			2*kRegAddr + kRegAddr*2/3, 5*kRegRow, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 84357, g_hInst, NULL);
@@ -849,8 +855,8 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			chk_z =
 			CreateWindow(
-				"BUTTON",
-				"z",
+				_T("BUTTON"),
+				_T("z"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				0, FLAGS_TOP, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_Z, g_hInst, NULL);
@@ -858,8 +864,8 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			chk_c =
 			CreateWindow(
-				"BUTTON",
-				"c",
+				_T("BUTTON"),
+				_T("c"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				2*kRegAddr, FLAGS_TOP, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_C, g_hInst, NULL);
@@ -867,8 +873,8 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			chk_s =
 			CreateWindow(
-				"BUTTON",
-				"s",
+				_T("BUTTON"),
+				_T("s"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				4*kRegAddr, FLAGS_TOP, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_S, g_hInst, NULL);
@@ -876,8 +882,8 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			chk_pv =
 			CreateWindow(
-				"BUTTON",
-				"p/v",
+				_T("BUTTON"),
+				_T("p/v"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				0, FLAGS_TOP + kRegRow, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_PV, g_hInst, NULL);
@@ -885,8 +891,8 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			chk_hc =
 			CreateWindow(
-				"BUTTON",
-				"hc",
+				_T("BUTTON"),
+				_T("hc"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				2*kRegAddr, FLAGS_TOP + kRegRow, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_HC, g_hInst, NULL);
@@ -894,8 +900,8 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			chk_n =
 			CreateWindow(
-				"BUTTON",
-				"n",
+				_T("BUTTON"),
+				_T("n"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				4*kRegAddr, FLAGS_TOP + kRegRow, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_N, g_hInst, NULL);
@@ -1020,28 +1026,28 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 				wcx.cbSize = sizeof(wcx);
 				wcx.style = CS_DBLCLKS;
-				wcx.lpszClassName = "WabbitRegDisp";
+				wcx.lpszClassName = _T("WabbitRegDisp");
 				wcx.lpfnWndProc = DBRegProc;
 				wcx.hCursor = LoadCursor(NULL, IDC_ARROW);
 				RegisterClassEx(&wcx);
 
-				wcx.lpszClassName = "WabbitFlagDisp";
+				wcx.lpszClassName = _T("WabbitFlagDisp");
 				wcx.lpfnWndProc = DBFlagProc;
 				RegisterClassEx(&wcx);
 
-				wcx.lpszClassName = "WabbitLCDDisp";
+				wcx.lpszClassName = _T("WabbitLCDDisp");
 				wcx.lpfnWndProc = DBLCDProc;
 				RegisterClassEx(&wcx);
 
-				wcx.lpszClassName = "WabbitCPUDisp";
+				wcx.lpszClassName = _T("WabbitCPUDisp");
 				wcx.lpfnWndProc = DBCPUProc;
 				RegisterClassEx(&wcx);
 
-				wcx.lpszClassName = "WabbitMemDisp";
+				wcx.lpszClassName = _T("WabbitMemDisp");
 				wcx.lpfnWndProc = DBMemMapProc;
 				RegisterClassEx(&wcx);
 
-				wcx.lpszClassName = "WabbitInterruptDisp";
+				wcx.lpszClassName = _T("WabbitInterruptDisp");
 				wcx.lpfnWndProc = DBInterruptProc;
 				RegisterClassEx(&wcx);
 
@@ -1053,66 +1059,66 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			hwndContent =
 				CreateWindow(
-						"WabbitRegDisp",
-						"Registers",
+						_T("WabbitRegDisp"),
+						_T("Registers"),
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
 						(HMENU) 1, g_hInst, NULL);
 
-			hwndExp = CreateExpandPane(hwnd, "Registers", hwndContent);
+			hwndExp = CreateExpandPane(hwnd, _T("Registers"), hwndContent);
 
 
 			hwndContent =
 				CreateWindow(
-						"WabbitFlagDisp",
-						"Flags",
+						_T("WabbitFlagDisp"),
+						_T("Flags"),
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
 						(HMENU) 1, g_hInst, NULL);
 
-			CreateExpandPane(hwnd, "Flags", hwndContent);
+			CreateExpandPane(hwnd, _T("Flags"), hwndContent);
 
 			hwndContent =
 				CreateWindow(
-						"WabbitCPUDisp",
-						"CPU Status",
+						_T("WabbitCPUDisp"),
+						_T("CPU Status"),
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
 						(HMENU) 1, g_hInst, NULL);
-			CreateExpandPane(hwnd, "CPU Status", hwndContent);
+			CreateExpandPane(hwnd, _T("CPU Status"), hwndContent);
 
 			hwndContent =
 				CreateWindow(
-						"WabbitMemDisp",
-						"Memory Map",
+						_T("WabbitMemDisp"),
+						_T("Memory Map"),
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
 						(HMENU) 1, g_hInst, NULL);
-			CreateExpandPane(hwnd, "Memory Map", hwndContent);
+			CreateExpandPane(hwnd, _T("Memory Map"), hwndContent);
 
 			hwndContent =
 				CreateWindow(
-						"WabbitInterruptDisp",
-						"Interrupts",
+						_T("WabbitInterruptDisp"),
+						_T("Interrupts"),
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
 						(HMENU) 1, g_hInst, NULL);
-			CreateExpandPane(hwnd, "Interrupts", hwndContent);
+			CreateExpandPane(hwnd, _T("Interrupts"), hwndContent);
 
 			hwndContent =
 				CreateWindow(
-					"WabbitLCDDisp",
-					"Display",
+					_T("WabbitLCDDisp"),
+					_T("Display"),
 					WS_CHILD  | WS_CLIPSIBLINGS,
 					0, 0, 1, 1,
 					hwnd,
 					(HMENU) 1, g_hInst, NULL);
-			CreateExpandPane(hwnd, "Display", hwndContent);
+			CreateExpandPane(hwnd, _T("Display"), hwndContent);
 
 			RECT rc;
 			GetClientRect(hwnd, &rc);
@@ -1242,10 +1248,10 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (vi != -1) {
 					if (vi < REG16_ROWS*REG16_COLS) {
 						ValueSubmit(hwndVal,
-							((char*) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 2);
+							((TCHAR *) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 2);
 					} else {
 						ValueSubmit(hwndVal,
-							((char*) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 1);
+							((TCHAR *) (&calcs[DebuggerSlot].cpu)) + reg_offset[vi].offset, 1);
 
 					}
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);

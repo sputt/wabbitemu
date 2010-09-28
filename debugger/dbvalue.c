@@ -13,37 +13,19 @@ extern HFONT hfontLucida;
 
 static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
-typedef struct tag_value_field_settings {
-	void *data;
-	size_t size;	// size in bytes of the value
-	VALUE_FORMAT format;
-	BOOL hot_lit;
-	BOOL selected;
-	BOOL editing;
-
-	// private fields
-	char szName[16];
-	DWORD cxName;
-	char szValue[32];
-	char szTip[80];
-	int max_digits;
-	RECT hot;
-	HWND hwndTip;
-	TOOLINFO toolInfo;
-	HWND hwndVal;
-} value_field_settings;
 
 /*
  * Create a value field with a label
  */
 HWND CreateValueField(
 		HWND hwndParent,
-		char *name,
+		TCHAR *name,
 		int label_width,
 		void *data,
 		size_t size,
 		int max_digits,
-		VALUE_FORMAT format)
+		VALUE_FORMAT format,
+		int max_value)
 {
 	static BOOL class_registered = FALSE;
 	static int ID = 400;
@@ -91,9 +73,10 @@ HWND CreateValueField(
 	vfs->size = size;
 	vfs->format = format;
 	vfs->max_digits = max_digits;
+	vfs->max_value = max_value;
 	vfs->hwndTip = hwndTip;
 #ifdef WINVER
-	strcpy_s(vfs->szName, name);
+	StringCbCopy(vfs->szName, sizeof(vfs->szName), name);
 #else
 	strcpy(vfs->szName, name);
 #endif
@@ -229,7 +212,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			}
 		}
 
-		if (strlen(vfs->szName) > 0) {
+		if (_tcslen(vfs->szName) > 0) {
 			GetClientRect(hwnd, &rc);
 			SetTextColor(hdc, DBCOLOR_HILIGHT);
 			rc.left += tm.tmAveCharWidth / 2;
@@ -247,11 +230,11 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	case WM_SIZE:
 	{
 		DWORD dwWidth = tm.tmAveCharWidth * 10;
-		if (strlen(vfs->szName) == 0)
+		if (_tcslen(vfs->szName) == 0)
 			dwWidth = tm.tmAveCharWidth * 3;
-		if (strlen(vfs->szName) > 4)
+		if (_tcslen(vfs->szName) > 4)
 			dwWidth *= 2;
-		dwWidth = vfs->cxName + (vfs->max_digits+1)*tm.tmAveCharWidth;
+		dwWidth = vfs->cxName + (vfs->max_digits+1) * tm.tmAveCharWidth;
 		SetWindowPos(hwnd, NULL, 0, 0, dwWidth, tm.tmHeight * 4 / 3, SWP_NOMOVE | SWP_NOZORDER);
 		InvalidateRect(hwnd, NULL, TRUE);
 		UpdateWindow(hwnd);
@@ -269,7 +252,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	{
 		// Create the edit window (modify the hot RECT slightly to make text line up perfectly (at 90 dpi)
 		vfs->hwndVal =
-		CreateWindow("EDIT", vfs->szValue,
+		CreateWindow(_T("EDIT"), vfs->szValue,
 			WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT | ES_MULTILINE,
 			vfs->hot.left + 1,
 			vfs->hot.top,
@@ -311,9 +294,9 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			case EN_KILLFOCUS:
 				if (GetFocus() == hwnd) break;
 			case EN_SUBMIT:
-				ValueSubmit(vfs->hwndVal, (char *) vfs->data, (int) vfs->size);
+				ValueSubmit(vfs->hwndVal, (TCHAR *) vfs->data, (int) vfs->size, vfs->max_value);
 				vfs->editing = FALSE;
-				SendMessage(GetParent(hwnd), WM_COMMAND, 0, 0);
+				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(0, EN_CHANGE), (LPARAM) hwnd);
 				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 				return 0;
 			case EN_CANCEL:
@@ -335,31 +318,31 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 		case DB_UPDATE:
 			switch (vfs->format) {
 			case HEX2:
-				sprintf_s(vfs->szValue, "%02X", *((unsigned char *) vfs->data));
+				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%02X"), *((_TUCHAR *) vfs->data));
 				break;
 			case HEX4:
-				sprintf_s(vfs->szValue, "%04X", *((unsigned short *) vfs->data));
+				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%04X"), *((unsigned short *) vfs->data));
 				break;
 			case FLOAT2:
 				if (vfs->size == sizeof(float))
-					sprintf_s(vfs->szValue, "%*.2f", vfs->max_digits, *((float *) vfs->data));
+					StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%*.2f"), vfs->max_digits, *((float *) vfs->data));
 				else
-					sprintf_s(vfs->szValue, "%*.2lf", vfs->max_digits, *((double *) vfs->data));
+					StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%*.2lf"), vfs->max_digits, *((double *) vfs->data));
 				break;
 			case FLOAT4:
 				if (vfs->size == sizeof(float))
-					sprintf_s(vfs->szValue, "%*.4f", vfs->max_digits, *((float *) vfs->data));
+					_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%*.4f"), vfs->max_digits, *((float *) vfs->data));
 				else
-					sprintf_s(vfs->szValue, "%*.4f", vfs->max_digits, *((double *) vfs->data));
+					_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%*.4f"), vfs->max_digits, *((double *) vfs->data));
 				break;
 			case DEC:
-				sprintf_s(vfs->szValue, "%*d", vfs->max_digits, *((unsigned int *) vfs->data));
+				_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%*d"), vfs->max_digits, *((unsigned int *) vfs->data));
 				break;
 			case CHAR1:
-				sprintf_s(vfs->szValue, "%c", *((unsigned char *) vfs->data));
+				_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%c"), *((_TUCHAR *) vfs->data));
 				break;
 			default:
-				sprintf_s(vfs->szValue, "%d", *((unsigned int *) vfs->data));
+				_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%d"), *((unsigned int *) vfs->data));
 				break;
 			}
 
@@ -370,9 +353,9 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			SendMessage(vfs->hwndTip, WM_SETFONT, (WPARAM) hfontLucida, TRUE);
 			SendMessage(vfs->hwndTip, TTM_SETDELAYTIME, TTDT_AUTOMATIC, MAKELONG(GetDoubleClickTime() * 5, 0));
 
-			sprintf_s(vfs->szTip, "%c: %3d (%s)\n%c: %3d (%s)",
-					vfs->szName[0], ((unsigned char *)vfs->data)[1], "01010100",
-					vfs->szName[1], ((unsigned char *)vfs->data)[0], "01010100");
+			StringCbPrintf(vfs->szTip, sizeof(vfs->szTip), _T("%c: %3d (%s)\n%c: %3d (%s)"),
+					vfs->szName[0], ((_TUCHAR *)vfs->data)[1], _T("01010100"),
+					vfs->szName[1], ((_TUCHAR *)vfs->data)[0], _T("01010100"));
 
 			vfs->toolInfo.lpszText = vfs->szTip;
 			CopyRect(&vfs->toolInfo.rect, &vfs->hot);

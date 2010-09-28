@@ -47,116 +47,116 @@ u_int calc_count(void) {
 }
 
 /*  82 83 */
-static BOOL calc_init_83(int slot, char* os) {
+static BOOL calc_init_83(calc_t *lpCalc, char *os) {
 	/* INTIALIZE 83 */
-	memory_init_83(&calcs[slot].mem_c);
-	tc_init(&calcs[slot].timer_c, MHZ_6);
-	CPU_init(&calcs[slot].cpu, &calcs[slot].mem_c, &calcs[slot].timer_c);
-	ClearDevices(&calcs[slot].cpu);
-	if (calcs[slot].model == TI_82) {
+	memory_init_83(&lpCalc->mem_c);
+	tc_init(&lpCalc->timer_c, MHZ_6);
+	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	ClearDevices(&lpCalc->cpu);
+	if (lpCalc->model == TI_82) {
 		if (memcmp(os,"19.006",6)==0) {
-			device_init_83(&calcs[slot].cpu,0);
+			device_init_83(&lpCalc->cpu,0);
 		} else {
-			device_init_83(&calcs[slot].cpu,1);
+			device_init_83(&lpCalc->cpu,1);
 		}
 	} else {
-		device_init_83(&calcs[slot].cpu,0);
+		device_init_83(&lpCalc->cpu,0);
 	}
 	/* END INTIALIZE 83 */
 
-	calcs[slot].send			= FALSE;
+	lpCalc->send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
-	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
-	calcs[slot].audio->enabled	= FALSE;
-	calcs[slot].audio->init		= FALSE;
+	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
+	lpCalc->audio->enabled	= FALSE;
+	lpCalc->audio->init		= FALSE;
 #endif
 	return TRUE;
 }
 
 /* 85 86 */
-static int calc_init_86(int slot) {
+static int calc_init_86(calc_t *lpCalc) {
 
 	/* INTIALIZE 86 */
 	printf("initializing 86!\n");
-	memory_init_86(&calcs[slot].mem_c);
-	tc_init(&calcs[slot].timer_c, MHZ_4_8);
-	CPU_init(&calcs[slot].cpu, &calcs[slot].mem_c, &calcs[slot].timer_c);
-	ClearDevices(&calcs[slot].cpu);
-	device_init_86(&calcs[slot].cpu);
+	memory_init_86(&lpCalc->mem_c);
+	tc_init(&lpCalc->timer_c, MHZ_4_8);
+	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	ClearDevices(&lpCalc->cpu);
+	device_init_86(&lpCalc->cpu);
 	/* END INTIALIZE 86 */
 
-	calcs[slot].send			= FALSE;
+	lpCalc->send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
-	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
-	calcs[slot].audio->enabled	= FALSE;
-	calcs[slot].audio->init		= FALSE;
+	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
+	lpCalc->audio->enabled	= FALSE;
+	lpCalc->audio->init		= FALSE;
 #endif
 	return 0;
 }
 
 /* 73 83+ */
-int calc_init_83p(int slot) {
+int calc_init_83p(calc_t *lpCalc) {
 	/* INTIALIZE 83+ */
-	memory_init_83p(&calcs[slot].mem_c);
-	tc_init(&calcs[slot].timer_c, MHZ_6);
-	CPU_init(&calcs[slot].cpu, &calcs[slot].mem_c, &calcs[slot].timer_c);
-	ClearDevices(&calcs[slot].cpu);
-	device_init_83p(&calcs[slot].cpu);
+	memory_init_83p(&lpCalc->mem_c);
+	tc_init(&lpCalc->timer_c, MHZ_6);
+	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	ClearDevices(&lpCalc->cpu);
+	device_init_83p(&lpCalc->cpu);
 	/* END INTIALIZE 83+ */
 
-	calcs[slot].send			= FALSE;
+	lpCalc->send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
-	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
-	calcs[slot].audio->enabled	= FALSE;
-	calcs[slot].audio->init		= FALSE;
+	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
+	lpCalc->audio->enabled	= FALSE;
+	lpCalc->audio->init		= FALSE;
 #endif
 	return 0;
 }
 
 /* 83+se */
-int calc_init_83pse(int slot) {
+int calc_init_83pse(calc_t *lpCalc) {
 	/* INTIALIZE 83+se */
-	memory_init_83pse(&calcs[slot].mem_c);
-	tc_init(&calcs[slot].timer_c, MHZ_6);
-	CPU_init(&calcs[slot].cpu, &calcs[slot].mem_c, &calcs[slot].timer_c);
-	ClearDevices(&calcs[slot].cpu);
-	device_init_83pse(&calcs[slot].cpu);
+	memory_init_83pse(&lpCalc->mem_c);
+	tc_init(&lpCalc->timer_c, MHZ_6);
+	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	ClearDevices(&lpCalc->cpu);
+	device_init_83pse(&lpCalc->cpu);
 	/* END INTIALIZE 83+se */
-	calcs[slot].send			= FALSE;
+	lpCalc->send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
-	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
-	calcs[slot].audio->enabled	= FALSE;
-	calcs[slot].audio->init		= FALSE;
+	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
+	lpCalc->audio->enabled	= FALSE;
+	lpCalc->audio->init		= FALSE;
 #endif
 	return 0;
 }
 
 /* 84+ */
-int calc_init_84p(int slot) {
+int calc_init_84p(calc_t *lpCalc) {
 	/* INTIALIZE 84+ */
-	memory_init_84p(&calcs[slot].mem_c);
-	tc_init(&calcs[slot].timer_c, MHZ_6);
-	CPU_init(&calcs[slot].cpu, &calcs[slot].mem_c, &calcs[slot].timer_c);
-	ClearDevices(&calcs[slot].cpu);
-	device_init_83pse(&calcs[slot].cpu);
+	memory_init_84p(&lpCalc->mem_c);
+	tc_init(&lpCalc->timer_c, MHZ_6);
+	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	ClearDevices(&lpCalc->cpu);
+	device_init_83pse(&lpCalc->cpu);
 	void port21_84p(CPU_t *cpu, device_t *dev);
-	calcs[slot].cpu.pio.devices[0x21].code = (devp) &port21_84p;
+	lpCalc->cpu.pio.devices[0x21].code = (devp) &port21_84p;
 #ifdef WITH_BACKUPS
 	init_backups();
 #endif
 	/* END INTIALIZE 84+ */
 
-	calcs[slot].send			= FALSE;
+	lpCalc->send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
-	calcs[slot].audio			= &calcs[slot].cpu.pio.link->audio;
-	calcs[slot].audio->enabled	= FALSE;
-	calcs[slot].audio->init		= FALSE;
+	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
+	lpCalc->audio->enabled	= FALSE;
+	lpCalc->audio->init		= FALSE;
 #endif
 	return 0;
 }
 
 
-void calc_erase_certificate( u_char* mem, int size) {
+void calc_erase_certificate(unsigned char *mem, int size) {
 	if (mem == NULL || size < 32768) return;
 
 	memset(mem + size - 32768, 0xFF, 16384);
@@ -170,22 +170,22 @@ void calc_erase_certificate( u_char* mem, int size) {
 #ifdef _WINDLL
 __declspec(dllexport)
 #endif
-int rom_load(int slot, char * FileName) {
-	if (slot == -1)
-		return -1;
+calc_t *rom_load(calc_t *lpCalc, TCHAR *FileName) {
+	if (lpCalc == NULL)
+		return NULL;
 	//doesnt matter for the 2nd two args never a group
-	TIFILE_t* tifile = importvar(FileName, (int)NULL, (int)NULL);
+	TIFILE_t* tifile = importvar(FileName, (int) NULL, (int) NULL);
 	if (tifile == NULL)
-		return -1;
+		return NULL;
 
-	calcs[slot].speed = 100;
+	lpCalc->speed = 100;
 
-	if (calcs[slot].active)
-		calc_slot_free(slot);
-	calcs[slot].model = tifile->model;
+	if (lpCalc->active)
+		calc_slot_free(lpCalc);
+	lpCalc->model = tifile->model;
 
 	if (tifile->type == SAV_TYPE) {
-		calcs[slot].active 	= TRUE;
+		lpCalc->active 	= TRUE;
 		switch (tifile->model) {
 			case TI_82:
 			case TI_83:
@@ -195,209 +195,227 @@ int rom_load(int slot, char * FileName) {
 				char VerString[64];
 				FindRomVersion(	tifile->model,
 								VerString,
-								(unsigned char*) rom,
+								(unsigned char *) rom,
 								size);
 
-				calc_init_83(slot,VerString);
+				calc_init_83(lpCalc, VerString);
 				break;
 			}
 			case TI_73:
 			case TI_83P:
-				calc_init_83p(slot);
+				calc_init_83p(lpCalc);
 				break;
 			case TI_84PSE:
 			case TI_83PSE:
-				calc_init_83pse(slot);
+				calc_init_83pse(lpCalc);
 				break;
 			case TI_84P:
-				calc_init_84p(slot);
+				calc_init_84p(lpCalc);
 				break;
 			case TI_85:
 			case TI_86:
-				calc_init_86(slot);
+				calc_init_86(lpCalc);
 				break;
 			default:
 				puts("Unknown model");
 				FreeTiFile(tifile);
-				return -1;
+				return NULL;
 		}
 
-		LoadSlot(tifile->save,slot);
+		LoadSlot(tifile->save, lpCalc->slot);
 #ifdef WINVER
-		strcpy_s(calcs[slot].rom_path, FileName);
+		StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), FileName);
 #else
-		strcpy(calcs[slot].rom_path, FileName);
+		strcpy(lpCalc->rom_path, FileName);
 #endif
 		FindRomVersion(	tifile->model,
-						calcs[slot].rom_version,
-						calcs[slot].mem_c.flash,
-						calcs[slot].mem_c.flash_size);
+						lpCalc->rom_version,
+						lpCalc->mem_c.flash,
+						lpCalc->mem_c.flash_size);
 	} else if (tifile->type == ROM_TYPE) {
 
 		switch (tifile->model) {
 			case TI_82:
 			case TI_83:
-				calc_init_83(slot,tifile->rom->version);
-				memcpy(	calcs[slot].cpu.mem_c->flash,
+				calc_init_83(lpCalc, tifile->rom->version);
+				memcpy(	lpCalc->cpu.mem_c->flash,
 						tifile->rom->data,
-						(calcs[slot].cpu.mem_c->flash_size<=tifile->rom->size)?calcs[slot].cpu.mem_c->flash_size:tifile->rom->size);
+						(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
 				break;
 			case TI_85:
 			case TI_86:
-				calc_init_86(slot);
-				memcpy(	calcs[slot].cpu.mem_c->flash,
+				calc_init_86(lpCalc);
+				memcpy(	lpCalc->cpu.mem_c->flash,
 						tifile->rom->data,
-						(calcs[slot].cpu.mem_c->flash_size<=tifile->rom->size)?calcs[slot].cpu.mem_c->flash_size:tifile->rom->size);
+						(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
 				break;
 			case TI_73:
 			case TI_83P:
-				calc_init_83p(slot);
-				memcpy(	calcs[slot].cpu.mem_c->flash,
+				calc_init_83p(lpCalc);
+				memcpy(	lpCalc->cpu.mem_c->flash,
 						tifile->rom->data,
-						(calcs[slot].cpu.mem_c->flash_size<=tifile->rom->size)?calcs[slot].cpu.mem_c->flash_size:tifile->rom->size);
-				calc_erase_certificate(calcs[slot].cpu.mem_c->flash,calcs[slot].cpu.mem_c->flash_size);
+						(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
+				calc_erase_certificate(lpCalc->cpu.mem_c->flash,lpCalc->cpu.mem_c->flash_size);
 				break;
 			case TI_84P:
-				calc_init_84p(slot);
-				memcpy(	calcs[slot].cpu.mem_c->flash,
+				calc_init_84p(lpCalc);
+				memcpy(	lpCalc->cpu.mem_c->flash,
 						tifile->rom->data,
-						(calcs[slot].cpu.mem_c->flash_size<=tifile->rom->size)?calcs[slot].cpu.mem_c->flash_size:tifile->rom->size);
-				calc_erase_certificate(calcs[slot].cpu.mem_c->flash,calcs[slot].cpu.mem_c->flash_size);
+						(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
+				calc_erase_certificate(lpCalc->cpu.mem_c->flash,lpCalc->cpu.mem_c->flash_size);
 				break;
 			case TI_84PSE:
 			case TI_83PSE:
-				calc_init_83pse(slot);
-				memcpy(	calcs[slot].cpu.mem_c->flash,
+				calc_init_83pse(lpCalc);
+				memcpy(	lpCalc->cpu.mem_c->flash,
 						tifile->rom->data,
-						(calcs[slot].cpu.mem_c->flash_size<=tifile->rom->size)?calcs[slot].cpu.mem_c->flash_size:tifile->rom->size);
-				calc_erase_certificate(calcs[slot].cpu.mem_c->flash,calcs[slot].cpu.mem_c->flash_size);
+						(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
+				calc_erase_certificate(lpCalc->cpu.mem_c->flash,lpCalc->cpu.mem_c->flash_size);
 				break;
 			default:
 				FreeTiFile(tifile);
-				return -1;
+				return NULL;
 		}
 
-		calcs[slot].active = TRUE;
-		memcpy(calcs[slot].rom_version, tifile->rom->version, sizeof(calcs[slot].rom_version));
+		lpCalc->active = TRUE;
+		memcpy(lpCalc->rom_version, tifile->rom->version, sizeof(lpCalc->rom_version));
 #ifdef WINVER
-		strcpy_s(calcs[slot].rom_path, FileName);
+		StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), FileName);
 #else
-		strcpy(calcs[slot].rom_path, FileName);
+		strcpy(lpCalc->rom_path, FileName);
 #endif
-		calc_reset(slot);
+		calc_reset(lpCalc);
 
-	} else slot = -1;
-	if (slot != -1) {
-		calcs[slot].cpu.pio.model = calcs[slot].model;
+	} else lpCalc = NULL;
+	if (lpCalc != NULL) {
+		lpCalc->cpu.pio.model = lpCalc->model;
 	}
 
 	/*if (calcs[gslot].hwndFrame)
 		gui_frame_update(slot);*/
 
 	FreeTiFile(tifile);
-	return slot;
+	return lpCalc;
 }
 
-void calc_slot_free(int slot) {
-	if (slot == -1)
+void calc_slot_free(calc_t *lpCalc) {
+	if (lpCalc == NULL)
 		return;
 
-	if (calcs[slot].active) {
-		calcs[slot].active = FALSE;
+	if (lpCalc->active) {
+		lpCalc->active = FALSE;
 #ifdef WINVER
 		/* don't forget to change this when audio for non-Windows
 		 * builds is implemented, or bad things happen! */
-		KillSound(calcs[slot].audio);
-		calcs[slot].audio = NULL;
+		KillSound(lpCalc->audio);
+		lpCalc->audio = NULL;
 #endif
-		printf("Freeing memory\n");
-		free(calcs[slot].mem_c.flash);
-		calcs[slot].mem_c.flash = NULL;
-		free(calcs[slot].mem_c.ram);
-		calcs[slot].mem_c.ram = NULL;
-		free(calcs[slot].mem_c.flash_break);
-		calcs[slot].mem_c.flash_break = NULL;
-		free(calcs[slot].mem_c.ram_break);
-		calcs[slot].mem_c.ram_break = NULL;
-		printf("Freeing hardware\n");
+		_tprintf_s(_T("Freeing memory\n"));
+		free(lpCalc->mem_c.flash);
+		lpCalc->mem_c.flash = NULL;
+		free(lpCalc->mem_c.ram);
+		lpCalc->mem_c.ram = NULL;
+		free(lpCalc->mem_c.flash_break);
+		lpCalc->mem_c.flash_break = NULL;
+		free(lpCalc->mem_c.ram_break);
+		lpCalc->mem_c.ram_break = NULL;
+		_tprintf_s(_T("Freeing hardware\n"));
 		//HACK: needs to disconnect if connected, but since this is all we support for now
-		if (link_connected(slot))
-			link_disconnect(&calcs[slot].cpu);
-		free(calcs[slot].cpu.pio.link);
-		calcs[slot].cpu.pio.link = NULL;
-		printf("freeing keypad\n");
-		free(calcs[slot].cpu.pio.keypad);
-		calcs[slot].cpu.pio.keypad = NULL;
-		printf("freeing stdint\n");
-		free(calcs[slot].cpu.pio.stdint);
-		calcs[slot].cpu.pio.stdint = NULL;
-		printf("freeing se aux %p\n", calcs[slot].cpu.pio.se_aux);
-		free(calcs[slot].cpu.pio.se_aux);
-		calcs[slot].cpu.pio.se_aux = NULL;
-		printf("freeing lcd\n");
-		free(calcs[slot].cpu.pio.lcd);
-		calcs[slot].cpu.pio.lcd = NULL;
-		printf("freeing backups\n");
+		if (link_connected(lpCalc->slot))
+			link_disconnect(&lpCalc->cpu);
+		free(lpCalc->cpu.pio.link);
+		lpCalc->cpu.pio.link = NULL;
+		_tprintf_s(_T("freeing keypad\n"));
+		free(lpCalc->cpu.pio.keypad);
+		lpCalc->cpu.pio.keypad = NULL;
+		_tprintf_s(_T("freeing stdint\n"));
+		free(lpCalc->cpu.pio.stdint);
+		lpCalc->cpu.pio.stdint = NULL;
+		_tprintf_s(_T("freeing se aux %p\n"), lpCalc->cpu.pio.se_aux);
+		free(lpCalc->cpu.pio.se_aux);
+		lpCalc->cpu.pio.se_aux = NULL;
+		_tprintf_s(_T("freeing lcd\n"));
+		free(lpCalc->cpu.pio.lcd);
+		lpCalc->cpu.pio.lcd = NULL;
+		_tprintf_s(_T("freeing backups\n"));
 #ifdef WITH_BACKUPS
 		if (do_backups)
-			free_backups(slot);
+			free_backups(lpCalc->slot);
 #endif
-		printf("Done freeing\n");
+		_tprintf_s(_T("Done freeing\n"));
 	}
 
 }
 
+void calc_turn_on(calc_t *lpCalc) {
+	calc_run_timed(lpCalc, 200);
+	lpCalc->cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
+	calc_run_timed(lpCalc, 300);
+	lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
+}
+
 /* Clear RAM and start calculator at $0000 */
-int calc_reset(int slot) {
-	//memset(calcs[slot].mem_c.ram, 0, calcs[slot].mem_c.ram_size);
-	calcs[slot].cpu.pc			= 0;
-	calcs[slot].cpu.sp			= 0;
-	calcs[slot].cpu.interrupt	= FALSE;
-	calcs[slot].cpu.imode		= 1;
-	calcs[slot].cpu.ei_block	= FALSE;
-	calcs[slot].cpu.iff1		= FALSE;
-	calcs[slot].cpu.iff2		= FALSE;
-	calcs[slot].cpu.halt		= FALSE;
-	calcs[slot].cpu.read		= FALSE;
-	calcs[slot].cpu.write		= FALSE;
-	calcs[slot].cpu.output		= FALSE;
-	calcs[slot].cpu.input		= FALSE;
-	calcs[slot].cpu.prefix		= 0;
-	calcs[slot].cpu.mem_c->port28_remap_count = 0;
+int calc_reset(calc_t *lpCalc) {
+	lpCalc->cpu.sp			= 0;
+	lpCalc->cpu.interrupt	= FALSE;
+	lpCalc->cpu.imode		= 1;
+	lpCalc->cpu.ei_block	= FALSE;
+	lpCalc->cpu.iff1		= FALSE;
+	lpCalc->cpu.iff2		= FALSE;
+	lpCalc->cpu.halt		= FALSE;
+	lpCalc->cpu.read		= FALSE;
+	lpCalc->cpu.write		= FALSE;
+	lpCalc->cpu.output		= FALSE;
+	lpCalc->cpu.input		= FALSE;
+	lpCalc->cpu.prefix		= 0;
+	lpCalc->cpu.mem_c->port27_remap_count = 0;
+	lpCalc->cpu.mem_c->port28_remap_count = 0;
+	/*if (lpCalc->model >= TI_83P) {
+		lpCalc->cpu.pc		= 0x8000;
+		lpCalc->cpu.mem_c->banks[1].page		= lpCalc->cpu.mem_c->flash_pages - 1;
+		lpCalc->cpu.mem_c->banks[1].addr		= lpCalc->cpu.mem_c->flash + (lpCalc->cpu.mem_c->banks[1].page * PAGE_SIZE);
+		lpCalc->cpu.mem_c->banks[1].read_only	= TRUE;
+		lpCalc->cpu.mem_c->banks[1].no_exec	= FALSE;
+	} else {*/
+		//memset(lpCalc->mem_c.ram, 0, lpCalc->mem_c.ram_size);
+		lpCalc->cpu.pc			= 0;
+	//}
 	return 0;
 }
 
-int calc_run_frame(int slot) {
-	double cpu_sync = tc_elapsed((&calcs[slot].timer_c));
+int calc_run_frame(calc_t *lpCalc) {
+	double cpu_sync = tc_elapsed((&lpCalc->timer_c));
 
-	while(calcs[slot].running) {
-		CPU_step(&calcs[slot].cpu);
+	while(lpCalc->running) {
+		CPU_step(&lpCalc->cpu);
 
 		/* sync CPU */
-		if (tc_elapsed((&calcs[slot].timer_c)) - cpu_sync > (1.0f / FPS)) {
-			if (calcs[slot].speed == MAX_SPEED) return 0;
-			if (tc_elapsed((&calcs[slot].timer_c)) - cpu_sync > (calcs[slot].speed / FPS)) return 0;
+		if (tc_elapsed((&lpCalc->timer_c)) - cpu_sync > (1.0f / FPS)) {
+			if (lpCalc->speed == MAX_SPEED) return 0;
+			if (tc_elapsed((&lpCalc->timer_c)) - cpu_sync > (lpCalc->speed / FPS)) return 0;
 		}
 	}
 	return 0;
 }
 
-int calc_run_tstates(int slot, time_t tstates) {
-	long long time_end = tc_tstates((&calcs[slot].timer_c)) + tstates - calcs[slot].time_error;
+int calc_run_tstates(calc_t *lpCalc, time_t tstates) {
+	long long time_end = tc_tstates((&lpCalc->timer_c)) + tstates - lpCalc->time_error;
 
-	while(calcs[slot].running) {
-		if (check_break(&calcs[slot].mem_c, calcs[slot].cpu.pc) & 1) {
-			calcs[slot].running = FALSE;
+	while(lpCalc->running) {
+		if (check_break(&lpCalc->mem_c, lpCalc->cpu.pc) & 1) {
 #ifdef WINVER
-			if (calcs[slot].pCalcNotify != NULL) {
-				CComObject<CCalcAddress> *pCalcAddress = new CComObject<CCalcAddress>();
-				pCalcAddress->AddRef();
-				bank_t *bank = &calcs[slot].mem_c.banks[mc_bank(calcs[slot].cpu.pc)];
-				pCalcAddress->Initialize(calcs[slot].pWabbitemu, !bank->ram, bank->page, calcs[slot].cpu.pc);
-				calcs[slot].pCalcNotify->Breakpoint(pCalcAddress);
+			lpCalc->running = FALSE;
+			bank_t *bank = &lpCalc->mem_c.banks[mc_bank(lpCalc->cpu.pc)];
+
+			Z80_info_t z[2];
+			disassemble(&lpCalc->mem_c, lpCalc->cpu.pc, 1, z);
+
+			if (lpCalc->ole_callback != NULL) {
+				PostMessage(lpCalc->ole_callback, WM_USER, bank->ram<<16 | bank->page, z[0].size<<16 | lpCalc->cpu.pc);
+				_tprintf_s(_T("postmessage called!\n"));
 			} else {
 #endif
-				gui_debug(&calcs[slot]);
+				gui_debug(lpCalc);
 #ifdef WINVER
 			}
 #endif
@@ -405,17 +423,17 @@ int calc_run_tstates(int slot, time_t tstates) {
 		}
 
 		long long oldTStates;
-		if(calcs[slot].profiler.running)
-			oldTStates= tc_tstates((&calcs[slot].timer_c));
-		CPU_step(&calcs[slot].cpu);
-		if (calcs[slot].profiler.running) {
-			long long time = tc_tstates((&calcs[slot].timer_c)) - oldTStates;
-			calcs[slot].profiler.totalTime += time;
-			if(calcs[slot].cpu.pc <= calcs[slot].profiler.highAddress && calcs[slot].cpu.pc >= calcs[slot].profiler.lowAddress )
-				calcs[slot].profiler.data[calcs[slot].cpu.pc / calcs[slot].profiler.blockSize] += (long) time;
+		if(lpCalc->profiler.running)
+			oldTStates = tc_tstates((&lpCalc->timer_c));
+		CPU_step(&lpCalc->cpu);
+		if (lpCalc->profiler.running) {
+			long long time = tc_tstates((&lpCalc->timer_c)) - oldTStates;
+			lpCalc->profiler.totalTime += time;
+			if(lpCalc->cpu.pc <= lpCalc->profiler.highAddress && lpCalc->cpu.pc >= lpCalc->profiler.lowAddress )
+				lpCalc->profiler.data[lpCalc->cpu.pc / lpCalc->profiler.blockSize] += (long) time;
 		}
-		if (tc_tstates((&calcs[slot].timer_c)) >= time_end) {
-			calcs[slot].time_error = tc_tstates((&calcs[slot].timer_c)) - time_end;
+		if (tc_tstates((&lpCalc->timer_c)) >= time_end) {
+			lpCalc->time_error = tc_tstates((&lpCalc->timer_c)) - time_end;
 			break;
 		}
 	}
@@ -435,7 +453,7 @@ int calc_run_all(void) {
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active) {
 				int time = ((long long)calcs[j].speed*calcs[j].timer_c.freq/FPS/100)/FRAME_SUBDIVISIONS/2;
-				calc_run_tstates(j, time);
+				calc_run_tstates(&calcs[j], time);
 				frame_counter += time;
 #ifdef WITH_BACKUPS
 				if (frame_counter >= calcs[j].timer_c.freq / 2) {
@@ -444,7 +462,7 @@ int calc_run_all(void) {
 						do_backup(j);
 				}
 #endif
-				calc_run_tstates(j, time);
+				calc_run_tstates(&calcs[j], time);
 				frame_counter += time;
 #ifdef WITH_BACKUPS
 				if (frame_counter >= calcs[j].timer_c.freq / 2) {
@@ -534,26 +552,26 @@ void free_backups(int slot)
 
 #endif
 
-int calc_run_seconds(int slot, double seconds) {
+int calc_run_seconds(calc_t *lpCalc, double seconds) {
 #ifdef MACVER
 	time_t time = (seconds * CLOCKS_PER_SEC) / 1000;
 #else
 	time_t time = (time_t ) (seconds * CLOCKS_PER_SEC);
 #endif
-	return calc_run_timed(slot, time);
+	return calc_run_timed(lpCalc, time);
 }
 
 
 // ticks
-int calc_run_timed(int slot, time_t time) {
+int calc_run_timed(calc_t *lpCalc, time_t time) {
 	int frames = (int) time / TPF;
 
-	int speed_backup = calcs[slot].speed;
+	int speed_backup = lpCalc->speed;
 
-	calcs[slot].speed = MAX_SPEED;
+	lpCalc->speed = MAX_SPEED;
 	while (frames--) 
-		calc_run_frame(slot);
-	calcs[slot].speed = speed_backup;
+		calc_run_frame(lpCalc);
+	lpCalc->speed = speed_backup;
 	return 0;
 }
 

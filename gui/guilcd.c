@@ -31,7 +31,7 @@ BITMAPINFO *bi = NULL;
 
 
 HDC DrawSending(HWND hwnd, HDC hdcDest) {
-	TCHAR Sendstr1[] = "Sending File(s)";
+	TCHAR Sendstr1[] = _T("Sending File(s)");
 
 	static HBITMAP bmpSend = NULL;
 	RECT clientRect;
@@ -134,8 +134,8 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 			GradientFill(hdc,&vert[2],2,&gRect[0],1,GRADIENT_FILL_RECT_H);
 		}
 
-		TCHAR txtArch[]="Archive";
-		if ( GetTextExtentPoint32(hdc,txtArch, (int) strlen(txtArch),&TxtSize) ) {
+		TCHAR txtArch[] = _T("Archive");
+		if ( GetTextExtentPoint32(hdc,txtArch, (int) _tcslen(txtArch),&TxtSize) ) {
 			TxtPt.x = ((rr.right - rr.left)-TxtSize.cx)/2;
 			TxtPt.y = ((rr.bottom - rr.top)-TxtSize.cy)/2;
 			if ( TxtPt.x < 0 ) TxtPt.x =0;
@@ -144,7 +144,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 			TxtPt.x = rr.left+5;
 			TxtPt.y = rr.top+52;
 		}
-		TextOut(hdc, TxtPt.x+rr.left, TxtPt.y, txtArch, (int) strlen(txtArch));
+		TextOut(hdc, TxtPt.x+rr.left, TxtPt.y, txtArch, (int) _tcslen(txtArch));
 	}
 
 	FillRect(hdc, &rl, hbrRAM);
@@ -181,8 +181,8 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 		GradientFill(hdc,&vert[2],2,&gRect[0],1,GRADIENT_FILL_RECT_H);
 	}
 
-	TCHAR txtRam[] ="RAM";
-	if ( GetTextExtentPoint32(hdc, txtRam, (int) strlen(txtRam), &TxtSize) ) {
+	TCHAR txtRam[] = _T("RAM");
+	if ( GetTextExtentPoint32(hdc, txtRam, (int) _tcslen(txtRam), &TxtSize) ) {
 		TxtPt.x = ((rl.right - rl.left)-TxtSize.cx)/2;
 		TxtPt.y = ((rl.bottom - rl.top)-TxtSize.cy)/2;
 		if ( TxtPt.x < 0 ) TxtPt.x =0;
@@ -191,7 +191,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 		TxtPt.x = rl.left+5;
 		TxtPt.y = rl.top+52;
 	}
-	TextOut(hdc, TxtPt.x, TxtPt.y, txtRam, (int) strlen(txtRam));
+	TextOut(hdc, TxtPt.x, TxtPt.y, txtRam, (int) _tcslen(txtRam));
 
 	DeleteObject(hbrRAM);
 	DeleteObject(hbrArchive);
@@ -209,12 +209,12 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 	HDC hdcOverlay, hdc = CreateCompatibleDC(hdcDest);
 	HBITMAP bmpBuf;
 	if (hdc == NULL) {
-		printf("Creating buffer DC failed\n");
+		_tprintf_s(_T("Creating buffer DC failed\n"));
 		return;
 	} else {
 		bmpBuf = CreateCompatibleBitmap(hdcDest, rc.right - rc.left, rc.bottom - rc.top);
 		if (bmpBuf == NULL)
-			printf("Creating bitmap failed\n");
+			_tprintf_s(_T("Creating bitmap failed\n"));
 		SelectObject(hdc, bmpBuf);
 	}
 
@@ -233,7 +233,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			DIB_RGB_COLORS,
 			SRCCOPY) == 0) {
 
-			printf("error in SetDIBitsToDevice\n");
+			_tprintf_s(_T("error in SetDIBitsToDevice\n"));
 		}
 
 		if (lpCalc->do_drag == TRUE) {
@@ -246,7 +246,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			bf.AlphaFormat = 0;
 			if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
 						hdcOverlay, 0, 0, rc.right, rc.bottom,
-						bf ) == FALSE) printf("alpha blend 1 failed\n");
+						bf ) == FALSE) _tprintf_s(_T("alpha blend 1 failed\n"));
 
 			DeleteDC(hdcOverlay);
 
@@ -254,7 +254,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 
 		if (BitBlt(	hdcDest, rc.left, rc.top, rc.right - rc.left, rc.bottom - rc.top,
-			hdc, 0, 0, SRCCOPY ) == FALSE) printf("BitBlt failed\n");
+			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("BitBlt failed\n"));
 
 	} else {
 		screen = LCD_image(lcd) ;
@@ -271,7 +271,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 							bi,
 							DIB_RGB_COLORS,
 							SRCCOPY) == 0) {
-							printf("error in SetDIBitsToDevice\n");
+							_tprintf_s(_T("error in SetDIBitsToDevice\n"));
 						}
 
 
@@ -287,7 +287,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 			if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
 						hdcOverlay, 0, 0, rc.right, rc.bottom,
-						bf ) == FALSE) printf("alpha blend 1 failed\n");
+						bf ) == FALSE) _tprintf_s(_T("alpha blend 1 failed\n"));
 
 			DeleteDC(hdcOverlay);
 
@@ -300,7 +300,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 			if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
 						hdcOverlay, 0, 0, rc.right, rc.bottom,
-						bf ) == FALSE) printf("alpha blend send failed\n");
+						bf ) == FALSE) _tprintf_s(_T("alpha blend send failed\n"));
 
 			DeleteDC(hdcOverlay);
 		}
@@ -324,7 +324,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		}
 
 		if (BitBlt(	hdcDest, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
-			hdc, 0, 0, SRCCOPY ) == FALSE) printf("Bit blt failed\n");
+			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("Bit blt failed\n"));
 
 	}
 	DeleteObject(bmpBuf);
@@ -337,12 +337,12 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 void SaveStateDialog(HWND hwnd) {
 	OPENFILENAME ofn;
-	char FileName[MAX_PATH];
-	char lpstrFilter[] 	= "\
+	TCHAR FileName[MAX_PATH];
+	TCHAR lpstrFilter[] 	= _T("\
 Known File types ( *.sav; *.rom; *.bin) \0*.sav;*.rom;*.bin\0\
 Save States  (*.sav)\0*.sav\0\
 ROMS  (*.rom; .bin)\0*.rom;*.bin\0\
-All Files (*.*)\0*.*\0\0";
+All Files (*.*)\0*.*\0\0");
 
 	ZeroMemory(&ofn, sizeof(ofn));
 	ZeroMemory(FileName, MAX_PATH);
@@ -352,10 +352,10 @@ All Files (*.*)\0*.*\0\0";
 	ofn.lpstrFilter		= (LPCTSTR) lpstrFilter;
 	ofn.lpstrFile		= FileName;
 	ofn.nMaxFile		= MAX_PATH;
-	ofn.lpstrTitle		= "Wabbitemu Save State";
+	ofn.lpstrTitle		= _T("Wabbitemu Save State");
 	ofn.Flags			= OFN_PATHMUSTEXIST | OFN_EXPLORER |
 						  OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-	ofn.lpstrDefExt			= "sav";
+	ofn.lpstrDefExt			= _T("sav");
 
 	if (!GetSaveFileName(&ofn)) return;
 
@@ -367,12 +367,12 @@ All Files (*.*)\0*.*\0\0";
 
 void LoadStateDialog(HWND hwnd){
 	OPENFILENAME ofn;
-	char FileName[MAX_PATH];
-	char lpstrFilter[] 	= "\
+	TCHAR FileName[MAX_PATH];
+	TCHAR lpstrFilter[] 	= _T("\
 Known File types ( *.sav; *.rom; *.bin) \0*.sav;*.rom;*.bin\0\
 Save States  (*.sav)\0*.sav\0\
 ROMS  (*.rom; .bin)\0*.rom;*.bin\0\
-All Files (*.*)\0*.*\0\0";
+All Files (*.*)\0*.*\0\0");
 
 	ZeroMemory(&ofn, sizeof(ofn));
 	ZeroMemory(FileName, MAX_PATH);
@@ -382,20 +382,20 @@ All Files (*.*)\0*.*\0\0";
 	ofn.lpstrFilter		= (LPCTSTR) lpstrFilter;
 	ofn.lpstrFile		= FileName;
 	ofn.nMaxFile		= MAX_PATH;
-	ofn.lpstrTitle		= "Wabbitemu Load State";
+	ofn.lpstrTitle		= _T("Wabbitemu Load State");
 	ofn.Flags			= OFN_PATHMUSTEXIST | OFN_EXPLORER |
 						  OFN_HIDEREADONLY | OFN_FILEMUSTEXIST;
-	ofn.lpstrDefExt			= "sav";
+	ofn.lpstrDefExt		= _T("sav");
 	if (!GetOpenFileName(&ofn)) return;
-	printf("%s \n",FileName);
+	_tprintf_s(_T("%s \n"),FileName);
 	BOOL Running_Backup = calcs[gslot].running;
 	calcs[gslot].running = FALSE;
-	rom_load(gslot,FileName);
+	rom_load(&calcs[gslot], FileName);
 	calcs[gslot].running =  Running_Backup;
 
 }
 
-static char sz_status[32];
+static TCHAR sz_status[32];
 LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 
 	static POINT ptOffset;
@@ -458,13 +458,13 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (clock() > lpCalc->sb_refresh + CLOCKS_PER_SEC/2) {
 					if (lcd->active)
 #ifdef WINVER
-						sprintf_s(sz_status,"FPS: %0.2lf",lcd->ufps);
+						StringCbPrintf(sz_status, sizeof(sz_status), _T("FPS: %0.2lf"),lcd->ufps);
 #else
 						sprintf(sz_status,"FPS: %0.2lf",lcd->ufps);
 #endif
 					else
 #ifdef WINVER
-						sprintf_s(sz_status,"FPS: -");
+						StringCbPrintf(sz_status, sizeof(sz_status),  _T("FPS: -"));
 #else
 						sprintf(sz_status,"FPS: -");
 #endif
@@ -482,8 +482,9 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_CONTEXTMENU:
 			{
-				const char names[][32] = {"File", "Edit", "Calculator", "Debug", "About"};
-				HMENU hmenuMain = GetMenu(GetParent(hwnd));
+				calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				const TCHAR names[][32] = {_T("File"), _T("Edit"), _T("Calculator"), _T("Debug"), _T("Help")};
+				HMENU hmenuMain = GetMenu(lpCalc->hwndFrame);
 				if (hmenuMain == NULL)
 				{
 					return 0;
@@ -502,7 +503,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 		case WM_CLOSE:
 		case WM_COMMAND: {
-			SendMessage(GetParent(hwnd), Message, wParam, lParam);
+			calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			SendMessage(lpCalc->hwndFrame, Message, wParam, lParam);
 			return 0;
 		}
 		case WM_LBUTTONDOWN:
@@ -534,16 +536,16 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					ptOffset.y = GET_Y_LPARAM(lParam);
 
 					// Create the GIF that is going to be produced by the drag
-					char temp_fn[L_tmpnam];
-					char fn[MAX_PATH];
+					TCHAR temp_fn[L_tmpnam];
+					TCHAR fn[MAX_PATH];
 #ifdef WINVER
-					char *env;
+					TCHAR *env;
 					size_t envLen;
-					_dupenv_s(&env, &envLen, "appdata");
-					strcpy_s(fn, env);
+					_tdupenv_s(&env, &envLen, _T("appdata"));
+					StringCbCopy(fn, envLen, env);
 					free(env);
-					strcat_s(fn, "\\wabbitemu.gif");
-					strcpy_s(gif_file_name, fn);
+					StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.gif"));
+					StringCbCopy(gif_file_name, sizeof(gif_file_name), fn);
 #else
 					strcpy(fn, getenv("appdata"));
 					strcat(fn, "\\wabbitemu.gif");
@@ -571,7 +573,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					FORMATETC fmtetc[] = {
 						{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
 						{RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL },
-						{RegisterClipboardFormat("WabbitShot"), 0, DVASPECT_CONTENT, 0, TYMED_NULL},
+						{RegisterClipboardFormat(_T("WabbitShot")), 0, DVASPECT_CONTENT, 0, TYMED_NULL},
 						{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
 					};
 
@@ -594,7 +596,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 					fd->nFileSizeLow = gif_file_size;
 #ifdef WINVER
-					strcpy_s(fd->cFileName, "wabbitemu.gif");
+					StringCbCopy(fd->cFileName, sizeof(fd->cFileName), _T("wabbitemu.gif"));
 #else
 					strcpy(fd->cFileName, "wabbitemu.gif");
 #endif
@@ -608,7 +610,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 #ifdef WINVER
 					FILE *fgif;
-					fopen_s(&fgif, fn, "rb");
+					_tfopen_s(&fgif, fn, _T("rb"));
 #else
 					FILE *fgif = fopen(fn, "rb");
 #endif
@@ -620,12 +622,12 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 						GlobalUnlock(stgmed[1].hGlobal);
 					} else {
-						MessageBox(NULL, "Opening the GIF failed\n", "Wabbitemu", MB_OK);
+						MessageBox(NULL, _T("Opening the GIF failed\n"), _T("Wabbitemu"), MB_OK);
 					}
 
 
 					// Create the CH_DROP that many apps can use
-					stgmed[3].hGlobal = GlobalAlloc(GHND, sizeof(DROPFILES) + strlen(fn) + 2);
+					stgmed[3].hGlobal = GlobalAlloc(GHND, sizeof(DROPFILES) + _tcslen(fn) + 2);
 					stgmed[3].tymed = TYMED_HGLOBAL;
 
 					DROPFILES *df = (DROPFILES *) GlobalLock(stgmed[3].hGlobal);
@@ -634,9 +636,9 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					df[0].pFiles = sizeof(DROPFILES);
 					df[0].fNC = FALSE;
 
-					memset(&df[1], 0, strlen(fn) + 2);
+					memset(&df[1], 0, _tcslen(fn) + 2);
 #ifdef WINVER
-					strcpy_s((char*) &df[1], strlen(fn) + 1, fn);
+					StringCbCopy((TCHAR *) &df[1], _tcslen(fn) + 1, fn);
 #else
 					strcpy((char*) &df[1], fn);
 #endif
@@ -695,11 +697,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_COPYDATA:
 		{
 			int size = (int)((PCOPYDATASTRUCT)lParam)->cbData;
-			char* string = (char*)((PCOPYDATASTRUCT)lParam)->lpData;
+			TCHAR* string = (TCHAR *)((PCOPYDATASTRUCT)lParam)->lpData;
 			int ram = (int)((PCOPYDATASTRUCT)lParam)->dwData;
 
-			if (size && string && size==SizeofFileList(string))	{
-				char* FileNames = (char *) malloc(size);
+			if (size && string && size == SizeofFileList(string))	{
+				TCHAR* FileNames = (TCHAR *) malloc(size);
 				memset(FileNames,0,size);
 				memcpy(FileNames,string,size);
 				ThreadSend(FileNames,ram, calc_from_hwnd(hwnd));
@@ -709,14 +711,14 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		case WM_DROPFILES:
 		{
-			char * FileNames = NULL;
-			char fn[256];
+			TCHAR *FileNames = NULL;
+			TCHAR fn[256];
 
 			int count = DragQueryFile((HDROP) wParam, ~0, fn, 256);
 
 			while (count--) {
 				DragQueryFile((HDROP) wParam, count, fn, 256);
-				FileNames = AppendName( FileNames,fn);
+				FileNames = AppendName(FileNames, fn);
 			}
 
 			ThreadSend(FileNames, DropMemoryTarget(hwnd), calc_from_hwnd(hwnd));
@@ -738,7 +740,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				lpCalc->hwndLCD = NULL;
 				if (calc_count() == 0)
 					free(bi);
-				printf("Unregistering drop window\n");
+				_tprintf_s(_T("Unregistering drop window\n"));
 				if (lpCalc->pDropTarget != NULL)
 				{
 					UnregisterDropWindow(hwnd, (IDropTarget *) lpCalc->pDropTarget);
@@ -746,7 +748,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				return 0;
 			}
 		default:
-			if (Message == RegisterWindowMessage("ShellGetDragImage")) {
+			if (Message == RegisterWindowMessage(_T("ShellGetDragImage"))) {
 				LPSHDRAGIMAGE pDragImage = (LPSHDRAGIMAGE) lParam;
 				RECT rc;
 				GetClientRect(hwnd, &rc);

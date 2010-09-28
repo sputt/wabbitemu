@@ -2,7 +2,7 @@
 #define EXPANDPANE_H
 
 LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-HWND CreateExpandPane(HWND hwndParent, char *name, HWND contents);
+HWND CreateExpandPane(HWND hwndParent, TCHAR *name, HWND contents);
 //int GetExpandedPanesHeight(void);
 
 typedef struct {
@@ -10,10 +10,10 @@ typedef struct {
 	BOOL state[32];
 } ep_state;
 
-#define g_szExpandPane	"wabexppane"
+#define g_szExpandPane	_T("wabexppane")
 
-INT_PTR QueryDebugKey(char*);
-void SaveDebugKey(char*, DWORD*);
+INT_PTR QueryDebugKey(TCHAR *);
+void SaveDebugKey(TCHAR *, DWORD*);
 void GetExpandPaneState(ep_state *);
 void SetExpandPaneState(const ep_state *);
 void ArrangeExpandPanes(void);

@@ -3,6 +3,7 @@
 #include "gui.h"
 #include "guifaceplate.h"
 #include "guibuttons.h"
+#include "resource.h"
 
 #define IDC_SMALLCLOSE		45
 #define IDC_SMALLMINIMIZE	46
@@ -32,7 +33,7 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				if (!calcs[gslot].bCutout)
 					return 0;
 			
-				HBITMAP hbmButtons = LoadBitmap(g_hInst, "close");
+				HBITMAP hbmButtons = LoadBitmap(g_hInst, _T("close"));
 				HDC hdcButtons = CreateCompatibleDC(hdc);
 				SelectObject(hdcButtons, hbmButtons);
 
@@ -84,7 +85,7 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				if (_tcsicmp(szWindowName, _T("wabbitminimize")) == 0) {
 					ShowWindow(calcs[gslot].hwndFrame, SW_MINIMIZE);
 				} else if (_tcsicmp(szWindowName, _T("wabbitclose")) == 0) {
-					DestroyWindow(calcs[gslot].hwndFrame);
+					SendMessage(calcs[gslot].hwndFrame, WM_CLOSE, 0, 0);
 				}
 				SetWindowLong(hwnd, 0, (LONG) FALSE);
 				ReleaseCapture();
@@ -141,7 +142,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	DestroyWindow(lpCalc->hwndLCD);
 	//BOOL disableTransition = TRUE;
 	//DwmSetWindowAttribute(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
-	HMODULE hasDWM = LoadLibrary("dwmapi.dll");
+	HMODULE hasDWM = LoadLibrary(_T("dwmapi.dll"));
 	if (hasDWM) {
 		BOOL disableTransition = TRUE;
 		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, "DwmSetWindowAttribute");
@@ -151,12 +152,12 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	lpCalc->hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
-			"Wabbitemu",
+			_T("Wabbitemu"),
 			WS_VISIBLE,
 			0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
 			hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
 
-	SetWindowTheme(lpCalc->hwndLCD, (LPCWSTR)_T(" "), (LPCWSTR)_T(" "));
+	SetWindowTheme(lpCalc->hwndLCD, (LPCWSTR) _T(" "), (LPCWSTR) _T(" "));
 	HDC hScreen = GetDC(NULL);
 
 	if (lpCalc->model == TI_84PSE) {
@@ -176,7 +177,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 			BITMAPINFO bi;
 			bi.bmiHeader = bih;
 			BYTE *bitmap = (BYTE*) malloc(dwBmpSize);
-
+		
 			// Gets the "bits" from the bitmap and copies them into a buffer
 			// which is pointed to by lpbitmap.
 			GetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
@@ -199,10 +200,11 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 				}
 			}
 
-			SetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
+			SetDIBitsToDevice(lpCalc->hdcSkin, 0, 0, width, height, 0, 0, 0,
 					height,
 					bitmap,
 					&bi, DIB_RGB_COLORS);
+			//SelectObject(lpCalc->hdcSkin, hbmSkin);
 			free(bitmap);
 	}
 
@@ -254,13 +256,13 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	RegisterClass(&wc);
 
 	lpCalc->hwndSmallClose = CreateWindow(
-		"WABBITSMALLBUTTON",
-		"wabbitclose",
+		_T("WABBITSMALLBUTTON"),
+		_T("wabbitclose"),
 		WS_VISIBLE, // | BS_OWNERDRAW,
 		270, 19,
 		13, 13,
 		hwndFrame,
-		(HMENU) IDC_SMALLCLOSE,
+		(HMENU) NULL,
 		g_hInst,
 		NULL);
 	if (lpCalc->hwndSmallClose == NULL) return 1;
@@ -268,13 +270,13 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 
 	lpCalc->hwndSmallMinimize = CreateWindowEx(
 		0,
-		"WABBITSMALLBUTTON",
-		"wabbitminimize",
+		_T("WABBITSMALLBUTTON"),
+		_T("wabbitminimize"),
 		WS_VISIBLE, // | BS_OWNERDRAW,
 		254, 19,
 		13, 13,
 		hwndFrame,
-		(HMENU) IDC_SMALLMINIMIZE,
+		(HMENU) NULL,
 		g_hInst,
 		NULL);
 	if (lpCalc->hwndSmallMinimize == NULL) return 1;
@@ -298,7 +300,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
  * the small minimize and close buttons
  */
 int DisableCutout(HWND hwndFrame) {
-	HMODULE hasDWM = LoadLibrary("dwmapi.dll");
+	HMODULE hasDWM = LoadLibrary(_T("dwmapi.dll"));
 	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwndFrame, GWLP_USERDATA);
 	if (hasDWM) {
 		BOOL disableTransition = TRUE;
@@ -320,7 +322,7 @@ int DisableCutout(HWND hwndFrame) {
 	lpCalc->hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
-			"LCD",
+			_T("LCD"),
 			WS_VISIBLE |  WS_CHILD,
 			0, 0, lpCalc->cpu.pio.lcd->width* scale, 64*scale,
 			hwndFrame, (HMENU) 99, g_hInst,  (LPVOID) GetWindowLongPtr(hwndFrame, GWLP_USERDATA));

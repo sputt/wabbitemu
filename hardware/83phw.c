@@ -165,9 +165,8 @@ static void port6(CPU_t *cpu, device_t *dev) {
 		} else {
 			cpu->mem_c->banks[1].page		= ((cpu->bus&0x1f) % cpu->mem_c->flash_pages);
 			cpu->mem_c->banks[1].addr		= cpu->mem_c->flash+(cpu->mem_c->banks[1].page*16384);
-			cpu->mem_c->banks[1].read_only	= FALSE;
+			cpu->mem_c->banks[1].read_only	= cpu->mem_c->banks[1].page == 0x1f;
 			cpu->mem_c->banks[1].no_exec	= FALSE;
-			if (cpu->mem_c->banks[1].page==0x1f) cpu->mem_c->banks[1].read_only=TRUE;
 		}
 		cpu->output = FALSE;
 	}
@@ -430,16 +429,16 @@ int memory_init_83p(memc *mc) {
 
 	mc->flash_version = 1;
 	mc->flash_size = mc->flash_pages * PAGE_SIZE;
-	mc->flash = (u_char *) calloc(mc->flash_pages, PAGE_SIZE);
-	mc->flash_break = (u_char *) calloc(mc->flash_pages, PAGE_SIZE);
+	mc->flash = (unsigned char *) calloc(mc->flash_pages, PAGE_SIZE);
+	mc->flash_break = (unsigned char *) calloc(mc->flash_pages, PAGE_SIZE);
 	memset(mc->flash, 0xFF, mc->flash_size);
 	
 	mc->ram_size = mc->ram_pages * PAGE_SIZE;
-	mc->ram = (u_char *)calloc(mc->ram_pages, PAGE_SIZE);
-	mc->ram_break = (u_char *) calloc(mc->ram_pages, PAGE_SIZE);
+	mc->ram = (unsigned char *)calloc(mc->ram_pages, PAGE_SIZE);
+	mc->ram_break = (unsigned char *) calloc(mc->ram_pages, PAGE_SIZE);
 
 	if (!mc->flash || !mc->ram) {
-		printf("Couldn't allocate memory in memory_init_83p\n");
+		_tprintf_s(_T("Couldn't allocate memory in memory_init_83p\n"));
 		return 1;
 	}
 

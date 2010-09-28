@@ -48,7 +48,7 @@ typedef struct {
 	double VisibleHeight;
 } expand_pane_settings, ep_settings;
 
-HWND CreateExpandPane(HWND hwndParent, char *name, HWND contents) {
+HWND CreateExpandPane(HWND hwndParent, TCHAR *name, HWND contents) {
 
 	expand_pane_settings *eps = (expand_pane_settings *) malloc(sizeof(expand_pane_settings));
 	ZeroMemory(eps, sizeof(expand_pane_settings));
@@ -81,7 +81,7 @@ HWND CreateExpandPane(HWND hwndParent, char *name, HWND contents) {
 	if (contents != NULL) {
 		if (SetParent(contents, hwndExp) == NULL)
 		{
-			MessageBox(NULL, "Unable to set parent!\n", "shit", MB_OK);
+			MessageBox(NULL, _T("Unable to set parent!\n"), _T("shit"), MB_OK);
 		}
 		ShowWindow(contents, SW_SHOW);
 		SetWindowPos(contents, HWND_BOTTOM, 16, tm.tmHeight*3/2, 0, 0, SWP_NOSIZE);
@@ -138,7 +138,7 @@ void SetExpandPaneState(const ep_state *state) {
 
 }
 
-void DrawHeader(HDC hdc, char *s, int y, int width) {
+void DrawHeader(HDC hdc, TCHAR *s, int y, int width) {
 
 	SelectObject(hdc, hfontSegoe);
 
@@ -270,7 +270,7 @@ static LRESULT CALLBACK ExpandButtonProc(HWND hwnd, UINT Message, WPARAM wParam,
 			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			if (hdcButtons == NULL) {
-				HBITMAP hbmButtons = LoadBitmap(g_hInst, "expandpanebuttons");
+				HBITMAP hbmButtons = LoadBitmap(g_hInst, _T("expandpanebuttons"));
 				hdcButtons = CreateCompatibleDC(GetDC(hwnd));
 				SelectObject(hdcButtons, hbmButtons);
 			}
@@ -351,7 +351,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 				ZeroMemory(&wcx, sizeof(wcx));
 				wcx.cbSize = sizeof(wcx);
 				wcx.lpfnWndProc = HeaderProc;
-				wcx.lpszClassName = "WabbitExpPaneHeader";
+				wcx.lpszClassName = _T("WabbitExpPaneHeader");
 				wcx.hInstance = g_hInst;
 				wcx.hbrBackground = NULL; //(HBRUSH) (COLOR_MENU+1);
 
@@ -360,8 +360,8 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 
 			eps->hwndHeader = CreateWindowEx(
 					0,
-					"WabbitExpPaneHeader",
-					"Test",
+					_T("WabbitExpPaneHeader"),
+					_T("Test"),
 					WS_CHILD | WS_VISIBLE,
 					0, 0, 40, 20,
 					hwnd, (HMENU) 10,
@@ -370,8 +370,8 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 
 			eps->hwndBtn = CreateWindowEx(
 					WS_EX_TRANSPARENT,	// this lets the other shit behind it get drawn first
-					"BUTTON",
-					"V",
+					_T("BUTTON"),
+					_T("V"),
 					BS_PUSHBUTTON | WS_CHILD | WS_VISIBLE,
 					0, 0, 1, 1,
 					eps->hwndHeader, (HMENU) 1500, g_hInst, NULL);
@@ -601,7 +601,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		}
 		case WM_DESTROY: {
 			ep_settings *eps = (ep_settings*) GetWindowLong(hwnd, GWLP_USERDATA);
-			char name[256];
+			TCHAR name[256];
 			GetWindowText(hwnd, name, ARRAYSIZE(name));
 			SaveDebugKey(name, (DWORD*)eps->ExpandState);
 			ID--;
@@ -613,17 +613,17 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 	return 0;
 }
 
-INT_PTR QueryDebugKey(char *name) {
+INT_PTR QueryDebugKey(TCHAR *name) {
 	HKEY hkeySoftware;
-	RegOpenKeyEx(HKEY_CURRENT_USER, "software", 0, KEY_ALL_ACCESS, &hkeySoftware);
+	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
 
 	HKEY hkeyWabbit, hkeyDebugger;
 	DWORD dwDisposition;
-	RegCreateKeyEx(hkeySoftware, "Wabbitemu", 0,
+	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0,
 			NULL, REG_OPTION_NON_VOLATILE,
 			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
 
-	RegCreateKeyEx(hkeyWabbit, "Debugger", 0,
+	RegCreateKeyEx(hkeyWabbit, _T("Debugger"), 0,
 				NULL, REG_OPTION_NON_VOLATILE,
 				KEY_ALL_ACCESS, NULL, &hkeyDebugger, &dwDisposition);
 
@@ -632,7 +632,7 @@ INT_PTR QueryDebugKey(char *name) {
 
 	LONG rqvx_res = RegQueryValueEx(hkeyDebugger, name, NULL, NULL, (LPBYTE)&dwResult, (LPDWORD)&len);
 	if (rqvx_res == ERROR_FILE_NOT_FOUND) {
-		printf("Error querying debug registry");
+		_tprintf_s(_T("Error querying debug registry"));
 		dwResult = EP_CLOSED;
 	}
 
@@ -643,13 +643,13 @@ INT_PTR QueryDebugKey(char *name) {
 	return dwResult;
 }
 
-void SaveDebugKey(char *name, DWORD *value) {
+void SaveDebugKey(TCHAR *name, DWORD *value) {
 	HKEY hkeyDebugger;
 	HRESULT res;
-	res = RegOpenKeyEx(HKEY_CURRENT_USER, "software\\Wabbitemu\\Debugger", 0, KEY_ALL_ACCESS, &hkeyDebugger);
+	res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu\\Debugger"), 0, KEY_ALL_ACCESS, &hkeyDebugger);
 	if (FAILED(res))
 	{
-		printf("Failed opening Debug registry");
+		_tprintf_s(_T("Failed opening Debug registry"));
 		return;
 	}
 	int error = RegSetValueEx(hkeyDebugger, name, 0, REG_DWORD, (const BYTE*) &value, sizeof(REG_DWORD));
