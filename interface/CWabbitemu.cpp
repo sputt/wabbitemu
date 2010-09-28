@@ -8,7 +8,7 @@
 #define WM_ADDFRAME	(WM_USER+5)
 #define WM_REMOVEFRAME (WM_USER+6)
 
-HANDLE CWabbitemu::m_hThread = NULL;
+DWORD CWabbitemu::m_dwThreadId = 0;
 
 STDMETHODIMP CWabbitemu::QueryInterface(REFIID riid, LPVOID *ppvObject)
 {
@@ -35,11 +35,11 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 {
 	if (fVisible == VARIANT_TRUE)
 	{
-		PostThreadMessage(GetThreadId(m_hThread), WM_ADDFRAME, m_iSlot, (LPARAM) m_lpCalc);
+		PostThreadMessage(m_dwThreadId, WM_ADDFRAME, m_iSlot, (LPARAM) m_lpCalc);
 	}
 	else
 	{
-		PostThreadMessage(GetThreadId(m_hThread), WM_REMOVEFRAME, m_iSlot, (LPARAM) m_lpCalc);
+		PostThreadMessage(m_dwThreadId, WM_REMOVEFRAME, m_iSlot, (LPARAM) m_lpCalc);
 	}
 	return S_OK;
 }
@@ -176,11 +176,14 @@ STDMETHODIMP CWabbitemu::Write(WORD Address, VARIANT varValue)
 
 STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 {
+#ifdef _UNICODE
+	NoThreadSend(bstrFileName, SEND_CUR);
+#else
 	char szFileName[MAX_PATH];
 	WideCharToMultiByte(CP_ACP, 0, bstrFileName, -1, szFileName, sizeof(szFileName), NULL, NULL);
-
 	gslot = m_iSlot;
 	NoThreadSend(szFileName, SEND_CUR);
+#endif
 	
 	return S_OK;
 }
@@ -223,10 +226,13 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 	{
 		for (u_int i = 0; i < sab.cElements; i++)
 		{
+#ifdef _UNICODE
+			pvData[i].Name = SysAllocString((OLECHAR *) applist.apps[i].name);
+#else
 			WCHAR wszAppName[ARRAYSIZE(applist.apps[i].name)];
 			MultiByteToWideChar(CP_ACP, 0, applist.apps[i].name, -1, wszAppName, ARRAYSIZE(wszAppName));
-
 			pvData[i].Name = SysAllocString((OLECHAR *) wszAppName);
+#endif
 			this->Flash(applist.apps[i].page, &pvData[i].Page);
 			pvData[i].PageCount = applist.apps[i].page_count;
 		}
@@ -276,13 +282,16 @@ STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 	{
 		for (u_int i = 0; i < sab.cElements; i++)
 		{
-			char buffer[256];
 			WCHAR wszSymName[256];
+#ifdef _UNICODE
+			if (Symbol_Name_to_String(&symlist.symbols[i], wszSymName) == NULL)
+				StringCbCopy(wszSymName, sizeof(wszSymName), _T(""));
+#else
+			TCHAR buffer[256];
 			if (Symbol_Name_to_String(&symlist.symbols[i], buffer) == NULL)
-				strcpy_s(buffer, "");
+				StringCbCopy(buffer, sizeof(wszSymName), _T(""));
 			MultiByteToWideChar(CP_ACP, 0, buffer, -1, wszSymName, ARRAYSIZE(wszSymName));
-
-
+#endif
 			pvData[i].Name = SysAllocString(wszSymName);
 			pvData[i].Page = symlist.symbols[i].page;
 			pvData[i].Version = symlist.symbols[i].version;

@@ -74,16 +74,18 @@ public:
 
 		if (m_hThread == NULL)
 		{
-			m_hThread = CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, NULL);
+			m_hThread = CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, &m_dwThreadId);
 		}
 	};
 
 	
 
 private:
-	static HANDLE m_hThread;
-
+	static DWORD m_dwThreadId;
 	static DWORD CALLBACK WabbitemuThread(LPVOID lpParam);
+	HANDLE m_hThread;
+
+	LONG m_lRefCount;
 
 	int m_iSlot;
 	VARIANT_BOOL m_fVisible;
