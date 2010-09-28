@@ -47,7 +47,7 @@ typedef struct profiler {
 
 typedef struct calc {
 	int slot;
-	char rom_path[256];
+	TCHAR rom_path[MAX_PATH];
 	char rom_version[32];
 	int model;
 
@@ -91,7 +91,7 @@ typedef struct calc {
 	label_struct labels[6000];
 	profiler_t profiler;
 
-	char labelfn[256];
+	TCHAR labelfn[256];
 	applist_t applist;
 	apphdr_t *last_transferred_app;
 
@@ -107,8 +107,9 @@ typedef struct calc {
 	RECT rectLCD;
 	COLORREF FaceplateColor;
 	BOOL bCustomSkin;
-	char skin_path[256];
-	char keymap_path[256];
+	BOOL bAlwaysOnTop;
+	TCHAR skin_path[256];
+	TCHAR keymap_path[256];
 	IWabbitemu *pWabbitemu;
 	ICalcNotify *pCalcNotify;
 #endif
@@ -125,12 +126,13 @@ typedef struct DEBUG_STATE {
 #define MAX_CALCS	8
 #define MAX_SPEED 100*50
 
+void calc_turn_on(calc_t *);
 int calc_slot_new(void);
 u_int calc_count(void);
-int calc_reset(int);
-int calc_run_frame(int);
-int calc_run_seconds(int, double);
-int calc_run_timed(int, time_t);
+int calc_reset(calc_t *);
+int calc_run_frame(calc_t *);
+int calc_run_seconds(calc_t *, double);
+int calc_run_timed(calc_t *, time_t);
 #ifdef _WINDLL
 __declspec(dllexport)
 #endif
@@ -146,18 +148,18 @@ void free_backup(debugger_backup *);
 #ifdef _WINDLL
 __declspec(dllexport)
 #endif
-int rom_load(int, char *);
-void calc_slot_free(int);
+calc_t *rom_load(calc_t *, TCHAR *);
+void calc_slot_free(calc_t *);
 #ifdef WINVER
 int calc_from_hwnd(HWND);
 #endif
 #endif
 
-int calc_init_83p(int slot);
-int calc_init_84p(int slot);
-int calc_init_83pse(int slot);
+int calc_init_83p(calc_t *);
+int calc_init_84p(calc_t *);
+int calc_init_83pse(calc_t *);
 
-void calc_erase_certificate(u_char*, int);
+void calc_erase_certificate(unsigned char *, int);
 #ifdef CALC_C
 #define GLOBAL
 #else
@@ -182,20 +184,20 @@ GLOBAL BOOL show_wizard;
 GLOBAL BOOL sync_cores;
 
 
-GLOBAL const char *CalcModelTxt[]
+GLOBAL const TCHAR *CalcModelTxt[]
 #ifdef CALC_C
 = {	//"???",
-	"TI_81",
-	"TI-82",
-	"TI-83",
-	"TI-85",
-	"TI-86",
-	"TI-73",
-	"TI-83+",
-	"TI-83+SE",
-	"TI-84+",
-	"TI-84+SE",
-	"???"}
+	_T("TI_81"),
+	_T("TI-82"),
+	_T("TI-83"),
+	_T("TI-85"),
+	_T("TI-86"),
+	_T("TI-73"),
+	_T("TI-83+"),
+	_T("TI-83+SE"),
+	_T("TI-84+"),
+	_T("TI-84+SE"),
+	_T("???")}
 #endif
 ;
 

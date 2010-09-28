@@ -1565,6 +1565,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_GETMINMAXINFO: {
+			if (lpCalc == NULL)
+				return 0;
 			if (!lpCalc->SkinEnabled)
 				break;
 			MINMAXINFO *info = (MINMAXINFO *) lParam;

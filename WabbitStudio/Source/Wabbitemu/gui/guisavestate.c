@@ -9,7 +9,7 @@ extern HINSTANCE g_hInst;
 extern BITMAPINFO *bi;
 
 static SAVESTATE_t *savestate;
-static char save_filename[MAX_PATH];
+static TCHAR save_filename[MAX_PATH];
 
 static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	static HWND edtAuthor;
@@ -29,8 +29,8 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 			edtModel = GetDlgItem(hwndDlg, IDC_EDTSAVEMODEL);
 			edtRom_version = GetDlgItem(hwndDlg, IDC_EDTSAVEROMVER);
 			
-			SendMessage(cmbCompress, CB_ADDSTRING, 0, (LPARAM) "None");
-			SendMessage(cmbCompress, CB_ADDSTRING, 0, (LPARAM) "Zlib");
+			SendMessage(cmbCompress, CB_ADDSTRING, 0, (LPARAM) _T("None"));
+			SendMessage(cmbCompress, CB_ADDSTRING, 0, (LPARAM) _T("Zlib"));
 			SendMessage(cmbCompress, CB_SETCURSEL, 1, (LPARAM) 0);
 			
 			SendMessage(edtRom_version, WM_SETTEXT, 0, (LPARAM) calcs[gslot].rom_version);
@@ -56,7 +56,7 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 			DeleteDC(hdc);
 			SendMessage(imgPreview, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) hbmPreview);
 			
-			char lpBuffer[32];
+			TCHAR lpBuffer[32];
 			DWORD length = sizeof(lpBuffer);
 			GetUserName(lpBuffer, (LPDWORD) &length);
 			SendMessage(edtAuthor, WM_SETTEXT, 0, (LPARAM) lpBuffer);
@@ -78,7 +78,7 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 							
 							WriteSave(save_filename, savestate, compression);
 #ifdef WINVER
-							strcpy_s(calcs[gslot].rom_path, save_filename);
+							StringCbCopy(calcs[gslot].rom_path, sizeof(calcs[gslot].rom_path), save_filename);
 #else
 							strcpy(calcs[gslot].rom_path, save_filename);
 #endif
@@ -98,11 +98,11 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 	}
 }
 
-INT_PTR gui_savestate(HWND hwndParent, SAVESTATE_t *save, char *filename) {
+INT_PTR gui_savestate(HWND hwndParent, SAVESTATE_t *save, TCHAR *filename) {
 	InitCommonControls();
 	savestate = save;
 #ifdef WINVER
-	strcpy_s(save_filename, filename);
+	StringCbCopy(save_filename, sizeof(save_filename), filename);
 #else
 	strcpy(save_filename, filename);
 #endif
