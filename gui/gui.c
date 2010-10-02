@@ -260,6 +260,8 @@ int gui_frame_update(calc_t *lpCalc) {
 			hbmKeymap.Load(_T("TI-84+SEKeymap"), _T("PNG"), g_hInst);
 			break;
 		case TI_85:
+			hbmKeymap.Load(_T("TI-85Keymap"), _T("PNG"), g_hInst);
+			break;
 		case TI_86:
 			hbmKeymap.Load(_T("TI-86Keymap"), _T("PNG"), g_hInst);
 		default:
@@ -822,12 +824,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 #ifdef WINVER
-	StringCbCopy(calc->labelfn, sizeof(calc->labelfn), _T("labels.lab"));
+	StringCbCopy(calcs[slot].labelfn, sizeof(calcs[slot].labelfn), _T("labels.lab"));
 #else
 	strcpy(lpCalc->labelfn, "labels.lab");
 #endif
 
-	state_build_applist(&calc->cpu, &calc->applist);
+	state_build_applist(&calcs[slot].cpu, &calcs[slot].applist);
 	VoidLabels(slot);
 
 	if (loadfiles) {
@@ -852,6 +854,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	loadfiles = FALSE;
 
 
+	InitCommonControls();
 #ifdef USE_DIRECTX
 	IDirect3D9 *pD3D = Direct3DCreate9(D3D_SDK_VERSION);
 
@@ -887,7 +890,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				haccel = hacceldebug;
 			} else if (hwndtop == FindWindow(g_szAppName, NULL) ) {
 				haccel = haccelmain;
-				if (calcs[slot].bCutout)
+				if (calcs[slot].bCutout && calcs[slot].SkinEnabled)
 					hwndtop = FindWindow(g_szLCDName, NULL);
 				else
 					hwndtop = FindWindowEx(hwndtop, NULL, g_szLCDName, NULL);
@@ -1050,6 +1053,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					calcs[slot].bCutout = lpCalc->bCutout;
 					calcs[slot].Scale = lpCalc->Scale;
 					calcs[slot].FaceplateColor = lpCalc->FaceplateColor;
+					calcs[slot].bAlwaysOnTop = lpCalc->bAlwaysOnTop;
 					gui_frame(&calcs[slot]);
 					break;
 				}
@@ -1246,7 +1250,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					if (!CreateProcess(NULL, argBuf,
 						NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, 
 						NULL, NULL, &si, &pi)) {
-						MessageBox(NULL, _T("Unable to start the process. Try manually sending the file."), _T("Error"), MB_OK);
+						MessageBox(NULL, _T("Unable to start the process. Try manually downloading the update."), _T("Error"), MB_OK);
 						return FALSE;
 					}
 					exit(0);
@@ -1478,7 +1482,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 				status_height = src.bottom - src.top;
 				desired_height += status_height;
-
 			}
 
 			rc.bottom -= status_height;
@@ -1517,7 +1520,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					correctSize.right -= correctSize.left;
 				if (correctSize.top < 0)	
 					correctSize.bottom -= correctSize.top;
-				SetWindowPos(hwnd, HWND_NOTOPMOST, 0, 0, correctSize.right, correctSize.bottom , SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
+				SetWindowPos(hwnd, NULL, 0, 0, correctSize.right, correctSize.bottom , SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
 			}
 			MoveWindow(lpCalc->hwndLCD, screen.left + client.left, screen.top + client.top,
 				screen.right-screen.left, screen.bottom-screen.top, FALSE);
@@ -1535,7 +1538,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_MOVE:
 		//case WM_MOVING:
 		{
-			int slot = calc_from_hwnd(hwnd);
 			if (lpCalc->bCutout && lpCalc->SkinEnabled) {
 				HDWP hdwp = BeginDeferWindowPos(3);
 				RECT rc;

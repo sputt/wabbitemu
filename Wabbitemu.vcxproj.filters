@@ -615,6 +615,9 @@
     </None>
     <None Include="..\..\Release\Revsoft.AutoUpdater.exe" />
     <None Include="Wabbitemu.tlb" />
+    <None Include="gui\ti-85Keymap.png">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">
