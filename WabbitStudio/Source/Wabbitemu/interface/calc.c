@@ -16,10 +16,10 @@
 #include "CPage.h"
 #endif
 
-/* Determine the slot for a new calculator.  Return the slot if found,
- * otherwise, return -1.
+/*
+ * Determine the slot for a new calculator.  Return a pointer to the calc
  */
-int calc_slot_new(void) {
+calc_t *calc_slot_new(void) {
 #ifdef WITH_BACKUPS
 	current_backup_index = 10;
 #endif
@@ -29,10 +29,10 @@ int calc_slot_new(void) {
 			memset(&calcs[i], 0, sizeof(calc_t));
 			calcs[i].gif_disp_state = GDS_IDLE;
 			calcs[i].speed = 100;
-			return i;
+			return &calcs[i];
 		}
 	}
-	return -1;
+	return NULL;
 }
 
 u_int calc_count(void) {
@@ -167,16 +167,13 @@ void calc_erase_certificate(unsigned char *mem, int size) {
 	return;
 }
 
-#ifdef _WINDLL
-__declspec(dllexport)
-#endif
-calc_t *rom_load(calc_t *lpCalc, TCHAR *FileName) {
+BOOL rom_load(calc_t *lpCalc, LPCTSTR FileName) {
 	if (lpCalc == NULL)
-		return NULL;
+		return FALSE;
 	//doesnt matter for the 2nd two args never a group
 	TIFILE_t* tifile = importvar(FileName, (int) NULL, (int) NULL);
 	if (tifile == NULL)
-		return NULL;
+		return FALSE;
 
 	lpCalc->speed = 100;
 
@@ -219,7 +216,7 @@ calc_t *rom_load(calc_t *lpCalc, TCHAR *FileName) {
 			default:
 				puts("Unknown model");
 				FreeTiFile(tifile);
-				return NULL;
+				return FALSE;
 		}
 
 		LoadSlot(tifile->save, lpCalc->slot);
@@ -274,7 +271,7 @@ calc_t *rom_load(calc_t *lpCalc, TCHAR *FileName) {
 				break;
 			default:
 				FreeTiFile(tifile);
-				return NULL;
+				return FALSE;
 		}
 
 		lpCalc->active = TRUE;
@@ -295,7 +292,7 @@ calc_t *rom_load(calc_t *lpCalc, TCHAR *FileName) {
 		gui_frame_update(slot);*/
 
 	FreeTiFile(tifile);
-	return lpCalc;
+	return TRUE;
 }
 
 void calc_slot_free(calc_t *lpCalc) {
@@ -310,7 +307,7 @@ void calc_slot_free(calc_t *lpCalc) {
 		KillSound(lpCalc->audio);
 		lpCalc->audio = NULL;
 #endif
-		_tprintf_s(_T("Freeing memory\n"));
+
 		free(lpCalc->mem_c.flash);
 		lpCalc->mem_c.flash = NULL;
 		free(lpCalc->mem_c.ram);
@@ -319,30 +316,30 @@ void calc_slot_free(calc_t *lpCalc) {
 		lpCalc->mem_c.flash_break = NULL;
 		free(lpCalc->mem_c.ram_break);
 		lpCalc->mem_c.ram_break = NULL;
-		_tprintf_s(_T("Freeing hardware\n"));
+
 		//HACK: needs to disconnect if connected, but since this is all we support for now
 		if (link_connected(lpCalc->slot))
 			link_disconnect(&lpCalc->cpu);
 		free(lpCalc->cpu.pio.link);
 		lpCalc->cpu.pio.link = NULL;
-		_tprintf_s(_T("freeing keypad\n"));
+
 		free(lpCalc->cpu.pio.keypad);
 		lpCalc->cpu.pio.keypad = NULL;
-		_tprintf_s(_T("freeing stdint\n"));
+
 		free(lpCalc->cpu.pio.stdint);
 		lpCalc->cpu.pio.stdint = NULL;
-		_tprintf_s(_T("freeing se aux %p\n"), lpCalc->cpu.pio.se_aux);
+
 		free(lpCalc->cpu.pio.se_aux);
 		lpCalc->cpu.pio.se_aux = NULL;
-		_tprintf_s(_T("freeing lcd\n"));
+
 		free(lpCalc->cpu.pio.lcd);
 		lpCalc->cpu.pio.lcd = NULL;
-		_tprintf_s(_T("freeing backups\n"));
+
 #ifdef WITH_BACKUPS
 		if (do_backups)
 			free_backups(lpCalc->slot);
 #endif
-		_tprintf_s(_T("Done freeing\n"));
+
 	}
 
 }
@@ -410,9 +407,8 @@ int calc_run_tstates(calc_t *lpCalc, time_t tstates) {
 			Z80_info_t z[2];
 			disassemble(&lpCalc->mem_c, lpCalc->cpu.pc, 1, z);
 
-			if (lpCalc->ole_callback != NULL) {
-				PostMessage(lpCalc->ole_callback, WM_USER, bank->ram<<16 | bank->page, z[0].size<<16 | lpCalc->cpu.pc);
-				_tprintf_s(_T("postmessage called!\n"));
+			if (lpCalc->pCalcNotify != NULL) {
+				lpCalc->pCalcNotify->Breakpoint(NULL);
 			} else {
 #endif
 				gui_debug(lpCalc);
@@ -443,9 +439,6 @@ int calc_run_tstates(calc_t *lpCalc, time_t tstates) {
 
 
 #define FRAME_SUBDIVISIONS	1024
-#ifdef _WINDLL
-__declspec(dllexport)
-#endif
 int calc_run_all(void) {
 	int i,j;
 

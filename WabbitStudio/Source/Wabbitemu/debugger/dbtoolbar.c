@@ -181,7 +181,19 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 	SelectObject(hdcBuf, hbmBuf);
 
 	HDC hdcRight = CreateCompatibleDC(hdcBuf);
-	HBITMAP hbmRight = LoadBitmap(g_hInst, "TBRIGHT");
+	HBITMAP hbmRight;
+
+	DWORD dwVersion = GetVersion();
+	WORD wVersion = MAKEWORD(HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
+	BOOL fIsWindows7 = (wVersion >= 0x0601) ? TRUE : FALSE;
+	if (fIsWindows7 == TRUE)
+	{
+		hbmRight = LoadBitmap(g_hInst, _T("TBRIGHT7"));
+	}
+	else
+	{
+		hbmRight = LoadBitmap(g_hInst, _T("TBRIGHT"));
+	}
 	SelectObject(hdcRight, hbmRight);
 
 	StretchBlt(hdcBuf, 0, 0, r->right - r->left, r->bottom - r->top,
@@ -213,40 +225,44 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 	int width = bi->biWidth;
 	int height = bi->biHeight;
 
-	HDC hdcGrad = CreateCompatibleDC(hdc);
-	// Create a solid brush of the gradient color
-	HBRUSH hbrGrad = CreateSolidBrush(RGB(0, 190, 0));
-	SelectObject(hdcGrad, hbrGrad);
+	if (fIsWindows7 == FALSE)
+	{
+		HDC hdcGrad = CreateCompatibleDC(hdc);
+		// Create a solid brush of the gradient color
+		HBRUSH hbrGrad = CreateSolidBrush(RGB(0, 190, 0));
+		SelectObject(hdcGrad, hbrGrad);
 
-	SelectObject(hdcGrad, GetStockObject(DC_PEN));
-	SetDCPenColor(hdcGrad, RGB(0, 190, 0));
+		SelectObject(hdcGrad, GetStockObject(DC_PEN));
+		SetDCPenColor(hdcGrad, RGB(0, 190, 0));
 
-	BYTE *pBits;
-	HBITMAP hbmGrad = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**) &pBits, NULL, 0);
+		
+		BYTE *pBits;
+		HBITMAP hbmGrad = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**) &pBits, NULL, 0);
 
-	SelectObject(hdcGrad, hbmGrad);
+		SelectObject(hdcGrad, hbmGrad);
 
-	// Fill it with green
-	Rectangle(hdcGrad, 0, 0, width, height);
+		// Fill it with green
+		Rectangle(hdcGrad, 0, 0, width, height);
 
-	int x;
+		int x;
 
-	BYTE * pPixel = pBits;
-	for (x = r->left; x < r->right; x++, pPixel+=4) {
-		pPixel[3] = (BYTE) (255*(x+1)/rc.right/8);
+		BYTE * pPixel = pBits;
+		for (x = r->left; x < r->right; x++, pPixel+=4) {
+			pPixel[3] = (BYTE) (255*(x+1)/rc.right/8);
 
-		pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
-		pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
-		pPixel[2] = pPixel[2] * pPixel[3] / 0xFF;
+			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
+			pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
+			pPixel[2] = pPixel[2] * pPixel[3] / 0xFF;
 
+		}
+
+		AlphaBlend(	hdcBuf, 0, 0, r->right - r->left, r->bottom - r->top,
+					hdcGrad, 0, 0, r->right - r->left, 1,
+					bf);
+
+		DeleteObject(hbmGrad);
+		DeleteDC(hdcGrad);
 	}
-
-	AlphaBlend(	hdcBuf, 0, 0, r->right - r->left, r->bottom - r->top,
-				hdcGrad, 0, 0, r->right - r->left, 1,
-				bf);
-
-	DeleteObject(hbmGrad);
-	DeleteDC(hdcGrad);
 
 	BitBlt(hdc, 0, 0, r->right - r->left, r->bottom - r->top, hdcBuf, 0, 0, SRCCOPY);
 
@@ -551,6 +567,10 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			// Fill the background
 			PaintToolbarBackground(GetParent(hwnd), hdcBuf, &scr);
 
+			DWORD dwVersion = GetVersion();
+			WORD wVersion = MAKEWORD(HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
+			BOOL fIsWindows7 = (wVersion >= 0x0601) ? TRUE : FALSE;
+
 			if (tbb->MouseState == MOUSE_DOWN) {
 				HDC hdcFrame = CreateCompatibleDC(hdc);
 				HBITMAP hbmFrame = LoadBitmap(g_hInst, "TBFrameRight");
@@ -740,11 +760,21 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			if (tbb->bSplitButton)
 			{
 				HDC hdcDownBtn = CreateCompatibleDC(hdc);
-				HBITMAP hbmDownArrow = LoadBitmap(g_hInst, "TBDownArrow");
+				HBITMAP hbmDownArrow;
+				if (fIsWindows7 == TRUE)
+				{
+					hbmDownArrow = LoadBitmap(g_hInst, "TBDownArrow7");
+				}
+				else
+				{
+					hbmDownArrow = LoadBitmap(g_hInst, "TBDownArrow");
+				}
 				SelectObject(hdcDownBtn, hbmDownArrow);
 				AlphaBlend(	hdcBuf, rc.right - 20 + ox, 3 + oy, 16, 16,
 							hdcDownBtn, 0, 0, 16, 16,
 							bf);
+				DeleteBitmap(hbmDownArrow);
+				DeleteDC(hdcDownBtn);
 			}
 
 			if (tbb->MouseState == MOUSE_DOWN_SPLIT)
@@ -765,12 +795,22 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			GetWindowText(hwnd, szTitle, 32);
 
 			RECT r = {16 + 9+ox, 2+oy, 400+ox, 24+oy};
-			SetTextColor(hdcBuf, RGB(0, 0, 0));
+			if (fIsWindows7 == TRUE)
+			{
+				SetTextColor(hdcBuf, RGB(30, 57, 91));
+			}
+			else
+			{
+				SetTextColor(hdcBuf, RGB(0, 0, 0));
+			}
 			DrawText(hdcBuf, szTitle, -1, &r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 
-			OffsetRect(&r, -1, -1);
-			SetTextColor(hdcBuf, RGB(255, 255, 255));
-			DrawText(hdcBuf, szTitle, -1, &r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+			if (fIsWindows7 == FALSE)
+			{
+				OffsetRect(&r, -1, -1);
+				SetTextColor(hdcBuf, RGB(255, 255, 255));
+				DrawText(hdcBuf, szTitle, -1, &r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+			}
 
 			SelectObject(hdcBtn, hbmPrior);
 			DeleteDC(hdcBtn);
@@ -1082,6 +1122,10 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 
+			DWORD dwVersion = GetVersion();
+			WORD wVersion = MAKEWORD(HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
+			BOOL fIsWindows7 = (wVersion >= 0x0601) ? TRUE : FALSE;
+
 			HDC hdc;
 			PAINTSTRUCT ps;
 
@@ -1092,7 +1136,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			SelectObject(hdcBuf, hbmBuf);
 
 			HDC hdcRight = CreateCompatibleDC(hdcBuf);
-			HBITMAP hbmRight = LoadBitmap(g_hInst, "TBRIGHT");
+			HBITMAP hbmRight = LoadBitmap(g_hInst, fIsWindows7 == TRUE ? _T("TBRIGHT7") : _T("TBRIGHT"));
 			SelectObject(hdcRight, hbmRight);
 
 			if (rc.right > 3 + 120) {
@@ -1105,7 +1149,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			DeleteDC(hdcRight);
 
 			HDC hdcLeft = CreateCompatibleDC(hdcBuf);
-			HBITMAP hbmLeft = LoadBitmap(g_hInst, "TBLEFT");
+			HBITMAP hbmLeft = LoadBitmap(g_hInst, fIsWindows7 == TRUE ? _T("TBLEFT7") : _T("TBRIGHT7"));
 			SelectObject(hdcLeft, hbmLeft);
 
 			BitBlt(hdcBuf, 0, 0, 3, 32, hdcLeft, 0, 0, SRCCOPY);
@@ -1135,40 +1179,43 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			int width = bi->biWidth;
 			int height = bi->biHeight;
 
-			HDC hdcGrad = CreateCompatibleDC(hdc);
-			// Create a solid brush of the gradient color
-			HBRUSH hbrGrad = CreateSolidBrush(RGB(0, 190, 0));
-			SelectObject(hdcGrad, hbrGrad);
+			if (fIsWindows7 == FALSE)
+			{
+				HDC hdcGrad = CreateCompatibleDC(hdc);
+				// Create a solid brush of the gradient color
+				HBRUSH hbrGrad = CreateSolidBrush(RGB(0, 190, 0));
+				SelectObject(hdcGrad, hbrGrad);
 
-			SelectObject(hdcGrad, GetStockObject(DC_PEN));
-			SetDCPenColor(hdcGrad, RGB(0, 190, 0));
+				SelectObject(hdcGrad, GetStockObject(DC_PEN));
+				SetDCPenColor(hdcGrad, RGB(0, 190, 0));
 
-			BYTE *pBits;
-			HBITMAP hbmGrad = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**) &pBits, NULL, 0);
+				BYTE *pBits;
+				HBITMAP hbmGrad = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**) &pBits, NULL, 0);
 
-			SelectObject(hdcGrad, hbmGrad);
+				SelectObject(hdcGrad, hbmGrad);
 
-			// Fill it with green
-			Rectangle(hdcGrad, 0, 0, width, height);
+				// Fill it with green
+				Rectangle(hdcGrad, 0, 0, width, height);
 
-			int x;
+				int x;
 
-			BYTE * pPixel = pBits;
-			for (x = 0; x < width; x++, pPixel+=4) {
-				pPixel[3] = 255*(x+1)/width/8;
+				BYTE * pPixel = pBits;
+				for (x = 0; x < width; x++, pPixel+=4) {
+					pPixel[3] = 255*(x+1)/width/8;
 
-				pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
-				pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
-				pPixel[2] = pPixel[2] * pPixel[3] / 0xFF;
+					pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
+					pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
+					pPixel[2] = pPixel[2] * pPixel[3] / 0xFF;
 
+				}
+
+				AlphaBlend(	hdcBuf, 0, 0, rc.right, rc.bottom,
+							hdcGrad, 0, 0, width, 1,
+							bf);
+
+				DeleteObject(hbmGrad);
+				DeleteDC(hdcGrad);
 			}
-
-			AlphaBlend(	hdcBuf, 0, 0, rc.right, rc.bottom,
-						hdcGrad, 0, 0, width, 1,
-						bf);
-
-			DeleteObject(hbmGrad);
-			DeleteDC(hdcGrad);
 
 			BitBlt(hdc, 0, 0, rc.right, rc.bottom, hdcBuf, 0, 0, SRCCOPY);
 

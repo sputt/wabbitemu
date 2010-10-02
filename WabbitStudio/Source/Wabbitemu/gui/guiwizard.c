@@ -174,9 +174,11 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 				case PSN_WIZFINISH: {
 					char string[MAX_PATH];
 					Edit_GetText(hEditRom, string, MAX_PATH);
-					int slot = calc_slot_new();
-					slot = rom_load(slot, string);
-					if (slot != -1) gui_frame(&calcs[slot]);
+					LPCALC lpCalc = calc_slot_new();
+					if (rom_load(lpCalc, string) == TRUE)
+					{
+						gui_frame(lpCalc);
+					}
 					break;
 				}
 				case PSN_QUERYCANCEL:
@@ -191,23 +193,23 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
-void ModelInit(int slot)
+void ModelInit(LPCALC lpCalc)
 {
 	switch(model) {
 		case TI_73:
-			calc_init_83p(slot);
+			calc_init_83p(lpCalc);
 			break;
 		case TI_83P:
-			calc_init_83p(slot);
+			calc_init_83p(lpCalc);
 			break;
 		case TI_83PSE:
-			calc_init_83pse(slot);
+			calc_init_83pse(lpCalc);
 			break;
 		case TI_84P:
-			calc_init_84p(slot);
+			calc_init_84p(lpCalc);
 			break;
 		case TI_84PSE:
-			calc_init_83pse(slot);
+			calc_init_83pse(lpCalc);
 			break;
 	}
 }
@@ -445,39 +447,38 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
-					int slot = calc_slot_new();
+					LPCALC lpCalc = calc_slot_new();
 					//ok yes i know this is retarded...but this way we can use Load_8xu
 					//outside this function...
 					HMODULE hModule = GetModuleHandle(NULL);
 					HRSRC resource;
 					switch(model) {
 						case TI_73:
-							calc_init_83p(slot);
+							calc_init_83p(lpCalc);
 							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT73), _T("HEX"));
 							break;
 						case TI_83P:
-							calc_init_83p(slot);
+							calc_init_83p(lpCalc);
 							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT83P), _T("HEX"));
 							break;
 						case TI_83PSE:
-							calc_init_83pse(slot);
+							calc_init_83pse(lpCalc);
 							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT83PSE), _T("HEX"));
 							break;
 						case TI_84P:
-							calc_init_84p(slot);
+							calc_init_84p(lpCalc);
 							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84P), _T("HEX"));
 							break;
 						case TI_84PSE:
-							calc_init_83pse(slot);
+							calc_init_83pse(lpCalc);
 							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84PSE), _T("HEX"));
 							break;
 					}
-					gslot = slot;
 					//slot stuff
-					calcs[slot].active = TRUE;
-					strcpy_s(calcs[slot].rom_path, buffer);
-					calcs[slot].model = model;
-					calcs[slot].cpu.pio.model = model;
+					lpCalc->active = TRUE;
+					strcpy_s(lpCalc->rom_path, buffer);
+					lpCalc->model = model;
+					lpCalc->cpu.pio.model = model;
 
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					char hexFile[MAX_PATH];
@@ -498,23 +499,20 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						fopen_s(&file, osPath, "rb");
 						Load_8xu(file);
 						fclose(file);
-						calcs[slot].mem_c.flash[0x56] = 0x5A;
-						calcs[slot].mem_c.flash[0x57] = 0xA5;
+						lpCalc->mem_c.flash[0x56] = 0x5A;
+						lpCalc->mem_c.flash[0x57] = 0xA5;
 						if (Button_GetCheck(hRadioDownload) == BST_CHECKED)
 							remove(osPath);
 					}
-					calc_erase_certificate(calcs[slot].cpu.mem_c->flash,calcs[slot].cpu.mem_c->flash_size);
-					calc_reset(slot);
-					calc_run_timed(gslot, 200);
-					calcs[slot].cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
-					calc_run_timed(gslot, 300);
-					calcs[slot].cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
+					calc_erase_certificate(lpCalc->mem_c.flash,lpCalc->mem_c.flash_size);
+					calc_reset(lpCalc);
+					calc_turn_on(lpCalc);
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
-					gui_frame(&calcs[slot]);
+					gui_frame(lpCalc);
 					//write the output from file
 					fopen_s(&file, buffer, "wb");
-					char* rom = (char *) calcs[slot].mem_c.flash;
-					int size = calcs[slot].mem_c.flash_size;
+					char* rom = (char *) lpCalc->mem_c.flash;
+					int size = lpCalc->mem_c.flash_size;
 					if (size != 0 && rom != NULL && file !=NULL) {
 						u_int i;
 						for(i = 0; i < size; i++) {
@@ -782,14 +780,14 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					Edit_GetText(hEditVar1, browse, MAX_PATH);
 					char buffer[MAX_PATH];
 					GetExportROMName(buffer);
-					int slot = calc_slot_new();
-					ModelInit(slot);
-					gslot = slot;
+					LPCALC lpCalc = calc_slot_new();
+					ModelInit(lpCalc);
+
 					//slot stuff
-					calcs[slot].active = TRUE;
-					strcpy_s(calcs[slot].rom_path, buffer);
-					calcs[slot].model = model;
-					calcs[slot].cpu.pio.model = model;
+					lpCalc->active = TRUE;
+					strcpy_s(lpCalc->rom_path, buffer);
+					lpCalc->model = model;
+					lpCalc->cpu.pio.model = model;
 					FILE *file;
 					fopen_s(&file, browse, "rb");
 					//goto the name to see whcih one we have
@@ -798,16 +796,16 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					//goto the first byte of data
 					fseek(file, 74, SEEK_SET);
 					int page;
-					unsigned char (*flash)[16384] = (uint8_t(*)[16384]) calcs[gslot].mem_c.flash;
+					BYTE (*flash)[PAGE_SIZE] = (BYTE(*)[PAGE_SIZE]) lpCalc->mem_c.flash;
 					if (ch == '1') {
 						int i;
-						page = calcs[slot].mem_c.flash_pages - 1;
+						page = lpCalc->mem_c.flash_pages - 1;
 						for (i = 0; i < PAGE_SIZE; i++)
 							flash[page][i] = fgetc(file);
 					}
 					else {
 						int i;
-						page = calcs[slot].mem_c.flash_pages - 0x11;;
+						page = lpCalc->mem_c.flash_pages - 0x11;;
 						for (i = 0; i < PAGE_SIZE; i++)
 							flash[page][i] = fgetc(file);
 					}
@@ -823,13 +821,13 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						fseek(file, 74, SEEK_SET);
 						if (ch == '1') {
 							int i;
-							page = calcs[slot].mem_c.flash_pages - 1;
+							page = lpCalc->mem_c.flash_pages - 1;
 							for (i = 0; i < PAGE_SIZE; i++)
 								flash[page][i] = fgetc(file);
 						}
 						else {
 							int i;
-							page = calcs[slot].mem_c.flash_pages - 0x11;;
+							page = lpCalc->mem_c.flash_pages - 0x11;;
 							for (i = 0; i < PAGE_SIZE; i++)
 								flash[page][i] = fgetc(file);
 						}
@@ -840,22 +838,19 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						fopen_s(&file, osPath, "rb");
 						Load_8xu(file);
 						fclose(file);
-						calcs[slot].mem_c.flash[0x56] = 0x5A;
-						calcs[slot].mem_c.flash[0x57] = 0xA5;
+						lpCalc->mem_c.flash[0x56] = 0x5A;
+						lpCalc->mem_c.flash[0x57] = 0xA5;
 						//if (Button_GetCheck(hRadioDownload) == BST_CHECKED)
 						//	remove(osPath);
 					}
-					calc_erase_certificate(calcs[slot].cpu.mem_c->flash,calcs[slot].cpu.mem_c->flash_size);
-					calc_reset(slot);
-					calc_run_timed(gslot, 200);
-					calcs[slot].cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
-					calc_run_timed(gslot, 300);
-					calcs[slot].cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
-					gui_frame(&calcs[slot]);
+					calc_erase_certificate(lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
+					calc_reset(lpCalc);
+					calc_turn_on(lpCalc);
+					gui_frame(lpCalc);
 					//write the output from file
 					fopen_s(&file, buffer, "wb");
-					char* rom = (char *) calcs[slot].mem_c.flash;
-					int size = calcs[slot].mem_c.flash_size;
+					char* rom = (char *) lpCalc->mem_c.flash;
+					int size = lpCalc->mem_c.flash_size;
 					if (size != 0 && rom != NULL && file !=NULL) {
 						u_int i;
 						for(i = 0; i < size; i++) {

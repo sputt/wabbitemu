@@ -24,6 +24,7 @@
 #include <Ole2.h>
 #include <OleIdl.h>
 #include <ShObjIdl.h>
+#include <assert.h>
 #include <setjmp.h>
 #ifdef _DEBUG
 #define _CRTDBG_MAP_ALLOC

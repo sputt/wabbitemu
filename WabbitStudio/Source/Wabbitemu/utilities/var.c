@@ -19,7 +19,7 @@ char txt86[] = "Already Installed";
 
 
 int CmpStringCase(char* str1, unsigned char* str2) {
-	return strnicmp(str1, (char *) str2, strlen(str1));
+	return _strnicmp(str1, (char *) str2, strlen(str1));
 }
 
 
@@ -144,7 +144,7 @@ void NullTiFile(TIFILE_t* tifile) {
 }
 
 
-TIFILE_t* importvar(TCHAR * FileName, int SlotSave, int ram) {
+TIFILE_t* importvar(LPCTSTR FileName, int SlotSave, int ram) {
 	FILE * infile = NULL;
 	TIFILE_t * tifile;
 	size_t i;
@@ -257,6 +257,8 @@ TIFILE_t* importvar(TCHAR * FileName, int SlotSave, int ram) {
 		if (!_tcscmp((const TCHAR *) tifile->flash->name, _T("basecode")))
 		{
 			//its an OS we need to load it
+			assert("Not current supported", 0);
+			/*
 			Load_8xu(infile);
 			calcs[gslot].mem_c.flash[0x56] = 0x5A;
 			calcs[gslot].mem_c.flash[0x57] = 0xA5;
@@ -267,6 +269,7 @@ TIFILE_t* importvar(TCHAR * FileName, int SlotSave, int ram) {
 			free(tifile->flash);
 			tifile->flash = NULL;
 			tifile->type = SKIP_TYPE;
+			*/
 			return tifile;
 		}
 

@@ -18,17 +18,13 @@ label_struct *lookup_label(TCHAR *label_name) {
 }	
 	
 
-void VoidLabels(int slot) {
+void VoidLabels(LPCALC lpCalc) {
 	int i;
 	
-	for (i = 0; calcs[slot].labels[i].name != NULL; i++) {
-		free(calcs[slot].labels[i].name);
-		calcs[slot].labels[i].name = NULL;
+	for (i = 0; lpCalc->labels[i].name != NULL; i++) {
+		free(lpCalc->labels[i].name);
+		lpCalc->labels[i].name = NULL;
 	}
-}
-
-void ClearLabels(int slot) {
-	VoidLabels(slot);
 }
 
 TCHAR* FindAddressLabel(int slot, BOOL IsRAM, uint8_t page, uint16_t addr) {
@@ -76,57 +72,49 @@ BOOL label_search_tios(TCHAR *label,int equate) {
 }
 	
 
-int labels_app_load(int slot, TCHAR* fn) {
-	FILE *labelFile;
-	int i,length;
-	TCHAR buffer[256];
-	TCHAR name[256];
+int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
+	FILE *labelFile = NULL;
+	int i, length;
+	char buffer[256];
+	char name[256];
 	unsigned int equate;
-	label_struct *label = &calcs[slot].labels[0];	
+	label_struct *label = &lpCalc->labels[0];	
 
-#ifdef WINVER
-	_tfopen_s(&labelFile, fn, _T("r"));
-	if (!labelFile) {
-#else
-    if (!(labelFile = fopen(fn,"r"))) {
-#endif
+	_tfopen_s(&labelFile, lpszFileName, _T("r"));
+	if (labelFile = NULL) {
         _putts(_T("Error opening label files."));
         return 1;
     }
     
     // Clear out the old labels
-    VoidLabels(slot);
+    VoidLabels(lpCalc);
 
     while (!feof(labelFile)) {
 		_fgetts(buffer, 256, labelFile);
 		i = 0;
 		if (buffer[0] != ';')
-#ifdef WINVER
-			i = _tscanf_s(buffer, _T("%s = $%X"), name, &equate);
-			//i = sscanf_s(buffer,"%s = $%X", name, &equate);
-#else
 			i = sscanf(buffer,"%s = $%X", name, &equate);
-#endif
 		if (i == 2) {
-			length = (int) _tcslen(name);
+			length = (int) strlen(name);
 			if (!label_search_tios(name, equate)) {
 				
-				label->name = (TCHAR *) malloc(length + 1);
-#ifdef WINVER
-				StringCbCopy(label->name, length + 1, name);
+				label->name = (TCHAR *) malloc((length + 1) * sizeof(TCHAR));
+#ifdef UNICODE
+				MultiByteToWideChar(CP_ACP, 0, name, -1, label->name, length + 1);
 #else
-				strcpy(label->name, name);
+				StringCbCopy(label->name, length + 1, name);
 #endif
+
 				label->addr = equate & 0xFFFF;
 
 				if ( (equate & 0x0000FFFF) >= 0x4000 && (equate & 0x0000FFFF) < 0x8000) {
 					int page_offset = (equate >> 16) & 0xFF;
 					
 					label->IsRAM = FALSE;
-					if (calcs[slot].last_transferred_app == NULL)
-						label->page = calcs[slot].mem_c.flash_pages - page_offset;
+					if (lpCalc->last_transferred_app == NULL)
+						label->page = lpCalc->mem_c.flash_pages - page_offset;
 					else
-						label->page = calcs[slot].last_transferred_app->page - page_offset;
+						label->page = lpCalc->last_transferred_app->page - page_offset;
 
 				} else {
 					label->IsRAM = TRUE;

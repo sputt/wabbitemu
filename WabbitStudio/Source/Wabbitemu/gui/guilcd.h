@@ -21,5 +21,5 @@ void PaintLCD(HWND, HDC);
 void SaveStateDialog(HWND);
 
 
-
+#define IDC_LCD		109
 #endif

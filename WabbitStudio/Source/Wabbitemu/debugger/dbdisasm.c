@@ -393,7 +393,7 @@ static int prev_select(int addr) {
 	return zinf[i-1].addr;
 }
 
-static void cycle_pcs(dp_settings *dps) {
+void cycle_pcs(dp_settings *dps) {
 	int i;
 	for (i = PC_TRAILS-1; i > 0; i--) {
 		dps->nPCs[i] = dps->nPCs[i-1];

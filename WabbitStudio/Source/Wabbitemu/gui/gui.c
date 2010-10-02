@@ -5,6 +5,7 @@
 
 #include "core.h"
 #include "calc.h"
+#include "label.h"
 
 #include "gifhandle.h"
 #include "gif.h"
@@ -798,39 +799,42 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 	}
 
-	int slot = calc_slot_new();
+	LPCALC lpCalc = calc_slot_new();
 	LoadRegistrySettings();
 
-	calc_t *calc = rom_load(&calcs[slot], calcs[slot].rom_path);
-	if (calc != NULL) gui_frame(calc);
-	else {
+	if (rom_load(lpCalc, lpCalc->rom_path) == TRUE)
+	{
+		gui_frame(lpCalc);
+	}
+	else
+	{
 		if (show_wizard) {
 			BOOL wizardError = DoWizardSheet(NULL);
 			//save wizard show
 			SaveWabbitKey(_T("show_wizard"), REG_DWORD, &show_wizard);
 			if (wizardError)
 				return EXIT_FAILURE;
-			slot = gslot;
 		}
 		else {
 			TCHAR* string = LoadRomIntialDialog();
 			if (string) {
-				slot = calc_slot_new();
-				calc = rom_load(&calcs[slot], string);
-				if (slot != -1) gui_frame(calc);
-				else return EXIT_FAILURE;
+				lpCalc = calc_slot_new();
+				if (rom_load(lpCalc, string) == TRUE)
+				{
+					gui_frame(lpCalc);
+				}
+				else
+				{
+					return EXIT_FAILURE;
+				}
 			} else return EXIT_FAILURE;
 		}
 	}
 
-#ifdef WINVER
-	StringCbCopy(calcs[slot].labelfn, sizeof(calcs[slot].labelfn), _T("labels.lab"));
-#else
-	strcpy(lpCalc->labelfn, "labels.lab");
-#endif
+	StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), _T("labels.lab"));
 
-	state_build_applist(&calcs[slot].cpu, &calcs[slot].applist);
-	VoidLabels(slot);
+	state_build_applist(&lpCalc->cpu, &lpCalc->applist);
+	VoidLabels(lpCalc);
 
 	if (loadfiles) {
 		if (argv && argc>1) {
@@ -848,7 +852,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 					FileNames = AppendName(FileNames, tmpstring);
 				}
 			}
-			ThreadSend(FileNames, SEND_CUR, slot);
+//			ThreadSend(FileNames, SEND_CUR, slot);
 		}
 	}
 	loadfiles = FALSE;
@@ -890,7 +894,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				haccel = hacceldebug;
 			} else if (hwndtop == FindWindow(g_szAppName, NULL) ) {
 				haccel = haccelmain;
-				if (calcs[slot].bCutout && calcs[slot].SkinEnabled)
+				if (lpCalc->bCutout && lpCalc->SkinEnabled)
 					hwndtop = FindWindow(g_szLCDName, NULL);
 				else
 					hwndtop = FindWindowEx(hwndtop, NULL, g_szLCDName, NULL);
@@ -909,8 +913,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		if (hwndProp == NULL || PropSheet_IsDialogMessage(hwndProp, &Msg) == FALSE) {
 			if (!TranslateAccelerator(hwndtop, haccel, &Msg)) {
 				TranslateMessage(&Msg);
-				int slot = calc_from_hwnd(Msg.hwnd);
-				if (slot != -1) gslot = slot;
 	        	DispatchMessage(&Msg);
 			}
 		} else {
@@ -1047,14 +1049,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			switch (LOWORD(wParam)) {
 				case IDM_FILE_NEW:
 				{
-					int slot = calc_slot_new();
-					rom_load(lpCalc, lpCalc->rom_path);
-					calcs[slot].SkinEnabled = lpCalc->SkinEnabled;
-					calcs[slot].bCutout = lpCalc->bCutout;
-					calcs[slot].Scale = lpCalc->Scale;
-					calcs[slot].FaceplateColor = lpCalc->FaceplateColor;
-					calcs[slot].bAlwaysOnTop = lpCalc->bAlwaysOnTop;
-					gui_frame(&calcs[slot]);
+					LPCALC lpCalcNew = calc_slot_new();
+					if (rom_load(lpCalcNew, lpCalc->rom_path) == TRUE)
+					{
+						lpCalcNew->SkinEnabled = lpCalc->SkinEnabled;
+						lpCalcNew->bCutout = lpCalc->bCutout;
+						lpCalcNew->Scale = lpCalc->Scale;
+						lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
+						gui_frame(lpCalcNew);
+					}
+					else
+					{
+						calc_slot_free(lpCalcNew);
+					}
 					break;
 				}
 				case IDM_FILE_OPEN:
@@ -1611,7 +1618,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			_tprintf_s(_T("Freeing calculator slot\n"));
 			calc_slot_free(lpCalc);
 			_tprintf_s(_T("freeing labels\n"));
-			VoidLabels(gslot);
+			VoidLabels(lpCalc);
 			if (calc_count() == 0)
 				PostQuitMessage(0);
 			return 0;

@@ -381,6 +381,7 @@ DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 #endif
 
+	CoInitializeEx(NULL, COINIT_MULTITHREADED);
 	//SetTimer(NULL, 0, TPF, TimerProc);
 
 	MSG Msg;
