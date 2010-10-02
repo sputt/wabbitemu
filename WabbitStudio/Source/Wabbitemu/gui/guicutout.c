@@ -324,7 +324,7 @@ int DisableCutout(HWND hwndFrame) {
 			g_szLCDName,
 			_T("LCD"),
 			WS_VISIBLE |  WS_CHILD,
-			0, 0, lpCalc->cpu.pio.lcd->width* scale, 64*scale,
+			0, 0, lpCalc->cpu.pio.lcd->width*scale, 64*scale,
 			hwndFrame, (HMENU) 99, g_hInst,  (LPVOID) GetWindowLongPtr(hwndFrame, GWLP_USERDATA));
 
 	SetWindowLong(hwndFrame, GWL_EXSTYLE, 0);

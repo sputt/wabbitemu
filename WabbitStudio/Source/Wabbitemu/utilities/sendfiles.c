@@ -17,44 +17,44 @@ static int SlotSave =-1;
 static HWND hwndMain = NULL;
 
 typedef struct SENDFILES {
-	char* FileNames;
+	TCHAR* FileNames;
 	int ram;
 //	HANDLE hdlSend;
 } SENDFILES_t;
 
 
-int SizeofFileList(char* FileNames) {
+int SizeofFileList(TCHAR* FileNames) {
 	int i;
 	if (FileNames == NULL) return 0;
 	for(i = 0; FileNames[i]!=0 || FileNames[i+1]!=0; i++);
 	return i+2;
 }
 
-char* AppendName(char* FileNames, char* fn) {
+TCHAR* AppendName(TCHAR* FileNames, TCHAR* fn) {
 	size_t length;
-	char* pnt;
+	TCHAR* pnt;
 	int i;
-	length = strlen(fn);
+	length = _tcslen(fn);
 	if (FileNames == NULL) {
-		FileNames = (char *) malloc(length+2);
+		FileNames = (TCHAR *) malloc(length+2);
 		memset(FileNames,0,length+2);
 		pnt = FileNames;
 	} else {
 		for(i = 0; FileNames[i]!=0 || FileNames[i+1]!=0; i++);
 		i++;
-		FileNames = (char *) realloc(FileNames,i+length+2);
+		FileNames = (TCHAR *) realloc(FileNames,i+length+2);
 		pnt = FileNames+i;
 		memset(pnt,0,length+2);
 	}
 #ifdef WINVER
-	strcpy_s(pnt, length+1, fn);
+	StringCbCopy(pnt, length+1, fn);
 #else
 	strcpy(pnt,fn);
 #endif
 	return FileNames;
 }
 
-void SendFile( char* FileName , int ram ) {
+void SendFile(TCHAR *FileName , int ram ) {
 	BOOL is_link_connected = link_connected(SlotSave);
 	TIFILE_t *var = importvar(FileName, SlotSave, ram);
 	LINK_ERR result;
@@ -71,36 +71,36 @@ void SendFile( char* FileName , int ram ) {
 				case LERR_MEM:
 					switch (ram) {
 					case SEND_RAM:
-						MessageBox(NULL, "Not enough free RAM on calculator","Error",MB_OK);
+						MessageBox(NULL, _T("Not enough free RAM on calculator"), _T("Error"),MB_OK);
 						break;
 					case SEND_ARC:
-						MessageBox(NULL, "Not enough free Archive on calculator","Error",MB_OK);
+						MessageBox(NULL, _T("Not enough free Archive on calculator"), _T("Error"),MB_OK);
 						break;
 					default:
-						MessageBox(NULL, "Not enough free memory on calculator","Error",MB_OK);
+						MessageBox(NULL, _T("Not enough free memory on calculator"), _T("Error"),MB_OK);
 						break;
 					}
 					break;
 				case LERR_TIMEOUT:
-					MessageBox(NULL, "Link timed out","Error",MB_OK);
+					MessageBox(NULL, _T("Link timed out"), _T("Error"),MB_OK);
 					break;
 				case LERR_FORCELOAD:
-					MessageBox(NULL, "Error force loading an application", "Error", MB_OK);
+					MessageBox(NULL, _T("Error force loading an application"), _T("Error"), MB_OK);
 					break;
 				case LERR_CHKSUM:
-					MessageBox(NULL, "Link checksum was not correct", "Error", MB_OK);
+					MessageBox(NULL, _T("Link checksum was not correct"), _T("Error"), MB_OK);
 					break;
 				case LERR_MODEL:
-					MessageBox(NULL, "Calculator model not correct for this type of file", "Error", MB_OK);
+					MessageBox(NULL, _T("Calculator model not correct for this type of file"), _T("Error"), MB_OK);
 					break;
 				case LERR_NOTINIT:
-					MessageBox(NULL, "Virtual link was not initialized", "Error", MB_OK);
+					MessageBox(NULL, _T("Virtual link was not initialized"), _T("Error"), MB_OK);
 					break;
 				case LERR_LINK:
-					MessageBox(NULL, "Virtual link error", "Error", MB_OK);
+					MessageBox(NULL, _T("Virtual link error"), _T("Error"), MB_OK);
 					break;
 				case LERR_FILE:
-					MessageBox(NULL, "The file was unable to be sent because it is corrupt", "Error", MB_OK);
+					MessageBox(NULL, _T("The file was unable to be sent because it is corrupt"), _T("Error"), MB_OK);
 					break;
 				}
 
@@ -111,7 +111,7 @@ void SendFile( char* FileName , int ram ) {
 
 					u_int i;
 					for (i = 0; i < calcs[SlotSave].applist.count; i++) {
-						if (strncmp((char *) var->flash->name, calcs[SlotSave].applist.apps[i].name, 8) == 0) {
+						if (_tcsncmp((TCHAR *) var->flash->name, calcs[SlotSave].applist.apps[i].name, 8) == 0) {
 							calcs[SlotSave].last_transferred_app = &calcs[SlotSave].applist.apps[i];
 							break;
 						}
@@ -122,16 +122,16 @@ void SendFile( char* FileName , int ram ) {
 			case SAV_TYPE:
 				FreeTiFile(var);
 				var = NULL;
-				rom_load(SlotSave, FileName);
+				rom_load(&calcs[SlotSave], FileName);
 				SendMessage(calcs[SlotSave].hwndFrame, WM_USER, 0, 0);
 				break;
 			case LABEL_TYPE: {
 #ifdef WINVER
-				strcpy_s(calcs[SlotSave].labelfn,FileName);
+				StringCbCopy(calcs[SlotSave].labelfn, sizeof(calcs[SlotSave].labelfn), FileName);
 #else
 				strcpy(calcs[SlotSave].labelfn,FileName);
 #endif
-				printf("loading label file for slot %d: %s\n", SlotSave, FileName);
+				_tprintf_s(_T("loading label file for slot %d: %s\n"), SlotSave, FileName);
 				VoidLabels(SlotSave);
 				labels_app_load(SlotSave, calcs[SlotSave].labelfn);
 
@@ -142,7 +142,7 @@ void SendFile( char* FileName , int ram ) {
 				break;
 			default:
 #ifdef WINVER
-				MessageBox(NULL, "The file was an invalid or unspecified type","Error",MB_OK);
+				MessageBox(NULL, _T("The file was an invalid or unspecified type"), _T("Error"), MB_OK);
 #endif
 				break;
 		}
@@ -152,7 +152,7 @@ void SendFile( char* FileName , int ram ) {
 			link_connect(&calcs[0].cpu, &calcs[1].cpu);
 	} else {
 #ifdef WINVER
-		MessageBox(NULL, "Invalid file format","Error",MB_OK);
+		MessageBox(NULL, _T("Invalid file format"), _T("Error"), MB_OK);
 #endif
 	}
 }
@@ -160,20 +160,20 @@ void SendFile( char* FileName , int ram ) {
 #ifdef WINVER
 extern HINSTANCE g_hInst;
 HWND hwndSend;
-static char *current_file_sending;
+static TCHAR *current_file_sending;
 #endif
 
-void SendFiles( char* FileNames , int ram ) {
+void SendFiles(TCHAR *FileNames , int ram ) {
 	int i;
 	int modelsave;
-	unsigned char* fn = (unsigned char *)  FileNames;
+	_TUCHAR *fn = (_TUCHAR *)  FileNames;
 	calcs[SlotSave].send = TRUE;
 	calcs[SlotSave].running = FALSE;
 	calcs[SlotSave].CurrentFile = 0;
 	calcs[SlotSave].FileCnt = 0;
-	i=0;
-	while(FileNames[i]!=0) {
-		for(;FileNames[i]!=0;i++);
+	i = 0;
+	while(FileNames[i] != 0) {
+		for(;FileNames[i] != 0; i++);
 		i++;
 		calcs[SlotSave].FileCnt++;
 	}
@@ -181,12 +181,12 @@ void SendFiles( char* FileNames , int ram ) {
 	while (fn[0] != 0) {
 		modelsave = calcs[SlotSave].model;
 		calcs[SlotSave].CurrentFile++;
-		current_file_sending = (char *) fn;
-		SendFile((char *) fn,ram);
+		current_file_sending = (TCHAR *) fn;
+		SendFile((TCHAR *) fn, ram);
 #ifdef WINVER
 		SendMessage(hwndSend, WM_USER, 0, 0);
 #endif
-		for(;fn[0]!=0;fn++);
+		for(;fn[0] != 0; fn++);
 		fn++;
 	}
 	//if (calcs[SlotSave].model == TI_82 && modelsave == calcs[SlotSave].model) end82send(SlotSave);
@@ -224,14 +224,14 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		LOGFONT lfSegoe;
 		memset(&lfSegoe, 0, sizeof(LOGFONT));
 #ifdef WINVER
-		strcpy_s(lfSegoe.lfFaceName, "Segoe UI");
+		StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Segoe UI"));
 #else
 		strcpy(lfSegoe.lfFaceName, "Segoe UI");
 #endif
 
 		if (EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
 #ifdef WINVER
-			strcpy_s(lfSegoe.lfFaceName, "Tahoma");
+			StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Tahoma"));
 #else
 			strcpy(lfSegoe.lfFaceName, "Segoe UI");
 #endif
@@ -287,9 +287,9 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		SetBkMode(hdc, TRANSPARENT);
 		SelectObject(hdc, hfontSegoe);
 
-		char szFile[256];
+		TCHAR szFile[256];
 #ifdef WINVER
-		sprintf_s(szFile, "Sending file %d of %d", calcs[SlotSave].CurrentFile, calcs[SlotSave].FileCnt);
+		StringCbPrintf(szFile, sizeof(szFile), _T("Sending file %d of %d"), calcs[SlotSave].CurrentFile, calcs[SlotSave].FileCnt);
 #else
 		sprintf(szFile, "Sending file %d of %d", calcs[SlotSave].CurrentFile, calcs[SlotSave].FileCnt);
 #endif
@@ -361,14 +361,14 @@ DWORD WINAPI ThreadSendStart( LPVOID lpParam ) {
 }
 
 
-void ThreadSend(char *FileNames, int ram, int slot) {
+void ThreadSend(TCHAR *FileNames, int ram, int slot) {
 	static HANDLE hdlSend = NULL;
 	SENDFILES_t* sf;
 
 	if (FileNames == NULL) return;
 
 	if (SlotSave != -1 || calcs[SlotSave].send == TRUE) {
-		MessageBox(NULL, "Currently sending files please wait...","Error",MB_OK);
+		MessageBox(NULL, _T("Currently sending files please wait..."), _T("Error"), MB_OK);
 		return;
 	} else {
 		SlotSave = slot;
@@ -391,7 +391,7 @@ void ThreadSend(char *FileNames, int ram, int slot) {
 
 	wcx.cbSize = sizeof(wcx);
 	wcx.style = CS_DBLCLKS;
-	wcx.lpszClassName = "WabbitSendClass";
+	wcx.lpszClassName = _T("WabbitSendClass");
 	wcx.lpfnWndProc = SendProc;
 	wcx.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wcx.hbrBackground = (HBRUSH) (COLOR_BTNFACE+1);
@@ -406,7 +406,7 @@ void ThreadSend(char *FileNames, int ram, int slot) {
 
 	hwndSend = CreateWindowEx(
 			0,
-			"WabbitSendClass",
+			_T("WabbitSendClass"),
 			NULL,
 			WS_SIZEBOX | WS_POPUP | WS_VISIBLE,
 			r.left+(r.right - r.left - SendWidth)/2, r.top+(r.bottom - r.top - SendHeight)/2, SendWidth, SendHeight,
@@ -419,7 +419,7 @@ void ThreadSend(char *FileNames, int ram, int slot) {
 		SlotSave = -1;
 		free(sf);
 		free(FileNames);
-		MessageBox(NULL, "Could not create thread to send","Error",MB_OK);
+		MessageBox(NULL, _T("Could not create thread to send"), _T("Error"), MB_OK);
 		return;
 	}
 
@@ -427,14 +427,14 @@ void ThreadSend(char *FileNames, int ram, int slot) {
 }
 #endif
 
-void NoThreadSend(const char* FileNames, int ram) {
+void NoThreadSend(const TCHAR* FileNames, int ram) {
 	if (SlotSave == -1) {
 		SlotSave = gslot;
 	} else {
 		// error;
 	}
 
-	SendFile((char *) FileNames, ram);
+	SendFile((TCHAR *) FileNames, ram);
 	SlotSave = -1;
 }
 

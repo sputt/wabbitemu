@@ -18,12 +18,12 @@ char txt86[] = "Already Installed";
 	}
 
 
-int CmpStringCase(char* str1,unsigned char* str2) {
-	return strnicmp(str1,(char *) str2,strlen(str1));
+int CmpStringCase(char* str1, unsigned char* str2) {
+	return strnicmp(str1, (char *) str2, strlen(str1));
 }
 
 
-int FindRomVersion(int calc,char* string,unsigned char* rom,int size) {
+int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 	int i,b;
 	if (calc == -1) {
 		if ( size == (128*1024) ) calc = TI_82;
@@ -32,14 +32,14 @@ int FindRomVersion(int calc,char* string,unsigned char* rom,int size) {
 		else if ( (size>=(1016*1024)) && (size<=(1030*1024))  ) calc = TI_84P;
 		else if ( (size>=(2044*1024)) && (size<=(2260*1024)) ) calc = TI_83PSE;
 		else {
-			puts("not a known rom");
+			_putts(_T("not a known rom"));
 			return -1;
 		}
 	}
 	switch (calc) {
 		case TI_82:
-			for(i = 0; i < (size-strlen(catalog) - 10); i++) {
-				if (CmpStringCase(catalog, rom+i)==0) {
+			for(i = 0; i < (size - strlen(catalog) - 10); i++) {
+				if (CmpStringCase(catalog, rom + i)==0) {
 					calc = TI_85;
 						for(i = 0; i < (size - strlen(self_test) - 10); i++) {
 							if (CmpStringCase(self_test, rom + i) == 0) break;
@@ -66,11 +66,11 @@ int FindRomVersion(int calc,char* string,unsigned char* rom,int size) {
 
 		case TI_83:
 			if (calc == TI_83) {
-				for(i=0;i<(size-strlen(txt86)-10);i++) {
-					if (CmpStringCase(txt86,rom+i)==0) {
+				for(i=0;i<(size - strlen(txt86) - 10);i++) {
+					if (CmpStringCase(txt86, rom + i)==0) {
 						calc = TI_86;
-							for(i=0;i<(size-strlen(self_test)-10);i++) {
-								if (CmpStringCase(self_test,rom+i)==0) break;
+							for(i=0;i<(size - strlen(self_test) - 10); i++) {
+								if (CmpStringCase(self_test, rom + i) == 0) break;
 							}
 							for(;i<(size-40);i++) {
 								if (isdigit(rom[i])) break;
@@ -93,8 +93,8 @@ int FindRomVersion(int calc,char* string,unsigned char* rom,int size) {
 			}
 			if (calc==TI_86) break;
 
-			for(i=0;i<(size-strlen(self_test)-10);i++) {
-				if (CmpStringCase(self_test,rom+i)==0) break;
+			for(i=0;i<(size - strlen(self_test) - 10); i++) {
+				if (CmpStringCase(self_test, rom + i)==0) break;
 			}
 			if ((i+64)<size) {
 				i+=10;
@@ -110,8 +110,8 @@ int FindRomVersion(int calc,char* string,unsigned char* rom,int size) {
 			}
 			break;
 		case TI_83P:
-			for(i=0;i<(size-strlen(txt73)-10);i++) {
-				if (CmpStringCase(txt73,rom+i)==0) {
+			for(i = 0; i < (size - strlen(txt73) - 10); i++) {
+				if (CmpStringCase(txt73, rom + i)==0) {
 					calc = TI_73;
 					break;
 				}
@@ -144,17 +144,17 @@ void NullTiFile(TIFILE_t* tifile) {
 }
 
 
-TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
+TIFILE_t* importvar(TCHAR * FileName, int SlotSave, int ram) {
 	FILE * infile = NULL;
 	TIFILE_t * tifile;
 	size_t i;
 	int tmp;
-	unsigned char * ptr;
-	char string[8];
+	_TUCHAR *ptr;
+	TCHAR string[8];
 
 	if (!FileName) return NULL;
 
-	for(i = strlen(FileName); (i>4) && (FileName[i]!='.'); i--) {
+	for(i = _tcslen(FileName); (i>4) && (FileName[i]!='.'); i--) {
 		if (	FileName[i-3]=='.' &&
 				toupper(FileName[i-2])=='L' &&
 				toupper(FileName[i-1])=='A' &&
@@ -184,7 +184,7 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 
 
 #ifdef WINVER
-	fopen_s(&infile, FileName, "rb");
+	_tfopen_s(&infile, FileName, _T("rb"));
 #else
 	infile = fopen(FileName, "rb");
 #endif
@@ -198,8 +198,8 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 	rewind(infile);
 
 
-	if ((memcmp(string,DETECT_STR,8)==0) ||
-		(memcmp(string,DETECT_CMP_STR,8)==0) ) {
+	if ((memcmp(string, DETECT_STR, 8) == 0) ||
+		(memcmp(string, DETECT_CMP_STR, 8) == 0) ) {
 		tifile = (TIFILE_t*) malloc(sizeof(TIFILE_t));
 		if (tifile == NULL) {
 			fclose(infile);
@@ -223,7 +223,7 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 
 
 
-	if ( memcmp(string,"**TIFL**",8)==0 ) {
+	if ( memcmp(string, _T("**TIFL**"),8)==0 ) {
 		tifile = (TIFILE_t*) malloc(sizeof(TIFILE_t));
 		if (tifile == NULL) {
 			fclose(infile);
@@ -242,11 +242,11 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 
 
 /* Import file Header */
-		ptr = (unsigned char *) tifile->flash;
+		ptr = (_TUCHAR *) tifile->flash;
 		for(i=0; i<TI_FLASH_HEADER_SIZE && !feof(infile); i++) {
 			tmp = fgetc(infile);
 			if (tmp == EOF) {
-				printf("failed to get the whole header\n");
+				_tprintf_s(_T("failed to get the whole header\n"));
 				fclose(infile);
 				FreeTiFile(tifile);
 				return NULL;
@@ -254,17 +254,15 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 			ptr[i] =tmp;
 		}
 
-		if (!strcmp((char*)tifile->flash->name, "basecode"))
+		if (!_tcscmp((const TCHAR *) tifile->flash->name, _T("basecode")))
 		{
 			//its an OS we need to load it
 			Load_8xu(infile);
 			calcs[gslot].mem_c.flash[0x56] = 0x5A;
 			calcs[gslot].mem_c.flash[0x57] = 0xA5;
-			calc_reset(gslot);
-			calc_run_timed(gslot, 200);
-			calcs[gslot].cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
-			calc_run_timed(gslot, 300);
-			calcs[gslot].cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
+			//is it ok to clear the cert here?
+			calc_reset(&calcs[gslot]);
+			calc_turn_on(&calcs[gslot]);
 			fclose(infile);
 			free(tifile->flash);
 			tifile->flash = NULL;
@@ -363,7 +361,7 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 					TotalPages++;
 					CurrentPage = Record.Data[1];
 					if (tifile->flash->data[CurrentPage]==0) {
-						tifile->flash->data[CurrentPage] = (unsigned char *) malloc(16384);
+						tifile->flash->data[CurrentPage] = (_TUCHAR *) malloc(16384);
 						if (tifile->flash->data[CurrentPage] == NULL) {
 							fclose(infile);
 							FreeTiFile(tifile);
@@ -442,7 +440,7 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 			return NULL;
 		}
 
-		tifile->rom->data = (unsigned char*) malloc(size);
+		tifile->rom->data = (unsigned char *) malloc(size);
 		if (tifile->rom->data == NULL) {
 			fclose(infile);
 			FreeTiFile(tifile);
@@ -456,13 +454,13 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 				FreeTiFile(tifile);
 				return NULL;
 			}
-			tifile->rom->data[i] =tmp;
+			tifile->rom->data[i] = tmp;
 		}
 		fclose(infile);
 		tifile->rom->size		= size;
 		tifile->type			= ROM_TYPE;
 
-		calc = FindRomVersion(calc,tifile->rom->version,tifile->rom->data,size);
+		calc = FindRomVersion(calc, tifile->rom->version, tifile->rom->data, size);
 		tifile->model			= calc;
 
 //		printf("It's a %s.\nVersion: %s \n",CalcModelTxt[calc],tifile->rom->version);
@@ -479,8 +477,8 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 	NullTiFile(tifile);
 
 /* Import file Header */
-	ptr = (unsigned char *) tifile;
-	for(i=0; i<TI_FILE_HEADER_SIZE && !feof(infile); i++) {
+	ptr = (_TUCHAR *) tifile;
+	for(i = 0; i < TI_FILE_HEADER_SIZE && !feof(infile); i++) {
 		tmp = fgetc(infile);
 		if (tmp == EOF) {
 			fclose(infile);
@@ -491,11 +489,11 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 	}
 
 
-	if ( memcmp(tifile->sig,"**TI73**",8)==0 ) tifile->model = TI_73;
-	else if ( memcmp(tifile->sig,"**TI82**",8)==0 ) tifile->model = TI_82;
-	else if ( memcmp(tifile->sig,"**TI83**",8)==0 ) tifile->model = TI_83;
-	else if ( memcmp(tifile->sig,"**TI83F*",8)==0 ) tifile->model = TI_83P;
-	else if ( memcmp(tifile->sig,"**TI86**",8)==0 ) tifile->model = TI_86;
+	if ( memcmp(tifile->sig, _T("**TI73**"), 8) == 0) tifile->model = TI_73;
+	else if ( memcmp(tifile->sig, _T("**TI82**"), 8) == 0) tifile->model = TI_82;
+	else if ( memcmp(tifile->sig, _T("**TI83**"), 8) == 0) tifile->model = TI_83;
+	else if ( memcmp(tifile->sig, _T("**TI83F*"), 8) == 0) tifile->model = TI_83P;
+	else if ( memcmp(tifile->sig, _T("**TI86**"), 8) == 0) tifile->model = TI_86;
 	else {
 		fclose(infile);
 		FreeTiFile(tifile);
@@ -565,7 +563,7 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 		tmpread(infile);
 		tifile->backup->length1a += tmp<<8;
 
-		tifile->backup->data1 = (unsigned char *) malloc(tifile->backup->length1);
+		tifile->backup->data1 = (_TUCHAR *) malloc(tifile->backup->length1);
 		if (tifile->backup->data1 == NULL) {
 			fclose(infile);
 			FreeTiFile(tifile);
@@ -582,7 +580,7 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 		tmpread(infile);
 		tifile->backup->length2a += tmp<<8;
 
-		tifile->backup->data2 = (unsigned char *) malloc(tifile->backup->length2);
+		tifile->backup->data2 = (_TUCHAR *) malloc(tifile->backup->length2);
 		if (tifile->backup->data2 == NULL) {
 			fclose(infile);
 			FreeTiFile(tifile);
@@ -598,7 +596,7 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 		tmpread(infile);
 		tifile->backup->length3a += tmp<<8;
 
-		tifile->backup->data3 = (unsigned char *) malloc(tifile->backup->length3);
+		tifile->backup->data3 = (_TUCHAR *) malloc(tifile->backup->length3);
 		if (tifile->backup->data3 == NULL) {
 			fclose(infile);
 			FreeTiFile(tifile);
@@ -690,7 +688,7 @@ TIFILE_t* importvar(char * FileName, int SlotSave, int ram) {
 			}
 			ptr[i++] =tmp;
 
-			groupFile->var->data = (unsigned char *) malloc(groupFile->var->length);
+			groupFile->var->data = (_TUCHAR *) malloc(groupFile->var->length);
 			if (groupFile->var->data == NULL) {
 				fclose(infile);
 				FreeTiFile(groupFile);
@@ -763,7 +761,7 @@ Done_Group:
 	tifile->var->length			= length;
 	tifile->var->vartype		= vartype;
 	ptr = tifile->var->name;
-	for(i=0; i<8 && !feof(infile); i++) {
+	for(i = 0; i < 8 && !feof(infile); i++) {
 		tmpread(infile);
 		ptr[i] =tmp;
 	}
@@ -802,7 +800,7 @@ Done_Group:
 	}
 	ptr[i++] =tmp;
 
-	tifile->var->data = (unsigned char *) malloc(tifile->var->length);
+	tifile->var->data = (_TUCHAR *) malloc(tifile->var->length);
 	if (tifile->var->data == NULL) {
 		fclose(infile);
 		FreeTiFile(tifile);

@@ -194,8 +194,8 @@ Global
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Debug|Any CPU.Build.0 = Wabbitcode Debug|Any CPU
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Wabbitcode Debug|X64
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Debug|Mixed Platforms.Build.0 = Wabbitcode Debug|X64
-		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X64
-		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Debug|Win32.Build.0 = Wabbitcode Debug|X64
+		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X86
+		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Debug|Win32.Build.0 = Wabbitcode Debug|X86
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Debug|x64.ActiveCfg = Wabbitcode Debug|X64
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Debug|x64.Build.0 = Wabbitcode Debug|X64
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Debug|X86.ActiveCfg = Wabbitcode Debug|X86
@@ -295,8 +295,8 @@ Global
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitcode Debug|Any CPU.Build.0 = Wabbitcode Debug|Any CPU
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Wabbitcode Debug|X64
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitcode Debug|Mixed Platforms.Build.0 = Wabbitcode Debug|X64
-		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X64
-		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitcode Debug|Win32.Build.0 = Wabbitcode Debug|X64
+		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X86
+		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitcode Debug|Win32.Build.0 = Wabbitcode Debug|X86
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitcode Debug|x64.ActiveCfg = Wabbitcode Debug|X64
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitcode Debug|x64.Build.0 = Wabbitcode Debug|X64
 		{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}.Wabbitcode Debug|X86.ActiveCfg = Wabbitcode Debug|X86
@@ -395,7 +395,7 @@ Global
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Any CPU.ActiveCfg = Wabbitcode Debug|Any CPU
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Wabbitcode Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Mixed Platforms.Build.0 = Wabbitcode Debug|X64
-		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X64
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X86
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|x64.ActiveCfg = Wabbitcode Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|X86.ActiveCfg = Wabbitcode Debug|X86
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Release|Any CPU.ActiveCfg = Wabbitcode Release|Any CPU
@@ -495,7 +495,7 @@ Global
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitcode Debug|Any CPU.ActiveCfg = Wabbitcode Debug|Any CPU
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Wabbitcode Debug|X64
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitcode Debug|Mixed Platforms.Build.0 = Wabbitcode Debug|X64
-		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X64
+		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X86
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitcode Debug|x64.ActiveCfg = Wabbitcode Debug|X64
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitcode Debug|X86.ActiveCfg = Wabbitcode Debug|X86
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F}.Wabbitcode Release|Any CPU.ActiveCfg = Wabbitcode Release|Any CPU
@@ -592,8 +592,8 @@ Global
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitcode Debug|Any CPU.Build.0 = Wabbitcode Debug|Any CPU
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Wabbitcode Debug|X64
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitcode Debug|Mixed Platforms.Build.0 = Wabbitcode Debug|X64
-		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X64
-		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitcode Debug|Win32.Build.0 = Wabbitcode Debug|X64
+		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X86
+		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitcode Debug|Win32.Build.0 = Wabbitcode Debug|X86
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitcode Debug|x64.ActiveCfg = Wabbitcode Debug|X64
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitcode Debug|x64.Build.0 = Wabbitcode Debug|X64
 		{C75532C4-765B-418E-B09B-46D36B2ABDB1}.Wabbitcode Debug|X86.ActiveCfg = Wabbitcode Debug|X86
@@ -913,7 +913,7 @@ Global
 		{B71D1B8A-1F0E-4214-AB73-B477E54F2073}.Wabbitcode Debug|Any CPU.ActiveCfg = Debug|X64
 		{B71D1B8A-1F0E-4214-AB73-B477E54F2073}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Debug|X64
 		{B71D1B8A-1F0E-4214-AB73-B477E54F2073}.Wabbitcode Debug|Mixed Platforms.Build.0 = Debug|X64
-		{B71D1B8A-1F0E-4214-AB73-B477E54F2073}.Wabbitcode Debug|Win32.ActiveCfg = Debug|X64
+		{B71D1B8A-1F0E-4214-AB73-B477E54F2073}.Wabbitcode Debug|Win32.ActiveCfg = Debug|x86
 		{B71D1B8A-1F0E-4214-AB73-B477E54F2073}.Wabbitcode Debug|x64.ActiveCfg = Debug|X64
 		{B71D1B8A-1F0E-4214-AB73-B477E54F2073}.Wabbitcode Debug|x64.Build.0 = Debug|X64
 		{B71D1B8A-1F0E-4214-AB73-B477E54F2073}.Wabbitcode Debug|X86.ActiveCfg = Debug|X64

@@ -713,7 +713,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		{
 			TCHAR *FileNames = NULL;
 			TCHAR fn[256];
-
 			int count = DragQueryFile((HDROP) wParam, ~0, fn, 256);
 
 			while (count--) {

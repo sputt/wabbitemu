@@ -934,10 +934,7 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	switch(Message) {
 		case WM_INITDIALOG: {
 			int i;			
-			//char buffer[256];
 			HWND hComboBox = GetDlgItem(hwnd, IDC_COMBO_MENU);
-			//m_nStore = 2*m_nCommands + m_nAccel; 			// extreme: max 2 keys per command assigned
-			//hNewAccels = &ACCEL[m_nStore];
 			hMenu = LoadMenu(g_hInst, (LPCTSTR)IDR_MAIN_MENU);
 			hListMenu = GetDlgItem(hwnd, IDC_LIST_MENU);
 			hListKeys = GetDlgItem(hwnd, IDC_LIST_KEYS);

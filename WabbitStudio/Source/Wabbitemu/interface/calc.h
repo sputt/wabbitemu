@@ -139,7 +139,7 @@ __declspec(dllexport)
 int calc_run_all(void);
 #ifdef WITH_BACKUPS
 void do_backup(int);
-void restore_backup(int, int);
+void restore_backup(int index, int slot);
 void init_backups();
 void free_backups(int);
 void free_backup(debugger_backup *);
