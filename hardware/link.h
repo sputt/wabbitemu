@@ -30,7 +30,7 @@ typedef enum {
 } LINK_ERR;
 
 // Destination flags
-typedef enum {
+typedef enum SEND_FLAG {
 	SEND_CUR,					/* sends based on current flag settings */
 	SEND_RAM,					/* sends to RAM, regardless of flag settings */
 	SEND_ARC					/* sends to archive, regardless of flag settings */

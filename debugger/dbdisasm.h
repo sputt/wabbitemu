@@ -48,4 +48,6 @@ typedef struct disasmpane_settings {
 
 #define DB_DISASM		40
 
+void cycle_pcs(dp_settings *dps);
+
 #endif

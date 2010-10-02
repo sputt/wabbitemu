@@ -3010,11 +3010,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\gui\resource.h"
+				RelativePath=".\resource.h"
 				>
 			</File>
 			<File
-				RelativePath=".\resource.h"
+				RelativePath=".\gui\resource.h"
 				>
 			</File>
 			<File
@@ -3027,6 +3027,34 @@
 			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav"
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
+			<File
+				RelativePath=".\downarrow7.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\gui\downarrow7.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\left7.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\gui\left7.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\right7.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\gui\right7.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\gui\ti-85Keymap.png"
+				>
+			</File>
 			<File
 				RelativePath=".\gui\tsmall.ico"
 				>
@@ -3452,6 +3480,10 @@
 		</File>
 		<File
 			RelativePath=".\gui\ROM\rom8x.8xp"
+			>
+		</File>
+		<File
+			RelativePath=".\Wabbitemu.tlb"
 			>
 		</File>
 		<File

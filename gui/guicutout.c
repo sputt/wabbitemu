@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "gui.h"
+#include "guilcd.h"
 #include "guifaceplate.h"
 #include "guibuttons.h"
 #include "resource.h"
@@ -155,7 +156,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 			_T("Wabbitemu"),
 			WS_VISIBLE,
 			0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
-			hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
+			hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID *) lpCalc);
 
 	SetWindowTheme(lpCalc->hwndLCD, (LPCWSTR) _T(" "), (LPCWSTR) _T(" "));
 	HDC hScreen = GetDC(NULL);
@@ -325,7 +326,7 @@ int DisableCutout(HWND hwndFrame) {
 			_T("LCD"),
 			WS_VISIBLE |  WS_CHILD,
 			0, 0, lpCalc->cpu.pio.lcd->width*scale, 64*scale,
-			hwndFrame, (HMENU) 99, g_hInst,  (LPVOID) GetWindowLongPtr(hwndFrame, GWLP_USERDATA));
+			hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID) GetWindowLongPtr(hwndFrame, GWLP_USERDATA));
 
 	SetWindowLong(hwndFrame, GWL_EXSTYLE, 0);
 	SetWindowLong(hwndFrame, GWL_STYLE, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));

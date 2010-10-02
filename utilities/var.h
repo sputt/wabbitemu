@@ -107,7 +107,7 @@ typedef struct TIFILE {
 #define SKIP_TYPE 	8
 
 int FindRomVersion(int, char*, unsigned char*, int);
-TIFILE_t* importvar(char *, int, int);
+TIFILE_t* importvar(LPCTSTR FileName, int SlotSave, int ram);
 void FreeTiFile(TIFILE_t *);
 
 #endif

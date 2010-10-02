@@ -106,7 +106,6 @@ HRESULT __stdcall CDropTarget::QueryInterface(REFIID riid, LPVOID *ppvObject) {
 
 HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
 	DWORD i;
-	m_slot = calc_from_hwnd(m_hwndTarget);
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};
 		m_pDropTargetHelper->DragEnter(m_hwndTarget, pDataObject, &p, *pdwEffect);
@@ -163,7 +162,6 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 }
 
 HRESULT __stdcall CDropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
-	m_slot = calc_from_hwnd(m_hwndTarget);
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};
 		m_pDropTargetHelper->DragOver(&p, *pdwEffect);
@@ -180,11 +178,15 @@ HRESULT __stdcall CDropTarget::DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdw
 }
 
 HRESULT __stdcall CDropTarget::DragLeave() {
-	m_slot = calc_from_hwnd(m_hwndTarget);
 	if (m_pDropTargetHelper != NULL) {
 		m_pDropTargetHelper->DragLeave();
 	}
-	calcs[m_slot].do_drag = false;
+
+	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	if (lpCalc != NULL)
+	{
+		lpCalc->do_drag = false;
+	}
 
 	return S_OK;
 }
@@ -195,7 +197,6 @@ static BOOL WriteStreamToFile(IStream *pStream, LPCTSTR lpszFileName)
 }
 
 HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
-	m_slot = calc_from_hwnd(m_hwndTarget);
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};
 		m_pDropTargetHelper->Drop(pDataObject, &p, *pdwEffect);

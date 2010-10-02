@@ -21,7 +21,7 @@ static unsigned int cyDisasm = 350, cyMem;
 
 #define MAX_TABS 5
 static ep_state expand_pane_state = {0};
-static HWND hdisasm, hreg, hmem;
+HWND hdisasm, hreg, hmem;
 static int total_mem_pane;
 static HWND hmemlist[MAX_TABS];
 static long long code_count_tstates = -1;

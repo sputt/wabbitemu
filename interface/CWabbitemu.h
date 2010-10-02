@@ -60,8 +60,7 @@ public:
 
 	CWabbitemu()
 	{
-		m_iSlot = calc_slot_new();
-		m_lpCalc = &calcs[m_iSlot];
+		m_lpCalc = calc_slot_new();
 		m_pZ80 = new CZ80(&calcs[m_iSlot].cpu);
 		m_pLCD = new CLCD(&calcs[m_iSlot].cpu);
 		m_pKeypad = new CKeypad(&calcs[m_iSlot].cpu);

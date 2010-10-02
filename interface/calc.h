@@ -1,32 +1,21 @@
-#ifndef CALC_H
-#define CALC_H
-
-#ifdef WINVER
-#define MAX_OLE_BREAKPOINTS	128
-#endif
+#ifndef _CALC_H
+#define _CALC_H
 
 #include "coretypes.h"
 
-#ifdef WINVER
-#include "DropTarget.h"
-#endif
 #include "core.h"
 #include "lcd.h"
 #include "keys.h"
-#ifdef WINVER
-#include "Wabbitemu_h.h"
-#include "sound.h" // FIXME: sound is nice
-#endif
-#include "savestate.h"
-#include "label.h"
 #include "link.h"
-#ifndef WINVER
-#include "types.h"
+
+#ifdef _WINDOWS
+#include "Wabbitemu_h.h"
+#include "sound.h"
+#include "DropTarget.h"
 #endif
 
-#ifdef QTVER
-#include <pthread.h>
-#endif
+#include "label.h"
+#include "savestate.h"
 
 typedef enum {
 	GDS_IDLE,
@@ -45,7 +34,7 @@ typedef struct profiler {
 	long data[0x10000 / MIN_BLOCK_SIZE];
 } profiler_t;
 
-typedef struct calc {
+typedef struct tagCALC {
 	int slot;
 	TCHAR rom_path[MAX_PATH];
 	char rom_version[32];
@@ -60,6 +49,7 @@ typedef struct calc {
 #ifdef WINVER
 	AUDIO_t* audio; // FIXME: Bad!
 #endif
+
 #ifdef WINVER
 	CDropTarget *pDropTarget;
 	HWND hwndFrame;
@@ -76,7 +66,6 @@ typedef struct calc {
 	
 	clock_t sb_refresh;
 
-	HWND ole_callback;
 	BOOL do_drag;
 	HDC hdcSkin;
 	HDC hdcButtons;
@@ -84,6 +73,7 @@ typedef struct calc {
 #else
 	pthread_t hdlThread;
 #endif
+
 	BOOL running;
 	int speed;
 	BYTE breakpoints[0x10000];
@@ -102,6 +92,7 @@ typedef struct calc {
 	volatile int SendSize;
 
 	gif_disp_states gif_disp_state;
+
 #ifdef WINVER
 	RECT rectSkin;
 	RECT rectLCD;
@@ -126,17 +117,17 @@ typedef struct DEBUG_STATE {
 #define MAX_CALCS	8
 #define MAX_SPEED 100*50
 
+typedef tagCALC CALC, *LPCALC;
+
 void calc_turn_on(calc_t *);
-int calc_slot_new(void);
+LPCALC calc_slot_new(void);
 u_int calc_count(void);
 int calc_reset(calc_t *);
 int calc_run_frame(calc_t *);
 int calc_run_seconds(calc_t *, double);
 int calc_run_timed(calc_t *, time_t);
-#ifdef _WINDLL
-__declspec(dllexport)
-#endif
 int calc_run_all(void);
+
 #ifdef WITH_BACKUPS
 void do_backup(int);
 void restore_backup(int index, int slot);
@@ -145,21 +136,16 @@ void free_backups(int);
 void free_backup(debugger_backup *);
 #endif
 
-#ifdef _WINDLL
-__declspec(dllexport)
-#endif
-calc_t *rom_load(calc_t *, TCHAR *);
+BOOL rom_load(calc_t *lpCalc, LPCTSTR FileName);
 void calc_slot_free(calc_t *);
-#ifdef WINVER
-int calc_from_hwnd(HWND);
-#endif
-#endif
 
 int calc_init_83p(calc_t *);
 int calc_init_84p(calc_t *);
 int calc_init_83pse(calc_t *);
 
 void calc_erase_certificate(unsigned char *, int);
+
+
 #ifdef CALC_C
 #define GLOBAL
 #else
@@ -170,12 +156,14 @@ GLOBAL calc_t calcs[MAX_CALCS];
 GLOBAL int gslot;
 GLOBAL int ScreenshotSlot;
 GLOBAL int DebuggerSlot;
+
 #ifdef WITH_BACKUPS
 #define MAX_BACKUPS 10
 GLOBAL debugger_backup* backups[MAX_CALCS];
 GLOBAL int number_backup;
 GLOBAL int current_backup_index;
 #endif
+
 GLOBAL u_int frame_counter;
 GLOBAL BOOL exit_save_state;
 GLOBAL BOOL load_files_first;
@@ -201,4 +189,5 @@ GLOBAL const TCHAR *CalcModelTxt[]
 #endif
 ;
 
-#define HAS_CALC_H
+#define _HAS_CALC_H
+#endif
