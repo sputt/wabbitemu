@@ -808,6 +808,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 	else
 	{
+		calc_slot_free(lpCalc);
+
 		if (show_wizard) {
 			BOOL wizardError = DoWizardSheet(NULL);
 			//save wizard show
@@ -1048,44 +1050,47 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		{
 			switch (LOWORD(wParam)) {
 				case IDM_FILE_NEW:
-				{
-					LPCALC lpCalcNew = calc_slot_new();
-					if (rom_load(lpCalcNew, lpCalc->rom_path) == TRUE)
 					{
-						lpCalcNew->SkinEnabled = lpCalc->SkinEnabled;
-						lpCalcNew->bCutout = lpCalc->bCutout;
-						lpCalcNew->Scale = lpCalc->Scale;
-						lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
-						gui_frame(lpCalcNew);
+						LPCALC lpCalcNew = calc_slot_new();
+						if (rom_load(lpCalcNew, lpCalc->rom_path) == TRUE)
+						{
+							lpCalcNew->SkinEnabled = lpCalc->SkinEnabled;
+							lpCalcNew->bCutout = lpCalc->bCutout;
+							lpCalcNew->Scale = lpCalc->Scale;
+							lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
+							calc_turn_on(lpCalcNew);
+							gui_frame(lpCalcNew);
+						}
+						else
+						{
+							calc_slot_free(lpCalcNew);
+						}
+						break;
 					}
-					else
-					{
-						calc_slot_free(lpCalcNew);
-					}
-					break;
-				}
 				case IDM_FILE_OPEN:
-					GetOpenSendFileName(hwnd, 0);
-					//no point, the rom will be sent on a separate thread...
-					//gui_frame_update(gslot);
-					break;
-				case IDM_FILE_SAVE:
-					SaveStateDialog(hwnd);
-					break;
-				case IDM_FILE_GIF:
-				{
-					HMENU hmenu = GetMenu(hwnd);
-					if (gif_write_state == GIF_IDLE) {
-						gif_write_state = GIF_START;
-						lpCalc->gif_disp_state = GDS_STARTING;
-						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_CHECKED);
-					} else {
-						gif_write_state = GIF_END;
-						lpCalc->gif_disp_state = GDS_ENDING;
-						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
+					{
+						GetOpenSendFileName(hwnd, 0);
+						break;
 					}
-					break;
-				}
+				case IDM_FILE_SAVE:
+					{
+						SaveStateDialog(hwnd);
+						break;
+					}
+				case IDM_FILE_GIF:
+					{
+						HMENU hmenu = GetMenu(hwnd);
+						if (gif_write_state == GIF_IDLE) {
+							gif_write_state = GIF_START;
+							lpCalc->gif_disp_state = GDS_STARTING;
+							CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_CHECKED);
+						} else {
+							gif_write_state = GIF_END;
+							lpCalc->gif_disp_state = GDS_ENDING;
+							CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
+						}
+						break;
+					}
 				case IDM_FILE_CLOSE:
 					return SendMessage(hwnd, WM_CLOSE, 0, 0);
 				case IDM_FILE_EXIT:
@@ -1298,13 +1303,13 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_MOUSEPRESS;
 
 			if (wParam != MK_LBUTTON) {
-				FinalizeButtons();
+				FinalizeButtons(lpCalc);
 				return 0;
 			}
 
 			COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
 			if (GetRValue(c) == 0xFF) {
-				FinalizeButtons();
+				FinalizeButtons(lpCalc);
 				return 0;
 			}
 
@@ -1313,7 +1318,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			} else {
 				kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] |= KEY_MOUSEPRESS;
 				if ((kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] & KEY_STATEDOWN) == 0) {
-					DrawButtonState(lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_PRESS);
+					DrawButtonState(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_PRESS);
 					kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] |= KEY_STATEDOWN;
 					//SendMessage(hwnd, WM_SIZE, 0, 0);
 				}
@@ -1342,16 +1347,16 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			if (group== 0x05 && bit == 0x00) {
 				lpCalc->cpu.pio.keypad->on_pressed ^= KEY_LOCKPRESS;
 				if ( lpCalc->cpu.pio.keypad->on_pressed &  KEY_LOCKPRESS ) {
-					DrawButtonState(lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
+					DrawButtonState(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
 				} else {
-					DrawButtonState(lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_LOCK | DBS_UP);
+					DrawButtonState(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_LOCK | DBS_UP);
 				}
 			}
 			kp->keys[group][bit] ^= KEY_LOCKPRESS;
 			if (kp->keys[group][bit] &  KEY_LOCKPRESS ) {
-				DrawButtonState(lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
+				DrawButtonState(lpCalc, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
 			} else {
-				DrawButtonState(lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_LOCK | DBS_UP);
+				DrawButtonState(lpCalc, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_LOCK | DBS_UP);
 			}
 			InvalidateRect(hwnd, &lpCalc->rectSkin, TRUE);
 			UpdateWindow(hwnd);
@@ -1360,11 +1365,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 
 		case WM_KEYDOWN: {
-			HandleKeyDown((unsigned int) wParam);
+			HandleKeyDown(lpCalc, wParam);
 			return 0;
 		}
 		case WM_KEYUP:
-			HandleKeyUp((unsigned int) wParam);
+			HandleKeyUp(lpCalc, wParam);
 			return 0;
 		case WM_SIZING:
 		{
@@ -1611,14 +1616,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 
 				_tprintf_s(_T("Saving registry settings\n"));
-				SaveRegistrySettings();
+				SaveRegistrySettings(lpCalc);
 
 			}
 			DestroyWindow(hwnd);
-			_tprintf_s(_T("Freeing calculator slot\n"));
 			calc_slot_free(lpCalc);
-			_tprintf_s(_T("freeing labels\n"));
-			VoidLabels(lpCalc);
 			if (calc_count() == 0)
 				PostQuitMessage(0);
 			return 0;

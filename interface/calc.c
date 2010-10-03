@@ -27,6 +27,7 @@ calc_t *calc_slot_new(void) {
 	for (i = 0; i < MAX_CALCS; i++) {
 		if (calcs[i].active == FALSE) {
 			memset(&calcs[i], 0, sizeof(calc_t));
+			calcs[i].active = TRUE;
 			calcs[i].gif_disp_state = GDS_IDLE;
 			calcs[i].speed = 100;
 			return &calcs[i];
@@ -283,14 +284,17 @@ BOOL rom_load(calc_t *lpCalc, LPCTSTR FileName) {
 #endif
 		calc_reset(lpCalc);
 
-	} else lpCalc = NULL;
+	}
+	else 
+	{
+		lpCalc = NULL;
+	}
 	if (lpCalc != NULL) {
 		lpCalc->cpu.pio.model = lpCalc->model;
 	}
 
 	/*if (calcs[gslot].hwndFrame)
 		gui_frame_update(slot);*/
-
 	FreeTiFile(tifile);
 	return TRUE;
 }
@@ -299,11 +303,11 @@ void calc_slot_free(calc_t *lpCalc) {
 	if (lpCalc == NULL)
 		return;
 
-	if (lpCalc->active) {
+	if (lpCalc->active)
+	{
 		lpCalc->active = FALSE;
+
 #ifdef WINVER
-		/* don't forget to change this when audio for non-Windows
-		 * builds is implemented, or bad things happen! */
 		KillSound(lpCalc->audio);
 		lpCalc->audio = NULL;
 #endif
@@ -345,6 +349,7 @@ void calc_slot_free(calc_t *lpCalc) {
 }
 
 void calc_turn_on(calc_t *lpCalc) {
+	lpCalc->running = TRUE;
 	calc_run_timed(lpCalc, 200);
 	lpCalc->cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
 	calc_run_timed(lpCalc, 300);
@@ -439,12 +444,13 @@ int calc_run_tstates(calc_t *lpCalc, time_t tstates) {
 
 
 #define FRAME_SUBDIVISIONS	1024
-int calc_run_all(void) {
+int calc_run_all(void)
+{
 	int i,j;
 
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
 		for (j = 0; j < MAX_CALCS; j++) {
-			if (calcs[j].active) {
+			if (calcs[j].active == TRUE) {
 				int time = ((long long)calcs[j].speed*calcs[j].timer_c.freq/FPS/100)/FRAME_SUBDIVISIONS/2;
 				calc_run_tstates(&calcs[j], time);
 				frame_counter += time;

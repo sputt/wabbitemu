@@ -167,6 +167,10 @@ int soundinit() {
 }
 
 void KillSound(AUDIO_t* audio) {
+	if (audio == NULL)
+	{
+		return;
+	}
 	if (audio->init) {
 		int i;
 		audio->endsnd = 0;
