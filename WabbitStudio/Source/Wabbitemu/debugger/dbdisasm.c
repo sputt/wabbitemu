@@ -1364,8 +1364,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				case DB_RESUME:
 					dps->nPCs[0] = calcs[DebuggerSlot].cpu.pc;
-					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					EnableWindow(hwnd, TRUE);
+					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
 			}
 			return 0;
