@@ -14,7 +14,7 @@
 
 
 
-static int SlotSave =-1;
+static LPCALC lpCalc = NULL;
 static HWND hwndMain = NULL;
 
 typedef struct SENDFILES {
@@ -57,7 +57,7 @@ TCHAR* AppendName(TCHAR* FileNames, TCHAR* fn) {
 
 BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination)
 {
-	BOOL is_link_connected = link_connected(SlotSave);
+	BOOL is_link_connected = link_connected(lpCalc->slot);
 	TIFILE_t *var = importvar(lpszFileName, 0, Destination);
 
 	LINK_ERR result;
@@ -112,12 +112,12 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 #endif
 				if (var->type == FLASH_TYPE) {
 					// Rebuild the applist
-					state_build_applist(&calcs[SlotSave].cpu, &calcs[SlotSave].applist);
+					state_build_applist(&lpCalc->cpu, &lpCalc->applist);
 
 					u_int i;
-					for (i = 0; i < calcs[SlotSave].applist.count; i++) {
-						if (_tcsncmp((TCHAR *) var->flash->name, calcs[SlotSave].applist.apps[i].name, 8) == 0) {
-							calcs[SlotSave].last_transferred_app = &calcs[SlotSave].applist.apps[i];
+					for (i = 0; i < lpCalc->applist.count; i++) {
+						if (_tcsncmp((TCHAR *) var->flash->name, lpCalc->applist.apps[i].name, 8) == 0) {
+							lpCalc->last_transferred_app = &lpCalc->applist.apps[i];
 							break;
 						}
 					}
@@ -127,15 +127,15 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 			case SAV_TYPE:
 				FreeTiFile(var);
 				var = NULL;
-				rom_load(&calcs[SlotSave], lpszFileName);
-				SendMessage(calcs[SlotSave].hwndFrame, WM_USER, 0, 0);
+				rom_load(lpCalc, lpszFileName);
+				SendMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
 				break;
 			case LABEL_TYPE:
 				{
-					StringCbCopy(calcs[SlotSave].labelfn, sizeof(calcs[SlotSave].labelfn), lpszFileName);
-					_tprintf_s(_T("loading label file for slot %d: %s\n"), SlotSave, lpszFileName);
-					VoidLabels(&calcs[SlotSave]);
-					labels_app_load(&calcs[SlotSave], calcs[SlotSave].labelfn);
+					StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), lpszFileName);
+					_tprintf_s(_T("loading label file for slot %d: %s\n"), lpCalc->slot, lpszFileName);
+					VoidLabels(lpCalc);
+					labels_app_load(lpCalc, lpCalc->labelfn);
 
 					break;
 				}
@@ -167,26 +167,26 @@ HWND hwndSend;
 static TCHAR *current_file_sending;
 #endif
 
-void SendFiles(TCHAR *FileNames , int ram ) {
+void SendFiles(TCHAR *FileNames, int ram ) {
 	int i;
 	int modelsave;
 	_TUCHAR *fn = (_TUCHAR *)  FileNames;
-	calcs[SlotSave].send = TRUE;
-	calcs[SlotSave].running = FALSE;
-	calcs[SlotSave].CurrentFile = 0;
-	calcs[SlotSave].FileCnt = 0;
+	lpCalc->send = TRUE;
+	lpCalc->running = FALSE;
+	lpCalc->CurrentFile = 0;
+	lpCalc->FileCnt = 0;
 	i = 0;
 	while(FileNames[i] != 0) {
 		for(;FileNames[i] != 0; i++);
 		i++;
-		calcs[SlotSave].FileCnt++;
+		lpCalc->FileCnt++;
 	}
 
 	while (fn[0] != 0) {
-		modelsave = calcs[SlotSave].model;
-		calcs[SlotSave].CurrentFile++;
+		modelsave = lpCalc->model;
+		lpCalc->CurrentFile++;
 		current_file_sending = (TCHAR *) fn;
-		SendFile(NULL, &calcs[SlotSave], (TCHAR *) fn, (SEND_FLAG) ram);
+		SendFile(NULL, lpCalc, (TCHAR *) fn, (SEND_FLAG) ram);
 #ifdef WINVER
 		SendMessage(hwndSend, WM_USER, 0, 0);
 #endif
@@ -194,9 +194,9 @@ void SendFiles(TCHAR *FileNames , int ram ) {
 		fn++;
 	}
 	//if (calcs[SlotSave].model == TI_82 && modelsave == calcs[SlotSave].model) end82send(SlotSave);
-	calcs[SlotSave].running = TRUE;
+	lpCalc->running = TRUE;
 	free(FileNames);
-	calcs[SlotSave].send = FALSE;
+	lpCalc->send = FALSE;
 }
 
 #ifdef WINVER
@@ -252,7 +252,7 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		{
 			MINMAXINFO *info = (MINMAXINFO *) lParam;
 			RECT rc;
-			GetWindowRect(calcs[SlotSave].hwndLCD, &rc);
+			GetWindowRect(lpCalc->hwndLCD, &rc);
 
 			DWORD SendWidth = (rc.right - rc.left) * 9 / 10;
 			DWORD SendHeight = 110;
@@ -285,7 +285,7 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			SelectObject(hdc, hfontSegoe);
 
 			TCHAR szFile[256];
-			StringCbPrintf(szFile, sizeof(szFile), _T("Sending file %d of %d"), calcs[SlotSave].CurrentFile, calcs[SlotSave].FileCnt);
+			StringCbPrintf(szFile, sizeof(szFile), _T("Sending file %d of %d"), lpCalc->CurrentFile, lpCalc->FileCnt);
 
 			RECT r;
 			GetClientRect(hwnd, &r);
@@ -317,8 +317,8 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		{
 			// Update the progress bar
 			SendMessage(hwndProgress, PBM_SETSTEP, 1, 0);
-			SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, calcs[SlotSave].cpu.pio.link->vlink_size/4));
-			SendMessage(hwndProgress, PBM_SETPOS, calcs[SlotSave].cpu.pio.link->vlink_send/4, 0);
+			SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, lpCalc->cpu.pio.link->vlink_size/4));
+			SendMessage(hwndProgress, PBM_SETPOS, lpCalc->cpu.pio.link->vlink_send/4, 0);
 
 			InvalidateRect(hwnd, NULL, FALSE);
 			UpdateWindow(hwnd);
@@ -338,7 +338,7 @@ DWORD WINAPI ThreadSendStart( LPVOID lpParam ) {
 	SENDFILES_t* sf = (SENDFILES_t *) lpParam;
 	int save = 0;
 
-	if (calcs[SlotSave].audio->enabled) {
+	if (lpCalc->audio->enabled) {
 		save = 1;
 		pausesound();
 	}
@@ -347,7 +347,7 @@ DWORD WINAPI ThreadSendStart( LPVOID lpParam ) {
 	SendFiles(sf->FileNames, sf->ram);
 	if (save==1) playsound();
 	free(sf);
-	SlotSave = -1;
+	lpCalc = NULL;
 
 	PostMessage(hwndSend, WM_CLOSE, 0, 0);
 
@@ -355,17 +355,17 @@ DWORD WINAPI ThreadSendStart( LPVOID lpParam ) {
 }
 
 
-void ThreadSend(TCHAR *FileNames, int ram, int slot) {
+void ThreadSend(TCHAR *FileNames, int ram, LPCALC calc) {
 	static HANDLE hdlSend = NULL;
 	SENDFILES_t* sf;
 
 	if (FileNames == NULL) return;
 
-	if (SlotSave != -1 || calcs[SlotSave].send == TRUE) {
+	if (lpCalc != NULL || lpCalc->send == TRUE) {
 		MessageBox(NULL, _T("Currently sending files please wait..."), _T("Error"), MB_OK);
 		return;
 	} else {
-		SlotSave = slot;
+		lpCalc = calc;
 	}
 
 	if (hdlSend != NULL) {
@@ -393,7 +393,7 @@ void ThreadSend(TCHAR *FileNames, int ram, int slot) {
 
 
 	RECT r;
-	GetWindowRect(calcs[SlotSave].hwndLCD, &r);
+	GetWindowRect(lpCalc->hwndLCD, &r);
 
 	DWORD SendWidth = (r.right - r.left) * 9 / 10;
 	DWORD SendHeight = 90; //10 * HIWORD(GetDialogBaseUnits());
@@ -404,13 +404,13 @@ void ThreadSend(TCHAR *FileNames, int ram, int slot) {
 			NULL,
 			WS_SIZEBOX | WS_POPUP | WS_VISIBLE,
 			r.left+(r.right - r.left - SendWidth)/2, r.top+(r.bottom - r.top - SendHeight)/2, SendWidth, SendHeight,
-			calcs[SlotSave].hwndLCD, NULL, g_hInst, 0
+			lpCalc->hwndLCD, NULL, g_hInst, 0
 	);
 	
     hdlSend = CreateThread(NULL,0,ThreadSendStart, sf, 0, NULL);
 
     if ( hdlSend  == NULL) {
-		SlotSave = -1;
+		lpCalc = NULL;
 		free(sf);
 		free(FileNames);
 		MessageBox(NULL, _T("Could not create thread to send"), _T("Error"), MB_OK);
@@ -421,15 +421,15 @@ void ThreadSend(TCHAR *FileNames, int ram, int slot) {
 }
 #endif
 
-void NoThreadSend(const TCHAR* FileNames, int ram) {
-	if (SlotSave == -1) {
-		SlotSave = gslot;
+void NoThreadSend(const TCHAR* FileNames, int ram, LPCALC calc) {
+	if (lpCalc == NULL) {
+		lpCalc = calc;
 	} else {
 		// error;
 	}
 
-	SendFile(NULL, &calcs[SlotSave], (TCHAR *) FileNames,(SEND_FLAG) ram);
-	SlotSave = -1;
+	SendFile(NULL, lpCalc, (TCHAR *) FileNames, (SEND_FLAG) ram);
+	lpCalc = NULL;
 }
 
 

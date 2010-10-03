@@ -14,21 +14,21 @@ typedef struct INTELHEX {
 #pragma pack(1)
 
 typedef struct TIFLASH {
-	unsigned char sig[8];
-	unsigned char rev[2];
-	unsigned char flag;
-	unsigned char object;
-	unsigned char date[4];
-	unsigned char namelength;
-	unsigned char name[8];
-	unsigned char filler[23];
-	unsigned char device;
-	unsigned char type;
-	unsigned char filler2[24];
+	_TUCHAR sig[8];
+	_TUCHAR rev[2];
+	_TUCHAR flag;
+	_TUCHAR object;
+	_TUCHAR date[4];
+	_TUCHAR namelength;
+	_TUCHAR name[8];
+	_TUCHAR filler[23];
+	_TUCHAR device;
+	_TUCHAR type;
+	_TUCHAR filler2[24];
 	unsigned int hexsize;
 //	int rpage[256];
 	int pagesize[256];
-	unsigned char * data[256];
+	_TUCHAR *data[256];
 //	unsigned short chksum;
 
 	unsigned int pages;		//total number of pages.
@@ -40,25 +40,25 @@ typedef struct TIFLASH {
 typedef struct ROM {
 	int size;
 	char version[32];
-	unsigned char * data;
+	unsigned char *data;
 } ROM_t;
 
 typedef struct TIBACKUP {
 	unsigned short headersize;		// size of the header up to name, sometimes ignored
 	unsigned short length1;			// data size
-	unsigned char vartype;			// what type of varible
+	_TUCHAR vartype;				// what type of varible
 	unsigned short length2;			// data size
 	unsigned short length3;			// data size
 	unsigned short address;			// duplicate of data size
 	
 	unsigned short length1a;		// Repeats of the data length.
-	unsigned char * data1;			// pointer to data
+	_TUCHAR *data1;					// pointer to data
 
 	unsigned short length2a;		// data size
-	unsigned char * data2;			// pointer to data
+	_TUCHAR *data2;					// pointer to data
 
 	unsigned short length3a;		// data size
-	unsigned char * data3;			// pointer to data
+	_TUCHAR *data3;					// pointer to data
 
 
 } TIBACKUP_t;
@@ -66,21 +66,21 @@ typedef struct TIBACKUP {
 typedef struct TIVAR {
 	unsigned short headersize;		// size of the header up to name, sometimes ignored
 	unsigned short length;			// data size
-	unsigned char vartype;			// what type of varible
-	unsigned char name[8];			// null padded name
-	unsigned char version;			// 0 83+only
-	unsigned char flag;				// bit 7 is if flash 83+only
+	_TUCHAR  vartype;			// what type of varible
+	_TUCHAR name[8];					// null padded name
+	_TUCHAR version;			// 0 83+only
+	_TUCHAR flag;				// bit 7 is if flash 83+only
 	unsigned short length2;			// duplicate of data size
-	unsigned char * data;			// pointer to data
+	_TUCHAR * data;			// pointer to data
 } TIVAR_t;
 
 typedef struct TIFILE {
-	unsigned char sig[8];
-	unsigned char subsig[3];
-	unsigned char comment[42];
-	unsigned short length;
+	_TUCHAR sig[8];
+	_TUCHAR subsig[3];
+	_TUCHAR comment[42];
+	_TUCHAR length;
 	TIVAR_t * var;
-	unsigned short chksum;
+	_TUCHAR chksum;
 	int model;
 	int type;
 	ROM_t * rom;

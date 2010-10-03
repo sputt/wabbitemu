@@ -16,9 +16,9 @@ extern HINSTANCE g_hInst;
 static HWND hwndWiz = NULL;
 static BOOL use_bootfree = FALSE;
 static int model = -1;
-char osPath[MAX_PATH];
-char dumperPath[MAX_PATH];
-static char TIConnectPath[MAX_PATH];
+TCHAR osPath[MAX_PATH];
+TCHAR dumperPath[MAX_PATH];
+static TCHAR TIConnectPath[MAX_PATH];
 static BOOL error = FALSE;
 
 BOOL DoWizardSheet(HWND hwndOwner) {
@@ -31,8 +31,8 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psp.hInstance = g_hInst;
 	psp.dwFlags = PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
 	psp.lParam = 0;
-	psp.pszHeaderTitle = "Wabbitemu ROM Selection";
-	psp.pszHeaderSubTitle = "Setup";
+	psp.pszHeaderTitle = _T("Wabbitemu ROM Selection");
+	psp.pszHeaderSubTitle = _T("Setup");
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_SETUP_START);
 	psp.pfnDlgProc = SetupStartProc;
 	hPropSheet[0] = CreatePropertySheetPage(&psp);
@@ -41,7 +41,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psp.hInstance = g_hInst;
 	psp.dwFlags = PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
 	psp.lParam = 0;
-	psp.pszHeaderTitle = "Calculator Type";
+	psp.pszHeaderTitle = _T("Calculator Type");
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_SETUP_TYPE);
 	psp.pfnDlgProc = SetupTypeProc;
 	hPropSheet[1] = CreatePropertySheetPage(&psp);
@@ -50,7 +50,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psp.hInstance = g_hInst;
 	psp.dwFlags = PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
 	psp.lParam = 0;
-	psp.pszHeaderTitle = "OS Selection";
+	psp.pszHeaderTitle = _T("OS Selection");
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_SETUP_TIOS);
 	psp.pfnDlgProc = SetupOSProc;
 	hPropSheet[2] = CreatePropertySheetPage(&psp);
@@ -59,7 +59,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psp.hInstance = g_hInst;
 	psp.dwFlags = PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
 	psp.lParam = 0;
-	psp.pszHeaderTitle = "Send ROM Dumper";
+	psp.pszHeaderTitle = _T("Send ROM Dumper");
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_SETUP_LOADFILE);
 	psp.pfnDlgProc = SetupROMDumperProc;
 	hPropSheet[3] = CreatePropertySheetPage(&psp);
@@ -68,7 +68,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psp.hInstance = g_hInst;
 	psp.dwFlags = PSP_USEHEADERTITLE | PSP_USEHEADERSUBTITLE;
 	psp.lParam = 0;
-	psp.pszHeaderTitle = "Make ROM";
+	psp.pszHeaderTitle = _T("Make ROM");
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_SETUP_GETFILE);
 	psp.pfnDlgProc = SetupMakeROMProc;
 	hPropSheet[4] = CreatePropertySheetPage(&psp);
@@ -88,7 +88,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	psh.dwFlags = flags | PSH_WATERMARK;// | PSH_HEADER;
 	psh.hwndParent = hwndOwner;
 	psh.phpage = hPropSheet;
-	psh.pszCaption = (LPSTR) "Wabbitemu Setup";
+	psh.pszCaption = (LPTSTR) _T("Wabbitemu Setup");
 	psh.pszbmHeader = NULL;//MAKEINTRESOURCE("A");
 	psh.pszbmWatermark = NULL;
 	psh.nPages = ARRAYSIZE(hPropSheet);
@@ -117,9 +117,9 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 				case BN_CLICKED:
 					switch (LOWORD(wParam)) {
 						case IDC_BUTTON_BROWSE:
-							char buffer[MAX_PATH];
-							if (!BrowseFile(buffer, "Known types ( *.sav; *.rom) \0*.sav;*.rom\0Save States  (*.sav)\0*.sav\0\
-										ROMs  (*.rom)\0*.rom\0All Files (*.*)\0*.*\0\0", "Please select a ROM or save state", "rom"))
+							TCHAR buffer[MAX_PATH];
+							if (!BrowseFile(buffer, _T("Known types ( *.sav; *.rom) \0*.sav;*.rom\0Save States  (*.sav)\0*.sav\0\
+										ROMs  (*.rom)\0*.rom\0All Files (*.*)\0*.*\0\0"), _T("Please select a ROM or save state"), _T("rom")))
 										Edit_SetText(hEditRom, buffer);
 							break;
 						case IDC_CHECK_NOSHOW:
@@ -128,7 +128,7 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						case IDC_RADIO_OWN_ROM: {
 							Button_Enable(GetDlgItem(hwnd, IDC_BUTTON_BROWSE), TRUE);
 							Edit_Enable(hEditRom, TRUE);
-							char buffer[MAX_PATH];
+							TCHAR buffer[MAX_PATH];
 							Edit_GetText(hEditRom, buffer, MAX_PATH);
 							if (ValidPath(buffer))
 								PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_FINISH);
@@ -145,7 +145,7 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					}
 					break;
 				case EN_CHANGE: {
-					char buffer[MAX_PATH];
+					TCHAR buffer[MAX_PATH];
 					Edit_GetText(hEditRom, buffer, MAX_PATH);
 					if (ValidPath(buffer))
 						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_FINISH);
@@ -264,13 +264,13 @@ INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 				case PSN_SETACTIVE: {
 					//TODO: make all the calcs rom dumping work
 					if (use_bootfree) {
-						Static_SetText(hQuestion, "What type of calculator would you like to emulate?");
+						Static_SetText(hQuestion, _T("What type of calculator would you like to emulate?"));
 						Button_Enable(hTI82, FALSE);
 						Button_Enable(hTI83, FALSE);
 						Button_Enable(hTI85, FALSE);
 						Button_Enable(hTI86, FALSE);
 					} else {
-						Static_SetText(hQuestion, "What type of calculator are you going to dump?");
+						Static_SetText(hQuestion, _T("What type of calculator are you going to dump?"));
 						Button_Enable(hTI82, TRUE);
 						Button_Enable(hTI83, TRUE);
 						Button_Enable(hTI85, TRUE);
@@ -369,11 +369,11 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							break;
 						}
 						case IDC_BROWSE_OS: {
-							char buf[512];
+							TCHAR buf[512];
 							if (!BrowseFile(buf,			//output
-								"	83 Plus Series OS  (*.8xu)\0*.8xu\0	73 OS  (*.73u)\0*.73u\0	All Files (*.*)\0*.*\0\0", //filter
-								"Open Calculator OS File",		//title
-								"8xu"))						//def ext
+								_T("	83 Plus Series OS  (*.8xu)\0*.8xu\0	73 OS  (*.73u)\0*.73u\0	All Files (*.*)\0*.*\0\0"), //filter
+								_T("Open Calculator OS File"),		//title
+								_T("8xu")))						//def ext
 								Edit_SetText(hEditOSPath, buf);
 							break;
 						}
@@ -390,11 +390,15 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case NM_RETURN: {
 						PNMLINK pNMLink = (PNMLINK)lParam;
 						LITEM item = pNMLink->item;
-						char buffer[1024];
+#ifdef _UNICODE
+						ShellExecute(NULL, _T("open"), item.szUrl, NULL, NULL, SW_SHOWNORMAL);
+#else
+						TCHAR buffer[1024];
 						memset(buffer, 0, ARRAYSIZE(buffer));
 						int length = (int) wcslen(item.szUrl);
 						WideCharToMultiByte(CP_ACP, 0, item.szUrl, length, buffer, length, NULL, NULL);
 						ShellExecute(NULL, _T("open"), buffer, NULL, NULL, SW_SHOWNORMAL);
+#endif
 						break;
 				}
 				case PSN_SETACTIVE: {
@@ -437,7 +441,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case PSN_WIZFINISH: {
 					Static_SetText(hStaticProgress, _T("Creating ROM file..."));
 					ShowWindow(hProgressBar, SW_SHOW);
-					char buffer[MAX_PATH];
+					TCHAR buffer[MAX_PATH];
 					GetExportROMName(buffer);
 					SendMessage(hProgressBar, PBM_SETSTEP, (WPARAM) 25, 0);
 					SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
@@ -455,55 +459,52 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					HRSRC resource;
 					switch(model) {
 						case TI_73:
-							calc_init_83p(lpCalc);
 							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT73), _T("HEX"));
 							break;
 						case TI_83P:
-							calc_init_83p(lpCalc);
 							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT83P), _T("HEX"));
 							break;
 						case TI_83PSE:
-							calc_init_83pse(lpCalc);
 							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT83PSE), _T("HEX"));
 							break;
 						case TI_84P:
-							calc_init_84p(lpCalc);
 							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84P), _T("HEX"));
 							break;
 						case TI_84PSE:
-							calc_init_83pse(lpCalc);
 							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84PSE), _T("HEX"));
 							break;
 					}
+					ModelInit(lpCalc);
+
 					//slot stuff
+					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
 					lpCalc->active = TRUE;
-					strcpy_s(lpCalc->rom_path, buffer);
 					lpCalc->model = model;
 					lpCalc->cpu.pio.model = model;
 
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
-					char hexFile[MAX_PATH];
-					char *env;
+					TCHAR hexFile[MAX_PATH];
+					TCHAR *env;
 					size_t envLen;
-					_dupenv_s(&env, &envLen, "appdata");
-					strcpy_s(hexFile, envLen, env);
+					_tdupenv_s(&env, &envLen, _T("appdata"));
+					StringCbCopy(hexFile, sizeof(hexFile), env);
 					free(env);
-					strcat_s(hexFile, "\\boot.hex");
+					StringCbCat(hexFile, sizeof(hexFile), _T("\\boot.hex"));
 					ExtractResource(hexFile, resource);
 					FILE *file;
-					fopen_s(&file, hexFile, "rb");
+					_tfopen_s(&file, hexFile, _T("rb"));
 					writeboot(file);
 					fclose(file);
-					remove(hexFile);
+					_tremove(hexFile);
 					//if you dont want to load an OS, fine...
-					if (strlen(osPath) > 0) {
-						fopen_s(&file, osPath, "rb");
+					if (_tcslen(osPath) > 0) {
+						_tfopen_s(&file, osPath, _T("rb"));
 						Load_8xu(file);
 						fclose(file);
 						lpCalc->mem_c.flash[0x56] = 0x5A;
 						lpCalc->mem_c.flash[0x57] = 0xA5;
 						if (Button_GetCheck(hRadioDownload) == BST_CHECKED)
-							remove(osPath);
+							_tremove(osPath);
 					}
 					calc_erase_certificate(lpCalc->mem_c.flash,lpCalc->mem_c.flash_size);
 					calc_reset(lpCalc);
@@ -511,8 +512,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					gui_frame(lpCalc);
 					//write the output from file
-					fopen_s(&file, buffer, "wb");
-					char* rom = (char *) lpCalc->mem_c.flash;
+					_tfopen_s(&file, buffer, _T("wb"));
+					TCHAR *rom = (TCHAR *) lpCalc->mem_c.flash;
 					int size = lpCalc->mem_c.flash_size;
 					if (size != 0 && rom != NULL && file !=NULL) {
 						u_int i;
@@ -538,41 +539,41 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version)
 {
-	char downloaded_file[MAX_PATH];
-	char *env;
+	TCHAR downloaded_file[MAX_PATH];
+	TCHAR *env;
 	size_t envLen;
-	_dupenv_s(&env, &envLen, "appdata");
-	strcpy_s(downloaded_file, env);
+	_tdupenv_s(&env, &envLen, _T("appdata"));
+	StringCbCopy(downloaded_file, sizeof(downloaded_file), env);
 	free(env);
-	strcat_s(downloaded_file, _T("\\OS.8xu"));
-	strcpy_s(osPath, downloaded_file);
-	char *url;
+	StringCbCat(downloaded_file, sizeof(downloaded_file), _T("\\OS.8xu"));
+	StringCbCopy(osPath, sizeof(osPath), downloaded_file);
+	TCHAR *url;
 	switch (model) {
 		case TI_73:
-			url = "http://education.ti.com/downloads/files/73/TI73_OS.73u";
+			url = _T("http://education.ti.com/downloads/files/73/TI73_OS.73u");
 			break;
 		case TI_83P:
 		case TI_83PSE:
-			url = "http://education.ti.com/downloads/files/83plus/TI83Plus_OS.8Xu";
+			url = _T("http://education.ti.com/downloads/files/83plus/TI83Plus_OS.8Xu");
 			break;
 		case TI_84P:
 		case TI_84PSE:
 			if (version)
-				url = "http://education.ti.com/downloads/files/83plus/TI84Plus_OS243.8Xu";
+				url = _T("http://education.ti.com/downloads/files/83plus/TI84Plus_OS243.8Xu");
 			else
-				url = "http://education.ti.com/downloads/files/83plus/TI84Plus_OS.8Xu";
+				url = _T("http://education.ti.com/downloads/files/83plus/TI84Plus_OS.8Xu");
 			break;
 	}
 	HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, NULL);
 	if (!SUCCEEDED(hr))
-		MessageBox(NULL, "Unable to download file", "Download failed", MB_OK);
+		MessageBox(NULL, _T("Unable to download file"), _T("Download failed"), MB_OK);
 	return SUCCEEDED(hr);
 }
 
-DWORD WINAPI StartTIConnect( LPVOID lpParam ) {
-	char *path = (char *) lpParam;
-	char argBuf[MAX_PATH];
-	sprintf_s(argBuf, "\"%s\" \"%s\"", TIConnectPath, path);
+DWORD WINAPI StartTIConnect(LPVOID lpParam) {
+	TCHAR *path = (TCHAR *) lpParam;
+	TCHAR argBuf[MAX_PATH];
+	StringCbPrintf(argBuf, sizeof(argBuf), _T("\"%s\" \"%s\""), TIConnectPath, path);
 	STARTUPINFO si;
 	PROCESS_INFORMATION pi;
 	memset(&si, 0, sizeof(si)); 
@@ -581,7 +582,7 @@ DWORD WINAPI StartTIConnect( LPVOID lpParam ) {
 	if (!CreateProcess(NULL, argBuf,
 		NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, 
 		NULL, NULL, &si, &pi)) {
-		MessageBox(NULL, "Unable to start the process. Try manually sending the file.", "Error", MB_OK);
+		MessageBox(NULL, _T("Unable to start the process. Try manually sending the file."), _T("Error"), MB_OK);
 		return FALSE;
 	}
 	// Wait until child process exits.
@@ -601,22 +602,22 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			hButtonAuto = GetDlgItem(hwnd, IDC_BUTTON_AUTO);
 			hButtonManual = GetDlgItem(hwnd, IDC_BUTTON_MANUAL);
 			hStaticError = GetDlgItem(hwnd, IDC_STATIC_ERROR);
-			char *env;
+			TCHAR *env;
 			size_t envLen;
 			SYSTEM_INFO sysInfo;
 			GetSystemInfo(&sysInfo);
 			if (sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-				_dupenv_s(&env, &envLen, "programfiles(x86)");
+				_tdupenv_s(&env, &envLen, _T("programfiles(x86)"));
 			else
-				_dupenv_s(&env, &envLen, "programfiles");
-			strcat_s(TIConnectPath, env);
+				_tdupenv_s(&env, &envLen, _T("programfiles"));
+			StringCbCat(TIConnectPath, sizeof(TIConnectPath), env);
 			free(env);
 			//yes i know hard coding is bad :/
-			strcat_s(TIConnectPath, "\\TI Education\\TI Connect\\TISendTo.exe");
+			StringCbCat(TIConnectPath, sizeof(TIConnectPath), _T("\\TI Education\\TI Connect\\TISendTo.exe"));
 			ExtractDumperProg();
 			FILE *connectProg;
-			if (fopen_s(&connectProg, TIConnectPath, "r") != 0) {
-				Static_SetText(hStaticError, "Unable to find TI Connect, please manually send the dumper program.");
+			if (_tfopen_s(&connectProg, TIConnectPath, _T("r")) != 0) {
+				Static_SetText(hStaticError, _T("Unable to find TI Connect, please manually send the dumper program."));
 				Button_Enable(hButtonAuto, FALSE);
 				ShowWindow(hStaticError, SW_SHOW);
 			} else
@@ -635,19 +636,19 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 							0,						// use default creation flags 
 							NULL);					// returns the thread identifier
 					} else {
-						char buf[MAX_PATH], ch;
-						if (!SaveFile(buf, "	83 Plus Program  (*.8xp)\0*.8xp\0	All Files (*.*)\0*.*\0\0",
-							"Wabbitemu Save ROM Dumper", "8xp")) {
+						TCHAR buf[MAX_PATH], ch;
+						if (!SaveFile(buf, _T("	83 Plus Program  (*.8xp)\0*.8xp\0	All Files (*.*)\0*.*\0\0"),
+							_T("Wabbitemu Save ROM Dumper"), _T("8xp"))) {
 							FILE *start, *end;
-							fopen_s(&start, dumperPath, "rb");
-							fopen_s(&end, buf, "wb");
+							_tfopen_s(&start, dumperPath, _T("rb"));
+							_tfopen_s(&end, buf, _T("wb"));
 							while(!feof(start)) {
 								ch = fgetc(start);
 								fputc(ch, end);
 							}
 							fclose(start);
 							fclose(end);
-							remove(dumperPath);
+							_tremove(dumperPath);
 						}
 
 					}
@@ -698,9 +699,9 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			switch(HIWORD(wParam)) {
 				case BN_CLICKED: {
 					PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_FINISH | PSWIZB_BACK);
-					char buf[MAX_PATH], ch;
-					if (BrowseFile(buf, "	83 Plus Application Variables (*.8xv)\0*.8xv\0	All Files (*.*)\0*.*\0\0",
-							"Wabbitemu Open ROM Dump", "8xp"))
+					TCHAR buf[MAX_PATH], ch;
+					if (BrowseFile(buf, _T("	83 Plus Application Variables (*.8xv)\0*.8xv\0	All Files (*.*)\0*.*\0\0"),
+							_T("Wabbitemu Open ROM Dump"), _T("8xp")))
 						break;
 					if (LOWORD(wParam) == IDC_BUTTON_BROWSE1) {
 						Edit_SetText(hEditVar1, buf);
@@ -709,10 +710,10 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						Edit_SetText(hEditVar2, buf);
 						ch = '1';
 					}
-					int len = (int) strlen(buf);
+					int len = (int) _tcslen(buf);
 					buf[len - 5] = ch;
 					FILE *file;
-					errno_t error = fopen_s(&file, buf, "r");
+					errno_t error = _tfopen_s(&file, buf, _T("r"));
 					if (error)
 						break;
 					fclose(file);
@@ -733,12 +734,17 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 				case NM_RETURN: {
 					PNMLINK pNMLink = (PNMLINK) lParam;
 					LITEM item = pNMLink->item;
-					char buffer[1024];
+#ifdef _UNICODE
+					if (_tcscmp(item.szID, _T("RunHelp")))
+						DialogBox(NULL, MAKEINTRESOURCE(DLG_RUNHELP), hwnd, (DLGPROC) HelpProc);
+#else
+					TCHAR buffer[1024];
 					memset(buffer, 0, ARRAYSIZE(buffer));
 					int length = (int) wcslen(item.szUrl);
 					WideCharToMultiByte(CP_ACP, 0, item.szID, length, buffer, length, NULL, NULL);
-					if (strcmp(buffer, "RunHelp"))
+					if (_tcscmp(buffer, _T("RunHelp")))
 						DialogBox(NULL, MAKEINTRESOURCE(DLG_RUNHELP), hwnd, (DLGPROC) HelpProc);
+#endif
 					break;
 				}
 				//The program will create two application variables D83PBE1.8xv and D84PBE2.8xv. You need to send these back to the computer, and browse them with the buttons below
@@ -749,25 +755,28 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_DISABLEDFINISH | PSWIZB_BACK);
 						inited = TRUE;
 					}
-					char buf[1024];
-					char name[12];
-					strcpy_s(name, "D83PBE1.8xv");
+					TCHAR buf[1024];
+					TCHAR name[12];
+					StringCbCopy(name, sizeof(name), _T("D83PBE1.8xv"));
 					switch(model) {
 						case TI_83P:
 						case TI_83PSE:
 							if (model != TI_83P)
 								name[4] = 'S';
-							sprintf_s(buf, "%s %s%s", "The program will create an application variable", name, ". You need to send this back to the computer, and locate it with the button below");
+							StringCbPrintf(buf, sizeof(buf), _T("%s %s%s"), _T("The program will create an application variable"),
+								name, _T(". You need to send this back to the computer, and locate it with the button below"));
 							break;
 						case TI_84P:
 						case TI_84PSE:
 							name[2] = '4';
 							if (model != TI_84P)
 								name[4] = 'S';
-							char name2[12];
-							strcpy_s(name2, name);
+							TCHAR name2[12];
+							StringCbCopy(name2, sizeof(name2), name);
 							name2[6] = '2';
-							sprintf_s(buf, "%s %s %s %s%s", "The program will create two application variables", name, "and", name2,". You need to send these back to the computer, and locate them with the buttons below");
+							StringCbPrintf(buf, sizeof(buf), _T("%s %s %s %s%s"), _T("The program will create two application variables"),
+								name, _T("and"), name2, 
+								_T(". You need to send these back to the computer, and locate them with the buttons below"));
 							break;
 					}
 					Static_SetText(hStaticAppVar, buf);
@@ -777,23 +786,23 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					}
 					break;
 				case PSN_WIZFINISH: {
-					char browse[MAX_PATH];
+					TCHAR browse[MAX_PATH];
 					Edit_GetText(hEditVar1, browse, MAX_PATH);
-					char buffer[MAX_PATH];
+					TCHAR buffer[MAX_PATH];
 					GetExportROMName(buffer);
 					LPCALC lpCalc = calc_slot_new();
 					ModelInit(lpCalc);
 
 					//slot stuff
 					lpCalc->active = TRUE;
-					strcpy_s(lpCalc->rom_path, buffer);
 					lpCalc->model = model;
-					lpCalc->cpu.pio.model = model;
+					lpCalc->cpu.pio.model = model;;
+					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
 					FILE *file;
-					fopen_s(&file, browse, "rb");
+					_tfopen_s(&file, browse, _T("rb") );
 					//goto the name to see whcih one we have
 					fseek(file, 66, SEEK_SET);
-					char ch = fgetc(file);
+					TCHAR ch = _fgettc(file);
 					//goto the first byte of data
 					fseek(file, 74, SEEK_SET);
 					int page;
@@ -814,7 +823,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					//second boot page
 					if (model >= TI_84P) {
 						Edit_GetText(hEditVar2, browse, MAX_PATH);
-						fopen_s(&file, browse, "rb");
+						_tfopen_s(&file, browse, _T("rb"));
 						//goto the name to see whcih one we have
 						fseek(file, 66, SEEK_SET);
 						char ch = fgetc(file);
@@ -835,8 +844,8 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					}
 
 					//if you dont want to load an OS, fine...
-					if (strlen(osPath) > 0) {
-						fopen_s(&file, osPath, "rb");
+					if (_tcslen(osPath) > 0) {
+						_tfopen_s(&file, osPath, _T("rb"));
 						Load_8xu(file);
 						fclose(file);
 						lpCalc->mem_c.flash[0x56] = 0x5A;
@@ -849,7 +858,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					calc_turn_on(lpCalc);
 					gui_frame(lpCalc);
 					//write the output from file
-					fopen_s(&file, buffer, "wb");
+					_tfopen_s(&file, buffer, _T("wb"));
 					char* rom = (char *) lpCalc->mem_c.flash;
 					int size = lpCalc->mem_c.flash_size;
 					if (size != 0 && rom != NULL && file !=NULL) {
@@ -885,9 +894,9 @@ INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 		case WM_TIMER: {
 			HBITMAP hbmHelp = NULL;
 			if (pic_num % 2)
-				hbmHelp = LoadBitmap(g_hInst, "HOMESCREEN");
+				hbmHelp = LoadBitmap(g_hInst, _T("HOMESCREEN"));
 			else
-				hbmHelp = LoadBitmap(g_hInst, "CATALOG");
+				hbmHelp = LoadBitmap(g_hInst, _T("CATALOG"));
 			SendMessage(hwndBitmap, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) hbmHelp);
 			DeleteObject(hbmHelp);
 			pic_num++;
@@ -908,12 +917,12 @@ INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 
 void ExtractDumperProg() {
 #ifdef WINVER
-	char *env;
+	TCHAR *env;
 	size_t envLen;
-	_dupenv_s(&env, &envLen, "appdata");
-	strcpy_s(dumperPath, env);
+	_tdupenv_s(&env, &envLen, _T("appdata"));
+	StringCbCopy(dumperPath, sizeof(dumperPath), env);
 	free(env);
-	strcat_s(dumperPath, "\\dumper");
+	StringCbCat(dumperPath, sizeof(dumperPath), _T("\\dumper"));
 #else
 	strcpy(dumperPath, getenv("appdata"));
 	strcat(dumperPath, "\\dumper");
@@ -926,13 +935,13 @@ void ExtractDumperProg() {
 		case TI_84P:
 		case TI_84PSE:
 			hrDumpProg = FindResource(hModule, MAKEINTRESOURCE(ROM8X), _T("CALCPROG"));
-			strcat_s(dumperPath, ".8xp");
+			StringCbCat(dumperPath, sizeof(dumperPath), _T(".8xp"));
 			break;
 	}
 	ExtractResource(dumperPath, hrDumpProg);
 }
 
-void ExtractResource(char *path, HRSRC resource) {
+void ExtractResource(TCHAR *path, HRSRC resource) {
 	HMODULE hModule = GetModuleHandle(NULL);
 	HGLOBAL hGlobal = LoadResource(hModule, resource);
 	DWORD size = SizeofResource(hModule, resource);

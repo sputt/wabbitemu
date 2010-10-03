@@ -474,7 +474,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 
 			hwndChevron = chv->hwnd;
 
-			char buf[256];
+			TCHAR buf[256];
 			GetWindowText(hwnd, buf, sizeof(buf));
 
 			// Did it transect the boundary
@@ -530,7 +530,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(ID, BN_CLICKED), (LPARAM)hwnd);
 			}
 			if (PtInRect(&rect, p) && tbb->bSplitButton) {
-				HMENU hMenu = LoadMenu(g_hInst, (LPCSTR)tbb->menuID);
+				HMENU hMenu = LoadMenu(g_hInst, (LPCTSTR) tbb->menuID);
 				HMENU hMenuTrackPopup = GetSubMenu(hMenu, 0);
 				TrackPopupMenu(hMenuTrackPopup,
 				            TPM_LEFTALIGN | TPM_RIGHTBUTTON,
@@ -540,7 +540,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		}
 		case WM_PAINT:
 		{
-			TBBTN *tbb = (TBBTN*)GetWindowLongPtr(hwnd, (int)GWLP_USERDATA);
+			TBBTN *tbb = (TBBTN*)GetWindowLongPtr(hwnd, (int) GWLP_USERDATA);
 			HDC hdc;
 			PAINTSTRUCT ps;
 
@@ -573,7 +573,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 
 			if (tbb->MouseState == MOUSE_DOWN) {
 				HDC hdcFrame = CreateCompatibleDC(hdc);
-				HBITMAP hbmFrame = LoadBitmap(g_hInst, "TBFrameRight");
+				HBITMAP hbmFrame = LoadBitmap(g_hInst, _T("TBFrameRight"));
 				SelectObject(hdcFrame, hbmFrame);
 
 				bf.SourceConstantAlpha = 200;
@@ -585,7 +585,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 							hdcFrame, 0, 0, 4, 24,
 							bf);
 
-				HBITMAP hbmFrameLeft = LoadBitmap(g_hInst, "TBFrameLeft");
+				HBITMAP hbmFrameLeft = LoadBitmap(g_hInst, _T("TBFrameLeft"));
 				SelectObject(hdcFrame, hbmFrameLeft);
 				DeleteObject(hbmFrame);
 
@@ -596,7 +596,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				DeleteObject(hbmFrameLeft);
 				if (tbb->bSplitButton)
 				{
-					HBITMAP hbmFrameMiddle = LoadBitmap(g_hInst, "TBFrameMiddle");
+					HBITMAP hbmFrameMiddle = LoadBitmap(g_hInst, _T("TBFrameMiddle"));
 					SelectObject(hdcFrame, hbmFrameMiddle);
 					AlphaBlend( hdcBuf, rc.right - 24, 0, 4, rc.bottom,
 								hdcFrame, 0, 0, 4, 24,
@@ -607,7 +607,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			}
 			else if (tbb->MouseState == MOUSE_DOWN_SPLIT) {
 				HDC hdcFrame = CreateCompatibleDC(hdc);
-				HBITMAP hbmFrame = LoadBitmap(g_hInst, "TBFrameRight");
+				HBITMAP hbmFrame = LoadBitmap(g_hInst, _T("TBFrameRight"));
 				SelectObject(hdcFrame, hbmFrame);
 
 				bf.SourceConstantAlpha = 200;
@@ -619,13 +619,13 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 							hdcFrame, 0, 0, 4, 24,
 							bf);
 				DeleteObject(hbmFrame);
-				HBITMAP hbmFrameMiddle = LoadBitmap(g_hInst, "TBFrameMiddle");
+				HBITMAP hbmFrameMiddle = LoadBitmap(g_hInst, _T("TBFrameMiddle"));
 				SelectObject(hdcFrame, hbmFrameMiddle);
 				AlphaBlend( hdcBuf, rc.right - 24, 0, 4, rc.bottom,
 							hdcFrame, 0, 0, 4, 24,
 							bf);
 				DeleteObject(hbmFrameMiddle);
-				hbmFrame = LoadBitmap(g_hInst, "TBHotFrame");
+				hbmFrame = LoadBitmap(g_hInst, _T("TBHotFrame"));
 				SelectObject(hdcFrame, hbmFrame);
 
 				if (hwnd == GetFocus()) {
@@ -641,7 +641,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 							hdcFrame, 0, 0, 4, 24,
 							bf);
 
-				HBITMAP hbmFrameLeft = LoadBitmap(g_hInst, "TBHotFrameLeft");
+				HBITMAP hbmFrameLeft = LoadBitmap(g_hInst, _T("TBHotFrameLeft"));
 				SelectObject(hdcFrame, hbmFrameLeft);
 				DeleteObject(hbmFrame);
 
@@ -652,7 +652,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				DeleteObject(hbmFrameLeft);
 				if (tbb->bSplitButton)
 				{
-					HBITMAP hbmFrameMiddle = LoadBitmap(g_hInst, "TBHotFrameMiddle");
+					HBITMAP hbmFrameMiddle = LoadBitmap(g_hInst, _T("TBHotFrameMiddle"));
 					SelectObject(hdcFrame, hbmFrameMiddle);
 					AlphaBlend( hdcBuf, rc.right - 24, 0, 4, rc.bottom,
 								hdcFrame, 0, 0, 4, 24,
@@ -663,7 +663,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			} else {
 				if (tbb->bHotLit || hwnd == GetFocus() || tbb->bFading) {
 					HDC hdcFrame = CreateCompatibleDC(hdc);
-					HBITMAP hbmFrame = LoadBitmap(g_hInst, "TBHotFrame");
+					HBITMAP hbmFrame = LoadBitmap(g_hInst, _T("TBHotFrame"));
 					SelectObject(hdcFrame, hbmFrame);
 
 					if (hwnd == GetFocus()) {
@@ -679,7 +679,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 								hdcFrame, 0, 0, 4, 24,
 								bf);
 
-					HBITMAP hbmFrameLeft = LoadBitmap(g_hInst, "TBHotFrameLeft");
+					HBITMAP hbmFrameLeft = LoadBitmap(g_hInst, _T("TBHotFrameLeft"));
 					SelectObject(hdcFrame, hbmFrameLeft);
 					DeleteObject(hbmFrame);
 
@@ -690,7 +690,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					DeleteObject(hbmFrameLeft);
 					if (tbb->bSplitButton)
 					{
-						HBITMAP hbmFrameMiddle = LoadBitmap(g_hInst, "TBHotFrameMiddle");
+						HBITMAP hbmFrameMiddle = LoadBitmap(g_hInst, _T("TBHotFrameMiddle"));
 						SelectObject(hdcFrame, hbmFrameMiddle);
 						AlphaBlend( hdcBuf, rc.right - 24, 0, 4, rc.bottom,
 									hdcFrame, 0, 0, 4, 24,
@@ -723,7 +723,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					SetDCPenColor(hdcGrad, RGB(255, 255, 255));
 
 					BYTE *pBits;
-					HBITMAP hbmGrad = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**) &pBits, NULL, 0);
+					HBITMAP hbmGrad = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void **) &pBits, NULL, 0);
 
 					SelectObject(hdcGrad, hbmGrad);
 					Rectangle(hdcGrad, 0, 0, width, height);
@@ -748,7 +748,6 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					DeleteObject(hbmGrad);
 					DeleteDC(hdcGrad);
 				}
-
 			}
 
 			bf.SourceConstantAlpha = 255;
@@ -762,13 +761,9 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				HDC hdcDownBtn = CreateCompatibleDC(hdc);
 				HBITMAP hbmDownArrow;
 				if (fIsWindows7 == TRUE)
-				{
 					hbmDownArrow = LoadBitmap(g_hInst, "TBDownArrow7");
-				}
 				else
-				{
 					hbmDownArrow = LoadBitmap(g_hInst, "TBDownArrow");
-				}
 				SelectObject(hdcDownBtn, hbmDownArrow);
 				AlphaBlend(	hdcBuf, rc.right - 20 + ox, 3 + oy, 16, 16,
 							hdcDownBtn, 0, 0, 16, 16,
@@ -791,18 +786,14 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 
 			SelectObject(hdcBuf, hfontSegoe);
 
-			char szTitle[32];
+			TCHAR szTitle[32];
 			GetWindowText(hwnd, szTitle, 32);
 
 			RECT r = {16 + 9+ox, 2+oy, 400+ox, 24+oy};
 			if (fIsWindows7 == TRUE)
-			{
 				SetTextColor(hdcBuf, RGB(30, 57, 91));
-			}
 			else
-			{
 				SetTextColor(hdcBuf, RGB(0, 0, 0));
-			}
 			DrawText(hdcBuf, szTitle, -1, &r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 
 			if (fIsWindows7 == FALSE)
@@ -837,10 +828,9 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 	return CallWindowProc(OldButtonProc, hwnd, Message, wParam, lParam);
 }
 
-
-int CreateToolbarButton(HWND hwndParent, char *szCaption, char *szTooltip, char *szIcon, int x, int y, int ID, BOOL splitButton, int menuID) {
+static TBBTN *prevBtn = NULL;
+int CreateToolbarButton(HWND hwndParent, TCHAR *szCaption, TCHAR *szTooltip, TCHAR *szIcon, int x, int y, int ID, BOOL splitButton, int menuID) {
 	static HWND hwndTip = NULL;
-	static TBBTN *prevBtn = NULL;
 
 	TBBTN *tbb = (TBBTN *) malloc(sizeof(TBBTN));
 
@@ -857,7 +847,7 @@ int CreateToolbarButton(HWND hwndParent, char *szCaption, char *szTooltip, char 
 	tbb->next = NULL;
 
 	HWND hwndBtn = CreateWindow(
-		"BUTTON",
+		_T("BUTTON"),
 		szCaption,
 		WS_CHILD | BS_PUSHBUTTON,
 		x, y, 60, 24,
@@ -870,12 +860,12 @@ int CreateToolbarButton(HWND hwndParent, char *szCaption, char *szTooltip, char 
 	RECT r = {0, 0, 0, 0};
 
 	SelectObject(hdc, hfontSegoe);
-	DrawText(hdc, szCaption, (int) strlen(szCaption), &r, DT_CALCRECT);
+	DrawText(hdc, szCaption, (int) _tcslen(szCaption), &r, DT_CALCRECT);
 
 	ReleaseDC(hwndBtn, hdc);
 
 	int img_sz_seperator = 8;
-	if (strlen(szCaption) == 0)
+	if (_tcslen(szCaption) == 0)
 		img_sz_seperator = 0;
 	int splitSize = 0;
 	if (tbb->bSplitButton)
@@ -910,7 +900,7 @@ int CreateToolbarButton(HWND hwndParent, char *szCaption, char *szTooltip, char 
     toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
     toolInfo.uId = (UINT_PTR)hwndBtn;
     toolInfo.lpszText = szTooltip;
-    SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+    SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &toolInfo);
 
 	return x + 4 + 16 + 8 + r.right + 4 + 4 + splitSize;
 }
@@ -939,17 +929,25 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 	switch (Message) {
 		case WM_CREATE: {
 
+			prevBtn = NULL;
 			SelectObject(GetDC(hwnd), hfontSegoe);
 			int next = 4;
-			next = CreateToolbarButton(hwnd, "Run", "Run the calculator.", "DBRun", next, 4, 999, FALSE, (int)NULL);
-			next = CreateToolbarButton(hwnd, "Toggle Breakpoint", "Toggle the breakpoint on the current selection.", "DBBreak", next, 4, 1000, FALSE, (int)NULL);
-			next = CreateToolbarButton(hwnd, "Toggle Watchpoint", "Toggle a memory breakpoint at the current selection.", "DBMemBreak", next, 4, 1001, TRUE, IDR_DISASM_WATCH_MENU);
-			next = CreateToolbarButton(hwnd, "Step", "Run a single command.", "DBStep", next, 4, 1002, FALSE, (int)NULL);
-			next = CreateToolbarButton(hwnd, "Step Over", "Run a single line.", "DBStepOver", next, 4, 1003, FALSE, (int)NULL);
-			next = CreateToolbarButton(hwnd, "Goto", "Goto an address in RAM or Flash.", "DBGoto", next, 4, 1004, FALSE, (int)NULL);
-			next = CreateToolbarButton(hwnd, "Rewind", "Restores to a previous state.", NULL, next, 4, 1005, TRUE, (int)IDR_DISASM_REWIND_MENU);
+			next = CreateToolbarButton(hwnd, _T("Run"), _T("Run the calculator."), _T("DBRun"), next, 4, 999, FALSE, (int) NULL);
+			next = CreateToolbarButton(hwnd, _T("Toggle Breakpoint"), _T("Toggle the breakpoint on the current selection."), _T("DBBreak"), next, 4, 1000, FALSE, (int) NULL);
+			next = CreateToolbarButton(hwnd, _T("Toggle Watchpoint"), _T("Toggle a memory breakpoint at the current selection."), _T("DBMemBreak"), next, 4, 1001, TRUE, IDR_DISASM_WATCH_MENU);
+			next = CreateToolbarButton(hwnd, _T("Step"), _T("Run a single command."), _T("DBStep"), next, 4, 1002, FALSE, (int) NULL);
+			next = CreateToolbarButton(hwnd, _T("Step Over"), _T("Run a single line."), _T("DBStepOver"), next, 4, 1003, FALSE, (int) NULL);
+			next = CreateToolbarButton(hwnd, _T("Goto"), _T("Goto an address in RAM or Flash."), _T("DBGoto"), next, 4, 1004, FALSE, (int) NULL);
+			next = CreateToolbarButton(hwnd, _T("Rewind"), _T("Restores to a previous state."), NULL, next, 4, 1005, TRUE, (int)IDR_DISASM_REWIND_MENU);
 			//next = CreateToolbarButton(hwnd, "Track", "Create a variable track window.", "DBGoto", next, 4, 1005);
-			next = CreateToolbarButton(hwnd, "", "Display additional commands.", "Chevron", next, 4, 1006, FALSE, (int)NULL);
+			TCHAR *szChevronBMP;
+			DWORD dwVersion = GetVersion();
+			WORD wVersion = MAKEWORD(HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
+			if (wVersion >= 0x0601)
+				szChevronBMP = _T("CHEVRON7");
+			else
+				szChevronBMP = _T("CHEVRON");
+			next = CreateToolbarButton(hwnd, _T(""), _T("Display additional commands."), szChevronBMP, next, 4, 1006, FALSE, (int)NULL);
 
 			return 0;
 		}
@@ -1013,11 +1011,11 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					biMenu.bmiHeader.biClrImportant = 0;
 
 					void **ppvBits;
-					CreateDIBSection(GetDC(hwnd), &biMenu, DIB_RGB_COLORS, (void**)&ppvBits, NULL, 0);
+					CreateDIBSection(GetDC(hwnd), &biMenu, DIB_RGB_COLORS, (void **)&ppvBits, NULL, 0);
 
 					printf("context menu\n");
 
-					char WindowText[256];
+					TCHAR WindowText[256];
 
 					mii.cbSize = sizeof(MENUITEMINFO);
 					mii.fMask = MIIM_STATE | MIIM_ID | MIIM_STRING | MIIM_BITMAP;
@@ -1033,7 +1031,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					//tbb->bMouseDown = TRUE;
 					tbb = tbb->prev;
 
-					BITMAPINFO *pbmi = (BITMAPINFO*)malloc(sizeof(BITMAPINFO));
+					BITMAPINFO *pbmi = (BITMAPINFO *) malloc(sizeof(BITMAPINFO));
 					pbmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 					pbmi->bmiHeader.biWidth = 16;
 					pbmi->bmiHeader.biHeight = 16;
@@ -1058,7 +1056,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						if (tbb->bSplitButton)
 						{
 							GetWindowText(tbb->hwnd, WindowText, sizeof(WindowText));
-							HMENU hSubMenu = LoadMenu(g_hInst, (LPCSTR)tbb->menuID);
+							HMENU hSubMenu = LoadMenu(g_hInst, (LPCTSTR) tbb->menuID);
 							HMENU hMenuToAdd = GetSubMenu(hSubMenu, 0);
 							InsertMenu(hmenu, mii.wID, MF_POPUP | MF_STRING| MF_BYPOSITION, (UINT)hMenuToAdd, WindowText);
 
@@ -1076,7 +1074,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							);
 
 							if (hbmDIB == NULL) {
-								MessageBox(NULL, "fuck", "fuck", MB_OK);
+								MessageBox(NULL, _T("fuck"), _T("fuck"), MB_OK);
 								break;
 							}
 							HBITMAP hbmBackup = (HBITMAP)SelectObject(hdcTemp, hbmDIB);
@@ -1102,7 +1100,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							mii.hbmpItem = hbmDIB;
 
 							if (InsertMenuItem(hmenu, 0, TRUE, &mii) == FALSE) {
-								printf("Failed to insert\n");
+								_tprintf_s(_T("Failed to insert\n"));
 							}
 						}
 					}
@@ -1149,7 +1147,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			DeleteDC(hdcRight);
 
 			HDC hdcLeft = CreateCompatibleDC(hdcBuf);
-			HBITMAP hbmLeft = LoadBitmap(g_hInst, fIsWindows7 == TRUE ? _T("TBLEFT7") : _T("TBRIGHT7"));
+			HBITMAP hbmLeft = LoadBitmap(g_hInst, fIsWindows7 == TRUE ? _T("TBLEFT7") : _T("TBLEFT"));
 			SelectObject(hdcLeft, hbmLeft);
 
 			BitBlt(hdcBuf, 0, 0, 3, 32, hdcLeft, 0, 0, SRCCOPY);

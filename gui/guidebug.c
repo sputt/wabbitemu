@@ -75,6 +75,12 @@ BOOL CALLBACK EnumDebugUpdate(HWND hwndChild, LPARAM lParam) {
 	return TRUE;
 }
 
+BOOL CALLBACK EnumDebugResume(HWND hwndChild, LPARAM lParam) {
+	SendMessage(hwndChild, WM_USER, DB_UPDATE, lParam);
+	SendMessage(hwndChild, WM_USER, DB_RESUME, lParam);
+	return TRUE;
+}
+
 int CALLBACK EnumFontFamExProc(
   ENUMLOGFONTEX *lpelfe,    // logical-font data
   NEWTEXTMETRICEX *lpntme,  // physical-font data
@@ -99,14 +105,14 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		{0, 0},
 		0, 0, 0,
 		NULL, NULL, NULL, NULL,
-		{{0, 0, 7, "Addr", &sprint_addr, 0, NULL},
-		{1, 0, 11, "Data", &sprint_data, 0, NULL},
-		{2, 0, 23, "Disassembly", &sprint_command, 0, NULL},
-		{3, 0, 6, "Size", &sprint_size, DT_CENTER, NULL},
-		{4, 0, 8, "Clocks", &sprint_clocks, DT_CENTER, NULL},
-		{-1, 0, 0, "", &sprint_addr, 0, NULL},
-		{-1, 0, 0, "", &sprint_addr, 0, NULL},
-		{-1, 0, 0, "", &sprint_addr, 0, NULL},},
+		{{0, 0, 7, _T("Addr"), &sprint_addr, 0, NULL},
+		{1, 0, 11, _T("Data"), &sprint_data, 0, NULL},
+		{2, 0, 23, _T("Disassembly"), &sprint_command, 0, NULL},
+		{3, 0, 6, _T("Size"), &sprint_size, DT_CENTER, NULL},
+		{4, 0, 8, _T("Clocks"), &sprint_clocks, DT_CENTER, NULL},
+		{-1, 0, 0, _T(""), &sprint_addr, 0, NULL},
+		{-1, 0, 0, _T(""), &sprint_addr, 0, NULL},
+		{-1, 0, 0, _T(""), &sprint_addr, 0, NULL},},
 		NULL,
 		{0, 0, 0, 0}};
 
@@ -115,10 +121,10 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	static BOOL top_locked = FALSE;
 	static BOOL bottom_locked = FALSE;
 
-	static const char* MemPaneString = "NumMemPane";
-	static const char* DisasmPaneString = "NumDisasmPane";
-	static const char* MemSelIndexString = "MemSelIndex";
-	static const char* DisasmSelString = "DiasmSelIndex";
+	static const TCHAR* MemPaneString = _T("NumMemPane");
+	static const TCHAR* DisasmPaneString = _T("NumDisasmPane");
+	static const TCHAR* MemSelIndexString = _T("MemSelIndex");
+	static const TCHAR* DisasmSelString = _T("DiasmSelIndex");
 
 	switch (Message) {
 		case WM_CREATE:
@@ -127,7 +133,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			LOGFONT lf;
 			memset(&lf, 0, sizeof(LOGFONT));
 #ifdef WINVER
-			strcpy_s(lf.lfFaceName, "Lucida Console");
+			StringCbCopy(lf.lfFaceName, sizeof(lf.lfFaceName), _T("Lucida Console"));
 #else
 			strcpy(lf.lfFaceName, "Lucida Console");
 #endif
@@ -147,14 +153,14 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			LOGFONT lfSegoe;
 			memset(&lfSegoe, 0, sizeof(LOGFONT));
 #ifdef WINVER
-			strcpy_s(lfSegoe.lfFaceName, "Segoe UI");
+			StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Segoe UI"));
 #else
 			strcpy(lfSegoe.lfFaceName, "Segoe UI");
 #endif
 
 			if (EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
 #ifdef WINVER
-				strcpy_s(lfSegoe.lfFaceName, "Tahoma");
+				StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Tahoma"));
 #else
 				strcpy(lfSegoe.lfFaceName, "Tahoma");
 #endif
@@ -174,7 +180,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			hdisasm =
 			CreateWindow(
 				g_szDisasmName,
-				"disasm",
+				_T("disasm"),
 				WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN,
 				0, 0, 1, 1,
 				hwnd,
@@ -183,7 +189,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			CreateWindow(
 				g_szToolbar,
-				"toolbar",
+				_T("toolbar"),
 				WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN,
 				0, 0, 1, 1,
 				hwnd,
@@ -192,7 +198,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			hmem =
 			CreateWindow(
-				WC_TABCONTROL, "",
+				WC_TABCONTROL, _T(""),
 			    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
 			    0, 0, 1, 1,
 			    hwnd,
@@ -206,14 +212,14 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			hmemlist[0] = CreateWindow(
 				g_szMemName,
-				"Memory",
+				_T("Memory"),
 				WS_VISIBLE | WS_CHILD | WS_CLIPSIBLINGS,
 				3, 20, 100, 100,
 				hmem,
 				(HMENU) ID_MEM,
 				g_hInst, &mps[1]);
 			total_mem_pane = 1;
-			int panes_to_add = (int) (QueryDebugKey((char *) MemPaneString) - 1);
+			int panes_to_add = (int) (QueryDebugKey((TCHAR *) MemPaneString) - 1);
 			while (panes_to_add > 0) {
 				SendMessage(hwnd, WM_COMMAND, IDM_VIEW_ADDMEM, 0);
 				panes_to_add--;
@@ -221,11 +227,11 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			TCITEM tie;
 			tie.mask = TCIF_TEXT | TCIF_IMAGE;
 			tie.iImage = -1;
-			tie.pszText = "Mem 1";
+			tie.pszText = _T("Mem 1");
 			tie.lParam = (LPARAM)hmem;
 			TabCtrl_InsertItem(hmem, 0, &tie);
 
-			int selIndex = (int) QueryDebugKey((char *) MemSelIndexString);
+			int selIndex = (int) QueryDebugKey((TCHAR *) MemSelIndexString);
 			TabCtrl_SetCurSel(hmem, selIndex);
 			NMHDR hdr;
 			hdr.code = TCN_SELCHANGE;
@@ -237,7 +243,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			hreg =
 			CreateWindow(
 				g_szRegName,
-				"reg",
+				_T("reg"),
 				WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL,
 				0, 0, 100, 300,
 				hwnd,
@@ -252,7 +258,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			CreateWindow(
 				g_szMemName,
-				"Stack",
+				_T("Stack"),
 				WS_VISIBLE | WS_CHILD,
 				0, 0, 1, 1,
 				hwnd,
@@ -437,13 +443,13 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					code_count_tstates = calcs[DebuggerSlot].cpu.timer_c->tstates;
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_CHECKED);
 				} else {
-					char buffer[256];
+					TCHAR buffer[256];
 #ifdef WINVER
-					sprintf_s(buffer, "%i T-States", (int)(calcs[DebuggerSlot].cpu.timer_c->tstates - code_count_tstates));
+					StringCbPrintf(buffer, sizeof(buffer), _T("%i T-States"), (int)(calcs[DebuggerSlot].cpu.timer_c->tstates - code_count_tstates));
 #else
 					sprintf(buffer, "%i T-States", (int)(calcs[DebuggerSlot].cpu.timer_c->tstates - code_count_tstates));
 #endif
-					MessageBox(NULL, buffer, "Code Counter", MB_OK);
+					MessageBox(NULL, buffer, _T("Code Counter"), MB_OK);
 					code_count_tstates = -1;
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_UNCHECKED);
 				}
@@ -464,7 +470,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					FILE* file;
 					int i;
 					double data;
-					char *buffer = (char *) malloc(MAX_PATH);
+					TCHAR *buffer = (TCHAR *) malloc(MAX_PATH);
 					if (BrowseTxtFile(buffer)) {
 						free(buffer);
 						//make the profiler running again
@@ -472,18 +478,18 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 						break;
 					}
 #ifdef WINVER
-					fopen_s(&file, buffer, "wb");
+					_tfopen_s(&file, buffer, _T("wb"));
 #else
 					file = fopen(buffer, "wb");
 #endif
 					free(buffer);
-					fprintf(file, "Total Tstates: %i\r\n", calcs[DebuggerSlot].profiler.totalTime);
+					_ftprintf_s(file, _T("Total Tstates: %i\r\n"), calcs[DebuggerSlot].profiler.totalTime);
 					for(i = calcs[DebuggerSlot].profiler.lowAddress / calcs[DebuggerSlot].profiler.blockSize;
 							i < ARRAYSIZE(calcs[DebuggerSlot].profiler.data) &&
 							i < (calcs[DebuggerSlot].profiler.highAddress / calcs[DebuggerSlot].profiler.blockSize); i++) {
 						data = (double) calcs[DebuggerSlot].profiler.data[i] / (double) calcs[DebuggerSlot].profiler.totalTime;
 						if (data != 0.0)
-							fprintf(file, "$%04X - $%04X: %f%% %d tstates\r\n", i * calcs[DebuggerSlot].profiler.blockSize, ((i + 1) *
+							_ftprintf_s(file, _T("$%04X - $%04X: %f%% %d tstates\r\n"), i * calcs[DebuggerSlot].profiler.blockSize, ((i + 1) *
 											calcs[DebuggerSlot].profiler.blockSize) - 1, data, calcs[DebuggerSlot].profiler.data[i]);
 					}
 					fclose(file);
@@ -505,15 +511,15 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 				hmemlist[total_mem_pane] = CreateWindow(
 					g_szMemName,
-					"Memory",
+					_T("Memory"),
 					WS_VISIBLE | WS_CHILD,
 					3, 20, 100, 100,
 					hmem,
 					(HMENU) ID_MEM,
 					g_hInst, &mps[total_mem_pane + 1]);
-				char buffer[64];
+				TCHAR buffer[64];
 #ifdef WINVER
-				sprintf_s(buffer, "Mem %i", total_mem_pane + 1);
+				StringCbPrintf(buffer, sizeof(buffer), _T("Mem %i"), total_mem_pane + 1);
 #else
 				sprintf(buffer, "Mem %i", total_mem_pane + 1);
 #endif
@@ -665,6 +671,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				case DB_UPDATE:
 					EnumChildWindows(hwnd, EnumDebugUpdate, 0);
 					break;
+				case DB_RESUME:
+					EnumChildWindows(hwnd, EnumDebugResume, 0);
+					break;
 			}
 			return 0;
 		case WM_DESTROY: {
@@ -674,8 +683,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			db_maximized = IsMaximized(hwnd);
 
 			int selIndex = TabCtrl_GetCurSel(hmem);
-			SaveDebugKey((char *) MemPaneString, (DWORD *) total_mem_pane);
-			SaveDebugKey((char *) MemSelIndexString, (DWORD *) selIndex);
+			SaveDebugKey((TCHAR *) MemPaneString, (DWORD *) total_mem_pane);
+			SaveDebugKey((TCHAR *) MemSelIndexString, (DWORD *) selIndex);
 			GetExpandPaneState(&expand_pane_state);
 			return 0;
 		}
@@ -697,15 +706,15 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					HWND hWndEdit;
 					hWndEdit = GetDlgItem(hwnd, IDC_LOW_EDT);
 					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
-					xtoi((const char*)&string, &output);
+					xtoi((const TCHAR *)&string, &output);
 					calcs[DebuggerSlot].profiler.lowAddress = output;
 					hWndEdit = GetDlgItem(hwnd, IDC_HIGH_EDT);
 					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
-					xtoi((const char*)&string, &output);
+					xtoi((const TCHAR *)&string, &output);
 					calcs[DebuggerSlot].profiler.highAddress = output;
 					hWndEdit = GetDlgItem(hwnd, IDC_BLOCK_EDT);
 					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
-					output = atoi((const char*) &string);
+					output = _tstoi((const TCHAR *) &string);
 					calcs[DebuggerSlot].profiler.blockSize = output;
 					EndDialog(hwnd, IDOK);
 					break;
@@ -723,10 +732,10 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 	return DefWindowProc(hwnd, Message, wParam, lParam);
 }
 
-int BrowseTxtFile(char* lpstrFile) {
+int BrowseTxtFile(TCHAR *lpstrFile) {
 	lpstrFile[0] = '\0';
 	OPENFILENAME ofn;
-	char lpstrFilter[] = "	Text file  (*.txt)\0*.txt\0	All Files (*.*)\0*.*\0\0";
+	TCHAR lpstrFilter[] = _T("	Text file  (*.txt)\0*.txt\0	All Files (*.*)\0*.*\0\0");
 	unsigned int Flags = 0;
 	ofn.lStructSize			= sizeof(OPENFILENAME);
 	ofn.hwndOwner			= GetForegroundWindow();
@@ -735,14 +744,14 @@ int BrowseTxtFile(char* lpstrFile) {
 	ofn.lpstrCustomFilter	= NULL;
 	ofn.nMaxCustFilter		= 0;
 	ofn.nFilterIndex		= 0;
-	ofn.lpstrFile			= (LPSTR) lpstrFile;
+	ofn.lpstrFile			= (LPTSTR) lpstrFile;
 	ofn.nMaxFile			= 512;
 	ofn.lpstrFileTitle		= NULL;
 	ofn.nMaxFileTitle		= 0;
 	ofn.lpstrInitialDir		= NULL;
-	ofn.lpstrTitle			= "Wabbitemu Save Profile";
+	ofn.lpstrTitle			= _T("Wabbitemu Save Profile");
 	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
-	ofn.lpstrDefExt			= "txt";
+	ofn.lpstrDefExt			= _T("txt");
 	ofn.lCustData			= 0;
 	ofn.lpfnHook			= NULL;
 	ofn.lpTemplateName		= NULL;
@@ -756,8 +765,8 @@ int BrowseTxtFile(char* lpstrFile) {
 }
 
 // Converts a hexadecimal string to integer
-int xtoi(const char* xs, int* result) {
-	int i, szlen = (int) strlen(xs);
+int xtoi(const TCHAR* xs, int* result) {
+	int i, szlen = (int) _tcslen(xs);
 	int xv, fact;
 	if (szlen <= 0)
 		// Nothing to convert

@@ -27,11 +27,11 @@ extern int find_value;
 extern BOOL search_backwards;
 
 void sprint_addr(HDC hdc, Z80_info_t *zinf, RECT *r) {
-	char s[64];
+	TCHAR s[64];
 
 	SetTextColor(hdc, RGB(0, 0, 0));
 #ifdef WINVER
-	sprintf_s(s, "%04X", zinf->addr);
+	_stprintf_s(s, _T("%04X"), zinf->addr);
 #else
 	sprintf(s, "%04X", zinf->addr);
 #endif
@@ -41,7 +41,7 @@ void sprint_addr(HDC hdc, Z80_info_t *zinf, RECT *r) {
 }
 
 void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
-	char s[64];
+	TCHAR s[64];
 	int j;
 	SetTextColor(hdc, RGB(0, 0, 0));
 
@@ -49,7 +49,7 @@ void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
 
 	for (j = 0; j < zinf->size; j++) {
 #ifdef WINVER
-		sprintf_s(s + (j*2), 3, "%02x", mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf->addr+j));
+		StringCbPrintf(s + (j*2), sizeof(s), _T("%02x"), mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf->addr+j));
 #else
 		sprintf(s + (j*2), "%02x", mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf->addr+j));
 #endif
@@ -63,11 +63,11 @@ void sprint_command(HDC hdc, Z80_info_t *zinf, RECT *r) {
 }
 
 void sprint_size(HDC hdc, Z80_info_t *zinf, RECT *r) {
-	char s[64];
+	TCHAR s[64];
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (zinf->size == 0) return;
 #ifdef WINVER
-	sprintf_s(s, "%d", zinf->size);
+	StringCbPrintf(s, sizeof(s), _T("%d"), zinf->size);
 #else
 	sprintf(s, "%d", zinf->size);
 #endif
@@ -77,18 +77,18 @@ void sprint_size(HDC hdc, Z80_info_t *zinf, RECT *r) {
 }
 
 void sprint_clocks(HDC hdc, Z80_info_t *zinf, RECT *r) {
-	char s[64];
+	TCHAR s[64];
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (da_opcode[zinf->index].clocks != -1) {
 		if (da_opcode[zinf->index].clocks_cond) {
 #ifdef WINVER
-			sprintf_s(s, "%d/%d", da_opcode[zinf->index].clocks, da_opcode[zinf->index].clocks_cond);
+			StringCbPrintf(s, sizeof(s), _T("%d/%d"), da_opcode[zinf->index].clocks, da_opcode[zinf->index].clocks_cond);
 #else
 			sprintf(s, "%d/%d", da_opcode[zinf->index].clocks, da_opcode[zinf->index].clocks_cond);
 #endif
 		} else {
 #ifdef WINVER
-			sprintf_s(s, "%d", da_opcode[zinf->index].clocks);
+			StringCbPrintf(s, sizeof(s), _T("%d"), da_opcode[zinf->index].clocks);
 #else
 			sprintf(s, "%d", da_opcode[zinf->index].clocks);
 #endif
@@ -493,7 +493,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 		    toolInfo.hwnd = hwnd;
 		    toolInfo.uFlags = TTF_IDISHWND | TTF_TRACK | TTF_ABSOLUTE;
 		    toolInfo.uId = (UINT_PTR)hwnd;
-		    toolInfo.lpszText = "";
+		    toolInfo.lpszText = _T("");
 		    GetClientRect(hwnd, &toolInfo.rect);
 		    SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 
@@ -872,7 +872,21 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			}
 
 			GetClientRect(hwnd, &rc);
-			BitBlt(hdcDest, 0, cyHeader, rc.right, rc.bottom, hdc, 0, cyHeader, SRCCOPY);
+			if (IsWindowEnabled(hwnd))
+				BitBlt(hdcDest, 0, cyHeader, rc.right, rc.bottom, hdc, 0, cyHeader, SRCCOPY);
+			else {
+				HBITMAP hbmSizer = CreateCompatibleBitmap(NULL, rc.right - rc.left, rc.bottom - rc.top);
+				SelectObject(hdcDest, hbmSizer);
+				FillRect(hdcDest, &rc, (HBRUSH) GetStockObject(GRAY_BRUSH));
+				BLENDFUNCTION bf;
+				bf.BlendOp = AC_SRC_OVER;
+				bf.BlendFlags = 0;
+				bf.SourceConstantAlpha = 100;
+				bf.AlphaFormat = AC_SRC_ALPHA;
+				AlphaBlend(hdcDest, 0, 0, rc.right - rc.left, rc.bottom - rc.top,
+					hdc, 0, 0, rc.right - rc.left, rc.bottom - rc.top, bf);
+				DeleteObject(hbmSizer);
+			}
 
 			EndPaint(hwnd, &ps);
 
@@ -889,7 +903,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case IDM_RUN_RUN:
 				case DB_RUN: {
+					int i;
 					//SendMessage(hwnd, WM_COMMAND, DB_STEP, 0);
+					EnableWindow(hwnd, FALSE);
+					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					for (i = 0; i < PC_TRAILS; i++) {
+						dps->nPCs[i] = -1;
+					}
 					CPU_step((&calcs[DebuggerSlot].cpu));
 					calcs[DebuggerSlot].running = TRUE;
 					/*GetWindowRect(hwnd, &db_rect);
@@ -956,7 +976,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 							addr++;
 					}
 					if (addr > 0xFFFF || addr < 0x0000) {
-						MessageBox(NULL, "Value not found", "Find results", MB_OK);
+						MessageBox(NULL, _T("Value not found"), _T("Find results"), MB_OK);
 						break;
 					}
 					dps->nSel = addr;
@@ -1108,7 +1128,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			if (IsDragging == TRUE) {
 
 				RECT r, rc;
-				char szTip[64];
+				TCHAR szTip[64];
 				int j;
 
 				if (MousePoint.y > dps->DragStart.y) {
@@ -1151,7 +1171,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 
 #ifdef WINVER
-				sprintf_s(szTip,"$%04X : $%04X\n%d bytes\n%d/%d clocks\n",
+				StringCbPrintf(szTip, sizeof(szTip), _T("$%04X : $%04X\n%d bytes\n%d/%d clocks\n"),
 						zinf[dps->iSel].addr, zinf[dps->iSel+dps->NumSel-1].addr,
 						total_bytes,
 						total, total + total_cond);
@@ -1341,6 +1361,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 					InvalidateRect(hwnd, NULL, FALSE);
 					UpdateWindow(hwnd);
+					break;
+				case DB_RESUME:
+					dps->nPCs[0] = calcs[DebuggerSlot].cpu.pc;
+					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					EnableWindow(hwnd, TRUE);
 					break;
 			}
 			return 0;

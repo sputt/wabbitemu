@@ -254,13 +254,17 @@
     <None Include="gui\buttonframemiddle.bmp" />
     <None Include="gui\Catalog.bmp" />
     <None Include="gui\chevron.bmp" />
+    <None Include="gui\chevron7.bmp" />
     <None Include="gui\downarrow.bmp" />
+    <None Include="gui\downarrow7.bmp" />
     <None Include="gui\expandpanebuttons.bmp" />
     <None Include="gui\goto.bmp" />
     <None Include="gui\homescreen.bmp" />
     <None Include="gui\left.bmp" />
+    <None Include="gui\left7.bmp" />
     <None Include="gui\membreak.bmp" />
     <None Include="gui\right.bmp" />
+    <None Include="gui\right7.bmp" />
     <None Include="gui\ROM\bf73.hex" />
     <None Include="gui\ROM\bf83pbe.hex" />
     <None Include="gui\ROM\bf83pse.hex" />

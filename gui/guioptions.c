@@ -890,18 +890,18 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 
 		// Update all of the ROM attributes
 		case WM_USER:
-			SendMessage(saveState_check, BM_SETCHECK, exit_save_state, 0);
-			SendMessage(edtRom_path, WM_SETTEXT, 0, (LPARAM) calcs[SlotSave].rom_path);
-			SendMessage(edtRom_version, WM_SETTEXT, 0, (LPARAM) calcs[SlotSave].rom_version);
-			SendMessage(edtRom_model, WM_SETTEXT, 0, (LPARAM) CalcModelTxt[calcs[SlotSave].model]);
-//			SendMessage(ramPages_check, BM_SETCHECK, calcs[SlotSave].mem_c.ram_pages_missing, 0);
+			Button_SetCheck(saveState_check, exit_save_state);
+			Edit_SetText(edtRom_path, calcs[SlotSave].rom_path);
+			Edit_SetText(edtRom_version, calcs[SlotSave].rom_version);
+			Edit_SetText(edtRom_model, CalcModelTxt[calcs[SlotSave].model]);
+//			Button_SetCheck(ramPages_check, calcs[SlotSave].mem_c.ram_pages_missing);
 			TCHAR szRomSize[16];
 #ifdef WINVER
 			StringCbPrintf(szRomSize, sizeof(szRomSize), _T("%0.1f KB"), (float) calcs[SlotSave].cpu.mem_c->flash_size/1024.0f);
 #else
 			sprintf(szRomSize, "%0.1f KB", (float) calcs[SlotSave].cpu.mem_c->flash_size/1024.0f);
 #endif
-			SendMessage(edtRom_size, WM_SETTEXT, 0, (LPARAM) szRomSize);
+			Edit_SetText(edtRom_size, szRomSize);
 			if (hbmTI83P) DeleteObject(hbmTI83P);
 			switch (calcs[SlotSave].model) {
 				case TI_83PSE:

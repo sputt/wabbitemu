@@ -5,26 +5,17 @@
 #include "core.h"
 #include "disassemble.h"
 
-LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-void sprint_addr(HDC,Z80_info_t*,RECT*);
-void sprint_command(HDC,Z80_info_t*,RECT*);
-void sprint_data(HDC,Z80_info_t*,RECT*);
-void sprint_size(HDC,Z80_info_t*,RECT*);
-void sprint_clocks(HDC,Z80_info_t*,RECT*);
-void CPU_stepout(CPU_t *);
-void CPU_stepover(CPU_t *);
 
+#define PC_TRAILS 4
 typedef struct disasmhdr {
 	int index;
 	unsigned int cx;
 	unsigned int nCharsWidth;
-	char pszText[32];
+	TCHAR pszText[32];
 	void (*lpfnCallback)(HDC, Z80_info_t*, RECT*);
 	UINT uFormat;
 	HFONT hfont;
 } disasmhdr_t;
-
-#define PC_TRAILS 4
 
 typedef struct disasmpane_settings {
 	unsigned short nSel, nPane;
@@ -39,6 +30,16 @@ typedef struct disasmpane_settings {
 	HWND hwndHeader;
 	int nPCs[PC_TRAILS];
 } disasmpane_settings_t, dp_settings;
+
+LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+void sprint_addr(HDC,Z80_info_t*,RECT*);
+void sprint_command(HDC,Z80_info_t*,RECT*);
+void sprint_data(HDC,Z80_info_t*,RECT*);
+void sprint_size(HDC,Z80_info_t*,RECT*);
+void sprint_clocks(HDC,Z80_info_t*,RECT*);
+void CPU_stepout(CPU_t *);
+void CPU_stepover(CPU_t *);
+void cycle_pcs(dp_settings *);
 
 #define dpsAddr		0
 #define dpsData		1
