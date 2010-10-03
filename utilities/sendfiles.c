@@ -361,11 +361,11 @@ void ThreadSend(TCHAR *FileNames, int ram, LPCALC calc) {
 
 	if (FileNames == NULL) return;
 
-	if (lpCalc != NULL || lpCalc->send == TRUE) {
+	if (lpCalc == NULL || lpCalc->send == FALSE) {
+		lpCalc = calc;
+	} else {
 		MessageBox(NULL, _T("Currently sending files please wait..."), _T("Error"), MB_OK);
 		return;
-	} else {
-		lpCalc = calc;
 	}
 
 	if (hdlSend != NULL) {

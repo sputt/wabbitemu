@@ -704,8 +704,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				TCHAR* FileNames = (TCHAR *) malloc(size);
 				memset(FileNames,0,size);
 				memcpy(FileNames,string,size);
-				assert("Not possible yet", 0);
-//				ThreadSend(FileNames,ram, calc_from_hwnd(hwnd));
+				ThreadSend(FileNames,ram, (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA));
 			}
 			break;
 		}
@@ -721,8 +720,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				FileNames = AppendName(FileNames, fn);
 			}
 
-			assert("not possible yet", 0);
-//			ThreadSend(FileNames, DropMemoryTarget(hwnd), calc_from_hwnd(hwnd));
+			ThreadSend(FileNames, DropMemoryTarget(hwnd), (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
 			//InvalidateRect(calcs[gslot].hwndFrame, NULL, FALSE);
 			return 0;
