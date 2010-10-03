@@ -171,16 +171,17 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 				case PSN_WIZNEXT:
 					use_bootfree = Button_GetCheck(hBootFree) == BST_CHECKED; 
 					break;
-				case PSN_WIZFINISH: {
-					char string[MAX_PATH];
-					Edit_GetText(hEditRom, string, MAX_PATH);
-					LPCALC lpCalc = calc_slot_new();
-					if (rom_load(lpCalc, string) == TRUE)
+				case PSN_WIZFINISH:
 					{
-						gui_frame(lpCalc);
+						TCHAR szROMPath[MAX_PATH];
+						Edit_GetText(hEditRom, szROMPath, ARRAYSIZE(szROMPath));
+						LPCALC lpCalc = calc_slot_new();
+						if (rom_load(lpCalc, szROMPath) == TRUE)
+						{
+							gui_frame(lpCalc);
+						}
+						break;
 					}
-					break;
-				}
 				case PSN_QUERYCANCEL:
 					error = TRUE;
 					break;

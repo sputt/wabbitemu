@@ -94,12 +94,6 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				UpdateWindow(hwnd);
 				return 0;
 		}
-		case WM_KEYDOWN:
-			HandleKeyDown((unsigned int) wParam);
-			return 0;
-		case WM_KEYUP:
-			HandleKeyUp((unsigned int) wParam);
-			return 0;
 		case WM_CLOSE:
 			SendMessage(calcs[gslot].hwndFrame, uMsg, wParam, lParam);
 		case WM_NCCALCSIZE:
@@ -156,7 +150,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 			_T("Wabbitemu"),
 			WS_VISIBLE,
 			0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
-			hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID *) lpCalc);
+			hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
 
 	SetWindowTheme(lpCalc->hwndLCD, (LPCWSTR) _T(" "), (LPCWSTR) _T(" "));
 	HDC hScreen = GetDC(NULL);

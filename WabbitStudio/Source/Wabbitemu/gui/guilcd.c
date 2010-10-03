@@ -729,12 +729,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 
 		case WM_KEYDOWN:
-			HandleKeyDown((unsigned int) wParam);
-			return 0;
-		case WM_KEYUP: {
-			HandleKeyUp((unsigned int) wParam);
-			return 0;
-		}
+		case WM_KEYUP:
+			{
+				calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				return SendMessage(lpCalc->hwndFrame, Message, wParam, lParam);
+			}
 		case WM_DESTROY: 
 			{
 				calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);

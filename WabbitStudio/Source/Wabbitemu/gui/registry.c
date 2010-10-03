@@ -11,24 +11,24 @@ static struct {
 	DWORD dwType;
 	LONG_PTR Value;
 } regDefaults[] = {
-	{"cutout", 		REG_DWORD, 	0},
-	{"skin",		REG_DWORD,	0},
-	{"version", 	REG_SZ, 	(LONG_PTR) "1.5"},
-	{"rom_path", 	REG_SZ, 	(LONG_PTR) "z.rom"},
-	{"shades",		REG_DWORD,	6},
-	{"gif_path", 	REG_SZ,		(LONG_PTR) "wabbitemu.gif"},
-	{"gif_autosave",REG_DWORD,	0},
-	{"gif_useinc",	REG_DWORD,	0},
-	{"lcd_mode",	REG_DWORD,	0}, // perfect gray
-	{"lcd_freq",	REG_DWORD,	FPS}, // steady freq
-	{"screen_scale",REG_DWORD,  2},
-	{"faceplate_color", REG_DWORD, 	0x838587},
-	{"exit_save_state", REG_DWORD,  0},
-	{"load_files_first", REG_DWORD,  1},
-	{"do_backups", REG_DWORD,  0},
-	{"show_wizard", REG_DWORD,  1},
-	{"sync_cores", REG_DWORD,  0},
-	{"num_keys",		REG_DWORD,  5},
+	{_T("cutout"), 		REG_DWORD, 	0},
+	{_T("skin"),		REG_DWORD,	0},
+	{_T("version"), 	REG_SZ, 	(LONG_PTR) L"1.5"},
+	{_T("rom_path"), 	REG_SZ, 	(LONG_PTR) L"z.rom"},
+	{_T("shades"),		REG_DWORD,	6},
+	{_T("gif_path"), 	REG_SZ,		(LONG_PTR) L"wabbitemu.gif"},
+	{_T("gif_autosave"),REG_DWORD,	0},
+	{_T("gif_useinc"),	REG_DWORD,	0},
+	{_T("lcd_mode"),	REG_DWORD,	0}, // perfect gray
+	{_T("lcd_freq"),	REG_DWORD,	FPS}, // steady freq
+	{_T("screen_scale"),REG_DWORD,  2},
+	{_T("faceplate_color"), REG_DWORD, 	0x838587},
+	{_T("exit_save_state"), REG_DWORD,  0},
+	{_T("load_files_first"), REG_DWORD,  1},
+	{_T("do_backups"), REG_DWORD,  0},
+	{_T("show_wizard"), REG_DWORD,  1},
+	{_T("sync_cores"), REG_DWORD,  0},
+	{_T("num_keys"),		REG_DWORD,  5},
 	{NULL,			0,			0},
 };
 
@@ -62,13 +62,13 @@ HRESULT LoadRegistryDefaults(HKEY hkey) {
 	return S_OK;
 }
 
-INT_PTR QueryWabbitKey(char *name) {
+INT_PTR QueryWabbitKey(LPCTSTR lpszName) {
 	HKEY hkeySoftware;
-	RegOpenKeyEx(HKEY_CURRENT_USER, "software", 0, KEY_ALL_ACCESS, &hkeySoftware);
+	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
 	
 	HKEY hkeyWabbit;
 	DWORD dwDisposition;
-	RegCreateKeyEx(hkeySoftware, "Wabbitemu", 0, 
+	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0, 
 			NULL, REG_OPTION_NON_VOLATILE, 
 			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
 	
@@ -76,27 +76,42 @@ INT_PTR QueryWabbitKey(char *name) {
 	DWORD len;
 	u_int i;
 	for (i = 0; regDefaults[i].lpValueName != NULL; i++) {
-		if (strcmp(regDefaults[i].lpValueName, name) == 0) break;
+		if (_tcsicmp(regDefaults[i].lpValueName, lpszName) == 0) break;
 	}
 	type = regDefaults[i].dwType;
-	len = (type == REG_SZ) ? 256 : sizeof(DWORD);
+	
 	static union {
 		DWORD dwResult;
-		char szResult[256];
+		TCHAR szResult[256];
 	} result;
+	len = (type == REG_SZ) ? 256 * sizeof(WCHAR) : sizeof(DWORD);
 	
 	LONG rqvx_res;
 	if (regDefaults[i].lpValueName != NULL) {
-		rqvx_res = RegQueryValueEx(hkeyWabbit, name, NULL, NULL, (LPBYTE) &result, &len);
+		WCHAR wszKeyName[256];
+#ifdef UNICODE
+		StringCbCopy(wszKeyName, sizeof(wszKeyName), lpszName);
+#else
+		MultiByteToWideChar(CP_ACP, 0, lpszName, -1, wszKeyName, ARRAYSIZE(wszKeyName));
+#endif
+		rqvx_res = RegQueryValueExW(hkeyWabbit, wszKeyName, NULL, NULL, (LPBYTE) &result, &len);
 		if (rqvx_res == ERROR_FILE_NOT_FOUND) {
 			if (type == REG_DWORD)
+			{
 				result.dwResult = (DWORD) regDefaults[i].Value;
+			}
 			else
-				strcpy_s(result.szResult, (char *) regDefaults[i].Value);
+			{
+#ifdef UNICODE
+				StringCbCopy(result.szResult, sizeof(result.szResult), (LPWSTR) regDefaults[i].Value);
+#else
+				WideCharToMultiByte(CP_ACP, 0, (LPWSTR) regDefaults[i].Value, -1, result.szResult, sizeof(result.szResult), NULL, NULL);
+#endif
+			}
 		}
 	} else {
-		MessageBox(NULL, "Could not find registry key", name, MB_OK);
-		exit(1);
+		//MessageBox(NULL, "Could not find registry key", lpszName, MB_OK);
+		return NULL;
 	}
 	
 	RegCloseKey(hkeyWabbit);
@@ -171,7 +186,7 @@ void SaveWabbitKey(char *name, int type, void *value) {
 }
 
 
-HRESULT SaveRegistrySettings(void) {
+HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 	if (hkeyTarget)
 		RegCloseKey(hkeyTarget);
 	HKEY hkeyWabbit;
@@ -180,9 +195,9 @@ HRESULT SaveRegistrySettings(void) {
 	if (SUCCEEDED(res)) {
 		hkeyTarget = hkeyWabbit;
 		
-		SaveWabbitKey("cutout", REG_DWORD, &calcs[gslot].bCutout);
-		SaveWabbitKey("skin", REG_DWORD, &calcs[gslot].SkinEnabled);
-		SaveWabbitKey("rom_path", REG_SZ, &calcs[gslot].rom_path);
+		SaveWabbitKey("cutout", REG_DWORD, &lpCalc->bCutout);
+		SaveWabbitKey("skin", REG_DWORD, &lpCalc->SkinEnabled);
+		SaveWabbitKey("rom_path", REG_SZ, &lpCalc->rom_path);
 		SaveWabbitKey("gif_path", REG_SZ, &gif_file_name);
 		SaveWabbitKey("gif_autosave", REG_DWORD, &gif_autosave);
 		SaveWabbitKey("gif_useinc", REG_DWORD, &gif_use_increasing);
@@ -192,10 +207,10 @@ HRESULT SaveRegistrySettings(void) {
 		SaveWabbitKey("show_wizard", REG_DWORD, &show_wizard);
 		SaveWabbitKey("sync_cores", REG_DWORD, &sync_cores);
 
-		SaveWabbitKey("faceplate_color", REG_DWORD, &calcs[gslot].FaceplateColor);
-		SaveWabbitKey("custom_skin", REG_DWORD, &calcs[gslot].bCustomSkin);
-		SaveWabbitKey("skin_path", REG_SZ, &calcs[gslot].skin_path);
-		SaveWabbitKey("keymap_path", REG_SZ, &calcs[gslot].keymap_path);
+		SaveWabbitKey("faceplate_color", REG_DWORD, &lpCalc->FaceplateColor);
+		SaveWabbitKey("custom_skin", REG_DWORD, &lpCalc->bCustomSkin);
+		SaveWabbitKey("skin_path", REG_SZ, &lpCalc->skin_path);
+		SaveWabbitKey("keymap_path", REG_SZ, &lpCalc->keymap_path);
 		/*ACCEL buf[256];
 		DWORD dwCount = sizeof(buf);
 		DWORD dwType = NULL;
@@ -206,12 +221,12 @@ HRESULT SaveRegistrySettings(void) {
 			haccelmain = CreateAcceleratorTable(buf, dwCount);
 		}*/
 		
-		SaveWabbitKey("shades", REG_DWORD, &calcs[gslot].cpu.pio.lcd->shades);
-		SaveWabbitKey("lcd_mode", REG_DWORD, &calcs[gslot].cpu.pio.lcd->mode);
+		SaveWabbitKey("shades", REG_DWORD, &lpCalc->cpu.pio.lcd->shades);
+		SaveWabbitKey("lcd_mode", REG_DWORD, &lpCalc->cpu.pio.lcd->mode);
 		DWORD steady = (DWORD) ( 1.0 / calcs[gslot].cpu.pio.lcd->steady_frame);
 		SaveWabbitKey("lcd_freq", REG_DWORD, &steady);
 		
-		SaveWabbitKey("screen_scale", REG_DWORD, &calcs[gslot].Scale);
+		SaveWabbitKey("screen_scale", REG_DWORD, &lpCalc->Scale);
 
 	}
 	RegCloseKey(hkeyWabbit);

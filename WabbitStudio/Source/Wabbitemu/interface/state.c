@@ -14,6 +14,11 @@ char *symbol_to_string(CPU_t *, symbol83P_t *, char *);
 void state_build_applist(CPU_t *cpu, applist_t *applist) {
 	applist->count = 0;
 	
+	if (cpu->mem_c == NULL)
+	{
+		return;
+	}
+
 	if (cpu->mem_c->flash == NULL) return;
 	u_char (*flash)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) cpu->mem_c->flash;
 

@@ -117,9 +117,9 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	
 	// Set all values to the defaults
 #ifdef WINVER
-	lcd->shades = (u_int) QueryWabbitKey("shades");
-	lcd->mode = (LCD_MODE) QueryWabbitKey("lcd_mode");
-	lcd->steady_frame = 1.0 / QueryWabbitKey("lcd_freq");
+	lcd->shades = (u_int) QueryWabbitKey(_T("shades"));
+	lcd->mode = (LCD_MODE) QueryWabbitKey(_T("lcd_mode"));
+	lcd->steady_frame = 1.0 / QueryWabbitKey(_T("lcd_freq"));
 #else
 	lcd->shades = 6;
 	lcd->mode = MODE_PERFECT_GRAY;
