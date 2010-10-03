@@ -46,6 +46,9 @@
     <Filter Include="Source Files\Utilities">
       <UniqueIdentifier>{2ff14b6f-9293-4268-9141-c395b32358ba}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Interface\COM">
+      <UniqueIdentifier>{983829f6-a64c-4cf1-a0d2-ec3dd7894ef1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\alu.c">
@@ -204,28 +207,7 @@
     <ClCompile Include="gui\guiwizard.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="interface\CKeypad.cpp">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="interface\CLCD.cpp">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="interface\CPage.cpp">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="interface\CWabbitemu.cpp">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="interface\CZ80.cpp">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="interface\WabbitemuClassFactory.cpp">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
     <ClCompile Include="interface\mapeditor.c">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
-    <ClCompile Include="Wabbitemu_i.c">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
     <ClCompile Include="utilities\zpipe.c">
@@ -235,10 +217,31 @@
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="interface\CCalcAddress.cpp">
-      <Filter>Source Files\Interface</Filter>
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CKeypad.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
     <ClCompile Include="interface\CLabelServer.cpp">
-      <Filter>Source Files\Interface</Filter>
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CLCD.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CPage.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CZ80.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CWabbitemu.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="Wabbitemu_i.c">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\WabbitemuClassFactory.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -459,10 +462,10 @@
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="interface\CCalcAddress.h">
-      <Filter>Source Files\Interface</Filter>
+      <Filter>Source Files\Interface\COM</Filter>
     </ClInclude>
     <ClInclude Include="interface\CLabelServer.h">
-      <Filter>Source Files\Interface</Filter>
+      <Filter>Source Files\Interface\COM</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -571,9 +574,6 @@
     <None Include="gui\Wabbitemu.tlb">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="interface\Wabbitemu.def">
-      <Filter>Source Files\Interface</Filter>
-    </None>
     <None Include="gui\TI-83.png">
       <Filter>Resource Files</Filter>
     </None>
@@ -618,6 +618,15 @@
     <None Include="gui\ti-85Keymap.png">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="gui\left7.bmp" />
+    <None Include="gui\right7.bmp" />
+    <None Include="gui\downarrow7.bmp" />
+    <None Include="gui\chevron7.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="interface\Wabbitemu.def">
+      <Filter>Source Files\Interface\COM</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">
@@ -626,7 +635,7 @@
   </ItemGroup>
   <ItemGroup>
     <Midl Include="interface\Wabbitemu.idl">
-      <Filter>Source Files\Interface</Filter>
+      <Filter>Source Files\Interface\COM</Filter>
     </Midl>
   </ItemGroup>
 </Project>

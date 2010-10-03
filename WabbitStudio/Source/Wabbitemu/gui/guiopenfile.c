@@ -117,7 +117,7 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 void GetOpenSendFileName(HWND hwnd, int defFilter) {
 	OPENFILENAME ofn;
 	int result;
-	char lpstrFilter[] 	= "\
+	TCHAR lpstrFilter[] 	= _T("\
 Known File Types\0*.73p;*.82*;*.83p*;*.8xp*;*.8xk;*.73k;*.sav;*.rom;*.lab;*.8xu\0\
 Calculator Program Files  (*.73p;*.82*;*.83p*;*.8xp*)\0*.73p;*.82*;*.83p*;*.8xp*\0\
 Calculator Applications  (*.8xk, *.73k)\0*.8xk;*.73k\0\
@@ -125,12 +125,12 @@ Calculator OSes (*.8xu)\0*.8xu\0\
 Save States  (*.sav)\0*.sav\0\
 ROMS  (*.rom)\0*.rom\0\
 Label Files (*.lab)\0*.lab\0\
-All Files (*.*)\0*.*\0\0";
-	char filepath[MAX_PATH+256];
-	char filestr[MAX_PATH+256];
-	char * FileNames = NULL;
-	char * filename;
-	char * filestroffset;
+All Files (*.*)\0*.*\0\0");
+	TCHAR filepath[MAX_PATH+256];
+	TCHAR filestr[MAX_PATH+256];
+	TCHAR *FileNames = NULL;
+	TCHAR *filename;
+	TCHAR *filestroffset;
 	
 	static OFNHookOptions HookOptions;
 	
@@ -152,7 +152,7 @@ All Files (*.*)\0*.*\0\0";
 	ofn.lpstrFileTitle		= NULL;
 	ofn.nMaxFileTitle		= 0;
 	ofn.lpstrInitialDir		= NULL;
-	ofn.lpstrTitle			= "Wabbitemu Open File";
+	ofn.lpstrTitle			= _T("Wabbitemu Open File");
 	ofn.Flags				= 	OFN_FILEMUSTEXIST |
 								OFN_PATHMUSTEXIST | 
 								OFN_EXPLORER | 
@@ -180,11 +180,11 @@ All Files (*.*)\0*.*\0\0";
 	while(filename[0] != 0) {
 		int len;
 #ifdef WINVER
-		strcpy_s(filestroffset, strlen(filename) + 1, filename);
+		StringCbCopy(filestroffset, _tcslen(filename) + 1, filename);
 #else
 		strcpy(filestroffset, filename);
 #endif
-		len = (int) strlen(filestroffset);
+		len = (int) _tcslen(filestroffset);
 		filestroffset[len] = 0;
 		filename += len+1;
 		FileNames = AppendName(FileNames, filestr);
@@ -196,5 +196,5 @@ All Files (*.*)\0*.*\0\0";
 		if (HookOptions.bArchive) send_mode = SEND_ARC;
 	}
 	
-	//ThreadSend(FileNames, send_mode, slot);
+	ThreadSend(FileNames, send_mode, (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA));
 }

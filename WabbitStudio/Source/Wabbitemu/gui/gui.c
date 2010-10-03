@@ -161,6 +161,7 @@ int gui_debug(calc_t *lpCalc) {
 
 	if ((hdebug = FindWindow(g_szDebugName, _T("Debugger")))) {
 		SwitchToThisWindow(hdebug, TRUE);
+		SendMessage(hdebug, WM_USER, DB_RESUME, 0);
 		return -1;
 	}
 	lpCalc->running = FALSE;
@@ -703,7 +704,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	//this is here so we get our load_files_first setting
-	LoadRegistrySettings();
+	load_files_first = QueryWabbitKey(_T("load_files_first"));
 
 	argv = CommandLineToArgvW(GetCommandLineW(),&argc);
 
@@ -800,7 +801,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	LPCALC lpCalc = calc_slot_new();
-	LoadRegistrySettings();
+	LoadRegistrySettings(lpCalc);
 
 	if (rom_load(lpCalc, lpCalc->rom_path) == TRUE)
 	{

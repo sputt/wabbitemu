@@ -177,12 +177,12 @@ STDMETHODIMP CWabbitemu::Write(WORD Address, VARIANT varValue)
 STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 {
 #ifdef _UNICODE
-	NoThreadSend(bstrFileName, SEND_CUR);
+	NoThreadSend(bstrFileName, SEND_CUR, NULL);
 #else
 	char szFileName[MAX_PATH];
 	WideCharToMultiByte(CP_ACP, 0, bstrFileName, -1, szFileName, sizeof(szFileName), NULL, NULL);
 	gslot = m_iSlot;
-	NoThreadSend(szFileName, SEND_CUR);
+	NoThreadSend(szFileName, SEND_CUR, NULL);
 #endif
 	
 	return S_OK;
