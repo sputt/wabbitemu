@@ -343,7 +343,6 @@ namespace Revsoft.Wabbitcode.Classes
                 {
                     for (int x = 0; x < 128; x++)
                     {
-
                         int pixColor = 255 - screenArray[counter];
                         int alpha = pixColor == 231 ? 0 : 255;
                         screen.SetPixel(x, y, Color.FromArgb(alpha, pixColor, pixColor, pixColor));

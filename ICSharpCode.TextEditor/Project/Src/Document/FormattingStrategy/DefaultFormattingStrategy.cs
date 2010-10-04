@@ -127,10 +127,6 @@ namespace Revsoft.TextEditor.Document
 			if (ch == '\n') {
 				textArea.Caret.Column = IndentLine(textArea.Document, line);
 			}
-
-			//if (ch == '#' || ch == '.') {
-			//	textArea.Caret.Column = 1;
-			//}
 		}
 		
 		/// <summary>

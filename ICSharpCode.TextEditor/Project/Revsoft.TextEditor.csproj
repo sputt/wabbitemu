@@ -129,7 +129,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Wabbitcode Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Wabbitcode Debug\</OutputPath>
+    <OutputPath>..\..\..\..\Debug\</OutputPath>
     <DefineConstants>DEBUG;DATACONSISTENCYTEST</DefineConstants>
     <BaseAddress>98041856</BaseAddress>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
@@ -180,13 +180,13 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Wabbitcode Release|AnyCPU'">
     <DebugSymbols>false</DebugSymbols>
-    <OutputPath>bin\Wabbitcode Release\</OutputPath>
+    <OutputPath>..\..\..\..\Release\</OutputPath>
     <BaseAddress>98041856</BaseAddress>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <Optimize>true</Optimize>
     <FileAlignment>4096</FileAlignment>
     <DebugType>none</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Release\Revsoft.TextEditor.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>

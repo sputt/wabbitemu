@@ -1,79 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
-using System.IO;
-using System.Globalization;
-using System.Xml;
-using System.Windows.Forms;
-using Revsoft.Wabbitcode.Properties;
-using System.Threading;
-using Revsoft.TextEditor.Document;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
-using Revsoft.TextEditor;
+using System.Globalization;
+using System.IO;
+using System.Threading;
+using System.Windows.Forms;
+using Microsoft.Win32;
+using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Classes;
+using Revsoft.Wabbitcode.Properties;
+using WabbitemuLib;
+using Revsoft.Wabbitcode.Services.Debugger;
+using System.Text;
 
 namespace Revsoft.Wabbitcode.Services
 {
 	public static class DebuggerService
 	{
 #if NEW_DEBUGGING
-        [StructLayout(LayoutKind.Explicit, Size= 1921)]
-         struct AppList {
-            [FieldOffset(0)]
-             public uint count;
-            [FieldOffset(4)]
-             public AppHeader[] apps;
-         }
-
-        [StructLayout(LayoutKind.Explicit)]
-        struct AppHeader {
-            [FieldOffset(0)]
-	        public char[] name;
-            [FieldOffset(12)] 
-            public uint page;
-            [FieldOffset(16)]
-            public uint page_count;
+        private static Wabbitemu debugger;
+        public static Wabbitemu Debugger
+        {
+            get { return debugger; }
+            set { debugger = value; }
         }
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr LoadLibrary(string lpFileName);
-        [DllImport("kernel32.dll")]
-        public static extern IntPtr FreeLibrary(IntPtr library);
-        [DllImport("libWabbitemu.dll")]
-        private static extern AppList GetAppList(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void SetBreakpoint(int slot, IntPtr Handle, bool isInRam, byte page, ushort address);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void ClearBreakpoint(int slot, bool isInRam, byte page, ushort address);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void RunDebugger(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void StepDebugger(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void StepOverDebugger(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void StepOutDebugger(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void PauseDebugger(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern CWabbitemu.Z80_State GetState(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern CWabbitemu.MEMSTATE GetMemState(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void SetState(int slot, CWabbitemu.Z80_State state);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void SetMemState(int slot, CWabbitemu.MEMSTATE memState);
-        [DllImport("libWabbitemu.dll")]
-        private static extern byte ReadMem(int slot, ushort address);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void WriteMem(int slot, ushort address);
-
-        public const int currentSlot = 0;
-        private IntPtr wabbitDLLPointer;
 #else
 		private static CWabbitemu debugger;
+        public static CWabbitemu Debugger
+		{
+			get { return debugger; }
+			set { debugger = value; }
+		}
 #endif
-		private static List<WabbitcodeBreakpoint> breakpoints = new List<WabbitcodeBreakpoint>();
+        private static List<WabbitcodeBreakpoint> breakpoints = new List<WabbitcodeBreakpoint>();
 		private static Stack<int> stepStack;
 		private static bool isDebugging;
 		private static byte appPage;
@@ -97,11 +56,6 @@ namespace Revsoft.Wabbitcode.Services
 			set { appPage = value; }
 		}
 
-		public static CWabbitemu Debugger
-		{
-			get { return debugger; }
-			set { debugger = value; }
-		}
 		public static bool IsDebugging
 		{
 			get { return isDebugging; }
@@ -154,7 +108,7 @@ namespace Revsoft.Wabbitcode.Services
 				//if (isAnApp)
 				//    page = (byte) (apppage - newBreakpoint.Page);
 #if NEW_DEBUGGING
-                ClearBreakpoint(currentSlot, newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
+                //debugger.ClearBreakpoint(new CPage(newBreakpoint.Page, newBreakpoint.IsRam), newBreakpoint.Address);
 #else
 				debugger.clearBreakpoint(newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
 #endif
@@ -177,7 +131,7 @@ namespace Revsoft.Wabbitcode.Services
 				if (isAnApp && !newBreakpoint.IsRam)
 					newBreakpoint.Page = (byte)(appPage - newBreakpoint.Page);
 #if NEW_DEBUGGING
-                SetBreakpoint(currentSlot, Handle, newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
+                debugger.SetBreakpoint(new CPage(newBreakpoint.Page, newBreakpoint.IsRam), newBreakpoint.Address);
 #else
 				debugger.setBreakpoint(newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
 #endif
@@ -234,7 +188,7 @@ namespace Revsoft.Wabbitcode.Services
 		public static void BreakpointHit()
 		{
 #if NEW_DEBUGGING
-            ushort address = GetState(currentSlot).PC;
+            ushort address = debugger.CPU.PC;
 #else
 			ushort address = debugger.getState().PC;
 #endif
@@ -296,7 +250,7 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				isBreakpointed = false;
 #if NEW_DEBUGGING
-				RunDebugger(currentSlot);
+                debugger.Running = true;
 #else
 				debugger.run();
 #endif
@@ -339,7 +293,6 @@ namespace Revsoft.Wabbitcode.Services
 		public static void DoStep(object steptype)
 		{
 			StepType stepType = (StepType)steptype;
-			CWabbitemu.Z80_State state;
 			/*foreach (newEditor child in GlobalClass.mainForm.MdiChildren)
 				if (child.DocumentChanged)
 				{
@@ -357,20 +310,30 @@ namespace Revsoft.Wabbitcode.Services
 				}*/
 			//need to clear the old breakpoint so lets save it
 #if NEW_DEBUGGING
-        string locInfo =
-            debugTable[getPageNum(GetState(currentSlot).PC.ToString("X")) + ":" + GetState(currentSlot).PC.ToString("X")].ToString();
+            ushort currentPC = debugger.CPU.PC;
 #else
 			ushort currentPC = debugger.getState().PC;
+#endif
 			byte oldPage = GetPageNum(currentPC);
 			ListFileValue value = new ListFileValue(currentPC, oldPage);
 			ListFileKey key;
-			debugTable.TryGetKey(value, out key);
-#endif
+            debugTable.TryGetKey(value, out key);
 			ListFileKey newKey = key;
 			while (newKey.LineNumber == key.LineNumber)
 			{
 				switch (stepType)
 				{
+#if NEW_DEBUGGING
+                    case StepType.Step:
+                        debugger.Step();
+                        break;
+                    case StepType.StepOver:
+                        debugger.StepOver();
+                        break;
+                    case StepType.StepOut:
+                        //debugger.StepOut();
+                        break;
+#else
 					case StepType.Step:
 						debugger.step();
 						break;
@@ -380,9 +343,14 @@ namespace Revsoft.Wabbitcode.Services
 					case StepType.StepOut:
 						debugger.stepOut();
 						break;
+#endif
 				}
-				state = debugger.getState();
-				ushort address = state.PC;
+#if NEW_DEBUGGING
+                ushort address = debugger.CPU.PC;
+#else
+				ushort address = debugger.getState().PC;
+#endif
+				
 				byte page = GetPageNum(address);
 				value = new ListFileValue(address, page);
 				if (debugTable == null)
@@ -404,7 +372,7 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			byte page = 0xFF;
 #if NEW_DEBUGGING
-            CWabbitemu.MEMSTATE memstate = GetMemState(currentSlot);
+            CWabbitemu.MEMSTATE memstate = new CWabbitemu.MEMSTATE();// = GetMemState(currentSlot);
 #else
 			CWabbitemu.MEMSTATE memstate = debugger.getMemState();
 #endif
@@ -436,7 +404,7 @@ namespace Revsoft.Wabbitcode.Services
 		public static void UpdateStack()
 		{
 #if NEW_DEBUGGING
-            int currentSP = GetState(currentSlot).SP;
+            int currentSP = debugger.CPU.SP;
 #else
 			int currentSP = debugger.getState().SP;
 #endif
@@ -449,7 +417,7 @@ namespace Revsoft.Wabbitcode.Services
 				if (oldSP > currentSP - 2)
 				{
 #if NEW_DEBUGGING
-                    callStack.addStackData(oldSP, ReadMem(currentSlot, oldSP) + ReadMem(currentSlot, (ushort)(oldSP + 1)) * 256);
+                    DockingService.CallStack.AddStackData(oldSP, debugger.Read(oldSP) + debugger.Read((ushort)(oldSP + 1)) * 256);
 #else
 					DockingService.CallStack.AddStackData(oldSP, debugger.readMem(oldSP) + debugger.readMem((ushort)(oldSP + 1)) * 256);
 #endif
@@ -468,7 +436,7 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			get { return symTable; }
 		}
-		//private static delegate void BeginDebugDelegate();
+		
 		private delegate void AssembleProjectDelegate();
 		private delegate void StartDebugDelegate();
 		private delegate void UpdateBreaksDelegate();
@@ -494,8 +462,6 @@ namespace Revsoft.Wabbitcode.Services
 						configFound = true;
 				if (configFound)
 				{
-					//AssembleProjectDelegate assemblerDelegate = AssemblerService.AssembleProject;
-					//DockingService.MainForm.Invoke(assemblerDelegate);
                     ThreadPool.QueueUserWorkItem(AssemblerService.AssembleProject);
                     //wait till we notice that it is building
                     while (!AssemblerService.IsBuildingProject)
@@ -513,7 +479,19 @@ namespace Revsoft.Wabbitcode.Services
                     fileName = ProjectService.Project.BuildSystem.MainFile;
 					if (!Path.IsPathRooted(createdName))
 						createdName = FileOperations.NormalizePath(Path.Combine(ProjectService.ProjectDirectory, createdName));
+                    if (ProjectService.Project.ListOutputs.Count < 1)
+                    {
+                        DockingService.ShowError("No List file was found");
+                        isDebugging = false;
+                        return;
+                    }
                     listName = ProjectService.Project.ListOutputs[0];
+                    if (ProjectService.Project.LabelOutputs.Count < 1)
+                    {
+                        DockingService.ShowError("No label file was found");
+                        isDebugging = false;
+                        return;
+                    }
                     symName = ProjectService.Project.LabelOutputs[0];
 					error = AssemblerService.ErrorsInFiles.Count == 0;
 				}
@@ -541,15 +519,7 @@ namespace Revsoft.Wabbitcode.Services
 					}
 				}
 
-				//error &= createListing(fileName, Path.ChangeExtension(fileName, "lst"));
-				//if (error)
-				//    MessageBox.Show("Problem creating list file");
-				//error &= createSymTable(fileName, Path.ChangeExtension(fileName, "lab"));
-				//if (error)
-				//    MessageBox.Show("Problem creating symtable");
-				error &= AssemblerService.AssembleFile(fileName,
-							Path.ChangeExtension(fileName, AssemblerService.GetExtension(Settings.Default.outputFile)),
-								false);
+				error &= AssemblerService.AssembleFile(fileName, Path.ChangeExtension(fileName, AssemblerService.GetExtension(Settings.Default.outputFile)), false);
 				//if (error)
 				//    MessageBox.Show("Problem creating 8xp file");
 				listName = Path.ChangeExtension(fileName, ".lst");
@@ -580,25 +550,54 @@ namespace Revsoft.Wabbitcode.Services
 					return;
 				}
 			}
-			//if (!File.Exists(listName))
-			//    createListing(fileName, Path.ChangeExtension(fileName, "lst"));
 #if NEW_DEBUGGING
-            Process test = new Process();
-            wabbitDLLPointer = test.Handle;
+            debugger = new Wabbitemu();
+            string romFile = "";
+            try 
+            {
+                RegistryKey romKey = Registry.CurrentUser.OpenSubKey("Software\\Wabbitemu");
+                romFile = romKey.GetValue("rom_path").ToString();
+            }
+            catch(Exception)
+            {
+                //display file browser here...
+            }
+            debugger.LoadFile(romFile);
+            debugger.LoadFile(createdName);
 #else
 			debugger = new CWabbitemu(createdName);
 #endif
 			stepStack = new Stack<int>();
-			//StartDebugDelegate startDebug = DockingService.MainForm.StartDebug;
-			//DockingService.MainForm.Invoke(startDebug);
-
-			StreamReader reader = new StreamReader(listName);
-			//StreamReader breakReader = new StreamReader(fileName.Remove(fileName.Length - 3) + "brk");
-			string listFileText = reader.ReadToEnd();
-			reader.Close();
-			reader = new StreamReader(symName);
-			string symFileText = reader.ReadToEnd();
-			reader.Close();
+            StreamReader reader;
+            string listFileText, symFileText = "";
+#if !DEBUG
+            try
+            {
+#endif
+                reader = new StreamReader(listName);
+                listFileText = reader.ReadToEnd();
+                reader.Close();
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error reading list file: \n" + ex);
+                CancelDebug();
+                return;
+            }
+            try
+            {
+#endif
+                reader = new StreamReader(symName);
+                symFileText = reader.ReadToEnd();
+                reader.Close();
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error reading symbol file: \n" + ex);
+            }
+#endif
 
 			debugTable = new Dictionary<ListFileKey, ListFileValue>();
 			ParseListFile(listFileText, fileName, Path.GetDirectoryName(fileName));
@@ -608,16 +607,15 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				isAnApp = true;
 #if NEW_DEBUGGING
-                AppList appList = new AppList();
-#else
-				CWabbitemu.AppEntry[] appList = new CWabbitemu.AppEntry[20];
-#endif
-#if NEW_DEBUGGING
-                while (appList.count == 0)
+                if (debugger.Apps.Length == 0)
                 {
-                    appList = GetAppList(0);
-                    apppage = (byte)appList.apps[0].page;
+                    CancelDebug();
+                    return;
+                }
+                while (((TIApplication)debugger.Apps.GetValue(0))/*[0]*/.PageCount == 0)
+                    Thread.Sleep(500);
 #else
+                CWabbitemu.AppEntry[] appList = new CWabbitemu.AppEntry[20];
 				while (appList[0].page_count == 0)
 				{
 					appList = debugger.getAppList();
@@ -626,9 +624,9 @@ namespace Revsoft.Wabbitcode.Services
 						CancelDebug();
 						return;
 					}
-#endif
-					Thread.Sleep(500);
+                    Thread.Sleep(500);
 				}
+#endif
 				int counter = 0;
                 char[] buffer = new char[8];
                 StreamReader appReader = new StreamReader(createdName);
@@ -637,7 +635,24 @@ namespace Revsoft.Wabbitcode.Services
                 appReader.ReadBlock(buffer, 0, 8);
                 appReader.Close();
                 string appName = new string(buffer).Trim();
-				//string appName = Path.GetFileNameWithoutExtension(createdName);
+#if NEW_DEBUGGING
+                foreach (TIApplication app in debugger.Apps)
+                {
+                    if (app.Name.Trim() == appName)
+                        break;
+                    counter++;
+                }
+                if (counter > debugger.Apps.Length)
+                {
+                    if (MessageBox.Show("Unable to find the app, would you like to try and continue and debug?", "Missing App", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
+                    {
+                        CancelDebug();
+                        return;
+                    }
+                    counter = 0;
+                }
+                appPage = (byte) ((TIApplication)debugger.Apps.GetValue(counter))/*[counter]*/.Page.Index;
+#else
 				foreach (CWabbitemu.AppEntry app in appList)
 				{
                     StringBuilder sb = new StringBuilder();
@@ -649,7 +664,6 @@ namespace Revsoft.Wabbitcode.Services
                     sb.Append(app.name6);
                     sb.Append(app.name7);
                     sb.Append(app.name8);
-					//HACK: FIX SO THAT I CHECK THE ACTUAL 8XK BINARY
 					if (sb.ToString().Trim().ToLower() == appName.ToLower())
 						break;
 					counter++;
@@ -678,6 +692,7 @@ namespace Revsoft.Wabbitcode.Services
 				debugger.sendKeyPress(Keys.Enter);
 				Thread.Sleep(50);
 				debugger.releaseKeyPress(Keys.Enter);
+#endif
 			}
 
 			UpdateBreaksDelegate updateBreaks = DockingService.MainForm.UpdateBreakpoints;
@@ -752,7 +767,7 @@ namespace Revsoft.Wabbitcode.Services
             oldSP = 0xFFFF;
             DockingService.CallStack.Clear();
 #if NEW_DEBUGGING
-            FreeLibrary(wabbitDLLPointer);
+            debugger.Running = false;
 #else
 #if !DEBUG
             try
@@ -805,8 +820,8 @@ namespace Revsoft.Wabbitcode.Services
 			ListFileValue value;
 			debugTable.TryGetValue(key, out value);
 #if NEW_DEBUGGING
-            CWabbitemu.Z80_State state = GetState(currentSlot);
-            CWabbitemu.MEMSTATE memState = GetMemState(currentSlot);
+            IZ80 state = debugger.CPU;
+            CWabbitemu.MEMSTATE memState = new CWabbitemu.MEMSTATE();// GetMemState(currentSlot);
 #else
 			CWabbitemu.Z80_State state = debugger.getState();
 			CWabbitemu.MEMSTATE memState = debugger.getMemState();
@@ -827,8 +842,8 @@ namespace Revsoft.Wabbitcode.Services
 			DocumentService.RemoveDebugHighlight();
 			DocumentService.HighlightDebugLine(lineNumber + 1);
 #if NEW_DEBUGGING
-            SetState(currentSlot, state);
-            SetMemState(currentSlot, memState);
+            //debugger.CPU = state;
+            //SetMemState(currentSlot, memState);
 #else
 			debugger.setMemState(memState);
 			debugger.setState(state);
@@ -852,27 +867,25 @@ namespace Revsoft.Wabbitcode.Services
 			DockingService.MainForm.UpdateTrackPanel();
 			DockingService.MainForm.UpdateDebugPanel();
 #if NEW_DEBUGGING
-            string pagenum = getPageNum(GetState(currentSlot).PC.ToString("X"));
-            if (!debugTable.Contains(pagenum + ":" + GetState(currentSlot).PC.ToString("X")))
+            ushort currentPC = debugger.CPU.PC;
 #else
 			ushort currentPC = debugger.getState().PC;
-			ListFileValue value = new ListFileValue(currentPC, GetPageNum(currentPC));
-			
-			if (!debugTable.ContainsValue(value))
 #endif
+            ListFileValue value = new ListFileValue(currentPC, GetPageNum(currentPC));
+            if (!debugTable.ContainsValue(value))
 			{
 				MessageBox.Show("Unable to pause here");
 				return;
 			}
-#if NEW_DEBUGGING
-            string locInfo = debugTable[pagenum + ":" + GetState(currentSlot).PC.ToString("X")].ToString();
-#else
 			ListFileKey key;
 			debugTable.TryGetKey(value, out key);
-#endif
 			DocumentService.GotoLine(key.FileName, key.LineNumber);
 			DocumentService.HighlightDebugLine(key.LineNumber);
+#if NEW_DEBUGGING
+            debugger.Running = false;
+#else
 			debugger.pause();
+#endif
 		}
 
 		internal static void Run()
@@ -882,7 +895,7 @@ namespace Revsoft.Wabbitcode.Services
 			//switch to the emulator
 			NativeMethods.SetForegroundWindow(calculatorHandle);
 #if NEW_DEBUGGING
-            RunDebugger(currentSlot);
+            debugger.Running = true;
 #else
 			DebuggerService.Debugger.run();
 #endif
@@ -893,7 +906,16 @@ namespace Revsoft.Wabbitcode.Services
 				DockingService.ActiveDocument.Refresh();
 			}
 		}
-	}
+
+        internal static void SetBreakpoint(WabbitcodeBreakpoint newBreakpoint)
+        {
+#if NEW_DEBUGGING
+            debugger.SetBreakpoint(new CPage(newBreakpoint.Page, newBreakpoint.IsRam), newBreakpoint.Address);
+#else
+            debugger.setBreakpoint(newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
+#endif
+        }
+    }
 
 	public class ListFileKey : IEquatable<ListFileKey>
 	{

@@ -1,8 +1,6 @@
-//#define CHECK_CODE
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
@@ -15,6 +13,7 @@ using System.Threading;
 using System.Windows.Forms;
 using System.Xml;
 using Revsoft.TextEditor;
+using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.Wabbitcode.Classes;
@@ -22,7 +21,6 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
-using Revsoft.TextEditor.Actions;
 
 namespace Revsoft.Wabbitcode
 {
@@ -88,10 +86,11 @@ namespace Revsoft.Wabbitcode
             set { setNextStateMenuItem.Visible = value; }
         }
 
+        bool hasInited;
         public newEditor()
         {
             InitializeComponent();
-
+            hasInited = true;
 			textChangedTimer.Tick += new EventHandler(textChangedTimer_Tick);
 			//fix this stuff so settings are applied on opening...what a concept :P
 			if (Settings.Default.antiAlias)
@@ -103,6 +102,7 @@ namespace Revsoft.Wabbitcode
 			editorBox.Font = Settings.Default.editorFont;
 			editorBox.LineViewerStyle = Settings.Default.lineEnabled ? LineViewerStyle.FullRow : LineViewerStyle.None;
             editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += new ToolTipRequestEventHandler(TextArea_ToolTipRequest);
+            editorBox.Document.FormattingStrategy = new Extensions.AsmFormattingStrategy();
             
             CodeCompletionKeyHandler.Attach(this, editorBox);
 
@@ -124,8 +124,8 @@ namespace Revsoft.Wabbitcode
 		{
 			get
 			{
-                if (!editorBox.IsHandleCreated)
-                    return null;
+                if (!hasInited)
+                    Thread.Sleep(200);
                 if (editorBox.InvokeRequired)
                     return Invoke(new GetTextDelegate(GetText)).ToString();
                 else
@@ -178,7 +178,7 @@ namespace Revsoft.Wabbitcode
         private void ParseFile(object data)
         {
             parseInfo = ParserService.ParseFile(FileName, EditorText);
-            if (DockingService.HasBeenInited)
+            if (DockingService.HasBeenInited && FileName == DocumentService.ActiveFileName)
             {
                 UpdateLabelBoxDelegate updateLabelDelegate = new UpdateLabelBoxDelegate(UpdateLabelBox);
                 DockingService.MainForm.BeginInvoke(updateLabelDelegate, null);
