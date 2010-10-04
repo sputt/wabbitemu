@@ -145,7 +145,7 @@ All Files (*.*)\0*.*\0\0");
 	ofn.nMaxCustFilter		= 0;
 	ofn.nFilterIndex		= 0;
 	ofn.lpstrFile			= filepath;
-	ofn.nMaxFile			= sizeof(filepath);
+	ofn.nMaxFile			= ARRAYSIZE(filepath);
 	ofn.lpstrFileTitle		= NULL;
 	ofn.nMaxFileTitle		= 0;
 	ofn.lpstrInitialDir		= NULL;
@@ -170,7 +170,7 @@ All Files (*.*)\0*.*\0\0");
 	
 	if (!result) return;
 	
-	memcpy(filestr, filepath, ofn.nFileOffset);
+	memcpy(filestr, filepath, ofn.nFileOffset * sizeof(TCHAR));
 	
 	for (filestroffset = filestr;filestroffset[0] != 0; filestroffset++);
 	filestroffset[0] = '\\';
@@ -180,7 +180,7 @@ All Files (*.*)\0*.*\0\0");
 	while(filename[0] != 0) {
 		int len;
 #ifdef WINVER
-		StringCbCopy(filestroffset, _tcslen(filename) + 1, filename);
+		StringCchCopy(filestroffset, _tcslen(filename) + 1, filename);
 #else
 		strcpy(filestroffset, filename);
 #endif

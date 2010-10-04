@@ -37,18 +37,18 @@ TCHAR* AppendName(TCHAR* FileNames, TCHAR* fn) {
 	int i;
 	length = _tcslen(fn);
 	if (FileNames == NULL) {
-		FileNames = (TCHAR *) malloc(length+2);
-		memset(FileNames,0,length+2);
+		FileNames = (TCHAR *) malloc(sizeof(TCHAR) * (length+2));
+		memset(FileNames, 0, sizeof(TCHAR) * (length+2));
 		pnt = FileNames;
 	} else {
-		for(i = 0; FileNames[i]!=0 || FileNames[i+1]!=0; i++);
+		for(i = 0; FileNames[i] != 0 || FileNames[i+1] != 0; i++);
 		i++;
-		FileNames = (TCHAR *) realloc(FileNames,i+length+2);
+		FileNames = (TCHAR *) realloc(FileNames, sizeof(TCHAR) * (i + length + 2));
 		pnt = FileNames+i;
-		memset(pnt,0,length+2);
+		memset(pnt, 0, length + 2);
 	}
 #ifdef WINVER
-	StringCbCopy(pnt, length+1, fn);
+	StringCchCopy(pnt, length + 1, fn);
 #else
 	strcpy(pnt,fn);
 #endif
@@ -58,7 +58,7 @@ TCHAR* AppendName(TCHAR* FileNames, TCHAR* fn) {
 BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination)
 {
 	BOOL is_link_connected = link_connected(lpCalc->slot);
-	TIFILE_t *var = importvar(lpszFileName, 0, Destination);
+	TIFILE_t *var = newimportvar(lpszFileName);//importvar(lpszFileName, 0, Destination);
 
 	LINK_ERR result;
 	if (var != NULL) {
@@ -158,6 +158,7 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 #ifdef WINVER
 		MessageBox(NULL, _T("Invalid file format"), _T("Error"), MB_OK);
 #endif
+		return FALSE;
 	}
 }
 
@@ -197,12 +198,10 @@ void SendFiles(TCHAR *FileNames, int ram ) {
 	lpCalc->running = TRUE;
 	free(FileNames);
 	lpCalc->send = FALSE;
+	current_file_sending = NULL;
 }
 
 #ifdef WINVER
-
-
-
 static int CALLBACK EnumFontFamExProc(
   ENUMLOGFONTEX *lpelfe,    // logical-font data
   NEWTEXTMETRICEX *lpntme,  // physical-font data
@@ -221,116 +220,109 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	static HFONT hfontSegoe;
 	static HWND hwndProgress;
 	static TEXTMETRIC tm;
-	switch (Message)
-	{
-	case WM_CREATE:
-		{
-			LOGFONT lfSegoe;
-			memset(&lfSegoe, 0, sizeof(LOGFONT));
-			StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Segoe UI"));
+	switch (Message)  {
+		case WM_CREATE: {
+				LOGFONT lfSegoe;
+				memset(&lfSegoe, 0, sizeof(LOGFONT));
+				StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Segoe UI"));
 
-			if (EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
-				StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Tahoma"));
-				EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0);
+				if (EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
+					StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Tahoma"));
+					EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0);
+				}
+
+				SelectObject(GetDC(hwnd), hfontSegoe);
+				GetTextMetrics(GetDC(hwnd), &tm);
+
+				hwndProgress = CreateWindowEx(
+						0,
+						PROGRESS_CLASS,
+						NULL,
+						WS_CHILD | WS_VISIBLE,
+						tm.tmAveCharWidth*2, tm.tmHeight * 4, 1, 1,
+						hwnd, (HMENU) 0, g_hInst, NULL
+				);
+
+				return 0;
 			}
+		case WM_GETMINMAXINFO: {
+				MINMAXINFO *info = (MINMAXINFO *) lParam;
+				RECT rc;
+				GetWindowRect(lpCalc->hwndLCD, &rc);
 
-			SelectObject(GetDC(hwnd), hfontSegoe);
-			GetTextMetrics(GetDC(hwnd), &tm);
+				DWORD SendWidth = (rc.right - rc.left) * 9 / 10;
+				DWORD SendHeight = 110;
+				AdjustWindowRect(&rc, WS_SIZEBOX | WS_POPUP, FALSE);
+				info->ptMinTrackSize.x = SendWidth;
+				info->ptMinTrackSize.y = SendHeight;
+				info->ptMaxTrackSize.x = SendWidth;
+				info->ptMaxTrackSize.y = SendHeight;
+				return 0;
+			}
+		case WM_SIZE: {
+				RECT rc;
+				GetClientRect(hwnd, &rc);
+				SetWindowPos(hwndProgress, NULL, 0, 0, rc.right - rc.left - tm.tmAveCharWidth*4, tm.tmHeight*3/2, SWP_NOMOVE | SWP_NOZORDER);
 
-			hwndProgress = CreateWindowEx(
-					0,
-					PROGRESS_CLASS,
-					NULL,
-					WS_CHILD | WS_VISIBLE,
-					tm.tmAveCharWidth*2, tm.tmHeight * 4, 1, 1,
-					hwnd, (HMENU) 0, g_hInst, NULL
-			);
+				rc.top = 0;
+				rc.bottom = tm.tmHeight * 6;
+				AdjustWindowRect(&rc, WS_SIZEBOX | WS_POPUP, FALSE);
+				SetWindowPos(hwnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
 
-			return 0;
-		}
-	case WM_GETMINMAXINFO:
-		{
-			MINMAXINFO *info = (MINMAXINFO *) lParam;
-			RECT rc;
-			GetWindowRect(lpCalc->hwndLCD, &rc);
+				return 0;
+			}
+		case WM_PAINT: {
+				PAINTSTRUCT ps;
+				HDC hdc = BeginPaint(hwnd, &ps);
 
-			DWORD SendWidth = (rc.right - rc.left) * 9 / 10;
-			DWORD SendHeight = 110;
-			AdjustWindowRect(&rc, WS_SIZEBOX | WS_POPUP, FALSE);
-			info->ptMinTrackSize.x = SendWidth;
-			info->ptMinTrackSize.y = SendHeight;
-			info->ptMaxTrackSize.x = SendWidth;
-			info->ptMaxTrackSize.y = SendHeight;
-			return 0;
-		}
-	case WM_SIZE:
-		{
-			RECT rc;
-			GetClientRect(hwnd, &rc);
-			SetWindowPos(hwndProgress, NULL, 0, 0, rc.right - rc.left - tm.tmAveCharWidth*4, tm.tmHeight*3/2, SWP_NOMOVE | SWP_NOZORDER);
+				SetBkMode(hdc, TRANSPARENT);
+				SelectObject(hdc, hfontSegoe);
 
-			rc.top = 0;
-			rc.bottom = tm.tmHeight * 6;
-			AdjustWindowRect(&rc, WS_SIZEBOX | WS_POPUP, FALSE);
-			SetWindowPos(hwnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+				TCHAR szFile[256];
+				StringCbPrintf(szFile, sizeof(szFile), _T("Sending file %d of %d"), lpCalc->CurrentFile, lpCalc->FileCnt);
 
-			return 0;
-		}
-	case WM_PAINT:
-		{
-			PAINTSTRUCT ps;
-			HDC hdc = BeginPaint(hwnd, &ps);
+				RECT r;
+				GetClientRect(hwnd, &r);
+				r.bottom = tm.tmHeight*5/2 + tm.tmHeight;
+				FillRect(hdc, &r, GetStockBrush(WHITE_BRUSH));
 
-			SetBkMode(hdc, TRANSPARENT);
-			SelectObject(hdc, hfontSegoe);
+				SelectObject(hdc, GetStockObject(DC_PEN));
+				SetDCPenColor(hdc, RGB(223,223,233));
+				MoveToEx(hdc, 0, r.bottom-1, NULL);
+				LineTo(hdc, r.right, r.bottom-1);
 
-			TCHAR szFile[256];
-			StringCbPrintf(szFile, sizeof(szFile), _T("Sending file %d of %d"), lpCalc->CurrentFile, lpCalc->FileCnt);
-
-			RECT r;
-			GetClientRect(hwnd, &r);
-			r.bottom = tm.tmHeight*5/2 + tm.tmHeight;
-			FillRect(hdc, &r, GetStockBrush(WHITE_BRUSH));
-
-			SelectObject(hdc, GetStockObject(DC_PEN));
-			SetDCPenColor(hdc, RGB(223,223,233));
-			MoveToEx(hdc, 0, r.bottom-1, NULL);
-			LineTo(hdc, r.right, r.bottom-1);
-
-			r.left = tm.tmAveCharWidth*2;
-			r.top = tm.tmHeight*3/4;
-			r.right -= tm.tmAveCharWidth*2;
-			SetTextColor(hdc, RGB(0, 0, 0));
-			DrawText(hdc, szFile, -1, &r, DT_SINGLELINE);
+				r.left = tm.tmAveCharWidth*2;
+				r.top = tm.tmHeight*3/4;
+				r.right -= tm.tmAveCharWidth*2;
+				SetTextColor(hdc, RGB(0, 0, 0));
+				DrawText(hdc, szFile, -1, &r, DT_SINGLELINE);
 
 
-			OffsetRect(&r, 0, tm.tmHeight);
-			r.left += tm.tmAveCharWidth;
-			SetTextColor(hdc, RGB(90, 90, 90));
+				OffsetRect(&r, 0, tm.tmHeight);
+				r.left += tm.tmAveCharWidth;
+				SetTextColor(hdc, RGB(90, 90, 90));
 
-			DrawText(hdc, current_file_sending, -1, &r, DT_SINGLELINE | DT_PATH_ELLIPSIS);
+				DrawText(hdc, current_file_sending, -1, &r, DT_SINGLELINE | DT_PATH_ELLIPSIS);
 
-			EndPaint(hwnd, &ps);
-			return 0;
-		}
-	case WM_USER:
-		{
-			// Update the progress bar
-			SendMessage(hwndProgress, PBM_SETSTEP, 1, 0);
-			SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, lpCalc->cpu.pio.link->vlink_size/4));
-			SendMessage(hwndProgress, PBM_SETPOS, lpCalc->cpu.pio.link->vlink_send/4, 0);
+				EndPaint(hwnd, &ps);
+				return 0;
+			}
+		case WM_USER: {
+				// Update the progress bar
+				SendMessage(hwndProgress, PBM_SETSTEP, 1, 0);
+				SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, lpCalc->cpu.pio.link->vlink_size/4));
+				SendMessage(hwndProgress, PBM_SETPOS, lpCalc->cpu.pio.link->vlink_send/4, 0);
 
-			InvalidateRect(hwnd, NULL, FALSE);
-			UpdateWindow(hwnd);
-			return 0;
-		}
-	case WM_CLOSE:
-		{
-			DestroyWindow(hwnd);
-			return 0;
-		}
-	default:
-		return DefWindowProc(hwnd, Message, wParam, lParam);
+				InvalidateRect(hwnd, NULL, FALSE);
+				UpdateWindow(hwnd);
+				return 0;
+			}
+		case WM_CLOSE: {
+				DestroyWindow(hwnd);
+				return 0;
+			}
+		default:
+			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
 }
 

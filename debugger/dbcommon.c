@@ -129,7 +129,7 @@ int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value) {
 				sscanf(result, "%lf", (double *) value);
 #endif
 			if (*((float *) value) > max_value)
-				*((float *) value) = max_value;
+				*((float *) value) = (float) max_value;
 			break;
 		case DEC:
 #ifdef WINVER

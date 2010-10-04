@@ -112,6 +112,14 @@
 #define DA_SET_IF	103
 #define DA_BJUMP	104
 #define DA_BJUMP_N	105
+#define DA_LD__HL__X	DA_BJUMP_N + 1
+#define DA_LD__HL__R	DA_LD__HL__X + 1
+#define DA_LD_R__HL_	DA_LD__HL__R
+#define DA_INC__HL_	DA_LD_R__HL_ + 1
+#define DA_DEC__HL_	DA_INC__HL_ + 1
+#define DA_BIT__HL_	DA_DEC__HL_ + 1
+#define DA_RES__HL_	DA_BIT__HL_ + 1
+#define DA_SET__HL_	DA_RES__HL_ + 1
 
 
 typedef struct Z80_info {
@@ -122,17 +130,17 @@ typedef struct Z80_info {
 		};
 		INT_PTR a[4];
 	};
-	unsigned char size;			/* Size of command */
+	_TUCHAR size;			/* Size of command */
 	unsigned short addr;
 } Z80_info_t;
 
 typedef struct Z80_command {
-	char format[32];			/* printf formatted string */
-	char clocks;				/* clocks to complete */
-	char clocks_cond;			/* Conditional clocks to complete */
+	TCHAR format[32];			/* printf formatted string */
+	TCHAR clocks;				/* clocks to complete */
+	TCHAR clocks_cond;			/* Conditional clocks to complete */
 #ifdef da_ready
-	char flag_effects[8];		/* Flag effects for all 8 bits */
-	char *flag_description;		/* optional description of flag effects */
+	TCHAR flag_effects[8];		/* Flag effects for all 8 bits */
+	TCHAR *flag_description;		/* optional description of flag effects */
 #endif
 } Z80_com_t;
 

@@ -172,7 +172,7 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 	if (check_mem_read_break(cpu->mem_c, addr))
 	{
-		assert("No way to do this right now", 0);
+		assert("No way to do this right now");
 	}
 	cpu->bus = mem_read(cpu->mem_c, addr);
 
@@ -191,7 +191,7 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 	if (check_mem_write_break(cpu->mem_c, addr))
 	{
-		assert("No way to handle this", 0);
+		assert("No way to handle this");
 	}
 	int bank = mc_bank(addr);
 
