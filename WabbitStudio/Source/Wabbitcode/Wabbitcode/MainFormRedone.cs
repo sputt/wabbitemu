@@ -20,6 +20,7 @@ using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Services.Debugger;
 
 namespace Revsoft.Wabbitcode
 {
@@ -619,12 +620,14 @@ namespace Revsoft.Wabbitcode
                         toolBarManager.AddControl(mainToolBar);
                     else
                         toolBarManager.RemoveControl(mainToolBar);
+                    Settings.Default.mainToolBar = item.Checked;
                     break;
 				case "editorToolBar":
 					if (item.Checked)
 						toolBarManager.AddControl(editorToolStrip);
 					else
 						toolBarManager.RemoveControl(editorToolStrip);
+                    Settings.Default.editorToolbar = item.Checked;
 					break;
                 case "outputWindow":
 					if (item.Checked)
@@ -691,6 +694,7 @@ namespace Revsoft.Wabbitcode
 					}
 					else
 						toolBarManager.RemoveControl(debugToolStrip);
+                    Settings.Default.debugToolbar = item.Checked;
                     break;
                 case "errorList":
                     if (item.Checked)
@@ -1491,7 +1495,7 @@ namespace Revsoft.Wabbitcode
                         newBreakpoint.file = child.FileName;
                         newBreakpoint.lineNumber = breakpoint.LineNumber;
 #if NEW_DEBUGGING
-                        SetBreakpoint(0, Handle, newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
+                        DebuggerService.SetBreakpoint(newBreakpoint);
 #else
                         DebuggerService.Debugger.setBreakpoint(newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
 #endif

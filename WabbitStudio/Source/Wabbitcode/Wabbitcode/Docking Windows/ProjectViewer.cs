@@ -414,7 +414,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 parent = parent.Parent;
             if (parent == null)
                 parent = projViewer.Nodes[0];
-            string file = Path.Combine(Path.Combine(Path.GetDirectoryName(ProjectService.ProjectDirectory), parent.FullPath), fileName);
+            string file = Path.Combine(ProjectService.ProjectDirectory, fileName);
             StreamWriter writer = File.CreateText(file);
             writer.Close();
             ProjectFile fileAdded = ProjectService.AddFile((ProjectFolder)parent.Tag, file);

@@ -136,21 +136,8 @@ namespace Revsoft.TextEditor.Document
 
 	    public void removeMarker(Breakpoint mark)
         {
-			
-            TextMarker marker = getMarker(mark.LineNumber);
-			List<TextMarker> markers = document.MarkerStrategy.GetMarkers(document.GetOffsetForLineNumber(mark.LineNumber) + 
-				document.FormattingStrategy.GetIndentation(document, mark.LineNumber).Length);
-			if (markers.Count > 0)
-			{
-				int i = 0;
-                while (markers[i].Offset != marker.Offset && i < markers.Count)
-                {
-                    i++;
-                    if (i == markers.Count)
-                        return;
-                }
-				document.MarkerStrategy.RemoveMarker(markers[i]);
-			}
+			document.MarkerStrategy.RemoveAll(breakpoint => breakpoint.Offset == document.GetOffsetForLineNumber(mark.LineNumber) + 
+				document.FormattingStrategy.GetIndentation(document, mark.LineNumber).Length && breakpoint.Tag == "Breakpoint");
 			/*else
 			{
 				markers = document.MarkerStrategy.GetMarkers(document.GetOffsetForLineNumber(mark.LineNumber) + mark.ColumnNumber - 1);

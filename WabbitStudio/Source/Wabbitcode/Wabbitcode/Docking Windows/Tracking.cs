@@ -1,13 +1,13 @@
-//#define NEW_DEBUGGING
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-using Revsoft.Docking;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
+using Microsoft.CSharp;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
@@ -100,9 +100,33 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                                               Substring(1, 4), System.Globalization.NumberStyles.HexNumber) + offset);
 					else if ("bc'de'hl'spixiypc".IndexOf(address.ToLower()) != -1)
 					{
-						switch (address.ToLower())
-						{
-							case "hl":
+                        switch (address.ToLower())
+                        {
+#if NEW_DEBUGGING
+                            case "hl":
+                                vartoadd.address = DebuggerService.Debugger.CPU.HL;
+                                break;
+                            case "de":
+                                vartoadd.address = DebuggerService.Debugger.CPU.DE;
+                                break;
+                            case "bc":
+                                vartoadd.address = DebuggerService.Debugger.CPU.BC;
+                                break;
+                            case "ix":
+                                vartoadd.address = DebuggerService.Debugger.CPU.IX;
+                                break;
+                            case "iy":
+                                vartoadd.address = DebuggerService.Debugger.CPU.IY;
+                                break;
+                            case "sp":
+                                vartoadd.address = DebuggerService.Debugger.CPU.SP;
+                                break;
+                            case "pc":
+                                vartoadd.address = DebuggerService.Debugger.CPU.PC;
+                                break;
+#else
+
+                            case "hl":
 								vartoadd.address = DebuggerService.Debugger.getState().HL;
 								break;
 							case "de":
@@ -123,7 +147,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 							case "pc":
 								vartoadd.address = DebuggerService.Debugger.getState().PC;
 								break;
-						}
+#endif
+                        }
 						
 					}
 					else
@@ -172,7 +197,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 return vartoadd;
             if (variablesDataView.Rows[vartoadd.rowNumber].Cells[3].Value == null)
                 variablesDataView.Rows[vartoadd.rowNumber].Cells[3].Value = "Byte";
-			int convertMethod;
             string valueTypeEntry = variablesDataView.Rows[vartoadd.rowNumber].Cells[3].Value.ToString();
 			switch (valueTypeEntry)
             {
@@ -201,8 +225,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                     for (int i = 0; i < width / 8 * height; i++)
                     {
 #if NEW_DEBUGGING
-                        //HACK: I'm horrible, yall should shoot me
-                        string abyte = Convert.ToString(ReadMem(0, (ushort)(vartoadd.address + i)), 2);
+                        int anotherbyte = 0;
+                        int abyte = DebuggerService.Debugger.Read((ushort)(vartoadd.address + i));
+                        if (isGrayscale)
+                            anotherbyte = DebuggerService.Debugger.Read((ushort)(vartoadd.address + grayscale + i));
 #else
                         int anotherbyte = 0;
                         int abyte = DebuggerService.Debugger.readMem((ushort)(vartoadd.address + i));
@@ -240,25 +266,30 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 					if (vartoadd.numBytes == -1)
 					{
 						int i = 0;
-						char chartoadd;
+						char charToAdd;
 						do
 						{
-							chartoadd = (char)DebuggerService.Debugger.readMem((ushort)(vartoadd.address + i));
-							vartoadd.value += chartoadd.ToString();
+#if NEW_DEBUGGING
+                            charToAdd = (char) DebuggerService.Debugger.Read((ushort)(vartoadd.address + i));
+#else
+							charToAdd = (char) DebuggerService.Debugger.readMem((ushort)(vartoadd.address + i));
+#endif
+                            vartoadd.value += charToAdd.ToString();
 							i++;
-						} while (chartoadd != '\0');
+						} while (charToAdd != '\0');
 					}
 					else
-					{
-						for (int i = 0; i < vartoadd.numBytes; i++)
+                    {
 #if NEW_DEBUGGING
-                        vartoadd.value += ((char)ReadMem(0, (ushort)(vartoadd.address + i))).ToString();
+                        vartoadd.value = String.Join(" ", DebuggerService.Debugger.Read(vartoadd.address, vartoadd.numBytes));
 #else
+                        for (int i = 0; i < vartoadd.numBytes; i++)
 							vartoadd.value += ((char)DebuggerService.Debugger.readMem((ushort)(vartoadd.address + i))).ToString();
 #endif
-					}
+                    }
                     break;
                 case "Word":
+                    int convertMethod = 16;
                     vartoadd.value = "";
 					if (variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value == null)
 						variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value = 0;
@@ -272,9 +303,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 							break;
 						case "Octal":
 							convertMethod = 8;
-							break;
-						default:
-							convertMethod = 16;
 							break;
 					}
                     for (int i = 0; i < vartoadd.numBytes * 2; i+=2)
@@ -372,8 +400,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                                 vartoadd.value += value + " ";
                                 break;
                         }
-					}
 #endif
+					}
                     break;
             }
             return vartoadd;

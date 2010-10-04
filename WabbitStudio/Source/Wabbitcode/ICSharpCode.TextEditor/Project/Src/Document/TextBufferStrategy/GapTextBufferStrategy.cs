@@ -68,7 +68,7 @@ namespace Revsoft.TextEditor.Document
 			#endif
 			
 			if (offset < 0 || offset > Length) {
-				throw new ArgumentOutOfRangeException("offset", offset, "0 <= offset <= " + Length.ToString());
+			throw new ArgumentOutOfRangeException("offset", offset, "0 <= offset <= " + Length.ToString());
 			}
 			if (length < 0 || offset + length > Length) {
 				throw new ArgumentOutOfRangeException("length", length, "0 <= length, offset(" + offset + ")+length <= " + Length.ToString());

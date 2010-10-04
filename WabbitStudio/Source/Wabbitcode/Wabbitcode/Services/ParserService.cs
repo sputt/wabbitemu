@@ -9,6 +9,56 @@ namespace Revsoft.Wabbitcode.Services.Parser
 {
 	public static class ParserService
 	{
+        internal static void IsSafeRefactor(string line, int index)
+        {
+
+        }
+
+        static string currentLine;
+        static int currentIndex;
+        internal static List<ParsedLineSec> ParseLine(string line)
+        {
+            currentLine = line;
+            List<ParsedLineSec> lineSections = new List<ParsedLineSec>();
+            int index = 0;
+            ParsedLineSec section;
+            do
+            {
+                if (currentLine[index] == '\\')
+                    index++;
+                section = ParseLineSec();
+                lineSections.Add(section);
+                index = SkipWhitespace(currentLine, index);
+            } while (section != null && !section.Error && index >= 0 && index < line.Length);
+            return lineSections;
+        }
+
+        private static ParsedLineSec ParseLineSec()
+        {
+            ParsedLineSec sec = new ParsedLineSec(currentLine);
+            if (IsEndOfCodeLine(currentIndex))
+                return sec;
+            char firstChar = currentLine[currentIndex];
+            if (char.IsLetter(firstChar) || firstChar == '_')
+            {
+                sec.Label = currentLine.Substring(currentIndex, SkipToNameEnd(currentLine, currentIndex) - currentIndex);
+                if (currentLine[SkipWhitespace(currentLine, currentIndex)] == '(')
+                {
+                    //its a macro with no indent
+                    sec.Command = sec.Label;
+                    sec.Label = null;
+                }
+
+            }
+            else if (char.IsWhiteSpace(firstChar))
+            {
+
+            }
+            return sec;
+        }
+
+        
+
         internal static void RemoveParseData(string fullPath)
         {
             ParserInformation replaceMe = ProjectService.GetParseInfo(fullPath);
@@ -378,7 +428,43 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		{
 			return "";
 		}
-		/*public void getAllProjectLabels(ArrayList files)
+
+        private static int SkipToNameEnd(string line, int index)
+        {
+            char[] ext_label_set = { '_', '[', ']', '!', '?', '.' };
+
+            if (string.IsNullOrEmpty(line))
+                return -1;
+            int end = index;
+            while (end < line.Length && (char.IsLetterOrDigit(line[end]) || ext_label_set.Contains(line[end])))
+                end++;
+
+            return end;
+        }
+
+        private static bool IsEndOfCodeLine(int index)
+        {
+            char charAtIndex = currentLine[index];
+            return charAtIndex == '\0' || charAtIndex == '\n' || charAtIndex == '\r' || charAtIndex == ';' || charAtIndex == '\\';
+        }
+
+        internal static bool IsReservedKeyword(string keyword)
+        {
+            return keyword == "ccf" || keyword == "cpdr" || keyword == "cpd" || keyword == "cpir" || keyword == "cpi" || keyword == "cpl" ||
+                keyword == "daa" || keyword == "di" || keyword == "ei" || keyword == "exx" || keyword == "halt" || keyword == "indr" ||
+                keyword == "ind" || keyword == "inir" || keyword == "ini" || keyword == "lddr" || keyword == "ldd" || keyword == "ldir" ||
+                keyword == "ldi" || keyword == "neg" || keyword == "nop" || keyword == "otdr" || keyword == "otir" || keyword == "outd" ||
+                keyword == "outi" || keyword == "reti" || keyword == "retn" || keyword == "rla" || keyword == "rlca" || keyword == "rld" ||
+                keyword == "rra" || keyword == "rrca" || keyword == "scf" || keyword == "rst" || keyword == "ex" || keyword == "im" ||
+                keyword == "djnz" || keyword == "jp" || keyword == "jr" || keyword == "ret" || keyword == "call" || keyword == "push" ||
+                keyword == "pop" || keyword == "cp" || keyword == "xor" || keyword == "sub" || keyword == "add" || keyword == "adc" ||
+                keyword == "sbc" || keyword == "dec" || keyword == "inc" || keyword == "rlc" || keyword == "rl" || keyword == "rr" ||
+                keyword == "rrc" || keyword == "sla" || keyword == "sll" || keyword == "sra" || keyword == "srl" || keyword == "bit" ||
+                keyword == "set" || keyword == "res" || keyword == "in" || keyword == "out" || keyword == "ld";
+
+        }
+		/*haha this looks so quaint now ;)
+         * public void getAllProjectLabels(ArrayList files)
 		{
 			string file = "";
 			try

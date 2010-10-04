@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Revsoft.Wabbitcode.Services;
+using WabbitemuLib;
 
 namespace Revsoft.Wabbitcode.Classes
 {
@@ -76,7 +77,7 @@ namespace Revsoft.Wabbitcode.Classes
 		{
 			bool isTrue = true;
 #if NEW_DEBUGGING
-            CWabbitemu.Z80_State state = GetState(currentSlot);
+            IZ80 state = DebuggerService.Debugger.CPU;
 #else
 			CWabbitemu.Z80_State state = DebuggerService.Debugger.getState();
 #endif
