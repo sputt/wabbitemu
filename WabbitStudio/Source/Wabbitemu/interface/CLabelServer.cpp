@@ -48,6 +48,7 @@ STDMETHODIMP CLabelServer::Find(VARIANT varCriteria, ILabel **ppLabel)
 		{
 //			ILabel *pLabel = m_mwLabels[V_UI2(&varNumber)];
 //			return pLabel->QueryInterface(IID_ILabel, (LPVOID *) ppLabel);
+			return hr;
 		}
 		else
 		{

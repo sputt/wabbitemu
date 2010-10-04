@@ -95,7 +95,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					FILEDESCRIPTOR *fd;
 					fd = (FILEDESCRIPTOR *) malloc(sizeof(FILEDESCRIPTOR));
 					if (fd == NULL)
-						MessageBox(NULL, "BAD", "FUCK", MB_OK);
+						MessageBox(NULL, _T("BAD"), _T("FUCK"), MB_OK);
 					if (!FillDesc(item, fd)) {
 						free (fd);
 						break;

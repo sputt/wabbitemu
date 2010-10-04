@@ -172,7 +172,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	return S_OK;
 }
 
-void SaveWabbitKey(char *name, int type, void *value) {
+void SaveWabbitKey(TCHAR *name, int type, void *value) {
 	size_t len;
 
 	if (type == REG_DWORD) {

@@ -761,9 +761,9 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				HDC hdcDownBtn = CreateCompatibleDC(hdc);
 				HBITMAP hbmDownArrow;
 				if (fIsWindows7 == TRUE)
-					hbmDownArrow = LoadBitmap(g_hInst, "TBDownArrow7");
+					hbmDownArrow = LoadBitmap(g_hInst, _T("TBDownArrow7"));
 				else
-					hbmDownArrow = LoadBitmap(g_hInst, "TBDownArrow");
+					hbmDownArrow = LoadBitmap(g_hInst, _T("TBDownArrow"));
 				SelectObject(hdcDownBtn, hbmDownArrow);
 				AlphaBlend(	hdcBuf, rc.right - 20 + ox, 3 + oy, 16, 16,
 							hdcDownBtn, 0, 0, 16, 16,

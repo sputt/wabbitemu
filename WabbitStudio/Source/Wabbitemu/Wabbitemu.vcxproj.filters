@@ -49,6 +49,15 @@
     <Filter Include="Source Files\Interface\COM">
       <UniqueIdentifier>{983829f6-a64c-4cf1-a0d2-ec3dd7894ef1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Skins">
+      <UniqueIdentifier>{84afbda0-7998-445f-8051-9b2092bd6969}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Wizard">
+      <UniqueIdentifier>{a260bbdb-2b7c-4710-9480-0c7bbf551b9d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Debugger">
+      <UniqueIdentifier>{7b7af4d3-eb37-4f7b-bbf0-a047a3ebb75b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\alu.c">
@@ -469,15 +478,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="gui\back.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\left.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\right.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="gui\small_close.bmp">
       <Filter>Resource Files</Filter>
     </None>
@@ -490,52 +490,7 @@
     <None Include="gui\TI-Icons.bmp">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="gui\break.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\buttondownleft.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\buttondownmiddle.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\buttondownright.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\buttonframe.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\buttonframeleft.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\buttonframemiddle.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\chevron.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\downarrow.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\expandpanebuttons.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\goto.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\membreak.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\run.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="gui\SkinPicker.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\step.bmp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\stepover.bmp">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="gui\wabbitemu.ico">
@@ -544,88 +499,150 @@
     <None Include="gui\tsmall.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="gui\TI-73.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-82.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ti-82keymap.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-83+.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-83+Keymap.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-83+SE.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ti-84+.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ti-84+se.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ti-84+sekeymap.png">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="gui\Wabbitemu.tlb">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="gui\TI-83.png">
-      <Filter>Resource Files</Filter>
+    <None Include="Wabbitemu.tlb" />
+    <None Include="interface\Wabbitemu.def">
+      <Filter>Source Files\Interface\COM</Filter>
     </None>
-    <None Include="gui\ti-86keymap.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\TI-83Keymap.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ti-86.png">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ti-85.png">
+    <None Include="..\..\Release\Revsoft.AutoUpdater.exe">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="gui\ROM\bf73.hex">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ROM\rom8x.8xp">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ROM\bf83pbe.hex">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ROM\bf83pse.hex">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="gui\ROM\bf84pbe.hex">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Wizard</Filter>
     </None>
     <None Include="gui\ROM\bf84pse.hex">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\ROM\bf83pbe.hex">
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\ROM\bf83pse.hex">
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\ROM\bf84pbe.hex">
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\ROM\rom8x.8xp">
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\TI-73.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\ti-86keymap.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\TI-82.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\ti-82keymap.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\TI-83+.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\TI-83+Keymap.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\TI-83+SE.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\TI-83.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\TI-83Keymap.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\ti-84+.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\ti-84+se.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\ti-84+sekeymap.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\ti-85.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\ti-85Keymap.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\ti-86.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="gui\break.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\back.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\buttonframemiddle.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\buttondownleft.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\buttondownmiddle.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\buttondownright.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\buttonframe.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\buttonframeleft.bmp">
+      <Filter>Resource Files\Debugger</Filter>
     </None>
     <None Include="gui\Catalog.bmp">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\membreak.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\left.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\left7.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\goto.bmp">
+      <Filter>Resource Files\Debugger</Filter>
     </None>
     <None Include="gui\homescreen.bmp">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Wizard</Filter>
     </None>
-    <None Include="..\..\Release\Revsoft.AutoUpdater.exe" />
-    <None Include="Wabbitemu.tlb" />
-    <None Include="gui\ti-85Keymap.png">
-      <Filter>Resource Files</Filter>
+    <None Include="gui\right.bmp">
+      <Filter>Resource Files\Debugger</Filter>
     </None>
-    <None Include="gui\left7.bmp" />
-    <None Include="gui\right7.bmp" />
-    <None Include="gui\downarrow7.bmp" />
+    <None Include="gui\right7.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\run.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\step.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\stepover.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\expandpanebuttons.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
     <None Include="gui\chevron7.bmp">
-      <Filter>Resource Files</Filter>
+      <Filter>Resource Files\Debugger</Filter>
     </None>
-    <None Include="interface\Wabbitemu.def">
-      <Filter>Source Files\Interface\COM</Filter>
+    <None Include="gui\chevron.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\downarrow.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\downarrow7.bmp">
+      <Filter>Resource Files\Debugger</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

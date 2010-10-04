@@ -6,7 +6,7 @@ typedef struct {
 	char tag[4];
 	int pnt;
 	int size;
-	unsigned char* data;
+	unsigned char *data;
 } CHUNK_t;
 
 
@@ -29,6 +29,7 @@ typedef struct {
 
 #define DETECT_STR		"*WABBIT*"
 #define DETECT_CMP_STR	"*WABCMP*"
+#define FLASH_HEADER	"**TIFL**"
 
 #define NO_CMP			0
 #define ZLIB_CMP		1
@@ -50,14 +51,14 @@ typedef struct {
 
 
 
-void WriteSave(const char * , SAVESTATE_t *, int );
-void LoadSlot(SAVESTATE_t* , int );
-SAVESTATE_t* SaveSlot( int );
-SAVESTATE_t* CreateSave(char* , char* , int );
-SAVESTATE_t* ReadSave(FILE* ifile);
-void FreeSave(SAVESTATE_t*);
-char* GetRomOnly(SAVESTATE_t* save,int*);
-void LoadLCD(SAVESTATE_t*, LCD_t*);
+void WriteSave(const TCHAR * , SAVESTATE_t *, int);
+void LoadSlot(SAVESTATE_t* , int);
+SAVESTATE_t* SaveSlot(int );
+SAVESTATE_t* CreateSave(TCHAR *, TCHAR *, int);
+SAVESTATE_t* ReadSave(FILE *ifile);
+void FreeSave(SAVESTATE_t *);
+char* GetRomOnly(SAVESTATE_t *save, int *);
+void LoadLCD(SAVESTATE_t *, LCD_t *);
 
 #endif
 

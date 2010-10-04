@@ -172,7 +172,7 @@ BOOL rom_load(calc_t *lpCalc, LPCTSTR FileName) {
 	if (lpCalc == NULL)
 		return FALSE;
 	//doesnt matter for the 2nd two args never a group
-	TIFILE_t* tifile = importvar(FileName, (int) NULL, (int) NULL);
+	TIFILE_t* tifile = newimportvar(FileName); //importvar(FileName, (int) NULL, (int) NULL);
 	if (tifile == NULL)
 		return FALSE;
 

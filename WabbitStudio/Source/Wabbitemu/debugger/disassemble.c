@@ -8,112 +8,119 @@
 
 
 Z80_com_t da_opcode[256] = {
-{"  nop", 				4, 	0},
-{"  ex %r,%r",			4, 	0},
-{"  djnz %g",			13,	8},
-{"  jr %g",				10, 0},
-{"  jr %c,%g",			12,	7},
-{"  ld %r,%x",			10, 0},
-{"  add %r,%r",			11, 0},
-{"  ld (%r),%r",		7,	0},
-{"  ld %r,(%r)",		7,	0},
-{"  ld (%r),%r",		7,	0},
-{"  ld %r,(%r)",		7,	0},
-{"  ld (%a),%r",		16,	0},
-{"  ld %r,(%a)",		16,	0},
-{"  ld (%a),%r",		13,	0},
-{"  ld %r,(%a)",		13,	0},
-{"  inc %r",			8,	0},
-{"  dec %r",			8,	0},
-{"  inc %r",			-1,	0},
-{"  dec %r",			-1,	0},
-{"  ld %r,%x",			7,	0},
-{"  rlca",				4,	0},
-{"  rrca",				4,	0},
-{"  rla",				4,	0},
-{"  rra",				4,	0},
-{"  daa",				4,	0},
-{"  cpl",				4,	0},
-{"  scf",				4,	0},
-{"  ccf",				4,	0},
-{"  ld %r,%r",			4,	0},
-{"  halt",				4,	0},
-{"  %s %r",				4,	0},
-{"  %s %r,%r",			4,	0},
-{"  ret %c",		11,	5},
-{"  pop %r",		10,	0},
-{"  ret",			10, 0},
-{"  exx",			4,	0},
-{"  jp (%r)",		4,	0},
-{"  ld %r,%r",		6,	0},
-{"  jp %c,%a",		10,	0},
-{"  jp %a",			10,	0},
-{"  out (%x),%r",	11,	0},
-{"  in %r,(%x)",		11, 0},
-{"  ex (%r),%r",	19, 0},
-{"  ex %r,%r",		4,	0},
-{"  di",			4,	0},
-{"  ei",			4,	0},
-{"  call %c,%a",	17,	10},
-{"  push %r",		11,	0},
-{"  call %a",		17,	0},
-{"  %s %d",			4,	0},
-{"  %s %r,%d",		4,	0},
-{"  rst %xh",		11,	0},
-{"  %s %s",			-1,	0},
-{"  bit %d,%r",		-1,	0},
-{"  res %d,%r",		-1,	0},
-{"  set %d,%r",		-1,	0},
-{"  in %r,(%r)",		12,	0},
-{"  out (%r),%r",	12,	0},
-{"  sbc %r,%r",		15,	0},
-{"  adc %r,%r",		11,	0},
-{"  ld (%a),%r",	20,	0},
-{"  ld %r,(%a)",	20,	0},
-{"  neg",			8,	0},
-{"  retn",			14,	0},
-{"  reti",			14,	0},
-{"  im %s",			8,	0},
-{"  ld i,a",		9,	0},
-{"  ld r,a",		9,	0},
-{"  ld a,i",		9,	0},
-{"  ld a,r",		9,	0},
-{"  rrd",			18,	0},
-{"  rld",			18, 0},
-{"  nop",			8,	0},
-{"  %s",			-1,	0},
-{"  %s (%r%h)->%r",	23,	0},
-{"  bit %d,(%r%h)->%r",	23,	0},
-{"  res %d,(%r%h)->%r",	23,	0},
-{"  set %d,(%r%h)->%r",	23,	0},
-{"  %s (%s%h)",		23,	0},
-{"  bit %d,(%r%h)",	20,	0},
-{"  res %d,(%r%h)",	20,	0},
-{"  set %d,(%r%h)",	20,	0},
-{"  add %r,%r",		15,	0},
-{"  ld %r,(%a)",	20,	0},
-{"  ld (%a),%r",	20,	0},
-{"  inc (%r%h)",	23,	0},
-{"  dec (%r%h)",	23,	0},
-{"  ld (%r%h),%x",	19,	0},
-{"  ld (%r%h),%r",	19,	0},
-{"  ld %r,(%r%h)",	19,	0},
-{"  %s (%r%h)",		19,	0},
-{"	%s %r,(%r%h)",	19, 0},
-{"  jp %s",			6,	0},
-{"  ld %r,%r",		10, 0},
-{"  ex (sp),%s",	23,	0},
-{"%l:",				-1, 0},
-{"  bcall(%l)",		-1,	0},
-{"  bcall(%a)",		-1,	0},
-{"  bit %l,(%r+%l)->%r",	23,	0},
-{"  res %l,(%r+%l)->%r",	23,	0},
-{"  set %l,(%r+%l)->%r",	23,	0},
-{"  bit %l,(%r+%l)",	20,	0},
-{"  res %l,(%r+%l)",	20,	0},
-{"  set %l,(%r+%l)",	20,	0},
-{"  bjump(%l)",		-1,	0},
-{"  bjump(%a)",		-1,	0}
+{_T("  nop"), 				4, 	0},
+{_T("  ex %r,%r"),			4, 	0},
+{_T("  djnz %g"),			13,	8},
+{_T("  jr %g"),				10, 0},
+{_T("  jr %c,%g"),			12,	7},
+{_T("  ld %r,%x"),			10, 0},
+{_T("  add %r,%r"),			11, 0},
+{_T("  ld (%r),%r"),		7,	0},
+{_T("  ld %r,(%r)"),		7,	0},
+{_T("  ld (%r),%r"),		7,	0},
+{_T("  ld %r,(%r)"),		7,	0},
+{_T("  ld (%a),%r"),		16,	0},
+{_T("  ld %r,(%a)"),		16,	0},
+{_T("  ld (%a),%r"),		13,	0},
+{_T("  ld %r,(%a)"),		13,	0},
+{_T("  inc %r"),			6,	0},
+{_T("  dec %r"),			6,	0},
+{_T("  inc %r"),			4,	0},
+{_T("  dec %r"),			4,	0},
+{_T("  ld %r,%x"),			7,	0},
+{_T("  rlca"),				4,	0},
+{_T("  rrca"),				4,	0},
+{_T("  rla"),				4,	0},
+{_T("  rra"),				4,	0},
+{_T("  daa"),				4,	0},
+{_T("  cpl"),				4,	0},
+{_T("  scf"),				4,	0},
+{_T("  ccf"),				4,	0},
+{_T("  ld %r,%r"),			4,	0},
+{_T("  halt"),				4,	0},
+{_T("  %s %r"),			4,	0},
+{_T("  %s %r,%r"),			4,	0},
+{_T("  ret %c"),		11,	5},
+{_T("  pop %r"),		10,	0},
+{_T("  ret"),			10, 0},
+{_T("  exx"),			4,	0},
+{_T("  jp (%r)"),		4,	0},
+{_T("  ld %r,%r"),		6,	0},
+{_T("  jp %c,%a"),		10,	0},
+{_T("  jp %a"),			10,	0},
+{_T("  out (%x),%r"),	11,	0},
+{_T("  in %r,(%x)"),		11, 0},
+{_T("  ex (%r),%r"),	19, 0},
+{_T("  ex %r,%r"),		4,	0},
+{_T("  di"),			4,	0},
+{_T("  ei"),			4,	0},
+{_T("  call %c,%a"),	17,	10},
+{_T("  push %r"),		11,	0},
+{_T("  call %a"),		17,	0},
+{_T("  %s %d"),			4,	0},
+{_T("  %s %r,%d"),		4,	0},
+{_T("  rst %xh"),		11,	0},
+{_T("  %s %s"),			-1,	0},
+{_T("  bit %d,%r"),		8,	0},
+{_T("  res %d,%r"),		8,	0},
+{_T("  set %d,%r"),		8,	0},
+{_T("  in %r,(%r)"),	12,	0},
+{_T("  out (%r),%r"),	12,	0},
+{_T("  sbc %r,%r"),		15,	0},
+{_T("  adc %r,%r"),		11,	0},
+{_T("  ld (%a),%r"),	20,	0},
+{_T("  ld %r,(%a)"),	20,	0},
+{_T("  neg"),			8,	0},
+{_T("  retn"),			14,	0},
+{_T("  reti"),			14,	0},
+{_T("  im %s"),			8,	0},
+{_T("  ld i,a"),		9,	0},
+{_T("  ld r,a"),		9,	0},
+{_T("  ld a,i"),		9,	0},
+{_T("  ld a,r"),		9,	0},
+{_T("  rrd"),			18,	0},
+{_T("  rld"),			18, 0},
+{_T("  nop"),			8,	0},
+{_T("  %s"),			-2,	0},
+{_T("  %s (%r%h)->%r"),	23,	0},
+{_T("  bit %d,(%r%h)->%r"),	23,	0},
+{_T("  res %d,(%r%h)->%r"),	23,	0},
+{_T("  set %d,(%r%h)->%r"),	23,	0},
+{_T("  %s (%s%h)"),		23,	0},
+{_T("  bit %d,(%r%h)"),	20,	0},
+{_T("  res %d,(%r%h)"),	20,	0},
+{_T("  set %d,(%r%h)"),	20,	0},
+{_T("  add %r,%r"),		15,	0},
+{_T("  ld %r,(%a)"),	20,	0},
+{_T("  ld (%a),%r"),	20,	0},
+{_T("  inc (%r%h)"),	23,	0},
+{_T("  dec (%r%h)"),	23,	0},
+{_T("  ld (%r%h),%x"),	19,	0},
+{_T("  ld (%r%h),%r"),	19,	0},
+{_T("  ld %r,(%r%h)"),	19,	0},
+{_T("  %s (%r%h)"),		19,	0},
+{_T("	%s %r,(%r%h)"),	19, 0},
+{_T("  jp %s"),			6,	0},
+{_T("  ld %r,%r"),		10, 0},
+{_T("  ex (sp),%s"),	23,	0},
+{_T("%l:"),				-1, 0},
+{_T("  bcall(%l)"),		-1,	0},
+{_T("  bcall(%a)"),		-1,	0},
+{_T("  bit %l,(%r+%l)->%r"),	23,	0},
+{_T("  res %l,(%r+%l)->%r"),	23,	0},
+{_T("  set %l,(%r+%l)->%r"),	23,	0},
+{_T("  bit %l,(%r+%l)"),	20,	0},
+{_T("  res %l,(%r+%l)"),	20,	0},
+{_T("  set %l,(%r+%l)"),	20,	0},
+{_T("  bjump(%l)"),			-1,	0},
+{_T("  bjump(%a)"),			-1,	0},
+{_T("  ld %r,%x"),			10,	0},
+{_T("  ld %r,%r"),			7,	0},
+{_T("  inc %r"),			11,	0},
+{_T("  dec %r"),			11,	0},
+{_T("  bit %d,%r"),			12,	0},
+{_T("  res %d,%r"),			15,	0},
+{_T("  set %d,%r"),			15,	0},
 };
 
 #define R_B 0
@@ -125,33 +132,33 @@ Z80_com_t da_opcode[256] = {
 #define R__HL_ 6
 #define R_A 7
 #define R_F 8
-static char r[9][5]  = 	{"b","c","d","e","h","l","(hl)","a","f"};
-static char r8i[2][9][5]  = {
-{"b","c","d","e","ixh","ixl","ix","a","f"},
-{"b","c","d","e","iyh","iyl","iy","a","f"}};
+static TCHAR r[9][5]		= {_T("b"),_T("c"),_T("d"),_T("e"),_T("h"),_T("l"),_T("(hl)"),_T("a"),_T("f")};
+static TCHAR r8i[2][9][5]	= {
+{_T("b"),_T("c"),_T("d"),_T("e"),_T("ixh"),_T("ixl"),_T("ix"),_T("a"),_T("f")},
+{_T("b"),_T("c"),_T("d"),_T("e"),_T("iyh"),_T("iyl"),_T("iy"),_T("a"),_T("f")}};
 #define R_BC 0
 #define R_DE 1
 #define R_HL 2
 #define R_SP 3
 #define R_AF 3
-static char rp[4][4] = 	{"bc","de","hl","sp"};
-static char rpi[2][4][4] = {{"bc","de","ix","sp"},{"bc","de","iy","sp"}};
-static char rp2[4][4] = {"bc","de","hl","af"};
-static char rp2i[2][4][4] = {{"bc","de","ix","af"},{"bc","de","iy","af"}};
-static char ri[2][4] = 	{"ix","iy"};
-static char cc[8][4] = 	{"nz","z","nc","c","po","pe","p","m"};
-static char alu[8][4] = {"add","adc","sub","sbc","and","xor","or","cp"};
-static char rot[8][4] = {"rlc","rrc","rl","rr","sla","sra","sll","srl"};
-static char im[8][4] = 	{"0","0/1","1","2","0","0/1","1","2"};
-static char bli[4][4][8] = {
-{"ldi", "cpi", "ini", "outi"},
-{"ldd", "cpd", "ind", "outd"},
-{"ldir","cpir","inir","otir"},
-{"lddr","cpdr","indr","otdr"}};
+static TCHAR rp[4][4]		= {_T("bc"),_T("de"),_T("hl"),_T("sp")};
+static TCHAR rpi[2][4][4]	= {{_T("bc"),_T("de"),_T("ix"),_T("sp")},{_T("bc"),_T("de"),_T("iy"),_T("sp")}};
+static TCHAR rp2[4][4]		= {_T("bc"),_T("de"),_T("hl"),_T("af")};
+static TCHAR rp2i[2][4][4]	= {{_T("bc"),_T("de"),_T("ix"),_T("af")},{_T("bc"),_T("de"),_T("iy"),_T("af")}};
+static TCHAR ri[2][4]		= {_T("ix"),_T("iy")};
+static TCHAR cc[8][4]		= {_T("nz"),_T("z"),_T("nc"),_T("c"),_T("po"),_T("pe"),_T("p"),_T("m")};
+static TCHAR alu[8][4]		= {_T("add"),_T("adc"),_T("sub"),_T("sbc"),_T("and"),_T("xor"),_T("or"),_T("cp")};
+static TCHAR rot[8][4]		= {_T("rlc"),_T("rrc"),_T("rl"),_T("rr"),_T("sla"),_T("sra"),_T("sll"),_T("srl")};
+static TCHAR im[8][4]		= {_T("0"),_T("0/1"),_T("1"),_T("2"),_T("0"),_T("0/1"),_T("1"),_T("2")};
+static TCHAR bli[4][4][8]	= {
+{_T("ldi"), _T("cpi"), _T("ini"), _T("outi")},
+{_T("ldd"), _T("cpd"), _T("ind"), _T("outd")},
+{_T("ldir"),_T("cpir"),_T("inir"),_T("otir")},
+{_T("lddr"),_T("cpdr"),_T("indr"),_T("otdr")}};
 
 void da_display(Z80_info_t *command) {
-	putchar(' ');
-	printf(da_opcode[command->index].format, command->a1, command->a2, command->a3, command->a4); 
+	_puttchar(' ');
+	_tprintf_s(da_opcode[command->index].format, command->a1, command->a2, command->a3, command->a4); 
 }
 
 /* returns number of bytes read */
@@ -161,7 +168,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 		int start_addr = result->addr = addr;
 
 
-		char* labelname = FindAddressLabel(gslot, calcs[DebuggerSlot].cpu.mem_c->banks[addr>>14].ram, calcs[DebuggerSlot].cpu.mem_c->banks[addr>>14].page, addr);
+		TCHAR* labelname = FindAddressLabel(gslot, calcs[DebuggerSlot].cpu.mem_c->banks[addr>>14].ram, calcs[DebuggerSlot].cpu.mem_c->banks[addr>>14].page, addr);
 
 		if (labelname) {
 			result->index = DA_LABEL;
@@ -196,13 +203,13 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 					result->index = DA_ROT;
 					result->a1 = (INT_PTR) rot[y];
 					break;
-				case 1:	result->index = DA_BIT; break; /* X = 1 */
-				case 2:	result->index = DA_RES; break; /* X = 2 */
-				case 3:	result->index = DA_SET; break; /* X = 3 */
+				case 1:	result->index = (result->a2 == (INT_PTR) r[R__HL_] && !prefix) ? DA_BIT__HL_ : DA_BIT; break; /* X = 1 */
+				case 2:	result->index = (result->a2 == (INT_PTR) r[R__HL_] && !prefix) ? DA_RES__HL_ : DA_RES; break; /* X = 2 */
+				case 3:	result->index = (result->a2 == (INT_PTR) r[R__HL_] && !prefix) ? DA_SET__HL_ : DA_SET; break; /* X = 3 */
 			}
 			if (prefix) {
-				char *flagname, *bitname;
-				FindFlags(offset,y,&flagname,&bitname);
+				TCHAR *flagname, *bitname;
+				FindFlags(offset, y, &flagname, &bitname);
 
 				/* Special IY flags*/
 				if ((prefix == 0xFD) &&
@@ -213,13 +220,13 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 					if (z == 6) {
 						result->index += (DA_BIT_IF - DA_BIT);
 						result->a1 = (INT_PTR) bitname;
-						result->a2 = (INT_PTR) "iy";
+						result->a2 = (INT_PTR) _T("iy");
 						result->a3 = (INT_PTR) flagname;
 					} else {
 						result->index += (DA_BIT_RF - DA_BIT);
 						result->a4 = result->a2;	// old register target receives the result
 						result->a1 = (INT_PTR) bitname;
-						result->a2 = (INT_PTR) "iy";
+						result->a2 = (INT_PTR) _T("iy");
 						result->a3 = (INT_PTR) flagname;
 					}
 				} else {
@@ -309,16 +316,6 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				} else {}
 			} else {}
 		} else {
-			
-
-
-
-
-
-
-
-
-
 			int x = (data & 0xC0) >> 6;
 			int y = (data & 0x38) >> 3;
 			int z = (data & 0x07);
@@ -336,7 +333,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 					case 1: 
 						result->index = DA_EX_AF_AF_;
 						result->a1 = (INT_PTR) rp2[3];
-						result->a2 = (INT_PTR) "af'";
+						result->a2 = (INT_PTR) _T("af'");
 						break;
 					case 2: 
 						result->index = DA_DJNZ_X;
@@ -436,6 +433,8 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			if (z < 6) {	/* ix, iy ready */
 				result->index = (z == 4) ? DA_INC_R : DA_DEC_R;
 				result->a1 = (INT_PTR) (prefix ? r8i[pi][y] : r[y]);
+				if (result->a1 == (INT_PTR) r[R__HL_])
+					result->index = (z == 4) ? DA_INC__HL_ : DA_DEC__HL_;
 				if (prefix && y == 6) {
 					result->index += (DA_INC_RI - DA_INC_R);
 					result->a2 = offset;
@@ -446,6 +445,8 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			if (z == 6) {	/* ix, iy ready */
 				result->index = DA_LD_R_X;
 				result->a1 = (INT_PTR) (prefix ? r8i[pi][y] : r[y]);
+				if (result->a1 == (INT_PTR) r[R__HL_])
+					result->index = DA_LD__HL__X;
 				if (prefix && y == 6) {
 					result->index = DA_LD_RI_X;
 					result->a2 = offset;
@@ -476,7 +477,11 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				} else {
 					result->index = DA_LD_R_R;
 					result->a1 = (INT_PTR) r[y];
+					if (result->a1 == (INT_PTR) r[R__HL_])
+						result->index = DA_LD__HL__R;
 					result->a2 = (INT_PTR) r[z];
+					if (result->a2 == (INT_PTR) r[R__HL_])
+						result->index = DA_LD_R__HL_;
 					if (prefix) {
 						if (y == 6) {
 							addr++;
@@ -589,7 +594,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 						if ((result->a1 == 0x0050) && calcs[DebuggerSlot].model >= TI_83P) {
 							result->index = DA_BJUMP;
 							result->a1 = mem_read16(memc, addr);
-							char* Name = FindBcall((int) result->a1);
+							TCHAR* Name = FindBcall((int) result->a1);
 							if (Name == NULL) {
 								result->index = DA_BJUMP_N;
 							} else {
@@ -627,7 +632,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				if ((y == 5) && (calcs[DebuggerSlot].model >= TI_83P)) {
 					result->index = DA_BCALL;
 					int tmp = mem_read16(memc, addr);
-					char* Name = FindBcall(tmp);
+					TCHAR* Name = FindBcall(tmp);
 					if (Name == NULL) {
 						result->index = DA_BCALL_N;
 						result->a1 = tmp;

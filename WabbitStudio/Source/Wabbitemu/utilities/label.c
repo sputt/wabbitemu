@@ -75,13 +75,14 @@ BOOL label_search_tios(TCHAR *label,int equate) {
 int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 	FILE *labelFile = NULL;
 	int i, length;
-	char buffer[256];
-	char name[256];
+	char readBuf[256];
+	TCHAR buffer[256];
+	TCHAR name[256];
 	unsigned int equate;
 	label_struct *label = &lpCalc->labels[0];	
 
 	_tfopen_s(&labelFile, lpszFileName, _T("r"));
-	if (labelFile = NULL) {
+	if (labelFile == NULL) {
         _putts(_T("Error opening label files."));
         return 1;
     }
@@ -90,20 +91,21 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
     VoidLabels(lpCalc);
 
     while (!feof(labelFile)) {
+#ifdef _UNICODE
+		fgets(readBuf, 256, labelFile);
+		MultiByteToWideChar(CP_ACP, 0, readBuf, -1, buffer, ARRAYSIZE(buffer));
+#else
 		_fgetts(buffer, 256, labelFile);
+#endif
 		i = 0;
 		if (buffer[0] != ';')
-			i = sscanf(buffer,"%s = $%X", name, &equate);
+			i = _stscanf(buffer, _T("%s = $%X"), name, &equate);
 		if (i == 2) {
-			length = (int) strlen(name);
+			length = (int) _tcslen(name);
 			if (!label_search_tios(name, equate)) {
 				
 				label->name = (TCHAR *) malloc((length + 1) * sizeof(TCHAR));
-#ifdef UNICODE
-				MultiByteToWideChar(CP_ACP, 0, name, -1, label->name, length + 1);
-#else
 				StringCbCopy(label->name, length + 1, name);
-#endif
 
 				label->addr = equate & 0xFFFF;
 

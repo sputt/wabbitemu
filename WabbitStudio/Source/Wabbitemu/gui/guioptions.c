@@ -892,7 +892,13 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		case WM_USER:
 			Button_SetCheck(saveState_check, exit_save_state);
 			Edit_SetText(edtRom_path, calcs[SlotSave].rom_path);
+#ifdef _UNICODE
+			TCHAR szRomVersion[256];
+			MultiByteToWideChar(CP_ACP, 0, calcs[SlotSave].rom_version, -1, szRomVersion, ARRAYSIZE(szRomVersion));
+			Edit_SetText(edtRom_version, szRomVersion);
+#else
 			Edit_SetText(edtRom_version, calcs[SlotSave].rom_version);
+#endif
 			Edit_SetText(edtRom_model, CalcModelTxt[calcs[SlotSave].model]);
 //			Button_SetCheck(ramPages_check, calcs[SlotSave].mem_c.ram_pages_missing);
 			TCHAR szRomSize[16];
