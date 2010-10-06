@@ -198,6 +198,8 @@ static BOOL WriteStreamToFile(IStream *pStream, LPCTSTR lpszFileName)
 }
 
 HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
+	calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};
 		m_pDropTargetHelper->Drop(pDataObject, &p, *pdwEffect);
@@ -253,7 +255,7 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 										{
 											fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
 											fclose(file);
-											lpszFileGroup = AppendName(lpszFileGroup, szFileName);
+											SendFileToCalc(lpCalc, szFileName, TRUE);
 										}
 									}
 									free(lpBuffer);
@@ -262,11 +264,6 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 								}
 							}
 							GlobalUnlock(stgmed.hGlobal);
-
-							if (lpszFileGroup != NULL)
-							{
-								ThreadSend(lpszFileGroup, DropMemoryTarget(m_hwndTarget), 0);
-							}
 						}
 
 						break;
@@ -281,7 +278,7 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 	} else {
 		*pdwEffect = DROPEFFECT_NONE;
 	}
-	calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	
 	lpCalc->do_drag = false;
 	return S_OK;
 }

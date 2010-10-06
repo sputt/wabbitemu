@@ -11,8 +11,100 @@
 #include "link.h"
 #include "sendfiles.h"
 
+typedef struct tagSENDINFO
+{
+	HANDLE hFileListMutex;
+	HANDLE hThread;
+	HWND hwndDlg;
+	std::list<std::tstring> *FileList;
+	LINK_ERR Error;
+} SENDINFO, *LPSENDINFO;
+
+static std::map<LPCALC, LPSENDINFO> g_SendInfo;
 
 
+DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
+{
+	LPCALC lpCalc = (LPCALC) lpParam;
+	LPSENDINFO lpsi = g_SendInfo[lpCalc];
+	BOOL fRunningBackup = lpCalc->running;
+
+	lpCalc->running = FALSE;
+
+	while (lpsi->FileList->size() > 0)
+	{
+		BOOL fHasFile = FALSE;
+		std::tstring sFileName;
+
+		if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0)
+		{
+			sFileName = lpsi->FileList->front();
+			lpsi->FileList->pop_front();
+			fHasFile = TRUE;
+			ReleaseMutex(lpsi->hFileListMutex);
+		}
+		if (fHasFile == TRUE)
+		{
+			SendFile(NULL, lpCalc, sFileName.c_str(), SEND_CUR);
+		}
+	}
+
+	lpCalc->running = fRunningBackup;
+	return 0;
+}
+
+BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
+{
+	if ((lpCalc == NULL) || (lpszFileName == NULL))
+	{
+		SetLastError(ERROR_INVALID_PARAMETER);
+		return FALSE;
+	}
+
+	if (fAsync == TRUE)
+	{
+		LPSENDINFO lpsi;
+		if (g_SendInfo.find(lpCalc) == g_SendInfo.end())
+		{
+			lpsi = new SENDINFO;
+			ZeroMemory(lpsi, sizeof(SENDINFO));
+			lpsi->FileList = new std::list<std::tstring>;
+			g_SendInfo[lpCalc] = lpsi;
+
+			lpsi->hFileListMutex = CreateMutex(NULL, FALSE, NULL);
+		}
+		else
+		{
+			lpsi = g_SendInfo[lpCalc];
+		}
+
+		// Add the file to the transfer queue
+		if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0)
+		{
+			lpsi->FileList->push_back(lpszFileName);
+			ReleaseMutex(lpsi->hFileListMutex);
+		}
+		else
+		{
+			return FALSE;
+		}
+
+		// Make sure the download thread is started
+		if ((lpsi->hThread == NULL) || (WaitForSingleObject(lpsi->hThread, 0) == WAIT_OBJECT_0))
+		{
+			if (lpsi->hThread != NULL)
+			{
+				CloseHandle(lpsi->hThread);
+			}
+			lpsi->hThread = CreateThread(NULL, 0, SendFileToCalcThread, lpCalc, 0, NULL);
+		}
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
 
 static LPCALC lpCalc = NULL;
 static HWND hwndMain = NULL;
@@ -57,7 +149,7 @@ TCHAR* AppendName(TCHAR* FileNames, TCHAR* fn) {
 
 BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination)
 {
-	BOOL is_link_connected = link_connected(lpCalc->slot);
+	//BOOL is_link_connected = link_connected(lpCalc->slot);
 	TIFILE_t *var = newimportvar(lpszFileName);//importvar(lpszFileName, 0, Destination);
 
 	LINK_ERR result;
@@ -150,8 +242,6 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 		}
 		if (var)
 			FreeTiFile(var);
-		if (is_link_connected)
-			link_connect(&calcs[0].cpu, &calcs[1].cpu);
 
 		return TRUE;
 	} else {

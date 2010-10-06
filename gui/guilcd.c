@@ -711,17 +711,15 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		case WM_DROPFILES:
 		{
+			calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			TCHAR *FileNames = NULL;
 			TCHAR fn[256];
 			int count = DragQueryFile((HDROP) wParam, ~0, fn, 256);
 
 			while (count--) {
 				DragQueryFile((HDROP) wParam, count, fn, 256);
-				FileNames = AppendName(FileNames, fn);
+				SendFileToCalc(lpCalc, fn, TRUE);
 			}
-
-			ThreadSend(FileNames, DropMemoryTarget(hwnd), (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA));
-
 			//InvalidateRect(calcs[gslot].hwndFrame, NULL, FALSE);
 			return 0;
 		}

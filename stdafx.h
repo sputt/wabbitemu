@@ -47,4 +47,17 @@ using namespace Gdiplus;
 #include <atlcom.h>
 #include <atlctl.h>
 using namespace ATL;
+#include <map>
+#include <list>
+#include <vector>
+#include <string>
+
+namespace std
+{
+#ifdef UNICODE
+typedef std::wstring tstring;
+#else
+typedef std::string tstring;
+#endif
+}
 #endif
