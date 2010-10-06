@@ -63,6 +63,8 @@ typedef struct link {
 	#ifdef WINVER
 	AUDIO_t audio;
 	#endif
+	BYTE vout;
+	LPBYTE vin;						// Virtual Link data
 } link_t;
 
 #pragma pack(push, 1)

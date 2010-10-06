@@ -3001,26 +3001,18 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\core\core.h"
+			<Filter
+				Name="Interface"
 				>
-			</File>
-			<File
-				RelativePath=".\core\coretypes.h"
-				>
-			</File>
-			<File
-				RelativePath=".\resource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\gui\resource.h"
-				>
-			</File>
-			<File
-				RelativePath=".\stdafx.h"
-				>
-			</File>
+				<File
+					RelativePath=".\interface\calc.h"
+					>
+				</File>
+				<File
+					RelativePath=".\interface\state.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Resource Files"
@@ -3028,19 +3020,19 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\downarrow7.bmp"
-				>
-			</File>
-			<File
 				RelativePath=".\gui\downarrow7.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\left7.bmp"
+				RelativePath=".\downarrow7.bmp"
 				>
 			</File>
 			<File
 				RelativePath=".\gui\left7.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\left7.bmp"
 				>
 			</File>
 			<File
@@ -3483,11 +3475,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\Wabbitemu.tlb"
+			RelativePath=".\gui\Wabbitemu.tlb"
 			>
 		</File>
 		<File
-			RelativePath=".\gui\Wabbitemu.tlb"
+			RelativePath=".\Wabbitemu.tlb"
 			>
 		</File>
 	</Files>

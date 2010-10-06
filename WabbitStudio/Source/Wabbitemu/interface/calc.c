@@ -321,9 +321,6 @@ void calc_slot_free(calc_t *lpCalc) {
 		free(lpCalc->mem_c.ram_break);
 		lpCalc->mem_c.ram_break = NULL;
 
-		//HACK: needs to disconnect if connected, but since this is all we support for now
-		if (link_connected(lpCalc->slot))
-			link_disconnect(&lpCalc->cpu);
 		free(lpCalc->cpu.pio.link);
 		lpCalc->cpu.pio.link = NULL;
 

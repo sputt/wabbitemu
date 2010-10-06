@@ -6,9 +6,7 @@
 #include "keys.h"	//key_press
 
 //#define DEBUG
-
-static u_char vout, *vin; // Virtual Link data
-#define vlink (((vout & 0x03)|(*vin & 0x03))^3)	// Virtual Link status
+#define vlink(zlink) ((((zlink)->vout & 0x03)|(*((zlink)->vin) & 0x03))^3)	// Virtual Link status
 static jmp_buf exc_pkt, exc_byte; // Exceptions
 /*
  * Byte Exception
@@ -41,9 +39,9 @@ int link_init(CPU_t *cpu) {
 	if (link == NULL)
 		return 1;
 
-	vout = 0;
-	link->client = &vout;
-	vin = &link->host;
+	link->vout = 0;
+	link->client = &link->vout;
+	link->vin = &link->host;
 
 	return 0;
 }
@@ -77,31 +75,20 @@ static void link_wait(CPU_t *cpu, time_t tstates) {
 /* Send a byte through the virtual link
  * On error: Throws a Byte Exception */
 static void link_send(CPU_t *cpu, u_char byte) {
-	CPU_t *cpu2;
-	cpu2 = &calcs[1].cpu;
-	u_int bit, i;
-	link_t *link1, *link2;
-	link1 = cpu->pio.link;
-	link2 = cpu2->pio.link;
-#ifdef WINVER
-	if (calcs[1].hwndFrame != NULL) {
-		link1->client = &link2->host;
-		link2->client = &link1->host;
-	}
-#endif
+	link_t *link = cpu->pio.link;
 
-	for (bit = 0; bit < 8; bit++, byte >>= 1) {
-		vout = (byte & 1) + 1;
+	for (u_int bit = 0; bit < 8; bit++, byte >>= 1) {
+		link->vout = (byte & 1) + 1;
 
-		for (i = 0; i < LINK_TIMEOUT && vlink != 0; i += LINK_STEP)
+		for (u_int i = 0; i < LINK_TIMEOUT && vlink(link) != 0; i += LINK_STEP)
 			link_wait(cpu, LINK_STEP);
-		if (vlink != 0)
+		if (vlink(link) != 0)
 			longjmp(exc_byte, LERR_TIMEOUT);
 
-		vout = 0;
-		for (i = 0; i < LINK_TIMEOUT && vlink != 3; i += LINK_STEP)
+		link->vout = 0;
+		for (u_int i = 0; i < LINK_TIMEOUT && vlink(link) != 3; i += LINK_STEP)
 			link_wait(cpu, LINK_STEP);
-		if (vlink != 3)
+		if (vlink(link) != 3)
 			longjmp(exc_byte, LERR_TIMEOUT);
 	}
 
@@ -111,57 +98,42 @@ static void link_send(CPU_t *cpu, u_char byte) {
 /* Receive a byte through the virtual link
  * On error: Throws a Byte Exception */
 static u_char link_recv(CPU_t *cpu) {
-	u_int bit, i;
+	link_t *link = cpu->pio.link;
 	u_char byte = 0;
 
-	for (bit = 0; bit < 8; bit++) {
+	for (u_int bit = 0; bit < 8; bit++) {
 		byte >>= 1;
 
-		for (i = 0; i < LINK_TIMEOUT && vlink == 3; i += LINK_STEP)
+		for (u_int i = 0; i < LINK_TIMEOUT && vlink(link) == 3; i += LINK_STEP)
 			link_wait(cpu, LINK_STEP);
 
-		if (vlink == 0)
+		if (vlink(link) == 0)
 			longjmp(exc_byte, LERR_LINK);
-		if (vlink == 3)
+		if (vlink(link) == 3)
 			longjmp(exc_byte, LERR_TIMEOUT);
 
-		vout = vlink;
-		if (vout == 1)
+		link->vout = vlink(link);
+		if (link->vout == 1)
 			byte |= 0x80;
 
-		for (i = 0; i < LINK_TIMEOUT && vlink == 0; i += LINK_STEP)
+		for (u_int i = 0; i < LINK_TIMEOUT && vlink(link) == 0; i += LINK_STEP)
 			link_wait(cpu, LINK_STEP);
-		if (vlink == 0)
+		if (vlink(link) == 0)
 			longjmp(exc_byte, LERR_TIMEOUT);
-		vout = 0;
+		link->vout = 0;
 	}
 
 	cpu->pio.link->vlink_recv++;
 	return byte;
 }
 
-BOOL link_connected(int slot)
-{
-	if (slot > 1)
-		return FALSE;
-	if (calcs[0].cpu.pio.link != NULL && calcs[1].cpu.pio.link != NULL)
-	{
-		return calcs[0].cpu.pio.link->client == &calcs[1].cpu.pio.link->host;
-	}
-	else
-	{
-		return FALSE;
-	}
-}
-
 /* Calculate a TI Link Protocol checksum
  *
  * checksum = 16-bit byte sum of all data bytes
  *  with the carries discarded */
-static uint16_t link_chksum(void *data, size_t length) {
+static uint16_t link_chksum(const void *data, size_t length) {
 	uint16_t chksum = 0;
-	size_t i;
-	for (i = 0; i < length; i++)
+	for (size_t i = 0; i < length; i++)
 		chksum += ((u_char *) data)[i];
 
 	return chksum;
@@ -169,7 +141,7 @@ static uint16_t link_chksum(void *data, size_t length) {
 
 /* Returns a Machine ID for the calc attached to virtual link
  * On error: Returns -1 */
-static u_char link_target_ID(CPU_t *cpu) {
+static u_char link_target_ID(const CPU_t *cpu) {
 	switch (cpu->pio.model) {
 	case TI_73:
 		return 0x07;
