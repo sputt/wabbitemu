@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "var.h"
 #include "link.h"
 #include "calc.h"
 #include "lcd.h"	//lcd->active
@@ -379,8 +380,14 @@ LINK_ERR link_send_var(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 
 	// Here's some code to temporarily pass off the apps
 	// to a send app function
-	if (tifile->type == FLASH_TYPE)
-		return forceload_app(cpu, tifile);
+	if (tifile->type == FLASH_TYPE) {
+		switch (tifile->flash->type) {
+			case FLASH_TYPE_OS:
+				return forceload_os(cpu, tifile);
+			case FLASH_TYPE_APP:
+				return forceload_app(cpu, tifile);
+		}
+	}
 
 	// Make sure the TIFILE is well formed
 	if (tifile->var == NULL)
@@ -568,6 +575,39 @@ void fix_certificate(CPU_t *cpu, u_int page) {
 	dest[cpu->mem_c->flash_pages-2][offset+1 + 2 * (upages.start - page)] = 0x00;
 }
 
+LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
+	u_int i, page;
+	u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) cpu->mem_c->flash;
+	if (dest == NULL)
+		return LERR_MODEL;
+
+	if (tifile->flash == NULL)
+		return LERR_FILE;
+
+	//valid OS
+	dest[0][0x56] = 0x5A;
+	dest[0][0x57] = 0xA5;
+
+	for (i = 0; i < ARRAYSIZE(tifile->flash->data); i++) {
+		if (tifile->flash->data[i] == NULL)
+			continue;
+		if (i > 10)
+			page = i + cpu->mem_c->flash_pages - 0x20;
+		else
+			page = i;
+		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
+	}
+
+	// Discard any error link_send_app returns
+	link_send_app(cpu, tifile);
+	// Delay for a few seconds so the calc will be responsive
+	cpu->pio.link->vlink_size = 100;
+	for (cpu->pio.link->vlink_send = 0; cpu->pio.link->vlink_send < 100; cpu->pio.link->vlink_send += 20) {
+		link_wait(cpu, MHZ_6*1);
+	}
+	return LERR_SUCCESS;
+}
+
 /* Forceload a TI-83+ series APP
  * On error: Returns an error code */
 static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
@@ -705,93 +745,8 @@ static void print_command_ID(uint8_t command_ID) {
 }
 #endif
 
-
-void Load_8xu(FILE* infile) {
-	intelhex_t ihex;
-	if (!infile)
-		return;
-
-	//0x31 says if its an OS or App
-	fseek(infile, 0x31, SEEK_SET);
-	if (fgetc(infile) != 0x23) {
-		puts("[0x31] != 0x23");
-		return;
-	}
-
-	fseek(infile, TI_FLASH_HEADER_SIZE,SEEK_SET);
-
-	// Find the first page, usually after the first line
-	do {
-		if (!ReadIntelHex(infile, &ihex))
-			return;
-	} while (ihex.type != 0x02 || ihex.size != 2);
-
-	int curpage = ((ihex.data[0] << 8) | ihex.data[1]) & 0x7F;
-	uint8_t (*flash)[16384] = (uint8_t(*)[16384]) calcs[gslot].mem_c.flash;
-
-	printf("Loading IntelHex OS\n");
-	printf("Loading page %02Xh\n", curpage);
-	while (1) {
-		if (!ReadIntelHex(infile, &ihex)) {
-			return;
-		}
-		switch (ihex.type) {
-		case 0x00:
-			memcpy(flash[curpage] + (ihex.address & 0x3FFF), ihex.data, ihex.size);
-			break;
-		case 0x02:
-			if (ihex.size == 2) {
-				curpage = ((ihex.data[0] << 8) + ihex.data[1]) & 0x7F;
-				//HACK: umm yeah but i dont have a better way to do this
-				if (curpage > 10)
-					curpage += calcs[gslot].mem_c.flash_pages - 0x20;
-			}
-			printf("Loading page %02Xh\n", curpage);
-			break;
-		default:
-			return;
-		}
-	}
-}
-
-int ReadIntelHex(FILE* ifile, intelhex_t *ihex) {
-	uint8_t str[600];
-	uint32_t i, size, addr, type, byte;
-	memset(str, 0x00, 600);
-	if (!fgets((char*)str, 580, ifile))
-		return 0;
-	if (str[0] == 0) memcpy(str, str+1, 579);
-#ifdef WINVER
-	if (sscanf_s((const char*)str, ":%02X%04X%02X%*s", &size, &addr, &type) != 3)
-#else
-	if (sscanf((const char*)str, ":%02X%04X%02X%*s", &size, &addr, &type) != 3)
-#endif
-		return 0;
-	ihex->size = size;
-	ihex->address = addr;
-	ihex->type = type;
-	memset(ihex->data, 0x00, 256);
-	for (i = 0; i < size; i++) {
-#ifdef WINVER
-		if (sscanf_s((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
-#else
-		if (sscanf((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
-#endif
-			return 0;
-		ihex->data[i] = byte;
-	}
-#ifdef WINVER
-	if (sscanf_s((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
-#else
-	if (sscanf((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
-#endif
-		return 0;
-	ihex->chksum = byte;
-	return 1;
-}
-
 void writeboot(FILE* infile, int page) {
-	intelhex_t ihex;
+	INTELHEX_t ihex;
 	if (!infile) return;
 	if (page == -1)
 		page += calcs[gslot].mem_c.flash_pages;			//last page is boot page
@@ -800,9 +755,9 @@ void writeboot(FILE* infile, int page) {
 		if (!ReadIntelHex(infile,&ihex)) {
 			return;
 		}
-		switch(ihex.type) {
+		switch(ihex.Type) {
 			case 0x00:
-				memcpy(flash[page]+(ihex.address&0x3FFF),ihex.data,ihex.size);
+				memcpy(flash[page]+(ihex.Address & 0x3FFF), ihex.Data, ihex.DataSize);
 				break;
 			case 0x02:
 				break;
@@ -812,12 +767,12 @@ void writeboot(FILE* infile, int page) {
 	}
 }
 
-int FindField(unsigned char *data,unsigned char Field) {
+int FindField(unsigned char *data, unsigned char Field) {
 	int i;
-	for(i=6;i<128;) {
-		if (data[i++]!=0x80) return 0;
-		if ((data[i]&0xF0)==Field) return i+1;
-		i+=1+(data[i]&0x0F);
+	for(i = 6; i < 128;) {
+		if (data[i++] != 0x80) return 0;
+		if ((data[i] & 0xF0) == Field) return i+1;
+		i += 1+(data[i] & 0x0F);
 	}
 	return 0;
 }

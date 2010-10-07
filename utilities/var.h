@@ -7,7 +7,7 @@ typedef struct INTELHEX {
 	int DataSize;
 	int Address;
 	int Type;
-	unsigned int Data[256];
+	BYTE Data[256];
 	int CheckSum;
 } INTELHEX_t;
 
@@ -92,9 +92,9 @@ typedef struct TIFILE {
 
 #pragma pack()
 
-#define TI_FLASH_HEADER_SIZE (8+2+1+1+4+1+8+23+1+1+24+4)	
-#define TI_FILE_HEADER_SIZE (8+3+42/*+2*/)	
-#define TI_VAR_HEADER_SIZE (2+2+1+8)
+#define TI_FLASH_HEADER_SIZE 8+2+1+1+4+1+8+23+1+1+24+4
+#define TI_FILE_HEADER_SIZE 8+3+42/*+2*/
+#define TI_VAR_HEADER_SIZE 2+2+1+8
 
 
 #define ROM_TYPE	1		//os
@@ -104,9 +104,13 @@ typedef struct TIFILE {
 #define BACKUP_TYPE	5		//Wabbit specific saves.
 #define LABEL_TYPE	6		//Lab file
 #define BREAKPOINT_TYPE 7	//breakpoint file
-#define SKIP_TYPE 	8
+#define GROUP_TYPE 	8
+
+#define FLASH_TYPE_OS 0x23
+#define FLASH_TYPE_APP 0x24
 
 int FindRomVersion(int, char*, unsigned char*, int);
+int ReadIntelHex(FILE *ifile, INTELHEX_t *ihex);
 TIFILE_t* newimportvar(LPCTSTR FilePath);
 TIFILE_t* importvar(LPCTSTR FileName, int SlotSave, int ram);
 TIFILE_t* FreeTiFile(TIFILE_t *);
