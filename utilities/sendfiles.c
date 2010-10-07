@@ -17,19 +17,66 @@ typedef struct tagSENDINFO
 	HANDLE hThread;
 	HWND hwndDlg;
 	std::list<std::tstring> *FileList;
+	LPCTSTR lpszCurrentFile;
 	LINK_ERR Error;
 } SENDINFO, *LPSENDINFO;
 
+static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+
+static HANDLE hSendInfoMutex = NULL;
 static std::map<LPCALC, LPSENDINFO> g_SendInfo;
+static const TCHAR *current_file_sending;
 
+static HWND CreateSendFileProgress(HWND hwndParent, const LPCALC lpCalc)
+{
+	static ATOM Atom = 0;
+	if (Atom == 0)
+	{
+		WNDCLASSEX wcx = {0};
+		wcx.cbSize = sizeof(wcx);
+		wcx.lpszClassName = _T("WabbitSendClass");
+		wcx.lpfnWndProc = SendProc;
+		wcx.hCursor = LoadCursor(NULL, IDC_ARROW);
+		wcx.hbrBackground = (HBRUSH) (COLOR_BTNFACE+1);
+		Atom = RegisterClassEx(&wcx);
+		if (Atom == 0)
+		{
+			return NULL;
+		}
+	}
 
-DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
+	RECT r;
+	GetWindowRect(hwndParent, &r);
+
+	DWORD dwSendWidth = (r.right - r.left) * 9 / 10;
+	DWORD dwSendHeight = 90; //10 * HIWORD(GetDialogBaseUnits());
+
+	HWND hwnd = CreateWindowEx(
+		0,
+		(LPCTSTR) Atom,
+		NULL,
+		WS_SIZEBOX | WS_POPUP | WS_VISIBLE,
+		r.left + ((r.right - r.left) - dwSendWidth) / 2, r.top + ((r.bottom - r.top) - dwSendHeight) / 2, 
+		dwSendWidth, dwSendHeight,
+		hwndParent, NULL, GetModuleHandle(NULL),
+		(LPVOID) lpCalc);
+
+	return hwnd;
+}
+
+static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
 {
 	LPCALC lpCalc = (LPCALC) lpParam;
 	LPSENDINFO lpsi = g_SendInfo[lpCalc];
 	BOOL fRunningBackup = lpCalc->running;
+	BOOL fSoundBackup = lpCalc->audio->enabled;
 
+	lpCalc->send = TRUE;
 	lpCalc->running = FALSE;
+	if (fSoundBackup)
+	{
+		pausesound();
+	}
 
 	while (lpsi->FileList->size() > 0)
 	{
@@ -45,11 +92,27 @@ DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
 		}
 		if (fHasFile == TRUE)
 		{
+			lpsi->lpszCurrentFile = sFileName.c_str();
+			SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);	
 			SendFile(NULL, lpCalc, sFileName.c_str(), SEND_CUR);
+			InterlockedIncrement(&lpCalc->CurrentFile);
 		}
 	}
 
+	if (lpsi->hwndDlg != NULL)
+	{
+		HWND hwndDlg = lpsi->hwndDlg;
+		lpsi->hwndDlg = NULL;
+		lpCalc->FileCnt = 0;
+		PostMessage(hwndDlg, WM_CLOSE, 0, NULL);
+	}
 	lpCalc->running = fRunningBackup;
+	if (fSoundBackup == TRUE)
+	{
+		playsound();
+	}
+	lpCalc->send = FALSE;
+	current_file_sending = NULL;
 	return 0;
 }
 
@@ -63,6 +126,18 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 
 	if (fAsync == TRUE)
 	{
+		if (hSendInfoMutex == NULL)
+		{
+			hSendInfoMutex = CreateMutex(NULL, TRUE, NULL);
+		}
+		else
+		{
+			if (WaitForSingleObject(hSendInfoMutex, INFINITE) != WAIT_OBJECT_0)
+			{
+				return FALSE;
+			}
+		}
+
 		LPSENDINFO lpsi;
 		if (g_SendInfo.find(lpCalc) == g_SendInfo.end())
 		{
@@ -78,14 +153,21 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 			lpsi = g_SendInfo[lpCalc];
 		}
 
+		if (lpsi->hwndDlg == NULL)
+		{
+			lpsi->hwndDlg = CreateSendFileProgress(lpCalc->hwndFrame, lpCalc);
+		}
+
 		// Add the file to the transfer queue
 		if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0)
 		{
 			lpsi->FileList->push_back(lpszFileName);
+			lpCalc->FileCnt++;
 			ReleaseMutex(lpsi->hFileListMutex);
 		}
 		else
 		{
+			ReleaseMutex(hSendInfoMutex);
 			return FALSE;
 		}
 
@@ -96,8 +178,11 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 			{
 				CloseHandle(lpsi->hThread);
 			}
+			lpCalc->CurrentFile = 1;
 			lpsi->hThread = CreateThread(NULL, 0, SendFileToCalcThread, lpCalc, 0, NULL);
 		}
+
+		ReleaseMutex(hSendInfoMutex);
 		return TRUE;
 	}
 	else
@@ -168,36 +253,36 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 					switch (Destination)
 					{
 					case SEND_RAM:
-						MessageBox(hwndParent, _T("Not enough free RAM on calculator"), _T("Error"),MB_OK);
+						MessageBox(hwndParent, _T("Not enough free RAM on calculator"), _T("Wabbitemu"),MB_OK);
 						break;
 					case SEND_ARC:
-						MessageBox(hwndParent, _T("Not enough free Archive on calculator"), _T("Error"),MB_OK);
+						MessageBox(hwndParent, _T("Not enough free Archive on calculator"), _T("Wabbitemu"),MB_OK);
 						break;
 					default:
-						MessageBox(hwndParent, _T("Not enough free memory on calculator"), _T("Error"),MB_OK);
+						MessageBox(hwndParent, _T("Not enough free memory on calculator"), _T("Wabbitemu"),MB_OK);
 						break;
 					}
 					break;
 				case LERR_TIMEOUT:
-					MessageBox(hwndParent, _T("Link timed out"), _T("Error"),MB_OK);
+					MessageBox(hwndParent, _T("Link timed out"), _T("Wabbitemu"),MB_OK);
 					break;
 				case LERR_FORCELOAD:
-					MessageBox(hwndParent, _T("Error force loading an application"), _T("Error"), MB_OK);
+					MessageBox(hwndParent, _T("Error force loading an application"), _T("Wabbitemu"), MB_OK);
 					break;
 				case LERR_CHKSUM:
-					MessageBox(hwndParent, _T("Link checksum was not correct"), _T("Error"), MB_OK);
+					MessageBox(hwndParent, _T("Link checksum was not correct"), _T("Wabbitemu"), MB_OK);
 					break;
 				case LERR_MODEL:
-					MessageBox(hwndParent, _T("Calculator model not correct for this type of file"), _T("Error"), MB_OK);
+					MessageBox(hwndParent, _T("Calculator model not correct for this type of file"), _T("Wabbitemu"), MB_OK);
 					break;
 				case LERR_NOTINIT:
-					MessageBox(hwndParent, _T("Virtual link was not initialized"), _T("Error"), MB_OK);
+					MessageBox(hwndParent, _T("Virtual link was not initialized"), _T("Wabbitemu"), MB_OK);
 					break;
 				case LERR_LINK:
-					MessageBox(hwndParent, _T("Virtual link error"), _T("Error"), MB_OK);
+					MessageBox(hwndParent, _T("Virtual link error"), _T("Wabbitemu"), MB_OK);
 					break;
 				case LERR_FILE:
-					MessageBox(hwndParent, _T("The file was unable to be sent because it is corrupt"), _T("Error"), MB_OK);
+					MessageBox(hwndParent, _T("The file was unable to be sent because it is corrupt"), _T("Wabbitemu"), MB_OK);
 					break;
 				}
 
@@ -255,7 +340,6 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 #ifdef WINVER
 extern HINSTANCE g_hInst;
 HWND hwndSend;
-static TCHAR *current_file_sending;
 #endif
 
 void SendFiles(TCHAR *FileNames, int ram ) {
@@ -292,127 +376,140 @@ void SendFiles(TCHAR *FileNames, int ram ) {
 }
 
 #ifdef WINVER
-static int CALLBACK EnumFontFamExProc(
-  ENUMLOGFONTEX *lpelfe,    // logical-font data
-  NEWTEXTMETRICEX *lpntme,  // physical-font data
-  DWORD FontType,           // type of font
-  LPARAM lParam             // application-defined data
-) {
-	LOGFONT *lplf = &lpelfe->elfLogFont;
-	lplf->lfHeight = -MulDiv(9, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72);
-	lplf->lfWidth = 0;
-	*((HFONT *) lParam) = CreateFontIndirect(lplf);
-	return 0;
-}
-
-
-static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HFONT hfontSegoe;
-	static HWND hwndProgress;
+static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
+{
+	static HFONT hfontSegoe = NULL;
 	static TEXTMETRIC tm;
-	switch (Message)  {
-		case WM_CREATE: {
-				LOGFONT lfSegoe;
-				memset(&lfSegoe, 0, sizeof(LOGFONT));
-				StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Segoe UI"));
+	switch (Message)
+	{
+	case WM_CREATE:
+		{
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) ((LPCREATESTRUCT) lParam)->lpCreateParams);
 
-				if (EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
-					StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Tahoma"));
-					EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0);
-				}
+			if (hfontSegoe == NULL)
+			{
+				NONCLIENTMETRICS ncm = {0};
+				ncm.cbSize = sizeof(ncm);
+				SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0);
 
-				SelectObject(GetDC(hwnd), hfontSegoe);
-				GetTextMetrics(GetDC(hwnd), &tm);
-
-				hwndProgress = CreateWindowEx(
-						0,
-						PROGRESS_CLASS,
-						NULL,
-						WS_CHILD | WS_VISIBLE,
-						tm.tmAveCharWidth*2, tm.tmHeight * 4, 1, 1,
-						hwnd, (HMENU) 0, g_hInst, NULL
-				);
-
-				return 0;
+				hfontSegoe = CreateFontIndirect(&ncm.lfMessageFont);
 			}
-		case WM_GETMINMAXINFO: {
-				MINMAXINFO *info = (MINMAXINFO *) lParam;
-				RECT rc;
-				GetWindowRect(lpCalc->hwndLCD, &rc);
 
-				DWORD SendWidth = (rc.right - rc.left) * 9 / 10;
-				DWORD SendHeight = 110;
-				AdjustWindowRect(&rc, WS_SIZEBOX | WS_POPUP, FALSE);
-				info->ptMinTrackSize.x = SendWidth;
-				info->ptMinTrackSize.y = SendHeight;
-				info->ptMaxTrackSize.x = SendWidth;
-				info->ptMaxTrackSize.y = SendHeight;
-				return 0;
-			}
-		case WM_SIZE: {
-				RECT rc;
-				GetClientRect(hwnd, &rc);
-				SetWindowPos(hwndProgress, NULL, 0, 0, rc.right - rc.left - tm.tmAveCharWidth*4, tm.tmHeight*3/2, SWP_NOMOVE | SWP_NOZORDER);
+			HDC hdc = GetDC(hwnd);
 
-				rc.top = 0;
-				rc.bottom = tm.tmHeight * 6;
-				AdjustWindowRect(&rc, WS_SIZEBOX | WS_POPUP, FALSE);
-				SetWindowPos(hwnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+			SelectObject(hdc, hfontSegoe);
+			GetTextMetrics(hdc, &tm);
 
-				return 0;
-			}
-		case WM_PAINT: {
-				PAINTSTRUCT ps;
-				HDC hdc = BeginPaint(hwnd, &ps);
+			ReleaseDC(hwnd, hdc);
 
-				SetBkMode(hdc, TRANSPARENT);
-				SelectObject(hdc, hfontSegoe);
+			CreateWindowEx(
+					0,
+					PROGRESS_CLASS,
+					NULL,
+					WS_CHILD | WS_VISIBLE,
+					tm.tmAveCharWidth*2, tm.tmHeight * 4, 1, 1,
+					hwnd, (HMENU) 1, g_hInst, NULL
+			);
 
-				TCHAR szFile[256];
-				StringCbPrintf(szFile, sizeof(szFile), _T("Sending file %d of %d"), lpCalc->CurrentFile, lpCalc->FileCnt);
+			SetTimer(hwnd, 1, 50, NULL);
+			return 0;
+		}
+	case WM_GETMINMAXINFO:
+		{
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			MINMAXINFO *info = (MINMAXINFO *) lParam;
+			RECT rc;
+			GetWindowRect(lpCalc->hwndFrame, &rc);
 
-				RECT r;
-				GetClientRect(hwnd, &r);
-				r.bottom = tm.tmHeight*5/2 + tm.tmHeight;
-				FillRect(hdc, &r, GetStockBrush(WHITE_BRUSH));
+			DWORD SendWidth = (rc.right - rc.left) * 9 / 10;
+			DWORD SendHeight = 110;
+			AdjustWindowRect(&rc, WS_SIZEBOX | WS_POPUP, FALSE);
+			info->ptMinTrackSize.x = SendWidth;
+			info->ptMinTrackSize.y = SendHeight;
+			info->ptMaxTrackSize.x = SendWidth;
+			info->ptMaxTrackSize.y = SendHeight;
+			return 0;
+		}
+	case WM_SIZE:
+		{
+			RECT rc;
+			GetClientRect(hwnd, &rc);
+			HWND hwndProgress = GetDlgItem(hwnd, 1);
+			SetWindowPos(hwndProgress, NULL, 0, 0, rc.right - rc.left - tm.tmAveCharWidth*4, tm.tmHeight*3/2, SWP_NOMOVE | SWP_NOZORDER);
 
-				SelectObject(hdc, GetStockObject(DC_PEN));
-				SetDCPenColor(hdc, RGB(223,223,233));
-				MoveToEx(hdc, 0, r.bottom-1, NULL);
-				LineTo(hdc, r.right, r.bottom-1);
+			rc.top = 0;
+			rc.bottom = tm.tmHeight * 6;
+			AdjustWindowRect(&rc, WS_SIZEBOX | WS_POPUP, FALSE);
+			SetWindowPos(hwnd, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
 
-				r.left = tm.tmAveCharWidth*2;
-				r.top = tm.tmHeight*3/4;
-				r.right -= tm.tmAveCharWidth*2;
-				SetTextColor(hdc, RGB(0, 0, 0));
-				DrawText(hdc, szFile, -1, &r, DT_SINGLELINE);
+			return 0;
+		}
+	case WM_PAINT:
+		{
+			PAINTSTRUCT ps;
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPSENDINFO lpsi = g_SendInfo[lpCalc];
+
+			HDC hdc = BeginPaint(hwnd, &ps);
+
+			SetBkMode(hdc, TRANSPARENT);
+			SelectObject(hdc, hfontSegoe);
+
+			TCHAR szFile[256];
+			StringCbPrintf(szFile, sizeof(szFile), _T("Sending file %d of %d"), lpCalc->CurrentFile, lpCalc->FileCnt);
+
+			RECT r;
+			GetClientRect(hwnd, &r);
+			r.bottom = tm.tmHeight*5/2 + tm.tmHeight;
+			FillRect(hdc, &r, GetStockBrush(WHITE_BRUSH));
+
+			SelectObject(hdc, GetStockObject(DC_PEN));
+			SetDCPenColor(hdc, RGB(223,223,233));
+			MoveToEx(hdc, 0, r.bottom-1, NULL);
+			LineTo(hdc, r.right, r.bottom-1);
+
+			r.left = tm.tmAveCharWidth*2;
+			r.top = tm.tmHeight*3/4;
+			r.right -= tm.tmAveCharWidth*2;
+			SetTextColor(hdc, RGB(0, 0, 0));
+			DrawText(hdc, szFile, -1, &r, DT_SINGLELINE);
 
 
-				OffsetRect(&r, 0, tm.tmHeight);
-				r.left += tm.tmAveCharWidth;
-				SetTextColor(hdc, RGB(90, 90, 90));
+			OffsetRect(&r, 0, tm.tmHeight);
+			r.left += tm.tmAveCharWidth;
+			SetTextColor(hdc, RGB(90, 90, 90));
 
-				DrawText(hdc, current_file_sending, -1, &r, DT_SINGLELINE | DT_PATH_ELLIPSIS);
+			DrawText(hdc, lpsi->lpszCurrentFile, -1, &r, DT_SINGLELINE | DT_PATH_ELLIPSIS);
 
-				EndPaint(hwnd, &ps);
-				return 0;
-			}
-		case WM_USER: {
-				// Update the progress bar
-				SendMessage(hwndProgress, PBM_SETSTEP, 1, 0);
-				SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, lpCalc->cpu.pio.link->vlink_size/4));
-				SendMessage(hwndProgress, PBM_SETPOS, lpCalc->cpu.pio.link->vlink_send/4, 0);
+			EndPaint(hwnd, &ps);
+			return 0;
+		}
+	case WM_TIMER:
+		{
+			return SendMessage(hwnd, WM_USER, 0, NULL);
+		}
+	case WM_USER:
+		{
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			HWND hwndProgress = GetDlgItem(hwnd, 1);
+			// Update the progress bar
+			SendMessage(hwndProgress, PBM_SETSTEP, 1, 0);
+			SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, lpCalc->cpu.pio.link->vlink_size/4));
+			SendMessage(hwndProgress, PBM_SETPOS, lpCalc->cpu.pio.link->vlink_send/4, 0);
 
-				InvalidateRect(hwnd, NULL, FALSE);
-				UpdateWindow(hwnd);
-				return 0;
-			}
-		case WM_CLOSE: {
-				DestroyWindow(hwnd);
-				return 0;
-			}
-		default:
+			InvalidateRect(hwnd, NULL, FALSE);
+			UpdateWindow(hwnd);
+			return 0;
+		}
+	case WM_CLOSE:
+		{
+			DestroyWindow(hwnd);
+			return 0;
+		}
+	default:
+		{
 			return DefWindowProc(hwnd, Message, wParam, lParam);
+		}
 	}
 }
 
@@ -474,21 +571,6 @@ void ThreadSend(TCHAR *FileNames, int ram, LPCALC calc) {
 	RegisterClassEx(&wcx);
 
 
-	RECT r;
-	GetWindowRect(lpCalc->hwndLCD, &r);
-
-	DWORD SendWidth = (r.right - r.left) * 9 / 10;
-	DWORD SendHeight = 90; //10 * HIWORD(GetDialogBaseUnits());
-
-	hwndSend = CreateWindowEx(
-			0,
-			_T("WabbitSendClass"),
-			NULL,
-			WS_SIZEBOX | WS_POPUP | WS_VISIBLE,
-			r.left+(r.right - r.left - SendWidth)/2, r.top+(r.bottom - r.top - SendHeight)/2, SendWidth, SendHeight,
-			lpCalc->hwndLCD, NULL, g_hInst, 0
-	);
-	
     hdlSend = CreateThread(NULL,0,ThreadSendStart, sf, 0, NULL);
 
     if ( hdlSend  == NULL) {

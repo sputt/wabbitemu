@@ -86,10 +86,10 @@ typedef struct tagCALC {
 	apphdr_t *last_transferred_app;
 
 	volatile BOOL send;
-	volatile int CurrentFile;
-	volatile int FileCnt;
-	volatile int BytesSent;
-	volatile int SendSize;
+	LONG CurrentFile;
+	LONG FileCnt;
+	LONG BytesSent;
+	LONG SendSize;
 
 	gif_disp_states gif_disp_state;
 

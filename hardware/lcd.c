@@ -235,15 +235,7 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 		}
 		
 		if (lcd->mode == MODE_GAME_GRAY) {
-			if (lcd->x == 0 && lcd->y == 0) {
-				u_int i;
-				for (i = 0; i < lcd->shades; i++) {
-					if (memcmp(lcd->display, lcd->queue[i], DISPLAY_SIZE) == 0) {
-						LCD_update_image(lcd);
-						break;
-					}
-				}
-				
+			if ((lcd->x == 0) && (lcd->y == 0)) {
 				LCD_enqueue(lcd);
 				lcd->time = tc_elapsed(cpu->timer_c);
 			}
@@ -426,10 +418,7 @@ u_char *LCD_update_image(LCD_t *lcd) {
  * the generated image will be blank
  */
 u_char* LCD_image(LCD_t *lcd) {
-	if (lcd->mode == MODE_GAME_GRAY)
-		return (uint8_t*) lcd->screen;
-	else
-		return LCD_update_image(lcd);
+	return LCD_update_image(lcd);
 }
 
 
