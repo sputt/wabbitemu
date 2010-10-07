@@ -657,7 +657,6 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 #ifdef _DEBUG
 static void print_command_ID(uint8_t command_ID) {
 	char buffer[256];
-#ifdef WINVER
 	switch (command_ID) {
 		case CID_ACK:
 		strcpy_s(buffer, "ACK");
@@ -702,52 +701,6 @@ static void print_command_ID(uint8_t command_ID) {
 		strcpy_s(buffer, "error");
 		break;
 	}
-#else
-	switch (command_ID) {
-		case CID_ACK:
-		strcpy(buffer, "ACK");
-		break;
-		case CID_CTS:
-		strcpy(buffer, "CTS");
-		break;
-		case CID_DATA:
-		strcpy(buffer, "DATA");
-		break;
-		case CID_DEL:
-		strcpy(buffer, "DEL");
-		break;
-		case CID_EOT:
-		strcpy(buffer, "EOT");
-		break;
-		case CID_ERR:
-		strcpy(buffer, "ERR");
-		break;
-		case CID_EXIT:
-		strcpy(buffer, "SKIP/EXIT");
-		break;
-		case CID_RDY:
-		strcpy(buffer, "RDY");
-		break;
-		case CID_REQ:
-		strcpy(buffer, "REQ");
-		break;
-		case CID_RTS:
-		strcpy(buffer, "RTS");
-		break;
-		case CID_SCR:
-		strcpy(buffer, "SCR");
-		break;
-		case CID_VAR:
-		strcpy(buffer, "VAR");
-		break;
-		case CID_VER:
-		strcpy(buffer, "VER");
-		break;
-		default:
-		strcpy(buffer, "error");
-		break;
-	}
-#endif
 	printf(buffer);
 }
 #endif
