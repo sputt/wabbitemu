@@ -124,12 +124,18 @@ namespace Revsoft.Wabbitcode
 		{
 			get
 			{
-                if (!hasInited)
-                    Thread.Sleep(200);
-                if (editorBox.InvokeRequired)
-                    return Invoke(new GetTextDelegate(GetText)).ToString();
-                else
-                    return editorBox.Text;
+                try
+                {
+                    if (!hasInited)
+                        Thread.Sleep(200);
+                    if (editorBox.InvokeRequired)
+                        return Invoke(new GetTextDelegate(GetText)).ToString();
+                    else
+                        return editorBox.Text;
+                }
+                catch (Exception) {
+                    return null;
+                }
 			}
 		}
 

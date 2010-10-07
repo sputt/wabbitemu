@@ -26,8 +26,11 @@ namespace Revsoft.AutoUpdater
             for (int i = 0; i < args.Length; i++)
             {
                 string arg = args[i];
-                if (arg == "-A" && !isElevated)
-                    requiresAdmin = true;
+                if (arg == "-A")
+                    if (!isElevated)
+                        requiresAdmin = true;
+                    else
+                        continue;
                 else if (arg == "-R")
                     processName = args[++i];
                 else
@@ -46,7 +49,7 @@ namespace Revsoft.AutoUpdater
                         UseShellExecute = true,
                         Verb = "runas",
                         FileName = "Revsoft.AutoUpdater.exe",
-                        Arguments = "-A"
+                        Arguments = "-A " + String.Join(" ", args)
                     }
                 };
                 process.Start();
@@ -72,6 +75,7 @@ namespace Revsoft.AutoUpdater
                 string downloadPath = downloadPaths[i];
                 try
                 {
+                    Console.WriteLine("Downloading " + Path.GetFileName(filePath));
                     bool succeeded = DownloadTempFile(downloadPath, filePath);
                     if (!succeeded)
                     {
@@ -92,11 +96,19 @@ namespace Revsoft.AutoUpdater
                     Console.WriteLine(ex.ToString());
                 }
             }
-            if (!string.IsNullOrEmpty(processName))
+            try
             {
-                Process process = new Process();
-                process.StartInfo.FileName = processName;
-                process.Start();
+                if (!string.IsNullOrEmpty(processName))
+                {
+                    Process process = new Process();
+                    process.StartInfo.FileName = processName;
+                    process.StartInfo.WorkingDirectory = Directory.GetCurrentDirectory();
+                    process.Start();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error starting process" + processName + "\n" + ex);
             }
             Thread.Sleep(2000);
             
