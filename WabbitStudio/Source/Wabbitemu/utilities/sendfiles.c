@@ -285,7 +285,6 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 					MessageBox(hwndParent, _T("The file was unable to be sent because it is corrupt"), _T("Wabbitemu"), MB_OK);
 					break;
 				}
-
 #endif
 				if (var->type == FLASH_TYPE) {
 					// Rebuild the applist
@@ -298,6 +297,10 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 							break;
 						}
 					}
+					if (var->flash->type == FLASH_TYPE_OS) {
+						calc_reset(lpCalc);
+						calc_turn_on(lpCalc);
+					}
 				}
 				break;
 			case ROM_TYPE:
@@ -307,16 +310,13 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 				rom_load(lpCalc, lpszFileName);
 				SendMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
 				break;
-			case LABEL_TYPE:
-				{
+			case LABEL_TYPE: {
 					StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), lpszFileName);
 					_tprintf_s(_T("loading label file for slot %d: %s\n"), lpCalc->slot, lpszFileName);
 					VoidLabels(lpCalc);
 					labels_app_load(lpCalc, lpCalc->labelfn);
-
 					break;
 				}
-			case SKIP_TYPE:
 			case BREAKPOINT_TYPE:
 				break;
 			default:

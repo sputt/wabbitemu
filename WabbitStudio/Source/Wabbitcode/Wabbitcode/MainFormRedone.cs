@@ -1387,6 +1387,9 @@ namespace Revsoft.Wabbitcode
                 return;
             updateThread = new Thread(updateApp);
             updateThread.Start();
+            while (updateThread.IsAlive)
+                Application.DoEvents();
+            Application.Exit();
         }
 
         private Version curVersion =  Assembly.GetExecutingAssembly().GetName().Version;
@@ -1397,10 +1400,12 @@ namespace Revsoft.Wabbitcode
             bool downloadIt = (bool) Invoke(new OurDelegate(OnAskUser), new Object[] {newVersion});
             if (!downloadIt)
                 return;
-            Application.Exit();
             Process updater = new Process
                                   {
-                                      StartInfo = {FileName = "Revsoft.Autoupdater.exe"}
+                                      StartInfo = {
+                                          WorkingDirectory = Directory.GetCurrentDirectory(),
+                                          Arguments = "-R Revsoft.Wabbitcode.exe Revsoft.Wabbitcode.exe http://group.revsoft.org/Wabbitcode/Revsoft.Wabbitcode.exe Revsoft.TextEditor.dll http://group.revsoft.org/Wabbitcode/Revsoft.TextEditor.dll Revsoft.Docking.dll http://group.revsoft.org/Wabbitcode/Revsoft.Docking.dll IWabbitemu.dll http://group.revsoft.org/Wabbitcode/IWabbitemu.dll",
+                                          FileName = "Revsoft.Autoupdater.exe" }
                                   };
             updater.Start();
         }

@@ -393,6 +393,7 @@ Global
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.SPASM Release|x64.ActiveCfg = SPASM Release|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.SPASM Release|X86.ActiveCfg = SPASM Release|X86
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Any CPU.ActiveCfg = Wabbitcode Debug|Any CPU
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Any CPU.Build.0 = Wabbitcode Debug|Any CPU
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Wabbitcode Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Mixed Platforms.Build.0 = Wabbitcode Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X86
@@ -798,7 +799,6 @@ Global
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.SPASM Release|x64.ActiveCfg = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.SPASM Release|X86.ActiveCfg = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Any CPU.ActiveCfg = Debug DLL|Win32
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Any CPU.Build.0 = Debug DLL|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Debug|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Mixed Platforms.Build.0 = Debug|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Win32.ActiveCfg = Debug DLL|Win32

@@ -498,11 +498,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					_tremove(hexFile);
 					//if you dont want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
-						_tfopen_s(&file, osPath, _T("rb"));
-						Load_8xu(file);
-						fclose(file);
-						lpCalc->mem_c.flash[0x56] = 0x5A;
-						lpCalc->mem_c.flash[0x57] = 0xA5;
+						TIFILE_t *tifile = newimportvar(osPath);
+						forceload_os(&lpCalc->cpu, tifile);
 						if (Button_GetCheck(hRadioDownload) == BST_CHECKED)
 							_tremove(osPath);
 					}
@@ -845,11 +842,8 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 
 					//if you dont want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
-						_tfopen_s(&file, osPath, _T("rb"));
-						Load_8xu(file);
-						fclose(file);
-						lpCalc->mem_c.flash[0x56] = 0x5A;
-						lpCalc->mem_c.flash[0x57] = 0xA5;
+						TIFILE_t *tifile = newimportvar(osPath);
+						forceload_os(&lpCalc->cpu, tifile);						
 						//if (Button_GetCheck(hRadioDownload) == BST_CHECKED)
 						//	remove(osPath);
 					}
