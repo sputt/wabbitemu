@@ -198,7 +198,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Wabbitcode Debug|X86'">
     <OutputPath>bin\X86\Wabbitcode Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;NEW_DEBUGGING</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <BaseAddress>285212672</BaseAddress>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <FileAlignment>4096</FileAlignment>
@@ -571,6 +571,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
@@ -585,10 +586,6 @@
     <Reference Include="System.Xml">
       <Name>System.XML</Name>
     </Reference>
-    <Reference Include="WabbitemuLib">
-      <HintPath>..\..\Wabbitemu\WabbitemuLib.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AboutBox.cs">
@@ -597,6 +594,7 @@
     <Compile Include="AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
+    <Compile Include="AppBase.cs" />
     <Compile Include="AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

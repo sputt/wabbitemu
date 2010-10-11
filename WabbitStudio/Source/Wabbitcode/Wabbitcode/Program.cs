@@ -11,15 +11,8 @@ namespace Revsoft.Wabbitcode
         [STAThread]
         static void Main(string[] args)
         {
-            //frmSplash splashScreen = new frmSplash();
-            //splashScreen.Show(); 
-            Application.EnableVisualStyles();
-            //Application.Run(new spriteEditor());
-            Application.Run(new MainFormRedone(args));
-            //Application.Run(new frmMain());
-
-            //Application.Run(new frmMain());
-            //splashScreen.Hide();
+            AppBase appBase = new AppBase();
+            appBase.Run(args);
         }
     }
 }

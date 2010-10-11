@@ -11,7 +11,7 @@
 
 static HWND g_hwndVarTree;
 extern HINSTANCE g_hInst;
-extern unsigned char type_ext[][4];
+extern TCHAR type_ext[][4];
 TCHAR export_file_name[512] = _T("Zelda.8xk");
 
 static RECT VTrc = {-1, -1, -1, -1};
@@ -20,7 +20,7 @@ static BOOL Tree_init = FALSE;
 
 void test_function(int num);
 
-BOOL VarTreeOpen(BOOL refresh){
+BOOL VarTreeOpen(BOOL refresh) {
 	HWND vardialog = FindWindow(NULL, _T("Calculator Variables"));
 	if (vardialog) {
 		if (refresh) {
@@ -455,37 +455,37 @@ void RefreshTreeView(BOOL New) {
 						switch(sym->symbols[i].type_ID) {
 							case ProgObj:
 							case ProtProgObj:
-								Tree[slot].hVars[i] = InsertVar(Tree[slot].hProgram,tmpstring,icon);
+								Tree[slot].hVars[i] = InsertVar(Tree[slot].hProgram, tmpstring, icon);
 								break;
 							case AppVarObj:
-								Tree[slot].hVars[i] = InsertVar(Tree[slot].hAppVar,tmpstring,icon);
+								Tree[slot].hVars[i] = InsertVar(Tree[slot].hAppVar, tmpstring, icon);
 								break;
 							case GroupObj:
-								Tree[slot].hVars[i] = InsertVar(Tree[slot].hGroup,tmpstring,icon);
+								Tree[slot].hVars[i] = InsertVar(Tree[slot].hGroup, tmpstring, icon);
 								break;
 							case PictObj:
-								Tree[slot].hVars[i] = InsertVar(Tree[slot].hPic,tmpstring,icon);
+								Tree[slot].hVars[i] = InsertVar(Tree[slot].hPic, tmpstring, icon);
 								break;
 							case GDBObj:
-								Tree[slot].hVars[i] = InsertVar(Tree[slot].hGDB,tmpstring,icon);
+								Tree[slot].hVars[i] = InsertVar(Tree[slot].hGDB, tmpstring, icon);
 								break;
 							case StrngObj:
-								Tree[slot].hVars[i] = InsertVar(Tree[slot].hString,tmpstring,icon);
+								Tree[slot].hVars[i] = InsertVar(Tree[slot].hString, tmpstring, icon);
 								break;
 							case RealObj:
 							case CplxObj:
-								Tree[slot].hVars[i] = InsertVar(Tree[slot].hNumber,tmpstring,icon);
+								Tree[slot].hVars[i] = InsertVar(Tree[slot].hNumber, tmpstring, icon);
 								break;
 							case ListObj:
 							case CListObj:
-								Tree[slot].hVars[i] = InsertVar(Tree[slot].hList,tmpstring,icon);
+								Tree[slot].hVars[i] = InsertVar(Tree[slot].hList, tmpstring, icon);
 								break;
 							case MatObj:
-								Tree[slot].hVars[i] = InsertVar(Tree[slot].hMatrix,tmpstring,icon);
+								Tree[slot].hVars[i] = InsertVar(Tree[slot].hMatrix, tmpstring, icon);
 								break;
 //							case EquObj:
 							case EquObj_2:
-								Tree[slot].hVars[i] = InsertVar(Tree[slot].hEquation,tmpstring,icon);
+								Tree[slot].hVars[i] = InsertVar(Tree[slot].hEquation, tmpstring, icon);
 								break;
 						}
 					}
@@ -493,10 +493,10 @@ void RefreshTreeView(BOOL New) {
 				//free(sym);
 			}
 			// If no children are found kill parent.
-			for(i=0;i<11;i++) {
+			for(i = 0; i < 11; i++) {
 				if (Tree[slot].hTypes[i]) {
-					if (TreeView_GetChild(g_hwndVarTree,Tree[slot].hTypes[i]) == NULL) {
-						TreeView_DeleteItem(g_hwndVarTree,Tree[slot].hTypes[i]);
+					if (TreeView_GetChild(g_hwndVarTree, Tree[slot].hTypes[i]) == NULL) {
+						TreeView_DeleteItem(g_hwndVarTree, Tree[slot].hTypes[i]);
 						Tree[slot].hTypes[i] = NULL;
 					}
 				}
@@ -510,9 +510,9 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 	int slot;
 	u_int i;
 	TCHAR string[MAX_PATH];
+	memset(string, 0, sizeof(string));
 	for(slot = 0; slot < MAX_CALCS; slot++) {
 		if (Tree[slot].model) {
-			
 			for(i = 0; i < Tree[slot].applist.count; i++) {
 				if (Tree[slot].hApps[i] == hSelect) {
 					if (App_Name_to_String(&Tree[slot].applist.apps[i], string)) {
@@ -570,6 +570,7 @@ void *FillFileBuffer(HTREEITEM hSelect, void *buf) {
 	u_int slot, i, b;
 	_TUCHAR *buffer = (_TUCHAR *) buf;
 	TCHAR string[64];
+	memset(string, 0, sizeof(string));
 	_tprintf_s(_T("Fill file buffer\n"));
 	for(slot = 0; slot<MAX_CALCS; slot++) {
 		if (Tree[slot].model) {
@@ -591,10 +592,10 @@ void *FillFileBuffer(HTREEITEM hSelect, void *buf) {
 			for(i = 0; i < (u_int) (Tree[slot].sym.last - Tree[slot].sym.symbols + 1); i++) {
 				if (Tree[slot].hVars[i] == hSelect) {
 					if (Symbol_Name_to_String(&Tree[slot].sym.symbols[i], string)) {
-						MFILE *outfile = ExportVar(slot,NULL, &Tree[slot].sym.symbols[i]);
+						MFILE *outfile = ExportVar(slot, NULL, &Tree[slot].sym.symbols[i]);
 						if(!outfile) _putts(_T("MFile not found"));
 						_tprintf_s(_T("size: %d\n"), outfile->size);
-						for(b=0;b<outfile->size;b++) {
+						for(b = 0; b < outfile->size; b++) {
 							_tprintf_s(_T("%02X"),outfile->data[b]);
 							buffer[b] = outfile->data[b];
 						}

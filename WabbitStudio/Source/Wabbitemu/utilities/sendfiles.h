@@ -9,7 +9,6 @@ int SizeofFileList(TCHAR *);
 TCHAR* AppendName(TCHAR *, TCHAR *);
 BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination);
 void SendFiles(TCHAR *, int);
-void ThreadSend(TCHAR *, int, LPCALC);
 void NoThreadSend(const TCHAR*, int, LPCALC);
 
 #endif

@@ -32,6 +32,7 @@ private:
 
 	FORMATETC *m_pAccepted;
 	UINT m_nAccepted;
+	BOOL CheckValidData(IDataObject *pDataObject);
 };
 
 void RegisterDropWindow(HWND hwnd,   IDropTarget **ppDropTarget);

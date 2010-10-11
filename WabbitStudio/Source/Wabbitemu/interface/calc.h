@@ -47,7 +47,7 @@ typedef struct tagCALC {
 	memory_context_t mem_c;
 	timer_context_t timer_c;
 #ifdef WINVER
-	AUDIO_t* audio; // FIXME: Bad!
+	AUDIO_t *audio; // FIXME: Bad!
 #endif
 
 #ifdef WINVER
@@ -114,13 +114,13 @@ typedef struct DEBUG_STATE {
 
 typedef tagCALC CALC, *LPCALC;
 
-void calc_turn_on(calc_t *);
+void calc_turn_on(LPCALC);
 LPCALC calc_slot_new(void);
 u_int calc_count(void);
-int calc_reset(calc_t *);
-int calc_run_frame(calc_t *);
-int calc_run_seconds(calc_t *, double);
-int calc_run_timed(calc_t *, time_t);
+int calc_reset(LPCALC);
+int calc_run_frame(LPCALC);
+int calc_run_seconds(LPCALC, double);
+int calc_run_timed(LPCALC, time_t);
 int calc_run_all(void);
 
 #ifdef WITH_BACKUPS
@@ -131,12 +131,12 @@ void free_backups(int);
 void free_backup(debugger_backup *);
 #endif
 
-BOOL rom_load(calc_t *lpCalc, LPCTSTR FileName);
-void calc_slot_free(calc_t *);
+BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName);
+void calc_slot_free(LPCALC);
 
-int calc_init_83p(calc_t *);
-int calc_init_84p(calc_t *);
-int calc_init_83pse(calc_t *);
+int calc_init_83p(LPCALC);
+int calc_init_84p(LPCALC);
+int calc_init_83pse(LPCALC);
 
 void calc_erase_certificate(unsigned char *, int);
 

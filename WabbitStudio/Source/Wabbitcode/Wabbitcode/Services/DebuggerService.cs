@@ -9,8 +9,10 @@ using Microsoft.Win32;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Properties;
+#if NEW_DEBUGGING
 using WabbitemuLib;
 using Revsoft.Wabbitcode.Services.Debugger;
+#endif
 using System.Text;
 
 namespace Revsoft.Wabbitcode.Services
@@ -472,7 +474,7 @@ namespace Revsoft.Wabbitcode.Services
                     if (ProjectService.Project.ProjectOutputs.Count < 1)
                     {
                         DockingService.ShowError("No project outputs detected");
-                        isDebugging = false;
+                        CancelDebug();
                         return;
                     }
 					createdName = ProjectService.Project.ProjectOutputs[0];
@@ -482,14 +484,14 @@ namespace Revsoft.Wabbitcode.Services
                     if (ProjectService.Project.ListOutputs.Count < 1)
                     {
                         DockingService.ShowError("No List file was found");
-                        isDebugging = false;
+                        CancelDebug();
                         return;
                     }
                     listName = ProjectService.Project.ListOutputs[0];
                     if (ProjectService.Project.LabelOutputs.Count < 1)
                     {
                         DockingService.ShowError("No label file was found");
-                        isDebugging = false;
+                        CancelDebug();
                         return;
                     }
                     symName = ProjectService.Project.LabelOutputs[0];
@@ -498,7 +500,7 @@ namespace Revsoft.Wabbitcode.Services
 				else
 				{
 					DockingService.ShowError("No build config named Debug was found. Make sure you have setup a debug build config");
-					isDebugging = false;
+                    CancelDebug();
 					return;
 				}
 			}

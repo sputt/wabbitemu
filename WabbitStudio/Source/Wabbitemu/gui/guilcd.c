@@ -72,7 +72,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	CopyRect(&rr, &clientRect);
 
 	if (lpCalc->model >= TI_83P) {
-		rl.right = rr.left = rr.right/2;
+		rl.right = rr.left = rr.right / 2;
 	}
 
 	// Create the device context that holds the overlay
@@ -83,7 +83,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	SelectObject(hdc, bmpDragPane);
 
 	SetBkMode(hdc, TRANSPARENT);
-	SetTextColor(hdc, RGB(0xFF,0xFF,0xFF));
+	SetTextColor(hdc, RGB(0xFF, 0xFF, 0xFF));
 	HBRUSH hbrRAM = CreateSolidBrush(RAM_COLOR);
 	HBRUSH hbrArchive = CreateSolidBrush(ARCHIVE_COLOR);
 
@@ -131,15 +131,15 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 			vert[3].Red    = 0x7000;
 			vert[3].Green  = 0x2000;
 			vert[3].Blue   = 0x3000;
-			GradientFill(hdc,&vert[2],2,&gRect[0],1,GRADIENT_FILL_RECT_H);
+			GradientFill(hdc, &vert[2], 2, &gRect[0], 1, GRADIENT_FILL_RECT_H);
 		}
 
 		TCHAR txtArch[] = _T("Archive");
-		if ( GetTextExtentPoint32(hdc,txtArch, (int) _tcslen(txtArch),&TxtSize) ) {
+		if ( GetTextExtentPoint32(hdc,txtArch, (int) _tcslen(txtArch), &TxtSize)) {
 			TxtPt.x = ((rr.right - rr.left)-TxtSize.cx)/2;
 			TxtPt.y = ((rr.bottom - rr.top)-TxtSize.cy)/2;
-			if ( TxtPt.x < 0 ) TxtPt.x =0;
-			if ( TxtPt.y < 0 ) TxtPt.y =0;
+			if ( TxtPt.x < 0 ) TxtPt.x = 0;
+			if ( TxtPt.y < 0 ) TxtPt.y = 0;
 		} else {
 			TxtPt.x = rr.left+5;
 			TxtPt.y = rr.top+52;
@@ -159,15 +159,15 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 		vert[0].Red    = 0x3000;
 		vert[0].Green  = 0x7000;
 		vert[0].Blue   = 0x2000;
-		vert[1].x      = rl.right/3;
+		vert[1].x      = rl.right / 3;
 		vert[1].y      = rl.bottom;
 		vert[1].Red    = 0x6000;
 		vert[1].Green  = 0xC000;
 		vert[1].Blue   = 0x4000;
 
-		GradientFill(hdc,vert,2,gRect,1,GRADIENT_FILL_RECT_H);
+		GradientFill(hdc, vert, 2, gRect, 1, GRADIENT_FILL_RECT_H);
 		//0x60, 0xC0, 0x40
-		vert[2].x      = 2*rl.right/3;
+		vert[2].x      = 2*rl.right / 3;
 		vert[2].y      = rl.bottom;
 		vert[2].Red    = 0x6000;
 		vert[2].Green  = 0xC000;
@@ -178,7 +178,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 		vert[3].Green  = 0x7000;
 		vert[3].Blue   = 0x2000;
 
-		GradientFill(hdc,&vert[2],2,&gRect[0],1,GRADIENT_FILL_RECT_H);
+		GradientFill(hdc, &vert[2], 2, &gRect[0], 1, GRADIENT_FILL_RECT_H);
 	}
 
 	TCHAR txtRam[] = _T("RAM");
@@ -686,8 +686,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					DWORD dwEffect = DROPEFFECT_NONE;
 					//if (SUCCEEDED(hres))
 						DoDragDrop((IDataObject*) pDataObject, (IDropSource*) pDropSource,  DROPEFFECT_COPY, &dwEffect);
-
-
 					pDragSourceHelper->Release();
 					pDataObject->Release();
 					pDropSource->Release();
@@ -696,15 +694,15 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_COPYDATA:
 		{
-			int size = (int)((PCOPYDATASTRUCT)lParam)->cbData;
-			TCHAR* string = (TCHAR *)((PCOPYDATASTRUCT)lParam)->lpData;
-			int ram = (int)((PCOPYDATASTRUCT)lParam)->dwData;
+			int size = (int) ((PCOPYDATASTRUCT)lParam)->cbData;
+			TCHAR* string = (TCHAR *) ((PCOPYDATASTRUCT)lParam)->lpData;
+			int ram = (int) ((PCOPYDATASTRUCT)lParam)->dwData;
 
 			if (size && string && size == SizeofFileList(string))	{
-				TCHAR* FileNames = (TCHAR *) malloc(size);
-				memset(FileNames,0,size);
-				memcpy(FileNames,string,size);
-				ThreadSend(FileNames,ram, (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA));
+				TCHAR *FileNames = (TCHAR *) malloc(size);
+				memset(FileNames, 0, size);
+				memcpy(FileNames, string, size);
+				SendFileToCalc((LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA), FileNames, ram);
 			}
 			break;
 		}

@@ -204,7 +204,7 @@ Global
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Release|Any CPU.Build.0 = Wabbitcode Release|Any CPU
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Release|Mixed Platforms.ActiveCfg = Wabbitcode Release|X64
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Release|Mixed Platforms.Build.0 = Wabbitcode Release|X64
-		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Release|Win32.ActiveCfg = Wabbitcode Release|X64
+		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Release|Win32.ActiveCfg = Wabbitcode Release|Any CPU
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Release|x64.ActiveCfg = Wabbitcode Release|X64
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Release|x64.Build.0 = Wabbitcode Release|X64
 		{C45C62A4-98E1-4768-9690-EFD2EB2C3272}.Wabbitcode Release|X86.ActiveCfg = Wabbitcode Release|X86
