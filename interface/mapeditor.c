@@ -30,8 +30,8 @@ __declspec (dllexport) BOOL WINAPI DllMain(HINSTANCE hModule, DWORD  ul_reason_f
 	switch (ul_reason_for_call)
 	{
 	case DLL_PROCESS_ATTACH:
-		LoadRegistrySettings();
 		ZeroMemory(calcs, sizeof(calcs));
+		LoadRegistrySettings(&calcs[0]);
 		break;
 	}
 	return TRUE;
@@ -77,17 +77,17 @@ typedef struct {
 // 2 = enemy
 __declspec (dllexport) 
 int FindAnimationInfo(int type, unsigned short addr, int *frame, unsigned short *base_addr) {
-	char *name = NULL;
+	TCHAR *name = NULL;
 	if (type == 0) {
-		name = "ANIMATE";
+		name = _T("ANIMATE");
 	} else if (type == 1) {
-		name = "OBJECT";
+		name = _T("OBJECT");
 	} else {
-		name = "ENEMY";
+		name = _T("ENEMY");
 	}
 	
-	char label_name[64];
-	sprintf(label_name, "%s_ANIM_PAGE", name);
+	TCHAR label_name[64];
+	_tprintf_s(label_name, _T("%s_ANIM_PAGE"), name);
 	label_struct *lab = lookup_label(label_name);
 	if (lab == NULL) {
 		return 0;
@@ -119,7 +119,7 @@ int FindAnimationInfo(int type, unsigned short addr, int *frame, unsigned short 
 
 __declspec (dllexport) 
 ZOBJECT *GetZeldaObjectArray() {
-	label_struct *lab = lookup_label("object_array");
+	label_struct *lab = lookup_label(_T("object_array"));
 	if (lab == NULL) {
 		return NULL;
 	}
@@ -129,7 +129,7 @@ ZOBJECT *GetZeldaObjectArray() {
 
 __declspec (dllexport) 
 ZANIMATE *GetZeldaAnimateArray() {
-	label_struct *lab = lookup_label("animate_array");
+	label_struct *lab = lookup_label(_T("animate_array"));
 	if (lab == NULL) {
 		return NULL;
 	}
@@ -139,7 +139,7 @@ ZANIMATE *GetZeldaAnimateArray() {
 
 __declspec (dllexport)
 unsigned char *GetZeldaMapData() {
-	label_struct *lab = lookup_label("map_data");
+	label_struct *lab = lookup_label(_T("map_data"));
 	if (lab == NULL) {
 		return NULL;
 	}
@@ -149,7 +149,7 @@ unsigned char *GetZeldaMapData() {
 
 __declspec (dllexport)
 void *GetZeldaDrawQueue() {
-	label_struct *lab = lookup_label("draw_queue");
+	label_struct *lab = lookup_label(_T("draw_queue"));
 	if (lab == NULL) {
 		return NULL;
 	}
@@ -159,7 +159,7 @@ void *GetZeldaDrawQueue() {
 
 __declspec (dllexport)
 int GetZeldaDrawQueueCount() {
-	label_struct *lab = lookup_label("draw_count");
+	label_struct *lab = lookup_label(_T("draw_count"));
 	if (lab == NULL) {
 		return 0;
 	}
@@ -193,20 +193,20 @@ void EnableCalc(BOOL fEnable) {
 __declspec (dllexport)
 void HookZelda(void (*fnCallback)(void) ) {
 	
-	label_struct *lab = lookup_label("sort_done");
+	label_struct *lab = lookup_label(_T("sort_done"));
 	if (lab == NULL) {
 		return;
 	}
 	int i;
 	for (i = 0; i < calcs[0].applist.count; i++) {
-		if (_strnicmp(calcs[0].applist.apps[i].name, "ZELDA", 5) == 0) {
+		if (_tcsnicmp(calcs[0].applist.apps[i].name, _T("ZELDA"), 5) == 0) {
 			BasePage = calcs[0].applist.apps[i].page;
 			break;
 		}
 	}
 	set_break(&calcs[0].mem_c, lab->IsRAM, lab->page, lab->addr);
 
-	label_struct *menu_lab = lookup_label("sub_sync");
+	label_struct *menu_lab = lookup_label(_T("sub_sync"));
 	if (menu_lab != NULL)
 	{
 		set_break(&calcs[0].mem_c, menu_lab->IsRAM, menu_lab->page, menu_lab->addr);
@@ -216,12 +216,12 @@ void HookZelda(void (*fnCallback)(void) ) {
 
 // returns bytes read
 __declspec(dllexport)
-int ReadVariable(char *name, void *data, int bytes) {
+int ReadVariable(TCHAR *name, void *data, int bytes) {
 	int address = 0;
 	label_struct *lab = lookup_label(name);
 
 	if (lab == NULL) {
-		address = atoi(name);
+		address = _tstoi(name);
 	}
 	else
 	{
@@ -230,7 +230,7 @@ int ReadVariable(char *name, void *data, int bytes) {
 	
 	int i;
 	for (i = 0; i < bytes; i++) {
-		((unsigned char *) data)[i] = mem_read(&calcs[0].mem_c, address + i);
+		((_TUCHAR *) data)[i] = mem_read(&calcs[0].mem_c, address + i);
 	}
 	return bytes;
 }

@@ -393,53 +393,58 @@ LINK_ERR link_send_var(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 	if (tifile->var == NULL)
 		return LERR_FILE;
 
-	cpu->pio.link->vlink_size = tifile->var->length;
+	int i = 0;
+	TIVAR_t *var = tifile->vars[i];
+	while (var != NULL) {
+		cpu->pio.link->vlink_size = var->length;
 
-	int err;
-	switch (err = setjmp(exc_pkt)) {
-	case 0: {
-		TI_PKTHDR rpkt;
-		u_char data[64];
+		int err;
+		switch (err = setjmp(exc_pkt)) {
+		case 0: {
+			TI_PKTHDR rpkt;
+			u_char data[64];
 
-		// Request to send
-		link_RTS(cpu, tifile, dest);
+			// Request to send
+			link_RTS(cpu, tifile, dest);
 
-		// Receive the ACK
-		link_recv_pkt(cpu, &rpkt, data);
-		if (rpkt.command_ID != CID_ACK)
-			return LERR_LINK;
-
-		// Receive Clear To Send
-		link_recv_pkt(cpu, &rpkt, data);
-		if (rpkt.command_ID != CID_CTS) {
-			if (rpkt.command_ID == CID_EXIT) {
-				link_send_pkt(cpu, CID_ACK, NULL);
-				return LERR_MEM;
-			} else
+			// Receive the ACK
+			link_recv_pkt(cpu, &rpkt, data);
+			if (rpkt.command_ID != CID_ACK)
 				return LERR_LINK;
+
+			// Receive Clear To Send
+			link_recv_pkt(cpu, &rpkt, data);
+			if (rpkt.command_ID != CID_CTS) {
+				if (rpkt.command_ID == CID_EXIT) {
+					link_send_pkt(cpu, CID_ACK, NULL);
+					return LERR_MEM;
+				} else
+					return LERR_LINK;
+			}
+
+			// Send the ACK
+			link_send_pkt(cpu, CID_ACK, NULL);
+
+			// Send the single data packet containing the whole file
+			TI_DATA s_data = { var->length, var->data };
+			link_send_pkt(cpu, CID_DATA, &s_data);
+
+			// Receive the ACK
+			link_recv_pkt(cpu, &rpkt, data);
+			if (rpkt.command_ID != CID_ACK)
+				return LERR_LINK;
+
+			// Send the End of Transmission
+			if (cpu->pio.model != TI_82)
+				link_send_pkt(cpu, CID_EOT, NULL);
+			break;
 		}
-
-		// Send the ACK
-		link_send_pkt(cpu, CID_ACK, NULL);
-
-		// Send the single data packet containing the whole file
-		TI_DATA s_data = { tifile->var->length, tifile->var->data };
-		link_send_pkt(cpu, CID_DATA, &s_data);
-
-		// Receive the ACK
-		link_recv_pkt(cpu, &rpkt, data);
-		if (rpkt.command_ID != CID_ACK)
-			return LERR_LINK;
-
-		// Send the End of Transmission
-		if (cpu->pio.model != TI_82)
-			link_send_pkt(cpu, CID_EOT, NULL);
-
-			return LERR_SUCCESS;
+		default:
+				return LERR_SYSTEM;
+		}
+		var = tifile->vars[++i];
 	}
-	default:
-			return LERR_SYSTEM;
-	}
+	return LERR_SUCCESS;
 }
 
 /* Send a flash application over the virtual link

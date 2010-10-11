@@ -168,7 +168,7 @@ void calc_erase_certificate(unsigned char *mem, int size) {
 	return;
 }
 
-BOOL rom_load(calc_t *lpCalc, LPCTSTR FileName) {
+BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	if (lpCalc == NULL)
 		return FALSE;
 	//doesnt matter for the 2nd two args never a group

@@ -196,5 +196,5 @@ All Files (*.*)\0*.*\0\0");
 		if (HookOptions.bArchive) send_mode = SEND_ARC;
 	}
 	
-	ThreadSend(FileNames, send_mode, (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	SendFileToCalc((LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA), FileNames, send_mode);
 }

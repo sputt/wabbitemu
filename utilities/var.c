@@ -378,6 +378,7 @@ TIFILE_t* ImportBackup(FILE *infile, TIFILE_t *tifile) {
 
 void NullTiFile(TIFILE_t* tifile) {
 	tifile->var = NULL;	//make sure its null. mostly for freeing later
+	memset(tifile->vars, 0, sizeof(tifile->vars));
 	tifile->flash = NULL;
 	tifile->rom = NULL;
 	tifile->save = NULL;
@@ -460,7 +461,8 @@ void ReadTiFileHeader(FILE *infile, TIFILE_t *tifile) {
 	return;
 }
 
-TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile) {
+static short length2 = 0;
+TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber = 0) {
 	switch (tifile->type) {
 		case ROM_TYPE:
 			return ImportROMFile(infile, tifile);
@@ -478,12 +480,13 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile) {
 	unsigned short headersize;
 	unsigned short length;
 	unsigned char vartype, *ptr;
-	unsigned short length2;
 
-	tmpread(infile);
-	length2 = tmp;
-	tmpread(infile);
-	length2 += tmp<<8;
+	if (varNumber == 0) {
+		tmpread(infile);
+		length2 = tmp;
+		tmpread(infile);
+		length2 += tmp<<8;
+	}
 
 	tmpread(infile);
 	headersize = tmp;
@@ -498,25 +501,25 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile) {
 	tmpread(infile);
 	vartype = tmp;
 
-	if ((tifile->model == TI_73 && vartype==0x13) ||
-		(tifile->model == TI_82 && vartype==0x0F)) {
+	if ((tifile->model == TI_73 && vartype == 0x13) ||
+		(tifile->model == TI_82 && vartype == 0x0F)) {
 		tifile->backup->headersize	= headersize;
 		tifile->backup->length1		= length;
 		tifile->backup->vartype		= vartype;
 		return ImportBackup(infile, tifile);
 	}
 
-	if (length2 > length + 17) {
+	if (length2 > length + 17 || tifile->type == GROUP_TYPE) {
 		tifile->type = GROUP_TYPE;
+		length2 -= 0x39;
+	} else {
+		tifile->type = VAR_TYPE;
 	}
 
 	tifile->var = (TIVAR_t *) malloc(sizeof(TIVAR_t));
-	if (tifile->var == NULL) {
-		FreeTiFile(tifile);
-		return NULL;
-	}
-
-	tifile->type				= VAR_TYPE;
+	tifile->vars[varNumber] = tifile->var;
+	if (tifile->var == NULL)
+		return FreeTiFile(tifile);
 
 	tifile->var->headersize		= headersize;
 	tifile->var->length			= length;
@@ -540,30 +543,21 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile) {
 			return FreeTiFile(tifile);
 		ptr[i++] =tmp;
 	} else {
-		ptr[i++] =0;
-		ptr[i++] =0;
+		ptr[i++] = 0;
+		ptr[i++] = 0;
 	}
 	tmp = fgetc(infile);
-	if (tmp == EOF) {
-		fclose(infile);
-		FreeTiFile(tifile);
-		return NULL;
-	}
+	if (tmp == EOF)
+		return FreeTiFile(tifile);
 	ptr[i++] =tmp;
 	tmp = fgetc(infile);
-	if (tmp == EOF) {
-		fclose(infile);
-		FreeTiFile(tifile);
-		return NULL;
-	}
+	if (tmp == EOF)
+		return FreeTiFile(tifile);
 	ptr[i++] =tmp;
 
 	tifile->var->data = (unsigned char *) malloc(tifile->var->length);
-	if (tifile->var->data == NULL) {
-		fclose(infile);
-		FreeTiFile(tifile);
-		return NULL;
-	}
+	if (tifile->var->data == NULL)
+		return FreeTiFile(tifile);
 
 	i = 0;
 	if (tifile->model == TI_86)
@@ -571,14 +565,21 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile) {
 
 	for(i = 0; i < tifile->var->length && !feof(infile); i++) {
 		tmp = fgetc(infile);
-		if (tmp == EOF) {
-			fclose(infile);
-			FreeTiFile(tifile);
-			return NULL;
-		}
+		if (tmp == EOF)
+			return FreeTiFile(tifile);
 		tifile->var->data[i] =tmp;
 	}
 
+	if (tifile->type == GROUP_TYPE) {
+		if (varNumber != 0)
+			return tifile;
+		while (tifile != NULL) {
+			length2 -= tifile->var->length + tifile->var->headersize;
+			if (length2 < 0)
+				break;
+			tifile = ImportVarData(infile, tifile, ++varNumber);
+		}
+	}
 
 	tifile->chksum = (fgetc(infile) & 0xFF) + ((fgetc(infile) & 0xFF) << 8 );
 	return tifile;
@@ -609,10 +610,8 @@ TIFILE_t* newimportvar(LPCTSTR filePath) {
 #else
 	infile = fopen(filePame, "rb");
 #endif
-	if (infile == NULL) {
-		FreeTiFile(tifile);
-		return NULL;
-	}
+	if (infile == NULL)
+		return FreeTiFile(tifile);
 
 	ReadTiFileHeader(infile, tifile);
 
@@ -662,7 +661,7 @@ TIFILE_t* importvar(LPCTSTR FileName, int SlotSave, int ram) {
 	tmpread(infile);
 	vartype = tmp;
 
-	if (length2 > length + 17)
+	/*if (length2 > length + 17)
 	{
 		while (length2 > length + 17) {
 			TIFILE_t* groupFile = (TIFILE_t*) malloc(sizeof(TIFILE_t));
@@ -792,7 +791,7 @@ Done_Group:
 		fclose(infile);
 		tifile->var->data = NULL;
 		return tifile;
-	}
+	}*/
 	
 
 	return tifile;
@@ -803,13 +802,16 @@ TIFILE_t* FreeTiFile(TIFILE_t * tifile) {
 	if (!tifile) return NULL;
 	if (tifile->save) FreeSave(tifile->save);
 
-	if (tifile->var) {
-		if (tifile->var->data) free(tifile->var->data);
-		free(tifile->var);
+	int i = 0;
+	while(tifile->vars[i] != NULL) {
+		if (tifile->vars[i]->data) free(tifile->vars[i]->data);
+		free(tifile->vars[i]);
+		tifile->vars[i] = NULL;
+		i++;
 	}
 	if (tifile->flash) {
 		int i;
-		for (i=0;i<256;i++) {
+		for (i = 0; i < 256; i++) {
 			if (tifile->flash->data[i]) free(tifile->flash->data[i]);
 		}
 		free(tifile->flash);
@@ -821,7 +823,3 @@ TIFILE_t* FreeTiFile(TIFILE_t * tifile) {
 	free(tifile);
 	return NULL;
 }
-
-
-
-

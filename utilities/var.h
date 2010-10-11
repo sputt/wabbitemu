@@ -79,7 +79,8 @@ typedef struct TIFILE {
 	unsigned char subsig[3];
 	unsigned char comment[42];
 	unsigned char length;
-	TIVAR_t * var;
+	TIVAR_t *var;
+	TIVAR_t *vars[256];
 	unsigned char chksum;
 	int model;
 	int type;

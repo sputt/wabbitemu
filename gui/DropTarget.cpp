@@ -124,8 +124,12 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 	}
 
 	for (i = 0; i < m_nAccepted; i++) {
-		if (SUCCEEDED(pDataObject->QueryGetData(&m_pAccepted[i])))
+		if (SUCCEEDED(pDataObject->QueryGetData(&m_pAccepted[i]))) {
+			BOOL valid = CheckValidData(pDataObject);
+			if (!valid)
+				i = m_nAccepted;
 			break;
+		}
 	}
 
 	if (i < m_nAccepted) {
@@ -195,6 +199,28 @@ HRESULT __stdcall CDropTarget::DragLeave() {
 static BOOL WriteStreamToFile(IStream *pStream, LPCTSTR lpszFileName)
 {
 	//pStream->g
+}
+
+BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
+	STGMEDIUM stgmed;
+	TCHAR path[MAX_PATH];
+	BOOL valid = FALSE;
+	for (UINT i = 0; i < m_nAccepted; i++) {
+		if (SUCCEEDED(pDataObject->GetData(&m_pAccepted[i], &stgmed))) {
+			switch (m_pAccepted[i].cfFormat) {
+				case CF_HDROP: {
+					PVOID pData = GlobalLock(stgmed.hGlobal);
+					DragQueryFile((HDROP) pData, i, path, ARRAYSIZE(path));
+					TIFILE_t *tifile = newimportvar(path);
+					valid = tifile != NULL;
+					FreeTiFile(tifile);
+					GlobalUnlock(stgmed.hGlobal);
+					break;
+				}
+			}
+		}
+	}
+	return valid;
 }
 
 HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {

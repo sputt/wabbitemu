@@ -1654,6 +1654,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					UnregisterDropWindow(hwnd, lpCalc->pDropTarget);
 				lpCalc->pDropTarget = NULL;
 
+				//if (link_connected(lpCalc->slot))
+				//	link_disconnect(&lpCalc->cpu);
+
 				lpCalc->hwndFrame = NULL;
 				return 0;
 			}

@@ -115,21 +115,16 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 
 	if (fAsync == TRUE)
 	{
-		if (hSendInfoMutex == NULL)
-		{
+		if (hSendInfoMutex == NULL) {
 			hSendInfoMutex = CreateMutex(NULL, TRUE, NULL);
-		}
-		else
-		{
-			if (WaitForSingleObject(hSendInfoMutex, INFINITE) != WAIT_OBJECT_0)
-			{
+		} else {
+			if (WaitForSingleObject(hSendInfoMutex, INFINITE) != WAIT_OBJECT_0) {
 				return FALSE;
 			}
 		}
 
 		LPSENDINFO lpsi;
-		if (g_SendInfo.find(lpCalc) == g_SendInfo.end())
-		{
+		if (g_SendInfo.find(lpCalc) == g_SendInfo.end()) {
 			lpsi = new SENDINFO;
 			ZeroMemory(lpsi, sizeof(SENDINFO));
 			lpsi->FileList = new std::vector<std::tstring>;
@@ -143,28 +138,22 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 			lpsi = g_SendInfo[lpCalc];
 		}
 
-		if (lpsi->hwndDlg == NULL)
-		{
+		if (lpsi->hwndDlg == NULL) {
 			lpsi->hwndDlg = CreateSendFileProgress(lpCalc->hwndFrame, lpCalc);
 		}
 
 		// Add the file to the transfer queue
-		if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0)
-		{
+		if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0) {
 			lpsi->FileList->push_back(lpszFileName);
 			ReleaseMutex(lpsi->hFileListMutex);
-		}
-		else
-		{
+		} else {
 			ReleaseMutex(hSendInfoMutex);
 			return FALSE;
 		}
 
 		// Make sure the download thread is started
-		if ((lpsi->hThread == NULL) || (WaitForSingleObject(lpsi->hThread, 0) == WAIT_OBJECT_0))
-		{
-			if (lpsi->hThread != NULL)
-			{
+		if ((lpsi->hThread == NULL) || (WaitForSingleObject(lpsi->hThread, 0) == WAIT_OBJECT_0)) {
+			if (lpsi->hThread != NULL) {
 				CloseHandle(lpsi->hThread);
 			}
 			lpsi->hThread = CreateThread(NULL, 0, SendFileToCalcThread, lpCalc, 0, NULL);
@@ -172,9 +161,7 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 
 		ReleaseMutex(hSendInfoMutex);
 		return TRUE;
-	}
-	else
-	{
+	} else {
 		return FALSE;
 	}
 }
@@ -192,7 +179,7 @@ typedef struct SENDFILES {
 int SizeofFileList(TCHAR* FileNames) {
 	int i;
 	if (FileNames == NULL) return 0;
-	for(i = 0; FileNames[i]!=0 || FileNames[i+1]!=0; i++);
+	for(i = 0; FileNames[i] != 0 || FileNames[i+1] != 0; i++);
 	return i+2;
 }
 
@@ -228,6 +215,7 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 	LINK_ERR result;
 	if (var != NULL) {
 		switch(var->type) {
+			case GROUP_TYPE:
 			case BACKUP_TYPE:
 			case VAR_TYPE:
 			case FLASH_TYPE:
@@ -393,8 +381,7 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 
-			if (hfontSegoe == NULL)
-			{
+			if (hfontSegoe == NULL) {
 				NONCLIENTMETRICS ncm = {0};
 				ncm.cbSize = sizeof(ncm);
 				SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(ncm), &ncm, 0);
@@ -422,9 +409,10 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			SetTimer(hwnd, 1, 50, NULL);
 			return 0;
 		}
-	case WM_GETMINMAXINFO:
-		{
+		case WM_GETMINMAXINFO: {
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			if (!lpCalc)
+				return 0;
 			MINMAXINFO *info = (MINMAXINFO *) lParam;
 			RECT rc;
 			GetWindowRect(lpCalc->hwndFrame, &rc);
@@ -438,8 +426,7 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			info->ptMaxTrackSize.y = SendHeight;
 			return 0;
 		}
-	case WM_SIZE:
-		{
+		case WM_SIZE: {
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 			HWND hwndProgress = GetDlgItem(hwnd, 1);
@@ -452,8 +439,7 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 			return 0;
 		}
-	case WM_PAINT:
-		{
+		case WM_PAINT: {
 			PAINTSTRUCT ps;
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			LPSENDINFO lpsi = g_SendInfo[lpCalc];
@@ -495,12 +481,10 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			EndPaint(hwnd, &ps);
 			return 0;
 		}
-	case WM_TIMER:
-		{
+		case WM_TIMER: {
 			return SendMessage(hwnd, WM_USER, 0, NULL);
 		}
-	case WM_USER:
-		{
+		case WM_USER: {
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			HWND hwndProgress = GetDlgItem(hwnd, 1);
 			// Update the progress bar
@@ -520,83 +504,12 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			DestroyWindow(hwnd);
 			return 0;
 		}
-	default:
-		{
+		default: {
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 		}
 	}
 }
 
-DWORD WINAPI ThreadSendStart( LPVOID lpParam ) {
-	SENDFILES_t* sf = (SENDFILES_t *) lpParam;
-	int save = 0;
-
-	if (lpCalc->audio->enabled) {
-		save = 1;
-		pausesound();
-	}
-
-
-	SendFiles(sf->FileNames, sf->ram);
-	if (save==1) playsound();
-	free(sf);
-	lpCalc = NULL;
-
-	PostMessage(hwndSend, WM_CLOSE, 0, 0);
-
-    return 0;
-}
-
-
-void ThreadSend(TCHAR *FileNames, int ram, LPCALC calc) {
-	static HANDLE hdlSend = NULL;
-	SENDFILES_t* sf;
-
-	if (FileNames == NULL) return;
-
-	if (lpCalc == NULL || lpCalc->send == FALSE) {
-		lpCalc = calc;
-	} else {
-		MessageBox(NULL, _T("Currently sending files please wait..."), _T("Error"), MB_OK);
-		return;
-	}
-
-	if (hdlSend != NULL) {
-		CloseHandle(hdlSend);
-		hdlSend = NULL;
-	}
-
-	sf = (SENDFILES_t *) malloc(sizeof(SENDFILES_t));
-	if (sf != NULL) {
-		sf->FileNames	= FileNames;
-		sf->ram			= ram;
-	}
-//	sf->hdlSend		= NULL;
-
-	WNDCLASSEX wcx;
-	ZeroMemory(&wcx, sizeof(wcx));
-
-	wcx.cbSize = sizeof(wcx);
-	wcx.style = CS_DBLCLKS;
-	wcx.lpszClassName = _T("WabbitSendClass");
-	wcx.lpfnWndProc = SendProc;
-	wcx.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wcx.hbrBackground = (HBRUSH) (COLOR_BTNFACE+1);
-	RegisterClassEx(&wcx);
-
-
-    hdlSend = CreateThread(NULL,0,ThreadSendStart, sf, 0, NULL);
-
-    if ( hdlSend  == NULL) {
-		lpCalc = NULL;
-		free(sf);
-		free(FileNames);
-		MessageBox(NULL, _T("Could not create thread to send"), _T("Error"), MB_OK);
-		return;
-	}
-
-	return;
-}
 #endif
 
 void NoThreadSend(const TCHAR* FileNames, int ram, LPCALC calc) {
@@ -609,9 +522,3 @@ void NoThreadSend(const TCHAR* FileNames, int ram, LPCALC calc) {
 	SendFile(NULL, lpCalc, (TCHAR *) FileNames, (SEND_FLAG) ram);
 	lpCalc = NULL;
 }
-
-
-
-
-
-

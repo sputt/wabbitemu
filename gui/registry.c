@@ -223,7 +223,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		
 		SaveWabbitKey(_T("shades"), REG_DWORD, &lpCalc->cpu.pio.lcd->shades);
 		SaveWabbitKey(_T("lcd_mode"), REG_DWORD, &lpCalc->cpu.pio.lcd->mode);
-		DWORD steady = (DWORD) ( 1.0 / calcs[gslot].cpu.pio.lcd->steady_frame);
+		DWORD steady = (DWORD) ( 1.0 / lpCalc->cpu.pio.lcd->steady_frame);
 		SaveWabbitKey(_T("lcd_freq"), REG_DWORD, &steady);
 		
 		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->Scale);
