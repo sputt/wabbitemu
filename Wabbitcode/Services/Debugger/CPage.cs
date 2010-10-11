@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NEW_DEBUGGING
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -47,3 +48,4 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         }
     }
 }
+#endif

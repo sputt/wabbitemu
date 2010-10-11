@@ -850,5 +850,41 @@ namespace Revsoft.Wabbitcode.Properties {
                 this["referencesHighlighter"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool autoSaveProject {
+            get {
+                return ((bool)(this["autoSaveProject"]));
+            }
+            set {
+                this["autoSaveProject"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("4")]
+        public int tabSize {
+            get {
+                return ((int)(this["tabSize"]));
+            }
+            set {
+                this["tabSize"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool convertTabs {
+            get {
+                return ((bool)(this["convertTabs"]));
+            }
+            set {
+                this["convertTabs"] = value;
+            }
+        }
     }
 }

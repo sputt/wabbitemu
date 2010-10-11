@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 using Revsoft.Wabbitcode.Services;
+#if NEW_DEBUGGING
 using WabbitemuLib;
+#endif
 
 namespace Revsoft.Wabbitcode.Classes
 {
@@ -64,8 +66,8 @@ namespace Revsoft.Wabbitcode.Classes
 
 		public static bool operator !=(WabbitcodeBreakpoint break1, WabbitcodeBreakpoint break2)
 		{
-			if ((object)break1 == null || (object)break2 == null)
-				if ((object)break1 == null && (object)break2 == null)
+			if ((object) break1 == null || (object) break2 == null)
+				if ((object) break1 == null && (object) break2 == null)
 					return false;
 				else
 					return true;

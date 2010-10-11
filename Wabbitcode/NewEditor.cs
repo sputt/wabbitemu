@@ -307,32 +307,36 @@ namespace Revsoft.Wabbitcode
 
         private void GetHighlightReferences(object data)
         {
-            ReferencesHighlightData highlightData = data as ReferencesHighlightData;
-            int offset = highlightData.Offset;
-            string word = highlightData.Word;
-            string text = highlightData.Text;
-            if (offset == text.Length)
-                offset--;
-            if (!Settings.Default.caseSensitive)
-                word = word.ToLower();
-            if (string.IsNullOrEmpty(word) || !Settings.Default.referencesHighlighter)
+            try
             {
-                isUpdatingRefs = false;
-                return;
-            }
-            int counter = 0;
-            string possibleReference;
-            List<TextMarker> references = new List<TextMarker>();
-            while (counter < text.Length)
-            {
-                possibleReference = GetWord(text, counter);
+                ReferencesHighlightData highlightData = data as ReferencesHighlightData;
+                int offset = highlightData.Offset;
+                string word = highlightData.Word;
+                string text = highlightData.Text;
+                if (offset == text.Length)
+                    offset--;
                 if (!Settings.Default.caseSensitive)
-                    possibleReference = possibleReference.ToLower();
-                if (!string.IsNullOrEmpty(possibleReference) && possibleReference == word) 
-                    references.Add(new TextMarker(counter, word.Length, TextMarkerType.SolidBlock, Color.LightGray) { Tag = "Reference" });
-                counter += possibleReference.Length + 1;
+                    word = word.ToLower();
+                if (string.IsNullOrEmpty(word) || !Settings.Default.referencesHighlighter)
+                {
+                    isUpdatingRefs = false;
+                    return;
+                }
+                int counter = 0;
+                string possibleReference;
+                List<TextMarker> references = new List<TextMarker>();
+                while (counter < text.Length)
+                {
+                    possibleReference = GetWord(text, counter);
+                    if (!Settings.Default.caseSensitive)
+                        possibleReference = possibleReference.ToLower();
+                    if (!string.IsNullOrEmpty(possibleReference) && possibleReference == word)
+                        references.Add(new TextMarker(counter, word.Length, TextMarkerType.SolidBlock, Color.LightGray) { Tag = "Reference" });
+                    counter += possibleReference.Length + 1;
+                }
+                this.Invoke(new ReferencesHighlighterDelegate(AddMarkers), references);
             }
-            this.Invoke(new ReferencesHighlighterDelegate(AddMarkers), references);
+            catch (Exception) { }
             isUpdatingRefs = false;
         }
 
@@ -1126,7 +1130,7 @@ namespace Revsoft.Wabbitcode
         {
             int line = editorBox.Document.GetLineNumberForOffset(offset);
             editorBox.ActiveTextAreaControl.ScrollTo(line);
-            editorBox.ActiveTextAreaControl.Caret.Line = line - 1;
+            editorBox.ActiveTextAreaControl.Caret.Position = new TextLocation(offset - editorBox.Document.GetOffsetForLineNumber(line), line);
         }
 
         internal void ToggleBreakpoint()
@@ -1240,6 +1244,8 @@ namespace Revsoft.Wabbitcode
             else
                 editorBox.TextRenderingHint = TextRenderingHint.SingleBitPerPixel;
             editorBox.Font = settings.editorFont;
+            editorBox.TabIndent = Settings.Default.tabSize;
+            editorBox.ConvertTabsToSpaces = Settings.Default.convertTabs;
         }
 
         internal void SelectedTextToSentenceCase()
@@ -1452,6 +1458,14 @@ namespace Revsoft.Wabbitcode
             editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
             this.Refresh();
         }
+
+        internal void ConvertSpacesToTabs()
+        {
+            StringBuilder spacesString = new StringBuilder();
+            for (int i = 0; i < Settings.Default.tabSize; i++)
+                spacesString.Append(' ');
+            editorBox.Document.TextContent = editorBox.Document.TextContent.Replace(spacesString.ToString(), "\t");
+        }
     }
 
     class CodeCompletionProvider : ICompletionDataProvider
@@ -1482,7 +1496,7 @@ namespace Revsoft.Wabbitcode
 
         public CompletionDataProviderKeyResult ProcessKey(char key)
         {
-            if (char.IsLetterOrDigit(key) || key == '\"' || key == '.' || key == '(' || key == '_')
+            if (char.IsLetterOrDigit(key) || key == '\"' || key == '.' || key == '(' || key == '_' || key == '$')
                 return CompletionDataProviderKeyResult.NormalKey;
             // key triggers insertion of selected items
             return CompletionDataProviderKeyResult.InsertionKey;
@@ -1636,6 +1650,68 @@ namespace Revsoft.Wabbitcode
                                    new CodeCompletionData("equ", 1),
                                    new CodeCompletionData("option", 1)
                                };
+        ICompletionData[] portsList = new ICompletionData[]
+                               {
+                                   new CodeCompletionData("($00)", 6),
+                                   new CodeCompletionData("($01)", 6),
+                                   new CodeCompletionData("($02)", 6),
+                                   new CodeCompletionData("($03)", 6),
+                                   new CodeCompletionData("($04)", 6),
+                                   new CodeCompletionData("($05)", 6),
+                                   new CodeCompletionData("($06)", 6),
+                                   new CodeCompletionData("($07)", 6),
+                                   new CodeCompletionData("($08)", 6),
+                                   new CodeCompletionData("($09)", 6),
+                                   new CodeCompletionData("($0A)", 6),
+                                   new CodeCompletionData("($0D)", 6),
+                                   new CodeCompletionData("($10)", 6),
+                                   new CodeCompletionData("($11)", 6),
+                                   new CodeCompletionData("($14)", 6),
+                                   new CodeCompletionData("($16)", 6),
+                                   new CodeCompletionData("($18)", 6),
+                                   new CodeCompletionData("($19)", 6),
+                                   new CodeCompletionData("($1A)", 6),
+                                   new CodeCompletionData("($1B)", 6),
+                                   new CodeCompletionData("($1C)", 6),
+                                   new CodeCompletionData("($1D)", 6),
+                                   new CodeCompletionData("($1E)", 6),
+                                   new CodeCompletionData("($1F)", 6),
+                                   new CodeCompletionData("($20)", 6),
+                                   new CodeCompletionData("($21)", 6),
+                                   new CodeCompletionData("($22)", 6),
+                                   new CodeCompletionData("($23)", 6),
+                                   new CodeCompletionData("($27)", 6),
+                                   new CodeCompletionData("($28)", 6),
+                                   new CodeCompletionData("($29)", 6),
+                                   new CodeCompletionData("($2A)", 6),
+                                   new CodeCompletionData("($2B)", 6),
+                                   new CodeCompletionData("($2C)", 6),
+                                   new CodeCompletionData("($2E)", 6),
+                                   new CodeCompletionData("($2F)", 6),
+                                   new CodeCompletionData("($30)", 6),
+                                   new CodeCompletionData("($31)", 6),
+                                   new CodeCompletionData("($32)", 6),
+                                   new CodeCompletionData("($33)", 6),
+                                   new CodeCompletionData("($34)", 6),
+                                   new CodeCompletionData("($35)", 6),
+                                   new CodeCompletionData("($36)", 6),
+                                   new CodeCompletionData("($37)", 6),
+                                   new CodeCompletionData("($38)", 6),
+                                   new CodeCompletionData("($40)", 6),
+                                   new CodeCompletionData("($41)", 6),
+                                   new CodeCompletionData("($42)", 6),
+                                   new CodeCompletionData("($43)", 6),
+                                   new CodeCompletionData("($44)", 6),
+                                   new CodeCompletionData("($45)", 6),
+                                   new CodeCompletionData("($46)", 6),
+                                   new CodeCompletionData("($47)", 6),
+                                   new CodeCompletionData("($48)", 6),
+                                   new CodeCompletionData("($4D)", 6),
+                                   new CodeCompletionData("($55)", 6),
+                                   new CodeCompletionData("($56)", 6),
+                                   new CodeCompletionData("($57)", 6),
+                                   new CodeCompletionData("($5B)", 6),
+                               };
         #endregion
         public ICompletionData[] GenerateCompletionData(string fileName, TextArea textArea, char charTyped)
         {
@@ -1718,6 +1794,8 @@ namespace Revsoft.Wabbitcode
                                 }
                                 else if (int.TryParse(firstArg, out temp))
                                     resultList.Add(new CodeCompletionData("(C)", 3));
+                                else
+                                    return portsList;
                                 return resultList.ToArray();
                             case "bit":
                             case "set":

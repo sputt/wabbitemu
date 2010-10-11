@@ -91,6 +91,7 @@
             this.sentenceCaseMenuItem = new System.Windows.Forms.MenuItem();
             this.menuItem6 = new System.Windows.Forms.MenuItem();
             this.formatDocMenuItem = new System.Windows.Forms.MenuItem();
+            this.convertSpacesToTabsMenuItem = new System.Windows.Forms.MenuItem();
             this.bookmarkMenuItem = new System.Windows.Forms.MenuItem();
             this.toggleBookmarkMenuItem = new System.Windows.Forms.MenuItem();
             this.prevBookmarkMenuItem = new System.Windows.Forms.MenuItem();
@@ -522,7 +523,8 @@
             this.invertCaseMenuItem,
             this.sentenceCaseMenuItem,
             this.menuItem6,
-            this.formatDocMenuItem});
+            this.formatDocMenuItem,
+            this.convertSpacesToTabsMenuItem});
             this.formattingMenuItem.Text = "Formatting";
             // 
             // makeUpperMenuItem
@@ -561,6 +563,12 @@
             this.formatDocMenuItem.Index = 5;
             this.formatDocMenuItem.Text = "Format Document";
             this.formatDocMenuItem.Click += new System.EventHandler(this.formatDocMenuItem_Click);
+            // 
+            // convertSpacesToTabsMenuItem
+            // 
+            this.convertSpacesToTabsMenuItem.Index = 6;
+            this.convertSpacesToTabsMenuItem.Text = "Convert Spaces To Tabs";
+            this.convertSpacesToTabsMenuItem.Click += new System.EventHandler(this.convertSpacesToTabsMenuItem_Click);
             // 
             // bookmarkMenuItem
             // 
@@ -1759,6 +1767,7 @@
         private System.Windows.Forms.MenuItem toolBarMenuItem;
         private System.Windows.Forms.MenuItem macroManagerMenuItem;
         private System.Windows.Forms.MenuItem formatDocMenuItem;
+        private System.Windows.Forms.MenuItem convertSpacesToTabsMenuItem;
         private System.Windows.Forms.MenuItem editorToolBarMenuItem;
         private System.Windows.Forms.ToolStrip editorToolStrip;
         private System.Windows.Forms.ToolStripButton toolStripButton1;

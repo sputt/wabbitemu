@@ -99,6 +99,9 @@ namespace Revsoft.Wabbitcode
             //need to add this eventually
             noBinaryBox.Checked = false;
             sendFileEmu.Checked = Settings.Default.sendFileEmu;
+            tabSizeUpDown.Value = Settings.Default.tabSize;
+            saveAutoBox.Checked = Settings.Default.autoSaveProject;
+            convertTabsToSpacesBox.Checked = Settings.Default.convertTabs;
         }
 
         private void fontBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -167,7 +170,6 @@ namespace Revsoft.Wabbitcode
         private void mouseWheelZoomBox_CheckedChanged(object sender, EventArgs e)
         {
             TempSettings.Default.inverseScrolling = inverseScrollingBox.Checked;
-            
         }
 
         private void enableFoldingBox_CheckedChanged(object sender, EventArgs e)
@@ -202,7 +204,7 @@ namespace Revsoft.Wabbitcode
 
         private void ti83Radio_CheckedChanged(object sender, EventArgs e)
         {
-            RadioButton outputRadio = (RadioButton)sender;
+            RadioButton outputRadio = (RadioButton) sender;
             TempSettings.Default.outputFile = outputRadio.TabIndex;
         }
 
@@ -247,7 +249,7 @@ namespace Revsoft.Wabbitcode
             {
                 browsing = false;
                 e.Cancel = true;
-			} 
+			}
 			UpdateSettings();
         }
 
@@ -306,7 +308,7 @@ namespace Revsoft.Wabbitcode
 
 		private void highlightCheckChange(object sender, EventArgs e)
 		{
-			CheckBox control = (CheckBox)sender;
+			CheckBox control = (CheckBox) sender;
 			TempSettings.Default[control.Name] = control.Checked;
 		}
 
@@ -316,5 +318,20 @@ namespace Revsoft.Wabbitcode
 			UpdateSettings();
 			savesettings = false;
 		}
+
+        private void saveAutoBox_CheckedChanged(object sender, EventArgs e)
+        {
+            TempSettings.Default.autoSaveProject = saveAutoBox.Checked;
+        }
+
+        private void tabSizeUpDown_ValueChanged(object sender, EventArgs e)
+        {
+            TempSettings.Default.tabSize = (int) tabSizeUpDown.Value;
+        }
+
+        private void convertTabsToSpacesBox_CheckedChanged(object sender, EventArgs e)
+        {
+            TempSettings.Default.convertTabs = convertTabsToSpacesBox.Checked;
+        }
     }
 }

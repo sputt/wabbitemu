@@ -225,7 +225,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public static void RemoveDebugHighlight()
 		{
-            if (ActiveDocument == null || highlights.Count == 0)
+            if (ActiveDocument == null || highlights.Count == 0 || debugIndex < 0)
                 return;
             ListFileKey key = highlights[debugIndex];
             GotoFile(key.FileName).RemoveDebugHighlight(key.LineNumber);

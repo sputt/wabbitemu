@@ -20,7 +20,9 @@ using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Parser;
+#if NEW_DEBUGGING
 using Revsoft.Wabbitcode.Services.Debugger;
+#endif
 
 namespace Revsoft.Wabbitcode
 {
@@ -63,6 +65,14 @@ namespace Revsoft.Wabbitcode
 			UpdateChecks();
 
             DocumentService.GetRecentFiles();
+        }
+
+        public delegate void ProcessParametersDelegate(object sender, string[] args);
+        public void ProcessParameters(object sender, string[] args)
+        {
+            // The form has loaded, and initialization will have been be done.
+            HandleArgs(args);
+            NativeMethods.SetForegroundWindow(this.Handle);
         }
 
 		private void RestoreWindow()
@@ -1457,6 +1467,13 @@ namespace Revsoft.Wabbitcode
 			DockingService.ActiveDocument.Refresh();
 
 		}
+
+        private void convertSpacesToTabsMenuItem_Click(object sender, EventArgs e)
+        {
+            if (DockingService.ActiveDocument == null)
+                return;
+            DockingService.ActiveDocument.ConvertSpacesToTabs();
+        }
 
 		private void formatDocMenuItem_Click(object sender, EventArgs e)
 		{

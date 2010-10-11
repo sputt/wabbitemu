@@ -46,17 +46,6 @@ namespace Revsoft.Wabbitcode
             this.outFontSize = new System.Windows.Forms.Label();
             this.outFontSizeBox = new System.Windows.Forms.ComboBox();
             this.outFontBox = new System.Windows.Forms.ComboBox();
-            this.textboxBox = new System.Windows.Forms.GroupBox();
-            this.enableRefHighlighterBox = new System.Windows.Forms.CheckBox();
-            this.inverseScrollingBox = new System.Windows.Forms.CheckBox();
-            this.enableAutoTriggerBox = new System.Windows.Forms.CheckBox();
-            this.enableFoldingBox = new System.Windows.Forms.CheckBox();
-            this.antiAliasBox = new System.Windows.Forms.CheckBox();
-            this.autoIndentBox = new System.Windows.Forms.CheckBox();
-            this.fontSizeLabel = new System.Windows.Forms.Label();
-            this.fontLabel = new System.Windows.Forms.Label();
-            this.fontSizeBox = new System.Windows.Forms.ComboBox();
-            this.fontBox = new System.Windows.Forms.ComboBox();
             this.defaultProjLabel = new System.Windows.Forms.Label();
             this.highlightingTab = new System.Windows.Forms.TabPage();
             this.extraHighlightBox = new System.Windows.Forms.GroupBox();
@@ -104,16 +93,36 @@ namespace Revsoft.Wabbitcode
             this.okButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
             this.applyButton = new System.Windows.Forms.Button();
+            this.editorTab = new System.Windows.Forms.TabPage();
+            this.textboxBox = new System.Windows.Forms.GroupBox();
+            this.enableRefHighlighterBox = new System.Windows.Forms.CheckBox();
+            this.inverseScrollingBox = new System.Windows.Forms.CheckBox();
+            this.enableAutoTriggerBox = new System.Windows.Forms.CheckBox();
+            this.enableFoldingBox = new System.Windows.Forms.CheckBox();
+            this.antiAliasBox = new System.Windows.Forms.CheckBox();
+            this.autoIndentBox = new System.Windows.Forms.CheckBox();
+            this.fontSizeLabel = new System.Windows.Forms.Label();
+            this.fontLabel = new System.Windows.Forms.Label();
+            this.fontSizeBox = new System.Windows.Forms.ComboBox();
+            this.fontBox = new System.Windows.Forms.ComboBox();
+            this.tabSizeLabel = new System.Windows.Forms.Label();
+            this.tabSizeUpDown = new System.Windows.Forms.NumericUpDown();
+            this.projectBox = new System.Windows.Forms.GroupBox();
+            this.saveAutoBox = new System.Windows.Forms.CheckBox();
+            this.convertTabsToSpacesBox = new System.Windows.Forms.CheckBox();
             this.preferencesTabs.SuspendLayout();
             this.generalTab.SuspendLayout();
             this.outwinBox.SuspendLayout();
-            this.textboxBox.SuspendLayout();
             this.highlightingTab.SuspendLayout();
             this.extraHighlightBox.SuspendLayout();
             this.highlightBox.SuspendLayout();
             this.assemblyTab.SuspendLayout();
             this.moreOutputOptions.SuspendLayout();
             this.outTypeBox.SuspendLayout();
+            this.editorTab.SuspendLayout();
+            this.textboxBox.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tabSizeUpDown)).BeginInit();
+            this.projectBox.SuspendLayout();
             this.SuspendLayout();
             // 
             // preferencesTabs
@@ -121,33 +130,31 @@ namespace Revsoft.Wabbitcode
             this.preferencesTabs.Controls.Add(this.generalTab);
             this.preferencesTabs.Controls.Add(this.highlightingTab);
             this.preferencesTabs.Controls.Add(this.assemblyTab);
+            this.preferencesTabs.Controls.Add(this.editorTab);
             this.preferencesTabs.Dock = System.Windows.Forms.DockStyle.Top;
             this.preferencesTabs.Location = new System.Drawing.Point(0, 0);
             this.preferencesTabs.Name = "preferencesTabs";
             this.preferencesTabs.SelectedIndex = 0;
-            this.preferencesTabs.Size = new System.Drawing.Size(329, 358);
+            this.preferencesTabs.Size = new System.Drawing.Size(329, 345);
             this.preferencesTabs.TabIndex = 0;
             // 
             // generalTab
             // 
-            this.generalTab.Controls.Add(this.defaultProjBox);
-            this.generalTab.Controls.Add(this.browseProjButton);
+            this.generalTab.Controls.Add(this.projectBox);
             this.generalTab.Controls.Add(this.outwinBox);
-            this.generalTab.Controls.Add(this.textboxBox);
-            this.generalTab.Controls.Add(this.defaultProjLabel);
             this.generalTab.Location = new System.Drawing.Point(4, 22);
             this.generalTab.Name = "generalTab";
             this.generalTab.Padding = new System.Windows.Forms.Padding(3);
-            this.generalTab.Size = new System.Drawing.Size(321, 332);
+            this.generalTab.Size = new System.Drawing.Size(321, 319);
             this.generalTab.TabIndex = 0;
             this.generalTab.Text = "General";
             this.generalTab.UseVisualStyleBackColor = true;
             // 
             // defaultProjBox
             // 
-            this.defaultProjBox.Location = new System.Drawing.Point(8, 301);
+            this.defaultProjBox.Location = new System.Drawing.Point(8, 67);
             this.defaultProjBox.Name = "defaultProjBox";
-            this.defaultProjBox.Size = new System.Drawing.Size(213, 20);
+            this.defaultProjBox.Size = new System.Drawing.Size(206, 20);
             this.defaultProjBox.TabIndex = 2;
             this.defaultProjBox.TextChanged += new System.EventHandler(this.defaultProjBox_TextChanged);
             this.defaultProjBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.defaultProjBox_KeyPress);
@@ -155,7 +162,7 @@ namespace Revsoft.Wabbitcode
             // browseProjButton
             // 
             this.browseProjButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.browseProjButton.Location = new System.Drawing.Point(232, 299);
+            this.browseProjButton.Location = new System.Drawing.Point(224, 65);
             this.browseProjButton.Name = "browseProjButton";
             this.browseProjButton.Size = new System.Drawing.Size(75, 23);
             this.browseProjButton.TabIndex = 1;
@@ -170,7 +177,7 @@ namespace Revsoft.Wabbitcode
             this.outwinBox.Controls.Add(this.outFontSize);
             this.outwinBox.Controls.Add(this.outFontSizeBox);
             this.outwinBox.Controls.Add(this.outFontBox);
-            this.outwinBox.Location = new System.Drawing.Point(8, 171);
+            this.outwinBox.Location = new System.Drawing.Point(8, 6);
             this.outwinBox.Name = "outwinBox";
             this.outwinBox.Size = new System.Drawing.Size(305, 105);
             this.outwinBox.TabIndex = 1;
@@ -221,122 +228,9 @@ namespace Revsoft.Wabbitcode
             this.outFontBox.TabIndex = 0;
             this.outFontBox.SelectedIndexChanged += new System.EventHandler(this.outFontBox_SelectedIndexChanged);
             // 
-            // textboxBox
-            // 
-            this.textboxBox.Controls.Add(this.enableRefHighlighterBox);
-            this.textboxBox.Controls.Add(this.inverseScrollingBox);
-            this.textboxBox.Controls.Add(this.enableAutoTriggerBox);
-            this.textboxBox.Controls.Add(this.enableFoldingBox);
-            this.textboxBox.Controls.Add(this.antiAliasBox);
-            this.textboxBox.Controls.Add(this.autoIndentBox);
-            this.textboxBox.Controls.Add(this.fontSizeLabel);
-            this.textboxBox.Controls.Add(this.fontLabel);
-            this.textboxBox.Controls.Add(this.fontSizeBox);
-            this.textboxBox.Controls.Add(this.fontBox);
-            this.textboxBox.Location = new System.Drawing.Point(8, 6);
-            this.textboxBox.Name = "textboxBox";
-            this.textboxBox.Size = new System.Drawing.Size(305, 159);
-            this.textboxBox.TabIndex = 0;
-            this.textboxBox.TabStop = false;
-            this.textboxBox.Text = "Text Editor";
-            // 
-            // enableRefHighlighterBox
-            // 
-            this.enableRefHighlighterBox.Location = new System.Drawing.Point(133, 130);
-            this.enableRefHighlighterBox.Name = "enableRefHighlighterBox";
-            this.enableRefHighlighterBox.Size = new System.Drawing.Size(166, 24);
-            this.enableRefHighlighterBox.TabIndex = 3;
-            this.enableRefHighlighterBox.Text = "Enable Reference Highlighter";
-            this.enableRefHighlighterBox.UseVisualStyleBackColor = true;
-            this.enableRefHighlighterBox.CheckedChanged += new System.EventHandler(this.enableRefHighlighterBox_CheckedChanged);
-            // 
-            // inverseScrollingBox
-            // 
-            this.inverseScrollingBox.Location = new System.Drawing.Point(133, 70);
-            this.inverseScrollingBox.Name = "inverseScrollingBox";
-            this.inverseScrollingBox.Size = new System.Drawing.Size(152, 24);
-            this.inverseScrollingBox.TabIndex = 2;
-            this.inverseScrollingBox.Text = "Inverse Scolling";
-            this.inverseScrollingBox.UseVisualStyleBackColor = true;
-            this.inverseScrollingBox.CheckedChanged += new System.EventHandler(this.mouseWheelZoomBox_CheckedChanged);
-            // 
-            // enableAutoTriggerBox
-            // 
-            this.enableAutoTriggerBox.Location = new System.Drawing.Point(6, 130);
-            this.enableAutoTriggerBox.Name = "enableAutoTriggerBox";
-            this.enableAutoTriggerBox.Size = new System.Drawing.Size(139, 24);
-            this.enableAutoTriggerBox.TabIndex = 2;
-            this.enableAutoTriggerBox.Text = "Enable Autotrigger";
-            this.enableAutoTriggerBox.UseVisualStyleBackColor = true;
-            this.enableAutoTriggerBox.CheckedChanged += new System.EventHandler(this.enableAutoCompleteBox_CheckedChanged);
-            // 
-            // enableFoldingBox
-            // 
-            this.enableFoldingBox.Location = new System.Drawing.Point(6, 100);
-            this.enableFoldingBox.Name = "enableFoldingBox";
-            this.enableFoldingBox.Size = new System.Drawing.Size(104, 24);
-            this.enableFoldingBox.TabIndex = 2;
-            this.enableFoldingBox.Text = "Enable Folding";
-            this.enableFoldingBox.UseVisualStyleBackColor = true;
-            this.enableFoldingBox.CheckedChanged += new System.EventHandler(this.enableFoldingBox_CheckedChanged);
-            // 
-            // antiAliasBox
-            // 
-            this.antiAliasBox.Location = new System.Drawing.Point(6, 70);
-            this.antiAliasBox.Name = "antiAliasBox";
-            this.antiAliasBox.Size = new System.Drawing.Size(104, 24);
-            this.antiAliasBox.TabIndex = 2;
-            this.antiAliasBox.Text = "Antialias Text";
-            this.antiAliasBox.UseVisualStyleBackColor = true;
-            this.antiAliasBox.CheckedChanged += new System.EventHandler(this.antiAliasBox_CheckedChanged);
-            // 
-            // autoIndentBox
-            // 
-            this.autoIndentBox.Location = new System.Drawing.Point(133, 100);
-            this.autoIndentBox.Name = "autoIndentBox";
-            this.autoIndentBox.Size = new System.Drawing.Size(104, 24);
-            this.autoIndentBox.TabIndex = 2;
-            this.autoIndentBox.Text = "Auto Indent";
-            this.autoIndentBox.UseVisualStyleBackColor = true;
-            this.autoIndentBox.CheckedChanged += new System.EventHandler(this.autoIndentBox_CheckedChanged);
-            // 
-            // fontSizeLabel
-            // 
-            this.fontSizeLabel.Location = new System.Drawing.Point(16, 49);
-            this.fontSizeLabel.Name = "fontSizeLabel";
-            this.fontSizeLabel.Size = new System.Drawing.Size(56, 18);
-            this.fontSizeLabel.TabIndex = 1;
-            this.fontSizeLabel.Text = "Font Size:";
-            // 
-            // fontLabel
-            // 
-            this.fontLabel.Location = new System.Drawing.Point(36, 22);
-            this.fontLabel.Name = "fontLabel";
-            this.fontLabel.Size = new System.Drawing.Size(36, 18);
-            this.fontLabel.TabIndex = 1;
-            this.fontLabel.Text = "Font:";
-            // 
-            // fontSizeBox
-            // 
-            this.fontSizeBox.FormattingEnabled = true;
-            this.fontSizeBox.Location = new System.Drawing.Point(78, 46);
-            this.fontSizeBox.Name = "fontSizeBox";
-            this.fontSizeBox.Size = new System.Drawing.Size(53, 21);
-            this.fontSizeBox.TabIndex = 0;
-            this.fontSizeBox.SelectedIndexChanged += new System.EventHandler(this.fontSizeBox_SelectedIndexChanged);
-            // 
-            // fontBox
-            // 
-            this.fontBox.FormattingEnabled = true;
-            this.fontBox.Location = new System.Drawing.Point(78, 19);
-            this.fontBox.Name = "fontBox";
-            this.fontBox.Size = new System.Drawing.Size(139, 21);
-            this.fontBox.TabIndex = 0;
-            this.fontBox.SelectedIndexChanged += new System.EventHandler(this.fontBox_SelectedIndexChanged);
-            // 
             // defaultProjLabel
             // 
-            this.defaultProjLabel.Location = new System.Drawing.Point(8, 279);
+            this.defaultProjLabel.Location = new System.Drawing.Point(6, 46);
             this.defaultProjLabel.Name = "defaultProjLabel";
             this.defaultProjLabel.Size = new System.Drawing.Size(102, 19);
             this.defaultProjLabel.TabIndex = 1;
@@ -350,7 +244,7 @@ namespace Revsoft.Wabbitcode
             this.highlightingTab.Location = new System.Drawing.Point(4, 22);
             this.highlightingTab.Name = "highlightingTab";
             this.highlightingTab.Padding = new System.Windows.Forms.Padding(3);
-            this.highlightingTab.Size = new System.Drawing.Size(321, 332);
+            this.highlightingTab.Size = new System.Drawing.Size(321, 319);
             this.highlightingTab.TabIndex = 1;
             this.highlightingTab.Text = "Highlighting";
             this.highlightingTab.UseVisualStyleBackColor = true;
@@ -361,7 +255,7 @@ namespace Revsoft.Wabbitcode
             this.extraHighlightBox.Controls.Add(this.browseHighButton);
             this.extraHighlightBox.Controls.Add(this.extraExtBox);
             this.extraHighlightBox.Controls.Add(this.externalHighBox);
-            this.extraHighlightBox.Location = new System.Drawing.Point(8, 238);
+            this.extraHighlightBox.Location = new System.Drawing.Point(8, 225);
             this.extraHighlightBox.Name = "extraHighlightBox";
             this.extraHighlightBox.Size = new System.Drawing.Size(305, 88);
             this.extraHighlightBox.TabIndex = 2;
@@ -422,7 +316,7 @@ namespace Revsoft.Wabbitcode
             this.highlightBox.Controls.Add(this.commentColor);
             this.highlightBox.Controls.Add(this.labelColor);
             this.highlightBox.Controls.Add(this.lineColor);
-            this.highlightBox.Location = new System.Drawing.Point(3, 49);
+            this.highlightBox.Location = new System.Drawing.Point(3, 36);
             this.highlightBox.Name = "highlightBox";
             this.highlightBox.Size = new System.Drawing.Size(310, 183);
             this.highlightBox.TabIndex = 1;
@@ -638,7 +532,7 @@ namespace Revsoft.Wabbitcode
             // 
             // highlightEnabled
             // 
-            this.highlightEnabled.Location = new System.Drawing.Point(79, 19);
+            this.highlightEnabled.Location = new System.Drawing.Point(79, 6);
             this.highlightEnabled.Name = "highlightEnabled";
             this.highlightEnabled.Size = new System.Drawing.Size(127, 24);
             this.highlightEnabled.TabIndex = 0;
@@ -653,7 +547,7 @@ namespace Revsoft.Wabbitcode
             this.assemblyTab.Location = new System.Drawing.Point(4, 22);
             this.assemblyTab.Name = "assemblyTab";
             this.assemblyTab.Padding = new System.Windows.Forms.Padding(3);
-            this.assemblyTab.Size = new System.Drawing.Size(321, 332);
+            this.assemblyTab.Size = new System.Drawing.Size(321, 319);
             this.assemblyTab.TabIndex = 2;
             this.assemblyTab.Text = "Assembly";
             this.assemblyTab.UseVisualStyleBackColor = true;
@@ -850,7 +744,7 @@ namespace Revsoft.Wabbitcode
             // okButton
             // 
             this.okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-            this.okButton.Location = new System.Drawing.Point(98, 364);
+            this.okButton.Location = new System.Drawing.Point(91, 347);
             this.okButton.Name = "okButton";
             this.okButton.Size = new System.Drawing.Size(69, 23);
             this.okButton.TabIndex = 1;
@@ -861,7 +755,7 @@ namespace Revsoft.Wabbitcode
             // cancelButton
             // 
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(179, 364);
+            this.cancelButton.Location = new System.Drawing.Point(172, 347);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(69, 23);
             this.cancelButton.TabIndex = 1;
@@ -871,7 +765,7 @@ namespace Revsoft.Wabbitcode
             // 
             // applyButton
             // 
-            this.applyButton.Location = new System.Drawing.Point(255, 364);
+            this.applyButton.Location = new System.Drawing.Point(248, 347);
             this.applyButton.Name = "applyButton";
             this.applyButton.Size = new System.Drawing.Size(69, 23);
             this.applyButton.TabIndex = 1;
@@ -879,13 +773,202 @@ namespace Revsoft.Wabbitcode
             this.applyButton.UseVisualStyleBackColor = true;
             this.applyButton.Click += new System.EventHandler(this.applyButton_Click);
             // 
+            // editorTab
+            // 
+            this.editorTab.Controls.Add(this.textboxBox);
+            this.editorTab.Location = new System.Drawing.Point(4, 22);
+            this.editorTab.Name = "editorTab";
+            this.editorTab.Padding = new System.Windows.Forms.Padding(3);
+            this.editorTab.Size = new System.Drawing.Size(321, 319);
+            this.editorTab.TabIndex = 3;
+            this.editorTab.Text = "Editor";
+            this.editorTab.UseVisualStyleBackColor = true;
+            // 
+            // textboxBox
+            // 
+            this.textboxBox.Controls.Add(this.tabSizeUpDown);
+            this.textboxBox.Controls.Add(this.tabSizeLabel);
+            this.textboxBox.Controls.Add(this.convertTabsToSpacesBox);
+            this.textboxBox.Controls.Add(this.enableRefHighlighterBox);
+            this.textboxBox.Controls.Add(this.inverseScrollingBox);
+            this.textboxBox.Controls.Add(this.enableAutoTriggerBox);
+            this.textboxBox.Controls.Add(this.enableFoldingBox);
+            this.textboxBox.Controls.Add(this.antiAliasBox);
+            this.textboxBox.Controls.Add(this.autoIndentBox);
+            this.textboxBox.Controls.Add(this.fontSizeLabel);
+            this.textboxBox.Controls.Add(this.fontLabel);
+            this.textboxBox.Controls.Add(this.fontSizeBox);
+            this.textboxBox.Controls.Add(this.fontBox);
+            this.textboxBox.Location = new System.Drawing.Point(8, 6);
+            this.textboxBox.Name = "textboxBox";
+            this.textboxBox.Size = new System.Drawing.Size(305, 320);
+            this.textboxBox.TabIndex = 1;
+            this.textboxBox.TabStop = false;
+            this.textboxBox.Text = "Text Editor";
+            // 
+            // enableRefHighlighterBox
+            // 
+            this.enableRefHighlighterBox.Location = new System.Drawing.Point(19, 251);
+            this.enableRefHighlighterBox.Name = "enableRefHighlighterBox";
+            this.enableRefHighlighterBox.Size = new System.Drawing.Size(181, 24);
+            this.enableRefHighlighterBox.TabIndex = 3;
+            this.enableRefHighlighterBox.Text = "Enable Reference Highlighter";
+            this.enableRefHighlighterBox.UseVisualStyleBackColor = true;
+            this.enableRefHighlighterBox.CheckedChanged += new System.EventHandler(this.enableRefHighlighterBox_CheckedChanged);
+            // 
+            // inverseScrollingBox
+            // 
+            this.inverseScrollingBox.Location = new System.Drawing.Point(19, 191);
+            this.inverseScrollingBox.Name = "inverseScrollingBox";
+            this.inverseScrollingBox.Size = new System.Drawing.Size(152, 24);
+            this.inverseScrollingBox.TabIndex = 2;
+            this.inverseScrollingBox.Text = "Inverse Scolling";
+            this.inverseScrollingBox.UseVisualStyleBackColor = true;
+            // 
+            // enableAutoTriggerBox
+            // 
+            this.enableAutoTriggerBox.Location = new System.Drawing.Point(19, 161);
+            this.enableAutoTriggerBox.Name = "enableAutoTriggerBox";
+            this.enableAutoTriggerBox.Size = new System.Drawing.Size(139, 24);
+            this.enableAutoTriggerBox.TabIndex = 2;
+            this.enableAutoTriggerBox.Text = "Enable Autotrigger";
+            this.enableAutoTriggerBox.UseVisualStyleBackColor = true;
+            this.enableAutoTriggerBox.CheckedChanged += new System.EventHandler(this.enableAutoCompleteBox_CheckedChanged);
+            // 
+            // enableFoldingBox
+            // 
+            this.enableFoldingBox.Location = new System.Drawing.Point(19, 133);
+            this.enableFoldingBox.Name = "enableFoldingBox";
+            this.enableFoldingBox.Size = new System.Drawing.Size(104, 24);
+            this.enableFoldingBox.TabIndex = 2;
+            this.enableFoldingBox.Text = "Enable Folding";
+            this.enableFoldingBox.UseVisualStyleBackColor = true;
+            this.enableFoldingBox.CheckedChanged += new System.EventHandler(this.enableFoldingBox_CheckedChanged);
+            // 
+            // antiAliasBox
+            // 
+            this.antiAliasBox.Location = new System.Drawing.Point(19, 105);
+            this.antiAliasBox.Name = "antiAliasBox";
+            this.antiAliasBox.Size = new System.Drawing.Size(104, 24);
+            this.antiAliasBox.TabIndex = 2;
+            this.antiAliasBox.Text = "Antialias Text";
+            this.antiAliasBox.UseVisualStyleBackColor = true;
+            this.antiAliasBox.CheckedChanged += new System.EventHandler(this.antiAliasBox_CheckedChanged);
+            // 
+            // autoIndentBox
+            // 
+            this.autoIndentBox.Location = new System.Drawing.Point(19, 221);
+            this.autoIndentBox.Name = "autoIndentBox";
+            this.autoIndentBox.Size = new System.Drawing.Size(104, 24);
+            this.autoIndentBox.TabIndex = 2;
+            this.autoIndentBox.Text = "Auto Indent";
+            this.autoIndentBox.UseVisualStyleBackColor = true;
+            this.autoIndentBox.CheckedChanged += new System.EventHandler(this.autoIndentBox_CheckedChanged);
+            // 
+            // fontSizeLabel
+            // 
+            this.fontSizeLabel.Location = new System.Drawing.Point(16, 49);
+            this.fontSizeLabel.Name = "fontSizeLabel";
+            this.fontSizeLabel.Size = new System.Drawing.Size(56, 18);
+            this.fontSizeLabel.TabIndex = 1;
+            this.fontSizeLabel.Text = "Font Size:";
+            // 
+            // fontLabel
+            // 
+            this.fontLabel.Location = new System.Drawing.Point(36, 22);
+            this.fontLabel.Name = "fontLabel";
+            this.fontLabel.Size = new System.Drawing.Size(36, 18);
+            this.fontLabel.TabIndex = 1;
+            this.fontLabel.Text = "Font:";
+            // 
+            // fontSizeBox
+            // 
+            this.fontSizeBox.FormattingEnabled = true;
+            this.fontSizeBox.Location = new System.Drawing.Point(78, 46);
+            this.fontSizeBox.Name = "fontSizeBox";
+            this.fontSizeBox.Size = new System.Drawing.Size(53, 21);
+            this.fontSizeBox.TabIndex = 0;
+            // 
+            // fontBox
+            // 
+            this.fontBox.FormattingEnabled = true;
+            this.fontBox.Location = new System.Drawing.Point(78, 19);
+            this.fontBox.Name = "fontBox";
+            this.fontBox.Size = new System.Drawing.Size(139, 21);
+            this.fontBox.TabIndex = 0;
+            // 
+            // tabSizeLabel
+            // 
+            this.tabSizeLabel.AutoSize = true;
+            this.tabSizeLabel.Location = new System.Drawing.Point(20, 82);
+            this.tabSizeLabel.Name = "tabSizeLabel";
+            this.tabSizeLabel.Size = new System.Drawing.Size(52, 13);
+            this.tabSizeLabel.TabIndex = 4;
+            this.tabSizeLabel.Text = "Tab Size:";
+            // 
+            // tabSizeUpDown
+            // 
+            this.tabSizeUpDown.Location = new System.Drawing.Point(78, 80);
+            this.tabSizeUpDown.Maximum = new decimal(new int[] {
+            20,
+            0,
+            0,
+            0});
+            this.tabSizeUpDown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.tabSizeUpDown.Name = "tabSizeUpDown";
+            this.tabSizeUpDown.Size = new System.Drawing.Size(93, 20);
+            this.tabSizeUpDown.TabIndex = 5;
+            this.tabSizeUpDown.Value = new decimal(new int[] {
+            4,
+            0,
+            0,
+            0});
+            this.tabSizeUpDown.ValueChanged += new System.EventHandler(this.tabSizeUpDown_ValueChanged);
+            // 
+            // projectBox
+            // 
+            this.projectBox.Controls.Add(this.saveAutoBox);
+            this.projectBox.Controls.Add(this.browseProjButton);
+            this.projectBox.Controls.Add(this.defaultProjBox);
+            this.projectBox.Controls.Add(this.defaultProjLabel);
+            this.projectBox.Location = new System.Drawing.Point(8, 117);
+            this.projectBox.Name = "projectBox";
+            this.projectBox.Size = new System.Drawing.Size(305, 102);
+            this.projectBox.TabIndex = 3;
+            this.projectBox.TabStop = false;
+            this.projectBox.Text = "Project";
+            // 
+            // saveAutoBox
+            // 
+            this.saveAutoBox.Location = new System.Drawing.Point(16, 19);
+            this.saveAutoBox.Name = "saveAutoBox";
+            this.saveAutoBox.Size = new System.Drawing.Size(153, 24);
+            this.saveAutoBox.TabIndex = 2;
+            this.saveAutoBox.Text = "Save Automatically";
+            this.saveAutoBox.UseVisualStyleBackColor = true;
+            this.saveAutoBox.CheckedChanged += new System.EventHandler(this.saveAutoBox_CheckedChanged);
+            // 
+            // convertTabsToSpacesBox
+            // 
+            this.convertTabsToSpacesBox.Location = new System.Drawing.Point(19, 279);
+            this.convertTabsToSpacesBox.Name = "convertTabsToSpacesBox";
+            this.convertTabsToSpacesBox.Size = new System.Drawing.Size(166, 24);
+            this.convertTabsToSpacesBox.TabIndex = 3;
+            this.convertTabsToSpacesBox.Text = "Convert Tabs to Spaces";
+            this.convertTabsToSpacesBox.UseVisualStyleBackColor = true;
+            this.convertTabsToSpacesBox.CheckedChanged += new System.EventHandler(this.convertTabsToSpacesBox_CheckedChanged);
+            // 
             // Preferences
             // 
             this.AcceptButton = this.okButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(329, 395);
+            this.ClientSize = new System.Drawing.Size(329, 380);
             this.Controls.Add(this.applyButton);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.okButton);
@@ -896,13 +979,12 @@ namespace Revsoft.Wabbitcode
             this.Name = "Preferences";
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.Text = "Preferences";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Preferences_FormClosing);
             this.preferencesTabs.ResumeLayout(false);
             this.generalTab.ResumeLayout(false);
-            this.generalTab.PerformLayout();
             this.outwinBox.ResumeLayout(false);
-            this.textboxBox.ResumeLayout(false);
             this.highlightingTab.ResumeLayout(false);
             this.extraHighlightBox.ResumeLayout(false);
             this.extraHighlightBox.PerformLayout();
@@ -912,6 +994,12 @@ namespace Revsoft.Wabbitcode
             this.moreOutputOptions.PerformLayout();
             this.outTypeBox.ResumeLayout(false);
             this.outTypeBox.PerformLayout();
+            this.editorTab.ResumeLayout(false);
+            this.textboxBox.ResumeLayout(false);
+            this.textboxBox.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.tabSizeUpDown)).EndInit();
+            this.projectBox.ResumeLayout(false);
+            this.projectBox.PerformLayout();
             this.ResumeLayout(false);
 
 		}
@@ -932,23 +1020,13 @@ namespace Revsoft.Wabbitcode
 		private System.Windows.Forms.Button opcodeColor;
 		private System.Windows.Forms.Button lineColor;
 		private System.Windows.Forms.CheckBox highlightEnabled;
-		private System.Windows.Forms.GroupBox highlightBox;
-		private System.Windows.Forms.CheckBox enableAutoTriggerBox;
-		private System.Windows.Forms.CheckBox enableFoldingBox;
-		private System.Windows.Forms.CheckBox inverseScrollingBox;
-		private System.Windows.Forms.CheckBox antiAliasBox;
-		private System.Windows.Forms.ComboBox outFontBox;
-		private System.Windows.Forms.ComboBox fontBox;
-		private System.Windows.Forms.ComboBox fontSizeBox;
-		private System.Windows.Forms.ComboBox outFontSizeBox;
-		private System.Windows.Forms.Label fontLabel;
-		private System.Windows.Forms.Label fontSizeLabel;
+        private System.Windows.Forms.GroupBox highlightBox;
+        private System.Windows.Forms.ComboBox outFontBox;
+        private System.Windows.Forms.ComboBox outFontSizeBox;
 		private System.Windows.Forms.Label outFontSizeLabel;
 		private System.Windows.Forms.Label outFontSize;
 		private System.Windows.Forms.CheckBox colorizeOutWinBox;
-		private System.Windows.Forms.GroupBox outwinBox;
-		private System.Windows.Forms.CheckBox autoIndentBox;
-		private System.Windows.Forms.GroupBox textboxBox;
+        private System.Windows.Forms.GroupBox outwinBox;
 		private System.Windows.Forms.TabPage assemblyTab;
 		private System.Windows.Forms.TabPage highlightingTab;
 		private System.Windows.Forms.TabPage generalTab;
@@ -981,7 +1059,23 @@ namespace Revsoft.Wabbitcode
         private System.Windows.Forms.TextBox extraExtBox;
 		private System.Windows.Forms.CheckBox stringsEnabled;
 		private System.Windows.Forms.Button stringColor;
-		private System.Windows.Forms.Button applyButton;
+        private System.Windows.Forms.Button applyButton;
+        private System.Windows.Forms.TabPage editorTab;
+        private System.Windows.Forms.GroupBox textboxBox;
+        private System.Windows.Forms.NumericUpDown tabSizeUpDown;
+        private System.Windows.Forms.Label tabSizeLabel;
         private System.Windows.Forms.CheckBox enableRefHighlighterBox;
+        private System.Windows.Forms.CheckBox inverseScrollingBox;
+        private System.Windows.Forms.CheckBox enableAutoTriggerBox;
+        private System.Windows.Forms.CheckBox enableFoldingBox;
+        private System.Windows.Forms.CheckBox antiAliasBox;
+        private System.Windows.Forms.CheckBox autoIndentBox;
+        private System.Windows.Forms.Label fontSizeLabel;
+        private System.Windows.Forms.Label fontLabel;
+        private System.Windows.Forms.ComboBox fontSizeBox;
+        private System.Windows.Forms.ComboBox fontBox;
+        private System.Windows.Forms.GroupBox projectBox;
+        private System.Windows.Forms.CheckBox saveAutoBox;
+        private System.Windows.Forms.CheckBox convertTabsToSpacesBox;
 	}
 }

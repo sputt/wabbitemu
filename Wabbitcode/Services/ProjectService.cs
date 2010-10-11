@@ -75,12 +75,13 @@ namespace Revsoft.Wabbitcode.Services
 
 		public static void OpenProject(string fileName)
 		{
-			OpenProject(fileName, false);
+            if (!OpenProject(fileName, false))
+                return;
 			DockingService.MainForm.UpdateProjectMenu(true);
             DockingService.ProjectViewer.BuildProjTree();
 		}
 
-		public static void OpenProject(string fileName, bool closeFiles)
+		public static bool OpenProject(string fileName, bool closeFiles)
 		{
 			if (closeFiles)
 				foreach (Form mdiChild in DockingService.Documents)
@@ -96,9 +97,11 @@ namespace Revsoft.Wabbitcode.Services
             catch (Exception ex)
             {
                 MessageBox.Show("Error opening project\n" + ex.ToString());
+                return false;
             }
 #endif
-			InitWatcher(project.ProjectDirectory);
+            if (!InitWatcher(project.ProjectDirectory))
+                return false;
             if (closeFiles)
             {
                 DockingService.ShowDockPanel(DockingService.ProjectViewer);
@@ -109,10 +112,7 @@ namespace Revsoft.Wabbitcode.Services
 
 			//ThreadStart threadStart = new ThreadStart(GetIncludeDirectories);
             ThreadPool.QueueUserWorkItem(ParseFiles);
-            
-			/*Thread thread = new Thread(ParseFiles);
-			thread.Priority = ThreadPriority.BelowNormal;
-			thread.Start();*/
+            return true;
 		}
 
 		private static void ParseFiles(object data)
@@ -142,7 +142,7 @@ namespace Revsoft.Wabbitcode.Services
 			return includeDir;
 		}
 
-		private static void InitWatcher(string location)
+		private static bool InitWatcher(string location)
 		{
 #if !DEBUG
             try
@@ -161,8 +161,10 @@ namespace Revsoft.Wabbitcode.Services
             catch (Exception ex)
             {
                 MessageBox.Show("Error in InitWatcher\n" + ex.ToString());
+                return false;
             }
 #endif
+                return true;
 		}
 
 		static void projectWatcher_Created(object sender, FileSystemEventArgs e)
@@ -294,9 +296,9 @@ namespace Revsoft.Wabbitcode.Services
 		internal static void CloseProject()
 		{
             DialogResult result = DialogResult.No;
-            if (Project.NeedsSave)
+            if (Project.NeedsSave && !Settings.Default.autoSaveProject)
                 result = MessageBox.Show("Would you like to save your changes to the project file?", "Save project?", MessageBoxButtons.YesNo, MessageBoxIcon.None);
-            if (result == DialogResult.Yes)
+            if (result == DialogResult.Yes || Settings.Default.autoSaveProject)
                 SaveProject();
             isInternal = true;
 		}
