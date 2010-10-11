@@ -75,6 +75,7 @@ typedef struct tagCALC {
 #endif
 
 	BOOL running;
+	BOOL send;
 	int speed;
 	BYTE breakpoints[0x10000];
 	//BOOL warp;
@@ -84,12 +85,6 @@ typedef struct tagCALC {
 	TCHAR labelfn[256];
 	applist_t applist;
 	apphdr_t *last_transferred_app;
-
-	volatile BOOL send;
-	LONG CurrentFile;
-	LONG FileCnt;
-	LONG BytesSent;
-	LONG SendSize;
 
 	gif_disp_states gif_disp_state;
 
