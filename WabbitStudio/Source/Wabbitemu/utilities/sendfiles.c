@@ -16,8 +16,14 @@ typedef struct tagSENDINFO
 	HANDLE hFileListMutex;
 	HANDLE hThread;
 	HWND hwndDlg;
-	std::list<std::tstring> *FileList;
-	LPCTSTR lpszCurrentFile;
+	std::vector<std::tstring> *FileList;
+	
+	// Download progress
+	int iCurrentFile;
+	ULONG ulBytesSent;
+	ULONG ulFileSize;
+	
+	// Overall progress
 	LINK_ERR Error;
 } SENDINFO, *LPSENDINFO;
 
@@ -45,21 +51,16 @@ static HWND CreateSendFileProgress(HWND hwndParent, const LPCALC lpCalc)
 		}
 	}
 
-	RECT r;
-	GetWindowRect(hwndParent, &r);
-
-	DWORD dwSendWidth = (r.right - r.left) * 9 / 10;
-	DWORD dwSendHeight = 90; //10 * HIWORD(GetDialogBaseUnits());
-
 	HWND hwnd = CreateWindowEx(
 		0,
 		(LPCTSTR) Atom,
 		NULL,
-		WS_SIZEBOX | WS_POPUP | WS_VISIBLE,
-		r.left + ((r.right - r.left) - dwSendWidth) / 2, r.top + ((r.bottom - r.top) - dwSendHeight) / 2, 
-		dwSendWidth, dwSendHeight,
+		WS_SIZEBOX | WS_POPUP,
+		0, 0, 0, 0,
 		hwndParent, NULL, GetModuleHandle(NULL),
 		(LPVOID) lpCalc);
+
+	SendMessage(lpCalc->hwndFrame, WM_MOVE, 0, NULL);
 
 	return hwnd;
 }
@@ -71,39 +72,28 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
 	BOOL fRunningBackup = lpCalc->running;
 	BOOL fSoundBackup = lpCalc->audio->enabled;
 
-	lpCalc->send = TRUE;
 	lpCalc->running = FALSE;
 	if (fSoundBackup)
 	{
 		pausesound();
 	}
 
-	while (lpsi->FileList->size() > 0)
+	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)
 	{
-		BOOL fHasFile = FALSE;
-		std::tstring sFileName;
+		SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);	
+		SendFile(NULL, lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), SEND_CUR);
+	}
 
-		if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0)
-		{
-			sFileName = lpsi->FileList->front();
-			lpsi->FileList->pop_front();
-			fHasFile = TRUE;
-			ReleaseMutex(lpsi->hFileListMutex);
-		}
-		if (fHasFile == TRUE)
-		{
-			lpsi->lpszCurrentFile = sFileName.c_str();
-			SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);	
-			SendFile(NULL, lpCalc, sFileName.c_str(), SEND_CUR);
-			InterlockedIncrement(&lpCalc->CurrentFile);
-		}
+	if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0)
+	{
+		lpsi->FileList->clear();
+		ReleaseMutex(lpsi->hFileListMutex);
 	}
 
 	if (lpsi->hwndDlg != NULL)
 	{
 		HWND hwndDlg = lpsi->hwndDlg;
 		lpsi->hwndDlg = NULL;
-		lpCalc->FileCnt = 0;
 		PostMessage(hwndDlg, WM_CLOSE, 0, NULL);
 	}
 	lpCalc->running = fRunningBackup;
@@ -111,7 +101,6 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
 	{
 		playsound();
 	}
-	lpCalc->send = FALSE;
 	current_file_sending = NULL;
 	return 0;
 }
@@ -143,10 +132,11 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 		{
 			lpsi = new SENDINFO;
 			ZeroMemory(lpsi, sizeof(SENDINFO));
-			lpsi->FileList = new std::list<std::tstring>;
+			lpsi->FileList = new std::vector<std::tstring>;
 			g_SendInfo[lpCalc] = lpsi;
 
 			lpsi->hFileListMutex = CreateMutex(NULL, FALSE, NULL);
+			lpsi->iCurrentFile = -1;
 		}
 		else
 		{
@@ -162,7 +152,6 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 		if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0)
 		{
 			lpsi->FileList->push_back(lpszFileName);
-			lpCalc->FileCnt++;
 			ReleaseMutex(lpsi->hFileListMutex);
 		}
 		else
@@ -178,7 +167,6 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 			{
 				CloseHandle(lpsi->hThread);
 			}
-			lpCalc->CurrentFile = 1;
 			lpsi->hThread = CreateThread(NULL, 0, SendFileToCalcThread, lpCalc, 0, NULL);
 		}
 
@@ -243,7 +231,7 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 			case BACKUP_TYPE:
 			case VAR_TYPE:
 			case FLASH_TYPE:
-				lpCalc->SendSize = var->length;
+				lpCalc->cpu.pio.link->vlink_size = var->length;
 				lpCalc->cpu.pio.link->vlink_send = 0;
 				result = link_send_var(&lpCalc->cpu, var, (SEND_FLAG) Destination);
 #ifdef WINVER
@@ -346,20 +334,15 @@ void SendFiles(TCHAR *FileNames, int ram ) {
 	int i;
 	int modelsave;
 	_TUCHAR *fn = (_TUCHAR *)  FileNames;
-	lpCalc->send = TRUE;
 	lpCalc->running = FALSE;
-	lpCalc->CurrentFile = 0;
-	lpCalc->FileCnt = 0;
 	i = 0;
 	while(FileNames[i] != 0) {
 		for(;FileNames[i] != 0; i++);
 		i++;
-		lpCalc->FileCnt++;
 	}
 
 	while (fn[0] != 0) {
 		modelsave = lpCalc->model;
-		lpCalc->CurrentFile++;
 		current_file_sending = (TCHAR *) fn;
 		SendFile(NULL, lpCalc, (TCHAR *) fn, (SEND_FLAG) ram);
 #ifdef WINVER
@@ -371,11 +354,34 @@ void SendFiles(TCHAR *FileNames, int ram ) {
 	//if (calcs[SlotSave].model == TI_82 && modelsave == calcs[SlotSave].model) end82send(SlotSave);
 	lpCalc->running = TRUE;
 	free(FileNames);
-	lpCalc->send = FALSE;
 	current_file_sending = NULL;
 }
 
 #ifdef WINVER
+
+static LRESULT CALLBACK FrameSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	HWND hwndTransfer = (HWND) dwRefData;
+	switch (uMsg)
+	{
+	case WM_MOVE:
+		{
+			RECT wr;
+			GetWindowRect(hwnd, &wr);
+
+			DWORD dwSendWidth = (wr.right - wr.left) * 9 / 10;
+			DWORD dwSendHeight = 90; //10 * HIWORD(GetDialogBaseUnits());
+
+			SetWindowPos(hwndTransfer, NULL, 
+				wr.left + ((wr.right - wr.left) - dwSendWidth) / 2, wr.top + ((wr.bottom - wr.top) - dwSendHeight) / 2,
+				dwSendWidth, dwSendHeight,
+				SWP_NOSIZE | SWP_NOZORDER);
+			break;
+		}
+	}
+	return DefSubclassProc(hwnd, uMsg, wParam, lParam);
+}
+
 static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {
 	static HFONT hfontSegoe = NULL;
@@ -384,7 +390,8 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	{
 	case WM_CREATE:
 		{
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) ((LPCREATESTRUCT) lParam)->lpCreateParams);
+			LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 
 			if (hfontSegoe == NULL)
 			{
@@ -411,6 +418,7 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					hwnd, (HMENU) 1, g_hInst, NULL
 			);
 
+			SetWindowSubclass(lpCalc->hwndFrame, FrameSubclass, 0, (DWORD_PTR) hwnd);
 			SetTimer(hwnd, 1, 50, NULL);
 			return 0;
 		}
@@ -455,8 +463,8 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			SetBkMode(hdc, TRANSPARENT);
 			SelectObject(hdc, hfontSegoe);
 
-			TCHAR szFile[256];
-			StringCbPrintf(szFile, sizeof(szFile), _T("Sending file %d of %d"), lpCalc->CurrentFile, lpCalc->FileCnt);
+			TCHAR szFile[256] = _T("");
+			StringCbPrintf(szFile, sizeof(szFile), _T("Sending file %d of %d"), lpsi->iCurrentFile + 1, lpsi->FileList->size());
 
 			RECT r;
 			GetClientRect(hwnd, &r);
@@ -479,7 +487,10 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			r.left += tm.tmAveCharWidth;
 			SetTextColor(hdc, RGB(90, 90, 90));
 
-			DrawText(hdc, lpsi->lpszCurrentFile, -1, &r, DT_SINGLELINE | DT_PATH_ELLIPSIS);
+			if (lpsi->iCurrentFile != -1)
+			{
+				DrawText(hdc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), -1, &r, DT_SINGLELINE | DT_PATH_ELLIPSIS);
+			}
 
 			EndPaint(hwnd, &ps);
 			return 0;
@@ -497,12 +508,15 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, lpCalc->cpu.pio.link->vlink_size/4));
 			SendMessage(hwndProgress, PBM_SETPOS, lpCalc->cpu.pio.link->vlink_send/4, 0);
 
+			ShowWindow(hwnd, SW_SHOW);
 			InvalidateRect(hwnd, NULL, FALSE);
 			UpdateWindow(hwnd);
 			return 0;
 		}
 	case WM_CLOSE:
 		{
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			RemoveWindowSubclass(lpCalc->hwndFrame, FrameSubclass, 0);
 			DestroyWindow(hwnd);
 			return 0;
 		}
