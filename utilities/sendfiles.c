@@ -488,9 +488,17 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			HWND hwndProgress = GetDlgItem(hwnd, 1);
 			// Update the progress bar
-			SendMessage(hwndProgress, PBM_SETSTEP, 1, 0);
-			SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, lpCalc->cpu.pio.link->vlink_size/4));
-			SendMessage(hwndProgress, PBM_SETPOS, lpCalc->cpu.pio.link->vlink_send/4, 0);
+			if (lpCalc->cpu.pio.link == NULL)
+			{
+				SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, 1));
+				SendMessage(hwndProgress, PBM_SETPOS, 1, 0);
+			}
+			else
+			{
+				SendMessage(hwndProgress, PBM_SETSTEP, 1, 0);
+				SendMessage(hwndProgress, PBM_SETRANGE, 0, MAKELPARAM(0, lpCalc->cpu.pio.link->vlink_size/4));
+				SendMessage(hwndProgress, PBM_SETPOS, lpCalc->cpu.pio.link->vlink_send/4, 0);
+			}
 
 			ShowWindow(hwnd, SW_SHOW);
 			InvalidateRect(hwnd, NULL, FALSE);
