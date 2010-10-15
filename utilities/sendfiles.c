@@ -27,7 +27,22 @@ typedef struct tagSENDINFO
 	LINK_ERR Error;
 } SENDINFO, *LPSENDINFO;
 
+LPCTSTR g_szLinkErrorDescriptions[] =
+{
+	_T("No error"),
+	_T("Virtual link error"),
+	_T("Link timed out"),
+	_T("Error forceloading application"),
+	_T("Invalid checksum on a packet"),
+	_T("The virtual link was not initialized"),
+	_T("Not enough free space on the calculator"),
+	_T("Not the correct model for this calculator"),
+	_T("Invalid file argument"),
+	_T("A problem with Wabbitemu prevented the file from getting sent"),
+};
+
 static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination);
 
 static HANDLE hSendInfoMutex = NULL;
 static std::map<LPCALC, LPSENDINFO> g_SendInfo;
@@ -78,10 +93,20 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
 		pausesound();
 	}
 
+	lpsi->Error = LERR_SUCCESS;
 	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)
 	{
 		SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);	
-		SendFile(NULL, lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), SEND_CUR);
+		lpsi->Error = SendFile(NULL, lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), SEND_CUR);
+		if (lpsi->Error != LERR_SUCCESS)
+		{
+			break;
+		}
+	}
+
+	if (lpsi->Error	!= LERR_SUCCESS)
+	{
+		MessageBox(lpsi->hwndDlg, g_szLinkErrorDescriptions[lpsi->Error], _T("Wabbitemu"), MB_OK | MB_ICONERROR);
 	}
 
 	if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0)
@@ -93,6 +118,7 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
 	if (lpsi->hwndDlg != NULL)
 	{
 		HWND hwndDlg = lpsi->hwndDlg;
+
 		lpsi->hwndDlg = NULL;
 		PostMessage(hwndDlg, WM_CLOSE, 0, NULL);
 	}
@@ -139,7 +165,7 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 		}
 
 		if (lpsi->hwndDlg == NULL) {
-			lpsi->hwndDlg = CreateSendFileProgress(lpCalc->hwndFrame, lpCalc);
+			lpsi->hwndDlg = CreateSendFileProgress(lpCalc->hwndLCD, lpCalc);
 		}
 
 		// Add the file to the transfer queue
@@ -162,107 +188,31 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 		ReleaseMutex(hSendInfoMutex);
 		return TRUE;
 	} else {
-		return FALSE;
+		SendFile(lpCalc->hwndLCD, lpCalc, lpszFileName, SEND_CUR);
+		return TRUE;
 	}
 }
 
-static LPCALC lpCalc = NULL;
-static HWND hwndMain = NULL;
-
-typedef struct SENDFILES {
-	TCHAR* FileNames;
-	int ram;
-//	HANDLE hdlSend;
-} SENDFILES_t;
-
-
-int SizeofFileList(TCHAR* FileNames) {
-	int i;
-	if (FileNames == NULL) return 0;
-	for(i = 0; FileNames[i] != 0 || FileNames[i+1] != 0; i++);
-	return i+2;
-}
-
-TCHAR* AppendName(TCHAR* FileNames, TCHAR* fn) {
-	size_t length;
-	TCHAR* pnt;
-	int i;
-	length = _tcslen(fn);
-	if (FileNames == NULL) {
-		FileNames = (TCHAR *) malloc(sizeof(TCHAR) * (length+2));
-		memset(FileNames, 0, sizeof(TCHAR) * (length+2));
-		pnt = FileNames;
-	} else {
-		for(i = 0; FileNames[i] != 0 || FileNames[i+1] != 0; i++);
-		i++;
-		FileNames = (TCHAR *) realloc(FileNames, sizeof(TCHAR) * (i + length + 2));
-		pnt = FileNames+i;
-		memset(pnt, 0, length + 2);
-	}
-#ifdef WINVER
-	StringCchCopy(pnt, length + 1, fn);
-#else
-	strcpy(pnt,fn);
-#endif
-	return FileNames;
-}
-
-BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination)
+static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination)
 {
-	//BOOL is_link_connected = link_connected(lpCalc->slot);
-	TIFILE_t *var = newimportvar(lpszFileName);//importvar(lpszFileName, 0, Destination);
+	TIFILE_t *var = newimportvar(lpszFileName);
 
 	LINK_ERR result;
-	if (var != NULL) {
-		switch(var->type) {
-			case GROUP_TYPE:
-			case BACKUP_TYPE:
-			case VAR_TYPE:
-			case FLASH_TYPE:
+	if (var != NULL)
+	{
+		switch(var->type)
+		{
+		case GROUP_TYPE:
+		case BACKUP_TYPE:
+		case VAR_TYPE:
+		case FLASH_TYPE:
+			{
 				lpCalc->cpu.pio.link->vlink_size = var->length;
 				lpCalc->cpu.pio.link->vlink_send = 0;
+
 				result = link_send_var(&lpCalc->cpu, var, (SEND_FLAG) Destination);
-#ifdef WINVER
-				switch (result)
+				if (var->type == FLASH_TYPE)
 				{
-				case LERR_MEM:
-					switch (Destination)
-					{
-					case SEND_RAM:
-						MessageBox(hwndParent, _T("Not enough free RAM on calculator"), _T("Wabbitemu"),MB_OK);
-						break;
-					case SEND_ARC:
-						MessageBox(hwndParent, _T("Not enough free Archive on calculator"), _T("Wabbitemu"),MB_OK);
-						break;
-					default:
-						MessageBox(hwndParent, _T("Not enough free memory on calculator"), _T("Wabbitemu"),MB_OK);
-						break;
-					}
-					break;
-				case LERR_TIMEOUT:
-					MessageBox(hwndParent, _T("Link timed out"), _T("Wabbitemu"),MB_OK);
-					break;
-				case LERR_FORCELOAD:
-					MessageBox(hwndParent, _T("Error force loading an application"), _T("Wabbitemu"), MB_OK);
-					break;
-				case LERR_CHKSUM:
-					MessageBox(hwndParent, _T("Link checksum was not correct"), _T("Wabbitemu"), MB_OK);
-					break;
-				case LERR_MODEL:
-					MessageBox(hwndParent, _T("Calculator model not correct for this type of file"), _T("Wabbitemu"), MB_OK);
-					break;
-				case LERR_NOTINIT:
-					MessageBox(hwndParent, _T("Virtual link was not initialized"), _T("Wabbitemu"), MB_OK);
-					break;
-				case LERR_LINK:
-					MessageBox(hwndParent, _T("Virtual link error"), _T("Wabbitemu"), MB_OK);
-					break;
-				case LERR_FILE:
-					MessageBox(hwndParent, _T("The file was unable to be sent because it is corrupt"), _T("Wabbitemu"), MB_OK);
-					break;
-				}
-#endif
-				if (var->type == FLASH_TYPE) {
 					// Rebuild the applist
 					state_build_applist(&lpCalc->cpu, &lpCalc->applist);
 
@@ -279,73 +229,52 @@ BOOL SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_F
 					}
 				}
 				break;
-			case ROM_TYPE:
-			case SAV_TYPE:
+			}
+		case ROM_TYPE:
+		case SAV_TYPE:
+			{
 				FreeTiFile(var);
 				var = NULL;
-				rom_load(lpCalc, lpszFileName);
+				if (rom_load(lpCalc, lpszFileName) == TRUE)
+				{
+					result = LERR_SUCCESS;
+				}
+				else
+				{
+					result = LERR_LINK;
+				}
 				SendMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
 				break;
-			case LABEL_TYPE: {
-					StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), lpszFileName);
-					_tprintf_s(_T("loading label file for slot %d: %s\n"), lpCalc->slot, lpszFileName);
-					VoidLabels(lpCalc);
-					labels_app_load(lpCalc, lpCalc->labelfn);
-					break;
-				}
-			case BREAKPOINT_TYPE:
+			}
+		case LABEL_TYPE:
+			{
+				StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), lpszFileName);
+				_tprintf_s(_T("loading label file for slot %d: %s\n"), lpCalc->slot, lpszFileName);
+				VoidLabels(lpCalc);
+				labels_app_load(lpCalc, lpCalc->labelfn);
+				result = LERR_SUCCESS;
 				break;
-			default:
-#ifdef WINVER
-				MessageBox(NULL, _T("The file was an invalid or unspecified type"), _T("Error"), MB_OK);
-#endif
-				break;
+			}
+		case BREAKPOINT_TYPE:
+			break;
 		}
 		if (var)
+		{
 			FreeTiFile(var);
+		}
 
-		return TRUE;
-	} else {
+		return result;
+	}
+	else
+	{
 #ifdef WINVER
 		MessageBox(NULL, _T("Invalid file format"), _T("Error"), MB_OK);
 #endif
-		return FALSE;
+		return LERR_FILE;
 	}
 }
 
-#ifdef WINVER
-extern HINSTANCE g_hInst;
-HWND hwndSend;
-#endif
-
-void SendFiles(TCHAR *FileNames, int ram ) {
-	int i;
-	int modelsave;
-	_TUCHAR *fn = (_TUCHAR *)  FileNames;
-	lpCalc->running = FALSE;
-	i = 0;
-	while(FileNames[i] != 0) {
-		for(;FileNames[i] != 0; i++);
-		i++;
-	}
-
-	while (fn[0] != 0) {
-		modelsave = lpCalc->model;
-		current_file_sending = (TCHAR *) fn;
-		SendFile(NULL, lpCalc, (TCHAR *) fn, (SEND_FLAG) ram);
-#ifdef WINVER
-		SendMessage(hwndSend, WM_USER, 0, 0);
-#endif
-		for(;fn[0] != 0; fn++);
-		fn++;
-	}
-	//if (calcs[SlotSave].model == TI_82 && modelsave == calcs[SlotSave].model) end82send(SlotSave);
-	lpCalc->running = TRUE;
-	free(FileNames);
-	current_file_sending = NULL;
-}
-
-#ifdef WINVER
+#ifdef _WINDOWS
 
 static LRESULT CALLBACK FrameSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
@@ -354,14 +283,18 @@ static LRESULT CALLBACK FrameSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARA
 	{
 	case WM_MOVE:
 		{
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			RECT wr;
 			GetWindowRect(hwnd, &wr);
 
 			DWORD dwSendWidth = (wr.right - wr.left) * 9 / 10;
 			DWORD dwSendHeight = 90; //10 * HIWORD(GetDialogBaseUnits());
 
+			RECT rcLcd;
+			GetWindowRect(lpCalc->hwndLCD, &rcLcd);
+
 			SetWindowPos(hwndTransfer, NULL, 
-				wr.left + ((wr.right - wr.left) - dwSendWidth) / 2, wr.top + ((wr.bottom - wr.top) - dwSendHeight) / 2,
+				wr.left + ((wr.right - wr.left) - dwSendWidth) / 2, rcLcd.top + 20,
 				dwSendWidth, dwSendHeight,
 				SWP_NOSIZE | SWP_NOZORDER);
 			break;
@@ -402,14 +335,15 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					NULL,
 					WS_CHILD | WS_VISIBLE,
 					tm.tmAveCharWidth*2, tm.tmHeight * 4, 1, 1,
-					hwnd, (HMENU) 1, g_hInst, NULL
+					hwnd, (HMENU) 1, GetModuleHandle(NULL), NULL
 			);
 
 			SetWindowSubclass(lpCalc->hwndFrame, FrameSubclass, 0, (DWORD_PTR) hwnd);
 			SetTimer(hwnd, 1, 50, NULL);
 			return 0;
 		}
-		case WM_GETMINMAXINFO: {
+	case WM_GETMINMAXINFO:
+		{
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (!lpCalc)
 				return 0;
@@ -426,7 +360,8 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			info->ptMaxTrackSize.y = SendHeight;
 			return 0;
 		}
-		case WM_SIZE: {
+	case WM_SIZE:
+		{
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 			HWND hwndProgress = GetDlgItem(hwnd, 1);
@@ -439,7 +374,8 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 			return 0;
 		}
-		case WM_PAINT: {
+	case WM_PAINT:
+		{
 			PAINTSTRUCT ps;
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			LPSENDINFO lpsi = g_SendInfo[lpCalc];
@@ -481,10 +417,12 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			EndPaint(hwnd, &ps);
 			return 0;
 		}
-		case WM_TIMER: {
+	case WM_TIMER:
+		{
 			return SendMessage(hwnd, WM_USER, 0, NULL);
 		}
-		case WM_USER: {
+	case WM_USER:
+		{
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			HWND hwndProgress = GetDlgItem(hwnd, 1);
 			// Update the progress bar
@@ -512,21 +450,11 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			DestroyWindow(hwnd);
 			return 0;
 		}
-		default: {
+	default:
+		{
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 		}
 	}
 }
 
 #endif
-
-void NoThreadSend(const TCHAR* FileNames, int ram, LPCALC calc) {
-	if (lpCalc == NULL) {
-		lpCalc = calc;
-	} else {
-		// error;
-	}
-
-	SendFile(NULL, lpCalc, (TCHAR *) FileNames, (SEND_FLAG) ram);
-	lpCalc = NULL;
-}

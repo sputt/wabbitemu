@@ -181,8 +181,7 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 #else
 	char szFileName[MAX_PATH];
 	WideCharToMultiByte(CP_ACP, 0, bstrFileName, -1, szFileName, sizeof(szFileName), NULL, NULL);
-	gslot = m_iSlot;
-	NoThreadSend(szFileName, SEND_CUR, NULL);
+	SendFileToCalc(m_lpCalc, szFileName, FALSE);
 #endif
 	
 	return S_OK;

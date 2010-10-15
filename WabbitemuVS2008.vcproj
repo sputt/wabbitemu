@@ -350,7 +350,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="&quot;$(ProjectDir)&quot;;&quot;$(ProjectDir)core&quot;;&quot;$(ProjectDir)hardware&quot;;&quot;$(ProjectDir)interface&quot;;&quot;$(ProjectDir)gui&quot;;&quot;$(ProjectDir)utilities&quot;;&quot;$(ProjectDir)debugger&quot;"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;WABBITEMUVS2008_EXPORTS;WINVER=_WIN32_WINNT;strcasecmp=stricmp;strncasecmp=strnicmp;_MAPEDITOR;USE_GDIPLUS;HIGH_SHADE_GIF;WITH_BACKUPS"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;WABBITEMUVS2008_EXPORTS;WINVER=_WIN32_WINNT;strcasecmp=stricmp;strncasecmp=strnicmp;_MAPEDITOR;USE_GDIPLUS;HIGH_SHADE_GIF;WITH_BACKUPS;_ATL_FREE_THREADED"
 				MinimalRebuild="false"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -3020,19 +3020,19 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath=".\gui\downarrow7.bmp"
-				>
-			</File>
-			<File
 				RelativePath=".\downarrow7.bmp"
 				>
 			</File>
 			<File
-				RelativePath=".\gui\left7.bmp"
+				RelativePath=".\gui\downarrow7.bmp"
 				>
 			</File>
 			<File
 				RelativePath=".\left7.bmp"
+				>
+			</File>
+			<File
+				RelativePath=".\gui\left7.bmp"
 				>
 			</File>
 			<File
@@ -3475,11 +3475,11 @@
 			>
 		</File>
 		<File
-			RelativePath=".\gui\Wabbitemu.tlb"
+			RelativePath=".\Wabbitemu.tlb"
 			>
 		</File>
 		<File
-			RelativePath=".\Wabbitemu.tlb"
+			RelativePath=".\gui\Wabbitemu.tlb"
 			>
 		</File>
 	</Files>

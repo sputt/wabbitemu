@@ -112,8 +112,6 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 			frameskip = (frameskip + 1) % 3;
 
 			if (frameskip == 0) {
-				extern HWND hwndSend;
-				SendMessage(hwndSend, WM_USER, 0, 0);
 				difference = 0;
 				return;
 			}
@@ -742,13 +740,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 #endif
 					if (tmpstring[0]!='-') {
-						//printf("%s \n",tmpstring);
-						FileNames = AppendName(FileNames, tmpstring);
+//						SendFileToCalc(lpCalc, tmpstring, TRUE);
 					} else {
 						if (toupper(tmpstring[1]) == 'F')
 							SwitchToThisWindow(FindChildhwnd, TRUE);
 					}
 				}
+/*
 				i = SizeofFileList(FileNames);
 				if (i>0) {
 					cds.dwData = SEND_CUR;
@@ -757,6 +755,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 					SendMessage(FindChildhwnd, WM_COPYDATA, (WPARAM) NULL, (LPARAM) &cds);
 					free(FileNames);
 				}
+*/
 			}
 		}
 	}
@@ -850,12 +849,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				size_t numConv;
 				wcstombs_s(&numConv, tmpstring, argv[i], 512);
 #endif
-				if (tmpstring[0] != '-') {
-					_tprintf_s(_T("%s\n"), tmpstring);
-					FileNames = AppendName(FileNames, tmpstring);
+				if (tmpstring[0] != '-')
+				{
+					SendFileToCalc(lpCalc, tmpstring, TRUE);
 				}
 			}
-//			ThreadSend(FileNames, SEND_CUR, slot);
 		}
 	}
 	loadfiles = FALSE;

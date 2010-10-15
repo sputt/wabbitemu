@@ -14,7 +14,7 @@
 
 class CWabbitemu :
 	public IDispatchImpl<IWabbitemu, &IID_IWabbitemu, &LIBID_WabbitemuLib>,
-	public CComObjectRoot
+	public CComObjectRootEx<CComMultiThreadModel>
 {
 public:
 	BEGIN_COM_MAP(CWabbitemu)
@@ -71,9 +71,9 @@ public:
 
 		m_lpCalc->pWabbitemu = this;
 
-		if (m_hThread == NULL)
+		if (m_dwThreadId == 0)
 		{
-			m_hThread = CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, &m_dwThreadId);
+			CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, &m_dwThreadId);
 		}
 	};
 
@@ -82,7 +82,6 @@ public:
 private:
 	static DWORD m_dwThreadId;
 	static DWORD CALLBACK WabbitemuThread(LPVOID lpParam);
-	HANDLE m_hThread;
 
 	LONG m_lRefCount;
 
