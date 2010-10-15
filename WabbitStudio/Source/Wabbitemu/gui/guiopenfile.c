@@ -177,6 +177,12 @@ All Files (*.*)\0*.*\0\0");
 	filestroffset++;		/* DOUBLE CHECK THIS */
 	filename = filepath+ofn.nFileOffset;
 
+	int send_mode = SEND_CUR;
+	if (!HookOptions.bFileSettings) {
+		send_mode = SEND_RAM;
+		if (HookOptions.bArchive) send_mode = SEND_ARC;
+	}
+
 	while(filename[0] != 0) {
 		int len;
 #ifdef WINVER
@@ -187,14 +193,6 @@ All Files (*.*)\0*.*\0\0");
 		len = (int) _tcslen(filestroffset);
 		filestroffset[len] = 0;
 		filename += len+1;
-		FileNames = AppendName(FileNames, filestr);
+		SendFileToCalc((LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA), filestr, TRUE);
 	}
-	
-	int send_mode = SEND_CUR;
-	if (!HookOptions.bFileSettings) {
-		send_mode = SEND_RAM;
-		if (HookOptions.bArchive) send_mode = SEND_ARC;
-	}
-	
-	SendFileToCalc((LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA), FileNames, send_mode);
 }

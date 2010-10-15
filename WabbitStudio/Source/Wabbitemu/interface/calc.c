@@ -410,7 +410,12 @@ int calc_run_tstates(calc_t *lpCalc, time_t tstates) {
 			disassemble(&lpCalc->mem_c, lpCalc->cpu.pc, 1, z);
 
 			if (lpCalc->pCalcNotify != NULL) {
-				lpCalc->pCalcNotify->Breakpoint(NULL);
+				
+				bank_t *bank = &lpCalc->mem_c.banks[mc_bank(lpCalc->cpu.pc)];
+				CCalcAddress *pCalcAddress = new CComObject<CCalcAddress>();
+				pCalcAddress->Initialize(lpCalc->pWabbitemu, bank->ram, bank->page, lpCalc->cpu.pc);
+				pCalcAddress->AddRef();
+				lpCalc->pCalcNotify->Breakpoint(pCalcAddress);
 			} else {
 #endif
 				gui_debug(lpCalc);

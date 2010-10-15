@@ -692,6 +692,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				return 0;
 		}
+
+		/*
 		case WM_COPYDATA:
 		{
 			int size = (int) ((PCOPYDATASTRUCT)lParam)->cbData;
@@ -706,6 +708,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 			break;
 		}
+		*/
 
 		case WM_DROPFILES:
 		{

@@ -10,7 +10,7 @@
 
 class CPage :
 	public IDispatchImpl<IPage, &IID_IPage, &LIBID_WabbitemuLib>,
-	public CComObjectRoot
+	public CComObjectRootEx<CComMultiThreadModel>
 {
 public:
 	CPage()

@@ -11,7 +11,7 @@
 
 class CCalcAddress :
 	public IDispatchImpl<ICalcAddress, &IID_ICalcAddress, &LIBID_WabbitemuLib>,
-	public CComObjectRoot
+	public CComObjectRootEx<CComMultiThreadModel>
 {
 public:
 	CCalcAddress()
