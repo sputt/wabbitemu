@@ -96,5 +96,5 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					return true;
 			return label1.Offset != label2.Offset || label1.LabelName != label2.LabelName;
 		}
-	}
+    }
 }

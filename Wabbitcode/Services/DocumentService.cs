@@ -72,9 +72,25 @@ namespace Revsoft.Wabbitcode.Services
 
         internal static newEditor OpenDocument(string filename)
         {
-            newEditor doc = new newEditor();
-            OpenDocument(doc, filename);
-            return doc;
+#if !DEBUG
+            try
+            {
+#endif
+                newEditor doc = new newEditor();
+                OpenDocument(doc, filename);
+                return doc;
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                StringBuilder builder = new StringBuilder();
+                builder.Append("Error opening file ");
+                builder.AppendLine(filename);
+                builder.Append(ex);
+                DockingService.ShowError(builder.ToString());
+                return null;
+            }
+#endif
         }
 
 		internal static void OpenDocument(newEditor doc, string filename)
@@ -261,7 +277,7 @@ namespace Revsoft.Wabbitcode.Services
 		internal static void GetRecentFiles()
 		{
             DockingService.MainForm.ClearRecentItems();
-			String line = Settings.Default.recentFiles;
+			string line = Settings.Default.recentFiles;
 			string[] list = line.Split('\n');
 			foreach (string file in list)
 			{

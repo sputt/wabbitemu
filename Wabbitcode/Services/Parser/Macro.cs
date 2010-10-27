@@ -15,7 +15,6 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			Description = description;
 			Arguments = args;
 			Parent = parent;
-			
 		}
 		public string Name
 		{
@@ -56,5 +55,17 @@ namespace Revsoft.Wabbitcode.Services.Parser
         {
             return Name;
         }
-	}
+
+
+        public bool IsWord
+        {
+            get { return true; }                    //assume that it returns a 16 bit val
+        }
+
+        public int Value
+        {
+            get;
+            set;
+        }
+    }
 }

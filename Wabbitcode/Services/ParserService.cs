@@ -190,7 +190,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 							newCounter = SkipToEOCL(lines, counter);
 							string contents = lines.Substring(counter, newCounter - counter).Trim();
 							//its a define
-							Define defineToAdd = new Define(counter, labelName, contents, description, info);
+							Define defineToAdd = new Define(counter, labelName, contents, description, info, EvaluateContents(contents));
 							info.DefinesList.Add(defineToAdd);
 						}
 						else if (lines[tempCounter] == '(')
@@ -201,9 +201,25 @@ namespace Revsoft.Wabbitcode.Services.Parser
 						} 
 						else 
 						{
-							//it must be a label with no colon
-							Label labelToAdd = new Label(counter, labelName, true, description, info);
-							info.LabelsList.Add(labelToAdd);
+                            string nextWord = null;
+                            int secondWordStart = GetWord(lines, tempCounter);
+                            if (secondWordStart > -1)
+                                nextWord = lines.Substring(tempCounter, secondWordStart - tempCounter).ToLower();
+                            if (secondWordStart > -1 && (nextWord == ".equ" || nextWord == "equ"))
+                            {
+                                //its an equate
+                                secondWordStart = SkipWhitespace(lines, secondWordStart);
+                                int secondWordEnd = SkipToEOCL(lines, secondWordStart);
+                                string contents = lines.Substring(secondWordStart, secondWordEnd - secondWordStart);
+                                Define defineToAdd = new Define(counter, labelName, contents, description, info, EvaluateContents(contents));
+                                info.DefinesList.Add(defineToAdd);
+                            }
+                            else
+                            {
+                                //it must be a label with no colon
+                                Label labelToAdd = new Label(counter, labelName, true, description, info);
+                                info.LabelsList.Add(labelToAdd);
+                            }
 						}
 					}
 					counter = SkipToEOL(lines, counter);
@@ -228,7 +244,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					counter = SkipWhitespace(lines, newCounter);
 					newCounter = SkipToEOCL(lines, counter);
 					string contents = lines.Substring(counter, newCounter - counter);
-					Define defineToAdd = new Define(counter, defineName, contents, description, info);
+                    Define defineToAdd = new Define(counter, defineName, contents, description, info, EvaluateContents(contents));
 					info.DefinesList.Add(defineToAdd);
 					counter = SkipWhitespace(lines, newCounter);
 					counter = SkipToEOL(lines, counter);
@@ -302,6 +318,38 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			DockingService.MainForm.Invoke(hideProgress);
 			return info;
 		}
+
+        private static int EvaluateContents(string contents)
+        {
+            List<IParserData> parserData = new List<IParserData>();
+            string text = contents.ToLower();
+            int value;
+            if (int.TryParse(contents, out value))
+                return value;
+            lock (ProjectService.ParseInfo)
+            {
+                foreach (ParserInformation info in ProjectService.ParseInfo)
+                    foreach (IParserData data in info.GeneratedList)
+                        if (data.Name.ToLower() == text)
+                        {
+                            parserData.Add(data);
+                            break;
+                        }
+            }
+            if (parserData.Count > 0)
+            {
+                foreach (IParserData data in parserData)
+                {
+                    if (data.GetType() == typeof(Label))
+                        return 0x4000;                  //arbitrary number > 255. maybe someday i'll parse label values :/
+                    if (data.GetType() == typeof(IDefine))
+                        return ((IDefine) data).Value;
+                }
+                return 0;
+            }
+            else
+                return 0;
+        }
 
 		private static int SkipToEOL(string substring, int counter)
 		{
