@@ -107,7 +107,7 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 
 	int i;
 	for (i = 0; i < MAX_CALCS; i++) {
-		if (calcs[i].active && calcs[i].send == TRUE) {
+		if (calcs[i].active) {
 			static int frameskip = 0;
 			frameskip = (frameskip + 1) % 3;
 

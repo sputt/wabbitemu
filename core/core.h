@@ -144,6 +144,7 @@ typedef struct memory_context {
 	BOOL flash_locked;			//Whether flash is writeable or not.
 
 	int flash_version;
+	int ram_version;
 
 	int read_OP_flash_tstates;	//These are for delays on SEs, typically they should be 0.
 	int read_NOP_flash_tstates;

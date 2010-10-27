@@ -48,7 +48,7 @@ u_int calc_count(void) {
 }
 
 /*  82 83 */
-static BOOL calc_init_83(calc_t *lpCalc, char *os) {
+static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	/* INTIALIZE 83 */
 	memory_init_83(&lpCalc->mem_c);
 	tc_init(&lpCalc->timer_c, MHZ_6);
@@ -65,7 +65,6 @@ static BOOL calc_init_83(calc_t *lpCalc, char *os) {
 	}
 	/* END INTIALIZE 83 */
 
-	lpCalc->send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
@@ -75,7 +74,7 @@ static BOOL calc_init_83(calc_t *lpCalc, char *os) {
 }
 
 /* 85 86 */
-static int calc_init_86(calc_t *lpCalc) {
+static int calc_init_86(LPCALC lpCalc) {
 
 	/* INTIALIZE 86 */
 	printf("initializing 86!\n");
@@ -86,7 +85,6 @@ static int calc_init_86(calc_t *lpCalc) {
 	device_init_86(&lpCalc->cpu);
 	/* END INTIALIZE 86 */
 
-	lpCalc->send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
@@ -96,7 +94,7 @@ static int calc_init_86(calc_t *lpCalc) {
 }
 
 /* 73 83+ */
-int calc_init_83p(calc_t *lpCalc) {
+int calc_init_83p(LPCALC lpCalc) {
 	/* INTIALIZE 83+ */
 	memory_init_83p(&lpCalc->mem_c);
 	tc_init(&lpCalc->timer_c, MHZ_6);
@@ -105,7 +103,6 @@ int calc_init_83p(calc_t *lpCalc) {
 	device_init_83p(&lpCalc->cpu);
 	/* END INTIALIZE 83+ */
 
-	lpCalc->send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
@@ -115,7 +112,7 @@ int calc_init_83p(calc_t *lpCalc) {
 }
 
 /* 83+se */
-int calc_init_83pse(calc_t *lpCalc) {
+int calc_init_83pse(LPCALC lpCalc) {
 	/* INTIALIZE 83+se */
 	memory_init_83pse(&lpCalc->mem_c);
 	tc_init(&lpCalc->timer_c, MHZ_6);
@@ -123,7 +120,6 @@ int calc_init_83pse(calc_t *lpCalc) {
 	ClearDevices(&lpCalc->cpu);
 	device_init_83pse(&lpCalc->cpu);
 	/* END INTIALIZE 83+se */
-	lpCalc->send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
@@ -133,7 +129,7 @@ int calc_init_83pse(calc_t *lpCalc) {
 }
 
 /* 84+ */
-int calc_init_84p(calc_t *lpCalc) {
+int calc_init_84p(LPCALC lpCalc) {
 	/* INTIALIZE 84+ */
 	memory_init_84p(&lpCalc->mem_c);
 	tc_init(&lpCalc->timer_c, MHZ_6);
@@ -147,7 +143,6 @@ int calc_init_84p(calc_t *lpCalc) {
 #endif
 	/* END INTIALIZE 84+ */
 
-	lpCalc->send			= FALSE;
 #ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
@@ -282,7 +277,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 #else
 		strcpy(lpCalc->rom_path, FileName);
 #endif
-		calc_reset(lpCalc);
+		
 
 	}
 	else 
@@ -291,15 +286,14 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	}
 	if (lpCalc != NULL) {
 		lpCalc->cpu.pio.model = lpCalc->model;
+		calc_reset(lpCalc);
 	}
 
-	/*if (calcs[gslot].hwndFrame)
-		gui_frame_update(slot);*/
 	FreeTiFile(tifile);
 	return TRUE;
 }
 
-void calc_slot_free(calc_t *lpCalc) {
+void calc_slot_free(LPCALC lpCalc) {
 	if (lpCalc == NULL)
 		return;
 
@@ -345,7 +339,7 @@ void calc_slot_free(calc_t *lpCalc) {
 
 }
 
-void calc_turn_on(calc_t *lpCalc) {
+void calc_turn_on(LPCALC lpCalc) {
 	lpCalc->running = TRUE;
 	calc_run_timed(lpCalc, 200);
 	lpCalc->cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
@@ -353,36 +347,77 @@ void calc_turn_on(calc_t *lpCalc) {
 	lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
 }
 
-/* Clear RAM and start calculator at $0000 */
-int calc_reset(calc_t *lpCalc) {
-	lpCalc->cpu.sp			= 0;
-	lpCalc->cpu.interrupt	= FALSE;
-	lpCalc->cpu.imode		= 1;
-	lpCalc->cpu.ei_block	= FALSE;
-	lpCalc->cpu.iff1		= FALSE;
-	lpCalc->cpu.iff2		= FALSE;
-	lpCalc->cpu.halt		= FALSE;
-	lpCalc->cpu.read		= FALSE;
-	lpCalc->cpu.write		= FALSE;
-	lpCalc->cpu.output		= FALSE;
-	lpCalc->cpu.input		= FALSE;
-	lpCalc->cpu.prefix		= 0;
-	lpCalc->cpu.mem_c->port27_remap_count = 0;
-	lpCalc->cpu.mem_c->port28_remap_count = 0;
-	/*if (lpCalc->model >= TI_83P) {
-		lpCalc->cpu.pc		= 0x8000;
-		lpCalc->cpu.mem_c->banks[1].page		= lpCalc->cpu.mem_c->flash_pages - 1;
-		lpCalc->cpu.mem_c->banks[1].addr		= lpCalc->cpu.mem_c->flash + (lpCalc->cpu.mem_c->banks[1].page * PAGE_SIZE);
-		lpCalc->cpu.mem_c->banks[1].read_only	= TRUE;
-		lpCalc->cpu.mem_c->banks[1].no_exec	= FALSE;
-	} else {*/
+int calc_reset(LPCALC lpCalc) {
+	lpCalc->running = FALSE;
+	return CPU_reset(&lpCalc->cpu);
+}
+
+/* Clear RAM and start calculator at $0000 
+ * 10/20/10 Calc84 says that starting at $0000 is wrong we need to start on the boot page,
+ */
+int CPU_reset(CPU_t *lpCPU) {
+	lpCPU->sp			= 0;
+	lpCPU->interrupt	= FALSE;
+	lpCPU->imode		= 1;
+	lpCPU->ei_block	= FALSE;
+	lpCPU->iff1		= FALSE;
+	lpCPU->iff2		= FALSE;
+	lpCPU->halt		= FALSE;
+	lpCPU->read		= FALSE;
+	lpCPU->write		= FALSE;
+	lpCPU->output		= FALSE;
+	lpCPU->input		= FALSE;
+	lpCPU->prefix		= 0;
+	lpCPU->mem_c->port27_remap_count = 0;
+	lpCPU->mem_c->port28_remap_count = 0;
+	if (lpCPU->pio.model >= TI_83P) {
+		lpCPU->pc		= 0x8000;
+		switch (lpCPU->pio.model) {
+			case TI_83P: {
+				/*	Address										page	write?	ram?	no exec?	*/
+				bank_state_t banks[5] = {
+					{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash+0x1f*PAGE_SIZE,		0x1f, 	FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash+0x1f*PAGE_SIZE,		0x1f, 	FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
+					{NULL,										0,		FALSE,	FALSE,	FALSE}
+				};
+				break;
+			}
+			case TI_83PSE:
+			case TI_84PSE: {
+				/*	Address										page	write?	ram?	no exec?	*/
+				bank_state_t banks[5] = {
+					{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash+0x7f*PAGE_SIZE,		0x7f, 	FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash+0x7f*PAGE_SIZE,		0x7f, 	FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	TRUE},
+					{NULL,										0,		FALSE,	FALSE,	FALSE}
+				};
+
+				memcpy(lpCPU->mem_c->banks, banks, sizeof(banks));
+				break;
+			}
+			case TI_84P: {
+				/*	Address									page	write?	ram?	no exec?	*/
+				bank_state_t banks[5] = {
+					{lpCPU->mem_c->flash, 					0, 		FALSE,	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash+0x3f*PAGE_SIZE,	0x3f, 	FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash+0x3f*PAGE_SIZE,	0x3f, 	FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->ram,						0,		FALSE,	TRUE,	TRUE},
+					{NULL,									0,		FALSE,	FALSE,	FALSE}
+				};
+				break;
+			}
+		}
+	} else {
 		//memset(lpCalc->mem_c.ram, 0, lpCalc->mem_c.ram_size);
-		lpCalc->cpu.pc			= 0;
-	//}
+		lpCPU->pc			= 0;
+	}
 	return 0;
 }
 
-int calc_run_frame(calc_t *lpCalc) {
+int calc_run_frame(LPCALC lpCalc) {
 	double cpu_sync = tc_elapsed((&lpCalc->timer_c));
 
 	while(lpCalc->running) {
@@ -397,7 +432,7 @@ int calc_run_frame(calc_t *lpCalc) {
 	return 0;
 }
 
-int calc_run_tstates(calc_t *lpCalc, time_t tstates) {
+int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	long long time_end = tc_tstates((&lpCalc->timer_c)) + tstates - lpCalc->time_error;
 
 	while(lpCalc->running) {
@@ -553,7 +588,7 @@ void free_backups(int slot)
 
 #endif
 
-int calc_run_seconds(calc_t *lpCalc, double seconds) {
+int calc_run_seconds(LPCALC lpCalc, double seconds) {
 #ifdef MACVER
 	time_t time = (seconds * CLOCKS_PER_SEC) / 1000;
 #else
@@ -564,7 +599,7 @@ int calc_run_seconds(calc_t *lpCalc, double seconds) {
 
 
 // ticks
-int calc_run_timed(calc_t *lpCalc, time_t time) {
+int calc_run_timed(LPCALC lpCalc, time_t time) {
 	int frames = (int) time / TPF;
 
 	int speed_backup = lpCalc->speed;

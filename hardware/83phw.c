@@ -195,7 +195,7 @@ static void port7(CPU_t *cpu, device_t *dev) {
 			cpu->mem_c->banks[2].addr		= cpu->mem_c->flash+(cpu->mem_c->banks[2].page*16384);
 			cpu->mem_c->banks[2].read_only	= FALSE;
 			cpu->mem_c->banks[2].no_exec	= FALSE;
-			if (cpu->mem_c->banks[2].page==0x1f) cpu->mem_c->banks[2].read_only=TRUE;
+			if (cpu->mem_c->banks[2].page == 0x1f) cpu->mem_c->banks[2].read_only = TRUE;
 		}
 		cpu->output = FALSE;
 	}
