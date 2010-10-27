@@ -775,9 +775,6 @@ namespace Revsoft.Wabbitcode
             bool isMacro = text[text.Length - 1] == '(';
             if (isMacro)
                 text = text.Remove(text.Length - 1);
-            //if (!ProjectService.IsInternal)
-            //    GlobalClass.outputWindow.outputWindowBox.Text = text + "\nProjectLabels:" + GlobalClass.project.projectLabels.Count +
-            //                                "\nProjectLabels[1]:" + ((ArrayList)GlobalClass.project.projectLabels[1]).Count;
             if (bgotoButton.Text.Substring(0, 4) == "Goto")
             {
                 List<IParserData> parserData = new List<IParserData>();
@@ -809,9 +806,10 @@ namespace Revsoft.Wabbitcode
                 }
                 else
                 {
+                    string lookup = text.ToLower();
                     foreach (ParserInformation info in ProjectService.ParseInfo)
                         foreach (IParserData data in info.GeneratedList)
-                            if (data.Name.ToLower() == text.ToLower())
+                            if (data.Name.ToLower() == lookup)
                             {
                                 parserData.Add(data);
                                 break;
@@ -897,7 +895,10 @@ namespace Revsoft.Wabbitcode
                             MenuItem item = new MenuItem(data.Name, new EventHandler(fixCaseContext_Click));
                             fixCaseContext.MenuItems.Add(item);
                         }
+                        bgotoButton.Enabled = true;
                     }
+                    else
+                        bgotoButton.Enabled = false;
                 }
                 //if the user clicked after the last char we need to catch this
                 if (offset == editorBox.Text.Length)
@@ -979,8 +980,15 @@ namespace Revsoft.Wabbitcode
                     }
                     else
                     {
-                        bgotoButton.Text = "Goto " + gotoLabel;
-                        bgotoButton.Enabled = string.IsNullOrEmpty(gotoLabel) ? false : true;
+                        if (bgotoButton.Enabled)
+                        {
+                            bgotoButton.Text = "Goto " + gotoLabel;
+                            bgotoButton.Enabled = string.IsNullOrEmpty(gotoLabel) ? false : true;
+                        }
+                        else
+                        {
+                            bgotoButton.Text = "Unable to find " + gotoLabel;
+                        }
                     }
                 }
                 else
@@ -1829,7 +1837,14 @@ namespace Revsoft.Wabbitcode
                                 }
                                 else
                                 {
-                                    if (!(firstArg == "hl" || ((firstArg == "ix" || firstArg == "iy") && command == "add")))
+                                    if (firstArg == "hl" || firstArg == "ix" || firstArg == "iy")
+                                    {
+                                        resultList.Add(new CodeCompletionData("bc", 3));
+                                        resultList.Add(new CodeCompletionData("de", 3));
+                                        resultList.Add(new CodeCompletionData("hl", 3));
+                                        resultList.Add(new CodeCompletionData("sp", 3));
+                                    }
+                                    else
                                         Add8BitRegs(ref resultList);
                                 }
                                 return resultList.ToArray();
@@ -1846,9 +1861,14 @@ namespace Revsoft.Wabbitcode
                             // commands that take a register or a number
                             case "cp":
                             case "or":
-                            case "sub":
                             case "xor":
-                                
+                                Add8BitRegs(ref resultList);
+                                return resultList.ToArray();
+                            case "sub":
+                                if (firstArg == "")
+                                    resultList.Add(new CodeCompletionData("a", 3));
+                                else
+                                    Add8BitRegs(ref resultList);
                                 return resultList.ToArray();
                             //16 bit only
                             case "push":
@@ -1873,11 +1893,8 @@ namespace Revsoft.Wabbitcode
                                     {
                                         resultList.Add(new CodeCompletionData("p", 2));
                                         resultList.Add(new CodeCompletionData("m", 2));
-                                        resultList.Add(new CodeCompletionData("n", 2));
                                         resultList.Add(new CodeCompletionData("po", 2));
                                         resultList.Add(new CodeCompletionData("pe", 2));
-                                        resultList.Add(new CodeCompletionData("v", 2));
-                                        resultList.Add(new CodeCompletionData("nv", 2));
                                     }
                                 }
                                 if (command == "ret")

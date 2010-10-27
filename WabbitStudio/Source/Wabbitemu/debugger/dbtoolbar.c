@@ -142,36 +142,6 @@ BOOL HasAlpha(ARGB *pargb, SIZE sizImage, int cxRow)
     return FALSE;
 }
 
-/*
-HRESULT ConvertBufferToPARGB32(HPAINTBUFFER hPaintBuffer, HDC hdc, HICON hicon, SIZE sizIcon)
-{
-    RGBQUAD *prgbQuad;
-    int cxRow;
-    HRESULT hr = GetBufferedPaintBits(hPaintBuffer, &prgbQuad, &cxRow);
-    if (SUCCEEDED(hr))
-    {
-        ARGB *pargb = (ARGB *) (prgbQuad);
-        if (!HasAlpha(pargb, sizIcon, cxRow))
-        {
-            ICONINFO info;
-            if (GetIconInfo(hicon, &info))
-            {
-                if (info.hbmMask)
-                {
-                    hr = ConvertToPARGB32(hdc, pargb, info.hbmMask, sizIcon, cxRow);
-                }
-
-                DeleteObject(info.hbmColor);
-                DeleteObject(info.hbmMask);
-            }
-        }
-    }
-
-    return hr;
-}
-*/
-
-
 void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 	RECT rc;
 	GetClientRect(hwndToolbar, &rc);
@@ -184,8 +154,8 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 	HBITMAP hbmRight;
 
 	DWORD dwVersion = GetVersion();
-	WORD wVersion = MAKEWORD(HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
-	BOOL fIsWindows7 = (wVersion >= 0x0601) ? TRUE : FALSE;
+	DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
+	BOOL fIsWindows7 = (dwMajorVersion >= 0x06) ? TRUE : FALSE;
 	if (fIsWindows7 == TRUE)
 	{
 		hbmRight = LoadBitmap(g_hInst, _T("TBRIGHT7"));
@@ -568,8 +538,8 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			PaintToolbarBackground(GetParent(hwnd), hdcBuf, &scr);
 
 			DWORD dwVersion = GetVersion();
-			WORD wVersion = MAKEWORD(HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
-			BOOL fIsWindows7 = (wVersion >= 0x0601) ? TRUE : FALSE;
+			DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
+			BOOL fIsWindows7 = (dwMajorVersion >= 0x06) ? TRUE : FALSE;
 
 			if (tbb->MouseState == MOUSE_DOWN) {
 				HDC hdcFrame = CreateCompatibleDC(hdc);
@@ -942,11 +912,11 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			//next = CreateToolbarButton(hwnd, "Track", "Create a variable track window.", "DBGoto", next, 4, 1005);
 			TCHAR *szChevronBMP;
 			DWORD dwVersion = GetVersion();
-			WORD wVersion = MAKEWORD(HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
-			if (wVersion >= 0x0601)
-				szChevronBMP = _T("CHEVRON7");
-			else
+			DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
+			if (dwMajorVersion < 0x06)
 				szChevronBMP = _T("CHEVRON");
+			else
+				szChevronBMP = _T("CHEVRON7");
 			next = CreateToolbarButton(hwnd, _T(""), _T("Display additional commands."), szChevronBMP, next, 4, 1006, FALSE, (int)NULL);
 
 			return 0;
@@ -1121,8 +1091,8 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			GetClientRect(hwnd, &rc);
 
 			DWORD dwVersion = GetVersion();
-			WORD wVersion = MAKEWORD(HIBYTE(LOWORD(dwVersion)), LOBYTE(LOWORD(dwVersion)));
-			BOOL fIsWindows7 = (wVersion >= 0x0601) ? TRUE : FALSE;
+			DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
+			BOOL fIsWindows7 = (dwMajorVersion >= 0x06) ? TRUE : FALSE;
 
 			HDC hdc;
 			PAINTSTRUCT ps;

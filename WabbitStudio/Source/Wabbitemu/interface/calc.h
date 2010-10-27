@@ -75,7 +75,7 @@ typedef struct tagCALC {
 #endif
 
 	BOOL running;
-	BOOL send;
+	//BOOL send;
 	int speed;
 	BYTE breakpoints[0x10000];
 	//BOOL warp;
@@ -118,6 +118,7 @@ void calc_turn_on(LPCALC);
 LPCALC calc_slot_new(void);
 u_int calc_count(void);
 int calc_reset(LPCALC);
+int CPU_reset(CPU_t *);
 int calc_run_frame(LPCALC);
 int calc_run_seconds(LPCALC, double);
 int calc_run_timed(LPCALC, time_t);

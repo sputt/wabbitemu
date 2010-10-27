@@ -35,11 +35,11 @@ unsigned char mem_read(memc *mem, unsigned short addr) {
 	if ((mem->port28_remap_count > 0) && !mem->boot_mapped && (mc_bank(addr) == 2) && (mc_base(addr) < 64*mem->port28_remap_count)) {
 		return mem->ram[1*PAGE_SIZE + mc_base(addr)];
 	}
-#ifdef CALC84MANIAC_HACK
-	if (mem->banks[mc_bank(addr)].ram == TRUE && mem->banks[mc_bank(addr)].page > 2) {
-		return mem->ram[2*PAGE_SIZE + mc_base(addr)];
+	if (mem->ram_version == 2) {
+		if (mem->banks[mc_bank(addr)].ram == TRUE && mem->banks[mc_bank(addr)].page > 2) {
+			return mem->ram[2*PAGE_SIZE + mc_base(addr)];
+		}
 	}
-#endif
 	return *(mem->banks[mc_bank(addr)].addr + mc_base(addr));
 }
 
@@ -105,11 +105,11 @@ unsigned char mem_write(memc *mem, unsigned short addr, char data) {
 	if ((mem->port28_remap_count > 0) && !mem->boot_mapped && (mc_bank(addr) == 2) && (mc_base(addr) < 64*mem->port28_remap_count)) {
 		return mem->ram[1*PAGE_SIZE + mc_base(addr)] = data;
 	}
-#ifdef CALC84MANIAC_HACK
-	if (mem->banks[mc_bank(addr)].ram == TRUE && mem->banks[mc_bank(addr)].page > 2) {
-		return mem->ram[2*PAGE_SIZE + mc_base(addr)] = data;
+	if (mem->ram_version == 2) {
+		if (mem->banks[mc_bank(addr)].ram == TRUE && mem->banks[mc_bank(addr)].page > 2) {
+			return mem->ram[2*PAGE_SIZE + mc_base(addr)] = data;
+		}
 	}
-#endif
 	return  *(mem->banks[mc_bank(addr)].addr + mc_base(addr)) = data;
 }
 

@@ -589,10 +589,6 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	if (tifile->flash == NULL)
 		return LERR_FILE;
 
-	//valid OS
-	dest[0][0x56] = 0x5A;
-	dest[0][0x57] = 0xA5;
-
 	for (i = 0; i < ARRAYSIZE(tifile->flash->data); i++) {
 		if (tifile->flash->data[i] == NULL)
 			continue;
@@ -603,8 +599,10 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 	}
 
-	// Discard any error link_send_app returns
-	link_send_app(cpu, tifile);
+	//valid OS
+	dest[0][0x56] = 0x5A;
+	dest[0][0x57] = 0xA5;
+
 	// Delay for a few seconds so the calc will be responsive
 	cpu->pio.link->vlink_size = 100;
 	for (cpu->pio.link->vlink_send = 0; cpu->pio.link->vlink_send < 100; cpu->pio.link->vlink_send += 20) {

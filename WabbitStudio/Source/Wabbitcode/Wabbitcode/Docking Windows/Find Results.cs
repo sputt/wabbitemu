@@ -32,13 +32,24 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void findResultsBox_DoubleClick(object sender, EventArgs e)
         {
-            int line = findResultsBox.GetLineFromCharIndex(findResultsBox.SelectionStart);
-            string lineContents = findResultsBox.Lines[line];
-            int firstParen = lineContents.IndexOf('(');
-            int secondParen = lineContents.IndexOf(')');
-            string file = lineContents.Substring(0, firstParen);
-            int lineNum = Convert.ToInt32(lineContents.Substring(firstParen + 1, secondParen - firstParen - 1));
-            DocumentService.GotoLine(file, lineNum + 1);
+#if !DEBUG
+            try
+            {
+#endif
+                int line = findResultsBox.GetLineFromCharIndex(findResultsBox.SelectionStart);
+                string lineContents = findResultsBox.Lines[line];
+                int firstParen = lineContents.IndexOf('(');
+                int secondParen = lineContents.IndexOf(')');
+                string file = lineContents.Substring(0, firstParen);
+                int lineNum = Convert.ToInt32(lineContents.Substring(firstParen + 1, secondParen - firstParen - 1));
+                DocumentService.GotoLine(file, lineNum + 1);
+#if !DEBUG
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError(ex.ToString());
+            }
+#endif
         }
 
 		public override void Copy()

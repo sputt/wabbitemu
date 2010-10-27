@@ -29,37 +29,6 @@ static int alphablendfail = 0;
 
 BITMAPINFO *bi = NULL;
 
-
-HDC DrawSending(HWND hwnd, HDC hdcDest) {
-	TCHAR Sendstr1[] = _T("Sending File(s)");
-
-	static HBITMAP bmpSend = NULL;
-	RECT clientRect;
-	GetClientRect(hwnd, &clientRect);
-
-	// Create the device context that holds the overlay
-	HDC hdc = CreateCompatibleDC(hdcDest);
-
-	if (bmpSend != NULL) DeleteObject(bmpSend);
-	bmpSend =
-	CreateCompatibleBitmap(hdcDest, clientRect.right, clientRect.bottom);
-
-	SelectObject(hdc, bmpSend);
-
-
-	SetBkMode(hdc, TRANSPARENT);
-	SetTextColor(hdc, RGB(0x00,0x00,0x00));
-
-
-	HBRUSH hbrSend = CreateSolidBrush(SEND_COLOR);
-	FillRect(hdc, &clientRect, hbrSend);
-
-	DeleteObject(hbrSend);
-
-	return hdc;
-}
-
-
 HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	RECT rl, rr, clientRect;
 	GetClientRect(hwnd, &clientRect);
@@ -291,18 +260,6 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 			DeleteDC(hdcOverlay);
 
-		}
-
-
-		if (lpCalc->send == TRUE) {
-			bf.SourceConstantAlpha = 192;
-			hdcOverlay = DrawSending(hwnd, hdcDest);
-
-			if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
-						hdcOverlay, 0, 0, rc.right, rc.bottom,
-						bf ) == FALSE) _tprintf_s(_T("alpha blend send failed\n"));
-
-			DeleteDC(hdcOverlay);
 		}
 
 		bf.SourceConstantAlpha = 108;
