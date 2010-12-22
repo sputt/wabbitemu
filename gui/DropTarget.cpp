@@ -188,16 +188,14 @@ HRESULT __stdcall CDropTarget::DragLeave() {
 	}
 
 	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
-	if (lpCalc != NULL)
-	{
+	if (lpCalc != NULL) {
 		lpCalc->do_drag = false;
 	}
 
 	return S_OK;
 }
 
-static BOOL WriteStreamToFile(IStream *pStream, LPCTSTR lpszFileName)
-{
+static BOOL WriteStreamToFile(IStream *pStream, LPCTSTR lpszFileName) {
 	//pStream->g
 }
 
@@ -213,8 +211,53 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 					DragQueryFile((HDROP) pData, i, path, ARRAYSIZE(path));
 					TIFILE_t *tifile = newimportvar(path);
 					valid = tifile != NULL;
+					calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+					if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73))
+						valid = FALSE;
 					FreeTiFile(tifile);
 					GlobalUnlock(stgmed.hGlobal);
+					break;
+				}
+				default: {
+					if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW)) {
+						LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
+						LPTSTR lpszFileGroup = NULL;
+
+						for (int i = 0; i < lpfgd->cItems; i++) {
+							TCHAR szTemp[L_tmpnam_s];
+							_ttmpnam_s(szTemp);
+
+							StringCbCopy(path, sizeof(path), _tgetenv(_T("appdata")));
+							StringCbCat(path, sizeof(path), szTemp);
+
+							FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
+							STGMEDIUM stgmedData = {0};
+							if (SUCCEEDED(pDataObject->GetData(&fmtstm, &stgmedData))) {
+								LPBYTE lpBuffer = (LPBYTE) malloc(lpfgd->fgd[i].nFileSizeLow);
+
+								ULONG cbRead = 0;
+								if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead))) {
+									FILE *file = _tfopen(path, _T("wb"));
+									if (file != NULL) {
+										fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
+										fclose(file);
+
+										TIFILE_t *tifile = newimportvar(path);
+										valid = tifile != NULL;
+										calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+										if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73))
+											valid = FALSE;
+										FreeTiFile(tifile);
+									}
+									_tremove(path);
+								}
+								free(lpBuffer);
+								ReleaseStgMedium(&stgmedData);
+							}
+						}
+						GlobalUnlock(stgmed.hGlobal);
+					}
+
 					break;
 				}
 			}
@@ -240,62 +283,53 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 
 		for (UINT i = 0; i < m_nAccepted; i++) {
 			if (SUCCEEDED(pDataObject->GetData(&m_pAccepted[i], &stgmed))) {
-				switch (m_pAccepted[i].cfFormat)
-				{
-				case CF_HDROP:
-					{
-						PVOID pData = GlobalLock(stgmed.hGlobal);
-						SendMessage(m_hwndTarget, WM_DROPFILES, (WPARAM) pData, NULL);
+				switch (m_pAccepted[i].cfFormat) {
+					case CF_HDROP: {
+							PVOID pData = GlobalLock(stgmed.hGlobal);
+							SendMessage(m_hwndTarget, WM_DROPFILES, (WPARAM) pData, NULL);
 
-						GlobalUnlock(stgmed.hGlobal);
-						break;
-					}
-				default:
-					{
-						if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW))
-						{
-							LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
-							LPTSTR lpszFileGroup = NULL;
-
-							for (int i = 0; i < lpfgd->cItems; i++)
-							{
-								TCHAR szFileName[MAX_PATH];
-
-								TCHAR szTemp[L_tmpnam_s];
-								_ttmpnam_s(szTemp);
-
-								StringCbCopy(szFileName, sizeof(szFileName), _tgetenv(_T("appdata")));
-								StringCbCat(szFileName, sizeof(szFileName), szTemp);
-
-								FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
-								STGMEDIUM stgmedData = {0};
-								if (SUCCEEDED(pDataObject->GetData(&fmtstm, &stgmedData)))
-								{
-									LPBYTE lpBuffer = (LPBYTE) malloc(lpfgd->fgd[i].nFileSizeLow);
-
-									ULONG cbRead = 0;
-									if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead)))
-									{
-										FILE *file = _tfopen(szFileName, _T("wb"));
-										if (file != NULL)
-										{
-											fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
-											fclose(file);
-											SendFileToCalc(lpCalc, szFileName, TRUE);
-										}
-									}
-									free(lpBuffer);
-
-									ReleaseStgMedium(&stgmedData);
-								}
-							}
 							GlobalUnlock(stgmed.hGlobal);
+							break;
 						}
+					default: {
+							if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW)) {
+								LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
+								LPTSTR lpszFileGroup = NULL;
 
-						break;
-					}
+								for (int i = 0; i < lpfgd->cItems; i++) {
+									TCHAR szFileName[MAX_PATH];
+
+									TCHAR szTemp[L_tmpnam_s];
+									_ttmpnam_s(szTemp);
+
+									StringCbCopy(szFileName, sizeof(szFileName), _tgetenv(_T("appdata")));
+									StringCbCat(szFileName, sizeof(szFileName), szTemp);
+
+									FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
+									STGMEDIUM stgmedData = {0};
+									if (SUCCEEDED(pDataObject->GetData(&fmtstm, &stgmedData))) {
+										LPBYTE lpBuffer = (LPBYTE) malloc(lpfgd->fgd[i].nFileSizeLow);
+
+										ULONG cbRead = 0;
+										if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead))) {
+											FILE *file = _tfopen(szFileName, _T("wb"));
+											if (file != NULL) {
+												fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
+												fclose(file);
+												SendFileToCalc(lpCalc, szFileName, FALSE, DropMemoryTarget(m_hwndTarget));
+												_tremove(szFileName);
+											}
+										}
+										free(lpBuffer);
+										ReleaseStgMedium(&stgmedData);
+									}
+								}
+								GlobalUnlock(stgmed.hGlobal);
+							}
+
+							break;
+						}
 				}
-
 				ReleaseStgMedium(&stgmed);
 			}
 
@@ -309,10 +343,10 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 	return S_OK;
 }
 
-int DropMemoryTarget(HWND hwnd) {
+SEND_FLAG DropMemoryTarget(HWND hwnd) {
 	RECT lr, rr;
 	POINT p;
-	int ram;
+	SEND_FLAG ram;
 
 	GetClientRect(hwnd, &lr);
 	CopyRect(&rr, &lr);

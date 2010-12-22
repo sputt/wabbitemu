@@ -7,8 +7,8 @@ INT_PTR CALLBACK SetupOSProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK SetupROMDumperProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK SetupMakeROMProc(HWND, UINT, WPARAM, LPARAM);
 BOOL DoWizardSheet(HWND);
-int BrowseOSFile(char* );
+int BrowseOSFile(TCHAR *);
 void ExtractDumperProg();
-void ExtractResource(char *, HRSRC);
+void ExtractResource(TCHAR *, HRSRC);
 
 #endif

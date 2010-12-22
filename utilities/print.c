@@ -14,6 +14,7 @@ static int mspf_break = 9999;
 
 void press_textA(TCHAR *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 	RECT tr;
+
 	tr.left = 0; tr.right = 1;
 	SetTextColor(hdc, zcolor);
 	DrawText(hdc, szText, -1, &tr, DT_LEFT | DT_SINGLELINE | DT_CALCRECT);
@@ -53,11 +54,10 @@ void press_textA(TCHAR *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 		DrawText(hdc, szText, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 	}
 	OffsetRect(r, tr.right, 0);
-
 }
 
 
-void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const TCHAR *fmt, ...) {
+void MyDrawText(HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
     TCHAR *p;
     va_list argp;
     RECT r = *rc;
@@ -68,7 +68,7 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const TCHAR *fmt, ...) {
     if (calc_size == FALSE) {
     	calc_size = TRUE;
     	
-    	mysprintf(hdc, zinf, rc, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+    	MyDrawText(hdc, rc, zinf, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
     	
     	TCHAR szFilltext[1024];
     	memset(szFilltext, 'A', mspf_size);
@@ -77,6 +77,7 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const TCHAR *fmt, ...) {
     	RECT hr;
     	CopyRect(&hr, rc);
     	DrawText(hdc, szFilltext, -1, &hr, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_CALCRECT | DT_END_ELLIPSIS | DT_MODIFYSTRING);
+
     	mspf_break = (int) _tcslen(szFilltext);
 
     	if (mspf_break < mspf_size) {
@@ -98,31 +99,24 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const TCHAR *fmt, ...) {
             press_text(szChar, DBCOLOR_BASE);
         } else {
             switch(*++p) {
-                case 'c': {//condition
+                case 'c': {		//condition
 					TCHAR *s = va_arg(argp, TCHAR *);
 					press_text(s, DBCOLOR_CONDITION);
 	            	break;
                 }
-                case 'h': {//offset
+                case 'h': {		//offset
                 	int val	= (int) va_arg(argp, INT_PTR);
                 	TCHAR szOffset[8];
-#ifdef WINVER
 					_stprintf_s(szOffset, _T("%+d"),val);
-#else
-                	sprintf(szOffset, "%+d",val);
-#endif
+
                 	press_text(szOffset, RGB(0, 0, 0));
 					break;
                 }
-                case 'd': //number
-				{
+                case 'd': {		//number
 					int val	= (int) va_arg(argp, INT_PTR);
 					TCHAR szAddr[16];
-#ifdef WINVER
 					_stprintf_s(szAddr, _T("%d"), val);
-#else
-					sprintf(szAddr, "%d",val);
-#endif
+
 					press_text(szAddr, RGB(0, 0, 0));		
                 	break;
 				}
@@ -151,11 +145,7 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const TCHAR *fmt, ...) {
 						press_text(name, RGB(0, 0, 0));
 					} else {
 						TCHAR szAddr[16];
-#ifdef WINVER
 						_stprintf_s(szAddr, _T("$%04X"),val);
-#else
-						sprintf(szAddr, "$%04X",val);
-#endif
 						press_text(szAddr, RGB(0, 0, 0));
 					}
                 	break;
@@ -173,11 +163,7 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const TCHAR *fmt, ...) {
 							press_text(name, RGB(0, 0, 0));
 						} else {
 							TCHAR szAddr[16];
-#ifdef WINVER
 							_stprintf_s(szAddr, _T("$%04X"), val);
-#else
-							sprintf(szAddr, "$%04X",val);
-#endif
 							press_text(szAddr, RGB(0, 0, 0));
 						}
 	                	break;
@@ -190,7 +176,132 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const TCHAR *fmt, ...) {
 						press_text(_T("hl"), DBCOLOR_HILIGHT);
 						press_text(_T(")"), DBCOLOR_BASE);
 					} else
-					press_text(szReg, DBCOLOR_HILIGHT);
+						press_text(szReg, DBCOLOR_HILIGHT);
+					break;
+				}
+				case 'x':
+				{
+					int val	= (int) va_arg(argp, INT_PTR);
+					TCHAR szAddr[16];
+					StringCbPrintf(szAddr, sizeof(szAddr), _T("$%02X"), val);
+					press_text(szAddr, RGB(0, 0, 0));	
+					break;	
+				}
+            }
+        }
+    }
+    va_end(argp);
+}
+
+TCHAR* mysprintf(Z80_info_t* zinf, const TCHAR *fmt, ...) {
+    TCHAR *p, end_buf[1024] = "\0";
+    va_list argp;
+    
+    mspf_size = 0;
+    mspf_break = 999;
+    
+    mspf_size = 0;
+    
+    // Initialize arguments
+    va_start(argp, fmt);
+    for (p = (TCHAR *) fmt; *p && (mspf_size < mspf_break+3); p++) {
+        if(*p != '%') {
+            TCHAR szChar[2] = _T("x");
+            szChar[0] = *p;
+			StringCbCat(end_buf, sizeof(end_buf), szChar);
+        } else {
+            switch(*++p) {
+                case 'c': {//condition
+					TCHAR *s = va_arg(argp, TCHAR *);
+					StringCbCat(end_buf, sizeof(end_buf), s);
+	            	break;
+                }
+                case 'h': {//offset
+                	int val	= (int) va_arg(argp, INT_PTR);
+                	TCHAR szOffset[8];
+#ifdef WINVER
+					_stprintf_s(szOffset, _T("%+d"),val);
+#else
+                	sprintf(szOffset, "%+d",val);
+#endif
+                	StringCbCat(end_buf, sizeof(end_buf), szOffset);
+					break;
+                }
+                case 'd': //number
+				{
+					int val	= (int) va_arg(argp, INT_PTR);
+					TCHAR szAddr[16];
+#ifdef WINVER
+					_stprintf_s(szAddr, _T("%d"), val);
+#else
+					sprintf(szAddr, "%d",val);
+#endif
+					StringCbCat(end_buf, sizeof(end_buf), szAddr);		
+                	break;
+				}
+				case 'l':
+				{
+					TCHAR *s = va_arg(argp, TCHAR *);
+					StringCbCat(end_buf, sizeof(end_buf), s);
+                	break;
+				}		
+                case 's':
+				{
+					TCHAR *s = va_arg(argp, TCHAR *);
+					StringCbCat(end_buf, sizeof(end_buf), s);
+                	break;
+				}
+                case 'g':
+				{
+					unsigned short addr = zinf->addr + 2;
+					TCHAR *name;
+					int val;
+					
+					val = (addr + ((char) va_arg(argp, INT_PTR)));
+					name = FindAddressLabel(gslot,calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].ram, calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].page,val);
+					
+					if (name) {
+						StringCbCat(end_buf, sizeof(end_buf), name);
+					} else {
+						TCHAR szAddr[16];
+#ifdef WINVER
+						_stprintf_s(szAddr, _T("$%04X"),val);
+#else
+						sprintf(szAddr, "$%04X",val);
+#endif
+						StringCbCat(end_buf, sizeof(end_buf), szAddr);
+					}
+                	break;
+				}
+				case 'a': //address
+					{
+						unsigned short addr = zinf->addr + 2;
+						TCHAR *name;
+						int val;
+						val = (int) va_arg(argp, INT_PTR);
+
+						name = FindAddressLabel(gslot,calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].ram, calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].page,val);
+						
+						if (name) {
+							StringCbCat(end_buf, sizeof(end_buf), name);
+						} else {
+							TCHAR szAddr[16];
+#ifdef WINVER
+							_stprintf_s(szAddr, _T("$%04X"), val);
+#else
+							sprintf(szAddr, "$%04X",val);
+#endif
+							StringCbCat(end_buf, sizeof(end_buf), szAddr);
+						}
+	                	break;
+					}
+                case 'r':
+				{
+					TCHAR *szReg = va_arg(argp, TCHAR *);
+					if (!_tcscmp(szReg, _T("(hl)"))) {
+						StringCbCat(end_buf, sizeof(end_buf), _T("(hl)"));
+					} else
+					StringCbCat(end_buf, sizeof(end_buf), szReg);
 					break;
 				}
 				case 'x':
@@ -202,11 +313,12 @@ void mysprintf(HDC hdc, Z80_info_t* zinf, RECT *rc, const TCHAR *fmt, ...) {
 #else
 					sprintf(szAddr, "$%02X", val);
 #endif
-					press_text(szAddr, RGB(0, 0, 0));	
+					StringCbCat(end_buf, sizeof(end_buf), szAddr);
 					break;	
 				}
             }
         }
     }
     va_end(argp);
+	return end_buf;
 }

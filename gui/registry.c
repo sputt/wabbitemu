@@ -11,26 +11,27 @@ static struct {
 	DWORD dwType;
 	LONG_PTR Value;
 } regDefaults[] = {
-	{_T("cutout"), 		REG_DWORD, 	0},
-	{_T("skin"),		REG_DWORD,	0},
-	{_T("version"), 	REG_SZ, 	(LONG_PTR) _T("1.5")},
-	{_T("rom_path"), 	REG_SZ, 	(LONG_PTR) _T("z.rom")},
-	{_T("shades"),		REG_DWORD,	6},
-	{_T("gif_path"), 	REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},
-	{_T("gif_autosave"),REG_DWORD,	0},
-	{_T("gif_useinc"),	REG_DWORD,	0},
-	{_T("lcd_mode"),	REG_DWORD,	0}, // perfect gray
-	{_T("lcd_freq"),	REG_DWORD,	FPS}, // steady freq
-	{_T("screen_scale"),REG_DWORD,  2},
+	{_T("cutout"), 			REG_DWORD, 	FALSE},
+	{_T("skin"),			REG_DWORD,	FALSE},
+	{_T("alphablend_lcd"),	REG_DWORD,	TRUE},
+	{_T("version"), 		REG_SZ, 	(LONG_PTR) _T("1.5")},
+	{_T("rom_path"), 		REG_SZ, 	(LONG_PTR) _T("z.rom")},
+	{_T("shades"),			REG_DWORD,	6},
+	{_T("gif_path"), 		REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},
+	{_T("gif_autosave"),	REG_DWORD,	FALSE},
+	{_T("gif_useinc"),		REG_DWORD,	FALSE},
+	{_T("lcd_mode"),		REG_DWORD,	0},		// perfect gray
+	{_T("lcd_freq"),		REG_DWORD,	FPS},	// steady freq
+	{_T("screen_scale"),	REG_DWORD,  2},
 	{_T("faceplate_color"), REG_DWORD, 	0x838587},
-	{_T("exit_save_state"), REG_DWORD,  0},
-	{_T("load_files_first"), REG_DWORD,  1},
-	{_T("do_backups"),	REG_DWORD,  0},
-	{_T("show_wizard"),	REG_DWORD,  1},
-	{_T("sync_cores"),	REG_DWORD,  0},
-	{_T("num_keys"),	REG_DWORD,  5},
-	{_T("always_on_top"),	REG_DWORD,  0},
-	{NULL,			0,			0},
+	{_T("exit_save_state"), REG_DWORD,  FALSE},
+	{_T("load_files_first"),REG_DWORD,  FALSE},
+	{_T("do_backups"),		REG_DWORD,  FALSE},
+	{_T("show_wizard"),		REG_DWORD,  TRUE},
+	{_T("sync_cores"),		REG_DWORD,  FALSE},
+	{_T("num_keys"),		REG_DWORD,  5},
+	{_T("always_on_top"),	REG_DWORD,  FALSE},
+	{NULL,					0,			0},
 };
 
 HRESULT LoadRegistryDefaults(HKEY hkey) {
@@ -135,6 +136,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), (TCHAR *) QueryWabbitKey(_T("rom_path")));
 	lpCalc->SkinEnabled = (BOOL) QueryWabbitKey(_T("skin"));
 	lpCalc->bCutout = (BOOL) QueryWabbitKey(_T("cutout"));
+	lpCalc->bAlphaBlendLCD = (BOOL) QueryWabbitKey(_T("alphablend_lcd"));
 	lpCalc->Scale = (int) QueryWabbitKey(_T("screen_scale"));
 	lpCalc->FaceplateColor = (COLORREF) QueryWabbitKey(_T("faceplate_color"));
 	exit_save_state = (BOOL) QueryWabbitKey(_T("exit_save_state"));
@@ -143,6 +145,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	show_wizard = (BOOL) QueryWabbitKey(_T("show_wizard"));
 	sync_cores = (BOOL) QueryWabbitKey(_T("sync_cores"));
 	lpCalc->bAlwaysOnTop = (BOOL) QueryWabbitKey(_T("always_on_top"));
+	lpCalc->bCustomSkin = (BOOL) QueryWabbitKey(_T("custom_skin"));
 	int num_entries = (int) QueryWabbitKey(_T("num_keys"));
 	//need to load accelerators
 	// querywabbitkey doesnt work because its a REG_BINARY
@@ -166,8 +169,6 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	//RegCloseKey(hkeyWabbit);
 	hkeyTarget = hkeyWabbit;
 	RegCloseKey(hkeySoftware);
-
-	lpCalc->bCutout = (BOOL) QueryWabbitKey(_T("cutout"));
 	
 	return S_OK;
 }
@@ -196,6 +197,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		hkeyTarget = hkeyWabbit;
 		
 		SaveWabbitKey(_T("cutout"), REG_DWORD, &lpCalc->bCutout);
+		SaveWabbitKey(_T("alphablend_lcd"), REG_DWORD, &lpCalc->bAlphaBlendLCD);
 		SaveWabbitKey(_T("skin"), REG_DWORD, &lpCalc->SkinEnabled);
 		SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
 		SaveWabbitKey(_T("gif_path"), REG_SZ, &gif_file_name);
@@ -207,10 +209,10 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("show_wizard"), REG_DWORD, &show_wizard);
 		SaveWabbitKey(_T("sync_cores"), REG_DWORD, &sync_cores);
 
-		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &calcs[gslot].FaceplateColor);
-		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &calcs[gslot].bCustomSkin);
-		SaveWabbitKey(_T("skin_path"), REG_SZ, &calcs[gslot].skin_path);
-		SaveWabbitKey(_T("keymap_path"), REG_SZ, &calcs[gslot].keymap_path);
+		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpCalc->FaceplateColor);
+		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);
+		SaveWabbitKey(_T("skin_path"), REG_SZ, &lpCalc->skin_path);
+		SaveWabbitKey(_T("keymap_path"), REG_SZ, &lpCalc->keymap_path);
 		/*ACCEL buf[256];
 		DWORD dwCount = sizeof(buf);
 		DWORD dwType = NULL;

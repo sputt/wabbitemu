@@ -3,7 +3,8 @@
 
 #include "disassemble.h"
 
-void mysprintf(HDC hdc, Z80_info_t*, RECT *, const char *, ...);
+void MyDrawText(HDC, RECT *, Z80_info_t *, const TCHAR *, ...);
+TCHAR* mysprintf(Z80_info_t *, const TCHAR *, ...);
 
 #define DBCOLOR_BASE (RGB(4, 72, 117))
 //#define DBCOLOR_HILIGHT (RGB(112, 169, 168))

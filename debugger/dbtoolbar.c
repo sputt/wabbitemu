@@ -291,7 +291,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				case IDM_45SECOND:
 				case IDM_50SECOND:
 				{
-					restore_backup(((int) wParam) - IDM_05SECOND, gslot);
+					restore_backup(((int) wParam) - IDM_05SECOND, &calcs[DebuggerSlot]);
 					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;
 				}
@@ -939,7 +939,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case IDM_45SECOND:
 				case IDM_50SECOND:
 				{
-					restore_backup(((int) wParam) - IDM_05SECOND, gslot);
+					restore_backup(((int) wParam) - IDM_05SECOND, &calcs[DebuggerSlot]);
 					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;
 				}

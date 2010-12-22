@@ -367,8 +367,8 @@ keypad_t *keypad_init(CPU_t *cpu) {
 	}
 
 	//keygrps = customkeys;
-	for(b=0;b<8;b++) {
-		for(i=0;i<8;i++) {
+	for(b = 0; b < 8; b++) {
+		for(i = 0; i < 8; i++) {
 			keypad->keys[b][i]=0;
 		}
 	}
@@ -383,8 +383,8 @@ void keypad(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		int i,group,keybit;
 		unsigned char result=0;
-		unsigned char keymap[8] = {0,0,0,0,0,0,0,0};
-		unsigned char keymapbug[8] = {0,0,0,0,0,0,0,0};
+		unsigned char keymap[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+		unsigned char keymapbug[8] = {0, 0, 0, 0, 0, 0, 0, 0};
 
 		for (group = 0; group < 7; group++) {
 			for (keybit = 0; keybit < 8; keybit++) {
@@ -423,8 +423,7 @@ keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk) {
 	int i;
 	keypad_t * keypad = cpu->pio.keypad;
 
-	if (keypad == NULL)
-	{
+	if (keypad == NULL) {
 		return NULL;
 	}
 	/*
@@ -432,7 +431,7 @@ keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk) {
 	if (vk >= 'a' && vk <= 'z') vk += 'A' - 'a';
 #endif
 	 */
-	for(i=0; i < NumElm(defaultkeys); i++) {
+	for(i = 0; i < NumElm(defaultkeys); i++) {
 		if (keygrps[i].vk == vk) {
 			if (keygrps[i].group == 5 && keygrps[i].bit == 0) {
 				keypad->on_pressed |= KEY_KEYBOARDPRESS;

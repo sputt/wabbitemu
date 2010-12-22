@@ -23,7 +23,7 @@ int PropPageLast = -1;
 
 // We have to save a slot for the ROM info
 // and skin, it differs per calc
-static int SlotSave;
+static LPCALC lpCalc;
 
 void DoPropertySheet(HWND hwndOwner) {
 
@@ -32,6 +32,7 @@ void DoPropertySheet(HWND hwndOwner) {
 		return;
 	}
 
+	lpCalc = (LPCALC) GetWindowLongPtr(hwndOwner, GWLP_USERDATA);
 	PROPSHEETPAGE psp[6];
 	PROPSHEETHEADER psh;
 
@@ -117,7 +118,6 @@ void DoPropertySheet(HWND hwndOwner) {
 		PropSheet_SetCurSel(hwndProp, NULL, PropPageLast);
 	}
 
-	SlotSave = gslot;
 	return;
 }
 
@@ -129,7 +129,7 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 	CPU_t *cpu = (CPU_t *) lpParam;
 	double Time = 0.0f;
 	int i;
-	clock_t last_time = (clock_t) (clock() - (1000/displayFPS));
+	clock_t last_time = (clock_t) (clock() - (1000 / displayFPS));
 	clock_t difference = 0;
 	for (;;) {
 		if (cpu->pio.lcd != calcs[gslot].cpu.pio.lcd) {
@@ -137,7 +137,7 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 			switch (cpu->imode) {
 			case 0: buffer = displayoptionstest_draw_bounce(4,displayFPS,Time); break;
 			case 1: buffer = displayoptionstest_draw_scroll(4,displayFPS,Time); break;
-			case 2: buffer = displayoptionstest_draw_gradient((int) (displayFPS/10.0f),displayFPS,Time);
+			case 2: buffer = displayoptionstest_draw_gradient((int) (displayFPS / 10.0f), displayFPS, Time);
 			}
 			fastcopy(buffer, cpu);
 			if (cpu->imode == 2) Time += 1/70.0f;
@@ -486,20 +486,24 @@ int BrowseBMPFile(TCHAR *lpstrFile[]) {
 }
 
 INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND chkCutout, chkCustom, hColorSelect, hBrowseSkin, hBrowseKey, hSkinText, hKeyText;
+	static HWND chkCutout, chkCustom, hColorSelect, hBrowseSkin, hBrowseKey, hSkinText, hKeyText, chkAlphaBlend;
+	static COLORREF backupFaceplate;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			chkCutout = GetDlgItem(hwndDlg, IDC_CHKCUTOUT);
 			chkCustom = GetDlgItem(hwndDlg, IDC_CHKCSTMSKIN);
+			chkAlphaBlend = GetDlgItem(hwndDlg, IDC_CHKALPHABLEND);
 			hColorSelect = GetDlgItem(hwndDlg, IDC_COLORPICK);
 			hBrowseSkin = GetDlgItem(hwndDlg, IDC_BROWSESKIN);
 			hBrowseKey = GetDlgItem(hwndDlg, IDC_BROWSEKEY);
 			hSkinText = GetDlgItem(hwndDlg, IDC_SKNFILE);
 			hKeyText = GetDlgItem(hwndDlg, IDC_KEYFILE);
-			BOOL CustomSkinSetting = calcs[SlotSave].bCustomSkin;
+			BOOL CustomSkinSetting = lpCalc->bCustomSkin;
 			SkinOptionsToggleCustomSkin(hwndDlg, CustomSkinSetting);
-			SendMessage(chkCutout, BM_SETCHECK, calcs[SlotSave].bCutout, 0);
+			Button_SetCheck(chkCutout, lpCalc->bCutout);
+			Button_SetCheck(chkAlphaBlend, lpCalc->bAlphaBlendLCD);
 			SendMessage(hColorSelect, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) LoadBitmap(g_hInst, _T("SkinPicker")));
+			backupFaceplate = lpCalc->FaceplateColor;
 			return 0;
 		}
 		case WM_COMMAND: {
@@ -514,11 +518,11 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 							//char lpstrFile[MAX_PATH];
 							//BrowseBMPFile(&lpstrFile);
 						}
+						case IDC_CHKALPHABLEND:
 						case IDC_CHKCUTOUT:
 							break;
 						case IDC_CHKCSTMSKIN: {
-							BOOL customSkinSetting;
-							customSkinSetting = (BOOL) SendMessage(chkCustom, BM_GETCHECK, 0, 0);
+							BOOL customSkinSetting = Button_GetCheck(chkCustom);
 							SkinOptionsToggleCustomSkin(hwndDlg, customSkinSetting);
 							break;
 						}
@@ -531,8 +535,8 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 							ptCursor.x -= rc.left;
 							ptCursor.y -= rc.top;
 							COLORREF selectedColor = GetPixel(hColorPicker, ptCursor.x, ptCursor.y);
-							calcs[SlotSave].FaceplateColor = selectedColor;
-							gui_frame_update(&calcs[SlotSave]);
+							lpCalc->FaceplateColor = selectedColor;
+							gui_frame_update(lpCalc);
 							break;
 						}
 						default:
@@ -547,17 +551,22 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 		case WM_NOTIFY: {
     		switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
-					BOOL chkState = SendMessage(chkCutout, BM_GETSTATE, 0, 0) & 0x0003 ? TRUE : FALSE;
+					BOOL chkState = Button_GetCheck(chkCutout) & 0x0003 ? TRUE : FALSE;
 
-					if (chkState != calcs[SlotSave].bCutout) {
-						calcs[SlotSave].bCutout = chkState;
-						gui_frame_update(&calcs[SlotSave]);
+					if (chkState != lpCalc->bCutout) {
+						lpCalc->bCutout = chkState;
+						gui_frame_update(lpCalc);
 					}
+					chkState = Button_GetCheck(chkAlphaBlend);
+					if (chkState != lpCalc->bAlphaBlendLCD)
+						lpCalc->bAlphaBlendLCD = chkState;
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
+					backupFaceplate = lpCalc->FaceplateColor;
 					return TRUE;
 				}
 				case PSN_KILLACTIVE:
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, FALSE);
+					lpCalc->FaceplateColor = backupFaceplate;
 					return TRUE;
 			}
 			return TRUE;
@@ -612,11 +621,11 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					do_backups = Button_GetCheck(doBackups_check);
 					if (!do_backups) {
 						for (i = 0; i < MAX_CALCS; i++)
-							free_backups(i);
+							free_backups(&calcs[i]);
 					}
 #endif
-					calcs[SlotSave].bAlwaysOnTop = Button_GetCheck(alwaysTop_check);
-					gui_frame_update(&calcs[SlotSave]);
+					lpCalc->bAlwaysOnTop = Button_GetCheck(alwaysTop_check);
+					gui_frame_update(lpCalc);
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -632,7 +641,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(doBackups_check, do_backups);
 #endif
 			Button_SetCheck(wizard_check, show_wizard);
-			Button_SetCheck(alwaysTop_check, calcs[SlotSave].bAlwaysOnTop);
+			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);
 			return TRUE;
 		}
 	}
@@ -653,13 +662,13 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 
 			int speedPos = 0;
 			if (gif_base_delay_start != 0) {
-			 	speedPos = ((100/gif_base_delay_start)-9)/TBRSTEP;
+			 	speedPos = ((100 / gif_base_delay_start) - 9) / TBRSTEP;
 			}
 
 			SendMessage(hwndSpeed, TBM_SETPOS, TRUE, speedPos);
 
-			int delayMin = (100/(9+(TBRTICS * TBRSTEP)));
-			int fpsMax = 100/delayMin;
+			int delayMin = (100 / (9 + (TBRTICS * TBRSTEP)));
+			int fpsMax = 100 / delayMin;
 			HWND hwndMaxSpeed = GetDlgItem(hwndDlg, IDC_STCGIFMAX);
 			TCHAR lpszMax[10];
 #ifdef WINVER
@@ -697,27 +706,21 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 
 					if (gif_write_state == GIF_IDLE) {
 						gif_base_delay_start = 	//GIF_MINIMUM + (GIF_MAXIMUM=GIF_MINIMUM)/6
-												(100/(9+(speedPos * TBRSTEP)));
+												(100 / (9 + (speedPos * TBRSTEP)));
 					}
 					//printf("gifbasedelay: %d\n",gif_base_delay_start);
 
-					gif_autosave =
-					SendMessage(chkAutosave, BM_GETSTATE, 0, 0) & 0x0003 ?
-						TRUE : FALSE;
+					gif_autosave = Button_GetState(chkAutosave) & 0x0003 ? TRUE : FALSE;
 
-					gif_use_increasing =
-					SendMessage(chkUseIncreasing, BM_GETSTATE, 0, 0) & 0x0003 ?
-						TRUE : FALSE;
+					gif_use_increasing = Button_GetState(chkUseIncreasing) & 0x0003 ? TRUE : FALSE;
 
 					gif_bw = Button_GetCheck(rbnGray);
 
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
 
-					gif_size =
-					SendMessage(chkSize, BM_GETSTATE, 0, 0) & 0x0003 ?
-						2 : 1;
+					gif_size = Button_GetState(chkSize) & 0x0003 ? 2 : 1;
 
-					Edit_GetText(edtGIFFilename, gif_file_name, sizeof(gif_file_name));
+					Edit_GetText(edtGIFFilename, gif_file_name, ARRAYSIZE(gif_file_name));
 					return TRUE;
 				}
 				case PSN_KILLACTIVE:
@@ -734,7 +737,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 					switch (LOWORD(wParam)) {
 						case IDC_CHKENABLEAUTOSAVE: {
 							BOOL bEnable = FALSE;
-							if (SendMessage(chkAutosave, BM_GETSTATE, 0, 0) & 0x0003) {
+							if (Button_GetState(chkAutosave) & 0x0003) {
 								bEnable = TRUE;
 							}
 							GIFOptionsToggleAutosave(hwndDlg, bEnable);
@@ -838,9 +841,9 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 							TCHAR lpszFile[MAX_PATH] = _T("\0");
 							if (!GetROMName(lpszFile)) {
 #ifdef WINVER
-								StringCbCopy(calcs[SlotSave].rom_path, sizeof(calcs[SlotSave].rom_path), lpszFile);
+								StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), lpszFile);
 #else
-								strcpy(calcs[SlotSave].rom_path, lpszFile);
+								strcpy(lpCalc->rom_path, lpszFile);
 #endif
 								//SendMessage(calcs[gslot].hwndLCD, WM_COMMAND, ECM_CALCRELOAD, 0);
 								SendMessage(hwnd, WM_USER, 0, 0);
@@ -856,12 +859,12 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 #else
 								FILE* outfile = fopen(lpszFile,"wb");
 #endif
-								char* rom = (char *) calcs[SlotSave].mem_c.flash;
-								int size = calcs[SlotSave].mem_c.flash_size;
-								if (size!=0 && rom!=NULL && outfile!=NULL) {
+								char* rom = (char *) lpCalc->mem_c.flash;
+								int size = lpCalc->mem_c.flash_size;
+								if (size != 0 && rom!=NULL && outfile!=NULL) {
 									int i;
-									for(i=0;i<size;i++) {
-										fputc(rom[i],outfile);
+									for(i = 0; i < size; i++) {
+										fputc(rom[i], outfile);
 									}
 									fclose(outfile);
 								}
@@ -878,7 +881,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		case WM_NOTIFY:
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
-					exit_save_state = (BOOL) SendMessage(saveState_check, BM_GETCHECK, 0, 0);
+					exit_save_state = Button_GetCheck(saveState_check);
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -891,25 +894,26 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		// Update all of the ROM attributes
 		case WM_USER:
 			Button_SetCheck(saveState_check, exit_save_state);
-			Edit_SetText(edtRom_path, calcs[SlotSave].rom_path);
+			Edit_SetText(edtRom_path, lpCalc->rom_path);
 #ifdef _UNICODE
 			TCHAR szRomVersion[256];
-			MultiByteToWideChar(CP_ACP, 0, calcs[SlotSave].rom_version, -1, szRomVersion, ARRAYSIZE(szRomVersion));
+			MultiByteToWideChar(CP_ACP, 0, lpCalc->rom_version, -1, szRomVersion, ARRAYSIZE(szRomVersion));
 			Edit_SetText(edtRom_version, szRomVersion);
 #else
-			Edit_SetText(edtRom_version, calcs[SlotSave].rom_version);
+			Edit_SetText(edtRom_version, lpCalc->rom_version);
 #endif
-			Edit_SetText(edtRom_model, CalcModelTxt[calcs[SlotSave].model]);
-//			Button_SetCheck(ramPages_check, calcs[SlotSave].mem_c.ram_pages_missing);
+			Edit_SetText(edtRom_model, CalcModelTxt[lpCalc->model]);
+//			Button_SetCheck(ramPages_check, lpCalc->mem_c.ram_pages_missing);
 			TCHAR szRomSize[16];
 #ifdef WINVER
-			StringCbPrintf(szRomSize, sizeof(szRomSize), _T("%0.1f KB"), (float) calcs[SlotSave].cpu.mem_c->flash_size/1024.0f);
+			StringCbPrintf(szRomSize, sizeof(szRomSize), _T("%0.1f KB"), (float) lpCalc->cpu.mem_c->flash_size / 1024.0f);
 #else
-			sprintf(szRomSize, "%0.1f KB", (float) calcs[SlotSave].cpu.mem_c->flash_size/1024.0f);
+			sprintf(szRomSize, "%0.1f KB", (float) lpCalc->cpu.mem_c->flash_size/1024.0f);
 #endif
 			Edit_SetText(edtRom_size, szRomSize);
-			if (hbmTI83P) DeleteObject(hbmTI83P);
-			switch (calcs[SlotSave].model) {
+			if (hbmTI83P)
+				DeleteObject(hbmTI83P);
+			switch (lpCalc->model) {
 				case TI_83PSE:
 					hbmTI83P = LoadBitmap(g_hInst, _T("CalcTI83PSE"));
 					break;

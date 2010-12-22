@@ -59,7 +59,7 @@ void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
 }
 
 void sprint_command(HDC hdc, Z80_info_t *zinf, RECT *r) {
-	mysprintf(hdc, zinf, r, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+	MyDrawText(hdc, r, zinf, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
 }
 
 void sprint_size(HDC hdc, Z80_info_t *zinf, RECT *r) {
@@ -896,6 +896,53 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 		}
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
+				case DB_COPYLINE: {
+					int i, j;
+					Z80_info *zinf_line;
+					TCHAR *disassembly = (TCHAR *) LocalAlloc(LMEM_FIXED, 1024);
+					memset(disassembly, 0, 1024);
+					TCHAR copy_line[512];
+					TCHAR buf[512];
+					for (i = 0; i < dps->NumSel; i++) {
+						zinf_line = &zinf[dps->iSel + i];
+						//print the address
+						StringCbPrintf(copy_line, sizeof(copy_line), _T("%04X"), zinf_line->addr);
+						StringCbCat(copy_line, sizeof(copy_line), _T(":"));
+						//print the data
+						for (j = 0; j < zinf_line->size; j++) {
+							StringCbPrintf(buf + (j*2), sizeof(buf), _T("%02x"), mem_read(calcs[DebuggerSlot].cpu.mem_c, zinf_line->addr+j));
+						}
+						StringCbCat(copy_line, sizeof(copy_line), buf);
+						StringCbCat(copy_line, sizeof(copy_line), _T(": "));
+						//print the command
+						TCHAR *test_string = mysprintf(zinf_line, da_opcode[zinf_line->index].format, zinf_line->a1, zinf_line->a2, zinf_line->a3, zinf_line->a4);
+						StringCbCat(copy_line, sizeof(copy_line), test_string);
+						StringCbCat(copy_line, sizeof(copy_line), _T("\t;"));
+						//print the size
+						if (zinf_line->size > 0) {
+							StringCbPrintf(buf, sizeof(buf), _T("%d"), zinf_line->size);
+							StringCbCat(copy_line, sizeof(copy_line), buf);
+							StringCbCat(copy_line, sizeof(copy_line), _T(" bytes "));
+						}
+						//print the clocks
+						if (da_opcode[zinf_line->index].clocks != -1) {
+							if (da_opcode[zinf_line->index].clocks_cond) {
+								StringCbPrintf(buf, sizeof(buf), _T("%d/%d"), da_opcode[zinf_line->index].clocks, da_opcode[zinf_line->index].clocks_cond);
+							} else {
+								StringCbPrintf(buf, sizeof(buf), _T("%d"), da_opcode[zinf_line->index].clocks);
+							}
+							StringCbCat(copy_line, sizeof(copy_line), buf);
+							StringCbCat(copy_line, sizeof(copy_line), _T(" clocks"));
+						}
+						StringCbCat(copy_line, sizeof(copy_line), _T("\r\n"));
+						StringCbCat(disassembly, 1024, copy_line);
+					}
+					OpenClipboard(hwnd);
+					EmptyClipboard();
+					SetClipboardData(CF_TEXT, (HLOCAL) disassembly);
+					CloseClipboard();
+					break;
+				}
 				case DB_DISASM: {
 					u_int addr = (u_int) lParam;
 					disassemble(&calcs[DebuggerSlot].mem_c, addr, dps->nRows, zinf);

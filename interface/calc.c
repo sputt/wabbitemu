@@ -69,6 +69,7 @@ static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
+	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 #endif
 	return TRUE;
 }
@@ -89,6 +90,7 @@ static int calc_init_86(LPCALC lpCalc) {
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
+	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 #endif
 	return 0;
 }
@@ -107,6 +109,7 @@ int calc_init_83p(LPCALC lpCalc) {
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
+	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 #endif
 	return 0;
 }
@@ -124,6 +127,7 @@ int calc_init_83pse(LPCALC lpCalc) {
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
+	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 #endif
 	return 0;
 }
@@ -147,6 +151,7 @@ int calc_init_84p(LPCALC lpCalc) {
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
+	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 #endif
 	return 0;
 }
@@ -215,7 +220,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 				return FALSE;
 		}
 
-		LoadSlot(tifile->save, lpCalc->slot);
+		LoadSlot(tifile->save, lpCalc);
 #ifdef WINVER
 		StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), FileName);
 #else
@@ -286,7 +291,8 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	}
 	if (lpCalc != NULL) {
 		lpCalc->cpu.pio.model = lpCalc->model;
-		calc_reset(lpCalc);
+		if (tifile->save == NULL)
+			calc_reset(lpCalc);
 	}
 
 	FreeTiFile(tifile);
@@ -332,7 +338,7 @@ void calc_slot_free(LPCALC lpCalc) {
 
 #ifdef WITH_BACKUPS
 		if (do_backups)
-			free_backups(lpCalc->slot);
+			free_backups(lpCalc);
 #endif
 
 	}
@@ -348,7 +354,7 @@ void calc_turn_on(LPCALC lpCalc) {
 }
 
 int calc_reset(LPCALC lpCalc) {
-	lpCalc->running = FALSE;
+	//lpCalc->running = FALSE;
 	return CPU_reset(&lpCalc->cpu);
 }
 
@@ -382,6 +388,7 @@ int CPU_reset(CPU_t *lpCPU) {
 					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
 					{NULL,										0,		FALSE,	FALSE,	FALSE}
 				};
+				memcpy(lpCPU->mem_c->banks, banks, sizeof(banks));
 				break;
 			}
 			case TI_83PSE:
@@ -407,6 +414,7 @@ int CPU_reset(CPU_t *lpCPU) {
 					{lpCPU->mem_c->ram,						0,		FALSE,	TRUE,	TRUE},
 					{NULL,									0,		FALSE,	FALSE,	FALSE}
 				};
+				memcpy(lpCPU->mem_c->banks, banks, sizeof(banks));
 				break;
 			}
 		}
@@ -433,9 +441,9 @@ int calc_run_frame(LPCALC lpCalc) {
 }
 
 int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
-	long long time_end = tc_tstates((&lpCalc->timer_c)) + tstates - lpCalc->time_error;
+	unsigned long long time_end = tc_tstates((&lpCalc->timer_c)) + tstates - lpCalc->time_error;
 
-	while(lpCalc->running) {
+	while (lpCalc->running) {
 		if (check_break(&lpCalc->mem_c, lpCalc->cpu.pc) & 1) {
 #ifdef WINVER
 			lpCalc->running = FALSE;
@@ -460,12 +468,12 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 			return 0;
 		}
 
-		long long oldTStates;
+		unsigned long long oldTStates;
 		if(lpCalc->profiler.running)
 			oldTStates = tc_tstates((&lpCalc->timer_c));
 		CPU_step(&lpCalc->cpu);
 		if (lpCalc->profiler.running) {
-			long long time = tc_tstates((&lpCalc->timer_c)) - oldTStates;
+			unsigned long long time = tc_tstates((&lpCalc->timer_c)) - oldTStates;
 			lpCalc->profiler.totalTime += time;
 			if(lpCalc->cpu.pc <= lpCalc->profiler.highAddress && lpCalc->cpu.pc >= lpCalc->profiler.lowAddress )
 				lpCalc->profiler.data[lpCalc->cpu.pc / lpCalc->profiler.blockSize] += (long) time;
@@ -495,7 +503,7 @@ int calc_run_all(void)
 				if (frame_counter >= calcs[j].timer_c.freq / 2) {
 					frame_counter = 0;
 					if (do_backups && calcs[j].speed <= 100)
-						do_backup(j);
+						do_backup(&calcs[j]);
 				}
 #endif
 				calc_run_tstates(&calcs[j], time);
@@ -504,7 +512,7 @@ int calc_run_all(void)
 				if (frame_counter >= calcs[j].timer_c.freq / 2) {
 					frame_counter = 0;
 					if (do_backups && calcs[j].speed <= 100)
-						do_backup(j);
+						do_backup(&calcs[j]);
 				}
 #endif
 			}
@@ -514,10 +522,11 @@ int calc_run_all(void)
 	return 0;
 }
 #ifdef WITH_BACKUPS
-void do_backup(int slot)
+void do_backup(LPCALC lpCalc)
 {
-	if (!calcs[slot].running)
+	if (!lpCalc->running)
 		return;
+	int slot = lpCalc->slot;
 	if (number_backup > MAX_BACKUPS)
 	{
 		debugger_backup* oldestBackup = backups[slot];
@@ -527,7 +536,7 @@ void do_backup(int slot)
 		free_backup(oldestBackup);
 	}
 	debugger_backup *backup = (debugger_backup *) malloc(sizeof(debugger_backup));
-	backup->save = SaveSlot(slot);
+	backup->save = SaveSlot(lpCalc);
 	backup->next = NULL;
 	backup->prev = backups[slot];
 	if (backups[slot] != NULL)
@@ -536,8 +545,9 @@ void do_backup(int slot)
 	number_backup++;
 }
 
-void restore_backup(int index, int slot)
+void restore_backup(int index, LPCALC lpCalc)
 {
+	int slot = lpCalc->slot;
 	debugger_backup* backup = backups[slot];
 	while (index > 0) {
 		if (backup->prev == NULL)
@@ -548,7 +558,7 @@ void restore_backup(int index, int slot)
 	}
 	//shouldnt happen
 	if (backup != NULL)
-		LoadSlot(backup->save, slot);
+		LoadSlot(backup->save, lpCalc);
 	backups[slot] = backup;
 }
 
@@ -572,8 +582,9 @@ void free_backup(debugger_backup* backup)
 /*
  * Frees all backups from memory
  */
-void free_backups(int slot)
+void free_backups(LPCALC lpCalc)
 {
+	int slot = lpCalc->slot;
 	debugger_backup *backup_prev, *backup = backups[slot];
 	if (backup == NULL)
 		return;

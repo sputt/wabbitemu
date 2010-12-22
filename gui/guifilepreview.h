@@ -3,6 +3,6 @@
 
 #include "guiopenfile.h"
 HWND CreateFilePreviewPane(HWND, int, int, int, int, OFNHookOptions *);
-LRESULT ShowFilePreview(HWND, LPSTR);
+LRESULT ShowFilePreview(HWND, LPTSTR);
 
 #endif /*GUIFILEPREVIEW_H_*/

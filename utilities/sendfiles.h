@@ -3,6 +3,6 @@
 
 #include "calc.h"
 
-BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync);
+BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND_FLAG destination = SEND_CUR);
 
 #endif

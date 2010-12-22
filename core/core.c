@@ -179,8 +179,8 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 	if (cpu->mem_c->banks[mc_bank(addr)].ram) {
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_NOP_ram_tstates);
 	} else {
-		if (cpu->mem_c->step > 4) cpu->bus = 0xFF; // Flash status read, apparently
-		else cpu->mem_c->step = 0;
+		/*if (cpu->mem_c->step > 4) cpu->bus = 0xFF; // Flash status read, apparently
+		else cpu->mem_c->step = 0;*/				// calc84: says this is better
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_NOP_flash_tstates);
 	}

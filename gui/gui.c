@@ -105,6 +105,9 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 	prevTimer = dwTimer;
 
 
+	/* 12/15 BuckeyeDude:
+	I have no clue what this code does apart from make it impossible to have >2 cores open at once
+	and cause calculators to runs slower as more are opened. Brilliant work :|
 	int i;
 	for (i = 0; i < MAX_CALCS; i++) {
 		if (calcs[i].active) {
@@ -116,7 +119,7 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 				return;
 			}
 		}
-	}
+	}*/
 
 	// Are we greater than Ticks Per Frame that would call for
 	// a frame skip?
@@ -140,8 +143,8 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 
 extern WINDOWPLACEMENT db_placement;
 
-int gui_debug(calc_t *lpCalc) {
-	pausesound();
+int gui_debug(LPCALC lpCalc) {
+	pausesound(lpCalc->audio);
 	HWND hdebug;
 	BOOL set_place = TRUE;
 	int flags = 0;
@@ -206,6 +209,7 @@ int gui_frame(calc_t *lpCalc) {
 	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
 	//SelectObject(lpCalc->hdcSkin, hbmSkin);
 
+	//this is now (intuitively) created in guicutout.c (Enable/Disable cutout function)
 	/*lpCalc->hwndLCD = CreateWindowEx(
 		0,
 		g_szLCDName,
@@ -434,7 +438,7 @@ int gui_frame_update(calc_t *lpCalc) {
 	return 0;
 }
 #else
-int gui_frame_update(int slot) {
+int gui_frame_update(LPCALC lpCalc) {
 	BITMAP skinSize, keymapSize;
 	HBITMAP hbmOldKeymap, hbmKeymap, hbmSkin, hbmOldSkin;
 	HDC hdc = GetDC(lpCalc->hwndFrame);
@@ -447,10 +451,10 @@ int gui_frame_update(int slot) {
 	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
 	hbmSkin = LoadBitmap(g_hInst, CalcModelTxt[lpCalc->model]);
 	if (hbmSkin) {
-		hbmOldSkin = (HBITMAP)SelectObject(lpCalc->hdcSkin, hbmSkin);
+		hbmOldSkin = (HBITMAP) SelectObject(lpCalc->hdcSkin, hbmSkin);
 		GetObject(hbmSkin, sizeof(BITMAP), &skinSize);
 	}
-	char *name = (char *) malloc(strlen(CalcModelTxt[lpCalc->model]) + 7);
+	TCHAR *name = (TCHAR *) malloc(strlen(CalcModelTxt[lpCalc->model]) + 7);
 	strcpy(name, CalcModelTxt[lpCalc->model]);
 	strcat(name, "Keymap");
 	hbmKeymap = LoadBitmap(g_hInst, name);
@@ -543,7 +547,7 @@ int gui_frame_update(int slot) {
 	if (!lpCalc->SkinEnabled || !lpCalc->bCutout)
 		FillRect(lpCalc->hdcSkin, &rc, GetStockBrush(GRAY_BRUSH));
 	if (lpCalc->model == TI_84PSE) {
-		if (DrawFaceplateRegion(lpCalc->hdcSkin))
+		if (DrawFaceplateRegion(lpCalc->hdcSkin, lpCalc->FaceplateColor))
 			MessageBox(NULL, "Unable to draw faceplate", "error", MB_OK);
 	}
 	//this needs to be done so we can alphablend the screen
@@ -602,6 +606,10 @@ All Files (*.*)\0*.*\0\0");
 	return FileName;
 }
 
+/*
+ * Checks based on the existence of the main window and the LCD window whether we need
+ * to spawn a new process
+ */
 bool check_no_new_process(HWND Findhwnd, HWND *FindChildhwnd)
 {
 	if (Findhwnd == NULL) {
@@ -709,6 +717,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	HWND Findhwnd = NULL, FindChildhwnd = NULL;
 	Findhwnd = FindWindow(g_szAppName, NULL);
 	loadfiles = check_no_new_process(Findhwnd, &FindChildhwnd);
+	// If there is a setting to load files into a new calc each time and there is a calc already running
+	// ask it to create a new core to load into
 	if (load_files_first && Findhwnd)
 		SendMessage(Findhwnd, WM_COMMAND, IDM_FILE_NEW, 0);
 
@@ -728,6 +738,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			if (!loadfiles) {
 				COPYDATASTRUCT cds;
 				TCHAR *FileNames = NULL;
+				cds.dwData = SEND_CUR;
 				for(i=1; i < argc; i++) {
 					memset(tmpstring, 0, 512);
 #ifdef _UNICODE
@@ -739,26 +750,21 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 					wcstombs(tmpstring, argv[i], 512);
 #endif
 #endif
-					if (tmpstring[0]!='-') {
-//						SendFileToCalc(lpCalc, tmpstring, TRUE);
+					if (tmpstring[0] != '-') {
+						size_t strLen;
+						cds.lpData = tmpstring;
+						StringCbLength(tmpstring, 512, &strLen);
+						cds.cbData = strLen;
+						SendMessage(FindChildhwnd, WM_COPYDATA, (WPARAM) NULL, (LPARAM) &cds);
 					} else {
 						if (toupper(tmpstring[1]) == 'F')
 							SwitchToThisWindow(FindChildhwnd, TRUE);
 					}
 				}
-/*
-				i = SizeofFileList(FileNames);
-				if (i>0) {
-					cds.dwData = SEND_CUR;
-					cds.cbData = i;
-					cds.lpData = FileNames;
-					SendMessage(FindChildhwnd, WM_COPYDATA, (WPARAM) NULL, (LPARAM) &cds);
-					free(FileNames);
-				}
-*/
 			}
 		}
 	}
+	
 	if (Findhwnd && loadfiles)
 		SendMessage(Findhwnd, WM_COMMAND, IDM_FILE_NEW, 0);
 
@@ -814,8 +820,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			BOOL wizardError = DoWizardSheet(NULL);
 			//save wizard show
 			SaveWabbitKey(_T("show_wizard"), REG_DWORD, &show_wizard);
+			SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
 			if (wizardError)
 				return EXIT_FAILURE;
+			LoadRegistrySettings(lpCalc);
 		}
 		else {
 			TCHAR* string = LoadRomIntialDialog();
@@ -1057,6 +1065,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							lpCalcNew->bCutout = lpCalc->bCutout;
 							lpCalcNew->Scale = lpCalc->Scale;
 							lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
+							lpCalcNew->bAlphaBlendLCD = lpCalc->bAlphaBlendLCD;
 							calc_turn_on(lpCalcNew);
 							gui_frame(lpCalcNew);
 						}
@@ -1073,7 +1082,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}
 				case IDM_FILE_SAVE:
 					{
-						SaveStateDialog(hwnd);
+						SaveStateDialog(hwnd, lpCalc);
 						break;
 					}
 				case IDM_FILE_GIF:
@@ -1127,7 +1136,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case IDM_CALC_SOUND: {
-					togglesound();
+					togglesound(lpCalc->audio);
 					CheckMenuItem(GetSubMenu(GetMenu(hwnd), 2), IDM_CALC_SOUND, MF_BYCOMMAND | (lpCalc->audio->enabled ? MF_CHECKED : MF_UNCHECKED));
 					break;
 				}
@@ -1157,7 +1166,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				case IDM_DEBUG_RESET: {
 					calc_reset(lpCalc);
-					calc_turn_on(lpCalc);
+					//calc_turn_on(lpCalc);
 					break;
 				}
 				case IDM_DEBUG_OPEN:
@@ -1609,7 +1618,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					strcat(temp_save, "\\wabbitemu.sav");
 					strcpy(lpCalc->rom_path, temp_save);
 #endif
-					SAVESTATE_t *save = SaveSlot(gslot);
+					SAVESTATE_t *save = SaveSlot(lpCalc);
 					WriteSave(temp_save, save, true);
 					FreeSave(save);
 				}

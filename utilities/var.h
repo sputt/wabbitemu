@@ -84,10 +84,10 @@ typedef struct TIFILE {
 	unsigned char chksum;
 	int model;
 	int type;
-	ROM_t * rom;
-	TIFLASH_t * flash;
-	SAVESTATE_t* save;
-	TIBACKUP_t* backup;
+	ROM_t *rom;
+	TIFLASH_t *flash;
+	SAVESTATE_t *save;
+	TIBACKUP_t *backup;
 } TIFILE_t;
 
 

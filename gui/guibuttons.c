@@ -169,7 +169,7 @@ void DrawButtonState(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT 
 
 void DrawButtonLockAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 	keypad_t *keypad = lpCalc->cpu.pio.keypad;
-	int group,bit;
+	int group, bit;
 	int mult;
 	//RECT cr;
 	POINT pt;
@@ -177,13 +177,13 @@ void DrawButtonLockAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 	//if ((cr.bottom-cr.top)>=SKIN_HEIGHT-10) 
 	mult = 1;
 	//else mult = 0.75f;
-	for(group=0;group<7;group++) {
-		for(bit=0;bit<8;bit++) {
-			if ( (*ButtonCenter)[bit+(group<<3)].x != 0xFFF ) {
-				pt.x	= (*ButtonCenter)[bit+(group<<3)].x*mult;
-				pt.y	= (*ButtonCenter)[bit+(group<<3)].y*mult;
-				if ( keypad->keys[group][bit] & KEY_LOCKPRESS ) {
-					DrawButtonState(lpCalc, hdcSkin,hdcKeymap, &pt, DBS_LOCK | DBS_DOWN);
+	for(group = 0; group < 7; group++) {
+		for(bit = 0; bit < 8; bit++) {
+			if ((*ButtonCenter)[bit+(group<<3)].x != 0xFFF) {
+				pt.x	= (*ButtonCenter)[bit + (group << 3)].x * mult;
+				pt.y	= (*ButtonCenter)[bit + (group << 3)].y * mult;
+				if (keypad->keys[group][bit] & KEY_LOCKPRESS) {
+					DrawButtonState(lpCalc, hdcSkin, hdcKeymap, &pt, DBS_LOCK | DBS_DOWN);
 				}
 			}
 		}
@@ -191,10 +191,10 @@ void DrawButtonLockAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 	
 	group	= 5;
 	bit		= 0;
-	pt.x	= (*ButtonCenter)[bit+(group<<3)].x*mult;
-	pt.y	= (*ButtonCenter)[bit+(group<<3)].y*mult;
+	pt.x	= (*ButtonCenter)[bit+(group<<3)].x * mult;
+	pt.y	= (*ButtonCenter)[bit+(group<<3)].y * mult;
 	if ( lpCalc->cpu.pio.keypad->on_pressed & KEY_LOCKPRESS ) {
-		DrawButtonState(lpCalc, hdcSkin,hdcKeymap, &pt, DBS_LOCK | DBS_DOWN);
+		DrawButtonState(lpCalc, hdcSkin, hdcKeymap, &pt, DBS_LOCK | DBS_DOWN);
 	}
 }
 
@@ -216,7 +216,7 @@ void HandleKeyDown(LPCALC lpCalc, unsigned int key) {
 	}
 	//CopySkinToButtons();
 	keyprog_t *kp = keypad_key_press(&lpCalc->cpu, key);
-	if (kp) {
+	if (kp && !(lpCalc->bCutout && lpCalc->SkinEnabled)) {
 		extern POINT ButtonCenter83[64];
 		extern POINT ButtonCenter84[64];
 		if ((lpCalc->cpu.pio.keypad->keys[kp->group][kp->bit] & KEY_STATEDOWN) == 0) {

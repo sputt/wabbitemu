@@ -18,7 +18,7 @@ void neg(CPU_t *cpu) {
 void adc_hl_reg16(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c,11);
+	tc_add(cpu->timer_c, 15);
 	switch (((cpu->bus)>>4)&0x03) {
 		case 0x00:
 			reg = cpu->bc;

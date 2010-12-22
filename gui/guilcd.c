@@ -57,7 +57,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	HBRUSH hbrArchive = CreateSolidBrush(ARCHIVE_COLOR);
 
 	if (!hbrRAM || !hbrArchive) {
-		printf("Brush creation failed\n");
+		printf(_T("Brush creation failed\n"));
 		return hdc;
 	}
 
@@ -87,7 +87,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 			vert[1].Green  = 0x4000;
 			vert[1].Blue   = 0x6000;
 
-			GradientFill(hdc,vert,2,gRect,1,GRADIENT_FILL_RECT_H);
+			GradientFill(hdc, vert, 2, gRect, 1, GRADIENT_FILL_RECT_H);
 
 			//0x60, 0xC0, 0x40
 			vert[2].x      = rr.left + 2*rl.right/3;
@@ -103,7 +103,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 			GradientFill(hdc, &vert[2], 2, &gRect[0], 1, GRADIENT_FILL_RECT_H);
 		}
 
-		TCHAR txtArch[] = _T("Archive");
+		const TCHAR txtArch[] = _T("Archive");
 		if ( GetTextExtentPoint32(hdc,txtArch, (int) _tcslen(txtArch), &TxtSize)) {
 			TxtPt.x = ((rr.right - rr.left)-TxtSize.cx)/2;
 			TxtPt.y = ((rr.bottom - rr.top)-TxtSize.cy)/2;
@@ -150,7 +150,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 		GradientFill(hdc, &vert[2], 2, &gRect[0], 1, GRADIENT_FILL_RECT_H);
 	}
 
-	TCHAR txtRam[] = _T("RAM");
+	const TCHAR txtRam[] = _T("RAM");
 	if ( GetTextExtentPoint32(hdc, txtRam, (int) _tcslen(txtRam), &TxtSize) ) {
 		TxtPt.x = ((rl.right - rl.left)-TxtSize.cx)/2;
 		TxtPt.y = ((rl.bottom - rl.top)-TxtSize.cy)/2;
@@ -270,7 +270,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		ClientToScreen(hwnd, &pt);
 		ScreenToClient(GetParent(hwnd), &pt);
 
-		if (alphablendfail<100) {
+		if (alphablendfail < 100 && lpCalc->bAlphaBlendLCD) {
 			if (AlphaBlend(	hdc, rc.left, rc.top, rc.right,  rc.bottom,
 				lpCalc->hdcSkin, lpCalc->rectLCD.left, lpCalc->rectLCD.top,
 				lpCalc->rectLCD.right - lpCalc->rectLCD.left,
@@ -292,7 +292,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 #include "guisavestate.h"
 
-void SaveStateDialog(HWND hwnd) {
+void SaveStateDialog(HWND hwnd, LPCALC lpCalc) {
 	OPENFILENAME ofn;
 	TCHAR FileName[MAX_PATH];
 	TCHAR lpstrFilter[] 	= _T("\
@@ -305,7 +305,7 @@ All Files (*.*)\0*.*\0\0");
 	ZeroMemory(FileName, MAX_PATH);
 
 	ofn.lStructSize		= sizeof(OPENFILENAME);
-	ofn.hwndOwner		= calcs[gslot].hwndLCD;
+	ofn.hwndOwner		= lpCalc->hwndLCD;
 	ofn.lpstrFilter		= (LPCTSTR) lpstrFilter;
 	ofn.lpstrFile		= FileName;
 	ofn.nMaxFile		= MAX_PATH;
@@ -316,7 +316,7 @@ All Files (*.*)\0*.*\0\0");
 
 	if (!GetSaveFileName(&ofn)) return;
 
-	SAVESTATE_t* save = SaveSlot(gslot);
+	SAVESTATE_t* save = SaveSlot(lpCalc);
 
 	gui_savestate(hwnd, save, FileName);
 
@@ -650,22 +650,22 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				return 0;
 		}
 
-		/*
 		case WM_COPYDATA:
 		{
-			int size = (int) ((PCOPYDATASTRUCT)lParam)->cbData;
-			TCHAR* string = (TCHAR *) ((PCOPYDATASTRUCT)lParam)->lpData;
-			int ram = (int) ((PCOPYDATASTRUCT)lParam)->dwData;
+			calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			PCOPYDATASTRUCT copyDataStruct = (PCOPYDATASTRUCT) lParam;
+			int size = (int) copyDataStruct->cbData;
+			TCHAR *string = (TCHAR *) copyDataStruct->lpData;
+			int ram = (int) copyDataStruct->dwData;
 
-			if (size && string && size == SizeofFileList(string))	{
+			if (size && string)	{
 				TCHAR *FileNames = (TCHAR *) malloc(size);
 				memset(FileNames, 0, size);
 				memcpy(FileNames, string, size);
-				SendFileToCalc((LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA), FileNames, ram);
+				SendFileToCalc(lpCalc, FileNames, ram);
 			}
 			break;
 		}
-		*/
 
 		case WM_DROPFILES:
 		{
@@ -676,7 +676,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			while (count--) {
 				DragQueryFile((HDROP) wParam, count, fn, 256);
-				SendFileToCalc(lpCalc, fn, TRUE);
+				SendFileToCalc(lpCalc, fn, TRUE, DropMemoryTarget(hwnd));
 			}
 			//InvalidateRect(calcs[gslot].hwndFrame, NULL, FALSE);
 			return 0;

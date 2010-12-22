@@ -146,6 +146,8 @@ typedef struct memory_context {
 	int flash_version;
 	int ram_version;
 
+	//void (*read_break_callback)(
+
 	int read_OP_flash_tstates;	//These are for delays on SEs, typically they should be 0.
 	int read_NOP_flash_tstates;
 	int write_flash_tstates;
