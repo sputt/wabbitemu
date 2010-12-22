@@ -125,7 +125,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		    Header_InsertItem(mps->hwndHeader, 0, &hdi);
 
 
-		    hdi.pszText = "Addr";
+		    hdi.pszText = _T("Addr");
 		    hdi.cxy = tm.tmAveCharWidth*7;
 		    hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]);
 		    mps->iAddr = 0;
@@ -134,17 +134,17 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			if (mps->track == -1) {
 				mps->cmbMode = CreateWindow(
-					"COMBOBOX",
-					"",
+					_T("COMBOBOX"),
+					_T(""),
 					CBS_DROPDOWNLIST | WS_CHILD | WS_VISIBLE,
 					0, 0, 1, 1,
 					//mps->hwndHeader,
 					hwnd,
 					(HMENU) 1001, g_hInst, NULL);
 
-				ComboBox_AddString(mps->cmbMode, "Byte");
-				ComboBox_AddString(mps->cmbMode, "Word");
-				ComboBox_AddString(mps->cmbMode, "Text");
+				ComboBox_AddString(mps->cmbMode, _T("Byte"));
+				ComboBox_AddString(mps->cmbMode, _T("Word"));
+				ComboBox_AddString(mps->cmbMode, _T("Text"));
 
 				ComboBox_SetCurSel(mps->cmbMode, 0);
 				SendMessage(mps->cmbMode, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
@@ -184,9 +184,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			mps->cyRow = 4*tm.tmHeight/3;
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 
-			char buffer[64];
+			TCHAR buffer[64];
 #ifdef WINVER
-			sprintf_s(buffer, "Mem%i", mps->memNum);
+			StringCbPrintf(buffer, sizeof(buffer), _T("Mem%i"), mps->memNum);
 #else
 			sprintf(buffer, "Mem%i", mps->memNum);
 #endif
@@ -210,9 +210,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				wp.cx, wp.cy, wp.flags);
 
 
-			char szHeader[64];
+			TCHAR szHeader[64];
 #ifdef WINVER
-			sprintf_s(szHeader, "Memory (%d Columns)", mps->nCols);
+			StringCbPrintf(szHeader, sizeof(szHeader), _T("Memory (%d Columns)"), mps->nCols);
 #else
 			sprintf(szHeader, "Memory (%d Columns)", mps->nCols);
 #endif
@@ -290,16 +290,16 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			mps->diff = diff;
 
 			int addr = mps->addr;
-			char memfmt[8];
+			TCHAR memfmt[8];
 			if (mps->bText) {
 #ifdef WINVER
-				strcpy_s(memfmt, "%c");
+				StringCbCopy(memfmt, sizeof(memfmt), _T("%c"));
 #else
 				strcpy(memfmt, "%c");
 #endif
 			} else {
 #ifdef WINVER
-				sprintf_s(memfmt, "%%0%dx", mps->mode*2);
+				StringCbPrintf(memfmt, sizeof(memfmt), _T("%%0%dx"), mps->mode*2);
 #else
 				sprintf(memfmt, "%%0%dx", mps->mode*2);
 #endif
@@ -311,16 +311,16 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			for (	i = 0, r.bottom = r.top + mps->cyRow;
 					i < rows;
 					i++, OffsetRect(&r, 0, mps->cyRow)) {
-				char szVal[16];
+				TCHAR szVal[16];
 				if (addr < 0) {
 #ifdef WINVER
-					strcpy_s(szVal, "0000");
+					StringCbCopy(szVal, sizeof(szVal), _T("0000"));
 #else
 					strcpy(szVal, "0000");
 #endif
 				} else {
 #ifdef WINVER
-					sprintf_s(szVal, "%04X", addr);
+					StringCbPrintf(szVal, sizeof(szVal), _T("%04X"), addr);
 #else
 					sprintf(szVal, "%04X", addr);
 #endif
@@ -380,7 +380,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							value += mem_read(calcs[DebuggerSlot].cpu.mem_c, addr + b) << shift;
 						}
 #ifdef WINVER
-						sprintf_s(szVal, memfmt, value);
+						StringCbPrintf(szVal, sizeof(szVal), memfmt, value);
 #else
 						sprintf(szVal, memfmt, value);
 #endif
@@ -439,7 +439,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 #ifdef WINVER
-					sprintf_s(nmtdi->szText, "%d", mem_read(&calcs[DebuggerSlot].mem_c, mps->addrTrack));
+					StringCbPrintf(nmtdi->szText, sizeof(nmtdi->szText), _T("%d"), mem_read(&calcs[DebuggerSlot].mem_c, mps->addrTrack));
 #else
 					sprintf(nmtdi->szText, "%d", mem_read(&calcs[DebuggerSlot].mem_c, mps->addrTrack));
 #endif
@@ -528,8 +528,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					if (GetFocus() == hwnd) break;
 				case EN_SUBMIT:
 				{
-					unsigned char data[8];
-					ValueSubmit(hwndVal, (char *) data, mps->mode + (2 * mps->bText));
+					_TUCHAR data[8];
+					ValueSubmit(hwndVal, (TCHAR *) data, mps->mode + (2 * mps->bText));
 					int i;
 					for (i = 0; i < mps->mode; i++) {
 						mem_write(&calcs[DebuggerSlot].mem_c, mps->sel + i, data[i]);
@@ -570,7 +570,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					while (addr < 0xFFFF && mem_read(&calcs[DebuggerSlot].mem_c, addr) != find_value)
 						addr++;
 					if (addr > 0xFFFF) {
-						MessageBox(NULL, "Value not found", "Find results", MB_OK);
+						MessageBox(NULL, _T("Value not found"), _T("Find results"), MB_OK);
 						break;
 					}
 					mps->addr = addr;
@@ -621,7 +621,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			int x = GET_X_LPARAM(lParam);
 			int y = GET_Y_LPARAM(lParam);
 
-			HWND oldVal = FindWindowEx(hwnd, NULL, "EDIT", NULL);
+			HWND oldVal = FindWindowEx(hwnd, NULL, _T("EDIT"), NULL);
 			if (oldVal) {
 				SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) oldVal);
 			}
@@ -633,7 +633,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			if (addr != -1) {
 				mps->sel = addr;
 				if (Message == WM_LBUTTONDBLCLK) {
-					char szInitial[8];
+					TCHAR szInitial[8];
 
 					int value = 0;
 					int shift, b;
@@ -641,13 +641,13 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						value += mem_read(calcs[DebuggerSlot].cpu.mem_c, mps->sel+b) << shift;
 					}
 
-					char szFmt[8];
+					TCHAR szFmt[8];
 					if (mps->bText)
 #ifdef WINVER
-						strcpy_s(szFmt, "%c");
+						StringCbCopy(szFmt, sizeof(szFmt), _T("%c"));
 					else
-						sprintf_s(szFmt, "%%0%dx", mps->mode*2);
-					sprintf_s(szInitial, szFmt, value);
+						StringCbPrintf(szFmt, sizeof(szFmt), _T("%%0%dx"), mps->mode*2);
+					StringCbPrintf(szInitial, sizeof(szFmt), szFmt, value);
 #else
 						strcpy(szFmt, "%c");
 					else						
@@ -656,7 +656,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 #endif
 
 					hwndVal =
-					CreateWindow("EDIT", szInitial,
+					CreateWindow(_T("EDIT"), szInitial,
 						WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT | ES_MULTILINE,
 						r.left-2,
 						r.top,
@@ -718,9 +718,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			mp_settings *mps = (mp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (mps->memNum != -1)
 			{
-				char buffer[64];
+				TCHAR buffer[64];
 #ifdef WINVER
-				sprintf_s(buffer, "Mem%i", mps->memNum);
+				StringCbPrintf(buffer, sizeof(buffer), _T("Mem%i"), mps->memNum);
 #else
 				sprintf(buffer, "Mem%i", mps->memNum);
 #endif

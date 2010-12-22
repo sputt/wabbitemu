@@ -2,6 +2,7 @@
 #define SAVESTATE_H
 
 #include "lcd.h"
+
 typedef struct {
 	char tag[4];
 	int pnt;
@@ -36,7 +37,6 @@ typedef struct {
 
 #define SAVE_HEADERSIZE	116
 
-
 #define INFO_tag		"INFO"
 #define CPU_tag			"CPU "
 #define MEM_tag			"MEMC"
@@ -49,11 +49,9 @@ typedef struct {
 #define SE_AUX_tag		"SEAX"
 #define REMAP_tag		"RMAP"
 
-
-
-void WriteSave(const TCHAR * , SAVESTATE_t *, int);
-void LoadSlot(SAVESTATE_t* , int);
-SAVESTATE_t* SaveSlot(int );
+void WriteSave(const TCHAR *, SAVESTATE_t *, int);
+void LoadSlot(SAVESTATE_t* , void *);
+SAVESTATE_t* SaveSlot(void *);
 SAVESTATE_t* CreateSave(TCHAR *, TCHAR *, int);
 SAVESTATE_t* ReadSave(FILE *ifile);
 void FreeSave(SAVESTATE_t *);

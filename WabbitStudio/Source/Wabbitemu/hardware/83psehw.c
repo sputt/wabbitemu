@@ -1039,6 +1039,7 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				}
 
 			}
+			endflash(cpu);
 			break;
 		case 6:
 			if (data == 0x90 ) {
@@ -1154,6 +1155,7 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 */
 				}
 			}
+			endflash(cpu);
 			break;
 		default:
 			endflash(cpu);

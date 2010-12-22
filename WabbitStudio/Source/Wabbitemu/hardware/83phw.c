@@ -312,6 +312,7 @@ void flashwrite83p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 */
 				}
 			}
+			endflash(cpu);
 			break;
 		default:
 			endflash(cpu);

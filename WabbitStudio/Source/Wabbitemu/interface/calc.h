@@ -94,6 +94,7 @@ typedef struct tagCALC {
 	COLORREF FaceplateColor;
 	BOOL bCustomSkin;
 	BOOL bAlwaysOnTop;
+	BOOL bAlphaBlendLCD;
 	TCHAR skin_path[256];
 	TCHAR keymap_path[256];
 	IWabbitemu *pWabbitemu;
@@ -104,7 +105,7 @@ typedef struct tagCALC {
 
 #ifdef WITH_BACKUPS
 typedef struct DEBUG_STATE {
-	SAVESTATE_t* save;
+	SAVESTATE_t *save;
 	struct DEBUG_STATE *next, *prev;
 } debugger_backup;
 #endif
@@ -125,10 +126,10 @@ int calc_run_timed(LPCALC, time_t);
 int calc_run_all(void);
 
 #ifdef WITH_BACKUPS
-void do_backup(int);
-void restore_backup(int index, int slot);
+void do_backup(LPCALC);
+void restore_backup(int index, LPCALC);
 void init_backups();
-void free_backups(int);
+void free_backups(LPCALC);
 void free_backup(debugger_backup *);
 #endif
 

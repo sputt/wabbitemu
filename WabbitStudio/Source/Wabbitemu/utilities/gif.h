@@ -17,7 +17,7 @@
 
 extern int gif_write_state;
 extern int gif_file_size;
-extern char gif_file_name[256];
+extern TCHAR gif_file_name[256];
 extern BOOL gif_autosave;
 extern BOOL gif_use_increasing;
 extern WORD gif_base_delay;

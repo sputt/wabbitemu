@@ -71,7 +71,8 @@ symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 		sym->type_ID		= mem_read(mem, stp--) & 0x1F;
 		sym->type_ID2		= mem_read(mem, stp--);
 		sym->version		= mem_read(mem, stp--);
-		sym->address		= mem_read(mem, stp--) + (mem_read(mem, stp--) << 8);
+		sym->address		= mem_read(mem, stp--);
+		sym->address		+= (mem_read(mem, stp--) << 8);
 		sym->page			= mem_read(mem, stp--);
 		sym->length			= mem_read(mem, sym->address - 1) + (mem_read(mem, sym->address) << 8);
 		

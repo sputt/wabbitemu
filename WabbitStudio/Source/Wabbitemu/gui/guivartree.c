@@ -86,6 +86,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
                 case IDC_REFRESH_VAR_LIST:
 					RefreshTreeView(FALSE);
                     break;
+				case IDM_VARTREEEXPORT:
 				case IDC_EXPORT_VAR: {
 					char *buf;
 					FILE *file;

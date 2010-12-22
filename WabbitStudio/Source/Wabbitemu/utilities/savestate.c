@@ -11,7 +11,7 @@
 extern int def(FILE *, FILE *, int);
 extern int inf(FILE *, FILE *);
 
-BOOL cmpTags(char* str1,char* str2) {
+BOOL cmpTags(char *str1, char *str2) {
 	int i;
 	for(i=0;i<4;i++) {
 		if (str1[i] != str2[i]) return FALSE;
@@ -40,7 +40,7 @@ int fgeti(FILE* stream) {
 	return r;
 }
 
-SAVESTATE_t* CreateSave(char* author, char* comment , int model) {
+SAVESTATE_t* CreateSave(TCHAR *author, TCHAR *comment , int model) {
 	SAVESTATE_t* save = (SAVESTATE_t*) malloc(sizeof(SAVESTATE_t));
 	if (!save) return NULL;
 
@@ -51,8 +51,15 @@ SAVESTATE_t* CreateSave(char* author, char* comment , int model) {
 	memset(save->author, 0, sizeof(save->author));
 	memset(save->comment, 0, sizeof(save->comment));
 #ifdef WINVER
-	strncpy_s(save->author, author, sizeof(save->author));
-	strncpy_s(save->comment, comment, sizeof(save->comment));
+#ifdef _UNICODE
+	char buffer[64];
+	size_t numConv;
+	wcstombs_s(&numConv, save->author, author, sizeof(save->author));
+	wcstombs_s(&numConv, save->comment, comment, sizeof(save->author));
+#else
+	_tcsncpy_s(save->author, author, sizeof(save->author));
+	_tcsncpy_s(save->comment, comment, sizeof(save->comment));
+#endif
 #else
 	strncpy(save->author, author, sizeof(save->author));
 	strncpy(save->comment, comment, sizeof(save->comment));
@@ -98,10 +105,10 @@ void FreeSave(SAVESTATE_t* save) {
 	free(save);
 }
 
-CHUNK_t* FindChunk(SAVESTATE_t* save,char* tag) {
+CHUNK_t* FindChunk(SAVESTATE_t* save, char* tag) {
 	int i;
 	for(i=0;i<save->chunk_count;i++) {
-		if ( cmpTags(save->chunks[i]->tag,tag) == TRUE ) {
+		if ( cmpTags(save->chunks[i]->tag, tag) == TRUE ) {
 			save->chunks[i]->pnt = 0;
 			return save->chunks[i];
 		}
@@ -113,8 +120,8 @@ CHUNK_t* NewChunk(SAVESTATE_t* save, char* tag) {
 	int chunk = save->chunk_count;
 
 	
-	if ( FindChunk(save,tag) != NULL ) {
-		printf("Error: chunk '%s' already exists",tag);
+	if (FindChunk(save, tag) != NULL) {
+		printf("Error: chunk '%s' already exists", tag);
 		return NULL;
 	}
 
@@ -139,13 +146,13 @@ CHUNK_t* NewChunk(SAVESTATE_t* save, char* tag) {
 	return save->chunks[chunk];
 }
 
-BOOL DelChunk(SAVESTATE_t* save,char* tag) {
+BOOL DelChunk(SAVESTATE_t* save, char* tag) {
 	int i;
 	for(i=0;i<save->chunk_count;i++) {
-		if ( cmpTags(save->chunks[i]->tag,tag) == TRUE ) {
+		if (cmpTags(save->chunks[i]->tag, tag) == TRUE ) {
 			if (save->chunks[i]->data) free(save->chunks[i]->data);
 			if (save->chunks[i]) free(save->chunks[i]);
-			for(;i<(save->chunk_count-1);i++) {
+			for(; i < (save->chunk_count-1); i++) {
 				save->chunks[i] = save->chunks[i+1];
 			}
 			save->chunks[i] = NULL;
@@ -159,15 +166,15 @@ BOOL DelChunk(SAVESTATE_t* save,char* tag) {
 
 void CheckPNT(CHUNK_t* chunk) {
 	if (chunk->size < chunk->pnt) {
-		printf("Chunk size is %d while pnt is %d \n",chunk->size,chunk->pnt);
+		_tprintf_s(_T("Chunk size is %d while pnt is %d \n"), chunk->size, chunk->pnt);
 	}
 }
 
-BOOL WriteChar(CHUNK_t* chunk, unsigned char value) {
-	unsigned char* tmppnt;
-	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size+sizeof(char));
+BOOL WriteChar(CHUNK_t* chunk, char value) {
+	unsigned char * tmppnt;
+	tmppnt = (unsigned char *) realloc(chunk->data, chunk->size + sizeof(char));
 	if (tmppnt == NULL) {
-		puts("Error could not realloc data");
+		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
@@ -179,11 +186,11 @@ BOOL WriteChar(CHUNK_t* chunk, unsigned char value) {
 
 BOOL WriteShort(CHUNK_t* chunk, unsigned short value) {
 	int i;
-	unsigned char* tmppnt;
-	unsigned char* pnt = (unsigned char*)(&value);
-	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size+sizeof(short));
+	unsigned char  *tmppnt;
+	unsigned char  *pnt = (unsigned char *)(&value);
+	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(short));
 	if (tmppnt == NULL) {
-		puts("Error could not realloc data");
+		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
@@ -199,18 +206,18 @@ BOOL WriteShort(CHUNK_t* chunk, unsigned short value) {
 }
 BOOL WriteInt(CHUNK_t* chunk, unsigned int value) {
 	int i;
-	unsigned char* tmppnt;
-	unsigned char* pnt = (unsigned char*)(&value);
-	tmppnt = (unsigned char*) realloc(chunk->data,chunk->size+sizeof(int));
+	unsigned char *tmppnt;
+	unsigned char *pnt = (unsigned char *)(&value);
+	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(int));
 	if (tmppnt == NULL) {
-		puts("Error could not realloc data");
+		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
 #ifdef __BIG_ENDIAN__
 	for(i=sizeof(int)-1;i>=0;i--) {
 #else
-	for(i=0;i<sizeof(int);i++) {
+	for(i = 0;i < sizeof(int); i++) {
 #endif
 		chunk->data[i+chunk->size] = *pnt++;
 	}
@@ -220,18 +227,18 @@ BOOL WriteInt(CHUNK_t* chunk, unsigned int value) {
 
 BOOL WriteLong(CHUNK_t* chunk, unsigned long long value) {
 	int i;
-	unsigned char* tmppnt;
-	unsigned char* pnt = (unsigned char*)(&value);
-	tmppnt = (unsigned char*) realloc(chunk->data,chunk->size+sizeof(long long));
+	unsigned char *tmppnt;
+	unsigned char *pnt = (unsigned char *)(&value);
+	tmppnt = (unsigned char  *) realloc(chunk->data, chunk->size + sizeof(long long));
 	if (tmppnt == NULL) {
-		puts("Error could not realloc data");
+		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
 #ifdef __BIG_ENDIAN__
 	for(i=sizeof(long long)-1;i>=0;i--) {
 #else
-	for(i=0;i<sizeof(long long);i++) {
+	for(i = 0; i < sizeof(long long); i++) {
 #endif
 		chunk->data[i+chunk->size] = *pnt++;
 	}
@@ -241,18 +248,18 @@ BOOL WriteLong(CHUNK_t* chunk, unsigned long long value) {
 
 BOOL WriteFloat(CHUNK_t* chunk, float value) {
 	int i;
-	unsigned char* tmppnt;
-	unsigned char* pnt = (unsigned char*)(&value);
-	tmppnt = (unsigned char*) realloc(chunk->data,chunk->size+sizeof(float));
+	unsigned char *tmppnt;
+	unsigned char *pnt = (unsigned char *)(&value);
+	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(float));
 	if (tmppnt == NULL) {
-		puts("Error could not realloc data");
+		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
 #ifdef __BIG_ENDIAN__
 	for(i=sizeof(float)-1;i>=0;i--) {
 #else
-	for(i=0;i<sizeof(float);i++) {
+	for(i = 0; i < sizeof(float); i++) {
 #endif
 		chunk->data[i+chunk->size] = *pnt++;
 	}
@@ -261,18 +268,18 @@ BOOL WriteFloat(CHUNK_t* chunk, float value) {
 }	
 BOOL WriteDouble(CHUNK_t* chunk, double value) {
 	int i;
-	unsigned char* tmppnt;
-	unsigned char* pnt = (unsigned char*)(&value);
-	tmppnt = (unsigned char*) realloc(chunk->data,chunk->size+sizeof(double));
+	unsigned char *tmppnt;
+	unsigned char *pnt = (unsigned char *)(&value);
+	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(double));
 	if (tmppnt == NULL) {
-		puts("Error could not realloc data");
+		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
 #ifdef __BIG_ENDIAN__
 	for(i=sizeof(double)-1;i>=0;i--) {
 #else
-	for(i=0;i<sizeof(double);i++) {
+	for(i = 0;i < sizeof(double); i++) {
 #endif
 		chunk->data[i+chunk->size] = *pnt++;
 	}
@@ -280,12 +287,12 @@ BOOL WriteDouble(CHUNK_t* chunk, double value) {
 	return TRUE;
 }
 
-BOOL WriteBlock(CHUNK_t* chunk, unsigned char* pnt, int length) {
+BOOL WriteBlock(CHUNK_t* chunk, unsigned char *pnt, int length) {
 	int i;
-	unsigned char* tmppnt;
-	tmppnt = (unsigned char*) realloc(chunk->data,chunk->size+length);
+	unsigned char *tmppnt;
+	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size+length);
 	if (tmppnt == NULL) {
-		puts("Error could not realloc data");
+		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
@@ -299,9 +306,9 @@ BOOL WriteBlock(CHUNK_t* chunk, unsigned char* pnt, int length) {
 
 	
 unsigned char ReadChar(CHUNK_t* chunk) {
-	unsigned char value;
+	_TUCHAR value;
 	value = chunk->data[chunk->pnt];
-	chunk->pnt += sizeof(char);
+	chunk->pnt += sizeof(TCHAR);
 	CheckPNT(chunk);
 	return value;
 }
@@ -309,11 +316,11 @@ unsigned char ReadChar(CHUNK_t* chunk) {
 unsigned short ReadShort(CHUNK_t* chunk) {
 	int i;
 	unsigned short value;
-	unsigned char* pnt = (unsigned char*)(&value);
+	_TUCHAR *pnt = (_TUCHAR *)(&value);
 #ifdef __BIG_ENDIAN__
 	for(i=sizeof(short)-1;i>=0;i--) {
 #else
-	for(i=0;i<sizeof(short);i++) {
+	for(i = 0;i < sizeof(short); i++) {
 #endif
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
@@ -325,11 +332,11 @@ unsigned short ReadShort(CHUNK_t* chunk) {
 unsigned int ReadInt(CHUNK_t* chunk) {
 	int i;
 	unsigned int value;
-	unsigned char* pnt = (unsigned char*)(&value);
+	unsigned char *pnt = (unsigned char *)(&value);
 #ifdef __BIG_ENDIAN__
 	for(i=sizeof(int)-1;i>=0;i--) {
 #else
-	for(i=0;i<sizeof(int);i++) {
+	for(i = 0;i < sizeof(int); i++) {
 #endif
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
@@ -341,11 +348,11 @@ unsigned int ReadInt(CHUNK_t* chunk) {
 float ReadFloat(CHUNK_t* chunk) {
 	int i;
 	float value;
-	unsigned char* pnt = (unsigned char*)(&value);
+	unsigned char *pnt = (unsigned char *)(&value);
 #ifdef __BIG_ENDIAN__
 	for(i=sizeof(float)-1;i>=0;i--) {
 #else
-	for(i=0;i<sizeof(float);i++) {
+	for(i = 0; i < sizeof(float); i++) {
 #endif
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
@@ -358,11 +365,11 @@ float ReadFloat(CHUNK_t* chunk) {
 double ReadDouble(CHUNK_t* chunk) {
 	int i;
 	double value;
-	unsigned char* pnt = (unsigned char*)(&value);
+	unsigned char *pnt = (unsigned char *)(&value);
 #ifdef __BIG_ENDIAN__
 	for(i=sizeof(double)-1;i>=0;i--) {
 #else
-	for(i=0;i<sizeof(double);i++) {
+	for(i = 0; i < sizeof(double); i++) {
 #endif
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
@@ -374,11 +381,11 @@ double ReadDouble(CHUNK_t* chunk) {
 unsigned long long ReadLong(CHUNK_t* chunk) {
 	int i;
 	unsigned long long value;
-	unsigned char* pnt = (unsigned char*)(&value);
+	unsigned char *pnt = (unsigned char *)(&value);
 #ifdef __BIG_ENDIAN__
 	for(i=sizeof(long long)-1;i>=0;i--) {
 #else
-	for(i=0;i<sizeof(long long);i++) {
+	for(i = 0;i < sizeof(long long); i++) {
 #endif
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
@@ -387,7 +394,7 @@ unsigned long long ReadLong(CHUNK_t* chunk) {
 	return value;
 }
 
-void ReadBlock(CHUNK_t* chunk, unsigned char* pnt, int length) {
+void ReadBlock(CHUNK_t* chunk, unsigned char *pnt, int length) {
 	int i;
 	for(i=0;i<length;i++) {
 		pnt[i] = chunk->data[i+chunk->pnt];
@@ -395,9 +402,6 @@ void ReadBlock(CHUNK_t* chunk, unsigned char* pnt, int length) {
 	chunk->pnt += length;
 	CheckPNT(chunk);
 }
-
-
-
 
 
 void SaveCPU(SAVESTATE_t* save, CPU_t* cpu) {
@@ -503,7 +507,7 @@ void SaveMEM(SAVESTATE_t* save, memc* mem) {
 	WriteInt(chunk, mem->port28_remap_count);
 }
 
-void SaveTIMER(SAVESTATE_t* save, timerc* time) {
+void SaveTIMER(SAVESTATE_t *save, timerc *time) {
 	if (!time) return;
 	CHUNK_t* chunk = NewChunk(save,TIMER_tag);
 	WriteLong(chunk,time->tstates);
@@ -587,66 +591,53 @@ void SaveSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 
 void SaveLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	if (!lcd) return;
-	CHUNK_t* chunk = NewChunk(save,LCD_tag);
+	CHUNK_t* chunk = NewChunk(save, LCD_tag);
 
-	WriteInt(chunk,lcd->active);
-	WriteInt(chunk,lcd->word_len);
-	WriteInt(chunk,lcd->x);
-	WriteInt(chunk,lcd->y);
-	WriteInt(chunk,lcd->z);
-	WriteInt(chunk,lcd->cursor_mode);
-	WriteInt(chunk,lcd->contrast);
-	WriteInt(chunk,lcd->base_level);
-	WriteBlock(chunk,lcd->display,DISPLAY_SIZE);
+	WriteInt(chunk, lcd->active);
+	WriteInt(chunk, lcd->word_len);
+	WriteInt(chunk, lcd->x);
+	WriteInt(chunk, lcd->y);
+	WriteInt(chunk, lcd->z);
+	WriteInt(chunk, lcd->cursor_mode);
+	WriteInt(chunk, lcd->contrast);
+	WriteInt(chunk, lcd->base_level);
+	WriteBlock(chunk, lcd->display, DISPLAY_SIZE);
 
-	WriteInt(chunk,lcd->front);
-	WriteBlock(chunk,(unsigned char *) lcd->queue,LCD_MAX_SHADES*DISPLAY_SIZE);
+	WriteInt(chunk, lcd->front);
+	WriteBlock(chunk, (unsigned char *) lcd->queue, LCD_MAX_SHADES*DISPLAY_SIZE);
 	
-	WriteInt(chunk,lcd->shades);
-	WriteInt(chunk,lcd->mode);
-	WriteDouble(chunk,lcd->time);
-	WriteDouble(chunk,lcd->ufps);
-	WriteDouble(chunk,lcd->ufps_last);
-	WriteDouble(chunk,lcd->lastgifframe);
-	WriteDouble(chunk,lcd->write_avg);
-	WriteDouble(chunk,lcd->write_last);
+	WriteInt(chunk, lcd->shades);
+	WriteInt(chunk, lcd->mode);
+	WriteDouble(chunk, lcd->time);
+	WriteDouble(chunk, lcd->ufps);
+	WriteDouble(chunk, lcd->ufps_last);
+	WriteDouble(chunk, lcd->lastgifframe);
+	WriteDouble(chunk, lcd->write_avg);
+	WriteDouble(chunk, lcd->write_last);
 }
 
-SAVESTATE_t* SaveSlot( int slot ) {
+SAVESTATE_t* SaveSlot(void *lpInput) {
+	LPCALC lpCalc = (LPCALC) lpInput;
 	SAVESTATE_t* save;
 	BOOL runsave;
-	if (calcs[slot].active == FALSE) return NULL;
+	if (lpCalc->active == FALSE) return NULL;
 
-
-	runsave = calcs[slot].running;
-	calcs[slot].running = FALSE;
+	runsave = lpCalc->running;
+	lpCalc->running = FALSE;
 	
-	save = CreateSave("Revsoft","Test save",calcs[slot].model);
+	save = CreateSave(_T("Revsoft"), _T("Test save"), lpCalc->model);
 
-	SaveCPU(save,&calcs[slot].cpu);
+	SaveCPU(save, &lpCalc->cpu);
+	SaveMEM(save, &lpCalc->mem_c);
+	SaveTIMER(save, &lpCalc->timer_c);
+	SaveLCD(save, lpCalc->cpu.pio.lcd);
+	SaveLINK(save, lpCalc->cpu.pio.link);
+	SaveSTDINT(save, lpCalc->cpu.pio.stdint);
+	SaveSE_AUX(save, lpCalc->cpu.pio.se_aux);
 
-	SaveMEM(save,&calcs[slot].mem_c);
-
-	SaveTIMER(save,&calcs[slot].timer_c);
-
-	SaveLCD(save,calcs[slot].cpu.pio.lcd);
-
-	SaveLINK(save,calcs[slot].cpu.pio.link);
-
-	SaveSTDINT(save,calcs[slot].cpu.pio.stdint);
-
-	SaveSE_AUX(save,calcs[slot].cpu.pio.se_aux);
-
-	calcs[slot].running = runsave;
+	lpCalc->running = runsave;
 	return save;
 }
-	
-	
-
-	
-	
-	
-	
 
 void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	CHUNK_t* chunk = FindChunk(save,CPU_tag);
@@ -747,11 +738,11 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 
 	chunk = FindChunk(save,ROM_tag);
 	chunk->pnt = 0;
-	ReadBlock(chunk,mem->flash,mem->flash_size);
+	ReadBlock(chunk, (unsigned char *)mem->flash, mem->flash_size);
 	
 	chunk = FindChunk(save,RAM_tag);
 	chunk->pnt = 0;
-	ReadBlock(chunk,mem->ram,mem->ram_size);	
+	ReadBlock(chunk, (unsigned char *)mem->ram, mem->ram_size);	
 
 	
 	chunk = FindChunk(save,REMAP_tag);
@@ -785,9 +776,10 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	lcd->cursor_mode		= (LCD_CURSOR_MODE) ReadInt(chunk);
 	lcd->contrast	= ReadInt(chunk);
 	lcd->base_level	= ReadInt(chunk);
-	ReadBlock(chunk,lcd->display,DISPLAY_SIZE);
+
+	ReadBlock(chunk, lcd->display, DISPLAY_SIZE);
 	lcd->front		= ReadInt(chunk);
-	ReadBlock(chunk,(unsigned char *) lcd->queue,LCD_MAX_SHADES*DISPLAY_SIZE);
+	ReadBlock(chunk,  (unsigned char *)lcd->queue,LCD_MAX_SHADES*DISPLAY_SIZE);
 	lcd->shades		= ReadInt(chunk);
 	lcd->mode		= (LCD_MODE) ReadInt(chunk);
 	lcd->time		= ReadDouble(chunk);
@@ -876,10 +868,11 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 }
 
 
-void LoadSlot(SAVESTATE_t* save, int slot) {
+void LoadSlot(SAVESTATE_t* save, void *lpInput) {
 	BOOL runsave;
+	LPCALC lpCalc = (LPCALC) lpInput;
 	
-	if (calcs[slot].active == FALSE){
+	if (lpCalc->active == FALSE){
 		puts("Slot was not active");
 		return;
 	}
@@ -888,21 +881,21 @@ void LoadSlot(SAVESTATE_t* save, int slot) {
 		return;
 	}
 	
-	runsave = calcs[slot].running;
-	calcs[slot].running = FALSE;
+	runsave = lpCalc->running;
+	lpCalc->running = FALSE;
 	
-	LoadCPU(save,&calcs[slot].cpu);
-	LoadMEM(save,&calcs[slot].mem_c);
-	LoadTIMER(save,&calcs[slot].timer_c);
-	LoadLCD(save,calcs[slot].cpu.pio.lcd);
-	LoadLINK(save,calcs[slot].cpu.pio.link);
-	LoadSTDINT(save,calcs[slot].cpu.pio.stdint);
-	LoadSE_AUX(save,calcs[slot].cpu.pio.se_aux);
-	calcs[slot].running = runsave;
+	LoadCPU(save, &lpCalc->cpu);
+	LoadMEM(save, &lpCalc->mem_c);
+	LoadTIMER(save, &lpCalc->timer_c);
+	LoadLCD(save, lpCalc->cpu.pio.lcd);
+	LoadLINK(save, lpCalc->cpu.pio.link);
+	LoadSTDINT(save, lpCalc->cpu.pio.stdint);
+	LoadSE_AUX(save, lpCalc->cpu.pio.se_aux);
+	lpCalc->running = runsave;
 }
 
-char* GetRomOnly(SAVESTATE_t* save,int* size) {
-	CHUNK_t* chunk = FindChunk(save,ROM_tag);
+char* GetRomOnly(SAVESTATE_t *save, int *size) {
+	CHUNK_t* chunk = FindChunk(save, ROM_tag);
 	*size = 0;
 	if (!chunk) return NULL;
 	*size = chunk->size;
@@ -910,33 +903,33 @@ char* GetRomOnly(SAVESTATE_t* save,int* size) {
 }
 
 
-void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
+void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 	int i;
 	FILE* ofile;
 	FILE* cfile;
-	char tmpfn[L_tmpnam];
-	char temp_save[MAX_PATH];
+	TCHAR tmpfn[L_tmpnam];
+	TCHAR temp_save[MAX_PATH];
 	
 	if (!save) {
-		puts("Save was null for write");
+		_putts(_T("Save was null for write"));
 		return;
 	}
 	if (compress == 0) {
 #ifdef WINVER
-		fopen_s(&ofile, fn, "wb");
+		_tfopen_s(&ofile, fn, _T("wb"));
 #else
 		ofile = fopen(fn,"wb");
 #endif
 	} else {
 #ifdef WINVER
-		char *env;
+		TCHAR *env;
 		size_t envLen;
-		tmpnam_s(tmpfn);
-		_dupenv_s(&env, &envLen, "appdata");
-		strcpy_s(temp_save, env);
+		_ttmpnam_s(tmpfn);
+		_tdupenv_s(&env, &envLen, _T("appdata"));
+		StringCbCopy(temp_save, sizeof(temp_save), env);
 		free(env);
-		strcat_s(temp_save, tmpfn);
-		fopen_s(&ofile, temp_save, "wb");
+		StringCbCat(temp_save, sizeof(temp_save), tmpfn);
+		_tfopen_s(&ofile, temp_save, _T("wb"));
 #else
 		tmpnam(tmpfn);
 		strcpy(temp_save, getenv("appdata"));
@@ -946,67 +939,67 @@ void WriteSave(const char * fn,SAVESTATE_t* save,int compress) {
 	}
 		
 	if (!ofile) {
-		puts("Could not open save file for write");
+		_putts(_T("Could not open save file for write"));
 		return;
 	}
 
-	fputs(DETECT_STR,ofile);
+	fputs(DETECT_STR, ofile);
 
-	fputi(SAVE_HEADERSIZE,ofile);	
+	fputi(SAVE_HEADERSIZE, ofile);	
 	
-	fputi(save->version_major,ofile);
-	fputi(save->version_minor,ofile);
-	fputi(save->version_build,ofile);
-	fputi(save->model,ofile);
-	fputi(save->chunk_count,ofile);
-	fwrite(save->author,1,32,ofile);
-	fwrite(save->comment,1,64,ofile);
+	fputi(save->version_major, ofile);
+	fputi(save->version_minor, ofile);
+	fputi(save->version_build, ofile);
+	fputi(save->model, ofile);
+	fputi(save->chunk_count, ofile);
+	fwrite(save->author, 1,32, ofile);
+	fwrite(save->comment, 1, 64, ofile);
 	
 	for(i=0;i<save->chunk_count;i++) {
-		fputc(save->chunks[i]->tag[0],ofile);
-		fputc(save->chunks[i]->tag[1],ofile);
-		fputc(save->chunks[i]->tag[2],ofile);
-		fputc(save->chunks[i]->tag[3],ofile);
+		fputc(save->chunks[i]->tag[0], ofile);
+		fputc(save->chunks[i]->tag[1], ofile);
+		fputc(save->chunks[i]->tag[2], ofile);
+		fputc(save->chunks[i]->tag[3], ofile);
 		fputi(save->chunks[i]->size,ofile);
-		fwrite(save->chunks[i]->data,1,save->chunks[i]->size,ofile);
+		fwrite(save->chunks[i]->data, 1, save->chunks[i]->size, ofile);
 	}
 	fclose(ofile);
 	
 	if (compress) {
 #ifdef WINVER
-		fopen_s(&cfile, fn, "wb");
+		_tfopen_s(&cfile, fn, _T("wb"));
 #else
 		cfile = fopen(fn,"wb");
 #endif
 		if (!cfile) {
-			puts("Could not open compress file for write");
+			_putts(_T("Could not open compress file for write"));
 			return;
 		}
 #ifdef WINVER
-		fopen_s(&ofile, temp_save, "rb");
+		_tfopen_s(&ofile, temp_save, _T("rb"));
 #else
 		ofile = fopen(temp_save,"rb");
 #endif
 		if (!ofile) {
-			puts("Could not open tmp file for read");
+			_putts(_T("Could not open tmp file for read"));
 			return;
 		}
 		int error;
-		fputs(DETECT_CMP_STR,cfile);
+		fputs(DETECT_CMP_STR, cfile);
 		switch(compress) {
 #ifdef ZLIB_WINAPI
 			case ZLIB_CMP:
-				fputc(ZLIB_CMP,cfile);
-				error = def(ofile,cfile,9);
+				fputc(ZLIB_CMP, cfile);
+				error = def(ofile, cfile, 9);
 				break;
 #endif
 			default:
-				puts("Error bad compression format selected.");
+				_putts(_T("Error bad compression format selected."));
 				break;
 		}
 		fclose(ofile);
 		fclose(cfile);
-		remove(temp_save);
+		_tremove(temp_save);
 	}
 }
 
@@ -1015,25 +1008,25 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 	int compressed = FALSE;
 	int chunk_offset,chunk_count;
 	char string[128];
-	char tmpfn[L_tmpnam];
-	char temp_save[MAX_PATH];
+	TCHAR tmpfn[L_tmpnam];
+	TCHAR temp_save[MAX_PATH];
 	SAVESTATE_t* save;
 	CHUNK_t* chunk;
 	FILE* tmpfile;
 
-	fread(string,1,8,ifile);
+	fread(string, 1, 8, ifile);
 	string[8]=0;
-	if (strncmp(DETECT_CMP_STR,string,8)==0) {
+	if (strncmp(DETECT_CMP_STR, string, 8) == 0) {
 		i = fgetc(ifile);
 #ifdef WINVER
-		tmpnam_s(tmpfn);
-		char *env;
+		_ttmpnam_s(tmpfn);
+		TCHAR *env;
 		size_t envLen;
-		_dupenv_s(&env, &envLen, "appdata");
-		strcpy_s(temp_save, env);
+		_tdupenv_s(&env, &envLen, _T("appdata"));
+		StringCbCopy(temp_save, sizeof(temp_save), env);
 		free(env);
-		strcat_s(temp_save, tmpfn);
-		fopen_s(&tmpfile, temp_save, "wb");
+		StringCbCat(temp_save, sizeof(temp_save), tmpfn);
+		_tfopen_s(&tmpfile, temp_save, _T("wb"));
 #else
 		tmpnam(tmpfn);
 		strcpy(temp_save, getenv("appdata"));
@@ -1041,7 +1034,7 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 		tmpfile = fopen(temp_save,"wb");
 #endif
 		if (!tmpfile) {
-			puts("Could not open tmp file for write");
+			_putts(_T("Could not open tmp file for write"));
 			return NULL;
 		}
 		int error;
@@ -1052,38 +1045,38 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 				break;
 #endif
 			default:
-				puts("Compressed save is not compatible.");
+				_putts(_T("Compressed save is not compatible."));
 				fclose(tmpfile);
-				remove(tmpfn);
+				_tremove(tmpfn);
 				return NULL;
 		}
 		
 		fclose(tmpfile);
 #ifdef WINVER
-		fopen_s(&ifile, temp_save, "rb");	//this is not a leak, ifile gets closed
+		_tfopen_s(&ifile, temp_save, _T("rb"));	//this is not a leak, ifile gets closed
 											// outside of this routine.
 #else
 		ifile = fopen(temp_save,"rb");	//this is not a leak, ifile gets closed
 										// outside of this routine.
 #endif
 		if (!ifile) {
-			puts("Could not open tmp file for read");
+			_putts(_T("Could not open tmp file for read"));
 			return NULL;
 		}
 		compressed = TRUE;
 		fread(string,1,8,ifile);
 	}
 		
-	if (strncmp(DETECT_STR,string,8)!=0){
+	if (strncmp(DETECT_STR, string, 8)!=0){
 
-		puts("Readsave detect string failed.");
+		_putts(_T("Readsave detect string failed."));
 		if (compressed == TRUE) fclose(ifile);
 		return NULL;
 	}		
 	
 	save = (SAVESTATE_t *) malloc(sizeof(SAVESTATE_t));
 	if (!save) {
-		puts("Save could not be allocated");
+		_putts(_T("Save could not be allocated"));
 		if (compressed == TRUE) fclose(ifile);
 		return NULL;
 	}
@@ -1097,7 +1090,7 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 
 	if (save->version_major != CUR_MAJOR) {
 		fclose(ifile);
-		puts("Save not compatible at all, sorry\n");
+		_putts(_T("Save not compatible at all, sorry\n"));
 		free(save);
 		return NULL;
 	}
@@ -1114,7 +1107,7 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 		save->chunks[i] = NULL;
 	}
 	save->chunk_count = 0;
-	for(i=0;i<chunk_count;i++) {
+	for(i = 0; i<chunk_count; i++) {
 		string[0]	= fgetc(ifile);
 		string[1]	= fgetc(ifile);
 		string[2]	= fgetc(ifile);
@@ -1127,7 +1120,7 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 	}
 	if (compressed == TRUE) {
 		fclose(ifile);
-		remove(temp_save);
+		_tremove(temp_save);
 	}
 /* check for read errors... */
 	return save;

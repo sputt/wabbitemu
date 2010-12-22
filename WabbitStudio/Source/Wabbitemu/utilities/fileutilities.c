@@ -2,7 +2,7 @@
 
 #include "fileutilities.h"
 
-int BrowseFile(char* lpstrFile, char *lpstrFilter, char *lpstrTitle, char *lpstrDefExt, unsigned int Flags) {
+int BrowseFile(TCHAR* lpstrFile, TCHAR *lpstrFilter, TCHAR *lpstrTitle, TCHAR *lpstrDefExt, unsigned int Flags) {
 	lpstrFile[0] = '\0';
 	OPENFILENAME ofn;
 	ofn.lStructSize			= sizeof(OPENFILENAME);
@@ -12,7 +12,7 @@ int BrowseFile(char* lpstrFile, char *lpstrFilter, char *lpstrTitle, char *lpstr
 	ofn.lpstrCustomFilter	= NULL;
 	ofn.nMaxCustFilter		= 0;
 	ofn.nFilterIndex		= 0;
-	ofn.lpstrFile			= (LPSTR) lpstrFile;
+	ofn.lpstrFile			= (LPTSTR) lpstrFile;
 	ofn.nMaxFile			= 512;
 	ofn.lpstrFileTitle		= NULL;
 	ofn.nMaxFileTitle		= 0;
@@ -32,7 +32,7 @@ int BrowseFile(char* lpstrFile, char *lpstrFilter, char *lpstrTitle, char *lpstr
 	return 0;
 }
 
-int SaveFile(char* lpstrFile, char *lpstrFilter, char *lpstrTitle, char *lpstrDefExt, unsigned int Flags) {
+int SaveFile(TCHAR *lpstrFile, TCHAR *lpstrFilter, TCHAR *lpstrTitle, TCHAR *lpstrDefExt, unsigned int Flags) {
 	lpstrFile[0] = '\0';
 	OPENFILENAME ofn;
 	ofn.lStructSize			= sizeof(OPENFILENAME);
@@ -42,7 +42,7 @@ int SaveFile(char* lpstrFile, char *lpstrFilter, char *lpstrTitle, char *lpstrDe
 	ofn.lpstrCustomFilter	= NULL;
 	ofn.nMaxCustFilter		= 0;
 	ofn.nFilterIndex		= 0;
-	ofn.lpstrFile			= (LPSTR) lpstrFile;
+	ofn.lpstrFile			= (LPTSTR) lpstrFile;
 	ofn.nMaxFile			= 512;
 	ofn.lpstrFileTitle		= NULL;
 	ofn.nMaxFileTitle		= 0;
@@ -62,10 +62,10 @@ int SaveFile(char* lpstrFile, char *lpstrFilter, char *lpstrTitle, char *lpstrDe
 	return 0;
 }
 
-BOOL ValidPath(char *lpstrFile) {
+BOOL ValidPath(TCHAR *lpstrFile) {
 	FILE *file;
 #ifdef WINVER
-	errno_t error = fopen_s(&file, lpstrFile, "r");
+	errno_t error = _tfopen_s(&file, lpstrFile, _T("r"));
 	if (file)
 		fclose(file);
 	return error == 0;

@@ -158,6 +158,6 @@ HWND CreateFilePreviewPane(HWND hwndParent, int x, int y, int cx, int cy, OFNHoo
 }
 	
 
-LRESULT ShowFilePreview(HWND hwndPreview, LPSTR szPath) {
+LRESULT ShowFilePreview(HWND hwndPreview, LPTSTR szPath) {
 	return SendMessage(hwndPreview, WM_USER, 0, (LPARAM) szPath);
 }

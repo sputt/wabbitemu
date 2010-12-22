@@ -18,7 +18,7 @@ char txt86[] = "Already Installed";
 	}
 
 
-int CmpStringCase(char* str1, unsigned char* str2) {
+int CmpStringCase(char *str1, unsigned char *str2) {
 	return _strnicmp(str1, (char *) str2, strlen(str1));
 }
 
@@ -49,7 +49,7 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 						}
 						if (i < (size - 40)) {
 							for(b = 0; (b + i) < (size-4) && b  <32; b++) {
-								if (rom[b+i] != ' ') string[b] = rom[b+i];
+								if (rom[b + i] != ' ') string[b] = rom[b+i];
 								else string[b] = 0;
 							}
 							string[31] = 0;
@@ -275,16 +275,16 @@ TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 	fseek(infile, 0, SEEK_SET);
 
 	if (size == (128*1024) ) calc = TI_82;
-	else if (size == (256*1024) ) calc = TI_83;
-	else if ((size>=(510*1024)) && (size<=(590*1024))  ) calc = TI_83P;
-	else if ((size>=(1016*1024)) && (size<=(1030*1024))  ) calc = TI_84P;
-	else if ((size>=(2044*1024)) && (size<=(2260*1024)) ) calc = TI_83PSE;
+	else if (size == (256 * 1024)) calc = TI_83;
+	else if ((size >= (510 * 1024)) && (size <= (590 * 1024))) calc = TI_83P;
+	else if ((size >= (1016 * 1024)) && (size <= (1030 * 1024))) calc = TI_84P;
+	else if ((size >= (2044 * 1024)) && (size <= (2260 * 1024))) calc = TI_83PSE;
 	else {
 		puts("not a known rom");
 		return FreeTiFile(tifile);
 	}
 
-	tifile->rom = (ROM_t*) malloc(sizeof(ROM_t));
+	tifile->rom = (ROM_t *) malloc(sizeof(ROM_t));
 	if (tifile->rom == NULL) {
 		return FreeTiFile(tifile);
 	}
@@ -308,9 +308,6 @@ TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 
 TIFILE_t* ImportBackup(FILE *infile, TIFILE_t *tifile) {
 	int i, tmp;
-	tifile->backup = (TIBACKUP_t *) malloc(sizeof(TIBACKUP_t));
-	if (tifile->backup == NULL)
-		return FreeTiFile(tifile);
 	tifile->backup->data1 = NULL;
 	tifile->backup->data2 = NULL;
 	tifile->backup->data3 = NULL;
@@ -340,7 +337,7 @@ TIFILE_t* ImportBackup(FILE *infile, TIFILE_t *tifile) {
 		return FreeTiFile(tifile);
 	for(i = 0; i < tifile->backup->length1 && !feof(infile); i++) {
 		tmpread(infile);
-		tifile->backup->data1[i] =tmp;
+		tifile->backup->data1[i] = tmp;
 	}
 
 
@@ -367,17 +364,17 @@ TIFILE_t* ImportBackup(FILE *infile, TIFILE_t *tifile) {
 		return FreeTiFile(tifile);
 	for(i=0; i<tifile->backup->length3 && !feof(infile); i++) {
 		tmpread(infile);
-		tifile->backup->data3[i] =tmp;
+		tifile->backup->data3[i] = tmp;
 	}
 
-	tifile->chksum = ( fgetc(infile) & 0xFF ) + ( (  fgetc(infile) & 0xFF ) << 8 );
+	tifile->chksum = (fgetc(infile) & 0xFF) + ((fgetc(infile) & 0xFF) << 8 );
 
 	tifile->type	= BACKUP_TYPE;
 	return tifile;
 }
 
 void NullTiFile(TIFILE_t* tifile) {
-	tifile->var = NULL;	//make sure its null. mostly for freeing later
+	tifile->var = NULL;				//make sure its null. mostly for freeing later
 	memset(tifile->vars, 0, sizeof(tifile->vars));
 	tifile->flash = NULL;
 	tifile->rom = NULL;
@@ -503,6 +500,9 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber = 0) {
 
 	if ((tifile->model == TI_73 && vartype == 0x13) ||
 		(tifile->model == TI_82 && vartype == 0x0F)) {
+		tifile->backup = (TIBACKUP_t *) malloc(sizeof(TIBACKUP_t));
+		if (tifile->backup == NULL)
+			return FreeTiFile(tifile);
 		tifile->backup->headersize	= headersize;
 		tifile->backup->length1		= length;
 		tifile->backup->vartype		= vartype;
@@ -537,7 +537,7 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber = 0) {
 			FreeTiFile(tifile);
 			return NULL;
 		}
-		ptr[i++] =tmp;
+		ptr[i++] = tmp;
 		tmp = fgetc(infile);
 		if (tmp == EOF)
 			return FreeTiFile(tifile);
@@ -549,11 +549,11 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber = 0) {
 	tmp = fgetc(infile);
 	if (tmp == EOF)
 		return FreeTiFile(tifile);
-	ptr[i++] =tmp;
+	ptr[i++] = tmp;
 	tmp = fgetc(infile);
 	if (tmp == EOF)
 		return FreeTiFile(tifile);
-	ptr[i++] =tmp;
+	ptr[i++] = tmp;
 
 	tifile->var->data = (unsigned char *) malloc(tifile->var->length);
 	if (tifile->var->data == NULL)
@@ -567,7 +567,7 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber = 0) {
 		tmp = fgetc(infile);
 		if (tmp == EOF)
 			return FreeTiFile(tifile);
-		tifile->var->data[i] =tmp;
+		tifile->var->data[i] = tmp;
 	}
 
 	if (tifile->type == GROUP_TYPE) {

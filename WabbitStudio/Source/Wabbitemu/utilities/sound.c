@@ -15,16 +15,17 @@ static void CALLBACK FillSoundBuffer(HWAVEOUT hWaveOut,
 									 DWORD dwParam2 ) {
 
 	WAVEHDR* waveheader = (WAVEHDR*) dwParam1;
-	AUDIO_t* audio = (AUDIO_t*)dwInstance;
+	//LPCALC lpCalc = (LPCALC) dwInstance;
+	AUDIO_t *audio = (AUDIO_t *) dwInstance;
 	int i;
 
 	switch(uMsg) {
 		case WOM_DONE:
 		{
 
-			waveOutUnprepareHeader(audio->hWaveOut,waveheader,sizeof(WAVEHDR));
+			waveOutUnprepareHeader(audio->hWaveOut, waveheader, sizeof(WAVEHDR));
 
-			if ((!audio->enabled) || (!calcs[gslot].running) ) {
+			if ((!audio->enabled) /*|| (lpCalc->running)*/ ) {
 				if (audio->init) {
 					memset(waveheader->lpData,0x80,BankSize);
 					waveOutPrepareHeader(audio->hWaveOut,waveheader,sizeof(WAVEHDR));
@@ -32,19 +33,19 @@ static void CALLBACK FillSoundBuffer(HWAVEOUT hWaveOut,
 				} else audio->endsnd++;
 			} else {
 
-				if ( ( audio->PlayTime+(BankTime*1.5f) ) < ( tc_elapsed(calcs[gslot].cpu.timer_c) ) ) {
+				if ((audio->PlayTime + (BankTime * 1.5f)) < (tc_elapsed(audio->timer_c))) {
 
-					if ( ( audio->PlayTime+(BankTime*((float)(BufferBanks*2))) ) < tc_elapsed(calcs[gslot].cpu.timer_c) ) {
+					if ((audio->PlayTime+(BankTime * ((float) (BufferBanks * 2)))) < tc_elapsed(audio->timer_c)) {
 
-						audio->PlayTime = tc_elapsed(calcs[gslot].cpu.timer_c)-(BankTime*((float)BufferBanks));
-						audio->PlayPnt = (audio->CurPnt-(PreferedSamples*BufferBanks))%BufferSamples;
+						audio->PlayTime = tc_elapsed(audio->timer_c) - (BankTime * ((float) BufferBanks));
+						audio->PlayPnt = (audio->CurPnt - (PreferedSamples * BufferBanks)) % BufferSamples;
 					}
-					unsigned char* dataout	= (unsigned char*)&audio->buffer[audio->PlayPnt];
-					unsigned char* datain	= (unsigned char*)waveheader->lpData;
-					unsigned char* dataend	= (unsigned char*)&audio->buffer[BufferSamples];
-					for(i=0;i<BankSize;i++) {
-						if ( dataout >= dataend) {
-							dataout = (unsigned char*)&audio->buffer[0];
+					unsigned char* dataout	= (unsigned char *) &audio->buffer[audio->PlayPnt];
+					unsigned char* datain	= (unsigned char *) waveheader->lpData;
+					unsigned char* dataend	= (unsigned char *) &audio->buffer[BufferSamples];
+					for(i = 0; i < BankSize; i++) {
+						if (dataout >= dataend) {
+							dataout = (unsigned char *) &audio->buffer[0];
 						}
 						datain[i] = dataout[0];
 						dataout++;
@@ -59,9 +60,9 @@ static void CALLBACK FillSoundBuffer(HWAVEOUT hWaveOut,
 					}
 				} else {
 
-					memset(waveheader->lpData,0x80,BankSize);
-					waveOutPrepareHeader(audio->hWaveOut,waveheader,sizeof(WAVEHDR));
-					waveOutWrite(audio->hWaveOut,waveheader,sizeof(WAVEHDR));
+					memset(waveheader->lpData, 0x80, BankSize);
+					waveOutPrepareHeader(audio->hWaveOut, waveheader, sizeof(WAVEHDR));
+					waveOutWrite(audio->hWaveOut, waveheader, sizeof(WAVEHDR));
 				}
 		
 		    }
@@ -70,7 +71,6 @@ static void CALLBACK FillSoundBuffer(HWAVEOUT hWaveOut,
 		case WOM_OPEN:
 		{
 			puts("WOM_OPEN");
-
 			break;
 		}
 		case WOM_CLOSE:
@@ -89,8 +89,7 @@ static void CALLBACK FillSoundBuffer(HWAVEOUT hWaveOut,
 }
 
 
-int soundinit() {
-	AUDIO_t* audio = calcs[gslot].audio;
+int soundinit(AUDIO_t *audio) {
 	int i,b;
 	
 	puts("Sound intial");
@@ -99,14 +98,14 @@ int soundinit() {
 	audio->enabled	= 0;
 
 
-	for(i=0;i<BufferSamples;i++) {
+	for(i = 0; i < BufferSamples; i++) {
 		audio->buffer[i].left = 0x80;
 		audio->buffer[i].right = 0x80;
 	}
 
 
-	for(b=0;b<BufferBanks;b++) {
-		for(i=0;i<PreferedSamples;i++) {
+	for(b = 0; b < BufferBanks; b++) {
+		for(i = 0;i<PreferedSamples; i++) {
 			audio->playbuf[b][i].left = 0x80;
 			audio->playbuf[b][i].right = 0x80;
 		}
@@ -116,12 +115,12 @@ int soundinit() {
 	audio->PlayPnt			= 0;
 	audio->CurPnt			= BufferBanks*PreferedSamples;
 
-	audio->PlayTime			= tc_elapsed(calcs[gslot].cpu.timer_c)-(((float)BufferBanks)*((float)PreferedSamples)) /((float)SampleRate);
-	audio->LastFlipLeft		= tc_elapsed(calcs[gslot].cpu.timer_c);
+	audio->PlayTime			= tc_elapsed(audio->timer_c)-(((float) BufferBanks) * ((float) PreferedSamples)) / ((float) SampleRate);
+	audio->LastFlipLeft		= tc_elapsed(audio->timer_c);
 	audio->HighLengLeft		= 0;
-	audio->LastFlipRight	= tc_elapsed(calcs[gslot].cpu.timer_c);
+	audio->LastFlipRight	= tc_elapsed(audio->timer_c);
 	audio->HighLengRight	= 0;
-	audio->LastSample		= tc_elapsed(calcs[gslot].cpu.timer_c);
+	audio->LastSample		= tc_elapsed(audio->timer_c);
 	audio->LeftOn			= 0;
 	audio->RightOn			= 0;
 	
@@ -142,7 +141,7 @@ int soundinit() {
 						WAVE_MAPPER, 
 						&audio->wfx, 
 						(DWORD_PTR)FillSoundBuffer, 
-						(DWORD)audio, 
+						(DWORD) audio, 
 						CALLBACK_FUNCTION
 					) != MMSYSERR_NOERROR ) {
 
@@ -154,12 +153,12 @@ int soundinit() {
 	audio->init =1;
 	audio->enabled =1;
 
-	for(i=0;i<BufferBanks;i++) {	
-		audio->waveheader[i].lpData				= (char*)audio->playbuf[i];
+	for(i = 0; i < BufferBanks; i++) {	
+		audio->waveheader[i].lpData				= (char *) audio->playbuf[i];
 		audio->waveheader[i].dwBufferLength		= BankSize;
 		audio->waveheader[i].dwFlags			= 0;
-		waveOutPrepareHeader(audio->hWaveOut,&audio->waveheader[i],sizeof(WAVEHDR));
-		waveOutWrite(audio->hWaveOut,&audio->waveheader[i],sizeof(WAVEHDR));
+		waveOutPrepareHeader(audio->hWaveOut, &audio->waveheader[i], sizeof(WAVEHDR));
+		waveOutWrite(audio->hWaveOut, &audio->waveheader[i], sizeof(WAVEHDR));
 	}
 
 
@@ -176,55 +175,51 @@ void KillSound(AUDIO_t* audio) {
 		audio->endsnd = 0;
 		audio->enabled	= FALSE;
 		audio->init = 0;
-		for(i=0;audio->endsnd<BufferBanks && i<200;i++) Sleep(5);
+		for(i = 0; audio->endsnd < BufferBanks && i < 200; i++) Sleep(5);
 		waveOutClose(audio->hWaveOut);
-		for(i=0;audio->endsnd<100 && i<200;i++) Sleep(5);
+		for(i = 0; audio->endsnd < 100 && i < 200; i++) Sleep(5);
 	}
 }
-	
 
-
-void togglesound() {
-	if (calcs[gslot].audio->enabled) pausesound();
-	else playsound();
+void togglesound(AUDIO_t *audio) {
+	if (audio->enabled) pausesound(audio);
+	else playsound(audio);
 }
 
-int playsound() {
-	AUDIO_t * audio = calcs[gslot].audio;
+int playsound(AUDIO_t *audio) {
 	if (audio->init == 0) {
-		soundinit();
+		soundinit(audio);
 	} else {
 		int i,b;
-		audio->PlayTime = tc_elapsed(calcs[gslot].cpu.timer_c)-(BankTime*((float)BufferBanks));
-		audio->PlayPnt = (audio->CurPnt-(PreferedSamples*BufferBanks))%BufferSamples;
-		for(b=0;b<BufferBanks;b++) {
-			for(i=0;i<PreferedSamples;i++) {
+		audio->PlayTime = tc_elapsed(audio->timer_c) - (BankTime * ((float)BufferBanks));
+		audio->PlayPnt = (audio->CurPnt-(PreferedSamples * BufferBanks)) % BufferSamples;
+		for(b = 0; b < BufferBanks; b++) {
+			for(i = 0; i < PreferedSamples; i++) {
 				audio->playbuf[b][i].left = 0x80;
 				audio->playbuf[b][i].right = 0x80;
 			}
 		}
 		waveOutRestart(audio->hWaveOut);
-		audio->enabled =1;
+		audio->enabled = 1;
 	}
 	return 0;
 }
 
-int pausesound() {
-	AUDIO_t * audio = calcs[gslot].audio;
+int pausesound(AUDIO_t *audio) {
 	if (audio->init == 0) return 0;
-	audio->enabled =0;
+	audio->enabled = 0;
 	waveOutPause(audio->hWaveOut);
 	return 0;
 }
 
 int FlippedLeft(CPU_t *cpu, int on) {
-	link_t* link = cpu->pio.link;
-	AUDIO_t* audio = &link->audio;
+	link_t *link = cpu->pio.link;
+	AUDIO_t *audio = &link->audio;
 	if (!audio->enabled) return 1;
 	if (on == 1) {
-		audio->LastFlipLeft = tc_elapsed(calcs[gslot].cpu.timer_c);
+		audio->LastFlipLeft = tc_elapsed(cpu->timer_c);
 	} else if (on == 0) {
-		audio->HighLengLeft += (tc_elapsed(calcs[gslot].cpu.timer_c)-audio->LastFlipLeft);
+		audio->HighLengLeft += (tc_elapsed(cpu->timer_c)-audio->LastFlipLeft);
 	}
 	audio->LeftOn = on;
 	return 0;
@@ -235,9 +230,9 @@ int FlippedRight(CPU_t *cpu, int on) {
 	AUDIO_t* audio = &link->audio;
 	if (!audio->enabled) return 1;
 	if (on == 1) {
-		audio->LastFlipRight = tc_elapsed(calcs[gslot].cpu.timer_c);
+		audio->LastFlipRight = tc_elapsed(cpu->timer_c);
 	} else if (on == 0) {
-		audio->HighLengRight += (tc_elapsed(calcs[gslot].cpu.timer_c)-audio->LastFlipRight);
+		audio->HighLengRight += (tc_elapsed(cpu->timer_c) - audio->LastFlipRight);
 	}
 	audio->RightOn = on;
 	return 0;
@@ -248,24 +243,24 @@ int nextsample(CPU_t *cpu) {
 	AUDIO_t* audio = &link->audio;
 	double tmp;
 	double max		=	255.0f * audio->volume;
-	double lower	=	(255.0f - max)/2.0f;
+	double lower	=	(255.0f - max) / 2.0f;
 	
 	unsigned char left;
 	unsigned char right;
 	if (!audio->enabled) return 1;
 	
-	if (tc_elapsed(calcs[gslot].cpu.timer_c) < (audio->LastSample+SampleLength)) return 0;
+	if (tc_elapsed(cpu->timer_c) < (audio->LastSample + SampleLength)) return 0;
 	
 	if (audio->RightOn == 1) {
-		if ( (audio->LastSample+SampleLength)>audio->LastFlipRight) {
-			audio->HighLengRight += ((audio->LastSample+SampleLength)-audio->LastFlipRight);
+		if ((audio->LastSample+SampleLength) > audio->LastFlipRight) {
+			audio->HighLengRight += ((audio->LastSample + SampleLength) - audio->LastFlipRight);
 			audio->LastFlipRight = audio->LastSample+SampleLength;
 		} 			
 	}
 	
 	if (audio->LeftOn == 1) {
-		if ( (audio->LastSample+SampleLength)>audio->LastFlipLeft) {
-			audio->HighLengLeft += ((audio->LastSample+SampleLength)-audio->LastFlipLeft);
+		if ((audio->LastSample + SampleLength) > audio->LastFlipLeft) {
+			audio->HighLengLeft += ((audio->LastSample+SampleLength) - audio->LastFlipLeft);
 			audio->LastFlipLeft = audio->LastSample+SampleLength;
 		}
 	}
@@ -319,9 +314,9 @@ int nextsample(CPU_t *cpu) {
 	audio->HighLengLeft		=	0;
 	audio->LastSample		+=	SampleLength;
 
-	if ( (audio->LastSample+(SampleLength*2.0f)) < tc_elapsed(calcs[gslot].cpu.timer_c)) {
+	if ( (audio->LastSample+(SampleLength*2.0f)) < tc_elapsed(cpu->timer_c)) {
 		puts("Last sample out of sync");
-		audio->LastSample = tc_elapsed(calcs[gslot].cpu.timer_c);
+		audio->LastSample = tc_elapsed(cpu->timer_c);
 	}
 
 	return 0;

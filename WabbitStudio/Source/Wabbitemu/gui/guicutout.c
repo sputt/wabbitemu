@@ -15,10 +15,14 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 {
 	switch (uMsg)
 	{
-		case WM_CREATE:
+		case WM_CREATE: {
+			LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 			return 0;
+		}
 
 		case WM_PAINT: {
+				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				BOOL fDown = (BOOL) GetWindowLong(hwnd, 0);
 
 				TCHAR szWindowName[256];
@@ -31,7 +35,7 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				GetClientRect(hwnd, &rc);
 				FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
 
-				if (!calcs[gslot].bCutout)
+				if (!lpCalc->bCutout)
 					return 0;
 			
 				HBITMAP hbmButtons = LoadBitmap(g_hInst, _T("close"));
@@ -55,7 +59,7 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				p.y = r.top;
 
 				ScreenToClient(hwnd, &p);
-				BitBlt(hdc,0,0,13,13,calcs[gslot].hdcSkin,p.x,p.y,SRCCOPY);
+				BitBlt(hdc, 0, 0, 13, 13, lpCalc->hdcSkin, p.x, p.y, SRCCOPY);
 
 				BLENDFUNCTION bf;
 				bf.BlendOp = AC_SRC_OVER;
@@ -80,13 +84,14 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				return 0;
 		}
 		case WM_LBUTTONUP: {
+				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				TCHAR szWindowName[256];
 				GetWindowText(hwnd, szWindowName, ARRAYSIZE(szWindowName));
 
 				if (_tcsicmp(szWindowName, _T("wabbitminimize")) == 0) {
-					ShowWindow(calcs[gslot].hwndFrame, SW_MINIMIZE);
+					ShowWindow(lpCalc->hwndFrame, SW_MINIMIZE);
 				} else if (_tcsicmp(szWindowName, _T("wabbitclose")) == 0) {
-					SendMessage(calcs[gslot].hwndFrame, WM_CLOSE, 0, 0);
+					SendMessage(lpCalc->hwndFrame, WM_CLOSE, 0, 0);
 				}
 				SetWindowLong(hwnd, 0, (LONG) FALSE);
 				ReleaseCapture();
@@ -94,8 +99,16 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				UpdateWindow(hwnd);
 				return 0;
 		}
-		case WM_CLOSE:
-			SendMessage(calcs[gslot].hwndFrame, uMsg, wParam, lParam);
+		case WM_KEYDOWN:
+			HandleKeyDown((LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA), (unsigned int) wParam);
+			return 0;
+		case WM_KEYUP:
+			HandleKeyUp((LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA), (unsigned int) wParam);
+			return 0;
+		case WM_CLOSE: {
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			SendMessage(lpCalc->hwndFrame, uMsg, wParam, lParam);
+		}
 		case WM_NCCALCSIZE:
 			return 0;
 		default:
@@ -259,7 +272,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 		hwndFrame,
 		(HMENU) NULL,
 		g_hInst,
-		NULL);
+		(LPVOID) lpCalc);
 	if (lpCalc->hwndSmallClose == NULL) return 1;
 	SetWindowLong(lpCalc->hwndSmallClose, GWL_STYLE, WS_VISIBLE);
 
@@ -273,7 +286,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 		hwndFrame,
 		(HMENU) NULL,
 		g_hInst,
-		NULL);
+		(LPVOID) lpCalc);
 	if (lpCalc->hwndSmallMinimize == NULL) return 1;
 	SetWindowLong(lpCalc->hwndSmallMinimize, GWL_STYLE, WS_VISIBLE);
 

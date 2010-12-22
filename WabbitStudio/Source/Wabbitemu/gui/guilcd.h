@@ -18,7 +18,7 @@
 
 LRESULT CALLBACK LCDProc(HWND, UINT, WPARAM, LPARAM);
 void PaintLCD(HWND, HDC);
-void SaveStateDialog(HWND);
+void SaveStateDialog(HWND, LPCALC);
 
 
 #define IDC_LCD		109

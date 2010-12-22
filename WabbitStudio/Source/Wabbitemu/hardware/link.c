@@ -202,7 +202,7 @@ static void link_send_pkt(CPU_t *cpu, u_char command_ID, void *data) {
 	case CID_RTS: {
 		uint8_t type_ID = ((TI_VARHDR *) data)->type_ID;
 
-		if (type_ID == BackupObj)
+		if (type_ID == BackupObj || (type_ID == BackupObj_82 && cpu->pio.model == TI_82))
 			data_len = sizeof(TI_BACKUPHDR);
 		else if (type_ID >= 0x22 && type_ID <= 0x28)
 			data_len = sizeof(TI_FLASHHDR);
@@ -316,24 +316,24 @@ static void link_recv_pkt(CPU_t *cpu, TI_PKTHDR *hdr, u_char *data) {
 
 /* Send a Request To Send packet
  * On error: Throws Packet Exception */
-static void link_RTS(CPU_t *cpu, TIFILE_t *tifile, int dest) {
+static void link_RTS(CPU_t *cpu, TIVAR_t *var, int dest) {
 	TI_VARHDR var_hdr;
 
-	var_hdr.length = link_endian(tifile->var->length);
-	var_hdr.type_ID = tifile->var->vartype;
+	var_hdr.length = link_endian(var->length);
+	var_hdr.type_ID = var->vartype;
 	memset(var_hdr.name, 0, sizeof(var_hdr.name));
 #ifdef WINVER
-	strncpy(var_hdr.name, (char *) tifile->var->name, 8);
+	strncpy(var_hdr.name, (char *) var->name, 8);
 #else
-	strncpy(var_hdr.name, (char *) tifile->var->name, 8);
+	strncpy(var_hdr.name, (char *) var->name, 8);
 #endif
-	var_hdr.version = tifile->var->version;
+	var_hdr.version = var->version;
 	if (dest == SEND_RAM) {
 		var_hdr.type_ID2 = 0x00;
 	} else if (dest == SEND_ARC) {
 		var_hdr.type_ID2 = 0x80;
 	} else {
-		var_hdr.type_ID2 = tifile->var->flag;
+		var_hdr.type_ID2 = var->flag;
 	}
 
 	//printf("Model: %d, length: %d\n", cpu->pio.model, link_endian(tifile->var->length));
@@ -341,6 +341,107 @@ static void link_RTS(CPU_t *cpu, TIFILE_t *tifile, int dest) {
 		link_send_pkt(cpu, CID_VAR, &var_hdr);
 	else
 		link_send_pkt(cpu, CID_RTS, &var_hdr);
+}
+
+LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
+	if (link_init(cpu))
+		return LERR_NOTINIT;
+
+	// If the calculator's LCD is off, it likely is not in
+	// the correct software state to receive link data.
+	// Turn it on by simulating pressing the 'ON' button
+	if (!cpu->pio.lcd->active) {
+		link_wait(cpu, MHZ_6);
+		cpu->pio.keypad->on_pressed |= KEY_FALSEPRESS;
+		link_wait(cpu, MHZ_6/2);
+		cpu->pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
+		link_wait(cpu, MHZ_6);
+
+		if (!cpu->pio.lcd->active)
+			return LERR_LINK;
+	}
+
+	if (tifile->backup == NULL)
+		return LERR_FILE;
+	TIBACKUP_t *backup = tifile->backup;
+	cpu->pio.link->vlink_size = backup->length1 + backup->length2 + backup->length3;
+
+	int err;
+	switch (err = setjmp(exc_pkt)) {
+	case 0: {
+		TI_BACKUPHDR bkhdr;
+		TI_PKTHDR rpkt;
+		u_char data[64];
+
+		bkhdr.flags_size = backup->length1;
+		bkhdr.type_ID = 0xF;
+		bkhdr.data_size = backup->length2;
+		bkhdr.symbol_size = backup->length3;
+		bkhdr.user_addr = backup->address;
+
+		// Send the VAR with Backup style header
+		link_send_pkt(cpu, CID_VAR, &bkhdr);
+
+		keypad_key_press(cpu, VK_RETURN);
+		//link_wait(cpu, 15000000);
+
+		// Receive the ACK
+		link_recv_pkt(cpu, &rpkt, data);
+		if (rpkt.command_ID != CID_ACK)
+			return LERR_LINK;
+
+		// Receive Clear To Send
+		link_recv_pkt(cpu, &rpkt, data);
+		if (rpkt.command_ID != CID_CTS) {
+			if (rpkt.command_ID == CID_EXIT) {
+				link_send_pkt(cpu, CID_ACK, NULL);
+				return LERR_MEM;
+			} else
+				return LERR_LINK;
+		}
+
+		// Send the ACK
+		link_send_pkt(cpu, CID_ACK, NULL);
+
+		// Send the single data packet containing the first data section
+		TI_DATA s_data = { backup->length1, backup->data1 };
+		link_send_pkt(cpu, CID_DATA, &s_data);
+
+		// Receive the ACK
+		link_recv_pkt(cpu, &rpkt, data);
+		if (rpkt.command_ID != CID_ACK)
+			return LERR_LINK;
+
+		// Send the single data packet containing the second data section
+		s_data.length = backup->length2;
+		s_data.data = backup->data2;
+		link_send_pkt(cpu, CID_DATA, &s_data);
+
+		// Receive the ACK
+		link_recv_pkt(cpu, &rpkt, data);
+		if (rpkt.command_ID != CID_ACK)
+			return LERR_LINK;
+
+		// Send the single data packet containing the final data section
+		s_data.length = backup->length3;
+		s_data.data = backup->data3;
+		link_send_pkt(cpu, CID_DATA, &s_data);
+
+		// Receive the ACK
+		link_recv_pkt(cpu, &rpkt, data);
+		if (rpkt.command_ID != CID_ACK)
+			return LERR_LINK;
+
+		// Send the End of Transmission
+		if (cpu->pio.model != TI_82)
+			link_send_pkt(cpu, CID_EOT, NULL);
+		keypad_key_release(cpu, VK_RETURN);
+		break;
+	}
+	default:
+			return LERR_SYSTEM;
+	}
+	return LERR_SUCCESS;
 }
 
 // Order that VTI uses:
@@ -405,7 +506,7 @@ LINK_ERR link_send_var(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 			u_char data[64];
 
 			// Request to send
-			link_RTS(cpu, tifile, dest);
+			link_RTS(cpu, var, dest);
 
 			// Receive the ACK
 			link_recv_pkt(cpu, &rpkt, data);

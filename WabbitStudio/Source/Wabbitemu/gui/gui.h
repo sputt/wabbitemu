@@ -6,25 +6,25 @@
 #define SKIN_WIDTH	314
 #define SKIN_HEIGHT	688
 
-#define WABBITVER		"1.5"
+#define WABBITVER		_T("1.5")
 
-#define g_szWebPage		"http://wabbit.codeplex.com"//"http://www.revsoft.org/emu"
+#define g_szWebPage		_T("http://wabbit.codeplex.com")//"http://www.revsoft.org/emu"
 #ifdef _WIN64
-#define g_szDownload	"http://group.revsoft.org/wabbitemu64.exe"//"http://wabbit.codeplex.com/releases/view/44625#DownloadId=122222"
+#define g_szDownload	_T("http://group.revsoft.org/wabbitemu64.exe")//"http://wabbit.codeplex.com/releases/view/44625#DownloadId=122222"
 #else
-#define g_szDownload	"http://group.revsoft.org/wabbitemu.exe"//"http://wabbit.codeplex.com/releases/view/44625#DownloadId=122222"
+#define g_szDownload	_T("http://group.revsoft.org/wabbitemu.exe")//"http://wabbit.codeplex.com/releases/view/44625#DownloadId=122222"
 #endif
 
-#define g_szAppName 	"z80"
-#define g_szDebugName 	"debug"
-#define g_szDisasmName 	"disasm"
-#define g_szRegName 	"reg"
-#define g_szMemName		"mem"
-#define g_szLinkName	"link"
-#define g_szLCDName 	"wabbitlcd"
-#define g_szWabbitName 	"wabbit"
-#define g_szToolbar		"wabtool"
-#define g_szSubbar		"wabsub"
+#define g_szAppName 	_T("z80")
+#define g_szDebugName 	_T("debug")
+#define g_szDisasmName 	_T("disasm")
+#define g_szRegName 	_T("reg")
+#define g_szMemName		_T("mem")
+#define g_szLinkName	_T("link")
+#define g_szLCDName 	_T("wabbitlcd")
+#define g_szWabbitName 	_T("wabbit")
+#define g_szToolbar		_T("wabtool")
+#define g_szSubbar		_T("wabsub")
 
 #define ID_DISASM 	0
 #define ID_REG 		1
@@ -65,7 +65,7 @@ int gui_frame(calc_t *lpCalc);
 int gui_frame_update(calc_t *lpCalc);
 void gui_draw(calc_t *lpCalc);
 INT_PTR CALLBACK AboutDialogProc(HWND, UINT, WPARAM, LPARAM);
-char* LoadRomIntialDialog();
+TCHAR* LoadRomIntialDialog();
 #ifdef USE_DIRECTX
 #include <d3d9.h>
 extern IDirect3DDevice9 *pd3dDevice; // Direct3D Rendering Device 

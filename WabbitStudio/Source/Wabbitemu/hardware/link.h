@@ -136,6 +136,7 @@ typedef struct _TI_DATA {
 #define CListObj        0x0D
 #define UndefObj        0x0E
 #define WindowObj       0x0F
+#define BackupObj_82	0x0F
 #define ZStoObj         0x10
 #define TblRngObj       0x11
 #define LCDObj          0x12
@@ -150,7 +151,8 @@ typedef struct _TI_DATA {
 #define IDListObj		0x26
 #define EquObj_3        0x63
 
-LINK_ERR link_send_var(CPU_t*, TIFILE_t*, SEND_FLAG);
+LINK_ERR link_send_var(CPU_t *, TIFILE_t *, SEND_FLAG);
+LINK_ERR link_send_backup(CPU_t *, TIFILE_t *, SEND_FLAG);
 LINK_ERR forceload_os(CPU_t *, TIFILE_t *);
 int link_connect(CPU_t *, CPU_t *);
 int link_disconnect(CPU_t *);

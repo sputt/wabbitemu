@@ -17,6 +17,7 @@ typedef struct tagSENDINFO
 	HANDLE hThread;
 	HWND hwndDlg;
 	std::vector<std::tstring> *FileList;
+	SEND_FLAG destination;
 	
 	// Download progress
 	int iCurrentFile;
@@ -90,14 +91,14 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
 	lpCalc->running = FALSE;
 	if (fSoundBackup)
 	{
-		pausesound();
+		pausesound(lpCalc->audio);
 	}
 
 	lpsi->Error = LERR_SUCCESS;
 	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)
 	{
 		SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);	
-		lpsi->Error = SendFile(NULL, lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), SEND_CUR);
+		lpsi->Error = SendFile(NULL, lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), lpsi->destination);
 		if (lpsi->Error != LERR_SUCCESS)
 		{
 			break;
@@ -125,13 +126,13 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
 	lpCalc->running = fRunningBackup;
 	if (fSoundBackup == TRUE)
 	{
-		playsound();
+		playsound(lpCalc->audio);
 	}
 	current_file_sending = NULL;
 	return 0;
 }
 
-BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
+BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND_FLAG destination)
 {
 	if ((lpCalc == NULL) || (lpszFileName == NULL))
 	{
@@ -163,6 +164,7 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 		{
 			lpsi = g_SendInfo[lpCalc];
 		}
+		lpsi->destination = destination;
 
 		if (lpsi->hwndDlg == NULL) {
 			lpsi->hwndDlg = CreateSendFileProgress(lpCalc->hwndLCD, lpCalc);
@@ -188,7 +190,7 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync)
 		ReleaseMutex(hSendInfoMutex);
 		return TRUE;
 	} else {
-		SendFile(lpCalc->hwndLCD, lpCalc, lpszFileName, SEND_CUR);
+		SendFile(lpCalc->hwndLCD, lpCalc, lpszFileName, destination);
 		return TRUE;
 	}
 }
@@ -203,7 +205,6 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 		switch(var->type)
 		{
 		case GROUP_TYPE:
-		case BACKUP_TYPE:
 		case VAR_TYPE:
 		case FLASH_TYPE:
 			{
@@ -233,17 +234,19 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 				}
 				break;
 			}
+		case BACKUP_TYPE:
+			lpCalc->cpu.pio.link->vlink_size = var->length;
+			lpCalc->cpu.pio.link->vlink_send = 0;
+			result = link_send_backup(&lpCalc->cpu, var, (SEND_FLAG) Destination);
+			break;
 		case ROM_TYPE:
 		case SAV_TYPE:
 			{
 				FreeTiFile(var);
 				var = NULL;
-				if (rom_load(lpCalc, lpszFileName) == TRUE)
-				{
+				if (rom_load(lpCalc, lpszFileName) == TRUE) {
 					result = LERR_SUCCESS;
-				}
-				else
-				{
+				} else {
 					result = LERR_LINK;
 				}
 				SendMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
@@ -261,8 +264,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 		case BREAKPOINT_TYPE:
 			break;
 		}
-		if (var)
-		{
+		if (var) {
 			FreeTiFile(var);
 		}
 

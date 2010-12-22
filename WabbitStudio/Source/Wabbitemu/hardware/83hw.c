@@ -447,16 +447,16 @@ int memory_init_83(memc *mc) {
 
 
 	mc->flash_size = mc->flash_pages * PAGE_SIZE;
-	mc->flash = (u_char *) calloc(mc->flash_pages, PAGE_SIZE);
-	mc->flash_break = (u_char *) calloc(mc->flash_pages, PAGE_SIZE);
+	mc->flash = (unsigned char *) calloc(mc->flash_pages, PAGE_SIZE);
+	mc->flash_break = (unsigned char *) calloc(mc->flash_pages, PAGE_SIZE);
 	memset(mc->flash, 0xFF, mc->flash_size);
 	
 	mc->ram_size = mc->ram_pages * PAGE_SIZE;
-	mc->ram = (u_char *) calloc(mc->ram_pages, PAGE_SIZE);
-	mc->ram_break = (u_char *) calloc(mc->ram_pages, PAGE_SIZE);
+	mc->ram = (unsigned char *) calloc(mc->ram_pages, PAGE_SIZE);
+	mc->ram_break = (unsigned char *) calloc(mc->ram_pages, PAGE_SIZE);
 
 	if (!mc->flash || !mc->ram) {
-		printf("Couldn't allocate memory in memory_init_83\n");
+		_tprintf_s(_T("Couldn't allocate memory in memory_init_83\n"));
 		return 1;
 	}
 	mc->flash_version = 0;

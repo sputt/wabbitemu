@@ -62,7 +62,7 @@ typedef struct GIF_TREE {
 
 int gif_write_state = GIF_IDLE;
 
-char gif_file_name[512]="wabbitemu.gif";
+TCHAR gif_file_name[512] = _T("wabbitemu.gif");
 BOOL gif_autosave = FALSE;
 BOOL gif_use_increasing = FALSE;
 #ifdef HIGH_SHADE_GIF
@@ -348,7 +348,7 @@ void gif_writer() {
 			gif_header[8] = gif_ys;
 			gif_header[9] = gif_ys >> 8;
 #ifdef WINVER
-			fopen_s(&fp, gif_file_name, "wb");
+			_tfopen_s(&fp, gif_file_name, _T("wb"));
 #else
 			fp = fopen(gif_file_name, "wb");
 #endif
