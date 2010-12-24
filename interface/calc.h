@@ -95,8 +95,8 @@ typedef struct tagCALC {
 	BOOL bCustomSkin;
 	BOOL bAlwaysOnTop;
 	BOOL bAlphaBlendLCD;
-	TCHAR skin_path[256];
-	TCHAR keymap_path[256];
+	WCHAR skin_path[256];
+	WCHAR keymap_path[256];
 	IWabbitemu *pWabbitemu;
 	ICalcNotify *pCalcNotify;
 #endif

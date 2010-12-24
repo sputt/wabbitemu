@@ -3,6 +3,7 @@
 #include "gui.h"
 #include "calc.h"
 #include "gif.h"
+#include "registry.h"
 
 static HKEY hkeyTarget;
 
@@ -14,7 +15,7 @@ static struct {
 	{_T("cutout"), 			REG_DWORD, 	FALSE},
 	{_T("skin"),			REG_DWORD,	FALSE},
 	{_T("alphablend_lcd"),	REG_DWORD,	TRUE},
-	{_T("version"), 		REG_SZ, 	(LONG_PTR) _T("1.5")},
+	{_T("version"), 		REG_SZ, 	(LONG_PTR) _T("1.5.12.24")},
 	{_T("rom_path"), 		REG_SZ, 	(LONG_PTR) _T("z.rom")},
 	{_T("shades"),			REG_DWORD,	6},
 	{_T("gif_path"), 		REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},
@@ -31,6 +32,9 @@ static struct {
 	{_T("sync_cores"),		REG_DWORD,  FALSE},
 	{_T("num_keys"),		REG_DWORD,  5},
 	{_T("always_on_top"),	REG_DWORD,  FALSE},
+	{_T("custom_skin"),	REG_DWORD,  FALSE},
+	{_T("skin_path"), 		REG_SZ, 	(LONG_PTR) _T("TI-83P.png")},
+	{_T("keymap_path"), 	REG_SZ, 	(LONG_PTR) _T("TI-83PKeymap.png")},
 	{NULL,					0,			0},
 };
 
@@ -102,7 +106,7 @@ INT_PTR QueryWabbitKey(LPCTSTR lpszName) {
 			}
 			else
 			{
-#ifdef UNICODE
+#ifdef _UNICODE
 				StringCbCopy(result.szResult, sizeof(result.szResult), (LPWSTR) regDefaults[i].Value);
 #else
 				WideCharToMultiByte(CP_ACP, 0, (LPWSTR) regDefaults[i].Value, -1, result.szResult, sizeof(result.szResult), NULL, NULL);
@@ -134,6 +138,17 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 		LoadRegistryDefaults(hkeyWabbit);
 	
 	StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), (TCHAR *) QueryWabbitKey(_T("rom_path")));
+#ifdef _UNICODE
+	StringCbCopyW(lpCalc->skin_path, sizeof(lpCalc->skin_path), (WCHAR *) QueryWabbitKey(_T("skin_path")));
+	StringCbCopyW(lpCalc->keymap_path, sizeof(lpCalc->keymap_path), (WCHAR *) QueryWabbitKey(_T("keymap_path")));
+#else
+	char *temp = (char *) QueryWabbitKey(_T("skin_path"));
+	CA2W skinPath(temp);
+	StringCbCopyW(lpCalc->skin_path, sizeof(lpCalc->skin_path), skinPath);
+	temp = (char *) QueryWabbitKey(_T("keymap_path"));
+	CA2W keyPath(temp);
+	StringCbCopyW(lpCalc->keymap_path, sizeof(lpCalc->keymap_path), keyPath);
+#endif
 	lpCalc->SkinEnabled = (BOOL) QueryWabbitKey(_T("skin"));
 	lpCalc->bCutout = (BOOL) QueryWabbitKey(_T("cutout"));
 	lpCalc->bAlphaBlendLCD = (BOOL) QueryWabbitKey(_T("alphablend_lcd"));
@@ -156,11 +171,6 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 		DestroyAcceleratorTable(haccelmain);
 		haccelmain = CreateAcceleratorTable(buf, num_entries);
 	}*/
-	/*
-	 * 		{"gif_path", 	REG_SZ,		"wabbitemu.gif"},
-		{"gif_autosave",REG_DWORD,	0},
-		{"gif_useinc",	REG_DWORD,	0},
-		*/
 	
 	StringCbCopy(gif_file_name, sizeof(gif_file_name), (TCHAR *) QueryWabbitKey(_T("gif_path")));
 	gif_autosave = (BOOL) QueryWabbitKey(_T("gif_autosave"));
@@ -173,17 +183,29 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	return S_OK;
 }
 
-void SaveWabbitKey(TCHAR *name, int type, void *value) {
+
+void SaveWabbitKeyA(char *name, int type, void *value) {
 	size_t len;
 
 	if (type == REG_DWORD) {
 		len = sizeof(DWORD);
 	} else if (type == REG_SZ) {
-		StringCbLength((TCHAR *) value, MAX_PATH, &len);
+		StringCbLengthA((char *) value, MAX_PATH, &len);
 	}
 	
-	RegSetValueEx(hkeyTarget, name, 0, type, (LPBYTE) value, len);
+	RegSetValueExA(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
+}
+
+void SaveWabbitKeyW(WCHAR *name, int type, void *value) {
+	size_t len;
+
+	if (type == REG_DWORD) {
+		len = sizeof(DWORD);
+	} else if (type == REG_SZ) {
+		StringCbLengthW((WCHAR *) value, MAX_PATH, &len);
+	}
 	
+	RegSetValueExW(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
 }
 
 
@@ -211,8 +233,8 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 
 		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpCalc->FaceplateColor);
 		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);
-		SaveWabbitKey(_T("skin_path"), REG_SZ, &lpCalc->skin_path);
-		SaveWabbitKey(_T("keymap_path"), REG_SZ, &lpCalc->keymap_path);
+		SaveWabbitKeyW(L"skin_path", REG_SZ, &lpCalc->skin_path);
+		SaveWabbitKeyW(L"keymap_path", REG_SZ, &lpCalc->keymap_path);
 		/*ACCEL buf[256];
 		DWORD dwCount = sizeof(buf);
 		DWORD dwType = NULL;

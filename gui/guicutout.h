@@ -1,7 +1,7 @@
 #ifndef GUI_CUTOUT_H_
 #define GUI_CUTOUT_H_
 
-int EnableCutout(HWND, HBITMAP);
+int EnableCutout(LPCALC, HBITMAP);
 int DisableCutout(HWND);
 void PositionLittleButtons(HWND);
 

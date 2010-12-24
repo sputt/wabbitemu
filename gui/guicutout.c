@@ -130,13 +130,24 @@ void PositionLittleButtons(HWND hwnd)
 typedef HRESULT (WINAPI *SetThemeFunc)(HWND, LPCWSTR, LPCWSTR);
 typedef HRESULT (WINAPI *DwmSetAttrib)(HWND, DWORD, LPCVOID, DWORD);
 
+static LRESULT CALLBACK TestButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+	switch(uMsg) {
+		case WM_CREATE:
+
+			return FALSE;
+		case WM_PAINT:
+
+			return FALSE;
+	}
+	return DefWindowProc(hwnd, uMsg, wParam, lParam);
+}
+
 /* Using a preset list of points, cut around the edges to make the
  * frame window transparent.  Also create buttons to allow minimize
  * and close while in skin mode
  */
-int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
-	if (hwndFrame == NULL) return 1;
-	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwndFrame, GWLP_USERDATA);
+int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
+	if (lpCalc == NULL) return 1;
 	if (lpCalc->SkinEnabled == FALSE)
 		return 1;
 
@@ -163,15 +174,17 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 			_T("Wabbitemu"),
 			WS_VISIBLE,
 			0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
-			hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
+			lpCalc->hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
 
 	SetWindowTheme(lpCalc->hwndLCD, (LPCWSTR) _T(" "), (LPCWSTR) _T(" "));
 	HDC hScreen = GetDC(NULL);
+	
 
 	if (lpCalc->model == TI_84PSE) {
 			BITMAPINFOHEADER bih;
+			ZeroMemory(&bih, sizeof(BITMAPINFOHEADER));
 			bih.biSize = sizeof(BITMAPINFOHEADER);
-			bih.biWidth = width;
+			/*bih.biWidth = width;
 			bih.biHeight = height;
 			bih.biPlanes = 1;
 			bih.biBitCount = 32;
@@ -180,18 +193,23 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 			bih.biXPelsPerMeter = 0;
 			bih.biYPelsPerMeter = 0;
 			bih.biClrUsed = 0;
-			bih.biClrImportant = 0;
-			DWORD dwBmpSize = ((width * bih.biBitCount + 31) / 32) * 4 * height;
-			BITMAPINFO bi;
-			bi.bmiHeader = bih;
-			BYTE *bitmap = (BYTE*) malloc(dwBmpSize);
-		
+			bih.biClrImportant = 0;*/
+			LPBITMAPINFO bi = (LPBITMAPINFO) malloc(sizeof(BITMAPINFOHEADER) + sizeof(DWORD) * 3);
+			bi->bmiHeader = bih;
 			// Gets the "bits" from the bitmap and copies them into a buffer
 			// which is pointed to by lpbitmap.
-			GetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
+			int error = GetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
+				height,
+				NULL,
+				bi, DIB_RGB_COLORS);
+			DWORD dwBmpSize = ((width * bi->bmiHeader.biBitCount + 31) / 32) * 4 * height;
+			LPBYTE bitmap = (LPBYTE) malloc(dwBmpSize);
+
+		
+			error = GetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
 				height,
 				bitmap,
-				&bi, DIB_RGB_COLORS);
+				bi, DIB_RGB_COLORS);
 
 			//this really sucked to figure out, but basically you can't fuck with
 			//the alpha channel in a bitmap unless you use GetDIBits to get it
@@ -202,8 +220,12 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 			unsigned int x, y;
 			for(y = 0; y < height; y++) {
 				for(x = 0; x < width; x++) {
-					if (PtInRegion(rgn, x, height - y))
+					if (PtInRegion(rgn, x, height - y)) {
+						//pPixel[0] = 0x00;
+						//pPixel[1] = 0x00;
+						//pPixel[2] = 0x00;
 						pPixel[3] = 0xFF;
+					}
 					pPixel+=4;
 				}
 			}
@@ -211,13 +233,16 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 			SetDIBitsToDevice(lpCalc->hdcSkin, 0, 0, width, height, 0, 0, 0,
 					height,
 					bitmap,
-					&bi, DIB_RGB_COLORS);
-			//SelectObject(lpCalc->hdcSkin, hbmSkin);
+					bi, DIB_RGB_COLORS);
+			/*HBITMAP testBitmap = CreateCompatibleBitmap(lpCalc->hdcSkin, width, height);
+			error = SetDIBits(lpCalc->hdcSkin, testBitmap, 0, height, bitmap, bi, DIB_RGB_COLORS);
+			SelectObject(lpCalc->hdcSkin, testBitmap);*/
 			free(bitmap);
+			free(bi);
 	}
 
 	RECT rc;
-	GetClientRect(hwndFrame, &rc);
+	GetClientRect(lpCalc->hwndFrame, &rc);
 	POINT rectTopLeft;
 	rectTopLeft.x = rc.left;
 	rectTopLeft.y = rc.top;
@@ -232,22 +257,21 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 	SIZE size;
 	size.cx = width;
 	size.cy = height;
-	SetBkColor(lpCalc->hdcSkin, 0xFF0000);
 
-	SetWindowLongPtr(hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
-	SetWindowLongPtr(hwndFrame, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+	SetWindowLongPtr(lpCalc->hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
+	SetWindowLongPtr(lpCalc->hwndFrame, GWL_STYLE, WS_VISIBLE | WS_POPUP);
 
-	int done = UpdateLayeredWindow(hwndFrame, hScreen, NULL, &size, lpCalc->hdcSkin, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
-	int error;
+	int done = UpdateLayeredWindow(lpCalc->hwndFrame, hScreen, NULL, &size, lpCalc->hdcSkin, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
+	DWORD error;
 	if (!done)
 		error = GetLastError();
 
 	ReleaseDC(0, hScreen);
 	UpdateWindow(lpCalc->hwndLCD);
-	SendMessage(hwndFrame, WM_MOVE, 0, 0);
+	SendMessage(lpCalc->hwndFrame, WM_MOVE, 0, 0);
 
 	// If there's a menu bar, include its height in the skin offset
-	HMENU hmenu = GetMenu(hwndFrame);
+	HMENU hmenu = GetMenu(lpCalc->hwndFrame);
 	int cyMenu;
 	if (hmenu == NULL) {
 		cyMenu = 0;
@@ -269,7 +293,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 		WS_VISIBLE, // | BS_OWNERDRAW,
 		270, 19,
 		13, 13,
-		hwndFrame,
+		lpCalc->hwndFrame,
 		(HMENU) NULL,
 		g_hInst,
 		(LPVOID) lpCalc);
@@ -283,7 +307,7 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 		WS_VISIBLE, // | BS_OWNERDRAW,
 		254, 19,
 		13, 13,
-		hwndFrame,
+		lpCalc->hwndFrame,
 		(HMENU) NULL,
 		g_hInst,
 		(LPVOID) lpCalc);
@@ -292,15 +316,15 @@ int EnableCutout(HWND hwndFrame, HBITMAP hbmSkin) {
 
 	if (!lpCalc->SkinEnabled) {
 		RECT wr;
-		GetWindowRect(hwndFrame, &wr);
-		SetWindowPos(hwndFrame, NULL,
+		GetWindowRect(lpCalc->hwndFrame, &wr);
+		SetWindowPos(lpCalc->hwndFrame, NULL,
 				wr.left - GetSystemMetrics(SM_CXFIXEDFRAME) - 8,
 				wr.top - (cyMenu + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME)),
 				0, 0,
 				SWP_NOZORDER|SWP_NOSIZE);
 	}
 
-	InvalidateRect(hwndFrame, NULL, TRUE);
+	InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);
 	return 0;
 }
 
