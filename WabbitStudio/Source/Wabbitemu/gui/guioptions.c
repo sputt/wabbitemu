@@ -12,6 +12,7 @@
 #include "guicutout.h"
 #include "keys.h"
 #include "registry.h"
+#include "fileutilities.h"
 
 
 extern HINSTANCE g_hInst;
@@ -502,8 +503,18 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 			SkinOptionsToggleCustomSkin(hwndDlg, CustomSkinSetting);
 			Button_SetCheck(chkCutout, lpCalc->bCutout);
 			Button_SetCheck(chkAlphaBlend, lpCalc->bAlphaBlendLCD);
+			Button_SetCheck(chkCustom, lpCalc->bCustomSkin);
 			SendMessage(hColorSelect, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) LoadBitmap(g_hInst, _T("SkinPicker")));
 			backupFaceplate = lpCalc->FaceplateColor;
+#ifndef _UNICODE
+			CW2A skinPath(lpCalc->skin_path);
+			CW2A keyPath(lpCalc->keymap_path);
+			Edit_SetText(hSkinText, skinPath);
+			Edit_SetText(hKeyText, keyPath);
+#else
+			Edit_SetText(hSkinText, lpCalc->skin_path);
+			Edit_SetText(hKeyText, lpCalc->keymap_path);
+#endif
 			return 0;
 		}
 		case WM_COMMAND: {
@@ -513,10 +524,21 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 					return TRUE;
 				case BN_CLICKED:
 					switch (LOWORD(wParam)) {
-						case IDC_BROWSESKIN:
+						case IDC_BROWSESKIN: {
+							TCHAR lpStrFile[MAX_PATH];
+							if (!BrowseFile(lpStrFile, _T("Image Files (*.bmp;*.jpg;*.png;*.tiff)\0*.bmp;*.jpg;*.png;*.tiff\0	All Files (*.*)\0*.*\0\0"),
+								_T("Browse for custom skin"), _T("png"))) {
+									Edit_SetText(hSkinText, lpStrFile);
+							}
+							break;
+						}
 						case IDC_BROWSEKEY: {
-							//char lpstrFile[MAX_PATH];
-							//BrowseBMPFile(&lpstrFile);
+							TCHAR lpStrFile[MAX_PATH];
+							if (!BrowseFile(lpStrFile, _T("Image Files (*.bmp;*.jpg;*.png;*.tiff)\0*.bmp;*.jpg;*.png;*.tiff\0	All Files (*.*)\0*.*\0\0"),
+								_T("Browse for custom keymap"), _T("png"))) {
+									Edit_SetText(hKeyText, lpStrFile);
+							}
+							break;
 						}
 						case IDC_CHKALPHABLEND:
 						case IDC_CHKCUTOUT:
@@ -550,23 +572,38 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 		}
 		case WM_NOTIFY: {
     		switch (((NMHDR FAR *) lParam)->code) {
+				case PSN_RESET: {
+					lpCalc->FaceplateColor = backupFaceplate;
+					gui_frame_update(lpCalc);
+				}
 				case PSN_APPLY: {
-					BOOL chkState = Button_GetCheck(chkCutout) & 0x0003 ? TRUE : FALSE;
+					lpCalc->bCutout = Button_GetCheck(chkCutout);
+					lpCalc->bAlphaBlendLCD = Button_GetCheck(chkAlphaBlend);
+					lpCalc->bCustomSkin = Button_GetCheck(chkCustom);
 
-					if (chkState != lpCalc->bCutout) {
-						lpCalc->bCutout = chkState;
-						gui_frame_update(lpCalc);
-					}
-					chkState = Button_GetCheck(chkAlphaBlend);
-					if (chkState != lpCalc->bAlphaBlendLCD)
-						lpCalc->bAlphaBlendLCD = chkState;
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
 					backupFaceplate = lpCalc->FaceplateColor;
+
+					TCHAR lpStrFile[MAX_PATH];
+					Edit_GetText(hSkinText, lpStrFile, sizeof(lpStrFile));
+#ifndef _UNICODE
+					CA2W lpWStrFile(lpStrFile);
+					StringCbCopyW(lpCalc->skin_path, sizeof(lpCalc->skin_path), lpWStrFile);
+#else
+					StringCbCopy(lpCalc->skin_path, sizeof(lpCalc->skin_path), lpStrFile);
+#endif
+					Edit_GetText(hKeyText, lpStrFile, sizeof(lpStrFile));
+#ifndef _UNICODE
+					CA2W lpWStrFile2(lpStrFile);
+					StringCbCopyW(lpCalc->keymap_path, sizeof(lpCalc->skin_path), lpWStrFile2);
+#else
+					StringCbCopy(lpCalc->keymap_path, sizeof(lpCalc->skin_path), lpStrFile);
+#endif
+					gui_frame_update(lpCalc);
 					return TRUE;
 				}
 				case PSN_KILLACTIVE:
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, FALSE);
-					lpCalc->FaceplateColor = backupFaceplate;
 					return TRUE;
 			}
 			return TRUE;

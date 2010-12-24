@@ -231,7 +231,7 @@ int gui_frame(calc_t *lpCalc) {
 }
 
 #ifdef USE_GDIPLUS
-int gui_frame_update(calc_t *lpCalc) {
+int gui_frame_update(LPCALC lpCalc) {
 	int skinWidth = 0, skinHeight = 0, keymapWidth = -1, keymapHeight = -1;
 	HDC hdc = GetDC(lpCalc->hwndFrame);
 	if (lpCalc->hdcKeymap)
@@ -244,45 +244,58 @@ int gui_frame_update(calc_t *lpCalc) {
 	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
 	lpCalc->hdcButtons = CreateCompatibleDC(hdc);
 	//load skin and keymap
-	CGdiPlusBitmapResource hbmSkin(CalcModelTxt[lpCalc->model],_T("PNG"), g_hInst);
-	CGdiPlusBitmapResource hbmKeymap;
-	switch(lpCalc->model)
-	{
-		case TI_73:
-		case TI_83P:
-		case TI_83PSE:
-			hbmKeymap.Load(_T("TI-83+Keymap"), _T("PNG"), g_hInst);
-			break;
-		case TI_82:
-			hbmKeymap.Load(_T("TI-82Keymap"), _T("PNG"), g_hInst);
-			break;
-		case TI_83:
-			hbmKeymap.Load(_T("TI-83Keymap"), _T("PNG"), g_hInst);
-			break;
-		case TI_84P:
-		case TI_84PSE:
-			hbmKeymap.Load(_T("TI-84+SEKeymap"), _T("PNG"), g_hInst);
-			break;
-		case TI_85:
-			hbmKeymap.Load(_T("TI-85Keymap"), _T("PNG"), g_hInst);
-			break;
-		case TI_86:
-			hbmKeymap.Load(_T("TI-86Keymap"), _T("PNG"), g_hInst);
-		default:
-			break;
+	CGdiPlusBitmapResource hbmSkin, hbmKeymap;
+	Bitmap *m_pBitmapSkin = NULL, *m_pBitmapKeymap = NULL;
+	if (lpCalc->bCustomSkin) {
+		m_pBitmapSkin = new Bitmap(lpCalc->skin_path);
+		m_pBitmapKeymap = new Bitmap(lpCalc->keymap_path);
+	}
+	if (!m_pBitmapSkin || m_pBitmapSkin->GetWidth() == 0 || m_pBitmapKeymap->GetWidth() == 0) {
+		if (lpCalc->bCustomSkin) {
+			MessageBox(NULL, _T("Custom skin failed to load."), _T("Error"),  MB_OK);
+			delete m_pBitmapKeymap;
+			delete m_pBitmapSkin;
+		}
+		hbmSkin.Load(CalcModelTxt[lpCalc->model], _T("PNG"), g_hInst);
+		switch(lpCalc->model) {
+			case TI_73:
+			case TI_83P:
+			case TI_83PSE:
+				hbmKeymap.Load(_T("TI-83+Keymap"), _T("PNG"), g_hInst);
+				break;
+			case TI_82:
+				hbmKeymap.Load(_T("TI-82Keymap"), _T("PNG"), g_hInst);
+				break;
+			case TI_83:
+				hbmKeymap.Load(_T("TI-83Keymap"), _T("PNG"), g_hInst);
+				break;
+			case TI_84P:
+			case TI_84PSE:
+				hbmKeymap.Load(_T("TI-84+SEKeymap"), _T("PNG"), g_hInst);
+				break;
+			case TI_85:
+				hbmKeymap.Load(_T("TI-85Keymap"), _T("PNG"), g_hInst);
+				break;
+			case TI_86:
+				hbmKeymap.Load(_T("TI-86Keymap"), _T("PNG"), g_hInst);
+			default:
+				break;
+		}
+		m_pBitmapSkin = hbmSkin.m_pBitmap;
+		m_pBitmapKeymap = hbmKeymap.m_pBitmap;
 	}
 
-	if (hbmSkin) {
-		skinWidth = hbmSkin.m_pBitmap->GetWidth();
-		skinHeight = hbmSkin.m_pBitmap->GetHeight();
+	if (m_pBitmapSkin) {
+		skinWidth = m_pBitmapSkin->GetWidth();
+		skinHeight = m_pBitmapSkin->GetHeight();
 	}
-	if (hbmKeymap) {
-		keymapWidth = hbmKeymap.m_pBitmap->GetWidth();
-		keymapHeight = hbmKeymap.m_pBitmap->GetHeight();
+	if (m_pBitmapKeymap) {
+		keymapWidth = m_pBitmapKeymap->GetWidth();
+		keymapHeight = m_pBitmapKeymap->GetHeight();
 	}
 	int x, y, foundX = 0, foundY = 0;
 	bool foundScreen = FALSE;
-	if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight)) {
+	if (((skinWidth != keymapWidth) || (skinHeight != keymapHeight)) && skinHeight > 0 && skinWidth > 0) {
 		lpCalc->SkinEnabled = false;
 		MessageBox(NULL, _T("Skin and Keymap are not the same size"), _T("Error"),  MB_OK);
 	} else {
@@ -291,7 +304,7 @@ int gui_frame_update(calc_t *lpCalc) {
 		Color pixel;
 		for(y = 0; y < skinHeight && foundScreen == false; y++) {
 			for (x = 0; x < skinWidth && foundScreen == false; x++) {
-				hbmKeymap.m_pBitmap->GetPixel(x, y, &pixel);
+				m_pBitmapKeymap->GetPixel(x, y, &pixel);
 				if (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0)	{
 					//81 92
 					foundX = x;
@@ -304,12 +317,12 @@ int gui_frame_update(calc_t *lpCalc) {
 		lpCalc->rectLCD.top = foundY;
 		do {
 			foundX++;
-			hbmKeymap.m_pBitmap->GetPixel(foundX, foundY, &pixel);
+			m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
 		} while (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0);
 		lpCalc->rectLCD.right = foundX--;
 		do { 
 			foundY++;
-			hbmKeymap.m_pBitmap->GetPixel(foundX, foundY, &pixel);
+			m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
 		} while (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0);
 		lpCalc->rectLCD.bottom = foundY;
 	}
@@ -391,10 +404,10 @@ int gui_frame_update(calc_t *lpCalc) {
 	return 0;*/
 	HBITMAP hbmSkinOld, hbmKeymapOld;
 	//translate to regular gdi compatibility to simplify coding :/
-	hbmKeymap.m_pBitmap->GetHBITMAP(Color::White, &hbmKeymapOld);
+	m_pBitmapKeymap->GetHBITMAP(Color::White, &hbmKeymapOld);
 	SelectObject(lpCalc->hdcKeymap, hbmKeymapOld);
 	//get the HBITMAP for the skin DONT change the first value, it is necessary for transparency to work
-	hbmSkin.m_pBitmap->GetHBITMAP(Color::AlphaMask, &hbmSkinOld);
+	m_pBitmapSkin->GetHBITMAP(Color::AlphaMask, &hbmSkinOld);
 	//84+SE has custom faceplates :D, draw it to the background
 	//thanks MSDN your documentation rules :))))
 	HDC hdcOverlay = CreateCompatibleDC(lpCalc->hdcSkin);
@@ -418,7 +431,7 @@ int gui_frame_update(calc_t *lpCalc) {
 		lpCalc->rectSkin.left, lpCalc->rectSkin.top, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, bf);
 	BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
 	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
-		if (EnableCutout(lpCalc->hwndFrame, hbmSkinOld) != 0)
+		if (EnableCutout(lpCalc, hbmSkinOld) != 0)
 			MessageBox(NULL, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
 	}
 	if (lpCalc->hwndStatusBar != NULL)
@@ -430,6 +443,10 @@ int gui_frame_update(calc_t *lpCalc) {
 	else
 		SetWindowPos(lpCalc->hwndFrame, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 
+	if (lpCalc->bCustomSkin) {
+		delete m_pBitmapKeymap;
+		delete m_pBitmapSkin;
+	}
 	DeleteObject(hbmKeymapOld);
 	DeleteObject(hbmSkinOld);
 	DeleteObject(blankBitmap);
