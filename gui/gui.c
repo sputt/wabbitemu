@@ -73,22 +73,19 @@ LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 
 void gui_draw(calc_t *lpCalc)
 {
-	if (lpCalc->hwndLCD != NULL)
-	{
+	if (lpCalc->hwndLCD != NULL) {
 		InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
 	}
 
-	if (lpCalc->gif_disp_state != GDS_IDLE)
-	{
+	if (lpCalc->gif_disp_state != GDS_IDLE) {
 		static int skip = 0;
-		if (skip == 0)
-		{
+		if (skip == 0) {
 			gif_anim_advance = TRUE;
-			if (lpCalc->hwndFrame != NULL)
-			{
+			if (lpCalc->hwndFrame != NULL) {
 				InvalidateRect(lpCalc->hwndFrame, NULL, FALSE);
 			}
 		}
+		
 		skip = (skip + 1) % 4;
 	}
 }
@@ -172,7 +169,7 @@ int gui_debug(LPCALC lpCalc) {
         _T("Debugger"),
 		flags | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
         pos.left, pos.top, pos.right, pos.bottom,
-        0, 0, g_hInst, NULL);
+        0, 0, g_hInst, (LPVOID) lpCalc);
 	if (set_place)
 		SetWindowPlacement(hdebug, &db_placement);
 
@@ -846,12 +843,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			TCHAR* string = LoadRomIntialDialog();
 			if (string) {
 				lpCalc = calc_slot_new();
-				if (rom_load(lpCalc, string) == TRUE)
-				{
+				if (rom_load(lpCalc, string) == TRUE) {
 					gui_frame(lpCalc);
-				}
-				else
-				{
+				} else {
 					return EXIT_FAILURE;
 				}
 			} else return EXIT_FAILURE;
@@ -1048,7 +1042,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 				int grayred = (int) (((double) GIFGRADWIDTH / GIFGRAD_PEAK) * 50);
 				HDC hWindow = GetDC(hwnd);
-				DrawGlow(hWindow, &screen, RGB(127-grayred, 127-grayred, 127+grayred), GIFGRADWIDTH);				
+				DrawGlow(lpCalc->hdcSkin, hWindow, &screen, RGB(127-grayred, 127-grayred, 127+grayred), GIFGRADWIDTH, lpCalc->SkinEnabled);				
 				ReleaseDC(hwnd, hWindow);
 				InflateRect(&screen, GIFGRADWIDTH, GIFGRADWIDTH);
 				ValidateRect(hwnd, &screen);
@@ -1070,14 +1064,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			return 0;
 		}
-		case WM_COMMAND:
-		{
+		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
-				case IDM_FILE_NEW:
-					{
+				case IDM_FILE_NEW: {
 						LPCALC lpCalcNew = calc_slot_new();
-						if (rom_load(lpCalcNew, lpCalc->rom_path) == TRUE)
-						{
+						if (rom_load(lpCalcNew, lpCalc->rom_path) == TRUE) {
 							lpCalcNew->SkinEnabled = lpCalc->SkinEnabled;
 							lpCalcNew->bCutout = lpCalc->bCutout;
 							lpCalcNew->Scale = lpCalc->Scale;
@@ -1085,37 +1076,40 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							lpCalcNew->bAlphaBlendLCD = lpCalc->bAlphaBlendLCD;
 							calc_turn_on(lpCalcNew);
 							gui_frame(lpCalcNew);
-						}
-						else
-						{
+						} else {
 							calc_slot_free(lpCalcNew);
 						}
 						break;
+				}
+				case IDM_FILE_OPEN: {
+					GetOpenSendFileName(hwnd, 0);
+					break;
+				}
+				case IDM_FILE_SAVE: {
+					SaveStateDialog(hwnd, lpCalc);
+					break;
+				}
+				case IDM_FILE_GIF: {
+					HMENU hmenu = GetMenu(hwnd);
+					if (gif_write_state == GIF_IDLE) {
+						TCHAR buf[MAX_PATH];
+						BOOL start_screenshot = get_gif_filename(buf);
+						if (!start_screenshot) 
+							break;
+						gif_write_state = GIF_START;
+						for (int i = 0; i < MAX_CALCS; i++)
+							if (calcs[i].active)
+								calcs[i].gif_disp_state = GDS_STARTING;
+						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_CHECKED);
+					} else {
+						gif_write_state = GIF_END;
+						for (int i = 0; i < MAX_CALCS; i++)
+							if (calcs[i].active)
+								calcs[i].gif_disp_state = GDS_ENDING;
+						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
 					}
-				case IDM_FILE_OPEN:
-					{
-						GetOpenSendFileName(hwnd, 0);
-						break;
-					}
-				case IDM_FILE_SAVE:
-					{
-						SaveStateDialog(hwnd, lpCalc);
-						break;
-					}
-				case IDM_FILE_GIF:
-					{
-						HMENU hmenu = GetMenu(hwnd);
-						if (gif_write_state == GIF_IDLE) {
-							gif_write_state = GIF_START;
-							lpCalc->gif_disp_state = GDS_STARTING;
-							CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_CHECKED);
-						} else {
-							gif_write_state = GIF_END;
-							lpCalc->gif_disp_state = GDS_ENDING;
-							CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
-						}
-						break;
-					}
+					break;
+				}
 				case IDM_FILE_CLOSE:
 					return SendMessage(hwnd, WM_CLOSE, 0, 0);
 				case IDM_FILE_EXIT:
@@ -1260,7 +1254,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_SPEED_SET: {
 					HMENU hmenu = GetMenu(hwnd);
 					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_SET, MF_BYCOMMAND | MF_CHECKED);
-					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC) SetSpeedProc);
+					DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC) SetSpeedProc, (LPARAM) lpCalc);
 					SetFocus(hwnd);
 					break;
 				}

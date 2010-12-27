@@ -30,7 +30,7 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 					
 					if (result[0] != '$') {
 						label_struct *label;
-						label = lookup_label(result);
+						label = lookup_label(lpDebuggerCalc, result);
 #ifdef WINVER
 						if (label == NULL) _stscanf_s(result, _T("%x"), &goto_addr);
 #else

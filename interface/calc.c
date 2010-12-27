@@ -14,6 +14,7 @@
 #ifdef _WINDOWS
 #include "CCalcAddress.h"
 #include "CPage.h"
+#include "gifhandle.h"
 #endif
 
 /*
@@ -437,6 +438,7 @@ int calc_run_frame(LPCALC lpCalc) {
 			if (tc_elapsed((&lpCalc->timer_c)) - cpu_sync > (lpCalc->speed / FPS)) return 0;
 		}
 	}
+
 	return 0;
 }
 
@@ -496,7 +498,7 @@ int calc_run_all(void)
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active == TRUE) {
-				int time = ((long long)calcs[j].speed*calcs[j].timer_c.freq/FPS/100)/FRAME_SUBDIVISIONS/2;
+				int time = ((long long) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS / 2;
 				calc_run_tstates(&calcs[j], time);
 				frame_counter += time;
 #ifdef WITH_BACKUPS
@@ -516,6 +518,11 @@ int calc_run_all(void)
 				}
 #endif
 			}
+		}
+		//this code handles screenshotting if were actually taking screenshots right now
+		if ((tc_elapsed(calcs[0].cpu.timer_c) - calcs[0].cpu.pio.lcd->lastgifframe) >= 0.01) {
+			handle_screenshot();
+			calcs[0].cpu.pio.lcd->lastgifframe += 0.01;
 		}
 	}
 

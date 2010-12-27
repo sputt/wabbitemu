@@ -26,7 +26,8 @@ STDMETHODIMP CLabelServer::Find(VARIANT varCriteria, ILabel **ppLabel)
 #else
 		TCHAR szLabelName[256];
 		WideCharToMultiByte(CP_ACP, 0, V_BSTR(&varCriteria), -1, szLabelName, sizeof(szLabelName), NULL, NULL);
-		label_struct *lab = lookup_label(szLabelName);
+		//HACK: fix somehow
+		label_struct *lab = lookup_label(&calcs[0], szLabelName);
 #endif
 		if (lab == NULL)
 		{

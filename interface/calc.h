@@ -150,13 +150,14 @@ void calc_erase_certificate(unsigned char *, int);
 #endif
 
 GLOBAL calc_t calcs[MAX_CALCS];
-GLOBAL int gslot;
-GLOBAL int ScreenshotSlot;
-GLOBAL int DebuggerSlot;
+//GLOBAL int gslot;
+//GLOBAL int ScreenshotSlot;
+//GLOBAL int DebuggerSlot;
+GLOBAL LPCALC lpDebuggerCalc;
 
 #ifdef WITH_BACKUPS
 #define MAX_BACKUPS 10
-GLOBAL debugger_backup* backups[MAX_CALCS];
+GLOBAL debugger_backup * backups[MAX_CALCS];
 GLOBAL int number_backup;
 GLOBAL int current_backup_index;
 #endif

@@ -126,18 +126,18 @@ void DoPropertySheet(HWND hwndOwner) {
 static HWND imgDisplayPreview;
 static double displayFPS = 48.0f;
 
-DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
+DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 	CPU_t *cpu = (CPU_t *) lpParam;
 	double Time = 0.0f;
 	int i;
 	clock_t last_time = (clock_t) (clock() - (1000 / displayFPS));
 	clock_t difference = 0;
 	for (;;) {
-		if (cpu->pio.lcd != calcs[gslot].cpu.pio.lcd) {
+		if (cpu->pio.lcd != lpCalc->cpu.pio.lcd) {
 			u_char *buffer = NULL;
 			switch (cpu->imode) {
-			case 0: buffer = displayoptionstest_draw_bounce(4,displayFPS,Time); break;
-			case 1: buffer = displayoptionstest_draw_scroll(4,displayFPS,Time); break;
+			case 0: buffer = displayoptionstest_draw_bounce(4, displayFPS, Time); break;
+			case 1: buffer = displayoptionstest_draw_scroll(4, displayFPS, Time); break;
 			case 2: buffer = displayoptionstest_draw_gradient((int) (displayFPS / 10.0f), displayFPS, Time);
 			}
 			fastcopy(buffer, cpu);
@@ -148,7 +148,6 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 		HDC hdc = GetDC(imgDisplayPreview);
 		if (hdc == NULL) continue;
 
-
 		StretchDIBits(hdc, 0, 0, 192, 128,
 			0, 0, 96, 64,
 			LCD_image(cpu->pio.lcd),
@@ -158,11 +157,11 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 
 		ReleaseDC(imgDisplayPreview, hdc);
 
-		for(i=0;i<16;i++) {
+		for(i = 0; i < 16; i++) {
 			if (cpu->imode == 2) {
-				tc_add(cpu->timer_c,((MHZ_6/70.0f)-(67*768))/16);
+				tc_add(cpu->timer_c, ((MHZ_6 / 70.0f)-(67 * 768)) / 16);
 			} else {
-				tc_add(cpu->timer_c,((MHZ_6/displayFPS)-(67*768))/16);
+				tc_add(cpu->timer_c, ((MHZ_6 / displayFPS)-(67 * 768)) / 16);
 			}
 
 			cpu->output = FALSE;
@@ -170,8 +169,8 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 		}
 
 		clock_t this_time = clock();
-		clock_t displayTPF = (clock_t) (1000/displayFPS);
-		if (cpu->imode == 2) displayTPF = (clock_t) (1000/70.0f);
+		clock_t displayTPF = (clock_t) (1000 / displayFPS);
+		if (cpu->imode == 2) displayTPF = (clock_t) (1000 / 70.0f);
 		// where we should be minus where we are
 		difference += ((last_time + displayTPF) - this_time);
 		last_time = this_time;
@@ -188,8 +187,8 @@ DWORD WINAPI ThreadDisplayPreview( LPVOID lpParam ) {
 
 
 LCD_t *DupLCDConfig(LCD_t *lcd_dest, const LCD_t *lcd_source) {
-	if (lcd_dest == NULL || lcd_source == NULL) return lcd_dest;
-	if (lcd_dest == lcd_source) return lcd_dest;
+	if (lcd_dest == NULL || lcd_source == NULL || lcd_dest == lcd_source)
+		return lcd_dest;
 
 	lcd_dest->time = lcd_source->time;
 	lcd_dest->write_last = lcd_source->write_last;
@@ -221,7 +220,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			lcd = LCD_init(&cpu, TI_83P);
 			lcd_old = lcd;
 
-			DupLCDConfig(lcd, calcs[gslot].cpu.pio.lcd);
+			DupLCDConfig(lcd, lpCalc->cpu.pio.lcd);
 			lcd->active = TRUE;
 			lcd->word_len = 1;
 			lcd->contrast = 52;
@@ -285,7 +284,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 		case WM_NOTIFY:
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
-					DupLCDConfig(calcs[gslot].cpu.pio.lcd, lcd);
+					DupLCDConfig(lpCalc->cpu.pio.lcd, lcd);
 					//calcs[gslot].cpu.pio.lcd->mode = lcd->mode;
 					//calcs[gslot].cpu.pio.lcd->shades = lcd->shades;
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
@@ -323,7 +322,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 							lcd = lcd_old;
 							break;
 						case 3:
-							lcd = calcs[gslot].cpu.pio.lcd;
+							lcd = lpCalc->cpu.pio.lcd;
 							if (last_index != 3) DupLCDConfig(lcd, lcd_old);
 							bEnable = FALSE;
 							break;
@@ -332,7 +331,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 						cpu.imode = index;
 						cpu.pio.devices[0x11].aux = lcd;
 						cpu.pio.lcd = lcd;
-						if (last_index == 3) cpu.timer_c->elapsed = calcs[gslot].timer_c.elapsed;
+						if (last_index == 3) cpu.timer_c->elapsed = lpCalc->timer_c.elapsed;
 						EnableWindow(trbFPS, bEnable);
 						return TRUE;
 					}
@@ -410,7 +409,7 @@ All Files (*.*)\0*.*\0\0");
 	if (bSave) Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
 
 	int i;
-	for (i = (int) _tcslen(gif_file_name)-1; i && gif_file_name[i] != '\\'; i--);
+	for (i = (int) _tcslen(gif_file_name) - 1; i && gif_file_name[i] != '\\'; i--);
 
 	if (i) {
 #ifdef WINVER
@@ -452,37 +451,6 @@ All Files (*.*)\0*.*\0\0");
 #else
 	strcpy(gif_file_name, lpstrFile);
 #endif
-	return 0;
-}
-
-int BrowseBMPFile(TCHAR *lpstrFile[]) {
-	OPENFILENAME ofn;
-	TCHAR lpstrFilter[] 	= _T("	BMP  (*.bmp)\0*.bmp\0	All Files (*.*)\0*.*\0\0");
-	unsigned int Flags = 0;
-	ofn.lStructSize			= sizeof(OPENFILENAME);
-	ofn.hwndOwner			= GetForegroundWindow();
-	ofn.hInstance			= NULL;
-	ofn.lpstrFilter			= (LPCTSTR) lpstrFilter;
-	ofn.lpstrCustomFilter	= NULL;
-	ofn.nMaxCustFilter		= 0;
-	ofn.nFilterIndex		= 0;
-	ofn.lpstrFile			= (LPTSTR) lpstrFile;
-	ofn.nMaxFile			= sizeof(lpstrFile);
-	ofn.lpstrFileTitle		= NULL;
-	ofn.nMaxFileTitle		= 0;
-	ofn.lpstrInitialDir		= NULL;
-	ofn.lpstrTitle			= _T("Wabbitemu Open Bitmap");
-	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
-	ofn.lpstrDefExt			= _T("bmp");
-	ofn.lCustData			= 0;
-	ofn.lpfnHook			= NULL;
-	ofn.lpTemplateName		= NULL;
-	ofn.pvReserved			= NULL;
-	ofn.dwReserved			= 0;
-	ofn.FlagsEx				= 0;
-	if (!GetOpenFileName(&ofn)) {
-		return 1;
-	}
 	return 0;
 }
 

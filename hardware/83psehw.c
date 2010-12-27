@@ -19,28 +19,27 @@
 // however for now this will do.
 static double timer_freq83pse[4] = {1.0/512.0, 1.0/227.0, 1.0/156.0, 1.0/108.0};
 
-
 void port0_83pse(CPU_t *cpu, device_t *dev) {
 	link_t * link = (link_t *) dev->aux;
 
 	if (cpu->input) {
-		cpu->bus = ((link->host&0x03)|(link->client[0]&0x03))^0x03;
+		cpu->bus = ((link->host & 0x03) | (link->client[0] & 0x03)) ^ 0x03;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		if ((link->host&0x01) != (cpu->bus&0x01)) {
+		if ((link->host & 0x01) != (cpu->bus & 0x01)) {
 			#ifdef WINVER
 			if (link->audio.init && link->audio.enabled) 
-				FlippedLeft(cpu,(cpu->bus&0x01));
+				FlippedLeft(cpu, cpu->bus & 0x01);
 			#endif
 		}
-		if ((link->host&0x02) != (cpu->bus&0x02)) {
+		if ((link->host & 0x02) != (cpu->bus & 0x02)) {
 			#ifdef WINVER
 			if (link->audio.init && link->audio.enabled) 
-				FlippedRight(cpu,((cpu->bus&0x02)>>1));
+				FlippedRight(cpu, (cpu->bus & 0x02) >> 1);
 			#endif
 		}		
 
-		link->host = cpu->bus&0x03;
+		link->host = cpu->bus & 0x03;
 		cpu->output = FALSE;
 	}
 	#ifdef WINVER
@@ -60,13 +59,12 @@ void port0_83pse(CPU_t *cpu, device_t *dev) {
 void port2_83pse(CPU_t *cpu, device_t *dev) {
 
 	if (cpu->input) {
-		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE3 : 0xC3) | ((cpu->mem_c->flash_locked)?4:0);
+		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE3 : 0xC3) | ((cpu->mem_c->flash_locked) ? 4 : 0);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
 	}
 }
-
 
 void port3_83pse(CPU_t *cpu, device_t *dev) {
 	STDINT_t * stdint = (STDINT_t *) dev->aux;
@@ -93,7 +91,7 @@ void port3_83pse(CPU_t *cpu, device_t *dev) {
 	}
 	
 	/*Read note above*/
-	if (!(stdint->intactive & 0x08)  && (cpu->halt==TRUE)) {
+	if (!(stdint->intactive & 0x08)  && (cpu->halt == TRUE)) {
 		cpu->pio.lcd->active = FALSE;
 	}
 
@@ -133,9 +131,6 @@ void port3_83pse(CPU_t *cpu, device_t *dev) {
 	if (stdint->on_latch)
 		cpu->interrupt = TRUE;
 }
-
-
-
 
 void port4_83pse(CPU_t *cpu, device_t *dev) {
 	STDINT_t * stdint = (STDINT_t *) dev->aux;
@@ -899,13 +894,13 @@ void clock_read(CPU_t *cpu, device_t *dev) {
 	CLOCK_t* clock = (CLOCK_t *) dev->aux;
 	if (cpu->input) {
 		unsigned long time;
-		if (clock->enable&0x01) {
-			time = clock->base+((unsigned long) (tc_elapsed(cpu->timer_c)-clock->lasttime));
+		if (clock->enable & 0x01) {
+			time = clock->base + ((unsigned long)(tc_elapsed(cpu->timer_c) - clock->lasttime));
 		} else {
 			time = clock->base;
 		}
 
-		cpu->bus = (time>>((DEV_INDEX(dev)-0x45)*8))&0xFF;
+		cpu->bus = (time >> ((DEV_INDEX(dev) - 0x45) * 8)) & 0xFF;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
@@ -939,8 +934,6 @@ void fake_usb(CPU_t *cpu, device_t *dev) {
 		cpu->output = FALSE;
 	}
 }
-	
-	
 
 
 void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
@@ -952,30 +945,30 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			}
 			break;
 		case 1:
-			if ( ( addr & 0x0FFF ) == 0x0555 ) {
-				if (data==0x55) cpu->mem_c->step++;
+			if ( (addr & 0x0FFF) == 0x0555 ) {
+				if (data == 0x55) cpu->mem_c->step++;
 				else endflash(cpu);
 			} else endflash(cpu);
 			break;
 		case 2:
-			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
-				if ( data == 0xA0 ) {
-					cpu->mem_c->cmd=0xA0;		//Program
+			if ((addr & 0x0FFF) == 0x0AAA) {
+				if (data == 0xA0) {
+					cpu->mem_c->cmd = 0xA0;		//Program
 					cpu->mem_c->step++;
 				} else if ( data == 0x80 ) {
 					printf("\n");
-					cpu->mem_c->cmd=0x80;		//Erase
+					cpu->mem_c->cmd = 0x80;		//Erase
 					cpu->mem_c->step++;
 				} else if ( data == 0x20 ) {
 					puts("Fast");
-					cpu->mem_c->cmd=0x20;		//Fastmode
-					cpu->mem_c->step=6;
+					cpu->mem_c->cmd = 0x20;		//Fastmode
+					cpu->mem_c->step = 6;
 				} else endflash(cpu);
 			} else endflash(cpu);
 			break;
 		case 3:
-			if ( cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
-				(*(cpu->mem_c->banks[bank].addr +(addr&0x3fff))) &= data;  //AND LOGIC!!
+			if (cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
+				(*(cpu->mem_c->banks[bank].addr +(addr & 0x3fff))) &= data;  //AND LOGIC!!
 //				if (cpu->mem_c->banks[bank].page == 0x1E) printf("\n");
 //				if (cpu->mem_c->banks[bank].page == 0x1E || cpu->mem_c->banks[bank].page == 0x08 ) {
 //					printf("Address: %02X:%04X  <- %02X  \n",cpu->mem_c->banks[bank].page ,addr&0x3fff,data);
@@ -983,22 +976,22 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 //				if (cpu->mem_c->banks[bank].page == 0x7E) printf("%04X <= %02X \n",addr,data);
 				endflash(cpu);
 			}
-			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
+			if ((addr & 0x0FFF) == 0x0AAA) {
 				if (data==0xAA) cpu->mem_c->step++;
 			}
 			if (data == 0xF0) endflash(cpu);
 			break;
 		case 4:
-			if ( ( addr & 0x0FFF ) == 0x0555 ) {
-				if ( data == 0x55 ) cpu->mem_c->step++;
+			if ((addr & 0x0FFF) == 0x0555 ) {
+				if (data == 0x55) cpu->mem_c->step++;
 			}
 			if (data == 0xF0) endflash(cpu);
 			break;
 		case 5:
-			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
-				if (data==0x10) {			//Erase entire chip...Im not sure if 
+			if ( (addr & 0x0FFF) == 0x0AAA ) {
+				if (data == 0x10) {			//Erase entire chip...Im not sure if 
 					int i;					//boot page is included, so I'll leave it off
-					for( i = 0; i < ( cpu->mem_c->flash_size - 16384 ) ; i++ ) {
+					for(i = 0; i < (cpu->mem_c->flash_size - PAGE_SIZE) ; i++ ) {
 						cpu->mem_c->flash[i] = 0xFF;
 					}
 				} 
@@ -1006,31 +999,31 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			if (data == 0xF0) endflash(cpu);
 			if (data == 0x30) {		//erase sectors
 				int i;
-				int spage = (cpu->mem_c->banks[bank].page<<1) + ((addr>>13)&0x01);
+				int spage = (cpu->mem_c->banks[bank].page<<1) + ((addr >> 13) & 0x01);
 
-				printf("Spage = %03d , Page = %02X , Addr = %04X \n",spage, spage/2,( ( spage & 0x00F8 ) * 0x2000 ) );
-				if (spage<248) {
-					int startaddr = ( ( spage & 0x00F8 ) * 0x2000 );
-					int endaddr   = ( startaddr + 0x10000 );
-					for(i=startaddr; i<endaddr ;i++) {
-						cpu->mem_c->flash[i]=0xFF;
-					}
-				} else if (spage<252) {
-					for( i=0x1F0000; i < 0x1F8000; i++ ) {
+				printf("Spage = %03d , Page = %02X , Addr = %04X \n", spage, spage/2, ((spage & 0x00F8) * 0x2000));
+				if (spage < 248) {
+					int startaddr = ((spage & 0x00F8 ) * 0x2000);
+					int endaddr   = (startaddr + 0x10000);
+					for(i = startaddr; i < endaddr; i++) {
 						cpu->mem_c->flash[i] = 0xFF;
 					}
-				} else if (spage<253) {
+				} else if (spage < 252) {
+					for(i = 0x1F0000; i < 0x1F8000; i++ ) {
+						cpu->mem_c->flash[i] = 0xFF;
+					}
+				} else if (spage < 253) {
 //					printf("\nAddress: 1E:0000 -- ERASED\n");
-					for( i=0x1F8000; i < 0x1FA000; i++ ) {
+					for(i = 0x1F8000; i < 0x1FA000; i++) {
 						cpu->mem_c->flash[i] = 0xFF;
 
 					}
-				} else if (spage<254) {
+				} else if (spage < 254) {
 //											printf("\nAddress: 1E:2000 -- ERASED\n");
-					for( i=0x1FA000; i< 0x1FC000; i++ ) {
-						cpu->mem_c->flash[i]=0xFF;
+					for(i = 0x1FA000; i< 0x1FC000; i++) {
+						cpu->mem_c->flash[i] = 0xFF;
 					}
-				} else if (spage<256) {
+				} else if (spage < 256) {
 // I comment this off because this is the boot page
 // it suppose to be write protected...
 //					for(i=0x7C000;i<0x80000;i++) {
@@ -1042,20 +1035,20 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			endflash(cpu);
 			break;
 		case 6:
-			if (data == 0x90 ) {
-				cpu->mem_c->step=7;	//check if exit fastmode
-			} else if (data == 0xA0 ) {
-				cpu->mem_c->step=8;	//write byte in fastmode
+			if (data == 0x90) {
+				cpu->mem_c->step = 7;	//check if exit fastmode
+			} else if (data == 0xA0) {
+				cpu->mem_c->step = 8;	//write byte in fastmode
 			}
 			break;
 		case 7:
 			if (data == 0xF0) {
 				endflash(cpu);
-			} else cpu->mem_c->step=6;
+			} else cpu->mem_c->step = 6;
 			break;
 		case 8:
-			(*(cpu->mem_c->banks[bank].addr +(addr&0x3fff))) &= data;  //AND LOGIC!!
-			cpu->mem_c->step=6;
+			(*(cpu->mem_c->banks[bank].addr +(addr & 0x3fff))) &= data;  //AND LOGIC!!
+			cpu->mem_c->step = 6;
 			break;
 
 		default:
@@ -1068,30 +1061,30 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 	int bank = addr>>14;
 	switch( cpu->mem_c->step ) {
 		case 0:
-			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
-				if ( data == 0xAA ) cpu->mem_c->step++;
+			if ((addr & 0x0FFF) == 0x0AAA) {
+				if (data == 0xAA) cpu->mem_c->step++;
 			}
 			break;
 		case 1:
-			if ( ( addr & 0x0FFF ) == 0x0555 ) {
-				if (data==0x55) cpu->mem_c->step++;
+			if ((addr & 0x0FFF) == 0x0555) {
+				if (data == 0x55) cpu->mem_c->step++;
 				else endflash(cpu);
 			} else endflash(cpu);
 			break;
 		case 2:
-			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
-				if ( data == 0xA0 ) {
-					cpu->mem_c->cmd=0xA0;		//Program
+			if ((addr & 0x0FFF) == 0x0AAA) {
+				if (data == 0xA0) {
+					cpu->mem_c->cmd = 0xA0;		//Program
 					cpu->mem_c->step++;
 				} else if ( data == 0x80 ) {
-					cpu->mem_c->cmd=0x80;		//Erase
+					cpu->mem_c->cmd = 0x80;		//Erase
 					cpu->mem_c->step++;
 				} else endflash(cpu);
 			} else endflash(cpu);
 			break;
 		case 3:
-			if ( cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
-				(*(cpu->mem_c->banks[bank].addr +(addr&0x3fff))) &= data;  //AND LOGIC!!
+			if (cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
+				(*(cpu->mem_c->banks[bank].addr + (addr & 0x3fff))) &= data;  //AND LOGIC!!
 //				if (cpu->mem_c->banks[bank].page == 0x1E) printf("\n");
 //				if (cpu->mem_c->banks[bank].page == 0x1E || cpu->mem_c->banks[bank].page == 0x08 ) {
 //					printf("Address: %02X:%04X  <- %02X  \n",cpu->mem_c->banks[bank].page ,addr&0x3fff,data);
@@ -1099,22 +1092,22 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 //				if (cpu->mem_c->banks[bank].page == 0x1E) printf("\n");
 				endflash(cpu);
 			}
-			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
-				if (data==0xAA) cpu->mem_c->step++;
+			if ((addr & 0x0FFF) == 0x0AAA) {
+				if (data == 0xAA) cpu->mem_c->step++;
 			}
 			if (data == 0xF0) endflash(cpu);
 			break;
 		case 4:
-			if ( ( addr & 0x0FFF ) == 0x0555 ) {
-				if ( data == 0x55 ) cpu->mem_c->step++;
+			if ((addr & 0x0FFF) == 0x0555) {
+				if (data == 0x55) cpu->mem_c->step++;
 			}
 			if (data == 0xF0) endflash(cpu);
 			break;
 		case 5:
-			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
-				if (data==0x10) {			//Erase entire chip...Im not sure if
+			if ((addr & 0x0FFF) == 0x0AAA) {
+				if (data == 0x10) {			//Erase entire chip...Im not sure if
 					int i;					//boot page is included, so I'll leave it off
-					for( i = 0; i < ( cpu->mem_c->flash_size - 16384 ) ; i++ ) {
+					for( i = 0; i < (cpu->mem_c->flash_size - PAGE_SIZE) ; i++ ) {
 						cpu->mem_c->flash[i] = 0xFF;
 					}
 				}
@@ -1122,30 +1115,30 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			if (data == 0xF0) endflash(cpu);
 			if (data == 0x30) {		//erase sectors
 				int i;
-				int spage = (cpu->mem_c->banks[bank].page<<1) + ((addr>>13)&0x01);
+				int spage = (cpu->mem_c->banks[bank].page << 1) + ((addr >> 13) & 0x01);
 //				printf("Spage = %03d , Page = %02X , Addr = %04X \n",spage, spage/2,( ( spage & 0x00F8 ) * 0x2000 ) );
-				if (spage<120) {
-					int startaddr = ( ( spage & 0x00F8 ) * 0x2000 );
-					int endaddr   = ( startaddr + 0x10000 );
-					for(i=startaddr; i<endaddr ;i++) {
-						cpu->mem_c->flash[i]=0xFF;
-					}
-				} else if (spage<124) {
-					for( i=0xF0000; i < 0xF8000; i++ ) {
+				if (spage < 120) {
+					int startaddr = (spage & 0x00F8) * 0x2000;
+					int endaddr   = startaddr + 0x10000;
+					for(i = startaddr; i < endaddr; i++) {
 						cpu->mem_c->flash[i] = 0xFF;
 					}
-				} else if (spage<125) {
+				} else if (spage < 124) {
+					for(i = 0xF0000; i < 0xF8000; i++) {
+						cpu->mem_c->flash[i] = 0xFF;
+					}
+				} else if (spage < 125) {
 //					printf("\nAddress: 1E:0000 -- ERASED\n");
-					for( i=0xF8000; i < 0xFA000; i++ ) {
+					for(i = 0xF8000; i < 0xFA000; i++) {
 						cpu->mem_c->flash[i] = 0xFF;
 
 					}
-				} else if (spage<126) {
+				} else if (spage < 126) {
 //					printf("\nAddress: 1E:2000 -- ERASED\n");
-					for( i=0xFA000; i<0xFC000; i++ ) {
+					for(i = 0xFA000; i < 0xFC000; i++) {
 						cpu->mem_c->flash[i]=0xFF;
 					}
-				} else if (spage<128) {
+				} else if (spage < 128) {
 /*
 // I comment this off because this is the boot page
 // it suppose to be write protected...
@@ -1188,8 +1181,8 @@ STDINT_t* INT83PSE_init(CPU_t* cpu) {
 	stdint->intactive = 0;
 	stdint->timermax1 = stdint->freq[3];
 	stdint->lastchk1 = tc_elapsed(cpu->timer_c);
-	stdint->timermax2 = stdint->freq[3]/2.0f;
-	stdint->lastchk2 = tc_elapsed(cpu->timer_c)+stdint->freq[3]/4.0f;
+	stdint->timermax2 = stdint->freq[3] / 2.0f;
+	stdint->lastchk2 = tc_elapsed(cpu->timer_c) + stdint->freq[3] / 4.0f;
 	
 	stdint->on_backup = 0;
 	stdint->on_latch = FALSE;
@@ -1312,7 +1305,6 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.devices[0x20].active = TRUE;
 	cpu->pio.devices[0x20].aux = NULL;
 	cpu->pio.devices[0x20].code = (devp) port20_83pse;
-
 	
 	
 /* page locking */
@@ -1424,7 +1416,6 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.devices[0x48].code = (devp) &clock_read;	
 
 
-
 /*Fake USB*/
 	cpu->pio.devices[0x4C].active = TRUE;
 	cpu->pio.devices[0x4C].aux = NULL;
@@ -1445,8 +1436,6 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.devices[0x57].active = TRUE;
 	cpu->pio.devices[0x57].aux = NULL;
 	cpu->pio.devices[0x57].code = (devp) &fake_usb;
-
-	
 	
 	cpu->pio.lcd		= lcd;
 	cpu->pio.keypad		= keyp;

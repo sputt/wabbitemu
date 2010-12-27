@@ -849,19 +849,19 @@ static void print_command_ID(uint8_t command_ID) {
 }
 #endif
 
-void writeboot(FILE* infile, int page) {
+void writeboot(FILE* infile, memory_context_t *mem_c, int page) {
 	INTELHEX_t ihex;
 	if (!infile) return;
 	if (page == -1)
-		page += calcs[gslot].mem_c.flash_pages;			//last page is boot page
-	unsigned char (*flash)[16384] = (uint8_t(*)[16384]) calcs[gslot].mem_c.flash;
+		page += mem_c->flash_pages;			//last page is boot page
+	unsigned char (*flash)[16384] = (uint8_t(*)[16384]) mem_c->flash;
 	while(1) {
-		if (!ReadIntelHex(infile,&ihex)) {
+		if (!ReadIntelHex(infile, &ihex)) {
 			return;
 		}
 		switch(ihex.Type) {
 			case 0x00:
-				memcpy(flash[page]+(ihex.Address & 0x3FFF), ihex.Data, ihex.DataSize);
+				memcpy(flash[page] + (ihex.Address & 0x3FFF), ihex.Data, ihex.DataSize);
 				break;
 			case 0x02:
 				break;
@@ -870,16 +870,3 @@ void writeboot(FILE* infile, int page) {
 		}
 	}
 }
-
-int FindField(unsigned char *data, unsigned char Field) {
-	int i;
-	for(i = 6; i < 128;) {
-		if (data[i++] != 0x80) return 0;
-		if ((data[i] & 0xF0) == Field) return i+1;
-		i += 1+(data[i] & 0x0F);
-	}
-	return 0;
-}
-
-
-

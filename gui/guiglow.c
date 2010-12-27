@@ -4,16 +4,16 @@
 
 extern HDC hdcSkin;
 
-void DrawGlow(HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADWIDTH) {
+void DrawGlow(HDC hdcSkin, HDC hdc, RECT *r, COLORREF GIFGRADCOLOR, int GIFGRADWIDTH, BOOL bSkinEnabled) {
 	
 	// Create the buffer bitmap
 	HDC hdcBuf = CreateCompatibleDC(hdc);
 	HBITMAP hbmBuf = CreateCompatibleBitmap(hdc, r->right - r->left + (2*GIFGRADWIDTH), r->bottom - r->top + (2*GIFGRADWIDTH));
 	SelectObject(hdcBuf, hbmBuf);
 	
-	if (calcs[gslot].SkinEnabled) {
+	if (bSkinEnabled) {
 		BitBlt(hdcBuf, 0, 0, r->right - r->left + (2*GIFGRADWIDTH), r->bottom - r->top + (2*GIFGRADWIDTH),
-				calcs[gslot].hdcSkin, r->left - GIFGRADWIDTH, r->top - GIFGRADWIDTH, SRCCOPY);
+				hdcSkin, r->left - GIFGRADWIDTH, r->top - GIFGRADWIDTH, SRCCOPY);
 	} else {
 		RECT rc = {0, 0, r->right - r->left + (2*GIFGRADWIDTH), r->bottom - r->top + (2*GIFGRADWIDTH)};
 		FillRect(hdcBuf, &rc, GetStockBrush(GRAY_BRUSH));

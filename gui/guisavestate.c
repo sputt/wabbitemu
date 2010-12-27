@@ -18,9 +18,11 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 	static HWND cmbCompress;
 	static HWND chkReadonly;
 	static HWND imgPreview;
+	static LPCALC lpCalc;
 	
 	switch (uMsg) {
 		case WM_INITDIALOG: {
+			lpCalc = (LPCALC) lParam;
 			edtAuthor = GetDlgItem(hwndDlg, IDC_EDTSAVEAUTHOR);
 			edtComment = GetDlgItem(hwndDlg, IDC_EDTSAVECOMMENT);
 			cmbCompress = GetDlgItem(hwndDlg, IDC_CBOSAVECOMPRESS);
@@ -33,8 +35,8 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 			SendMessage(cmbCompress, CB_ADDSTRING, 0, (LPARAM) _T("Zlib"));
 			SendMessage(cmbCompress, CB_SETCURSEL, 1, (LPARAM) 0);
 			
-			SendMessage(edtRom_version, WM_SETTEXT, 0, (LPARAM) calcs[gslot].rom_version);
-			SendMessage(edtModel, WM_SETTEXT, 0, (LPARAM) CalcModelTxt[calcs[gslot].model]);
+			SendMessage(edtRom_version, WM_SETTEXT, 0, (LPARAM) lpCalc->rom_version);
+			SendMessage(edtModel, WM_SETTEXT, 0, (LPARAM) CalcModelTxt[lpCalc->model]);
 			
 			
 			HBITMAP hbmPreview = CreateBitmap(96, 64, 1, 32, NULL);
@@ -78,9 +80,9 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 							
 							WriteSave(save_filename, savestate, compression);
 #ifdef WINVER
-							StringCbCopy(calcs[gslot].rom_path, sizeof(calcs[gslot].rom_path), save_filename);
+							StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), save_filename);
 #else
-							strcpy(calcs[gslot].rom_path, save_filename);
+							strcpy(lpCalc->rom_path, save_filename);
 #endif
 						}
 					case IDC_BTNSAVECANCEL:
@@ -98,7 +100,7 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 	}
 }
 
-INT_PTR gui_savestate(HWND hwndParent, SAVESTATE_t *save, TCHAR *filename) {
+INT_PTR gui_savestate(HWND hwndParent, SAVESTATE_t *save, TCHAR *filename, LPCALC lpCalc) {
 	InitCommonControls();
 	savestate = save;
 #ifdef WINVER
@@ -106,10 +108,6 @@ INT_PTR gui_savestate(HWND hwndParent, SAVESTATE_t *save, TCHAR *filename) {
 #else
 	strcpy(save_filename, filename);
 #endif
-	return DialogBox(
-    						g_hInst, 
-    						MAKEINTRESOURCE(IDD_DLGSAVESTATE), 
-    						hwndParent, 
-    						DlgSavestateProc);
+	return DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGSAVESTATE), hwndParent, DlgSavestateProc, (LPARAM) lpCalc);
 }
 

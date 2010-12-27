@@ -252,6 +252,12 @@
     <ClCompile Include="interface\WabbitemuClassFactory.cpp">
       <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
+    <ClCompile Include="Debugger\dbmonitor.c">
+      <Filter>Source Files\Debugger</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\dbprofile.c">
+      <Filter>Source Files\Debugger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -475,6 +481,12 @@
     </ClInclude>
     <ClInclude Include="interface\CLabelServer.h">
       <Filter>Source Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\dbprofile.h">
+      <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\dbmonitor.h">
+      <Filter>Header Files\Debugger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
