@@ -2,9 +2,10 @@
 #define PRINT_H
 
 #include "disassemble.h"
+#include "calc.h"
 
-void MyDrawText(HDC, RECT *, Z80_info_t *, const TCHAR *, ...);
-TCHAR* mysprintf(Z80_info_t *, const TCHAR *, ...);
+void MyDrawText(LPCALC, HDC, RECT *, Z80_info_t *, const TCHAR *, ...);
+TCHAR* mysprintf(LPCALC, Z80_info_t *, const TCHAR *, ...);
 
 #define DBCOLOR_BASE (RGB(4, 72, 117))
 //#define DBCOLOR_HILIGHT (RGB(112, 169, 168))

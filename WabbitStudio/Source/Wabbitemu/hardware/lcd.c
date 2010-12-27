@@ -279,9 +279,9 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 	// Perfect gray mode should time out too in case the screen update rate is too slow for
 	// proper grayscale (essentially a fallback on steady freq)
 	if (lcd->mode == MODE_PERFECT_GRAY || lcd->mode == MODE_GAME_GRAY) {	
-		if ((tc_elapsed(cpu->timer_c) - lcd->time) >= (1.0/STEADY_FREQ_MIN)) {
+		if ((tc_elapsed(cpu->timer_c) - lcd->time) >= (1.0 / STEADY_FREQ_MIN)) {
 			LCD_enqueue(lcd);
-			lcd->time += (1.0/STEADY_FREQ_MIN);
+			lcd->time += (1.0 / STEADY_FREQ_MIN);
 		}
 	} else if (lcd->mode == MODE_STEADY) {
 		if ((tc_elapsed(cpu->timer_c) - lcd->time) >= lcd->steady_frame) {
@@ -290,12 +290,10 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 		}
 	}
 
-
-	if ((tc_elapsed(cpu->timer_c) - lcd->lastgifframe) >= 0.01){
-		handle_screenshot();
-		lcd->lastgifframe += 0.01;
-	}
-
+	/*if ((tc_elapsed(calcs[0].cpu.timer_c) - calcs[0].cpu.pio.lcd->lastgifframe) >= 0.01) {
+		handle_screenshot(&calcs[0]);
+		calcs[0].cpu.pio.lcd->lastgifframe += 0.01;
+	}*/
 }
 
 /* 

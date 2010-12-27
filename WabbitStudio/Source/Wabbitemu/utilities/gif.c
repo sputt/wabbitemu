@@ -32,7 +32,7 @@
 
 //#include "gif.h" // uhh...
 
-#define GIF_FRAME_MAX (256 * 128 * 4)
+#define GIF_FRAME_MAX (256 * 128 * MAX_CALCS)
 
 #define GIF_IDLE 0
 #define GIF_START 1
@@ -78,6 +78,7 @@ WORD gif_base_delay;
 int gif_file_size = 0;
 WORD gif_delay;
 int gif_xs;
+int gif_indiv_xs;
 int gif_ys;
 int gif_frame_x;
 int gif_frame_y;
@@ -292,7 +293,7 @@ int gif_encode(FILE *fout, BYTE *pixels, int depth, int siz) {
 	return fsize;
 }
 
-void gif_writer() {
+void gif_writer(int shades) {
 	static FILE *fp;
 	// flags = 1 111 0 010
 	BYTE gif_header[205] = {'G', 'I', 'F', '8', '9', 'a', 96, 0, 64, 0, 0xf2, 0x0f, 0};
@@ -310,7 +311,7 @@ void gif_writer() {
 			break;
 		case GIF_START: {
 			int i;
-			gif_colors = calcs[ScreenshotSlot].cpu.pio.lcd->shades + 1;
+			gif_colors = shades + 1;
 			for (i = 0; i < gif_colors; i++) {
 #ifdef HIGH_SHADE_GIF
 				double color_ratio = 1.0 - ((double) i / (double) (gif_colors - 1));
@@ -365,7 +366,8 @@ void gif_writer() {
 		case GIF_FRAME: {
 			int i, j, k, l;
 			for (i = 0; i < gif_xs * gif_ys; i++)
-				if (gif_frame[i] != gif_frame_old[i]) break;
+				if (gif_frame[i] != gif_frame_old[i])
+					break;
 			if (i == gif_xs * gif_ys) {
 				gif_delay += gif_base_delay;
 			} else {
@@ -423,8 +425,6 @@ void gif_writer() {
 			break;
 		}
 		case GIF_END: {
-			if (!fp)
-				break;
 			int i;
 			gif_img[4] = (BYTE) gif_delay;
 			gif_img[5] = gif_delay >> 8;

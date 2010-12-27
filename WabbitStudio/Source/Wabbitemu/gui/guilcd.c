@@ -318,11 +318,11 @@ All Files (*.*)\0*.*\0\0");
 
 	SAVESTATE_t* save = SaveSlot(lpCalc);
 
-	gui_savestate(hwnd, save, FileName);
+	gui_savestate(hwnd, save, FileName, lpCalc);
 
 }
 
-void LoadStateDialog(HWND hwnd){
+/*void LoadStateDialog(HWND hwnd) {
 	OPENFILENAME ofn;
 	TCHAR FileName[MAX_PATH];
 	TCHAR lpstrFilter[] 	= _T("\
@@ -350,7 +350,7 @@ All Files (*.*)\0*.*\0\0");
 	rom_load(&calcs[gslot], FileName);
 	calcs[gslot].running =  Running_Backup;
 
-}
+}*/
 
 static TCHAR sz_status[32];
 LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -512,9 +512,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					gif_xs = SCRXSIZE*gif_size;
 					gif_ys = SCRYSIZE*gif_size;
 
-					GIFGREYLCD();
-
-					calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					GIFGREYLCD(lpCalc->cpu.pio.lcd);
 
 					unsigned int i, j;
 					for (i = 0; i < SCRYSIZE*gif_size; i++)
@@ -522,10 +521,10 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							gif_frame[i * gif_xs + j] = lpCalc->cpu.pio.lcd->gif[i][j];
 
 					gif_write_state = GIF_START;
-					gif_writer();
+					gif_writer(lpCalc->cpu.pio.lcd->shades);
 
 					gif_write_state = GIF_END;
-					gif_writer();
+					gif_writer(lpCalc->cpu.pio.lcd->shades);
 
 					FORMATETC fmtetc[] = {
 						{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },

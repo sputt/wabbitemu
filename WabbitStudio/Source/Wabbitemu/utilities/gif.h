@@ -22,6 +22,7 @@ extern BOOL gif_autosave;
 extern BOOL gif_use_increasing;
 extern WORD gif_base_delay;
 extern int gif_xs;
+extern int gif_indiv_xs;
 extern int gif_ys;
 extern BYTE gif_frame[GIF_FRAME_MAX];
 extern int gif_time;
@@ -32,4 +33,4 @@ extern int gif_file_num;
 extern u_int gif_size;
 extern BOOL gif_bw;
 
-void gif_writer();
+void gif_writer(int shades);

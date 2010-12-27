@@ -5,9 +5,13 @@
 #include "calc.h"
 #include "dbmem.h"
 #include "dbdisasm.h"
+#include "dbmonitor.h"
+#include "dbprofile.h"
 #include "dbreg.h"
 #include "expandpane.h"
 #include "resource.h"
+#include "fileutilities.h"
+
 
 extern HINSTANCE g_hInst;
 
@@ -21,7 +25,7 @@ static unsigned int cyDisasm = 350, cyMem;
 
 #define MAX_TABS 5
 static ep_state expand_pane_state = {0};
-HWND hdisasm, hreg, hmem;
+HWND hdisasm, hreg, hmem, hPortMon;
 static int total_mem_pane;
 static HWND hmemlist[MAX_TABS];
 static long long code_count_tstates = -1;
@@ -129,7 +133,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	switch (Message) {
 		case WM_CREATE:
 		{
-			DebuggerSlot = gslot;
+			lpDebuggerCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 			LOGFONT lf;
 			memset(&lf, 0, sizeof(LOGFONT));
 #ifdef WINVER
@@ -175,7 +179,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			/* Create diassembly window */
 
 			//ZeroMemory(&dps, sizeof(dps));
-			dps.nSel = calcs[DebuggerSlot].cpu.pc;
+			dps.nSel = lpDebuggerCalc->cpu.pc;
 
 			hdisasm =
 			CreateWindow(
@@ -250,7 +254,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				(HMENU) ID_REG,
 				g_hInst, NULL);
 
-			mps[0].addr = calcs[DebuggerSlot].cpu.sp;
+			mps[0].addr = lpDebuggerCalc->cpu.sp;
 			mps[0].mode = MEM_WORD;
 			mps[0].sel = mps[1].addr;
 			mps[0].track = offsetof(struct CPU, sp);
@@ -270,7 +274,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				SendMessage(hreg, WM_SIZE, 0, 0); // didn't help
 			}
 
-			if (calcs[DebuggerSlot].profiler.running)
+			if (lpDebuggerCalc->profiler.running)
 				CheckMenuItem(GetSubMenu(GetMenu(hwnd), 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
 			if (code_count_tstates != -1)
 				CheckMenuItem(GetSubMenu(GetMenu(hwnd), 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_CHECKED);
@@ -440,14 +444,14 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			case IDM_TOOLS_COUNT: {
 				HMENU hmenu = GetMenu(hwnd);
 				if (code_count_tstates == -1) {
-					code_count_tstates = calcs[DebuggerSlot].cpu.timer_c->tstates;
+					code_count_tstates = lpDebuggerCalc->cpu.timer_c->tstates;
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_CHECKED);
 				} else {
 					TCHAR buffer[256];
 #ifdef WINVER
-					StringCbPrintf(buffer, sizeof(buffer), _T("%i T-States"), (int)(calcs[DebuggerSlot].cpu.timer_c->tstates - code_count_tstates));
+					StringCbPrintf(buffer, sizeof(buffer), _T("%i T-States"), (int)(lpDebuggerCalc->cpu.timer_c->tstates - code_count_tstates));
 #else
-					sprintf(buffer, "%i T-States", (int)(calcs[DebuggerSlot].cpu.timer_c->tstates - code_count_tstates));
+					sprintf(buffer, "%i T-States", (int)(lpDebuggerCalc->cpu.timer_c->tstates - code_count_tstates));
 #endif
 					MessageBox(NULL, buffer, _T("Code Counter"), MB_OK);
 					code_count_tstates = -1;
@@ -456,25 +460,25 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				break;
 			}
 			case IDM_TOOLS_PROFILE: {
-				calcs[DebuggerSlot].profiler.running = !calcs[gslot].profiler.running;
+				lpDebuggerCalc->profiler.running = !lpDebuggerCalc->profiler.running;
 				HMENU hmenu = GetMenu(hwnd);
-				if (calcs[DebuggerSlot].profiler.running) {
-					int result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGPROFILE), hwnd, (DLGPROC)ProfileDialogProc);
+				if (lpDebuggerCalc->profiler.running) {
+					int result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGPROFILE), hwnd, (DLGPROC) ProfileDialogProc);
 					if (result == IDCANCEL)
-						calcs[DebuggerSlot].profiler.running = !calcs[gslot].profiler.running;
+						lpDebuggerCalc->profiler.running = !lpDebuggerCalc->profiler.running;
 					else {
-						memset(calcs[DebuggerSlot].profiler.data, 0, MIN_BLOCK_SIZE * sizeof(long));
+						memset(lpDebuggerCalc->profiler.data, 0, MIN_BLOCK_SIZE * sizeof(long));
 						CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
 					}
 				} else {
 					FILE* file;
 					int i;
 					double data;
-					TCHAR *buffer = (TCHAR *) malloc(MAX_PATH);
-					if (BrowseTxtFile(buffer)) {
-						free(buffer);
+					TCHAR buffer[MAX_PATH];
+					if (BrowseFile(buffer, _T("	Text file  (*.txt)\0*.txt\0	All Files (*.*)\0*.*\0\0"),
+									_T("Wabbitemu Save Profile"), _T("txt"))) {
 						//make the profiler running again
-						calcs[DebuggerSlot].profiler.running = TRUE;
+						lpDebuggerCalc->profiler.running = TRUE;
 						break;
 					}
 #ifdef WINVER
@@ -482,15 +486,14 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 #else
 					file = fopen(buffer, "wb");
 #endif
-					free(buffer);
-					_ftprintf_s(file, _T("Total Tstates: %i\r\n"), calcs[DebuggerSlot].profiler.totalTime);
-					for(i = calcs[DebuggerSlot].profiler.lowAddress / calcs[DebuggerSlot].profiler.blockSize;
-							i < ARRAYSIZE(calcs[DebuggerSlot].profiler.data) &&
-							i < (calcs[DebuggerSlot].profiler.highAddress / calcs[DebuggerSlot].profiler.blockSize); i++) {
-						data = (double) calcs[DebuggerSlot].profiler.data[i] / (double) calcs[DebuggerSlot].profiler.totalTime;
+					_ftprintf_s(file, _T("Total Tstates: %i\r\n"), lpDebuggerCalc->profiler.totalTime);
+					for(i = lpDebuggerCalc->profiler.lowAddress / lpDebuggerCalc->profiler.blockSize;
+							i < ARRAYSIZE(lpDebuggerCalc->profiler.data) &&
+							i < (lpDebuggerCalc->profiler.highAddress / lpDebuggerCalc->profiler.blockSize); i++) {
+						data = (double) lpDebuggerCalc->profiler.data[i] / (double) lpDebuggerCalc->profiler.totalTime;
 						if (data != 0.0)
-							_ftprintf_s(file, _T("$%04X - $%04X: %f%% %d tstates\r\n"), i * calcs[DebuggerSlot].profiler.blockSize, ((i + 1) *
-											calcs[DebuggerSlot].profiler.blockSize) - 1, data, calcs[DebuggerSlot].profiler.data[i]);
+							_ftprintf_s(file, _T("$%04X - $%04X: %f%% %d tstates\r\n"), i * lpDebuggerCalc->profiler.blockSize, ((i + 1) *
+											lpDebuggerCalc->profiler.blockSize) - 1, data, lpDebuggerCalc->profiler.data[i]);
 					}
 					fclose(file);
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_UNCHECKED);
@@ -549,6 +552,15 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				TabCtrl_SetCurSel(hmem, total_mem_pane - 1);
 				hmemlist[total_mem_pane] = NULL;
 				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				break;
+			}
+			case IDM_VIEW_PORTMONITOR: {
+				if (IsWindow(hPortMon)) {
+					SwitchToThisWindow(hPortMon, TRUE);
+				} else {
+					hPortMon = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_PORT_MONITOR), hwnd, (DLGPROC) PortMonitorDialogProc);
+					ShowWindow(hPortMon, SW_SHOW);
+				}
 				break;
 			}
 			default:
@@ -677,8 +689,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 			return 0;
 		case WM_DESTROY: {
-			CPU_step((&calcs[DebuggerSlot].cpu));
-			calcs[DebuggerSlot].running = TRUE;
+			CPU_step((&lpDebuggerCalc->cpu));
+			lpDebuggerCalc->running = TRUE;
 			GetWindowPlacement(hwnd, &db_placement);
 			db_maximized = IsMaximized(hwnd);
 
@@ -690,114 +702,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		}
 	}
 	return DefWindowProc(hwnd, Message, wParam, lParam);
-}
-
-LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	switch(Message)
-	{
-		/*case WM_INITDIALOG:
-
-			break;*/
-		case WM_COMMAND: {
-			switch(LOWORD(wParam)) {
-				case IDC_PROFILE_OK: {
-					char string[9];
-					int output;
-					HWND hWndEdit;
-					hWndEdit = GetDlgItem(hwnd, IDC_LOW_EDT);
-					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
-					xtoi((const TCHAR *)&string, &output);
-					calcs[DebuggerSlot].profiler.lowAddress = output;
-					hWndEdit = GetDlgItem(hwnd, IDC_HIGH_EDT);
-					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
-					xtoi((const TCHAR *)&string, &output);
-					calcs[DebuggerSlot].profiler.highAddress = output;
-					hWndEdit = GetDlgItem(hwnd, IDC_BLOCK_EDT);
-					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
-					output = _tstoi((const TCHAR *) &string);
-					calcs[DebuggerSlot].profiler.blockSize = output;
-					EndDialog(hwnd, IDOK);
-					break;
-				}
-				case IDC_PROFILE_CANCEL:
-					EndDialog(hwnd, IDCANCEL);
-					break;
-			}
-			break;
-		}
-		case WM_CLOSE:
-			EndDialog(hwnd, IDCANCEL);
-			return 0;
-	}
-	return DefWindowProc(hwnd, Message, wParam, lParam);
-}
-
-int BrowseTxtFile(TCHAR *lpstrFile) {
-	lpstrFile[0] = '\0';
-	OPENFILENAME ofn;
-	TCHAR lpstrFilter[] = _T("	Text file  (*.txt)\0*.txt\0	All Files (*.*)\0*.*\0\0");
-	unsigned int Flags = 0;
-	ofn.lStructSize			= sizeof(OPENFILENAME);
-	ofn.hwndOwner			= GetForegroundWindow();
-	ofn.hInstance			= NULL;
-	ofn.lpstrFilter			= (LPCTSTR) lpstrFilter;
-	ofn.lpstrCustomFilter	= NULL;
-	ofn.nMaxCustFilter		= 0;
-	ofn.nFilterIndex		= 0;
-	ofn.lpstrFile			= (LPTSTR) lpstrFile;
-	ofn.nMaxFile			= 512;
-	ofn.lpstrFileTitle		= NULL;
-	ofn.nMaxFileTitle		= 0;
-	ofn.lpstrInitialDir		= NULL;
-	ofn.lpstrTitle			= _T("Wabbitemu Save Profile");
-	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
-	ofn.lpstrDefExt			= _T("txt");
-	ofn.lCustData			= 0;
-	ofn.lpfnHook			= NULL;
-	ofn.lpTemplateName		= NULL;
-	ofn.pvReserved			= NULL;
-	ofn.dwReserved			= 0;
-	ofn.FlagsEx				= 0;
-	if (!GetSaveFileName(&ofn)) {
-		return 1;
-	}
-	return 0;
-}
-
-// Converts a hexadecimal string to integer
-int xtoi(const TCHAR* xs, int* result) {
-	int i, szlen = (int) _tcslen(xs);
-	int xv, fact;
-	if (szlen <= 0)
-		// Nothing to convert
-		return 1;
-	// Converting more than 32bit hexadecimal value?
-	if (szlen>8) return 2; // exit
-	// Begin conversion here
-	*result = 0;
-	fact = 1;
-	// Run until no more character to convert
-	for(i = szlen-1; i >= 0; i--) {
-		if (isxdigit(*(xs + i))) {
-			if (*(xs+i)>=97) {
-				xv = ( *(xs+i) - 97) + 10;
-			}
-			else if ( *(xs+i) >= 65) {
-				xv = (*(xs+i) - 65) + 10;
-			} else {
-				xv = *(xs+i) - 48;
-			}
-			*result += (xv * fact);
-			fact *= 16;
-		} else {
-		// Conversion was abnormally terminated
-		// by non hexadecimal digit, hence
-		// returning only the converted with
-		// an error value 4 (illegal hex character)
-			return 4;
-		}
-	}
-	return 0;
 }
 
 

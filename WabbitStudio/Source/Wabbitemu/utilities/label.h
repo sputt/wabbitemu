@@ -17,13 +17,13 @@ typedef struct {
 
 #ifdef _HAS_CALC_H
 #define _LABEL_H_PROTOTYPES
-TCHAR* FindAddressLabel( int slot, BOOL IsRAM, uint8_t page, uint16_t addr);
+TCHAR* FindAddressLabel(LPCALC lpCalc, BOOL IsRAM, uint8_t page, uint16_t addr);
 //void ImportBcalls(char* fn);
 TCHAR* FindBcall(int address);
 void FindFlags(int flag,int bit, TCHAR **flagstring, TCHAR **bitstring);
 
 void VoidLabels(LPCALC lpCalc);
-label_struct *lookup_label(TCHAR *label);
+label_struct *lookup_label(LPCALC lpCalc, TCHAR *label);
 int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName);
 #endif
 

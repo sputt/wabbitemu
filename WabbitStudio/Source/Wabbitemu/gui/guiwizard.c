@@ -489,11 +489,12 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					_tdupenv_s(&env, &envLen, _T("appdata"));
 					StringCbCopy(hexFile, sizeof(hexFile), env);
 					free(env);
+					//extract and write the open source boot page
 					StringCbCat(hexFile, sizeof(hexFile), _T("\\boot.hex"));
 					ExtractResource(hexFile, resource);
 					FILE *file;
 					_tfopen_s(&file, hexFile, _T("rb"));
-					writeboot(file);
+					writeboot(file, &lpCalc->mem_c);
 					fclose(file);
 					_tremove(hexFile);
 					//if you dont want to load an OS, fine...

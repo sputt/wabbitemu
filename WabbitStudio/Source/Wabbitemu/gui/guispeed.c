@@ -15,10 +15,12 @@
 int originalSpeed;
 
 LRESULT CALLBACK SetSpeedProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+	static LPCALC lpCalc;
 	switch (Message) {
 			case WM_INITDIALOG:
 			{
-				int speed = calcs[gslot].speed;
+				lpCalc = (LPCALC) lParam;
+				int speed = lpCalc->speed;
 				originalSpeed = speed;
 				HWND hTrackbar = GetDlgItem(hwnd, IDC_TRB1);
 				SendMessage(hTrackbar, TBM_SETRANGE,
@@ -42,8 +44,8 @@ LRESULT CALLBACK SetSpeedProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 					if (newPos == 0)
 						newPos = MIN_SPEED;
 					SendMessage(hTrackbar, TBM_SETPOS, TRUE, newPos);
-					calcs[gslot].speed = newPos;
-					HMENU hMenu = GetSubMenu(GetMenu(calcs[gslot].hwndFrame), 2);
+					lpCalc->speed = newPos;
+					HMENU hMenu = GetSubMenu(GetMenu(lpCalc->hwndFrame), 2);
 					switch(newPos)
 					{
 						case 25:
@@ -75,7 +77,7 @@ LRESULT CALLBACK SetSpeedProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 						return TRUE;
 					}
 					case IDC_SPEED_CANCEL: {
-						calcs[gslot].speed = originalSpeed;
+						lpCalc->speed = originalSpeed;
 						EndDialog(hwnd, IDCANCEL);
 						return FALSE;
 					}

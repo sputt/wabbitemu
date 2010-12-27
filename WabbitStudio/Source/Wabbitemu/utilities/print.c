@@ -2,7 +2,6 @@
 
 #include "print.h"
 #include "label.h"
-#include "calc.h"
 #include "core.h"
 
 
@@ -57,7 +56,7 @@ void press_textA(TCHAR *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 }
 
 
-void MyDrawText(HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
+void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
     TCHAR *p;
     va_list argp;
     RECT r = *rc;
@@ -68,7 +67,7 @@ void MyDrawText(HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
     if (calc_size == FALSE) {
     	calc_size = TRUE;
     	
-    	MyDrawText(hdc, rc, zinf, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+    	MyDrawText(lpCalc, hdc, rc, zinf, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
     	
     	TCHAR szFilltext[1024];
     	memset(szFilltext, 'A', mspf_size);
@@ -139,13 +138,14 @@ void MyDrawText(HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
 					int val;
 					
 					val = (addr + ((char) va_arg(argp, INT_PTR)));
-					name = FindAddressLabel(gslot,calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].ram, calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].page,val);
+					name = FindAddressLabel(lpCalc, lpCalc->cpu.mem_c->banks[(val >> 14) & 0x03].ram,
+											lpCalc->cpu.mem_c->banks[(val >> 14) & 0x03].page, val);
 					
 					if (name) {
 						press_text(name, RGB(0, 0, 0));
 					} else {
 						TCHAR szAddr[16];
-						_stprintf_s(szAddr, _T("$%04X"),val);
+						_stprintf_s(szAddr, _T("$%04X"), val);
 						press_text(szAddr, RGB(0, 0, 0));
 					}
                 	break;
@@ -157,7 +157,8 @@ void MyDrawText(HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
 						int val;
 						val = (int) va_arg(argp, INT_PTR);
 
-						name = FindAddressLabel(gslot,calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].ram, calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].page,val);
+						name = FindAddressLabel(lpCalc, lpCalc->cpu.mem_c->banks[(val >> 14) & 0x03].ram,
+												lpCalc->cpu.mem_c->banks[(val >> 14) & 0x03].page, val);
 						
 						if (name) {
 							press_text(name, RGB(0, 0, 0));
@@ -193,7 +194,7 @@ void MyDrawText(HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
     va_end(argp);
 }
 
-TCHAR* mysprintf(Z80_info_t* zinf, const TCHAR *fmt, ...) {
+TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
     TCHAR *p, end_buf[1024] = "\0";
     va_list argp;
     
@@ -258,14 +259,15 @@ TCHAR* mysprintf(Z80_info_t* zinf, const TCHAR *fmt, ...) {
 					int val;
 					
 					val = (addr + ((char) va_arg(argp, INT_PTR)));
-					name = FindAddressLabel(gslot,calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].ram, calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].page,val);
+					name = FindAddressLabel(lpCalc, lpCalc->cpu.mem_c->banks[(val >> 14) & 0x03].ram, 
+												lpCalc->cpu.mem_c->banks[(val >> 14) & 0x03].page, val);
 					
 					if (name) {
 						StringCbCat(end_buf, sizeof(end_buf), name);
 					} else {
 						TCHAR szAddr[16];
 #ifdef WINVER
-						_stprintf_s(szAddr, _T("$%04X"),val);
+						_stprintf_s(szAddr, _T("$%04X"), val);
 #else
 						sprintf(szAddr, "$%04X",val);
 #endif
@@ -280,7 +282,8 @@ TCHAR* mysprintf(Z80_info_t* zinf, const TCHAR *fmt, ...) {
 						int val;
 						val = (int) va_arg(argp, INT_PTR);
 
-						name = FindAddressLabel(gslot,calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].ram, calcs[gslot].cpu.mem_c->banks[(val>>14)&0x03].page,val);
+						name = FindAddressLabel(lpCalc, lpCalc->cpu.mem_c->banks[(val >> 14) & 0x03].ram,
+												lpCalc->cpu.mem_c->banks[(val >> 14) & 0x03].page, val);
 						
 						if (name) {
 							StringCbCat(end_buf, sizeof(end_buf), name);

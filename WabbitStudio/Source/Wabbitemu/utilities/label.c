@@ -8,11 +8,11 @@
 #include "bcalls.h"
 #include "flags.h"
 
-label_struct *lookup_label(TCHAR *label_name) {
+label_struct *lookup_label(LPCALC lpCalc, TCHAR *label_name) {
 	int i;
-	for (i = 0; calcs[gslot].labels[i].name != NULL; i++) {
-		if (_tcsicmp(calcs[gslot].labels[i].name, label_name) == 0)
-			return &calcs[gslot].labels[i];
+	for (i = 0; lpCalc->labels[i].name != NULL; i++) {
+		if (_tcsicmp(lpCalc->labels[i].name, label_name) == 0)
+			return &lpCalc->labels[i];
 	}
 	return NULL;
 }	
@@ -27,11 +27,11 @@ void VoidLabels(LPCALC lpCalc) {
 	}
 }
 
-TCHAR* FindAddressLabel(int slot, BOOL IsRAM, uint8_t page, uint16_t addr) {
+TCHAR* FindAddressLabel(LPCALC lpCalc, BOOL IsRAM, uint8_t page, uint16_t addr) {
 	int i;
 	
-	for (i = 0; calcs[slot].labels[i].name != NULL; i++) {
-		label_struct *label = &calcs[slot].labels[i];
+	for (i = 0; lpCalc->labels[i].name != NULL; i++) {
+		label_struct *label = &lpCalc->labels[i];
 		if (label->IsRAM == IsRAM && label->page == page && label->addr == addr)
 			return label->name;
 	}

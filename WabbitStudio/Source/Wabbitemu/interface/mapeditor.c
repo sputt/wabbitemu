@@ -88,7 +88,7 @@ int FindAnimationInfo(int type, unsigned short addr, int *frame, unsigned short 
 	
 	TCHAR label_name[64];
 	_tprintf_s(label_name, _T("%s_ANIM_PAGE"), name);
-	label_struct *lab = lookup_label(label_name);
+	label_struct *lab = lookup_label(&calcs[0], label_name);
 	if (lab == NULL) {
 		return 0;
 	}
@@ -119,7 +119,7 @@ int FindAnimationInfo(int type, unsigned short addr, int *frame, unsigned short 
 
 __declspec (dllexport) 
 ZOBJECT *GetZeldaObjectArray() {
-	label_struct *lab = lookup_label(_T("object_array"));
+	label_struct *lab = lookup_label(&calcs[0], _T("object_array"));
 	if (lab == NULL) {
 		return NULL;
 	}
@@ -129,7 +129,7 @@ ZOBJECT *GetZeldaObjectArray() {
 
 __declspec (dllexport) 
 ZANIMATE *GetZeldaAnimateArray() {
-	label_struct *lab = lookup_label(_T("animate_array"));
+	label_struct *lab = lookup_label(&calcs[0], _T("animate_array"));
 	if (lab == NULL) {
 		return NULL;
 	}
@@ -139,7 +139,7 @@ ZANIMATE *GetZeldaAnimateArray() {
 
 __declspec (dllexport)
 unsigned char *GetZeldaMapData() {
-	label_struct *lab = lookup_label(_T("map_data"));
+	label_struct *lab = lookup_label(&calcs[0], _T("map_data"));
 	if (lab == NULL) {
 		return NULL;
 	}
@@ -149,7 +149,7 @@ unsigned char *GetZeldaMapData() {
 
 __declspec (dllexport)
 void *GetZeldaDrawQueue() {
-	label_struct *lab = lookup_label(_T("draw_queue"));
+	label_struct *lab = lookup_label(&calcs[0], _T("draw_queue"));
 	if (lab == NULL) {
 		return NULL;
 	}
@@ -159,7 +159,7 @@ void *GetZeldaDrawQueue() {
 
 __declspec (dllexport)
 int GetZeldaDrawQueueCount() {
-	label_struct *lab = lookup_label(_T("draw_count"));
+	label_struct *lab = lookup_label(&calcs[0], _T("draw_count"));
 	if (lab == NULL) {
 		return 0;
 	}
@@ -184,8 +184,6 @@ void ReleaseKey(WORD wKey) {
 
 __declspec (dllexport)
 void EnableCalc(BOOL fEnable) {
-	gslot = 0;
-	
 	calcs[0].active = fEnable;
 	calcs[0].running = fEnable;
 }
@@ -193,7 +191,7 @@ void EnableCalc(BOOL fEnable) {
 __declspec (dllexport)
 void HookZelda(void (*fnCallback)(void) ) {
 	
-	label_struct *lab = lookup_label(_T("sort_done"));
+	label_struct *lab = lookup_label(&calcs[0], _T("sort_done"));
 	if (lab == NULL) {
 		return;
 	}
@@ -206,7 +204,7 @@ void HookZelda(void (*fnCallback)(void) ) {
 	}
 	set_break(&calcs[0].mem_c, lab->IsRAM, lab->page, lab->addr);
 
-	label_struct *menu_lab = lookup_label(_T("sub_sync"));
+	label_struct *menu_lab = lookup_label(&calcs[0], _T("sub_sync"));
 	if (menu_lab != NULL)
 	{
 		set_break(&calcs[0].mem_c, menu_lab->IsRAM, menu_lab->page, menu_lab->addr);
@@ -218,7 +216,7 @@ void HookZelda(void (*fnCallback)(void) ) {
 __declspec(dllexport)
 int ReadVariable(TCHAR *name, void *data, int bytes) {
 	int address = 0;
-	label_struct *lab = lookup_label(name);
+	label_struct *lab = lookup_label(&calcs[0], name);
 
 	if (lab == NULL) {
 		address = _tstoi(name);

@@ -291,7 +291,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				case IDM_45SECOND:
 				case IDM_50SECOND:
 				{
-					restore_backup(((int) wParam) - IDM_05SECOND, &calcs[DebuggerSlot]);
+					restore_backup(((int) wParam) - IDM_05SECOND, lpDebuggerCalc);
 					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;
 				}
@@ -884,7 +884,7 @@ BOOL CALLBACK EnumToolbarRedraw(HWND hwndChild, LPARAM lParam) {
 }
 
 waddr_t z80_to_waddr(uint16_t addr) {
-	bank_t *pb = &calcs[DebuggerSlot].mem_c.banks[mc_bank(addr)];
+	bank_t *pb = &lpDebuggerCalc->mem_c.banks[mc_bank(addr)];
 
 	waddr_t waddr;
 	waddr.is_ram = pb->ram;
@@ -939,7 +939,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case IDM_45SECOND:
 				case IDM_50SECOND:
 				{
-					restore_backup(((int) wParam) - IDM_05SECOND, &calcs[DebuggerSlot]);
+					restore_backup(((int) wParam) - IDM_05SECOND, lpDebuggerCalc);
 					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;
 				}

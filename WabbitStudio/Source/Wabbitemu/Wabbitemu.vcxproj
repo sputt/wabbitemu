@@ -57,6 +57,8 @@
     <ClCompile Include="debugger\dbmem.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Debugger\dbmonitor.c" />
+    <ClCompile Include="Debugger\dbprofile.c" />
     <ClCompile Include="debugger\dbreg.c">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -190,6 +192,8 @@
     <ClInclude Include="debugger\dbcommon.h" />
     <ClInclude Include="debugger\dbdisasm.h" />
     <ClInclude Include="debugger\dbmem.h" />
+    <ClInclude Include="Debugger\dbmonitor.h" />
+    <ClInclude Include="Debugger\dbprofile.h" />
     <ClInclude Include="debugger\dbreg.h" />
     <ClInclude Include="debugger\dbtoolbar.h" />
     <ClInclude Include="debugger\dbtrack.h" />
