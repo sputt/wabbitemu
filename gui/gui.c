@@ -2,6 +2,7 @@
 
 #include "gui.h"
 #include "resource.h"
+#include "uxtheme.h"
 
 #include "core.h"
 #include "calc.h"
@@ -10,43 +11,43 @@
 #include "gifhandle.h"
 #include "gif.h"
 
-#include "resource.h"
 #include "var.h"
 #include "link.h"
 #include "keys.h"
+#include "fileutilities.h"
 
-#include "guidebug.h"
-#include "guioptions.h"
-#include "guiwizard.h"
-#include "guicontext.h"
-#include "guibuttons.h"
-#include "guilcd.h"
-#include "guispeed.h"
-#include "guivartree.h"
-#include "guifaceplate.h"
-#include "guiglow.h"
-#include "guiopenfile.h"
-#include "guicutout.h"
 #include "dbmem.h"
 #include "dbreg.h"
 #include "dbtoolbar.h"
 #include "dbtrack.h"
 #include "dbdisasm.h"
+
+#include "guibuttons.h"
+#include "guicontext.h"
+#include "guicutout.h"
+#include "guidebug.h"
+#include "guifaceplate.h"
+#include "guiglow.h"
+#include "guilcd.h"
+#include "guiopenfile.h"
+#include "guioptions.h"
+#include "guisavestate.h"
+#include "guispeed.h"
+#include "guivartree.h"
+#include "guiwizard.h"
+
+#include "DropTarget.h"
+#include "expandpane.h"
 #include "registry.h"
 #include "sendfiles.h"
 #include "state.h"
 #ifdef USE_COM
 #include "wbded.h"
 #endif
-#include "link.h"
-#include "uxtheme.h"
 #ifdef USE_GDIPLUS
 #include "CGdiPlusBitmap.h"
 #endif
 
-#include "DropTarget.h"
-
-#include "expandpane.h"
 
 #ifdef _M_IX86
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -180,7 +181,7 @@ int gui_debug(LPCALC lpCalc) {
 
 void SkinCutout(HWND hwnd);
 
-int gui_frame(calc_t *lpCalc) {
+int gui_frame(LPCALC lpCalc) {
  	RECT r;
 
  	if (!lpCalc->Scale)
@@ -188,7 +189,7 @@ int gui_frame(calc_t *lpCalc) {
 	if (lpCalc->SkinEnabled) {
  		SetRect(&r, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
  	} else {
- 		SetRect(&r, 0, 0, 128*lpCalc->Scale, 64*lpCalc->Scale);
+ 		SetRect(&r, 0, 0, 128 * lpCalc->Scale, 64 * lpCalc->Scale);
  	}
 	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 	r.bottom += GetSystemMetrics(SM_CYMENU);
@@ -198,7 +199,7 @@ int gui_frame(calc_t *lpCalc) {
 		g_szAppName,
         _T("Z80"),
 		(WS_TILEDWINDOW |  (silent_mode ? 0 : WS_VISIBLE) | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */),
-        CW_USEDEFAULT, CW_USEDEFAULT, r.right - r.left, r.bottom - r.top,
+        startX, startY, r.right - r.left, r.bottom - r.top,
         NULL, 0, g_hInst, (LPVOID) lpCalc);
 
 	HDC hdc = GetDC(lpCalc->hwndFrame);
@@ -596,42 +597,17 @@ int gui_frame_update(LPCALC lpCalc) {
 }
 #endif
 
-TCHAR* LoadRomIntialDialog(void) {
-	OPENFILENAME ofn;
-	TCHAR lpstrFilter[] 	= _T("\
-Known types ( *.sav; *.rom) \0*.sav;*.rom\0\
-Save States  (*.sav)\0*.sav\0\
-ROMs  (*.rom)\0*.rom\0\
-All Files (*.*)\0*.*\0\0");
-	TCHAR* FileName = (TCHAR *) malloc(MAX_PATH);
-	ZeroMemory(&ofn, sizeof(ofn));
-	ZeroMemory(FileName, MAX_PATH);
-	ofn.lStructSize		= sizeof(OPENFILENAME);
-	ofn.lpstrFilter		= (LPCTSTR) lpstrFilter;
-	ofn.lpstrFile		= FileName;
-	ofn.nMaxFile		= MAX_PATH;
-	ofn.lpstrTitle		= _T("Wabbitemu: Please select a ROM or save state");
-	ofn.Flags			= OFN_PATHMUSTEXIST | OFN_EXPLORER |
-						  OFN_HIDEREADONLY | OFN_FILEMUSTEXIST;
-	if (!GetOpenFileName(&ofn)) {
-		free(FileName);
-		return NULL;
-	}
-	return FileName;
-}
-
 /*
  * Checks based on the existence of the main window and the LCD window whether we need
  * to spawn a new process
  */
-bool check_no_new_process(HWND Findhwnd, HWND *FindChildhwnd)
-{
+bool check_no_new_process(HWND Findhwnd, HWND *FindChildhwnd) {
 	if (Findhwnd == NULL) {
 		return true;
 	} else {
-		*FindChildhwnd = FindWindowEx(Findhwnd,NULL,g_szLCDName,NULL);
+		*FindChildhwnd = FindWindowEx(Findhwnd, NULL, g_szLCDName, NULL);
 		if (*FindChildhwnd == NULL)
-			*FindChildhwnd = FindWindowEx(NULL,NULL,g_szLCDName,NULL);
+			*FindChildhwnd = FindWindowEx(NULL, NULL, g_szLCDName, NULL);
 		return *FindChildhwnd == NULL;
 	}
 }
@@ -675,7 +651,7 @@ void RegisterWindowClasses(void)
 	wc.lpfnWndProc = DebugProc;
 	wc.style = CS_DBLCLKS;
 	wc.lpszClassName = g_szDebugName;
-	wc.lpszMenuName = MAKEINTRESOURCE(IDR_DEBUG_MENU); //MAKEINTRESOURCE(IDR_DB_MENU);
+	wc.lpszMenuName = MAKEINTRESOURCE(IDR_DEBUG_MENU);
 	wc.hbrBackground = (HBRUSH) (COLOR_BTNFACE+1);
 	RegisterClassEx(&wc);
 
@@ -803,13 +779,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 
 	if (argv && argc>1) {
-		for (i=1;i<argc;i++) {
+		for (i = 1; i < argc; i++) {
 			memset(tmpstring, 0, 512);
 #ifdef _UNICODE
 			_tcscpy(tmpstring, argv[i]);
 #else
 			size_t numConv;
-			wcstombs_s(&numConv, tmpstring,argv[i],512);
+			wcstombs_s(&numConv, tmpstring, argv[i], 512);
 #endif
 			if (tmpstring[0] == '/' || tmpstring[0] == '-') {
 				if (toupper(tmpstring[1]) == 'S') {
@@ -822,12 +798,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPCALC lpCalc = calc_slot_new();
 	LoadRegistrySettings(lpCalc);
 
-	if (rom_load(lpCalc, lpCalc->rom_path) == TRUE)
-	{
+	if (rom_load(lpCalc, lpCalc->rom_path) == TRUE) {
 		gui_frame(lpCalc);
-	}
-	else
-	{
+	} else {
 		calc_slot_free(lpCalc);
 
 		if (show_wizard) {
@@ -838,16 +811,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			if (wizardError)
 				return EXIT_FAILURE;
 			LoadRegistrySettings(lpCalc);
-		}
-		else {
-			TCHAR* string = LoadRomIntialDialog();
-			if (string) {
+		} else {
+			const TCHAR lpstrFilter[] 	= _T("Known types ( *.sav; *.rom) \0*.sav;*.rom\0\
+												Save States  (*.sav)\0*.sav\0\
+												ROMs  (*.rom)\0*.rom\0\
+												All Files (*.*)\0*.*\0\0");
+			const TCHAR lpstrTitle[] = _T("Wabbitemu: Please select a ROM or save state");
+			const TCHAR lpstrDefExt[] = _T("rom");
+			TCHAR* FileName = (TCHAR *) malloc(MAX_PATH);
+			ZeroMemory(FileName, MAX_PATH);
+			if (!BrowseFile(FileName, lpstrFilter, lpstrTitle, lpstrDefExt, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST)) {
 				lpCalc = calc_slot_new();
-				if (rom_load(lpCalc, string) == TRUE) {
+				if (rom_load(lpCalc, FileName) == TRUE)
 					gui_frame(lpCalc);
-				} else {
-					return EXIT_FAILURE;
-				}
+				else return EXIT_FAILURE;
 			} else return EXIT_FAILURE;
 		}
 	}
@@ -858,9 +835,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	VoidLabels(lpCalc);
 
 	if (loadfiles) {
-		if (argv && argc>1) {
+		if (argv && argc > 1) {
 			TCHAR* FileNames = NULL;
-			for(i=1;i<argc;i++) {
+			for(i = 1; i < argc; i++) {
 				memset(tmpstring, 0, 512);
 #ifdef _UNICODE
 				_tcscpy(tmpstring, argv[i]);
@@ -868,15 +845,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				size_t numConv;
 				wcstombs_s(&numConv, tmpstring, argv[i], 512);
 #endif
-				if (tmpstring[0] != '-')
-				{
+				if (tmpstring[0] != '-') {
 					SendFileToCalc(lpCalc, tmpstring, TRUE);
 				}
 			}
 		}
 	}
 	loadfiles = FALSE;
-
+	//initialize linking hub
+	memset(link_hub, 0, sizeof(link_hub));
+	link_t *hub_link = (link_t *) malloc(sizeof(link_t)); 
+	if (!hub_link) {
+		printf("Couldn't allocate memory for link\n");
+	}
+	hub_link->host		= 0;			//neither lines set
+	hub_link->client	= &hub_link->host;	//nothing plugged in.
+	link_hub[MAX_CALCS] = hub_link;
 
 	InitCommonControls();
 #ifdef USE_DIRECTX
@@ -947,6 +931,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		gif_write_state = GIF_END;
 		handle_screenshot();
 	}
+
+	//free the link we setup to act as our hub
+	free(hub_link);
 	
 #ifdef USE_GDIPLUS
 	// Shutdown GDI+
@@ -1024,10 +1011,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			if (lpCalc->gif_disp_state != GDS_IDLE) {
 				RECT screen, rc;
-				//screen = lpCalc->rectLCD;
 				GetWindowRect(lpCalc->hwndLCD, &screen);
 				GetWindowRect(lpCalc->hwndFrame, &rc);
-				//OffsetRect(&screen, rc.left, rc.top);
 				int orig_w = screen.right - screen.left;
 				int orig_h = screen.bottom - screen.top;
 
@@ -1042,7 +1027,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 				int grayred = (int) (((double) GIFGRADWIDTH / GIFGRAD_PEAK) * 50);
 				HDC hWindow = GetDC(hwnd);
-				DrawGlow(lpCalc->hdcSkin, hWindow, &screen, RGB(127-grayred, 127-grayred, 127+grayred), GIFGRADWIDTH, lpCalc->SkinEnabled);				
+				DrawGlow(lpCalc->hdcSkin, hWindow, &screen, RGB(127 - grayred, 127 - grayred, 127 + grayred),
+							GIFGRADWIDTH, lpCalc->SkinEnabled);				
 				ReleaseDC(hwnd, hWindow);
 				InflateRect(&screen, GIFGRADWIDTH, GIFGRADWIDTH);
 				ValidateRect(hwnd, &screen);
@@ -1082,19 +1068,26 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						break;
 				}
 				case IDM_FILE_OPEN: {
-					GetOpenSendFileName(hwnd, 0);
+					GetOpenSendFileName(hwnd);
 					break;
 				}
 				case IDM_FILE_SAVE: {
-					SaveStateDialog(hwnd, lpCalc);
+					TCHAR FileName[MAX_PATH];
+					const TCHAR lpstrFilter[] 	= _T("Known File types ( *.sav; *.rom; *.bin) \0*.sav;*.rom;*.bin\0\
+														Save States  (*.sav)\0*.sav\0\
+														ROMS  (*.rom; .bin)\0*.rom;*.bin\0\
+														All Files (*.*)\0*.*\0\0");
+					ZeroMemory(FileName, MAX_PATH);
+					SaveFile(FileName, (TCHAR *) lpstrFilter, _T("Wabbitemu Save State"), _T("sav"), OFN_PATHMUSTEXIST);
+					SAVESTATE_t *save = SaveSlot(lpCalc);
+					gui_savestate(hwnd, save, FileName, lpCalc);
 					break;
 				}
 				case IDM_FILE_GIF: {
 					HMENU hmenu = GetMenu(hwnd);
 					if (gif_write_state == GIF_IDLE) {
-						TCHAR buf[MAX_PATH];
-						BOOL start_screenshot = get_gif_filename(buf);
-						if (!start_screenshot) 
+						BOOL start_screenshot = get_gif_filename();
+						if (!start_screenshot)
 							break;
 						gif_write_state = GIF_START;
 						for (int i = 0; i < MAX_CALCS; i++)
@@ -1154,8 +1147,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_CALC_CONNECT: {
 					if (!calcs[0].active || !calcs[1].active || link_connect(&calcs[0].cpu, &calcs[1].cpu))						
 						MessageBox(NULL, _T("Connection Failed"), _T("Error"), MB_OK);					
-					else						
-						MessageBox(NULL, _T("Connection Successful"), _T("Success"), MB_OK);					
+					else
+					//link_connect_hub(lpCalc->slot, &lpCalc->cpu);
+					MessageBox(NULL, _T("Connection Successful"), _T("Success"), MB_OK);					
 					break;
 				}
 				case IDM_CALC_PAUSE: {
@@ -1185,7 +1179,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				case IDM_HELP_ABOUT:
 					lpCalc->running = FALSE;
-					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGABOUT), hwnd, (DLGPROC)AboutDialogProc);					
+					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGABOUT), hwnd, (DLGPROC) AboutDialogProc);					
 					lpCalc->running = TRUE;					
 					break;
 				case IDM_HELP_WIZARD:
@@ -1201,15 +1195,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				case IDM_FRAME_BUNLOCK: {
 					RECT rc;
-					keypad_t *kp = (keypad_t *) (&lpCalc->cpu)->pio.devices[1].aux;
+					keypad_t *kp = (keypad_t *) lpCalc->cpu.pio.devices[1].aux;
 					int group,bit;
 					GetClientRect(hwnd, &rc);
-					for(group=0;group<7;group++) {
-						for(bit=0;bit<8;bit++) {
-							kp->keys[group][bit] &=(~KEY_LOCKPRESS);
+					for(group = 0; group < 7; group++) {
+						for(bit = 0; bit < 8; bit++) {
+							kp->keys[group][bit] &= (~KEY_LOCKPRESS);
 						}
 					}
-					lpCalc->cpu.pio.keypad->on_pressed &=(~KEY_LOCKPRESS);
+					lpCalc->cpu.pio.keypad->on_pressed &= (~KEY_LOCKPRESS);
 
 					InvalidateRect(hwnd, &lpCalc->rectSkin, TRUE);
 					UpdateWindow(hwnd);
@@ -1266,7 +1260,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					StringCbCopy(buffer, sizeof(buffer), env);
 					free(env);
 					StringCbCat(buffer, sizeof(buffer), _T("\\Revsoft.Autoupdater.exe"));
-					HRSRC hrDumpProg = FindResource(GetModuleHandle(NULL), MAKEINTRESOURCE(UPDATER), _T("EXE"));
+					HRSRC hrDumpProg = FindResource(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_UPDATER), _T("UPDATER"));
 					ExtractResource(buffer, hrDumpProg);
 
 					TCHAR argBuf[MAX_PATH * 3];
@@ -1278,6 +1272,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					memset(&si, 0, sizeof(si)); 
 					memset(&pi, 0, sizeof(pi)); 
 					si.cb = sizeof(si);
+					MessageBox(NULL, argBuf, _T("TEST"), MB_OK);
 					if (!CreateProcess(NULL, argBuf,
 						NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, 
 						NULL, NULL, &si, &pi)) {
@@ -1313,9 +1308,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				ReleaseCapture();
 			}
 
-			for(group=0;group<7;group++) {
-				for(bit=0;bit<8;bit++) {
-					kp->keys[group][bit] &=(~KEY_MOUSEPRESS);
+			for(group = 0; group < 7; group++) {
+				for(bit = 0; bit < 8; bit++) {
+					kp->keys[group][bit] &= (~KEY_MOUSEPRESS);
 				}
 			}
 
@@ -1332,7 +1327,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				return 0;
 			}
 
-			if ( (GetGValue(c)>>4)==0x05 && (GetBValue(c)>>4)==0x00){
+			if ( (GetGValue(c) >> 4) == 0x05 && (GetBValue(c) >> 4) == 0x00){
 				lpCalc->cpu.pio.keypad->on_pressed |= KEY_MOUSEPRESS;
 			} else {
 				kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] |= KEY_MOUSEPRESS;

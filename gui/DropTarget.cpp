@@ -212,7 +212,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 					TIFILE_t *tifile = newimportvar(path);
 					valid = tifile != NULL;
 					calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
-					if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73))
+					if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
 						valid = FALSE;
 					FreeTiFile(tifile);
 					GlobalUnlock(stgmed.hGlobal);
@@ -245,7 +245,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 										TIFILE_t *tifile = newimportvar(path);
 										valid = tifile != NULL;
 										calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
-										if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73))
+										if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
 											valid = FALSE;
 										FreeTiFile(tifile);
 									}

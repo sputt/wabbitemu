@@ -59,7 +59,7 @@ typedef struct link {
 	u_char *client;					// what they wrote to the link port
 	volatile size_t vlink_send;		// amount already sent over vlink
 	volatile size_t vlink_recv;		// amount already received over the link
-	size_t vlink_size;			// Size of the var currently on the link (if known)
+	size_t vlink_size;				// Size of the var currently on the link (if known)
 	#ifdef WINVER
 	AUDIO_t audio;
 	#endif
@@ -155,6 +155,7 @@ LINK_ERR link_send_var(CPU_t *, TIFILE_t *, SEND_FLAG);
 LINK_ERR link_send_backup(CPU_t *, TIFILE_t *, SEND_FLAG);
 LINK_ERR forceload_os(CPU_t *, TIFILE_t *);
 int link_connect(CPU_t *, CPU_t *);
+int link_connect_hub(int slot, CPU_t *cpu);
 int link_disconnect(CPU_t *);
 BOOL link_connected(int);
 void writeboot(FILE* , memory_context_t *, int page = -1);

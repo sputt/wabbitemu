@@ -163,11 +163,14 @@ GLOBAL int current_backup_index;
 #endif
 
 GLOBAL u_int frame_counter;
+GLOBAL int startX;
+GLOBAL int startY;
 GLOBAL BOOL exit_save_state;
 GLOBAL BOOL load_files_first;
 GLOBAL BOOL do_backups;
 GLOBAL BOOL show_wizard;
 GLOBAL BOOL sync_cores;
+GLOBAL link_t *link_hub[MAX_CALCS + 1];
 
 
 GLOBAL const TCHAR *CalcModelTxt[]
