@@ -47,6 +47,12 @@ int link_init(CPU_t *cpu) {
 	return 0;
 }
 
+int link_connect_hub(int slot, CPU_t *cpu) {
+	link_hub[slot] = cpu->pio.link;
+	cpu->pio.link->client = &link_hub[MAX_CALCS]->host;
+	return 0;
+}
+
 int link_connect(CPU_t *cpu1, CPU_t *cpu2) {
 	link_t *link1 = cpu1->pio.link;
 	link_t *link2 = cpu2->pio.link;
@@ -353,7 +359,7 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 	if (!cpu->pio.lcd->active) {
 		link_wait(cpu, MHZ_6);
 		cpu->pio.keypad->on_pressed |= KEY_FALSEPRESS;
-		link_wait(cpu, MHZ_6/2);
+		link_wait(cpu, MHZ_6 / 2);
 		cpu->pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
 		link_wait(cpu, MHZ_6);
 
@@ -374,7 +380,7 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		u_char data[64];
 
 		bkhdr.flags_size = backup->length1;
-		bkhdr.type_ID = 0xF;
+		bkhdr.type_ID = backup->vartype;
 		bkhdr.data_size = backup->length2;
 		bkhdr.symbol_size = backup->length3;
 		bkhdr.user_addr = backup->address;
@@ -382,17 +388,20 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		// Send the VAR with Backup style header
 		link_send_pkt(cpu, CID_VAR, &bkhdr);
 
-		keypad_key_press(cpu, VK_RETURN);
-		//link_wait(cpu, 15000000);
+		int virtKey = cpu->pio.model = TI_85 ? VK_F1 : VK_RETURN;
+		keypad_key_press(cpu, virtKey);
 
 		// Receive the ACK
 		link_recv_pkt(cpu, &rpkt, data);
-		if (rpkt.command_ID != CID_ACK)
+		if (rpkt.command_ID != CID_ACK) {
+			keypad_key_release(cpu, virtKey);
 			return LERR_LINK;
+		}
 
 		// Receive Clear To Send
 		link_recv_pkt(cpu, &rpkt, data);
 		if (rpkt.command_ID != CID_CTS) {
+			keypad_key_release(cpu, virtKey);
 			if (rpkt.command_ID == CID_EXIT) {
 				link_send_pkt(cpu, CID_ACK, NULL);
 				return LERR_MEM;
@@ -409,8 +418,10 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 
 		// Receive the ACK
 		link_recv_pkt(cpu, &rpkt, data);
-		if (rpkt.command_ID != CID_ACK)
+		if (rpkt.command_ID != CID_ACK) {
+			keypad_key_release(cpu, virtKey);
 			return LERR_LINK;
+		}
 
 		// Send the single data packet containing the second data section
 		s_data.length = backup->length2;
@@ -419,8 +430,10 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 
 		// Receive the ACK
 		link_recv_pkt(cpu, &rpkt, data);
-		if (rpkt.command_ID != CID_ACK)
+		if (rpkt.command_ID != CID_ACK) {
+			keypad_key_release(cpu, virtKey);
 			return LERR_LINK;
+		}
 
 		// Send the single data packet containing the final data section
 		s_data.length = backup->length3;
@@ -429,13 +442,15 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 
 		// Receive the ACK
 		link_recv_pkt(cpu, &rpkt, data);
-		if (rpkt.command_ID != CID_ACK)
+		if (rpkt.command_ID != CID_ACK) {
+			keypad_key_release(cpu, virtKey);
 			return LERR_LINK;
+		}
 
 		// Send the End of Transmission
 		if (cpu->pio.model != TI_82)
 			link_send_pkt(cpu, CID_EOT, NULL);
-		keypad_key_release(cpu, VK_RETURN);
+		keypad_key_release(cpu, virtKey);
 		break;
 	}
 	default:
