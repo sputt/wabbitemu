@@ -1,9 +1,6 @@
 #ifndef __OPCODES_H
 #define __OPCODES_H
 
-#include <stdio.h>
-//#include <stdbool.h>
-
 typedef struct _instr {
 	char *args;
 	unsigned char instr_data[8];

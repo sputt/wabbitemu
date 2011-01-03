@@ -1,14 +1,7 @@
-#define _GNU_SOURCE
+#include "stdafx.h"
 
 //max depth of #defines
 #define RECURSION_LIMIT 20
-
-#include <stdarg.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-
-#include <stdlib.h>
 
 //#include <stdbool.h>
 #include "storage.h"
@@ -17,13 +10,14 @@
 #include "expand_buf.h"
 #include "console.h"
 #include "spasm.h"
+#include "errors.h"
 
 /*
  * Returns true if ptr has reached what is the end of an assembly
  * line of code.
  * For example: comment, line break (\), or new line
  */
-bool is_end_of_code_line (char *ptr) {
+bool is_end_of_code_line (const char *ptr) {
 	if (ptr == NULL)
 		return NULL;
 
@@ -33,7 +27,7 @@ bool is_end_of_code_line (char *ptr) {
 /*
  * Skips to the next physical line in the file
  */
-char *skip_to_next_line (char *ptr) {
+char *skip_to_next_line (const char *ptr) {
 	if (ptr == NULL)
 		return NULL;
 
@@ -45,13 +39,13 @@ char *skip_to_next_line (char *ptr) {
 	if (*ptr == '\n')
 		ptr++;
 
-	return ptr;
+	return (char *) ptr;
 }
 
 /*
  * Skips to the end of a value spasm2 label name
  */
-char *skip_to_name_end (char *ptr) {
+char *skip_to_name_end (const char *ptr) {
 	const char ext_label_set[] = "_[]!?.";
 	
 	if (ptr == NULL)
@@ -60,10 +54,10 @@ char *skip_to_name_end (char *ptr) {
 	while (*ptr != '\0' && (isalnum((unsigned char) *ptr) || strchr(ext_label_set, *ptr) != NULL))
 		ptr++;
 
-	return ptr;
+	return (char *) ptr;
 }
 
-char *skip_to_code_line_end (char *ptr) {
+char *skip_to_code_line_end (const char *ptr) {
 	bool in_escape = false, in_quotes = false;
 
 	if (ptr == NULL)
@@ -77,17 +71,17 @@ char *skip_to_code_line_end (char *ptr) {
 		ptr++;
 	}
 
-	return ptr;
+	return (char *) ptr;
 }
 
-char *skip_whitespace (char *ptr) {
+char *skip_whitespace (const char *ptr) {
 	if (ptr == NULL)
 		return NULL;
 
 	while (isspace ((unsigned char) *ptr) && *ptr != '\n' && *ptr != '\r')
 		ptr++;
 
-	return ptr;
+	return (char *) ptr;
 }
 
 bool is_arg (char test) {
@@ -96,7 +90,7 @@ bool is_arg (char test) {
 }
 
 
-char *next_expr (char* ptr, const char *delims) {
+char *next_expr (const char *ptr, const char *delims) {
     bool in_string = false, // "xxx xxx xx"
 	     in_escape = false;	// \n
 	int in_quote = 0;		// 'x'
@@ -105,7 +99,7 @@ char *next_expr (char* ptr, const char *delims) {
 	// Skip whitespace at the start
 	ptr = skip_whitespace (ptr);
 	if (is_end_of_code_line (ptr) || *ptr == ')') 
-		return ptr;
+		return (char *) ptr;
 
     while (*ptr != '\0' && !((strpbrk (ptr, delims) == ptr || is_end_of_code_line (ptr))
 				&& !in_escape && !in_string && in_quote == 0)) {
@@ -134,7 +128,7 @@ char *next_expr (char* ptr, const char *delims) {
 		ptr++;
     }
 
-	return ptr;
+	return (char *) ptr;
 }
 
 char *next_code_line(char *ptr) {
@@ -161,7 +155,8 @@ char *next_code_line(char *ptr) {
  * otherwise expands the expression
  */
 
-char *eval (char *expr) {
+char *eval (const char *expr)
+{
 	char result[256], *expr_value;
 	bool suppress_backup = suppress_errors;
 	int value;
@@ -186,28 +181,32 @@ char *eval (char *expr) {
  * holding the values of the args
  */
 
-char *parse_args (char *ptr, define_t *define, list_t **curr_arg_set) {
+char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 	int num_args = 0;
-	char word[256];
 
 	if (curr_arg_set == NULL)
 		return NULL;
 
 	if (*ptr != '(' && define->num_args == 0)
-		return ptr;
+		return (char *) ptr;
 
 	*curr_arg_set = add_arg_set();
 
 	//then parse each argument and store its value
 	if (*ptr == '(') {
-		ptr++;
-		
-		while (read_expr (&ptr, word, ",")) {
-			if (num_args >= define->num_args) {
-				show_warning ("Macro '%s' was given too many arguments, ignoring extras", define->name);
-				break;
+		ptr = skip_whitespace(ptr + 1);
+		if (*ptr != ')')
+		{
+			char *word = NULL;
+			arg_context_t context = ARG_CONTEXT_INITIALIZER;
+			while ((word = extract_arg_string(&ptr, &context)) != NULL)
+			{
+				if (num_args >= define->num_args) {
+					show_warning ("Macro '%s' was given too many arguments, ignoring extras", define->name);
+					break;
+				}
+				add_arg(strdup(define->args[num_args++]), eval(word), *curr_arg_set);
 			}
-			add_arg(strdup(define->args[num_args++]), eval(word), *curr_arg_set);
 		}
 	}
 
@@ -224,7 +223,7 @@ char *parse_args (char *ptr, define_t *define, list_t **curr_arg_set) {
 	}*/
 
 	if (*ptr == ')') ptr++;
-	return ptr;
+	return (char *) ptr;
 }
 
 
@@ -259,7 +258,7 @@ bool line_has_word (char *ptr, const char *word, int word_len) {
  *		NULL if input was not delimiter terminated 
  */
 
-bool read_expr (char** ptr, char word[256], const char *delims) {
+bool read_expr_impl(const char ** const ptr, char word[256], const char *delims) {
     bool in_string = false, // "xxx xxx xx"
 	     in_escape = false;	// \n
 	int in_quote = 0;		// 'x'
@@ -295,7 +294,7 @@ bool read_expr (char** ptr, char word[256], const char *delims) {
 				case ')':
 					if (!in_string && in_quote == 0) level--;
 					if (level < 0) {
-						(*ptr)--;
+						//(*ptr)--; //12/29/2010 stp not sure
 						goto finish_read_expr;
 					}
 					break;
@@ -331,11 +330,37 @@ finish_read_expr:
 
     /* input is either the delimiter or null */
     if (is_end_of_code_line (*ptr)) return true;
-    (*ptr)++;
 	return true;
 }
  
-       
+
+char *extract_arg_string(const char ** const ptr, arg_context_t *context)
+{	
+	bool fReadResult = read_expr((char **) ptr, context->arg, _T(","));
+	if (fReadResult == true)
+	{
+		if (**ptr == ',')
+		{
+			context->fExpectingMore = true;
+			(*ptr)++;
+		}
+		else
+		{
+			context->fExpectingMore = false;
+		}
+	}
+	else
+	{
+		if (context->fExpectingMore == true)
+		{
+			SetLastSPASMError(SPASM_ERR_VALUE_EXPECTED);
+		}
+		return NULL;
+	}
+
+	return context->arg;
+}
+
 /*
  * Removes surrounding quotation marks (if necessary)
  * and reduces control characters
@@ -343,21 +368,41 @@ finish_read_expr:
 
 char* reduce_string (char* input) {
     char *output = input;
-    int i = 0;
-    if (input[0] == '"') i = 1;
-    
-    for (; input[i] != '\0' && input[i] != '"'; i++, output++) {
-        if (input[i] == '\\') {
+
+	int quote_count = 0;
+    for (int i = 0; input[i] != '\0'; i++, output++)
+	{
+        if (input[i] == '\\')
+		{
 			int value;
             char pbuf[8] = "'\\ '";
             pbuf[2] = input[++i];
 			parse_num (pbuf, &value);
             *output = value;
-        } else {
+        }
+		else if (input[i] == '"')
+		{
+			quote_count++;
+			*output = input[i];
+		}
+		else
+		{
             *output = input[i];
         }
     }
-    *output = '\0';
+
+	*output = '\0';
+
+	// Count the quotes
+	if (quote_count == 2)
+	{
+		if (input[0] == '"' && input[strlen(input) - 1] == '"')
+		{
+			input[strlen(input) - 1] = '\0';
+			memmove(input, input + 1, strlen(input));
+		}
+	}
+    
     return input;
 }
 
@@ -536,7 +581,7 @@ char *change_extension (const char *filename, const char *ext) {
 	return strcat(new_fn, ext);
 }
 
-#if defined(WINVER) || defined(MACVER)
+#if defined(WIN32) || defined(MACVER)
 char *strndup (const char *str, int len) {
 	char *dupstr;
 
@@ -564,8 +609,9 @@ int strnlen (const char *str, int maxlen) {
  * text replacements
  */
 
-void expand_expr_full (char *expr, expand_buf *new_expr, int depth) {
-	char *block_start, *name;
+void expand_expr_full (const char *expr, expand_buf *new_expr, int depth) {
+	const char *block_start;
+	char *name;
 	static char separators[] = "=+-*<>|&/%^()\\, \t\r";
 	define_t *define;
 	label_t *label;
@@ -643,7 +689,7 @@ void expand_expr_full (char *expr, expand_buf *new_expr, int depth) {
 }
 
 
-char *expand_expr (char *expr) {
+char *expand_expr (const char *expr) {
 	expand_buf *new_expr;
 	char *new_expr_text;
 
@@ -707,7 +753,7 @@ void show_fatal_error(const char *text, ...) {
 		if (exit_code < EXIT_FATAL_ERROR) exit_code = EXIT_FATAL_ERROR;
 
 		show_error_prefix(curr_input_file, line_num);
-#ifdef WINVER
+#ifdef WIN32
 		OutputDebugString(text);
 		OutputDebugString(TEXT("\n"));
 #endif
@@ -731,7 +777,7 @@ void show_warning(const char *text, ...) {
 		if (exit_code < EXIT_WARNINGS) exit_code = EXIT_WARNINGS;
 
 		show_warning_prefix(curr_input_file, line_num);
-#ifdef WINVER
+#ifdef WIN32
 		OutputDebugString(text);
 		OutputDebugString(TEXT("\n"));
 #endif

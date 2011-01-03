@@ -1,8 +1,5 @@
-#define _GNU_SOURCE
-#include <ctype.h>
-#include <string.h>
-#include <setjmp.h>
-#include <stdlib.h>
+#include "stdafx.h"
+
 #include "spasm.h"
 #include "directive.h"
 #include "utils.h"
@@ -12,6 +9,7 @@
 #include "opcodes.h"
 #include "console.h"
 #include "expand_buf.h"
+#include "errors.h"
 
 
 /*
@@ -61,28 +59,43 @@ char *handle_directive (char *ptr) {
 		case 3: //ORG
 		{
 			int value;
-			char value_str[256];
-
-			read_expr (&ptr, value_str, "");
-			parse_num (value_str, &value);
-			program_counter = value;
+			char value_str[256] = "";
+			bool fResult = read_expr(&ptr, value_str, "");
+			if (fResult == true)
+			{
+				if (parse_num(value_str, &value) == true)
+				{
+					if (value < 0)
+					{
+						SetLastSPASMError(SPASM_ERR_INVALID_ADDRESS, skip_whitespace(value_str));
+					}
+					else
+					{
+						program_counter = value;
+					}
+				}
+			}
+			if ((fResult == false) || (strlen(skip_whitespace(value_str)) == 0))
+			{
+				SetLastSPASMError(SPASM_ERR_VALUE_EXPECTED);
+			}
 			break;
 		}
 		case 6: //FILL
 		case 7: //BLOCK
 		{
 			int size, fill_value;
-			char value_str[256];
+			char szSize[256], szFill[256];
 			bool old_listing_on = listing_on;
 			//listing_on = false;
 
-			read_expr (&ptr, value_str, ",");
-			parse_num (value_str, &size);
+			read_expr (&ptr, szSize, ",");
+			parse_num (szSize, &size);
 			ptr = skip_whitespace (ptr);
 
-			if (read_expr (&ptr, value_str, "")) {
+			if (read_expr (&ptr, szFill, "")) {
 				//if there's a value to fill the block with, then handle that
-				parse_num (value_str, &fill_value);
+				parse_num (szFill, &fill_value);
 			} else {
 				//otherwise use 0
 				fill_value = 0;
@@ -90,12 +103,13 @@ char *handle_directive (char *ptr) {
 
 			if (size < 0) {
 				show_error ("Size to fill must be positive (given %d)", size);
+				SetLastSPASMError(SPASM_ERR_SIZE_MUST_BE_POSITIVE, szSize);
 				listing_on = old_listing_on;
 				break;
 			}
 
-			if (fill_value < -128 || fill_value > 127)
-				show_warning ("Value to fill with can't fit in 8 bits, truncating");
+			if (fill_value < -128 || fill_value > 255)
+				show_warning ("Value to fill '%d' can't fit in 8 bits, truncating", fill_value);
 
 			program_counter += size;
 			stats_datasize += size;
@@ -204,7 +218,8 @@ char *handle_directive (char *ptr) {
 		}
 		case 9: //ECHO
 		{
-			if (ptr[0] == '>') {
+			if (ptr[0] == '>')
+			{
 				char target_format[2] = "w";
 				FILE *echo_target;
 				char filename[MAX_PATH];
@@ -216,7 +231,7 @@ char *handle_directive (char *ptr) {
 
 				ptr = skip_whitespace (ptr + 1);
 				if (is_end_of_code_line (ptr)) {
-					show_error ("No filename given for echo target");
+					SetLastSPASMError(SPASM_ERR_FILENAME_EXPECTED);
 					return NULL;
 				}
 
@@ -392,10 +407,18 @@ void show_define (define_t *define) {
 		for (i = 0; i < define->num_args; i++) {
 			if (i != 0) fputs (", ", stdout);
 			fputs (define->args[i], stdout);
+
 		}
 		putchar (')');
 	}
 
+#ifdef WIN32
+	if (define->contents != NULL)
+	{
+		OutputDebugString(define->contents);
+		OutputDebugString("\n");
+	}
+#endif
 	//printf (": %s\n", define->contents);
 }
 
@@ -407,34 +430,21 @@ void show_define (define_t *define) {
  * to the program output
  */
 
-char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
+char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 	static int level = 0;
-	char word[256];
-	jmp_buf error_buf;
+	char *word = NULL;
 	int i;
 
-	i = setjmp(error_buf);
-	if (i != 0)
-	{
-		if (echo_target != NULL)
-			fprintf ((FILE *) echo_target, "(error)");
-		if (type == ES_ECHO && level == 1) {
-			if (echo_target == stdout) putchar ('\n');
-			else fclose ((FILE *) echo_target);
-		}
-	
-		level--;
-		return ptr;
-	}
 	level++;
 
-	// Handle the list portion
-	while (read_expr (&ptr, word, ",")) {
+	arg_context_t context = ARG_CONTEXT_INITIALIZER;
+	while ((word = extract_arg_string(&ptr, &context)) != NULL)
+	{
 		// handle strings
 		if (word[0] == '"') {
 			char *next = next_expr (word, EXPR_DELIMS);
 			if (*next != '\0') 
-				longjmp(error_buf, 1);
+				goto echo_error;
 			
 			reduce_string (word);
 			if (type == ES_ECHO) {
@@ -444,7 +454,7 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 			} else {
 				int i;
 				for (i = 0; word[i]; i++) {
-					if (mode & MODE_NORMAL || mode & MODE_LIST)
+					if ((mode & MODE_NORMAL) || (mode & MODE_LIST))
 						write_out (word[i]);
 	                stats_datasize++;
 	                program_counter++;
@@ -457,6 +467,8 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 			//first try to parse it
 			suppress_errors = true;
 			
+			SetLastSPASMError(SPASM_ERR_SUCCESS);
+
 			if (parse_num (word, &value) || parser_forward_ref_err) {
 				switch (type) 
 				{
@@ -465,7 +477,7 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 						if (parser_forward_ref_err == false)
 							fprintf ((FILE *) echo_target, "%d", value);
 						else 
-							longjmp(error_buf, 1);
+							goto echo_error;
 						break;
 					}
 #ifdef USE_BUILTIN_FCREATE
@@ -473,13 +485,13 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 					{
 						char buffer[256];
 						if (parser_forward_ref_err == false)
-#ifdef WINVER
+#ifdef WIN32
 							sprintf_s(buffer, "%d", value);
 #else
 							sprintf(buffer, "%d", value);
 #endif
 						else
-#ifdef WINVER
+#ifdef WIN32
 							sprintf_s(buffer, "(error)");
 #else
 							sprintf(buffer, "(error)");
@@ -511,6 +523,7 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 				define_t *define;
 
 				suppress_errors = false;
+				SetLastSPASMError(SPASM_ERR_SUCCESS);
 				
 				//printf("error occured: %d, forward: %d, value: %d\n", error_occurred, parser_forward_ref_err, value);
 				read_expr (&name_end, name, "(");
@@ -519,21 +532,22 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 				read_expr (&next, NULL, ")");
 				
 				if (*next != '\0')
-					longjmp(error_buf, 1);
+					goto echo_error;
 
 				if ((define = search_defines (name))) {
 					char *expr;
 					list_t *args = NULL;
 	
 					//handle defines
-					if (define->contents == NULL) {
-						show_error ("Argument '%s' used without value", name);
+					if (define->contents == NULL)
+					{
+						SetLastSPASMError(SPASM_ERR_ARG_USED_WITHOUT_VALUE, name);
 					}
 					
 					if (*(name_end - 1) == '(') name_end--;
 					name_end = parse_args (name_end, define, &args);
 					if (!name_end)
-						return ptr;
+						return (char *) ptr;
 					
 					expr = parse_define (define);
 					if (expr) {
@@ -541,19 +555,29 @@ char *parse_emit_string (char *ptr, ES_TYPE type, void *echo_target) {
 						free (expr);
 					}
 					remove_arg_set (args);
-				} else
-					longjmp(error_buf, 1);
+				}
+				else
+				{
+echo_error:
+					// Generate the errors
+					parse_num (word, &value);
+
+					if (echo_target != NULL)
+					{
+						fprintf((FILE *) echo_target, "(error)");
+					}
+				}
 			}
 			
 			
 		}
 	}
-	
+
 	if (type == ES_ECHO && level == 1) {
 		if (echo_target == stdout) putchar ('\n');
 		else fclose ((FILE *) echo_target);
 	}
 	
 	level--;
-	return ptr;
+	return (char *) ptr;
 }

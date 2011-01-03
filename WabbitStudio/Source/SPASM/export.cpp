@@ -3,28 +3,9 @@
 
 /* Modified for use in SPASM by Don Straney */
 
-#ifdef USE_GMP
-#include <gmp.h>
-#endif
+#include "stdafx.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#ifndef WINVER
-#include <openssl/md5.h>				//NOTE: We used Openssl's MD5 generator, but any should do.
-typedef unsigned long       DWORD;
-#endif
-#include <string.h>
-#ifndef USE_GMP
-#include "big.h"
-#endif
 #include "utils.h"
-
-
-#ifdef WINVER
-#define strcasecmp _stricmp
-#include <WinCrypt.h>
-#endif
 
 #undef  show_fatal_error_prefix
 #define show_fatal_error_prefix(zcif, zln) printf ("signer: error: ")
@@ -107,7 +88,6 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
 
 void write_file (const unsigned char *output_contents, int output_len, const char *output_filename) {
 	FILE *outfile;
-	char *prgmname;
 	int i, calc;
 
 	//get the type from the extension of the output filename
@@ -116,7 +96,7 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 		const char *ext = output_filename + i + 1;
 
 		for (calc = 0; calc < 10; calc++) {
-			if (!strcasecmp (ext, extensions[calc]))
+			if (!_stricmp (ext, extensions[calc]))
 				break;
 		}
 
@@ -140,7 +120,9 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	for (i = strlen (output_filename); output_filename[i] != '\\' && output_filename[i] != '/' && i; i--);
 	if (i != 0)
 		i++;
-	prgmname = (char *)&output_filename[i];
+	
+	char prgmname[MAX_PATH];
+	strcpy(prgmname, output_filename);
 	
 	for (i = strlen (prgmname); prgmname[i] != '.' && i; i--);
 	if (i != 0)
@@ -216,7 +198,7 @@ void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, c
     for (i=0; i < 8 ;i++) name[i]=buffer[i+pnt];
 
 /* Calculate MD5 */
-#ifdef WINVER
+#ifdef WIN32
 	unsigned char hashbuf[64];
 	HCRYPTPROV hCryptProv; 
     HCRYPTHASH hCryptHash;
@@ -263,7 +245,7 @@ void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, c
 /* Convert to 8xk */
     intelhex(outfile, buffer, total_size);
 
-#ifdef WINVER
+#ifdef WIN32
 	if (hCryptHash) {
 		CryptDestroyHash(hCryptHash);
 		hCryptHash = NULL;
@@ -299,7 +281,6 @@ int findfield( unsigned char byte, const unsigned char* buffer ) {
  * Spencer wrote his own big num routines,  cutting the size to a tenth 
  * of what it was. */
 int siggen(const unsigned char* hashbuf, unsigned char* sigbuf, int* outf) {
-	int i;
 #ifdef USE_GMP
 	mpz_t
 #else
@@ -470,7 +451,7 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
     
 	if (calc==1) {
 		char name_buf[256];
-		name_buf[0] = 0xDC;
+		name_buf[0] = (char) 0xDC;
 		name_buf[1] = '\0';
 		strcat(name_buf, prgmname);
 		namestring = strdup (name_buf);

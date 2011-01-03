@@ -1,9 +1,6 @@
 #ifndef __EXPAND_BUF_H
 #define __EXPAND_BUF_H
 
-#include <stdio.h>
-#include <stdlib.h>
-
 typedef struct {
 	unsigned char *start;
 	unsigned char *end;

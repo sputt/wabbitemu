@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "opcodes.h"
 
 #define NumElm(array) (sizeof (array) / sizeof ((array)[0]))

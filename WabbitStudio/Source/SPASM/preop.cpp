@@ -1,26 +1,14 @@
-//#define _GNU_SOURCE
+#include "stdafx.h"
 
-#include <string.h>
-
-
-#include <stdarg.h>
-#include <ctype.h>
-#ifndef WINVER
-#include <unistd.h>
-#endif
-//#include <stdbool.h>
-#include <math.h>
 #include "spasm.h"
 #include "utils.h"
 #include "storage.h"
 #include "pass_one.h"
 #include "parser.h"
 #include "expand_buf.h"
+#include "errors.h"
 
-#ifdef WINVER
-#include <windows.h>
-#else
-#include <sys/types.h>
+#ifndef WIN32
 typedef u_int32_t LONG;
 typedef u_int16_t UINT;
 typedef u_int8_t BYTE;
@@ -92,7 +80,7 @@ static const char operators[OP_LAST][4] = {"=", "<", ">", "!=", ">=", "<="};
 
 char *do_if (char *ptr, bool condition);
 char *parse_arg_defs (char *ptr, define_t *macro);
-char *handle_preop_define (char *ptr);
+char *handle_preop_define (const char *ptr);
 static char *handle_preop_include (char *ptr);
 char *handle_preop_import (char *ptr);
 char *handle_preop_if (char *ptr);
@@ -251,7 +239,7 @@ char *handle_preop (char *ptr) {
 				ptr = name_end;
 
 			//now find the end of the macro (at the end of the file or an #endmacro directive)
-			ptr = skip_to_next_line (ptr);
+			//ptr = skip_to_next_line (ptr);
 			if (!in_macro) line_num++;
 			macro_end = skip_until (ptr, 1, "#endmacro");
 
@@ -294,14 +282,14 @@ char *handle_preop (char *ptr) {
  * in file
  */
 
-char *handle_preop_define (char *ptr) {
+char *handle_preop_define (const char *ptr) {
 	char *name_end, *value_end;
 	define_t *define;
 	bool redefined;
 
 	if (is_end_of_code_line (ptr)) {
 		show_error ("#DEFINE is missing name");
-		return ptr;
+		return (char *) ptr;
 	}
 
 	//get the name
@@ -316,12 +304,12 @@ char *handle_preop_define (char *ptr) {
 		//it's a simple macro, so get all the arguments
 		ptr = parse_arg_defs (++name_end, define);
 		if (ptr == NULL)
-			return ptr;
+			return (char *) ptr;
 		
 		//then find the function it's defining
 		if (is_end_of_code_line (ptr)) {
 			show_error ("#DEFINE macro is missing function");
-			return ptr;
+			return (char *) ptr;
 		}
 
 		value_end = skip_to_code_line_end (ptr);
@@ -331,12 +319,12 @@ char *handle_preop_define (char *ptr) {
 		//it's a normal define without arguments
 		
 		char word[256];
-		char *eval_ptr = ptr = name_end;
+		const char *eval_ptr = ptr = name_end;
 
 		if (is_end_of_code_line (skip_whitespace (ptr))) {
 			//if there's no value specified, then set it to 1
 			set_define (define, "1", 1, false);
-			return ptr;
+			return (char *) ptr;
 		}
 
 		//check for certain special functions
@@ -355,36 +343,47 @@ char *handle_preop_define (char *ptr) {
 		} else if (!strcasecmp (word, "concat")) {
 			
 			expand_buf *buffer;
-			char arg[256];
 			int value;
 
 			buffer = eb_init(-1);
 			if (*eval_ptr == '(')
 				eval_ptr++;
 
-			while (read_expr (&eval_ptr, arg, ",")) {
-				if (arg[0] == '\"') {
+			char *arg = NULL;
+			arg_context_t context = ARG_CONTEXT_INITIALIZER;
+			while ((arg = extract_arg_string(&eval_ptr, &context)) != NULL)
+			{
+				if (arg[0] == '\"')
+				{
 					reduce_string (arg);
 					eb_insert (buffer, -1, arg, -1);
-				} else {
+				}
+				else
+				{
 					define_t *define;
 
-					if ((define = search_defines (arg)))
-						if (define->contents == NULL) {
+					if ((define = search_defines (arg)) != NULL)
+					{
+						if (define->contents == NULL)
+						{
 							show_error("'%s' is not yet fully defined", arg);
-						} else {
+						
+						}
+						else
+						{
 							char *define_buffer = (char *) malloc(strlen(define->contents) + 1);
 							strcpy(define_buffer, define->contents);
 							reduce_string(define_buffer);
 							eb_insert (buffer, -1, define_buffer, -1);
 							free(define_buffer);
 						}
-					else if (parse_num (arg, &value)) {
+					}
+					else if (parse_num(arg, &value) == true)
+					{
 						char num_buf[256];
 						sprintf (num_buf, "%d", value);
 						eb_insert (buffer, -1, num_buf, -1);
-					} else
-						show_error ("%s isn't a define or expression", arg);
+					}
 				}
 			}
 			set_define (define, eb_extract (buffer), -1, redefined);
@@ -398,7 +397,7 @@ char *handle_preop_define (char *ptr) {
 		}
 	}
 
-	return ptr;
+	return (char *) ptr;
 }
 
 
@@ -659,7 +658,7 @@ static void handle_bitmap (FILE *file, const RECT *r, const BITMAPFILEHEADER *bf
 char *full_path (const char *filename) {
 	list_t *dir;
 	char *full_path;
-#ifdef WINVER
+#ifdef WIN32
 	if (is_abs_path(filename) && (GetFileAttributes(filename) != 0xFFFFFFFF))
 #else
 	if (is_abs_path(filename) && (access (filename, R_OK) == 0))
@@ -679,13 +678,13 @@ char *full_path (const char *filename) {
 		fix_filename (full_path);
 		eb_free (eb);
 		dir = dir->next;
-#ifdef WINVER
+#ifdef WIN32
 	} while (GetFileAttributes(full_path) == 0xFFFFFFFF && dir);
 #else
 	} while (access (full_path, R_OK) && dir);
 #endif
 
-#ifdef WINVER
+#ifdef WIN32
 	if (GetFileAttributes(full_path) != 0xFFFFFFFF)
 #else
 	if (access (full_path, R_OK) == 0)
@@ -738,7 +737,9 @@ static char *handle_preop_include (char *ptr) {
 	file_path = full_path (qs);
 
 	//finally, now that we've got the full path, determine file type
-	if (!file_path || !(file = fopen (file_path, "rb"))) {
+	if (!file_path || !(file = fopen (file_path, "rb")))
+	{
+		SetLastSPASMError(SPASM_ERR_FILE_NOT_FOUND, name);
 		show_error ("%s: No such file or directory", name);
 		if (file_path) free (file_path);
 		return ptr;
@@ -958,30 +959,45 @@ static char *handle_preop_include (char *ptr) {
 char *handle_preop_import (char *ptr) {
 	FILE *import_file;
 	int c;
-	char name[256], full_path[MAX_PATH];
+	char name[256];
 
 	if (is_end_of_code_line (ptr)) {
 		show_error ("#IMPORT is missing file name");
 		return ptr;
 	}
 
-	//get the name of the file to include
+	//get the name of the file to include	
 	read_expr (&ptr, name, "");
-	fix_filename (reduce_string (name));
+	fix_filename (name);
+	
+	char *qs = skip_whitespace(name);
+	if (*qs == '"') {
+		int i;
+		qs++;
+		for (i = 0; qs[i] != '"' && qs[i] != '\0'; i++);
+		qs[i] = '\0';
+	}
 
 	//now see where it is, using include directories
-	strcpy (full_path, name);
+	char *file_path = full_path(qs);
 
 	//...and read it in
-	import_file = fopen(full_path, "rb");
-	if (!import_file) {
-		show_error ("Couldn't open #imported file %s", full_path);
+	import_file = fopen(file_path, "rb");
+	if (!import_file)
+	{
+		SetLastSPASMError(SPASM_ERR_FILE_NOT_FOUND, file_path);
+		free(file_path);
 		return ptr;
 	}
 
+	free(file_path);
+
 	//write the contents to the output
 	while ((c = fgetc(import_file)) != EOF)
+	{
 		write_out (c);
+		program_counter++;
+	}
 
 	fclose (import_file);
 	return ptr;
@@ -1044,9 +1060,13 @@ char *parse_arg_defs (char *ptr, define_t *define) {
 	char word[256];
 
 	define->num_args = 0;
-	while (read_expr (&ptr, word, ",")) {
+	while (read_expr (&ptr, word, ","))
+	{
 		bool is_dup = false;
 		int i;
+
+		ptr++;
+		
 		for (i = 0; i < define->num_args && !is_dup; i++) {
 			if (case_sensitive) {
 				if (strcmp(word, define->args[i]) == 0)

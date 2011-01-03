@@ -1,23 +1,6 @@
+#include "stdafx.h"
+
 #define __MAIN_C
-
-#ifdef WINVER
-#define _CRTDBG_MAP_ALLOC
-#endif
-#include <stdlib.h>
-#ifdef WINVER
-#include <crtdbg.h>
-#endif
-
-#include <string.h>
-#include <stdio.h>
-
-#ifdef _WIN32
-#include <direct.h>
-#include <sys/timeb.h>
-#include <time.h>
-#else
-#include <unistd.h>
-#endif
 
 #include "pass_one.h"
 #include "pass_two.h"
@@ -114,7 +97,7 @@ int run_assembly() {
 		else
 			strcpy(temp_path, ".");
 	} else {
-#ifdef WINVER
+#ifdef WIN32
 		_getcwd(temp_path, sizeof (temp_path));
 #else
 		getcwd(temp_path, sizeof (temp_path));
@@ -222,15 +205,13 @@ int run_assembly() {
 	printf("Assembly time: %0.3f seconds\n", (float) s_diff + ((float) ms_diff / 1000.0f));
 #endif
 	//free(output_filename);
+#ifndef _WINDLL
 	free_storage();
+#endif
 	return exit_code;
 }
 
 int main (int argc, char **argv) {
-#ifdef WINVER
-	 _CrtSetDbgFlag( _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF);
-#endif
-
 	int curr_arg = 1;
 	bool case_sensitive = false;
 
@@ -249,6 +230,13 @@ int main (int argc, char **argv) {
 		puts ("-I [directory] = Add include directory\n-A = Labels are cAse-sensitive\n-D<name>[=value] = Create a define 'name' [with 'value']");
 		puts ("-N = Don't use colors for messages");
 		puts ("-V <Expression> = Pipe expression directly into assembly");
+
+#if defined(_DEBUG) && defined(WIN32)
+		if (IsDebuggerPresent())
+		{
+			system("PAUSE");
+		}
+#endif
 		return EXIT_NORMAL;
 	}
 
@@ -398,5 +386,12 @@ int main (int argc, char **argv) {
 		free(curr_input_file);
 	if (include_dirs)
 		list_free(include_dirs, true);
+
+#if defined(_DEBUG) && defined(WIN32)
+		if (IsDebuggerPresent())
+		{
+			system("PAUSE");
+		}
+#endif
 	return error;
 }

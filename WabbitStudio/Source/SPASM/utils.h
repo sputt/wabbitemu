@@ -1,25 +1,29 @@
 #ifndef __UTILS_H
 #define __UTILS_H
 
-#include <stdlib.h>
-//#include <stdbool.h>
 #include "storage.h"
 
-#ifdef WINVER
-#include <windows.h>
-#endif
+#define MAX_ARG_LEN	256
+#define ARG_CONTEXT_INITIALIZER {"", true}
+typedef struct arg_context
+{
+	char arg[MAX_ARG_LEN];
+	bool fExpectingMore;
+} arg_context_t;
 
-char *eval (char *expr);
-bool is_end_of_code_line (char *ptr);
-char *skip_to_next_line (char *ptr);
-char *skip_to_name_end (char *ptr);
-char *skip_to_code_line_end (char *ptr);
-char *skip_whitespace (char *ptr);
+char *eval (const char *expr);
+bool is_end_of_code_line (const char *ptr);
+char *skip_to_next_line (const char *ptr);
+char *skip_to_name_end (const char *ptr);
+char *skip_to_code_line_end (const char *ptr);
+char *skip_whitespace (const char *ptr);
 bool is_arg (char test);
 char *next_code_line (char *);
-char *next_expr (char* ptr, const char *delims);
-bool read_expr (char **input, char word[256], const char *delims);
-char *parse_args (char *ptr, define_t *define, list_t **arg_local_labels);
+char *next_expr (const char *ptr, const char *delims);
+#define read_expr(ptr, word, delims) (read_expr_impl((const char ** const) ptr, word, delims))
+bool read_expr_impl(__inout const char ** const ptr, char word[256], const char *delims);
+char *extract_arg_string(const char ** const ptr, arg_context_t *context);
+char *parse_args (const char *ptr, define_t *define, list_t **arg_local_labels);
 bool line_has_word (char *ptr, const char *word, int word_len);
 char *reduce_string (char* input);
 char *fix_filename (char *filename);
@@ -29,15 +33,15 @@ char *get_file_contents (const char *filename);
 void release_file_contents(char *contents);
 char *change_extension (const char *filename, const char *new_ext);
 bool define_with_value (const char *name, const int value);
-#if defined(MACVER) || defined(WINVER)
+#if defined(MACVER) || defined(WIN32)
 char *strndup (const char *str, int len);
 int strnlen (const char *str, int maxlen);
-#ifdef WINVER
+#ifdef WIN32
 #define strdup _strdup
 #endif
 #endif
 
-char *expand_expr (char *expr);
+char *expand_expr (const char *expr);
 //void *malloc_chk (size_t);
 #define malloc_chk malloc
 

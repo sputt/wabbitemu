@@ -1,17 +1,17 @@
 #ifndef HASH_H_
 #define HASH_H_
 
-#include <stdio.h>
-
 typedef struct {
 	char *name;
 } store_t;
 
+#pragma warning(disable : 4200)
 typedef struct _mh_hash_table {
 	size_t size, used;
 	void (*remove_callback)(void *);
 	store_t *table[0];
 } hash_t;
+#pragma warning(default : 4200)
 
 typedef void (*HASH_ENUM_CALLBACK)(void *, void *);
 typedef void (*HASH_REMOVE_CALLBACK)(void *);

@@ -1,8 +1,7 @@
-#include "spasm.h"
-#include <stdio.h>
+#include "stdafx.h"
 
-#include <stdlib.h>
-#include <string.h>
+#include "spasm.h"
+
 #include "list.h"
 #include "utils.h"
 

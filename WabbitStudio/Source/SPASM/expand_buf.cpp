@@ -1,13 +1,9 @@
-#define _GNU_SOURCE
+#include "stdafx.h"
+
 #include "spasm.h"
 
-#include <string.h>
-#include <stdio.h>
-
-#include <stdlib.h>
 #include "expand_buf.h"
 #include "utils.h"
-
 
 /*
  * Initializes an expandable buffer with a

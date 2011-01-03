@@ -1,14 +1,6 @@
 #ifndef __SPASM_H
 #define __SPASM_H
 
-#ifdef _WIN32
-#include <Windows.h>
-#include <stdio.h>
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#endif
-
 //#include <stdbool.h>
 #include "storage.h"
 #include "list.h"
@@ -30,7 +22,7 @@ typedef enum {
 	EXIT_FATAL_ERROR = 3
 } EXIT_STATUS;
 
-#ifdef WINVER
+#ifdef WIN32
 #include <windows.h>
 #define NEWLINE "\r\n"
 #define PATH_SEPARATOR '\\'

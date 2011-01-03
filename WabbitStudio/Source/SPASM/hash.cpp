@@ -1,9 +1,8 @@
+#include "stdafx.h"
+
 #include "spasm.h"
 #include "hash.h"
 #include "storage.h"
-
-#include <string.h>
-#include <stdlib.h>
 
 /* 
  * Strong hash function for english language (such as line labels)
@@ -107,6 +106,10 @@ void *hash_insert (hash_t *ht, void *store) {
 void *hash_lookup (hash_t *ht, const char *name) {
 	unsigned int hash = murmur_hash (name, strlen (name));
 	
+	if (ht == NULL)
+	{
+		return NULL;
+	}
 	hash %= ht->size;
 
 	// Search the entire clump

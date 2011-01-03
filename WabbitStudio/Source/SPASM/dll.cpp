@@ -1,11 +1,6 @@
+#include "stdafx.h"
+
 #ifdef _WINDLL
-#include <windows.h>
-#include <windowsx.h>
-#include <fcntl.h>
-#include <iostream>
-
-//#define LOG
-
 #include "spasm.h"
 #include "utils.h"
 #include "storage.h"

@@ -1,10 +1,7 @@
-#define _GNU_SOURCE
+#include "stdafx.h"
 
 #define MAX_REUSABLES 512
 
-#include <stdlib.h>
-#include <string.h>
-#include <string.h>
 #include "spasm.h"
 //#include <stdbool.h>
 #include "storage.h"
@@ -27,7 +24,7 @@ unsigned int reusables[MAX_REUSABLES];
 extern int total_reusables, curr_reusable;
 #endif
 
-#ifdef WINVER
+#ifdef WIN32
 #define strcasecmp _stricmp
 #endif
 
@@ -127,7 +124,7 @@ void write_defines_callback(define_t *define, list_t *label_list) {
 }
 
 void dump_defines_callback(define_t *define, void *reserved) {
-#ifdef WINVER
+#ifdef WIN32
 	OutputDebugString(define->name);
 	OutputDebugString("---------\n");
 	OutputDebugString(define->contents);
@@ -405,7 +402,7 @@ void remove_define (char *name) {
  * to avoid endless recursion
  */
 
-void set_define (define_t *define, char *str, int len, bool redefined) {
+void set_define (define_t *define, const char *str, int len, bool redefined) {
 	//if there's any possibility that the define is being redefined, use
 	// this function to avoid memory leaks and infinite recursion,
 	// otherwise writing directly to define->contents is fine

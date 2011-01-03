@@ -1,11 +1,6 @@
-#define _GNU_SOURCE
+#include "stdafx.h"
+
 #include "spasm.h"
-#include <string.h>
-#include <ctype.h>
-//#include <stdbool.h>
-
-#include <stdlib.h>
-
 #include "utils.h"
 #include "storage.h"
 #include "parser.h"
@@ -14,6 +9,7 @@
 #include "directive.h"
 #include "preop.h"
 #include "list.h"
+#include "errors.h"
 
 #ifdef USE_BUILTIN_FCREATE
 #include "expand_buf.h"
@@ -290,7 +286,7 @@ char *handle_opcode_or_macro (char *ptr) {
 		//try to match them to one of the opcode's sets of arguments
 		ptr = match_opcode_args (ptr, arg_ptrs, arg_end_ptrs, curr_opcode, &curr_instr);
 		free (name);
-		if (error_occurred)
+		if (GetLastSPASMError() != SPASM_ERR_SUCCESS)
 			return ptr;
 
 		//if that worked, write data + args
@@ -400,11 +396,37 @@ char *handle_opcode_or_macro (char *ptr) {
 				full_macro[0] = ' ';
 				strcpy(&full_macro[1], define->contents);
 
+				int macro_line_num = define->line_num;
 				while (curr_line != NULL && *curr_line && !error_occurred) {
+
+					SetLastSPASMError(SPASM_ERR_SUCCESS);
+
 					//char *full_line = curr_line;
-					curr_line = skip_to_next_line (run_first_pass_line (curr_line));
-					//full_line = strndup(full_line, curr_line - full_line);
-					//printf("ran pass on: %s\n", full_line);
+					bool old_suppress_errors = suppress_errors;
+					suppress_errors = true;
+					char *next_line = run_first_pass_line(curr_line);
+					suppress_errors = old_suppress_errors;
+
+					if (GetLastSPASMError() != SPASM_ERR_SUCCESS)
+					{
+						suppress_errors = false;
+
+						show_error("Error during invocation of macro '%s'", define->name);
+						char *old_input_file = curr_input_file;
+						curr_input_file = define->input_file;
+
+						int old_line_num = line_num;
+						line_num = macro_line_num;
+
+						run_first_pass_line(curr_line);
+
+						suppress_errors = old_suppress_errors;
+						line_num = old_line_num;
+						curr_input_file = old_input_file;
+					}
+
+					curr_line = skip_to_next_line(next_line);
+					macro_line_num++;
 				}
 				
 				free(full_macro);
@@ -439,6 +461,8 @@ char *handle_opcode_or_macro (char *ptr) {
 char *match_opcode_args (char *ptr, char **arg_ptrs, char **arg_end_ptrs, opcode *curr_opcode, instr **curr_instr) {
 	char *curr_arg_file;
 	int instr_num;
+
+	SetLastSPASMError(SPASM_ERR_SUCCESS);
 
 	for (instr_num = 0; instr_num < curr_opcode->num_instrs; instr_num++) {
 		//test each possible set of arguments for this opcode
@@ -487,7 +511,7 @@ char *match_opcode_args (char *ptr, char **arg_ptrs, char **arg_end_ptrs, opcode
 			return match_opcode_args (ptr, arg_ptrs, arg_end_ptrs, curr_opcode->next, curr_instr);
 		
 		//if it doesn't match any instructions for this opcode, show an error and skip to line end
-		show_fatal_error ("%s doesn't take these arguments", curr_opcode->name);
+		SetLastSPASMError(SPASM_ERR_INVALID_OPERANDS, curr_opcode->name);
 	} else
 		*curr_instr = &(curr_opcode->instrs[instr_num]);
 

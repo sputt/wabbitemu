@@ -10,7 +10,7 @@ typedef enum _ES_TYPE {
 
 char *handle_directive (char *ptr);
 void show_define (define_t *define);
-char *parse_emit_string (char *, ES_TYPE, void *);
+char *parse_emit_string (const char *, ES_TYPE, void *);
 
 #endif
 

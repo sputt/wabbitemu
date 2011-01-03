@@ -1,7 +1,5 @@
-#define _GNU_SOURCE
+#include "stdafx.h"
 
-#include <stdlib.h>
-#include <string.h>
 #include "spasm.h"
 #include "pass_one.h"
 #include "pass_two.h"
@@ -9,9 +7,9 @@
 #include "parser.h"
 #include "directive.h"
 #include "console.h"
+#include "errors.h"
 
 void write_arg (int value, arg_type type, int or_value);
-char *expand_expr (char *expr);
 
 expr_t *expr_list = NULL, *expr_list_tail = NULL;
 output_t *output_list = NULL, *output_list_tail = NULL;
@@ -43,6 +41,8 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 			return;
 		}
 	}
+
+	SetLastSPASMError(SPASM_ERR_SUCCESS);
 
 	//first try to parse it
 	suppress_errors = true;
@@ -90,8 +90,12 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 
 	} else {
 		suppress_errors = false;
-		// Reparse the value to generate errors
-		parse_num (expr, &value);
+
+		if (GetLastSPASMError() != SPASM_ERR_SUCCESS)
+		{
+			// Reparse the value to generate errors
+			parse_num (expr, &value);
+		}
 		//write the value now
 		write_arg (value, type, or_value);
 	}
@@ -152,7 +156,8 @@ void run_second_pass () {
 	//FILE *file = fopen ("passtwoexprs.txt", "w");
 
 	//printf("running through the list %p\n", expr_list);
-	while (expr_list) {
+	while (expr_list)
+	{
 		//go through each expression and evaluate it
 		program_counter = expr_list->program_counter;
 		line_num = expr_list->line_num;
@@ -164,7 +169,8 @@ void run_second_pass () {
 		//fprintf(file, "%s:%d:offset(%d): %s\n", curr_input_file, line_num, expr_list->out_ptr - output_contents, expr_list->expr);
 
 		//printf("passtwoexpr: '%s'\n", expr_list->expr);
-		if (parse_num (expr_list->expr, &value)) {
+		if (parse_num (expr_list->expr, &value))
+		{
 			//if that was successful, then write it to the file
 			if (mode & MODE_LIST)
 				listing_offset = expr_list->listing_offset;

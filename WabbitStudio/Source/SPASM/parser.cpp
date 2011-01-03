@@ -1,23 +1,16 @@
+#include "stdafx.h"
+
 #define __PARSER_C
 
 //max depth of #defines
 #define RECURSION_LIMIT 20
 
-#define _GNU_SOURCE
 #include "spasm.h"
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-//#include <stdbool.h>
 #include "parser.h"
 #include "storage.h"
 #include "utils.h"
 #include "preop.h"
-
-#ifdef WINVER
-#define strcasecmp _stricmp
-#endif
+#include "errors.h"
 
 extern char *curr_input_file;
 extern int line_num;
@@ -27,8 +20,8 @@ extern bool pass_one;
 extern unsigned int program_counter;
 extern bool suppress_errors;
 
-static char *parse_single_num (char *expr, int *value);
-static char *parse_num_full (char *expr, int *value, int depth);
+static const char *parse_single_num (const char *expr, int *value);
+static const char *parse_num_full (const char *expr, int *value, int depth);
 static int conv_dec (const char* str, const char *end);
 static int conv_bin (const char* str, const char *end);
 
@@ -46,9 +39,9 @@ int parse_depth;
  * and returns FALSE
  */
 
-bool parse_num (char *expr, int *value) {
+bool parse_num (const char *expr, int *value) {
 	int fake_value;
-	char *result;
+	const char *result;
 
 	if (value == NULL)
 		value = &fake_value;
@@ -67,7 +60,7 @@ bool parse_num (char *expr, int *value) {
  * ignoring errors
  */
 
-int parse_f (char *expr) {
+int parse_f (const char *expr) {
 	int result;
 	suppress_errors = true;
 	if (!(parse_num (expr, &result)))
@@ -113,7 +106,7 @@ char *parse_define (define_t *define) {
  * end of the number
  */
 
-static char *parse_single_num (char *expr, int *value) {
+static const char *parse_single_num (const char *expr, int *value) {
 
 	switch (*expr) {
 #ifdef USE_REUSABLES
@@ -130,11 +123,15 @@ static char *parse_single_num (char *expr, int *value) {
 			}
 
 			if (*(expr++) != '_') {
-				show_error ("Error in local label's syntax (had leading +/- but no _)");
+				SetLastSPASMError(SPASM_ERR_LOCAL_LABEL_SYNTAX);
 				return NULL;
-			} else if (this_reusable >= get_num_reusables()) {
-				if (pass_one == false) 
-					show_error ("Forward reference to local label which doesn't exist (total %d)", get_num_reusables());
+			}
+			else if (this_reusable >= get_num_reusables())
+			{
+				if (pass_one == false)
+				{
+					SetLastSPASMError(SPASM_ERR_LOCAL_LABEL_FORWARD_REF);
+				}
 				parser_forward_ref_err = true;
 				return NULL;
 			}
@@ -167,12 +164,16 @@ static char *parse_single_num (char *expr, int *value) {
 		//If the number has a prefix it's easy to tell what the type is!
 		case '$':
 		{
-			char *num_start = ++expr;
+			const char *num_start = ++expr;
 			//Could be a hex number (ld hl,$1A2F) or the current address (ld hl,$)
 			if (isxdigit ((unsigned char) *expr)) {
-				while (isxdigit (*expr))
+				while (isalnum(*expr))
 					expr++;
 				*value = conv_hex (num_start, expr);
+				if (*value == -1)
+				{
+					return NULL;
+				}
 			} else
 				//TODO: This is questionable behavior.  It should probably check specifically for $
 				*value = program_counter;
@@ -181,10 +182,14 @@ static char *parse_single_num (char *expr, int *value) {
 		}
 		case '%':
 		{
-			char *num_start = ++expr;
-			while (*expr == '1' || *expr == '0')
+			const char *num_start = ++expr;
+			while (isalnum(*expr))
 				expr++;
 			*value = conv_bin (num_start, expr);
+			if (*value == -1)
+			{
+				return NULL;
+			}
 			break;
 
 		}
@@ -222,7 +227,7 @@ static char *parse_single_num (char *expr, int *value) {
 				define_t *define;
 				char *name;
 
-				char *expr_start = expr;
+				const char *expr_start = expr;
 				//Find the end of the name, then try it as a label first
 				expr = skip_to_name_end (expr_start);
 				name = strndup (expr_start, expr - expr_start);
@@ -232,21 +237,32 @@ static char *parse_single_num (char *expr, int *value) {
 				if (!strcmp (name, "_")) {
 					free (name);
 					if (get_curr_reusable() + 1 < get_num_reusables())
+					{
 						*value = search_reusables(get_curr_reusable() + 1);
+					}
 					else
+					{
+						if (pass_one == false)
+						{
+							SetLastSPASMError(SPASM_ERR_LOCAL_LABEL_FORWARD_REF);
+						}
+						parser_forward_ref_err = true;
 						return NULL;
+					}
 				} else 
 #endif
-				if ((label = search_labels (name))) {
-					*value = label->value;
-					free (name);
+					if ((label = search_labels (name))) {
+						*value = label->value;
+						free (name);
 
 						//or the "eval" macro
 					} else if (!strcasecmp (name, "eval") && *expr == '(') {
 						show_warning ("eval() has no effect except in #define");
 						expr = parse_num_full (expr, value, 0);
 						//then a normal label
-					} else if (!strcasecmp (name, "getc") && *expr == '(') {
+					}
+					else if (!strcasecmp (name, "getc") && *expr == '(')
+					{
 						char filename[256];
 						FILE *temp_file;
 						define_t *define;
@@ -259,7 +275,9 @@ static char *parse_single_num (char *expr, int *value) {
 
 						// Is the filename given a macro?
 						if ((define = search_defines (filename)))
+						{
 							strncpy (filename, define->contents, sizeof (filename));
+						}
 
 						read_expr (&expr, parse_buf, ",");
 						char_index = parse_f (parse_buf);
@@ -270,25 +288,26 @@ static char *parse_single_num (char *expr, int *value) {
 							*value = fgetc (temp_file);
 							fclose (temp_file);
 						} else {
-							show_error ("Failed to open file '%s' for GETC", filename);
+							SetLastSPASMError(SPASM_ERR_FILE_NOT_FOUND, filename);
 						}
 
 						if (*expr == ')') expr++;
 						//If that didn't work, see if it's a macro
-					} else if ((define = search_defines (name))) {
+					}
+					else if ((define = search_defines (name)))
+					{
 						list_t *args = NULL;
 						char *contents;
 
 						free (name);
-						if (define->num_args > 0) {
-							expr = parse_args (expr, define, &args);
-							if (!expr)
-								return NULL;
-						}
+
+						expr = parse_args (expr, define, &args);
+						if (!expr)
+							return NULL;
 
 						contents = parse_define (define);
 						if (contents == NULL) {
-							show_error ("Argument '%s' used without value", define->name);
+							SetLastSPASMError(SPASM_ERR_ARG_USED_WITHOUT_VALUE, define->name);
 							return NULL;
 						}
 						if (!parse_num_full (contents, value, 0)) {
@@ -298,8 +317,10 @@ static char *parse_single_num (char *expr, int *value) {
 						}
 						free (contents);
 						remove_arg_set (args);
-					} else {
-						show_error ("'%s' isn't a macro or label", name);
+					}
+					else
+					{
+						SetLastSPASMError(SPASM_ERR_LABEL_NOT_FOUND, name);
 						parser_forward_ref_err = true;
 						free (name);
 						return NULL;
@@ -317,14 +338,13 @@ static char *parse_single_num (char *expr, int *value) {
 		default:	*value = conv_dec (expr_start, ++expr); break;
 				}
 
-				if (error_occurred) {
-					//TODO: WTF???
-					error_occurred = false;
+				if (*value == -1)
+				{
 					return NULL;
 				}
 
 			} else {
-				show_error ("Expecting a value, found '%c' instead", *expr);
+				SetLastSPASMError(SPASM_ERR_BAD_VALUE_PREFIX, *expr);
 				return NULL;
 			}
 			break;
@@ -340,7 +360,7 @@ static char *parse_single_num (char *expr, int *value) {
  * returns a pointer to it
  */
 
-char *find_next_condition (char *ptr) {
+const char *find_next_condition (const char *ptr) {
 	int depth = 0;
 	while (!is_end_of_code_line (ptr)) {
 		if (depth == 0 &&
@@ -371,7 +391,7 @@ char *find_next_condition (char *ptr) {
  * pointer to end of expression (if depth > 0) or NULL on error.
  */
 
-static char *parse_num_full (char *expr, int *value, int depth) {
+static const char *parse_num_full (const char *expr, int *value, int depth) {
 	int total = 0, last_num;
 	char last_op = '\0';
 	bool invert_lastnum, neg_lastnum;
@@ -383,8 +403,9 @@ static char *parse_num_full (char *expr, int *value, int depth) {
 	}
 
 	expr = skip_whitespace (expr);
-	if (!(*expr)) {
-		show_error ("Value expected");
+	if (!(*expr))
+	{
+		SetLastSPASMError(SPASM_ERR_VALUE_EXPECTED);
 		return NULL;
 	}
 
@@ -489,7 +510,8 @@ static char *parse_num_full (char *expr, int *value, int depth) {
 			last_op = *expr;
 			expr += 2;
 		} else if (*expr == '=' || *expr == '<' || *expr == '>' || (*expr == '!' && *(expr + 1) == '=')) {
-			char *expr_end, *next_expr;
+			const char *expr_end;
+			char *next_expr;
 			int next_val;
 			// Special operators for conditions
 			last_op = *expr++;
@@ -539,7 +561,7 @@ static char *parse_num_full (char *expr, int *value, int depth) {
 			}
 
 		} else {
-			show_error ("Expecting an operator, found '%c' instead", *expr);
+			SetLastSPASMError(SPASM_ERR_OPERATOR_EXPECTED, *expr);
 			return NULL;
 		}
 
@@ -563,14 +585,19 @@ static char *parse_num_full (char *expr, int *value, int depth) {
 
 int conv_hex (const char* str, const char *end) {
     int acc = 0;
+	const char *start = str;
 
     while (str < end) {
 		char hexchar = toupper (*str);
 		
-		if (!isxdigit (*str)) {
-			show_error ("Invalid hex digit '%c'", *str);
-			error_occurred = true;
-			return 0;
+		if (!isxdigit (*str))
+		{
+			char number[256];
+			strncpy(number, start, end - start);
+			number[end - start] = '\0';
+
+			SetLastSPASMError(SPASM_ERR_INVALID_HEX_DIGIT, *str, number);
+			return -1;
 		}
 		
         acc <<= 4;
@@ -588,14 +615,19 @@ int conv_hex (const char* str, const char *end) {
 
 static int conv_dec (const char* str, const char *end) {
     int acc = 0;
-    
+    const char *start = str;
+
     while (str < end) {
         acc *= 10;
         
-        if (!isdigit ((unsigned char) *str)) {
-			show_error ("Invalid decimal digit '%c'", *str);
-			error_occurred = true;
-			return 0;
+        if (!isdigit ((unsigned char) *str))
+		{
+			char number[256];
+			strncpy(number, start, end - start);
+			number[end - start] = '\0';
+
+			SetLastSPASMError(SPASM_ERR_INVALID_DECIMAL_DIGIT, *str, number);
+			return -1;
         }
         
         acc += *str-'0';
@@ -611,14 +643,19 @@ static int conv_dec (const char* str, const char *end) {
 
 static int conv_bin (const char* str, const char *end) {
     int acc = 0;
-    
+    const char *start = str;
+
     while (str < end) {
         acc <<= 1;
         
-        if (!(*str == '0' || *str == '1')) {
-        	show_error ("Invalid binary digit '%c'", *str);
-        	error_occurred = true;
-        	return 0;
+        if (!(*str == '0' || *str == '1'))
+		{
+			char number[256];
+			strncpy(number, start, end - start);
+			number[end - start] = '\0';
+
+			SetLastSPASMError(SPASM_ERR_INVALID_BINARY_DIGIT, *str, number);
+			return -1;
         }
         
         if (*str == '1') acc++;
