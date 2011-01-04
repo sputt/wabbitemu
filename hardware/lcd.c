@@ -88,6 +88,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	LCD_reset(lcd);
 	
 	switch (model) {
+		case TI_81:
 		case TI_82:
 		case TI_83:
 			lcd->base_level = BASE_LEVEL_83;
@@ -289,11 +290,6 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 			lcd->time += lcd->steady_frame;
 		}
 	}
-
-	/*if ((tc_elapsed(calcs[0].cpu.timer_c) - calcs[0].cpu.pio.lcd->lastgifframe) >= 0.01) {
-		handle_screenshot(&calcs[0]);
-		calcs[0].cpu.pio.lcd->lastgifframe += 0.01;
-	}*/
 }
 
 /* 
@@ -375,12 +371,12 @@ u_char *LCD_update_image(LCD_t *lcd) {
 	if (base < 0) base = 0;
 
 	if (level > 12) level = 0;
-	else level = (12 - level) * (255 - base)/lcd->shades / 12;
+	else level = (12 - level) * (255 - base) / lcd->shades / 12;
 
 	u_int row, col;
 	for (row = 0; row < LCD_HEIGHT; row++) {
 		for (col = 0; col < LCD_MEM_WIDTH; col++) {
-			u_int p0=0,p1=0,p2=0,p3=0,p4=0,p5=0,p6=0,p7=0;
+			u_int p0 = 0, p1 = 0, p2 = 0, p3 = 0, p4 = 0, p5 = 0, p6 = 0, p7 = 0;
 			u_int i;
 			
 			for (i = 0; i < lcd->shades; i++) {
@@ -407,7 +403,7 @@ u_char *LCD_update_image(LCD_t *lcd) {
 		}
 	}
 
-	return (uint8_t*) lcd->screen;	
+	return (uint8_t*) lcd->screen;
 }
 
 /* 
@@ -418,15 +414,3 @@ u_char *LCD_update_image(LCD_t *lcd) {
 u_char* LCD_image(LCD_t *lcd) {
 	return LCD_update_image(lcd);
 }
-
-
-
-
-
-
-
-
-
-
-
-

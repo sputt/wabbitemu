@@ -15,7 +15,7 @@ static struct {
 	{_T("cutout"), 			REG_DWORD, 	FALSE},
 	{_T("skin"),			REG_DWORD,	FALSE},
 	{_T("alphablend_lcd"),	REG_DWORD,	TRUE},
-	{_T("version"), 		REG_SZ, 	(LONG_PTR) _T("1.5.12.24")},
+	{_T("version"), 		REG_SZ, 	(LONG_PTR) _T("1.5.12.31")},
 	{_T("rom_path"), 		REG_SZ, 	(LONG_PTR) _T("z.rom")},
 	{_T("shades"),			REG_DWORD,	6},
 	{_T("gif_path"), 		REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},
@@ -32,9 +32,11 @@ static struct {
 	{_T("sync_cores"),		REG_DWORD,  FALSE},
 	{_T("num_keys"),		REG_DWORD,  5},
 	{_T("always_on_top"),	REG_DWORD,  FALSE},
-	{_T("custom_skin"),	REG_DWORD,  FALSE},
+	{_T("custom_skin"),		REG_DWORD,  FALSE},
 	{_T("skin_path"), 		REG_SZ, 	(LONG_PTR) _T("TI-83P.png")},
 	{_T("keymap_path"), 	REG_SZ, 	(LONG_PTR) _T("TI-83PKeymap.png")},
+	{_T("startX"),			REG_DWORD,  CW_USEDEFAULT},
+	{_T("startY"),			REG_DWORD,  CW_USEDEFAULT},
 	{NULL,					0,			0},
 };
 
@@ -100,12 +102,9 @@ INT_PTR QueryWabbitKey(LPCTSTR lpszName) {
 		//MultiByteToWideChar(CP_ACP, 0, lpszName, -1, szKeyName, ARRAYSIZE(szKeyName));
 		rqvx_res = RegQueryValueEx(hkeyWabbit, szKeyName, NULL, NULL, (LPBYTE) &result, &len);
 		if (rqvx_res == ERROR_FILE_NOT_FOUND) {
-			if (type == REG_DWORD)
-			{
+			if (type == REG_DWORD) {
 				result.dwResult = (DWORD) regDefaults[i].Value;
-			}
-			else
-			{
+			} else {
 #ifdef _UNICODE
 				StringCbCopy(result.szResult, sizeof(result.szResult), (LPWSTR) regDefaults[i].Value);
 #else
@@ -159,6 +158,8 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	do_backups = (BOOL) QueryWabbitKey(_T("do_backups"));
 	show_wizard = (BOOL) QueryWabbitKey(_T("show_wizard"));
 	sync_cores = (BOOL) QueryWabbitKey(_T("sync_cores"));
+	startX = (int) QueryWabbitKey(_T("startX"));
+	startY = (int) QueryWabbitKey(_T("startY"));
 	lpCalc->bAlwaysOnTop = (BOOL) QueryWabbitKey(_T("always_on_top"));
 	lpCalc->bCustomSkin = (BOOL) QueryWabbitKey(_T("custom_skin"));
 	int num_entries = (int) QueryWabbitKey(_T("num_keys"));
@@ -232,9 +233,18 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("sync_cores"), REG_DWORD, &sync_cores);
 
 		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpCalc->FaceplateColor);
-		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);
+		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);		
 		SaveWabbitKeyW(L"skin_path", REG_SZ, &lpCalc->skin_path);
 		SaveWabbitKeyW(L"keymap_path", REG_SZ, &lpCalc->keymap_path);
+		if (startX != CW_USEDEFAULT) {
+			RECT rc;
+			GetWindowRect(lpCalc->hwndFrame, &rc);
+			SaveWabbitKey(_T("startX"), REG_DWORD, &rc.left);
+			SaveWabbitKey(_T("startY"), REG_DWORD, &rc.top);
+		} else {
+			SaveWabbitKey(_T("startX"), REG_DWORD, &startX);
+			SaveWabbitKey(_T("startY"), REG_DWORD, &startY);
+		}
 		/*ACCEL buf[256];
 		DWORD dwCount = sizeof(buf);
 		DWORD dwType = NULL;

@@ -9,24 +9,7 @@
 #include "control.h"
 #include "83phw.h"
 #include "83psehw.h"
-
-
 #include "optable.h"
-
-u_char check_break(memc *mem, uint16_t addr) {
-	bank_t *bank = &mem->banks[mc_bank(addr)];
-	return mem->breaks[bank->ram][PAGE_SIZE * bank->page + mc_base(addr)] & 1;
-}
-
-u_char check_mem_write_break(memc *mem, uint16_t addr) {
-	bank_t *bank = &mem->banks[mc_bank(addr)];
-	return mem->breaks[bank->ram][PAGE_SIZE * bank->page + mc_base(addr)] & 2;
-}
-
-u_char check_mem_read_break(memc *mem, uint16_t addr) {
-	bank_t *bank = &mem->banks[mc_bank(addr)];
-	return mem->breaks[bank->ram][PAGE_SIZE * bank->page + mc_base(addr)] & 4;
-}
 
 unsigned char mem_read(memc *mem, unsigned short addr) {
 	if ((mem->port27_remap_count > 0) && !mem->boot_mapped && (mc_bank(addr) == 3) && (addr >= (0x10000 - 64*mem->port27_remap_count)) && addr >= 0xFB64) {
@@ -35,9 +18,10 @@ unsigned char mem_read(memc *mem, unsigned short addr) {
 	if ((mem->port28_remap_count > 0) && !mem->boot_mapped && (mc_bank(addr) == 2) && (mc_base(addr) < 64*mem->port28_remap_count)) {
 		return mem->ram[1*PAGE_SIZE + mc_base(addr)];
 	}
+	//handle missing ram pages
 	if (mem->ram_version == 2) {
 		if (mem->banks[mc_bank(addr)].ram == TRUE && mem->banks[mc_bank(addr)].page > 2) {
-			return mem->ram[2*PAGE_SIZE + mc_base(addr)];
+			return mem->ram[2 * PAGE_SIZE + mc_base(addr)];
 		}
 	}
 	return *(mem->banks[mc_bank(addr)].addr + mc_base(addr));
@@ -74,28 +58,52 @@ waddr_t addr_to_waddr(memc *mem_c, uint16_t addr) {
 	return waddr;
 }
 
+enum BREAK_TYPE {
+	NORMAL_BREAK = 0x1,
+	MEM_WRITE_BREAK = 0x2,
+	MEM_READ_BREAK = 0x4,
+	CLEAR_NORMAL_BREAK = MEM_READ_BREAK | MEM_WRITE_BREAK,
+	CLEAR_MEM_WRITE_BREAK = MEM_READ_BREAK | NORMAL_BREAK,
+	CLEAR_MEM_READ_BREAK = MEM_WRITE_BREAK | NORMAL_BREAK,
+};
+
+BOOL check_break(memc *mem, uint16_t addr) {
+	bank_t *bank = &mem->banks[mc_bank(addr)];
+	return mem->breaks[bank->ram][PAGE_SIZE * bank->page + mc_base(addr)] & NORMAL_BREAK;
+}
+
+BOOL check_mem_write_break(memc *mem, uint16_t addr) {
+	bank_t *bank = &mem->banks[mc_bank(addr)];
+	return mem->breaks[bank->ram][PAGE_SIZE * bank->page + mc_base(addr)] & MEM_WRITE_BREAK;
+}
+
+BOOL check_mem_read_break(memc *mem, uint16_t addr) {
+	bank_t *bank = &mem->banks[mc_bank(addr)];
+	return mem->breaks[bank->ram][PAGE_SIZE * bank->page + mc_base(addr)] & MEM_READ_BREAK;
+}
+
 void set_break(memc *mem, BOOL ram, int page, uint16_t addr) {
-	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] |= 1;
+	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] |= NORMAL_BREAK;
 }
 
 void set_mem_write_break(memc *mem, BOOL ram, int page, uint16_t addr) {
-	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] |= 2;
+	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] |= MEM_WRITE_BREAK;
 }
 
 void set_mem_read_break(memc *mem, BOOL ram, int page, uint16_t addr) {
-	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] |= 4;
+	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] |= MEM_READ_BREAK;
 }
 
 void clear_break(memc *mem, BOOL ram, int page, uint16_t addr) {
-	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] &= 6;
+	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] &= CLEAR_NORMAL_BREAK;
 }
 
 void clear_mem_write_break(memc *mem, BOOL ram, int page, uint16_t addr) {
-	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] &= 5;
+	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] &= CLEAR_MEM_WRITE_BREAK;
 }
 
 void clear_mem_read_break(memc *mem, BOOL ram, int page, uint16_t addr) {
-	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] &= 3;
+	mem->breaks[ram % 2][PAGE_SIZE * page + mc_base(addr)] &= CLEAR_MEM_READ_BREAK;
 }
 
 unsigned char mem_write(memc *mem, unsigned short addr, char data) {
@@ -105,6 +113,7 @@ unsigned char mem_write(memc *mem, unsigned short addr, char data) {
 	if ((mem->port28_remap_count > 0) && !mem->boot_mapped && (mc_bank(addr) == 2) && (mc_base(addr) < 64*mem->port28_remap_count)) {
 		return mem->ram[1*PAGE_SIZE + mc_base(addr)] = data;
 	}
+	//handle missing ram pages
 	if (mem->ram_version == 2) {
 		if (mem->banks[mc_bank(addr)].ram == TRUE && mem->banks[mc_bank(addr)].page > 2) {
 			return mem->ram[2*PAGE_SIZE + mc_base(addr)] = data;
@@ -114,11 +123,11 @@ unsigned char mem_write(memc *mem, unsigned short addr, char data) {
 }
 
 inline unsigned short read2bytes(memc *mem, unsigned short addr) {
-	return (mem_read(mem,addr)+(mem_read(mem,addr+1)<<8));
+	return (mem_read(mem, addr) + (mem_read(mem, addr + 1) << 8));
 }
 
 unsigned short mem_read16(memc *mem, unsigned short addr) {
-	return (mem_read(mem,addr)+(mem_read(mem,addr+1)<<8));
+	return (mem_read(mem, addr) + (mem_read(mem, addr + 1) << 8));
 }
 
 /* Initialize a timer context */
@@ -143,15 +152,17 @@ static void handle_pio(CPU_t *cpu) {
 	for (i = 0; cpu->pio.interrupt[i] != -1; i++) {
 		if (cpu->pio.skip_factor[i]) {
 			if (cpu->pio.skip_count[i] == 0x00) device_control(cpu, cpu->pio.interrupt[i]);
-			cpu->pio.skip_count[i] = (cpu->pio.skip_count[i]+1)%cpu->pio.skip_factor[i];
+			cpu->pio.skip_count[i] = (cpu->pio.skip_count[i] + 1) % cpu->pio.skip_factor[i];
 		}
 	}
 }
 
 static int CPU_opcode_fetch(CPU_t *cpu) {
 	int bank = mc_bank(cpu->pc);
+	//TODO: add in exec prevetion based on port 16
 	// TI Execution prevention will reset to 0x0000 if you execute on an even RAM page (handle also the port28 remap for SEs)
-	if (cpu->mem_c->banks[bank].no_exec && !(!cpu->mem_c->boot_mapped && (bank == 2) && (mc_base(cpu->pc) < 64*cpu->mem_c->port28_remap_count))) {
+	if ((cpu->mem_c->banks[bank].no_exec && !(!cpu->mem_c->boot_mapped && (bank == 2)
+			&& (mc_base(cpu->pc) < 64 * cpu->mem_c->port28_remap_count)))) {
 		// plant a reset command if this was a non execute area
 		cpu->bus = 0xC7;	// rst 00h, may want to place interrupt and hardware resets.
 	} else {
@@ -165,14 +176,13 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_OP_flash_tstates);
 	}
 	cpu->pc++;
-	cpu->r = (cpu->r&0x80) + ((cpu->r+1)&0x7F);		//note: prefix opcodes inc the r reg to. so bit 7,h has 2 incs.
+	cpu->r = (cpu->r & 0x80) + ((cpu->r + 1) & 0x7F);		//note: prefix opcodes inc the r reg to. so bit 7,h has 2 incs.
 	return cpu->bus;
 }
 
 unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
-	if (check_mem_read_break(cpu->mem_c, addr))
-	{
-		assert("No way to do this right now");
+	if (check_mem_read_break(cpu->mem_c, addr)) {
+		cpu->mem_c->mem_read_break_callback(cpu);
 	}
 	cpu->bus = mem_read(cpu->mem_c, addr);
 
@@ -189,9 +199,8 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 }
 
 unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
-	if (check_mem_write_break(cpu->mem_c, addr))
-	{
-		assert("No way to handle this");
+	if (check_mem_write_break(cpu->mem_c, addr)) {
+		cpu->mem_c->mem_write_break_callback(cpu);
 	}
 	int bank = mc_bank(addr);
 
@@ -205,10 +214,10 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 				case 00:
 					break;
 				case 01:	//TI83+
-					flashwrite83p(cpu,addr,data);	// in a seperate function for now, flash writes aren't the same across calcs
+					flashwrite83p(cpu, addr, data);		// in a seperate function for now, flash writes aren't the same across calcs
 					break;
 				case 02:	//TI83+SE, TI84+SE
-					flashwrite83pse(cpu,addr,data);	// in a seperate function for now, flash writes aren't the same across calcs
+					flashwrite83pse(cpu, addr, data);	// in a seperate function for now, flash writes aren't the same across calcs
 					break;
 				case 03:	//TI84+
 					flashwrite84p(cpu, addr, data);
@@ -228,10 +237,10 @@ static void CPU_opcode_run(CPU_t *cpu) {
 
 static void CPU_CB_opcode_run(CPU_t *cpu) {
 	if (cpu->prefix) {
-		CPU_mem_read(cpu,cpu->pc++);				//read the offset, NOT INST
+		CPU_mem_read(cpu, cpu->pc++);				//read the offset, NOT INST
 		char offset = cpu->bus;
 		CPU_opcode_fetch(cpu);						//cb opcode, this is an INST
-		cpu->r=((cpu->r-1)&0x7f)+(cpu->r&0x80);		//CHEAP BUG FIX
+		cpu->r = ((cpu->r - 1) & 0x7f) + (cpu->r & 0x80);		//CHEAP BUG FIX
 		ICB_opcode[cpu->bus](cpu,offset);
 	} else {
 		CPU_opcode_fetch(cpu);
@@ -261,10 +270,10 @@ static void handle_interrupt(CPU_t *cpu) {
 		} else if (cpu->imode == 2) {
 			tc_add(cpu->timer_c, 19);
 			cpu->halt = FALSE;
-			unsigned short vector = (cpu->i<<8) + cpu->bus;
-			int reg = CPU_mem_read(cpu,vector++) + ( CPU_mem_read(cpu,vector)<<8 );
-			CPU_mem_write(cpu, --cpu->sp, (cpu->pc>>8)&0xFF);
-			CPU_mem_write(cpu, --cpu->sp, cpu->pc&0xFF);
+			unsigned short vector = (cpu->i << 8) + cpu->bus;
+			int reg = CPU_mem_read(cpu,vector++) + (CPU_mem_read(cpu,vector) << 8);
+			CPU_mem_write(cpu, --cpu->sp, (cpu->pc >> 8) & 0xFF);
+			CPU_mem_write(cpu, --cpu->sp, cpu->pc & 0xFF);
 			cpu->pc = reg;
 		}
 	}
@@ -287,8 +296,8 @@ int CPU_step(CPU_t* cpu) {
 	} else {
 		/* If the CPU is in halt */
 		#define HALT_SCALE	3
-		tc_add(cpu->timer_c, 4*HALT_SCALE);
-		cpu->r = (cpu->r&0x80) + ((cpu->r+1*HALT_SCALE)&0x7F);
+		tc_add(cpu->timer_c, 4 * HALT_SCALE);
+		cpu->r = (cpu->r & 0x80) + ((cpu->r+1 * HALT_SCALE) & 0x7F);
 	}
 
 	handle_pio(cpu);
@@ -296,6 +305,8 @@ int CPU_step(CPU_t* cpu) {
 	if (cpu->interrupt && !cpu->ei_block) handle_interrupt(cpu);
 	return 0;
 }
+
+
 
 #ifdef DEBUG
 void displayreg(CPU_t *cpu) {

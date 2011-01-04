@@ -288,70 +288,6 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 	DeleteDC(hdc);
 }
 
-
-
-#include "guisavestate.h"
-
-void SaveStateDialog(HWND hwnd, LPCALC lpCalc) {
-	OPENFILENAME ofn;
-	TCHAR FileName[MAX_PATH];
-	TCHAR lpstrFilter[] 	= _T("\
-Known File types ( *.sav; *.rom; *.bin) \0*.sav;*.rom;*.bin\0\
-Save States  (*.sav)\0*.sav\0\
-ROMS  (*.rom; .bin)\0*.rom;*.bin\0\
-All Files (*.*)\0*.*\0\0");
-
-	ZeroMemory(&ofn, sizeof(ofn));
-	ZeroMemory(FileName, MAX_PATH);
-
-	ofn.lStructSize		= sizeof(OPENFILENAME);
-	ofn.hwndOwner		= lpCalc->hwndLCD;
-	ofn.lpstrFilter		= (LPCTSTR) lpstrFilter;
-	ofn.lpstrFile		= FileName;
-	ofn.nMaxFile		= MAX_PATH;
-	ofn.lpstrTitle		= _T("Wabbitemu Save State");
-	ofn.Flags			= OFN_PATHMUSTEXIST | OFN_EXPLORER |
-						  OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-	ofn.lpstrDefExt			= _T("sav");
-
-	if (!GetSaveFileName(&ofn)) return;
-
-	SAVESTATE_t* save = SaveSlot(lpCalc);
-
-	gui_savestate(hwnd, save, FileName, lpCalc);
-
-}
-
-/*void LoadStateDialog(HWND hwnd) {
-	OPENFILENAME ofn;
-	TCHAR FileName[MAX_PATH];
-	TCHAR lpstrFilter[] 	= _T("\
-Known File types ( *.sav; *.rom; *.bin) \0*.sav;*.rom;*.bin\0\
-Save States  (*.sav)\0*.sav\0\
-ROMS  (*.rom; .bin)\0*.rom;*.bin\0\
-All Files (*.*)\0*.*\0\0");
-
-	ZeroMemory(&ofn, sizeof(ofn));
-	ZeroMemory(FileName, MAX_PATH);
-
-	ofn.lStructSize		= sizeof(OPENFILENAME);
-	ofn.hwndOwner		= calcs[gslot].hwndLCD;
-	ofn.lpstrFilter		= (LPCTSTR) lpstrFilter;
-	ofn.lpstrFile		= FileName;
-	ofn.nMaxFile		= MAX_PATH;
-	ofn.lpstrTitle		= _T("Wabbitemu Load State");
-	ofn.Flags			= OFN_PATHMUSTEXIST | OFN_EXPLORER |
-						  OFN_HIDEREADONLY | OFN_FILEMUSTEXIST;
-	ofn.lpstrDefExt		= _T("sav");
-	if (!GetOpenFileName(&ofn)) return;
-	_tprintf_s(_T("%s \n"),FileName);
-	BOOL Running_Backup = calcs[gslot].running;
-	calcs[gslot].running = FALSE;
-	rom_load(&calcs[gslot], FileName);
-	calcs[gslot].running =  Running_Backup;
-
-}*/
-
 static TCHAR sz_status[32];
 LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 
@@ -477,7 +413,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_MOUSEMOVE:
 			{
 				static DWORD dwDragCountdown = 0;
-				if (wParam != MK_LBUTTON) { // || calcs[gslot].cpu.pio.lcd->active == FALSE) {
+				if (wParam != MK_LBUTTON) {
 					dwDragCountdown = 0;
 				} else if (gif_write_state == GIF_IDLE) {
 					if (++dwDragCountdown < (u_int) GetSystemMetrics(SM_CXDRAG)) return 0;
@@ -619,25 +555,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
             			IID_IDragSourceHelper,
             			(LPVOID*) &pDragSourceHelper);
 
-					/*
-					if (SUCCEEDED(result)) {
-	            		IDragSourceHelper2 *pDragSourceHelper2;
-	            		pDragSourceHelper->lpVtbl->QueryInterface(pDragSourceHelper, &IID_IDragSourceHelper2, &pDragSourceHelper2);
-
-	            		if (pDragSourceHelper2) {
-	            			printf("Created dragsourcehelper2\n");
-	            			pDragSourceHelper = pDragSourceHelper2;
-	            			pDragSourceHelper->lpVtbl->SetFlags(pDragSourceHelper, DSH_ALLOWDROPDESCRIPTIONTEXT);
-	            		} else {
-	            			printf("Couldn't even create IDragSourceHelper2\n");
-	            		}
-
-					} else {
-	            		printf("Failed to create drop helper at all\n");
-					}
-					*/
-					//hres = pDragSourceHelper->lpVtbl->InitializeFromWindow(pDragSourceHelper, hwnd, &ptOffset, (IDataObject *) pDataObject);
-
 					//SetDropSourceDataObject(pDropSource, pDataObject);
 					DWORD dwEffect = DROPEFFECT_NONE;
 					//if (SUCCEEDED(hres))
@@ -649,9 +566,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				return 0;
 		}
 
-		case WM_COPYDATA:
-		{
-			calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		case WM_COPYDATA: {
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			PCOPYDATASTRUCT copyDataStruct = (PCOPYDATASTRUCT) lParam;
 			int size = (int) copyDataStruct->cbData;
 			TCHAR *string = (TCHAR *) copyDataStruct->lpData;
@@ -666,9 +582,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 		}
 
-		case WM_DROPFILES:
-		{
-			calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		case WM_DROPFILES: {
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			TCHAR *FileNames = NULL;
 			TCHAR fn[256];
 			int count = DragQueryFile((HDROP) wParam, ~0, fn, 256);
@@ -677,25 +592,21 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				DragQueryFile((HDROP) wParam, count, fn, 256);
 				SendFileToCalc(lpCalc, fn, TRUE, DropMemoryTarget(hwnd));
 			}
-			//InvalidateRect(calcs[gslot].hwndFrame, NULL, FALSE);
 			return 0;
 		}
 
 		case WM_KEYDOWN:
-		case WM_KEYUP:
-			{
-				calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		case WM_KEYUP: {
+				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				return SendMessage(lpCalc->hwndFrame, Message, wParam, lParam);
 			}
-		case WM_DESTROY: 
-			{
-				calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		case WM_DESTROY: {
+				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				lpCalc->hwndLCD = NULL;
 				if (calc_count() == 0)
 					free(bi);
 				_tprintf_s(_T("Unregistering drop window\n"));
-				if (lpCalc->pDropTarget != NULL)
-				{
+				if (lpCalc->pDropTarget != NULL) {
 					UnregisterDropWindow(hwnd, (IDropTarget *) lpCalc->pDropTarget);
 				}
 				return 0;

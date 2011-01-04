@@ -17,7 +17,7 @@
 
 //Interrupts on SE calculators are based on the crystal timers
 // however for now this will do.
-static double timer_freq83pse[4] = {1.0/512.0, 1.0/227.0, 1.0/156.0, 1.0/108.0};
+static double timer_freq83pse[4] = { 1.0 / 512.0, 1.0 / 227.0, 1.0 / 156.0, 1.0 / 108.0 };
 
 void port0_83pse(CPU_t *cpu, device_t *dev) {
 	link_t * link = (link_t *) dev->aux;
@@ -181,78 +181,79 @@ void port5_83pse(CPU_t *cpu, device_t *dev) {
 		cpu->bus = cpu->mem_c->banks[3].page;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->mem_c->banks[3].page		= ((cpu->bus&0x7f) % cpu->mem_c->ram_pages );
-		cpu->mem_c->banks[3].addr		= cpu->mem_c->ram+(cpu->mem_c->banks[3].page*16384);
+		cpu->mem_c->banks[3].page		= ((cpu->bus & 0x7f) % cpu->mem_c->ram_pages );
+		cpu->mem_c->banks[3].addr		= cpu->mem_c->ram+(cpu->mem_c->banks[3].page * PAGE_SIZE);
 		cpu->mem_c->banks[3].read_only	= FALSE;
 		// the next line isn't correct...
-		cpu->mem_c->banks[3].no_exec	= (cpu->mem_c->banks[3].page%2)^1;
+		cpu->mem_c->banks[3].no_exec	= (cpu->mem_c->banks[3].page % 2) ^ 1;
 
 		cpu->output = FALSE;
 	}
 	if (cpu->mem_c->boot_mapped) {
-		memmove(&cpu->mem_c->banks[2],&cpu->mem_c->banks[1],sizeof(bank_state_t)*3);
-		memmove(&cpu->mem_c->banks[1],&cpu->mem_c->banks[4],sizeof(bank_state_t)*1);
+		memmove(&cpu->mem_c->banks[2], &cpu->mem_c->banks[1], sizeof(bank_state_t) * 3);
+		memmove(&cpu->mem_c->banks[1], &cpu->mem_c->banks[4], sizeof(bank_state_t) * 1);
 	}
 }
 
 void port6_83pse(CPU_t *cpu, device_t *dev) {
-	if ( cpu->mem_c->boot_mapped ) {
-		memmove(&cpu->mem_c->banks[1],&cpu->mem_c->banks[2],sizeof(bank_state_t)*3);
+	if (cpu->mem_c->boot_mapped) {
+		memmove(&cpu->mem_c->banks[1], &cpu->mem_c->banks[2], sizeof(bank_state_t)*3);
 	}
-	if ( cpu->input ) {
-		cpu->bus = ((cpu->mem_c->banks[1].ram)<<7)+cpu->mem_c->banks[1].page;
+	if (cpu->input) {
+		cpu->bus = ((cpu->mem_c->banks[1].ram) << 7)+cpu->mem_c->banks[1].page;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->mem_c->banks[1].ram = (cpu->bus>>7)&1;
+		cpu->mem_c->banks[1].ram = (cpu->bus >> 7) & 1;
 		if (cpu->mem_c->banks[1].ram) {
-			cpu->mem_c->banks[1].page		= ((cpu->bus&0x7f) % cpu->mem_c->ram_pages );
-			cpu->mem_c->banks[1].addr		= cpu->mem_c->ram+(cpu->mem_c->banks[1].page*16384);
+			cpu->mem_c->banks[1].page		= ((cpu->bus & 0x7f) % cpu->mem_c->ram_pages );
+			cpu->mem_c->banks[1].addr		= cpu->mem_c->ram + (cpu->mem_c->banks[1].page * PAGE_SIZE);
 			cpu->mem_c->banks[1].read_only	= FALSE;
 			// the next line isn't correct...
-			cpu->mem_c->banks[1].no_exec	= (cpu->mem_c->banks[1].page%2)^1;
+			cpu->mem_c->banks[1].no_exec	= (cpu->mem_c->banks[1].page % 2) ^ 1;
 		} else {
-			cpu->mem_c->banks[1].page		= ((cpu->bus&0x7f) % cpu->mem_c->flash_pages);
-			cpu->mem_c->banks[1].addr		= cpu->mem_c->flash+(cpu->mem_c->banks[1].page*16384);
+			cpu->mem_c->banks[1].page		= ((cpu->bus & 0x7f) % cpu->mem_c->flash_pages);
+			cpu->mem_c->banks[1].addr		= cpu->mem_c->flash + (cpu->mem_c->banks[1].page * PAGE_SIZE);
 			cpu->mem_c->banks[1].read_only	= FALSE;
-			cpu->mem_c->banks[1].no_exec	= FALSE;
+			//factor in port 22 and 23
+			cpu->mem_c->banks[1].no_exec	= cpu->mem_c->banks[1].page < cpu->mem_c->upper && cpu->mem_c->banks[1].page > cpu->mem_c->lower;
 			if ((cpu->mem_c->banks[1].page == 0x3f && cpu->pio.model == TI_84P) || cpu->mem_c->banks[1].page == 0x7f)
-				cpu->mem_c->banks[1].read_only=TRUE;
+				cpu->mem_c->banks[1].read_only = TRUE;
 		}
 		cpu->output = FALSE;
 	}
 	if (cpu->mem_c->boot_mapped) {
-		memmove(&cpu->mem_c->banks[2],&cpu->mem_c->banks[1],sizeof(bank_state_t)*3);
-		memmove(&cpu->mem_c->banks[1],&cpu->mem_c->banks[4],sizeof(bank_state_t)*1);
+		memmove(&cpu->mem_c->banks[2], &cpu->mem_c->banks[1], sizeof(bank_state_t) * 3);
+		memmove(&cpu->mem_c->banks[1], &cpu->mem_c->banks[4], sizeof(bank_state_t) * 1);
 	}
 }
 
 void port7_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->mem_c->boot_mapped) {
-		memmove(&cpu->mem_c->banks[1],&cpu->mem_c->banks[2],sizeof(bank_state_t)*3);
+		memmove(&cpu->mem_c->banks[1], &cpu->mem_c->banks[2], sizeof(bank_state_t) * 3);
 	}
 	if (cpu->input) {
-		cpu->bus = ((cpu->mem_c->banks[2].ram)<<7)+cpu->mem_c->banks[2].page;
+		cpu->bus = ((cpu->mem_c->banks[2].ram) << 7)+cpu->mem_c->banks[2].page;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->mem_c->banks[2].ram = (cpu->bus>>7)&1;
+		cpu->mem_c->banks[2].ram = (cpu->bus >> 7) & 1;
 		if (cpu->mem_c->banks[2].ram) {
-			cpu->mem_c->banks[2].page		= ((cpu->bus&0x7f) % cpu->mem_c->ram_pages);
-			cpu->mem_c->banks[2].addr		= cpu->mem_c->ram+(cpu->mem_c->banks[2].page*16384);
+			cpu->mem_c->banks[2].page		= ((cpu->bus & 0x7f) % cpu->mem_c->ram_pages);
+			cpu->mem_c->banks[2].addr		= cpu->mem_c->ram + (cpu->mem_c->banks[2].page * PAGE_SIZE);
 			cpu->mem_c->banks[2].read_only	= FALSE;
 			// the next line isn't correct...
-			cpu->mem_c->banks[2].no_exec	= (cpu->mem_c->banks[2].page%2)^1;
+			cpu->mem_c->banks[2].no_exec	= (cpu->mem_c->banks[2].page % 2) ^ 1;
 		} else {
-			cpu->mem_c->banks[2].page		= ((cpu->bus&0x7f) % cpu->mem_c->flash_pages);
-			cpu->mem_c->banks[2].addr		= cpu->mem_c->flash+(cpu->mem_c->banks[2].page*16384);
+			cpu->mem_c->banks[2].page		= ((cpu->bus & 0x7f) % cpu->mem_c->flash_pages);
+			cpu->mem_c->banks[2].addr		= cpu->mem_c->flash + (cpu->mem_c->banks[2].page * PAGE_SIZE);
 			cpu->mem_c->banks[2].read_only	= FALSE;
 			cpu->mem_c->banks[2].no_exec	= FALSE;
-			if (cpu->mem_c->banks[2].page==0x1f) cpu->mem_c->banks[2].read_only=TRUE;
+			if (cpu->mem_c->banks[2].page == 0x1f) cpu->mem_c->banks[2].read_only = TRUE;
 		}
 		cpu->output = FALSE;
 	}
 	if (cpu->mem_c->boot_mapped) {
-		memmove(&cpu->mem_c->banks[2],&cpu->mem_c->banks[1],sizeof(bank_state_t)*3);
-		memmove(&cpu->mem_c->banks[1],&cpu->mem_c->banks[4],sizeof(bank_state_t)*1);
+		memmove(&cpu->mem_c->banks[2], &cpu->mem_c->banks[1], sizeof(bank_state_t) * 3);
+		memmove(&cpu->mem_c->banks[1], &cpu->mem_c->banks[4], sizeof(bank_state_t) * 1);
 	}
 }
 
@@ -264,7 +265,12 @@ void port14_83pse(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		int bank = cpu->pc>>14;
 		if (!cpu->mem_c->banks[bank].ram) {
-			if ( cpu->mem_c->banks[bank].page > 0x7B ) {		
+			//priveleged pages are as follows
+			// TI 83+SE = 7C, 7D, 7F
+			// TI-84+ = 2F, 3C, 3D, 3F
+			// TI 84+SE = 6F, 7C, 7D, 7F
+			if ((cpu->mem_c->banks[bank].page > cpu->mem_c->flash_pages - 4) ||
+					(cpu->mem_c->banks[bank].page == 0x6F && cpu->pio.model > TI_83PSE)) {		
 				cpu->mem_c->flash_locked = ( cpu->bus & 0x01 );
 			}
 		}
@@ -283,7 +289,7 @@ void port14_83pse(CPU_t *cpu, device_t *dev) {
 
 
 void port8_83pse(CPU_t *cpu, device_t *dev) {
-	LINKASSIST_t* assist = (LINKASSIST_t *) dev->aux;
+	LINKASSIST_t *assist = (LINKASSIST_t *) dev->aux;
 	
 	if (cpu->input) {
 		cpu->bus = assist->link_enable & 0x87;
@@ -296,8 +302,8 @@ void port8_83pse(CPU_t *cpu, device_t *dev) {
 			assist->ready		= TRUE;
 			assist->error		= FALSE;
 			assist->sending		= FALSE;
-			Modify_interrupt_device(cpu,0x09,0);
-		} else Modify_interrupt_device(cpu,0x09,3);
+			Modify_interrupt_device(cpu, 0x09, 0);
+		} else Modify_interrupt_device(cpu, 0x09, 3);
 		cpu->output = FALSE;
 	}
 }
@@ -307,58 +313,48 @@ void port9_83pse(CPU_t *cpu, device_t *dev) {
 	link_t * link = (link_t *) cpu->pio.link;
 	
 	if (!cpu->input && !cpu->output) {
-		if (!(assist->link_enable&0x80)) {
+		if (!(assist->link_enable & 0x80)) {
 
 			if (assist->sending) {
 				assist->ready = FALSE;
-				//if (!isinit(cpu)) {
-				if (0) {
-					assist->sending = FALSE;
-					assist->ready = TRUE;
-					assist->error	= TRUE;
-				} else {
-//				{
-					switch ( (LinkRead) & 0x03) {
-						case 00:	// bit Acknoledged
-							if (link->host) {
-								assist->bit++;
-							}
-							link->host = 0;
-							break;
-						case 03:
-							if (assist->bit >=8) {
-								assist->sending = FALSE;
-								assist->ready = TRUE;
-								assist->bit = 0;
-							} else if (assist->out & (1<<assist->bit)) {
-								link->host = 2;
-							} else {
-								link->host = 1;
-							}
-							break;
-					}
+				switch ((LinkRead) & 0x03) {
+					case 00:	// bit Acknoledged
+						if (link->host) {
+							assist->bit++;
+						}
+						link->host = 0;
+						break;
+					case 03:
+						if (assist->bit >= 8) {
+							assist->sending = FALSE;
+							assist->ready = TRUE;
+							assist->bit = 0;
+						} else if (assist->out & (1 << assist->bit)) {
+							link->host = 2;
+						} else {
+							link->host = 1;
+						}
+						break;
 				}
 			} else {
-				if (LinkRead!=3) assist->ready = FALSE;
-				switch ( (LinkRead) & 0x03) {
+				if (LinkRead != 3) assist->ready = FALSE;
+				switch ((LinkRead) & 0x03) {
 					case 01:
 						if (assist->bit < 8) {
-							if (!assist->receiving) {
+							if (!assist->receiving)
 								assist->bit = 0;
-							}
 							assist->receiving = TRUE;
 							if (!link->host) {
-								assist->working  = (assist->working>>1) + 128;
+								assist->working  = (assist->working >> 1) + 128;
 								assist->bit++;
 								link->host = 1;
 							} else {
 								link->host = 0;
 							}
 						} else if (assist->bit == 8) {
-							if (link->host) {
+							if (link->host)
 								link->host = 0;
-							}
-							if ( !assist->read ) {
+							if (!assist->read) {
 								assist->receiving = FALSE;
 								assist->read = TRUE;
 								assist->in = assist->working;
@@ -368,22 +364,20 @@ void port9_83pse(CPU_t *cpu, device_t *dev) {
 						break;
 					case 02:
 						if (assist->bit < 8) {
-							if (!assist->receiving) {
+							if (!assist->receiving)
 								assist->bit = 0;
-							}
 							assist->receiving = TRUE;
 							if (!link->host) {
-								assist->working  = (assist->working>>1);
+								assist->working  = (assist->working >> 1);
 								assist->bit++;
 								link->host = 2;
 							} else {
 								link->host = 0;
 							}
 						} else if (assist->bit == 8) {
-							if (link->host) {
+							if (link->host)
 								link->host = 0;
-							}
-							if ( !assist->read ) {
+							if (!assist->read) {
 								assist->receiving = FALSE;
 								assist->read = TRUE;
 								assist->in = assist->working;
@@ -404,13 +398,13 @@ void port9_83pse(CPU_t *cpu, device_t *dev) {
 
 				}
 			} 
-			if ( (assist->link_enable&0x01) && assist->read ) {
+			if ((assist->link_enable & 0x01) && assist->read) {
 				cpu->interrupt = TRUE;
 			}
-			if ( (assist->link_enable&0x02) && assist->ready ) {
+			if ((assist->link_enable & 0x02) && assist->ready) {
 				cpu->interrupt = TRUE;
 			}
-			if ( (assist->link_enable&0x04) && assist->error ) {
+			if ((assist->link_enable & 0x04) && assist->error) {
 				cpu->interrupt = TRUE;
 			}
 		}
@@ -418,30 +412,30 @@ void port9_83pse(CPU_t *cpu, device_t *dev) {
 	
 	if (cpu->input) {
 		cpu->bus = 0x00;
-		if (!(assist->link_enable&0x80)) {
-			if ( (assist->link_enable&0x01) && assist->read ) {
-				cpu->bus +=1;
+		if (!(assist->link_enable & 0x80)) {
+			if ((assist->link_enable & 0x01) && assist->read) {
+				cpu->bus += 1;
 			}
-			if ( (assist->link_enable&0x02) && assist->ready ) {
-				cpu->bus +=2;
+			if ((assist->link_enable & 0x02) && assist->ready) {
+				cpu->bus += 2;
 			}
-			if ( (assist->link_enable&0x04) && assist->error ) {
-				cpu->bus +=4;
+			if ((assist->link_enable & 0x04) && assist->error) {
+				cpu->bus += 4;
 			}
 			if (assist->receiving) {
-				cpu->bus +=8;
+				cpu->bus += 8;
 			}
 			if (assist->read) {
-				cpu->bus +=16;
+				cpu->bus += 16;
 			}
 			if (assist->ready) {
-				cpu->bus +=32;
+				cpu->bus += 32;
 			}
 			if (assist->error) {
-				cpu->bus +=64;
+				cpu->bus += 64;
 			}
 			if (assist->sending) {
-				cpu->bus +=128;
+				cpu->bus += 128;
 			}
 		}
 		cpu->input = FALSE;
@@ -452,7 +446,7 @@ void port9_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 void port0A_83pse(CPU_t *cpu, device_t *dev) {
-	LINKASSIST_t* assist = (LINKASSIST_t *) dev->aux;
+	LINKASSIST_t *assist = (LINKASSIST_t *) dev->aux;
 	if (cpu->input) {
 		cpu->bus = assist->in;
 		assist->read = FALSE;
@@ -464,7 +458,7 @@ void port0A_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 void port0D_83pse(CPU_t *cpu, device_t *dev) {
-	LINKASSIST_t* assist = (LINKASSIST_t *) dev->aux;
+	LINKASSIST_t *assist = (LINKASSIST_t *) dev->aux;
 	if (cpu->input) {
 		cpu->bus = assist->out;
 		assist->ready = FALSE;
@@ -626,21 +620,21 @@ void delay_ports(CPU_t *cpu, device_t *dev) {
 
 
 void mod_timer(CPU_t *cpu,XTAL_t* xtal) {
-	int a,b,c;
-	a = ((xtal->timers[0].clock&0xC0)>>6)&0x03;
-	b = ((xtal->timers[1].clock&0xC0)>>6)&0x03;
-	c = ((xtal->timers[2].clock&0xC0)>>6)&0x03;
+	int a, b, c;
+	a = ((xtal->timers[0].clock & 0xC0) >> 6) & 0x03;
+	b = ((xtal->timers[1].clock & 0xC0) >> 6) & 0x03;
+	c = ((xtal->timers[2].clock & 0xC0) >> 6) & 0x03;
 
-	switch (a|b|c) {
+	switch (a | b | c) {
 		case 0:
-			Modify_interrupt_device(cpu,0x32,0);
+			Modify_interrupt_device(cpu, 0x32, 0);
 			break;
 		case 1:
-			Modify_interrupt_device(cpu,0x32,8);
+			Modify_interrupt_device(cpu, 0x32, 8);
 			break;
 		case 2:
 		case 3:
-			Modify_interrupt_device(cpu,0x32,1);
+			Modify_interrupt_device(cpu, 0x32, 1);
 			break;
 	}
 }
@@ -660,7 +654,7 @@ void port_chunk_remap_83pse(CPU_t *cpu, device_t *dev) {
 
 void port30_83pse(CPU_t *cpu, device_t *dev) {
 	XTAL_t* xtal = (XTAL_t *) dev->aux;
-	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev)-0x30)/3];
+	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev) - 0x30) / 3];
 	
 	if (cpu->input) {
 		cpu->bus = timer->clock;
@@ -669,15 +663,13 @@ void port30_83pse(CPU_t *cpu, device_t *dev) {
 		timer->clock = cpu->bus;
 		timer->active = FALSE;
 		timer->generate	= FALSE;
-		switch ( (timer->clock&0xC0)>>6) {
-			case 0x00:
-			{
+		switch ((timer->clock & 0xC0) >> 6) {
+			case 0x00: {
 				timer->divsor = 0.0f;
 				break;
 			}
-			case 0x01:
-			{
-				switch (timer->clock&0x07) {
+			case 0x01: {
+				switch (timer->clock & 0x07) {
 					case 0x00:
 						timer->divsor = 3.0f;
 						break;
@@ -711,11 +703,10 @@ void port30_83pse(CPU_t *cpu, device_t *dev) {
 				int i;
 				int mask = 0x20;
 				timer->divsor = 64.0f;
-				for(i=0;i<6; i++) {
+				for(i = 0; i < 6; i++) {
 					if (timer->clock & mask) break;
 					mask = mask>>1;
-					timer->divsor /=2.0f;
-					
+					timer->divsor /= 2.0f;
 				}
 				break;
 			}
@@ -727,15 +718,15 @@ void port30_83pse(CPU_t *cpu, device_t *dev) {
 
 void port31_83pse(CPU_t *cpu, device_t *dev) {
 	XTAL_t* xtal = (XTAL_t *) dev->aux;
-	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev)-0x30)/3];
+	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev) - 0x30) / 3];
 	if (cpu->input) {
-		cpu->bus  = (timer->loop?1:0);
-		cpu->bus += (timer->interrupt?2:0);
-		cpu->bus += (timer->underflow?4:0);
+		cpu->bus  = timer->loop ? 1 : 0;
+		cpu->bus += timer->interrupt ? 2 : 0;
+		cpu->bus += timer->underflow ? 4 : 0;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		timer->loop			= (cpu->bus&0x01)?1:0;
-		timer->interrupt	= (cpu->bus&0x02)?1:0;
+		timer->loop			= (cpu->bus & 0x01) ? 1 : 0;
+		timer->interrupt	= (cpu->bus & 0x02) ? 1 : 0;
 		timer->underflow	= FALSE;
 		timer->generate		= FALSE;
 		cpu->output = FALSE;
@@ -757,21 +748,21 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 
 	}
 */
-	xtal->ticks = (long long) (tc_elapsed(cpu->timer_c)*32768.0f);
+	xtal->ticks = (long long) (tc_elapsed(cpu->timer_c) * 32768.0f);
 	xtal->lastTime = ((double) xtal->ticks / 32768.0f);
 	
 
 
 	int i;
-	for(i=0;i<3;i++) {
+	for(i = 0; i < 3; i++) {
 		timer = &xtal->timers[i];
 		if (timer->active) {
 			
-			switch(((timer->clock&0xC0)>>6)&0x03) {
+			switch(((timer->clock & 0xC0) >> 6) & 0x03) {
 				case 0:
 					break;
 				case 1:
-					if ( (timer->lastTicks+timer->divsor) < xtal->ticks ) {
+					if ((timer->lastTicks + timer->divsor) < xtal->ticks ) {
 						timer->lastTicks+=timer->divsor;
 						timer->count--;
 						if (!timer->count) {
@@ -788,16 +779,15 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 					break;
 				case 2:
 				case 3:
-					while( timer->lastTstates+((unsigned long long) timer->divsor) < (unsigned long long) tc_tstates(cpu->timer_c) ) {
+					while(timer->lastTstates + ((unsigned long long) timer->divsor) < (unsigned long long) tc_tstates(cpu->timer_c) ) {
 						
-						timer->lastTstates+= (unsigned long long) timer->divsor;
+						timer->lastTstates += (unsigned long long) timer->divsor;
 						timer->count--;
 						if (!timer->count) {
 							if (!timer->underflow) {
 								timer->count = timer->max;
-								if (!timer->loop) {
+								if (!timer->loop)
 									timer->active = FALSE;
-								}
 							}
 							if (timer->interrupt) timer->generate = TRUE;
 							timer->underflow = TRUE;
@@ -807,9 +797,8 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 			}
 		}
 						
-		if (timer->generate && !cpu->halt) {
+		if (timer->generate && !cpu->halt)
 			cpu->interrupt = TRUE;
-		}
 	}
 }
 
@@ -817,10 +806,7 @@ void port32_83pse(CPU_t *cpu, device_t *dev) {
 	XTAL_t* xtal = (XTAL_t *) dev->aux;
 	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev)-0x30)/3];
 	
-	
-
-	handlextal(cpu,xtal);
-		
+	handlextal(cpu, xtal);	
 		
 	if (cpu->input) {
 		cpu->bus = timer->count;
@@ -829,19 +815,15 @@ void port32_83pse(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		timer->count = cpu->bus;
 		timer->max = cpu->bus;
-		if (timer->clock&0xC0) timer->active = TRUE;
+		if (timer->clock & 0xC0) timer->active = TRUE;
 		timer->lastTstates = tc_tstates(cpu->timer_c);
 		timer->lastTicks = (double) xtal->ticks;
-		mod_timer(cpu,xtal);
+		mod_timer(cpu, xtal);
 		cpu->output = FALSE;
 	}
 	
 //	handlextal(cpu,xtal);
 }
-
-
-
-
 
 //########################################################
 //########################################################
@@ -850,9 +832,6 @@ void port32_83pse(CPU_t *cpu, device_t *dev) {
 //##
 //########################################################
 //########################################################
-
-
-
 
 void clock_enable(CPU_t *cpu, device_t *dev) {
 	CLOCK_t* clock = (CLOCK_t *) dev->aux;
@@ -887,8 +866,7 @@ void clock_set(CPU_t *cpu, device_t *dev) {
 		clock->lasttime = tc_elapsed(cpu->timer_c);
 		cpu->output = FALSE;
 	}
-}
-	
+}	
 	
 void clock_read(CPU_t *cpu, device_t *dev) {
 	CLOCK_t* clock = (CLOCK_t *) dev->aux;
@@ -907,9 +885,8 @@ void clock_read(CPU_t *cpu, device_t *dev) {
 	}
 }
 	
-	
-	
 void fake_usb(CPU_t *cpu, device_t *dev) {
+	USB_t *usb = (USB_t *) dev->aux; 
 	if (cpu->input) {
 		switch(DEV_INDEX(dev)) {
 /* double checked TILEM for proper values, thanks Ben, Dan_E*/
@@ -926,26 +903,31 @@ void fake_usb(CPU_t *cpu, device_t *dev) {
 				cpu->bus =  0x00;
 				break;
 			case 0x57:
-				cpu->bus =  0x50;
+				cpu->bus =  usb->USBEvents;
 				break;
 		}	
 		cpu->input = FALSE;
 	} else if (cpu->output) {
+		switch (DEV_INDEX(dev)) {
+			case 0x56:
+				usb->USBEvents = cpu->bus;
+				break;
+		}
 		cpu->output = FALSE;
 	}
 }
 
 
 void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
-	int bank = addr>>14;
-	switch( cpu->mem_c->step ) {
+	int bank = addr >> 14;
+	switch(cpu->mem_c->step) {
 		case 0:
-			if ( ( addr & 0x0FFF ) == 0x0AAA ) {
-				if ( data == 0xAA ) cpu->mem_c->step++;
+			if ((addr & 0x0FFF) == 0x0AAA) {
+				if (data == 0xAA) cpu->mem_c->step++;
 			}
 			break;
 		case 1:
-			if ( (addr & 0x0FFF) == 0x0555 ) {
+			if ((addr & 0x0FFF) == 0x0555) {
 				if (data == 0x55) cpu->mem_c->step++;
 				else endflash(cpu);
 			} else endflash(cpu);
@@ -988,7 +970,7 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			if (data == 0xF0) endflash(cpu);
 			break;
 		case 5:
-			if ( (addr & 0x0FFF) == 0x0AAA ) {
+			if ((addr & 0x0FFF) == 0x0AAA) {
 				if (data == 0x10) {			//Erase entire chip...Im not sure if 
 					int i;					//boot page is included, so I'll leave it off
 					for(i = 0; i < (cpu->mem_c->flash_size - PAGE_SIZE) ; i++ ) {
@@ -1001,7 +983,7 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				int i;
 				int spage = (cpu->mem_c->banks[bank].page<<1) + ((addr >> 13) & 0x01);
 
-				printf("Spage = %03d , Page = %02X , Addr = %04X \n", spage, spage/2, ((spage & 0x00F8) * 0x2000));
+				printf("Spage = %03d , Page = %02X , Addr = %04X \n", spage, spage / 2, ((spage & 0x00F8) * 0x2000));
 				if (spage < 248) {
 					int startaddr = ((spage & 0x00F8 ) * 0x2000);
 					int endaddr   = (startaddr + 0x10000);
@@ -1030,7 +1012,6 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 //						cpu->mem_c->flash[i]=0xFF;
 //					}
 				}
-
 			}
 			endflash(cpu);
 			break;
@@ -1047,7 +1028,7 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			} else cpu->mem_c->step = 6;
 			break;
 		case 8:
-			(*(cpu->mem_c->banks[bank].addr +(addr & 0x3fff))) &= data;  //AND LOGIC!!
+			(*(cpu->mem_c->banks[bank].addr + (addr & 0x3fff))) &= data;  //AND LOGIC!!
 			cpu->mem_c->step = 6;
 			break;
 
@@ -1058,8 +1039,8 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 }
 
 void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
-	int bank = addr>>14;
-	switch( cpu->mem_c->step ) {
+	int bank = addr >> 14;
+	switch(cpu->mem_c->step) {
 		case 0:
 			if ((addr & 0x0FFF) == 0x0AAA) {
 				if (data == 0xAA) cpu->mem_c->step++;
@@ -1164,8 +1145,6 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 /*												*/
 /*----------------------------------------------*/
 
-
-
 STDINT_t* INT83PSE_init(CPU_t* cpu) {
 	STDINT_t * stdint = (STDINT_t *) malloc(sizeof(STDINT_t));
 	if (!stdint) {
@@ -1197,13 +1176,8 @@ link_t* link83pse_init(CPU_t* cpu) {
 	}
 	link->host		= 0;			//neither lines set
 	link->client	= &link->host;	//nothing plugged in.
-
-
 	return link;
 }
-
-
-
 
 SE_AUX_t* SE_AUX_init(CPU_t* cpu) {
 	SE_AUX_t* se_aux = (SE_AUX_t *) malloc(sizeof(SE_AUX_t));
@@ -1211,11 +1185,12 @@ SE_AUX_t* SE_AUX_init(CPU_t* cpu) {
 		printf("Couldn't allocate memory for SE structs\n");
 		exit(1);
 	}
-	memset(se_aux,0,sizeof(SE_AUX_t));
+	memset(se_aux, 0, sizeof(SE_AUX_t));
 	se_aux->xtal.timers[0].divsor = 1;
 	se_aux->xtal.timers[1].divsor = 1;
 	se_aux->xtal.timers[2].divsor = 1;
 	se_aux->linka.link_enable = 0x80;
+	se_aux->usb.USBEvents = 0x50;
 	return se_aux;
 }
 
@@ -1260,7 +1235,7 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.devices[0x07].code = (devp) port7_83pse;
 	
 	
-	SE_AUX_t* se_aux = SE_AUX_init(cpu);
+	SE_AUX_t *se_aux = SE_AUX_init(cpu);
 	
 // SE link assist
 	cpu->pio.devices[0x08].active = TRUE;
@@ -1280,7 +1255,7 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.devices[0x0D].code = (devp) port0D_83pse;
 	
 /* LCD */
-	LCD_t *lcd = LCD_init(cpu,TI_83PSE);
+	LCD_t *lcd = LCD_init(cpu, TI_83PSE);
 	cpu->pio.devices[0x10].active = TRUE;
 	cpu->pio.devices[0x10].aux = lcd;
 	cpu->pio.devices[0x10].code = (devp) LCD_command;
@@ -1418,23 +1393,23 @@ int device_init_83pse(CPU_t *cpu) {
 
 /*Fake USB*/
 	cpu->pio.devices[0x4C].active = TRUE;
-	cpu->pio.devices[0x4C].aux = NULL;
+	cpu->pio.devices[0x4C].aux = &se_aux->usb;
 	cpu->pio.devices[0x4C].code = (devp) &fake_usb;	
 
 	cpu->pio.devices[0x4D].active = TRUE;
-	cpu->pio.devices[0x4D].aux = NULL;
+	cpu->pio.devices[0x4D].aux = &se_aux->usb;
 	cpu->pio.devices[0x4D].code = (devp) &fake_usb;
 
 	cpu->pio.devices[0x55].active = TRUE;
-	cpu->pio.devices[0x55].aux = NULL;
+	cpu->pio.devices[0x55].aux = &se_aux->usb;
 	cpu->pio.devices[0x55].code = (devp) &fake_usb;
 
 	cpu->pio.devices[0x56].active = TRUE;
-	cpu->pio.devices[0x56].aux = NULL;
+	cpu->pio.devices[0x56].aux = &se_aux->usb;
 	cpu->pio.devices[0x56].code = (devp) &fake_usb;
 
 	cpu->pio.devices[0x57].active = TRUE;
-	cpu->pio.devices[0x57].aux = NULL;
+	cpu->pio.devices[0x57].aux = &se_aux->usb;
 	cpu->pio.devices[0x57].code = (devp) &fake_usb;
 	
 	cpu->pio.lcd		= lcd;
@@ -1442,14 +1417,14 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.link		= link;
 	cpu->pio.stdint		= stdint;
 	cpu->pio.se_aux		= se_aux;
-
+	cpu->pio.breakpoint_callback = port_debug_callback;
 	cpu->pio.model		= TI_83PSE;
 	
-	Append_interrupt_device(cpu,0x00,1);
-	Append_interrupt_device(cpu,0x03,8);
-	Append_interrupt_device(cpu,0x11,128);
-	Append_interrupt_device(cpu,0x09,3);
-	Append_interrupt_device(cpu,0x32,8);
+	Append_interrupt_device(cpu, 0x00, 1);
+	Append_interrupt_device(cpu, 0x03, 8);
+	Append_interrupt_device(cpu, 0x11, 128);
+	Append_interrupt_device(cpu, 0x09, 3);
+	Append_interrupt_device(cpu, 0x32, 8);
 	return 0;
 }
 
@@ -1457,6 +1432,9 @@ int device_init_83pse(CPU_t *cpu) {
 int memory_init_83pse(memc *mc) {
 	memset(mc, 0, sizeof(memory_context_t));
 	
+	mc->mem_read_break_callback = mem_debug_callback;
+	mc->mem_write_break_callback = mem_debug_callback;
+
 	/* Set Number of Pages here */
 	mc->flash_pages = 128;
 	mc->ram_pages = 8;
@@ -1464,7 +1442,6 @@ int memory_init_83pse(memc *mc) {
 	mc->flash_version = 2;
 	mc->upper = 0x60;
 	mc->lower = 0x10;
-	
 	
 	mc->flash_size = mc->flash_pages * PAGE_SIZE;
 	mc->flash = (unsigned char *) calloc(mc->flash_pages, PAGE_SIZE);
@@ -1500,6 +1477,9 @@ int memory_init_83pse(memc *mc) {
 
 int memory_init_84p(memc *mc) {
 	memset(mc, 0, sizeof(memory_context_t));
+
+	mc->mem_read_break_callback = mem_debug_callback;
+	mc->mem_write_break_callback = mem_debug_callback;
 
 	/* Set Number of Pages here */
 	mc->flash_pages = 64;
@@ -1540,5 +1520,3 @@ int memory_init_84p(memc *mc) {
 	memcpy(mc->banks, banks, sizeof(banks));
 	return 0;
 }
-
-

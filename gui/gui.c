@@ -142,6 +142,7 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 extern WINDOWPLACEMENT db_placement;
 
 int gui_debug(LPCALC lpCalc) {
+	if (lpCalc->audio != NULL)
 	pausesound(lpCalc->audio);
 	HWND hdebug;
 	BOOL set_place = TRUE;
@@ -256,11 +257,6 @@ int gui_frame_update(LPCALC lpCalc) {
 		}
 		hbmSkin.Load(CalcModelTxt[lpCalc->model], _T("PNG"), g_hInst);
 		switch(lpCalc->model) {
-			case TI_73:
-			case TI_83P:
-			case TI_83PSE:
-				hbmKeymap.Load(_T("TI-83+Keymap"), _T("PNG"), g_hInst);
-				break;
 			case TI_82:
 				hbmKeymap.Load(_T("TI-82Keymap"), _T("PNG"), g_hInst);
 				break;
@@ -276,7 +272,12 @@ int gui_frame_update(LPCALC lpCalc) {
 				break;
 			case TI_86:
 				hbmKeymap.Load(_T("TI-86Keymap"), _T("PNG"), g_hInst);
+			case TI_73:
+			case TI_83P:
+			case TI_83PSE:
 			default:
+				hbmKeymap.Load(_T("TI-83+Keymap"), _T("PNG"), g_hInst);
+				break;
 				break;
 		}
 		m_pBitmapSkin = hbmSkin.m_pBitmap;
@@ -1145,11 +1146,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case IDM_CALC_CONNECT: {
-					if (!calcs[0].active || !calcs[1].active || link_connect(&calcs[0].cpu, &calcs[1].cpu))						
+					/*if (!calcs[0].active || !calcs[1].active || link_connect(&calcs[0].cpu, &calcs[1].cpu))						
 						MessageBox(NULL, _T("Connection Failed"), _T("Error"), MB_OK);					
-					else
-					//link_connect_hub(lpCalc->slot, &lpCalc->cpu);
-					MessageBox(NULL, _T("Connection Successful"), _T("Success"), MB_OK);					
+					else*/
+					link_connect_hub(lpCalc->slot, &lpCalc->cpu);
+					//MessageBox(NULL, _T("Connection Successful"), _T("Success"), MB_OK);					
 					break;
 				}
 				case IDM_CALC_PAUSE: {
