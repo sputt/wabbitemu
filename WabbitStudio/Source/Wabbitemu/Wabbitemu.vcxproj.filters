@@ -258,6 +258,9 @@
     <ClCompile Include="Debugger\dbprofile.c">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="hardware\81hw.c">
+      <Filter>Source Files\Hardware</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -487,6 +490,12 @@
     </ClInclude>
     <ClInclude Include="Debugger\dbmonitor.h">
       <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\backups.h">
+      <Filter>Header Files\Interface</Filter>
+    </ClInclude>
+    <ClInclude Include="Hardware\81hw.h">
+      <Filter>Header Files\Hardware</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

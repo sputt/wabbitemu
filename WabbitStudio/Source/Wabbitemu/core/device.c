@@ -24,6 +24,8 @@ void ClearDevices(CPU_t* cpu) {
 int device_output(CPU_t *cpu, unsigned char dev) {
 	if (cpu->pio.devices[dev].active) {
 		cpu->output = TRUE;
+		if (cpu->pio.devices[dev].breakpoint)
+			cpu->pio.breakpoint_callback(cpu, &(cpu->pio.devices[dev]));
 		cpu->pio.devices[dev].code(cpu, &(cpu->pio.devices[dev]));
 		if (cpu->output) {
 			/* Device is not responding */
@@ -41,6 +43,8 @@ int device_output(CPU_t *cpu, unsigned char dev) {
 int device_input(CPU_t *cpu, unsigned char dev) {
 	if (cpu->pio.devices[dev].active) {
 		cpu->input = TRUE;
+		if (cpu->pio.devices[dev].breakpoint)
+			cpu->pio.breakpoint_callback(cpu, &(cpu->pio.devices[dev]));
 		cpu->pio.devices[dev].code(cpu, &(cpu->pio.devices[dev]));
 		if (cpu->input) {
 			/* Device is not responding */
@@ -58,7 +62,7 @@ int device_input(CPU_t *cpu, unsigned char dev) {
 
 void Append_interrupt_device(CPU_t *cpu, int port, int skip) {
 	int i;
-	for(i=0;i<256;i++) {
+	for(i = 0; i < 256; i++) {
 		if (cpu->pio.interrupt[i] == -1) {
 			cpu->pio.interrupt[i] = port;
 			if ( skip > 0 ) cpu->pio.skip_factor[i] = skip;
@@ -70,9 +74,9 @@ void Append_interrupt_device(CPU_t *cpu, int port, int skip) {
 
 void Modify_interrupt_device(CPU_t *cpu, int port, int skip) {
 	int i;
-	for(i=0;i<256;i++) {
+	for(i = 0; i < 256; i++) {
 		if (cpu->pio.interrupt[i] == port) {
-			if ( skip > 0 ) cpu->pio.skip_factor[i] = skip;
+			if (skip > 0) cpu->pio.skip_factor[i] = skip;
 			else cpu->pio.skip_factor[i] = 0;
 			break;
 		} else if (cpu->pio.interrupt[i] == -1) break;

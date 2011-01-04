@@ -13,7 +13,7 @@
 #include "keys.h"
 #include "registry.h"
 #include "fileutilities.h"
-
+#include "guiwizard.h"
 
 extern HINSTANCE g_hInst;
 extern BITMAPINFO *bi;
@@ -285,8 +285,6 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
 					DupLCDConfig(lpCalc->cpu.pio.lcd, lcd);
-					//calcs[gslot].cpu.pio.lcd->mode = lcd->mode;
-					//calcs[gslot].cpu.pio.lcd->shades = lcd->shades;
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -393,65 +391,6 @@ void SkinOptionsToggleCustomSkin(HWND hwndDlg, BOOL bEnable){
 	EnableWindow(hBrowseSkin, bEnable);
 	EnableWindow(hSkinText, bEnable);
 	EnableWindow(hKeyText, bEnable);
-}
-
-/* 	Set bSave = TRUE if you are prompting for a file name to save to
- *	If you're fetching a filename otherwise, bSave = FALSE */
-int SetGifName(BOOL bSave) {
-	OPENFILENAME ofn;
-
-	TCHAR lpstrFilter[] 	= _T("\
-Graphics Interchange Format  (*.gif)\0*.gif\0\
-All Files (*.*)\0*.*\0\0");
-	TCHAR lpstrFile[MAX_PATH];
-	unsigned int Flags = 0;
-
-	if (bSave) Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
-
-	int i;
-	for (i = (int) _tcslen(gif_file_name) - 1; i && gif_file_name[i] != '\\'; i--);
-
-	if (i) {
-#ifdef WINVER
-		StringCbCopy(lpstrFile, sizeof(lpstrFile), gif_file_name + i + 1);
-#else
-		strcpy(lpstrFile, gif_file_name + i + 1);
-#endif
-	} else {
-		lpstrFile[0] = '\0';
-	}
-
-	ofn.lStructSize			= sizeof(OPENFILENAME);
-	ofn.hwndOwner			= GetForegroundWindow();
-	ofn.hInstance			= NULL;
-	ofn.lpstrFilter			= (LPCTSTR) lpstrFilter;
-	ofn.lpstrCustomFilter	= NULL;
-	ofn.nMaxCustFilter		= 0;
-	ofn.nFilterIndex		= 0;
-	ofn.lpstrFile			= lpstrFile;
-	ofn.nMaxFile			= sizeof(lpstrFile);
-	ofn.lpstrFileTitle		= NULL;
-	ofn.nMaxFileTitle		= 0;
-	ofn.lpstrInitialDir		= NULL;
-	ofn.lpstrTitle			= _T("Wabbitemu GIF File Target");
-	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
-	ofn.lpstrDefExt			= _T("gif");
-	ofn.lCustData			= 0;
-	ofn.lpfnHook			= NULL;
-	ofn.lpTemplateName		= NULL;
-	ofn.pvReserved			= NULL;
-	ofn.dwReserved			= 0;
-	ofn.FlagsEx				= 0;
-
-	if (!GetSaveFileName(&ofn)) {
-		return 1;
-	}
-#ifdef WINVER
-	StringCbCopy(gif_file_name, sizeof(gif_file_name), lpstrFile);
-#else
-	strcpy(gif_file_name, lpstrFile);
-#endif
-	return 0;
 }
 
 INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -581,14 +520,15 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 }
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check;
+	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check, saveWindow_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
-			saveState_check = GetDlgItem(hwnd, IDC_CHKSAVE);
-			loadFiles_check = GetDlgItem(hwnd, IDC_CHKLOADFILES);
-			doBackups_check = GetDlgItem(hwnd, IDC_CHKREWINDING);
-			wizard_check = GetDlgItem(hwnd, IDC_CHKSHOWWIZARD);
-			alwaysTop_check = GetDlgItem(hwnd, IDC_CHKONTOP);
+			saveState_check = GetDlgItem(hwnd, IDC_CHK_SAVE);
+			loadFiles_check = GetDlgItem(hwnd, IDC_CHK_LOADFILES);
+			doBackups_check = GetDlgItem(hwnd, IDC_CHK_REWINDING);
+			wizard_check = GetDlgItem(hwnd, IDC_CHK_SHOWWIZARD);
+			alwaysTop_check = GetDlgItem(hwnd, IDC_CHK_ONTOP);
+			saveWindow_check = GetDlgItem(hwnd, IDC_CHK_SAVEWINDOW);
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
 		case WM_COMMAND: {
@@ -598,17 +538,15 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					return TRUE;
 				case BN_CLICKED:
 					switch(LOWORD(wParam)) {
-						case IDC_CHKSAVE:
-							break;
-						case IDC_CHKLOADFILES:
-							break;
-						case IDC_CHKREWINDING:
-							break;
-						case IDC_CHKSHOWWIZARD:
+						case IDC_CHK_SAVEWINDOW:
+						case IDC_CHK_SAVE:
+						case IDC_CHK_LOADFILES:
+						case IDC_CHK_REWINDING:
+						case IDC_CHK_SHOWWIZARD:
 							break;
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
-					break;
+					return FALSE;
 			}
 			return TRUE;
 		}
@@ -617,6 +555,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
 					int i;
+					startX = startY = Button_GetCheck(saveWindow_check) ? 0 : CW_USEDEFAULT;
 					exit_save_state = Button_GetCheck(saveState_check);
 					load_files_first = Button_GetCheck(loadFiles_check);
 					show_wizard = Button_GetCheck(wizard_check);
@@ -647,6 +586,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 #endif
 			Button_SetCheck(wizard_check, show_wizard);
 			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);
+			Button_SetCheck(saveWindow_check, startX != CW_USEDEFAULT);
 			return TRUE;
 		}
 	}
@@ -749,7 +689,8 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 							break;
 						}
 						case IDC_BTNGIFBROWSE:
-							SetGifName(FALSE);
+							BrowseFile(gif_file_name, _T("Graphics Interchange Format  (*.gif)\0*.gif\0All Files (*.*)\0*.*\0\0"),
+										_T("Wabbitemu GIF File Target"), _T("gif"));
 							Edit_SetText(edtGIFFilename, gif_file_name);
 							break;
 						case IDC_CHKUSEINCREASING:
@@ -773,55 +714,6 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-
-
-int GetROMName(TCHAR *lpstrFile) {
-	OPENFILENAME ofn;
-
-	TCHAR lpstrFilter[] 	= _T("\
-Calculator ROM  (*.rom, *.bin)\0*.rom;*.bin\0\
-All Files (*.*)\0*.*\0\0");
-
-	ZeroMemory(&ofn, sizeof(ofn));
-
-	ofn.lStructSize			= sizeof(OPENFILENAME);
-	ofn.hwndOwner			= GetForegroundWindow();
-	ofn.lpstrFilter			= (LPCTSTR) lpstrFilter;
-	ofn.lpstrFile			= lpstrFile;
-	ofn.nMaxFile			= MAX_PATH;
-	ofn.lpstrTitle			= _T("Wabbitemu Load ROM");
-	ofn.Flags				= OFN_PATHMUSTEXIST | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
-
-	if (!GetOpenFileName(&ofn)) {
-		return 1;
-	}
-	return 0;
-}
-
-int GetExportROMName(TCHAR *lpstrFile) {
-	OPENFILENAME ofn;
-	TCHAR lpstrFilter[] 	= _T("\
-ROMS  (*.rom)\0*.rom\0\
-BINS  (*.bin)\0*.bin\0\
-All Files (*.*)\0*.*\0\0");
-
-	ZeroMemory(&ofn, sizeof(ofn));
-	ZeroMemory(lpstrFile, MAX_PATH);
-
-	ofn.lStructSize		= sizeof(OPENFILENAME);
-	ofn.hwndOwner		= GetForegroundWindow();
-	ofn.lpstrFilter		= (LPCTSTR) lpstrFilter;
-	ofn.lpstrFile		= lpstrFile;
-	ofn.nMaxFile		= MAX_PATH;
-	ofn.lpstrTitle		= _T("Wabbitemu Export Rom");
-	ofn.Flags			= OFN_PATHMUSTEXIST | OFN_EXPLORER |
-						  OFN_OVERWRITEPROMPT | OFN_HIDEREADONLY;
-	ofn.lpstrDefExt		= _T("rom");
-	if (!GetSaveFileName(&ofn)) return 1;
-	return 0;
-}
-
-
 INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND edtRom_path, edtRom_version, edtRom_model, edtRom_size, stcRom_image, saveState_check,
 			ramPages_check;
@@ -844,38 +736,30 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					switch (LOWORD(wParam)) {
 						case IDC_BTNROMBROWSE: {
 							TCHAR lpszFile[MAX_PATH] = _T("\0");
-							if (!GetROMName(lpszFile)) {
+							const TCHAR lpstrFilter[] = _T("Calculator ROM  (*.rom, *.bin)\0*.rom;*.bin\0\
+															All Files (*.*)\0*.*\0\0");
+							const TCHAR lpstrTitle[] = _T("Wabbitemu Load ROM");
+							const TCHAR lpstrDefExt[] = _T("rom");
+							
+							if (!BrowseFile(lpszFile, lpstrFilter, lpstrTitle, lpstrDefExt, OFN_PATHMUSTEXIST)) {
 #ifdef WINVER
 								StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), lpszFile);
 #else
 								strcpy(lpCalc->rom_path, lpszFile);
 #endif
-								//SendMessage(calcs[gslot].hwndLCD, WM_COMMAND, ECM_CALCRELOAD, 0);
 								SendMessage(hwnd, WM_USER, 0, 0);
 							}
 							break;
 						}
 						case IDC_BTN1: {
-							TCHAR lpszFile[MAX_PATH] = _T("\0");
-							if (!GetExportROMName(lpszFile)) {
-#ifdef WINVER
-								FILE* outfile;
-								_tfopen_s(&outfile, lpszFile, _T("wb"));
-#else
-								FILE* outfile = fopen(lpszFile,"wb");
-#endif
-								char* rom = (char *) lpCalc->mem_c.flash;
-								int size = lpCalc->mem_c.flash_size;
-								if (size != 0 && rom!=NULL && outfile!=NULL) {
-									int i;
-									for(i = 0; i < size; i++) {
-										fputc(rom[i], outfile);
-									}
-									fclose(outfile);
-								}
+							TCHAR lpszFile[MAX_PATH];
+							if (!SaveFile(lpszFile, _T("Roms  (*.rom)\0*.rom\0\bins  (*.bin)\0*.bin\0\All Files (*.*)\0*.*\0\0"),
+											_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST)) {
+								ExportRom(lpszFile, lpCalc);
 							}
 							break;
 						}
+						case IDC_CHK_RAMPAGES:
 						case IDC_CHKSAVE:
 							PropSheet_Changed(GetParent(hwnd), hwnd);
 							break;
@@ -887,6 +771,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
 					exit_save_state = Button_GetCheck(saveState_check);
+					lpCalc->mem_c.ram_version = Button_GetCheck(ramPages_check) ? 2 : 0;
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -908,7 +793,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			Edit_SetText(edtRom_version, lpCalc->rom_version);
 #endif
 			Edit_SetText(edtRom_model, CalcModelTxt[lpCalc->model]);
-//			Button_SetCheck(ramPages_check, lpCalc->mem_c.ram_pages_missing);
+			Button_SetCheck(ramPages_check, lpCalc->mem_c.ram_version == 2);
 			TCHAR szRomSize[16];
 #ifdef WINVER
 			StringCbPrintf(szRomSize, sizeof(szRomSize), _T("%0.1f KB"), (float) lpCalc->cpu.mem_c->flash_size / 1024.0f);

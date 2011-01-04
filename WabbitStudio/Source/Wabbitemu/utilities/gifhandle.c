@@ -3,15 +3,12 @@
 #include "gif.h"
 #ifdef WINVER // ...oops
 #include "resource.h"
-#endif
-#ifndef WINVER
+#else
 #include "types.h"
 #endif
 #include "lcd.h"
 #include "gifhandle.h"
-#ifdef WINVER
-#include "guioptions.h"
-#endif
+#include "fileutilities.h"
 
 
 TCHAR *generate_gif_name(TCHAR *fn, int num, TCHAR *dest) {
@@ -23,7 +20,7 @@ TCHAR *generate_gif_name(TCHAR *fn, int num, TCHAR *dest) {
 	if (i) fn[i] = '\0';
 	
 #ifdef WINVER
-	StringCbPrintf(dest, _tcslen(dest), _T("%s%d.gif"), fn, num);
+	StringCbPrintf(dest, _tcslen(dest) + 4, _T("%s%d.gif"), fn, num);
 #else
 	sprintf(dest, "%s%d.gif", fn, num);
 #endif
@@ -37,25 +34,24 @@ static TCHAR gif_fn_backup[MAX_PATH];
  * Gets where the next screenshot should be saved to.
  * Returns true if ready, false if user cancels
  */
-BOOL get_gif_filename(TCHAR *fn) {
+BOOL get_gif_filename() {
 	int i;
 	StringCbCopy(gif_fn_backup, sizeof(gif_fn_backup), gif_file_name);
 	if (gif_autosave) {
 		/* do file save */
 		if (gif_use_increasing) {
-			TCHAR fn[MAX_PATH];
 			FILE *test = (FILE*) 1;
 					
 			for (i = 0; test; i++) {
-				generate_gif_name(gif_file_name, i, fn);
-				_tfopen_s(&test, fn, _T("r"));
+				generate_gif_name(gif_fn_backup, i, gif_file_name);
+				_tfopen_s(&test, gif_file_name, _T("r"));
 				if (test) fclose(test);
 			}
-			StringCbCopy(gif_file_name, sizeof(gif_file_name), fn);
 		}
 	} else {
 #ifndef _WINDLL
-		if (SetGifName(TRUE))
+		if (SaveFile(gif_file_name, _T("Graphics Interchange Format  (*.gif)\0*.gif\0All Files (*.*)\0*.*\0\0"),
+						_T("Wabbitemu GIF File Target"), _T("gif")))
 			//if we cancel, mark the menu and set to idle
 			return FALSE;
 #endif
@@ -67,6 +63,14 @@ BOOL get_gif_filename(TCHAR *fn) {
 unsigned char* GIFGREYLCD(LCD_t *lpLCD) {
 	
 	uint8_t temp_gif[LCD_HEIGHT][LCD_WIDTH];
+
+	int level = abs((int) lpLCD->contrast - (int) lpLCD->base_level);
+	int base = (lpLCD->contrast - 54) * 24;
+	if (base < 0) base = 0;
+
+	if (level > 12) level = 0;
+	else level = (12 - level) * (255 - base) / lpLCD->shades / 12;
+
 	u_int row, col;
 	for (row = 0; row < LCD_HEIGHT; row++) {
 		for (col = 0; col < LCD_MEM_WIDTH; col++) {
@@ -87,14 +91,14 @@ unsigned char* GIFGREYLCD(LCD_t *lpLCD) {
 			
 			// Convert lcd shades to gif
 			u_char *scol = &temp_gif[row][col * 8];
-			scol[0] = (u_char) p0;
-			scol[1] = (u_char) p1;
-			scol[2] = (u_char) p2;
-			scol[3] = (u_char) p3;
-			scol[4] = (u_char) p4;
-			scol[5] = (u_char) p5;
-			scol[6] = (u_char) p6;
-			scol[7] = (u_char) p7;
+			scol[0] = (u_char) p0;//(p0 * level + base);
+			scol[1] = (u_char) p1;//(p1 * level + base);
+			scol[2] = (u_char) p2;//(p2 * level + base);
+			scol[3] = (u_char) p3;//(p3 * level + base);
+			scol[4] = (u_char) p4;//(p4 * level + base);
+			scol[5] = (u_char) p5;//(p5 * level + base);
+			scol[6] = (u_char) p6;//(p6 * level + base);
+			scol[7] = (u_char) p7;//(p7 * level + base);
 		}
 	}
 	
@@ -109,22 +113,22 @@ unsigned char* GIFGREYLCD(LCD_t *lpLCD) {
 }
 
 #else
-unsigned char* GIFGREYLCD() {
-	LCD_t* lcd = calcs[gslot].cpu.pio.lcd;
+unsigned char* GIFGREYLCD(LCD_t *lpLCD) {
 	unsigned int tmp;
-	int x,y,i,bit,col;
-	for(y=0;y<LCD_HEIGHT*gif_size;y++) {
-		for(x=0;x<LCD_WIDTH*gif_size;x++) {
-			bit = 7-((x/gif_size)&0x7);
-			col = (x/gif_size)>>3;
-			tmp=0;
-			for(i=0;i<(lcd->shades);i++) {
-				if (lcd->queue[i]) tmp +=((lcd->queue[i][((y/gif_size)*LCD_MEM_WIDTH)+col]>>bit)&0x01);
+	int x, y, i, bit, col;
+	for(y = 0; y < LCD_HEIGHT * gif_size; y++) {
+		for(x = 0; x < LCD_WIDTH * gif_size; x++) {
+			bit = 7 - ((x / gif_size) & 0x7);
+			col = (x / gif_size) >> 3;
+			tmp = 0;
+			for(i = 0; i < lcd->shades; i++) {
+				if (lpLCD->queue[i]) 
+					tmp += ((lpLCD->queue[i][((y / gif_size) * LCD_MEM_WIDTH) + col] >> bit) & 0x01);
 			}
-			lcd->gif[y][x] = tmp;
+			lpLCD->gif[y][x] = tmp;
 		}
 	}
-	return (u_char*) lcd->gif;
+	return (u_char*) lpLCD->gif;
 }
 #endif
 
@@ -244,7 +248,3 @@ void handle_screenshot() {
 	}
 #endif
 }
-
-
-
-

@@ -127,6 +127,7 @@
     </ClCompile>
     <ClCompile Include="gui\guiwizard.c" />
     <ClCompile Include="gui\registry.c" />
+    <ClCompile Include="hardware\81hw.c" />
     <ClCompile Include="hardware\83hw.c" />
     <ClCompile Include="hardware\83phw.c" />
     <ClCompile Include="hardware\83psehw.c" />
@@ -223,6 +224,7 @@
     <ClInclude Include="gui\map.h" />
     <ClInclude Include="gui\registry.h" />
     <ClInclude Include="gui\resource.h" />
+    <ClInclude Include="Hardware\81hw.h" />
     <ClInclude Include="hardware\83hw.h" />
     <ClInclude Include="hardware\83phw.h" />
     <ClInclude Include="hardware\83psehw.h" />
@@ -231,6 +233,7 @@
     <ClInclude Include="hardware\lcd.h" />
     <ClInclude Include="hardware\link.h" />
     <ClInclude Include="hardware\ti_stdint.h" />
+    <ClInclude Include="interface\backups.h" />
     <ClInclude Include="interface\calc.h" />
     <ClInclude Include="interface\CCalcAddress.h" />
     <ClInclude Include="interface\CKeypad.h" />
@@ -556,7 +559,7 @@
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>winmm.lib;comctl32.lib;msimg32.lib;dwmapi.lib;uxtheme.lib;gdiplus.lib;zlibstat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreEmbeddedIDL>true</IgnoreEmbeddedIDL>
       <ModuleDefinitionFile>

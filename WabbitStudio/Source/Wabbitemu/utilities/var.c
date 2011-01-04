@@ -26,11 +26,11 @@ int CmpStringCase(char *str1, unsigned char *str2) {
 int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 	int i,b;
 	if (calc == -1) {
-		if ( size == (128*1024) ) calc = TI_82;
-		else if ( size == (256*1024) ) calc = TI_83;
-		else if ( (size>=(510*1024)) && (size<=(590*1024))  ) calc = TI_83P;
-		else if ( (size>=(1016*1024)) && (size<=(1030*1024))  ) calc = TI_84P;
-		else if ( (size>=(2044*1024)) && (size<=(2260*1024)) ) calc = TI_83PSE;
+		if (size == (128 * 1024)) calc = TI_82;
+		else if (size == (256 * 1024)) calc = TI_83;
+		else if ((size >= (510 * 1024)) && (size <= (590 * 1024))) calc = TI_83P;
+		else if ((size >= (1016 * 1024)) && (size<= (1030 * 1024))) calc = TI_84P;
+		else if ((size >= (2044 * 1024)) && (size<= (2260 * 1024))) calc = TI_83PSE;
 		else {
 			_putts(_T("not a known rom"));
 			return -1;
@@ -39,7 +39,7 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 	switch (calc) {
 		case TI_82:
 			for(i = 0; i < (size - strlen(catalog) - 10); i++) {
-				if (CmpStringCase(catalog, rom + i)==0) {
+				if (!CmpStringCase(catalog, rom + i)) {
 					calc = TI_85;
 						for(i = 0; i < (size - strlen(self_test) - 10); i++) {
 							if (CmpStringCase(self_test, rom + i) == 0) break;
@@ -48,8 +48,8 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 							if (isdigit(rom[i])) break;
 						}
 						if (i < (size - 40)) {
-							for(b = 0; (b + i) < (size-4) && b  <32; b++) {
-								if (rom[b + i] != ' ') string[b] = rom[b+i];
+							for(b = 0; (b + i) < (size - 4) && b < 32; b++) {
+								if (rom[b + i] != ' ') string[b] = rom[b + i];
 								else string[b] = 0;
 							}
 							string[31] = 0;
@@ -62,22 +62,23 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 					break;
 				}
 			}
-			if (calc!=TI_82) break;
+			if (calc != TI_82) break;
 
 		case TI_83:
 			if (calc == TI_83) {
-				for(i=0;i<(size - strlen(txt86) - 10);i++) {
-					if (CmpStringCase(txt86, rom + i)==0) {
+				for(i = 0; i < (size - strlen(txt86) - 10); i++) {
+					if (!CmpStringCase(txt86, rom + i)) {
 						calc = TI_86;
-							for(i=0;i<(size - strlen(self_test) - 10); i++) {
+							for(i = 0; i < size - strlen(self_test) - 10; i++) {
 								if (CmpStringCase(self_test, rom + i) == 0) break;
 							}
-							for(;i<(size-40);i++) {
+							for(; i < size - 40; i++) {
 								if (isdigit(rom[i])) break;
 							}
-							if (i<(size-40)) {
-								for(b=0;(b+i)<(size-4) && b<32;b++) {
-									if (rom[b+i] != ' ') string[b] = rom[b+i];
+							if (i < size - 40) {
+								for(b = 0; (b + i) < (size - 4) && b < 32; b++) {
+									if (rom[b + i] != ' ')
+										string[b] = rom[b + i];
 									else string[b] = 0;
 								}
 								string[31] = 0;
@@ -91,14 +92,14 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 					}
 				}
 			}
-			if (calc==TI_86) break;
+			if (calc == TI_86) break;
 
-			for(i=0;i<(size - strlen(self_test) - 10); i++) {
+			for(i = 0; i < (size - strlen(self_test) - 10); i++) {
 				if (CmpStringCase(self_test, rom + i)==0) break;
 			}
-			if ((i+64)<size) {
-				i+=10;
-				for(b=0;b<32;b++) {
+			if ((i + 64) < size) {
+				i += 10;
+				for(b = 0; b < 32; b++) {
 					string[b] = rom[i++];
 				}
 				string[31] = 0;
@@ -111,7 +112,7 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 			break;
 		case TI_83P:
 			for(i = 0; i < (size - strlen(txt73) - 10); i++) {
-				if (CmpStringCase(txt73, rom + i)==0) {
+				if (CmpStringCase(txt73, rom + i) == 0) {
 					calc = TI_73;
 					break;
 				}
@@ -120,7 +121,7 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 		case TI_83PSE:
 		case TI_84PSE:
 			i = 0x0064;
-			for(b=0;b<32;b++) {
+			for(b = 0; b < 32; b++) {
 				string[b] = rom[i++];
 			}
 			string[31] = 0;
@@ -274,11 +275,12 @@ TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 	size = ftell(infile);
 	fseek(infile, 0, SEEK_SET);
 
-	if (size == (128*1024) ) calc = TI_82;
-	else if (size == (256 * 1024)) calc = TI_83;
-	else if ((size >= (510 * 1024)) && (size <= (590 * 1024))) calc = TI_83P;
-	else if ((size >= (1016 * 1024)) && (size <= (1030 * 1024))) calc = TI_84P;
-	else if ((size >= (2044 * 1024)) && (size <= (2260 * 1024))) calc = TI_83PSE;
+	if (size == 32 * 1024) calc = TI_81;
+	else if (size == 128 * 1024) calc = TI_82;
+	else if (size == 256 * 1024) calc = TI_83;
+	else if ((size >= 510 * 1024) && (size <= (590 * 1024))) calc = TI_83P;
+	else if ((size >= 1016 * 1024) && (size <= (1030 * 1024))) calc = TI_84P;
+	else if ((size >= 2044 * 1024) && (size <= (2260 * 1024))) calc = TI_83PSE;
 	else {
 		puts("not a known rom");
 		return FreeTiFile(tifile);

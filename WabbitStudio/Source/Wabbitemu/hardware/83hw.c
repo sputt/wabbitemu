@@ -6,7 +6,7 @@
 #include "link.h"
 #include "device.h"
 #include "calc.h"
-static double timer_freq83[4] = {1.0f/600.0f, 1.0f/257.14f, 1.0f/163.63f, 1.0f/120.0f};
+static double timer_freq83[4] = {1.0f / 600.0f, 1.0f / 257.14f, 1.0f / 163.63f, 1.0f / 120.0f};
 
 #define SWAP_BANK	0xFF
 #define ROM0_8		0xFE
@@ -48,11 +48,10 @@ void setpage83(CPU_t *cpu) {
 	int mem		= ( (stdint->mem & 0x08) >> 3 ) + ( (stdint->mem & 0x80) >> 6 ) + (ram<<2) + ((cpu->mem_c->boot_mapped==TRUE)?8:0);
 	int i;
 	
-	for(i=0;i<4;i++) {
+	for(i = 0; i < 4; i++) {
 		
 		switch(banks83[mem][i]) {
-			case ROM0:
-			{
+			case ROM0: {
 				cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x00*PAGE_SIZE;
 				cpu->mem_c->banks[i].page			= 0x00;
 				cpu->mem_c->banks[i].read_only		= FALSE;
@@ -60,8 +59,7 @@ void setpage83(CPU_t *cpu) {
 				cpu->mem_c->banks[i].no_exec		= FALSE;
 				break;
 			}
-			case RAM0:
-			{
+			case RAM0: {
 				cpu->mem_c->banks[i].addr			= cpu->mem_c->ram+0x00*PAGE_SIZE;
 				cpu->mem_c->banks[i].page			= 0x00;
 				cpu->mem_c->banks[i].read_only		= FALSE;
@@ -69,8 +67,7 @@ void setpage83(CPU_t *cpu) {
 				cpu->mem_c->banks[i].no_exec		= FALSE;
 				break;
 			}
-			case RAM1:
-			{
+			case RAM1: {
 				cpu->mem_c->banks[i].addr			= cpu->mem_c->ram+0x01*PAGE_SIZE;
 				cpu->mem_c->banks[i].page			= 0x01;
 				cpu->mem_c->banks[i].read_only		= FALSE;
@@ -78,8 +75,7 @@ void setpage83(CPU_t *cpu) {
 				cpu->mem_c->banks[i].no_exec		= FALSE;
 				break;
 			}
-			case ROM0_8:
-			{
+			case ROM0_8: {
 				if (xy) {
 					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x08*PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= 0x08;
@@ -95,8 +91,7 @@ void setpage83(CPU_t *cpu) {
 				}
 				break;
 			}
-			case ROM1_8:
-			{
+			case ROM1_8: {
 				if (xy) {
 					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x08*PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= 0x08;
@@ -112,8 +107,7 @@ void setpage83(CPU_t *cpu) {
 				}
 				break;
 			}
-			case ROM1_9:
-			{
+			case ROM1_9: {
 				if (xy) {
 					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x09*PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= 0x09;
@@ -129,8 +123,7 @@ void setpage83(CPU_t *cpu) {
 				}
 				break;
 			}
-			case SWAP_BANK:
-			{
+			case SWAP_BANK: {
 				if (ram) {
 					cpu->mem_c->banks[i].addr			= cpu->mem_c->ram+rpage*PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= rpage;
@@ -156,23 +149,21 @@ void port00_82(CPU_t *cpu, device_t *dev) {
 	STDINT_t* stdint = (STDINT_t *) cpu->pio.devices[0x02].aux;
 	
 	if (cpu->input) {
-		cpu->bus = ((link->host&0x03))<<2;
-		cpu->bus += (((link->host&0x03)|(link->client[0]&0x03))^0x03);
+		cpu->bus = ((link->host & 0x03)) << 2;
+		cpu->bus += (((link->host & 0x03) | (link->client[0] & 0x03)) ^ 0x03);
 		cpu->input = FALSE;
-//		calcs[gslot].brkpnt = TRUE;
 	} else if (cpu->output) {
 		#ifdef WINVER
-		if ((link->host&0x01) != ((cpu->bus&0x04)>>2)) {
-			FlippedLeft(cpu,((cpu->bus&0x04)>>2));
+		if ((link->host & 0x01) != ((cpu->bus & 0x04) >> 2)) {
+			FlippedLeft(cpu, (cpu->bus & 0x04) >> 2);
 		}
-		if ((link->host&0x02) != ((cpu->bus&0x08)>>2)) {
-			FlippedRight(cpu,((cpu->bus&0x08)>>3));
+		if ((link->host&0x02) != ((cpu->bus & 0x08) >> 2)) {
+			FlippedRight(cpu, (cpu->bus & 0x08) >> 3);
 		}
 		#endif
-		link->host = (cpu->bus&0x0C)>>2;
+		link->host = (cpu->bus & 0x0C) >> 2;
 //		setpage83(cpu);
 		cpu->output = FALSE;
-//		calcs[gslot].brkpnt = TRUE;
 	}
 	#ifdef WINVER
 	if (link->audio.init && link->audio.enabled) nextsample(cpu);
@@ -184,25 +175,23 @@ void port00_83(CPU_t *cpu, device_t *dev) {
 	STDINT_t* stdint = (STDINT_t *) cpu->pio.devices[0x02].aux;
 	
 	if (cpu->input) {
-		cpu->bus = ((link->host&0x03)^0x03);
-		cpu->bus += (((link->host&0x03)|(link->client[0]&0x03))^0x03)<<2;
+		cpu->bus = (link->host & 0x03) ^ 0x03;
+		cpu->bus += (((link->host & 0x03) | (link->client[0] & 0x03)) ^ 0x03) << 2;
 		cpu->bus += stdint->xy;
 		cpu->input = FALSE;
-//		calcs[gslot].brkpnt = TRUE;
 	} else if (cpu->output) {
 		#ifdef WINVER
-		if ((link->host&0x01) != (cpu->bus&0x01)) {
-			FlippedLeft(cpu,(cpu->bus&0x01));
+		if ((link->host & 0x01) != (cpu->bus & 0x01)) {
+			FlippedLeft(cpu, cpu->bus & 0x01);
 		}
-		if ((link->host&0x02) != (cpu->bus&0x02)) {
-			FlippedRight(cpu,((cpu->bus&0x02)>>1));
+		if ((link->host & 0x02) != (cpu->bus & 0x02)) {
+			FlippedRight(cpu, (cpu->bus & 0x02) >> 1);
 		}
 		#endif
-		link->host = cpu->bus&0x03;
-		stdint->xy = cpu->bus&0x10;
+		link->host = cpu->bus & 0x03;
+		stdint->xy = cpu->bus & 0x10;
 		setpage83(cpu);
 		cpu->output = FALSE;
-//		calcs[gslot].brkpnt = TRUE;
 	}
 	#ifdef WINVER
 	nextsample(cpu);
@@ -379,9 +368,8 @@ link_t* link83_init(CPU_t* cpu) {
 }
 
 
-int device_init_83(CPU_t *cpu,int bad82) {
+int device_init_83(CPU_t *cpu, int bad82) {
 	ClearDevices(cpu);
-
 
 	link_t * link = link83_init(cpu);
 	cpu->pio.devices[0x00].active = TRUE;
@@ -411,7 +399,7 @@ int device_init_83(CPU_t *cpu,int bad82) {
 	cpu->pio.devices[0x04].aux = stdint;
 	cpu->pio.devices[0x04].code = (devp) port04_83;
 
-	LCD_t *lcd = LCD_init(cpu,TI_83);
+	LCD_t *lcd = LCD_init(cpu, TI_83);
 	cpu->pio.devices[0x10].active = TRUE;
 	cpu->pio.devices[0x10].aux = lcd;
 	cpu->pio.devices[0x10].code = (devp) LCD_command;
@@ -428,12 +416,11 @@ int device_init_83(CPU_t *cpu,int bad82) {
 	cpu->pio.link		= link;
 	cpu->pio.stdint		= stdint;
 	cpu->pio.se_aux		= NULL;
-
 	cpu->pio.model		= TI_83;
 
-	Append_interrupt_device(cpu,0x00,1);
-	Append_interrupt_device(cpu,0x03,8);
-	Append_interrupt_device(cpu,0x11,138);
+	Append_interrupt_device(cpu, 0x00, 1);
+	Append_interrupt_device(cpu, 0x03, 8);
+	Append_interrupt_device(cpu, 0x11, 138);
 	return 0;
 }
 

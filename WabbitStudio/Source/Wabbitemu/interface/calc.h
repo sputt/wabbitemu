@@ -139,9 +139,10 @@ void calc_slot_free(LPCALC);
 int calc_init_83p(LPCALC);
 int calc_init_84p(LPCALC);
 int calc_init_83pse(LPCALC);
-
+LPCALC calc_from_cpu(CPU_t *);
 void calc_erase_certificate(unsigned char *, int);
-
+void port_debug_callback(void *, void *);
+void mem_debug_callback(void *);
 
 #ifdef CALC_C
 #define GLOBAL
@@ -150,9 +151,6 @@ void calc_erase_certificate(unsigned char *, int);
 #endif
 
 GLOBAL calc_t calcs[MAX_CALCS];
-//GLOBAL int gslot;
-//GLOBAL int ScreenshotSlot;
-//GLOBAL int DebuggerSlot;
 GLOBAL LPCALC lpDebuggerCalc;
 
 #ifdef WITH_BACKUPS

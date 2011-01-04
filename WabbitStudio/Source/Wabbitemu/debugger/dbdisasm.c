@@ -733,13 +733,10 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			// Mark selection index as not on screen
 			dps->iPC = -1;
 
-
 			CopyRect(&tr, &rc);
 			tr.bottom = dps->cyRow;
 
 			OffsetRect(&tr, 0, cyHeader);
-
-
 
 			gRect.UpperLeft  = 0;
 			gRect.LowerRight = 1;
@@ -755,10 +752,10 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			printf("starting i: %d\n",(ps.rcPaint.top - cyHeader)/dps->cyRow);*/
 
-			i = (ps.rcPaint.top - cyHeader)/dps->cyRow;
+			i = (ps.rcPaint.top - cyHeader) / dps->cyRow;
 			OffsetRect(&tr, 0, dps->cyRow * i);
 
-			end_i = (ps.rcPaint.bottom - cyHeader + dps->cyRow - 1)/dps->cyRow;
+			end_i = (ps.rcPaint.bottom - cyHeader + dps->cyRow - 1) / dps->cyRow;
 
 			for (; i < end_i; i++, OffsetRect(&tr, 0, dps->cyRow)) {
 				BOOL do_gradient = FALSE;

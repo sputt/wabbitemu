@@ -3,6 +3,7 @@
 #define CALC_C
 #include "gui.h"
 #include "core.h"
+#include "81hw.h"
 #include "83hw.h"
 #include "83phw.h"
 #include "83psehw.h"
@@ -31,6 +32,7 @@ calc_t *calc_slot_new(void) {
 			calcs[i].active = TRUE;
 			calcs[i].gif_disp_state = GDS_IDLE;
 			calcs[i].speed = 100;
+			calcs[i].slot = i;
 			return &calcs[i];
 		}
 	}
@@ -48,6 +50,19 @@ u_int calc_count(void) {
 	return count;
 }
 
+/* 81 */
+int calc_init_81(LPCALC lpCalc) {
+	/* INTIALIZE 81 */
+	memory_init_81(&lpCalc->mem_c);
+	tc_init(&lpCalc->timer_c, MHZ_2);
+	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	ClearDevices(&lpCalc->cpu);
+	device_init_81(&lpCalc->cpu);
+	/* END INTIALIZE 81 */
+
+	return 0;
+}
+
 /*  82 83 */
 static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	/* INTIALIZE 83 */
@@ -56,13 +71,13 @@ static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
 	if (lpCalc->model == TI_82) {
-		if (memcmp(os,"19.006",6)==0) {
-			device_init_83(&lpCalc->cpu,0);
+		if (memcmp(os, "19.006", 6)==0) {
+			device_init_83(&lpCalc->cpu, 0);
 		} else {
-			device_init_83(&lpCalc->cpu,1);
+			device_init_83(&lpCalc->cpu, 1);
 		}
 	} else {
-		device_init_83(&lpCalc->cpu,0);
+		device_init_83(&lpCalc->cpu, 0);
 	}
 	/* END INTIALIZE 83 */
 
@@ -172,13 +187,11 @@ void calc_erase_certificate(unsigned char *mem, int size) {
 BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	if (lpCalc == NULL)
 		return FALSE;
-	//doesnt matter for the 2nd two args never a group
 	TIFILE_t* tifile = newimportvar(FileName); //importvar(FileName, (int) NULL, (int) NULL);
 	if (tifile == NULL)
 		return FALSE;
 
 	lpCalc->speed = 100;
-
 	if (lpCalc->active)
 		calc_slot_free(lpCalc);
 	lpCalc->model = tifile->model;
@@ -190,7 +203,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 			case TI_83:
 			{
 				int size;
-				char* rom = GetRomOnly(tifile->save,&size);
+				char *rom = GetRomOnly(tifile->save,&size);
 				char VerString[64];
 				FindRomVersion(	tifile->model,
 								VerString,
@@ -234,6 +247,12 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	} else if (tifile->type == ROM_TYPE) {
 
 		switch (tifile->model) {
+			case TI_81:
+				calc_init_81(lpCalc);
+				memcpy(	lpCalc->cpu.mem_c->flash,
+						tifile->rom->data,
+						(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
+				break;
 			case TI_82:
 			case TI_83:
 				calc_init_83(lpCalc, tifile->rom->version);
@@ -285,9 +304,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 #endif
 		
 
-	}
-	else 
-	{
+	} else {
 		lpCalc = NULL;
 	}
 	if (lpCalc != NULL) {
@@ -304,8 +321,7 @@ void calc_slot_free(LPCALC lpCalc) {
 	if (lpCalc == NULL)
 		return;
 
-	if (lpCalc->active)
-	{
+	if (lpCalc->active) {
 		lpCalc->active = FALSE;
 
 #ifdef WINVER
@@ -366,11 +382,11 @@ int CPU_reset(CPU_t *lpCPU) {
 	lpCPU->sp			= 0;
 	lpCPU->interrupt	= FALSE;
 	lpCPU->imode		= 1;
-	lpCPU->ei_block	= FALSE;
-	lpCPU->iff1		= FALSE;
-	lpCPU->iff2		= FALSE;
-	lpCPU->halt		= FALSE;
-	lpCPU->read		= FALSE;
+	lpCPU->ei_block		= FALSE;
+	lpCPU->iff1			= FALSE;
+	lpCPU->iff2			= FALSE;
+	lpCPU->halt			= FALSE;
+	lpCPU->read			= FALSE;
 	lpCPU->write		= FALSE;
 	lpCPU->output		= FALSE;
 	lpCPU->input		= FALSE;
@@ -491,13 +507,18 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 
 
 #define FRAME_SUBDIVISIONS	1024
-int calc_run_all(void)
-{
-	int i,j;
+int calc_run_all(void) {
+	int i, j, hub_val, active_calc = -1;
 
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
+		for (j = 0, hub_val = 0x0; j < MAX_CALCS; j++) {
+			if (link_hub[j] != NULL)
+				hub_val |= link_hub[j]->host;
+		}
+		link_hub[MAX_CALCS]->host = hub_val;
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active == TRUE) {
+				active_calc = j;
 				int time = ((long long) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS / 2;
 				calc_run_tstates(&calcs[j], time);
 				frame_counter += time;
@@ -519,23 +540,36 @@ int calc_run_all(void)
 #endif
 			}
 		}
+
 		//this code handles screenshotting if were actually taking screenshots right now
-		if ((tc_elapsed(calcs[0].cpu.timer_c) - calcs[0].cpu.pio.lcd->lastgifframe) >= 0.01) {
+		if (active_calc >= 0 && ((tc_elapsed(calcs[active_calc].cpu.timer_c) - calcs[active_calc].cpu.pio.lcd->lastgifframe) >= 0.01)) {
 			handle_screenshot();
-			calcs[0].cpu.pio.lcd->lastgifframe += 0.01;
+			calcs[active_calc].cpu.pio.lcd->lastgifframe += 0.01;
 		}
 	}
 
 	return 0;
 }
+
+void port_debug_callback(void *arg1, void *arg2) {
+	CPU_t *cpu = (CPU_t *) arg1;
+	device_t *dev = (device_t *) arg2;
+	LPCALC lpCalc = calc_from_cpu(cpu);
+	gui_debug(lpCalc);
+}
+
+void mem_debug_callback(void *arg1) {
+	CPU_t *cpu = (CPU_t *) arg1;
+	LPCALC lpCalc = calc_from_cpu(cpu);
+	gui_debug(lpCalc);
+}
+
 #ifdef WITH_BACKUPS
-void do_backup(LPCALC lpCalc)
-{
+void do_backup(LPCALC lpCalc) {
 	if (!lpCalc->running)
 		return;
 	int slot = lpCalc->slot;
-	if (number_backup > MAX_BACKUPS)
-	{
+	if (number_backup > MAX_BACKUPS) {
 		debugger_backup* oldestBackup = backups[slot];
 		while(oldestBackup->prev != NULL)
 			oldestBackup = oldestBackup->prev;
@@ -552,8 +586,7 @@ void do_backup(LPCALC lpCalc)
 	number_backup++;
 }
 
-void restore_backup(int index, LPCALC lpCalc)
-{
+void restore_backup(int index, LPCALC lpCalc) {
 	int slot = lpCalc->slot;
 	debugger_backup* backup = backups[slot];
 	while (index > 0) {
@@ -569,16 +602,14 @@ void restore_backup(int index, LPCALC lpCalc)
 	backups[slot] = backup;
 }
 
-void init_backups()
-{
+void init_backups() {
 	int i;
 	number_backup = 0;
 	for(i = 0; i < MAX_CALCS; i++)
 		backups[i] = NULL;
 }
 
-void free_backup(debugger_backup* backup)
-{
+void free_backup(debugger_backup* backup) {
 	if (backup == NULL)
 		return;
 	FreeSave(backup->save);
@@ -589,8 +620,7 @@ void free_backup(debugger_backup* backup)
 /*
  * Frees all backups from memory
  */
-void free_backups(LPCALC lpCalc)
-{
+void free_backups(LPCALC lpCalc) {
 	int slot = lpCalc->slot;
 	debugger_backup *backup_prev, *backup = backups[slot];
 	if (backup == NULL)
@@ -629,10 +659,19 @@ int calc_run_timed(LPCALC lpCalc, time_t time) {
 	return 0;
 }
 
+LPCALC calc_from_cpu(CPU_t *cpu) {
+	int i;
+	for (i = 0; i < MAX_CALCS; i++) {
+		if (&calcs[i].cpu == cpu)
+			return &calcs[i];
+	}
+	return NULL;
+}
+
 #ifdef WINVER
-int calc_from_hwnd(HWND hwnd) {
+LPCALC calc_from_hwnd(HWND hwnd) {
 	if (hwnd == NULL)
-		return -1;
+		return NULL;
 
 	int slot;
 	for (slot = 0; slot < MAX_CALCS; slot++) {
@@ -642,10 +681,10 @@ int calc_from_hwnd(HWND hwnd) {
 				hwnd == calcs[slot].hwndStatusBar ||
 				hwnd == calcs[slot].hwndSmallClose ||
 				hwnd == calcs[slot].hwndSmallMinimize) {
-				return slot;
+				return &calcs[slot];
 			}
 		}
 	}
-	return -1;
+	return NULL;
 }
 #endif

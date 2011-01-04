@@ -10,7 +10,6 @@
 
 extern HINSTANCE g_hInst;
 extern HFONT hfontSegoe;
-extern int gslot;
 
 static WNDPROC OldButtonProc;
 

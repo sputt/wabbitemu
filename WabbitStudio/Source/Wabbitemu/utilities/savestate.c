@@ -107,8 +107,8 @@ void FreeSave(SAVESTATE_t* save) {
 
 CHUNK_t* FindChunk(SAVESTATE_t* save, char* tag) {
 	int i;
-	for(i=0;i<save->chunk_count;i++) {
-		if ( cmpTags(save->chunks[i]->tag, tag) == TRUE ) {
+	for(i = 0; i < save->chunk_count; i++) {
+		if (cmpTags(save->chunks[i]->tag, tag) == TRUE) {
 			save->chunks[i]->pnt = 0;
 			return save->chunks[i];
 		}
@@ -119,7 +119,6 @@ CHUNK_t* FindChunk(SAVESTATE_t* save, char* tag) {
 CHUNK_t* NewChunk(SAVESTATE_t* save, char* tag) {
 	int chunk = save->chunk_count;
 
-	
 	if (FindChunk(save, tag) != NULL) {
 		printf("Error: chunk '%s' already exists", tag);
 		return NULL;
@@ -148,11 +147,11 @@ CHUNK_t* NewChunk(SAVESTATE_t* save, char* tag) {
 
 BOOL DelChunk(SAVESTATE_t* save, char* tag) {
 	int i;
-	for(i=0;i<save->chunk_count;i++) {
-		if (cmpTags(save->chunks[i]->tag, tag) == TRUE ) {
+	for(i = 0; i < save->chunk_count; i++) {
+		if (cmpTags(save->chunks[i]->tag, tag) == TRUE) {
 			if (save->chunks[i]->data) free(save->chunks[i]->data);
 			if (save->chunks[i]) free(save->chunks[i]);
-			for(; i < (save->chunk_count-1); i++) {
+			for(; i < save->chunk_count - 1; i++) {
 				save->chunks[i] = save->chunks[i+1];
 			}
 			save->chunks[i] = NULL;
@@ -296,7 +295,7 @@ BOOL WriteBlock(CHUNK_t* chunk, unsigned char *pnt, int length) {
 		return FALSE;
 	}
 	chunk->data = tmppnt;
-	for(i=0;i<length;i++) {
+	for(i = 0; i < length; i++) {
 		chunk->data[i+chunk->size] = pnt[i];
 	}
 	chunk->size += length;
@@ -318,7 +317,7 @@ unsigned short ReadShort(CHUNK_t* chunk) {
 	unsigned short value;
 	_TUCHAR *pnt = (_TUCHAR *)(&value);
 #ifdef __BIG_ENDIAN__
-	for(i=sizeof(short)-1;i>=0;i--) {
+	for(i = sizeof(short) - 1; i >= 0; i--) {
 #else
 	for(i = 0;i < sizeof(short); i++) {
 #endif
@@ -334,9 +333,9 @@ unsigned int ReadInt(CHUNK_t* chunk) {
 	unsigned int value;
 	unsigned char *pnt = (unsigned char *)(&value);
 #ifdef __BIG_ENDIAN__
-	for(i=sizeof(int)-1;i>=0;i--) {
+	for(i = sizeof(int) - 1; i >= 0; i--) {
 #else
-	for(i = 0;i < sizeof(int); i++) {
+	for(i = 0; i < sizeof(int); i++) {
 #endif
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
@@ -383,7 +382,7 @@ unsigned long long ReadLong(CHUNK_t* chunk) {
 	unsigned long long value;
 	unsigned char *pnt = (unsigned char *)(&value);
 #ifdef __BIG_ENDIAN__
-	for(i=sizeof(long long)-1;i>=0;i--) {
+	for(i = sizeof(long long) - 1; i >= 0; i--) {
 #else
 	for(i = 0;i < sizeof(long long); i++) {
 #endif
@@ -396,7 +395,7 @@ unsigned long long ReadLong(CHUNK_t* chunk) {
 
 void ReadBlock(CHUNK_t* chunk, unsigned char *pnt, int length) {
 	int i;
-	for(i=0;i<length;i++) {
+	for(i = 0; i < length; i++) {
 		pnt[i] = chunk->data[i+chunk->pnt];
 	}
 	chunk->pnt += length;
@@ -409,100 +408,99 @@ void SaveCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	if (!cpu) return;
 	CHUNK_t* chunk = NewChunk(save,CPU_tag);
 	
-	WriteChar(chunk,cpu->a);
-	WriteChar(chunk,cpu->f);
-	WriteChar(chunk,cpu->b);
-	WriteChar(chunk,cpu->c);
-	WriteChar(chunk,cpu->d);
-	WriteChar(chunk,cpu->e);
-	WriteChar(chunk,cpu->h);
-	WriteChar(chunk,cpu->l);
+	WriteChar(chunk, cpu->a);
+	WriteChar(chunk, cpu->f);
+	WriteChar(chunk, cpu->b);
+	WriteChar(chunk, cpu->c);
+	WriteChar(chunk, cpu->d);
+	WriteChar(chunk, cpu->e);
+	WriteChar(chunk, cpu->h);
+	WriteChar(chunk, cpu->l);
 	
-	WriteChar(chunk,cpu->ap);
-	WriteChar(chunk,cpu->fp);
-	WriteChar(chunk,cpu->bp);
-	WriteChar(chunk,cpu->cp);
-	WriteChar(chunk,cpu->dp);
-	WriteChar(chunk,cpu->ep);
-	WriteChar(chunk,cpu->hp);
-	WriteChar(chunk,cpu->lp);
+	WriteChar(chunk, cpu->ap);
+	WriteChar(chunk, cpu->fp);
+	WriteChar(chunk, cpu->bp);
+	WriteChar(chunk, cpu->cp);
+	WriteChar(chunk, cpu->dp);
+	WriteChar(chunk, cpu->ep);
+	WriteChar(chunk, cpu->hp);
+	WriteChar(chunk, cpu->lp);
 	
-	WriteChar(chunk,cpu->ixl);
-	WriteChar(chunk,cpu->ixh);
-	WriteChar(chunk,cpu->iyl);
-	WriteChar(chunk,cpu->iyh);
+	WriteChar(chunk, cpu->ixl);
+	WriteChar(chunk, cpu->ixh);
+	WriteChar(chunk, cpu->iyl);
+	WriteChar(chunk, cpu->iyh);
 
-	WriteShort(chunk,cpu->pc);
-	WriteShort(chunk,cpu->sp);
+	WriteShort(chunk, cpu->pc);
+	WriteShort(chunk, cpu->sp);
 
-	WriteChar(chunk,cpu->i);
-	WriteChar(chunk,cpu->r);
-	WriteChar(chunk,cpu->bus);
+	WriteChar(chunk, cpu->i);
+	WriteChar(chunk, cpu->r);
+	WriteChar(chunk, cpu->bus);
 	
-	WriteInt(chunk,cpu->imode);
+	WriteInt(chunk, cpu->imode);
 
-	WriteInt(chunk,cpu->interrupt);
-	WriteInt(chunk,cpu->ei_block);
-	WriteInt(chunk,cpu->iff1);
-	WriteInt(chunk,cpu->iff2);
-	WriteInt(chunk,cpu->halt);
+	WriteInt(chunk, cpu->interrupt);
+	WriteInt(chunk, cpu->ei_block);
+	WriteInt(chunk, cpu->iff1);
+	WriteInt(chunk, cpu->iff2);
+	WriteInt(chunk, cpu->halt);
 	
-	WriteInt(chunk,cpu->read);
-	WriteInt(chunk,cpu->write);
-	WriteInt(chunk,cpu->output);
-	WriteInt(chunk,cpu->input);
-	WriteInt(chunk,cpu->prefix);
-	
+	WriteInt(chunk, cpu->read);
+	WriteInt(chunk, cpu->write);
+	WriteInt(chunk, cpu->output);
+	WriteInt(chunk, cpu->input);
+	WriteInt(chunk, cpu->prefix);
+
 	
 	/*pio*/
-	for(i=0; i<256; i++) {
-		WriteInt(chunk,cpu->pio.interrupt[i]);
-		WriteInt(chunk,cpu->pio.skip_factor[i]);
-		WriteInt(chunk,cpu->pio.skip_count[i]);
+	for(i = 0; i < 256; i++) {
+		WriteInt(chunk, cpu->pio.interrupt[i]);
+		WriteInt(chunk, cpu->pio.skip_factor[i]);
+		WriteInt(chunk, cpu->pio.skip_count[i]);
 	}
 }
 	
 void SaveMEM(SAVESTATE_t* save, memc* mem) {
 	int i;
 	if (!mem) return;
-	CHUNK_t* chunk = NewChunk(save,MEM_tag);
+	CHUNK_t *chunk = NewChunk(save, MEM_tag);
 
-	WriteInt(chunk,mem->flash_size);
-	WriteInt(chunk,mem->flash_pages);
-	WriteInt(chunk,mem->ram_size);
-	WriteInt(chunk,mem->ram_pages);
-	WriteInt(chunk,mem->step);
-	WriteChar(chunk,mem->cmd);
+	WriteInt(chunk, mem->flash_size);
+	WriteInt(chunk, mem->flash_pages);
+	WriteInt(chunk, mem->ram_size);
+	WriteInt(chunk, mem->ram_pages);
+	WriteInt(chunk, mem->step);
+	WriteChar(chunk, mem->cmd);
 	
-	WriteInt(chunk,mem->boot_mapped);
-	WriteInt(chunk,mem->flash_locked);
-	WriteInt(chunk,mem->flash_version);	
+	WriteInt(chunk, mem->boot_mapped);
+	WriteInt(chunk, mem->flash_locked);
+	WriteInt(chunk, mem->flash_version);	
 
-
-	for(i=0;i<5;i++) {
-		WriteInt(chunk,mem->banks[i].page);
-		WriteInt(chunk,mem->banks[i].read_only);
-		WriteInt(chunk,mem->banks[i].ram);
-		WriteInt(chunk,mem->banks[i].no_exec);
+	for(i = 0; i < 5; i++) {
+		WriteInt(chunk, mem->banks[i].page);
+		WriteInt(chunk, mem->banks[i].read_only);
+		WriteInt(chunk, mem->banks[i].ram);
+		WriteInt(chunk, mem->banks[i].no_exec);
 	}
 	
-	WriteInt(chunk,mem->read_OP_flash_tstates);
-	WriteInt(chunk,mem->read_NOP_flash_tstates);
-	WriteInt(chunk,mem->write_flash_tstates);
-	WriteInt(chunk,mem->read_OP_ram_tstates);
-	WriteInt(chunk,mem->read_NOP_ram_tstates);
-	WriteInt(chunk,mem->write_ram_tstates);
+	WriteInt(chunk, mem->read_OP_flash_tstates);
+	WriteInt(chunk, mem->read_NOP_flash_tstates);
+	WriteInt(chunk, mem->write_flash_tstates);
+	WriteInt(chunk, mem->read_OP_ram_tstates);
+	WriteInt(chunk, mem->read_NOP_ram_tstates);
+	WriteInt(chunk, mem->write_ram_tstates);
 	
-	WriteInt(chunk,mem->upper);
-	WriteInt(chunk,mem->lower);
+	WriteInt(chunk, mem->upper);
+	WriteInt(chunk, mem->lower);
 
-	chunk = NewChunk(save,ROM_tag);
-	WriteBlock(chunk,mem->flash,mem->flash_size);
+	chunk = NewChunk(save, ROM_tag);
+	WriteBlock(chunk, mem->flash, mem->flash_size);
 
-	chunk = NewChunk(save,RAM_tag);
-	WriteBlock(chunk,mem->ram,mem->ram_size);
+	chunk = NewChunk(save, RAM_tag);
+	WriteBlock(chunk, mem->ram, mem->ram_size);
 	
-	chunk = NewChunk(save,REMAP_tag);
+	chunk = NewChunk(save, REMAP_tag);
 	WriteInt(chunk, mem->port27_remap_count);
 	WriteInt(chunk, mem->port28_remap_count);
 }
@@ -510,82 +508,82 @@ void SaveMEM(SAVESTATE_t* save, memc* mem) {
 void SaveTIMER(SAVESTATE_t *save, timerc *time) {
 	if (!time) return;
 	CHUNK_t* chunk = NewChunk(save,TIMER_tag);
-	WriteLong(chunk,time->tstates);
-	WriteLong(chunk,time->freq);
-	WriteDouble(chunk,tc_elapsed(time));
-	WriteDouble(chunk,time->lasttime);
+	WriteLong(chunk, time->tstates);
+	WriteLong(chunk, time->freq);
+	WriteDouble(chunk, tc_elapsed(time));
+	WriteDouble(chunk, time->lasttime);
 }
 
 void SaveLINK(SAVESTATE_t* save, link_t* link) {
-	CHUNK_t* chunk = NewChunk(save,LINK_tag);
-	WriteChar(chunk,link->host);
+	CHUNK_t* chunk = NewChunk(save, LINK_tag);
+	WriteChar(chunk, link->host);
 }
 
 void SaveSTDINT(SAVESTATE_t* save, STDINT_t *stdint) {
 	int i;
 	if (!stdint) return;
-	CHUNK_t* chunk = NewChunk(save,STDINT_tag);
-	WriteChar(chunk,stdint->intactive);
+	CHUNK_t* chunk = NewChunk(save, STDINT_tag);
+	WriteChar(chunk, stdint->intactive);
 
-	WriteDouble(chunk,stdint->lastchk1);
-	WriteDouble(chunk,stdint->timermax1);
-	WriteDouble(chunk,stdint->lastchk2);
-	WriteDouble(chunk,stdint->timermax2);
-	for(i=0;i<4;i++) {
-		WriteDouble(chunk,stdint->freq[i]);
+	WriteDouble(chunk, stdint->lastchk1);
+	WriteDouble(chunk, stdint->timermax1);
+	WriteDouble(chunk, stdint->lastchk2);
+	WriteDouble(chunk, stdint->timermax2);
+	for(i = 0; i < 4; i++) {
+		WriteDouble(chunk, stdint->freq[i]);
 	}
-	WriteInt(chunk,stdint->mem);
-	WriteInt(chunk,stdint->xy);
+	WriteInt(chunk, stdint->mem);
+	WriteInt(chunk, stdint->xy);
 }
 
 void SaveSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	int i;
 	if (!se_aux) return;
-	CHUNK_t* chunk = NewChunk(save,SE_AUX_tag);
+	CHUNK_t* chunk = NewChunk(save, SE_AUX_tag);
 	
 	
-	WriteChar(chunk,se_aux->clock.enable);
-	WriteInt(chunk,se_aux->clock.set);
-	WriteInt(chunk,se_aux->clock.base);
-	WriteDouble(chunk,se_aux->clock.lasttime);
+	WriteChar(chunk, se_aux->clock.enable);
+	WriteInt(chunk, se_aux->clock.set);
+	WriteInt(chunk, se_aux->clock.base);
+	WriteDouble(chunk, se_aux->clock.lasttime);
 	
-	for(i=0;i<7;i++) {
-		WriteChar(chunk,se_aux->delay.reg[i]);
+	for(i = 0; i < 7; i++) {
+		WriteChar(chunk, se_aux->delay.reg[i]);
 	}
 	
-	for(i=0;i<6;i++) {
-		WriteInt(chunk,se_aux->md5.reg[i]);
+	for(i = 0; i < 6; i++) {
+		WriteInt(chunk, se_aux->md5.reg[i]);
 	}
-	WriteChar(chunk,se_aux->md5.s);
-	WriteChar(chunk,se_aux->md5.mode);
+	WriteChar(chunk, se_aux->md5.s);
+	WriteChar(chunk, se_aux->md5.mode);
 	
 	
-	WriteChar(chunk,se_aux->linka.link_enable);
-	WriteChar(chunk,se_aux->linka.in);
-	WriteChar(chunk,se_aux->linka.out);
-	WriteChar(chunk,se_aux->linka.working);
-	WriteInt(chunk,se_aux->linka.receiving);
-	WriteInt(chunk,se_aux->linka.read);
-	WriteInt(chunk,se_aux->linka.ready);
-	WriteInt(chunk,se_aux->linka.error);
-	WriteInt(chunk,se_aux->linka.sending);
-	WriteDouble(chunk,se_aux->linka.last_access);
-	WriteInt(chunk,se_aux->linka.bit);
+	WriteChar(chunk, se_aux->linka.link_enable);
+	WriteChar(chunk, se_aux->linka.in);
+	WriteChar(chunk, se_aux->linka.out);
+	WriteChar(chunk, se_aux->linka.working);
+	WriteInt(chunk, se_aux->linka.receiving);
+	WriteInt(chunk, se_aux->linka.read);
+	WriteInt(chunk, se_aux->linka.ready);
+	WriteInt(chunk, se_aux->linka.error);
+	WriteInt(chunk, se_aux->linka.sending);
+	WriteDouble(chunk, se_aux->linka.last_access);
+	WriteInt(chunk, se_aux->linka.bit);
 	
-	WriteDouble(chunk,se_aux->xtal.lastTime);
-	WriteLong(chunk,se_aux->xtal.ticks);
-	for(i=0;i<3;i++) {
-		WriteLong(chunk,se_aux->xtal.timers[i].lastTstates);
-		WriteDouble(chunk,se_aux->xtal.timers[i].lastTicks);
-		WriteDouble(chunk,se_aux->xtal.timers[i].divsor);
-		WriteInt(chunk,se_aux->xtal.timers[i].loop);
-		WriteInt(chunk,se_aux->xtal.timers[i].interrupt);
-		WriteInt(chunk,se_aux->xtal.timers[i].underflow);
-		WriteInt(chunk,se_aux->xtal.timers[i].generate);
-		WriteInt(chunk,se_aux->xtal.timers[i].active);
-		WriteChar(chunk,se_aux->xtal.timers[i].clock);
-		WriteChar(chunk,se_aux->xtal.timers[i].count);
-		WriteChar(chunk,se_aux->xtal.timers[i].max);
+	WriteDouble(chunk, se_aux->xtal.lastTime);
+	WriteLong(chunk, se_aux->xtal.ticks);
+	for(i = 0; i < 3; i++) {
+		WriteLong(chunk, se_aux->xtal.timers[i].lastTstates);
+		WriteDouble(chunk, se_aux->xtal.timers[i].lastTicks);
+		WriteDouble(chunk, se_aux->xtal.timers[i].divsor);
+		WriteInt(chunk, se_aux->xtal.timers[i].loop);
+		WriteInt(chunk, se_aux->xtal.timers[i].interrupt);
+		WriteInt(chunk, se_aux->xtal.timers[i].underflow);
+		WriteInt(chunk, se_aux->xtal.timers[i].generate);
+		WriteInt(chunk, se_aux->xtal.timers[i].active);
+		WriteChar(chunk, se_aux->xtal.timers[i].clock);
+		WriteChar(chunk, se_aux->xtal.timers[i].count);
+		WriteChar(chunk, se_aux->xtal.timers[i].max);
 	}
 }
 
@@ -604,7 +602,7 @@ void SaveLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	WriteBlock(chunk, lcd->display, DISPLAY_SIZE);
 
 	WriteInt(chunk, lcd->front);
-	WriteBlock(chunk, (unsigned char *) lcd->queue, LCD_MAX_SHADES*DISPLAY_SIZE);
+	WriteBlock(chunk, (unsigned char *) lcd->queue, LCD_MAX_SHADES * DISPLAY_SIZE);
 	
 	WriteInt(chunk, lcd->shades);
 	WriteInt(chunk, lcd->mode);
