@@ -244,7 +244,7 @@ static keyprog_t defaultkeys[] = {
 	{ VK_DELETE , 6 , 7 },
 	{ VK_HOME , 5 , 6 },
 	{ VK_END , 3 , 7 },
-#if !_DEBUG
+#ifndef _DEBUG
 	{ VK_NUMPAD0 , 4 , 0 },
 #endif
 	{ VK_NUMPAD1 , 4 , 1 },
