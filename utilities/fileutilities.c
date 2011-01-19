@@ -2,7 +2,7 @@
 
 #include "fileutilities.h"
 
-int BrowseFile(TCHAR* lpstrFile, TCHAR *lpstrFilter, TCHAR *lpstrTitle, TCHAR *lpstrDefExt, unsigned int Flags) {
+int BrowseFile(TCHAR* lpstrFile, const TCHAR *lpstrFilter, const TCHAR *lpstrTitle, const TCHAR *lpstrDefExt, unsigned int Flags) {
 	lpstrFile[0] = '\0';
 	OPENFILENAME ofn;
 	ofn.lStructSize			= sizeof(OPENFILENAME);
