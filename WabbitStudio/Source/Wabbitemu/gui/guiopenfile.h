@@ -6,6 +6,6 @@ typedef struct tag_OFNHookOptions {
 	BOOL bFileSettings;
 } OFNHookOptions;
 
-void GetOpenSendFileName(HWND, int);
+void GetOpenSendFileName(HWND);
 
 #endif /*GUIOPENFILE_H_*/

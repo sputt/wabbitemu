@@ -114,7 +114,7 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 }
 
 
-void GetOpenSendFileName(HWND hwnd, int defFilter) {
+void GetOpenSendFileName(HWND hwnd) {
 	OPENFILENAME ofn;
 	int result;
 	TCHAR lpstrFilter[] 	= _T("\

@@ -7,7 +7,6 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK ROMOptionsProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK SkinOptionsProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK KeysOptionsProc(HWND, UINT, WPARAM, LPARAM);
-int GetExportROMName(TCHAR *);
 void ChangeMenuCommands(HWND);
 TCHAR* GetFriendlyMenuText(HMENU, int, UINT);
 void RecurseAddItems(HMENU, TCHAR *);
