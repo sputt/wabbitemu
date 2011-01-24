@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "lcd.h"
+#include "83psehw.h"
 #include "gifhandle.h"
 #ifdef WINVER
 #include "registry.h"
@@ -145,11 +146,19 @@ static void LCD_free(LCD_t *lcd) {
 	free(lcd);
 }
 
+static void Add_SE_Delay(CPU_t *cpu) {
+	DELAY_t *delay = (DELAY_t *) &cpu->pio.se_aux->delay;
+	int extra_time = delay->reg[GetCPUSpeed(cpu)] >> 2;
+	tc_add(cpu->timer_c, extra_time);
+}
+
 /* 
  * Device code for LCD commands 
  */
 void LCD_command(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
+	if (cpu->pio.model > TI_83P)
+		Add_SE_Delay(cpu);
 	
 	if (cpu->output) {
 		// Test the bus to determine which command to run
@@ -193,6 +202,9 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
  */
 void LCD_data(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
+
+	if (cpu->pio.model > TI_83P)
+		Add_SE_Delay(cpu);
 
 	// Get a pointer to the byte referenced by the CRD cursor
 	u_int shift = 0;

@@ -80,10 +80,10 @@ union { \
 #define regpair(name1,name2,fullname) \
 union { \
 	struct { \
-		_TUCHAR name2; \
-		_TUCHAR name1; \
+		BYTE name2; \
+		BYTE name1; \
 	}; \
-	unsigned short fullname; \
+	WORD fullname; \
 }
 #endif
 
@@ -93,7 +93,8 @@ typedef struct timer_context {
 	long long tstates;
 	unsigned long freq;
 	double elapsed;		//this isn't used if using long long only
-	double lasttime; //<--this isn't used anymore
+	double lasttime;	//<--this isn't used anymore (execpt for sound)
+	int timer_version;
 } timer_context_t, timerc;
 
 /* Bank unit for a partition */
@@ -220,6 +221,7 @@ typedef struct CPU {
 	pioc pio;
 	memc *mem_c;
 	timerc *timer_c;
+	void (*exe_violation_callback)(void *);
 } CPU_t;
 
 typedef void (*opcodep)(CPU_t*);

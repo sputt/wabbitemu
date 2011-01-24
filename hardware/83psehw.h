@@ -81,13 +81,24 @@ typedef struct CLOCK {
 } CLOCK_t;
 
 typedef struct USB {
-	unsigned int DPlus;
-	unsigned int DMinus;
-	unsigned int ID;
-	unsigned int Vbus;
-	unsigned int USBEvents;			//whether interrupts should be generated when USB lines change
-
+	unsigned int USBLineState;		//Whether each line is low or high
+	unsigned int USBEvents;			//Whether interrupts have occurred
+	unsigned int USBEventMask;		//Whether interrupts should be generated when USB lines change
+	BOOL LineInterrupt;
+	BOOL ProtocolInterrupt;
+	unsigned int DevAddress;		//Current USB device address
 } USB_t;
+
+enum USB_MASK {
+	DPLUS_LOW_MASK = 0x01,
+	DPLUS_HIGH_MASK = 0x02,
+	DMINUS_LOW_MASK = 0x04,
+	DMINUS_HIGH_MASK = 0x08,
+	ID_LOW_MASK = 0x10,
+	ID_HIGH_MASK = 0x20,
+	VBUS_HIGH_MASK = 0x40,
+	VBUS_LOW_MASK = 0x80,
+};
 
 typedef struct SE_AUX {
 	CLOCK_t clock;
@@ -110,6 +121,7 @@ void port4_83pse(CPU_t *, device_t *);
 void port6_83pse(CPU_t *, device_t *);
 void port7_83pse(CPU_t *, device_t *);
 void port14_83pse(CPU_t *, device_t *);
+int GetCPUSpeed(CPU_t *);
 void flashwrite83pse(CPU_t *, unsigned short, unsigned char);
 void flashwrite84p(CPU_t *, unsigned short, unsigned char);
 

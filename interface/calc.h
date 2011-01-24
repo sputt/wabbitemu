@@ -167,6 +167,7 @@ GLOBAL BOOL exit_save_state;
 GLOBAL BOOL load_files_first;
 GLOBAL BOOL do_backups;
 GLOBAL BOOL show_wizard;
+GLOBAL BOOL break_on_exe_violation;
 GLOBAL BOOL sync_cores;
 GLOBAL link_t *link_hub[MAX_CALCS + 1];
 

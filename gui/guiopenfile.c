@@ -117,15 +117,15 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 void GetOpenSendFileName(HWND hwnd) {
 	OPENFILENAME ofn;
 	int result;
-	TCHAR lpstrFilter[] 	= _T("\
-Known File Types\0*.73p;*.82*;*.83p*;*.8xp*;*.8xk;*.73k;*.sav;*.rom;*.lab;*.8xu\0\
-Calculator Program Files  (*.73p;*.82*;*.83p*;*.8xp*)\0*.73p;*.82*;*.83p*;*.8xp*\0\
-Calculator Applications  (*.8xk, *.73k)\0*.8xk;*.73k\0\
-Calculator OSes (*.8xu)\0*.8xu\0\
-Save States  (*.sav)\0*.sav\0\
-ROMS  (*.rom)\0*.rom\0\
-Label Files (*.lab)\0*.lab\0\
-All Files (*.*)\0*.*\0\0");
+	const TCHAR lpstrFilter[] 	= _T("Known File Types\0*.73p;*.82*;*.83p*;*.8xp*;*.8xk;*.73k;*.sav;*.rom;*.lab;*.8xu\0\
+										Calculator Program Files  (*.73p;*.82*;*.83p*;*.8xp*)\0*.73p;*.82*;*.83p*;*.8xp*\0\
+										Calculator Applications  (*.8xk, *.73k)\0*.8xk;*.73k\0\
+										Calculator OSes (*.8xu)\0*.8xu\0\
+										Save States  (*.sav)\0*.sav\0\
+										ROMS  (*.rom)\0*.rom\0\
+										Label Files (*.lab)\0*.lab\0\
+										All Files (*.*)\0*.*\0\0");
+	const TCHAR lpstrTitle[] = _T("Wabbitemu Open File");
 	TCHAR filepath[MAX_PATH+256];
 	TCHAR filestr[MAX_PATH+256];
 	TCHAR *FileNames = NULL;
@@ -152,13 +152,10 @@ All Files (*.*)\0*.*\0\0");
 	ofn.lpstrFileTitle		= NULL;
 	ofn.nMaxFileTitle		= 0;
 	ofn.lpstrInitialDir		= NULL;
-	ofn.lpstrTitle			= _T("Wabbitemu Open File");
-	ofn.Flags				= 	OFN_FILEMUSTEXIST |
-								OFN_PATHMUSTEXIST | 
-								OFN_EXPLORER | 
-								OFN_ALLOWMULTISELECT | 
-								OFN_ENABLEHOOK | 
-								OFN_HIDEREADONLY | 
+	ofn.lpstrTitle			= lpstrTitle;
+	ofn.Flags				= 	OFN_FILEMUSTEXIST | OFN_PATHMUSTEXIST | 
+								OFN_EXPLORER | OFN_ALLOWMULTISELECT | 
+								OFN_ENABLEHOOK | OFN_HIDEREADONLY |
 								OFN_ENABLESIZING;
 	ofn.lpstrDefExt			= NULL;
 	ofn.lCustData			= (LPARAM) &HookOptions;
@@ -175,7 +172,7 @@ All Files (*.*)\0*.*\0\0");
 	for (filestroffset = filestr;filestroffset[0] != 0; filestroffset++);
 	filestroffset[0] = '\\';
 	filestroffset++;		/* DOUBLE CHECK THIS */
-	filename = filepath+ofn.nFileOffset;
+	filename = filepath + ofn.nFileOffset;
 
 	int send_mode = SEND_CUR;
 	if (!HookOptions.bFileSettings) {
@@ -184,15 +181,15 @@ All Files (*.*)\0*.*\0\0");
 	}
 
 	while(filename[0] != 0) {
-		int len;
+		size_t len;
 #ifdef WINVER
 		StringCchCopy(filestroffset, _tcslen(filename) + 1, filename);
 #else
 		strcpy(filestroffset, filename);
 #endif
-		len = (int) _tcslen(filestroffset);
+		len = _tcslen(filestroffset);
 		filestroffset[len] = 0;
-		filename += len+1;
+		filename += len + 1;
 		SendFileToCalc((LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA), filestr, TRUE);
 	}
 }

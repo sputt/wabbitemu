@@ -4,6 +4,7 @@
 #include "guioptions.h"
 #include "gui.h"
 #include "fileutilities.h"
+#include "registry.h"
 #include <commdlg.h>
 #include "resource.h"
 
@@ -351,16 +352,16 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							ComboBox_ResetContent(hComboOS);
 							switch(model) {
 								case TI_73:
-									ComboBox_AddString(hComboOS, "OS 1.91");
+									ComboBox_AddString(hComboOS, _T("OS 1.91"));
 									break;
 								case TI_83P:
 								case TI_83PSE:
-									ComboBox_AddString(hComboOS, "OS 1.19");
+									ComboBox_AddString(hComboOS, _T("OS 1.19"));
 									break;
 								case TI_84P:
 								case TI_84PSE: {
-									ComboBox_AddString(hComboOS, "OS 2.43");
-									ComboBox_AddString(hComboOS, "OS 2.53 MP");
+									ComboBox_AddString(hComboOS, _T("OS 2.43"));
+									ComboBox_AddString(hComboOS, _T("OS 2.55 MP"));
 									break;
 								}
 							}
@@ -370,7 +371,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 						case IDC_BROWSE_OS: {
 							TCHAR buf[512];
 							if (!BrowseFile(buf,			//output
-								_T("	83 Plus Series OS  (*.8xu)\0*.8xu\0	73 OS  (*.73u)\0*.73u\0	All Files (*.*)\0*.*\0\0"), //filter
+								_T("83 Plus Series OS  (*.8xu)\0*.8xu\0	73 OS  (*.73u)\0*.73u\0	All Files (*.*)\0*.*\0\0"), //filter
 								_T("Open Calculator OS File"),		//title
 								_T("8xu")))						//def ext
 								Edit_SetText(hEditOSPath, buf);
@@ -441,8 +442,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					Static_SetText(hStaticProgress, _T("Creating ROM file..."));
 					ShowWindow(hProgressBar, SW_SHOW);
 					TCHAR buffer[MAX_PATH];
-					SaveFile(buffer, _T("Roms  (*.rom)\0*.rom\0\bins  (*.bin)\0*.bin\0\All Files (*.*)\0*.*\0\0"),
-									_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST);
+					SaveFile(buffer, _T("Roms  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
+								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST);
 					SendMessage(hProgressBar, PBM_SETSTEP, (WPARAM) 25, 0);
 					SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
@@ -477,6 +478,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					ModelInit(lpCalc);
 
 					//slot stuff
+					LoadRegistrySettings(lpCalc);
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
 					lpCalc->active = TRUE;
 					lpCalc->model = model;
@@ -787,15 +789,15 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					TCHAR browse[MAX_PATH];
 					Edit_GetText(hEditVar1, browse, MAX_PATH);
 					TCHAR buffer[MAX_PATH];
-					SaveFile(buffer, _T("Roms  (*.rom)\0*.rom\0\bins  (*.bin)\0*.bin\0\All Files (*.*)\0*.*\0\0"),
-									_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST);
+					SaveFile(buffer, _T("Roms (*.rom)\0*.rom\0Bins (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
+								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST);
 					LPCALC lpCalc = calc_slot_new();
 					ModelInit(lpCalc);
 
 					//slot stuff
 					lpCalc->active = TRUE;
 					lpCalc->model = model;
-					lpCalc->cpu.pio.model = model;;
+					lpCalc->cpu.pio.model = model;
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
 					FILE *file;
 					_tfopen_s(&file, browse, _T("rb") );

@@ -27,10 +27,14 @@ static void port0(CPU_t *cpu, device_t *dev) {
 }
 
 // Contrast
+// ranges from 0 to 31
 static void port2(CPU_t *cpu, device_t *dev) {
-	if (cpu->output) {
-		//HACK: i dont really no how this works...
-		LCD_t *lcd = cpu->pio.lcd;
+	LCD_t *lcd = (LCD_t *) dev->aux;
+	if (cpu->input) {
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		//lcd->contrast ranges from 24 - 64
+		//HACK: still not sure exactly how this works :P
 		lcd->contrast = lcd->base_level - 15 + cpu->bus;
 		if (lcd->contrast > 64)
 			lcd->contrast = 64;
@@ -85,7 +89,6 @@ static void port3(CPU_t *cpu, device_t *dev) {
 
 
 static void port4(CPU_t *cpu, device_t *dev) {
-
 	if (cpu->input) {
 		dev->aux = (void *) cpu->bus;
 		cpu->input = FALSE;
@@ -98,21 +101,21 @@ static void port4(CPU_t *cpu, device_t *dev) {
 // ROM port
 static void port5(CPU_t *cpu, device_t *dev) {
 	if ( cpu->input ) {
-		cpu->bus = ((cpu->mem_c->banks[1].ram)<<6)+cpu->mem_c->banks[1].page;
+		cpu->bus = (cpu->mem_c->banks[1].ram << 6) + cpu->mem_c->banks[1].page;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->mem_c->banks[1].ram = (cpu->bus>>6)&1;
+		cpu->mem_c->banks[1].ram = (cpu->bus >> 6) & 1;
 		if (cpu->mem_c->banks[1].ram) {
-			cpu->mem_c->banks[1].page		= ((cpu->bus&0x1f) % cpu->mem_c->ram_pages );
-			cpu->mem_c->banks[1].addr		= cpu->mem_c->ram+(cpu->mem_c->banks[1].page*16384);
+			cpu->mem_c->banks[1].page		= (cpu->bus & 0x1f) % cpu->mem_c->ram_pages;
+			cpu->mem_c->banks[1].addr		= cpu->mem_c->ram+(cpu->mem_c->banks[1].page * PAGE_SIZE);
 			cpu->mem_c->banks[1].read_only	= FALSE;
 			cpu->mem_c->banks[1].no_exec	= FALSE;
 		} else {
-			cpu->mem_c->banks[1].page		= ((cpu->bus&0x1f) % cpu->mem_c->flash_pages);
-			cpu->mem_c->banks[1].addr		= cpu->mem_c->flash+(cpu->mem_c->banks[1].page*16384);
+			cpu->mem_c->banks[1].page		= (cpu->bus & 0x1f) % cpu->mem_c->flash_pages;
+			cpu->mem_c->banks[1].addr		= cpu->mem_c->flash+(cpu->mem_c->banks[1].page * PAGE_SIZE);
 			cpu->mem_c->banks[1].read_only	= TRUE;
 			cpu->mem_c->banks[1].no_exec	= FALSE;
-			if (cpu->mem_c->banks[1].page==0x1f) cpu->mem_c->banks[1].read_only=TRUE;
+			if (cpu->mem_c->banks[1].page == 0x1f) cpu->mem_c->banks[1].read_only = TRUE;
 		}
 		cpu->output = FALSE;
 	}
@@ -121,21 +124,21 @@ static void port5(CPU_t *cpu, device_t *dev) {
 // RAM port
 static void port6(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
-		cpu->bus = ((cpu->mem_c->banks[2].ram)<<6)+cpu->mem_c->banks[2].page;
+		cpu->bus = (cpu->mem_c->banks[2].ram << 6) + cpu->mem_c->banks[2].page;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->mem_c->banks[2].ram = (cpu->bus>>6)&1;
+		cpu->mem_c->banks[2].ram = (cpu->bus >> 6) & 1;
 		if (cpu->mem_c->banks[2].ram) {
-			cpu->mem_c->banks[2].page		= ((cpu->bus&0x1f) % cpu->mem_c->ram_pages);
-			cpu->mem_c->banks[2].addr		= cpu->mem_c->ram+(cpu->mem_c->banks[2].page*16384);
+			cpu->mem_c->banks[2].page		= (cpu->bus & 0x1f) % cpu->mem_c->ram_pages;
+			cpu->mem_c->banks[2].addr		= cpu->mem_c->ram+(cpu->mem_c->banks[2].page * PAGE_SIZE);
 			cpu->mem_c->banks[2].read_only	= FALSE;
 			cpu->mem_c->banks[2].no_exec	= FALSE;
 		} else {
-			cpu->mem_c->banks[2].page		= ((cpu->bus&0x1f) % cpu->mem_c->flash_pages);
-			cpu->mem_c->banks[2].addr		= cpu->mem_c->flash+(cpu->mem_c->banks[2].page*16384);
+			cpu->mem_c->banks[2].page		= (cpu->bus & 0x1f) % cpu->mem_c->flash_pages;
+			cpu->mem_c->banks[2].addr		= cpu->mem_c->flash + (cpu->mem_c->banks[2].page * PAGE_SIZE);
 			cpu->mem_c->banks[2].read_only	= TRUE;
 			cpu->mem_c->banks[2].no_exec	= FALSE;
-			if (cpu->mem_c->banks[2].page==0x1f) cpu->mem_c->banks[2].read_only=TRUE;
+			if (cpu->mem_c->banks[2].page == 0x1f) cpu->mem_c->banks[2].read_only = TRUE;
 		}
 		cpu->output = FALSE;
 	}
@@ -144,7 +147,7 @@ static void port6(CPU_t *cpu, device_t *dev) {
 static void port7(CPU_t *cpu, device_t *dev) {
 	link_t * link = (link_t *) dev->aux;
 	if (cpu->input) {
-		cpu->bus = (((link->host&0x03)|(link->client[0]&0x03))^0x03);
+		cpu->bus = (((link->host & 0x03) | (link->client[0] & 0x03)) ^ 0x03);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		link->host = (cpu->bus >> 4) & 0x03;
@@ -216,7 +219,7 @@ int device_init_86(CPU_t *cpu) {
 	cpu->pio.devices[0x01].code = (devp) &keypad;
 
 	cpu->pio.devices[0x02].active = TRUE;
-	cpu->pio.devices[0x02].aux = NULL;
+	cpu->pio.devices[0x02].aux = lcd;
 	cpu->pio.devices[0x02].code = (devp) &port2;
 
 	cpu->pio.devices[0x03].active = TRUE;

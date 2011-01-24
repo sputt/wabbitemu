@@ -144,6 +144,7 @@ int CPU_init(CPU_t *cpu, memc *mem_c, timerc *timer_c) {
 	cpu->mem_c = mem_c;
 	cpu->timer_c = timer_c;
 	mem_c->port28_remap_count = 0;
+	cpu->exe_violation_callback = mem_debug_callback;
 	return 0;
 }
 
@@ -159,22 +160,22 @@ static void handle_pio(CPU_t *cpu) {
 
 static int CPU_opcode_fetch(CPU_t *cpu) {
 	int bank = mc_bank(cpu->pc);
-	//TODO: add in exec prevetion based on port 16
 	// TI Execution prevention will reset to 0x0000 if you execute on an even RAM page (handle also the port28 remap for SEs)
 	if ((cpu->mem_c->banks[bank].no_exec && !(!cpu->mem_c->boot_mapped && (bank == 2)
 			&& (mc_base(cpu->pc) < 64 * cpu->mem_c->port28_remap_count)))) {
 		// plant a reset command if this was a non execute area
+				if (break_on_exe_violation)
+					cpu->exe_violation_callback(cpu);
 		cpu->bus = 0xC7;	// rst 00h, may want to place interrupt and hardware resets.
 	} else {
 		if (!cpu->mem_c->banks[bank].ram) endflash(cpu);	//I DON'T THINK THIS IS CORRECT
 		cpu->bus = mem_read(cpu->mem_c, cpu->pc);			//However it shouldn't be a problem
 															//assuming you know how to write to flash
-	}
-	if (cpu->mem_c->banks[bank].ram) {
+}	
+	if (cpu->mem_c->banks[bank].ram)
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_OP_ram_tstates);
-	} else {
+	else
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_OP_flash_tstates);
-	}
 	cpu->pc++;
 	cpu->r = (cpu->r & 0x80) + ((cpu->r + 1) & 0x7F);		//note: prefix opcodes inc the r reg to. so bit 7,h has 2 incs.
 	return cpu->bus;

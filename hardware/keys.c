@@ -176,7 +176,7 @@ static keyprog_t keygrps[] = {
 };
 #else
 
-static keyprog_t defaultkeys[] = {
+keyprog_t defaultkeys[256] = {
 	{ 'A' , 5 , 6 },
 	{ 'B' , 4 , 6 },
 	{ 'C' , 3 , 6 },
@@ -260,12 +260,13 @@ static keyprog_t defaultkeys[] = {
 	{ VK_OEM_2, 2, 0 },
 //so much better than harcoding the changes :P
 #ifdef _DEBUG
-	{ VK_NUMPAD0, 5, 0}
+	{ VK_NUMPAD0, 5, 0},
 #else
-	{ VK_F12, 5, 0}
+	{ VK_F12, 5, 0},
 #endif
+	{ -1, -1, -1},
 };
-static keyprog_t keygrps[] = {
+keyprog_t keygrps[256] = {
 	{ 'A' , 5 , 6 },
 	{ 'B' , 4 , 6 },
 	{ 'C' , 3 , 6 },
@@ -349,10 +350,11 @@ static keyprog_t keygrps[] = {
 	{ VK_OEM_2, 2, 0 },
 //so much better than harcoding the changes :P
 #ifdef _DEBUG
-	{ VK_NUMPAD0, 5, 0}
+	{ VK_NUMPAD0, 5, 0},
 #else
-	{ VK_F12, 5, 0}
+	{ VK_F12, 5, 0},
 #endif
+	{ -1, -1, -1},
 };
 #endif
 	

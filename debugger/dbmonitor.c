@@ -81,7 +81,7 @@ HWND DoCreateHeader(HWND hwndParent) {
 // iInsertAfter - index of the previous item. 
 // nWidth - width of the new item. 
 // lpsz - address of the item string. 
-int DoInsertItem(HWND hwndHeader, int iInsertAfter, int nWidth, LPSTR lpsz) { 
+int DoInsertItem(HWND hwndHeader, int iInsertAfter, int nWidth, LPTSTR lpsz) { 
     HDITEM hdi; 
     int index; 
  

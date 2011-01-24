@@ -64,6 +64,7 @@ TCHAR ExeDir[512];
 INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 HINSTANCE g_hInst;
 HACCEL hacceldebug;
+HACCEL haccelmain;
 POINT drop_pt;
 BOOL gif_anim_advance;
 BOOL silent_mode = FALSE;
@@ -272,6 +273,7 @@ int gui_frame_update(LPCALC lpCalc) {
 				break;
 			case TI_86:
 				hbmKeymap.Load(_T("TI-86Keymap"), _T("PNG"), g_hInst);
+				break;
 			case TI_73:
 			case TI_83P:
 			case TI_83PSE:
@@ -889,7 +891,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SetTimer(NULL, 0, TPF, TimerProc);
 
 	hacceldebug = LoadAccelerators(g_hInst, _T("DisasmAccel"));
-	haccelmain = LoadAccelerators(g_hInst, _T("Z80Accel"));
+	if (!haccelmain)
+		haccelmain = LoadAccelerators(g_hInst, _T("Z80Accel"));
 
     while (GetMessage(&Msg, NULL, 0, 0)) {
 		HACCEL haccel = haccelmain;

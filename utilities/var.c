@@ -382,6 +382,7 @@ void NullTiFile(TIFILE_t* tifile) {
 	tifile->rom = NULL;
 	tifile->save = NULL;
 	tifile->backup = NULL;
+	tifile->type = VAR_TYPE;
 }
 
 TIFILE_t* InitTiFile() {
@@ -393,7 +394,7 @@ TIFILE_t* InitTiFile() {
 }
 
 void ReadTiFileHeader(FILE *infile, TIFILE_t *tifile) {
-	char headerString[16];
+	char headerString[8];
 	int i, tmp;
 
 	fread(headerString, 1, 8, infile);

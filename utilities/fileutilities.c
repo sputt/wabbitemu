@@ -13,7 +13,7 @@ int BrowseFile(TCHAR* lpstrFile, const TCHAR *lpstrFilter, const TCHAR *lpstrTit
 	ofn.nMaxCustFilter		= 0;
 	ofn.nFilterIndex		= 0;
 	ofn.lpstrFile			= (LPTSTR) lpstrFile;
-	ofn.nMaxFile			= 512;
+	ofn.nMaxFile			= MAX_PATH;
 	ofn.lpstrFileTitle		= NULL;
 	ofn.nMaxFileTitle		= 0;
 	ofn.lpstrInitialDir		= NULL;
@@ -32,7 +32,7 @@ int BrowseFile(TCHAR* lpstrFile, const TCHAR *lpstrFilter, const TCHAR *lpstrTit
 	return 0;
 }
 
-int SaveFile(TCHAR *lpstrFile, TCHAR *lpstrFilter, TCHAR *lpstrTitle, TCHAR *lpstrDefExt, unsigned int Flags) {
+int SaveFile(TCHAR *lpstrFile, const TCHAR *lpstrFilter, const TCHAR *lpstrTitle, const TCHAR *lpstrDefExt, unsigned int Flags) {
 	lpstrFile[0] = '\0';
 	OPENFILENAME ofn;
 	ofn.lStructSize			= sizeof(OPENFILENAME);
@@ -43,12 +43,12 @@ int SaveFile(TCHAR *lpstrFile, TCHAR *lpstrFilter, TCHAR *lpstrTitle, TCHAR *lps
 	ofn.nMaxCustFilter		= 0;
 	ofn.nFilterIndex		= 0;
 	ofn.lpstrFile			= (LPTSTR) lpstrFile;
-	ofn.nMaxFile			= 512;
+	ofn.nMaxFile			= MAX_PATH;
 	ofn.lpstrFileTitle		= NULL;
 	ofn.nMaxFileTitle		= 0;
 	ofn.lpstrInitialDir		= NULL;
 	ofn.lpstrTitle			= lpstrTitle;
-	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
+	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES | OFN_OVERWRITEPROMPT;
 	ofn.lpstrDefExt			= lpstrDefExt;
 	ofn.lCustData			= 0;
 	ofn.lpfnHook			= NULL;
