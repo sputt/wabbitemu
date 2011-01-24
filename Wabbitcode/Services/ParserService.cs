@@ -303,7 +303,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
 				}
 			}
             RemoveParseData(file);
-			ProjectService.ParseInfo.Add(info);
+            lock (ProjectService.ParseInfo) {
+			    ProjectService.ParseInfo.Add(info);
+            }
             if (ProjectService.IsInternal)
             {
                 baseDir = Path.GetDirectoryName(file);
@@ -342,7 +344,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 {
                     if (data.GetType() == typeof(Label))
                         return 0x4000;                  //arbitrary number > 255. maybe someday i'll parse label values :/
-                    if (data.GetType() == typeof(IDefine))
+                    if (data.GetType() == typeof(Define))
                         return ((IDefine) data).Value;
                 }
                 return 0;
