@@ -5,6 +5,9 @@
 #include "state.h"
 #include "guivartree.h"
 #include "guicontext.h"
+#include "fileutilities.h"
+#include "DropSource.h"
+#include "DataObject.h"
 
 #include "exportvar.h"
 #include "resource.h"
@@ -71,17 +74,14 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
             RefreshTreeView(TRUE);
             return TRUE;
         }
-        case WM_SIZE:
-			{
-				GetWindowRect(hwnd, &VTrc);
-				int width = (VTrc.right-VTrc.left)-14-6;
-				int height = (VTrc.bottom-VTrc.top)-38-30-73;
-				MoveWindow(g_hwndVarTree,6,30,width,height,TRUE);
-
-				break;
-			}
-        case WM_COMMAND:
-        {
+        case WM_SIZE: {
+			GetWindowRect(hwnd, &VTrc);
+			int width = VTrc.right - VTrc.left - 14 - 6;
+			int height = VTrc.bottom-VTrc.top - 38 - 30 - 73;
+			MoveWindow(g_hwndVarTree, 6, 30, width, height, TRUE);
+			break;
+		}
+        case WM_COMMAND: {
             switch (LOWORD(wParam)) {
                 case IDC_REFRESH_VAR_LIST:
 					RefreshTreeView(FALSE);
@@ -105,7 +105,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					FillFileBuffer(item, buf);
 					if (SetVarName(fd)) {
 						free(buf);
-						free (fd);
+						free(fd);
 						break;
 					}
 #ifdef WINVER
@@ -124,8 +124,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
             }
             return TRUE;
         }
-        case WM_NOTIFY:
-		{
+        case WM_NOTIFY: {
 			NMTREEVIEW *nmtv = (LPNMTREEVIEW) lParam;
 			switch (((NMHDR*) lParam)->code) {
 				case NM_DBLCLK:	{
@@ -135,8 +134,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 //					}
 					break;
 				}
-				case NM_RCLICK:
-				{
+				case NM_RCLICK: {
 					// Working on this ...
 					HMENU hmenu;
 					hmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_VARTREE_MENU));
@@ -151,57 +149,47 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					DestroyMenu(hmenu); 
 					return TRUE;
 				}
-#ifdef USE_COM
 				case TVN_BEGINDRAG:	{
 					TreeView_SelectItem(g_hwndVarTree, nmtv->itemNew.hItem);
-
-					WB_IDataObject *pDataObject;
-					WB_IDropSource *pDropSource;
-					DWORD		 dwEffect;
-		
 					FORMATETC fmtetc[2] = {
 						{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
 						{RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, 0, TYMED_HGLOBAL }};
 					STGMEDIUM stgmed[2] = {
 						{ TYMED_HGLOBAL, { 0 }, 0 },
 						{ TYMED_HGLOBAL, { 0 }, 0 }};
-		
-					// transfer the current selection into the IDataObject
-					stgmed[0].hGlobal = GlobalAlloc(GHND, 
-										sizeof(FILEGROUPDESCRIPTOR) + sizeof(FILEDESCRIPTOR));
-										
-					FILEGROUPDESCRIPTOR *fgd = (FILEGROUPDESCRIPTOR*) GlobalLock(stgmed[0].hGlobal);
+					CDataObject *pDataObject;
+					CDropSource *pDropSource;
+					DWORD dwEffect = DROPEFFECT_NONE;
+					// transfer the current selection into the CDataObject
+					stgmed[0].hGlobal = GlobalAlloc(GHND, sizeof(FILEGROUPDESCRIPTOR) + sizeof(FILEDESCRIPTOR));
 					
+					FILEGROUPDESCRIPTOR *fgd = (FILEGROUPDESCRIPTOR *) GlobalLock(stgmed[0].hGlobal);
 					fgd->cItems = 1;
 					FILEDESCRIPTOR *fd = fgd->fgd;
-					
 					ZeroMemory(fd, sizeof(FILEDESCRIPTOR));
-					
 					if (FillDesc(nmtv->itemNew.hItem, fd) == NULL || fd->nFileSizeLow == 0) {
 						GlobalFree(stgmed[0].hGlobal);
 						return FALSE;
 					}
 					GlobalUnlock(stgmed[0].hGlobal);
-		
+
 					stgmed[1].hGlobal = GlobalAlloc(GHND, fd->nFileSizeLow);
-					char *buf = GlobalLock(stgmed[1].hGlobal);
-					
+					char *buf = (char *) GlobalLock(stgmed[1].hGlobal);
 					FillFileBuffer(nmtv->itemNew.hItem, buf);
-		
 					GlobalUnlock(stgmed[1].hGlobal);
-					
+
 					// Create IDataObject and IDropSource COM objects
-					CreateDropSource(&pDropSource);
-					CreateDataObject(fmtetc, stgmed, 2, &pDataObject);
+					pDropSource = new CDropSource();
+					CreateDataObject(fmtetc, stgmed, 2, (IDataObject **) &pDataObject);
 		
 					//
 					//	** ** ** The drag-drop operation starts here! ** ** **
 					//
-					SetDropSourceDataObject(pDropSource, pDataObject);
-					DoDragDrop((IDataObject*)pDataObject, (struct IDropSource*)pDropSource, DROPEFFECT_COPY, &dwEffect);
+					pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource);
+					//SetDropSourceDataObject(pDropSource, pDataObject);
+					DoDragDrop((IDataObject *) pDataObject, (IDropSource *) pDropSource, DROPEFFECT_COPY, &dwEffect);
 					return TRUE;
 				}
-#endif
 			}
 			
 			return TRUE;
@@ -220,26 +208,25 @@ int SetVarName(FILEDESCRIPTOR *fd) {
 	OPENFILENAME ofn;
 	TCHAR *defExt;
 	int filterIndex;
-	TCHAR lpstrFilter[] 	= _T("\
-Programs  (*.8xp)\0*.8xp\0\
-Applications (*.8xk)\0*.8xk\0\
-App Vars (*.8xv)\0*.8xv\0\
-Lists  (*.8xl)\0*.8xl\0\
-Real/Complex Variables  (*.8xn)\0*.8xn\0\
-Pictures  (*.8xi)\0*.8xi\0\
-GDBs  (*.8xd)\0*.8xd\0\
-Matrices  (*.8xm)\0*.8xm\0\
-Strings  (*.8xs)\0*.8xs\0\
-Groups  (*.8xg)\0*.8xg\0\
-All Files (*.*)\0*.*\0\0");
+	const TCHAR lpstrFilter[] = _T("Programs  (*.8xp)\0*.8xp\0\
+									Applications (*.8xk)\0*.8xk\0\
+									App Vars (*.8xv)\0*.8xv\0\
+									Lists  (*.8xl)\0*.8xl\0\
+									Real/Complex Variables  (*.8xn)\0*.8xn\0\
+									Pictures  (*.8xi)\0*.8xi\0\
+									GDBs  (*.8xd)\0*.8xd\0\
+									Matrices  (*.8xm)\0*.8xm\0\
+									Strings  (*.8xs)\0*.8xs\0\
+									Groups  (*.8xg)\0*.8xg\0\
+									All Files (*.*)\0*.*\0\0");
+	const TCHAR lpstrTitle[] = _T("Wabbitemu Export");
 	TCHAR lpstrFile[MAX_PATH];
-	unsigned int Flags = OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
 #ifdef WINVER
 	StringCbCopy(lpstrFile, sizeof(lpstrFile), fd->cFileName);
 #else
 	strcpy(lpstrFile, fd->cFileName);
 #endif
-	int i = (int) _tcslen(lpstrFile);
+	size_t i = _tcslen(lpstrFile);
 	lpstrFile[i] = '\0';
 	defExt = &lpstrFile[i];
 	while (*defExt != '.')
@@ -280,31 +267,8 @@ All Files (*.*)\0*.*\0\0");
 			break;
 	}
 
-	ofn.lStructSize			= sizeof(OPENFILENAME);
-	ofn.hwndOwner			= GetForegroundWindow();
-	ofn.hInstance			= NULL;
-	ofn.lpstrFilter			= (LPCTSTR) lpstrFilter;
-	ofn.lpstrCustomFilter	= NULL;
-	ofn.nMaxCustFilter		= 0;
-	ofn.nFilterIndex		= filterIndex;
-	ofn.lpstrFile			= lpstrFile;
-	ofn.nMaxFile			= sizeof(lpstrFile);
-	ofn.lpstrFileTitle		= NULL;
-	ofn.nMaxFileTitle		= 0;
-	ofn.lpstrInitialDir		= NULL;
-	ofn.lpstrTitle			= _T("Wabbitemu Export");
-	ofn.Flags				= Flags | OFN_HIDEREADONLY | OFN_EXPLORER | OFN_LONGNAMES;
-	ofn.lpstrDefExt			= defExt;
-	ofn.lCustData			= 0;
-	ofn.lpfnHook			= NULL;
-	ofn.lpTemplateName		= NULL;
-	ofn.pvReserved			= NULL;
-	ofn.dwReserved			= 0;
-	ofn.FlagsEx				= 0;
-
-	if (!GetSaveFileName(&ofn)) {
+	if (SaveFile(lpstrFile, lpstrFilter, lpstrTitle, defExt, OFN_PATHMUSTEXIST))
 		return 1;
-	}
 #ifdef WINVER
 	StringCbCopy(export_file_name, sizeof(export_file_name), lpstrFile);
 #else
@@ -318,7 +282,7 @@ All Files (*.*)\0*.*\0\0");
 void DeleteChildren(HWND hwnd, HTREEITEM parent) {
 	HTREEITEM Child;
 	while(Child = TreeView_GetChild(hwnd,parent)) {
-		TreeView_DeleteItem(hwnd,Child);
+		TreeView_DeleteItem(hwnd, Child);
 	}
 }
 
@@ -348,22 +312,20 @@ void RefreshTreeView(BOOL New) {
 	}
 
 	/* run through all active calcs */
-	for(slot = 0;slot < MAX_CALCS;slot++) {
-
-
-		if (!calcs[slot].active && Tree[slot].model!=0) {
-			TreeView_DeleteItem(g_hwndVarTree,Tree[slot].hRoot);
+	for(slot = 0; slot < MAX_CALCS; slot++) {
+		if (!calcs[slot].active && Tree[slot].model != 0) {
+			TreeView_DeleteItem(g_hwndVarTree, Tree[slot].hRoot);
 			Tree[slot].model = 0;
 		}
 
-		if (calcs[slot].active && Tree[slot].model!=calcs[slot].model && Tree[slot].model!=0) {
-			TreeView_DeleteItem(g_hwndVarTree,Tree[slot].hRoot);
+		if (calcs[slot].active && Tree[slot].model != calcs[slot].model && Tree[slot].model != 0) {
+			TreeView_DeleteItem(g_hwndVarTree, Tree[slot].hRoot);
 			Tree[slot].model = 0;
 		}
 		
 		
 		/*It's an 83+ compatible with a known rom(hopefully)*/
-		if (calcs[slot].active && calcs[slot].model >=TI_83P &&
+		if (calcs[slot].active && calcs[slot].model >= TI_83P &&
 #ifdef WINVER
 			sscanf_s(calcs[slot].rom_version, "%f", &ver) == 1) {
 #else
@@ -373,11 +335,11 @@ void RefreshTreeView(BOOL New) {
 
 			/* This slot has not yet been initlised. */
 			/* so set up the Root */
-			if (Tree[slot].model==0) {
+			if (Tree[slot].model == 0) {
 				tvs.hParent				= TVI_ROOT;
 				tvs.hInsertAfter		= TVI_ROOT;
 				tvs.item.mask			= TVIF_IMAGE | TVIF_SELECTEDIMAGE |TVIF_TEXT;
-				tvs.item.pszText		= (LPTSTR)CalcModelTxt[calcs[slot].model];
+				tvs.item.pszText		= (LPTSTR) CalcModelTxt[calcs[slot].model];
 				tvs.item.cchTextMax		= (int) _tcslen(tvs.item.pszText) + 1;
 				tvs.item.iImage			= TI_ICON_84PSE;
 				tvs.item.iSelectedImage	= tvs.item.iImage;
@@ -386,56 +348,56 @@ void RefreshTreeView(BOOL New) {
 
 			/* If nodes haven't been init or the model is reset, create nodes */
 			/* otherwise delete children so the vars can be appended */
-			if (!Tree[slot].hApplication || Tree[slot].model==0) {
+			if (!Tree[slot].hApplication || Tree[slot].model == 0) {
 				Tree[slot].hApplication = InsertVar(Tree[slot].hRoot, _T("Application"), TI_ICON_APP);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hApplication);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hApplication);
 
-			if (!Tree[slot].hProgram || Tree[slot].model==0) {
+			if (!Tree[slot].hProgram || Tree[slot].model == 0) {
 				Tree[slot].hProgram = InsertVar(Tree[slot].hRoot, _T("Program"), TI_ICON_PROGRAM);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hProgram);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hProgram);
 
-			if (!Tree[slot].hAppVar || Tree[slot].model==0) {
+			if (!Tree[slot].hAppVar || Tree[slot].model == 0) {
 				Tree[slot].hAppVar = InsertVar(Tree[slot].hRoot, _T("Application Variable"), TI_ICON_APPVAR);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hAppVar);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hAppVar);
 
-			if (!Tree[slot].hPic || Tree[slot].model==0) {
+			if (!Tree[slot].hPic || Tree[slot].model == 0) {
 				Tree[slot].hPic = InsertVar(Tree[slot].hRoot, _T("Picture"), TI_ICON_PIC);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hPic);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hPic);
 
-			if (!Tree[slot].hGDB || Tree[slot].model==0) {
+			if (!Tree[slot].hGDB || Tree[slot].model == 0) {
 				Tree[slot].hGDB = InsertVar(Tree[slot].hRoot, _T("Graph Database"), TI_ICON_GDB);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hGDB);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hGDB);
 
-			if (!Tree[slot].hString || Tree[slot].model==0) {
+			if (!Tree[slot].hString || Tree[slot].model == 0) {
 				Tree[slot].hString = InsertVar(Tree[slot].hRoot, _T("String"), TI_ICON_STRING);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hString);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hString);
 
-			if (!Tree[slot].hNumber || Tree[slot].model==0) {
+			if (!Tree[slot].hNumber || Tree[slot].model == 0) {
 				Tree[slot].hNumber = InsertVar(Tree[slot].hRoot, _T("Number"), TI_ICON_NUMBER);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hNumber);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hNumber);
 
-			if (!Tree[slot].hList || Tree[slot].model==0) {
+			if (!Tree[slot].hList || Tree[slot].model == 0) {
 				Tree[slot].hList = InsertVar(Tree[slot].hRoot, _T("List"), TI_ICON_LIST);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hList);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hList);
 
-			if (!Tree[slot].hMatrix || Tree[slot].model==0) {
+			if (!Tree[slot].hMatrix || Tree[slot].model == 0) {
 				Tree[slot].hMatrix = InsertVar(Tree[slot].hRoot, _T("Matrix"), TI_ICON_MATRIX);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hMatrix);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hMatrix);
 
-			if (!Tree[slot].hGroup || Tree[slot].model==0) {
+			if (!Tree[slot].hGroup || Tree[slot].model == 0) {
 				Tree[slot].hGroup = InsertVar(Tree[slot].hRoot, _T("Group"), TI_ICON_GROUP);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hGroup);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hGroup);
 
-			if (!Tree[slot].hEquation || Tree[slot].model==0) {
+			if (!Tree[slot].hEquation || Tree[slot].model == 0) {
 				Tree[slot].hEquation = InsertVar(Tree[slot].hRoot, _T("Equation"), TI_ICON_EQUATIONS);
-			} else DeleteChildren(g_hwndVarTree,Tree[slot].hEquation);
+			} else DeleteChildren(g_hwndVarTree, Tree[slot].hEquation);
 
 			Tree[slot].model		= calcs[slot].model;
 			
 			/* Apps are handled outside of the symbol table*/
-			state_build_applist(&calcs[slot].cpu,&Tree[slot].applist);
+			state_build_applist(&calcs[slot].cpu, &Tree[slot].applist);
 			for(i = 0; i < Tree[slot].applist.count; i++) {
-				Tree[slot].hApps[i] = InsertVar(Tree[slot].hApplication,Tree[slot].applist.apps[i].name,TI_ICON_FILE_ARC);
+				Tree[slot].hApps[i] = InsertVar(Tree[slot].hApplication, Tree[slot].applist.apps[i].name, TI_ICON_FILE_ARC);
 			}
 			symlist_t* sym = state_build_symlist_83P(&calcs[slot].cpu, &Tree[slot].sym);
 			if (sym) {
@@ -573,11 +535,11 @@ void *FillFileBuffer(HTREEITEM hSelect, void *buf) {
 	TCHAR string[64];
 	memset(string, 0, sizeof(string));
 	_tprintf_s(_T("Fill file buffer\n"));
-	for(slot = 0; slot<MAX_CALCS; slot++) {
+	for(slot = 0; slot < MAX_CALCS; slot++) {
 		if (Tree[slot].model) {
 			_tprintf_s(_T("model found\n"));
 			for(i = 0; i < Tree[slot].applist.count; i++) {
-				if (Tree[slot].hApps[i]==hSelect) {
+				if (Tree[slot].hApps[i] == hSelect) {
 					MFILE *outfile = ExportApp(slot, NULL, &Tree[slot].applist.apps[i]);
 					if(!outfile) _putts(_T("MFile not found"));
 					_tprintf_s(_T("size: %d\n"), outfile->size);

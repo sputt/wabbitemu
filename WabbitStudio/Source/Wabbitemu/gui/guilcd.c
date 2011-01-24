@@ -57,7 +57,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	HBRUSH hbrArchive = CreateSolidBrush(ARCHIVE_COLOR);
 
 	if (!hbrRAM || !hbrArchive) {
-		printf(_T("Brush creation failed\n"));
+		_tprintf(_T("Brush creation failed\n"));
 		return hdc;
 	}
 
@@ -410,8 +410,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 		}
 
-		case WM_MOUSEMOVE:
-			{
+		case WM_MOUSEMOVE: {
 				static DWORD dwDragCountdown = 0;
 				if (wParam != MK_LBUTTON) {
 					dwDragCountdown = 0;
@@ -435,7 +434,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					TCHAR *env;
 					size_t envLen;
 					_tdupenv_s(&env, &envLen, _T("appdata"));
-					StringCbCopy(fn, envLen, env);
+					StringCchCopy(fn, envLen, env);
 					free(env);
 					StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.gif"));
 					StringCbCopy(gif_file_name, sizeof(gif_file_name), fn);
@@ -444,23 +443,22 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					strcat(fn, "\\wabbitemu.gif");
 					strcpy(gif_file_name, fn);
 #endif
-
-					gif_xs = SCRXSIZE*gif_size;
-					gif_ys = SCRYSIZE*gif_size;
-
 					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					GIFGREYLCD(lpCalc->cpu.pio.lcd);
+					LCD_t *lcd = lpCalc->cpu.pio.lcd;
+					gif_xs = lcd->width * gif_size;
+					gif_ys = SCRYSIZE * gif_size;
+					GIFGREYLCD(lcd);
 
 					unsigned int i, j;
-					for (i = 0; i < SCRYSIZE*gif_size; i++)
-						for (j = 0; j < SCRXSIZE*gif_size; j++)
+					for (i = 0; i < SCRYSIZE * gif_size; i++)
+						for (j = 0; j < lcd->width * gif_size; j++)
 							gif_frame[i * gif_xs + j] = lpCalc->cpu.pio.lcd->gif[i][j];
 
 					gif_write_state = GIF_START;
-					gif_writer(lpCalc->cpu.pio.lcd->shades);
+					gif_writer(lcd->shades);
 
 					gif_write_state = GIF_END;
-					gif_writer(lpCalc->cpu.pio.lcd->shades);
+					gif_writer(lcd->shades);
 
 					FORMATETC fmtetc[] = {
 						{RegisterClipboardFormat(CFSTR_FILEDESCRIPTOR), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL },
@@ -473,8 +471,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					ZeroMemory(stgmed, sizeof(stgmed));
 
 					// Do the file group descriptor
-					stgmed[0].hGlobal = GlobalAlloc(GHND,
-										sizeof(FILEGROUPDESCRIPTOR) + sizeof(FILEDESCRIPTOR));
+					stgmed[0].hGlobal = GlobalAlloc(GHND, sizeof(FILEGROUPDESCRIPTOR) + sizeof(FILEDESCRIPTOR));
 					stgmed[0].tymed = TYMED_HGLOBAL;
 
 					FILEGROUPDESCRIPTOR *fgd = (FILEGROUPDESCRIPTOR *) GlobalLock(stgmed[0].hGlobal);
@@ -492,9 +489,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 #else
 					strcpy(fd->cFileName, "wabbitemu.gif");
 #endif
-
 					GlobalUnlock(stgmed[0].hGlobal);
-
 
 					// Now do file contents
 					stgmed[1].hGlobal = GlobalAlloc(GHND, gif_file_size);
@@ -534,15 +529,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 #else
 					strcpy((char*) &df[1], fn);
 #endif
-
 					GlobalUnlock(stgmed[3].hGlobal);
 
 					// Create IDataObject and IDropSource COM objects
 					pDropSource = new CDropSource();
 					CreateDataObject(fmtetc, stgmed, NumElm(fmtetc), (IDataObject **) &pDataObject);
-
-					//((IDataObject *)pDataObject)->lpVtbl->QueryInterface(pDataObject, &IID_IDataObject,
-					//		(LPVOID *) &((WB_IDropSource*)pDropSource)->pDataObject);
 
 					IID IID_IDragSourceHelper2;
 					CLSIDFromString((LPOLESTR) L"{83E07D0D-0C5F-4163-BF1A-60B274051E40}", &IID_IDragSourceHelper2);
@@ -553,8 +544,9 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
             			NULL,
             			CLSCTX_INPROC_SERVER,
             			IID_IDragSourceHelper,
-            			(LPVOID*) &pDragSourceHelper);
+            			(LPVOID *) &pDragSourceHelper);
 
+					pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource->m_pDataobject);
 					//SetDropSourceDataObject(pDropSource, pDataObject);
 					DWORD dwEffect = DROPEFFECT_NONE;
 					//if (SUCCEEDED(hres))
@@ -637,7 +629,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				bih->biBitCount = 32;
 				bih->biCompression = BI_RGB;
 
-				HBITMAP hbmDrag = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**) &pBits, NULL, 0);
+				HBITMAP hbmDrag = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void **) &pBits, NULL, 0);
 
 				HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmDrag);
 
@@ -657,11 +649,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					printf("error in SetDIBitsToDevice\n");
 				}
-				BYTE * pPixel = pBits +  16*96*4 - 4;
-				BYTE * pPixelTop = pBits + 96*96*4 - 16*96*4;
+				BYTE * pPixel = pBits +  16 * 96 * 4 - 4;
+				BYTE * pPixelTop = pBits + 96 * 96 * 4 - 16 * 96 * 4;
 				int i, j;
 				for (i = 16*96*4 - 4, j = 16; j > 0; i -= 4, pPixel -= 4, pPixelTop += 4) {
-					pPixel[3] = pPixelTop[3] = 42 - ((42/16)*(16 - j));
+					pPixel[3] = pPixelTop[3] = 42 - ((42 / 16) * (16 - j));
 
 					pPixelTop[0] = pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
 					pPixelTop[1] = pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;

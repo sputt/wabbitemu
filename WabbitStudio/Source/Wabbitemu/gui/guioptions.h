@@ -14,8 +14,21 @@ BOOL IsValidCmdRange(WORD);
 void DoPropertySheet(HWND);
 void ChangeCommand(HWND);
 TCHAR* NameFromAccel(ACCEL);
-void AddNormalKeys(TCHAR *);
-int SetGifName(BOOL);
+int GetNumKeyEntries();
+void AssignAccel(HWND);
+void RemoveAccel();
+void AssignEmuKey(HWND);
+void RemoveEmuKey();
+TCHAR* NameFromVKey(UINT nVK);
+
+#define KEY_STRING_SIZE 56
+struct key_string{
+	TCHAR *text;
+	int group;
+	int bit;
+};
+void AddNormalKeys(TCHAR *, key_string keystrings[KEY_STRING_SIZE]);
+
 
 #define TBRTICS 4
 #define TBRSTEP 5

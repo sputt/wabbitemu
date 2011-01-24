@@ -379,6 +379,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="errors.cpp" />
     <ClCompile Include="expand_buf.cpp" />
     <ClCompile Include="export.cpp" />
     <ClCompile Include="hash.cpp" />
@@ -395,6 +396,7 @@
   <ItemGroup>
     <ClInclude Include="console.h" />
     <ClInclude Include="directive.h" />
+    <ClInclude Include="errors.h" />
     <ClInclude Include="expand_buf.h" />
     <ClInclude Include="hash.h" />
     <ClInclude Include="list.h" />

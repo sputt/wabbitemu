@@ -5,6 +5,8 @@
 #include "gif.h"
 #include "registry.h"
 
+extern keyprog_t keygrps[256];
+
 static HKEY hkeyTarget;
 
 static struct {
@@ -12,32 +14,33 @@ static struct {
 	DWORD dwType;
 	LONG_PTR Value;
 } regDefaults[] = {
-	{_T("cutout"), 			REG_DWORD, 	FALSE},
-	{_T("skin"),			REG_DWORD,	FALSE},
-	{_T("alphablend_lcd"),	REG_DWORD,	TRUE},
-	{_T("version"), 		REG_SZ, 	(LONG_PTR) _T("1.5.12.31")},
-	{_T("rom_path"), 		REG_SZ, 	(LONG_PTR) _T("z.rom")},
-	{_T("shades"),			REG_DWORD,	6},
-	{_T("gif_path"), 		REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},
-	{_T("gif_autosave"),	REG_DWORD,	FALSE},
-	{_T("gif_useinc"),		REG_DWORD,	FALSE},
-	{_T("lcd_mode"),		REG_DWORD,	0},		// perfect gray
-	{_T("lcd_freq"),		REG_DWORD,	FPS},	// steady freq
-	{_T("screen_scale"),	REG_DWORD,  2},
-	{_T("faceplate_color"), REG_DWORD, 	0x838587},
-	{_T("exit_save_state"), REG_DWORD,  FALSE},
-	{_T("load_files_first"),REG_DWORD,  FALSE},
-	{_T("do_backups"),		REG_DWORD,  FALSE},
-	{_T("show_wizard"),		REG_DWORD,  TRUE},
-	{_T("sync_cores"),		REG_DWORD,  FALSE},
-	{_T("num_keys"),		REG_DWORD,  5},
-	{_T("always_on_top"),	REG_DWORD,  FALSE},
-	{_T("custom_skin"),		REG_DWORD,  FALSE},
-	{_T("skin_path"), 		REG_SZ, 	(LONG_PTR) _T("TI-83P.png")},
-	{_T("keymap_path"), 	REG_SZ, 	(LONG_PTR) _T("TI-83PKeymap.png")},
-	{_T("startX"),			REG_DWORD,  CW_USEDEFAULT},
-	{_T("startY"),			REG_DWORD,  CW_USEDEFAULT},
-	{NULL,					0,			0},
+	{_T("cutout"), 					REG_DWORD, 	FALSE},
+	{_T("skin"),					REG_DWORD,	FALSE},
+	{_T("alphablend_lcd"),			REG_DWORD,	TRUE},
+	{_T("version"), 				REG_SZ, 	(LONG_PTR) _T("1.5.12.31")},
+	{_T("rom_path"), 				REG_SZ, 	(LONG_PTR) _T("z.rom")},
+	{_T("shades"),					REG_DWORD,	6},
+	{_T("gif_path"), 				REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},
+	{_T("gif_autosave"),			REG_DWORD,	FALSE},
+	{_T("gif_useinc"),				REG_DWORD,	FALSE},
+	{_T("lcd_mode"),				REG_DWORD,	0},		// perfect gray
+	{_T("lcd_freq"),				REG_DWORD,	FPS},	// steady freq
+	{_T("screen_scale"),			REG_DWORD,  2},
+	{_T("faceplate_color"),			REG_DWORD, 	0x838587},
+	{_T("exit_save_state"),			REG_DWORD,  FALSE},
+	{_T("load_files_first"),		REG_DWORD,  FALSE},
+	{_T("do_backups"),				REG_DWORD,  FALSE},
+	{_T("show_wizard"),				REG_DWORD,  TRUE},
+	{_T("sync_cores"),				REG_DWORD,  FALSE},
+	{_T("num_accel"),				REG_DWORD,  6},
+	{_T("always_on_top"),			REG_DWORD,  FALSE},
+	{_T("custom_skin"),				REG_DWORD,  FALSE},
+	{_T("skin_path"), 				REG_SZ, 	(LONG_PTR) _T("TI-83P.png")},
+	{_T("keymap_path"), 			REG_SZ, 	(LONG_PTR) _T("TI-83PKeymap.png")},
+	{_T("startX"),					REG_DWORD,  CW_USEDEFAULT},
+	{_T("startY"),					REG_DWORD,  CW_USEDEFAULT},
+	{_T("break_on_exe_violation"),	REG_DWORD,  TRUE},
+	{NULL,							0,			0},
 };
 
 HRESULT LoadRegistryDefaults(HKEY hkey) {
@@ -49,7 +52,7 @@ HRESULT LoadRegistryDefaults(HKEY hkey) {
 		switch (regDefaults[i].dwType) {
 		case REG_DWORD:
 			cbData = sizeof(DWORD);
-			lpData = (BYTE*) &regDefaults[i].Value;
+			lpData = (LPBYTE) &regDefaults[i].Value;
 			break;
 		case REG_SZ:
 			cbData = lstrlen((TCHAR *) regDefaults[i].Value) + 1;
@@ -70,21 +73,13 @@ HRESULT LoadRegistryDefaults(HKEY hkey) {
 	return S_OK;
 }
 
-INT_PTR QueryWabbitKey(LPCTSTR lpszName) {
-	HKEY hkeySoftware;
-	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
-	
-	HKEY hkeyWabbit;
-	DWORD dwDisposition;
-	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0, 
-			NULL, REG_OPTION_NON_VOLATILE, 
-			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
-	
+LONG_PTR GetKeyData(HKEY hkeyWabbit, LPCTSTR lpszName) {
 	DWORD type;
 	DWORD len;
 	u_int i;
 	for (i = 0; regDefaults[i].lpValueName != NULL; i++) {
-		if (_tcsicmp(regDefaults[i].lpValueName, lpszName) == 0) break;
+		if (!_tcsicmp(regDefaults[i].lpValueName, lpszName))
+			break;
 	}
 	type = regDefaults[i].dwType;
 	
@@ -99,7 +94,6 @@ INT_PTR QueryWabbitKey(LPCTSTR lpszName) {
 		TCHAR szKeyName[256];
 		StringCbCopy(szKeyName, sizeof(szKeyName), lpszName);
 
-		//MultiByteToWideChar(CP_ACP, 0, lpszName, -1, szKeyName, ARRAYSIZE(szKeyName));
 		rqvx_res = RegQueryValueEx(hkeyWabbit, szKeyName, NULL, NULL, (LPBYTE) &result, &len);
 		if (rqvx_res == ERROR_FILE_NOT_FOUND) {
 			if (type == REG_DWORD) {
@@ -116,11 +110,58 @@ INT_PTR QueryWabbitKey(LPCTSTR lpszName) {
 		//MessageBox(NULL, "Could not find registry key", lpszName, MB_OK);
 		return NULL;
 	}
+	return (type == REG_SZ) ? (LONG_PTR) result.szResult : result.dwResult;
+}
+
+INT_PTR QueryWabbitKey(LPCTSTR lpszName) {
+	HKEY hkeySoftware;
+	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
+	
+	HKEY hkeyWabbit;
+	DWORD dwDisposition;
+	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0, 
+			NULL, REG_OPTION_NON_VOLATILE, 
+			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
+	
+	LONG_PTR result = GetKeyData(hkeyWabbit, lpszName);
 	
 	RegCloseKey(hkeyWabbit);
 	RegCloseKey(hkeySoftware);
 	
-	return (type == REG_SZ) ? (LONG_PTR) result.szResult : result.dwResult;
+	return result;
+}
+
+void QueryKeyMappings() {
+	HKEY hkeySoftware;
+	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
+	
+	HKEY hkeyWabbit;
+	DWORD dwDisposition;
+	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0, 
+			NULL, REG_OPTION_NON_VOLATILE, 
+			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
+	
+	int num_entries = (int) QueryWabbitKey(_T("num_accel"));
+	ACCEL buf[256];
+	DWORD dwCount = sizeof(buf);
+	LONG res = RegQueryValueEx(hkeyWabbit, _T("accelerators"), NULL, NULL, (LPBYTE) buf, &dwCount);
+	if (res == ERROR_SUCCESS) {
+		DestroyAcceleratorTable(haccelmain);
+		haccelmain = CreateAcceleratorTable(buf, num_entries);
+	}
+	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
+	RegOpenKeyEx(hkeySoftware, _T("Wabbitemu"), 0, KEY_ALL_ACCESS, &hkeyWabbit);
+	keyprog_t keys[256];
+	dwCount = sizeof(keygrps);
+	res = RegQueryValueEx(hkeyWabbit, _T("emu_keys"), NULL, NULL, (LPBYTE) keys, &dwCount);
+	if (res == ERROR_SUCCESS) {
+		memcpy(keygrps, keys, sizeof(keyprog_t) * 256);
+	}
+	
+	RegCloseKey(hkeyWabbit);
+	RegCloseKey(hkeySoftware);
+	
+	return;
 }
 
 HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
@@ -162,20 +203,12 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	startY = (int) QueryWabbitKey(_T("startY"));
 	lpCalc->bAlwaysOnTop = (BOOL) QueryWabbitKey(_T("always_on_top"));
 	lpCalc->bCustomSkin = (BOOL) QueryWabbitKey(_T("custom_skin"));
-	int num_entries = (int) QueryWabbitKey(_T("num_keys"));
-	//need to load accelerators
-	// querywabbitkey doesnt work because its a REG_BINARY
-	/*ACCEL buf[256];
-	DWORD dwCount = sizeof(buf);
-	LONG res = RegQueryValueEx(hkeyWabbit, "accelerators", NULL, NULL, (LPBYTE)buf, &dwCount);
-	if (res == ERROR_SUCCESS){
-		DestroyAcceleratorTable(haccelmain);
-		haccelmain = CreateAcceleratorTable(buf, num_entries);
-	}*/
-	
+	QueryKeyMappings();
+
 	StringCbCopy(gif_file_name, sizeof(gif_file_name), (TCHAR *) QueryWabbitKey(_T("gif_path")));
 	gif_autosave = (BOOL) QueryWabbitKey(_T("gif_autosave"));
 	gif_use_increasing = (BOOL) QueryWabbitKey(_T("gif_useinc"));
+	break_on_exe_violation = (BOOL) QueryWabbitKey(_T("break_on_exe_violation"));
 	
 	//RegCloseKey(hkeyWabbit);
 	hkeyTarget = hkeyWabbit;
@@ -188,11 +221,10 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 void SaveWabbitKeyA(char *name, int type, void *value) {
 	size_t len;
 
-	if (type == REG_DWORD) {
+	if (type == REG_DWORD)
 		len = sizeof(DWORD);
-	} else if (type == REG_SZ) {
+	else if (type == REG_SZ)
 		StringCbLengthA((char *) value, MAX_PATH, &len);
-	}
 	
 	RegSetValueExA(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
 }
@@ -231,6 +263,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("do_backups"), REG_DWORD, &do_backups);
 		SaveWabbitKey(_T("show_wizard"), REG_DWORD, &show_wizard);
 		SaveWabbitKey(_T("sync_cores"), REG_DWORD, &sync_cores);
+		SaveWabbitKey(_T("break_on_exe_violation"), REG_DWORD, &break_on_exe_violation);
 
 		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpCalc->FaceplateColor);
 		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);		
@@ -245,15 +278,16 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 			SaveWabbitKey(_T("startX"), REG_DWORD, &startX);
 			SaveWabbitKey(_T("startY"), REG_DWORD, &startY);
 		}
-		/*ACCEL buf[256];
-		DWORD dwCount = sizeof(buf);
-		DWORD dwType = NULL;
-		LONG res = RegQueryValueEx(hkeyWabbit, "accelerators", NULL, &dwType,
-			(LPBYTE)buf, &dwCount);
-		if (res == ERROR_SUCCESS){
-			DestroyAcceleratorTable(haccelmain);
-			haccelmain = CreateAcceleratorTable(buf, dwCount);
-		}*/
+		ACCEL buf[256];
+		int numEntries = CopyAcceleratorTable(haccelmain, NULL, 0);
+		int nUsed = CopyAcceleratorTable(haccelmain, buf, numEntries);
+		DWORD dwCount = nUsed * sizeof(ACCEL);
+		DWORD dwType = REG_BINARY;
+		LONG res = RegSetValueEx(hkeyWabbit, _T("accelerators"), NULL, dwType, (LPBYTE) buf, dwCount);
+		SaveWabbitKey(_T("num_accel"), REG_DWORD, &nUsed);
+
+		dwCount = 256 * sizeof(keyprog_t);
+		res = RegSetValueEx(hkeyWabbit, _T("emu_keys"), NULL, dwType, (LPBYTE) keygrps, dwCount);
 		
 		SaveWabbitKey(_T("shades"), REG_DWORD, &lpCalc->cpu.pio.lcd->shades);
 		SaveWabbitKey(_T("lcd_mode"), REG_DWORD, &lpCalc->cpu.pio.lcd->mode);

@@ -136,7 +136,7 @@ void CreateEditField(HWND hwnd, POINT p) {
 	hwndVal = NULL;
 	TCHAR rval[8];
 	int edit_width = 4;
-	if (vi < REG16_ROWS*REG16_COLS) {
+	if (vi < REG16_ROWS * REG16_COLS) {
 #ifdef WINVER
 		StringCbPrintf(rval, sizeof(rval), _T("%04X"), reg16(reg_offset[vi].offset));
 #else
@@ -193,7 +193,7 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		int i;
 		for (i = 0; i < NumElm(reg); i++) {
 			HWND hwndValue = CreateValueField(hwnd, reg[i].name, kRegAddr, reg[i].data, reg[i].size, 4, HEX4);
-			SetWindowPos(hwndValue, NULL, (i % 2) * kRegAddr*3, kRegRow * (i/2), 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+			SetWindowPos(hwndValue, NULL, (i % 2) * kRegAddr*3, kRegRow * (i / 2), 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 		}
 		return 0;
@@ -224,7 +224,7 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	}
 	case WM_SIZE:
 	{
-		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr*6, kRegRow*8, SWP_NOMOVE | SWP_NOZORDER);
+		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr * 6, kRegRow * 8, SWP_NOMOVE | SWP_NOZORDER);
 		return 0;
 	}
 	case WM_USER:
@@ -250,17 +250,15 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 	{
 
 		HWND hwndValue;
-
 		int i;
-		for (i = 0; i < 4; i++)
-		{
-			int row_y = kRegRow/4 + kRegRow*(i+1);
+		for (i = 0; i < 4; i++) {
+			int row_y = kRegRow / 4 + kRegRow * (i + 1);
 
 			hwndValue = CreateValueField(hwnd, _T(""), 0, &lpDebuggerCalc->cpu.mem_c->banks[i].page, 1, 3, HEX2, lpDebuggerCalc->mem_c.flash_pages - 1);
-			SetWindowPos(hwndValue, NULL, kRegAddr*4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+			SetWindowPos(hwndValue, NULL, kRegAddr * 4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-			rdoType[2*i] =
+			rdoType[2 *i] =
 				CreateWindow(
 					_T("BUTTON"),
 					_T(""),
@@ -272,8 +270,8 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 					_T("BUTTON"),
 					_T(""),
 					WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-					kRegAddr*5/2-kRegAddr/8, row_y, kRegAddr/2, kRegRow,
-					hwnd, (HMENU) (20+2*i+1), g_hInst, NULL);
+					kRegAddr * 5 / 2 - kRegAddr / 8, row_y, kRegAddr / 2, kRegRow,
+					hwnd, (HMENU) (20 + 2 * i + 1), g_hInst, NULL);
 			// not quite the right thing, but close enough
 			DWORD check_width = GetSystemMetrics(SM_CYMENUCHECK);
 			chkRO[i] =
@@ -281,8 +279,8 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 				_T("BUTTON"),
 				_T(""),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-				kRegAddr*3+((kRegAddr-check_width)/2), row_y, kRegAddr/2, kRegRow,
-				hwnd, (HMENU) (30+i), g_hInst, NULL);
+				kRegAddr * 3 + ((kRegAddr - check_width) / 2), row_y, kRegAddr / 2, kRegRow,
+				hwnd, (HMENU) (30 + i), g_hInst, NULL);
 			SendMessage(chkRO[i], WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
 		}
 
@@ -293,15 +291,12 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 		switch (HIWORD(wParam)) {
 		case BN_CLICKED:
 			if ((LOWORD(wParam) >= 20) && (LOWORD(wParam) < 28)) {
-				SendMessage(rdoType[((LOWORD(wParam)-20)/2) * 2 + 0],
-						BM_SETCHECK, BST_UNCHECKED, 0);
-				SendMessage(rdoType[((LOWORD(wParam)-20)/2) * 2 + 1],
-						BM_SETCHECK, BST_UNCHECKED, 0);
-				bank_state_t *bank = &lpDebuggerCalc->mem_c.banks[(LOWORD(wParam)-20)/2];
+				Button_SetCheck(rdoType[((LOWORD(wParam) - 20) / 2) * 2 + 0], BST_UNCHECKED);
+				Button_SetCheck(rdoType[((LOWORD(wParam) - 20) / 2) * 2 + 1], BST_UNCHECKED);
+				bank_state_t *bank = &lpDebuggerCalc->mem_c.banks[(LOWORD(wParam) - 20) / 2];
 				bank->ram = !(LOWORD(wParam) % 2);
 			} else if (LOWORD(wParam) >= 30 && LOWORD(wParam) < 34) {
-				lpDebuggerCalc->mem_c.banks[LOWORD(wParam)-30].read_only =
-					!lpDebuggerCalc->mem_c.banks[LOWORD(wParam)-30].read_only;
+				lpDebuggerCalc->mem_c.banks[LOWORD(wParam) - 30].read_only = !lpDebuggerCalc->mem_c.banks[LOWORD(wParam) - 30].read_only;
 			}
 			break;
 		}
@@ -325,22 +320,22 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 		rc.left = kRegAddr * 2;
 		rc.right = kRegAddr * 3;
 		SelectObject(hdc, hfontSegoe);
-		SetRect(&rc, kRegAddr*3/2+kRegAddr/8, 0, kRegAddr*3/2+kRegAddr/8 + kRegAddr/2, kRegRow);
+		SetRect(&rc, kRegAddr * 3 / 2 + kRegAddr / 8, 0, kRegAddr * 3 / 2 + kRegAddr / 8 + kRegAddr / 2, kRegRow);
 		DrawTextA(hdc, "R", -1, &rc, DT_CENTER);
 
-		SetRect(&rc, kRegAddr*3/2+kRegAddr/8, 0, kRegAddr*5/2-kRegAddr/8+ kRegAddr/2, kRegRow);
+		SetRect(&rc, kRegAddr * 3 / 2 + kRegAddr / 8, 0, kRegAddr * 5 / 2 - kRegAddr / 8 + kRegAddr / 2, kRegRow);
 		DrawTextA(hdc, "-", -1, &rc, DT_CENTER);
 
-		SetRect(&rc, kRegAddr*5/2-kRegAddr/8, 0, kRegAddr*5/2-kRegAddr/8+ kRegAddr/2, kRegRow);
+		SetRect(&rc, kRegAddr * 5 / 2 - kRegAddr / 8, 0, kRegAddr * 5 / 2 - kRegAddr / 8 + kRegAddr / 2, kRegRow);
 		DrawTextA(hdc, "F", -1, &rc, DT_CENTER);
 
-		SetRect(&rc, kRegAddr*3, 0, kRegAddr*4, kRegRow);
+		SetRect(&rc, kRegAddr * 3, 0, kRegAddr * 4, kRegRow);
 		DrawTextA(hdc, "RO", -1, &rc, DT_CENTER);
 
 		OffsetRect(&rc, kRegAddr, 0);
 		DrawTextA(hdc, "Page", -1, &rc, DT_CENTER);
 
-		SetRect(&rc, 0, kRegRow/4 + kRegRow, kRegAddr*3/2, kRegRow/4 + kRegRow*2);
+		SetRect(&rc, 0, kRegRow / 4 + kRegRow, kRegAddr * 3 / 2, kRegRow / 4 + kRegRow * 2);
 		int i;
 		for (i = 0; i < 4; i++)
 		{
@@ -358,20 +353,20 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 		SetDCPenColor(hdc, GetSysColor(COLOR_BTNFACE));
 
 		GetClientRect(hwnd, &rc);
-		MoveToEx(hdc, kRegAddr*3/2, 0, NULL);
-		LineTo(hdc,  kRegAddr*3/2, rc.bottom - kRegRow*2);
-		MoveToEx(hdc, 3*kRegAddr, 0, NULL);
-		LineTo(hdc,  3*kRegAddr, rc.bottom - kRegRow*2);
-		MoveToEx(hdc, 4*kRegAddr-kRegRow/8, 0, NULL);
-		LineTo(hdc,  4*kRegAddr-kRegRow/8, rc.bottom - kRegRow*2);
-		MoveToEx(hdc, 5*kRegAddr, 0, NULL);
-		LineTo(hdc,  5*kRegAddr, rc.bottom - kRegRow*2);
+		MoveToEx(hdc, kRegAddr * 3 / 2, 0, NULL);
+		LineTo(hdc,  kRegAddr * 3 / 2, rc.bottom - kRegRow * 2);
+		MoveToEx(hdc, 3 * kRegAddr, 0, NULL);
+		LineTo(hdc,  3 * kRegAddr, rc.bottom - kRegRow*2);
+		MoveToEx(hdc, 4 * kRegAddr - kRegRow / 8, 0, NULL);
+		LineTo(hdc,  4 * kRegAddr - kRegRow / 8, rc.bottom - kRegRow * 2);
+		MoveToEx(hdc, 5 * kRegAddr, 0, NULL);
+		LineTo(hdc,  5 * kRegAddr, rc.bottom - kRegRow * 2);
 		EndPaint(hwnd, &ps);
 		return 0;
 	}
 	case WM_SIZE:
 	{
-		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr*6, kRegRow/4 + kRegRow * 2 + kRegRow*5, SWP_NOMOVE | SWP_NOZORDER);
+		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr * 6, kRegRow / 4 + kRegRow * 2 + kRegRow * 5, SWP_NOMOVE | SWP_NOZORDER);
 		return 0;
 	}
 	case WM_CTLCOLORSTATIC:
@@ -387,8 +382,8 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 			for (i = 0; i < 4; i++)
 			{
 				bank_state_t *bank = &lpDebuggerCalc->mem_c.banks[i];
-				SendMessage(rdoType[2*i + (bank->ram ? 0 : 1)], BM_SETCHECK, BST_CHECKED, 0);
-				SendMessage(chkRO[i], BM_SETCHECK, bank->read_only ? BST_CHECKED : BST_UNCHECKED, 0);
+				Button_SetCheck(rdoType[2 * i + (bank->ram ? 0 : 1)], BST_CHECKED);
+				Button_SetCheck(chkRO[i], bank->read_only ? BST_CHECKED : BST_UNCHECKED);
 				bank->addr = bank->ram ? lpDebuggerCalc->mem_c.ram : lpDebuggerCalc->mem_c.flash;
 				bank->addr += bank->page * PAGE_SIZE;
 			}

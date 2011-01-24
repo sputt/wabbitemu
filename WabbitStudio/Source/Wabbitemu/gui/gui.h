@@ -65,12 +65,11 @@ int gui_frame(calc_t *lpCalc);
 int gui_frame_update(calc_t *lpCalc);
 void gui_draw(calc_t *lpCalc);
 INT_PTR CALLBACK AboutDialogProc(HWND, UINT, WPARAM, LPARAM);
-TCHAR* LoadRomIntialDialog();
 #ifdef USE_DIRECTX
 #include <d3d9.h>
 extern IDirect3DDevice9 *pd3dDevice; // Direct3D Rendering Device 
 #endif
-static HACCEL haccelmain;
+extern HACCEL haccelmain;
 
 void RegisterWindowClasses(void);
 VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer);

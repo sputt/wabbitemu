@@ -213,7 +213,6 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			static timer_context_t timer_c;
 
 			tc_init(&timer_c, MHZ_6);
-
 			cpu.timer_c = &timer_c;
 			cpu.imode = 0;
 
@@ -230,29 +229,22 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			cpu.pio.devices[0x11].mem_c = NULL;
 			cpu.pio.devices[0x11].aux = lcd;
 			cpu.pio.devices[0x11].code = (devp) LCD_data;
-
 			cpu.pio.lcd = lcd;
 
 			cbMode = GetDlgItem(hwndDlg, IDC_CBODISPLAYMODE);
 			imgDisplayPreview = GetDlgItem(hwndDlg, IDC_IMGDISPLAYPREVIEW);
 
-			SendMessage(cbMode, CB_ADDSTRING,  0, (LPARAM) _T("Perfect gray"));
-			SendMessage(cbMode, CB_ADDSTRING,  0, (LPARAM) _T("Steady freq"));
-			SendMessage(cbMode, CB_ADDSTRING,  0, (LPARAM) _T("Game gray"));
-			if (lcd->mode == MODE_PERFECT_GRAY)
-				SendMessage(cbMode, CB_SETCURSEL, 0, (LPARAM) lcd->mode);
-			else if (lcd->mode == MODE_STEADY)
-				SendMessage(cbMode, CB_SETCURSEL, 1, (LPARAM) lcd->mode);
-			else
-				SendMessage(cbMode, CB_SETCURSEL, 2, (LPARAM) lcd->mode);
-
+			ComboBox_AddString(cbMode, _T("Perfect gray"));
+			ComboBox_AddString(cbMode, _T("Steady freq"));
+			ComboBox_AddString(cbMode, _T("Game gray"));
+			ComboBox_SetCurSel(cbMode, lcd->mode);
 
 			cbSource = GetDlgItem(hwndDlg, IDC_CBODISPLAYSOURCE);
-			SendMessage(cbSource, CB_ADDSTRING, 0, (LPARAM) _T("Bounce"));
-			SendMessage(cbSource, CB_ADDSTRING, 0, (LPARAM) _T("Scroll"));
-			SendMessage(cbSource, CB_ADDSTRING, 0, (LPARAM) _T("Gradient"));
-			SendMessage(cbSource, CB_ADDSTRING, 0 ,(LPARAM) _T("Live"));
-			SendMessage(cbSource, CB_SETCURSEL, 0, (LPARAM) 0);
+			ComboBox_AddString(cbSource, _T("Bounce"));
+			ComboBox_AddString(cbSource, _T("Scroll"));
+			ComboBox_AddString(cbSource, _T("Gradient"));
+			ComboBox_AddString(cbSource, _T("Live"));
+			ComboBox_SetCurSel(cbSource, 0);
 
 			trbShades = GetDlgItem(hwndDlg, IDC_TRBDISPLAYSHADES);
 			SendMessage(trbShades, TBM_SETRANGE,
@@ -297,33 +289,33 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			switch (HIWORD(wParam)) {
 				case CBN_SELCHANGE:
 					switch (LOWORD(wParam)) {
-					case  IDC_CBODISPLAYMODE:
-						lcd->mode = (LCD_MODE) SendMessage(cbMode, CB_GETCURSEL, 0, 0);
+					case IDC_CBODISPLAYMODE:
+						lcd->mode = (LCD_MODE) ComboBox_GetCurSel(cbMode);
 						EnableWindow(trbSteady, lcd->mode == MODE_STEADY);
 						PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 						return TRUE;
 					case IDC_CBODISPLAYSOURCE: {
 						static int last_index = 0;
-						int index = (int) SendMessage(cbSource, CB_GETCURSEL, 0, 0);
+						int index = ComboBox_GetCurSel(cbSource);
 						BOOL bEnable = TRUE;
 						HWND stcDisplayOption = GetDlgItem(hwndDlg, IDC_STCDISPLAYOPTION);
 						switch (index) {
-						case 2:
-							if (last_index == 3) DupLCDConfig(lcd_old, lcd);
-							lcd = lcd_old;
-							SendMessage(stcDisplayOption, WM_SETTEXT, 0, (LPARAM) _T("Levels"));
-							break;
-						case 0:
-						case 1:
-							SendMessage(stcDisplayOption, WM_SETTEXT, 0, (LPARAM) _T("FPS"));
-							if (last_index == 3) DupLCDConfig(lcd_old, lcd);
-							lcd = lcd_old;
-							break;
-						case 3:
-							lcd = lpCalc->cpu.pio.lcd;
-							if (last_index != 3) DupLCDConfig(lcd, lcd_old);
-							bEnable = FALSE;
-							break;
+							case 0:
+							case 1:
+								Static_SetText(stcDisplayOption, _T("FPS"));
+								if (last_index == 3) DupLCDConfig(lcd_old, lcd);
+								lcd = lcd_old;
+								break;
+							case 2:
+								if (last_index == 3) DupLCDConfig(lcd_old, lcd);
+								lcd = lcd_old;
+								Static_SetText(stcDisplayOption, _T("Levels"));
+								break;
+							case 3:
+								lcd = lpCalc->cpu.pio.lcd;
+								if (last_index != 3) DupLCDConfig(lcd, lcd_old);
+								bEnable = FALSE;
+								break;
 						}
 						last_index = index;
 						cpu.imode = index;
@@ -338,8 +330,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 					}
 			}
 			break;
-		case WM_DESTROY:
-		{
+		case WM_DESTROY: {
 			TerminateThread(hdlThread, 0);
 			CloseHandle(hdlThread);
 			GetWindowRect(hwndDlg, &PropRect);
@@ -520,7 +511,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 }
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check, saveWindow_check;
+	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check, saveWindow_check, exeViolation_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			saveState_check = GetDlgItem(hwnd, IDC_CHK_SAVE);
@@ -529,6 +520,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			wizard_check = GetDlgItem(hwnd, IDC_CHK_SHOWWIZARD);
 			alwaysTop_check = GetDlgItem(hwnd, IDC_CHK_ONTOP);
 			saveWindow_check = GetDlgItem(hwnd, IDC_CHK_SAVEWINDOW);
+			exeViolation_check = GetDlgItem(hwnd, IDC_CHK_BRK_EXE_VIOLATION);
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
 		case WM_COMMAND: {
@@ -543,6 +535,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 						case IDC_CHK_LOADFILES:
 						case IDC_CHK_REWINDING:
 						case IDC_CHK_SHOWWIZARD:
+						case IDC_CHK_BRK_EXE_VIOLATION:
 							break;
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
@@ -559,6 +552,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					exit_save_state = Button_GetCheck(saveState_check);
 					load_files_first = Button_GetCheck(loadFiles_check);
 					show_wizard = Button_GetCheck(wizard_check);
+					break_on_exe_violation = Button_GetCheck(exeViolation_check);
 					//we need to persist this immediately
 					SaveWabbitKey(_T("load_files_first"), REG_DWORD, &load_files_first);
 #ifdef WITH_BACKUPS
@@ -587,6 +581,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(wizard_check, show_wizard);
 			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);
 			Button_SetCheck(saveWindow_check, startX != CW_USEDEFAULT);
+			Button_SetCheck(exeViolation_check, break_on_exe_violation);
 			return TRUE;
 		}
 	}
@@ -616,13 +611,8 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 			int fpsMax = 100 / delayMin;
 			HWND hwndMaxSpeed = GetDlgItem(hwndDlg, IDC_STCGIFMAX);
 			TCHAR lpszMax[10];
-#ifdef WINVER
 			StringCbPrintf(lpszMax, sizeof(lpszMax), _T("%d"), fpsMax);
-#else
-			sprintf(lpszMax, "%d", fpsMax);
-#endif
-			SendMessage(hwndMaxSpeed, WM_SETTEXT, 0, (LPARAM) lpszMax);
-
+			SetWindowText(hwndMaxSpeed, lpszMax);
 
 			chkAutosave = GetDlgItem(hwndDlg, IDC_CHKENABLEAUTOSAVE);
 			Button_SetCheck(chkAutosave, gif_autosave);
@@ -742,18 +732,14 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 							const TCHAR lpstrDefExt[] = _T("rom");
 							
 							if (!BrowseFile(lpszFile, lpstrFilter, lpstrTitle, lpstrDefExt, OFN_PATHMUSTEXIST)) {
-#ifdef WINVER
 								StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), lpszFile);
-#else
-								strcpy(lpCalc->rom_path, lpszFile);
-#endif
 								SendMessage(hwnd, WM_USER, 0, 0);
 							}
 							break;
 						}
 						case IDC_BTN1: {
 							TCHAR lpszFile[MAX_PATH];
-							if (!SaveFile(lpszFile, _T("Roms  (*.rom)\0*.rom\0\bins  (*.bin)\0*.bin\0\All Files (*.*)\0*.*\0\0"),
+							if (!SaveFile(lpszFile, _T("Roms  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 											_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST)) {
 								ExportRom(lpszFile, lpCalc);
 							}
@@ -795,11 +781,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			Edit_SetText(edtRom_model, CalcModelTxt[lpCalc->model]);
 			Button_SetCheck(ramPages_check, lpCalc->mem_c.ram_version == 2);
 			TCHAR szRomSize[16];
-#ifdef WINVER
 			StringCbPrintf(szRomSize, sizeof(szRomSize), _T("%0.1f KB"), (float) lpCalc->cpu.mem_c->flash_size / 1024.0f);
-#else
-			sprintf(szRomSize, "%0.1f KB", (float) lpCalc->cpu.mem_c->flash_size/1024.0f);
-#endif
 			Edit_SetText(edtRom_size, szRomSize);
 			if (hbmTI83P)
 				DeleteObject(hbmTI83P);
@@ -816,127 +798,142 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 	}
 	return FALSE;
 }
-//static ACCEL hInitialAccels[256];	// original tables not touched
+
+static TCHAR keyPressBuf[64];
+static UINT editKeyPressed;
+LRESULT CALLBACK EmuKeyHandleProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+	switch (uMsg) {
+		case WM_KEYDOWN: {
+			editKeyPressed = (int) wParam;
+			if (editKeyPressed == VK_SHIFT) {
+				if (GetKeyState(VK_LSHIFT) & 0xFF00) {
+					editKeyPressed = VK_LSHIFT;
+				} else {
+					editKeyPressed = VK_RSHIFT;
+				}
+			}
+			if (editKeyPressed == VK_CONTROL) {
+				if (GetKeyState(VK_LCONTROL) & 0xFF00) {
+					editKeyPressed = VK_LCONTROL;
+				} else {
+					editKeyPressed = VK_RCONTROL;
+				}
+			}
+			TCHAR *string = NameFromVKey(editKeyPressed);
+			StringCbCopy(keyPressBuf, sizeof(keyPressBuf), string);
+			SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(0, EN_CHANGE), (LPARAM) hwnd);
+			return TRUE;
+		}
+	}
+	return DefSubclassProc(hwnd, uMsg, wParam, lParam);
+}
+
+static key_string ti86keystrings[56] = {
+	{_T("F5"),6,0},		{_T("F4"),6,1},		{_T("F3"),6,2},		{_T("F2"),6,3},	{_T("F1"),6,4},	{_T("2ND"),6,5},	{_T("EXIT"),6,6},	{_T("MORE"),6,7},
+	{_T("ON"),5,0},		{_T("STO"),5,1},	{_T(","),5,2},		{_T("x^2"),5,3},	{_T("LN"),5,4},{_T("LOG"),5,5},	{_T("GRAPH"),5,6},	{_T("ALPHA"),5,7},
+	{_T("0"),4,0},		{_T("1"),4,1},		{_T("4"),4,2},		{_T("7"),4,3},		{_T("EE"),4,4},	{_T("SIN"),4,5},	{_T("STAT"),4,6},	{_T("x-Var"),4,7},
+	{_T("."),3,0},		{_T("2"),3,1},		{_T("5"),3,2},		{_T("8"),3,3},		{_T("("),3,4},	{_T("COS"),3,5},	{_T("PRGM"),3,6},	{_T("DEL"),3,7},
+	{_T("(-)"),2,0},	{_T("3"),2,1},		{_T("6"),2,2},		{_T("9"),2,3},		{_T(")"),2,4},	{_T("TAN"),2,5},	{_T("CUSTOM"),2,6},	{_T(""),2,7},
+	{_T("ENTER"),1,0},	{_T("+"),1,1},		{_T("-"),1,2},		{_T("x"),1,3},		{_T("/"),1,4},	{_T("^"),1,5},		{_T("CLEAR"),1,6},	{_T(""),1,7},
+	{_T("DOWN"),0,0},	{_T("LEFT"),0,1},	{_T("RIGHT"),0,2},	{_T("UP"),0,3},		{_T(""),0,4},	{_T(""),0,5},		{_T(""),0,6},		{_T(""),0,7},
+};
+
+static key_string ti83pkeystrings[56] = {
+	{_T("GRAPH"),6,4},	{_T("TRACE"),6,3},	{_T("ZOOM"),6,2},	{_T("WINDOW"),6,1},	{_T("Y="),6,0},	{_T("2ND"),6,5},	{_T("MODE"),6,6},	{_T("DEL"),6,7},
+	{_T("ON"),5,0},		{_T("STO"),5,1},	{_T("LN"),5,2},		{_T("LOG"),5,3},	{_T("x^2"),5,4},{_T("x^-1"),5,5},	{_T("MATH"),5,6},	{_T("ALPHA"),5,7},
+	{_T("0"),4,0},		{_T("1"),4,1},		{_T("4"),4,2},		{_T("7"),4,3},		{_T(","),4,4},	{_T("SIN"),4,5},	{_T("APPS"),4,6},	{_T("X,T,0,n"),4,7},
+	{_T("."),3,0},		{_T("2"),3,1},		{_T("5"),3,2},		{_T("8"),3,3},		{_T("("),3,4},	{_T("COS"),3,5},	{_T("PRGM"),3,6},	{_T("STAT"),3,7},
+	{_T("(-)"),2,0},	{_T("3"),2,1},		{_T("6"),2,2},		{_T("9"),2,3},		{_T(")"),2,4},	{_T("TAN"),2,5},	{_T("VARS"),2,6},	{_T(""),2,7},
+	{_T("ENTER"),1,0},	{_T("+"),1,1},		{_T("-"),1,2},		{_T("x"),1,3},		{_T("/"),1,4},	{_T("^"),1,5},		{_T("CLEAR"),1,6},	{_T(""),1,7},
+	{_T("DOWN"),0,0},	{_T("LEFT"),0,1},	{_T("RIGHT"),0,2},	{_T("UP"),0,3},		{_T(""),0,4},	{_T(""),0,5},		{_T(""),0,6},		{_T(""),0,7},
+};
+extern keyprog_t keygrps[256];
+extern keyprog_t defaultkeys[256];
 ACCEL hNewAccels[256];		// working copy
-HWND hListMenu;
-// all submenus of current category
-HWND hHotKey;
-HWND hListKeys; 			// shortcuts for currently selected command
+HWND hListMenu, hHotKey, hEmuKey, hListKeys, hAssignButton, hRemoveButton, hResetButton;
 HMENU hMenu;
 int m_nCommands; 			// total commands listed (all categories)
-int nStore, nUsed; 			// how many ACCELs allocated and how many used already
+int nAccelStore, nAccelUsed;		// how many ACCELs allocated and how many used already
+int nEmuStore, nEmuUsed; 			// how many ACCELs allocated and how many used already
 TCHAR *m_sCtrl, *m_sAlt, *m_sShift;
 int m_nInitialLen;
 DWORD m_dwCheckSum; 		// trivia for initial table
 static int cur_sel;
-bool accelerators = true;
+BOOL accelerators = TRUE;	//true if were editing the accels
+TCHAR menu_text_buf[256];
+key_string **emu_strings;
 INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+	static keyprog_t backupkeys[256];
 	switch(Message) {
 		case WM_INITDIALOG: {
-			int i;			
+			memcpy(backupkeys, keygrps, 256 *sizeof(keyprog_t));
+			int i;
 			HWND hComboBox = GetDlgItem(hwnd, IDC_COMBO_MENU);
-			hMenu = LoadMenu(g_hInst, (LPCTSTR)IDR_MAIN_MENU);
+			hMenu = LoadMenu(g_hInst, (LPCTSTR) IDR_MAIN_MENU);
 			hListMenu = GetDlgItem(hwnd, IDC_LIST_MENU);
 			hListKeys = GetDlgItem(hwnd, IDC_LIST_KEYS);
 			hHotKey = GetDlgItem(hwnd, IDC_HOTKEY);
+			hEmuKey = GetDlgItem(hwnd, IDC_EDT_KEY);
+			hAssignButton = GetDlgItem(hwnd, IDC_ASSIGN_ACCEL);
+			hRemoveButton = GetDlgItem(hwnd, IDC_REMOVE_ACCEL);
+			hResetButton = GetDlgItem(hwnd, IDC_RESET_ACCEL);
 			int numEntries = CopyAcceleratorTable(haccelmain, NULL, 0);
-			nUsed = CopyAcceleratorTable(haccelmain, hNewAccels, numEntries);
-			nStore = 256;
+			nAccelUsed = CopyAcceleratorTable(haccelmain, hNewAccels, numEntries);
+			nEmuUsed = GetNumKeyEntries();
+			nAccelStore = 256;
+			nEmuStore = 256;
 			int count = GetMenuItemCount(hMenu);
 			for (i = 0; i < count; i++) {
 				TCHAR *string = (TCHAR *) GetFriendlyMenuText(hMenu, i, 0);
 				ComboBox_AddString(hComboBox, string);
-				free(string);
 			}
 			ComboBox_AddString(hComboBox, _T("Emulator"));
 			ComboBox_SetCurSel(hComboBox, 0);
 			SendMessage(hwnd, WM_COMMAND, CBN_SELCHANGE << 16, 0);
+			SetWindowSubclass(hEmuKey, EmuKeyHandleProc, 0, 0);
 			return TRUE;
 		}
 		case WM_COMMAND: {
 			switch(HIWORD(wParam)) {
 				case EN_CHANGE: {
-					BOOL enable = (BOOL) SendMessage(hHotKey, HKM_GETHOTKEY, 0 , 0);
-					EnableWindow(GetDlgItem(hwnd, IDC_ASSIGN_ACCEL), enable);
+					BOOL enable;
+					if (hEmuKey == ((HWND) lParam)) {
+						enable = _tcslen(keyPressBuf) > 0;
+						Edit_SetText(hEmuKey, keyPressBuf);
+					} else enable = (BOOL) SendMessage(hHotKey, HKM_GETHOTKEY, 0 , 0);
+					EnableWindow(hAssignButton, enable);
 					break;
 				}
 				case CBN_SELCHANGE: {
-					HWND hSender = (HWND)lParam;
+					HWND hSender = (HWND) lParam;
 					if (hSender == hListKeys) {
 						int sel = ListBox_GetCurSel(hListKeys);
-						EnableWindow(GetDlgItem(hwnd, IDC_REMOVE_ACCEL), sel >= 0);
+						EnableWindow(hRemoveButton, sel >= 0);
 					} else {
 						ChangeMenuCommands(hSender);
 					}
 					break;
 				}
 				case BN_CLICKED: {
-					HWND hSender = (HWND)lParam;
-					if (hSender == GetDlgItem(hwnd, IDC_ASSIGN_ACCEL)) {
-						int i;
-						WORD wVirtualKeyCode, wModifiers;
-						DWORD key = (DWORD) SendMessage(hHotKey, HKM_GETHOTKEY, 0, 0);
-						wVirtualKeyCode = LOBYTE(LOWORD(key));
-						wModifiers = HIBYTE(LOWORD(key));
-						int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED);
-						if(wVirtualKeyCode && active >= 0) {
-							// i don't really understand that: is this ALWAYS a virt key? Looks like it!
-							BYTE fVirt = (wModifiers & (HOTKEYF_SHIFT| HOTKEYF_CONTROL| HOTKEYF_ALT)) << 2;
-							fVirt |= FVIRTKEY | FNOINVERT;							// various checks: valid range, not already assigned et cetera
-							LVITEM lvi;
-							lvi.iItem = active;
-							lvi.mask = LVIF_PARAM;
-							ListView_GetItem(hListMenu, &lvi);
-							int newCmd = (int) lvi.lParam;
-							for (i=0; i < nUsed; i++)
-								if(hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == wVirtualKeyCode)
-									break;
-							if (i < nUsed) {								// cheeky: could this be the same item being assigned a double key?
-								if (newCmd == hNewAccels[i].cmd)
-									return 0; // no actions required
-								// ask for shortcut overwrite confirmation
-								if(MessageBox(hwnd, _T("This key combination is already in use.\nErase the old command assignment?"),
-									_T("Overwrite?"), MB_ICONQUESTION | MB_YESNO) == IDNO)
-									return 0;
-								hNewAccels[i].cmd = newCmd;
-							} else if(nUsed < nStore) { // i'm sure capacity will never be reached
-								hNewAccels[nUsed].fVirt = fVirt;
-								hNewAccels[nUsed].key = wVirtualKeyCode;
-								hNewAccels[nUsed].cmd = newCmd;
-								nUsed++;
-							}
-							ChangeCommand(hwnd); // reflect changes
-							// this key can only be clicked, and if it is default & disabled, the key navigation gets screwy
-							// so make something else default item
-							//SendMessage(DM_SETDEFID, IDOK);
-							SetFocus(hHotKey);
-						}
-					} else if (hSender == GetDlgItem(hwnd, IDC_REMOVE_ACCEL)) {
-						int idx = ListBox_GetCurSel(hListKeys);
-						LRESULT lr = ListBox_GetItemData(hListKeys, idx);
-						if(lr != LB_ERR) {
-							int i;
-							BYTE fVirt = (BYTE)LOWORD(lr);
-							WORD key = HIWORD(lr);
-							for(i = 0; i < nUsed; i++)
-								if(hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == key) {
-									ListBox_DeleteString(hListKeys, idx);
-									// pack working accelerator table too
-									int last = nUsed-1;
-									if(i < last)
-										hNewAccels[i] = hNewAccels[last];
-									nUsed--;
-									EnableWindow(GetDlgItem(hwnd, IDC_REMOVE_ACCEL), FALSE);
-									break;
-								}
-						}
-					} else if (hSender == GetDlgItem(hwnd, IDC_RESET_ACCEL)) {
+					HWND hSender = (HWND) lParam;
+					if (hSender == hAssignButton) {
+						if (accelerators)
+							AssignAccel(hwnd);
+						else
+							AssignEmuKey(hwnd);
+					} else if (hSender == hRemoveButton) {
+						if (accelerators)
+							RemoveAccel();
+						else
+							RemoveEmuKey();
+					} else if (hSender == hResetButton) {
 						//reload whatever is packed in with us
 						HACCEL hAccelNew = LoadAccelerators(g_hInst, _T("Z80Accel"));
 						int numEntries = CopyAcceleratorTable(hAccelNew, NULL, 0);
-						nUsed = CopyAcceleratorTable(hAccelNew, hNewAccels, numEntries);
-						//need to clean up :D
+						nAccelUsed = CopyAcceleratorTable(hAccelNew, hNewAccels, numEntries);
 						DestroyAcceleratorTable(hAccelNew);
+						//reload normal emu keys
+						memcpy(keygrps, defaultkeys, sizeof(keyprog_t) * 256);
 						ChangeCommand(hwnd);
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
@@ -947,13 +944,16 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		}
 		case WM_NOTIFY: {
 			switch(((LPNMHDR)lParam)->code) {
+				case PSN_RESET:
+					memcpy(keygrps, backupkeys, sizeof(keyprog_t) * 256);
+					break;
 				case LVN_ITEMCHANGED: {
 					ChangeCommand(hwnd);
 					break;
 				}
 				case PSN_APPLY: {
 					DestroyAcceleratorTable(haccelmain);
-					haccelmain = CreateAcceleratorTable(hNewAccels, nUsed);
+					haccelmain = CreateAcceleratorTable(hNewAccels, nAccelUsed);
 					return TRUE;
 				}
 				case PSN_KILLACTIVE:
@@ -965,24 +965,159 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
+int GetNumKeyEntries() {
+	int num_entries = 0;
+	for (int i = 0; i < 256 && keygrps[i].vk != -1; i++) {
+		if (keygrps[i].vk != 0)
+			num_entries++;
+	}
+	return num_entries;
+}
+
+void AssignEmuKey(HWND hwnd) {
+	int i;
+	DWORD key = editKeyPressed;
+	int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED);
+	if(active >= 0) {
+		LVITEM lvi;
+		lvi.iItem = active;
+		lvi.mask = LVIF_PARAM;
+		ListView_GetItem(hListMenu, &lvi);
+		int newCmd = (int) lvi.lParam;
+		for (i = 0; i < nEmuUsed; i++)
+			if(keygrps[i].vk == key)
+				break;
+		if (i < nEmuUsed) {								// cheeky: could this be the same item being assigned a double key?
+			if (LOWORD(newCmd) == keygrps[i].bit && HIWORD(newCmd) == keygrps[i].group && keygrps[i].vk == key)
+				return; // no actions required
+			// ask for shortcut overwrite confirmation
+			if(MessageBox(hwnd, _T("This key is already in use.\nErase the old command assignment?"),
+				_T("Overwrite?"), MB_ICONQUESTION | MB_YESNO) == IDNO)
+				return;
+			keygrps[i].bit = LOWORD(newCmd);
+			keygrps[i].group = HIWORD(newCmd);
+		} else if(nEmuUsed < nEmuStore) { // i'm sure capacity will never be reached
+			keygrps[nEmuUsed].vk = key;
+			keygrps[nEmuUsed].bit = LOWORD(newCmd);
+			keygrps[nEmuUsed].group = HIWORD(newCmd);
+			nEmuUsed++;
+			keygrps[nEmuUsed].vk = -1;
+		}
+		ChangeCommand(hwnd); // reflect changes
+		// this key can only be clicked, and if it is default & disabled, the key navigation gets screwy
+		// so make something else default item
+		SetFocus(hHotKey);
+	}
+}
+
+void RemoveEmuKey() {
+	int idx = ListBox_GetCurSel(hListKeys);
+	LRESULT lr = ListBox_GetItemData(hListKeys, idx);
+	if (lr != LB_ERR) {
+		int i;
+		BYTE bit = (BYTE) LOWORD(lr);
+		BYTE group = (BYTE) HIWORD(lr);
+		TCHAR buf[64];
+		ListBox_GetText(hListKeys, idx, buf);
+		for(i = 0; i < nEmuUsed; i++)
+			if (keygrps[i].bit == bit && keygrps[i].group == group) {
+				TCHAR *name = NameFromVKey(keygrps[i].vk);
+				BOOL sameKey = strcmp(buf, name);
+				free(name);
+				if (sameKey)
+					continue;
+				ListBox_DeleteString(hListKeys, idx);
+				int last = --nEmuUsed;
+				if (i < last)
+					keygrps[i] = keygrps[last];
+				keygrps[last].vk = -1;
+				EnableWindow(hRemoveButton, FALSE);
+				break;
+			}
+	}
+}
+
+void AssignAccel(HWND hwnd) {
+	int i;
+	WORD wVirtualKeyCode, wModifiers;
+	DWORD key = (DWORD) SendMessage(hHotKey, HKM_GETHOTKEY, 0, 0);
+	wVirtualKeyCode = LOBYTE(LOWORD(key));
+	wModifiers = HIBYTE(LOWORD(key));
+	int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED);
+	if(wVirtualKeyCode && active >= 0) {
+		// i don't really understand that: is this ALWAYS a virt key? Looks like it!
+		BYTE fVirt = (wModifiers & (HOTKEYF_SHIFT | HOTKEYF_CONTROL | HOTKEYF_ALT)) << 2;
+		fVirt |= FVIRTKEY | FNOINVERT;							// various checks: valid range, not already assigned et cetera
+		LVITEM lvi;
+		lvi.iItem = active;
+		lvi.mask = LVIF_PARAM;
+		ListView_GetItem(hListMenu, &lvi);
+		int newCmd = (int) lvi.lParam;
+		for (i = 0; i < nAccelUsed; i++)
+			if(hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == wVirtualKeyCode)
+				break;
+		if (i < nAccelUsed) {								// cheeky: could this be the same item being assigned a double key?
+			if (newCmd == hNewAccels[i].cmd)
+				return; // no actions required
+			// ask for shortcut overwrite confirmation
+			if(MessageBox(hwnd, _T("This key combination is already in use.\nErase the old command assignment?"),
+				_T("Overwrite?"), MB_ICONQUESTION | MB_YESNO) == IDNO)
+				return;
+			hNewAccels[i].cmd = newCmd;
+		} else if(nAccelUsed < nAccelStore) { // i'm sure capacity will never be reached
+			hNewAccels[nAccelUsed].fVirt = fVirt;
+			hNewAccels[nAccelUsed].key = wVirtualKeyCode;
+			hNewAccels[nAccelUsed].cmd = newCmd;
+			nAccelUsed++;
+		}
+		ChangeCommand(hwnd); // reflect changes
+		// this key can only be clicked, and if it is default & disabled, the key navigation gets screwy
+		// so make something else default item
+		SetFocus(hHotKey);
+	}
+}
+
+void RemoveAccel() {
+	int idx = ListBox_GetCurSel(hListKeys);
+	LRESULT lr = ListBox_GetItemData(hListKeys, idx);
+	if (lr != LB_ERR) {
+		int i;
+		BYTE fVirt = (BYTE) LOWORD(lr);
+		WORD key = HIWORD(lr);
+		for(i = 0; i < nAccelUsed; i++)
+			if (hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == key) {
+				ListBox_DeleteString(hListKeys, idx);
+				// pack working accelerator table too
+				int last = nAccelUsed-1;
+				if (i < last)
+					hNewAccels[i] = hNewAccels[last];
+				nAccelUsed--;
+				EnableWindow(hRemoveButton, FALSE);
+				break;
+			}
+	}
+}
+
 void ChangeMenuCommands(HWND hSender) {
 	TCHAR buffer[256];
 	LVITEM li;
 	li.mask = LVIF_TEXT;
 	li.iSubItem = 0;
 	li.cchTextMax = 64;
-	cur_sel = (int) SendMessage(hSender, CB_GETCURSEL, 0, 0);
+	cur_sel = ComboBox_GetCurSel(hSender);
 	HMENU hSubMenu = GetSubMenu(hMenu, cur_sel);
 	ListView_DeleteAllItems(hListMenu);
 	memset(buffer, 0, ARRAYSIZE(buffer));
 	if (hSubMenu == NULL) {
 		//assume that if we cant find the menu, then its the emulator keys
-		AddNormalKeys((TCHAR *) &buffer);
+		AddNormalKeys((TCHAR *) &buffer, (lpCalc->cpu.pio.model == TI_86 || lpCalc->cpu.pio.model == TI_85) ? ti86keystrings : ti83pkeystrings);
 		accelerators = false;
 	} else {
 		RecurseAddItems(hSubMenu, (TCHAR *) &buffer);
 		accelerators = true;
 	}
+	ShowWindow(hHotKey, accelerators);
+	ShowWindow(hEmuKey, !accelerators);
 }
 
 TCHAR* NameFromVKey(UINT nVK) {
@@ -998,6 +1133,7 @@ TCHAR* NameFromVKey(UINT nVK) {
 		case VK_RIGHT:
 		case VK_UP:
 		case VK_DOWN:
+		case VK_RCONTROL:
 			nScanCode |= 0x100; // Add extended bit	
 	}
 	// GetKeyNameText() expects the scan code to be on the same format as WM_KEYDOWN
@@ -1025,52 +1161,51 @@ void ChangeCommand(HWND hwnd) {		// new command selected
 		lvi.iItem = active;
 		ListView_GetItem(hListMenu, &lvi);
 		u_int cmd = (u_int) lvi.lParam;		// add all accelerators registered for this command
-		for(i = 0; i < nUsed; i++) {
-			if(hNewAccels[i].cmd == cmd) {
-				name = (TCHAR *) NameFromAccel(hNewAccels[i]);
-				idx = ListBox_AddString(hListKeys, name);
-				free(name);
-				lvi.lParam = MAKELPARAM(hNewAccels[i].fVirt, hNewAccels[i].key);
-				ListView_SetItem(hListKeys, &lvi);
-				ListBox_SetItemData(hListKeys, idx, MAKELPARAM(hNewAccels[i].fVirt, hNewAccels[i].key));
+		if (!accelerators) {
+			for(i = 0; i < ARRAYSIZE(keygrps); i++) {
+				if (keygrps[i].bit == LOWORD(cmd) && keygrps[i].group == HIWORD(cmd)) {
+					TCHAR *name = NameFromVKey(keygrps[i].vk);
+					idx = ListBox_AddString(hListKeys, name);
+					free(name);
+					lvi.lParam = cmd;
+					ListView_SetItem(hListKeys, &lvi);
+					ListBox_SetItemData(hListKeys, idx, cmd);
+				}
 			}
+		} else {
+			for(i = 0; i < nAccelUsed; i++) {
+				if(hNewAccels[i].cmd == cmd) {
+					name = (TCHAR *) NameFromAccel(hNewAccels[i]);
+					idx = ListBox_AddString(hListKeys, name);
+					free(name);
+					lvi.lParam = MAKELPARAM(hNewAccels[i].fVirt, hNewAccels[i].key);
+					ListView_SetItem(hListKeys, &lvi);
+					ListBox_SetItemData(hListKeys, idx, MAKELPARAM(hNewAccels[i].fVirt, hNewAccels[i].key));
+				}
+			}
+			EnableWindow(hAssignButton, FALSE);
 		}
 		ListBox_SetCurSel(hListKeys, LB_ERR);
 	}
 	SendMessage(hHotKey, HKM_SETHOTKEY, 0, 0);
-	EnableWindow(GetDlgItem(hwnd, IDC_ASSIGN_ACCEL), FALSE);
-	EnableWindow(GetDlgItem(hwnd, IDC_REMOVE_ACCEL), FALSE);
+	EnableWindow(hRemoveButton, FALSE);
 }
 
 TCHAR* NameFromAccel(ACCEL key) {
 	TCHAR *name = (TCHAR *) malloc(80);
 	memset(name, 0, 80);
 	if(key.fVirt & FCONTROL)
-#ifdef WINVER
-		StringCbCat(name, _tcslen(name), _T("Ctrl + "));
-#else
-		strcat(name, "Ctrl + ");
-#endif
+		StringCbCat(name, 80, _T("Ctrl"));
 	if(key.fVirt & FALT)
-#ifdef WINVER
-		StringCbCat(name, _tcslen(name), _T("Alt + "));
-#else
-		strcat(name, "Alt + ");
-#endif
+		StringCbCat(name, 80, _T("Alt"));
 	if(key.fVirt & FSHIFT)
-#ifdef WINVER
-		StringCbCat(name, _tcslen(name), _T("Shift + "));
-#else
-		strcat(name, "Shift + ");
-#endif
+		StringCbCat(name, 80, _T("Shift"));
 	// FNOINVERT is useless, backward compatibility
 	if(key.fVirt & FVIRTKEY) {
+		if (key.fVirt & (FSHIFT | FALT | FCONTROL))
+			StringCbCat(name, 80, _T(" + "));
 		TCHAR *temp = (TCHAR *) NameFromVKey(key.key);
-#ifdef WINVER
-		StringCbCat(name, _tcslen(name), temp);
-#else
-		strcat(name, temp);
-#endif
+		StringCbCat(name, 80, temp);
 		free(temp);
 	} else {
 		// key field is an ASCII key code. (i never saw one of these)
@@ -1086,11 +1221,19 @@ TCHAR* NameFromAccel(ACCEL key) {
 	return name;
 }
 
-void AddNormalKeys(TCHAR *base) {
+void AddNormalKeys(TCHAR *base, key_string keystrings[KEY_STRING_SIZE]) {
 	LVITEM li; // lparam is command ID
 	li.mask = LVIF_TEXT | LVIF_PARAM;
 	li.iSubItem = 0;	// browse this menu checking for submenus
-	//int nItems = ARRAYSIZE(keygrps);
+	int i;
+	for (i = 0; i < KEY_STRING_SIZE; i++) {
+		if (strcmp(keystrings[i].text, _T(""))) {
+			li.pszText = (LPTSTR)(LPCTSTR) keystrings[i].text;
+			li.iItem = ListView_GetItemCount(hListMenu);
+			li.lParam = MAKELPARAM(keystrings[i].bit, keystrings[i].group);
+			ListView_InsertItem(hListMenu, &li);
+		}
+	}
 }
 
 void RecurseAddItems(HMENU hMenu, TCHAR *base) {
@@ -1104,27 +1247,15 @@ void RecurseAddItems(HMENU hMenu, TCHAR *base) {
 	mi.fMask = MIIM_ID | MIIM_SUBMENU;
 	TCHAR *name, temp[64];
 	for(i = 0; i < nItems; i++)	{
-		//temp = (char*)malloc(64);
 		GetMenuItemInfo(hMenu, i, TRUE, &mi); 		// by position
 		if(!mi.wID) 								// separators excluded
 			continue;
 		name = (TCHAR *) GetFriendlyMenuText(hMenu, i, 0);
-#ifdef WINVER
 		StringCbCopy(temp, sizeof(temp), base);
 		StringCbCat(temp, sizeof(temp), name);
-#else
-		strcpy(temp, base);
-		strcat(temp, name);
-#endif
-		free(name);
 		if(mi.hSubMenu) {
-#ifdef WINVER
 			StringCbCat(temp, sizeof(temp), _T(" > "));
-#else
-			strcat(temp, " > ");
-#endif
 			RecurseAddItems(mi.hSubMenu, temp);
-			//free(temp);
 		} else {
 			if(!IsValidCmdRange(mi.wID))
 				continue;
@@ -1132,7 +1263,6 @@ void RecurseAddItems(HMENU hMenu, TCHAR *base) {
 			li.iItem = ListView_GetItemCount(hListMenu);
 			li.lParam = mi.wID;			// is this mixed icon/nie mode going to make listview funny?
 			ListView_InsertItem(hListMenu, &li);
-			//free(temp);
 		}
 	}
 }
@@ -1141,11 +1271,11 @@ BOOL IsValidCmdRange(WORD cmdid) {	// return FALSE to exclude certain commands f
 	return TRUE;
 }
 
-TCHAR * GetFriendlyMenuText(HMENU hMenu, int nItem, UINT uFlag) {
+TCHAR* GetFriendlyMenuText(HMENU hMenu, int nItem, UINT uFlag) {
 	TCHAR buf[256];
 	uFlag = MF_BYPOSITION;
 	GetMenuString(hMenu, nItem, buf, ARRAYSIZE(buf), uFlag);	// strip ampersands and tab characters
-	TCHAR *str = (TCHAR *) malloc(_tcslen(buf) + 1);
+	TCHAR *str = menu_text_buf;
 	TCHAR *start = str;
 	int i = 0;
 	while(1) {

@@ -50,7 +50,7 @@ namespace Revsoft.Wabbitcode
 				toolBarManager.AddControl(mainToolBar);
 			if (Settings.Default.debugToolbar)
 				toolBarManager.AddControl(debugToolStrip);
-			AssemblerService.ErrorsInFiles = new List<Errors>();
+            AssemblerService.InitAssembler();
 
 			DockingService.InitDocking(dockPanel);
 			DockingService.InitPanels();

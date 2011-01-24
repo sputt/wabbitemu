@@ -869,7 +869,7 @@ void writeboot(FILE* infile, memory_context_t *mem_c, int page) {
 	if (!infile) return;
 	if (page == -1)
 		page += mem_c->flash_pages;			//last page is boot page
-	unsigned char (*flash)[16384] = (uint8_t(*)[16384]) mem_c->flash;
+	unsigned char (*flash)[PAGE_SIZE] = (uint8_t(*)[PAGE_SIZE]) mem_c->flash;
 	while(1) {
 		if (!ReadIntelHex(infile, &ihex)) {
 			return;

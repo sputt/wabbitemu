@@ -22,7 +22,7 @@ STDMETHODIMP CLabelServer::Find(VARIANT varCriteria, ILabel **ppLabel)
 	if (V_VT(&varCriteria) == VT_BSTR)
 	{
 #ifdef _UNICODE
-		label_struct *lab = lookup_label(V_BSTR(&varCriteria));
+		label_struct *lab = lookup_label(&calcs[0], V_BSTR(&varCriteria));
 #else
 		TCHAR szLabelName[256];
 		WideCharToMultiByte(CP_ACP, 0, V_BSTR(&varCriteria), -1, szLabelName, sizeof(szLabelName), NULL, NULL);

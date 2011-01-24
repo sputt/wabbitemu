@@ -177,7 +177,7 @@ STDMETHODIMP CWabbitemu::Write(WORD Address, VARIANT varValue)
 STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 {
 #ifdef _UNICODE
-	NoThreadSend(bstrFileName, SEND_CUR, NULL);
+	SendFileToCalc(m_lpCalc, bstrFileName, FALSE);
 #else
 	char szFileName[MAX_PATH];
 	WideCharToMultiByte(CP_ACP, 0, bstrFileName, -1, szFileName, sizeof(szFileName), NULL, NULL);

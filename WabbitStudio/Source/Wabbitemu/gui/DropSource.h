@@ -16,7 +16,8 @@ public:
 	CDropSource();
 	~CDropSource();
 
+	IDataObject *m_pDataobject;
+
 private:
 	LONG m_lRefCount;
-	IDataObject *m_pDataobject;
 };
