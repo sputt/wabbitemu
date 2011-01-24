@@ -28,6 +28,7 @@
 #include "guidebug.h"
 #include "guifaceplate.h"
 #include "guiglow.h"
+#include "guikeylist.h"
 #include "guilcd.h"
 #include "guiopenfile.h"
 #include "guioptions.h"
@@ -953,6 +954,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     return (int) Msg.wParam;
 }
 
+static HWND hListDialog;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	//static HDC hdcKeymap;
 	static POINT ctxtPt;
@@ -1169,6 +1171,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case IDM_CALC_VARIABLES:
 					CreateVarTreeList();
+					break;
+				case IDM_CALC_KEYSPRESSED:
+					if (IsWindow(hListDialog)) {
+						SwitchToThisWindow(hListDialog, TRUE);
+					} else {
+						hListDialog = (HWND) CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_KEYS_LIST), hwnd, (DLGPROC) KeysListProc);
+						ShowWindow(hListDialog, SW_SHOW);
+					}
 					break;
 				case IDM_CALC_OPTIONS:
 					DoPropertySheet(hwnd);
@@ -1698,6 +1708,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
 	return 0;
+}
+
+extern key_string ti83pkeystrings[KEY_STRING_SIZE];
+extern key_string ti86keystrings[KEY_STRING_SIZE];
+void LogKeypress(int group, int bit, UINT vk, BOOL keyDown, int model) {
+	if (hListDialog) {
+		int i;
+		TCHAR buf[256];
+		key_string *keystrings = model == TI_85 || model == TI_86 ? ti86keystrings : ti83pkeystrings;
+		if (keyDown)
+			StringCbCopy(buf, sizeof(buf), _T("Key down: "));
+		else
+			StringCbCopy(buf, sizeof(buf), _T("Key up: "));
+		for (i = 0; i < KEY_STRING_SIZE; i++) {
+			if (keystrings[i].group == group && keystrings[i].bit == bit)
+				break;
+		}
+		StringCbCat(buf, sizeof(buf),keystrings[i].text);
+		StringCbCat(buf, sizeof(buf), _T(" ("));
+		TCHAR *name = NameFromVKey(vk);
+		StringCbCat(buf, sizeof(buf), name);
+		StringCbCat(buf, sizeof(buf), _T(")"));
+		free(name);
+		SendMessage(hListDialog, WM_USER, ADD_LISTBOX_ITEM, (LPARAM) &buf);
+	}
 }
 
 INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
