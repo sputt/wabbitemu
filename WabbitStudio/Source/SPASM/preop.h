@@ -3,7 +3,7 @@
 
 #include "storage.h"
 char *handle_preop (char *ptr);
-char *parse_arg_defs (char *ptr, define_t *define);
+char *parse_arg_defs (const char *ptr, define_t *define);
 
 #endif
 

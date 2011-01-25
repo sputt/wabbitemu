@@ -153,6 +153,7 @@ void run_first_pass (char *ptr) {
  */
 
 char *run_first_pass_line (char *ptr) {
+	SetLastSPASMError(SPASM_ERR_SUCCESS);
 	do {
 		if (*ptr == '\\')
 			ptr++;
@@ -396,39 +397,25 @@ char *handle_opcode_or_macro (char *ptr) {
 				full_macro[0] = ' ';
 				strcpy(&full_macro[1], define->contents);
 
-				int macro_line_num = define->line_num;
-				while (curr_line != NULL && *curr_line && !error_occurred) {
+				int old_line_num = line_num;
+				line_num = define->line_num;
 
-					SetLastSPASMError(SPASM_ERR_SUCCESS);
-
-					//char *full_line = curr_line;
-					bool old_suppress_errors = suppress_errors;
-					suppress_errors = true;
+				int session = StartSPASMErrorSession();
+				while (curr_line != NULL && *curr_line && !error_occurred)
+				{
 					char *next_line = run_first_pass_line(curr_line);
-					suppress_errors = old_suppress_errors;
-
-					if (GetLastSPASMError() != SPASM_ERR_SUCCESS)
-					{
-						suppress_errors = false;
-
-						show_error("Error during invocation of macro '%s'", define->name);
-						char *old_input_file = curr_input_file;
-						curr_input_file = define->input_file;
-
-						int old_line_num = line_num;
-						line_num = macro_line_num;
-
-						run_first_pass_line(curr_line);
-
-						suppress_errors = old_suppress_errors;
-						line_num = old_line_num;
-						curr_input_file = old_input_file;
-					}
-
 					curr_line = skip_to_next_line(next_line);
-					macro_line_num++;
+					line_num++;
 				}
-				
+				line_num = old_line_num;
+
+				if (GetSPASMErrorSessionErrorCount(session) > 0)
+				{
+					show_error("Error during invocation of macro '%s'", define->name);
+					ReplaySPASMErrorSession(session);
+				}
+				EndSPASMErrorSession(session);
+
 				free(full_macro);
 			}
 			in_macro--;

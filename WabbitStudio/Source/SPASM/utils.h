@@ -25,6 +25,7 @@ bool read_expr_impl(__inout const char ** const ptr, char word[256], const char 
 char *extract_arg_string(const char ** const ptr, arg_context_t *context);
 char *parse_args (const char *ptr, define_t *define, list_t **arg_local_labels);
 bool line_has_word (char *ptr, const char *word, int word_len);
+char *escape_string(const char *input);
 char *reduce_string (char* input);
 char *fix_filename (char *filename);
 bool is_abs_path(const char *filename);

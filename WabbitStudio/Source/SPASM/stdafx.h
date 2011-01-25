@@ -22,6 +22,7 @@
 
 #include <tchar.h>
 #include <strsafe.h>
+#include <assert.h>
 
 #ifdef USE_GMP
 #include <gmp.h>

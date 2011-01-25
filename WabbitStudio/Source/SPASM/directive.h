@@ -6,6 +6,7 @@ typedef enum _ES_TYPE {
 	ES_WORD,
 	ES_ECHO,
 	ES_FCREATE,
+	ES_NONE,
 } ES_TYPE;
 
 char *handle_directive (char *ptr);

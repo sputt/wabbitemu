@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "preop.h"
 #include "spasm.h"
 #include "utils.h"
 #include "storage.h"
@@ -79,7 +80,6 @@ typedef enum {
 static const char operators[OP_LAST][4] = {"=", "<", ">", "!=", ">=", "<="};
 
 char *do_if (char *ptr, bool condition);
-char *parse_arg_defs (char *ptr, define_t *macro);
 char *handle_preop_define (const char *ptr);
 static char *handle_preop_include (char *ptr);
 char *handle_preop_import (char *ptr);
@@ -101,6 +101,8 @@ char *handle_preop (char *ptr) {
 	char *name_end, *name;
 	int preop;
 
+	SetLastSPASMError(SPASM_ERR_SUCCESS);
+
 	//first get the name
 	name_end = ptr;
 	while (isalpha (*name_end))
@@ -116,13 +118,17 @@ char *handle_preop (char *ptr) {
 		preop++;
 	}
 
-	free (name);
-
-	//if it doesn't match any, maybe it's a #defined preop
-	if (!preops[preop])
-		return handle_opcode_or_macro (ptr - 1);
-
 	ptr = skip_whitespace (name_end);
+
+	// Error if it doesn't match any
+	if (!preops[preop])
+	{
+		SetLastSPASMError(SPASM_ERR_UNKNOWN_PREOP, name);
+		free(name);
+		return ptr;
+	}
+
+	free (name);
 
 	//otherwise, decide what to do depending on what the preop is
 	switch (preop) {
@@ -227,7 +233,9 @@ char *handle_preop (char *ptr) {
 
 			//get the name
 			name_end = skip_to_name_end (ptr);
-			macro = add_define (strndup (ptr, name_end - ptr), NULL);
+			char *name = strndup(ptr, name_end - ptr);
+			
+			macro = add_define (name, NULL);
 
 			name_end = skip_whitespace (name_end);
 			if (*name_end == '(') {
@@ -238,13 +246,17 @@ char *handle_preop (char *ptr) {
 			} else
 				ptr = name_end;
 
+			ptr = skip_to_next_line(ptr);
+			line_num++;
+
+			macro->line_num++;
+			
 			//now find the end of the macro (at the end of the file or an #endmacro directive)
 			//ptr = skip_to_next_line (ptr);
-			if (!in_macro) line_num++;
 			macro_end = skip_until (ptr, 1, "#endmacro");
 
 			//...and copy everything up to the end into the contents
-			set_define (macro, ptr, macro_end - ptr, false);
+			set_define (macro, ptr, macro_end - ptr - strlen("#endmacro"), false);
 			ptr = macro_end;
 			break;
 		}
@@ -371,8 +383,7 @@ char *handle_preop_define (const char *ptr) {
 						}
 						else
 						{
-							char *define_buffer = (char *) malloc(strlen(define->contents) + 1);
-							strcpy(define_buffer, define->contents);
+							char *define_buffer = strdup(define->contents);
 							reduce_string(define_buffer);
 							eb_insert (buffer, -1, define_buffer, -1);
 							free(define_buffer);
@@ -700,7 +711,8 @@ char *full_path (const char *filename) {
  * in file
  */
 
-static char *handle_preop_include (char *ptr) {
+static char *handle_preop_include (char *ptr)
+{
 	char name[MAX_PATH], *file_path;
 	FILE *file;
 	char *qs, *alloc_path, *input_contents, *old_input_file, *old_line_start;
@@ -1056,16 +1068,16 @@ char *do_if (char *ptr, bool condition) {
  * to the end of the args
  */
 
-char *parse_arg_defs (char *ptr, define_t *define) {
-	char word[256];
+char *parse_arg_defs (const char *ptr, define_t *define) {
+	char *word;
 
 	define->num_args = 0;
-	while (read_expr (&ptr, word, ","))
+	arg_context_t context = ARG_CONTEXT_INITIALIZER;
+	context.fExpectingMore = false;
+	while ((word = extract_arg_string(&ptr, &context)) != NULL)
 	{
 		bool is_dup = false;
 		int i;
-
-		ptr++;
 		
 		for (i = 0; i < define->num_args && !is_dup; i++) {
 			if (case_sensitive) {
@@ -1082,11 +1094,12 @@ char *parse_arg_defs (char *ptr, define_t *define) {
 	}
 	
 	if (*ptr == ')') ptr++;
-	return ptr;
+	return (char *) ptr;
 }
 
 
-char *skip_until (char *ptr, int argc, ...) {
+char *skip_until (char *ptr, int argc, ...)
+{
 	int level = 0;
 	va_list argp;
 
@@ -1122,8 +1135,8 @@ char *skip_until (char *ptr, int argc, ...) {
 			line = next_code_line(line);
 		} while (line < line_end && !error_occurred);
 			
-		if (!in_macro) line_num++;
 		ptr = line_end;
+		line_num++;
 	}
 	
 	return ptr;

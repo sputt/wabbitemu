@@ -27,7 +27,7 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 	int value;
 
 	//if we're in code counter or stats mode, where we don't need actual expressions, then just skip this crap
-	if ((mode & MODE_CODE_COUNTER) || (mode & MODE_STATS))
+	if (mode & MODE_CODE_COUNTER)
 		return;
 
 	if (type == ARG_IX_IY_OFFSET) {
@@ -42,12 +42,10 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 		}
 	}
 
-	SetLastSPASMError(SPASM_ERR_SUCCESS);
-
-	//first try to parse it
-	suppress_errors = true;
-
-	if (!parse_num (expr, &value)) {
+	int session = StartSPASMErrorSession();
+	bool fResult = parse_num (expr, &value);
+	if ((fResult == false) && (IsSPASMErrorSessionFatal(session) == false))
+	{
 		expr_t *new_expr;
 
 		suppress_errors = false;
@@ -88,23 +86,26 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 			type = ARG_NUM_8;
 		write_arg (0, type, 0);
 
-	} else {
-		suppress_errors = false;
-
-		if (GetLastSPASMError() != SPASM_ERR_SUCCESS)
-		{
-			// Reparse the value to generate errors
-			parse_num (expr, &value);
-		}
+	}
+	else if (fResult == false)
+	{
+		ReplaySPASMErrorSession(session);
+	}
+	else
+	{
 		//write the value now
 		write_arg (value, type, or_value);
 	}
+
+	EndSPASMErrorSession(session);
 }
 
 
 /*
  * Adds an expression to be
  * echo'ed on the second pass
+ *
+ * Allocates a copy
  */
 
 void add_pass_two_output (char *expr, output_type type) {
@@ -202,9 +203,20 @@ void run_second_pass () {
 
 		switch (output_list->type) {
 			case OUTPUT_ECHO:
-				set_console_attributes (COLOR_GREEN);
-				parse_emit_string (output_list->expr, ES_ECHO, stdout);
-				break;
+				{
+					set_console_attributes (COLOR_GREEN);
+					
+					bool old_suppress_errors = suppress_errors;
+					suppress_errors = true;
+					parse_emit_string (output_list->expr, ES_ECHO, stdout);
+					suppress_errors = old_suppress_errors;
+
+					if (GetLastSPASMError() != SPASM_ERR_SUCCESS && suppress_errors != true)
+					{
+						parse_emit_string (output_list->expr, ES_ECHO, NULL);
+					}
+					break;
+				}
 			case OUTPUT_SHOW:
 			{
 				define_t *define;

@@ -43,5 +43,6 @@ typedef struct output {
 void add_pass_two_expr (char *expr, arg_type type, int or_value);
 void add_pass_two_output (char *expr, output_type type);
 void run_second_pass ();
+void write_arg (int value, arg_type type, int or_value);
 
 #endif

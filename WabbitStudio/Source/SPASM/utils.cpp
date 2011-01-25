@@ -361,6 +361,35 @@ char *extract_arg_string(const char ** const ptr, arg_context_t *context)
 	return context->arg;
 }
 
+char *escape_string(const char *input)
+{
+	expand_buf_t *escape_string = eb_init(strlen(input) + strlen(input) / 2);
+
+	eb_append(escape_string, "\"", 1);
+
+	for (int i = 0; i < strlen(input); i++)
+	{
+		switch (*input)
+		{
+		case '"':
+			{
+				eb_append(escape_string, "\\\"", -1);
+				break;
+			}
+		default:
+			{
+				eb_append(escape_string, &input[i], 1);
+				break;
+			}
+		}
+	}
+
+	eb_append(escape_string, "\"", 1);
+	char *result = eb_extract(escape_string);
+	eb_free(escape_string);
+	return result;
+}
+
 /*
  * Removes surrounding quotation marks (if necessary)
  * and reduces control characters
@@ -729,22 +758,20 @@ void show_error_prefix(const char *zcif, const int zln) {
 }
 
 void show_error(const char *text, ...) {
-	if (!suppress_errors) {
-		va_list args;
-		if (exit_code < EXIT_ERRORS) exit_code = EXIT_ERRORS;
+	va_list args;
+	if (exit_code < EXIT_ERRORS) exit_code = EXIT_ERRORS;
 
-		show_error_prefix(curr_input_file, line_num);
+	show_error_prefix(curr_input_file, line_num);
 
-		va_start(args, text);
-		
-		vprintf (text, args); 
-		putchar ('\n');
+	va_start(args, text);
+	
+	vprintf (text, args); 
+	putchar ('\n');
 
-		//char buffer[256];
-		//vsprintf(buffer, text, args);
-		//OutputDebugString(buffer);
-		//OutputDebugString(TEXT("\n"));
-	}
+	//char buffer[256];
+	//vsprintf(buffer, text, args);
+	//OutputDebugString(buffer);
+	//OutputDebugString(TEXT("\n"));
 }
 
 void show_fatal_error(const char *text, ...) {

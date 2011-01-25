@@ -263,8 +263,34 @@ char *handle_directive (char *ptr) {
 				char expr[256];
 
 				//otherwise, save it for the second pass
+				bool old_suppress_errors = suppress_errors;
+				suppress_errors = true;
 				read_expr (&ptr, expr, "");
-				add_pass_two_output (expr, OUTPUT_ECHO);
+
+				// If it craps out for some reason, save it for the next pass
+				SetLastSPASMError(SPASM_ERR_SUCCESS);
+				parse_emit_string (expr, ES_ECHO, NULL);
+
+				if (GetLastSPASMError() != SPASM_ERR_SUCCESS)
+				{
+					add_pass_two_output (expr, OUTPUT_ECHO);
+				}
+				else
+				{
+					expand_buf_t *echo = eb_init(256);
+					parse_emit_string (expr, ES_FCREATE, echo);
+
+					char *echo_string = eb_extract(echo);
+					eb_free(echo);
+
+					char *expanded_string = escape_string(echo_string);
+					free(echo_string);
+
+					add_pass_two_output (expanded_string, OUTPUT_ECHO);
+					free(expanded_string);
+				}
+
+				suppress_errors = old_suppress_errors;
 			}
 			break;
 		}
@@ -435,21 +461,29 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 	char *word = NULL;
 	int i;
 
+	bool old_suppress_errors = suppress_errors;
+
 	level++;
 
 	arg_context_t context = ARG_CONTEXT_INITIALIZER;
 	while ((word = extract_arg_string(&ptr, &context)) != NULL)
 	{
 		// handle strings
-		if (word[0] == '"') {
+		if (word[0] == '"')
+		{
 			char *next = next_expr (word, EXPR_DELIMS);
 			if (*next != '\0') 
 				goto echo_error;
 			
 			reduce_string (word);
-			if (type == ES_ECHO) {
-				fprintf ((FILE *) echo_target, word);
-			} else if (type == ES_FCREATE) {
+			if (type == ES_ECHO)
+			{
+				if (echo_target != NULL)
+				{
+					fprintf ((FILE *) echo_target, word);
+				}
+			}
+			else if (type == ES_FCREATE) {
 				eb_append((expand_buf_t *) echo_target, word, strlen(word));
 			} else {
 				int i;
@@ -464,67 +498,75 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 		} else {
 			int value;
 
-			//first try to parse it
-			suppress_errors = true;
-			
-			SetLastSPASMError(SPASM_ERR_SUCCESS);
-
-			if (parse_num (word, &value) || parser_forward_ref_err) {
+			int session = StartSPASMErrorSession();
+			bool fWasParsed = parse_num(word, &value);
+			if (fWasParsed == true)
+			{
 				switch (type) 
 				{
 					case ES_ECHO: 
 					{
-						if (parser_forward_ref_err == false)
+						if (echo_target != NULL)
+						{
 							fprintf ((FILE *) echo_target, "%d", value);
-						else 
-							goto echo_error;
+						}
 						break;
 					}
 #ifdef USE_BUILTIN_FCREATE
 					case ES_FCREATE:
 					{
 						char buffer[256];
-						if (parser_forward_ref_err == false)
-#ifdef WIN32
-							sprintf_s(buffer, "%d", value);
-#else
-							sprintf(buffer, "%d", value);
-#endif
-						else
-#ifdef WIN32
-							sprintf_s(buffer, "(error)");
-#else
-							sprintf(buffer, "(error)");
-#endif
-						eb_append((expand_buf_t *) echo_target, buffer, strlen(buffer));
+						sprintf_s(buffer, "%d", value);
+						eb_append((expand_buf_t *) echo_target, buffer, -1);
 						break;
 					}
 #endif
 					case ES_BYTE: 
 					{
-		                add_pass_two_expr (word, ARG_NUM_8, 0);
+						write_arg(value, ARG_NUM_8, 0);
 		                stats_datasize++;
 		                program_counter++;
 		                break;
 					}
 					case ES_WORD:
 					{
-		                add_pass_two_expr (word, ARG_NUM_16, 0);
+		                write_arg(value, ARG_NUM_16, 0);
 		                stats_datasize+=2;
 		                program_counter+=2;
 		                break;
 					}
 				}
-				
-				suppress_errors = false;
-			} else {
+			}
+			else if (IsSPASMErrorSessionFatal(session) == false)
+			{
+				switch (type) 
+				{
+				case ES_ECHO:
+					break;
+				case ES_FCREATE:
+					break;
+				case ES_BYTE: 
+					{
+						add_pass_two_expr(word, ARG_NUM_8, 0);
+		                stats_datasize++;
+		                program_counter++;
+		                break;
+					}
+				case ES_WORD:
+					{
+		                add_pass_two_expr(word, ARG_NUM_16, 0);
+		                stats_datasize+=2;
+		                program_counter+=2;
+		                break;
+					}
+				}
+			}
+			else
+			{
 				char name[256], *name_end = word;
 				char *next;
 				define_t *define;
 
-				suppress_errors = false;
-				SetLastSPASMError(SPASM_ERR_SUCCESS);
-				
 				//printf("error occured: %d, forward: %d, value: %d\n", error_occurred, parser_forward_ref_err, value);
 				read_expr (&name_end, name, "(");
 				//printf("Looking up %s\n", name);
@@ -550,8 +592,26 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 						return (char *) ptr;
 					
 					expr = parse_define (define);
-					if (expr) {
-						parse_emit_string (expr, type, echo_target);
+					if (expr != NULL)
+					{
+						arg_context_t nested_context = ARG_CONTEXT_INITIALIZER;
+
+						// Is it some kind of argument list?
+						const char *nested_expr = expr;
+						extract_arg_string(&nested_expr, &nested_context);
+
+						suppress_errors = old_suppress_errors;
+						if (extract_arg_string(&nested_expr, &nested_context) != NULL)
+						{
+							// if it is, plug it in to the emit string
+							parse_emit_string(expr, type, echo_target);
+						}
+						else
+						{
+							// otherwise, generate parse errors
+							//parse_num(word, &value);
+							parse_emit_string(expr, type, echo_target);
+						}
 						free (expr);
 					}
 					remove_arg_set (args);
@@ -559,23 +619,25 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 				else
 				{
 echo_error:
-					// Generate the errors
-					parse_num (word, &value);
-
+					ReplaySPASMErrorSession(session);
 					if (echo_target != NULL)
 					{
 						fprintf((FILE *) echo_target, "(error)");
 					}
 				}
 			}
-			
-			
+			EndSPASMErrorSession(session);
 		}
 	}
 
 	if (type == ES_ECHO && level == 1) {
 		if (echo_target == stdout) putchar ('\n');
-		else fclose ((FILE *) echo_target);
+		else {
+			if (echo_target != NULL)
+			{
+				fclose ((FILE *) echo_target);
+			}
+		}
 	}
 	
 	level--;

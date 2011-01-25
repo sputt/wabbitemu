@@ -22,6 +22,8 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_SIZE_MUST_BE_POSITIVE		0x108
 #define SPASM_ERR_FILENAME_EXPECTED			0x109
 #define SPASM_ERR_INVALID_OPERANDS			0x110
+#define SPASM_ERR_UNKNOWN_PREOP				0x111
+#define SPASM_ERR_UNKNOWN_DIRECTIVE			0x112
 
 #define SPASM_ERR_INVALID_DECIMAL_DIGIT		0x200
 #define SPASM_ERR_INVALID_HEX_DIGIT			0x201
@@ -48,6 +50,8 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_SIZE_MUST_BE_POSITIVE,	_T("The value '%s' is a size and must be positive")},
 	{SPASM_ERR_FILENAME_EXPECTED,		_T("Expecting a filename, none was provided")},
 	{SPASM_ERR_INVALID_OPERANDS,		_T("The opcode %s was given invalid operands")},
+	{SPASM_ERR_UNKNOWN_PREOP,			_T("Unknown preprocessor command '#%s'")},
+	{SPASM_ERR_UNKNOWN_DIRECTIVE,		_T("Unknown assembler directive '.%s'")},
 
 	{SPASM_ERR_INVALID_DECIMAL_DIGIT,	_T("Invalid digit '%c' in the decimal number '%s'")},
 	{SPASM_ERR_INVALID_HEX_DIGIT,		_T("Invalid digit '%c' in the hexadecimal number '%s'")},
@@ -59,3 +63,9 @@ SPASMERROR g_ErrorCodes[]
 
 void SetLastSPASMError(DWORD dwErrorCode, ...);
 DWORD GetLastSPASMError();
+int StartSPASMErrorSession(void);
+int GetSPASMErrorSessionErrorCount(int nSession);
+bool IsSPASMErrorSessionFatal(int nSession);
+void ReplaySPASMErrorSession(int nSession);
+void EndSPASMErrorSession(int nSession);
+void ClearSPASMErrorSessions(void);

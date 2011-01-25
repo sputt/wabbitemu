@@ -11,6 +11,7 @@
 #include "big.h"
 #endif
 #include "console.h"
+#include "errors.h"
 
 
 
@@ -109,6 +110,7 @@ int run_assembly() {
 
 	set_console_attributes (COLOR_WHITE);
 	printf ("Pass one... \n");
+	ClearSPASMErrorSessions();
 	run_first_pass ((char *) input_contents);
 
 	//free include dirs when done
