@@ -101,8 +101,6 @@ char *handle_preop (char *ptr) {
 	char *name_end, *name;
 	int preop;
 
-	SetLastSPASMError(SPASM_ERR_SUCCESS);
-
 	//first get the name
 	name_end = ptr;
 	while (isalpha (*name_end))

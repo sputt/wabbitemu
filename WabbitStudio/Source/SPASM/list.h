@@ -1,8 +1,6 @@
 #ifndef __LIST_H
 #define __LIST_H
 
-//#include <stdbool.h>
-
 typedef struct _list {
 	void *data;
 	struct _list *next;

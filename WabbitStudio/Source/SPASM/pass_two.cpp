@@ -205,16 +205,10 @@ void run_second_pass () {
 			case OUTPUT_ECHO:
 				{
 					set_console_attributes (COLOR_GREEN);
-					
-					bool old_suppress_errors = suppress_errors;
-					suppress_errors = true;
+					int session = StartSPASMErrorSession();
 					parse_emit_string (output_list->expr, ES_ECHO, stdout);
-					suppress_errors = old_suppress_errors;
-
-					if (GetLastSPASMError() != SPASM_ERR_SUCCESS && suppress_errors != true)
-					{
-						parse_emit_string (output_list->expr, ES_ECHO, NULL);
-					}
+					ReplaySPASMErrorSession(session);
+					EndSPASMErrorSession(session);
 					break;
 				}
 			case OUTPUT_SHOW:

@@ -62,10 +62,13 @@ SPASMERROR g_ErrorCodes[]
 ;
 
 void SetLastSPASMError(DWORD dwErrorCode, ...);
-DWORD GetLastSPASMError();
+//DWORD GetLastSPASMError();
 int StartSPASMErrorSession(void);
 int GetSPASMErrorSessionErrorCount(int nSession);
 bool IsSPASMErrorSessionFatal(int nSession);
 void ReplaySPASMErrorSession(int nSession);
 void EndSPASMErrorSession(int nSession);
 void ClearSPASMErrorSessions(void);
+#ifdef _TEST
+DWORD GetLastSPASMError();
+#endif

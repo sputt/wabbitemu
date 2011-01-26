@@ -153,7 +153,6 @@ void run_first_pass (char *ptr) {
  */
 
 char *run_first_pass_line (char *ptr) {
-	SetLastSPASMError(SPASM_ERR_SUCCESS);
 	do {
 		if (*ptr == '\\')
 			ptr++;
@@ -287,8 +286,6 @@ char *handle_opcode_or_macro (char *ptr) {
 		//try to match them to one of the opcode's sets of arguments
 		ptr = match_opcode_args (ptr, arg_ptrs, arg_end_ptrs, curr_opcode, &curr_instr);
 		free (name);
-		if (GetLastSPASMError() != SPASM_ERR_SUCCESS)
-			return ptr;
 
 		//if that worked, write data + args
 		write_instruction_data (curr_instr, arg_ptrs, arg_end_ptrs);
@@ -390,33 +387,40 @@ char *handle_opcode_or_macro (char *ptr) {
 				free(full_line);
 
 			} else {
-				//parse each line in the macro (prefix with space)
-				char *full_macro = (char *) malloc(strlen(define->contents) + 2);
-				char *curr_line = full_macro;
-
-				full_macro[0] = ' ';
-				strcpy(&full_macro[1], define->contents);
-
-				int old_line_num = line_num;
-				line_num = define->line_num;
-
-				int session = StartSPASMErrorSession();
-				while (curr_line != NULL && *curr_line && !error_occurred)
+				if (define->contents == NULL)
 				{
-					char *next_line = run_first_pass_line(curr_line);
-					curr_line = skip_to_next_line(next_line);
-					line_num++;
+					SetLastSPASMError(SPASM_ERR_ARG_USED_WITHOUT_VALUE, define->name);
 				}
-				line_num = old_line_num;
-
-				if (GetSPASMErrorSessionErrorCount(session) > 0)
+				else
 				{
-					show_error("Error during invocation of macro '%s'", define->name);
-					ReplaySPASMErrorSession(session);
-				}
-				EndSPASMErrorSession(session);
+					//parse each line in the macro (prefix with space)
+					char *full_macro = (char *) malloc(strlen(define->contents) + 2);
+					char *curr_line = full_macro;
 
-				free(full_macro);
+					full_macro[0] = ' ';
+					strcpy(&full_macro[1], define->contents);
+
+					int old_line_num = line_num;
+					line_num = define->line_num;
+
+					int session = StartSPASMErrorSession();
+					while (curr_line != NULL && *curr_line && !error_occurred)
+					{
+						char *next_line = run_first_pass_line(curr_line);
+						curr_line = skip_to_next_line(next_line);
+						line_num++;
+					}
+					line_num = old_line_num;
+
+					if (GetSPASMErrorSessionErrorCount(session) > 0)
+					{
+						show_error("Error during invocation of macro '%s'", define->name);
+						ReplaySPASMErrorSession(session);
+					}
+					EndSPASMErrorSession(session);
+
+					free(full_macro);
+				}
 			}
 			in_macro--;
 
@@ -448,8 +452,6 @@ char *handle_opcode_or_macro (char *ptr) {
 char *match_opcode_args (char *ptr, char **arg_ptrs, char **arg_end_ptrs, opcode *curr_opcode, instr **curr_instr) {
 	char *curr_arg_file;
 	int instr_num;
-
-	SetLastSPASMError(SPASM_ERR_SUCCESS);
 
 	for (instr_num = 0; instr_num < curr_opcode->num_instrs; instr_num++) {
 		//test each possible set of arguments for this opcode

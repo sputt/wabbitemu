@@ -30,12 +30,6 @@ bool parser_forward_ref_err;
 //current recursive depth in expression
 int parse_depth;
 
-#define SetLastSPASMParserError(dwErrorCode, ...) \
-	do { \
-		if ((dwErrorCode != SPASM_ERR_LABEL_NOT_FOUND) || (GetLastSPASMError() == SPASM_ERR_SUCCESS)) \
-			SetLastSPASMError(dwErrorCode, __VA_ARGS__); \
-	} while (0)
-
 /*
  * Parses an expression, sets
  * the result in value and
@@ -48,7 +42,6 @@ bool parse_num (const char *expr, int *value) {
 	int fake_value;
 	const char *result;
 
-	SetLastSPASMParserError(SPASM_ERR_SUCCESS);
 	if (value == NULL)
 		value = &fake_value;
 
@@ -133,12 +126,12 @@ static const char *parse_single_num (const char *expr, int *value) {
 
 			if (*(expr++) != '_')
 			{
-				SetLastSPASMParserError(SPASM_ERR_LOCAL_LABEL_SYNTAX);
+				SetLastSPASMError(SPASM_ERR_LOCAL_LABEL_SYNTAX);
 				return NULL;
 			}
 			else if (this_reusable >= get_num_reusables())
 			{
-				SetLastSPASMParserError(SPASM_ERR_LABEL_NOT_FOUND);
+				SetLastSPASMError(SPASM_ERR_LABEL_NOT_FOUND);
 				return NULL;
 			}
 			else
@@ -161,7 +154,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 	
 			if (*(expr++) != '_' || this_reusable < 0)
 			{
-				SetLastSPASMParserError(SPASM_ERR_LOCAL_LABEL_SYNTAX);
+				SetLastSPASMError(SPASM_ERR_LOCAL_LABEL_SYNTAX);
 				return NULL;
 			}
 	
@@ -251,7 +244,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 					}
 					else
 					{
-						SetLastSPASMParserError(SPASM_ERR_LABEL_NOT_FOUND);
+						SetLastSPASMError(SPASM_ERR_LABEL_NOT_FOUND);
 						return NULL;
 					}
 				} else 
@@ -293,7 +286,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 							*value = fgetc (temp_file);
 							fclose (temp_file);
 						} else {
-							SetLastSPASMParserError(SPASM_ERR_FILE_NOT_FOUND, filename);
+							SetLastSPASMError(SPASM_ERR_FILE_NOT_FOUND, filename);
 						}
 
 						if (*expr == ')') expr++;
@@ -310,62 +303,41 @@ static const char *parse_single_num (const char *expr, int *value) {
 						if (!expr)
 							return NULL;
 
-
-						bool fHasShownInvocation = false;
+						bool fHasError = false;
 						int old_line_num = line_num;
 						line_num = define->line_num;
-						bool old_suppress_errors = suppress_errors;
-						suppress_errors = true;
 
+						int session = StartSPASMErrorSession();
 						contents = parse_define (define);
 						if (contents == NULL)
 						{
-							SetLastSPASMParserError(SPASM_ERR_ARG_USED_WITHOUT_VALUE, define->name);
+							SetLastSPASMError(SPASM_ERR_ARG_USED_WITHOUT_VALUE, define->name);
 						}
-						if (GetLastSPASMError() == SPASM_ERR_SUCCESS)
+						else
 						{
 							parse_num_full(contents, value, 0);
-						}
-						free(contents);
-
-						if (GetLastSPASMError() != SPASM_ERR_SUCCESS && old_suppress_errors == false)
-						{
-							suppress_errors = false;
-
-							if (fHasShownInvocation == false)
-							{
-								int macro_line_num = line_num;
-								line_num = old_line_num;
-								show_error("Error during invocation of macro '%s'", define->name);
-								line_num = macro_line_num;
-
-								fHasShownInvocation = true;
-							}
-
-							contents = parse_define (define);
-							if (contents == NULL)
-							{
-								SetLastSPASMParserError(SPASM_ERR_ARG_USED_WITHOUT_VALUE, define->name);
-							}
-							if (GetLastSPASMError() == SPASM_ERR_SUCCESS)
-							{
-								parse_num_full(contents, value, 0);
-							}
 							free(contents);
 						}
 
-						suppress_errors = old_suppress_errors;
 						line_num = old_line_num;
 
+						if (GetSPASMErrorSessionErrorCount(session) > 0)
+						{
+							show_error("Error during invocation of macro '%s'", define->name);
+							ReplaySPASMErrorSession(session);
+							fHasError = true;
+						}
+						EndSPASMErrorSession(session);
+
 						remove_arg_set (args);
-						if (GetLastSPASMError() != SPASM_ERR_SUCCESS)
+						if (fHasError != true)
 						{
 							return NULL;
 						}
 					}
 					else
 					{
-						SetLastSPASMParserError(SPASM_ERR_LABEL_NOT_FOUND, name);
+						SetLastSPASMError(SPASM_ERR_LABEL_NOT_FOUND, name);
 						parser_forward_ref_err = true;
 						free (name);
 						return NULL;
@@ -389,7 +361,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 				}
 
 			} else {
-				SetLastSPASMParserError(SPASM_ERR_BAD_VALUE_PREFIX, *expr);
+				SetLastSPASMError(SPASM_ERR_BAD_VALUE_PREFIX, *expr);
 				return NULL;
 			}
 			break;
@@ -450,7 +422,7 @@ static const char *parse_num_full (const char *expr, int *value, int depth) {
 	expr = skip_whitespace (expr);
 	if (!(*expr))
 	{
-		SetLastSPASMParserError(SPASM_ERR_VALUE_EXPECTED);
+		SetLastSPASMError(SPASM_ERR_VALUE_EXPECTED);
 		return NULL;
 	}
 
@@ -606,7 +578,7 @@ static const char *parse_num_full (const char *expr, int *value, int depth) {
 			}
 
 		} else {
-			SetLastSPASMParserError(SPASM_ERR_OPERATOR_EXPECTED, *expr);
+			SetLastSPASMError(SPASM_ERR_OPERATOR_EXPECTED, *expr);
 			return NULL;
 		}
 
@@ -641,7 +613,7 @@ int conv_hex (const char* str, const char *end) {
 			strncpy(number, start, end - start);
 			number[end - start] = '\0';
 
-			SetLastSPASMParserError(SPASM_ERR_INVALID_HEX_DIGIT, *str, number);
+			SetLastSPASMError(SPASM_ERR_INVALID_HEX_DIGIT, *str, number);
 			return -1;
 		}
 		
@@ -671,7 +643,7 @@ static int conv_dec (const char* str, const char *end) {
 			strncpy(number, start, end - start);
 			number[end - start] = '\0';
 
-			SetLastSPASMParserError(SPASM_ERR_INVALID_DECIMAL_DIGIT, *str, number);
+			SetLastSPASMError(SPASM_ERR_INVALID_DECIMAL_DIGIT, *str, number);
 			return -1;
         }
         
@@ -699,7 +671,7 @@ static int conv_bin (const char* str, const char *end) {
 			strncpy(number, start, end - start);
 			number[end - start] = '\0';
 
-			SetLastSPASMParserError(SPASM_ERR_INVALID_BINARY_DIGIT, *str, number);
+			SetLastSPASMError(SPASM_ERR_INVALID_BINARY_DIGIT, *str, number);
 			return -1;
         }
         

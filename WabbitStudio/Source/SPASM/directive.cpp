@@ -261,19 +261,24 @@ char *handle_directive (char *ptr) {
 				ptr = parse_emit_string (ptr, ES_ECHO, echo_target);
 			} else {
 				char expr[256];
-
-				//otherwise, save it for the second pass
-				bool old_suppress_errors = suppress_errors;
-				suppress_errors = true;
 				read_expr (&ptr, expr, "");
 
 				// If it craps out for some reason, save it for the next pass
-				SetLastSPASMError(SPASM_ERR_SUCCESS);
+				int session = StartSPASMErrorSession();
 				parse_emit_string (expr, ES_ECHO, NULL);
 
-				if (GetLastSPASMError() != SPASM_ERR_SUCCESS)
+				if (IsSPASMErrorSessionFatal(session) == false)
 				{
 					add_pass_two_output (expr, OUTPUT_ECHO);
+				}
+				else if (GetSPASMErrorSessionErrorCount(session) > 0)
+				{
+					set_console_attributes(COLOR_GREEN);
+					int internal_session = StartSPASMErrorSession();
+					parse_emit_string (expr, ES_ECHO, stdout);
+					EndSPASMErrorSession(internal_session);
+
+					ReplaySPASMErrorSession(session);
 				}
 				else
 				{
@@ -289,8 +294,7 @@ char *handle_directive (char *ptr) {
 					add_pass_two_output (expanded_string, OUTPUT_ECHO);
 					free(expanded_string);
 				}
-
-				suppress_errors = old_suppress_errors;
+				EndSPASMErrorSession(session);
 			}
 			break;
 		}
@@ -620,9 +624,21 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 				{
 echo_error:
 					ReplaySPASMErrorSession(session);
-					if (echo_target != NULL)
+					switch (type)
 					{
-						fprintf((FILE *) echo_target, "(error)");
+					case ES_ECHO:
+						{
+							if (echo_target != NULL)
+							{
+								fprintf((FILE *) echo_target, "(error)");
+							}
+							break;
+						}
+					case ES_FCREATE:
+						{
+							eb_append((expand_buf_t *) echo_target, "(error)", -1);
+							break;
+						}
 					}
 				}
 			}
