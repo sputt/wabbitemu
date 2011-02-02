@@ -66,7 +66,7 @@ HRESULT CDataObject::LookupFormatEtc(FORMATETC *pFormatEtc, LPDATAENTRY *pDataEn
 			(m_pDataEntry[i].fmtetc.cfFormat == pFormatEtc->cfFormat) &&
 			(m_pDataEntry[i].fmtetc.dwAspect == pFormatEtc->dwAspect))
 		{
-			if (fAdd == TRUE || (m_pDataEntry[i].fmtetc.tymed & pFormatEtc->tymed) == pFormatEtc->tymed) {
+			if (fAdd == TRUE || (m_pDataEntry[i].fmtetc.tymed & pFormatEtc->tymed) != 0) {
 				if (pDataEntry != NULL)
 					*pDataEntry = &m_pDataEntry[i];
 				return S_OK;
