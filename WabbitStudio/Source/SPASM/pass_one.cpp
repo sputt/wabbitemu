@@ -235,13 +235,28 @@ char *run_first_pass_line_sec (char *ptr) {
 		ptr++;
 		read_expr (&ptr, value_str, "");
 
-		if (!parse_num (value_str, &value) && parser_forward_ref_err) {
-			show_error ("Equates can't have forward references");
-		} else {
+		if (parse_num (value_str, &value) == true)
+		{
 			if (last_label == NULL)
-				show_error("Equate is missing label");
+			{
+				SetLastSPASMError(SPASM_ERR_EQUATE_MISSING_LABEL);
+			}
 			else
+			{
 				last_label->value = value;
+			}
+		}
+		else
+		{
+			if (last_label == NULL)
+			{
+				show_error(_T("Error while evaluating equate expression"));
+			}
+			else
+			{
+				show_error(_T("Error while evaluating equate expression for '%s'"), last_label->name);
+			}
+			
 		}
 		return ptr;
 
@@ -359,7 +374,8 @@ char *handle_opcode_or_macro (char *ptr) {
 			ptr += 2;
 		} else
 #endif
-		if ((define = search_defines (name))) {
+		if ((define = search_defines (name)))
+		{
 			list_t *args = NULL;
 			char *args_end;
 
@@ -428,7 +444,7 @@ char *handle_opcode_or_macro (char *ptr) {
 			remove_arg_set(args);
 
 		} else {
-			show_error ("Can't recognize '%s' as an instruction or macro", name);
+			SetLastSPASMError(SPASM_ERR_UNKNOWN_OPCODE, name);
 			free (name);
 		}
 	}

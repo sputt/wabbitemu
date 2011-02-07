@@ -131,7 +131,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 			}
 			else if (this_reusable >= get_num_reusables())
 			{
-				SetLastSPASMError(SPASM_ERR_LABEL_NOT_FOUND);
+				SetLastSPASMError(SPASM_ERR_LOCAL_LABEL_FORWARD_REF);
 				return NULL;
 			}
 			else
@@ -244,7 +244,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 					}
 					else
 					{
-						SetLastSPASMError(SPASM_ERR_LABEL_NOT_FOUND);
+						SetLastSPASMError(SPASM_ERR_LOCAL_LABEL_FORWARD_REF);
 						return NULL;
 					}
 				} else 
@@ -330,7 +330,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 						EndSPASMErrorSession(session);
 
 						remove_arg_set (args);
-						if (fHasError != true)
+						if (fHasError == true)
 						{
 							return NULL;
 						}
@@ -414,8 +414,9 @@ static const char *parse_num_full (const char *expr, int *value, int depth) {
 	bool invert_lastnum, neg_lastnum;
 
 	parser_forward_ref_err = false;
-	if (++parse_depth > RECURSION_LIMIT) {
-		show_fatal_error ("Expression is too deep (only %d levels allowed)", RECURSION_LIMIT);
+	if (++parse_depth > RECURSION_LIMIT)
+	{
+		SetLastSPASMError(SPASM_ERR_EXCEEDED_RECURSION_LIMIT);
 		return NULL;
 	}
 
@@ -585,12 +586,8 @@ static const char *parse_num_full (const char *expr, int *value, int depth) {
 		//Skip any whitespace after the operator
 		expr = skip_whitespace (expr);
 		if (*expr == '\0') {
-			show_warning ("Stray operator '%c' at end", last_op);
-			if (depth > 0)
-				show_warning ("Missing %d parentheses at end of expression", depth);
-			*value = total;
-			parse_depth--;
-			return expr;
+			SetLastSPASMError(SPASM_ERR_VALUE_EXPECTED);
+			return NULL;
 		}
 	}
 }

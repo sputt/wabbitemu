@@ -604,7 +604,6 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 						const char *nested_expr = expr;
 						extract_arg_string(&nested_expr, &nested_context);
 
-						suppress_errors = old_suppress_errors;
 						if (extract_arg_string(&nested_expr, &nested_context) != NULL)
 						{
 							// if it is, plug it in to the emit string
@@ -612,9 +611,18 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 						}
 						else
 						{
-							// otherwise, generate parse errors
-							//parse_num(word, &value);
-							parse_emit_string(expr, type, echo_target);
+							if (IsErrorInSPASMErrorSession(session, SPASM_ERR_EXCEEDED_RECURSION_LIMIT) == false)
+							{
+								int expr_session = StartSPASMErrorSession();
+								parse_emit_string(expr, type, echo_target);
+								ReplaySPASMErrorSession(expr_session);
+								EndSPASMErrorSession(expr_session);
+								ReplaySPASMErrorSession(session);
+							}
+							else
+							{
+								ReplaySPASMErrorSession(session);
+							}
 						}
 						free (expr);
 					}

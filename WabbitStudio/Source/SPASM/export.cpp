@@ -399,7 +399,7 @@ int siggen(const unsigned char* hashbuf, unsigned char* sigbuf, int* outf) {
     big_mul(temp, temp, result);
     big_mod(temp, temp, p);
 #endif
-
+	
 /* ((r-s) * q^(p-2) mod p) * q + s */
 #ifdef USE_GMP
     mpz_mul(result, temp, q);

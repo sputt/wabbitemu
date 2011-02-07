@@ -25,5 +25,5 @@
 #include <assert.h>
 
 #ifdef USE_GMP
-#include <gmp.h>
+#include <gmp/gmp.h>
 #endif

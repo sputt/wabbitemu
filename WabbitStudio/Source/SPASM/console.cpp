@@ -28,7 +28,7 @@ void save_console_attributes () {
 bool set_console_attributes (unsigned short attr) {
 	if (!use_colors) return true;
 #ifdef WIN32
-    return (SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), (WORD)attr));
+    return (SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), (WORD)attr) ? true : false);
 #elif !defined(MACVER)
 	printf ("\x1b[1;%d;40m", attr);
     return true;

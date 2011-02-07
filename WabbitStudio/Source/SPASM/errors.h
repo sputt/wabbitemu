@@ -24,6 +24,9 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_INVALID_OPERANDS			0x110
 #define SPASM_ERR_UNKNOWN_PREOP				0x111
 #define SPASM_ERR_UNKNOWN_DIRECTIVE			0x112
+#define SPASM_ERR_UNKNOWN_OPCODE			0x113
+#define SPASM_ERR_EQUATE_MISSING_LABEL		0x114
+#define SPASM_ERR_EXCEEDED_RECURSION_LIMIT	0x115
 
 #define SPASM_ERR_INVALID_DECIMAL_DIGIT		0x200
 #define SPASM_ERR_INVALID_HEX_DIGIT			0x201
@@ -52,6 +55,9 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_INVALID_OPERANDS,		_T("The opcode %s was given invalid operands")},
 	{SPASM_ERR_UNKNOWN_PREOP,			_T("Unknown preprocessor command '#%s'")},
 	{SPASM_ERR_UNKNOWN_DIRECTIVE,		_T("Unknown assembler directive '.%s'")},
+	{SPASM_ERR_UNKNOWN_OPCODE,			_T("Unknown opcode '%s'")},
+	{SPASM_ERR_EQUATE_MISSING_LABEL,	_T("Equate is missing corresponding label")},
+	{SPASM_ERR_EXCEEDED_RECURSION_LIMIT,_T("Recursion depth limit exceeded")},
 
 	{SPASM_ERR_INVALID_DECIMAL_DIGIT,	_T("Invalid digit '%c' in the decimal number '%s'")},
 	{SPASM_ERR_INVALID_HEX_DIGIT,		_T("Invalid digit '%c' in the hexadecimal number '%s'")},
@@ -69,6 +75,7 @@ bool IsSPASMErrorSessionFatal(int nSession);
 void ReplaySPASMErrorSession(int nSession);
 void EndSPASMErrorSession(int nSession);
 void ClearSPASMErrorSessions(void);
+bool IsErrorInSPASMErrorSession(int nSession, DWORD dwErrorCode);
 #ifdef _TEST
 DWORD GetLastSPASMError();
 #endif
