@@ -21,7 +21,8 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
 			//Clear any other assemblings
-            DockingService.OutputWindow.ClearOutput();
+            //this needs to be done when the button is pressed, as the project build system uses this function
+            //DockingService.OutputWindow.ClearOutput();
 			//Get our emulator
 			Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
 #if !USE_DLL
@@ -164,10 +165,17 @@ namespace Revsoft.Wabbitcode.Services
 			AssembleFile(text, Path.ChangeExtension(text, GetExtension(Properties.Settings.Default.outputFile)), true);			
 		}
 
+        private static bool isBuildProj;
+        public static bool IsBuildingProject
+        {
+            get { return isBuildProj; }
+        }
 		public static void AssembleProject(object data)
 		{
+            isBuildProj = true;
             DockingService.OutputWindow.ClearOutput();
 			ProjectService.Project.BuildSystem.Build();
+            isBuildProj = false;
 		}
 
 		public static bool CreateSymTable(string filePath, string assembledName)
@@ -316,5 +324,10 @@ namespace Revsoft.Wabbitcode.Services
 			}
 			return outputFileExt;
 		}
-	}
+
+        internal static void InitAssembler()
+        {
+            ErrorsInFiles = new List<Errors>();
+        }
+    }
 }

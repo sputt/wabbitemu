@@ -110,6 +110,8 @@
 				<Key word="#undefine" />
 				<Key word="#macro" />
 				<Key word="#endmacro" />
+        <Key word="#region" />
+        <Key word="#endregion" />
 			</KeyWords>
 			<KeyWords name="Directives" bold="false" italic="false" color="#999999">
 				<Key word=".org" />
