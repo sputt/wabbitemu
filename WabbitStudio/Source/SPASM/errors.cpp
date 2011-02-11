@@ -3,6 +3,7 @@
 #define _ERRORS_CPP
 #include "Errors.h"
 
+#include <assert.h>
 #include "spasm.h"
 #include "console.h"
 #include "list.h"
