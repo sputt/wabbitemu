@@ -53,6 +53,10 @@ int link_connect_hub(int slot, CPU_t *cpu) {
 	return 0;
 }
 
+BOOL link_connected_hub(int slot) {
+	return link_hub[slot] != NULL;
+}
+
 int link_connect(CPU_t *cpu1, CPU_t *cpu2) {
 	link_t *link1 = cpu1->pio.link;
 	link_t *link2 = cpu2->pio.link;
@@ -803,6 +807,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 	}
 
+	cpu->mem_c->upper -= tifile->flash->pages;
 	// Discard any error link_send_app returns
 	link_send_app(cpu, tifile);
 	// Delay for a few seconds so the calc will be responsive

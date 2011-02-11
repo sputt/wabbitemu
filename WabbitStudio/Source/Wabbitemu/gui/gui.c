@@ -74,8 +74,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 
-void gui_draw(calc_t *lpCalc)
-{
+void gui_draw(calc_t *lpCalc) {
 	if (lpCalc->hwndLCD != NULL) {
 		InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
 	}
@@ -140,16 +139,15 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 	} else difference += TPF;
 }
 
-
 extern WINDOWPLACEMENT db_placement;
 
 int gui_debug(LPCALC lpCalc) {
 	if (lpCalc->audio != NULL)
-	pausesound(lpCalc->audio);
+		pausesound(lpCalc->audio);
 	HWND hdebug;
 	BOOL set_place = TRUE;
 	int flags = 0;
-	RECT pos = {CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT+600, CW_USEDEFAULT+400};
+	RECT pos = {CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT+800, CW_USEDEFAULT+600};
 	if (!db_placement.length) {
 		db_placement.flags = SW_SHOWNORMAL;
 		db_placement.length = sizeof(WINDOWPLACEMENT);
@@ -160,13 +158,20 @@ int gui_debug(LPCALC lpCalc) {
 
 	pos.right -= pos.left;
 	pos.bottom -= pos.top;
+	
 
-	if ((hdebug = FindWindow(g_szDebugName, _T("Debugger")))) {
-		SwitchToThisWindow(hdebug, TRUE);
-		SendMessage(hdebug, WM_USER, DB_RESUME, 0);
-		return -1;
-	}
 	lpCalc->running = FALSE;
+	calc_pause_linked();
+	if ((hdebug = FindWindow(g_szDebugName, _T("Debugger")))) {
+		if (lpCalc != lpDebuggerCalc) {
+			DestroyWindow(hdebug);
+		} else {
+			SwitchToThisWindow(hdebug, TRUE);
+			SendMessage(hdebug, WM_USER, DB_RESUME, 0);
+			return -1;
+		}
+	}
+	
 	hdebug = CreateWindowEx(
 		WS_EX_APPWINDOW,
 		g_szDebugName,
@@ -181,8 +186,6 @@ int gui_debug(LPCALC lpCalc) {
 	SendMessage(hdebug, WM_SIZE, 0, 0);
 	return 0;
 }
-
-void SkinCutout(HWND hwnd);
 
 int gui_frame(LPCALC lpCalc) {
  	RECT r;
@@ -259,6 +262,7 @@ int gui_frame_update(LPCALC lpCalc) {
 		}
 		hbmSkin.Load(CalcModelTxt[lpCalc->model], _T("PNG"), g_hInst);
 		switch(lpCalc->model) {
+			case TI_81:
 			case TI_82:
 				hbmKeymap.Load(_T("TI-82Keymap"), _T("PNG"), g_hInst);
 				break;
@@ -353,9 +357,9 @@ int gui_frame_update(LPCALC lpCalc) {
 				SendMessage(lpCalc->hwndStatusBar, WM_DESTROY, 0, 0);
 				SendMessage(lpCalc->hwndStatusBar, WM_CLOSE, 0, 0);
 			}
-			SetRect(&rc, 0, 0, 128*lpCalc->Scale, 64*lpCalc->Scale);
-			int iStatusWidths[] = {100, -1};
-			lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, lpCalc->hwndFrame, (HMENU)99, g_hInst, NULL);
+			SetRect(&rc, 0, 0, 128 * lpCalc->Scale, 64 * lpCalc->Scale);
+			int iStatusWidths[] = { 100, -1 };
+			lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, lpCalc->hwndFrame, (HMENU) 99, g_hInst, NULL);
 			SendMessage(lpCalc->hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
 			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 			RECT src;
@@ -620,8 +624,7 @@ extern HWND hwndProp;
 extern RECT PropRect;
 extern int PropPageLast;
 
-void RegisterWindowClasses(void)
-{
+void RegisterWindowClasses(void) {
 	WNDCLASSEX wc;
 
 	wc.cbSize = sizeof(wc);
@@ -699,14 +702,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	length = GetModuleFileName(NULL, ExeDir, 512);
 	//LCD_X = 63+16+1;	//LCD_Y = 74+16+2;
 	if (length) {
-		for(i=length;i>0 && (ExeDir[i]!='\\') ;i--);
+		for(i = length; i > 0 && (ExeDir[i] != '\\'); i--);
 		if (i) ExeDir[i+1] = 0;
 	}
 
 	//this is here so we get our load_files_first setting
 	load_files_first = QueryWabbitKey(_T("load_files_first"));
 
-	argv = CommandLineToArgvW(GetCommandLineW(),&argc);
+	argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
 	HWND Findhwnd = NULL, FindChildhwnd = NULL;
 	Findhwnd = FindWindow(g_szAppName, NULL);
@@ -716,33 +719,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	if (load_files_first && Findhwnd)
 		SendMessage(Findhwnd, WM_COMMAND, IDM_FILE_NEW, 0);
 
-	if (argv && argc>1) {
+	if (argv && argc > 1) {
 #ifdef _UNICODE
-		_tcscpy(tmpstring, argv[1]);
+		StringCbCopy(tmpstring, sizeof(tmpstring), argv[1]);
 #else
-#ifdef WINVER
 		size_t numConv;
 		wcstombs_s(&numConv, tmpstring, argv[1], 512);
-#else
-		wcstombs(tmpstring, argv[1], 512);
 #endif
-#endif
-		if ( (tmpstring[0] == '-') && (tmpstring[1] == 'n') ) loadfiles = TRUE;
+		if ((tmpstring[0] == '-') && (tmpstring[1] == 'n'))
+			loadfiles = TRUE;
 		else {
 			if (!loadfiles) {
 				COPYDATASTRUCT cds;
 				TCHAR *FileNames = NULL;
 				cds.dwData = SEND_CUR;
-				for(i=1; i < argc; i++) {
+				for(i = 1; i < argc; i++) {
 					memset(tmpstring, 0, 512);
 #ifdef _UNICODE
-					_tcscpy(tmpstring, argv[i]);
-#else
-#ifdef WINVER
-					wcstombs_s(&numConv, tmpstring, argv[i], 512);
+					StringCbCopy(tmpstring, sizeof(tmpstring), argv[i]);
 #else
 					wcstombs(tmpstring, argv[i], 512);
-#endif
 #endif
 					if (tmpstring[0] != '-') {
 						size_t strLen;
@@ -782,7 +778,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 
 
-	if (argv && argc>1) {
+	if (argv && argc > 1) {
 		for (i = 1; i < argc; i++) {
 			memset(tmpstring, 0, 512);
 #ifdef _UNICODE
@@ -860,7 +856,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	memset(link_hub, 0, sizeof(link_hub));
 	link_t *hub_link = (link_t *) malloc(sizeof(link_t)); 
 	if (!hub_link) {
-		printf("Couldn't allocate memory for link\n");
+		printf("Couldn't allocate memory for link hub\n");
 	}
 	hub_link->host		= 0;			//neither lines set
 	hub_link->client	= &hub_link->host;	//nothing plugged in.
@@ -958,12 +954,11 @@ static HWND hListDialog;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	//static HDC hdcKeymap;
 	static POINT ctxtPt;
-	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	switch (Message) {
-		case WM_CREATE:
-		{
-			calc_t *lpCalc = (calc_t *) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+		case WM_CREATE: {
+			LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 
 			IDropTarget *pDropTarget = NULL;
@@ -979,8 +974,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_USER:
 			gui_frame_update(lpCalc);
 			break;
-		case WM_PAINT:
-		{
+		case WM_PAINT: {
 #define GIFGRAD_PEAK 15
 #define GIFGRAD_TROUGH 10
 
@@ -1079,7 +1073,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case IDM_FILE_SAVE: {
 					TCHAR FileName[MAX_PATH];
-					const TCHAR lpstrFilter[] 	= _T("Known File types ( *.sav; *.rom; *.bin) \0*.sav;*.rom;*.bin\0\
+					const TCHAR lpstrFilter[] = _T("Known File types ( *.sav; *.rom; *.bin) \0*.sav;*.rom;*.bin\0\
 														Save States  (*.sav)\0*.sav\0\
 														ROMS  (*.rom; .bin)\0*.rom;*.bin\0\
 														All Files (*.*)\0*.*\0\0");
@@ -1114,12 +1108,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_FILE_EXIT:
 					if (calc_count() > 1) {
 						TCHAR buf[256];
-#ifdef WINVER
 						StringCbPrintf(buf, sizeof(buf), _T("If you exit now, %d other running calculator(s) will be closed. \
 															Are you sure you want to exit?"), calc_count() - 1);
-#else
-						sprintf(buf, "If you exit now, %d other running calculator(s) will be closed.  Are you sure you want to exit?", calc_count()-1);
-#endif
 						int res = MessageBox(NULL, buf, _T("Wabbitemu"), MB_YESNO);
 						if (res == IDCANCEL || res == IDNO)
 							break;
@@ -1155,6 +1145,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						MessageBox(NULL, _T("Connection Failed"), _T("Error"), MB_OK);					
 					else*/
 					link_connect_hub(lpCalc->slot, &lpCalc->cpu);
+					TCHAR buf[64];
+					StringCbCopy(buf, sizeof(buf), CalcModelTxt[lpCalc->model]);
+					StringCbCat(buf, sizeof(buf), _T(" Connected"));
+					SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) buf);
 					//MessageBox(NULL, _T("Connection Successful"), _T("Success"), MB_OK);					
 					break;
 				}
@@ -1226,7 +1220,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case IDM_SPEED_QUARTER: {
 					lpCalc->speed = 25;
-					CheckMenuRadioItem(GetSubMenu(GetMenu(hwnd), 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUARTER, MF_BYCOMMAND| MF_CHECKED);
+					HMENU hmenu = GetMenu(hwnd);
+					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUARTER, MF_BYCOMMAND | MF_CHECKED);
 					break;
 				}
 				case IDM_SPEED_HALF: {
@@ -1358,8 +1353,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		//extern POINT ButtonCenter84[64];
 			return 0;
 		}
-		case WM_MBUTTONDOWN:
-		{
+		case WM_MBUTTONDOWN: {
 			int group,bit;
 			POINT pt;
 			keypad_t *kp = (keypad_t *) (&lpCalc->cpu)->pio.devices[1].aux;
@@ -1399,8 +1393,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_KEYUP:
 			HandleKeyUp(lpCalc, wParam);
 			return 0;
-		case WM_SIZING:
-		{
+		case WM_SIZING: {
 			if (lpCalc->SkinEnabled)
 				return TRUE;
 			RECT *prc = (RECT *) lParam;
@@ -1494,24 +1487,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			InvalidateRect(hwnd, &rect, TRUE);
 			return TRUE;
 		}
-		case WM_SIZE:
-		{
+		case WM_SIZE: {
 			RECT rc, screen;
 			GetClientRect(hwnd, &rc);
 			HMENU hmenu = GetMenu(hwnd);
-			int cyMenu;
-			if (hmenu == NULL) {
-				cyMenu = 0;
-			} else {
-				cyMenu = GetSystemMetrics(SM_CYMENU);
-			}
+			int cyMenu = hmenu == NULL ? 0 : GetSystemMetrics(SM_CYMENU);
 			if ((lpCalc->bCutout && lpCalc->SkinEnabled))	
 				rc.bottom += cyMenu;
-			int desired_height;
-			if (lpCalc->SkinEnabled)
-				desired_height = lpCalc->rectSkin.bottom;
-			else
-				desired_height = 128;
+			int desired_height = lpCalc->SkinEnabled ?  lpCalc->rectSkin.bottom : desired_height = 128;
 
 			int status_height;
 			if (lpCalc->hwndStatusBar == NULL) {
@@ -1526,24 +1509,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			rc.bottom -= status_height;
 
-			float xc, yc;
-			if (lpCalc->SkinEnabled) {
-				xc = 1/*((float)rc.right)/lpCalc->rectSkin.right*/;
-				yc = 1/*((float)rc.bottom)/(lpCalc->rectSkin.bottom)*/;
-			} else {
+			float xc = 1, yc = 1;
+			if (!lpCalc->SkinEnabled) {
 				xc = ((float) rc.right) / 256.0;
 				yc = ((float) rc.bottom) / 128.0;
 			}
 			int width = lpCalc->rectLCD.right - lpCalc->rectLCD.left;
 			SetRect(&screen,
 				0, 0,
-				(int) (width*xc),
-				(int) (64*2*yc));
+				(int) (width * xc),
+				(int) (64 * 2 * yc));
 
 			if (lpCalc->SkinEnabled)
 				OffsetRect(&screen, lpCalc->rectLCD.left, lpCalc->rectLCD.top);
 			else
-				OffsetRect(&screen, (int) ((rc.right - width*xc)/2), 0);
+				OffsetRect(&screen, (int) ((rc.right - width * xc) / 2), 0);
 
 			if ((rc.right - rc.left) & 1) rc.right++;
 			if ((rc.bottom - rc.top) & 1) rc.bottom++;
@@ -1575,9 +1555,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			//InvalidateRect(hwnd, NULL, FALSE);
 			return 0;
 		}
-		case WM_MOVE:
 		//case WM_MOVING:
-		{
+		case WM_MOVE: {
 			if (lpCalc->bCutout && lpCalc->SkinEnabled) {
 				HDWP hdwp = BeginDeferWindowPos(3);
 				RECT rc;
@@ -1589,8 +1568,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 			return 0;
 		}
-		case WM_CONTEXTMENU:
-		{
+		case WM_CONTEXTMENU: {
 			ctxtPt.x = GET_X_LPARAM(lParam);
 			ctxtPt.y = GET_Y_LPARAM(lParam);
 
@@ -1625,7 +1603,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (exit_save_state)
 				{
 					TCHAR temp_save[MAX_PATH];
-#ifdef WINVER
 					size_t len;
 					TCHAR *path;
 					_tdupenv_s(&path, &len, _T("appdata"));
@@ -1633,11 +1610,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					free(path);
 					StringCbCat(temp_save, sizeof(temp_save), _T("\\wabbitemu.sav"));
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), temp_save);
-#else
-					strcpy(temp_save, getenv("appdata"));
-					strcat(temp_save, "\\wabbitemu.sav");
-					strcpy(lpCalc->rom_path, temp_save);
-#endif
 					SAVESTATE_t *save = SaveSlot(lpCalc);
 					WriteSave(temp_save, save, true);
 					FreeSave(save);
@@ -1652,8 +1624,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			if (calc_count() == 0)
 				PostQuitMessage(0);
 			return 0;
-		case WM_DESTROY:
-			{
+		case WM_DESTROY: {
 				_tprintf_s(_T("Releasing skin and keymap\n"));
 				DeleteDC(lpCalc->hdcKeymap);
 				DeleteDC(lpCalc->hdcSkin);

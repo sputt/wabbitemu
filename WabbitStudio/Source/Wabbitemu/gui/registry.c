@@ -17,7 +17,7 @@ static struct {
 	{_T("cutout"), 					REG_DWORD, 	FALSE},
 	{_T("skin"),					REG_DWORD,	FALSE},
 	{_T("alphablend_lcd"),			REG_DWORD,	TRUE},
-	{_T("version"), 				REG_SZ, 	(LONG_PTR) _T("1.5.12.31")},
+	{_T("version"), 				REG_SZ, 	(LONG_PTR) _T("1.5.2.7")},
 	{_T("rom_path"), 				REG_SZ, 	(LONG_PTR) _T("z.rom")},
 	{_T("shades"),					REG_DWORD,	6},
 	{_T("gif_path"), 				REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},
@@ -40,6 +40,7 @@ static struct {
 	{_T("startX"),					REG_DWORD,  CW_USEDEFAULT},
 	{_T("startY"),					REG_DWORD,  CW_USEDEFAULT},
 	{_T("break_on_exe_violation"),	REG_DWORD,  TRUE},
+	{_T("num_backup_per_sec"),		REG_DWORD,  2},
 	{NULL,							0,			0},
 };
 
@@ -201,6 +202,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	sync_cores = (BOOL) QueryWabbitKey(_T("sync_cores"));
 	startX = (int) QueryWabbitKey(_T("startX"));
 	startY = (int) QueryWabbitKey(_T("startY"));
+	num_backup_per_sec = (int) QueryWabbitKey(_T("num_backup_per_sec"));
 	lpCalc->bAlwaysOnTop = (BOOL) QueryWabbitKey(_T("always_on_top"));
 	lpCalc->bCustomSkin = (BOOL) QueryWabbitKey(_T("custom_skin"));
 	QueryKeyMappings();
@@ -293,7 +295,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("lcd_mode"), REG_DWORD, &lpCalc->cpu.pio.lcd->mode);
 		DWORD steady = (DWORD) ( 1.0 / lpCalc->cpu.pio.lcd->steady_frame);
 		SaveWabbitKey(_T("lcd_freq"), REG_DWORD, &steady);
-		
+		SaveWabbitKey(_T("num_backup_per_sec"), REG_DWORD, &num_backup_per_sec);
 		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->Scale);
 
 	}

@@ -96,6 +96,7 @@ int DoInsertItem(HWND hwndHeader, int iInsertAfter, int nWidth, LPTSTR lpsz) {
     return index;
 }
 
+#define DB_CREATE 0
 LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndHeader;
 	static int start_row, last_port, cyHeader;
@@ -112,9 +113,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			DoInsertItem(hwndHeader, 1, PortHeaderWidths[1], _T("Value (Hex)"));
 			DoInsertItem(hwndHeader, 2, PortHeaderWidths[2], _T("Value (Decimal)"));
 			DoInsertItem(hwndHeader, 3, PortHeaderWidths[3], _T("Value (Binary)"));
-			SendMessage(hwnd, WM_USER, 0, 0);
-			GetClientRect(hwnd, &rc);
-			InvalidateRect(hwnd, &rc, TRUE);
+			SendMessage(hwnd, WM_USER, DB_CREATE, 0);
 			return TRUE;
 		}
 		case WM_COMMAND: {
@@ -327,9 +326,19 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			return FALSE;
 		}
 		case WM_USER: {
-			if (port_cpu != NULL)
-				free(port_cpu);
-			port_cpu = CPU_clone(&lpDebuggerCalc->cpu);
+			switch (lParam) {
+				case DB_CREATE:
+					if (port_cpu != NULL)
+						free(port_cpu);
+					port_cpu = CPU_clone(&lpDebuggerCalc->cpu);
+					break;
+				case DB_UPDATE: {
+					RECT rc;
+					GetClientRect(hwnd, &rc);
+					InvalidateRect(hwnd, &rc, TRUE);
+					break;
+				}
+			}
 			return TRUE;
 		}
 		case WM_CLOSE:

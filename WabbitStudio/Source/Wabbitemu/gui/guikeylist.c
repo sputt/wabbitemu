@@ -23,7 +23,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			}
 			return TRUE;
 		case WM_CLOSE:
-
+			DestroyWindow(hwnd);
 			return TRUE;
 	}
 	return FALSE;

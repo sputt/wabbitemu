@@ -200,7 +200,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Wabbitcode Release|X86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\X86\Wabbitcode Release\</OutputPath>
+    <OutputPath>..\..\..\..\Release\</OutputPath>
     <BaseAddress>98041856</BaseAddress>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <Optimize>true</Optimize>

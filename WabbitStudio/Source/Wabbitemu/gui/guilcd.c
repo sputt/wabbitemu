@@ -348,19 +348,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			EndPaint(hwnd, &ps);	
 			
 			if (lpCalc->hwndStatusBar) {
-				if (clock() > lpCalc->sb_refresh + CLOCKS_PER_SEC/2) {
+				if (clock() > lpCalc->sb_refresh + CLOCKS_PER_SEC / 2) {
 					if (lcd->active)
-#ifdef WINVER
-						StringCbPrintf(sz_status, sizeof(sz_status), _T("FPS: %0.2lf"),lcd->ufps);
-#else
-						sprintf(sz_status,"FPS: %0.2lf",lcd->ufps);
-#endif
+						StringCbPrintf(sz_status, sizeof(sz_status), _T("FPS: %0.2lf"), lcd->ufps);
 					else
-#ifdef WINVER
 						StringCbPrintf(sz_status, sizeof(sz_status),  _T("FPS: -"));
-#else
-						sprintf(sz_status,"FPS: -");
-#endif
 					SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 0, (LPARAM) sz_status);
 					lpCalc->sb_refresh = clock();
 				}
@@ -375,36 +367,32 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_CONTEXTMENU:
 			{
-				calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				const TCHAR names[][32] = {_T("File"), _T("Edit"), _T("Calculator"), _T("Debug"), _T("Help")};
 				HMENU hmenuMain = GetMenu(lpCalc->hwndFrame);
 				if (hmenuMain == NULL)
-				{
 					return 0;
-				}
 				HMENU hmenuContext = CreatePopupMenu();
 				int i;
 				for (i = 0; i < 5; i++)
 					InsertMenu(hmenuContext, -1, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), (LPCTSTR) names[i]);
 
-				if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenuContext)) {
+				if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenuContext))
 					DefWindowProc(hwnd, Message, wParam, lParam);
-				}
 
 				//DestroyMenu(hmenuContext);
 				return 0;
 			}
 		case WM_CLOSE:
 		case WM_COMMAND: {
-			calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			SendMessage(lpCalc->hwndFrame, Message, wParam, lParam);
 			return 0;
 		}
 		case WM_LBUTTONDOWN:
 			//WriteRIFFHeader();
 			break;
-		case WM_LBUTTONUP:
-		{
+		case WM_LBUTTONUP: {
 			static DWORD dwDragCountdown = 0;
 				dwDragCountdown = 0;
 			break;
@@ -430,7 +418,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					// Create the GIF that is going to be produced by the drag
 					TCHAR temp_fn[L_tmpnam];
 					TCHAR fn[MAX_PATH];
-#ifdef WINVER
 					TCHAR *env;
 					size_t envLen;
 					_tdupenv_s(&env, &envLen, _T("appdata"));
@@ -438,11 +425,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					free(env);
 					StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.gif"));
 					StringCbCopy(gif_file_name, sizeof(gif_file_name), fn);
-#else
-					strcpy(fn, getenv("appdata"));
-					strcat(fn, "\\wabbitemu.gif");
-					strcpy(gif_file_name, fn);
-#endif
+
 					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					LCD_t *lcd = lpCalc->cpu.pio.lcd;
 					gif_xs = lcd->width * gif_size;
@@ -478,32 +461,22 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					fgd->cItems = 1;
 
 					FILEDESCRIPTOR *fd = fgd->fgd;
-
 					ZeroMemory(fd, sizeof(FILEDESCRIPTOR));
 
 					fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
 					fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 					fd->nFileSizeLow = gif_file_size;
-#ifdef WINVER
 					StringCbCopy(fd->cFileName, sizeof(fd->cFileName), _T("wabbitemu.gif"));
-#else
-					strcpy(fd->cFileName, "wabbitemu.gif");
-#endif
 					GlobalUnlock(stgmed[0].hGlobal);
 
 					// Now do file contents
 					stgmed[1].hGlobal = GlobalAlloc(GHND, gif_file_size);
 					stgmed[1].tymed = TYMED_HGLOBAL;
 
-#ifdef WINVER
 					FILE *fgif;
 					_tfopen_s(&fgif, fn, _T("rb"));
-#else
-					FILE *fgif = fopen(fn, "rb");
-#endif
 					if (fgif != NULL) {
 						char *buf = (char *) GlobalLock(stgmed[1].hGlobal);
-
 						fread(buf, gif_file_size, 1, fgif);
 						fclose(fgif);
 
@@ -524,11 +497,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					df[0].fNC = FALSE;
 
 					memset(&df[1], 0, _tcslen(fn) + 2);
-#ifdef WINVER
 					StringCbCopy((TCHAR *) &df[1], _tcslen(fn) + 1, fn);
-#else
-					strcpy((char*) &df[1], fn);
-#endif
 					GlobalUnlock(stgmed[3].hGlobal);
 
 					// Create IDataObject and IDropSource COM objects
@@ -547,7 +516,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
             			(LPVOID *) &pDragSourceHelper);
 
 					pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource->m_pDataobject);
-					//SetDropSourceDataObject(pDropSource, pDataObject);
 					DWORD dwEffect = DROPEFFECT_NONE;
 					//if (SUCCEEDED(hres))
 						DoDragDrop((IDataObject*) pDataObject, (IDropSource*) pDropSource,  DROPEFFECT_COPY, &dwEffect);

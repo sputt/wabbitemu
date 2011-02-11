@@ -137,7 +137,7 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR 
 					TCHAR *name;
 					int val;
 					
-					val = (addr + ((char) va_arg(argp, INT_PTR)));
+					val = (addr + ((char) va_arg(argp, INT_PTR))) & 0xFFFF;
 					name = FindAddressLabel(lpCalc, lpCalc->cpu.mem_c->banks[(val >> 14) & 0x03].ram,
 											lpCalc->cpu.mem_c->banks[(val >> 14) & 0x03].page, val);
 					

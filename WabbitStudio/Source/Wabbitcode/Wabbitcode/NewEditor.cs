@@ -2456,7 +2456,7 @@ namespace Revsoft.Wabbitcode
                 string normalText = document.GetText(offs, seg.Length - spaceCount);
 				string text = normalText.ToLower();
                 if (text.StartsWith("#region"))
-                    regionLines.Push(new FoldingItem(i, normalText.Remove(0, "#region ".Length)));
+                    regionLines.Push(new FoldingItem(i, normalText.Remove(0, "#region".Length).Trim()));
                 if (text.StartsWith("#ifdef") || text.StartsWith("#if") || text.StartsWith("#ifndef"))
                     ifLines.Push(new FoldingItem(i, normalText));
 				if (text.StartsWith("#macro"))

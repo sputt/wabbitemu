@@ -7,7 +7,7 @@
 #define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
 
 
-
+static void port10(CPU_t *cpu, device_t *dev);
 int device_init_81(CPU_t*);
 int memory_init_81(memc *);
 

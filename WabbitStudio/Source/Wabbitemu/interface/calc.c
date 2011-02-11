@@ -430,6 +430,10 @@ int CPU_reset(CPU_t *lpCPU) {
 	return 0;
 }
 
+void ConnectedCPU_step(CPU_t *cpu) {
+
+}
+
 int calc_run_frame(LPCALC lpCalc) {
 	double cpu_sync = tc_elapsed((&lpCalc->timer_c));
 
@@ -493,6 +497,18 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	return 0;
 }
 
+#include "link.h"
+void calc_pause_linked() {
+	for (int i = 0; i < MAX_CALCS; i++)
+		if (calcs[i].active && link_connected_hub(i))
+			calcs[i].running = FALSE;
+}
+
+void calc_unpause_linked() {
+	for (int i = 0; i < MAX_CALCS; i++)
+		if (calcs[i].active && link_connected_hub(i))
+			calcs[i].running = TRUE;
+}
 
 #define FRAME_SUBDIVISIONS	1024
 int calc_run_all(void) {
@@ -511,7 +527,7 @@ int calc_run_all(void) {
 				calc_run_tstates(&calcs[j], time);
 				frame_counter += time;
 #ifdef WITH_BACKUPS
-				if (frame_counter >= calcs[j].timer_c.freq / 2) {
+				if (frame_counter >= calcs[j].timer_c.freq / num_backup_per_sec) {
 					frame_counter = 0;
 					if (do_backups && calcs[j].speed <= 100)
 						do_backup(&calcs[j]);
@@ -520,7 +536,7 @@ int calc_run_all(void) {
 				calc_run_tstates(&calcs[j], time);
 				frame_counter += time;
 #ifdef WITH_BACKUPS
-				if (frame_counter >= calcs[j].timer_c.freq / 2) {
+				if (frame_counter >= calcs[j].timer_c.freq / num_backup_per_sec) {
 					frame_counter = 0;
 					if (do_backups && calcs[j].speed <= 100)
 						do_backup(&calcs[j]);
@@ -537,6 +553,10 @@ int calc_run_all(void) {
 	}
 
 	return 0;
+}
+
+void link_step(CPU_t *cpu) {
+
 }
 
 void port_debug_callback(void *arg1, void *arg2) {
@@ -621,7 +641,6 @@ void free_backups(LPCALC lpCalc) {
 	backups[slot] = NULL;
 	number_backup = 0;
 }
-
 #endif
 
 int calc_run_seconds(LPCALC lpCalc, double seconds) {

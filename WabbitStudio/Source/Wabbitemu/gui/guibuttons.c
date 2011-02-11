@@ -191,6 +191,7 @@ void DrawButtonLockAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 	}
 }
 
+static int last_shift;
 void HandleKeyDown(LPCALC lpCalc, unsigned int key) {
 	/* make this an accel*/
 	if (key == VK_F8) {
@@ -206,10 +207,14 @@ void HandleKeyDown(LPCALC lpCalc, unsigned int key) {
 		} else {
 			key = VK_RSHIFT;
 		}
+		last_shift = key;
 	}
 	//CopySkinToButtons();
 	keyprog_t *kp = keypad_key_press(&lpCalc->cpu, key);
-	if (kp && !(lpCalc->bCutout && lpCalc->SkinEnabled)) {
+	if (!kp)
+		return;
+	LogKeypress(kp->group, kp->bit, key, TRUE, lpCalc->cpu.pio.model);
+	if (!(lpCalc->bCutout && lpCalc->SkinEnabled)) {
 		extern POINT ButtonCenter83[64];
 		extern POINT ButtonCenter84[64];
 		if (!(lpCalc->cpu.pio.keypad->keys[kp->group][kp->bit] & KEY_STATEDOWN)) {
@@ -226,12 +231,11 @@ void HandleKeyDown(LPCALC lpCalc, unsigned int key) {
 }
 
 void HandleKeyUp(LPCALC lpCalc, unsigned int key) {
-	if (key == VK_SHIFT) {
-		keypad_key_release(&lpCalc->cpu, VK_LSHIFT);
-		keypad_key_release(&lpCalc->cpu, VK_RSHIFT);
-	} else {
-		keypad_key_release(&lpCalc->cpu, key);
-	}
+	if (key == VK_SHIFT)
+		key = last_shift;
+	keyprog_t *kp = keypad_key_release(&lpCalc->cpu, key);
+	if (kp)
+		LogKeypress(kp->group, kp->bit, key, FALSE, lpCalc->cpu.pio.model);
 	//CopySkinToButtons();
 	FinalizeButtons(lpCalc);
 }

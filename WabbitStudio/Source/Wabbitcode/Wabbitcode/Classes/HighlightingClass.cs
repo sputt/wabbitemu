@@ -272,7 +272,7 @@ namespace Revsoft.Wabbitcode.Classes
 				writer.WriteEndElement();
 
 				string[] preprocessor = { "#include", "#define", "#ifdef", "#ifndef", "#if", "#else", "#endif",
-					"#defcont", "#undefine", "#macro", "#endmacro" };
+					"#defcont", "#undefine", "#macro", "#endmacro", "#region", "#endregion" };
 				writer.WriteStartElement("KeyWords");
 				writer.WriteAttributeString("name", "Preprocessor");
 				writer.WriteAttributeString("bold", "false");

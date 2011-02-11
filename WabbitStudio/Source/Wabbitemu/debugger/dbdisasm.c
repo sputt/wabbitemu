@@ -402,6 +402,32 @@ void cycle_pcs(dp_settings *dps) {
 	dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
 }
 
+void db_step_finish(HWND hwnd) {
+	unsigned short past_last = lpDebuggerCalc->cpu.pc - zinf[dps->nRows-1].addr + zinf[dps->nRows-1].size;
+	unsigned short before_first = zinf[0].addr - lpDebuggerCalc->cpu.pc;
+	//InvalidateSel(hwnd, dps->iPC);
+	InvalidateSel(hwnd, dps->iSel);
+	dps->nSel = (&lpDebuggerCalc->cpu)->pc;
+	if (past_last >= 0 || before_first > 0) {
+		int iQ1;
+		SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, lpDebuggerCalc->cpu.pc), 0);
+		iQ1 = dps->nRows/4;
+		if (iQ1 == 0) 
+			return;
+		while (iQ1--) SendMessage(hwnd, WM_VSCROLL, SB_LINEUP, 0);
+		UpdateWindow(hwnd);
+	} else if (past_last > 0) {
+		SendMessage(hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
+	} else if (before_first > 0) {
+		SendMessage(hwnd, WM_VSCROLL, SB_PAGEUP, 0);
+	} else {
+		UpdateWindow(hwnd);
+	}
+	//InvalidateSel(hwnd, dps->iPC);
+	cycle_pcs(dps);
+	SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+}
+
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static TEXTMETRIC tm;
 	static BOOL IsDragging = FALSE;
@@ -955,52 +981,26 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						dps->nPCs[i] = -1;
 					}
 					CPU_step((&lpDebuggerCalc->cpu));
+					calc_unpause_linked();
 					lpDebuggerCalc->running = TRUE;
-					/*GetWindowRect(hwnd, &db_rect);
-
-					GetExpandPaneState(&expand_pane_state)*/
-					//DestroyWindow(GetParent(hwnd));
 					break;
 				}
 				case IDM_RUN_STEP:
 				case DB_STEP: {
-					int past_last;
-					int before_first;
-
 					CPU_step((&lpDebuggerCalc->cpu));
-				db_step_finish:
-					past_last = lpDebuggerCalc->cpu.pc - zinf[dps->nRows-1].addr + zinf[dps->nRows-1].size;
-					before_first = zinf[0].addr - lpDebuggerCalc->cpu.pc;
-					//InvalidateSel(hwnd, dps->iPC);
-					InvalidateSel(hwnd, dps->iSel);
-					dps->nSel = (&lpDebuggerCalc->cpu)->pc;
-					if (past_last >= 0 || before_first > 0) {
-						int iQ1;
-						SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, lpDebuggerCalc->cpu.pc), 0);
-						iQ1 = dps->nRows/4;
-						if (iQ1 == 0) return 0;
-						while (iQ1--) SendMessage(hwnd, WM_VSCROLL, SB_LINEUP, 0);
-						UpdateWindow(hwnd);
-					} else if (past_last > 0) {
-						SendMessage(hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
-					} else if (before_first > 0) {
-						SendMessage(hwnd, WM_VSCROLL, SB_PAGEUP, 0);
-					} else {
-						UpdateWindow(hwnd);
-					}
-					//InvalidateSel(hwnd, dps->iPC);
-					cycle_pcs(dps);
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					db_step_finish(hwnd);
 					break;
 				}
 				case IDM_RUN_STEPOVER:
 				case DB_STEPOVER: {
 					CPU_stepover(&lpDebuggerCalc->cpu);
-					goto db_step_finish;
+					db_step_finish(hwnd);
+					break;
 				}
 				case IDM_RUN_STEPOUT: {
 					CPU_stepout(&lpDebuggerCalc->cpu);
-					goto db_step_finish;
+					db_step_finish(hwnd);
+					break;
 				}
 				case DB_DISASM_GOTO:
 				case DB_GOTO: {
