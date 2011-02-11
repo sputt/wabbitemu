@@ -613,14 +613,21 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 						{
 							if (IsErrorInSPASMErrorSession(session, SPASM_ERR_EXCEEDED_RECURSION_LIMIT) == false)
 							{
-								EndSPASMErrorSession(session);
-								session = StartSPASMErrorSession();
+								
+								int inner_session = StartSPASMErrorSession();
 								parse_emit_string(expr, type, echo_target);
-								if (IsSPASMErrorSessionFatal(session))
+								if (IsSPASMErrorSessionFatal(inner_session))
 								{
-									AddSPASMErrorSessionAnnotation(session, _T("Error during invocation of macro '%s'"), define->name);
+									EndSPASMErrorSession(inner_session);
+									AddSPASMErrorSessionAnnotation(session, _T("Error during evaluation of macro '%s'"), define->name);
+
+									ReplaySPASMErrorSession(session);
 								}
-								ReplaySPASMErrorSession(session);
+								else
+								{
+									EndSPASMErrorSession(inner_session);
+								}
+								//ReplaySPASMErrorSession(session);
 							}
 							else
 							{

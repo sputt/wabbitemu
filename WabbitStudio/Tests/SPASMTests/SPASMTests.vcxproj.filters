@@ -43,7 +43,6 @@
     <None Include="app.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="AuthoringTests.txt" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">

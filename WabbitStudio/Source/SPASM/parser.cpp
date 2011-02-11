@@ -329,7 +329,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 
 						if (GetSPASMErrorSessionErrorCount(session) > 0)
 						{
-							AddSPASMErrorSessionAnnotation(session, _T("Error during invocation of macro '%s'"), define->name);
+							AddSPASMErrorSessionAnnotation(session, _T("Error during evaluation of macro '%s'"), define->name);
 							ReplaySPASMErrorSession(session);
 							fHasError = true;
 						}
