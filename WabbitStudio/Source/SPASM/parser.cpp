@@ -61,11 +61,16 @@ bool parse_num (const char *expr, int *value) {
 
 int parse_f (const char *expr) {
 	int result;
-	suppress_errors = true;
+	int session = StartSPASMErrorSession();
 	if (!(parse_num (expr, &result)))
 		result = -1;
 
-	suppress_errors = false;
+	if (IsSPASMErrorSessionFatal(session) == true)
+	{
+		result = -1;
+	}
+
+	EndSPASMErrorSession(session);
 	return result;
 }
 
@@ -77,7 +82,8 @@ int parse_f (const char *expr) {
  * allocated
  */
 
-char *parse_define (define_t *define) {
+char *parse_define (define_t *define)
+{
 	char *curr_line = define->contents;
 	char *lpszResult = NULL;
 
@@ -323,7 +329,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 
 						if (GetSPASMErrorSessionErrorCount(session) > 0)
 						{
-							show_error("Error during invocation of macro '%s'", define->name);
+							AddSPASMErrorSessionAnnotation(session, _T("Error during invocation of macro '%s'"), define->name);
 							ReplaySPASMErrorSession(session);
 							fHasError = true;
 						}

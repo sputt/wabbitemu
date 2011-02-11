@@ -715,16 +715,7 @@ static char *handle_preop_include (char *ptr)
 	FILE *file;
 	char *qs, *alloc_path, *input_contents, *old_input_file, *old_line_start;
 	char *base_name = NULL, *suffix = NULL;
-	BITMAPFILEHEADER bf;
-	BITMAPINFOHEADER bi;
-	RGBQUAD *bmiColors;
-	DWORD nColors = 0;
-	RECT r;
-	LONG padding = parse_f("__BM_PAD");
-	define_t *img_map = search_defines("__BM_MAP");
 	int old_line_num, old_in_macro, old_old_line_num;
-	int min_w = parse_f("__BM_MIN_W");
-	int bmp_num = 1;
 
 	if (is_end_of_code_line (ptr)) {
 		show_error ("#INCLUDE is missing file name");
@@ -755,6 +746,7 @@ static char *handle_preop_include (char *ptr)
 		return ptr;
 	}
 	
+	BITMAPFILEHEADER bf;
 	fread (&bf, sizeof (BITMAPFILEHEADER), 1, file);
 
 	if (!(LOBYTE(_W(bf.bfType)) == 'B' && HIBYTE(_W(bf.bfType)) == 'M')) {
@@ -816,147 +808,158 @@ static char *handle_preop_include (char *ptr)
 
 		return ptr;
 	}
+	else
+	{
+		BITMAPINFOHEADER bi;
+		RGBQUAD *bmiColors;
+		DWORD nColors = 0;
+		RECT r;
+		LONG padding = parse_f("__BM_PAD");
+		define_t *img_map = search_defines("__BM_MAP");
+		int min_w = parse_f("__BM_MIN_W");
+		int bmp_num = 1;
 
-	free (file_path);
-	fread (&bi, sizeof (BITMAPINFOHEADER), 1, file);
+		free (file_path);
+		fread (&bi, sizeof (BITMAPINFOHEADER), 1, file);
 
-	if (_DW(bi.biSize) != sizeof (BITMAPINFOHEADER) || _DW(bi.biCompression) != BI_RGB) {
-		show_error ("Bitmap file of this type not supported: size: %ld, compression: %ld\n", _DW(bi.biSize), _DW(bi.biCompression));
-		return ptr;
-	}
-	
-	if (_W(bi.biBitCount) < 16 || _DW(bi.biClrUsed) != 0) {
-		// If biClrUsed is 0, then the amount of RGBQUADs listed is the total possible
-		// as given by biBitCount
-		nColors = (_DW(bi.biClrUsed == 0)) ? 1 << _W(bi.biBitCount) : _DW(bi.biClrUsed);
-	}
-	
-	// Read in the palette
-	bmiColors = (LPRGBQUAD) calloc(nColors, sizeof(RGBQUAD));
-	fread(bmiColors, sizeof(RGBQUAD), nColors, file);
-	
-	if (ftell (file) != _DW(bf.bfOffBits)) {
-		printf("invalid file structure!\n");
-		return ptr;
-	}
-
-	if (last_label != NULL && last_label->value == program_counter) {
-		base_name = (char *) malloc(strlen(last_label->name) + 32);
-		strcpy(base_name, last_label->name);
-		suffix = base_name + strlen(base_name);
-	}
-	
-	if (img_map == NULL || parse_f("__BM_MAP") == 0) {
-		int width = _L(bi.biWidth);
-		int height = _L(bi.biHeight);
-			
-		r.left = 0;
-		r.top = 0;
-		r.right = width;
-		r.bottom = height;
-		
-		if (base_name) {
-			strcpy(suffix, "_WIDTH");
-			add_label(strdup(base_name), width);
-			
-			strcpy(suffix, "_HEIGHT");
-			add_label(strdup(base_name), height);
+		if (_DW(bi.biSize) != sizeof (BITMAPINFOHEADER) || _DW(bi.biCompression) != BI_RGB) {
+			show_error ("Bitmap file of this type not supported: size: %ld, compression: %ld\n", _DW(bi.biSize), _DW(bi.biCompression));
+			return ptr;
 		}
+	
+		if (_W(bi.biBitCount) < 16 || _DW(bi.biClrUsed) != 0) {
+			// If biClrUsed is 0, then the amount of RGBQUADs listed is the total possible
+			// as given by biBitCount
+			nColors = (_DW(bi.biClrUsed == 0)) ? 1 << _W(bi.biBitCount) : _DW(bi.biClrUsed);
+		}
+	
+		// Read in the palette
+		bmiColors = (LPRGBQUAD) calloc(nColors, sizeof(RGBQUAD));
+		fread(bmiColors, sizeof(RGBQUAD), nColors, file);
+	
+		if (ftell (file) != _DW(bf.bfOffBits)) {
+			printf("invalid file structure!\n");
+			return ptr;
+		}
+
+		if (last_label != NULL && last_label->value == program_counter) {
+			base_name = (char *) malloc(strlen(last_label->name) + 32);
+			strcpy(base_name, last_label->name);
+			suffix = base_name + strlen(base_name);
+		}
+	
+		if (img_map == NULL || parse_f("__BM_MAP") == 0) {
+			int width = _L(bi.biWidth);
+			int height = _L(bi.biHeight);
+			
+			r.left = 0;
+			r.top = 0;
+			r.right = width;
+			r.bottom = height;
 		
-		handle_bitmap_header(&r, &bf, &bi);
+			if (base_name) {
+				strcpy(suffix, "_WIDTH");
+				add_label(strdup(base_name), width);
+			
+				strcpy(suffix, "_HEIGHT");
+				add_label(strdup(base_name), height);
+			}
+		
+			handle_bitmap_header(&r, &bf, &bi);
 		
 		
-		if (min_w > 0 && width > min_w) {
-			int w = width;
-			while (w > 0) {
-				r.right = r.left + min(min_w, w);
+			if (min_w > 0 && width > min_w) {
+				int w = width;
+				while (w > 0) {
+					r.right = r.left + min(min_w, w);
+					handle_bitmap(file, &r, &bf, &bi, bmiColors);
+					r.left += min_w;
+					w -= min_w;
+				}
+			} else {
 				handle_bitmap(file, &r, &bf, &bi, bmiColors);
-				r.left += min_w;
-				w -= min_w;
 			}
 		} else {
-			handle_bitmap(file, &r, &bf, &bi, bmiColors);
-		}
-	} else {
-		int left, top, width = 0, height = 0, count = 0, i = 0;
-		char *p;
-		char *fmt = strdup(skip_whitespace(img_map->contents));
-		reduce_string(fmt);
+			int left, top, width = 0, height = 0, count = 0, i = 0;
+			char *p;
+			char *fmt = strdup(skip_whitespace(img_map->contents));
+			reduce_string(fmt);
  
-		for (p = strtok(fmt, ",;x "); p; p = strtok(NULL, ",;x ")) {
-			if (i == 0) width = parse_f(p);
-			else if (i == 1) height = parse_f(p);
-			else if (i == 2) count = parse_f(p) + 1;
-			i++;
-		}
-		free(fmt);
+			for (p = strtok(fmt, ",;x "); p; p = strtok(NULL, ",;x ")) {
+				if (i == 0) width = parse_f(p);
+				else if (i == 1) height = parse_f(p);
+				else if (i == 2) count = parse_f(p) + 1;
+				i++;
+			}
+			free(fmt);
 		
-		if (padding == -1) padding = 0;
+			if (padding == -1) padding = 0;
 		
-		if (width == 0 && height == 0) {
-			show_error("At least either of width or height must be given for an image map");
-			goto map_done;
-		}
+			if (width == 0 && height == 0) {
+				show_error("At least either of width or height must be given for an image map");
+				goto map_done;
+			}
 
-		width 	= (_L(bi.biWidth) - (width * 2 * padding)) / width;
-		height 	= (_L(bi.biHeight) - (height * 2 * padding)) / height;
+			width 	= (_L(bi.biWidth) - (width * 2 * padding)) / width;
+			height 	= (_L(bi.biHeight) - (height * 2 * padding)) / height;
 
-		if (base_name) {
-			strcpy(suffix, "_WIDTH");
-			add_label(strdup(base_name), width);
+			if (base_name) {
+				strcpy(suffix, "_WIDTH");
+				add_label(strdup(base_name), width);
 			
-			strcpy(suffix, "_HEIGHT");
-			add_label(strdup(base_name), height);
-		}
+				strcpy(suffix, "_HEIGHT");
+				add_label(strdup(base_name), height);
+			}
 		
-		for (left = 0; left < _L(bi.biWidth); left += width + 2*padding) {
-			for (top = _L(bi.biHeight) - height - 2*padding; top >= 0 ; top -= height + 2*padding) {
-				int min_w = parse_f("__BM_MIN_W");
-				if (count == 1) goto map_done;
-				if (count != 0) count--;
+			for (left = 0; left < _L(bi.biWidth); left += width + 2*padding) {
+				for (top = _L(bi.biHeight) - height - 2*padding; top >= 0 ; top -= height + 2*padding) {
+					int min_w = parse_f("__BM_MIN_W");
+					if (count == 1) goto map_done;
+					if (count != 0) count--;
 
-				if (base_name) {
-					char num_buf[8];
-					sprintf(num_buf, "%d", bmp_num);
-					strcpy(suffix, num_buf);
-					add_label(strdup(base_name), program_counter);
-				}
-				
-				bmp_num++;
-				
-				r.left = left + padding;
-				r.top = top + padding;
-				r.right = r.left + width;
-				r.bottom = r.top + height;
-				handle_bitmap_header(&r, &bf, &bi);
-				
-				if (min_w > 0 && width > min_w) {
-					int w = width;
-					while (w > 0) {
-						r.right = r.left + min(min_w, w);
-						handle_bitmap(file, &r, &bf, &bi, bmiColors);
-						r.left += min_w;
-						w -= min_w;
+					if (base_name) {
+						char num_buf[8];
+						sprintf(num_buf, "%d", bmp_num);
+						strcpy(suffix, num_buf);
+						add_label(strdup(base_name), program_counter);
 					}
-				} else {
-					handle_bitmap(file, &r, &bf, &bi, bmiColors);
+				
+					bmp_num++;
+				
+					r.left = left + padding;
+					r.top = top + padding;
+					r.right = r.left + width;
+					r.bottom = r.top + height;
+					handle_bitmap_header(&r, &bf, &bi);
+				
+					if (min_w > 0 && width > min_w) {
+						int w = width;
+						while (w > 0) {
+							r.right = r.left + min(min_w, w);
+							handle_bitmap(file, &r, &bf, &bi, bmiColors);
+							r.left += min_w;
+							w -= min_w;
+						}
+					} else {
+						handle_bitmap(file, &r, &bf, &bi, bmiColors);
+					}
 				}
 			}
-		}
-	map_done:
-		if (base_name) {
-			strcpy(suffix, "_COUNT");
-			add_label(strdup(base_name), bmp_num - 1);
-		}
+		map_done:
+			if (base_name) {
+				strcpy(suffix, "_COUNT");
+				add_label(strdup(base_name), bmp_num - 1);
+			}
 	
-		set_define(img_map, "0", -1, NULL);
+			set_define(img_map, "0", -1, NULL);
+		}
+		if (base_name)
+			free(base_name);
+		free (bmiColors);
+		fclose (file);
+	
+		return ptr;
 	}
-	if (base_name)
-		free(base_name);
-	free (bmiColors);
-	fclose (file);
-	
-	return ptr;
 }
 
 

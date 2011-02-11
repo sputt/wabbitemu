@@ -3,7 +3,6 @@
 #define _ERRORS_CPP
 #include "Errors.h"
 
-#include <assert.h>
 #include "spasm.h"
 #include "console.h"
 #include "list.h"
@@ -17,6 +16,7 @@ typedef struct tagERRORINSTANCE
 	bool fSuppressErrors;
 	int nPrintSession;
 	LPTSTR lpszErrorText;
+	LPTSTR lpszAnnotation;
 } ERRORINSTANCE, *LPERRORINSTANCE;
 
 static DWORD g_dwLastError;
@@ -34,15 +34,43 @@ static int g_nErrorSession = 0;
 static void PrintSPASMError(const LPERRORINSTANCE lpError)
 {
 	assert(lpError != NULL);
-	if (lpError->dwErrorCode != SPASM_ERR_SUCCESS)
+	if ((lpError->dwErrorCode != SPASM_ERR_SUCCESS) || (lpError->lpszErrorText != NULL))
 	{
 		set_console_attributes(COLOR_RED);
+		if (lpError->lpszAnnotation != NULL)
+		{
+			printf("%s\n", lpError->lpszAnnotation);
+		}
+
 		printf("%s\n", lpError->lpszErrorText);
 #ifdef WINVER
 		OutputDebugString(lpError->lpszErrorText);
 		OutputDebugString(_T("\n"));
 #endif
 	}
+}
+
+static LPERRORINSTANCE AllocErrorInstance()
+{
+	LPERRORINSTANCE lpErr = (LPERRORINSTANCE) malloc(sizeof(ERRORINSTANCE));
+	lpErr->dwErrorCode = SPASM_ERR_SUCCESS;
+	lpErr->line_num = -1;
+	lpErr->lpszFileName = NULL;
+	lpErr->fSuppressErrors = suppress_errors;
+	lpErr->nSession = g_nErrorSession;
+	lpErr->nPrintSession = -1;
+	lpErr->lpszErrorText = NULL;
+	lpErr->lpszAnnotation = NULL;
+	return lpErr;
+}
+
+static void FreeErrorInstance(LPERRORINSTANCE lpErr)
+{
+	if (lpErr->lpszErrorText != NULL)
+	{
+		free(lpErr->lpszErrorText);
+	}
+	free(lpErr);
 }
 
 int StartSPASMErrorSession(void)
@@ -55,12 +83,7 @@ int StartSPASMErrorSession(void)
 	}
 	else
 	{
-		LPERRORINSTANCE lpErr = (LPERRORINSTANCE) malloc(sizeof(ERRORINSTANCE));
-		lpErr->dwErrorCode = SPASM_ERR_SUCCESS;
-		lpErr->line_num = -1;
-		lpErr->lpszFileName = NULL;
-		lpErr->fSuppressErrors = suppress_errors;
-		lpErr->nSession = g_nErrorSession;
+		LPERRORINSTANCE lpErr = AllocErrorInstance();
 		g_ErrorList = (errorlist_t *) list_prepend((list_t *) g_ErrorList, lpErr);
 	}
 	suppress_errors = true;
@@ -146,6 +169,23 @@ bool IsErrorInSPASMErrorSession(int nSession, DWORD dwErrorCode)
 	return false;
 }
 
+void AddSPASMErrorSessionAnnotation(int nSession, LPCTSTR lpszFormat, ...)
+{
+	va_list valist;
+	va_start(valist, lpszFormat);
+
+	TCHAR szBuffer[256];
+	TCHAR szDescription[128] = _T("An error occurred");
+
+	StringCchVPrintf(szDescription, ARRAYSIZE(szDescription), lpszFormat, valist);
+	StringCchPrintf(szBuffer, ARRAYSIZE(szBuffer), _T("%s:%d: %s"),
+		curr_input_file, line_num, szDescription);
+
+	((LPERRORINSTANCE) g_ErrorList->data)->lpszAnnotation = _tcsdup(szBuffer);
+
+	va_end(valist);
+}
+
 void EndSPASMErrorSession(int nSession)
 {
 	list_t *pList = (list_t *) g_ErrorList;
@@ -189,6 +229,7 @@ void ClearSPASMErrorSessions(void)
 	lpErr->lpszFileName = NULL;
 	lpErr->fSuppressErrors = false;
 	lpErr->nSession = -1;
+	lpErr->nPrintSession = -1;
 
 	g_ErrorList = (errorlist_t *) list_prepend(NULL, lpErr);
 }
@@ -222,13 +263,11 @@ void SetLastSPASMError(DWORD dwErrorCode, ...)
 	va_list valist;
 	va_start(valist, dwErrorCode);
 
-	LPERRORINSTANCE lpErr = (LPERRORINSTANCE) malloc(sizeof(ERRORINSTANCE));
+	LPERRORINSTANCE lpErr = AllocErrorInstance();
 	lpErr->dwErrorCode = dwErrorCode;
 	lpErr->line_num = line_num;
 	lpErr->lpszFileName = _strdup(curr_input_file);
 	lpErr->fSuppressErrors = suppress_errors;
-	lpErr->nPrintSession = -1;
-	lpErr->nSession = -1;
 	
 	TCHAR szBuffer[256];
 	TCHAR szDescription[128] = _T("An error occurred");
