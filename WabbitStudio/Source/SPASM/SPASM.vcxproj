@@ -19,6 +19,10 @@
     <ProjectGuid>{C36BF10E-335B-4892-ADF8-D23DD16FBE06}</ProjectGuid>
     <RootNamespace>SPASMVS2008</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <SccProjectName>SAK</SccProjectName>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccProvider>SAK</SccProvider>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Static Library Debug|Win32'" Label="Configuration">
