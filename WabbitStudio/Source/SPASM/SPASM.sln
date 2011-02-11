@@ -3,14 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASM", "SPASM.vcxproj", "{C36BF10E-335B-4892-ADF8-D23DD16FBE06}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASMTests", "..\..\Tests\SPASMTests\SPASMTests.vcxproj", "{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 2
+		SccNumberOfProjects = 3
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = SPASM.vcxproj
 		SccLocalPath1 = .
+		SccProjectUniqueName2 = ..\\..\\Tests\\SPASMTests\\SPASMTests.vcxproj
+		SccProjectName2 = ../../Tests/SPASMTests
+		SccLocalPath2 = ..\\..\\Tests\\SPASMTests
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -24,6 +29,12 @@ Global
 		{C36BF10E-335B-4892-ADF8-D23DD16FBE06}.Release|Win32.Build.0 = Release|Win32
 		{C36BF10E-335B-4892-ADF8-D23DD16FBE06}.Static Library Debug|Win32.ActiveCfg = Static Library Debug|Win32
 		{C36BF10E-335B-4892-ADF8-D23DD16FBE06}.Static Library Debug|Win32.Build.0 = Static Library Debug|Win32
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Debug|Win32.Build.0 = Debug|Win32
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Release|Win32.ActiveCfg = Release|Win32
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Release|Win32.Build.0 = Release|Win32
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Static Library Debug|Win32.ActiveCfg = Debug|Win32
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Static Library Debug|Win32.Build.0 = Debug|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
