@@ -511,7 +511,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 }
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check, saveWindow_check, exeViolation_check;
+	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check, saveWindow_check, exeViolation_check, backupTime_edit;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			saveState_check = GetDlgItem(hwnd, IDC_CHK_SAVE);
@@ -521,6 +521,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			alwaysTop_check = GetDlgItem(hwnd, IDC_CHK_ONTOP);
 			saveWindow_check = GetDlgItem(hwnd, IDC_CHK_SAVEWINDOW);
 			exeViolation_check = GetDlgItem(hwnd, IDC_CHK_BRK_EXE_VIOLATION);
+			backupTime_edit = GetDlgItem(hwnd, IDC_EDT_BACKUPTIME);
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
 		case WM_COMMAND: {
@@ -553,6 +554,12 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					load_files_first = Button_GetCheck(loadFiles_check);
 					show_wizard = Button_GetCheck(wizard_check);
 					break_on_exe_violation = Button_GetCheck(exeViolation_check);
+					TCHAR buf[256];
+					Edit_GetText(backupTime_edit, buf, ARRAYSIZE(buf));
+					double persec = atof(buf);
+					if (persec == 0.0)
+						persec = 30.0;
+					num_backup_per_sec = (int) (60 / persec);
 					//we need to persist this immediately
 					SaveWabbitKey(_T("load_files_first"), REG_DWORD, &load_files_first);
 #ifdef WITH_BACKUPS
@@ -577,6 +584,9 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(loadFiles_check, load_files_first);
 #ifdef WITH_BACKUPS
 			Button_SetCheck(doBackups_check, do_backups);
+			TCHAR buf[256];
+			StringCbPrintf(buf, sizeof(buf), "%f", 60 / ((float) num_backup_per_sec));
+			Edit_SetText(backupTime_edit, buf);
 #endif
 			Button_SetCheck(wizard_check, show_wizard);
 			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);
@@ -828,7 +838,7 @@ LRESULT CALLBACK EmuKeyHandleProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	return DefSubclassProc(hwnd, uMsg, wParam, lParam);
 }
 
-static key_string ti86keystrings[56] = {
+key_string ti86keystrings[KEY_STRING_SIZE] = {
 	{_T("F5"),6,0},		{_T("F4"),6,1},		{_T("F3"),6,2},		{_T("F2"),6,3},	{_T("F1"),6,4},	{_T("2ND"),6,5},	{_T("EXIT"),6,6},	{_T("MORE"),6,7},
 	{_T("ON"),5,0},		{_T("STO"),5,1},	{_T(","),5,2},		{_T("x^2"),5,3},	{_T("LN"),5,4},{_T("LOG"),5,5},	{_T("GRAPH"),5,6},	{_T("ALPHA"),5,7},
 	{_T("0"),4,0},		{_T("1"),4,1},		{_T("4"),4,2},		{_T("7"),4,3},		{_T("EE"),4,4},	{_T("SIN"),4,5},	{_T("STAT"),4,6},	{_T("x-Var"),4,7},
@@ -838,7 +848,7 @@ static key_string ti86keystrings[56] = {
 	{_T("DOWN"),0,0},	{_T("LEFT"),0,1},	{_T("RIGHT"),0,2},	{_T("UP"),0,3},		{_T(""),0,4},	{_T(""),0,5},		{_T(""),0,6},		{_T(""),0,7},
 };
 
-static key_string ti83pkeystrings[56] = {
+key_string ti83pkeystrings[KEY_STRING_SIZE] = {
 	{_T("GRAPH"),6,4},	{_T("TRACE"),6,3},	{_T("ZOOM"),6,2},	{_T("WINDOW"),6,1},	{_T("Y="),6,0},	{_T("2ND"),6,5},	{_T("MODE"),6,6},	{_T("DEL"),6,7},
 	{_T("ON"),5,0},		{_T("STO"),5,1},	{_T("LN"),5,2},		{_T("LOG"),5,3},	{_T("x^2"),5,4},{_T("x^-1"),5,5},	{_T("MATH"),5,6},	{_T("ALPHA"),5,7},
 	{_T("0"),4,0},		{_T("1"),4,1},		{_T("4"),4,2},		{_T("7"),4,3},		{_T(","),4,4},	{_T("SIN"),4,5},	{_T("APPS"),4,6},	{_T("X,T,0,n"),4,7},

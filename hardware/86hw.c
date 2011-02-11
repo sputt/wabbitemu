@@ -9,7 +9,8 @@
 
 static double timer_freq[4] = {1.0/200.0};
 
-static int screen_addr = 0xFC00;
+//this would make it impossible to open multiple 86s...
+//static int screen_addr = 0xFC00;
 static void port10(CPU_t *, device_t *);
 
 // 86 screen offset
@@ -18,7 +19,7 @@ static void port0(CPU_t *cpu, device_t *dev) {
 		cpu->bus = 0;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		screen_addr = 0x100 * ((cpu->bus % 0x40) + 0xC0);
+		dev->aux = (LPVOID) (0x100 * ((cpu->bus % 0x40) + 0xC0));
 		port10(cpu, dev);
 		cpu->output = FALSE;
 		LCD_data(cpu, dev);
@@ -157,11 +158,10 @@ static void port7(CPU_t *cpu, device_t *dev) {
 
 
 static void port10(CPU_t *cpu, device_t *dev) {
+	int screen_addr = (int) dev->aux;
 	// Output the entire LCD
 	LCD_t *lcd = cpu->pio.lcd;
-	memcpy(lcd->display, 
-			cpu->mem_c->banks[mc_bank(screen_addr)].addr + mc_base(screen_addr), 
-			DISPLAY_SIZE);
+	memcpy(lcd->display, cpu->mem_c->banks[mc_bank(screen_addr)].addr + mc_base(screen_addr), DISPLAY_SIZE);
 
 }
 

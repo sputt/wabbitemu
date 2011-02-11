@@ -508,7 +508,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					}
 					calc_erase_certificate(lpCalc->mem_c.flash,lpCalc->mem_c.flash_size);
 					calc_reset(lpCalc);
-					calc_turn_on(lpCalc);
+					//calc_turn_on(lpCalc);
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					gui_frame(lpCalc);
 					//write the output from file

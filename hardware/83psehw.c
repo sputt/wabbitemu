@@ -266,9 +266,9 @@ void port14_83pse(CPU_t *cpu, device_t *dev) {
 			// TI 83+SE = 7C, 7D, 7F
 			// TI-84+ = 2F, 3C, 3D, 3F
 			// TI 84+SE = 6F, 7C, 7D, 7F
-			if ((cpu->mem_c->banks[bank].page > cpu->mem_c->flash_pages - 4) ||
-					(cpu->mem_c->banks[bank].page == 0x6F && cpu->pio.model > TI_83PSE)) {		
-				cpu->mem_c->flash_locked = ( cpu->bus & 0x01 );
+			if ((cpu->mem_c->banks[bank].page >= cpu->mem_c->flash_pages - 4) ||
+				((cpu->mem_c->banks[bank].page == cpu->mem_c->flash_pages - 0x11) && (cpu->pio.model >= TI_84P))) {
+				cpu->mem_c->flash_locked = cpu->bus & 0x01;
 			}
 		}
 		cpu->output = FALSE;
@@ -1530,7 +1530,7 @@ int memory_init_84p(memc *mc) {
 	mc->ram_pages = 8;
 
 	mc->flash_version = 3;
-	mc->upper = 0x60;
+	mc->upper = 0x30;
 	mc->lower = 0x10;
 
 	mc->flash_size = mc->flash_pages * PAGE_SIZE;

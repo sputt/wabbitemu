@@ -156,8 +156,8 @@ LINK_ERR link_send_backup(CPU_t *, TIFILE_t *, SEND_FLAG);
 LINK_ERR forceload_os(CPU_t *, TIFILE_t *);
 int link_connect(CPU_t *, CPU_t *);
 int link_connect_hub(int slot, CPU_t *cpu);
+BOOL link_connected_hub(int slot);
 int link_disconnect(CPU_t *);
-BOOL link_connected(int);
 void writeboot(FILE* , memory_context_t *, int page = -1);
 #endif
 

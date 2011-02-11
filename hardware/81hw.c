@@ -8,22 +8,78 @@
 
 static double timer_freq81[4] = { 1.0f / 560.0f, 1.0f / 248.0f, 1.0f / 170.0f, 1.0f / 118.0f };
 
-static void port2(CPU_t *cpu, device_t *dev) {
+// 81 screen offset
+static void port0(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
-		cpu->bus = 0x00;
+		cpu->bus = 0;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
+		dev->aux = (LPVOID) (0x100 * ((cpu->bus % 0x40) + 0xC0));
+		port10(cpu, dev);
+		cpu->output = FALSE;
+		device_t dev;
+		dev.aux = cpu->pio.lcd;
+		LCD_data(cpu, &dev);
+	}
+	return;
+}
+
+// Contrast
+static void port2(CPU_t *cpu, device_t *dev) {
+	LCD_t *lcd = (LCD_t *) dev->aux;
+	if (cpu->input) {
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		//lcd->contrast ranges from 24 - 64
+		//HACK: still not sure exactly how this works :P
+		lcd->contrast = lcd->base_level - 15 + cpu->bus;
+		if (lcd->contrast > 64)
+			lcd->contrast = 64;
 		cpu->output = FALSE;
 	}
+	return;
 }
 
 static void port3(CPU_t *cpu, device_t *dev) {
+	STDINT_t * stdint = (STDINT_t *) dev->aux;
+	
 	if (cpu->input) {
-		cpu->bus = 0x08;
+		unsigned char result = 0;
+		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) result += 4;
+		if (cpu->pio.lcd->active) result += 2;
+		if (stdint->on_latch) result += 1;
+		else result += 8;
+		
+		cpu->bus = result;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
+		if (cpu->bus & 0x08) {
+			cpu->pio.lcd->active = TRUE;		//I'm worried about this
+		} else {
+			cpu->pio.lcd->active = FALSE;
+		}
+		
+		if ((cpu->bus & 0x01) == 0)
+			stdint->on_latch = FALSE;
+		
+		stdint->intactive = cpu->bus;
 		cpu->output = FALSE;
 	}
+	
+	if (!(stdint->intactive & 0x04) && cpu->pio.lcd->active == TRUE) {
+		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
+			cpu->interrupt = TRUE;
+			while ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)
+				stdint->lastchk1 += stdint->timermax1;
+		}
+	}
+
+	if ((stdint->intactive & 0x01) && (cpu->pio.keypad->on_pressed & KEY_VALUE_MASK) && (stdint->on_backup & KEY_VALUE_MASK) == 0)  {
+		stdint->on_latch = TRUE;
+	}
+	stdint->on_backup = cpu->pio.keypad->on_pressed;
+	if (stdint->on_latch)
+		cpu->interrupt = TRUE;
 }
 
 static void port5(CPU_t *cpu, device_t *dev) {
@@ -42,6 +98,14 @@ static void port6(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		cpu->output = FALSE;
 	}
+}
+
+static void port10(CPU_t *cpu, device_t *dev) {
+	int screen_addr = (int) dev->aux;
+	// Output the entire LCD
+	LCD_t *lcd = cpu->pio.lcd;
+	memcpy(lcd->display, cpu->mem_c->banks[mc_bank(screen_addr)].addr + mc_base(screen_addr), DISPLAY_SIZE);
+
 }
 
 static STDINT_t* INT81_init(CPU_t* cpu) {
@@ -109,31 +173,36 @@ int memory_init_81(memc *mc) {
 int device_init_81(CPU_t *cpu) {
 	ClearDevices(cpu);
 
+	cpu->pio.devices[0x00].active = TRUE;
+	cpu->pio.devices[0x00].aux = NULL;
+	cpu->pio.devices[0x00].code = (devp) &port0;
+
 	keypad_t *keyp = keypad_init(cpu);
 	cpu->pio.devices[0x01].active = TRUE;
 	cpu->pio.devices[0x01].aux = keyp;
-	cpu->pio.devices[0x01].code = (devp) keypad;
+	cpu->pio.devices[0x01].code = (devp) &keypad;
 
 	cpu->pio.devices[0x02].active = TRUE;
-	cpu->pio.devices[0x02].code = (devp) port2;
+	cpu->pio.devices[0x02].code = (devp) &port2;
 
+	STDINT_t *stdint = INT81_init(cpu);
 	cpu->pio.devices[0x03].active = TRUE;
-	cpu->pio.devices[0x03].code = (devp) port3;
+	cpu->pio.devices[0x03].aux = stdint;
+	cpu->pio.devices[0x03].code = (devp) &port3;
 
 	cpu->pio.devices[0x06].active = TRUE;
-	cpu->pio.devices[0x06].code = (devp) port6;
+	cpu->pio.devices[0x06].code = (devp) &port6;
 
 
 	LCD_t *lcd = LCD_init(cpu, TI_81);
 	cpu->pio.devices[0x10].active = TRUE;
-	cpu->pio.devices[0x10].aux = lcd;
-	cpu->pio.devices[0x10].code = (devp) LCD_command;
+	cpu->pio.devices[0x10].aux = NULL;
+	cpu->pio.devices[0x10].code = (devp) &port10;
 
 	cpu->pio.devices[0x11].active = TRUE;
 	cpu->pio.devices[0x11].aux = lcd;
-	cpu->pio.devices[0x11].code = (devp) LCD_data;
+	cpu->pio.devices[0x11].code = (devp) &LCD_data;
 	
-	STDINT_t *stdint = INT81_init(cpu);
 	cpu->pio.lcd		= lcd;
 	cpu->pio.keypad		= keyp;
 	cpu->pio.link		= NULL;

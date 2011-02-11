@@ -81,43 +81,35 @@ static HWND CreateSendFileProgress(HWND hwndParent, const LPCALC lpCalc)
 	return hwnd;
 }
 
-static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
-{
+static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 	LPCALC lpCalc = (LPCALC) lpParam;
 	LPSENDINFO lpsi = g_SendInfo[lpCalc];
 	BOOL fRunningBackup = lpCalc->running;
-	BOOL fSoundBackup = lpCalc->audio->enabled;
+	BOOL fSoundBackup = FALSE;
+	if (lpCalc->audio)
+		fSoundBackup = lpCalc->audio->enabled;
 
 	lpCalc->running = FALSE;
 	if (fSoundBackup)
-	{
 		pausesound(lpCalc->audio);
-	}
 
 	lpsi->Error = LERR_SUCCESS;
-	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)
-	{
+	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)	{
 		SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);	
 		lpsi->Error = SendFile(NULL, lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), lpsi->destination);
 		if (lpsi->Error != LERR_SUCCESS)
-		{
 			break;
-		}
 	}
 
 	if (lpsi->Error	!= LERR_SUCCESS)
-	{
 		MessageBox(lpsi->hwndDlg, g_szLinkErrorDescriptions[lpsi->Error], _T("Wabbitemu"), MB_OK | MB_ICONERROR);
-	}
-
-	if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0)
-	{
+	
+	if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0) {
 		lpsi->FileList->clear();
 		ReleaseMutex(lpsi->hFileListMutex);
 	}
 
-	if (lpsi->hwndDlg != NULL)
-	{
+	if (lpsi->hwndDlg != NULL) {
 		HWND hwndDlg = lpsi->hwndDlg;
 
 		lpsi->hwndDlg = NULL;
@@ -125,23 +117,18 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam)
 	}
 	lpCalc->running = fRunningBackup;
 	if (fSoundBackup == TRUE)
-	{
 		playsound(lpCalc->audio);
-	}
 	current_file_sending = NULL;
 	return 0;
 }
 
-BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND_FLAG destination)
-{
-	if ((lpCalc == NULL) || (lpszFileName == NULL))
-	{
+BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND_FLAG destination) {
+	if ((lpCalc == NULL) || (lpszFileName == NULL)) {
 		SetLastError(ERROR_INVALID_PARAMETER);
 		return FALSE;
 	}
 
-	if (fAsync == TRUE)
-	{
+	if (fAsync == TRUE) {
 		if (hSendInfoMutex == NULL) {
 			hSendInfoMutex = CreateMutex(NULL, TRUE, NULL);
 		} else {

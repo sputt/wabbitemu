@@ -136,6 +136,9 @@ void free_backup(debugger_backup *);
 BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName);
 void calc_slot_free(LPCALC);
 
+void calc_unpause_linked();
+void calc_pause_linked();
+
 int calc_init_83p(LPCALC);
 int calc_init_84p(LPCALC);
 int calc_init_83pse(LPCALC);
@@ -158,6 +161,7 @@ GLOBAL LPCALC lpDebuggerCalc;
 GLOBAL debugger_backup * backups[MAX_CALCS];
 GLOBAL int number_backup;
 GLOBAL int current_backup_index;
+GLOBAL int num_backup_per_sec;
 #endif
 
 GLOBAL u_int frame_counter;
@@ -175,7 +179,7 @@ GLOBAL link_t *link_hub[MAX_CALCS + 1];
 GLOBAL const TCHAR *CalcModelTxt[]
 #ifdef CALC_C
 = {	//"???",
-	_T("TI_81"),
+	_T("TI-81"),
 	_T("TI-82"),
 	_T("TI-83"),
 	_T("TI-85"),

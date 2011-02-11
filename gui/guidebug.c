@@ -111,7 +111,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		NULL, NULL, NULL, NULL,
 		{{0, 0, 7, _T("Addr"), &sprint_addr, 0, NULL},
 		{1, 0, 11, _T("Data"), &sprint_data, 0, NULL},
-		{2, 0, 23, _T("Disassembly"), &sprint_command, 0, NULL},
+		{2, 0, 45, _T("Disassembly"), &sprint_command, 0, NULL},
 		{3, 0, 6, _T("Size"), &sprint_size, DT_CENTER, NULL},
 		{4, 0, 8, _T("Clocks"), &sprint_clocks, DT_CENTER, NULL},
 		{-1, 0, 0, _T(""), &sprint_addr, 0, NULL},
@@ -298,8 +298,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			return FALSE;
 		}
-		case WM_SIZE:
-		{
+		case WM_SIZE: {
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 
@@ -322,8 +321,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			UpdateWindow(hwnd);
 			return 0;
 		}
-		case WM_MOUSEMOVE:
-		{
+		case WM_MOUSEMOVE: {
 			u_int y = GET_Y_LPARAM(lParam) + offset_click;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
@@ -380,8 +378,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			ratioDisasm = (double) cyDisasm / (double) rc.bottom;
 			return 0;
 		}
-		case WM_MOUSELEAVE:
-		{
+		case WM_MOUSELEAVE: {
 			bHot = FALSE;
 			RECT r;
 			GetClientRect(hwnd, &r);
@@ -391,8 +388,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			InvalidateRect(hwnd, &r, FALSE);
 			return 0;
 		}
-		case WM_LBUTTONDOWN:
-		{
+		case WM_LBUTTONDOWN: {
 			int y = GET_Y_LPARAM(lParam);
 			int dy = abs((int) (y - (cyDisasm + (cyGripper/2))));
 
@@ -411,8 +407,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 			return 0;
 		}
-		case WM_LBUTTONUP:
-		{
+		case WM_LBUTTONUP:  {
 			ReleaseCapture();
 			bDrag = FALSE;
 			RECT r;
@@ -423,8 +418,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			InvalidateRect(hwnd, &r, FALSE);
 			return 0;
 		}
-		case WM_LBUTTONDBLCLK:
-		{
+		case WM_LBUTTONDBLCLK: {
 			int y = GET_Y_LPARAM(lParam);
 			int dy = abs((int) (y - (cyDisasm + (cyGripper/2))));
 
@@ -434,8 +428,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 			return 0;
 		}
-		case WM_COMMAND:
-		{
+		case WM_COMMAND: {
 			printf("Got a command\n");
 			switch (wParam) {
 			case IDM_DEBUG_EXIT:
@@ -691,6 +684,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		case WM_DESTROY: {
 			CPU_step((&lpDebuggerCalc->cpu));
 			lpDebuggerCalc->running = TRUE;
+			calc_unpause_linked();
 			GetWindowPlacement(hwnd, &db_placement);
 			db_maximized = IsMaximized(hwnd);
 
