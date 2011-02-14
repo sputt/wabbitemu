@@ -310,12 +310,10 @@
     <None Include="gui\ti-84+.png" />
     <None Include="gui\ti-84+se.png" />
     <None Include="gui\ti-84+sekeymap.png" />
-    <None Include="gui\ti-84.png" />
     <None Include="gui\ti-85.png" />
     <None Include="gui\ti-85Keymap.png" />
     <None Include="gui\ti-86.png" />
     <None Include="gui\ti-86keymap.png" />
-    <None Include="gui\ti-87.png" />
     <None Include="gui\TI-Icons.bmp" />
     <None Include="gui\TI83P.bmp" />
     <None Include="gui\TI83PSE.bmp" />
@@ -323,7 +321,6 @@
     <None Include="gui\wabbitemu.ico" />
     <None Include="gui\Wabbitemu.tlb" />
     <None Include="interface\Wabbitemu.def" />
-    <None Include="ti-81.png" />
     <None Include="Wabbitemu.tlb" />
   </ItemGroup>
   <ItemGroup>

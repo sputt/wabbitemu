@@ -671,10 +671,9 @@
     <None Include="gui\downarrow7.bmp">
       <Filter>Resource Files\Debugger</Filter>
     </None>
-    <None Include="gui\ti-84.png" />
-    <None Include="gui\ti-87.png" />
-    <None Include="ti-81.png" />
-    <None Include="gui\ti-81.png" />
+    <None Include="gui\ti-81.png">
+      <Filter>Resource Files\Skins</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">

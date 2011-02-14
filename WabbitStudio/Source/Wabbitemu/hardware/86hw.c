@@ -245,7 +245,7 @@ int device_init_86(CPU_t *cpu) {
 	cpu->pio.devices[0x07].code = (devp) &port7;
 
 	cpu->pio.devices[0x10].active = TRUE;
-	cpu->pio.devices[0x10].aux = lcd;
+	cpu->pio.devices[0x10].aux = (void *) 0xFC00;
 	cpu->pio.devices[0x10].code = (devp) &port10;
 
 	cpu->pio.devices[0x11].active = TRUE;
