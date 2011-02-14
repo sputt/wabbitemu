@@ -172,6 +172,10 @@ HRESULT __stdcall CDataObject::QueryGetData(FORMATETC *pFormatEtc) {
 
 HRESULT __stdcall CDataObject::GetData(FORMATETC *pFormatEtc, STGMEDIUM *pStgMedium) {
 	LPDATAENTRY lpde;
+	if (pFormatEtc == NULL)
+	{
+		return E_INVALIDARG;
+	}
 	HRESULT hr = LookupFormatEtc(pFormatEtc, &lpde, FALSE);
 	if (SUCCEEDED(hr)) {
 		hr = AddRefStgMedium(&lpde->stgmed, pStgMedium, FALSE);

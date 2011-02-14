@@ -24,13 +24,7 @@
 #include <ShObjIdl.h>
 #include <assert.h>
 #include <setjmp.h>
-#ifdef _DEBUG
-#define _CRTDBG_MAP_ALLOC
-#endif
 #include <stdlib.h>
-#ifdef _DEBUG
-#include <crtdbg.h>
-#endif
 #include <stdio.h>
 #include <sys/types.h>
 #include <mmsystem.h>

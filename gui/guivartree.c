@@ -162,18 +162,24 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					DWORD dwEffect = DROPEFFECT_NONE;
 					// transfer the current selection into the CDataObject
 					stgmed[0].hGlobal = GlobalAlloc(GHND, sizeof(FILEGROUPDESCRIPTOR) + sizeof(FILEDESCRIPTOR));
-					
+					stgmed[0].tymed = TYMED_HGLOBAL;
+
 					FILEGROUPDESCRIPTOR *fgd = (FILEGROUPDESCRIPTOR *) GlobalLock(stgmed[0].hGlobal);
 					fgd->cItems = 1;
+
 					FILEDESCRIPTOR *fd = fgd->fgd;
 					ZeroMemory(fd, sizeof(FILEDESCRIPTOR));
-					if (FillDesc(nmtv->itemNew.hItem, fd) == NULL || fd->nFileSizeLow == 0) {
+
+					if ((FillDesc(nmtv->itemNew.hItem, fd) == NULL) || (fd->nFileSizeLow == 0))
+					{
 						GlobalFree(stgmed[0].hGlobal);
 						return FALSE;
 					}
 					GlobalUnlock(stgmed[0].hGlobal);
 
 					stgmed[1].hGlobal = GlobalAlloc(GHND, fd->nFileSizeLow);
+					stgmed[1].tymed = TYMED_HGLOBAL;
+
 					char *buf = (char *) GlobalLock(stgmed[1].hGlobal);
 					FillFileBuffer(nmtv->itemNew.hItem, buf);
 					GlobalUnlock(stgmed[1].hGlobal);
@@ -185,9 +191,9 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					//
 					//	** ** ** The drag-drop operation starts here! ** ** **
 					//
-					pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource);
+					pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource->m_pDataobject);
 					//SetDropSourceDataObject(pDropSource, pDataObject);
-					DoDragDrop((IDataObject *) pDataObject, (IDropSource *) pDropSource, DROPEFFECT_COPY, &dwEffect);
+					HRESULT hr = DoDragDrop((IDataObject *) pDataObject, (IDropSource *) pDropSource, DROPEFFECT_COPY, &dwEffect);
 					return TRUE;
 				}
 			}
