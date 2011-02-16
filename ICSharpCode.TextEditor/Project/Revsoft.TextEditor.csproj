@@ -146,7 +146,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Wabbitcode Debug|X86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\X86\Wabbitcode Debug\</OutputPath>
+    <OutputPath>..\..\..\..\Debug\</OutputPath>
     <DefineConstants>DEBUG;DATACONSISTENCYTEST</DefineConstants>
     <BaseAddress>98041856</BaseAddress>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
@@ -219,7 +219,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Wabbitcode Release|X64'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\X64\Wabbitcode Release\</OutputPath>
+    <OutputPath>..\..\..\..\x64\Release\</OutputPath>
     <BaseAddress>98041856</BaseAddress>
     <CheckForOverflowUnderflow>true</CheckForOverflowUnderflow>
     <Optimize>true</Optimize>
