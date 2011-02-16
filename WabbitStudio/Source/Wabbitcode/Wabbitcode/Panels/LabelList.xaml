@@ -1,0 +1,18 @@
+﻿<ad:DockableContent x:Class="Revsoft.Wabbitcode.Panels.LabelList"
+      xmlns:ad="clr-namespace:AvalonDock;assembly=AvalonDock"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d"
+      d:DesignHeight="400" d:DesignWidth="250"
+      Title="Label List"
+      Name="LabelListPanel">
+
+    <Grid>
+        <DockPanel Height="Auto" Width="Auto" LastChildFill="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <ListBox Name="LabelListBox">
+            </ListBox>
+        </DockPanel>
+    </Grid>
+</ad:DockableContent>
