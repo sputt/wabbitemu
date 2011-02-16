@@ -1,0 +1,225 @@
+<?xml version="1.0"?>
+
+<!-- Syntaxdefinition for VB.NET, v0.1 Rev 1 by Christian Holm -->
+<!-- Updated 2005 by Daniel Grunwald for VB.NET 2.0 -->
+<!-- Converted to AvalonEdit format by Daniel Grunwald in 2010 -->
+<SyntaxDefinition name="VBNET" extensions=".vb" xmlns="http://icsharpcode.net/sharpdevelop/syntaxdefinition/2008">
+	<Color name="Comment" foreground="Green" exampleText="' comment" />
+	<Color name="String" exampleText="text = &quot;Hello, World!&quot;" />
+	
+	<Color name="DateLiteral" foreground="Blue" exampleText="endOfWorld = #2012-12-21#" />
+	<Color name="Preprocessor" foreground="Maroon" exampleText="#Region &quot;Title&quot;" />
+	<Color name="DataTypes" foreground="#FF6F002F" exampleText="Dim b As Boolean = True" />
+	<Color name="Operators" foreground="#FF8515EA" exampleText="If a OrElse b Then"/>
+	<Color name="Constants" foreground="Blue" exampleText="b = False" />
+	<Color name="Keywords" foreground="Blue" exampleText="If a OrElse b Then" />
+	<Color name="FunctionKeywords" foreground="Blue" exampleText="CInt(a)" />
+	<Color name="ContextKeywords" foreground="Blue" exampleText="Declare Unicode Sub SomeMethod" />
+	
+	<RuleSet ignoreCase="true">
+		<Span color="String">
+			<Begin>"</Begin>
+			<End>"</End>
+			<RuleSet>
+				<Span begin="&quot;&quot;" end="" />
+			</RuleSet>
+		</Span>
+		<Span color="Preprocessor" ruleSet="PreprocessorSet">
+			<Begin>(?&lt;=(^\s*))\#</Begin>
+		</Span>
+		<Span color="DateLiteral">
+			<Begin>(?&lt;!(^\s*))\#</Begin>
+			<End>\#</End>
+		</Span>
+		<Span color="Comment" ruleSet="XmlDoc/DocCommentSet">
+			<Begin color="XmlDoc/DocComment">'''</Begin>
+		</Span>
+		<Span color="Comment">
+			<Begin>'</Begin>
+		</Span>
+		<Span color="Comment">
+			<Begin>\bREM\b</Begin>
+		</Span>
+		<Keywords color="DataTypes">
+			<Word>Boolean</Word>
+			<Word>Byte</Word>
+			<Word>Char</Word>
+			<Word>Date</Word>
+			<Word>Decimal</Word>
+			<Word>Double</Word>
+			<Word>Integer</Word>
+			<Word>Long</Word>
+			<Word>Object</Word>
+			<Word>SByte</Word>
+			<Word>Short</Word>
+			<Word>Single</Word>
+			<Word>String</Word>
+			<Word>UInteger</Word>
+			<Word>ULong</Word>
+			<Word>UShort</Word>
+			<Word>Variant</Word>
+		</Keywords>
+		<Keywords color="Operators">
+			<Word>AddressOf</Word>
+			<Word>And</Word>
+			<Word>AndAlso</Word>
+			<Word>Is</Word>
+			<Word>IsNot</Word>
+			<Word>Like</Word>
+			<Word>Mod</Word>
+			<Word>New</Word>
+			<Word>Not</Word>
+			<Word>Or</Word>
+			<Word>OrElse</Word>
+			<Word>Xor</Word>
+		</Keywords>
+		<Keywords color="Constants">
+			<Word>False</Word>
+			<Word>Me</Word>
+			<Word>MyBase</Word>
+			<Word>MyClass</Word>
+			<Word>Nothing</Word>
+			<Word>True</Word>
+		</Keywords>
+		<Keywords color="FunctionKeywords">
+			<Word>CBool</Word>
+			<Word>CByte</Word>
+			<Word>CChar</Word>
+			<Word>CDate</Word>
+			<Word>CDec</Word>
+			<Word>CDbl</Word>
+			<Word>CInt</Word>
+			<Word>CLng</Word>
+			<Word>CObj</Word>
+			<Word>CSByte</Word>
+			<Word>CShort</Word>
+			<Word>CSng</Word>
+			<Word>CStr</Word>
+			<Word>CType</Word>
+			<Word>CUInt</Word>
+			<Word>CULng</Word>
+			<Word>CUShort</Word>
+			<Word>DirectCast</Word>
+			<Word>GetType</Word>
+			<Word>TryCast</Word>
+			<Word>TypeOf</Word>
+		</Keywords>
+		<Keywords color="Keywords">
+			<Word>As</Word>
+			<Word>Of</Word>
+			<Word>New</Word>
+			<Word>End</Word>
+			<Word>ByRef</Word>
+			<Word>ByVal</Word>
+			<Word>Optional</Word>
+			<Word>ParamArray</Word>
+			<Word>Friend</Word>
+			<Word>Private</Word>
+			<Word>Protected</Word>
+			<Word>Public</Word>
+			<Word>Const</Word>
+			<Word>Custom</Word>
+			<Word>Default</Word>
+			<Word>Global</Word>
+			<Word>MustInherit</Word>
+			<Word>MustOverride</Word>
+			<Word>Narrowing</Word>
+			<Word>NotInheritable</Word>
+			<Word>NotOverridable</Word>
+			<Word>Overloads</Word>
+			<Word>Overridable</Word>
+			<Word>Overrides</Word>
+			<Word>Partial</Word>
+			<Word>ReadOnly</Word>
+			<Word>Shadows</Word>
+			<Word>Shared</Word>
+			<Word>Static</Word>
+			<Word>Widening</Word>
+			<Word>WithEvents</Word>
+			<Word>WriteOnly</Word>
+			<Word>Throw</Word>
+			<Word>Stop</Word>
+			<Word>Return</Word>
+			<Word>Resume</Word>
+			<Word>AddHandler</Word>
+			<Word>RemoveHandler</Word>
+			<Word>RaiseEvent</Word>
+			<Word>Option</Word>
+			<Word>Let</Word>
+			<Word>GoTo</Word>
+			<Word>GoSub</Word>
+			<Word>Call</Word>
+			<Word>Continue</Word>
+			<Word>Dim</Word>
+			<Word>ReDim</Word>
+			<Word>Erase</Word>
+			<Word>On</Word>
+			<Word>Error</Word>
+			<Word>Exit</Word>
+			<Word>Namespace</Word>
+			<Word>Class</Word>
+			<Word>Imports</Word>
+			<Word>Implements</Word>
+			<Word>Inherits</Word>
+			<Word>Interface</Word>
+			<Word>Delegate</Word>
+			<Word>Module</Word>
+			<Word>Structure</Word>
+			<Word>Enum</Word>
+			<Word>Sub</Word>
+			<Word>Function</Word>
+			<Word>Handles</Word>
+			<Word>Declare</Word>
+			<Word>Lib</Word>
+			<Word>Alias</Word>
+			<Word>Get</Word>
+			<Word>Set</Word>
+			<Word>Property</Word>
+			<Word>Operator</Word>
+			<Word>Event</Word>
+			<Word>SyncLock</Word>
+			<Word>Using</Word>
+			<Word>With</Word>
+			<Word>Do</Word>
+			<Word>While</Word>
+			<Word>Loop</Word>
+			<Word>Wend</Word>
+			<Word>Try</Word>
+			<Word>Catch</Word>
+			<Word>When</Word>
+			<Word>Finally</Word>
+			<Word>If</Word>
+			<Word>Then</Word>
+			<Word>Else</Word>
+			<Word>ElseIf</Word>
+			<Word>EndIf</Word>
+			<Word>For</Word>
+			<Word>To</Word>
+			<Word>Step</Word>
+			<Word>Each</Word>
+			<Word>In</Word>
+			<Word>Next</Word>
+			<Word>Select</Word>
+			<Word>Case</Word>
+		</Keywords>
+		<Keywords color="ContextKeywords">
+			<Word>Ansi</Word>
+			<Word>Auto</Word>
+			<Word>Unicode</Word>
+			<Word>Preserve</Word>
+			<Word>Until</Word>
+		</Keywords>
+	</RuleSet>
+	<RuleSet name="PreprocessorSet" ignoreCase="true">
+		<Keywords fontWeight="bold">
+			<Word>Const</Word>
+			<Word>If</Word>
+			<Word>ElseIf</Word>
+			<Word>Else</Word>
+			<Word>End</Word>
+			<Word>ExternalSource</Word>
+			<Word>Region</Word>
+			<Word>ExternalChecksum</Word>
+		</Keywords>
+	</RuleSet>
+</SyntaxDefinition>

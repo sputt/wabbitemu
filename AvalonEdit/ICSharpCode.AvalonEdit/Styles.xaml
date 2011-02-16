@@ -1,0 +1,23 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	xmlns:local="clr-namespace:ICSharpCode.AvalonEdit">
+    <Style TargetType="{x:Type Window}" x:Key="WindowStyleKey">
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+    </Style>
+
+    <Style TargetType="{x:Type Window}" x:Key="DialogWindowStyleKey">
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+        <Setter Property="Background" Value="{DynamicResource {x:Static SystemColors.ControlBrushKey}}" />
+        <Setter Property="ShowInTaskbar" Value="False" />
+    </Style>
+
+    <Style TargetType="{x:Type Button}" x:Key="ButtonStyleKey">
+        <Setter Property="MinWidth" Value="73" />
+        <!-- <Setter Property="Height" Value="21" /> height implicit using text height+padding-->
+        <Setter Property="Padding" Value="9,1,9,1" />
+    </Style>
+
+    <x:StaticExtension x:Key="FlowDirectionKey"  Member="LeftToRight" />
+</ResourceDictionary>
