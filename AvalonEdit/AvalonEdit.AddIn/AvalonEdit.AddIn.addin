@@ -1,0 +1,180 @@
+﻿<AddIn name        = "AvalonEdit.AddIn"
+       author      = "Daniel Grunwald"
+       description = "The main text editor for SharpDevelop"
+       addInManagerHidden="preinstalled">
+	
+	<Manifest>
+		<Identity name="ICSharpCode.AvalonEdit" />
+	</Manifest>
+	
+	<Runtime>
+		<Import assembly = ":ICSharpCode.AvalonEdit"/>
+		<Import assembly = "ICSharpCode.AvalonEdit.AddIn.dll">
+			<Doozer name="SyntaxMode" class="ICSharpCode.AvalonEdit.AddIn.SyntaxModeDoozer"/>
+		</Import>
+	</Runtime>
+	
+	<Path name = "/SharpDevelop/Workbench/DisplayBindings">
+		<DisplayBinding id = "Text"
+		                title = "${res:Gui.ProjectBrowser.OpenWith.Bindings.TextEditor}"
+		                class = "ICSharpCode.AvalonEdit.AddIn.AvalonEditDisplayBinding"/>
+		<DisplayBinding id = "TextWithEncoding"
+		                insertbefore = "ShellExecute"
+		                title = "${res:Gui.ProjectBrowser.OpenWith.Bindings.TextEditorWithEncoding}"
+		                class = "ICSharpCode.AvalonEdit.AddIn.ChooseEncodingDisplayBinding"/>
+	</Path>
+	
+	<Path name = "/SharpDevelop/ViewContent/AvalonEdit/ContextMenu">
+		<Include id="DefaultEditor" path="/SharpDevelop/ViewContent/TextEditor/ContextMenu"/>
+	</Path>
+	
+	<Path name = "/SharpDevelop/ViewContent/TextEditor/EditorControlService">
+		<Class id="CodeEditorView" class="ICSharpCode.AvalonEdit.AddIn.AvalonEditorControlService"/>
+	</Path>
+	
+	<!-- 
+	<Path name = "/SharpDevelop/ViewContent/TextEditor/ContextMenu">
+		<Condition name = "WindowActive" activewindow="ICSharpCode.AvalonEdit.AddIn.ICodeEditorProvider">
+			<MenuItem id = "SaveWithEncoding"
+			          label = "${res:XML.MainMenu.FileMenu.SaveWithEncoding}"
+			          insertafter="SaveAs"
+			          insertbefore="CloseFile"
+			          class = "ICSharpCode.AvalonEdit.AddIn.Commands.SaveFileWithEncoding"/>
+		</Condition>
+	</Path>
+	-->
+	
+	<Path name = "/SharpDevelop/Workbench/MainMenu/File">
+		<Condition name = "WindowActive" activewindow="ICSharpCode.AvalonEdit.AddIn.ICodeEditorProvider" action="Disable">
+			<MenuItem id = "SaveWithEncoding"
+			          label = "${res:XML.MainMenu.FileMenu.SaveWithEncoding}"
+			          insertafter="SaveAs"
+			          insertbefore="SaveAll"
+			          class = "ICSharpCode.AvalonEdit.AddIn.Commands.SaveFileWithEncoding"/>
+		</Condition>
+	</Path>
+	
+	<Path name = "/SharpDevelop/Workbench/MainMenu/Edit/Format">
+		<Condition name = "WindowActive" activewindow="ICSharpCode.SharpDevelop.Editor.ITextEditorProvider" action="Disable">
+			<MenuItem id = "RemoveLeadingWs"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.RlWs}"
+			          command = "ICSharpCode.AvalonEdit.AvalonEditCommands.RemoveLeadingWhitespace"/>
+			<MenuItem id = "RemoveTrailingWs"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.RtWs}"
+			          command = "ICSharpCode.AvalonEdit.AvalonEditCommands.RemoveTrailingWhitespace"/>
+			<MenuItem id = "Seperator1" type = "Separator" insertbefore = "Separator4" />
+			<MenuItem id = "UpperCase"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.UpperCase}"
+			          icon = "Icons.16x16.LowerToUpperCase"
+			          command = "ICSharpCode.AvalonEdit.AvalonEditCommands.ConvertToUppercase"/>
+			<MenuItem id = "LowerCase"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.LowerCase}"
+			          icon = "Icons.16x16.UpperToLowerCase"
+			          command = "ICSharpCode.AvalonEdit.AvalonEditCommands.ConvertToLowercase"/>
+			<MenuItem id = "Capitalize"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.Capitalize}"
+			          command = "ICSharpCode.AvalonEdit.AvalonEditCommands.ConvertToTitleCase"/>
+			<MenuItem id = "InvertCase"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.InvertCase}"
+			          command = "ICSharpCode.AvalonEdit.AvalonEditCommands.InvertCase"/>
+			<MenuItem id = "Separator2" type = "Separator" />
+			<MenuItem id = "SortSelection"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.SortLines}"
+			          class ="ICSharpCode.AvalonEdit.AddIn.Commands.SortSelectionCommand"/>
+			<MenuItem id = "Separator3" type = "Separator" insertbefore = "Separator4" />
+			<MenuItem id = "Tabs2Spaces"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.Tab2Space}"
+			          command = "ICSharpCode.AvalonEdit.AvalonEditCommands.ConvertTabsToSpaces"/>
+			<MenuItem id = "Spaces2Tabs"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.Space2Tab}"
+			          command = "ICSharpCode.AvalonEdit.AvalonEditCommands.ConvertSpacesToTabs"/>
+			<MenuItem id = "LeadingTabs2Spaces"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.LdTab2Space}"
+			          command = "ICSharpCode.AvalonEdit.AvalonEditCommands.ConvertLeadingTabsToSpaces"/>
+			<MenuItem id = "LeadingSpaces2Tabs"
+			          insertbefore = "Separator4"
+			          label = "${res:XML.MainMenu.EditMenu.FormatMenu.LdSpace2Tab}"
+			          command = "ICSharpCode.AvalonEdit.AvalonEditCommands.ConvertLeadingSpacesToTabs"/>
+			<MenuItem id = "Separator5" type = "Separator" insertbefore = "Separator4" />
+			<MenuItem id = "SurroundWithSnippet"
+			          insertbefore = "Separator4"
+			          shortcut="Ctrl|J"
+			          label = "Surround with"
+			          class = "ICSharpCode.AvalonEdit.AddIn.Commands.SurroundWithCommand"/>
+		</Condition>
+	</Path>
+	
+	<Path name = "/SharpDevelop/Workbench/MainMenu/Edit">
+		<MenuItem id = "Folding" label = "${res:XML.MainMenu.EditMenu.FoldingMenu}" type="Menu" insertafter="Format">
+			<Condition name = "WindowActive" activewindow="ICSharpCode.AvalonEdit.AddIn.ICodeEditorProvider" action="Disable">
+				<MenuItem id          = "ToggleFolding"
+				          label       = "${res:XML.MainMenu.EditMenu.FoldingMenu.ToggleFolding}"
+				          shortcut    = "Shift|Control|M"
+				          class       = "ICSharpCode.AvalonEdit.AddIn.Commands.ToggleFolding"/>
+				<MenuItem id          = "ToggleAllFoldings"
+				          label       = "${res:XML.MainMenu.EditMenu.FoldingMenu.ToggleAllFoldings}"
+				          shortcut    = "Shift|Control|L"
+				          class       = "ICSharpCode.AvalonEdit.AddIn.Commands.ToggleAllFoldings"/>
+				<MenuItem id          = "ShowDefinitionsOnly"
+				          label       = "${res:XML.MainMenu.EditMenu.FoldingMenu.ShowDefinitions}"
+				          shortcut    = "Shift|Control|P"
+				          class       = "ICSharpCode.AvalonEdit.AddIn.Commands.ShowDefinitionsOnly"/>
+			</Condition>
+		</MenuItem>
+	</Path>
+	
+	<Path name = "/SharpDevelop/Workbench/MainMenu/Search">
+		<Condition name = "WindowActive" activewindow="ICSharpCode.SharpDevelop.Editor.ITextEditorProvider" action="Disable">
+			<MenuItem id = "SearchIncremental"
+			          label = "${res:XML.MainMenu.SearchMenu.IncrementalSearch}"
+			          shortcut = "Control|E"
+			          class = "ICSharpCode.AvalonEdit.AddIn.Commands.RunIncrementalSearch"/>
+			<MenuItem id = "SearchReverseIncremental"
+			          label = "${res:XML.MainMenu.SearchMenu.ReverseIncrementalSearch}"
+			          shortcut = "Control|Shift|E"
+			          class = "ICSharpCode.AvalonEdit.AddIn.Commands.RunReverseIncrementalSearch"
+			          insertbefore = "SearchInFilesSeparator"/>
+		</Condition>
+	</Path>
+	
+	<Path name = "/SharpDevelop/Dialogs/OptionsDialog/CodingOptions">
+		<OptionPanel id = "CodeTemplates"
+		             label = "${res:Dialog.Options.CodeTemplatesText}"
+		             class = "ICSharpCode.AvalonEdit.AddIn.Snippets.SnippetOptionPanel"/>
+	</Path>
+	
+	<Path name = "/SharpDevelop/Dialogs/OptionsDialog">
+		<OptionPanel id    = "TextEditorOptions"
+		             insertafter = "CodingOptions"
+		             insertbefore = "ToolsOptions"
+		             label = "${res:Dialog.Options.IDEOptions.TextEditorOptionsText}">
+			<OptionPanel id = "General"
+			             label = "${res:Dialog.Options.IDEOptions.General}"
+			             class = "ICSharpCode.AvalonEdit.AddIn.Options.GeneralEditorOptions"/>
+			<OptionPanel id = "Markers"
+			             label = "${res:Dialog.Options.IDEOptions.TextEditor.Markers.PanelName}"
+			             class = "ICSharpCode.AvalonEdit.AddIn.Options.TextViewOptions"/>
+			<OptionPanel id = "Behavior"
+			             label = "${res:Dialog.Options.IDEOptions.TextEditor.Behaviour.PanelName}"
+			             class = "ICSharpCode.AvalonEdit.AddIn.Options.BehaviorOptions"/>
+			<OptionPanel id = "Highlighting"
+			             label = "${res:Dialog.Options.TextEditorOptions.EditHighlighting.Title}"
+			             class = "ICSharpCode.AvalonEdit.AddIn.Options.HighlightingOptions"/>
+		</OptionPanel>
+	</Path>
+	
+	<Path name = "/SharpDevelop/ViewContent/AvalonEdit/SnippetElementProviders">
+		<Class id="default" class="ICSharpCode.AvalonEdit.AddIn.Snippets.DefaultSnippetElementProvider" />
+		<Class id="anchor" class="ICSharpCode.AvalonEdit.AddIn.Snippets.AnchorSnippetElementProvider" />
+	</Path>
+</AddIn>
