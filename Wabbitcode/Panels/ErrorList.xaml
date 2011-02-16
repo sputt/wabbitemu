@@ -1,0 +1,41 @@
+﻿<ad:DockableContent x:Class="Revsoft.Wabbitcode.Panels.ErrorList"
+      xmlns:ad="clr-namespace:AvalonDock;assembly=AvalonDock"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+      mc:Ignorable="d"
+      d:DesignHeight="200" d:DesignWidth="600"
+      Title="Error List" Initialized="DockableContent_Initialized"
+      Name="ErrorListPanel">
+
+    <Grid>
+        <DockPanel Height="Auto" Width="Auto" LastChildFill="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <ListView Name="ListView">
+                <ListView.View>
+                    <GridView TextBlock.TextAlignment="Left">
+                        <GridView.Columns>
+                            <GridViewColumn Width="15" />
+                            <GridViewColumn Width="25"/>
+                            <GridViewColumn Width="220" >
+                                <GridViewColumnHeader HorizontalContentAlignment="Left">
+                                    Description
+                                </GridViewColumnHeader>
+                            </GridViewColumn>
+                            <GridViewColumn Width="Auto">
+                                <GridViewColumnHeader HorizontalContentAlignment="Left">
+                                    File
+                                </GridViewColumnHeader>
+                            </GridViewColumn>
+                            <GridViewColumn Width="80">
+                                <GridViewColumnHeader HorizontalContentAlignment="Left">
+                                    Line
+                                </GridViewColumnHeader>
+                            </GridViewColumn>
+                        </GridView.Columns>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </DockPanel>
+    </Grid>
+</ad:DockableContent>
