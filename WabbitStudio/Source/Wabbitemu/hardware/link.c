@@ -347,7 +347,7 @@ static void link_RTS(CPU_t *cpu, TIVAR_t *var, int dest) {
 	}
 
 	//printf("Model: %d, length: %d\n", cpu->pio.model, link_endian(tifile->var->length));
-	if (cpu->pio.model == TI_82)
+	if (cpu->pio.model == TI_82 || cpu->pio.model == TI_85)
 		link_send_pkt(cpu, CID_VAR, &var_hdr);
 	else
 		link_send_pkt(cpu, CID_RTS, &var_hdr);
@@ -555,7 +555,7 @@ LINK_ERR link_send_var(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 				return LERR_LINK;
 
 			// Send the End of Transmission
-			if (cpu->pio.model != TI_82)
+			if (cpu->pio.model != TI_82 && cpu->pio.model != TI_85)
 				link_send_pkt(cpu, CID_EOT, NULL);
 			break;
 		}
@@ -563,6 +563,16 @@ LINK_ERR link_send_var(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 				return LERR_SYSTEM;
 		}
 		var = tifile->vars[++i];
+	}
+	if (cpu->pio.model == TI_85) {
+		TI_PKTHDR rpkt;
+		u_char data[64];
+		link_send_pkt(cpu, CID_EOT, NULL);
+
+		// Receive the ACK
+		link_recv_pkt(cpu, &rpkt, data);
+		if (rpkt.command_ID != CID_ACK)
+			return LERR_LINK;
 	}
 	return LERR_SUCCESS;
 }

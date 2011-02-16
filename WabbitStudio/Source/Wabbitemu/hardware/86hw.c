@@ -22,7 +22,9 @@ static void port0(CPU_t *cpu, device_t *dev) {
 		dev->aux = (LPVOID) (0x100 * ((cpu->bus % 0x40) + 0xC0));
 		port10(cpu, dev);
 		cpu->output = FALSE;
-		LCD_data(cpu, dev);
+		device_t lcd_dev;
+		lcd_dev.aux = cpu->pio.lcd;
+		LCD_data(cpu, &lcd_dev);
 	}
 	return;
 }
