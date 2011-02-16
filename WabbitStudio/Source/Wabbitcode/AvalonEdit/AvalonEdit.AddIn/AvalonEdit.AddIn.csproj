@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{0162E499-42D0-409B-AA25-EED21F75336B}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Revsoft.Wabbitcode.AvalonEditExtension</RootNamespace>
+    <AssemblyName>Revsoft.Wabbitcode.AvalonEditExtension</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <SourceAnalysisOverrideSettingsFile>C:\Users\Daniel\AppData\Roaming\ICSharpCode/SharpDevelop3.0\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
+    <OutputPath>..\..\..\..\AddIns\DisplayBindings\AvalonEdit\</OutputPath>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <NoStdLib>False</NoStdLib>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <RunCodeAnalysis>False</RunCodeAnalysis>
+    <CodeAnalysisRules>-Microsoft.Design#CA1014;-Microsoft.Design#CA2210</CodeAnalysisRules>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>False</DebugSymbols>
+    <DebugType>None</DebugType>
+    <Optimize>True</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <BaseAddress>4194304</BaseAddress>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <FileAlignment>4096</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <OutputPath>..\..\bin\Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>..\..\bin\Release\</OutputPath>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+  <ItemGroup>
+    <Reference Include="ICSharpCode.AvalonEdit">
+      <HintPath>..\..\bin\Debug\ICSharpCode.AvalonEdit.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="PresentationFramework">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="ReachFramework">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Printing">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsFormsIntegration">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AvalonEdit.AddIn.addin">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Compile Include="Configuration\AssemblyInfo.cs" />
+    <Compile Include="Src\IBookmarkMargin.cs" />
+    <Compile Include="Src\AvalonEditEditorUIService.cs" />
+    <Compile Include="Src\AvalonEditorControlService.cs" />
+    <Compile Include="Src\AvalonEditViewContent.cs" />
+    <Compile Include="Src\BracketHighlightRenderer.cs" />
+    <Compile Include="Src\CaretReferencesRenderer.cs" />
+    <Compile Include="Src\ChooseEncodingDialog.xaml.cs">
+      <DependentUpon>ChooseEncodingDialog.xaml</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Src\CodeCompletionEditorAdapter.cs" />
+    <Compile Include="Src\CodeEditor.cs" />
+    <Compile Include="Src\CodeEditorAdapter.cs" />
+    <Compile Include="Src\CodeEditorView.cs" />
+    <Compile Include="Src\ContextActionsRenderer.cs" />
+    <Compile Include="Src\ExpressionHighlightRenderer.cs" />
+    <Compile Include="Src\NewLineConsistencyCheck.cs" />
+    <Compile Include="Src\WabbitcodeTextEditor.cs" />
+    <Compile Include="Src\Commands\FoldingCommands.cs" />
+    <Compile Include="Src\Commands\RunIncrementalSearch.cs" />
+    <Compile Include="Src\Commands\SaveFileWithEncoding.cs" />
+    <Compile Include="Src\Commands\SurroundWithCommand.cs" />
+    <Compile Include="Src\CustomCommands.cs" />
+    <Compile Include="Src\CustomizableHighlightingColorizer.cs" />
+    <Compile Include="Src\CustomizedHighlightingColor.cs" />
+    <Compile Include="Src\DocumentPrinter.cs" />
+    <Compile Include="Src\IncrementalSearch.cs" />
+    <Compile Include="Src\InlineUIElementGenerator.cs" />
+    <Compile Include="Src\IconBarManager.cs" />
+    <Compile Include="Src\IconBarMargin.cs" />
+    <Compile Include="Src\PrintPreviewViewContent.cs" />
+    <Compile Include="Src\Snippets\AnchorSnippetElementProvider.cs" />
+    <Compile Include="Src\Snippets\CodeSnippet.cs" />
+    <Compile Include="Src\Snippets\CodeSnippetCompletionWindow.cs" />
+    <Compile Include="Src\Snippets\CodeSnippetGroup.cs" />
+    <Compile Include="Src\Snippets\DefaultSnippetElementProvider.cs" />
+    <Compile Include="Src\Snippets\SnippetCompletionItem.cs" />
+    <Compile Include="Src\Snippets\SnippetManager.cs" />
+    <Compile Include="Src\ParserFoldingStrategy.cs" />
+    <Compile Include="Src\WabbitcodeCompletionWindow.cs" />
+    <Compile Include="Src\SharpDevelopInsightWindow.cs">
+    </Compile>
+    <Compile Include="Src\StringToVisibilityConverter.cs" />
+    <Compile Include="Src\SyntaxModeDoozer.cs" />
+    <Compile Include="Src\TextMarkerService.cs" />
+    <EmbeddedResource Include="Resources\IncrementalSearchCursor.cur" />
+    <EmbeddedResource Include="Resources\ReverseIncrementalSearchCursor.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="Src\SharpDevelopCompletionWindow.xaml">
+      <DependentUpon>WabbitcodeCompletionWindow.cs</DependentUpon>
+    </Page>
+    <Page Include="themes\generic.xaml" />
+    <Page Include="Src\ChooseEncodingDialog.xaml" />
+  </ItemGroup>
+</Project>

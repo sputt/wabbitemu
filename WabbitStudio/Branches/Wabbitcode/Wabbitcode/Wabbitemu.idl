@@ -1,0 +1,72 @@
+import "oaidl.idl";
+import "ocidl.idl";
+
+#pragma pack(1)
+
+typedef struct {
+	WORD AF, BC, HL, DE;
+	WORD AFP, BCP, HLP, DEP;
+	
+	WORD IX, IY, PC, SP;
+	BYTE I, R, Bus, IFF1, IFF2;
+	
+	BYTE IMode;
+	DOUBLE SecondsElapsed;
+} Z80State_t;
+
+typedef struct  {
+	BOOL active;
+	BOOL is_ram;
+	DWORD page;
+	DWORD address;
+} OLEBreakpoint;
+
+typedef struct {
+	char name[12];
+	DWORD page, page_count;
+} APPENTRY;
+
+typedef struct {
+	DWORD TypeID;
+	char name[12];
+	DWORD page;
+	DWORD address;
+} SYMENTRY;
+
+[
+	uuid(13b5c004-4377-4c94-a8f9-efc1fdaeb31c),
+	object,
+]
+interface IWabbitemu : IUnknown {
+	HRESULT ShowMessage( );
+	HRESULT GetState( [in] ULONG uSlot, [out] Z80State_t * pZ80State );
+	HRESULT SetState( [in] ULONG uSlot, [in] Z80State_t * pZ80State );
+	HRESULT KeyPress( [in] ULONG uSlot, [in] DWORD vk );
+	HRESULT KeyRelease( [in] ULONG uSlot, [in] DWORD vk );
+	HRESULT MemRead( [in] ULONG uSlot, [in] WORD Address, [out] BYTE * Value );
+	HRESULT MemWrite( [in] ULONG uSlot, [in] WORD Address, [in] BYTE Value );
+	HRESULT DrawScreen( [in] ULONG uSlot, [out] BYTE Image[8192] );
+	HRESULT SetBreakpoint( [in] ULONG uSlot, [in] LONG hwndCallback, [in] BOOL IsRam, [in] BYTE Page, [in] WORD Address );
+	HRESULT ClearBreakpoint( [in] ULONG uSlot, [in] BOOL IsRam, [in] BYTE Page, [in] WORD Address );
+	HRESULT GetAppList( [in] ULONG uSlot, [out] APPENTRY AppList[96], [out] DWORD *Count );
+	HRESULT GetSymList( [in] ULONG uSlot, [out] SYMENTRY SymList[256], [out] DWORD *Count );
+};
+
+
+[
+    uuid(519374E2-B7F9-41a0-BE56-4CB1F472341D),
+]
+library WabbitemuLib {
+
+    importlib("stdole32.tlb");
+
+	[
+		uuid(8cc953bc-a879-492b-ad22-a2f4dfcd0e19),
+	]
+	coclass CoWabbitemu {
+		interface IUnknown;
+		interface IWabbitemu;
+	}
+
+
+};
