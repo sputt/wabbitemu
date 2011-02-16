@@ -1,0 +1,720 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ProjectGuid>{6C55B776-26D4-4DB3-A6AB-87E783B2F3D1}</ProjectGuid>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ICSharpCode.AvalonEdit</RootNamespace>
+    <AssemblyName>ICSharpCode.AvalonEdit</AssemblyName>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <SourceAnalysisOverrideSettingsFile>"C:\Program Files\SharpDevelop\3.0\bin\..\AddIns\AddIns\Misc\SourceAnalysis\Settings.SourceAnalysis"</SourceAnalysisOverrideSettingsFile>
+    <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
+    <NoStdLib>False</NoStdLib>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>ICSharpCode.AvalonEdit.snk</AssemblyOriginatorKeyFile>
+    <DelaySign>False</DelaySign>
+    <AssemblyOriginatorKeyMode>File</AssemblyOriginatorKeyMode>
+    <RunCodeAnalysis>False</RunCodeAnalysis>
+    <CodeAnalysisRules>-Microsoft.Design#CA1020;-Microsoft.Design#CA1033;-Microsoft.Performance#CA1805;-Microsoft.Performance#CA1810</CodeAnalysisRules>
+    <OutputPath>..\bin\$(Configuration)</OutputPath>
+    <DocumentationFile>..\bin\$(Configuration)\ICSharpCode.AvalonEdit.xml</DocumentationFile>
+    <FileUpgradeFlags>
+    </FileUpgradeFlags>
+    <OldToolsVersion>4.0</OldToolsVersion>
+    <UpgradeBackupLocation />
+    <TargetFrameworkProfile />
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>Full</DebugType>
+    <Optimize>False</Optimize>
+    <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>PdbOnly</DebugType>
+    <Optimize>True</Optimize>
+    <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
+    <RegisterForComInterop>False</RegisterForComInterop>
+    <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
+    <BaseAddress>4194304</BaseAddress>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <FileAlignment>4096</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <OutputPath>..\..\bin\Debug\</OutputPath>
+    <DocumentationFile>..\..\bin\Debug\ICSharpCode.AvalonEdit.xml</DocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>..\..\bin\Release\</OutputPath>
+    <DocumentationFile>..\..\bin\Release\ICSharpCode.AvalonEdit.xml</DocumentationFile>
+  </PropertyGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
+  <ItemGroup>
+    <Reference Include="PresentationCore">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="PresentationFramework">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Data" />
+    <Reference Include="System.Data.DataSetExtensions">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Linq">
+      <RequiredTargetFramework>3.5</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="UIAutomationProvider">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="UIAutomationTypes">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+    <Reference Include="WindowsBase">
+      <RequiredTargetFramework>3.0</RequiredTargetFramework>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AvalonEditCommands.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CodeCompletion\CompletionList.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CodeCompletion\CompletionListBox.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CodeCompletion\CompletionWindow.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CodeCompletion\CompletionWindowBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CodeCompletion\ICompletionData.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CodeCompletion\InsightWindow.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CodeCompletion\IOverloadProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CodeCompletion\OverloadInsightWindow.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="CodeCompletion\OverloadViewer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\ChangeTrackingCheckpoint.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\DocumentChangeEventArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\DocumentChangeOperation.cs">
+      <DependentUpon>UndoStack.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\DocumentLine.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\DocumentLineTree.cs">
+      <DependentUpon>DocumentLine.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\GapTextBuffer.cs">
+      <DependentUpon>TextDocument.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Document\ILineTracker.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\ISegment.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\ITextSource.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\IUndoableOperation.cs">
+      <DependentUpon>UndoStack.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\LineManager.cs">
+      <DependentUpon>TextDocument.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\LineNode.cs">
+      <DependentUpon>DocumentLine.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\NewLineFinder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\OffsetChangeMap.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\TextAnchor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\TextAnchorNode.cs">
+      <DependentUpon>TextAnchor.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\TextAnchorTree.cs">
+      <DependentUpon>TextAnchor.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\TextDocument.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\TextDocumentWeakEventManager.cs">
+      <DependentUpon>TextDocument.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\TextLocation.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\TextSegment.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\TextSegmentCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\TextUtilities.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\UndoOperationGroup.cs">
+      <DependentUpon>UndoStack.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\UndoStack.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Document\WeakLineTracker.cs">
+      <DependentUpon>ILineTracker.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\AbstractMargin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\Caret.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\CaretLayer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\CaretNavigationCommandHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\CaretWeakEventHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\DottedLineMargin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\DragDropException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\EditingCommandHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\IReadOnlySectionProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\LineNumberMargin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\NoReadOnlySections.cs">
+      <DependentUpon>IReadOnlySectionProvider.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\RectangleSelection.cs">
+      <DependentUpon>Selection.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\Selection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\SelectionColorizer.cs">
+      <DependentUpon>Selection.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\SelectionLayer.cs">
+      <DependentUpon>Selection.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\SelectionMouseHandler.cs">
+      <DependentUpon>Selection.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\SimpleSelection.cs">
+      <DependentUpon>Selection.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\TextArea.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\TextAreaDefaultInputHandlers.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\TextAreaInputHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Editing\TextSegmentReadOnlySectionProvider.cs">
+      <DependentUpon>IReadOnlySectionProvider.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Folding\AbstractFoldingStrategy.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Folding\FoldingElementGenerator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Folding\FoldingManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Folding\FoldingMargin.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Folding\FoldingMarginMarker.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Folding\FoldingSection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Folding\NewFolding.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Folding\XmlFoldingStrategy.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\DocumentHighlighter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightedInlineBuilder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightedLine.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightedSection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightingBrush.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightingColor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightingColorizer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightingDefinitionInvalidException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightingDefinitionTypeConverter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightingManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightingRule.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightingRuleSet.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HighlightingSpan.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\HtmlClipboard.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\IHighlighter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\IHighlightingDefinition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\IHighlightingDefinitionReferenceResolver.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Resources\Resources.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\HighlightingLoader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\IXshdVisitor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\SaveXshdVisitor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\V1Loader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\V2Loader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\XmlHighlightingDefinition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\XshdColor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\XshdElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\XshdImport.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\XshdKeywords.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\XshdReference.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\XshdRule.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\XshdRuleSet.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\XshdSpan.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Highlighting\Xshd\XshdSyntaxDefinition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Indentation\CSharp\CSharpIndentationStrategy.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Indentation\CSharp\DocumentAccessor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Indentation\CSharp\IndentationReformatter.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Indentation\DefaultIndentationStrategy.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Indentation\IIndentationStrategy.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\GlobalAssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\BackgroundGeometryBuilder.cs">
+      <DependentUpon>IBackgroundRenderer.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\CollapsedLineSection.cs">
+      <DependentUpon>HeightTree.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\ColorizingTransformer.cs">
+      <DependentUpon>IVisualLineTransformer.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\DocumentColorizingTransformer.cs">
+      <DependentUpon>IVisualLineTransformer.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\FormattedTextElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\GlobalTextRunProperties.cs">
+      <DependentUpon>TextView.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\HeightTree.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\HeightTreeLineNode.cs">
+      <DependentUpon>HeightTree.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\HeightTreeNode.cs">
+      <DependentUpon>HeightTree.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\IBackgroundRenderer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\InlineObjectRun.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\ITextRunConstructionContext.cs">
+      <DependentUpon>VisualLineElementGenerator.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\ITextViewConnect.cs">
+      <DependentUpon>TextView.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\IVisualLineTransformer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\Layer.cs">
+      <DependentUpon>TextView.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\LayerPosition.cs">
+      <DependentUpon>TextView.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\LinkElementGenerator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\NewLineElementGenerator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\SingleCharacterElementGenerator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\TextLayer.cs">
+      <DependentUpon>TextView.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\TextView.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\TextViewWeakEventManager.cs">
+      <DependentUpon>TextView.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualLine.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualLineConstructionStartEventArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualLineElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualLineElementGenerator.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualLineElementTextRunProperties.cs">
+      <DependentUpon>VisualLine.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualLineLinkText.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualLinesInvalidException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualLineText.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualLineTextParagraphProperties.cs">
+      <DependentUpon>VisualLine.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualLineTextSource.cs">
+      <DependentUpon>VisualLineElementGenerator.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Rendering\VisualYPosition.cs">
+      <DependentUpon>VisualLine.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\IActiveElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\InsertionContext.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\Snippet.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\SnippetBoundElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\SnippetCaretElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\SnippetContainerElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\SnippetElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\SnippetEventArgs.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\SnippetInputHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\SnippetReplaceableTextElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\SnippetSelectionElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Snippets\SnippetTextElement.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TextEditor.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TextEditorAutomationPeer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TextEditorComponent.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TextEditorOptions.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TextEditorWeakEventManager.cs">
+      <DependentUpon>TextEditor.cs</DependentUpon>
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="TextViewPosition.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\Boxes.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\BusyManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\CallbackOnDispose.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\CharRope.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\CompressingTreeList.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\Constants.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\DelayedEvents.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\Deque.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\Empty.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\ExtensionMethods.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\FileReader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\ImmutableStack.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\NullSafeCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\ObserveAddRemoveCollection.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\PixelSnapHelpers.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\PropertyChangedWeakEventManager.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\Rope.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\RopeNode.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\RopeTextReader.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\TextFormatterFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\ThrowUtil.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\WeakEventManagerBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Utils\Win32.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="CodeCompletion\CompletionList.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CodeCompletion\InsightWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Styles.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="TextEditor.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="themes\generic.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="themes\RightArrow.cur" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Highlighting\Resources\ASPX.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\Boo.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\Coco-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\CPP-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\CSharp-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\HTML-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\Java-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\JavaScript-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\ModeV1.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Highlighting\Resources\ModeV2.xsd">
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Highlighting\Resources\Patch-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\PHP-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\Tex-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\VBNET-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\XML-Mode.xshd" />
+    <EmbeddedResource Include="Highlighting\Resources\XmlDoc.xshd" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <CodeAnalysisDictionary Include="Properties\CodeAnalysisDictionary.xml" />
+  </ItemGroup>
+</Project>

@@ -1,8 +1,0 @@
-<SyntaxModes version="1.0">
-  <Mode file       = "Application.UserAppData + \\Z80Asm.xshd"
-	      name       = "Z80 Assembly"
-	      extensions = ".asm;.z80;.inc"/>
-  <Mode file       = "Application.UserAppData + \\TIBasic.xshd"
-	      name       = "TI Basic"
-	      extensions = ".8xp;.83p"/>
-</SyntaxModes>
