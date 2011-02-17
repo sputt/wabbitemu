@@ -63,6 +63,9 @@ namespace ICSharpCode.AvalonEdit.Folding
 			this.DefaultClosed = false;
 		}
 
+        /// <summary>
+        /// Creates a new NewFolding instance.
+        /// </summary>
         public NewFolding(int start, int end, string text)
         {
             if (!(start <= end))
@@ -73,6 +76,9 @@ namespace ICSharpCode.AvalonEdit.Folding
             this.DefaultClosed = false;
         }
 
+        /// <summary>
+        /// Creates a new NewFolding instance.
+        /// </summary>
         public NewFolding(int start, int end, string text, bool closed)
         {
             if (!(start <= end))

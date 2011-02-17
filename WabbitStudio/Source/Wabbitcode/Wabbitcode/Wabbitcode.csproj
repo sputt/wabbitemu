@@ -41,7 +41,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>..\bin\Debug\</OutputPath>
+    <OutputPath>..\..\..\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -50,7 +50,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>..\bin\Release\</OutputPath>
+    <OutputPath>..\..\..\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -76,7 +76,9 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppBase.cs" />
+    <Compile Include="AppBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="AsmFoldingStrategy.cs" />
     <Compile Include="Commands.cs" />
     <Compile Include="ExtensionMethods.cs" />
@@ -110,14 +112,36 @@
       <DependentUpon>ProjectViewer.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Properties\Editor.Designer.cs">
       <DependentUpon>Editor.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
     </Compile>
-    <Compile Include="Services\AssemblerService.cs" />
-    <Compile Include="Services\ParserService.cs" />
-    <Compile Include="Services\DocumentService.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+      <AutoGen>True</AutoGen>
+    </Compile>
+    <Compile Include="Services\AssemblerService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\DockingService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\DocumentService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\ParserService.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Services\Parser\Define.cs" />
     <Compile Include="Services\Parser\IDefine.cs" />
     <Compile Include="Services\Parser\IIncludeFile.cs" />
@@ -129,17 +153,39 @@
     <Compile Include="Services\Parser\Macro.cs" />
     <Compile Include="Services\Parser\ParsedLineSec.cs" />
     <Compile Include="Services\Parser\ParserInformation.cs" />
-    <Compile Include="Services\ProjectService.cs" />
-    <Compile Include="Services\Project\BuildConfig.cs" />
-    <Compile Include="Services\Project\BuildSystem.cs" />
-    <Compile Include="Services\Project\CProject.cs" />
-    <Compile Include="Services\Project\ExternalBuildStep.cs" />
-    <Compile Include="Services\Project\IBuildStep.cs" />
-    <Compile Include="Services\Project\InternalBuildStep.cs" />
-    <Compile Include="Services\Project\IProject.cs" />
-    <Compile Include="Services\Project\ProjectFile.cs" />
-    <Compile Include="Services\Project\ProjectFolder.cs" />
-    <Compile Include="Services\Project\ProjectStuff.cs" />
+    <Compile Include="Services\ProjectService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\Project\BuildConfig.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\Project\BuildSystem.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\Project\CProject.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\Project\ExternalBuildStep.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\Project\IBuildStep.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\Project\InternalBuildStep.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\Project\IProject.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\Project\ProjectFile.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\Project\ProjectFolder.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Services\Project\ProjectStuff.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Services\PropertyService.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -155,7 +201,6 @@
     <Compile Include="WabbitcodePaths.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Services\DockingService.cs" />
     <Page Include="MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -182,23 +227,10 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resources.resx</DependentUpon>
-    </Compile>
-    <Compile Include="Properties\Settings.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Settings.settings</DependentUpon>
-      <DesignTimeSharedInput>True</DesignTimeSharedInput>
-    </Compile>
     <EmbeddedResource Include="Properties\Resources.resx">
+      <SubType>Designer</SubType>
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Z80Asm.xshd" />
     <None Include="app.config" />
@@ -206,16 +238,20 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Editor.Designer.cs</LastGenOutput>
     </None>
+    <AppDesigner Include="Properties\" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <AppDesigner Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AvalonDock\src\AvalonDock.csproj">
       <Project>{87E61430-4243-45F2-B74E-0A4C096CEBF3}</Project>
       <Name>AvalonDock</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AvalonEdit\ICSharpCode.AvalonEdit\ICSharpCode.AvalonEdit.csproj">
+      <Project>{6C55B776-26D4-4DB3-A6AB-87E783B2F3D1}</Project>
+      <Name>ICSharpCode.AvalonEdit</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -242,6 +278,25 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Editor\" />
+    <Folder Include="Resources\Toolbar Images\Editor\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Resources\Toolbar Images\Debug\PauseHS.png" />
+    <Resource Include="Resources\Toolbar Images\Debug\PlayHS.png" />
+    <Resource Include="Resources\Toolbar Images\Debug\RestartHS.png" />
+    <Resource Include="Resources\Toolbar Images\Debug\StepHS.png" />
+    <Resource Include="Resources\Toolbar Images\Debug\StepOutHS.png" />
+    <Resource Include="Resources\Toolbar Images\Debug\StepOverHS.png" />
+    <Resource Include="Resources\Toolbar Images\Debug\StopHS.png" />
+    <Resource Include="Resources\Toolbar Images\Main\CopyHS.png" />
+    <Resource Include="Resources\Toolbar Images\Main\CutHS.png" />
+    <Resource Include="Resources\Toolbar Images\Main\NewDocumentHS.png" />
+    <Resource Include="Resources\Toolbar Images\Main\openHS.png" />
+    <Resource Include="Resources\Toolbar Images\Main\PasteHS.png" />
+    <Resource Include="Resources\Toolbar Images\Main\RedoHS.png" />
+    <Resource Include="Resources\Toolbar Images\Main\SaveAllHS.png" />
+    <Resource Include="Resources\Toolbar Images\Main\saveHS.png" />
+    <Resource Include="Resources\Toolbar Images\Main\UndoHS.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

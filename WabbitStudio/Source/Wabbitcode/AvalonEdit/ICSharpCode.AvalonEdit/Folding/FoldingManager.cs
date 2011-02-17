@@ -331,6 +331,10 @@ namespace ICSharpCode.AvalonEdit.Folding
 
         #region Serialization
 
+        /// <summary>
+        /// Creates foldings based on the input string. Expects the output from the ToString method.
+        /// </summary>
+        /// <param name="serializedFoldings">String created from ToString method</param>
         public void LoadFromString(string serializedFoldings)
         {
             string[] splitFoldings = serializedFoldings.Split('|');
@@ -349,6 +353,11 @@ namespace ICSharpCode.AvalonEdit.Folding
             
         }
 
+        /// <summary>
+        /// Creates a string that represents the current state of foldings in the document. Used to save
+        /// and recreate foldings in conjunction with LoadFromString method
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

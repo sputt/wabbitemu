@@ -3,8 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Z80MapEditor", "Source\Z80MapEditor\Z80MapEditor.vcxproj", "{14CDF278-8F19-4E27-97EB-A66E59979F9F}"
 	ProjectSection(ProjectDependencies) = postProject
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB} = {9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}
 		{C36BF10E-335B-4892-ADF8-D23DD16FBE06} = {C36BF10E-335B-4892-ADF8-D23DD16FBE06}
+		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB} = {9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wabbitemu", "Source\Wabbitemu\Wabbitemu.vcxproj", "{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}"
@@ -20,6 +20,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AvalonDock", "Source\Wabbitcode\AvalonDock\src\AvalonDock.csproj", "{87E61430-4243-45F2-B74E-0A4C096CEBF3}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Wabbitcode", "Source\Wabbitcode\Wabbitcode\Wabbitcode.csproj", "{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C} = {1BF86B19-DD98-43B0-BD97-6164D56EDE8C}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ICSharpCode.AvalonEdit", "Source\Wabbitcode\AvalonEdit\ICSharpCode.AvalonEdit\ICSharpCode.AvalonEdit.csproj", "{6C55B776-26D4-4DB3-A6AB-87E783B2F3D1}"
 EndProject
@@ -51,6 +54,7 @@ Global
 		SccProjectName6 = Source/Wabbitcode/AvalonDock/src
 		SccLocalPath6 = Source\\Wabbitcode\\AvalonDock\\src
 		SccProjectUniqueName7 = Source\\Wabbitcode\\Wabbitcode\\Wabbitcode.csproj
+		SccProjectTopLevelParentUniqueName7 = WabbitStudio.sln
 		SccProjectName7 = Source/Wabbitcode/Wabbitcode
 		SccLocalPath7 = Source\\Wabbitcode\\Wabbitcode
 		SccProjectUniqueName8 = Source\\Wabbitcode\\AvalonEdit\\ICSharpCode.AvalonEdit\\ICSharpCode.AvalonEdit.csproj
@@ -424,12 +428,14 @@ Global
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.SPASM Release|x64.ActiveCfg = SPASM Release|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.SPASM Release|X86.ActiveCfg = SPASM Release|X86
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Any CPU.ActiveCfg = Wabbitcode Debug|Any CPU
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Any CPU.Build.0 = Wabbitcode Debug|Any CPU
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Wabbitcode Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Mixed Platforms.Build.0 = Wabbitcode Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|Win32.ActiveCfg = Wabbitcode Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|x64.ActiveCfg = Wabbitcode Debug|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Debug|X86.ActiveCfg = Wabbitcode Debug|X86
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Release|Any CPU.ActiveCfg = Wabbitcode Release|Any CPU
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Release|Any CPU.Build.0 = Wabbitcode Release|Any CPU
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Release|Mixed Platforms.ActiveCfg = Wabbitcode Release|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Release|Mixed Platforms.Build.0 = Wabbitcode Release|X64
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C}.Wabbitcode Release|Win32.ActiveCfg = Wabbitcode Release|X64
@@ -673,6 +679,7 @@ Global
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.SPASM Release|X86.ActiveCfg = Release|x86
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.SPASM Release|X86.Build.0 = Release|x86
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Debug|Any CPU.ActiveCfg = Debug|x86
+		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Debug|Any CPU.Build.0 = Debug|x86
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Debug|x86
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Debug|Mixed Platforms.Build.0 = Debug|x86
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Debug|Win32.ActiveCfg = Debug|x86
@@ -680,6 +687,7 @@ Global
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Debug|X86.ActiveCfg = Debug|x86
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Debug|X86.Build.0 = Debug|x86
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Release|Any CPU.ActiveCfg = Release|x86
+		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Release|Any CPU.Build.0 = Release|x86
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Release|Mixed Platforms.ActiveCfg = Release|x86
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Release|Mixed Platforms.Build.0 = Release|x86
 		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD}.Wabbitcode Release|Win32.ActiveCfg = Release|x86
@@ -803,9 +811,10 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C} = {C054163E-DFD7-46FD-A522-FAABBDE95E7E}
 		{7F7E8EB5-BBB9-498F-B4A2-97BBBB90C15F} = {C054163E-DFD7-46FD-A522-FAABBDE95E7E}
+		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C} = {C054163E-DFD7-46FD-A522-FAABBDE95E7E}
 		{87E61430-4243-45F2-B74E-0A4C096CEBF3} = {C054163E-DFD7-46FD-A522-FAABBDE95E7E}
 		{6C55B776-26D4-4DB3-A6AB-87E783B2F3D1} = {C054163E-DFD7-46FD-A522-FAABBDE95E7E}
+		{56D4A675-CDC0-4BDC-919D-85AEEB834CBD} = {C054163E-DFD7-46FD-A522-FAABBDE95E7E}
 	EndGlobalSection
 EndGlobal

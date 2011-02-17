@@ -50,7 +50,7 @@ namespace Revsoft.Wabbitcode.Panels
             throw new InvalidOperationException();
         }
 
-        internal void AddText(string text)
+        internal new void AddText(string text)
         {
             OutputBox.Text += text;
         }

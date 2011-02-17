@@ -27,7 +27,7 @@ namespace Revsoft.Wabbitcode.Services.Project
             get
             {
                 return Path.Combine(FileOperations.GetRelativePath(Path.GetDirectoryName(input),
-                    ProjectService.ProjectDirectory), Path.GetFileName(input));
+                    ProjectService.CurrentProject.ProjectDirectory), Path.GetFileName(input));
             }
         }
 
@@ -43,7 +43,7 @@ namespace Revsoft.Wabbitcode.Services.Project
             get
             {
                 return Path.Combine(FileOperations.GetRelativePath(Path.GetDirectoryName(output),
-                    ProjectService.ProjectDirectory), Path.GetFileName(output));
+                    ProjectService.CurrentProject.ProjectDirectory), Path.GetFileName(output));
             }
         }
 
@@ -69,9 +69,9 @@ namespace Revsoft.Wabbitcode.Services.Project
 			{
 				case Project.StepType.All:
 					errors |= AssemblerService.AssembleFile(input, output, true);
-					ProjectService.Project.ProjectOutputs.Add(output);
-                    ProjectService.Project.ListOutputs.Add(Path.ChangeExtension(output, "lst"));
-                    ProjectService.Project.LabelOutputs.Add(Path.ChangeExtension(output, "lab"));
+					ProjectService.CurrentProject.ProjectOutputs.Add(output);
+                    ProjectService.CurrentProject.ListOutputs.Add(Path.ChangeExtension(output, "lst"));
+                    ProjectService.CurrentProject.LabelOutputs.Add(Path.ChangeExtension(output, "lab"));
 					break;
 				case Project.StepType.Listing:
 
@@ -81,7 +81,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 					break;
 				default:
 					errors |= AssemblerService.AssembleFile(input, output, true);
-					ProjectService.Project.ProjectOutputs.Add(output);
+					ProjectService.CurrentProject.ProjectOutputs.Add(output);
 					break;
 			}
 			return errors;
