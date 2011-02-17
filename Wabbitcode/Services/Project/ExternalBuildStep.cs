@@ -64,7 +64,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 					StartInfo =
 					{
 						FileName = input,
-						WorkingDirectory = ProjectService.ProjectDirectory,
+                        WorkingDirectory = ProjectService.CurrentProject.ProjectDirectory,
 						UseShellExecute = false,
 						CreateNoWindow = true,
 						RedirectStandardOutput = true,

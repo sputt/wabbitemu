@@ -60,10 +60,52 @@ namespace Revsoft.Wabbitcode.Properties {
             }
         }
         
-        internal static byte[] spasm {
+        internal static System.Drawing.Bitmap CopyHS {
             get {
-                object obj = ResourceManager.GetObject("spasm", resourceCulture);
-                return ((byte[])(obj));
+                object obj = ResourceManager.GetObject("CopyHS", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap CutHS {
+            get {
+                object obj = ResourceManager.GetObject("CutHS", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap NewDocumentHS {
+            get {
+                object obj = ResourceManager.GetObject("NewDocumentHS", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap openHS {
+            get {
+                object obj = ResourceManager.GetObject("openHS", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap PasteHS {
+            get {
+                object obj = ResourceManager.GetObject("PasteHS", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap SaveAllHS {
+            get {
+                object obj = ResourceManager.GetObject("SaveAllHS", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap saveHS {
+            get {
+                object obj = ResourceManager.GetObject("saveHS", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
             }
         }
     }

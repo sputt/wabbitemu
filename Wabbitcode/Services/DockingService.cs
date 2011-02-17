@@ -1,271 +1,103 @@
 ﻿using System;
-using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text;
-using Revsoft.Docking;
-using System.IO;
-using Revsoft.Wabbitcode.Docking_Windows;
-using System.Windows.Forms;
-using Revsoft.Wabbitcode.Classes;
+using System.Windows;
+using AvalonDock;
+using ICSharpCode.AvalonEdit;
+using Revsoft.Wabbitcode.Panels;
 
 namespace Revsoft.Wabbitcode.Services
 {
-	public static class DockingService
-	{
-		private static DockPanel dockPanel;
-		public static DockPanel DockPanel
-		{
-			get { return dockPanel; }
-			set { dockPanel = value; }
-		}
+    public static class DockingService
+    {
+        static DockingManager dockManager;
+        public static MainWindow MainWindow { get; private set; }
 
-		public static MainFormRedone MainForm
-		{
-			get { return (MainFormRedone)dockPanel.Parent; }
-		}
+        public static IWabbitcodePanel ActivePanel { get { return (IWabbitcodePanel) dockManager.ActiveContent; } }
+        public static ManagedContent ActiveContent { get { return dockManager.ActiveContent; } }
+        public static Editor ActiveDocument { get { return (Editor) dockManager.ActiveDocument; } }
 
-		private static IList<IDockContent> documents = new List<IDockContent>();
-		public static IEnumerable<IDockContent> Documents
-		{
-			get
-			{
-				documents.Clear();
-				if (dockPanel == null)
-					return documents;
-				foreach (IDockContent doc in dockPanel.Documents)
-					if (doc.GetType() == typeof(newEditor))
-						documents.Add(doc);
-				return documents;
-			}
-		}
-
-		public static newEditor ActiveDocument
-		{
-			get
-			{
-				if (dockPanel.ActiveDocument == null)
-					return null;
-				if (dockPanel.ActiveDocument.GetType() != typeof(newEditor))
-					return null;
-				return dockPanel.ActiveDocument as newEditor;
-			}
-		}
-
-		public static IDockContent ActiveContent
-		{
-			get
-			{
-				if (dockPanel == null)
-					return null;
-				return dockPanel.ActiveContent;
-			}
-		}
-
-		private static ProjectViewer projectViewer;
-		public static ProjectViewer ProjectViewer
-		{
-			get { return projectViewer; }
-		}
-
-		private static DirectoryViewer directoryViewer;
-		public static DirectoryViewer DirectoryViewer
-		{
-			get { return directoryViewer; }
-		}
-
-		private static DebugPanel debugPanel;
-		public static DebugPanel DebugPanel
-		{
-			get { return debugPanel; }
-		}
-
-		private static TrackingWindow trackWindow;
-		public static TrackingWindow TrackWindow
-		{
-			get { return trackWindow; }
-		}
-
-		private static ErrorList errorList;
-		public static ErrorList ErrorList
-		{
-			get { return errorList; }
-		}
-
-		private static CallStack callStack;
-		public static CallStack CallStack
-		{
-			get { return callStack; }
-		}
-
-		private static StackViewer stackViewer;
-		public static StackViewer StackViewer
-		{
-			get { return stackViewer; }
-		}
-
-		private static OutputWindow outputWindow;
-		public static OutputWindow OutputWindow
-		{
-			get { return outputWindow; }
-		}
-
-		private static LabelList labelList;
-		public static LabelList LabelList
-		{
-			get { return labelList; }
-		}
-
-		private static FindAndReplaceForm findForm;
-		public static FindAndReplaceForm FindForm
-		{
-			get { return findForm; }
-		}
-
-		private static FindResultsWindow findResults;
-		public static FindResultsWindow FindResults
-		{
-			get { return findResults; }
-		}
-
-		private static MacroManager macroManager;
-		public static MacroManager MacroManager
-		{
-			get { return macroManager; }
-		}
-
-		private static BreakpointManager breakManager;
-		public static BreakpointManager BreakManager
-		{
-			get { return breakManager; }
-		}
-
-        private static bool initialized;
-        public static bool HasBeenInited
+        public static WabbitcodeStatusBarService StatusBar { get; private set; }
+        public static LabelList LabelList { get; private set; }
+        public static ProjectViewer ProjectViewer { get; private set; }
+        public static OutputWindow OutputWindow { get; private set; }
+        public static ErrorList ErrorList { get; private set; }
+        
+        internal static void InitDocking(MainWindow main, DockingManager manager)
         {
-            get { return initialized; }
+            MainWindow = main;
+            dockManager = manager;
+
+            Application.Current.Resources["ThemeDictionary"] = new ResourceDictionary();
+            ThemeFactory.ChangeTheme("dev2010");
+
+            MainWindow.WindowState = PropertyService.GetWabbitcodeProperty("WindowState");
+            MainWindow.Top = PropertyService.GetWabbitcodeProperty("Top");
+            MainWindow.Left = PropertyService.GetWabbitcodeProperty("Left");
+            MainWindow.Width = PropertyService.GetWabbitcodeProperty("Width");
+            MainWindow.Height = PropertyService.GetWabbitcodeProperty("Height");
+
+            dockManager.DeserializationCallback = new DockingManager.DeserializationCallbackHandler(DeserializationCallback);
         }
 
-		public static void ShowDockPanel(DockContent panel)
-		{
-			if (panel == null)
-				return;
-			panel.Show(dockPanel);
-		}
-
-		public static void HideDockPanel(DockContent panel)
-		{
-			if (panel == null)
-				return;
-			panel.Hide();
-		}
-
-		internal static void InitPanels()
-		{
-#if !DEBUG
-            try
-            {
-#endif
-                projectViewer = new ProjectViewer();
-                directoryViewer = new DirectoryViewer();
-                errorList = new ErrorList();
-                trackWindow = new TrackingWindow();
-                debugPanel = new DebugPanel();
-                callStack = new CallStack();
-                labelList = new LabelList();
-                outputWindow = new OutputWindow();
-                findForm = new FindAndReplaceForm();
-                findResults = new FindResultsWindow();
-                macroManager = new MacroManager();
-                breakManager = new BreakpointManager();
-                stackViewer = new StackViewer();
-                initialized = true;
-#if !DEBUG
-            }
-            catch (Exception ex)
-            {
-                ShowError("Error in InitPanels", ex);
-            }
-#endif
-		}
-
-		internal static void InitDocking(DockPanel dockingPanel)
-		{
-			dockPanel = dockingPanel;
-		}
-
-		internal static void LoadConfig()
-		{
-			DeserializeDockContent dockContent = new DeserializeDockContent(GetContentFromPersistString);
-#if !DEBUG
-            try
-			{
-#endif
-			if (File.Exists(FileLocations.ConfigFile))
-				dockPanel.LoadFromXml(FileLocations.ConfigFile, dockContent);
-#if !DEBUG
-			}
-			catch (Exception ex)
-			{
-                ShowError("Error Loading the DockPanel Config File", ex);
-			}
-#endif
+        internal static void DeserializationCallback(object s, DeserializationCallbackEventArgs e)
+        {
+            if (e.Name != "EditorDocument")
+                return;
+            e.Content = new Editor();
         }
 
-		private static IDockContent GetContentFromPersistString(string persistString)
-		{
-			if (persistString == typeof(OutputWindow).ToString())
-				return outputWindow;
-			if (persistString == typeof(LabelList).ToString())
-				return labelList;
-			if (persistString == typeof(ErrorList).ToString())
-				return errorList;
-			if (persistString == typeof(DebugPanel).ToString())
-				return debugPanel;
-			if (persistString == typeof(CallStack).ToString())
-				return callStack;
-			if (persistString == typeof(TrackingWindow).ToString())
-				return trackWindow;
-			if (persistString == typeof(ProjectViewer).ToString())
-				return DockingService.ProjectViewer;
-			if (persistString == typeof(DirectoryViewer).ToString())
-				return DockingService.DirectoryViewer;
+        static readonly DependencyProperty ErrorListProperty =
+                                DependencyProperty.Register("ErrorListVisible", typeof(ObservableCollection<Editor>),
+                                    typeof(MainWindow), new UIPropertyMetadata(null));
 
-			string[] parsedStrings = persistString.Split(';');
-			if (parsedStrings.Length != 6 || parsedStrings[0] != typeof(newEditor).ToString() || !File.Exists(parsedStrings[1]))
-				return null;
-            newEditor doc = DocumentService.OpenDocument(parsedStrings[1]);
-            doc.SetPosition(int.Parse(parsedStrings[2]), int.Parse(parsedStrings[3]),
-                                                        int.Parse(parsedStrings[4]), int.Parse(parsedStrings[5]));
-            return doc;
-		}
+        internal static void InitPanels(WabbitcodeStatusBar statusBar)
+        {
+            StatusBar = new WabbitcodeStatusBarService(statusBar);
 
-		internal static void Destroy()
-		{
+            //Init Normal Panels
+            LabelList = new LabelList();
+            LabelList.Show(dockManager, AnchorStyle.Right);
+
+            ProjectViewer = new ProjectViewer();
+            ProjectViewer.Show(dockManager, AnchorStyle.Left);
+
+            OutputWindow = new OutputWindow();
+            OutputWindow.Show(dockManager, AnchorStyle.Bottom);
+
+            ErrorList = new ErrorList();
+            ErrorList.Show(dockManager, AnchorStyle.Bottom);
+
+            if (File.Exists(WabbitcodePaths.DockConfig))
+            {
 #if !DEBUG
-			try
-			{
+                try {
 #endif
-				if (File.Exists(FileLocations.ConfigFile))
-					File.Delete(FileLocations.ConfigFile);
-				dockPanel.SaveAsXml(FileLocations.ConfigFile);
-                initialized = false;
+                dockManager.RestoreLayout(WabbitcodePaths.DockConfig);
 #if !DEBUG
-			}
-			catch (Exception ex)
-			{
-                ShowError("Error saving DockPanel.config file!", ex);
-			}
+                } catch (Exception) { }
 #endif
-		}
+                return;
+            }            
+        }
 
-		public static DialogResult RequestDialog(string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon)
-		{
-			return DialogResult.None;
-		}
+        internal static void DestoryDocking()
+        {
+            PropertyService.SaveWabbitcodeProperty("WindowState", MainWindow.WindowState);
+            PropertyService.SaveWabbitcodeProperty("Top", MainWindow.Top);
+            PropertyService.SaveWabbitcodeProperty("Left", MainWindow.Left);
+            PropertyService.SaveWabbitcodeProperty("Width", MainWindow.Width);
+            PropertyService.SaveWabbitcodeProperty("Height", MainWindow.Height);
+            PropertyService.Save();
+
+            dockManager.SaveLayout(WabbitcodePaths.DockConfig);
+        }
 
         public static void ShowError(string error)
         {
-            MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(error, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
         }
 
         public static void ShowError(string error, Exception ex)
@@ -273,7 +105,18 @@ namespace Revsoft.Wabbitcode.Services
             StringBuilder sb = new StringBuilder(error);
             sb.Append("\n");
             sb.Append(ex.ToString());
-            MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show(sb.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        }
+
+        internal static void ShowDockPanel(DockableContent doc)
+        {
+            doc.Show(dockManager);
+        }
+
+        internal static void ShowDockPanel(DocumentContent doc)
+        {
+            doc.Show(dockManager);
+            doc.Activate();
         }
     }
 }

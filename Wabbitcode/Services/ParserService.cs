@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Windows.Forms;
+using System.Windows;
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
@@ -61,9 +61,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
         internal static void RemoveParseData(string fullPath)
         {
-            ParserInformation replaceMe = ProjectService.GetParseInfo(fullPath);
+            ParserInformation replaceMe = ProjectService.CurrentProject.GetParseInfo(fullPath);
             if (replaceMe != null)
-                ProjectService.ParseInfo.Remove(replaceMe);
+                ProjectService.CurrentProject.ParseInfo.Remove(replaceMe);
         }
 
         private static string baseDir;
@@ -75,10 +75,10 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 file = Path.Combine(baseDir, file);
             ParserInformation fileInfo = null;
             ParserInformation[] array;
-            lock (ProjectService.ParseInfo)
+            lock (ProjectService.CurrentProject.ParseInfo)
             {
-                array = new ParserInformation[ProjectService.ParseInfo.Count];
-                ProjectService.ParseInfo.CopyTo(array, 0);
+                array = new ParserInformation[ProjectService.CurrentProject.ParseInfo.Count];
+                ProjectService.CurrentProject.ParseInfo.CopyTo(array, 0);
             }
             foreach (ParserInformation info in array)
                 if (info.SourceFile.ToLower() == file.ToLower())
@@ -117,10 +117,10 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			}
 			catch (FileNotFoundException ex)
 			{
-				DialogResult result = MessageBox.Show(ex.FileName + " not found, would you like to remove it from the project?",
-					"File not found", MessageBoxButtons.YesNo, MessageBoxIcon.None);
-				if (result == DialogResult.Yes)
-					ProjectService.DeleteFile(file);
+                var result = MessageBox.Show(ex.FileName + " not found, would you like to remove it from the project?",
+					"File not found", MessageBoxButton.YesNo, MessageBoxImage.None);
+				if (result == MessageBoxResult.Yes)
+                    ProjectService.CurrentProject.DeleteFile(file);
 				return null;
 			}
 			catch (Exception ex)
@@ -137,7 +137,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		}
 
 		delegate void HideProgressDelegate();
-		delegate void ProgressDelegate(int percent);
+		delegate void ProgressDelegate(double percent, string text, OperationStatus status);
 		internal static ParserInformation ParseFile(string file, string lines)
 		{
             if (string.IsNullOrEmpty(file))
@@ -151,16 +151,17 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 return null;
             }
 			ParserInformation info = new ParserInformation(file);
-			int counter = 0, percent = 0, newPercent;
-			ProgressDelegate progressDelegate = new ProgressDelegate(DockingService.MainForm.SetProgress);
+			int counter = 0;
+            double percent = 0, newPercent;
+			ProgressDelegate progressDelegate = new ProgressDelegate(DockingService.StatusBar.SetProgress);
 			while (counter < lines.Length && counter >= 0)
 			{
-				newPercent = counter * 100 / lines.Length;
+				newPercent = counter / lines.Length;
                 if (newPercent < percent)
                     throw new Exception("Repeat!");
-				if (percent + 5 <= newPercent){
+				if (percent + .05 <= newPercent){
 					percent = newPercent;
-					DockingService.MainForm.Invoke(progressDelegate, percent);
+					DockingService.MainWindow.Dispatcher.Invoke(progressDelegate, percent);
 				}
 				//handle label other xx = 22 type define
 				if (IsValidLabelChar(lines[counter]))
@@ -303,21 +304,22 @@ namespace Revsoft.Wabbitcode.Services.Parser
 				}
 			}
             RemoveParseData(file);
-            lock (ProjectService.ParseInfo) {
-			    ProjectService.ParseInfo.Add(info);
+            lock (ProjectService.CurrentProject.ParseInfo)
+            {
+                ProjectService.CurrentProject.ParseInfo.Add(info);
             }
-            if (ProjectService.IsInternal)
+            if (ProjectService.CurrentProject.IsInternal)
             {
                 baseDir = Path.GetDirectoryName(file);
                 FindIncludedFiles(file);
             }
             else
             {
-                baseDir = ProjectService.ProjectDirectory;
-                FindIncludedFiles(ProjectService.Project.BuildSystem.MainFile);
+                baseDir = ProjectService.CurrentProject.ProjectDirectory;
+                FindIncludedFiles(ProjectService.CurrentProject.BuildSystem.MainFile);
             }
-			HideProgressDelegate hideProgress = DockingService.MainForm.HideProgressBar;
-			DockingService.MainForm.Invoke(hideProgress);
+			//HideProgressDelegate hideProgress = DockingService.MainForm.HideProgressBar;
+			//DockingService.MainForm.Invoke(hideProgress);
 			return info;
 		}
 
@@ -328,9 +330,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
             int value;
             if (int.TryParse(contents, out value))
                 return value;
-            lock (ProjectService.ParseInfo)
+            lock (ProjectService.CurrentProject.ParseInfo)
             {
-                foreach (ParserInformation info in ProjectService.ParseInfo)
+                foreach (ParserInformation info in ProjectService.CurrentProject.ParseInfo)
                     foreach (IParserData data in info.GeneratedList)
                         if (data.Name.ToLower() == text)
                         {
@@ -513,128 +515,5 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 keyword == "set" || keyword == "res" || keyword == "in" || keyword == "out" || keyword == "ld";
 
         }
-		/*haha this looks so quaint now ;)
-         * public void getAllProjectLabels(ArrayList files)
-		{
-			string file = "";
-			try
-			{
-				FileStream stream;
-				StreamReader reader;
-				//int counter = 0;
-				for (int i = 0; i < files.Count; i++)
-				{
-					file = files[i].ToString();
-					if (!File.Exists(file))
-						continue;
-					stream = new FileStream(file, FileMode.Open);
-					reader = new StreamReader(stream);
-					string[] lines = reader.ReadToEnd().Split('\n');
-					ArrayList temp = getAllLabels(lines, true, file);
-					//if (((ArrayList)temp[1]).Count != 0)
-					projectLabels.Add(temp);
-					//counter++;
-					stream.Flush();
-					stream.Close();
-				}
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show("Error getting project labesls from file: " + file + "\n" + ex.ToString());
-			}
-		}
-
-		public ArrayList getAllLabels(string[] lines, bool includeEquates, string fileName)
-		{
-			ArrayList includeFile = new ArrayList { new ArrayList(), new ArrayList(), new ArrayList() };
-			ArrayList labels = (ArrayList)includeFile[0];
-			ArrayList properties = (ArrayList)includeFile[1];
-			ArrayList description = (ArrayList)includeFile[2];
-			int location = 0;
-			int counter = 0;
-			string text;
-			string endText = "|label|";
-			foreach (string line in lines)
-			{
-				int lineLength = line.Length;
-				if (lineLength <= 0)
-					continue;
-				char firstChar = line[0];
-				if (char.IsWhiteSpace(line[0]) || "\r \t;.".IndexOf(firstChar) != -1 && (!line.Contains("#define") || !line.Contains("#macro")))
-				{
-					location += lineLength + 1;
-					counter++;
-					continue;
-				}
-				//Find first word
-				char[] whiteSpaceNext = { ' ', '\t', '\n', ':', '\r' };
-				int select = line.IndexOfAny(whiteSpaceNext);
-				//Check if this is a label or an equate
-				int label = line.IndexOf(':');
-				//Check make sure the first char is not whitespace, check that its either a label or an equate (if we need to find them)
-				if (label == select && label != -1 || includeEquates && ((select != -1 && line[0] != '#') || line.StartsWith("#define") || line.StartsWith("#macro")))
-				{
-					//if were including equates and theres no colon, its an equate, lets set it to that
-					if (includeEquates && label == -1)
-					{
-						if (line.Contains("=") || line.ToLower().Contains("equ") || line.ToLower().Contains("#define") || line.ToLower().Contains("#macro"))
-						{
-							label = select;
-							endText = "|equate|";
-						}
-						else
-						{
-							location += lineLength + 1;
-							counter++;
-							continue;
-						}
-					}
-					if (label == -1)
-						label = 1;
-					//if its case sensitive we need to put it into lowercse
-					if (line.Contains("#define") || line.Contains("#macro"))
-					{
-						label = line.IndexOf("#define") + 8;
-						if (label == 7)
-							label = line.IndexOf("#macro") + 7;
-						if (label > line.Length || line.IndexOfAny(whiteSpaceNext, label) == -1)
-						{
-							location += lineLength + 1;
-							counter++;
-							continue;
-						}
-						char[] defineSpace = { ' ', '\t', '\n', ':', '\r', '(' };
-						text = line.Substring(label, line.IndexOfAny(defineSpace, label) - label);
-						if ((line.IndexOf('(', label) != -1 && line.Contains("#define") || line.Contains("#macro")))
-							endText = "|macro|";
-					}
-					else
-						text = line.Substring(0, label);
-					if (Settings.Default.caseSensitive)
-						labels.Add(text);
-					else
-						labels.Add(text.ToLower());
-					properties.Add(fileName + endText + location);
-					int back = 1;
-					text = "";
-					if (counter - back > 0)
-					{
-						while (lines[counter - back].StartsWith(";"))
-						{
-							text = lines[counter - back] + text;
-							back++;
-							if (counter - back < 0)
-								break;
-						}
-					}
-					description.Add(text.Replace('\r', '\n'));
-					//reset the ending
-					endText = "|label|";
-				}
-				location += lineLength + 1;
-				counter++;
-			}
-			return includeFile;
-		}*/
     }
 }

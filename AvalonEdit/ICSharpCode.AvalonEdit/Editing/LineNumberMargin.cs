@@ -30,6 +30,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			                                         new FrameworkPropertyMetadata(typeof(LineNumberMargin)));
 		}
 
+        /// <summary>
+        /// Sets margin of line number
+        /// </summary>
         public LineNumberMargin()
         {
             this.Margin = new Thickness(3);

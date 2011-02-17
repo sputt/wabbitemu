@@ -34,15 +34,15 @@
     <Optimize>false</Optimize>
     <DefineConstants>TRACE;DEBUG;NET4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <OutputPath>..\..\bin\Debug\</OutputPath>
+    <OutputPath>..\..\..\..\Debug\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <DefineConstants>TRACE;NET4</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
-    <DocumentationFile>..\..\bin\\AvalonDock.XML</DocumentationFile>
-    <OutputPath>..\..\bin\Release\</OutputPath>
+    <DocumentationFile>..\..\..\..\Release\\AvalonDock.XML</DocumentationFile>
+    <OutputPath>..\..\..\..\Release\</OutputPath>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>false</SignAssembly>

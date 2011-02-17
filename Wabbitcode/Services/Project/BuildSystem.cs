@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Revsoft.Wabbitcode.Classes;
 using System.Xml;
 
 namespace Revsoft.Wabbitcode.Services.Project
@@ -75,7 +74,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 		}
 
-		public BuildSystem(bool CreateDefaults)
+		public BuildSystem(ProjectClass project, bool CreateDefaults)
 		{
 			if (CreateDefaults)
 			{
@@ -84,6 +83,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 				buildConfigs.Add(debug);
 				buildConfigs.Add(release);
 			}
+            Project = project;
 		}
 
 		List<BuildConfig> buildConfigs = new List<BuildConfig>();
@@ -91,11 +91,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			get { return buildConfigs; }
 		}
+
+        public ProjectClass Project { get; private set; }
 		
 		public void Build()
 		{
 			if (buildConfigs.Count < 1 || currentConfigIndex == -1)
-				System.Windows.Forms.MessageBox.Show("No config set up");
+				System.Windows.MessageBox.Show("No config set up");
 			else
 				buildConfigs[currentConfigIndex].Build();
 		}
@@ -105,7 +107,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			int counter = 0;
 			writer.WriteStartElement("BuildSystem");
 			string includes = "";
-			foreach(string include in ProjectService.IncludeDirs)
+			foreach(string include in ProjectService.CurrentProject.IncludeDirs)
 				if (!string.IsNullOrEmpty(include))
 				includes += include + ";";
 			writer.WriteAttributeString("IncludeDirs", includes);
@@ -120,12 +122,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 					writer.WriteAttributeString("InputFile", step.InputFile);
 					if (type == typeof(ExternalBuildStep))
 					{
-						writer.WriteAttributeString("Arguments", ((ExternalBuildStep)step).Arguments);
+                        ExternalBuildStep eStep = (ExternalBuildStep) step;
+						writer.WriteAttributeString("Arguments", eStep.Arguments);
 					}
 					else if (type == typeof(InternalBuildStep))
 					{
-						writer.WriteAttributeString("OutputFile", ((InternalBuildStep)step).OutputFile);
-						writer.WriteAttributeString("StepType", Convert.ToInt16(((InternalBuildStep)step).StepType).ToString());
+                        InternalBuildStep iStep = (InternalBuildStep) step;
+						writer.WriteAttributeString("OutputFile", iStep.OutputFile);
+						writer.WriteAttributeString("StepType", Convert.ToInt16(iStep.StepType).ToString());
 					}
 					writer.WriteEndElement();
 				}
@@ -142,7 +146,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			string[] includeDirs = reader.GetAttribute("IncludeDirs").Split(';');
 			foreach (string include in includeDirs)
 				if (!string.IsNullOrEmpty(include))
-					ProjectService.IncludeDirs.Add(include);
+					this.Project.IncludeDirs.Add(include);
 			while (reader.MoveToNextElement())
 			{
 				string configName = reader.Name;

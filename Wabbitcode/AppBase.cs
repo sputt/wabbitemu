@@ -1,13 +1,48 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
+using System.Windows;
 using Microsoft.VisualBasic.ApplicationServices;
 
 namespace Revsoft.Wabbitcode
 {
+    public class EntryPoint
+    {
+        [STAThread]
+        public static void Main(string[] args)
+        {
+            AppBase manager = new AppBase();
+            manager.Run(args);
+        }
+    }
+
+    public class SingleInstanceApplication : Application
+    {
+        protected override void OnStartup(System.Windows.StartupEventArgs e)
+        {
+            base.OnStartup(e);
+
+            //Resources.Add("Settings", null);
+
+            // Create and show the application's main window
+            this.MainWindow = new MainWindow(e.Args);
+            this.MainWindow.Show();
+        }
+
+        public void HandleArgs(string[] args)
+        {
+            ((MainWindow) this.MainWindow).HandleArgs(args);
+        }
+
+        public void Activate()
+        {
+            // Reactivate application's main window
+            this.MainWindow.Activate();
+        }
+    }
+
     class AppBase : WindowsFormsApplicationBase
     {
+        SingleInstanceApplication app;
         public AppBase()
         {
             // Make this a single-instance application
@@ -17,41 +52,29 @@ namespace Revsoft.Wabbitcode
             // There are some other things available in the VB application model, for
             // instance the shutdown style:
             this.ShutdownStyle = Microsoft.VisualBasic.ApplicationServices.ShutdownMode.AfterMainFormCloses;
-
-            // Add StartupNextInstance handler
-            this.StartupNextInstance += new StartupNextInstanceEventHandler(this.SIApp_StartupNextInstance);
         }
 
-        /// <summary>
-        /// We are responsible for creating the application's main form in this override.
-        /// </summary>
-        protected override void OnCreateMainForm()
+        protected override bool OnStartup(Microsoft.VisualBasic.ApplicationServices.StartupEventArgs e)
         {
-            // Create an instance of the main form and set it in the application; 
-            // but don't try to run it.
-            string[] args = new string[this.CommandLineArgs.Count];
-            this.CommandLineArgs.CopyTo(args, 0);
-            this.MainForm = new MainFormRedone(args);
+            // First time app is launched
+            app = new SingleInstanceApplication();
+            app.Run();
+            return false;
         }
 
-        /// <summary>
-        /// This is called for additional instances. The application model will call this 
-        /// function, and terminate the additional instance when this returns.
-        /// </summary>
-        /// <param name="eventArgs"></param>
-        protected void SIApp_StartupNextInstance(object sender, StartupNextInstanceEventArgs eventArgs)
+        protected override void OnStartupNextInstance(StartupNextInstanceEventArgs eventArgs)
         {
-            // Copy the arguments to a string array
-            string[] args = new string[eventArgs.CommandLine.Count];
-            eventArgs.CommandLine.CopyTo(args, 0);
+            // Subsequent launches
+            base.OnStartupNextInstance(eventArgs);
+            app.HandleArgs(eventArgs.CommandLine.ToArray());
+            app.Activate();
+        }
 
-            // Create an argument array for the Invoke method
-            object[] parameters = new object[2];
-            parameters[0] = this.MainForm;
-            parameters[1] = args;
-
-            // Need to use invoke to b/c this is being called from another thread.
-            this.MainForm.Invoke(new MainFormRedone.ProcessParametersDelegate(((MainFormRedone)this.MainForm).ProcessParameters), parameters);
+        protected override void OnShutdown()
+        {
+            Properties.Settings.Default.Save();
+            Properties.Editor.Default.Save();
+            base.OnShutdown();
         }
     }
 }

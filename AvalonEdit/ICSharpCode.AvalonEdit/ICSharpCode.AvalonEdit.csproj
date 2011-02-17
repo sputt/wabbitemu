@@ -54,12 +54,12 @@
     <FileAlignment>4096</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
-    <OutputPath>..\..\bin\Debug\</OutputPath>
-    <DocumentationFile>..\..\bin\Debug\ICSharpCode.AvalonEdit.xml</DocumentationFile>
+    <OutputPath>..\..\..\..\Debug\</OutputPath>
+    <DocumentationFile>..\..\..\..\Debug\ICSharpCode.AvalonEdit.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
-    <OutputPath>..\..\bin\Release\</OutputPath>
-    <DocumentationFile>..\..\bin\Release\ICSharpCode.AvalonEdit.xml</DocumentationFile>
+    <OutputPath>..\..\..\..\Release\</OutputPath>
+    <DocumentationFile>..\..\..\..\Release\ICSharpCode.AvalonEdit.xml</DocumentationFile>
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
