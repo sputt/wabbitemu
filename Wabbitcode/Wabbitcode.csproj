@@ -130,6 +130,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="Services\Assembler.cs" />
     <Compile Include="Services\AssemblerService.cs">
       <SubType>Code</SubType>
     </Compile>

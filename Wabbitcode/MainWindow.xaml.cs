@@ -100,14 +100,14 @@ namespace Revsoft.Wabbitcode
         #endregion
 
         #region File Menu
-        private void NewFile_Executed(object sender, ExecutedRoutedEventArgs e)
+        private void NewFile_Executed(object sender, RoutedEventArgs e)
         {
             DocumentService.CreateDocument("New Document");
         }
 
         private void NewProject_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-
+            
         }
 
         private void OpenFile_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -115,10 +115,21 @@ namespace Revsoft.Wabbitcode
             DocumentService.OpenDocument();
         }
 
+        private void OpenProject_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            //ProjectService.OpenProject();
+        }
+
         private void SaveFile_Executed(object sender, ExecutedRoutedEventArgs e)
         {
             if (DockingService.ActiveDocument != null)
                 DockingService.ActiveDocument.SaveFile();
+        }
+
+        private void SaveAll_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            foreach(Editor doc in DockingService.Documents)
+                doc.SaveFile();
         }
 
         private void Close_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -165,5 +176,12 @@ namespace Revsoft.Wabbitcode
                 DockingService.ActiveDocument.SelectAll();
         }
         #endregion
+
+        private void Assemble_Executed(object sender, ExecutedRoutedEventArgs e)
+        {
+            string filePath = DockingService.ActiveDocument.FilePath;
+            string outputPath = Path.ChangeExtension(filePath, ".8xk");
+            AssemblerService.AssembleFile(filePath, outputPath, true);
+        }
     }
 }

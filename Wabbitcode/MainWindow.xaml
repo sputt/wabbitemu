@@ -15,7 +15,9 @@
         <CommandBinding Command="New" Executed="NewFile_Executed" />
         <CommandBinding Command="wc:WabbitcodeCommands.NewProject" Executed="NewProject_Executed" />
         <CommandBinding Command="Open" Executed="OpenFile_Executed" />
+        <CommandBinding Command="wc:WabbitcodeCommands.OpenProject" Executed="OpenProject_Executed" />
         <CommandBinding Command="Save" Executed="SaveFile_Executed" />
+        <CommandBinding Command="wc:WabbitcodeCommands.SaveAll" Executed="SaveAll_Executed" />
         <CommandBinding Command="Cut" Executed="Cut_Executed" />
         <CommandBinding Command="Copy" Executed="Copy_Executed" />
         <CommandBinding Command="Paste" Executed="Paste_Executed" />
@@ -23,6 +25,7 @@
         <CommandBinding Command="Undo" Executed="Undo_Executed" />
         <CommandBinding Command="Redo" Executed="Redo_Executed" />
         <CommandBinding Command="Close" Executed="Close_Executed" />
+        <CommandBinding Command="wc:WabbitcodeCommands.Assemble" Executed="Assemble_Executed" />
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Command="New" Key="N" Modifiers="Ctrl" />
@@ -56,10 +59,11 @@
                 </MenuItem>
                 <MenuItem Header="Open">
                     <MenuItem Header="File..." Command="Open"/>
-                    <MenuItem Header="Project..."/>
+                    <MenuItem Header="Project..." Command="wc:WabbitcodeCommands.OpenProject"/>
                 </MenuItem>
                 <MenuItem Header="Save"/>
                 <MenuItem Header="Save As..."/>
+                <MenuItem Header="Save All" Command="wc:WabbitcodeCommands.SaveAll"/>
                 <MenuItem Header="Save Project"/>
                 <MenuItem Header="Close"/>
                 <Separator/>
@@ -140,7 +144,7 @@
                 
             </MenuItem>
             <MenuItem Header="Build">
-                <MenuItem Header="Assemble"/>
+                <MenuItem Header="Assemble" Command="wc:WabbitcodeCommands.Assemble"/>
                 <MenuItem Header="Include Directories"/>
                 <MenuItem Header="Build Symbol Table"/>
                 <MenuItem Header="Build Listing"/>
@@ -186,16 +190,16 @@
         </ad:DockingManager>
         <ToolBarTray Grid.Row="1" Background="White">
             <ToolBar ToolBar.OverflowMode="AsNeeded" Name="MainToolBar" Visibility="{Binding Source={StaticResource Settings}, Path=Default.MainToolbar, Converter={StaticResource boolToVis}}" >
-                <Button ToolTip="New">
+                <Button ToolTip="New" Command="New">
                     <Image Width="16" Height="16" Source=".\Resources\Toolbar Images\Main\NewDocumentHS.png" />
                 </Button>
-                <Button ToolTip="Open">
+                <Button ToolTip="Open" Command="Open">
                     <Image Width="16" Height="16" Source=".\Resources\Toolbar Images\Main\OpenHS.png" />
                 </Button>
-                <Button ToolTip="Save">
+                <Button ToolTip="Save" Command="Save">
                     <Image Width="16" Height="16" Source=".\Resources\Toolbar Images\Main\SaveHS.png" />
                 </Button>
-                <Button ToolTip="Save All">
+                <Button ToolTip="Save All" Command="wc:WabbitcodeCommands.SaveAll">
                     <Image Width="16" Height="16" Source=".\Resources\Toolbar Images\Main\SaveAllHS.png" />
                 </Button>
                 <Separator/>

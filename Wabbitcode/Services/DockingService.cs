@@ -7,6 +7,7 @@ using System.Windows;
 using AvalonDock;
 using ICSharpCode.AvalonEdit;
 using Revsoft.Wabbitcode.Panels;
+using System.Collections.Generic;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -118,5 +119,7 @@ namespace Revsoft.Wabbitcode.Services
             doc.Show(dockManager);
             doc.Activate();
         }
+
+        public static ManagedContentCollection<DocumentContent> Documents { get { return dockManager.Documents; } }
     }
 }

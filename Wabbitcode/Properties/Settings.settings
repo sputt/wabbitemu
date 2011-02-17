@@ -29,5 +29,8 @@
     <Setting Name="StatusBar" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="OutputWindowFont" Type="System.Windows.Media.FontFamily" Scope="User">
+      <Value Profile="(Default)">Courier New</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

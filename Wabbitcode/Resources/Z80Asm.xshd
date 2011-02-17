@@ -26,11 +26,12 @@
     <!-- Digits -->
     <Rule foreground="DarkBlue">
       \b[0-9a-fA-F]+\$\b | \$[0-9a-fA-F]+\b |# hex number
-      \b([0-9]+)                             #number
+      \b([0-9]+)\b                           # number
     </Rule>
+    
     <!-- Labels -->
     <Rule foreground="Blue">
-      ^[A-Za-z0-9_]+:*
+      (^[A-Za-z0-9_]+:*)(?!\()\b
     </Rule>
 
     <!-- Conditions -->
