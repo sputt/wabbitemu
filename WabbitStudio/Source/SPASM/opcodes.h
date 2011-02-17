@@ -22,5 +22,6 @@ typedef struct _opcode {
 } opcode;
 
 extern opcode *all_opcodes;
+opcode opcode_list[];
 
 #endif

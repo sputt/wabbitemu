@@ -27,6 +27,7 @@ namespace Revsoft.Wabbitcode.Panels
     public partial class Editor : DocumentContent, IWabbitcodePanel
     {
         private string filePath;
+        public string FilePath { get { return filePath; } }
         private TextEditor editor;
         FoldingManager foldingManager;
         AbstractFoldingStrategy foldingStrategy;

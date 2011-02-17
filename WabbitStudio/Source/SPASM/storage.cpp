@@ -207,6 +207,7 @@ void init_storage() {
  */
 EXPORT void free_storage() {
 	opcode *next_opcode = NULL, *last_opcode = NULL, *curr_opcode = all_opcodes;
+	all_opcodes = opcode_list;
 
 	hash_free(label_table);
 	label_table = NULL;
@@ -216,11 +217,13 @@ EXPORT void free_storage() {
 
 	while (curr_opcode) {
 		next_opcode = curr_opcode->next;
-		if (curr_opcode->is_added){
+		if (curr_opcode->is_added) {
 			free(curr_opcode->instrs->args);
 			free(curr_opcode->instrs);
 			free(curr_opcode->name);
 			free(curr_opcode);
+			if (last_opcode)
+				last_opcode->next = next_opcode;
 		} else {
 			last_opcode = curr_opcode;
 		}

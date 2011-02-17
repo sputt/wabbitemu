@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#ifdef _WINDLL
+#if _WINDLL
 #include "spasm.h"
 #include "utils.h"
 #include "storage.h"
@@ -38,7 +38,7 @@ extern "C"
 		stdin->_file  = _open_osfhandle((long)GetStdHandle(STD_INPUT_HANDLE), _O_TEXT);  
 		*/
 			output_contents = (unsigned char *) malloc_chk (OUTPUT_BUF_SIZE);
-			setvbuf(stdout, output_text, _IOFBF, 1000);
+			setvbuf(stdout, output_text, _IOFBF, 65536);
 			break;
 		case DLL_THREAD_ATTACH:
 			break;
@@ -153,7 +153,7 @@ extern "C"
 	
 		list = include_dirs;
 		while (list) {
-			printf("inclue dir: %s\n", (char *) list->data);
+			printf("Include dir: %s\n", (char *) list->data);
 			list = list->next;
 		}
 	
@@ -171,6 +171,7 @@ extern "C"
 		fprintf(logfile, "File assembled with return value: %d\n", result);
 		fflush(logfile);
 	#endif
+		free_storage();
 		return result;
 	}
 

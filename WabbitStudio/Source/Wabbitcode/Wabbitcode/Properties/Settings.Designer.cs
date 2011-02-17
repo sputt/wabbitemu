@@ -130,5 +130,17 @@ namespace Revsoft.Wabbitcode.Properties {
                 this["StatusBar"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("Courier New")]
+        public global::System.Windows.Media.FontFamily OutputWindowFont {
+            get {
+                return ((global::System.Windows.Media.FontFamily)(this["OutputWindowFont"]));
+            }
+            set {
+                this["OutputWindowFont"] = value;
+            }
+        }
     }
 }
