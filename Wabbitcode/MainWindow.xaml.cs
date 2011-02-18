@@ -94,6 +94,7 @@ namespace Revsoft.Wabbitcode
         private void dockManager_Loaded(object sender, RoutedEventArgs e)
         {
             DockingService.InitPanels(StatusBar);
+
             //handle any arguments sent
             HandleArgs(args);
         }
