@@ -10,6 +10,7 @@
         TextOptions.TextFormattingMode="Display"
         UseLayoutRounding="True"
         Title="Wabbitcode" mc:Ignorable="d"
+        Name="WabbitcodeMainWindow"
         Height="564" Width="707" Closed="Window_Closed" Initialized="Window_Initialized" AllowDrop="True" DragDrop.DragEnter="Window_DragEnter">
     <Window.CommandBindings>
         <CommandBinding Command="New" Executed="NewFile_Executed" />
@@ -141,7 +142,10 @@
                 <MenuItem Header="Find Results"/>
             </MenuItem>
             <MenuItem Header="Macros" IsEnabled="False">
-                
+                <MenuItem Header="Record Temp Macro" />
+                <MenuItem Header="Run Temp Macro" />
+                <Separator />
+                <MenuItem Header="Manage Macros" />
             </MenuItem>
             <MenuItem Header="Build">
                 <MenuItem Header="Assemble" Command="wc:WabbitcodeCommands.Assemble"/>
@@ -167,13 +171,7 @@
                 <MenuItem Header="Delete All Breakpoints"/>
                 <MenuItem Header="Disable All Breakpoints"/>
             </MenuItem>
-            <MenuItem Header="Window" ItemsSource="{Binding Documents}">
-                <MenuItem.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding Title}"/>
-                    </DataTemplate>
-                </MenuItem.ItemTemplate>
-            </MenuItem>
+            <MenuItem Header="Window" ItemsSource="{Binding OpenDocuments}"/>
             <MenuItem Header="Help">
                 <MenuItem Header="Help"/>
                 <MenuItem Header="Check For Updates"/>
@@ -181,7 +179,7 @@
             </MenuItem>
         </Menu>
 
-        <ad:DockingManager Name="dockManager" Grid.Row="2" DocumentsSource="{Binding Documents}" Loaded="dockManager_Loaded">
+        <ad:DockingManager Name="dockManager" Grid.Row="2"  Loaded="dockManager_Loaded">
             <ad:ResizingPanel Orientation="Vertical">
                 <ad:ResizingPanel Orientation="Horizontal">
                     <ad:DocumentPane></ad:DocumentPane>
@@ -245,6 +243,6 @@
                 </Button>
             </ToolBar>
         </ToolBarTray>
-        <wcs:WabbitcodeStatusBar x:Name="StatusBar" Height="26" Grid.Row="3" Visibility="{Binding Source={StaticResource Settings}, Path=Default.StatusBar, Converter={StaticResource boolToVis}}" />
+        <wcs:WabbitcodeStatusBar x:Name="StatusBar" Background="#2C3D5A" Foreground="White" Height="26" Grid.Row="3" Visibility="{Binding Source={StaticResource Settings}, Path=Default.StatusBar, Converter={StaticResource boolToVis}}" />
     </Grid>
 </Window>

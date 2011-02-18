@@ -80,8 +80,18 @@ namespace Revsoft.Wabbitcode.Services
 #if !DEBUG
                 } catch (Exception) { }
 #endif
-                return;
-            }            
+            }
+			try
+			{
+				DocumentContent[] docs = new DocumentContent[Documents.Count];
+				Documents.CopyTo(docs, 0);
+				foreach (Editor doc in docs)
+					DocumentService.OpenDocuments.Add(doc);
+			}
+			catch (Exception ex)
+			{
+				ShowError("ERROR", ex);
+			}
         }
 
         internal static void DestoryDocking()

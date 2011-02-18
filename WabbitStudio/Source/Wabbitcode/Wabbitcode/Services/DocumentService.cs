@@ -16,26 +16,26 @@ namespace Revsoft.Wabbitcode.Services
 {
     public static class DocumentService
     {
-        public static ObservableCollection<Editor> openDocuments
+        public static ObservableCollection<Editor> OpenDocuments
         {
             get { return (ObservableCollection<Editor>)DockingService.MainWindow.GetValue(DocumentsProperty); }
             set { DockingService.MainWindow.SetValue(DocumentsProperty, value); }
         }
 
         public static readonly DependencyProperty DocumentsProperty =
-                                DependencyProperty.Register("Documents", typeof(ObservableCollection<Editor>),
+                                DependencyProperty.Register("OpenDocuments", typeof(ObservableCollection<Editor>),
                                     typeof(MainWindow), new UIPropertyMetadata(null));
 
         internal static void InitDocuments()
         {
-            openDocuments = new ObservableCollection<Editor>();
+            OpenDocuments = new ObservableCollection<Editor>();
             InitHighlighting();
         }
 
         internal static Editor CreateDocument(string title)
         {
             var editor = new Editor() { Title = title };
-            openDocuments.Add(editor);
+            OpenDocuments.Add(editor);
             editor.Activate();
             return editor;
         }
@@ -74,7 +74,7 @@ namespace Revsoft.Wabbitcode.Services
             {
 #endif
                 var doc = new Editor();
-                openDocuments.Add(doc);
+                OpenDocuments.Add(doc);
                 //DockingService.StatusBar.ShowProgress();
                 //DockingService.StatusBar.SetProgress(.1, "Open", OperationStatus.Error);
                 OpenDocument(doc, filename);

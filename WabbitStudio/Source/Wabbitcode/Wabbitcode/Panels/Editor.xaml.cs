@@ -59,7 +59,8 @@ namespace Revsoft.Wabbitcode.Panels
         const string fileNameAttribute = "FileName";
         public override void RestoreLayout(System.Xml.XmlElement contentElement)
         {
-            DocumentService.OpenDocument(this, contentElement.GetAttribute(fileNameAttribute));
+			string fileName = contentElement.GetAttribute(fileNameAttribute);
+            DocumentService.OpenDocument(this, fileName);
             base.RestoreLayout(contentElement);
         }
 
