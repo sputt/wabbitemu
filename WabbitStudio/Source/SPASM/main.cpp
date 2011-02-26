@@ -33,7 +33,8 @@ extern output_t *output_list, *output_list_tail;
  * After those conditions are met, go for it!
  */
 
-int run_assembly() {
+int run_assembly()
+{
 #ifdef _WIN32
 	struct _timeb time_start, time_end;
 	_ftime(&time_start);
@@ -114,8 +115,10 @@ int run_assembly() {
 	run_first_pass ((char *) input_contents);
 
 	//free include dirs when done
-	//free(input_contents);
-	release_file_contents(input_contents);
+	if (mode & MODE_COMMANDLINE == 0)
+	{
+		release_file_contents(input_contents);
+	}
 	input_contents = NULL;
 	list_free (include_dirs, true);
 	include_dirs = NULL;
@@ -213,17 +216,75 @@ int run_assembly() {
 	return exit_code;
 }
 
-int main (int argc, char **argv) {
+#ifndef _TEST
+#include <atlbase.h>
+#include <atlcom.h>
+
+#include "xdlldata.h"
+#include "resource.h"
+
+#include "CZ80Assembler.h"
+
+class CATLSPASMModule : public ATL::CAtlExeModuleT<CATLSPASMModule>
+{
+public:
+	DECLARE_LIBID(LIBID_SPASM)
+};
+#endif
+
+int main (int argc, char **argv)
+//int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hReserved, LPSTR lpszCommandLine, int nCmdShow)
+{
 	int curr_arg = 1;
 	bool case_sensitive = false;
+
+	//CoInitializeEx(NULL, COINIT_MULTITHREADED);
+
+	/*
+	CHAR szModulePath[MAX_PATH];
+	GetModuleFileNameA(NULL, szModulePath, ARRAYSIZE(szModulePath));
+
+	WCHAR wszModulePath[MAX_PATH];
+	MultiByteToWideChar(CP_ACP, 0, szModulePath, -1, wszModulePath, MAX_PATH);
+	*/
+	
+
+	/*
+	CComObject<CRegObject> *pRegObject;
+	CComObject<CRegObject>::CreateInstance(&pRegObject);
+	pRegObject->AddRef();
+
+	_ATL_REGMAP_ENTRY RegMapEntries[] =
+	{
+		{L"CLSID", L""},
+		{NULL, NULL},
+	};
+
+	pRegObject->ResourceRegister(NULL, IDR_RGS, L"RGS");
+
+	pRegObject->Release();
+	*/
+	
+	
+
 
 	use_colors = true;
 	save_console_attributes ();
 	atexit (restore_console_attributes);
+
+	//int argc;
+	//LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+	//LPSTR *argv = (LPSTR *) malloc(argc * sizeof(LPSTR));
+	//for (int i = 0; i < argc; i++)
+	//{
+	//	CW2A szArg(wargv[i]);
+	//	argv[0] = strdup(szArg);
+	//}
 	
 	//if there aren't enough args, show info
 	if (argc < 2) {
-		puts ("SPASM Z80 Assembler by Don Straney and Spencer Putt");
+		puts ("SPASM Z80 Assembler by Spencer Putt and Don Straney");
 #ifdef _M_X64
 		puts ("64-bit Version");
 #endif
@@ -250,7 +311,10 @@ int main (int argc, char **argv) {
 	//otherwise, get any options
 
 	while (curr_arg < argc) {
-		if (argv[curr_arg][0] == '-') switch (argv[curr_arg][1]) {
+		if (argv[curr_arg][0] == '-' || argv[curr_arg][0] == '/')
+		{
+			switch (argv[curr_arg][1])
+			{
 			//args for different modes
 			case 'O':
 				mode = mode & (~MODE_NORMAL);
@@ -349,7 +413,27 @@ int main (int argc, char **argv) {
 				break;
 			}
 			default:
-				printf ("Unrecognized option %s\n", argv[curr_arg]);
+				{
+#ifndef _TEST
+					if (strcasecmp(&argv[curr_arg][1], "embedding") == 0 ||
+						strcasecmp(&argv[curr_arg][1], "regserver") == 0)
+					{
+						//FreeConsole();
+						printf("Waiting for a client to connect...\n");
+						CATLSPASMModule _Module;
+						int nReturn = _Module.WinMain(SW_HIDE);
+						return nReturn;
+					}
+					else
+					{
+						printf ("Unrecognized option %s\n", argv[curr_arg]);
+					}
+#else
+					printf ("Unrecognized option %s\n", argv[curr_arg]);
+#endif
+				}
+				
+			}
 
 		} else {
 			//if it's not a flag, then it must be a filename
@@ -357,10 +441,6 @@ int main (int argc, char **argv) {
 				output_filename = strdup(argv[curr_arg]);
 			else if (!curr_input_file)
 				curr_input_file = strdup(argv[curr_arg]);
-			/*else {
-				puts("Too many input files");
-				return EXIT_FATAL_ERROR;
-			}*/
 
 		}
 		curr_arg++;
@@ -390,10 +470,11 @@ int main (int argc, char **argv) {
 		list_free(include_dirs, true);
 
 #if defined(_DEBUG) && defined(WIN32)
-		if (IsDebuggerPresent())
-		{
-			system("PAUSE");
-		}
+		//if (IsDebuggerPresent())
+		//{
+		//	system("PAUSE");
+		//}
 #endif
+	FreeConsole();
 	return error;
 }

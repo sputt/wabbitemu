@@ -13,6 +13,15 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
+    <Filter Include="Source Files\COM">
+      <UniqueIdentifier>{ec117db6-c935-4f5b-9219-7120bfbc2812}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IDL Files">
+      <UniqueIdentifier>{76e406cc-45fe-4281-abca-8755f7b5a81c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\COM">
+      <UniqueIdentifier>{0e6c9207-b9b1-4a77-ba8b-b0bfe9b50486}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="console.cpp">
@@ -69,6 +78,12 @@
     <ClCompile Include="errors.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="CZ80Assembler.cpp">
+      <Filter>Source Files\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="SPASM_i.c">
+      <Filter>Source Files\COM</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="console.h">
@@ -122,6 +137,12 @@
     <ClInclude Include="errors.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="CZ80Assembler.h">
+      <Filter>Header Files\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="SPASM_h.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SPASM.rc">
@@ -132,5 +153,14 @@
     <None Include="test.asm">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="SPASM.rgs">
+      <Filter>IDL Files</Filter>
+    </None>
+    <None Include="x64\Debug\SPASM.tlb" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="SPASM.idl">
+      <Filter>IDL Files</Filter>
+    </Midl>
   </ItemGroup>
 </Project>
