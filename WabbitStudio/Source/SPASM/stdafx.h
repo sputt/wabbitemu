@@ -1,7 +1,29 @@
+// stdafx.h : include file for standard system include files,
+// or project specific include files that are used frequently,
+// but are changed infrequently
+
 #pragma once
 
-#ifdef WIN32
-#define _WIN32_WINNT 0x0501
+#ifndef STRICT
+#define STRICT
+#endif
+
+#include "targetver.h"
+
+#define _ATL_APARTMENT_THREADED
+
+#define _ATL_NO_AUTOMATIC_NAMESPACE
+
+#define _ATL_CSTRING_EXPLICIT_CONSTRUCTORS	// some CString constructors will be explicit
+
+#define _ATL_STATIC_REGISTRY
+#define ATL_NO_ASSERT_ON_DESTROY_NONEXISTENT_WINDOW
+
+#include "resource.h"
+#include <atlbase.h>
+#include <atlcom.h>
+#include <atlctl.h>
+#include <atlconv.h>
 
 #include <windows.h>
 #include <windowsx.h>
@@ -10,10 +32,6 @@
 #include <fcntl.h>
 #include <sys/timeb.h>
 #include <direct.h>
-#else
-#include <unistd.h>
-#endif
-
 #include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,14 +45,4 @@
 #include <strsafe.h>
 #include <assert.h>
 
-#ifdef _ATL
-#define _ATL_STATIC_REGISTRY
-#include <atlbase.h>
-#include <atlcom.h>
-#include <atlrc.h>
-#include <atlconv.h>
-#endif
-
-#ifdef USE_GMP
-#include <gmp/gmp.h>
-#endif
+#include <gmp\gmp.h>

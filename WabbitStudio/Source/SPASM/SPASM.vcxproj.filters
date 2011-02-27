@@ -11,26 +11,27 @@
     </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
-      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
-    <Filter Include="Source Files\COM">
-      <UniqueIdentifier>{ec117db6-c935-4f5b-9219-7120bfbc2812}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="IDL Files">
-      <UniqueIdentifier>{76e406cc-45fe-4281-abca-8755f7b5a81c}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Header Files\COM">
-      <UniqueIdentifier>{0e6c9207-b9b1-4a77-ba8b-b0bfe9b50486}</UniqueIdentifier>
+    <Filter Include="Generated Files">
+      <UniqueIdentifier>{00f5d352-e0a0-4e66-b18e-6a5438b1485c}</UniqueIdentifier>
+      <SourceControlFiles>False</SourceControlFiles>
     </Filter>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SPASMNew.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SPASM_i.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
     <ClCompile Include="console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="directive.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="dll.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="errors.cpp">
@@ -66,26 +67,32 @@
     <ClCompile Include="preop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="storage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="errors.cpp">
+    <ClCompile Include="dll.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CZ80Assembler.cpp">
-      <Filter>Source Files\COM</Filter>
-    </ClCompile>
-    <ClCompile Include="SPASM_i.c">
-      <Filter>Source Files\COM</Filter>
+    <ClCompile Include="Z80Assembler.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SPASM_i.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
     <ClInclude Include="console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -119,13 +126,7 @@
     <ClInclude Include="preop.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="spasm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="stdafx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="storage.h">
@@ -134,33 +135,26 @@
     <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="errors.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Z80Assembler.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="CZ80Assembler.h">
-      <Filter>Header Files\COM</Filter>
-    </ClInclude>
-    <ClInclude Include="SPASM_h.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Z80Assembler.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="SPASM.rgs">
+      <Filter>Resource Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="SPASM.idl">
+      <Filter>Source Files</Filter>
+    </Midl>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SPASM.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="test.asm">
-      <Filter>Resource Files</Filter>
-    </None>
-    <None Include="SPASM.rgs">
-      <Filter>IDL Files</Filter>
-    </None>
-    <None Include="x64\Debug\SPASM.tlb" />
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="SPASM.idl">
-      <Filter>IDL Files</Filter>
-    </Midl>
   </ItemGroup>
 </Project>

@@ -1,10 +1,18 @@
+// SPASMNew.idl : IDL source for SPASMNew
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (SPASMNew.tlb) and marshalling code.
+
 import "oaidl.idl";
 import "ocidl.idl";
 
 [
 	object,
-	uuid(81B27D7E-B1B5-402f-84E5-0948A38D5497),
-	pointer_default(unique),
+	uuid(38516350-2EF5-48DE-8C13-FEEAD1CAC91A),
+	dual,
+	nonextensible,
+	pointer_default(unique)
 ]
 interface IZ80Assembler : IDispatch
 {
@@ -13,37 +21,23 @@ interface IZ80Assembler : IDispatch
 
 	[propput, helpstring("Input string for the assemble operation")]
 	HRESULT Input([in] BSTR Input);
-	
-	/*
-	[propget] HRESULT InputFile([out, retval] BSTR *FileName);
-	[propput] HRESULT InputFile([in] BSTR FileName);
-
-	[propget] HRESULT OutputFile([out, retval] BSTR *FileName);
-	[propput] HRESULT OutputFile([in] BSTR FileName);
-
-	HRESULT ClearDefines();
-	HRESULT AddDefine([in] BSTR Name, [in] VARIANT Value);
-
-	HRESULT ClearIncludeDirectories();
-	HRESULT AddIncludeDirectory([in] BSTR Directory);
-	*/
 
 	HRESULT Assemble();
 };
-
 [
-	uuid(36EB8341-0201-4ac6-A8D0-D06BC6E1B5E1),
+	uuid(16387CF3-1B28-46C0-ABA9-5DEC7A8FA7AA),
 	version(1.0),
+	helpstring("SPASM Z80 Assembler 1.0 Type Library"),
 ]
 library SPASM
 {
-	importlib("stdole32.tlb");
-
+	importlib("stdole2.tlb");
 	[
-		uuid(FD2AD3D2-78AE-4761-AD02-F8D9263A527D),
+		uuid(BDD26FAE-A388-4860-9D4E-669809BC8EC2)		
 	]
-	coclass CZ80Assembler
+	coclass Z80Assembler
 	{
 		[default] interface IZ80Assembler;
-	}
+	};
 };
+

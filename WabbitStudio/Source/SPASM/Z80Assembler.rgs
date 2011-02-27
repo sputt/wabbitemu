@@ -1,0 +1,26 @@
+HKCR
+{
+	Wabbit.SPASM.1 = s 'Z80Assembler Class'
+	{
+		CLSID = s '{BDD26FAE-A388-4860-9D4E-669809BC8EC2}'
+	}
+	Wabbit.SPASM = s 'Z80Assembler Class'
+	{		
+		CurVer = s 'Wabbit.SPASM.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {BDD26FAE-A388-4860-9D4E-669809BC8EC2} = s 'Z80Assembler Class'
+		{
+			ProgID = s 'Wabbit.SPASM.1'
+			VersionIndependentProgID = s 'Wabbit.SPASM'
+			ForceRemove Programmable
+			LocalServer32 = s '%MODULE%'
+			{
+				val ServerExecutable = s '%MODULE_RAW%'
+			}
+			TypeLib = s '{16387CF3-1B28-46C0-ABA9-5DEC7A8FA7AA}'
+			Version = s '1.0'
+		}
+	}
+}

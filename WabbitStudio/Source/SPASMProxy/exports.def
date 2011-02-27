@@ -1,4 +1,4 @@
-LIBRARY SPASMProxy.dll
+LIBRARY
 EXPORTS
 	DllGetClassObject      PRIVATE
 	DllCanUnloadNow        PRIVATE
