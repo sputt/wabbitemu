@@ -77,7 +77,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 				return true;
 #if !DEBUG
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return false;
 			}
