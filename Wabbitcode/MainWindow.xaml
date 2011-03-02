@@ -7,10 +7,8 @@
         xmlns:wcs="clr-namespace:Revsoft.Wabbitcode.Services"
         xmlns:wcp="clr-namespace:Revsoft.Wabbitcode.Properties"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        TextOptions.TextFormattingMode="Display"
-        UseLayoutRounding="True"
-        Title="Wabbitcode" mc:Ignorable="d"
-        Name="WabbitcodeMainWindow"
+        TextOptions.TextFormattingMode="Display" UseLayoutRounding="True"
+        mc:Ignorable="d" Title="Wabbitcode" Name="WabbitcodeMainWindow"
         Height="564" Width="707" Closed="Window_Closed" Initialized="Window_Initialized" AllowDrop="True" DragDrop.DragEnter="Window_DragEnter">
     <Window.CommandBindings>
         <CommandBinding Command="New" Executed="NewFile_Executed" />
@@ -27,6 +25,7 @@
         <CommandBinding Command="Redo" Executed="Redo_Executed" />
         <CommandBinding Command="Close" Executed="Close_Executed" />
         <CommandBinding Command="wc:WabbitcodeCommands.Assemble" Executed="Assemble_Executed" />
+        <CommandBinding Command="wc:WabbitcodeCommands.About" Executed="About_Executed" />
     </Window.CommandBindings>
     <Window.InputBindings>
         <KeyBinding Command="New" Key="N" Modifiers="Ctrl" />
@@ -39,6 +38,8 @@
         <KeyBinding Command="Undo" Key="Z" Modifiers="Ctrl" />
         <KeyBinding Command="Redo" Key="Y" Modifiers="Ctrl" />
         <KeyBinding Command="Close" Key="W" Modifiers="Ctrl" />
+        <KeyBinding Command="wc:WabbitcodeCommands.Assemble" Key="B" Modifiers="Ctrl+Shift" />
+        <KeyBinding Command="wc:WabbitcodeCommands.Assemble" Key="F6" />
     </Window.InputBindings>
     <Window.Resources>
         <wcp:Settings x:Key="Settings" />
@@ -171,11 +172,11 @@
                 <MenuItem Header="Delete All Breakpoints"/>
                 <MenuItem Header="Disable All Breakpoints"/>
             </MenuItem>
-            <MenuItem Header="Window" ItemsSource="{Binding OpenDocuments}"/>
+            <MenuItem Header="Window" Name="WindowMenuItem" ItemsSource="{Binding OpenDocuments}" />
             <MenuItem Header="Help">
                 <MenuItem Header="Help"/>
                 <MenuItem Header="Check For Updates"/>
-                <MenuItem Header="About"/>
+                <MenuItem Header="About" Command="wc:WabbitcodeCommands.About"/>
             </MenuItem>
         </Menu>
 
