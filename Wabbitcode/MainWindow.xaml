@@ -172,7 +172,7 @@
                 <MenuItem Header="Delete All Breakpoints"/>
                 <MenuItem Header="Disable All Breakpoints"/>
             </MenuItem>
-            <MenuItem Header="Window" Name="WindowMenuItem" ItemsSource="{Binding OpenDocuments}" />
+            <MenuItem Header="Window" ItemsSource="{Binding {StaticResource Docking}, Path=OpenDocuments}"/>
             <MenuItem Header="Help">
                 <MenuItem Header="Help"/>
                 <MenuItem Header="Check For Updates"/>
