@@ -688,19 +688,19 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 		HWND hwndValue;
 
-		hwndValue = CreateValueField(hwnd, _T("X"), kRegAddr, &lpDebuggerCalc->cpu.pio.lcd->x, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, _T("X"), kRegAddr, &lpDebuggerCalc->cpu.pio.lcd->x, 4, 2, DEC3);
 		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, 0, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, _T("Y"), kRegAddr, &lpDebuggerCalc->cpu.pio.lcd->y, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, _T("Y"), kRegAddr, &lpDebuggerCalc->cpu.pio.lcd->y, 4, 2, DEC3);
 		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, _T("Z"), kRegAddr, &lpDebuggerCalc->cpu.pio.lcd->z, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, _T("Z"), kRegAddr, &lpDebuggerCalc->cpu.pio.lcd->z, 4, 2, DEC3);
 		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, _T("Contrast"), kRegAddr*2, &lpDebuggerCalc->cpu.pio.lcd->contrast, 4, 2, DEC);
+		hwndValue = CreateValueField(hwnd, _T("Contrast"), kRegAddr*2, &lpDebuggerCalc->cpu.pio.lcd->contrast, 4, 2, DEC3);
 		SetWindowPos(hwndValue, NULL, 0, 5*kRegRow/4, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 

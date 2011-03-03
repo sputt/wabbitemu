@@ -4,6 +4,7 @@
 
 #include "calc.h"
 #include "dbmem.h"
+#include "dbcommon.h"
 #include "dbdisasm.h"
 #include "dbmonitor.h"
 #include "dbprofile.h"
@@ -15,8 +16,10 @@
 
 extern HINSTANCE g_hInst;
 
+
 WINDOWPLACEMENT db_placement = { NULL };
 BOOL db_maximized = FALSE;
+DISPLAY_BASE dispType = HEX;
 HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
 
 #define CY_TOOLBAR 32
@@ -176,6 +179,18 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			GetClientRect(hwnd, &rc);
 			ratioDisasm = (double) cyDisasm / rc.bottom;
 
+			switch (dispType) {
+				case HEX:
+					CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_HEX, MF_BYCOMMAND | MF_CHECKED);
+					break;
+				case DEC:
+					CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_DEC, MF_BYCOMMAND | MF_CHECKED);
+					break;
+				case BIN:
+					CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_BIN, MF_BYCOMMAND | MF_CHECKED);
+					break;
+			}
+
 			/* Create diassembly window */
 
 			//ZeroMemory(&dps, sizeof(dps));
@@ -211,6 +226,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			SetWindowFont(hmem, hfontSegoe, TRUE);
 			mps[1].addr = 0x0000;
 			mps[1].mode = MEM_BYTE;
+			mps[1].display = dispType;
 			mps[1].sel = 0x000;
 			mps[1].track = -1;
 
@@ -256,6 +272,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			mps[0].addr = lpDebuggerCalc->cpu.sp;
 			mps[0].mode = MEM_WORD;
+			mps[0].display = HEX;
 			mps[0].sel = mps[1].addr;
 			mps[0].track = offsetof(struct CPU, sp);
 			mps[0].memNum = -1;
@@ -493,6 +510,31 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				}
 				break;
 			}
+
+			case IDM_DISPLAYBASE_HEX:
+				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_HEX, MF_BYCOMMAND | MF_CHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_DEC, MF_BYCOMMAND | MF_UNCHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_BIN, MF_BYCOMMAND | MF_UNCHECKED);
+				dispType = HEX;
+				mps[1].display = dispType;
+				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				break;
+			case IDM_DISPLAYBASE_BIN:
+				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_HEX, MF_BYCOMMAND | MF_UNCHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_DEC, MF_BYCOMMAND | MF_UNCHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_BIN, MF_BYCOMMAND | MF_CHECKED);
+				dispType = BIN;
+				mps[1].display = dispType;
+				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				break;
+			case IDM_DISPLAYBASE_DEC:
+				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_HEX, MF_BYCOMMAND | MF_UNCHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_DEC, MF_BYCOMMAND | MF_CHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_BIN, MF_BYCOMMAND | MF_UNCHECKED);
+				dispType = DEC;
+				mps[1].display = dispType;
+				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				break;
 			case IDM_VIEW_ADDMEM: {
 				HMENU hMenu = GetMenu(hwnd);
 				EnableMenuItem(hMenu, IDM_VIEW_DELMEM, MF_BYCOMMAND | MF_ENABLED);

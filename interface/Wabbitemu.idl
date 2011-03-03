@@ -176,7 +176,7 @@ interface IPage : IDispatch
 ]
 interface IKeypad : IUnknown
 {
-	typedef enum CalcKey
+	typedef enum Calc_Key
 	{
 		KEY_UP,
 		KEY_LEFT,
@@ -205,11 +205,11 @@ interface IKeypad : IUnknown
 		KEY_ON,
 
 
-	} CalcKey;
+	} Calc_Key;
 
-	HRESULT PressKey([in] enum CalcKey Key);
-	HRESULT ReleaseKey([in] enum CalcKey Key);
-	HRESULT IsKeyPressed([in] enum CalcKey Key, [out, retval] VARIANT_BOOL *IsPressed);
+	HRESULT PressKey([in] enum Calc_Key Key);
+	HRESULT ReleaseKey([in] enum Calc_Key Key);
+	HRESULT IsKeyPressed([in] enum Calc_Key Key, [out, retval] VARIANT_BOOL *IsPressed);
 	HRESULT PressVirtKey([in] int Key);
 	HRESULT ReleaseVirtKey([in] int Key);
 }

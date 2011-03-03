@@ -14,6 +14,7 @@
 #include "registry.h"
 #include "fileutilities.h"
 #include "guiwizard.h"
+#include "dbcommon.h"
 
 extern HINSTANCE g_hInst;
 extern BITMAPINFO *bi;
@@ -558,8 +559,8 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					Edit_GetText(backupTime_edit, buf, ARRAYSIZE(buf));
 					double persec = atof(buf);
 					if (persec == 0.0)
-						persec = 30.0;
-					num_backup_per_sec = (int) (60 / persec);
+						persec = 50.0;
+					num_backup_per_sec = (int) (100 / persec);
 					//we need to persist this immediately
 					SaveWabbitKey(_T("load_files_first"), REG_DWORD, &load_files_first);
 #ifdef WITH_BACKUPS
@@ -585,7 +586,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 #ifdef WITH_BACKUPS
 			Button_SetCheck(doBackups_check, do_backups);
 			TCHAR buf[256];
-			StringCbPrintf(buf, sizeof(buf), "%f", 60 / ((float) num_backup_per_sec));
+			StringCbPrintf(buf, sizeof(buf), "%.2f", 100 / ((float) num_backup_per_sec));
 			Edit_SetText(backupTime_edit, buf);
 #endif
 			Button_SetCheck(wizard_check, show_wizard);
@@ -726,7 +727,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			edtRom_size = GetDlgItem(hwnd, IDC_EDTROMSIZE);
 			stcRom_image = GetDlgItem(hwnd, IDC_STCROMIMAGE);
 			saveState_check = GetDlgItem(hwnd, IDC_CHKSAVE);
-			ramPages_check = GetDlgItem(hwnd, IDC_CHECK_RAMPAGES);
+			ramPages_check = GetDlgItem(hwnd, IDC_CHK_RAMPAGES);
 
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}

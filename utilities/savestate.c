@@ -13,7 +13,7 @@ extern int inf(FILE *, FILE *);
 
 BOOL cmpTags(char *str1, char *str2) {
 	int i;
-	for(i=0;i<4;i++) {
+	for(i = 0; i < 4; i++) {
 		if (str1[i] != str2[i]) return FALSE;
 	}
 	return TRUE;
@@ -21,13 +21,13 @@ BOOL cmpTags(char *str1, char *str2) {
 
 int fputi(unsigned int integer, FILE* stream) {
 	int r;
-	r = fputc( ( ( integer ) & 0xFF ) , stream);
+	r = fputc(integer & 0xFF, stream);
 	if (r == EOF) return EOF;
-	r = fputc( ( ( integer >> 8 ) & 0xFF ) , stream);
+	r = fputc((integer >> 8) & 0xFF, stream);
 	if (r == EOF) return EOF;
-	r = fputc( ( ( integer >> 16 ) & 0xFF ) , stream);
+	r = fputc((integer >> 16) & 0xFF, stream);
 	if (r == EOF) return EOF;
-	r = fputc( ( ( integer >>24 ) & 0xFF ) , stream);
+	r = fputc((integer >> 24) & 0xFF, stream);
 	return r;
 }
 	
@@ -57,8 +57,8 @@ SAVESTATE_t* CreateSave(TCHAR *author, TCHAR *comment , int model) {
 	wcstombs_s(&numConv, save->author, author, sizeof(save->author));
 	wcstombs_s(&numConv, save->comment, comment, sizeof(save->author));
 #else
-	_tcsncpy_s(save->author, author, sizeof(save->author));
-	_tcsncpy_s(save->comment, comment, sizeof(save->comment));
+	StringCbCopy(save->author, sizeof(save->author), author);
+	StringCbCopy(save->comment, sizeof(save->comment), comment);
 #endif
 #else
 	strncpy(save->author, author, sizeof(save->author));
@@ -80,7 +80,7 @@ void ClearSave(SAVESTATE_t* save) {
 	
 	if (save == NULL) return;
 
-	for(i=0;i<save->chunk_count;i++) {
+	for(i = 0; i < save->chunk_count; i++) {
 		if (save->chunks[i]) {
 			if (save->chunks[i]->data) {
 				free(save->chunks[i]->data);
@@ -145,13 +145,13 @@ CHUNK_t* NewChunk(SAVESTATE_t* save, char* tag) {
 	return save->chunks[chunk];
 }
 
-BOOL DelChunk(SAVESTATE_t* save, char* tag) {
+BOOL DelChunk(SAVESTATE_t *save, char *tag) {
 	int i;
 	for(i = 0; i < save->chunk_count; i++) {
 		if (cmpTags(save->chunks[i]->tag, tag) == TRUE) {
 			if (save->chunks[i]->data) free(save->chunks[i]->data);
 			if (save->chunks[i]) free(save->chunks[i]);
-			for(; i < save->chunk_count - 1; i++) {
+			for(; i < (save->chunk_count - 1); i++) {
 				save->chunks[i] = save->chunks[i+1];
 			}
 			save->chunks[i] = NULL;
@@ -777,7 +777,7 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 
 	ReadBlock(chunk, lcd->display, DISPLAY_SIZE);
 	lcd->front		= ReadInt(chunk);
-	ReadBlock(chunk,  (unsigned char *)lcd->queue,LCD_MAX_SHADES*DISPLAY_SIZE);
+	ReadBlock(chunk,  (unsigned char *) lcd->queue, LCD_MAX_SHADES * DISPLAY_SIZE);
 	lcd->shades		= ReadInt(chunk);
 	lcd->mode		= (LCD_MODE) ReadInt(chunk);
 	lcd->time		= ReadDouble(chunk);
@@ -805,7 +805,7 @@ void LoadSTDINT(SAVESTATE_t* save, STDINT_t* stdint) {
 	stdint->timermax1	= ReadDouble(chunk);
 	stdint->lastchk2	= ReadDouble(chunk);
 	stdint->timermax2	= ReadDouble(chunk);
-	for(i=0;i<4;i++) {
+	for(i = 0; i < 4; i++) {
 		stdint->freq[i]	= ReadDouble(chunk);
 	}
 	stdint->mem			= ReadInt(chunk);
@@ -824,11 +824,11 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	se_aux->clock.base			= ReadInt(chunk);
 	se_aux->clock.lasttime		= ReadDouble(chunk);
 	
-	for(i=0;i<7;i++) {
+	for(i = 0; i < 7; i++) {
 		se_aux->delay.reg[i]	= ReadChar(chunk);
 	}
 	
-	for(i=0;i<6;i++) {
+	for(i = 0; i < 6; i++) {
 		se_aux->md5.reg[i]		= ReadInt(chunk);
 	}
 	se_aux->md5.s				= ReadChar(chunk);
@@ -850,7 +850,7 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	se_aux->xtal.lastTime		= ReadDouble(chunk);
 	se_aux->xtal.ticks			= ReadLong(chunk);
 
-	for(i=0;i<3;i++) {
+	for(i = 0; i < 3; i++) {
 		se_aux->xtal.timers[i].lastTstates	= ReadLong(chunk);
 		se_aux->xtal.timers[i].lastTicks	= ReadDouble(chunk);
 		se_aux->xtal.timers[i].divsor		= ReadDouble(chunk);
@@ -866,7 +866,7 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 }
 
 
-void LoadSlot(SAVESTATE_t* save, void *lpInput) {
+void LoadSlot(SAVESTATE_t *save, void *lpInput) {
 	BOOL runsave;
 	LPCALC lpCalc = (LPCALC) lpInput;
 	
@@ -953,7 +953,7 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 	fwrite(save->author, 1,32, ofile);
 	fwrite(save->comment, 1, 64, ofile);
 	
-	for(i=0;i<save->chunk_count;i++) {
+	for(i = 0; i < save->chunk_count; i++) {
 		fputc(save->chunks[i]->tag[0], ofile);
 		fputc(save->chunks[i]->tag[1], ofile);
 		fputc(save->chunks[i]->tag[2], ofile);
@@ -1001,19 +1001,19 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 	}
 }
 
-SAVESTATE_t* ReadSave(FILE* ifile) {
+SAVESTATE_t* ReadSave(FILE *ifile) {
 	int i;
 	int compressed = FALSE;
 	int chunk_offset,chunk_count;
 	char string[128];
 	TCHAR tmpfn[L_tmpnam];
 	TCHAR temp_save[MAX_PATH];
-	SAVESTATE_t* save;
-	CHUNK_t* chunk;
-	FILE* tmpfile;
+	SAVESTATE_t *save;
+	CHUNK_t *chunk;
+	FILE *tmpfile;
 
 	fread(string, 1, 8, ifile);
-	string[8]=0;
+	string[8] = 0;
 	if (strncmp(DETECT_CMP_STR, string, 8) == 0) {
 		i = fgetc(ifile);
 #ifdef WINVER
@@ -1065,7 +1065,7 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 		fread(string,1,8,ifile);
 	}
 		
-	if (strncmp(DETECT_STR, string, 8)!=0){
+	if (strncmp(DETECT_STR, string, 8) != 0){
 
 		_putts(_T("Readsave detect string failed."));
 		if (compressed == TRUE) fclose(ifile);
@@ -1099,13 +1099,13 @@ SAVESTATE_t* ReadSave(FILE* ifile) {
 	fread(save->author,1,32,ifile);
 	fread(save->comment,1,64,ifile);
 
-	fseek(ifile,chunk_offset+8+4,SEEK_SET);
+	fseek(ifile, chunk_offset + 8 + 4, SEEK_SET);
 	
-	for(i=0;i<512;i++) {
+	for(i = 0; i < 512; i++) {
 		save->chunks[i] = NULL;
 	}
 	save->chunk_count = 0;
-	for(i = 0; i<chunk_count; i++) {
+	for(i = 0; i < chunk_count; i++) {
 		string[0]	= fgetc(ifile);
 		string[1]	= fgetc(ifile);
 		string[2]	= fgetc(ifile);

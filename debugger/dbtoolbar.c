@@ -889,25 +889,14 @@ waddr_t z80_to_waddr(uint16_t addr) {
 
 static HMENU rewindmenu;
 HMENU CreateRewindMenu() {
-	rewindmenu = CreatePopupMenu();
-	int i;
-	float j = ((float) num_backup_per_sec) / 60;
 	TCHAR buf[256];
-	MENUITEMINFO mii;
-	mii.cbSize = sizeof(MENUITEMINFO);
-	mii.fMask = MIIM_STATE | MIIM_ID | MIIM_STRING | MIIM_BITMAP;
-	mii.fType = MFT_STRING;
-	mii.fState = MFS_ENABLED;
-	mii.hSubMenu = NULL;
-	mii.hbmpChecked = NULL;
-	mii.hbmpUnchecked = NULL;
-	mii.dwItemData = 0;
-	mii.dwTypeData = buf;
+	int i;
+	rewindmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_DISASM_REWIND_MENU));
+	float j = 1 / ((float) num_backup_per_sec);
 	for (i = 0; i < MAX_BACKUPS; i++) {
-		mii.wID = 1005 - i;
-		StringCbPrintf(buf, sizeof(buf), "%f", j);
+		StringCbPrintf(buf, sizeof(buf), "%.2f", j * (i + 1));
 		StringCbCat(buf, sizeof(buf), _T(" seconds"));
-		InsertMenuItem(rewindmenu, 0, TRUE, &mii);
+		ModifyMenu(rewindmenu, IDM_05SECOND + i, MF_BYCOMMAND | MF_STRING, 0, buf);
 	}
 	return rewindmenu;
 }

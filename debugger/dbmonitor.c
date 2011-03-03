@@ -4,6 +4,7 @@
 #include "guidebug.h"
 #include "calc.h"
 #include "resource.h"
+#include "dbcommon.h"
 
 #define PORT_MIN_COL_WIDTH 40
 #define PORT_ROW_SIZE 15
@@ -15,17 +16,6 @@ int line_sel;
 static CPU_t *port_cpu = NULL;
 #define COLOR_BREAKPOINT		(RGB(230, 160, 180))
 #define COLOR_SELECTION			(RGB(153, 222, 253))
-
-const char* byte_to_binary(int x) {
-	static char b[9];
-	b[0] = '\0';
-	int z;
-	char *p = b;
-	for (z = 128; z > 0; z >>= 1) {
-		*p++ = x & z ? '1' : '0';
-	}
-	return b;
-}
 
 CPU_t* CPU_clone(CPU_t *cpu) {
 	CPU_t *new_cpu = (CPU_t *) malloc(sizeof(CPU_t));

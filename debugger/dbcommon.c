@@ -90,6 +90,18 @@ INT_PTR CALLBACK FindDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 	return FALSE;
 }
 
+const char* byte_to_binary(int x, BOOL isWord) {
+	static char b[17];
+	b[0] = '\0';
+	int z;
+	char *p = b;
+	for (z = 32768; z > 0; z >>= 1) {
+		*p++ = x & z ? '1' : '0';
+	}
+	if (!isWord)
+		return b + 8;
+	return b;
+}
 
 int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value) {
 	TCHAR result[32];
@@ -131,7 +143,7 @@ int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value) {
 			if (*((float *) value) > max_value)
 				*((float *) value) = (float) max_value;
 			break;
-		case DEC:
+		case DEC3:
 #ifdef WINVER
 			_stscanf_s(result, _T("%d"), (int*) value);
 #else

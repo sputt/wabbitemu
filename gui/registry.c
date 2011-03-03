@@ -4,6 +4,8 @@
 #include "calc.h"
 #include "gif.h"
 #include "registry.h"
+#include "dbcommon.h"
+#include "expandpane.h"
 
 extern keyprog_t keygrps[256];
 
@@ -17,7 +19,7 @@ static struct {
 	{_T("cutout"), 					REG_DWORD, 	FALSE},
 	{_T("skin"),					REG_DWORD,	FALSE},
 	{_T("alphablend_lcd"),			REG_DWORD,	TRUE},
-	{_T("version"), 				REG_SZ, 	(LONG_PTR) _T("1.5.2.7")},
+	{_T("version"), 				REG_SZ, 	(LONG_PTR) _T("1.5.2.24")},
 	{_T("rom_path"), 				REG_SZ, 	(LONG_PTR) _T("z.rom")},
 	{_T("shades"),					REG_DWORD,	6},
 	{_T("gif_path"), 				REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},
@@ -165,6 +167,8 @@ void QueryKeyMappings() {
 	return;
 }
 
+
+extern DISPLAY_BASE dispType;
 HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	HKEY hkeySoftware;
 	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
@@ -211,6 +215,8 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	gif_autosave = (BOOL) QueryWabbitKey(_T("gif_autosave"));
 	gif_use_increasing = (BOOL) QueryWabbitKey(_T("gif_useinc"));
 	break_on_exe_violation = (BOOL) QueryWabbitKey(_T("break_on_exe_violation"));
+
+	dispType = (DISPLAY_BASE) QueryDebugKey((TCHAR *) DisplayTypeString);
 	
 	//RegCloseKey(hkeyWabbit);
 	hkeyTarget = hkeyWabbit;
@@ -297,6 +303,8 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("lcd_freq"), REG_DWORD, &steady);
 		SaveWabbitKey(_T("num_backup_per_sec"), REG_DWORD, &num_backup_per_sec);
 		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->Scale);
+
+		SaveDebugKey((TCHAR *) DisplayTypeString, (DWORD *) dispType);
 
 	}
 	RegCloseKey(hkeyWabbit);

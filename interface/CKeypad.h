@@ -3,7 +3,7 @@
 #include "Wabbitemu_h.h"
 #include "keys.h"
 
-typedef CalcKey KEYS;
+typedef Calc_Key KEYS;
 
 class CKeypad : IKeypad
 {
