@@ -335,7 +335,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 				else
 					_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%*.4f"), vfs->max_digits, *((double *) vfs->data));
 				break;
-			case DEC:
+			case DEC3:
 				_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%*d"), vfs->max_digits, *((unsigned int *) vfs->data));
 				break;
 			case CHAR1:

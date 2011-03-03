@@ -12,15 +12,27 @@ INT_PTR CALLBACK FindDialogProc(HWND, UINT, WPARAM, LPARAM);
 int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value = INT_MAX);
 LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int opacity);
+const char* byte_to_binary(int x, BOOL isWord = FALSE);
 
 typedef enum {
 	HEX2,
 	HEX4,
 	FLOAT2,
 	FLOAT4,
-	DEC,
+	DEC3,
+	DEC5,
+	BIN8,
+	BIN16,
 	CHAR1,
 } VALUE_FORMAT;
+
+typedef enum {
+	HEX,
+	DEC,
+	BIN,
+} DISPLAY_BASE;
+
+static const TCHAR* DisplayTypeString = _T("Disp_Type");
 
 void SubclassEdit(HWND hwndEdt, int edit_width, VALUE_FORMAT format);
 

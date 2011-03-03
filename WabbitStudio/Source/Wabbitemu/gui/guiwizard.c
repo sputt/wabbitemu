@@ -8,6 +8,12 @@
 #include <commdlg.h>
 #include "resource.h"
 
+#ifdef WITH_TILP
+#include <libti\ticables.h>
+#include <libti\tifiles.h>
+#include <libti\ticalcs.h>
+#endif
+
 INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version);
@@ -919,17 +925,12 @@ INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 }
 
 void ExtractDumperProg() {
-#ifdef WINVER
 	TCHAR *env;
 	size_t envLen;
 	_tdupenv_s(&env, &envLen, _T("appdata"));
 	StringCbCopy(dumperPath, sizeof(dumperPath), env);
 	free(env);
 	StringCbCat(dumperPath, sizeof(dumperPath), _T("\\dumper"));
-#else
-	strcpy(dumperPath, getenv("appdata"));
-	strcat(dumperPath, "\\dumper");
-#endif
 	HMODULE hModule = GetModuleHandle(NULL);
 	HRSRC hrDumpProg;
 	switch (model) {
@@ -954,3 +955,80 @@ void ExtractResource(TCHAR *path, HRSRC resource) {
 	WriteFile(hFile, data, size, &writtenBytes, NULL);
 	CloseHandle(hFile);
 }
+
+#ifdef WITH_TILP
+#pragma comment(lib, "ticalcs2.lib")
+
+static void print_lc_error(int errnum)
+{
+  char *msg;
+
+  ticables_error_get(errnum, &msg);
+  fprintf(stderr, _T("Link cable error (code %i)...\n<<%s>>\n"), errnum, msg);
+
+  free(msg);
+}
+
+/*
+  Dump the ROM (get a ROM image)
+*/
+int calc_rom_dump(CalcHandle *calc_handle)
+{
+	int ret, err;
+	TCHAR tmp_filename[MAX_PATH];
+
+	// Transfer ROM dumper
+	err = ticalcs_calc_dump_rom_1(calc_handle);
+	if(err)
+		return err;
+
+	// Get data from dumper
+	TCHAR *env;
+	size_t envLen;
+	_tdupenv_s(&env, &envLen, _T("appdata"));
+	StringCbCopy(tmp_filename, sizeof(dumperPath), env);
+	free(env);
+	StringCbCat(tmp_filename, sizeof(tmp_filename), _T("\\temp.rom"));
+
+	err = ticalcs_calc_dump_rom_2(calc_handle, ROMSIZE_AUTO, tmp_filename);
+
+	return err;
+}
+
+
+int DumpRomLibTi() {
+	CableHandle *cable;
+	CalcHandle *calc;
+	int err;
+
+	// init libs
+	ticables_library_init();
+	ticalcs_library_init();
+	
+	// set cable
+	cable = ticables_handle_new(CABLE_BLK, PORT_2);
+	if(cable == NULL)
+		return -1;
+	
+	// set calc
+	calc = ticalcs_handle_new(CALC_TI83);
+	if(calc == NULL)
+		return -1;
+
+	// attach cable to calc (and open cable)
+	err = ticalcs_cable_attach(calc, cable);
+	err = ticalcs_calc_isready(calc);
+	if(err)
+		print_lc_error(err);
+	
+	calc_rom_dump(calc);
+
+	// detach cable (made by handle_del, too)
+	err = ticalcs_cable_detach(calc);
+
+	// remove calc & cable
+	ticalcs_handle_del(calc);
+	ticables_handle_del(cable);
+	return ERROR_SUCCESS;
+}
+#endif

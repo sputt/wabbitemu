@@ -17,9 +17,25 @@
       <Configuration>Release</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
+    <ProjectConfiguration Include="WabbitComp Debug|Win32">
+      <Configuration>WabbitComp Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="WabbitComp Debug|x64">
+      <Configuration>WabbitComp Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="WabbitComp Release|Win32">
+      <Configuration>WabbitComp Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="WabbitComp Release|x64">
+      <Configuration>WabbitComp Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
   </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}</ProjectGuid>
+    <ProjectGuid>{C36BF10E-335B-4892-ADF8-D23DD16FBE06}</ProjectGuid>
     <SccProjectName>SAK</SccProjectName>
     <SccAuxPath>SAK</SccAuxPath>
     <SccLocalPath>SAK</SccLocalPath>

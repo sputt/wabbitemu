@@ -28,7 +28,7 @@ static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
 	ReleaseDC(hwnd, hdc);
 
 
-	int x = pt.x - tm.tmAveCharWidth*7 - COLUMN_X_OFFSET - (int) (mps->diff - mps->cxMem - 2*tm.tmAveCharWidth)/2;
+	int x = pt.x - tm.tmAveCharWidth * 7 - COLUMN_X_OFFSET - (int) (mps->diff - mps->cxMem - 2 * tm.tmAveCharWidth) / 2;
 	int y = pt.y - cyHeader;
 
 	int row = y/mps->cyRow;
@@ -66,6 +66,41 @@ static void ScrollDown(HWND hwnd) {
 
 	InvalidateRect(hwnd, NULL, FALSE);
 	UpdateWindow(hwnd);
+}
+
+static VALUE_FORMAT GetValueFormat(mp_settings *mps) {
+	VALUE_FORMAT format = CHAR1;
+	if (mps->bText)
+		return format;
+	switch (mps->mode) {
+	case 1:
+		switch (mps->display) {
+			case HEX:
+				format = HEX2;
+				break;
+			case DEC:
+				format = DEC3;
+				break;
+			case BIN:
+				format = BIN8;
+				break;
+		}
+		break;
+	case 2:
+		switch (mps->display) {
+			case HEX:
+				format = HEX4;
+				break;
+			case DEC:
+				format = DEC3;
+				break;
+			case BIN:
+				format = BIN16;
+				break;
+		}
+		break;
+	}
+	return format;
 }
 
 
@@ -181,7 +216,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		    mps->hfontData = hfontLucida;
 			mps->hfontAddr = hfontLucidaBold;
 
-			mps->cyRow = 4*tm.tmHeight/3;
+			mps->cyRow = 4 * tm.tmHeight / 3;
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 
 			TCHAR buffer[64];
@@ -211,11 +246,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 
 			TCHAR szHeader[64];
-#ifdef WINVER
 			StringCbPrintf(szHeader, sizeof(szHeader), _T("Memory (%d Columns)"), mps->nCols);
-#else
-			sprintf(szHeader, "Memory (%d Columns)", mps->nCols);
-#endif
 			HDITEM hdi;
 			hdi.mask = HDI_WIDTH;
 			//| HDI_TEXT;
@@ -260,25 +291,42 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			SelectObject(hdc, GetStockObject(DC_PEN));
 			SetDCPenColor(hdc, GetSysColor(COLOR_BTNFACE));
 
-			MoveToEx(hdc, tm.tmAveCharWidth*7-1, cyHeader, NULL);
-			LineTo(hdc, tm.tmAveCharWidth*7-1, r.bottom);
-
-			if (mps->bText) {
-				kMemWidth = tm.tmAveCharWidth;
-			} else {
-				kMemWidth = tm.tmAveCharWidth*mps->mode*2;
+			BOOL isBinary = FALSE;
+			TCHAR memfmt[8];
+			VALUE_FORMAT format = GetValueFormat(mps);
+			switch (format) {
+				case DEC3:
+				case DEC5:
+					StringCbPrintf(memfmt, sizeof(memfmt), _T("%%d"), mps->mode * 2);
+					kMemWidth = tm.tmAveCharWidth * mps->mode * 3;
+					break;
+				case HEX2:
+				case HEX4:
+					StringCbPrintf(memfmt, sizeof(memfmt), _T("%%0%dx"), mps->mode * 2);
+					kMemWidth = tm.tmAveCharWidth * mps->mode * 2;
+					break;
+				case BIN8:
+				case BIN16:
+					isBinary = TRUE;
+					kMemWidth = tm.tmAveCharWidth * mps->mode * 8;
+					break;
+				case CHAR1:
+					StringCbCopy(memfmt, sizeof(memfmt), _T("%c"));
+					kMemWidth = tm.tmAveCharWidth;
+					break;
 			}
+
+			MoveToEx(hdc, tm.tmAveCharWidth * 7 - 1, cyHeader, NULL);
+			LineTo(hdc, tm.tmAveCharWidth * 7 - 1, r.bottom);
 
 			int i, j, 	rows = (r.bottom - r.top + mps->cyRow - 1)/mps->cyRow,
 						cols =
-						(r.right - r.left - tm.tmAveCharWidth*7) /
-						(kMemWidth + 2*tm.tmAveCharWidth);
-
-
+						(r.right - r.left - tm.tmAveCharWidth * 7) /
+						(kMemWidth + 2 * tm.tmAveCharWidth);
 
 			mps->nRows = rows;
 			mps->nCols = cols;
-			mps->cxMem = kMemWidth + 2*tm.tmAveCharWidth;
+			mps->cxMem = kMemWidth + 2 * tm.tmAveCharWidth;
 
 			double diff = r.right - r.left - tm.tmAveCharWidth*7 - (cols * mps->cxMem);
 			if (cols != 1) {
@@ -286,50 +334,23 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 
 			diff += mps->cxMem;
-
 			mps->diff = diff;
-
 			int addr = mps->addr;
-			TCHAR memfmt[8];
-			if (mps->bText) {
-#ifdef WINVER
-				StringCbCopy(memfmt, sizeof(memfmt), _T("%c"));
-#else
-				strcpy(memfmt, "%c");
-#endif
-			} else {
-#ifdef WINVER
-				StringCbPrintf(memfmt, sizeof(memfmt), _T("%%0%dx"), mps->mode*2);
-#else
-				sprintf(memfmt, "%%0%dx", mps->mode*2);
-#endif
-			}
-			unsigned int value;
 
+			unsigned int value;
 			r.left = COLUMN_X_OFFSET;
 
 			for (	i = 0, r.bottom = r.top + mps->cyRow;
 					i < rows;
 					i++, OffsetRect(&r, 0, mps->cyRow)) {
-				TCHAR szVal[16];
-				if (addr < 0) {
-#ifdef WINVER
+				TCHAR szVal[32];
+				if (addr < 0)
 					StringCbCopy(szVal, sizeof(szVal), _T("0000"));
-#else
-					strcpy(szVal, "0000");
-#endif
-				} else {
-#ifdef WINVER
+				else
 					StringCbPrintf(szVal, sizeof(szVal), _T("%04X"), addr);
-#else
-					sprintf(szVal, "%04X", addr);
-#endif
-				}
-
 
 				if (addr < 0x10000) {
 					SelectObject(hdc, mps->hfontAddr);
-
 					DrawText(hdc, szVal, -1, &r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 				}
 
@@ -337,8 +358,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					RECT tr;
 					CopyRect(&tr, &r);
 					DrawText(hdc, szVal, -1, &tr, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_CALCRECT);
-					OffsetRect(&tr, tm.tmAveCharWidth/3, 0);
-					InflateRect(&tr, 0, -tm.tmAveCharWidth/2);
+					OffsetRect(&tr, tm.tmAveCharWidth / 3, 0);
+					InflateRect(&tr, 0, -tm.tmAveCharWidth / 2);
 					if ((tr.bottom - tr.top) % 2 != 0)
 						tr.bottom++;
 
@@ -356,7 +377,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				for (j = 0; j < cols; j++) {
 
 					CopyRect(&dr, &r);
-					dr.left = tm.tmAveCharWidth*7 + COLUMN_X_OFFSET + (int) (diff * j);
+					dr.left = tm.tmAveCharWidth * 7 + COLUMN_X_OFFSET + (int) (diff * j);
 					dr.right = dr.left + kMemWidth;
 
 					int b;
@@ -379,23 +400,21 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
 							value += mem_read(lpDebuggerCalc->cpu.mem_c, addr + b) << shift;
 						}
-#ifdef WINVER
-						StringCbPrintf(szVal, sizeof(szVal), memfmt, value);
-#else
-						sprintf(szVal, memfmt, value);
-#endif
+						if (isBinary)
+							StringCbCopy(szVal, sizeof(szVal), byte_to_binary(value, mps->mode - 1));
+						else
+							StringCbPrintf(szVal, sizeof(szVal), memfmt, value);
+
 #define COLOR_MEMPOINT_WRITE	(RGB(255, 177, 100))
 #define COLOR_MEMPOINT_READ		(RGB(255, 250, 145))
-						if (check_mem_write_break(lpDebuggerCalc->cpu.mem_c, addr))
-						{
+						if (check_mem_write_break(lpDebuggerCalc->cpu.mem_c, addr)) {
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_WRITE, 255);
 							if (isSel)
 								DrawFocusRect(hdc, &dr);
 							InflateRect(&dr, -2, 0);
 						}
-						if (check_mem_read_break(lpDebuggerCalc->cpu.mem_c, addr))
-						{
+						if (check_mem_read_break(lpDebuggerCalc->cpu.mem_c, addr)) {
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_READ , 255);
 							if (isSel)
@@ -409,10 +428,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					} else {
 						addr += mps->mode;
 					}
-
 				}
-
-
 			}
 
 
@@ -430,20 +446,13 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			switch (((NMHDR*) lParam)->code) {
 				case HDN_BEGINTRACK:
 				case HDN_ENDTRACK:
-				{
 					return TRUE;
-				}
 				case TTN_GETDISPINFO:
 				{
 					NMTTDISPINFO *nmtdi = (NMTTDISPINFO *) lParam;
 					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-#ifdef WINVER
-					StringCbPrintf(nmtdi->szText, sizeof(nmtdi->szText), _T("%d"), mem_read(&lpDebuggerCalc->mem_c, mps->addrTrack));
-#else
-					sprintf(nmtdi->szText, "%d", mem_read(&lpDebuggerCalc->mem_c, mps->addrTrack));
-#endif
-					return TRUE;
+					StringCbPrintf(nmtdi->szText, sizeof(nmtdi->szText), _T("%d"), mem_read(&lpDebuggerCalc->mem_c, mps->addrTrack));					return TRUE;
 				}
 			}
 			return FALSE;
@@ -562,7 +571,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			switch(LOWORD(wParam))
 			{
 				case DB_OPEN_FIND:
-					hwndDialog = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC)FindDialogProc);
+					hwndDialog = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC) FindDialogProc);
 					ShowWindow(hwndDialog, SW_SHOW);
 					break;
 				case DB_FIND_NEXT: {
@@ -580,29 +589,29 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case DB_GOTO: {
 					int result;
-					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC)GotoDialogProc);
+					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC) GotoDialogProc);
 					if (result == IDOK) mps->addr = goto_addr;
 					SetFocus(hwnd);
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
 				}
 				case DB_MEMPOINT_WRITE: {
-					bank_t *bank = &lpDebuggerCalc->mem_c.banks[mps->sel >> 14];
-					if (check_mem_write_break(&lpDebuggerCalc->mem_c, mps->sel)) {
+					bank_t *bank = &lpDebuggerCalc->mem_c.banks[mc_bank(mps->sel)];
+					if (check_mem_write_break(&lpDebuggerCalc->mem_c, mps->sel))
 						clear_mem_write_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, mps->sel);
-					} else {
+					else
 						set_mem_write_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, mps->sel);
-					}
+
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
 				}
 				case DB_MEMPOINT_READ: {
-					bank_t *bank = &lpDebuggerCalc->mem_c.banks[mps->sel >> 14];
-					if (check_mem_read_break(&lpDebuggerCalc->mem_c, mps->sel)) {
+					bank_t *bank = &lpDebuggerCalc->mem_c.banks[mc_bank(mps->sel)];
+					if (check_mem_read_break(&lpDebuggerCalc->mem_c, mps->sel))
 						clear_mem_read_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, mps->sel);
-					} else {
+					else
 						set_mem_read_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, mps->sel);
-					}
+
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
 				}
@@ -643,17 +652,10 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					TCHAR szFmt[8];
 					if (mps->bText)
-#ifdef WINVER
 						StringCbCopy(szFmt, sizeof(szFmt), _T("%c"));
 					else
 						StringCbPrintf(szFmt, sizeof(szFmt), _T("%%0%dx"), mps->mode*2);
 					StringCbPrintf(szInitial, sizeof(szFmt), szFmt, value);
-#else
-						strcpy(szFmt, "%c");
-					else						
-						sprintf(szFmt, "%%0%dx", mps->mode*2);
-					sprintf(szInitial, szFmt, value);
-#endif
 
 					hwndVal =
 					CreateWindow(_T("EDIT"), szInitial,
@@ -664,19 +666,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						r.bottom - r.top +4,
 						hwnd, 0, g_hInst, NULL);
 
-					VALUE_FORMAT format;
-					switch (mps->mode) {
-					case 1:
-						format = HEX2;
-						break;
-					case 2:
-						format = HEX4;
-						break;
-					case 3:
-						format = CHAR1;
-						break;
-					}
-					SubclassEdit(hwndVal, (mps->mode == 3) ? 1 : mps->mode*2, format);
+					VALUE_FORMAT format = GetValueFormat(mps);
+					SubclassEdit(hwndVal, (mps->mode == 3) ? 1 : mps->mode * 2, format);
 				}
 			}
 			SendMessage(hwnd, WM_USER, DB_UPDATE, 1);
@@ -716,14 +707,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		case WM_DESTROY: {
 			mp_settings *mps = (mp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			if (mps->memNum != -1)
-			{
+			if (mps->memNum != -1) {
 				TCHAR buffer[64];
-#ifdef WINVER
 				StringCbPrintf(buffer, sizeof(buffer), _T("Mem%i"), mps->memNum);
-#else
-				sprintf(buffer, "Mem%i", mps->memNum);
-#endif
 				DWORD value = mps->addr;
 				SaveDebugKey(buffer, (DWORD *) value);
 			}

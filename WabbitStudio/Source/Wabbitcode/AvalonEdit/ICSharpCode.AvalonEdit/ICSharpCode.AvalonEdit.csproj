@@ -61,6 +61,15 @@
     <OutputPath>..\..\..\..\Release\</OutputPath>
     <DocumentationFile>..\..\..\..\Release\ICSharpCode.AvalonEdit.xml</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'WabbitComp Debug|AnyCPU'">
+    <OutputPath>bin\WabbitComp Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'WabbitComp Release|AnyCPU'">
+    <OutputPath>bin\WabbitComp Release\</OutputPath>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="PresentationCore">

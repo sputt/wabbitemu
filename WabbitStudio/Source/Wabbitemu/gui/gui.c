@@ -142,6 +142,11 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 extern WINDOWPLACEMENT db_placement;
 
 int gui_debug(LPCALC lpCalc) {
+	TCHAR buf[256];
+	if (link_connected_hub(lpCalc->slot))
+		StringCbPrintf(buf, sizeof(buf), _T("Debugger (%d)"), lpCalc->slot + 1);
+	else
+		StringCbCopy(buf, sizeof(buf), _T("Debugger"));
 	if (lpCalc->audio != NULL)
 		pausesound(lpCalc->audio);
 	HWND hdebug;
@@ -162,7 +167,7 @@ int gui_debug(LPCALC lpCalc) {
 
 	lpCalc->running = FALSE;
 	calc_pause_linked();
-	if ((hdebug = FindWindow(g_szDebugName, _T("Debugger")))) {
+	if (hdebug = FindWindow(g_szDebugName, buf)) {
 		if (lpCalc != lpDebuggerCalc) {
 			DestroyWindow(hdebug);
 		} else {
@@ -175,7 +180,7 @@ int gui_debug(LPCALC lpCalc) {
 	hdebug = CreateWindowEx(
 		WS_EX_APPWINDOW,
 		g_szDebugName,
-        _T("Debugger"),
+        buf,
 		flags | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
         pos.left, pos.top, pos.right, pos.bottom,
         0, 0, g_hInst, (LPVOID) lpCalc);
@@ -208,10 +213,9 @@ int gui_frame(LPCALC lpCalc) {
         startX, startY, r.right - r.left, r.bottom - r.top,
         NULL, 0, g_hInst, (LPVOID) lpCalc);
 
+	SetWindowText(lpCalc->hwndFrame, _T("Wabbitemu"));
 	HDC hdc = GetDC(lpCalc->hwndFrame);
-	//HBITMAP hbmSkin = LoadBitmap(g_hInst, lpCalc->model);
 	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
-	//SelectObject(lpCalc->hdcSkin, hbmSkin);
 
 	//this is now (intuitively) created in guicutout.c (Enable/Disable cutout function)
 	/*lpCalc->hwndLCD = CreateWindowEx(
@@ -284,7 +288,6 @@ int gui_frame_update(LPCALC lpCalc) {
 			case TI_83PSE:
 			default:
 				hbmKeymap.Load(_T("TI-83+Keymap"), _T("PNG"), g_hInst);
-				break;
 				break;
 		}
 		m_pBitmapSkin = hbmSkin.m_pBitmap;
@@ -967,8 +970,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			// Force the current skin setting to be enacted
 			lpCalc->SkinEnabled = !lpCalc->SkinEnabled;
 			SendMessage(hwnd, WM_COMMAND, IDM_CALC_SKIN, 0);
-
-			SetWindowText(hwnd, _T("Wabbitemu"));
 			return 0;
 		}
 		case WM_USER:
@@ -1069,6 +1070,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case IDM_FILE_OPEN: {
 					GetOpenSendFileName(hwnd);
+					SetWindowText(hwnd, _T("Wabbitemu"));
 					break;
 				}
 				case IDM_FILE_SAVE: {
@@ -1149,6 +1151,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					StringCbCopy(buf, sizeof(buf), CalcModelTxt[lpCalc->model]);
 					StringCbCat(buf, sizeof(buf), _T(" Connected"));
 					SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) buf);
+					StringCbPrintf(buf, sizeof(buf), _T("Wabbitemu (%d)"), lpCalc->slot + 1);
+					SetWindowText(hwnd, buf);
 					//MessageBox(NULL, _T("Connection Successful"), _T("Success"), MB_OK);					
 					break;
 				}
@@ -1188,7 +1192,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_HELP_ABOUT:
 					lpCalc->running = FALSE;
 					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGABOUT), hwnd, (DLGPROC) AboutDialogProc);					
-					lpCalc->running = TRUE;					
+					lpCalc->running = TRUE;
 					break;
 				case IDM_HELP_WIZARD:
 					DoWizardSheet(hwnd);

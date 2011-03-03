@@ -8,6 +8,7 @@ typedef struct mempane_settings {
 	int memNum;						// mempane number
 	int addr;						// Top left address
 	int mode;						// current display mode
+	int display;					// hex, dec, or bin
 	int sel;						// current selection
 	int xSel, ySel;					// position
 	int track;						// register to track

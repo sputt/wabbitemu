@@ -9,11 +9,11 @@ using namespace System::Runtime::InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 //
-[assembly:AssemblyTitleAttribute("SPASMTestsVS2008")];
+[assembly:AssemblyTitleAttribute("SPASMTests")];
 [assembly:AssemblyDescriptionAttribute("")];
 [assembly:AssemblyConfigurationAttribute("")];
 [assembly:AssemblyCompanyAttribute("Microsoft")];
-[assembly:AssemblyProductAttribute("SPASMTestsVS2008")];
+[assembly:AssemblyProductAttribute("SPASMTests")];
 [assembly:AssemblyCopyrightAttribute("Copyright (c) Microsoft 2010")];
 [assembly:AssemblyTrademarkAttribute("")];
 [assembly:AssemblyCultureAttribute("")];

@@ -244,7 +244,7 @@ keyprog_t defaultkeys[256] = {
 	{ VK_DELETE , 6 , 7 },
 	{ VK_HOME , 5 , 6 },
 	{ VK_END , 3 , 7 },
-#if !_DEBUG
+#ifndef _DEBUG
 	{ VK_NUMPAD0 , 4 , 0 },
 #endif
 	{ VK_NUMPAD1 , 4 , 1 },
@@ -334,7 +334,7 @@ keyprog_t keygrps[256] = {
 	{ VK_DELETE , 6 , 7 },
 	{ VK_HOME , 5 , 6 },
 	{ VK_END , 3 , 7 },
-#if !_DEBUG
+#ifndef _DEBUG
 	{ VK_NUMPAD0 , 4 , 0 },
 #endif
 	{ VK_NUMPAD1 , 4 , 1 },
@@ -446,14 +446,13 @@ keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk) {
 	return NULL;
 }
 
+
 keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
 	int i;
 	keypad_t * keypad = cpu->pio.keypad;
 	
 	if (keypad == NULL)
-	{
 		return NULL;
-	}
 	/*
 #if !defined(WINVER) || !defined(MACVER)
 	if (vk >= 'a' && vk <= 'z') vk += 'A' - 'a';
