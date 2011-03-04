@@ -37,13 +37,22 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'WabbitComp Debug|x86'">
-    <OutputPath>bin\x86\WabbitComp Debug\</OutputPath>
+    <OutputPath>..\..\..\Debug\</OutputPath>
+    <Optimize>false</Optimize>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'WabbitComp Release|x86'">
-    <OutputPath>bin\X86\WabbitComp Release\</OutputPath>
+    <OutputPath>..\..\..\Release\</OutputPath>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject>WabbitC.Program</StartupObject>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

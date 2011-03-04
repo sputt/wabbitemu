@@ -17,6 +17,7 @@ namespace WabbitC
         static string InputFile;
         static string OutputFile;
         static CompilerStatus Status;
+		[STAThread]
         static void Main(string[] args)
         {
             foreach (string arg in args)

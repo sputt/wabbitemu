@@ -112,8 +112,10 @@ namespace WabbitC
                 if (index != newIndex)
                     index++;
                 test = inputContents[newIndex];
-                while (newIndex < inputContents.Length && delimeters.IndexOf(test) == -1)
+                while (newIndex + 1 < inputContents.Length && delimeters.IndexOf(test) == -1)
                     test = inputContents[++newIndex];
+				if (newIndex + 1 >= inputContents.Length)
+					newIndex++;
                 if (newIndex < index)
                     return null;
             }
@@ -130,8 +132,8 @@ namespace WabbitC
                 else if (word == "/")
                 {
                     //check for comments
-                    word += inputContents[newIndex];
-                    if (word == MultiLineCommentStart)
+					string comment = word + inputContents[newIndex];
+                    if (comment == MultiLineCommentStart)
                     {
                         while (newIndex < inputContents.Length && !(test == '*' && inputContents[newIndex + 1] == '/'))
                         {
@@ -140,20 +142,24 @@ namespace WabbitC
                                 line++;
                         }
                         newIndex += 2;
+						word = comment;
                     }
-                    else if (word == SingleLineComment)
+                    else if (comment == SingleLineComment)
                     {
                         while (newIndex < inputContents.Length && test != '\n')
                             test = inputContents[++newIndex];
+						word = comment;
                     }
                 }
                 else
                 {
-                    if (IsValidIndex(newIndex))
+                    if (IsValidIndex(newIndex) && IsValidIndex(newIndex + 1))
                     {
                         test = inputContents[newIndex];
+						char nextCh =  inputContents[newIndex + 1];
                         if (operators.IndexOf(test) >= 0)
-                            newIndex++;
+							if (((test == '+' || test == '-') && nextCh == test) || nextCh == '=')
+								newIndex++;
                     }
                 }
                 word = inputContents.Substring(index, newIndex - index);
