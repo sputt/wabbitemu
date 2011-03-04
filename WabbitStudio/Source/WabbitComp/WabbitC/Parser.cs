@@ -2,6 +2,65 @@
 using System.Collections.Generic;
 using System.Text;
 
+#region Class layout
+/*
+ * class Module
+ *   Type[]         ; prototypes, structs, typedefs
+ *   Declaration[]  ; globals, functions
+ * 
+ * class Type
+ *   public Size
+ *   public Layout
+ *   ...
+ * 
+ * class Declaration
+ *   Property Type
+ *   Public Value InitialValue
+ *  
+ * class Variable
+ *   Private Declaration
+ *   
+ * class Value
+ *   Property Type
+ *   Union {Variable, Immediate}       
+ * 
+ * class Statement
+ * 
+ * class ValueStatement : Statement
+ * 
+ * class ControlStatement : Statement
+ * 
+ * class LoneValue : ValueStatement
+ *   Public Value
+ * 
+ * class Assignment : ValueStatement
+ *   Public Variable Assignee
+ *   Public Value ValueStatement
+ * 
+ * class If : ControlStatement
+ *   Public Statement Condition
+ *   Public Block IfTrue
+ *   Optional Public Block IfFalse
+ *   
+ * class Loop : ControlStatement
+ *   Public ValueStatement Condition
+ *   Public Block Body
+ * 
+ * class Block
+ *  Type[]
+ *  Declaration[]
+ *  Statement[]
+ *   
+ * class Function
+ *   Block
+
+
+
+*/
+#endregion
+
+
+
 namespace WabbitC
 {
     public class Parser
