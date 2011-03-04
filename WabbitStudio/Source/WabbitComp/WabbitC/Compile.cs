@@ -19,7 +19,7 @@ namespace WabbitC
                 return false;
 
             Tokenizer tokenizer = new Tokenizer();
-            tokenizer.Tokenize("(2*12)/7+9*2");
+			tokenizer.Tokenize("5 + ((1 + 2) * 4) − 3");
 
 			Expression exp = new Expression(tokenizer.Tokens);
 			exp.Eval();

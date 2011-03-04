@@ -13,7 +13,7 @@ namespace WabbitC
         IntType,
         RealType,
         CommentType,
-
+		OperatorType,
     };
 
     public class Tokenizer
@@ -76,6 +76,8 @@ namespace WabbitC
                 tokenToAdd.TokenType = TokenType.RealType;
             else if (int.TryParse(tokenToAdd.TokenText, out intCheck))
                 tokenToAdd.TokenType = TokenType.IntType;
+			else if (operators.Contains(tokenToAdd.TokenText))
+				tokenToAdd.TokenType = TokenType.OperatorType;
             else
                 tokenToAdd.TokenType = TokenType.StringType;
         }
@@ -95,8 +97,8 @@ namespace WabbitC
             return ReservedKeywords.Contains(text);
         }
 
-        const string delimeters = "&<>~!%^*()-+=|\\/{}[]:;\"' \n\t\r?,";
-        const string operators = "&<!%^*-+|/";
+		const string delimeters = "&<>~!%^*()−-+=|\\/{}[]:;\"' \n\t\r?,";
+		const string operators = "&<>!%^*−-+|/";
         private string ReadWord(ref int index)
         {
             int newIndex = index;

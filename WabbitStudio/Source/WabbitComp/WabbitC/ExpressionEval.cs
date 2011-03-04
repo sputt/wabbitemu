@@ -20,20 +20,6 @@ namespace WabbitC
 			}
 		}
 
-		public char Operator
-		{
-			get
-			{
-				if (tokens.Count != 1)
-					return '\0';
-				foreach(string ops in operators) {
-					if (ops.Contains(tokens[0].TokenText))
-						return tokens[0].TokenText[0];
-				}
-				return '\0';
-			}
-		}
-
         public Expression(List<Token> tokens)
         {
             this.tokens = tokens;
@@ -41,81 +27,240 @@ namespace WabbitC
 
         public int Eval()
         {
-			List<Expression> stack = new List<Expression>();
-			FillStack(this, stack);
-			double output = CalculateStack(stack);
+			List<Token> rpn = ShuntingYard();
+			Token result = CalcRPN(rpn);
             return 0;
         }
 
-		private double CalculateStack(List<Expression> stack)
+		private Token CalcRPN(List<Token> rpn)
 		{
-			double output = 0;
-			Expression left = stack[stack.Count - 1];
-			for (int i = stack.Count - 2; i >= 0; i--)
+			Stack<Token> stack = new Stack<Token>();
+			foreach (Token token in rpn)
 			{
-				Expression right = stack[i--];
-				Expression op = stack[i];
-				output = CalcExpression(left, right, op);
-			}
-			return output;
-		}
-
-		private Expression CalcExpression(Expression left, Expression right, Expression op)
-		{
-			double output = 0.0;
-			double leftNum = float.Parse(left.Token.TokenText);
-			double rightNum = float.Parse(right.Token.TokenText);
-			switch (op.Token.TokenText)
-			{
-				case "+":
-					output = leftNum + rightNum;
-					break;
-				case "-":
-					output = leftNum - rightNum;
-					break;
-				case "*":
-					output = leftNum * rightNum;
-					break;
-				case "/":
-					output = leftNum / rightNum;
-					break;
-				case "%":
-					output = leftNum % rightNum;
-					break;
-			}
-			return output;
-		}
-
-		string[] operators = { "+-", "*/", "%" };
-		void FillStack(Expression equation, List<Expression> stack)
-		{
-			stack.Add(equation);
-			for (int i = 0; i < stack.Count; i++)
-			{
-				if (stack[i].Operator == '\0')
+				switch (token.TokenType)
 				{
-					int opIndex = GetOperator(stack[i], operators);
-					if (opIndex != -1)
-					{
-						Expression oldExpression = stack[i];
-						int j = 0;
-						List<Token> list = new List<Token>();
-						for (; j < opIndex; j++)
-							list.Add(stack[i].Tokens[j]);
-						Expression left = new Expression(list);
-						Expression op = new Expression(new List<Token>() { stack[i].Tokens[j++] });
-						list = new List<Token>();
-						for (; j < stack[i].Tokens.Count; j++)
-							list.Add(stack[i].Tokens[j]);
-						Expression right = new Expression(list);
-						stack.Remove(oldExpression);
-						stack.Insert(i, op);
-						stack.Insert(i + 1, left);
-						stack.Insert(i + 2, right);
-					}
+					case TokenType.RealType:
+					case TokenType.IntType:
+						stack.Push(token);
+						break;
+					case TokenType.OperatorType:
+						if (stack.Count < 2)
+							throw new Exception("Not enough values on the stack");
+						Token tok2 = stack.Pop();
+						Token tok1 = stack.Pop();
+						Token result = ApplyOperator(tok1, tok2, token);
+						stack.Push(result);
+						break;
+					default:
+
+						break;
 				}
 			}
+			return stack.Pop();
 		}
+
+		private WabbitC.Token ApplyOperator(WabbitC.Token tok1, WabbitC.Token tok2, WabbitC.Token op)
+		{
+			Token result = new Token();
+			dynamic var1, var2, resultvar = null;
+			if (tok1.TokenType == TokenType.RealType || tok2.TokenType == TokenType.RealType)
+			{
+				result.TokenType = TokenType.RealType;
+				var1 = double.Parse(tok1.TokenText);
+				var2 = double.Parse(tok2.TokenText);
+			}
+			else
+			{
+				result.TokenType = TokenType.IntType;
+				var1 = int.Parse(tok1.TokenText);
+				var2 = int.Parse(tok2.TokenText);
+			}
+			switch (op.TokenText)
+			{
+				case "+":
+					resultvar = var1 + var2;
+					break;
+				case "−":
+				case "-":
+					resultvar = var1 - var2;
+					break;
+				case "*":
+					resultvar = var1 * var2;
+					break;
+				case "/":
+					resultvar = var1 / var2;
+					break;
+				case "^":
+					resultvar = var1 ^ var2;
+					break;
+			}
+			result.TokenText = resultvar.ToString();
+			return result;
+		}
+
+		int op_preced(Token token)
+		{			
+			switch (token.TokenText)
+			{
+				case "++":
+				case "−−":
+				case "--":
+					return 12;
+				case "!":
+				case "~":
+					return 11;
+				case "*":
+				case "/":
+				case "%":
+					return 10;
+				case "+":
+				case "-":
+				case "−":
+					return 9;
+				case ">>":
+				case "<<":
+					return 8;
+				case "<":
+				case "<=":
+				case ">":
+				case ">=":
+					return 7;
+				case "==":
+				case "!=":
+					return 6;
+				case "&":
+					return 5;
+				case "^":
+					return 4;
+				case "|":
+					return 3;
+				case "&&":
+					return 2;
+				case "||":
+					return 1;
+			}
+			return 0;
+		}
+
+		bool op_left_assoc(Token token)
+		{
+			switch (token.TokenText)
+			{
+				// left to right
+				case "++":
+				case "--":
+				case "−−":
+				case "*":
+				case "/":
+				case "%":
+				case "+":
+				case "-":
+				case "−":
+				case ">>":
+				case "<<":
+				case "<":
+				case "<=":
+				case ">":
+				case ">=":
+				case "==":
+				case "!=":
+				case "&":
+				case "^":
+				case "|":
+				case "&&":
+				case "||":
+					return true;
+				// right to left
+				case "!":
+				case "~":
+					return false;
+			}
+			return false;
+		}
+
+		uint op_arg_count(Token token)
+		{
+			char c = token.TokenText[0];
+			switch (c)
+			{
+				case '*':
+				case '/':
+				case '%':
+				case '+':
+				case '-':
+				case '=':
+					return 2;
+				case '!':
+					return 1;
+				default:
+					return (uint)(c - 'A');
+			}
+		}
+
+
+		private List<Token> ShuntingYard()
+		{
+			List<Token> output = new List<Token>();
+			Stack<Token> stack = new Stack<Token>();
+
+			foreach (Token token in tokens)
+			{
+				switch (token.TokenType)
+				{
+					case TokenType.RealType:
+					case TokenType.IntType:
+						output.Add(token);
+						break;
+					case TokenType.OperatorType:
+						if (stack.Count > 0)
+						{
+							Token o2 = stack.Peek();
+							while (o2.TokenType == TokenType.OperatorType &&
+										((op_left_assoc(token) && (op_preced(token) <= op_preced(o2))) ||
+										(!op_left_assoc(token) && (op_preced(token) < op_preced(o2)))))
+							{
+								o2 = stack.Pop();
+								output.Add(o2);
+								if (stack.Count > 0)
+									o2 = stack.Peek();
+								else
+									break;
+							}
+						}
+						stack.Push(token);
+						break;
+					default:
+						if (token.TokenText == "(")
+						{
+							stack.Push(token);
+							break;
+						}
+						else if (token.TokenText == ")")
+						{
+							Token nextTok = stack.Pop();
+							while (nextTok.TokenText != "(")
+							{
+								output.Add(nextTok);
+								if (stack.Count > 0)
+									nextTok = stack.Pop();
+								else
+									throw new Exception("Mismatched parenthesises");
+							}
+							//stack.Pop();
+
+						}
+						break;
+				}
+			}
+			while (stack.Count > 0)
+			{
+				Token token = stack.Pop();
+				output.Add(token);
+			}
+			
+			return output;
+		}
+
 
 		public override string ToString()
 		{
@@ -124,47 +269,5 @@ namespace WabbitC
 				sb.Append(token.TokenText);
 			return sb.ToString();
 		}
-
-		int GetOperator(Expression expression, string[] operators)
-		{
-			for (int opIndex = 0; opIndex < operators.Length; opIndex++)
-			{
-				int nOpen = 0;
-				for (int i = expression.Tokens.Count - 1; i >= 0; i--)
-				{
-					Token token = expression.Tokens[i];
-					char ch = token.TokenText[0];
-					if (ch == ')')
-						nOpen++;
-					else if (ch == '(')
-						nOpen--;
-					else if (nOpen == 0 && operators[opIndex].IndexOf(ch) != -1)
-					{
-						if ((ch != '-' && ch != '+') || (i != 0 && IsRightSign(tokens[i - 1].TokenText[0], operators, i)))
-							return i;
-					}
-				}
-			}
-			return -1;
-		}
-
-		private bool IsRightSign(char ch, string[] operators, int i)
-		{
-			for (; i < operators.Length; i++)
-				if (operators[i].IndexOf(ch) != -1)
-					return false;
-			return true;
-		}
-
-
-		bool IsOperator(Token token)
-        {
-            return token.TokenText == "+" || token.TokenText == "-" || token.TokenText == "*" || token.TokenText == "/" || token.TokenText == "%" ||
-                token.TokenText == "&" || token.TokenText == "|" || token.TokenText == "^" || token.TokenText == "~" ||
-                token.TokenText == "<<" || token.TokenText == ">>" ||
-                token.TokenText == "++" || token.TokenText == "--" ||
-                token.TokenText == "==" || token.TokenText == "!=" || token.TokenText == ">" || token.TokenText == "<" || token.TokenText == "<=" || token.TokenText == ">=" ||
-                token.TokenText == "!" || token.TokenText == "&&" || token.TokenText == "||";
-        }
     }
 }
