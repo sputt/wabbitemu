@@ -76,11 +76,19 @@ namespace WabbitC
                 tokenToAdd.TokenType = TokenType.RealType;
             else if (int.TryParse(tokenToAdd.TokenText, out intCheck))
                 tokenToAdd.TokenType = TokenType.IntType;
-			else if (operators.Contains(tokenToAdd.TokenText))
+			else if (CheckOperators(tokenToAdd.TokenText))
 				tokenToAdd.TokenType = TokenType.OperatorType;
             else
                 tokenToAdd.TokenType = TokenType.StringType;
         }
+
+		private bool CheckOperators(string text)
+		{
+			if (operators.Contains(text))
+				return true;
+			else
+				return false;
+		}
 
         private bool CheckComment(string text)
         {
@@ -98,7 +106,7 @@ namespace WabbitC
         }
 
 		const string delimeters = "&<>~!%^*()−-+=|\\/{}[]:;\"' \n\t\r?,";
-		const string operators = "&<>!%^*−-+|/";
+		const string operators = "&&<<>>!~%^=*=−−=--=++=||/=";
         private string ReadWord(ref int index)
         {
             int newIndex = index;
@@ -155,12 +163,12 @@ namespace WabbitC
                 }
                 else
                 {
-                    if (IsValidIndex(newIndex) && IsValidIndex(newIndex + 1))
+                    if (IsValidIndex(newIndex))
                     {
-                        test = inputContents[newIndex];
-						char nextCh =  inputContents[newIndex + 1];
+                        test = word[0];
+						char nextCh =  inputContents[newIndex];
                         if (operators.IndexOf(test) >= 0)
-							if (((test == '+' || test == '-') && nextCh == test) || nextCh == '=')
+							if (((test == '+' || test == '-' || test == '|' || test == '=' || test == '&') && nextCh == test) || nextCh == '=')
 								newIndex++;
                     }
                 }

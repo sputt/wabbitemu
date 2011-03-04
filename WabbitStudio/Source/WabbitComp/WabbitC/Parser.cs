@@ -63,10 +63,10 @@ using System.Text;
 
 namespace WabbitC
 {
-    public class Parser
+    public class OldParser
     {
         private List<Token> tokens;
-        public Parser()
+        public OldParser()
         {
         }
 

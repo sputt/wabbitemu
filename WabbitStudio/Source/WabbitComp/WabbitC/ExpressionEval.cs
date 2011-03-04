@@ -52,7 +52,7 @@ namespace WabbitC
 						stack.Push(result);
 						break;
 					default:
-
+						//functions/vars here
 						break;
 				}
 			}
@@ -203,8 +203,9 @@ namespace WabbitC
 			List<Token> output = new List<Token>();
 			Stack<Token> stack = new Stack<Token>();
 
-			foreach (Token token in tokens)
+			for(int i = 0; i < tokens.Count; i++)
 			{
+				Token token = tokens[i];
 				switch (token.TokenType)
 				{
 					case TokenType.RealType:
@@ -246,9 +247,13 @@ namespace WabbitC
 								else
 									throw new Exception("Mismatched parenthesises");
 							}
-							//stack.Pop();
-
+							break;
 						}
+						//handle functions here
+						if (i + 1 >= tokens.Count || tokens[i + 1].TokenText != "(")
+							output.Add(token);
+						else
+							stack.Push(token);
 						break;
 				}
 			}

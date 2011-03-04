@@ -19,10 +19,12 @@ namespace WabbitC
                 return false;
 
             Tokenizer tokenizer = new Tokenizer();
-			tokenizer.Tokenize("5 + ((1 + 2) * 4) − 3");
+			tokenizer.Tokenize(fileContents);
 
-			Expression exp = new Expression(tokenizer.Tokens);
-			exp.Eval();
+			/*Expression exp = new Expression(tokenizer.Tokens);
+			exp.Eval();*/
+			PreprocessorParser preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
+			preprocessorParser.Parse();
             /*Parser parser = new Parser();
             parser.ParseTokens(tokenizer.Tokens);*/
 
