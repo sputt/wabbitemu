@@ -1,10 +1,10 @@
 HKCR
 {
-	Wabbit.SPASM.1 = s 'Z80Assembler Class'
+	ForceRemove Wabbit.SPASM.1 = s 'Z80Assembler Class'
 	{
 		CLSID = s '{BDD26FAE-A388-4860-9D4E-669809BC8EC2}'
 	}
-	Wabbit.SPASM = s 'Z80Assembler Class'
+	ForceRemove Wabbit.SPASM = s 'Z80Assembler Class'
 	{		
 		CurVer = s 'Wabbit.SPASM.1'
 	}

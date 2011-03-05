@@ -1,9 +1,3 @@
-// SPASMNew.idl : IDL source for SPASMNew
-//
-
-// This file will be processed by the MIDL tool to
-// produce the type library (SPASMNew.tlb) and marshalling code.
-
 import "oaidl.idl";
 import "ocidl.idl";
 
@@ -19,15 +13,34 @@ interface IZ80Assembler : IDispatch
 	[propget, helpstring("Output data from the assemble operation")]
 	HRESULT Output([out, retval] IStream **Stream);
 
-	[propput, helpstring("Input string for the assemble operation")]
-	HRESULT Input([in] BSTR Input);
+	[propget, helpstring("Input file for the assembly")]
+	HRESULT InputFile([out, retval] BSTR *FileName);
+    [propput, helpstring("Input file for the assembly")]
+	HRESULT InputFile([in] BSTR FileName);
 
-	HRESULT Assemble();
+    [propget, helpstring("Output file for the assembly")]
+	HRESULT OutputFile([out, retval] BSTR *FileName);
+    [propput, helpstring("Output file for the assembly")]
+	HRESULT OutputFile([in] BSTR FileName);
+
+	[helpstring("Clear the preprocessor definitions")]
+    HRESULT ClearDefines();
+	[helpstring("Adds a preprocessor definition")]
+    HRESULT AddDefine([in] BSTR Name, [in, optional] VARIANT Value);
+
+	[helpstring("Clear the additional include directories")]
+    HRESULT ClearIncludeDirectories();
+	[helpstring("Add the additional include directories")]
+    HRESULT AddIncludeDirectory([in] BSTR Directory);
+
+	[helpstring("Run the assembly")]
+	HRESULT Assemble([in, optional] VARIANT Input, [out, retval] int *Return);
 };
+
 [
 	uuid(16387CF3-1B28-46C0-ABA9-5DEC7A8FA7AA),
-	version(1.0),
-	helpstring("SPASM Z80 Assembler 1.0 Type Library"),
+	version(1.1),
+	helpstring("SPASM Z80 Assembler 1.1 Type Library"),
 ]
 library SPASM
 {
@@ -40,4 +53,3 @@ library SPASM
 		[default] interface IZ80Assembler;
 	};
 };
-

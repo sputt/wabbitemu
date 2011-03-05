@@ -25,6 +25,8 @@
 #include <atlctl.h>
 #include <atlconv.h>
 
+#include <comutil.h>
+
 #include <windows.h>
 #include <windowsx.h>
 #include <WinCrypt.h>

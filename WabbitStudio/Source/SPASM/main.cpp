@@ -13,8 +13,7 @@
 #include "console.h"
 #include "errors.h"
 
-
-
+#include "SPASM_i.h"
 
 #define LISTING_BUF_SIZE 65536	//initial size of buffer for output listing
 #define malloc_chk malloc
@@ -23,6 +22,15 @@ void write_file (const unsigned char *, int, const char *);
 
 extern expr_t *expr_list, *expr_list_tail;
 extern output_t *output_list, *output_list_tail;
+
+class CSPASMModule : public ATL::CAtlExeModuleT<CSPASMModule>
+{
+public:
+	DECLARE_LIBID(LIBID_SPASM)
+	DECLARE_REGISTRY_APPID_RESOURCEID(IDR_SPASM, "{20116167-8503-4A34-B8BB-37621F5DAC1B}")
+};
+
+CSPASMModule _AtlModule;
 
 /*
  * Must have mode set
@@ -62,6 +70,9 @@ int run_assembly()
 	output_list = NULL;
 	output_list_tail = NULL;
 
+	assert(curr_input_file != NULL);
+	assert(output_filename != NULL);
+
 	//read in the input file
 	if (!(mode & MODE_COMMANDLINE))
 		input_contents = (char *) get_file_contents (curr_input_file);
@@ -71,13 +82,7 @@ int run_assembly()
 		return EXIT_FATAL_ERROR;
 	}
 	
-	//and create the output buffer
-	//if (mode & MODE_NORMAL) {
-#ifndef _WINDLL
-		output_contents = (unsigned char *) malloc_chk (OUTPUT_BUF_SIZE);
-#endif
-		out_ptr = output_contents;
-	//}
+	out_ptr = output_contents;
 
 	//along with the listing buffer, if required
 	if (mode & MODE_LIST) {
@@ -111,25 +116,22 @@ int run_assembly()
 
 	set_console_attributes (COLOR_WHITE);
 	printf ("Pass one... \n");
+
 	ClearSPASMErrorSessions();
 	run_first_pass ((char *) input_contents);
 
 	//free include dirs when done
-	if (mode & MODE_COMMANDLINE == 0)
+	if ((mode & MODE_COMMANDLINE) == 0)
 	{
 		release_file_contents(input_contents);
 	}
 	input_contents = NULL;
 	list_free (include_dirs, true);
 	include_dirs = NULL;
-	
-	//STP 8/13/2009 - Continue anyway to atleast generate a list file 
-	//if there was an error in the first pass, don't bother with the second pass
-	//if (error_occurred)
-	//	return exit_code;
 
 	//...and if there's output, run the second pass and write it to the output file
-	if (mode & MODE_NORMAL || mode & MODE_LIST) {
+	if (mode & MODE_NORMAL || mode & MODE_LIST)
+	{
 
 		set_console_attributes (COLOR_WHITE);
 		printf ("Pass two... \n");
@@ -140,12 +142,9 @@ int run_assembly()
 		printf ("Done\n");
 		
 		//run the output through the appropriate program export and write it to a file
-		if (mode & MODE_NORMAL && output_filename != NULL) {
+		if (mode & MODE_NORMAL && output_filename != NULL)
+		{
 			write_file (output_contents, out_ptr - output_contents, output_filename);
-#ifndef _WINDLL
-			free (output_contents);
-			output_contents = NULL;
-#endif
 		}
 
 		//write the listing file if necessary
@@ -209,79 +208,22 @@ int run_assembly()
 	}
 	printf("Assembly time: %0.3f seconds\n", (float) s_diff + ((float) ms_diff / 1000.0f));
 #endif
-	//free(output_filename);
-#ifndef _WINDLL
-	free_storage();
-#endif
 	return exit_code;
 }
-
-#ifndef _TEST
-#include <atlbase.h>
-#include <atlcom.h>
-
-#include "xdlldata.h"
-#include "resource.h"
-
-#include "CZ80Assembler.h"
-
-class CATLSPASMModule : public ATL::CAtlExeModuleT<CATLSPASMModule>
-{
-public:
-	DECLARE_LIBID(LIBID_SPASM)
-};
-#endif
 
 int main (int argc, char **argv)
 //int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hReserved, LPSTR lpszCommandLine, int nCmdShow)
 {
+	printf("Waiting for a client...\n");
+	return _AtlModule.WinMain(SW_HIDE);
+
 	int curr_arg = 1;
 	bool case_sensitive = false;
-
-	//CoInitializeEx(NULL, COINIT_MULTITHREADED);
-
-	/*
-	CHAR szModulePath[MAX_PATH];
-	GetModuleFileNameA(NULL, szModulePath, ARRAYSIZE(szModulePath));
-
-	WCHAR wszModulePath[MAX_PATH];
-	MultiByteToWideChar(CP_ACP, 0, szModulePath, -1, wszModulePath, MAX_PATH);
-	*/
-	
-
-	/*
-	CComObject<CRegObject> *pRegObject;
-	CComObject<CRegObject>::CreateInstance(&pRegObject);
-	pRegObject->AddRef();
-
-	_ATL_REGMAP_ENTRY RegMapEntries[] =
-	{
-		{L"CLSID", L""},
-		{NULL, NULL},
-	};
-
-	pRegObject->ResourceRegister(NULL, IDR_RGS, L"RGS");
-
-	pRegObject->Release();
-	*/
-	
-	
-
 
 	use_colors = true;
 	save_console_attributes ();
 	atexit (restore_console_attributes);
 
-	//int argc;
-	//LPWSTR *wargv = CommandLineToArgvW(GetCommandLineW(), &argc);
-
-	//LPSTR *argv = (LPSTR *) malloc(argc * sizeof(LPSTR));
-	//for (int i = 0; i < argc; i++)
-	//{
-	//	CW2A szArg(wargv[i]);
-	//	argv[0] = strdup(szArg);
-	//}
-	
 	//if there aren't enough args, show info
 	if (argc < 2) {
 		puts ("SPASM Z80 Assembler by Spencer Putt and Don Straney");
@@ -306,7 +248,7 @@ int main (int argc, char **argv)
 	//init stuff
 	mode = MODE_NORMAL;
 	in_macro = 0;
-	init_storage();
+	//init_storage();
 	
 	//otherwise, get any options
 
@@ -415,19 +357,10 @@ int main (int argc, char **argv)
 			default:
 				{
 #ifndef _TEST
-					if (strcasecmp(&argv[curr_arg][1], "embedding") == 0 ||
-						strcasecmp(&argv[curr_arg][1], "regserver") == 0)
-					{
-						//FreeConsole();
-						printf("Waiting for a client to connect...\n");
-						CATLSPASMModule _Module;
-						int nReturn = _Module.WinMain(SW_HIDE);
-						return nReturn;
-					}
-					else
-					{
-						printf ("Unrecognized option %s\n", argv[curr_arg]);
-					}
+					//FreeConsole();
+					//system("PAUSE");
+					printf("Waiting for a client...\n");
+					return _AtlModule.WinMain(SW_HIDE);
 #else
 					printf ("Unrecognized option %s\n", argv[curr_arg]);
 #endif

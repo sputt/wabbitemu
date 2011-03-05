@@ -1,6 +1,6 @@
 #include "stdafx.h"
 
-#if _WINDLL
+#ifdef _WINDLL
 #include "spasm.h"
 #include "utils.h"
 #include "storage.h"

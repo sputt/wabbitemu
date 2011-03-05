@@ -2,7 +2,7 @@
 
 #pragma once
 #include "resource.h"       // main symbols
-
+#include "list.h"
 
 
 #include "SPASM_i.h"
@@ -15,6 +15,12 @@
 
 using namespace ATL;
 
+typedef struct
+{
+	char name[64];
+	char value[64];
+}
+default_define_pair_t;
 
 // CZ80Assembler
 
@@ -28,29 +34,42 @@ public:
 	{
 	}
 
-DECLARE_REGISTRY_RESOURCEID(IDR_Z80ASSEMBLER)
+	DECLARE_REGISTRY_RESOURCEID(IDR_Z80ASSEMBLER)
 
-
-BEGIN_COM_MAP(CZ80Assembler)
-	COM_INTERFACE_ENTRY(IZ80Assembler)
-	COM_INTERFACE_ENTRY(IDispatch)
-END_COM_MAP()
-
-
+	BEGIN_COM_MAP(CZ80Assembler)
+		COM_INTERFACE_ENTRY(IZ80Assembler)
+		COM_INTERFACE_ENTRY(IDispatch)
+	END_COM_MAP()
 
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 	HRESULT FinalConstruct();
 	void FinalRelease();
+
 public:
 	STDMETHOD(get_Output)(IStream **ppStream);
-	STDMETHOD(put_Input)(BSTR bstrInput);
-	STDMETHOD(Assemble)(void);
+
+	STDMETHOD(get_InputFile)(LPBSTR lpbstrInput);
+	STDMETHOD(put_InputFile)(BSTR bstrInput);
+
+	STDMETHOD(get_OutputFile)(LPBSTR lpbstrOutput);
+	STDMETHOD(put_OutputFile)(BSTR bstrOutput);
+
+	STDMETHOD(ClearDefines)();
+	STDMETHOD(AddDefine)(BSTR bstrName, VARIANT varValue);
+
+	STDMETHOD(ClearIncludeDirectories)();
+	STDMETHOD(AddIncludeDirectory)(BSTR bstrDirectory);
+
+	STDMETHOD(Assemble)(VARIANT varInput, int *lpReturn);
 
 private:
-	BSTR m_bstrInput;
+	LPSTREAM m_pStmOutput;
 
+	_bstr_t m_bstrInputFile;
+	_bstr_t m_bstrOutputFile;
 
+	list_t *default_defines;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(Z80Assembler), CZ80Assembler)
