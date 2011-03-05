@@ -53,6 +53,7 @@ namespace WabbitC
 						break;
 					default:
 						//functions/vars here
+						stack.Push(token);
 						break;
 				}
 			}
@@ -69,11 +70,17 @@ namespace WabbitC
 				var1 = double.Parse(tok1.TokenText);
 				var2 = double.Parse(tok2.TokenText);
 			}
-			else
+			else 
 			{
 				result.TokenType = TokenType.IntType;
-				var1 = int.Parse(tok1.TokenText);
-				var2 = int.Parse(tok2.TokenText);
+				if (tok1.TokenType == TokenType.IntType)
+					var1 = int.Parse(tok1.TokenText);
+				else
+					var1 = tok1.TokenText;
+				if (tok2.TokenType == TokenType.IntType)
+					var2 = int.Parse(tok2.TokenText);
+				else
+					var2 = tok1.TokenText;
 			}
 			switch (op.TokenText)
 			{

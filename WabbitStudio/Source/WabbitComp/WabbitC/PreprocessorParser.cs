@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.IO;
 
 namespace WabbitC
 {
@@ -92,17 +93,25 @@ namespace WabbitC
 		private void HandleInclude(ref int i)
 		{
 			StringBuilder sb = new StringBuilder();
+			string includeFile;
 			if (fileContents[++i].TokenText == "<")
 			{
 				//#include <>
+				i++;		//skip first <
 				while (fileContents[i].TokenText != ">")
 					sb.Append(fileContents[i++].TokenText);
-				sb.Append(fileContents[i].TokenText);
 			}
 			else
+			{
 				//#include ""
-				sb.Append(fileContents[i].TokenText);
-			string includeFile = sb.ToString().Replace("\"", "");
+				sb.Append(fileContents[i].TokenText.Replace("\"", ""));
+				includeFile = ResolveInclude(sb.ToString(), IncludeDirs.LocalIncludes);
+			}
+		}
+
+		private string ResolveInclude(string partialPath, List<string> includeDirs)
+		{
+			return null;
 		}
 
 		private void HandleDefine(ref int i)

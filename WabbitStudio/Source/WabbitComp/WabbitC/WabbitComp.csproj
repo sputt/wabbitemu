@@ -65,11 +65,15 @@
   <ItemGroup>
     <Compile Include="Compile.cs" />
     <Compile Include="ExpressionEval.cs" />
+    <Compile Include="IncludeDirs.cs" />
     <Compile Include="MessageSystem.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserExpression.cs" />
+    <Compile Include="Parser\Block.cs" />
+    <Compile Include="Parser\Declaration.cs" />
     <Compile Include="Parser\DeclarationClass.cs" />
     <Compile Include="Parser\Module.cs" />
+    <Compile Include="Parser\Statement.cs" />
     <Compile Include="Parser\TypeClass.cs" />
     <Compile Include="Parser\ValueClass.cs" />
     <Compile Include="PreprocessorParser.cs" />
