@@ -13,6 +13,8 @@ using System.Text;
  *   public Layout
  *   ...
  * 
+ * Function : 
+ * 
  * class Declaration
  *   Property Type
  *   Public Value InitialValue
@@ -36,6 +38,14 @@ using System.Text;
  * class Assignment : ValueStatement
  *   Public Variable Assignee
  *   Public Value ValueStatement
+ *   
+ * class Addition : ValueStatement
+ *   Public Variable Accumulator
+ *   Public Value
+ *   
+ * class Multiply : ValueStatement
+ *   Public Variable Accumulator
+ *   Public Value
  * 
  * class If : ControlStatement
  *   Public Statement Condition
@@ -53,9 +63,19 @@ using System.Text;
  *   
  * class Function
  *   Block
-
-
-
+ * 
+ * 
+ * Example expression:
+ * 
+ * 
+ * int test = 4;
+ * int bob = (test + 2) * 2;
+ * 
+ * Assignment(test, Value(4))
+ * Assignment(temp1, Value(test))
+ * Addition(temp1, Value(2))
+ * Multiplication(temp1, Value(2))
+ * Assignment(bob, Value(temp1))
 */
 #endregion
 

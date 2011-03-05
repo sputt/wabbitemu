@@ -14,6 +14,11 @@ namespace WabbitC
         RealType,
         CommentType,
 		OperatorType,
+        OpenBlock,
+        CloseBlock,
+        OpenParen,
+        CloseParen,
+        StatementEnd,
     };
 
     public class Tokenizer
@@ -76,10 +81,21 @@ namespace WabbitC
                 tokenToAdd.TokenType = TokenType.RealType;
             else if (int.TryParse(tokenToAdd.TokenText, out intCheck))
                 tokenToAdd.TokenType = TokenType.IntType;
-			else if (CheckOperators(tokenToAdd.TokenText))
-				tokenToAdd.TokenType = TokenType.OperatorType;
+            else if (CheckOperators(tokenToAdd.TokenText))
+                tokenToAdd.TokenType = TokenType.OperatorType;
+            else if (tokenToAdd.TokenText == "{")
+                tokenToAdd.TokenType = TokenType.OpenBlock;
+            else if (tokenToAdd.TokenText == "}")
+                tokenToAdd.TokenType = TokenType.CloseBlock;
+            else if (tokenToAdd.TokenText == "(")
+                tokenToAdd.TokenType = TokenType.OpenParen;
+            else if (tokenToAdd.TokenText == ")")
+                tokenToAdd.TokenType = TokenType.CloseParen;
+            else if (tokenToAdd.TokenText == ";")
+                tokenToAdd.TokenType = TokenType.StatementEnd;
             else
                 tokenToAdd.TokenType = TokenType.StringType;
+
         }
 
 		private bool CheckOperators(string text)
@@ -215,11 +231,27 @@ namespace WabbitC
 
         public static bool operator ==(Token t1, Token t2)
         {
+            if (object.Equals(t1, t2))
+            {
+                return true;
+            }
+            if (object.Equals(t1, null) || object.Equals(t2, null))
+            {
+                return false;
+            }
             return t1.TokenType == t2.TokenType && t1.TokenText == t2.TokenText;
         }
 
         public static bool operator !=(Token t1, Token t2)
         {
+            if (object.Equals(t1, t2))
+            {
+                return false;
+            }
+            if (object.Equals(t1, null) || object.Equals(t2, null))
+            {
+                return true;
+            }
             return t1.TokenType != t2.TokenType || t1.TokenText != t2.TokenText;
         }
     }

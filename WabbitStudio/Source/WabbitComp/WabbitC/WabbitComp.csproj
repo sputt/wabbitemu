@@ -67,6 +67,12 @@
     <Compile Include="ExpressionEval.cs" />
     <Compile Include="IncludeDirs.cs" />
     <Compile Include="MessageSystem.cs" />
+    <Compile Include="Model\Declaration.cs" />
+    <Compile Include="Model\Types\FunctionType.cs" />
+    <Compile Include="Model\Module.cs" />
+    <Compile Include="Model\Types\BuiltInType.cs" />
+    <Compile Include="Model\Types\Type.cs" />
+    <Compile Include="Model\Types\TypeHelper.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserExpression.cs" />
     <Compile Include="Parser\Block.cs" />
