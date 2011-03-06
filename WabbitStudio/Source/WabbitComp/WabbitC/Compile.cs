@@ -28,6 +28,9 @@ namespace WabbitC
             var tokenPass1 = new TokenPasses.ArrayDereference();
             var newTokens = tokenPass1.Run(preProcessorTokens);
 
+            var tokenPass2 = new TokenPasses.Bracer();
+            newTokens = tokenPass2.Run(newTokens);
+
             var tokens = newTokens.GetEnumerator();
             tokens.MoveNext();
 
