@@ -25,7 +25,10 @@ namespace WabbitC
 			PreprocessorParser preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
 			List<Token> preProcessorTokens = preprocessorParser.Parse();
 
-            var tokens = tokenizer.Tokens.GetEnumerator();
+            var tokenPass1 = new TokenPasses.ArrayDereference();
+            var newTokens = tokenPass1.Run(preProcessorTokens);
+
+            var tokens = newTokens.GetEnumerator();
             tokens.MoveNext();
 
             Model.Module currentModule = Model.Module.ParseModule(ref tokens);
