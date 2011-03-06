@@ -85,7 +85,7 @@ namespace WabbitC
 {
     public class OldParser
     {
-        private List<Token> tokens;
+        /*private List<Token> tokens;
         public OldParser()
         {
         }
@@ -183,10 +183,10 @@ namespace WabbitC
         {
             return HandleStartToken(ref i, ref parent);
 
-            /*List<Token> line = new List<Token>();
-            while (tokens[i].TokenText != ";")
-                line.Add(tokens[i++]);
-            return line;*/
+			//List<Token> line = new List<Token>();
+			//while (tokens[i].TokenText != ";")
+			//    line.Add(tokens[i++]);
+			//return line;
         }
 
         private PreprocessorExpression HandlePreprocessor(ref int i, ref ParserExpression parent)
@@ -283,6 +283,6 @@ namespace WabbitC
                 //#include ""
                 line.AddChild(tokens[i]);
             exp.AddChild(line);
-        }
+        }*/
     }
 }

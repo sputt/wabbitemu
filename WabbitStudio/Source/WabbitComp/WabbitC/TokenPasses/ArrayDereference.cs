@@ -7,7 +7,7 @@ namespace WabbitC.TokenPasses
 {
     class ArrayDereference : TokenPass
     {
-        public List<Token> Run(List<Token> tokenList)
+        public override List<Token> Run(List<Token> tokenList)
         {
             return tokenList;
         }

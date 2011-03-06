@@ -25,12 +25,47 @@ namespace WabbitC
             this.tokens = tokens;
         }
 
-        public int Eval()
+        public Token Eval()
         {
+			ReplaceDefines();
 			List<Token> rpn = ShuntingYard();
 			Token result = CalcRPN(rpn);
-            return 0;
+            return result;
         }
+
+		private void ReplaceDefines()
+		{
+			for(int i = 0; i < tokens.Count; i++)
+			{
+				Token token = tokens[i];
+				CheckTokenReplace(ref token);
+				tokens[i] = token;
+			}
+		}
+
+		private void CheckTokenReplace(ref WabbitC.Token token)
+		{
+			if (token.Type == TokenType.StringType)
+			{
+				PreprocessorDefine define = PreprocessorParser.DefineValue(token);
+				if (define == null)
+				{
+					token.Text = "undefined";
+					token.Type = TokenType.UndefinedType;
+				}
+				else
+				{
+					Type defineType = define.GetType();
+					if (defineType == typeof(ReplacementDefine))
+					{
+						ReplacementDefine replaceDefine = (ReplacementDefine)define;
+						token = replaceDefine.Value;
+						CheckTokenReplace(ref token);
+					}
+				}
+			}
+		}
+
 
 		private Token CalcRPN(List<Token> rpn)
 		{
@@ -44,11 +79,19 @@ namespace WabbitC
 						stack.Push(token);
 						break;
 					case TokenType.OperatorType:
-						if (stack.Count < 2)
+						if ((stack.Count < 2) && !(stack.Count == 1 && (token.Text == "!" || token.Text == "~")))
 							throw new Exception("Not enough values on the stack");
-						Token tok2 = stack.Pop();
-						Token tok1 = stack.Pop();
-						Token result = ApplyOperator(tok1, tok2, token);
+						Token result, tok1 = null, tok2 = stack.Pop();
+						if (stack.Count > 0)
+						{
+							tok1 = stack.Pop();
+							result = ApplyOperator(tok1, tok2, token);
+						}
+						else
+						{
+							result = ApplyOperator(tok2, token);
+						}
+						
 						stack.Push(result);
 						break;
 					default:
@@ -58,6 +101,36 @@ namespace WabbitC
 				}
 			}
 			return stack.Pop();
+		}
+
+		private WabbitC.Token ApplyOperator(WabbitC.Token tok1, WabbitC.Token op)
+		{
+			Token result = new Token();
+			dynamic var1, resultvar = null;
+			if (tok1.Type == TokenType.RealType)
+			{
+				result.Type = TokenType.RealType;
+				var1 = double.Parse(tok1.Text);
+			}
+			else
+			{
+				result.Type = TokenType.IntType;
+				if (tok1.Type == TokenType.IntType)
+					var1 = int.Parse(tok1.Text);
+				else
+					var1 = tok1.Text;
+			}
+			switch (op.Text)
+			{
+				case "!":
+					resultvar = Convert.ToInt16(!Convert.ToBoolean(var1));
+					break;
+				case "~":
+					resultvar = ~var1;
+					break;
+			}
+			result.Text = resultvar.ToString();
+			return result;
 		}
 
 		private WabbitC.Token ApplyOperator(WabbitC.Token tok1, WabbitC.Token tok2, WabbitC.Token op)
@@ -85,7 +158,7 @@ namespace WabbitC
 			switch (op.Text)
 			{
 				case "+":
-					resultvar = var1 + var2;
+					resultvar = tok1 + tok2;
 					break;
 				case "−":
 				case "-":
@@ -99,6 +172,12 @@ namespace WabbitC
 					break;
 				case "^":
 					resultvar = var1 ^ var2;
+					break;
+				case "||":
+					resultvar = Convert.ToBoolean(var1) || Convert.ToBoolean(var2);
+					break;
+				case "&&":
+					resultvar = Convert.ToBoolean(var1) && Convert.ToBoolean(var2);
 					break;
 			}
 			result.Text = resultvar.ToString();
@@ -237,27 +316,23 @@ namespace WabbitC
 						}
 						stack.Push(token);
 						break;
+					case TokenType.OpenParen:
+						stack.Push(token);
+						break;
+					case TokenType.CloseParen:
+						Token nextTok = stack.Pop();
+						while (nextTok.Type != TokenType.OpenParen)
+						{
+							output.Add(nextTok);
+							if (stack.Count > 0)
+								nextTok = stack.Pop();
+							else
+								throw new Exception("Mismatched parenthesises");
+						}
+						break;
 					default:
-						if (token.Text == "(")
-						{
-							stack.Push(token);
-							break;
-						}
-						else if (token.Text == ")")
-						{
-							Token nextTok = stack.Pop();
-							while (nextTok.Text != "(")
-							{
-								output.Add(nextTok);
-								if (stack.Count > 0)
-									nextTok = stack.Pop();
-								else
-									throw new Exception("Mismatched parenthesises");
-							}
-							break;
-						}
 						//handle functions here
-						if (i + 1 >= tokens.Count || tokens[i + 1].Text != "(")
+						if (i + 1 >= tokens.Count || tokens[i + 1].Type != TokenType.OpenParen)
 							output.Add(token);
 						else
 							stack.Push(token);

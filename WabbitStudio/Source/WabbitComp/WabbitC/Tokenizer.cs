@@ -19,6 +19,7 @@ namespace WabbitC
         OpenParen,
         CloseParen,
         StatementEnd,
+		UndefinedType,
     };
 
     public class Tokenizer
@@ -27,8 +28,8 @@ namespace WabbitC
         const string MultiLineCommentStart = "/*";
         const string MultiLineCommentEnd = "*/";
         const string DoubleQuote = "\"";
-        List<string> Preprocessor = new List<string>() { "#include", "#define", "#error", "#warning", "#if", "#ifdef",
-                                                            "#elsif", "#else", "#endif", "#region" };
+        List<string> Preprocessor = new List<string>() { "#include", "#define", "#undef", "#error", "#warning", "#if", "#ifndef", 
+                                                           "#ifdef", "#elif", "#else", "#endif", "#region", "#endregion" };
         List<string> ReservedKeywords = new List<string>() { "auto", "double", "int", "struct", "break", "else", "long", "switch",
                                               "case", "enum", "register", "typedef", "char", "extern", "return", "union",
                                               "const", "float", "short", "unsigned", "continue", "for", "signed", "void",
@@ -254,6 +255,36 @@ namespace WabbitC
             }
             return t1.Type != t2.Type || t1.Text != t2.Text;
         }
+
+		public static Token operator +(Token t1, Token t2)
+		{
+			Token result = new Token();
+			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
+			{
+				result.Type = TokenType.RealType;
+				var double1 = double.Parse(t1.Text);
+				var double2 = double.Parse(t2.Text);
+				result.Text = (double1 + double2).ToString();
+				result.Type = TokenType.RealType;
+			}
+			else
+			{
+				int int1, int2;
+				string string1, string2;
+				result.Type = TokenType.IntType;
+				if (int.TryParse(t1.Text, out int1))
+				{
+					string1 = t1.Text;
+				}
+				if (int.TryParse(t2.Text, out int2))
+				{
+					string2 = t2.Text;
+				}
+				result.Text = (int1 + int2).ToString();
+				result.Type = TokenType.IntType;
+			}
+			return result;
+		}
     }
 
 

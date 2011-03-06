@@ -36,8 +36,8 @@ namespace WabbitC.Model
 
         public Declaration CreateTempDeclaration(Type type)
         {
-            var declaration = new Declaration(;
-            declaration.Name = "Temp" + TempDeclarationNumber;
+            var declaration = new Declaration(type, "Temp" + TempDeclarationNumber);
+			return declaration;
         }
 
         static public Block ParseBlock(ref List<Token>.Enumerator tokens, Block parent)

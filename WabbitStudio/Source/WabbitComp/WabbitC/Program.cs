@@ -41,6 +41,7 @@ namespace WabbitC
                         OutputFile = arg;
                 }
             }
+			IncludeDirs.LocalIncludes.Insert(0, Environment.CurrentDirectory);
             Compiler.DoCompile(InputFile);
         }
     }

@@ -21,6 +21,10 @@ namespace WabbitC
             Tokenizer tokenizer = new Tokenizer();
 			tokenizer.Tokenize(fileContents);
 
+
+			PreprocessorParser preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
+			List<Token> preProcessorTokens = preprocessorParser.Parse();
+
             var tokens = tokenizer.Tokens.GetEnumerator();
             tokens.MoveNext();
 
@@ -28,8 +32,7 @@ namespace WabbitC
 
             //Expression exp = new Expression(tokenizer.Tokens);
             //exp.Eval();
-            //PreprocessorParser preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
-            //preprocessorParser.Parse();
+            
             /*Parser parser = new Parser();
             parser.ParseTokens(tokenizer.Tokens);*/
 
