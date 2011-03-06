@@ -45,5 +45,18 @@ namespace WabbitC.Model.Types
 
             tokens.MoveNext();
         }
+
+        public override string ToString()
+        {
+            string result = returnType + " (*)(";
+            for (int i = 0; i < paramDefs.Count; i++)
+            {
+                result += paramDefs[i].Type + " " + paramDefs[i].Name;
+                if (i != paramDefs.Count - 1)
+                    result += ", ";
+            }
+            result += ")";
+            return result;
+        }
     }
 }

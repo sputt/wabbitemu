@@ -25,6 +25,24 @@ namespace WabbitC.Model
             this.name = name;
         }
 
+        public override string ToString()
+        {
+            if (type.GetType() == typeof(Types.FunctionType))
+            {
+                string funcType = type.ToString();
+                funcType = funcType.Replace("(*)", name);
+                if (Code != null)
+                {
+                    funcType += "\n" + Code.ToString();
+                }
+                return funcType;
+            }
+            else
+            {
+                return type + " " + name;
+            }
+        }
+
         //public ValueStatement InitialValue;
         public Block Code;
     }

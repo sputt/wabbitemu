@@ -17,5 +17,10 @@ namespace WabbitC.Model
             Type = new BuiltInType();
             Value = valueToken;
         }
+
+        public override string ToString()
+        {
+            return Value.ToString();
+        }
     }
 }

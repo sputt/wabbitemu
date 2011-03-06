@@ -39,5 +39,10 @@ namespace WabbitC.Model
         {
             Val = val;
         }
+
+        public override string ToString()
+        {
+            return Val.ToString();
+        }
     }
 }

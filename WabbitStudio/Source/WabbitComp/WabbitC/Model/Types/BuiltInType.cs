@@ -71,13 +71,18 @@ namespace WabbitC.Model.Types
             }
         }
 
-        public bool Equals(Type otherType)
+        public override string ToString()
         {
-            if (otherType.GetType() != typeof(BuiltInType))
+            return type.ToString().ToLower();
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() != typeof(BuiltInType))
             {
                 return false;
             }
-            BuiltInType otherBuiltInType = (BuiltInType)otherType;
+            BuiltInType otherBuiltInType = (BuiltInType)obj;
             if (otherBuiltInType.type != this.type)
             {
                 return false;

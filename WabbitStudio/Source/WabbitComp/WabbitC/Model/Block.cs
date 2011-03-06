@@ -141,5 +141,30 @@ namespace WabbitC.Model
             }
             return thisBlock;
         }
+
+        public override string ToString()
+        {
+            string result = "";
+            if (this.GetType() != typeof(Module))
+            {
+                result += "{\n";
+            }
+            foreach (Declaration decl in Declarations)
+            {
+                result += decl + ";\n";
+            }
+            if (Statements != null)
+            {
+                foreach (Statement statement in Statements)
+                {
+                    result += statement + ";\n";
+                }
+            }
+            if (this.GetType() != typeof(Module))
+            {
+                result += "}\n";
+            }
+            return result;
+        }
     }
 }

@@ -9,5 +9,10 @@ namespace WabbitC.Model.Statements
     {
         public Declaration LValue;
         public Value RValue;
+
+        public override string ToString()
+        {
+            return LValue.Name + " = " + RValue;
+        }
     }
 }

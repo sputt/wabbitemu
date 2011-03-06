@@ -61,7 +61,8 @@ namespace WabbitC.TokenPasses
                 tokenizer.Tokenize("{");
                 tokenList.AddRange(tokenizer.Tokens);
 
-                tokenList.AddRange(GetStatement(ref tokens));
+                var listStatement = GetStatement(ref tokens);
+                tokenList.AddRange(this.Run(listStatement));
 
                 tokenizer.Tokenize("}");
                 tokenList.AddRange(tokenizer.Tokens);

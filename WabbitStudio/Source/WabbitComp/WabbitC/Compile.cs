@@ -35,9 +35,13 @@ namespace WabbitC
             tokens.MoveNext();
 
             Model.Module currentModule = Model.Module.ParseModule(ref tokens);
-
+            string code = currentModule.ToString();
             //Expression exp = new Expression(tokenizer.Tokens);
             //exp.Eval();
+
+            var writer = new StreamWriter("test_compiled.c");
+            writer.Write(code);
+            writer.Close();
             
             /*Parser parser = new Parser();
             parser.ParseTokens(tokenizer.Tokens);*/

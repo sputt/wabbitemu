@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WabbitC.Model.Statements
 {
-    class Statement
+    abstract class Statement
     {
         public HashSet<String> Properties;
     }
