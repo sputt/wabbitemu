@@ -129,12 +129,30 @@ namespace WabbitC.Model
                     }
                     else
                     {
+                        var decl = new Declaration(resultType, resultName);
+                        thisBlock.Declarations.Add(decl);
 
+                        // Handle declarations with initial values
+                        if (tokens.Current.Text == "=")
+                        {
+                            tokens.MoveNext();
+                        
+                            var statement = new Assignment();
+                            statement.LValue = decl;
+                            statement.RValue = new Value(new Immediate(tokens.Current));
 
-                        Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                        tokens.MoveNext();
+                            thisBlock.Statements.Add(statement);
 
-                        thisBlock.Declarations.Add(new Declaration(resultType, resultName));
+                            tokens.MoveNext();
+
+                            Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+                            tokens.MoveNext();
+                        }
+                        else
+                        {
+                            Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+                            tokens.MoveNext();
+                        }
                     }
                 }
                 
