@@ -3,10 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace WabbitC.Parser
+namespace WabbitC.Model.Statements
 {
-	public class Statement
-	{
-
-	}
+    class ValueStatement : Statement
+    {
+    }
 }

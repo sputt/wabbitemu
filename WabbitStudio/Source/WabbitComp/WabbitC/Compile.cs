@@ -21,8 +21,10 @@ namespace WabbitC
             Tokenizer tokenizer = new Tokenizer();
 			tokenizer.Tokenize(fileContents);
 
-            Model.Module currentModule = new Model.Module(tokenizer.Tokens);
+            var tokens = tokenizer.Tokens.GetEnumerator();
+            tokens.MoveNext();
 
+            Model.Module currentModule = Model.Module.ParseModule(ref tokens);
 
             //Expression exp = new Expression(tokenizer.Tokens);
             //exp.Eval();

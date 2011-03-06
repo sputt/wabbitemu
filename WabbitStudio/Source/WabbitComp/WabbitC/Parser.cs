@@ -24,7 +24,7 @@ using System.Text;
  *   
  * class Value
  *   Property Type
- *   Union {Variable, Immediate}       
+ *   Union {Declaration, Immediate}       
  * 
  * class Statement
  * 
@@ -101,7 +101,7 @@ namespace WabbitC
 
         private ParserExpression HandleStartToken(ref int i, ref ParserExpression parent)
         {
-            switch (tokens[i].TokenType)
+            switch (tokens[i].Type)
             {
                 case TokenType.CommentType:
                     return null;
@@ -119,13 +119,13 @@ namespace WabbitC
             List<Token> wholeLine = new List<Token>();
             int startLine = i;
             bool hasParen = false;
-            while (tokens[i].TokenText != ";" && tokens[i].TokenText != "{")
+            while (tokens[i].Text != ";" && tokens[i].Text != "{")
             {
-                if (tokens[i].TokenText == "(")
+                if (tokens[i].Text == "(")
                     hasParen = true;
                 wholeLine.Add(tokens[i++]);
             }
-            if (hasParen && tokens[i].TokenText == "{")
+            if (hasParen && tokens[i].Text == "{")
             {
                 i = startLine;
                 return HandleFunction(ref i, ref parent);
@@ -144,18 +144,18 @@ namespace WabbitC
             Token type = tokens[i++];
             Token name = tokens[i++];
             Token paren = tokens[i++];
-            while (tokens[i].TokenText != ")")
+            while (tokens[i].Text != ")")
             {
                 var param = new ArgumentExpression(tokens[i], i);
-                while (tokens[i].TokenText != ")" && tokens[i].TokenText != ",")
+                while (tokens[i].Text != ")" && tokens[i].Text != ",")
                     param.AddArg(tokens[i++]);
                 parameters.Add(param);
             }
             i++;        //skip )
             //handle old C style shit
-            if (tokens[i].TokenText != "{")
+            if (tokens[i].Text != "{")
                 parameters.Clear();
-            while (tokens[i].TokenText != "{")
+            while (tokens[i].Text != "{")
             {
                 var param = new ArgumentExpression(tokens[i], i);
                 var line = GetLine(ref i, ref funcParent);
@@ -167,7 +167,7 @@ namespace WabbitC
             i++;            //skip {
             
             //now we handle the stuff between the braces
-            while (tokens[i].TokenText != "}")
+            while (tokens[i].Text != "}")
             {
                 var line = (LineExpression) GetLine(ref i, ref funcParent);
                 if (line != null)
@@ -192,7 +192,7 @@ namespace WabbitC
         private PreprocessorExpression HandlePreprocessor(ref int i, ref ParserExpression parent)
         {
             PreprocessorExpression expression = new PreprocessorExpression(tokens[i], i);
-            switch (tokens[i].TokenText)
+            switch (tokens[i].Text)
             {
                 case "#if":
                 case "#ifdef":
@@ -241,9 +241,9 @@ namespace WabbitC
                 while (tokens[i].LineNumber == currentLine)
                     line.AddChild(tokens[i++]);
                 endLineNum = i--;
-                while (tokens[i].TokenType == TokenType.CommentType)
+                while (tokens[i].Type == TokenType.CommentType)
                     i--;
-                if (tokens[i].TokenText == "\\")
+                if (tokens[i].Text == "\\")
                     isMultiLine = true;
                 i = endLineNum;
                 currentLine = tokens[i].LineNumber;
@@ -260,7 +260,7 @@ namespace WabbitC
                 line.AddChild(tokens[i]);
             exp.SetArgs(line);
             ParserExpression internalLine = null, parent = (ParserExpression) exp;
-            LineExpression expToCheck = new LineExpression(new Token() { TokenText = "#endif", TokenType = WabbitC.TokenType.Preprocessor }, -1);
+            LineExpression expToCheck = new LineExpression(new Token() { Text = "#endif", Type = WabbitC.TokenType.Preprocessor }, -1);
             while (!(internalLine != null && internalLine.Equals(expToCheck)))
             {
                 internalLine = GetLine(ref i, ref parent);
@@ -272,10 +272,10 @@ namespace WabbitC
         private void HandleInclude(ref int i, ref PreprocessorExpression exp)
         {
             LineExpression line = new LineExpression(tokens[i], i);
-            if (tokens[++i].TokenText == "<")
+            if (tokens[++i].Text == "<")
             {
                 //#include <>
-                while (tokens[i].TokenText != ">")
+                while (tokens[i].Text != ">")
                     line.AddChild(tokens[i++]);
                 line.AddChild(tokens[i]);
             }

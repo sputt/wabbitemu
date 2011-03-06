@@ -62,7 +62,7 @@ namespace WabbitC
             int oldIndex = index;
             tokenToAdd.LineNumber = line;
             tokenToAdd.CharNumber = index;
-            tokenToAdd.TokenText = ReadWord(ref index);
+            tokenToAdd.Text = ReadWord(ref index);
             GetTokenType(ref tokenToAdd);
             return tokenToAdd;
         }
@@ -71,30 +71,30 @@ namespace WabbitC
         {
             float floatCheck;
             int intCheck;
-            if (CheckReservedKeyword(tokenToAdd.TokenText))
-                tokenToAdd.TokenType = TokenType.ReservedKeyword;
-            else if (CheckPreprocessorKeyword(tokenToAdd.TokenText))
-                tokenToAdd.TokenType = TokenType.Preprocessor;
-            else if (CheckComment(tokenToAdd.TokenText))
-                tokenToAdd.TokenType = TokenType.CommentType;
-            else if (float.TryParse(tokenToAdd.TokenText, out floatCheck) && (tokenToAdd.TokenText.Contains("E") || tokenToAdd.TokenText.Contains(".")))
-                tokenToAdd.TokenType = TokenType.RealType;
-            else if (int.TryParse(tokenToAdd.TokenText, out intCheck))
-                tokenToAdd.TokenType = TokenType.IntType;
-            else if (CheckOperators(tokenToAdd.TokenText))
-                tokenToAdd.TokenType = TokenType.OperatorType;
-            else if (tokenToAdd.TokenText == "{")
-                tokenToAdd.TokenType = TokenType.OpenBlock;
-            else if (tokenToAdd.TokenText == "}")
-                tokenToAdd.TokenType = TokenType.CloseBlock;
-            else if (tokenToAdd.TokenText == "(")
-                tokenToAdd.TokenType = TokenType.OpenParen;
-            else if (tokenToAdd.TokenText == ")")
-                tokenToAdd.TokenType = TokenType.CloseParen;
-            else if (tokenToAdd.TokenText == ";")
-                tokenToAdd.TokenType = TokenType.StatementEnd;
+            if (CheckReservedKeyword(tokenToAdd.Text))
+                tokenToAdd.Type = TokenType.ReservedKeyword;
+            else if (CheckPreprocessorKeyword(tokenToAdd.Text))
+                tokenToAdd.Type = TokenType.Preprocessor;
+            else if (CheckComment(tokenToAdd.Text))
+                tokenToAdd.Type = TokenType.CommentType;
+            else if (float.TryParse(tokenToAdd.Text, out floatCheck) && (tokenToAdd.Text.Contains("E") || tokenToAdd.Text.Contains(".")))
+                tokenToAdd.Type = TokenType.RealType;
+            else if (int.TryParse(tokenToAdd.Text, out intCheck))
+                tokenToAdd.Type = TokenType.IntType;
+            else if (CheckOperators(tokenToAdd.Text))
+                tokenToAdd.Type = TokenType.OperatorType;
+            else if (tokenToAdd.Text == "{")
+                tokenToAdd.Type = TokenType.OpenBlock;
+            else if (tokenToAdd.Text == "}")
+                tokenToAdd.Type = TokenType.CloseBlock;
+            else if (tokenToAdd.Text == "(")
+                tokenToAdd.Type = TokenType.OpenParen;
+            else if (tokenToAdd.Text == ")")
+                tokenToAdd.Type = TokenType.CloseParen;
+            else if (tokenToAdd.Text == ";")
+                tokenToAdd.Type = TokenType.StatementEnd;
             else
-                tokenToAdd.TokenType = TokenType.StringType;
+                tokenToAdd.Type = TokenType.StringType;
 
         }
 
@@ -214,8 +214,8 @@ namespace WabbitC
 
     public class Token
     {
-        public TokenType TokenType { get; set; }
-        public string TokenText { get; set; }
+        public TokenType Type { get; set; }
+        public string Text { get; set; }
         public int LineNumber { get; set; }
         public int CharNumber { get; set; }
         
@@ -226,7 +226,7 @@ namespace WabbitC
 
         public override string ToString()
         {
-            return TokenText;
+            return Text;
         }
 
         public static bool operator ==(Token t1, Token t2)
@@ -239,7 +239,7 @@ namespace WabbitC
             {
                 return false;
             }
-            return t1.TokenType == t2.TokenType && t1.TokenText == t2.TokenText;
+            return t1.Type == t2.Type && t1.Text == t2.Text;
         }
 
         public static bool operator !=(Token t1, Token t2)
@@ -252,7 +252,7 @@ namespace WabbitC
             {
                 return true;
             }
-            return t1.TokenType != t2.TokenType || t1.TokenText != t2.TokenText;
+            return t1.Type != t2.Type || t1.Text != t2.Text;
         }
     }
 

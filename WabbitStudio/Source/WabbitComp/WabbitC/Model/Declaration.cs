@@ -17,11 +17,15 @@ namespace WabbitC.Model
         }
 
         private String name;
+        public String Name { get { return name; } }
 
         public Declaration(Type declarationType, String name)
         {
             this.type = declarationType;
             this.name = name;
         }
+
+        //public ValueStatement InitialValue;
+        public Block Code;
     }
 }

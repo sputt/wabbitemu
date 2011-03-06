@@ -37,7 +37,7 @@ namespace WabbitC
 			Stack<Token> stack = new Stack<Token>();
 			foreach (Token token in rpn)
 			{
-				switch (token.TokenType)
+				switch (token.Type)
 				{
 					case TokenType.RealType:
 					case TokenType.IntType:
@@ -64,25 +64,25 @@ namespace WabbitC
 		{
 			Token result = new Token();
 			dynamic var1, var2, resultvar = null;
-			if (tok1.TokenType == TokenType.RealType || tok2.TokenType == TokenType.RealType)
+			if (tok1.Type == TokenType.RealType || tok2.Type == TokenType.RealType)
 			{
-				result.TokenType = TokenType.RealType;
-				var1 = double.Parse(tok1.TokenText);
-				var2 = double.Parse(tok2.TokenText);
+				result.Type = TokenType.RealType;
+				var1 = double.Parse(tok1.Text);
+				var2 = double.Parse(tok2.Text);
 			}
 			else 
 			{
-				result.TokenType = TokenType.IntType;
-				if (tok1.TokenType == TokenType.IntType)
-					var1 = int.Parse(tok1.TokenText);
+				result.Type = TokenType.IntType;
+				if (tok1.Type == TokenType.IntType)
+					var1 = int.Parse(tok1.Text);
 				else
-					var1 = tok1.TokenText;
-				if (tok2.TokenType == TokenType.IntType)
-					var2 = int.Parse(tok2.TokenText);
+					var1 = tok1.Text;
+				if (tok2.Type == TokenType.IntType)
+					var2 = int.Parse(tok2.Text);
 				else
-					var2 = tok1.TokenText;
+					var2 = tok1.Text;
 			}
-			switch (op.TokenText)
+			switch (op.Text)
 			{
 				case "+":
 					resultvar = var1 + var2;
@@ -101,13 +101,13 @@ namespace WabbitC
 					resultvar = var1 ^ var2;
 					break;
 			}
-			result.TokenText = resultvar.ToString();
+			result.Text = resultvar.ToString();
 			return result;
 		}
 
 		int op_preced(Token token)
 		{			
-			switch (token.TokenText)
+			switch (token.Text)
 			{
 				case "++":
 				case "−−":
@@ -151,7 +151,7 @@ namespace WabbitC
 
 		bool op_left_assoc(Token token)
 		{
-			switch (token.TokenText)
+			switch (token.Text)
 			{
 				// left to right
 				case "++":
@@ -187,7 +187,7 @@ namespace WabbitC
 
 		uint op_arg_count(Token token)
 		{
-			char c = token.TokenText[0];
+			char c = token.Text[0];
 			switch (c)
 			{
 				case '*':
@@ -213,7 +213,7 @@ namespace WabbitC
 			for(int i = 0; i < tokens.Count; i++)
 			{
 				Token token = tokens[i];
-				switch (token.TokenType)
+				switch (token.Type)
 				{
 					case TokenType.RealType:
 					case TokenType.IntType:
@@ -223,7 +223,7 @@ namespace WabbitC
 						if (stack.Count > 0)
 						{
 							Token o2 = stack.Peek();
-							while (o2.TokenType == TokenType.OperatorType &&
+							while (o2.Type == TokenType.OperatorType &&
 										((op_left_assoc(token) && (op_preced(token) <= op_preced(o2))) ||
 										(!op_left_assoc(token) && (op_preced(token) < op_preced(o2)))))
 							{
@@ -238,15 +238,15 @@ namespace WabbitC
 						stack.Push(token);
 						break;
 					default:
-						if (token.TokenText == "(")
+						if (token.Text == "(")
 						{
 							stack.Push(token);
 							break;
 						}
-						else if (token.TokenText == ")")
+						else if (token.Text == ")")
 						{
 							Token nextTok = stack.Pop();
-							while (nextTok.TokenText != "(")
+							while (nextTok.Text != "(")
 							{
 								output.Add(nextTok);
 								if (stack.Count > 0)
@@ -257,7 +257,7 @@ namespace WabbitC
 							break;
 						}
 						//handle functions here
-						if (i + 1 >= tokens.Count || tokens[i + 1].TokenText != "(")
+						if (i + 1 >= tokens.Count || tokens[i + 1].Text != "(")
 							output.Add(token);
 						else
 							stack.Push(token);
@@ -278,7 +278,7 @@ namespace WabbitC
 		{
 			StringBuilder sb = new StringBuilder();
 			foreach (Token token in tokens)
-				sb.Append(token.TokenText);
+				sb.Append(token.Text);
 			return sb.ToString();
 		}
     }

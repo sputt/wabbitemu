@@ -21,25 +21,25 @@ namespace WabbitC.Model.Types
         {
             this.Size = 2;
 
-            Debug.Assert(tokens.Current.TokenType == TokenType.OpenParen);
+            Debug.Assert(tokens.Current.Type == TokenType.OpenParen);
             
             tokens.MoveNext();
 
             this.returnType = returnType;
 
             paramDefs = new List<ParamDef>();
-            while (tokens.Current.TokenType != TokenType.CloseParen)
+            while (tokens.Current.Type != TokenType.CloseParen)
             {
                 ParamDef param;
                 param.Type = TypeHelper.ParseType(ref tokens);
-                param.Name = tokens.Current.TokenText;
+                param.Name = tokens.Current.Text;
                 tokens.MoveNext();
 
                 paramDefs.Add(param);
 
-                Debug.Assert(tokens.Current.TokenText == "," || tokens.Current.TokenText == ")");
+                Debug.Assert(tokens.Current.Text == "," || tokens.Current.Text == ")");
 
-                if (tokens.Current.TokenText == ",")
+                if (tokens.Current.Text == ",")
                     tokens.MoveNext();
             }
 

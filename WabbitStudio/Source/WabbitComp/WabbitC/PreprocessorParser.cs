@@ -22,9 +22,9 @@ namespace WabbitC
 			for (int i = 0; i < fileContents.Count; i++)
 			{
 				Token token = fileContents[i];
-				if (token.TokenType == TokenType.Preprocessor)
+				if (token.Type == TokenType.Preprocessor)
 				{
-					switch (token.TokenText)
+					switch (token.Text)
 					{
 						case "#if":
 						case "#ifdef":
@@ -94,17 +94,17 @@ namespace WabbitC
 		{
 			StringBuilder sb = new StringBuilder();
 			string includeFile;
-			if (fileContents[++i].TokenText == "<")
+			if (fileContents[++i].Text == "<")
 			{
 				//#include <>
 				i++;		//skip first <
-				while (fileContents[i].TokenText != ">")
-					sb.Append(fileContents[i++].TokenText);
+				while (fileContents[i].Text != ">")
+					sb.Append(fileContents[i++].Text);
 			}
 			else
 			{
 				//#include ""
-				sb.Append(fileContents[i].TokenText.Replace("\"", ""));
+				sb.Append(fileContents[i].Text.Replace("\"", ""));
 				includeFile = ResolveInclude(sb.ToString(), IncludeDirs.LocalIncludes);
 			}
 		}

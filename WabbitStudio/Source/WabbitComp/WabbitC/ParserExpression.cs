@@ -39,7 +39,7 @@ namespace WabbitC
         public override string ToString()
         {
             if (defaultToken != null)
-                return defaultToken.TokenText;
+                return defaultToken.Text;
             return base.ToString();
         }
 
@@ -136,7 +136,7 @@ namespace WabbitC
         public override string ToString()
         {
             if (line.Count > 0)
-                return line[0].TokenText;
+                return line[0].Text;
             return base.ToString();
         }
     }

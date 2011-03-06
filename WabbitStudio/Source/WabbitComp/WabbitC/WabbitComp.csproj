@@ -67,21 +67,21 @@
     <Compile Include="ExpressionEval.cs" />
     <Compile Include="IncludeDirs.cs" />
     <Compile Include="MessageSystem.cs" />
+    <Compile Include="Model\Block.cs" />
     <Compile Include="Model\Declaration.cs" />
+    <Compile Include="Model\Immediate.cs" />
+    <Compile Include="Model\Statements\Assignment.cs" />
+    <Compile Include="Model\Statements\GenericAssignment.cs" />
+    <Compile Include="Model\Statements\Statement.cs" />
+    <Compile Include="Model\Statements\ValueStatement.cs" />
     <Compile Include="Model\Types\FunctionType.cs" />
     <Compile Include="Model\Module.cs" />
     <Compile Include="Model\Types\BuiltInType.cs" />
     <Compile Include="Model\Types\Type.cs" />
     <Compile Include="Model\Types\TypeHelper.cs" />
+    <Compile Include="Model\Value.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserExpression.cs" />
-    <Compile Include="Parser\Block.cs" />
-    <Compile Include="Parser\Declaration.cs" />
-    <Compile Include="Parser\DeclarationClass.cs" />
-    <Compile Include="Parser\Module.cs" />
-    <Compile Include="Parser\Statement.cs" />
-    <Compile Include="Parser\TypeClass.cs" />
-    <Compile Include="Parser\ValueClass.cs" />
     <Compile Include="PreprocessorParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -90,6 +90,7 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

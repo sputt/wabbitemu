@@ -15,11 +15,19 @@ namespace WabbitC.Model.Types
             Long,
             Float,
             Double,
+            Void,
         };
 
         private BuiltInTypeType type;
         private bool isUnsigned;
         private int indirectionLevels;
+
+        public BuiltInType()
+        {
+            type = BuiltInTypeType.Int;
+            isUnsigned = false;
+            indirectionLevels = 0;
+        }
 
         /// <summary>
         /// 
@@ -27,7 +35,7 @@ namespace WabbitC.Model.Types
         /// <param name="tokens"></param>
         public BuiltInType(ref List<Token>.Enumerator tokens)
         {
-            if (tokens.Current.TokenText == "unsigned")
+            if (tokens.Current.Text == "unsigned")
             {
                 isUnsigned = true;
                 tokens.MoveNext();
@@ -37,24 +45,29 @@ namespace WabbitC.Model.Types
                 isUnsigned = false;
             }
 
-            switch (tokens.Current.TokenText.ToUpper())
+            switch (tokens.Current.Text)
             {
-                case "CHAR":
+                case "char":
                     type = BuiltInTypeType.Char;
                     this.Size = 1;
                     break;
-                case "INT":
+                case "int":
                     type = BuiltInTypeType.Int;
                     this.Size = 2;
+                    break;
+                case "void":
+                    type = BuiltInTypeType.Void;
+                    this.Size = 0;
                     break;
                 default:
                     throw new System.Exception("No type for this");
             }
 
             indirectionLevels = 0;
-            while ((tokens.MoveNext()) && (tokens.Current.TokenText == "*"))
+            while ((tokens.MoveNext()) && (tokens.Current.Text == "*"))
             {
                 indirectionLevels++;
+                this.Size = 2;
             }
         }
 
