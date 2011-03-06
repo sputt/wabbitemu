@@ -15,6 +15,7 @@ namespace WabbitC.Model
         public HashSet<Type> Types;
         public List<Declaration> Declarations;
         public List<Statement> Statements;
+        public int TempDeclarationNumber = 0;
 
         public Declaration FindDeclaration(String name)
         {
@@ -31,6 +32,12 @@ namespace WabbitC.Model
                 curBlock = curBlock.Parent;
             }
             return null;
+        }
+
+        public Declaration CreateTempDeclaration(Type type)
+        {
+            var declaration = new Declaration(;
+            declaration.Name = "Temp" + TempDeclarationNumber;
         }
 
         static public Block ParseBlock(ref List<Token>.Enumerator tokens, Block parent)
