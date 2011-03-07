@@ -5,20 +5,20 @@ using System.Text;
 
 namespace WabbitC.Model.Statements
 {
-    class Assignment : ValueStatement
+    class Move : ValueStatement
     {
         public Declaration LValue;
-        public Immediate RValue;
+        public Declaration RValue;
 
-        public Assignment(Declaration decl, Immediate imm)
+        public Move(Declaration dest, Declaration src)
         {
-            LValue = decl;
-            RValue = imm;
+            LValue = dest;
+            RValue = src;
         }
 
         public override string ToString()
         {
-            return LValue.Name + " = " + RValue + ";";
+            return LValue.Name + " = " + RValue.Name + ";";
         }
     }
 }

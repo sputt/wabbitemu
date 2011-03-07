@@ -29,11 +29,7 @@ namespace WabbitC.Model.Types
             indirectionLevels = 0;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="tokens"></param>
-        public BuiltInType(ref List<Token>.Enumerator tokens)
+        private void InitializeType(ref List<Token>.Enumerator tokens)
         {
             if (tokens.Current.Text == "unsigned")
             {
@@ -69,6 +65,21 @@ namespace WabbitC.Model.Types
                 indirectionLevels++;
                 this.Size = 2;
             }
+        }
+
+        public BuiltInType(string typeString)
+        {
+            Tokenizer tokenizer = new Tokenizer();
+            tokenizer.Tokenize(typeString);
+
+            var tokens = tokenizer.Tokens.GetEnumerator();
+            tokens.MoveNext();
+            InitializeType(ref tokens);
+        }
+
+        public BuiltInType(ref List<Token>.Enumerator tokens)
+        {
+            InitializeType(ref tokens);
         }
 
         public override string ToString()

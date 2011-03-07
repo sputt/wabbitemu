@@ -34,12 +34,16 @@ namespace WabbitC.Model
                 if (Code != null)
                 {
                     funcType += "\n" + Code.ToString();
+                    return funcType;
                 }
-                return funcType;
+                else
+                {
+                    return funcType + ";";
+                }
             }
             else
             {
-                return type + " " + name;
+                return type + " " + name + ";";
             }
         }
 

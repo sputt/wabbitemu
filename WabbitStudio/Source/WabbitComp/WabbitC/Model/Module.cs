@@ -18,7 +18,7 @@ namespace WabbitC.Model
         }
         static public Module ParseModule(ref List<Token>.Enumerator tokens)
         {
-            var block = Block.ParseBlock(ref tokens, null);
+            var block = Block.ParseBlock(ref tokens, null, null);
             // Make sure there's no stuff that doesn't belong in module
             return new Module(block);
         }

@@ -9,13 +9,13 @@ namespace WabbitC.Model.Types
 {
     class FunctionType : Type
     {
-        Type returnType;
-        struct ParamDef
+        public Type ReturnType;
+        public struct ParamDef
         {
             public Type Type;
             public String Name; 
         }
-        List<ParamDef> paramDefs;
+        public List<ParamDef> ParamDefs;
 
         public FunctionType(ref List<Token>.Enumerator tokens, Type returnType)
         {
@@ -25,9 +25,9 @@ namespace WabbitC.Model.Types
             
             tokens.MoveNext();
 
-            this.returnType = returnType;
+            this.ReturnType = returnType;
 
-            paramDefs = new List<ParamDef>();
+            ParamDefs = new List<ParamDef>();
             while (tokens.Current.Type != TokenType.CloseParen)
             {
                 ParamDef param;
@@ -35,7 +35,7 @@ namespace WabbitC.Model.Types
                 param.Name = tokens.Current.Text;
                 tokens.MoveNext();
 
-                paramDefs.Add(param);
+                ParamDefs.Add(param);
 
                 Debug.Assert(tokens.Current.Text == "," || tokens.Current.Text == ")");
 
@@ -48,11 +48,11 @@ namespace WabbitC.Model.Types
 
         public override string ToString()
         {
-            string result = returnType + " (*)(";
-            for (int i = 0; i < paramDefs.Count; i++)
+            string result = ReturnType + " (*)(";
+            for (int i = 0; i < ParamDefs.Count; i++)
             {
-                result += paramDefs[i].Type + " " + paramDefs[i].Name;
-                if (i != paramDefs.Count - 1)
+                result += ParamDefs[i].Type + " " + ParamDefs[i].Name;
+                if (i != ParamDefs.Count - 1)
                     result += ", ";
             }
             result += ")";

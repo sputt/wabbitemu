@@ -71,6 +71,12 @@
     <Compile Include="Model\Declaration.cs" />
     <Compile Include="Model\Immediate.cs" />
     <Compile Include="Model\Statements\Assignment.cs" />
+    <Compile Include="Model\Statements\AssignmentHelper.cs" />
+    <Compile Include="Model\Statements\ControlStatement.cs" />
+    <Compile Include="Model\Statements\FunctionCall.cs" />
+    <Compile Include="Model\Statements\If.cs" />
+    <Compile Include="Model\Statements\Move.cs" />
+    <Compile Include="Model\Statements\Return.cs" />
     <Compile Include="Model\Statements\Statement.cs" />
     <Compile Include="Model\Statements\ValueStatement.cs" />
     <Compile Include="Model\Types\FunctionType.cs" />
@@ -78,7 +84,6 @@
     <Compile Include="Model\Types\BuiltInType.cs" />
     <Compile Include="Model\Types\Type.cs" />
     <Compile Include="Model\Types\TypeHelper.cs" />
-    <Compile Include="Model\Value.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserExpression.cs" />
     <Compile Include="PreprocessorDefine.cs" />

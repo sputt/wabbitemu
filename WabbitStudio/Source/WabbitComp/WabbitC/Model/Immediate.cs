@@ -12,10 +12,10 @@ namespace WabbitC.Model
         public BuiltInType Type;
         public Token Value;
 
-        public Immediate(Token valueToken)
+        public Immediate(List<Token> valueList)
         {
             Type = new BuiltInType();
-            Value = valueToken;
+            Value = valueList[0];
         }
 
         public override string ToString()

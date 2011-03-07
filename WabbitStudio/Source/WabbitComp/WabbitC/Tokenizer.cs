@@ -44,6 +44,39 @@ namespace WabbitC
             Tokens = Tokenize();
         }
 
+        public static List<Token> GetStatement(ref List<Token>.Enumerator tokens)
+        {
+            var tokenList = new List<Token>();
+            while (tokens.Current.Type != TokenType.StatementEnd)
+            {
+                tokenList.Add(tokens.Current);
+                tokens.MoveNext();
+            }
+
+            return tokenList;
+        }
+
+        public static List<Token> GetArgument(ref List<Token>.Enumerator tokens)
+        {
+            var tokenList = new List<Token>();
+            int nParenBalance = 0;
+            while (!(tokens.Current.Text == "," || (nParenBalance == 0 && tokens.Current.Text == ")")))
+            {
+                if (tokens.Current.Type == TokenType.OpenParen)
+                {
+                    nParenBalance++;
+                }
+                else if (tokens.Current.Type == TokenType.CloseParen)
+                {
+                    nParenBalance--;
+                }
+                tokenList.Add(tokens.Current);
+                tokens.MoveNext();
+            }
+
+            return tokenList;
+        }
+
         private List<Token> Tokenize()
         {
             List<Token> tokens = new List<Token>();
