@@ -1,29 +1,18 @@
-int global;
-
-int function(int arg)
+int single_val()
 {
-	return arg;
+	return 20;
 }
-
-void function2()
+void main(int arg)
 {
-	global = 80;
-}
+	int test;
+	test = 20;
 
-int main()
-{
-	int result;
-	if (20)
+	if (test + 20)
 	{
-		int test;
-		test = 40;
-		function(test);
+		single_val();
 	}
 	else
 	{
-		function2();
-		result = global;
-	}
 
-	return result;
+	}
 }

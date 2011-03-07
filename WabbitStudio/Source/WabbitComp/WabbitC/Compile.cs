@@ -22,10 +22,6 @@ namespace WabbitC
             var tokenizer = new Tokenizer();
 			tokenizer.Tokenize(fileContents);
 
-			tokenizer = new Tokenizer();
-			tokenizer.Tokenize("void");
-
-
 			var preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
 			var preProcessorTokens = preprocessorParser.Parse();
 

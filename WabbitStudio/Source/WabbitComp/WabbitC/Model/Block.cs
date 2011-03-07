@@ -12,6 +12,7 @@ namespace WabbitC.Model
     class Block
     {
         public Block Parent;
+        public FunctionType Function;
         public HashSet<Type> Types;
         public List<Declaration> Declarations;
         public List<Statement> Statements;
@@ -27,6 +28,16 @@ namespace WabbitC.Model
                     if (decl.Name == name)
                     {
                         return decl;
+                    }
+                }
+                if (Function != null)
+                {
+                    foreach (FunctionType.ParamDef param in Function.ParamDefs)
+                    {
+                        if (param.Name == name)
+                        {
+                            return new Declaration(param.Type, name);
+                        }
                     }
                 }
                 curBlock = curBlock.Parent;
@@ -57,6 +68,7 @@ namespace WabbitC.Model
         static public Block ParseBlock(ref List<Token>.Enumerator tokens, Block parent, FunctionType func)
         {
             var thisBlock = new Block();
+            thisBlock.Function = func;
             thisBlock.Parent = parent;
             if (parent != null)
             {
@@ -91,8 +103,7 @@ namespace WabbitC.Model
                     var returnList = Tokenizer.GetStatement(ref tokens);
                     Declaration decl = thisBlock.CreateTempDeclaration(func.ReturnType);
 
-                    Assignment assign = new Assignment(decl, new Immediate(returnList));
-                    thisBlock.Statements.Add(assign);
+                    AssignmentHelper.Parse(thisBlock, decl, returnList);
 
                     var returnStatement = new Return(decl);
                     thisBlock.Statements.Add(returnStatement);
@@ -114,9 +125,7 @@ namespace WabbitC.Model
                             var valueList = Tokenizer.GetStatement(ref tokens);
                             var expr = new Expression(valueList);
 
-                            var statement = new Assignment(declForStatement, new Immediate(valueList));
-
-                            thisBlock.Statements.Add(statement);
+                            AssignmentHelper.Parse(thisBlock, declForStatement, valueList);
 
                             Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
                             tokens.MoveNext();
@@ -198,8 +207,7 @@ namespace WabbitC.Model
                                 tokens.MoveNext();
 
                                 var valueList = Tokenizer.GetStatement(ref tokens);
-                                var statement = new Assignment(decl, new Immediate(valueList));
-                                thisBlock.Statements.Add(statement);
+                                AssignmentHelper.Parse(thisBlock, decl, valueList);
 
                                 Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
                                 tokens.MoveNext();

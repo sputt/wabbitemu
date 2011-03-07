@@ -24,8 +24,9 @@ namespace WabbitC.Model.Statements
                 Declaration decl = block.CreateTempDeclaration(funcType.ParamDefs[nCount].Type);
 
                 var valueList = Tokenizer.GetArgument(ref tokens);
-                var statement = new Assignment(decl, new Immediate(valueList));
-                block.Statements.Add(statement);
+
+                AssignmentHelper.Parse(block, decl, valueList);
+
                 tokenList.Add(decl);
   
                 Debug.Assert(tokens.Current.Text == "," || tokens.Current.Text == ")");

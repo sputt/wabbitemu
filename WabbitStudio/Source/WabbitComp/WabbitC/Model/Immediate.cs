@@ -12,10 +12,18 @@ namespace WabbitC.Model
         public BuiltInType Type;
         public Token Value;
 
-        public Immediate(List<Token> valueList)
+        public static bool IsImmediate(Token immToken)
+        {
+            int number1;
+            double number2;
+
+            return int.TryParse(immToken.Text, out number1) || double.TryParse(immToken.Text, out number2);
+        }
+
+        public Immediate(Token valueToken)
         {
             Type = new BuiltInType();
-            Value = valueList[0];
+            Value = valueToken;
         }
 
         public override string ToString()

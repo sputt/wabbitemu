@@ -45,6 +45,13 @@ namespace WabbitC
             Tokens = Tokenize();
         }
 
+        public static Token ToToken(string input)
+        {
+            Tokenizer tokenizer = new Tokenizer();
+            tokenizer.Tokenize(input);
+            return tokenizer.Tokens[0];
+        }
+
         public static List<Token> GetStatement(ref List<Token>.Enumerator tokens)
         {
             var tokenList = new List<Token>();

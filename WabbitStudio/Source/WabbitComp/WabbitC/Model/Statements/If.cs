@@ -26,8 +26,7 @@ namespace WabbitC.Model.Statements
 
             Declaration condDecl = parent.CreateTempDeclaration(new BuiltInType("int"));
 
-            Assignment condStatement = new Assignment(condDecl, new Immediate(conditionList));
-            parent.Statements.Add(condStatement);
+            AssignmentHelper.Parse(parent, condDecl, conditionList);
 
             tokens.MoveNext();
             Debug.Assert(tokens.Current.Text == "{");
