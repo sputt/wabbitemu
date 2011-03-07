@@ -22,6 +22,9 @@ namespace WabbitC
             var tokenizer = new Tokenizer();
 			tokenizer.Tokenize(fileContents);
 
+			tokenizer = new Tokenizer();
+			tokenizer.Tokenize("void");
+
 
 			var preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
 			var preProcessorTokens = preprocessorParser.Parse();
@@ -42,9 +45,9 @@ namespace WabbitC
             writer.Write(code);
             writer.Close();
 
-/*			tokenizer = new Tokenizer();
+			
 			tokenizer.Tokenize("test + ( temp + 2*2)");
-			var eval = new Expression(tokenizer.Tokens);
+/*			var eval = new Expression(tokenizer.Tokens);
 			var test = eval.Eval();
 */
 

@@ -177,7 +177,7 @@ namespace WabbitC
                 test = inputContents[newIndex];
                 while (newIndex + 1 < inputContents.Length && delimeters.IndexOf(test) == -1)
                     test = inputContents[++newIndex];
-				if (newIndex + 1 > inputContents.Length)
+				if (newIndex + 1 >= inputContents.Length && delimeters.IndexOf(inputContents[newIndex]) == -1)
 					newIndex++;
                 if (newIndex < index)
                     return null;
