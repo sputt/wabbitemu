@@ -95,6 +95,7 @@
     <Compile Include="Tokenizer.cs" />
     <Compile Include="TokenPasses\ArrayDereference.cs" />
     <Compile Include="TokenPasses\Bracer.cs" />
+    <Compile Include="TokenPasses\CompoundAssignment.cs" />
     <Compile Include="TokenPasses\TokenPass.cs" />
   </ItemGroup>
   <ItemGroup>

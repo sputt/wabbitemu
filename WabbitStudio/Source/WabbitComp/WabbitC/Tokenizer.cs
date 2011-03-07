@@ -257,8 +257,14 @@ namespace WabbitC
     }
 
     public class Token
-    {
-        public TokenType Type { get; set; }
+	{
+		#region Constant Tokens
+		public static Token OpenParenToken = new Token() { Type = TokenType.OpenParen, Text = "(" };
+		public static Token CloseParenToken = new Token() { Type = TokenType.CloseParen, Text = ")" };
+		public static Token AssignmentOperatorToken = new Token() { Text = "=", Type = TokenType.OperatorType };
+		#endregion
+
+		public TokenType Type { get; set; }
         public string Text { get; set; }
         public int LineNumber { get; set; }
         public int CharNumber { get; set; }

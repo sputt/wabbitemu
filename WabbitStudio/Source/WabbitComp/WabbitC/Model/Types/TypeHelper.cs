@@ -21,5 +21,17 @@ namespace WabbitC.Model.Types
 
             return null;
         }
+
+		public static Type GetType(Block block, Token token)
+		{
+			if (token.Type == TokenType.IntType)
+				return new BuiltInType("int");
+			if (token.Type == TokenType.RealType)
+				return new BuiltInType("float");
+			var decl = block.FindDeclaration(token.Text);
+			if (decl == null)
+				return null;
+			return decl.Type;
+		}
     }
 }

@@ -4,6 +4,7 @@ using System.Text;
 using System.IO;
 using System.Diagnostics;
 using WabbitC.Model;
+using WabbitC.TokenPasses;
 
 namespace WabbitC
 {
@@ -25,11 +26,14 @@ namespace WabbitC
 			var preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
 			var preProcessorTokens = preprocessorParser.Parse();
 
-            var tokenPass1 = new TokenPasses.ArrayDereference();
+            var tokenPass1 = new ArrayDereference();
             var newTokens = tokenPass1.Run(preProcessorTokens);
 
-            var tokenPass2 = new TokenPasses.Bracer();
+            var tokenPass2 = new Bracer();
             newTokens = tokenPass2.Run(newTokens);
+
+			var tokenPass3 = new CompoundAssignmentRemover();
+			newTokens = tokenPass3.Run(newTokens);
 
             var tokens = newTokens.GetEnumerator();
             tokens.MoveNext();
@@ -40,12 +44,6 @@ namespace WabbitC
             var writer = new StreamWriter("test_compiled.c");
             writer.Write(code);
             writer.Close();
-
-			
-			tokenizer.Tokenize("test + ( temp + 2*2)");
-/*			var eval = new Expression(tokenizer.Tokens);
-			var test = eval.Eval();
-*/
 
             return true;
         }

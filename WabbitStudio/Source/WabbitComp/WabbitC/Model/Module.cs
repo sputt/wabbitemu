@@ -14,6 +14,7 @@ namespace WabbitC.Model
         {
             this.Types = block.Types;
             this.Declarations = block.Declarations;
+			//TODO: make so assignment statements work...
             this.Parent = null;
         }
         static public Module ParseModule(ref List<Token>.Enumerator tokens)

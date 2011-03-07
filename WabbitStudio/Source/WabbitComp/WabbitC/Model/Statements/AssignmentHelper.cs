@@ -33,15 +33,13 @@ namespace WabbitC.Model.Statements
             {
                 if (rpnList[i].Type == TokenType.OperatorType)
                 {
-                    //TODO: Figure out what type this should be
-                    Declaration decl = block.CreateTempDeclaration(new BuiltInType("int"));
-
-                    var arg1 = rpnStack.Pop();
-                    var arg2 = rpnStack.Pop();
+					var arg1 = rpnStack.Pop();
+                    Declaration decl = block.CreateTempDeclaration(TypeHelper.GetType(block, arg1));
 
                     ValueStatement initialAssign = ParseSingle(block, decl, arg1);
                     block.Statements.Add(initialAssign);
 
+					var arg2 = rpnStack.Pop();
                     if (Immediate.IsImmediate(arg2))
                     {
                         var operation = new AddImmediate(decl, new Immediate(arg2));
@@ -49,6 +47,7 @@ namespace WabbitC.Model.Statements
                     }
                     else
                     {
+						//TODO: check and make sure this is the same time as decl
                         block.Statements.Add(new Add(decl, block.FindDeclaration(arg2.Text)));
                     }
 
