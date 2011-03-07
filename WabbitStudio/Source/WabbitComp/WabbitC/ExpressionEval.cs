@@ -25,12 +25,15 @@ namespace WabbitC
             this.tokens = tokens;
         }
 
-        public Token Eval()
+        public List<Token> Eval()
         {
 			ReplaceDefines();
-			List<Token> rpn = ShuntingYard();
-			Token result = CalcRPN(rpn);
-            return result;
+			var rpn = ShuntingYard(tokens);
+			var result = CalcRPN(rpn);
+			var tokenizer = new Tokenizer();
+			tokenizer.Tokenize(result.Text);
+			rpn = ShuntingYard(tokenizer.Tokens);
+            return rpn;
         }
 
 		private void ReplaceDefines()
@@ -48,12 +51,7 @@ namespace WabbitC
 			if (token.Type == TokenType.StringType)
 			{
 				PreprocessorDefine define = PreprocessorParser.DefineValue(token);
-				if (define == null)
-				{
-					token.Text = "undefined";
-					token.Type = TokenType.UndefinedType;
-				}
-				else
+				if (define != null)
 				{
 					Type defineType = define.GetType();
 					if (defineType == typeof(ReplacementDefine))
@@ -79,10 +77,11 @@ namespace WabbitC
 						stack.Push(token);
 						break;
 					case TokenType.OperatorType:
-						if ((stack.Count < 2) && !(stack.Count == 1 && (token.Text == "!" || token.Text == "~")))
+						int argsRequired = GetArgCount(token);
+						if (stack.Count < argsRequired)
 							throw new Exception("Not enough values on the stack");
 						Token result, tok1 = null, tok2 = stack.Pop();
-						if (stack.Count > 0)
+						if (argsRequired > 1)
 						{
 							tok1 = stack.Pop();
 							result = ApplyOperator(tok1, tok2, token);
@@ -101,6 +100,41 @@ namespace WabbitC
 				}
 			}
 			return stack.Pop();
+		}
+
+		private int GetArgCount(WabbitC.Token token)
+		{
+			switch (token.Text)
+			{
+				case "*":
+				case "/":
+				case "%":
+				case "+":
+				case "-":
+				case "−":
+				case ">>":
+				case "<<":
+				case "<":
+				case "<=":
+				case ">":
+				case ">=":
+				case "==":
+				case "!=":
+				case "&":
+				case "^":
+				case "|":
+				case "&&":
+				case "||":
+					return 2;
+				case "++":
+				case "--":
+				case "−−":
+				case "!":
+				case "~":
+					return 1;
+				default:
+					return 2;
+			}
 		}
 
 		private WabbitC.Token ApplyOperator(WabbitC.Token tok1, WabbitC.Token op)
@@ -123,10 +157,10 @@ namespace WabbitC
 			switch (op.Text)
 			{
 				case "!":
-					resultvar = Convert.ToInt16(!Convert.ToBoolean(var1));
+					resultvar = !tok1;
 					break;
 				case "~":
-					resultvar = ~var1;
+					resultvar = ~tok1;
 					break;
 			}
 			result.Text = resultvar.ToString();
@@ -136,7 +170,7 @@ namespace WabbitC
 		private WabbitC.Token ApplyOperator(WabbitC.Token tok1, WabbitC.Token tok2, WabbitC.Token op)
 		{
 			Token result = new Token();
-			dynamic var1, var2, resultvar = null;
+			dynamic var1, var2;
 			if (tok1.Type == TokenType.RealType || tok2.Type == TokenType.RealType)
 			{
 				result.Type = TokenType.RealType;
@@ -158,19 +192,19 @@ namespace WabbitC
 			switch (op.Text)
 			{
 				case "+":
-					resultvar = tok1 + tok2;
+					result = tok1 + tok2;
 					break;
 				case "−":
 				case "-":
-					resultvar = var1 - var2;
+					result = tok1 - tok2;
 					break;
 				case "*":
-					resultvar = var1 * var2;
+					result = tok1 * tok2;
 					break;
 				case "/":
-					resultvar = var1 / var2;
+					result = tok1 / tok2;
 					break;
-				case "^":
+				/*case "^":
 					resultvar = var1 ^ var2;
 					break;
 				case "||":
@@ -178,9 +212,8 @@ namespace WabbitC
 					break;
 				case "&&":
 					resultvar = Convert.ToBoolean(var1) && Convert.ToBoolean(var2);
-					break;
+					break;*/
 			}
-			result.Text = resultvar.ToString();
 			return result;
 		}
 
@@ -284,14 +317,14 @@ namespace WabbitC
 		}
 
 
-		private List<Token> ShuntingYard()
+		private List<Token> ShuntingYard(List<Token> input)
 		{
 			List<Token> output = new List<Token>();
 			Stack<Token> stack = new Stack<Token>();
 
-			for(int i = 0; i < tokens.Count; i++)
+			for(int i = 0; i < input.Count; i++)
 			{
-				Token token = tokens[i];
+				Token token = input[i];
 				switch (token.Type)
 				{
 					case TokenType.RealType:
@@ -332,7 +365,7 @@ namespace WabbitC
 						break;
 					default:
 						//handle functions here
-						if (i + 1 >= tokens.Count || tokens[i + 1].Type != TokenType.OpenParen)
+						if (i + 1 >= input.Count || input[i + 1].Type != TokenType.OpenParen)
 							output.Add(token);
 						else
 							stack.Push(token);

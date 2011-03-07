@@ -20,6 +20,7 @@ namespace WabbitC
         CloseParen,
         StatementEnd,
 		UndefinedType,
+		ArgSeparator,
     };
 
     public class Tokenizer
@@ -105,30 +106,32 @@ namespace WabbitC
         {
             float floatCheck;
             int intCheck;
-            if (CheckReservedKeyword(tokenToAdd.Text))
-                tokenToAdd.Type = TokenType.ReservedKeyword;
-            else if (CheckPreprocessorKeyword(tokenToAdd.Text))
-                tokenToAdd.Type = TokenType.Preprocessor;
-            else if (CheckComment(tokenToAdd.Text))
-                tokenToAdd.Type = TokenType.CommentType;
-            else if (float.TryParse(tokenToAdd.Text, out floatCheck) && (tokenToAdd.Text.Contains("E") || tokenToAdd.Text.Contains(".")))
-                tokenToAdd.Type = TokenType.RealType;
-            else if (int.TryParse(tokenToAdd.Text, out intCheck))
-                tokenToAdd.Type = TokenType.IntType;
-            else if (CheckOperators(tokenToAdd.Text))
-                tokenToAdd.Type = TokenType.OperatorType;
-            else if (tokenToAdd.Text == "{")
-                tokenToAdd.Type = TokenType.OpenBlock;
-            else if (tokenToAdd.Text == "}")
-                tokenToAdd.Type = TokenType.CloseBlock;
-            else if (tokenToAdd.Text == "(")
-                tokenToAdd.Type = TokenType.OpenParen;
-            else if (tokenToAdd.Text == ")")
-                tokenToAdd.Type = TokenType.CloseParen;
-            else if (tokenToAdd.Text == ";")
-                tokenToAdd.Type = TokenType.StatementEnd;
-            else
-                tokenToAdd.Type = TokenType.StringType;
+			if (CheckReservedKeyword(tokenToAdd.Text))
+				tokenToAdd.Type = TokenType.ReservedKeyword;
+			else if (CheckPreprocessorKeyword(tokenToAdd.Text))
+				tokenToAdd.Type = TokenType.Preprocessor;
+			else if (CheckComment(tokenToAdd.Text))
+				tokenToAdd.Type = TokenType.CommentType;
+			else if (float.TryParse(tokenToAdd.Text, out floatCheck) && (tokenToAdd.Text.Contains("E") || tokenToAdd.Text.Contains("e") || tokenToAdd.Text.Contains(".")))
+				tokenToAdd.Type = TokenType.RealType;
+			else if (int.TryParse(tokenToAdd.Text, out intCheck))
+				tokenToAdd.Type = TokenType.IntType;
+			else if (CheckOperators(tokenToAdd.Text))
+				tokenToAdd.Type = TokenType.OperatorType;
+			else if (tokenToAdd.Text == "{")
+				tokenToAdd.Type = TokenType.OpenBlock;
+			else if (tokenToAdd.Text == "}")
+				tokenToAdd.Type = TokenType.CloseBlock;
+			else if (tokenToAdd.Text == "(")
+				tokenToAdd.Type = TokenType.OpenParen;
+			else if (tokenToAdd.Text == ")")
+				tokenToAdd.Type = TokenType.CloseParen;
+			else if (tokenToAdd.Text == ";")
+				tokenToAdd.Type = TokenType.StatementEnd;
+			else if (tokenToAdd.Text == ",")
+				tokenToAdd.Type = TokenType.ArgSeparator;
+			else
+				tokenToAdd.Type = TokenType.StringType;
 
         }
 
@@ -174,7 +177,7 @@ namespace WabbitC
                 test = inputContents[newIndex];
                 while (newIndex + 1 < inputContents.Length && delimeters.IndexOf(test) == -1)
                     test = inputContents[++newIndex];
-				if (newIndex + 1 >= inputContents.Length)
+				if (newIndex + 1 > inputContents.Length)
 					newIndex++;
                 if (newIndex < index)
                     return null;
@@ -260,10 +263,13 @@ namespace WabbitC
 
         public override string ToString()
         {
+			if (Type == TokenType.UndefinedType)
+				return "undefined";
             return Text;
         }
 
-        public static bool operator ==(Token t1, Token t2)
+		#region Operator Overloads
+		public static bool operator ==(Token t1, Token t2)
         {
             if (object.Equals(t1, t2))
             {
@@ -292,12 +298,49 @@ namespace WabbitC
 		public static Token operator +(Token t1, Token t2)
 		{
 			Token result = new Token();
+			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
+			{
+				result.Type = TokenType.UndefinedType;
+				return result;
+			}
 			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
 			{
 				result.Type = TokenType.RealType;
 				var double1 = double.Parse(t1.Text);
 				var double2 = double.Parse(t2.Text);
 				result.Text = (double1 + double2).ToString();
+				result.Type = TokenType.RealType;
+			}
+			else
+			{
+				int int1, int2;
+				result.Type = TokenType.IntType;
+				if (!int.TryParse(t1.Text, out int1) || !int.TryParse(t2.Text, out int2))
+				{
+					result.Type = TokenType.StringType;
+					result.Text = "(" + t1.Text + ")+(" + t2.Text + ")";
+					return result;
+				}
+				result.Text = (int1 + int2).ToString();
+				result.Type = TokenType.IntType;
+			}
+			return result;
+		}
+
+		public static Token operator -(Token t1, Token t2)
+		{
+			Token result = new Token();
+			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
+			{
+				result.Type = TokenType.UndefinedType;
+				return result;
+			}
+			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
+			{
+				result.Type = TokenType.RealType;
+				var double1 = double.Parse(t1.Text);
+				var double2 = double.Parse(t2.Text);
+				result.Text = (double1 - double2).ToString();
 				result.Type = TokenType.RealType;
 			}
 			else
@@ -313,12 +356,123 @@ namespace WabbitC
 				{
 					string2 = t2.Text;
 				}
-				result.Text = (int1 + int2).ToString();
+				result.Text = (int1 - int2).ToString();
 				result.Type = TokenType.IntType;
 			}
 			return result;
 		}
-    }
+
+		public static Token operator *(Token t1, Token t2)
+		{
+			Token result = new Token();
+			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
+			{
+				result.Type = TokenType.UndefinedType;
+				return result;
+			}
+			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
+			{
+				result.Type = TokenType.RealType;
+				var double1 = double.Parse(t1.Text);
+				var double2 = double.Parse(t2.Text);
+				result.Text = (double1 * double2).ToString();
+				result.Type = TokenType.RealType;
+			}
+			else
+			{
+				int int1, int2;
+				string string1, string2;
+				result.Type = TokenType.IntType;
+				if (!int.TryParse(t1.Text, out int1))
+				{
+					string1 = t1.Text;
+				}
+				if (!int.TryParse(t2.Text, out int2))
+				{
+					string2 = t2.Text;
+				}
+				result.Text = (int1 * int2).ToString();
+				result.Type = TokenType.IntType;
+			}
+			return result;
+		}
+
+		public static Token operator /(Token t1, Token t2)
+		{
+			Token result = new Token();
+			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
+			{
+				result.Type = TokenType.UndefinedType;
+				return result;
+			}
+			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
+			{
+				result.Type = TokenType.RealType;
+				var double1 = double.Parse(t1.Text);
+				var double2 = double.Parse(t2.Text);
+				result.Text = (double1 / double2).ToString();
+				result.Type = TokenType.RealType;
+			}
+			else
+			{
+				int int1, int2;
+				string string1, string2;
+				result.Type = TokenType.IntType;
+				if (int.TryParse(t1.Text, out int1))
+				{
+					string1 = t1.Text;
+				}
+				if (int.TryParse(t2.Text, out int2))
+				{
+					string2 = t2.Text;
+				}
+				result.Text = (int1 / int2).ToString();
+				result.Type = TokenType.IntType;
+			}
+			return result;
+		}
+
+		public static Token operator !(Token t1)
+		{
+			Token result = new Token();
+			if (t1.Type == TokenType.UndefinedType)
+			{
+				result.Type = TokenType.UndefinedType;
+				return result;
+			}
+				int int1;
+				string string1;
+				result.Type = TokenType.IntType;
+				if (int.TryParse(t1.Text, out int1))
+				{
+					string1 = t1.Text;
+				}
+				result.Text = (Convert.ToInt16(!Convert.ToBoolean(int1))).ToString();
+				result.Type = TokenType.IntType;
+			return result;
+		}
+
+		public static Token operator ~(Token t1)
+		{
+			Token result = new Token();
+			if (t1.Type == TokenType.UndefinedType)
+			{
+				result.Type = TokenType.UndefinedType;
+				return result;
+			}
+			int int1;
+			string string1;
+			result.Type = TokenType.IntType;
+			if (int.TryParse(t1.Text, out int1))
+			{
+				string1 = t1.Text;
+			}
+			result.Text = (~int1).ToString();
+			result.Type = TokenType.IntType;
+			return result;
+		}
 
 
+		#endregion
+	}
 }

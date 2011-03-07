@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.IO;
 using System.Diagnostics;
+using WabbitC.Model;
 
 namespace WabbitC
 {
@@ -18,12 +19,12 @@ namespace WabbitC
             if (string.IsNullOrEmpty(fileContents))
                 return false;
 
-            Tokenizer tokenizer = new Tokenizer();
+            var tokenizer = new Tokenizer();
 			tokenizer.Tokenize(fileContents);
 
 
-			PreprocessorParser preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
-			List<Token> preProcessorTokens = preprocessorParser.Parse();
+			var preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
+			var preProcessorTokens = preprocessorParser.Parse();
 
             var tokenPass1 = new TokenPasses.ArrayDereference();
             var newTokens = tokenPass1.Run(preProcessorTokens);
@@ -34,17 +35,18 @@ namespace WabbitC
             var tokens = newTokens.GetEnumerator();
             tokens.MoveNext();
 
-            Model.Module currentModule = Model.Module.ParseModule(ref tokens);
+            Module currentModule = Module.ParseModule(ref tokens);
             string code = currentModule.ToString();
-            //Expression exp = new Expression(tokenizer.Tokens);
-            //exp.Eval();
 
             var writer = new StreamWriter("test_compiled.c");
             writer.Write(code);
             writer.Close();
-            
-            /*Parser parser = new Parser();
-            parser.ParseTokens(tokenizer.Tokens);*/
+
+/*			tokenizer = new Tokenizer();
+			tokenizer.Tokenize("test + ( temp + 2*2)");
+			var eval = new Expression(tokenizer.Tokens);
+			var test = eval.Eval();
+*/
 
             return true;
         }
