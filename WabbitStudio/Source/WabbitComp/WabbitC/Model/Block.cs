@@ -58,6 +58,10 @@ namespace WabbitC.Model
         {
             var thisBlock = new Block();
             thisBlock.Parent = parent;
+            if (parent != null)
+            {
+                thisBlock.TempDeclarationNumber = parent.TempDeclarationNumber;
+            }
             thisBlock.Declarations = new List<Declaration>();
             thisBlock.Types = new HashSet<Type>();
             thisBlock.Statements = new List<Statement>();

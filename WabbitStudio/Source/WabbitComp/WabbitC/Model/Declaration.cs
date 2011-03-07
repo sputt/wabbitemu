@@ -27,23 +27,30 @@ namespace WabbitC.Model
 
         public override string ToString()
         {
-            if (type.GetType() == typeof(Types.FunctionType))
+            if (type == null)
             {
-                string funcType = type.ToString();
-                funcType = funcType.Replace("(*)", name);
-                if (Code != null)
-                {
-                    funcType += "\n" + Code.ToString();
-                    return funcType;
-                }
-                else
-                {
-                    return funcType + ";";
-                }
+                return "#NOTPROVIDED# " + name;
             }
             else
             {
-                return type + " " + name + ";";
+                if (type.GetType() == typeof(Types.FunctionType))
+                {
+                    string funcType = type.ToString();
+                    funcType = funcType.Replace("(*)", name);
+                    if (Code != null)
+                    {
+                        funcType += "\n" + Code.ToString();
+                        return funcType;
+                    }
+                    else
+                    {
+                        return funcType + ";";
+                    }
+                }
+                else
+                {
+                    return type + " " + name + ";";
+                }
             }
         }
 
