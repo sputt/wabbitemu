@@ -9,9 +9,9 @@ int single_val()
 void main(int arg)
 {
 	int test;
-	test = 20;
+	test = 10;
 
-	if (20 + test)
+	if (130 + single_val())
 	{
 		single_val();
 	}

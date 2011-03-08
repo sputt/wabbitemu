@@ -213,8 +213,8 @@ namespace WabbitC
 			{
 				//its a replacement
 				Expression expression = new Expression(tokensAfter);
-				var replacement = new ReplacementDefine(line[0], expression.Eval()[0]);
-				defines.Add(replacement);
+				//var replacement = new ReplacementDefine(line[0], expression.Eval()[0]);
+				//defines.Add(replacement);
 			}
 		}
 
@@ -236,7 +236,7 @@ namespace WabbitC
 		{
 			List<Token> line = GetPreprocessorLine(ref i);
 			Expression exp = new Expression(line);
-			var value = exp.Eval()[0];
+			var value = new Token();// exp.Eval()[0];
 			int nesting = 0;
 			List<Token> conditionalTokens = new List<Token>();
 			i++;

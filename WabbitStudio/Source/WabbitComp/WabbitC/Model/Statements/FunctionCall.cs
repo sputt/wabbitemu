@@ -37,6 +37,21 @@ namespace WabbitC.Model.Statements
             return tokenList;
         }
 
+		public static List<Declaration> BuildParams(Block block, FunctionType funcType, List<Expression> args)
+		{
+			var tokenList = new List<Declaration>();
+			int nCount = 0;
+			foreach(Expression arg in args)
+			{
+				Declaration decl = block.CreateTempDeclaration(funcType.ParamDefs[nCount].Type);
+
+				AssignmentHelper.Parse(block, decl, arg.Tokens);
+
+				tokenList.Add(decl);
+			}
+			return tokenList;
+		}
+
         public FunctionCall(Declaration returnDecl, Declaration func, List<Declaration> funcParams)
         {
             Debug.Assert(func.Type.GetType() == typeof(FunctionType));

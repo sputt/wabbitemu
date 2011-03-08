@@ -9,7 +9,7 @@ using WabbitC.Model.Statements;
 
 namespace WabbitC.Model
 {
-    class Block
+    public class Block
     {
         public Block Parent;
         public FunctionType Function;

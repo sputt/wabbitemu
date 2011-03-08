@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WabbitC.Model
 {
-    abstract class Type
+    public abstract class Type
     {
         private int size;
         public int Size

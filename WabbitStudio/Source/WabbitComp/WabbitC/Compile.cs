@@ -39,6 +39,10 @@ namespace WabbitC
             tokens.MoveNext();
 
             Module currentModule = Module.ParseModule(ref tokens);
+
+			AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
+			codeGenerator.GenerateCode();
+
             string code = currentModule.ToString();
 
             var writer = new StreamWriter("test_compiled.c");

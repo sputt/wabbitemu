@@ -63,6 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssemblyGenerator.cs" />
     <Compile Include="Compile.cs" />
     <Compile Include="ExpressionEval.cs" />
     <Compile Include="IncludeDirs.cs" />
