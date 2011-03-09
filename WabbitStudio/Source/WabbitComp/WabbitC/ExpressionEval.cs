@@ -241,7 +241,9 @@ namespace WabbitC
 			return stack;
 		}
 
-		static List<List<string>> operators = new List<List<string>> { new List<string> {"||"},
+		static List<List<string>> operators = new List<List<string>> { 
+																	new List<string> {"="},
+																	new List<string> {"||"},
 																	new List<string> {"&&"}, 
 																	new List<string> {"|"},
 																	new List<string> {"^"},
@@ -253,7 +255,6 @@ namespace WabbitC
 																	new List<string> {"*", "/", "%"},
 																	new List<string> {"!", "~"},
 																	new List<string> {"++",  "−−", "--"},
-                                                                    new List<string> {"="},
 																};
 		public static int GetOperator(Expression expr)
 		{
