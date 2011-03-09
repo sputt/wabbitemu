@@ -106,6 +106,9 @@ namespace WabbitC
 				case "^":
 					result = tok1 ^ tok2;
 					break;
+                case "=":
+                    result = (Token.OpEquals(tok1, tok2));
+                    break;
 				/*case "||":
 					resultvar = Convert.ToBoolean(var1) || Convert.ToBoolean(var2);
 					break;
@@ -211,7 +214,8 @@ namespace WabbitC
 																	new List<string> {"+", "-", "−"},
 																	new List<string> {"*", "/", "%"},
 																	new List<string> {"!", "~"},
-																	new List<string> {"++",  "−−", "--"}
+																	new List<string> {"++",  "−−", "--"},
+                                                                    new List<string> {"="},
 																};
 		public static int GetOperator(Expression expr)
 		{

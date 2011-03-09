@@ -69,7 +69,7 @@ namespace WabbitC
         {
             var tokenList = new List<Token>();
             int nParenBalance = 0;
-            while (!(tokens.Current.Text == "," || (nParenBalance == 0 && tokens.Current.Text == ")")))
+            while (!((nParenBalance == 0 && tokens.Current.Text == ",") || (nParenBalance == 0 && tokens.Current.Text == ")")))
             {
                 if (tokens.Current.Type == TokenType.OpenParen)
                 {
@@ -285,6 +285,11 @@ namespace WabbitC
         public Token()
         {
             
+        }
+
+        public static implicit operator string(Token t)
+        {
+            return t.Text;
         }
 
         public override string ToString()
@@ -592,6 +597,14 @@ namespace WabbitC
 			return new Expression(resultList);
 		}
 
+        public static Expression OpEquals(Token t1, Token t2)
+        {
+            var resultList = new List<Token>();
+			resultList.Add(AssignmentOperatorToken);
+            resultList.Add(t2);
+            resultList.Add(t1);
+            return new Expression(resultList);
+        }
 
 		#endregion
 	}

@@ -5,8 +5,7 @@ using System.Text;
 
 namespace WabbitC.Model.Statements
 {
-    public abstract class Statement
+    class While : ControlStatement
     {
-        public HashSet<String> Properties;
     }
 }

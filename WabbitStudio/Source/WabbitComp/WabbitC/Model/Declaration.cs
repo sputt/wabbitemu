@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WabbitC.Model
 {
-    public class Declaration
+    public class Declaration : Datum
     {
         private Type type;
         public Type Type
@@ -25,7 +25,7 @@ namespace WabbitC.Model
             this.name = name;
         }
 
-        public override string ToString()
+        public string GetDeclaration()
         {
             if (type == null)
             {
@@ -52,6 +52,11 @@ namespace WabbitC.Model
                     return type + " " + name + ";";
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            return name;
         }
 
         //public ValueStatement InitialValue;

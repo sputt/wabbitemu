@@ -8,9 +8,9 @@ namespace WabbitC.Model.Statements
     class Add : ValueStatement
     {
         public Declaration LValue;
-        public Declaration AddValue;
+        public Datum AddValue;
 
-        public Add(Declaration lValue, Declaration addValue)
+        public Add(Declaration lValue, Datum addValue)
         {
             LValue = lValue;
             AddValue = addValue;
@@ -18,7 +18,7 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            return LValue.Name + " += " + AddValue.Name;
+            return LValue.Name + " += " + AddValue;
         }
     }
 }

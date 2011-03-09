@@ -7,7 +7,7 @@ using WabbitC.Model.Types;
 
 namespace WabbitC.Model
 {
-    class Immediate
+    class Immediate : Datum
     {
         public BuiltInType Type;
         public Token Value;

@@ -1,22 +1,9 @@
-int global = 80;
-
-int single_val()
+int main()
 {
-	int help = 40;
-	help += 5;
-	return 20;
-}
-void main(int arg)
-{
+	//char *pbyte = 0x1234;
+	//*pbyte = 10;
 	int test;
-	test = 10;
+	int test2;
 
-	if (130 + single_val())
-	{
-		single_val();
-	}
-	else
-	{
-
-	}
+	test = (test + 40) + 20;
 }

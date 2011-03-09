@@ -69,10 +69,10 @@
     <Compile Include="IncludeDirs.cs" />
     <Compile Include="MessageSystem.cs" />
     <Compile Include="Model\Block.cs" />
+    <Compile Include="Model\Datum.cs" />
     <Compile Include="Model\Declaration.cs" />
     <Compile Include="Model\Immediate.cs" />
     <Compile Include="Model\Statements\Add.cs" />
-    <Compile Include="Model\Statements\AddImmediate.cs" />
     <Compile Include="Model\Statements\Assignment.cs" />
     <Compile Include="Model\Statements\AssignmentHelper.cs" />
     <Compile Include="Model\Statements\ControlStatement.cs" />
@@ -81,7 +81,9 @@
     <Compile Include="Model\Statements\Move.cs" />
     <Compile Include="Model\Statements\Return.cs" />
     <Compile Include="Model\Statements\Statement.cs" />
+    <Compile Include="Model\Statements\Store.cs" />
     <Compile Include="Model\Statements\ValueStatement.cs" />
+    <Compile Include="Model\Statements\While.cs" />
     <Compile Include="Model\Types\FunctionType.cs" />
     <Compile Include="Model\Module.cs" />
     <Compile Include="Model\Types\BuiltInType.cs" />

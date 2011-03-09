@@ -160,7 +160,15 @@ namespace WabbitC.Model
                         Type resultType = TypeHelper.ParseType(ref tokens);
                         if (resultType == null)
                         {
-                            throw new System.Exception("Could not parse a type");
+                            // Dereference of some kind
+                            if (tokens.Current == "*")
+                            {
+                                Store.Parse(thisBlock, ref tokens);
+                            }
+                            else
+                            {
+                                throw new System.Exception("Not a known statement");
+                            }
                         }
 
                         // Read the name of the declaration/type
@@ -233,7 +241,7 @@ namespace WabbitC.Model
             }
             foreach (Declaration decl in Declarations)
             {
-                result += decl + "\n";
+                result += decl.GetDeclaration() + "\n";
             }
             if (Statements != null)
             {
