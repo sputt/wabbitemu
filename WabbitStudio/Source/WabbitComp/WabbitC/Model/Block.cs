@@ -88,146 +88,150 @@ namespace WabbitC.Model
                 {
                     thisBlock.Statements.Add(If.ParseIf(thisBlock, ref tokens));
                 }
-                else if (tokens.Current.Text == "struct")
-                {
-                    tokens.MoveNext();
-                    if (tokens.Current.Type != TokenType.OpenBlock)
-                    {
-                        throw new System.Exception("That was gay");
-                    }
-                }
-                else if (tokens.Current.Text == "return")
-                {
-                    tokens.MoveNext();
+				else if (tokens.Current.Text == "while")
+				{
+					thisBlock.Statements.Add(While.ParseWhile(thisBlock, ref tokens));
+				}
+				else if (tokens.Current.Text == "struct")
+				{
+					tokens.MoveNext();
+					if (tokens.Current.Type != TokenType.OpenBlock)
+					{
+						throw new System.Exception("That was gay");
+					}
+				}
+				else if (tokens.Current.Text == "return")
+				{
+					tokens.MoveNext();
 
-                    var returnList = Tokenizer.GetStatement(ref tokens);
-                    Declaration decl = thisBlock.CreateTempDeclaration(func.ReturnType);
+					var returnList = Tokenizer.GetStatement(ref tokens);
+					Declaration decl = thisBlock.CreateTempDeclaration(func.ReturnType);
 
-                    AssignmentHelper.Parse(thisBlock, decl, returnList);
+					AssignmentHelper.Parse(thisBlock, decl, returnList);
 
-                    var returnStatement = new Return(decl);
-                    thisBlock.Statements.Add(returnStatement);
+					var returnStatement = new Return(decl);
+					thisBlock.Statements.Add(returnStatement);
 
-                    tokens.MoveNext();
-                }
-                else
-                {
-                    Declaration declForStatement = thisBlock.FindDeclaration(tokens.Current.Text);
-                    if (declForStatement != null)
-                    {
-                        // We have some kind of statement in this case
-                        tokens.MoveNext();
+					tokens.MoveNext();
+				}
+				else
+				{
+					Declaration declForStatement = thisBlock.FindDeclaration(tokens.Current.Text);
+					if (declForStatement != null)
+					{
+						// We have some kind of statement in this case
+						tokens.MoveNext();
 
-                        if (tokens.Current.Text == "=")
-                        {
-                            tokens.MoveNext();
+						if (tokens.Current.Text == "=")
+						{
+							tokens.MoveNext();
 
-                            var valueList = Tokenizer.GetStatement(ref tokens);
-                            var expr = new Expression(valueList);
+							var valueList = Tokenizer.GetStatement(ref tokens);
+							var expr = new Expression(valueList);
 
-                            AssignmentHelper.Parse(thisBlock, declForStatement, valueList);
+							AssignmentHelper.Parse(thisBlock, declForStatement, valueList);
 
-                            Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                            tokens.MoveNext();
-                        }
-                        else if (tokens.Current.Text == "(")
-                        {
-                            tokens.MoveNext();
-                            List<Declaration> paramList = FunctionCall.BuildParams(thisBlock, (FunctionType)declForStatement.Type, ref tokens);
+							Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+							tokens.MoveNext();
+						}
+						else if (tokens.Current.Text == "(")
+						{
+							tokens.MoveNext();
+							List<Declaration> paramList = FunctionCall.BuildParams(thisBlock, (FunctionType)declForStatement.Type, ref tokens);
 
-                            Declaration returnDecl;
-                            Type returnType = ((FunctionType)declForStatement.Type).ReturnType;
-                            if (returnType.Equals(new BuiltInType("void")))
-                            {
-                                returnDecl = null;
-                            }
-                            else
-                            {
-                                returnDecl = thisBlock.CreateTempDeclaration(returnType);
-                            }
-                            var funcCall = new FunctionCall(returnDecl, declForStatement, paramList);
-                            thisBlock.Statements.Add(funcCall);
+							Declaration returnDecl;
+							Type returnType = ((FunctionType)declForStatement.Type).ReturnType;
+							if (returnType.Equals(new BuiltInType("void")))
+							{
+								returnDecl = null;
+							}
+							else
+							{
+								returnDecl = thisBlock.CreateTempDeclaration(returnType);
+							}
+							var funcCall = new FunctionCall(returnDecl, declForStatement, paramList);
+							thisBlock.Statements.Add(funcCall);
 
-                            tokens.MoveNext();
+							tokens.MoveNext();
 
-                            Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                            tokens.MoveNext();
-                        }
-                    }
-                    else
-                    {
-                        String resultName = "";
-                        Type resultType = TypeHelper.ParseType(ref tokens);
-                        if (resultType == null)
-                        {
-                            // Dereference of some kind
-                            if (tokens.Current == "*")
-                            {
-                                Store.Parse(thisBlock, ref tokens);
-                            }
-                            else
-                            {
-                                throw new System.Exception("Not a known statement");
-                            }
-                        }
+							Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+							tokens.MoveNext();
+						}
+					}
+					else
+					{
+						String resultName = "";
+						Type resultType = TypeHelper.ParseType(ref tokens);
+						if (resultType == null)
+						{
+							// Dereference of some kind
+							if (tokens.Current == "*")
+							{
+								Store.Parse(thisBlock, ref tokens);
+							}
+							else
+							{
+								throw new System.Exception("Not a known statement");
+							}
+						}
 
-                        // Read the name of the declaration/type
-                        if (tokens.Current.Type == TokenType.StringType)
-                        {
-                            resultName = tokens.Current.Text;
-                            tokens.MoveNext();
-                        }
+						// Read the name of the declaration/type
+						if (tokens.Current.Type == TokenType.StringType)
+						{
+							resultName = tokens.Current.Text;
+							tokens.MoveNext();
+						}
 
-                        // in this case it's either a prototype or a function
-                        // Either way it gets added to the types of this module
-                        if (tokens.Current.Type == TokenType.OpenParen)
-                        {
-                            FunctionType function = new FunctionType(ref tokens, resultType);
-                            resultType = function;
-                            thisBlock.Types.Add(function);
+						// in this case it's either a prototype or a function
+						// Either way it gets added to the types of this module
+						if (tokens.Current.Type == TokenType.OpenParen)
+						{
+							FunctionType function = new FunctionType(ref tokens, resultType);
+							resultType = function;
+							thisBlock.Types.Add(function);
 
-                            if (tokens.Current.Type == TokenType.OpenBlock)
-                            {
-                                tokens.MoveNext();
-                                var block = Block.ParseBlock(ref tokens, thisBlock, function);
+							if (tokens.Current.Type == TokenType.OpenBlock)
+							{
+								tokens.MoveNext();
+								var block = Block.ParseBlock(ref tokens, thisBlock, function);
 
-                                Debug.Assert(tokens.Current.Type == TokenType.CloseBlock);
-                                tokens.MoveNext();
+								Debug.Assert(tokens.Current.Type == TokenType.CloseBlock);
+								tokens.MoveNext();
 
-                                var declaration = new Declaration(resultType, resultName);
-                                declaration.Code = block;
-                                thisBlock.Declarations.Add(declaration);
-                            }
-                            else
-                            {
-                                Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                                tokens.MoveNext();
-                            }
-                        }
-                        else
-                        {
-                            var decl = new Declaration(resultType, resultName);
-                            thisBlock.Declarations.Add(decl);
+								var declaration = new Declaration(resultType, resultName);
+								declaration.Code = block;
+								thisBlock.Declarations.Add(declaration);
+							}
+							else
+							{
+								Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+								tokens.MoveNext();
+							}
+						}
+						else
+						{
+							var decl = new Declaration(resultType, resultName);
+							thisBlock.Declarations.Add(decl);
 
-                            // Handle declarations with initial values
-                            if (tokens.Current.Text == "=")
-                            {
-                                tokens.MoveNext();
+							// Handle declarations with initial values
+							if (tokens.Current.Text == "=")
+							{
+								tokens.MoveNext();
 
-                                var valueList = Tokenizer.GetStatement(ref tokens);
-                                AssignmentHelper.Parse(thisBlock, decl, valueList);
+								var valueList = Tokenizer.GetStatement(ref tokens);
+								AssignmentHelper.Parse(thisBlock, decl, valueList);
 
-                                Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                                tokens.MoveNext();
-                            }
-                            else
-                            {
-                                Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                                tokens.MoveNext();
-                            }
-                        }
-                    }
-                }
+								Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+								tokens.MoveNext();
+							}
+							else
+							{
+								Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+								tokens.MoveNext();
+							}
+						}
+					}
+				}
             }
             return thisBlock;
         }

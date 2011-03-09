@@ -5,22 +5,22 @@ using System.Text;
 
 namespace WabbitC.Model.Statements
 {
-    class Add : ValueStatement
+	class Sub: ValueStatement
     {
         public Declaration LValue;
-        public Datum AddValue;
+        public Datum SubValue;
 
-        public Add(Declaration lValue, Datum addValue)
+        public Sub(Declaration lValue, Datum subValue)
         {
             LValue = lValue;
-            AddValue = addValue;
+            SubValue = subValue;
         }
 
         public override string ToString()
         {
 			StringBuilder sb = new StringBuilder(LValue.Name);
-			sb.Append(" += ");
-			sb.Append(AddValue);
+			sb.Append(" -= ");
+			sb.Append(SubValue);
 			return sb.ToString();
         }
     }

@@ -82,6 +82,7 @@
     <Compile Include="Model\Statements\Return.cs" />
     <Compile Include="Model\Statements\Statement.cs" />
     <Compile Include="Model\Statements\Store.cs" />
+    <Compile Include="Model\Statements\Sub.cs" />
     <Compile Include="Model\Statements\ValueStatement.cs" />
     <Compile Include="Model\Statements\While.cs" />
     <Compile Include="Model\Types\FunctionType.cs" />
@@ -99,6 +100,7 @@
     <Compile Include="TokenPasses\ArrayDereference.cs" />
     <Compile Include="TokenPasses\Bracer.cs" />
     <Compile Include="TokenPasses\CompoundAssignment.cs" />
+    <Compile Include="TokenPasses\ForLoopRemover.cs" />
     <Compile Include="TokenPasses\TernaryOperator.cs">
       <SubType>Code</SubType>
     </Compile>

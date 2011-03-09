@@ -72,7 +72,16 @@ namespace WabbitC.Model.Statements
                                 block.Statements.Add(initialAssign);
                                 block.Statements.Add(new Add(decl, Datum.Parse(block, stack.Pop())));
                                 break;
-                            }
+							}
+						case "-":
+							{
+								var arg1 = stack.Pop();
+								decl = block.CreateTempDeclaration(TypeHelper.GetType(block, arg1));
+								ValueStatement initialAssign = ParseSingle(block, decl, arg1);
+								block.Statements.Add(initialAssign);
+								block.Statements.Add(new Sub(decl, Datum.Parse(block, stack.Pop())));
+								break;
+							}
                         case "=":
                             {
                                 decl = block.FindDeclaration(stack.Pop());

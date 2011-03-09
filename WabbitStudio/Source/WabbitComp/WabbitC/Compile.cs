@@ -34,8 +34,11 @@ namespace WabbitC
             var tokenPass2 = new Bracer();
             newTokens = tokenPass2.Run(newTokens);
 
-			var tokenPass3 = new CompoundAssignmentRemover();
+			var tokenPass3 = new ForLoopRemover();
 			newTokens = tokenPass3.Run(newTokens);
+
+			var tokenPass4 = new CompoundAssignmentRemover();
+			newTokens = tokenPass4.Run(newTokens);
 
             var tokens = newTokens.GetEnumerator();
             tokens.MoveNext();

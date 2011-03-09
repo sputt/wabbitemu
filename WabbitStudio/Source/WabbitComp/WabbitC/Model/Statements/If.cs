@@ -66,14 +66,16 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            string result = "if (" + Condition.Name + ")\n";
-            result += TrueCase.ToString();
+			StringBuilder result = new StringBuilder("if (");
+			result.Append(Condition.Name);
+			result.AppendLine(")");
+            result.Append(TrueCase);
             if (FalseCase != null)
             {
-                result += "else\n";
-                result += FalseCase.ToString();
+                result.AppendLine("else");
+                result.Append(FalseCase);
             }
-            return result;
+            return result.ToString();
         }
     }
 }

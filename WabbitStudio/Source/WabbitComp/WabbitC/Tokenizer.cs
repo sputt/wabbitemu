@@ -264,9 +264,10 @@ namespace WabbitC
 		#region Constant Tokens
 		public static Token OpenParenToken = new Token() { Type = TokenType.OpenParen, Text = "(" };
 		public static Token CloseParenToken = new Token() { Type = TokenType.CloseParen, Text = ")" };
-		public static Token OpenBraceToken = new Token() { Type = TokenType.OpenParen, Text = "{" };
-		public static Token CloseBraceToken = new Token() { Type = TokenType.CloseParen, Text = "}" };
+		public static Token OpenBraceToken = new Token() { Type = TokenType.OpenBlock, Text = "{" };
+		public static Token CloseBraceToken = new Token() { Type = TokenType.CloseBlock, Text = "}" };
 		public static Token AssignmentOperatorToken = new Token() { Text = "=", Type = TokenType.OperatorType };
+		public static Token StatementEndToken = new Token() { Text = ";", Type = TokenType.StatementEnd };
 		
 		public static Token BitNOTOperatorToken = new Token() { Text = "~", Type = TokenType.OperatorType };
 		public static Token BitXOROperatorToken = new Token() { Text = "^", Type = TokenType.OperatorType };
@@ -306,6 +307,14 @@ namespace WabbitC
         }
 
 		#region Operator Overloads
+		public override bool Equals(object obj)
+		{
+			if (obj.GetType() != typeof(Token))
+				return base.Equals(obj);
+			Token tok = (Token)obj;
+			return Text == tok.Text && Type == tok.Type;
+		}
+
 		public static bool operator ==(Token t1, Token t2)
         {
             if (object.Equals(t1, t2))
