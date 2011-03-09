@@ -23,6 +23,11 @@ namespace WabbitC
             this.tokens = tokens;
         }
 
+		public Expression(Token token)
+		{
+			this.tokens = new List<Token> { token };
+		}
+
         public List<Expression> Eval()
         {
 			ReplaceDefines();
@@ -40,6 +45,13 @@ namespace WabbitC
 				CalculateStack(ref exp);
 				expressions[i] = exp;
 			}
+			var listTokens = Expression.ToTokens(expressions);
+			var result = CalculateStack(ref listTokens);
+			if (result != null)
+			{
+				expressions.Clear();
+				expressions.Add(result);
+			}
 		}
 
 		private void CalculateStack(ref Expression exp)
@@ -48,13 +60,20 @@ namespace WabbitC
 				return;
 			var evalExp = exp.Eval();
 			var tokens = Expression.ToTokens(evalExp);
+			var result = CalculateStack(ref tokens);
+			exp = result == null ? exp : result;
+		}
+
+		private Expression CalculateStack(ref List<Token> tokens)
+		{
 			if (tokens.Count < 2)
-				return;
+				return null;
 			if (tokens.Count == 2)
 			{
 				Token op = tokens[0];
 				Token value = tokens[1];
-				ApplyOperator(value, op);
+				var result = ApplyOperator(value, op);
+				return result;
 			}
 			else if (tokens.Count == 3 )
 			{
@@ -64,10 +83,10 @@ namespace WabbitC
 					Token value1 = tokens[1];
 					Token value2 = tokens[2];
 					Expression result = ApplyOperator(value1, value2, op);
-					if (result != null)
-						exp = result;
+					return result;
 				}
 			}
+			return null;
 		}
 
 		private Expression ApplyOperator(WabbitC.Token tok1, WabbitC.Token op)
@@ -87,6 +106,8 @@ namespace WabbitC
 
 		private Expression ApplyOperator(WabbitC.Token tok1, WabbitC.Token tok2, WabbitC.Token op)
 		{
+			int int1, int2;
+			Token token;
 			Expression result = null;
 			switch (op.Text)
 			{
@@ -109,12 +130,28 @@ namespace WabbitC
                 case "=":
                     result = (Token.OpEquals(tok1, tok2));
                     break;
-				/*case "||":
-					resultvar = Convert.ToBoolean(var1) || Convert.ToBoolean(var2);
+				case "&":
+					result = tok1 & tok2;
 					break;
+				case "|":
+					result = tok1 | tok2;
+					break;
+				case "||":
+					if (!int.TryParse(tok1.Text, out int1) || !int.TryParse(tok2.Text, out int2))
+					{
+						var resultList = new List<Token> { Token.OROperatorToken, tok2, tok1 };
+						return new Expression(resultList);
+					}
+					token = new Token() { Text = (Convert.ToBoolean(int1) || Convert.ToBoolean(int2)).ToString(), Type = TokenType.IntType };
+					return new Expression(token);
 				case "&&":
-					resultvar = Convert.ToBoolean(var1) && Convert.ToBoolean(var2);
-					break;*/
+					if (!int.TryParse(tok1.Text, out int1) || !int.TryParse(tok2.Text, out int2))
+					{
+						var resultList = new List<Token> { Token.OROperatorToken, tok2, tok1 };
+						return new Expression(resultList);
+					}
+					token = new Token() { Text = (Convert.ToBoolean(int1) && Convert.ToBoolean(int2)).ToString(), Type = TokenType.IntType };
+					return new Expression(token);
 			}
 			return result;
 		}
@@ -169,7 +206,8 @@ namespace WabbitC
 						Expression insideExp = new Expression(insideTokens);
 						stack[i] = insideExp;
 					}
-					if (curToken.Type == TokenType.StringType && curExpr.Tokens.Count > 1 && curExpr.Tokens[1].Type == TokenType.OpenParen)
+					else if (curToken.Type == TokenType.StringType && curExpr.Tokens.Count > 1 &&
+								curExpr.Tokens[1].Type == TokenType.OpenParen)
 					{
 						//its a func!
 						List<Expression> args = new List<Expression>();
@@ -232,7 +270,8 @@ namespace WabbitC
 						nParen--;
 					else if (nParen == 0 && token.Type == TokenType.OperatorType && operatorLevel.Contains(token.Text)) 
 					{
-						if ((token.Text != "-" && token.Text != "+") || (i > 0 && tokens[i - 1].Type != TokenType.OperatorType))
+						if ((token.Text != "-" && token.Text != "+" && token.Text != "*") 
+								|| (i > 0 && tokens[i - 1].Type != TokenType.OperatorType))
 							return i;
 					}
 				}

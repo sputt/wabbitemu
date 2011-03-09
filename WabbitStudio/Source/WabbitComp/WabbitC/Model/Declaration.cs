@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WabbitC.Model
 {
-    public class Declaration : Datum
+    class Declaration : Datum
     {
         private Type type;
         public Type Type

@@ -21,7 +21,7 @@ namespace WabbitC
         StatementEnd,
 		UndefinedType,
 		ArgSeparator,
-		FunctionType,
+		TernaryConditional,
     };
 
     public class Tokenizer
@@ -138,6 +138,8 @@ namespace WabbitC
 				tokenToAdd.Type = TokenType.StatementEnd;
 			else if (tokenToAdd.Text == ",")
 				tokenToAdd.Type = TokenType.ArgSeparator;
+			else if (tokenToAdd.Text == "?")
+				tokenToAdd.Type = TokenType.TernaryConditional;
 			else
 				tokenToAdd.Type = TokenType.StringType;
 
@@ -166,8 +168,8 @@ namespace WabbitC
             return ReservedKeywords.Contains(text);
         }
 
-		const string delimeters = "&<>~!%^*()−-+=|\\/{}[]:;\"' \n\t\r?,";
-		const string operators = "&&<<>>!~%^=*=−−=--=++=||/=";
+		const string delimeters = "&<−->~!%^*()+=|\\/{}[]:;\"' \n\t\r?,.";
+		const string operators = "&&<<-->>!~%^=*=−−==++=||/=";
         private string ReadWord(ref int index)
         {
             int newIndex = index;
@@ -229,7 +231,7 @@ namespace WabbitC
                         test = word[0];
 						char nextCh =  inputContents[newIndex];
                         if (operators.IndexOf(test) >= 0)
-							if (((test == '+' || test == '-' || test == '|' || test == '=' || test == '&') && nextCh == test) || nextCh == '=')
+							if (((test == '+' || test == '-' || test == '|' || test == '=' || test == '&') && nextCh == test) || nextCh == '=' || (test == '-' && nextCh == '>'))
 								newIndex++;
                     }
                 }
@@ -262,6 +264,8 @@ namespace WabbitC
 		#region Constant Tokens
 		public static Token OpenParenToken = new Token() { Type = TokenType.OpenParen, Text = "(" };
 		public static Token CloseParenToken = new Token() { Type = TokenType.CloseParen, Text = ")" };
+		public static Token OpenBraceToken = new Token() { Type = TokenType.OpenParen, Text = "{" };
+		public static Token CloseBraceToken = new Token() { Type = TokenType.CloseParen, Text = "}" };
 		public static Token AssignmentOperatorToken = new Token() { Text = "=", Type = TokenType.OperatorType };
 		
 		public static Token BitNOTOperatorToken = new Token() { Text = "~", Type = TokenType.OperatorType };
@@ -270,6 +274,8 @@ namespace WabbitC
 		public static Token BitOROperatorToken = new Token() { Text = "|", Type = TokenType.OperatorType };
 
 		public static Token NOTOperatorToken = new Token() { Text = "!", Type = TokenType.OperatorType };
+		public static Token ANDOperatorToken = new Token() { Text = "!", Type = TokenType.OperatorType };
+		public static Token OROperatorToken = new Token() { Text = "!", Type = TokenType.OperatorType };
 		
 		public static Token AddOperatorToken = new Token() { Text = "+", Type = TokenType.OperatorType };
 		public static Token SubOperatorToken = new Token() { Text = "-", Type = TokenType.OperatorType };
@@ -329,22 +335,18 @@ namespace WabbitC
 		public static Expression operator +(Token t1, Token t2)
 		{
 			var result = new Token();
-			var resultList = new List<Token>();
 			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
 			{
-				resultList.Add(result);
 				result.Type = TokenType.UndefinedType;
-				return new Expression(resultList);
+				return new Expression(result);
 			}
 			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
 			{
-				result.Type = TokenType.RealType;
 				var double1 = double.Parse(t1.Text);
 				var double2 = double.Parse(t2.Text);
 				result.Text = (double1 + double2).ToString();
 				result.Type = TokenType.RealType;
-				resultList.Add(result);
-				return new Expression(resultList);
+				return new Expression(result);
 			}
 			else
 			{
@@ -352,6 +354,8 @@ namespace WabbitC
 				result.Type = TokenType.IntType;
 				if (!int.TryParse(t1.Text, out int1))
 				{
+					return null;
+					var resultList = new List<Token>();
 					resultList.Add(AddOperatorToken);
 					resultList.Add(t2);
 					resultList.Add(t1);
@@ -359,6 +363,8 @@ namespace WabbitC
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
+					return null;
+					var resultList = new List<Token>();
 					resultList.Add(AddOperatorToken);
 					resultList.Add(t2);
 					resultList.Add(t1);
@@ -366,30 +372,25 @@ namespace WabbitC
 				}
 				result.Text = (int1 + int2).ToString();
 				result.Type = TokenType.IntType;
-				resultList.Add(result);
 			}
-			return new Expression(resultList);
+			return new Expression(result);
 		}
 
 		public static Expression operator -(Token t1, Token t2)
 		{
 			var result = new Token();
-			var resultList = new List<Token>();
 			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
 			{
-				resultList.Add(result);
 				result.Type = TokenType.UndefinedType;
-				return new Expression(resultList);
+				return new Expression(result);
 			}
 			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
 			{
-				result.Type = TokenType.RealType;
 				var double1 = double.Parse(t1.Text);
 				var double2 = double.Parse(t2.Text);
 				result.Text = (double1 - double2).ToString();
 				result.Type = TokenType.RealType;
-				resultList.Add(result);
-				return new Expression(resultList);
+				return new Expression(result);
 			}
 			else
 			{
@@ -397,6 +398,8 @@ namespace WabbitC
 				result.Type = TokenType.IntType;
 				if (!int.TryParse(t1.Text, out int1))
 				{
+					return null;
+					var resultList = new List<Token>();
 					resultList.Add(SubOperatorToken);
 					resultList.Add(t2);
 					resultList.Add(t1);
@@ -404,6 +407,8 @@ namespace WabbitC
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
+					return null;
+					var resultList = new List<Token>();
 					resultList.Add(SubOperatorToken);
 					resultList.Add(t2);
 					resultList.Add(t1);
@@ -411,30 +416,25 @@ namespace WabbitC
 				}
 				result.Text = (int1 - int2).ToString();
 				result.Type = TokenType.IntType;
-				resultList.Add(result);
 			}
-			return new Expression(resultList);
+			return new Expression(result);
 		}
 
 		public static Expression operator *(Token t1, Token t2)
 		{
-			var result = new Token();
-			var resultList = new List<Token>();
+			var result = new Token();			
 			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
 			{
-				resultList.Add(result);
 				result.Type = TokenType.UndefinedType;
-				return new Expression(resultList);
+				return new Expression(result);
 			}
 			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
 			{
-				result.Type = TokenType.RealType;
 				var double1 = double.Parse(t1.Text);
 				var double2 = double.Parse(t2.Text);
 				result.Text = (double1 * double2).ToString();
 				result.Type = TokenType.RealType;
-				resultList.Add(result);
-				return new Expression(resultList);
+				return new Expression(result);
 			}
 			else
 			{
@@ -442,6 +442,8 @@ namespace WabbitC
 				result.Type = TokenType.IntType;
 				if (!int.TryParse(t1.Text, out int1))
 				{
+					return null;
+					var resultList = new List<Token>();
 					resultList.Add(MultOperatorToken);
 					resultList.Add(t2);
 					resultList.Add(t1);
@@ -449,6 +451,8 @@ namespace WabbitC
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
+					return null;
+					var resultList = new List<Token>();
 					resultList.Add(MultOperatorToken);
 					resultList.Add(t2);
 					resultList.Add(t1);
@@ -456,30 +460,24 @@ namespace WabbitC
 				}
 				result.Text = (int1 * int2).ToString();
 				result.Type = TokenType.IntType;
-				resultList.Add(result);
 			}
-			return new Expression(resultList);
+			return new Expression(result);
 		}
 
 		public static Expression operator /(Token t1, Token t2)
 		{
 			var result = new Token();
-			var resultList = new List<Token>();
+			
 			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
 			{
-				resultList.Add(result);
 				result.Type = TokenType.UndefinedType;
-				return new Expression(resultList);
 			}
 			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
 			{
-				result.Type = TokenType.RealType;
 				var double1 = double.Parse(t1.Text);
 				var double2 = double.Parse(t2.Text);
 				result.Text = (double1 / double2).ToString();
 				result.Type = TokenType.RealType;
-				resultList.Add(result);
-				return new Expression(resultList);
 			}
 			else
 			{
@@ -487,6 +485,8 @@ namespace WabbitC
 				result.Type = TokenType.IntType;
 				if (!int.TryParse(t1.Text, out int1))
 				{
+					return null;
+					var resultList = new List<Token>();
 					resultList.Add(DivOperatorToken);
 					resultList.Add(t2);
 					resultList.Add(t1);
@@ -494,6 +494,8 @@ namespace WabbitC
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
+					return null;
+					var resultList = new List<Token>();
 					resultList.Add(DivOperatorToken);
 					resultList.Add(t2);
 					resultList.Add(t1);
@@ -501,20 +503,17 @@ namespace WabbitC
 				}
 				result.Text = (int1 / int2).ToString();
 				result.Type = TokenType.IntType;
-				resultList.Add(result);
 			}
-			return new Expression(resultList);
+			return new Expression(result);
 		}
 
 		public static Expression operator ^(Token t1, Token t2)
 		{
 			var result = new Token();
-			var resultList = new List<Token>();
 			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
 			{
-				resultList.Add(result);
 				result.Type = TokenType.UndefinedType;
-				return new Expression(resultList);
+				return new Expression(result);
 			}
 			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
 			{
@@ -526,6 +525,8 @@ namespace WabbitC
 				result.Type = TokenType.IntType;
 				if (!int.TryParse(t1.Text, out int1))
 				{
+					return null;
+					var resultList = new List<Token>();
 					resultList.Add(BitXOROperatorToken);
 					resultList.Add(t2);
 					resultList.Add(t1);
@@ -533,6 +534,8 @@ namespace WabbitC
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
+					return null;
+					var resultList = new List<Token>();
 					resultList.Add(BitXOROperatorToken);
 					resultList.Add(t2);
 					resultList.Add(t1);
@@ -540,9 +543,88 @@ namespace WabbitC
 				}
 				result.Text = (int1 ^ int2).ToString();
 				result.Type = TokenType.IntType;
-				resultList.Add(result);
 			}
-			return new Expression(resultList);
+			return new Expression(result);
+		}
+
+		public static Expression operator &(Token t1, Token t2)
+		{
+			var result = new Token();
+			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
+			{
+				result.Type = TokenType.UndefinedType;
+				return new Expression(result);
+			}
+			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
+			{
+				throw new Exception("Unable to apply & to type RealType");
+			}
+			else
+			{
+				int int1, int2;
+				result.Type = TokenType.IntType;
+				if (!int.TryParse(t1.Text, out int1))
+				{
+					return null;
+					var resultList = new List<Token>();
+					resultList.Add(BitANDOperatorToken);
+					resultList.Add(t2);
+					resultList.Add(t1);
+					return new Expression(resultList);
+				}
+				if (!int.TryParse(t2.Text, out int2))
+				{
+					return null;
+					var resultList = new List<Token>();
+					resultList.Add(BitANDOperatorToken);
+					resultList.Add(t2);
+					resultList.Add(t1);
+					return new Expression(resultList);
+				}
+				result.Text = (int1 & int2).ToString();
+				result.Type = TokenType.IntType;
+			}
+			return new Expression(result);
+		}
+
+		public static Expression operator |(Token t1, Token t2)
+		{
+			var result = new Token();
+			if (t2.Type == TokenType.UndefinedType || t1.Type == TokenType.UndefinedType)
+			{
+				result.Type = TokenType.UndefinedType;
+				return new Expression(result);
+			}
+			if (t2.Type == TokenType.RealType || t1.Type == TokenType.RealType)
+			{
+				throw new Exception("Unable to apply | to type RealType");
+			}
+			else
+			{
+				int int1, int2;
+				result.Type = TokenType.IntType;
+				if (!int.TryParse(t1.Text, out int1))
+				{
+					return null;
+					var resultList = new List<Token>();
+					resultList.Add(BitOROperatorToken);
+					resultList.Add(t2);
+					resultList.Add(t1);
+					return new Expression(resultList);
+				}
+				if (!int.TryParse(t2.Text, out int2))
+				{
+					return null;
+					var resultList = new List<Token>();
+					resultList.Add(BitOROperatorToken);
+					resultList.Add(t2);
+					resultList.Add(t1);
+					return new Expression(resultList);
+				}
+				result.Text = (int1 | int2).ToString();
+				result.Type = TokenType.IntType;
+			}
+			return new Expression(result);
 		}
 
 		public static Expression operator !(Token t1)
@@ -562,6 +644,7 @@ namespace WabbitC
 			result.Type = TokenType.IntType;
 			if (!int.TryParse(t1.Text, out int1))
 			{
+				return null;
 				resultList.Add(NOTOperatorToken);
 				resultList.Add(t1);
 				return new Expression(resultList);
@@ -588,6 +671,7 @@ namespace WabbitC
 			result.Type = TokenType.IntType;
 			if (!int.TryParse(t1.Text, out int1))
 			{
+				return null;
 				resultList.Add(BitNOTOperatorToken);
 				resultList.Add(t1);
 				return new Expression(resultList);

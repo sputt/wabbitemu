@@ -7,7 +7,7 @@ using System.Diagnostics;
 
 namespace WabbitC.Model.Types
 {
-    public class FunctionType : Type
+    class FunctionType : Type
     {
         public Type ReturnType;
         public struct ParamDef

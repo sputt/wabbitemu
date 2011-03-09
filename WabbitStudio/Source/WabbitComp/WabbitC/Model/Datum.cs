@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WabbitC.Model
 {
-    public class Datum
+    class Datum
     {
         public static Datum Parse(Block block, Token token)
         {

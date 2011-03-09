@@ -7,7 +7,7 @@ using WabbitC.Model.Types;
 
 namespace WabbitC
 {
-	public class AssemblyGenerator
+	class AssemblyGenerator
 	{
 		Block block;
 		public AssemblyGenerator(Block block)
