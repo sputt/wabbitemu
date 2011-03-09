@@ -66,30 +66,45 @@ namespace WabbitC
 
 		private Expression CalculateStack(ref List<Token> tokens)
 		{
-			if (tokens.Count < 2)
+			if (tokens.Count < 1)
 				return null;
-			if (tokens.Count == 2)
+			if (tokens.Count == 1)
+				return new Expression(tokens);
+			Stack<Token> stack = new Stack<Token>();
+			int i = tokens.Count;
+			Expression result = null;
+			while (i > 0)
 			{
-				Token op = tokens[0];
-				Token value = tokens[1];
-				var result = ApplyOperator(value, op);
-				return result;
+				while (tokens[--i].Type != TokenType.OperatorType)
+					stack.Push(tokens[i]);
+				Token op = tokens[i];
+				List<Token> toks = new List<Token>();
+				while (stack.Count > 0 && toks.Count < 2)
+					toks.Add(stack.Pop());
+				var exp = ApplyOperator(op, toks);
+				if (exp != null) 
+					result = exp;
+				if (i > 0 && result != null)
+					stack.Push(result.Tokens[0]);
+				else
+					return exp;
 			}
-			else if (tokens.Count == 3 )
-			{
-				Token op = tokens[0];
-				if (op.Type == TokenType.OperatorType)
-				{
-					Token value1 = tokens[1];
-					Token value2 = tokens[2];
-					Expression result = ApplyOperator(value1, value2, op);
-					return result;
-				}
-			}
-			return null;
+			return result;
 		}
 
-		private Expression ApplyOperator(WabbitC.Token tok1, WabbitC.Token op)
+		private Expression ApplyOperator(Token op, List<Token> tokens)
+		{
+			switch (tokens.Count)
+			{
+				case 1:
+					return ApplyOperator(op, tokens[0]);
+				case 2:
+					return ApplyOperator(op, tokens[0], tokens[1]);
+			}
+			throw new Exception("Unrecognized number of params");
+		}
+
+		private Expression ApplyOperator(Token op, Token tok1)
 		{
 			Expression result = null;
 			switch (op.Text)
@@ -104,7 +119,7 @@ namespace WabbitC
 			return result;
 		}
 
-		private Expression ApplyOperator(WabbitC.Token tok1, WabbitC.Token tok2, WabbitC.Token op)
+		private Expression ApplyOperator(Token op, Token tok1, Token tok2)
 		{
 			int int1, int2;
 			Token token;
@@ -128,7 +143,7 @@ namespace WabbitC
 					result = tok1 ^ tok2;
 					break;
                 case "=":
-                    result = (Token.OpEquals(tok1, tok2));
+                    result = null;//(Token.OpEquals(tok1, tok2));
                     break;
 				case "&":
 					result = tok1 & tok2;

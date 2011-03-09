@@ -120,5 +120,25 @@ namespace WabbitC_Tests
                 Assert.AreEqual(expected[i].ToString(), actual[i].ToString());
             }
         }
+
+		[TestMethod()]
+		public void EvalTest3()
+		{
+			Tokenizer tokenizer = new Tokenizer();
+			tokenizer.Tokenize("20 / (10 - 8) + 9 * 7");
+			List<Token> tokens = tokenizer.Tokens; // TODO: Initialize to an appropriate value
+			Expression target = new Expression(tokens); // TODO: Initialize to an appropriate value
+
+			var expr1 = new Expression(Tokenizer.ToToken("73"));
+
+			List<Expression> expected = new List<Expression>(); // TODO: Initialize to an appropriate value
+			expected.Add(expr1);
+			List<Expression> actual;
+			actual = target.Eval();
+			for (int i = 0; i < expected.Count; i++)
+			{
+				Assert.AreEqual(expected[i].ToString(), actual[i].ToString());
+			}
+		}
     }
 }

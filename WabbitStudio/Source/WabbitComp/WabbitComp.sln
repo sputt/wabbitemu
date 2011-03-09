@@ -52,6 +52,7 @@ Global
 		{471C743F-5EB9-4FB9-8742-330525D68503}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
 		{471C743F-5EB9-4FB9-8742-330525D68503}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
 		{471C743F-5EB9-4FB9-8742-330525D68503}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Debug|x86.Build.0 = Debug|Any CPU
 		{471C743F-5EB9-4FB9-8742-330525D68503}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{471C743F-5EB9-4FB9-8742-330525D68503}.Release|Any CPU.Build.0 = Release|Any CPU
 		{471C743F-5EB9-4FB9-8742-330525D68503}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
