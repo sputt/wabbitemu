@@ -5,5 +5,5 @@ int main()
 	int test;
 	int test2;
 
-	test = (test + 40) + 20;
+	test = test2 = 20;
 }

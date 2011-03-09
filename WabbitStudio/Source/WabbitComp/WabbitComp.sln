@@ -3,25 +3,60 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WabbitComp", "WabbitC\WabbitComp.csproj", "{68666923-07F9-433E-92F3-F1806A2DBB5F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WabbitC Tests", "WabbitC Tests\WabbitC Tests.csproj", "{471C743F-5EB9-4FB9-8742-330525D68503}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{20004026-A5CD-4D6B-8817-8A11DEA8D4A7}"
+	ProjectSection(SolutionItems) = preProject
+		Local.testsettings = Local.testsettings
+		TraceAndTestImpact.testsettings = TraceAndTestImpact.testsettings
+		WabbitComp.vsmdi = WabbitComp.vsmdi
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 2
+		SccNumberOfProjects = 3
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = WabbitC\\WabbitComp.csproj
 		SccProjectName1 = WabbitC
 		SccLocalPath1 = WabbitC
+		SccProjectUniqueName2 = WabbitC\u0020Tests\\WabbitC\u0020Tests.csproj
+		SccProjectName2 = WabbitC\u0020Tests
+		SccLocalPath2 = WabbitC\u0020Tests
+	EndGlobalSection
+	GlobalSection(TestCaseManagementSettings) = postSolution
+		CategoryFile = WabbitComp.vsmdi
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
 		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{68666923-07F9-433E-92F3-F1806A2DBB5F}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{68666923-07F9-433E-92F3-F1806A2DBB5F}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{68666923-07F9-433E-92F3-F1806A2DBB5F}.Debug|Mixed Platforms.Build.0 = Debug|x86
 		{68666923-07F9-433E-92F3-F1806A2DBB5F}.Debug|x86.ActiveCfg = Debug|x86
 		{68666923-07F9-433E-92F3-F1806A2DBB5F}.Debug|x86.Build.0 = Debug|x86
+		{68666923-07F9-433E-92F3-F1806A2DBB5F}.Release|Any CPU.ActiveCfg = Release|x86
+		{68666923-07F9-433E-92F3-F1806A2DBB5F}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{68666923-07F9-433E-92F3-F1806A2DBB5F}.Release|Mixed Platforms.Build.0 = Release|x86
 		{68666923-07F9-433E-92F3-F1806A2DBB5F}.Release|x86.ActiveCfg = Release|x86
 		{68666923-07F9-433E-92F3-F1806A2DBB5F}.Release|x86.Build.0 = Release|x86
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Release|Any CPU.Build.0 = Release|Any CPU
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{471C743F-5EB9-4FB9-8742-330525D68503}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
