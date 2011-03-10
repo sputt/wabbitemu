@@ -21,9 +21,9 @@ namespace WabbitC
                 return false;
 
             var tokenizer = new Tokenizer();
-			tokenizer.Tokenize(fileContents);//"((test2 + 10) + 40) + 20");
-			/*Expression exp = new Expression(tokenizer.Tokens);
-			var test = exp.Eval();*/
+			tokenizer.Tokenize("*(*test)");
+			Expression exp = new Expression(tokenizer.Tokens);
+			var test = exp.Eval();
 
 			var preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
 			var preProcessorTokens = preprocessorParser.Parse();

@@ -109,6 +109,7 @@ namespace WabbitC
 			Expression result = null;
 			switch (op.Text)
 			{
+					//* and & pass through
 				case "!":
 					result = !tok1;
 					break;
@@ -194,8 +195,15 @@ namespace WabbitC
 					rightSide = new Expression(tokenList);
 					stack.Remove(curExpr);
 					stack.Insert(i, op);
-					stack.Insert(i + 1, leftSide);
-					stack.Insert(i + 2, rightSide);
+					if (leftSide.Tokens.Count > 0)
+					{
+						stack.Insert(i + 1, leftSide);
+						stack.Insert(i + 2, rightSide);
+					}
+					else
+					{
+						stack.Insert(i + 1, rightSide);
+					}
 				}
 				else
 				{
@@ -255,7 +263,6 @@ namespace WabbitC
 			}
 			return stack;
 		}
-
 		static List<List<string>> operators = new List<List<string>> { 
 																	new List<string> {"="},
 																	new List<string> {"||"},
@@ -269,6 +276,8 @@ namespace WabbitC
 																	new List<string> {"+", "-", "−"},
 																	new List<string> {"*", "/", "%"},
 																	new List<string> {"!", "~"},
+																	new List<string> {"&", "*", "+", "-"},
+																	new List<string> {"."},
 																	new List<string> {"++",  "−−", "--"},
 																};
 		public static int GetOperator(Expression expr)
@@ -288,9 +297,19 @@ namespace WabbitC
 						nParen--;
 					else if (nParen == 0 && token.Type == TokenType.OperatorType && operatorLevel.Contains(token.Text)) 
 					{
-						if ((token.Text != "-" && token.Text != "+" && token.Text != "*") 
+						//we've found an operator, now we need to see if its acutally what we want
+						if (leftToRight)
+						{
+							if ((token.Text != "-" && token.Text != "+" && token.Text != "*")
 								|| (i > 0 && tokens[i - 1].Type != TokenType.OperatorType))
-							return i;
+								return i;
+						}
+						else
+						{
+							if ((token.Text != "-" && token.Text != "+" && token.Text != "*")
+								|| (i + 1 < tokens.Count && tokens[i + 1].Type != TokenType.OperatorType))
+								return i;
+						}
 					}
 				}
 			}
@@ -309,6 +328,7 @@ namespace WabbitC
 			{
 				case 0:
 				case 11:
+				case 12:
 					return false;
 				default:
 					return true;
@@ -373,12 +393,4 @@ namespace WabbitC
 			return sb.ToString();
 		}
     }
-
-	public class ExpressionResult
-	{
-		public ExpressionResult()
-		{
-
-		}
-	}
 }
