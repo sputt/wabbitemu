@@ -75,7 +75,7 @@ namespace WabbitC.Model.Statements
             {
                 result += statement.ToString() + "\n";
             }
-            result += "}";
+            result += "}\n";
             result += "while (" + condDecl.Name + ");";
             
             return result;

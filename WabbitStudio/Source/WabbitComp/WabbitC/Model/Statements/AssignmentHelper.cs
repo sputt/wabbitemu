@@ -31,7 +31,7 @@ namespace WabbitC.Model.Statements
             for (int i = exprList.Count - 1; i >= 0; i--)
             {
                 Token token;
-                if (exprList[i].Tokens.Count > 1)
+                if ((exprList[i].Tokens.Count > 1) && (exprList[i].Args == null))
                 {
                     token = InternalParse(block, exprList[i]);
                 }
