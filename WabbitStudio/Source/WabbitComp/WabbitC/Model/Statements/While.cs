@@ -9,51 +9,67 @@ namespace WabbitC.Model.Statements
 {
     class While : ControlStatement
     {
-		public Declaration Condition;
-        public Block LoopCase;
+		Block Condition;
+        Block Body;
+        Label Label;
+        private Declaration condDecl;
 
-        public static While ParseWhile(Block parent, ref List<Token>.Enumerator tokens)
+        public static While Parse(Block parent, ref List<Token>.Enumerator tokens)
         {
             Debug.Assert(tokens.Current.Text == "while");
 
             tokens.MoveNext();
             Debug.Assert(tokens.Current.Text == "(");
             tokens.MoveNext();
-
             List<Token> conditionList = Tokenizer.GetArgument(ref tokens);
-
-            Declaration condDecl = parent.CreateTempDeclaration(new BuiltInType("int"));
-
-            AssignmentHelper.Parse(parent, condDecl, conditionList);
-
             tokens.MoveNext();
             Debug.Assert(tokens.Current.Text == "{");
             tokens.MoveNext();
 
-            Block loopCase = Block.ParseBlock(ref tokens, parent);
+            Block body = Block.ParseBlock(ref tokens, parent);
             tokens.MoveNext();
 
-            return new While(parent, condDecl, loopCase);
+            var condDecl = parent.CreateTempDeclaration(new BuiltInType("int"));
+            Block condBlock = new Block();
+            condBlock.Parent = parent;
+            AssignmentHelper.Parse(condBlock, condDecl, conditionList);
+
+            return new While(parent, condDecl, condBlock, body);
         }
 
-        public While(Block parent, Declaration cond, Block loopCase)
+        public While(Block parent, Declaration decl,  Block cond, Block body)
         {
-            Debug.Assert(loopCase != null);
+            Debug.Assert(parent != null);
+            Debug.Assert(cond != null);
+            Debug.Assert(body != null);
 
-            loopCase.Parent = parent;
+            body.Parent = parent;
 
             Condition = cond;
-			LoopCase = loopCase;
+            Body = body;
+            Label = parent.CreateTempLabel();
+            condDecl = decl;
         }
 
         public override string ToString()
         {
-			StringBuilder result = new StringBuilder("while (");
-			result.Append(Condition.Name);
-			result.AppendLine(")");
-            result.Append(LoopCase);
+            string result = "goto " + Label + ";\n";
+            result += "do\n";
+            result += "{\n";
+
+            foreach (Statement statement in Body.Statements)
+            {
+                result += statement.ToString() + "\n";
+            }
+            result += Label + ":\n";
+            foreach (Statement statement in Condition.Statements)
+            {
+                result += statement.ToString() + "\n";
+            }
+            result += "}";
+            result += "while (" + condDecl.Name + ");";
             
-            return result.ToString();
+            return result;
         }
     }
 }

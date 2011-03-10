@@ -21,6 +21,7 @@ namespace WabbitC.Model.Statements
 			StringBuilder sb = new StringBuilder(LValue.Name);
 			sb.Append(" -= ");
 			sb.Append(SubValue);
+            sb.Append(";");
 			return sb.ToString();
         }
     }

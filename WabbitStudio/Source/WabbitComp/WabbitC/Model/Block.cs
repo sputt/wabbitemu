@@ -23,11 +23,14 @@ namespace WabbitC.Model
             Block curBlock = this;
             while (curBlock != null)
             {
-                foreach (Declaration decl in curBlock.Declarations)
+                if (curBlock.Declarations != null)
                 {
-                    if (decl.Name == name)
+                    foreach (Declaration decl in curBlock.Declarations)
                     {
-                        return decl;
+                        if (decl.Name == name)
+                        {
+                            return decl;
+                        }
                     }
                 }
                 if (Function != null)
@@ -45,19 +48,30 @@ namespace WabbitC.Model
             return null;
         }
 
+        private static void IncrementTempDeclarationNumber(Block block)
+        {
+            while (block != null)
+            {
+                block.TempDeclarationNumber++;
+                block = block.Parent;
+            }
+        }
+
         public Declaration CreateTempDeclaration(Type type)
         {
             var declaration = new Declaration(type, "__temp" + TempDeclarationNumber);
             Declarations.Add(declaration);
 
-            Block curBlock = this;
-            while (curBlock != null)
-            {
-                curBlock.TempDeclarationNumber++;
-                curBlock = curBlock.Parent;
-            }
+            IncrementTempDeclarationNumber(this);
             
 			return declaration;
+        }
+
+        public Label CreateTempLabel()
+        {
+            var label = new Label("__label" + TempDeclarationNumber);
+            IncrementTempDeclarationNumber(this);
+            return label;
         }
 
         static public Block ParseBlock(ref List<Token>.Enumerator tokens, Block parent)
@@ -74,9 +88,6 @@ namespace WabbitC.Model
             {
                 thisBlock.TempDeclarationNumber = parent.TempDeclarationNumber;
             }
-            thisBlock.Declarations = new List<Declaration>();
-            thisBlock.Types = new HashSet<Type>();
-            thisBlock.Statements = new List<Statement>();
 
             while (tokens.Current != null && tokens.Current.Type != TokenType.CloseBlock)
             {
@@ -90,7 +101,7 @@ namespace WabbitC.Model
                 }
 				else if (tokens.Current.Text == "while")
 				{
-					thisBlock.Statements.Add(While.ParseWhile(thisBlock, ref tokens));
+					thisBlock.Statements.Add(While.Parse(thisBlock, ref tokens));
 				}
 				else if (tokens.Current.Text == "struct")
 				{
@@ -234,6 +245,13 @@ namespace WabbitC.Model
 				}
             }
             return thisBlock;
+        }
+
+        public Block()
+        {
+            Declarations = new List<Declaration>();
+            Types = new HashSet<Type>();
+            Statements = new List<Statement>();
         }
 
         public override string ToString()
