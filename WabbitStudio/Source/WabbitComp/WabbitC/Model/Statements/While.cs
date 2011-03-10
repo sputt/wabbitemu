@@ -32,6 +32,7 @@ namespace WabbitC.Model.Statements
             var condDecl = parent.CreateTempDeclaration(new BuiltInType("int"));
             Block condBlock = new Block();
             condBlock.Parent = parent;
+            condBlock.TempDeclarationNumber = parent.TempDeclarationNumber;
             AssignmentHelper.Parse(condBlock, condDecl, conditionList);
 
             return new While(parent, condDecl, condBlock, body);
@@ -57,6 +58,14 @@ namespace WabbitC.Model.Statements
             result += "do\n";
             result += "{\n";
 
+            foreach (Declaration decl in Body.Declarations)
+            {
+                result += decl.GetDeclaration() + "\n";
+            }
+            foreach (Declaration decl in Condition.Declarations)
+            {
+                result += decl.GetDeclaration() + "\n";
+            }
             foreach (Statement statement in Body.Statements)
             {
                 result += statement.ToString() + "\n";

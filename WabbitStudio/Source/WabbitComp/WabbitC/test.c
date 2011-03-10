@@ -7,7 +7,7 @@ int main()
 	//int test2;
 
 	//test = test2 = 20;
-	int i = 0;
+	i = 0;
 	while (i - 6)
 	{
 		int var;
