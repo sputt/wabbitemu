@@ -167,5 +167,33 @@ namespace WabbitC_Tests
                     "Actual: \"" + string.Join<Token>("", actual[i].Tokens.ToArray()) + "\"");
             }
         }
+
+        [TestMethod()]
+        public void EvalTest5()
+        {
+            Tokenizer tokenizer = new Tokenizer();
+            tokenizer.Tokenize("*test * 2");
+            List<Token> tokens = tokenizer.Tokens;
+            Expression target = new Expression(tokens);
+
+            List<Expression> expected = new List<Expression>();
+
+            var expr1 = new Expression(Tokenizer.ToToken("*"));
+            var expr2 = new Expression(Tokenizer.ToToken("*"));
+            var expr3 = new Expression(Tokenizer.ToToken("test"));
+            var expr4 = new Expression(Tokenizer.ToToken("2"));
+
+            expected.Add(expr1);
+            expected.Add(expr2);
+
+            List<Expression> actual;
+            actual = target.Eval();
+            for (int i = 0; i < expected.Count; i++)
+            {
+                Assert.IsTrue(expected[i].Tokens.SequenceEqual<Token>(actual[i].Tokens),
+                    "Expected: \"" + string.Join<Token>("", expected[i].Tokens.ToArray()) + "\" " +
+                    "Actual: \"" + string.Join<Token>("", actual[i].Tokens.ToArray()) + "\"");
+            }
+        }
     }
 }

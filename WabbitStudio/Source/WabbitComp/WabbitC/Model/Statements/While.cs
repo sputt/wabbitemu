@@ -33,7 +33,7 @@ namespace WabbitC.Model.Statements
             Block condBlock = new Block();
             condBlock.Parent = parent;
             condBlock.TempDeclarationNumber = parent.TempDeclarationNumber;
-            AssignmentHelper.Parse(condBlock, condDecl, conditionList);
+            StatementHelper.Parse(condBlock, condDecl, conditionList);
 
             return new While(parent, condDecl, condBlock, body);
         }

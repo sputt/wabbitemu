@@ -82,6 +82,7 @@
     <Compile Include="Model\Statements\Move.cs" />
     <Compile Include="Model\Statements\Return.cs" />
     <Compile Include="Model\Statements\Statement.cs" />
+    <Compile Include="Model\Statements\StatementHelper.cs" />
     <Compile Include="Model\Statements\Store.cs" />
     <Compile Include="Model\Statements\Sub.cs" />
     <Compile Include="Model\Statements\ValueStatement.cs" />

@@ -25,7 +25,7 @@ namespace WabbitC.Model.Statements
 
                 var valueList = Tokenizer.GetArgument(ref tokens);
 
-                AssignmentHelper.Parse(block, decl, valueList);
+                StatementHelper.Parse(block, decl, valueList);
 
                 tokenList.Add(decl);
   
@@ -45,7 +45,7 @@ namespace WabbitC.Model.Statements
 			{
 				Declaration decl = block.CreateTempDeclaration(funcType.ParamDefs[nCount].Type);
 
-				AssignmentHelper.Parse(block, decl, arg.Tokens);
+                StatementHelper.Parse(block, decl, arg.Tokens);
 
 				tokenList.Add(decl);
 			}

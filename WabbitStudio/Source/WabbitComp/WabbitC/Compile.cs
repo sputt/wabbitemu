@@ -50,8 +50,8 @@ namespace WabbitC
 
             var currentModule = Module.ParseModule(ref tokens);
 
-			AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
-			codeGenerator.GenerateCode();
+			//AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
+			//codeGenerator.GenerateCode();
 
             string code = currentModule.ToString();
 

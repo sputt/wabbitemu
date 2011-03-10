@@ -26,7 +26,7 @@ namespace WabbitC.Model.Statements
 
             Declaration condDecl = parent.CreateTempDeclaration(new BuiltInType("int"));
 
-            AssignmentHelper.Parse(parent, condDecl, conditionList);
+            StatementHelper.Parse(parent, condDecl, conditionList);
 
             tokens.MoveNext();
             Debug.Assert(tokens.Current.Text == "{");
