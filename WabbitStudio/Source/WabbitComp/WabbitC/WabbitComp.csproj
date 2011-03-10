@@ -102,9 +102,9 @@
     <Compile Include="TokenPasses\Bracer.cs" />
     <Compile Include="TokenPasses\CompoundAssignment.cs" />
     <Compile Include="TokenPasses\ForLoopRemover.cs" />
-    <Compile Include="TokenPasses\TernaryOperator.cs">
+    <None Include="TokenPasses\TernaryOperator.cs">
       <SubType>Code</SubType>
-    </Compile>
+    </None>
     <Compile Include="TokenPasses\TokenPass.cs" />
   </ItemGroup>
   <ItemGroup>

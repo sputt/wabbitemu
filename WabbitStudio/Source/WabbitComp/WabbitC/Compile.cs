@@ -10,6 +10,23 @@ namespace WabbitC
 {
     public class Compiler
     {
+        private static List<Token> RunTokenPasses(List<Token> tokens)
+        {
+            List<Token> resultTokens = tokens;
+            var asm = System.Reflection.Assembly.GetExecutingAssembly();
+            foreach (System.Type type in asm.GetTypes())
+            {
+                if (type.Namespace != null && type.Namespace.Contains("TokenPasses"))
+                {
+                    if (type.Name != "TokenPass")
+                    {
+                        var pass = asm.CreateInstance(type.FullName) as TokenPass;
+                        resultTokens = pass.Run(resultTokens);
+                    }
+                }
+            }
+            return resultTokens;
+        }
         /// <summary>
         /// Parses a file and outputs a .asm file
         /// </summary>
@@ -21,29 +38,17 @@ namespace WabbitC
                 return false;
 
             var tokenizer = new Tokenizer();
-			tokenizer.Tokenize("*(*test)");
-			Expression exp = new Expression(tokenizer.Tokens);
-			var test = exp.Eval();
+			tokenizer.Tokenize(fileContents);
 
 			var preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
 			var preProcessorTokens = preprocessorParser.Parse();
 
-            var tokenPass1 = new ArrayDereference();
-            var newTokens = tokenPass1.Run(preProcessorTokens);
+            var tokenPassTokens = RunTokenPasses(preProcessorTokens);
 
-            var tokenPass2 = new Bracer();
-            newTokens = tokenPass2.Run(newTokens);
-
-			var tokenPass3 = new ForLoopRemover();
-			newTokens = tokenPass3.Run(newTokens);
-
-			var tokenPass4 = new CompoundAssignmentRemover();
-			newTokens = tokenPass4.Run(newTokens);
-
-            var tokens = newTokens.GetEnumerator();
+            var tokens = tokenPassTokens.GetEnumerator();
             tokens.MoveNext();
 
-            Module currentModule = Module.ParseModule(ref tokens);
+            var currentModule = Module.ParseModule(ref tokens);
 
 			AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
 			codeGenerator.GenerateCode();
