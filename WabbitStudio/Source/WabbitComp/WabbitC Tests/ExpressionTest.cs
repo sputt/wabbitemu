@@ -2,6 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace WabbitC_Tests
 {
@@ -140,5 +141,31 @@ namespace WabbitC_Tests
 				Assert.AreEqual(expected[i].ToString(), actual[i].ToString());
 			}
 		}
+
+        [TestMethod()]
+        public void EvalTest4()
+        {
+            Tokenizer tokenizer = new Tokenizer();
+            tokenizer.Tokenize("!test");
+            List<Token> tokens = tokenizer.Tokens;
+            Expression target = new Expression(tokens);
+
+            List<Expression> expected = new List<Expression>();
+
+            var expr1 = new Expression(Tokenizer.ToToken("!"));
+            var expr2 = new Expression(Tokenizer.ToToken("test"));
+
+            expected.Add(expr1);
+            expected.Add(expr2);
+
+            List<Expression> actual;
+            actual = target.Eval();
+            for (int i = 0; i < expected.Count; i++)
+            {
+                Assert.IsTrue(expected[i].Tokens.SequenceEqual<Token>(actual[i].Tokens),
+                    "Expected: \"" + string.Join<Token>("", expected[i].Tokens.ToArray()) + "\" " +
+                    "Actual: \"" + string.Join<Token>("", actual[i].Tokens.ToArray()) + "\"");
+            }
+        }
     }
 }

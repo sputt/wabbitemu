@@ -312,7 +312,7 @@ namespace WabbitC
 			if (obj.GetType() != typeof(Token))
 				return base.Equals(obj);
 			Token tok = (Token)obj;
-			return Text == tok.Text && Type == tok.Type;
+			return (Text == tok.Text) && (Type == tok.Type);
 		}
 
 		public static bool operator ==(Token t1, Token t2)
@@ -325,20 +325,12 @@ namespace WabbitC
             {
                 return false;
             }
-            return t1.Type == t2.Type && t1.Text == t2.Text;
+            return t1.Equals(t2);
         }
 
         public static bool operator !=(Token t1, Token t2)
         {
-            if (object.Equals(t1, t2))
-            {
-                return false;
-            }
-            if (object.Equals(t1, null) || object.Equals(t2, null))
-            {
-                return true;
-            }
-            return t1.Type != t2.Type || t1.Text != t2.Text;
+            return !(t1 == t2);
         }
 
 		public static Expression operator +(Token t1, Token t2)
