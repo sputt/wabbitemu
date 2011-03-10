@@ -18,10 +18,22 @@ namespace WabbitC
 			get { return args; }
 		}
 
+		int operands;
+		public int Operands
+		{
+			get { return operands; }
+		}
+
         public Expression(List<Token> tokens)
         {
             this.tokens = tokens;
         }
+
+		public Expression(List<Token> tokens, int operands)
+		{
+			this.operands = operands;
+			this.tokens = tokens;
+		}
 
 		public Expression(Token token)
 		{
@@ -56,7 +68,7 @@ namespace WabbitC
 
 		private void CalculateStack(ref Expression exp)
 		{
-			if (exp.Args != null)
+			if (exp.Args != null || exp.Operands != 0)
 				return;
 			var evalExp = exp.Eval();
 			var tokens = Expression.ToTokens(evalExp);
@@ -179,30 +191,51 @@ namespace WabbitC
 			for (int i = 0; i < stack.Count; i++)
 			{
 				Expression curExpr = stack[i];
-				int operatorIndex = Expression.GetOperator(curExpr);
+				int numArgs;
+				int operatorIndex = Expression.GetOperator(curExpr, out numArgs);
 				if (operatorIndex != -1)
 				{
 					int j;
-					Expression leftSide, rightSide, op;
+					Expression leftSide, rightSide, ternarySide = null, op;
 					List<Token> tokenList = new List<Token>();
 					for (j = 0; j < operatorIndex; j++)
 						tokenList.Add(curExpr.Tokens[j]);
 					leftSide = new Expression(tokenList);
 					tokenList = new List<Token>();
-					op = new Expression(new List<Token> { curExpr.Tokens[j++] });
-					for (; j < curExpr.Tokens.Count; j++)
-						tokenList.Add(curExpr.Tokens[j]);
-					rightSide = new Expression(tokenList);
-					stack.Remove(curExpr);
-					stack.Insert(i, op);
-					if (leftSide.Tokens.Count > 0)
+					op = new Expression(new List<Token> { curExpr.Tokens[j++] }, numArgs);
+					if (numArgs == 3)
 					{
-						stack.Insert(i + 1, leftSide);
-						stack.Insert(i + 2, rightSide);
+						for (; j < curExpr.Tokens.Count && curExpr.Tokens[j].Text != ":"; j++)
+							tokenList.Add(curExpr.Tokens[j]);
+						rightSide = new Expression(tokenList);
+						tokenList = new List<Token>();
+						j++;		//skip :
+						for (; j < curExpr.Tokens.Count; j++)
+							tokenList.Add(curExpr.Tokens[j]);
+						ternarySide = new Expression(tokenList);
 					}
 					else
 					{
-						stack.Insert(i + 1, rightSide);
+						for (; j < curExpr.Tokens.Count; j++)
+							tokenList.Add(curExpr.Tokens[j]);
+						rightSide = new Expression(tokenList);
+					}
+					stack.Remove(curExpr);
+					stack.Insert(i, op);
+					switch (numArgs)
+					{
+						case 3:
+							stack.Insert(i + 1, leftSide);
+							stack.Insert(i + 2, rightSide);
+							stack.Insert(i + 3, ternarySide);
+							break;
+						case 2:
+							stack.Insert(i + 1, leftSide);
+							stack.Insert(i + 2, rightSide);
+							break;
+						case 1:
+							stack.Insert(i + 1, rightSide);
+							break;
 					}
 				}
 				else
@@ -265,6 +298,7 @@ namespace WabbitC
 		}
 		static List<List<string>> operators = new List<List<string>> { 
 																	new List<string> {"="},
+																	new List<string> {"?"},
 																	new List<string> {"||"},
 																	new List<string> {"&&"}, 
 																	new List<string> {"|"},
@@ -280,7 +314,7 @@ namespace WabbitC
 																	new List<string> {"."},
 																	new List<string> {"++",  "−−", "--"},
 																};
-		public static int GetOperator(Expression expr)
+		public static int GetOperator(Expression expr, out int numArgs)
 		{
 			for (int level = 0; level < operators.Count; level++)
 			{
@@ -297,6 +331,7 @@ namespace WabbitC
 						nParen--;
 					else if (nParen == 0 && token.Type == TokenType.OperatorType && operatorLevel.Contains(token.Text)) 
 					{
+						numArgs = GetNumArgs(level);
 						//we've found an operator, now we need to see if its acutally what we want
 						if (leftToRight)
 						{
@@ -313,7 +348,22 @@ namespace WabbitC
 					}
 				}
 			}
+			numArgs = -1;
 			return -1;
+		}
+
+		private static int GetNumArgs(int level)
+		{
+			switch (level)
+			{
+				case 12:
+				case 13:
+					return 1;
+				case 1:
+					return 3;
+				default:
+					return 2;
+			}
 		}
 
 
@@ -327,8 +377,9 @@ namespace WabbitC
 			switch (level)
 			{
 				case 0:
-				case 11:
+				case 1:
 				case 12:
+				case 13:
 					return false;
 				default:
 					return true;

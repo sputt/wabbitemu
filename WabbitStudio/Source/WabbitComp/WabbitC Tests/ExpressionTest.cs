@@ -91,10 +91,7 @@ namespace WabbitC_Tests
             expected.Add(expr5);
             List<Expression> actual;
             actual = target.Eval();
-            for (int i = 0; i < expected.Count; i++)
-            {
-                Assert.AreEqual(expected[i].ToString(), actual[i].ToString());
-            }
+			Compare(expected, actual);
         }
 
         [TestMethod()]
@@ -116,10 +113,7 @@ namespace WabbitC_Tests
             expected.Add(expr3);
             List<Expression> actual;
             actual = target.Eval();
-            for (int i = 0; i < expected.Count; i++)
-            {
-                Assert.AreEqual(expected[i].ToString(), actual[i].ToString());
-            }
+			Compare(expected, actual);
         }
 
 		[TestMethod()]
@@ -136,10 +130,7 @@ namespace WabbitC_Tests
 			expected.Add(expr1);
 			List<Expression> actual;
 			actual = target.Eval();
-			for (int i = 0; i < expected.Count; i++)
-			{
-				Assert.AreEqual(expected[i].ToString(), actual[i].ToString());
-			}
+			Compare(expected, actual);
 		}
 
         [TestMethod()]
@@ -160,16 +151,53 @@ namespace WabbitC_Tests
 
             List<Expression> actual;
             actual = target.Eval();
-            for (int i = 0; i < expected.Count; i++)
-            {
-                Assert.IsTrue(expected[i].Tokens.SequenceEqual<Token>(actual[i].Tokens),
-                    "Expected: \"" + string.Join<Token>("", expected[i].Tokens.ToArray()) + "\" " +
-                    "Actual: \"" + string.Join<Token>("", actual[i].Tokens.ToArray()) + "\"");
-            }
+			Compare(expected, actual);
         }
 
-        [TestMethod()]
-        public void EvalTest5()
+		[TestMethod()]
+		public void EvalTest5()
+		{
+			Tokenizer tokenizer = new Tokenizer();
+			tokenizer.Tokenize("!test");
+			List<Token> tokens = tokenizer.Tokens;
+			Expression target = new Expression(tokens);
+
+			List<Expression> expected = new List<Expression>();
+
+			var expr1 = new Expression(Tokenizer.ToToken("!"));
+			var expr2 = new Expression(Tokenizer.ToToken("test"));
+
+			expected.Add(expr1);
+			expected.Add(expr2);
+
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+		}
+
+		[TestMethod()]
+		public void EvalTest6()
+		{
+			Tokenizer tokenizer = new Tokenizer();
+			tokenizer.Tokenize("test = cool ? not : definitely");
+			List<Token> tokens = tokenizer.Tokens;
+			Expression target = new Expression(tokens);
+
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Token.AssignmentOperatorToken));
+			expected.Add(new Expression(Tokenizer.ToToken("test")));
+			expected.Add(new Expression(Tokenizer.ToToken("?")));
+			expected.Add(new Expression(Tokenizer.ToToken("cool")));
+			expected.Add(new Expression(Tokenizer.ToToken("not")));
+			expected.Add(new Expression(Tokenizer.ToToken("definitely")));
+
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+		}
+
+		[TestMethod()]
+        public void EvalTest7()
         {
             Tokenizer tokenizer = new Tokenizer();
             tokenizer.Tokenize("*test * 2");
@@ -188,12 +216,17 @@ namespace WabbitC_Tests
 
             List<Expression> actual;
             actual = target.Eval();
-            for (int i = 0; i < expected.Count; i++)
-            {
-                Assert.IsTrue(expected[i].Tokens.SequenceEqual<Token>(actual[i].Tokens),
-                    "Expected: \"" + string.Join<Token>("", expected[i].Tokens.ToArray()) + "\" " +
-                    "Actual: \"" + string.Join<Token>("", actual[i].Tokens.ToArray()) + "\"");
-            }
+			Compare(expected, actual);
         }
+
+		void Compare(List<Expression> expected, List<Expression> actual)
+		{
+			for (int i = 0; i < expected.Count; i++)
+			{
+				Assert.IsTrue(expected[i].Tokens.SequenceEqual<Token>(actual[i].Tokens),
+					"Expected: \"" + string.Join<Token>("", expected[i].Tokens.ToArray()) + "\" " +
+					"Actual: \"" + string.Join<Token>("", actual[i].Tokens.ToArray()) + "\"");
+			}
+		}
     }
 }

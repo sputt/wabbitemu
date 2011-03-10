@@ -138,8 +138,6 @@ namespace WabbitC
 				tokenToAdd.Type = TokenType.StatementEnd;
 			else if (tokenToAdd.Text == ",")
 				tokenToAdd.Type = TokenType.ArgSeparator;
-			else if (tokenToAdd.Text == "?")
-				tokenToAdd.Type = TokenType.TernaryConditional;
 			else
 				tokenToAdd.Type = TokenType.StringType;
 
@@ -169,7 +167,7 @@ namespace WabbitC
         }
 
 		const string delimeters = "&<−->~!%^*()+=|\\/{}[]:;\"' \n\t\r?,.";
-		const string operators = "&&<<-->>!~%^=*=−−==-=++=||/=";
+		const string operators = "&&<<-->>?!~%^=*=−−==-=++=||/=";
         private string ReadWord(ref int index)
         {
             int newIndex = index;
