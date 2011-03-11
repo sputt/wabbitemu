@@ -23,7 +23,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\..\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -32,7 +32,7 @@
     <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\..\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -66,6 +66,7 @@
     <Compile Include="AssemblyGenerator.cs" />
     <Compile Include="Compile.cs" />
     <Compile Include="ExpressionEval.cs" />
+    <Compile Include="ExtensionMethods.cs" />
     <Compile Include="IncludeDirs.cs" />
     <Compile Include="MessageSystem.cs" />
     <Compile Include="Model\Block.cs" />
@@ -76,6 +77,8 @@
     <Compile Include="Model\Statements\Assignment.cs" />
     <Compile Include="Model\Statements\AssignmentHelper.cs" />
     <Compile Include="Model\Statements\ControlStatement.cs" />
+    <Compile Include="Model\Statements\Mult.cs" />
+    <Compile Include="Model\Statements\Div.cs" />
     <Compile Include="Model\Statements\FunctionCall.cs" />
     <Compile Include="Model\Statements\If.cs" />
     <Compile Include="Model\Statements\Label.cs" />
@@ -102,10 +105,8 @@
     <Compile Include="TokenPasses\ArrayDereference.cs" />
     <Compile Include="TokenPasses\Bracer.cs" />
     <Compile Include="TokenPasses\CompoundAssignment.cs" />
+    <Compile Include="TokenPasses\CharacterRemover.cs" />
     <Compile Include="TokenPasses\ForLoopRemover.cs" />
-    <None Include="TokenPasses\TernaryOperator.cs">
-      <SubType>Code</SubType>
-    </None>
     <Compile Include="TokenPasses\TokenPass.cs" />
   </ItemGroup>
   <ItemGroup>

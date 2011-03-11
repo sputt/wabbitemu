@@ -49,32 +49,18 @@ namespace WabbitC.Model.Statements
                 else if (token.Type == TokenType.OperatorType)
                 {
                     Declaration decl = null;
-                    switch (token)
-                    {
-                        case "+":
-                            decl = Add.BuildStatements(block, stack, exprList[i]);
-                            break;
-                        case "-":
-                            //decl = Sub.BuildStatements(block, stack, exprList[i]);
-                            break;
-                        case "*":
-                            if (exprList[i].Operands == 1)
-                            {
-                                Debug.WriteLine("handling deref");
-                            }
-                            else
-                            {
-                                throw new NotImplementedException();
-                            }
-                            break;
-                        case "=":
-                            decl = block.FindDeclaration(stack.Pop());
-                            ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, stack.Pop());
-                            block.Statements.Add(initialAssign);
-                            break;
-                        default:
-                            throw new NotImplementedException();
-                    }
+					switch (exprList[i].Operands)
+					{
+						case 1:
+							decl = ParseOperand(exprList[i], block, stack.Pop());
+							break;
+						case 2:
+							decl = ParseOperand(exprList[i], block, stack.Pop(), stack.Pop());
+							break;
+						case 3:
+							decl = ParseOperand(exprList[i], block, stack.Pop(), stack.Pop(), stack.Pop());
+							break;
+					}
 
                     if (decl != null)
                     {
@@ -90,6 +76,52 @@ namespace WabbitC.Model.Statements
 
             return stack.Pop();
         }
+
+		static Declaration ParseOperand(Expression exp, Block block, Token arg1)
+		{
+			Declaration decl = null;
+			switch (exp.Tokens[0])
+			{
+				case "*":
+					decl = block.FindDeclaration(arg1);
+					//TODO: specify indirection somehow
+					break;
+			}
+			return decl;
+		}
+
+		static Declaration ParseOperand(Expression exp, Block block, Token arg1, Token arg2)
+		{
+			Declaration decl = null;
+			switch (exp.Tokens[0])
+			{
+				case "+":
+					decl = Add.BuildStatements(block, exp, arg1, arg2);
+					break;
+				case "-":
+					decl = Sub.BuildStatements(block, exp, arg1, arg2);
+					break;
+				case "*":
+					decl = Mult.BuildStatements(block, exp, arg1, arg2);
+					break;
+				case "/":
+					decl = Div.BuildStatements(block, exp, arg1, arg2);
+					break;
+				case "=":
+					decl = block.FindDeclaration(arg1);
+					ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, arg2);
+					block.Statements.Add(initialAssign);
+					break;
+			}
+			return decl;
+		}
+
+		static Declaration ParseOperand(Expression exp, Block block, Token arg1, Token arg2, Token arg3)
+		{
+			Declaration decl = null;
+			decl = block.FindDeclaration(arg1);
+			return decl;
+		}
 
         public static void Parse(Block block, List<Token> tokenList)
         {

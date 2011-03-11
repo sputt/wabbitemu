@@ -84,7 +84,14 @@ namespace WabbitC.Model.Types
 
         public override string ToString()
         {
-            return type.ToString().ToLower();
+			StringBuilder sb = new StringBuilder();
+			if (isUnsigned)
+				sb.Append("unsigned ");
+			sb.Append(type.ToString().ToLower());
+			for (int i = 0; i < indirectionLevels; i++)
+				sb.Append("*");
+			
+			return sb.ToString();
         }
 
         public override bool Equals(object obj)

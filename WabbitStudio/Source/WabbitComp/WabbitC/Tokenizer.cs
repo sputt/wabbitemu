@@ -167,7 +167,7 @@ namespace WabbitC
         }
 
 		const string delimeters = "&<−->~!%^*()+=|\\/{}[]:;\"' \n\t\r?,.";
-		const string operators = "&&<<-->>?!~%^=*=−−==-=++=||/=";
+		const string operators = "&&<<=-->>=?!~%^=*=−−==-=++=||/=";
         private string ReadWord(ref int index)
         {
             int newIndex = index;

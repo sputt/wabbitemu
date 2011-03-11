@@ -102,15 +102,13 @@ namespace WabbitC_Tests
             List<Token> tokens = tokenizer.Tokens; // TODO: Initialize to an appropriate value
             Expression target = new Expression(tokens); // TODO: Initialize to an appropriate value
 
-            var expr1 = new Expression(Tokenizer.ToToken("+"));
-            var expr2 = new Expression(Tokenizer.ToToken("test"));
-            tokenizer.Tokenize("test2 + 20");
-            var expr3 = new Expression(tokenizer.Tokens);
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("+")));
+            expected.Add(new Expression(Tokenizer.ToToken("+")));
+            expected.Add(new Expression(Tokenizer.ToToken("test")));
+            expected.Add(new Expression(Tokenizer.ToToken("test2")));
+			expected.Add(new Expression(Tokenizer.ToToken("20")));
 
-            List<Expression> expected = new List<Expression>(); // TODO: Initialize to an appropriate value
-            expected.Add(expr1);
-            expected.Add(expr2);
-            expected.Add(expr3);
             List<Expression> actual;
             actual = target.Eval();
 			Compare(expected, actual);
@@ -124,10 +122,8 @@ namespace WabbitC_Tests
 			List<Token> tokens = tokenizer.Tokens; // TODO: Initialize to an appropriate value
 			Expression target = new Expression(tokens); // TODO: Initialize to an appropriate value
 
-			var expr1 = new Expression(Tokenizer.ToToken("73"));
-
 			List<Expression> expected = new List<Expression>(); // TODO: Initialize to an appropriate value
-			expected.Add(expr1);
+			expected.Add(new Expression(Tokenizer.ToToken("73")));
 			List<Expression> actual;
 			actual = target.Eval();
 			Compare(expected, actual);
@@ -219,18 +215,43 @@ namespace WabbitC_Tests
 		public void EvalTest8()
 		{
 			Tokenizer tokenizer = new Tokenizer();
-			tokenizer.Tokenize("++(test++)");
+			tokenizer.Tokenize("*test++");
 			List<Token> tokens = tokenizer.Tokens;
 			Expression target = new Expression(tokens);
 
 			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("*")));
 			expected.Add(new Expression(Tokenizer.ToToken("++")));
-			expected.Add(new Expression(new List<Token>{Tokenizer.ToToken("test"), Tokenizer.ToToken("++")}));
+			expected.Add(new Expression(Tokenizer.ToToken("test")));
 
 			List<Expression> actual;
 			actual = target.Eval();
 			Compare(expected, actual);
 		}
+
+		[TestMethod()]
+		public void EvalTest9()
+		{
+			Tokenizer tokenizer = new Tokenizer();
+			tokenizer.Tokenize("test = (10 *arg * (arg3 * 20)) + (arg2 + 40)");
+			List<Token> tokens = tokenizer.Tokens;
+			Expression target = new Expression(tokens);
+
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("=")));
+			expected.Add(new Expression(Tokenizer.ToToken("test")));
+			expected.Add(new Expression(Tokenizer.ToToken("+")));
+			expected.Add(new Expression(Tokenizer.ToToken("+")));
+			expected.Add(new Expression(Tokenizer.ToToken("arg2")));
+			expected.Add(new Expression(new List<Token> { Tokenizer.ToToken("arg"), Tokenizer.ToToken("*"), Tokenizer.ToToken("arg3"), Tokenizer.ToToken("*"), Tokenizer.ToToken("200") }));
+			expected.Add(new Expression(Tokenizer.ToToken("40")));
+
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+		}
+
+		
 
 		void Compare(List<Expression> expected, List<Expression> actual)
 		{

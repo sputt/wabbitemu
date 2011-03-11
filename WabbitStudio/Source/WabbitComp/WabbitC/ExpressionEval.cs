@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Linq;
 
 namespace WabbitC
 {
@@ -43,11 +44,138 @@ namespace WabbitC
         public List<Expression> Eval()
         {
 			ReplaceDefines();
+			OptimizeTokens();
 			var test = FillStack(this);
-			CalculateStack(ref test);
-
+			MoveConstantsToEnd(ref test);
+			if (test.Count == 1 && test[0].Tokens.Count > 1)
+			{
+				test = new Expression(test[0].Tokens).Eval();
+			}
 			return test;
         }
+
+		private void MoveConstantsToEnd(ref List<Expression> expressions)
+		{
+			List<int> numLocs = new List<int>();
+			Token opTok = null;
+			int i;
+			for (i = 0; i < expressions.Count; i++)
+			{
+				Expression exp = expressions[i];
+				var token = exp.Tokens[0];
+				if (opTok == null && ((token == "*" && exp.Operands == 2) || token == "+"))
+					if (opTok != null && opTok != token)
+						break;
+					else
+						opTok = token;
+				else if (token.Type == TokenType.IntType || token.Type == TokenType.RealType)
+					numLocs.Add(i);
+			}
+			//we broke early
+			if (i != expressions.Count)
+				return;
+			int locToSwap = expressions.Count - 1;
+			foreach (int loc in numLocs)
+			{
+				while (numLocs.Contains(locToSwap))
+					locToSwap--;
+				if (locToSwap <= loc)
+					break;
+				expressions.Swap(loc, locToSwap);
+				locToSwap--;
+			}
+
+			return;
+			/*int totalOps;
+			string lastTok;
+			for (int i = 0; i < expressions.Count; i++)
+			{
+				lastTok = null;
+				totalOps = 0;
+				Expression exp = expressions[i];
+				while (((exp.Tokens[0] == "*" && exp.Operands == 2) || exp.Tokens[0] == "+") && (lastTok == null || exp.Tokens[0] == lastTok))
+				{
+					exp = expressions[++i];
+					totalOps++;
+					lastTok = exp.Tokens[0];
+				}
+				if (lastTok != null)
+				{
+					while (totalOps > 0)
+					{
+						if (exp.Tokens[0].Type == TokenType.IntType || exp.Tokens[0].Type == TokenType.RealType)
+						{
+							if (i + totalOps >= tokens.Count)
+								break;
+							if (expressions[i + totalOps].Tokens[0].Type != TokenType.IntType && expressions[i + totalOps].Tokens[0].Type != TokenType.RealType)
+							{
+								expressions.Swap(i, i + totalOps);
+								break;
+							}
+							else
+								totalOps--;
+						}
+						else if (i + 1 < tokens.Count)
+							exp = expressions[++i];
+						else
+							break;
+					}
+
+				}
+			}*/
+		}
+
+		private void OptimizeTokens()
+		{
+			//remove parens around entire expression
+			/*if (tokens[0].Type == TokenType.OpenParen && tokens[tokens.Count - 1].Type == TokenType.CloseParen)
+			{
+				tokens.RemoveAt(0);
+				tokens.RemoveAt(tokens.Count - 1);
+			}*/
+			int nParen = 0;
+			List<int> curOpLevel = new List<int>();
+			List<int> parenLoc = new List<int>();
+			bool canRemoveParen = true;
+			curOpLevel.Add(-1);
+			for (int i = 0; i < tokens.Count; i++)
+			{
+				Token token = tokens[i];
+				if (token == "(")
+				{
+					nParen++;
+					parenLoc.Add(i);
+					curOpLevel.Add(-1);
+				}
+				else if (token == ")")
+				{
+					nParen--;
+					if (canRemoveParen && curOpLevel[nParen] == curOpLevel[nParen + 1])
+					{
+						tokens.RemoveAt(i);
+						tokens.RemoveAt(parenLoc[parenLoc.Count - 1]);
+					}
+					curOpLevel[nParen + 1] = -1;
+					curOpLevel[nParen] = -1;
+					parenLoc.RemoveAt(parenLoc.Count - 1);
+				}
+				else if (token.Type == TokenType.OperatorType)
+				{
+					int level = 0;
+					foreach (List<string> ops in operators)
+					{
+						if (ops.Contains(token))
+							break;
+						level++;
+					}
+					//ignore assignment operator
+					if (curOpLevel[nParen] == -1)
+						curOpLevel[nParen] = level;
+					else if (curOpLevel[nParen] != level)
+						canRemoveParen = false;
+				}
+			}
+		}
 
 		private void CalculateStack(ref List<Expression> expressions)
 		{
@@ -221,19 +349,32 @@ namespace WabbitC
 						rightSide = new Expression(tokenList);
 					}
 					stack.Remove(curExpr);
-					stack.Insert(i, op);
 					switch (numArgs)
 					{
 						case 3:
+							stack.Insert(i, op);
 							stack.Insert(i + 1, leftSide);
 							stack.Insert(i + 2, rightSide);
 							stack.Insert(i + 3, ternarySide);
 							break;
 						case 2:
-							stack.Insert(i + 1, leftSide);
-							stack.Insert(i + 2, rightSide);
+							var testleft = leftSide.Eval();
+							var testright = rightSide.Eval();
+							if ((testleft.Count == 1 && (testleft[0].Tokens[0].Type == TokenType.IntType || testleft[0].Tokens[0].Type == TokenType.RealType)) &&
+									(testright.Count == 1 && (testright[0].Tokens[0].Type == TokenType.IntType || testright[0].Tokens[0].Type == TokenType.RealType)))
+							{
+								var resultExp = ApplyOperator(op.Tokens[0], testleft[0].Tokens[0], testright[0].Tokens[0]);
+								stack.Insert(i, resultExp);
+							}
+							else
+							{
+								stack.Insert(i, op);
+								stack.Insert(i + 1, leftSide);
+								stack.Insert(i + 2, rightSide);
+							}
 							break;
 						case 1:
+							stack.Insert(i, op);
 							if (leftSide.Tokens.Count > 0)
 								stack.Insert(i + 1, leftSide);
 							else
@@ -312,7 +453,7 @@ namespace WabbitC
 																	new List<string> {">>", "<<"},
 																	new List<string> {"+", "-", "−"},
 																	new List<string> {"*", "/", "%"},
-																	new List<string> {"!", "~", "&", "*", "+", "-", "++", "−−", "--"},
+																	new List<string> {"++", "−−", "--", "!", "~", "&", "*", "+", "-" },
 																	new List<string> {".", "++", "−−", "--" },
 																};
 		public static int GetOperator(Expression expr, out int numArgs)
@@ -336,13 +477,13 @@ namespace WabbitC
 						//we've found an operator, now we need to see if its acutally what we want
 						if (leftToRight)
 						{
-							if ((token.Text != "-" && token.Text != "+" && token.Text != "*" && token.Text != "++" && token.Text != "--")
+							if ((token.Text != "-" && token.Text != "+" && token.Text != "*" && token.Text != "++" && token.Text != "--" && token.Text != "&")
 								|| (i > 0 && tokens[i - 1].Type != TokenType.OperatorType))
 								return i;
 						}
 						else
 						{
-							if ((token.Text != "-" && token.Text != "+" && token.Text != "*" && token.Text != "++" && token.Text != "--")
+							if ((token.Text != "-" && token.Text != "+" && token.Text != "*" && token.Text != "++" && token.Text != "--" && token.Text != "&")
 								|| (i + 1 < tokens.Count && tokens[i + 1].Type != TokenType.OperatorType))
 								return i;
 						}

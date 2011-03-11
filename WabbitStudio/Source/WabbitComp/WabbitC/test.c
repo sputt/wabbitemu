@@ -1,3 +1,9 @@
+/*char ToLower(char ch) {
+	if (ch >= 'A' && ch <= 'Z')
+		return ch + 'a' - 'A';
+	return ch;
+}*/
+
 int function(int arg)
 {
 	return 20 + arg;
