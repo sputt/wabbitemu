@@ -131,7 +131,8 @@ namespace WabbitC.Model
                     if (declForStatement != null)
                     {
                         StatementHelper.Parse(thisBlock, Tokenizer.GetStatement(ref tokens));
-
+                        Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+                        tokens.MoveNext();
                         /*
 						// We have some kind of statement in this case
 						tokens.MoveNext();
@@ -180,6 +181,8 @@ namespace WabbitC.Model
                         if (resultType == null)
                         {
                             StatementHelper.Parse(thisBlock, Tokenizer.GetStatement(ref tokens));
+                            Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+                            tokens.MoveNext();
                         }
                         else
                         {

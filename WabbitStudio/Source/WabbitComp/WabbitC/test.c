@@ -1,6 +1,13 @@
+int function(int arg)
+{
+	return 20 + arg;
+}
+
 int test()
 {
-	int var;
+	int arg;
+	int arg2;
 
-	*var = 10;
+	arg = arg + 20 + arg2 + function(45);
+	return arg;
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
 
 using WabbitC.Model.Types;
 
@@ -51,30 +52,28 @@ namespace WabbitC.Model.Statements
                     switch (token)
                     {
                         case "+":
-                            {
-                                var arg1 = stack.Pop();
-                                decl = block.CreateTempDeclaration(TypeHelper.GetType(block, arg1));
-                                ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, arg1);
-                                block.Statements.Add(initialAssign);
-                                block.Statements.Add(new Add(decl, Datum.Parse(block, stack.Pop())));
-                                break;
-                            }
+                            decl = Add.BuildStatements(block, stack, exprList[i]);
+                            break;
                         case "-":
+                            //decl = Sub.BuildStatements(block, stack, exprList[i]);
+                            break;
+                        case "*":
+                            if (exprList[i].Operands == 1)
                             {
-                                var arg1 = stack.Pop();
-                                decl = block.CreateTempDeclaration(TypeHelper.GetType(block, arg1));
-                                ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, arg1);
-                                block.Statements.Add(initialAssign);
-                                block.Statements.Add(new Sub(decl, Datum.Parse(block, stack.Pop())));
-                                break;
+                                Debug.WriteLine("handling deref");
                             }
-                        case "=":
+                            else
                             {
-                                decl = block.FindDeclaration(stack.Pop());
-                                ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, stack.Pop());
-                                block.Statements.Add(initialAssign);
+                                throw new NotImplementedException();
                             }
                             break;
+                        case "=":
+                            decl = block.FindDeclaration(stack.Pop());
+                            ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, stack.Pop());
+                            block.Statements.Add(initialAssign);
+                            break;
+                        default:
+                            throw new NotImplementedException();
                     }
 
                     if (decl != null)

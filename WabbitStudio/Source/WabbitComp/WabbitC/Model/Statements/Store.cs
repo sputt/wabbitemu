@@ -16,17 +16,6 @@ namespace WabbitC.Model.Statements
             this.value = value;
         }
 
-        public static void Parse(Block block, ref List<Token>.Enumerator tokens)
-        {
-            int deref = 0;
-            if (tokens.Current == "*")
-            {
-                deref++;
-            }
-            tokens.MoveNext();
-
-        }
-
         public override string ToString()
         {
             return base.ToString();
