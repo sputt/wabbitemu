@@ -113,7 +113,7 @@ namespace WabbitC
 				case 2:
 					return ApplyOperator(op, tokens[0], tokens[1]);
 			}
-			throw new Exception("Unrecognized number of params");
+			return null;
 		}
 
 		private Expression ApplyOperator(Token op, Token tok1)
@@ -234,7 +234,10 @@ namespace WabbitC
 							stack.Insert(i + 2, rightSide);
 							break;
 						case 1:
-							stack.Insert(i + 1, rightSide);
+							if (leftSide.Tokens.Count > 0)
+								stack.Insert(i + 1, leftSide);
+							else
+								stack.Insert(i + 1, rightSide);
 							break;
 					}
 				}
@@ -309,10 +312,8 @@ namespace WabbitC
 																	new List<string> {">>", "<<"},
 																	new List<string> {"+", "-", "−"},
 																	new List<string> {"*", "/", "%"},
-																	new List<string> {"!", "~"},
-																	new List<string> {"&", "*", "+", "-"},
-																	new List<string> {"."},
-																	new List<string> {"++",  "−−", "--"},
+																	new List<string> {"!", "~", "&", "*", "+", "-", "++", "−−", "--"},
+																	new List<string> {".", "++", "−−", "--" },
 																};
 		public static int GetOperator(Expression expr, out int numArgs)
 		{
@@ -331,17 +332,17 @@ namespace WabbitC
 						nParen--;
 					else if (nParen == 0 && token.Type == TokenType.OperatorType && operatorLevel.Contains(token.Text)) 
 					{
-						numArgs = GetNumArgs(level);
+						numArgs = GetNumArgs(level, token);
 						//we've found an operator, now we need to see if its acutally what we want
 						if (leftToRight)
 						{
-							if ((token.Text != "-" && token.Text != "+" && token.Text != "*")
+							if ((token.Text != "-" && token.Text != "+" && token.Text != "*" && token.Text != "++" && token.Text != "--")
 								|| (i > 0 && tokens[i - 1].Type != TokenType.OperatorType))
 								return i;
 						}
 						else
 						{
-							if ((token.Text != "-" && token.Text != "+" && token.Text != "*")
+							if ((token.Text != "-" && token.Text != "+" && token.Text != "*" && token.Text != "++" && token.Text != "--")
 								|| (i + 1 < tokens.Count && tokens[i + 1].Type != TokenType.OperatorType))
 								return i;
 						}
@@ -352,12 +353,15 @@ namespace WabbitC
 			return -1;
 		}
 
-		private static int GetNumArgs(int level)
+		private static int GetNumArgs(int level, Token tok)
 		{
 			switch (level)
 			{
 				case 12:
+					return 1;
 				case 13:
+					if (tok.Text == ".")
+						return 2;
 					return 1;
 				case 1:
 					return 3;
@@ -379,7 +383,6 @@ namespace WabbitC
 				case 0:
 				case 1:
 				case 12:
-				case 13:
 					return false;
 				default:
 					return true;

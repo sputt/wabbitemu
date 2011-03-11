@@ -205,19 +205,32 @@ namespace WabbitC_Tests
             Expression target = new Expression(tokens);
 
             List<Expression> expected = new List<Expression>();
-
-            var expr1 = new Expression(Tokenizer.ToToken("*"));
-            var expr2 = new Expression(Tokenizer.ToToken("*"));
-            var expr3 = new Expression(Tokenizer.ToToken("test"));
-            var expr4 = new Expression(Tokenizer.ToToken("2"));
-
-            expected.Add(expr1);
-            expected.Add(expr2);
+            expected.Add(new Expression(Tokenizer.ToToken("*")));
+            expected.Add(new Expression(Tokenizer.ToToken("*")));
+            expected.Add(new Expression(Tokenizer.ToToken("test")));
+            expected.Add(new Expression(Tokenizer.ToToken("2")));
 
             List<Expression> actual;
             actual = target.Eval();
 			Compare(expected, actual);
         }
+
+		[TestMethod()]
+		public void EvalTest8()
+		{
+			Tokenizer tokenizer = new Tokenizer();
+			tokenizer.Tokenize("++(test++)");
+			List<Token> tokens = tokenizer.Tokens;
+			Expression target = new Expression(tokens);
+
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("++")));
+			expected.Add(new Expression(new List<Token>{Tokenizer.ToToken("test"), Tokenizer.ToToken("++")}));
+
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+		}
 
 		void Compare(List<Expression> expected, List<Expression> actual)
 		{
