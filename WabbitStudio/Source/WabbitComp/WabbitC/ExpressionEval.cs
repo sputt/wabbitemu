@@ -47,10 +47,7 @@ namespace WabbitC
 			OptimizeTokens();
 			var test = FillStack(this);
 			MoveConstantsToEnd(ref test);
-			if (test.Count == 1 && test[0].Tokens.Count > 1)
-			{
-				test = new Expression(test[0].Tokens).Eval();
-			}
+			CalculateStack(ref test);
 			return test;
         }
 
@@ -141,13 +138,24 @@ namespace WabbitC
 			for (int i = 0; i < tokens.Count; i++)
 			{
 				Token token = tokens[i];
-				if (token == "(")
+				if (token.Type == TokenType.OpenParen)
 				{
-					nParen++;
-					parenLoc.Add(i);
-					curOpLevel.Add(-1);
+					
+					if (i > 0 && tokens[i - 1].Type != TokenType.StringType)
+					{
+						nParen++;
+						parenLoc.Add(i);
+						curOpLevel.Add(-1);
+					}
+					else
+					{
+						//skip function
+						int curParenLevel = nParen;
+						while (token.Type != TokenType.CloseParen && curParenLevel == nParen)
+							token = tokens[++i];
+					}
 				}
-				else if (token == ")")
+				else if (token.Type == TokenType.CloseParen)
 				{
 					nParen--;
 					if (canRemoveParen && curOpLevel[nParen] == curOpLevel[nParen + 1])
@@ -179,18 +187,21 @@ namespace WabbitC
 
 		private void CalculateStack(ref List<Expression> expressions)
 		{
-			for (int i = expressions.Count - 1; i > 0; i--)
+			if (expressions.Count == 1 && expressions[0].Tokens.Count > 1 && expressions[0].Args == null)
 			{
-				var exp = expressions[i];
-				CalculateStack(ref exp);
-				expressions[i] = exp;
+				expressions = new Expression(expressions[0].Tokens).Eval();
 			}
-			var listTokens = Expression.ToTokens(expressions);
-			var result = CalculateStack(ref listTokens);
-			if (result != null)
+			else if (expressions[0].Args == null)
 			{
-				expressions.Clear();
-				expressions.Add(result);
+				var temp = Expression.ToTokens(expressions);
+				int count = temp.Count;
+				CalculateStack(ref temp);
+				if (count != temp.Count)
+				{
+					expressions.Clear();
+					foreach (Token token in temp)
+						expressions.Add(new Expression(token));
+				}
 			}
 		}
 
@@ -218,16 +229,20 @@ namespace WabbitC
 				while (tokens[--i].Type != TokenType.OperatorType)
 					stack.Push(tokens[i]);
 				Token op = tokens[i];
+				int operatorAt = i;
 				List<Token> toks = new List<Token>();
 				while (stack.Count > 0 && toks.Count < 2)
 					toks.Add(stack.Pop());
 				var exp = ApplyOperator(op, toks);
-				if (exp != null) 
+				if (exp != null)
+				{
 					result = exp;
+					tokens[tokens.Count - 1 - i] = result.Tokens[0];
+					tokens.RemoveAt(operatorAt);
+					tokens.RemoveAt(tokens.Count - i);
+				}
 				if (i > 0 && result != null)
 					stack.Push(result.Tokens[0]);
-				else
-					return exp;
 			}
 			return result;
 		}
@@ -360,7 +375,11 @@ namespace WabbitC
 						case 2:
 							var testleft = leftSide.Eval();
 							var testright = rightSide.Eval();
-							if ((testleft.Count == 1 && (testleft[0].Tokens[0].Type == TokenType.IntType || testleft[0].Tokens[0].Type == TokenType.RealType)) &&
+							stack.Insert(i, op);
+							stack.InsertRange(i + 1, testleft);
+							stack.InsertRange(i + 2 + testleft.Count - 1, testright);
+							i = i + 2 + testleft.Count - 1;
+							/*if ((testleft.Count == 1 && (testleft[0].Tokens[0].Type == TokenType.IntType || testleft[0].Tokens[0].Type == TokenType.RealType)) &&
 									(testright.Count == 1 && (testright[0].Tokens[0].Type == TokenType.IntType || testright[0].Tokens[0].Type == TokenType.RealType)))
 							{
 								var resultExp = ApplyOperator(op.Tokens[0], testleft[0].Tokens[0], testright[0].Tokens[0]);
@@ -371,7 +390,7 @@ namespace WabbitC
 								stack.Insert(i, op);
 								stack.Insert(i + 1, leftSide);
 								stack.Insert(i + 2, rightSide);
-							}
+							}*/
 							break;
 						case 1:
 							stack.Insert(i, op);

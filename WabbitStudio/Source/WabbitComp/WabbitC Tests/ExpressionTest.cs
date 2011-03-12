@@ -138,12 +138,8 @@ namespace WabbitC_Tests
             Expression target = new Expression(tokens);
 
             List<Expression> expected = new List<Expression>();
-
-            var expr1 = new Expression(Tokenizer.ToToken("!"));
-            var expr2 = new Expression(Tokenizer.ToToken("test"));
-
-            expected.Add(expr1);
-            expected.Add(expr2);
+            expected.Add(new Expression(Tokenizer.ToToken("!")));
+            expected.Add(new Expression(Tokenizer.ToToken("test")));
 
             List<Expression> actual;
             actual = target.Eval();
@@ -154,17 +150,20 @@ namespace WabbitC_Tests
 		public void EvalTest5()
 		{
 			Tokenizer tokenizer = new Tokenizer();
-			tokenizer.Tokenize("!test");
+			tokenizer.Tokenize("test = function(10, arg2) + arg1 + 40");
 			List<Token> tokens = tokenizer.Tokens;
 			Expression target = new Expression(tokens);
 
 			List<Expression> expected = new List<Expression>();
-
-			var expr1 = new Expression(Tokenizer.ToToken("!"));
-			var expr2 = new Expression(Tokenizer.ToToken("test"));
-
-			expected.Add(expr1);
-			expected.Add(expr2);
+			expected.Add(new Expression(Tokenizer.ToToken("=")));
+			expected.Add(new Expression(Tokenizer.ToToken("test")));
+			expected.Add(new Expression(Tokenizer.ToToken("+")));
+			expected.Add(new Expression(Tokenizer.ToToken("+")));
+			var temp = new Tokenizer();
+			temp.Tokenize("function(10, arg2)");
+			expected.Add(new Expression(temp.Tokens).Eval()[0]);
+			expected.Add(new Expression(Tokenizer.ToToken("arg1")));
+			expected.Add(new Expression(Tokenizer.ToToken("40")));
 
 			List<Expression> actual;
 			actual = target.Eval();
