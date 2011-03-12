@@ -138,10 +138,7 @@ namespace WabbitC
 				string includeFileContents = Compiler.TryOpenFile(includeFile);
 				if (!string.IsNullOrEmpty(includeFileContents))
 				{
-					Tokenizer tokenizer = new Tokenizer();
-					tokenizer.Tokenize(includeFileContents);
-					
-					PreprocessorParser newParser = new PreprocessorParser(tokenizer.Tokens);
+					PreprocessorParser newParser = new PreprocessorParser(Tokenizer.Tokenize(includeFileContents));
 					List<Token> newPreprocess = newParser.Parse();
 					parsedContent.AddRange(newPreprocess);
 				}

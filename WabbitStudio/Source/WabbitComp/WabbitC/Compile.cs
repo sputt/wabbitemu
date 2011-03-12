@@ -37,10 +37,9 @@ namespace WabbitC
             if (string.IsNullOrEmpty(fileContents))
                 return false;
 
-            var tokenizer = new Tokenizer();
-			tokenizer.Tokenize(fileContents);
+            var tokenizerTokens = Tokenizer.Tokenize(fileContents);
 
-			var preprocessorParser = new PreprocessorParser(tokenizer.Tokens);
+			var preprocessorParser = new PreprocessorParser(tokenizerTokens);
 			var preProcessorTokens = preprocessorParser.Parse();
 
             var tokenPassTokens = RunTokenPasses(preProcessorTokens);

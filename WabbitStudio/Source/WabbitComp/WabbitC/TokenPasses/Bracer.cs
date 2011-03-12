@@ -49,7 +49,6 @@ namespace WabbitC.TokenPasses
 
         private List<Token> BraceBlock(ref List<Token>.Enumerator tokens)
         {
-            var tokenizer = new Tokenizer();
             var tokenList = new List<Token>();
 
             if (tokens.Current.Type == TokenType.OpenBlock)
@@ -58,14 +57,12 @@ namespace WabbitC.TokenPasses
             }
             else
             {
-                tokenizer.Tokenize("{");
-                tokenList.AddRange(tokenizer.Tokens);
+                tokenList.Add(Token.OpenBraceToken);
 
                 var listStatement = GetStatement(ref tokens);
                 tokenList.AddRange(this.Run(listStatement));
 
-                tokenizer.Tokenize("}");
-                tokenList.AddRange(tokenizer.Tokens);
+                tokenList.Add(Token.CloseBraceToken);
             }
             return tokenList;
         }

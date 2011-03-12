@@ -40,7 +40,7 @@ namespace WabbitC.TokenPasses
 
         public override List<Token> Run(List<Token> tokenList)
         {
-            var tokenizer = new Tokenizer();
+            
             var newTokenList = new List<Token>();
             var tokens = tokenList.GetEnumerator();
             while (tokens.MoveNext())
@@ -50,18 +50,15 @@ namespace WabbitC.TokenPasses
 
                 if (result.Count > 0)
                 {
-                    tokenizer.Tokenize("*(");
-                    newTokenList.AddRange(tokenizer.Tokens);
+                    
+                    newTokenList.AddRange(Tokenizer.Tokenize("*("));
                     // Add the name
                     newTokenList.Add(tokens.Current);
-
-                    tokenizer.Tokenize("+(");
-                    newTokenList.AddRange(tokenizer.Tokens);
-
+                    
+                    newTokenList.AddRange(Tokenizer.Tokenize("+("));
                     newTokenList.AddRange(result);
 
-                    tokenizer.Tokenize("))");
-                    newTokenList.AddRange(tokenizer.Tokens);
+                    newTokenList.AddRange(Tokenizer.Tokenize("))"));
 
                     tokens = currentTokens;
                 }

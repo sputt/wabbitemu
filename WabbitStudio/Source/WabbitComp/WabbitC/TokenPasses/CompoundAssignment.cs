@@ -41,7 +41,6 @@ namespace WabbitC.TokenPasses
 
         public override List<Token> Run(List<Token> tokenList)
         {
-            var tokenizer = new Tokenizer();
             var newTokenList = new List<Token>();
             var tokens = tokenList.GetEnumerator();
             while (tokens.MoveNext())

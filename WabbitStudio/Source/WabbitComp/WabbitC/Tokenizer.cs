@@ -24,33 +24,39 @@ namespace WabbitC
 		TernaryConditional,
     };
 
-    public class Tokenizer
+    public static class Tokenizer
     {
         const string SingleLineComment = "//";
         const string MultiLineCommentStart = "/*";
         const string MultiLineCommentEnd = "*/";
         const string DoubleQuote = "\"";
-        List<string> Preprocessor = new List<string>() { "#include", "#define", "#undef", "#error", "#warning", "#if", "#ifndef", 
+        static List<string> Preprocessor = new List<string>() { "#include", "#define", "#undef", "#error", "#warning", "#if", "#ifndef", 
                                                            "#ifdef", "#elif", "#else", "#endif", "#region", "#endregion" };
-        List<string> ReservedKeywords = new List<string>() { "auto", "double", "int", "struct", "break", "else", "long", "switch",
+        static List<string> ReservedKeywords = new List<string>() { "auto", "double", "int", "struct", "break", "else", "long", "switch",
                                               "case", "enum", "register", "typedef", "char", "extern", "return", "union",
                                               "const", "float", "short", "unsigned", "continue", "for", "signed", "void",
                                               "default", "goto", "sizeof", "volatile", "do", "if", "static", "while" };
-        string inputContents = null;
-        int line = 0;
+        //string inputContents = null;
+        static int line = 0;
 
-        public List<Token> Tokens { get; private set; }
-        public void Tokenize(string infile)
+        //public List<Token> Tokens { get; private set; }
+        public static List<Token> Tokenize(string infile)
         {
-            inputContents = infile;
-            Tokens = Tokenize();
+			var tokens = new List<Token>();
+			int index = 0;
+			int length = infile.Length;
+			while (index < length)
+			{
+				tokens.Add(ReadToken(ref index, infile));
+				SkipWhitespace(ref index, infile);
+			}
+			return tokens;
         }
 
         public static Token ToToken(string input)
         {
-            Tokenizer tokenizer = new Tokenizer();
-            tokenizer.Tokenize(input);
-            return tokenizer.Tokens[0];
+            var tokens = Tokenize(input);
+            return tokens[0];
         }
 
         public static List<Token> GetStatement(ref List<Token>.Enumerator tokens)
@@ -86,31 +92,18 @@ namespace WabbitC
             return tokenList;
         }
 
-        private List<Token> Tokenize()
-        {
-            List<Token> tokens = new List<Token>();
-            int index = 0;
-            int length = inputContents.Length;
-            while (index < length)
-            {
-                tokens.Add(ReadToken(ref index));
-                SkipWhitespace(ref index);
-            }
-            return tokens;
-        }
-
-        private Token ReadToken(ref int index)
+        private static Token ReadToken(ref int index, string inputContents)
         {
             Token tokenToAdd = new Token();
             int oldIndex = index;
             tokenToAdd.LineNumber = line;
             tokenToAdd.CharNumber = index;
-            tokenToAdd.Text = ReadWord(ref index);
+            tokenToAdd.Text = ReadWord(ref index, inputContents);
             GetTokenType(ref tokenToAdd);
             return tokenToAdd;
         }
 
-        private void GetTokenType(ref Token tokenToAdd)
+        private static void GetTokenType(ref Token tokenToAdd)
         {
             float floatCheck;
             int intCheck;
@@ -143,7 +136,7 @@ namespace WabbitC
 
         }
 
-		private bool CheckOperators(string text)
+		private static bool CheckOperators(string text)
 		{
 			if (operators.Contains(text))
 				return true;
@@ -151,24 +144,24 @@ namespace WabbitC
 				return false;
 		}
 
-        private bool CheckComment(string text)
+        private static bool CheckComment(string text)
         {
             return text.StartsWith(MultiLineCommentStart) || text.StartsWith(SingleLineComment);
         }
 
-        private bool CheckPreprocessorKeyword(string text)
+        private static bool CheckPreprocessorKeyword(string text)
         {
             return Preprocessor.Contains(text);
         }
 
-        private bool CheckReservedKeyword(string text)
+        private static bool CheckReservedKeyword(string text)
         {
             return ReservedKeywords.Contains(text);
         }
 
 		const string delimeters = "&<−->~!%^*()+=|\\/{}[]:;\"' \n\t\r?,.";
 		const string operators = "&&<<=-->>=?!~%^=*=−−==-=++=||/=";
-        private string ReadWord(ref int index)
+        private static string ReadWord(ref int index, string inputContents)
         {
             int newIndex = index;
             char test = inputContents[index];
@@ -224,7 +217,7 @@ namespace WabbitC
                 }
                 else
                 {
-                    if (IsValidIndex(newIndex))
+                    if (IsValidIndex(newIndex, inputContents))
                     {
                         test = word[0];
 						char nextCh =  inputContents[newIndex];
@@ -240,9 +233,9 @@ namespace WabbitC
             return word;
         }
 
-        private void SkipWhitespace(ref int index)
+        private static void SkipWhitespace(ref int index, string inputContents)
         {
-            while (IsValidIndex(index) && char.IsWhiteSpace(inputContents[index]))
+            while (IsValidIndex(index, inputContents) && char.IsWhiteSpace(inputContents[index]))
             {
                 if (inputContents[index] == '\n')
                     line++;
@@ -250,7 +243,7 @@ namespace WabbitC
             }
         }
 
-        private bool IsValidIndex(int index)
+        private static bool IsValidIndex(int index, string inputContents)
         {
             return index < inputContents.Length;
         }

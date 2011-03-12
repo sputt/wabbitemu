@@ -67,10 +67,7 @@ namespace WabbitC.Model.Types
 
         public BuiltInType(string typeString)
         {
-            Tokenizer tokenizer = new Tokenizer();
-            tokenizer.Tokenize(typeString);
-
-            var tokens = tokenizer.Tokens.GetEnumerator();
+			var tokens = Tokenizer.Tokenize(typeString).GetEnumerator();
             tokens.MoveNext();
             InitializeType(ref tokens);
         }

@@ -73,14 +73,11 @@ namespace WabbitC_Tests
         [TestMethod()]
         public void RunTest1()
         {
-            Tokenizer tokenizer = new Tokenizer();
+
             CompoundAssignmentRemover target = new CompoundAssignmentRemover(); // TODO: Initialize to an appropriate value
 
-            tokenizer.Tokenize("test += 20;");
-            List<Token> tokenList = tokenizer.Tokens; // TODO: Initialize to an appropriate value
-
-            tokenizer.Tokenize("test = test + (20);");
-            List<Token> expected = tokenizer.Tokens;
+			List<Token> tokenList = Tokenizer.Tokenize("test += 20;"); // TODO: Initialize to an appropriate value
+			List<Token> expected = Tokenizer.Tokenize("test = test + (20);");
 
             List<Token> actual;
             actual = target.Run(tokenList);
@@ -94,14 +91,10 @@ namespace WabbitC_Tests
         [TestMethod()]
         public void RunTest2()
         {
-            Tokenizer tokenizer = new Tokenizer();
             CompoundAssignmentRemover target = new CompoundAssignmentRemover(); // TODO: Initialize to an appropriate value
 
-            tokenizer.Tokenize("test -= 20;");
-            List<Token> tokenList = tokenizer.Tokens; // TODO: Initialize to an appropriate value
-
-            tokenizer.Tokenize("test = test - (20);");
-            List<Token> expected = tokenizer.Tokens;
+			List<Token> tokenList = Tokenizer.Tokenize("test -= 20;"); // TODO: Initialize to an appropriate value
+			List<Token> expected = Tokenizer.Tokenize("test = test - (20);");
 
             List<Token> actual;
             actual = target.Run(tokenList);
