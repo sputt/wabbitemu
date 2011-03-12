@@ -1,6 +1,4 @@
 int test()
 {
-	int **p;
-
-	**p = 10;
+	char test[32];
 }
