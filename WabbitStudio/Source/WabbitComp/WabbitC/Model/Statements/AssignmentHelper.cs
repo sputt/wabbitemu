@@ -9,6 +9,11 @@ namespace WabbitC.Model.Statements
 {
     static class AssignmentHelper
     {
+        //public static bool IsLValue()
+        //{
+   
+        //}
+
         public static ValueStatement ParseSingle(Block block, Declaration LValue, Token RValue)
         {
             if (Immediate.IsImmediate(RValue) == false)

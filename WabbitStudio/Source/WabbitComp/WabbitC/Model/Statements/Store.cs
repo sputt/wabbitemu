@@ -18,7 +18,7 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            return base.ToString();
+            return "*" + store + " = " + value + ";";
         }
     }
 }

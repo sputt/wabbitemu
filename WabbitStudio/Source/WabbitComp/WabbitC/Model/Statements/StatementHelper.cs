@@ -10,11 +10,31 @@ namespace WabbitC.Model.Statements
 {
     static class StatementHelper
     {
+        private const string StoreToken = "#store";
+
+        private static void IdentifyStores(ref List<Expression> exprList)
+        {
+            for (int i = 0; i < exprList.Count - 1; i++)
+            {
+                if (exprList[i].Tokens.Count == 1)
+                {
+                    if (exprList[i].Tokens[0] == "=" &&
+                        exprList[i + 1].Tokens[0] == "*")
+                    {
+                        exprList.RemoveAt(i + 1);
+                        exprList[i].Tokens[0] = Tokenizer.ToToken("#store");
+                        exprList[i].Tokens[0].Type = TokenType.OperatorType;
+                    }
+                }
+            }
+        }
+
         private static Token InternalParse(Block block, Expression expr)
         {
             var stack = new Stack<Token>();
 
             var exprList = expr.Eval();
+            IdentifyStores(ref exprList);
             for (int i = exprList.Count - 1; i >= 0; i--)
             {
                 Token token;
@@ -84,7 +104,7 @@ namespace WabbitC.Model.Statements
 			{
 				case "*":
 					decl = block.FindDeclaration(arg1);
-					//TODO: specify indirection somehow
+                    block.Statements.Add(new Load(decl, Datum.Parse(block, arg1)));
 					break;
 			}
 			return decl;
@@ -107,10 +127,19 @@ namespace WabbitC.Model.Statements
 				case "/":
 					decl = Div.BuildStatements(block, exp, arg1, arg2);
 					break;
+                case StoreToken:
+                    decl = block.CreateTempDeclaration(TypeHelper.GetType(block, arg2));
+                    var assignCopy = AssignmentHelper.ParseSingle(block, decl, arg2);
+                    block.Statements.Add(assignCopy);
+
+                    var storeStatement = new Store(Datum.Parse(block, arg1), 
+                        Datum.Parse(block, Tokenizer.ToToken(decl.Name)));
+                    block.Statements.Add(storeStatement);
+                    break;
 				case "=":
 					decl = block.FindDeclaration(arg1);
-					ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, arg2);
-					block.Statements.Add(initialAssign);
+                    ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, arg2);
+                    block.Statements.Add(initialAssign);
 					break;
 			}
 			return decl;

@@ -16,27 +16,26 @@ namespace WabbitC.Model
             }
         }
 
-        private String name;
-        public String Name { get { return name; } }
+        public String Name;
 
         public Declaration(Type declarationType, String name)
         {
             this.type = declarationType;
-            this.name = name;
+            this.Name = name;
         }
 
         public string GetDeclaration()
         {
             if (type == null)
             {
-                return "#NOTPROVIDED# " + name;
+                return "#NOTPROVIDED# " + Name;
             }
             else
             {
                 if (type.GetType() == typeof(Types.FunctionType))
                 {
                     string funcType = type.ToString();
-                    funcType = funcType.Replace("(*)", name);
+                    funcType = funcType.Replace("(*)", Name);
                     if (Code != null)
                     {
                         funcType += "\n" + Code.ToString();
@@ -49,14 +48,14 @@ namespace WabbitC.Model
                 }
                 else
                 {
-                    return type + " " + name + ";";
+                    return type + " " + Name + ";";
                 }
             }
         }
 
         public override string ToString()
         {
-            return name;
+            return Name;
         }
 
         //public ValueStatement InitialValue;

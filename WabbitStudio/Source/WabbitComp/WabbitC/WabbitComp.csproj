@@ -77,6 +77,7 @@
     <Compile Include="Model\Statements\Assignment.cs" />
     <Compile Include="Model\Statements\AssignmentHelper.cs" />
     <Compile Include="Model\Statements\ControlStatement.cs" />
+    <Compile Include="Model\Statements\Load.cs" />
     <Compile Include="Model\Statements\Mult.cs" />
     <Compile Include="Model\Statements\Div.cs" />
     <Compile Include="Model\Statements\FunctionCall.cs" />
