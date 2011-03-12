@@ -20,13 +20,11 @@ namespace WabbitC.Model.Types
 
         private BuiltInTypeType type;
         private bool isUnsigned;
-        private int indirectionLevels;
-
         public BuiltInType()
         {
             type = BuiltInTypeType.Int;
             isUnsigned = false;
-            indirectionLevels = 0;
+            IndirectionLevels = 0;
         }
 
         private void InitializeType(ref List<Token>.Enumerator tokens)
@@ -59,10 +57,10 @@ namespace WabbitC.Model.Types
                     throw new System.Exception("No type for this");
             }
 
-            indirectionLevels = 0;
+            IndirectionLevels = 0;
             while ((tokens.MoveNext()) && (tokens.Current.Text == "*"))
             {
-                indirectionLevels++;
+                IndirectionLevels++;
                 this.Size = 2;
             }
         }
@@ -82,13 +80,18 @@ namespace WabbitC.Model.Types
             InitializeType(ref tokens);
         }
 
+        public override object Clone()
+        {
+            return new BuiltInType(this.ToString());
+        }
+
         public override string ToString()
         {
 			StringBuilder sb = new StringBuilder();
 			if (isUnsigned)
 				sb.Append("unsigned ");
 			sb.Append(type.ToString().ToLower());
-			for (int i = 0; i < indirectionLevels; i++)
+            for (int i = 0; i < IndirectionLevels; i++)
 				sb.Append("*");
 			
 			return sb.ToString();

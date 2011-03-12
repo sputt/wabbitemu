@@ -223,8 +223,23 @@ namespace WabbitC_Tests
 			Compare(expected, actual);
 		}
 
+        [TestMethod()]
+        public void DoubleDerefTest()
+        {
+            Tokenizer tokenizer = new Tokenizer();
+            tokenizer.Tokenize("**test");
+            List<Token> tokens = tokenizer.Tokens;
+            Expression target = new Expression(tokens);
+
+            var actual = target.Eval();
+
+            Assert.AreEqual(1, actual[0].Operands, "First dereference operand count wrong");
+            Assert.AreEqual(1, actual[1].Operands, "Second dereference operand count wrong");
+            Assert.AreEqual("test", actual[2].Tokens[0], "Was not parsed correctly");
+        }
+
 		[TestMethod()]
-		public void EvalTest9()
+		public void OptimizeTest1()
 		{
 			Tokenizer tokenizer = new Tokenizer();
 			tokenizer.Tokenize("test = (10 *arg * (arg3 * 20)) + (arg2 + 40)");

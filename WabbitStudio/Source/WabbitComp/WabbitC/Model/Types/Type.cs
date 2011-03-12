@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WabbitC.Model
 {
-    abstract class Type
+    abstract class Type : ICloneable
     {
         private int size;
         public int Size
@@ -19,9 +19,29 @@ namespace WabbitC.Model
                 size = value;
             }
         }
+
+        public int IndirectionLevels;
+
+        public void Dereference()
+        {
+            if (IndirectionLevels > 0)
+            {
+                IndirectionLevels--;
+            }
+            else
+            {
+                MessageSystem.Instance.ThrowNewError("Cannot deference");
+            }
+        }
+
         public Type()
         {
+            IndirectionLevels = 0;
+        }
 
+        public virtual object Clone()
+        {
+            return this.MemberwiseClone();
         }
     }
 }

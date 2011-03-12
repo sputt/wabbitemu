@@ -103,7 +103,9 @@ namespace WabbitC.Model.Statements
 			switch (exp.Tokens[0])
 			{
 				case "*":
-					decl = block.FindDeclaration(arg1);
+                    Type type = TypeHelper.GetType(block, arg1);
+                    type.Dereference();
+                    decl = block.CreateTempDeclaration(type);
                     block.Statements.Add(new Load(decl, Datum.Parse(block, arg1)));
 					break;
 			}

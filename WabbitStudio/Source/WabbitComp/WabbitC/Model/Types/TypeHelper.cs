@@ -31,7 +31,7 @@ namespace WabbitC.Model.Types
 			var decl = block.FindDeclaration(token.Text);
 			if (decl == null)
 				return null;
-			return decl.Type;
+            return (Type) decl.Type.Clone();
 		}
     }
 }
