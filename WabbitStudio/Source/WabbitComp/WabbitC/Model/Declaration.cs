@@ -46,6 +46,14 @@ namespace WabbitC.Model
                         return funcType + ";";
                     }
                 }
+                else if (type.GetType() == typeof(Types.Array))
+                {
+                    var arrayType = type as Types.Array;
+                    string arrayString = type.ToString();
+                    arrayString = arrayString.Replace(arrayType.BaseType.ToString(), 
+                        arrayType.BaseType.ToString() + " " + Name);
+                    return arrayString + ";";
+                }
                 else
                 {
                     return type + " " + Name + ";";

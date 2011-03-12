@@ -91,6 +91,7 @@
     <Compile Include="Model\Statements\Sub.cs" />
     <Compile Include="Model\Statements\ValueStatement.cs" />
     <Compile Include="Model\Statements\While.cs" />
+    <Compile Include="Model\Types\Array.cs" />
     <Compile Include="Model\Types\FunctionType.cs" />
     <Compile Include="Model\Module.cs" />
     <Compile Include="Model\Types\BuiltInType.cs" />

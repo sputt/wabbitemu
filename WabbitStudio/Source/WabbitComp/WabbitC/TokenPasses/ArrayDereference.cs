@@ -10,26 +10,28 @@ namespace WabbitC.TokenPasses
         private List<Token> IsArrayDereference(ref List<Token>.Enumerator tokens)
         {
             var tokenList = new List<Token>();
-            if (tokens.Current.Type == TokenType.StringType)
+            if (tokens.Current.Type != TokenType.StringType && tokens.Current.Type != TokenType.ReservedKeyword)
             {
-                tokens.MoveNext();
-
-                if (tokens.Current.Text == "[")
+                if (tokens.MoveNext() && (tokens.Current.Type == TokenType.StringType))
                 {
                     tokens.MoveNext();
-
-                    int nBrackets = 1;
-                    while (nBrackets > 0)
+                    if (tokens.Current.Text == "[")
                     {
-                        if (tokens.Current.Text == "[")
-                            nBrackets++;
-                        else if (tokens.Current.Text == "]")
-                            nBrackets--;
+                        tokens.MoveNext();
 
-                        if (nBrackets > 0)
+                        int nBrackets = 1;
+                        while (nBrackets > 0)
                         {
-                            tokenList.Add(tokens.Current);
-                            tokens.MoveNext();
+                            if (tokens.Current.Text == "[")
+                                nBrackets++;
+                            else if (tokens.Current.Text == "]")
+                                nBrackets--;
+
+                            if (nBrackets > 0)
+                            {
+                                tokenList.Add(tokens.Current);
+                                tokens.MoveNext();
+                            }
                         }
                     }
                 }
@@ -50,8 +52,11 @@ namespace WabbitC.TokenPasses
 
                 if (result.Count > 0)
                 {
-                    
+                    newTokenList.Add(tokens.Current);
+                    tokens.MoveNext();
+
                     newTokenList.AddRange(Tokenizer.Tokenize("*("));
+                    
                     // Add the name
                     newTokenList.Add(tokens.Current);
                     

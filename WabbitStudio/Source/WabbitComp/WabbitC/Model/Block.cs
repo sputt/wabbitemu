@@ -219,6 +219,14 @@ namespace WabbitC.Model
                                     tokens.MoveNext();
                                 }
                             }
+                            else if (tokens.Current == "[")
+                            {
+                                resultType = new WabbitC.Model.Types.Array(resultType, ref tokens);
+                                var declaration = new Declaration(resultType, resultName);
+                                thisBlock.Declarations.Add(declaration);
+                                Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+                                tokens.MoveNext();
+                            }
                             else
                             {
                                 var decl = new Declaration(resultType, resultName);
