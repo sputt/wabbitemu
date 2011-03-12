@@ -77,18 +77,13 @@ namespace WabbitC_Tests
             List<Token> tokens = tokenizer.Tokens; // TODO: Initialize to an appropriate value
             Expression target = new Expression(tokens); // TODO: Initialize to an appropriate value
 
-            //var expr1 = new Expression(Tokenizer.ToToken("="));
-            //var expr2 = new Expression(Tokenizer.ToToken("test"));
-            var expr3 = new Expression(Tokenizer.ToToken("="));
-            var expr4 = new Expression(Tokenizer.ToToken("test2"));
-            var expr5 = new Expression(Tokenizer.ToToken("20"));
+			List<Expression> expected = new List<Expression>(); // TODO: Initialize to an appropriate value
+			//expected.Add(new Expression(Tokenizer.ToToken("="));
+			//expected.Add(new Expression(Tokenizer.ToToken("test"));
+            expected.Add(new Expression(Tokenizer.ToToken("=")));
+            expected.Add(new Expression(Tokenizer.ToToken("test2")));
+            expected.Add(new Expression(Tokenizer.ToToken("20")));
             
-            List<Expression> expected = new List<Expression>(); // TODO: Initialize to an appropriate value
-           // expected.Add(expr1);
-           // expected.Add(expr2);
-            expected.Add(expr3);
-            expected.Add(expr4);
-            expected.Add(expr5);
             List<Expression> actual;
             actual = target.Eval();
 			Compare(expected, actual);
