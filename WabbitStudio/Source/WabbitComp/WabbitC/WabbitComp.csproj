@@ -115,7 +115,9 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="test.c" />
+    <None Include="test.c">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

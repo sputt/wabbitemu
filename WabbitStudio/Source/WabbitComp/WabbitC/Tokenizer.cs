@@ -287,6 +287,8 @@ namespace WabbitC
 
         public static implicit operator string(Token t)
         {
+			if (t == null)
+				return null;
             return t.Text;
         }
 

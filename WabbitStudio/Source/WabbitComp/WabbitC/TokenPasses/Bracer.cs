@@ -81,7 +81,19 @@ namespace WabbitC.TokenPasses
 
             if (tokens.Current.Type == TokenType.OpenBlock)
             {
+				int nParen = 0;
                 tokenList.Add(tokens.Current);
+				tokens.MoveNext();
+				while (tokens.Current.Type != TokenType.CloseBlock)
+				{
+					if (tokens.Current.Type == TokenType.OpenBlock)
+						nParen++;
+					else if (tokens.Current.Type == TokenType.CloseBlock && nParen > 0)
+						nParen--;
+					tokenList.Add(tokens.Current);
+					tokens.MoveNext();
+				}
+				tokenList.Add(tokens.Current);
             }
             else
             {
@@ -111,9 +123,18 @@ namespace WabbitC.TokenPasses
 			tokens.MoveNext();
 			if (tokens.Current == "if")
 			{
-				tokens = tempSave;
 				tokenList.Add(Token.OpenBraceToken);
-				tokenList.AddRange(RunBracer(ref tokens));
+				tokenList.Add(tokens.Current);
+				tokenList.AddRange(HandleIfWhileFor(ref tokens));
+				tempSave = tokens;
+				tokens.MoveNext();
+				if (tokens.Current == "else")
+				{
+					tokenList.Add(tokens.Current);
+					tokenList.AddRange(HandleElseDo(ref tokens));
+				}
+				else
+					tokens = tempSave;
 				tokenList.Add(Token.CloseBraceToken);
 			}
 			else
