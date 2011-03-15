@@ -123,7 +123,7 @@ namespace WabbitC_Tests
         public void EvalTest4()
         {
 
-			List<Token> tokens = Tokenizer.Tokenize("!test"); ;
+			List<Token> tokens = Tokenizer.Tokenize("!test");
             Expression target = new Expression(tokens);
 
             List<Expression> expected = new List<Expression>();
@@ -207,6 +207,32 @@ namespace WabbitC_Tests
 			Compare(expected, actual);
 		}
 
+		[TestMethod()]
+		public void EvalTest9()
+		{
+			List<Token> tokens = Tokenizer.Tokenize("test = !(x < y  && u != v) ? y : x >= z ? z : 1");
+			Expression target = new Expression(tokens);
+
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("=")));
+			expected.Add(new Expression(Tokenizer.ToToken("test")));
+			expected.Add(new Expression(Tokenizer.ToToken("?")));
+			expected.Add(new Expression(Tokenizer.ToToken("!")));
+			expected.Add(new Expression(Tokenizer.Tokenize("x < y  && u != v")));
+			expected.Add(new Expression(Tokenizer.ToToken("y")));
+			expected.Add(new Expression(Tokenizer.ToToken("?")));
+			expected.Add(new Expression(Tokenizer.ToToken(">=")));
+			expected.Add(new Expression(Tokenizer.ToToken("x")));
+			expected.Add(new Expression(Tokenizer.ToToken("z")));
+			expected.Add(new Expression(Tokenizer.ToToken("z")));
+			expected.Add(new Expression(Tokenizer.ToToken("1")));
+
+
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+		}
+
         [TestMethod()]
         public void DoubleDerefTest()
         {
@@ -232,7 +258,7 @@ namespace WabbitC_Tests
 			expected.Add(new Expression(Tokenizer.ToToken("+")));
 			expected.Add(new Expression(Tokenizer.ToToken("+")));
 			expected.Add(new Expression(Tokenizer.ToToken("arg2")));
-			expected.Add(new Expression(new List<Token> { Tokenizer.ToToken("arg"), Tokenizer.ToToken("*"), Tokenizer.ToToken("arg3"), Tokenizer.ToToken("*"), Tokenizer.ToToken("200") }));
+			expected.Add(new Expression(Tokenizer.Tokenize("arg*arg3*200")));
 			expected.Add(new Expression(Tokenizer.ToToken("40")));
 
 			List<Expression> actual;
@@ -240,7 +266,7 @@ namespace WabbitC_Tests
 			Compare(expected, actual);
 		}
 
-		
+
 
 		void Compare(List<Expression> expected, List<Expression> actual)
 		{

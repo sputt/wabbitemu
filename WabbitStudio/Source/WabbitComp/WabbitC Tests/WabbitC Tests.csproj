@@ -53,6 +53,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BracerTest.cs" />
     <Compile Include="CompoundAssignmentRemoverTest.cs" />
     <Compile Include="ExpressionTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -62,6 +63,13 @@
       <Project>{68666923-07F9-433E-92F3-F1806A2DBB5F}</Project>
       <Name>WabbitComp</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Shadow Include="Test References\WabbitC.accessor" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="bracer_result.c" />
+    <Content Include="bracer_test.c" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -160,7 +160,7 @@ namespace WabbitC
         }
 
 		const string delimeters = "&<−->~!%^*()+=|\\/{}[]:;\"' \n\t\r?,.";
-		const string operators = "&&<<=-->>=?!~%^=*=−−==-=++=||/=";
+		const string operators = "&&<<=-->>=?!=~%^=*=−−==-=++=||/=";
         private static string ReadWord(ref int index, string inputContents)
         {
             int newIndex = index;
@@ -297,7 +297,6 @@ namespace WabbitC
             return Text;
         }
 
-		#region Operator Overloads
 		public override bool Equals(object obj)
 		{
 			if (obj.GetType() != typeof(Token))
@@ -306,6 +305,7 @@ namespace WabbitC
 			return (Text == tok.Text) && (Type == tok.Type);
 		}
 
+		#region Operator Overloads
 		public static bool operator ==(Token t1, Token t2)
         {
             if (object.Equals(t1, t2))
