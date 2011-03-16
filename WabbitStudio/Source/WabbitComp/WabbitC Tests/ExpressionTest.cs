@@ -233,17 +233,38 @@ namespace WabbitC_Tests
 			Compare(expected, actual);
 		}
 
+		[TestMethod()]
+		public void CommaOperatorTest1()
+		{
+			List<Token> tokens = Tokenizer.Tokenize("d = 10, d = testfunc(with, args)");
+			Expression target = new Expression(tokens);
+
+			var actual = target.Eval();
+
+			var expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken(",")));
+			expected.Add(new Expression(Token.AssignmentOperatorToken));
+			expected.Add(new Expression(Tokenizer.ToToken("d")));
+			expected.Add(new Expression(Tokenizer.ToToken("10")));
+			expected.Add(new Expression(Token.AssignmentOperatorToken));
+			expected.Add(new Expression(Tokenizer.ToToken("d")));
+			expected.Add(new Expression(Tokenizer.Tokenize("testfunc(with, args)")).Eval()[0]);
+
+			Compare(expected, actual);
+		}
+
         [TestMethod()]
-        public void DoubleDerefTest()
+        public void TripleDerefTest()
         {
-			List<Token> tokens = Tokenizer.Tokenize("**test");
-            Expression target = new Expression(tokens);
+			var tokens = Tokenizer.Tokenize("***test");
+            var target = new Expression(tokens);
 
             var actual = target.Eval();
 
             Assert.AreEqual(1, actual[0].Operands, "First dereference operand count wrong");
             Assert.AreEqual(1, actual[1].Operands, "Second dereference operand count wrong");
-            Assert.AreEqual("test", actual[2].Tokens[0], "Was not parsed correctly");
+			Assert.AreEqual(1, actual[2].Operands, "Third dereference operand count wrong");
+            Assert.AreEqual("test", actual[3].Tokens[0], "Was not parsed correctly");
         }
 
 		[TestMethod()]

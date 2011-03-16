@@ -336,7 +336,7 @@ namespace WabbitC
 						{
 							int nParen = 0;
 							List<Token> arg = new List<Token>();
-							while (!((curToken.Type == TokenType.ArgSeparator || curToken.Type == TokenType.CloseParen) && nParen == 0))
+							while (!((curToken.Text != "," || curToken.Type == TokenType.CloseParen) && nParen == 0))
 							{
 								if (curToken.Type == TokenType.CloseParen)
 									nParen++;
@@ -361,6 +361,7 @@ namespace WabbitC
 			return stack;
 		}
 		static List<List<string>> operators = new List<List<string>> { 
+																	new List<string> {","},
 																	new List<string> {"="},
 																	new List<string> {"?"},
 																	new List<string> {"||"},
@@ -398,13 +399,13 @@ namespace WabbitC
 						if (leftToRight)
 						{
 							if ((token != "-" && token != "+" && token != "*" && token != "++" && token != "--")
-								|| (i > 0 && (tokens[i - 1].Type != TokenType.OperatorType || (token == "*" && tokens[i-1] == "*" && level == 12))))
+								|| (i > 0 && (tokens[i - 1].Type != TokenType.OperatorType || (token == "*" && tokens[i-1] == "*" && level == 13))))
 								return i;
 						}
 						else
 						{
 							if ((token != "-" && token != "+" && token != "*" && token != "++" && token != "--")
-								|| (i + 1 < tokens.Count && (tokens[i + 1].Type != TokenType.OperatorType || (token == "*" && tokens[i + 1] == "*" && level == 12))))
+								|| (i + 1 < tokens.Count && (tokens[i + 1].Type != TokenType.OperatorType || (token == "*" && tokens[i + 1] == "*" && level == 13))))
 								return i;
 						}
 					}
@@ -418,13 +419,13 @@ namespace WabbitC
 		{
 			switch (level)
 			{
-				case 12:
-					return 1;
 				case 13:
+					return 1;
+				case 14:
 					if (tok.Text == ".")
 						return 2;
 					return 1;
-				case 1:
+				case 2:
 					return 3;
 				default:
 					return 2;
@@ -441,9 +442,9 @@ namespace WabbitC
 		{
 			switch (level)
 			{
-				case 0:
 				case 1:
-				case 12:
+				case 2:
+				case 13:
 					return false;
 				default:
 					return true;

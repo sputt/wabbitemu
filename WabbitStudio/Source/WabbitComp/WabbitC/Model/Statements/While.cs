@@ -53,32 +53,37 @@ namespace WabbitC.Model.Statements
         }
 
         public override string ToString()
-        {
-            string result = "goto " + Label + ";\n";
-            result += "do\n";
-            result += "{\n";
+		{
+			StringBuilder sb = new StringBuilder("goto ");
+			sb.Append(Label);
+			sb.AppendLine(";");
+			sb.AppendLine("do");
+			sb.AppendLine("{");
 
             foreach (Declaration decl in Body.Declarations)
             {
-                result += decl.GetDeclaration() + "\n";
+                sb.AppendLine(decl.GetDeclaration());
             }
             foreach (Declaration decl in Condition.Declarations)
             {
-                result += decl.GetDeclaration() + "\n";
+                sb.AppendLine(decl.GetDeclaration());
             }
             foreach (Statement statement in Body.Statements)
             {
-                result += statement.ToString() + "\n";
+                sb.AppendLine(statement.ToString());
             }
-            result += Label + ":\n";
+			sb.Append(Label);
+			sb.AppendLine(":");
             foreach (Statement statement in Condition.Statements)
             {
-                result += statement.ToString() + "\n";
+                sb.AppendLine(statement.ToString());
             }
-            result += "}\n";
-            result += "while (" + condDecl.Name + ");";
+            sb.AppendLine("}");
+            sb.Append("while (");
+			sb.Append(condDecl.Name);
+			sb.Append(");");
             
-            return result;
+            return sb.ToString();
         }
     }
 }
