@@ -100,13 +100,17 @@ namespace WabbitC
 					}
 					//ignore assignment operator
 					if (curOpLevel[nParen] == -1)
-						curOpLevel[nParen] = level;
-					else if (curOpLevel[nParen] != level)
+                        curOpLevel[nParen] = level;
+                    else if (curOpLevel[nParen] != level || IsBanned(token))
 						canRemoveParen = false;
 				}
 			}
 		}
 
+        private bool IsBanned(Token token)
+        {
+            return token == "-" || token == "/";
+        }
 
 
 		private void CalculateStack(ref List<Expression> expressions)
@@ -140,8 +144,11 @@ namespace WabbitC
 		{
 			if (tokens.Count < 1)
 				return null;
-			if (tokens.Count == 1)
-				return new Expression(tokens);
+            if (tokens.Count == 1)
+                if (tokens[0].Type == TokenType.OperatorType)
+                    return null;
+                else
+                    return new Expression(tokens);
 			Stack<Token> stack = new Stack<Token>();
 			int i = tokens.Count;
 			Expression result = null;
@@ -336,7 +343,7 @@ namespace WabbitC
 						{
 							int nParen = 0;
 							List<Token> arg = new List<Token>();
-							while (!((curToken.Text != "," || curToken.Type == TokenType.CloseParen) && nParen == 0))
+                            while ((curToken.Text != "," && curToken.Type != TokenType.CloseParen) && nParen == 0)
 							{
 								if (curToken.Type == TokenType.CloseParen)
 									nParen++;
