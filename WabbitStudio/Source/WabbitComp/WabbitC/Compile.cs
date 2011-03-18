@@ -54,7 +54,13 @@ namespace WabbitC
 
             string code = currentModule.ToString();
 
-            var writer = new StreamWriter("test_compiled.c");
+            string outputFile = inputFile.Replace("expected", "actual");
+            if (outputFile.Equals(inputFile))
+            {
+                outputFile = Path.GetFileNameWithoutExtension(inputFile) + "_compiled.c";
+            }
+
+            var writer = new StreamWriter(outputFile);
             writer.Write(code);
             writer.Close();
 
