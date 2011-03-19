@@ -97,6 +97,7 @@
     <Compile Include="Model\Types\BuiltInType.cs" />
     <Compile Include="Model\Types\Type.cs" />
     <Compile Include="Model\Types\TypeHelper.cs" />
+    <Compile Include="Optimizer.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserExpression.cs" />
     <Compile Include="PreprocessorDefine.cs" />

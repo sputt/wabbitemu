@@ -12,6 +12,17 @@ namespace WabbitC
 			get { return tokens; }
 		}
 
+        public Token Token
+        {
+            get
+            {
+                if (tokens.Count == 0)
+                    return null;
+                else
+                    return tokens[0];
+            }
+        }
+
 		List<Expression> args;
 		public List<Expression> Args
 		{
@@ -23,6 +34,9 @@ namespace WabbitC
 		{
 			get { return operands; }
 		}
+
+        bool isPrefix = false;
+        public bool IsPrefix { get { return isPrefix; } }
 
         public Expression(List<Token> tokens)
         {
@@ -302,6 +316,11 @@ namespace WabbitC
 							stack.Insert(i + 2, rightSide);
 							break;
 						case 1:
+                            if (op.Token == "++" || op.Token == "--")
+                                if (leftSide.Token != null)
+                                    op.isPrefix = true;
+                                else
+                                    op.isPrefix = false;
 							if (leftSide.Tokens.Count > 0)
 								stack.Insert(i + 1, leftSide);
 							else

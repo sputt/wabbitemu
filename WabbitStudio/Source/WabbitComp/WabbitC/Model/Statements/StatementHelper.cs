@@ -102,6 +102,23 @@ namespace WabbitC.Model.Statements
 			Declaration decl = null;
 			switch (exp.Tokens[0])
 			{
+                //TODO: fix for post/pre
+                case "++":
+                    if (exp.IsPrefix)
+                    {
+                        decl = block.CreateTempDeclaration(TypeHelper.GetType(block, arg1));
+                        ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, arg1);
+                        block.Statements.Add(initialAssign);
+                        block.Statements.Add(new Add(decl, Datum.Parse(block, Tokenizer.ToToken("1"))));
+                    }
+                    else
+                    {
+
+                    }
+                    break;
+                case "--":
+                    decl = Sub.BuildStatements(block, exp, arg1, Tokenizer.ToToken("1"));
+                    break;
 				case "*":
                     Type type = TypeHelper.GetType(block, arg1);
                     type.Dereference();

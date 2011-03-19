@@ -49,6 +49,7 @@ namespace WabbitC
 
             var currentModule = Module.ParseModule(ref tokens);
 
+            Optimizer.Optimize(ref currentModule);
 			//AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
 			//codeGenerator.GenerateCode();
 
