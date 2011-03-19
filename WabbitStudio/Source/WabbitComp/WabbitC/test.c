@@ -1,12 +1,11 @@
-int test()
+int fibonacci(int n)
 {
-	int buffer[32];
-	int i;
-	i = 0;
-	while (i - 6)
+	if (n == 0)
 	{
-		buffer[i] = i;
-		i += 1;
+		return 0;
 	}
-	return 0;
+	else
+	{
+		return fibonacci(n - 2) + fibonacci(n - 1);
+	}
 }

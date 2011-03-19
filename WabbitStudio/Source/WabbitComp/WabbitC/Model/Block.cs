@@ -33,9 +33,9 @@ namespace WabbitC.Model
                         }
                     }
                 }
-                if (Function != null)
+                if (curBlock.Function != null)
                 {
-                    foreach (FunctionType.ParamDef param in Function.ParamDefs)
+                    foreach (FunctionType.ParamDef param in curBlock.Function.ParamDefs)
                     {
                         if (param.Name == name)
                         {
@@ -82,8 +82,25 @@ namespace WabbitC.Model
         static public Block ParseBlock(ref List<Token>.Enumerator tokens, Block parent, FunctionType func)
         {
             var thisBlock = new Block();
-            thisBlock.Function = func;
             thisBlock.Parent = parent;
+
+            thisBlock.Function = func;
+
+            // Climp the parents to find the function we are in
+            if (func == null)
+            {
+                Block curBlock = thisBlock;
+                do
+                {
+                    if (curBlock.Function != null)
+                    {
+                        func = curBlock.Function;
+                    }
+                    curBlock = curBlock.Parent;
+                }
+                while (curBlock != null);
+            }
+            
             if (parent != null)
             {
                 thisBlock.TempDeclarationNumber = parent.TempDeclarationNumber;
@@ -203,15 +220,18 @@ namespace WabbitC.Model
 
                                 if (tokens.Current.Type == TokenType.OpenBlock)
                                 {
+                                    var declaration = new Declaration(resultType, resultName);
+                                    thisBlock.Declarations.Add(declaration);
+
                                     tokens.MoveNext();
                                     var block = Block.ParseBlock(ref tokens, thisBlock, function);
 
                                     Debug.Assert(tokens.Current.Type == TokenType.CloseBlock);
                                     tokens.MoveNext();
 
-                                    var declaration = new Declaration(resultType, resultName);
                                     declaration.Code = block;
-                                    thisBlock.Declarations.Add(declaration);
+                                    //STP: Not sure about this
+                                    //thisBlock.Declarations.Add(declaration);
                                 }
                                 else
                                 {

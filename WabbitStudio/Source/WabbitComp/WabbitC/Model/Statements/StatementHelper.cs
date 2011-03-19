@@ -160,6 +160,27 @@ namespace WabbitC.Model.Statements
                     ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, arg2);
                     block.Statements.Add(initialAssign);
 					break;
+                case "==":
+                    decl = block.CreateTempDeclaration(new BuiltInType("int"));
+                    Datum equalsRhs;
+                    Declaration equalsLhs;
+                    equalsLhs = block.FindDeclaration(arg1);
+                    if (equalsLhs == null)
+                    {
+                        equalsRhs = Datum.Parse(block, arg1);
+                        equalsLhs = block.FindDeclaration(arg2);
+                        if (equalsLhs == null)
+                        {
+                            MessageSystem.Instance.ThrowNewError("Could not find decl for equals");
+                        }
+                    }
+                    else
+                    {
+                        equalsRhs = Datum.Parse(block, arg2);
+                    }
+                    Equals equalsStatement = new Equals(decl, equalsLhs, equalsRhs);
+                    block.Statements.Add(equalsStatement);
+                    break;
 			}
 			return decl;
 		}

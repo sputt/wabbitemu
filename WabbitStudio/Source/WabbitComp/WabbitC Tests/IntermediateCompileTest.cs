@@ -66,5 +66,11 @@ namespace WabbitC_Tests
         {
             RunIntermediateTest("SimpleMath");
         }
+
+        [TestMethod]
+        public void Fibonacci()
+        {
+            RunIntermediateTest("fibonacci");
+        }
     }
 }
