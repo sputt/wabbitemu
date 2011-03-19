@@ -113,7 +113,7 @@ namespace WabbitC_Tests
             Assert.AreEqual("10UL", tokens[0].Text);
         }
 
-        [TestMethod()]
+        /*[TestMethod()]
         public void TokenizeTest6()
         {
             List<Token> tokens = Tokenizer.Tokenize("-10");
@@ -129,7 +129,7 @@ namespace WabbitC_Tests
 
             Assert.AreEqual(TokenType.RealType, tokens[0].Type);
             Assert.AreEqual("-10.0", tokens[0].Text);
-        }
+        }*/
 
         [TestMethod()]
         public void TokenizeTest8()

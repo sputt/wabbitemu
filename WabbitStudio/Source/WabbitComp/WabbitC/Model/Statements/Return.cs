@@ -7,16 +7,20 @@ namespace WabbitC.Model.Statements
 {
     class Return : ControlStatement
     {
-        Declaration ReturnReg;
-
-        public Return(Declaration decl)
+        Datum returnReg;
+        public Datum ReturnReg
         {
-            ReturnReg = decl;
+            get { return returnReg; }
+        }
+
+        public Return(Datum decl)
+        {
+            returnReg = decl;
         }
 
         public override string ToString()
         {
-            return "return " + ReturnReg.Name + ";";
+            return "return " + ReturnReg + ";";
         }
     }
 }

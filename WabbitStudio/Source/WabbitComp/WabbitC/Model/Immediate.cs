@@ -14,10 +14,11 @@ namespace WabbitC.Model
 
         public static bool IsImmediate(Token immToken)
         {
-            int number1;
+            return immToken.Type == TokenType.IntType || immToken.Type == TokenType.RealType;
+            /*int number1;
             double number2;
 
-            return int.TryParse(immToken.Text, out number1) || double.TryParse(immToken.Text, out number2);
+            return int.TryParse(immToken.Text, out number1) || double.TryParse(immToken.Text, out number2);*/
         }
 
         public Immediate(Token valueToken)

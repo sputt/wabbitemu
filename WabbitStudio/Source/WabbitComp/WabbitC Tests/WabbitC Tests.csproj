@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="BracerTest.cs" />
     <Compile Include="CompoundAssignmentRemoverTest.cs" />
+    <Compile Include="OptimizerTest.cs" />
     <Compile Include="ExpressionTest.cs" />
     <Compile Include="IntermediateCompileTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

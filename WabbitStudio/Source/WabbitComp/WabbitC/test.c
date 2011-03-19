@@ -1,11 +1,7 @@
-int fibonacci(int n)
+int test()
 {
-	if (n == 0)
-	{
-		return 0;
-	}
-	else
-	{
-		return fibonacci(n - 2) + fibonacci(n - 1);
-	}
+	int i;
+	i = 5;
+	i++;
+	return i + 1;
 }

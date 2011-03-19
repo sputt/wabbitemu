@@ -5,6 +5,7 @@ using System.IO;
 using System.Diagnostics;
 using WabbitC.Model;
 using WabbitC.TokenPasses;
+using WabbitC.Optimizer;
 
 namespace WabbitC
 {
@@ -27,6 +28,7 @@ namespace WabbitC
             }
             return resultTokens;
         }
+
         /// <summary>
         /// Parses a file and outputs a .asm file
         /// </summary>
@@ -49,7 +51,7 @@ namespace WabbitC
 
             var currentModule = Module.ParseModule(ref tokens);
 
-            Optimizer.Optimize(ref currentModule);
+            Optimizer.Optimizer.RunOptimizer(ref currentModule);
 			//AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
 			//codeGenerator.GenerateCode();
 

@@ -106,9 +106,7 @@ namespace WabbitC.Model.Statements
                 case "++":
                     if (exp.IsPrefix)
                     {
-                        decl = block.CreateTempDeclaration(TypeHelper.GetType(block, arg1));
-                        ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, arg1);
-                        block.Statements.Add(initialAssign);
+                        decl = block.FindDeclaration(arg1.Text);
                         block.Statements.Add(new Add(decl, Datum.Parse(block, Tokenizer.ToToken("1"))));
                     }
                     else
@@ -117,7 +115,15 @@ namespace WabbitC.Model.Statements
                     }
                     break;
                 case "--":
-                    decl = Sub.BuildStatements(block, exp, arg1, Tokenizer.ToToken("1"));
+                    if (exp.IsPrefix)
+                    {
+                        decl = block.FindDeclaration(arg1.Text);
+                        block.Statements.Add(new Sub(decl, Datum.Parse(block, Tokenizer.ToToken("1"))));
+                    }
+                    else
+                    {
+
+                    }
                     break;
 				case "*":
                     Type type = TypeHelper.GetType(block, arg1);
@@ -203,6 +209,22 @@ namespace WabbitC.Model.Statements
 
             var finalAssign = AssignmentHelper.ParseSingle(block, LValue, token);
             block.Statements.Add(finalAssign);
+        }
+
+        internal static bool Contains(Statement statement, Datum datum)
+        {
+            System.Type type = statement.GetType();
+            if (type == typeof(Assignment))
+            {
+                var assigment = statement as Assignment;
+                return assigment.RValue == datum;
+            }
+            else if (type == typeof(Return))
+            {
+                var returnStatement = statement as Return;
+                return returnStatement.ReturnReg == datum;
+            }
+            return false;
         }
     }
 }

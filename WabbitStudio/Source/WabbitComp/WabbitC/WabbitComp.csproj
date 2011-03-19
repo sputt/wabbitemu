@@ -98,7 +98,9 @@
     <Compile Include="Model\Types\BuiltInType.cs" />
     <Compile Include="Model\Types\Type.cs" />
     <Compile Include="Model\Types\TypeHelper.cs" />
-    <Compile Include="Optimizer.cs" />
+    <Compile Include="Optimizer\ConstantsOptimizer.cs" />
+    <Compile Include="Optimizer\DeadCodeOptimizer.cs" />
+    <Compile Include="Optimizer\Optimizer.cs" />
     <Compile Include="Parser.cs" />
     <Compile Include="ParserExpression.cs" />
     <Compile Include="PreprocessorDefine.cs" />
@@ -121,6 +123,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

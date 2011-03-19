@@ -105,18 +105,16 @@ namespace WabbitC
 
         private static void GetTokenType(ref Token tokenToAdd)
         {
-            float floatCheck;
-            int intCheck;
 			if (CheckReservedKeyword(tokenToAdd.Text))
 				tokenToAdd.Type = TokenType.ReservedKeyword;
 			else if (CheckPreprocessorKeyword(tokenToAdd.Text))
 				tokenToAdd.Type = TokenType.Preprocessor;
 			else if (CheckComment(tokenToAdd.Text))
 				tokenToAdd.Type = TokenType.CommentType;
-			else if (float.TryParse(tokenToAdd.Text, out floatCheck) && (tokenToAdd.Text.Contains("E") || tokenToAdd.Text.Contains("e") || tokenToAdd.Text.Contains(".")))
+            else if (CheckIntType(tokenToAdd.Text))
+                tokenToAdd.Type = TokenType.IntType;
+			else if (CheckFloatType(tokenToAdd.Text))
 				tokenToAdd.Type = TokenType.RealType;
-			else if (int.TryParse(tokenToAdd.Text, out intCheck))
-				tokenToAdd.Type = TokenType.IntType;
 			else if (CheckOperators(tokenToAdd.Text))
 				tokenToAdd.Type = TokenType.OperatorType;
 			else if (tokenToAdd.Text == "{")
@@ -132,6 +130,34 @@ namespace WabbitC
 			else
 				tokenToAdd.Type = TokenType.StringType;
 
+        }
+
+        private static bool CheckIntType(string text)
+        {
+            int intCheck;
+            string newText = text;
+            if (newText.EndsWith("L") || newText.EndsWith("l"))
+                newText = newText.Remove(newText.Length - 1);
+            if (newText.EndsWith("U") || newText.EndsWith("u"))
+                newText = newText.Remove(newText.Length - 1);
+
+            if (int.TryParse(newText, out intCheck))
+                return true;
+            if (!text.StartsWith("0x"))
+                return false;
+            return int.TryParse(newText.Remove(0, 2), System.Globalization.NumberStyles.HexNumber, null, out intCheck);
+        }
+
+        private static bool CheckFloatType(string text)
+        {
+            float floatCheck;
+            int counter = text.Length - 1;
+            while(counter >= 0 && char.IsLetter(text[counter]))
+                counter--;
+            if (counter < 0)
+                return false;
+            string newString = text.Remove(counter + 1, text.Length - counter - 1);
+            return float.TryParse(newString, out floatCheck);
         }
 
 		private static bool CheckOperators(string text)
@@ -182,6 +208,43 @@ namespace WabbitC
                     return null;
             }
             string word = inputContents.Substring(index, newIndex - index);
+            if (char.IsDigit(word[0]) && newIndex < inputContents.Length)
+            {
+                char nextChar = inputContents[newIndex];
+                //realtypes
+                if (nextChar == '.' || nextChar == 'e' || nextChar == 'E')
+                {
+                    newIndex++;
+                    while (newIndex < inputContents.Length && char.IsDigit(inputContents[newIndex]))
+                        newIndex++;
+                    if (newIndex < inputContents.Length)
+                    {
+                        nextChar = char.ToLower(inputContents[newIndex]);
+                        if (newIndex < inputContents.Length && (nextChar == 'f' || nextChar == 'l'))
+                            newIndex++;
+                    }
+                    word = inputContents.Substring(index, newIndex - index);
+                }
+                    //inttypes
+                else 
+                {
+                    if ((word[0] == '0' && inputContents[newIndex] == 'x'))
+                    {
+                        newIndex++;
+                        while (newIndex < inputContents.Length && char.IsDigit(inputContents[newIndex]))
+                            newIndex++;
+                    }
+                    if (newIndex < inputContents.Length) { 
+                        nextChar = char.ToLower(inputContents[newIndex]);
+                        if (nextChar == 'l')
+                            newIndex++;
+                        else if (nextChar == 'u' && newIndex < inputContents.Length - 1 &&
+                            char.ToLower(inputContents[newIndex + 1]) == 'l')
+                            newIndex += 2;
+                    }
+                    word = inputContents.Substring(index, newIndex - index);
+                }
+            }
             if (word.Length > 0 && delimeters.IndexOf(word[0]) >= 0)
             {
                 if (word == DoubleQuote)
@@ -194,7 +257,7 @@ namespace WabbitC
                 else if (word == "/")
                 {
                     //check for comments
-					string comment = word + inputContents[newIndex];
+                    string comment = word + inputContents[newIndex];
                     if (comment == MultiLineCommentStart)
                     {
                         while (newIndex < inputContents.Length && !(test == '*' && inputContents[newIndex + 1] == '/'))
@@ -204,13 +267,13 @@ namespace WabbitC
                                 line++;
                         }
                         newIndex += 2;
-						word = comment;
+                        word = comment;
                     }
                     else if (comment == SingleLineComment)
                     {
                         while (newIndex < inputContents.Length && test != '\n')
                             test = inputContents[++newIndex];
-						word = comment;
+                        word = comment;
                     }
                 }
                 else
@@ -218,10 +281,10 @@ namespace WabbitC
                     if (IsValidIndex(newIndex, inputContents))
                     {
                         test = word[0];
-						char nextCh =  inputContents[newIndex];
+                        char nextCh = inputContents[newIndex];
                         if (operators.IndexOf(test) >= 0)
-							if (((test == '+' || test == '-' || test == '|' || test == '=' || test == '&') && nextCh == test) || nextCh == '=' || (test == '-' && nextCh == '>'))
-								newIndex++;
+                            if (((test == '+' || test == '-' || test == '|' || test == '=' || test == '&') && nextCh == test) || nextCh == '=' || (test == '-' && nextCh == '>'))
+                                newIndex++;
                     }
                 }
                 word = inputContents.Substring(index, newIndex - index);

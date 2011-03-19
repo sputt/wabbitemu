@@ -18,5 +18,21 @@ namespace WabbitC.Model
                 return (Datum)block.FindDeclaration(token);
             }
         }
+
+        public override string ToString()
+        {
+            if (this.GetType() == typeof(Immediate))
+            {
+                return ((Immediate) this).Value;
+            }
+            else if (this.GetType() == typeof(Declaration))
+            {
+                return ((Declaration)this).Name;
+            }
+            else
+            {
+                return base.ToString();
+            }
+        }
     }
 }
