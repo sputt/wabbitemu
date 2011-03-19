@@ -7,5 +7,9 @@ namespace WabbitC.Model.Statements
 {
     class ValueStatement : Statement
     {
+        public virtual Immediate Apply()
+        {
+            throw new NotImplementedException();
+        }
     }
 }

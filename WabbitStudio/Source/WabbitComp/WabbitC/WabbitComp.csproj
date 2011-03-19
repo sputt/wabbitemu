@@ -76,6 +76,7 @@
     <Compile Include="Model\Statements\Add.cs" />
     <Compile Include="Model\Statements\Assignment.cs" />
     <Compile Include="Model\Statements\AssignmentHelper.cs" />
+    <Compile Include="Model\Statements\ConditionalOperator.cs" />
     <Compile Include="Model\Statements\ControlStatement.cs" />
     <Compile Include="Model\Statements\Equals.cs" />
     <Compile Include="Model\Statements\Load.cs" />

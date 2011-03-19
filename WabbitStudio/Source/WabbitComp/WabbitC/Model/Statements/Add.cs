@@ -48,5 +48,11 @@ namespace WabbitC.Model.Statements
 
             return decl;
         }
+
+        public override Immediate Apply()
+        {
+            LValue.ConstValue.Value = (LValue.ConstValue.Value + (AddValue as Immediate).Value).Eval()[0].Token;
+            return LValue.ConstValue;
+        }
     }
 }

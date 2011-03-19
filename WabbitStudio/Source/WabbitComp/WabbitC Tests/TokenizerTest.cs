@@ -69,7 +69,7 @@ namespace WabbitC_Tests
         ///A test for Tokenize
         ///</summary>
         [TestMethod()]
-        public void TokenizeTest1()
+        public void TokenizeTest01()
         {
             List<Token> tokens = Tokenizer.Tokenize("10");
 
@@ -78,7 +78,7 @@ namespace WabbitC_Tests
         }
 
         [TestMethod()]
-        public void TokenizeTest2()
+        public void TokenizeTest02()
         {
             List<Token> tokens = Tokenizer.Tokenize("10.0");
 
@@ -87,7 +87,7 @@ namespace WabbitC_Tests
         }
 
         [TestMethod()]
-        public void TokenizeTest3()
+        public void TokenizeTest03()
         {
             List<Token> tokens = Tokenizer.Tokenize("10.0f");
 
@@ -96,7 +96,7 @@ namespace WabbitC_Tests
         }
 
         [TestMethod()]
-        public void TokenizeTest4()
+        public void TokenizeTest04()
         {
             List<Token> tokens = Tokenizer.Tokenize("10L");
 
@@ -105,7 +105,7 @@ namespace WabbitC_Tests
         }
 
         [TestMethod()]
-        public void TokenizeTest5()
+        public void TokenizeTest05()
         {
             List<Token> tokens = Tokenizer.Tokenize("10UL");
 
@@ -113,8 +113,8 @@ namespace WabbitC_Tests
             Assert.AreEqual("10UL", tokens[0].Text);
         }
 
-        /*[TestMethod()]
-        public void TokenizeTest6()
+        [TestMethod()]
+        public void TokenizeTest06()
         {
             List<Token> tokens = Tokenizer.Tokenize("-10");
 
@@ -123,16 +123,16 @@ namespace WabbitC_Tests
         }
 
         [TestMethod()]
-        public void TokenizeTest7()
+        public void TokenizeTest07()
         {
             List<Token> tokens = Tokenizer.Tokenize("-10.0");
 
             Assert.AreEqual(TokenType.RealType, tokens[0].Type);
             Assert.AreEqual("-10.0", tokens[0].Text);
-        }*/
+        }
 
         [TestMethod()]
-        public void TokenizeTest8()
+        public void TokenizeTest08()
         {
             List<Token> tokens = Tokenizer.Tokenize("0x10");
 
@@ -141,12 +141,39 @@ namespace WabbitC_Tests
         }
 
         [TestMethod()]
-        public void TokenizeTest9()
+        public void TokenizeTest09()
         {
             List<Token> tokens = Tokenizer.Tokenize("010");
 
             Assert.AreEqual(TokenType.IntType, tokens[0].Type);
             Assert.AreEqual("010", tokens[0].Text);
+        }
+
+        [TestMethod()]
+        public void TokenizeTest10()
+        {
+            List<Token> tokens = Tokenizer.Tokenize("10 <= 20");
+
+            Assert.AreEqual(TokenType.OperatorType, tokens[1].Type);
+            Assert.AreEqual("<=", tokens[1].Text);
+        }
+
+        [TestMethod()]
+        public void TokenizeTest11()
+        {
+            List<Token> tokens = Tokenizer.Tokenize("10 == 20");
+
+            Assert.AreEqual(TokenType.OperatorType, tokens[1].Type);
+            Assert.AreEqual("==", tokens[1].Text);
+        }
+
+        [TestMethod()]
+        public void TokenizeTest12()
+        {
+            List<Token> tokens = Tokenizer.Tokenize("10 >= 20");
+
+            Assert.AreEqual(TokenType.OperatorType, tokens[1].Type);
+            Assert.AreEqual(">=", tokens[1].Text);
         }
     }
 }

@@ -20,11 +20,12 @@ namespace WabbitC.Model
 
         public Declaration(Type declarationType, String name)
         {
-            this.type = declarationType;
-            this.Name = name;
+            type = declarationType;
+            Name = name;
         }
 
-        public string GetDeclaration()
+        #region ToString methods
+        public string ToDeclarationString()
         {
             if (type == null)
             {
@@ -65,8 +66,10 @@ namespace WabbitC.Model
         {
             return Name;
         }
+        #endregion
 
         //public ValueStatement InitialValue;
         public Block Code;
+        public Immediate ConstValue;
     }
 }

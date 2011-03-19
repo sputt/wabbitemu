@@ -62,11 +62,11 @@ namespace WabbitC.Model.Statements
 
             foreach (Declaration decl in Body.Declarations)
             {
-                sb.AppendLine(decl.GetDeclaration());
+                sb.AppendLine(decl.ToDeclarationString());
             }
             foreach (Declaration decl in Condition.Declarations)
             {
-                sb.AppendLine(decl.GetDeclaration());
+                sb.AppendLine(decl.ToDeclarationString());
             }
             foreach (Statement statement in Body.Statements)
             {

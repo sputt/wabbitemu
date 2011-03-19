@@ -20,5 +20,10 @@ namespace WabbitC.Model.Statements
         {
             return LValue.Name + " = " + RValue + ";";
         }
+
+        public override Immediate Apply()
+        {
+            return RValue;
+        }
     }
 }

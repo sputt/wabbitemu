@@ -292,7 +292,7 @@ namespace WabbitC.Model
             }
             foreach (Declaration decl in Declarations)
             {
-                result += decl.GetDeclaration() + "\n";
+                result += decl.ToDeclarationString() + "\n";
             }
             if (Statements != null)
             {
