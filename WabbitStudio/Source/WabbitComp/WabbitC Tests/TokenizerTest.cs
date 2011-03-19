@@ -118,17 +118,20 @@ namespace WabbitC_Tests
         {
             List<Token> tokens = Tokenizer.Tokenize("-10");
 
-            Assert.AreEqual(TokenType.IntType, tokens[0].Type);
-            Assert.AreEqual("-10", tokens[0].Text);
+            var expr = new Expression(tokens);
+            var exprList = expr.Eval();
+            Assert.AreEqual(TokenType.RealType, exprList[0].Tokens[0].Type);
+            Assert.AreEqual("-10", exprList[0].Tokens[0].Text);
         }
 
         [TestMethod()]
         public void TokenizeTest07()
         {
             List<Token> tokens = Tokenizer.Tokenize("-10.0");
-
-            Assert.AreEqual(TokenType.RealType, tokens[0].Type);
-            Assert.AreEqual("-10.0", tokens[0].Text);
+            var expr = new Expression(tokens);
+            var exprList = expr.Eval();
+            Assert.AreEqual(TokenType.RealType, exprList[0].Tokens[0].Type);
+            Assert.AreEqual("-10.0", exprList[0].Tokens[0].Text);
         }
 
         [TestMethod()]
