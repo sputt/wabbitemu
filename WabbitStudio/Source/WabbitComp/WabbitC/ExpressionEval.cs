@@ -360,7 +360,7 @@ namespace WabbitC
 						}
 						Expression insideExp = new Expression(insideTokens);
 						stack[i] = insideExp;
-						if (IsCasting(insideTokens))
+                        if (CastHelper.IsCast(insideTokens))
 						{
 							j++;
 							var castedTokens = new List<Token>();
