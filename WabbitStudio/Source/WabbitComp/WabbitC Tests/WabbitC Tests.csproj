@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="BracerTest.cs" />
     <Compile Include="CompoundAssignmentRemoverTest.cs" />
+    <Compile Include="ForLoopRemoverTest.cs" />
     <Compile Include="OptimizerTest.cs" />
     <Compile Include="ExpressionTest.cs" />
     <Compile Include="IntermediateCompileTest.cs" />
@@ -75,6 +76,7 @@
     <Content Include="bracer_test.c" />
     <Content Include="C Files\fibonacci_expected.c" />
     <Content Include="C Files\functioncallmath_expected.c" />
+    <Content Include="C Files\loop_expected.c" />
     <Content Include="C Files\main.c" />
     <Content Include="C Files\returntest_expected.c" />
     <Content Include="C Files\SimpleMath_expected.c" />

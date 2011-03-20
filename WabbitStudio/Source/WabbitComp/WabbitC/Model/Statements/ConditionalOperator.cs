@@ -8,16 +8,32 @@ namespace WabbitC.Model.Statements
     class ConditionalOperator : ValueStatement
     {
         public Declaration Result;
-        public Declaration EqualsDecl;
+        public Declaration CondDecl;
         public Token Operator;
-        public Datum EqualsValue;
+        public Datum CondValue;
 
-        public ConditionalOperator(Declaration result, Declaration equalsDecl, Token opToken, Datum equalsValue)
+        public ConditionalOperator(Declaration result, Declaration condDecl, Token opToken, Datum condValue)
         {
             Result = result;
-            EqualsDecl = equalsDecl;
+            CondDecl = condDecl;
             Operator = opToken;
-            EqualsValue = equalsValue;
+            CondValue = condValue;
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.Append(Result);
+            sb.Append(" = ");
+            sb.Append("(");
+            sb.Append(CondDecl);
+            sb.Append(" ");
+            sb.Append(Operator);
+            sb.Append(" ");
+            sb.Append(CondValue);
+            sb.Append(")");
+            sb.Append(";");
+            return sb.ToString();
         }
     }
 }

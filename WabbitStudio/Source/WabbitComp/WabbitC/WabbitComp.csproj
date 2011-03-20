@@ -78,7 +78,6 @@
     <Compile Include="Model\Statements\AssignmentHelper.cs" />
     <Compile Include="Model\Statements\ConditionalOperator.cs" />
     <Compile Include="Model\Statements\ControlStatement.cs" />
-    <Compile Include="Model\Statements\Equals.cs" />
     <Compile Include="Model\Statements\Load.cs" />
     <Compile Include="Model\Statements\Mult.cs" />
     <Compile Include="Model\Statements\Div.cs" />
@@ -125,7 +124,9 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="StatementPasses\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

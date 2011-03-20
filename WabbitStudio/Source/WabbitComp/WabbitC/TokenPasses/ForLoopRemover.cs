@@ -76,26 +76,44 @@ namespace WabbitC.TokenPasses
 
 				var conditionStatement = GetStatement(ref tokens);
 				conditionStatement.Remove(Token.StatementEndToken);
+                if (conditionStatement.Count == 0)
+                {
+                    conditionStatement.Add(new Token("1"));
+                }
 				tokensList.Add(conditionStatement);
 
 				var finalStatement = GetStatement(ref tokens);
-				Debug.Assert(tokens.Current.Type == TokenType.OpenBlock);
-				tokens.MoveNext();			//skip {
+				
 
-				var internalBlock = new List<Token>();
-				int nParen = 0;
-				while (!(tokens.Current.Type == TokenType.CloseBlock && nParen == 0))
-				{
-					if (tokens.Current.Type == TokenType.OpenBlock)
-						nParen++;
-					else if (tokens.Current.Type == TokenType.CloseBlock)
-						nParen--;
-					internalBlock.Add(tokens.Current);
-					tokens.MoveNext();
-				}
-				internalBlock.AddRange(finalStatement);
-				tokensList.Add(internalBlock);
-				//return with tokens.Current == "}"
+                if (tokens.Current.Type == TokenType.OpenBlock)
+                {
+                    tokens.MoveNext();			//skip {
+
+                    var internalBlock = new List<Token>();
+                    int nParen = 0;
+                    while (!(tokens.Current.Type == TokenType.CloseBlock && nParen == 0))
+                    {
+                        if (tokens.Current.Type == TokenType.OpenBlock)
+                            nParen++;
+                        else if (tokens.Current.Type == TokenType.CloseBlock)
+                            nParen--;
+                        internalBlock.Add(tokens.Current);
+                        tokens.MoveNext();
+                    }
+                    internalBlock.AddRange(finalStatement);
+                    tokensList.Add(internalBlock);
+                }
+                else if (tokens.Current.Type == TokenType.StatementEnd)
+                {
+                    var internalBlock = new List<Token>();
+                    internalBlock.AddRange(finalStatement);
+                    tokensList.Add(internalBlock);
+                }
+                else
+                {
+                    throw new Exception("Invalid token of some kind");
+                }
+				//return with tokens.Current == "}" or token.Current == ";"
 			}
 			return tokensList;
 		}

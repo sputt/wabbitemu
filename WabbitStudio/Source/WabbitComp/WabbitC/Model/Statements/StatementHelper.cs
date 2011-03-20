@@ -167,6 +167,11 @@ namespace WabbitC.Model.Statements
                     block.Statements.Add(initialAssign);
 					break;
                 case "==":
+                case "<=":
+                case "<":
+                case ">":
+                case ">=":
+                case "!=":
                     decl = block.CreateTempDeclaration(new BuiltInType("int"));
                     Datum equalsRhs;
                     Declaration equalsLhs;
@@ -184,7 +189,7 @@ namespace WabbitC.Model.Statements
                     {
                         equalsRhs = Datum.Parse(block, arg2);
                     }
-                    Equals equalsStatement = new Equals(decl, equalsLhs, equalsRhs);
+                    var equalsStatement = new ConditionalOperator(decl, equalsLhs, exp.Tokens[0], equalsRhs);
                     block.Statements.Add(equalsStatement);
                     break;
 			}

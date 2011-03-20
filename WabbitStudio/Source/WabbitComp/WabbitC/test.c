@@ -1,7 +1,7 @@
-int test()
+int loop(int arg)
 {
 	int i;
-	i = 5;
-	i++;
-	return i + 1;
+	for (i = 0; i < 20; i += 1)
+	{
+	}
 }

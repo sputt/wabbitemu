@@ -50,13 +50,6 @@ namespace WabbitC.Optimizer
                     MarkAlive(move.LValue, ref symbolTable);
                     MarkAlive(move.RValue, ref symbolTable);
                 }
-                else if (type == typeof(Equals))
-                {
-                    var equals = statement as Equals;
-                    MarkAlive(equals.EqualsDecl, ref symbolTable);
-                    if (equals.EqualsValue.GetType() == typeof(Declaration))
-                        MarkAlive((Declaration)equals.EqualsValue, ref symbolTable);
-                }
                 else if (type == typeof(Sub))
                 {
                     var sub = statement as Sub;

@@ -26,8 +26,17 @@ namespace WabbitC.TokenPasses
 					tokenList.Add(Token.OpenParenToken);
 					tokens.MoveNext();
 
-					while (tokens.Current.Type != TokenType.StatementEnd)
+                    int parenCount = 0;
+					while (tokens.Current.Type != TokenType.StatementEnd && !(parenCount == 0 && tokens.Current.Type == TokenType.CloseParen))
 					{
+                        if (tokens.Current.Type == TokenType.OpenParen)
+                        {
+                            parenCount++;
+                        }
+                        else if (tokens.Current.Type == TokenType.CloseParen)
+                        {
+                            parenCount++;
+                        }
 						tokenList.Add(tokens.Current);
 						tokens.MoveNext();
 					}

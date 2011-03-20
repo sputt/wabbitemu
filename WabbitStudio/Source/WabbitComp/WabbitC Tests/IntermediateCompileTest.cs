@@ -36,16 +36,12 @@ namespace WabbitC_Tests
 
             int ExpectedValue = p.ExitCode;
 
-            System.IO.File.Delete(p.StartInfo.FileName);
-
             p.StartInfo.FileName = Path.Combine(p.StartInfo.WorkingDirectory, name + "_actual.exe");
             p.StartInfo.Arguments = "7";
             p.Start();
             p.WaitForExit();
 
             int ActualValue = p.ExitCode;
-
-            System.IO.File.Delete(p.StartInfo.FileName);
 
             Assert.AreEqual(ExpectedValue, ActualValue);
         }
@@ -72,6 +68,12 @@ namespace WabbitC_Tests
         public void Fibonacci()
         {
             RunIntermediateTest("fibonacci");
+        }
+
+        [TestMethod]
+        public void Loop()
+        {
+            RunIntermediateTest("loop");
         }
     }
 }

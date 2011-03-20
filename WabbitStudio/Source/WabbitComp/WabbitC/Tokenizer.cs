@@ -346,6 +346,13 @@ namespace WabbitC
             
         }
 
+        public Token(string arg)
+        {
+            var token = Tokenizer.ToToken(arg);
+            this.Text = token.Text;
+            this.Type = token.Type;
+        }
+
         public static implicit operator string(Token t)
         {
 			if (t == null)

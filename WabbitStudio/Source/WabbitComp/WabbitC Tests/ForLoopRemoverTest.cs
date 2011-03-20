@@ -10,11 +10,11 @@ namespace WabbitC_Tests
     
     
     /// <summary>
-    ///This is a test class for CompoundAssignmentRemoverTest and is intended
-    ///to contain all CompoundAssignmentRemoverTest Unit Tests
+    ///This is a test class for ForLoopRemoverTest and is intended
+    ///to contain all ForLoopRemoverTest Unit Tests
     ///</summary>
     [TestClass()]
-    public class CompoundAssignmentRemoverTest
+    public class ForLoopRemoverTest
     {
 
 
@@ -73,11 +73,10 @@ namespace WabbitC_Tests
         [TestMethod()]
         public void RunTest1()
         {
+            ForLoopRemover target = new ForLoopRemover();
 
-            CompoundAssignmentRemover target = new CompoundAssignmentRemover(); // TODO: Initialize to an appropriate value
-
-			List<Token> tokenList = Tokenizer.Tokenize("test += 20;"); // TODO: Initialize to an appropriate value
-			List<Token> expected = Tokenizer.Tokenize("test = test + (20);");
+            List<Token> tokenList = Tokenizer.Tokenize("for (i = 0; i < 20; i++) {int var; var = 10;}");
+            List<Token> expected = Tokenizer.Tokenize("i = 0; while (i < 20) {int var; var = 10; i++;}");
 
             List<Token> actual;
             actual = target.Run(tokenList);
@@ -85,32 +84,63 @@ namespace WabbitC_Tests
             Assert.IsTrue(expected.SequenceEqual<Token>(actual),
                 "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
                 "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
-
         }
 
         [TestMethod()]
         public void RunTest2()
         {
-            CompoundAssignmentRemover target = new CompoundAssignmentRemover(); // TODO: Initialize to an appropriate value
+            ForLoopRemover target = new ForLoopRemover();
 
-			List<Token> tokenList = Tokenizer.Tokenize("test -= 20;"); // TODO: Initialize to an appropriate value
-			List<Token> expected = Tokenizer.Tokenize("test = test - (20);");
+            List<Token> tokenList = Tokenizer.Tokenize("for (i = 0; i < 20; i++);");
+            List<Token> expected = Tokenizer.Tokenize("i = 0; while (i < 20) {i++;}");
 
             List<Token> actual;
             actual = target.Run(tokenList);
 
-            Assert.IsTrue(expected.SequenceEqual<Token>(actual), 
-                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " + 
+            Assert.IsTrue(expected.SequenceEqual<Token>(actual),
+                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
                 "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
         }
 
         [TestMethod()]
         public void RunTest3()
         {
-            CompoundAssignmentRemover target = new CompoundAssignmentRemover(); // TODO: Initialize to an appropriate value
+            ForLoopRemover target = new ForLoopRemover();
 
-            List<Token> tokenList = Tokenizer.Tokenize("for (i = 0; i < 20; i += 20)"); // TODO: Initialize to an appropriate value
-            List<Token> expected = Tokenizer.Tokenize("for (i = 0; i < 20; i = i + (20))");
+            List<Token> tokenList = Tokenizer.Tokenize("for (;;);");
+            List<Token> expected = Tokenizer.Tokenize("; while (1) {;}");
+
+            List<Token> actual;
+            actual = target.Run(tokenList);
+
+            Assert.IsTrue(expected.SequenceEqual<Token>(actual),
+                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+        }
+
+        [TestMethod()]
+        public void RunTest4()
+        {
+            ForLoopRemover target = new ForLoopRemover();
+
+            List<Token> tokenList = Tokenizer.Tokenize("for (j = 2, i = 0; i < 20 && j < 20; j += 10, i++) {int var; var = 10;}");
+            List<Token> expected = Tokenizer.Tokenize("j = 2, i = 0; while (i < 20 && j < 20) {int var; var = 10; j += 10, i++;}");
+
+            List<Token> actual;
+            actual = target.Run(tokenList);
+
+            Assert.IsTrue(expected.SequenceEqual<Token>(actual),
+                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+        }
+
+        [TestMethod()]
+        public void RunTest5()
+        {
+            ForLoopRemover target = new ForLoopRemover();
+
+            List<Token> tokenList = Tokenizer.Tokenize("for (;i < 20;);");
+            List<Token> expected = Tokenizer.Tokenize("; while (i < 20) {;}");
 
             List<Token> actual;
             actual = target.Run(tokenList);
