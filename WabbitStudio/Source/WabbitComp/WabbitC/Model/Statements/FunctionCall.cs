@@ -11,7 +11,8 @@ namespace WabbitC.Model.Statements
 {
     class FunctionCall : ValueStatement
     {
-        Declaration LValue;
+        Declaration lValue;
+        public Declaration LValue { get { return lValue; } }
         Declaration Function;
         List<Declaration> Params;
 
@@ -55,7 +56,7 @@ namespace WabbitC.Model.Statements
         public FunctionCall(Declaration returnDecl, Declaration func, List<Declaration> funcParams)
         {
             Debug.Assert(func.Type.GetType() == typeof(FunctionType));
-            LValue = returnDecl;
+            lValue = returnDecl;
             Function = func;
             Params = funcParams;
         }
@@ -63,9 +64,9 @@ namespace WabbitC.Model.Statements
         public override string ToString()
         {
             string result = "";
-            if (LValue != null)
+            if (lValue != null)
             {
-                result += LValue.Name + " = ";
+                result += lValue.Name + " = ";
             }
             result += Function.Name;
             result += "(";

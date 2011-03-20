@@ -120,7 +120,7 @@ namespace WabbitC_Tests
 
             var expr = new Expression(tokens);
             var exprList = expr.Eval();
-            Assert.AreEqual(TokenType.RealType, exprList[0].Tokens[0].Type);
+            Assert.AreEqual(TokenType.IntType, exprList[0].Tokens[0].Type);
             Assert.AreEqual("-10", exprList[0].Tokens[0].Text);
         }
 
@@ -131,7 +131,7 @@ namespace WabbitC_Tests
             var expr = new Expression(tokens);
             var exprList = expr.Eval();
             Assert.AreEqual(TokenType.RealType, exprList[0].Tokens[0].Type);
-            Assert.AreEqual("-10.0", exprList[0].Tokens[0].Text);
+            Assert.AreEqual("-10", exprList[0].Tokens[0].Text);
         }
 
         [TestMethod()]

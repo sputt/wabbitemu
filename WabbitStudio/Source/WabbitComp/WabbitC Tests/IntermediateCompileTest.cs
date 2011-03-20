@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using WabbitC;
+using System.IO;
 
 namespace WabbitC_Tests
 {
@@ -28,7 +29,7 @@ namespace WabbitC_Tests
             p.Start();
             p.WaitForExit();
 
-            p.StartInfo.FileName = p.StartInfo.WorkingDirectory + @"\" + name + "_expected.exe";
+            p.StartInfo.FileName = Path.Combine(p.StartInfo.WorkingDirectory, name + "_expected.exe");
             p.StartInfo.Arguments = "7";
             p.Start();
             p.WaitForExit();
@@ -37,7 +38,7 @@ namespace WabbitC_Tests
 
             System.IO.File.Delete(p.StartInfo.FileName);
 
-            p.StartInfo.FileName = p.StartInfo.WorkingDirectory + @"\" + name + "_actual.exe";
+            p.StartInfo.FileName = Path.Combine(p.StartInfo.WorkingDirectory, name + "_actual.exe");
             p.StartInfo.Arguments = "7";
             p.Start();
             p.WaitForExit();

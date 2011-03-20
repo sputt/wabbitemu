@@ -65,7 +65,7 @@ namespace WabbitC.Optimizer
         private static bool IsReferenced(Block block, Declaration declaration, int i)
         {
             bool isRefed = false;
-            for (; i < block.Statements.Count; i++)
+            for (; i < block.Statements.Count && !isRefed; i++)
             {
                 var statement = block.Statements[i];
                 isRefed |= StatementHelper.Contains(statement, declaration);

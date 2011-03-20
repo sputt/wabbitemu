@@ -209,6 +209,9 @@ namespace WabbitC
 				case "~":
 					result = ~tok1;
 					break;
+                case "-":
+                    result = Tokenizer.ToToken("0") - tok1;
+                    break;
 			}
 			return result;
 		}

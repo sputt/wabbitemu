@@ -410,20 +410,10 @@ namespace WabbitC
 				if (!int.TryParse(t1.Text, out int1))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(AddOperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(AddOperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				result.Text = (int1 + int2).ToString();
 				result.Type = TokenType.IntType;
@@ -454,20 +444,10 @@ namespace WabbitC
 				if (!int.TryParse(t1.Text, out int1))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(SubOperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(SubOperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				result.Text = (int1 - int2).ToString();
 				result.Type = TokenType.IntType;
@@ -498,20 +478,10 @@ namespace WabbitC
 				if (!int.TryParse(t1.Text, out int1))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(MultOperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(MultOperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				result.Text = (int1 * int2).ToString();
 				result.Type = TokenType.IntType;
@@ -541,20 +511,10 @@ namespace WabbitC
 				if (!int.TryParse(t1.Text, out int1))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(DivOperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(DivOperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				result.Text = (int1 / int2).ToString();
 				result.Type = TokenType.IntType;
@@ -581,20 +541,10 @@ namespace WabbitC
 				if (!int.TryParse(t1.Text, out int1))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(BitXOROperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(BitXOROperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				result.Text = (int1 ^ int2).ToString();
 				result.Type = TokenType.IntType;
@@ -621,20 +571,10 @@ namespace WabbitC
 				if (!int.TryParse(t1.Text, out int1))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(BitANDOperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(BitANDOperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				result.Text = (int1 & int2).ToString();
 				result.Type = TokenType.IntType;
@@ -661,20 +601,10 @@ namespace WabbitC
 				if (!int.TryParse(t1.Text, out int1))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(BitOROperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				if (!int.TryParse(t2.Text, out int2))
 				{
 					return null;
-					var resultList = new List<Token>();
-					resultList.Add(BitOROperatorToken);
-					resultList.Add(t2);
-					resultList.Add(t1);
-					return new Expression(resultList);
 				}
 				result.Text = (int1 | int2).ToString();
 				result.Type = TokenType.IntType;
@@ -700,9 +630,6 @@ namespace WabbitC
 			if (!int.TryParse(t1.Text, out int1))
 			{
 				return null;
-				resultList.Add(NOTOperatorToken);
-				resultList.Add(t1);
-				return new Expression(resultList);
 			}
 			result.Text = (Convert.ToInt16(!Convert.ToBoolean(int1))).ToString();
 			result.Type = TokenType.IntType;
@@ -727,9 +654,6 @@ namespace WabbitC
 			if (!int.TryParse(t1.Text, out int1))
 			{
 				return null;
-				resultList.Add(BitNOTOperatorToken);
-				resultList.Add(t1);
-				return new Expression(resultList);
 			}
 			result.Text = (~int1).ToString();
 			result.Type = TokenType.IntType;
