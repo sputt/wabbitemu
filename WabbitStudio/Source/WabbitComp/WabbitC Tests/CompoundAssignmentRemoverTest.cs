@@ -77,7 +77,7 @@ namespace WabbitC_Tests
             CompoundAssignmentRemover target = new CompoundAssignmentRemover(); // TODO: Initialize to an appropriate value
 
 			List<Token> tokenList = Tokenizer.Tokenize("test += 20;"); // TODO: Initialize to an appropriate value
-			List<Token> expected = Tokenizer.Tokenize("test = test + (20);");
+			List<Token> expected = Tokenizer.Tokenize("test = test + 20;");
 
             List<Token> actual;
             actual = target.Run(tokenList);
@@ -94,7 +94,7 @@ namespace WabbitC_Tests
             CompoundAssignmentRemover target = new CompoundAssignmentRemover(); // TODO: Initialize to an appropriate value
 
 			List<Token> tokenList = Tokenizer.Tokenize("test -= 20;"); // TODO: Initialize to an appropriate value
-			List<Token> expected = Tokenizer.Tokenize("test = test - (20);");
+			List<Token> expected = Tokenizer.Tokenize("test = test - 20;");
 
             List<Token> actual;
             actual = target.Run(tokenList);
@@ -110,7 +110,23 @@ namespace WabbitC_Tests
             CompoundAssignmentRemover target = new CompoundAssignmentRemover(); // TODO: Initialize to an appropriate value
 
             List<Token> tokenList = Tokenizer.Tokenize("for (i = 0; i < 20; i += 20)"); // TODO: Initialize to an appropriate value
-            List<Token> expected = Tokenizer.Tokenize("for (i = 0; i < 20; i = i + (20))");
+            List<Token> expected = Tokenizer.Tokenize("for (i = 0; i < 20; i = i + 20)");
+
+            List<Token> actual;
+            actual = target.Run(tokenList);
+
+            Assert.IsTrue(expected.SequenceEqual<Token>(actual),
+                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+        }
+
+        [TestMethod()]
+        public void RunTest4()
+        {
+            CompoundAssignmentRemover target = new CompoundAssignmentRemover(); // TODO: Initialize to an appropriate value
+
+            List<Token> tokenList = Tokenizer.Tokenize("test -= var + 20;"); // TODO: Initialize to an appropriate value
+            List<Token> expected = Tokenizer.Tokenize("test = test - (var + 20);");
 
             List<Token> actual;
             actual = target.Run(tokenList);

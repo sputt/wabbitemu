@@ -50,7 +50,8 @@ namespace WabbitC.Model.Statements
                 if (exprList[i].Args != null)
                 {
                     Declaration funcDecl = block.FindDeclaration(token);
-                    List<Declaration> paramList = FunctionCall.BuildParams(block, (FunctionType)funcDecl.Type, exprList[i].Args);
+                    List<Declaration> paramList = FunctionCall.BuildParams(block, 
+                        (FunctionType)funcDecl.Type, exprList[i].Args);
 
                     Declaration returnDecl;
                     Type returnType = (funcDecl.Type as FunctionType).ReturnType;

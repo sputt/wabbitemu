@@ -10,7 +10,7 @@ namespace WabbitC
         private static List<string> ReservedModifiers = 
             new List<string>() {"const", "volatile", "struct", "union", "enum"};
 
-        static bool HandleIndirectionSection(ref List<Token>.Enumerator tokens)
+        private static bool HandleIndirectionSection(ref List<Token>.Enumerator tokens)
         {
             int parenCount = 0;
             while (!(parenCount == 0 && tokens.Current.Text == ")"))

@@ -23,9 +23,12 @@ namespace WabbitC.TokenPasses
 					Token operatorToken = tokens.Current;
 					operatorToken.Text = operatorToken.Text.Remove(operatorToken.Text.Length - 1);
 					tokenList.Add(operatorToken);
-					tokenList.Add(Token.OpenParenToken);
+
+
+					
 					tokens.MoveNext();
 
+                    var internalBlock = new List<Token>();
                     int parenCount = 0;
 					while (tokens.Current.Type != TokenType.StatementEnd && !(parenCount == 0 && tokens.Current.Type == TokenType.CloseParen))
 					{
@@ -37,10 +40,22 @@ namespace WabbitC.TokenPasses
                         {
                             parenCount++;
                         }
-						tokenList.Add(tokens.Current);
+                        internalBlock.Add(tokens.Current);
 						tokens.MoveNext();
 					}
-					tokenList.Add(Token.CloseParenToken);
+
+                    if (internalBlock.Count > 1)
+                    {
+                        tokenList.Add(Token.OpenParenToken);
+                    }
+                    
+                    tokenList.AddRange(internalBlock);
+                    
+                    if (internalBlock.Count > 1)
+                    {
+                        tokenList.Add(Token.CloseParenToken);
+                    }
+
 					tokenList.Add(tokens.Current);
 					return tokenList;
 				}
