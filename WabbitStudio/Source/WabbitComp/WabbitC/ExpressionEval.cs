@@ -349,6 +349,8 @@ namespace WabbitC
 						int j = 1;
 						curToken = curExpr.Tokens[j];
 						List<Token> insideTokens = new List<Token>();
+						List<Token> castTokens = new List<Token>();
+						castTokens.Add(Token.OpenParenToken);
 						while (!(curToken.Type == TokenType.CloseParen && nParen == 0))
 						{
 							if (curToken.Type == TokenType.CloseParen)
@@ -356,11 +358,14 @@ namespace WabbitC
 							else if (curToken.Type == TokenType.OpenParen)
 								nParen++;
 							insideTokens.Add(curToken);
+							castTokens.Add(curToken);
 							curToken = curExpr.Tokens[++j];
 						}
+						castTokens.Add(Token.CloseParenToken);
 						Expression insideExp = new Expression(insideTokens);
 						stack[i] = insideExp;
-                        if (CastHelper.IsCast(insideTokens))
+						
+                        if (CastHelper.IsCast(castTokens))
 						{
 							j++;
 							var castedTokens = new List<Token>();

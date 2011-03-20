@@ -36,18 +36,44 @@ namespace WabbitC.Optimizer
                         OptimizeBlock(ref trueBlock);
                         var falseBlock = (statement as If).FalseCase;
                         OptimizeBlock(ref falseBlock);
-                    } 
-                    else if (type == typeof(Assignment))
-                    {
-                        var assignment = statement as Assignment;
-                        var decl = block.FindDeclaration(assignment.LValue.Name);
-                        var isReferenced = IsReferenced(block, assignment.LValue, i + 1);
-                        if (decl != null && !isReferenced)
-                        {
-                            deadInstructions[i] = true;
-                            changedInstructions = true;
-                        }
                     }
+					else if (type == typeof(Assignment))
+					{
+						var assignment = statement as Assignment;
+						var decl = block.FindDeclaration(assignment.LValue.Name);
+						var isReferenced = IsReferenced(block, assignment.LValue, i + 1);
+						if (decl != null && !isReferenced)
+						{
+							deadInstructions[i] = true;
+							changedInstructions = true;
+						}
+					}
+					else if (type == typeof(Sub))
+					{
+						var sub = statement as Sub;
+						var decl = block.FindDeclaration(sub.LValue.Name);
+						var isReferenced = IsReferenced(block, sub.LValue, i + 1);
+						if (decl != null && !isReferenced)
+						{
+							deadInstructions[i] = true;
+							changedInstructions = true;
+						}
+					}
+					else if (type == typeof(Move))
+					{
+						var move = statement as Move;
+						var decl = block.FindDeclaration(move.LValue.Name);
+						var isReferenced = IsReferenced(block, move.LValue, i + 1);
+						if (decl != null && !isReferenced)
+						{
+							deadInstructions[i] = true;
+							changedInstructions = true;
+						}
+					}
+					else
+					{
+
+					}
                 }
                 if (changedInstructions)
                 {

@@ -238,6 +238,15 @@ namespace WabbitC.Model.Statements
 				var returnStatement = statement as Return;
 				return returnStatement.ReturnReg == datum;
 			}
+			else if (type == typeof(Move))
+			{
+				var move = statement as Move;
+				return move.RValue == datum;
+			}
+			else
+			{
+
+			}
             return false;
         }
     }
