@@ -99,6 +99,7 @@
     <Compile Include="Model\Types\Type.cs" />
     <Compile Include="Model\Types\TypeHelper.cs" />
     <Compile Include="Optimizer\ConstantsOptimizer.cs" />
+    <Compile Include="Optimizer\VariableReducer.cs" />
     <Compile Include="Optimizer\DeadVariableOptimizer.cs" />
     <Compile Include="Optimizer\DeadCodeOptimizer.cs" />
     <Compile Include="Optimizer\Optimizer.cs" />

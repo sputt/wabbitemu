@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace WabbitC.Optimizer
 {
-    static class DeadVariableOptimizer
+    static class VariableReducer
     {
         public static void Optimize(ref Module module)
         {
@@ -42,31 +42,27 @@ namespace WabbitC.Optimizer
                 else if (type == typeof(Assignment))
                 {
                     var assignment = statement as Assignment;
-                    MarkAlive(assignment.LValue, ref symbolTable);
+                    
                 }
                 else if (type == typeof(Move))
                 {
                     var move = statement as Move;
-                    MarkAlive(move.LValue, ref symbolTable);
-                    MarkAlive(move.RValue, ref symbolTable);
+                    
                 }
                 else if (type == typeof(ConditionalOperator))
                 {
-                    var condOp = statement as ConditionalOperator;
-                    MarkAlive(condOp.CondDecl, ref symbolTable);
-                    if (condOp.CondValue.GetType() == typeof(Declaration))
-                        MarkAlive((Declaration)condOp.CondValue, ref symbolTable);
+                    var equals = statement as ConditionalOperator;
+                    
                 }
-                else if (type == typeof(Sub) || type == typeof(Add))
+                else if (type == typeof(Sub))
                 {
                     var sub = statement as Sub;
-					var add = statement as Add;
-                    MarkAlive(add != null ? add.LValue : sub.LValue, ref symbolTable);
+                    
                 }
                 else if (type == typeof(FunctionCall))
                 {
                     FunctionCall funcCall = statement as FunctionCall;
-                    MarkAlive(funcCall.LValue, ref symbolTable);
+                    
                 }
             }
             for (int i = block.Declarations.Count - 1; i > -1; i--)
@@ -74,13 +70,6 @@ namespace WabbitC.Optimizer
                 if (!symbolTable[i].IsAlive)
                     block.Declarations.RemoveAt(i);
             }
-        }
-
-        static void MarkAlive(Declaration decl, ref List<OptimizerSymbol> symbolTable)
-        {
-            var symbol = FindSymbol(decl, ref symbolTable);
-            if (symbol != null)
-                symbol.IsAlive = true;
         }
 
         static OptimizerSymbol FindSymbol(Declaration decl, ref List<OptimizerSymbol> symbolTable)

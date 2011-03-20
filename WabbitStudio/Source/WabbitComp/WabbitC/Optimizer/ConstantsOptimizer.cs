@@ -66,28 +66,35 @@ namespace WabbitC
                         symbol.IsConstant = false;
                     }
                 }
-                else if (type == typeof(Add))
+                else if (type == typeof(Add) || type == typeof(Sub))
                 {
                     var add = statement as Add;
-                    var symbol = FindSymbol(add.LValue);
+					var sub = statement as Sub;
+                    var symbol = add != null ? FindSymbol(add.LValue) : FindSymbol(sub.LValue);
                     if (symbol.IsConstant)
                     {
-                        if (add.AddValue.GetType() == typeof(Immediate))
+						Datum value = add != null ? add.AddValue : sub.SubValue;
+						Declaration lValue = add != null ? add.LValue : sub.LValue;
+                        if (value.GetType() == typeof(Immediate))
                         {
-                            var immediate = add.AddValue as Immediate;
+                            var immediate = value as Immediate;
                             symbol.IsConstant = true;
                             if (immediate.Value.Type == TokenType.IntType)
                             {
-                                var test = int.Parse(immediate.Value.Text) + int.Parse(symbol.Value.ToString());
-                                var newImmediate = new Immediate(Tokenizer.ToToken(test.ToString()));
-                                var assigment = new Assignment(add.LValue, newImmediate);
+                                int result;
+								if (add != null)
+									result = int.Parse(symbol.Value.ToString()) + int.Parse(immediate.Value.Text);
+								else
+									result = int.Parse(symbol.Value.ToString()) - int.Parse(immediate.Value.Text);
+                                var newImmediate = new Immediate(Tokenizer.ToToken(result.ToString()));
+                                var assigment = new Assignment(lValue, newImmediate);
                                 block.Statements[i] = assigment;
                                 symbol.Value = newImmediate;
                             }
                         }
                         else
                         {
-
+							symbol.IsConstant = false;
                         }
                     }
                 }

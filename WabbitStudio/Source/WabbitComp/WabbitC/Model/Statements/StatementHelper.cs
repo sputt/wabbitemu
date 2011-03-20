@@ -224,11 +224,20 @@ namespace WabbitC.Model.Statements
                 var assigment = statement as Assignment;
                 return assigment.RValue == datum;
             }
-            else if (type == typeof(Return))
-            {
-                var returnStatement = statement as Return;
-                return returnStatement.ReturnReg == datum;
-            }
+			else if (type == typeof(Add) || type == typeof(Sub))
+			{
+				var add = statement as Add;
+				var sub = statement as Sub;
+				if (add != null)
+					return add.LValue == datum;
+				else
+					return sub.LValue == datum;
+			}
+			else if (type == typeof(Return))
+			{
+				var returnStatement = statement as Return;
+				return returnStatement.ReturnReg == datum;
+			}
             return false;
         }
     }

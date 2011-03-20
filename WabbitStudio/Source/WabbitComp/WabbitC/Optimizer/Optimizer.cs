@@ -11,6 +11,7 @@ namespace WabbitC.Optimizer
         static bool ConstantTracking = true;
         static bool DeadCodeOptimization = true;
         static bool DeadVariableRemoval = true;
+		static bool VariableReduction = true;
         public static void RunOptimizer(ref Module module)
         {
             Block mainModule = (Block) module;
@@ -20,6 +21,8 @@ namespace WabbitC.Optimizer
                 DeadCodeOptimizer.Optimize(ref module);
             if (DeadVariableRemoval)
                 DeadVariableOptimizer.Optimize(ref module);
+			if (VariableReduction)
+				VariableReducer.Optimize(ref module);
         }
     }
 }

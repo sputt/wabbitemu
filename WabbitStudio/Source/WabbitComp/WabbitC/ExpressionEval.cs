@@ -29,6 +29,12 @@ namespace WabbitC
 			get { return args; }
 		}
 
+		bool isCast;
+		public bool IsCast
+		{
+			get { return isCast; }
+		}
+
 		int operands;
 		public int Operands
 		{
@@ -354,6 +360,16 @@ namespace WabbitC
 						}
 						Expression insideExp = new Expression(insideTokens);
 						stack[i] = insideExp;
+						if (IsCasting(insideTokens))
+						{
+							j++;
+							var castedTokens = new List<Token>();
+							for (; j < curExpr.Tokens.Count; j++)
+								castedTokens.Add(curExpr.Tokens[j]);
+							var castedExp = new Expression(castedTokens);
+							insideExp.isCast = true;
+							stack.Insert(i + 1, castedExp);
+						}
 					}
 					else if (curToken.Type == TokenType.StringType && curExpr.Tokens.Count > 1 &&
 								curExpr.Tokens[1].Type == TokenType.OpenParen)
@@ -388,6 +404,11 @@ namespace WabbitC
 				}
 			}
 			return stack;
+		}
+
+		private bool IsCasting(List<Token> insideTokens)
+		{
+			return false;
 		}
 		static List<List<string>> operators = new List<List<string>> { 
 																	new List<string> {","},
