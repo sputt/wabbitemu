@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 
+using WabbitC.Model.Statements.Math;
 using WabbitC.Model.Types;
 
 namespace WabbitC.Model.Statements
@@ -142,16 +143,10 @@ namespace WabbitC.Model.Statements
 			switch (exp.Tokens[0])
 			{
 				case "+":
-					decl = Add.BuildStatements(block, exp, arg1, arg2);
-					break;
-				case "-":
-					decl = Sub.BuildStatements(block, exp, arg1, arg2);
-					break;
-				case "*":
-					decl = Mult.BuildStatements(block, exp, arg1, arg2);
-					break;
-				case "/":
-					decl = Div.BuildStatements(block, exp, arg1, arg2);
+                case "-":
+                case "*":
+                case "/":
+					decl = MathStatement.BuildStatements(block, exp, arg1, arg2);
 					break;
                 case StoreToken:
                     decl = block.CreateTempDeclaration(TypeHelper.GetType(block, arg2));

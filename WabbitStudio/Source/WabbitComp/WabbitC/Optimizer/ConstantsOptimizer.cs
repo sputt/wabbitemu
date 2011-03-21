@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using WabbitC.Model;
 using WabbitC.Model.Statements;
+using WabbitC.Model.Statements.Math;
 using System.Diagnostics;
 
 namespace WabbitC
@@ -73,7 +74,7 @@ namespace WabbitC
                     var symbol = add != null ? FindSymbol(add.LValue) : FindSymbol(sub.LValue);
                     if (symbol.IsConstant)
                     {
-						Datum value = add != null ? add.AddValue : sub.SubValue;
+						Datum value = add != null ? add.RValue : sub.RValue;
 						Declaration lValue = add != null ? add.LValue : sub.LValue;
                         if (value.GetType() == typeof(Immediate))
                         {

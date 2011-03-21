@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using WabbitC.Model;
 using WabbitC.Model.Statements;
+using WabbitC.Model.Statements.Math;
 
 namespace WabbitC.Optimizer
 {
