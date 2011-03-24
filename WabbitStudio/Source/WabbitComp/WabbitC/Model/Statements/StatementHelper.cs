@@ -133,6 +133,13 @@ namespace WabbitC.Model.Statements
                     decl = block.CreateTempDeclaration(type);
                     block.Statements.Add(new Load(decl, Datum.Parse(block, arg1)));
 					break;
+                /*
+                case "&":
+                    Type type = TypeHelper.GetType(block, arg1);
+                    type.Reference();
+                    decl = block.CreateTempDeclaration(type);
+                    block.Statements.Add(new 
+                 */
 			}
 			return decl;
 		}

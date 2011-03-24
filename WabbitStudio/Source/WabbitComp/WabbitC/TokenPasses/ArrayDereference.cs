@@ -60,10 +60,20 @@ namespace WabbitC.TokenPasses
                     // Add the name
                     newTokenList.Add(tokens.Current);
                     
-                    newTokenList.AddRange(Tokenizer.Tokenize("+("));
-                    newTokenList.AddRange(result);
+                    newTokenList.AddRange(Tokenizer.Tokenize("+"));
 
-                    newTokenList.AddRange(Tokenizer.Tokenize("))"));
+                    if (result.Count > 1)
+                    {
+                        newTokenList.AddRange(Tokenizer.Tokenize("("));
+                        newTokenList.AddRange(result);
+                        newTokenList.AddRange(Tokenizer.Tokenize(")"));
+                    }
+                    else
+                    {
+                        newTokenList.AddRange(result);
+                    }
+
+                    newTokenList.AddRange(Tokenizer.Tokenize(")"));
 
                     tokens = currentTokens;
                 }

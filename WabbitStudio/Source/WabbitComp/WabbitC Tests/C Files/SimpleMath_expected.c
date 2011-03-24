@@ -1,4 +1,7 @@
 ﻿int SimpleMath(int arg)
 {
-	return arg + 20 - (arg + 2);
+	int temp;
+	temp = arg * 2;
+	temp /= arg + 4;
+	return arg + 20 - (arg + 2) + temp;
 }

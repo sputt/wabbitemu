@@ -59,6 +59,10 @@ namespace WabbitC.Model
 
         public Declaration CreateTempDeclaration(Type type)
         {
+            if (type.GetType() == typeof(Types.Array))
+            {
+                type = (type as Types.Array).GetArrayPointerType();
+            }
             var declaration = new Declaration(type, "__temp" + TempDeclarationNumber);
             Declarations.Add(declaration);
 

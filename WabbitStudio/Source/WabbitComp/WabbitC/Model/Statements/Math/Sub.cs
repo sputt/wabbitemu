@@ -20,7 +20,7 @@ namespace WabbitC.Model.Statements.Math
 
         public Token GetHandledOperator()
         {
-            return Token.AddOperatorToken;
+            return Token.SubOperatorToken;
         }
 
         Immediate IMathOperator.Apply()

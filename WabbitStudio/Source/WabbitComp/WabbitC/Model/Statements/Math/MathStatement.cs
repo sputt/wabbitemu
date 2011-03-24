@@ -45,16 +45,13 @@ namespace WabbitC.Model.Statements.Math
                     try
                     {
                         IMathOperator mathOp = (IMathOperator)asm.CreateInstance(type.FullName);
-                        if (mathOp != null)
+                        if (opToken.Equals(mathOp.GetHandledOperator()))
                         {
-                            if (opToken.Equals(mathOp.GetHandledOperator()))
-                            {
-                                MathStatement mathStatement;
-                                mathStatement = Activator.CreateInstance(type,
-                                    new object[] { decl, Datum.Parse(block, operand2) }) as MathStatement;
-                                block.Statements.Add(mathStatement);
-                                break;
-                            }
+                            MathStatement mathStatement;
+                            mathStatement = Activator.CreateInstance(type,
+                                new object[] { decl, Datum.Parse(block, operand2) }) as MathStatement;
+                            block.Statements.Add(mathStatement);
+                            break;
                         }
                     }
                     catch (MissingMethodException) { }

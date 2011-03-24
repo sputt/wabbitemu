@@ -60,6 +60,15 @@ namespace WabbitC.Model.Types
             }
         }
 
+        public Type GetArrayPointerType()
+        {
+            Type ptrType = BaseType.Clone() as Type;
+
+            ptrType.IndirectionLevels += Dimensions.Count;
+            return ptrType;
+        }
+
+
         public override string ToString()
         {
             var sb = new StringBuilder();

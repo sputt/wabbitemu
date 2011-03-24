@@ -82,6 +82,7 @@
     <Content Include="C Files\main.c" />
     <Content Include="C Files\returntest_expected.c" />
     <Content Include="C Files\SimpleMath_expected.c" />
+    <Content Include="C Files\store_expected.c" />
   </ItemGroup>
   <ItemGroup>
     <None Include="build-intermediates.bat" />

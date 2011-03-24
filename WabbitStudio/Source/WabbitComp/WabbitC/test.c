@@ -1,5 +1,7 @@
-int loop(int arg)
+int SimpleMath(int arg)
 {
-	int test;
-	test = arg + 10;
+	int temp;
+	temp = arg * 2;
+	temp /= arg + 4;
+	return arg + 20 - (arg + 2) + temp;
 }

@@ -34,6 +34,11 @@ namespace WabbitC.Model
             }
         }
 
+        public void Reference()
+        {
+            IndirectionLevels++;
+        }
+
         public Type()
         {
             IndirectionLevels = 0;

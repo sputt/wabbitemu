@@ -75,5 +75,11 @@ namespace WabbitC_Tests
         {
             RunIntermediateTest("loop");
         }
+
+        [TestMethod]
+        public void Store()
+        {
+            RunIntermediateTest("store");
+        }
     }
 }

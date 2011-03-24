@@ -16,7 +16,7 @@ namespace WabbitC.Model.Statements.Math
         public Mult(Declaration lValue, Datum rValue)
         {
             LValue = lValue;
-            Operator = Token.DivOperatorToken;
+            Operator = Token.MultOperatorToken;
             RValue = rValue;
         }
 
@@ -24,7 +24,7 @@ namespace WabbitC.Model.Statements.Math
 
         public Token GetHandledOperator()
         {
-            return Token.AddOperatorToken;
+            return Token.MultOperatorToken;
         }
 
         Immediate IMathOperator.Apply()

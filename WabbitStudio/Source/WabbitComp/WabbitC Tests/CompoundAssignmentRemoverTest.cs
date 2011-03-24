@@ -135,5 +135,22 @@ namespace WabbitC_Tests
                 "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
                 "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
         }
+
+
+        [TestMethod()]
+        public void RunTest5()
+        {
+            CompoundAssignmentRemover target = new CompoundAssignmentRemover(); // TODO: Initialize to an appropriate value
+
+            List<Token> tokenList = Tokenizer.Tokenize("test /= var + 20;"); // TODO: Initialize to an appropriate value
+            List<Token> expected = Tokenizer.Tokenize("test = test / (var + 20);");
+
+            List<Token> actual;
+            actual = target.Run(tokenList);
+
+            Assert.IsTrue(expected.SequenceEqual<Token>(actual),
+                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+        }
     }
 }
