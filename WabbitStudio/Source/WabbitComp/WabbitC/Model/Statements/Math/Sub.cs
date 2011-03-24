@@ -9,6 +9,10 @@ namespace WabbitC.Model.Statements.Math
 {
 	class Sub: MathStatement, IMathOperator
     {
+        public Sub()
+        {
+        }
+
         public Sub(Declaration lValue, Datum subValue)
         {
             LValue = lValue;

@@ -127,19 +127,23 @@ namespace WabbitC.Model.Statements
 
                     }
                     break;
-				case "*":
-                    Type type = TypeHelper.GetType(block, arg1);
-                    type.Dereference();
-                    decl = block.CreateTempDeclaration(type);
-                    block.Statements.Add(new Load(decl, Datum.Parse(block, arg1)));
-					break;
-                /*
+                case "*":
+                    {
+                        Type type = TypeHelper.GetType(block, arg1);
+                        type.Dereference();
+                        decl = block.CreateTempDeclaration(type);
+                        block.Statements.Add(new Load(decl, Datum.Parse(block, arg1)));
+                        break;
+                    }
+
                 case "&":
-                    Type type = TypeHelper.GetType(block, arg1);
-                    type.Reference();
-                    decl = block.CreateTempDeclaration(type);
-                    block.Statements.Add(new 
-                 */
+                    {
+                        Type type = TypeHelper.GetType(block, arg1);
+                        type.Reference();
+                        decl = block.CreateTempDeclaration(type);
+                        block.Statements.Add(new AddressOf(decl, block.FindDeclaration(arg1)));
+                        break;
+                    }
 			}
 			return decl;
 		}

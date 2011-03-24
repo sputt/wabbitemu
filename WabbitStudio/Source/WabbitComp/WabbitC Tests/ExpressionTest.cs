@@ -283,6 +283,22 @@ namespace WabbitC_Tests
             Assert.AreEqual("test", actual[3].Tokens[0], "Was not parsed correctly");
         }
 
+        [TestMethod()]
+        public void AddressOfTest()
+        {
+            var tokens = Tokenizer.Tokenize("ptest = &test");
+            var target = new Expression(tokens);
+            List<Expression> expected = new List<Expression>();
+            expected.Add(new Expression(Tokenizer.ToToken("=")));
+            expected.Add(new Expression(Tokenizer.ToToken("ptest")));
+            expected.Add(new Expression(Tokenizer.ToToken("&")));
+            expected.Add(new Expression(Tokenizer.ToToken("test")));
+
+            List<Expression> actual;
+            actual = target.Eval();
+            Compare(expected, actual);
+        }
+
 		[TestMethod()]
 		public void OptimizeTest1()
 		{
