@@ -254,30 +254,30 @@ namespace WabbitC
                         test = inputContents[++newIndex];
                     newIndex++;
                 }
-                else if (word == "/")
-                {
-                    //check for comments
-                    string comment = word + inputContents[newIndex];
-                    if (comment == MultiLineCommentStart)
-                    {
-                        while (newIndex < inputContents.Length && !(test == '*' && inputContents[newIndex + 1] == '/'))
-                        {
-                            test = inputContents[++newIndex];
-                            if (test == '\n')
-                                line++;
-                        }
-                        newIndex += 2;
-                        word = comment;
-                    }
-                    else if (comment == SingleLineComment)
-                    {
-                        while (newIndex < inputContents.Length && test != '\n')
-                            test = inputContents[++newIndex];
-                        word = comment;
-                    }
-                }
                 else
                 {
+					if (word == "/")
+					{
+						//check for comments
+						string comment = word + inputContents[newIndex];
+						if (comment == MultiLineCommentStart)
+						{
+							while (newIndex < inputContents.Length && !(test == '*' && inputContents[newIndex + 1] == '/'))
+							{
+								test = inputContents[++newIndex];
+								if (test == '\n')
+									line++;
+							}
+							newIndex += 2;
+							word = comment;
+						}
+						else if (comment == SingleLineComment)
+						{
+							while (newIndex < inputContents.Length && test != '\n')
+								test = inputContents[++newIndex];
+							word = comment;
+						}
+					}
                     if (IsValidIndex(newIndex, inputContents))
                     {
                         test = word[0];
