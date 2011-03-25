@@ -234,6 +234,22 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
+		public void EvalTest10()
+		{
+			List<Token> tokens = Tokenizer.Tokenize("sizeof (int) * x");
+			Expression target = new Expression(tokens);
+
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("*")));
+			expected.Add(new Expression(Tokenizer.Tokenize("sizeof(int)")).Eval()[0]);
+			expected.Add(new Expression(Tokenizer.ToToken("x")));
+
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+		}
+
+		[TestMethod()]
 		public void CastTest1()
 		{
 			List<Token> tokens = Tokenizer.Tokenize("(unsigned char *) test");

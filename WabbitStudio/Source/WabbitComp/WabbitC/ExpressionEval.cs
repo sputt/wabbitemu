@@ -83,7 +83,7 @@ namespace WabbitC
 				if (token.Type == TokenType.OpenParen)
 				{
 
-					if (i > 0 && tokens[i - 1].Type != TokenType.StringType)
+					if (i > 0 && tokens[i - 1].Type != TokenType.StringType && tokens[i - 1].Text != "sizeof")
 					{
 						nParen++;
 						parenLoc.Add(i);
@@ -174,8 +174,10 @@ namespace WabbitC
 			Expression result = null;
 			while (i > 0)
 			{
-				while (tokens[--i].Type != TokenType.OperatorType)
+				while (--i >= 0 && tokens[i].Type != TokenType.OperatorType)
 					stack.Push(tokens[i]);
+				if (i < 0)
+					return null;
 				Token op = tokens[i];
 				List<Token> toks = new List<Token>();
 				while (stack.Count > 0 && toks.Count < 2)
@@ -371,9 +373,12 @@ namespace WabbitC
 							var castedTokens = new List<Token>();
 							for (; j < curExpr.Tokens.Count; j++)
 								castedTokens.Add(curExpr.Tokens[j]);
-							var castedExp = new Expression(castedTokens);
-							insideExp.isCast = true;
-							stack.Insert(i + 1, castedExp);
+							if (castedTokens.Count > 0)
+							{
+								var castedExp = new Expression(castedTokens);
+								insideExp.isCast = true;
+								stack.Insert(i + 1, castedExp);
+							}
 						}
 					}
 					else if (curToken.Type == TokenType.StringType && curExpr.Tokens.Count > 1 &&
@@ -432,6 +437,7 @@ namespace WabbitC
 																	new List<string> {"!", "~", "&", "*", "+", "-", "++", "−−", "--"},
 																	new List<string> {".", "++", "−−", "--" },
 																};
+		static List<string> DoubleOps = new List<string> { "&", "-", "+", "*", "++", "--" };
 		public static int GetOperator(Expression expr, out int numArgs)
 		{
 			for (int level = 0; level < operators.Count; level++)
@@ -453,14 +459,14 @@ namespace WabbitC
 						//we've found an operator, now we need to see if its acutally what we want
 						if (leftToRight)
 						{
-							if ((token != "-" && token != "+" && token != "*" && token != "++" && token != "--")
-								|| (i > 0 && (tokens[i - 1].Type != TokenType.OperatorType || (token == "*" && tokens[i-1] == "*" && level == 13))))
+							if (!DoubleOps.Contains(token) || (i > 0 && (tokens[i - 1].Type != TokenType.OperatorType ||
+								(token == "*" && tokens[i - 1] == "*" && numArgs == 1))))
 								return i;
 						}
 						else
 						{
-							if ((token != "-" && token != "+" && token != "*" && token != "++" && token != "--")
-								|| (i + 1 < tokens.Count && (tokens[i + 1].Type != TokenType.OperatorType || (token == "*" && tokens[i + 1] == "*" && level == 13))))
+							if (!DoubleOps.Contains(token) || (i + 1 < tokens.Count && (tokens[i + 1].Type != TokenType.OperatorType ||
+								(token == "*" && tokens[i + 1] == "*" && numArgs == 1))))
 								return i;
 						}
 					}

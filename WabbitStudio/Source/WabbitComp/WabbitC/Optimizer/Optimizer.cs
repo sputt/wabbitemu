@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using WabbitC.Model;
+using WabbitC;
 
 namespace WabbitC.Optimizer
 {
@@ -12,7 +13,7 @@ namespace WabbitC.Optimizer
         static bool DeadCodeOptimization = true;
         static bool DeadVariableRemoval = true;
 		static bool VariableReduction = true;
-        public static void RunOptimizer(ref Module module)
+        public static void RunOptimizer(ref Module module, Compiler.OptimizeLevel opLevel)
         {
             Block mainModule = (Block) module;
             if (ConstantTracking)

@@ -29,12 +29,23 @@ namespace WabbitC
             return resultTokens;
         }
 
+		public enum OptimizeLevel
+		{
+			OptimizeNone,
+			OptimizeSome,
+			OptimizeAlot,
+			OptimizeMax,
+		}
+
+		static OptimizeLevel optimizeLevel = OptimizeLevel.OptimizeNone;
+
         /// <summary>
         /// Parses a file and outputs a .asm file
         /// </summary>
         /// <returns></returns>
-        public static bool DoCompile(string inputFile)
+        public static bool DoCompile(string inputFile, OptimizeLevel opLevel = OptimizeLevel.OptimizeNone)
         {
+			optimizeLevel = opLevel;
             string fileContents = TryOpenFile(inputFile);
             if (string.IsNullOrEmpty(fileContents))
                 return false;
@@ -51,7 +62,8 @@ namespace WabbitC
 
             var currentModule = Module.ParseModule(ref tokens);
 
-            //Optimizer.Optimizer.RunOptimizer(ref currentModule);
+			if (optimizeLevel != OptimizeLevel.OptimizeNone)
+				Optimizer.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
 			//AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
 			//codeGenerator.GenerateCode();
 

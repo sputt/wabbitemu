@@ -67,15 +67,14 @@ namespace WabbitC
                         symbol.IsConstant = false;
                     }
                 }
-                else if (type == typeof(Add) || type == typeof(Sub))
+                else if (type.BaseType == typeof(MathStatement))
                 {
-                    var add = statement as Add;
-					var sub = statement as Sub;
-                    var symbol = add != null ? FindSymbol(add.LValue) : FindSymbol(sub.LValue);
+                    var math = statement as MathStatement;
+                    var symbol = FindSymbol(math.LValue);
                     if (symbol.IsConstant)
                     {
-						Datum value = add != null ? add.RValue : sub.RValue;
-						Declaration lValue = add != null ? add.LValue : sub.LValue;
+						Datum value = math.RValue;
+						Declaration lValue = math.LValue;
                         if (value.GetType() == typeof(Immediate))
                         {
                             var immediate = value as Immediate;
@@ -83,10 +82,7 @@ namespace WabbitC
                             if (immediate.Value.Type == TokenType.IntType)
                             {
                                 int result;
-								if (add != null)
-									result = int.Parse(symbol.Value.ToString()) + int.Parse(immediate.Value.Text);
-								else
-									result = int.Parse(symbol.Value.ToString()) - int.Parse(immediate.Value.Text);
+								result = int.Parse(symbol.Value.ToString()) + int.Parse(immediate.Value.Text);
                                 var newImmediate = new Immediate(Tokenizer.ToToken(result.ToString()));
                                 var assigment = new Assignment(lValue, newImmediate);
                                 block.Statements[i] = assigment;

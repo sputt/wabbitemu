@@ -22,10 +22,15 @@ namespace WabbitC.Optimizer
 
         public static void OptimizeBlock(ref Block block)
         {
-            bool[] deadInstructions = new bool[block.Statements.Count];
+			//true if live, dead if false
+            bool[] instructions = new bool[block.Statements.Count];
             bool changedInstructions;
             do
             {
+				for (int i = 0; i < instructions.Length; i++)
+				{
+					instructions[i] = true;
+				}
                 changedInstructions = false;
                 for (int i = 0; i < block.Statements.Count; i++)
                 {
@@ -42,21 +47,21 @@ namespace WabbitC.Optimizer
 					{
 						var assignment = statement as Assignment;
 						var decl = block.FindDeclaration(assignment.LValue.Name);
-						var isReferenced = IsReferenced(block, assignment.LValue, i + 1);
+						var isReferenced = IsReferenced(block, instructions, assignment.LValue, i + 1);
 						if (decl != null && !isReferenced)
 						{
-							deadInstructions[i] = true;
+							instructions[i] = false;
 							changedInstructions = true;
 						}
 					}
-					else if (type == typeof(Sub))
+					else if (type.BaseType == typeof(MathStatement))
 					{
-						var sub = statement as Sub;
-						var decl = block.FindDeclaration(sub.LValue.Name);
-						var isReferenced = IsReferenced(block, sub.LValue, i + 1);
+						var math = statement as MathStatement;
+						var decl = block.FindDeclaration(math.LValue.Name);
+						var isReferenced = IsReferenced(block, instructions, math.LValue, i + 1);
 						if (decl != null && !isReferenced)
 						{
-							deadInstructions[i] = true;
+							instructions[i] = false;
 							changedInstructions = true;
 						}
 					}
@@ -64,10 +69,10 @@ namespace WabbitC.Optimizer
 					{
 						var move = statement as Move;
 						var decl = block.FindDeclaration(move.LValue.Name);
-						var isReferenced = IsReferenced(block, move.LValue, i + 1);
+						var isReferenced = IsReferenced(block, instructions, move.LValue, i + 1);
 						if (decl != null && !isReferenced)
 						{
-							deadInstructions[i] = true;
+							instructions[i] = false;
 							changedInstructions = true;
 						}
 					}
@@ -81,7 +86,7 @@ namespace WabbitC.Optimizer
                     List<Statement> newStatements = new List<Statement>();
                     for (int i = 0; i < block.Statements.Count; i++)
                     {
-                        if (!deadInstructions[i])
+                        if (instructions[i])
                             newStatements.Add(block.Statements[i]);
                     }
                     block.Statements = newStatements;
@@ -89,13 +94,14 @@ namespace WabbitC.Optimizer
             } while (changedInstructions);
         }
 
-        private static bool IsReferenced(Block block, Declaration declaration, int i)
+        private static bool IsReferenced(Block block, bool[] deadInstructions, Declaration declaration, int i)
         {
             bool isRefed = false;
+		
             for (; i < block.Statements.Count && !isRefed; i++)
             {
                 var statement = block.Statements[i];
-                isRefed |= StatementHelper.Contains(statement, declaration);
+				isRefed = StatementHelper.Contains(statement, declaration) && deadInstructions[i];
             }
             return isRefed;
         }
