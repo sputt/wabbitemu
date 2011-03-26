@@ -169,10 +169,10 @@ char *handle_directive (char *ptr) {
 			size_left = instr->size - instr->instr_size;
 			while ((i = strcspn (&instr->args[base], "*")) + base != strlen (instr->args)) {
 				switch (size_left - instr->has_end_data) {
-					case 2:	instr->args[base+i] = '*'; break;
-					case 1: instr->args[base+i] = '&'; break;
+					case 2:	((char *) instr->args)[base+i] = '*'; break;
+					case 1: ((char *) instr->args)[base+i] = '&'; break;
 					default:
-						instr->args[base+i] = '&'; break;
+						((char *) instr->args)[base+i] = '&'; break;
 						//show_error ("Invalid wildcard type in ADDRINSTR");
 						//goto addinstr_fail;
 						break;
@@ -211,7 +211,7 @@ char *handle_directive (char *ptr) {
 			break;
 		addinstr_fail:
 			show_error ("Missing required information for ADDINSTR (mnemonic, args, data, and size required)");
-			if (instr && instr->args) free (instr->args);
+			if (instr && instr->args) free ((void *) instr->args);
 			if (instr) free (instr);
 			ptr = NULL;
 			break;
@@ -464,6 +464,9 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 	static int level = 0;
 	char *word = NULL;
 	int i;
+	int session;
+	bool fWasParsed;
+	char *name_end;
 
 	bool old_suppress_errors = suppress_errors;
 
@@ -502,8 +505,8 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 		} else {
 			int value;
 
-			int session = StartSPASMErrorSession();
-			bool fWasParsed = parse_num(word, &value);
+			session = StartSPASMErrorSession();
+			fWasParsed = parse_num(word, &value);
 			if (fWasParsed == true)
 			{
 				switch (type) 
@@ -567,10 +570,11 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 			}
 			else
 			{
-				char name[256], *name_end = word;
+				char name[256];
 				char *next;
 				define_t *define;
 
+				name_end = word;
 				//printf("error occured: %d, forward: %d, value: %d\n", error_occurred, parser_forward_ref_err, value);
 				read_expr (&name_end, name, "(");
 				//printf("Looking up %s\n", name);

@@ -611,7 +611,8 @@ char *change_extension (const char *filename, const char *ext) {
 }
 
 #if defined(WIN32) || defined(MACVER)
-char *strndup (const char *str, int len) {
+char *strndup (const char *str, int len)
+{
 	char *dupstr;
 
 	dupstr = (char *) malloc_chk(len + 1);

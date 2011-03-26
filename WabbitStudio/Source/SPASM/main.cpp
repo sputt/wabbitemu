@@ -13,8 +13,6 @@
 #include "console.h"
 #include "errors.h"
 
-#include "SPASM_i.h"
-
 #define LISTING_BUF_SIZE 65536	//initial size of buffer for output listing
 #define malloc_chk malloc
 
@@ -22,6 +20,9 @@ void write_file (const unsigned char *, int, const char *);
 
 extern expr_t *expr_list, *expr_list_tail;
 extern output_t *output_list, *output_list_tail;
+
+#ifdef _WINDOWS
+#include "SPASM_i.h"
 
 class CSPASMModule : public ATL::CAtlExeModuleT<CSPASMModule>
 {
@@ -31,6 +32,7 @@ public:
 };
 
 CSPASMModule _AtlModule;
+#endif
 
 /*
  * Must have mode set
@@ -214,8 +216,10 @@ int run_assembly()
 int main (int argc, char **argv)
 //int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hReserved, LPSTR lpszCommandLine, int nCmdShow)
 {
+#ifdef _WINDOWS
 	printf("Waiting for a client...\n");
 	return _AtlModule.WinMain(SW_HIDE);
+#endif
 
 	int curr_arg = 1;
 	bool case_sensitive = false;
@@ -248,7 +252,7 @@ int main (int argc, char **argv)
 	//init stuff
 	mode = MODE_NORMAL;
 	in_macro = 0;
-	//init_storage();
+	init_storage();
 	
 	//otherwise, get any options
 
@@ -357,10 +361,12 @@ int main (int argc, char **argv)
 			default:
 				{
 #ifndef _TEST
+#ifdef _WINDOWS
 					//FreeConsole();
 					//system("PAUSE");
 					printf("Waiting for a client...\n");
 					return _AtlModule.WinMain(SW_HIDE);
+#endif
 #else
 					printf ("Unrecognized option %s\n", argv[curr_arg]);
 #endif
@@ -395,6 +401,7 @@ int main (int argc, char **argv)
 			output_filename = change_extension (curr_input_file, "bin");
 	}
 
+	output_contents = (unsigned char *) malloc(OUTPUT_BUF_SIZE);
 	int error = run_assembly();
 	free(output_filename);
 	if (curr_input_file && !(mode & MODE_COMMANDLINE))
@@ -402,12 +409,8 @@ int main (int argc, char **argv)
 	if (include_dirs)
 		list_free(include_dirs, true);
 
-#if defined(_DEBUG) && defined(WIN32)
-		//if (IsDebuggerPresent())
-		//{
-		//	system("PAUSE");
-		//}
-#endif
+#ifdef _WINDOWS
 	FreeConsole();
+#endif
 	return error;
 }

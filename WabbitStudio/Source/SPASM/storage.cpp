@@ -218,9 +218,9 @@ EXPORT void free_storage() {
 	while (curr_opcode) {
 		next_opcode = curr_opcode->next;
 		if (curr_opcode->is_added) {
-			free(curr_opcode->instrs->args);
+			free((void *) curr_opcode->instrs->args);
 			free(curr_opcode->instrs);
-			free(curr_opcode->name);
+			free((void *) curr_opcode->name);
 			free(curr_opcode);
 			if (last_opcode)
 				last_opcode->next = next_opcode;

@@ -14,7 +14,7 @@ typedef u_int32_t LONG;
 typedef u_int16_t UINT;
 typedef u_int8_t BYTE;
 typedef u_int16_t WORD;
-typedef u_int32_t DWORD;
+//typedef u_int32_t DWORD;
 #define LOBYTE(w)	((BYTE)(w))
 #define HIBYTE(w)	((BYTE)(((WORD)(w)>>8)&0xFF))
 #define BI_RGB 0

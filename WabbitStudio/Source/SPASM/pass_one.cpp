@@ -471,7 +471,7 @@ char *match_opcode_args (char *ptr, char **arg_ptrs, char **arg_end_ptrs, opcode
 
 	for (instr_num = 0; instr_num < curr_opcode->num_instrs; instr_num++) {
 		//test each possible set of arguments for this opcode
-		char *curr_arg;
+		const char *curr_arg;
 		int curr_arg_num = 0;
 
 		curr_arg_file = ptr;
