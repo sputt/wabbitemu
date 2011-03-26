@@ -70,6 +70,45 @@ namespace WabbitC
 			return test;
         }
 
+		private List<Token> ReadBetweenParens(int i, int nParen, ref int j)
+		{
+			Token token = tokens[i];
+			List<Token> tempList = new List<WabbitC.Token>();
+			//skip function too
+			int curParenLevel = nParen;
+			tempList.Add(token);
+			j = i + 1;
+			while (token.Type != TokenType.CloseParen || curParenLevel == nParen)
+			{
+				if (token.Type == TokenType.CloseParen)
+					curParenLevel--;
+				else if (token.Type == TokenType.OpenParen)
+					curParenLevel++;
+				token = tokens[j++];
+				tempList.Add(token);
+			}
+			return tempList;
+		}
+
+		private int SkipCasts(ref int i, ref int nParen, ref List<int> parenLoc, ref List<int> curOpLevel)
+		{
+			int j = -1;
+			List<Token> tempList = ReadBetweenParens(i, nParen, ref j);
+			if (CastHelper.IsCast(tempList))
+			{
+				i = j;
+				if (tokens[i].Type == TokenType.OpenParen)
+				{
+					parenLoc.Add(i);
+					curOpLevel.Add(-1);
+					curOpLevel[nParen] = -1;		//impossible to remove
+					nParen++;		//skip the first paren of the cast
+					SkipCasts(ref i, ref nParen, ref parenLoc, ref curOpLevel);
+				}
+			}
+			return j;
+		}
+
 		private void OptimizeTokens()
 		{
 			int nParen = 0;
@@ -80,9 +119,18 @@ namespace WabbitC
 			for (int i = 0; i < tokens.Count; i++)
 			{
 				Token token = tokens[i];
-				if (token.Type == TokenType.OpenParen)
+				if (token.Type == TokenType.StringType || token == "sizeof")
 				{
-
+					if (i + 1 < tokens.Count && tokens[i + 1].Type == TokenType.OpenParen)
+					{
+						int j = 0;
+						ReadBetweenParens(i, nParen, ref j);
+						i = j;
+					}
+				} 
+				else if (token.Type == TokenType.OpenParen)
+				{
+					int j = SkipCasts(ref i, ref nParen, ref parenLoc, ref curOpLevel);
 					if (i > 0 && tokens[i - 1].Type != TokenType.StringType && tokens[i - 1].Text != "sizeof")
 					{
 						nParen++;
@@ -91,10 +139,7 @@ namespace WabbitC
 					}
 					else
 					{
-						//skip function
-						int curParenLevel = nParen;
-						while (token.Type != TokenType.CloseParen && curParenLevel == nParen)
-							token = tokens[++i];
+						i = j;
 					}
 				}
 				else if (token.Type == TokenType.CloseParen)
@@ -120,8 +165,8 @@ namespace WabbitC
 					}
 					//ignore assignment operator
 					if (curOpLevel[nParen] == -1)
-                        curOpLevel[nParen] = level;
-                    else if (curOpLevel[nParen] != level || IsBanned(token))
+						curOpLevel[nParen] = level;
+					else if (curOpLevel[nParen] != level || IsBanned(token))
 						canRemoveParen = false;
 				}
 			}
@@ -152,7 +197,7 @@ namespace WabbitC
 
 		private void CalculateStack(ref Expression exp)
 		{
-			if (exp.Args != null || exp.Operands != 0)
+			if (exp.Args != null || exp.Operands != 0 || exp.IsCast)
 				return;
 			var evalExp = exp.Eval();
 			var tokens = Expression.ToTokens(evalExp);

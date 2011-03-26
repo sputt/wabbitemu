@@ -266,6 +266,40 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
+		public void CastTest2()
+		{
+			List<Token> tokens = Tokenizer.Tokenize("(int *) ((unsigned char *) foo + (unsigned char *) bar)");
+			Expression target = new Expression(tokens);
+
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.Tokenize("int *")));
+			expected.Add(new Expression(Tokenizer.Tokenize("(unsigned char *) foo + (unsigned char *) bar")));
+
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+			Assert.IsTrue(actual[0].IsCast, "Not marked as a cast properly");
+		}
+
+		[TestMethod()]
+		public void CastTest3()
+		{
+			List<Token> tokens = Tokenizer.Tokenize("(int) (char) 342");
+			Expression target = new Expression(tokens);
+
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("int")));
+			expected.Add(new Expression(Tokenizer.ToToken("char")));
+			expected.Add(new Expression(Tokenizer.ToToken("342")));
+
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+			Assert.IsTrue(actual[0].IsCast, "Not marked as a cast properly");
+			Assert.IsTrue(actual[1].IsCast, "Not marked as a cast properly");
+		}
+
+		[TestMethod()]
 		public void CommaOperatorTest1()
 		{
 			List<Token> tokens = Tokenizer.Tokenize("d = 10, d = testfunc(with, args)");
