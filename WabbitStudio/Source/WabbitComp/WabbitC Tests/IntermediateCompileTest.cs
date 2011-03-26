@@ -81,5 +81,11 @@ namespace WabbitC_Tests
         {
             RunIntermediateTest("store");
         }
+
+        [TestMethod]
+        public void Cast1()
+        {
+            RunIntermediateTest("cast");
+        }
     }
 }

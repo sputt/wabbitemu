@@ -1,7 +1,7 @@
-int SimpleMath(int arg)
+int test()
 {
-	int temp;
-	temp = arg * 2;
-	temp /= arg + 4;
-	return arg + 20 - (arg + 2) + temp;
+	void *tc;
+	int test;
+	test = 0x1234;
+	tc = (void *) test;
 }

@@ -75,6 +75,9 @@
     <Compile Include="Model\Declaration.cs" />
     <Compile Include="Model\Immediate.cs" />
     <Compile Include="Model\Statements\AddressOf.cs" />
+    <Compile Include="Model\Statements\Cast.cs" />
+    <Compile Include="Model\Statements\Condition\Equals.cs" />
+    <Compile Include="Model\Statements\Condition\LessThan.cs" />
     <Compile Include="Model\Statements\Math\Add.cs" />
     <Compile Include="Model\Statements\Assignment.cs" />
     <Compile Include="Model\Statements\AssignmentHelper.cs" />

@@ -1,7 +1,9 @@
-﻿typedef void (*fp)(void *, char *);
-
-int cast(int arg)
+﻿int cast(int arg)
 {
-	void *test = (void (*(*)[32])()) arg;
-	return test;
+	int total;
+	int result;
+	total = arg * 40;
+
+	result = (unsigned char) total;
+	return result;
 }

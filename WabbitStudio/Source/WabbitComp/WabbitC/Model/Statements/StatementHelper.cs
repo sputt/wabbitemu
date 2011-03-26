@@ -38,8 +38,25 @@ namespace WabbitC.Model.Statements
             IdentifyStores(ref exprList);
             for (int i = exprList.Count - 1; i >= 0; i--)
             {
-                Token token;
-                if ((exprList[i].Tokens.Count > 1) && (exprList[i].Args == null))
+                Token token = null;
+                if (exprList[i].IsCast)
+                {
+                    List<Token>.Enumerator tokens = exprList[i].Tokens.GetEnumerator();
+                    tokens.MoveNext();
+                    Type castType = TypeHelper.ParseType(ref tokens);
+                    if (castType != null)
+                    {
+                        Declaration temp = block.CreateTempDeclaration(castType);
+                        var castStatement = new Cast(temp, castType, Datum.Parse(block, stack.Pop()));
+                        block.Statements.Add(castStatement);
+                        stack.Push(Tokenizer.ToToken(temp.Name));
+                    }
+                    else
+                    {
+                        // Some kind of false positive
+                    }
+                }
+                else if ((exprList[i].Tokens.Count > 1) && (exprList[i].Args == null))
                 {
                     token = InternalParse(block, exprList[i]);
                 }
@@ -68,7 +85,7 @@ namespace WabbitC.Model.Statements
                     block.Statements.Add(funcCall);
                     stack.Push(Tokenizer.ToToken(returnDecl.Name));
                 }
-                else if (token.Type == TokenType.OperatorType)
+                else if (token != null && token.Type == TokenType.OperatorType)
                 {
                     Declaration decl = null;
 					switch (exprList[i].Operands)
@@ -89,7 +106,7 @@ namespace WabbitC.Model.Statements
                         stack.Push(Tokenizer.ToToken(decl.Name));
                     }
                 }
-                else
+                else if (token != null)
                 {
                     stack.Push(token);
                 }
@@ -179,7 +196,6 @@ namespace WabbitC.Model.Statements
                 case ">":
                 case ">=":
                 case "!=":
-                    decl = block.CreateTempDeclaration(new BuiltInType("int"));
                     Token condLHS;
                     Token condRHS;
                     Declaration tmpDecl = block.FindDeclaration(arg1);
@@ -193,8 +209,7 @@ namespace WabbitC.Model.Statements
                         condLHS = arg1;
                         condRHS = arg2;
                     }
-                    //var equalsStatement = ConditionStatement.BuildStatements(decl, condLHS, exp.Tokens[0], condRHS);
-                    //block.Statements.Add(equalsStatement);
+                    decl = ConditionStatement.BuildStatements(block, exp, condLHS, condRHS);
                     break;
 			}
 			return decl;

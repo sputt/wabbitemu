@@ -19,11 +19,9 @@ namespace WabbitC.Model.Statements
             Token opToken = expr.Tokens[0];
 
             var decl = block.CreateTempDeclaration(TypeHelper.GetType(block, operand1));
-            ValueStatement initialAssign = AssignmentHelper.ParseSingle(block, decl, operand1);
-            block.Statements.Add(initialAssign);
 
             var asm = System.Reflection.Assembly.GetExecutingAssembly();
-            var objParams = new object[] {decl, Datum.Parse(block, operand2)};
+            var objParams = new object[] {decl, block.FindDeclaration(operand1), Datum.Parse(block, operand2)};
             var types = from t in asm.GetTypes() 
                         where 
                             (t.BaseType == typeof(ConditionStatement)) &&
@@ -34,6 +32,10 @@ namespace WabbitC.Model.Statements
             if (types.Count<ConditionStatement>() > 0)
             {
                 block.Statements.Add(types.First<ConditionStatement>());
+            }
+            else
+            {
+                MessageSystem.Instance.ThrowNewError("No condition class to handle this operator '" + opToken + "'");
             }
 
             return decl;
