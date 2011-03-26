@@ -50,9 +50,9 @@ namespace WabbitC.Optimizer
                     var move = statement as Move;
                     
                 }
-                else if (type == typeof(ConditionalOperator))
+                else if (type == typeof(ConditionStatement))
                 {
-                    var equals = statement as ConditionalOperator;
+                    var equals = statement as ConditionStatement;
                     
                 }
                 else if (type == typeof(Sub))

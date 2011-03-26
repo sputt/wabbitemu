@@ -9,12 +9,6 @@ using WabbitC.Model.Types;
 
 namespace WabbitC.Model.Statements.Math
 {
-    interface IMathOperator
-    {
-        Token GetHandledOperator();
-        Immediate Apply();
-    }
-
     class MathStatement : ValueStatement
     {
         public Declaration LValue;

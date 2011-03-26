@@ -51,9 +51,9 @@ namespace WabbitC.Optimizer
                     MarkAlive(move.LValue, ref symbolTable);
                     MarkAlive(move.RValue, ref symbolTable);
                 }
-                else if (type == typeof(ConditionalOperator))
+                else if (type == typeof(ConditionStatement))
                 {
-                    var condOp = statement as ConditionalOperator;
+                    var condOp = statement as ConditionStatement;
                     MarkAlive(condOp.CondDecl, ref symbolTable);
                     if (condOp.CondValue.GetType() == typeof(Declaration))
                         MarkAlive((Declaration)condOp.CondValue, ref symbolTable);

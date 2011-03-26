@@ -180,24 +180,21 @@ namespace WabbitC.Model.Statements
                 case ">=":
                 case "!=":
                     decl = block.CreateTempDeclaration(new BuiltInType("int"));
-                    Datum equalsRhs;
-                    Declaration equalsLhs;
-                    equalsLhs = block.FindDeclaration(arg1);
-                    if (equalsLhs == null)
+                    Token condLHS;
+                    Token condRHS;
+                    Declaration tmpDecl = block.FindDeclaration(arg1);
+                    if (tmpDecl == null)
                     {
-                        equalsRhs = Datum.Parse(block, arg1);
-                        equalsLhs = block.FindDeclaration(arg2);
-                        if (equalsLhs == null)
-                        {
-                            MessageSystem.Instance.ThrowNewError("Could not find decl for equals");
-                        }
+                        condRHS = arg1;
+                        condLHS = arg2;
                     }
                     else
                     {
-                        equalsRhs = Datum.Parse(block, arg2);
+                        condLHS = arg1;
+                        condRHS = arg2;
                     }
-                    var equalsStatement = new ConditionalOperator(decl, equalsLhs, exp.Tokens[0], equalsRhs);
-                    block.Statements.Add(equalsStatement);
+                    //var equalsStatement = ConditionStatement.BuildStatements(decl, condLHS, exp.Tokens[0], condRHS);
+                    //block.Statements.Add(equalsStatement);
                     break;
 			}
 			return decl;

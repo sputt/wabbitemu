@@ -299,6 +299,22 @@ namespace WabbitC_Tests
 			Assert.IsTrue(actual[1].IsCast, "Not marked as a cast properly");
 		}
 
+        [TestMethod()]
+        public void CastTest4()
+        {
+            List<Token> tokens = Tokenizer.Tokenize("(test)-342");
+            Expression target = new Expression(tokens);
+
+            List<Expression> expected = new List<Expression>();
+            expected.Add(new Expression(Tokenizer.ToToken("test")));
+            expected.Add(new Expression(Tokenizer.ToToken("-342")));
+
+            List<Expression> actual;
+            actual = target.Eval();
+            Compare(expected, actual);
+            Assert.IsTrue(actual[0].IsCast, "Not marked as a cast properly");
+        }
+
 		[TestMethod()]
 		public void CommaOperatorTest1()
 		{
@@ -369,7 +385,19 @@ namespace WabbitC_Tests
 			Compare(expected, actual);
 		}
 
+        [TestMethod()]
+        public void DoubleNegative()
+        {
+            List<Token> tokens = Tokenizer.Tokenize("-(-300)"); ;
+            Expression target = new Expression(tokens);
 
+            List<Expression> expected = new List<Expression>();
+            expected.Add(new Expression(Tokenizer.ToToken("300")));
+
+            List<Expression> actual;
+            actual = target.Eval();
+            Compare(expected, actual);
+        }
 
 		void Compare(List<Expression> expected, List<Expression> actual)
 		{

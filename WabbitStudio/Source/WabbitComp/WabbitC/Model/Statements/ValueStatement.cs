@@ -12,4 +12,10 @@ namespace WabbitC.Model.Statements
             throw new NotImplementedException();
         }
     }
+
+    interface IMathOperator
+    {
+        Token GetHandledOperator();
+        Immediate Apply();
+    }
 }

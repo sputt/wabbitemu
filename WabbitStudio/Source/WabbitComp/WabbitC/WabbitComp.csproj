@@ -112,6 +112,7 @@
     <Compile Include="PreprocessorParser.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StatementPasses\LoopGotoConversion.cs" />
     <Compile Include="Tokenizer.cs" />
     <Compile Include="TokenPasses\ArrayDereference.cs" />
     <Compile Include="TokenPasses\Bracer.cs" />
@@ -128,9 +129,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="StatementPasses\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
