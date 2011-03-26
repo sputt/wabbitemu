@@ -1,7 +1,13 @@
 int test()
 {
-	void *tc;
-	int test;
-	test = 0x1234;
-	tc = (void *) test;
+	if (1)
+	{
+		int true_case;
+		true_case = 10;
+	}
+	else
+	{
+		int false_case;
+		false_case = 20;
+	}
 }

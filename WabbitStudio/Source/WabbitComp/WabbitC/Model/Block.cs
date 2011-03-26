@@ -18,6 +18,11 @@ namespace WabbitC.Model
         public List<Statement> Statements;
         public int TempDeclarationNumber = 0;
 
+        //public IEnumerator<Block> GetBlockEnumerator(Block block)
+        //{
+                                    
+        //}
+
         public Declaration FindDeclaration(String name)
         {
             Block curBlock = this;

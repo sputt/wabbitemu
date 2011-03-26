@@ -62,6 +62,8 @@ namespace WabbitC
 
             var currentModule = Module.ParseModule(ref tokens);
 
+            StatementPasses.LoopGotoConversion.ConvertLoops(currentModule.Declarations[0].Code);
+
 			if (optimizeLevel != OptimizeLevel.OptimizeNone)
 				Optimizer.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
 			//AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);

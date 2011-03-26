@@ -77,5 +77,20 @@ namespace WabbitC.Model.Statements
             }
             return result.ToString();
         }
+
+        #region IEnumerable<Block> Members
+
+        public override IEnumerator<Block> GetEnumerator()
+        {
+            List<Block> blocks = new List<Block>();
+            blocks.Add(TrueCase);
+            if (FalseCase != null)
+            {
+                blocks.Add(FalseCase);
+            }
+            return blocks.GetEnumerator();
+        }
+
+        #endregion
     }
 }
