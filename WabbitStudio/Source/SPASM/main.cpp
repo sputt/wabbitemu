@@ -216,11 +216,6 @@ int run_assembly()
 int main (int argc, char **argv)
 //int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hReserved, LPSTR lpszCommandLine, int nCmdShow)
 {
-#ifdef _WINDOWS
-	printf("Waiting for a client...\n");
-	return _AtlModule.WinMain(SW_HIDE);
-#endif
-
 	int curr_arg = 1;
 	bool case_sensitive = false;
 
@@ -409,8 +404,5 @@ int main (int argc, char **argv)
 	if (include_dirs)
 		list_free(include_dirs, true);
 
-#ifdef _WINDOWS
-	FreeConsole();
-#endif
 	return error;
 }

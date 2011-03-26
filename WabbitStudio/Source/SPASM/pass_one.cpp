@@ -293,7 +293,7 @@ char *handle_opcode_or_macro (char *ptr) {
 	//if it was found, then find the right instruction
 	if (curr_opcode && curr_opcode->name) {
 		char *arg_ptrs[3], *arg_end_ptrs[3];
-		instr *curr_instr;
+		instr *curr_instr = NULL;
 
 		//go to the start of the arguments
 		ptr = skip_whitespace (ptr);
@@ -301,15 +301,17 @@ char *handle_opcode_or_macro (char *ptr) {
 		//try to match them to one of the opcode's sets of arguments
 		ptr = match_opcode_args (ptr, arg_ptrs, arg_end_ptrs, curr_opcode, &curr_instr);
 		free (name);
+		if (curr_instr != NULL)
+		{
+			//if that worked, write data + args
+			write_instruction_data (curr_instr, arg_ptrs, arg_end_ptrs);
 
-		//if that worked, write data + args
-		write_instruction_data (curr_instr, arg_ptrs, arg_end_ptrs);
-
-		//increment program counter and stats
-		program_counter += curr_instr->size;
-		stats_codesize += curr_instr->size;
-		stats_mintime += curr_instr->min_exectime;
-		stats_maxtime += curr_instr->max_exectime;
+			//increment program counter and stats
+			program_counter += curr_instr->size;
+			stats_codesize += curr_instr->size;
+			stats_mintime += curr_instr->min_exectime;
+			stats_maxtime += curr_instr->max_exectime;
+		}
 
 	} else {
 		//if this name doesn't match an opcode, it must be a macro (#macro OR #define)
