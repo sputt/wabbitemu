@@ -59,10 +59,20 @@ namespace WabbitC.Model.Statements.Math
         {
             StringBuilder sb = new StringBuilder(LValue.Name);
             sb.Append(" ");
-            sb.Append(Operator);
-            sb.Append("= ");
-            sb.Append(RValue);
-            sb.Append(";");
+            if (RValue != null)
+            {
+                sb.Append(Operator);
+                sb.Append("= ");
+                sb.Append(RValue);
+                sb.Append(";");
+            }
+            else
+            {
+                sb.Append("= ");
+                sb.Append(Operator);
+                sb.Append(LValue);
+                sb.Append(";");
+            }
             return sb.ToString();
         }
     }

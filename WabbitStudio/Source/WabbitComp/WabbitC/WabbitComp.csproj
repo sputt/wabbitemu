@@ -92,6 +92,7 @@
     <Compile Include="Model\Statements\FunctionCall.cs" />
     <Compile Include="Model\Statements\If.cs" />
     <Compile Include="Model\Statements\Label.cs" />
+    <Compile Include="Model\Statements\Math\Not.cs" />
     <Compile Include="Model\Statements\Move.cs" />
     <Compile Include="Model\Statements\Return.cs" />
     <Compile Include="Model\Statements\Statement.cs" />

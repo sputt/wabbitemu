@@ -29,6 +29,9 @@ namespace WabbitC_Tests
             p.Start();
             p.WaitForExit();
 
+            Assert.AreEqual(p.ExitCode, 0, "Failed to build");
+
+
             p.StartInfo.FileName = Path.Combine(p.StartInfo.WorkingDirectory, name + "_expected.exe");
             p.StartInfo.Arguments = "7";
             p.Start();

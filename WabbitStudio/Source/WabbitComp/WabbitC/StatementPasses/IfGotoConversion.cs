@@ -5,6 +5,7 @@ using System.Text;
 
 using WabbitC.Model;
 using WabbitC.Model.Statements;
+using WabbitC.Model.Types;
 
 namespace WabbitC.StatementPasses
 {
@@ -29,7 +30,10 @@ namespace WabbitC.StatementPasses
                         List<Statement> ifReplacement = new List<Statement>();
                         Label trueSkipLabel = block.CreateTempLabel();
 
-                        ifReplacement.Add(new Goto(trueSkipLabel, ifStatement.Condition));
+                        Declaration notDecl = functions.Current.Code.CreateTempDeclaration(new BuiltInType("int"));
+                        ifReplacement.Add(new Move(notDecl, ifStatement.Condition));
+                        ifReplacement.Add(new WabbitC.Model.Statements.Math.Not(notDecl));
+                        ifReplacement.Add(new Goto(trueSkipLabel, notDecl));
                         ifReplacement.AddRange(ifStatement.TrueCase.Statements);
                         if (ifStatement.FalseCase == null)
                         {
