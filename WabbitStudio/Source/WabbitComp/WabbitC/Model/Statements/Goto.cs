@@ -10,13 +10,13 @@ namespace WabbitC.Model.Statements
         Label TargetLabel;
         Declaration CondDecl;
 
-        Goto(Label lbl)
+        public Goto(Label lbl)
         {
             TargetLabel = lbl;
             CondDecl = null;
         }
 
-        Goto(Label lbl, Declaration condDecl)
+        public Goto(Label lbl, Declaration condDecl)
         {
             TargetLabel = lbl;
             CondDecl = condDecl;
@@ -24,8 +24,8 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            string gotoString = "goto " + TargetLabel + ";";
-            if (CondDecl == null)
+            string gotoString = "goto " + TargetLabel.Name + ";";
+            if (CondDecl != null)
             {
                 return "if (" + CondDecl + ") {" + gotoString + "}";
             }

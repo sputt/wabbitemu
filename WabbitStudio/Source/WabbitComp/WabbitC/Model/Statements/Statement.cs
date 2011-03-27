@@ -7,6 +7,7 @@ namespace WabbitC.Model.Statements
 {
     abstract class Statement : IEnumerable<Block>
     {
+        public Block Block;
         public HashSet<String> Properties;
 
         #region IEnumerable<Block> Members

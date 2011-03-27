@@ -7,7 +7,7 @@ namespace WabbitC.Model.Statements
 {
     class Label : ControlStatement
     {
-        string Name;
+        public string Name;
 
         public Label(string name)
         {
@@ -16,7 +16,7 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            return Name;
+            return Name + ":";
         }
     }
 }

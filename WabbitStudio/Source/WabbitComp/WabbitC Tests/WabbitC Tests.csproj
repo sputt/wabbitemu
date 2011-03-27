@@ -70,9 +70,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Shadow Include="Test References\WabbitC.accessor" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="bracer_result.c" />
     <Content Include="bracer_test.c" />
     <Content Include="C Files\cast_expected.c" />

@@ -9,19 +9,53 @@ using WabbitC.Model.Statements;
 
 namespace WabbitC.Model
 {
-    class Block
+    class BlockStatements : List<Statement>
+    {
+        private Block Block;
+        public BlockStatements(Block block)
+        {
+            Block = block;
+        }
+
+        public void Add(Statement item)
+        {
+            item.Block = Block;
+            base.Add(item);
+        }
+
+        public void AddRange(IEnumerable<Statement> collection)
+        {
+            foreach (Statement st in collection)
+            {
+                st.Block = Block;
+            }
+            base.AddRange(collection);
+        }
+
+        public void Insert(int index, Statement item)
+        {
+            item.Block = Block;
+            base.Insert(index, item);
+        }
+
+        public void InsertRange(int index, IEnumerable<Statement> collection)
+        {
+            foreach (Statement st in collection)
+            {
+                st.Block = Block;
+            }
+            base.InsertRange(index, collection);
+        }
+    }
+
+    class Block : IEnumerable<Block>, IEnumerable<Statement>
     {
         public Block Parent;
         public FunctionType Function;
         public HashSet<Type> Types;
         public List<Declaration> Declarations;
-        public List<Statement> Statements;
+        public BlockStatements Statements;
         public int TempDeclarationNumber = 0;
-
-        //public IEnumerator<Block> GetBlockEnumerator(Block block)
-        //{
-                                    
-        //}
 
         public Declaration FindDeclaration(String name)
         {
@@ -289,7 +323,7 @@ namespace WabbitC.Model
         {
             Declarations = new List<Declaration>();
             Types = new HashSet<Type>();
-            Statements = new List<Statement>();
+            Statements = new BlockStatements(this);
         }
 
         public override string ToString()
@@ -316,5 +350,38 @@ namespace WabbitC.Model
             }
             return result;
         }
+
+        #region IEnumerable Members
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region IEnumerable<Statement> Members
+
+        IEnumerator<Statement> IEnumerable<Statement>.GetEnumerator()
+        {
+            List<Statement> listStatements = new List<Statement>();
+            BlockEnumerator blockEnum = new BlockEnumerator(this);
+            while (blockEnum.MoveNext())
+            {
+                listStatements.AddRange(blockEnum.Current.Statements);
+            }
+            return listStatements.GetEnumerator();
+        }
+
+        #endregion
+
+        #region IEnumerable<Block> Members
+
+        IEnumerator<Block> IEnumerable<Block>.GetEnumerator()
+        {
+            return new BlockEnumerator(this);
+        }
+
+        #endregion
     }
 }

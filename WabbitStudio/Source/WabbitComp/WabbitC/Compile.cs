@@ -37,7 +37,7 @@ namespace WabbitC
 			OptimizeMax,
 		}
 
-		static OptimizeLevel optimizeLevel = OptimizeLevel.OptimizeNone;
+        static OptimizeLevel optimizeLevel = OptimizeLevel.OptimizeMax;
 
         /// <summary>
         /// Parses a file and outputs a .asm file
@@ -62,7 +62,10 @@ namespace WabbitC
 
             var currentModule = Module.ParseModule(ref tokens);
 
-            StatementPasses.LoopGotoConversion.ConvertLoops(currentModule.Declarations[0].Code);
+            // Statement passes
+            StatementPasses.BlockCollapse.Run(currentModule);
+            StatementPasses.IfGotoConversion.Run(currentModule);
+            StatementPasses.LoopGotoConversion.Run(currentModule);
 
 			if (optimizeLevel != OptimizeLevel.OptimizeNone)
 				Optimizer.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);

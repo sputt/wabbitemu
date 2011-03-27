@@ -17,6 +17,15 @@ namespace WabbitC.Model
 			//TODO: make so assignment statements work...
             this.Parent = null;
         }
+
+        public IEnumerator<Declaration> GetFunctionEnumerator()
+        {
+            var functions = from d in Declarations
+                            where d.Type.GetType() == typeof(FunctionType) && d.Code != null
+                            select d;
+            return functions.GetEnumerator();
+        }
+
         static public Module ParseModule(ref List<Token>.Enumerator tokens)
         {
             var block = Block.ParseBlock(ref tokens, null, null);

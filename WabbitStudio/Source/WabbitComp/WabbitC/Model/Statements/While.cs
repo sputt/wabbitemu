@@ -9,10 +9,10 @@ namespace WabbitC.Model.Statements
 {
     class While : ControlStatement
     {
-		Block Condition;
-        Block Body;
-        Label Label;
-        private Declaration condDecl;
+        public Block Condition;
+        public Block Body;
+        public Label Label;
+        public Declaration CondDecl;
 
         public static While Parse(Block parent, ref List<Token>.Enumerator tokens)
         {
@@ -48,8 +48,15 @@ namespace WabbitC.Model.Statements
 
             Condition = cond;
             Body = body;
+
             Label = parent.CreateTempLabel();
-            condDecl = decl;
+
+            CondDecl = decl;
+        }
+
+        public override IEnumerator<Block> GetEnumerator()
+        {
+            return new List<Block> { Condition, Body }.GetEnumerator();
         }
 
         public override string ToString()
@@ -60,11 +67,7 @@ namespace WabbitC.Model.Statements
 			sb.AppendLine("do");
 			sb.AppendLine("{");
 
-            foreach (Declaration decl in Body.Declarations)
-            {
-                sb.AppendLine(decl.ToDeclarationString());
-            }
-            foreach (Declaration decl in Condition.Declarations)
+            foreach (Declaration decl in Body.Declarations.Concat(Condition.Declarations))
             {
                 sb.AppendLine(decl.ToDeclarationString());
             }
@@ -72,15 +75,14 @@ namespace WabbitC.Model.Statements
             {
                 sb.AppendLine(statement.ToString());
             }
-			sb.Append(Label);
-			sb.AppendLine(":");
+            sb.AppendLine(Label.ToString());
             foreach (Statement statement in Condition.Statements)
             {
                 sb.AppendLine(statement.ToString());
             }
             sb.AppendLine("}");
             sb.Append("while (");
-			sb.Append(condDecl.Name);
+			sb.Append(CondDecl.Name);
 			sb.Append(");");
             
             return sb.ToString();

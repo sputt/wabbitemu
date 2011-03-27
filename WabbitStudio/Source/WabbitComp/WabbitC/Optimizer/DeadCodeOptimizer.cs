@@ -83,7 +83,7 @@ namespace WabbitC.Optimizer
                 }
                 if (changedInstructions)
                 {
-                    List<Statement> newStatements = new List<Statement>();
+                    var newStatements = new BlockStatements(block);
                     for (int i = 0; i < block.Statements.Count; i++)
                     {
                         if (instructions[i])

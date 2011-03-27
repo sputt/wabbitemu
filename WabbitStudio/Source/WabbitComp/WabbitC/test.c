@@ -1,13 +1,15 @@
-int test()
+int fibonacci(int n)
 {
-	if (1)
+	if (n == 0)
 	{
-		int true_case;
-		true_case = 10;
+		return 0;
+	}
+	else if (n == 1)
+	{
+		return 1;
 	}
 	else
 	{
-		int false_case;
-		false_case = 20;
+		return fibonacci(n - 2) + fibonacci(n - 1);
 	}
 }
