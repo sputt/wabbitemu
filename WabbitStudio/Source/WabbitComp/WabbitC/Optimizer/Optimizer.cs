@@ -12,7 +12,7 @@ namespace WabbitC.Optimizer
         static bool ConstantTracking = true;
         static bool DeadCodeOptimization = true;
         static bool DeadVariableRemoval = true;
-		static bool VariableReduction = true;
+		static bool VariableReduction = false;
         public static void RunOptimizer(ref Module module, Compiler.OptimizeLevel opLevel)
         {
             Block mainModule = (Block) module;

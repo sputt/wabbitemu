@@ -16,7 +16,8 @@ namespace WabbitC.Optimizer
             for (int i = 0; i < module.Declarations.Count; i++)
             {
                 Declaration decl = module.Declarations[i];
-                OptimizeBlock(ref decl.Code);
+				if (decl.Code != null)
+					OptimizeBlock(ref decl.Code);
             }
         }
 

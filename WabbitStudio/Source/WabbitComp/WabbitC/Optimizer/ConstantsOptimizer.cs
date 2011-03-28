@@ -18,7 +18,8 @@ namespace WabbitC
             for (int i = 0; i < module.Declarations.Count; i++)
             {
                 Declaration decl = module.Declarations[i];
-                OptimizeBlock(ref decl.Code);
+				if (decl.Code != null)
+					OptimizeBlock(ref decl.Code);
             }
         }
 
@@ -70,19 +71,20 @@ namespace WabbitC
                 else if (type.BaseType == typeof(MathStatement))
                 {
                     var math = statement as MathStatement;
+					var imath = statement as IMathOperator;
                     var symbol = FindSymbol(math.LValue);
                     if (symbol.IsConstant)
                     {
-						Datum value = math.RValue;
-						Declaration lValue = math.LValue;
-                        if (value.GetType() == typeof(Immediate))
+						var value = imath.Apply();
+                        if (value != null)
                         {
+							var lValue = math.LValue;
                             var immediate = value as Immediate;
                             symbol.IsConstant = true;
                             if (immediate.Value.Type == TokenType.IntType)
                             {
                                 int result;
-								result = int.Parse(symbol.Value.ToString()) + int.Parse(immediate.Value.Text);
+								result = int.Parse(immediate.Value);
                                 var newImmediate = new Immediate(Tokenizer.ToToken(result.ToString()));
                                 var assigment = new Assignment(lValue, newImmediate);
                                 block.Statements[i] = assigment;
@@ -101,8 +103,8 @@ namespace WabbitC
                     var symbol = FindSymbol((Declaration) returnType.ReturnReg);
                     if (symbol != null && symbol.IsConstant)
                     {
-                        returnType = new Return(symbol.Value);
-                        block.Statements[i] = returnType;
+                        //returnType = new Return(symbol.Value);
+                        //block.Statements[i] = returnType;
                     }
                     else
                     {

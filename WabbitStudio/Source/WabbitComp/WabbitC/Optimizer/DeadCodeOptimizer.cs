@@ -16,7 +16,8 @@ namespace WabbitC.Optimizer
             for (int i = 0; i < module.Declarations.Count; i++)
             {
                 Declaration decl = module.Declarations[i];
-                OptimizeBlock(ref decl.Code);
+				if (decl.Code != null)
+					OptimizeBlock(ref decl.Code);
             }
         }
 
@@ -36,14 +37,7 @@ namespace WabbitC.Optimizer
                 {
                     var statement = block.Statements[i];
                     var type = statement.GetType();
-                    if (type == typeof(If))
-                    {
-                        var trueBlock = (statement as If).TrueCase;
-                        OptimizeBlock(ref trueBlock);
-                        var falseBlock = (statement as If).FalseCase;
-                        OptimizeBlock(ref falseBlock);
-                    }
-					else if (type == typeof(Assignment))
+                    if (type == typeof(Assignment))
 					{
 						var assignment = statement as Assignment;
 						var decl = block.FindDeclaration(assignment.LValue.Name);
@@ -65,11 +59,33 @@ namespace WabbitC.Optimizer
 							changedInstructions = true;
 						}
 					}
+					else if (type.BaseType == typeof(ConditionStatement))
+					{
+						var cond = statement as ConditionStatement;
+						var decl = block.FindDeclaration(cond.LValue.Name);
+						var isReferenced = IsReferenced(block, instructions, cond.LValue, i + 1);
+						if (decl != null && !isReferenced)
+						{
+							instructions[i] = false;
+							changedInstructions = true;
+						}
+					}
 					else if (type == typeof(Move))
 					{
 						var move = statement as Move;
 						var decl = block.FindDeclaration(move.LValue.Name);
 						var isReferenced = IsReferenced(block, instructions, move.LValue, i + 1);
+						if (decl != null && !isReferenced)
+						{
+							instructions[i] = false;
+							changedInstructions = true;
+						}
+					}
+					else if(type == typeof(FunctionCall))
+					{
+						var func = statement as FunctionCall;
+						var decl = block.FindDeclaration(func.LValue.Name);
+						var isReferenced = IsReferenced(block, instructions, func.LValue, i + 1);
 						if (decl != null && !isReferenced)
 						{
 							instructions[i] = false;
@@ -96,14 +112,21 @@ namespace WabbitC.Optimizer
 
         private static bool IsReferenced(Block block, bool[] deadInstructions, Declaration declaration, int i)
         {
-            bool isRefed = false;
-		
-            for (; i < block.Statements.Count && !isRefed; i++)
+            int isRefed = -1;
+			int isReassigned = -1;
+            for (; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
-				isRefed = StatementHelper.Contains(statement, declaration) && deadInstructions[i];
+				var modified = statement.GetModifiedDeclarations();
+				var refed = statement.GetReferencedDeclarations();
+				if (modified.Contains(declaration))
+					isReassigned = i;
+				if (refed.Contains(declaration) && deadInstructions[i])
+					isRefed = i;
             }
-            return isRefed;
+			if (isReassigned < isRefed && isReassigned >= 0 && isRefed >= 0)
+				return false;
+            return isRefed >= 0;
         }
     }
 }

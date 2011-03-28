@@ -234,39 +234,5 @@ namespace WabbitC.Model.Statements
             var finalAssign = AssignmentHelper.ParseSingle(block, LValue, token);
             block.Statements.Add(finalAssign);
         }
-
-        internal static bool Contains(Statement statement, Datum datum)
-        {
-            System.Type type = statement.GetType();
-            if (type == typeof(Assignment))
-            {
-                var assigment = statement as Assignment;
-                return assigment.RValue == datum;
-            }
-			else if (type == typeof(Add) || type == typeof(Sub))
-			{
-				var add = statement as Add;
-				var sub = statement as Sub;
-				if (add != null)
-					return add.LValue == datum;
-				else
-					return sub.LValue == datum;
-			}
-			else if (type == typeof(Return))
-			{
-				var returnStatement = statement as Return;
-				return returnStatement.ReturnReg == datum;
-			}
-			else if (type == typeof(Move))
-			{
-				var move = statement as Move;
-				return move.RValue == datum;
-			}
-			else
-			{
-
-			}
-            return false;
-        }
     }
 }

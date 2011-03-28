@@ -256,7 +256,7 @@ namespace WabbitC_Tests
 			Expression target = new Expression(tokens);
 
 			List<Expression> expected = new List<Expression>();
-			expected.Add(new Expression(Tokenizer.Tokenize("unsigned char *")));
+			expected.Add(new Expression(Tokenizer.Tokenize("(unsigned char *)")));
 			expected.Add(new Expression(Tokenizer.ToToken("test")));
 
 			List<Expression> actual;
@@ -272,7 +272,7 @@ namespace WabbitC_Tests
 			Expression target = new Expression(tokens);
 
 			List<Expression> expected = new List<Expression>();
-			expected.Add(new Expression(Tokenizer.Tokenize("int *")));
+			expected.Add(new Expression(Tokenizer.Tokenize("(int *)")));
 			expected.Add(new Expression(Tokenizer.Tokenize("(unsigned char *) foo + (unsigned char *) bar")));
 
 			List<Expression> actual;
@@ -288,8 +288,8 @@ namespace WabbitC_Tests
 			Expression target = new Expression(tokens);
 
 			List<Expression> expected = new List<Expression>();
-			expected.Add(new Expression(Tokenizer.ToToken("int")));
-			expected.Add(new Expression(Tokenizer.ToToken("char")));
+			expected.Add(new Expression(Tokenizer.Tokenize("(int)")));
+			expected.Add(new Expression(Tokenizer.Tokenize("(char)")));
 			expected.Add(new Expression(Tokenizer.ToToken("342")));
 
 			List<Expression> actual;
@@ -306,8 +306,9 @@ namespace WabbitC_Tests
             Expression target = new Expression(tokens);
 
             List<Expression> expected = new List<Expression>();
-            expected.Add(new Expression(Tokenizer.ToToken("test")));
-            expected.Add(new Expression(Tokenizer.ToToken("-342")));
+            expected.Add(new Expression(Tokenizer.Tokenize("(test)")));
+            expected.Add(new Expression(Tokenizer.ToToken("-")));
+			expected.Add(new Expression(Tokenizer.ToToken("342")));
 
             List<Expression> actual;
             actual = target.Eval();

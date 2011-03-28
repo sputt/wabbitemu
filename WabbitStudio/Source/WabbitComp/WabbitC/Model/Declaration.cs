@@ -70,6 +70,6 @@ namespace WabbitC.Model
 
         //public ValueStatement InitialValue;
         public Block Code;
-        public Immediate ConstValue;
+        public Immediate ConstValue = new Immediate(Token.ZeroToken);
     }
 }

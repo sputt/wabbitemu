@@ -70,21 +70,20 @@ namespace WabbitC
 			return test;
         }
 
-		private List<Token> ReadBetweenParens(int i, int nParen, ref int j)
+		private static List<Token> ReadBetweenParens(List<Token> tokens, int i, int nParen, ref int j)
 		{
 			Token token = tokens[i];
 			List<Token> tempList = new List<WabbitC.Token>();
 			//skip function too
 			int curParenLevel = nParen;
-			tempList.Add(token);
-			j = i + 1;
-			while (token.Type != TokenType.CloseParen || curParenLevel == nParen)
+			j = i;
+			while (!(token.Type == TokenType.CloseParen && curParenLevel == nParen))
 			{
+				token = tokens[j++];
 				if (token.Type == TokenType.CloseParen)
 					curParenLevel--;
 				else if (token.Type == TokenType.OpenParen)
 					curParenLevel++;
-				token = tokens[j++];
 				tempList.Add(token);
 			}
 			return tempList;
@@ -93,7 +92,7 @@ namespace WabbitC
 		private int SkipCasts(ref int i, ref int nParen, ref List<int> parenLoc, ref List<int> curOpLevel)
 		{
 			int j = -1;
-			List<Token> tempList = ReadBetweenParens(i, nParen, ref j);
+			List<Token> tempList = ReadBetweenParens(tokens, i, nParen, ref j);
 			if (CastHelper.IsCast(tempList))
 			{
 				i = j;
@@ -124,22 +123,19 @@ namespace WabbitC
 					if (i + 1 < tokens.Count && tokens[i + 1].Type == TokenType.OpenParen)
 					{
 						int j = 0;
-						ReadBetweenParens(i, nParen, ref j);
+						ReadBetweenParens(tokens, i, nParen, ref j);
 						i = j;
 					}
 				} 
 				else if (token.Type == TokenType.OpenParen)
 				{
-					int j = SkipCasts(ref i, ref nParen, ref parenLoc, ref curOpLevel);
-					if (i > 0 && tokens[i - 1].Type != TokenType.StringType && tokens[i - 1].Text != "sizeof")
+					int j = i;
+					SkipCasts(ref i, ref nParen, ref parenLoc, ref curOpLevel);
+					if (i == j)
 					{
 						nParen++;
 						parenLoc.Add(i);
 						curOpLevel.Add(-1);
-					}
-					else
-					{
-						i = j;
 					}
 				}
 				else if (token.Type == TokenType.CloseParen)
@@ -186,10 +182,13 @@ namespace WabbitC
 				CalculateStack(ref exp);
 				expressions[i] = exp;
 			}
+			//we've now calculated each part of the stack, lets put them together
 			var listTokens = Expression.ToTokens(expressions);
+			//and try to recalculate the thing as a whole
 			var result = CalculateStack(ref listTokens);
 			if (result != null)
 			{
+				//we've distilled it down to one exp, good work
 				expressions.Clear();
 				expressions.Add(result);
 			}
@@ -197,11 +196,16 @@ namespace WabbitC
 
 		private void CalculateStack(ref Expression exp)
 		{
+			//if its a function, an operator, or a cast dont fuck with it
 			if (exp.Args != null || exp.Operands != 0 || exp.IsCast)
 				return;
+			//else eval it
 			var evalExp = exp.Eval();
+			//put it back together as one big thing
 			var tokens = Expression.ToTokens(evalExp);
+			//and calculate that
 			var result = CalculateStack(ref tokens);
+			//if we calculated something, give that, else return the original
 			exp = result == null ? exp : result;
 		}
 
@@ -225,6 +229,7 @@ namespace WabbitC
 					return null;
 				Token op = tokens[i];
 				List<Token> toks = new List<Token>();
+				//TODO: use operands instead of assuming 2
 				while (stack.Count > 0 && toks.Count < 2)
 					toks.Add(stack.Pop());
 				var exp = ApplyOperator(op, toks);
@@ -293,7 +298,8 @@ namespace WabbitC
 					result = tok1 ^ tok2;
 					break;
                 case "=":
-                    result = null;//(Token.OpEquals(tok1, tok2));
+					//we cant eval =
+                    result = null;
                     break;
 				case "&":
 					result = tok1 & tok2;
@@ -340,7 +346,18 @@ namespace WabbitC
 					leftSide = new Expression(tokenList);
 
 					tokenList = new List<Token>();
-					op = new Expression(new List<Token> { curExpr.Tokens[j++] }, numArgs);
+					//we've got a cast
+					if (curExpr.Tokens[j].Type == TokenType.OpenParen)
+					{
+						int k = 0;
+						op = new Expression(ReadBetweenParens(curExpr.Tokens, j, 0, ref k));
+						j = k;
+						op.isCast = true;
+					}
+					else
+					{
+						op = new Expression(new List<Token> { curExpr.Tokens[j++] }, numArgs);
+					}
 					if (numArgs == 3)
 					{
 						for (; j < curExpr.Tokens.Count && curExpr.Tokens[j].Text != ":"; j++)
@@ -412,7 +429,7 @@ namespace WabbitC
 						Expression insideExp = new Expression(insideTokens);
 						stack[i] = insideExp;
 						
-                        if (CastHelper.IsCast(castTokens))
+                        /*if (CastHelper.IsCast(castTokens))
 						{
 							j++;
 							var castedTokens = new List<Token>();
@@ -424,9 +441,9 @@ namespace WabbitC
 								insideExp.isCast = true;
 								stack.Insert(i + 1, castedExp);
 							}
-						}
+						}*/
 					}
-					else if (curToken.Type == TokenType.StringType && curExpr.Tokens.Count > 1 &&
+					else if ((curToken.Type == TokenType.StringType || curToken == "sizeof") && curExpr.Tokens.Count > 1 &&
 								curExpr.Tokens[1].Type == TokenType.OpenParen)
 					{
 						//its a func!
@@ -479,59 +496,92 @@ namespace WabbitC
 																	new List<string> {">>", "<<"},
 																	new List<string> {"+", "-", "−"},
 																	new List<string> {"*", "/", "%"},
-																	new List<string> {"!", "~", "&", "*", "+", "-", "++", "−−", "--"},
+																	new List<string> {"#cast", "!", "~", "&", "*", "+", "-", "++", "−−", "--"},
 																	new List<string> {".", "++", "−−", "--" },
 																};
+
+		private const int TernaryLevel = 2;
+		private const int CastLevel = 13;
+		private const int ParenLevel = 14;
+
 		static List<string> DoubleOps = new List<string> { "&", "-", "+", "*", "++", "--" };
 		public static int GetOperator(Expression expr, out int numArgs)
 		{
+			int foundOp = -1;
+			numArgs = -1;
 			for (int level = 0; level < operators.Count; level++)
 			{
 				List<string> operatorLevel = operators[level];
 				List<Token> tokens = expr.Tokens;
-				int nParen = 0;
 				bool leftToRight =  GetOpAssoc(level);
+				int nParen = 0;
 				for (int i = leftToRight ? tokens.Count - 1 : 0;  leftToRight ? i >= 0 : i < tokens.Count; i += leftToRight ? -1 : 1)
 				{
+					int j = -1;
+					bool isCast = false;
 					Token token = tokens[i];
+					List<Token> parenTokens = null;
 					if (token.Type == TokenType.CloseParen)
-						nParen++;
-					else if (token.Type == TokenType.OpenParen)
 						nParen--;
-					else if (nParen == 0 && token.Type == TokenType.OperatorType && operatorLevel.Contains(token.Text)) 
+					else if (token.Type == TokenType.OpenParen)
 					{
+						if (level == CastLevel)
+						{
+							parenTokens = ReadBetweenParens(tokens, i, nParen, ref j);
+							isCast = CastHelper.IsCast(parenTokens);
+							if (i > 0 && isCast)
+								isCast = tokens[i - 1].Type != TokenType.StringType && tokens[i - 1] != "sizeof";
+						}
+						if (!isCast)
+							nParen++;
+					}
+					if (nParen == 0 && ((token.Type == TokenType.OperatorType && operatorLevel.Contains(token.Text))
+								|| isCast == true))
+					{
+						if (foundOp >= 0 && !isCast)
+							continue;
 						numArgs = GetNumArgs(level, token);
-						//we've found an operator, now we need to see if its acutally what we want
+						//we've found an operator, now we need to see if its actually what we want
 						if (leftToRight)
 						{
-							if (!DoubleOps.Contains(token) || (i > 0 && (tokens[i - 1].Type != TokenType.OperatorType ||
-								(token == "*" && tokens[i - 1] == "*" && numArgs == 1))))
+							if (!DoubleOps.Contains(token))
 								return i;
+							if (i > 0 && (tokens[i - 1].Type != TokenType.OperatorType ||
+								(token == "*" && tokens[i - 1] == "*" && numArgs == 1)))
+								foundOp = i;
 						}
 						else
 						{
-							if (!DoubleOps.Contains(token) || (i + 1 < tokens.Count && (tokens[i + 1].Type != TokenType.OperatorType ||
-								(token == "*" && tokens[i + 1] == "*" && numArgs == 1))))
+							if (isCast)
+							{
+								if (j < tokens.Count)
+									return i;
+							}
+							else if (!DoubleOps.Contains(token))
 								return i;
+							if (i + 1 < tokens.Count && (tokens[i + 1].Type != TokenType.OperatorType ||
+									(token == "*" && tokens[i + 1] == "*" && numArgs == 1)))
+								foundOp = i;
 						}
 					}
+					if (isCast)
+						i += parenTokens.Count - 1;
 				}
 			}
-			numArgs = -1;
-			return -1;
+			return foundOp;
 		}
 
 		private static int GetNumArgs(int level, Token tok)
 		{
 			switch (level)
 			{
-				case 13:
+				case CastLevel:
 					return 1;
-				case 14:
+				case ParenLevel:
 					if (tok.Text == ".")
 						return 2;
 					return 1;
-				case 2:
+				case TernaryLevel:
 					return 3;
 				default:
 					return 2;

@@ -16,7 +16,8 @@ namespace WabbitC.Optimizer
             for (int i = 0; i < module.Declarations.Count; i++)
             {
                 Declaration decl = module.Declarations[i];
-                OptimizeBlock(ref decl.Code);
+                if (decl.Code != null)
+					OptimizeBlock(ref decl.Code);
             }
         }
 
@@ -32,15 +33,12 @@ namespace WabbitC.Optimizer
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
-                var type = statement.GetType();
-                if (type == typeof(If))
-                {
-                    var trueBlock = (statement as If).TrueCase;
-                    OptimizeBlock(ref trueBlock);
-                    var falseBlock = (statement as If).FalseCase;
-                    OptimizeBlock(ref falseBlock);
-                } 
-                else if (type == typeof(Assignment))
+				var refed = statement.GetReferencedDeclarations();
+				var modified = statement.GetModifiedDeclarations();
+				MarkAlive(refed, ref symbolTable);
+				MarkAlive(modified, ref symbolTable);
+				/*var type = statement.GetType();
+                if (type == typeof(Assignment))
                 {
                     var assignment = statement as Assignment;
                     MarkAlive(assignment.LValue, ref symbolTable);
@@ -68,7 +66,7 @@ namespace WabbitC.Optimizer
                 {
                     FunctionCall funcCall = statement as FunctionCall;
                     MarkAlive(funcCall.LValue, ref symbolTable);
-                }
+				}*/
             }
             for (int i = block.Declarations.Count - 1; i > -1; i--)
             {
@@ -77,11 +75,14 @@ namespace WabbitC.Optimizer
             }
         }
 
-        static void MarkAlive(Declaration decl, ref List<OptimizerSymbol> symbolTable)
+        static void MarkAlive(List<Declaration> decls, ref List<OptimizerSymbol> symbolTable)
         {
-            var symbol = FindSymbol(decl, ref symbolTable);
-            if (symbol != null)
-                symbol.IsAlive = true;
+			foreach (var decl in decls)
+			{
+				var symbol = FindSymbol(decl, ref symbolTable);
+				if (symbol != null)
+					symbol.IsAlive = true;
+			}
         }
 
         static OptimizerSymbol FindSymbol(Declaration decl, ref List<OptimizerSymbol> symbolTable)

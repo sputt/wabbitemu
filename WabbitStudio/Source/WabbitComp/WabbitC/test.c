@@ -1,6 +1,7 @@
 int fibonacci(int n)
 {
-	int test;
-	test = 4;
-	test += n;
+	int i; 
+	i = 8;
+	i--;
+	return i + 1;
 }

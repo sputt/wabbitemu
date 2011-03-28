@@ -327,13 +327,16 @@ namespace WabbitC
 		public static Token BitOROperatorToken = new Token() { Text = "|", Type = TokenType.OperatorType };
 
 		public static Token NOTOperatorToken = new Token() { Text = "!", Type = TokenType.OperatorType };
-		public static Token ANDOperatorToken = new Token() { Text = "!", Type = TokenType.OperatorType };
-		public static Token OROperatorToken = new Token() { Text = "!", Type = TokenType.OperatorType };
+		public static Token ANDOperatorToken = new Token() { Text = "&&", Type = TokenType.OperatorType };
+		public static Token OROperatorToken = new Token() { Text = "||", Type = TokenType.OperatorType };
 		
 		public static Token AddOperatorToken = new Token() { Text = "+", Type = TokenType.OperatorType };
 		public static Token SubOperatorToken = new Token() { Text = "-", Type = TokenType.OperatorType };
 		public static Token MultOperatorToken = new Token() { Text = "*", Type = TokenType.OperatorType };
 		public static Token DivOperatorToken = new Token() { Text = "/", Type = TokenType.OperatorType };
+
+		public static Token ZeroToken = new Token() { Text = "0", Type = TokenType.IntType};
+		public static Token OneToken = new Token() { Text = "1", Type = TokenType.IntType };
 		#endregion
 
 		public TokenType Type { get; set; }

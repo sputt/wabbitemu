@@ -27,7 +27,11 @@ namespace WabbitC.Model.Statements.Math
 
         Immediate IMathOperator.Apply()
         {
-            throw new NotImplementedException();
+			var imm = RValue as Immediate;
+			if (imm == null)
+				return null;
+			LValue.ConstValue.Value = (!imm.Value).Eval()[0].Token;
+			return LValue.ConstValue;
         }
 
         #endregion

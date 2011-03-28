@@ -19,11 +19,13 @@ namespace WabbitC.Model.Statements
             if (Immediate.IsImmediate(RValue) == false)
             {
                 Declaration valDecl = block.FindDeclaration(RValue.Text);
+				LValue.ConstValue = valDecl.ConstValue;
                 return new Move(LValue, valDecl);
             }
             else
             {
                 Immediate valImm = new Immediate(RValue);
+				LValue.ConstValue = valImm;
                 return new Assignment(LValue, valImm);
             }
         }
