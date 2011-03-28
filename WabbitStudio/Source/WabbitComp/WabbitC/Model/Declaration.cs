@@ -7,35 +7,35 @@ namespace WabbitC.Model
 {
     class Declaration : Datum
     {
-        private Type type;
-        public Type Type
-        {
-            get
-            {
-                return type;
-            }
-        }
-
+        public Type Type;
         public String Name;
+
+        public Declaration()
+        {
+        }
 
         public Declaration(Type declarationType, String name)
         {
-            type = declarationType;
+            Type = declarationType;
             Name = name;
         }
+
+        #region Allocated properties
+        public int StackOffset;
+        #endregion
 
         #region ToString methods
         public string ToDeclarationString()
         {
-            if (type == null)
+            if (Type == null)
             {
                 return "#NOTPROVIDED# " + Name;
             }
             else
             {
-                if (type.GetType() == typeof(Types.FunctionType))
+                if (Type.GetType() == typeof(Types.FunctionType))
                 {
-                    string funcType = type.ToString();
+                    string funcType = Type.ToString();
                     funcType = funcType.Replace("(*)", Name);
                     if (Code != null)
                     {
@@ -47,17 +47,17 @@ namespace WabbitC.Model
                         return funcType + ";";
                     }
                 }
-                else if (type.GetType() == typeof(Types.Array))
+                else if (Type.GetType() == typeof(Types.Array))
                 {
-                    var arrayType = type as Types.Array;
-                    string arrayString = type.ToString();
+                    var arrayType = Type as Types.Array;
+                    string arrayString = Type.ToString();
                     arrayString = arrayString.Replace(arrayType.BaseType.ToString(), 
                         arrayType.BaseType.ToString() + " " + Name);
                     return arrayString + ";";
                 }
                 else
                 {
-                    return type + " " + Name + ";";
+                    return Type + " " + Name + ";";
                 }
             }
         }

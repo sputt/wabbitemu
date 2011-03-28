@@ -74,11 +74,11 @@ namespace WabbitC.Model
                 }
                 if (curBlock.Function != null)
                 {
-                    foreach (FunctionType.ParamDef param in curBlock.Function.ParamDefs)
+                    foreach (Declaration decl in curBlock.Function.Params)
                     {
-                        if (param.Name == name)
+                        if (decl.Name == name)
                         {
-                            return new Declaration(param.Type, name);
+                            return decl;
                         }
                     }
                 }

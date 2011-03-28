@@ -8,7 +8,7 @@ namespace WabbitC.Model.Statements
     class Goto : ControlStatement
     {
         Label TargetLabel;
-        Declaration CondDecl;
+        public Declaration CondDecl;
 
         public Goto(Label lbl)
         {
@@ -20,6 +20,18 @@ namespace WabbitC.Model.Statements
         {
             TargetLabel = lbl;
             CondDecl = condDecl;
+        }
+
+        public override List<Declaration> GetReferencedDeclarations()
+        {
+            if (CondDecl != null)
+            {
+                return new List<Declaration>() { CondDecl };
+            }
+            else
+            {
+                return base.GetReferencedDeclarations();
+            }
         }
 
         public override string ToString()

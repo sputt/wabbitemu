@@ -16,6 +16,16 @@ namespace WabbitC.Model.Statements
             RValue = src;
         }
 
+        public override List<Declaration> GetModifiedDeclarations()
+        {
+            return new List<Declaration>() { LValue };
+        }
+
+        public override List<Declaration> GetReferencedDeclarations()
+        {
+            return new List<Declaration>() { RValue };
+        }
+
         public override string ToString()
         {
             return LValue.Name + " = " + RValue.Name + ";";

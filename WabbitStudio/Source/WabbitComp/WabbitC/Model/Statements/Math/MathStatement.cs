@@ -55,6 +55,23 @@ namespace WabbitC.Model.Statements.Math
             return decl;
         }
 
+        public override List<Declaration> GetModifiedDeclarations()
+        {
+            return new List<Declaration>() { LValue };
+        }
+
+        public override List<Declaration> GetReferencedDeclarations()
+        {
+            if (RValue != null && RValue.GetType() == typeof(Declaration))
+            {
+                return new List<Declaration>() { LValue, RValue as Declaration };
+            }
+            else
+            {
+                return base.GetReferencedDeclarations();
+            }
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder(LValue.Name);

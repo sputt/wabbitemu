@@ -41,6 +41,23 @@ namespace WabbitC.Model.Statements
             return decl;
         }
 
+        public override List<Declaration> GetModifiedDeclarations()
+        {
+            return new List<Declaration>() { LValue };
+        }
+
+        public override List<Declaration> GetReferencedDeclarations()
+        {
+            if (CondValue.GetType() == typeof(Declaration))
+            {
+                return new List<Declaration>() { CondDecl, CondValue as Declaration };
+            }
+            else
+            {
+                return new List<Declaration>() { CondDecl };
+            }
+        }
+
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();

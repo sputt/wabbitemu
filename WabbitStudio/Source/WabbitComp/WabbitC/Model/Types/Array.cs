@@ -11,12 +11,8 @@ namespace WabbitC.Model.Types
     {
         public Type BaseType;
         public List<int> Dimensions;
-        /// <summary>
-        /// Array constructor, token list points to first bracket e.g. char buffer*->*[32];
-        /// </summary>
-        /// <param name="elementType"></param>
-        /// <param name="tokenList"></param>
-        public Array(Type elementType, ref List<Token>.Enumerator tokens)
+
+        private void BuildArray(Type elementType, ref List<Token>.Enumerator tokens)
         {
             Debug.Assert(tokens.Current == "[");
 
@@ -49,7 +45,10 @@ namespace WabbitC.Model.Types
                     tokens.MoveNext();
                     if (tokens.Current == "]")
                     {
-                        tokens.MoveNext();
+                        if (tokens.MoveNext() == false)
+                        {
+                            break;
+                        }
                     }
                     else
                     {
@@ -58,6 +57,24 @@ namespace WabbitC.Model.Types
                 }
                 nDimensions++;
             }
+        }
+
+        public Array(Type elementType, string dimensions)
+        {
+            List<Token> tokenList = Tokenizer.Tokenize(dimensions);
+            var tokens = tokenList.GetEnumerator();
+            tokens.MoveNext();
+            BuildArray(elementType, ref tokens);
+        }
+
+        /// <summary>
+        /// Array constructor, token list points to first bracket e.g. char buffer*->*[32];
+        /// </summary>
+        /// <param name="elementType"></param>
+        /// <param name="tokenList"></param>
+        public Array(Type elementType, ref List<Token>.Enumerator tokens)
+        {
+            BuildArray(elementType, ref tokens);
         }
 
         public Type GetArrayPointerType()

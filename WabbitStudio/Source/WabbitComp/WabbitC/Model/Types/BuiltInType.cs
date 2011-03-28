@@ -47,7 +47,7 @@ namespace WabbitC.Model.Types
                     break;
                 case "int":
                     type = BuiltInTypeType.Int;
-                    this.Size = 2;
+                    this.Size = 4;
                     break;
                 case "void":
                     type = BuiltInTypeType.Void;
@@ -61,7 +61,7 @@ namespace WabbitC.Model.Types
             while ((tokens.MoveNext()) && (tokens.Current.Text == "*"))
             {
                 IndirectionLevels++;
-                this.Size = 2;
+                this.Size = 4;
             }
         }
 

@@ -7,18 +7,38 @@ namespace WabbitC.Model.Statements
 {
     class Store : ValueStatement
     {
-        Datum store;
-        Datum value;
+        public Datum StoreAddress;
+        public Datum Value;
 
         public Store(Datum store, Datum value)
         {
-            this.store = store;
-            this.value = value;
+            StoreAddress = store;
+            Value = value;
+        }
+
+        public override List<Declaration> GetModifiedDeclarations()
+        {
+            var Result = new List<Declaration>();
+            if (StoreAddress.GetType() == typeof(Declaration))
+            {
+                Result.Add(StoreAddress as Declaration);
+            }
+            return Result;
+        }
+
+        public override List<Declaration> GetReferencedDeclarations()
+        {
+            var Result = new List<Declaration>();
+            if (Value.GetType() == typeof(Declaration))
+            {
+                Result.Add(Value as Declaration);
+            }
+            return Result;
         }
 
         public override string ToString()
         {
-            return "*" + store + " = " + value + ";";
+            return "*" + StoreAddress + " = " + Value + ";";
         }
     }
 }

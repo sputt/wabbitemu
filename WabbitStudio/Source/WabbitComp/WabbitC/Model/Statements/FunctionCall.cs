@@ -11,10 +11,9 @@ namespace WabbitC.Model.Statements
 {
     class FunctionCall : ValueStatement
     {
-        Declaration lValue;
-        public Declaration LValue { get { return lValue; } }
+        public Declaration LValue;
         Declaration Function;
-        List<Declaration> Params;
+        public List<Declaration> Params;
 
         public static List<Declaration> BuildParams(Block block, FunctionType funcType, ref List<Token>.Enumerator tokens)
         {
@@ -22,7 +21,7 @@ namespace WabbitC.Model.Statements
             int nCount = 0;
             while (tokens.Current.Type != TokenType.CloseParen)
             {
-                Declaration decl = block.CreateTempDeclaration(funcType.ParamDefs[nCount].Type);
+                Declaration decl = block.CreateTempDeclaration(funcType.Params[nCount].Type);
 
                 var valueList = Tokenizer.GetArgument(ref tokens);
 
@@ -44,7 +43,7 @@ namespace WabbitC.Model.Statements
 			int nCount = 0;
 			foreach(Expression arg in args)
 			{
-				Declaration decl = block.CreateTempDeclaration(funcType.ParamDefs[nCount].Type);
+				Declaration decl = block.CreateTempDeclaration(funcType.Params[nCount].Type);
 
                 StatementHelper.Parse(block, decl, arg.Tokens);
 
@@ -56,17 +55,27 @@ namespace WabbitC.Model.Statements
         public FunctionCall(Declaration returnDecl, Declaration func, List<Declaration> funcParams)
         {
             Debug.Assert(func.Type.GetType() == typeof(FunctionType));
-            lValue = returnDecl;
+            LValue = returnDecl;
             Function = func;
             Params = funcParams;
+        }
+
+        public override List<Declaration> GetModifiedDeclarations()
+        {
+            return new List<Declaration>() { LValue };
+        }
+
+        public override List<Declaration> GetReferencedDeclarations()
+        {
+            return Params;
         }
 
         public override string ToString()
         {
             string result = "";
-            if (lValue != null)
+            if (LValue != null)
             {
-                result += lValue.Name + " = ";
+                result += LValue.Name + " = ";
             }
             result += Function.Name;
             result += "(";

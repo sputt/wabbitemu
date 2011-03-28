@@ -10,12 +10,7 @@ namespace WabbitC.Model.Types
     class FunctionType : Type
     {
         public Type ReturnType;
-        public struct ParamDef
-        {
-            public Type Type;
-            public String Name; 
-        }
-        public List<ParamDef> ParamDefs;
+        public List<Declaration> Params;
 
         public FunctionType(ref List<Token>.Enumerator tokens, Type returnType)
         {
@@ -27,15 +22,14 @@ namespace WabbitC.Model.Types
 
             this.ReturnType = returnType;
 
-            ParamDefs = new List<ParamDef>();
+            Params = new List<Declaration>();
             while (tokens.Current.Type != TokenType.CloseParen)
             {
-                ParamDef param;
-                param.Type = TypeHelper.ParseType(ref tokens);
-                param.Name = tokens.Current.Text;
+                Type type = TypeHelper.ParseType(ref tokens);
+                string name = tokens.Current.Text;
                 tokens.MoveNext();
 
-                ParamDefs.Add(param);
+                Params.Add(new Declaration(type, name));
 
                 Debug.Assert(tokens.Current.Text == "," || tokens.Current.Text == ")");
 
@@ -49,10 +43,10 @@ namespace WabbitC.Model.Types
         public override string ToString()
         {
             string result = ReturnType + " (*)(";
-            for (int i = 0; i < ParamDefs.Count; i++)
+            for (int i = 0; i < Params.Count; i++)
             {
-                result += ParamDefs[i].Type + " " + ParamDefs[i].Name;
-                if (i != ParamDefs.Count - 1)
+                result += Params[i].Type + " " + Params[i].Name;
+                if (i != Params.Count - 1)
                     result += ", ";
             }
             result += ")";

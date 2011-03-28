@@ -5,7 +5,13 @@ using System.Text;
 
 namespace WabbitC.Model.Statements
 {
-    abstract class Statement : IEnumerable<Block>
+    interface IDeclarations
+    {
+        List<Declaration> GetModifiedDeclarations();
+        List<Declaration> GetReferencedDeclarations();
+    }
+
+    class Statement : IEnumerable<Block>, IDeclarations
     {
         public Block Block;
         public HashSet<String> Properties;
@@ -27,5 +33,49 @@ namespace WabbitC.Model.Statements
         }
 
         #endregion
+
+        #region IDeclarations Members
+
+        public virtual List<Declaration> GetModifiedDeclarations()
+        {
+            return new List<Declaration>();
+        }
+
+        public virtual List<Declaration> GetReferencedDeclarations()
+        {
+            return new List<Declaration>();
+        }
+
+        #endregion
+
+        public void ReplaceDeclaration(Declaration declToReplace, Declaration newDecl)
+        {
+            System.Type type = this.GetType();
+            var fields = from f in type.GetFields() 
+                         where f.FieldType == typeof(Declaration) || f.FieldType == typeof(Datum) || f.FieldType == typeof(List<Declaration>)
+                         select f;
+            foreach (var field in fields)
+            {
+                if (field.FieldType == typeof(List<Declaration>))
+                {
+                    List<Declaration> decls = field.GetValue(this) as List<Declaration>;
+                    for (int i = 0; i < decls.Count; i++)
+                    {
+                        if (decls[i] == declToReplace)
+                        {
+                            decls[i] = newDecl;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    if (field.GetValue(this) == declToReplace)
+                    {
+                        field.SetValue(this, newDecl);
+                    }
+                }
+            }
+        }
     }
 }

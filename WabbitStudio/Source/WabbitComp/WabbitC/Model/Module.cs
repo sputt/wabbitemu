@@ -14,6 +14,14 @@ namespace WabbitC.Model
         {
             this.Types = block.Types;
             this.Declarations = block.Declarations;
+
+            this.Declarations.InsertRange(0, new List<Declaration>()
+            {
+                new Declaration(new BuiltInType("int"), "__hl"),
+                new Declaration(new BuiltInType("int"), "__de"),
+                new Declaration(new BuiltInType("int"), "__bc"),
+            });
+
 			//TODO: make so assignment statements work...
             this.Parent = null;
         }

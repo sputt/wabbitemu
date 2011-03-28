@@ -18,6 +18,23 @@ namespace WabbitC.Model.Statements
             RValue = datum;
         }
 
+        public override List<Declaration> GetModifiedDeclarations()
+        {
+            return new List<Declaration>() { LValue };
+        }
+
+        public override List<Declaration> GetReferencedDeclarations()
+        {
+            if (RValue.GetType() == typeof(Declaration))
+            {
+                return new List<Declaration>() { RValue as Declaration };
+            }
+            else
+            {
+                return base.GetReferencedDeclarations();
+            }
+        }
+
         public override string ToString()
         {
             return LValue + " = (" + Type + ") " + RValue + ";";
