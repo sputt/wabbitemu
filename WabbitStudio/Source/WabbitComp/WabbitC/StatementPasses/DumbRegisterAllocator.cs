@@ -76,6 +76,7 @@ namespace WabbitC.StatementPasses
                     block.Declarations.Clear();
                     block.Declarations.Add(stackDecl);
 
+                    // copy the params to the stack (on z80 these will already be on the stack)
                     foreach (Declaration param in (functions.Current.Type as FunctionType).Params)
                     {
                         block.Statements.Insert(0, new StackStore(param, param));
