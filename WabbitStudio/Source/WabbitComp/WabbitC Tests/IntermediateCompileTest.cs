@@ -95,5 +95,11 @@ namespace WabbitC_Tests
         {
             RunIntermediateTest("cast");
         }
+
+		[TestMethod]
+		public void BubbleSort()
+		{
+			RunIntermediateTest("bubblesort");
+		}
     }
 }

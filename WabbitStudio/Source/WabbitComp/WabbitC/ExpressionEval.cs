@@ -447,7 +447,7 @@ namespace WabbitC
 						case 1:
 							//if we have a pre/post operator we need to make sure we specify which it is
                             if (op.Token == "++" || op.Token == "--")
-                                if (leftSide.Token != null)
+                                if (leftSide.Token == null)
                                     op.isPrefix = true;
                                 else
                                     op.isPrefix = false;

@@ -16,7 +16,7 @@ namespace WabbitC.Model.Statements
 
         public override List<Declaration> GetReferencedDeclarations()
         {
-            if (ReturnReg.GetType() == typeof(Declaration))
+            if (ReturnReg != null && ReturnReg.GetType() == typeof(Declaration))
             {
                 return new List<Declaration>() { ReturnReg as Declaration };
             }
@@ -28,6 +28,8 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
+			if (ReturnReg == null)
+				return "return;";
             return "return " + ReturnReg + ";";
         }
     }

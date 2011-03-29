@@ -23,6 +23,9 @@ namespace WabbitC.StatementPasses
                     var whileLoops = from Statement st in block
                                      where st.GetType() == typeof(While)
                                      select st;
+					var doWhileLoops = from Statement st in block
+									 where st.GetType() == typeof(DoWhile)
+									 select st;
                     foreach (While loop in whileLoops)
                     {
                         Block loopBlock = loop.Block;
@@ -40,6 +43,22 @@ namespace WabbitC.StatementPasses
 
                         loopBlock.Statements.InsertRange(nPos, whileReplacement);
                     }
+					foreach (DoWhile loop in doWhileLoops)
+					{
+						Block loopBlock = loop.Block;
+						int nPos = loopBlock.Statements.IndexOf(loop);
+						loopBlock.Statements.Remove(loop);
+
+						List<Statement> whileReplacement = new List<Statement>();
+						Label whileStartLbl = block.CreateTempLabel();
+						whileReplacement.Add(whileStartLbl);
+						whileReplacement.AddRange(loop.Body);
+						whileReplacement.Add(loop.Label);
+						whileReplacement.AddRange(loop.Condition);
+						whileReplacement.Add(new Goto(whileStartLbl, loop.CondDecl));
+
+						loopBlock.Statements.InsertRange(nPos, whileReplacement);
+					}
                 }
             }
         }

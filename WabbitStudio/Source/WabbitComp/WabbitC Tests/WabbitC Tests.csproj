@@ -72,6 +72,7 @@
   <ItemGroup>
     <Content Include="bracer_result.c" />
     <Content Include="bracer_test.c" />
+    <Content Include="C Files\bubblesort_expected.c" />
     <Content Include="C Files\cast_expected.c" />
     <Content Include="C Files\fibonacci_expected.c" />
     <Content Include="C Files\functioncallmath_expected.c" />

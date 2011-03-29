@@ -159,6 +159,10 @@ namespace WabbitC.Model
                 {
                     thisBlock.Statements.Add(If.ParseIf(thisBlock, ref tokens));
                 }
+				else if (tokens.Current.Text == "do")
+				{
+					thisBlock.Statements.Add(DoWhile.Parse(thisBlock, ref tokens));
+				}
 				else if (tokens.Current.Text == "while")
 				{
 					thisBlock.Statements.Add(While.Parse(thisBlock, ref tokens));
@@ -171,29 +175,38 @@ namespace WabbitC.Model
 						throw new System.Exception("That was gay");
 					}
 				}
-                else if (tokens.Current.Text == "return")
-                {
-                    tokens.MoveNext();
+				else if (tokens.Current.Text == "return")
+				{
+					tokens.MoveNext();
 
-                    var returnList = Tokenizer.GetStatement(ref tokens);
-                    Declaration decl = thisBlock.CreateTempDeclaration(func.ReturnType);
+					if (tokens.Current.Type == TokenType.StatementEnd)
+					{
+						var returnStatement = new Return(null);
+						thisBlock.Statements.Add(returnStatement);
+						tokens.MoveNext();
+					}
+					else
+					{
+						var returnList = Tokenizer.GetStatement(ref tokens);
+						Declaration decl = thisBlock.CreateTempDeclaration(func.ReturnType);
 
-                    StatementHelper.Parse(thisBlock, decl, returnList);
+						StatementHelper.Parse(thisBlock, decl, returnList);
 
-                    var returnStatement = new Return(decl);
-                    thisBlock.Statements.Add(returnStatement);
+						var returnStatement = new Return(decl);
+						thisBlock.Statements.Add(returnStatement);
 
-                    tokens.MoveNext();
-                }
-                else
-                {
-                    Declaration declForStatement = thisBlock.FindDeclaration(tokens.Current.Text);
-                    if (declForStatement != null)
-                    {
-                        StatementHelper.Parse(thisBlock, Tokenizer.GetStatement(ref tokens));
-                        Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                        tokens.MoveNext();
-                        /*
+						tokens.MoveNext();
+					}
+				}
+				else
+				{
+					Declaration declForStatement = thisBlock.FindDeclaration(tokens.Current.Text);
+					if (declForStatement != null)
+					{
+						StatementHelper.Parse(thisBlock, Tokenizer.GetStatement(ref tokens));
+						Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+						tokens.MoveNext();
+						/*
 						// We have some kind of statement in this case
 						tokens.MoveNext();
 
@@ -204,7 +217,7 @@ namespace WabbitC.Model
 							var valueList = Tokenizer.GetStatement(ref tokens);
 							var expr = new Expression(valueList);
 
-                            StatementHelper.Parse(thisBlock, declForStatement, valueList);
+							StatementHelper.Parse(thisBlock, declForStatement, valueList);
 
 							Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
 							tokens.MoveNext();
@@ -232,89 +245,89 @@ namespace WabbitC.Model
 							Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
 							tokens.MoveNext();
 						}
-                         * */
-                    }
-                    else
-                    {
-                        String resultName = "";
-                        Type resultType = TypeHelper.ParseType(ref tokens);
-                        if (resultType == null)
-                        {
-                            StatementHelper.Parse(thisBlock, Tokenizer.GetStatement(ref tokens));
-                            Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                            tokens.MoveNext();
-                        }
-                        else
-                        {
-                            // Read the name of the declaration/type
-                            if (tokens.Current.Type == TokenType.StringType)
-                            {
-                                resultName = tokens.Current.Text;
-                                tokens.MoveNext();
-                            }
+						 * */
+					}
+					else
+					{
+						String resultName = "";
+						Type resultType = TypeHelper.ParseType(ref tokens);
+						if (resultType == null)
+						{
+							StatementHelper.Parse(thisBlock, Tokenizer.GetStatement(ref tokens));
+							Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+							tokens.MoveNext();
+						}
+						else
+						{
+							// Read the name of the declaration/type
+							if (tokens.Current.Type == TokenType.StringType)
+							{
+								resultName = tokens.Current.Text;
+								tokens.MoveNext();
+							}
 
-                            // in this case it's either a prototype or a function
-                            // Either way it gets added to the types of this module
-                            if (tokens.Current.Type == TokenType.OpenParen)
-                            {
-                                FunctionType function = new FunctionType(ref tokens, resultType);
-                                resultType = function;
-                                thisBlock.Types.Add(function);
+							// in this case it's either a prototype or a function
+							// Either way it gets added to the types of this module
+							if (tokens.Current.Type == TokenType.OpenParen)
+							{
+								FunctionType function = new FunctionType(ref tokens, resultType);
+								resultType = function;
+								thisBlock.Types.Add(function);
 
-                                if (tokens.Current.Type == TokenType.OpenBlock)
-                                {
-                                    var declaration = new Declaration(resultType, resultName);
-                                    thisBlock.Declarations.Add(declaration);
+								if (tokens.Current.Type == TokenType.OpenBlock)
+								{
+									var declaration = new Declaration(resultType, resultName);
+									thisBlock.Declarations.Add(declaration);
 
-                                    tokens.MoveNext();
-                                    var block = Block.ParseBlock(ref tokens, thisBlock, function);
+									tokens.MoveNext();
+									var block = Block.ParseBlock(ref tokens, thisBlock, function);
 
-                                    Debug.Assert(tokens.Current.Type == TokenType.CloseBlock);
-                                    tokens.MoveNext();
+									Debug.Assert(tokens.Current.Type == TokenType.CloseBlock);
+									tokens.MoveNext();
 
-                                    declaration.Code = block;
-                                    //STP: Not sure about this
-                                    //thisBlock.Declarations.Add(declaration);
-                                }
-                                else
-                                {
-                                    Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                                    tokens.MoveNext();
-                                }
-                            }
-                            else if (tokens.Current == "[")
-                            {
-                                resultType = new WabbitC.Model.Types.Array(resultType, ref tokens);
-                                var declaration = new Declaration(resultType, resultName);
-                                thisBlock.Declarations.Add(declaration);
-                                Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                                tokens.MoveNext();
-                            }
-                            else
-                            {
-                                var decl = new Declaration(resultType, resultName);
-                                thisBlock.Declarations.Add(decl);
+									declaration.Code = block;
+									//STP: Not sure about this
+									//thisBlock.Declarations.Add(declaration);
+								}
+								else
+								{
+									Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+									tokens.MoveNext();
+								}
+							}
+							else if (tokens.Current == "[")
+							{
+								resultType = new WabbitC.Model.Types.Array(resultType, ref tokens);
+								var declaration = new Declaration(resultType, resultName);
+								thisBlock.Declarations.Add(declaration);
+								Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+								tokens.MoveNext();
+							}
+							else
+							{
+								var decl = new Declaration(resultType, resultName);
+								thisBlock.Declarations.Add(decl);
 
-                                // Handle declarations with initial values
-                                if (tokens.Current.Text == "=")
-                                {
-                                    tokens.MoveNext();
+								// Handle declarations with initial values
+								if (tokens.Current.Text == "=")
+								{
+									tokens.MoveNext();
 
-                                    var valueList = Tokenizer.GetStatement(ref tokens);
-                                    StatementHelper.Parse(thisBlock, decl, valueList);
+									var valueList = Tokenizer.GetStatement(ref tokens);
+									StatementHelper.Parse(thisBlock, decl, valueList);
 
-                                    Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                                    tokens.MoveNext();
-                                }
-                                else
-                                {
-                                    Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-                                    tokens.MoveNext();
-                                }
-                            }
-                        }
-                    }
-                }
+									Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+									tokens.MoveNext();
+								}
+								else
+								{
+									Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+									tokens.MoveNext();
+								}
+							}
+						}
+					}
+				}
             }
             return thisBlock;
         }

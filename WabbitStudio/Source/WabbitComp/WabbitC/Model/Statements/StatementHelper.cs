@@ -214,6 +214,9 @@ namespace WabbitC.Model.Statements
                     }
                     decl = ConditionStatement.BuildStatements(block, exp, condLHS, condRHS);
                     break;
+				case "%":
+
+					break;
 			}
 			return decl;
 		}

@@ -79,8 +79,13 @@
     <Compile Include="Model\BlockEnumerator.cs" />
     <Compile Include="Model\Statements\Annotation.cs" />
     <Compile Include="Model\Statements\Cast.cs" />
+    <Compile Include="Model\Statements\Condition\NotEquals.cs" />
+    <Compile Include="Model\Statements\Condition\GreaterThan.cs" />
+    <Compile Include="Model\Statements\Condition\GreaterThanEquals.cs" />
+    <Compile Include="Model\Statements\Condition\LessThanEquals.cs" />
     <Compile Include="Model\Statements\Condition\Equals.cs" />
     <Compile Include="Model\Statements\Condition\LessThan.cs" />
+    <Compile Include="Model\Statements\DoWhile.cs" />
     <Compile Include="Model\Statements\Goto.cs" />
     <Compile Include="Model\Statements\Math\Add.cs" />
     <Compile Include="Model\Statements\Assignment.cs" />
@@ -139,13 +144,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="test.c" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="test.c">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
