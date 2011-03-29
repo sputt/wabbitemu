@@ -41,8 +41,11 @@ namespace WabbitC.Model.Statements
                 Token token = null;
                 if (exprList[i].IsCast)
                 {
-                    List<Token>.Enumerator tokens = exprList[i].Tokens.GetEnumerator();
-                    tokens.MoveNext();
+					var tokensList = exprList[i].Tokens;
+					tokensList.Remove(Token.OpenParenToken);
+					tokensList.Remove(Token.CloseParenToken);
+					var tokens = tokensList.GetEnumerator();
+					tokens.MoveNext();
                     Type castType = TypeHelper.ParseType(ref tokens);
                     if (castType != null)
                     {

@@ -16,7 +16,7 @@ namespace WabbitC.StatementPasses
             var functions = module.GetFunctionEnumerator();
             while (functions.MoveNext())
             {
-                if (functions.Current.Code != null && functions.Current.Code.Declarations.Count > 0)
+                if (functions.Current.Code != null)
                 {
                     Declaration lastDecl = functions.Current.Code.Declarations.Last<Declaration>();
                     int stackSize = lastDecl.StackOffset + lastDecl.Type.Size;

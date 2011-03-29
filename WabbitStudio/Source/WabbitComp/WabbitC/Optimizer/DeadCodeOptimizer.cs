@@ -114,12 +114,13 @@ namespace WabbitC.Optimizer
         {
             int isRefed = -1;
 			int isReassigned = -1;
-            for (; i < block.Statements.Count; i++)
+            for (; i < block.Statements.Count && isRefed == -1; i++)
             {
                 var statement = block.Statements[i];
 				var modified = statement.GetModifiedDeclarations();
 				var refed = statement.GetReferencedDeclarations();
-				if (modified.Contains(declaration))
+				var type = statement.GetType();
+				if ((type == typeof(Move) || type == typeof(Assignment)) && modified.Contains(declaration))
 					isReassigned = i;
 				if (refed.Contains(declaration) && deadInstructions[i])
 					isRefed = i;
