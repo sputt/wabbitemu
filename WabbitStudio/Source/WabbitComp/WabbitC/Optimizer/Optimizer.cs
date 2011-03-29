@@ -13,6 +13,7 @@ namespace WabbitC.Optimizer
         static bool DeadCodeOptimization = true;
         static bool DeadVariableRemoval = true;
 		static bool VariableReduction = true;
+		static bool ReuseVariables = true;
         public static void RunOptimizer(ref Module module, Compiler.OptimizeLevel opLevel)
         {
             Block mainModule = (Block) module;
@@ -22,7 +23,9 @@ namespace WabbitC.Optimizer
 				VariableReducer.Optimize(ref module);
             if (DeadCodeOptimization)
                 DeadCodeOptimizer.Optimize(ref module);
-            if (DeadVariableRemoval)
+			if (ReuseVariables)
+				VariableReuse.Optimize(ref module);
+			if (DeadVariableRemoval)
                 DeadVariableOptimizer.Optimize(ref module);
         }
     }
