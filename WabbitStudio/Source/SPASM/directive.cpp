@@ -92,6 +92,8 @@ char *handle_directive (char *ptr) {
 			read_expr (&ptr, szSize, ",");
 			parse_num (szSize, &size);
 			ptr = skip_whitespace (ptr);
+			if (*ptr == ',')
+				ptr++;
 
 			if (read_expr (&ptr, szFill, "")) {
 				//if there's a value to fill the block with, then handle that
