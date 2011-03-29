@@ -77,6 +77,7 @@
     <Compile Include="Model\StackDeclaration.cs" />
     <Compile Include="Model\Statements\AddressOf.cs" />
     <Compile Include="Model\BlockEnumerator.cs" />
+    <Compile Include="Model\Statements\Annotation.cs" />
     <Compile Include="Model\Statements\Cast.cs" />
     <Compile Include="Model\Statements\Condition\Equals.cs" />
     <Compile Include="Model\Statements\Condition\LessThan.cs" />

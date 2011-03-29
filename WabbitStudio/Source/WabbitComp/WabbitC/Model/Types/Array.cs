@@ -57,6 +57,8 @@ namespace WabbitC.Model.Types
                 }
                 nDimensions++;
             }
+
+            Size = Dimensions[0] * BaseType.Size;
         }
 
         public Array(Type elementType, string dimensions)
@@ -85,15 +87,22 @@ namespace WabbitC.Model.Types
             return ptrType;
         }
 
-
         public override string ToString()
+        {
+            throw new NotSupportedException();
+        }
+
+        public override string ToDeclarationString(string DeclName)
         {
             var sb = new StringBuilder();
             sb.Append(BaseType);
+            sb.Append(" ");
+            sb.Append(DeclName);
             foreach (int dim in Dimensions)
             {
                 sb.Append("[" + dim + "]");
             }
+            sb.Append(";");
             return sb.ToString();
         }
     }

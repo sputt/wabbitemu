@@ -18,7 +18,14 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            return "*(" + LValue.Type + "*) &__stack[" + LValue.StackOffset + "] = " + Decl.Name + ";";
+            if (Decl.Type.Size > 4)
+            {
+                return "";
+            }
+            else
+            {
+                return "*(" + LValue.Type + "*) &__stack[" + LValue.StackOffset + "] = " + Decl.Name + ";";
+            }
         }
     }
 }

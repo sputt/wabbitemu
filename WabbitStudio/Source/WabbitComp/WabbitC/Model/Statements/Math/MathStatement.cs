@@ -68,7 +68,7 @@ namespace WabbitC.Model.Statements.Math
             }
             else
             {
-                return base.GetReferencedDeclarations();
+                return new List<Declaration>() { LValue };
             }
         }
 

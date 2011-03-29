@@ -67,7 +67,7 @@ namespace WabbitC
             StatementPasses.IfGotoConversion.Run(currentModule);
             StatementPasses.LoopGotoConversion.Run(currentModule);
 
-			//if (optimizeLevel != OptimizeLevel.OptimizeNone)
+			if (optimizeLevel != OptimizeLevel.OptimizeNone)
 				Optimizer.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
 
             StatementPasses.StackAllocator.Run(currentModule);
@@ -86,7 +86,7 @@ namespace WabbitC
             }
 
             var writer = new StreamWriter(outputFile);
-            writer.Write(code);
+            writer.Write(code.Replace("\n","\r\n"));
             writer.Close();
 
             return true;

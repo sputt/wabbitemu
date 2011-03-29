@@ -35,8 +35,7 @@ namespace WabbitC.Model
             {
                 if (Type.GetType() == typeof(Types.FunctionType))
                 {
-                    string funcType = Type.ToString();
-                    funcType = funcType.Replace("(*)", Name);
+                    string funcType = Type.ToDeclarationString(Name);
                     if (Code != null)
                     {
                         funcType += "\n" + Code.ToString();
@@ -47,17 +46,9 @@ namespace WabbitC.Model
                         return funcType + ";";
                     }
                 }
-                else if (Type.GetType() == typeof(Types.Array))
-                {
-                    var arrayType = Type as Types.Array;
-                    string arrayString = Type.ToString();
-                    arrayString = arrayString.Replace(arrayType.BaseType.ToString(), 
-                        arrayType.BaseType.ToString() + " " + Name);
-                    return arrayString + ";";
-                }
                 else
                 {
-                    return Type + " " + Name + ";";
+                    return Type.ToDeclarationString(Name);
                 }
             }
         }

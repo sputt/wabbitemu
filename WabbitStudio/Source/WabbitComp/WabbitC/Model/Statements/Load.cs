@@ -25,6 +25,7 @@ namespace WabbitC.Model.Statements
         public override List<Declaration> GetReferencedDeclarations()
         {
             var Result = new List<Declaration>();
+            Result.Add(LValue);
             if (LoadAddress.GetType() == typeof(Declaration))
             {
                 Result.Add(LoadAddress as Declaration);
@@ -34,7 +35,7 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            return this.LValue.Name + " = *" + this.LoadAddress.ToString() + ";";
+            return this.LValue.Name + " = *(" + LValue.Type + "*) " + this.LoadAddress.ToString() + ";";
         }
     }
 }

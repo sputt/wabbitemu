@@ -94,6 +94,11 @@ namespace WabbitC.Model.Types
 			return sb.ToString();
         }
 
+        public override string ToDeclarationString(string DeclName)
+        {
+            return this.ToString() + " " + DeclName + ";";
+        }
+
         public override bool Equals(object obj)
         {
             if (obj.GetType() != typeof(BuiltInType))

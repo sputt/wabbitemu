@@ -7,19 +7,9 @@ namespace WabbitC.Model
 {
     abstract class Type : ICloneable
     {
-        private int size;
-        public int Size
-        {
-            get
-            {
-                return size;
-            }
-            set
-            {
-                size = value;
-            }
-        }
+        public int Size;
 
+        public abstract string ToDeclarationString(string DeclName);
         public int IndirectionLevels;
 
         public void Dereference()
@@ -30,7 +20,7 @@ namespace WabbitC.Model
             }
             else
             {
-                MessageSystem.Instance.ThrowNewError("Cannot deference");
+                MessageSystem.Instance.ThrowNewError("Cannot dereference");
             }
         }
 
@@ -48,5 +38,7 @@ namespace WabbitC.Model
         {
             return this.MemberwiseClone();
         }
+
+        
     }
 }

@@ -52,5 +52,10 @@ namespace WabbitC.Model.Types
             result += ")";
             return result;
         }
+
+        public override string ToDeclarationString(string DeclName)
+        {
+            return this.ToString().Replace("(*)", DeclName);
+        }
     }
 }

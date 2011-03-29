@@ -18,7 +18,26 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            return LValue.Name + " = *(" + Decl.Type + "*) &__stack[" + Decl.StackOffset + "];";
+            if (Decl.Type.Size > 4)
+            {
+                // It refers to the stack, not stored in the stack
+                Type type;
+                if (Decl.Type.GetType() == typeof(Types.Array))
+                {
+                    type = (Decl.Type as Types.Array).GetArrayPointerType();
+                }
+                else
+                {
+                    type = (Type) Decl.Type.Clone();
+                    type.Reference();
+                }
+
+                return LValue.Name + " = (" + type + ") &__stack[" + Decl.StackOffset + "];";
+            }
+            else
+            {
+                return LValue.Name + " = *(" + Decl.Type + "*) &__stack[" + Decl.StackOffset + "];";
+            }
         }
     }
 }
