@@ -68,49 +68,80 @@ namespace WabbitC
                         symbol.IsConstant = false;
                     }
                 }
-                else if (type.BaseType == typeof(MathStatement))
-                {
-                    var math = statement as MathStatement;
+				else if (type.BaseType == typeof(ConditionStatement))
+				{
+					var cond = statement as ConditionStatement;
+					var symbol = FindSymbol(cond.CondDecl);
+					if (symbol != null && symbol.IsConstant)
+					{
+						var immediate = new Immediate(Tokenizer.ToToken(symbol.Value.ToString()));
+						
+					}
+					else
+					{
+						symbol = FindSymbol(cond.LValue);
+						symbol.IsConstant = false;
+					}
+				}
+				else if (type.BaseType == typeof(MathStatement))
+				{
+					var math = statement as MathStatement;
 					var imath = statement as IMathOperator;
-                    var symbol = FindSymbol(math.LValue);
-                    if (symbol.IsConstant)
-                    {
+					var symbol = FindSymbol(math.LValue);
+					if (symbol.IsConstant)
+					{
 						var value = imath.Apply();
-                        if (value != null)
-                        {
+						if (value != null)
+						{
 							var lValue = math.LValue;
-                            var immediate = value as Immediate;
-                            symbol.IsConstant = true;
-                            if (immediate.Value.Type == TokenType.IntType)
-                            {
-                                int result;
+							var immediate = value as Immediate;
+							symbol.IsConstant = true;
+							if (immediate.Value.Type == TokenType.IntType)
+							{
+								int result;
 								result = int.Parse(immediate.Value);
-                                var newImmediate = new Immediate(Tokenizer.ToToken(result.ToString()));
-                                var assigment = new Assignment(lValue, newImmediate);
-                                block.Statements[i] = assigment;
-                                symbol.Value = newImmediate;
-                            }
-                        }
-                        else
-                        {
+								var newImmediate = new Immediate(Tokenizer.ToToken(result.ToString()));
+								var assigment = new Assignment(lValue, newImmediate);
+								block.Statements[i] = assigment;
+								symbol.Value = newImmediate;
+							}
+						}
+						else
+						{
 							symbol.IsConstant = false;
-                        }
-                    }
-                }
-                else if (type == typeof(Return))
-                {
-                    var returnType = statement as Return;
-                    var symbol = FindSymbol((Declaration) returnType.ReturnReg);
-                    if (symbol != null && symbol.IsConstant)
-                    {
-                        //returnType = new Return(symbol.Value);
-                        //block.Statements[i] = returnType;
-                    }
-                    else
-                    {
+						}
+					}
+				}
+				else if (type == typeof(Return))
+				{
+					var returnType = statement as Return;
+					var symbol = FindSymbol((Declaration)returnType.ReturnReg);
+					if (symbol != null && symbol.IsConstant)
+					{
+						//returnType = new Return(symbol.Value);
+						//block.Statements[i] = returnType;
+					}
+					else
+					{
 
-                    }
-                }
+					}
+				}
+				else if (type == typeof(Goto))
+				{
+					var gotoType = statement as Goto;
+					if (gotoType.CondDecl != null)
+					{
+						for (int k = 0; k < block.Declarations.Count; k++)
+						{
+							symbolTable[k].IsConstant = false;
+						}
+					}
+					int j = i;
+					while (j + 1 < block.Statements.Count && statement != gotoType.TargetLabel)
+						statement = block.Statements[++j];
+					if (j != block.Statements.Count)
+						i = j;
+				}
             }
         }
 
@@ -132,6 +163,7 @@ namespace WabbitC
         public bool IsVolatile { get; set; }
         public bool IsAlive { get; set; }
         public Datum Value { get; set; }
+		public Statement ConstStatment { get; set; }
 
         public static OptimizerSymbol Parse(Declaration statement)
         {

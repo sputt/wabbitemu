@@ -1,19 +1,15 @@
-int store(int arg)
+int fibonacci(int n)
 {
-	int buffer[32];
-	int i;
-	int total;
-
-	for (i = 0; i < arg; i += 1)
+	if (n == 0)
 	{
-		buffer[i] = i;
+		return 0;
 	}
-
-	total = 0;
-	for (i = 0; i < arg; i += 1)
+	else if (n == 1)
 	{
-		total += buffer[i];
+		return 1;
 	}
-
-	return total;
+	else
+	{
+		return fibonacci(n - 2) + fibonacci(n - 1);
+	}
 }

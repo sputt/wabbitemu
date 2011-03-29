@@ -6,6 +6,7 @@ using System.Text;
 using WabbitC.Model;
 using WabbitC.Model.Statements;
 using WabbitC.Model.Types;
+using System.Diagnostics;
 
 namespace WabbitC.StatementPasses
 {
@@ -20,6 +21,7 @@ namespace WabbitC.StatementPasses
                 {
                     Declaration lastDecl = functions.Current.Code.Declarations.Last<Declaration>();
                     int stackSize = lastDecl.StackOffset + lastDecl.Type.Size;
+					Debug.Print("{0}", stackSize);
                     functions.Current.Code.Declarations.Insert(0, new StackDeclaration(stackSize));
                 }
             }

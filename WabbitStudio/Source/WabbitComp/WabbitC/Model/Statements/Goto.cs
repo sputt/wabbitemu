@@ -7,7 +7,7 @@ namespace WabbitC.Model.Statements
 {
     class Goto : ControlStatement
     {
-        Label TargetLabel;
+        public Label TargetLabel;
         public Declaration CondDecl;
 
         public Goto(Label lbl)

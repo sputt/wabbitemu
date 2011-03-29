@@ -75,7 +75,9 @@ namespace WabbitC.Optimizer
 						var move = statement as Move;
 						var decl = block.FindDeclaration(move.LValue.Name);
 						var isReferenced = IsReferenced(block, instructions, move.LValue, i + 1);
-						if (decl != null && !isReferenced)
+						//last part is stuck on there because the variable reduction causes some stuff
+						//like this and nothing will find it. No need to make new stuff, easy to remove here
+						if ((decl != null && !isReferenced) || move.LValue == move.RValue)
 						{
 							instructions[i] = false;
 							changedInstructions = true;

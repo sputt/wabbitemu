@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using WabbitC;
 using System.IO;
+using System.Diagnostics;
 
 namespace WabbitC_Tests
 {
@@ -16,7 +17,10 @@ namespace WabbitC_Tests
         {
             string CurDir = Environment.CurrentDirectory;
             var compiler = new Compiler();
-            Compiler.DoCompile(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_expected.c");
+			Debug.Print("Optimized Stack");
+			Compiler.DoCompile(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_expected.c", Compiler.OptimizeLevel.OptimizeMax);
+			Debug.Print("Normal Stack");
+			Compiler.DoCompile(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_expected.c");
 
             System.Diagnostics.Process p = new System.Diagnostics.Process();
             p.StartInfo.WorkingDirectory = CurDir + @"\..\..\..\WabbitC Tests";
@@ -29,6 +33,7 @@ namespace WabbitC_Tests
             p.Start();
             p.WaitForExit();
 
+			
             Assert.AreEqual(p.ExitCode, 0, "Failed to build");
 
 

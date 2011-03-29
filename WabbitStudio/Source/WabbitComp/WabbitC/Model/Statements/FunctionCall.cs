@@ -67,6 +67,9 @@ namespace WabbitC.Model.Statements
 
         public override List<Declaration> GetReferencedDeclarations()
         {
+			var temp = new List<Declaration>();
+			temp.Add(Function);
+			temp.AddRange(Params);
             return Params;
         }
 

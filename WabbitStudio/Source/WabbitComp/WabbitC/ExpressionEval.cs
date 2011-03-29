@@ -7,11 +7,17 @@ namespace WabbitC
     public class Expression
     {
         List<Token> tokens;
+		/// <summary>
+		/// The list of tokens in the current expression
+		/// </summary>
 		public List<Token> Tokens
 		{
 			get { return tokens; }
 		}
 
+		/// <summary>
+		/// Returns the first Token in the expression
+		/// </summary>
         public Token Token
         {
             get
@@ -24,32 +30,51 @@ namespace WabbitC
         }
 
 		List<Expression> args;
+		/// <summary>
+		/// If this expression is a function, this returns a list of all parameters inputted for it.
+		/// Returns null if not a function.
+		/// </summary>
 		public List<Expression> Args
 		{
 			get { return args; }
 		}
 
 		bool isCast;
+		/// <summary>
+		/// Returns true if this expression is the special cast operator
+		/// Returns false otherwise
+		/// </summary>
 		public bool IsCast
 		{
 			get { return isCast; }
 		}
 
 		int operands;
+		/// <summary>
+		/// Returns the number of operands this expression needs to function
+		/// If 0 is returned it is likely a Immediate or Declaration
+		/// </summary>
 		public int Operands
 		{
 			get { return operands; }
 		}
 
         bool isPrefix = false;
-        public bool IsPrefix { get { return isPrefix; } }
+		/// <summary>
+		/// Returns true if this ++ or -- operator is a prefix operator
+		/// Only valid if expression is ++ or --
+		/// </summary>
+		public bool IsPrefix
+		{
+			get { return isPrefix; }
+		}
 
         public Expression(List<Token> tokens)
         {
             this.tokens = tokens;
         }
 
-		public Expression(List<Token> tokens, int operands)
+		private Expression(List<Token> tokens, int operands)
 		{
 			this.operands = operands;
 			this.tokens = tokens;
@@ -60,13 +85,19 @@ namespace WabbitC
 			this.tokens = new List<Token> { token };
 		}
 
+		/// <summary>
+		/// Attempts to evaluate the current expression.
+		/// Optimizes parens, then makes an RPN stack of the tokens.
+		/// Finally attempts to calculate known parts of the stack and reduce them as much as possible
+		/// </summary>
+		/// <returns>An RPN stack of the evaluated tokens. Highest index of
+		/// the list is the top of the stack</returns>
         public List<Expression> Eval()
         {
 			ReplaceDefines();
 			OptimizeTokens();
 			var test = FillStack(this);
 			CalculateStack(ref test);
-
 			return test;
         }
 
@@ -101,7 +132,7 @@ namespace WabbitC
 					parenLoc.Add(i);
 					curOpLevel.Add(-1);
 					curOpLevel[nParen] = -1;		//impossible to remove
-					nParen++;		//skip the first paren of the cast
+					nParen++;						//skip the first paren of the cast
 					SkipCasts(ref i, ref nParen, ref parenLoc, ref curOpLevel);
 				}
 			}
@@ -162,13 +193,13 @@ namespace WabbitC
 					//ignore assignment operator
 					if (curOpLevel[nParen] == -1)
 						curOpLevel[nParen] = level;
-					else if (curOpLevel[nParen] != level || IsBanned(token))
+					else if (curOpLevel[nParen] != level || IsBannedParenOptimze(token))
 						canRemoveParen = false;
 				}
 			}
 		}
 
-        private bool IsBanned(Token token)
+        private bool IsBannedParenOptimze(Token token)
         {
             return token == "-" || token == "/";
         }
@@ -243,6 +274,13 @@ namespace WabbitC
 			return result;
 		}
 
+		/// <summary>
+		/// Tries to take a list of tokens and combine them into a single expression
+		/// </summary>
+		/// <param name="op">Operator to apply to tokens</param>
+		/// <param name="tokens">List of operands necessary for op</param>
+		/// <returns>Null if the tokens supplied cannot be distilled to a single token.
+		///	Otherwise returns an expression of one token.</returns>
 		private Expression ApplyOperator(Token op, List<Token> tokens)
 		{
 			switch (tokens.Count)
@@ -252,6 +290,7 @@ namespace WabbitC
 				case 2:
 					return ApplyOperator(op, tokens[0], tokens[1]);
 			}
+			//ternary falls through
 			return null;
 		}
 
@@ -268,7 +307,8 @@ namespace WabbitC
 					result = ~tok1;
 					break;
                 case "-":
-                    result = Tokenizer.ToToken("0") - tok1;
+					//negation is just subtraction from 0
+                    result = Token.ZeroToken - tok1;
                     break;
 			}
 			return result;
@@ -308,6 +348,7 @@ namespace WabbitC
 					result = tok1 | tok2;
 					break;
 				case "||":
+					//cant override || or && :/
 					if (!int.TryParse(tok1.Text, out int1) || !int.TryParse(tok2.Text, out int2))
 					{
 						var resultList = new List<Token> { Token.OROperatorToken, tok2, tok1 };
@@ -327,6 +368,11 @@ namespace WabbitC
 			return result;
 		}
 
+		/// <summary>
+		/// Takes a single expression and breaks it apart into an RPN based stack
+		/// </summary>
+		/// <param name="input">Expression to split into components</param>
+		/// <returns>A list of expression where the last element is the top of the RPN stack</returns>
 		public List<Expression> FillStack(Expression input)
 		{
 			List<Expression> stack = new List<Expression>();
@@ -335,18 +381,21 @@ namespace WabbitC
 			{
 				Expression curExpr = stack[i];
 				int numArgs;
+				//we need to see if we can find an operator to split into two expressions
 				int operatorIndex = Expression.GetOperator(curExpr, out numArgs);
 				if (operatorIndex != -1)
 				{
+					//we've got something, lets break it into parts
 					int j;
 					Expression leftSide, rightSide, ternarySide = null, op;
 					List<Token> tokenList = new List<Token>();
 					for (j = 0; j < operatorIndex; j++)
 						tokenList.Add(curExpr.Tokens[j]);
+					//everything before op
 					leftSide = new Expression(tokenList);
 
 					tokenList = new List<Token>();
-					//we've got a cast
+					//we've got a cast, lets treat it like as a single operator
 					if (curExpr.Tokens[j].Type == TokenType.OpenParen)
 					{
 						int k = 0;
@@ -356,8 +405,11 @@ namespace WabbitC
 					}
 					else
 					{
+						//get a single token for the operator
 						op = new Expression(new List<Token> { curExpr.Tokens[j++] }, numArgs);
 					}
+					//special case for ternary, we need to read everything to the ':', then skip and
+					//keep going to the end of the statement
 					if (numArgs == 3)
 					{
 						for (; j < curExpr.Tokens.Count && curExpr.Tokens[j].Text != ":"; j++)
@@ -371,12 +423,16 @@ namespace WabbitC
 					}
 					else
 					{
+						//otherwise get everything to the right of the op
 						for (; j < curExpr.Tokens.Count; j++)
 							tokenList.Add(curExpr.Tokens[j]);
 						rightSide = new Expression(tokenList);
 					}
+					//remove the current part on the stack
 					stack.Remove(curExpr);
+					//and at in the new operator first, as per RPN
 					stack.Insert(i, op);
+					//and add in the args left (first) to right/ternary (last)
 					switch (numArgs)
 					{
 						case 3:
@@ -389,6 +445,7 @@ namespace WabbitC
 							stack.Insert(i + 2, rightSide);
 							break;
 						case 1:
+							//if we have a pre/post operator we need to make sure we specify which it is
                             if (op.Token == "++" || op.Token == "--")
                                 if (leftSide.Token != null)
                                     op.isPrefix = true;
@@ -403,74 +460,53 @@ namespace WabbitC
 				}
 				else
 				{
+					//no operators, we should check for parens and functions
 					if (curExpr.Tokens.Count < 1)
 						continue;
 					Token curToken = curExpr.Tokens[0];
 					if (curToken.Type == TokenType.OpenParen)
 					{
-						//handle paren
-						int nParen = 0;
-						int j = 1;
-						curToken = curExpr.Tokens[j];
-						List<Token> insideTokens = new List<Token>();
-						List<Token> castTokens = new List<Token>();
-						castTokens.Add(Token.OpenParenToken);
-						while (!(curToken.Type == TokenType.CloseParen && nParen == 0))
-						{
-							if (curToken.Type == TokenType.CloseParen)
-								nParen--;
-							else if (curToken.Type == TokenType.OpenParen)
-								nParen++;
-							insideTokens.Add(curToken);
-							castTokens.Add(curToken);
-							curToken = curExpr.Tokens[++j];
-						}
-						castTokens.Add(Token.CloseParenToken);
+						//handle paren, just read everything between and place on the stack
+						//we've already tried to remove parens so we dont want to mess with these
+						int j = 0;
+						List<Token> insideTokens = ReadBetweenParens(curExpr.Tokens, 0, 0, ref j);
+						//returns with parens on each end, we dont need
+						insideTokens.RemoveAt(insideTokens.Count - 1);
+						insideTokens.RemoveAt(0);
 						Expression insideExp = new Expression(insideTokens);
 						stack[i] = insideExp;
-						
-                        /*if (CastHelper.IsCast(castTokens))
-						{
-							j++;
-							var castedTokens = new List<Token>();
-							for (; j < curExpr.Tokens.Count; j++)
-								castedTokens.Add(curExpr.Tokens[j]);
-							if (castedTokens.Count > 0)
-							{
-								var castedExp = new Expression(castedTokens);
-								insideExp.isCast = true;
-								stack.Insert(i + 1, castedExp);
-							}
-						}*/
 					}
+					//check for function (word with paren after)
 					else if ((curToken.Type == TokenType.StringType || curToken == "sizeof") && curExpr.Tokens.Count > 1 &&
 								curExpr.Tokens[1].Type == TokenType.OpenParen)
 					{
-						//its a func!
 						List<Expression> args = new List<Expression>();
 						curToken = curExpr.Tokens[2];
-						while (curToken.Type != TokenType.CloseParen)
+						//read in all args
+						int j = 0;
+						List<Token> insideTokens = ReadBetweenParens(curExpr.Tokens, 1, 0, ref j);
+						//returns with parens on each end, we dont need
+						insideTokens.RemoveAt(insideTokens.Count - 1);
+						insideTokens.RemoveAt(0);
+						var arg = new List<Token>();
+						Expression argExp;
+						foreach (var token in insideTokens)
 						{
-							int nParen = 0;
-							List<Token> arg = new List<Token>();
-                            while ((curToken.Text != "," && curToken.Type != TokenType.CloseParen) && nParen == 0)
+							//check for seperator
+							if (token == ",")
 							{
-								if (curToken.Type == TokenType.CloseParen)
-									nParen++;
-								else if (curToken.Type == TokenType.OpenParen)
-									nParen--;
-								arg.Add(curToken);
-								curExpr.Tokens.Remove(curToken);
-								curToken = curExpr.Tokens[2];
+								argExp = new Expression(arg);
+								args.Add(argExp);
+								arg = new List<Token>();
 							}
-							Expression argExp = new Expression(arg);
-							args.Add(argExp);
-							if (3 < curExpr.Tokens.Count)
+							else
 							{
-								curExpr.Tokens.Remove(curToken);
-								curToken = curExpr.Tokens[2];
+								arg.Add(token);
 							}
 						}
+						//add last arg
+						argExp = new Expression(arg);
+						args.Add(argExp);
 						curExpr.args = args;
 					}
 				}
@@ -478,10 +514,12 @@ namespace WabbitC
 			return stack;
 		}
 
-		private bool IsCasting(List<Token> insideTokens)
-		{
-			return false;
-		}
+		/// <summary>
+		/// This is a list of all operators handled by the evaluator. The larger the index, the lower the precedence.
+		/// It is iterated through in GetOperator starting with the lowest precedence (thus the least sticking power)
+		/// 
+		/// based on: http://en.wikipedia.org/wiki/Operators_in_C_and_C%2B%2B
+		/// </summary>
 		static List<List<string>> operators = new List<List<string>> { 
 																	new List<string> {","},
 																	new List<string> {"="},
@@ -504,16 +542,24 @@ namespace WabbitC
 		private const int CastLevel = 13;
 		private const int ParenLevel = 14;
 
+		/// <summary>
+		/// These operators can mean two things depending on the context
+		/// eg: & can be bitwise AND or Address Of
+		/// </summary>
 		static List<string> DoubleOps = new List<string> { "&", "-", "+", "*", "++", "--" };
 		public static int GetOperator(Expression expr, out int numArgs)
 		{
 			int foundOp = -1;
 			numArgs = -1;
+			//go through each level of operators looking for one in the current statement
 			for (int level = 0; level < operators.Count; level++)
 			{
 				List<string> operatorLevel = operators[level];
 				List<Token> tokens = expr.Tokens;
+				//this determines the direction we look through the tokens
+				//left to right means we start need move backwards through the tokens, and right to left vice versa
 				bool leftToRight =  GetOpAssoc(level);
+				//current paren level
 				int nParen = 0;
 				for (int i = leftToRight ? tokens.Count - 1 : 0;  leftToRight ? i >= 0 : i < tokens.Count; i += leftToRight ? -1 : 1)
 				{
@@ -535,17 +581,23 @@ namespace WabbitC
 						if (!isCast)
 							nParen++;
 					}
+					//almost all code before this is just to check for the special cast operator to see if we found one
+					//casts are horrible horrible creatures and cause tons of problems
 					if (nParen == 0 && ((token.Type == TokenType.OperatorType && operatorLevel.Contains(token.Text))
 								|| isCast == true))
 					{
+						//if we've found something and this new operator is not a cast screw it, its almost gauranteed
+						//not to work. This is meant to fix issues like (#cast) #DoubleOp #var
 						if (foundOp >= 0 && !isCast)
 							continue;
 						numArgs = GetNumArgs(level, token);
 						//we've found an operator, now we need to see if its actually what we want
 						if (leftToRight)
 						{
+							//if its not a double op were good
 							if (!DoubleOps.Contains(token))
 								return i;
+							//otherwise check if the context is valid. If so mark that we found it
 							if (i > 0 && (tokens[i - 1].Type != TokenType.OperatorType ||
 								(token == "*" && tokens[i - 1] == "*" && numArgs == 1)))
 								foundOp = i;
@@ -554,9 +606,11 @@ namespace WabbitC
 						{
 							if (isCast)
 							{
+								//if its a cast and its not at the very end were good
 								if (j < tokens.Count)
 									return i;
 							}
+							//same as above
 							else if (!DoubleOps.Contains(token))
 								return i;
 							if (i + 1 < tokens.Count && (tokens[i + 1].Type != TokenType.OperatorType ||
@@ -564,6 +618,7 @@ namespace WabbitC
 								foundOp = i;
 						}
 					}
+					//skip over what we thought was a cast
 					if (isCast)
 						i += parenTokens.Count - 1;
 				}
@@ -571,6 +626,12 @@ namespace WabbitC
 			return foundOp;
 		}
 
+		/// <summary>
+		/// Returns the expected number of operands for this particular token
+		/// </summary>
+		/// <param name="level">Current level of operators</param>
+		/// <param name="tok">Token to resolve special cases</param>
+		/// <returns>Number of operands the token operates on</returns>
 		private static int GetNumArgs(int level, Token tok)
 		{
 			switch (level)

@@ -6,6 +6,7 @@ using WabbitC.Model;
 using WabbitC.Model.Statements;
 using WabbitC.Model.Statements.Math;
 using System.Diagnostics;
+using System.Collections;
 
 namespace WabbitC.Optimizer
 {
@@ -23,25 +24,19 @@ namespace WabbitC.Optimizer
 
         public static void OptimizeBlock(ref Block block)
         {
-            List<OptimizerSymbol> symbolTable = new List<OptimizerSymbol>();
+            var symbolTable = new List<OptimizerSymbol>();
+			var gotoTable = new Hashtable();
             foreach (var decl in block.Declarations)
             {
                 var symbol = OptimizerSymbol.Parse(decl);
-                symbol.IsAlive = false;
+                symbol.IsConstant = false;
                 symbolTable.Add(symbol);
             }
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
                 var type = statement.GetType();
-                if (type == typeof(If))
-                {
-                    var trueBlock = (statement as If).TrueCase;
-                    OptimizeBlock(ref trueBlock);
-                    var falseBlock = (statement as If).FalseCase;
-                    OptimizeBlock(ref falseBlock);
-                } 
-                else if (type == typeof(Assignment))
+                if (type == typeof(Assignment))
                 {
                     var assignment = statement as Assignment;
                     
@@ -49,33 +44,142 @@ namespace WabbitC.Optimizer
                 else if (type == typeof(Move))
                 {
                     var move = statement as Move;
-                    
+					var symbol = FindSymbol(move.RValue, ref symbolTable);
+					if (symbol != null && symbol.ConstStatment != null)
+					{
+						var newStatement = symbol.ConstStatment;
+						var lValue = newStatement.GetModifiedDeclarations()[0];
+						block.Statements.Remove(newStatement);
+						block.Statements.Remove(move);
+						newStatement.ReplaceDeclaration(lValue, move.LValue);
+						block.Statements.Insert(--i, newStatement);
+						symbol = FindSymbol(move.LValue, ref symbolTable);
+						symbol.ConstStatment = newStatement;
+					}
+					else
+					{
+						symbol = FindSymbol(move.LValue, ref symbolTable);
+						symbol.ConstStatment = move;
+					}
                 }
-                else if (type == typeof(ConditionStatement))
+                else if (type.BaseType == typeof(ConditionStatement))
                 {
-                    var equals = statement as ConditionStatement;
-                    
+                    var cond = statement as ConditionStatement;
+					var symbol = FindSymbol(cond.LValue, ref symbolTable);
+					symbol.ConstStatment = cond;
                 }
-                else if (type == typeof(Sub))
+                else if (type.BaseType == typeof(MathStatement))
                 {
-                    var sub = statement as Sub;
-                    
+                    var math = statement as MathStatement;
+					var symbol = FindSymbol(math.RValue as Declaration, ref symbolTable);
+					if (symbol != null && symbol.ConstStatment != null)
+					{
+						var newStatement = symbol.ConstStatment;
+						var lValue = newStatement.GetModifiedDeclarations()[0];
+						if (newStatement.GetType() != typeof(FunctionCall))
+						{
+							math.ReplaceDeclaration(lValue, newStatement.GetReferencedDeclarations()[0]);
+							block.Statements[i--] = math;
+							//block.Statements.Remove(newStatement);
+						}
+						symbol = FindSymbol(math.LValue, ref symbolTable);
+						symbol.ConstStatment = null;
+					}
+					else
+					{
+						symbol = FindSymbol(math.LValue, ref symbolTable);
+						if (symbol != null && symbol.ConstStatment != null && type != typeof(Not))
+						{
+							var newStatement = symbol.ConstStatment;
+							var decl = symbol.ConstStatment.GetReferencedDeclarations()[0];
+							var replaceSymbol = FindSymbol(decl, ref symbolTable);
+							if (replaceSymbol != null)
+							{
+								math.ReplaceDeclaration(math.LValue, decl);
+								//block.Statements.Remove(newStatement);
+								i--;
+							}
+							else
+							{
+								symbol.ConstStatment = null;
+							}
+						}
+						else
+						{
+							if (symbol != null)
+								symbol.ConstStatment = null;
+						}
+					}
                 }
                 else if (type == typeof(FunctionCall))
                 {
-                    FunctionCall funcCall = statement as FunctionCall;
-                    
-                }
-            }
-            for (int i = block.Declarations.Count - 1; i > -1; i--)
-            {
-                if (!symbolTable[i].IsAlive)
-                    block.Declarations.RemoveAt(i);
+                    var funcCall = statement as FunctionCall;
+					OptimizerSymbol symbol;
+					for (int j = 0; j < funcCall.Params.Count; j++)
+					{
+						var param = funcCall.Params[j];
+						symbol = FindSymbol(param as Declaration, ref symbolTable);
+						if (symbol != null && symbol.ConstStatment != null)
+						{
+							if (symbol.ConstStatment.GetType() == typeof(Move))
+							{
+								param = (symbol.ConstStatment as Move).RValue;
+							}
+						}
+						funcCall.Params[j] = param;
+					}
+					symbol = FindSymbol(funcCall.LValue, ref symbolTable);
+					symbol.ConstStatment = funcCall;
+				}
+				else if (type == typeof(Goto))
+				{
+					var gotoType = statement as Goto;
+					int j;
+					if (gotoType.CondDecl != null)
+					{
+						if (!gotoTable.Contains(i))
+						{
+							gotoTable.Add(i, true);
+							j = i - 1;
+							//we really only care if were going backwards
+							while (j > 0 && statement != gotoType.TargetLabel)
+								statement = block.Statements[--j];
+							if (j != 0)
+								i = j;
+						}
+						for (int k = 0; k < block.Declarations.Count; k++)
+							symbolTable[k].ConstStatment = null;
+					}
+					/*else
+					{
+						j = i + 1;
+						while (j + 1 < block.Statements.Count && statement != gotoType.TargetLabel)
+							statement = block.Statements[++j];
+						if (j + 1 != block.Statements.Count)
+							i = j;
+					}*/
+				}
+				else if (type == typeof(Return))
+				{
+					var returnStatement = statement as Return;
+					var returnVal = returnStatement.ReturnReg as Declaration;
+					var symbol = FindSymbol(returnVal, ref symbolTable);
+					if (symbol != null && symbol.ConstStatment != null)
+					{
+						var newStatement = symbol.ConstStatment;
+						var lValue = newStatement.GetModifiedDeclarations()[0];
+						returnStatement.ReplaceDeclaration(lValue, newStatement.GetReferencedDeclarations()[0]);
+						block.Statements[i--] = returnStatement;
+						block.Statements.Remove(newStatement);
+					}
+				}
             }
         }
 
         static OptimizerSymbol FindSymbol(Declaration decl, ref List<OptimizerSymbol> symbolTable)
         {
+			if (decl == null)
+				return null;
             var symbolToFind = OptimizerSymbol.Parse(decl);
             var index = symbolTable.IndexOf(symbolToFind);
             if (index == -1)

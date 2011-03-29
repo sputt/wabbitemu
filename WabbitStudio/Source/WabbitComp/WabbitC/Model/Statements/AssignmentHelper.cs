@@ -19,7 +19,8 @@ namespace WabbitC.Model.Statements
             if (Immediate.IsImmediate(RValue) == false)
             {
                 Declaration valDecl = block.FindDeclaration(RValue.Text);
-				LValue.ConstValue = valDecl.ConstValue;
+				if (valDecl != null)
+					LValue.ConstValue = valDecl.ConstValue;
                 return new Move(LValue, valDecl);
             }
             else
