@@ -140,7 +140,8 @@ namespace WabbitC.TokenPasses
 			}
 			else
 			{
-				tokenList.AddRange(BraceBlock(ref tokens));
+				var blockTokens = BraceBlock(ref tokens);
+				tokenList.AddRange(this.Run(blockTokens));
 				if (startToken == "do")
 				{
 					tokens.MoveNext();
