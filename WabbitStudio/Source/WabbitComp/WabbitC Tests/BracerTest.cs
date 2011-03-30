@@ -72,7 +72,7 @@ namespace WabbitC_Tests
 		///A test for Run
 		///</summary>
 		[TestMethod()]
-		public void RunTest()
+		public void RunTest1()
 		{
 			string fileContents = Compiler.TryOpenFile(@"..\..\..\WabbitC Tests\bracer_test.c");
 			Assert.IsTrue(!string.IsNullOrEmpty(fileContents));
@@ -87,5 +87,21 @@ namespace WabbitC_Tests
 
 			Assert.IsTrue(expected.SequenceEqual(actual));
 		}
+
+        [TestMethod()]
+        public void RunTest2()
+        {
+            Bracer target = new Bracer(); // TODO: Initialize to an appropriate value
+
+            List<Token> tokenList = Tokenizer.Tokenize("do if (test) test = 0; while (1); var = 2;");
+            List<Token> expected = Tokenizer.Tokenize("do {if (test) {test = 0;}} while (1); var = 2;");
+
+            List<Token> actual;
+            actual = target.Run(tokenList);
+
+            Assert.IsTrue(expected.SequenceEqual<Token>(actual),
+                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+        }
 	}
 }

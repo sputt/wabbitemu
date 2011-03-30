@@ -42,8 +42,23 @@ namespace WabbitC.Model.Statements.Math
                         if (opToken.Equals(mathOp.GetHandledOperator()))
                         {
                             MathStatement mathStatement;
+                            Datum datum = Datum.Parse(block, operand2);
+
+                            if (decl.Type.IndirectionLevels > 0)
+                            {
+                                Type derefType = decl.Type.Clone() as Type;
+                                derefType.Dereference();
+
+                                var offsetDecl = block.CreateTempDeclaration(new BuiltInType("int"));
+                                block.Statements.Add(AssignmentHelper.ParseSingle(block, offsetDecl, operand2));
+                                var imm = new Immediate(new Token(derefType.Size.ToString()));
+                                Mult mult = new Mult(offsetDecl, imm);
+                                block.Statements.Add(mult);
+                                datum = offsetDecl;
+                            }
+                           
                             mathStatement = Activator.CreateInstance(type,
-                                new object[] { decl, Datum.Parse(block, operand2) }) as MathStatement;
+                               new object[] { decl, datum }) as MathStatement;
                             block.Statements.Add(mathStatement);
                             break;
                         }
@@ -78,10 +93,23 @@ namespace WabbitC.Model.Statements.Math
             sb.Append(" ");
             if (RValue != null)
             {
-                sb.Append(Operator);
-                sb.Append("= ");
-                sb.Append(RValue);
-                sb.Append(";");
+                if (LValue.Type.IndirectionLevels > 0)
+                {
+                    sb.Append("= (" + LValue.Type + ") ((unsigned char *)");
+                    sb.Append(LValue);
+                    sb.Append(" ");
+                    sb.Append(Operator);
+                    sb.Append(RValue);
+                    sb.Append(");");
+                }
+                else
+                {
+                    sb.Append(Operator);
+                    sb.Append("= ");
+                    sb.Append(RValue);
+                    sb.Append(";");
+                }
+
             }
             else
             {

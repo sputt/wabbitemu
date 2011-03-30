@@ -70,8 +70,9 @@ namespace WabbitC_Tests
             p.Start();
             p.WaitForExit();
 
-			
             Assert.AreEqual(p.ExitCode, 0, "Failed to build");
+
+            File.Copy(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_actual.c", Path.GetFileNameWithoutExtension(p.StartInfo.FileName) + opLevel.ToString() + "Pass" + passCount + ".c");
 
 
             p.StartInfo.FileName = Path.Combine(p.StartInfo.WorkingDirectory, name + "_expected.exe");
@@ -139,9 +140,16 @@ namespace WabbitC_Tests
             RunIntermediateTest("cast");
         }
 
+        [TestMethod]
         public void BubbleSort()
 		{
 			RunIntermediateTest("bubblesort");
 		}
+
+        [TestMethod]
+        public void PointerMath()
+        {
+            RunIntermediateTest("pointermath");
+        }
     }
 }

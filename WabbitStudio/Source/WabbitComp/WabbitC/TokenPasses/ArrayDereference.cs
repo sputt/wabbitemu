@@ -10,7 +10,8 @@ namespace WabbitC.TokenPasses
         private List<Token> IsArrayDereference(ref List<Token>.Enumerator tokens)
         {
             var tokenList = new List<Token>();
-            if (tokens.Current.Type != TokenType.StringType && tokens.Current.Type != TokenType.ReservedKeyword)
+            if (tokens.Current.Type != TokenType.StringType && 
+                !(tokens.Current.Type == TokenType.ReservedKeyword && !tokens.Current.Text.Equals("return")))
             {
                 if (tokens.MoveNext() && (tokens.Current.Type == TokenType.StringType))
                 {

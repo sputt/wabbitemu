@@ -78,6 +78,7 @@
     <Content Include="C Files\functioncallmath_expected.c" />
     <Content Include="C Files\loop_expected.c" />
     <Content Include="C Files\main.c" />
+    <Content Include="C Files\pointermath_expected.c" />
     <Content Include="C Files\returntest_expected.c" />
     <Content Include="C Files\SimpleMath_expected.c" />
     <Content Include="C Files\store_expected.c" />

@@ -206,46 +206,6 @@ namespace WabbitC.Model
 						StatementHelper.Parse(thisBlock, Tokenizer.GetStatement(ref tokens));
 						Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
 						tokens.MoveNext();
-						/*
-						// We have some kind of statement in this case
-						tokens.MoveNext();
-
-						if (tokens.Current.Text == "=")
-						{
-							tokens.MoveNext();
-
-							var valueList = Tokenizer.GetStatement(ref tokens);
-							var expr = new Expression(valueList);
-
-							StatementHelper.Parse(thisBlock, declForStatement, valueList);
-
-							Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-							tokens.MoveNext();
-						}
-						else if (tokens.Current.Text == "(")
-						{
-							tokens.MoveNext();
-							List<Declaration> paramList = FunctionCall.BuildParams(thisBlock, (FunctionType)declForStatement.Type, ref tokens);
-
-							Declaration returnDecl;
-							Type returnType = ((FunctionType)declForStatement.Type).ReturnType;
-							if (returnType.Equals(new BuiltInType("void")))
-							{
-								returnDecl = null;
-							}
-							else
-							{
-								returnDecl = thisBlock.CreateTempDeclaration(returnType);
-							}
-							var funcCall = new FunctionCall(returnDecl, declForStatement, paramList);
-							thisBlock.Statements.Add(funcCall);
-
-							tokens.MoveNext();
-
-							Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-							tokens.MoveNext();
-						}
-						 * */
 					}
 					else
 					{
