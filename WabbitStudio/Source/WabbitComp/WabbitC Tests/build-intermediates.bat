@@ -9,6 +9,9 @@ IF ERRORLEVEL 1 GOTO ERROR
 GOTO END
 :ERROR
 popd
+echo "Error level: %ERRORLEVEL%"
 exit /B 1
 :END
 popd
+echo "No error"
+exit /B 0

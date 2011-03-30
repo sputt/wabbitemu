@@ -140,10 +140,15 @@ namespace WabbitC_Tests
             RunIntermediateTest("cast");
         }
 
-        [TestMethod]
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",
+            "|DataDirectory|\\IntermediateCompileTestArgs.csv",
+            "IntermediateCompileTestArgs#csv",
+            DataAccessMethod.Sequential),
+        DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
+        TestMethod]
         public void BubbleSort()
 		{
-			RunIntermediateTest("bubblesort");
+			RunIntermediateTest("BubbleSort");
 		}
 
         [TestMethod]
