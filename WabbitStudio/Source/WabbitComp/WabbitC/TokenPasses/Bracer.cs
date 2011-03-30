@@ -120,11 +120,9 @@ namespace WabbitC.TokenPasses
 		{
 			var tokenList = new List<Token>();
 			var tempSave = tokens;
-			bool isDo = false;
-			if (tokens.Current == "do")
-				isDo = true;
+			var startToken = tokens.Current;
 			tokens.MoveNext();
-			if (tokens.Current == "if")
+			if (tokens.Current == "if" && startToken == "else")
 			{
 				tokenList.Add(Token.OpenBraceToken);
 				tokenList.Add(tokens.Current);
@@ -143,7 +141,7 @@ namespace WabbitC.TokenPasses
 			else
 			{
 				tokenList.AddRange(BraceBlock(ref tokens));
-				if (isDo)
+				if (startToken == "do")
 				{
 					tokens.MoveNext();
 					Debug.Assert(tokens.Current == "while");
