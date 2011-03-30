@@ -1,15 +1,30 @@
-int fibonacci(int n)
+int BubbleSortAlgorithm(int *a, int n)
 {
-	if (n == 0)
+	int i = 1;
+	int j;
+	int tmp;
+
+	if (n <= 1) 
+		return -1;
+	do
 	{
-		return 0;
+		for (j = n - 1; j >= i; --j) {
+			if (a[j - 1] > a[j]) {
+				tmp = a[j - 1];
+				a[j - 1] = a[j]; 
+				a[j] = tmp;
+			}
+		}
+	} while (++i < n);
+}
+
+int BubbleSort(int n)
+{
+	int i;
+	int a[10];
+	for(i = 0; i < 10; ++i) {
+		a[i] = 10 - i;
 	}
-	else if (n == 1)
-	{
-		return 1;
-	}
-	else
-	{
-		return fibonacci(n - 2) + fibonacci(n - 1);
-	}
+	BubbleSortAlgorithm(a, n);
+	return a[0];
 }
