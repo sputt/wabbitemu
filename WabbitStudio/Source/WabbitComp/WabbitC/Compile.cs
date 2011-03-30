@@ -43,7 +43,7 @@ namespace WabbitC
         /// Parses a file and outputs a .asm file
         /// </summary>
         /// <returns></returns>
-        public static bool DoCompile(string inputFile, OptimizeLevel opLevel = OptimizeLevel.OptimizeNone)
+        public static bool DoCompile(string inputFile, OptimizeLevel opLevel = OptimizeLevel.OptimizeNone, int passCount = int.MaxValue)
         {
 			optimizeLevel = opLevel;
             string fileContents = TryOpenFile(inputFile);
@@ -63,19 +63,25 @@ namespace WabbitC
             var currentModule = Module.ParseModule(ref tokens);
 
             // Statement passes
-            StatementPasses.BlockCollapse.Run(currentModule);
-            StatementPasses.IfGotoConversion.Run(currentModule);
-            StatementPasses.LoopGotoConversion.Run(currentModule);
+            if (passCount >= 2)
+            {
+                StatementPasses.BlockCollapse.Run(currentModule);
+                StatementPasses.IfGotoConversion.Run(currentModule);
+                StatementPasses.LoopGotoConversion.Run(currentModule);
+            }
 
 			if (optimizeLevel != OptimizeLevel.OptimizeNone)
 				Optimizer.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
 
-            StatementPasses.StackAllocator.Run(currentModule);
-            StatementPasses.AddStackDeclaration.Run(currentModule);
-            StatementPasses.DumbRegisterAllocator.Run(currentModule);
+            if (passCount >= 3)
+            {
+                StatementPasses.StackAllocator.Run(currentModule);
+                StatementPasses.AddStackDeclaration.Run(currentModule);
+                StatementPasses.DumbRegisterAllocator.Run(currentModule);
 
-			//AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
-			//codeGenerator.GenerateCode();
+                //AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
+                //codeGenerator.GenerateCode();
+            }
 
             string code = currentModule.ToString();
 

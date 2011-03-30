@@ -1,0 +1,5 @@
+Name,Args,PassCount,Enabled
+Baseline,,-1,True
+Baseline,,1,True
+Baseline,,2,True
+Optimized,-O3,-1,True

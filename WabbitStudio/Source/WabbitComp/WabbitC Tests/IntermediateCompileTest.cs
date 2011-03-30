@@ -13,14 +13,51 @@ namespace WabbitC_Tests
     [TestClass]
     public class IntermediateCompileTest
     {
+        private TestContext testContextInstance;
+
+        /// <summary>
+        ///Gets or sets the test context which provides
+        ///information about and functionality for the current test run.
+        ///</summary>
+        public TestContext TestContext
+        {
+            get
+            {
+                return testContextInstance;
+            }
+            set
+            {
+                testContextInstance = value;
+            }
+        }
+
         private void RunIntermediateTest(string name)
         {
+            string args = "";
+            int passCount = int.MaxValue;
+            if (testContextInstance.DataRow != null)
+            {
+                if (Boolean.Parse(testContextInstance.DataRow["Enabled"].ToString()) == false)
+                {
+                    Assert.IsTrue(true);
+                    Debug.WriteLine("Test was skipped because this mode is disabled.");
+                    return;
+                }
+
+                args = testContextInstance.DataRow["Args"].ToString();
+                passCount = int.Parse(testContextInstance.DataRow["PassCount"].ToString());
+                if (passCount == -1)
+                {
+                    passCount = int.MaxValue;
+                }
+                Debug.WriteLine("Running config " + testContextInstance.DataRow["Name"] + ": " + args);
+            }
+
             string CurDir = Environment.CurrentDirectory;
             var compiler = new Compiler();
-			Debug.Print("Optimized Stack");
-			Compiler.DoCompile(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_expected.c", Compiler.OptimizeLevel.OptimizeMax);
-			Debug.Print("Normal Stack");
-			Compiler.DoCompile(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_expected.c");
+
+            Compiler.OptimizeLevel opLevel = WabbitC.Optimizer.Optimizer.ParseCommandLine(args);
+			Compiler.DoCompile(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_expected.c", opLevel, passCount);
 
             System.Diagnostics.Process p = new System.Diagnostics.Process();
             p.StartInfo.WorkingDirectory = CurDir + @"\..\..\..\WabbitC Tests";
@@ -72,7 +109,13 @@ namespace WabbitC_Tests
             RunIntermediateTest("SimpleMath");
         }
 
-        [TestMethod]
+
+        [DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV", 
+            "|DataDirectory|\\IntermediateCompileTestArgs.csv", 
+            "IntermediateCompileTestArgs#csv",
+            DataAccessMethod.Sequential), 
+        DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
+        TestMethod]
         public void Fibonacci()
         {
             RunIntermediateTest("fibonacci");
@@ -96,8 +139,7 @@ namespace WabbitC_Tests
             RunIntermediateTest("cast");
         }
 
-		[TestMethod]
-		public void BubbleSort()
+        public void BubbleSort()
 		{
 			RunIntermediateTest("bubblesort");
 		}
