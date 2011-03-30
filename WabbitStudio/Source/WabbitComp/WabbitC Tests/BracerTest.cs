@@ -100,8 +100,8 @@ namespace WabbitC_Tests
             actual = target.Run(tokenList);
 
             Assert.IsTrue(expected.SequenceEqual<Token>(actual),
-                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
-                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+                "Expected: \"" + string.Join<Token>(" ", expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>(" ", actual.ToArray()) + "\"");
         }
 
         [TestMethod()]
@@ -116,8 +116,24 @@ namespace WabbitC_Tests
             actual = target.Run(tokenList);
 
             Assert.IsTrue(expected.SequenceEqual<Token>(actual),
-                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
-                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+                "Expected: \"" + string.Join<Token>(" ", expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>(" ", actual.ToArray()) + "\"");
+        }
+
+        [TestMethod()]
+        public void RunTest4()
+        {
+            Bracer target = new Bracer(); // TODO: Initialize to an appropriate value
+
+            List<Token> tokenList = Tokenizer.Tokenize("do { do if (test) while (0) test = 0; while (1); } while (1);");
+            List<Token> expected = Tokenizer.Tokenize("do { do {if (test) {while (0) {test = 0;}}} while (1); } while (1);");
+
+            List<Token> actual;
+            actual = target.Run(tokenList);
+
+            Assert.IsTrue(expected.SequenceEqual<Token>(actual),
+                "Expected: \"" + string.Join<Token>(" ", expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>(" ", actual.ToArray()) + "\"");
         }
 	}
 }
