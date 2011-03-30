@@ -1,4 +1,4 @@
-int BubbleSortAlgorithm(int *a, int n)
+/*int BubbleSortAlgorithm(int *a, int n)
 {
 	int i = 1;
 	int j;
@@ -26,4 +26,19 @@ int BubbleSort(int n) {
 	}
 	BubbleSortAlgorithm(a, n);
 	return a[0];
+}*/
+int fibonacci(int n)
+{
+	if (n == 0)
+	{
+		return 0;
+	}
+	else if (n == 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return fibonacci(n - 2) + fibonacci(n - 1);
+	}
 }
