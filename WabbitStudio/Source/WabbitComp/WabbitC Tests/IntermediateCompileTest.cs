@@ -72,7 +72,7 @@ namespace WabbitC_Tests
 
             Assert.AreEqual(p.ExitCode, 0, "Failed to build");
 
-            File.Copy(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_actual.c", Path.GetFileNameWithoutExtension(p.StartInfo.FileName) + opLevel.ToString() + "Pass" + passCount + ".c");
+            File.Copy(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_actual.c", name + opLevel.ToString() + "Pass" + passCount + ".c");
 
 
             p.StartInfo.FileName = Path.Combine(p.StartInfo.WorkingDirectory, name + "_expected.exe");

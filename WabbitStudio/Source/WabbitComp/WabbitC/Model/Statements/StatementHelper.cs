@@ -230,11 +230,16 @@ namespace WabbitC.Model.Statements
 
         public static void Parse(Block block, List<Token> tokenList)
         {
+            Annotation ann = new Annotation(string.Join<Token>(" ", tokenList) + ";");
+            block.Statements.Add(ann);
             Token token = InternalParse(block, new Expression(tokenList));
         }
 
         public static void Parse(Block block, Declaration LValue, List<Token> tokenList)
         {
+            Annotation ann = new Annotation(LValue + " = " + string.Join<Token>(" ", tokenList) + ";");
+            block.Statements.Add(ann);
+
             Token token = InternalParse(block, new Expression(tokenList));
 
             var finalAssign = AssignmentHelper.ParseSingle(block, LValue, token);
