@@ -84,7 +84,7 @@ namespace WabbitC.TokenPasses
 				int nParen = 0;
                 tokenList.Add(tokens.Current);
 				tokens.MoveNext();
-				while (tokens.Current.Type != TokenType.CloseBlock)
+				while (tokens.Current.Type != TokenType.CloseBlock || nParen != 0)
 				{
 					if (tokens.Current.Type == TokenType.OpenBlock)
 						nParen++;
