@@ -76,7 +76,7 @@ namespace WabbitC.Optimizer
 					{
 						var newStatement = symbol.ConstStatment;
 						var lValue = newStatement.GetModifiedDeclarations()[0];
-						if (newStatement.GetType() != typeof(FunctionCall))
+						if (newStatement.GetType() == typeof(Move))
 						{
 							math.ReplaceDeclaration(lValue, newStatement.GetReferencedDeclarations()[0]);
 							block.Statements[i--] = math;
@@ -88,20 +88,37 @@ namespace WabbitC.Optimizer
 					else
 					{
 						symbol = FindSymbol(math.LValue, ref symbolTable);
-						if (symbol != null && symbol.ConstStatment != null && type != typeof(Not))
+						if (symbol != null && symbol.ConstStatment != null)
 						{
 							var newStatement = symbol.ConstStatment;
-							var decl = symbol.ConstStatment.GetReferencedDeclarations()[0];
-							var replaceSymbol = FindSymbol(decl, ref symbolTable);
-							if (replaceSymbol != null)
+							if (type == typeof(Not))
 							{
-								math.ReplaceDeclaration(math.LValue, decl);
-								//block.Statements.Remove(newStatement);
-								i--;
+								if (newStatement.GetType().BaseType == typeof(ConditionStatement))
+								{
+									var newBlock = new Block(block);
+									var cond = newStatement as ConditionStatement;
+									var decl = ConditionStatement.BuildStatements(newBlock, new Expression(cond.GetInverseOperator()), 
+										Tokenizer.ToToken(cond.CondDecl.ToString()), Tokenizer.ToToken(cond.CondValue.ToString()));
+									newBlock.Statements[0].ReplaceDeclaration(decl, cond.LValue);
+									block.Statements.Remove(newStatement);
+									block.Statements.Remove(math);
+									block.Statements.InsertRange(i - 1, newBlock.Statements);
+								}
 							}
 							else
 							{
-								symbol.ConstStatment = null;
+								var decl = symbol.ConstStatment.GetReferencedDeclarations()[0];
+								var replaceSymbol = FindSymbol(decl, ref symbolTable);
+								if (replaceSymbol != null)
+								{
+									math.ReplaceDeclaration(math.LValue, decl);
+									//block.Statements.Remove(newStatement);
+									i--;
+								}
+								else
+								{
+									symbol.ConstStatment = null;
+								}
 							}
 						}
 						else

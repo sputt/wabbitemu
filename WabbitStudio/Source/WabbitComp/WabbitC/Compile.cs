@@ -78,10 +78,10 @@ namespace WabbitC
                 StatementPasses.StackAllocator.Run(currentModule);
                 StatementPasses.AddStackDeclaration.Run(currentModule);
 
-                //if (optimizeLevel != OptimizeLevel.OptimizeNone)
-                //    StatementPasses.SmarterRegisterAllocator.Run(currentModule);
-                //else
-                //    StatementPasses.DumbRegisterAllocator.Run(currentModule);
+				if (optimizeLevel != OptimizeLevel.OptimizeNone)
+					StatementPasses.SmarterRegisterAllocator.Run(currentModule);
+				else
+					StatementPasses.DumbRegisterAllocator.Run(currentModule);
 
                 //AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
                 //codeGenerator.GenerateCode();

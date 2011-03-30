@@ -299,6 +299,11 @@ namespace WabbitC.Model
             Statements = new BlockStatements(this);
         }
 
+		public Block(Block parent) : this()
+		{
+			this.Parent = parent;
+		}
+
         public override string ToString()
         {
             string result = "";

@@ -19,6 +19,11 @@ namespace WabbitC.Model.Statements.Condition
             CondValue = condValue;
         }
 
+		public override Token GetInverseOperator()
+		{
+			return Tokenizer.ToToken(">=");
+		}
+
         #region IMathOperator Members
 
         public Token GetHandledOperator()

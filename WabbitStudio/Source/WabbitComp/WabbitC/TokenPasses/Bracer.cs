@@ -120,6 +120,9 @@ namespace WabbitC.TokenPasses
 		{
 			var tokenList = new List<Token>();
 			var tempSave = tokens;
+			bool isDo = false;
+			if (tokens.Current == "do")
+				isDo = true;
 			tokens.MoveNext();
 			if (tokens.Current == "if")
 			{
@@ -140,6 +143,16 @@ namespace WabbitC.TokenPasses
 			else
 			{
 				tokenList.AddRange(BraceBlock(ref tokens));
+				if (isDo)
+				{
+					tokens.MoveNext();
+					Debug.Assert(tokens.Current == "while");
+					tokenList.Add(tokens.Current);
+					tokens.MoveNext();
+					tokenList.AddRange(SkipParens(ref tokens));
+					tokens.MoveNext();
+					tokenList.Add(tokens.Current);
+				}
 			}
 			return tokenList;
 		}

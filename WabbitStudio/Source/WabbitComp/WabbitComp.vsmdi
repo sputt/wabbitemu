@@ -1,12 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
 <TestLists xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
   <TestList name="Lists of Tests" id="8c43106b-9dc1-4907-a29f-aa66a61bf5b6">
-    <RunConfiguration id="2bdddc8c-0c18-4161-b617-feb3e4f79d90" name="Local" storage="local.testsettings" type="Microsoft.VisualStudio.TestTools.Common.TestRunConfiguration, Microsoft.VisualStudio.QualityTools.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    <RunConfiguration id="3819fd81-6db5-4565-bb56-9c33c317b412" name="Trace and Test Impact" storage="traceandtestimpact.testsettings" type="Microsoft.VisualStudio.TestTools.Common.TestRunConfiguration, Microsoft.VisualStudio.QualityTools.Common, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   </TestList>
   <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d">
     <TestLinks>
       <TestLink id="fe048e12-5368-681f-28fc-49411d738e8d" name="OptimizeTest1" storage="wabbitc tests\bin\debug\wabbitc tests.dll" enabled="false" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
-      <TestLink id="b8b1278b-3b71-913e-678a-f73a601b591f" name="CastTest4" storage="wabbitc tests\bin\debug\wabbitc tests.dll" enabled="false" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
       <TestLink id="118bb3eb-e7b1-e744-540e-7a026b32672a" name="DoubleNegative" storage="wabbitc tests\bin\debug\wabbitc tests.dll" enabled="false" type="Microsoft.VisualStudio.TestTools.TestTypes.Unit.UnitTestElement, Microsoft.VisualStudio.QualityTools.Tips.UnitTest.ObjectModel, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     </TestLinks>
   </TestList>

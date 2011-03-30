@@ -41,6 +41,11 @@ namespace WabbitC.Model.Statements
             return decl;
         }
 
+		public virtual Token GetInverseOperator()
+		{
+			return null;
+		}
+
         public override List<Declaration> GetModifiedDeclarations()
         {
             return new List<Declaration>() { LValue };
