@@ -78,7 +78,7 @@ namespace WabbitC.Optimizer
 						if (newStatement.GetType() == typeof(Move))
 						{
 							math.ReplaceDeclaration(lValue, newStatement.GetReferencedDeclarations()[0]);
-							block.Statements[i--] = math;
+							block.Statements[i] = math;
 							//block.Statements.Remove(newStatement);
 						}
 						symbol = FindSymbol(math.LValue, ref symbolTable);
@@ -112,7 +112,7 @@ namespace WabbitC.Optimizer
 								{
 									math.ReplaceDeclaration(math.LValue, decl);
 									//block.Statements.Remove(newStatement);
-									i--;
+									//i--;
 								}
 								else
 								{

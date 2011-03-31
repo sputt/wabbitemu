@@ -19,8 +19,8 @@ namespace WabbitC.Optimizer
         public static void RunOptimizer(ref Module module, Compiler.OptimizeLevel opLevel)
         {
             Block mainModule = (Block) module;
-            if (ConstantTracking)
-                ConstantsOptimizer.Optimize(ref mainModule);
+			if (ConstantTracking)
+				ConstantsOptimizer.Optimize(ref mainModule);
 			if (VariableReduction)
 				VariableReducer.Optimize(ref module);
             if (DeadCodeOptimization)

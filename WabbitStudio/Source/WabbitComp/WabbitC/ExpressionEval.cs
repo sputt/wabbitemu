@@ -264,7 +264,7 @@ namespace WabbitC
 				while (stack.Count > 0 && toks.Count < 2)
 					toks.Add(stack.Pop());
 				var exp = ApplyOperator(op, toks);
-				if (exp != null) 
+				if (exp != null)
 					result = exp;
 				if (i > 0 && result != null)
 					stack.Push(result.Tokens[0]);

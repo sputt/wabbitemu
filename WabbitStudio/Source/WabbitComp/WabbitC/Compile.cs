@@ -81,12 +81,12 @@ namespace WabbitC
                 StatementPasses.StackAllocator.Run(currentModule);
                 StatementPasses.AddStackDeclaration.Run(currentModule);
 
-                if (optimizeLevel != OptimizeLevel.OptimizeNone)
+                /*if (optimizeLevel != OptimizeLevel.OptimizeNone)
                     StatementPasses.SmarterRegisterAllocator.Run(currentModule);
-                else
+                else*/
                     StatementPasses.DumbRegisterAllocator.Run(currentModule);
 
-				AssemblyGenerator.GenerateCode(ref currentModule);
+				//AssemblyGenerator.GenerateCode(ref currentModule);
             }
 
             string code = currentModule.ToString();

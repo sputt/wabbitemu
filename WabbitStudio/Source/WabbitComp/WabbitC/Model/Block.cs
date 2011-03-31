@@ -119,10 +119,11 @@ namespace WabbitC.Model
 
 		public List<Block> GetBasicBlocks()
 		{
-			var blocks = new List<Block>();
-			//TODO: implement
+			//var blocks = new List<Block>();
+			/*var blocks = from statement in this.Statements where statement.
 
-			return blocks;
+			return blocks;*/
+			return null;
 		}
 
         static public Block ParseBlock(ref List<Token>.Enumerator tokens, Block parent)
@@ -136,7 +137,7 @@ namespace WabbitC.Model
 
             thisBlock.Function = func;
 
-            // Climp the parents to find the function we are in
+            // Climb the parents to find the function we are in
             if (func == null)
             {
                 Block curBlock = thisBlock;

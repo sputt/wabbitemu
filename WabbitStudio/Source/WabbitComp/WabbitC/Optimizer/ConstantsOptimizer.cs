@@ -90,11 +90,7 @@ namespace WabbitC
 					var symbol = FindSymbol(math.LValue);
 					var refed = math.GetReferencedDeclarations()[0];
 					var refedSymbol = FindSymbol(refed);
-					if (refedSymbol.IsConstant)
-					{
-						statement.ReplaceDeclaration(refed, refedSymbol.Value);
-					}
-					if (symbol.IsConstant)
+					if (symbol.IsConstant || refedSymbol.IsConstant)
 					{
 						var value = imath.Apply();
 						if (value != null)

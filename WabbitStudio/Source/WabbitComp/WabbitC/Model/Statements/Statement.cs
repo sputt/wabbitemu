@@ -48,7 +48,7 @@ namespace WabbitC.Model.Statements
 
         #endregion
 
-        public void ReplaceDeclaration(Declaration declToReplace, Datum newDecl)
+        public void ReplaceDeclaration(Declaration declToReplace, Declaration newDecl)
         {
             System.Type type = this.GetType();
             var fields = from f in type.GetFields() 
@@ -58,7 +58,7 @@ namespace WabbitC.Model.Statements
             {
                 if (field.FieldType == typeof(List<Declaration>))
                 {
-                    List<Datum> decls = field.GetValue(this) as List<Datum>;
+                    var decls = field.GetValue(this) as List<Declaration>;
                     for (int i = 0; i < decls.Count; i++)
                     {
                         if (decls[i] == declToReplace)
@@ -72,8 +72,7 @@ namespace WabbitC.Model.Statements
                 {
 					if (field.GetValue(this) == declToReplace)
                     {
-						if (field.FieldType == newDecl.GetType())
-							field.SetValue(this, newDecl);
+						field.SetValue(this, newDecl);
                     }
                 }
             }
