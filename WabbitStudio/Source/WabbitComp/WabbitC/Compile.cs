@@ -71,6 +71,7 @@ namespace WabbitC
                 StatementPasses.BlockCollapse.Run(currentModule);
                 StatementPasses.IfGotoConversion.Run(currentModule);
                 StatementPasses.LoopGotoConversion.Run(currentModule);
+				StatementPasses.LabelMerger.Run(currentModule);
             }
 
 			if (optimizeLevel != OptimizeLevel.OptimizeNone)
