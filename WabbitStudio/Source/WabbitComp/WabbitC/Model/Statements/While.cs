@@ -62,7 +62,7 @@ namespace WabbitC.Model.Statements
         public override string ToString()
 		{
 			StringBuilder sb = new StringBuilder("goto ");
-			sb.Append(Label);
+			sb.Append(Label.Name);
 			sb.AppendLine(";");
 			sb.AppendLine("do");
 			sb.AppendLine("{");

@@ -36,11 +36,10 @@ namespace WabbitC.Optimizer
             {
                 var statement = block.Statements[i];
                 var type = statement.GetType();
-                if (type == typeof(Assignment))
-                {
-                    var assignment = statement as Assignment;
-                    
-                }
+				if (type == typeof(Annotation) || type == typeof(Assignment) || type == typeof(Label))
+				{
+					continue;
+				}
                 else if (type == typeof(Move))
                 {
                     var move = statement as Move;
@@ -164,9 +163,9 @@ namespace WabbitC.Optimizer
 							if (j != 0)
 								i = j;
 						}
-						for (int k = 0; k < block.Declarations.Count; k++)
-							symbolTable[k].ConstStatment = null;
 					}
+					for (int k = 0; k < block.Declarations.Count; k++)
+						symbolTable[k].ConstStatment = null;
 					/*else
 					{
 						j = i + 1;

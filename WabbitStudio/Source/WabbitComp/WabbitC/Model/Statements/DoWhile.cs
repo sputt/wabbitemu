@@ -32,7 +32,8 @@ namespace WabbitC.Model.Statements
             tokens.MoveNext();
             List<Token> conditionList = Tokenizer.GetArgument(ref tokens);
             tokens.MoveNext();
-            tokens.MoveNext();
+			Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+			tokens.MoveNext();
 
             var condDecl = parent.CreateTempDeclaration(new BuiltInType("int"));
             Block condBlock = new Block();

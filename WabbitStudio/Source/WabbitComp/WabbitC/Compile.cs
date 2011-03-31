@@ -62,6 +62,9 @@ namespace WabbitC
 
             var currentModule = Module.ParseModule(ref tokens);
 
+			if (optimizeLevel != OptimizeLevel.OptimizeNone)
+				Optimizer.CSE.Optimize(ref currentModule);
+
             // Statement passes
             if (passCount >= 2)
             {
@@ -83,8 +86,7 @@ namespace WabbitC
                 else
                     StatementPasses.DumbRegisterAllocator.Run(currentModule);
 
-                //AssemblyGenerator codeGenerator = new AssemblyGenerator(currentModule);
-                //codeGenerator.GenerateCode();
+				AssemblyGenerator.GenerateCode(ref currentModule);
             }
 
             string code = currentModule.ToString();

@@ -89,7 +89,7 @@ namespace WabbitC.Model.Types
 
         public override string ToString()
         {
-            throw new NotSupportedException();
+			return BaseType.ToString() + "*"; // + "[" + Dimensions[0] + "]";
         }
 
         public override string ToDeclarationString(string DeclName)

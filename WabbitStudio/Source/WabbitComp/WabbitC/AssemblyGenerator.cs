@@ -4,66 +4,61 @@ using System.Linq;
 using System.Text;
 using WabbitC.Model;
 using WabbitC.Model.Types;
+using WabbitC.Model.Statements;
+using WabbitC.Model.Statements.Assembly;
 
 namespace WabbitC
 {
-	class AssemblyGenerator
+	static class AssemblyGenerator
 	{
-		Block block;
-		public AssemblyGenerator(Block block)
+		public static void GenerateCode(ref Module module)
 		{
-			this.block = block;
-		}
-
-		AssemblyVars varNames = new AssemblyVars();
-		public string GenerateCode()
-		{
-			StringBuilder sb = new StringBuilder();
-			foreach (Declaration decl in block.Declarations)
+			var functions = module.GetFunctionEnumerator();
+			while (functions.MoveNext())
 			{
-				if (decl.Type.GetType() == typeof(FunctionType))
+				if (functions.Current.Code != null)
 				{
-					AssemblyGenerator generator = new AssemblyGenerator(decl.Code);
-					string code = generator.GenerateCode();
-					sb.Append(code);
-				}
-				else if (decl.Type.GetType().BaseType == typeof(WabbitC.Model.Type))
-				{
-					varNames.AddDeclaration(decl);
+					Block block = functions.Current.Code;
+					var statements = from Statement st in functions.Current.Code
+									 select st;
+					foreach (var statement in statements)
+					{
+						int nPos = block.Statements.IndexOf(statement);
+						System.Type type = statement.GetType();
+						if (type == typeof(StackLoad))
+						{
+
+						}
+						else if (type == typeof(StackStore))
+						{
+
+						}
+						else if (type == typeof(Goto))
+						{
+							var gotoStatement = statement as Goto;
+							Jump jump = null;
+							if (gotoStatement.CondDecl != null)
+							{
+								//jump = new Jump(gotoStatement.TargetLabel.Name, gotoStatement.CondDec
+							}
+							else
+							{
+								jump = new Jump(gotoStatement.TargetLabel.Name);
+							}
+							block.Statements.Remove(statement);
+							block.Statements.Insert(nPos, jump);
+						}
+						else if (type == typeof(Move))
+						{
+							var move = statement as Move;
+							var load = new Model.Statements.Assembly.Load(move.LValue, move.RValue);
+							block.Statements.Remove(statement);
+							block.Statements.Insert(nPos, load);
+						}
+					}
+
 				}
 			}
-			string variables = varNames.ToString();
-			return sb.ToString();
-		}
-	}
-
-	class AssemblyVars
-	{
-		List<Declaration> decls = new List<Declaration>();
-		public AssemblyVars()
-		{
-		}
-
-		public void AddDeclaration(Declaration decl)
-		{
-			decls.Add(decl);
-		}
-
-		public override string ToString()
-		{
-			string varStart = "VariableAllocationStart";
-			StringBuilder sb = new StringBuilder();
-			foreach (Declaration decl in decls)
-			{
-				sb.Append(decl.Name);
-				sb.Append(" = ");
-				sb.AppendLine(varStart);
-				StringBuilder varNameBuilder = new StringBuilder(decl.Name);
-				varNameBuilder.Append(" + ");
-				varNameBuilder.Append(decl.Type.Size);
-				varStart = varNameBuilder.ToString();
-			}
-			return sb.ToString();
 		}
 	}
 }

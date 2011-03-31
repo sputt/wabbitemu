@@ -88,6 +88,12 @@ namespace WabbitC
 					var math = statement as MathStatement;
 					var imath = statement as IMathOperator;
 					var symbol = FindSymbol(math.LValue);
+					var refed = math.GetReferencedDeclarations()[0];
+					var refedSymbol = FindSymbol(refed);
+					if (refedSymbol.IsConstant)
+					{
+						statement.ReplaceDeclaration(refed, refedSymbol.Value);
+					}
 					if (symbol.IsConstant)
 					{
 						var value = imath.Apply();

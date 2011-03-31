@@ -92,19 +92,24 @@ namespace WabbitC_Tests
             Assert.AreEqual(ExpectedValue, ActualValue);
         }
 
-        [TestMethod]
+		[DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",
+			"|DataDirectory|\\IntermediateCompileTestArgs.csv",
+			"IntermediateCompileTestArgs#csv",
+			DataAccessMethod.Sequential),
+		DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
+		TestMethod]
         public void Return()
         {
             RunIntermediateTest("returntest");
         }
 
-        [TestMethod]
+		[TestMethod]
         public void FunctionCallMath()
         {
             RunIntermediateTest("functioncallmath");
         }
 
-        [TestMethod]
+		[TestMethod]
         public void SimpleMath()
         {
             RunIntermediateTest("SimpleMath");
@@ -122,7 +127,7 @@ namespace WabbitC_Tests
             RunIntermediateTest("fibonacci");
         }
 
-        [TestMethod]
+		[TestMethod]
         public void Loop()
         {
             RunIntermediateTest("loop");

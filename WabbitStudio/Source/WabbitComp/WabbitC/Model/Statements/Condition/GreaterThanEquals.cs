@@ -21,7 +21,7 @@ namespace WabbitC.Model.Statements.Condition
 
 		public override Token GetInverseOperator()
 		{
-			return Tokenizer.ToToken("<=");
+			return Tokenizer.ToToken("<");
 		}
 
         #region IMathOperator Members

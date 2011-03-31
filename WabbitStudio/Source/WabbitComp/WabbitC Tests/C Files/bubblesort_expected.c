@@ -16,6 +16,7 @@ int BubbleSortAlgorithm(int *a, int n)
 			}
 		}
 	} while (++i < n);
+	return 0;
 }
 
 int BubbleSort(int n) {

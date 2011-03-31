@@ -31,6 +31,10 @@ namespace WabbitC.StatementPasses
 						null
 					};
 
+					Declaration lastDecl = functions.Current.Code.Declarations.Last<Declaration>();
+                    int stackSize = lastDecl.StackOffset + lastDecl.Type.Size;
+					bool[] usedStack = new bool[stackSize];
+
                     var CurrentMappings = new List<KeyValuePair<Declaration, Declaration>>();
 
                     var statements = from Statement st in functions.Current.Code
@@ -57,7 +61,9 @@ namespace WabbitC.StatementPasses
 								int index = RegisterContents.IndexOf(null);
 								if (index == -1)
 								{
-									replacementList.Add(new StackStore(usedLValues[0], module.FindDeclaration("__hl")));
+									var store = new StackStore(usedDecls[0], module.FindDeclaration("__hl"));
+									replacementList.Add(store);
+									usedStack[store.StackOffset] = true;
 									statement.ReplaceDeclaration(usedLValues[0], module.FindDeclaration("__hl"));
 									RegisterContents[0] = usedLValues[0];
 								}
@@ -106,11 +112,6 @@ namespace WabbitC.StatementPasses
 
                         replacementList.Add(statement);
 
-                        /*if (usedLValues.Count == 1)
-                        {
-                            replacementList.Add(new StackStore(usedLValues[0], module.FindDeclaration("__hl")));
-                        }*/
-
                         block.Statements.InsertRange(nPos, replacementList);
                     }
 
@@ -121,7 +122,9 @@ namespace WabbitC.StatementPasses
                     // copy the params to the stack (on z80 these will already be on the stack)
                     foreach (Declaration param in (functions.Current.Type as FunctionType).Params)
                     {
-                        block.Statements.Insert(0, new StackStore(param, param));
+						var store = new StackStore(param, param);
+						usedStack[store.StackOffset] = true;
+                        block.Statements.Insert(0, store);
                     }
                 }
             }

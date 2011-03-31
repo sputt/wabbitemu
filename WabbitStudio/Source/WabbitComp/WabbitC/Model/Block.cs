@@ -117,6 +117,14 @@ namespace WabbitC.Model
             return label;
         }
 
+		public List<Block> GetBasicBlocks()
+		{
+			var blocks = new List<Block>();
+			//TODO: implement
+
+			return blocks;
+		}
+
         static public Block ParseBlock(ref List<Token>.Enumerator tokens, Block parent)
         {
             return ParseBlock(ref tokens, parent, null);
@@ -124,8 +132,7 @@ namespace WabbitC.Model
 
         static public Block ParseBlock(ref List<Token>.Enumerator tokens, Block parent, FunctionType func)
         {
-            var thisBlock = new Block();
-            thisBlock.Parent = parent;
+			var thisBlock = new Block(parent);
 
             thisBlock.Function = func;
 
@@ -281,6 +288,7 @@ namespace WabbitC.Model
 								}
 								else
 								{
+									//TODO: check for comma operator
 									Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
 									tokens.MoveNext();
 								}

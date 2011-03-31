@@ -25,19 +25,7 @@ namespace WabbitC
 
         public static void OptimizeBlock(ref Block block)
         {
-			int numVars = 0;
-			List<VariableReuseClass> liveChart = new List<VariableReuseClass>();
-            for (int i = 0; i < block.Declarations.Count; i++)
-            {
-				bool varLive = false;
-				bool[] chart = GenerateLiveChart(block, block.Declarations[i]);
-                foreach (var liveValue in chart)
-				{
-					varLive |= liveValue;
-				}
-				if (varLive)
-					liveChart.Add(new VariableReuseClass(block.Declarations[i].Name, i, numVars++, chart));
-            }
+			List<VariableReuseClass> liveChart =  GenerateVariableChart(block);
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
@@ -101,6 +89,24 @@ namespace WabbitC
             }
         }
 
+		private static List<VariableReuseClass> GenerateVariableChart(Block block)
+		{
+			int numVars = 0;
+			var liveChart = new List<VariableReuseClass>();
+			for (int i = 0; i < block.Declarations.Count; i++)
+			{
+				bool varLive = false;
+				bool[] chart = GenerateLiveChart(block, block.Declarations[i]);
+				foreach (var liveValue in chart)
+				{
+					varLive |= liveValue;
+				}
+				if (varLive)
+					liveChart.Add(new VariableReuseClass(block.Declarations[i].Name, i, numVars++, chart));
+			}
+			return liveChart;
+		}
+
 		private static bool CompareSections(int compareIndex, int startLine, int endLine, ref List<VariableReuseClass> liveChart)
 		{
 			for (; startLine < endLine; startLine++)
@@ -124,12 +130,16 @@ namespace WabbitC
 		static bool[] GenerateLiveChart(Block block, Declaration decl)
 		{
 			int assigned = -1;
+			if (decl.Type.GetType() == typeof(Model.Types.Array))
+			{
+				assigned = 0;
+			}
 			bool[] livePoints = new bool[block.Statements.Count];
 			for (int i = 0; i < block.Statements.Count; i++)
 			{
 				var statement = block.Statements[i];
 				var modified = statement.GetModifiedDeclarations();
-				if (modified.Contains(decl))
+				if (modified.Contains(decl) && statement.GetType().BaseType != typeof(MathStatement))
 				{
 					livePoints[i] = true;
 					assigned = i;

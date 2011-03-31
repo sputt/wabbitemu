@@ -9,6 +9,11 @@ namespace WabbitC.Model.Statements
     {
         Declaration LValue;
         Declaration Decl;
+		public int StackOffset
+		{
+			get { return LValue.StackOffset; }
+			set { LValue.StackOffset = value; }
+		}
 
         public StackStore(Declaration lValue, Declaration decl)
         {
