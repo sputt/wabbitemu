@@ -119,11 +119,32 @@ namespace WabbitC.Model
 
 		public List<Block> GetBasicBlocks()
 		{
-			//var blocks = new List<Block>();
-			/*var blocks = from statement in this.Statements where statement.
-
-			return blocks;*/
-			return null;
+			var blocks = new List<Block>();
+			Block currentBlock = new Block(this);
+			for (int i = 0; i < Statements.Count; i++)
+			{
+				var statement = Statements[i];
+				if (statement.GetType() == typeof(Goto) || statement.GetType() == typeof(Goto))
+				{
+					blocks.Add(currentBlock);
+					if (statement.GetType() == typeof(Goto))
+					{
+						currentBlock.Statements.Add(statement);
+						currentBlock = new Block(this);
+					}
+					else
+					{
+						currentBlock = new Block(this);
+						currentBlock.Statements.Add(statement);
+					}
+				}
+				else
+				{
+					currentBlock.Statements.Add(statement);
+				}
+			}
+			blocks.Add(currentBlock);
+			return blocks;
 		}
 
         static public Block ParseBlock(ref List<Token>.Enumerator tokens, Block parent)

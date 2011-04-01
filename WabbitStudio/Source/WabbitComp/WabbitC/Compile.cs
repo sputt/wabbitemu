@@ -63,7 +63,9 @@ namespace WabbitC
             var currentModule = Module.ParseModule(ref tokens);
 
 			if (optimizeLevel != OptimizeLevel.OptimizeNone)
+			{
 				Optimizer.CSE.Optimize(ref currentModule);
+			}
 
             // Statement passes
             if (passCount >= 2)
@@ -79,13 +81,10 @@ namespace WabbitC
 
             if (passCount >= 3)
             {
-                StatementPasses.StackAllocator.Run(currentModule);
-                StatementPasses.AddStackDeclaration.Run(currentModule);
-
-                /*if (optimizeLevel != OptimizeLevel.OptimizeNone)
+                //if (optimizeLevel != OptimizeLevel.OptimizeNone)
                     StatementPasses.SmarterRegisterAllocator.Run(currentModule);
-                else*/
-                    StatementPasses.DumbRegisterAllocator.Run(currentModule);
+                /*else 
+                    StatementPasses.DumbRegisterAllocator.Run(currentModule);*/
 
 				//AssemblyGenerator.GenerateCode(ref currentModule);
             }

@@ -20,10 +20,6 @@ namespace WabbitC.Model
             Name = name;
         }
 
-        #region Allocated properties
-        public int StackOffset;
-        #endregion
-
         #region ToString methods
         public string ToDeclarationString()
         {

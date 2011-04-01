@@ -13,7 +13,7 @@ namespace WabbitC.StatementPasses
     {
         public static void Run(Module module)
         {
-            var functions = module.GetFunctionEnumerator();
+            /*var functions = module.GetFunctionEnumerator();
             while (functions.MoveNext())
             {
                 if (functions.Current.Code != null)
@@ -82,7 +82,7 @@ namespace WabbitC.StatementPasses
                         block.Statements.Insert(0, new StackStore(param, param));
                     }
                 }
-            }
+            }*/
         }
     }
 }

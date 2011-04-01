@@ -12,7 +12,7 @@ namespace WabbitC.StatementPasses
 {
     static class AddStackDeclaration
     {
-        public static void Run(Module module)
+        /*public static void Run(Module module)
         {
             var functions = module.GetFunctionEnumerator();
             while (functions.MoveNext())
@@ -25,6 +25,6 @@ namespace WabbitC.StatementPasses
                     functions.Current.Code.Declarations.Insert(0, new StackDeclaration(stackSize));
                 }
             }
-        }
+        }*/
     }
 }

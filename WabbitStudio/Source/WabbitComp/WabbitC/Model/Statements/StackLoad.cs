@@ -9,16 +9,18 @@ namespace WabbitC.Model.Statements
     {
         Declaration LValue;
         Declaration Decl;
-		public int StackOffset
+		int StackOffset;
+		/*public int StackOffset
 		{
 			get { return LValue.StackOffset; }
 			set { LValue.StackOffset = value; }
-		}
+		}*/
 
-        public StackLoad(Declaration lValue, Declaration decl)
+        public StackLoad(Declaration lValue, Declaration decl, int offset)
         {
             LValue = lValue;
             Decl = decl;
+			StackOffset = offset;
         }
 
         public override string ToString()
@@ -37,11 +39,11 @@ namespace WabbitC.Model.Statements
                     type.Reference();
                 }
 
-                return LValue.Name + " = (" + type + ") &__stack[" + Decl.StackOffset + "];";
+                return LValue.Name + " = (" + type + ") &__stack[" + StackOffset + "];";
             }
             else
             {
-                return LValue.Name + " = *(" + Decl.Type + "*) &__stack[" + Decl.StackOffset + "];";
+                return LValue.Name + " = *(" + Decl.Type + "*) &__stack[" + StackOffset + "];";
             }
         }
     }

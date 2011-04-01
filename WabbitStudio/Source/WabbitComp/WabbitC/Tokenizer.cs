@@ -45,6 +45,7 @@ namespace WabbitC
 			var tokens = new List<Token>();
 			int index = 0;
 			int length = infile.Length;
+			SkipWhitespace(ref index, infile);
 			while (index < length)
 			{
 				tokens.Add(ReadToken(ref index, infile));
