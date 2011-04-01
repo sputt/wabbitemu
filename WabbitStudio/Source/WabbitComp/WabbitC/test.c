@@ -15,18 +15,14 @@
 	t6 = t5+c;
 	d = t4*t6;*/
 
-int fibonacci(int n)
+int function(int arg1, int arg2)
 {
-	if (n == 0)
-	{
-		return 0;
-	}
-	else if (n == 1)
-	{
-		return 1;
-	}
-	else
-	{
-		return fibonacci(n - 2) + fibonacci(n - 1);
-	}
+	return arg1 + arg2;
+}
+
+int test()
+{
+	int temp;
+	temp = function(0, 1);
+	return temp;
 }

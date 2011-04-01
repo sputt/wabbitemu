@@ -180,7 +180,7 @@ namespace WabbitC.Optimizer
 					var returnStatement = statement as Return;
 					var returnVal = returnStatement.ReturnReg as Declaration;
 					var symbol = FindSymbol(returnVal, ref symbolTable);
-					if (symbol != null && symbol.ConstStatment != null)
+					if (symbol != null && symbol.ConstStatment != null && symbol.ConstStatment.GetType() == typeof(Move))
 					{
 						var newStatement = symbol.ConstStatment;
 						var lValue = newStatement.GetModifiedDeclarations()[0];
