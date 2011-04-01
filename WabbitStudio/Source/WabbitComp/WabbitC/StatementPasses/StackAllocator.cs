@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 
 using WabbitC.Model;
+using WabbitC.Model.Statements;
 using WabbitC.Model.Types;
 
 namespace WabbitC.StatementPasses
@@ -14,6 +15,7 @@ namespace WabbitC.StatementPasses
 
 		List<Declaration> stack = new List<Declaration>();
 
+		int nFixed = 0;
 		int nOffset = 0;
 		public int Offset
 		{
@@ -37,7 +39,11 @@ namespace WabbitC.StatementPasses
 			stack.Add(decl);
 			return temp;
 		}
-
+		public int ReserveSpace(int bytes)
+		{
+			Declaration tempDecl = new Declaration(new WabbitC.Model.Types.Array(new BuiltInType("unsigned char"), "[" + bytes + "]"), "__FIXED_SIZE" + nFixed++);
+			return ReserveSpace(tempDecl);
+		}
 		public int GetOffset(Declaration decl)
 		{
 			int offset = 0;

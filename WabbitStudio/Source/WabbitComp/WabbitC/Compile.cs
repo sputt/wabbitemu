@@ -81,6 +81,7 @@ namespace WabbitC
 
             if (passCount >= 3)
             {
+				StatementPasses.ApplyCallingConvention.Run(currentModule);
                 //if (optimizeLevel != OptimizeLevel.OptimizeNone)
                     StatementPasses.SmarterRegisterAllocator.Run(currentModule);
                 /*else 
@@ -98,7 +99,7 @@ namespace WabbitC
             }
 
             var writer = new StreamWriter(outputFile);
-            writer.Write(code.Replace("\n", "\r\n"));
+            writer.Write(code.Replace("\r\n", "\n").Replace("\n", "\r\n"));
             writer.Close();
 
             return true;

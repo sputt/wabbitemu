@@ -1,4 +1,8 @@
-﻿int function1(int arg)
+﻿unsigned char __stack[512];
+unsigned char* __sp;
+int __hl;
+
+int function1(int arg)
 {
 	return arg + arg;
 }

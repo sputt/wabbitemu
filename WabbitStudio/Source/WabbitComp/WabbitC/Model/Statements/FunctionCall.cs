@@ -12,7 +12,7 @@ namespace WabbitC.Model.Statements
     class FunctionCall : ValueStatement
     {
         public Declaration LValue;
-        Declaration Function;
+        public Declaration Function;
         public List<Declaration> Params;
 
         public static List<Declaration> BuildParams(Block block, FunctionType funcType, ref List<Token>.Enumerator tokens)

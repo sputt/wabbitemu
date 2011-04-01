@@ -12,6 +12,10 @@ namespace WabbitC.Model.Types
         public Type ReturnType;
         public List<Declaration> Params;
 
+		public FunctionType()
+		{
+		}
+
         public FunctionType(ref List<Token>.Enumerator tokens, Type returnType)
         {
             this.Size = 2;

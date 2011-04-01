@@ -10,16 +10,22 @@ namespace WabbitC.Model
 {
     class Module : Block
     {
+		public List<string> IntermediateStrings;
+
         private Module(Block block)
         {
             this.Types = block.Types;
             this.Declarations = block.Declarations;
+			IntermediateStrings = new List<string>();
 
             this.Declarations.InsertRange(0, new List<Declaration>()
             {
                 new Declaration(new BuiltInType("int"), "__hl"),
                 new Declaration(new BuiltInType("int"), "__de"),
                 new Declaration(new BuiltInType("int"), "__bc"),
+				new Declaration(new BuiltInType("int"), "__iy"),
+				new Declaration(new Types.Array(new BuiltInType("unsigned char"), "[512]"), "__stack"),
+				new Declaration(new BuiltInType("unsigned char *"), "__sp"),
             });
 
 			//TODO: make so assignment statements work...
@@ -29,7 +35,7 @@ namespace WabbitC.Model
         public IEnumerator<Declaration> GetFunctionEnumerator()
         {
             var functions = from d in Declarations
-                            where d.Type.GetType() == typeof(FunctionType) && d.Code != null
+                            where (d.Type.GetType() == typeof(FunctionType) || d.Type.GetType().BaseType == typeof(FunctionType)) && d.Code != null
                             select d;
             return functions.GetEnumerator();
         }
@@ -40,5 +46,16 @@ namespace WabbitC.Model
             // Make sure there's no stuff that doesn't belong in module
             return new Module(block);
         }
+
+		public override string ToString()
+		{
+			string result = "";
+			foreach (string s in IntermediateStrings)
+			{
+				result += s + "\n";
+			}
+			result = base.ToString();
+			return result;
+		}
     }
 }

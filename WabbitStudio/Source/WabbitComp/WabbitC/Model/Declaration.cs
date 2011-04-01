@@ -29,7 +29,7 @@ namespace WabbitC.Model
             }
             else
             {
-                if (Type.GetType() == typeof(Types.FunctionType))
+				if (Type.GetType() == typeof(Types.FunctionType) || Type.GetType().BaseType == typeof(Types.FunctionType))
                 {
                     string funcType = Type.ToDeclarationString(Name);
                     if (Code != null)

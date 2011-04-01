@@ -27,9 +27,15 @@ namespace WabbitC.StatementPasses
 					// copy the params to the stack (on z80 these will already be on the stack)
 					foreach (Declaration param in (functions.Current.Type as FunctionType).Params)
 					{
-						var store = new StackStore(param, param, stack.ReserveSpace(param));
+						int offset = stack.ReserveSpace(param);
+						/*
+						var store = new StackStore(param, param, offset);
 						block.Statements.Insert(0, store);
+						*/
 					}
+
+					// Reserve space for the return value
+					stack.ReserveSpace(new BuiltInType("void *").Size);
 
 					for (int i = 0; i < blocks.Count; i++)
 					{
@@ -42,7 +48,9 @@ namespace WabbitC.StatementPasses
                     block.Declarations.Add(stackDecl);
 
 					Debug.Print("{0}", stack.Size);
-					functions.Current.Code.Declarations.Insert(0, new StackDeclaration(stack.Size));
+					functions.Current.Code.Statements.Insert(0, new StackFrameInit(block, stack.Size));
+
+					functions.Current.Code.Statements.Add(new StackFrameCleanup(block, stack.Size));
                 }
             }
         }

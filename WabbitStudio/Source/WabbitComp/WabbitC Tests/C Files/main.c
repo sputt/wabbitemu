@@ -7,8 +7,15 @@
 
 int TEST_FUNCTION(int);
 
+extern unsigned char __stack[512];
+extern unsigned char* __sp;
+extern int __hl;
+
 int main(int argc, char **argv)
 {
-	int result = TEST_FUNCTION(atoi(argv[1]));
-	return result;
+	int result;
+	__sp = __stack + 8;
+	*((int *) &__stack[0]) = atoi(argv[1]);
+	result = TEST_FUNCTION(atoi(argv[1]));
+	return __hl;
 }

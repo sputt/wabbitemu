@@ -39,11 +39,11 @@ namespace WabbitC.Model.Statements
                     type.Reference();
                 }
 
-                return LValue.Name + " = (" + type + ") &__stack[" + StackOffset + "];";
+                return LValue.Name + " = (" + type + ") &(((unsigned char *) __iy)[" + StackOffset + "]);";
             }
             else
             {
-                return LValue.Name + " = *(" + Decl.Type + "*) &__stack[" + StackOffset + "];";
+				return LValue.Name + " = *(" + Decl.Type + "*) &(((unsigned char *) __iy)[" + StackOffset + "]);";
             }
         }
     }

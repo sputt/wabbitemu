@@ -31,7 +31,7 @@ namespace WabbitC.Model.Statements
             }
             else
             {
-                return "*(" + LValue.Type + "*) &__stack[" + Offset + "] = " + Decl.Name + ";";
+				return "*(" + LValue.Type + "*) &__sp[" + Offset + "] = " + Decl.Name + ";";
             }
         }
     }
