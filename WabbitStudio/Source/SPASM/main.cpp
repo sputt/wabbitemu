@@ -252,7 +252,7 @@ int main (int argc, char **argv)
 	//otherwise, get any options
 
 	while (curr_arg < argc) {
-		if (argv[curr_arg][0] == '-' || argv[curr_arg][0] == '/')
+		if (argv[curr_arg][0] == '-')
 		{
 			switch (argv[curr_arg][1])
 			{
