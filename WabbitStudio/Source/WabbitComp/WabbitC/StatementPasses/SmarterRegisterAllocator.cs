@@ -99,8 +99,8 @@ namespace WabbitC.StatementPasses
 				{
 					if (usedLValues[0] == RegisterContents[0] || RegisterContents[0] == null)
 					{
-						var test = block.FindDeclaration(usedLValues[0].Name);
-						if (test != null)
+						var test = block.Declarations.Contains(usedLValues[0]);
+						if (test == null)
 							replacementList.Add(new StackLoad(module.FindDeclaration("__hl"), usedLValues[0], stack.GetOffset(usedLValues[0])));
 						RegisterContents[0] = usedLValues[0];
 						statement.ReplaceDeclaration(usedLValues[0], module.FindDeclaration("__hl"));

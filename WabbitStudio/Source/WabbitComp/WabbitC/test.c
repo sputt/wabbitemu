@@ -1,11 +1,17 @@
-int test(int arg)
+int fibonacci(int n)
 {
-	char buffer[16];
-	char var;
-
-	var = arg + 20;
-	buffer[0] = var;
-	return var;
+	if (n == 0)
+	{
+		return 0;
+	}
+	else if (n == 1)
+	{
+		return 1;
+	}
+	else
+	{
+		return fibonacci(n - 2) + fibonacci(n - 1);
+	}
 }
 
 /*int loop(int a)
