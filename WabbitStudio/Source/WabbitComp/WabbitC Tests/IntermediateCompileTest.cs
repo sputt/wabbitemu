@@ -92,13 +92,13 @@ namespace WabbitC_Tests
             Assert.AreEqual(ExpectedValue, ActualValue);
         }
 
-		//[DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",
-		//    "|DataDirectory|\\IntermediateCompileTestArgs.csv",
-		//    "IntermediateCompileTestArgs#csv",
-		//    DataAccessMethod.Sequential),
-		//DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
-		//TestMethod]
-		[TestMethod]
+		[DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",
+			"|DataDirectory|\\IntermediateCompileTestArgs.csv",
+			"IntermediateCompileTestArgs#csv",
+			DataAccessMethod.Sequential),
+		DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
+		TestMethod]
+		//[TestMethod]
         public void Return()
         {
             RunIntermediateTest("returntest");
@@ -140,7 +140,13 @@ namespace WabbitC_Tests
             RunIntermediateTest("store");
         }
 
-        [TestMethod]
+		[DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",
+			"|DataDirectory|\\IntermediateCompileTestArgs.csv",
+			"IntermediateCompileTestArgs#csv",
+			DataAccessMethod.Sequential),
+		DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
+		TestMethod]
+        //[TestMethod]
         public void Cast1()
         {
             RunIntermediateTest("cast");

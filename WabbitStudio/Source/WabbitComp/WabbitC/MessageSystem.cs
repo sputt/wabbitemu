@@ -9,6 +9,7 @@ namespace WabbitC
 	{
 		public enum ErrorCode
 		{
+			UndeclaredVar,
 
 		}
 		public static MessageSystem Instance = new MessageSystem();

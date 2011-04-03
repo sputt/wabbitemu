@@ -124,7 +124,7 @@ namespace WabbitC.Model
 			for (int i = 0; i < Statements.Count; i++)
 			{
 				var statement = Statements[i];
-				if (statement.GetType() == typeof(Goto) || statement.GetType() == typeof(Goto))
+				if (statement.GetType() == typeof(Goto) || statement.GetType() == typeof(Label))
 				{
 					blocks.Add(currentBlock);
 					if (statement.GetType() == typeof(Goto))

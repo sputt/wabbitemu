@@ -19,7 +19,6 @@ namespace WabbitC.StatementPasses
                 if (functions.Current.Code != null)
                 {
                     Block block = functions.Current.Code;
-                    
 
                     // copy the params to the stack (on z80 these will already be on the stack)
                     foreach (Declaration param in (functions.Current.Type as FunctionType).Params)
@@ -27,6 +26,8 @@ namespace WabbitC.StatementPasses
 						var store = new StackStore(param, param, 0);
                         block.Statements.Insert(0, store);
                     }
+
+
                 }
             }
         }

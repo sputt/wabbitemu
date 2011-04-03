@@ -27,6 +27,8 @@ namespace WabbitC.Optimizer
                 DeadCodeOptimizer.Optimize(ref module);
 			if (ReuseVariables)
 				VariableReuse.Optimize(ref module);
+			if (DeadCodeOptimization)
+				DeadCodeOptimizer.Optimize(ref module);
 			if (DeadVariableRemoval)
                 DeadVariableOptimizer.Optimize(ref module);
         }
@@ -35,14 +37,14 @@ namespace WabbitC.Optimizer
         {
             if (string.IsNullOrEmpty(arg))
                 return Compiler.OptimizeLevel.OptimizeNone;
-
+			
             if (arg[0] == '-')
-            {
+            {	
                 switch (arg[1])
                 {
                     case 'O':
                         if (!char.IsDigit(arg[2]))
-                            throw new InvalidDataException("-O switch doesn not have an appropriate optimization level");
+                            throw new InvalidDataException("-O switch does not have an appropriate optimization level");
                         int optimizeLevel = int.Parse(arg[2].ToString());
                         switch (optimizeLevel)
                         {

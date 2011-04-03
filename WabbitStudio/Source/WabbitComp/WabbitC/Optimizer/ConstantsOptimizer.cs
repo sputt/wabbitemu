@@ -31,73 +31,59 @@ namespace WabbitC
             }
             for (int i = 0; i < block.Statements.Count; i++)
             {
-                int intTest;
                 var statement = block.Statements[i];
                 System.Type type = statement.GetType();
-                if (type == typeof(If))
-                {
-                    var trueBlock = (statement as If).TrueCase;
-                    OptimizeBlock(ref trueBlock);
-                    var falseBlock = (statement as If).FalseCase;
-                    OptimizeBlock(ref falseBlock);
-                }
+				if (type == typeof(Annotation))
+				{
+					continue;
+				}
                 else if (type == typeof(Assignment))
                 {
                     var assignment = statement as Assignment;
-                    var symbol = FindSymbol(assignment.LValue);
-                    symbol.IsConstant = int.TryParse(assignment.RValue.Value, out intTest);
-                    symbol.Value = Datum.Parse(block, assignment.RValue.Value);
-                    symbol.IsVolatile = false;
+					assignment.LValue.ConstValue = new Immediate(assignment.RValue.Value);
                 }
                 else if (type == typeof(Move))
                 {
                     var move = statement as Move;
-                    var symbol = FindSymbol(move.RValue);
-                    if (symbol != null && symbol.IsConstant)
+                    if (move.RValue.ConstValue != null)
                     {
-                        var immediate = new Immediate(Tokenizer.ToToken(symbol.Value.ToString()));
+                        var immediate = new Immediate(move.RValue.ConstValue.Value);
                         var assigment = new Assignment(move.LValue, immediate);
                         block.Statements[i] = assigment;
-                        symbol = FindSymbol(assigment.LValue);
-                        symbol.IsConstant = true;
-                        symbol.Value = immediate;
+						move.LValue.ConstValue = immediate;
                     }
                     else
                     {
-                        symbol = FindSymbol(move.LValue);
-                        symbol.IsConstant = false;
+						move.LValue.ConstValue = null;
                     }
                 }
 				else if (type.BaseType == typeof(ConditionStatement))
 				{
 					var cond = statement as ConditionStatement;
-					var symbol = FindSymbol(cond.CondDecl);
-					if (symbol != null && symbol.IsConstant)
+					if (cond.CondDecl.ConstValue != null)
 					{
-						var immediate = new Immediate(Tokenizer.ToToken(symbol.Value.ToString()));
+						var immediate = new Immediate(cond.LValue.ConstValue.Value);
 						
 					}
 					else
 					{
-						symbol = FindSymbol(cond.LValue);
-						symbol.IsConstant = false;
+						cond.LValue.ConstValue = null;
 					}
 				}
 				else if (type.BaseType == typeof(MathStatement))
 				{
 					var math = statement as MathStatement;
 					var imath = statement as IMathOperator;
-					var symbol = FindSymbol(math.LValue);
-					var refed = math.GetReferencedDeclarations()[0];
-					var refedSymbol = FindSymbol(refed);
-					if (symbol.IsConstant || refedSymbol.IsConstant)
+					var refedSymbols = math.GetReferencedDeclarations();
+					var refed = refedSymbols.Count > 1 ? refedSymbols[1] : refedSymbols[0];
+					if (math.LValue.ConstValue != null || refed.ConstValue != null)
 					{
 						var value = imath.Apply();
 						if (value != null)
 						{
 							var lValue = math.LValue;
 							var immediate = value as Immediate;
-							symbol.IsConstant = true;
+							lValue.ConstValue = immediate;
 							if (immediate.Value.Type == TokenType.IntType)
 							{
 								int result;
@@ -105,16 +91,15 @@ namespace WabbitC
 								var newImmediate = new Immediate(Tokenizer.ToToken(result.ToString()));
 								var assigment = new Assignment(lValue, newImmediate);
 								block.Statements[i] = assigment;
-								symbol.Value = newImmediate;
 							}
 						}
 						else
 						{
-							symbol.IsConstant = false;
+							math.LValue.ConstValue = null;
 						}
 					}
 				}
-				else if (type == typeof(Return))
+				/*else if (type == typeof(Return))
 				{
 					var returnType = statement as Return;
 					var symbol = FindSymbol((Declaration)returnType.ReturnReg);
@@ -127,7 +112,7 @@ namespace WabbitC
 					{
 
 					}
-				}
+				}*/
 				else if (type == typeof(Goto))
 				{
 					var gotoType = statement as Goto;
@@ -135,7 +120,7 @@ namespace WabbitC
 					{
 						for (int k = 0; k < block.Declarations.Count; k++)
 						{
-							symbolTable[k].IsConstant = false;
+							block.Declarations[k].ConstValue = null;
 						}
 					}
 					int j = i;
@@ -146,26 +131,13 @@ namespace WabbitC
 				}
             }
         }
-
-        static OptimizerSymbol FindSymbol(Declaration decl)
-        {
-            var symbolToFind = OptimizerSymbol.Parse(decl);
-            var index = symbolTable.IndexOf(symbolToFind);
-            if (index == -1)
-                return null;
-            return symbolTable[index];
-        }
     }
 
 
     class OptimizerSymbol
     {
         public string Name { get; set; }
-        public bool IsConstant { get; set; }
-        public bool IsVolatile { get; set; }
         public bool IsAlive { get; set; }
-        public Datum Value { get; set; }
-		public Statement ConstStatment { get; set; }
 
         public static OptimizerSymbol Parse(Declaration statement)
         {

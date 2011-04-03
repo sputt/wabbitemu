@@ -257,7 +257,7 @@ namespace WabbitC
                 }
                 else
                 {
-					if (word == "/")
+					if (word == "/" && newIndex < inputContents.Length)
 					{
 						//check for comments
 						string comment = word + inputContents[newIndex];

@@ -29,15 +29,17 @@ namespace WabbitC.Optimizer
             do
             {
 				for (int i = 0; i < instructions.Length; i++)
-				{
 					instructions[i] = true;
-				}
                 changedInstructions = false;
                 for (int i = 0; i < block.Statements.Count; i++)
                 {
                     var statement = block.Statements[i];
                     var type = statement.GetType();
-                    if (type == typeof(Assignment))
+					if (type == typeof(Annotation) || type == typeof(Label) || type == typeof(Goto))
+					{
+						continue;
+					} 
+					else if (type == typeof(Assignment))
 					{
 						var assignment = statement as Assignment;
 						var decl = block.FindDeclaration(assignment.LValue.Name);

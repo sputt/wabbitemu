@@ -31,9 +31,21 @@ namespace WabbitC.Model.Statements.Math
         {
 			var imm = RValue as Immediate;
 			if (imm == null)
+			{
+				imm = (RValue as Declaration).ConstValue;
+				if (imm == null)
+					return null;
+			}
+			if (LValue.ConstValue == null)
+			{
+				RValue = imm;
 				return null;
-			LValue.ConstValue.Value = (LValue.ConstValue.Value * imm.Value).Eval()[0].Token;
-			return LValue.ConstValue;
+			}
+			else
+			{
+				LValue.ConstValue.Value = (LValue.ConstValue.Value * imm.Value).Eval()[0].Token;
+				return LValue.ConstValue;
+			}
         }
 
         #endregion

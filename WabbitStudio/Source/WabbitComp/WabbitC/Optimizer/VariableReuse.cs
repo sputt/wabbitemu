@@ -35,6 +35,7 @@ namespace WabbitC
 					int j;
 					var modified = modifiedVars[0];
 					int modIndex = FindVar(modified, ref liveChart);
+					//pst hi i love you
 					//if we cant find, get out of here or if we've used previously, no need to replace
 					if (modIndex < 0 || liveChart[modIndex].usedCount > 0)
 						continue;
@@ -45,35 +46,44 @@ namespace WabbitC
 					if (endLine < i)
 						continue;
 					List<int> possibles = new List<int>();
+					List<int> score = new List<int>();
 					for (j = 0; j < liveChart.Count; j++ )
 					{
-						if (block.Declarations[liveChart[modIndex].blockIndex].Type.ToString() == 
+						if (j != modIndex && block.Declarations[liveChart[modIndex].blockIndex].Type.ToString() == 
 							block.Declarations[liveChart[j].blockIndex].Type.ToString())
 						{
-							if (CompareSections(j, i, endLine, ref liveChart))
+							int scoreVal;
+							if (CompareSections(j, modIndex, i, endLine, ref liveChart, block, out scoreVal))
+							{
 								possibles.Add(j);
+								score.Add(scoreVal);
+							}
 						}
 					}
-					if (possibles.Count > 1)
+					Declaration oldDecl = null, newDecl = null;
+					if (possibles.Count >= 1)
 					{
-						j = 0;
-						//perfer variables that are already used
-						foreach (var possible in possibles)
-						{
-							if (liveChart[possible].usedCount > liveChart[j].usedCount)
-								j = possible;
-						}
+						j = possibles[score.IndexOf(score.Max())];
+						oldDecl = liveChart[modIndex].decl;
+						newDecl = liveChart[j].decl;
 					}
 					if (j < liveChart.Count)
 					{
+						
 						//we've found a variable of the same type and dead on this line
 						for (int k = i; k <= endLine; k++)
 						{
 							var statementToChange = block.Statements[k];
 							liveChart[j].livePoints[k] = true;
 							liveChart[modIndex].livePoints[k] = false;
-							statementToChange.ReplaceDeclaration(block.Declarations[liveChart[modIndex].blockIndex],
-									block.Declarations[liveChart[j].blockIndex]);
+							statementToChange.ReplaceDeclaration(oldDecl, newDecl);
+							//remove test = test; type statements
+							if (statementToChange.GetType() == typeof(Move) && ((Move)statementToChange).LValue == ((Move)statementToChange).RValue)
+							{
+								block.Statements.Remove(statementToChange);
+								endLine--;
+								k--;
+							}
 						}
 						liveChart[j].usedCount++;
 						bool varLive = false;
@@ -84,7 +94,7 @@ namespace WabbitC
 						if (!varLive)
 							liveChart.RemoveAt(modIndex);
 					}
-					i = endLine;
+					//i = endLine;
 				}
             }
         }
@@ -93,26 +103,48 @@ namespace WabbitC
 		{
 			int numVars = 0;
 			var liveChart = new List<VariableReuseClass>();
+			for (int i = 0; i < block.Function.Params.Count; i++)
+			{
+				bool varLive = false;
+				bool[] chart = GenerateLiveChart(block, block.Function.Params[i]);
+				foreach (var liveValue in chart)
+					varLive |= liveValue;
+				if (varLive)
+					liveChart.Add(new VariableReuseClass(block.Function.Params[i], i, numVars++, chart));
+			}
 			for (int i = 0; i < block.Declarations.Count; i++)
 			{
 				bool varLive = false;
 				bool[] chart = GenerateLiveChart(block, block.Declarations[i]);
 				foreach (var liveValue in chart)
-				{
 					varLive |= liveValue;
-				}
 				if (varLive)
-					liveChart.Add(new VariableReuseClass(block.Declarations[i].Name, i, numVars++, chart));
+					liveChart.Add(new VariableReuseClass(block.Declarations[i], i, numVars++, chart));
 			}
 			return liveChart;
 		}
 
-		private static bool CompareSections(int compareIndex, int startLine, int endLine, ref List<VariableReuseClass> liveChart)
+		private static bool CompareSections(int compareIndex, int modIndex, int startLine, int endLine, ref List<VariableReuseClass> liveChart, Block block, out int score)
 		{
+			score = -1;
 			for (; startLine < endLine; startLine++)
 			{
 				if (liveChart[compareIndex].livePoints[startLine])
+				{
+					var mod = block.Statements[startLine].GetModifiedDeclarations();
+					var refed = block.Statements[startLine].GetReferencedDeclarations();
+					if (mod.Count > 0 && mod.Count > 0 && (mod[mod.Count - 1] == liveChart[compareIndex].decl
+						&& refed[refed.Count - 1] == liveChart[modIndex].decl) || (mod[mod.Count - 1] == liveChart[modIndex].decl
+						&& refed[refed.Count - 1] == liveChart[compareIndex].decl))
+						continue;
 					return false;
+				}
+			}
+			score = liveChart[0].livePoints.Length;
+			for (int i = 0; i < liveChart[0].livePoints.Length; i++)
+			{
+				if (liveChart[compareIndex].livePoints[i] != liveChart[modIndex].livePoints[i])
+					score--;
 			}
 			return true;
 		}
@@ -121,7 +153,7 @@ namespace WabbitC
 		{
 			for (int i = 0; i < liveChart.Count; i++)
 			{
-				if (modified.Name == liveChart[i].name)
+				if (modified == liveChart[i].decl)
 					return i;
 			}
 			return -1;
@@ -130,7 +162,7 @@ namespace WabbitC
 		static bool[] GenerateLiveChart(Block block, Declaration decl)
 		{
 			int assigned = -1;
-			if (decl.Type.GetType() == typeof(Model.Types.Array))
+			if (decl.Type.GetType() == typeof(Model.Types.Array) || block.Function.Params.Contains(decl))
 			{
 				assigned = 0;
 			}
@@ -156,29 +188,24 @@ namespace WabbitC
 
 		class VariableReuseClass
 		{
-			public string name;
+			public Declaration decl;
 			public int blockIndex;
 			public int chartIndex;
 			public bool[] livePoints;
 			public int usedCount = 0;
 
-			public VariableReuseClass(string name, int i, int varNum, bool[] chart)
+			public VariableReuseClass(Declaration decl, int i, int varNum, bool[] chart)
 			{
-				this.name = name;
+				this.decl = decl;
 				this.blockIndex = i;
 				this.chartIndex = varNum;
 				this.livePoints = chart;
 			}
 
+			public override string ToString()
+			{
+				return decl.Name;
+			}
 		}
-
-		static OptimizerSymbol FindSymbol(Declaration decl)
-        {
-            var symbolToFind = OptimizerSymbol.Parse(decl);
-            var index = symbolTable.IndexOf(symbolToFind);
-            if (index == -1)
-                return null;
-            return symbolTable[index];
-        }
     }    
 }

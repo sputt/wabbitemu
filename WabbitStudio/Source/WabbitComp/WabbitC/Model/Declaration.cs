@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using WabbitC.Model.Statements;
 
 namespace WabbitC.Model
 {
@@ -57,6 +58,7 @@ namespace WabbitC.Model
 
         //public ValueStatement InitialValue;
         public Block Code;
-        public Immediate ConstValue = new Immediate(Token.ZeroToken);
+		public Immediate ConstValue;
+		public Statement ConstStatement;
     }
 }

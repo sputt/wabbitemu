@@ -43,9 +43,7 @@ namespace WabbitC.StatementPasses
 						block.Statements.AddRange(blocks[i]);
 					}
 					
-                    Declaration stackDecl = block.Declarations[0];
                     block.Declarations.Clear();
-                    block.Declarations.Add(stackDecl);
 
 					Debug.Print("{0}", stack.Size);
 					functions.Current.Code.Statements.Insert(0, new StackFrameInit(block, stack.Size));
@@ -74,6 +72,8 @@ namespace WabbitC.StatementPasses
 			for (int nPos = 0; nPos < block.Statements.Count; nPos++)
 			{
 				Statement statement = block.Statements[nPos];
+				if (statement.GetType() == typeof(Push))
+					continue;
 				block.Statements.Remove(statement);
 
 				List<Statement> replacementList = new List<Statement>();
@@ -85,6 +85,9 @@ namespace WabbitC.StatementPasses
 				{
 					if (usedLValues[0] == RegisterContents[0] || RegisterContents[0] == null)
 					{
+						var test = block.FindDeclaration(usedLValues[0].Name);
+						if (test != null)
+							replacementList.Add(new StackLoad(module.FindDeclaration("__hl"), usedLValues[0], stack.GetOffset(usedLValues[0])));
 						RegisterContents[0] = usedLValues[0];
 						statement.ReplaceDeclaration(usedLValues[0], module.FindDeclaration("__hl"));
 					}

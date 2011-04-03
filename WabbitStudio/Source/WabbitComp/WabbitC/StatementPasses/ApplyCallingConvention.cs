@@ -48,10 +48,10 @@ namespace WabbitC.StatementPasses
 
 				}
 
-				// Add pushing regs
-				block.Statements.Insert(0, new Push(block.FindDeclaration("__hl")));
-				block.Statements.Insert(1, new Push(block.FindDeclaration("__de")));
-				block.Statements.Insert(2, new Push(block.FindDeclaration("__bc")));
+				//// Add pushing regs
+				//block.Statements.Insert(0, new Push(block.FindDeclaration("__hl")));
+				//block.Statements.Insert(1, new Push(block.FindDeclaration("__de")));
+				//block.Statements.Insert(2, new Push(block.FindDeclaration("__bc")));
 
 				// Add popping regs
 				Label endLabel = new Label("__function_cleanup");

@@ -43,6 +43,11 @@ namespace WabbitC.Model.Statements.Math
                         {
                             MathStatement mathStatement;
                             Datum datum = Datum.Parse(block, operand2);
+							if (datum == null)
+							{
+								MessageSystem.Instance.ThrowNewError(MessageSystem.ErrorCode.UndeclaredVar);
+								return null;
+							}
 
                             if (decl.Type.IndirectionLevels > 0)
                             {

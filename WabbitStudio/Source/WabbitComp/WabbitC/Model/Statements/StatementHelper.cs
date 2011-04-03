@@ -104,10 +104,14 @@ namespace WabbitC.Model.Statements
 							break;
 					}
 
-                    if (decl != null)
-                    {
-                        stack.Push(Tokenizer.ToToken(decl.Name));
-                    }
+					if (decl != null)
+					{
+						stack.Push(Tokenizer.ToToken(decl.Name));
+					}
+					else
+					{
+						return null;
+					}
                 }
                 else if (token != null)
                 {
