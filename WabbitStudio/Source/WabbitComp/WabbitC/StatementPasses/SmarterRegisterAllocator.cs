@@ -55,6 +55,9 @@ namespace WabbitC.StatementPasses
 
 		public static void AllocateBlock(ref Module module, ref StackAllocator stack, Block block)
 		{
+
+			var liveChart = new VariableReuse.LiveChartClass(block);
+			//liveChart.GenerateVariableChart();
 			var RegistersAvailable = new List<Declaration>
                     {
                         module.FindDeclaration("__de"),
@@ -75,6 +78,14 @@ namespace WabbitC.StatementPasses
 				if (statement.GetType() == typeof(Push))
 					continue;
 				block.Statements.Remove(statement);
+				/*for (int i = 0; i < RegisterContents.Count; i++)
+				{
+					var content = RegisterContents[i] as Declaration;
+					if (content != null)
+					{
+						var index = liveChart.FindVar(content);
+					}
+				}*/
 
 				List<Statement> replacementList = new List<Statement>();
 
@@ -96,8 +107,11 @@ namespace WabbitC.StatementPasses
 						int index = RegisterContents.IndexOf(null);
 						if (index == -1)
 						{
-							var store = new StackStore(usedDecls[0], module.FindDeclaration("__hl"), stack.ReserveSpace(usedDecls[0]));
-							replacementList.Add(store);
+							if (usedDecls.Count > 0)
+							{
+								var store = new StackStore(usedDecls[0], module.FindDeclaration("__hl"), stack.ReserveSpace(usedDecls[0]));
+								replacementList.Add(store);
+							}
 							statement.ReplaceDeclaration(usedLValues[0], module.FindDeclaration("__hl"));
 							RegisterContents[0] = usedLValues[0];
 						}

@@ -25,7 +25,8 @@ namespace WabbitC
 
         public static void OptimizeBlock(ref Block block)
         {
-			List<VariableReuseClass> liveChart =  GenerateVariableChart(block);
+			var liveChart =  new LiveChartClass(block);
+			liveChart.GenerateVariableChart();
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
@@ -34,7 +35,7 @@ namespace WabbitC
 				{
 					int j;
 					var modified = modifiedVars[0];
-					int modIndex = FindVar(modified, ref liveChart);
+					int modIndex = liveChart.FindVar(modified);
 					//pst hi i love you
 					//if we cant find, get out of here or if we've used previously, no need to replace
 					if (modIndex < 0 || liveChart[modIndex].usedCount > 0)
@@ -53,7 +54,7 @@ namespace WabbitC
 							block.Declarations[liveChart[j].blockIndex].Type.ToString())
 						{
 							int scoreVal;
-							if (CompareSections(j, modIndex, i, endLine, ref liveChart, block, out scoreVal))
+							if (liveChart.CompareSections(j, modIndex, i, endLine, out scoreVal))
 							{
 								possibles.Add(j);
 								score.Add(scoreVal);
@@ -99,94 +100,106 @@ namespace WabbitC
             }
         }
 
-		private static List<VariableReuseClass> GenerateVariableChart(Block block)
+		public class LiveChartClass : List<VariableReuseClass>
 		{
-			int numVars = 0;
-			var liveChart = new List<VariableReuseClass>();
-			for (int i = 0; i < block.Function.Params.Count; i++)
+			readonly Block block;
+			public LiveChartClass(Block block)
 			{
-				bool varLive = false;
-				bool[] chart = GenerateLiveChart(block, block.Function.Params[i]);
-				foreach (var liveValue in chart)
-					varLive |= liveValue;
-				if (varLive)
-					liveChart.Add(new VariableReuseClass(block.Function.Params[i], i, numVars++, chart));
+				this.block = block;
 			}
-			for (int i = 0; i < block.Declarations.Count; i++)
-			{
-				bool varLive = false;
-				bool[] chart = GenerateLiveChart(block, block.Declarations[i]);
-				foreach (var liveValue in chart)
-					varLive |= liveValue;
-				if (varLive)
-					liveChart.Add(new VariableReuseClass(block.Declarations[i], i, numVars++, chart));
-			}
-			return liveChart;
-		}
 
-		private static bool CompareSections(int compareIndex, int modIndex, int startLine, int endLine, ref List<VariableReuseClass> liveChart, Block block, out int score)
-		{
-			score = -1;
-			for (; startLine < endLine; startLine++)
+			public List<VariableReuseClass> GenerateVariableChart()
 			{
-				if (liveChart[compareIndex].livePoints[startLine])
+				int numVars = 0;
+				var liveChart = new List<VariableReuseClass>();
+				if (block.Function != null)
 				{
-					var mod = block.Statements[startLine].GetModifiedDeclarations();
-					var refed = block.Statements[startLine].GetReferencedDeclarations();
-					if (mod.Count > 0 && mod.Count > 0 && (mod[mod.Count - 1] == liveChart[compareIndex].decl
-						&& refed[refed.Count - 1] == liveChart[modIndex].decl) || (mod[mod.Count - 1] == liveChart[modIndex].decl
-						&& refed[refed.Count - 1] == liveChart[compareIndex].decl))
-						continue;
-					return false;
+					for (int i = 0; i < block.Function.Params.Count; i++)
+					{
+						bool varLive = false;
+						bool[] chart = GenerateLiveChart(block, block.Function.Params[i]);
+						foreach (var liveValue in chart)
+							varLive |= liveValue;
+						if (varLive)
+							liveChart.Add(new VariableReuseClass(block.Function.Params[i], i, numVars++, chart));
+					}
 				}
-			}
-			score = liveChart[0].livePoints.Length;
-			for (int i = 0; i < liveChart[0].livePoints.Length; i++)
-			{
-				if (liveChart[compareIndex].livePoints[i] != liveChart[modIndex].livePoints[i])
-					score--;
-			}
-			return true;
-		}
-
-		private static int FindVar(Declaration modified, ref List<VariableReuseClass> liveChart)
-		{
-			for (int i = 0; i < liveChart.Count; i++)
-			{
-				if (modified == liveChart[i].decl)
-					return i;
-			}
-			return -1;
-		}
-
-		static bool[] GenerateLiveChart(Block block, Declaration decl)
-		{
-			int assigned = -1;
-			if (decl.Type.GetType() == typeof(Model.Types.Array) || block.Function.Params.Contains(decl))
-			{
-				assigned = 0;
-			}
-			bool[] livePoints = new bool[block.Statements.Count];
-			for (int i = 0; i < block.Statements.Count; i++)
-			{
-				var statement = block.Statements[i];
-				var modified = statement.GetModifiedDeclarations();
-				if (modified.Contains(decl) && statement.GetType().BaseType != typeof(MathStatement))
+				for (int i = 0; i < block.Declarations.Count; i++)
 				{
-					livePoints[i] = true;
-					assigned = i;
+					bool varLive = false;
+					bool[] chart = GenerateLiveChart(block, block.Declarations[i]);
+					foreach (var liveValue in chart)
+						varLive |= liveValue;
+					if (varLive)
+						liveChart.Add(new VariableReuseClass(block.Declarations[i], i, numVars++, chart));
 				}
-				var refed = statement.GetReferencedDeclarations();
-				if (refed.Contains(decl))
-				{
-					for (int j = assigned; j <= i; j++)
-						livePoints[j] = true;
-				}
+				return liveChart;
 			}
-			return livePoints;
+
+			public bool CompareSections(int compareIndex, int modIndex, int startLine, int endLine, out int score)
+			{
+				score = -1;
+				for (; startLine < endLine; startLine++)
+				{
+					if (this[compareIndex].livePoints[startLine])
+					{
+						var mod = block.Statements[startLine].GetModifiedDeclarations();
+						var refed = block.Statements[startLine].GetReferencedDeclarations();
+						if (mod.Count > 0 && mod.Count > 0 && (mod[mod.Count - 1] == this[compareIndex].decl
+							&& refed[refed.Count - 1] == this[modIndex].decl) || (mod[mod.Count - 1] == this[modIndex].decl
+							&& refed[refed.Count - 1] == this[compareIndex].decl))
+							continue;
+						return false;
+					}
+				}
+				score = this[0].livePoints.Length;
+				for (int i = 0; i < this[0].livePoints.Length; i++)
+				{
+					if (this[compareIndex].livePoints[i] != this[modIndex].livePoints[i])
+						score--;
+				}
+				return true;
+			}
+
+			public int FindVar(Declaration modified)
+			{
+				for (int i = 0; i < this.Count; i++)
+				{
+					if (modified == this[i].decl)
+						return i;
+				}
+				return -1;
+			}
+
+			bool[] GenerateLiveChart(Block block, Declaration decl)
+			{
+				int assigned = -1;
+				if (decl.Type.GetType() == typeof(Model.Types.Array) || block.Function.Params.Contains(decl))
+				{
+					assigned = 0;
+				}
+				bool[] livePoints = new bool[block.Statements.Count];
+				for (int i = 0; i < block.Statements.Count; i++)
+				{
+					var statement = block.Statements[i];
+					var modified = statement.GetModifiedDeclarations();
+					if (modified.Contains(decl) && statement.GetType().BaseType != typeof(MathStatement))
+					{
+						livePoints[i] = true;
+						assigned = i;
+					}
+					var refed = statement.GetReferencedDeclarations();
+					if (refed.Contains(decl))
+					{
+						for (int j = assigned; j <= i; j++)
+							livePoints[j] = true;
+					}
+				}
+				return livePoints;
+			}
 		}
 
-		class VariableReuseClass
+		public class VariableReuseClass
 		{
 			public Declaration decl;
 			public int blockIndex;

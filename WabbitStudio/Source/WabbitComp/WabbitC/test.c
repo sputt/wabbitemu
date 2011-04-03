@@ -1,6 +1,11 @@
-int returntest(int arg)
+int test(int arg)
 {
-	return arg + 20;
+	char buffer[16];
+	char var;
+
+	var = arg + 20;
+	buffer[0] = var;
+	return var;
 }
 
 /*int loop(int a)
