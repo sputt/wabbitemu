@@ -57,7 +57,7 @@ namespace WabbitC.StatementPasses
 		{
 
 			var liveChart = new VariableReuse.LiveChartClass(block);
-			//liveChart.GenerateVariableChart();
+			liveChart.GenerateVariableChart();
 			var RegistersAvailable = new List<Declaration>
                     {
                         module.FindDeclaration("__de"),
@@ -72,20 +72,23 @@ namespace WabbitC.StatementPasses
 
 			var CurrentMappings = new List<KeyValuePair<Declaration, Declaration>>();
 
-			for (int nPos = 0; nPos < block.Statements.Count; nPos++)
+			int adjustedPos = 0;
+			for (int nPos = 0; nPos < block.Statements.Count; nPos++, adjustedPos++)
 			{
 				Statement statement = block.Statements[nPos];
 				if (statement.GetType() == typeof(Push))
 					continue;
 				block.Statements.Remove(statement);
-				/*for (int i = 0; i < RegisterContents.Count; i++)
+				for (int i = 0; i < RegisterContents.Count; i++)
 				{
 					var content = RegisterContents[i] as Declaration;
 					if (content != null)
 					{
 						var index = liveChart.FindVar(content);
+						if (index != -1 && liveChart[index].livePoints[adjustedPos] == false)
+							RegisterContents[i] = null;
 					}
-				}*/
+				}
 
 				List<Statement> replacementList = new List<Statement>();
 

@@ -121,6 +121,7 @@ namespace WabbitC.Model
 		{
 			var blocks = new List<Block>();
 			Block currentBlock = new Block(this);
+			currentBlock.Declarations = this.Declarations;
 			for (int i = 0; i < Statements.Count; i++)
 			{
 				var statement = Statements[i];
@@ -131,10 +132,12 @@ namespace WabbitC.Model
 					{
 						currentBlock.Statements.Add(statement);
 						currentBlock = new Block(this);
+						currentBlock.Declarations = this.Declarations;
 					}
 					else
 					{
 						currentBlock = new Block(this);
+						currentBlock.Declarations = this.Declarations;
 						currentBlock.Statements.Add(statement);
 					}
 				}

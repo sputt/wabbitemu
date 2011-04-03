@@ -108,10 +108,9 @@ namespace WabbitC
 				this.block = block;
 			}
 
-			public List<VariableReuseClass> GenerateVariableChart()
+			public void GenerateVariableChart()
 			{
 				int numVars = 0;
-				var liveChart = new List<VariableReuseClass>();
 				if (block.Function != null)
 				{
 					for (int i = 0; i < block.Function.Params.Count; i++)
@@ -121,7 +120,7 @@ namespace WabbitC
 						foreach (var liveValue in chart)
 							varLive |= liveValue;
 						if (varLive)
-							liveChart.Add(new VariableReuseClass(block.Function.Params[i], i, numVars++, chart));
+							this.Add(new VariableReuseClass(block.Function.Params[i], i, numVars++, chart));
 					}
 				}
 				for (int i = 0; i < block.Declarations.Count; i++)
@@ -131,9 +130,8 @@ namespace WabbitC
 					foreach (var liveValue in chart)
 						varLive |= liveValue;
 					if (varLive)
-						liveChart.Add(new VariableReuseClass(block.Declarations[i], i, numVars++, chart));
+						this.Add(new VariableReuseClass(block.Declarations[i], i, numVars++, chart));
 				}
-				return liveChart;
 			}
 
 			public bool CompareSections(int compareIndex, int modIndex, int startLine, int endLine, out int score)
@@ -174,7 +172,7 @@ namespace WabbitC
 			bool[] GenerateLiveChart(Block block, Declaration decl)
 			{
 				int assigned = -1;
-				if (decl.Type.GetType() == typeof(Model.Types.Array) || block.Function.Params.Contains(decl))
+				if (decl.Type.GetType() == typeof(Model.Types.Array) || (block.Function != null && block.Function.Params.Contains(decl)))
 				{
 					assigned = 0;
 				}
