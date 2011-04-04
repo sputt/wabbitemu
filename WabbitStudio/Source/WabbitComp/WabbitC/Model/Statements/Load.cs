@@ -37,5 +37,10 @@ namespace WabbitC.Model.Statements
         {
             return this.LValue.Name + " = *(" + LValue.Type + "*) " + this.LoadAddress.ToString() + ";";
         }
+
+		public override string ToAssemblyString()
+		{
+			return "ld " + LValue.Name + "(" + LoadAddress.ToString() + ")";
+		}
     }
 }

@@ -48,6 +48,11 @@ namespace WabbitC.Model.Statements
 
         #endregion
 
+		public virtual string ToAssemblyString()
+		{
+			return "";
+		}
+
         public void ReplaceDeclaration(Declaration declToReplace, Declaration newDecl)
         {
             System.Type type = this.GetType();

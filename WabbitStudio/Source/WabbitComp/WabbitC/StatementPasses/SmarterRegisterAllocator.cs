@@ -20,19 +20,10 @@ namespace WabbitC.StatementPasses
                 if (functions.Current.Code != null)
                 {
                     Block block = functions.Current.Code;
-					StackAllocator stack = new StackAllocator(block); 
+					StackAllocator stack = new StackAllocator(block);
+					registerStates = new List<RegisterContentState>();
 					var blocks = block.GetBasicBlocks();
 					block.Statements.Clear();
-
-					// copy the params to the stack (on z80 these will already be on the stack)
-					foreach (Declaration param in (functions.Current.Type as FunctionType).Params)
-					{
-						int offset = stack.ReserveSpace(param);
-						/*
-						var store = new StackStore(param, param, offset);
-						block.Statements.Insert(0, store);
-						*/
-					}
 
 					// Reserve space for the return value
 					stack.ReserveSpace(new BuiltInType("void *").Size);
@@ -52,6 +43,8 @@ namespace WabbitC.StatementPasses
                 }
             }
         }
+
+		static List<RegisterContentState> registerStates;
 
 		public static void AllocateBlock(ref Module module, ref StackAllocator stack, Block block)
 		{
@@ -76,7 +69,7 @@ namespace WabbitC.StatementPasses
 			for (int nPos = 0; nPos < block.Statements.Count; nPos++, adjustedPos++)
 			{
 				Statement statement = block.Statements[nPos];
-				if (statement.GetType() == typeof(Push))
+				if (statement.GetType() == typeof(Push) || statement.GetType() == typeof(ReturnMove))
 					continue;
 				block.Statements.Remove(statement);
 				for (int i = 0; i < RegisterContents.Count; i++)
@@ -169,4 +162,15 @@ namespace WabbitC.StatementPasses
 			}
 		}
     }
+
+	class RegisterContentState
+	{
+		public Block targetBlock;
+		public List<Datum> registerContents;
+		public RegisterContentState(Block block, List<Datum> registers)
+		{
+			targetBlock = block;
+			registerContents = registers;
+		}
+	}
 }

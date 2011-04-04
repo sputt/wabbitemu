@@ -37,5 +37,10 @@ namespace WabbitC.Model.Statements.Math
         }
 
         #endregion
+
+		public override string ToAssemblyString()
+		{
+			return "add " + LValue.Name + "," + RValue.ToString();
+		}
     }
 }

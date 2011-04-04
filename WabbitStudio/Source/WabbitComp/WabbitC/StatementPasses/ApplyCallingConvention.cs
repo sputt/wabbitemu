@@ -35,7 +35,8 @@ namespace WabbitC.StatementPasses
 					}
 
 					// Garbage push representing return address
-					newStatements.Add(new Push(block.FindDeclaration("__hl")));
+					if (!block.Function.ReturnType.Equals(BuiltInType.BuiltInTypeType.Void))
+						newStatements.Add(new Push(block.FindDeclaration("__hl")));
 
 					newStatements.Add(new Call(call.Function));
 					if (call.LValue != null)
@@ -47,11 +48,6 @@ namespace WabbitC.StatementPasses
 
 
 				}
-
-				//// Add pushing regs
-				//block.Statements.Insert(0, new Push(block.FindDeclaration("__hl")));
-				//block.Statements.Insert(1, new Push(block.FindDeclaration("__de")));
-				//block.Statements.Insert(2, new Push(block.FindDeclaration("__bc")));
 
 				// Add popping regs
 				Label endLabel = new Label("__function_cleanup");
@@ -65,8 +61,19 @@ namespace WabbitC.StatementPasses
 					block.Statements.Remove(curReturn);
 
 					var newStatements = new List<Statement>();
-					newStatements.Add(AssignmentHelper.ParseSingle(block, 
-						block.FindDeclaration("__hl"), new Token(curReturn.ReturnReg.ToString())));
+
+					var assignment = block.Statements[index - 1];
+					if (assignment.GetType() == typeof(Assignment))
+					{
+						block.Statements.Remove(assignment);
+						index--;
+						curReturn.ReturnReg.ConstValue = ((Assignment)assignment).RValue;
+					}
+					else
+					{
+						curReturn.ReturnReg.ConstValue = null;
+					}
+					newStatements.Add(new ReturnMove(curReturn.ReturnReg));
 					newStatements.Add(new Goto(endLabel));
 					block.Statements.InsertRange(index, newStatements);
 				}

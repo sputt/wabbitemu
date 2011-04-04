@@ -18,5 +18,10 @@ namespace WabbitC.Model.Statements
         {
             return "//" + AnnotationText;
         }
+
+		public override string  ToAssemblyString()
+		{
+			return ";" + AnnotationText;
+		}
     }
 }

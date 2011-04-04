@@ -30,5 +30,10 @@ namespace WabbitC.Model.Statements
 		{
 			return "(*(int *) __sp = " + Decl + "), __sp += " + new BuiltInType("int").Size + ";";
 		}
+
+		public override string ToAssemblyString()
+		{
+			return "push " + Decl;
+		}
 	}
 }

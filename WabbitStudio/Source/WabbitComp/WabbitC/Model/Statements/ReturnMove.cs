@@ -5,20 +5,17 @@ using System.Text;
 
 namespace WabbitC.Model.Statements
 {
-    class Move : ValueStatement
+    class ReturnMove : ValueStatement
     {
-        public Declaration LValue;
         public Declaration RValue;
-
-        public Move(Declaration dest, Declaration src)
+        public ReturnMove(Declaration src)
         {
-            LValue = dest;
             RValue = src;
         }
 
         public override List<Declaration> GetModifiedDeclarations()
         {
-            return new List<Declaration>() { LValue };
+            return new List<Declaration>();
         }
 
         public override List<Declaration> GetReferencedDeclarations()
@@ -28,12 +25,7 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            return LValue.Name + " = " + RValue.Name + ";";
+            return "__hl = " + (RValue.ConstValue == null ? RValue.Name  : RValue.ConstValue.ToString()) + ";";
         }
-
-		public override string ToAssemblyString()
-		{
-			return "ld " + LValue.Name + "," + RValue.Name;
-		}
     }
 }

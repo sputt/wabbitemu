@@ -53,5 +53,19 @@ namespace WabbitC.Model.Statements
             }
             return "*(" + type + "*)" + StoreAddress + " = " + Value + ";";
         }
+
+		public override string ToAssemblyString()
+		{
+			Type type;
+			if (Value.GetType() == typeof(Declaration))
+			{
+				type = (Value as Declaration).Type;
+			}
+			else
+			{
+				type = (Value as Immediate).Type;
+			}
+			return "ld " + StoreAddress + "," + Value;
+		}
     }
 }

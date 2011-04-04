@@ -7,9 +7,9 @@ namespace WabbitC.Model.Statements
 {
     class Return : ControlStatement
     {
-        public Datum ReturnReg;
+        public Declaration ReturnReg;
 
-        public Return(Datum decl)
+        public Return(Declaration decl)
         {
             ReturnReg = decl;
         }

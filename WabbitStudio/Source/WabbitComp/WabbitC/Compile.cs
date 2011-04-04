@@ -82,12 +82,9 @@ namespace WabbitC
             if (passCount >= 3)
             {
 				StatementPasses.ApplyCallingConvention.Run(currentModule);
-                //if (optimizeLevel != OptimizeLevel.OptimizeNone)
-                    StatementPasses.SmarterRegisterAllocator.Run(currentModule);
-                /*else 
-                    StatementPasses.DumbRegisterAllocator.Run(currentModule);*/
+                StatementPasses.SmarterRegisterAllocator.Run(currentModule);
 
-				//AssemblyGenerator.GenerateCode(ref currentModule);
+				var asmString = AssemblyGenerator.GenerateCode(ref currentModule);
             }
 
             string code = currentModule.ToString();

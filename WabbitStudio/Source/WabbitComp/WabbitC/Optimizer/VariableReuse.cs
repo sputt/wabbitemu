@@ -172,10 +172,6 @@ namespace WabbitC
 			bool[] GenerateLiveChart(Block block, Declaration decl)
 			{
 				int assigned = -1;
-				if (decl.Type.GetType() == typeof(Model.Types.Array) || (block.Function != null && block.Function.Params.Contains(decl)))
-				{
-					assigned = 0;
-				}
 				bool[] livePoints = new bool[block.Statements.Count];
 				for (int i = 0; i < block.Statements.Count; i++)
 				{
@@ -185,6 +181,10 @@ namespace WabbitC
 					{
 						livePoints[i] = true;
 						assigned = i;
+					}
+					if (assigned == -1 && block.FindDeclaration(decl.Name) != null)
+					{
+						assigned = 0;
 					}
 					var refed = statement.GetReferencedDeclarations();
 					if (refed.Contains(decl))

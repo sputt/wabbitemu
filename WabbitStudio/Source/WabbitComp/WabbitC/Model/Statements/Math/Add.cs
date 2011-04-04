@@ -30,10 +30,18 @@ namespace WabbitC.Model.Statements.Math
 
         Immediate IMathOperator.Apply()
         {
-            LValue.ConstValue.Value = (LValue.ConstValue.Value + (RValue as Immediate).Value).Eval()[0].Token;
+			var imm = RValue as Immediate;
+			if (imm == null)
+				return null;
+            LValue.ConstValue.Value = (LValue.ConstValue.Value + imm.Value).Eval()[0].Token;
             return LValue.ConstValue;
         }
 
         #endregion
+
+		public override string ToAssemblyString()
+		{
+			return "add " + LValue.Name + "," + RValue.ToString();
+		}
     }
 }

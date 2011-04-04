@@ -74,14 +74,12 @@
     <Compile Include="Model\Datum.cs" />
     <Compile Include="Model\Declaration.cs" />
     <Compile Include="Model\Immediate.cs" />
+    <Compile Include="Model\Statements\ReturnMove.cs" />
     <Compile Include="Model\Statements\StackFrameCleanup.cs" />
     <Compile Include="Model\Statements\StackFrameInit.cs" />
     <Compile Include="Model\Statements\AddressOf.cs" />
     <Compile Include="Model\BlockEnumerator.cs" />
     <Compile Include="Model\Statements\Annotation.cs" />
-    <Compile Include="Model\Statements\Assembly\Jump.cs" />
-    <Compile Include="Model\Statements\Assembly\Label.cs" />
-    <Compile Include="Model\Statements\Assembly\Load.cs" />
     <Compile Include="Model\Statements\Call.cs" />
     <Compile Include="Model\Statements\Cast.cs" />
     <Compile Include="Model\Statements\Condition\NotEquals.cs" />

@@ -18,5 +18,10 @@ namespace WabbitC.Model.Statements
 		{
 			return CallTarget.Name + "();";
 		}
+
+		public override string ToAssemblyString()
+		{
+			return "call " + CallTarget.Name;
+		}
 	}
 }
