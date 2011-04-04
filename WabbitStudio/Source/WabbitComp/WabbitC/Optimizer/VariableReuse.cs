@@ -12,7 +12,6 @@ namespace WabbitC
 {
     static class VariableReuse
     {
-        static List<OptimizerSymbol> symbolTable = new List<OptimizerSymbol>();
         public static void Optimize(ref Module module)
         {
             for (int i = 0; i < module.Declarations.Count; i++)

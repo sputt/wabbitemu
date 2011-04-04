@@ -45,21 +45,17 @@ namespace WabbitC.StatementPasses
 					int index = block.Statements.IndexOf(call);
 					block.Statements.Remove(call);
 
-					var newStatements = new List<Statement>();
-
-					for (int i = 0; i < call.Params.Count; i++)
-					{
-						newStatements.Add(new Push(call.Params[i]));
-					}
-
-					// Garbage push representing return address
-					newStatements.Add(new ReturnAddress(block.FindDeclaration("__hl")));
-
-					newStatements.Add(new Call(call.Function));
-					if (call.LValue != null)
-					{
-						newStatements.Add(new Move(call.LValue, block.FindDeclaration("__hl")));
-					}
+                    List<Statement> newStatements = null;
+                    switch (block.Function.CallingConvention)
+                    {
+                        case FunctionType.CallConvention.CalleeSave:
+                            newStatements = FormatCallCalleeSave(block, call);
+                            break;
+                        case FunctionType.CallConvention.CallerSave:
+                            newStatements = FormatCallCallerSave(block, call);
+                            break;
+                    }
+					
 
 					block.Statements.InsertRange(index, newStatements);
 
@@ -98,5 +94,51 @@ namespace WabbitC.StatementPasses
 				functions.Current.Type = newFuncType;
 			}
 		}
+
+        private static List<Statement> FormatCallCallerSave(Block block, FunctionCall call)
+        {
+            var newStatements = new List<Statement>();
+            //save regs (we can remove undeeded pushs later
+            newStatements.Add(new Push(block.FindDeclaration("__hl")));
+            newStatements.Add(new Push(block.FindDeclaration("__de")));
+            newStatements.Add(new Push(block.FindDeclaration("__bc")));
+            for (int i = 0; i < call.Params.Count; i++)
+            {
+                newStatements.Add(new Push(call.Params[i]));
+            }
+
+            // Garbage push representing return address
+            newStatements.Add(new ReturnAddress(block.FindDeclaration("__hl")));
+
+            newStatements.Add(new Call(call.Function));
+            if (call.LValue != null)
+            {
+                newStatements.Add(new Move(call.LValue, block.FindDeclaration("__hl")));
+            }
+            //restore regs
+            newStatements.Add(new Pop(block.FindDeclaration("__bc")));
+            newStatements.Add(new Pop(block.FindDeclaration("__de")));
+            newStatements.Add(new Pop(block.FindDeclaration("__hl")));
+            return newStatements;
+        }
+
+        private static List<Statement> FormatCallCalleeSave(Block block, FunctionCall call)
+        {
+            var newStatements = new List<Statement>();
+            for (int i = 0; i < call.Params.Count; i++)
+            {
+                newStatements.Add(new Push(call.Params[i]));
+            }
+
+            // Garbage push representing return address
+            newStatements.Add(new ReturnAddress(block.FindDeclaration("__hl")));
+
+            newStatements.Add(new Call(call.Function));
+            if (call.LValue != null)
+            {
+                newStatements.Add(new Move(call.LValue, block.FindDeclaration("__hl")));
+            }
+            return newStatements;
+        }
 	}
 }

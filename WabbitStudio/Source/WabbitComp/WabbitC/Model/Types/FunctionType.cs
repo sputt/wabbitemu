@@ -9,8 +9,14 @@ namespace WabbitC.Model.Types
 {
     class FunctionType : Type
     {
+        public enum CallConvention
+        {
+            CalleeSave,     //__stdcall
+            CallerSave,     //__cdecl
+        }
         public Type ReturnType;
         public List<Declaration> Params;
+        public CallConvention CallingConvention = CallConvention.CalleeSave;
 
 		public FunctionType()
 		{

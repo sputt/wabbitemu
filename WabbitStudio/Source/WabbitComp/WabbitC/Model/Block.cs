@@ -236,6 +236,18 @@ namespace WabbitC.Model
 				}
 				else
 				{
+                    FunctionType.CallConvention specifiedConvention = FunctionType.CallConvention.CalleeSave;
+                    switch (tokens.Current)
+                    {
+                        case "__stdcall":
+                            tokens.MoveNext();
+                            break;
+                        case "__cdecl":
+                            specifiedConvention = FunctionType.CallConvention.CallerSave;
+                            tokens.MoveNext();
+                            break;
+                    }
+
 					Declaration declForStatement = thisBlock.FindDeclaration(tokens.Current.Text);
 					if (declForStatement != null)
 					{
@@ -266,7 +278,7 @@ namespace WabbitC.Model
 							// Either way it gets added to the types of this module
 							if (tokens.Current.Type == TokenType.OpenParen)
 							{
-								FunctionType function = new FunctionType(ref tokens, resultType);
+                                FunctionType function = new FunctionType(ref tokens, resultType) { CallingConvention = specifiedConvention };
 								resultType = function;
 								thisBlock.Types.Add(function);
 

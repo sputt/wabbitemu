@@ -12,7 +12,6 @@ namespace WabbitC
 {
     static class ConstantsOptimizer
     {
-        static List<OptimizerSymbol> symbolTable = new List<OptimizerSymbol>();
         public static void Optimize(ref Block module)
         {
             for (int i = 0; i < module.Declarations.Count; i++)
@@ -25,10 +24,6 @@ namespace WabbitC
 
         public static void OptimizeBlock(ref Block block)
         {
-            for (int i = 0; i < block.Declarations.Count; i++)
-            {
-                symbolTable.Add(OptimizerSymbol.Parse(block.Declarations[i]));
-            }
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
@@ -130,38 +125,6 @@ namespace WabbitC
 						i = j;
 				}
             }
-        }
-    }
-
-
-    class OptimizerSymbol
-    {
-        public string Name { get; set; }
-        public bool IsAlive { get; set; }
-
-        public static OptimizerSymbol Parse(Declaration statement)
-        {
-            var symbol = new OptimizerSymbol();
-            symbol.Name = statement.Name;
-            return symbol;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (obj == null)
-                return base.Equals(obj);
-            var symbol = obj as OptimizerSymbol;
-            return symbol.Name == this.Name;
-        }
-
-        public override int GetHashCode()
-        {
-            return Name.GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return Name;
         }
     }
 }

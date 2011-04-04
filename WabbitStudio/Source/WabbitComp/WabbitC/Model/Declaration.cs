@@ -60,5 +60,6 @@ namespace WabbitC.Model
         public Block Code;
 		public Immediate ConstValue;
 		public Statement ConstStatement;
+        public bool IsAlive;
     }
 }
