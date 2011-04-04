@@ -69,7 +69,7 @@ namespace WabbitC.StatementPasses
 			for (int nPos = 0; nPos < block.Statements.Count; nPos++, adjustedPos++)
 			{
 				Statement statement = block.Statements[nPos];
-				if (statement.GetType() == typeof(Push) || statement.GetType() == typeof(ReturnMove))
+				if (statement.GetType() == typeof(Push))
 					continue;
 				block.Statements.Remove(statement);
 				for (int i = 0; i < RegisterContents.Count; i++)
@@ -141,7 +141,15 @@ namespace WabbitC.StatementPasses
 							if (RegisterContents[j] == usedDecls[i])
 							{
 								var decl = j == 0 ? module.FindDeclaration("__hl") : RegistersAvailable[j - 1];
-								statement.ReplaceDeclaration(usedDecls[i], decl);
+								if (usedDecls[i] == RegisterContents[j])
+								{
+									block.Statements.Remove(statement);
+									statement = null;
+								}
+								else
+								{
+									statement.ReplaceDeclaration(usedDecls[i], decl);
+								}
 								alreadyInRegister = true;
 							}
 						}
@@ -155,7 +163,8 @@ namespace WabbitC.StatementPasses
 					}
 				}
 
-				replacementList.Add(statement);
+				if (statement != null)
+					replacementList.Add(statement);
 
 				block.Statements.InsertRange(nPos, replacementList);
 				nPos += replacementList.Count - 1;

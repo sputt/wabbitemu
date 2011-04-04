@@ -25,13 +25,13 @@ namespace WabbitC
 					foreach (var statement in statements)
 					{
 						var asmString = statement.ToAssemblyString();
+						sb.Append(tabs);
+						asmString = asmString.Replace(Environment.NewLine, Environment.NewLine + tabs);
+						sb.AppendLine(asmString);
 						if (statement.GetType() == typeof(Push))
 							tabs += "\t";
 						else if (statement.GetType() == typeof(Pop))
 							tabs = tabs.Remove(tabs.Length - 1);
-						sb.Append(tabs);
-						asmString = asmString.Replace(Environment.NewLine, Environment.NewLine + tabs);
-						sb.AppendLine(asmString);
 					}
 				}
 			}

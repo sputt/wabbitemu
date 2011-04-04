@@ -33,9 +33,15 @@ namespace WabbitC.Optimizer
 				{
 					continue;
 				}
-                else if (type == typeof(Move))
-                {
-                    var move = statement as Move;
+				else if (type == typeof(ReturnMove))
+				{
+					var retMove = statement as ReturnMove;
+					if (retMove.RValue == block.FindDeclaration("__hl"))
+						block.Statements.Remove(statement);
+				}
+				else if (type == typeof(Move))
+				{
+					var move = statement as Move;
 					if (move.RValue.ConstStatement != null)
 					{
 						var newStatement = move.RValue.ConstStatement;
@@ -50,15 +56,15 @@ namespace WabbitC.Optimizer
 					{
 						move.LValue.ConstStatement = move;
 					}
-                }
-                else if (type.BaseType == typeof(ConditionStatement))
-                {
-                    var cond = statement as ConditionStatement;
+				}
+				else if (type.BaseType == typeof(ConditionStatement))
+				{
+					var cond = statement as ConditionStatement;
 					cond.LValue.ConstStatement = cond;
-                }
-                else if (type.BaseType == typeof(MathStatement))
-                {
-                    var math = statement as MathStatement;
+				}
+				else if (type.BaseType == typeof(MathStatement))
+				{
+					var math = statement as MathStatement;
 					var refed = math.RValue as Declaration;
 					if (refed != null)
 					{
@@ -82,7 +88,7 @@ namespace WabbitC.Optimizer
 								{
 									var newBlock = new Block(block);
 									var cond = newStatement as ConditionStatement;
-									var decl = ConditionStatement.BuildStatements(newBlock, new Expression(cond.GetInverseOperator()), 
+									var decl = ConditionStatement.BuildStatements(newBlock, new Expression(cond.GetInverseOperator()),
 										Tokenizer.ToToken(cond.CondDecl.ToString()), Tokenizer.ToToken(cond.CondValue.ToString()));
 									newBlock.Statements[0].ReplaceDeclaration(decl, cond.LValue);
 									block.Statements.Remove(newStatement);
@@ -110,10 +116,10 @@ namespace WabbitC.Optimizer
 							math.LValue.ConstStatement = null;
 						}
 					}
-                }
-                else if (type == typeof(FunctionCall))
-                {
-                    var funcCall = statement as FunctionCall;
+				}
+				else if (type == typeof(FunctionCall))
+				{
+					var funcCall = statement as FunctionCall;
 					for (int j = 0; j < funcCall.Params.Count; j++)
 					{
 						var param = funcCall.Params[j];

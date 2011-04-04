@@ -143,9 +143,9 @@ namespace WabbitC
 					{
 						var mod = block.Statements[startLine].GetModifiedDeclarations();
 						var refed = block.Statements[startLine].GetReferencedDeclarations();
-						if (mod.Count > 0 && mod.Count > 0 && (mod[mod.Count - 1] == this[compareIndex].decl
+						if (mod.Count > 0 && refed.Count > 0 && ((mod[mod.Count - 1] == this[compareIndex].decl
 							&& refed[refed.Count - 1] == this[modIndex].decl) || (mod[mod.Count - 1] == this[modIndex].decl
-							&& refed[refed.Count - 1] == this[compareIndex].decl))
+							&& refed[refed.Count - 1] == this[compareIndex].decl)))
 							continue;
 						return false;
 					}
