@@ -28,7 +28,7 @@ namespace WabbitC.Model.Statements
 
 		public override string ToString()
 		{
-			return "__sp -= " + new BuiltInType("int").Size + ", (" + Decl + "= *(int *) __sp);";
+			return "(" + Decl + "= *(int *) __sp), __sp += " + new BuiltInType("int").Size + ";";
 		}
 
 		public override string ToAssemblyString()

@@ -20,13 +20,10 @@ namespace WabbitC.StatementPasses
                 if (functions.Current.Code != null)
                 {
                     Block block = functions.Current.Code;
-					StackAllocator stack = new StackAllocator(block);
+					StackAllocator stack = block.stack;
 					registerStates = new List<RegisterContentState>();
 					var blocks = block.GetBasicBlocks();
 					block.Statements.Clear();
-
-					// Reserve space for the return value
-					stack.ReserveSpace(new BuiltInType("void *").Size);
 
 					for (int i = 0; i < blocks.Count; i++)
 					{
@@ -34,10 +31,18 @@ namespace WabbitC.StatementPasses
 						block.Statements.AddRange(blocks[i]);
 					}
 					
+					foreach (Declaration decl in block.Declarations)
+					{
+						var Array = decl.Type as WabbitC.Model.Types.Array;
+						if (Array != null)
+						{
+							stack.ReserveSpace(decl);
+						}
+					}
                     block.Declarations.Clear();
 
 					Debug.Print("{0}", stack.Size);
-					block.stack = stack;
+					
 					functions.Current.Code.Statements.Insert(0, new StackFrameInit(block, stack.Size));
 					functions.Current.Code.Statements.Add(new StackFrameCleanup(block, stack.Size));
                 }
@@ -94,7 +99,10 @@ namespace WabbitC.StatementPasses
 					{
 						var test = block.Declarations.Contains(usedLValues[0]);
 						if (test == false)
-							replacementList.Add(new StackLoad(module.FindDeclaration("__hl"), usedLValues[0], stack.GetOffset(usedLValues[0])));
+						{
+							stack.GetOffset(usedLValues[0]);
+							replacementList.Add(new StackLoad(module.FindDeclaration("__hl"), usedLValues[0]));
+						}
 						RegisterContents[0] = usedLValues[0];
 						statement.ReplaceDeclaration(usedLValues[0], module.FindDeclaration("__hl"));
 					}
@@ -105,7 +113,8 @@ namespace WabbitC.StatementPasses
 						{
 							if (usedDecls.Count > 0)
 							{
-								var store = new StackStore(usedDecls[0], module.FindDeclaration("__hl"), stack.ReserveSpace(usedDecls[0]));
+								stack.ReserveSpace(usedDecls[0]);
+								var store = new StackStore(usedDecls[0], module.FindDeclaration("__hl"));
 								replacementList.Add(store);
 							}
 							statement.ReplaceDeclaration(usedLValues[0], module.FindDeclaration("__hl"));
@@ -129,7 +138,7 @@ namespace WabbitC.StatementPasses
 							fSkip = true;
 							if (RegisterContents[0] != usedDecls[i])
 							{
-								replacementList.Add(new StackLoad(module.FindDeclaration("__hl"), usedDecls[i], stack.GetOffset(usedDecls[i])));
+								replacementList.Add(new StackLoad(module.FindDeclaration("__hl"), usedDecls[i]));
 							}
 						}
 					}
@@ -156,7 +165,7 @@ namespace WabbitC.StatementPasses
 
 						if (!alreadyInRegister)
 						{
-							replacementList.Add(new StackLoad(RegistersAvailable[i], usedDecls[i], stack.GetOffset(usedDecls[i])));
+							replacementList.Add(new StackLoad(RegistersAvailable[i], usedDecls[i]));
 							RegisterContents[i + 1] = usedDecls[i];
 							statement.ReplaceDeclaration(usedDecls[i], RegistersAvailable[i]);
 						}

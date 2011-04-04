@@ -27,6 +27,13 @@ namespace WabbitC.Model
             Value = valueToken;
         }
 
+		public Immediate(int val)
+		{
+			var expr = new Expression(Tokenizer.Tokenize(val.ToString())).Eval();
+			Type = new BuiltInType("int");
+			Value = expr[0].Tokens[0];
+		}
+
         public override string ToString()
         {
             return Value.ToString();

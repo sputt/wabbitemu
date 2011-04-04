@@ -46,6 +46,20 @@ namespace WabbitC.Model
 				"[" + bytes + "]"), "__FIXED_SIZE" + nFixed++);
 			return ReserveSpace(tempDecl);
 		}
+		
+		public int GetNonAutosSize()
+		{
+			int offset = 0;
+			foreach (var stackItem in stack)
+			{
+				if (stackItem.Type.Size == 0)
+					break;
+
+				offset += stackItem.Type.Size;
+			}
+			return offset;
+		}
+
 		public int GetOffset(Declaration decl)
 		{
 			int offset = 0;

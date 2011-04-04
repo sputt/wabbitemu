@@ -18,6 +18,24 @@ namespace WabbitC.StatementPasses
 			while (functions.MoveNext())
 			{
 				Block block = functions.Current.Code;
+				StackAllocator stack = new StackAllocator(block);
+				block.stack = stack;
+
+				// Parameters
+				var function = functions.Current.Type as FunctionType;
+				for (int i = 0; i < function.Params.Count; i++)
+				{
+					stack.ReserveSpace(function.Params[i]);
+				}
+
+				// Return address
+				stack.ReserveSpace(new BuiltInType("void *").Size);
+
+				// Saved registers
+				stack.ReserveSpace(new BuiltInType("void *").Size * 3);
+
+				stack.ReserveSpace(0);
+
 
 				var statements = from Statement s in block
 								 where s.GetType() == typeof(FunctionCall)
@@ -35,8 +53,7 @@ namespace WabbitC.StatementPasses
 					}
 
 					// Garbage push representing return address
-					if (!block.Function.ReturnType.Equals(BuiltInType.BuiltInTypeType.Void))
-						newStatements.Add(new Push(block.FindDeclaration("__hl")));
+					newStatements.Add(new Push(block.FindDeclaration("__hl")));
 
 					newStatements.Add(new Call(call.Function));
 					if (call.LValue != null)

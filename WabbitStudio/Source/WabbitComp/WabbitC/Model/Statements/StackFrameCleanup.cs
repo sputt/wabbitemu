@@ -5,34 +5,40 @@ using System.Text;
 
 using WabbitC.Model.Statements;
 using WabbitC.Model.Types;
+using WabbitC.Model.Statements.Math;
 
 namespace WabbitC.Model.Statements
 {
 	class StackFrameCleanup : Statement
 	{
 		int StackSize;
+		Block CleanupBlock;
 
 		public StackFrameCleanup(Block block, int stackSize)
 		{
 			StackSize = stackSize;
+			CleanupBlock = new Block(block);
+
+			int StackOffset = StackSize - block.stack.GetNonAutosSize();
+			CleanupBlock.Statements.Add(new Exchange());
+			CleanupBlock.Statements.Add(new Assignment(block.FindDeclaration("__hl"), new Immediate(StackOffset)));
+			CleanupBlock.Statements.Add(new Add(block.FindDeclaration("__hl"), block.FindDeclaration("__sp")));
+			CleanupBlock.Statements.Add(new Move(block.FindDeclaration("__sp"), block.FindDeclaration("__hl")));
+			CleanupBlock.Statements.Add(new Exchange());
+
+			CleanupBlock.Statements.Add(new Pop(block.FindDeclaration("__bc")));
+			CleanupBlock.Statements.Add(new Pop(block.FindDeclaration("__de")));
+			//BuiltInType blt = block.Function.ReturnType as BuiltInType;
+			//if (blt != null && blt.BuildInTypeType == BuiltInType.BuiltInTypeType.Void)
+			//{
+			//    CleanupBlock.Statements.Add(new Pop(block.FindDeclaration("__hl")));
+			//}
+			CleanupBlock.Statements.Add(new Pop(block.FindDeclaration("__iy")));
 		}
 
 		public override string ToString()
 		{
-			int TotalParamSize = 0;
-			foreach (Declaration decl in Block.Function.Params)
-			{
-				TotalParamSize += decl.Type.Size;
-			}
-			TotalParamSize += new BuiltInType("void *").Size;
-
-			var sb = new StringBuilder();
-
-			sb.AppendLine(new Pop(Block.FindDeclaration("__bc")).ToString());
-			sb.AppendLine(new Pop(Block.FindDeclaration("__de")).ToString());
-			sb.AppendLine(new Pop(Block.FindDeclaration("__hl")).ToString());
-			sb.AppendLine(new Move(Block.FindDeclaration("__sp"), Block.FindDeclaration("__iy")).ToString());
-			return sb.ToString();
+			return CleanupBlock.ToString().Replace("{", "").Replace("}", "");
 		}
 	}
 }

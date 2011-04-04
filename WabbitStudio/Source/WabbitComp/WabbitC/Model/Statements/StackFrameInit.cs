@@ -12,31 +12,34 @@ namespace WabbitC.Model.Statements
     class StackFrameInit : Statement
     {
 		int StackSize;
+		public Block InitBlock;
 
         public StackFrameInit(Block block, int stackSize)
         {
 			StackSize = stackSize;
+
+			InitBlock = new Block(block);
+			InitBlock.Statements.Add(new Push(block.FindDeclaration("__iy")));
+
+			//BuiltInType blt = block.Function.ReturnType as BuiltInType;
+			//if (blt != null && blt.BuildInTypeType == BuiltInType.BuiltInTypeType.Void)
+			//{
+			//    InitBlock.Statements.Add(new Push(block.FindDeclaration("__hl")));
+			//}
+			InitBlock.Statements.Add(new Push(block.FindDeclaration("__de")));
+			InitBlock.Statements.Add(new Push(block.FindDeclaration("__bc")));
+
+			InitBlock.Statements.Add(new Assignment(block.FindDeclaration("__iy"), new Immediate(0)));
+			InitBlock.Statements.Add(new Add(block.FindDeclaration("__iy"), block.FindDeclaration("__sp")));
+			int StackOffset = -(StackSize - block.stack.GetNonAutosSize());
+			InitBlock.Statements.Add(new Assignment(block.FindDeclaration("__hl"), new Immediate(StackOffset)));
+			InitBlock.Statements.Add(new Add(block.FindDeclaration("__hl"), block.FindDeclaration("__sp")));
+			InitBlock.Statements.Add(new Move(block.FindDeclaration("__sp"), block.FindDeclaration("__hl")));
         }
 
 		public override string ToString()
 		{
-			int TotalParamSize = 0;
-			foreach (Declaration decl in Block.Function.Params)
-			{
-				TotalParamSize += decl.Type.Size;
-			}
-			TotalParamSize += new BuiltInType("void *").Size;
-
-			var sb = new StringBuilder();
-
-			if (StackSize - TotalParamSize > 0)
-				sb.AppendLine("__sp += " + (StackSize - TotalParamSize).ToString() + ";");
-			sb.AppendLine(new Move(Block.FindDeclaration("__iy"), Block.FindDeclaration("__sp")).ToString());
-			sb.AppendLine(new Push(Block.FindDeclaration("__hl")).ToString());
-			sb.AppendLine(new Push(Block.FindDeclaration("__de")).ToString());
-			sb.AppendLine(new Push(Block.FindDeclaration("__bc")).ToString());
-
-			return sb.ToString();
+			return InitBlock.ToString().Replace("{", "").Replace("}", "");
 		}
 
 		public override string ToAssemblyString()

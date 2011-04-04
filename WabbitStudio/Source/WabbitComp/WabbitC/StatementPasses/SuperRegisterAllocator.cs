@@ -23,7 +23,7 @@ namespace WabbitC.StatementPasses
                     // copy the params to the stack (on z80 these will already be on the stack)
                     foreach (Declaration param in (functions.Current.Type as FunctionType).Params)
                     {
-						var store = new StackStore(param, param, 0);
+						var store = new StackStore(param, param);
                         block.Statements.Insert(0, store);
                     }
 
