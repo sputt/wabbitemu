@@ -29,10 +29,9 @@ namespace WabbitC.Model.Statements
 
 			var sb = new StringBuilder();
 
-			sb.AppendLine(new Push(Block.FindDeclaration("__iy")).ToString());
-			sb.AppendLine("__iy = __sp - " + (TotalParamSize).ToString() + ";");
 			if (StackSize - TotalParamSize > 0)
 				sb.AppendLine("__sp += " + (StackSize - TotalParamSize).ToString() + ";");
+			sb.AppendLine(new Move(Block.FindDeclaration("__iy"), Block.FindDeclaration("__sp")).ToString());
 			sb.AppendLine(new Push(Block.FindDeclaration("__hl")).ToString());
 			sb.AppendLine(new Push(Block.FindDeclaration("__de")).ToString());
 			sb.AppendLine(new Push(Block.FindDeclaration("__bc")).ToString());

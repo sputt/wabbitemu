@@ -7,7 +7,7 @@ using WabbitC.Model;
 using WabbitC.Model.Statements;
 using WabbitC.Model.Types;
 
-namespace WabbitC.StatementPasses
+namespace WabbitC.Model
 {
     class StackAllocator
     {
@@ -37,11 +37,13 @@ namespace WabbitC.StatementPasses
 			int temp = nOffset;
 			nOffset += decl.Type.Size;
 			stack.Add(decl);
+			Parent.Statements.Insert(0, new Annotation("[" + temp + "] (" + decl.Type.Size + ", " + decl.Type +") " + decl.Name));
 			return temp;
 		}
 		public int ReserveSpace(int bytes)
 		{
-			Declaration tempDecl = new Declaration(new WabbitC.Model.Types.Array(new BuiltInType("unsigned char"), "[" + bytes + "]"), "__FIXED_SIZE" + nFixed++);
+			Declaration tempDecl = new Declaration(new WabbitC.Model.Types.Array(new BuiltInType("unsigned char"), 
+				"[" + bytes + "]"), "__FIXED_SIZE" + nFixed++);
 			return ReserveSpace(tempDecl);
 		}
 		public int GetOffset(Declaration decl)

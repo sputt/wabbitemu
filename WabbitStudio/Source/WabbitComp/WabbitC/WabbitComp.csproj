@@ -139,12 +139,14 @@
     <Compile Include="StatementPasses\ApplyCallingConvention.cs" />
     <Compile Include="StatementPasses\BlockCollapse.cs" />
     <Compile Include="StatementPasses\LabelMerger.cs" />
+    <Compile Include="StatementPasses\RemovePointlessGotos.cs" />
+    <Compile Include="StatementPasses\ReorderDeclarations.cs" />
     <Compile Include="StatementPasses\SuperRegisterAllocator.cs" />
     <Compile Include="StatementPasses\SmarterRegisterAllocator.cs" />
     <Compile Include="StatementPasses\DumbRegisterAllocator.cs" />
     <Compile Include="StatementPasses\IfGotoConversion.cs" />
     <Compile Include="StatementPasses\LoopGotoConversion.cs" />
-    <Compile Include="StatementPasses\StackAllocator.cs" />
+    <Compile Include="Model\StackAllocator.cs" />
     <Compile Include="Tokenizer.cs" />
     <Compile Include="TokenPasses\ArrayDereference.cs" />
     <Compile Include="TokenPasses\Bracer.cs" />

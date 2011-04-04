@@ -74,6 +74,7 @@ namespace WabbitC
                 StatementPasses.IfGotoConversion.Run(currentModule);
                 StatementPasses.LoopGotoConversion.Run(currentModule);
 				StatementPasses.LabelMerger.Run(currentModule);
+				StatementPasses.ReorderDeclarations.Run(currentModule);
             }
 
 			if (optimizeLevel != OptimizeLevel.OptimizeNone)
@@ -82,6 +83,7 @@ namespace WabbitC
             if (passCount >= 3)
             {
 				StatementPasses.ApplyCallingConvention.Run(currentModule);
+				StatementPasses.RemovePointlessGotos.Run(currentModule);
                 StatementPasses.SmarterRegisterAllocator.Run(currentModule);
 
 				var asmString = AssemblyGenerator.GenerateCode(ref currentModule);

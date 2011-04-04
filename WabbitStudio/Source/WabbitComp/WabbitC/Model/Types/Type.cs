@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using WabbitC.Model.Types;
+
 namespace WabbitC.Model
 {
     abstract class Type : ICloneable
@@ -17,6 +19,10 @@ namespace WabbitC.Model
             if (IndirectionLevels > 0)
             {
                 IndirectionLevels--;
+				List<Token> tokenList = Tokenizer.Tokenize(this.ToString());
+				var tokens = tokenList.GetEnumerator();
+				tokens.MoveNext();
+				Size = TypeHelper.ParseType(ref tokens).Size;
             }
             else
             {
@@ -27,6 +33,7 @@ namespace WabbitC.Model
         public void Reference()
         {
             IndirectionLevels++;
+			Size = new BuiltInType("void *").Size;
         }
 
         public Type()

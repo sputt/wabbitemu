@@ -9,7 +9,7 @@ namespace WabbitC.Model.Statements
     {
         Declaration LValue;
         Declaration Decl;
-		int StackOffset;
+		int Offset;
 		/*public int StackOffset
 		{
 			get { return LValue.StackOffset; }
@@ -20,12 +20,13 @@ namespace WabbitC.Model.Statements
         {
             LValue = lValue;
             Decl = decl;
-			StackOffset = offset;
+			Offset = offset;
         }
 
         public override string ToString()
         {
-            if (Decl.Type.Size > 4)
+			//TODO: Make this true for structures too
+            if (Decl.Type.GetType() == typeof(WabbitC.Model.Types.Array))
             {
                 // It refers to the stack, not stored in the stack
                 Type type;
@@ -39,11 +40,13 @@ namespace WabbitC.Model.Statements
                     type.Reference();
                 }
 
-                return LValue.Name + " = (" + type + ") &(((unsigned char *) __iy)[" + StackOffset + "]);";
+				return LValue.Name + " = (" + type + ") &(((unsigned char *) __iy)[" + 
+					(-(Block.stack.Size - Offset) - Decl.Type.Size) + "]);";
             }
             else
             {
-				return LValue.Name + " = *(" + Decl.Type + "*) &(((unsigned char *) __iy)[" + StackOffset + "]);";
+				return LValue.Name + " = *(" + Decl.Type + "*) &(((unsigned char *) __iy)[" +
+					(-(Block.stack.Size - Offset) - Decl.Type.Size) + "]);";
             }
         }
     }

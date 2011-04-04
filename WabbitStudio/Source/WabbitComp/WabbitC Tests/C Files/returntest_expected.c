@@ -1,6 +1,4 @@
-﻿unsigned char __stack[512];
-unsigned char* __sp;
-int __hl;
+﻿#include "wabbitc.h"
 
 int returntest(int arg)
 {

@@ -37,8 +37,8 @@ namespace WabbitC.StatementPasses
                     block.Declarations.Clear();
 
 					Debug.Print("{0}", stack.Size);
+					block.stack = stack;
 					functions.Current.Code.Statements.Insert(0, new StackFrameInit(block, stack.Size));
-
 					functions.Current.Code.Statements.Add(new StackFrameCleanup(block, stack.Size));
                 }
             }

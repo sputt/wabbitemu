@@ -18,11 +18,11 @@ namespace WabbitC.Model.Types
             Void,
         };
 
-        private BuiltInTypeType type;
+        public BuiltInTypeType BuildInTypeType;
         private bool isUnsigned;
         public BuiltInType()
         {
-            type = BuiltInTypeType.Int;
+			BuildInTypeType = BuiltInTypeType.Int;
             isUnsigned = false;
             IndirectionLevels = 0;
         }
@@ -42,15 +42,15 @@ namespace WabbitC.Model.Types
             switch (tokens.Current.Text)
             {
                 case "char":
-                    type = BuiltInTypeType.Char;
+					BuildInTypeType = BuiltInTypeType.Char;
                     this.Size = 1;
                     break;
                 case "int":
-                    type = BuiltInTypeType.Int;
+					BuildInTypeType = BuiltInTypeType.Int;
                     this.Size = 4;
                     break;
                 case "void":
-                    type = BuiltInTypeType.Void;
+					BuildInTypeType = BuiltInTypeType.Void;
                     this.Size = 0;
                     break;
                 default:
@@ -87,7 +87,7 @@ namespace WabbitC.Model.Types
 			StringBuilder sb = new StringBuilder();
 			if (isUnsigned)
 				sb.Append("unsigned ");
-			sb.Append(type.ToString().ToLower());
+			sb.Append(BuildInTypeType.ToString().ToLower());
             for (int i = 0; i < IndirectionLevels; i++)
 				sb.Append("*");
 			
@@ -106,7 +106,7 @@ namespace WabbitC.Model.Types
                 return false;
             }
             BuiltInType otherBuiltInType = (BuiltInType)obj;
-            if (otherBuiltInType.type != this.type)
+			if (otherBuiltInType.BuildInTypeType != this.BuildInTypeType)
             {
                 return false;
             }

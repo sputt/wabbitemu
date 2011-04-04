@@ -55,6 +55,7 @@ namespace WabbitC.Model
         public HashSet<Type> Types;
         public List<Declaration> Declarations;
         public BlockStatements Statements;
+		public StackAllocator stack;
         public int TempDeclarationNumber = 0;
 
         public Declaration FindDeclaration(String name)

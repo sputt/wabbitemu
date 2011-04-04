@@ -83,7 +83,10 @@ namespace WabbitC.Model.Types
         {
             Type ptrType = BaseType.Clone() as Type;
 
-            ptrType.IndirectionLevels += Dimensions.Count;
+			for (int i = 0; i < Dimensions.Count; i++)
+			{
+				ptrType.Reference();
+			}
             return ptrType;
         }
 

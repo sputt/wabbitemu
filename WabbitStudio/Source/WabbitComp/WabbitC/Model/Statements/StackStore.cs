@@ -25,13 +25,13 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            if (Decl.Type.Size > 4)
+			if (Decl.Type.GetType() == typeof(WabbitC.Model.Types.Array))
             {
                 return "";
             }
             else
             {
-				return "*(" + LValue.Type + "*) &__sp[" + Offset + "] = " + Decl.Name + ";";
+				return "*(" + LValue.Type + "*) &__sp[" + (-(Block.stack.Size - Offset) - Decl.Type.Size) + "] = " + Decl.Name + ";";
             }
         }
     }

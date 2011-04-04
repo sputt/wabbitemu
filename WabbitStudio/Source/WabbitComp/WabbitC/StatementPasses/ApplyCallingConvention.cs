@@ -49,7 +49,6 @@ namespace WabbitC.StatementPasses
 
 				}
 
-				// Add popping regs
 				Label endLabel = new Label("__function_cleanup");
 
 				var returns = from Statement s in block
