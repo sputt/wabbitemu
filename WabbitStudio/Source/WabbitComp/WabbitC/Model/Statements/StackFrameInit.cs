@@ -32,9 +32,12 @@ namespace WabbitC.Model.Statements
 			InitBlock.Statements.Add(new Assignment(block.FindDeclaration("__iy"), new Immediate(0)));
 			InitBlock.Statements.Add(new Add(block.FindDeclaration("__iy"), block.FindDeclaration("__sp")));
 			int StackOffset = -(StackSize - block.stack.GetNonAutosSize());
-			InitBlock.Statements.Add(new Assignment(block.FindDeclaration("__hl"), new Immediate(StackOffset)));
-			InitBlock.Statements.Add(new Add(block.FindDeclaration("__hl"), block.FindDeclaration("__sp")));
-			InitBlock.Statements.Add(new Move(block.FindDeclaration("__sp"), block.FindDeclaration("__hl")));
+			if (StackOffset != 0)
+			{
+				InitBlock.Statements.Add(new Assignment(block.FindDeclaration("__hl"), new Immediate(StackOffset)));
+				InitBlock.Statements.Add(new Add(block.FindDeclaration("__hl"), block.FindDeclaration("__sp")));
+				InitBlock.Statements.Add(new Move(block.FindDeclaration("__sp"), block.FindDeclaration("__hl")));
+			}
         }
 
 		public override string ToString()
@@ -44,28 +47,7 @@ namespace WabbitC.Model.Statements
 
 		public override string ToAssemblyString()
 		{
-			int TotalParamSize = 0;
-			foreach (Declaration decl in Block.Function.Params)
-			{
-				TotalParamSize += decl.Type.Size;
-			}
-			TotalParamSize += new BuiltInType("void *").Size;
-			TotalParamSize *= -1;
-
-			var sb = new StringBuilder();
-
-			sb.AppendLine(new Push(Block.FindDeclaration("__iy")).ToAssemblyString());
-			sb.AppendLine(new Push(Block.FindDeclaration("__hl")).ToAssemblyString());
-			sb.AppendLine(new Push(Block.FindDeclaration("__de")).ToAssemblyString());
-			sb.AppendLine(new Push(Block.FindDeclaration("__bc")).ToAssemblyString());
-			var exp = new Expression(Tokenizer.Tokenize(TotalParamSize.ToString()));
-			sb.AppendLine(new Store(Block.FindDeclaration("__de"), 
-				Datum.Parse(Block, exp.Eval()[0].Token)).ToAssemblyString());
-			sb.AppendLine(new Sub(Block.FindDeclaration("__iy"), Block.FindDeclaration("__de")).ToAssemblyString());
-			if (StackSize - TotalParamSize > 0)
-				sb.AppendLine("__sp += " + (StackSize - TotalParamSize).ToString() + ";");
-
-			return sb.ToString();
+			return InitBlock.ToAssemblyString();
 		}
 
     }

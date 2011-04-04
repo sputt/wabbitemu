@@ -9,11 +9,6 @@ namespace WabbitC.Model.Statements
     {
         Declaration Decl;
 		Declaration Slot;
-		/*public int StackOffset
-		{
-			get { return LValue.StackOffset; }
-			set { LValue.StackOffset = value; }
-		}*/
 
         public StackStore(Declaration slot, Declaration decl)
         {
@@ -35,5 +30,10 @@ namespace WabbitC.Model.Statements
 					Slot.Type + ") " + Decl.Name + ";";
             }
         }
+
+		public override string ToAssemblyString()
+		{
+			return "stack_store(\"" + Decl.Name + "\", " + -Block.stack.GetOffset(Slot) + ")";
+		}
     }
 }

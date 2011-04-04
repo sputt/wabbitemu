@@ -28,11 +28,15 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
+			if (LValue == RValue)
+				return "";
             return LValue.Name + " = " + RValue.Name + ";";
         }
 
 		public override string ToAssemblyString()
 		{
+			if (LValue == RValue)
+				return "";
 			return "ld " + LValue.Name + "," + RValue.Name;
 		}
     }

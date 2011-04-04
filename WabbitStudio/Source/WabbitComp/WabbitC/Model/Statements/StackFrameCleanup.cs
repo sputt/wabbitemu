@@ -20,11 +20,14 @@ namespace WabbitC.Model.Statements
 			CleanupBlock = new Block(block);
 
 			int StackOffset = StackSize - block.stack.GetNonAutosSize();
-			CleanupBlock.Statements.Add(new Exchange());
-			CleanupBlock.Statements.Add(new Assignment(block.FindDeclaration("__hl"), new Immediate(StackOffset)));
-			CleanupBlock.Statements.Add(new Add(block.FindDeclaration("__hl"), block.FindDeclaration("__sp")));
-			CleanupBlock.Statements.Add(new Move(block.FindDeclaration("__sp"), block.FindDeclaration("__hl")));
-			CleanupBlock.Statements.Add(new Exchange());
+			if (StackOffset != 0)
+			{
+				CleanupBlock.Statements.Add(new Exchange());
+				CleanupBlock.Statements.Add(new Assignment(block.FindDeclaration("__hl"), new Immediate(StackOffset)));
+				CleanupBlock.Statements.Add(new Add(block.FindDeclaration("__hl"), block.FindDeclaration("__sp")));
+				CleanupBlock.Statements.Add(new Move(block.FindDeclaration("__sp"), block.FindDeclaration("__hl")));
+				CleanupBlock.Statements.Add(new Exchange());
+			}
 
 			CleanupBlock.Statements.Add(new Pop(block.FindDeclaration("__bc")));
 			CleanupBlock.Statements.Add(new Pop(block.FindDeclaration("__de")));
@@ -39,6 +42,11 @@ namespace WabbitC.Model.Statements
 		public override string ToString()
 		{
 			return CleanupBlock.ToString().Replace("{", "").Replace("}", "");
+		}
+
+		public override string ToAssemblyString()
+		{
+			return CleanupBlock.ToAssemblyString();
 		}
 	}
 }

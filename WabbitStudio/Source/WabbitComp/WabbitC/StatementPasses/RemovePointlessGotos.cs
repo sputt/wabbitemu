@@ -25,6 +25,14 @@ namespace WabbitC.StatementPasses
 					if (gotoStatement != null)
 					{
 						Label labelStatement = block.Statements[i + 1] as Label;
+						//remove unreachable code
+						while (labelStatement == null && gotoStatement.CondDecl == null)
+						{
+							block.Statements.RemoveAt(i + 1);
+							nStatements--;
+							i--;
+							labelStatement = block.Statements[i + 2] as Label;
+						}
 						if (labelStatement != null)
 						{
 							if (gotoStatement.TargetLabel == labelStatement)

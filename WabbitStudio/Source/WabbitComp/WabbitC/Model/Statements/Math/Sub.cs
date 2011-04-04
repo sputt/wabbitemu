@@ -40,7 +40,7 @@ namespace WabbitC.Model.Statements.Math
 
 		public override string ToAssemblyString()
 		{
-			return "add " + LValue.Name + "," + RValue.ToString();
+			return "add " + LValue.Name + ", -" + RValue.ToString();
 		}
     }
 }

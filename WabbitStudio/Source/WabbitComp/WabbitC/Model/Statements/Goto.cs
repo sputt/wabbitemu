@@ -36,7 +36,7 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            string gotoString = "goto " + TargetLabel.Name + ";";
+			string gotoString = "goto " + TargetLabel.Name + ";";
             if (CondDecl != null)
             {
                 return "if (" + CondDecl + ") {" + gotoString + "}";
@@ -46,5 +46,18 @@ namespace WabbitC.Model.Statements
                 return gotoString;
             }
         }
+
+		public override string ToAssemblyString()
+		{
+			string gotoString = "jp " + TargetLabel.Name;
+			if (CondDecl != null)
+			{
+				return "if (" + CondDecl + ") {" + gotoString + "}";
+			}
+			else
+			{
+				return gotoString;
+			}
+		}
     }
 }

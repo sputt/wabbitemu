@@ -20,14 +20,13 @@ namespace WabbitC.StatementPasses
                 if (functions.Current.Code != null)
                 {
                     Block block = functions.Current.Code;
-					StackAllocator stack = block.stack;
 					registerStates = new List<RegisterContentState>();
 					var blocks = block.GetBasicBlocks();
 					block.Statements.Clear();
 
 					for (int i = 0; i < blocks.Count; i++)
 					{
-						AllocateBlock(ref module, ref stack, blocks[i]);
+						AllocateBlock(ref module, blocks[i]);
 						block.Statements.AddRange(blocks[i]);
 					}
 					
@@ -36,22 +35,22 @@ namespace WabbitC.StatementPasses
 						var Array = decl.Type as WabbitC.Model.Types.Array;
 						if (Array != null)
 						{
-							stack.ReserveSpace(decl);
+							block.stack.ReserveSpace(decl);
 						}
 					}
                     block.Declarations.Clear();
 
-					Debug.Print("{0}", stack.Size);
+					Debug.Print("{0}", block.stack.Size);
 					
-					functions.Current.Code.Statements.Insert(0, new StackFrameInit(block, stack.Size));
-					functions.Current.Code.Statements.Add(new StackFrameCleanup(block, stack.Size));
+					functions.Current.Code.Statements.Insert(0, new StackFrameInit(block, block.stack.Size));
+					functions.Current.Code.Statements.Add(new StackFrameCleanup(block, block.stack.Size));
                 }
             }
         }
 
 		static List<RegisterContentState> registerStates;
 
-		public static void AllocateBlock(ref Module module, ref StackAllocator stack, Block block)
+		public static void AllocateBlock(ref Module module, Block block)
 		{
 
 			var liveChart = new VariableReuse.LiveChartClass(block);
@@ -74,8 +73,6 @@ namespace WabbitC.StatementPasses
 			for (int nPos = 0; nPos < block.Statements.Count; nPos++, adjustedPos++)
 			{
 				Statement statement = block.Statements[nPos];
-				if (statement.GetType() == typeof(Push))
-					continue;
 				block.Statements.Remove(statement);
 				for (int i = 0; i < RegisterContents.Count; i++)
 				{
@@ -98,9 +95,9 @@ namespace WabbitC.StatementPasses
 					if (usedLValues[0] == RegisterContents[0] || RegisterContents[0] == null)
 					{
 						var test = block.Declarations.Contains(usedLValues[0]);
-						if (test == false)
+						if (test == false && block.FindDeclaration("__hl") != usedLValues[0] && !RegistersAvailable.Contains(usedLValues[0]))
 						{
-							stack.GetOffset(usedLValues[0]);
+							block.stack.GetOffset(usedLValues[0]);
 							replacementList.Add(new StackLoad(module.FindDeclaration("__hl"), usedLValues[0]));
 						}
 						RegisterContents[0] = usedLValues[0];
@@ -109,13 +106,35 @@ namespace WabbitC.StatementPasses
 					else
 					{
 						int index = RegisterContents.IndexOf(null);
-						if (index == -1)
+						//the last part of that is added to make sure we dont try to load an old value from a register
+						//mainly due to variable reuse, because I made it so awesome
+						if (index == -1 || statement.GetType() == typeof(Move))
 						{
-							if (usedDecls.Count > 0)
+							if (usedDecls.Count > 0 && block.Declarations.Contains(usedDecls[0]))
 							{
-								stack.ReserveSpace(usedDecls[0]);
+								block.stack.ReserveSpace(usedDecls[0]);
 								var store = new StackStore(usedDecls[0], module.FindDeclaration("__hl"));
 								replacementList.Add(store);
+							}
+							if (block.Declarations.Contains(usedLValues[0]))
+							{
+								var saveDecl = RegisterContents[0] as Declaration;
+								bool regSwitch = false;
+								for (int j = 1; j < RegisterContents.Count && !regSwitch; j++)
+								{
+									if (RegisterContents[j] == null)
+									{
+										RegisterContents[j] = saveDecl;
+										replacementList.Add(new Move(RegistersAvailable[j - 1], module.FindDeclaration("__hl")));
+										regSwitch = true;
+									}
+								}
+								if (!regSwitch)
+								{
+									block.stack.ReserveSpace(saveDecl);
+									var store = new StackStore(saveDecl, module.FindDeclaration("__hl"));
+									replacementList.Add(store);
+								}
 							}
 							statement.ReplaceDeclaration(usedLValues[0], module.FindDeclaration("__hl"));
 							RegisterContents[0] = usedLValues[0];
@@ -144,30 +163,25 @@ namespace WabbitC.StatementPasses
 					}
 					if (fSkip == false)
 					{
-						bool alreadyInRegister = false;
-						for (int j = 0; j < RegisterContents.Count && !alreadyInRegister; j++)
+						if (block.FindDeclaration("__hl") != usedDecls[i] && !RegistersAvailable.Contains(usedDecls[i]))
 						{
-							if (RegisterContents[j] == usedDecls[i])
+							bool alreadyInRegister = false;
+							for (int j = 0; j < RegisterContents.Count && !alreadyInRegister; j++)
 							{
-								var decl = j == 0 ? module.FindDeclaration("__hl") : RegistersAvailable[j - 1];
-								if (usedDecls[i] == RegisterContents[j])
+								if (RegisterContents[j] == usedDecls[i])
 								{
-									block.Statements.Remove(statement);
-									statement = null;
-								}
-								else
-								{
+									var decl = j == 0 ? module.FindDeclaration("__hl") : RegistersAvailable[j - 1];
 									statement.ReplaceDeclaration(usedDecls[i], decl);
+									alreadyInRegister = true;
 								}
-								alreadyInRegister = true;
 							}
-						}
 
-						if (!alreadyInRegister)
-						{
-							replacementList.Add(new StackLoad(RegistersAvailable[i], usedDecls[i]));
-							RegisterContents[i + 1] = usedDecls[i];
-							statement.ReplaceDeclaration(usedDecls[i], RegistersAvailable[i]);
+							if (!alreadyInRegister)
+							{
+								replacementList.Add(new StackLoad(RegistersAvailable[i], usedDecls[i]));
+								RegisterContents[i + 1] = usedDecls[i];
+								statement.ReplaceDeclaration(usedDecls[i], RegistersAvailable[i]);
+							}
 						}
 					}
 				}

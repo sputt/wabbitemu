@@ -18,5 +18,10 @@ namespace WabbitC.Model.Statements
         {
             return Name + ":\n;";
         }
+
+		public override string ToAssemblyString()
+		{
+			return Name + ":";
+		}
     }
 }

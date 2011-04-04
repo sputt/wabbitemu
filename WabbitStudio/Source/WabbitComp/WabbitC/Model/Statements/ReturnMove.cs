@@ -7,25 +7,37 @@ namespace WabbitC.Model.Statements
 {
     class ReturnMove : ValueStatement
     {
-        public Declaration RValue;
-        public ReturnMove(Declaration src)
+        public Datum RValue;
+        public ReturnMove(Datum src)
         {
             RValue = src;
         }
 
         public override List<Declaration> GetModifiedDeclarations()
         {
-            return new List<Declaration>();
+            return new List<Declaration>() { Block.FindDeclaration("__hl") };
         }
 
         public override List<Declaration> GetReferencedDeclarations()
         {
-            return new List<Declaration>() { RValue };
+            var temp = new List<Declaration>();
+			if (RValue.GetType() == typeof(Declaration))
+				temp.Add((Declaration)RValue);
+			return temp;
         }
 
         public override string ToString()
         {
-            return "__hl = " + (RValue.ConstValue == null ? RValue.Name  : RValue.ConstValue.ToString()) + ";";
+			if (RValue.ToString() == "__hl")
+				return "";
+            return "__hl = " + RValue.ToString() + ";";
         }
+
+		public override string ToAssemblyString()
+		{
+			if (RValue.ToString() == "__hl")
+				return "";
+			return "ld hl," + RValue.ToString();
+		}
     }
 }

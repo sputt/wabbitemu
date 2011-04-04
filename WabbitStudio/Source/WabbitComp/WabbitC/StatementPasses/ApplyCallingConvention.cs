@@ -53,7 +53,7 @@ namespace WabbitC.StatementPasses
 					}
 
 					// Garbage push representing return address
-					newStatements.Add(new Push(block.FindDeclaration("__hl")));
+					newStatements.Add(new ReturnAddress(block.FindDeclaration("__hl")));
 
 					newStatements.Add(new Call(call.Function));
 					if (call.LValue != null)
@@ -79,17 +79,14 @@ namespace WabbitC.StatementPasses
 					var newStatements = new List<Statement>();
 
 					var assignment = block.Statements[index - 1];
+					Datum returnVal = curReturn.ReturnReg;
 					if (assignment.GetType() == typeof(Assignment))
 					{
 						block.Statements.Remove(assignment);
 						index--;
-						curReturn.ReturnReg.ConstValue = ((Assignment)assignment).RValue;
+						returnVal = ((Assignment)assignment).RValue;
 					}
-					else
-					{
-						curReturn.ReturnReg.ConstValue = null;
-					}
-					newStatements.Add(new ReturnMove(curReturn.ReturnReg));
+					newStatements.Add(new ReturnMove(returnVal));
 					newStatements.Add(new Goto(endLabel));
 					block.Statements.InsertRange(index, newStatements);
 				}

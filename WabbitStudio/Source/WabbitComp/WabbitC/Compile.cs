@@ -73,7 +73,6 @@ namespace WabbitC
                 StatementPasses.BlockCollapse.Run(currentModule);
                 StatementPasses.IfGotoConversion.Run(currentModule);
                 StatementPasses.LoopGotoConversion.Run(currentModule);
-				StatementPasses.LabelMerger.Run(currentModule);
 				StatementPasses.ReorderDeclarations.Run(currentModule);
             }
 
@@ -83,10 +82,14 @@ namespace WabbitC
             if (passCount >= 3)
             {
 				StatementPasses.ApplyCallingConvention.Run(currentModule);
+				StatementPasses.LabelMerger.Run(currentModule);
 				StatementPasses.RemovePointlessGotos.Run(currentModule);
                 StatementPasses.SmarterRegisterAllocator.Run(currentModule);
 
 				var asmString = AssemblyGenerator.GenerateCode(ref currentModule);
+				var asmWriter = new StreamWriter(Path.GetFileNameWithoutExtension(inputFile) + "_compiled.z80");
+				asmWriter.Write(asmString);
+				asmWriter.Close();
             }
 
             string code = currentModule.ToString();

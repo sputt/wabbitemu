@@ -123,6 +123,7 @@ namespace WabbitC.Model
 			var blocks = new List<Block>();
 			Block currentBlock = new Block(this);
 			currentBlock.Declarations = this.Declarations;
+			currentBlock.stack = stack;
 			for (int i = 0; i < Statements.Count; i++)
 			{
 				var statement = Statements[i];
@@ -134,11 +135,13 @@ namespace WabbitC.Model
 						currentBlock.Statements.Add(statement);
 						currentBlock = new Block(this);
 						currentBlock.Declarations = this.Declarations;
+						currentBlock.stack = stack;
 					}
 					else
 					{
 						currentBlock = new Block(this);
 						currentBlock.Declarations = this.Declarations;
+						currentBlock.stack = stack;
 						currentBlock.Statements.Add(statement);
 					}
 				}
@@ -362,6 +365,27 @@ namespace WabbitC.Model
             }
             return result;
         }
+
+		public string ToAssemblyString() 
+		{
+			var sb = new StringBuilder();
+//			string tabs = "\t";
+			foreach (var statement in Statements)
+			{
+				var asmString = statement.ToAssemblyString();
+				if (asmString == "")
+					continue;
+				if (statement.GetType() != typeof(Label) && asmString.Length > 0 && asmString[0] != '\t')
+					sb.Append("\t");
+				//asmString = asmString.Replace(Environment.NewLine, Environment.NewLine + tabs);
+				sb.AppendLine(asmString);
+				/*if (statement.GetType() == typeof(Push))
+					tabs += "\t";
+				else if (statement.GetType() == typeof(Pop))
+					tabs = tabs.Remove(tabs.Length - 1);*/
+			}
+			return sb.ToString();
+		}
 
         #region IEnumerable Members
 

@@ -10,11 +10,15 @@ namespace WabbitC.Model.Statements
 		public Exchange()
 		{
 		}
+
 		public override string ToString()
 		{
-			StringBuilder sb = new StringBuilder();
-			sb.Append("__hl ^= __de, __de ^= __hl, __hl ^= __de;");
-			return sb.ToString();
+			return "__hl ^= __de, __de ^= __hl, __hl ^= __de;";
+		}
+
+		public override string ToAssemblyString()
+		{
+			return "ex de,hl";
 		}
 
 		public override List<Declaration> GetReferencedDeclarations()

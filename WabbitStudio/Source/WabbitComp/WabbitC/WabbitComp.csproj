@@ -74,6 +74,7 @@
     <Compile Include="Model\Datum.cs" />
     <Compile Include="Model\Declaration.cs" />
     <Compile Include="Model\Immediate.cs" />
+    <Compile Include="Model\Statements\ReturnAddress.cs" />
     <Compile Include="Model\Statements\Exchange.cs" />
     <Compile Include="Model\Statements\ReturnMove.cs" />
     <Compile Include="Model\Statements\StackFrameCleanup.cs" />

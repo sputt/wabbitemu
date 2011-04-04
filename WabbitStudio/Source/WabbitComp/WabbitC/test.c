@@ -1,8 +1,12 @@
 #include "wabbitc.h"
 
-int returntest(int arg)
-{
-	return arg + 20;
+int factorial(int n) {
+	if (n == 0) {
+		return 1;
+	} else {
+		int factor = factorial(n - 1);
+		return n * factor;
+	}
 }
 /*int loop(int a)
 {
