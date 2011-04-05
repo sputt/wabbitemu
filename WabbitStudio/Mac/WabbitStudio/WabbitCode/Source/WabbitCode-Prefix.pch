@@ -1,7 +1,0 @@
-//
-// Prefix header for all source files of the 'WabbitCode' target in the 'WabbitCode' project
-//
-
-#ifdef __OBJC__
-	#import <Cocoa/Cocoa.h>
-#endif
