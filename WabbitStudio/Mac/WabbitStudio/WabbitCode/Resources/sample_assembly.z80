@@ -1,0 +1,23 @@
+#comment
+this is a multiline comment
+it can span as many lines as you want
+#endcomment
+
+#include "someincludefile.inc"
+
+#macro somemacro()
+somelabel:
+	ldir
+	call somelabel
+#endmacro
+
+#define supersweetdefine 10
+
+; this is a single line comment
+; each one has to begin with a semicolon
+someequate = 2
+someotherequate = $4
+yetanotherequate = %1000
+
+anotherlabel:
+	call somelabel
