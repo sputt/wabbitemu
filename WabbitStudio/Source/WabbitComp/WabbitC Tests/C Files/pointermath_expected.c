@@ -1,4 +1,6 @@
-﻿int pointermath(int arg)
+﻿#include "wabbitc.h"
+
+int pointermath(int arg)
 {
 	int *test;
 	test = 0;

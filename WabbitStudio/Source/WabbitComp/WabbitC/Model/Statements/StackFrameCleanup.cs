@@ -33,20 +33,22 @@ namespace WabbitC.Model.Statements
 
 			var s = CleanupBlock.Statements;
 			s.Add(new Push(hl));
-			s.Add(new Load(hl, new Immediate(StackSize + hl.Type.Size)));
+			s.Add(new Assignment(hl, new Immediate(StackSize + hl.Type.Size - 1)));
 			s.Add(new Add(hl, sp));
 			s.Add(new Exchange());
-			s.Add(new Load(hl, new Immediate(paramsSize)));
+			s.Add(new Assignment(hl, new Immediate(-paramsSize)));
 			s.Add(new Add(hl, de));
-			s.Add(new Load(bc, new Immediate(StackSize - localsSize - paramsSize)));
+			s.Add(new Assignment(bc, new Immediate(StackSize - localsSize - paramsSize)));
 			s.Add(new BlockCopyReverse());
 			s.Add(new Pop(hl));
 			s.Add(new Exchange());
+			s.Add(new Add(hl, new Immediate(1)));
 			s.Add(new Move(sp, hl));
 			s.Add(new Exchange());
 			s.Add(new Pop(bc));
 			s.Add(new Pop(de));
 			s.Add(new Pop(iy));
+			s.Add(new Add(sp, new Immediate(4)));
 			s.Add(new Return(null));
 		}
 

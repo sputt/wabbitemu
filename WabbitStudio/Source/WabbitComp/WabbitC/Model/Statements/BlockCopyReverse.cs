@@ -13,7 +13,12 @@ namespace WabbitC.Model.Statements
 
 		public override string ToString()
 		{
-			return "memmove((unsigned char *) __de, (unsigned char *) __hl, __bc);";
+			var sb = new StringBuilder();
+			sb.AppendLine("memmove((unsigned char *) __de - __bc + 1, (unsigned char *) __hl - __bc + 1, __bc);");
+			sb.AppendLine("__hl -= __bc;");
+			sb.AppendLine("__de -= __bc;");
+			sb.AppendLine("__bc = 0;");
+			return sb.ToString();
 		}
 
 		public override string ToAssemblyString()

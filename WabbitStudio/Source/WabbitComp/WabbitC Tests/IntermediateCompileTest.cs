@@ -61,7 +61,7 @@ namespace WabbitC_Tests
             System.Diagnostics.Process p = new System.Diagnostics.Process();
             p.StartInfo.WorkingDirectory = CurDir + @"\..\..\..\WabbitC Tests";
             p.StartInfo.FileName = p.StartInfo.WorkingDirectory + @"\build-intermediates.bat";
-            p.StartInfo.Arguments = name;
+            p.StartInfo.Arguments = name + " " + passCount;
             p.StartInfo.UseShellExecute = true;
             p.StartInfo.CreateNoWindow = true;
             p.StartInfo.WindowStyle = System.Diagnostics.ProcessWindowStyle.Hidden;
@@ -89,19 +89,24 @@ namespace WabbitC_Tests
             Assert.AreEqual(ExpectedValue, ActualValue);
         }
 
-		//[DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",
-		//    "|DataDirectory|\\IntermediateCompileTestArgs.csv",
-		//    "IntermediateCompileTestArgs#csv",
-		//    DataAccessMethod.Sequential),
-		//DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
-		//TestMethod]
-		[TestMethod]
+		[DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",
+			"|DataDirectory|\\IntermediateCompileTestArgs.csv",
+			"IntermediateCompileTestArgs#csv",
+			DataAccessMethod.Sequential),
+		DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
+		TestMethod]
+		//[TestMethod]
         public void Return()
         {
             RunIntermediateTest("returntest", "");
         }
 
-		[TestMethod]
+		[DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",
+			"|DataDirectory|\\IntermediateCompileTestArgs.csv",
+			"IntermediateCompileTestArgs#csv",
+			DataAccessMethod.Sequential),
+		DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
+		TestMethod]
         public void FunctionCallMath()
         {
             RunIntermediateTest("functioncallmath");

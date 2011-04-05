@@ -1,4 +1,6 @@
-﻿int SimpleMath(int arg)
+﻿#include "wabbitc.h"
+
+int SimpleMath(int arg)
 {
 	int temp;
 	temp = arg * 2;

@@ -24,7 +24,7 @@ namespace WabbitC.Model
                 new Declaration(new BuiltInType("int"), "__de"),
                 new Declaration(new BuiltInType("int"), "__bc"),
 				new Declaration(new BuiltInType("int"), "__iy"),
-				new Declaration(new Types.Array(new BuiltInType("unsigned char"), "[512]"), "__stack"),
+				new Declaration(new Types.Array(new BuiltInType("unsigned char"), "[2048]"), "__stack"),
 				new Declaration(new BuiltInType("int"), "__sp"),
             });
 

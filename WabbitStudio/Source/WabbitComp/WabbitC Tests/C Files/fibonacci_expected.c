@@ -1,3 +1,5 @@
+#include "wabbitc.h"
+
 int fibonacci(int n)
 {
 	if (n == 0)

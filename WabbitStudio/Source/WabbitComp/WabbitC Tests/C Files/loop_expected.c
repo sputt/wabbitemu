@@ -1,4 +1,6 @@
-﻿int loop(int arg)
+﻿#include "wabbitc.h"
+
+int loop(int arg)
 {
 	int total;
 	int i;
