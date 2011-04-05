@@ -34,6 +34,15 @@ namespace WabbitC.Model
 			Value = expr[0].Tokens[0];
 		}
 
+		public void Negate()
+		{
+			string negString = "0 - " + Value;
+			List<Token> tokens = Tokenizer.Tokenize(negString);
+			Expression expr = new Expression(tokens);
+			var result = expr.Eval();
+			Value = result[0].Tokens[0];
+		}
+
         public override string ToString()
         {
             return Value.ToString();

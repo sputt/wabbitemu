@@ -84,6 +84,11 @@ namespace WabbitC
 				StatementPasses.ApplyCallingConvention.Run(currentModule);
 				StatementPasses.LabelMerger.Run(currentModule);
 				StatementPasses.RemovePointlessGotos.Run(currentModule);
+
+				// Adjust the arithmetic
+				StatementPasses.ConvertAddSubToIncDec.Run(currentModule);
+				StatementPasses.RemoveMathImmediates.Run(currentModule);
+
                 StatementPasses.SmarterRegisterAllocator.Run(currentModule);
 
 				var asmString = AssemblyGenerator.GenerateCode(ref currentModule);

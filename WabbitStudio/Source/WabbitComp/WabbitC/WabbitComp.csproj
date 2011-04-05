@@ -75,6 +75,8 @@
     <Compile Include="Model\Declaration.cs" />
     <Compile Include="Model\Immediate.cs" />
     <Compile Include="Model\Statements\BlockCopyReverse.cs" />
+    <Compile Include="Model\Statements\Dec.cs" />
+    <Compile Include="Model\Statements\Inc.cs" />
     <Compile Include="Model\Statements\ReturnAddress.cs" />
     <Compile Include="Model\Statements\Exchange.cs" />
     <Compile Include="Model\Statements\ReturnMove.cs" />
@@ -141,7 +143,9 @@
     <Compile Include="StatementPasses\AddStackDeclaration.cs" />
     <Compile Include="StatementPasses\ApplyCallingConvention.cs" />
     <Compile Include="StatementPasses\BlockCollapse.cs" />
+    <Compile Include="StatementPasses\ConvertAddSubToIncDec.cs" />
     <Compile Include="StatementPasses\LabelMerger.cs" />
+    <Compile Include="StatementPasses\RemoveMathImmediates.cs" />
     <Compile Include="StatementPasses\RemovePointlessGotos.cs" />
     <Compile Include="StatementPasses\ReorderDeclarations.cs" />
     <Compile Include="StatementPasses\SuperRegisterAllocator.cs" />
