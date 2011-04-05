@@ -30,9 +30,7 @@ namespace WabbitC.Model.Statements
 			InitBlock.Statements.Add(new Push(block.FindDeclaration("__bc")));
 
 			InitBlock.Statements.Add(new Assignment(block.FindDeclaration("__iy"), new Immediate(0)));
-            var tempDecl = block.CreateTempDeclaration(block.FindDeclaration("__iy").Type);
-            InitBlock.Statements.Add(new Cast(tempDecl, block.FindDeclaration("__iy").Type, block.FindDeclaration("__sp")));
-			InitBlock.Statements.Add(new Add(block.FindDeclaration("__iy"), tempDecl));
+			InitBlock.Statements.Add(new Add(block.FindDeclaration("__iy"), block.FindDeclaration("__sp")));
 			int StackOffset = -(StackSize - block.stack.GetNonAutosSize());
 			if (StackOffset != 0)
 			{

@@ -92,6 +92,7 @@ namespace WabbitC
 				asmWriter.Close();
             }
 
+			currentModule.IntermediateStrings.Add("#include <string.h>");
             string code = currentModule.ToString();
 
             string outputFile = inputFile.Replace("expected", "actual");

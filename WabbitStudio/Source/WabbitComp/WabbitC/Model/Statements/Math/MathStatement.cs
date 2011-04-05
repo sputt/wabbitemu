@@ -111,6 +111,7 @@ namespace WabbitC.Model.Statements.Math
                 {
                     sb.Append(Operator);
                     sb.Append("= ");
+					sb.Append("(" + LValue.Type + ") ");
                     sb.Append(RValue);
                     sb.Append(";");
                 }

@@ -17,8 +17,8 @@ int main(int argc, char **argv)
 {
 	int result;
 	__hl = 0xDEADBEEF;
-	__sp = __stack + 8;
-	*((int *) &__stack[0]) = atoi(argv[1]);
+	__sp = __stack + sizeof(__stack) - sizeof(int);
+	*((int *) &__stack[sizeof(__stack) - sizeof(int)]) = atoi(argv[1]);
 	result = TEST_FUNCTION(atoi(argv[1]));
 	return (__hl == 0xDEADBEEF) ? result : __hl;
 }

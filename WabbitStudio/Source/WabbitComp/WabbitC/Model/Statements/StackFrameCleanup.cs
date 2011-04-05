@@ -20,23 +20,34 @@ namespace WabbitC.Model.Statements
 			CleanupBlock = new Block(block);
 
 			int StackOffset = StackSize - block.stack.GetNonAutosSize();
-			if (StackOffset != 0)
-			{
-				CleanupBlock.Statements.Add(new Exchange());
-				CleanupBlock.Statements.Add(new Assignment(block.FindDeclaration("__hl"), new Immediate(StackOffset)));
-				CleanupBlock.Statements.Add(new Add(block.FindDeclaration("__hl"), block.FindDeclaration("__sp")));
-				CleanupBlock.Statements.Add(new Move(block.FindDeclaration("__sp"), block.FindDeclaration("__hl")));
-				CleanupBlock.Statements.Add(new Exchange());
-			}
 
-			CleanupBlock.Statements.Add(new Pop(block.FindDeclaration("__bc")));
-			CleanupBlock.Statements.Add(new Pop(block.FindDeclaration("__de")));
-			//BuiltInType blt = block.Function.ReturnType as BuiltInType;
-			//if (blt != null && blt.BuildInTypeType == BuiltInType.BuiltInTypeType.Void)
-			//{
-			//    CleanupBlock.Statements.Add(new Pop(block.FindDeclaration("__hl")));
-			//}
-			CleanupBlock.Statements.Add(new Pop(block.FindDeclaration("__iy")));
+			int localsSize = StackSize - block.stack.GetNonAutosSize();
+			int paramsSize = block.stack.GetOffset(block.Function.Params.Last<Declaration>()) +
+				block.Function.Params.Last<Declaration>().Type.Size;
+
+			Declaration hl = block.FindDeclaration("__hl");
+			Declaration de = block.FindDeclaration("__de");
+			Declaration bc = block.FindDeclaration("__bc");
+			Declaration iy = block.FindDeclaration("__iy");
+			Declaration sp = block.FindDeclaration("__sp");
+
+			var s = CleanupBlock.Statements;
+			s.Add(new Push(hl));
+			s.Add(new Load(hl, new Immediate(StackSize + hl.Type.Size)));
+			s.Add(new Add(hl, sp));
+			s.Add(new Exchange());
+			s.Add(new Load(hl, new Immediate(paramsSize)));
+			s.Add(new Add(hl, de));
+			s.Add(new Load(bc, new Immediate(StackSize - localsSize - paramsSize)));
+			s.Add(new BlockCopyReverse());
+			s.Add(new Pop(hl));
+			s.Add(new Exchange());
+			s.Add(new Move(sp, hl));
+			s.Add(new Exchange());
+			s.Add(new Pop(bc));
+			s.Add(new Pop(de));
+			s.Add(new Pop(iy));
+			s.Add(new Return(null));
 		}
 
 		public override string ToString()

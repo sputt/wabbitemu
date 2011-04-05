@@ -26,7 +26,7 @@ namespace WabbitC.Model.Statements
             {
 				Type SlotPtr = Slot.Type.Clone() as Type;
 				SlotPtr.Reference();
-				return "*(" + SlotPtr + ") &__sp[" + (-Block.stack.GetOffset(Slot)) + " - " + Decl.Type.Size + "] = (" + 
+				return "*(" + SlotPtr + ") &(((unsigned char *) __iy)[" + (-Block.stack.GetOffset(Slot)) + " + " + Block.stack.GetNonAutosSize() + " - " + Decl.Type.Size + "]) = (" + 
 					Slot.Type + ") " + Decl.Name + ";";
             }
         }

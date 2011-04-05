@@ -25,7 +25,7 @@ namespace WabbitC.Model
                 new Declaration(new BuiltInType("int"), "__bc"),
 				new Declaration(new BuiltInType("int"), "__iy"),
 				new Declaration(new Types.Array(new BuiltInType("unsigned char"), "[512]"), "__stack"),
-				new Declaration(new BuiltInType("unsigned char *"), "__sp"),
+				new Declaration(new BuiltInType("int"), "__sp"),
             });
 
 			//TODO: make so assignment statements work...
@@ -54,7 +54,7 @@ namespace WabbitC.Model
 			{
 				result += s + "\n";
 			}
-			result = base.ToString();
+			result += base.ToString();
 			return result;
 		}
     }

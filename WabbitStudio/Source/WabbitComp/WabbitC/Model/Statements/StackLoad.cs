@@ -34,12 +34,12 @@ namespace WabbitC.Model.Statements
                 }
 
 				return Decl.Name + " = (" + Decl.Type + ") (" + type + ") &(((unsigned char *) __iy)[" +
-					(-Block.stack.GetOffset(Slot)) + " - " + Slot.Type.Size + "]);";
+					(-Block.stack.GetOffset(Slot)) + " + " + Block.stack.GetNonAutosSize() + " - " + Slot.Type.Size + "]);";
             }
             else
             {
 				return Decl.Name + " = (" + Decl.Type +") *(" + Slot.Type + "*) &(((unsigned char *) __iy)[" +
-					(-Block.stack.GetOffset(Slot)) + " - " + Slot.Type.Size + "]);";
+					(-Block.stack.GetOffset(Slot)) + " + " + Block.stack.GetNonAutosSize() + " - " + Slot.Type.Size + "]);";
             }
         }
 

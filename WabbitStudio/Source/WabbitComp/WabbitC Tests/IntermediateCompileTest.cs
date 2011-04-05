@@ -31,9 +31,8 @@ namespace WabbitC_Tests
             }
         }
 
-        private void RunIntermediateTest(string name)
+        private void RunIntermediateTest(string name, string args = "")
         {
-            string args = "";
             int passCount = int.MaxValue;
             if (testContextInstance.DataRow != null)
             {
@@ -70,10 +69,8 @@ namespace WabbitC_Tests
             p.Start();
             p.WaitForExit();
 
+			File.Copy(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_actual.c", name + opLevel.ToString() + "Pass" + passCount + ".c");
             Assert.AreEqual(p.ExitCode, 0, "Failed to build");
-
-            File.Copy(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_actual.c", name + opLevel.ToString() + "Pass" + passCount + ".c");
-
 
             p.StartInfo.FileName = Path.Combine(p.StartInfo.WorkingDirectory, name + "_expected.exe");
             p.StartInfo.Arguments = "7";
@@ -92,16 +89,16 @@ namespace WabbitC_Tests
             Assert.AreEqual(ExpectedValue, ActualValue);
         }
 
-		[DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",
-			"|DataDirectory|\\IntermediateCompileTestArgs.csv",
-			"IntermediateCompileTestArgs#csv",
-			DataAccessMethod.Sequential),
-		DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
-		TestMethod]
-		//[TestMethod]
+		//[DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",
+		//    "|DataDirectory|\\IntermediateCompileTestArgs.csv",
+		//    "IntermediateCompileTestArgs#csv",
+		//    DataAccessMethod.Sequential),
+		//DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
+		//TestMethod]
+		[TestMethod]
         public void Return()
         {
-            RunIntermediateTest("returntest");
+            RunIntermediateTest("returntest", "");
         }
 
 		[TestMethod]
