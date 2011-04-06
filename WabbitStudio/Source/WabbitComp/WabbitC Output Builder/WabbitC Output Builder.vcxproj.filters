@@ -17,8 +17,10 @@
     <ClCompile Include="..\WabbitC\test_compiled.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\WabbitC\test.c">
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\WabbitC\test.c">
       <Filter>Source Files</Filter>
-    </ClCompile>
+    </CustomBuild>
   </ItemGroup>
 </Project>

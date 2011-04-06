@@ -170,7 +170,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>del "$(SolutionDir)$(ConfigurationName)\WabbitC Output Builder.exe"</PostBuildEvent>
+    <PostBuildEvent>del "$(SolutionDir)$(ConfigurationName)\WabbitC Output Builder.exe" 2&gt; nul</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

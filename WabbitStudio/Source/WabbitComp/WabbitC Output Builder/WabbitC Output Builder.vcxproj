@@ -12,10 +12,10 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\WabbitC Tests\C Files\main.c" />
-    <ClCompile Include="..\WabbitC\test.c" />
-    <ClCompile Include="..\WabbitC\test_compiled.c">
+    <CustomBuild Include="..\WabbitC\test.c">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">test=test2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-    </ClCompile>
+    </CustomBuild>
+    <ClCompile Include="..\WabbitC\test_compiled.c" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{DA4C6EF8-396D-4834-8FF7-96A61BBA9F3D}</ProjectGuid>
