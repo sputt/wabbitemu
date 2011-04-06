@@ -18,7 +18,7 @@
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="..\WabbitC\test.c">
-      <Filter>Generated Files</Filter>
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
