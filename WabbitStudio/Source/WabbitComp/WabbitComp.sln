@@ -2,9 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WabbitComp", "WabbitC\WabbitComp.csproj", "{68666923-07F9-433E-92F3-F1806A2DBB5F}"
-	ProjectSection(ProjectDependencies) = postProject
-		{DA4C6EF8-396D-4834-8FF7-96A61BBA9F3D} = {DA4C6EF8-396D-4834-8FF7-96A61BBA9F3D}
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WabbitC Tests", "WabbitC Tests\WabbitC Tests.csproj", "{471C743F-5EB9-4FB9-8742-330525D68503}"
 EndProject
@@ -16,6 +13,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WabbitC Output Builder", "WabbitC Output Builder\WabbitC Output Builder.vcxproj", "{DA4C6EF8-396D-4834-8FF7-96A61BBA9F3D}"
+	ProjectSection(ProjectDependencies) = postProject
+		{68666923-07F9-433E-92F3-F1806A2DBB5F} = {68666923-07F9-433E-92F3-F1806A2DBB5F}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
@@ -74,6 +74,7 @@ Global
 		{471C743F-5EB9-4FB9-8742-330525D68503}.Release|x86.ActiveCfg = Release|Any CPU
 		{DA4C6EF8-396D-4834-8FF7-96A61BBA9F3D}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{DA4C6EF8-396D-4834-8FF7-96A61BBA9F3D}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{DA4C6EF8-396D-4834-8FF7-96A61BBA9F3D}.Debug|Mixed Platforms.Build.0 = Debug|Win32
 		{DA4C6EF8-396D-4834-8FF7-96A61BBA9F3D}.Debug|Win32.ActiveCfg = Debug|Win32
 		{DA4C6EF8-396D-4834-8FF7-96A61BBA9F3D}.Debug|Win32.Build.0 = Debug|Win32
 		{DA4C6EF8-396D-4834-8FF7-96A61BBA9F3D}.Debug|x86.ActiveCfg = Debug|Win32
