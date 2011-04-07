@@ -108,5 +108,17 @@ namespace WabbitC_Tests
 			actual = target.GetMostModifiedVariables();
 			Assert.IsTrue(expected.SequenceEqual<Declaration>(actual));
 		}
+
+		/// <summary>
+		///A test for Alloc16
+		///</summary>
+		[TestMethod()]
+		[DeploymentItem("WabbitC.exe")]
+		public void Alloc16Test()
+		{
+			// Creation of the private accessor for 'Microsoft.VisualStudio.TestTools.TypesAndSymbols.Assembly' failed
+			Assert.Inconclusive("Creation of the private accessor for \'Microsoft.VisualStudio.TestTools.TypesAndSy" +
+					"mbols.Assembly\' failed");
+		}
 	}
 }
