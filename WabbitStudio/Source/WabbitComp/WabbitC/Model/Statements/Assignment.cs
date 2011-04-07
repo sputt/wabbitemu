@@ -23,7 +23,7 @@ namespace WabbitC.Model.Statements
 
         public override List<Declaration> GetReferencedDeclarations()
         {
-            return new List<Declaration>() { };
+			return new List<Declaration>() { LValue };
         }
 
         public override string ToString()

@@ -148,6 +148,7 @@
     <Compile Include="StatementPasses\BlockCollapse.cs" />
     <Compile Include="StatementPasses\ConvertAddSubToIncDec.cs" />
     <Compile Include="StatementPasses\LabelMerger.cs" />
+    <Compile Include="StatementPasses\RegisterAllocator\Helper.cs" />
     <Compile Include="StatementPasses\RemoveMathImmediates.cs" />
     <Compile Include="StatementPasses\RemovePointlessGotos.cs" />
     <Compile Include="StatementPasses\ReorderDeclarations.cs" />
@@ -168,6 +169,7 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>del "$(SolutionDir)$(ConfigurationName)\WabbitC Output Builder.exe" 2&gt; nul</PostBuildEvent>
