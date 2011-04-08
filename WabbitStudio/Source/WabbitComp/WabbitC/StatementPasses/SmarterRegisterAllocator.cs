@@ -8,7 +8,7 @@ using WabbitC.Model.Statements;
 using WabbitC.Model.Types;
 using System.Diagnostics;
 
-namespace WabbitC.StatementPasses
+namespace WabbitC.StatementPasses.RegisterAllocator
 {
     static class SmarterRegisterAllocator
     {
@@ -53,7 +53,7 @@ namespace WabbitC.StatementPasses
 		public static void AllocateBlock(ref Module module, Block block)
 		{
 
-			var liveChart = new VariableReuse.LiveChartClass(block);
+			var liveChart = new WabbitC.Optimizer.VariableReuse.LiveChartClass(block);
 			liveChart.GenerateVariableChart();
 			var RegistersAvailable = new List<Declaration>
                     {

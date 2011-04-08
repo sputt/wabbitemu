@@ -147,6 +147,7 @@
     <Compile Include="StatementPasses\ApplyCallingConvention.cs" />
     <Compile Include="StatementPasses\BlockCollapse.cs" />
     <Compile Include="StatementPasses\ConvertAddSubToIncDec.cs" />
+    <Compile Include="Optimizer\RemoveUselessMath.cs" />
     <Compile Include="StatementPasses\LabelMerger.cs" />
     <Compile Include="StatementPasses\RegisterAllocator\Helper.cs" />
     <Compile Include="StatementPasses\RemoveMathImmediates.cs" />

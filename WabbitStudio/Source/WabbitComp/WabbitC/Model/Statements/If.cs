@@ -11,6 +11,7 @@ namespace WabbitC.Model.Statements
     class If : ControlStatement
     {
         public Declaration Condition;
+		public Block ConditionBlock;
         public Block TrueCase;
         public Block FalseCase;
 
@@ -24,9 +25,10 @@ namespace WabbitC.Model.Statements
 
             List<Token> conditionList = Tokenizer.GetArgument(ref tokens);
 
+			var condBlock = new Block(parent);
             Declaration condDecl = parent.CreateTempDeclaration(new BuiltInType("int"));
 
-            StatementHelper.Parse(parent, condDecl, conditionList);
+            StatementHelper.Parse(condBlock, condDecl, conditionList);			
 
             tokens.MoveNext();
             Debug.Assert(tokens.Current.Text == "{");
@@ -46,10 +48,10 @@ namespace WabbitC.Model.Statements
                 tokens.MoveNext();
             }
 
-            return new If(parent, condDecl, trueCase, falseCase);
+            return new If(parent, condDecl, condBlock, trueCase, falseCase);
         }
 
-        public If(Block parent, Declaration cond, Block trueCase, Block falseCase)
+        public If(Block parent, Declaration cond, Block condBlock, Block trueCase, Block falseCase)
         {
             Debug.Assert(trueCase != null);
 
@@ -62,11 +64,17 @@ namespace WabbitC.Model.Statements
             Condition = cond;
             TrueCase = trueCase;
             FalseCase = falseCase;
+			ConditionBlock = condBlock;
         }
 
         public override string ToString()
         {
-			StringBuilder result = new StringBuilder("if (");
+			StringBuilder result = new StringBuilder();
+			foreach (var statement in ConditionBlock.Statements)
+			{
+				result.AppendLine(statement.ToString());
+			}
+			result.Append("if (");
 			result.Append(Condition.Name);
 			result.AppendLine(")");
             result.Append(TrueCase);
@@ -83,7 +91,8 @@ namespace WabbitC.Model.Statements
         public override IEnumerator<Block> GetEnumerator()
         {
             List<Block> blocks = new List<Block>();
-            blocks.Add(TrueCase);
+			blocks.Add(ConditionBlock);
+			blocks.Add(TrueCase);
             if (FalseCase != null)
             {
                 blocks.Add(FalseCase);

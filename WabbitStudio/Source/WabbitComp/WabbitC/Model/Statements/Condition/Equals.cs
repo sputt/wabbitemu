@@ -24,12 +24,10 @@ namespace WabbitC.Model.Statements.Condition
 			return Tokenizer.ToToken("!=");
 		}
 
-        public override string ToAssemblyString()
-        {
-            string equals = "or a";
-            //TODO: make sure condDecl = __hl
-            return equals + "\tsbc __hl, " + CondDecl.ToString(); 
-        }
+		public override string ToAssemblyString()
+		{
+			return "add hl,de";
+		}
 
         #region IMathOperator Members
 

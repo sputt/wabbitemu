@@ -34,6 +34,9 @@ namespace WabbitC.Model
 
 		public int ReserveSpace(Declaration decl)
 		{
+			int offset = GetOffset(decl);
+			if (offset != nOffset)
+				return offset;
 			int temp = nOffset;
 			nOffset += decl.Type.Size;
 			stack.Add(decl);

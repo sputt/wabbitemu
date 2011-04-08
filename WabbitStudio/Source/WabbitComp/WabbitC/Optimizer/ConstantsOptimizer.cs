@@ -8,7 +8,7 @@ using WabbitC.Model.Statements;
 using WabbitC.Model.Statements.Math;
 using System.Diagnostics;
 
-namespace WabbitC
+namespace WabbitC.Optimizer
 {
     static class ConstantsOptimizer
     {

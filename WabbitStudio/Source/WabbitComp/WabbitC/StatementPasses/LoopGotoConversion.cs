@@ -35,11 +35,11 @@ namespace WabbitC.StatementPasses
                         List<Statement> whileReplacement = new List<Statement>();
                         whileReplacement.Add(new Goto(loop.Label));
                         Label whileStartLbl = block.CreateTempLabel();
+						List<Statement> condStatements = new List<Statement>();
                         whileReplacement.Add(whileStartLbl);
                         whileReplacement.AddRange(loop.Body);
                         whileReplacement.Add(loop.Label);
-                        whileReplacement.AddRange(loop.Condition);
-                        whileReplacement.Add(new Goto(whileStartLbl, loop.CondDecl));
+                        whileReplacement.AddRange(Goto.ParseConditionStatements(loop.Condition.Statements, loop.Label));
 
                         loopBlock.Statements.InsertRange(nPos, whileReplacement);
                     }
@@ -54,8 +54,7 @@ namespace WabbitC.StatementPasses
 						whileReplacement.Add(whileStartLbl);
 						whileReplacement.AddRange(loop.Body);
 						whileReplacement.Add(loop.Label);
-						whileReplacement.AddRange(loop.Condition);
-						whileReplacement.Add(new Goto(whileStartLbl, loop.CondDecl));
+						whileReplacement.AddRange(Goto.ParseConditionStatements(loop.Condition.Statements, loop.Label));
 
 						loopBlock.Statements.InsertRange(nPos, whileReplacement);
 					}

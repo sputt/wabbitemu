@@ -89,7 +89,7 @@ namespace WabbitC
 				StatementPasses.ConvertAddSubToIncDec.Run(currentModule);
 				StatementPasses.RemoveMathImmediates.Run(currentModule);
 
-                StatementPasses.SmarterRegisterAllocator.Run(currentModule);
+				StatementPasses.RegisterAllocator.SmarterRegisterAllocator.Run(currentModule);
 
 				var asmString = AssemblyGenerator.GenerateCode(ref currentModule);
 				var asmWriter = new StreamWriter(Path.GetFileNameWithoutExtension(inputFile) + "_compiled.z80");

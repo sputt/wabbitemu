@@ -44,13 +44,10 @@ namespace WabbitC.Optimizer
 					var move = statement as Move;
 					if (move.RValue.ConstStatement != null)
 					{
-						var newStatement = move.RValue.ConstStatement;
-						var lValue = newStatement.GetModifiedDeclarations()[0];
-						//block.Statements.Remove(newStatement);
-						block.Statements.Remove(move);
-						newStatement.ReplaceDeclaration(lValue, move.LValue);
-						move.LValue.ConstStatement = newStatement;
-						i--;
+						var newStatement = (Statement) move.RValue.ConstStatement.Clone();
+						newStatement.ReplaceDeclaration(move.RValue, move.LValue);
+						block.Statements[i] = newStatement;
+						i--;	//rerun current statement to correctly populate LValue conststatement
 					}
 					else
 					{
@@ -98,7 +95,7 @@ namespace WabbitC.Optimizer
 							}
 							else
 							{
-								var decl = math.LValue.ConstStatement.GetReferencedDeclarations()[0];
+								/*var decl = math.LValue.ConstStatement.GetReferencedDeclarations()[0];
 								if (decl.ConstStatement == null)
 								{
 									math.LValue.ConstStatement = null;
@@ -109,6 +106,7 @@ namespace WabbitC.Optimizer
 									//block.Statements.Remove(newStatement);
 									//i--;
 								}*/
+								math.LValue.ConstStatement = null;
 							}
 						}
 						else

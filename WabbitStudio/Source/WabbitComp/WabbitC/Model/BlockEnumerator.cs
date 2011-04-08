@@ -43,7 +43,7 @@ namespace WabbitC.Model
 
         object System.Collections.IEnumerator.Current
         {
-            get { throw new NotImplementedException(); }
+			get { return currentStatement; }
         }
 
         public bool MoveNext()

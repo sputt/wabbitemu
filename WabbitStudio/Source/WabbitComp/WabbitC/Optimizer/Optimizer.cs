@@ -16,11 +16,14 @@ namespace WabbitC.Optimizer
         static bool DeadVariableRemoval = true;
 		static bool VariableReduction = true;
 		static bool ReuseVariables = true;
+		static bool RemoveCrapMath = true;
         public static void RunOptimizer(ref Module module, Compiler.OptimizeLevel opLevel)
         {
             Block mainModule = (Block) module;
 			if (ConstantTracking)
 				ConstantsOptimizer.Optimize(ref mainModule);
+			if (RemoveCrapMath)
+				RemoveUselessMath.Optimize(module);
 			if (VariableReduction)
 				VariableReducer.Optimize(ref module);
             if (DeadCodeOptimization)

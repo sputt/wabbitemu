@@ -110,11 +110,11 @@ namespace WabbitC.StatementPasses
             // Garbage push representing return address
             newStatements.Add(new ReturnAddress(block.FindDeclaration("__hl")));
 
-            newStatements.Add(new Call(call.Function));
-            if (call.LValue != null)
+            newStatements.Add(new Call(call.Function, call.LValue));
+            /*if (call.LValue != null)
             {
                 newStatements.Add(new Move(call.LValue, block.FindDeclaration("__hl")));
-            }
+            }*/
             //restore regs
             newStatements.Add(new Pop(block.FindDeclaration("__bc")));
             newStatements.Add(new Pop(block.FindDeclaration("__de")));
@@ -133,11 +133,11 @@ namespace WabbitC.StatementPasses
             // Garbage push representing return address
             newStatements.Add(new ReturnAddress(block.FindDeclaration("__hl")));
 
-            newStatements.Add(new Call(call.Function));
-            if (call.LValue != null)
+            newStatements.Add(new Call(call.Function, call.LValue));
+            /*if (call.LValue != null)
             {
                 newStatements.Add(new Move(call.LValue, block.FindDeclaration("__hl")));
-            }
+            }*/
             return newStatements;
         }
 	}

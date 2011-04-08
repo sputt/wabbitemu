@@ -27,13 +27,15 @@ namespace WabbitC.StatementPasses
                         int nPos = block.Statements.IndexOf(ifStatement);
                         block.Statements.Remove(ifStatement);
 
-                        List<Statement> ifReplacement = new List<Statement>();
+                        var ifReplacement = new List<Statement>();
+						var condStatements = new List<Statement>();
                         Label trueSkipLabel = block.CreateTempLabel();
 
                         Declaration notDecl = functions.Current.Code.CreateTempDeclaration(new BuiltInType("int"));
-                        ifReplacement.Add(new Move(notDecl, ifStatement.Condition));
-                        ifReplacement.Add(new WabbitC.Model.Statements.Math.Not(notDecl));
-                        ifReplacement.Add(new Goto(trueSkipLabel, notDecl));
+						condStatements.AddRange(ifStatement.ConditionBlock);
+						condStatements.Add(new Move(notDecl, ifStatement.Condition));
+                        condStatements.Add(new WabbitC.Model.Statements.Math.Not(notDecl));
+                        ifReplacement.AddRange(Goto.ParseConditionStatements(condStatements, trueSkipLabel));
                         ifReplacement.AddRange(ifStatement.TrueCase.Statements);
                         if (ifStatement.FalseCase == null)
                         {

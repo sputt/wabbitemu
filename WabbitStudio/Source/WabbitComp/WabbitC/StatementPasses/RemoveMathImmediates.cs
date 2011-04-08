@@ -19,8 +19,9 @@ namespace WabbitC.StatementPasses
 			{
 				Block block = functions.Current.Code;
 
+				//TODO: expand to conditions
 				var maths = from Statement s in block
-							where s.GetType() == typeof(Add) || s.GetType() == typeof(Sub)
+							where s.GetType() == typeof(Add) || s.GetType() == typeof(Sub) 
 							select s;
 
 				foreach (MathStatement op in maths)

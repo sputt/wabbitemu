@@ -1,10 +1,10 @@
-﻿using WabbitC.StatementPasses.RegisterAllocator;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using WabbitC.Model;
 using WabbitC.Model.Statements;
-using System.Collections.Generic;
+using WabbitC.StatementPasses.RegisterAllocator;
 
 namespace WabbitC_Tests
 {

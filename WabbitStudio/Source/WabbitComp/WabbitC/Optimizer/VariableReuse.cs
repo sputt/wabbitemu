@@ -8,7 +8,7 @@ using WabbitC.Model.Statements;
 using WabbitC.Model.Statements.Math;
 using System.Diagnostics;
 
-namespace WabbitC
+namespace WabbitC.Optimizer
 {
     static class VariableReuse
     {
@@ -81,6 +81,8 @@ namespace WabbitC
 							if (statementToChange.GetType() == typeof(Move) && ((Move)statementToChange).LValue == ((Move)statementToChange).RValue)
 							{
 								block.Statements.Remove(statementToChange);
+								for (int index = 0; index < liveChart.Count; index++)
+									liveChart[index].livePoints.RemoveAt(k);
 								endLine--;
 								k--;
 							}
@@ -115,7 +117,7 @@ namespace WabbitC
 					for (int i = 0; i < block.Function.Params.Count; i++)
 					{
 						bool varLive = false;
-						bool[] chart = GenerateLiveChart(block, block.Function.Params[i]);
+						var chart = GenerateLiveChart(block, block.Function.Params[i]);
 						foreach (var liveValue in chart)
 							varLive |= liveValue;
 						if (varLive)
@@ -125,7 +127,7 @@ namespace WabbitC
 				for (int i = 0; i < block.Declarations.Count; i++)
 				{
 					bool varLive = false;
-					bool[] chart = GenerateLiveChart(block, block.Declarations[i]);
+					var chart = GenerateLiveChart(block, block.Declarations[i]);
 					foreach (var liveValue in chart)
 						varLive |= liveValue;
 					if (varLive)
@@ -149,8 +151,8 @@ namespace WabbitC
 						return false;
 					}
 				}
-				score = this[0].livePoints.Length;
-				for (int i = 0; i < this[0].livePoints.Length; i++)
+				score = this[0].livePoints.Count;
+				for (int i = 0; i < this[0].livePoints.Count; i++)
 				{
 					if (this[compareIndex].livePoints[i] != this[modIndex].livePoints[i])
 						score--;
@@ -168,26 +170,25 @@ namespace WabbitC
 				return -1;
 			}
 
-			bool[] GenerateLiveChart(Block block, Declaration decl)
+			List<bool> GenerateLiveChart(Block block, Declaration decl)
 			{
 				int assigned = -1;
-				bool[] livePoints = new bool[block.Statements.Count];
+				var livePoints = new List<bool>();
+				for (int i = 0; i < block.Statements.Count; i++)
+					livePoints.Add(false);
+
 				for (int i = 0; i < block.Statements.Count; i++)
 				{
 					var statement = block.Statements[i];
 					var modified = statement.GetModifiedDeclarations();
 					if (modified.Contains(decl) && statement.GetType().BaseType != typeof(MathStatement))
-					{
-						livePoints[i] = true;
 						assigned = i;
-					}
-					if (assigned == -1 && block.FindDeclaration(decl.Name) != null)
-					{
-						assigned = 0;
-					}
+
 					var refed = statement.GetReferencedDeclarations();
 					if (refed.Contains(decl))
 					{
+						if (assigned == -1 && !block.Declarations.Contains(decl))
+							assigned = 0;
 						for (int j = assigned; j <= i; j++)
 							livePoints[j] = true;
 					}
@@ -201,10 +202,10 @@ namespace WabbitC
 			public Declaration decl;
 			public int blockIndex;
 			public int chartIndex;
-			public bool[] livePoints;
+			public List<bool> livePoints;
 			public int usedCount = 0;
 
-			public VariableReuseClass(Declaration decl, int i, int varNum, bool[] chart)
+			public VariableReuseClass(Declaration decl, int i, int varNum, List<bool> chart)
 			{
 				this.decl = decl;
 				this.blockIndex = i;

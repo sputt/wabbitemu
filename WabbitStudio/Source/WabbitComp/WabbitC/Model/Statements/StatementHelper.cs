@@ -133,7 +133,7 @@ namespace WabbitC.Model.Statements
                     if (exp.IsPrefix)
                     {
                         decl = block.FindDeclaration(arg1.Text);
-                        block.Statements.Add(new Add(decl, Datum.Parse(block, Tokenizer.ToToken("1"))));
+                        block.Statements.Add(new Inc(decl));
                     }
                     else
                     {
@@ -144,7 +144,7 @@ namespace WabbitC.Model.Statements
                     if (exp.IsPrefix)
                     {
                         decl = block.FindDeclaration(arg1.Text);
-                        block.Statements.Add(new Sub(decl, Datum.Parse(block, Tokenizer.ToToken("1"))));
+                        block.Statements.Add(new Dec(decl));
                     }
                     else
                     {

@@ -11,7 +11,13 @@ namespace WabbitC.Model.Statements
         List<Declaration> GetReferencedDeclarations();
     }
 
-    class Statement : IEnumerable<Block>, IDeclarations
+	interface IAllocationScheme
+	{
+		List<Declaration> GetAllocatableRegisters();
+		//TODO: add stuff for 8 bit numbers
+	}
+
+    class Statement : IEnumerable<Block>, IDeclarations, ICloneable, IAllocationScheme
     {
         public Block Block;
         public HashSet<String> Properties;
@@ -48,6 +54,24 @@ namespace WabbitC.Model.Statements
 
         #endregion
 
+		#region ICloneable Members
+
+		public object Clone()
+		{
+			return this.MemberwiseClone();
+		}
+
+		#endregion
+
+		#region IAllocationScheme
+
+		public virtual List<Declaration> GetAllocatableRegisters()
+		{
+			return new List<Declaration> { Block.FindDeclaration("__hl"), Block.FindDeclaration("__de"), Block.FindDeclaration("__bc") };
+		}
+
+		#endregion
+
 		public virtual string ToAssemblyString()
 		{
 			return "";
@@ -82,5 +106,5 @@ namespace WabbitC.Model.Statements
                 }
             }
         }
-    }
+	}
 }
