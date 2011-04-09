@@ -193,7 +193,8 @@ void EndSPASMErrorSession(int nSession)
 	list_t *pPrev = NULL;
 	while (((LPERRORINSTANCE) pList->data)->nSession != nSession)
 	{
-		if (((LPERRORINSTANCE) pList->data)->nPrintSession > nSession)
+		LPERRORINSTANCE lpErr = (LPERRORINSTANCE) pList->data;
+		if (lpErr->nPrintSession > nSession || lpErr->nPrintSession == -1)
 		{
 		   if (pPrev == NULL)
 		   {

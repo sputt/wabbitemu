@@ -404,5 +404,12 @@ int main (int argc, char **argv)
 	if (include_dirs)
 		list_free(include_dirs, true);
 
+#ifdef _WINDOWS
+	if (IsDebuggerPresent())
+	{
+		system("PAUSE");
+	}
+#endif
+
 	return error;
 }

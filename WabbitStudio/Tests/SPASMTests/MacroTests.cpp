@@ -312,6 +312,20 @@ namespace SPASMTestsVS2008
 			Assert::AreEqual(gcnew String("XXXXXXXX"), str);
 		};
 
+		[TestMethod]
+		void ConcatMacro5()
+		{
+			char buffer[256] = " ConcatMacro5()";
+			error_occurred = false;
+			run_first_pass(buffer);
+			Assert::IsFalse(error_occurred);
+
+			System::IO::StreamReader ^sr = gcnew System::IO::StreamReader("ConcatMacro5.txt");
+			System::String ^str = sr->ReadLine();
+
+			Assert::AreEqual(gcnew String("XXXXXXX"), str);
+		};
+
 		void IsWithinRange(int v1, int v2)
 		{
 			int diff = abs(v1 - v2);

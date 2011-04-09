@@ -1,0 +1,5 @@
+#define zstr(z) .db z,0
+#define .str zstr(
+
+.org 1234
+test .str "hello"

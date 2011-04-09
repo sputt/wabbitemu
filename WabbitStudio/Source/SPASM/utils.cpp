@@ -162,10 +162,16 @@ char *eval (const char *expr)
 	int value;
 
 	suppress_errors = true;
-	if (parse_num (expr, &value)) {
+	int session = StartSPASMErrorSession();
+	bool fResult = parse_num (expr, &value);
+	EndSPASMErrorSession(session);
+	if (fResult)
+	{
 		sprintf (result, "$%0X", value);
 		expr_value = strdup (result);
-	} else {
+	}
+	else
+	{
 		expr_value = expand_expr (expr);
 	}
 	suppress_errors = suppress_backup;
@@ -205,6 +211,7 @@ char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 					show_warning ("Macro '%s' was given too many arguments, ignoring extras", define->name);
 					break;
 				}
+
 				add_arg(strdup(define->args[num_args++]), eval(word), *curr_arg_set);
 			}
 		}

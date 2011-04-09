@@ -1,0 +1,10 @@
+#macro echo_fill(times, char, base)
+#if times > 0
+ #define base base,char
+ echo_fill(eval(times-1), char, base)
+#else
+ .db base
+#endif
+#endmacro
+
+ echo_fill(4, 'Z', 'A')

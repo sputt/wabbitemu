@@ -51,10 +51,10 @@ Global
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Release|Win32.Build.0 = Release|Win32
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Release|x64.ActiveCfg = Release|x64
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Release|x64.Build.0 = Release|x64
-		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|Win32.ActiveCfg = Debug|Win32
-		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|Win32.Build.0 = Debug|Win32
-		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|x64.ActiveCfg = Debug|x64
-		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|x64.Build.0 = Debug|x64
+		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|Win32.ActiveCfg = Static Library Debug|Win32
+		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|Win32.Build.0 = Static Library Debug|Win32
+		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|x64.ActiveCfg = Static Library Debug|x64
+		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|x64.Build.0 = Static Library Debug|x64
 		{25CD8176-A277-42A2-830F-42EF5D576037}.Debug|Win32.ActiveCfg = Debug|Win32
 		{25CD8176-A277-42A2-830F-42EF5D576037}.Debug|Win32.Build.0 = Debug|Win32
 		{25CD8176-A277-42A2-830F-42EF5D576037}.Debug|x64.ActiveCfg = Debug|x64
@@ -64,7 +64,6 @@ Global
 		{25CD8176-A277-42A2-830F-42EF5D576037}.Release|x64.ActiveCfg = Release|x64
 		{25CD8176-A277-42A2-830F-42EF5D576037}.Release|x64.Build.0 = Release|x64
 		{25CD8176-A277-42A2-830F-42EF5D576037}.Static Library Debug|Win32.ActiveCfg = Debug|Win32
-		{25CD8176-A277-42A2-830F-42EF5D576037}.Static Library Debug|Win32.Build.0 = Debug|Win32
 		{25CD8176-A277-42A2-830F-42EF5D576037}.Static Library Debug|x64.ActiveCfg = Debug|x64
 		{25CD8176-A277-42A2-830F-42EF5D576037}.Static Library Debug|x64.Build.0 = Debug|x64
 	EndGlobalSection

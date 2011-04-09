@@ -83,6 +83,19 @@
 #endmacro
 
 
+#macro InternalConcatMacro5(times, char, base)
+  #if times > 0
+    #define base base,char
+    InternalConcatMacro5(times - 1, char, base)
+  #else
+    .echo >> ConcatMacro5.txt base
+  #endif
+#endmacro
+
+#macro ConcatMacro5()
+  InternalConcatMacro5(4, "X", "XXX")
+#endmacro
+
 #macro Fixed14Power(val, pow)
   #if pow = 0
     16384
