@@ -24,6 +24,11 @@ namespace WabbitC.Model.Statements.Condition
 			return Tokenizer.ToToken("==");
 		}
 
+		public override string ToAssemblyString()
+		{
+			return "add hl,de";
+		}
+
         #region IMathOperator Members
 
         public Token GetHandledOperator()

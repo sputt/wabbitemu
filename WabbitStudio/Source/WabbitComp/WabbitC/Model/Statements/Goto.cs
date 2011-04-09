@@ -124,7 +124,7 @@ namespace WabbitC.Model.Statements
 				{
 					cond = GotoCondition.NZ;
 				}
-				//newStatements.Add(statement);
+				newStatements.Add(statement);
 			}
 			newStatements.Add(new Goto(TargetLabel, lastMoveDecl, cond));
 			return newStatements;

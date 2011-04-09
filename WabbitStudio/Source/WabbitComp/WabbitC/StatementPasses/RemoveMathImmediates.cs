@@ -19,9 +19,11 @@ namespace WabbitC.StatementPasses
 			{
 				Block block = functions.Current.Code;
 
-				//TODO: expand to conditions
 				var maths = from Statement s in block
 							where s.GetType() == typeof(Add) || s.GetType() == typeof(Sub) 
+							select s;
+				var conds = from Statement s in block
+							where s.GetType().BaseType == typeof(ConditionStatement)
 							select s;
 
 				foreach (MathStatement op in maths)
@@ -39,11 +41,21 @@ namespace WabbitC.StatementPasses
 							block.Statements.Remove(op);
 							block.Statements.Insert(offset, new Add(temp, imm));
 						}
-						else
-						{
-							block.Statements.Insert(offset, new Assignment(temp, imm));
-							op.RValue = temp;
-						}
+						block.Statements.Insert(offset, new Assignment(temp, imm));
+						op.RValue = temp;
+					}
+				}
+
+				foreach (ConditionStatement cond in conds)
+				{
+					if (cond.CondValue.GetType() == typeof(Immediate))
+					{
+						Immediate imm = (Immediate)cond.CondValue;
+						Declaration temp = block.CreateTempDeclaration(imm.Type);
+
+						int offset = block.Statements.IndexOf(cond);
+						block.Statements.Insert(offset, new Assignment(temp, imm));
+						cond.CondValue = temp;
 					}
 				}
 			}
