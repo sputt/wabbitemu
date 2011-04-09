@@ -17,10 +17,11 @@
  * new location in the file
  */
 
-char *handle_directive (char *ptr) {
+char *handle_directive (const char *ptr) {
 	static const char *dirs[] = {"db", "dw", "end", "org", "byte", "word", "fill", "block", "addinstr",
 		"echo", "error", "list", "nolist", "equ", "show", "option", "seek", NULL};
-	char *name_end, *name;
+	const char *name_end;
+	char *name;
 	int dir;
 
 	//same deal as handle_preop, just with directives instead
@@ -39,7 +40,7 @@ char *handle_directive (char *ptr) {
 	free (name);
 
 	if (!dirs[dir])
-		return handle_opcode_or_macro (ptr - 1);
+		return handle_opcode_or_macro ((char *) ptr - 1);
 
 	ptr = skip_whitespace (name_end);
 
@@ -365,8 +366,10 @@ char *handle_directive (char *ptr) {
 		}
 		case 15: //OPTION
 		{
-			char word[256];
-			while (read_expr (&ptr, word, ",")) {
+			char *word = NULL;
+			arg_context_t context = ARG_CONTEXT_INITIALIZER;
+			while ((word = extract_arg_string(&ptr, &context)) != NULL)
+			{
 				char name[256], *expr = word;
 				char *define_name;
 				define_t *define;
@@ -375,7 +378,7 @@ char *handle_directive (char *ptr) {
 				
 				if (!(isalpha(name[0]))) {
 					show_error("Invalid option '%s'", name);
-					return ptr;
+					return (char *) ptr;
 				}
 				
 				if (is_end_of_code_line (skip_whitespace (expr)))
@@ -422,7 +425,7 @@ char *handle_directive (char *ptr) {
 		}
 	}
 
-	return ptr;
+	return (char *) ptr;
 }
 
 
