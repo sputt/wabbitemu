@@ -63,7 +63,7 @@
 
 #define __inout
 
-typedef unsigned long DWORD;
+typedef unsigned int DWORD;
 typedef const char *LPCTSTR;
 typedef char *LPSTR, *LPTSTR;
 typedef char TCHAR;
