@@ -342,7 +342,8 @@ char *handle_preop_define (const char *ptr) {
 		//handle EVAL, evaluate the contents
 		if (!strcasecmp (word, "eval")) {
 			char expr[256], *new_value;
-
+			if (*eval_ptr == '(')
+				eval_ptr++;
 			read_expr (&eval_ptr, expr, ")");
 			new_value = eval (expr);
 			set_define (define, new_value, -1, redefined);
