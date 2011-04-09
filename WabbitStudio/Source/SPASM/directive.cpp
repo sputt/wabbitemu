@@ -375,6 +375,10 @@ char *handle_directive (const char *ptr) {
 				define_t *define;
 
 				read_expr(&expr, name, "=");
+				if (*expr == '=')
+				{
+					expr++;
+				}
 				
 				if (!(isalpha(name[0]))) {
 					show_error("Invalid option '%s'", name);
