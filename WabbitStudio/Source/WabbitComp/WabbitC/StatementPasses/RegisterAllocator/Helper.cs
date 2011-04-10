@@ -53,6 +53,11 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 
 			Registers = new List<Register>();
 
+			var A = new Register("__a");
+			A.Decl = block.FindDeclaration(A.Name);
+			A.Type = new WabbitC.Model.Types.BuiltInType("char");
+			Registers.Add(A);
+
 			for (int i = 0; i <= registers.GetUpperBound(0); i++)
 			{
 				var Pair = new Register(registers[i, 0]);
@@ -75,10 +80,6 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 				Registers.Add(R2);
 			}
 
-			var A = new Register("__a");
-			A.Decl = block.FindDeclaration(A.Name);
-			A.Type = new WabbitC.Model.Types.BuiltInType("char");
-			Registers.Add(A);
 			Block = block;	
 		}
 

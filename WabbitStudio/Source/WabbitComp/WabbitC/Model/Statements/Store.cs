@@ -16,19 +16,14 @@ namespace WabbitC.Model.Statements
             Value = value;
         }
 
-        public override List<Declaration> GetModifiedDeclarations()
+		public override ISet<Declaration> GetModifiedDeclarations()
         {
-            var Result = new List<Declaration>();
-            if (StoreAddress.GetType() == typeof(Declaration))
-            {
-                Result.Add(StoreAddress as Declaration);
-            }
-            return Result;
+			return new HashSet<Declaration>() { };
         }
 
-        public override List<Declaration> GetReferencedDeclarations()
+        public override ISet<Declaration> GetReferencedDeclarations()
         {
-            var Result = new List<Declaration>();
+            var Result = new HashSet<Declaration>();
             if (StoreAddress.GetType() == typeof(Declaration))
             {
                 Result.Add(StoreAddress as Declaration);

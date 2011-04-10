@@ -21,9 +21,14 @@ namespace WabbitC.Model.Statements
 			return "ex de,hl";
 		}
 
-		public override List<Declaration> GetReferencedDeclarations()
+		public override ISet<Declaration> GetModifiedDeclarations()
 		{
-			return new List<Declaration>() { Block.FindDeclaration("__hl"), Block.FindDeclaration("__de") };
+			return new HashSet<Declaration>() { Block.FindDeclaration("__hl"), Block.FindDeclaration("__de") };
+		}
+
+		public override ISet<Declaration> GetReferencedDeclarations()
+		{
+			return new HashSet<Declaration>() { Block.FindDeclaration("__hl"), Block.FindDeclaration("__de") };
 		}
 	}
 }

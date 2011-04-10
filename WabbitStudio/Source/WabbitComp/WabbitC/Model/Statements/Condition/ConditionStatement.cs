@@ -46,20 +46,20 @@ namespace WabbitC.Model.Statements
 			return null;
 		}
 
-        public override List<Declaration> GetModifiedDeclarations()
+        public override ISet<Declaration> GetModifiedDeclarations()
         {
-            return new List<Declaration>() { LValue };
+            return new HashSet<Declaration>() { LValue };
         }
 
-        public override List<Declaration> GetReferencedDeclarations()
+		public override ISet<Declaration> GetReferencedDeclarations()
         {
             if (CondValue.GetType() == typeof(Declaration))
             {
-                return new List<Declaration>() { CondDecl, CondValue as Declaration };
+				return new HashSet<Declaration>() { CondDecl, CondValue as Declaration };
             }
             else
             {
-                return new List<Declaration>() { CondDecl };
+				return new HashSet<Declaration>() { CondDecl };
             }
         }
 

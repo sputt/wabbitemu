@@ -13,14 +13,14 @@ namespace WabbitC.Model.Statements
 			Decl = decl;
 		}
 
-		public override List<Declaration> GetModifiedDeclarations()
+		public override ISet<Declaration> GetModifiedDeclarations()
 		{
-			return new List<Declaration>() { Decl };
+			return new HashSet<Declaration>() { Decl };
 		}
 
-		public override List<Declaration> GetReferencedDeclarations()
+		public override ISet<Declaration> GetReferencedDeclarations()
 		{
-			return new List<Declaration>() { Decl };
+			return new HashSet<Declaration>() { Decl };
 		}
 
 		public override string ToString()

@@ -69,7 +69,7 @@ namespace WabbitC.Optimizer
 				{
 					var math = statement as MathStatement;
 					var imath = statement as IMathOperator;
-					var refedSymbols = math.GetReferencedDeclarations();
+					var refedSymbols = math.GetReferencedDeclarations().ToList();
 					var refed = refedSymbols.Count > 1 ? refedSymbols[1] : refedSymbols[0];
 					if (math.LValue.ConstValue != null || refed.ConstValue != null)
 					{

@@ -34,12 +34,16 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 
 					var newStatements = new List<Statement>();
 
-					foreach (var decl in statement.GetReferencedDeclarations())
+					foreach (var decl in statement.GetReferencedDeclarations().Union(statement.GetModifiedDeclarations()))
 					{
 						var allocStatements = new List<Statement>();
 						Declaration reg = helper.AllocateRegister(decl, ref allocStatements);
 						Debug.Assert(decl != null);
-						newStatements.Add(new StackLoad(reg, decl));
+						
+						if (statement.GetReferencedDeclarations().Contains(decl))
+						{
+							newStatements.Add(new StackLoad(reg, decl));
+						}
 						newStatements.AddRange(allocStatements);
 
 						statement.ReplaceDeclaration(decl, reg);

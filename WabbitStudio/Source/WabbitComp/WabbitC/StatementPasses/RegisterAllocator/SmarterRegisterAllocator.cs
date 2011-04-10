@@ -87,8 +87,8 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 
 				List<Statement> replacementList = new List<Statement>();
 
-				var usedLValues = statement.GetModifiedDeclarations();
-				List<Declaration> usedDecls = statement.GetReferencedDeclarations();
+				List<Declaration> usedLValues = statement.GetModifiedDeclarations().ToList<Declaration>();
+				List<Declaration> usedDecls = statement.GetReferencedDeclarations().ToList<Declaration>();
 
 				if (usedLValues.Count == 1)
 				{

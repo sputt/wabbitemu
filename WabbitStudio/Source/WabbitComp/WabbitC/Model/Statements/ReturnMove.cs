@@ -13,14 +13,14 @@ namespace WabbitC.Model.Statements
             RValue = src;
         }
 
-        public override List<Declaration> GetModifiedDeclarations()
+        public override ISet<Declaration> GetModifiedDeclarations()
         {
-            return new List<Declaration>() { Block.FindDeclaration("__hl") };
+            return new HashSet<Declaration>() { Block.FindDeclaration("__hl") };
         }
 
-        public override List<Declaration> GetReferencedDeclarations()
+        public override ISet<Declaration> GetReferencedDeclarations()
         {
-            var temp = new List<Declaration>();
+            var temp = new HashSet<Declaration>();
 			if (RValue.GetType() == typeof(Declaration))
 				temp.Add((Declaration)RValue);
 			return temp;

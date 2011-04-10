@@ -7,6 +7,9 @@ using WabbitC.Model.Types;
 
 namespace WabbitC.Model.Statements
 {
+	/// <summary>
+	/// Used to push the return address onto the stack before calling a function
+	/// </summary>
 	class ReturnAddress : Push
 	{
 		public Declaration Decl;
@@ -16,14 +19,14 @@ namespace WabbitC.Model.Statements
 			Decl = decl;
 		}
 
-		public override List<Declaration> GetModifiedDeclarations()
+		public override ISet<Declaration> GetModifiedDeclarations()
 		{
-			return new List<Declaration>() { };
+			return new HashSet<Declaration>() { };
 		}
 
-		public override List<Declaration> GetReferencedDeclarations()
+		public override ISet<Declaration> GetReferencedDeclarations()
 		{
-			return new List<Declaration>() { Decl };
+			return new HashSet<Declaration>() { Decl };
 		}
 
 		public override string ToString()

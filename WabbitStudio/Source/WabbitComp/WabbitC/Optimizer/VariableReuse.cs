@@ -29,7 +29,7 @@ namespace WabbitC.Optimizer
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
-				var modifiedVars = statement.GetModifiedDeclarations();
+				var modifiedVars = statement.GetModifiedDeclarations().ToList();
 				if (modifiedVars.Count == 1)
 				{
 					int j;
@@ -142,8 +142,8 @@ namespace WabbitC.Optimizer
 				{
 					if (this[compareIndex].livePoints[startLine])
 					{
-						var mod = block.Statements[startLine].GetModifiedDeclarations();
-						var refed = block.Statements[startLine].GetReferencedDeclarations();
+						var mod = block.Statements[startLine].GetModifiedDeclarations().ToList();
+						var refed = block.Statements[startLine].GetReferencedDeclarations().ToList();
 						if (mod.Count > 0 && refed.Count > 0 && ((mod[mod.Count - 1] == this[compareIndex].decl
 							&& refed[refed.Count - 1] == this[modIndex].decl) || (mod[mod.Count - 1] == this[modIndex].decl
 							&& refed[refed.Count - 1] == this[compareIndex].decl)))

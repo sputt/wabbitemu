@@ -14,11 +14,11 @@ namespace WabbitC.Model.Statements
             ReturnReg = decl;
         }
 
-        public override List<Declaration> GetReferencedDeclarations()
+        public override ISet<Declaration> GetReferencedDeclarations()
         {
             if (ReturnReg != null && ReturnReg.GetType() == typeof(Declaration))
             {
-                return new List<Declaration>() { ReturnReg as Declaration };
+                return new HashSet<Declaration>() { ReturnReg as Declaration };
             }
             else
             {

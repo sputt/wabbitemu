@@ -17,15 +17,14 @@ namespace WabbitC.Model.Statements
         }
 
 
-        public override List<Declaration> GetModifiedDeclarations()
+        public override ISet<Declaration> GetModifiedDeclarations()
         {
-            return new List<Declaration>() { LValue };
+			return new HashSet<Declaration>() { LValue };
         }
 
-        public override List<Declaration> GetReferencedDeclarations()
+        public override ISet<Declaration> GetReferencedDeclarations()
         {
-            var Result = new List<Declaration>();
-            Result.Add(LValue);
+			var Result = new HashSet<Declaration>();
             if (LoadAddress.GetType() == typeof(Declaration))
             {
                 Result.Add(LoadAddress as Declaration);

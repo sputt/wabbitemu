@@ -38,7 +38,7 @@ namespace WabbitC.Optimizer
             }
         }
 
-        static void MarkAlive(List<Declaration> decls)
+        static void MarkAlive(IEnumerable<Declaration> decls)
         {
 			foreach (var decl in decls)
 			{

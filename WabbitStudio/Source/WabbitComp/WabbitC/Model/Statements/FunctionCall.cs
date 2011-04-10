@@ -60,17 +60,17 @@ namespace WabbitC.Model.Statements
             Params = funcParams;
         }
 
-        public override List<Declaration> GetModifiedDeclarations()
+		public override ISet<Declaration> GetModifiedDeclarations()
         {
-            return new List<Declaration>() { LValue };
+            return new HashSet<Declaration>() { LValue };
         }
 
-        public override List<Declaration> GetReferencedDeclarations()
+        public override ISet<Declaration> GetReferencedDeclarations()
         {
-			var temp = new List<Declaration>();
+			var temp = new HashSet<Declaration>();
 			temp.Add(Function);
-			temp.AddRange(Params);
-            return Params;
+			temp.UnionWith(Params);
+			return temp;
         }
 
         public override string ToString()

@@ -68,7 +68,7 @@ namespace WabbitC.Optimizer
 						var newStatement = refed.ConstStatement;
 						if (newStatement != null && newStatement.GetType() == typeof(Move))
 						{
-							math.ReplaceDeclaration(refed, newStatement.GetReferencedDeclarations()[0]);
+							math.ReplaceDeclaration(refed, newStatement.GetReferencedDeclarations().First());
 							block.Statements[i] = math;
 							//block.Statements.Remove(newStatement);
 						}
@@ -167,8 +167,8 @@ namespace WabbitC.Optimizer
 					if (returnVal.ConstStatement != null && returnVal.ConstStatement.GetType() == typeof(Move))
 					{
 						var newStatement = returnVal.ConstStatement;
-						var lValue = newStatement.GetModifiedDeclarations()[0];
-						returnStatement.ReplaceDeclaration(lValue, newStatement.GetReferencedDeclarations()[0]);
+						var lValue = newStatement.GetModifiedDeclarations().First();
+						returnStatement.ReplaceDeclaration(lValue, newStatement.GetReferencedDeclarations().First());
 						//block.Statements.Remove(newStatement);
 					}
 				}

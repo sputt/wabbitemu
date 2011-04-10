@@ -34,16 +34,14 @@ namespace WabbitC.Model.Statements
 			GotoCond = cond;
         }
 
-        public override List<Declaration> GetReferencedDeclarations()
+        public override ISet<Declaration> GetReferencedDeclarations()
         {
+			var result = new HashSet<Declaration>();
 			if (CondDecl != null)
 			{
-				return new List<Declaration> { CondDecl };
+				result.Add(CondDecl);
 			}
-			else
-			{
-				return base.GetReferencedDeclarations();
-			}
+			return result;
         }
 
         public override string ToString()

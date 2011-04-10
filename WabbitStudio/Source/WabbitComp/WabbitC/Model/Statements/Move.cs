@@ -16,14 +16,14 @@ namespace WabbitC.Model.Statements
             RValue = src;
         }
 
-        public override List<Declaration> GetModifiedDeclarations()
+        public override ISet<Declaration> GetModifiedDeclarations()
         {
-            return new List<Declaration>() { LValue };
+            return new HashSet<Declaration>() { LValue };
         }
 
-        public override List<Declaration> GetReferencedDeclarations()
+		public override ISet<Declaration> GetReferencedDeclarations()
         {
-			return new List<Declaration>() { LValue, RValue };
+			return new HashSet<Declaration>() { RValue };
         }
 
         public override string ToString()

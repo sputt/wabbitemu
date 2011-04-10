@@ -75,20 +75,20 @@ namespace WabbitC.Model.Statements.Math
             return decl;
         }
 
-        public override List<Declaration> GetModifiedDeclarations()
+        public override ISet<Declaration> GetModifiedDeclarations()
         {
-            return new List<Declaration>() { LValue };
+            return new HashSet<Declaration>() { LValue };
         }
 
-        public override List<Declaration> GetReferencedDeclarations()
+		public override ISet<Declaration> GetReferencedDeclarations()
         {
             if (RValue != null && RValue.GetType() == typeof(Declaration))
             {
-                return new List<Declaration>() { LValue, RValue as Declaration };
+				return new HashSet<Declaration>() { LValue, RValue as Declaration };
             }
             else
             {
-                return new List<Declaration>() { LValue };
+				return new HashSet<Declaration>() { LValue };
             }
         }
 

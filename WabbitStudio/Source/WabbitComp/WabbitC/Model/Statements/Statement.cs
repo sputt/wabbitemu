@@ -7,20 +7,32 @@ namespace WabbitC.Model.Statements
 {
     interface IDeclarations
     {
-        List<Declaration> GetModifiedDeclarations();
-        List<Declaration> GetReferencedDeclarations();
+		ISet<Declaration> GetModifiedDeclarations();
+		ISet<Declaration> GetReferencedDeclarations();
     }
 
 	interface IAllocationScheme
 	{
-		List<Declaration> GetAllocatableRegisters();
-		//TODO: add stuff for 8 bit numbers
+		ISet<Declaration> GetAllocatableRegisters(Declaration decl);
 	}
 
     class Statement : IEnumerable<Block>, IDeclarations, ICloneable, IAllocationScheme
     {
         public Block Block;
         public HashSet<String> Properties;
+
+		public Module Module
+		{
+			get
+			{
+				Block curBlock = Block;
+				while (curBlock != null && curBlock.GetType() != typeof(Module))
+				{
+					curBlock = curBlock.Parent;
+				}
+				return curBlock as Module;
+			}
+		}
 
         #region IEnumerable<Block> Members
 
@@ -42,14 +54,14 @@ namespace WabbitC.Model.Statements
 
         #region IDeclarations Members
 
-        public virtual List<Declaration> GetModifiedDeclarations()
+		public virtual ISet<Declaration> GetModifiedDeclarations()
         {
-            return new List<Declaration>();
+            return new HashSet<Declaration>();
         }
 
-        public virtual List<Declaration> GetReferencedDeclarations()
+		public virtual ISet<Declaration> GetReferencedDeclarations()
         {
-            return new List<Declaration>();
+			return new HashSet<Declaration>();
         }
 
         #endregion
@@ -65,9 +77,14 @@ namespace WabbitC.Model.Statements
 
 		#region IAllocationScheme
 
-		public virtual List<Declaration> GetAllocatableRegisters()
+		public virtual ISet<Declaration> GetAllocatableRegisters(Declaration decl)
 		{
-			return new List<Declaration> { Block.FindDeclaration("__hl"), Block.FindDeclaration("__de"), Block.FindDeclaration("__bc") };
+			var set = GetModifiedDeclarations().Union(GetReferencedDeclarations());
+			if (!set.Contains(decl))
+			{
+				throw new System.Exception("This declaration is not even in this statement");
+			}
+			return Module.GeneralPurposeRegisters;
 		}
 
 		#endregion
