@@ -17,7 +17,7 @@ typedef struct tagSENDINFO
 	HANDLE hThread;
 	HWND hwndDlg;
 	std::vector<std::tstring> *FileList;
-	SEND_FLAG destination;
+	std::vector<SEND_FLAG> *DestinationList;
 	
 	// Download progress
 	int iCurrentFile;
@@ -96,7 +96,7 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 	lpsi->Error = LERR_SUCCESS;
 	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)	{
 		SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);	
-		lpsi->Error = SendFile(NULL, lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), lpsi->destination);
+		lpsi->Error = SendFile(NULL, lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), lpsi->DestinationList->at(lpsi->iCurrentFile));
 		if (lpsi->Error != LERR_SUCCESS)
 			break;
 	}
@@ -142,6 +142,7 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND
 			lpsi = new SENDINFO;
 			ZeroMemory(lpsi, sizeof(SENDINFO));
 			lpsi->FileList = new std::vector<std::tstring>;
+			lpsi->DestinationList = new std::vector<SEND_FLAG>;
 			g_SendInfo[lpCalc] = lpsi;
 
 			lpsi->hFileListMutex = CreateMutex(NULL, FALSE, NULL);
@@ -151,7 +152,6 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND
 		{
 			lpsi = g_SendInfo[lpCalc];
 		}
-		lpsi->destination = destination;
 
 		if (lpsi->hwndDlg == NULL) {
 			lpsi->hwndDlg = CreateSendFileProgress(lpCalc->hwndLCD, lpCalc);
@@ -160,6 +160,7 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND
 		// Add the file to the transfer queue
 		if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0) {
 			lpsi->FileList->push_back(lpszFileName);
+			lpsi->DestinationList->push_back(destination);
 			ReleaseMutex(lpsi->hFileListMutex);
 		} else {
 			ReleaseMutex(hSendInfoMutex);
