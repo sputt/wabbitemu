@@ -150,6 +150,7 @@
     <Compile Include="Optimizer\RemoveUselessMath.cs" />
     <Compile Include="StatementPasses\LabelMerger.cs" />
     <Compile Include="StatementPasses\RegisterAllocator\Helper.cs" />
+    <Compile Include="StatementPasses\RegisterAllocator\Register.cs" />
     <Compile Include="StatementPasses\RemoveMathImmediates.cs" />
     <Compile Include="StatementPasses\RemovePointlessGotos.cs" />
     <Compile Include="StatementPasses\ReorderDeclarations.cs" />

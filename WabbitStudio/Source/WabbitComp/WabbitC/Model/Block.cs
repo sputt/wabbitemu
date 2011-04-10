@@ -360,10 +360,12 @@ namespace WabbitC.Model
             {
                 result += "{\n";
             }
+
             foreach (Declaration decl in Declarations)
             {
                 result += decl.ToDeclarationString() + "\n";
             }
+
             if (Statements != null)
             {
                 foreach (Statement statement in Statements)

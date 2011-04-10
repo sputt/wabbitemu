@@ -45,8 +45,8 @@ namespace WabbitC.Model
 			GeneralPurposeRegisters = gprs;
 			Registers = regs;
 
-			Declarations.Add(new Declaration(new Types.Array(new BuiltInType("unsigned char"), "[2048]"), "__stack"));
-			Declarations.AddRange(Registers);
+			Declarations.Insert(0, new Declaration(new Types.Array(new BuiltInType("unsigned char"), "[2048]"), "__stack"));
+			Declarations.InsertRange(0, Registers);
 
 			//TODO: make so assignment statements work...
             this.Parent = null;

@@ -39,13 +39,13 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 						var allocStatements = new List<Statement>();
 						Declaration reg = helper.AllocateRegister(decl, ref allocStatements);
 						Debug.Assert(decl != null);
-						
+						Debug.Assert(reg != null);
+
 						if (statement.GetReferencedDeclarations().Contains(decl))
 						{
 							newStatements.Add(new StackLoad(reg, decl));
 						}
 						newStatements.AddRange(allocStatements);
-
 						statement.ReplaceDeclaration(decl, reg);
 					}
 
@@ -53,19 +53,24 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 					
 					foreach (var decl in statement.GetModifiedDeclarations())
 					{
-						newStatements.Add(new StackStore(helper.GetAssignedVariable(decl), decl));
+						Declaration slot = helper.GetAssignedVariable(decl);
+						Debug.Assert(slot != null);
+						Debug.Assert(decl != null);
+						newStatements.Add(new StackStore(slot, decl));
 					}
 
 					block.Statements.InsertRange(index, newStatements);
 
-					foreach (var decl in statement.GetReferencedDeclarations())
+					foreach (var decl in statement.GetReferencedDeclarations().Union(statement.GetModifiedDeclarations()))
 					{
 						helper.FreeRegister(decl);
 					}
 				}
 
-				functions.Current.Code.Statements.Insert(0, new StackFrameInit(block, block.stack.Size));
-				functions.Current.Code.Statements.Add(new StackFrameCleanup(block, block.stack.Size));
+				block.Statements.Insert(0, new StackFrameInit(block, block.stack.Size));
+				block.Statements.Add(new StackFrameCleanup(block, block.stack.Size));
+
+				block.Declarations.Clear();
 			}
         }
     }
