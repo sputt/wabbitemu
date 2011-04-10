@@ -722,6 +722,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	if (load_files_first && Findhwnd)
 		SendMessage(Findhwnd, WM_COMMAND, IDM_FILE_NEW, 0);
 
+	SEND_FLAG ram = SEND_CUR;
 	if (argv && argc > 1) {
 #ifdef _UNICODE
 		StringCbCopy(tmpstring, sizeof(tmpstring), argv[1]);
@@ -729,13 +730,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		size_t numConv;
 		wcstombs_s(&numConv, tmpstring, argv[1], 512);
 #endif
-		if ((tmpstring[0] == '-') && (tmpstring[1] == 'n'))
+		if ((tmpstring[0] == '-') && (toupper(tmpstring[1]) == 'N'))
 			loadfiles = TRUE;
 		else {
 			if (!loadfiles) {
 				COPYDATASTRUCT cds;
 				TCHAR *FileNames = NULL;
-				cds.dwData = SEND_CUR;
+				cds.dwData = ram;
 				for(i = 1; i < argc; i++) {
 					memset(tmpstring, 0, 512);
 #ifdef _UNICODE
@@ -752,6 +753,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 					} else {
 						if (toupper(tmpstring[1]) == 'F')
 							SwitchToThisWindow(FindChildhwnd, TRUE);
+						else if (toupper(tmpstring[1]) == 'R')
+							ram = SEND_RAM;
+						else if (toupper(tmpstring[1]) == 'A')
+							ram = SEND_ARC;
 					}
 				}
 			}
@@ -849,7 +854,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				wcstombs_s(&numConv, tmpstring, argv[i], 512);
 #endif
 				if (tmpstring[0] != '-') {
-					SendFileToCalc(lpCalc, tmpstring, TRUE);
+					SendFileToCalc(lpCalc, tmpstring, TRUE, ram);
+				} else if (toupper(tmpstring[1]) == 'R') {
+					ram = SEND_RAM;
+				} else if (toupper(tmpstring[1]) == 'A') {
+					ram = SEND_ARC;
 				}
 			}
 		}
