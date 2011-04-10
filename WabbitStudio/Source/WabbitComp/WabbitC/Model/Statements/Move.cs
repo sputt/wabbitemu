@@ -28,8 +28,6 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-			if (LValue == RValue)
-				return "";
             return LValue.Name + " = " + RValue.Name + ";";
         }
 

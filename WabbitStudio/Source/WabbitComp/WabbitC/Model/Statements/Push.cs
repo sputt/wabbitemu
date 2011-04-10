@@ -11,6 +11,10 @@ namespace WabbitC.Model.Statements
 	{
 		public Declaration Decl;
 
+		public Push()
+		{
+		}
+
 		public Push(Declaration decl)
 		{
 			Decl = decl;

@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 using WabbitC.Model;
 using WabbitC.Model.Statements;
+
 
 namespace WabbitC.StatementPasses.RegisterAllocator
 {
@@ -54,11 +57,15 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 			{
 				var Pair = new Register(registers[i, 0]);
 				Pair.Type = new WabbitC.Model.Types.BuiltInType("int");
+				Pair.Decl = block.FindDeclaration(Pair.Name);
+
 				var R1 = new Register(registers[i, 1]);
+				R1.Decl = block.FindDeclaration(registers[i, 1]);
 				R1.Parent = Pair;
 				R1.Type = new WabbitC.Model.Types.BuiltInType("char");
 
 				var R2 = new Register(registers[i, 2]);
+				R2.Decl = block.FindDeclaration(registers[i, 2]);
 				R2.Parent = Pair;
 				R2.Type = new WabbitC.Model.Types.BuiltInType("char");
 
@@ -69,9 +76,22 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 			}
 
 			var A = new Register("__a");
+			A.Decl = block.FindDeclaration(A.Name);
 			A.Type = new WabbitC.Model.Types.BuiltInType("char");
 			Registers.Add(A);
 			Block = block;	
+		}
+
+		private Register RegisterFromDecl(Declaration decl)
+		{
+			foreach (var reg in Registers)
+			{
+				if (reg.Decl == decl || reg.AssignedDecl == decl)
+				{
+					return reg;
+				}
+			}
+			return null;
 		}
 
 		private void UpdateUseCount(ref Dictionary<Declaration, int> dict, Declaration decl)
@@ -89,6 +109,13 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 
 		private bool IsRegisterFree(Register reg)
 		{
+			if (reg.Parent != null)
+			{
+				if (reg.Parent.AssignedDecl != null)
+				{
+					return false;
+				}
+			}
 			if (reg.AssignedDecl != null)
 			{
 				return false;
@@ -102,14 +129,42 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 
 		private Register Alloc8(Declaration decl)
 		{
+			foreach (var reg in Registers)
+			{
+				if (reg.Type.Size == new WabbitC.Model.Types.BuiltInType("char").Size)
+				{
+					if (IsRegisterFree(reg))
+					{
+						reg.Assign(decl);
+						return reg;
+					}
+				}
+			}
 			return null;
 		}
 
 
 		private Register Merge8s(Register r1, Register r2, ref List<Statement> addstatements)
 		{
-			Register r1_8 = (r1.Components[0].AssignedDecl == null) ? r1.Components[0] : r1.Components[1];
-			Register r2_8 = (r2.Components[0].AssignedDecl != null) ? r2.Components[0] : r2.Components[1];
+			Register r1_8;
+			if (r1.Components != null)
+			{
+				r1_8 = (r1.Components[0].AssignedDecl == null) ? r1.Components[0] : r1.Components[1];
+			}
+			else
+			{
+				r1_8 = r1;
+			}
+
+			Register r2_8;
+			if (r2.Components != null)
+			{
+				r2_8 = (r2.Components[0].AssignedDecl != null) ? r2.Components[0] : r2.Components[1];
+			}
+			else
+			{
+				r2_8 = r2;
+			}
 
 			addstatements.Add(new Move(r1_8.Decl, r2_8.Decl));
 			r1_8.Assign(r2_8.AssignedDecl);
@@ -124,7 +179,7 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 			var PartialAssignList = new List<Register>();
 			foreach (var reg in Registers)
 			{
-				if (reg.Type.Size == 2)
+				if (reg.Type.Size == new WabbitC.Model.Types.BuiltInType("int").Size)
 				{
 					if (IsRegisterFree(reg))
 					{
@@ -133,12 +188,17 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 					}
 					else
 					{
-						if (reg.Components[0].AssignedDecl == null ||
-							reg.Components[1].AssignedDecl == null)
+						if (reg.AssignedDecl == null &&
+							(reg.Components[0].AssignedDecl == null ||
+							reg.Components[1].AssignedDecl == null))
 						{
 							PartialAssignList.Add(reg);
 						}
 					}
+				}
+				else if (reg.Parent == null && IsRegisterFree(reg))
+				{
+					PartialAssignList.Add(reg);
 				}
 			}
 
@@ -179,7 +239,7 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 		}
 
 
-		Declaration AllocateRegister(Declaration decl, ref List<Statement> addstatements)
+		public Declaration AllocateRegister(Declaration decl, ref List<Statement> addstatements)
 		{
 			var reg = IsAllocated(decl);
 			if (reg != null)
@@ -216,6 +276,31 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 			}
 		}
 
+		public void FreeRegister(Declaration decl)
+		{
+			foreach (var reg in Registers)
+			{
+				if (reg.Decl == decl || reg.AssignedDecl == decl)
+				{
+					reg.AssignedDecl = null;
+				}
+			}
+		}
+
+		public List<Declaration> GetFreeRegisters()
+		{
+			var regs = from r in Registers
+					   where IsRegisterFree(r)
+					   select r.Decl;
+			return regs.ToList<Declaration>();
+		}
+
+		public Declaration GetAssignedVariable(Declaration decl)
+		{
+			Register reg = RegisterFromDecl(decl);
+			return reg.AssignedDecl;
+		}
+
 		public List<Declaration> GetMostReferencedVariables()
 		{
 			Dictionary<Declaration, int> RefCounts = new Dictionary<Declaration, int>();
@@ -233,21 +318,116 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 			return items.ToList<Declaration>();
 		}
 
-		public List<Declaration> GetMostModifiedVariables()
+
+		private ICollection<Statement> GetNextStatement(Statement statement)
 		{
-			Dictionary<Declaration, int> RefCounts = new Dictionary<Declaration, int>();
-			foreach (Statement st in Block.Statements)
+			var result = new List<Statement>();
+			int index = Block.Statements.IndexOf(statement);
+
+			if (index != -1 && index != Block.Statements.Count - 1)
 			{
-				foreach (Declaration decl in st.GetModifiedDeclarations())
-				{
-					UpdateUseCount(ref RefCounts, decl);
-				}
+				result.Add(Block.Statements[index + 1]);
 			}
 
-			var items = from k in RefCounts.Keys
-						orderby RefCounts[k] descending
-						select k;
-			return items.ToList<Declaration>();
+			Goto go = statement as Goto;
+			if (go != null && go.CondDecl != null)
+			{
+				result.Add(go.TargetLabel);
+			}
+			return result;
+		}
+
+		private int CountStepsUntilNextReference(Declaration decl, Statement curStatement, int steps = 0)
+		{
+			ICollection<Statement> nextStatements;
+			do
+			{
+				if (steps != 0)
+				{
+					if (curStatement.GetReferencedDeclarations().Contains(decl))
+					{
+						return steps;
+					}
+				}
+				if (curStatement.GetType() != typeof(Label))
+				{
+					steps++;
+				}
+
+				nextStatements = GetNextStatement(curStatement);
+				if (nextStatements.Count == 1)
+				{
+					curStatement = nextStatements.First();
+				}
+			}
+			while (nextStatements.Count == 1);
+
+			if (nextStatements.Count == 0)
+			{
+				return -1;
+			}
+
+			int nextSteps = steps + 1;
+			steps = -1;
+			foreach(var statement in nextStatements)
+			{
+				int curSteps = CountStepsUntilNextReference(decl, statement, nextSteps);
+				if ((steps == -1) || (curSteps != -1 && curSteps < steps))
+				{
+					steps = curSteps;
+				}
+			}
+			return steps;
+		}
+
+
+		public Declaration GetLeastImportantAllocatedVariable(Statement statement)
+		{
+			var steplist =
+				(from r in Registers
+				 where r.AssignedDecl != null
+				 let steps = CountStepsUntilNextReference(r.AssignedDecl, statement)
+				 select new { r = r.AssignedDecl, steps });
+
+			foreach (var item in steplist)
+			{
+				Debug.WriteLine(item);
+			}
+
+			var results =
+				from r in steplist
+				where !(from rr in steplist
+						where rr.steps > r.steps
+						select rr).Any()
+				select r.r;
+
+			foreach (var item in results)
+			{
+				Debug.WriteLine(item);
+			}
+
+			if (results.Count() == 0)
+			{
+				return null;
+			}
+			else
+			{
+				return results.First<Declaration>();
+			}
+		}
+
+		public List<Declaration> GetMostModifiedVariables()
+		{
+			var vars = from Statement st in Block.Statements
+					   from decls in st.GetModifiedDeclarations()
+					   group decls by decls into g
+					   select new
+					   {
+						   Decl = g.Key,
+						   Count = g.Count(),
+					   };
+
+			return (from item in vars orderby item.Count descending select item.Decl).ToList<Declaration>();
 		}
 
 		public List<Statement> GetVariableStatements(Declaration decl)

@@ -25,6 +25,7 @@ namespace WabbitC.Model.Types
 			BuildInTypeType = BuiltInTypeType.Int;
             isUnsigned = false;
             IndirectionLevels = 0;
+			this.Size = 4;
         }
 
         private void InitializeType(ref List<Token>.Enumerator tokens)

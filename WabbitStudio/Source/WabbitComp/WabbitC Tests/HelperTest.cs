@@ -6,6 +6,8 @@ using WabbitC.Model;
 using WabbitC.Model.Statements;
 using WabbitC.StatementPasses.RegisterAllocator;
 
+using WabbitC.Model.Types;
+
 namespace WabbitC_Tests
 {
     
@@ -68,6 +70,27 @@ namespace WabbitC_Tests
 		#endregion
 
 
+		private void AddRegisters(Block block)
+		{
+			block.Declarations.InsertRange(0, new List<Declaration>()
+            {
+                new Declaration(new BuiltInType("int"), "__hl"),
+                new Declaration(new BuiltInType("int"), "__de"),
+                new Declaration(new BuiltInType("int"), "__bc"),
+				new Declaration(new BuiltInType("int"), "__iy"),
+				new Declaration(new BuiltInType("int"), "__ix"),
+				new Declaration(new BuiltInType("int"), "__h"),
+				new Declaration(new BuiltInType("int"), "__l"),
+				new Declaration(new BuiltInType("int"), "__d"),
+				new Declaration(new BuiltInType("int"), "__e"),
+				new Declaration(new BuiltInType("int"), "__b"),
+				new Declaration(new BuiltInType("int"), "__c"),
+				new Declaration(new BuiltInType("int"), "__a"),
+				new Declaration(new WabbitC.Model.Types.Array(new BuiltInType("unsigned char"), "[2048]"), "__stack"),
+				new Declaration(new BuiltInType("int"), "__sp"),
+            });
+		}
+
 		/// <summary>
 		///A test for GetMostReferencedVariables
 		///</summary>
@@ -102,7 +125,7 @@ namespace WabbitC_Tests
 			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("a")));
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("b"), block.FindDeclaration("a")));
 
-			Helper target = new Helper(block); // TODO: Initialize to an appropriate value
+			Helper target = new Helper(block);
 			List<Declaration> expected = new List<Declaration>() { block.FindDeclaration("b"), block.FindDeclaration("a") }; // TODO: Initialize to an appropriate value
 			List<Declaration> actual;
 			actual = target.GetMostModifiedVariables();
@@ -113,12 +136,241 @@ namespace WabbitC_Tests
 		///A test for Alloc16
 		///</summary>
 		[TestMethod()]
-		[DeploymentItem("WabbitC.exe")]
-		public void Alloc16Test()
+		public void AllocTest1()
 		{
-			// Creation of the private accessor for 'Microsoft.VisualStudio.TestTools.TypesAndSymbols.Assembly' failed
-			Assert.Inconclusive("Creation of the private accessor for \'Microsoft.VisualStudio.TestTools.TypesAndSy" +
-					"mbols.Assembly\' failed");
+			Block block = new Block(); // TODO: Initialize to an appropriate value
+			AddRegisters(block);
+
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "b"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "c"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "d"));
+
+			var statements = new List<Statement>();
+			Helper target = new Helper(block);
+
+			Declaration decl;
+			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 1");
+			decl = target.AllocateRegister(block.FindDeclaration("b"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 2");
+			decl = target.AllocateRegister(block.FindDeclaration("c"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 3");
+			decl = target.AllocateRegister(block.FindDeclaration("d"), ref statements);
+			Assert.IsTrue(decl == null, "Did not fail alloc 4");
+
+		}
+
+		[TestMethod()]
+		public void AllocTest2()
+		{
+			Block block = new Block(); // TODO: Initialize to an appropriate value
+			AddRegisters(block);
+
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "a"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "b"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "c"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "d"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "e"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "f"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "g"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "h"));
+
+			var statements = new List<Statement>();
+			Helper target = new Helper(block);
+
+			Declaration decl;
+			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 1");
+			decl = target.AllocateRegister(block.FindDeclaration("b"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 2");
+			decl = target.AllocateRegister(block.FindDeclaration("c"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 3");
+			decl = target.AllocateRegister(block.FindDeclaration("d"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 4");
+			decl = target.AllocateRegister(block.FindDeclaration("e"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 5");
+			decl = target.AllocateRegister(block.FindDeclaration("f"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 6");
+			decl = target.AllocateRegister(block.FindDeclaration("g"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 7");
+			decl = target.AllocateRegister(block.FindDeclaration("h"), ref statements);
+			Assert.IsTrue(decl == null, "Did not fail alloc 8");
+
+		}
+
+		[TestMethod()]
+		public void AllocTest3()
+		{
+			Block block = new Block(); // TODO: Initialize to an appropriate value
+			AddRegisters(block);
+
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "b"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "c"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "d"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "e"));
+
+			var statements = new List<Statement>();
+			Helper target = new Helper(block);
+
+			Declaration decl;
+			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 1");
+			decl = target.AllocateRegister(block.FindDeclaration("b"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 2");
+			decl = target.AllocateRegister(block.FindDeclaration("c"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 3");
+			decl = target.AllocateRegister(block.FindDeclaration("d"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 4");
+			decl = target.AllocateRegister(block.FindDeclaration("e"), ref statements);
+			Assert.IsTrue(decl == null, "Did not fail alloc 5");
+		}
+
+		[TestMethod()]
+		public void AllocTest4()
+		{
+			Block block = new Block(); // TODO: Initialize to an appropriate value
+			AddRegisters(block);
+
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "b"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "c"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "d"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "e"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "f"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "g"));
+
+			var statements = new List<Statement>();
+			Helper target = new Helper(block);
+
+			Declaration decl;
+			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 1");
+			decl = target.AllocateRegister(block.FindDeclaration("b"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 2");
+			decl = target.AllocateRegister(block.FindDeclaration("c"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 3");
+			decl = target.AllocateRegister(block.FindDeclaration("d"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 4");
+			decl = target.AllocateRegister(block.FindDeclaration("e"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 5");
+			decl = target.AllocateRegister(block.FindDeclaration("f"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 6");
+
+			target.FreeRegister(block.FindDeclaration("b"));
+			target.FreeRegister(block.FindDeclaration("f"));
+
+			var regs = target.GetFreeRegisters();
+
+			decl = target.AllocateRegister(block.FindDeclaration("g"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 7");
+		}
+
+		[TestMethod()]
+		public void AllocTest5()
+		{
+			Block block = new Block(); // TODO: Initialize to an appropriate value
+			AddRegisters(block);
+
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
+
+			var statements = new List<Statement>();
+			Helper target = new Helper(block);
+
+			Declaration decl;
+			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 1");
+			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 1");
+			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 1");
+			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 1");
+			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			Assert.IsTrue(decl != null, "Failed alloc 1");
+		}
+
+		[TestMethod()]
+		public void LeastImportant1()
+		{
+			Block block = new Block(); // TODO: Initialize to an appropriate value
+
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "b"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "c"));
+
+			block.Statements.Add(new Assignment(block.FindDeclaration("b"), new Immediate(10)));
+			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("c")));
+			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("b"), block.FindDeclaration("a")));
+
+			Helper target = new Helper(block); // TODO: Initialize to an appropriate value
+			var statements = new List<Statement>();
+			target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			target.AllocateRegister(block.FindDeclaration("b"), ref statements);
+			Declaration decl = target.GetLeastImportantAllocatedVariable(block.Statements[0]);
+
+			Assert.AreEqual(decl, block.FindDeclaration("a"));
+		}
+
+		[TestMethod()]
+		public void LeastImportant2()
+		{
+			Block block = new Block(); // TODO: Initialize to an appropriate value
+
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "b"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "c"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "cond"));
+
+
+			Label lbl = new Label("test");
+
+			block.Statements.Add(new Assignment(block.FindDeclaration("b"), new Immediate(10)));
+			block.Statements.Add(new Goto(lbl, block.FindDeclaration("cond"), Goto.GotoCondition.NC));
+			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("b")));
+			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("a"), block.FindDeclaration("b")));
+			block.Statements.Add(lbl);
+			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("c"), block.FindDeclaration("b")));
+
+			Helper target = new Helper(block); // TODO: Initialize to an appropriate value
+			var statements = new List<Statement>();
+			target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			target.AllocateRegister(block.FindDeclaration("c"), ref statements);
+			Declaration decl = target.GetLeastImportantAllocatedVariable(block.Statements[0]);
+
+			Assert.AreEqual(decl, block.FindDeclaration("a"));
+		}
+
+		[TestMethod()]
+		public void LeastImportant3()
+		{
+			Block block = new Block(); // TODO: Initialize to an appropriate value
+
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "b"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "c"));
+			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "cond"));
+
+
+			Label lbl = new Label("test");
+
+			block.Statements.Add(new Assignment(block.FindDeclaration("c"), new Immediate(10)));
+			block.Statements.Add(new Goto(lbl, block.FindDeclaration("cond"), Goto.GotoCondition.NC));
+			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("b")));
+			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("a"), block.FindDeclaration("b")));
+			block.Statements.Add(lbl);
+			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("b")));
+			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("b")));
+			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("c"), block.FindDeclaration("b")));
+
+			Helper target = new Helper(block); // TODO: Initialize to an appropriate value
+			var statements = new List<Statement>();
+			target.AllocateRegister(block.FindDeclaration("a"), ref statements);
+			target.AllocateRegister(block.FindDeclaration("c"), ref statements);
+			Declaration decl = target.GetLeastImportantAllocatedVariable(block.Statements[0]);
+
+			Assert.AreEqual(decl, block.FindDeclaration("c"));
 		}
 	}
 }

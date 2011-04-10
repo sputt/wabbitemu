@@ -11,8 +11,9 @@ namespace WabbitC.Model.Statements
 	{
 		public Declaration Decl;
 
-		public ReturnAddress(Declaration decl) : base(decl)
+		public ReturnAddress(Declaration decl)
 		{
+			Decl = decl;
 		}
 
 		public override List<Declaration> GetModifiedDeclarations()
