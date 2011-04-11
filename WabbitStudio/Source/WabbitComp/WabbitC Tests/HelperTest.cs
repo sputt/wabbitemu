@@ -72,23 +72,8 @@ namespace WabbitC_Tests
 
 		private void AddRegisters(Block block)
 		{
-			block.Declarations.InsertRange(0, new List<Declaration>()
-            {
-                new Declaration(new BuiltInType("int"), "__hl"),
-                new Declaration(new BuiltInType("int"), "__de"),
-                new Declaration(new BuiltInType("int"), "__bc"),
-				new Declaration(new BuiltInType("int"), "__iy"),
-				new Declaration(new BuiltInType("int"), "__ix"),
-				new Declaration(new BuiltInType("int"), "__h"),
-				new Declaration(new BuiltInType("int"), "__l"),
-				new Declaration(new BuiltInType("int"), "__d"),
-				new Declaration(new BuiltInType("int"), "__e"),
-				new Declaration(new BuiltInType("int"), "__b"),
-				new Declaration(new BuiltInType("int"), "__c"),
-				new Declaration(new BuiltInType("int"), "__a"),
-				new Declaration(new WabbitC.Model.Types.Array(new BuiltInType("unsigned char"), "[2048]"), "__stack"),
-				new Declaration(new BuiltInType("int"), "__sp"),
-            });
+			Module mod = new Module();
+			mod.UpdateModule(block);
 		}
 
 		/// <summary>
@@ -295,6 +280,7 @@ namespace WabbitC_Tests
 		public void LeastImportant1()
 		{
 			Block block = new Block(); // TODO: Initialize to an appropriate value
+			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "b"));
@@ -317,6 +303,7 @@ namespace WabbitC_Tests
 		public void LeastImportant2()
 		{
 			Block block = new Block(); // TODO: Initialize to an appropriate value
+			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "b"));
@@ -346,6 +333,7 @@ namespace WabbitC_Tests
 		public void LeastImportant3()
 		{
 			Block block = new Block(); // TODO: Initialize to an appropriate value
+			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "b"));

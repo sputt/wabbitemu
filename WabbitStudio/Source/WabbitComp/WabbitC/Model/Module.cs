@@ -18,7 +18,7 @@ namespace WabbitC.Model
 		{
 		}
 
-        private void UpdateModule(Block block)
+        public void UpdateModule(Block block)
         {
             this.Types = block.Types;
             this.Declarations = block.Declarations;
@@ -53,6 +53,7 @@ namespace WabbitC.Model
 			Declarations.InsertRange(0, Registers);
 
 			//TODO: make so assignment statements work...
+			block.Parent = this;
             this.Parent = null;
         }
 

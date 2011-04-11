@@ -1,4 +1,6 @@
-﻿int store(int arg)
+﻿#include "wabbitc.h"
+
+int store(int arg)
 {
 	int buffer[32];
 	int i;

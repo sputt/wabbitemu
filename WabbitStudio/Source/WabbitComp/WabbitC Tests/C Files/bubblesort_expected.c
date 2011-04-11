@@ -1,3 +1,5 @@
+#include "wabbitc.h"
+
 int BubbleSortAlgorithm(int *a, int n)
 {
 	int i = 1;

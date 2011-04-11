@@ -1,4 +1,6 @@
-﻿int cast(int arg)
+﻿#include "wabbitc.h"
+
+int cast(int arg)
 {
 	int total;
 	int result;
