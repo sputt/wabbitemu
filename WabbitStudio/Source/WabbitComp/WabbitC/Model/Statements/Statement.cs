@@ -25,12 +25,7 @@ namespace WabbitC.Model.Statements
 		{
 			get
 			{
-				Block curBlock = Block;
-				while (curBlock != null && curBlock.GetType() != typeof(Module))
-				{
-					curBlock = curBlock.Parent;
-				}
-				return curBlock as Module;
+				return Block.Module;
 			}
 		}
 

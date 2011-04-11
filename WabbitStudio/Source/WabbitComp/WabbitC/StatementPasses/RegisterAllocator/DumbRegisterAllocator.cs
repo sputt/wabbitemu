@@ -36,12 +36,20 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 
 					foreach (var decl in statement.GetReferencedDeclarations().Union(statement.GetModifiedDeclarations()))
 					{
+						if (block.Module.Registers.Contains(decl))
+						{
+							helper.ReserveRegister(decl);
+						}
+					}
+
+					foreach (var decl in statement.GetReferencedDeclarations().Union(statement.GetModifiedDeclarations()))
+					{
 						var allocStatements = new List<Statement>();
 						Declaration reg = helper.AllocateRegister(decl, ref allocStatements);
 						Debug.Assert(decl != null);
 						Debug.Assert(reg != null);
 
-						if (statement.GetReferencedDeclarations().Contains(decl))
+						if (reg != decl && statement.GetReferencedDeclarations().Contains(decl))
 						{
 							newStatements.Add(new StackLoad(reg, decl));
 						}
@@ -56,7 +64,10 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 						Declaration slot = helper.GetAssignedVariable(decl);
 						Debug.Assert(slot != null);
 						Debug.Assert(decl != null);
-						newStatements.Add(new StackStore(slot, decl));
+						if (slot != decl)
+						{
+							newStatements.Add(new StackStore(slot, decl));
+						}
 					}
 
 					block.Statements.InsertRange(index, newStatements);

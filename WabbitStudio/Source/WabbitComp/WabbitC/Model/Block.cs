@@ -12,6 +12,7 @@ namespace WabbitC.Model
     class BlockStatements : List<Statement>
     {
         private Block Block;
+
         public BlockStatements(Block block)
         {
             Block = block;
@@ -57,6 +58,19 @@ namespace WabbitC.Model
         public BlockStatements Statements;
 		public StackAllocator stack;
         public int TempDeclarationNumber = 0;
+
+		public Module Module
+		{
+			get
+			{
+				Block curBlock = this;
+				while (curBlock != null && curBlock.GetType() != typeof(Module))
+				{
+					curBlock = curBlock.Parent;
+				}
+				return curBlock as Module;
+			}
+		}
 
         public Declaration FindDeclaration(String name)
         {

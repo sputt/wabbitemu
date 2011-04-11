@@ -98,27 +98,27 @@ namespace WabbitC.StatementPasses
         private static List<Statement> FormatCallCallerSave(Block block, FunctionCall call)
         {
             var newStatements = new List<Statement>();
-            //save regs (we can remove undeeded pushs later
-            newStatements.Add(new Push(block.FindDeclaration("__hl")));
-            newStatements.Add(new Push(block.FindDeclaration("__de")));
-            newStatements.Add(new Push(block.FindDeclaration("__bc")));
-            for (int i = 0; i < call.Params.Count; i++)
-            {
-                newStatements.Add(new Push(call.Params[i]));
-            }
+			////save regs (we can remove undeeded pushs later
+			//newStatements.Add(new Push(block.FindDeclaration("__hl")));
+			//newStatements.Add(new Push(block.FindDeclaration("__de")));
+			//newStatements.Add(new Push(block.FindDeclaration("__bc")));
+			//for (int i = 0; i < call.Params.Count; i++)
+			//{
+			//    newStatements.Add(new Push(call.Params[i]));
+			//}
 
-            // Garbage push representing return address
-            newStatements.Add(new ReturnAddress(block.FindDeclaration("__hl")));
+			//// Garbage push representing return address
+			//newStatements.Add(new ReturnAddress(block.FindDeclaration("__hl")));
 
-            newStatements.Add(new Call(call.Function, call.LValue));
-            /*if (call.LValue != null)
-            {
-                newStatements.Add(new Move(call.LValue, block.FindDeclaration("__hl")));
-            }*/
-            //restore regs
-            newStatements.Add(new Pop(block.FindDeclaration("__bc")));
-            newStatements.Add(new Pop(block.FindDeclaration("__de")));
-            newStatements.Add(new Pop(block.FindDeclaration("__hl")));
+			//newStatements.Add(new Call(call.Function, call.LValue));
+			///*if (call.LValue != null)
+			//{
+			//    newStatements.Add(new Move(call.LValue, block.FindDeclaration("__hl")));
+			//}*/
+			////restore regs
+			//newStatements.Add(new Pop(block.FindDeclaration("__bc")));
+			//newStatements.Add(new Pop(block.FindDeclaration("__de")));
+			//newStatements.Add(new Pop(block.FindDeclaration("__hl")));
             return newStatements;
         }
 
@@ -133,11 +133,13 @@ namespace WabbitC.StatementPasses
             // Garbage push representing return address
             newStatements.Add(new ReturnAddress(block.FindDeclaration("__hl")));
 
-            newStatements.Add(new Call(call.Function, call.LValue));
-            /*if (call.LValue != null)
+			Call newCall = new Call(call.Function);
+            newStatements.Add(newCall);
+            if (call.LValue != null)
             {
-                newStatements.Add(new Move(call.LValue, block.FindDeclaration("__hl")));
-            }*/
+				newCall.Block = block;
+                newStatements.Add(new Move(call.LValue, newCall.ReturnRegister));
+            }
             return newStatements;
         }
 	}

@@ -15,7 +15,8 @@ namespace WabbitC.Model.Statements
 
         public override ISet<Declaration> GetModifiedDeclarations()
         {
-            return new HashSet<Declaration>() { Block.FindDeclaration("__hl") };
+			Declaration decl = Block.Function.Is16() ? Block.FindDeclaration("__hl") : Block.FindDeclaration("__a");
+			return new HashSet<Declaration>() { decl };
         }
 
         public override ISet<Declaration> GetReferencedDeclarations()
@@ -28,16 +29,12 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-			if (RValue.ToString() == "__hl")
-				return "";
-            return "__hl = " + RValue.ToString() + ";";
+            return GetModifiedDeclarations().First() + " = " + RValue.ToString() + ";";
         }
 
 		public override string ToAssemblyString()
 		{
-			if (RValue.ToString() == "__hl")
-				return "";
-			return "ld hl," + RValue.ToString();
+			return "ld " + GetModifiedDeclarations().First() + "," + RValue.ToString();
 		}
     }
 }

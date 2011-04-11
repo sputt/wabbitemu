@@ -14,7 +14,11 @@ namespace WabbitC.Model
 		public ISet<Declaration> GeneralPurposeRegisters;
 		public ISet<Declaration> Registers;
 
-        private Module(Block block)
+		public Module()
+		{
+		}
+
+        private void UpdateModule(Block block)
         {
             this.Types = block.Types;
             this.Declarations = block.Declarations;
@@ -62,9 +66,11 @@ namespace WabbitC.Model
 
         static public Module ParseModule(ref List<Token>.Enumerator tokens)
         {
-            var block = Block.ParseBlock(ref tokens, null, null);
+			Module mod = new Module();
+            var block = Block.ParseBlock(ref tokens, mod, null);
             // Make sure there's no stuff that doesn't belong in module
-            return new Module(block);
+			mod.UpdateModule(block);
+            return mod;
         }
 
 		public override string ToString()

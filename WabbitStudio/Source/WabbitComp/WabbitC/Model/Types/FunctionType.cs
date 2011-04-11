@@ -22,6 +22,20 @@ namespace WabbitC.Model.Types
 		{
 		}
 
+		public bool Is16()
+		{
+			bool Is16 = false;
+			if (this.ReturnType.IndirectionLevels > 0)
+			{
+				Is16 = true;
+			}
+			else if (this.ReturnType.Size > 1)
+			{
+				Is16 = true;
+			}
+			return Is16;
+		}
+
         public FunctionType(ref List<Token>.Enumerator tokens, Type returnType)
         {
             this.Size = 2;

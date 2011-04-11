@@ -239,9 +239,26 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 			return null;
 		}
 
+		public Declaration ReserveRegister(Declaration decl)
+		{
+			foreach (var reg in Registers)
+			{
+				if (reg.Decl == decl)
+				{
+					reg.AssignedDecl = decl;
+					return reg.Decl;
+				}
+			}
+			return null;
+		}
 
 		public Declaration AllocateRegister(Declaration decl, ref List<Statement> addstatements)
 		{
+			if (Block.Module.Registers.Contains(decl))
+			{
+				return decl;
+			}
+
 			var reg = IsAllocated(decl);
 			if (reg != null)
 			{
