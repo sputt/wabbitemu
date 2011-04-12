@@ -137,6 +137,7 @@ namespace WabbitC.Model
 			var blocks = new List<Block>();
 			Block currentBlock = new Block(this);
 			currentBlock.Declarations = this.Declarations;
+			currentBlock.Function = this.Function;
 			currentBlock.stack = stack;
 			for (int i = 0; i < Statements.Count; i++)
 			{
@@ -149,12 +150,14 @@ namespace WabbitC.Model
 						currentBlock.Statements.Add(statement);
 						currentBlock = new Block(this);
 						currentBlock.Declarations = this.Declarations;
+						currentBlock.Function = this.Function;
 						currentBlock.stack = stack;
 					}
 					else
 					{
 						currentBlock = new Block(this);
 						currentBlock.Declarations = this.Declarations;
+						currentBlock.Function = this.Function;
 						currentBlock.stack = stack;
 						currentBlock.Statements.Add(statement);
 					}
@@ -251,16 +254,23 @@ namespace WabbitC.Model
 				else
 				{
                     FunctionType.CallConvention specifiedConvention = FunctionType.CallConvention.CalleeSave;
-                    switch (tokens.Current)
-                    {
-                        case "__stdcall":
-                            tokens.MoveNext();
-                            break;
-                        case "__cdecl":
-                            specifiedConvention = FunctionType.CallConvention.CallerSave;
-                            tokens.MoveNext();
-                            break;
-                    }
+					bool useStack = false;
+					while (tokens.Current.Text.StartsWith("__"))
+					{
+						switch (tokens.Current)
+						{
+							case "__usestack":
+								useStack = true;
+								break;
+							case "__stdcall":
+								specifiedConvention = FunctionType.CallConvention.CalleeSave;
+								break;
+							case "__cdecl":
+								specifiedConvention = FunctionType.CallConvention.CallerSave;
+								break;
+						}
+						tokens.MoveNext();
+					}
 
 					Declaration declForStatement = thisBlock.FindDeclaration(tokens.Current.Text);
 					if (declForStatement != null)
@@ -292,7 +302,11 @@ namespace WabbitC.Model
 							// Either way it gets added to the types of this module
 							if (tokens.Current.Type == TokenType.OpenParen)
 							{
-                                FunctionType function = new FunctionType(ref tokens, resultType) { CallingConvention = specifiedConvention };
+								FunctionType function = new FunctionType(ref tokens, resultType)
+									{
+										CallingConvention = specifiedConvention,
+										UseStack = useStack
+									};
 								resultType = function;
 								thisBlock.Types.Add(function);
 

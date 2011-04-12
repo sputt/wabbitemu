@@ -19,11 +19,18 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 			while (functions.MoveNext())
 			{
 				Block block = functions.Current.Code;
-				Helper helper = new Helper(block);
+				RegisterHelper helper = new RegisterHelper(block);
 
 				foreach (var decl in block.Declarations)
 				{
-					block.stack.ReserveSpace(decl);
+					if (block.Function.UseStack)
+					{
+						block.stack.ReserveSpace(decl);
+					}
+					else
+					{
+						module.AddGlobalVariable(decl);
+					}
 				}
 
 				var statements = from Statement st in block select st;

@@ -62,11 +62,6 @@ namespace WabbitC
 
             var currentModule = Module.ParseModule(ref tokens);
 
-			if (optimizeLevel != OptimizeLevel.OptimizeNone)
-			{
-				Optimizer.CSE.Optimize(ref currentModule);
-			}
-
             // Statement passes
             if (passCount >= 2)
             {
@@ -74,6 +69,7 @@ namespace WabbitC
                 StatementPasses.IfGotoConversion.Run(currentModule);
                 StatementPasses.LoopGotoConversion.Run(currentModule);
 				StatementPasses.ReorderDeclarations.Run(currentModule);
+				StatementPasses.MarkRecursiveFunctions.Run(currentModule);
             }
 
 			if (optimizeLevel != OptimizeLevel.OptimizeNone)
@@ -89,7 +85,7 @@ namespace WabbitC
 				StatementPasses.ConvertAddSubToIncDec.Run(currentModule);
 				StatementPasses.RemoveMathImmediates.Run(currentModule);
 
-				StatementPasses.RegisterAllocator.DumbRegisterAllocator.Run(currentModule);
+				StatementPasses.RegisterAllocator.SmarterRegisterAllocator.Run(currentModule);
 
 				var asmString = AssemblyGenerator.GenerateCode(ref currentModule);
 				var asmWriter = new StreamWriter(Path.GetFileNameWithoutExtension(inputFile) + "_compiled.z80");

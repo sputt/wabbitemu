@@ -91,7 +91,7 @@ namespace WabbitC_Tests
 			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("a")));
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("b"), block.FindDeclaration("a")));
 
-			Helper target = new Helper(block); // TODO: Initialize to an appropriate value
+			RegisterHelper target = new RegisterHelper(block); // TODO: Initialize to an appropriate value
 			List<Declaration> expected = new List<Declaration>() { block.FindDeclaration("a"), block.FindDeclaration("b") }; // TODO: Initialize to an appropriate value
 			List<Declaration> actual;
 			actual = target.GetMostReferencedVariables();
@@ -110,7 +110,7 @@ namespace WabbitC_Tests
 			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("a")));
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("b"), block.FindDeclaration("a")));
 
-			Helper target = new Helper(block);
+			RegisterHelper target = new RegisterHelper(block);
 			List<Declaration> expected = new List<Declaration>() { block.FindDeclaration("b"), block.FindDeclaration("a") }; // TODO: Initialize to an appropriate value
 			List<Declaration> actual;
 			actual = target.GetMostModifiedVariables();
@@ -132,7 +132,7 @@ namespace WabbitC_Tests
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "d"));
 
 			var statements = new List<Statement>();
-			Helper target = new Helper(block);
+			RegisterHelper target = new RegisterHelper(block);
 
 			Declaration decl;
 			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
@@ -162,7 +162,7 @@ namespace WabbitC_Tests
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "h"));
 
 			var statements = new List<Statement>();
-			Helper target = new Helper(block);
+			RegisterHelper target = new RegisterHelper(block);
 
 			Declaration decl;
 			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
@@ -197,7 +197,7 @@ namespace WabbitC_Tests
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "e"));
 
 			var statements = new List<Statement>();
-			Helper target = new Helper(block);
+			RegisterHelper target = new RegisterHelper(block);
 
 			Declaration decl;
 			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
@@ -227,7 +227,7 @@ namespace WabbitC_Tests
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "g"));
 
 			var statements = new List<Statement>();
-			Helper target = new Helper(block);
+			RegisterHelper target = new RegisterHelper(block);
 
 			Declaration decl;
 			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
@@ -261,7 +261,7 @@ namespace WabbitC_Tests
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
 
 			var statements = new List<Statement>();
-			Helper target = new Helper(block);
+			RegisterHelper target = new RegisterHelper(block);
 
 			Declaration decl;
 			decl = target.AllocateRegister(block.FindDeclaration("a"), ref statements);
@@ -290,7 +290,7 @@ namespace WabbitC_Tests
 			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("c")));
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("b"), block.FindDeclaration("a")));
 
-			Helper target = new Helper(block); // TODO: Initialize to an appropriate value
+			RegisterHelper target = new RegisterHelper(block); // TODO: Initialize to an appropriate value
 			var statements = new List<Statement>();
 			target.AllocateRegister(block.FindDeclaration("a"), ref statements);
 			target.AllocateRegister(block.FindDeclaration("b"), ref statements);
@@ -320,7 +320,7 @@ namespace WabbitC_Tests
 			block.Statements.Add(lbl);
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("c"), block.FindDeclaration("b")));
 
-			Helper target = new Helper(block); // TODO: Initialize to an appropriate value
+			RegisterHelper target = new RegisterHelper(block); // TODO: Initialize to an appropriate value
 			var statements = new List<Statement>();
 			target.AllocateRegister(block.FindDeclaration("a"), ref statements);
 			target.AllocateRegister(block.FindDeclaration("c"), ref statements);
@@ -352,7 +352,7 @@ namespace WabbitC_Tests
 			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("b")));
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("c"), block.FindDeclaration("b")));
 
-			Helper target = new Helper(block); // TODO: Initialize to an appropriate value
+			RegisterHelper target = new RegisterHelper(block); // TODO: Initialize to an appropriate value
 			var statements = new List<Statement>();
 			target.AllocateRegister(block.FindDeclaration("a"), ref statements);
 			target.AllocateRegister(block.FindDeclaration("c"), ref statements);

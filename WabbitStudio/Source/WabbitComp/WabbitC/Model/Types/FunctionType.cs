@@ -17,6 +17,21 @@ namespace WabbitC.Model.Types
         public Type ReturnType;
         public List<Declaration> Params;
         public CallConvention CallingConvention = CallConvention.CalleeSave;
+		public bool IsRecursive = false;
+		bool useStack = false;
+		public bool UseStack
+		{
+			get
+			{
+				if (IsRecursive)
+					return true;
+				return useStack;
+			}
+			set
+			{
+				useStack = value;
+			}
+		}
 
 		public FunctionType()
 		{

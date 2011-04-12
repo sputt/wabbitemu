@@ -17,6 +17,7 @@ namespace WabbitC.Optimizer
 		static bool VariableReduction = true;
 		static bool ReuseVariables = true;
 		static bool RemoveCrapMath = true;
+		static bool UseCSE = true;
         public static void RunOptimizer(ref Module module, Compiler.OptimizeLevel opLevel)
         {
             Block mainModule = (Block) module;
@@ -28,13 +29,33 @@ namespace WabbitC.Optimizer
 				VariableReducer.Optimize(ref module);
             if (DeadCodeOptimization)
                 DeadCodeOptimizer.Optimize(ref module);
-			if (ReuseVariables)
+			if (ReuseVariables) {
 				VariableReuse.Optimize(ref module);
-			if (DeadCodeOptimization)
-				DeadCodeOptimizer.Optimize(ref module);
+				if (DeadCodeOptimization)
+					DeadCodeOptimizer.Optimize(ref module);
+			}
 			if (DeadVariableRemoval)
                 DeadVariableOptimizer.Optimize(ref module);
-        }
+			if (UseCSE)
+			{
+				bool hasChanged;
+				do
+				{
+					hasChanged = false;
+					hasChanged |= CSE.Optimize(ref module);
+					if (ReuseVariables)
+					{
+						VariableReuse.Optimize(ref module);
+						if (DeadCodeOptimization)
+							DeadCodeOptimizer.Optimize(ref module);
+					}
+					if (DeadVariableRemoval)
+						DeadVariableOptimizer.Optimize(ref module);
+				}
+				while (hasChanged);
+			}
+			
+		}
 
         public static Compiler.OptimizeLevel ParseCommandLine(string arg)
         {

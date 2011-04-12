@@ -57,6 +57,11 @@ namespace WabbitC.Model
             this.Parent = null;
         }
 
+		public void AddGlobalVariable(Declaration decl)
+		{
+
+		}
+
         public IEnumerator<Declaration> GetFunctionEnumerator()
         {
             var functions = from d in Declarations
@@ -84,5 +89,5 @@ namespace WabbitC.Model
 			result += base.ToString();
 			return result;
 		}
-    }
+	}
 }

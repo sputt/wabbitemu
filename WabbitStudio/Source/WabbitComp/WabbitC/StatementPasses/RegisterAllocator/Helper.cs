@@ -11,7 +11,7 @@ using WabbitC.Model.Statements;
 
 namespace WabbitC.StatementPasses.RegisterAllocator
 {
-	class Helper
+	class RegisterHelper
 	{
 		private class Register
 		{
@@ -42,7 +42,7 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 		Block Block;
 		List<Register> Registers;
 
-		public Helper(Block block)
+		public RegisterHelper(Block block)
 		{
 			string[,] registers = new string[,]
 			{
