@@ -1093,7 +1093,7 @@ char *do_if (char *ptr, bool condition) {
 	char *temp;
 	if (condition) return ptr;
 	
-	return skip_until (ptr, 2, "#else", "#elif", "#endif");
+	return skip_until (ptr, 3, "#else", "#elif", "#endif");
 }
 
 /*
@@ -1118,7 +1118,7 @@ char *do_elif (char *ptr, bool condition) {
 		return skip_until(ptr, 1, _T("#endif"));
 	}
 	
-	return skip_until (ptr, 2, _T("#else"), _T("#elif"), _T("#endif"));
+	return skip_until (ptr, 3, _T("#else"), _T("#elif"), _T("#endif"));
 }
 
 
