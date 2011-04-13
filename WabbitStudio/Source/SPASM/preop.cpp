@@ -80,10 +80,12 @@ typedef enum {
 static const char operators[OP_LAST][4] = {"=", "<", ">", "!=", ">=", "<="};
 
 char *do_if (char *ptr, bool condition);
+char *do_elif (char *ptr, bool condition);
 char *handle_preop_define (const char *ptr);
 static char *handle_preop_include (char *ptr);
 char *handle_preop_import (char *ptr);
 char *handle_preop_if (char *ptr);
+char *handle_preop_elif (char *ptr);
 char *skip_until (char *ptr, int argc, ...);
 
 
@@ -96,8 +98,8 @@ static define_t *last_define = NULL;
  */
 
 char *handle_preop (char *ptr) {
-	const char *preops[] = {"define", "include", "if", "ifdef", "ifndef", "else", "endif",
-		"undef", "undefine", "comment", "endcomment", "macro", "endmacro", "import", "defcont", NULL};
+	const char *preops[] = {"define", "include", "if", "ifdef", "ifndef", "else", "elif", "endif",
+		"undef", "undefine", "comment", "endcomment", "macro", "endmacro", "import", "defcont", "region", "endregion", NULL};
 	char *name_end, *name;
 	int preop;
 
@@ -189,17 +191,18 @@ char *handle_preop (char *ptr) {
 			break;
 		}
 		case 5: //ELSE
+		case 6: //ELSE IF
 		{
 			ptr = skip_until (ptr, 1, "#endif");
 			break;
 		}
-		case 6: //ENDIF
+		case 7: //ENDIF
 		{
 			//show_warning("Stray #ENDIF");
 			break;
 		}
-		case 7: //UNDEF
-		case 8: //UNDEFINE
+		case 8: //UNDEF
+		case 9: //UNDEFINE
 		{
 			//get the name of the define to remove
 			if (is_end_of_code_line (ptr)) {
@@ -214,12 +217,12 @@ char *handle_preop (char *ptr) {
 			ptr = name_end;
 			break;
 		}
-		case 9: //COMMENT
+		case 10: //COMMENT
 		{
 			ptr = skip_until (ptr, 1, "#endcomment");
 			break;
 		}
-		case 11: //MACRO
+		case 12: //MACRO
 		{
 			char *name_end, *macro_end;
 			define_t *macro;
@@ -258,12 +261,12 @@ char *handle_preop (char *ptr) {
 			ptr = macro_end;
 			break;
 		}
-		case 13: //IMPORT
+		case 14: //IMPORT
 		{
 			ptr = handle_preop_import (ptr);
 			break;
 		}
-		case 14: //DEFCONT
+		case 15: //DEFCONT
 		{
 			if (last_define == NULL) {
 				show_error("DEFCONT used without previous define");
@@ -1046,6 +1049,35 @@ char *handle_preop_if (char *ptr) {
 	return do_if (expr_end + 1, condition);
 }
 
+/*
+ * Handles #IF statement,
+ * returns pointer to new
+ * location in file
+ */
+
+char *handle_preop_elif (char *ptr) {
+	char *expr_end, *expr;
+	int condition;
+
+	if (is_end_of_code_line (ptr)) {
+		show_fatal_error ("#ELIF is missing condition");
+		return ptr;
+	}
+
+	expr_end = next_code_line (ptr) - 1;
+	while (is_end_of_code_line (expr_end))
+		expr_end--;
+//	expr_end = skip_to_code_line_end (ptr);
+	
+	expr = strndup (ptr, expr_end - ptr + 1);
+	
+	parse_num (expr, &condition);
+	free(expr);
+	
+	return do_elif(expr_end + 1, condition);
+}
+
+
 
 
 /*
@@ -1058,9 +1090,35 @@ char *handle_preop_if (char *ptr) {
  */
 
 char *do_if (char *ptr, bool condition) {
+	char *temp;
 	if (condition) return ptr;
 	
-	return skip_until (ptr, 2, "#else", "#endif");
+	return skip_until (ptr, 2, "#else", "#elif", "#endif");
+}
+
+/*
+ * Skips the appropriate
+ * parts of #IF blocks,
+ * returns pointer to location
+ * in file, needs to be passed
+ * whether the condition is
+ * true or false
+ */
+
+char *do_elif (char *ptr, bool condition) {
+	char *temp;
+	if (condition) {
+		while(!line_has_word(ptr, _T("#elif"), 5) &&
+				!line_has_word(ptr, _T("#else"), 5) &&
+				!line_has_word(ptr, _T("#endif"), 6))
+		{
+			ptr = run_first_pass_line(ptr);
+			ptr = skip_to_next_line(ptr);
+		}
+		return skip_until(ptr, 1, _T("#endif"));
+	}
+	
+	return skip_until (ptr, 2, _T("#else"), _T("#elif"), _T("#endif"));
 }
 
 
@@ -1128,6 +1186,12 @@ char *skip_until (char *ptr, int argc, ...)
 					char *word = va_arg(argp, char *);
 					if (line_has_word (line, word, strlen (word))) {
 						word_found = true;
+						
+						//a little hacky but bleh...
+						if (!strcmp(word, _T("#elif"))) {
+							return handle_preop_elif(ptr + 5);
+							
+						}
 						return next_expr(line, "\\\r\n");
 					}
 				}

@@ -1,6 +1,7 @@
 // Z80Assembler.cpp : Implementation of CZ80Assembler
 
 #include "stdafx.h"
+#include <comdef.h>
 #include "Z80Assembler.h"
 
 #include "spasm.h"

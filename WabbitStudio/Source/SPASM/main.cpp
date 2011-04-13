@@ -355,7 +355,7 @@ int main (int argc, char **argv)
 			}
 			default:
 				{
-#ifndef _TEST
+#ifdef _TEST
 #ifdef _WINDOWS
 					//FreeConsole();
 					//system("PAUSE");
