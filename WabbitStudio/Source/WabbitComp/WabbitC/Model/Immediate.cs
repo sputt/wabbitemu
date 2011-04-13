@@ -43,6 +43,26 @@ namespace WabbitC.Model
 			Value = result[0].Tokens[0];
 		}
 
+		public static Immediate operator +(Immediate imm1, Immediate imm2)
+		{
+			Immediate imm = new Immediate((imm1.Value + imm2.Value).Eval()[0].Token);
+			return imm;
+		}
+
+		public static Immediate operator -(Immediate imm1, Immediate imm2)
+		{
+			Immediate imm = new Immediate((imm1.Value - imm2.Value).Eval()[0].Token);
+			return imm;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj.GetType() != typeof(Immediate))
+				return base.Equals(obj);
+			var imm = obj as Immediate;
+			return imm.Value == this.Value;
+		}
+
         public override string ToString()
         {
             return Value.ToString();

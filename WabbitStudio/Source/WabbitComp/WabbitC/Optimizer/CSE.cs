@@ -75,7 +75,49 @@ namespace WabbitC.Optimizer
 					int listIndex = possibleSubExp.IndexOf(curExp);
 					if (listIndex == -1)
 					{
-						possibleSubExp.Add(curExp);
+						bool add = true;
+						if (possibleSubExp.Count > 0 && ((math.GetType() == typeof(Add) || math.GetType() == typeof(Sub)) && math.RValue.GetType() == typeof(Immediate)))
+						{
+							Immediate imm = math.RValue as Immediate;
+							Immediate newImm = new Immediate(imm.Value);
+							Immediate tempImm;
+							for (int i = 1; i <= 4; i++)
+							{
+								tempImm = newImm + new Immediate(i);
+								curExp.Operand2 = tempImm;
+								listIndex = possibleSubExp.IndexOf(curExp);
+								if (listIndex == -1)
+								{
+									tempImm = newImm - new Immediate(i);
+									curExp.Operand2 = tempImm;
+									listIndex = possibleSubExp.IndexOf(curExp);
+								}
+								if (listIndex != -1)
+								{
+									var firstInst = possibleSubExp[listIndex];
+									if (firstInst.TempDecl == null)
+									{
+										firstInst.TempDecl = block.CreateTempDeclaration(firstInst.LValue.Type);
+										block.Statements.Insert(firstInst.index + 2, new Move(firstInst.TempDecl, firstInst.LValue));
+									}
+									block.Statements.RemoveAt(index);
+									newStatements.Add(new Move(firstInst.LValue, firstInst.TempDecl));
+									for (; i > 0; i--)
+									{
+										if (math.Operator == "+")
+											newStatements.Add(new Inc(firstInst.LValue));
+										else
+											newStatements.Add(new Dec(firstInst.LValue));
+									}
+									hasChanged = true;
+									add = false;
+									break;
+								}
+
+							}
+						}
+						if (add)
+							possibleSubExp.Add(curExp);
 					}
 					else
 					{
@@ -128,7 +170,7 @@ namespace WabbitC.Optimizer
 				if (obj.GetType() != typeof(CSEStore))
 					return base.Equals(obj);
 				var cse = obj as CSEStore;
-				return cse.Operand1 == this.Operand1 && cse.Operand2 == this.Operand2 && cse.Operator == this.Operator;
+				return this.Operand1.Equals(cse.Operand1) && this.Operand2.Equals(cse.Operand2) && this.Operator.Equals(cse.Operator);
 			}
 
 			public override string ToString()

@@ -32,7 +32,7 @@ namespace WabbitC.Model.Statements.Math
 			var imm = RValue as Immediate;
 			if (imm == null)
 				return null;
-			LValue.ConstValue.Value = (LValue.ConstValue.Value - imm.Value).Eval()[0].Token;
+			LValue.ConstValue = LValue.ConstValue - imm;
 			return LValue.ConstValue;
         }
 
