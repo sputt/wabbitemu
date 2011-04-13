@@ -396,7 +396,7 @@ int main (int argc, char **argv)
 			output_filename = change_extension (curr_input_file, "bin");
 	}
 
-	output_contents = (unsigned char *) malloc(OUTPUT_BUF_SIZE);
+	output_contents = (unsigned char *) malloc(output_buf_size);
 	int error = run_assembly();
 	free(output_filename);
 	if (curr_input_file && !(mode & MODE_COMMANDLINE))

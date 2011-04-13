@@ -37,7 +37,7 @@ extern "C"
 		stdout->_file = _open_osfhandle((long)GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT);    
 		stdin->_file  = _open_osfhandle((long)GetStdHandle(STD_INPUT_HANDLE), _O_TEXT);  
 		*/
-			output_contents = (unsigned char *) malloc_chk (OUTPUT_BUF_SIZE);
+			output_contents = (unsigned char *) malloc_chk (output_buf_size);
 			setvbuf(stdout, output_text, _IOFBF, 65536);
 			break;
 		case DLL_THREAD_ATTACH:

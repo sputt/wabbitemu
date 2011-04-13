@@ -409,15 +409,15 @@ char *handle_directive (const char *ptr) {
 		}
 		case 16: //SEEK
 		{
-			int value;
+			unsigned int value;
 			char value_str[256];
 
 			read_expr (&ptr, value_str, "");
-			parse_num (value_str, &value);
+			parse_num (value_str, (int *) &value);
 
 			//printf("value_str: %s\npc: %d\n", value_str, program_counter);
 
-			if (value > program_counter && (value - (int) program_counter > OUTPUT_BUF_SIZE - (out_ptr - output_contents)))
+			if (value > program_counter && (value - program_counter > output_buf_size - (out_ptr - output_contents)))
 				show_fatal_error ("Seek location %d out of bounds", value);
 			else if (value < program_counter && (value - (int) program_counter + (out_ptr - output_contents) < 0))
 				show_fatal_error ("Seek value %d too small", value);
@@ -472,7 +472,6 @@ void show_define (define_t *define) {
 char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 	static int level = 0;
 	char *word = NULL;
-	int i;
 	int session;
 	bool fWasParsed;
 	char *name_end;

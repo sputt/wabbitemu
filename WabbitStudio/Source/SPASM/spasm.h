@@ -42,7 +42,8 @@ typedef enum {
 #define GLOBAL extern
 #endif
 
-#define OUTPUT_BUF_SIZE 8000000	//size of output buffer for assembled code
+//#define OUTPUT_BUF_SIZE 8000000
+const unsigned int output_buf_size = 8000000;	//size of output buffer for assembled code
 
 //make sure that MAX_PATH is max path length on *nix and Windows
 #if !defined(MAX_PATH) || defined(UNIX_VER)

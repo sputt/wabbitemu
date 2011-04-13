@@ -374,7 +374,7 @@ char *escape_string(const char *input)
 
 	eb_append(escape_string, "\"", 1);
 
-	for (int i = 0; i < strlen(input); i++)
+	for (unsigned int i = 0; i < strlen(input); i++)
 	{
 		switch (*input)
 		{

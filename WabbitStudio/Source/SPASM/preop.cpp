@@ -79,8 +79,8 @@ typedef enum {
 
 static const char operators[OP_LAST][4] = {"=", "<", ">", "!=", ">=", "<="};
 
-char *do_if (char *ptr, bool condition);
-char *do_elif (char *ptr, bool condition);
+char *do_if (char *ptr, int condition);
+char *do_elif (char *ptr, int condition);
 char *handle_preop_define (const char *ptr);
 static char *handle_preop_include (char *ptr);
 char *handle_preop_import (char *ptr);
@@ -612,7 +612,8 @@ static void handle_bitmap (FILE *file, const RECT *r, const BITMAPFILEHEADER *bf
 			for (i = log2(biOutputShades) - 1; i >= 0; i--) {
 				int row;
 				for (row = 0; row < r->bottom - r->top; row++) {
-					int col, db_out = 0;
+					DWORD col;
+					int db_out = 0;
 					for (col = 0; col < biOutputRowSize; col++) {
 						//db_out |= ((pOutput[row][col] >> i) & 1) << (7 - (col % 8));
 						db_out |= ((OUTPUT_ACCESS(row, col) >> i) & 1) << (7 - (col % 8));
@@ -634,7 +635,7 @@ static void handle_bitmap (FILE *file, const RECT *r, const BITMAPFILEHEADER *bf
 			if (define_with_value ("__BM_MSK", 1)) {
 				int row;
 				for (row = 0; row < r->bottom - r->top; row++) {
-					int col;
+					DWORD col;
 					BYTE db_out = 0;
 					for (col = 0; col < biOutputRowSize; col++) {
 						//db_out |= (pMask[row][col] & 1) << (7 - (col % 8));
@@ -1089,8 +1090,7 @@ char *handle_preop_elif (char *ptr) {
  * true or false
  */
 
-char *do_if (char *ptr, bool condition) {
-	char *temp;
+char *do_if (char *ptr, int condition) {
 	if (condition) return ptr;
 	
 	return skip_until (ptr, 3, "#else", "#elif", "#endif");
@@ -1105,8 +1105,7 @@ char *do_if (char *ptr, bool condition) {
  * true or false
  */
 
-char *do_elif (char *ptr, bool condition) {
-	char *temp;
+char *do_elif (char *ptr, int condition) {
 	if (condition) {
 		while(!line_has_word(ptr, _T("#elif"), 5) &&
 				!line_has_word(ptr, _T("#else"), 5) &&

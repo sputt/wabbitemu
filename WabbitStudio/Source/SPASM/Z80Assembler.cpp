@@ -103,7 +103,7 @@ STDMETHODIMP CZ80Assembler::AddIncludeDirectory(BSTR bstrDirectory)
 
 STDMETHODIMP CZ80Assembler::Assemble(VARIANT varInput, int *lpInt)
 {
-	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, OUTPUT_BUF_SIZE); 
+	HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, output_buf_size); 
 	output_contents = (unsigned char *) GlobalLock(hGlobal);
 
 	if (V_VT(&varInput) == VT_BSTR)

@@ -180,7 +180,7 @@ int hash_remove (hash_t *ht, const char *name) {
 }
 
 void hash_enum (hash_t *ht, void enum_callback(void *, void *), void *arg) {
-	int i;
+	unsigned int i;
 	
 	for (i = 0; i < ht->size; i++) {
 		if (ht->table[i] != NULL) {
@@ -194,7 +194,7 @@ int hash_count (hash_t *ht) {
 		return -1;
 
 	int count = 0;
-	for (int i = 0; i < ht->size; i++)
+	for (unsigned int i = 0; i < ht->size; i++)
 		if (ht->table[i] != NULL) count++;
 	
 	return count;
@@ -207,7 +207,7 @@ void hash_free (hash_t *ht) {
 	if (ht == NULL || ht->remove_callback == NULL)
 		return;
 
-	for (int i = 0; i < ht->size; i++) {
+	for (unsigned int i = 0; i < ht->size; i++) {
 		if (ht->table[i] != NULL) {
 			ht->remove_callback(ht->table[i]);
 		}

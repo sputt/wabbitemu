@@ -23,7 +23,7 @@ expand_buf *eb_init (size_t init_size) {
 }
 
 
-int eb_append(expand_buf_t *eb, const char *text, int len) {
+int eb_append(expand_buf_t *eb, const char *text, size_t len) {
 	return eb_insert(eb, -1, text, len);
 }
 
@@ -35,7 +35,7 @@ int eb_append(expand_buf_t *eb, const char *text, int len) {
  * new offset
  */
 
-int eb_insert (expand_buf *buf, int offset, const char *text, int length) {
+int eb_insert (expand_buf *buf, int offset, const char *text, size_t length) {
 	unsigned char *ptr;
 
 	if (text == NULL)
@@ -53,9 +53,9 @@ int eb_insert (expand_buf *buf, int offset, const char *text, int length) {
 		return 0;
 
 	//if the string's too long for the buffer to hold, expand it
-	if (buf->end + length - buf->start > buf->size) {
+	if ((size_t) (buf->end + length - buf->start) > buf->size) {
 		unsigned char *old_start = buf->start;
-		while (buf->end + length - buf->start > buf->size)
+		while ((size_t) (buf->end + length - buf->start) > buf->size)
 			buf->size *= 2;
 		buf->start = (unsigned char *) realloc (buf->start, buf->size);
 		if (buf->start == NULL) {
@@ -86,7 +86,7 @@ int eb_insert (expand_buf *buf, int offset, const char *text, int length) {
  * do length checking!
  */
 
-void eb_overwrite (expand_buf *buf, int offset, const char *text, int length) {
+void eb_overwrite (expand_buf *buf, int offset, const char *text, size_t length) {
 	unsigned char *ptr = buf->start + offset;
 
 	if (length == -1)
@@ -100,7 +100,7 @@ void eb_overwrite (expand_buf *buf, int offset, const char *text, int length) {
  * Erases text from buffer
  */
 
-void eb_erase (expand_buf *buf, int offset, int length) {
+void eb_erase (expand_buf *buf, int offset, size_t length) {
 	unsigned char *ptr, *curr_ptr;
 	ptr = buf->start + offset;
 	for (curr_ptr = ptr; curr_ptr < ptr + length && curr_ptr + length < buf->end; curr_ptr++)
