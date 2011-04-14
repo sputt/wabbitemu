@@ -24,7 +24,7 @@
 
 @dynamic includeFileNames;
 - (NSArray *)includeFileNames {
-	return [[self templateDictionary] objectForKey:@"includeFiles"];
+	return [[self templateDictionary] objectForKey:@"includeFileNames"];
 }
 
 @end

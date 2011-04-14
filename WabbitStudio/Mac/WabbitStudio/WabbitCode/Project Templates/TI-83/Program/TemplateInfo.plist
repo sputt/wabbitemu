@@ -2,13 +2,11 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<key>outputType</key>
-	<integer>0</integer>
 	<key>description</key>
-	<string>Creates a standard Ti-73 program, which includes the ti73.inc header.</string>
+	<string>Creates a standard TI-83 program.</string>
 	<key>includeFileNames</key>
-	<array>
-		<string>ti73</string>
-	</array>
+	<array/>
+	<key>outputType</key>
+	<integer>3</integer>
 </dict>
 </plist>
