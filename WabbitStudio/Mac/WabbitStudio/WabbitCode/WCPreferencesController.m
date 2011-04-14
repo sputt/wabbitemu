@@ -154,7 +154,7 @@ NSString *const kWCPreferencesAdvancedProjectTemplatesPreferUserIncludeFilesKey 
 	// current line highlight enabled
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesCurrentLineHighlightKey];
 	// current line highlight color
-	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor colorWithCalibratedRed:1.0 green:1.0 blue:0.8 alpha:1.0]] forKey:kWCPreferencesCurrentLineHighlightColorKey];
+	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor colorWithCalibratedWhite:0.9 alpha:1.0]] forKey:kWCPreferencesCurrentLineHighlightColorKey];
 	
 	// text view text color
 	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor textColor]] forKey:kWCPreferencesEditorTextColorKey];

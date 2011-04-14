@@ -8,24 +8,26 @@
 
 #import <Cocoa/Cocoa.h>
 
-extern NSString* const kWCProjectFileKey;
-extern NSString* const kWCProjectVersionKey;
-extern NSString* const kWCProjectBuildTargetsKey;
+extern NSString *const kWCProjectFileKey;
+extern NSString *const kWCProjectVersionKey;
+extern NSString *const kWCProjectBuildTargetsKey;
 
 extern const CGFloat kWCProjectVersion;
 
-extern NSString* const kWCProjectDataFileName;
-extern NSString* const kWCProjectWrapperExtension;
+extern NSString *const kWCProjectDataFileName;
+extern NSString *const kWCProjectWrapperExtension;
 
-extern NSString* const kWCProjectUTI;
+extern NSString *const kWCProjectUTI;
 
-extern NSString* const kWCProjectActiveBuildTargetDidChangeNotification;
+extern NSString *const kWCProjectActiveBuildTargetDidChangeNotification;
 extern NSString *const kWCProjectNumberOfBuildTargetsDidChangeNotification;
 extern NSString *const kWCProjectNumberOfFilesDidChangeNotification;
 
 extern NSString *const kWCProjectSettingsProjectFilesOutlineViewExpandedItemUUIDsKey;
 extern NSString *const kWCProjectSettingsProjectWindowFrameKey;
 extern NSString *const kWCProjectSettingsLeftVerticalSplitViewDividerPositionKey;
+extern NSString *const kWCProjectSettingsOpenFileUUIDsKey;
+extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 
 @class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge;
 
@@ -122,4 +124,6 @@ extern NSString *const kWCProjectSettingsLeftVerticalSplitViewDividerPositionKey
 - (void)jumpToBuildMessage:(WCBuildMessage *)message;
 - (void)jumpToSymbol:(WCSymbol *)symbol;
 - (void)jumpToFindInProjectResult:(WCFindInProjectResult *)findResult;
+
+- (void)saveProjectFile;
 @end

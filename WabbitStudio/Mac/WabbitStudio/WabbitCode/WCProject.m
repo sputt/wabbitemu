@@ -64,6 +64,8 @@ NSString *const kWCProjectNumberOfFilesDidChangeNotification = @"kWCProjectNumbe
 NSString *const kWCProjectSettingsProjectFilesOutlineViewExpandedItemUUIDsKey = @"projectFilesOutlineViewExpandedItemUUIDs";
 NSString *const kWCProjectSettingsProjectWindowFrameKey = @"projectWindowFrame";
 NSString *const kWCProjectSettingsLeftVerticalSplitViewDividerPositionKey = @"leftVerticalSplitViewDividerPosition";
+NSString *const kWCProjectSettingsOpenFileUUIDsKey = @"projectOpenFileUUIDs";
+NSString *const kWCProjectSettingsSelectedFileUUIDKey = @"projectSelectedFileUUID";
 
 static NSString *const kWCProjectErrorDomain = @"org.revsoft.wabbitcode.project.error";
 static const NSInteger kWCProjectDataFileMovedErrorCode = 1001;
@@ -241,8 +243,7 @@ static NSImage *_appIcon = nil;
 }
 #pragma mark IBActions
 - (void)saveDocument:(id)sender {
-	[self _updateProjectSettings];
-	[super saveDocument:sender];
+	[self saveProjectFile];
 	
 	WCFile *file = [[self selectedFileViewController] file];
 	
@@ -368,11 +369,18 @@ static NSImage *_appIcon = nil;
 	return [super validateUserInterfaceItem:item];
 }
 #pragma mark NSWindowDelegate
-- (BOOL)windowShouldClose:(id)sender {	
+- (BOOL)windowShouldClose:(id)sender {
+	if (![[self unsavedTextFiles] count])
+		return YES;
+	
 	return ([WCUnsavedFilesWindowController runModalForProject:self] == NSOKButton);
 }
 
 - (void)windowWillClose:(NSNotification *)note {
+	// save the project file before removing the tabs
+	[self saveProjectFile];
+	
+	// otherwise crashes ensue, PSMTabBarControl retains things too long
 	for (NSTabViewItem *item in [[[self tabBarControl] tabView] tabViewItems])
 		[[[self tabBarControl] tabView] removeTabViewItem:item];
 }
@@ -436,6 +444,11 @@ static NSImage *_appIcon = nil;
 	
 	[textView setSelectedRange:range];
 	[textView scrollRangeToVisible:range];
+}
+
+- (void)saveProjectFile; {
+	[self _updateProjectSettings];
+	[super saveDocument:nil];
 }
 #pragma mark NSKeyValueCoding
 - (NSUInteger)countOfBuildTargets {
@@ -1126,6 +1139,9 @@ static NSImage *_appIcon = nil;
 	[[self projectSettings] setObject:[[[self projectFilesOutlineViewController] outlineView] expandedItemUUIDs] forKey:kWCProjectSettingsProjectFilesOutlineViewExpandedItemUUIDsKey];
 	[[self projectSettings] setObject:[[self windowForSheet] stringWithSavedFrame] forKey:kWCProjectSettingsProjectWindowFrameKey];
 	[[self projectSettings] setObject:[NSNumber numberWithDouble:[[[_splitView subviews] firstObject] frame].size.width] forKey:kWCProjectSettingsLeftVerticalSplitViewDividerPositionKey];
+	[[self projectSettings] setObject:[[[[self tabBarControl] tabView] tabViewItems] valueForKeyPath:@"identifier.UUID"] forKey:kWCProjectSettingsOpenFileUUIDsKey];
+	if ([[[self tabBarControl] tabView] numberOfTabViewItems])
+		[[self projectSettings] setObject:[[[[self tabBarControl] tabView] selectedTabViewItem] valueForKeyPath:@"identifier.UUID"] forKey:kWCProjectSettingsSelectedFileUUIDKey];
 }
 - (void)_applyProjectSettings; {
 	// expand the right items in our files outline view
@@ -1140,6 +1156,29 @@ static NSImage *_appIcon = nil;
 	// restore the position of the left vertical split view divider
 	if ([[self projectSettings] objectForKey:kWCProjectSettingsLeftVerticalSplitViewDividerPositionKey])
 		[_splitView setPosition:[[[self projectSettings] objectForKey:kWCProjectSettingsLeftVerticalSplitViewDividerPositionKey] doubleValue] ofDividerAtIndex:0];
+	
+	// restore open files
+	NSArray *tFiles = [self textFiles];
+	for (NSString *UUID in [[self projectSettings] objectForKey:kWCProjectSettingsOpenFileUUIDsKey]) {
+		for (WCFile *file in tFiles) {
+			if ([[file UUID] isEqualToString:UUID]) {
+				[self addFileViewControllerForFile:file];
+				break;
+			}
+		}
+	}
+	
+	// restore the selected file
+	if ([[self projectSettings] objectForKey:kWCProjectSettingsSelectedFileUUIDKey]) {
+		NSString *sUUID = [[self projectSettings] objectForKey:kWCProjectSettingsSelectedFileUUIDKey];
+		
+		for (WCFile *file in tFiles) {
+			if ([[file UUID] isEqualToString:sUUID]) {
+				[[[self tabBarControl] tabView] selectTabViewItemWithIdentifier:file];
+				break;
+			}
+		}
+	}
 }
 #pragma mark Accessors
 @synthesize absoluteFilePaths=_cachedAbsoluteFilePaths;

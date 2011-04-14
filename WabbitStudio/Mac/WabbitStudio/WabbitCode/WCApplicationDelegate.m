@@ -13,6 +13,8 @@
 #import "NSArray+WCExtensions.h"
 #import "WCPreferencesWindowController.h"
 #import "WCUnsavedFilesWindowController.h"
+#import "WCDocumentController.h"
+#import "WCProject.h"
 
 
 @implementation WCApplicationDelegate
@@ -39,6 +41,9 @@
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender {
+	for (WCProject *project in [[WCDocumentController sharedDocumentController] projects])
+		[project saveProjectFile];
+	
 	NSUInteger result = [WCUnsavedFilesWindowController runModalForProject:nil];
 	
 	if (result == NSOKButton)
