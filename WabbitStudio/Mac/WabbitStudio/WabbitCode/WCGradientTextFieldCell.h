@@ -11,7 +11,7 @@
 
 @interface WCGradientTextFieldCell : WCIconTextFieldCell {
 @private
-	BOOL _drawGradient; // our corresponding NSTableView class actually draws the gradient, this just tells them whether to draw
+	BOOL _drawGradient; // our corresponding NSTableView class actually draws the gradient, this just tells it whether to draw
 }
 @property (assign,nonatomic) BOOL drawGradient;
 @end

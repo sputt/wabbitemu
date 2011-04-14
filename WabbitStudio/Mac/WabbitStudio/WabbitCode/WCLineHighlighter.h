@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/NSObject.h>
+#import <AppKit/NSTextView.h>
 
 
 @interface WCLineHighlighter : NSObject {

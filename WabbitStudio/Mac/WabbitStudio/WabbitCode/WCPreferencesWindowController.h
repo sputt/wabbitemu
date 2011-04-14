@@ -7,7 +7,7 @@
 //
 
 #import "DBPrefsWindowController.h"
-//#import "WCSingletonWindowControllerManager.h"
+
 
 extern NSString* const kWCPreferencesWindowControllerGeneralIdentifier;
 extern NSString* const kWCPreferencesWindowControllerAppearanceIdentifier;

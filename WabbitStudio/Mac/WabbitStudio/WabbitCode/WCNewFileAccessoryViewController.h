@@ -7,6 +7,7 @@
 //
 
 #import <AppKit/NSViewController.h>
+#import <AppKit/NSPopUpButton.h>
 
 @class WCNewFileWindowController,WCFile;
 

@@ -44,11 +44,11 @@
 	// compare against the context value to see which value we are observing
 	if ([(NSString *)context isEqualToString:kWCPreferencesCurrentLineHighlightKey]) {
 		// check the current value and highlight the line or disable it
-		[_textView setNeedsDisplay:YES];
+		[_textView setNeedsDisplayInRect:[_textView visibleRect]];
 	}
 	else if ([(NSString *)context isEqualToString:kWCPreferencesCurrentLineHighlightColorKey]) {
 		// if drawing is enabled draw with the new color
-		[_textView setNeedsDisplay:YES];
+		[_textView setNeedsDisplayInRect:[_textView visibleRect]];
 	}
 	else
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];

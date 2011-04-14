@@ -7,6 +7,7 @@
 //
 
 #import <AppKit/NSWindowController.h>
+#import <AppKit/NSTableView.h>
 
 @class WCProject;
 

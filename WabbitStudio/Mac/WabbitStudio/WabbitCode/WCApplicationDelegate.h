@@ -6,7 +6,8 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
+#import <Foundation/NSObject.h>
+#import <AppKit/NSApplication.h>
 
 
 @interface WCApplicationDelegate : NSObject <NSApplicationDelegate> {

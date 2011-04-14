@@ -7,6 +7,12 @@
 //
 
 #import "WCSingletonWindowController.h"
+#import <Foundation/NSArray.h>
+#import <AppKit/NSSplitView.h>
+#import <AppKit/NSTableView.h>
+#import <AppKit/NSImageView.h>
+#import <AppKit/NSArrayController.h>
+
 
 @class BWAnchoredButtonBar;
 

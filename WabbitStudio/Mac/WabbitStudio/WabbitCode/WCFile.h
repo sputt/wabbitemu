@@ -27,7 +27,7 @@ extern NSString *const kWCFileNameDidChangeNotification;
 	WCAlias *_alias; // tracks the file we represent
 	NSString *_UUID; // for storing in project settings plist
 	
-	WCTextStorage *_textStorage; // text storage that stores the text of the file we represent
+	WCTextStorage *_textStorage; // stores the text of the file we represent, support for line numbers
 	NSUndoManager *_undoManager; // undo manager for any text views that hook up to our text storage
 	NSInteger _changeCount; // so we know when we have unsaved changes
 	NSTextView *_textViewForFindInProjectReplace;

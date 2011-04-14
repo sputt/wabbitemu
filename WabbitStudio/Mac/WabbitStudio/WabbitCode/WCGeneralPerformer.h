@@ -7,6 +7,8 @@
 //
 
 #import "WCSingleton.h"
+#import <Foundation/NSURL.h>
+#import <AppKit/NSColor.h>
 
 extern NSString *const kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier;
 extern NSString *const kWCProjectToolbarBuildItemIdentifier;

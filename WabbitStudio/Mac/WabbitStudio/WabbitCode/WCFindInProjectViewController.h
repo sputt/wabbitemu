@@ -8,6 +8,8 @@
 
 #import "WCProjectNavigationViewController.h"
 #import "WCDefines.h"
+#import <AppKit/NSOutlineView.h>
+#import <AppKit/NSSearchField.h>
 
 
 @interface WCFindInProjectViewController : WCProjectNavigationViewController <NSAnimationDelegate,NSUserInterfaceValidations> {

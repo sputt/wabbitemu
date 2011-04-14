@@ -7,6 +7,8 @@
 //
 
 #import <AppKit/NSViewController.h>
+#import <AppKit/NSAnimation.h>
+#import <AppKit/NSMenuItem.h>
 #import "WCDefines.h"
 
 @class WCTextView,WCMutableRangeArray;

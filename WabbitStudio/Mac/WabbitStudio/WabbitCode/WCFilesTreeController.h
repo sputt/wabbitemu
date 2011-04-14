@@ -7,6 +7,7 @@
 //
 
 #import <AppKit/NSTreeController.h>
+#import <AppKit/NSOutlineView.h>
 
 
 @class WCProject;

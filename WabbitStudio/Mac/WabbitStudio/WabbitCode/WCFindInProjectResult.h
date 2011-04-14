@@ -13,7 +13,6 @@
 @interface WCFindInProjectResult : WCTreeNode {
 @private
 	WCFile *_file;
-    //MAZeroingWeakRef *_fileRef;
 	WCSymbol *_symbol;
 	NSRange _findRange;
 	NSAttributedString *_findString;

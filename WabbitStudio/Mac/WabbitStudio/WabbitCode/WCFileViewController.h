@@ -7,6 +7,7 @@
 //
 
 #import <AppKit/NSViewController.h>
+#import <AppKit/NSPopUpButton.h>
 
 
 @class WCTopBarView,WCFile,WCTextView,BWAnchoredButtonBar,WCLineNumberTextView;
