@@ -1237,7 +1237,6 @@
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../Resources/Source/adium/Frameworks\"",
 					"\"$(SRCROOT)\"",
 					"\"$(SRCROOT)/WabbitCode\"",
 				);
@@ -1274,7 +1273,6 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
-					"\"$(SRCROOT)/../../Resources/Source/adium/Frameworks\"",
 					"\"$(SRCROOT)\"",
 					"\"$(SRCROOT)/WabbitCode\"",
 				);
