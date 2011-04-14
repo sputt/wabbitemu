@@ -386,24 +386,24 @@ namespace WabbitC.Model
             string result = "";
             if (this.GetType() != typeof(Module))
             {
-                result += "{\n";
+                result += "{" + Environment.NewLine;
             }
 
             foreach (Declaration decl in Declarations)
             {
-                result += decl.ToDeclarationString() + "\n";
+				result += decl.ToDeclarationString() + Environment.NewLine;
             }
 
             if (Statements != null)
             {
                 foreach (Statement statement in Statements)
                 {
-                    result += statement + "\n";
+					result += statement + Environment.NewLine;
                 }
             }
             if (this.GetType() != typeof(Module))
             {
-                result += "}\n";
+				result += "}" + Environment.NewLine;
             }
             return result;
         }

@@ -35,7 +35,7 @@ namespace WabbitC.Model
                     string funcType = Type.ToDeclarationString(Name);
                     if (Code != null)
                     {
-                        funcType += "\n" + Code.ToString();
+						funcType += Environment.NewLine + Code.ToString();
                         return funcType;
                     }
                     else

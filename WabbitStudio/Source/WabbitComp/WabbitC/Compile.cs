@@ -62,6 +62,9 @@ namespace WabbitC
 
             var currentModule = Module.ParseModule(ref tokens);
 
+			if (optimizeLevel != OptimizeLevel.OptimizeNone)
+				Optimizer.Loop.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
+
             // Statement passes
             if (passCount >= 2)
             {

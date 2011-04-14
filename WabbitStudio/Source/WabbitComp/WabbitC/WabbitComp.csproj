@@ -132,6 +132,8 @@
     <Compile Include="Model\Types\TypeHelper.cs" />
     <Compile Include="Optimizer\ConstantsOptimizer.cs" />
     <Compile Include="Optimizer\CSE.cs" />
+    <Compile Include="Optimizer\Loop\LoopInvarianceReduction.cs" />
+    <Compile Include="Optimizer\Loop\Optimizer.cs" />
     <Compile Include="Optimizer\Loop\StrengthReduction.cs" />
     <Compile Include="Optimizer\VariableReuse.cs" />
     <Compile Include="Optimizer\VariableReducer.cs" />
@@ -173,7 +175,11 @@
   <ItemGroup>
     <None Include="app.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="test.c">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>del "$(SolutionDir)$(ConfigurationName)\WabbitC Output Builder.exe" 2&gt; nul</PostBuildEvent>

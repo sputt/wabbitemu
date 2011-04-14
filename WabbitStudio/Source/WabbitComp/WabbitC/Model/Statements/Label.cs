@@ -16,7 +16,7 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            return Name + ":\n;";
+			return Name + ":" + Environment.NewLine + ";";
         }
 
 		public override string ToAssemblyString()

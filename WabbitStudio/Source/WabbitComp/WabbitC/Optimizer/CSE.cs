@@ -60,78 +60,92 @@ namespace WabbitC.Optimizer
 				{
 					var move = statement as Move;
 					curExp = new CSEStore(index, move.LValue, move.RValue);
+					move.LValue.ConstStatement = move;
 				}
 				else if (type.BaseType == typeof(ConditionStatement))
 				{
 					var cond = statement as ConditionStatement;
 					curExp = new CSEStore(index, cond.CondDecl, cond.CondValue, cond.Operator);
+					cond.LValue.ConstStatement = statement;
 				}
 				else if (type.BaseType == typeof(MathStatement))
 				{
-					Debug.Assert(curExp != null);
 					var math = statement as MathStatement;
-					curExp.Operand2 = math.RValue;
-					curExp.Operator = math.Operator;
-					int listIndex = possibleSubExp.IndexOf(curExp);
-					if (listIndex == -1)
+					if (curExp == null)
 					{
-						bool add = true;
-						if (possibleSubExp.Count > 0 && ((math.GetType() == typeof(Add) || math.GetType() == typeof(Sub)) && math.RValue.GetType() == typeof(Immediate)))
+						var test = math.LValue;
+						if (block.FindDeclaration(math.LValue.Name) != null)
 						{
-							Immediate imm = math.RValue as Immediate;
-							Immediate newImm = new Immediate(imm.Value);
-							Immediate tempImm;
-							for (int i = 1; i <= 4; i++)
+							curExp = new CSEStore(index, math.LValue, math.LValue);
+						}
+					}
+					if (curExp != null)
+					{
+						math.LValue.ConstStatement = null;
+						curExp.Operand2 = math.RValue;
+						curExp.Operator = math.Operator;
+						int listIndex = possibleSubExp.IndexOf(curExp);
+						if (listIndex == -1)
+						{
+							//do not check shit like test *= test;
+							bool add = curExp.Operand2 != curExp.Operand1;
+							if (possibleSubExp.Count > 0 && ((math.GetType() == typeof(Add) || math.GetType() == typeof(Sub)) && math.RValue.GetType() == typeof(Immediate)))
 							{
-								tempImm = newImm + new Immediate(i);
-								curExp.Operand2 = tempImm;
-								listIndex = possibleSubExp.IndexOf(curExp);
-								if (listIndex == -1)
+								Immediate imm = math.RValue as Immediate;
+								Immediate newImm = new Immediate(imm.Value);
+								Immediate tempImm;
+								for (int i = 1; i <= 4; i++)
 								{
-									tempImm = newImm - new Immediate(i);
+									tempImm = newImm + new Immediate(i);
 									curExp.Operand2 = tempImm;
 									listIndex = possibleSubExp.IndexOf(curExp);
-								}
-								if (listIndex != -1)
-								{
-									var firstInst = possibleSubExp[listIndex];
-									if (firstInst.TempDecl == null)
+									if (listIndex == -1)
 									{
-										firstInst.TempDecl = block.CreateTempDeclaration(firstInst.LValue.Type);
-										block.Statements.Insert(firstInst.index + 2, new Move(firstInst.TempDecl, firstInst.LValue));
+										tempImm = newImm - new Immediate(i);
+										curExp.Operand2 = tempImm;
+										listIndex = possibleSubExp.IndexOf(curExp);
 									}
-									block.Statements.RemoveAt(index);
-									newStatements.Add(new Move(firstInst.LValue, firstInst.TempDecl));
-									for (; i > 0; i--)
+									if (listIndex != -1)
 									{
-										if (math.Operator == "+")
-											newStatements.Add(new Inc(firstInst.LValue));
-										else
-											newStatements.Add(new Dec(firstInst.LValue));
+										var firstInst = possibleSubExp[listIndex];
+										if (firstInst.TempDecl == null)
+										{
+											firstInst.TempDecl = block.CreateTempDeclaration(firstInst.LValue.Type);
+											block.Statements.Insert(firstInst.index + 2, new Move(firstInst.TempDecl, firstInst.LValue));
+										}
+										block.Statements.RemoveAt(index);
+										newStatements.Add(new Move(firstInst.LValue, firstInst.TempDecl));
+										for (; i > 0; i--)
+										{
+											if (math.Operator == "+")
+												newStatements.Add(new Inc(firstInst.LValue));
+											else
+												newStatements.Add(new Dec(firstInst.LValue));
+										}
+										hasChanged = true;
+										add = false;
+										break;
 									}
-									hasChanged = true;
-									add = false;
-									break;
-								}
 
+								}
 							}
+							if (add)
+								possibleSubExp.Add(curExp);
 						}
-						if (add)
-							possibleSubExp.Add(curExp);
-					}
-					else
-					{
-						var firstInst = possibleSubExp[listIndex];
-						if (firstInst.TempDecl == null)
+						else
 						{
-							firstInst.TempDecl = block.CreateTempDeclaration(firstInst.LValue.Type);
-							block.Statements.Insert(firstInst.index + 2, new Move(firstInst.TempDecl, firstInst.LValue));
+							var firstInst = possibleSubExp[listIndex];
+							if (firstInst.TempDecl == null)
+							{
+								firstInst.TempDecl = block.CreateTempDeclaration(firstInst.LValue.Type);
+								block.Statements.Insert(firstInst.index + 2, new Move(firstInst.TempDecl, firstInst.LValue));
+							}
+							block.Statements.RemoveAt(index);
+							newStatements.Add(new Move(firstInst.LValue, firstInst.TempDecl));
+							hasChanged = true;
 						}
-						block.Statements.RemoveAt(index);						
-						newStatements.Add(new Move(firstInst.LValue, firstInst.TempDecl));
-						hasChanged = true;
+						curExp = null;// new CSEStore(index, math.LValue, math.RValue);
 					}
-					curExp = new CSEStore(index, math.LValue, math.RValue);
 				}
 
 				if (newStatements.Count == 0)

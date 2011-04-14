@@ -84,7 +84,7 @@ namespace WabbitC.Model
 			string result = "";
 			foreach (string s in IntermediateStrings)
 			{
-				result += s + "\n";
+				result += s + Environment.NewLine;
 			}
 			result += base.ToString();
 			return result;

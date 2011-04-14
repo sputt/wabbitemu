@@ -43,16 +43,19 @@ namespace WabbitC.Optimizer
 				{
 					hasChanged = false;
 					hasChanged |= CSE.Optimize(ref module);
-					if (ReuseVariables)
+					if (hasChanged)
 					{
-						VariableReuse.Optimize(ref module);
-						if (DeadCodeOptimization)
-							DeadCodeOptimizer.Optimize(ref module);
+						if (ReuseVariables)
+						{
+							VariableReuse.Optimize(ref module);
+							if (DeadCodeOptimization)
+								DeadCodeOptimizer.Optimize(ref module);
+						}
 					}
-					if (DeadVariableRemoval)
-						DeadVariableOptimizer.Optimize(ref module);
 				}
 				while (hasChanged);
+				if (DeadVariableRemoval)
+					DeadVariableOptimizer.Optimize(ref module);
 			}
 			
 		}

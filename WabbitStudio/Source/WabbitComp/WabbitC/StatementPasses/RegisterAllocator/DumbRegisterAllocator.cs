@@ -23,7 +23,7 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 
 				foreach (var decl in block.Declarations)
 				{
-					if (block.Function.UseStack)
+					if (block.Function.UseStack || true)
 					{
 						block.stack.ReserveSpace(decl);
 					}
