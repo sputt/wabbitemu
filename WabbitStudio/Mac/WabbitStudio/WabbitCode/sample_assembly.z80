@@ -1,0 +1,23 @@
+#comment
+this is a multiline comment
+it can span as many lines as you want
+#endcomment
+
+; this is a single line comment
+#include "ti83plus.inc"
+
+#define valueforsomeequate $FF
+
+#macro somemacro
+	ld a,200
+	call somelabel
+#endmacro
+
+someequate = valueforsomeequate
+someotherequate = someequate + %10011
+
+somelabel:
+	call somelabel
+	.fill 100,300 ; another single line comment
+	
+somemacro()

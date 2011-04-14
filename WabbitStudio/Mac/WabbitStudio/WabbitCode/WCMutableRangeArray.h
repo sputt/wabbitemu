@@ -1,0 +1,24 @@
+//
+//  WCMutableRangeArray.h
+//  WabbitStudio
+//
+//  Created by William Towe on 4/6/11.
+//  Copyright 2011 Revolution Software. All rights reserved.
+//
+
+#import <Foundation/NSArray.h>
+
+
+@interface WCMutableRangeArray : NSMutableArray {
+@private
+    NSUInteger _count;
+	NSMutableData *_data;
+}
+
+- (void)addRange:(NSRange)range;
+- (NSRange)rangeAtIndex:(NSUInteger)index;
+- (void)insertRange:(NSRange)range atIndex:(NSUInteger)index;
+- (void)removeAllRanges;
+
+- (NSArray *)allRangesAsObjects;
+@end
