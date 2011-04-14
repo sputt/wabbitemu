@@ -1,24 +1,24 @@
 //
-//  WCSingletonWindowControllerManager.m
+//  WCSingletonWindowController.m
 //  WabbitStudio
 //
 //  Created by William Towe on 3/20/11.
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCSingletonWindowControllerManager.h"
+#import "WCSingletonWindowController.h"
 
 static NSMutableDictionary *_dict = nil;
 
-@interface WCSingletonWindowControllerManager (Private)
+@interface WCSingletonWindowController (Private)
 + (id)_sharedInstanceCreateIfNecessary;
 + (id)_sharedInstanceDontCreate;
 @end
 
-@implementation WCSingletonWindowControllerManager
+@implementation WCSingletonWindowController
 
 + (void)initialize {
-	if ([WCSingletonWindowControllerManager class] != self)
+	if ([WCSingletonWindowController class] != self)
 		return;
 	
 	_dict = [[NSMutableDictionary alloc] init];

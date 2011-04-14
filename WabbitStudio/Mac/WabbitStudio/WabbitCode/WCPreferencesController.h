@@ -6,7 +6,7 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCSingletonManager.h"
+#import "WCSingleton.h"
 
 
 extern NSString *const kWCPreferencesAddFilesToProjectCopyFilesKey;
@@ -101,7 +101,7 @@ typedef NSUInteger WCPreferencesBuildingLocation;
 extern NSString *const kWCPreferencesBuildingLocationKey;
 extern NSString *const kWCPreferencesBuildingCustomLocationKey;
 
-@interface WCPreferencesController : WCSingletonManager {
+@interface WCPreferencesController : WCSingleton {
 @private
     
 }

@@ -1,5 +1,5 @@
 //
-//  WCSingletonManager.h
+//  WCSingleton.h
 //  WabbitStudio
 //
 //  Created by William Towe on 3/20/11.
@@ -10,7 +10,7 @@
 
 
 // manages all the singletons in the project, you have to override init for this to work properly
-@interface WCSingletonManager : NSObject {
+@interface WCSingleton : NSObject {
 @private
     
 }

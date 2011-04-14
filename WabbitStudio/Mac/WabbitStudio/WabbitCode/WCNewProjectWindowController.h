@@ -6,11 +6,11 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCSingletonWindowControllerManager.h"
+#import "WCSingletonWindowController.h"
 
 @class BWAnchoredButtonBar;
 
-@interface WCNewProjectWindowController : WCSingletonWindowControllerManager <NSSplitViewDelegate,NSTableViewDelegate> {
+@interface WCNewProjectWindowController : WCSingletonWindowController <NSSplitViewDelegate,NSTableViewDelegate> {
 @private
 	IBOutlet NSImageView *_splitterHandleImageView;
 	IBOutlet BWAnchoredButtonBar *_buttonBar;

@@ -6,7 +6,7 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCSingletonManager.h"
+#import "WCSingleton.h"
 
 extern NSString *const kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier;
 extern NSString *const kWCProjectToolbarBuildItemIdentifier;
@@ -15,7 +15,7 @@ extern NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer;
 
 @class WCFile,WCProject,WCProjectTemplate,WCFileTemplate;
 
-@interface WCGeneralPerformer : WCSingletonManager {
+@interface WCGeneralPerformer : WCSingleton {
 @private
 
 }

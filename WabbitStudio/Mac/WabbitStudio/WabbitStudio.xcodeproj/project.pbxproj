@@ -76,8 +76,8 @@
 		077016CE1348F41300FD0CAD /* WCNewFileWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 077016CD1348F41300FD0CAD /* WCNewFileWindowController.m */; };
 		077016D11348F89200FD0CAD /* WCNewFileWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 077016CF1348F89200FD0CAD /* WCNewFileWindow.xib */; };
 		077016D41348FAE600FD0CAD /* WCFileTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = 077016D31348FAE600FD0CAD /* WCFileTemplate.m */; };
-		0772BEF113367207009D4F32 /* WCSingletonManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0772BEF013367207009D4F32 /* WCSingletonManager.m */; };
-		0772BEF51336766F009D4F32 /* WCSingletonWindowControllerManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 0772BEF41336766E009D4F32 /* WCSingletonWindowControllerManager.m */; };
+		0772BEF113367207009D4F32 /* WCSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 0772BEF013367207009D4F32 /* WCSingleton.m */; };
+		0772BEF51336766F009D4F32 /* WCSingletonWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0772BEF41336766E009D4F32 /* WCSingletonWindowController.m */; };
 		0772BEF713367DC5009D4F32 /* Group16x16.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 0772BEF613367DC5009D4F32 /* Group16x16.tiff */; };
 		078073D0134404F30003DE27 /* NoodleLineNumberMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = 078073CD134404F30003DE27 /* NoodleLineNumberMarker.m */; };
 		078073D1134404F30003DE27 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 078073CF134404F30003DE27 /* NoodleLineNumberView.m */; };
@@ -309,10 +309,10 @@
 		077016D01348F89200FD0CAD /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCNewFileWindow.xib; sourceTree = "<group>"; };
 		077016D21348FAE500FD0CAD /* WCFileTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFileTemplate.h; sourceTree = "<group>"; };
 		077016D31348FAE600FD0CAD /* WCFileTemplate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFileTemplate.m; sourceTree = "<group>"; };
-		0772BEEF13367207009D4F32 /* WCSingletonManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSingletonManager.h; sourceTree = "<group>"; };
-		0772BEF013367207009D4F32 /* WCSingletonManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSingletonManager.m; sourceTree = "<group>"; };
-		0772BEF31336766E009D4F32 /* WCSingletonWindowControllerManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSingletonWindowControllerManager.h; sourceTree = "<group>"; };
-		0772BEF41336766E009D4F32 /* WCSingletonWindowControllerManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSingletonWindowControllerManager.m; sourceTree = "<group>"; };
+		0772BEEF13367207009D4F32 /* WCSingleton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSingleton.h; sourceTree = "<group>"; };
+		0772BEF013367207009D4F32 /* WCSingleton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSingleton.m; sourceTree = "<group>"; };
+		0772BEF31336766E009D4F32 /* WCSingletonWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSingletonWindowController.h; sourceTree = "<group>"; };
+		0772BEF41336766E009D4F32 /* WCSingletonWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSingletonWindowController.m; sourceTree = "<group>"; };
 		0772BEF613367DC5009D4F32 /* Group16x16.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Group16x16.tiff; sourceTree = "<group>"; };
 		078073CC134404F30003DE27 /* NoodleLineNumberMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoodleLineNumberMarker.h; sourceTree = "<group>"; };
 		078073CD134404F30003DE27 /* NoodleLineNumberMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NoodleLineNumberMarker.m; sourceTree = "<group>"; };
@@ -639,10 +639,10 @@
 				0769A1D31333DDE100080A96 /* WCIconTextFieldCell.m */,
 				0769A1EE13342F7800080A96 /* WCGeneralPerformer.h */,
 				0769A1EF13342F7F00080A96 /* WCGeneralPerformer.m */,
-				0772BEEF13367207009D4F32 /* WCSingletonManager.h */,
-				0772BEF013367207009D4F32 /* WCSingletonManager.m */,
-				0772BEF31336766E009D4F32 /* WCSingletonWindowControllerManager.h */,
-				0772BEF41336766E009D4F32 /* WCSingletonWindowControllerManager.m */,
+				0772BEEF13367207009D4F32 /* WCSingleton.h */,
+				0772BEF013367207009D4F32 /* WCSingleton.m */,
+				0772BEF31336766E009D4F32 /* WCSingletonWindowController.h */,
+				0772BEF41336766E009D4F32 /* WCSingletonWindowController.m */,
 				070D558E1337BE9E00847B1A /* WCFilesOutlineView.h */,
 				070D558F1337BE9E00847B1A /* WCFilesOutlineView.m */,
 				070D559D13385B3D00847B1A /* WCAddFilesToProjectViewController.h */,
@@ -969,8 +969,8 @@
 				0769A1E31334023F00080A96 /* WCProjectFile.m in Sources */,
 				0769A1ED13340FF900080A96 /* NSFileManager+WCExtensions.m in Sources */,
 				0769A1F013342F9000080A96 /* WCGeneralPerformer.m in Sources */,
-				0772BEF113367207009D4F32 /* WCSingletonManager.m in Sources */,
-				0772BEF51336766F009D4F32 /* WCSingletonWindowControllerManager.m in Sources */,
+				0772BEF113367207009D4F32 /* WCSingleton.m in Sources */,
+				0772BEF51336766F009D4F32 /* WCSingletonWindowController.m in Sources */,
 				070D558D1337BD3600847B1A /* WCFilesTreeController.m in Sources */,
 				070D55901337BE9F00847B1A /* WCFilesOutlineView.m in Sources */,
 				070D55961338559700847B1A /* NSTreeController+WCExtensions.m in Sources */,

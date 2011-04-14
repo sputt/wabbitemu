@@ -1,25 +1,25 @@
 //
-//  WCSingletonManager.m
+//  WCSingleton.m
 //  WabbitStudio
 //
 //  Created by William Towe on 3/20/11.
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCSingletonManager.h"
+#import "WCSingleton.h"
 
 
 static NSMutableDictionary *_dict = nil;
 
-@interface WCSingletonManager (Private)
+@interface WCSingleton (Private)
 + (id)_sharedInstanceCreateIfNecessary;
 + (id)_sharedInstanceDontCreate;
 @end
 
-@implementation WCSingletonManager
+@implementation WCSingleton
 
 + (void)initialize {
-	if ([WCSingletonManager class] == self)
+	if ([WCSingleton class] == self)
 		_dict = [[NSMutableDictionary alloc] init];
 }
 

@@ -1,5 +1,5 @@
 //
-//  WCSingletonWindowControllerManager.h
+//  WCSingletonWindowController.h
 //  WabbitStudio
 //
 //  Created by William Towe on 3/20/11.
@@ -9,7 +9,7 @@
 #import <AppKit/NSWindowController.h>
 
 // manages the singleton window controllers in the project, override windowNibName for it to work properly
-@interface WCSingletonWindowControllerManager : NSWindowController {
+@interface WCSingletonWindowController : NSWindowController {
 @private
     
 }
