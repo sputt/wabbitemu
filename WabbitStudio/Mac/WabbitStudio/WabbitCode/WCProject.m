@@ -779,6 +779,9 @@ static NSImage *_appIcon = nil;
 			
 		[[WCGeneralPerformer sharedPerformer] addFileURLs:[panel URLs] toFile:file atIndex:index];
 		
+		// update our cached file paths
+		[self setAbsoluteFilePaths:[NSSet setWithArray:[[[self projectFile] descendantNodes] valueForKeyPath:@"absolutePath"]]];
+		
 		[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectNumberOfFilesDidChangeNotification object:self];		
 	}];
 }
@@ -1111,6 +1114,9 @@ static NSImage *_appIcon = nil;
 		// remove the objects from our model
 		for (WCFile *file in objects)
 			[[[file parentNode] mutableChildNodes] removeObject:file];
+		
+		// update our cached file paths
+		[self setAbsoluteFilePaths:[NSSet setWithArray:[[[self projectFile] descendantNodes] valueForKeyPath:@"absolutePath"]]];
 		
 		[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectNumberOfFilesDidChangeNotification object:self];
 	}

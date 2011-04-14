@@ -44,7 +44,9 @@ NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer = @"kWCProjectToolba
 	return [self addFileURLs:urls toFile:file inDirectoryURL:nil atIndex:index];
 }
 
-- (BOOL)addFileURLs:(NSArray *)urls toFile:(WCFile *)file inDirectoryURL:(NSURL *)directory atIndex:(NSUInteger)index {	
+- (BOOL)addFileURLs:(NSArray *)urls toFile:(WCFile *)file inDirectoryURL:(NSURL *)directory atIndex:(NSUInteger)index {
+	// get the updated set of all file paths in the project
+	NSSet *currentFilePaths = [[file project] absoluteFilePaths];
 	// grab a reference to the mutable proxy of our files child nodes
 	NSMutableArray *childNodes = [file mutableChildNodes];
 	NSFileManager *fm = [NSFileManager defaultManager];
@@ -55,6 +57,9 @@ NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer = @"kWCProjectToolba
 	// iterate over the passed in urls
 	for (NSURL *url in urls) {
 		NSURL *newURL = url;
+		
+		if ([currentFilePaths containsObject:[newURL path]])
+			continue;
 		
 		if ([[newURL lastPathComponent] hasPrefix:@"."])
 			continue;
