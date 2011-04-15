@@ -26,6 +26,7 @@
 		0713964E1348004A0022E742 /* WCArrayToCommaSeparatedStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0713964D134800480022E742 /* WCArrayToCommaSeparatedStringTransformer.m */; };
 		0713965113484C130022E742 /* main.z80 in Resources */ = {isa = PBXBuildFile; fileRef = 0713964F134840010022E742 /* main.z80 */; };
 		07142412133BD78D003D0247 /* WCLineHighlighter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07142411133BD78B003D0247 /* WCLineHighlighter.m */; };
+		072C8A361358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A351358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.m */; };
 		073043B613405E0300BD7154 /* WCBuildTargetInfoSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 073043B513405E0300BD7154 /* WCBuildTargetInfoSheetController.m */; };
 		073043B91340714700BD7154 /* NSPopUpButton+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 073043B81340714700BD7154 /* NSPopUpButton+WCExtensions.m */; };
 		07463AB21332AB7700744B98 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AB11332AB7700744B98 /* Cocoa.framework */; };
@@ -93,7 +94,6 @@
 		07880B651341708900E07231 /* GreenCheck8x8.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 07880B641341708900E07231 /* GreenCheck8x8.tiff */; };
 		07880B6A13418C9500E07231 /* WCBuildDefine.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B6913418C9300E07231 /* WCBuildDefine.m */; };
 		07880B6D1341953B00E07231 /* WCBuildDefinesArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B6C1341953800E07231 /* WCBuildDefinesArrayController.m */; };
-		07880B731341B32000E07231 /* RSRTVArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B721341B32000E07231 /* RSRTVArrayController.m */; };
 		07880B761341B84700E07231 /* WCIncludeDirectory.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B751341B84500E07231 /* WCIncludeDirectory.m */; };
 		07880B791341B8F900E07231 /* WCAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B781341B8F600E07231 /* WCAlias.m */; };
 		0790C72E134CED4C00AABB1D /* WCMutableRangeArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790C72D134CED4C00AABB1D /* WCMutableRangeArray.m */; };
@@ -221,6 +221,8 @@
 		0713964F134840010022E742 /* main.z80 */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.z80; sourceTree = "<group>"; };
 		07142410133BD78B003D0247 /* WCLineHighlighter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCLineHighlighter.h; sourceTree = "<group>"; };
 		07142411133BD78B003D0247 /* WCLineHighlighter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCLineHighlighter.m; sourceTree = "<group>"; };
+		072C8A341358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCVerticallyCenteredTextFieldCell.h; sourceTree = "<group>"; };
+		072C8A351358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCVerticallyCenteredTextFieldCell.m; sourceTree = "<group>"; };
 		073043B413405E0300BD7154 /* WCBuildTargetInfoSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildTargetInfoSheetController.h; sourceTree = "<group>"; };
 		073043B513405E0300BD7154 /* WCBuildTargetInfoSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildTargetInfoSheetController.m; sourceTree = "<group>"; };
 		073043B71340714700BD7154 /* NSPopUpButton+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSPopUpButton+WCExtensions.h"; sourceTree = "<group>"; };
@@ -337,8 +339,6 @@
 		07880B6913418C9300E07231 /* WCBuildDefine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildDefine.m; sourceTree = "<group>"; };
 		07880B6B1341953600E07231 /* WCBuildDefinesArrayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildDefinesArrayController.h; sourceTree = "<group>"; };
 		07880B6C1341953800E07231 /* WCBuildDefinesArrayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildDefinesArrayController.m; sourceTree = "<group>"; };
-		07880B711341B32000E07231 /* RSRTVArrayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSRTVArrayController.h; sourceTree = "<group>"; };
-		07880B721341B32000E07231 /* RSRTVArrayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSRTVArrayController.m; sourceTree = "<group>"; };
 		07880B741341B84300E07231 /* WCIncludeDirectory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCIncludeDirectory.h; sourceTree = "<group>"; };
 		07880B751341B84500E07231 /* WCIncludeDirectory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCIncludeDirectory.m; sourceTree = "<group>"; };
 		07880B771341B8F300E07231 /* WCAlias.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCAlias.h; sourceTree = "<group>"; };
@@ -619,6 +619,8 @@
 		0769A1C71333D74C00080A96 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				072C8A341358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.h */,
+				072C8A351358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.m */,
 				070D558B1337BD3600847B1A /* WCFilesTreeController.h */,
 				070D558C1337BD3600847B1A /* WCFilesTreeController.m */,
 				070D559A133859C200847B1A /* WCPreferencesController.h */,
@@ -822,8 +824,6 @@
 				07F1B80D1342ED2A0013B9CC /* NDSDKCompatibility.h */,
 				07F1B80A1342EAE10013B9CC /* NDAlias.h */,
 				07F1B80B1342EAE10013B9CC /* NDAlias.m */,
-				07880B711341B32000E07231 /* RSRTVArrayController.h */,
-				07880B721341B32000E07231 /* RSRTVArrayController.m */,
 				075EB11B133F3C3A00A34611 /* TLAnimatingOutlineView.h */,
 				075EB11C133F3C3A00A34611 /* TLAnimatingOutlineView.m */,
 				075EB11D133F3C3A00A34611 /* TLCollapsibleView.h */,
@@ -1007,7 +1007,6 @@
 				07880B5D13413B2700E07231 /* WCFindBarViewController.m in Sources */,
 				07880B6A13418C9500E07231 /* WCBuildDefine.m in Sources */,
 				07880B6D1341953B00E07231 /* WCBuildDefinesArrayController.m in Sources */,
-				07880B731341B32000E07231 /* RSRTVArrayController.m in Sources */,
 				07880B761341B84700E07231 /* WCIncludeDirectory.m in Sources */,
 				07880B791341B8F900E07231 /* WCAlias.m in Sources */,
 				07F1B8031342A8CE0013B9CC /* WCIncludeDirectoriesArrayController.m in Sources */,
@@ -1060,6 +1059,7 @@
 				07D28D4E1352588600437AA1 /* WCUnsavedFilesWindowController.m in Sources */,
 				07D28D541352651000437AA1 /* WCProjectWindow.m in Sources */,
 				070F2F4D1353F73B00641AE3 /* CTBadge.m in Sources */,
+				072C8A361358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

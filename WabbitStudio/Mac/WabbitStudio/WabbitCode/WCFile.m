@@ -283,6 +283,11 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	return [[self URL] path];
 }
 
+@dynamic absolutePathForDisplay;
+- (NSString *)absolutePathForDisplay {
+	return [[self absolutePath] stringByReplacingPercentEscapesUsingEncoding:[self encoding]];
+}
+
 @dynamic directoryURL;
 - (NSURL *)directoryURL {
 	return ([self isDirectory])?[self URL]:[[self URL] URLByDeletingLastPathComponent];

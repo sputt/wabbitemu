@@ -6,10 +6,10 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "RSVerticallyCenteredTextFieldCell.h"
+#import "WCVerticallyCenteredTextFieldCell.h"
 
 
-@interface WCIconTextFieldCell : RSVerticallyCenteredTextFieldCell <NSCopying> {
+@interface WCIconTextFieldCell : WCVerticallyCenteredTextFieldCell <NSCopying> {
 @private
     NSImage *_icon;
 	NSSize _iconSize;

@@ -417,6 +417,25 @@ static NSImage *_appIcon = nil;
 	
 	[[[controller textView] syntaxHighlighter] performSyntaxHighlighting];
 }
+
+- (BOOL)tabView:(NSTabView *)tabView shouldDragTabViewItem:(NSTabViewItem *)tabViewItem fromTabBar:(PSMTabBarControl *)tabBarControl; {
+	if ([tabView numberOfTabViewItems] == 1)
+		return NO;
+	return YES;
+}
+- (BOOL)tabView:(NSTabView *)tabView shouldDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl; {
+	return YES;
+}
+- (BOOL)tabView:(NSTabView *)tabView shouldAllowTabViewItem:(NSTabViewItem *)tabViewItem toLeaveTabBar:(PSMTabBarControl *)tabBarControl; {
+	return NO;
+}
+- (void)tabView:(NSTabView*)tabView didDropTabViewItem:(NSTabViewItem *)tabViewItem inTabBar:(PSMTabBarControl *)tabBarControl; {
+	
+}
+
+- (NSString *)tabView:(NSTabView *)tabView toolTipForTabViewItem:(NSTabViewItem *)tabViewItem; {
+	return [(WCFile *)[tabViewItem identifier] absolutePathForDisplay];
+}
 #pragma mark WCTabViewContextProtocol
 - (NSWindow *)tabWindow; {
 	return [[[self windowControllers] lastObject] window];
@@ -577,8 +596,6 @@ static NSImage *_appIcon = nil;
 #endif
 	
 	WCFileViewController *controller = [self fileViewControllerForFile:file inTabViewContext:tabViewContext selectTab:NO];
-	
-	NSLog(@"%@",controller);
 
 #ifdef DEBUG
 	NSParameterAssert(controller != nil);

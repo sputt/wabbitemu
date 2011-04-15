@@ -44,6 +44,7 @@ extern NSString *const kWCFileNameDidChangeNotification;
 @property (copy,nonatomic) NSURL *URL;
 @property (readonly,nonatomic) BOOL isDirectory;
 @property (readonly,nonatomic) NSString *absolutePath;
+@property (readonly,nonatomic) NSString *absolutePathForDisplay;
 @property (readonly,nonatomic) NSURL *directoryURL;
 @property (readonly,nonatomic) WCTextStorage *textStorage;
 @property (readonly,nonatomic) NSUndoManager *undoManager;
