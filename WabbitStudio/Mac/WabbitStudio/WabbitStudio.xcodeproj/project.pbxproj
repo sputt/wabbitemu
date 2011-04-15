@@ -27,6 +27,9 @@
 		0713965113484C130022E742 /* main.z80 in Resources */ = {isa = PBXBuildFile; fileRef = 0713964F134840010022E742 /* main.z80 */; };
 		07142412133BD78D003D0247 /* WCLineHighlighter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07142411133BD78B003D0247 /* WCLineHighlighter.m */; };
 		072C8A361358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A351358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.m */; };
+		072C8A3A1358EBED006EE420 /* NSGradient+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A391358EBED006EE420 /* NSGradient+WCExtensions.m */; };
+		072C8A3D1358EFCF006EE420 /* RSRTVArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3C1358EFCF006EE420 /* RSRTVArrayController.m */; };
+		072C8A401358F05A006EE420 /* WCFileViewStatusBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */; };
 		073043B613405E0300BD7154 /* WCBuildTargetInfoSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 073043B513405E0300BD7154 /* WCBuildTargetInfoSheetController.m */; };
 		073043B91340714700BD7154 /* NSPopUpButton+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 073043B81340714700BD7154 /* NSPopUpButton+WCExtensions.m */; };
 		07463AB21332AB7700744B98 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AB11332AB7700744B98 /* Cocoa.framework */; };
@@ -70,7 +73,6 @@
 		07604ADE133C9A4C00D8A432 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07604ADD133C9A4C00D8A432 /* Sparkle.framework */; };
 		07604ADF133C9A6100D8A432 /* Sparkle.framework in Copy Private Frameworks */ = {isa = PBXBuildFile; fileRef = 07604ADD133C9A4C00D8A432 /* Sparkle.framework */; };
 		0769A1D41333DDE500080A96 /* WCIconTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0769A1D31333DDE100080A96 /* WCIconTextFieldCell.m */; };
-		0769A1D81333DF2D00080A96 /* RSVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0769A1D71333DF2D00080A96 /* RSVerticallyCenteredTextFieldCell.m */; };
 		0769A1E31334023F00080A96 /* WCProjectFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 0769A1E21334023A00080A96 /* WCProjectFile.m */; };
 		0769A1ED13340FF900080A96 /* NSFileManager+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0769A1EC13340FE800080A96 /* NSFileManager+WCExtensions.m */; };
 		0769A1F013342F9000080A96 /* WCGeneralPerformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0769A1EF13342F7F00080A96 /* WCGeneralPerformer.m */; };
@@ -125,7 +127,6 @@
 		07AC0CE5133971FA0060F786 /* PSMTabBarControl.framework in Copy Private Frameworks */ = {isa = PBXBuildFile; fileRef = 07AC0CE3133971DA0060F786 /* PSMTabBarControl.framework */; };
 		07AC0CE9133973A10060F786 /* WCFileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AC0CE71339739B0060F786 /* WCFileViewController.m */; };
 		07AC0CED133973FD0060F786 /* WCFileView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07AC0CEB133973FD0060F786 /* WCFileView.xib */; };
-		07AC0CF0133974240060F786 /* WCTopBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AC0CEF133974210060F786 /* WCTopBarView.m */; };
 		07AC0CFB1339A8A50060F786 /* WCTextStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AC0CFA1339A8960060F786 /* WCTextStorage.m */; };
 		07AF6E64133A709D00A2D188 /* NSImage+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AF6E63133A709D00A2D188 /* NSImage+WCExtensions.m */; };
 		07AF6E6A133A7FB200A2D188 /* WCSymbolScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AF6E69133A7FB000A2D188 /* WCSymbolScanner.m */; };
@@ -223,6 +224,12 @@
 		07142411133BD78B003D0247 /* WCLineHighlighter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCLineHighlighter.m; sourceTree = "<group>"; };
 		072C8A341358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCVerticallyCenteredTextFieldCell.h; sourceTree = "<group>"; };
 		072C8A351358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCVerticallyCenteredTextFieldCell.m; sourceTree = "<group>"; };
+		072C8A381358EBED006EE420 /* NSGradient+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSGradient+WCExtensions.h"; sourceTree = "<group>"; };
+		072C8A391358EBED006EE420 /* NSGradient+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSGradient+WCExtensions.m"; sourceTree = "<group>"; };
+		072C8A3B1358EFCF006EE420 /* RSRTVArrayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSRTVArrayController.h; sourceTree = "<group>"; };
+		072C8A3C1358EFCF006EE420 /* RSRTVArrayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSRTVArrayController.m; sourceTree = "<group>"; };
+		072C8A3E1358F059006EE420 /* WCFileViewStatusBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFileViewStatusBarView.h; sourceTree = "<group>"; };
+		072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFileViewStatusBarView.m; sourceTree = "<group>"; };
 		073043B413405E0300BD7154 /* WCBuildTargetInfoSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildTargetInfoSheetController.h; sourceTree = "<group>"; };
 		073043B513405E0300BD7154 /* WCBuildTargetInfoSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildTargetInfoSheetController.m; sourceTree = "<group>"; };
 		073043B71340714700BD7154 /* NSPopUpButton+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSPopUpButton+WCExtensions.h"; sourceTree = "<group>"; };
@@ -299,8 +306,6 @@
 		07604ADD133C9A4C00D8A432 /* Sparkle.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Sparkle.framework; path = WabbitCode/Sparkle.framework; sourceTree = "<group>"; };
 		0769A1D21333DDE000080A96 /* WCIconTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCIconTextFieldCell.h; sourceTree = "<group>"; };
 		0769A1D31333DDE100080A96 /* WCIconTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCIconTextFieldCell.m; sourceTree = "<group>"; };
-		0769A1D61333DF2D00080A96 /* RSVerticallyCenteredTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSVerticallyCenteredTextFieldCell.h; sourceTree = "<group>"; };
-		0769A1D71333DF2D00080A96 /* RSVerticallyCenteredTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSVerticallyCenteredTextFieldCell.m; sourceTree = "<group>"; };
 		0769A1E11334023800080A96 /* WCProjectFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCProjectFile.h; sourceTree = "<group>"; };
 		0769A1E21334023A00080A96 /* WCProjectFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCProjectFile.m; sourceTree = "<group>"; };
 		0769A1EB13340FE100080A96 /* NSFileManager+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSFileManager+WCExtensions.h"; sourceTree = "<group>"; };
@@ -392,8 +397,6 @@
 		07AC0CE61339739A0060F786 /* WCFileViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFileViewController.h; sourceTree = "<group>"; };
 		07AC0CE71339739B0060F786 /* WCFileViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFileViewController.m; sourceTree = "<group>"; };
 		07AC0CEC133973FD0060F786 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCFileView.xib; sourceTree = "<group>"; };
-		07AC0CEE1339741F0060F786 /* WCTopBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTopBarView.h; sourceTree = "<group>"; };
-		07AC0CEF133974210060F786 /* WCTopBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCTopBarView.m; sourceTree = "<group>"; };
 		07AC0CF91339A8900060F786 /* WCTextStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTextStorage.h; sourceTree = "<group>"; };
 		07AC0CFA1339A8960060F786 /* WCTextStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCTextStorage.m; sourceTree = "<group>"; };
 		07AF6E62133A709D00A2D188 /* NSImage+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSImage+WCExtensions.h"; sourceTree = "<group>"; };
@@ -653,8 +656,6 @@
 				070D559E13385B4200847B1A /* WCAddFilesToProjectViewController.m */,
 				07AC0CE61339739A0060F786 /* WCFileViewController.h */,
 				07AC0CE71339739B0060F786 /* WCFileViewController.m */,
-				07AC0CEE1339741F0060F786 /* WCTopBarView.h */,
-				07AC0CEF133974210060F786 /* WCTopBarView.m */,
 				07AC0CF91339A8900060F786 /* WCTextStorage.h */,
 				07AC0CFA1339A8960060F786 /* WCTextStorage.m */,
 				07AF6E68133A7FAF00A2D188 /* WCSymbolScanner.h */,
@@ -761,6 +762,8 @@
 				07D28D4D1352588500437AA1 /* WCUnsavedFilesWindowController.m */,
 				07D28D521352651000437AA1 /* WCProjectWindow.h */,
 				07D28D531352651000437AA1 /* WCProjectWindow.m */,
+				072C8A3E1358F059006EE420 /* WCFileViewStatusBarView.h */,
+				072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -800,6 +803,8 @@
 				071396481347AFEF0022E742 /* NSString+WCExtensions.m */,
 				0790C72F134D6CAE00AABB1D /* NSTextView+WCExtensions.h */,
 				0790C730134D6CAE00AABB1D /* NSTextView+WCExtensions.m */,
+				072C8A381358EBED006EE420 /* NSGradient+WCExtensions.h */,
+				072C8A391358EBED006EE420 /* NSGradient+WCExtensions.m */,
 			);
 			name = Categories;
 			sourceTree = "<group>";
@@ -807,6 +812,8 @@
 		0769A1D51333DEFB00080A96 /* External */ = {
 			isa = PBXGroup;
 			children = (
+				072C8A3B1358EFCF006EE420 /* RSRTVArrayController.h */,
+				072C8A3C1358EFCF006EE420 /* RSRTVArrayController.m */,
 				070F2F4E1353F74500641AE3 /* CTBadge_1.pdf */,
 				070F2F4F1353F74500641AE3 /* CTBadge_3.pdf */,
 				070F2F501353F74500641AE3 /* CTBadge_4.pdf */,
@@ -837,8 +844,6 @@
 				075EB125133F3C3A00A34611 /* TLGradientView.m */,
 				07604AD5133C353300D8A432 /* DBPrefsWindowController.h */,
 				07604AD6133C353300D8A432 /* DBPrefsWindowController.m */,
-				0769A1D61333DF2D00080A96 /* RSVerticallyCenteredTextFieldCell.h */,
-				0769A1D71333DF2D00080A96 /* RSVerticallyCenteredTextFieldCell.m */,
 				0790CB8113458E4E00FAEA63 /* NSAlert-OAExtensions.h */,
 				0790CB8213458E5300FAEA63 /* NSAlert-OAExtensions.m */,
 			);
@@ -967,7 +972,6 @@
 				07463AF11332FF7D00744B98 /* WCTreeNode.m in Sources */,
 				07463AF61333212900744B98 /* WCNewProjectWindowController.m in Sources */,
 				0769A1D41333DDE500080A96 /* WCIconTextFieldCell.m in Sources */,
-				0769A1D81333DF2D00080A96 /* RSVerticallyCenteredTextFieldCell.m in Sources */,
 				0769A1E31334023F00080A96 /* WCProjectFile.m in Sources */,
 				0769A1ED13340FF900080A96 /* NSFileManager+WCExtensions.m in Sources */,
 				0769A1F013342F9000080A96 /* WCGeneralPerformer.m in Sources */,
@@ -980,7 +984,6 @@
 				070D55A013385B5F00847B1A /* WCAddFilesToProjectViewController.m in Sources */,
 				0706F50F13391684000C9007 /* NSUserDefaults+WCExtensions.m in Sources */,
 				07AC0CE9133973A10060F786 /* WCFileViewController.m in Sources */,
-				07AC0CF0133974240060F786 /* WCTopBarView.m in Sources */,
 				07AC0CFB1339A8A50060F786 /* WCTextStorage.m in Sources */,
 				07AF6E64133A709D00A2D188 /* NSImage+WCExtensions.m in Sources */,
 				07AF6E6A133A7FB200A2D188 /* WCSymbolScanner.m in Sources */,
@@ -1060,6 +1063,9 @@
 				07D28D541352651000437AA1 /* WCProjectWindow.m in Sources */,
 				070F2F4D1353F73B00641AE3 /* CTBadge.m in Sources */,
 				072C8A361358E95E006EE420 /* WCVerticallyCenteredTextFieldCell.m in Sources */,
+				072C8A3A1358EBED006EE420 /* NSGradient+WCExtensions.m in Sources */,
+				072C8A3D1358EFCF006EE420 /* RSRTVArrayController.m in Sources */,
+				072C8A401358F05A006EE420 /* WCFileViewStatusBarView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

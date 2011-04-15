@@ -1,19 +1,19 @@
 //
-//  WCFindBarBackgroundView.m
+//  WCFileViewStatusBarView.m
 //  WabbitStudio
 //
-//  Created by William Towe on 4/4/11.
+//  Created by William Towe on 4/15/11.
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCFindBarBackgroundView.h"
+#import "WCFileViewStatusBarView.h"
 #import "NSGradient+WCExtensions.h"
 
 
-@implementation WCFindBarBackgroundView
+@implementation WCFileViewStatusBarView
 
 - (void)commonInit {
-	[self setGradient:[NSGradient unifiedSelectedGradient]];
+	[self setGradient:[NSGradient unifiedNormalGradient]];
 	[self setBottomLineColor:[NSColor colorWithCalibratedWhite:0.6 alpha:1.0]];
 }
 
@@ -24,4 +24,5 @@
 - (BOOL)drawsBottomLine {
 	return YES;
 }
+
 @end
