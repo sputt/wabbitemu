@@ -127,15 +127,21 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	return [NSArray arrayWithObjects:kWCPreferencesBinariesKey,kWCPreferencesBinariesColorKey,kWCPreferencesConditionalsKey,kWCPreferencesConditionalsColorKey,kWCPreferencesCommentsKey,kWCPreferencesCommentsColorKey,kWCPreferencesDefinesKey,kWCPreferencesDefinesColorKey,kWCPreferencesDirectivesKey,kWCPreferencesDirectivesColorKey,kWCPreferencesEquatesKey,kWCPreferencesEquatesColorKey,kWCPreferencesHexadecimalsKey,kWCPreferencesHexadecimalsColorKey,kWCPreferencesLabelsKey,kWCPreferencesLabelsColorKey,kWCPreferencesMacrosKey,kWCPreferencesMacrosColorKey,kWCPreferencesNumbersKey,kWCPreferencesNumbersColorKey,kWCPreferencesOpCodesKey,kWCPreferencesOpCodesColorKey,kWCPreferencesPreOpsKey,kWCPreferencesPreOpsColorKey,kWCPreferencesRegistersKey,kWCPreferencesRegistersColorKey,kWCPreferencesStringsKey,kWCPreferencesStringsColorKey,kWCPreferencesUseSyntaxHighlightingKey, nil];
 }
 
+@synthesize isHighlighting=_isHighlighting;
+
 - (void)performSyntaxHighlighting; {
 	NSString *string = [_textView string];
 	
 	if (![string length])
 		return;
+	else if ([self isHighlighting])
+		return;
 	else if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesUseSyntaxHighlightingKey]) {
 		[[_textView layoutManager] removeTemporaryAttribute:NSForegroundColorAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
 		return;
 	}
+	
+	[self setIsHighlighting:YES];
 	
 	NSRect visibleRect = [[[_textView enclosingScrollView] contentView] documentVisibleRect];
 	NSRange visibleRange = [[_textView layoutManager] glyphRangeForBoundingRect:visibleRect inTextContainer:[_textView textContainer]];
@@ -327,6 +333,8 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 				break;
 		}
 	}
+	
+	[self setIsHighlighting:NO];
 }
 
 - (void)_textViewBoundsDidChange:(NSNotification *)note {

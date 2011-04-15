@@ -253,6 +253,7 @@
 	return nil;
 }
 @synthesize fileViewController=_fileViewController;
+@synthesize syntaxHighlighter=_syntaxHighlighter;
 #pragma mark IBActions
 - (IBAction)jumpToDefinition:(id)sender; {
 	NSString *symbolString = [[self currentSymbolString] lowercaseString];

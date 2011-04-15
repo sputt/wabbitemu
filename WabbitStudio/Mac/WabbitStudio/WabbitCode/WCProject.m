@@ -43,6 +43,7 @@
 #import "WCUnsavedFilesWindowController.h"
 #import "CTBadge.h"
 #import "NSTextView+WCExtensions.h"
+#import "WCSyntaxHighlighter.h"
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import <BWToolkitFramework/BWToolkitFramework.h>
@@ -411,6 +412,11 @@ static NSImage *_appIcon = nil;
 - (void)tabView:(NSTabView *)tabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem; {
 	[self removeFileViewControllerForFile:[tabViewItem identifier]];
 }
+- (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
+	WCFileViewController *controller = [[[self filesToFileViewControllers] objectForKey:[tabViewItem identifier]] anyObject];
+	
+	[[[controller textView] syntaxHighlighter] performSyntaxHighlighting];
+}
 #pragma mark -
 #pragma mark *** Public Methods ***
 - (NSArray *)symbolsForSymbolName:(NSString *)name; {
@@ -518,9 +524,9 @@ static NSImage *_appIcon = nil;
 }
 
 - (WCFileViewController *)selectFileViewControllerForFile:(WCFile *)file; {
-	for (NSTabViewItem *item in [[_tabBarControl tabView] tabViewItems]) {
-		if ([item identifier] == file) {
-			[[_tabBarControl tabView] selectTabViewItem:item];
+	for (NSTabViewItem *item in [[[self tabBarControl] tabView] tabViewItems]) {
+		if ([item identifier] == file && [[[[self tabBarControl] tabView] selectedTabViewItem] identifier] != [item identifier]) {
+			[[[self tabBarControl] tabView] selectTabViewItem:item];
 			return [[[self filesToFileViewControllers] objectForKey:file] anyObject];
 		}
 	}

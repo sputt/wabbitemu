@@ -27,7 +27,10 @@ extern RKRegex *kWCSyntaxHighlighterSymbolsRegex;
 @interface WCSyntaxHighlighter : NSObject {
 @private
     __weak WCTextView *_textView;
+	BOOL _isHighlighting;
 }
+@property (assign,nonatomic) BOOL isHighlighting;
+
 - (id)initWithTextView:(WCTextView *)textView;
 
 - (void)performSyntaxHighlighting;

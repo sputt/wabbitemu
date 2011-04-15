@@ -21,6 +21,7 @@
 @property (assign,nonatomic) WCFile *file;
 @property (readonly,nonatomic) NSString *currentSymbolString;
 @property (assign,nonatomic) WCFileViewController *fileViewController;
+@property (readonly,nonatomic) WCSyntaxHighlighter *syntaxHighlighter;
 
 - (void)jumpToSymbol:(WCSymbol *)symbol;
 
