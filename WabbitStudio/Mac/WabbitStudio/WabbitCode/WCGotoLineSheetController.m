@@ -10,6 +10,7 @@
 #import "WCTextView.h"
 #import "WCTextStorage.h"
 #import "WCFile.h"
+#import "NSTextView+WCExtensions.h"
 
 @interface WCGotoLineSheetController ()
 - (id)_initWithTextView:(WCTextView *)textView;
@@ -79,7 +80,6 @@
 		range.location = [[[_textView file] textStorage] lineStartIndexForLineNumber:--line];
 		range.length = 0;
 	}
-	[_textView setSelectedRange:range];
-	[_textView scrollRangeToVisible:range];
+	[_textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
 }
 @end

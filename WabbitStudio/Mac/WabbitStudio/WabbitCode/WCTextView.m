@@ -24,6 +24,7 @@
 #import "WCFileViewController.h"
 #import "WCFindInProjectViewController.h"
 #import "WCGotoLineSheetController.h"
+#import "NSTextView+WCExtensions.h"
 
 // without this xcode complains about the restrict qualifiers in the regexkit header
 #define restrict
@@ -213,8 +214,7 @@
 	NSAssert(textView != nil, @"cannot jump to a symbol without a text view!");
 #endif
 	
-	[textView scrollRangeToVisible:[symbol symbolRange]];
-	[textView setSelectedRange:[symbol symbolRange]];
+	[textView setSelectedRangeSafely:[symbol symbolRange] scrollRangeToVisible:YES];
 }
 #pragma mark Accessors
 @dynamic file;

@@ -34,7 +34,7 @@
 	NSAssert([replacementRanges count] > 0, @"replaceRanges must have count > 0!");
 	NSAssert([replacementRanges count] == [strings count], @"replacementRanges and stringRanges must have the same count!");
 #endif
-	
+
 	NSMutableArray *retval = [NSMutableArray arrayWithCapacity:[replacementRanges count]];
 	NSTextStorage *textStorage = [self textStorage];
 	NSInteger locationShift = 0;
@@ -58,5 +58,19 @@
 		[textStorage endEditing];
 	}
 	return [[retval copy] autorelease];
+}
+
+- (void)setSelectedRangeSafely:(NSRange)range; {
+	[self setSelectedRangeSafely:range scrollRangeToVisible:NO];
+}
+
+- (void)setSelectedRangeSafely:(NSRange)range scrollRangeToVisible:(BOOL)scrollRangeToVisible; {
+	if (NSMaxRange(range) >= [[self string] length])
+		range = NSMakeRange(0, 0);
+	
+	[self setSelectedRange:range];
+	
+	if (scrollRangeToVisible)
+		[self scrollRangeToVisible:range];
 }
 @end

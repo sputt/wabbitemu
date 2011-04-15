@@ -33,7 +33,7 @@ extern NSString *const kWCFileNameDidChangeNotification;
 	NSTextView *_textViewForFindInProjectReplace;
 	NSStringEncoding _encoding; // encoding we should use when reading and writing the file contents
 	
-	WCSymbolScanner *_symbolScanner; // parses the text of our file and gathers information about labels, equates, etc
+	WCSymbolScanner *_symbolScanner; // parses the text of our file and gathers information about symbols
 	
 	__weak WCProject *_project; // back pointer to our project, if we have one
 	

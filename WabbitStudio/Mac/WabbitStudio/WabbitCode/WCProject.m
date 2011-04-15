@@ -42,6 +42,7 @@
 #import "NSAlert-OAExtensions.h"
 #import "WCUnsavedFilesWindowController.h"
 #import "CTBadge.h"
+#import "NSTextView+WCExtensions.h"
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import <BWToolkitFramework/BWToolkitFramework.h>
@@ -426,24 +427,21 @@ static NSImage *_appIcon = nil;
 	WCTextView *textView = [controller textView];
 	NSRange range = NSMakeRange([[message file] lineStartForBuildMessage:message], 0);
 	
-	[textView setSelectedRange:range];
-	[textView scrollRangeToVisible:range];
+	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
 }
 - (void)jumpToSymbol:(WCSymbol *)symbol; {
 	WCFileViewController *controller = [self addFileViewControllerForFile:[symbol file]];
 	WCTextView *textView = [controller textView];
 	NSRange range = [symbol symbolRange];
 	
-	[textView setSelectedRange:range];
-	[textView scrollRangeToVisible:range];
+	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
 }
 - (void)jumpToFindInProjectResult:(WCFindInProjectResult *)findResult; {
 	WCFileViewController *controller = [self addFileViewControllerForFile:[findResult file]];
 	WCTextView *textView = [controller textView];
 	NSRange range = [findResult findRange];
 	
-	[textView setSelectedRange:range];
-	[textView scrollRangeToVisible:range];
+	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
 }
 
 - (void)saveProjectFile; {
@@ -1142,6 +1140,7 @@ static NSImage *_appIcon = nil;
 	[[self projectSettings] setObject:[[[[self tabBarControl] tabView] tabViewItems] valueForKeyPath:@"identifier.UUID"] forKey:kWCProjectSettingsOpenFileUUIDsKey];
 	if ([[[self tabBarControl] tabView] numberOfTabViewItems])
 		[[self projectSettings] setObject:[[[[self tabBarControl] tabView] selectedTabViewItem] valueForKeyPath:@"identifier.UUID"] forKey:kWCProjectSettingsSelectedFileUUIDKey];
+	
 }
 - (void)_applyProjectSettings; {
 	// expand the right items in our files outline view

@@ -13,4 +13,7 @@
 // both of these methods assume the replacementRanges array is sorted in ascending order
 - (NSArray *)replaceCharactersInRanges:(NSArray *)replacementRanges withString:(NSString *)string;
 - (NSArray *)replaceCharactersInRanges:(NSArray *)replacementRanges withStrings:(NSArray *)strings;
+
+- (void)setSelectedRangeSafely:(NSRange)range;
+- (void)setSelectedRangeSafely:(NSRange)range scrollRangeToVisible:(BOOL)scrollRangeToVisible;
 @end
