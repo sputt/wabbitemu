@@ -257,6 +257,7 @@
 		07463AF41333212500744B98 /* WCNewProjectWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCNewProjectWindowController.h; sourceTree = "<group>"; };
 		07463AF51333212700744B98 /* WCNewProjectWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCNewProjectWindowController.m; sourceTree = "<group>"; };
 		07463AF713332BCC00744B98 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = SDKs/MacOSX10.6.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
+		0747E3B9135819B90009EFBF /* WCTabViewContextProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTabViewContextProtocol.h; sourceTree = "<group>"; };
 		0758E828134ABC1200280D9D /* NSColor-NTExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSColor-NTExtensions.h"; sourceTree = "<group>"; };
 		0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSColor-NTExtensions.m"; sourceTree = "<group>"; };
 		0758E82B134AD2F200280D9D /* WCFindInProjectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFindInProjectViewController.h; sourceTree = "<group>"; };
@@ -487,6 +488,7 @@
 		070D55891337BA9200847B1A /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
+				0747E3B9135819B90009EFBF /* WCTabViewContextProtocol.h */,
 			);
 			name = Protocols;
 			sourceTree = "<group>";

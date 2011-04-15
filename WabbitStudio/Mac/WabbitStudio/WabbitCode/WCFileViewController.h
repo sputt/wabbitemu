@@ -8,6 +8,7 @@
 
 #import <AppKit/NSViewController.h>
 #import <AppKit/NSPopUpButton.h>
+#import "WCTabViewContextProtocol.h"
 
 
 @class WCTopBarView,WCFile,WCTextView,BWAnchoredButtonBar,WCLineNumberTextView;
@@ -20,6 +21,7 @@
 	IBOutlet NSView *_topBarView;
 	
 	__weak WCFile *_file;
+	__weak id <WCTabViewContext> _tabViewContext;
 	NSString *_textViewSelectedRangeString;
 }
 
@@ -27,7 +29,11 @@
 @property (assign,nonatomic) WCTextView *textView;
 @property (copy,nonatomic) NSString *textViewSelectedRangeString;
 @property (readonly,nonatomic) NSView *topBarView;
+@property (readonly,nonatomic) id <WCTabViewContext> tabViewContext;
 
 + (id)fileViewControllerWithFile:(WCFile *)file;
 - (id)initWithFile:(WCFile *)file;
+
++ (id)fileViewControllerWithFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext;
+- (id)initWithFile:(WCFile *)file tabViewContext:(id <WCTabViewContext>)tabViewContext;
 @end

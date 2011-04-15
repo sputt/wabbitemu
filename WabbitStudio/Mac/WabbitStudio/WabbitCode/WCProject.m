@@ -247,7 +247,7 @@ static NSImage *_appIcon = nil;
 - (void)saveDocument:(id)sender {
 	[self saveProjectFile];
 	
-	WCFile *file = [[self selectedFileViewController] file];
+	WCFile *file = [[[self currentTabViewContext] selectedTextView] file];
 	
 	if (!file)
 		return;
@@ -410,12 +410,30 @@ static NSImage *_appIcon = nil;
 	return NO;
 }
 - (void)tabView:(NSTabView *)tabView didCloseTabViewItem:(NSTabViewItem *)tabViewItem; {
-	[self removeFileViewControllerForFile:[tabViewItem identifier]];
+	[self removeFileViewControllerForFile:[tabViewItem identifier] inTabViewContext:self];
 }
 - (void)tabView:(NSTabView *)tabView didSelectTabViewItem:(NSTabViewItem *)tabViewItem {
-	WCFileViewController *controller = [[[self filesToFileViewControllers] objectForKey:[tabViewItem identifier]] anyObject];
+	WCFileViewController *controller = [self fileViewControllerForFile:[tabViewItem identifier] inTabViewContext:self selectTab:NO];
 	
 	[[[controller textView] syntaxHighlighter] performSyntaxHighlighting];
+}
+#pragma mark WCTabViewContextProtocol
+- (NSWindow *)tabWindow; {
+	return [[[self windowControllers] lastObject] window];
+}
+- (PSMTabBarControl *)tabBarControl; {
+	return _tabBarControl;
+}
+- (WCTextView *)selectedTextView; {
+	if (![[[self tabBarControl] tabView] numberOfTabViewItems])
+		return nil;
+	
+	WCTextView *retval = nil;
+	for (NSView *view in [[[[[self tabBarControl] tabView] selectedTabViewItem] view] subviews]) {
+		if ([view isKindOfClass:[NSScrollView class]])
+			retval = (WCTextView *)[(NSScrollView *)view documentView];
+	}
+	return retval;
 }
 #pragma mark -
 #pragma mark *** Public Methods ***
@@ -429,21 +447,21 @@ static NSImage *_appIcon = nil;
 	return [[retval copy] autorelease];
 }
 - (void)jumpToBuildMessage:(WCBuildMessage *)message; {
-	WCFileViewController *controller = [self addFileViewControllerForFile:[message file]];
+	WCFileViewController *controller = [self addFileViewControllerForFile:[message file] inTabViewContext:[self currentTabViewContext]];
 	WCTextView *textView = [controller textView];
 	NSRange range = NSMakeRange([[message file] lineStartForBuildMessage:message], 0);
 	
 	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
 }
 - (void)jumpToSymbol:(WCSymbol *)symbol; {
-	WCFileViewController *controller = [self addFileViewControllerForFile:[symbol file]];
+	WCFileViewController *controller = [self addFileViewControllerForFile:[symbol file] inTabViewContext:[self currentTabViewContext]];
 	WCTextView *textView = [controller textView];
 	NSRange range = [symbol symbolRange];
 	
 	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
 }
 - (void)jumpToFindInProjectResult:(WCFindInProjectResult *)findResult; {
-	WCFileViewController *controller = [self addFileViewControllerForFile:[findResult file]];
+	WCFileViewController *controller = [self addFileViewControllerForFile:[findResult file] inTabViewContext:[self currentTabViewContext]];
 	WCTextView *textView = [controller textView];
 	NSRange range = [findResult findRange];
 	
@@ -490,74 +508,87 @@ static NSImage *_appIcon = nil;
 		[file removeAllBuildMessages];
 }
 #pragma mark Tabs
-- (WCFileViewController *)addFileViewControllerForFile:(WCFile *)file; {
-	WCFileViewController *controller = [self selectFileViewControllerForFile:file];
-	
-	if (controller)
-		return controller;
-	
-	controller = [WCFileViewController fileViewControllerWithFile:file];
-	
+- (WCFileViewController *)addFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext; {
 #ifdef DEBUG
-	NSAssert(controller != nil, @"file view controller was nil!");
-	NSAssert(file != nil, @"cannot add a tab without a file identifier!");
+	NSParameterAssert(file != nil);
+	NSParameterAssert(tabViewContext != nil);
 #endif
 	
-	NSTabViewItem *item = [[[NSTabViewItem alloc] initWithIdentifier:file] autorelease];
-	[item setLabel:[file name]];
-	[item setView:[controller view]];
+	WCFileViewController *retval = [self fileViewControllerForFile:file inTabViewContext:tabViewContext selectTab:YES];
 	
-	[[_tabBarControl tabView] addTabViewItem:item];
-	[[_tabBarControl tabView] selectTabViewItem:item];
-	
-	NSMutableSet *controllers = [[self filesToFileViewControllers] objectForKey:file];
-	
-	if (!controllers) {
-		controllers = [[[NSMutableSet alloc] initWithCapacity:1] autorelease];
-		[[self filesToFileViewControllers] setObject:controllers forKey:file];
+	if (!retval) {
+		retval = [WCFileViewController fileViewControllerWithFile:file inTabViewContext:tabViewContext];
+		
+#ifdef DEBUG
+		NSParameterAssert(retval != nil);
+#endif
+		
+		NSTabViewItem *item = [[[NSTabViewItem alloc] initWithIdentifier:file] autorelease];
+		
+		[item setLabel:[file name]];
+		[item setView:[retval view]];
+		[item setInitialFirstResponder:[retval textView]];
+		
+		[[[tabViewContext tabBarControl] tabView] addTabViewItem:item];
+		[[[tabViewContext tabBarControl] tabView] selectTabViewItem:item];
+		
+		NSMutableArray *controllers = [[self filesToFileViewControllers] objectForKey:file];
+		
+		if (!controllers) {
+			controllers = [NSMutableArray arrayWithCapacity:1];
+			
+			[[self filesToFileViewControllers] setObject:controllers forKey:file];
+		}
+		
+#ifdef DEBUG
+		NSParameterAssert(controllers != nil);
+#endif
+		
+		[controllers addObject:retval];
+		
+		[[self openFiles] addObject:file];
 	}
-	
-	[controllers addObject:controller];
-	[[self openFiles] addObject:file];
-	
-	return controller;
+	return retval;
 }
-
-- (WCFileViewController *)selectFileViewControllerForFile:(WCFile *)file; {
-	for (NSTabViewItem *item in [[[self tabBarControl] tabView] tabViewItems]) {
-		if ([item identifier] == file && [[[[self tabBarControl] tabView] selectedTabViewItem] identifier] != [item identifier]) {
-			[[[self tabBarControl] tabView] selectTabViewItem:item];
-			return [[[self filesToFileViewControllers] objectForKey:file] anyObject];
+- (WCFileViewController *)fileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext selectTab:(BOOL)selectTab; {
+#ifdef DEBUG
+	NSParameterAssert(file != nil);
+	NSParameterAssert(tabViewContext != nil);
+#endif
+	for (WCFileViewController *controller in [[self filesToFileViewControllers] objectForKey:file]) {
+		if ([controller tabViewContext] == tabViewContext) {
+			if (selectTab) {
+				for (NSTabViewItem *item in [[[tabViewContext tabBarControl] tabView] tabViewItems]) {
+					if ([item identifier] == file) {
+						[[[tabViewContext tabBarControl] tabView] selectTabViewItem:item];
+						break;
+					}
+				}
+			}
+			return controller;
 		}
 	}
 	return nil;
 }
-
-- (void)removeFileViewControllerForFile:(WCFile *)file; {
+- (void)removeFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext; {
 #ifdef DEBUG
-	NSAssert(file != nil, @"cannot remove a tab without a file identifier!");
+	NSParameterAssert(file != nil);
+	NSParameterAssert(tabViewContext != nil);
 #endif
-	NSMutableSet *controllers = [[self filesToFileViewControllers] objectForKey:file];
-	WCFileViewController *controllerToRemove = [controllers anyObject];
 	
-	/*
-	for (WCFileViewController *controller in controllers) {
-		if ([[controller view] superview] == [_tabBarControl tabView]) {
-			controllerToRemove = controller;
-			break;
-		}
-	}
-	 */
+	WCFileViewController *controller = [self fileViewControllerForFile:file inTabViewContext:tabViewContext selectTab:NO];
 	
+	NSLog(@"%@",controller);
+
 #ifdef DEBUG
-    NSAssert(controllerToRemove != nil, @"could not find a controller to remove!");
+	NSParameterAssert(controller != nil);
 #endif
 	
 	if ([[self openFiles] countForObject:file] == 1)
 		[[file undoManager] removeAllActions];
 	
-	[[file textStorage] removeLayoutManager:[[controllerToRemove textView] layoutManager]];
-	[controllers removeObject:controllerToRemove];
+	[[file textStorage]	removeLayoutManager:[[controller textView] layoutManager]];
+	[[[self filesToFileViewControllers] objectForKey:file] removeObject:controller];
 	[[self openFiles] removeObject:file];
 }
 #pragma mark Accessors
@@ -657,10 +688,6 @@ static NSImage *_appIcon = nil;
 		[retval addEntriesFromDictionary:[[file symbolScanner] macroNamesToSymbols]];
 	}
 	return [[retval copy] autorelease];
-}
-@dynamic selectedFileViewController;
-- (WCFileViewController *)selectedFileViewController {
-	return [[[self filesToFileViewControllers] objectForKey:[[[_tabBarControl tabView] selectedTabViewItem] identifier]] anyObject];
 }
 @dynamic activeBuildTarget;
 - (WCBuildTarget *)activeBuildTarget {
@@ -767,9 +794,10 @@ static NSImage *_appIcon = nil;
 - (WCFindInProjectViewController *)findInProjectViewControllerDontCreate {
 	return _findInProjectViewController;
 }
-@synthesize tabBarControl=_tabBarControl;
-@synthesize ignoreUnsavedChanges=_ignoreUnsavedChanges;
-@synthesize ignoreUnsavedChangesForProjectClose=_ignoreUnsavedChangesForProjectClose;
+@dynamic currentTabViewContext;
+- (id <WCTabViewContext>)currentTabViewContext {
+	return self;
+}
 #pragma mark IBActions
 - (IBAction)addFilesToProject:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -1167,7 +1195,7 @@ static NSImage *_appIcon = nil;
 	for (NSString *UUID in [[self projectSettings] objectForKey:kWCProjectSettingsOpenFileUUIDsKey]) {
 		for (WCFile *file in tFiles) {
 			if ([[file UUID] isEqualToString:UUID]) {
-				[self addFileViewControllerForFile:file];
+				[self addFileViewControllerForFile:file inTabViewContext:self];
 				break;
 			}
 		}
@@ -1193,7 +1221,7 @@ static NSImage *_appIcon = nil;
 	WCFile *file = [node representedObject];
 	
 	if ([[self textFiles] containsObject:file])
-		[self addFileViewControllerForFile:file];
+		[self addFileViewControllerForFile:file inTabViewContext:[self currentTabViewContext]];
 	else if ([file isDirectory]) {
 		if ([[[self projectFilesOutlineViewController] outlineView] isItemExpanded:node])
 			[[[self projectFilesOutlineViewController] outlineView] collapseItem:node];

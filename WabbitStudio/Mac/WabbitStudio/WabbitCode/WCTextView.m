@@ -122,10 +122,8 @@
 	
 	NSRect newRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[[self layoutManager] glyphRangeForCharacterRange:[[self string] lineRangeForRange:range] actualCharacterRange:NULL].location effectiveRange:NULL];
 	
-	if (NSIntersectsRect(newRect, visibleRect) && [self needsToDrawRect:newRect]) {
-		[[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesCurrentLineHighlightColorKey] setFill];
-		NSRectFillUsingOperation(newRect, NSCompositeSourceOver);
-	}
+	[[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesCurrentLineHighlightColorKey] setFill];
+	NSRectFillUsingOperation(newRect, NSCompositeSourceOver);
 }
 
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index {
@@ -146,11 +144,12 @@
 	
 	return [[csymbols copy] autorelease];
 }
-
+/*
 - (void)insertCompletion:(NSString *)word forPartialWordRange:(NSRange)charRange movement:(NSInteger)movement isFinal:(BOOL)flag {
 	if (flag && (movement == NSReturnTextMovement || movement == NSTabTextMovement))
 		[super insertCompletion:word forPartialWordRange:charRange movement:movement isFinal:flag];
 }
+ */
  
 #pragma mark IBActions
 - (IBAction)insertNewline:(id)sender {
@@ -204,7 +203,7 @@
 }
 #pragma mark *** Public Methods ***
 - (void)jumpToSymbol:(WCSymbol *)symbol; {
-	WCFileViewController *controller = [[[self file] project] addFileViewControllerForFile:[symbol file]];
+	WCFileViewController *controller = [[[self file] project] addFileViewControllerForFile:[symbol file] inTabViewContext:[[[self file] project] currentTabViewContext]];
 	WCTextView *textView = [controller textView];
 	
 	if (textView == nil)

@@ -7,6 +7,7 @@
 //
 
 #import <AppKit/NSDocument.h>
+#import "WCTabViewContextProtocol.h"
 
 extern NSString *const kWCProjectFileKey;
 extern NSString *const kWCProjectVersionKey;
@@ -31,7 +32,7 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 
 @class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge;
 
-@interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate> {
+@interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext> {
 @private
 	IBOutlet PSMTabBarControl *_tabBarControl;
 	IBOutlet BWAnchoredButtonBar *_rightButtonBar;
@@ -59,9 +60,6 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 	WCFindInProjectViewController *_findInProjectViewController;
 	
 	NSSet *_cachedAbsoluteFilePaths;
-	
-	BOOL _ignoreUnsavedChanges;
-	BOOL _ignoreUnsavedChangesForProjectClose;
 }
 
 @property (readonly,retain,nonatomic) WCProjectFile *projectFile;
@@ -76,7 +74,6 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 @property (readonly,nonatomic) NSDictionary *equateNamesToSymbols;
 @property (readonly,nonatomic) NSDictionary *defineNamesToSymbols;
 @property (readonly,nonatomic) NSDictionary *macroNamesToSymbols;
-@property (readonly,nonatomic) WCFileViewController *selectedFileViewController;
 @property (readonly,nonatomic) NSArray *buildTargets;
 @property (readonly,nonatomic) NSMutableArray *mutableBuildTargets;
 @property (assign,nonatomic) WCBuildTarget *activeBuildTarget;
@@ -92,10 +89,8 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 @property (readonly,nonatomic) NSArray *buildMessages;
 @property (readonly,nonatomic) NSMutableArray *mutableBuildMessages;
 @property (readonly,retain,nonatomic) NSSet *absoluteFilePaths;
-@property (readonly,nonatomic) PSMTabBarControl *tabBarControl;
 @property (readonly,nonatomic) NSArray *unsavedTextFiles;
-@property (assign,nonatomic) BOOL ignoreUnsavedChanges;
-@property (assign,nonatomic) BOOL ignoreUnsavedChangesForProjectClose;
+@property (readonly,nonatomic) id <WCTabViewContext> currentTabViewContext;
 
 - (IBAction)addFilesToProject:(id)sender;
 - (IBAction)newFile:(id)sender;
@@ -114,9 +109,9 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 - (IBAction)viewSearch:(id)sender;
 - (IBAction)changeProjectView:(id)sender;
 
-- (WCFileViewController *)addFileViewControllerForFile:(WCFile *)file;
-- (WCFileViewController *)selectFileViewControllerForFile:(WCFile *)file;
-- (void)removeFileViewControllerForFile:(WCFile *)file;
+- (WCFileViewController *)addFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext;
+- (WCFileViewController *)fileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext selectTab:(BOOL)selectTab;
+- (void)removeFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext;
 
 - (NSArray *)symbolsForSymbolName:(NSString *)name;
 

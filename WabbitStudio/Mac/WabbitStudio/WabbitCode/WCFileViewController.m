@@ -72,15 +72,24 @@
 @synthesize textView=_textView;
 @synthesize textViewSelectedRangeString=_textViewSelectedRangeString;
 @synthesize topBarView=_topBarView;
+@synthesize tabViewContext=_tabViewContext;
 + (id)fileViewControllerWithFile:(WCFile *)file; {
-	return [[[[self class] alloc] initWithFile:file] autorelease];
+	return [self fileViewControllerWithFile:file inTabViewContext:nil];
 }
 
 - (id)initWithFile:(WCFile *)file; {
+	return [self initWithFile:file tabViewContext:nil];
+}
+
++ (id)fileViewControllerWithFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext; {
+	return [[[[self class] alloc] initWithFile:file tabViewContext:tabViewContext] autorelease];
+}
+- (id)initWithFile:(WCFile *)file tabViewContext:(id <WCTabViewContext>)tabViewContext; {
 	if (!(self = [super initWithNibName:@"WCFileView" bundle:nil]))
 		return nil;
 	
 	_file = file;
+	_tabViewContext = tabViewContext;
 	
 	return self;
 }
