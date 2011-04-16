@@ -81,6 +81,7 @@ int run_assembly()
 
 	if (!input_contents) {
 		puts ("Couldn't open input file");
+		OutputDebugString(_T("Could not open input file\n"));
 		return EXIT_FATAL_ERROR;
 	}
 	

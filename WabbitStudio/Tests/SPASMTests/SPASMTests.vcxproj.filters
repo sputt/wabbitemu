@@ -36,6 +36,9 @@
     <ClCompile Include="AssembleTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="PreprocessorTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="resource.h">
@@ -56,6 +59,9 @@
       <Filter>Test Files</Filter>
     </None>
     <None Include="Tests.asm">
+      <Filter>Test Files</Filter>
+    </None>
+    <None Include="PreprocessorTests.z80">
       <Filter>Test Files</Filter>
     </None>
   </ItemGroup>

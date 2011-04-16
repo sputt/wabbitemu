@@ -44,7 +44,7 @@ namespace SPASMTestsVS2008
 		[TestInitialize]
 		void Init()
 		{
-			output_contents = (unsigned char *) malloc(OUTPUT_BUF_SIZE);
+			output_contents = (unsigned char *) malloc(output_buf_size);
 			init_storage();
 			curr_input_file = "..\\..\\..\\..\\..\\Tests\\SPASMTests\\Tests.asm";
 			output_filename = "output.bin";

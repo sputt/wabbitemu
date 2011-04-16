@@ -1,0 +1,35 @@
+#define OUTPUT_FILE output.bin
+
+#macro Ifdef
+  #ifdef bob
+    .echo > OUTPUT_FILE "FAIL"
+  #endif
+  #define bob
+  #ifdef bob
+    .echo > OUTPUT_FILE "PASS"
+  #endif
+#endmacro
+
+#macro Ifndef
+  #define bob
+  #ifndef bob
+    #define you_failed
+  #endif
+
+  #ifndef you_failed
+    .echo > OUTPUT_FILE "PASS"
+  #endif
+#endmacro
+
+#macro Else
+  #ifdef bob
+    .echo > OUTPUT_FILE "FAIL"
+  #else
+    #define bob
+  #endif
+
+  #ifndef bob
+  #else
+    .echo > OUTPUT_FILE "PASS"
+  #endif
+#endmacro

@@ -188,6 +188,7 @@
     <ClCompile Include="LabelTests.cpp" />
     <ClCompile Include="MacroTests.cpp" />
     <ClCompile Include="ParserTests.cpp" />
+    <ClCompile Include="PreprocessorTests.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -203,6 +204,7 @@
     <None Include="app.ico" />
     <None Include="directivemacro.z80" />
     <None Include="echofill.z80" />
+    <None Include="PreprocessorTests.z80" />
     <None Include="Tests.asm" />
   </ItemGroup>
   <ItemGroup>
