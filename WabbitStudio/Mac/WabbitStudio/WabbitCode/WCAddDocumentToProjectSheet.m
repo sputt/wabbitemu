@@ -17,11 +17,14 @@
 #import "WCTextStorage.h"
 #import "WCFileViewController.h"
 #import "WCTextView.h"
+#import "NSPopUpButton+WCExtensions.h"
+#import "NSResponder+WCExtensions.h"
 
 
 @interface WCAddDocumentToProjectSheet ()
 @property (readonly,nonatomic) NSPopUpButton *popUpButton;
 - (id)_initWithDocument:(WCDocument *)documentToAdd;
+- (void)_updatePopUpButton;
 @end
 
 @implementation WCAddDocumentToProjectSheet
@@ -37,17 +40,9 @@
 - (void)windowDidLoad {
     [super windowDidLoad];
 	
-	NSMenu *menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_projectWillClose:) name:kWCProjectWillCloseNotification object:nil];
 	
-	for (WCProject *project in [[WCDocumentController sharedDocumentController] projects]) {
-		NSMenuItem *item = [menu addItemWithTitle:[project displayName] action:NULL keyEquivalent:@""];
-		
-		[item setImage:[[project projectFile] icon]];
-		[item setRepresentedObject:project];
-	}
-	
-	[[self popUpButton] setMenu:menu];
-	[[self popUpButton] selectItemAtIndex:0];
+	[self _updatePopUpButton];
 }
 
 - (NSString *)windowNibName {
@@ -80,7 +75,7 @@
 	
 	WCProject *project = [[[self popUpButton] selectedItem] representedObject];
 	
-	// saving before hand just makes it easier, we can close the document instance without any problem then
+	// saving before hand just makes it easier, we can close the document instance without any problem
 	[_documentToAdd saveDocument:nil];
 	
 	[[[_documentToAdd file] textStorage] removeLayoutManager:[[[_documentToAdd fileViewController] textView] layoutManager]];
@@ -88,6 +83,8 @@
 	[[[[[_documentToAdd fileViewController] textView] enclosingScrollView] verticalRulerView] setClientView:nil];
 	[[[project projectFile] mutableChildNodes] insertObject:[_documentToAdd file] atIndex:0];
 	[(NSTreeController *)[[[project projectFilesOutlineViewController] outlineView] dataSource] setSelectedRepresentedObject:[_documentToAdd file]];
+	
+	[project viewProject:nil];
 	
 	NSRect rect = [[[project projectFilesOutlineViewController] outlineView] convertRectToBase:[[[project projectFilesOutlineViewController] outlineView] frameOfCellAtColumn:0 row:[[[project projectFilesOutlineViewController] outlineView] rowForItem:[(NSTreeController *)[[[project projectFilesOutlineViewController] outlineView] dataSource] treeNodeForRepresentedObject:[_documentToAdd file]]]]];
 	rect.origin = [[project windowForSheet] convertBaseToScreen:rect.origin];
@@ -99,5 +96,31 @@
 	[_documentToAdd close];
 	
 	[project noteNumberOfFilesChanged];
+}
+
+- (void)_projectWillClose:(NSNotification *)note {
+	[[self popUpButton] removeItemWithRepresentedObject:[note object]];
+	
+	if ([[self popUpButton] numberOfItems] == 0) {
+		[[self window] close];
+		[[NSApplication sharedApplication] endSheet:[self window] returnCode:NSCancelButton];
+		return;
+	}
+	
+	[[self popUpButton] selectItemAtIndex:0];
+}
+
+- (void)_updatePopUpButton; {
+	NSMenu *menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+	
+	for (WCProject *project in [[WCDocumentController sharedDocumentController] projects]) {
+		NSMenuItem *item = [menu addItemWithTitle:[project displayName] action:NULL keyEquivalent:@""];
+		
+		[item setImage:[[project projectFile] icon]];
+		[item setRepresentedObject:project];
+	}
+	
+	[[self popUpButton] setMenu:menu];
+	[[self popUpButton] selectItemAtIndex:0];
 }
 @end

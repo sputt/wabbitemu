@@ -29,7 +29,6 @@
 #import "WCAlias.h"
 #import "WCBuildDefine.h"
 #import "WCIncludeDirectory.h"
-#import "NSIndexPath+WCExtensions.h"
 #import "WCProjectFilesOutlineViewController.h"
 #import "WCBuildMessagesViewController.h"
 #import "WCSymbolsViewController.h"
@@ -62,6 +61,7 @@ NSString *const kWCProjectUTI = @"org.revsoft.wabbitcode.project";
 NSString *const kWCProjectActiveBuildTargetDidChangeNotification = @"kWCProjectActiveBuildTargetDidChangeNotification";
 NSString *const kWCProjectNumberOfBuildTargetsDidChangeNotification = @"kWCProjectNumberOfBuildTargetsDidChangeNotification";
 NSString *const kWCProjectNumberOfFilesDidChangeNotification = @"kWCProjectNumberOfFilesDidChangeNotification";
+NSString *const kWCProjectWillCloseNotification = @"kWCProjectWillCloseNotification";
 
 NSString *const kWCProjectSettingsProjectFilesOutlineViewExpandedItemUUIDsKey = @"projectFilesOutlineViewExpandedItemUUIDs";
 NSString *const kWCProjectSettingsProjectWindowFrameKey = @"projectWindowFrame";
@@ -379,6 +379,9 @@ static NSImage *_appIcon = nil;
 }
 
 - (void)windowWillClose:(NSNotification *)note {
+	// post our notification
+	[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectWillCloseNotification object:self];
+	
 	// save the project file before removing the tabs
 	[self saveProjectFile];
 	

@@ -23,6 +23,7 @@ extern NSString *const kWCProjectUTI;
 extern NSString *const kWCProjectActiveBuildTargetDidChangeNotification;
 extern NSString *const kWCProjectNumberOfBuildTargetsDidChangeNotification;
 extern NSString *const kWCProjectNumberOfFilesDidChangeNotification;
+extern NSString *const kWCProjectWillCloseNotification;
 
 extern NSString *const kWCProjectSettingsProjectFilesOutlineViewExpandedItemUUIDsKey;
 extern NSString *const kWCProjectSettingsProjectWindowFrameKey;

@@ -18,4 +18,13 @@
 		}
 	}
 }
+
+- (void)removeItemWithRepresentedObject:(id)object; {
+	for (NSMenuItem *item in [[self menu] itemArray]) {
+		if ([item representedObject] == object) {
+			[[self menu] removeItem:item];
+			return;
+		}
+	}
+}
 @end

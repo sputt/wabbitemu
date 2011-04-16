@@ -9,7 +9,6 @@
 #import "WCFindBarViewController.h"
 #import "WCTextView.h"
 #import "WCFileViewController.h"
-#import "WCTopBarView.h"
 #import "WCGeneralPerformer.h"
 #import "NSArray+WCExtensions.h"
 #import "WCMutableRangeArray.h"

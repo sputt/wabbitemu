@@ -118,11 +118,11 @@ NSString *kRSRTVMovedRowsType = @"com.red-sweater.RSRTVArrayController";
 -(void) copyObjectsInArrangedObjectsFromIndexes:(NSIndexSet*)indexSet toIndex:(unsigned int)insertIndex
 {	
     NSArray		*objects = [self arrangedObjects];
-	int			copyFromIndex = [indexSet lastIndex];
+	NSInteger			copyFromIndex = [indexSet lastIndex];
 	
-    int			aboveInsertIndexCount = 0;
+    NSInteger			aboveInsertIndexCount = 0;
     id			object;
-    int			copyIndex;
+    NSInteger			copyIndex;
 	
     while (NSNotFound != copyFromIndex)
 	{
@@ -147,11 +147,11 @@ NSString *kRSRTVMovedRowsType = @"com.red-sweater.RSRTVArrayController";
 {
 	
     NSArray		*objects = [self arrangedObjects];
-	int			index = [indexSet lastIndex];
+	NSInteger			index = [indexSet lastIndex];
 	
-    int			aboveInsertIndexCount = 0;
+    NSInteger			aboveInsertIndexCount = 0;
     id			object;
-    int			removeIndex;
+    NSInteger			removeIndex;
 	
     while (NSNotFound != index)
 	{
@@ -185,7 +185,7 @@ NSString *kRSRTVMovedRowsType = @"com.red-sweater.RSRTVArrayController";
     NSMutableIndexSet *indexSet = [NSMutableIndexSet indexSet];
     NSEnumerator *rowEnumerator = [rows objectEnumerator];
     NSNumber *idx;
-    while (idx = [rowEnumerator nextObject])
+    while ((idx = [rowEnumerator nextObject]))
     {
 		[indexSet addIndex:[idx intValue]];
     }
@@ -195,7 +195,7 @@ NSString *kRSRTVMovedRowsType = @"com.red-sweater.RSRTVArrayController";
 
 - (int)rowsAboveRow:(int)row inIndexSet:(NSIndexSet *)indexSet
 {
-    unsigned currentIndex = [indexSet firstIndex];
+    NSUInteger currentIndex = [indexSet firstIndex];
     int i = 0;
     while (currentIndex != NSNotFound)
     {

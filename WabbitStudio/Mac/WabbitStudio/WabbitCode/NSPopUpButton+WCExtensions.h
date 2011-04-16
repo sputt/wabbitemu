@@ -11,4 +11,5 @@
 
 @interface NSPopUpButton (NSPopUpButton_WCExtensions)
 - (void)selectItemWithRepresentedObject:(id)object;
+- (void)removeItemWithRepresentedObject:(id)object;
 @end

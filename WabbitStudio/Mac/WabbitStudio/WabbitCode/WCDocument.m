@@ -13,6 +13,7 @@
 #import "WCProject.h"
 #import "WCTextView.h"
 #import "WCAddDocumentToProjectSheet.h"
+#import "WCDocumentController.h"
 
 
 @implementation WCDocument
@@ -89,6 +90,9 @@
 		NSMenuItem *mItem = (NSMenuItem *)item;
 		
 		[mItem setTitle:[NSString stringWithFormat:NSLocalizedString(@"Add \"%@\" to Project\u2026", @"add document to project menu item title"),[self displayName]]];
+		
+		if ([[[WCDocumentController sharedDocumentController] projects] count] == 0)
+			return NO;
 		
 		return YES;
 	}
