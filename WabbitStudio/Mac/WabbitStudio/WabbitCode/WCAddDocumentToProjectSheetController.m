@@ -1,12 +1,12 @@
 //
-//  WCAddDocumentToProjectSheet.m
+//  WCAddDocumentToProjectSheetController.m
 //  WabbitStudio
 //
 //  Created by William Towe on 4/16/11.
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCAddDocumentToProjectSheet.h"
+#import "WCAddDocumentToProjectSheetController.h"
 #import "WCDocument.h"
 #import "WCDocumentController.h"
 #import "WCProject.h"
@@ -21,13 +21,13 @@
 #import "NSResponder+WCExtensions.h"
 
 
-@interface WCAddDocumentToProjectSheet ()
+@interface WCAddDocumentToProjectSheetController ()
 @property (readonly,nonatomic) NSPopUpButton *popUpButton;
 - (id)_initWithDocument:(WCDocument *)documentToAdd;
 - (void)_updatePopUpButton;
 @end
 
-@implementation WCAddDocumentToProjectSheet
+@implementation WCAddDocumentToProjectSheetController
 
 - (void)dealloc {
 #ifdef DEBUG
@@ -50,7 +50,7 @@
 }
 
 + (void)presentSheetForDocument:(WCDocument *)documentToAdd; {
-	WCAddDocumentToProjectSheet *controller = [[[self class] alloc] _initWithDocument:documentToAdd];
+	WCAddDocumentToProjectSheetController *controller = [[[self class] alloc] _initWithDocument:documentToAdd];
 	
 	[[NSApplication sharedApplication] beginSheet:[controller window] modalForWindow:[documentToAdd windowForSheet] modalDelegate:controller didEndSelector:@selector(_sheetDidEnd:code:info:) contextInfo:NULL];
 }

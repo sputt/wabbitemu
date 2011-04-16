@@ -1,5 +1,5 @@
 //
-//  WCAddDocumentToProjectSheet.h
+//  WCAddDocumentToProjectSheetController.h
 //  WabbitStudio
 //
 //  Created by William Towe on 4/16/11.
@@ -11,7 +11,7 @@
 
 @class WCDocument;
 
-@interface WCAddDocumentToProjectSheet : NSWindowController {
+@interface WCAddDocumentToProjectSheetController : NSWindowController {
 @private
 	IBOutlet NSPopUpButton *_popUpButton;
 	

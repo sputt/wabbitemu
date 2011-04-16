@@ -12,7 +12,7 @@
 #import "WCTextStorage.h"
 #import "WCProject.h"
 #import "WCTextView.h"
-#import "WCAddDocumentToProjectSheet.h"
+#import "WCAddDocumentToProjectSheetController.h"
 #import "WCDocumentController.h"
 
 
@@ -104,6 +104,6 @@
 @synthesize fileViewController=_fileViewController;
 
 - (IBAction)addDocumentToProject:(id)sender; {
-	[WCAddDocumentToProjectSheet presentSheetForDocument:self];
+	[WCAddDocumentToProjectSheetController presentSheetForDocument:self];
 }
 @end
