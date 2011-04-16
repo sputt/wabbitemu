@@ -16,4 +16,5 @@
 }
 @property (readonly,nonatomic) WCProject *currentProject;
 @property (readonly,nonatomic) NSArray *projects;
+@property (readonly,nonatomic) NSArray *recentProjectURLs;
 @end

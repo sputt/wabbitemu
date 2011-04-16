@@ -31,8 +31,8 @@
 			[[WCNewProjectWindowController sharedWindowController] presentWindowController];
 			break;
 		case WCPreferencesOnStartupOpenMostRecentProject:
-			if ([[[NSDocumentController sharedDocumentController] recentDocumentURLs] count])
-				[[NSDocumentController sharedDocumentController] openDocumentWithContentsOfURL:[[[NSDocumentController sharedDocumentController] recentDocumentURLs] firstObject] display:YES error:NULL];
+			if ([[[WCDocumentController sharedDocumentController] recentProjectURLs] count])
+				[[WCDocumentController sharedDocumentController] openDocumentWithContentsOfURL:[[[WCDocumentController sharedDocumentController] recentProjectURLs] firstObject] display:YES error:NULL];
 			break;
 		case WCPreferencesOnStartupDoNothing:
 		default:

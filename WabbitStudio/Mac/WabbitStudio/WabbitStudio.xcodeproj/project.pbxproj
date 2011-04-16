@@ -773,8 +773,6 @@
 			children = (
 				07E02056134BFBD40017B9BF /* NSTreeNode+WCExtensions.h */,
 				07E02057134BFBD40017B9BF /* NSTreeNode+WCExtensions.m */,
-				0758E828134ABC1200280D9D /* NSColor-NTExtensions.h */,
-				0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */,
 				07968ABD1345945000E74BC6 /* NSOutlineView+WCExtensions.h */,
 				07968ABE1345945000E74BC6 /* NSOutlineView+WCExtensions.m */,
 				078073DD13446A9A0003DE27 /* NSIndexPath+WCExtensions.h */,
@@ -812,6 +810,8 @@
 		0769A1D51333DEFB00080A96 /* External */ = {
 			isa = PBXGroup;
 			children = (
+				0758E828134ABC1200280D9D /* NSColor-NTExtensions.h */,
+				0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */,
 				072C8A3B1358EFCF006EE420 /* RSRTVArrayController.h */,
 				072C8A3C1358EFCF006EE420 /* RSRTVArrayController.m */,
 				070F2F4E1353F74500641AE3 /* CTBadge_1.pdf */,

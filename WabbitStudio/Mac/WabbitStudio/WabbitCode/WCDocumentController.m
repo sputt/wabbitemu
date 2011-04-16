@@ -61,4 +61,13 @@
 	
 	return [[retval copy] autorelease];
 }
+@dynamic recentProjectURLs;
+- (NSArray *)recentProjectURLs {
+	NSMutableArray *retval = [NSMutableArray array];
+	for (NSURL *URL in [self recentDocumentURLs]) {
+		if ([[self typeForContentsOfURL:URL error:NULL] isEqualToString:kWCProjectUTI])
+			[retval addObject:URL];
+	}
+	return [[retval copy] autorelease];
+}
 @end

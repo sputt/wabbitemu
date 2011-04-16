@@ -238,7 +238,7 @@ static NSDictionary *_outputTypesToFileExtensions = nil;
 	return [[[[[self inputFileAlias] URL] path] lastPathComponent] stringByDeletingPathExtension];
 }
 - (void)setOutputName:(NSString *)outputName {
-	if (_outputName == outputName)
+	if ([_outputName isEqualToString:outputName])
 		return;
 	
 	[_outputName release];
