@@ -96,7 +96,7 @@
 		
 		if (index == [self selectedIndex]) {
 			[[NSGradient unifiedSelectedGradient] drawInRect:frame angle:90.0];
-			[[NSColor colorWithCalibratedWhite:0.5 alpha:1.0] setFill];
+			[[NSColor colorWithCalibratedWhite:0.66 alpha:1.0] setFill];
 			NSRectFill(NSMakeRect(frame.origin.x, frame.origin.y, 1.0, NSHeight(frame)));
 			NSRectFill(NSMakeRect(frame.origin.x+NSWidth(frame), frame.origin.y, 1.0, NSHeight(frame)));
 		}

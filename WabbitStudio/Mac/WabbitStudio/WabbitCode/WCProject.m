@@ -339,12 +339,22 @@ static NSImage *_appIcon = nil;
 }
 
 #pragma mark NSUserInterfaceValidations
-- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
-	if ([item action] == @selector(addFilesToProject:) &&
-		[(id <NSObject>)item isKindOfClass:[NSMenuItem class]]) {
+- (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {
+	if ([item action] == @selector(addFilesToProject:)) {
 		
-		[(NSMenuItem *)item setTitle:[NSString stringWithFormat:NSLocalizedString(@"Add Files to \"%@\"\u2026", @"project add files to project menu item title"),[self displayName]]];
+		if ([(id <NSObject>)item isKindOfClass:[NSMenuItem class]])
+			[(NSMenuItem *)item setTitle:[NSString stringWithFormat:NSLocalizedString(@"Add Files to \"%@\"\u2026", @"project add files to project menu item title"),[self displayName]]];
 		
+		return YES;
+	}
+	else if ([item action] == @selector(nextTab:)) {
+		if ([[[[self currentTabViewContext] tabBarControl] tabView] numberOfTabViewItems] <= 1)
+			return NO;
+		return YES;
+	}
+	else if ([item action] == @selector(previousTab::)) {
+		if ([[[[self currentTabViewContext] tabBarControl] tabView] numberOfTabViewItems] <= 1)
+			return NO;
 		return YES;
 	}
 	else if ([item action] == @selector(group:)) {
