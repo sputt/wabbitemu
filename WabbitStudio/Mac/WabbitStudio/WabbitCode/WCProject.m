@@ -1081,6 +1081,51 @@ static NSImage *_appIcon = nil;
 - (IBAction)changeProjectView:(WCProjectNavView *)sender; {
 	[self performSelector:NSSelectorFromString([[sender selectors] objectAtIndex:[sender selectedIndex]]) withObject:nil];
 }
+
+- (IBAction)nextTab:(id)sender; {
+	id <WCTabViewContext> context = [self currentTabViewContext];
+	NSTabView *tabView = [[context tabBarControl] tabView];
+	
+	// no other tabs to switch to
+	if ([tabView numberOfTabViewItems] <= 1) {
+		NSBeep();
+		return;
+	}
+	
+	// get the index of the currently selected tab
+	NSArray *items = [[context tabBarControl] representedTabViewItems];
+	NSUInteger index = [items indexOfObject:[tabView selectedTabViewItem]];
+	
+	// if we would go off the end of the tab view, wrap around to the first tab
+	if (++index >= [tabView numberOfTabViewItems])
+		index = 0;
+	
+	// select the new tab
+	[tabView selectTabViewItem:[items objectAtIndex:index]];
+}
+- (IBAction)previousTab:(id)sender; {
+	id <WCTabViewContext> context = [self currentTabViewContext];
+	NSTabView *tabView = [[context tabBarControl] tabView];
+	
+	// no other tabs to switch to
+	if ([tabView numberOfTabViewItems] <= 1) {
+		NSBeep();
+		return;
+	}
+	
+	// get the index of the currently selected tab
+	NSArray *items = [[context tabBarControl] representedTabViewItems];
+	NSUInteger index = [items indexOfObject:[tabView selectedTabViewItem]];
+	
+	// if the first tab is selected wrap around to the last tab
+	if (index == 0)
+		index = [tabView numberOfTabViewItems] - 1;
+	else
+		--index;
+	
+	// select the new tab
+	[tabView selectTabViewItem:[items objectAtIndex:index]];
+}
 #pragma mark -
 #pragma mark *** Private Methods ***
 - (void)_addBuildMessageForString:(NSString *)string; {

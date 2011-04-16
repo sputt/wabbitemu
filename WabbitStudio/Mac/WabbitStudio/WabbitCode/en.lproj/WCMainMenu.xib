@@ -819,6 +819,34 @@
 									<reference key="NSOnImage" ref="1033313550"/>
 									<reference key="NSMixedImage" ref="310636482"/>
 								</object>
+								<object class="NSMenuItem" id="493173783">
+									<reference key="NSMenu" ref="383618694"/>
+									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsSeparator">YES</bool>
+									<string key="NSTitle"/>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="1033313550"/>
+									<reference key="NSMixedImage" ref="310636482"/>
+								</object>
+								<object class="NSMenuItem" id="153550497">
+									<reference key="NSMenu" ref="383618694"/>
+									<string key="NSTitle">Next Tab</string>
+									<string key="NSKeyEquiv">]</string>
+									<int key="NSKeyEquivModMask">1179648</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="1033313550"/>
+									<reference key="NSMixedImage" ref="310636482"/>
+								</object>
+								<object class="NSMenuItem" id="152393187">
+									<reference key="NSMenu" ref="383618694"/>
+									<string key="NSTitle">Previous Tab</string>
+									<string key="NSKeyEquiv">[</string>
+									<int key="NSKeyEquivModMask">1179648</int>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="1033313550"/>
+									<reference key="NSMixedImage" ref="310636482"/>
+								</object>
 							</object>
 						</object>
 					</object>
@@ -1514,6 +1542,22 @@
 					</object>
 					<int key="connectionID">614</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">nextTab:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="153550497"/>
+					</object>
+					<int key="connectionID">618</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">previousTab:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="152393187"/>
+					</object>
+					<int key="connectionID">619</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2091,6 +2135,9 @@
 							<reference ref="193872489"/>
 							<reference ref="191087138"/>
 							<reference ref="291133933"/>
+							<reference ref="493173783"/>
+							<reference ref="153550497"/>
+							<reference ref="152393187"/>
 						</object>
 						<reference key="parent" ref="808667872"/>
 					</object>
@@ -2299,6 +2346,21 @@
 						<reference key="object" ref="805228105"/>
 						<reference key="parent" ref="720053764"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">615</int>
+						<reference key="object" ref="493173783"/>
+						<reference key="parent" ref="383618694"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">616</int>
+						<reference key="object" ref="153550497"/>
+						<reference key="parent" ref="383618694"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">617</int>
+						<reference key="object" ref="152393187"/>
+						<reference key="parent" ref="383618694"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -2474,6 +2536,9 @@
 					<string>610.IBPluginDependency</string>
 					<string>611.IBPluginDependency</string>
 					<string>613.IBPluginDependency</string>
+					<string>615.IBPluginDependency</string>
+					<string>616.IBPluginDependency</string>
+					<string>617.IBPluginDependency</string>
 					<string>72.IBPluginDependency</string>
 					<string>72.ImportedFromIB2</string>
 					<string>73.IBPluginDependency</string>
@@ -2673,6 +2738,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -2712,7 +2780,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">614</int>
+			<int key="maxID">619</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -2981,6 +3049,8 @@
 							<string>group:</string>
 							<string>newFile:</string>
 							<string>newGroup:</string>
+							<string>nextTab:</string>
+							<string>previousTab:</string>
 							<string>ungroup:</string>
 							<string>viewBuildMessages:</string>
 							<string>viewProject:</string>
@@ -2989,6 +3059,8 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -3014,6 +3086,8 @@
 							<string>group:</string>
 							<string>newFile:</string>
 							<string>newGroup:</string>
+							<string>nextTab:</string>
+							<string>previousTab:</string>
 							<string>ungroup:</string>
 							<string>viewBuildMessages:</string>
 							<string>viewProject:</string>
@@ -3048,6 +3122,14 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">newGroup:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">nextTab:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">previousTab:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
