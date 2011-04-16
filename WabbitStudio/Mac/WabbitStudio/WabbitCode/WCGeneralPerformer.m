@@ -18,6 +18,12 @@
 #import "WCFileTemplate.h"
 #import "WCProjectBuildTargetPopUpButton.h"
 #import "NSColor-NTExtensions.h"
+#import "WCDocument.h"
+#import "WCDocumentController.h"
+#import "WCProjectFilesOutlineViewController.h"
+#import "NSTreeController+WCExtensions.h"
+#import "NSWindow-NoodleEffects.h"
+
 
 NSString *const kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier = @"kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier";
 NSString *const kWCProjectToolbarBuildItemIdentifier = @"kWCProjectToolbarBuildItemIdentifier";
@@ -123,6 +129,49 @@ NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer = @"kWCProjectToolba
 		[urls addObject:[NSURL fileURLWithPath:path]];
 	
 	return [self addFileURLs:urls toFile:file atIndex:index];
+}
+
+- (BOOL)addDocument:(WCDocument *)document toProject:(WCProject *)project; {
+	// check to see if the file already exists in the project
+	if ([[project absoluteFilePaths] containsObject:[[document fileURL] path]])
+		return NO;
+	
+	// saving before hand just makes it easier, we can close the document instance without any problem
+	[document saveDocument:nil];
+	
+	// remove the text view's layout manager from from the file's text storage, or else it won't be dealloc'd
+	[[[document file] textStorage] removeLayoutManager:[[[document fileViewController] textView] layoutManager]];
+	// since we saved the file, remove all undo actions, this allows the text view to be dealloc'd
+	[[[document file] undoManager] removeAllActions];
+	// set the ruler view's client to nil which causes the ruler view to unregister itself to certain notifications, otherwise we get a crash, which is bad
+	[[[[[document fileViewController] textView] enclosingScrollView] verticalRulerView] setClientView:nil];
+	// insert the document's file into the project's root
+	[[[project projectFile] mutableChildNodes] insertObject:[document file] atIndex:0];
+	// select the new file in the files outline view
+	[(NSTreeController *)[[[project projectFilesOutlineViewController] outlineView] dataSource] setSelectedRepresentedObject:[document file]];
+	
+	// switch to the files outline view so the user can see the new file
+	[project viewProject:nil];
+	
+	// grab the rect of the new file in the files outline view, converting it to the window's coordinate system
+	NSRect rect = [[[project projectFilesOutlineViewController] outlineView] convertRectToBase:[[[project projectFilesOutlineViewController] outlineView] frameOfCellAtColumn:0 row:[[[project projectFilesOutlineViewController] outlineView] rowForItem:[(NSTreeController *)[[[project projectFilesOutlineViewController] outlineView] dataSource] treeNodeForRepresentedObject:[document file]]]]];
+	// convert the origin to the screen's coordinate system
+	rect.origin = [[project windowForSheet] convertBaseToScreen:rect.origin];
+	
+#ifdef DEBUG
+	NSAssert(!NSIsEmptyRect(rect), @"cannot zoom off the screen with an empty rect!");
+#endif
+	
+	// animate the document window into the rect of the new file
+	[[document windowForSheet] zoomOffToRect:rect];
+	
+	// close the actual document
+	[document close];
+	
+	// notify the project that a new file has been added; forces text views to re-highlight, symbols to update, etc
+	[project noteNumberOfFilesChanged];
+	
+	return YES;
 }
 
 - (WCProject *)createProjectFromFolder:(NSURL *)folderURL error:(NSError **)error; {	

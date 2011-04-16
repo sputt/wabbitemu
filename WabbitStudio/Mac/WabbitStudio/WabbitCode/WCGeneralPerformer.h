@@ -15,7 +15,7 @@ extern NSString *const kWCProjectToolbarBuildItemIdentifier;
 extern NSString *const kWCProjectToolbarBuildAndRunItemIdentifier;
 extern NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer;
 
-@class WCFile,WCProject,WCProjectTemplate,WCFileTemplate;
+@class WCFile,WCProject,WCProjectTemplate,WCFileTemplate,WCDocument;
 
 @interface WCGeneralPerformer : WCSingleton {
 @private
@@ -28,6 +28,8 @@ extern NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer;
 - (BOOL)addFileURLs:(NSArray *)urls toFile:(WCFile *)file atIndex:(NSUInteger)index;
 - (BOOL)addFilePaths:(NSArray *)paths toFile:(WCFile *)file atIndex:(NSUInteger)index;
 - (BOOL)addFileURLs:(NSArray *)urls toFile:(WCFile *)file inDirectoryURL:(NSURL *)directory atIndex:(NSUInteger)index;
+
+- (BOOL)addDocument:(WCDocument *)document toProject:(WCProject *)project;
 
 - (WCProject *)createProjectFromFolder:(NSURL *)folderURL error:(NSError **)outError;
 - (WCProject *)createProjectAtURL:(NSURL *)projectURL withTemplate:(WCProjectTemplate *)projectTemplate error:(NSError **)error;

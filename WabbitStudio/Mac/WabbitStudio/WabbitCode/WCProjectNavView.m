@@ -106,7 +106,7 @@
 		[image drawInRect:WCCenteredRect(NSMakeRect(0.0, 0.0, size.width, size.height), frame) fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
 	}
 	
-	[[NSColor colorWithCalibratedWhite:0.33 alpha:1.0] setFill];
+	[[NSColor colorWithCalibratedWhite:0.66 alpha:1.0] setFill];
 	NSRectFill(NSMakeRect(0.0, 0.0, NSWidth(bounds), 1.0));
 }
 

@@ -10,15 +10,9 @@
 #import "WCDocument.h"
 #import "WCDocumentController.h"
 #import "WCProject.h"
-#import "WCProjectFile.h"
-#import "WCProjectFilesOutlineViewController.h"
-#import "NSTreeController+WCExtensions.h"
-#import "NSWindow-NoodleEffects.h"
-#import "WCTextStorage.h"
-#import "WCFileViewController.h"
-#import "WCTextView.h"
 #import "NSPopUpButton+WCExtensions.h"
 #import "NSResponder+WCExtensions.h"
+#import "WCGeneralPerformer.h"
 
 
 @interface WCAddDocumentToProjectSheetController ()
@@ -33,6 +27,7 @@
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	_documentToAdd = nil;
     [super dealloc];
 }
@@ -47,6 +42,16 @@
 
 - (NSString *)windowNibName {
 	return @"WCAddDocumentToProjectSheet";
+}
+
+- (void)approveModalSheetAction:(id)sender {
+	if (![[WCGeneralPerformer sharedPerformer] addDocument:_documentToAdd toProject:[[[self popUpButton] selectedItem] representedObject]]) {
+		NSBeep();
+		return;
+	}
+	
+	[[self window] close];
+	[[NSApplication sharedApplication] endSheet:[self window] returnCode:NSOKButton];
 }
 
 + (void)presentSheetForDocument:(WCDocument *)documentToAdd; {
@@ -68,34 +73,6 @@
 
 - (void)_sheetDidEnd:(NSWindow *)sheet code:(NSInteger)code info:(void *)info {
 	[self autorelease];
-	if (code == NSCancelButton)
-		return;
-	
-	[[self window] orderOut:nil];
-	
-	WCProject *project = [[[self popUpButton] selectedItem] representedObject];
-	
-	// saving before hand just makes it easier, we can close the document instance without any problem
-	[_documentToAdd saveDocument:nil];
-	
-	[[[_documentToAdd file] textStorage] removeLayoutManager:[[[_documentToAdd fileViewController] textView] layoutManager]];
-	[[[_documentToAdd file] undoManager] removeAllActions];
-	[[[[[_documentToAdd fileViewController] textView] enclosingScrollView] verticalRulerView] setClientView:nil];
-	[[[project projectFile] mutableChildNodes] insertObject:[_documentToAdd file] atIndex:0];
-	[(NSTreeController *)[[[project projectFilesOutlineViewController] outlineView] dataSource] setSelectedRepresentedObject:[_documentToAdd file]];
-	
-	[project viewProject:nil];
-	
-	NSRect rect = [[[project projectFilesOutlineViewController] outlineView] convertRectToBase:[[[project projectFilesOutlineViewController] outlineView] frameOfCellAtColumn:0 row:[[[project projectFilesOutlineViewController] outlineView] rowForItem:[(NSTreeController *)[[[project projectFilesOutlineViewController] outlineView] dataSource] treeNodeForRepresentedObject:[_documentToAdd file]]]]];
-	rect.origin = [[project windowForSheet] convertBaseToScreen:rect.origin];
-	
-	if (!NSIsEmptyRect(rect)) {
-		[[_documentToAdd windowForSheet] zoomOffToRect:rect];
-	}
-	
-	[_documentToAdd close];
-	
-	[project noteNumberOfFilesChanged];
 }
 
 - (void)_projectWillClose:(NSNotification *)note {

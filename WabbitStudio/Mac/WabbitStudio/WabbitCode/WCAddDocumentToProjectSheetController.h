@@ -19,4 +19,5 @@
 }
 
 + (void)presentSheetForDocument:(WCDocument *)documentToAdd;
+
 @end

@@ -1240,7 +1240,19 @@ static NSImage *_appIcon = nil;
 	}
 }
 #pragma mark Accessors
-@synthesize absoluteFilePaths=_cachedAbsoluteFilePaths;
+@dynamic absoluteFilePaths;
+- (NSSet *)absoluteFilePaths {
+	if (!_cachedAbsoluteFilePaths)
+		_cachedAbsoluteFilePaths = [[NSSet setWithArray:[[[self projectFile] descendantLeafNodes] valueForKeyPath:@"absolutePath"]] retain];
+	return _cachedAbsoluteFilePaths;
+}
+- (void)setAbsoluteFilePaths:(NSSet *)absoluteFilePaths {
+	if (_cachedAbsoluteFilePaths == absoluteFilePaths)
+		return;
+	
+	[_cachedAbsoluteFilePaths release];
+	_cachedAbsoluteFilePaths = [absoluteFilePaths retain];
+}
 #pragma mark IBActions
 - (IBAction)_outlineViewDoubleClick:(id)sender; {
 	NSTreeNode *node = [(NSTreeController *)[[[self projectFilesOutlineViewController] outlineView] dataSource] selectedNode];
