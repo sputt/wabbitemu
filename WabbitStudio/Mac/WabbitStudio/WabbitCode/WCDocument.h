@@ -10,7 +10,7 @@
 
 @class WCFile,WCFileViewController,WCProject;
 
-@interface WCDocument : NSDocument {
+@interface WCDocument : NSDocument <NSUserInterfaceValidations> {
 @private
 	__weak WCProject *_project;
     WCFileViewController *_fileViewController;
@@ -18,4 +18,7 @@
 }
 @property (readonly,nonatomic) WCFile *file;
 @property (assign,nonatomic) WCProject *project;
+@property (readonly,nonatomic) WCFileViewController *fileViewController;
+
+- (IBAction)addDocumentToProject:(id)sender;
 @end

@@ -121,4 +121,6 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 - (void)jumpToFindInProjectResult:(WCFindInProjectResult *)findResult;
 
 - (void)saveProjectFile;
+
+- (void)noteNumberOfFilesChanged;
 @end

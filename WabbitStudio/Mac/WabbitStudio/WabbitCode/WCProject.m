@@ -491,6 +491,12 @@ static NSImage *_appIcon = nil;
 	[self _updateProjectSettings];
 	[super saveDocument:nil];
 }
+
+- (void)noteNumberOfFilesChanged {
+	[self setAbsoluteFilePaths:[NSSet setWithArray:[[[self projectFile] descendantNodes] valueForKeyPath:@"absolutePath"]]];
+	
+	[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectNumberOfFilesDidChangeNotification object:self];
+}
 #pragma mark NSKeyValueCoding
 - (NSUInteger)countOfBuildTargets {
 	return [_buildTargets count];

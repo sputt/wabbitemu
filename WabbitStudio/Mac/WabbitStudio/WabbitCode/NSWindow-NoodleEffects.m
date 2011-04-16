@@ -27,7 +27,7 @@
 #import "NSWindow-NoodleEffects.h"
 #import <Carbon/Carbon.h>
 
-#define ZOOM_ANIMATION_TIME_MULTIPLIER			0.4
+#define ZOOM_ANIMATION_TIME_MULTIPLIER			0.5
 #define SLOW_ZOOM_ANIMATION_TIME_MULTIPLIER		5
 
 @interface NoodleZoomWindow : NSWindow

@@ -7,9 +7,7 @@
 //
 
 #import "WCFileViewController.h"
-#import "WCTopBarView.h"
 #import "WCFile.h"
-//#import "WCRulerView.h"
 #import "NoodleLineNumberView.h"
 #import "WCTextStorage.h"
 #import "WCTextView.h"
@@ -33,7 +31,6 @@
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	_textView = nil;
 	_file = nil;
 	[_textViewSelectedRangeString release];
     [super dealloc];

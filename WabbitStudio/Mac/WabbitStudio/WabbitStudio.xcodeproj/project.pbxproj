@@ -30,6 +30,8 @@
 		072C8A3A1358EBED006EE420 /* NSGradient+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A391358EBED006EE420 /* NSGradient+WCExtensions.m */; };
 		072C8A3D1358EFCF006EE420 /* RSRTVArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3C1358EFCF006EE420 /* RSRTVArrayController.m */; };
 		072C8A401358F05A006EE420 /* WCFileViewStatusBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */; };
+		072F7AE41359622E00FEFE5F /* WCAddDocumentToProjectSheet.m in Sources */ = {isa = PBXBuildFile; fileRef = 072F7AE31359622E00FEFE5F /* WCAddDocumentToProjectSheet.m */; };
+		072F7AE8135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 072F7AE6135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib */; };
 		073043B613405E0300BD7154 /* WCBuildTargetInfoSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 073043B513405E0300BD7154 /* WCBuildTargetInfoSheetController.m */; };
 		073043B91340714700BD7154 /* NSPopUpButton+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 073043B81340714700BD7154 /* NSPopUpButton+WCExtensions.m */; };
 		07463AB21332AB7700744B98 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AB11332AB7700744B98 /* Cocoa.framework */; };
@@ -230,6 +232,9 @@
 		072C8A3C1358EFCF006EE420 /* RSRTVArrayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSRTVArrayController.m; sourceTree = "<group>"; };
 		072C8A3E1358F059006EE420 /* WCFileViewStatusBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFileViewStatusBarView.h; sourceTree = "<group>"; };
 		072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFileViewStatusBarView.m; sourceTree = "<group>"; };
+		072F7AE21359622E00FEFE5F /* WCAddDocumentToProjectSheet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCAddDocumentToProjectSheet.h; sourceTree = "<group>"; };
+		072F7AE31359622E00FEFE5F /* WCAddDocumentToProjectSheet.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCAddDocumentToProjectSheet.m; sourceTree = "<group>"; };
+		072F7AE7135966D700FEFE5F /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCAddDocumentToProjectSheet.xib; sourceTree = "<group>"; };
 		073043B413405E0300BD7154 /* WCBuildTargetInfoSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildTargetInfoSheetController.h; sourceTree = "<group>"; };
 		073043B513405E0300BD7154 /* WCBuildTargetInfoSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildTargetInfoSheetController.m; sourceTree = "<group>"; };
 		073043B71340714700BD7154 /* NSPopUpButton+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSPopUpButton+WCExtensions.h"; sourceTree = "<group>"; };
@@ -614,6 +619,7 @@
 				0790C738134D9E9800AABB1D /* WCDocument.xib */,
 				07CE7873134EB23B001B96FC /* WCGotoLineSheet.xib */,
 				07D28D55135274BC00437AA1 /* WCUnsavedFilesWindow.xib */,
+				072F7AE6135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib */,
 			);
 			name = Xibs;
 			path = en.lproj;
@@ -764,6 +770,8 @@
 				07D28D531352651000437AA1 /* WCProjectWindow.m */,
 				072C8A3E1358F059006EE420 /* WCFileViewStatusBarView.h */,
 				072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */,
+				072F7AE21359622E00FEFE5F /* WCAddDocumentToProjectSheet.h */,
+				072F7AE31359622E00FEFE5F /* WCAddDocumentToProjectSheet.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -953,6 +961,7 @@
 				07005B4F135426A40094FAFC /* ErrorBadge.png in Resources */,
 				07D516551356B16A00E18C1A /* ErrorsAndWarnings16x16.png in Resources */,
 				07D516561356B16A00E18C1A /* ErrorsAndWarnings16x16.pxm in Resources */,
+				072F7AE8135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1066,6 +1075,7 @@
 				072C8A3A1358EBED006EE420 /* NSGradient+WCExtensions.m in Sources */,
 				072C8A3D1358EFCF006EE420 /* RSRTVArrayController.m in Sources */,
 				072C8A401358F05A006EE420 /* WCFileViewStatusBarView.m in Sources */,
+				072F7AE41359622E00FEFE5F /* WCAddDocumentToProjectSheet.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1078,6 +1088,14 @@
 				070D55A313385CC000847B1A /* en */,
 			);
 			name = WCAddFilesToProjectView.xib;
+			sourceTree = "<group>";
+		};
+		072F7AE6135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				072F7AE7135966D700FEFE5F /* en */,
+			);
+			name = WCAddDocumentToProjectSheet.xib;
 			sourceTree = "<group>";
 		};
 		07463ABA1332AB7700744B98 /* InfoPlist.strings */ = {
