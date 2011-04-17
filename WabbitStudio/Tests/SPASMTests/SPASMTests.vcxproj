@@ -202,9 +202,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.ico" />
-    <None Include="directivemacro.z80" />
-    <None Include="echofill.z80" />
-    <None Include="PreprocessorTests.z80" />
+    <None Include="directivemacro.z80">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="echofill.z80">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
+    <None Include="PreprocessorTests.z80">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+    </None>
     <None Include="Tests.asm" />
   </ItemGroup>
   <ItemGroup>

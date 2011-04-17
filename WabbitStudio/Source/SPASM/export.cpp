@@ -6,6 +6,7 @@
 #include "stdafx.h"
 
 #include "utils.h"
+#include "errors.h"
 
 #undef  show_fatal_error_prefix
 #define show_fatal_error_prefix(zcif, zln) printf ("signer: error: ")
@@ -113,7 +114,8 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	//open the output file
 	outfile = fopen (output_filename, "wb");
 	if (!outfile) {
-		show_fatal_error ("Couldn't open output file");
+		int error = errno;
+		SetLastSPASMError(SPASM_ERR_FILE_NOT_FOUND, output_filename);
 		return;
 	}
 

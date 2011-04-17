@@ -12,6 +12,79 @@
 #include "preop.h"
 #include "errors.h"
 
+			//case '+': total += last_num; break;
+			//case '-': total -= last_num; break;
+			//case '*': total *= last_num; break;
+			//case '/': total /= last_num; break;
+			//case '%': total %= last_num; break;
+			//case '^': total ^= last_num; break;
+			//case '&': total &= last_num; break;
+			//case '|': total |= last_num; break;
+			//case '<': total <<= last_num; break;
+			//case '>': total >>= last_num; break;
+
+typedef enum tagMATHOP
+{
+	// Math
+	M_ADD,
+	M_SUB,
+	M_MUL,
+	M_DIV,
+	M_MOD,
+	M_XOR,
+	M_LAND,
+	M_LOR,
+	M_LSHIFT,
+	M_RSHIFT,
+
+	// Conditions
+	M_AND,
+	M_OR,
+	M_LT,
+	M_GT,
+	M_LTE,
+	M_GTE,
+	M_EQUALS,
+	M_NOTEQUALS,
+
+	// 
+	M_NONE,
+}
+MATHOP;
+
+static const struct tagMATHOPDEF
+{
+	MATHOP Op;
+	const char *szDef;
+}
+MathDefs[] =
+{
+	{M_LSHIFT, "<<"},
+	{M_RSHIFT, ">>"},
+
+	// Conditions
+	{M_AND, "&&"},
+	{M_OR, "||"},
+	{M_LT, "<"},
+	{M_GT, ">"},
+	{M_LTE, "<="},
+	{M_GTE, ">="},
+	{M_EQUALS, "=="},
+	{M_EQUALS, "="},
+	{M_NOTEQUALS, "!="},
+
+	// Math
+	{M_ADD, "+"},
+	{M_SUB, "-"},
+	{M_MUL, "*"},
+	{M_DIV, "/"},
+	{M_MOD, "%"},
+	{M_XOR, "^"},
+	{M_LAND, "&"},
+	{M_LOR, "|"},
+};
+
+
 extern char *curr_input_file;
 extern int line_num;
 extern bool suppress_errors;
@@ -416,7 +489,7 @@ const char *find_next_condition (const char *ptr) {
 
 static const char *parse_num_full (const char *expr, int *value, int depth) {
 	int total = 0, last_num;
-	char last_op = '\0';
+	MATHOP last_op = M_NONE;
 	bool invert_lastnum, neg_lastnum;
 
 	parser_forward_ref_err = false;
@@ -434,7 +507,8 @@ static const char *parse_num_full (const char *expr, int *value, int depth) {
 	}
 
 	//Now loop through the whole expression
-	for (;;) {
+	for (;;)
+	{
 
 		//First look for numbers
 		invert_lastnum = neg_lastnum = false;
@@ -475,19 +549,31 @@ static const char *parse_num_full (const char *expr, int *value, int depth) {
 
 		//Now check on the last operator to see what to do with this number
 		switch (last_op) {
-			case '\0':
+			case M_NONE:
 				//Special case for the first number in the expression
 				total = last_num; break;
-			case '+': total += last_num; break;
-			case '-': total -= last_num; break;
-			case '*': total *= last_num; break;
-			case '/': total /= last_num; break;
-			case '%': total %= last_num; break;
-			case '^': total ^= last_num; break;
-			case '&': total &= last_num; break;
-			case '|': total |= last_num; break;
-			case '<': total <<= last_num; break;
-			case '>': total >>= last_num; break;
+
+			// Math
+			case M_ADD: total += last_num; break;
+			case M_SUB: total -= last_num; break;
+			case M_MUL: total *= last_num; break;
+			case M_DIV: total /= last_num; break;
+			case M_MOD: total %= last_num; break;
+			case M_XOR: total ^= last_num; break;
+			case M_LAND: total &= last_num; break;
+			case M_LOR: total |= last_num; break;
+			case M_LSHIFT: total <<= last_num; break;
+			case M_RSHIFT: total >>= last_num; break;
+
+			// Condition
+			case M_AND: total = total && last_num; break;
+			case M_OR: total = total || last_num; break;
+			case M_LT: total = total < last_num; break;
+			case M_GT: total = total > last_num; break;
+			case M_LTE: total = total <= last_num; break;
+			case M_GTE: total = total >= last_num; break;
+			case M_EQUALS: total = total == last_num; break;
+			case M_NOTEQUALS: total = total != last_num; break;
 		}
 
 		//Get the next operator
@@ -502,74 +588,21 @@ static const char *parse_num_full (const char *expr, int *value, int depth) {
 			return expr;
 		}
 
-		if ((*expr == '&' || *expr == '|') && *(expr + 1) == *expr ) {
-			char *next_expr;
-			int next_val;
-
-			last_op = *expr;
-			expr += 2;
-			
-			next_expr = strdup(expr);
-
-			if (!parse_num_full (next_expr, &next_val, depth)) {
-				free (next_expr);
-				return NULL;
+		last_op = M_NONE;
+		for (int i = 0; i < ARRAYSIZE(MathDefs); i++)
+		{
+			if (strncmp(expr, MathDefs[i].szDef, strlen(MathDefs[i].szDef)) == 0)
+			{
+				last_op = MathDefs[i].Op;
+				expr += strlen(MathDefs[i].szDef);
+				break;
 			}
-			free (next_expr);
+		}
 
-			switch (last_op) {
-				case '&': total = (total && next_val); break;
-				case '|': total = (total || next_val); break;
-			}
-
-			*value = total;
-			parse_depth--;
-			return expr + strlen (expr);
-		} else if (*expr == '+' || *expr == '-' || *expr == '*' || *expr == '/' ||
-		    *expr == '&' || *expr == '|' || *expr == '^' || *expr == '%')
-			//Handle single-char operators
-			last_op = *(expr++);
-		else if ((*expr == '>' || *expr == '<') && *(expr + 1) == *expr) {
-			//Two-char bit shift ops
-			last_op = *expr;
-			expr += 2;
-		} else if (*expr == '=' || *expr == '<' || *expr == '>' || (*expr == '!' && *(expr + 1) == '=')) {
-			const char *expr_end;
-			char *next_expr;
-			int next_val;
-			// Special operators for conditions
-			last_op = *expr++;
-			if (*expr == '=' && *(expr - 1) == '=')
-				expr++;
-
-			expr_end = find_next_condition (expr + 1);
-			if (!(is_end_of_code_line (expr_end) || *expr_end == '&' || *expr_end == '|' || *expr_end == ')')) {
-				show_error ("Invalid condition test, expecting || or && '%s'", expr_end);
-				return NULL;
-			}
-
-			next_expr = strndup (expr + (*expr == '='), expr_end - expr - (*expr == '='));
-			if (!parse_num_full (next_expr, &next_val, 0)) {
-				free (next_expr);
-				return NULL;
-			}
-			free (next_expr);
-
-			if (*expr == '=')
-				last_op += ('A' - '<');
-			
-			switch (last_op) {
-				case '=': total = (total == next_val); break;
-				case '!' + ('A' - '<'): total = (total != next_val); break;
-				case '<': total = (total < next_val); break;
-				case '>': total = (total > next_val); break;
-				case '<' + ('A' - '<'): total = (total <= next_val); break;
-				case '>' + ('A' - '<'): total = (total >= next_val); break;
-			}
-
-			expr = expr_end;
-			goto get_op;
-		} else if (*expr == ')') {
+		if (last_op != M_NONE)
+		{
+		}
+		else if (*expr == ')') {
 			if (depth > 0) {
 				// We've been parsing an expression in parentheses and reached the end,
 				// so return the result and go up a level again

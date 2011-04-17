@@ -30,17 +30,18 @@ namespace SPASMTestsVS2008
 		[TestInitialize]
 		void Init()
 		{
+			OutputDebugString(TEXT("Start\n"));
 			output_contents = (unsigned char *) malloc(output_buf_size);
 			init_storage();
 			curr_input_file = "..\\..\\..\\..\\..\\Tests\\SPASMTests\\PreprocessorTests.z80";
 			output_filename = "output.bin";
-			mode = MODE_NORMAL;
+			mode = MODE_LIST;
 
 			char buffer[256];
 			_getcwd(buffer, sizeof(buffer));
 
 			int nResult = run_assembly();
-			Assert::AreEqual((int) EXIT_NORMAL, nResult, "Could not open test file");
+			Assert::AreEqual((int) EXIT_NORMAL, nResult, "Could not assemble test file");
 
 			ClearSPASMErrorSessions();
 			mode = 0;
@@ -49,6 +50,7 @@ namespace SPASMTestsVS2008
 		[TestCleanup]
 		void Cleanup()
 		{
+			OutputDebugString(TEXT("End\n"));
 			free_storage();
 			free(output_contents);
 		}
@@ -61,12 +63,17 @@ namespace SPASMTestsVS2008
 			char buffer[256];
 			sprintf_s(buffer, " %s()", szFunctionName);
 			
+			TCHAR szFileName[256];
+			sprintf_s(szFileName, "%s.txt", szFunctionName);
+			add_define (strdup ("OUTPUT_FILE"), NULL)->contents = strdup (szFileName);
+
 			ClearSPASMErrorSessions();
 			int session = StartSPASMErrorSession();
 			run_first_pass(buffer);
 			EndSPASMErrorSession(session);
 
-			System::IO::StreamReader ^sr = gcnew System::IO::StreamReader("output.bin");
+			String ^sfunction = gcnew String(szFileName);
+			System::IO::StreamReader ^sr = gcnew System::IO::StreamReader(sfunction);
 			System::String ^str = sr->ReadLine();
 
 			Assert::AreEqual(gcnew String("PASS"), str);
@@ -86,6 +93,12 @@ namespace SPASMTestsVS2008
 
 		[TestMethod]
 		void Else()
+		{
+			RunTest(__FUNCTION__);
+		}
+
+		[TestMethod]
+		void If()
 		{
 			RunTest(__FUNCTION__);
 		}

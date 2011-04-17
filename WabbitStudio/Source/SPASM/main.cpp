@@ -22,6 +22,7 @@ extern expr_t *expr_list, *expr_list_tail;
 extern output_t *output_list, *output_list_tail;
 
 #ifdef _WINDOWS
+#ifndef _TEST
 #include "SPASM_i.h"
 
 class CSPASMModule : public ATL::CAtlExeModuleT<CSPASMModule>
@@ -32,6 +33,7 @@ public:
 };
 
 CSPASMModule _AtlModule;
+#endif
 #endif
 
 /*
@@ -81,7 +83,6 @@ int run_assembly()
 
 	if (!input_contents) {
 		puts ("Couldn't open input file");
-		OutputDebugString(_T("Could not open input file\n"));
 		return EXIT_FATAL_ERROR;
 	}
 	
@@ -356,7 +357,7 @@ int main (int argc, char **argv)
 			}
 			default:
 				{
-#ifdef _TEST
+#ifndef _TEST
 #ifdef _WINDOWS
 					//FreeConsole();
 					//system("PAUSE");

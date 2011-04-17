@@ -1,5 +1,3 @@
-#define OUTPUT_FILE output.bin
-
 #macro Ifdef
   #ifdef bob
     .echo > OUTPUT_FILE "FAIL"
@@ -22,14 +20,39 @@
 #endmacro
 
 #macro Else
+  .echo > OUTPUT_FILE ""
   #ifdef bob
-    .echo > OUTPUT_FILE "FAIL"
+    .echo >> OUTPUT_FILE "FAIL"
   #else
     #define bob
   #endif
 
   #ifndef bob
   #else
-    .echo > OUTPUT_FILE "PASS"
+    .echo >> OUTPUT_FILE "PASS"
+  #endif
+#endmacro
+
+#macro If
+  .echo > OUTPUT_FILE ""
+  #define if_test 20
+  #if (if_test > 20) || (if_test < 20)
+    .echo >> OUTPUT_FILE "FAIL1"
+  #endif
+
+  #if if_test != 20
+    .echo >> OUTPUT_FILE "FAIL2"
+  #endif
+
+  #if if_test = 20 && 0
+    .echo >> OUTPUT_FILE "FAIL3"
+  #endif
+
+  #if (if_test = 20 || 1) && 0
+    .echo >> OUTPUT_FILE "FAIL: ", ((0 + 1) && 0)
+  #endif
+
+  #if ((if_test = 20) || 1) && 1 && (if_test < 21)
+    .echo >> OUTPUT_FILE "PASS"
   #endif
 #endmacro
