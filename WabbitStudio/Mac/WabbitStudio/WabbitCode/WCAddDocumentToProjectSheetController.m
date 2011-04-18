@@ -55,6 +55,11 @@
 }
 
 + (void)presentSheetForDocument:(WCDocument *)documentToAdd; {
+	if (![documentToAdd fileURL]) {
+		[documentToAdd saveDocument:nil];
+		return;
+	}
+	
 	WCAddDocumentToProjectSheetController *controller = [[[self class] alloc] _initWithDocument:documentToAdd];
 	
 	[[NSApplication sharedApplication] beginSheet:[controller window] modalForWindow:[documentToAdd windowForSheet] modalDelegate:controller didEndSelector:@selector(_sheetDidEnd:code:info:) contextInfo:NULL];

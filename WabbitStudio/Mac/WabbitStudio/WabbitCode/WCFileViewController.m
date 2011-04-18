@@ -113,6 +113,9 @@
 		[item setRepresentedObject:symbol];
 	}
 	
+	if ([menu numberOfItems] == 0)
+		[menu addItemWithTitle:NSLocalizedString(@"No Symbols", @"No Symbols") action:NULL keyEquivalent:@""];
+	
 	[_symbolsPopUpButton setMenu:menu];
 	[_symbolsPopUpButton selectItemAtIndex:[symbols symbolIndexForLocation:[[self textView] selectedRange].location]];
 }

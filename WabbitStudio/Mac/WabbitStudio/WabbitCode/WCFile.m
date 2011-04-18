@@ -239,7 +239,14 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	return [[self alias] URL];
 }
 - (void)setURL:(NSURL *)URL {
-	[[self alias] setURL:URL];
+	if (!_alias)
+		_alias = [[WCAlias alloc] initWithURL:URL];
+	else
+		[[self alias] setURL:URL];
+	
+#ifdef DEBUG
+    NSAssert(_alias != nil, @"alias cannot be nil!");
+#endif
 }
 
 - (NSImage *)icon {
@@ -378,7 +385,12 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 #pragma mark *** Private Methods ***
 - (void)_setupTextStorageAndSymbolScanner; {
 	if (!_textStorage) {
-		NSString *string = [[[NSString alloc] initWithContentsOfURL:[self URL] usedEncoding:&_encoding error:NULL] autorelease];
+		_encoding = NSUTF8StringEncoding;
+		NSString *string = nil;
+		if ([self URL])
+			string = [[[NSString alloc] initWithContentsOfURL:[self URL] usedEncoding:&_encoding error:NULL] autorelease];
+		else
+			string = @"";
 		
 		_textStorage = [[WCTextStorage alloc] initWithString:string attributes:[NSDictionary dictionaryWithObjectsAndKeys:[[NSUserDefaults standardUserDefaults] fontForKey:kWCPreferencesEditorFontKey],NSFontAttributeName, nil]];
 		

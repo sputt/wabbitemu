@@ -59,4 +59,8 @@
 - (IBAction)preferences:(id)sender; {
 	[[WCPreferencesWindowController sharedPrefsWindowController] showWindow:nil];
 }
+
+- (IBAction)newBlankFile:(id)sender; {
+	[[WCDocumentController sharedDocumentController] openUntitledDocumentAndDisplay:YES error:NULL];
+}
 @end

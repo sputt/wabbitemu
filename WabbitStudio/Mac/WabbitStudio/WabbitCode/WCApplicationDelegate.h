@@ -16,4 +16,5 @@
 }
 - (IBAction)newProject:(id)sender;
 - (IBAction)preferences:(id)sender;
+- (IBAction)newBlankFile:(id)sender;
 @end

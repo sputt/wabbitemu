@@ -83,6 +83,9 @@
 	return _cachedURL;
 }
 - (void)setURL:(NSURL *)fileURL {
+	if (!_alias)
+		_alias = [[NDAlias alloc] initWithURL:fileURL];
+	
 	[[self alias] setURL:fileURL];
 	_needsToRecacheValues = YES;
 }

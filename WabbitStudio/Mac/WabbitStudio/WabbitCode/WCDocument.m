@@ -25,18 +25,16 @@
 	return NO;
 }
 
-- (id)init
-{
+- (id)init {
     self = [super init];
     if (self) {
-        // Initialization code here.
+         _file = [[WCFile alloc] initWithURL:nil];
     }
     
     return self;
 }
 
-- (void)dealloc
-{
+- (void)dealloc {
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
@@ -45,8 +43,7 @@
     [super dealloc];
 }
 
-- (NSString *)windowNibName
-{
+- (NSString *)windowNibName {
     // Implement this to return a nib to load OR implement -makeWindowControllers to manually create your controllers.
     return @"WCDocument";
 }
@@ -68,8 +65,7 @@
 	return [_file hasUnsavedChanges];
 }
 
-- (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError
-{	
+- (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError {	
     return [[[_file textStorage] string] dataUsingEncoding:[_file encoding]];
 }
 
@@ -79,10 +75,15 @@
     return YES;
 }
 
-- (void)saveDocument:(id)sender {
-	[super saveDocument:sender];
-	
-	[[self file] setChangeCount:0];
+- (void)saveDocumentWithDelegate:(id)delegate didSaveSelector:(SEL)didSaveSelector contextInfo:(void *)contextInfo {
+	[super saveDocumentWithDelegate:self didSaveSelector:@selector(document:didSave:info:) contextInfo:NULL];
+}
+
+- (void)document:(WCDocument *)document didSave:(BOOL)didSave info:(void *)info {
+	if (didSave) {
+		[[self file] setChangeCount:0];
+		[[self file] setURL:[self fileURL]];
+	}
 }
 
 - (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {
