@@ -14,4 +14,6 @@
 	BOOL _drawGradient; // our corresponding NSTableView class actually draws the gradient, this just tells it whether to draw
 }
 @property (assign,nonatomic) BOOL drawGradient;
+@property (readonly,nonatomic) NSGradient *gradient;
+@property (readonly,nonatomic) NSColor *borderColor;
 @end

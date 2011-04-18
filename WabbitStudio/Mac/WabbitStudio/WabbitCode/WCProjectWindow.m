@@ -15,6 +15,13 @@
 
 @implementation WCProjectWindow
 
+- (void)dealloc {
+#ifdef DEBUG
+	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
+#endif
+	[super dealloc];
+}
+
 - (IBAction)performClose:(id)sender {
 	id document = [[self windowController] document];
 	

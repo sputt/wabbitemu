@@ -78,6 +78,7 @@
 - (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item {
 	
 	[cell setIcon:[item icon]];
+	[cell setIconSize:NSMakeSize(16.0, 16.0)];
 	[cell setBadgeCount:[[item childNodes] count]];
 }
 

@@ -20,4 +20,7 @@
 @property (retain,nonatomic) NSImage *icon;
 @property (assign,nonatomic) NSSize iconSize;
 @property (assign,nonatomic) NSUInteger badgeCount;
+
+@property (readonly,nonatomic) NSColor *badgeTextColor;
+@property (readonly,nonatomic) NSColor *badgeBackgroundColor;
 @end

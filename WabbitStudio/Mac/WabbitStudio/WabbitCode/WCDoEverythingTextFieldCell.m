@@ -49,26 +49,8 @@ static const CGFloat kBadgeMinWidth = 22.0;
 	}
 	
 	if ([self badgeCount] > 0) {
-		NSColor *textColor = nil;
-		if ([self isHighlighted] &&
-			[[view window] firstResponder] == view &&
-			[[NSApplication sharedApplication] keyWindow] == [view window])
-			textColor = [NSColor keyboardFocusIndicatorColor];
-		else if ([self isHighlighted] &&
-				 [[NSApplication sharedApplication] keyWindow] == [view window])
-			textColor = [NSColor colorWithCalibratedRed:(152/255.0) green:(168/255.0) blue:(202/255.0) alpha:1.0];
-		else if ([self isHighlighted])
-			textColor = [NSColor colorWithDeviceWhite:(180/255.0) alpha:1.0];
-		else
-			textColor = [NSColor alternateSelectedControlTextColor];
-		
-		NSColor *backgroundColor = nil;
-		if ([self isHighlighted])
-			backgroundColor = [NSColor alternateSelectedControlTextColor];
-		else if ([[NSApplication sharedApplication] keyWindow] == [view window])
-			backgroundColor = [NSColor colorWithCalibratedRed:(152/255.0) green:(168/255.0) blue:(202/255.0) alpha:1.0];
-		else
-			backgroundColor = [NSColor colorWithDeviceWhite:(180/255.0) alpha:1];
+		NSColor *textColor = [self badgeTextColor];
+		NSColor *backgroundColor = [self badgeBackgroundColor];
 		
 		NSString *badgeString = [NSString stringWithFormat:@"%lu",[self badgeCount]];
 		NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont boldSystemFontOfSize:[NSFont systemFontSizeForControlSize:[self controlSize]]],NSFontAttributeName,textColor,NSForegroundColorAttributeName, nil];
@@ -98,12 +80,12 @@ static const CGFloat kBadgeMinWidth = 22.0;
 		NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
 		[style setLineBreakMode:NSLineBreakByTruncatingTail];
 		[style setAlignment:NSLeftTextAlignment];
-		NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]],NSFontAttributeName,([self isHighlighted])?[NSColor alternateSelectedControlTextColor]:[NSColor darkGrayColor],NSForegroundColorAttributeName,style,NSParagraphStyleAttributeName, nil];
+		NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]],NSFontAttributeName,([self isHighlighted])?[NSColor alternateSelectedControlTextColor]:[NSColor textColor],NSForegroundColorAttributeName,style,NSParagraphStyleAttributeName, nil];
 		NSAttributedString *attributedString = [[[NSAttributedString alloc] initWithString:[self secondaryTitle] attributes:attributes] autorelease];
 		NSSize size = [attributedString size];
 		
 		NSRect top, bottom;
-		NSDivideRect(frame, &top, &bottom, size.height+kSecondaryTitleMarginTopBottom*2, NSMinYEdge);
+		NSDivideRect(frame, &top, &bottom, floor(NSHeight(frame)/2.0), NSMinYEdge);
 		
 		bottom = WCCenteredRect(NSMakeRect(NSMinX(bottom)+kSecondaryTitleMarginLeft, NSMinY(bottom), NSWidth(bottom)-kSecondaryTitleMarginLeft, size.height), bottom);
 		
@@ -116,7 +98,7 @@ static const CGFloat kBadgeMinWidth = 22.0;
 	NSAttributedString *attributedString = [self attributedStringValue];
 	NSSize size = [attributedString size];
 	
-	frame = WCCenteredRect(NSMakeRect(NSMinX(frame), NSMinY(frame), NSWidth(frame), size.height), frame);
+	frame = WCCenteredRectWithSize(NSMakeSize(NSWidth(frame), size.height), frame);
 	
 	 
 	[super drawInteriorWithFrame:frame inView:view];
@@ -178,4 +160,34 @@ static const CGFloat kBadgeMinWidth = 22.0;
 @synthesize icon=_icon;
 @synthesize iconSize=_iconSize;
 @synthesize badgeCount=_badgeCount;
+
+@dynamic badgeTextColor;
+- (NSColor *)badgeTextColor {
+	NSColor *textColor = nil;
+	if ([self isHighlighted] &&
+		[[[self controlView] window] firstResponder] == [self controlView] &&
+		[[NSApplication sharedApplication] keyWindow] == [[self controlView] window])
+		textColor = [NSColor keyboardFocusIndicatorColor];
+	else if ([self isHighlighted] &&
+			 [[NSApplication sharedApplication] keyWindow] == [[self controlView] window])
+		textColor = [NSColor colorWithCalibratedRed:(152/255.0) green:(168/255.0) blue:(202/255.0) alpha:1.0];
+	else if ([self isHighlighted])
+		textColor = [NSColor colorWithDeviceWhite:(180/255.0) alpha:1.0];
+	else
+		textColor = [NSColor alternateSelectedControlTextColor];
+	
+	return textColor;
+}
+@dynamic badgeBackgroundColor;
+- (NSColor *)badgeBackgroundColor {
+	NSColor *backgroundColor = nil;
+	if ([self isHighlighted])
+		backgroundColor = [NSColor alternateSelectedControlTextColor];
+	else if ([[NSApplication sharedApplication] keyWindow] == [[self controlView] window])
+		backgroundColor = [NSColor colorWithCalibratedRed:(152/255.0) green:(168/255.0) blue:(202/255.0) alpha:1.0];
+	else
+		backgroundColor = [NSColor colorWithDeviceWhite:(180/255.0) alpha:1];
+	
+	return backgroundColor;
+}
 @end
