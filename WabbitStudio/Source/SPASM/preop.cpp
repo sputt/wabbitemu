@@ -1188,7 +1188,10 @@ char *skip_until (char *ptr, int argc, ...)
 						
 						//a little hacky but bleh...
 						if (!strcmp(word, _T("#elif"))) {
-							return handle_preop_elif(ptr + 5);
+							ptr = skip_whitespace(ptr);
+							ptr += sizeof(TCHAR) * 5;
+							ptr = skip_whitespace(ptr);
+							return handle_preop_elif(ptr);
 							
 						}
 						return next_expr(line, "\\\r\n");

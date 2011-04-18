@@ -9,6 +9,7 @@
 
 #include <stdio.h>
 #include <direct.h>
+//#include <string>
 
 #pragma managed
 
@@ -17,7 +18,7 @@ using namespace System::Text;
 using namespace System::Collections::Generic;
 using namespace	Microsoft::VisualStudio::TestTools::UnitTesting;
 
-#include <string>
+
 
 using namespace std;
 
@@ -55,10 +56,10 @@ namespace SPASMTestsVS2008
 			free(output_contents);
 		}
 
-		void RunTest(string function_name)
+		void RunTest(const char *function_name)
 		{
 			char szFunctionName[256];
-			strcpy_s(szFunctionName, strrchr(function_name.c_str(), ':') + 1);
+			strcpy_s(szFunctionName, strrchr(function_name, ':') + 1);
 
 			char buffer[256];
 			sprintf_s(buffer, " %s()", szFunctionName);

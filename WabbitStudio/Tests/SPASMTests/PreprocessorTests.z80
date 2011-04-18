@@ -67,11 +67,11 @@
   #elif if_test == 20 && 0
     .echo >> OUTPUT_FILE "FAIL3"
   #else
-    .echo >> OUTPUT_FILE "PASS1"
+    .echo >> OUTPUT_FILE "P"
   #endif
 
   #if if_test == 20
-    .echo >> OUTPUT_FILE "PASS2"
+    .echo >> OUTPUT_FILE "A"
   #elif if_test != 20
     .echo >> OUTPUT_FILE "FAIL4"
   #elif if_test == 20
@@ -82,8 +82,8 @@
 
   #if if_test != 20
     .echo >> OUTPUT_FILE "FAIL7"
-  #elif if_test = 20
-    .echo >> OUTPUT_FILE "PASS3"
+  #elif if_test == 20
+    .echo >> OUTPUT_FILE "SS"
   #elif if_test == 20
     .echo >> OUTPUT_FILE "FAIL8"
   #else
