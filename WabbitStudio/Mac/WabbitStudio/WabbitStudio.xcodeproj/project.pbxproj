@@ -151,6 +151,7 @@
 		07C83BA11350FD700051412B /* spasm in Resources */ = {isa = PBXBuildFile; fileRef = 07C83BA01350FD700051412B /* spasm */; };
 		07C83BA41351BC230051412B /* WCSymbolsOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */; };
 		07CBCF64135B9E8400B72B6B /* WCDoEverythingTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CBCF63135B9E8400B72B6B /* WCDoEverythingTextFieldCell.m */; };
+		07CBCF7C135C141600B72B6B /* Advanced.png in Resources */ = {isa = PBXBuildFile; fileRef = 07CBCF7B135C141600B72B6B /* Advanced.png */; };
 		07CE786C134E410D001B96FC /* NSWindow-NoodleEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE786B134E410D001B96FC /* NSWindow-NoodleEffects.m */; };
 		07CE786F134E637A001B96FC /* WCDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE786E134E637A001B96FC /* WCDocumentController.m */; };
 		07CE7872134EB1B8001B96FC /* WCGotoLineSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE7871134EB1B7001B96FC /* WCGotoLineSheetController.m */; };
@@ -428,6 +429,7 @@
 		07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSymbolsOutlineView.m; sourceTree = "<group>"; };
 		07CBCF62135B9E8400B72B6B /* WCDoEverythingTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCDoEverythingTextFieldCell.h; sourceTree = "<group>"; };
 		07CBCF63135B9E8400B72B6B /* WCDoEverythingTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCDoEverythingTextFieldCell.m; sourceTree = "<group>"; };
+		07CBCF7B135C141600B72B6B /* Advanced.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Advanced.png; sourceTree = "<group>"; };
 		07CE786A134E410D001B96FC /* NSWindow-NoodleEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSWindow-NoodleEffects.h"; sourceTree = "<group>"; };
 		07CE786B134E410D001B96FC /* NSWindow-NoodleEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSWindow-NoodleEffects.m"; sourceTree = "<group>"; };
 		07CE786D134E6379001B96FC /* WCDocumentController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCDocumentController.h; sourceTree = "<group>"; };
@@ -550,6 +552,7 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				07CBCF7B135C141600B72B6B /* Advanced.png */,
 				07D516531356B16A00E18C1A /* ErrorsAndWarnings16x16.png */,
 				07D516541356B16A00E18C1A /* ErrorsAndWarnings16x16.pxm */,
 				07005B4C135426A30094FAFC /* WarningBadge.png */,
@@ -947,6 +950,7 @@
 				07D516551356B16A00E18C1A /* ErrorsAndWarnings16x16.png in Resources */,
 				07D516561356B16A00E18C1A /* ErrorsAndWarnings16x16.pxm in Resources */,
 				072F7AE8135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib in Resources */,
+				07CBCF7C135C141600B72B6B /* Advanced.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

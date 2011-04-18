@@ -144,6 +144,8 @@ static NSImage *_appIcon = nil;
 	
 	[self _applyProjectSettings];
 	
+	[_tabBarControl setAutomaticallyAnimates:YES];
+	
 	NSString *identifier = [NSString stringWithFormat:@"%@ToolbarIdentifier",[self className]];
 	NSToolbar *toolbar = [[[NSToolbar alloc] initWithIdentifier:identifier] autorelease];
 	
@@ -257,7 +259,22 @@ static NSImage *_appIcon = nil;
 	if (![file saveFile:&error] && error)
 		[self presentError:error];
 }
-
+- (void)revertDocumentToSaved:(id)sender {
+	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Do you want to revert to the most recently saved version of the document \"%@?\"", @"revert alert message text"),[[[[[[self currentTabViewContext] tabBarControl] tabView] selectedTabViewItem] identifier] name]]  defaultButton:NSLocalizedString(@"Revert", @"Revert") alternateButton:NS_LOCALIZED_STRING_CANCEL otherButton:nil informativeTextWithFormat:NSLocalizedString(@"This operation cannot be undone. Your current changes will be lost.", @"revert alert informative text")];
+	
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	[alert beginSheetModalForWindow:[[self currentTabViewContext] tabWindow] completionHandler:^(NSAlert *mAlert, NSInteger result) {
+		if (result != NSAlertDefaultReturn)
+			return;
+		
+		WCFile *file = [[[[[self currentTabViewContext] tabBarControl] tabView] selectedTabViewItem] identifier];
+		NSError *error = nil;
+		
+		if (![file resetFile:&error] && error != nil)
+			[self presentError:error];
+	}];
+}
 #pragma mark -
 #pragma mark *** Protocol Overrides ***
 #pragma mark NSToolbarDelegate
@@ -376,6 +393,14 @@ static NSImage *_appIcon = nil;
 		for (WCFile *file in [(NSTreeController *)[[[self projectFilesOutlineViewController] outlineView] dataSource] selectedRepresentedObjects])
 			if ([file isKindOfClass:[WCProjectFile class]])
 				return NO;
+		return YES;
+	}
+	else if ([item action] == @selector(saveDocumentAs:)) {
+		return NO;
+	}
+	else if ([item action] == @selector(revertDocumentToSaved:)) {
+		if ([[[[self currentTabViewContext] tabBarControl] tabView] numberOfTabViewItems] == 0)
+			return NO;
 		return YES;
 	}
 	return [super validateUserInterfaceItem:item];
@@ -945,10 +970,9 @@ static NSImage *_appIcon = nil;
     NSAssert(outputName != nil && outputExtension != nil, @"outputName and outputExtension cannot be nil!");
 #endif
 	
-	NSString *outputFile = [outputDirectory stringByAppendingPathComponent:[outputName stringByAppendingPathExtension:outputExtension]];
-	
 	[self removeAllBuildMessages];
 	
+	NSString *outputFile = [outputDirectory stringByAppendingPathComponent:[outputName stringByAppendingPathExtension:outputExtension]];
 	NSMutableArray *args = [NSMutableArray array];
 	
 	if ([bt generateCodeListing])
@@ -1057,8 +1081,12 @@ static NSImage *_appIcon = nil;
 			canDeleteWithoutAlert = NO;
 			break;
 		}
+		else if ([[file descendantLeafNodes] count] != 0) {
+			canDeleteWithoutAlert = NO;
+			break;
+		}
 	}
-	
+
 	// delete the groups without confirming
 	if (canDeleteWithoutAlert) {
 		for (WCFile *file in files)
@@ -1066,10 +1094,20 @@ static NSImage *_appIcon = nil;
 		return;
 	}
 	
-	// otherwise we have to confirm with the user first before proceeding
+	// otherwise we have to confirm with the user before proceeding
 	NSAlert *alert = [NSAlert alertWithMessageText:([files count] == 1)?[NSString stringWithFormat:NSLocalizedString(@"Delete \"%@\"", @"delete one file alert message text"),[[files firstObject] name]]:[NSString stringWithFormat:NSLocalizedString(@"Delete %u Files", @"delete multiple files alert message text"),[files count]] defaultButton:([files count] == 1)?NSLocalizedString(@"Remove Reference Only", @"delete one file alert default button title"):NSLocalizedString(@"Remove References Only", @"delete multiple files alert default button title") alternateButton:NS_LOCALIZED_STRING_CANCEL otherButton:NS_LOCALIZED_STRING_DELETE informativeTextWithFormat:([files count] == 1)?[NSString stringWithFormat:NSLocalizedString(@"Do you want to delete \"%@\" or only remove the reference to it? This operation cannot be undone. Unsaved changes will be lost.", @"delete one file alert informative text"),[[files firstObject] name]]:[NSString stringWithFormat:NSLocalizedString(@"Do you want to delete %u files or only remove the references to them? This operation cannot be undone. Unsaved changes will be lost.", @"delete multiple files alert informative text"),[files count]]];
 	
-	[alert beginSheetModalForWindow:[self windowForSheet] modalDelegate:self didEndSelector:@selector(_deleteAlertDidEnd:code:info:) contextInfo:NULL];
+	[alert setAlertStyle:NSCriticalAlertStyle];
+	
+	[alert beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSAlert *mAlert, NSInteger result) {
+		if (result == NSAlertAlternateReturn)
+			return;
+		
+		if (result == NSAlertDefaultReturn)
+			[self _deleteObjects:[[self currentViewController] selectedObjects] deleteFiles:NO];
+		else if (result == NSAlertOtherReturn)
+			[self _deleteObjects:[[self currentViewController] selectedObjects] deleteFiles:YES];
+	}];
 }
 
 - (IBAction)viewProject:(id)sender; {
@@ -1210,7 +1248,7 @@ static NSImage *_appIcon = nil;
 	if ([[objects firstObject] isKindOfClass:[WCFile class]]) {
 		if (deleteFiles) {
 			// move the represented files to the trash can
-			[[NSWorkspace sharedWorkspace] recycleURLs:[objects valueForKeyPath:@"URL"] completionHandler:nil];
+			[[NSWorkspace sharedWorkspace] recycleURLs:[objects valueForKeyPath:@"descendantLeafNodes.@distinctUnionOfArrays.URL"] completionHandler:nil];
 		}
 		
 		// close any open tabs representing the files
@@ -1491,15 +1529,5 @@ static NSImage *_appIcon = nil;
 	[[alert window] close];
 	
 	[self editBuildTargets:nil];
-}
-
-- (void)_deleteAlertDidEnd:(NSAlert *)alert code:(NSInteger)code info:(void *)info {
-	if (code == NSAlertAlternateReturn)
-		return;
-	
-	if (code == NSAlertDefaultReturn)
-		[self _deleteObjects:[[self currentViewController] selectedObjects] deleteFiles:NO];
-	else if (code == NSAlertOtherReturn)
-		[self _deleteObjects:[[self currentViewController] selectedObjects] deleteFiles:YES];
 }
 @end

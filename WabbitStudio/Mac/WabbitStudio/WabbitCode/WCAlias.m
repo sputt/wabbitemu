@@ -95,7 +95,7 @@
 	if (_needsToRecacheValues)
 		[self _privateSetup];
 	
-	return _cachedIsDirectory;
+	return [[NSFileManager defaultManager] directoryExistsAtURL:[self URL]];
 }
 
 + (id)aliasWithURL:(NSURL *)url; {
@@ -121,6 +121,6 @@
 	
 	_cachedURL = [[[self alias] URL] retain];
 	_cachedUTI = [[[NSWorkspace sharedWorkspace] typeOfFile:[self absolutePath] error:NULL] retain];
-	_cachedIsDirectory = [[NSFileManager defaultManager] directoryExistsAtURL:_cachedURL];
+	//_cachedIsDirectory = [[NSFileManager defaultManager] directoryExistsAtURL:_cachedURL];
 }
 @end

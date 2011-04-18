@@ -76,7 +76,7 @@
 }
 
 - (void)saveDocumentWithDelegate:(id)delegate didSaveSelector:(SEL)didSaveSelector contextInfo:(void *)contextInfo {
-	[super saveDocumentWithDelegate:self didSaveSelector:@selector(document:didSave:info:) contextInfo:NULL];
+	[super saveDocumentWithDelegate:self didSaveSelector:@selector(document:didSave:info:) contextInfo:contextInfo];
 }
 
 - (void)document:(WCDocument *)document didSave:(BOOL)didSave info:(void *)info {
