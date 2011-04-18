@@ -153,12 +153,13 @@
     <Compile Include="Optimizer\RemoveUselessMath.cs" />
     <Compile Include="StatementPasses\MarkRecursiveFunctions.cs" />
     <Compile Include="StatementPasses\LabelMerger.cs" />
+    <Compile Include="StatementPasses\RegisterAllocator\Graph.cs" />
     <Compile Include="StatementPasses\RegisterAllocator\Helper.cs" />
     <Compile Include="StatementPasses\RegisterAllocator\Register.cs" />
     <Compile Include="StatementPasses\RemoveMathImmediates.cs" />
     <Compile Include="StatementPasses\RemovePointlessGotos.cs" />
     <Compile Include="StatementPasses\ReorderDeclarations.cs" />
-    <Compile Include="StatementPasses\SuperRegisterAllocator.cs" />
+    <Compile Include="StatementPasses\RegisterAllocator\SuperRegisterAllocator.cs" />
     <Compile Include="StatementPasses\RegisterAllocator\SmarterRegisterAllocator.cs" />
     <Compile Include="StatementPasses\RegisterAllocator\DumbRegisterAllocator.cs" />
     <Compile Include="StatementPasses\IfGotoConversion.cs" />

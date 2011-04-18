@@ -154,48 +154,48 @@ namespace WabbitC.Optimizer
 			}
 			return hasChanged;
 		}
+	}
 
-		class CSEStore
+	class CSEStore
+	{
+		public Declaration TempDecl = null;
+		public int index;
+		public Datum Operand1;
+		public Datum Operand2;
+		public Token Operator;
+		public Declaration LValue;
+
+		public CSEStore(int index, Declaration lValue, Datum op1)
 		{
-			public Declaration TempDecl = null;
-			public int index;
-			public Datum Operand1;
-			public Datum Operand2;
-			public Token Operator;
-			public Declaration LValue;
+			this.index = index;
+			LValue = lValue;
+			Operand1 = op1;
+		}
 
-			public CSEStore(int index, Declaration lValue, Datum op1)
-			{
-				this.index = index;
-				LValue = lValue;
-				Operand1 = op1;
-			}
+		public CSEStore(int index, Datum op1, Datum op2, Token op)
+		{
+			this.index = index;
+			Operand1 = op1;
+			Operand2 = op2;
+			Operator = op;
+		}
 
-			public CSEStore(int index, Datum op1, Datum op2, Token op)
-			{
-				this.index = index;
-				Operand1 = op1;
-				Operand2 = op2;
-				Operator = op;
-			}
+		public override bool Equals(object obj)
+		{
+			if (obj.GetType() != typeof(CSEStore))
+				return base.Equals(obj);
+			var cse = obj as CSEStore;
+			return this.Operand1.Equals(cse.Operand1) && this.Operand2.Equals(cse.Operand2) && this.Operator.Equals(cse.Operator);
+		}
 
-			public override bool Equals(object obj)
+		public override string ToString()
+		{
+			string temp = Operand1.ToString();
+			if (Operand2 != null)
 			{
-				if (obj.GetType() != typeof(CSEStore))
-					return base.Equals(obj);
-				var cse = obj as CSEStore;
-				return this.Operand1.Equals(cse.Operand1) && this.Operand2.Equals(cse.Operand2) && this.Operator.Equals(cse.Operator);
+				temp += Operator + Operand2;
 			}
-
-			public override string ToString()
-			{
-				string temp = Operand1.ToString();
-				if (Operand2 != null)
-				{
-					temp += Operator + Operand2;
-				}
-				return temp;
-			}
+			return temp;
 		}
 	}
 }

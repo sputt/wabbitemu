@@ -56,3 +56,37 @@
     .echo >> OUTPUT_FILE "PASS"
   #endif
 #endmacro
+
+#macro Elif
+  .echo > OUTPUT_FILE ""
+  #define if_test 20
+  #if (if_test > 20) || (if_test < 20)
+    .echo >> OUTPUT_FILE "FAIL1"
+  #elif if_test != 20
+    .echo >> OUTPUT_FILE "FAIL2"
+  #elif if_test == 20 && 0
+    .echo >> OUTPUT_FILE "FAIL3"
+  #else
+    .echo >> OUTPUT_FILE "PASS1"
+  #endif
+
+  #if if_test == 20
+    .echo >> OUTPUT_FILE "PASS2"
+  #elif if_test != 20
+    .echo >> OUTPUT_FILE "FAIL4"
+  #elif if_test == 20
+    .echo >> OUTPUT_FILE "FAIL5"
+  #else
+    .echo >> OUTPUT_FILE "FAIL6"
+  #endif
+
+  #if if_test != 20
+    .echo >> OUTPUT_FILE "FAIL7"
+  #elif if_test = 20
+    .echo >> OUTPUT_FILE "PASS3"
+  #elif if_test == 20
+    .echo >> OUTPUT_FILE "FAIL8"
+  #else
+    .echo >> OUTPUT_FILE "FAIL9"
+  #endif
+#endmacro

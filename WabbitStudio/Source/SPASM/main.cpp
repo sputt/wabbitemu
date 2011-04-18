@@ -64,6 +64,9 @@ int run_assembly()
 	old_line_num = 0;
 	in_macro = 0;
 	line_num = 0;
+#ifdef USE_BUILTIN_FCREATE
+	cur_buf = 0;
+#endif
 #ifdef USE_REUSABLES
 	curr_reusable = 0;
 	total_reusables = 0;

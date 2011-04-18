@@ -102,5 +102,11 @@ namespace SPASMTestsVS2008
 		{
 			RunTest(__FUNCTION__);
 		}
+
+		[TestMethod]
+		void Elif()
+		{
+			RunTest(__FUNCTION__);
+		}
 	};
 }

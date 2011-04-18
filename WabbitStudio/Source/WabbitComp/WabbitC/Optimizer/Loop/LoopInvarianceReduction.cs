@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using WabbitC.Model;
 using WabbitC.Model.Statements;
+using WabbitC.Model.Statements.Math;
 
 namespace WabbitC.Optimizer.Loop
 {
@@ -24,17 +25,18 @@ namespace WabbitC.Optimizer.Loop
 			var statements = from Statement st in block where st.GetType() == typeof(While) select st;
 			foreach (While statement in statements)
 			{
-				//actual optimization code
-				bool hasChanged;
-				do
-				{
-					hasChanged = false;
-					hasChanged |= CSE.OptimizeBlock(ref statement.Block);
-					VariableReuse.OptimizeBlock(ref statement.Block);
-					DeadCodeOptimizer.OptimizeBlock(ref statement.Block);
-				}
-				while (hasChanged);
-				DeadVariableOptimizer.OptimizeBlock(ref statement.Block);
+				OptimizeLoopBlock(ref statement.Block);
+			}
+		}
+
+		public static bool OptimizeLoopBlock(ref Block block)
+		{
+			List<bool> variantDecls = new List<bool>();
+			var statements = from Statement st in block select st;
+			foreach (var statement in statements)
+			{
+
+
 			}
 		}
 	}

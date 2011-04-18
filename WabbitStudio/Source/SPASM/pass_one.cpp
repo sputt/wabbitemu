@@ -15,7 +15,8 @@
 #include "expand_buf.h"
 #include "directive.h"
 #include "pass_one.h"
-static expand_buf_t *eb_fcreate = NULL;
+#define MAX_BUFFERS 10
+static expand_buf_t* fcreate_bufs[MAX_BUFFERS];
 #endif
 
 char *run_first_pass_line (char *ptr);
@@ -317,13 +318,25 @@ char *handle_opcode_or_macro (char *ptr) {
 		//if this name doesn't match an opcode, it must be a macro (#macro OR #define)
 		define_t *define;
 #ifdef USE_BUILTIN_FCREATE
-		if (!strcasecmp (name, "clr") && *ptr == '(') {
+		if (!strcasecmp (name, "buf") && *ptr == '(') {
+		    char buf[256];
+			int value;
+			cur_buf = read_expr(ptr, buf, _T(")"));
+			if (parse_num(buf, &value)) {
+				cur_buf = value;
+			} else {
+				SetLastSPASMError(SPASM_ERR_INVALID_OPERANDS);
+			}
+			ptr += 2;
+		} else if (!strcasecmp (name, "clr") && *ptr == '(') {
+			expand_buf_t *eb_fcreate = fcreate_bufs[cur_buf];
 			if (eb_fcreate != NULL) {
 				eb_free(eb_fcreate);
 			}
 			eb_fcreate = eb_init(128);
 			ptr += 2;
 		} else if (!strcasecmp (name, "wr") && *ptr == '(') {
+			expand_buf_t *eb_fcreate = fcreate_bufs[cur_buf];
 			if (eb_fcreate == NULL) {
 				eb_fcreate = eb_init(128);
 			}
@@ -332,8 +345,8 @@ char *handle_opcode_or_macro (char *ptr) {
 			ptr++;
 			eb_append(eb_fcreate, NEWLINE, strlen(NEWLINE));
 		} else if (!strcasecmp (name, "run") && *ptr == '(') {
+			expand_buf_t *eb_fcreate = fcreate_bufs[cur_buf];
 			char *fcreate_string = eb_extract(eb_fcreate);
-
 
 			//make sure the listing for this line is finished up BEFORE
 			// the new file is parsed and writes its listing stuff all over

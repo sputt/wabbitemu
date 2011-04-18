@@ -75,6 +75,9 @@ GLOBAL EXIT_STATUS exit_code;
 #ifdef USE_REUSABLES
 GLOBAL int total_reusables, curr_reusable;
 #endif
+#ifdef USE_BUILTIN_FCREATE
+GLOBAL int cur_buf;
+#endif
 #ifdef _WINDLL
 GLOBAL char output_text[800000];
 #endif
