@@ -585,7 +585,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>WCSymbolsOutlineView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>WCBadgedTextFieldCell</string>
+					<string>WCDoEverythingTextFieldCell</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -667,27 +667,11 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">RSVerticallyCenteredTextFieldCell</string>
+					<string key="className">WCDoEverythingTextFieldCell</string>
 					<string key="superclassName">NSTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/RSVerticallyCenteredTextFieldCell.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">WCBadgedTextFieldCell</string>
-					<string key="superclassName">WCIconTextFieldCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WCBadgedTextFieldCell.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">WCIconTextFieldCell</string>
-					<string key="superclassName">RSVerticallyCenteredTextFieldCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WCIconTextFieldCell.h</string>
+						<string key="minorKey">./Classes/WCDoEverythingTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

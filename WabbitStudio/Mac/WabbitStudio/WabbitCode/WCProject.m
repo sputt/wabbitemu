@@ -9,7 +9,7 @@
 #import "WCProject.h"
 #import "NSArray+WCExtensions.h"
 #import "WCProjectFile.h"
-#import "WCIconTextFieldCell.h"
+#import "WCDoEverythingTextFieldCell.h"
 #import "NSFileManager+WCExtensions.h"
 #import "WCGeneralPerformer.h"
 #import "NSOutlineView+WCExtensions.h"
@@ -352,7 +352,7 @@ static NSImage *_appIcon = nil;
 			return NO;
 		return YES;
 	}
-	else if ([item action] == @selector(previousTab::)) {
+	else if ([item action] == @selector(previousTab:)) {
 		if ([[[[self currentTabViewContext] tabBarControl] tabView] numberOfTabViewItems] <= 1)
 			return NO;
 		return YES;

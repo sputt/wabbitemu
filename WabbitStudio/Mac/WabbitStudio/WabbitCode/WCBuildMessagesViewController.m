@@ -8,11 +8,11 @@
 
 #import "WCBuildMessagesViewController.h"
 #import "WCProject.h"
-#import "WCBadgedTextFieldCell.h"
 #import "WCFile.h"
 #import "WCBuildMessage.h"
 #import "WCAlias.h"
 #import "NSTreeController+WCExtensions.h"
+#import "WCDoEverythingTextFieldCell.h"
 
 @implementation WCBuildMessagesViewController
 #pragma mark *** Subclass Overrides ***
@@ -42,7 +42,8 @@
 - (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item {	
 	WCBuildMessage *message = [item representedObject];
 	
-	[cell setIcon:[message icon]];	
+	[cell setIcon:[message icon]];
+	[cell setIconSize:NSMakeSize(16.0, 16.0)];
 	[cell setBadgeCount:[[item representedObject] messagesCount]];
 	
 	/*

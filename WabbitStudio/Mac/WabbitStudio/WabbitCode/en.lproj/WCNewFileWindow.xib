@@ -141,7 +141,7 @@
 															<string key="NSFrameSize">{152, 275}</string>
 															<reference key="NSSuperview" ref="992145252"/>
 															<reference key="NSWindow"/>
-															<reference key="NSNextKeyView" ref="687001162"/>
+															<reference key="NSNextKeyView" ref="1033136730"/>
 															<bool key="NSEnabled">YES</bool>
 															<object class="_NSCornerView" key="NSCornerView">
 																<nil key="NSNextResponder"/>
@@ -263,7 +263,7 @@
 											<string key="NSFrame">{{0, 23}, {152, 275}}</string>
 											<reference key="NSSuperview" ref="120378251"/>
 											<reference key="NSWindow"/>
-											<reference key="NSNextKeyView" ref="1033136730"/>
+											<reference key="NSNextKeyView" ref="992145252"/>
 											<int key="NSsFlags">528</int>
 											<reference key="NSVScroller" ref="687001162"/>
 											<reference key="NSHScroller" ref="1033136730"/>
@@ -453,7 +453,7 @@
 															<string key="NSFrameSize">{332, 148}</string>
 															<reference key="NSSuperview" ref="487478683"/>
 															<reference key="NSWindow"/>
-															<reference key="NSNextKeyView" ref="220466975"/>
+															<reference key="NSNextKeyView" ref="259462079"/>
 															<string key="NSMinGridSize">{0, 0}</string>
 															<string key="NSMaxGridSize">{0, 0}</string>
 															<int key="NSMaxNumberOfGridRows">0</int>
@@ -503,7 +503,7 @@
 											<string key="NSFrame">{{0, 150}, {347, 148}}</string>
 											<reference key="NSSuperview" ref="555010559"/>
 											<reference key="NSWindow"/>
-											<reference key="NSNextKeyView" ref="259462079"/>
+											<reference key="NSNextKeyView" ref="487478683"/>
 											<int key="NSsFlags">16</int>
 											<reference key="NSVScroller" ref="220466975"/>
 											<reference key="NSHScroller" ref="259462079"/>
@@ -644,7 +644,6 @@
 							<string key="NSFrame">{{432, 12}, {94, 32}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSButtonCell" key="NSCell" id="1013009332">
 								<int key="NSCellFlags">67239424</int>
@@ -694,7 +693,7 @@
 			</object>
 			<object class="NSCollectionViewItem" id="818381364"/>
 			<object class="NSView" id="720474197">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">256</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -725,7 +724,6 @@
 										</object>
 										<string key="NSFrame">{{8, 8}, {48, 48}}</string>
 										<reference key="NSSuperview" ref="204751143"/>
-										<reference key="NSWindow"/>
 										<reference key="NSNextKeyView" ref="976987483"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSImageCell" key="NSCell" id="52638669">
@@ -742,13 +740,11 @@
 								</object>
 								<string key="NSFrameSize">{64, 64}</string>
 								<reference key="NSSuperview" ref="352012985"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="198676924"/>
 							</object>
 						</object>
 						<string key="NSFrame">{{22, 26}, {64, 64}}</string>
 						<reference key="NSSuperview" ref="720474197"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="204751143"/>
 						<string key="NSOffsets">{0, 0}</string>
 						<object class="NSTextFieldCell" key="NSTitleCell">
@@ -790,7 +786,6 @@
 										<int key="NSvFlags">268</int>
 										<string key="NSFrame">{{6, 3}, {88, 14}}</string>
 										<reference key="NSSuperview" ref="344155540"/>
-										<reference key="NSWindow"/>
 										<reference key="NSNextKeyView" ref="393378449"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="1013933430">
@@ -806,13 +801,11 @@
 								</object>
 								<string key="NSFrameSize">{100, 20}</string>
 								<reference key="NSSuperview" ref="976987483"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="239928983"/>
 							</object>
 						</object>
 						<string key="NSFrame">{{4, 4}, {100, 20}}</string>
 						<reference key="NSSuperview" ref="720474197"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="344155540"/>
 						<string key="NSOffsets">{0, 0}</string>
 						<object class="NSTextFieldCell" key="NSTitleCell">
@@ -849,8 +842,6 @@
 										<int key="NSvFlags">268</int>
 										<string key="NSFrame">{{6, 3}, {88, 14}}</string>
 										<reference key="NSSuperview" ref="248954836"/>
-										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="NSTextFieldCell" key="NSCell" id="35647432">
 											<int key="NSCellFlags">68288064</int>
@@ -870,13 +861,11 @@
 								</object>
 								<string key="NSFrameSize">{100, 20}</string>
 								<reference key="NSSuperview" ref="393378449"/>
-								<reference key="NSWindow"/>
 								<reference key="NSNextKeyView" ref="410991800"/>
 							</object>
 						</object>
 						<string key="NSFrame">{{4, 4}, {100, 20}}</string>
 						<reference key="NSSuperview" ref="720474197"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="248954836"/>
 						<string key="NSOffsets">{0, 0}</string>
 						<object class="NSTextFieldCell" key="NSTitleCell">
@@ -908,8 +897,6 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{108, 94}</string>
-				<reference key="NSSuperview"/>
-				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="352012985"/>
 			</object>
 			<object class="NSArrayController" id="369528981">
@@ -1922,11 +1909,11 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">RSVerticallyCenteredTextFieldCell</string>
+					<string key="className">WCDoEverythingTextFieldCell</string>
 					<string key="superclassName">NSTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/RSVerticallyCenteredTextFieldCell.h</string>
+						<string key="minorKey">./Classes/WCDoEverythingTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1939,18 +1926,10 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">WCGradientTextFieldCell</string>
-					<string key="superclassName">WCIconTextFieldCell</string>
+					<string key="superclassName">WCDoEverythingTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCGradientTextFieldCell.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">WCIconTextFieldCell</string>
-					<string key="superclassName">RSVerticallyCenteredTextFieldCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WCIconTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

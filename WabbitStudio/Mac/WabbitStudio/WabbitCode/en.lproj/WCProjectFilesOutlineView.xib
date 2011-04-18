@@ -925,7 +925,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{357, 416}, {480, 272}}</string>
-					<string>WCIconTextFieldCell</string>
+					<string>WCDoEverythingTextFieldCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>BWAnchoredButton</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1184,19 +1184,19 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">RSVerticallyCenteredTextFieldCell</string>
-					<string key="superclassName">NSTextFieldCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/RSVerticallyCenteredTextFieldCell.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
 					<string key="className">WCContexualMenuOutlineView</string>
 					<string key="superclassName">NSOutlineView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCContexualMenuOutlineView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCDoEverythingTextFieldCell</string>
+					<string key="superclassName">NSTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCDoEverythingTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1210,28 +1210,9 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">WCFilesTreeController</string>
 					<string key="superclassName">NSTreeController</string>
-					<object class="NSMutableDictionary" key="outlets">
-						<string key="NS.key.0">_project</string>
-						<string key="NS.object.0">WCProject</string>
-					</object>
-					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<string key="NS.key.0">_project</string>
-						<object class="IBToOneOutletInfo" key="NS.object.0">
-							<string key="name">_project</string>
-							<string key="candidateClassName">WCProject</string>
-						</object>
-					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCFilesTreeController.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">WCIconTextFieldCell</string>
-					<string key="superclassName">RSVerticallyCenteredTextFieldCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WCIconTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1243,10 +1224,13 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addFilesToProject:</string>
 							<string>build:</string>
+							<string>changeProjectView:</string>
 							<string>editBuildTargets:</string>
 							<string>group:</string>
 							<string>newFile:</string>
 							<string>newGroup:</string>
+							<string>nextTab:</string>
+							<string>previousTab:</string>
 							<string>ungroup:</string>
 							<string>viewBuildMessages:</string>
 							<string>viewProject:</string>
@@ -1255,6 +1239,9 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1274,10 +1261,13 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>addFilesToProject:</string>
 							<string>build:</string>
+							<string>changeProjectView:</string>
 							<string>editBuildTargets:</string>
 							<string>group:</string>
 							<string>newFile:</string>
 							<string>newGroup:</string>
+							<string>nextTab:</string>
+							<string>previousTab:</string>
 							<string>ungroup:</string>
 							<string>viewBuildMessages:</string>
 							<string>viewProject:</string>
@@ -1295,6 +1285,10 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
+								<string key="name">changeProjectView:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
 								<string key="name">editBuildTargets:</string>
 								<string key="candidateClassName">id</string>
 							</object>
@@ -1308,6 +1302,14 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">newGroup:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">nextTab:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">previousTab:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -1336,14 +1338,18 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>_navBarControl</string>
 							<string>_rightButtonBar</string>
 							<string>_splitView</string>
+							<string>_swapView</string>
 							<string>_tabBarControl</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>WCProjectNavView</string>
 							<string>BWAnchoredButtonBar</string>
 							<string>NSSplitView</string>
+							<string>NSView</string>
 							<string>PSMTabBarControl</string>
 						</object>
 					</object>
@@ -1351,12 +1357,18 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>_navBarControl</string>
 							<string>_rightButtonBar</string>
 							<string>_splitView</string>
+							<string>_swapView</string>
 							<string>_tabBarControl</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBToOneOutletInfo">
+								<string key="name">_navBarControl</string>
+								<string key="candidateClassName">WCProjectNavView</string>
+							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">_rightButtonBar</string>
 								<string key="candidateClassName">BWAnchoredButtonBar</string>
@@ -1364,6 +1376,10 @@
 							<object class="IBToOneOutletInfo">
 								<string key="name">_splitView</string>
 								<string key="candidateClassName">NSSplitView</string>
+							</object>
+							<object class="IBToOneOutletInfo">
+								<string key="name">_swapView</string>
+								<string key="candidateClassName">NSView</string>
 							</object>
 							<object class="IBToOneOutletInfo">
 								<string key="name">_tabBarControl</string>
@@ -1393,6 +1409,25 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCProjectFilesOutlineViewController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCProjectNavView</string>
+					<string key="superclassName">NSControl</string>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">_project</string>
+						<string key="NS.object.0">WCProject</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">_project</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">_project</string>
+							<string key="candidateClassName">WCProject</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCProjectNavView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

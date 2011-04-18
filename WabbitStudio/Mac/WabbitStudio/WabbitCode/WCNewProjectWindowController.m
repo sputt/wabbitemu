@@ -90,18 +90,16 @@
 }
 #pragma mark NSTableViewDelegate
 - (void)tableView:(NSTableView *)tableView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row {
-	if ([cell isKindOfClass:[WCIconTextFieldCell class]]) {
-		WCProjectTemplate *pt = [[(NSArrayController *)[tableView dataSource] arrangedObjects] objectAtIndex:row];
-		
-		if ([pt isTemplateHeader]) {
-			[cell setIcon:[pt icon]];
-			[cell setIconSize:NSMakeSize(24.0, 24.0)];
-			[cell setDrawGradient:YES];
-		}
-		else {
-			[cell setIcon:nil];
-			[cell setDrawGradient:NO];
-		}
+	WCProjectTemplate *pt = [[(NSArrayController *)[tableView dataSource] arrangedObjects] objectAtIndex:row];
+	
+	if ([pt isTemplateHeader]) {
+		[cell setIcon:[pt icon]];
+		[cell setIconSize:NSMakeSize(24.0, 24.0)];
+		[cell setDrawGradient:YES];
+	}
+	else {
+		[cell setIcon:nil];
+		[cell setDrawGradient:NO];
 	}
 }
 

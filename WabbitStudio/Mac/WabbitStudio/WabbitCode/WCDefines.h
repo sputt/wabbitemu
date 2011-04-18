@@ -22,6 +22,10 @@ static inline NSRect WCCenteredRect(NSRect rect1, NSRect rect2) {
 	return NSMakeRect((rect2.origin.x+floor(rect2.size.width/2.0))-floor(rect1.size.width/2.0), (rect2.origin.y+floor(rect2.size.height/2.0))-floor(rect1.size.height/2.0), rect1.size.width, rect1.size.height);
 }
 
+static inline NSRect WCCenteredRectWithSize(NSSize size, NSRect rect) {
+	return WCCenteredRect(NSMakeRect(NSMinX(rect), NSMinY(rect), size.width, size.height), rect);
+}
+
 enum {
 	WCFindScopeFile = 0,
 	WCFindScopeSelection = 1,

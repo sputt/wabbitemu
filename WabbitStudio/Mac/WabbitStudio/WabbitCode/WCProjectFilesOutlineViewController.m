@@ -8,7 +8,7 @@
 
 #import "WCProjectFilesOutlineViewController.h"
 #import "WCProject.h"
-#import "WCIconTextFieldCell.h"
+#import "WCDoEverythingTextFieldCell.h"
 #import "WCFile.h"
 #import "WCAlias.h"
 #import "NSTreeController+WCExtensions.h"
@@ -40,6 +40,7 @@
 #pragma mark NSOutlineViewDelegate
 - (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item {	
 	[cell setIcon:[[item representedObject] icon]];
+	[cell setIconSize:NSMakeSize(16.0, 16.0)];
 }
 
 - (NSString *)outlineView:(NSOutlineView *)outlineView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tc item:(id)item mouseLocation:(NSPoint)mouseLocation {

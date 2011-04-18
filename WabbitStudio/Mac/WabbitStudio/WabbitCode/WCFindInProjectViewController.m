@@ -13,7 +13,7 @@
 #import "WCProject.h"
 #import "WCTextStorage.h"
 #import "NSTreeController+WCExtensions.h"
-#import "WCBadgedTextFieldCell.h"
+#import "WCDoEverythingTextFieldCell.h"
 #import "WCSymbolScanner.h"
 #import "NSAlert-OAExtensions.h"
 #import "NSTextView+WCExtensions.h"
@@ -70,20 +70,18 @@
 	WCFindInProjectResult *result = [item representedObject];
 	
 	[cell setIcon:[result icon]];
+	[cell setIconSize:NSMakeSize(16.0, 16.0)];
 	[cell setBadgeCount:[[result childNodes] count]];
 	
 	if ([result parentNode]) {
 		NSMutableAttributedString *string = [[[result findString] mutableCopy] autorelease];
+		[string addAttribute:NSFontAttributeName value:[cell font] range:NSMakeRange(0, [[string string] length])];
 		
 		if ([cell isHighlighted])
 			[string applyFontTraits:NSBoldFontMask range:NSMakeRange(0, [[string string] length])];
 		
 		[cell setAttributedStringValue:string];
 	}
-}
-
-- (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item {
-	return NO;
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowCellExpansionForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
@@ -187,7 +185,7 @@
 					}
 					
 					NSRange lRange = [string lineRangeForRange:matchRange];
-					NSMutableAttributedString *lString = [[[NSMutableAttributedString alloc] initWithString:[string substringWithRange:lRange] attributes:attributes] autorelease];
+					NSMutableAttributedString *lString = [[[NSMutableAttributedString alloc] initWithString:[[string substringWithRange:lRange] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]] attributes:attributes] autorelease];
 					[lString addAttributes:mAttributes range:NSMakeRange(matchRange.location-lRange.location, matchRange.length)];
 					
 					WCFindInProjectResult *result = [WCFindInProjectResult findInProjectResultForFile:file inRange:matchRange withString:lString symbol:nil];
@@ -256,7 +254,7 @@
 						}
 						
 						NSRange lRange = [string lineRangeForRange:matchRange];
-						NSMutableAttributedString *lString = [[[NSMutableAttributedString alloc] initWithString:[string substringWithRange:lRange] attributes:attributes] autorelease];
+						NSMutableAttributedString *lString = [[[NSMutableAttributedString alloc] initWithString:[[string substringWithRange:lRange] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]] attributes:attributes] autorelease];
 						[lString addAttributes:mAttributes range:NSMakeRange(matchRange.location-lRange.location, matchRange.length)];
 						
 						WCSymbol *mSymbol = nil;
@@ -450,7 +448,7 @@
 				for (NSValue *rValue in [self replacementRanges]) {
 					NSRange matchRange = [rValue rangeValue];
 					NSRange lRange = [string lineRangeForRange:matchRange];
-					NSMutableAttributedString *lString = [[[NSMutableAttributedString alloc] initWithString:[string substringWithRange:lRange] attributes:attributes] autorelease];
+					NSMutableAttributedString *lString = [[[NSMutableAttributedString alloc] initWithString:[[string substringWithRange:lRange] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]] attributes:attributes] autorelease];
 					[lString addAttributes:mAttributes range:NSMakeRange(matchRange.location-lRange.location, matchRange.length)];
 					
 					WCFindInProjectResult *result = [WCFindInProjectResult findInProjectResultForFile:file inRange:matchRange withString:lString symbol:nil];
