@@ -29,7 +29,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class NoodleLineNumberMarker;
+@class WCBreakpoint;
 
 @interface NoodleLineNumberView : NSRulerView
 {
@@ -42,6 +42,8 @@
 	NSColor				*alternateTextColor;
 	NSColor				*backgroundColor;
 	BOOL hasPerformedSetup;
+	
+	WCBreakpoint *_breakpointForContextualMenu;
 }
 
 - (id)initWithScrollView:(NSScrollView *)aScrollView;
@@ -59,6 +61,5 @@
 - (NSColor *)backgroundColor;
 
 - (NSUInteger)lineNumberForLocation:(CGFloat)location;
-- (NoodleLineNumberMarker *)markerAtLine:(NSUInteger)line;
 
 @end

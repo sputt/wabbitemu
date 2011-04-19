@@ -9,18 +9,20 @@
 #import "WCTreeNode.h"
 
 
-extern NSString* const kWCFileAssemblyUTI;
-extern NSString* const kWCFileIncludeUTI;
-extern NSString* const kWCFilePanicCodaImportedUTI;
+extern NSString *const kWCFileAssemblyUTI;
+extern NSString *const kWCFileIncludeUTI;
+extern NSString *const kWCFilePanicCodaImportedUTI;
 
-extern NSString* const kWCFileHasUnsavedChangesNotification;
+extern NSString *const kWCFileHasUnsavedChangesNotification;
 
-extern NSString* const kWCFileNumberOfErrorMessagesChangedNotification;
-extern NSString* const kWCFileNumberOfWarningMessagesChangedNotification;
+extern NSString *const kWCFileNumberOfErrorMessagesChangedNotification;
+extern NSString *const kWCFileNumberOfWarningMessagesChangedNotification;
+
+extern NSString *const kWCFileNumberOfBreakpointsDidChangeNotification;
 
 extern NSString *const kWCFileNameDidChangeNotification;
 
-@class WCTextStorage,WCSymbolScanner,WCProject,WCBuildMessage,WCAlias;
+@class WCTextStorage,WCSymbolScanner,WCProject,WCBuildMessage,WCAlias,WCBreakpoint;
 
 @interface WCFile : WCTreeNode <NSCoding,NSCopying,NSTextViewDelegate> {
 @private
@@ -39,6 +41,8 @@ extern NSString *const kWCFileNameDidChangeNotification;
 	
 	NSMutableDictionary *_lineNumbersToErrorMessages; // NSNumber instances pointing to WCBuildMessages
 	NSMutableDictionary *_lineNumbersToWarningMessages;
+	
+	NSMutableDictionary *_lineNumbersToBreakpoints;
 }
 @property (readonly,nonatomic) NSString *UUID;
 @property (copy,nonatomic) NSURL *URL;
@@ -77,4 +81,9 @@ extern NSString *const kWCFileNameDidChangeNotification;
 - (NSArray *)allErrorMessages;
 - (NSArray *)allWarningMessages;
 - (NSUInteger)lineStartForBuildMessage:(WCBuildMessage *)message;
+
+- (void)addBreakpoint:(WCBreakpoint *)breakpoint;
+- (void)removeBreakpoint:(WCBreakpoint *)breakpoint;
+- (WCBreakpoint *)breakpointAtLineNumber:(NSUInteger)lineNumber;
+- (NSArray *)allBreakpoints;
 @end

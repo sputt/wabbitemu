@@ -25,6 +25,7 @@
 #import "WCFindInProjectViewController.h"
 #import "WCGotoLineSheetController.h"
 #import "NSTextView+WCExtensions.h"
+#import "WCBreakpoint.h"
 
 // without this xcode complains about the restrict qualifiers in the regexkit header
 #define restrict
@@ -117,13 +118,24 @@
 	
 	NSRange range = [self selectedRange];
 	
-	if (range.length || range.location >= [[self string] length])
+	if (range.length)
 		return;
+	else if (range.location >= [[self string] length])
+		range.location = [[self string] length] - 1;
 	
-	NSRect newRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[[self layoutManager] glyphRangeForCharacterRange:[[self string] lineRangeForRange:range] actualCharacterRange:NULL].location effectiveRange:NULL];
+	NSUInteger rectCount = 0;
+	NSRectArray newRects = [[self layoutManager] rectArrayForCharacterRange:[[self string] lineRangeForRange:range] withinSelectedCharacterRange:NSMakeRange(NSNotFound, 0) inTextContainer:[self textContainer] rectCount:&rectCount];
+	NSRect newRect = NSZeroRect;
 	
-	[[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesCurrentLineHighlightColorKey] setFill];
-	NSRectFillUsingOperation(newRect, NSCompositeSourceOver);
+	if (rectCount != 0) {
+		newRect = newRects[0];
+		
+		newRect.origin.x = NSMinX([self bounds]);
+		newRect.size.width = NSWidth([self bounds]);
+		
+		[[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesCurrentLineHighlightColorKey] setFill];
+		NSRectFillUsingOperation(newRect, NSCompositeSourceOver);
+	}
 }
 
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index {
@@ -174,6 +186,15 @@
 - (IBAction)performFindPanelAction:(id)sender {
 	[WCFindBarViewController presentFindBarForTextView:self];
 }
+
+- (void)paste:(id)sender {
+	[self pasteAsPlainText:sender];
+}
+
+- (void)pasteAsRichText:(id)sender {
+	[self pasteAsPlainText:sender];
+}
+
 #pragma mark *** Protocol Overrides ***
 #pragma mark NSKeyValueObserving
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {

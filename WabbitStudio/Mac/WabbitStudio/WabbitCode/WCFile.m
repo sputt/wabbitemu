@@ -17,16 +17,19 @@
 #import "WCBuildMessage.h"
 #import "WCAlias.h"
 #import "NSString+WCExtensions.h"
+#import "WCBreakpoint.h"
 
 
-NSString* const kWCFileAssemblyUTI = @"org.revsoft.wabbitcode.assembly";
-NSString* const kWCFileIncludeUTI = @"org.revsoft.wabbitcode.include";
-NSString* const kWCFilePanicCodaImportedUTI = @"com.panic.coda.active-server-include-file";
+NSString *const kWCFileAssemblyUTI = @"org.revsoft.wabbitcode.assembly";
+NSString *const kWCFileIncludeUTI = @"org.revsoft.wabbitcode.include";
+NSString *const kWCFilePanicCodaImportedUTI = @"com.panic.coda.active-server-include-file";
 
-NSString* const kWCFileHasUnsavedChangesNotification = @"kWCFileHasUnsavedChangesNotification";
+NSString *const kWCFileHasUnsavedChangesNotification = @"kWCFileHasUnsavedChangesNotification";
 
-NSString* const kWCFileNumberOfErrorMessagesChangedNotification = @"kWCFileNumberOfErrorMessagesChangedNotification";
-NSString* const kWCFileNumberOfWarningMessagesChangedNotification = @"kWCFileNumberOfWarningMessagesChangedNotification";
+NSString *const kWCFileNumberOfErrorMessagesChangedNotification = @"kWCFileNumberOfErrorMessagesChangedNotification";
+NSString *const kWCFileNumberOfWarningMessagesChangedNotification = @"kWCFileNumberOfWarningMessagesChangedNotification";
+
+NSString *const kWCFileNumberOfBreakpointsDidChangeNotification = @"kWCFileNumberOfBreakpointsDidChangeNotification";
 
 NSString *const kWCFileNameDidChangeNotification = @"kWCFileNameDidChangeNotification";
 
@@ -39,8 +42,10 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 @implementation WCFile
 #pragma mark *** Subclass Overrides ***
 + (void)initialize {
-	if ([WCFile class] == self)
-		_UTIsToUnsavedIcons = [[NSMutableDictionary alloc] init];
+	if ([WCFile class] != self)
+		return;
+	
+	_UTIsToUnsavedIcons = [[NSMutableDictionary alloc] init];
 }
 
 - (NSString *)description {
@@ -99,6 +104,7 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 - (void)encodeWithCoder:(NSCoder *)coder {
 	[coder encodeObject:[self alias] forKey:@"alias"];
 	[coder encodeObject:[self UUID] forKey:@"UUID"];
+	[coder encodeObject:[self allBreakpoints] forKey:@"breakpoints"];
 	[super encodeWithCoder:coder];
 }
 - (id)initWithCoder:(NSCoder *)coder {
@@ -107,6 +113,16 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	
 	_alias = [[coder decodeObjectForKey:@"alias"] retain];
 	_UUID = [[coder decodeObjectForKey:@"UUID"] retain];
+	
+	NSArray *breakpoints = [coder decodeObjectForKey:@"breakpoints"];
+	if ([breakpoints count]) {
+		_lineNumbersToBreakpoints = [[NSMutableDictionary alloc] initWithCapacity:[breakpoints count]];
+		
+		for (WCBreakpoint *bp in breakpoints) {
+			[bp setFile:self];
+			[_lineNumbersToBreakpoints setObject:bp forKey:[NSNumber numberWithUnsignedInteger:[bp lineNumber]]];
+		}
+	}
 	
 	return self;
 }
@@ -203,6 +219,26 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 }
 - (NSUInteger)lineStartForBuildMessage:(WCBuildMessage *)message; {
 	return [[self textStorage] lineStartIndexForLineNumber:[message lineNumber]-1];
+}
+#pragma mark Breakpoints
+- (void)addBreakpoint:(WCBreakpoint *)breakpoint; {
+	if (!_lineNumbersToBreakpoints)
+		_lineNumbersToBreakpoints = [[NSMutableDictionary alloc] init];
+	
+	[_lineNumbersToBreakpoints setObject:breakpoint forKey:[NSNumber numberWithUnsignedInteger:[breakpoint lineNumber]]];
+	
+	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileNumberOfBreakpointsDidChangeNotification object:self];
+}
+- (void)removeBreakpoint:(WCBreakpoint *)breakpoint; {
+	[_lineNumbersToBreakpoints removeObjectForKey:[NSNumber numberWithUnsignedInteger:[breakpoint lineNumber]]];
+	
+	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileNumberOfBreakpointsDidChangeNotification object:self];
+}
+- (WCBreakpoint *)breakpointAtLineNumber:(NSUInteger)lineNumber; {
+	return [_lineNumbersToBreakpoints objectForKey:[NSNumber numberWithUnsignedInteger:lineNumber]];
+}
+- (NSArray *)allBreakpoints; {
+	return [_lineNumbersToBreakpoints allValues];
 }
 #pragma mark Accessors
 - (NSString *)name {

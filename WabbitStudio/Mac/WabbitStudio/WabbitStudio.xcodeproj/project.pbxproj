@@ -82,7 +82,6 @@
 		0772BEF113367207009D4F32 /* WCSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 0772BEF013367207009D4F32 /* WCSingleton.m */; };
 		0772BEF51336766F009D4F32 /* WCSingletonWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0772BEF41336766E009D4F32 /* WCSingletonWindowController.m */; };
 		0772BEF713367DC5009D4F32 /* Group16x16.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 0772BEF613367DC5009D4F32 /* Group16x16.tiff */; };
-		078073D0134404F30003DE27 /* NoodleLineNumberMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = 078073CD134404F30003DE27 /* NoodleLineNumberMarker.m */; };
 		078073D1134404F30003DE27 /* NoodleLineNumberView.m in Sources */ = {isa = PBXBuildFile; fileRef = 078073CF134404F30003DE27 /* NoodleLineNumberView.m */; };
 		078073D5134453F70003DE27 /* WCContexualMenuOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 078073D4134453F40003DE27 /* WCContexualMenuOutlineView.m */; };
 		078073D813445ACA0003DE27 /* WCContextualMenuTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 078073D713445AC70003DE27 /* WCContextualMenuTableView.m */; };
@@ -138,10 +137,10 @@
 		07AF6EA6133B26E900A2D188 /* Colors.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AF6EA5133B26E900A2D188 /* Colors.png */; };
 		07AF6EA8133B291400A2D188 /* Editor.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AF6EA7133B291400A2D188 /* Editor.png */; };
 		07AF6EAC133B2A8900A2D188 /* Debugging.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AF6EAB133B2A8900A2D188 /* Debugging.png */; };
-		07AF6EAE133B2BB000A2D188 /* Updates.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AF6EAD133B2BB000A2D188 /* Updates.png */; };
 		07AF6EB0133B343700A2D188 /* sample_assembly.z80 in Resources */ = {isa = PBXBuildFile; fileRef = 07AF6EAF133B342300A2D188 /* sample_assembly.z80 */; };
 		07B4556D133DAF5200521353 /* WCBuildTargetsInfoSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07B4556B133DAF5200521353 /* WCBuildTargetsInfoSheet.xib */; };
 		07B45579133DC76600521353 /* WCBuildMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B45578133DC76600521353 /* WCBuildMessage.m */; };
+		07B5491E135CE7B200B34C46 /* WCBreakpoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B5491D135CE7B100B34C46 /* WCBreakpoint.m */; };
 		07C4D98D13470793004792DD /* WCBuildMessagesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C4D98C13470792004792DD /* WCBuildMessagesOutlineView.m */; };
 		07C4D9911347138C004792DD /* WCSymbolsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C4D98F1347138C004792DD /* WCSymbolsViewController.m */; };
 		07C4D995134714F6004792DD /* WCSymbolsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07C4D993134714F6004792DD /* WCSymbolsView.xib */; };
@@ -321,8 +320,6 @@
 		0772BEF31336766E009D4F32 /* WCSingletonWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSingletonWindowController.h; sourceTree = "<group>"; };
 		0772BEF41336766E009D4F32 /* WCSingletonWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSingletonWindowController.m; sourceTree = "<group>"; };
 		0772BEF613367DC5009D4F32 /* Group16x16.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = Group16x16.tiff; sourceTree = "<group>"; };
-		078073CC134404F30003DE27 /* NoodleLineNumberMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoodleLineNumberMarker.h; sourceTree = "<group>"; };
-		078073CD134404F30003DE27 /* NoodleLineNumberMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NoodleLineNumberMarker.m; sourceTree = "<group>"; };
 		078073CE134404F30003DE27 /* NoodleLineNumberView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = NoodleLineNumberView.h; sourceTree = "<group>"; };
 		078073CF134404F30003DE27 /* NoodleLineNumberView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = NoodleLineNumberView.m; sourceTree = "<group>"; };
 		078073D3134453F10003DE27 /* WCContexualMenuOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCContexualMenuOutlineView.h; sourceTree = "<group>"; };
@@ -411,11 +408,12 @@
 		07AF6EA5133B26E900A2D188 /* Colors.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Colors.png; sourceTree = "<group>"; };
 		07AF6EA7133B291400A2D188 /* Editor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Editor.png; sourceTree = "<group>"; };
 		07AF6EAB133B2A8900A2D188 /* Debugging.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Debugging.png; sourceTree = "<group>"; };
-		07AF6EAD133B2BB000A2D188 /* Updates.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Updates.png; sourceTree = "<group>"; };
 		07AF6EAF133B342300A2D188 /* sample_assembly.z80 */ = {isa = PBXFileReference; lastKnownFileType = text; path = sample_assembly.z80; sourceTree = "<group>"; };
 		07B4556C133DAF5200521353 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCBuildTargetsInfoSheet.xib; sourceTree = "<group>"; };
 		07B45577133DC76500521353 /* WCBuildMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildMessage.h; sourceTree = "<group>"; };
 		07B45578133DC76600521353 /* WCBuildMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildMessage.m; sourceTree = "<group>"; };
+		07B5491C135CE7B100B34C46 /* WCBreakpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpoint.h; sourceTree = "<group>"; };
+		07B5491D135CE7B100B34C46 /* WCBreakpoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBreakpoint.m; sourceTree = "<group>"; };
 		07C4D98B13470792004792DD /* WCBuildMessagesOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildMessagesOutlineView.h; sourceTree = "<group>"; };
 		07C4D98C13470792004792DD /* WCBuildMessagesOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildMessagesOutlineView.m; sourceTree = "<group>"; };
 		07C4D98E1347138B004792DD /* WCSymbolsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSymbolsViewController.h; sourceTree = "<group>"; };
@@ -574,7 +572,6 @@
 				075EB132133F495B00A34611 /* Directory16x16.tiff */,
 				07604ADB133C91EF00D8A432 /* Building.png */,
 				07AF6EAF133B342300A2D188 /* sample_assembly.z80 */,
-				07AF6EAD133B2BB000A2D188 /* Updates.png */,
 				07AF6EAB133B2A8900A2D188 /* Debugging.png */,
 				07AF6EA7133B291400A2D188 /* Editor.png */,
 				07AF6EA5133B26E900A2D188 /* Colors.png */,
@@ -762,6 +759,8 @@
 				072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */,
 				072F7AE21359622E00FEFE5F /* WCAddDocumentToProjectSheetController.h */,
 				072F7AE31359622E00FEFE5F /* WCAddDocumentToProjectSheetController.m */,
+				07B5491C135CE7B100B34C46 /* WCBreakpoint.h */,
+				07B5491D135CE7B100B34C46 /* WCBreakpoint.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -818,8 +817,6 @@
 				070F2F4C1353F73B00641AE3 /* CTBadge.m */,
 				07CE786A134E410D001B96FC /* NSWindow-NoodleEffects.h */,
 				07CE786B134E410D001B96FC /* NSWindow-NoodleEffects.m */,
-				078073CC134404F30003DE27 /* NoodleLineNumberMarker.h */,
-				078073CD134404F30003DE27 /* NoodleLineNumberMarker.m */,
 				078073CE134404F30003DE27 /* NoodleLineNumberView.h */,
 				078073CF134404F30003DE27 /* NoodleLineNumberView.m */,
 				07F1B8111342EE9E0013B9CC /* NSURL+NDCarbonUtilities.m */,
@@ -914,7 +911,6 @@
 				07AF6EA6133B26E900A2D188 /* Colors.png in Resources */,
 				07AF6EA8133B291400A2D188 /* Editor.png in Resources */,
 				07AF6EAC133B2A8900A2D188 /* Debugging.png in Resources */,
-				07AF6EAE133B2BB000A2D188 /* Updates.png in Resources */,
 				07604ADC133C91EF00D8A432 /* Building.png in Resources */,
 				07B4556D133DAF5200521353 /* WCBuildTargetsInfoSheet.xib in Resources */,
 				075EB133133F495B00A34611 /* Directory16x16.tiff in Resources */,
@@ -1013,7 +1009,6 @@
 				07F1B8061342BD580013B9CC /* NSURL+WCExtensions.m in Sources */,
 				07F1B80C1342EAE10013B9CC /* NDAlias.m in Sources */,
 				07F1B8121342EE9E0013B9CC /* NSURL+NDCarbonUtilities.m in Sources */,
-				078073D0134404F30003DE27 /* NoodleLineNumberMarker.m in Sources */,
 				078073D1134404F30003DE27 /* NoodleLineNumberView.m in Sources */,
 				078073D5134453F70003DE27 /* WCContexualMenuOutlineView.m in Sources */,
 				078073D813445ACA0003DE27 /* WCContextualMenuTableView.m in Sources */,
@@ -1062,6 +1057,7 @@
 				072C8A401358F05A006EE420 /* WCFileViewStatusBarView.m in Sources */,
 				072F7AE41359622E00FEFE5F /* WCAddDocumentToProjectSheetController.m in Sources */,
 				07CBCF64135B9E8400B72B6B /* WCDoEverythingTextFieldCell.m in Sources */,
+				07B5491E135CE7B200B34C46 /* WCBreakpoint.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

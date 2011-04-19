@@ -28,7 +28,6 @@
 //
 
 #import "NoodleLineNumberView.h"
-#import "NoodleLineNumberMarker.h"
 
 #import "WCFile.h"
 #import "WCTextView.h"
@@ -37,10 +36,13 @@
 #import "WCPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "NSObject+WCExtensions.h"
+#import "WCBreakpoint.h"
 
-#define DEFAULT_THICKNESS	22.0
-#define RULER_MARGIN		3.0
+#define DEFAULT_THICKNESS 22.0
+#define RULER_MARGIN 3.0
 #define BADGE_THICKNESS 12.0
+#define CORNER_RADIUS 3.0
+#define BREAKPOINT_HEIGHT 12.0
 
 @interface NoodleLineNumberView (Private)
 
@@ -109,7 +111,7 @@
 }
 
 - (NSArray *)notificationDictionaries {
-	return [NSArray arrayWithObjects:[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBuildMessagesChanged:)),kNSObjectSelectorKey,kWCFileNumberOfErrorMessagesChangedNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBuildMessagesChanged:)),kNSObjectSelectorKey,kWCFileNumberOfWarningMessagesChangedNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil], nil];
+	return [NSArray arrayWithObjects:[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBuildMessagesChanged:)),kNSObjectSelectorKey,kWCFileNumberOfErrorMessagesChangedNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBuildMessagesChanged:)),kNSObjectSelectorKey,kWCFileNumberOfWarningMessagesChangedNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBreakpointsDidChange:)),kNSObjectSelectorKey,kWCFileNumberOfBreakpointsDidChangeNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_breakpointIsActiveDidChange:)),kNSObjectSelectorKey,kWCBreakpointIsActiveDidChangeNotification,kNSObjectNotificationNameKey, nil], nil];
 }
 
 - (void)setFont:(NSFont *)aFont
@@ -125,7 +127,7 @@
 {
 	if (font == nil)
 	{
-		return [NSFont labelFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
+		return [NSFont userFixedPitchFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
 	}
     return font;
 }
@@ -220,6 +222,177 @@
 	lineIndices = nil;
 }
 
+- (void)mouseDown:(NSEvent *)theEvent {
+	NSUInteger lineNumber = [self lineNumberForLocation:[self convertPointFromBase:[theEvent locationInWindow]].y];
+	
+	if (lineNumber == NSNotFound)
+		return;
+	
+	WCFile *file = [(WCTextView *)[self clientView] file];
+	WCBreakpoint *fBreakpoint = [file breakpointAtLineNumber:lineNumber];
+	if (fBreakpoint == nil) {
+		fBreakpoint = [WCBreakpoint breakpointWithLineNumber:lineNumber inFile:file];
+		[file addBreakpoint:fBreakpoint];
+		return;
+	}
+	
+	// create a pool to flush each time through the cycle
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	// track!
+	NSEvent *event = nil;
+	while([event type] != NSLeftMouseUp) {
+		[pool drain];
+		pool = [[NSAutoreleasePool alloc] init];
+		
+		event = [[self window] nextEventMatchingMask: NSLeftMouseDraggedMask | NSLeftMouseUpMask];
+		
+		NSPoint p = [self convertPointFromBase:[event locationInWindow]];
+		NSUInteger line = [self lineNumberForLocation:p.y];
+		WCBreakpoint *bp = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
+		
+		if (NSMouseInRect(p, [self bounds], [self isFlipped])) {
+			if (bp == nil) {
+				[fBreakpoint retain];
+				[file removeBreakpoint:fBreakpoint];
+				[fBreakpoint setLineNumber:line];
+				[file addBreakpoint:fBreakpoint];
+				[fBreakpoint release];
+			}
+			else if ([event type] == NSLeftMouseUp && lineNumber == line)
+				[fBreakpoint setIsActive:![fBreakpoint isActive]];
+			
+			[[NSCursor arrowCursor] set];
+		}
+		else if ([event type] == NSLeftMouseUp && fBreakpoint != nil) {
+			[file removeBreakpoint:fBreakpoint];
+			NSShowAnimationEffect(NSAnimationEffectDisappearingItemDefault, [NSEvent mouseLocation], NSZeroSize, NULL, NULL, NULL);
+		}
+		else
+			[[NSCursor disappearingItemCursor] set];
+	}
+	
+	[pool drain];
+}
+
+- (BOOL)validateMenuItem:(NSMenuItem *)item {
+	if ([item action] == @selector(_deleteBreakpoint:)) {
+		if (_breakpointForContextualMenu == nil)
+			return NO;
+	}
+	else if ([item action] == @selector(_deleteAllBreakpoints:)) {
+		if ([[[(WCTextView *)[self clientView] file] allBreakpoints] count] == 0)
+			return NO;
+	}
+	else if ([item action] == @selector(_toggleBreakpoint:)) {
+		if (_breakpointForContextualMenu == nil)
+			return NO;
+		
+		if ([_breakpointForContextualMenu isActive])
+			[item setTitle:NSLocalizedString(@"Disable Breakpoint", @"Disable Breakpoint")];
+		else
+			[item setTitle:NSLocalizedString(@"Enable Breakpoint", @"Enable Breakpoint")];
+	}
+	else if ([item action] == @selector(_editBreakpoint:)) {
+		if (_breakpointForContextualMenu == nil)
+			[item setTitle:NSLocalizedString(@"Add Breakpoint", @"Add Breakpoint")];
+		else
+			[item setTitle:NSLocalizedString(@"Edit Breakpoint\u2026", @"Edit Breakpoint with ellipsis")];
+	}
+	else if ([item action] == @selector(_revealInBreakpointsView:)) {
+		if (_breakpointForContextualMenu == nil)
+			return NO;
+	}
+	return YES;
+}
+
+- (NSMenu *)menu {
+	NSMenu *mMenu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+	
+	[mMenu addItemWithTitle:NSLocalizedString(@"Edit Breakpoint\u2026", @"Edit Breakpoint with ellipsis") action:@selector(_editBreakpoint:) keyEquivalent:@""];
+	[mMenu addItemWithTitle:NSLocalizedString(@"Disable Breakpoint", @"Disable Breakpoint") action:@selector(_toggleBreakpoint:) keyEquivalent:@""];
+	[mMenu addItem:[NSMenuItem separatorItem]];
+	[mMenu addItemWithTitle:NSLocalizedString(@"Delete Breakpoint", @"Delete Breakpoint") action:@selector(_deleteBreakpoint:) keyEquivalent:@""];
+	[mMenu addItemWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Delete All Breakpoints in \"%@\"\u2026", @"Delete All Breakpoints in File with ellipsis"),[[(WCTextView *)[self clientView] file] name]] action:@selector(_deleteAllBreakpoints:) keyEquivalent:@""];
+	[mMenu addItem:[NSMenuItem separatorItem]];
+	[mMenu addItemWithTitle:NSLocalizedString(@"Reveal in Breakpoints View", @"Reveal in Breakpoints View") action:@selector(_revealInBreakpointsView:) keyEquivalent:@""];
+	
+	return mMenu;
+}
+
+- (NSMenu *)menuForEvent:(NSEvent *)event {
+	NSMenu *menu = [super menuForEvent:event];
+	
+	if (menu != nil) {
+		NSPoint p = [self convertPointFromBase:[event locationInWindow]];
+		NSUInteger line = [self lineNumberForLocation:p.y];
+		_breakpointForContextualMenu = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
+	}
+	
+	return menu;
+}
+
+- (IBAction)_editBreakpoint:(id)sender {
+	
+}
+- (IBAction)_toggleBreakpoint:(id)sender {
+	
+}
+- (IBAction)_deleteBreakpoint:(id)sender {
+	
+}
+- (IBAction)_deleteAllBreakpoints:(id)sender {
+	
+}
+- (IBAction)_revealInBreakpointsView:(id)sender {
+	
+}
+
+- (NSUInteger)lineNumberForLocation:(CGFloat)location
+{
+	NSUInteger		line, count, index, rectCount, i;
+	NSRectArray		rects;
+	NSRect			visibleRect;
+	NSLayoutManager	*layoutManager;
+	NSTextContainer	*container;
+	NSRange			nullRange;
+	NSArray	*lines;
+	id				view;
+	
+	view = [self clientView];
+	visibleRect = [[[self scrollView] contentView] bounds];
+	
+	lines = [self lineIndices];
+	
+	location += NSMinY(visibleRect);
+	
+	if ([view isKindOfClass:[NSTextView class]])
+	{
+		nullRange = NSMakeRange(NSNotFound, 0);
+		layoutManager = [view layoutManager];
+		container = [view textContainer];
+		count = [lines count];
+		
+		for (line = 0; line < count; line++)
+		{
+			index = [[lines objectAtIndex:line] unsignedIntegerValue];
+			
+			rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
+								 withinSelectedCharacterRange:nullRange
+											  inTextContainer:container
+													rectCount:&rectCount];
+			
+			for (i = 0; i < rectCount; i++)
+			{
+				if ((location >= NSMinY(rects[i])) && (location < NSMaxY(rects[i])))
+				{
+					return line;
+				}
+			}
+		}	
+	}
+	return NSNotFound;
+}
+
 - (void)textDidChange:(NSNotification *)notification
 {
 	// Invalidate the line indices. They will be recalculated and recached on demand.
@@ -243,58 +416,6 @@
 	
     [self setNeedsDisplay:YES];
 }
-
-- (NSUInteger)lineNumberForLocation:(CGFloat)location
-{
-	NSUInteger		line, count, index, rectCount, i;
-	NSRectArray		rects;
-	NSRect			visibleRect;
-	NSLayoutManager	*layoutManager;
-	NSTextContainer	*container;
-	NSRange			nullRange;
-	NSArray	*lines;
-	id				view;
-		
-	view = [self clientView];
-	visibleRect = [[[self scrollView] contentView] bounds];
-	
-	lines = [self lineIndices];
-
-	location += NSMinY(visibleRect);
-	
-	if ([view isKindOfClass:[NSTextView class]])
-	{
-		nullRange = NSMakeRange(NSNotFound, 0);
-		layoutManager = [view layoutManager];
-		container = [view textContainer];
-		count = [lines count];
-		
-		for (line = 0; line < count; line++)
-		{
-			index = [[lines objectAtIndex:line] unsignedIntegerValue];
-			
-			rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
-								 withinSelectedCharacterRange:nullRange
-											  inTextContainer:container
-													rectCount:&rectCount];
-			
-			for (i = 0; i < rectCount; i++)
-			{
-				if ((location >= NSMinY(rects[i])) && (location < NSMaxY(rects[i])))
-				{
-					return line + 1;
-				}
-			}
-		}	
-	}
-	return NSNotFound;
-}
-
-- (NoodleLineNumberMarker *)markerAtLine:(NSUInteger)line
-{
-	return [linesToMarkers objectForKey:[NSNumber numberWithUnsignedInteger:line - 1]];
-}
-
 
 - (void)calculateLines
 {
@@ -420,7 +541,8 @@
     
     stringSize = [sampleString sizeWithAttributes:[self textAttributes]];
 
-	CGFloat badgeThickness = ([[(WCTextView *)[self clientView] file] project] == nil)?0.0:BADGE_THICKNESS;
+	//CGFloat badgeThickness = ([[(WCTextView *)[self clientView] file] project] == nil)?0.0:BADGE_THICKNESS;
+	CGFloat badgeThickness = BADGE_THICKNESS;
 	CGFloat defaultThickness = DEFAULT_THICKNESS + badgeThickness;
 	CGFloat reqThickness = stringSize.width + (RULER_MARGIN * 2) + badgeThickness;
 	
@@ -459,7 +581,6 @@
         CGFloat					ypos, yinset;
         NSDictionary			*textAttributes, *currentTextAttributes;
         NSSize					stringSize/*, markerSize*/;
-		NoodleLineNumberMarker	*marker = nil;
 		//NSImage					*markerImage;
 		NSArray			*lines;
 
@@ -561,20 +682,55 @@
 							[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
 						}
 					}
-
-					if (marker == nil)
+					
+					WCBreakpoint *breakpoint = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
+					if (breakpoint == nil)
 					{
 						currentTextAttributes = textAttributes;
 					}
 					else
 					{
 						currentTextAttributes = [self markerTextAttributes];
+						
+						NSBezierPath *path = [NSBezierPath bezierPath];
+						//[path setLineCapStyle:NSRoundLineCapStyle];
+						[path setLineJoinStyle:NSRoundLineJoinStyle];
+						[path setLineWidth:1.5];
+						
+						NSRect bRect = NSMakeRect(NSMinX(bounds)+2.0, ypos, NSWidth(bounds)-2.0, NSHeight(rects[0])-2.0);
+						
+						
+						// left vertical line
+						[path moveToPoint:NSMakePoint(NSMinX(bRect)+CORNER_RADIUS, NSMaxY(bRect))];
+						[path appendBezierPathWithArcWithCenter:NSMakePoint(NSMinX(bRect)+CORNER_RADIUS, NSMaxY(bRect)-CORNER_RADIUS) radius:CORNER_RADIUS startAngle:90.0 endAngle:180.0];
+						[path moveToPoint:NSMakePoint(NSMinX(bRect), NSMinY(bRect)+CORNER_RADIUS)];
+						[path lineToPoint:NSMakePoint(NSMinX(bRect), NSMaxY(bRect)-CORNER_RADIUS)];
+						[path appendBezierPathWithArcWithCenter:NSMakePoint(NSMinX(bRect)+CORNER_RADIUS, NSMinY(bRect)+CORNER_RADIUS) radius:CORNER_RADIUS startAngle:180.0 endAngle:270.0];
+						[path lineToPoint:NSMakePoint(NSMaxX(bRect)-(RULER_MARGIN+2.0), NSMinY(bRect))];
+						[path lineToPoint:NSMakePoint(NSMaxX(bRect), NSMinY(bRect)+floor(NSHeight(bRect)/2.0))];
+						[path lineToPoint:NSMakePoint(NSMaxX(bRect)-(RULER_MARGIN+2.0), NSMaxY(bRect))];
+						[path lineToPoint:NSMakePoint(NSMinX(bRect)+CORNER_RADIUS, NSMaxY(bRect))];
+						[path appendBezierPathWithArcWithCenter:NSMakePoint(NSMinX(bRect)+CORNER_RADIUS, NSMaxY(bRect)-CORNER_RADIUS) radius:CORNER_RADIUS startAngle:90.0 endAngle:180.0];
+						[path closePath];
+						
+						if ([breakpoint isActive]) {
+							[[[[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.431 green:0.608 blue:0.792 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.329 green:0.533 blue:0.757 alpha:1.0]] autorelease] drawInBezierPath:path angle:90.0];
+							[[NSColor colorWithCalibratedRed:0.235 green:0.443 blue:0.686 alpha:1.0] setStroke];
+							[path stroke];
+						}
+						else {
+							currentTextAttributes = textAttributes;
+							
+							[[[[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.431 green:0.608 blue:0.792 alpha:0.5] endingColor:[NSColor colorWithCalibratedRed:0.329 green:0.533 blue:0.757 alpha:0.5]] autorelease] drawInBezierPath:path angle:90.0];
+							[[NSColor colorWithCalibratedRed:0.235 green:0.443 blue:0.686 alpha:0.5] setStroke];
+							[path stroke];
+						}
 					}
 					
                     // Draw string flush right, centered vertically within the line
                     [labelText drawInRect:
                        NSMakeRect(NSWidth(bounds) - stringSize.width - RULER_MARGIN,
-                                  ypos + (NSHeight(rects[0]) - stringSize.height) / 2.0,
+                                  ypos + floor(NSHeight(rects[0])/2.0) - floor(stringSize.height / 2.0),
                                   NSWidth(bounds) - RULER_MARGIN * 2.0, NSHeight(rects[0]))
                            withAttributes:currentTextAttributes];
                 }
@@ -588,6 +744,17 @@
 }
 
 - (void)_fileNumberOfBuildMessagesChanged:(NSNotification *)note {
+	[self setNeedsDisplay:YES];
+}
+
+- (void)_fileNumberOfBreakpointsDidChange:(NSNotification *)note {	
+	[self setNeedsDisplay:YES];
+}
+
+- (void)_breakpointIsActiveDidChange:(NSNotification *)note {
+	if ([[note object] file] != [(WCTextView *)[self clientView] file])
+		return;
+	
 	[self setNeedsDisplay:YES];
 }
 @end
