@@ -15,6 +15,7 @@
 @interface WCTextStorage (Private)
 - (void)_privateInit;
 - (void)_calculateLineStartIndexes;
+- (void)_calculateLineStartIndexesFromLineNumber:(NSUInteger)lineNumber;
 @end
 
 @implementation WCTextStorage
@@ -86,7 +87,8 @@
 - (void)replaceCharactersInRange:(NSRange)range withString:(NSString *)str {
 	[_contents replaceCharactersInRange:range withString:str];
 	
-	[self _calculateLineStartIndexes];
+	// only calculate line indexes that could have changed; i.e. lines after the line that was edited
+	[self _calculateLineStartIndexesFromLineNumber:[self lineNumberForCharacterIndex:range.location]];
 	
 	[self edited:NSTextStorageEditedCharacters range:range changeInLength:[str length] - range.length];
 }
@@ -138,6 +140,31 @@
 	
 	NSString *string = [self string];
 	NSUInteger length = [string length], index = 0;
+	
+	do {
+		
+		[_lineStartIndexes addObject:[NSNumber numberWithUnsignedInteger:index]];
+		index = NSMaxRange([string lineRangeForRange:NSMakeRange(index, 0)]);
+		
+	} while (index < length);
+	
+	// check to see if the string ends with a newline
+	NSUInteger lineEnd = 0, contentEnd = 0;
+	
+	[string getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange([[_lineStartIndexes lastObject] unsignedIntegerValue], 0)];
+	
+	if (contentEnd < lineEnd)
+		[_lineStartIndexes addObject:[NSNumber numberWithUnsignedInteger:index]];
+}
+
+- (void)_calculateLineStartIndexesFromLineNumber:(NSUInteger)lineNumber; {
+	[_lineStartIndexes removeObjectsAtIndexes:[NSIndexSet indexSetWithIndexesInRange:NSMakeRange(lineNumber, [_lineStartIndexes count] - lineNumber)]];
+	
+	NSString *string = [self string];
+	NSUInteger length = [string length], index = 0;
+	
+	if ([_lineStartIndexes count] != 0)
+		index = NSMaxRange([string lineRangeForRange:NSMakeRange([[_lineStartIndexes objectAtIndex:lineNumber - 1] unsignedIntegerValue], 0)]);
 	
 	do {
 		
