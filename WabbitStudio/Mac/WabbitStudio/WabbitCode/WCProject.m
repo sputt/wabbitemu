@@ -43,6 +43,8 @@
 #import "CTBadge.h"
 #import "NSTextView+WCExtensions.h"
 #import "WCSyntaxHighlighter.h"
+#import "WCBreakpointsViewController.h"
+#import "WCBreakpoint.h"
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import <BWToolkitFramework/BWToolkitFramework.h>
@@ -144,7 +146,7 @@ static NSImage *_appIcon = nil;
 	
 	[self _applyProjectSettings];
 	
-	[_tabBarControl setAutomaticallyAnimates:YES];
+	//[_tabBarControl setAutomaticallyAnimates:YES];
 	
 	NSString *identifier = [NSString stringWithFormat:@"%@ToolbarIdentifier",[self className]];
 	NSToolbar *toolbar = [[[NSToolbar alloc] initWithIdentifier:identifier] autorelease];
@@ -524,7 +526,13 @@ static NSImage *_appIcon = nil;
 	
 	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
 }
-
+- (void)jumpToBreakpoint:(WCBreakpoint *)breakpoint; {
+	WCFileViewController *controller = [self addFileViewControllerForFile:[breakpoint file] inTabViewContext:[self currentTabViewContext]];
+	WCTextView *textView = [controller textView];
+	NSRange range = [breakpoint breakpointRange];
+	
+	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
+}
 - (void)saveProjectFile; {
 	[self _updateProjectSettings];
 	[super saveDocument:nil];
@@ -855,6 +863,12 @@ static NSImage *_appIcon = nil;
 - (WCFindInProjectViewController *)findInProjectViewControllerDontCreate {
 	return _findInProjectViewController;
 }
+@dynamic breakpointsViewController;
+- (WCBreakpointsViewController *)breakpointsViewController {
+	if (!_breakpointsViewController)
+		_breakpointsViewController = [[WCBreakpointsViewController projectNavigationViewControllerWithProject:self] retain];
+	return _breakpointsViewController;
+}
 @dynamic currentTabViewContext;
 - (id <WCTabViewContext>)currentTabViewContext {
 	return self;
@@ -1124,6 +1138,10 @@ static NSImage *_appIcon = nil;
 }
 - (IBAction)viewSearch:(id)sender; {
 	[self setCurrentViewController:[self findInProjectViewController]];
+	[_navBarControl setSelectedIndex:[[_navBarControl selectors] indexOfObject:NSStringFromSelector(_cmd)]];
+}
+- (IBAction)viewBreakpoints:(id)sender; {
+	[self setCurrentViewController:[self breakpointsViewController]];
 	[_navBarControl setSelectedIndex:[[_navBarControl selectors] indexOfObject:NSStringFromSelector(_cmd)]];
 }
 - (IBAction)changeProjectView:(WCProjectNavView *)sender; {
@@ -1396,6 +1414,18 @@ static NSImage *_appIcon = nil;
 			[[[self findInProjectViewController] outlineView] collapseItem:node];
 		else
 			[[[self findInProjectViewController] outlineView] expandItem:node];
+	}
+}
+- (IBAction)_breakpointsOutlineViewDoubleAction:(id)sender {
+	WCBreakpoint *breakpoint = [[self breakpointsViewController] selectedObject];
+	
+	if ([breakpoint isLeaf])
+		[self jumpToBreakpoint:breakpoint];
+	else {
+		if ([[[self breakpointsViewController] outlineView] isItemExpanded:breakpoint])
+			[[[self breakpointsViewController] outlineView] collapseItem:breakpoint];
+		else
+			[[[self breakpointsViewController] outlineView] expandItem:breakpoint];
 	}
 }
 #pragma mark Notifications

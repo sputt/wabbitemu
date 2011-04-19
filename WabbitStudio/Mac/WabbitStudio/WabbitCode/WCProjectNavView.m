@@ -22,8 +22,8 @@
 	if (!(self = [super initWithFrame:frameRect]))
 		return nil;
 	
-	_images = [[NSArray alloc] initWithObjects:[NSImage imageNamed:@"Directory16x16"],[NSImage imageNamed:@"Symbols16x16"],[NSImage imageNamed:@"Search16x16"],[NSImage imageNamed:@"ErrorsAndWarnings16x16"], nil];
-	_selectors = [[NSArray alloc] initWithObjects:NSStringFromSelector(@selector(viewProject:)),NSStringFromSelector(@selector(viewSymbols:)),NSStringFromSelector(@selector(viewSearch:)),NSStringFromSelector(@selector(viewBuildMessages:)), nil];
+	_images = [[NSArray alloc] initWithObjects:[NSImage imageNamed:@"Directory16x16"],[NSImage imageNamed:@"Symbols16x16"],[NSImage imageNamed:@"Search16x16"],[NSImage imageNamed:@"ErrorsAndWarnings"],[NSImage imageNamed:@"Breakpoints16x16"], nil];
+	_selectors = [[NSArray alloc] initWithObjects:NSStringFromSelector(@selector(viewProject:)),NSStringFromSelector(@selector(viewSymbols:)),NSStringFromSelector(@selector(viewSearch:)),NSStringFromSelector(@selector(viewBuildMessages:)),NSStringFromSelector(@selector(viewBreakpoints:)), nil];
 	
 	return self;
 }
@@ -61,7 +61,7 @@
 	// track!
 	NSEvent *event = nil;
 	while([event type] != NSLeftMouseUp) {
-		[pool release];
+		[pool drain];
 		pool = [[NSAutoreleasePool alloc] init];
 		
 		event = [[self window] nextEventMatchingMask: NSLeftMouseDraggedMask | NSLeftMouseUpMask];
@@ -78,7 +78,7 @@
 	
 	[self sendAction:[self action] to:[self target]];
 
-	[pool release];
+	[pool drain];
 	free(rects);
 }
 

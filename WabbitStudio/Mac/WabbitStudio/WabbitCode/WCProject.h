@@ -31,7 +31,7 @@ extern NSString *const kWCProjectSettingsLeftVerticalSplitViewDividerPositionKey
 extern NSString *const kWCProjectSettingsOpenFileUUIDsKey;
 extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 
-@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge;
+@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint;
 
 @interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext> {
 @private
@@ -59,6 +59,7 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 	WCBuildMessagesViewController *_buildMessagesViewController;
 	WCSymbolsViewController *_symbolsViewController;
 	WCFindInProjectViewController *_findInProjectViewController;
+	WCBreakpointsViewController *_breakpointsViewController;
 	
 	NSSet *_cachedAbsoluteFilePaths;
 }
@@ -87,6 +88,7 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 @property (readonly,nonatomic) WCSymbolsViewController *symbolsViewController;
 @property (readonly,nonatomic) WCFindInProjectViewController *findInProjectViewController;
 @property (readonly,nonatomic) WCFindInProjectViewController *findInProjectViewControllerDontCreate;
+@property (readonly,nonatomic) WCBreakpointsViewController *breakpointsViewController;
 @property (readonly,nonatomic) NSArray *buildMessages;
 @property (readonly,nonatomic) NSMutableArray *mutableBuildMessages;
 @property (readonly,retain,nonatomic) NSSet *absoluteFilePaths;
@@ -108,6 +110,7 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 - (IBAction)viewBuildMessages:(id)sender;
 - (IBAction)viewSymbols:(id)sender;
 - (IBAction)viewSearch:(id)sender;
+- (IBAction)viewBreakpoints:(id)sender;
 - (IBAction)changeProjectView:(id)sender;
 
 - (IBAction)nextTab:(id)sender;
@@ -123,6 +126,7 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 - (void)jumpToBuildMessage:(WCBuildMessage *)message;
 - (void)jumpToSymbol:(WCSymbol *)symbol;
 - (void)jumpToFindInProjectResult:(WCFindInProjectResult *)findResult;
+- (void)jumpToBreakpoint:(WCBreakpoint *)breakpoint;
 
 - (void)saveProjectFile;
 

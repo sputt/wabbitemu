@@ -40,6 +40,7 @@
 - (NSTreeNode *)selectedNode {
 	return [[self selectedNodes] firstObject];
 }
+// subclasses must define selectedNodes and selectedObjects for their given context
 @dynamic selectedNodes;
 @dynamic selectedObjects;
 @synthesize firstResponder=_firstResponder;

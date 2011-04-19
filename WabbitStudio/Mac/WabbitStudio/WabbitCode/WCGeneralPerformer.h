@@ -15,7 +15,7 @@ extern NSString *const kWCProjectToolbarBuildItemIdentifier;
 extern NSString *const kWCProjectToolbarBuildAndRunItemIdentifier;
 extern NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer;
 
-@class WCFile,WCProject,WCProjectTemplate,WCFileTemplate,WCDocument;
+@class WCFile,WCProject,WCProjectTemplate,WCFileTemplate,WCDocument,WCBreakpoint;
 
 @interface WCGeneralPerformer : WCSingleton {
 @private
@@ -44,4 +44,6 @@ extern NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer;
 - (NSColor *)findBackgroundColor;
 - (NSColor *)findUnderlineColor;
 - (NSDictionary *)findAttributes;
+
+- (void)drawBreakpoint:(WCBreakpoint *)breakpoint inRect:(NSRect)rect;
 @end

@@ -86,4 +86,5 @@ extern NSString *const kWCFileNameDidChangeNotification;
 - (void)removeBreakpoint:(WCBreakpoint *)breakpoint;
 - (WCBreakpoint *)breakpointAtLineNumber:(NSUInteger)lineNumber;
 - (NSArray *)allBreakpoints;
+- (NSArray *)allBreakpointsSortedByLineNumber;
 @end

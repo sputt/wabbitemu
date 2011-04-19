@@ -240,6 +240,17 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 - (NSArray *)allBreakpoints; {
 	return [_lineNumbersToBreakpoints allValues];
 }
+- (NSArray *)allBreakpointsSortedByLineNumber; {
+	static NSArray *sortDescriptors = nil;
+	if (!sortDescriptors)
+		sortDescriptors = [[NSArray alloc] initWithObjects:[[[NSSortDescriptor alloc] initWithKey:@"lineNumber" ascending:YES selector:@selector(compare:)] autorelease],nil];
+	
+	NSMutableArray *retval = [NSMutableArray arrayWithArray:[self allBreakpoints]];
+	
+	[retval sortUsingDescriptors:sortDescriptors];
+	
+	return [[retval copy] autorelease];
+}
 #pragma mark Accessors
 - (NSString *)name {
 	if ([super name] && [self isDirectory])

@@ -37,6 +37,9 @@
 #import "NSUserDefaults+WCExtensions.h"
 #import "NSObject+WCExtensions.h"
 #import "WCBreakpoint.h"
+#import "WCGeneralPerformer.h"
+#import "WCProject.h"
+#import "WCBreakpointsViewController.h"
 
 #define DEFAULT_THICKNESS 22.0
 #define RULER_MARGIN 3.0
@@ -335,16 +338,17 @@
 	
 }
 - (IBAction)_toggleBreakpoint:(id)sender {
-	
+	[_breakpointForContextualMenu setIsActive:![_breakpointForContextualMenu isActive]];
 }
 - (IBAction)_deleteBreakpoint:(id)sender {
-	
+	[[(WCTextView *)[self clientView] file] removeBreakpoint:_breakpointForContextualMenu];
 }
 - (IBAction)_deleteAllBreakpoints:(id)sender {
 	
 }
 - (IBAction)_revealInBreakpointsView:(id)sender {
-	
+	[[[(WCTextView *)[self clientView] file] project] viewBreakpoints:nil];
+	[[[[(WCTextView *)[self clientView] file] project] breakpointsViewController] setSelectedObject:_breakpointForContextualMenu];
 }
 
 - (NSUInteger)lineNumberForLocation:(CGFloat)location
@@ -690,41 +694,12 @@
 					}
 					else
 					{
-						currentTextAttributes = [self markerTextAttributes];
-						
-						NSBezierPath *path = [NSBezierPath bezierPath];
-						//[path setLineCapStyle:NSRoundLineCapStyle];
-						[path setLineJoinStyle:NSRoundLineJoinStyle];
-						[path setLineWidth:1.5];
+						if ([breakpoint isActive])
+							currentTextAttributes = [self markerTextAttributes];
 						
 						NSRect bRect = NSMakeRect(NSMinX(bounds)+2.0, ypos, NSWidth(bounds)-2.0, NSHeight(rects[0])-2.0);
 						
-						
-						// left vertical line
-						[path moveToPoint:NSMakePoint(NSMinX(bRect)+CORNER_RADIUS, NSMaxY(bRect))];
-						[path appendBezierPathWithArcWithCenter:NSMakePoint(NSMinX(bRect)+CORNER_RADIUS, NSMaxY(bRect)-CORNER_RADIUS) radius:CORNER_RADIUS startAngle:90.0 endAngle:180.0];
-						[path moveToPoint:NSMakePoint(NSMinX(bRect), NSMinY(bRect)+CORNER_RADIUS)];
-						[path lineToPoint:NSMakePoint(NSMinX(bRect), NSMaxY(bRect)-CORNER_RADIUS)];
-						[path appendBezierPathWithArcWithCenter:NSMakePoint(NSMinX(bRect)+CORNER_RADIUS, NSMinY(bRect)+CORNER_RADIUS) radius:CORNER_RADIUS startAngle:180.0 endAngle:270.0];
-						[path lineToPoint:NSMakePoint(NSMaxX(bRect)-(RULER_MARGIN+2.0), NSMinY(bRect))];
-						[path lineToPoint:NSMakePoint(NSMaxX(bRect), NSMinY(bRect)+floor(NSHeight(bRect)/2.0))];
-						[path lineToPoint:NSMakePoint(NSMaxX(bRect)-(RULER_MARGIN+2.0), NSMaxY(bRect))];
-						[path lineToPoint:NSMakePoint(NSMinX(bRect)+CORNER_RADIUS, NSMaxY(bRect))];
-						[path appendBezierPathWithArcWithCenter:NSMakePoint(NSMinX(bRect)+CORNER_RADIUS, NSMaxY(bRect)-CORNER_RADIUS) radius:CORNER_RADIUS startAngle:90.0 endAngle:180.0];
-						[path closePath];
-						
-						if ([breakpoint isActive]) {
-							[[[[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.431 green:0.608 blue:0.792 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.329 green:0.533 blue:0.757 alpha:1.0]] autorelease] drawInBezierPath:path angle:90.0];
-							[[NSColor colorWithCalibratedRed:0.235 green:0.443 blue:0.686 alpha:1.0] setStroke];
-							[path stroke];
-						}
-						else {
-							currentTextAttributes = textAttributes;
-							
-							[[[[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.431 green:0.608 blue:0.792 alpha:0.5] endingColor:[NSColor colorWithCalibratedRed:0.329 green:0.533 blue:0.757 alpha:0.5]] autorelease] drawInBezierPath:path angle:90.0];
-							[[NSColor colorWithCalibratedRed:0.235 green:0.443 blue:0.686 alpha:0.5] setStroke];
-							[path stroke];
-						}
+						[[WCGeneralPerformer sharedPerformer] drawBreakpoint:breakpoint inRect:bRect];
 					}
 					
                     // Draw string flush right, centered vertically within the line

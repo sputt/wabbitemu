@@ -8,6 +8,11 @@
 
 #import "WCBreakpoint.h"
 #import "WCFile.h"
+#import "WCTextStorage.h"
+#import "WCSymbol.h"
+#import "WCSymbolScanner.h"
+#import "NSArray+WCExtensions.h"
+#import "WCGeneralPerformer.h"
 
 NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsActiveDidChangeNotification";
 
@@ -30,6 +35,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	
 	_lineNumber = [[coder decodeObjectForKey:@"lineNumber"] unsignedIntegerValue];
 	_isActive = [coder decodeBoolForKey:@"isActive"];
+	_breakpointType = WCBreakpointTypeLine;
 	
 	return self;
 }
@@ -39,8 +45,45 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	
 	copy->_lineNumber = _lineNumber;
 	copy->_isActive = _isActive;
+	copy->_breakpointType = _breakpointType;
 	
 	return copy;
+}
+
+- (NSString *)name {
+	switch ([self breakpointType]) {
+		case WCBreakpointTypeLine: {
+			NSArray *symbols = [[[self file] symbolScanner] symbols];
+			WCSymbol *symbol = [symbols objectAtIndex:[symbols symbolIndexForLocation:[[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]]]];
+			
+			return [NSString stringWithFormat:NSLocalizedString(@"%@ - line %lu", @"breakpoint line name"),[symbol name],[self lineNumber]+1];
+		}
+		case WCBreakpointTypeFile:
+		case WCBreakpointTypeProject:
+			return [[self file] name];
+		default:
+			return nil;
+	}
+}
+
+- (NSImage *)icon {
+	switch ([self breakpointType]) {
+		case WCBreakpointTypeLine: {
+			NSImage *retval = [[[NSImage alloc] initWithSize:NSMakeSize(24.0, 12.0)] autorelease];
+			[retval setFlipped:YES];
+			
+			[retval lockFocus];
+			[[WCGeneralPerformer sharedPerformer] drawBreakpoint:self inRect:NSMakeRect(0.0, 0.0, [retval size].width, [retval size].height)];
+			[retval unlockFocus];
+			
+			return retval;
+		}
+		case WCBreakpointTypeFile:
+		case WCBreakpointTypeProject:
+			return [[self file] icon];
+		default:
+			return nil;
+	}
 }
 
 + (id)breakpointWithLineNumber:(NSUInteger)lineNumber inFile:(WCFile *)file; {
@@ -53,12 +96,14 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	_file = file;
 	_lineNumber = lineNumber;
 	_isActive = YES;
+	_breakpointType = WCBreakpointTypeLine;
 	
 	return self;
 }
 
 @synthesize file=_file;
 @synthesize lineNumber=_lineNumber;
+@synthesize breakpointType=_breakpointType;
 @dynamic isActive;
 - (BOOL)isActive {
 	return _isActive;
@@ -70,5 +115,9 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	_isActive = isActive;
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWCBreakpointIsActiveDidChangeNotification object:self];
+}
+@dynamic breakpointRange;
+- (NSRange)breakpointRange {
+	return NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0);
 }
 @end
