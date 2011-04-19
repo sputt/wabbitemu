@@ -153,6 +153,7 @@
 		07C82EEF134FFC1C0071D2BF /* project16x16.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 07C82EEE134FFC1C0071D2BF /* project16x16.tiff */; };
 		07C83BA11350FD700051412B /* spasm in Resources */ = {isa = PBXBuildFile; fileRef = 07C83BA01350FD700051412B /* spasm */; };
 		07C83BA41351BC230051412B /* WCSymbolsOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */; };
+		07C8B06A135E244E00DC8322 /* WCBreakpointsOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C8B069135E244D00DC8322 /* WCBreakpointsOutlineView.m */; };
 		07CBCF64135B9E8400B72B6B /* WCDoEverythingTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CBCF63135B9E8400B72B6B /* WCDoEverythingTextFieldCell.m */; };
 		07CBCF7C135C141600B72B6B /* Advanced.png in Resources */ = {isa = PBXBuildFile; fileRef = 07CBCF7B135C141600B72B6B /* Advanced.png */; };
 		07CE786C134E410D001B96FC /* NSWindow-NoodleEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE786B134E410D001B96FC /* NSWindow-NoodleEffects.m */; };
@@ -434,6 +435,8 @@
 		07C83BA01350FD700051412B /* spasm */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = spasm; sourceTree = "<group>"; };
 		07C83BA21351BC220051412B /* WCSymbolsOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSymbolsOutlineView.h; sourceTree = "<group>"; };
 		07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSymbolsOutlineView.m; sourceTree = "<group>"; };
+		07C8B068135E244D00DC8322 /* WCBreakpointsOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpointsOutlineView.h; sourceTree = "<group>"; };
+		07C8B069135E244D00DC8322 /* WCBreakpointsOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBreakpointsOutlineView.m; sourceTree = "<group>"; };
 		07CBCF62135B9E8400B72B6B /* WCDoEverythingTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCDoEverythingTextFieldCell.h; sourceTree = "<group>"; };
 		07CBCF63135B9E8400B72B6B /* WCDoEverythingTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCDoEverythingTextFieldCell.m; sourceTree = "<group>"; };
 		07CBCF7B135C141600B72B6B /* Advanced.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Advanced.png; sourceTree = "<group>"; };
@@ -775,6 +778,8 @@
 				07B5491D135CE7B100B34C46 /* WCBreakpoint.m */,
 				07B54923135D6F8700B34C46 /* WCBreakpointsViewController.h */,
 				07B54924135D6F8700B34C46 /* WCBreakpointsViewController.m */,
+				07C8B068135E244D00DC8322 /* WCBreakpointsOutlineView.h */,
+				07C8B069135E244D00DC8322 /* WCBreakpointsOutlineView.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1076,6 +1081,7 @@
 				07CBCF64135B9E8400B72B6B /* WCDoEverythingTextFieldCell.m in Sources */,
 				07B5491E135CE7B200B34C46 /* WCBreakpoint.m in Sources */,
 				07B54925135D6F8800B34C46 /* WCBreakpointsViewController.m in Sources */,
+				07C8B06A135E244E00DC8322 /* WCBreakpointsOutlineView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

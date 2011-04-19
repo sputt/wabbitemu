@@ -40,6 +40,8 @@
 #import "WCGeneralPerformer.h"
 #import "WCProject.h"
 #import "WCBreakpointsViewController.h"
+#import "WCDefines.h"
+#import "NSAlert-OAExtensions.h"
 
 #define DEFAULT_THICKNESS 22.0
 #define RULER_MARGIN 3.0
@@ -130,7 +132,7 @@
 {
 	if (font == nil)
 	{
-		return [NSFont userFixedPitchFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
+		return [NSFont labelFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
 	}
     return font;
 }
@@ -243,6 +245,7 @@
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	// track!
 	NSEvent *event = nil;
+	BOOL didChangeLineNumber = NO;
 	while([event type] != NSLeftMouseUp) {
 		[pool drain];
 		pool = [[NSAutoreleasePool alloc] init];
@@ -253,6 +256,9 @@
 		NSUInteger line = [self lineNumberForLocation:p.y];
 		WCBreakpoint *bp = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
 		
+		if (!didChangeLineNumber && lineNumber != line)
+			didChangeLineNumber = YES;
+		
 		if (NSMouseInRect(p, [self bounds], [self isFlipped])) {
 			if (bp == nil) {
 				[fBreakpoint retain];
@@ -261,8 +267,15 @@
 				[file addBreakpoint:fBreakpoint];
 				[fBreakpoint release];
 			}
-			else if ([event type] == NSLeftMouseUp && lineNumber == line)
+			else if ([event type] == NSLeftMouseUp && !didChangeLineNumber) {
+				/*
+				if ([fBreakpoint isActive])
+					[fBreakpoint setIsActive:NO];
+				else
+					[file removeBreakpoint:fBreakpoint];
+				 */
 				[fBreakpoint setIsActive:![fBreakpoint isActive]];
+			}
 			
 			[[NSCursor arrowCursor] set];
 		}
@@ -330,6 +343,8 @@
 		NSUInteger line = [self lineNumberForLocation:p.y];
 		_breakpointForContextualMenu = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
 	}
+	else
+		_breakpointForContextualMenu = nil;
 	
 	return menu;
 }
@@ -344,7 +359,15 @@
 	[[(WCTextView *)[self clientView] file] removeBreakpoint:_breakpointForContextualMenu];
 }
 - (IBAction)_deleteAllBreakpoints:(id)sender {
+	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete All Breakpoints in \"%@?\"", @"Delete All Breakpoints in File alert message"),[[(WCTextView *)[self clientView] file] name]] defaultButton:NS_LOCALIZED_STRING_DELETE_ALL alternateButton:NS_LOCALIZED_STRING_CANCEL otherButton:nil informativeTextWithFormat:NSLocalizedString(@"This operation cannot be undone.", @"This operation cannot be undone.")];
 	
+	[alert beginSheetModalForWindow:[self window] completionHandler:^(NSAlert *mAlert,NSInteger result) {
+		if (result != NSAlertDefaultReturn)
+			return;
+		
+		for (WCBreakpoint *bp in [[(WCTextView *)[self clientView] file] allBreakpoints])
+			[[(WCTextView *)[self clientView] file] removeBreakpoint:bp];
+	}];
 }
 - (IBAction)_revealInBreakpointsView:(id)sender {
 	[[[(WCTextView *)[self clientView] file] project] viewBreakpoints:nil];
@@ -421,92 +444,8 @@
     [self setNeedsDisplay:YES];
 }
 
-- (void)calculateLines
-{
-    id              view;
-
-    view = [self clientView];
-    
-    if ([view isKindOfClass:[NSTextView class]])
-    {
-        NSUInteger        index, numberOfLines, stringLength, lineEnd, contentEnd;
-        NSString        *text;
-        CGFloat         oldThickness, newThickness;
-        
-        text = [view string];
-        stringLength = [text length];
-        [lineIndices release];
-        lineIndices = [[NSMutableArray alloc] init];
-        
-        index = 0;
-        numberOfLines = 0;
-        
-        do
-        {
-            [lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
-            
-            index = NSMaxRange([text lineRangeForRange:NSMakeRange(index, 0)]);
-            numberOfLines++;
-        }
-        while (index < stringLength);
-
-        // Check if text ends with a new line.
-        [text getLineStart:NULL end:&lineEnd contentsEnd:&contentEnd forRange:NSMakeRange([[lineIndices lastObject] unsignedIntegerValue], 0)];
-        if (contentEnd < lineEnd)
-        {
-            [lineIndices addObject:[NSNumber numberWithUnsignedInteger:index]];
-        }
-
-        oldThickness = [self ruleThickness];
-        newThickness = [self requiredThickness];
-        if (fabs(oldThickness - newThickness) > 1)
-        {
-			NSInvocation			*invocation;
-			
-			// Not a good idea to resize the view during calculations (which can happen during
-			// display). Do a delayed perform (using NSInvocation since arg is a float).
-			invocation = [NSInvocation invocationWithMethodSignature:[self methodSignatureForSelector:@selector(setRuleThickness:)]];
-			[invocation setSelector:@selector(setRuleThickness:)];
-			[invocation setTarget:self];
-			[invocation setArgument:&newThickness atIndex:2];
-			
-			[invocation performSelector:@selector(invoke) withObject:nil afterDelay:0.0];
-        }
-	}
-}
-
 - (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index inText:(NSString *)text
 {
-	/*
-    NSUInteger			left, right, mid, lineStart;
-	NSMutableArray		*lines;
-
-	lines = [self lineIndices];
-	
-    // Binary search
-    left = 0;
-    right = [lines count];
-
-    while ((right - left) > 1)
-    {
-        mid = (right + left) / 2;
-        lineStart = [[lines objectAtIndex:mid] unsignedIntegerValue];
-        
-        if (index < lineStart)
-        {
-            right = mid;
-        }
-        else if (index > lineStart)
-        {
-            left = mid;
-        }
-        else
-        {
-            return mid;
-        }
-    }
-    return left;
-	 */
 	return [(WCTextStorage *)[(WCTextView *)[self clientView] textStorage] lineNumberForCharacterIndex:index];
 }
 
@@ -637,6 +576,21 @@
                     
                     stringSize = [labelText sizeWithAttributes:textAttributes];
 					
+					WCBreakpoint *breakpoint = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
+					if (breakpoint != nil)
+					{
+						if ([breakpoint isActive])
+							currentTextAttributes = [self markerTextAttributes];
+						else
+							currentTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[self font],NSFontAttributeName,[NSColor textColor],NSForegroundColorAttributeName, nil];
+						
+						NSRect bRect = NSMakeRect(NSMinX(bounds), ypos, NSWidth(bounds), NSHeight(rects[0]));
+						
+						[[WCGeneralPerformer sharedPerformer] drawBreakpoint:breakpoint inRect:bRect];
+					}
+					else
+						currentTextAttributes = textAttributes;
+					
 					if (showErrorBadges) {
 						WCBuildMessage *error = [[(WCTextView *)[self clientView] file] errorMessageAtLineNumber:line];
 						
@@ -685,21 +639,6 @@
 							
 							[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
 						}
-					}
-					
-					WCBreakpoint *breakpoint = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
-					if (breakpoint == nil)
-					{
-						currentTextAttributes = textAttributes;
-					}
-					else
-					{
-						if ([breakpoint isActive])
-							currentTextAttributes = [self markerTextAttributes];
-						
-						NSRect bRect = NSMakeRect(NSMinX(bounds)+2.0, ypos, NSWidth(bounds)-2.0, NSHeight(rects[0])-2.0);
-						
-						[[WCGeneralPerformer sharedPerformer] drawBreakpoint:breakpoint inRect:bRect];
 					}
 					
                     // Draw string flush right, centered vertically within the line

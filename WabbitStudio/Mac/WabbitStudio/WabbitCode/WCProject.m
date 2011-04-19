@@ -527,6 +527,11 @@ static NSImage *_appIcon = nil;
 	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
 }
 - (void)jumpToBreakpoint:(WCBreakpoint *)breakpoint; {
+	if ([breakpoint breakpointType] == WCBreakpointTypeProject) {
+		NSBeep();
+		return;
+	}
+	
 	WCFileViewController *controller = [self addFileViewControllerForFile:[breakpoint file] inTabViewContext:[self currentTabViewContext]];
 	WCTextView *textView = [controller textView];
 	NSRange range = [breakpoint breakpointRange];

@@ -9,6 +9,7 @@
 #import <Foundation/NSObject.h>
 
 #define NS_LOCALIZED_STRING_DELETE NSLocalizedString(@"Delete",@"Delete")
+#define NS_LOCALIZED_STRING_DELETE_ALL NSLocalizedString(@"Delete All",@"Delete All")
 #define NS_LOCALIZED_STRING_CANCEL NSLocalizedString(@"Cancel",@"Cancel")
 #define NS_LOCALIZED_STRING_CREATE NSLocalizedString(@"Create",@"Create")
 #define NS_LOCALIZED_STRING_ADD NSLocalizedString(@"Add",@"Add")

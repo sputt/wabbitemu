@@ -50,6 +50,12 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	return copy;
 }
 
+- (BOOL)isLeaf {
+	if ([self breakpointType] == WCBreakpointTypeLine)
+		return YES;
+	return NO;
+}
+
 - (NSString *)name {
 	switch ([self breakpointType]) {
 		case WCBreakpointTypeLine: {
@@ -69,7 +75,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 - (NSImage *)icon {
 	switch ([self breakpointType]) {
 		case WCBreakpointTypeLine: {
-			NSImage *retval = [[[NSImage alloc] initWithSize:NSMakeSize(24.0, 12.0)] autorelease];
+			NSImage *retval = [[[NSImage alloc] initWithSize:NSMakeSize(32.0, 14.0)] autorelease];
 			[retval setFlipped:YES];
 			
 			[retval lockFocus];
@@ -118,6 +124,8 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 }
 @dynamic breakpointRange;
 - (NSRange)breakpointRange {
+	if ([self breakpointType] == WCBreakpointTypeFile)
+		return NSMakeRange(0, 0);
 	return NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0);
 }
 @end
