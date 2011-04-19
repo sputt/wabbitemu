@@ -33,33 +33,16 @@
 
 @interface NoodleLineNumberView : NSRulerView
 {
-    // Array of character indices for the beginning of each line
-    NSMutableArray      *lineIndices;
-	// Maps line numbers to markers
-	NSMutableDictionary	*linesToMarkers;
-	NSFont              *font;
-	NSColor				*textColor;
-	NSColor				*alternateTextColor;
-	NSColor				*backgroundColor;
 	BOOL hasPerformedSetup;
-	
 	WCBreakpoint *_breakpointForContextualMenu;
 }
 
 - (id)initWithScrollView:(NSScrollView *)aScrollView;
 
-- (void)setFont:(NSFont *)aFont;
 - (NSFont *)font;
-
-- (void)setTextColor:(NSColor *)color;
 - (NSColor *)textColor;
-
-- (void)setAlternateTextColor:(NSColor *)color;
 - (NSColor *)alternateTextColor;
-
-- (void)setBackgroundColor:(NSColor *)color;
 - (NSColor *)backgroundColor;
-
 - (NSUInteger)lineNumberForLocation:(CGFloat)location;
 
 @end
