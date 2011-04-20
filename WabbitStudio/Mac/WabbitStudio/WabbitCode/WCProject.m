@@ -45,6 +45,7 @@
 #import "WCSyntaxHighlighter.h"
 #import "WCBreakpointsViewController.h"
 #import "WCBreakpoint.h"
+#import "WCFileWindowController.h"
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import <BWToolkitFramework/BWToolkitFramework.h>
@@ -88,6 +89,8 @@ static NSImage *_appIcon = nil;
 - (void)_applyProjectSettings;
 
 - (void)_deleteObjects:(NSArray *)objects deleteFiles:(BOOL)deleteFiles;
+
+- (void)_openSeparateEditorForFile:(WCFile *)file;
 @end
 
 @implementation WCProject
@@ -129,7 +132,8 @@ static NSImage *_appIcon = nil;
 
 - (void)windowControllerDidLoadNib:(NSWindowController *)controller {
 	[super windowControllerDidLoadNib:controller];
-	// Add any code here that needs to be executed once the windowController has loaded the document's window.
+	
+	[controller setShouldCloseDocument:YES];
 	
 	[_tabBarControl setCanCloseOnlyTab:YES];
 	[_tabBarControl setStyleNamed:@"Unified"];
@@ -145,8 +149,6 @@ static NSImage *_appIcon = nil;
 	[self setCurrentViewController:[self projectFilesOutlineViewController]];
 	
 	[self _applyProjectSettings];
-	
-	//[_tabBarControl setAutomaticallyAnimates:YES];
 	
 	NSString *identifier = [NSString stringWithFormat:@"%@ToolbarIdentifier",[self className]];
 	NSToolbar *toolbar = [[[NSToolbar alloc] initWithIdentifier:identifier] autorelease];
@@ -445,6 +447,9 @@ static NSImage *_appIcon = nil;
 		}
 		
 		[[tabViewItem tabView] removeTabViewItem:tabViewItem];
+		
+		if ([[[tabView window] windowController] isKindOfClass:[WCFileWindowController class]])
+			[[tabView window] close];
 	}];
 	
 	return NO;
@@ -876,6 +881,8 @@ static NSImage *_appIcon = nil;
 }
 @dynamic currentTabViewContext;
 - (id <WCTabViewContext>)currentTabViewContext {
+	if ([[[[NSApplication sharedApplication] keyWindow] windowController] isKindOfClass:[WCFileWindowController class]])
+		return [[[NSApplication sharedApplication] keyWindow] windowController];
 	return self;
 }
 #pragma mark IBActions
@@ -1197,6 +1204,16 @@ static NSImage *_appIcon = nil;
 	// select the new tab
 	[tabView selectTabViewItem:[items objectAtIndex:index]];
 }
+
+- (IBAction)openInSeparateEditor:(id)sender; {
+	NSArray *nodes = [[self projectFilesOutlineViewController] selectedNodes];
+	
+	if ([nodes count] == 1)
+		[self _openSeparateEditorForFile:[[nodes lastObject] representedObject]];
+	else
+		for (NSTreeNode *node in nodes)
+			[self _openSeparateEditorForFile:[node representedObject]];
+}
 #pragma mark -
 #pragma mark *** Private Methods ***
 - (void)_addBuildMessageForString:(NSString *)string; {
@@ -1308,6 +1325,24 @@ static NSImage *_appIcon = nil;
 		[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectNumberOfFilesDidChangeNotification object:self];
 	}
 }
+
+- (void)_openSeparateEditorForFile:(WCFile *)file; {
+	WCFileWindowController *mController = nil;
+	for (id controller in [self windowControllers]) {
+		if ([controller isKindOfClass:[WCFileWindowController class]] &&
+			[controller file] == file) {
+			mController = controller;
+			break;
+		}
+	}
+	
+	if (!mController) {
+		mController = [WCFileWindowController fileWindowControllerWithFile:file];
+		[self addWindowController:mController];
+	}
+	
+	[mController showWindow:nil];
+}
 #pragma mark Project Settings
 - (void)_updateProjectSettings; {
 	[[self projectSettings] setObject:[[[self projectFilesOutlineViewController] outlineView] expandedItemUUIDs] forKey:kWCProjectSettingsProjectFilesOutlineViewExpandedItemUUIDsKey];
@@ -1349,7 +1384,12 @@ static NSImage *_appIcon = nil;
 		
 		for (WCFile *file in tFiles) {
 			if ([[file UUID] isEqualToString:sUUID]) {
-				[[[self tabBarControl] tabView] selectTabViewItemWithIdentifier:file];
+				for (NSTabViewItem *item in [[[self tabBarControl] tabView] tabViewItems]) {
+					if ([item identifier] == file) {
+						[[[self tabBarControl] tabView] selectTabViewItem:item];
+						break;
+					}
+				}
 				break;
 			}
 		}
@@ -1371,16 +1411,23 @@ static NSImage *_appIcon = nil;
 }
 #pragma mark IBActions
 - (IBAction)_outlineViewDoubleClick:(id)sender; {
-	NSTreeNode *node = [(NSTreeController *)[[[self projectFilesOutlineViewController] outlineView] dataSource] selectedNode];
-	WCFile *file = [node representedObject];
+	NSArray *selectedNodes = [[self projectFilesOutlineViewController] selectedNodes];
 	
-	if ([[self textFiles] containsObject:file])
-		[self addFileViewControllerForFile:file inTabViewContext:[self currentTabViewContext]];
-	else if ([file isDirectory]) {
-		if ([[[self projectFilesOutlineViewController] outlineView] isItemExpanded:node])
-			[[[self projectFilesOutlineViewController] outlineView] collapseItem:node];
-		else
-			[[[self projectFilesOutlineViewController] outlineView] expandItem:node];
+	if ([selectedNodes count] == 1) {
+		if ([[self textFiles] containsObject:[[selectedNodes lastObject] representedObject]])
+			[self addFileViewControllerForFile:[[selectedNodes lastObject] representedObject] inTabViewContext:[self currentTabViewContext]];
+		else if ([[[selectedNodes lastObject] representedObject] isDirectory]) {
+			if ([[[self projectFilesOutlineViewController] outlineView] isItemExpanded:[selectedNodes lastObject]])
+				[[[self projectFilesOutlineViewController] outlineView] collapseItem:[selectedNodes lastObject]];
+			else
+				[[[self projectFilesOutlineViewController] outlineView] expandItem:[selectedNodes lastObject]];
+		}
+	}
+	else {
+		for (NSTreeNode *node in selectedNodes) {
+			if ([[self textFiles] containsObject:[node representedObject]])
+				[self addFileViewControllerForFile:[node representedObject] inTabViewContext:[self currentTabViewContext]];
+		}
 	}
 }
 - (IBAction)_buildMessagesOutlineViewDoubleAction:(id)sender {

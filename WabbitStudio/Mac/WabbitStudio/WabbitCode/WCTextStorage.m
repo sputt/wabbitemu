@@ -89,6 +89,7 @@
 	
 	// only calculate line indexes that could have changed; i.e. lines after the line that was edited
 	[self _calculateLineStartIndexesFromLineNumber:[self lineNumberForCharacterIndex:range.location]];
+	//[self _calculateLineStartIndexes];
 	
 	[self edited:NSTextStorageEditedCharacters range:range changeInLength:[str length] - range.length];
 }

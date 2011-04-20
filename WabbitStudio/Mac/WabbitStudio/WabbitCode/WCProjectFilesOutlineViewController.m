@@ -34,6 +34,10 @@
 	return @"WCProjectFilesOutlineView";
 }
 
+- (NSArray *)selectedNodes {
+	return [(NSTreeController *)[[self outlineView] dataSource] selectedNodes];
+}
+
 - (NSArray *)selectedObjects {
 	return [(NSTreeController *)[[self outlineView] dataSource] selectedRepresentedObjects];
 }

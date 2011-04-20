@@ -225,96 +225,97 @@
 	for (NSUInteger line = [self lineNumberForCharacterIndex:range.location inText:nil]; line < count; line++) {
 		index = [[lines objectAtIndex:line] unsignedIntegerValue];
 		
-		if (!NSLocationInRange(index, range))
-			break;
-		
-		NSUInteger rectCount = 0;
-		NSRectArray rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
-										 withinSelectedCharacterRange:nullRange
-													  inTextContainer:container
-															rectCount:&rectCount];
-		
-		if (rectCount == 0)
-			break;
-		
-		// Note that the ruler view is only as tall as the visible
-		// portion. Need to compensate for the clipview's coordinates.
-		CGFloat ypos = yinset + NSMinY(rects[0]) - NSMinY(visibleRect);
-		// Line numbers are internally stored starting at 0
-		NSString *labelText = [NSString stringWithFormat:@"%d", line + 1];
-		
-		NSSize stringSize = [labelText sizeWithAttributes:textAttributes];
-		
-		WCBreakpoint *breakpoint = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
-		if (breakpoint != nil) {
-			if ([breakpoint isActive])
-				currentTextAttributes = [self markerTextAttributes];
-			else
-				currentTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[self font],NSFontAttributeName,[NSColor textColor],NSForegroundColorAttributeName, nil];
+		if (NSLocationInRange(index, range)) {
+			NSUInteger rectCount = 0;
+			NSRectArray rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
+											 withinSelectedCharacterRange:nullRange
+														  inTextContainer:container
+																rectCount:&rectCount];
 			
-			NSRect bRect = NSMakeRect(NSMinX(bounds), ypos, NSWidth(bounds), NSHeight(rects[0]));
-			
-			[[WCGeneralPerformer sharedPerformer] drawBreakpoint:breakpoint inRect:bRect];
-		}
-		else
-			currentTextAttributes = textAttributes;
-		
-		if (showErrorBadges) {
-			WCBuildMessage *error = [[(WCTextView *)[self clientView] file] errorMessageAtLineNumber:line];
-			
-			if (error) {
-				if (errorLineHighlight) {
-					NSRect lineRect = NSMakeRect(bounds.origin.x,ypos,NSWidth(bounds),NSHeight(rects[0]));
-					NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey];
+			if (rectCount > 0) {
+				// Note that the ruler view is only as tall as the visible
+				// portion. Need to compensate for the clipview's coordinates.
+				CGFloat ypos = yinset + NSMinY(rects[0]) - NSMinY(visibleRect);
+				// Line numbers are internally stored starting at 0
+				NSString *labelText = [NSString stringWithFormat:@"%d", line + 1];
+				
+				NSSize stringSize = [labelText sizeWithAttributes:textAttributes];
+				
+				WCBreakpoint *breakpoint = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
+				if (breakpoint != nil) {
+					if ([breakpoint isActive])
+						currentTextAttributes = [self markerTextAttributes];
+					else
+						currentTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[self font],NSFontAttributeName,[NSColor textColor],NSForegroundColorAttributeName, nil];
 					
-					[[baseColor colorWithAlphaComponent:0.25] setFill];
-					NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
-					[[baseColor colorWithAlphaComponent:0.5] setFill];
-					NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
-					NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
+					NSRect bRect = NSMakeRect(NSMinX(bounds), ypos, NSWidth(bounds), NSHeight(rects[0]));
+					
+					[[WCGeneralPerformer sharedPerformer] drawBreakpoint:breakpoint inRect:bRect];
+				}
+				else
+					currentTextAttributes = textAttributes;
+				
+				if (showErrorBadges) {
+					WCBuildMessage *error = [[(WCTextView *)[self clientView] file] errorMessageAtLineNumber:line];
+					
+					if (error) {
+						if (errorLineHighlight) {
+							NSRect lineRect = NSMakeRect(bounds.origin.x,ypos,NSWidth(bounds),NSHeight(rects[0]));
+							NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey];
+							
+							[[baseColor colorWithAlphaComponent:0.25] setFill];
+							NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
+							[[baseColor colorWithAlphaComponent:0.5] setFill];
+							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
+							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
+						}
+						
+						NSRect drawRect = NSMakeRect(bounds.origin.x,ypos + (NSHeight(rects[0]) - BADGE_THICKNESS)/2.0,BADGE_THICKNESS, BADGE_THICKNESS);
+						drawRect.size.width = drawRect.size.height = BADGE_THICKNESS;
+						
+						NSImage *icon = [error icon];
+						[icon setSize:NSMakeSize(BADGE_THICKNESS, BADGE_THICKNESS)];
+						
+						[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+					}
 				}
 				
-				NSRect drawRect = NSMakeRect(bounds.origin.x,ypos + (NSHeight(rects[0]) - BADGE_THICKNESS)/2.0,BADGE_THICKNESS, BADGE_THICKNESS);
-				drawRect.size.width = drawRect.size.height = BADGE_THICKNESS;
+				if (showWarningBadges) {
+					WCBuildMessage *warning = [[(WCTextView *)[self clientView] file] warningMessageAtLineNumber:line];
+					
+					if (warning) {
+						if (warningLineHighlight) {
+							NSRect lineRect = NSMakeRect(bounds.origin.x,ypos,NSWidth(bounds),NSHeight(rects[0]));
+							NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorWarningLineHighlightColorKey];
+							
+							[[baseColor colorWithAlphaComponent:0.25] setFill];
+							NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
+							[[baseColor colorWithAlphaComponent:0.5] setFill];
+							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
+							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
+						}
+						
+						NSRect drawRect = NSMakeRect(bounds.origin.x,ypos + (NSHeight(rects[0]) - BADGE_THICKNESS)/2.0,BADGE_THICKNESS, BADGE_THICKNESS);
+						drawRect.size.width = drawRect.size.height = BADGE_THICKNESS;
+						
+						NSImage *icon = [warning icon];
+						[icon setSize:NSMakeSize(BADGE_THICKNESS, BADGE_THICKNESS)];
+						
+						[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+					}
+				}
 				
-				NSImage *icon = [error icon];
-				[icon setSize:NSMakeSize(BADGE_THICKNESS, BADGE_THICKNESS)];
-				
-				[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+				// Draw string flush right, centered vertically within the line
+				[labelText drawInRect:
+				 NSMakeRect(NSWidth(bounds) - stringSize.width - RULER_MARGIN,
+							ypos + floor(NSHeight(rects[0])/2.0) - floor(stringSize.height / 2.0),
+							NSWidth(bounds) - RULER_MARGIN * 2.0, NSHeight(rects[0]))
+					   withAttributes:currentTextAttributes];
 			}
 		}
 		
-		if (showWarningBadges) {
-			WCBuildMessage *warning = [[(WCTextView *)[self clientView] file] warningMessageAtLineNumber:line];
-			
-			if (warning) {
-				if (warningLineHighlight) {
-					NSRect lineRect = NSMakeRect(bounds.origin.x,ypos,NSWidth(bounds),NSHeight(rects[0]));
-					NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorWarningLineHighlightColorKey];
-					
-					[[baseColor colorWithAlphaComponent:0.25] setFill];
-					NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
-					[[baseColor colorWithAlphaComponent:0.5] setFill];
-					NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
-					NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
-				}
-				
-				NSRect drawRect = NSMakeRect(bounds.origin.x,ypos + (NSHeight(rects[0]) - BADGE_THICKNESS)/2.0,BADGE_THICKNESS, BADGE_THICKNESS);
-				drawRect.size.width = drawRect.size.height = BADGE_THICKNESS;
-				
-				NSImage *icon = [warning icon];
-				[icon setSize:NSMakeSize(BADGE_THICKNESS, BADGE_THICKNESS)];
-				
-				[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
-			}
-		}
-		
-		// Draw string flush right, centered vertically within the line
-		[labelText drawInRect:
-		 NSMakeRect(NSWidth(bounds) - stringSize.width - RULER_MARGIN,
-					ypos + floor(NSHeight(rects[0])/2.0) - floor(stringSize.height / 2.0),
-					NSWidth(bounds) - RULER_MARGIN * 2.0, NSHeight(rects[0]))
-			   withAttributes:currentTextAttributes];
+		if (index > NSMaxRange(range))
+			break;
 	}
 }
 #pragma mark Menus

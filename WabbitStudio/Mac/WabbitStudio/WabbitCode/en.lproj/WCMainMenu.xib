@@ -856,6 +856,24 @@
 									<reference key="NSOnImage" ref="1033313550"/>
 									<reference key="NSMixedImage" ref="310636482"/>
 								</object>
+								<object class="NSMenuItem" id="845645359">
+									<reference key="NSMenu" ref="383618694"/>
+									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsSeparator">YES</bool>
+									<string key="NSTitle"/>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="1033313550"/>
+									<reference key="NSMixedImage" ref="310636482"/>
+								</object>
+								<object class="NSMenuItem" id="417485796">
+									<reference key="NSMenu" ref="383618694"/>
+									<string key="NSTitle">Open in Separate Editor</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="1033313550"/>
+									<reference key="NSMixedImage" ref="310636482"/>
+								</object>
 							</object>
 						</object>
 					</object>
@@ -1575,6 +1593,14 @@
 					</object>
 					<int key="connectionID">623</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">openInSeparateEditor:</string>
+						<reference key="source" ref="1014"/>
+						<reference key="destination" ref="417485796"/>
+					</object>
+					<int key="connectionID">626</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -2151,6 +2177,8 @@
 							<reference ref="493173783"/>
 							<reference ref="153550497"/>
 							<reference ref="152393187"/>
+							<reference ref="417485796"/>
+							<reference ref="845645359"/>
 						</object>
 						<reference key="parent" ref="808667872"/>
 					</object>
@@ -2384,6 +2412,16 @@
 						<reference key="object" ref="874707985"/>
 						<reference key="parent" ref="466310130"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">624</int>
+						<reference key="object" ref="417485796"/>
+						<reference key="parent" ref="383618694"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">625</int>
+						<reference key="object" ref="845645359"/>
+						<reference key="parent" ref="383618694"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -2563,6 +2601,8 @@
 					<string>617.IBPluginDependency</string>
 					<string>620.IBPluginDependency</string>
 					<string>622.IBPluginDependency</string>
+					<string>624.IBPluginDependency</string>
+					<string>625.IBPluginDependency</string>
 					<string>72.IBPluginDependency</string>
 					<string>72.ImportedFromIB2</string>
 					<string>73.IBPluginDependency</string>
@@ -2766,6 +2806,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -2805,7 +2847,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">623</int>
+			<int key="maxID">626</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -3297,6 +3339,7 @@
 							<string>commentOrUncomment:</string>
 							<string>gotoLine:</string>
 							<string>jumpToDefinition:</string>
+							<string>openInSeparateEditor:</string>
 							<string>shiftLeft:</string>
 							<string>shiftRight:</string>
 							<string>toggleWrapLines:</string>
@@ -3304,6 +3347,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -3322,6 +3366,7 @@
 							<string>commentOrUncomment:</string>
 							<string>gotoLine:</string>
 							<string>jumpToDefinition:</string>
+							<string>openInSeparateEditor:</string>
 							<string>shiftLeft:</string>
 							<string>shiftRight:</string>
 							<string>toggleWrapLines:</string>
@@ -3343,6 +3388,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">jumpToDefinition:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">openInSeparateEditor:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

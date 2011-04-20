@@ -33,4 +33,6 @@
 - (IBAction)useSelectionForFindInProject:(id)sender;
 - (IBAction)toggleWrapLines:(id)sender;
 - (IBAction)gotoLine:(id)sender;
+
+- (IBAction)openInSeparateEditor:(id)sender;
 @end

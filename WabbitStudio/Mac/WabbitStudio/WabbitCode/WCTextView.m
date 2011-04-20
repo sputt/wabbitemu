@@ -26,6 +26,7 @@
 #import "WCGotoLineSheetController.h"
 #import "NSTextView+WCExtensions.h"
 #import "WCBreakpoint.h"
+#import "WCFileWindowController.h"
 
 // without this xcode complains about the restrict qualifiers in the regexkit header
 #define restrict
@@ -490,6 +491,19 @@
 }
 - (IBAction)gotoLine:(id)sender; {
 	[WCGotoLineSheetController presentGotoLineSheetForTextView:self];
+}
+
+- (IBAction)openInSeparateEditor:(id)sender; {
+	if ([_file project] == nil || [[[self window] windowController] isKindOfClass:[WCFileWindowController class]]) {
+		NSBeep();
+		return;
+	}
+	
+	WCFileWindowController *controller = [WCFileWindowController fileWindowControllerWithFile:_file];
+	
+	[[_file project] addWindowController:controller];
+	
+	[controller showWindow:nil];
 }
 #pragma mark *** Private Methods ***
 #pragma mark IBActions

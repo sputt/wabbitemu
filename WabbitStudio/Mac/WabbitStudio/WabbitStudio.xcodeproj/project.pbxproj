@@ -76,6 +76,8 @@
 		0769A1E31334023F00080A96 /* WCProjectFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 0769A1E21334023A00080A96 /* WCProjectFile.m */; };
 		0769A1ED13340FF900080A96 /* NSFileManager+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0769A1EC13340FE800080A96 /* NSFileManager+WCExtensions.m */; };
 		0769A1F013342F9000080A96 /* WCGeneralPerformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0769A1EF13342F7F00080A96 /* WCGeneralPerformer.m */; };
+		076B6DEB135E62B600754CDE /* WCFileWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 076B6DEA135E62B600754CDE /* WCFileWindowController.m */; };
+		076B6DEF135E644400754CDE /* WCFileWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 076B6DED135E644400754CDE /* WCFileWindow.xib */; };
 		077016CE1348F41300FD0CAD /* WCNewFileWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 077016CD1348F41300FD0CAD /* WCNewFileWindowController.m */; };
 		077016D11348F89200FD0CAD /* WCNewFileWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 077016CF1348F89200FD0CAD /* WCNewFileWindow.xib */; };
 		077016D41348FAE600FD0CAD /* WCFileTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = 077016D31348FAE600FD0CAD /* WCFileTemplate.m */; };
@@ -315,6 +317,9 @@
 		0769A1EC13340FE800080A96 /* NSFileManager+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSFileManager+WCExtensions.m"; sourceTree = "<group>"; };
 		0769A1EE13342F7800080A96 /* WCGeneralPerformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGeneralPerformer.h; sourceTree = "<group>"; };
 		0769A1EF13342F7F00080A96 /* WCGeneralPerformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCGeneralPerformer.m; sourceTree = "<group>"; };
+		076B6DE9135E62B600754CDE /* WCFileWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFileWindowController.h; sourceTree = "<group>"; };
+		076B6DEA135E62B600754CDE /* WCFileWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFileWindowController.m; sourceTree = "<group>"; };
+		076B6DEE135E644400754CDE /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCFileWindow.xib; sourceTree = "<group>"; };
 		077016CC1348F41300FD0CAD /* WCNewFileWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCNewFileWindowController.h; sourceTree = "<group>"; };
 		077016CD1348F41300FD0CAD /* WCNewFileWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCNewFileWindowController.m; sourceTree = "<group>"; };
 		077016D01348F89200FD0CAD /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCNewFileWindow.xib; sourceTree = "<group>"; };
@@ -626,6 +631,7 @@
 				07D28D55135274BC00437AA1 /* WCUnsavedFilesWindow.xib */,
 				072F7AE6135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib */,
 				07B54926135D755B00B34C46 /* WCBreakpointsView.xib */,
+				076B6DED135E644400754CDE /* WCFileWindow.xib */,
 			);
 			name = Xibs;
 			path = en.lproj;
@@ -780,6 +786,8 @@
 				07B54924135D6F8700B34C46 /* WCBreakpointsViewController.m */,
 				07C8B068135E244D00DC8322 /* WCBreakpointsOutlineView.h */,
 				07C8B069135E244D00DC8322 /* WCBreakpointsOutlineView.m */,
+				076B6DE9135E62B600754CDE /* WCFileWindowController.h */,
+				076B6DEA135E62B600754CDE /* WCFileWindowController.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -969,6 +977,7 @@
 				07B54920135D6DE500B34C46 /* ErrorsAndWarnings.png in Resources */,
 				07B54922135D6F5600B34C46 /* Breakpoints16x16.png in Resources */,
 				07B54928135D755B00B34C46 /* WCBreakpointsView.xib in Resources */,
+				076B6DEF135E644400754CDE /* WCFileWindow.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1082,6 +1091,7 @@
 				07B5491E135CE7B200B34C46 /* WCBreakpoint.m in Sources */,
 				07B54925135D6F8800B34C46 /* WCBreakpointsViewController.m in Sources */,
 				07C8B06A135E244E00DC8322 /* WCBreakpointsOutlineView.m in Sources */,
+				076B6DEB135E62B600754CDE /* WCFileWindowController.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1144,6 +1154,14 @@
 				0758E82F134AD50000280D9D /* en */,
 			);
 			name = WCFindInProjectView.xib;
+			sourceTree = "<group>";
+		};
+		076B6DED135E644400754CDE /* WCFileWindow.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				076B6DEE135E644400754CDE /* en */,
+			);
+			name = WCFileWindow.xib;
 			sourceTree = "<group>";
 		};
 		077016CF1348F89200FD0CAD /* WCNewFileWindow.xib */ = {

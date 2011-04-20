@@ -116,6 +116,8 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 - (IBAction)nextTab:(id)sender;
 - (IBAction)previousTab:(id)sender;
 
+- (IBAction)openInSeparateEditor:(id)sender;
+
 - (WCFileViewController *)addFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext;
 - (WCFileViewController *)fileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext selectTab:(BOOL)selectTab;
 - (void)removeFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext;
