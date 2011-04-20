@@ -24,13 +24,37 @@
 	
 	_images = [[NSArray alloc] initWithObjects:[NSImage imageNamed:@"Directory16x16"],[NSImage imageNamed:@"Symbols16x16"],[NSImage imageNamed:@"Search16x16"],[NSImage imageNamed:@"ErrorsAndWarnings"],[NSImage imageNamed:@"Breakpoints16x16"], nil];
 	_selectors = [[NSArray alloc] initWithObjects:NSStringFromSelector(@selector(viewProject:)),NSStringFromSelector(@selector(viewSymbols:)),NSStringFromSelector(@selector(viewSearch:)),NSStringFromSelector(@selector(viewBuildMessages:)),NSStringFromSelector(@selector(viewBreakpoints:)), nil];
+	_tooltips = [[NSArray alloc] initWithObjects:NSLocalizedString(@"Show the Project view", @"Show the Project view"),NSLocalizedString(@"Show the Symbols view", @"Show the Symbols view"),NSLocalizedString(@"Show the Search view", @"Show the Search view"),NSLocalizedString(@"Show the Build Messages view", @"Show the Build Messages view"),NSLocalizedString(@"Show the Breakpoints view", @"Show the Breakpoints view"), nil];
 	
 	return self;
 }
 
 - (void)dealloc {
 	[_images release];
+	[_selectors release];
+	[_tooltips release];
     [super dealloc];
+}
+
+- (void)resetCursorRects {
+	[super resetCursorRects];
+	[self removeAllToolTips];
+	
+	NSRect bounds = [self bounds];
+	CGFloat startX = floor(NSWidth(bounds)/2.0) - floor(([[[self images] lastObject] size].width * 2 * [[self images] count])/2.0);
+	NSUInteger index;
+	
+	for (index = 0; index < [[self images] count]; index++) {
+		NSImage *image = [[self images] objectAtIndex:index];
+		NSSize size = [image size];
+		NSRect frame = NSMakeRect(startX + (size.width * 2 * index), bounds.origin.y, size.width * 2, NSHeight(bounds));
+		
+		[self addToolTipRect:frame owner:self userData:[_tooltips objectAtIndex:index]];
+	}
+}
+
+- (NSString *)view:(NSView *)view stringForToolTip:(NSToolTipTag)tag point:(NSPoint)point userData:(void *)data {
+	return (NSString *)data;
 }
 
 - (void)mouseDown:(NSEvent *)theEvent {

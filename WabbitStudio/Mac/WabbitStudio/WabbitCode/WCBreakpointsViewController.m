@@ -42,7 +42,7 @@
 		for (WCBreakpoint *breakpoint in [file allBreakpointsSortedByLineNumber])
 			[[parent mutableChildNodes] addObject:breakpoint];
 	}
-	
+
 	[super loadView];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileNumberOfBreakpointsDidChange:) name:kWCFileNumberOfBreakpointsDidChangeNotification object:nil];

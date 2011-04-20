@@ -21,7 +21,8 @@ extern NSString *const kWCPreferencesAddFilesToProjectGroupOrFolderReferencesKey
 enum WCPreferencesOnStartup {
 	WCPreferencesOnStartupShowNewProjectWindow = 0,
 	WCPreferencesOnStartupOpenMostRecentProject = 1,
-	WCPreferencesOnStartupDoNothing = 2
+	WCPreferencesOnStartupDoNothing = 2,
+	WCPreferencesOnStartupOpenMostRecentDocument = 3
 };
 typedef NSUInteger WCPreferencesOnStartup;
 extern NSString *const kWCPreferencesOnStartupKey;

@@ -115,6 +115,7 @@ static NSImage *_appIcon = nil;
 	_currentViewController = nil;
 	[_cachedAbsoluteFilePaths release];
 	[_buildMessages release];
+	[_breakpointsViewController release];
 	[_projectFilesOutlineViewController release];
 	[_buildMessagesViewController release];
 	[_symbolsViewController release];

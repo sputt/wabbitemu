@@ -13,7 +13,7 @@
 
 @class WCTextView,WCMutableRangeArray;
 
-@interface WCFindBarViewController : NSViewController <NSAnimationDelegate,NSUserInterfaceValidations> {
+@interface WCFindBarViewController : NSViewController <NSAnimationDelegate,NSUserInterfaceValidations,NSControlTextEditingDelegate> {
 @private
 	IBOutlet NSSearchField *_searchField;
 	IBOutlet NSTextField *_replaceTextField;
@@ -33,6 +33,8 @@
 	NSString *_replaceString;
 	WCMutableRangeArray *_findRanges;
 }
+@property (readonly,nonatomic) WCTextView *textView;
+@property (readonly,nonatomic) NSSearchField *searchField;
 @property (copy,nonatomic) NSString *findString;
 @property (copy,nonatomic) NSString *replaceString;
 @property (copy,nonatomic) NSString *matchesString;

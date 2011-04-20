@@ -34,6 +34,10 @@
 			if ([[[WCDocumentController sharedDocumentController] recentProjectURLs] count])
 				[[WCDocumentController sharedDocumentController] openDocumentWithContentsOfURL:[[[WCDocumentController sharedDocumentController] recentProjectURLs] firstObject] display:YES error:NULL];
 			break;
+		case WCPreferencesOnStartupOpenMostRecentDocument:
+			if ([[[WCDocumentController sharedDocumentController] recentDocumentURLs] count])
+				[[WCDocumentController sharedDocumentController] openDocumentWithContentsOfURL:[[[WCDocumentController sharedDocumentController] recentDocumentURLs] firstObject] display:YES error:NULL];
+			break;
 		case WCPreferencesOnStartupDoNothing:
 		default:
 			break;

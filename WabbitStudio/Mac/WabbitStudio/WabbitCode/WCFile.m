@@ -220,6 +220,24 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 - (NSUInteger)lineStartForBuildMessage:(WCBuildMessage *)message; {
 	return [[self textStorage] lineStartIndexForLineNumber:[message lineNumber]-1];
 }
+- (NSArray *)allBuildMessagesSortedByLineNumber; {
+	static NSArray *sortDescriptors = nil;
+	if (!sortDescriptors)
+		sortDescriptors = [[NSArray alloc] initWithObjects:[[[NSSortDescriptor alloc] initWithKey:@"lineNumber" ascending:YES selector:@selector(compare:)] autorelease], nil];
+	
+	NSMutableArray *retval = [NSMutableArray arrayWithCapacity:[_lineNumbersToErrorMessages count]+[_lineNumbersToWarningMessages count]];
+	
+	[retval addObjectsFromArray:[_lineNumbersToWarningMessages allValues]];
+	[retval addObjectsFromArray:[_lineNumbersToErrorMessages allValues]];
+	
+	[retval sortUsingDescriptors:sortDescriptors];
+	
+	return [[retval copy] autorelease];
+}
+
+- (NSUInteger)numberOfBuildMessages; {
+	return ([_lineNumbersToErrorMessages count] + [_lineNumbersToWarningMessages count]);
+}
 #pragma mark Breakpoints
 - (void)addBreakpoint:(WCBreakpoint *)breakpoint; {
 	if (!_lineNumbersToBreakpoints)

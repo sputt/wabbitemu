@@ -81,6 +81,8 @@ extern NSString *const kWCFileNameDidChangeNotification;
 - (void)removeAllBuildMessages;
 - (NSArray *)allErrorMessages;
 - (NSArray *)allWarningMessages;
+- (NSArray *)allBuildMessagesSortedByLineNumber;
+- (NSUInteger)numberOfBuildMessages;
 - (NSUInteger)lineStartForBuildMessage:(WCBuildMessage *)message;
 
 - (void)addBreakpoint:(WCBreakpoint *)breakpoint;

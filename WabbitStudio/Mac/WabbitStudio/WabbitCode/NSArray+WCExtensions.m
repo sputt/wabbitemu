@@ -35,40 +35,6 @@
 	}
 	return left;
 }
-// binary search; assumes the array is sorted
-- (NSUInteger)previousRangeIndexForCharacterIndex:(NSUInteger)index; {
-	NSUInteger left = 0, right = [self count], mid, lineStart;
-	
-	while ((right - left) > 1) {
-		mid = (right + left) / 2;
-		lineStart = [[self objectAtIndex:mid] rangeValue].location;
-		
-		if (index < lineStart)
-			right = mid;
-		else if (index > lineStart)
-			left = mid;
-		else
-			return mid;
-	}
-	return left;
-}
-// binary search; assumes the array is sorted
-- (NSUInteger)nextRangeIndexForCharacterIndex:(NSUInteger)index; {
-	NSUInteger left = 0, right = [self count], mid, lineStart;
-	
-	while ((right - left) > 1) {
-		mid = (right + left) / 2;
-		lineStart = [[self objectAtIndex:mid] rangeValue].location;
-		
-		if (index < lineStart)
-			right = mid;
-		else if (index > lineStart)
-			left = mid;
-		else
-			return (++mid < [self count])?mid:--mid;
-	}
-	return (++left < [self count])?left:--left;
-}
 
 - (WCFile *)fileMatchingAlias:(WCAlias *)alias; {
 	WCFile *mFile = nil;

@@ -37,6 +37,20 @@
 	_textView = nil;
     [super dealloc];
 }
+
+#pragma mark NSControlTextEditingDelegate
+- (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector; {
+	if (commandSelector == @selector(cancelOperation:)) {
+		[self closeFindBar:nil];
+		return YES;
+	}
+	else if (commandSelector == @selector(insertNewline:)) {
+		[self findNext:nil];
+		return YES;
+	}
+	return NO;
+}
+
 #pragma mark NSUserInterfaceValidations
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
 
@@ -63,6 +77,8 @@
 	}
 	return YES;
 }
+@synthesize textView=_textView;
+@synthesize searchField=_searchField;
 @synthesize findString=_findString;
 @synthesize matchesString=_matchesString;
 @synthesize ignoreCase=_ignoreCase;
@@ -139,7 +155,7 @@
 	NSRange searchRange = entireRange;
 	NSStringCompareOptions options = NSCaseInsensitiveSearch;
 	RKCompileOption rOptions = ([self ignoreCase])?(RKCompileUTF8|RKCompileMultiline):(RKCompileUTF8|RKCompileMultiline|RKCompileCaseless);
-	NSRange matchRange = NSMakeRange(NSNotFound, 0);
+	NSRange matchRange;
 	NSUInteger matches = 0;
 	NSDictionary *mAttributes = [[WCGeneralPerformer sharedPerformer] findAttributes];
 	
@@ -208,6 +224,8 @@
 			
 			searchRange = NSMakeRange(NSMaxRange(matchRange), entireRange.length-NSMaxRange(matchRange));
 		}
+		
+		CFRelease(tokenizer);
 	}
 	
 	_numberOfMatches = matches;
@@ -270,10 +288,32 @@
 }
 
 - (IBAction)replace:(id)sender; {
+	if (![self findString] ||
+		[[self findString] length] == 0) {
+		NSBeep();
+		return;
+	}
 	
+	if (![self replaceString])
+		[self setReplaceString:@""];
+	
+	NSString *compareString = ([self ignoreCase])?[[self findString] lowercaseString]:[self findString];
+	NSString *selectedString = ([self ignoreCase])?[[[[self textView] string] substringWithRange:[[self textView] selectedRange]] lowercaseString]:[[[self textView] string] substringWithRange:[[self textView] selectedRange]];
+	if (![compareString isEqualToString:selectedString]) {
+		NSBeep();
+		return;
+	}
+	
+	if ([[self textView] shouldChangeTextInRange:[[self textView] selectedRange] replacementString:[self replaceString]]) {
+		[[self textView] replaceCharactersInRange:[[self textView] selectedRange] withString:[self replaceString]];
+		[[self textView] didChangeText];
+	}
+	
+	[self find:nil];
 }
 - (IBAction)replaceAndFind:(id)sender; {
-	
+	[self replace:nil];
+	[self findNext:nil];
 }
 - (IBAction)replaceAll:(id)sender; {
 	if (![self findString] || ![[self findString] length] || ![self replaceString]) {
@@ -347,12 +387,14 @@
 		_closeAnimation = nil;
 		[[self view] removeFromSuperviewWithoutNeedingDisplay];
 		[self _removeEverything];
+		[_textView setFindBarViewController:nil];
 	}
 	else if (animation == _showAnimation) {
 		[[[self view] window] makeFirstResponder:_searchField];
 		[_searchField setNextKeyView:_textView];
 		[_showAnimation release];
 		_showAnimation = nil;
+		[_textView setFindBarViewController:self];
 	}
 	else {
 		[self setReplaceControlsVisible:![self replaceControlsVisible]];

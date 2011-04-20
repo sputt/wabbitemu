@@ -78,6 +78,7 @@
 		0769A1F013342F9000080A96 /* WCGeneralPerformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0769A1EF13342F7F00080A96 /* WCGeneralPerformer.m */; };
 		076B6DEB135E62B600754CDE /* WCFileWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 076B6DEA135E62B600754CDE /* WCFileWindowController.m */; };
 		076B6DEF135E644400754CDE /* WCFileWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 076B6DED135E644400754CDE /* WCFileWindow.xib */; };
+		076B6DF2135EDDCE00754CDE /* WCFindBarSearchField.m in Sources */ = {isa = PBXBuildFile; fileRef = 076B6DF1135EDDCB00754CDE /* WCFindBarSearchField.m */; };
 		077016CE1348F41300FD0CAD /* WCNewFileWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 077016CD1348F41300FD0CAD /* WCNewFileWindowController.m */; };
 		077016D11348F89200FD0CAD /* WCNewFileWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 077016CF1348F89200FD0CAD /* WCNewFileWindow.xib */; };
 		077016D41348FAE600FD0CAD /* WCFileTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = 077016D31348FAE600FD0CAD /* WCFileTemplate.m */; };
@@ -320,6 +321,8 @@
 		076B6DE9135E62B600754CDE /* WCFileWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFileWindowController.h; sourceTree = "<group>"; };
 		076B6DEA135E62B600754CDE /* WCFileWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFileWindowController.m; sourceTree = "<group>"; };
 		076B6DEE135E644400754CDE /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCFileWindow.xib; sourceTree = "<group>"; };
+		076B6DF0135EDDC800754CDE /* WCFindBarSearchField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFindBarSearchField.h; sourceTree = "<group>"; };
+		076B6DF1135EDDCB00754CDE /* WCFindBarSearchField.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFindBarSearchField.m; sourceTree = "<group>"; };
 		077016CC1348F41300FD0CAD /* WCNewFileWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCNewFileWindowController.h; sourceTree = "<group>"; };
 		077016CD1348F41300FD0CAD /* WCNewFileWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCNewFileWindowController.m; sourceTree = "<group>"; };
 		077016D01348F89200FD0CAD /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCNewFileWindow.xib; sourceTree = "<group>"; };
@@ -788,6 +791,8 @@
 				07C8B069135E244D00DC8322 /* WCBreakpointsOutlineView.m */,
 				076B6DE9135E62B600754CDE /* WCFileWindowController.h */,
 				076B6DEA135E62B600754CDE /* WCFileWindowController.m */,
+				076B6DF0135EDDC800754CDE /* WCFindBarSearchField.h */,
+				076B6DF1135EDDCB00754CDE /* WCFindBarSearchField.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1092,6 +1097,7 @@
 				07B54925135D6F8800B34C46 /* WCBreakpointsViewController.m in Sources */,
 				07C8B06A135E244E00DC8322 /* WCBreakpointsOutlineView.m in Sources */,
 				076B6DEB135E62B600754CDE /* WCFileWindowController.m in Sources */,
+				076B6DF2135EDDCE00754CDE /* WCFindBarSearchField.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -82,6 +82,29 @@
 	
 	NSRect visibleRect = [self visibleRect];
 	
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesCurrentLineHighlightKey]) {
+		NSRange range = [self selectedRange];
+		
+		if (range.length == 0) {
+			if (range.location >= [[self string] length])
+				range.location = [[self string] length] - 1;
+			
+			NSUInteger rectCount = 0;
+			NSRectArray newRects = [[self layoutManager] rectArrayForCharacterRange:[[self string] lineRangeForRange:range] withinSelectedCharacterRange:NSMakeRange(NSNotFound, 0) inTextContainer:[self textContainer] rectCount:&rectCount];
+			NSRect newRect = NSZeroRect;
+			
+			if (rectCount > 0) {
+				newRect = newRects[0];
+				
+				newRect.origin.x = NSMinX([self bounds]);
+				newRect.size.width = NSWidth([self bounds]);
+				
+				[[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesCurrentLineHighlightColorKey] setFill];
+				NSRectFillUsingOperation(newRect, NSCompositeCopy);
+			}
+		}
+	}
+	
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayErrorBadgesKey] &&
 		[[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorErrorLineHighlightKey]) {
 		for (WCBuildMessage *error in [_file allErrorMessages]) {
@@ -115,30 +138,6 @@
 			}
 		}
 	}
-	
-	if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesCurrentLineHighlightKey])
-		return;
-	
-	NSRange range = [self selectedRange];
-	
-	if (range.length)
-		return;
-	else if (range.location >= [[self string] length])
-		range.location = [[self string] length] - 1;
-	
-	NSUInteger rectCount = 0;
-	NSRectArray newRects = [[self layoutManager] rectArrayForCharacterRange:[[self string] lineRangeForRange:range] withinSelectedCharacterRange:NSMakeRange(NSNotFound, 0) inTextContainer:[self textContainer] rectCount:&rectCount];
-	NSRect newRect = NSZeroRect;
-	
-	if (rectCount != 0) {
-		newRect = newRects[0];
-		
-		newRect.origin.x = NSMinX([self bounds]);
-		newRect.size.width = NSWidth([self bounds]);
-		
-		[[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesCurrentLineHighlightColorKey] setFill];
-		NSRectFillUsingOperation(newRect, NSCompositeSourceOver);
-	}
 }
 
 - (NSArray *)completionsForPartialWordRange:(NSRange)charRange indexOfSelectedItem:(NSInteger *)index {
@@ -165,6 +164,15 @@
 		[super insertCompletion:word forPartialWordRange:charRange movement:movement isFinal:flag];
 }
  */
+
+- (NSMenu *)menu {
+	NSMenu *retval = [[[super menu] copy] autorelease];
+	
+	for (NSMenuItem *item in [retval itemArray])
+		[item setKeyEquivalent:@""];
+	
+	return retval;
+}
  
 #pragma mark IBActions
 - (IBAction)insertNewline:(id)sender {
@@ -187,7 +195,42 @@
 }
 
 - (IBAction)performFindPanelAction:(id)sender {
-	[WCFindBarViewController presentFindBarForTextView:self];
+	switch ([sender tag]) {
+		case NSFindPanelActionShowFindPanel:
+			if ([self findBarViewController] == nil)
+				[WCFindBarViewController presentFindBarForTextView:self];
+			else {
+				[[self window] makeFirstResponder:[[self findBarViewController] searchField]];
+				[[self findBarViewController] find:nil];
+			}
+			break;
+		case NSFindPanelActionNext:
+			[[self findBarViewController] findNext:nil];
+			break;
+		case NSFindPanelActionPrevious:
+			[[self findBarViewController] findPrevious:nil];
+			break;
+		case NSFindPanelActionReplaceAll:
+			[[self findBarViewController] replaceAll:nil];
+			break;
+		case NSFindPanelActionReplace:
+			[[self findBarViewController] replace:nil];
+			break;
+		case NSFindPanelActionReplaceAndFind:
+			[[self findBarViewController] replaceAndFind:nil];
+			break;
+		case NSFindPanelActionSetFindString:
+			if ([self findBarViewController] == nil)
+				[WCFindBarViewController presentFindBarForTextView:self];
+			[[self findBarViewController] setFindString:[[self string] substringWithRange:[self selectedRange]]];
+			[[self findBarViewController] find:nil];
+			break;
+		case NSFindPanelActionReplaceAllInSelection:
+		case NSFindPanelActionSelectAll:
+		case NSFindPanelActionSelectAllInSelection:
+		default:
+			break;
+	}
 }
 
 - (void)paste:(id)sender {
@@ -201,7 +244,17 @@
 #pragma mark *** Protocol Overrides ***
 #pragma mark NSUserInterfaceValidations
 - (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {
-	if ([item action] == @selector(addBreakpointAtCurrentLine:)) {
+	if ([item action] == @selector(jumpToNextBuildMessage:)) {
+		if ([[self file] numberOfBuildMessages] == 0)
+			return NO;
+		return YES;
+	}
+	else if ([item action] == @selector(jumpToPreviousBuildMessage:)) {
+		if ([[self file] numberOfBuildMessages] == 0)
+			return NO;
+		return YES;
+	}
+	else if ([item action] == @selector(addBreakpointAtCurrentLine:)) {
 		WCBreakpoint *breakpoint = [[self file] breakpointAtLineNumber:[(WCTextStorage *)[self textStorage] lineNumberForCharacterIndex:[self selectedRange].location]];
 		
 		if (breakpoint == nil) {
@@ -299,6 +352,7 @@
 }
 @synthesize fileViewController=_fileViewController;
 @synthesize syntaxHighlighter=_syntaxHighlighter;
+@synthesize findBarViewController=_findBarViewController;
 #pragma mark IBActions
 - (IBAction)jumpToDefinition:(id)sender; {
 	NSString *symbolString = [self currentSymbolString];
@@ -336,6 +390,39 @@
 		
 		[menu popUpMenuPositioningItem:nil atLocation:lineRect.origin inView:self];
 	}
+}
+
+- (IBAction)jumpToNextBuildMessage:(id)sender; {
+	NSArray *messages = [[self file] allBuildMessagesSortedByLineNumber];
+	NSRange range = [self selectedRange];
+	
+	for (WCBuildMessage *message in messages) {
+		NSRange mRange = NSMakeRange([[self file] lineStartForBuildMessage:message], 0);
+		
+		if (mRange.location > range.location) {
+			[self setSelectedRange:mRange];
+			[self scrollRangeToVisible:mRange];
+			return;
+		}
+	}
+	
+	NSBeep();
+}
+- (IBAction)jumpToPreviousBuildMessage:(id)sender; {
+	NSArray *messages = [[self file] allBuildMessagesSortedByLineNumber];
+	NSRange range = [self selectedRange];
+	
+	for (WCBuildMessage *message in [messages reverseObjectEnumerator]) {
+		NSRange mRange = NSMakeRange([[self file] lineStartForBuildMessage:message], 0);
+		
+		if (mRange.location < range.location) {
+			[self setSelectedRange:mRange];
+			[self scrollRangeToVisible:mRange];
+			return;
+		}
+	}
+	
+	NSBeep();
 }
 
 - (IBAction)commentOrUncomment:(id)sender; {

@@ -17,6 +17,7 @@
     NSArray *_images;
 	NSUInteger _selectedIndex;
 	NSArray *_selectors;
+	NSArray *_tooltips;
 }
 @property (readonly,nonatomic) NSArray *images;
 @property (readonly,nonatomic) NSArray *selectors;

@@ -206,7 +206,7 @@ const CGFloat CTSmallLabelSize = 11.;
 	[NSGraphicsContext restoreGraphicsState];
   [image unlockFocus];
   
-  [label release];
+	//[label release];
   [badgeImage release];
   
   return [image autorelease];
@@ -284,7 +284,7 @@ const CGFloat CTSmallLabelSize = 11.;
   NSAttributedString *attributedString = [[NSAttributedString alloc] initWithString:label attributes:attributes];
   [attributes release];
   
-  return attributedString;
+  return [attributedString autorelease];
   }
 
 - (NSString *)stringForValue:(NSUInteger)value

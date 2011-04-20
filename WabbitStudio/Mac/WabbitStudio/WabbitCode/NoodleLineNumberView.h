@@ -35,7 +35,9 @@
 {
 	BOOL hasPerformedSetup;
 	WCBreakpoint *_breakpointForContextualMenu;
+	NSMapTable *_tooltipTagsToBuildMessages;
 }
+@property (readonly,nonatomic) NSMapTable *tooltipTagsToBuildMessages;
 
 - (id)initWithScrollView:(NSScrollView *)aScrollView;
 

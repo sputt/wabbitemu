@@ -80,7 +80,8 @@
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[self cleanupUserDefaultsObserving];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];    
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+	[_tooltipTagsToBuildMessages release];
     [super dealloc];
 }
 
@@ -132,8 +133,17 @@
 	// return an integral value here.
     return ceilf(MAX(defaultThickness, reqThickness));
 }
+#pragma mark Tooltips
+- (NSString *)view:(NSView *)view stringForToolTip:(NSToolTipTag)tag point:(NSPoint)point userData:(void *)data {
+	WCBuildMessage *message = (WCBuildMessage *)data;
+	
+	return [message name];
+}
 #pragma mark Mouse Handling
 - (void)mouseDown:(NSEvent *)theEvent {
+	if ([[(WCTextView *)[self clientView] file] project] == nil)
+		return;
+	
 	NSUInteger startLineNumber = [self lineNumberForLocation:[self convertPointFromBase:[theEvent locationInWindow]].y];
 	
 	if (startLineNumber == NSNotFound)
@@ -202,6 +212,8 @@
 	
 	if (view == nil)
 		return;
+	
+	[self removeAllToolTips];
 	
 	NSLayoutManager *layoutManager = [view layoutManager];
 	NSTextContainer	*container = [view textContainer];
@@ -277,6 +289,8 @@
 						[icon setSize:NSMakeSize(BADGE_THICKNESS, BADGE_THICKNESS)];
 						
 						[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+						
+						[self addToolTipRect:drawRect owner:self userData:(void *)error];
 					}
 				}
 				
@@ -302,6 +316,8 @@
 						[icon setSize:NSMakeSize(BADGE_THICKNESS, BADGE_THICKNESS)];
 						
 						[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
+						
+						[self addToolTipRect:drawRect owner:self userData:(void *)warning];
 					}
 				}
 				
@@ -320,6 +336,9 @@
 }
 #pragma mark Menus
 - (NSMenu *)menu {
+	if ([[(WCTextView *)[self clientView] file] project] == nil)
+		return nil;
+	
 	NSMenu *mMenu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
 	
 	[mMenu addItemWithTitle:NSLocalizedString(@"Edit Breakpoint\u2026", @"Edit Breakpoint with ellipsis") action:@selector(_editBreakpoint:) keyEquivalent:@""];
@@ -392,6 +411,14 @@
 }
 #pragma mark *** Public Methods ***
 #pragma mark Accessors
+@dynamic tooltipTagsToBuildMessages;
+- (NSMapTable *)tooltipTagsToBuildMessages {
+	if (!_tooltipTagsToBuildMessages) {
+		_tooltipTagsToBuildMessages = [[NSMapTable mapTableWithKeyOptions:NSPointerFunctionsIntegerPersonality|NSPointerFunctionsOpaqueMemory valueOptions:NSPointerFunctionsObjectPersonality] retain];
+	}
+	return _tooltipTagsToBuildMessages;
+}
+
 - (NSFont *)font {
 	return [NSFont labelFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
 }

@@ -9,7 +9,7 @@
 #import <AppKit/NSTextView.h>
 
 
-@class WCSyntaxHighlighter,WCFile,WCLineHighlighter,WCSymbol,WCFileViewController;
+@class WCSyntaxHighlighter,WCFile,WCLineHighlighter,WCSymbol,WCFileViewController,WCFindBarViewController;
 
 @interface WCTextView : NSTextView <NSUserInterfaceValidations> {
 @private
@@ -17,15 +17,20 @@
 	__weak WCFile *_file; // the file we are displaying
     WCSyntaxHighlighter *_syntaxHighlighter; // handles the coloring of keywords and symbols
 	WCLineHighlighter *_lineHighlighter; // handles the line highlight
+	__weak WCFindBarViewController *_findBarViewController;
 }
 @property (assign,nonatomic) WCFile *file;
 @property (readonly,nonatomic) NSString *currentSymbolString;
 @property (assign,nonatomic) WCFileViewController *fileViewController;
 @property (readonly,nonatomic) WCSyntaxHighlighter *syntaxHighlighter;
+@property (assign,nonatomic) WCFindBarViewController *findBarViewController;
 
 - (void)jumpToSymbol:(WCSymbol *)symbol;
 
 - (IBAction)jumpToDefinition:(id)sender;
+- (IBAction)jumpToNextBuildMessage:(id)sender;
+- (IBAction)jumpToPreviousBuildMessage:(id)sender;
+
 - (IBAction)commentOrUncomment:(id)sender;
 - (IBAction)blockCommentOrUncomment:(id)sender;
 - (IBAction)shiftLeft:(id)sender;
