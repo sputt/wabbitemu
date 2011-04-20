@@ -452,7 +452,7 @@ NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer = @"kWCProjectToolba
 		[activeStroke setStroke];
 	else
 		[inactiveStroke setStroke];
-	[path setLineWidth:2.0];
+	[path setLineWidth:1.5];
 	[path stroke];
 }
 @end

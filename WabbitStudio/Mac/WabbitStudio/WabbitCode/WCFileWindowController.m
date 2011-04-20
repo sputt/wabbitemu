@@ -32,6 +32,12 @@
 - (void)windowDidLoad {
     [super windowDidLoad];
     
+	NSDictionary *fDict = [[[[self project] projectSettings] objectForKey:kWCProjectSettingsFileSettingsDictionaryKey] objectForKey:[[self file] UUID]];
+	NSString *frameString = [fDict objectForKey:kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey];
+	
+	if (frameString != nil)
+		[[self window] setFrameFromString:frameString];
+	
 	[_tabBarControl setHideForSingleTab:NO];
 	[_tabBarControl setCanCloseOnlyTab:NO];
 	[_tabBarControl setStyleNamed:@"Unified"];
@@ -70,6 +76,22 @@
 
 - (void)windowWillClose:(NSNotification *)notification {
 	[[self project] removeFileViewControllerForFile:[self file] inTabViewContext:self];
+	
+	NSMutableDictionary *filesDict = [[[self project] projectSettings] objectForKey:kWCProjectSettingsFileSettingsDictionaryKey];
+	
+	if (!filesDict) {
+		filesDict = [NSMutableDictionary dictionary];
+		[[[self project] projectSettings] setObject:filesDict forKey:kWCProjectSettingsFileSettingsDictionaryKey];
+	}
+	
+	NSMutableDictionary *fDict = [filesDict objectForKey:[[self file] UUID]];
+	
+	if (!fDict) {
+		fDict = [NSMutableDictionary dictionary];
+		[filesDict setObject:fDict forKey:[[self file] UUID]];
+	}
+	
+	[fDict setObject:[[self window] stringWithSavedFrame] forKey:kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey];
 }
 
 + (id)fileWindowControllerWithFile:(WCFile *)file; {

@@ -47,7 +47,7 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	kWCSyntaxHighlighterPreOpsRegex = [[RKRegex alloc] initWithRegexString:@"#\\w+" options:RKCompileUTF8];
 	kWCSyntaxHighlighterStringsRegex = [[RKRegex alloc] initWithRegexString:@"\".*?\"" options:RKCompileUTF8];
 	kWCSyntaxHighlighterNumbersRegex = [[RKRegex alloc] initWithRegexString:@"\\b[0-9]+\\b" options:RKCompileUTF8];
-	kWCSyntaxHighlighterHexadeicmalsRegex = [[RKRegex alloc] initWithRegexString:@"(?:\\$[0-9a-fA-F]+\\b)|(?:(?<=[^$%]\\b)[0-9a-fA-F]+h)" options:RKCompileUTF8];
+	kWCSyntaxHighlighterHexadeicmalsRegex = [[RKRegex alloc] initWithRegexString:@"(?:\\$[0-9a-fA-F]+\\b)|(?:(?<=[^$%]\\b)[0-9a-fA-F]+h\\b)" options:RKCompileUTF8];
 	kWCSyntaxHighlighterBinariesRegex = [[RKRegex alloc] initWithRegexString:@"(?:%[01]+\\b)|(?:(?<=[^$%]\\b)[01]+b)" options:RKCompileUTF8];
 	kWCSyntaxHighlighterCommentsRegex = [[RKRegex alloc] initWithRegexString:@";+.*$" options:RKCompileUTF8|RKCompileMultiline];
 	

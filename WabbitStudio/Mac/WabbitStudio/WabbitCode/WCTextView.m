@@ -494,16 +494,7 @@
 }
 
 - (IBAction)openInSeparateEditor:(id)sender; {
-	if ([_file project] == nil || [[[self window] windowController] isKindOfClass:[WCFileWindowController class]]) {
-		NSBeep();
-		return;
-	}
-	
-	WCFileWindowController *controller = [WCFileWindowController fileWindowControllerWithFile:_file];
-	
-	[[_file project] addWindowController:controller];
-	
-	[controller showWindow:nil];
+	[[[self file] project] performSelector:@selector(_openSeparateEditorForFile:) withObject:[self file]];
 }
 #pragma mark *** Private Methods ***
 #pragma mark IBActions

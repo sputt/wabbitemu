@@ -71,6 +71,8 @@ NSString *const kWCProjectSettingsProjectWindowFrameKey = @"projectWindowFrame";
 NSString *const kWCProjectSettingsLeftVerticalSplitViewDividerPositionKey = @"leftVerticalSplitViewDividerPosition";
 NSString *const kWCProjectSettingsOpenFileUUIDsKey = @"projectOpenFileUUIDs";
 NSString *const kWCProjectSettingsSelectedFileUUIDKey = @"projectSelectedFileUUID";
+NSString *const kWCProjectSettingsFileSettingsDictionaryKey = @"projectFileSettingsDictionary";
+NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey = @"projectFileSettingsFileSeparateWindowFrame";
 
 static NSString *const kWCProjectErrorDomain = @"org.revsoft.wabbitcode.project.error";
 static const NSInteger kWCProjectDataFileMovedErrorCode = 1001;
@@ -885,6 +887,15 @@ static NSImage *_appIcon = nil;
 		return [[[NSApplication sharedApplication] keyWindow] windowController];
 	return self;
 }
+@dynamic fileWindowControllers;
+- (NSArray *)fileWindowControllers {
+	NSMutableArray *retval = [NSMutableArray array];
+	for (id controller in [self windowControllers]) {
+		if ([controller isKindOfClass:[WCFileWindowController class]])
+			[retval addObject:controller];
+	}
+	return [[retval copy] autorelease];
+}
 #pragma mark IBActions
 - (IBAction)addFilesToProject:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -1352,6 +1363,25 @@ static NSImage *_appIcon = nil;
 	if ([[[self tabBarControl] tabView] numberOfTabViewItems])
 		[[self projectSettings] setObject:[[[[self tabBarControl] tabView] selectedTabViewItem] valueForKeyPath:@"identifier.UUID"] forKey:kWCProjectSettingsSelectedFileUUIDKey];
 	
+	// file specific settings
+	NSMutableDictionary *fileDict = [[self projectSettings] objectForKey:kWCProjectSettingsFileSettingsDictionaryKey];
+	
+	if (!fileDict) {
+		fileDict = [NSMutableDictionary dictionary];
+		[[self projectSettings] setObject:fileDict forKey:kWCProjectSettingsFileSettingsDictionaryKey];
+	}
+	
+	for (WCFileWindowController *controller in [self fileWindowControllers]) {
+		NSMutableDictionary *fDict = [fileDict objectForKey:[[controller file] UUID]];
+		
+		if (!fDict) {
+			fDict = [NSMutableDictionary dictionary];
+			[fileDict setObject:fDict forKey:[[controller file] UUID]];
+		}
+		
+		// separate editor window frame
+		[fDict setObject:[[controller window] stringWithSavedFrame] forKey:kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey];
+	}
 }
 - (void)_applyProjectSettings; {
 	// expand the right items in our files outline view

@@ -30,6 +30,8 @@ extern NSString *const kWCProjectSettingsProjectWindowFrameKey;
 extern NSString *const kWCProjectSettingsLeftVerticalSplitViewDividerPositionKey;
 extern NSString *const kWCProjectSettingsOpenFileUUIDsKey;
 extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
+extern NSString *const kWCProjectSettingsFileSettingsDictionaryKey;
+extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey;
 
 @class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint;
 
@@ -94,6 +96,7 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 @property (readonly,retain,nonatomic) NSSet *absoluteFilePaths;
 @property (readonly,nonatomic) NSArray *unsavedTextFiles;
 @property (readonly,nonatomic) id <WCTabViewContext> currentTabViewContext;
+@property (readonly,nonatomic) NSArray *fileWindowControllers;
 
 - (IBAction)addFilesToProject:(id)sender;
 - (IBAction)newFile:(id)sender;
