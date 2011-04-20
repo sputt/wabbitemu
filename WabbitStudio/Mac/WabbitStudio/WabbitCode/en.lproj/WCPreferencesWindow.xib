@@ -69,7 +69,6 @@
 						<string key="NSFrame">{{247, 13}, {97, 28}}</string>
 						<reference key="NSSuperview" ref="117701649"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="20772247">
 							<int key="NSCellFlags">67239424</int>
@@ -1400,7 +1399,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				<string key="NSClassName">NSView</string>
 			</object>
 			<object class="NSCustomView" id="920083783">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">268</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -1409,6 +1408,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{134, 18}, {328, 18}}</string>
 						<reference key="NSSuperview" ref="920083783"/>
+						<reference key="NSWindow"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="245066842">
 							<int key="NSCellFlags">-2080244224</int>
@@ -1431,6 +1431,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{46, 20}, {85, 17}}</string>
 						<reference key="NSSuperview" ref="920083783"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="345727596"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="420877515">
@@ -1448,6 +1449,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{388, 40}, {77, 28}}</string>
 						<reference key="NSSuperview" ref="920083783"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="42186708"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="747422603">
@@ -1475,8 +1477,9 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 								<string>NSFilenamesPboardType</string>
 							</object>
 						</object>
-						<string key="NSFrame">{{136, 45}, {248, 20}}</string>
+						<string key="NSFrame">{{133, 45}, {251, 20}}</string>
 						<reference key="NSSuperview" ref="920083783"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="913779444"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSPathCell" key="NSCell" id="102152830">
@@ -1488,10 +1491,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							</object>
 							<reference key="NSSupport" ref="26"/>
 							<reference key="NSControlView" ref="1023144039"/>
-							<object class="NSColor" key="NSBackgroundColor">
-								<int key="NSColorSpace">2</int>
-								<bytes key="NSRGB">MC44OTgwMzkyMTU3IDAuOTI1NDkwMTk2MSAwLjk3MjU0OTAxOTYAA</bytes>
-							</object>
 							<object class="NSMutableArray" key="NSPathComponentCells">
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSPathComponentCell">
@@ -1531,6 +1530,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 									</object>
 								</object>
 							</object>
+							<int key="NSPathStyle">1</int>
 							<reference key="NSDelegate" ref="1023144039"/>
 						</object>
 					</object>
@@ -1539,6 +1539,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{136, 73}, {324, 38}}</string>
 						<reference key="NSSuperview" ref="920083783"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="1023144039"/>
 						<bool key="NSEnabled">YES</bool>
 						<int key="NSNumRows">2</int>
@@ -1732,6 +1733,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{38, 94}, {93, 17}}</string>
 						<reference key="NSSuperview" ref="920083783"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="896047491"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="1045074496">
@@ -1749,6 +1751,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{136, 119}, {324, 58}}</string>
 						<reference key="NSSuperview" ref="920083783"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="366556428"/>
 						<bool key="NSEnabled">YES</bool>
 						<int key="NSNumRows">3</int>
@@ -1955,6 +1958,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{17, 160}, {114, 17}}</string>
 						<reference key="NSSuperview" ref="920083783"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="567859507"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="746301523">
@@ -1969,6 +1973,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 					</object>
 				</object>
 				<string key="NSFrameSize">{480, 197}</string>
+				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="688798309"/>
 				<string key="NSClassName">NSView</string>
 			</object>
@@ -2057,7 +2063,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<string key="NSFrame">{{122, 18}, {91, 18}}</string>
 						<reference key="NSSuperview" ref="40869661"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="653250752">
 							<int key="NSCellFlags">-2080244224</int>
@@ -2443,7 +2448,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 														<string key="NSFrameSize">{139, 279}</string>
 														<reference key="NSSuperview" ref="512716477"/>
 														<reference key="NSWindow"/>
-														<reference key="NSNextKeyView" ref="255832403"/>
+														<reference key="NSNextKeyView" ref="74146626"/>
 														<bool key="NSEnabled">YES</bool>
 														<object class="_NSCornerView" key="NSCornerView">
 															<nil key="NSNextResponder"/>
@@ -2552,7 +2557,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 										<string key="NSFrame">{{0, 23}, {139, 279}}</string>
 										<reference key="NSSuperview" ref="241730119"/>
 										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView" ref="74146626"/>
+										<reference key="NSNextKeyView" ref="512716477"/>
 										<int key="NSsFlags">0</int>
 										<reference key="NSVScroller" ref="74146626"/>
 										<reference key="NSHScroller" ref="1028042880"/>
@@ -2634,7 +2639,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 													<string key="NSFrameSize">{340, 302}</string>
 													<reference key="NSSuperview" ref="208796806"/>
 													<reference key="NSWindow"/>
-													<reference key="NSNextKeyView"/>
 												</object>
 												<string key="NSLabel">Updates</string>
 												<reference key="NSColor" ref="897016954"/>
@@ -6255,10 +6259,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addBreakpointAtCurrentLine:</string>
 							<string>blockCommentOrUncomment:</string>
 							<string>commentOrUncomment:</string>
 							<string>gotoLine:</string>
 							<string>jumpToDefinition:</string>
+							<string>openInSeparateEditor:</string>
+							<string>revealInProjectView:</string>
 							<string>shiftLeft:</string>
 							<string>shiftRight:</string>
 							<string>toggleWrapLines:</string>
@@ -6266,6 +6273,9 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -6280,10 +6290,13 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addBreakpointAtCurrentLine:</string>
 							<string>blockCommentOrUncomment:</string>
 							<string>commentOrUncomment:</string>
 							<string>gotoLine:</string>
 							<string>jumpToDefinition:</string>
+							<string>openInSeparateEditor:</string>
+							<string>revealInProjectView:</string>
 							<string>shiftLeft:</string>
 							<string>shiftRight:</string>
 							<string>toggleWrapLines:</string>
@@ -6291,6 +6304,10 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBActionInfo">
+								<string key="name">addBreakpointAtCurrentLine:</string>
+								<string key="candidateClassName">id</string>
+							</object>
 							<object class="IBActionInfo">
 								<string key="name">blockCommentOrUncomment:</string>
 								<string key="candidateClassName">id</string>
@@ -6305,6 +6322,14 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">jumpToDefinition:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">openInSeparateEditor:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">revealInProjectView:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

@@ -10,6 +10,7 @@
 #import "WCFile.h"
 #import "WCProject.h"
 #import "NSURL+WCExtensions.h"
+#import "NSArray+WCExtensions.h"
 
 
 @implementation WCDocumentController
@@ -38,7 +39,6 @@
 	if (!mProject || !mFile)
 		return [super openDocumentWithContentsOfURL:absoluteURL display:displayDocument error:outError];
 	
-	[[[[mProject windowControllers] lastObject] window] makeKeyAndOrderFront:nil];
 	[mProject addFileViewControllerForFile:mFile inTabViewContext:[mProject currentTabViewContext]];
 	return mProject;
 }

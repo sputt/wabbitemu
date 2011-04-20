@@ -109,6 +109,11 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 - (IBAction)group:(id)sender;
 - (IBAction)ungroup:(id)sender;
 
+- (IBAction)rename:(id)sender;
+
+- (IBAction)showInFinder:(id)sender;
+- (IBAction)openWithFinder:(id)sender;
+
 - (IBAction)viewProject:(id)sender;
 - (IBAction)viewBuildMessages:(id)sender;
 - (IBAction)viewSymbols:(id)sender;

@@ -363,7 +363,12 @@ static NSImage *_appIcon = nil;
 
 #pragma mark NSUserInterfaceValidations
 - (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {
-	if ([item action] == @selector(openInSeparateEditor:)) {
+	if ([item action] == @selector(rename:)) {
+		if (![[[[self projectFilesOutlineViewController] selectedNode] representedObject] canEditName])
+			return NO;
+		return YES;
+	}
+	else if ([item action] == @selector(openInSeparateEditor:)) {
 		for (NSTreeNode *node in [[self projectFilesOutlineViewController] selectedNodes]) {
 			if (![[node representedObject] isTextFile])
 				return NO;
@@ -962,6 +967,8 @@ static NSImage *_appIcon = nil;
 					[file saveFile:NULL];
 				break;
 			case WCPreferencesBuildingForUnsavedFilesPromptBeforeSaving:
+				if ([WCUnsavedFilesWindowController runModalForProject:self] == NSCancelButton)
+					return;
 				break;
 			case WCPreferencesBuildingForUnsavedFilesNeverSave:
 			default:
@@ -996,7 +1003,19 @@ static NSImage *_appIcon = nil;
 			outputDirectory = [projectDirectory path];
 		}
 			break;
-		case WCPreferencesBuildingLocationCustom:
+		case WCPreferencesBuildingLocationCustom: {
+			NSURL *projectDirectory = [NSKeyedUnarchiver unarchiveObjectWithData:[[NSUserDefaults standardUserDefaults] objectForKey:kWCPreferencesBuildingCustomLocationKey]];
+			projectDirectory = [[projectDirectory URLByAppendingPathComponent:[[[self displayName] stringByDeletingPathExtension] stringByAppendingFormat:@"-%@",[[self projectFile] UUID]]] URLByAppendingPathComponent:[bt name]];
+			
+			if (![[NSFileManager defaultManager] createDirectoryAtPath:[projectDirectory path] withIntermediateDirectories:YES attributes:nil error:NULL]) {
+				if (![projectDirectory checkResourceIsReachableAndReturnError:NULL]) {
+					NSLog(@"could not create output directory and it does not already exist");
+					return;
+				}
+			}
+			
+			outputDirectory = [projectDirectory path];
+		}
 			break;
 		default:
 			break;
@@ -1154,6 +1173,13 @@ static NSImage *_appIcon = nil;
 	}];
 }
 
+- (IBAction)rename:(id)sender; {
+	NSTreeNode *node = [[self projectFilesOutlineViewController] selectedNode];
+	
+	if ([[node representedObject] canEditName])
+		[[[self projectFilesOutlineViewController] outlineView] editColumn:0 row:[[[self projectFilesOutlineViewController] outlineView] selectedRow] withEvent:nil select:YES];
+}
+
 - (IBAction)viewProject:(id)sender; {
 	[self setCurrentViewController:[self projectFilesOutlineViewController]];
 	[_navBarControl setSelectedIndex:[[_navBarControl selectors] indexOfObject:NSStringFromSelector(_cmd)]];
@@ -1232,6 +1258,18 @@ static NSImage *_appIcon = nil;
 		for (NSTreeNode *node in nodes)
 			if ([[node representedObject] isTextFile])
 				[self _openSeparateEditorForFile:[node representedObject]];
+	}
+}
+
+- (IBAction)showInFinder:(id)sender; {
+	[[NSWorkspace sharedWorkspace] activateFileViewerSelectingURLs:[[[self projectFilesOutlineViewController] selectedObjects] valueForKeyPath:@"URL"]];
+}
+- (IBAction)openWithFinder:(id)sender; {
+	for (NSTreeNode *node in [[self projectFilesOutlineViewController] selectedNodes]) {
+		if ([[node representedObject] isTextFile])
+			[self addFileViewControllerForFile:[node representedObject] inTabViewContext:[self currentTabViewContext]];
+		else
+			[[NSWorkspace sharedWorkspace] openFile:[[node representedObject] absolutePath]];
 	}
 }
 #pragma mark -
