@@ -27,6 +27,8 @@
 #import "NSTextView+WCExtensions.h"
 #import "WCBreakpoint.h"
 #import "WCFileWindowController.h"
+#import "WCProjectFilesOutlineViewController.h"
+#import "NSTreeController+WCExtensions.h"
 
 // without this xcode complains about the restrict qualifiers in the regexkit header
 #define restrict
@@ -197,6 +199,28 @@
 }
 
 #pragma mark *** Protocol Overrides ***
+#pragma mark NSUserInterfaceValidations
+- (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {
+	if ([item action] == @selector(addBreakpointAtCurrentLine:)) {
+		WCBreakpoint *breakpoint = [[self file] breakpointAtLineNumber:[(WCTextStorage *)[self textStorage] lineNumberForCharacterIndex:[self selectedRange].location]];
+		
+		if (breakpoint == nil) {
+			if ([(id <NSObject>)item isKindOfClass:[NSMenuItem class]])
+				[(NSMenuItem *)item setTitle:NSLocalizedString(@"Add Breakpoint at Current Line", @"Add Breakpoint at Current Line")];
+		}
+		else {
+			if ([(id <NSObject>)item isKindOfClass:[NSMenuItem class]])
+				[(NSMenuItem *)item setTitle:NSLocalizedString(@"Edit Breakpoint at Current Line\u2026", @"Edit Breakpoint at Current Line with ellipsis")];
+		}
+		return YES;
+	}
+	else if ([item action] == @selector(revealInSymbolsView:)) {
+		if ([[self file] project] == nil)
+			return NO;
+		return YES;
+	}
+	return [super validateUserInterfaceItem:item];
+}
 #pragma mark NSKeyValueObserving
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 	
@@ -277,7 +301,7 @@
 @synthesize syntaxHighlighter=_syntaxHighlighter;
 #pragma mark IBActions
 - (IBAction)jumpToDefinition:(id)sender; {
-	NSString *symbolString = [[self currentSymbolString] lowercaseString];
+	NSString *symbolString = [self currentSymbolString];
 	
 	if (!symbolString) {
 		NSBeep();
@@ -493,8 +517,29 @@
 	[WCGotoLineSheetController presentGotoLineSheetForTextView:self];
 }
 
+- (IBAction)addBreakpointAtCurrentLine:(id)sender; {
+	WCBreakpoint *breakpoint = [[self file] breakpointAtLineNumber:[(WCTextStorage *)[self textStorage] lineNumberForCharacterIndex:[self selectedRange].location]];
+	
+	if (breakpoint != nil) {
+		NSBeep();
+		return;
+	}
+	
+	breakpoint = [WCBreakpoint breakpointWithLineNumber:[(WCTextStorage *)[self textStorage] lineNumberForCharacterIndex:[self selectedRange].location] inFile:[self file]];
+	
+	[[self file] addBreakpoint:breakpoint];
+}
+
 - (IBAction)openInSeparateEditor:(id)sender; {
 	[[[self file] project] performSelector:@selector(_openSeparateEditorForFile:) withObject:[self file]];
+}
+
+- (IBAction)revealInProjectView:(id)sender; {
+	[[[self file] project] viewProject:nil];
+	
+	[(NSTreeController *)[[[[[self file] project] projectFilesOutlineViewController] outlineView] dataSource] setSelectedRepresentedObject:[self file]];
+	
+	[[self window] makeFirstResponder:[[[[self file] project] projectFilesOutlineViewController] outlineView]];
 }
 #pragma mark *** Private Methods ***
 #pragma mark IBActions

@@ -472,6 +472,42 @@
 						<reference key="NSOnImage" ref="397430861"/>
 						<reference key="NSMixedImage" ref="985583742"/>
 					</object>
+					<object class="NSMenuItem" id="188567383">
+						<reference key="NSMenu" ref="609795346"/>
+						<bool key="NSIsDisabled">YES</bool>
+						<bool key="NSIsSeparator">YES</bool>
+						<string key="NSTitle"/>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="397430861"/>
+						<reference key="NSMixedImage" ref="985583742"/>
+					</object>
+					<object class="NSMenuItem" id="580024158">
+						<reference key="NSMenu" ref="609795346"/>
+						<string key="NSTitle">Add Breakpoint at Current Line</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="397430861"/>
+						<reference key="NSMixedImage" ref="985583742"/>
+					</object>
+					<object class="NSMenuItem" id="544528885">
+						<reference key="NSMenu" ref="609795346"/>
+						<bool key="NSIsDisabled">YES</bool>
+						<bool key="NSIsSeparator">YES</bool>
+						<string key="NSTitle"/>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="397430861"/>
+						<reference key="NSMixedImage" ref="985583742"/>
+					</object>
+					<object class="NSMenuItem" id="1025255839">
+						<reference key="NSMenu" ref="609795346"/>
+						<string key="NSTitle">Reveal in Project View</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="397430861"/>
+						<reference key="NSMixedImage" ref="985583742"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSUserDefaultsController" id="474829822">
@@ -620,6 +656,22 @@
 						</object>
 					</object>
 					<int key="connectionID">74</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">addBreakpointAtCurrentLine:</string>
+						<reference key="source" ref="1003"/>
+						<reference key="destination" ref="580024158"/>
+					</object>
+					<int key="connectionID">77</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">revealInProjectView:</string>
+						<reference key="source" ref="1003"/>
+						<reference key="destination" ref="1025255839"/>
+					</object>
+					<int key="connectionID">80</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -773,6 +825,10 @@
 							<reference ref="473528906"/>
 							<reference ref="84987643"/>
 							<reference ref="576868488"/>
+							<reference ref="188567383"/>
+							<reference ref="580024158"/>
+							<reference ref="544528885"/>
+							<reference ref="1025255839"/>
 						</object>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -826,6 +882,26 @@
 						<reference key="object" ref="474829822"/>
 						<reference key="parent" ref="0"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">75</int>
+						<reference key="object" ref="188567383"/>
+						<reference key="parent" ref="609795346"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">76</int>
+						<reference key="object" ref="580024158"/>
+						<reference key="parent" ref="609795346"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">78</int>
+						<reference key="object" ref="544528885"/>
+						<reference key="parent" ref="609795346"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">79</int>
+						<reference key="object" ref="1025255839"/>
+						<reference key="parent" ref="609795346"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -859,6 +935,10 @@
 					<string>63.IBPluginDependency</string>
 					<string>69.IBPluginDependency</string>
 					<string>70.IBPluginDependency</string>
+					<string>75.IBPluginDependency</string>
+					<string>76.IBPluginDependency</string>
+					<string>78.IBPluginDependency</string>
+					<string>79.IBPluginDependency</string>
 				</object>
 				<object class="NSMutableArray" key="dict.values">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -872,6 +952,10 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>WCTextView</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -903,7 +987,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">74</int>
+			<int key="maxID">82</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1038,10 +1122,13 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addBreakpointAtCurrentLine:</string>
 							<string>blockCommentOrUncomment:</string>
 							<string>commentOrUncomment:</string>
 							<string>gotoLine:</string>
 							<string>jumpToDefinition:</string>
+							<string>openInSeparateEditor:</string>
+							<string>revealInProjectView:</string>
 							<string>shiftLeft:</string>
 							<string>shiftRight:</string>
 							<string>toggleWrapLines:</string>
@@ -1049,6 +1136,9 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1063,10 +1153,13 @@
 						<bool key="EncodedWithXMLCoder">YES</bool>
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>addBreakpointAtCurrentLine:</string>
 							<string>blockCommentOrUncomment:</string>
 							<string>commentOrUncomment:</string>
 							<string>gotoLine:</string>
 							<string>jumpToDefinition:</string>
+							<string>openInSeparateEditor:</string>
+							<string>revealInProjectView:</string>
 							<string>shiftLeft:</string>
 							<string>shiftRight:</string>
 							<string>toggleWrapLines:</string>
@@ -1074,6 +1167,10 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBActionInfo">
+								<string key="name">addBreakpointAtCurrentLine:</string>
+								<string key="candidateClassName">id</string>
+							</object>
 							<object class="IBActionInfo">
 								<string key="name">blockCommentOrUncomment:</string>
 								<string key="candidateClassName">id</string>
@@ -1088,6 +1185,14 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">jumpToDefinition:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">openInSeparateEditor:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">revealInProjectView:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

@@ -18,6 +18,8 @@
 @interface WCSymbolsViewController ()
 @property (readonly,nonatomic) NSMutableArray *symbols;
 @property (readonly,nonatomic) NSMutableArray *filteredSymbols;
+
+- (void)_resetFilterString;
 @end
 
 @implementation WCSymbolsViewController
@@ -143,13 +145,7 @@
 #pragma mark IBActions
 - (IBAction)filterSymbols:(id)sender; {
 	if (![self filterString] || ![[self filterString] length]) {
-		[[self filteredSymbols] removeAllObjects];
-		for (WCSymbol *symbol in _symbols) {
-			[[symbol mutableChildNodes] removeAllObjects];
-			[[symbol mutableChildNodes] addObjectsFromArray:[[[symbol file] symbolScanner] symbols]];
-			[[self filteredSymbols] addObject:symbol];
-		}
-		[[self outlineView] reloadData];
+		[self _resetFilterString];
 		return;
 	}
 	
@@ -160,7 +156,7 @@
 	for (WCSymbol *symbol in [self symbols]) {
 		NSMutableArray *mSymbols = [NSMutableArray array];
 		for (WCSymbol *cSymbol in [[[symbol file] symbolScanner] symbols]) {
-			if ([[cSymbol name] rangeOfString:filterString].location != NSNotFound)
+			if ([[cSymbol name] rangeOfString:filterString options:NSCaseInsensitiveSearch].location != NSNotFound)
 				[mSymbols addObject:cSymbol];
 		}
 		
@@ -177,6 +173,17 @@
 		[[self outlineView] expandItem:symbol];
 }
 #pragma mark *** Private Methods ***
+- (void)_resetFilterString {
+	[self setFilterString:@""];
+	
+	[[self filteredSymbols] removeAllObjects];
+	for (WCSymbol *symbol in _symbols) {
+		[[symbol mutableChildNodes] removeAllObjects];
+		[[symbol mutableChildNodes] addObjectsFromArray:[[[symbol file] symbolScanner] symbols]];
+		[[self filteredSymbols] addObject:symbol];
+	}
+	[[self outlineView] reloadData];
+}
 #pragma mark Accessors
 @dynamic symbols;
 - (NSMutableArray *)symbols {

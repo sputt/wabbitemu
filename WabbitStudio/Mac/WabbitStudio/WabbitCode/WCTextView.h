@@ -11,7 +11,7 @@
 
 @class WCSyntaxHighlighter,WCFile,WCLineHighlighter,WCSymbol,WCFileViewController;
 
-@interface WCTextView : NSTextView {
+@interface WCTextView : NSTextView <NSUserInterfaceValidations> {
 @private
 	__weak WCFileViewController *_fileViewController; // back pointer to the file view controller, if we have one
 	__weak WCFile *_file; // the file we are displaying
@@ -33,6 +33,8 @@
 - (IBAction)useSelectionForFindInProject:(id)sender;
 - (IBAction)toggleWrapLines:(id)sender;
 - (IBAction)gotoLine:(id)sender;
+- (IBAction)addBreakpointAtCurrentLine:(id)sender;
 
 - (IBAction)openInSeparateEditor:(id)sender;
+- (IBAction)revealInProjectView:(id)sender;
 @end

@@ -429,6 +429,12 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	if (_changeCount == 0 || _changeCount == 1 || _changeCount == -1)
 		[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileHasUnsavedChangesNotification object:self];
 }
+@dynamic isTextFile;
+- (BOOL)isTextFile {
+	return ([[self UTI] isEqualToString:kWCFileIncludeUTI] ||
+			[[self UTI] isEqualToString:kWCFileAssemblyUTI] ||
+			[[self UTI] isEqualToString:kWCFilePanicCodaImportedUTI]);
+}
 #pragma mark *** Private Methods ***
 - (void)_setupTextStorageAndSymbolScanner; {
 	if (!_textStorage) {

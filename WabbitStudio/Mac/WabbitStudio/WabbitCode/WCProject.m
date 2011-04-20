@@ -363,7 +363,14 @@ static NSImage *_appIcon = nil;
 
 #pragma mark NSUserInterfaceValidations
 - (BOOL)validateUserInterfaceItem:(id <NSValidatedUserInterfaceItem>)item {
-	if ([item action] == @selector(addFilesToProject:)) {
+	if ([item action] == @selector(openInSeparateEditor:)) {
+		for (NSTreeNode *node in [[self projectFilesOutlineViewController] selectedNodes]) {
+			if (![[node representedObject] isTextFile])
+				return NO;
+		}
+		return YES;
+	}
+	else if ([item action] == @selector(addFilesToProject:)) {
 		
 		if ([(id <NSObject>)item isKindOfClass:[NSMenuItem class]])
 			[(NSMenuItem *)item setTitle:[NSString stringWithFormat:NSLocalizedString(@"Add Files to \"%@\"\u2026", @"project add files to project menu item title"),[self displayName]]];
@@ -1219,11 +1226,13 @@ static NSImage *_appIcon = nil;
 - (IBAction)openInSeparateEditor:(id)sender; {
 	NSArray *nodes = [[self projectFilesOutlineViewController] selectedNodes];
 	
-	if ([nodes count] == 1)
+	if ([nodes count] == 1 && [[[nodes lastObject] representedObject] isTextFile])
 		[self _openSeparateEditorForFile:[[nodes lastObject] representedObject]];
-	else
+	else {
 		for (NSTreeNode *node in nodes)
-			[self _openSeparateEditorForFile:[node representedObject]];
+			if ([[node representedObject] isTextFile])
+				[self _openSeparateEditorForFile:[node representedObject]];
+	}
 }
 #pragma mark -
 #pragma mark *** Private Methods ***
@@ -1444,9 +1453,9 @@ static NSImage *_appIcon = nil;
 	NSArray *selectedNodes = [[self projectFilesOutlineViewController] selectedNodes];
 	
 	if ([selectedNodes count] == 1) {
-		if ([[self textFiles] containsObject:[[selectedNodes lastObject] representedObject]])
+		if ([[[selectedNodes lastObject] representedObject] isTextFile])
 			[self addFileViewControllerForFile:[[selectedNodes lastObject] representedObject] inTabViewContext:[self currentTabViewContext]];
-		else if ([[[selectedNodes lastObject] representedObject] isDirectory]) {
+		else if (![[[selectedNodes lastObject] representedObject] isLeaf]) {
 			if ([[[self projectFilesOutlineViewController] outlineView] isItemExpanded:[selectedNodes lastObject]])
 				[[[self projectFilesOutlineViewController] outlineView] collapseItem:[selectedNodes lastObject]];
 			else
@@ -1455,7 +1464,7 @@ static NSImage *_appIcon = nil;
 	}
 	else {
 		for (NSTreeNode *node in selectedNodes) {
-			if ([[self textFiles] containsObject:[node representedObject]])
+			if ([[node representedObject] isTextFile])
 				[self addFileViewControllerForFile:[node representedObject] inTabViewContext:[self currentTabViewContext]];
 		}
 	}

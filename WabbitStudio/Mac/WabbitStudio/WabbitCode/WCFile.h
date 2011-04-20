@@ -61,6 +61,7 @@ extern NSString *const kWCFileNameDidChangeNotification;
 @property (readonly,nonatomic) NSTextView *textViewForFindInProjectReplace;
 @property (assign,nonatomic) NSStringEncoding encoding;
 @property (assign,nonatomic) NSInteger changeCount;
+@property (readonly,nonatomic) BOOL isTextFile;
 
 + (id)fileWithURL:(NSURL *)url;
 - (id)initWithURL:(NSURL *)url;
