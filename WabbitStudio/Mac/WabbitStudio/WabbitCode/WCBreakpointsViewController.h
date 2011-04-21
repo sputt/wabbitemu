@@ -8,13 +8,13 @@
 
 #import "WCProjectNavigationViewController.h"
 
-@class WCBreakpoint;
+@class WCBreakpoint,BWAnchoredButton,BWAnchoredPopUpButton;
 
 @interface WCBreakpointsViewController : WCProjectNavigationViewController <NSOutlineViewDelegate,NSOutlineViewDataSource> {
 @private
     IBOutlet NSOutlineView *_outlineView;
 	
-	WCBreakpoint *_breakpoint;
+	
 }
 @property (readonly,nonatomic) NSOutlineView *outlineView;
 @end

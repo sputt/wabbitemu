@@ -11,15 +11,15 @@
 #import "WCBreakpoint.h"
 #import "WCProject.h"
 #import "WCProjectFile.h"
+#import "NSTreeController+WCExtensions.h"
 
 
 @implementation WCBreakpointsViewController
 
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[_outlineView setDelegate:nil];
 	[_outlineView setDataSource:nil];
-	[_breakpoint release];
+	[_outlineView setDelegate:nil];
     [super dealloc];
 }
 
@@ -28,64 +28,51 @@
 }
 
 - (void)loadView {
-	_breakpoint = [[WCBreakpoint alloc] initWithLineNumber:0 file:[[self project] projectFile]];
-	[_breakpoint setBreakpointType:WCBreakpointTypeProject];
-	
-	for (WCFile *file in [[self project] textFiles]) {
-		if ([[file allBreakpoints] count] == 0)
-			continue;
-		
-		WCBreakpoint *parent = [WCBreakpoint breakpointWithLineNumber:0 inFile:file];
-		[parent setBreakpointType:WCBreakpointTypeFile];
-		[[_breakpoint mutableChildNodes] addObject:parent];
-		
-		for (WCBreakpoint *breakpoint in [file allBreakpointsSortedByLineNumber])
-			[[parent mutableChildNodes] addObject:breakpoint];
-	}
-
 	[super loadView];
-	
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileNumberOfBreakpointsDidChange:) name:kWCFileNumberOfBreakpointsDidChangeNotification object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_breakpointIsActiveDidChange:) name:kWCBreakpointIsActiveDidChangeNotification object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_numberOfFilesDidChange:) name:kWCProjectNumberOfFilesDidChangeNotification object:[self project]];
 	
 	[[self outlineView] setDoubleAction:@selector(_breakpointsOutlineViewDoubleAction:)];
 	[[self outlineView] setTarget:[self project]];
 	
-	[[self outlineView] expandItem:_breakpoint expandChildren:YES];
+	[[self outlineView] expandItem:nil expandChildren:YES];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileDidAddBreakpoint:) name:kWCFileDidAddBreakpointNotification object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileDidRemoveBreakpoint:) name:kWCFileDidRemoveBreakpointNotification object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_breakpointIsActiveDidChange:) name:kWCBreakpointIsActiveDidChangeNotification object:nil];
+}
+
+- (NSArray *)selectedNodes {
+	return [(NSTreeController *)[[self outlineView] dataSource] selectedNodes];
 }
 
 - (NSArray *)selectedObjects {
-	if ([[self outlineView] selectedRow] == -1)
-		return nil;
-	return [NSArray arrayWithObject:[[self outlineView] itemAtRow:[[self outlineView] selectedRow]]];
+	return [(NSTreeController *)[[self outlineView] dataSource] selectedRepresentedObjects];
 }
 - (void)setSelectedObjects:(NSArray *)selectedObjects {
-	NSMutableIndexSet *rowIndexes = [NSMutableIndexSet indexSet];
-	
-	for (id object in selectedObjects) {
-		[rowIndexes addIndex:[[self outlineView] rowForItem:object]];
-	}
-	
-	[[self outlineView] selectRowIndexes:rowIndexes byExtendingSelection:NO];
+	[(NSTreeController *)[[self outlineView] dataSource] setSelectedRepresentedObjects:selectedObjects];
 }
 #pragma mark *** Protocol Overrides ***
 #pragma mark NSOutlineViewDelegate
-- (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(WCDoEverythingTextFieldCell *)cell forTableColumn:(NSTableColumn *)tableColumn item:(WCBreakpoint *)item {
+- (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(WCDoEverythingTextFieldCell *)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item {
 	
-	[cell setIcon:[item icon]];
-	if ([item breakpointType] == WCBreakpointTypeLine)
-		[cell setIconSize:[[item icon] size]];
+	[cell setIcon:[[item representedObject] icon]];
+	if ([[item representedObject] breakpointType] == WCBreakpointTypeLine)
+		[cell setIconSize:[[[item representedObject] icon] size]];
 	else
 		[cell setIconSize:NSMakeSize(16.0, 16.0)];
 	
-	if ([item breakpointType] == WCBreakpointTypeProject ||
-		[item breakpointType] == WCBreakpointTypeLine)
+	if ([[item representedObject] breakpointType] == WCBreakpointTypeProject ||
+		[[item representedObject] breakpointType] == WCBreakpointTypeLine)
 		[cell setBadgeCount:0];
 	else
-		[cell setBadgeCount:[[item childNodes] count]];
+		[cell setBadgeCount:[[[item representedObject] childNodes] count]];
 	
-	if ([item breakpointType] == WCBreakpointTypeProject) {
+	if ([[item representedObject] breakpointType] == WCBreakpointTypeLine) {
+		[cell setSecondaryTitle:[[item representedObject] symbolNameAndLineNumber]];
+	}
+	else
+		[cell setSecondaryTitle:nil];
+	
+	if ([[item representedObject] breakpointType] == WCBreakpointTypeProject) {
 		NSMutableAttributedString *attributedString = [[[cell attributedStringValue] mutableCopy] autorelease];
 		[attributedString applyFontTraits:NSBoldFontMask range:NSMakeRange(0, [[attributedString string] length])];
 		[cell setAttributedStringValue:attributedString];
@@ -93,100 +80,109 @@
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item {
+	if ([[item representedObject] breakpointType] == WCBreakpointTypeLine)
+		return YES;
 	return NO;
 }
 
 - (NSString *)outlineView:(NSOutlineView *)outlineView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tableColumn item:(id)item mouseLocation:(NSPoint)mouseLocation {
+	if ([outlineView editedRow] != -1)
+		return nil;
+	
+	switch ([[item representedObject] breakpointType]) {
+		case WCBreakpointTypeProject:
+			return nil;
+		case WCBreakpointTypeFile:
+			return [NSString stringWithFormat:NSLocalizedString(@"Name: %@\nPath: %@\nLine Breakpoints: %lu", @"file breakpoint tooltip"),[[[item representedObject] file] name],[[[item representedObject] file] absolutePathForDisplay],[[[item representedObject] childNodes] count]];
+		case WCBreakpointTypeLine:
+			return [NSString stringWithFormat:NSLocalizedString(@"Name: %@\nPath: %@\nSymbol: %@\nAddress: $%04X\nPage: %u", @"line breakpoint tooltip"),[[item representedObject] name],[[[item representedObject] file] absolutePathForDisplay],[[item representedObject] symbolName],[(WCBreakpoint *)[item representedObject] address],[[item representedObject] page]];
+		default:
+			break;
+	}
 	return nil;
+}
+
+- (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item {
+	if ([[item representedObject] breakpointType] == WCBreakpointTypeLine)
+		return floor([outlineView rowHeight]*1.5);
+	return [outlineView rowHeight];
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowCellExpansionForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
 	return NO;
 }
 
-#pragma mark NSOutlineViewDataSource
-- (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(WCBreakpoint *)item {
-	if (item == nil)
-		return _breakpoint;
-	return [[item childNodes] objectAtIndex:index];
-}
-
-- (BOOL)outlineView:(NSOutlineView *)outlineView isItemExpandable:(WCBreakpoint *)item {
-	if ([item breakpointType] == WCBreakpointTypeLine)
-		return NO;
-	return YES;
-}
-
-- (NSInteger)outlineView:(NSOutlineView *)outlineView numberOfChildrenOfItem:(WCBreakpoint *)item {
-	if (item == nil)
-		return 1;
-	return [[item childNodes] count];
-}
-
-- (id)outlineView:(NSOutlineView *)outlineView objectValueForTableColumn:(NSTableColumn *)tableColumn byItem:(WCBreakpoint *)item {
-	return [item name];
-}
-
 @synthesize outlineView=_outlineView;
 
-- (void)_fileNumberOfBreakpointsDidChange:(NSNotification *)note {
-	if ([[note object] project] != [self project])
-		return;
-	
+- (void)_fileDidAddBreakpoint:(NSNotification *)note {
 	WCFile *file = [note object];
 	
-	for (WCBreakpoint *bp in [_breakpoint childNodes]) {
-		if ([bp file] == file) {
-			if ([[file allBreakpoints] count] == 0) {
-				[[_breakpoint mutableChildNodes] removeObject:bp];
-				[[self outlineView] reloadData];
-				return;
-			}
-			else {
-				[[bp mutableChildNodes] removeAllObjects];
-				
-				for (WCBreakpoint *cbp in [file allBreakpointsSortedByLineNumber])
-					[[bp mutableChildNodes] addObject:cbp];
-				
-				[[self outlineView] reloadItem:bp reloadChildren:YES];
-				return;
-			}
+	if ([file project] != [self project])
+		return;
+	
+	WCBreakpoint *newBreakpoint = [[note userInfo] objectForKey:kWCFileBreakpointKey];
+	WCBreakpoint *parentBreakpoint = nil;
+	
+	// find the parent breakpoint that this new breakpoint should be added to
+	for (WCBreakpoint *breakpoint in [[[self project] projectBreakpoint] childNodes]) {
+		if ([breakpoint file] == file) {
+			parentBreakpoint = breakpoint;
+			break;
 		}
 	}
 	
-	WCBreakpoint *parent = [WCBreakpoint breakpointWithLineNumber:0 inFile:file];
-	[parent setBreakpointType:WCBreakpointTypeFile];
-	[[_breakpoint mutableChildNodes] addObject:parent];
+	// the parent breakpoint wasn't found, which means this breakpoint is the first for this file
+	if (!parentBreakpoint) {
+		parentBreakpoint = [WCBreakpoint breakpointWithLineNumber:0 inFile:file];
+		[parentBreakpoint setBreakpointType:WCBreakpointTypeFile];
+		[[[[self project] projectBreakpoint] mutableChildNodes] addObject:parentBreakpoint];
+		[[self outlineView] expandItem:[(NSTreeController *)[[[[self project] breakpointsViewController] outlineView] dataSource] treeNodeForRepresentedObject:parentBreakpoint]];
+	}
 	
-	for (WCBreakpoint *cbp in [file allBreakpointsSortedByLineNumber])
-		[[parent mutableChildNodes] addObject:cbp];
+	// see if the breakpoint already exists, i.e. its being dragged around in a ruler view
+	for (WCBreakpoint *breakpoint in [parentBreakpoint childNodes]) {
+		// no need to update
+		if (breakpoint == newBreakpoint)
+			return;
+	}
 	
-	[[self outlineView] reloadData];
-	[[self outlineView] expandItem:parent];
+	// add the new breakpoint
+	[[parentBreakpoint mutableChildNodes] addObject:newBreakpoint];
+}
+
+- (void)_fileDidRemoveBreakpoint:(NSNotification *)note {
+	WCFile *file = [note object];
+	
+	if ([file project] != [self project])
+		return;
+	
+	WCBreakpoint *oldBreakpoint = [[note userInfo] objectForKey:kWCFileBreakpointKey];
+	WCBreakpoint *parentBreakpoint = nil;
+	
+	// find the parent breakpoint that this new breakpoint should be removed from
+	for (WCBreakpoint *breakpoint in [[[self project] projectBreakpoint] childNodes]) {
+		if ([breakpoint file] == file) {
+			parentBreakpoint = breakpoint;
+			break;
+		}
+	}
+	
+#ifdef DEBUG
+    NSAssert(parentBreakpoint != nil, @"could not find parent breakpoint for %@",oldBreakpoint);
+#endif
+	
+	// remove the old breakpoint
+	[[parentBreakpoint mutableChildNodes] removeObject:oldBreakpoint];
+	
+	// remove the parent if that was the last breakpoint
+	if ([[parentBreakpoint childNodes] count] == 0)
+		[[[[self project] projectBreakpoint] mutableChildNodes] removeObject:parentBreakpoint];
 }
 
 - (void)_breakpointIsActiveDidChange:(NSNotification *)note {
 	if ([[[note object] file] project] != [self project])
 		return;
 	
-	[[self outlineView] reloadItem:[note object]];
-}
-
-- (void)_numberOfFilesDidChange:(NSNotification *)note {
-	[[_breakpoint mutableChildNodes] removeAllObjects];
-	
-	for (WCFile *file in [[self project] textFiles]) {
-		if ([[file allBreakpoints] count] == 0)
-			continue;
-		
-		WCBreakpoint *parent = [WCBreakpoint breakpointWithLineNumber:0 inFile:file];
-		[parent setBreakpointType:WCBreakpointTypeFile];
-		[[_breakpoint mutableChildNodes] addObject:parent];
-		
-		for (WCBreakpoint *breakpoint in [file allBreakpointsSortedByLineNumber])
-			[[parent mutableChildNodes] addObject:breakpoint];
-	}
-	
-	[[self outlineView] reloadData];
+	[[self outlineView] setNeedsDisplayInRect:[[self outlineView] rectOfRow:[[self outlineView] rowForItem:[(NSTreeController *)[[self outlineView] dataSource] treeNodeForRepresentedObject:[note object]]]]];
 }
 @end

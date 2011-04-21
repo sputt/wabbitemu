@@ -422,10 +422,16 @@ NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer = @"kWCProjectToolba
 		inactiveStroke = [[NSColor colorWithCalibratedRed:0.5 green:0.0 blue:0.0 alpha:0.5] retain];
 		 */
 		// purple colors
+		/*
 		activeGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.65 green:0.0 blue:0.65 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.45 green:0.0 blue:0.45 alpha:1.0]];
 		activeStroke = [[NSColor colorWithCalibratedRed:0.35 green:0.0 blue:0.35 alpha:1.0] retain];
 		inactiveGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.65 green:0.0 blue:0.65 alpha:0.5] endingColor:[NSColor colorWithCalibratedRed:0.45 green:0.0 blue:0.45 alpha:0.5]];
 		inactiveStroke = [[NSColor colorWithCalibratedRed:0.35 green:0.0 blue:0.35 alpha:0.5] retain];
+		 */
+		activeGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.6 green:0.6 blue:0.6 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.35 green:0.35 blue:0.35 alpha:1.0]];
+		activeStroke = [[NSColor colorWithCalibratedRed:0.25 green:0.25 blue:0.25 alpha:1.0] retain];
+		inactiveGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.6 green:0.6 blue:0.6 alpha:0.5] endingColor:[NSColor colorWithCalibratedRed:0.35 green:0.35 blue:0.35 alpha:0.5]];
+		inactiveStroke = [[NSColor colorWithCalibratedRed:0.25 green:0.25 blue:0.25 alpha:0.5] retain];
 	}
 	
 	NSBezierPath *path = [NSBezierPath bezierPath];

@@ -22,9 +22,14 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 + (NSSet *)keyPathsForValuesAffectingName {
     return [NSSet setWithObjects:@"lineNumber", nil];
 }
-
++ (NSSet *)keyPathsForValuesAffectingSymbolName {
+    return [NSSet setWithObjects:@"lineNumber", nil];
+}
 + (NSSet *)keyPathsForValuesAffectingAddress {
     return [NSSet setWithObjects:@"lineNumber", nil];
+}
++ (NSSet *)keyPathsForValuesAffectingSymbolNameAndLineNumber {
+    return [NSSet setWithObjects:@"symbolName",@"lineNumber", nil];
 }
 
 - (void)dealloc {
@@ -45,6 +50,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	_lineNumber = [[coder decodeObjectForKey:@"lineNumber"] unsignedIntegerValue];
 	_isActive = [coder decodeBoolForKey:@"isActive"];
 	_breakpointType = WCBreakpointTypeLine;
+	_isRam = YES;
 	
 	return self;
 }
@@ -72,10 +78,9 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 - (NSString *)name {
 	switch ([self breakpointType]) {
 		case WCBreakpointTypeLine: {
-			NSArray *symbols = [[[self file] symbolScanner] symbols];
-			WCSymbol *symbol = [symbols objectAtIndex:[symbols symbolIndexForLocation:[[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]]]];
-			
-			return [NSString stringWithFormat:NSLocalizedString(@"%@ - line %lu", @"breakpoint line name"),[symbol name],[self lineNumber]+1];
+			if ([[super name] length])
+				return [super name];
+			return [[[[[self file] textStorage] string] substringWithRange:[[[[self file] textStorage] string] lineRangeForRange:NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0)]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
 		}
 		case WCBreakpointTypeFile:
 		case WCBreakpointTypeProject:
@@ -116,6 +121,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	_lineNumber = lineNumber;
 	_isActive = YES;
 	_breakpointType = WCBreakpointTypeLine;
+	_isRam = YES;
 	
 	return self;
 }
@@ -141,13 +147,35 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 		return NSMakeRange(0, 0);
 	return NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0);
 }
+@dynamic symbolName;
+- (NSString *)symbolName {
+	switch ([self breakpointType]) {
+		case WCBreakpointTypeLine: {
+			NSArray *symbols = [[[self file] symbolScanner] symbols];
+			WCSymbol *symbol = [symbols objectAtIndex:[symbols symbolIndexForLocation:[[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]]]];
+			
+			return [symbol name];
+		}
+		case WCBreakpointTypeFile:
+		case WCBreakpointTypeProject:
+			return [[self file] name];
+		default:
+			return nil;
+	}
+}
+@dynamic symbolNameAndLineNumber;
+- (NSString *)symbolNameAndLineNumber {
+	if ([self breakpointType] == WCBreakpointTypeLine)
+		return [NSString stringWithFormat:NSLocalizedString(@"%@ - %lu", @"breakpoint symbol name and line number"),[self symbolName],[self lineNumber]+1];
+	return [self name];
+}
 @synthesize isRam=_isRam;
 @synthesize page=_page;
 @dynamic address;
 - (u_int16_t)address {
 	if ([[[self file] project] codeListing] == nil) {
 #ifdef DEBUG
-		NSLog(@"no listing file for project of \"%@\"",[[self file] name]);
+		NSLog(@"no listing file for project of %@",[[self file] name]);
 #endif
 		return _address;
 	}
@@ -159,7 +187,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	
 	if (fileRange.location == NSNotFound) {
 #ifdef DEBUG
-		NSLog(@"could not find listing for file \"%@\"",[[self file] name]);
+		NSLog(@"could not find listing for file %@",[[self file] name]);
 #endif
 		return _address;
 	}
@@ -170,14 +198,14 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	NSRange entireRange = NSMakeRange(0, [codeListing length]);
 	NSRange searchRange = NSMakeRange(NSMaxRange(fileRange), [codeListing length]-NSMaxRange(fileRange));
 	
-	NSLog(@"%@ %lu",NSStringFromRange(entireRange),[codeListing length]);
+	NSLog(@"%@ %lu",NSStringFromRange(entireRange),(unsigned long)[codeListing length]);
 	
 	while (searchRange.location < entireRange.length) {
 		NSRange lineRange = [codeListing rangeOfString:lineString options:NSLiteralSearch range:searchRange];
 		
 		if (lineRange.location == NSNotFound) {
 #ifdef DEBUG
-			NSLog(@"could not find listing for line %lu in file \"%@\"",[self lineNumber]+1,[[self file] name]);
+			NSLog(@"could not find listing for line %lu in file %@",[self lineNumber]+1,[[self file] name]);
 #endif
 			return _address;
 		}
@@ -191,7 +219,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 		// grab the line number from the listing file
 		if (![scanner scanInteger:&lineNumber]) {
 #ifdef DEBUG
-			NSLog(@"could not scan line number for line %lu in file \"%@\"",[self lineNumber]+1,[[self file] name]);
+			NSLog(@"could not scan line number for line %lu in file %@",[self lineNumber]+1,[[self file] name]);
 #endif
 			return _address;
 		}
@@ -203,7 +231,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 			
 			if (![scanner scanInteger:&page]) {
 #ifdef DEBUG
-				NSLog(@"could not scan page for line %lu in file \"%@\"",[self lineNumber]+1,[[self file] name]);
+				NSLog(@"could not scan page for line %lu in file %@",[self lineNumber]+1,[[self file] name]);
 #endif
 				return _address;
 			}
@@ -217,20 +245,20 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 			
 			if (![scanner scanHexInt:&newAddress]) {
 #ifdef DEBUG
-				NSLog(@"could not scan address for line %lu in file \"%@\"",[self lineNumber]+1,[[self file] name]);
+				NSLog(@"could not scan address for line %lu in file %@",[self lineNumber]+1,[[self file] name]);
 #endif
 				return _address;
 			}
 			
 #ifdef DEBUG
-			NSLog(@"found page and address for line %lu in file \"%@\"",[self lineNumber]+1,[[self file] name]);
+			NSLog(@"found page and address for line %lu in file %@",[self lineNumber]+1,[[self file] name]);
 #endif
 			_address = (u_int16_t)newAddress;
 			break;
 		}
 		
 #ifdef DEBUG
-		NSLog(@"line numbers not equal advancing search range for file \"%@\"",[[self file] name]);
+		NSLog(@"line numbers not equal advancing search range for file %@",[[self file] name]);
 #endif
 		// otherwise adjust the search range and try again
 		searchRange = NSMakeRange(NSMaxRange(lineRange), entireRange.length-NSMaxRange(lineRange));

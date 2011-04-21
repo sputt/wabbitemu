@@ -38,6 +38,8 @@ extern NSString *const kWCBreakpointIsActiveDidChangeNotification;
 @property (assign,nonatomic) BOOL isRam;
 @property (assign,nonatomic) u_int8_t page;
 @property (readonly,nonatomic) u_int16_t address;
+@property (readonly,nonatomic) NSString *symbolName;
+@property (readonly,nonatomic) NSString *symbolNameAndLineNumber;
 
 + (id)breakpointWithLineNumber:(NSUInteger)lineNumber inFile:(WCFile *)file;
 - (id)initWithLineNumber:(NSUInteger)lineNumber file:(WCFile *)file;

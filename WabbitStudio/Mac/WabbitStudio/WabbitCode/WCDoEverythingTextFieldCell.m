@@ -80,7 +80,7 @@ static const CGFloat kBadgeMinWidth = 22.0;
 		NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
 		[style setLineBreakMode:NSLineBreakByTruncatingTail];
 		[style setAlignment:NSLeftTextAlignment];
-		NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]],NSFontAttributeName,([self isHighlighted])?[NSColor alternateSelectedControlTextColor]:[NSColor textColor],NSForegroundColorAttributeName,style,NSParagraphStyleAttributeName, nil];
+		NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont systemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]],NSFontAttributeName,([self isHighlighted])?[NSColor alternateSelectedControlTextColor]:[NSColor disabledControlTextColor],NSForegroundColorAttributeName,style,NSParagraphStyleAttributeName, nil];
 		NSAttributedString *attributedString = [[[NSAttributedString alloc] initWithString:[self secondaryTitle] attributes:attributes] autorelease];
 		NSSize size = [attributedString size];
 		

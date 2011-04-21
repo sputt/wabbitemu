@@ -10,6 +10,7 @@
 		07005B4E135426A40094FAFC /* WarningBadge.png in Resources */ = {isa = PBXBuildFile; fileRef = 07005B4C135426A30094FAFC /* WarningBadge.png */; };
 		07005B4F135426A40094FAFC /* ErrorBadge.png in Resources */ = {isa = PBXBuildFile; fileRef = 07005B4D135426A40094FAFC /* ErrorBadge.png */; };
 		0706F50F13391684000C9007 /* NSUserDefaults+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0706F50E13391684000C9007 /* NSUserDefaults+WCExtensions.m */; };
+		0707208C1360A29800E7C7CD /* WCBoolToStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */; };
 		070D558D1337BD3600847B1A /* WCFilesTreeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D558C1337BD3600847B1A /* WCFilesTreeController.m */; };
 		070D55901337BE9F00847B1A /* WCFilesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D558F1337BE9E00847B1A /* WCFilesOutlineView.m */; };
 		070D55961338559700847B1A /* NSTreeController+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D55951338559700847B1A /* NSTreeController+WCExtensions.m */; };
@@ -209,6 +210,8 @@
 		07005B4D135426A40094FAFC /* ErrorBadge.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ErrorBadge.png; sourceTree = "<group>"; };
 		0706F50D13391684000C9007 /* NSUserDefaults+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+WCExtensions.h"; sourceTree = "<group>"; };
 		0706F50E13391684000C9007 /* NSUserDefaults+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+WCExtensions.m"; sourceTree = "<group>"; };
+		0707208A1360A29800E7C7CD /* WCBoolToStringTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBoolToStringTransformer.h; sourceTree = "<group>"; };
+		0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBoolToStringTransformer.m; sourceTree = "<group>"; };
 		070D558B1337BD3600847B1A /* WCFilesTreeController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFilesTreeController.h; sourceTree = "<group>"; };
 		070D558C1337BD3600847B1A /* WCFilesTreeController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFilesTreeController.m; sourceTree = "<group>"; };
 		070D558E1337BE9E00847B1A /* WCFilesOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFilesOutlineView.h; sourceTree = "<group>"; };
@@ -814,6 +817,8 @@
 				07BBD22B135F9330005C4870 /* WCHexFormatter.m */,
 				07BBD22D135F9609005C4870 /* WCReturnAndEscapeButton.h */,
 				07BBD22E135F9609005C4870 /* WCReturnAndEscapeButton.m */,
+				0707208A1360A29800E7C7CD /* WCBoolToStringTransformer.h */,
+				0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1126,6 +1131,7 @@
 				07BBD226135F7CED005C4870 /* WCBreakpointEditViewController.m in Sources */,
 				07BBD22C135F9330005C4870 /* WCHexFormatter.m in Sources */,
 				07BBD22F135F960A005C4870 /* WCReturnAndEscapeButton.m in Sources */,
+				0707208C1360A29800E7C7CD /* WCBoolToStringTransformer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

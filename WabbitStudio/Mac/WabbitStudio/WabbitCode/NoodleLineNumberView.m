@@ -51,7 +51,10 @@
 #define CORNER_RADIUS 3.0
 #define BREAKPOINT_HEIGHT 12.0
 
-@interface NoodleLineNumberView (Private)
+@interface NoodleLineNumberView ()
+@property (assign,nonatomic) WCBreakpoint *currentBreakpoint;
+@property (assign,nonatomic) NSUInteger currentLineNumber;
+@property (assign,nonatomic) CGFloat currentLocation;
 
 - (NSArray *)lineIndices;
 - (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index inText:(NSString *)text;
@@ -92,7 +95,7 @@
 }
 
 - (NSArray *)notificationDictionaries {
-	return [NSArray arrayWithObjects:[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBuildMessagesChanged:)),kNSObjectSelectorKey,kWCFileNumberOfErrorMessagesChangedNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBuildMessagesChanged:)),kNSObjectSelectorKey,kWCFileNumberOfWarningMessagesChangedNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBreakpointsDidChange:)),kNSObjectSelectorKey,kWCFileNumberOfBreakpointsDidChangeNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_breakpointIsActiveDidChange:)),kNSObjectSelectorKey,kWCBreakpointIsActiveDidChangeNotification,kNSObjectNotificationNameKey, nil], nil];
+	return [NSArray arrayWithObjects:[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBuildMessagesChanged:)),kNSObjectSelectorKey,kWCFileNumberOfErrorMessagesChangedNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBuildMessagesChanged:)),kNSObjectSelectorKey,kWCFileNumberOfWarningMessagesChangedNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBreakpointsDidChange:)),kNSObjectSelectorKey,kWCFileDidAddBreakpointNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileNumberOfBreakpointsDidChange:)),kNSObjectSelectorKey,kWCFileDidRemoveBreakpointNotification,kNSObjectNotificationNameKey,[(WCTextView *)[self clientView] file],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_breakpointIsActiveDidChange:)),kNSObjectSelectorKey,kWCBreakpointIsActiveDidChangeNotification,kNSObjectNotificationNameKey, nil], nil];
 }
 
 - (void)setClientView:(NSView *)aView {
@@ -199,6 +202,7 @@
 	}
 	
 	[pool drain];
+	 
 }
 #pragma mark Drawing
 - (void)drawHashMarksAndLabelsInRect:(NSRect)aRect {
@@ -360,19 +364,20 @@
 	if (menu != nil) {
 		NSPoint p = [self convertPointFromBase:[event locationInWindow]];
 		NSUInteger line = [self lineNumberForLocation:p.y];
-		_locationForContextualMenu = p.y;
-		_lineNumberForContextualMenu = line;
-		_breakpointForContextualMenu = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
+		
+		[self setCurrentBreakpoint:[[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line]];
+		[self setCurrentLocation:p.y];
+		[self setCurrentLineNumber:line];
 	}
 	else
-		_breakpointForContextualMenu = nil;
+		[self setCurrentBreakpoint:nil];
 	
 	return menu;
 }
 #pragma mark NSMenuValidation
 - (BOOL)validateMenuItem:(NSMenuItem *)item {
 	if ([item action] == @selector(_deleteBreakpoint:)) {
-		if (_breakpointForContextualMenu == nil)
+		if ([self currentBreakpoint] == nil)
 			return NO;
 	}
 	else if ([item action] == @selector(_deleteAllBreakpoints:)) {
@@ -380,16 +385,16 @@
 			return NO;
 	}
 	else if ([item action] == @selector(_toggleBreakpoint:)) {
-		if (_breakpointForContextualMenu == nil)
+		if ([self currentBreakpoint] == nil)
 			return NO;
 		
-		if ([_breakpointForContextualMenu isActive])
+		if ([[self currentBreakpoint] isActive])
 			[item setTitle:NSLocalizedString(@"Disable Breakpoint", @"Disable Breakpoint")];
 		else
 			[item setTitle:NSLocalizedString(@"Enable Breakpoint", @"Enable Breakpoint")];
 	}
 	else if ([item action] == @selector(_editBreakpoint:)) {
-		if (_breakpointForContextualMenu == nil)
+		if ([self currentBreakpoint] == nil)
 			[item setTitle:NSLocalizedString(@"Add Breakpoint", @"Add Breakpoint")];
 		else {
 			[item setTitle:NSLocalizedString(@"Edit Breakpoint\u2026", @"Edit Breakpoint with ellipsis")];
@@ -399,7 +404,7 @@
 		}
 	}
 	else if ([item action] == @selector(_revealInBreakpointsView:)) {
-		if (_breakpointForContextualMenu == nil)
+		if ([self currentBreakpoint] == nil)
 			return NO;
 	}
 	return YES;
@@ -438,8 +443,8 @@
 }
 
 - (NSArray *)lineIndices {
-	if (!hasPerformedSetup) {
-		hasPerformedSetup = YES;
+	if (!_hasSetInitialRulerThickness) {
+		_hasSetInitialRulerThickness = YES;
 		
 		CGFloat oldThickness = [self ruleThickness];
         CGFloat newThickness = [self requiredThickness];
@@ -557,26 +562,31 @@
             [self alternateTextColor], NSForegroundColorAttributeName,
 			nil];
 }
+
+@synthesize currentBreakpoint=_currentBreakpoint;
+@synthesize currentLineNumber=_currentLineNumber;
+@synthesize currentLocation=_currentLocation;
 #pragma mark IBActions
 - (IBAction)_editBreakpoint:(id)sender {
-	if (_breakpointForContextualMenu == nil)
-		[[(WCTextView *)[self clientView] file] addBreakpoint:[WCBreakpoint breakpointWithLineNumber:_lineNumberForContextualMenu inFile:[(WCTextView *)[self clientView] file]]];
+	if ([self currentBreakpoint] == nil)
+		[[(WCTextView *)[self clientView] file] addBreakpoint:[WCBreakpoint breakpointWithLineNumber:[self currentLineNumber] inFile:[(WCTextView *)[self clientView] file]]];
 	else if ([self currentEditViewController] == nil) {
-		WCBreakpointEditViewController *controller = [[WCBreakpointEditViewController alloc] initWithBreakpoint:_breakpointForContextualMenu rulerView:self];
-		MAAttachedWindow *window = [[MAAttachedWindow alloc] initWithView:[controller view] attachedToPoint:[self convertPointToBase:[self convertPoint:[self centerPointForLocation:_locationForContextualMenu] fromView:[self clientView]]] inWindow:[self window] onSide:MAPositionRight atDistance:0.0];
+		WCBreakpointEditViewController *controller = [[WCBreakpointEditViewController alloc] initWithBreakpoint:[self currentBreakpoint] rulerView:self];
+		MAAttachedWindow *window = [[MAAttachedWindow alloc] initWithView:[controller view] attachedToPoint:[self convertPointToBase:[self convertPoint:[self centerPointForLocation:[self currentLocation]] fromView:[self clientView]]] inWindow:[self window] onSide:MAPositionRight atDistance:0.0];
 		
 		[self setCurrentEditViewController:controller];
 		
 		[window setBackgroundColor:[NSColor colorWithCalibratedWhite:0.9 alpha:1.0]];
+		[window setBorderColor:[NSColor colorWithCalibratedWhite:0.75 alpha:1.0]];
 		
 		[controller showEditViewController:nil];
 	}
 }
 - (IBAction)_toggleBreakpoint:(id)sender {
-	[_breakpointForContextualMenu setIsActive:![_breakpointForContextualMenu isActive]];
+	[[self currentBreakpoint] setIsActive:![[self currentBreakpoint] isActive]];
 }
 - (IBAction)_deleteBreakpoint:(id)sender {
-	[[(WCTextView *)[self clientView] file] removeBreakpoint:_breakpointForContextualMenu];
+	[[(WCTextView *)[self clientView] file] removeBreakpoint:[self currentBreakpoint]];
 }
 - (IBAction)_deleteAllBreakpoints:(id)sender {
 	NSAlert *alert = [NSAlert alertWithMessageText:[NSString stringWithFormat:NSLocalizedString(@"Delete All Breakpoints in \"%@?\"", @"Delete All Breakpoints in File alert message"),[[(WCTextView *)[self clientView] file] name]] defaultButton:NS_LOCALIZED_STRING_DELETE_ALL alternateButton:NS_LOCALIZED_STRING_CANCEL otherButton:nil informativeTextWithFormat:NSLocalizedString(@"This operation cannot be undone.", @"This operation cannot be undone.")];
@@ -591,7 +601,7 @@
 }
 - (IBAction)_revealInBreakpointsView:(id)sender {
 	[[[(WCTextView *)[self clientView] file] project] viewBreakpoints:nil];
-	[[[[(WCTextView *)[self clientView] file] project] breakpointsViewController] setSelectedObject:_breakpointForContextualMenu];
+	[[[[(WCTextView *)[self clientView] file] project] breakpointsViewController] setSelectedObject:[self currentBreakpoint]];
 }
 #pragma mark Notifications
 - (void)textDidChange:(NSNotification *)notification {

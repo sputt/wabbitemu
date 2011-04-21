@@ -32,11 +32,12 @@
 @class WCBreakpoint,WCBreakpointEditViewController;
 
 @interface NoodleLineNumberView : NSRulerView {
-	BOOL hasPerformedSetup;
-	WCBreakpoint *_breakpointForContextualMenu;
-	CGFloat _locationForContextualMenu;
-	NSUInteger _lineNumberForContextualMenu;
+	WCBreakpoint *_currentBreakpoint;
+	NSUInteger _currentLineNumber;
+	CGFloat _currentLocation;
 	WCBreakpointEditViewController *_currentEditViewController;
+	
+	BOOL _hasSetInitialRulerThickness;
 }
 @property (assign,nonatomic) WCBreakpointEditViewController *currentEditViewController;
 

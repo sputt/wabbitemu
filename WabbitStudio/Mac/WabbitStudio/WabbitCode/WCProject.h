@@ -55,6 +55,8 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	CTBadge *_warningBadge; // white on orange badge for the number of warnings for the current build task
 	NSString *_codeListing; // lst file that SPASM spit out for the last successful build
 	
+	WCBreakpoint *_projectBreakpoint;
+	
 	NSMutableDictionary *_projectSettings;
 	
 	__weak WCProjectNavigationViewController *_currentViewController;
@@ -99,6 +101,7 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 @property (readonly,nonatomic) id <WCTabViewContext> currentTabViewContext;
 @property (readonly,nonatomic) NSArray *fileWindowControllers;
 @property (readonly,retain,nonatomic) NSString *codeListing;
+@property (readonly,nonatomic) WCBreakpoint *projectBreakpoint;
 
 - (IBAction)addFilesToProject:(id)sender;
 - (IBAction)newFile:(id)sender;

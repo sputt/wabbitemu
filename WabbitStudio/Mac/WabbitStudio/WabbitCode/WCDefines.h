@@ -17,6 +17,8 @@
 #define NS_LOCALIZED_STRING_NONE NSLocalizedString(@"None",@"None")
 #define NS_LOCALIZED_STRING_CHOOSE NSLocalizedString(@"Choose",@"Choose")
 #define NS_LOCALIZED_STRING_SAVE NSLocalizedString(@"Save",@"Save")
+#define NS_LOCALIZED_STRING_FALSE NSLocalizedString(@"FALSE",@"FALSE")
+#define NS_LOCALIZED_STRING_TRUE NSLocalizedString(@"TRUE",@"TRUE")
 
 // returns a rect with the size of rect1 centered inside rect2
 static inline NSRect WCCenteredRect(NSRect rect1, NSRect rect2) {

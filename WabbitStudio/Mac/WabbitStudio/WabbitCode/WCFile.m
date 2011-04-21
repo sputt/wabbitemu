@@ -29,7 +29,9 @@ NSString *const kWCFileHasUnsavedChangesNotification = @"kWCFileHasUnsavedChange
 NSString *const kWCFileNumberOfErrorMessagesChangedNotification = @"kWCFileNumberOfErrorMessagesChangedNotification";
 NSString *const kWCFileNumberOfWarningMessagesChangedNotification = @"kWCFileNumberOfWarningMessagesChangedNotification";
 
-NSString *const kWCFileNumberOfBreakpointsDidChangeNotification = @"kWCFileNumberOfBreakpointsDidChangeNotification";
+NSString *const kWCFileDidAddBreakpointNotification = @"kWCFileDidAddBreakpointNotification";
+NSString *const kWCFileDidRemoveBreakpointNotification = @"kWCFileDidRemoveBreakpointNotification";
+NSString *const kWCFileBreakpointKey = @"kWCFileBreakpointKey";
 
 NSString *const kWCFileNameDidChangeNotification = @"kWCFileNameDidChangeNotification";
 
@@ -126,15 +128,6 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	
 	return self;
 }
-#pragma mark NSCopying
-- (id)copyWithZone:(NSZone *)zone {
-	WCFile *copy = [super copyWithZone:zone];
-	
-	copy->_alias = [_alias retain];
-	copy->_UUID = [_UUID retain];
-	
-	return copy;
-}
 #pragma mark *** Public Methods ***
 - (BOOL)saveFile:(NSError **)outError; {
 	NSString *string = [[self textStorage] string];
@@ -176,7 +169,7 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 }
 #pragma mark Errors & Warnings
 - (void)addErrorMessage:(WCBuildMessage *)error; {
-	if (!_lineNumbersToErrorMessages)
+	if (_lineNumbersToErrorMessages == nil)
 		_lineNumbersToErrorMessages = [[NSMutableDictionary alloc] init];
 	
 	[_lineNumbersToErrorMessages setObject:error forKey:[NSNumber numberWithUnsignedInteger:[error lineNumber] - 1]];
@@ -184,7 +177,7 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileNumberOfErrorMessagesChangedNotification object:self];
 }
 - (void)addWarningMessage:(WCBuildMessage *)warning; {
-	if (!_lineNumbersToWarningMessages)
+	if (_lineNumbersToWarningMessages == nil)
 		_lineNumbersToWarningMessages = [[NSMutableDictionary alloc] init];
 	
 	[_lineNumbersToWarningMessages setObject:warning forKey:[NSNumber numberWithUnsignedInteger:[warning lineNumber] - 1]];
@@ -240,17 +233,21 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 }
 #pragma mark Breakpoints
 - (void)addBreakpoint:(WCBreakpoint *)breakpoint; {
-	if (!_lineNumbersToBreakpoints)
+	if (_lineNumbersToBreakpoints == nil)
 		_lineNumbersToBreakpoints = [[NSMutableDictionary alloc] init];
 	
 	[_lineNumbersToBreakpoints setObject:breakpoint forKey:[NSNumber numberWithUnsignedInteger:[breakpoint lineNumber]]];
 	
-	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileNumberOfBreakpointsDidChangeNotification object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileDidAddBreakpointNotification object:self userInfo:[NSDictionary dictionaryWithObjectsAndKeys:breakpoint,kWCFileBreakpointKey, nil]];
 }
 - (void)removeBreakpoint:(WCBreakpoint *)breakpoint; {
+	// this protects against the case where the breakpoints view has not been shown yet
+	// we must retain autorelease so 'breakpoint' is still valid when we construct the userInfo dictionary
+	[[breakpoint retain] autorelease];
+	
 	[_lineNumbersToBreakpoints removeObjectForKey:[NSNumber numberWithUnsignedInteger:[breakpoint lineNumber]]];
 	
-	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileNumberOfBreakpointsDidChangeNotification object:self];
+	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileDidRemoveBreakpointNotification object:self userInfo:[NSDictionary dictionaryWithObjectsAndKeys:breakpoint,kWCFileBreakpointKey, nil]];
 }
 - (WCBreakpoint *)breakpointAtLineNumber:(NSUInteger)lineNumber; {
 	return [_lineNumbersToBreakpoints objectForKey:[NSNumber numberWithUnsignedInteger:lineNumber]];

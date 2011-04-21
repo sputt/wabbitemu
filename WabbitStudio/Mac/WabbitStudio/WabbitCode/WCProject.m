@@ -116,10 +116,11 @@ static NSImage *_appIcon = nil;
 	[_warningBadge release];
 	_currentViewController = nil;
 	[_cachedAbsoluteFilePaths release];
-	[_buildMessages release];
 	[_breakpointsViewController release];
+	[_projectBreakpoint release];
 	[_projectFilesOutlineViewController release];
 	[_buildMessagesViewController release];
+	[_buildMessages release];
 	[_symbolsViewController release];
 	[_findInProjectViewController release];
 	[_buildTask release];
@@ -705,11 +706,7 @@ static NSImage *_appIcon = nil;
 - (NSArray *)textFiles {
 	NSMutableArray *retval = [NSMutableArray array];
 	for (WCFile *file in [[self projectFile] descendantLeafNodes]) {
-		NSString *UTI = [file UTI];
-		
-		if ([UTI isEqualToString:kWCFileAssemblyUTI] ||
-			[UTI isEqualToString:kWCFileIncludeUTI] ||
-			[UTI isEqualToString:kWCFilePanicCodaImportedUTI])
+		if ([file isTextFile])
 			[retval addObject:file];
 	}
 	return [[retval copy] autorelease];
@@ -910,6 +907,25 @@ static NSImage *_appIcon = nil;
 			[retval addObject:controller];
 	}
 	return [[retval copy] autorelease];
+}
+@dynamic projectBreakpoint;
+- (WCBreakpoint *)projectBreakpoint {
+	if (!_projectBreakpoint) {
+		_projectBreakpoint = [[WCBreakpoint alloc] initWithLineNumber:0 file:[self projectFile]];
+		[_projectBreakpoint setBreakpointType:WCBreakpointTypeProject];
+		
+		for (WCFile *file in [self textFiles]) {
+			if ([[file allBreakpoints] count] == 0)
+				continue;
+			
+			WCBreakpoint *parent = [WCBreakpoint breakpointWithLineNumber:0 inFile:file];
+			[parent setBreakpointType:WCBreakpointTypeFile];
+			
+			[[_projectBreakpoint mutableChildNodes] addObject:parent];
+			[[parent mutableChildNodes] addObjectsFromArray:[file allBreakpoints]];
+		}
+	}
+	return _projectBreakpoint;
 }
 #pragma mark IBActions
 - (IBAction)addFilesToProject:(id)sender; {
@@ -1551,14 +1567,15 @@ static NSImage *_appIcon = nil;
 }
 - (IBAction)_breakpointsOutlineViewDoubleAction:(id)sender {
 	WCBreakpoint *breakpoint = [[self breakpointsViewController] selectedObject];
+	NSTreeNode *node = [[self breakpointsViewController] selectedNode];
 	
 	if ([breakpoint isLeaf])
 		[self jumpToBreakpoint:breakpoint];
 	else {
-		if ([[[self breakpointsViewController] outlineView] isItemExpanded:breakpoint])
-			[[[self breakpointsViewController] outlineView] collapseItem:breakpoint];
+		if ([[[self breakpointsViewController] outlineView] isItemExpanded:node])
+			[[[self breakpointsViewController] outlineView] collapseItem:node];
 		else
-			[[[self breakpointsViewController] outlineView] expandItem:breakpoint];
+			[[[self breakpointsViewController] outlineView] expandItem:node];
 	}
 }
 #pragma mark Notifications
@@ -1688,6 +1705,7 @@ static NSImage *_appIcon = nil;
 		}
 	}
 }
+
 #pragma mark Callbacks
 - (void)_activeBuildTargetHasNoInputFileAlertDidEnd:(NSAlert *)alert code:(NSInteger)code info:(void *)info {
 	if (code != NSAlertDefaultReturn)

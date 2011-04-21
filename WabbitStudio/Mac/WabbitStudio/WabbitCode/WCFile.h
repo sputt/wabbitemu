@@ -18,13 +18,15 @@ extern NSString *const kWCFileHasUnsavedChangesNotification;
 extern NSString *const kWCFileNumberOfErrorMessagesChangedNotification;
 extern NSString *const kWCFileNumberOfWarningMessagesChangedNotification;
 
-extern NSString *const kWCFileNumberOfBreakpointsDidChangeNotification;
+extern NSString *const kWCFileDidAddBreakpointNotification;
+extern NSString *const kWCFileDidRemoveBreakpointNotification;
+extern NSString *const kWCFileBreakpointKey;
 
 extern NSString *const kWCFileNameDidChangeNotification;
 
 @class WCTextStorage,WCSymbolScanner,WCProject,WCBuildMessage,WCAlias,WCBreakpoint;
 
-@interface WCFile : WCTreeNode <NSCoding,NSCopying,NSTextViewDelegate> {
+@interface WCFile : WCTreeNode <NSCoding,NSTextViewDelegate> {
 @private
 	WCAlias *_alias; // tracks the file we represent
 	NSString *_UUID; // for storing in project settings plist
