@@ -11,7 +11,7 @@
 
 @class BWAnchoredButtonBar,WCProject;
 
-@interface WCBuildTargetInfoSheetController : NSWindowController <NSControlTextEditingDelegate> {
+@interface WCBuildTargetsInfoSheetController : NSWindowController <NSControlTextEditingDelegate> {
 @private
     IBOutlet BWAnchoredButtonBar *_buttonBar;
 	IBOutlet NSPopUpButton *_inputFilePopUpButton;

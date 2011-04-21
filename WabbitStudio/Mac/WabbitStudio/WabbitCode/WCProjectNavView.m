@@ -22,9 +22,9 @@
 	if (!(self = [super initWithFrame:frameRect]))
 		return nil;
 	
-	_images = [[NSArray alloc] initWithObjects:[NSImage imageNamed:@"Directory16x16"],[NSImage imageNamed:@"Symbols16x16"],[NSImage imageNamed:@"Search16x16"],[NSImage imageNamed:@"ErrorsAndWarnings"],[NSImage imageNamed:@"Breakpoints16x16"], nil];
-	_selectors = [[NSArray alloc] initWithObjects:NSStringFromSelector(@selector(viewProject:)),NSStringFromSelector(@selector(viewSymbols:)),NSStringFromSelector(@selector(viewSearch:)),NSStringFromSelector(@selector(viewBuildMessages:)),NSStringFromSelector(@selector(viewBreakpoints:)), nil];
-	_tooltips = [[NSArray alloc] initWithObjects:NSLocalizedString(@"Show the Project view", @"Show the Project view"),NSLocalizedString(@"Show the Symbols view", @"Show the Symbols view"),NSLocalizedString(@"Show the Search view", @"Show the Search view"),NSLocalizedString(@"Show the Build Messages view", @"Show the Build Messages view"),NSLocalizedString(@"Show the Breakpoints view", @"Show the Breakpoints view"), nil];
+	_images = [[NSArray alloc] initWithObjects:[NSImage imageNamed:@"Directory16x16"],[NSImage imageNamed:@"ErrorsAndWarnings"],[NSImage imageNamed:@"Search16x16"],[NSImage imageNamed:@"Breakpoints16x16"],[NSImage imageNamed:@"Symbols16x16"], nil];
+	_selectors = [[NSArray alloc] initWithObjects:NSStringFromSelector(@selector(viewProject:)),NSStringFromSelector(@selector(viewBuildMessages:)),NSStringFromSelector(@selector(viewSearch:)),NSStringFromSelector(@selector(viewBreakpoints:)),NSStringFromSelector(@selector(viewSymbols:)), nil];
+	_tooltips = [[NSArray alloc] initWithObjects:NSLocalizedString(@"Show the Project view", @"Show the Project view"),NSLocalizedString(@"Show the Build Messages view", @"Show the Build Messages view"),NSLocalizedString(@"Show the Search view", @"Show the Search view"),NSLocalizedString(@"Show the Breakpoints view", @"Show the Breakpoints view"),NSLocalizedString(@"Show the Symbols view", @"Show the Symbols view"), nil];
 	
 	return self;
 }

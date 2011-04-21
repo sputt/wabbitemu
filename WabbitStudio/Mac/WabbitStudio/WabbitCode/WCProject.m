@@ -22,7 +22,7 @@
 #import "WCTextStorage.h"
 #import "WCBuildMessage.h"
 #import "WCBuildTarget.h"
-#import "WCBuildTargetInfoSheetController.h"
+#import "WCBuildTargetsInfoSheetController.h"
 #import "WCPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "WCDefines.h"
@@ -1101,7 +1101,7 @@ static NSImage *_appIcon = nil;
 }
 
 - (IBAction)editBuildTargets:(id)sender; {
-	[WCBuildTargetInfoSheetController presentBuildTargetInfoSheetControllerForProject:self];
+	[WCBuildTargetsInfoSheetController presentBuildTargetInfoSheetControllerForProject:self];
 }
 
 - (IBAction)newGroup:(id)sender; {
@@ -1451,7 +1451,10 @@ static NSImage *_appIcon = nil;
 }
 - (void)_applyProjectSettings; {
 	// expand the right items in our files outline view
-	[[[self projectFilesOutlineViewController] outlineView] expandItemsWithUUIDs:[[self projectSettings] objectForKey:kWCProjectSettingsProjectFilesOutlineViewExpandedItemUUIDsKey]];
+	if ([[self projectSettings] objectForKey:kWCProjectSettingsProjectFilesOutlineViewExpandedItemUUIDsKey])
+		[[[self projectFilesOutlineViewController] outlineView] expandItemsWithUUIDs:[[self projectSettings] objectForKey:kWCProjectSettingsProjectFilesOutlineViewExpandedItemUUIDsKey]];
+	else
+		[[[self projectFilesOutlineViewController] outlineView] expandItem:[(NSTreeController *)[[[self projectFilesOutlineViewController] outlineView] dataSource] treeNodeForRepresentedObject:[self projectFile]]];
 	
 	// restore the project window's frame
 	if (![[self projectSettings] objectForKey:kWCProjectSettingsProjectWindowFrameKey])

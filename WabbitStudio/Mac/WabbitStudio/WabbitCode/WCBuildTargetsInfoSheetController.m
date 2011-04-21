@@ -6,7 +6,7 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCBuildTargetInfoSheetController.h"
+#import "WCBuildTargetsInfoSheetController.h"
 #import "WCProject.h"
 #import "WCBuildTarget.h"
 #import "WCFile.h"
@@ -18,12 +18,12 @@
 #import <BWToolkitFramework/BWToolkitFramework.h>
 
 
-@interface WCBuildTargetInfoSheetController (Private)
+@interface WCBuildTargetsInfoSheetController (Private)
 - (void)_setupInputFilePopUpButton;
 - (WCBuildTarget *)_selectedBuildTarget;
 @end
 
-@implementation WCBuildTargetInfoSheetController
+@implementation WCBuildTargetsInfoSheetController
 
 - (void)dealloc {
 #ifdef DEBUG
@@ -44,6 +44,8 @@
 	[_buttonBar setIsResizable:NO];
 	
 	[self _setupInputFilePopUpButton];
+	
+	[_buildTargetsArrayController setSelectedObjects:[NSArray arrayWithObjects:[[self project] activeBuildTarget], nil]];
 }
 
 - (BOOL)control:(NSControl *)control textShouldEndEditing:(NSText *)fieldEditor {

@@ -220,7 +220,7 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 				NSString *compareName = (labelsAreCaseSensitive)?labelName:[labelName lowercaseString];
 				
 				// dont count the special temp labels
-				if ([labelName characterAtIndex:0] == '_')
+				if (labelRange->length == 1 && [labelName characterAtIndex:0] == '_')
 					continue;
 				 
 				// ignore macro invocations
