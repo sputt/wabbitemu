@@ -37,7 +37,7 @@ extern NSString *const kWCBreakpointIsActiveDidChangeNotification;
 @property (readonly,nonatomic) NSRange breakpointRange;
 @property (assign,nonatomic) BOOL isRam;
 @property (assign,nonatomic) u_int8_t page;
-@property (assign,nonatomic) u_int16_t address;
+@property (readonly,nonatomic) u_int16_t address;
 
 + (id)breakpointWithLineNumber:(NSUInteger)lineNumber inFile:(WCFile *)file;
 - (id)initWithLineNumber:(NSUInteger)lineNumber file:(WCFile *)file;

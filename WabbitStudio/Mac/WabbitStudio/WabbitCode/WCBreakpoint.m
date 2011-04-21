@@ -13,12 +13,17 @@
 #import "WCSymbolScanner.h"
 #import "NSArray+WCExtensions.h"
 #import "WCGeneralPerformer.h"
+#import "WCProject.h"
 
 NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsActiveDidChangeNotification";
 
 @implementation WCBreakpoint
 
 + (NSSet *)keyPathsForValuesAffectingName {
+    return [NSSet setWithObjects:@"lineNumber", nil];
+}
+
++ (NSSet *)keyPathsForValuesAffectingAddress {
     return [NSSet setWithObjects:@"lineNumber", nil];
 }
 
@@ -138,5 +143,98 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 }
 @synthesize isRam=_isRam;
 @synthesize page=_page;
-@synthesize address=_address;
+@dynamic address;
+- (u_int16_t)address {
+	if ([[[self file] project] codeListing] == nil) {
+#ifdef DEBUG
+		NSLog(@"no listing file for project of \"%@\"",[[self file] name]);
+#endif
+		return _address;
+	}
+	
+	NSString *codeListing = [[[self file] project] codeListing];
+	// find where the listing for our file begins
+	NSString *fileString = [NSString stringWithFormat:@"Listing for file \"%@\"",[[self file] absolutePathForDisplay]];
+	NSRange fileRange = [codeListing rangeOfString:fileString options:NSLiteralSearch];
+	
+	if (fileRange.location == NSNotFound) {
+#ifdef DEBUG
+		NSLog(@"could not find listing for file \"%@\"",[[self file] name]);
+#endif
+		return _address;
+	}
+	
+	// find the contents of our line within our file
+	NSString *lineString = [[[[self file] textStorage] string] substringWithRange:[[[[self file] textStorage] string] lineRangeForRange:NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0)]];
+	
+	NSRange entireRange = NSMakeRange(0, [codeListing length]);
+	NSRange searchRange = NSMakeRange(NSMaxRange(fileRange), [codeListing length]-NSMaxRange(fileRange));
+	
+	NSLog(@"%@ %lu",NSStringFromRange(entireRange),[codeListing length]);
+	
+	while (searchRange.location < entireRange.length) {
+		NSRange lineRange = [codeListing rangeOfString:lineString options:NSLiteralSearch range:searchRange];
+		
+		if (lineRange.location == NSNotFound) {
+#ifdef DEBUG
+			NSLog(@"could not find listing for line %lu in file \"%@\"",[self lineNumber]+1,[[self file] name]);
+#endif
+			return _address;
+		}
+		
+		// grab the entire matched line in the listing file
+		NSString *listingLine = [codeListing substringWithRange:[codeListing lineRangeForRange:NSMakeRange(lineRange.location, 0)]];
+		NSScanner *scanner = [NSScanner scannerWithString:listingLine];
+		[scanner setCharactersToBeSkipped:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+		NSInteger lineNumber;
+		
+		// grab the line number from the listing file
+		if (![scanner scanInteger:&lineNumber]) {
+#ifdef DEBUG
+			NSLog(@"could not scan line number for line %lu in file \"%@\"",[self lineNumber]+1,[[self file] name]);
+#endif
+			return _address;
+		}
+		
+		// if our line numbers are the same, we have the correct line, scan the rest of the line for page and address
+		if (--lineNumber == [self lineNumber]) {
+			// scan the page
+			NSInteger page;
+			
+			if (![scanner scanInteger:&page]) {
+#ifdef DEBUG
+				NSLog(@"could not scan page for line %lu in file \"%@\"",[self lineNumber]+1,[[self file] name]);
+#endif
+				return _address;
+			}
+			
+			[self setPage:(u_int8_t)page];
+			
+			// skip past the ':'
+			[scanner setScanLocation:[scanner scanLocation]+1];
+			
+			unsigned newAddress;
+			
+			if (![scanner scanHexInt:&newAddress]) {
+#ifdef DEBUG
+				NSLog(@"could not scan address for line %lu in file \"%@\"",[self lineNumber]+1,[[self file] name]);
+#endif
+				return _address;
+			}
+			
+#ifdef DEBUG
+			NSLog(@"found page and address for line %lu in file \"%@\"",[self lineNumber]+1,[[self file] name]);
+#endif
+			_address = (u_int16_t)newAddress;
+			break;
+		}
+		
+#ifdef DEBUG
+		NSLog(@"line numbers not equal advancing search range for file \"%@\"",[[self file] name]);
+#endif
+		// otherwise adjust the search range and try again
+		searchRange = NSMakeRange(NSMaxRange(lineRange), entireRange.length-NSMaxRange(lineRange));
+	}
+	return _address;
+}
 @end

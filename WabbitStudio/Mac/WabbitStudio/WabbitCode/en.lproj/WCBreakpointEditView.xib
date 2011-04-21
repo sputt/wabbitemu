@@ -12,14 +12,12 @@
 		</object>
 		<object class="NSArray" key="IBDocument.IntegratedClassDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<string>NSTextField</string>
-			<string>NSCustomObject</string>
-			<string>NSStepper</string>
 			<string>NSCustomView</string>
+			<string>NSTextField</string>
 			<string>NSButtonCell</string>
-			<string>NSStepperCell</string>
-			<string>NSButton</string>
 			<string>NSTextFieldCell</string>
+			<string>NSButton</string>
+			<string>NSCustomObject</string>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -54,7 +52,6 @@
 						<string key="NSFrame">{{190, 18}, {75, 19}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="150619118">
 							<int key="NSCellFlags">-2080244224</int>
@@ -80,10 +77,10 @@
 						<string key="NSFrame">{{90, 67}, {29, 19}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="980090563"/>
+						<reference key="NSNextKeyView"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="522531123">
-							<int key="NSCellFlags">-1804468671</int>
+							<int key="NSCellFlags">-1267597759</int>
 							<int key="NSCellFlags2">272761856</int>
 							<string key="NSContents">255</string>
 							<object class="NSFont" key="NSSupport" id="26">
@@ -113,25 +110,6 @@
 							</object>
 						</object>
 					</object>
-					<object class="NSStepper" id="980090563">
-						<reference key="NSNextResponder" ref="1005"/>
-						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{119, 65}, {15, 22}}</string>
-						<reference key="NSSuperview" ref="1005"/>
-						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="309231924"/>
-						<bool key="NSEnabled">YES</bool>
-						<object class="NSStepperCell" key="NSCell" id="98287438">
-							<int key="NSCellFlags">68025888</int>
-							<int key="NSCellFlags2">131072</int>
-							<reference key="NSSupport" ref="26"/>
-							<reference key="NSControlView" ref="980090563"/>
-							<double key="NSMaxValue">255</double>
-							<double key="NSIncrement">1</double>
-							<bool key="NSValueWraps">YES</bool>
-							<bool key="NSAutorepeat">YES</bool>
-						</object>
-					</object>
 					<object class="NSTextField" id="327929117">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
@@ -141,7 +119,7 @@
 						<reference key="NSNextKeyView" ref="23716223"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="204095244">
-							<int key="NSCellFlags">-1804468671</int>
+							<int key="NSCellFlags">-1267597759</int>
 							<int key="NSCellFlags2">272761856</int>
 							<string key="NSContents">0xFFFF</string>
 							<reference key="NSSupport" ref="26"/>
@@ -160,7 +138,7 @@
 						<reference key="NSNextKeyView" ref="974394825"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="568999293">
-							<int key="NSCellFlags">-2080244224</int>
+							<int key="NSCellFlags">-1543373312</int>
 							<int key="NSCellFlags2">131072</int>
 							<string key="NSContents">Ram</string>
 							<reference key="NSSupport" ref="26"/>
@@ -345,22 +323,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: breakpoint.page</string>
-						<reference key="source" ref="980090563"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="980090563"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">value: breakpoint.page</string>
-							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">breakpoint.page</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">27</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: breakpoint.isRam</string>
 						<reference key="source" ref="309231924"/>
 						<reference key="destination" ref="1001"/>
@@ -445,7 +407,6 @@
 							<reference ref="327929117"/>
 							<reference ref="767136233"/>
 							<reference ref="23716223"/>
-							<reference ref="980090563"/>
 							<reference ref="309231924"/>
 							<reference ref="974394825"/>
 						</object>
@@ -522,20 +483,6 @@
 						<reference key="parent" ref="327929117"/>
 					</object>
 					<object class="IBObjectRecord">
-						<int key="objectID">13</int>
-						<reference key="object" ref="980090563"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="98287438"/>
-						</object>
-						<reference key="parent" ref="1005"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">14</int>
-						<reference key="object" ref="98287438"/>
-						<reference key="parent" ref="980090563"/>
-					</object>
-					<object class="IBObjectRecord">
 						<int key="objectID">15</int>
 						<reference key="object" ref="767136233"/>
 						<object class="NSMutableArray" key="children">
@@ -583,8 +530,6 @@
 					<string>10.IBPluginDependency</string>
 					<string>11.IBPluginDependency</string>
 					<string>12.IBPluginDependency</string>
-					<string>13.IBPluginDependency</string>
-					<string>14.IBPluginDependency</string>
 					<string>15.IBPluginDependency</string>
 					<string>16.IBPluginDependency</string>
 					<string>17.CustomClassName</string>
@@ -607,8 +552,6 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{357, 416}, {480, 272}}</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>

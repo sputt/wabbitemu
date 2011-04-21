@@ -84,6 +84,7 @@ static NSImage *_appIcon = nil;
 @interface WCProject ()
 @property (readwrite,retain,nonatomic) WCProjectFile *projectFile;
 @property (readwrite,retain,nonatomic) NSSet *absoluteFilePaths;
+@property (readwrite,retain,nonatomic) NSString *codeListing;
 
 - (void)_addBuildMessageForString:(NSString *)string;
 
@@ -110,6 +111,7 @@ static NSImage *_appIcon = nil;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[_codeListing release];
 	[_errorBadge release];
 	[_warningBadge release];
 	_currentViewController = nil;
@@ -1487,6 +1489,7 @@ static NSImage *_appIcon = nil;
 	[_cachedAbsoluteFilePaths release];
 	_cachedAbsoluteFilePaths = [absoluteFilePaths retain];
 }
+@synthesize codeListing=_codeListing;
 #pragma mark IBActions
 - (IBAction)_outlineViewDoubleClick:(id)sender; {
 	NSArray *selectedNodes = [[self projectFilesOutlineViewController] selectedNodes];
@@ -1653,8 +1656,12 @@ static NSImage *_appIcon = nil;
 		else {
 			[NSApp setApplicationIconImage:_appIcon];
 			
-			//[[NSWorkspace sharedWorkspace] launchApplication:@"WabbitEmu"];
-			//[[NSWorkspace sharedWorkspace] openFile:[[_buildTask arguments] lastObject] withApplication:@"WabbitEmu" andDeactivate:YES];
+			if ([[self activeBuildTarget] generateCodeListing]) {
+				NSString *codeListingPath = [[[[_buildTask arguments] lastObject] stringByDeletingPathExtension] stringByAppendingPathExtension:@"lst"];
+				[self setCodeListing:[NSString stringWithContentsOfFile:codeListingPath encoding:NSASCIIStringEncoding error:NULL]];
+			}
+			else
+				[self setCodeListing:nil];
 		}
 		
 		[self setIsBuilding:NO];

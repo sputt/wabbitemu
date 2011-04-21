@@ -53,6 +53,7 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	NSMutableArray *_buildMessages; // errors and warnings for the current build task
 	CTBadge *_errorBadge; // white on red badge for number of errors for the current build task
 	CTBadge *_warningBadge; // white on orange badge for the number of warnings for the current build task
+	NSString *_codeListing; // lst file that SPASM spit out for the last successful build
 	
 	NSMutableDictionary *_projectSettings;
 	
@@ -97,6 +98,7 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 @property (readonly,nonatomic) NSArray *unsavedTextFiles;
 @property (readonly,nonatomic) id <WCTabViewContext> currentTabViewContext;
 @property (readonly,nonatomic) NSArray *fileWindowControllers;
+@property (readonly,retain,nonatomic) NSString *codeListing;
 
 - (IBAction)addFilesToProject:(id)sender;
 - (IBAction)newFile:(id)sender;
