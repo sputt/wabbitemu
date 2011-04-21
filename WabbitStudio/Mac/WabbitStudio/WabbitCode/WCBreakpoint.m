@@ -18,6 +18,10 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 
 @implementation WCBreakpoint
 
++ (NSSet *)keyPathsForValuesAffectingName {
+    return [NSSet setWithObjects:@"lineNumber", nil];
+}
+
 - (void)dealloc {
 	_file = nil;
     [super dealloc];
@@ -43,9 +47,13 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 - (id)copyWithZone:(NSZone *)zone {
 	WCBreakpoint *copy = [super copyWithZone:zone];
 	
+	copy->_file = _file;
 	copy->_lineNumber = _lineNumber;
 	copy->_isActive = _isActive;
 	copy->_breakpointType = _breakpointType;
+	copy->_isRam = _isRam;
+	copy->_page = _page;
+	copy->_address = _address;
 	
 	return copy;
 }
@@ -128,4 +136,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 		return NSMakeRange(0, 0);
 	return NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0);
 }
+@synthesize isRam=_isRam;
+@synthesize page=_page;
+@synthesize address=_address;
 @end

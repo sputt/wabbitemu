@@ -29,15 +29,16 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class WCBreakpoint;
+@class WCBreakpoint,WCBreakpointEditViewController;
 
-@interface NoodleLineNumberView : NSRulerView
-{
+@interface NoodleLineNumberView : NSRulerView {
 	BOOL hasPerformedSetup;
 	WCBreakpoint *_breakpointForContextualMenu;
-	NSMapTable *_tooltipTagsToBuildMessages;
+	CGFloat _locationForContextualMenu;
+	NSUInteger _lineNumberForContextualMenu;
+	WCBreakpointEditViewController *_currentEditViewController;
 }
-@property (readonly,nonatomic) NSMapTable *tooltipTagsToBuildMessages;
+@property (assign,nonatomic) WCBreakpointEditViewController *currentEditViewController;
 
 - (id)initWithScrollView:(NSScrollView *)aScrollView;
 
@@ -46,5 +47,6 @@
 - (NSColor *)alternateTextColor;
 - (NSColor *)backgroundColor;
 - (NSUInteger)lineNumberForLocation:(CGFloat)location;
+- (NSPoint)centerPointForLocation:(CGFloat)location;
 
 @end

@@ -42,6 +42,8 @@
 #import "WCBreakpointsViewController.h"
 #import "WCDefines.h"
 #import "NSAlert-OAExtensions.h"
+#import "MAAttachedWindow.h"
+#import "WCBreakpointEditViewController.h"
 
 #define DEFAULT_THICKNESS 22.0
 #define RULER_MARGIN 3.0
@@ -81,7 +83,7 @@
 #endif
 	[self cleanupUserDefaultsObserving];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
-	[_tooltipTagsToBuildMessages release];
+	_currentEditViewController = nil;
     [super dealloc];
 }
 
@@ -358,6 +360,8 @@
 	if (menu != nil) {
 		NSPoint p = [self convertPointFromBase:[event locationInWindow]];
 		NSUInteger line = [self lineNumberForLocation:p.y];
+		_locationForContextualMenu = p.y;
+		_lineNumberForContextualMenu = line;
 		_breakpointForContextualMenu = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
 	}
 	else
@@ -387,8 +391,12 @@
 	else if ([item action] == @selector(_editBreakpoint:)) {
 		if (_breakpointForContextualMenu == nil)
 			[item setTitle:NSLocalizedString(@"Add Breakpoint", @"Add Breakpoint")];
-		else
+		else {
 			[item setTitle:NSLocalizedString(@"Edit Breakpoint\u2026", @"Edit Breakpoint with ellipsis")];
+			
+			if ([self currentEditViewController] != nil)
+				return NO;
+		}
 	}
 	else if ([item action] == @selector(_revealInBreakpointsView:)) {
 		if (_breakpointForContextualMenu == nil)
@@ -411,13 +419,7 @@
 }
 #pragma mark *** Public Methods ***
 #pragma mark Accessors
-@dynamic tooltipTagsToBuildMessages;
-- (NSMapTable *)tooltipTagsToBuildMessages {
-	if (!_tooltipTagsToBuildMessages) {
-		_tooltipTagsToBuildMessages = [[NSMapTable mapTableWithKeyOptions:NSPointerFunctionsIntegerPersonality|NSPointerFunctionsOpaqueMemory valueOptions:NSPointerFunctionsObjectPersonality] retain];
-	}
-	return _tooltipTagsToBuildMessages;
-}
+@synthesize currentEditViewController=_currentEditViewController;
 
 - (NSFont *)font {
 	return [NSFont labelFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
@@ -493,6 +495,51 @@
 	return NSNotFound;
 }
 
+- (NSPoint)centerPointForLocation:(CGFloat)location; {
+	NSUInteger		line, count, index, rectCount, i;
+	NSRectArray		rects;
+	NSRect			visibleRect;
+	NSLayoutManager	*layoutManager;
+	NSTextContainer	*container;
+	NSRange			nullRange;
+	NSArray	*lines;
+	id				view;
+	
+	view = [self clientView];
+	visibleRect = [[[self scrollView] contentView] bounds];
+	
+	lines = [self lineIndices];
+	
+	location += NSMinY(visibleRect);
+	
+	if ([view isKindOfClass:[NSTextView class]])
+	{
+		nullRange = NSMakeRange(NSNotFound, 0);
+		layoutManager = [view layoutManager];
+		container = [view textContainer];
+		count = [lines count];
+		
+		for (line = 0; line < count; line++)
+		{
+			index = [[lines objectAtIndex:line] unsignedIntegerValue];
+			
+			rects = [layoutManager rectArrayForCharacterRange:NSMakeRange(index, 0)
+								 withinSelectedCharacterRange:nullRange
+											  inTextContainer:container
+													rectCount:&rectCount];
+			
+			for (i = 0; i < rectCount; i++)
+			{
+				if ((location >= NSMinY(rects[i])) && (location < NSMaxY(rects[i])))
+				{
+					return NSMakePoint(NSMinX(rects[i]), NSMaxY(rects[i])-floor(NSHeight(rects[i])/2.0));
+				}
+			}
+		}	
+	}
+	return NSZeroPoint;
+}
+
 - (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index inText:(NSString *)text {
 	return [(WCTextStorage *)[(WCTextView *)[self clientView] textStorage] lineNumberForCharacterIndex:index];
 }
@@ -512,7 +559,18 @@
 }
 #pragma mark IBActions
 - (IBAction)_editBreakpoint:(id)sender {
-	
+	if (_breakpointForContextualMenu == nil)
+		[[(WCTextView *)[self clientView] file] addBreakpoint:[WCBreakpoint breakpointWithLineNumber:_lineNumberForContextualMenu inFile:[(WCTextView *)[self clientView] file]]];
+	else if ([self currentEditViewController] == nil) {
+		WCBreakpointEditViewController *controller = [[WCBreakpointEditViewController alloc] initWithBreakpoint:_breakpointForContextualMenu rulerView:self];
+		MAAttachedWindow *window = [[MAAttachedWindow alloc] initWithView:[controller view] attachedToPoint:[self convertPointToBase:[self convertPoint:[self centerPointForLocation:_locationForContextualMenu] fromView:[self clientView]]] inWindow:[self window] onSide:MAPositionRight atDistance:0.0];
+		
+		[self setCurrentEditViewController:controller];
+		
+		[window setBackgroundColor:[NSColor colorWithCalibratedWhite:0.9 alpha:1.0]];
+		
+		[controller showEditViewController:nil];
+	}
 }
 - (IBAction)_toggleBreakpoint:(id)sender {
 	[_breakpointForContextualMenu setIsActive:![_breakpointForContextualMenu isActive]];

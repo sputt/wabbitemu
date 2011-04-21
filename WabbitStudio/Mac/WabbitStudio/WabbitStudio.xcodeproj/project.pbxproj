@@ -148,6 +148,11 @@
 		07B54922135D6F5600B34C46 /* Breakpoints16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B54921135D6F5600B34C46 /* Breakpoints16x16.png */; };
 		07B54925135D6F8800B34C46 /* WCBreakpointsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B54924135D6F8700B34C46 /* WCBreakpointsViewController.m */; };
 		07B54928135D755B00B34C46 /* WCBreakpointsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07B54926135D755B00B34C46 /* WCBreakpointsView.xib */; };
+		07BBD222135F78E4005C4870 /* MAAttachedWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BBD221135F78E4005C4870 /* MAAttachedWindow.m */; };
+		07BBD226135F7CED005C4870 /* WCBreakpointEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BBD225135F7CED005C4870 /* WCBreakpointEditViewController.m */; };
+		07BBD229135F7DE0005C4870 /* WCBreakpointEditView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07BBD227135F7DE0005C4870 /* WCBreakpointEditView.xib */; };
+		07BBD22C135F9330005C4870 /* WCHexFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BBD22B135F9330005C4870 /* WCHexFormatter.m */; };
+		07BBD22F135F960A005C4870 /* WCReturnAndEscapeButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BBD22E135F9609005C4870 /* WCReturnAndEscapeButton.m */; };
 		07C4D98D13470793004792DD /* WCBuildMessagesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C4D98C13470792004792DD /* WCBuildMessagesOutlineView.m */; };
 		07C4D9911347138C004792DD /* WCSymbolsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C4D98F1347138C004792DD /* WCSymbolsViewController.m */; };
 		07C4D995134714F6004792DD /* WCSymbolsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07C4D993134714F6004792DD /* WCSymbolsView.xib */; };
@@ -432,6 +437,15 @@
 		07B54923135D6F8700B34C46 /* WCBreakpointsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpointsViewController.h; sourceTree = "<group>"; };
 		07B54924135D6F8700B34C46 /* WCBreakpointsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBreakpointsViewController.m; sourceTree = "<group>"; };
 		07B54927135D755B00B34C46 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCBreakpointsView.xib; sourceTree = "<group>"; };
+		07BBD220135F78E4005C4870 /* MAAttachedWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MAAttachedWindow.h; sourceTree = "<group>"; };
+		07BBD221135F78E4005C4870 /* MAAttachedWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MAAttachedWindow.m; sourceTree = "<group>"; };
+		07BBD224135F7CED005C4870 /* WCBreakpointEditViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpointEditViewController.h; sourceTree = "<group>"; };
+		07BBD225135F7CED005C4870 /* WCBreakpointEditViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBreakpointEditViewController.m; sourceTree = "<group>"; };
+		07BBD228135F7DE0005C4870 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCBreakpointEditView.xib; sourceTree = "<group>"; };
+		07BBD22A135F932F005C4870 /* WCHexFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCHexFormatter.h; sourceTree = "<group>"; };
+		07BBD22B135F9330005C4870 /* WCHexFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCHexFormatter.m; sourceTree = "<group>"; };
+		07BBD22D135F9609005C4870 /* WCReturnAndEscapeButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCReturnAndEscapeButton.h; sourceTree = "<group>"; };
+		07BBD22E135F9609005C4870 /* WCReturnAndEscapeButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCReturnAndEscapeButton.m; sourceTree = "<group>"; };
 		07C4D98B13470792004792DD /* WCBuildMessagesOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildMessagesOutlineView.h; sourceTree = "<group>"; };
 		07C4D98C13470792004792DD /* WCBuildMessagesOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildMessagesOutlineView.m; sourceTree = "<group>"; };
 		07C4D98E1347138B004792DD /* WCSymbolsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSymbolsViewController.h; sourceTree = "<group>"; };
@@ -635,6 +649,7 @@
 				072F7AE6135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib */,
 				07B54926135D755B00B34C46 /* WCBreakpointsView.xib */,
 				076B6DED135E644400754CDE /* WCFileWindow.xib */,
+				07BBD227135F7DE0005C4870 /* WCBreakpointEditView.xib */,
 			);
 			name = Xibs;
 			path = en.lproj;
@@ -793,6 +808,12 @@
 				076B6DEA135E62B600754CDE /* WCFileWindowController.m */,
 				076B6DF0135EDDC800754CDE /* WCFindBarSearchField.h */,
 				076B6DF1135EDDCB00754CDE /* WCFindBarSearchField.m */,
+				07BBD224135F7CED005C4870 /* WCBreakpointEditViewController.h */,
+				07BBD225135F7CED005C4870 /* WCBreakpointEditViewController.m */,
+				07BBD22A135F932F005C4870 /* WCHexFormatter.h */,
+				07BBD22B135F9330005C4870 /* WCHexFormatter.m */,
+				07BBD22D135F9609005C4870 /* WCReturnAndEscapeButton.h */,
+				07BBD22E135F9609005C4870 /* WCReturnAndEscapeButton.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -837,6 +858,8 @@
 		0769A1D51333DEFB00080A96 /* External */ = {
 			isa = PBXGroup;
 			children = (
+				07BBD220135F78E4005C4870 /* MAAttachedWindow.h */,
+				07BBD221135F78E4005C4870 /* MAAttachedWindow.m */,
 				0758E828134ABC1200280D9D /* NSColor-NTExtensions.h */,
 				0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */,
 				072C8A3B1358EFCF006EE420 /* RSRTVArrayController.h */,
@@ -983,6 +1006,7 @@
 				07B54922135D6F5600B34C46 /* Breakpoints16x16.png in Resources */,
 				07B54928135D755B00B34C46 /* WCBreakpointsView.xib in Resources */,
 				076B6DEF135E644400754CDE /* WCFileWindow.xib in Resources */,
+				07BBD229135F7DE0005C4870 /* WCBreakpointEditView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1098,6 +1122,10 @@
 				07C8B06A135E244E00DC8322 /* WCBreakpointsOutlineView.m in Sources */,
 				076B6DEB135E62B600754CDE /* WCFileWindowController.m in Sources */,
 				076B6DF2135EDDCE00754CDE /* WCFindBarSearchField.m in Sources */,
+				07BBD222135F78E4005C4870 /* MAAttachedWindow.m in Sources */,
+				07BBD226135F7CED005C4870 /* WCBreakpointEditViewController.m in Sources */,
+				07BBD22C135F9330005C4870 /* WCHexFormatter.m in Sources */,
+				07BBD22F135F960A005C4870 /* WCReturnAndEscapeButton.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1240,6 +1268,14 @@
 				07B54927135D755B00B34C46 /* en */,
 			);
 			name = WCBreakpointsView.xib;
+			sourceTree = "<group>";
+		};
+		07BBD227135F7DE0005C4870 /* WCBreakpointEditView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				07BBD228135F7DE0005C4870 /* en */,
+			);
+			name = WCBreakpointEditView.xib;
 			sourceTree = "<group>";
 		};
 		07C4D993134714F6004792DD /* WCSymbolsView.xib */ = {

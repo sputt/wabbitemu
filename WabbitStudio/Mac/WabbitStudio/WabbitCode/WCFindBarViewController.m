@@ -38,6 +38,21 @@
     [super dealloc];
 }
 
+- (void)loadView {
+	[super loadView];
+	
+	if (![self findString] ||
+		[[self findString] length] == 0) {
+		NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSFindPboard];
+		NSString *string = [pboard stringForType:NSStringPboardType];
+		
+		if ([string length]) {
+			[self setFindString:string];
+			[self find:nil];
+		}
+	}
+}
+
 #pragma mark NSControlTextEditingDelegate
 - (BOOL)control:(NSControl *)control textView:(NSTextView *)textView doCommandBySelector:(SEL)commandSelector; {
 	if (commandSelector == @selector(cancelOperation:)) {
@@ -388,6 +403,14 @@
 		[[self view] removeFromSuperviewWithoutNeedingDisplay];
 		[self _removeEverything];
 		[_textView setFindBarViewController:nil];
+		
+		if ([[self findString] length] > 0) {
+			NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSFindPboard];
+			
+			[pboard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
+			
+			[pboard setString:[self findString] forType:NSStringPboardType];
+		}
 	}
 	else if (animation == _showAnimation) {
 		[[[self view] window] makeFirstResponder:_searchField];

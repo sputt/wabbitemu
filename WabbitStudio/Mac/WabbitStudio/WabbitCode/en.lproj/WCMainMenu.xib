@@ -948,16 +948,26 @@
 								</object>
 								<object class="NSMenuItem" id="178718015">
 									<reference key="NSMenu" ref="147948472"/>
-									<string key="NSTitle">Group</string>
+									<string key="NSTitle">New Group from Selection</string>
 									<string key="NSKeyEquiv">g</string>
 									<int key="NSKeyEquivModMask">1572864</int>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="1033313550"/>
 									<reference key="NSMixedImage" ref="310636482"/>
 								</object>
+								<object class="NSMenuItem" id="237139443">
+									<reference key="NSMenu" ref="147948472"/>
+									<bool key="NSIsDisabled">YES</bool>
+									<bool key="NSIsSeparator">YES</bool>
+									<string key="NSTitle"/>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="1033313550"/>
+									<reference key="NSMixedImage" ref="310636482"/>
+								</object>
 								<object class="NSMenuItem" id="661203804">
 									<reference key="NSMenu" ref="147948472"/>
-									<string key="NSTitle">Ungroup</string>
+									<string key="NSTitle">Ungroup Selection</string>
 									<string key="NSKeyEquiv">G</string>
 									<int key="NSKeyEquivModMask">1572864</int>
 									<int key="NSMnemonicLoc">2147483647</int>
@@ -2300,6 +2310,7 @@
 							<reference ref="661203804"/>
 							<reference ref="76525671"/>
 							<reference ref="191454735"/>
+							<reference ref="237139443"/>
 						</object>
 						<reference key="parent" ref="943079319"/>
 					</object>
@@ -2485,6 +2496,11 @@
 						<reference key="object" ref="88285865"/>
 						<reference key="parent" ref="383618694"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">632</int>
+						<reference key="object" ref="237139443"/>
+						<reference key="parent" ref="147948472"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -2669,6 +2685,7 @@
 					<string>627.IBPluginDependency</string>
 					<string>628.IBPluginDependency</string>
 					<string>629.IBPluginDependency</string>
+					<string>632.IBPluginDependency</string>
 					<string>72.IBPluginDependency</string>
 					<string>72.ImportedFromIB2</string>
 					<string>73.IBPluginDependency</string>
@@ -2877,6 +2894,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<integer value="1"/>
@@ -2916,7 +2934,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">631</int>
+			<int key="maxID">632</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
