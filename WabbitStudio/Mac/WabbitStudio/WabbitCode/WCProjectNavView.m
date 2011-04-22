@@ -42,9 +42,8 @@
 	
 	NSRect bounds = [self bounds];
 	CGFloat startX = floor(NSWidth(bounds)/2.0) - floor(([[[self images] lastObject] size].width * 2 * [[self images] count])/2.0);
-	NSUInteger index;
 	
-	for (index = 0; index < [[self images] count]; index++) {
+	for (u_int8_t index = 0; index < [[self images] count]; index++) {
 		NSImage *image = [[self images] objectAtIndex:index];
 		NSSize size = [image size];
 		NSRect frame = NSMakeRect(startX + (size.width * 2 * index), bounds.origin.y, size.width * 2, NSHeight(bounds));

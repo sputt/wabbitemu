@@ -81,6 +81,10 @@ static NSMutableDictionary *_symbolIconCache = nil;
 		NSColor *color = nil;
 		
 		switch (_symbolType) {
+			case WCSymbolFunctionType:
+				letter = @"F";
+				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesLabelsColorKey];
+				break;
 			case WCSymbolLabelType:
 				letter = @"L";
 				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesLabelsColorKey];
@@ -150,6 +154,10 @@ static NSMutableDictionary *_symbolIconCache = nil;
 		NSColor *color = nil;
 		
 		switch (_symbolType) {
+			case WCSymbolFunctionType:
+				letter = @"F";
+				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesLabelsColorKey];
+				break;
 			case WCSymbolLabelType:
 				letter = @"L";
 				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesLabelsColorKey];

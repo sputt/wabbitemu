@@ -93,7 +93,7 @@ static NSImage *_appIcon = nil;
 
 - (void)_deleteObjects:(NSArray *)objects deleteFiles:(BOOL)deleteFiles;
 
-- (void)_openSeparateEditorForFile:(WCFile *)file;
+- (WCFileWindowController *)_openSeparateEditorForFile:(WCFile *)file;
 @end
 
 @implementation WCProject
@@ -106,11 +106,26 @@ static NSImage *_appIcon = nil;
 	_appIcon = [[NSImage imageNamed:@"NSApplicationIcon"] copy];
 }
 
++ (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName {
+	if ([typeName isEqualToString:kWCProjectUTI])
+		return YES;
+	return NO;
+}
+
+- (NSUndoManager *)undoManager {
+	return nil;
+}
+
+- (BOOL)hasUndoManager {
+	return NO;
+}
+
 - (void)dealloc {
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[_currentAddFilesToProjectViewController release];
 	[_codeListing release];
 	[_errorBadge release];
 	[_warningBadge release];
@@ -171,9 +186,6 @@ static NSImage *_appIcon = nil;
 	[[controller window] setToolbar:toolbar];
 }
 
-- (BOOL)hasUndoManager {
-	return NO;
-}
 #pragma mark Reading and Writing
 - (BOOL)readFromFileWrapper:(NSFileWrapper *)fileWrapper ofType:(NSString *)typeName error:(NSError **)outError {
 	// we should only ever be asked to open project file types
@@ -284,6 +296,10 @@ static NSImage *_appIcon = nil;
 		if (![file resetFile:&error] && error != nil)
 			[self presentError:error];
 	}];
+}
+- (void)printDocument:(id)sender {
+	NSLog(@"%@ not implemented in %@",NSStringFromSelector(_cmd),[self className]);
+	NSBeep();
 }
 #pragma mark -
 #pragma mark *** Protocol Overrides ***
@@ -615,7 +631,12 @@ static NSImage *_appIcon = nil;
 	
 	WCFileViewController *retval = [self fileViewControllerForFile:file inTabViewContext:tabViewContext selectTab:YES];
 	
-	if (!retval) {
+	if (retval == nil) {
+		// if the current context is a single window editor, we need to open a new window
+		if ([tabViewContext isKindOfClass:[WCFileWindowController class]] &&
+			[[[tabViewContext tabBarControl] tabView] numberOfTabViewItems] != 0)
+			return [self fileViewControllerForFile:file inTabViewContext:[self _openSeparateEditorForFile:file] selectTab:NO];
+		
 		retval = [WCFileViewController fileViewControllerWithFile:file inTabViewContext:tabViewContext];
 		
 #ifdef DEBUG
@@ -645,6 +666,7 @@ static NSImage *_appIcon = nil;
 		
 		[controllers addObject:retval];
 		
+		// increase the open count for this file, so we know when to prompt the user to save before closing said file
 		[[self openFiles] addObject:file];
 	}
 	return retval;
@@ -934,12 +956,14 @@ static NSImage *_appIcon = nil;
 	[panel setAllowsMultipleSelection:YES];
 	[panel setCanChooseDirectories:YES];
 	[panel setPrompt:NS_LOCALIZED_STRING_ADD];
-	[panel setAccessoryView:[[[[WCAddFilesToProjectViewController alloc] init] autorelease] view]];
+	_currentAddFilesToProjectViewController = [[WCAddFilesToProjectViewController alloc] initWithNibName:@"WCAddFilesToProjectView" bundle:nil];
+	[panel setAccessoryView:[_currentAddFilesToProjectViewController view]];
 	[panel setDelegate:self];
 	
 	[self setAbsoluteFilePaths:[NSSet setWithArray:[[[self projectFile] descendantNodes] valueForKeyPath:@"absolutePath"]]];
 	
 	[panel beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSInteger result) {
+		[_currentAddFilesToProjectViewController autorelease];
 		if (result == NSFileHandlingPanelCancelButton)
 			return;
 		
@@ -956,7 +980,9 @@ static NSImage *_appIcon = nil;
 		// update our cached file paths
 		[self setAbsoluteFilePaths:[NSSet setWithArray:[[[self projectFile] descendantNodes] valueForKeyPath:@"absolutePath"]]];
 		
-		[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectNumberOfFilesDidChangeNotification object:self];		
+		[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectNumberOfFilesDidChangeNotification object:self];
+		
+		_currentAddFilesToProjectViewController = nil;
 	}];
 }
 
@@ -1403,7 +1429,7 @@ static NSImage *_appIcon = nil;
 	}
 }
 
-- (void)_openSeparateEditorForFile:(WCFile *)file; {
+- (WCFileWindowController *)_openSeparateEditorForFile:(WCFile *)file; {
 	WCFileWindowController *mController = nil;
 	for (id controller in [self windowControllers]) {
 		if ([controller isKindOfClass:[WCFileWindowController class]] &&
@@ -1419,6 +1445,7 @@ static NSImage *_appIcon = nil;
 	}
 	
 	[mController showWindow:nil];
+	return mController;
 }
 #pragma mark Project Settings
 - (void)_updateProjectSettings; {

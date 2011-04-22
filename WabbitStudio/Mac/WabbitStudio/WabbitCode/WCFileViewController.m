@@ -61,8 +61,8 @@
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_textViewDidChangeSelection:) name:NSTextViewDidChangeSelectionNotification object:_textView];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_symbolScannerDidFinishScanning:) name:kWCSymbolScannerFinishedScanningNotification object:[_file symbolScanner]];
-	[_textView setSelectedRange:NSMakeRange(0, 0)];
 	[self _setupSymbolsPopUpButton];
+	[_textView setSelectedRange:NSMakeRange(0, 0)];
 }
 
 @synthesize file=_file;
@@ -111,13 +111,17 @@
 		[item setTarget:self];
 		[item setImage:[symbol icon]];
 		[item setRepresentedObject:symbol];
+		[item setIndentationLevel:([symbol symbolType] == WCSymbolFunctionType)?0:1];
 	}
 	
-	if ([menu numberOfItems] == 0)
-		[menu addItemWithTitle:NSLocalizedString(@"No Symbols", @"No Symbols") action:NULL keyEquivalent:@""];
-	
 	[_symbolsPopUpButton setMenu:menu];
-	[_symbolsPopUpButton selectItemAtIndex:[symbols symbolIndexForLocation:[[self textView] selectedRange].location]];
+	
+	if ([menu numberOfItems] == 0) {
+		[menu addItemWithTitle:NSLocalizedString(@"No Symbols", @"No Symbols") action:NULL keyEquivalent:@""];
+		[_symbolsPopUpButton selectItemAtIndex:0];
+	}
+	else
+		[_symbolsPopUpButton selectItemAtIndex:[symbols symbolIndexForLocation:[[self textView] selectedRange].location]];
 }
 
 - (void)_textViewDidChangeSelection:(NSNotification *)note {
@@ -127,7 +131,11 @@
 	
 	[self setTextViewSelectedRangeString:[NSString stringWithFormat:@"%u:%u",++lineNumber,NSMaxRange(range)-lineStart]];
 	
-	[_symbolsPopUpButton selectItemAtIndex:[[[[self file] symbolScanner] symbols] symbolIndexForLocation:range.location]];
+	NSArray *functions = [[[self file] symbolScanner] symbols];
+	if ([functions count] == 0)
+		[_symbolsPopUpButton selectItemAtIndex:0];
+	else
+		[_symbolsPopUpButton selectItemAtIndex:[functions symbolIndexForLocation:range.location]];
 }
 
 - (void)_jumpToDefinitionFromSymbolsPopUpButton:(id)sender {

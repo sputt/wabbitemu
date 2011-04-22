@@ -43,13 +43,13 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 	// '^' checks for the beginning of a line, i.e. a label must begin in column 0, otherwise it's not a label
 	// '[A-z0-9_!?]+' matches the rest of the label
 	// '(?!\\()' is a look ahead assertion that ensures calls to macros are ignored as potential label names; somemacro() is ignored whereas somemacro would be considered a valid label name
-	kWCSymbolScannerLabelsRegex = [[RKRegex alloc] initWithRegexString:@"^[A-z0-9_!?]+(?!\\()" options:RKCompileUTF8|RKCompileMultiline];
+	kWCSymbolScannerLabelsRegex = [[RKRegex alloc] initWithRegexString:@"^[[:alpha:]][A-z0-9!?]*(?!\\()\\b" options:RKCompileUTF8|RKCompileMultiline];
 	// general pattern for equates, which are just a special kind of label
 	// '^' checks for the beginning of a line as above
 	// '(?<name> ...)' names the capture for the name of the equate so we can extract it later
 	// then we skip any whitespace and look for '=', '.equ', '.EQU', 'equ', or 'EQU' which tells us we have an equate
 	// again, skip whitespace then look for the value of equate which '(?<value> ...)' captures so we can get at it later
-	kWCSymbolScannerEquatesRegex = [[RKRegex alloc] initWithRegexString:@"^(?<name>[A-z0-9_!?]+)\\s*(?:=|\\.equ|\\.EQU|equ|EQU)\\s*(?<value>[-+$._!? ()A-z0-9]+)" options:RKCompileUTF8|RKCompileMultiline];
+	kWCSymbolScannerEquatesRegex = [[RKRegex alloc] initWithRegexString:@"^(?<name>[[:alpha:]][A-z0-9!?]*)(?:\\s*=\\s*|\\s+\\.equ\\s+|\\s+\\.EQU\\s+|\\s+equ\\s+|\\s+EQU\\s+)(?<value>[-+$._!? ()A-z0-9]+)" options:RKCompileUTF8|RKCompileMultiline];
 	// general pattern for defines
 	// same as the previous cases, but we have to for '#define' or '#DEFINE' to start off the match
 	kWCSymbolScannerDefinesRegex = [[RKRegex alloc] initWithRegexString:@"(?:#define|#DEFINE)\\s+(?<name>[A-z0-9_!?.]+)" options:RKCompileUTF8];
@@ -83,6 +83,7 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	_file = nil;
 	[_symbols release];
+	[_functions release];
 	[_labelNamesToSymbols release];
 	[_equateNamesToSymbols release];
 	[_defineNamesToSymbols release];
@@ -97,6 +98,7 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 @synthesize file=_file;
 @synthesize isScanning=_isScanning;
 @synthesize symbols=_symbols;
+@synthesize functions=_functions;
 @synthesize labelNamesToSymbols=_labelNamesToSymbols;
 @synthesize equateNamesToSymbols=_equateNamesToSymbols;
 @synthesize defineNamesToSymbols=_defineNamesToSymbols;
@@ -155,6 +157,7 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 		BOOL labelsAreCaseSensitive = [[[[self file] project] activeBuildTarget] symbolsAreCaseSensitive];
 		NSMutableArray *multilineCommentRanges = [NSMutableArray array];
 		NSMutableArray *symbols = [NSMutableArray arrayWithCapacity:[[self symbols] count]];
+		NSMutableArray *functions = [NSMutableArray arrayWithCapacity:[[self labelNamesToSymbols] count]];
 		NSMutableDictionary *labelNamesToSymbols = [NSMutableDictionary dictionary];
 		NSMutableDictionary *equateNamesToSymbols = [NSMutableDictionary dictionary];
 		NSMutableDictionary *defineNamesToSymbols = [NSMutableDictionary dictionary];
@@ -218,25 +221,19 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 			if (!insideMComment) {
 				NSString *labelName = [string substringWithRange:*labelRange];
 				NSString *compareName = (labelsAreCaseSensitive)?labelName:[labelName lowercaseString];
-				
-				// dont count the special temp labels
-				if (labelRange->length == 1 && [labelName characterAtIndex:0] == '_')
-					continue;
-				 
-				// ignore macro invocations
-				/*
-				NSUInteger indexOfLastCharacter = NSMaxRange(*labelRange);
-				if (indexOfLastCharacter < length && [string characterAtIndex:indexOfLastCharacter] == '(')
-					continue;
-				*/
 				 
 				if ([equateNamesToSymbols objectForKey:compareName] == nil) {
+					WCSymbolType type = WCSymbolLabelType;
+					if ([string rangeOfString:[NSString stringWithFormat:@"call %@",compareName] options:(labelsAreCaseSensitive)?NSLiteralSearch:NSCaseInsensitiveSearch].location != NSNotFound)
+						type = WCSymbolFunctionType;
 					
 					WCSymbol *existingSymbol = nil;
 					
-					existingSymbol = [WCSymbol symbolWithName:labelName ofType:WCSymbolLabelType inFile:_file withRange:*labelRange];
+					existingSymbol = [WCSymbol symbolWithName:labelName ofType:type inFile:_file withRange:*labelRange];
 					
 					[symbols addObject:existingSymbol];
+					if (type == WCSymbolFunctionType)
+						[functions addObject:existingSymbol];
 					
 					[labelNamesToSymbols setObject:existingSymbol forKey:compareName];
 				}
@@ -307,26 +304,26 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 		[self setMacroNamesToSymbols:macroNamesToSymbols];
 		
 		[symbols sortUsingSelector:@selector(compareUsingSymbolRange:)];
-		
 		[self setSymbols:symbols];
-		
-		[pool drain];
+		[self setFunctions:functions];
 		
 		// post the notification on the main thread
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[[NSNotificationCenter defaultCenter] postNotificationName:kWCSymbolScannerFinishedScanningNotification object:self];
 			[self setIsScanning:NO];
 		});
+		
+		[pool drain];
 	});
 }
 
 - (void)_repopulateSymbolStrings; {
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-		NSMutableDictionary *labels = [NSMutableDictionary dictionary];
-		NSMutableDictionary *equates = [NSMutableDictionary dictionary];
-		NSMutableDictionary *defines = [NSMutableDictionary dictionary];
-		NSMutableDictionary *macros = [NSMutableDictionary dictionary];
+		NSMutableDictionary *labels = [NSMutableDictionary dictionaryWithCapacity:[[self labelNamesToSymbols] count]];
+		NSMutableDictionary *equates = [NSMutableDictionary dictionaryWithCapacity:[[self equateNamesToSymbols] count]];
+		NSMutableDictionary *defines = [NSMutableDictionary dictionaryWithCapacity:[[self defineNamesToSymbols] count]];
+		NSMutableDictionary *macros = [NSMutableDictionary dictionaryWithCapacity:[[self macroNamesToSymbols] count]];
 		NSArray *symbols = [self symbols];
 		BOOL symbolsAreCaseSensitive = [[[[self file] project] activeBuildTarget] symbolsAreCaseSensitive];
 		
@@ -355,12 +352,12 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 		[self setDefineNamesToSymbols:defines];
 		[self setMacroNamesToSymbols:macros];
 		
-		[pool release];
-		
 		// post the notification on the main thread
 		dispatch_async(dispatch_get_main_queue(), ^{
 			[[NSNotificationCenter defaultCenter] postNotificationName:kWCSymbolScannerFinishedScanningAfterSymbolsCaseSensitiveDidChangeNotification object:self];
 		});
+		
+		[pool drain];
 	});
 }
 @end

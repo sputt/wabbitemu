@@ -65,6 +65,7 @@ NSString* const kWCPreferencesWindowControllerAdvancedIdentifier = @"Advanced";
 	[self addView:_building label:NSLocalizedString(@"Building", @"building prefs title") image:[NSImage imageNamed:kWCPreferencesWindowControllerBuildingIdentifier]];
 	[self addView:_debugging label:NSLocalizedString(@"Debugging", @"debugging prefs title") image:[NSImage imageNamed:kWCPreferencesWindowControllerDebuggingIdentifier]];
 	[self addView:_editor label:NSLocalizedString(@"Editor", @"editor prefs title") image:[NSImage imageNamed:kWCPreferencesWindowControllerEditorIdentifier]];
+	[self addView:_files label:NSLocalizedString(@"Files", @"files prefs title")];
 	[self addView:_advanced label:NSLocalizedString(@"Advanced", @"advanced prefs title") image:[NSImage imageNamed:kWCPreferencesWindowControllerAdvancedIdentifier]];
 }
 

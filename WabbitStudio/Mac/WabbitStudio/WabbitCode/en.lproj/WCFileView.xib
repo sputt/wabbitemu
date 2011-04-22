@@ -12,19 +12,19 @@
 		</object>
 		<object class="NSArray" key="IBDocument.IntegratedClassDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<string>NSPopUpButton</string>
 			<string>NSScroller</string>
+			<string>NSPopUpButton</string>
 			<string>NSMenuItem</string>
 			<string>NSMenu</string>
-			<string>NSScrollView</string>
 			<string>NSTextFieldCell</string>
+			<string>NSScrollView</string>
 			<string>NSBox</string>
 			<string>NSCustomView</string>
 			<string>NSTextView</string>
-			<string>NSPopUpButtonCell</string>
+			<string>NSUserDefaultsController</string>
 			<string>NSCustomObject</string>
 			<string>NSTextField</string>
-			<string>NSUserDefaultsController</string>
+			<string>NSPopUpButtonCell</string>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -92,7 +92,7 @@
 										<string key="NSFrameSize">{466, 14}</string>
 										<reference key="NSSuperview" ref="80032388"/>
 										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView" ref="947048589"/>
+										<reference key="NSNextKeyView" ref="1036145427"/>
 										<object class="NSTextContainer" key="NSTextContainer" id="330429200">
 											<object class="NSLayoutManager" key="NSLayoutManager">
 												<object class="NSTextStorage" key="NSTextStorage">
@@ -197,7 +197,6 @@
 								<string key="NSFrame">{{466, 0}, {15, 251}}</string>
 								<reference key="NSSuperview" ref="511833216"/>
 								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView"/>
 								<reference key="NSTarget" ref="511833216"/>
 								<string key="NSAction">_doScroller:</string>
 								<double key="NSCurValue">1</double>
@@ -220,7 +219,7 @@
 						<string key="NSFrameSize">{481, 251}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="1036145427"/>
+						<reference key="NSNextKeyView" ref="80032388"/>
 						<int key="NSsFlags">16</int>
 						<reference key="NSVScroller" ref="947048589"/>
 						<reference key="NSHScroller" ref="1036145427"/>
@@ -559,14 +558,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBOutletConnection" key="connection">
-						<string key="label">_symbolsPopUpButton</string>
-						<reference key="source" ref="1001"/>
-						<reference key="destination" ref="1063425210"/>
-					</object>
-					<int key="connectionID">42</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBOutletConnection" key="connection">
 						<string key="label">view</string>
 						<reference key="source" ref="1001"/>
 						<reference key="destination" ref="1005"/>
@@ -673,6 +664,14 @@
 					</object>
 					<int key="connectionID">80</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">_symbolsPopUpButton</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="1063425210"/>
+					</object>
+					<int key="connectionID">87</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -747,50 +746,6 @@
 						<int key="objectID">13</int>
 						<reference key="object" ref="510547880"/>
 						<reference key="parent" ref="511833216"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">18</int>
-						<reference key="object" ref="1063425210"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="193156902"/>
-						</object>
-						<reference key="parent" ref="506373484"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">19</int>
-						<reference key="object" ref="193156902"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="1001876209"/>
-						</object>
-						<reference key="parent" ref="1063425210"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">20</int>
-						<reference key="object" ref="1001876209"/>
-						<object class="NSMutableArray" key="children">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="759910981"/>
-							<reference ref="883285594"/>
-							<reference ref="831762248"/>
-						</object>
-						<reference key="parent" ref="193156902"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">21</int>
-						<reference key="object" ref="759910981"/>
-						<reference key="parent" ref="1001876209"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">22</int>
-						<reference key="object" ref="883285594"/>
-						<reference key="parent" ref="1001876209"/>
-					</object>
-					<object class="IBObjectRecord">
-						<int key="objectID">23</int>
-						<reference key="object" ref="831762248"/>
-						<reference key="parent" ref="1001876209"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">25</int>
@@ -902,6 +857,50 @@
 						<reference key="object" ref="1025255839"/>
 						<reference key="parent" ref="609795346"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">18</int>
+						<reference key="object" ref="1063425210"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="193156902"/>
+						</object>
+						<reference key="parent" ref="506373484"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">19</int>
+						<reference key="object" ref="193156902"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="1001876209"/>
+						</object>
+						<reference key="parent" ref="1063425210"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">20</int>
+						<reference key="object" ref="1001876209"/>
+						<object class="NSMutableArray" key="children">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<reference ref="759910981"/>
+							<reference ref="883285594"/>
+							<reference ref="831762248"/>
+						</object>
+						<reference key="parent" ref="193156902"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">23</int>
+						<reference key="object" ref="831762248"/>
+						<reference key="parent" ref="1001876209"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">22</int>
+						<reference key="object" ref="883285594"/>
+						<reference key="parent" ref="1001876209"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">21</int>
+						<reference key="object" ref="759910981"/>
+						<reference key="parent" ref="1001876209"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -987,7 +986,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">82</int>
+			<int key="maxID">87</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1127,6 +1126,8 @@
 							<string>commentOrUncomment:</string>
 							<string>gotoLine:</string>
 							<string>jumpToDefinition:</string>
+							<string>jumpToNextBuildMessage:</string>
+							<string>jumpToPreviousBuildMessage:</string>
 							<string>openInSeparateEditor:</string>
 							<string>revealInProjectView:</string>
 							<string>shiftLeft:</string>
@@ -1136,6 +1137,8 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1158,6 +1161,8 @@
 							<string>commentOrUncomment:</string>
 							<string>gotoLine:</string>
 							<string>jumpToDefinition:</string>
+							<string>jumpToNextBuildMessage:</string>
+							<string>jumpToPreviousBuildMessage:</string>
 							<string>openInSeparateEditor:</string>
 							<string>revealInProjectView:</string>
 							<string>shiftLeft:</string>
@@ -1185,6 +1190,14 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">jumpToDefinition:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">jumpToNextBuildMessage:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">jumpToPreviousBuildMessage:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

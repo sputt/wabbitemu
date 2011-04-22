@@ -33,7 +33,7 @@ extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 extern NSString *const kWCProjectSettingsFileSettingsDictionaryKey;
 extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey;
 
-@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint;
+@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint,WCAddFilesToProjectViewController;
 
 @interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext> {
 @private
@@ -67,6 +67,7 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	WCBreakpointsViewController *_breakpointsViewController;
 	
 	NSSet *_cachedAbsoluteFilePaths;
+	WCAddFilesToProjectViewController *_currentAddFilesToProjectViewController;
 }
 
 @property (readonly,retain,nonatomic) WCProjectFile *projectFile;

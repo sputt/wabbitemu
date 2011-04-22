@@ -18,13 +18,6 @@
 
 @implementation WCDocument
 
-+ (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName {
-	if ([typeName isEqualToString:kWCFileAssemblyUTI] ||
-		[typeName isEqualToString:kWCFileIncludeUTI])
-		return YES;
-	return NO;
-}
-
 - (id)init {
     self = [super init];
     if (self) {
@@ -57,12 +50,21 @@
 	[[windowController window] makeFirstResponder:[_fileViewController textView]];
 }
 
+- (NSUndoManager *)undoManager {
+	return nil;
+}
+
 - (BOOL)hasUndoManager {
 	return NO;
 }
 
 - (BOOL)isDocumentEdited {
 	return [_file hasUnsavedChanges];
+}
+
+- (void)printDocument:(id)sender {
+	NSLog(@"%@ not implemented in %@",NSStringFromSelector(_cmd),[self className]);
+	NSBeep();
 }
 
 - (NSData *)dataOfType:(NSString *)typeName error:(NSError **)outError {	

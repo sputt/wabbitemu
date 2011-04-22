@@ -26,10 +26,12 @@ extern RKRegex *kWCSyntaxHighlighterMultilineCommentsRegex;
 	NSDictionary *_macroNamesToSymbols;
 	
 	NSArray *_symbols; // this is always sorted by location in the text, from top to bottom
+	NSArray *_functions; // same as above
 }
 @property (readonly,nonatomic) WCFile *file;
 @property (assign,nonatomic) BOOL isScanning;
 @property (copy) NSArray *symbols;
+@property (copy) NSArray *functions;
 @property (copy) NSDictionary *labelNamesToSymbols;
 @property (copy) NSDictionary *equateNamesToSymbols;
 @property (copy) NSDictionary *defineNamesToSymbols;

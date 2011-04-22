@@ -14,7 +14,8 @@ enum WCSymbolType {
 	WCSymbolLabelType,
 	WCSymbolEquateType,
 	WCSymbolDefineType,
-	WCSymbolMacroType
+	WCSymbolMacroType,
+	WCSymbolFunctionType
 };
 typedef NSUInteger WCSymbolType;
 
