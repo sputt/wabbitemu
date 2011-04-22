@@ -95,6 +95,7 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 @property (readonly,nonatomic) WCFindInProjectViewController *findInProjectViewController;
 @property (readonly,nonatomic) WCFindInProjectViewController *findInProjectViewControllerDontCreate;
 @property (readonly,nonatomic) WCBreakpointsViewController *breakpointsViewController;
+@property (readonly,nonatomic) WCBreakpointsViewController *breakpointsViewControllerDontCreate;
 @property (readonly,nonatomic) NSArray *buildMessages;
 @property (readonly,nonatomic) NSMutableArray *mutableBuildMessages;
 @property (readonly,retain,nonatomic) NSSet *absoluteFilePaths;

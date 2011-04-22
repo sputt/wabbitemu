@@ -13,11 +13,9 @@
 		0707208C1360A29800E7C7CD /* WCBoolToStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */; };
 		070720981360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */; };
 		0707209A1360C1DC00E7C7CD /* Symbols16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 070720991360C1DC00E7C7CD /* Symbols16x16.png */; };
-		070720A41360C3A100E7C7CD /* BuildProducts16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 070720A31360C3A100E7C7CD /* BuildProducts16x16.png */; };
 		070720AA1360C7AE00E7C7CD /* Search16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 070720A91360C7AE00E7C7CD /* Search16x16.png */; };
 		070720AD1360EA2D00E7C7CD /* EncodingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720AC1360EA2D00E7C7CD /* EncodingManager.m */; };
 		070720B01360EA8E00E7C7CD /* SelectEncodingsPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = 070720AE1360EA8E00E7C7CD /* SelectEncodingsPanel.nib */; };
-		070720B21360EDB800E7C7CD /* Files.png in Resources */ = {isa = PBXBuildFile; fileRef = 070720B11360EDB800E7C7CD /* Files.png */; };
 		070D558D1337BD3600847B1A /* WCFilesTreeController.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D558C1337BD3600847B1A /* WCFilesTreeController.m */; };
 		070D55901337BE9F00847B1A /* WCFilesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D558F1337BE9E00847B1A /* WCFilesOutlineView.m */; };
 		070D55961338559700847B1A /* NSTreeController+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 070D55951338559700847B1A /* NSTreeController+WCExtensions.m */; };
@@ -60,6 +58,8 @@
 		07463AF313331D0100744B98 /* WCNewProjectWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07463AF213331D0000744B98 /* WCNewProjectWindow.xib */; };
 		07463AF61333212900744B98 /* WCNewProjectWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07463AF51333212700744B98 /* WCNewProjectWindowController.m */; };
 		07463AF813332BCC00744B98 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AF713332BCC00744B98 /* QuartzCore.framework */; };
+		074D80C313620EA00081571E /* Breakpoints16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 074D80C213620EA00081571E /* Breakpoints16x16.png */; };
+		074D80C7136234170081571E /* Files.png in Resources */ = {isa = PBXBuildFile; fileRef = 074D80C6136234170081571E /* Files.png */; };
 		0758E82A134ABC1200280D9D /* NSColor-NTExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */; };
 		0758E82D134AD2F200280D9D /* WCFindInProjectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0758E82C134AD2F200280D9D /* WCFindInProjectViewController.m */; };
 		0758E830134AD50000280D9D /* WCFindInProjectView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0758E82E134AD50000280D9D /* WCFindInProjectView.xib */; };
@@ -153,7 +153,6 @@
 		07B45579133DC76600521353 /* WCBuildMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B45578133DC76600521353 /* WCBuildMessage.m */; };
 		07B5491E135CE7B200B34C46 /* WCBreakpoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B5491D135CE7B100B34C46 /* WCBreakpoint.m */; };
 		07B54920135D6DE500B34C46 /* ErrorsAndWarnings.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B5491F135D6DE500B34C46 /* ErrorsAndWarnings.png */; };
-		07B54922135D6F5600B34C46 /* Breakpoints16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B54921135D6F5600B34C46 /* Breakpoints16x16.png */; };
 		07B54925135D6F8800B34C46 /* WCBreakpointsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B54924135D6F8700B34C46 /* WCBreakpointsViewController.m */; };
 		07B54928135D755B00B34C46 /* WCBreakpointsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07B54926135D755B00B34C46 /* WCBreakpointsView.xib */; };
 		07BBD222135F78E4005C4870 /* MAAttachedWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BBD221135F78E4005C4870 /* MAAttachedWindow.m */; };
@@ -164,7 +163,6 @@
 		07C4D98D13470793004792DD /* WCBuildMessagesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C4D98C13470792004792DD /* WCBuildMessagesOutlineView.m */; };
 		07C4D9911347138C004792DD /* WCSymbolsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C4D98F1347138C004792DD /* WCSymbolsViewController.m */; };
 		07C4D995134714F6004792DD /* WCSymbolsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07C4D993134714F6004792DD /* WCSymbolsView.xib */; };
-		07C82EEF134FFC1C0071D2BF /* project16x16.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 07C82EEE134FFC1C0071D2BF /* project16x16.tiff */; };
 		07C83BA11350FD700051412B /* spasm in Resources */ = {isa = PBXBuildFile; fileRef = 07C83BA01350FD700051412B /* spasm */; };
 		07C83BA41351BC230051412B /* WCSymbolsOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */; };
 		07C8B06A135E244E00DC8322 /* WCBreakpointsOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C8B069135E244D00DC8322 /* WCBreakpointsOutlineView.m */; };
@@ -178,8 +176,6 @@
 		07D28D4E1352588600437AA1 /* WCUnsavedFilesWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D28D4D1352588500437AA1 /* WCUnsavedFilesWindowController.m */; };
 		07D28D541352651000437AA1 /* WCProjectWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D28D531352651000437AA1 /* WCProjectWindow.m */; };
 		07D28D57135274BC00437AA1 /* WCUnsavedFilesWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07D28D55135274BC00437AA1 /* WCUnsavedFilesWindow.xib */; };
-		07D516551356B16A00E18C1A /* ErrorsAndWarnings16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07D516531356B16A00E18C1A /* ErrorsAndWarnings16x16.png */; };
-		07D516561356B16A00E18C1A /* ErrorsAndWarnings16x16.pxm in Resources */ = {isa = PBXBuildFile; fileRef = 07D516541356B16A00E18C1A /* ErrorsAndWarnings16x16.pxm */; };
 		07E02058134BFBD40017B9BF /* NSTreeNode+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07E02057134BFBD40017B9BF /* NSTreeNode+WCExtensions.m */; };
 		07E0205B134C0C3C0017B9BF /* WCProjectBuildTargetPopUpButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 07E0205A134C0C3C0017B9BF /* WCProjectBuildTargetPopUpButtonCell.m */; };
 		07E44E2A13503ECA00EBD5EA /* WCProjectNavView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07E44E2913503ECA00EBD5EA /* WCProjectNavView.m */; };
@@ -220,12 +216,10 @@
 		070720961360B5AB00E7C7CD /* WCVerticallyCenteredTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCVerticallyCenteredTextFieldCell.h; sourceTree = "<group>"; };
 		070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCVerticallyCenteredTextFieldCell.m; sourceTree = "<group>"; };
 		070720991360C1DC00E7C7CD /* Symbols16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Symbols16x16.png; sourceTree = "<group>"; };
-		070720A31360C3A100E7C7CD /* BuildProducts16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = BuildProducts16x16.png; sourceTree = "<group>"; };
 		070720A91360C7AE00E7C7CD /* Search16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Search16x16.png; sourceTree = "<group>"; };
 		070720AB1360EA2D00E7C7CD /* EncodingManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncodingManager.h; sourceTree = "<group>"; };
 		070720AC1360EA2D00E7C7CD /* EncodingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EncodingManager.m; sourceTree = "<group>"; };
 		070720AF1360EA8E00E7C7CD /* en */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = en; path = SelectEncodingsPanel.nib; sourceTree = "<group>"; };
-		070720B11360EDB800E7C7CD /* Files.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Files.png; sourceTree = "<group>"; };
 		070D558B1337BD3600847B1A /* WCFilesTreeController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFilesTreeController.h; sourceTree = "<group>"; };
 		070D558C1337BD3600847B1A /* WCFilesTreeController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFilesTreeController.m; sourceTree = "<group>"; };
 		070D558E1337BE9E00847B1A /* WCFilesOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFilesOutlineView.h; sourceTree = "<group>"; };
@@ -297,6 +291,8 @@
 		07463AF51333212700744B98 /* WCNewProjectWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCNewProjectWindowController.m; sourceTree = "<group>"; };
 		07463AF713332BCC00744B98 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = SDKs/MacOSX10.6.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		0747E3B9135819B90009EFBF /* WCTabViewContextProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTabViewContextProtocol.h; sourceTree = "<group>"; };
+		074D80C213620EA00081571E /* Breakpoints16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Breakpoints16x16.png; sourceTree = "<group>"; };
+		074D80C6136234170081571E /* Files.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Files.png; sourceTree = "<group>"; };
 		0758E828134ABC1200280D9D /* NSColor-NTExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSColor-NTExtensions.h"; sourceTree = "<group>"; };
 		0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSColor-NTExtensions.m"; sourceTree = "<group>"; };
 		0758E82B134AD2F200280D9D /* WCFindInProjectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFindInProjectViewController.h; sourceTree = "<group>"; };
@@ -450,7 +446,6 @@
 		07B5491C135CE7B100B34C46 /* WCBreakpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpoint.h; sourceTree = "<group>"; };
 		07B5491D135CE7B100B34C46 /* WCBreakpoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBreakpoint.m; sourceTree = "<group>"; };
 		07B5491F135D6DE500B34C46 /* ErrorsAndWarnings.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ErrorsAndWarnings.png; sourceTree = "<group>"; };
-		07B54921135D6F5600B34C46 /* Breakpoints16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Breakpoints16x16.png; sourceTree = "<group>"; };
 		07B54923135D6F8700B34C46 /* WCBreakpointsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpointsViewController.h; sourceTree = "<group>"; };
 		07B54924135D6F8700B34C46 /* WCBreakpointsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBreakpointsViewController.m; sourceTree = "<group>"; };
 		07B54927135D755B00B34C46 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCBreakpointsView.xib; sourceTree = "<group>"; };
@@ -468,7 +463,6 @@
 		07C4D98E1347138B004792DD /* WCSymbolsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSymbolsViewController.h; sourceTree = "<group>"; };
 		07C4D98F1347138C004792DD /* WCSymbolsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSymbolsViewController.m; sourceTree = "<group>"; };
 		07C4D994134714F6004792DD /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCSymbolsView.xib; sourceTree = "<group>"; };
-		07C82EEE134FFC1C0071D2BF /* project16x16.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = project16x16.tiff; sourceTree = "<group>"; };
 		07C83BA01350FD700051412B /* spasm */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = spasm; sourceTree = "<group>"; };
 		07C83BA21351BC220051412B /* WCSymbolsOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSymbolsOutlineView.h; sourceTree = "<group>"; };
 		07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSymbolsOutlineView.m; sourceTree = "<group>"; };
@@ -491,8 +485,6 @@
 		07D28D521352651000437AA1 /* WCProjectWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCProjectWindow.h; sourceTree = "<group>"; };
 		07D28D531352651000437AA1 /* WCProjectWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCProjectWindow.m; sourceTree = "<group>"; };
 		07D28D56135274BC00437AA1 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCUnsavedFilesWindow.xib; sourceTree = "<group>"; };
-		07D516531356B16A00E18C1A /* ErrorsAndWarnings16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ErrorsAndWarnings16x16.png; sourceTree = "<group>"; };
-		07D516541356B16A00E18C1A /* ErrorsAndWarnings16x16.pxm */ = {isa = PBXFileReference; lastKnownFileType = file; path = ErrorsAndWarnings16x16.pxm; sourceTree = "<group>"; };
 		07E02056134BFBD40017B9BF /* NSTreeNode+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTreeNode+WCExtensions.h"; sourceTree = "<group>"; };
 		07E02057134BFBD40017B9BF /* NSTreeNode+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTreeNode+WCExtensions.m"; sourceTree = "<group>"; };
 		07E02059134C0C3C0017B9BF /* WCProjectBuildTargetPopUpButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCProjectBuildTargetPopUpButtonCell.h; sourceTree = "<group>"; };
@@ -599,19 +591,15 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				070720B11360EDB800E7C7CD /* Files.png */,
+				074D80C6136234170081571E /* Files.png */,
+				074D80C213620EA00081571E /* Breakpoints16x16.png */,
 				070720A91360C7AE00E7C7CD /* Search16x16.png */,
-				070720A31360C3A100E7C7CD /* BuildProducts16x16.png */,
 				070720991360C1DC00E7C7CD /* Symbols16x16.png */,
-				07B54921135D6F5600B34C46 /* Breakpoints16x16.png */,
 				07B5491F135D6DE500B34C46 /* ErrorsAndWarnings.png */,
 				07CBCF7B135C141600B72B6B /* Advanced.png */,
-				07D516531356B16A00E18C1A /* ErrorsAndWarnings16x16.png */,
-				07D516541356B16A00E18C1A /* ErrorsAndWarnings16x16.pxm */,
 				07005B4C135426A30094FAFC /* WarningBadge.png */,
 				07005B4D135426A40094FAFC /* ErrorBadge.png */,
 				07C83BA01350FD700051412B /* spasm */,
-				07C82EEE134FFC1C0071D2BF /* project16x16.tiff */,
 				07911E29134BBA9A00B3DB86 /* BuildAndDebug32x32.png */,
 				07911E23134BBA1000B3DB86 /* BuildAndDebug32x32.pxm */,
 				07911E24134BBA1000B3DB86 /* BuildAndRun32x32.png */,
@@ -1011,7 +999,6 @@
 				07911E2A134BBA9A00B3DB86 /* BuildAndDebug32x32.png in Resources */,
 				0790C73A134D9E9800AABB1D /* WCDocument.xib in Resources */,
 				07CE7875134EB23B001B96FC /* WCGotoLineSheet.xib in Resources */,
-				07C82EEF134FFC1C0071D2BF /* project16x16.tiff in Resources */,
 				07C83BA11350FD700051412B /* spasm in Resources */,
 				07D28D57135274BC00437AA1 /* WCUnsavedFilesWindow.xib in Resources */,
 				070F2F521353F74500641AE3 /* CTBadge_1.pdf in Resources */,
@@ -1020,20 +1007,17 @@
 				070F2F551353F74500641AE3 /* CTBadge_5.pdf in Resources */,
 				07005B4E135426A40094FAFC /* WarningBadge.png in Resources */,
 				07005B4F135426A40094FAFC /* ErrorBadge.png in Resources */,
-				07D516551356B16A00E18C1A /* ErrorsAndWarnings16x16.png in Resources */,
-				07D516561356B16A00E18C1A /* ErrorsAndWarnings16x16.pxm in Resources */,
 				072F7AE8135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib in Resources */,
 				07CBCF7C135C141600B72B6B /* Advanced.png in Resources */,
 				07B54920135D6DE500B34C46 /* ErrorsAndWarnings.png in Resources */,
-				07B54922135D6F5600B34C46 /* Breakpoints16x16.png in Resources */,
 				07B54928135D755B00B34C46 /* WCBreakpointsView.xib in Resources */,
 				076B6DEF135E644400754CDE /* WCFileWindow.xib in Resources */,
 				07BBD229135F7DE0005C4870 /* WCBreakpointEditView.xib in Resources */,
 				0707209A1360C1DC00E7C7CD /* Symbols16x16.png in Resources */,
-				070720A41360C3A100E7C7CD /* BuildProducts16x16.png in Resources */,
 				070720AA1360C7AE00E7C7CD /* Search16x16.png in Resources */,
 				070720B01360EA8E00E7C7CD /* SelectEncodingsPanel.nib in Resources */,
-				070720B21360EDB800E7C7CD /* Files.png in Resources */,
+				074D80C313620EA00081571E /* Breakpoints16x16.png in Resources */,
+				074D80C7136234170081571E /* Files.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -428,7 +428,15 @@ static NSImage *_appIcon = nil;
 		return YES;
 	}
 	else if ([item action] == @selector(delete:)) {
-		for (WCFile *file in [(NSTreeController *)[[[self projectFilesOutlineViewController] outlineView] dataSource] selectedRepresentedObjects])
+		if ([self currentViewController] == [self breakpointsViewControllerDontCreate]) {
+			for (WCBreakpoint *breakpoint in [[self breakpointsViewController] selectedObjects]) {
+				if ([breakpoint breakpointType] != WCBreakpointTypeLine)
+					return NO;
+			}
+			return YES;
+		}
+		
+		for (WCFile *file in [[self projectFilesOutlineViewController] selectedObjects])
 			if ([file isKindOfClass:[WCProjectFile class]])
 				return NO;
 		return YES;
@@ -634,7 +642,8 @@ static NSImage *_appIcon = nil;
 	if (retval == nil) {
 		// if the current context is a single window editor, we need to open a new window
 		if ([tabViewContext isKindOfClass:[WCFileWindowController class]] &&
-			[[[tabViewContext tabBarControl] tabView] numberOfTabViewItems] != 0)
+			[[[tabViewContext tabBarControl] tabView] numberOfTabViewItems] != 0 /*&&
+			([[[NSApplication sharedApplication] currentEvent] modifierFlags] & NSAlternateKeyMask) != 0*/)
 			return [self fileViewControllerForFile:file inTabViewContext:[self _openSeparateEditorForFile:file] selectTab:NO];
 		
 		retval = [WCFileViewController fileViewControllerWithFile:file inTabViewContext:tabViewContext];
@@ -905,16 +914,14 @@ static NSImage *_appIcon = nil;
 		_findInProjectViewController = [[WCFindInProjectViewController projectNavigationViewControllerWithProject:self] retain];
 	return _findInProjectViewController;
 }
-@dynamic findInProjectViewControllerDontCreate;
-- (WCFindInProjectViewController *)findInProjectViewControllerDontCreate {
-	return _findInProjectViewController;
-}
+@synthesize findInProjectViewControllerDontCreate=_findInProjectViewController;
 @dynamic breakpointsViewController;
 - (WCBreakpointsViewController *)breakpointsViewController {
 	if (!_breakpointsViewController)
 		_breakpointsViewController = [[WCBreakpointsViewController projectNavigationViewControllerWithProject:self] retain];
 	return _breakpointsViewController;
 }
+@synthesize breakpointsViewControllerDontCreate=_breakpointsViewController;
 @dynamic currentTabViewContext;
 - (id <WCTabViewContext>)currentTabViewContext {
 	if ([[[[NSApplication sharedApplication] keyWindow] windowController] isKindOfClass:[WCFileWindowController class]])
@@ -1174,6 +1181,31 @@ static NSImage *_appIcon = nil;
 }
 
 - (IBAction)delete:(id)sender {
+	// we allow deleting breakpoints without confirmation, check for that first
+	if ([self currentViewController] == [self breakpointsViewControllerDontCreate]) {
+		if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesAdvancedConfirmDeleteOfBreakpointKey]) {
+			for (WCBreakpoint *breakpoint in [[self breakpointsViewController] selectedObjects])
+				[[breakpoint file] removeBreakpoint:breakpoint];
+			return;
+		}
+		
+		NSArray *breakpoints = [[self breakpointsViewController] selectedObjects];
+		NSAlert *alert = [NSAlert alertWithMessageText:([breakpoints count] == 1)?NSLocalizedString(@"Delete Breakpoint", @"Delete Breakpoint"):[NSString stringWithFormat:NSLocalizedString(@"Delete %lu Breakpoints", @"delete multiple breakpoints alert message"),[breakpoints count]] defaultButton:NS_LOCALIZED_STRING_DELETE alternateButton:NS_LOCALIZED_STRING_CANCEL otherButton:nil informativeTextWithFormat:NSLocalizedString(@"This operation cannot be undone.", @"This operation cannot be undone.")];
+		
+		[alert setShowsSuppressionButton:YES];
+		[[alert suppressionButton] bind:@"value" toObject:[NSUserDefaultsController sharedUserDefaultsController] withKeyPath:[@"values." stringByAppendingString:kWCPreferencesAdvancedConfirmDeleteOfBreakpointKey] options:nil];
+		
+		[alert beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSAlert *mAlert, NSInteger result) {
+			if (result != NSAlertDefaultReturn)
+				return;
+			
+			for (WCBreakpoint *breakpoint in [[self breakpointsViewController] selectedObjects])
+				[[breakpoint file] removeBreakpoint:breakpoint];
+		}];
+		
+		return;
+	}
+	
 	// deletes are only allowed in the files outline view, for now at least
 	if ([self currentViewController] != [self projectFilesOutlineViewController]) {
 		NSBeep();

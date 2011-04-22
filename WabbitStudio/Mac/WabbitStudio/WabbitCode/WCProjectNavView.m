@@ -22,7 +22,7 @@
 	if (!(self = [super initWithFrame:frameRect]))
 		return nil;
 	
-	_images = [[NSArray alloc] initWithObjects:[NSImage imageNamed:@"Directory16x16"],[NSImage imageNamed:@"ErrorsAndWarnings"],[NSImage imageNamed:@"Search16x16"],[NSImage imageNamed:@"Breakpoints16x16"],[NSImage imageNamed:@"Symbols16x16"], nil];
+	_images = [[NSArray alloc] initWithObjects:[NSImage imageNamed:@"project"],[NSImage imageNamed:@"ErrorsAndWarnings"],[NSImage imageNamed:@"Search16x16"],[NSImage imageNamed:@"Breakpoints16x16"],[NSImage imageNamed:@"Symbols16x16"], nil];
 	_selectors = [[NSArray alloc] initWithObjects:NSStringFromSelector(@selector(viewProject:)),NSStringFromSelector(@selector(viewBuildMessages:)),NSStringFromSelector(@selector(viewSearch:)),NSStringFromSelector(@selector(viewBreakpoints:)),NSStringFromSelector(@selector(viewSymbols:)), nil];
 	_tooltips = [[NSArray alloc] initWithObjects:NSLocalizedString(@"Show the Project view", @"Show the Project view"),NSLocalizedString(@"Show the Build Messages view", @"Show the Build Messages view"),NSLocalizedString(@"Show the Search view", @"Show the Search view"),NSLocalizedString(@"Show the Breakpoints view", @"Show the Breakpoints view"),NSLocalizedString(@"Show the Symbols view", @"Show the Symbols view"), nil];
 	
@@ -129,7 +129,7 @@
 		[image drawInRect:WCCenteredRect(NSMakeRect(0.0, 0.0, size.width, size.height), frame) fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
 	}
 	
-	[[NSColor colorWithCalibratedWhite:0.66 alpha:1.0] setFill];
+	[[NSColor colorWithCalibratedWhite:0.6 alpha:1.0] setFill];
 	NSRectFill(NSMakeRect(0.0, 0.0, NSWidth(bounds), 1.0));
 }
 

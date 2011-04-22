@@ -66,6 +66,7 @@ NSString *const kWCPreferencesEditorWarningLineHighlightColorKey = @"editorWarni
 NSString *const kWCPreferencesEditorWrapLinesKey = @"editorWrapLines";
          
 NSString *const kWCPreferencesNewBuildTargetsCopyActiveBuildTargetKey = @"advancedNewBuildTargetsCopyActiveBuildTarget";
+NSString *const kWCPreferencesAdvancedConfirmDeleteOfBreakpointKey = @"confirmDeleteOfBreakpoint";
          
 NSString *const kWCPreferencesBuildingForUnsavedFilesKey = @"buildingForUnsavedFiles";
 NSString *const kWCPreferencesBuildingLocationKey = @"buildingLocation";
@@ -197,6 +198,8 @@ NSString *const kWCPreferencesAdvancedProjectTemplatesPreferUserIncludeFilesKey 
 	
 	// advanced project templates prefer user include files
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesAdvancedProjectTemplatesPreferUserIncludeFilesKey];
+	// confirm deletion of breakpoints
+	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesAdvancedConfirmDeleteOfBreakpointKey];
 	
 	[[NSUserDefaults standardUserDefaults] registerDefaults:preferences];
 }

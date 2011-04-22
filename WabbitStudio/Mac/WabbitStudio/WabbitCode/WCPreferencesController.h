@@ -85,6 +85,7 @@ extern NSString *const kWCPreferencesBuildingTreatWarningsAsErrorsKey;
 extern NSString *const kWCPreferencesNewBuildTargetsCopyActiveBuildTargetKey;
 
 extern NSString *const kWCPreferencesAdvancedProjectTemplatesPreferUserIncludeFilesKey;
+extern NSString *const kWCPreferencesAdvancedConfirmDeleteOfBreakpointKey;
 
 enum WCPreferencesBuildingForUnsavedFiles {
 	WCPreferencesBuildingForUnsavedFilesAlwaysSave = 0,
