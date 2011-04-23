@@ -13,7 +13,7 @@
 
 @class WCTopBarView,WCFile,WCTextView,BWAnchoredButtonBar,WCLineNumberTextView;
 
-@interface WCFileViewController : NSViewController <NSTextViewDelegate> {
+@interface WCFileViewController : NSViewController <NSTextViewDelegate,NSMenuDelegate> {
 @private
 	IBOutlet NSScrollView *_scrollView;
 	IBOutlet WCTextView *_textView;
@@ -23,6 +23,7 @@
 	__weak WCFile *_file;
 	__weak id <WCTabViewContext> _tabViewContext;
 	NSString *_textViewSelectedRangeString;
+	NSInteger _currentSymbolIndex;
 }
 
 @property (assign,nonatomic) WCFile *file;

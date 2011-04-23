@@ -35,28 +35,6 @@
 	}
 	return left;
 }
-// binary search; assumes the array is sorted
-- (WCSymbol *)functionSymbolForLocation:(NSUInteger)location indexOfSymbol:(NSUInteger *)indexOfSymbol; {
-	NSUInteger left = 0, right = [self count], mid, lineStart;
-	
-	while ((right - left) > 1) {
-		mid = (right + left) / 2;
-		lineStart = [[self objectAtIndex:mid] symbolRange].location;
-		
-		if (location < lineStart)
-			right = mid;
-		else if (location > lineStart)
-			left = mid;
-		else {
-			if (indexOfSymbol != NULL)
-				*indexOfSymbol = mid;
-			return [self objectAtIndex:mid];
-		}
-	}
-	if (indexOfSymbol != NULL)
-		*indexOfSymbol = left;
-	return [self objectAtIndex:left];
-}
 
 - (WCFile *)fileMatchingAlias:(WCAlias *)alias; {
 	WCFile *mFile = nil;

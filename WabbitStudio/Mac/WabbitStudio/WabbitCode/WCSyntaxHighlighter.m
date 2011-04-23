@@ -132,12 +132,12 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 - (void)performSyntaxHighlighting; {
 	NSString *string = [_textView string];
 	
-	if (![string length])
-		return;
-	else if ([self isHighlighting])
+	if ([self isHighlighting] || [[_textView string] length] == 0)
 		return;
 	else if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesUseSyntaxHighlightingKey]) {
 		[[_textView layoutManager] removeTemporaryAttribute:NSForegroundColorAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
+		[[_textView layoutManager] removeTemporaryAttribute:NSUnderlineStyleAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
+		[[_textView layoutManager] removeTemporaryAttribute:NSToolTipAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
 		return;
 	}
 	
@@ -153,6 +153,7 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	
 	[[_textView layoutManager] removeTemporaryAttribute:NSForegroundColorAttributeName forCharacterRange:visibleRange];
 	[[_textView layoutManager] removeTemporaryAttribute:NSToolTipAttributeName forCharacterRange:visibleRange];
+	[[_textView layoutManager] removeTemporaryAttribute:NSUnderlineStyleAttributeName forCharacterRange:visibleRange];
 	
 	// symbols
 	RKEnumerator *symbolsEnum = [[[RKEnumerator alloc] initWithRegex:kWCSyntaxHighlighterSymbolsRegex string:searchString] autorelease];
@@ -196,8 +197,12 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 			if (showEquateValues)
 				[[_textView layoutManager] addTemporaryAttribute:NSToolTipAttributeName value:[[equateNamesToSymbols objectForKey:symbolName] symbolValue] forCharacterRange:actualRange];
 		}
-		else if (highlightLabels && [labelNamesToSymbols objectForKey:symbolName])
+		else if (highlightLabels && [labelNamesToSymbols objectForKey:symbolName]) {
 			[[_textView layoutManager] addTemporaryAttribute:NSForegroundColorAttributeName value:labelsColor forCharacterRange:actualRange];
+			
+			if ([[labelNamesToSymbols objectForKey:symbolName] symbolType] == WCSymbolFunctionType)
+				[[_textView layoutManager] addTemporaryAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithUnsignedInteger:NSUnderlineStyleSingle|NSUnderlinePatternSolid] forCharacterRange:actualRange];
+		}
 		else if (highlightDefines && [defineNamesToSymbols objectForKey:symbolName])
 			[[_textView layoutManager] addTemporaryAttribute:NSForegroundColorAttributeName value:definesColor forCharacterRange:actualRange];
 		else if (highlightMacros && [macroNamesToSymbols objectForKey:symbolName])

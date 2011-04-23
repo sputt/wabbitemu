@@ -14,14 +14,11 @@
 #import "WCSymbol.h"
 #import "WCSymbolScanner.h"
 #import "NSArray+WCExtensions.h"
-//#import "WCLineNumberTextView.h"
 
-#import <BWToolkitFramework/BWToolkitFramework.h>
 
-//const CGFloat LargeNumberForText = 1.0e7;
-
-@interface WCFileViewController (Private)
-- (void)_setupSymbolsPopUpButton;
+@interface WCFileViewController ()
+@property (assign,nonatomic) NSInteger currentSymbolIndex;
+- (void)_setupSymbolsMenuAndAdjustNumberOfItems:(BOOL)flag;
 @end
 
 @implementation WCFileViewController
@@ -46,6 +43,9 @@
 	NSAssert(_file != nil, @"file cannot be nil!");
 #endif
 	
+	_currentSymbolIndex = -1;
+	//[(NSPopUpButtonCell *)[_symbolsPopUpButton cell] setAltersStateOfSelectedItem:NO];
+	
 	// for now it has to be done this way, creating everything in code causes the ruler view to flake out
 	[[_textView layoutManager] replaceTextStorage:[_file textStorage]];
 	
@@ -61,7 +61,7 @@
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_textViewDidChangeSelection:) name:NSTextViewDidChangeSelectionNotification object:_textView];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_symbolScannerDidFinishScanning:) name:kWCSymbolScannerFinishedScanningNotification object:[_file symbolScanner]];
-	[self _setupSymbolsPopUpButton];
+	[self _setupSymbolsMenuAndAdjustNumberOfItems:YES];
 	[_textView setSelectedRange:NSMakeRange(0, 0)];
 }
 
@@ -70,6 +70,8 @@
 @synthesize textViewSelectedRangeString=_textViewSelectedRangeString;
 @synthesize topBarView=_topBarView;
 @synthesize tabViewContext=_tabViewContext;
+@synthesize currentSymbolIndex=_currentSymbolIndex;
+
 + (id)fileViewControllerWithFile:(WCFile *)file; {
 	return [self fileViewControllerWithFile:file inTabViewContext:nil];
 }
@@ -96,32 +98,7 @@
 }
 
 - (void)_symbolScannerDidFinishScanning:(NSNotification *)note {
-	[self _setupSymbolsPopUpButton];
-}
-
-- (void)_setupSymbolsPopUpButton; {
-	[_symbolsPopUpButton removeAllItems];
-	
-	NSMenu *menu = [[[NSMenu alloc] initWithTitle:@"SymbolsPopUpButtonMenu"] autorelease];
-	NSArray *symbols = [[[self file] symbolScanner] symbols];
-	
-	for (WCSymbol *symbol in symbols) {
-		NSMenuItem *item = [menu addItemWithTitle:[symbol name] action:@selector(_jumpToDefinitionFromSymbolsPopUpButton:) keyEquivalent:@""];
-		
-		[item setTarget:self];
-		[item setImage:[symbol icon]];
-		[item setRepresentedObject:symbol];
-		[item setIndentationLevel:([symbol symbolType] == WCSymbolFunctionType)?0:1];
-	}
-	
-	[_symbolsPopUpButton setMenu:menu];
-	
-	if ([menu numberOfItems] == 0) {
-		[menu addItemWithTitle:NSLocalizedString(@"No Symbols", @"No Symbols") action:NULL keyEquivalent:@""];
-		[_symbolsPopUpButton selectItemAtIndex:0];
-	}
-	else
-		[_symbolsPopUpButton selectItemAtIndex:[symbols symbolIndexForLocation:[[self textView] selectedRange].location]];
+	[self _setupSymbolsMenuAndAdjustNumberOfItems:YES];
 }
 
 - (void)_textViewDidChangeSelection:(NSNotification *)note {
@@ -131,11 +108,44 @@
 	
 	[self setTextViewSelectedRangeString:[NSString stringWithFormat:@"%u:%u",++lineNumber,NSMaxRange(range)-lineStart]];
 	
-	NSArray *functions = [[[self file] symbolScanner] symbols];
-	if ([functions count] == 0)
-		[_symbolsPopUpButton selectItemAtIndex:0];
-	else
-		[_symbolsPopUpButton selectItemAtIndex:[functions symbolIndexForLocation:range.location]];
+	[self _setupSymbolsMenuAndAdjustNumberOfItems:NO];
+}
+
+- (void)_setupSymbolsMenuAndAdjustNumberOfItems:(BOOL)flag; {
+	NSArray *symbols = [[[self file] symbolScanner] symbols];
+	NSMenu *menu = [_symbolsPopUpButton menu];
+	
+	if (flag) {
+		NSUInteger totalItems = ([symbols count] == 0)?1:[symbols count];
+		
+		// add items until we are even
+		if ([menu numberOfItems] < totalItems) {
+			while ([menu numberOfItems] < totalItems) {
+				NSMenuItem *item = [menu addItemWithTitle:@"" action:@selector(_jumpToDefinitionFromSymbolsPopUpButton:) keyEquivalent:@""];
+				[item setTarget:self];
+			}
+		}
+		// remove items until we are even
+		else if ([menu numberOfItems] > totalItems) {
+			while ([menu numberOfItems] > totalItems)
+				[menu removeItemAtIndex:0];
+		}
+		
+		if ([symbols count] == 0)
+			[[menu itemAtIndex:0] setTitle:NSLocalizedString(@"-", @"title for no symbols menu item")];
+		else {
+			NSUInteger count = 0;
+			for (NSMenuItem *item in [menu itemArray]) {
+				WCSymbol *symbol = [symbols objectAtIndex:count++];
+				
+				[item setTitle:[symbol name]];
+				[item setImage:[symbol icon]];
+				[item setIndentationLevel:([symbol symbolType] == WCSymbolFunctionType)?0:1];
+			}
+		}
+	}
+
+	[_symbolsPopUpButton selectItemAtIndex:[symbols symbolIndexForLocation:[_textView selectedRange].location]];
 }
 
 - (void)_jumpToDefinitionFromSymbolsPopUpButton:(id)sender {

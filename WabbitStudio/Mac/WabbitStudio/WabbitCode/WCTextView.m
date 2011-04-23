@@ -86,21 +86,20 @@
 		NSRange range = [self selectedRange];
 		
 		if (range.length == 0) {
-			if (range.location >= [[self string] length])
-				range.location = [[self string] length] - 1;
-			
-			NSUInteger rectCount = 0;
-			NSRectArray newRects = [[self layoutManager] rectArrayForCharacterRange:[[self string] lineRangeForRange:range] withinSelectedCharacterRange:NSMakeRange(NSNotFound, 0) inTextContainer:[self textContainer] rectCount:&rectCount];
-			NSRect newRect = NSZeroRect;
-			
-			if (rectCount > 0) {
-				newRect = newRects[0];
+			if (range.location < [[self string] length]) {
+				NSUInteger rectCount = 0;
+				NSRectArray newRects = [[self layoutManager] rectArrayForCharacterRange:[[self string] lineRangeForRange:range] withinSelectedCharacterRange:NSMakeRange(NSNotFound, 0) inTextContainer:[self textContainer] rectCount:&rectCount];
+				NSRect newRect = NSZeroRect;
 				
-				newRect.origin.x = NSMinX([self bounds]);
-				newRect.size.width = NSWidth([self bounds]);
-				
-				[[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesCurrentLineHighlightColorKey] setFill];
-				NSRectFillUsingOperation(newRect, NSCompositeCopy);
+				if (rectCount > 0) {
+					newRect = newRects[0];
+					
+					newRect.origin.x = NSMinX([self bounds]);
+					newRect.size.width = NSWidth([self bounds]);
+					
+					[[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesCurrentLineHighlightColorKey] setFill];
+					NSRectFillUsingOperation(newRect, NSCompositeCopy);
+				}
 			}
 		}
 	}

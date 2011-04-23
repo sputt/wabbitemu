@@ -41,15 +41,17 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 	
 	// general pattern for labels, including checks for some special cases that we don't want treated as labels
 	// '^' checks for the beginning of a line, i.e. a label must begin in column 0, otherwise it's not a label
-	// '[A-z0-9_!?]+' matches the rest of the label
+	// [[:alpha:]] checks to see that the first character of the label is a letter
+	// '[A-z0-9_!?]*' matches the rest of the label, ensuring that labels of length 1 are still allowed by using '*'
 	// '(?!\\()' is a look ahead assertion that ensures calls to macros are ignored as potential label names; somemacro() is ignored whereas somemacro would be considered a valid label name
 	kWCSymbolScannerLabelsRegex = [[RKRegex alloc] initWithRegexString:@"^[[:alpha:]][A-z0-9!?]*(?!\\()\\b" options:RKCompileUTF8|RKCompileMultiline];
 	// general pattern for equates, which are just a special kind of label
 	// '^' checks for the beginning of a line as above
+	// [[:alpha:]] checks to see that the first character of the equate is a letter
 	// '(?<name> ...)' names the capture for the name of the equate so we can extract it later
 	// then we skip any whitespace and look for '=', '.equ', '.EQU', 'equ', or 'EQU' which tells us we have an equate
 	// again, skip whitespace then look for the value of equate which '(?<value> ...)' captures so we can get at it later
-	kWCSymbolScannerEquatesRegex = [[RKRegex alloc] initWithRegexString:@"^(?<name>[[:alpha:]][A-z0-9!?]*)(?:\\s*=\\s*|\\s+\\.equ\\s+|\\s+\\.EQU\\s+|\\s+equ\\s+|\\s+EQU\\s+)(?<value>[-+$._!? ()A-z0-9]+)" options:RKCompileUTF8|RKCompileMultiline];
+	kWCSymbolScannerEquatesRegex = [[RKRegex alloc] initWithRegexString:@"^(?<name>[A-z0-9!?]*)(?:\\s*=\\s*|\\s+\\.equ\\s+|\\s+\\.EQU\\s+|\\s+equ\\s+|\\s+EQU\\s+)(?<value>[-+$._!? ()A-z0-9]+)" options:RKCompileUTF8|RKCompileMultiline];
 	// general pattern for defines
 	// same as the previous cases, but we have to for '#define' or '#DEFINE' to start off the match
 	kWCSymbolScannerDefinesRegex = [[RKRegex alloc] initWithRegexString:@"(?:#define|#DEFINE)\\s+(?<name>[A-z0-9_!?.]+)" options:RKCompileUTF8];
@@ -57,7 +59,7 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 	// same as above, but we check for '#macro' and '#MACRO' instead
 	kWCSymbolScannerMacrosRegex = [[RKRegex alloc] initWithRegexString:@"(?:#macro|#MACRO)\\s+(?<name>[A-z0-9_!?.]+)" options:RKCompileUTF8];
 	// pattern for multiline comments
-	// the first part of the alteration has the *? qualifier after the dot to ensure it doesn't consume the '#endcomment' tag
+	// the first part of the alteration has the *? qualifier after the dot to ensure it doesn't consume the '#endcomment'
 	kWCSyntaxHighlighterMultilineCommentsRegex = [[RKRegex alloc] initWithRegexString:@"(?:#comment.*?#endcomment)|(?:#comment.*)" options:RKCompileUTF8|RKCompileDotAll|RKCompileMultiline];
 }
 
@@ -153,7 +155,7 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
 		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 		// grab a copy of the string
-		NSString *string = [[[self file] textStorage] string];
+		NSString *string = [[[[[self file] textStorage] string] copy] autorelease];
 		BOOL labelsAreCaseSensitive = [[[[self file] project] activeBuildTarget] symbolsAreCaseSensitive];
 		NSMutableArray *multilineCommentRanges = [NSMutableArray array];
 		NSMutableArray *symbols = [NSMutableArray arrayWithCapacity:[[self symbols] count]];
@@ -205,7 +207,6 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 		
 		// find labels
 		RKEnumerator *labelsEnum = [[[RKEnumerator alloc] initWithRegex:kWCSymbolScannerLabelsRegex string:string] autorelease];
-		//NSUInteger length = [string length];
 		
 		while ([labelsEnum nextRanges] != NULL) {
 			NSRangePointer labelRange = [labelsEnum currentRanges];

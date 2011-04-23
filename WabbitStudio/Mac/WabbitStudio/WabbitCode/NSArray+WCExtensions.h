@@ -13,6 +13,5 @@
 @interface NSArray (NSArray_WCExtensions)
 - (id)firstObject;
 - (NSUInteger)symbolIndexForLocation:(NSUInteger)location;
-- (WCSymbol *)functionSymbolForLocation:(NSUInteger)location indexOfSymbol:(NSUInteger *)indexOfSymbol;
 - (WCFile *)fileMatchingAlias:(WCAlias *)alias;
 @end
