@@ -107,7 +107,7 @@
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayErrorBadgesKey] &&
 		[[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorErrorLineHighlightKey]) {
 		for (WCBuildMessage *error in [_file allErrorMessages]) {
-			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[_file lineStartForBuildMessage:error] effectiveRange:NULL];
+			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[[_file textStorage] safeLineStartIndexForLineNumber:[error lineNumber]] effectiveRange:NULL];
 			
 			if (NSIntersectsRect(lineRect, visibleRect) && [self needsToDrawRect:lineRect]) {
 				NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey];
@@ -124,7 +124,7 @@
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayWarningBadgesKey] &&
 		[[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorWarningLineHighlightKey]) {
 		for (WCBuildMessage *warning in [_file allWarningMessages]) {
-			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[_file lineStartForBuildMessage:warning] effectiveRange:NULL];
+			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[[_file textStorage] safeLineStartIndexForLineNumber:[warning lineNumber]] effectiveRange:NULL];
 			
 			if (NSIntersectsRect(lineRect, visibleRect) && [self needsToDrawRect:lineRect]) {
 				NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorWarningLineHighlightColorKey];
@@ -396,7 +396,7 @@
 	NSRange range = [self selectedRange];
 	
 	for (WCBuildMessage *message in messages) {
-		NSRange mRange = NSMakeRange([[self file] lineStartForBuildMessage:message], 0);
+		NSRange mRange = NSMakeRange([[[self file] textStorage] safeLineStartIndexForLineNumber:[message lineNumber]], 0);
 		
 		if (mRange.location > range.location) {
 			[self setSelectedRange:mRange];
@@ -412,7 +412,7 @@
 	NSRange range = [self selectedRange];
 	
 	for (WCBuildMessage *message in [messages reverseObjectEnumerator]) {
-		NSRange mRange = NSMakeRange([[self file] lineStartForBuildMessage:message], 0);
+		NSRange mRange = NSMakeRange([[[self file] textStorage] safeLineStartIndexForLineNumber:[message lineNumber]], 0);
 		
 		if (mRange.location < range.location) {
 			[self setSelectedRange:mRange];

@@ -8,6 +8,7 @@
 
 #import "WCDefines.h"
 
+const NSRange WCEmptyRange = (NSRange){0,0};
 
 @implementation WCDefines
 

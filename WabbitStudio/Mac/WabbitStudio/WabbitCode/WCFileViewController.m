@@ -17,8 +17,7 @@
 
 
 @interface WCFileViewController ()
-@property (assign,nonatomic) NSInteger currentSymbolIndex;
-- (void)_setupSymbolsMenuAndAdjustNumberOfItems:(BOOL)flag;
+- (void)_setupSymbolsMenuAndAdjustNumberOfItems:(BOOL)adjustNumberOfItems;
 @end
 
 @implementation WCFileViewController
@@ -42,10 +41,6 @@
 	NSAssert(_symbolsPopUpButton != nil, @"symbolsPopUpButton cannot be nil!");
 	NSAssert(_file != nil, @"file cannot be nil!");
 #endif
-	
-	_currentSymbolIndex = -1;
-	//[(NSPopUpButtonCell *)[_symbolsPopUpButton cell] setAltersStateOfSelectedItem:NO];
-	
 	// for now it has to be done this way, creating everything in code causes the ruler view to flake out
 	[[_textView layoutManager] replaceTextStorage:[_file textStorage]];
 	
@@ -70,7 +65,6 @@
 @synthesize textViewSelectedRangeString=_textViewSelectedRangeString;
 @synthesize topBarView=_topBarView;
 @synthesize tabViewContext=_tabViewContext;
-@synthesize currentSymbolIndex=_currentSymbolIndex;
 
 + (id)fileViewControllerWithFile:(WCFile *)file; {
 	return [self fileViewControllerWithFile:file inTabViewContext:nil];
@@ -111,11 +105,11 @@
 	[self _setupSymbolsMenuAndAdjustNumberOfItems:NO];
 }
 
-- (void)_setupSymbolsMenuAndAdjustNumberOfItems:(BOOL)flag; {
+- (void)_setupSymbolsMenuAndAdjustNumberOfItems:(BOOL)adjustNumberOfItems; {
 	NSArray *symbols = [[[self file] symbolScanner] symbols];
 	NSMenu *menu = [_symbolsPopUpButton menu];
 	
-	if (flag) {
+	if (adjustNumberOfItems) {
 		NSUInteger totalItems = ([symbols count] == 0)?1:[symbols count];
 		
 		// add items until we are even

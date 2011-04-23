@@ -44,7 +44,7 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 	// [[:alpha:]] checks to see that the first character of the label is a letter
 	// '[A-z0-9_!?]*' matches the rest of the label, ensuring that labels of length 1 are still allowed by using '*'
 	// '(?!\\()' is a look ahead assertion that ensures calls to macros are ignored as potential label names; somemacro() is ignored whereas somemacro would be considered a valid label name
-	kWCSymbolScannerLabelsRegex = [[RKRegex alloc] initWithRegexString:@"^[[:alpha:]][A-z0-9!?]*(?!\\()\\b" options:RKCompileUTF8|RKCompileMultiline];
+	kWCSymbolScannerLabelsRegex = [[RKRegex alloc] initWithRegexString:@"^[[:alpha:]][A-z0-9!?]*(?!\\()" options:RKCompileUTF8|RKCompileMultiline];
 	// general pattern for equates, which are just a special kind of label
 	// '^' checks for the beginning of a line as above
 	// [[:alpha:]] checks to see that the first character of the equate is a letter

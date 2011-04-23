@@ -16,8 +16,9 @@
 }
 - (NSArray *)lineStartIndexes;
 - (NSUInteger)numberOfLines;
-- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index;
-- (NSUInteger)lineStartIndexForLineNumber:(NSUInteger)line;
-- (NSUInteger)lineStartIndexForCharacterIndex:(NSUInteger)index;
-//- (NSRange)lineRangeForCharacterIndex:(NSUInteger)index;
+- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)characterIndex;
+- (NSUInteger)lineStartIndexForLineNumber:(NSUInteger)lineNumber;
+- (NSUInteger)lineStartIndexForCharacterIndex:(NSUInteger)characterIndex;
+
+- (NSUInteger)safeLineStartIndexForLineNumber:(NSUInteger)lineNumber;
 @end

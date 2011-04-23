@@ -555,7 +555,7 @@ static NSImage *_appIcon = nil;
 - (void)jumpToBuildMessage:(WCBuildMessage *)message; {
 	WCFileViewController *controller = [self addFileViewControllerForFile:[message file] inTabViewContext:[self currentTabViewContext]];
 	WCTextView *textView = [controller textView];
-	NSRange range = NSMakeRange([[message file] lineStartForBuildMessage:message], 0);
+	NSRange range = NSMakeRange([[[message file] textStorage] safeLineStartIndexForLineNumber:[message lineNumber]], 0);
 	
 	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
 }

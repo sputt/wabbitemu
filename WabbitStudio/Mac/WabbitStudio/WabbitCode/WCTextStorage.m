@@ -107,16 +107,16 @@
 	return [_lineStartIndexes count];
 }
 
-- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index; {
+- (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)characterIndex; {
 	NSUInteger left = 0, right = [_lineStartIndexes count], mid, lineStart;
 	
 	while ((right - left) > 1) {
 		mid = (right + left) / 2;
 		lineStart = [[_lineStartIndexes objectAtIndex:mid] unsignedIntegerValue];
 		
-		if (index < lineStart)
+		if (characterIndex < lineStart)
 			right = mid;
-		else if (index > lineStart)
+		else if (characterIndex > lineStart)
 			left = mid;
 		else
 			return mid;
@@ -124,14 +124,20 @@
 	return left;
 }
 
-- (NSUInteger)lineStartIndexForLineNumber:(NSUInteger)line; {
-	if (line >= [_lineStartIndexes count])
-		line = [_lineStartIndexes count] - 1;
-	return [[_lineStartIndexes objectAtIndex:line] unsignedIntegerValue];
+- (NSUInteger)lineStartIndexForLineNumber:(NSUInteger)lineNumber; {
+	return [[_lineStartIndexes objectAtIndex:lineNumber] unsignedIntegerValue];
 }
 
-- (NSUInteger)lineStartIndexForCharacterIndex:(NSUInteger)index; {
-	return [[_lineStartIndexes objectAtIndex:[self lineNumberForCharacterIndex:index]] unsignedIntegerValue];
+- (NSUInteger)lineStartIndexForCharacterIndex:(NSUInteger)characterIndex; {
+	return [[_lineStartIndexes objectAtIndex:[self lineNumberForCharacterIndex:characterIndex]] unsignedIntegerValue];
+}
+
+- (NSUInteger)safeLineStartIndexForLineNumber:(NSUInteger)lineNumber; {
+	if ([self numberOfLines] == 0)
+		return 0;
+	else if (lineNumber >= [self numberOfLines])
+		lineNumber = [self numberOfLines] - 1;
+	return [self lineStartIndexForLineNumber:lineNumber];
 }
 
 - (void)_calculateLineStartIndexes; {

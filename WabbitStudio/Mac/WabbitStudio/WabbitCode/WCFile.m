@@ -172,7 +172,7 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	if (_lineNumbersToErrorMessages == nil)
 		_lineNumbersToErrorMessages = [[NSMutableDictionary alloc] init];
 	
-	[_lineNumbersToErrorMessages setObject:error forKey:[NSNumber numberWithUnsignedInteger:[error lineNumber] - 1]];
+	[_lineNumbersToErrorMessages setObject:error forKey:[NSNumber numberWithUnsignedInteger:[error lineNumber]]];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileNumberOfErrorMessagesChangedNotification object:self];
 }
@@ -180,7 +180,7 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	if (_lineNumbersToWarningMessages == nil)
 		_lineNumbersToWarningMessages = [[NSMutableDictionary alloc] init];
 	
-	[_lineNumbersToWarningMessages setObject:warning forKey:[NSNumber numberWithUnsignedInteger:[warning lineNumber] - 1]];
+	[_lineNumbersToWarningMessages setObject:warning forKey:[NSNumber numberWithUnsignedInteger:[warning lineNumber]]];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileNumberOfWarningMessagesChangedNotification object:self];
 }
@@ -210,9 +210,6 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 - (NSArray *)allWarningMessages; {
 	return [_lineNumbersToWarningMessages allValues];
 }
-- (NSUInteger)lineStartForBuildMessage:(WCBuildMessage *)message; {
-	return [[self textStorage] lineStartIndexForLineNumber:[message lineNumber]-1];
-}
 - (NSArray *)allBuildMessagesSortedByLineNumber; {
 	static NSArray *sortDescriptors = nil;
 	if (!sortDescriptors)
@@ -229,7 +226,7 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 }
 
 - (NSUInteger)numberOfBuildMessages; {
-	return ([_lineNumbersToErrorMessages count] + [_lineNumbersToWarningMessages count]);
+	return ([_lineNumbersToErrorMessages count]+[_lineNumbersToWarningMessages count]);
 }
 #pragma mark Breakpoints
 - (void)addBreakpoint:(WCBreakpoint *)breakpoint; {

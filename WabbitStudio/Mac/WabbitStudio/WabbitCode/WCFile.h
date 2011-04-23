@@ -34,7 +34,7 @@ extern NSString *const kWCFileNameDidChangeNotification;
 	WCTextStorage *_textStorage; // stores the text of the file we represent, support for line numbers
 	NSUndoManager *_undoManager; // undo manager for any text views that hook up to our text storage
 	NSInteger _changeCount; // so we know when we have unsaved changes
-	NSTextView *_textViewForFindInProjectReplace;
+	NSTextView *_textViewForFindInProjectReplace; // we need an NSTextView instance to support if our file isn't open
 	NSStringEncoding _encoding; // encoding we should use when reading and writing the file contents
 	
 	WCSymbolScanner *_symbolScanner; // parses the text of our file and gathers information about symbols
@@ -85,7 +85,6 @@ extern NSString *const kWCFileNameDidChangeNotification;
 - (NSArray *)allWarningMessages;
 - (NSArray *)allBuildMessagesSortedByLineNumber;
 - (NSUInteger)numberOfBuildMessages;
-- (NSUInteger)lineStartForBuildMessage:(WCBuildMessage *)message;
 
 - (void)addBreakpoint:(WCBreakpoint *)breakpoint;
 - (void)removeBreakpoint:(WCBreakpoint *)breakpoint;

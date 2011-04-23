@@ -23,7 +23,6 @@
 	__weak WCFile *_file;
 	__weak id <WCTabViewContext> _tabViewContext;
 	NSString *_textViewSelectedRangeString;
-	NSInteger _currentSymbolIndex;
 }
 
 @property (assign,nonatomic) WCFile *file;

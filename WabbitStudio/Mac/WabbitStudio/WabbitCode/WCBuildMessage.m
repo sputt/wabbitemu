@@ -86,7 +86,7 @@
 	
 	_messageType = type;
 	_file = file;
-	_lineNumber = lineNumber;
+	_lineNumber = (lineNumber == 0)?0:--lineNumber;
 	
 	return self;
 }
