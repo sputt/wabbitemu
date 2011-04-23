@@ -120,10 +120,8 @@
 		
 		// add items until we are even
 		if ([menu numberOfItems] < totalItems) {
-			while ([menu numberOfItems] < totalItems) {
-				NSMenuItem *item = [menu addItemWithTitle:@"" action:@selector(_jumpToDefinitionFromSymbolsPopUpButton:) keyEquivalent:@""];
-				[item setTarget:self];
-			}
+			while ([menu numberOfItems] < totalItems)
+				[menu addItem:[[[NSMenuItem alloc] init] autorelease]];
 		}
 		// remove items until we are even
 		else if ([menu numberOfItems] > totalItems) {
@@ -131,8 +129,11 @@
 				[menu removeItemAtIndex:0];
 		}
 		
-		if ([symbols count] == 0)
-			[[menu itemAtIndex:0] setTitle:NSLocalizedString(@"-", @"title for no symbols menu item")];
+		if ([symbols count] == 0) {
+			[[menu itemAtIndex:0] setTitle:NSLocalizedString(@"No Symbols", @"title for no symbols menu item")];
+			[[menu itemAtIndex:0] setImage:nil];
+			[[menu itemAtIndex:0] setRepresentedObject:nil];
+		}
 		else {
 			NSUInteger count = 0;
 			for (NSMenuItem *item in [menu itemArray]) {
@@ -141,6 +142,9 @@
 				[item setTitle:[symbol name]];
 				[item setImage:[symbol icon]];
 				[item setIndentationLevel:([symbol symbolType] == WCSymbolFunctionType)?0:1];
+				[item setRepresentedObject:symbol];
+				[item setAction:@selector(_jumpToDefinitionFromSymbolsPopUpButton:)];
+				[item setTarget:self];
 			}
 		}
 	}
