@@ -40,7 +40,7 @@
 #include "DropTarget.h"
 #include "expandpane.h"
 #include "registry.h"
-#include "sendfiles.h"
+#include "sendfileswindows.h"
 #include "state.h"
 #ifdef USE_COM
 #include "wbded.h"

@@ -2,7 +2,7 @@
 
 #include "calc.h"
 #include "DropTarget.h"
-#include "SendFiles.h"
+#include "SendFilesWindows.h"
 
 extern POINT drop_pt;
 

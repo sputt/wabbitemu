@@ -171,9 +171,6 @@
     <ClCompile Include="utilities\savestate.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="utilities\sendfiles.c">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="utilities\sound.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -263,6 +260,12 @@
     </ClCompile>
     <ClCompile Include="gui\guikeylist.c">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\SendFile.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\sendfileswindows.cpp">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -437,9 +440,6 @@
     <ClInclude Include="utilities\savestate.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="utilities\sendfiles.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="utilities\sound.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
@@ -502,6 +502,12 @@
     </ClInclude>
     <ClInclude Include="gui\guikeylist.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\SendFile.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\sendfileswindows.h">
+      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

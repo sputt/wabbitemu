@@ -9,7 +9,8 @@
 #include "state.h"
 #include "var.h"
 #include "link.h"
-#include "sendfiles.h"
+#include "SendFile.h"
+#include "sendfileswindows.h"
 
 typedef struct tagSENDINFO
 {
