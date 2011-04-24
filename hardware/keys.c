@@ -5,7 +5,9 @@
 #ifdef WINVER
 #elif MACVER
 #else
+#ifdef GTK
 #include <gdk/gdkkeysyms.h>
+#endif
 #endif
 
 #ifdef MACVER
@@ -177,6 +179,7 @@ static keyprog_t keygrps[] = {
 #else
 
 keyprog_t defaultkeys[256] = {
+#ifdef _WINDOWS
 	{ 'A' , 5 , 6 },
 	{ 'B' , 4 , 6 },
 	{ 'C' , 3 , 6 },
@@ -263,10 +266,12 @@ keyprog_t defaultkeys[256] = {
 	{ VK_NUMPAD0, 5, 0},
 #else
 	{ VK_F12, 5, 0},
+#endif
 #endif
 	{ -1, -1, -1},
 };
 keyprog_t keygrps[256] = {
+#ifdef _WINDOWS
 	{ 'A' , 5 , 6 },
 	{ 'B' , 4 , 6 },
 	{ 'C' , 3 , 6 },
@@ -353,6 +358,7 @@ keyprog_t keygrps[256] = {
 	{ VK_NUMPAD0, 5, 0},
 #else
 	{ VK_F12, 5, 0},
+#endif
 #endif
 	{ -1, -1, -1},
 };

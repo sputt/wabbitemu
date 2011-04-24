@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #define CALC_C
-#include "gui.h"
+#include "calc.h"
 #include "core.h"
 #include "81hw.h"
 #include "83hw.h"
@@ -10,12 +10,18 @@
 #include "86hw.h"
 #include "device.h"
 #include "var.h"
-#include "disassemble.h"
+#include "gif.h"
+#include "gifhandle.h"
+#include "link.h"
 
 #ifdef _WINDOWS
+#include "gui.h"
+#include "disassemble.h"
 #include "CCalcAddress.h"
 #include "CPage.h"
 #include "gifhandle.h"
+#else
+static void gui_debug(calc_t *calc) {}
 #endif
 
 /*
@@ -259,6 +265,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 				break;
 			case TI_73:
 			case TI_83P:
+				printf("initializing 83p\n");
 				calc_init_83p(lpCalc);
 				memcpy(	lpCalc->cpu.mem_c->flash,
 						tifile->rom->data,
@@ -497,7 +504,25 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	return 0;
 }
 
-#include "link.h"
+BOOL calc_start_screenshot(calc_t *calc, const char *filename)
+{
+	if (gif_write_state == GIF_IDLE)
+	{
+		gif_write_state = GIF_START;
+		strcpy(gif_file_name, filename);
+		return TRUE;
+	}
+	else
+	{
+		return FALSE;
+	}
+}
+
+void calc_stop_screenshot(calc_t *calc)
+{
+	gif_write_state = GIF_END;
+}
+
 void calc_pause_linked() {
 	for (int i = 0; i < MAX_CALCS; i++)
 		if (calcs[i].active && link_connected_hub(i))
@@ -519,7 +544,10 @@ int calc_run_all(void) {
 			if (link_hub[j] != NULL)
 				hub_val |= link_hub[j]->host;
 		}
-		link_hub[MAX_CALCS]->host = hub_val;
+		if (link_hub[MAX_CALCS] != NULL)
+		{
+			link_hub[MAX_CALCS]->host = hub_val;
+		}
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active == TRUE) {
 				active_calc = j;
@@ -593,7 +621,6 @@ void do_backup(LPCALC lpCalc) {
 	backups[slot] = backup;
 	number_backup++;
 }
-
 void restore_backup(int index, LPCALC lpCalc) {
 	int slot = lpCalc->slot;
 	debugger_backup* backup = backups[slot];

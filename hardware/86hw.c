@@ -96,7 +96,7 @@ static void port4(CPU_t *cpu, device_t *dev) {
 		dev->aux = (void *) cpu->bus;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->bus = (uint8_t) dev->aux;
+		cpu->bus = (uint8_t) (int) dev->aux;
 		cpu->output = FALSE;
 	}
 }

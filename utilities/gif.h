@@ -12,6 +12,7 @@
 #ifdef WINVER
 #include "gui.h"
 #else
+#include "coretypes.h"
 #include "types.h"
 #endif
 

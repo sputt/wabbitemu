@@ -595,8 +595,12 @@ TIFILE_t* newimportvar(LPCTSTR filePath) {
 	FILE *infile = NULL;
 	TIFILE_t *tifile;
 	
-	TCHAR extension[_MAX_EXT];
-	_tsplitpath_s(filePath, NULL, 0, NULL, 0, NULL, 0, extension, ARRAYSIZE(extension));
+	TCHAR extension[4] = _T("");
+	char *pext = _tcsrchr(filePath, _T('.'));
+	if (pext != NULL)
+	{
+		_tcscpy_s(extension, pext);
+	}
 
 	tifile = InitTiFile();
 	if (tifile == NULL)
@@ -614,7 +618,7 @@ TIFILE_t* newimportvar(LPCTSTR filePath) {
 #ifdef WINVER
 	_tfopen_s(&infile, filePath, _T("rb"));
 #else
-	infile = fopen(filePame, "rb");
+	infile = fopen(filePath, "rb");
 #endif
 	if (infile == NULL)
 		return FreeTiFile(tifile);

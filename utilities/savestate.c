@@ -305,9 +305,9 @@ BOOL WriteBlock(CHUNK_t* chunk, unsigned char *pnt, int length) {
 
 	
 unsigned char ReadChar(CHUNK_t* chunk) {
-	_TUCHAR value;
+	unsigned char value;
 	value = chunk->data[chunk->pnt];
-	chunk->pnt += sizeof(TCHAR);
+	chunk->pnt += sizeof(unsigned char);
 	CheckPNT(chunk);
 	return value;
 }
@@ -315,7 +315,7 @@ unsigned char ReadChar(CHUNK_t* chunk) {
 unsigned short ReadShort(CHUNK_t* chunk) {
 	int i;
 	unsigned short value;
-	_TUCHAR *pnt = (_TUCHAR *)(&value);
+	unsigned char *pnt = (unsigned char *)(&value);
 #ifdef __BIG_ENDIAN__
 	for(i = sizeof(short) - 1; i >= 0; i--) {
 #else
@@ -997,7 +997,11 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 		}
 		fclose(ofile);
 		fclose(cfile);
+#ifdef _WINDOWS
 		_tremove(temp_save);
+#else
+		remove(temp_save);
+#endif
 	}
 }
 
@@ -1032,7 +1036,6 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 		tmpfile = fopen(temp_save,"wb");
 #endif
 		if (!tmpfile) {
-			_putts(_T("Could not open tmp file for write"));
 			return NULL;
 		}
 		int error;
@@ -1043,9 +1046,12 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 				break;
 #endif
 			default:
-				_putts(_T("Compressed save is not compatible."));
 				fclose(tmpfile);
+#ifdef _WINDOWS
 				_tremove(tmpfn);
+#else
+				remove(tmpfn);
+#endif
 				return NULL;
 		}
 		
@@ -1118,7 +1124,11 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 	}
 	if (compressed == TRUE) {
 		fclose(ifile);
+#ifdef _WINDOWS
 		_tremove(temp_save);
+#else
+		remove(temp_save);
+#endif
 	}
 /* check for read errors... */
 	return save;

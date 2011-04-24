@@ -124,6 +124,8 @@ int calc_run_frame(LPCALC);
 int calc_run_seconds(LPCALC, double);
 int calc_run_timed(LPCALC, time_t);
 int calc_run_all(void);
+BOOL calc_start_screenshot(calc_t *calc, const char *filename);
+void calc_stop_screenshot(calc_t *calc);
 
 #ifdef WITH_BACKUPS
 void do_backup(LPCALC);

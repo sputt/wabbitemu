@@ -165,12 +165,12 @@ TCHAR *App_Name_to_String(apphdr_t *app, TCHAR *buffer) {
 	StringCbCopy(buffer, _tcslen(app->name) + 1, app->name);
 	return buffer;
 #else
-	return strcpy_s(buffer, app->name);
+	return strcpy(buffer, app->name);
 #endif
 }
 
 TCHAR *Symbol_Name_to_String(symbol83P_t *sym, TCHAR *buffer) {
-	const _TUCHAR ans_name[] = {tAns, 0x00, 0x00};
+	const TCHAR ans_name[] = {tAns, 0x00, 0x00};
 	if (memcmp(sym->name, ans_name, 3) == 0) {
 #ifdef WINVER
 		StringCbCopy(buffer, 10, _T("Ans"));
@@ -329,7 +329,7 @@ TCHAR *GetRealAns(CPU_t *cpu) {
 #ifdef WINVER
 	TCHAR *buffer = (TCHAR *) LocalAlloc(LMEM_FIXED, 2048);
 #else
-	char *buffer = malloc(2048);
+	char *buffer = (char *) malloc(2048);
 #endif
 	
 	symbol_to_string(cpu, sym, buffer);

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "core.h"
-#include "gui.h"
 #include "calc.h"
 #include "device.h"
 #include "alu.h"
