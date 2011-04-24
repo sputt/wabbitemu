@@ -1,9 +1,9 @@
 //
 //  WCIconTextFieldCell.m
-//  customcelltest
+//  WabbitStudio
 //
 //  Created by William Towe on 4/22/11.
-//  Copyright 2011 __MyCompanyName__. All rights reserved.
+//  Copyright 2011 Revolution Software. All rights reserved.
 //
 
 #import "WCIconTextFieldCell.h"

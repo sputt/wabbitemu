@@ -13,9 +13,10 @@
 static const CGFloat kBadgeMarginLeft = 2.0;
 static const CGFloat kBadgeMarginRight = 2.0;
 static const CGFloat kBadgeMarginTop = 1.0;
-static const CGFloat kBadgeInsetLeft = 5.0;
-static const CGFloat kBadgeInsetRight = 4.0;
+static const CGFloat kBadgeInsetLeft = 4.0;
+static const CGFloat kBadgeInsetRight = 3.0;
 static const CGFloat kBadgeInsetTop = 1.0;
+static const CGFloat kBadgeMinWidth = (25.0)-(kBadgeMarginLeft+kBadgeMarginRight+kBadgeInsetLeft+kBadgeInsetRight);
 static NSColor *kBadgeTextColor = nil;
 static NSColor *kBadgeSelectedKeyTextColor = nil;
 static NSColor *kBadgeSelectedNonKeyTextColor = nil;
@@ -78,7 +79,8 @@ static NSColor *kBadgeBackgroundColor = nil;
 	NSSize size = [badgeString size];
 	
 	NSRect left, right;
-	NSDivideRect(bounds, &right, &left, size.width+kBadgeMarginLeft+kBadgeMarginRight+kBadgeInsetLeft+kBadgeInsetRight, NSMaxXEdge);
+	CGFloat baseWidth = (size.width < kBadgeMinWidth)?kBadgeMinWidth:size.width;
+	NSDivideRect(bounds, &right, &left, baseWidth+kBadgeMarginLeft+kBadgeMarginRight+kBadgeInsetLeft+kBadgeInsetRight, NSMaxXEdge);
 	
 	if (remainingRect != NULL)
 		*remainingRect = left;

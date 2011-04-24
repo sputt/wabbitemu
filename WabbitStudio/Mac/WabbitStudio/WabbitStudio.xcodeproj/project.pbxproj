@@ -12,7 +12,6 @@
 		0706F50F13391684000C9007 /* NSUserDefaults+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0706F50E13391684000C9007 /* NSUserDefaults+WCExtensions.m */; };
 		0707208C1360A29800E7C7CD /* WCBoolToStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */; };
 		070720981360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */; };
-		0707209A1360C1DC00E7C7CD /* Symbols16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 070720991360C1DC00E7C7CD /* Symbols16x16.png */; };
 		070720AA1360C7AE00E7C7CD /* Search16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 070720A91360C7AE00E7C7CD /* Search16x16.png */; };
 		070720AD1360EA2D00E7C7CD /* EncodingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720AC1360EA2D00E7C7CD /* EncodingManager.m */; };
 		070720B01360EA8E00E7C7CD /* SelectEncodingsPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = 070720AE1360EA8E00E7C7CD /* SelectEncodingsPanel.nib */; };
@@ -64,6 +63,7 @@
 		074D80C313620EA00081571E /* Breakpoints16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 074D80C213620EA00081571E /* Breakpoints16x16.png */; };
 		074D80C7136234170081571E /* Files.png in Resources */ = {isa = PBXBuildFile; fileRef = 074D80C6136234170081571E /* Files.png */; };
 		0756D8D91363DFE200ECDFFD /* WCInfoTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */; };
+		0756D8DD1363E9DD00ECDFFD /* Symbols16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0756D8DC1363E9DD00ECDFFD /* Symbols16x16.png */; };
 		0758E82A134ABC1200280D9D /* NSColor-NTExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */; };
 		0758E82D134AD2F200280D9D /* WCFindInProjectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0758E82C134AD2F200280D9D /* WCFindInProjectViewController.m */; };
 		0758E830134AD50000280D9D /* WCFindInProjectView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0758E82E134AD50000280D9D /* WCFindInProjectView.xib */; };
@@ -218,7 +218,6 @@
 		0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBoolToStringTransformer.m; sourceTree = "<group>"; };
 		070720961360B5AB00E7C7CD /* WCVerticallyCenteredTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCVerticallyCenteredTextFieldCell.h; sourceTree = "<group>"; };
 		070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCVerticallyCenteredTextFieldCell.m; sourceTree = "<group>"; };
-		070720991360C1DC00E7C7CD /* Symbols16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Symbols16x16.png; sourceTree = "<group>"; };
 		070720A91360C7AE00E7C7CD /* Search16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Search16x16.png; sourceTree = "<group>"; };
 		070720AB1360EA2D00E7C7CD /* EncodingManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncodingManager.h; sourceTree = "<group>"; };
 		070720AC1360EA2D00E7C7CD /* EncodingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EncodingManager.m; sourceTree = "<group>"; };
@@ -304,6 +303,7 @@
 		074D80C6136234170081571E /* Files.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Files.png; sourceTree = "<group>"; };
 		0756D8D71363DFE200ECDFFD /* WCInfoTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCInfoTextFieldCell.h; sourceTree = "<group>"; };
 		0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCInfoTextFieldCell.m; sourceTree = "<group>"; };
+		0756D8DC1363E9DD00ECDFFD /* Symbols16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Symbols16x16.png; sourceTree = "<group>"; };
 		0758E828134ABC1200280D9D /* NSColor-NTExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSColor-NTExtensions.h"; sourceTree = "<group>"; };
 		0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSColor-NTExtensions.m"; sourceTree = "<group>"; };
 		0758E82B134AD2F200280D9D /* WCFindInProjectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFindInProjectViewController.h; sourceTree = "<group>"; };
@@ -600,10 +600,10 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				0756D8DC1363E9DD00ECDFFD /* Symbols16x16.png */,
 				074D80C6136234170081571E /* Files.png */,
 				074D80C213620EA00081571E /* Breakpoints16x16.png */,
 				070720A91360C7AE00E7C7CD /* Search16x16.png */,
-				070720991360C1DC00E7C7CD /* Symbols16x16.png */,
 				07B5491F135D6DE500B34C46 /* ErrorsAndWarnings.png */,
 				07CBCF7B135C141600B72B6B /* Advanced.png */,
 				07005B4C135426A30094FAFC /* WarningBadge.png */,
@@ -1028,11 +1028,11 @@
 				07B54928135D755B00B34C46 /* WCBreakpointsView.xib in Resources */,
 				076B6DEF135E644400754CDE /* WCFileWindow.xib in Resources */,
 				07BBD229135F7DE0005C4870 /* WCBreakpointEditView.xib in Resources */,
-				0707209A1360C1DC00E7C7CD /* Symbols16x16.png in Resources */,
 				070720AA1360C7AE00E7C7CD /* Search16x16.png in Resources */,
 				070720B01360EA8E00E7C7CD /* SelectEncodingsPanel.nib in Resources */,
 				074D80C313620EA00081571E /* Breakpoints16x16.png in Resources */,
 				074D80C7136234170081571E /* Files.png in Resources */,
+				0756D8DD1363E9DD00ECDFFD /* Symbols16x16.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -113,7 +113,7 @@
 					<object class="NSTextField" id="504238639">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">268</int>
-						<string key="NSFrame">{{40, 133}, {225, 19}}</string>
+						<string key="NSFrame">{{77, 133}, {188, 19}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="413771547"/>
@@ -199,25 +199,26 @@
 					<object class="NSButton" id="974394825">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">289</int>
-						<string key="NSFrame">{{190, 18}, {75, 19}}</string>
+						<string key="NSFrame">{{195, 13}, {75, 28}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="150619118">
 							<int key="NSCellFlags">-2080244224</int>
-							<int key="NSCellFlags2">134217728</int>
+							<int key="NSCellFlags2">134348800</int>
 							<string key="NSContents">Done</string>
-							<object class="NSFont" key="NSSupport">
+							<reference key="NSSupport" ref="26"/>
+							<reference key="NSControlView" ref="974394825"/>
+							<int key="NSButtonFlags">-2038021889</int>
+							<int key="NSButtonFlags2">129</int>
+							<object class="NSFont" key="NSAlternateImage">
 								<string key="NSName">LucidaGrande</string>
-								<double key="NSSize">12</double>
+								<double key="NSSize">11</double>
 								<int key="NSfFlags">16</int>
 							</object>
-							<reference key="NSControlView" ref="974394825"/>
-							<int key="NSButtonFlags">-2038152961</int>
-							<int key="NSButtonFlags2">164</int>
 							<string key="NSAlternateContents"/>
-							<string type="base64-UTF8" key="NSKeyEquivalent">Gw</string>
+							<string type="base64-UTF8" key="NSKeyEquivalent">DQ</string>
 							<int key="NSPeriodicDelay">400</int>
 							<int key="NSPeriodicInterval">75</int>
 						</object>
@@ -301,7 +302,7 @@
 					<object class="NSButton" id="219659603">
 						<reference key="NSNextResponder" ref="1005"/>
 						<int key="NSvFlags">266</int>
-						<string key="NSFrame">{{17, 133}, {17, 18}}</string>
+						<string key="NSFrame">{{17, 133}, {54, 18}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="504238639"/>
@@ -309,7 +310,7 @@
 						<object class="NSButtonCell" key="NSCell" id="548799751">
 							<int key="NSCellFlags">-2080244224</int>
 							<int key="NSCellFlags2">131072</int>
-							<string key="NSContents"/>
+							<string key="NSContents">Name</string>
 							<reference key="NSSupport" ref="514543879"/>
 							<reference key="NSControlView" ref="219659603"/>
 							<int key="NSButtonFlags">1211912703</int>
@@ -364,22 +365,6 @@
 						</object>
 					</object>
 					<int key="connectionID">21</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">title: breakpoint.name</string>
-						<reference key="source" ref="219659603"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="219659603"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">title: breakpoint.name</string>
-							<string key="NSBinding">title</string>
-							<string key="NSKeyPath">breakpoint.name</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">23</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">

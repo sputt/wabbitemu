@@ -45,6 +45,7 @@
 	
 	for (u_int8_t index = 0; index < [[self images] count]; index++) {
 		NSImage *image = [[self images] objectAtIndex:index];
+		[image setSize:WCSmallSize];
 		NSSize size = [image size];
 		NSRect frame = NSMakeRect(startX + (size.width * 2 * index), bounds.origin.y, size.width * 2, NSHeight(bounds));
 		
@@ -65,6 +66,7 @@
 	
 	for (index = 0; index < [[self images] count]; index++) {
 		NSImage *image = [[self images] objectAtIndex:index];
+		[image setSize:WCSmallSize];
 		NSSize size = [image size];
 		NSRect frame = NSMakeRect(startX + (size.width * 2 * index), bounds.origin.y, size.width * 2, NSHeight(bounds));
 		
@@ -109,11 +111,12 @@
 	NSRect bounds = [self bounds];
 	
 	[[NSGradient unifiedNormalGradient] drawInRect:bounds angle:90.0];
-	CGFloat startX = floor(NSWidth(bounds)/2.0) - floor(([[[self images] lastObject] size].width * 2 * [[self images] count])/2.0);
+	CGFloat startX = floor(NSWidth(bounds)/2.0) - floor(([[[self images] objectAtIndex:0] size].width * 2 * [[self images] count])/2.0);
 	NSUInteger index;
 	
 	for (index = 0; index < [[self images] count]; index++) {
 		NSImage *image = [[self images] objectAtIndex:index];
+		[image setSize:WCSmallSize];
 		NSSize size = [image size];
 		NSRect frame = NSMakeRect(startX + (size.width * 2 * index), bounds.origin.y, size.width * 2, NSHeight(bounds));
 		
@@ -124,8 +127,6 @@
 			NSRectFill(NSMakeRect(frame.origin.x+NSWidth(frame), frame.origin.y, 1.0, NSHeight(frame)));
 		}
 		
-		[image setSize:NSMakeSize(16.0, 16.0)];
-		size = [image size];
 		[image drawInRect:WCCenteredRect(NSMakeRect(0.0, 0.0, size.width, size.height), frame) fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
 	}
 	
