@@ -13,5 +13,5 @@
 @private
     
 }
-
+- (NSRect)centeredTitleRectForBounds:(NSRect)bounds;
 @end

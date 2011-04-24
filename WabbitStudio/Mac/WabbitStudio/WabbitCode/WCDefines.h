@@ -47,7 +47,11 @@ enum {
 };
 typedef NSUInteger WCFindSubScope;
 
+// NSMakeRange(0,0)
 extern const NSRange WCEmptyRange;
+
+// NSMakeSize(16.0,16.0)
+extern const NSSize WCSmallSize;
 
 @interface WCDefines : NSObject {
 @private

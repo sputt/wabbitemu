@@ -9,7 +9,7 @@
 #import "WCProject.h"
 #import "NSArray+WCExtensions.h"
 #import "WCProjectFile.h"
-#import "WCDoEverythingTextFieldCell.h"
+#import "WCBadgedTextFieldCell.h"
 #import "NSFileManager+WCExtensions.h"
 #import "WCGeneralPerformer.h"
 #import "NSOutlineView+WCExtensions.h"

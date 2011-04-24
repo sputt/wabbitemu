@@ -8,7 +8,7 @@
 
 #import "WCProjectFilesOutlineViewController.h"
 #import "WCProject.h"
-#import "WCDoEverythingTextFieldCell.h"
+#import "WCBadgedTextFieldCell.h"
 #import "WCFile.h"
 #import "WCAlias.h"
 #import "NSTreeController+WCExtensions.h"

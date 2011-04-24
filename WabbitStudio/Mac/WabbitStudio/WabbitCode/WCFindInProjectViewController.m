@@ -13,7 +13,7 @@
 #import "WCProject.h"
 #import "WCTextStorage.h"
 #import "NSTreeController+WCExtensions.h"
-#import "WCDoEverythingTextFieldCell.h"
+#import "WCBadgedTextFieldCell.h"
 #import "WCSymbolScanner.h"
 #import "NSAlert-OAExtensions.h"
 #import "NSTextView+WCExtensions.h"

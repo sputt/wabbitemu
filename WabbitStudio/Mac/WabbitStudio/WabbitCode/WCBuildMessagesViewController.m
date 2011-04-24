@@ -12,7 +12,7 @@
 #import "WCBuildMessage.h"
 #import "WCAlias.h"
 #import "NSTreeController+WCExtensions.h"
-#import "WCDoEverythingTextFieldCell.h"
+#import "WCBadgedTextFieldCell.h"
 
 @implementation WCBuildMessagesViewController
 #pragma mark *** Subclass Overrides ***

@@ -257,7 +257,6 @@
 										</object>
 										<reference key="NSMenuFont" ref="479383231"/>
 									</object>
-									<int key="NSSelectedIndex">-1</int>
 									<bool key="NSPullDown">YES</bool>
 									<int key="NSPreferredEdge">1</int>
 									<bool key="NSUsesItemFromMenu">YES</bool>
@@ -394,6 +393,7 @@
 								<string key="NSFrame">{{189, -1}, {15, 24}}</string>
 								<reference key="NSSuperview" ref="183553726"/>
 								<reference key="NSWindow"/>
+								<reference key="NSNextKeyView"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSImageCell" key="NSCell" id="842697701">
 									<int key="NSCellFlags">130560</int>
@@ -432,7 +432,7 @@
 										<string key="NSFrameSize">{204, 249}</string>
 										<reference key="NSSuperview" ref="321582247"/>
 										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView" ref="348251105"/>
+										<reference key="NSNextKeyView" ref="976006754"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="_NSCornerView" key="NSCornerView">
 											<nil key="NSNextResponder"/>
@@ -564,7 +564,7 @@
 						<string key="NSFrame">{{0, 23}, {204, 249}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="321582247"/>
+						<reference key="NSNextKeyView" ref="348251105"/>
 						<int key="NSsFlags">528</int>
 						<reference key="NSVScroller" ref="976006754"/>
 						<reference key="NSHScroller" ref="348251105"/>
@@ -1126,7 +1126,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{357, 416}, {480, 272}}</string>
-					<string>WCDoEverythingTextFieldCell</string>
+					<string>WCIconTextFieldCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>BWAnchoredButton</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1402,14 +1402,6 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">WCDoEverythingTextFieldCell</string>
-					<string key="superclassName">NSTextFieldCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WCDoEverythingTextFieldCell.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
 					<string key="className">WCFilesOutlineView</string>
 					<string key="superclassName">WCContexualMenuOutlineView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -1423,6 +1415,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCFilesTreeController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCIconTextFieldCell</string>
+					<string key="superclassName">WCVerticallyCenteredTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCIconTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1837,6 +1837,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCTextView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCVerticallyCenteredTextFieldCell</string>
+					<string key="superclassName">NSTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCVerticallyCenteredTextFieldCell.h</string>
 					</object>
 				</object>
 			</object>

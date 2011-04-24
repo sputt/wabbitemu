@@ -172,7 +172,6 @@
 										</object>
 										<reference key="NSMenuFont" ref="589790941"/>
 									</object>
-									<int key="NSSelectedIndex">-1</int>
 									<bool key="NSPullDown">YES</bool>
 									<int key="NSPreferredEdge">1</int>
 									<bool key="NSUsesItemFromMenu">YES</bool>
@@ -765,7 +764,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{628, 654}</string>
 					<string>{{357, 416}, {480, 272}}</string>
-					<string>WCDoEverythingTextFieldCell</string>
+					<string>WCBadgedTextFieldCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>BWAnchoredButton</string>
@@ -1011,6 +1010,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">WCBadgedTextFieldCell</string>
+					<string key="superclassName">WCIconTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCBadgedTextFieldCell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">WCBreakpointsOutlineView</string>
 					<string key="superclassName">WCContexualMenuOutlineView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -1046,11 +1053,11 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">WCDoEverythingTextFieldCell</string>
-					<string key="superclassName">NSTextFieldCell</string>
+					<string key="className">WCIconTextFieldCell</string>
+					<string key="superclassName">WCVerticallyCenteredTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WCDoEverythingTextFieldCell.h</string>
+						<string key="minorKey">./Classes/WCIconTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1329,6 +1336,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCProjectNavigationViewController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCVerticallyCenteredTextFieldCell</string>
+					<string key="superclassName">NSTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCVerticallyCenteredTextFieldCell.h</string>
 					</object>
 				</object>
 			</object>

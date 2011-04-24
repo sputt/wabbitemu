@@ -10,6 +10,8 @@
 
 const NSRange WCEmptyRange = (NSRange){0,0};
 
+const NSSize WCSmallSize = (NSSize){16.0,16.0};
+
 @implementation WCDefines
 
 @end

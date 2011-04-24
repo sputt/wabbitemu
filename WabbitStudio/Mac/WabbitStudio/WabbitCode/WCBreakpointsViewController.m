@@ -7,7 +7,7 @@
 //
 
 #import "WCBreakpointsViewController.h"
-#import "WCDoEverythingTextFieldCell.h"
+#import "WCBadgedTextFieldCell.h"
 #import "WCBreakpoint.h"
 #import "WCProject.h"
 #import "WCProjectFile.h"
@@ -52,7 +52,7 @@
 }
 #pragma mark *** Protocol Overrides ***
 #pragma mark NSOutlineViewDelegate
-- (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(WCDoEverythingTextFieldCell *)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item {
+- (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item {
 	
 	[cell setIcon:[[item representedObject] icon]];
 	if ([[item representedObject] breakpointType] == WCBreakpointTypeLine)

@@ -67,7 +67,7 @@
 										<string key="NSFrameSize">{197, 283}</string>
 										<reference key="NSSuperview" ref="586034627"/>
 										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView" ref="101580028"/>
+										<reference key="NSNextKeyView" ref="235161306"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="_NSCornerView" key="NSCornerView">
 											<nil key="NSNextResponder"/>
@@ -199,7 +199,7 @@
 						<string key="NSFrame">{{0, 23}, {197, 283}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="586034627"/>
+						<reference key="NSNextKeyView" ref="101580028"/>
 						<int key="NSsFlags">528</int>
 						<reference key="NSVScroller" ref="235161306"/>
 						<reference key="NSHScroller" ref="101580028"/>
@@ -301,6 +301,7 @@
 								<string key="NSFrame">{{182, -1}, {15, 24}}</string>
 								<reference key="NSSuperview" ref="652252257"/>
 								<reference key="NSWindow"/>
+								<reference key="NSNextKeyView"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSImageCell" key="NSCell" id="66911004">
 									<int key="NSCellFlags">130560</int>
@@ -584,7 +585,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>WCSymbolsOutlineView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>WCDoEverythingTextFieldCell</string>
+					<string>WCBadgedTextFieldCell</string>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
@@ -666,11 +667,19 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">WCDoEverythingTextFieldCell</string>
-					<string key="superclassName">NSTextFieldCell</string>
+					<string key="className">WCBadgedTextFieldCell</string>
+					<string key="superclassName">WCIconTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WCDoEverythingTextFieldCell.h</string>
+						<string key="minorKey">./Classes/WCBadgedTextFieldCell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCIconTextFieldCell</string>
+					<string key="superclassName">WCVerticallyCenteredTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCIconTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -756,6 +765,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCSymbolsViewController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCVerticallyCenteredTextFieldCell</string>
+					<string key="superclassName">NSTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCVerticallyCenteredTextFieldCell.h</string>
 					</object>
 				</object>
 			</object>

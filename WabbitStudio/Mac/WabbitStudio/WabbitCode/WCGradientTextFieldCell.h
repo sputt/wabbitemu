@@ -6,12 +6,12 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCDoEverythingTextFieldCell.h"
+#import "WCIconTextFieldCell.h"
 
 
-@interface WCGradientTextFieldCell : WCDoEverythingTextFieldCell {
+@interface WCGradientTextFieldCell : WCIconTextFieldCell {
 @private
-	BOOL _drawGradient; // our corresponding NSTableView class actually draws the gradient, this just tells it whether to draw
+	BOOL _drawGradient; // our corresponding NSTableView class actually draws the gradient
 }
 @property (assign,nonatomic) BOOL drawGradient;
 @property (readonly,nonatomic) NSGradient *gradient;

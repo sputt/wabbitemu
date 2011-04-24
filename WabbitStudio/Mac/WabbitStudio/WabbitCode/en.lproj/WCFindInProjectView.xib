@@ -1426,7 +1426,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>WCFindInProjectOutlineView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>WCDoEverythingTextFieldCell</string>
+					<string>WCBadgedTextFieldCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -1535,11 +1535,11 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">WCDoEverythingTextFieldCell</string>
-					<string key="superclassName">NSTextFieldCell</string>
+					<string key="className">WCBadgedTextFieldCell</string>
+					<string key="superclassName">WCIconTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WCDoEverythingTextFieldCell.h</string>
+						<string key="minorKey">./Classes/WCBadgedTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
@@ -1667,6 +1667,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">WCIconTextFieldCell</string>
+					<string key="superclassName">WCVerticallyCenteredTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCIconTextFieldCell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">WCProjectNavigationViewController</string>
 					<string key="superclassName">NSViewController</string>
 					<object class="NSMutableDictionary" key="outlets">
@@ -1711,6 +1719,14 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCProjectNavigationViewController.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCVerticallyCenteredTextFieldCell</string>
+					<string key="superclassName">NSTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCVerticallyCenteredTextFieldCell.h</string>
 					</object>
 				</object>
 			</object>
