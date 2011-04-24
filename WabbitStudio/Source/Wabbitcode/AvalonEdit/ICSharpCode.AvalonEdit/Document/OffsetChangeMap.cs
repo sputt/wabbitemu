@@ -56,7 +56,12 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// causes anchors to always survive irrespective of their <see cref="TextAnchor.SurviveDeletion"/> setting.
 		/// If the text keeps its old size, this is implemented as OffsetChangeMap.Empty.
 		/// </remarks>
-		CharacterReplace
+		CharacterReplace,
+        /// <summary>
+		/// Like 'Normal', but anchors with <see cref="TextAnchor.MovementType"/> = Default will stay in front of the
+		/// insertion instead of being moved behind it.
+		/// </summary>
+		KeepAnchorBeforeInsertion
 	}
 	
 	/// <summary>

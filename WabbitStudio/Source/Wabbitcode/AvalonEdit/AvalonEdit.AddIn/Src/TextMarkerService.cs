@@ -10,6 +10,7 @@ using System.Windows.Threading;
 
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
+using ICSharpCode.AvalonEditAddin.Interface;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {

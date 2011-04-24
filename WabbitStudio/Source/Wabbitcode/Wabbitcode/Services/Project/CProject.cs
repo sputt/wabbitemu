@@ -110,20 +110,23 @@ namespace Revsoft.Wabbitcode.Services.Project
                     Settings.Default.StartupProject = projectFile;
         }
 
-		internal void CreateNewProject(string projectFile, string projectName)
+		internal static ProjectClass CreateNewProject(string projectFile, string projectName)
 		{
-			ProjectFolder folder = new ProjectFolder(this, projectName);
-			this.mainFolder = folder;
-			this.ProjectName = projectName;
-			this.ProjectFile = projectFile;
-			this.ProjectDirectory = Path.GetDirectoryName(projectFile);
-			this.BuildSystem = new BuildSystem(this, true);
+            var newProj = new ProjectClass();
+            ProjectFolder folder = new ProjectFolder(newProj, projectName);
+			newProj.mainFolder = folder;
+            newProj.ProjectName = projectName;
+            newProj.ProjectFile = projectFile;
+            newProj.ProjectDirectory = Path.GetDirectoryName(projectFile);
+            newProj.BuildSystem = new BuildSystem(newProj, true);
+            return newProj;
 		}
 
-		internal void OpenProject(string projectFile)
+		internal static ProjectClass OpenProject(string projectFile)
 		{
-			FileStream stream = new FileStream(projectFile, FileMode.Open);
-			XmlTextReader reader = new XmlTextReader(stream);
+            var newProj = new ProjectClass();
+			var stream = new FileStream(projectFile, FileMode.Open);
+			var reader = new XmlTextReader(stream);
 			reader.WhitespaceHandling = WhitespaceHandling.None;
 			reader.MoveToContent();
 			while (!reader.Name.Equals("WabbitcodeProject"))
@@ -133,22 +136,27 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 
 			string formatVersion = reader.GetAttribute("Version");
-			if (formatVersion != ProjectFileVersion && 
-                MessageBox.Show("Project Version is not up to date.\nTry to load anyway?", "Invalid Version", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
-				return;
-			ProjectName = reader.GetAttribute("Name");
+			if (formatVersion != ProjectFileVersion && MessageBox.Show("Project Version is not up to date.\nTry to load anyway?", 
+                                                        "Invalid Version", MessageBoxButton.YesNo) != MessageBoxResult.Yes)
+				return null;
+            newProj.ProjectDirectory = reader.GetAttribute("Directory");
+            if (newProj.ProjectDirectory == null)
+                newProj.ProjectDirectory = Path.GetPathRoot(projectFile);
+            newProj.ProjectName = reader.GetAttribute("Name");
 			reader.MoveToNextElement();
 			if (reader.Name != "Folder")
 				throw new ArgumentException("Invalid XML Format");
-			mainFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
-			RecurseReadFolders(reader, ref mainFolder);
-			BuildSystem.ReadXML(reader);
+            var mainFolder = new ProjectFolder(newProj, reader.GetAttribute("Name"));
+            RecurseReadFolders(newProj, reader, ref mainFolder);
+            newProj.mainFolder = mainFolder;
+            newProj.BuildSystem.ReadXML(reader);
 			reader.Close();
 			stream.Close();
+            return newProj;
 		}
 
         #region XML
-        private void RecurseReadFolders(XmlTextReader reader, ref ProjectFolder folder)
+        private static void RecurseReadFolders(ProjectClass project, XmlTextReader reader, ref ProjectFolder folder)
 		{
 			if (reader.IsEmptyElement)
 				return;
@@ -158,13 +166,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 					return;
 				if (reader.Name == "Folder")
 				{
-					ProjectFolder subFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
+					ProjectFolder subFolder = new ProjectFolder(project, reader.GetAttribute("Name"));
 					folder.AddFolder(subFolder);
-					RecurseReadFolders(reader, ref subFolder);
+					RecurseReadFolders(project, reader, ref subFolder);
 				}
 				else if (reader.Name == "File")
 				{
-					ProjectFile file = new ProjectFile(this, reader.GetAttribute("Path"));
+					ProjectFile file = new ProjectFile(project, reader.GetAttribute("Path"));
 					folder.AddFile(file);
 				} 
 				else
@@ -182,6 +190,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			writer.WriteComment("Wabbitcode Config File");
 			writer.WriteStartElement("WabbitcodeProject");
 			writer.WriteAttributeString("Version", ProjectFileVersion);
+            writer.WriteAttributeString("Directory", ProjectDirectory);
 			writer.WriteAttributeString("Name", ProjectName);
 			RecurseWriteFolders(writer, mainFolder);
 			BuildSystem.CreateXML(writer);
@@ -287,18 +296,18 @@ namespace Revsoft.Wabbitcode.Services.Project
             return null;
         }
 
-        public enum AssemblerOutputType
+        public class AssemblerOutputType
         {
-            Bin,
-            Program73,
-            Program82,
-            Program83,
-            Program83p,
-            App83p,
-            Program85,
-            String85,
-            Program86,
-            String86,
+            readonly string extension;
+            public AssemblerOutputType(string ext)
+            {
+                extension = ext;
+            }
+
+            public override string ToString()
+            {
+                return extension;
+            }
         }
 
         internal AssemblerOutputType GetOutputType()
@@ -310,14 +319,11 @@ namespace Revsoft.Wabbitcode.Services.Project
                     InternalBuildStep iStep = (InternalBuildStep)step;
                     string outputFile = iStep.OutputFile;
                     string ext = Path.GetExtension(outputFile);
-                    if (ext == ".8xk")
-                        return AssemblerOutputType.App83p;
-                    if (ext == ".8xp")
-                        return AssemblerOutputType.Program83p;
+                    return new AssemblerOutputType(ext);
                 }
             }
             //otherwise we assume its a bin
-            return AssemblerOutputType.Bin;
+            return new AssemblerOutputType(".bin");
         }
 
         internal ParserInformation GetParseInfo(string fullPath)

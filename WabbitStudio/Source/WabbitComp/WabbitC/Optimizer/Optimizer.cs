@@ -23,6 +23,8 @@ namespace WabbitC.Optimizer
             Block mainModule = (Block) module;
 			if (ConstantTracking)
 				ConstantsOptimizer.Optimize(ref mainModule);
+			if (ConstantTracking)
+				ConstantsOptimizer.Optimize(ref mainModule);
 			if (RemoveCrapMath)
 				RemoveUselessMath.Optimize(module);
 			if (VariableReduction)

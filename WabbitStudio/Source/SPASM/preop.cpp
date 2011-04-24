@@ -1192,7 +1192,6 @@ char *skip_until (char *ptr, int argc, ...)
 							ptr += sizeof(TCHAR) * 5;
 							ptr = skip_whitespace(ptr);
 							return handle_preop_elif(ptr);
-							
 						}
 						return next_expr(line, "\\\r\n");
 					}

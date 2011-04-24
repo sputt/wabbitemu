@@ -17,6 +17,7 @@ using Revsoft.Wabbitcode.AvalonEditExtension.Snippets;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Rendering;
+using ICSharpCode.SharpDevelop.Editor;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {
@@ -74,8 +75,8 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 			base.OnOptionChanged(e);
 			if (e.PropertyName == "HighlightBrackets")
 				HighlightBrackets(null, e);
-			else if (e.PropertyName == "EnableFolding")
-				UpdateParseInformationForFolding();
+			/*else if (e.PropertyName == "EnableFolding")
+				UpdateParseInformationForFolding();*/
 			else if (e.PropertyName == "HighlightSymbol") {
 				if (this.caretReferencesRenderer != null)
 					this.caretReferencesRenderer.ClearHighlight();
@@ -95,12 +96,10 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 				 * ITextEditor.Language gets set in CodeEditorAdapter.FileNameChanged, which is called after
 				 * loading of the document has finished.
 				 * */
-				if (this.Adapter.Language != null) {
-					var bracketSearchResult = this.Adapter.Language.BracketSearcher.SearchBracket(this.Adapter.Document, this.TextArea.Caret.Offset);
-					this.bracketRenderer.SetHighlight(bracketSearchResult);
-				}
+				var bracketSearchResult = bracketSearcher.SearchBracket(this.Adapter.Document, this.TextArea.Caret.Offset);
+				this.bracketRenderer.SetHighlight(bracketSearchResult);
 			} else {
-				this.bracketRenderer.SetHighlight(null);
+				this.bracketRenderer.SetHighlight(null, null);
 			}
 		}
 		#endregion
@@ -440,7 +439,7 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 		}
 		
 		#region UpdateParseInformation - Folding
-		void UpdateParseInformationForFolding()
+		/*void UpdateParseInformationForFolding()
 		{
 			UpdateParseInformationForFolding(ParserService.GetExistingParseInformation(this.Adapter.FileName));
 		}
@@ -477,7 +476,7 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 				}
 				folding.UpdateFoldings(parseInfo);
 			}
-		}
+		}*/
 		#endregion
 		
 		protected override IVisualLineTransformer CreateColorizer(IHighlightingDefinition highlightingDefinition)

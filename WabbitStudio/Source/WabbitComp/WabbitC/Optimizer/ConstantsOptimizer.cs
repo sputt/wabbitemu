@@ -18,7 +18,16 @@ namespace WabbitC.Optimizer
             {
                 Declaration decl = module.Declarations[i];
 				if (decl.Code != null)
-					OptimizeBlock(ref decl.Code);
+				{
+					var basicBlocks = decl.Code.GetBasicBlocks();
+					decl.Code.Statements.Clear();
+					for (int j = 0; j < basicBlocks.Count; j++)
+					{
+						Block basicBlock = basicBlocks[j];
+						OptimizeBlock(ref basicBlock);
+						decl.Code.Statements.AddRange(basicBlock);
+					}
+				}
             }
         }
 
@@ -57,7 +66,7 @@ namespace WabbitC.Optimizer
 					var cond = statement as ConditionStatement;
 					if (cond.CondDecl.ConstValue != null)
 					{
-						var immediate = new Immediate(cond.LValue.ConstValue.Value);
+						//var immediate = new Immediate(cond.LValue.ConstValue.Value);
 						
 					}
 					else
@@ -94,20 +103,6 @@ namespace WabbitC.Optimizer
 						}
 					}
 				}
-				/*else if (type == typeof(Return))
-				{
-					var returnType = statement as Return;
-					var symbol = FindSymbol((Declaration)returnType.ReturnReg);
-					if (symbol != null && symbol.IsConstant)
-					{
-						//returnType = new Return(symbol.Value);
-						//block.Statements[i] = returnType;
-					}
-					else
-					{
-
-					}
-				}*/
 				else if (type == typeof(Goto))
 				{
 					var gotoType = statement as Goto;
@@ -125,6 +120,10 @@ namespace WabbitC.Optimizer
 						i = j;
 				}
             }
+			for (int i = 0; i < block.Declarations.Count; i++)
+			{
+				block.Declarations[i].ConstValue = null;
+			}
         }
     }
 }

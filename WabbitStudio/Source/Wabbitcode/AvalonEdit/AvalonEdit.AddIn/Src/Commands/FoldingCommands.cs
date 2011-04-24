@@ -4,12 +4,13 @@
 using System;
 using System.Linq;
 using ICSharpCode.AvalonEdit.Folding;
+using Revsoft.Wabbitcode.AvalonEditExtension.Interface;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension.Commands
 {
-	public class ToggleFolding : AbstractMenuCommand
+	/*public static class FoldingCommands
 	{
-		public override void Run()
+		public static void ToggleFolding()
 		{
 			ITextEditorProvider provider = WorkbenchSingleton.Workbench.ActiveViewContent as ITextEditorProvider;
 			ITextEditor editor = provider.TextEditor;
@@ -27,11 +28,8 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension.Commands
 				}
 			}
 		}
-	}
-	
-	public class ToggleAllFoldings : AbstractMenuCommand
-	{
-		public override void Run()
+
+		public override void ToggleAllFoldings()
 		{
 			ITextEditorProvider provider = WorkbenchSingleton.Workbench.ActiveViewContent as ITextEditorProvider;
 			ITextEditor editor = provider.TextEditor;
@@ -50,11 +48,8 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension.Commands
 				}
 			}
 		}
-	}
 	
-	public class ShowDefinitionsOnly : AbstractMenuCommand
-	{
-		public override void Run()
+		public override void ShowDefinitionsOnly()
 		{
 			ITextEditorProvider provider = WorkbenchSingleton.Workbench.ActiveViewContent as ITextEditorProvider;
 			ITextEditor editor = provider.TextEditor;
@@ -66,5 +61,5 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension.Commands
 				}
 			}
 		}
-	}
+	}*/
 }

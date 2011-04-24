@@ -68,6 +68,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>true</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
+  <PropertyGroup />
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
@@ -87,10 +88,10 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AboutBox.cs">
+    <Compile Include="Dialogs\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="AboutBox.Designer.cs">
+    <Compile Include="Dialogs\AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
     <Compile Include="AppBase.cs">
@@ -98,6 +99,9 @@
     </Compile>
     <Compile Include="AsmFoldingStrategy.cs" />
     <Compile Include="Commands.cs" />
+    <Compile Include="Dialogs\NewProjectDialog.xaml.cs">
+      <DependentUpon>NewProjectDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ExtensionMethods.cs" />
     <Compile Include="FileOperations.cs">
       <SubType>Code</SubType>
@@ -210,6 +214,7 @@
     <Compile Include="Services\RecentFileService.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Services\ResourceService.cs" />
     <Compile Include="Services\StatusBarService.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -219,6 +224,10 @@
     <Compile Include="WabbitcodePaths.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Dialogs\NewProjectDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -245,7 +254,7 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AboutBox.resx">
+    <EmbeddedResource Include="Dialogs\AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -255,7 +264,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Resources\Z80Asm.xshd" />
     <None Include="app.config" />
-    <None Include="Properties\app.manifest" />
     <None Include="Properties\Editor.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Editor.Designer.cs</LastGenOutput>
@@ -320,6 +328,33 @@
     <Resource Include="Resources\Toolbar Images\Main\SaveAllHS.png" />
     <Resource Include="Resources\Toolbar Images\Main\saveHS.png" />
     <Resource Include="Resources\Toolbar Images\Main\UndoHS.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources\Templates.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Resources\Templates\Includes\app.inc" />
+    <Content Include="Resources\Templates\Includes\dcs.inc" />
+    <Content Include="Resources\Templates\Includes\ion.inc" />
+    <Content Include="Resources\Templates\Includes\keys82.inc" />
+    <Content Include="Resources\Templates\Includes\mirage.inc" />
+    <Content Include="Resources\Templates\Includes\relocate.inc" />
+    <Content Include="Resources\Templates\Includes\ti73.inc" />
+    <Content Include="Resources\Templates\Includes\ti82.h" />
+    <Content Include="Resources\Templates\Includes\ti83plus.inc" />
+    <Content Include="Resources\Templates\Includes\var.inc" />
+    <Content Include="Resources\Templates\Includes\z80ext.inc" />
+    <Content Include="Resources\Templates\Source\app.asm" />
+    <Content Include="Resources\Templates\Source\ashell.asm" />
+    <Content Include="Resources\Templates\Source\crash.asm" />
+    <Content Include="Resources\Templates\Source\dcs.asm" />
+    <Content Include="Resources\Templates\Source\ion83.asm" />
+    <Content Include="Resources\Templates\Source\ion83p.asm" />
+    <Content Include="Resources\Templates\Source\mirage.asm" />
+    <Content Include="Resources\Templates\Source\nostub83.asm" />
+    <Content Include="Resources\Templates\Source\nostub83p.asm" />
+    <Content Include="Resources\Templates\Source\nostub86.asm" />
+    <Content Include="Resources\Templates\Source\venus.asm" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

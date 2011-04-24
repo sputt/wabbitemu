@@ -1,8 +1,8 @@
-﻿<cc:CompletionWindow x:Class="ICSharpCode.AvalonEdit.AddIn.WabbitcodeCompletionWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+﻿<cc:CompletionWindow x:Class="Revsoft.Wabbitcode.AvalonEditExtension.WabbitcodeCompletionWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
 	xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
 	xmlns:core="http://icsharpcode.net/sharpdevelop/core"
 	xmlns:cc="clr-namespace:ICSharpCode.AvalonEdit.CodeCompletion;assembly=ICSharpCode.AvalonEdit"
-	xmlns:local="clr-namespace:ICSharpCode.AvalonEdit.AddIn"
+	xmlns:local="clr-namespace:Revsoft.Wabbitcode.AvalonEditExtension"
 	Style="{x:Static core:GlobalStyles.WindowStyle}"
 >
 	<Window.Resources>

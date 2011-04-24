@@ -25,19 +25,44 @@ namespace WabbitC.Optimizer.Loop
 			var statements = from Statement st in block where st.GetType() == typeof(While) select st;
 			foreach (While statement in statements)
 			{
-				OptimizeLoopBlock(ref statement.Block);
+				OptimizeLoopBlock(ref statement.Body);
 			}
 		}
 
-		public static bool OptimizeLoopBlock(ref Block block)
+		public static void OptimizeLoopBlock(ref Block block)
 		{
-			List<bool> variantDecls = new List<bool>();
-			var statements = from Statement st in block select st;
-			foreach (var statement in statements)
+			ConstantsOptimizer.OptimizeBlock(ref block);
+			Dictionary<Declaration, bool> variantDecls = new Dictionary<Declaration, bool>();
+			foreach (var decl in block.Declarations)
 			{
-
-
+				variantDecls.Add(decl, false);
 			}
+			var statements = from Statement st in block select st;
+			bool hasChanged = false;
+			do
+			{
+				foreach (var statement in statements)
+				{
+					foreach (var modified in statement.GetModifiedDeclarations())
+					{
+						var refed = statement.GetReferencedDeclarations();
+						bool variant = false;
+						foreach (var refedvar in refed)
+						{
+							if (variantDecls.ContainsKey(refedvar))
+								variant |= variantDecls[refedvar];
+							else
+								variantDecls.Add(refedvar, false);
+						}
+						if (variant)
+						{
+							variantDecls[modified] = true;
+							hasChanged = true;
+						}
+					}
+				}
+			} while (hasChanged);
+			
 		}
 	}
 }

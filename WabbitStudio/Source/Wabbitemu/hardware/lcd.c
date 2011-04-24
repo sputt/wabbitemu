@@ -69,7 +69,7 @@ static void LCD_enqueue(LCD_t *);
 static void LCD_free(LCD_t *);
 u_char *LCD_update_image(LCD_t *lcd);
 
-
+#define MICROSECONDS(xx) (GetCPUSpeed(cpu) + 1) * xx
 //static FILE *log;
 
 /* 
@@ -129,6 +129,8 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 #endif
 	if (lcd->shades > LCD_MAX_SHADES)
 		lcd->shades = LCD_MAX_SHADES;
+
+	lcd->lcd_delay = 60;
 	
 	lcd->time = tc_elapsed(cpu->timer_c);
 	lcd->ufps_last = tc_elapsed(cpu->timer_c);
@@ -159,6 +161,9 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
 	if (cpu->pio.model > TI_83P)
 		Add_SE_Delay(cpu);
+	if (MICROSECONDS(lcd->lcd_delay) > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
+		cpu->output = FALSE;
+	}
 	
 	if (cpu->output) {
 		// Test the bus to determine which command to run
@@ -222,10 +227,16 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 		// Run some sanity checks on the write vars
 		if (lcd->write_last > tc_elapsed(cpu->timer_c))
 			lcd->write_last = tc_elapsed(cpu->timer_c);
-		
+
+		if (MICROSECONDS(lcd->lcd_delay) > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
+			cpu->output = FALSE;
+			return;
+		}
+
 		double write_delay = tc_elapsed(cpu->timer_c) - lcd->write_last;
 		if (lcd->write_avg == 0.0) lcd->write_avg = write_delay;
 		lcd->write_last = tc_elapsed(cpu->timer_c);
+		lcd->last_tstate = tc_tstates(cpu->timer_c);
 	
 		// If there is a delay that is significantly longer than the
 		// average write delay, we can assume a frame has just terminated

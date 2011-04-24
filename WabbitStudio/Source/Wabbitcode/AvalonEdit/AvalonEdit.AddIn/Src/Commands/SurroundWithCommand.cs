@@ -7,15 +7,16 @@ using System.Linq;
 
 using Revsoft.Wabbitcode.AvalonEditExtension.Snippets;
 using ICSharpCode.AvalonEdit.Editing;
+using Revsoft.Wabbitcode.AvalonEditExtension.CodeCompletion;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension.Commands
 {
-	public class SurroundWithCommand : AbstractMenuCommand
+	public class SurroundWithCommand
 	{
 		/// <summary>
 		/// Starts the command
 		/// </summary>
-		public override void Run()
+		public void SurroundWithCommand()
 		{
 			ICodeEditorProvider provider = WorkbenchSingleton.Workbench.ActiveViewContent as ICodeEditorProvider;
 			

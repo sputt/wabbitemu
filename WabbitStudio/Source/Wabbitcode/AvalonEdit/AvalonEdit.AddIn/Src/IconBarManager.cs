@@ -1,12 +1,10 @@
 ﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
-using Revsoft.SharpDevelop.Dom;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using Revsoft.SharpDevelop.Bookmarks;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {
@@ -40,7 +38,7 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 		
 		public event EventHandler RedrawRequested;
 		
-		internal void UpdateClassMemberBookmarks(ParseInformation parseInfo)
+		/*internal void UpdateClassMemberBookmarks(ParseInformation parseInfo)
 		{
 			for (int i = bookmarks.Count - 1; i >= 0; i--) {
 				if (IsClassMemberBookmark(bookmarks[i]))
@@ -83,6 +81,6 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 		static bool IsClassMemberBookmark(IBookmark b)
 		{
 			return b is ClassMemberBookmark || b is ClassBookmark;
-		}
+		}*/
 	}
 }

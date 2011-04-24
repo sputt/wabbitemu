@@ -30,6 +30,8 @@
     <Window.InputBindings>
         <KeyBinding Command="New" Key="N" Modifiers="Ctrl" />
         <KeyBinding Command="Open" Key="O" Modifiers="Ctrl" />
+        <KeyBinding Command="wc:WabbitcodeCommands.NewProject" Key="N" Modifiers="Ctrl+Shift" />
+        <KeyBinding Command="wc:WabbitcodeCommands.OpenProject" Key="O" Modifiers="Ctrl+Shift" />
         <KeyBinding Command="Save" Key="S" Modifiers="Ctrl" />
         <KeyBinding Command="Cut" Key="X" Modifiers="Ctrl" />
         <KeyBinding Command="Copy" Key="C" Modifiers="Ctrl" />
@@ -172,7 +174,8 @@
                 <MenuItem Header="Delete All Breakpoints"/>
                 <MenuItem Header="Disable All Breakpoints"/>
             </MenuItem>
-            <MenuItem Header="Window" ItemsSource="{Binding {StaticResource Docking}, Path=OpenDocuments}"/>
+            <!--ItemsSource="{Binding {StaticResource Docking}, Path=OpenDocuments}"-->
+            <MenuItem Header="Window" />
             <MenuItem Header="Help">
                 <MenuItem Header="Help"/>
                 <MenuItem Header="Check For Updates"/>
