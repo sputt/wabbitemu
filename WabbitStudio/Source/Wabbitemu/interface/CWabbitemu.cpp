@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "gui.h"
-#include "SendFiles.h"
+#include "SendFileswindows.h"
 #include "CWabbitemu.h"
 #include "CPage.h"
 

@@ -4,7 +4,7 @@
 #include "guifilepreview.h"
 #include "calc.h"
 #include "resource.h"
-#include "sendfiles.h"
+#include "sendfileswindows.h"
 
 #define OFN_PREVIEW_WIDTH ((96*2) + (96/6))
 
