@@ -657,9 +657,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 					//printf("gifbasedelay: %d\n",gif_base_delay_start);
 
 					gif_autosave = Button_GetState(chkAutosave) & 0x0003 ? TRUE : FALSE;
-
 					gif_use_increasing = Button_GetState(chkUseIncreasing) & 0x0003 ? TRUE : FALSE;
-
 					gif_bw = Button_GetCheck(rbnGray);
 
 					SetWindowLongPtr(hwndDlg, DWLP_MSGRESULT, PSNRET_NOERROR);
@@ -717,7 +715,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 
 INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND edtRom_path, edtRom_version, edtRom_model, edtRom_size, stcRom_image, saveState_check,
-			ramPages_check;
+			ramPages_check, edtLCD_delay;
 	static HBITMAP hbmTI83P = NULL;
 	switch (Message) {
 		case WM_INITDIALOG: {
@@ -728,6 +726,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			stcRom_image = GetDlgItem(hwnd, IDC_STCROMIMAGE);
 			saveState_check = GetDlgItem(hwnd, IDC_CHKSAVE);
 			ramPages_check = GetDlgItem(hwnd, IDC_CHK_RAMPAGES);
+			edtLCD_delay = GetDlgItem(hwnd, IDC_EDT_LCDDELAY);
 
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
@@ -756,6 +755,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 							}
 							break;
 						}
+						case IDC_EDT_LCDDELAY:
 						case IDC_CHK_RAMPAGES:
 						case IDC_CHKSAVE:
 							PropSheet_Changed(GetParent(hwnd), hwnd);
@@ -767,8 +767,14 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		case WM_NOTIFY:
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
+					TCHAR buf[64];
+					u_int delay;
 					exit_save_state = Button_GetCheck(saveState_check);
 					lpCalc->mem_c.ram_version = Button_GetCheck(ramPages_check) ? 2 : 0;
+					Edit_GetText(edtLCD_delay,buf, ARRAYSIZE(buf));
+					delay = atoi(buf);
+					if (delay != 0)
+						lpCalc->cpu.pio.lcd->lcd_delay = delay;
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -779,9 +785,12 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			break;
 
 		// Update all of the ROM attributes
-		case WM_USER:
+		case WM_USER: {
+			TCHAR buf[64];
+			StringCbPrintf(buf, sizeof(buf), "%i", lpCalc->cpu.pio.lcd->lcd_delay);
 			Button_SetCheck(saveState_check, exit_save_state);
 			Edit_SetText(edtRom_path, lpCalc->rom_path);
+			Edit_SetText(edtLCD_delay, buf);
 #ifdef _UNICODE
 			TCHAR szRomVersion[256];
 			MultiByteToWideChar(CP_ACP, 0, lpCalc->rom_version, -1, szRomVersion, ARRAYSIZE(szRomVersion));
@@ -806,6 +815,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			}
 			SendMessage(stcRom_image, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) hbmTI83P);
 			return TRUE;
+		}
 	}
 	return FALSE;
 }
