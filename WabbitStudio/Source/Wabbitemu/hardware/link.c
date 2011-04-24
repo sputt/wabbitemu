@@ -353,6 +353,7 @@ static void link_RTS(CPU_t *cpu, TIVAR_t *var, int dest) {
 		link_send_pkt(cpu, CID_RTS, &var_hdr);
 }
 
+#ifdef _WINDOWS
 LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 	if (link_init(cpu))
 		return LERR_NOTINIT;
@@ -462,6 +463,7 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 	}
 	return LERR_SUCCESS;
 }
+#endif
 
 // Order that VTI uses:
 // Packet 1

@@ -9,6 +9,9 @@ typedef WORD uint16_t;
 typedef DWORD uint32_t;
 #else
 #include <sys/types.h>
+typedef uint8_t BYTE, *LPBYTE;
+typedef uint16_t WORD, *LPWORD;
+typedef uint32_t DWORD, *LPDWORD;
 #endif
 
 

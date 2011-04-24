@@ -1,3 +1,7 @@
+#ifndef _STDAFX_H
+#define _STDAFX_H
+
+#if defined(_WINDOWS)
 #pragma once
 
 #define _WIN32_LEAN_AND_MEAN
@@ -53,4 +57,36 @@ typedef std::wstring tstring;
 typedef std::string tstring;
 #endif
 }
+#endif
+
+#elif defined(_LINUX)
+#include <assert.h>
+#include <setjmp.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <sys/types.h>
+#include <stddef.h>
+#include <time.h>
+#include <ctype.h>
+
+typedef char TCHAR;
+typedef void *LPVOID;
+typedef const char *LPCTSTR;
+#define MAX_PATH 256
+#define _T(z) z
+#define _tprintf_s printf
+#define ARRAYSIZE(z) (sizeof(z)/sizeof((z)[0]))
+#define _strnicmp strncasecmp
+#define _tcsicmp strcasecmp
+#define _putts puts
+#define _tcsrchr strrchr
+#define _tcscpy_s strcpy
+#define _tcslen strlen
+
+#elif defined(_MACVER)
+
+
+#endif
+
 #endif

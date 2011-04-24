@@ -36,7 +36,11 @@ static TCHAR gif_fn_backup[MAX_PATH];
  */
 BOOL get_gif_filename() {
 	int i;
+#ifdef _WINDOWS
 	StringCbCopy(gif_fn_backup, sizeof(gif_fn_backup), gif_file_name);
+#else
+	strcpy(gif_fn_backup, gif_file_name);
+#endif
 	if (gif_autosave) {
 		/* do file save */
 		if (gif_use_increasing) {
@@ -44,16 +48,22 @@ BOOL get_gif_filename() {
 					
 			for (i = 0; test; i++) {
 				generate_gif_name(gif_fn_backup, i, gif_file_name);
+#ifdef _WINDOWS
 				_tfopen_s(&test, gif_file_name, _T("r"));
+#else
+				test = fopen(gif_file_name, "r");
+#endif
 				if (test) fclose(test);
 			}
 		}
 	} else {
+#ifdef _WINDOWS
 #ifndef _WINDLL
 		if (SaveFile(gif_file_name, _T("Graphics Interchange Format  (*.gif)\0*.gif\0All Files (*.*)\0*.*\0\0"),
 						_T("Wabbitemu GIF File Target"), _T("gif")))
 			//if we cancel, mark the menu and set to idle
 			return FALSE;
+#endif
 #endif
 	}
 	return TRUE;
@@ -150,7 +160,7 @@ void handle_screenshot() {
 		gif_write_state = GIF_END;*/
 	int calc_pos = 0;
 	int num_calcs = calc_count();
-#ifdef WINVER
+
 	switch (gif_write_state) {
 		case GIF_IDLE: {
 			gif_newframe = 0;
@@ -234,7 +244,11 @@ void handle_screenshot() {
 			//WriteRIFFIndex();
 			gif_newframe = 1;
 			gif_file_num++;
+#ifdef _WINDOWS
 			StringCbCopy(gif_file_name, sizeof(gif_file_name), gif_fn_backup);
+#else
+			strcpy(gif_file_name, gif_fn_backup);
+#endif
 			break;
 		}
 	}
@@ -246,5 +260,4 @@ void handle_screenshot() {
 		gif_writer(shades);
 		//WriteAVIFrame();
 	}
-#endif
 }
