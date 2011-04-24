@@ -25,4 +25,8 @@
 	
 	[self drawBackgroundString];
 }
+
+- (BOOL)drawsGroupBackgroundForRootItems {
+	return NO;
+}
 @end

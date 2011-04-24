@@ -393,7 +393,6 @@
 								<string key="NSFrame">{{189, -1}, {15, 24}}</string>
 								<reference key="NSSuperview" ref="183553726"/>
 								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSImageCell" key="NSCell" id="842697701">
 									<int key="NSCellFlags">130560</int>
@@ -432,7 +431,7 @@
 										<string key="NSFrameSize">{204, 249}</string>
 										<reference key="NSSuperview" ref="321582247"/>
 										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView" ref="976006754"/>
+										<reference key="NSNextKeyView" ref="348251105"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="_NSCornerView" key="NSCornerView">
 											<nil key="NSNextResponder"/>
@@ -526,7 +525,7 @@
 										<bool key="NSAllowsTypeSelect">YES</bool>
 										<int key="NSTableViewSelectionHighlightStyle">1</int>
 										<int key="NSTableViewDraggingDestinationStyle">1</int>
-										<float key="NSOutlineViewIndentationPerLevelKey">10</float>
+										<float key="NSOutlineViewIndentationPerLevelKey">14</float>
 									</object>
 								</object>
 								<string key="NSFrameSize">{204, 249}</string>
@@ -564,7 +563,7 @@
 						<string key="NSFrame">{{0, 23}, {204, 249}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="348251105"/>
+						<reference key="NSNextKeyView" ref="321582247"/>
 						<int key="NSsFlags">528</int>
 						<reference key="NSVScroller" ref="976006754"/>
 						<reference key="NSHScroller" ref="348251105"/>
@@ -1419,10 +1418,18 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">WCIconTextFieldCell</string>
-					<string key="superclassName">WCVerticallyCenteredTextFieldCell</string>
+					<string key="superclassName">WCMultiLineTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCIconTextFieldCell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCMultiLineTextFieldCell</string>
+					<string key="superclassName">WCVerticallyCenteredTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCMultiLineTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

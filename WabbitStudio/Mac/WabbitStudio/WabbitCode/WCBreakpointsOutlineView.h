@@ -6,10 +6,10 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCContexualMenuOutlineView.h"
+#import "WCGroupBackgroundOutlineView.h"
 
 
-@interface WCBreakpointsOutlineView : WCContexualMenuOutlineView {
+@interface WCBreakpointsOutlineView : WCGroupBackgroundOutlineView {
 @private
     
 }
