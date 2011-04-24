@@ -163,7 +163,12 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
 		Add_SE_Delay(cpu);
 	if (MICROSECONDS(lcd->lcd_delay) > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
 		cpu->output = FALSE;
+		if (cpu->input) {
+			cpu->input = FALSE;
+			cpu->bus = 0x80;
+		}
 	}
+
 	
 	if (cpu->output) {
 		// Test the bus to determine which command to run
@@ -223,15 +228,16 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 		cursor = &lcd->display[ LCD_OFFSET(new_y / 8, lcd->x, lcd->z) ];
 	}
 	
+	if (MICROSECONDS(lcd->lcd_delay) > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
+		cpu->output = FALSE;
+		cpu->input = FALSE;
+		return;
+	}
+
 	if (cpu->output) {
 		// Run some sanity checks on the write vars
 		if (lcd->write_last > tc_elapsed(cpu->timer_c))
 			lcd->write_last = tc_elapsed(cpu->timer_c);
-
-		if (MICROSECONDS(lcd->lcd_delay) > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
-			cpu->output = FALSE;
-			return;
-		}
 
 		double write_delay = tc_elapsed(cpu->timer_c) - lcd->write_last;
 		if (lcd->write_avg == 0.0) lcd->write_avg = write_delay;
@@ -280,7 +286,7 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 		cpu->output = FALSE;
 	} else if (cpu->input) {
 		cpu->bus = lcd->last_read;
-		
+
 		if (lcd->word_len) {
 			lcd->last_read = cursor[0];
 		} else {
