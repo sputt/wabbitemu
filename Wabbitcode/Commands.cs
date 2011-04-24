@@ -19,5 +19,8 @@ namespace Revsoft.Wabbitcode
 
         static readonly RoutedUICommand assembleCommand = new RoutedUICommand("Assemble", "Assemble", typeof(RoutedUICommand));
         public static RoutedUICommand Assemble { get { return assembleCommand; } }
+
+        static readonly RoutedUICommand aboutCommand = new RoutedUICommand("About", "About", typeof(RoutedUICommand));
+        public static RoutedUICommand About { get { return aboutCommand; } }
     }
 }

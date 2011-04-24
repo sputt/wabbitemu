@@ -10,7 +10,7 @@
              Name="ProjectViewerPanel">
     <Grid>
         <DockPanel Height="Auto" Width="Auto" LastChildFill="True" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <TreeView>
+            <TreeView Name="projViewer">
 
             </TreeView>
         </DockPanel>

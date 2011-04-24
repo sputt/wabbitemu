@@ -6,14 +6,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-using Revsoft.Wabbitcode.AvalonEditExtension.Options;
 using Revsoft.Wabbitcode.AvalonEditExtension.Snippets;
-using Revsoft.Wabbitcode.Indentation;
-using Revsoft.Core;
-using Revsoft.SharpDevelop;
-using Revsoft.SharpDevelop.Editor;
-using Revsoft.SharpDevelop.Editor.AvalonEdit;
-using Revsoft.SharpDevelop.Editor.CodeCompletion;
+using Revsoft.Wabbitcode.AvalonEditExtension.Interface;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {
@@ -31,14 +25,8 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 			this.codeEditor = codeEditor;
 		}
 		
-		public override FileName FileName {
+		public override string FileName {
 			get { return codeEditor.FileName; }
-		}
-		
-		ILanguageBinding languageBinding;
-		
-		public override ILanguageBinding Language {
-			get { return languageBinding; }
 		}
 		
 		public override ITextEditor PrimaryView {
@@ -47,12 +35,6 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 		
 		internal void FileNameChanged()
 		{
-			if (languageBinding != null)
-				languageBinding.Detach();
-			
-			languageBinding = LanguageBindingService.CreateBinding(this); // never returns null
-			languageBinding.Attach(this);
-			
 			// update properties set by languageBinding
 			this.TextEditor.TextArea.IndentationStrategy = new OptionControlledIndentationStrategy(this, languageBinding.FormattingStrategy);
 		}

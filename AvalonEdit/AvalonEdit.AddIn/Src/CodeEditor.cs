@@ -20,6 +20,7 @@ using ICSharpCode.AvalonEdit.Highlighting;
 using ICSharpCode.AvalonEdit.Rendering;
 using ICSharpCode.AvalonEdit.Utils;
 using ICSharpCode.AvalonEdit;
+using Revsoft.Wabbitcode.AvalonEditExtension.Interface;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {

@@ -8,12 +8,14 @@ using System.Windows.Media;
 
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
+using ICSharpCode.AvalonEdit;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {
 	public class BracketHighlightRenderer : IBackgroundRenderer
 	{
-		BracketSearchResult result;
+        int? openBracketOffset;
+        int? closeBracketOffset;
 		Pen borderPen;
 		Brush backgroundBrush;
 		TextView textView;
@@ -23,10 +25,12 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 		
 		public const string BracketHighlight = "Bracket highlight";
 		
-		public void SetHighlight(BracketSearchResult result)
+		public void SetHighlight(int? openBracketOffset, int? closeBracketOffset)
 		{
-			if (this.result != result) {
-				this.result = result;
+            if (this.openBracketOffset != openBracketOffset || this.closeBracketOffset != closeBracketOffset)
+            {
+                this.openBracketOffset = openBracketOffset;
+                this.closeBracketOffset = closeBracketOffset;
 				textView.InvalidateLayer(this.Layer);
 			}
 		}
@@ -58,17 +62,17 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 		
 		public void Draw(TextView textView, DrawingContext drawingContext)
 		{
-			if (this.result == null)
+            if (this.openBracketOffset == null || this.closeBracketOffset == null)
 				return;
 			
 			BackgroundGeometryBuilder builder = new BackgroundGeometryBuilder();
 			
 			builder.CornerRadius = 1;
 			builder.AlignToMiddleOfPixels = true;
-			
-			builder.AddSegment(textView, new TextSegment() { StartOffset = result.OpeningBracketOffset, Length = result.OpeningBracketLength });
+
+            builder.AddSegment(textView, new TextSegment() { StartOffset = openBracketOffset, Length = 1 });
 			builder.CloseFigure(); // prevent connecting the two segments
-			builder.AddSegment(textView, new TextSegment() { StartOffset = result.ClosingBracketOffset, Length = result.ClosingBracketLength });
+			builder.AddSegment(textView, new TextSegment() { StartOffset = closeBracketOffset, Length = 1 });
 			
 			Geometry geometry = builder.CreateGeometry();
 			if (geometry != null) {

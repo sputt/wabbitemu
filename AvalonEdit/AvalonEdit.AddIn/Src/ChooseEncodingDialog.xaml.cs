@@ -5,8 +5,10 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Windows;
+using System.Collections.ObjectModel;
+using System.Collections.Generic;
 
-using Revsoft.SharpDevelop;
+//using Revsoft.SharpDevelop;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {
@@ -15,16 +17,31 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 	/// </summary>
 	public partial class ChooseEncodingDialog : Window
 	{
+        static readonly IEnumerable<EncodingInfo> allEncodings = Encoding.GetEncodings().OrderBy(e => e.DisplayName).ToList();
+        static int defaultFileEncodingCodePage = 65001;
+        static EncodingInfo DefaultFileEncoding
+        {
+            get
+            {
+                int cp = defaultFileEncodingCodePage;
+                return allEncodings.Single(e => e.CodePage == cp);
+            }
+            set
+            {
+                defaultFileEncodingCodePage = value.CodePage;
+            }
+        }
+
 		public ChooseEncodingDialog()
 		{
 			InitializeComponent();
-			encodingComboBox.ItemsSource = FileService.AllEncodings;
-			encodingComboBox.SelectedItem = FileService.DefaultFileEncoding;
+			encodingComboBox.ItemsSource = allEncodings;
+			encodingComboBox.SelectedItem = DefaultFileEncoding;
 		}
 		
 		public Encoding Encoding {
 			get { return ((EncodingInfo)encodingComboBox.SelectedItem).GetEncoding(); }
-			set { encodingComboBox.SelectedItem = FileService.AllEncodings.Single(e => e.CodePage == value.CodePage); }
+			set { encodingComboBox.SelectedItem = allEncodings.Single(e => e.CodePage == value.CodePage); }
 		}
 		
 		void okButton_Click(object sender, RoutedEventArgs e)

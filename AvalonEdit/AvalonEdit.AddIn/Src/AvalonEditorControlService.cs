@@ -2,6 +2,7 @@
 // This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using Revsoft.Wabbitcode.AvalonEditExtension.Interface;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {
@@ -9,7 +10,7 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 	/// Implementation of IEditorControlService, allows other addins to create editors or access the options without
 	/// requiring a reference to AvalonEdit.AddIn.
 	/// </summary>
-	public class AvalonEditorControlService : IEditorControlService
+	public class AvalonEditorControlService //: IEditorControlService
 	{
 		public ITextEditorOptions GlobalOptions {
 			get { return CodeEditorOptions.Instance; }

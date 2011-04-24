@@ -10,6 +10,8 @@ using System.Windows.Media;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
+using Revsoft.Wabbitcode.AvalonEditExtension.CodeCompletion;
+using Revsoft.Wabbitcode.AvalonEditExtension.Interface;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {
@@ -68,7 +70,7 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 			
 			if (!itemList.ContainsAllAvailableItems) {
 				// If more items are available (Ctrl+Space wasn't pressed), show this hint
-				this.EmptyText = StringParser.Parse("${res:ICSharpCode.AvalonEdit.AddIn.SharpDevelopCompletionWindow.EmptyText}");
+				this.EmptyText = "No items available";
 			}
 			
 			InitializeComponent();

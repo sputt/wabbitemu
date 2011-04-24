@@ -17,6 +17,8 @@ using AvalonDock;
 using ICSharpCode.AvalonEdit.Highlighting;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Panels;
+using Revsoft.Wabbitcode.Dialogs;
+using Microsoft.Win32;
 
 namespace Revsoft.Wabbitcode
 {
@@ -108,7 +110,8 @@ namespace Revsoft.Wabbitcode
 
         private void NewProject_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            
+            var dialog = new NewProjectDialog();
+            dialog.ShowDialog();
         }
 
         private void OpenFile_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -118,7 +121,22 @@ namespace Revsoft.Wabbitcode
 
         private void OpenProject_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            //ProjectService.OpenProject();
+            var ofn = new OpenFileDialog()
+            {
+                AddExtension = true,
+                CheckFileExists = true,
+                DefaultExt = ".wcodeproj",
+                Filter = "Project Files (*.wcodeproj)|*.wcodeproj|All Files(*.*)|*.*",
+                FilterIndex = 0,
+                InitialDirectory = WabbitcodePaths.ProjectDirectory,
+                Multiselect = false,
+                RestoreDirectory = true,
+                Title = "Open Project",
+            };
+            if (ofn.ShowDialog() == true)
+            {
+                ProjectService.OpenProject(ofn.FileName);
+            }
         }
 
         private void SaveFile_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -183,6 +201,12 @@ namespace Revsoft.Wabbitcode
             string filePath = DockingService.ActiveDocument.FilePath;
             string outputPath = Path.ChangeExtension(filePath, ".8xk");
             AssemblerService.AssembleFile(filePath, outputPath, true);
+        }
+
+        private void About_Executed(object snder, ExecutedRoutedEventArgs e)
+        {
+            var aboutBox = new AboutBox();
+            aboutBox.ShowDialog();
         }
     }
 }

@@ -53,9 +53,6 @@
   </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
-    <Reference Include="ICSharpCode.AvalonEdit">
-      <HintPath>..\..\bin\Debug\ICSharpCode.AvalonEdit.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore">
       <RequiredTargetFramework>3.0</RequiredTargetFramework>
     </Reference>
@@ -88,8 +85,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <Compile Include="Configuration\AssemblyInfo.cs" />
+    <Compile Include="ExtensionMethods.cs" />
+    <Compile Include="Src\AvalonEditDocumentAdapter.cs" />
+    <Compile Include="Src\AvalonEditTextEditorAdapter.cs" />
+    <Compile Include="Src\CodeEditorOptions.cs" />
+    <Compile Include="Src\ErrorPainter.cs" />
     <Compile Include="Src\IBookmarkMargin.cs" />
-    <Compile Include="Src\AvalonEditEditorUIService.cs" />
     <Compile Include="Src\AvalonEditorControlService.cs" />
     <Compile Include="Src\AvalonEditViewContent.cs" />
     <Compile Include="Src\BracketHighlightRenderer.cs" />
@@ -102,23 +103,43 @@
     <Compile Include="Src\CodeEditor.cs" />
     <Compile Include="Src\CodeEditorAdapter.cs" />
     <Compile Include="Src\CodeEditorView.cs" />
-    <Compile Include="Src\ContextActionsRenderer.cs" />
     <Compile Include="Src\ExpressionHighlightRenderer.cs" />
+    <Compile Include="Src\Interface\AvalonEditTextSourceAdapter.cs" />
+    <Compile Include="Src\Interface\Code Completion\ICompletionItem.cs" />
+    <Compile Include="Src\Interface\Code Completion\ICompletionItemHandler.cs" />
+    <Compile Include="Src\Interface\Code Completion\ICompletionItemList.cs" />
+    <Compile Include="Src\Interface\Code Completion\ICompletionListWindow.cs" />
+    <Compile Include="Src\Interface\Code Completion\ICompletionWindow.cs" />
+    <Compile Include="Src\Interface\DocumentUtilitites.cs" />
+    <Compile Include="Src\Interface\IDocument.cs" />
+    <Compile Include="Src\Interface\IDocumentLine.cs" />
+    <Compile Include="Src\Interface\Insight Window\IInsightItem.cs" />
+    <Compile Include="Src\Interface\Insight Window\IInsightWindow.cs" />
+    <Compile Include="Src\Interface\ITextAnchor.cs" />
+    <Compile Include="Src\Interface\ITextBuffer.cs" />
+    <Compile Include="Src\Interface\ITextEditor.cs" />
+    <Compile Include="Src\Interface\ITextMarker.cs" />
     <Compile Include="Src\NewLineConsistencyCheck.cs" />
+    <Compile Include="Src\Reference.cs" />
+    <Compile Include="Src\Tasks\TagComment.cs" />
+    <Compile Include="Src\Tasks\Task.cs" />
+    <Compile Include="Src\Tasks\TaskEventHandler.cs" />
+    <Compile Include="Src\Tasks\TaskService.cs" />
+    <Compile Include="Src\TextChangeEventArgs.cs" />
+    <Compile Include="Src\WabbitcodeCompletionWindow.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="Src\WabbitcodeTextEditor.cs" />
     <Compile Include="Src\Commands\FoldingCommands.cs" />
     <Compile Include="Src\Commands\RunIncrementalSearch.cs" />
-    <Compile Include="Src\Commands\SaveFileWithEncoding.cs" />
     <Compile Include="Src\Commands\SurroundWithCommand.cs" />
     <Compile Include="Src\CustomCommands.cs" />
     <Compile Include="Src\CustomizableHighlightingColorizer.cs" />
     <Compile Include="Src\CustomizedHighlightingColor.cs" />
     <Compile Include="Src\DocumentPrinter.cs" />
     <Compile Include="Src\IncrementalSearch.cs" />
-    <Compile Include="Src\InlineUIElementGenerator.cs" />
     <Compile Include="Src\IconBarManager.cs" />
     <Compile Include="Src\IconBarMargin.cs" />
-    <Compile Include="Src\PrintPreviewViewContent.cs" />
     <Compile Include="Src\Snippets\AnchorSnippetElementProvider.cs" />
     <Compile Include="Src\Snippets\CodeSnippet.cs" />
     <Compile Include="Src\Snippets\CodeSnippetCompletionWindow.cs" />
@@ -127,8 +148,7 @@
     <Compile Include="Src\Snippets\SnippetCompletionItem.cs" />
     <Compile Include="Src\Snippets\SnippetManager.cs" />
     <Compile Include="Src\ParserFoldingStrategy.cs" />
-    <Compile Include="Src\WabbitcodeCompletionWindow.cs" />
-    <Compile Include="Src\SharpDevelopInsightWindow.cs">
+    <Compile Include="Src\WabbitcodeInsightWindow.cs">
     </Compile>
     <Compile Include="Src\StringToVisibilityConverter.cs" />
     <Compile Include="Src\SyntaxModeDoozer.cs" />
@@ -137,10 +157,17 @@
     <EmbeddedResource Include="Resources\ReverseIncrementalSearchCursor.cur" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Src\SharpDevelopCompletionWindow.xaml">
-      <DependentUpon>WabbitcodeCompletionWindow.cs</DependentUpon>
+    <Page Include="Src\WabbitcodeCompletionWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="themes\generic.xaml" />
     <Page Include="Src\ChooseEncodingDialog.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ICSharpCode.AvalonEdit\ICSharpCode.AvalonEdit.csproj">
+      <Project>{6C55B776-26D4-4DB3-A6AB-87E783B2F3D1}</Project>
+      <Name>ICSharpCode.AvalonEdit</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

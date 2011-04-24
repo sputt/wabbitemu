@@ -7,12 +7,10 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-using Revsoft.Wabbitcode.Snippets;
-using Revsoft.SharpDevelop;
-using Revsoft.SharpDevelop.Dom;
-using Revsoft.SharpDevelop.Editor;
-using Revsoft.SharpDevelop.Editor.AvalonEdit;
-using Revsoft.SharpDevelop.Editor.CodeCompletion;
+using Revsoft.Wabbitcode.AvalonEditExtension;
+using Revsoft.Wabbitcode.AvalonEditExtension.CodeCompletion;
+using Revsoft.Wabbitcode.AvalonEditExtension.Interface;
+using ICSharpCode.AvalonEdit.Snippets;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension.Snippets
 {

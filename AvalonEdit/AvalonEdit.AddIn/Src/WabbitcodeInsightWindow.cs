@@ -10,6 +10,7 @@ using System.ComponentModel;
 using ICSharpCode.AvalonEdit.CodeCompletion;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
+using Revsoft.Wabbitcode.AvalonEditExtension.CodeCompletion;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {

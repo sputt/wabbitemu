@@ -6,11 +6,8 @@ using System.Windows.Controls;
 using System.Windows.Documents;
 
 using ICSharpCode.AvalonEdit.Editing;
-using Revsoft.Wabbitcode.Snippets;
-using Revsoft.Core;
-using Revsoft.SharpDevelop;
-using Revsoft.SharpDevelop.Editor;
-using Revsoft.SharpDevelop.Editor.CodeCompletion;
+using Revsoft.Wabbitcode.AvalonEditExtension.Interface;
+using Revsoft.Wabbitcode.AvalonEditExtension.CodeCompletion;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension.Snippets
 {

@@ -60,7 +60,7 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 			// don't allow mac-style newlines; accept either unix or windows-style newlines but avoid mixing them
 			bool isConsistent = (numCR == 0) && (numLF == 0 || numCRLF == 0);
 			if (!isConsistent) {
-				SharpDevelop.Gui.WorkbenchSingleton.SafeThreadAsyncCall(ShowInconsistentWarning, numLF > numCRLF);
+				//DockingService.SafeThreadAsyncCall(ShowInconsistentWarning, numLF > numCRLF);
 			}
 		}
 		
@@ -86,16 +86,16 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 			
 			windows = new RadioButton {
 				IsChecked = !preferUnixNewLines,
-				Content = ResourceService.GetString("Dialog.Options.IDEOptions.LoadSaveOptions.WindowsRadioButton"),
+				Content = "Windows",
 				Margin = new Thickness(0, 0, 8, 0)
 			};
 			unix = new RadioButton {
 				IsChecked = preferUnixNewLines,
-				Content = ResourceService.GetString("Dialog.Options.IDEOptions.LoadSaveOptions.UnixRadioButton")
+				Content = "Unix"
 			};
 			
 			normalizeButton = new Button { Content = "Normalize" };
-			cancelButton = new Button { Content = ResourceService.GetString("Global.CancelButtonText") };
+			cancelButton = new Button { Content = "Cancel" };
 			
 			groupBox.Content = new StackPanel {
 				Children = {
@@ -110,40 +110,36 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 			};
 			editor.Children.Add(groupBox);
 			
-			var featureUse = AnalyticsMonitorService.TrackFeature(typeof(NewLineConsistencyCheck));
-			
 			EventHandler removeWarning = null;
 			removeWarning = delegate {
 				editor.Children.Remove(groupBox);
 				editor.PrimaryTextEditor.TextArea.Focus();
 				editor.LoadedFileContent -= removeWarning;
-				
-				featureUse.EndTracking();
 			};
 			
 			editor.LoadedFileContent += removeWarning;
 			cancelButton.Click += delegate {
-				AnalyticsMonitorService.TrackFeature(typeof(NewLineConsistencyCheck), "cancelButton");
 				removeWarning(null, null);
 			};
-			normalizeButton.Click += delegate {
-				AnalyticsMonitorService.TrackFeature(typeof(NewLineConsistencyCheck), "normalizeButton");
-				removeWarning(null, null);
-				
-				TextDocument document = editor.Document;
-				string newNewLine = (unix.IsChecked == true) ? "\n" : "\r\n";
-				using (document.RunUpdate()) {
-					for (int i = 1; i <= document.LineCount; i++) {
-						// re-fetch DocumentLine for every iteration because we're modifying the newlines so that DocumentLines might get re-created
-						DocumentLine line = document.GetLineByNumber(i);
-						if (line.DelimiterLength > 0) {
-							int endOffset = line.EndOffset;
-							if (document.GetText(endOffset, line.DelimiterLength) != newNewLine)
-								document.Replace(endOffset, line.DelimiterLength, newNewLine);
-						}
-					}
-				}
-			};
+            normalizeButton.Click += delegate {
+                removeWarning(null, null);
+                TextDocument document = editor.Document;
+                string newNewLine = (unix.IsChecked == true) ? "\n" : "\r\n";
+                using (document.RunUpdate())
+                {
+                    for (int i = 1; i <= document.LineCount; i++)
+                    {
+                        // re-fetch DocumentLine for every iteration because we're modifying the newlines so that DocumentLines might get re-created
+                        DocumentLine line = document.GetLineByNumber(i);
+                        if (line.DelimiterLength > 0)
+                        {
+                            int endOffset = line.EndOffset;
+                            if (document.GetText(endOffset, line.DelimiterLength) != newNewLine)
+                                document.Replace(endOffset, line.DelimiterLength, newNewLine);
+                        }
+                    }
+                }
+            };
 		}
 	}
 }

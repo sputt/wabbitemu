@@ -178,15 +178,21 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// </summary>
 	public enum AnchorMovementType
 	{
-		/// <summary>
-		/// When text is inserted at the anchor position, the anchor will stay
-		/// before the inserted text.
-		/// </summary>
-		BeforeInsertion,
-		/// <summary>
-		/// When text is insered at the anchor position, the anchor will move
-		/// after the inserted text.
-		/// </summary>
-		AfterInsertion
+        /// <summary>
+        /// When text is inserted at the anchor position, the type of the insertion
+        /// determines where the caret moves to. For normal insertions, the anchor will stay
+        /// behind the inserted text.
+        /// </summary>
+        Default,
+        /// <summary>
+        /// When text is inserted at the anchor position, the anchor will stay
+        /// before the inserted text.
+        /// </summary>
+        BeforeInsertion,
+        /// <summary>
+        /// When text is insered at the anchor position, the anchor will move
+        /// after the inserted text.
+        /// </summary>
+        AfterInsertion
 	}
 }

@@ -6,14 +6,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-using Revsoft.Wabbitcode.AvalonEditExtension.Options;
 using Revsoft.Wabbitcode.AvalonEditExtension.Snippets;
-using Revsoft.Wabbitcode.Indentation;
-using Revsoft.Core;
-using Revsoft.SharpDevelop;
-using Revsoft.SharpDevelop.Editor;
-using Revsoft.SharpDevelop.Editor.AvalonEdit;
-using Revsoft.SharpDevelop.Editor.CodeCompletion;
+using Revsoft.Wabbitcode.AvalonEditExtension.CodeCompletion;
+using Revsoft.Wabbitcode.AvalonEditExtension.Src;
+using Revsoft.Wabbitcode.AvalonEditExtension.Interface;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {
@@ -21,8 +17,7 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 	{
 		WabbitcodeTextEditor textEditor;
 		
-		public CodeCompletionEditorAdapter(WabbitcodeTextEditor textEditor)
-			: base(textEditor)
+		public CodeCompletionEditorAdapter(WabbitcodeTextEditor textEditor) : base(textEditor)
 		{
 			this.textEditor = textEditor;
 		}
@@ -31,7 +26,7 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension
 		{
 			if (data == null || !data.Items.Any())
 				return null;
-			WabbitcodeCompletionWindow window = new WabbitcodeCompletionWindow(this, this.TextEditor.TextArea, data);
+			var window = new WabbitcodeCompletionWindow(this, textEditor.TextArea, data);
 			textEditor.ShowCompletionWindow(window);
 			return window;
 		}

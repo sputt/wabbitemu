@@ -4,12 +4,13 @@
 using System;
 using System.Windows.Documents;
 using ICSharpCode.AvalonEdit.Editing;
+using Revsoft.Wabbitcode.AvalonEditExtension.Interface;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension.Commands
 {
-	public class RunIncrementalSearch : AbstractMenuCommand
+	public static class RunIncrementalSearch
 	{
-		public override void Run()
+		/*public void RunIncrementalSearch()
 		{
 			ITextEditorProvider provider = WorkbenchSingleton.Workbench.ActiveViewContent as ITextEditorProvider;
 			if (provider != null) {
@@ -19,11 +20,8 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension.Commands
 				}
 			}
 		}
-	}
-	
-	public class RunReverseIncrementalSearch : AbstractMenuCommand
-	{
-		public override void Run()
+
+		public void RunReverseIncrementalSearch()
 		{
 			ITextEditorProvider provider = WorkbenchSingleton.Workbench.ActiveViewContent as ITextEditorProvider;
 			if (provider != null) {
@@ -32,6 +30,6 @@ namespace Revsoft.Wabbitcode.AvalonEditExtension.Commands
 					textArea.ActiveInputHandler = new IncrementalSearch(textArea, LogicalDirection.Backward);
 				}
 			}
-		}
+		}*/
 	}
 }

@@ -8,6 +8,7 @@ using System.Collections.Generic;
 
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Rendering;
+using Revsoft.Wabbitcode.AvalonEditExtension.Src;
 
 namespace Revsoft.Wabbitcode.AvalonEditExtension
 {
