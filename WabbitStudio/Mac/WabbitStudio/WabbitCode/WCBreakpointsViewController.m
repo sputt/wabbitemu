@@ -71,7 +71,7 @@
 	}
 	else
 		[cell setSecondaryTitle:nil];
-	
+	 
 	if ([[item representedObject] breakpointType] == WCBreakpointTypeProject) {
 		NSMutableAttributedString *attributedString = [[[cell attributedStringValue] mutableCopy] autorelease];
 		[attributedString applyFontTraits:NSBoldFontMask range:NSMakeRange(0, [[attributedString string] length])];

@@ -6,14 +6,14 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCVerticallyCenteredTextFieldCell.h"
+#import "WCInfoTextFieldCell.h"
 
 
 @interface WCMultiLineTextFieldCell : WCVerticallyCenteredTextFieldCell <NSCopying> {
 @private
-    NSString *_secondaryTitle;
+	WCInfoTextFieldCell *_secondaryTextFieldCell;
 }
 @property (copy,nonatomic) NSString *secondaryTitle;
 
-- (NSRect)secondaryTitleRectForBounds:(NSRect)bounds;
+- (NSRect)secondaryTitleRectForBounds:(NSRect)bounds remainingRect:(NSRectPointer)remainingRect;
 @end

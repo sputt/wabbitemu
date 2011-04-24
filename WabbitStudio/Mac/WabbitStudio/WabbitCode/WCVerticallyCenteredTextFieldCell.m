@@ -11,16 +11,45 @@
 
 
 @implementation WCVerticallyCenteredTextFieldCell
+- (id)init {
+	if (!(self = [super init]))
+		return nil;
+	
+	[self commonInit];
+	
+	return self;
+}
+
+/*
+- (id)initTextCell:(NSString *)stringValue {
+	if (!(self = [super initTextCell:stringValue]))
+		return nil;
+	
+	[self commonInit];
+	
+	return self;
+}
+ */
+
+- (id)initWithCoder:(NSCoder *)coder {
+	if (!(self = [super initWithCoder:coder]))
+		return nil;
+	
+	[self commonInit];
+	
+	return self;
+}
+
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {	
-	[super drawInteriorWithFrame:[self centeredTitleRectForBounds:[self titleRectForBounds:cellFrame]] inView:controlView];
+	[super drawInteriorWithFrame:[self centeredTitleRectForBounds:cellFrame] inView:controlView];
 }
 
 - (void)editWithFrame:(NSRect)aRect inView:(NSView *)controlView editor:(NSText *)textObj delegate:(id)anObject event:(NSEvent *)theEvent {
-	[super editWithFrame:[self centeredTitleRectForBounds:[self titleRectForBounds:aRect]] inView:controlView editor:textObj delegate:anObject event:theEvent];
+	[super editWithFrame:[self centeredTitleRectForBounds:aRect] inView:controlView editor:textObj delegate:anObject event:theEvent];
 }
 
 - (void)selectWithFrame:(NSRect)aRect inView:(NSView *)controlView editor:(NSText *)textObj delegate:(id)anObject start:(NSInteger)selStart length:(NSInteger)selLength {
-	[super selectWithFrame:[self centeredTitleRectForBounds:[self titleRectForBounds:aRect]] inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
+	[super selectWithFrame:[self centeredTitleRectForBounds:aRect] inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
 }
 
 - (NSRect)centeredTitleRectForBounds:(NSRect)bounds; {
@@ -28,5 +57,9 @@
 	NSSize size = [attributedString size];
 	
 	return WCCenteredRectWithSize(NSMakeSize(NSWidth(bounds), size.height), bounds);
+}
+
+- (void)commonInit; {
+	
 }
 @end

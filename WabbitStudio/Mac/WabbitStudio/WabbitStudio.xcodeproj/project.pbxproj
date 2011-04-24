@@ -63,6 +63,7 @@
 		07463AF813332BCC00744B98 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AF713332BCC00744B98 /* QuartzCore.framework */; };
 		074D80C313620EA00081571E /* Breakpoints16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 074D80C213620EA00081571E /* Breakpoints16x16.png */; };
 		074D80C7136234170081571E /* Files.png in Resources */ = {isa = PBXBuildFile; fileRef = 074D80C6136234170081571E /* Files.png */; };
+		0756D8D91363DFE200ECDFFD /* WCInfoTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */; };
 		0758E82A134ABC1200280D9D /* NSColor-NTExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */; };
 		0758E82D134AD2F200280D9D /* WCFindInProjectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0758E82C134AD2F200280D9D /* WCFindInProjectViewController.m */; };
 		0758E830134AD50000280D9D /* WCFindInProjectView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0758E82E134AD50000280D9D /* WCFindInProjectView.xib */; };
@@ -301,6 +302,8 @@
 		0747E3B9135819B90009EFBF /* WCTabViewContextProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTabViewContextProtocol.h; sourceTree = "<group>"; };
 		074D80C213620EA00081571E /* Breakpoints16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Breakpoints16x16.png; sourceTree = "<group>"; };
 		074D80C6136234170081571E /* Files.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Files.png; sourceTree = "<group>"; };
+		0756D8D71363DFE200ECDFFD /* WCInfoTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCInfoTextFieldCell.h; sourceTree = "<group>"; };
+		0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCInfoTextFieldCell.m; sourceTree = "<group>"; };
 		0758E828134ABC1200280D9D /* NSColor-NTExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSColor-NTExtensions.h"; sourceTree = "<group>"; };
 		0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSColor-NTExtensions.m"; sourceTree = "<group>"; };
 		0758E82B134AD2F200280D9D /* WCFindInProjectViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFindInProjectViewController.h; sourceTree = "<group>"; };
@@ -834,6 +837,8 @@
 				0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */,
 				070720961360B5AB00E7C7CD /* WCVerticallyCenteredTextFieldCell.h */,
 				070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */,
+				0756D8D71363DFE200ECDFFD /* WCInfoTextFieldCell.h */,
+				0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1152,6 +1157,7 @@
 				0724B7AB136390300061AA47 /* WCBadgedTextFieldCell.m in Sources */,
 				0724B7AC136390300061AA47 /* WCIconTextFieldCell.m in Sources */,
 				0724B7D21363A3D40061AA47 /* WCMultiLineTextFieldCell.m in Sources */,
+				0756D8D91363DFE200ECDFFD /* WCInfoTextFieldCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

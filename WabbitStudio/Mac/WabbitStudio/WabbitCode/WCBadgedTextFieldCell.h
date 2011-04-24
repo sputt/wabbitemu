@@ -15,5 +15,5 @@
 }
 @property (assign,nonatomic) NSUInteger badgeCount;
 
-- (NSRect)badgeRectForBounds:(NSRect)bounds;
+- (NSRect)badgeRectForBounds:(NSRect)bounds remainingRect:(NSRectPointer)remainingRect;
 @end

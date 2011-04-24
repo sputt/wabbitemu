@@ -53,15 +53,9 @@ static NSColor *kBadgeBackgroundColor = nil;
 	return copy;
 }
 
-- (NSRect)titleRectForBounds:(NSRect)theRect {
-	NSRect badgeRect = [self badgeRectForBounds:theRect];
-	
-	return [super titleRectForBounds:NSMakeRect(NSMinX(theRect), NSMinY(theRect), NSWidth(theRect)-NSWidth(badgeRect), NSHeight(theRect))];
-}
-
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {
 	if ([self badgeCount] > 0) {
-		NSRect badgeRect = [self badgeRectForBounds:cellFrame];
+		NSRect badgeRect = [self badgeRectForBounds:cellFrame remainingRect:&cellFrame];
 		NSAttributedString *attributedString = [self _attributedStringForBadgeCount];
 		NSSize size = [attributedString size];
 		NSRect fillRect = WCCenteredRect(NSMakeRect(NSMinX(badgeRect)+kBadgeMarginLeft, NSMinY(badgeRect)+kBadgeMarginTop, NSWidth(badgeRect)-kBadgeMarginLeft-kBadgeMarginRight, size.height+kBadgeInsetTop+kBadgeInsetTop), badgeRect);
@@ -76,7 +70,7 @@ static NSColor *kBadgeBackgroundColor = nil;
 	[super drawInteriorWithFrame:cellFrame inView:controlView];
 }
 
-- (NSRect)badgeRectForBounds:(NSRect)bounds; {
+- (NSRect)badgeRectForBounds:(NSRect)bounds remainingRect:(NSRectPointer)remainingRect; {
 	if ([self badgeCount] == 0)
 		return NSZeroRect;
 	
@@ -85,6 +79,9 @@ static NSColor *kBadgeBackgroundColor = nil;
 	
 	NSRect left, right;
 	NSDivideRect(bounds, &right, &left, size.width+kBadgeMarginLeft+kBadgeMarginRight+kBadgeInsetLeft+kBadgeInsetRight, NSMaxXEdge);
+	
+	if (remainingRect != NULL)
+		*remainingRect = left;
 	
 	return right;
 }

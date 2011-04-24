@@ -19,5 +19,5 @@
 @property (assign,nonatomic) NSSize iconSize;
 @property (assign,nonatomic) BOOL centerIcon;
 
-- (NSRect)iconRectForBounds:(NSRect)bounds;
+- (NSRect)iconRectForBounds:(NSRect)bounds remainingRect:(NSRectPointer)remainingRect;
 @end

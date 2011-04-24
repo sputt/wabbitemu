@@ -14,4 +14,6 @@
     
 }
 - (NSRect)centeredTitleRectForBounds:(NSRect)bounds;
+
+- (void)commonInit;
 @end
