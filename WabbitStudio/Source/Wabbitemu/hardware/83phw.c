@@ -6,21 +6,7 @@
 #include "link.h"
 #include "device.h"
 #include "calc.h"
-#include <math.h>
-
-typedef struct LINKASSIST {
-	unsigned char link_enable;
-	unsigned char in;
-	unsigned char out;
-	unsigned char working;
-	BOOL receiving;
-	BOOL read;
-	BOOL ready;
-	BOOL error;
-	BOOL sending;
-	double last_access;
-	int bit;
-} LINKASSIST_t;
+#include "83psehw.h"
 
 static double timer_freq83p[4] = { 1.0f / 560.0f, 1.0f / 248.0f, 1.0f / 170.0f, 1.0f / 118.0f };
 
@@ -559,7 +545,7 @@ int device_init_83p(CPU_t *cpu) {
 	cpu->pio.link		= link;
 	cpu->pio.stdint		= stdint;
 	//a little hacky but it will work
-	cpu->pio.se_aux		= (SE_AUX *) assist;
+	cpu->pio.se_aux		= (SE_AUX_t *) assist;
 	
 	cpu->pio.model		= TI_83P;
 	

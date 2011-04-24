@@ -464,7 +464,7 @@ void ReadTiFileHeader(FILE *infile, TIFILE_t *tifile) {
 }
 
 static short length2 = 0;
-TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber = 0) {
+TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	switch (tifile->type) {
 		case ROM_TYPE:
 			return ImportROMFile(infile, tifile);
@@ -625,7 +625,7 @@ TIFILE_t* newimportvar(LPCTSTR filePath) {
 
 	ReadTiFileHeader(infile, tifile);
 
-	tifile = ImportVarData(infile, tifile);
+	tifile = ImportVarData(infile, tifile, 0);
 	fclose(infile);
 	return tifile;
 }
