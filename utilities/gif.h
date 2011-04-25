@@ -13,7 +13,6 @@
 #include "gui.h"
 #else
 #include "coretypes.h"
-#include "types.h"
 #endif
 
 extern int gif_write_state;
