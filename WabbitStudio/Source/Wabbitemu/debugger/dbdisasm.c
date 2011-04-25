@@ -423,6 +423,7 @@ void db_step_finish(HWND hwnd) {
 	} else {
 		UpdateWindow(hwnd);
 	}
+
 	//InvalidateSel(hwnd, dps->iPC);
 	cycle_pcs(dps);
 	SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);

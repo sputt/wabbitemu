@@ -498,7 +498,7 @@ unsigned long calc_md5(MD5_t* md5) {
 	}
 	reg += a + x + ac;
 	reg &= 0xFFFFFFFF;
-	reg = ( (reg<<s) | (reg>>(32-s)) );
+	reg = ( (reg << s) | (reg >> (32 - s)));
 	reg += b;
 	return reg;
 }
@@ -518,7 +518,7 @@ void md5ports(CPU_t *cpu, device_t *dev) {
 			case 0x1D:
 			case 0x1E:
 			case 0x1F:
-				cpu->bus = (calc_md5(md5)>>((DEV_INDEX(dev)-0x1C)*8))&0xFF;
+				cpu->bus = (calc_md5(md5) >> ((DEV_INDEX(dev) - 0x1C) * 8)) & 0xFF;
 				break;
 		}
 		cpu->input = FALSE;
@@ -530,14 +530,14 @@ void md5ports(CPU_t *cpu, device_t *dev) {
 			case 0x1B:
 			case 0x1C:
 			case 0x1D:
-				md5->reg[DEV_INDEX(dev)-0x18] =
-					(md5->reg[DEV_INDEX(dev)-0x18]>>8) | (cpu->bus<<24);
+				md5->reg[DEV_INDEX(dev) - 0x18] =
+					(md5->reg[DEV_INDEX(dev) - 0x18] >> 8) | (cpu->bus << 24);
 				break;
 			case 0x1E:
-				md5->s = cpu->bus&0x1F;
+				md5->s = cpu->bus & 0x1F;
 				break;
 			case 0x1F:
-				md5->mode = cpu->bus&0x03;
+				md5->mode = cpu->bus & 0x03;
 				break;
 		}
 		cpu->output = FALSE;

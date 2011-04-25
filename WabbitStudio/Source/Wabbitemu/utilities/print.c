@@ -106,7 +106,11 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR 
                 case 'h': {		//offset
                 	int val	= (int) va_arg(argp, INT_PTR);
                 	TCHAR szOffset[8];
-					_stprintf_s(szOffset, _T("%+d"),val);
+					if (val & 0x80) {
+						_stprintf_s(szOffset, _T("%-d"), 256 - val);
+					} else {
+						_stprintf_s(szOffset, _T("%+d"), val);
+					}
 
                 	press_text(szOffset, RGB(0, 0, 0));
 					break;

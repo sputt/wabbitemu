@@ -717,6 +717,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			switch (wParam) {
 				case DB_UPDATE:
 					EnumChildWindows(hwnd, EnumDebugUpdate, 0);
+					if (IsWindow(hPortMon)) {
+						SendMessage(hPortMon, WM_USER, DB_UPDATE, 0); 
+					}
 					break;
 				case DB_RESUME:
 					EnumChildWindows(hwnd, EnumDebugResume, 0);

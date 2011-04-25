@@ -316,7 +316,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			return FALSE;
 		}
 		case WM_USER: {
-			switch (lParam) {
+			switch (wParam) {
 				case DB_CREATE:
 					if (port_cpu != NULL)
 						free(port_cpu);
@@ -325,7 +325,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				case DB_UPDATE: {
 					RECT rc;
 					GetClientRect(hwnd, &rc);
-					InvalidateRect(hwnd, &rc, TRUE);
+					InvalidateRect(hwnd, &rc, FALSE);
 					break;
 				}
 			}
