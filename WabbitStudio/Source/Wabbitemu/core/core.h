@@ -2,6 +2,7 @@
 #define CORE_H
 
 #include "coretypes.h"
+//#include "stdafx.h"
 
 #define TI_81		0
 #define TI_82		1
