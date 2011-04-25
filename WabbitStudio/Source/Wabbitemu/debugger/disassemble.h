@@ -130,7 +130,7 @@ typedef struct Z80_info {
 		};
 		INT_PTR a[4];
 	};
-	_TUCHAR size;			/* Size of command */
+	int size;			/* Size of command */
 	unsigned short addr;
 } Z80_info_t;
 

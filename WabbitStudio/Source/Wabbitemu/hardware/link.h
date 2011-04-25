@@ -158,6 +158,6 @@ int link_connect(CPU_t *, CPU_t *);
 int link_connect_hub(int slot, CPU_t *cpu);
 BOOL link_connected_hub(int slot);
 int link_disconnect(CPU_t *);
-void writeboot(FILE* , memory_context_t *, int page = -1);
+void writeboot(FILE* , memory_context_t *, int page);
 #endif
 
