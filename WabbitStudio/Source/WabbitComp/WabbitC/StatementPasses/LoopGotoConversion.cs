@@ -39,7 +39,7 @@ namespace WabbitC.StatementPasses
                         whileReplacement.Add(whileStartLbl);
                         whileReplacement.AddRange(loop.Body);
                         whileReplacement.Add(loop.Label);
-                        whileReplacement.AddRange(Goto.ParseConditionStatements(loop.Condition.Statements, loop.Label));
+                        whileReplacement.AddRange(Goto.ParseConditionStatements(loop.Condition.Statements, whileStartLbl));
 
                         loopBlock.Statements.InsertRange(nPos, whileReplacement);
                     }
@@ -54,7 +54,7 @@ namespace WabbitC.StatementPasses
 						whileReplacement.Add(whileStartLbl);
 						whileReplacement.AddRange(loop.Body);
 						whileReplacement.Add(loop.Label);
-						whileReplacement.AddRange(Goto.ParseConditionStatements(loop.Condition.Statements, loop.Label));
+                        whileReplacement.AddRange(Goto.ParseConditionStatements(loop.Condition.Statements, whileStartLbl));
 
 						loopBlock.Statements.InsertRange(nPos, whileReplacement);
 					}

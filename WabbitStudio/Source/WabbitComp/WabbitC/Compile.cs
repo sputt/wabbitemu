@@ -39,6 +39,15 @@ namespace WabbitC
 
         static OptimizeLevel optimizeLevel = OptimizeLevel.OptimizeMax;
 
+        private static void WriteModule(Module module, int pass)
+        {
+            string code = module.ToString();
+
+            var writer = new StreamWriter("intermediate." + pass + ".c");
+            writer.Write(code.Replace("\r\n", "\n").Replace("\n", "\r\n"));
+            writer.Close();
+        }
+
         /// <summary>
         /// Parses a file and outputs a .asm file
         /// </summary>
@@ -65,6 +74,8 @@ namespace WabbitC
 			if (optimizeLevel != OptimizeLevel.OptimizeNone)
 				Optimizer.Loop.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
 
+            WriteModule(currentModule, 1);
+
             // Statement passes
             if (passCount >= 2)
             {
@@ -74,9 +85,12 @@ namespace WabbitC
 				StatementPasses.ReorderDeclarations.Run(currentModule);
 				StatementPasses.MarkRecursiveFunctions.Run(currentModule);
             }
+            WriteModule(currentModule, 2);
 
 			if (optimizeLevel != OptimizeLevel.OptimizeNone)
 				Optimizer.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
+
+            WriteModule(currentModule, 3);
 
             if (passCount >= 3)
             {
