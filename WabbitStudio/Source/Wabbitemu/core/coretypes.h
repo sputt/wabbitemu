@@ -19,6 +19,8 @@ typedef intptr_t INT_PTR;
 typedef uint8_t BYTE, *LPBYTE;
 typedef uint16_t WORD, *LPWORD;
 typedef uint32_t DWORD, *LPDWORD;
+
+#define MAX_PATH 256
 #endif
 
 
