@@ -359,10 +359,18 @@ void calc_slot_free(LPCALC lpCalc) {
 
 void calc_turn_on(LPCALC lpCalc) {
 	lpCalc->running = TRUE;
+#ifdef MACVER
+#define FUNCTION6_KEY_CODE 97
+	calc_run_seconds(lpCalc, 1.0);
+	keypad_key_press(&lpCalc->cpu, FUNCTION6_KEY_CODE);
+	calc_run_seconds(lpCalc, 0.25);
+	keypad_key_release(&lpCalc->cpu, FUNCTION6_KEY_CODE);
+#else
 	calc_run_timed(lpCalc, 200);
 	lpCalc->cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
 	calc_run_timed(lpCalc, 300);
 	lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
+#endif
 }
 
 int calc_reset(LPCALC lpCalc) {
