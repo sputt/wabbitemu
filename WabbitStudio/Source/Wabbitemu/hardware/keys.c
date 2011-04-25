@@ -156,8 +156,8 @@ static keyprog_t defaultkeys[256] = {
     {NUMPAD_THREE, 2, 1}, // 3
     {D, 1, 1}, // Add
     {ADD, 1, 1}, // Add
-    {O, 20, 0}, // Power On/Off
-    {FUNCTION6, 20, 0}, // Power On/Off
+    {O, 5, 0}, // Power On/Off
+    {FUNCTION6, 5, 0}, // Power On/Off
     {ZERO, 4, 0}, // 0
     {NUMPAD_ZERO, 4, 0}, // 0
     {PERIOD, 3, 0}, // Decimal Point
@@ -235,8 +235,8 @@ static keyprog_t keygrps[256] = {
     {NUMPAD_THREE, 2, 1}, // 3
     {D, 1, 1}, // Add
     {ADD, 1, 1}, // Add
-    {O, 20, 0}, // Power On/Off
-    {FUNCTION6, 20, 0}, // Power On/Off
+    {O, 5, 0}, // Power On/Off
+    {FUNCTION6, 5, 0}, // Power On/Off
     {ZERO, 4, 0}, // 0
     {NUMPAD_ZERO, 4, 0}, // 0
     {PERIOD, 3, 0}, // Decimal Point
