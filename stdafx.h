@@ -83,6 +83,7 @@ typedef const char *LPCTSTR;
 #define _tcsrchr strrchr
 #define _tcscpy_s strcpy
 #define _tcslen strlen
+#define _tcscmp strcmp
 
 #elif defined(_MACVER)
 
