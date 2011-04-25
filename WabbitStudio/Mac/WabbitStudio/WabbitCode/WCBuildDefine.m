@@ -55,17 +55,12 @@
 	[super setName:legalValue];
 }
 
-- (NSDictionary *)dictionaryRepresentation {
-	// first grab super's dictionary
-	NSMutableDictionary *retval = [[[super dictionaryRepresentation] mutableCopy] autorelease];
+- (NSDictionary *)plistRepresentation {
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[super plistRepresentation]];
 	
-	// add our keys to it
+	[dict setObject:[self defineValue] forKey:@"defineValue"];
 	
-	if ([self defineValue])
-		[retval setObject:[self defineValue] forKey:@"defineValue"];
-	
-	// return a copy
-	return [[retval copy] autorelease];
+	return [[dict copy] autorelease];
 }
 
 @dynamic defineValue;

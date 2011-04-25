@@ -103,6 +103,15 @@ typedef NSUInteger WCPreferencesBuildingLocation;
 extern NSString *const kWCPreferencesBuildingLocationKey;
 extern NSString *const kWCPreferencesBuildingCustomLocationKey;
 
+extern NSString *const kWCPreferencesFilesTextEncodingKey;
+
+enum WCPreferencesFilesOpenWith {
+	WCPreferencesFilesOpenWithDoubleClick = 0,
+	WCPreferencesFilesOpenWithSingleClick = 1
+};
+typedef NSUInteger WCPreferencesFilesOpenWith;
+extern NSString *const kWCPreferencesFilesOpenWithKey;
+
 @interface WCPreferencesController : WCSingleton {
 @private
     

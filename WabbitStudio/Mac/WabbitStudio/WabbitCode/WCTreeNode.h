@@ -11,7 +11,7 @@
 
 extern NSString* const kWCTreeNodeChildNodesKey;
 
-@interface WCTreeNode : WCObject <NSCoding,NSCopying,NSMutableCopying> {
+@interface WCTreeNode : WCObject <NSCoding,NSCopying,NSMutableCopying,WCPlistRepresentation> {
 @private
 	__weak id _parentNode; // back pointer to our parent node; not retained
     NSMutableArray *_childNodes;

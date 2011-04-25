@@ -40,11 +40,7 @@
 			NSRect hRect = NSUnionRect([self rectOfRow:++start], [self rectOfRow:row]);
 			
 			// [[NSColor colorWithCalibratedRed:(229/255.0) green:(233/255.0) blue:(238/255.0) alpha:1.0] setFill];
-			// draw a lighter color for the background if we are key window
-			if ([[NSApplication sharedApplication] keyWindow] == [self window])
-				[[[self backgroundColor] lighterColor:0.55] setFill];
-			else
-				[[NSColor colorWithCalibratedWhite:0.941 alpha:1.0] setFill];
+			[[[self backgroundColor] lighterColor:0.55] setFill];
 			NSRectFill(hRect);
 			// use the standard grid color for the top and bottom bars
 			[[NSColor gridColor] setFill];

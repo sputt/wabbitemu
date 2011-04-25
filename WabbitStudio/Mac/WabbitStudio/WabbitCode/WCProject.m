@@ -552,38 +552,22 @@ static NSImage *_appIcon = nil;
 	
 	return [[retval copy] autorelease];
 }
-- (void)jumpToBuildMessage:(WCBuildMessage *)message; {
-	WCFileViewController *controller = [self addFileViewControllerForFile:[message file] inTabViewContext:[self currentTabViewContext]];
-	WCTextView *textView = [controller textView];
-	NSRange range = NSMakeRange([[[message file] textStorage] safeLineStartIndexForLineNumber:[message lineNumber]], 0);
-	
-	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
+- (void)jumpToObject:(id <WCJumpToObject>)object; {
+	[self jumpToObjects:[NSArray arrayWithObject:object]];
 }
-- (void)jumpToSymbol:(WCSymbol *)symbol; {
-	WCFileViewController *controller = [self addFileViewControllerForFile:[symbol file] inTabViewContext:[self currentTabViewContext]];
-	WCTextView *textView = [controller textView];
-	NSRange range = [symbol symbolRange];
-	
-	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
-}
-- (void)jumpToFindInProjectResult:(WCFindInProjectResult *)findResult; {
-	WCFileViewController *controller = [self addFileViewControllerForFile:[findResult file] inTabViewContext:[self currentTabViewContext]];
-	WCTextView *textView = [controller textView];
-	NSRange range = [findResult findRange];
-	
-	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
-}
-- (void)jumpToBreakpoint:(WCBreakpoint *)breakpoint; {
-	if ([breakpoint breakpointType] == WCBreakpointTypeProject) {
-		NSBeep();
-		return;
+- (void)jumpToObjects:(NSArray *)objects; {
+	for (id <WCJumpToObject> object in objects) {
+		if (![object shouldJumpToObject])
+			continue;
+		
+		WCFileViewController *controller = [self addFileViewControllerForFile:[object jumpToFile] inTabViewContext:[self currentTabViewContext]];
+		
+#ifdef DEBUG
+		NSAssert(controller != nil, @"controller in jumpToObjects cannot be nil!");
+#endif
+		
+		[[controller textView] setSelectedRangeSafely:[object jumpToRange] scrollRangeToVisible:YES];
 	}
-	
-	WCFileViewController *controller = [self addFileViewControllerForFile:[breakpoint file] inTabViewContext:[self currentTabViewContext]];
-	WCTextView *textView = [controller textView];
-	NSRange range = [breakpoint breakpointRange];
-	
-	[textView setSelectedRangeSafely:range scrollRangeToVisible:YES];
 }
 - (void)saveProjectFile; {
 	[self _updateProjectSettings];
@@ -1192,10 +1176,10 @@ static NSImage *_appIcon = nil;
 		NSArray *breakpoints = [[self breakpointsViewController] selectedObjects];
 		NSAlert *alert = [NSAlert alertWithMessageText:([breakpoints count] == 1)?NSLocalizedString(@"Delete Breakpoint", @"Delete Breakpoint"):[NSString stringWithFormat:NSLocalizedString(@"Delete %lu Breakpoints", @"delete multiple breakpoints alert message"),[breakpoints count]] defaultButton:NS_LOCALIZED_STRING_DELETE alternateButton:NS_LOCALIZED_STRING_CANCEL otherButton:nil informativeTextWithFormat:NSLocalizedString(@"This operation cannot be undone.", @"This operation cannot be undone.")];
 		
-		[alert setShowsSuppressionButton:YES];
-		[[alert suppressionButton] bind:@"value" toObject:[NSUserDefaultsController sharedUserDefaultsController] withKeyPath:[@"values." stringByAppendingString:kWCPreferencesAdvancedConfirmDeleteOfBreakpointKey] options:nil];
+		[alert setShowsSuppressionButton:YES]; 
 		
 		[alert beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSAlert *mAlert, NSInteger result) {
+			[[NSUserDefaults standardUserDefaults] setBool:([[mAlert suppressionButton] state] == NSOnState)?NO:YES forKey:kWCPreferencesAdvancedConfirmDeleteOfBreakpointKey];
 			if (result != NSAlertDefaultReturn)
 				return;
 			
@@ -1568,78 +1552,6 @@ static NSImage *_appIcon = nil;
 	_cachedAbsoluteFilePaths = [absoluteFilePaths retain];
 }
 @synthesize codeListing=_codeListing;
-#pragma mark IBActions
-- (IBAction)_outlineViewDoubleClick:(id)sender; {
-	NSArray *selectedNodes = [[self projectFilesOutlineViewController] selectedNodes];
-	
-	if ([selectedNodes count] == 1) {
-		if ([[[selectedNodes lastObject] representedObject] isTextFile])
-			[self addFileViewControllerForFile:[[selectedNodes lastObject] representedObject] inTabViewContext:[self currentTabViewContext]];
-		else if (![[[selectedNodes lastObject] representedObject] isLeaf]) {
-			if ([[[self projectFilesOutlineViewController] outlineView] isItemExpanded:[selectedNodes lastObject]])
-				[[[self projectFilesOutlineViewController] outlineView] collapseItem:[selectedNodes lastObject]];
-			else
-				[[[self projectFilesOutlineViewController] outlineView] expandItem:[selectedNodes lastObject]];
-		}
-	}
-	else {
-		for (NSTreeNode *node in selectedNodes) {
-			if ([[node representedObject] isTextFile])
-				[self addFileViewControllerForFile:[node representedObject] inTabViewContext:[self currentTabViewContext]];
-		}
-	}
-}
-- (IBAction)_buildMessagesOutlineViewDoubleAction:(id)sender {
-	NSTreeNode *node = [(NSTreeController *)[[[self buildMessagesViewController] outlineView] dataSource] selectedNode];
-	WCBuildMessage *message = [node representedObject];
-	
-	if ([message isLeaf])
-		[self jumpToBuildMessage:message];
-	else {
-		if ([[[self buildMessagesViewController] outlineView] isItemExpanded:node])
-			[[[self buildMessagesViewController] outlineView] collapseItem:node];
-		else
-			[[[self buildMessagesViewController] outlineView] expandItem:node];
-	}
-}
-- (IBAction)_symbolsOutlineViewDoubleAction:(id)sender {
-	WCSymbol *symbol = [[self symbolsViewController] selectedObject];
-	
-	if ([symbol isLeaf])
-		[self jumpToSymbol:symbol];
-	else {
-		if ([[[self symbolsViewController] outlineView] isItemExpanded:symbol])
-			[[[self symbolsViewController] outlineView] collapseItem:symbol];
-		else
-			[[[self symbolsViewController] outlineView] expandItem:symbol];
-	}
-}
-- (IBAction)_findInProjectOutlineViewDoubleAction:(id)sender {
-	WCFindInProjectResult *fResult = [[self findInProjectViewController] selectedObject];
-	NSTreeNode *node = [[self findInProjectViewController] selectedNode];
-	
-	if ([fResult isLeaf])
-		[self jumpToFindInProjectResult:fResult];
-	else {
-		if ([[[self findInProjectViewController] outlineView] isItemExpanded:node])
-			[[[self findInProjectViewController] outlineView] collapseItem:node];
-		else
-			[[[self findInProjectViewController] outlineView] expandItem:node];
-	}
-}
-- (IBAction)_breakpointsOutlineViewDoubleAction:(id)sender {
-	WCBreakpoint *breakpoint = [[self breakpointsViewController] selectedObject];
-	NSTreeNode *node = [[self breakpointsViewController] selectedNode];
-	
-	if ([breakpoint isLeaf])
-		[self jumpToBreakpoint:breakpoint];
-	else {
-		if ([[[self breakpointsViewController] outlineView] isItemExpanded:node])
-			[[[self breakpointsViewController] outlineView] collapseItem:node];
-		else
-			[[[self breakpointsViewController] outlineView] expandItem:node];
-	}
-}
 #pragma mark Notifications
 - (void)_readDataFromBuildTask:(NSNotification *)note {	
 	NSData *data = [[note userInfo] objectForKey:NSFileHandleNotificationDataItem];

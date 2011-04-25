@@ -25,15 +25,6 @@
     [super dealloc];
 }
 
-- (NSDictionary *)dictionaryRepresentation {
-	NSMutableDictionary *retval = [[[super dictionaryRepresentation] mutableCopy] autorelease];
-	
-	//[retval setObject:[self absolutePath] forKey:@"aliasURL"];
-	//[retval setObject:[self aliasBookmarkData] forKey:@"aliasBookmarkData"];
-	
-	return [[retval copy] autorelease];
-}
-
 - (id)initWithCoder:(NSCoder *)coder {
 	if (!(self = [super initWithCoder:coder]))
 		return nil;
@@ -58,6 +49,14 @@
 	copy->_cachedIsDirectory = _cachedIsDirectory;
 	
 	return copy;
+}
+
+- (NSDictionary *)plistRepresentation {
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[super plistRepresentation]];
+	
+	[dict setObject:[NSKeyedArchiver archivedDataWithRootObject:[self alias]] forKey:@"alias"];
+	
+	return [[dict copy] autorelease];
 }
 
 @dynamic UTI;

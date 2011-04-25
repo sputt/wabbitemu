@@ -17,4 +17,7 @@
 	
 }
 @property (readonly,nonatomic) NSOutlineView *outlineView;
+
+- (IBAction)breakpointsOutlineViewSingleClick:(id)sender;
+- (IBAction)breakpointsOutlineViewDoubleClick:(id)sender;
 @end

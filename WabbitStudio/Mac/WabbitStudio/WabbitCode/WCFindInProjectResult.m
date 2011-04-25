@@ -19,7 +19,6 @@
 - (void)dealloc {
 	_symbol = nil;
 	_file = nil;
-	//[_fileRef release];
 	[_findString release];
     [super dealloc];
 }
@@ -35,12 +34,20 @@
 		return [[self file] icon];
 	return [[self symbol] icon];
 }
-/*
-@dynamic file;
-- (WCFile *)file {
-	return [_fileRef target];
+
+- (NSRange)jumpToRange {
+	return [[[self file] textStorage] safeRangeForCharacterRange:[self findRange]];
 }
- */
+
+- (WCFile *)jumpToFile {
+	return [self file];
+}
+- (BOOL)shouldJumpToObject; {
+	if ([self parentNode] == nil)
+		return NO;
+	return YES;
+}
+
 @synthesize file=_file;
 @synthesize symbol=_symbol;
 @synthesize findRange=_findRange;
@@ -52,15 +59,6 @@
 - (id)initWithFile:(WCFile *)file range:(NSRange)range string:(NSAttributedString *)string symbol:(WCSymbol *)symbol; {
 	if (!(self = [super initWithName:nil]))
 		return nil;
-	
-	/*
-	_fileRef = [[MAZeroingWeakRef alloc] initWithTarget:file];
-	
-	[_fileRef setCleanupBlock:^(id target) {
-		if (![self parentNode])
-			[[[[target project] findInProjectViewControllerDontCreate] mutableFindResults] removeObject:self];
-	}];
-	*/
 	
 	_file = file; 
 	_symbol = symbol;

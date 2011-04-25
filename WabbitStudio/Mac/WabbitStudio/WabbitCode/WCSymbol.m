@@ -49,6 +49,22 @@ static NSMutableDictionary *_symbolIconCache = nil;
 	
 }
 
+- (NSRange)jumpToRange {
+	if ([self symbolType] == WCSymbolFileType)
+		return NSMakeRange(0, 0);
+	return [[[self file] textStorage] safeRangeForCharacterRange:[self symbolRange]];
+}
+
+- (WCFile *)jumpToFile {
+	return [self file];
+}
+
+- (BOOL)shouldJumpToObject; {
+	if ([self symbolType] == WCSymbolFileType)
+		return NO;
+	return YES;
+}
+
 - (NSString *)name {
 	if ([self symbolType] == WCSymbolFileType)
 		return [[self file] name];

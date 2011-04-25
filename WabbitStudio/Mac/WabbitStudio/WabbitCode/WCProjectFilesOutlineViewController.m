@@ -13,6 +13,9 @@
 #import "WCAlias.h"
 #import "NSTreeController+WCExtensions.h"
 #import "WCBuildTarget.h"
+#import "WCPreferencesController.h"
+#import "NSUserDefaults+WCExtensions.h"
+
 
 @implementation WCProjectFilesOutlineViewController
 #pragma mark *** Subclass Overrides ***
@@ -24,10 +27,7 @@
 - (void)loadView {
 	[super loadView];
 	
-	//[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_updateProjectFileRow:) name:kWCProjectNumberOfBuildTargetsDidChangeNotification object:[self project]];
-	
-	[_outlineView setDoubleAction:@selector(_outlineViewDoubleClick:)];
-	[_outlineView setTarget:[self project]];
+	[[self outlineView] setDoubleAction:@selector(filesOutlineViewDoubleClick:)];
 }
 
 - (NSString *)viewNibName {
@@ -80,6 +80,40 @@
 
 #pragma mark Accessors
 @synthesize outlineView=_outlineView;
+#pragma mark IBActions
+- (IBAction)filesOutlineViewSingleClick:(id)sender; {
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] != WCPreferencesFilesOpenWithSingleClick)
+		return;
+	
+	NSArray *selectedNodes = [self selectedNodes];
+	
+	for (NSTreeNode *node in selectedNodes) {
+		if ([[node representedObject] isTextFile])
+			[[self project] addFileViewControllerForFile:[node representedObject] inTabViewContext:[[self project] currentTabViewContext]];
+	}
+}
+- (IBAction)filesOutlineViewDoubleClick:(id)sender; {
+	NSArray *selectedNodes = [self selectedNodes];
+	
+	/*
+	if ([selectedNodes count] == 1 &&
+		![[[selectedNodes lastObject] representedObject] isLeaf]) {
+		
+		if ([[self outlineView] isItemExpanded:[selectedNodes lastObject]])
+			[[self outlineView] collapseItem:[selectedNodes lastObject]];
+		else
+			[[self outlineView] expandItem:[selectedNodes lastObject]];
+	}
+	 */
+	
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] != WCPreferencesFilesOpenWithDoubleClick)
+		return;
+	
+	for (NSTreeNode *node in selectedNodes) {
+		if ([[node representedObject] isTextFile])
+			[[self project] addFileViewControllerForFile:[node representedObject] inTabViewContext:[[self project] currentTabViewContext]];
+	}
+}
 #pragma mark *** Private Methods ***
 /*
 - (void)_updateProjectFileRow:(NSNotification *)note {

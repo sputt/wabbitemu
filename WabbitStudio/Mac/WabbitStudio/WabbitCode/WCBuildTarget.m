@@ -49,30 +49,6 @@ static NSDictionary *_outputTypesToFileExtensions = nil;
 		return [super keyPathsForValuesAffectingValueForKey:key];
 }
 
-- (NSDictionary *)dictionaryRepresentation {
-	// first grab super's dictionary
-	NSMutableDictionary *retval = [[[super dictionaryRepresentation] mutableCopy] autorelease];
-	
-	// add our keys to it
-	
-	if ([_includeDirectories count])
-		[retval setObject:[[self includeDirectories] valueForKeyPath:kWCObjectDictionaryRepresentationKey] forKey:kWCBuildTargetIncludeDirectoriesKey];
-	if ([_defines count])
-		[retval setObject:[[self defines] valueForKeyPath:kWCObjectDictionaryRepresentationKey] forKey:kWCBuildTargetDefinesKey];
-	
-	[retval setObject:[NSNumber numberWithUnsignedInteger:[self outputType]] forKey:kWCBuildTargetOutputTypeKey];
-	
-	[retval setObject:[[self inputFileAlias] dictionaryRepresentation] forKey:@"inputFileAlias"];
-	
-	[retval setObject:[NSNumber numberWithBool:_generateCodeListing] forKey:kWCBuildTargetGenerateCodeListingKey];
-	[retval setObject:[NSNumber numberWithBool:_generateLabelFile] forKey:kWCBuildTargetGenerateLabelFileKey];
-	[retval setObject:[NSNumber numberWithBool:_symbolsAreCaseSensitive] forKey:kWCBuildTargetLabelsAreCaseSensitiveKey];
-	[retval setObject:[NSNumber numberWithBool:_isActive] forKey:@"isActive"];
-	
-	// return a copy
-	return [[retval copy] autorelease];
-}
-
 - (void)setName:(NSString *)name {
 	if ([[self name] isEqualToString:name])
 		return;
@@ -162,6 +138,22 @@ static NSDictionary *_outputTypesToFileExtensions = nil;
 	[coder encodeObject:[NSNumber numberWithBool:[self symbolsAreCaseSensitive]] forKey:kWCBuildTargetLabelsAreCaseSensitiveKey];
 	[coder encodeObject:[NSNumber numberWithBool:[self isActive]] forKey:@"isActive"];
 	[super encodeWithCoder:coder];
+}
+#pragma mark WCPlistRepresentationProtocol
+- (NSDictionary *)plistRepresentation {
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[super plistRepresentation]];
+	
+	[dict setObject:[[self defines] valueForKeyPath:@"plistRepresentation"] forKey:kWCBuildTargetDefinesKey];
+	[dict setObject:[[self includeDirectories] valueForKeyPath:@"plistRepresentation"] forKey:kWCBuildTargetIncludeDirectoriesKey];
+	[dict setObject:[[self inputFileAlias] plistRepresentation] forKey:@"inputFileAlias"];
+	[dict setObject:[NSNumber numberWithUnsignedInteger:[self outputType]] forKey:kWCBuildTargetOutputTypeKey];
+	[dict setObject:[self outputName] forKey:kWCBuildTargetOutputNameKey];
+	[dict setObject:[NSNumber numberWithBool:[self generateLabelFile]] forKey:kWCBuildTargetGenerateLabelFileKey];
+	[dict setObject:[NSNumber numberWithBool:[self generateCodeListing]] forKey:kWCBuildTargetGenerateCodeListingKey];
+	[dict setObject:[NSNumber numberWithBool:[self symbolsAreCaseSensitive]] forKey:kWCBuildTargetLabelsAreCaseSensitiveKey];
+	[dict setObject:[NSNumber numberWithBool:[self isActive]] forKey:@"isActive"];
+	
+	return [[dict copy] autorelease];
 }
 #pragma mark *** Public Methods ***
 + (id)buildTargetWithOutputType:(WCBuildTargetOutputType)type outputName:(NSString *)outputName; {

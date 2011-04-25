@@ -7,6 +7,7 @@
 //
 
 #import "WCTreeNode.h"
+#import "WCJumpToObjectProtocol.h"
 
 enum WCBuildMessageType {
 	WCBuildMessageTypeFile = 0,
@@ -17,7 +18,7 @@ typedef NSUInteger WCBuildMessageType;
 
 @class WCFile;
 
-@interface WCBuildMessage : WCTreeNode {
+@interface WCBuildMessage : WCTreeNode <WCJumpToObject> {
 @private
 	__weak WCFile *_file;
     WCBuildMessageType _messageType;

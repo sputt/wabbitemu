@@ -73,17 +73,6 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
     [super dealloc];
 }
 
-- (NSDictionary *)dictionaryRepresentation {
-	// grab super's dictionary
-	NSMutableDictionary *retval = [NSMutableDictionary dictionaryWithDictionary:[super dictionaryRepresentation]];
-	
-	// add our keys to it
-	[retval addEntriesFromDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[[self alias] dictionaryRepresentation],@"alias", nil]];
-	
-	// return a copy
-	return [[retval copy] autorelease];
-}
-
 - (BOOL)isLeaf {
 	if ([self isDirectory])
 		return NO;
@@ -127,6 +116,45 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	}
 	
 	return self;
+}
+#pragma mark NSCopying
+- (id)copyWithZone:(NSZone *)zone  {
+	WCFile *copy = [super copyWithZone:zone];
+	
+	copy->_UUID = [_UUID retain];
+	copy->_alias = [_alias retain];
+	copy->_textStorage = [_textStorage retain];
+	copy->_undoManager = [_undoManager retain];
+	copy->_textViewForFindInProjectReplace = [_textViewForFindInProjectReplace retain];
+	copy->_encoding = _encoding;
+	copy->_symbolScanner = [_symbolScanner retain];
+	copy->_project = _project;
+	copy->_lineNumbersToBreakpoints = [_lineNumbersToBreakpoints retain];
+	copy->_lineNumbersToErrorMessages = [_lineNumbersToErrorMessages retain];
+	copy->_lineNumbersToWarningMessages = [_lineNumbersToWarningMessages retain];
+	
+	return copy;
+}
+#pragma mark NSMutableCopying
+- (id)mutableCopyWithZone:(NSZone *)zone {
+	WCFile *copy = [super mutableCopyWithZone:zone];
+	
+	copy->_UUID = [_UUID retain];
+	copy->_alias = [[WCAlias alloc] initWithURL:[self URL]];
+	copy->_encoding = _encoding;
+	copy->_project = _project;
+	
+	return copy;
+}
+#pragma mark NSPlistRepresentationProtocol
+- (NSDictionary *)plistRepresentation {
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[super plistRepresentation]];
+	
+	[dict setObject:[self UUID] forKey:@"UUID"];
+	[dict setObject:[[self alias] plistRepresentation] forKey:@"alias"];
+	[dict setObject:[[_lineNumbersToBreakpoints allValues] valueForKey:@"plistRepresentation"] forKey:@"breakpoints"];
+	
+	return [[dict copy] autorelease];
 }
 #pragma mark *** Public Methods ***
 - (BOOL)saveFile:(NSError **)outError; {
@@ -452,10 +480,18 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	if (!_textStorage) {
 		_encoding = NSUTF8StringEncoding;
 		NSString *string = nil;
-		if ([self URL])
-			string = [[[NSString alloc] initWithContentsOfURL:[self URL] usedEncoding:&_encoding error:NULL] autorelease];
-		else
-			string = @"";
+		if ([self URL]) {
+			NSStringEncoding encoding = [[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesTextEncodingKey];
+			string = [[[NSString alloc] initWithContentsOfURL:[self URL] encoding:encoding error:NULL] autorelease];
+			
+			if (string == nil)
+				string = [[[NSString alloc] initWithContentsOfURL:[self URL] usedEncoding:&encoding error:NULL] autorelease];
+			
+			_encoding = encoding;
+		}
+		
+		if (string == nil)
+			string = NSLocalizedString(@"Windoze is stups. That is all.", @"blank file default contents");
 		
 		_textStorage = [[WCTextStorage alloc] initWithString:string attributes:[NSDictionary dictionaryWithObjectsAndKeys:[[NSUserDefaults standardUserDefaults] fontForKey:kWCPreferencesEditorFontKey],NSFontAttributeName, nil]];
 		

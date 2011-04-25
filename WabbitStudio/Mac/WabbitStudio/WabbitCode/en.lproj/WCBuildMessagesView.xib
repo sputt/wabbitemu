@@ -73,7 +73,6 @@
 								<string key="NSFrame">{{223, -1}, {15, 24}}</string>
 								<reference key="NSSuperview" ref="74886280"/>
 								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSImageCell" key="NSCell" id="761493697">
 									<int key="NSCellFlags">130560</int>
@@ -112,7 +111,7 @@
 										<string key="NSFrameSize">{238, 249}</string>
 										<reference key="NSSuperview" ref="1049115016"/>
 										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView" ref="551951070"/>
+										<reference key="NSNextKeyView" ref="424087476"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="_NSCornerView" key="NSCornerView">
 											<nil key="NSNextResponder"/>
@@ -245,7 +244,7 @@
 						<string key="NSFrame">{{0, 23}, {238, 249}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="424087476"/>
+						<reference key="NSNextKeyView" ref="1049115016"/>
 						<int key="NSsFlags">528</int>
 						<reference key="NSVScroller" ref="551951070"/>
 						<reference key="NSHScroller" ref="424087476"/>
@@ -361,6 +360,14 @@
 						<reference key="destination" ref="321391759"/>
 					</object>
 					<int key="connectionID">33</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">buildMessagesOutlineViewSingleClick:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="321391759"/>
+					</object>
+					<int key="connectionID">34</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -523,7 +530,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">33</int>
+			<int key="maxID">34</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -599,7 +606,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">WCBuildMessagesOutlineView</string>
-					<string key="superclassName">NSOutlineView</string>
+					<string key="superclassName">WCGroupBackgroundOutlineView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCBuildMessagesOutlineView.h</string>
@@ -608,6 +615,38 @@
 				<object class="IBPartialClassDescription">
 					<string key="className">WCBuildMessagesViewController</string>
 					<string key="superclassName">WCProjectNavigationViewController</string>
+					<object class="NSMutableDictionary" key="actions">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>buildMessagesOutlineViewDoubleClick:</string>
+							<string>buildMessagesOutlineViewSingleClick:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<bool key="EncodedWithXMLCoder">YES</bool>
+						<object class="NSArray" key="dict.sortedKeys">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>buildMessagesOutlineViewDoubleClick:</string>
+							<string>buildMessagesOutlineViewSingleClick:</string>
+						</object>
+						<object class="NSMutableArray" key="dict.values">
+							<bool key="EncodedWithXMLCoder">YES</bool>
+							<object class="IBActionInfo">
+								<string key="name">buildMessagesOutlineViewDoubleClick:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">buildMessagesOutlineViewSingleClick:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+						</object>
+					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<string key="NS.key.0">_outlineView</string>
 						<string key="NS.object.0">NSOutlineView</string>
@@ -625,11 +664,35 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">WCContexualMenuOutlineView</string>
+					<string key="superclassName">NSOutlineView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCContexualMenuOutlineView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCGroupBackgroundOutlineView</string>
+					<string key="superclassName">WCContexualMenuOutlineView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCGroupBackgroundOutlineView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">WCIconTextFieldCell</string>
-					<string key="superclassName">WCVerticallyCenteredTextFieldCell</string>
+					<string key="superclassName">WCMultiLineTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCIconTextFieldCell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCMultiLineTextFieldCell</string>
+					<string key="superclassName">WCVerticallyCenteredTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCMultiLineTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

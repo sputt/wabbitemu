@@ -12,6 +12,8 @@
 #import "WCProject.h"
 #import "WCProjectFile.h"
 #import "NSTreeController+WCExtensions.h"
+#import "WCPreferencesController.h"
+#import "NSUserDefaults+WCExtensions.h"
 
 
 @implementation WCBreakpointsViewController
@@ -30,8 +32,7 @@
 - (void)loadView {
 	[super loadView];
 	
-	[[self outlineView] setDoubleAction:@selector(_breakpointsOutlineViewDoubleAction:)];
-	[[self outlineView] setTarget:[self project]];
+	[[self outlineView] setDoubleAction:@selector(breakpointsOutlineViewDoubleClick:)];
 	
 	[[self outlineView] expandItem:nil expandChildren:YES];
 	
@@ -93,9 +94,9 @@
 		case WCBreakpointTypeProject:
 			return nil;
 		case WCBreakpointTypeFile:
-			return [NSString stringWithFormat:NSLocalizedString(@"Name: %@\nPath: %@\nLine Breakpoints: %lu", @"file breakpoint tooltip"),[[[item representedObject] file] name],[[[item representedObject] file] absolutePathForDisplay],[[[item representedObject] childNodes] count]];
+			return [NSString stringWithFormat:NSLocalizedString(@"Name: %@\nLine Breakpoints: %lu", @"file breakpoint tooltip"),[[[item representedObject] file] name],[[[item representedObject] childNodes] count]];
 		case WCBreakpointTypeLine:
-			return [NSString stringWithFormat:NSLocalizedString(@"Name: %@\nPath: %@\nSymbol: %@\nAddress: $%04X\nPage: %u", @"line breakpoint tooltip"),[[item representedObject] name],[[[item representedObject] file] absolutePathForDisplay],[[item representedObject] symbolName],[(WCBreakpoint *)[item representedObject] address],[[item representedObject] page]];
+			return [NSString stringWithFormat:NSLocalizedString(@"Name: %@\nSymbol: %@\nAddress: $%04X\nPage: %u", @"line breakpoint tooltip"),[[item representedObject] name],[[item representedObject] symbolName],[(WCBreakpoint *)[item representedObject] address],[[item representedObject] page]];
 		default:
 			break;
 	}
@@ -113,6 +114,19 @@
 }
 
 @synthesize outlineView=_outlineView;
+
+- (IBAction)breakpointsOutlineViewSingleClick:(id)sender; {
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] != WCPreferencesFilesOpenWithSingleClick)
+		return;
+	
+	[[self project] jumpToObjects:[self selectedObjects]];
+}
+- (IBAction)breakpointsOutlineViewDoubleClick:(id)sender; {
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] != WCPreferencesFilesOpenWithDoubleClick)
+		return;
+	
+	[[self project] jumpToObjects:[self selectedObjects]];
+}
 
 - (void)_fileDidAddBreakpoint:(NSNotification *)note {
 	WCFile *file = [note object];
@@ -183,6 +197,6 @@
 	if ([[[note object] file] project] != [self project])
 		return;
 	
-	[[self outlineView] setNeedsDisplayInRect:[[self outlineView] rectOfRow:[[self outlineView] rowForItem:[(NSTreeController *)[[self outlineView] dataSource] treeNodeForRepresentedObject:[note object]]]]];
+	[[self outlineView] setNeedsDisplay:YES];
 }
 @end

@@ -82,7 +82,6 @@
 								<string key="NSFrame">{{217, -1}, {15, 24}}</string>
 								<reference key="NSSuperview" ref="67028847"/>
 								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSImageCell" key="NSCell" id="894335645">
 									<int key="NSCellFlags">130560</int>
@@ -121,7 +120,7 @@
 										<string key="NSFrameSize">{232, 210}</string>
 										<reference key="NSSuperview" ref="294214576"/>
 										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView" ref="649857546"/>
+										<reference key="NSNextKeyView" ref="266006679"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="_NSCornerView" key="NSCornerView">
 											<nil key="NSNextResponder"/>
@@ -253,7 +252,7 @@
 						<string key="NSFrame">{{0, 23}, {232, 210}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="266006679"/>
+						<reference key="NSNextKeyView" ref="294214576"/>
 						<int key="NSsFlags">528</int>
 						<reference key="NSVScroller" ref="649857546"/>
 						<reference key="NSHScroller" ref="266006679"/>
@@ -1006,6 +1005,14 @@
 					</object>
 					<int key="connectionID">89</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">findInProjectOutlineViewSingleClick:</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="339203053"/>
+					</object>
+					<int key="connectionID">90</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -1468,7 +1475,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">89</int>
+			<int key="maxID">90</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -1543,6 +1550,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">WCContexualMenuOutlineView</string>
+					<string key="superclassName">NSOutlineView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCContexualMenuOutlineView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">WCFindBarBackgroundView</string>
 					<string key="superclassName">WCGradientView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
@@ -1552,7 +1567,7 @@
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">WCFindInProjectOutlineView</string>
-					<string key="superclassName">NSOutlineView</string>
+					<string key="superclassName">WCGroupBackgroundOutlineView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCFindInProjectOutlineView.h</string>
@@ -1568,6 +1583,8 @@
 							<string>changeFindScope:</string>
 							<string>changeFindSubScope:</string>
 							<string>findInProject:</string>
+							<string>findInProjectOutlineViewDoubleClick:</string>
+							<string>findInProjectOutlineViewSingleClick:</string>
 							<string>replaceInProject:</string>
 							<string>toggleReplaceControls:</string>
 						</object>
@@ -1575,6 +1592,8 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>NSMenuItem</string>
 							<string>NSMenuItem</string>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1587,6 +1606,8 @@
 							<string>changeFindScope:</string>
 							<string>changeFindSubScope:</string>
 							<string>findInProject:</string>
+							<string>findInProjectOutlineViewDoubleClick:</string>
+							<string>findInProjectOutlineViewSingleClick:</string>
 							<string>replaceInProject:</string>
 							<string>toggleReplaceControls:</string>
 						</object>
@@ -1602,6 +1623,14 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">findInProject:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">findInProjectOutlineViewDoubleClick:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">findInProjectOutlineViewSingleClick:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -1667,11 +1696,27 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">WCGroupBackgroundOutlineView</string>
+					<string key="superclassName">WCContexualMenuOutlineView</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCGroupBackgroundOutlineView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">WCIconTextFieldCell</string>
-					<string key="superclassName">WCVerticallyCenteredTextFieldCell</string>
+					<string key="superclassName">WCMultiLineTextFieldCell</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCIconTextFieldCell.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
+					<string key="className">WCMultiLineTextFieldCell</string>
+					<string key="superclassName">WCVerticallyCenteredTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/WCMultiLineTextFieldCell.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

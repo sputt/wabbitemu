@@ -33,15 +33,12 @@ NSString* const kWCTreeNodeChildNodesKey = @"childNodes";
     
     return self;
 }
-
-- (NSDictionary *)dictionaryRepresentation {
-	// first grab super's dictionary
-	NSMutableDictionary *retval = [NSMutableDictionary dictionaryWithDictionary:[super dictionaryRepresentation]];
+#pragma mark WCPlistRepresentationProtocol
+- (NSDictionary *)plistRepresentation {
+	NSMutableDictionary *retval = [NSMutableDictionary dictionaryWithDictionary:[super plistRepresentation]];
 	
-	// add our keys to it
-	[retval addEntriesFromDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[[self childNodes] valueForKeyPath:kWCObjectDictionaryRepresentationKey],kWCTreeNodeChildNodesKey, nil]];
+	[retval addEntriesFromDictionary:[NSDictionary dictionaryWithObjectsAndKeys:[[self childNodes] valueForKeyPath:@"plistRepresentation"],kWCTreeNodeChildNodesKey, nil]];
 	
-	// return a copy
 	return [[retval copy] autorelease];
 }
 #pragma mark *** Protocol Overrides ***

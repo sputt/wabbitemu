@@ -77,7 +77,7 @@
 	return bottom;
 }
 		 
-@synthesize secondaryTitle=_secondaryTitle;
+@dynamic secondaryTitle;
 - (NSString *)secondaryTitle {
 	return [_secondaryTextFieldCell stringValue];
 }

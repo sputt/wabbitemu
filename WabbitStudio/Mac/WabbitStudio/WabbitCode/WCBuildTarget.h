@@ -8,6 +8,7 @@
 
 #import "WCTreeNode.h"
 
+
 enum WCBuildTargetOutputType {
 	WCBuildTargetOutputTypeBinary = 0,
 	WCBuildTargetOutputType73 = 1,
@@ -28,7 +29,7 @@ extern NSString *const kWCBuildTargetOutputTypeDidChangeNotification;
 
 @class WCFile,WCProject,WCAlias;
 
-@interface WCBuildTarget : WCTreeNode <NSCoding,NSCopying,NSMutableCopying> {
+@interface WCBuildTarget : WCTreeNode <NSCoding,NSCopying,NSMutableCopying,WCPlistRepresentation> {
 @private
 	__weak WCProject *_project;
     WCBuildTargetOutputType _outputType;

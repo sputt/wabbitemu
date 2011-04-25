@@ -75,6 +75,9 @@ NSString *const kWCPreferencesBuildingTreatWarningsAsErrorsKey = @"buildingTreat
          
 NSString *const kWCPreferencesAdvancedProjectTemplatesPreferUserIncludeFilesKey = @"advancedProjectTemplatesPreferUserIncludeFiles";
 
+NSString *const kWCPreferencesFilesTextEncodingKey = @"textEncoding";
+NSString *const kWCPreferencesFilesOpenWithKey = @"filesOpenWith";
+
 @implementation WCPreferencesController
 #pragma mark *** Subclass Overrides ***
 + (void)initialize {
@@ -200,6 +203,11 @@ NSString *const kWCPreferencesAdvancedProjectTemplatesPreferUserIncludeFilesKey 
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesAdvancedProjectTemplatesPreferUserIncludeFilesKey];
 	// confirm deletion of breakpoints
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesAdvancedConfirmDeleteOfBreakpointKey];
+	
+	// files text encoding
+	[preferences setObject:[NSNumber numberWithUnsignedInteger:NSUTF8StringEncoding] forKey:kWCPreferencesFilesTextEncodingKey];
+	// files open with
+	[preferences setObject:[NSNumber numberWithUnsignedInteger:WCPreferencesFilesOpenWithDoubleClick] forKey:kWCPreferencesFilesOpenWithKey];
 	
 	[[NSUserDefaults standardUserDefaults] registerDefaults:preferences];
 }

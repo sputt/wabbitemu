@@ -12,6 +12,7 @@
 @class PSMTabBarControl,WCTextView;
 
 @protocol WCTabViewContext <NSObject>
+@required
 - (NSWindow *)tabWindow;
 - (PSMTabBarControl *)tabBarControl;
 - (WCTextView *)selectedTextView;

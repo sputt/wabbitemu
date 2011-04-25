@@ -10,6 +10,7 @@
 #import "WCPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "NSObject+WCExtensions.h"
+#import "WCDefines.h"
 
 
 @interface WCTextStorage (Private)
@@ -138,6 +139,14 @@
 	else if (lineNumber >= [self numberOfLines])
 		lineNumber = [self numberOfLines] - 1;
 	return [self lineStartIndexForLineNumber:lineNumber];
+}
+
+- (NSRange)safeRangeForCharacterRange:(NSRange)characterRange; {
+	if ([self numberOfLines] == 0)
+		return WCEmptyRange;
+	if (NSMaxRange(characterRange) >= [[self string] length])
+		return WCEmptyRange;
+	return characterRange;
 }
 
 - (void)_calculateLineStartIndexes; {

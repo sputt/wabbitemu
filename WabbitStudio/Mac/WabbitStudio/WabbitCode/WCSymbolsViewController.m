@@ -14,6 +14,9 @@
 #import "WCTextStorage.h"
 #import "WCSymbolScanner.h"
 #import "NSObject+WCExtensions.h"
+#import "WCPreferencesController.h"
+#import "NSUserDefaults+WCExtensions.h"
+
 
 @interface WCSymbolsViewController ()
 @property (readonly,nonatomic) NSMutableArray *symbols;
@@ -52,8 +55,7 @@
 	
 	[self setupNotificationObserving];
 	
-	[[self outlineView] setDoubleAction:@selector(_symbolsOutlineViewDoubleAction:)];
-	[[self outlineView] setTarget:[self project]];
+	[[self outlineView] setDoubleAction:@selector(symbolsOutlineViewDoubleClick:)];
 }
 
 - (NSArray *)notificationDictionaries {
@@ -171,6 +173,21 @@
 	
 	for (WCSymbol *symbol in [self filteredSymbols])
 		[[self outlineView] expandItem:symbol];
+}
+
+- (IBAction)symbolsOutlineViewSingleClick:(id)sender; {
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] != WCPreferencesFilesOpenWithSingleClick)
+		return;
+	
+	[[self project] jumpToObjects:[self selectedObjects]];
+}
+- (IBAction)symbolsOutlineViewDoubleClick:(id)sender; {
+	NSArray *selectedObjects = [self selectedObjects];
+	
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] != WCPreferencesFilesOpenWithDoubleClick)
+		return;
+	
+	[[self project] jumpToObjects:selectedObjects];
 }
 #pragma mark *** Private Methods ***
 - (void)_resetFilterString {

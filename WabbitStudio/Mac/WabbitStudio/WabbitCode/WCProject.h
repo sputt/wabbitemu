@@ -8,6 +8,7 @@
 
 #import <AppKit/NSDocument.h>
 #import "WCTabViewContextProtocol.h"
+#import "WCJumpToObjectProtocol.h"
 
 extern NSString *const kWCProjectFileKey;
 extern NSString *const kWCProjectVersionKey;
@@ -140,10 +141,8 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 - (NSArray *)symbolsForSymbolName:(NSString *)name;
 
 - (void)removeAllBuildMessages;
-- (void)jumpToBuildMessage:(WCBuildMessage *)message;
-- (void)jumpToSymbol:(WCSymbol *)symbol;
-- (void)jumpToFindInProjectResult:(WCFindInProjectResult *)findResult;
-- (void)jumpToBreakpoint:(WCBreakpoint *)breakpoint;
+- (void)jumpToObject:(id <WCJumpToObject>)object;
+- (void)jumpToObjects:(NSArray *)objects;
 
 - (void)saveProjectFile;
 

@@ -13,5 +13,5 @@
 @private
     
 }
-
+- (IBAction)selectTextEncoding:(NSPopUpButton *)sender;
 @end

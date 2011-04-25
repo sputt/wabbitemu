@@ -55,4 +55,7 @@
 - (IBAction)toggleReplaceControls:(id)sender;
 - (IBAction)changeFindScope:(NSMenuItem *)sender;
 - (IBAction)changeFindSubScope:(NSMenuItem *)sender;
+
+- (IBAction)findInProjectOutlineViewSingleClick:(id)sender;
+- (IBAction)findInProjectOutlineViewDoubleClick:(id)sender;
 @end

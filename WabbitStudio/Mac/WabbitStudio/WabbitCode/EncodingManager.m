@@ -41,6 +41,7 @@
 
 #import <Cocoa/Cocoa.h>
 #import "EncodingManager.h"
+#import "WCPreferencesController.h"
 
 
 /*
@@ -53,7 +54,7 @@
 - (id)initTextCell:(NSString *)stringValue pullsDown:(BOOL)pullDown {
     if ((self = [super initTextCell:stringValue pullsDown:pullDown])) {        
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(encodingsListChanged:) name:@"EncodingsListChanged" object:nil];
-        [[EncodingManager sharedInstance] setupPopUpCell:self selectedEncoding:NoStringEncoding withDefaultEntry:NO];
+        [[EncodingManager sharedInstance] setupPopUpCell:self selectedEncoding:[[[NSUserDefaults standardUserDefaults] objectForKey:kWCPreferencesFilesTextEncodingKey] unsignedIntegerValue] withDefaultEntry:NO];
     }
     return self;
 }
@@ -61,7 +62,7 @@
 - (id)initWithCoder:(NSCoder *)coder {
     if ((self = [super initWithCoder:coder])) {
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(encodingsListChanged:) name:@"EncodingsListChanged" object:nil];
-        [[EncodingManager sharedInstance] setupPopUpCell:self selectedEncoding:NoStringEncoding withDefaultEntry:([self numberOfItems] > 0 && [[self itemAtIndex:0] tag] == WantsAutomaticTag)];
+        [[EncodingManager sharedInstance] setupPopUpCell:self selectedEncoding:[[[NSUserDefaults standardUserDefaults] objectForKey:kWCPreferencesFilesTextEncodingKey] unsignedIntegerValue] withDefaultEntry:([self numberOfItems] > 0 && [[self itemAtIndex:0] tag] == WantsAutomaticTag)];
     }
     return self;
 }

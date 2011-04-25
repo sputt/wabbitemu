@@ -69,6 +69,30 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	return copy;
 }
 
+- (NSDictionary *)plistRepresentation {
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[super plistRepresentation]];
+	
+	[dict setObject:[NSNumber numberWithUnsignedInteger:[self lineNumber]] forKey:@"lineNumber"];
+	[dict setObject:[NSNumber numberWithBool:[self isActive]] forKey:@"isActive"];
+	[dict setObject:[NSNumber numberWithUnsignedInteger:[self breakpointType]] forKey:@"type"];
+	
+	return [[dict copy] autorelease];
+}
+
+- (NSRange)jumpToRange {
+	return [self breakpointRange];
+}
+
+- (WCFile *)jumpToFile {
+	return [self file];
+}
+
+- (BOOL)shouldJumpToObject; {
+	if ([self breakpointType] == WCBreakpointTypeFile)
+		return NO;
+	return YES;
+}
+
 - (BOOL)isLeaf {
 	if ([self breakpointType] == WCBreakpointTypeLine)
 		return YES;
@@ -166,7 +190,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 @dynamic symbolNameAndLineNumber;
 - (NSString *)symbolNameAndLineNumber {
 	if ([self breakpointType] == WCBreakpointTypeLine)
-		return [NSString stringWithFormat:NSLocalizedString(@"%@ - %lu", @"breakpoint symbol name and line number"),[self symbolName],[self lineNumber]+1];
+		return [NSString stringWithFormat:NSLocalizedString(@"%@ - line %lu", @"breakpoint symbol name and line number"),[self symbolName],[self lineNumber]+1];
 	return [self name];
 }
 @synthesize isRam=_isRam;
@@ -197,8 +221,6 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	
 	NSRange entireRange = NSMakeRange(0, [codeListing length]);
 	NSRange searchRange = NSMakeRange(NSMaxRange(fileRange), [codeListing length]-NSMaxRange(fileRange));
-	
-	NSLog(@"%@ %lu",NSStringFromRange(entireRange),(unsigned long)[codeListing length]);
 	
 	while (searchRange.location < entireRange.length) {
 		NSRange lineRange = [codeListing rangeOfString:lineString options:NSLiteralSearch range:searchRange];

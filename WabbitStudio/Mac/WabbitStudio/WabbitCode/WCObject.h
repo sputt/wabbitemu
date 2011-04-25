@@ -10,17 +10,16 @@
 #import <Foundation/NSString.h>
 #import <AppKit/NSImage.h>
 #import <Foundation/NSDictionary.h>
+#import "WCPlistRepresentationProtocol.h"
 
-extern NSString* const kWCObjectDictionaryRepresentationKey;
 
-@interface WCObject : NSObject <NSCoding,NSCopying,NSMutableCopying> {
+@interface WCObject : NSObject <NSCoding,NSCopying,NSMutableCopying,WCPlistRepresentation> {
 @private
 	NSString *_name;
 	NSImage *_icon;
 }
 @property (readonly,nonatomic) NSImage *icon;
 @property (copy,nonatomic) NSString *name;
-@property (readonly,nonatomic) NSDictionary *dictionaryRepresentation;
 
 + (id)objectWithName:(NSString *)name;
 - (id)initWithName:(NSString *)name;

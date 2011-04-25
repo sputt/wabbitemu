@@ -7,15 +7,16 @@
 //
 
 #import "WCTreeNode.h"
+#import "WCJumpToObjectProtocol.h"
 
-@class WCFile,WCSymbol,MAZeroingWeakRef;
+@class WCFile,WCSymbol;
 
-@interface WCFindInProjectResult : WCTreeNode {
+@interface WCFindInProjectResult : WCTreeNode <WCJumpToObject> {
 @private
-	WCFile *_file;
-	WCSymbol *_symbol;
-	NSRange _findRange;
-	NSAttributedString *_findString;
+	__weak WCFile *_file;
+	__weak WCSymbol *_symbol;
+	NSRange _findRange; // the matching range
+	NSAttributedString *_findString; // string containing the entire line(s) that the match is contained in
 }
 @property (readonly,nonatomic) WCFile *file;
 @property (readonly,nonatomic) NSRange findRange;

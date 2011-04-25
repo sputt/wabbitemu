@@ -7,6 +7,7 @@
 //
 
 #import "WCAddFilesToProjectViewController.h"
+#import "WCPreferencesController.h"
 
 
 @implementation WCAddFilesToProjectViewController
@@ -20,4 +21,7 @@
     [super dealloc];
 }
 
+- (IBAction)selectTextEncoding:(NSPopUpButton *)sender; {
+	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithUnsignedInteger:(NSUInteger)[sender selectedTag]] forKey:kWCPreferencesFilesTextEncodingKey];
+}
 @end

@@ -7,10 +7,11 @@
 //
 
 #import "WCObject.h"
+#import "WCPlistRepresentationProtocol.h"
 
 @class NDAlias;
 
-@interface WCAlias : WCObject <NSCoding,NSCopying> {
+@interface WCAlias : WCObject <NSCoding,NSCopying,WCPlistRepresentation> {
 @private
     NDAlias *_alias;
 	NSString *_cachedUTI;

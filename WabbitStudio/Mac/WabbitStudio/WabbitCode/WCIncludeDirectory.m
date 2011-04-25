@@ -47,6 +47,14 @@
 	return copy;
 }
 
+- (NSDictionary *)plistRepresentation {
+	NSMutableDictionary *dict = [NSMutableDictionary dictionaryWithDictionary:[super plistRepresentation]];
+	
+	[dict setObject:[[self alias] plistRepresentation] forKey:@"alias"];
+	
+	return [[dict copy] autorelease];
+}
+
 - (NSString *)name {
 	return [[self absolutePathForDisplay] lastPathComponent];
 }

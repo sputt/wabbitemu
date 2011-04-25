@@ -9,8 +9,6 @@
 #import "WCObject.h"
 #import <AppKit/NSImage.h>
 
-NSString* const kWCObjectDictionaryRepresentationKey = @"dictionaryRepresentation";
-
 static NSString* const kWCObjectNameKey = @"name";
 static NSString* const kWCObjectClassKey = @"class";
 
@@ -53,6 +51,11 @@ static NSString* const kWCObjectClassKey = @"class";
 	
 	return copy;
 }
+#pragma mark WCPlistRepresentationProtocol
+- (NSDictionary *)plistRepresentation {
+	// this is the base class, just return a new dictionary with our values
+	return [NSDictionary dictionaryWithObjectsAndKeys:[self className],kWCObjectClassKey,[self name],kWCObjectNameKey, nil];
+}
 #pragma mark *** Public Methods ***
 + (id)objectWithName:(NSString *)name; {
 	return [self objectWithName:name icon:nil];
@@ -76,11 +79,5 @@ static NSString* const kWCObjectClassKey = @"class";
 #pragma mark Accessors
 @synthesize name=_name;
 @synthesize icon=_icon;
-
-@dynamic dictionaryRepresentation;
-- (NSDictionary *)dictionaryRepresentation {
-	// this is the base class, just return a new dictionary with our values
-	return [NSDictionary dictionaryWithObjectsAndKeys:[self className],kWCObjectClassKey,[self name],kWCObjectNameKey, nil];
-}
 
 @end

@@ -13,6 +13,9 @@
 #import "WCAlias.h"
 #import "NSTreeController+WCExtensions.h"
 #import "WCBadgedTextFieldCell.h"
+#import "WCPreferencesController.h"
+#import "NSUserDefaults+WCExtensions.h"
+
 
 @implementation WCBuildMessagesViewController
 #pragma mark *** Subclass Overrides ***
@@ -27,8 +30,7 @@
 - (void)loadView {
 	[super loadView];
 	
-	[[self outlineView] setDoubleAction:@selector(_buildMessagesOutlineViewDoubleAction:)];
-	[[self outlineView] setTarget:[self project]];
+	[[self outlineView] setDoubleAction:@selector(buildMessagesOutlineViewDoubleClick:)];
 }
 
 - (NSArray *)selectedObjects {
@@ -45,13 +47,6 @@
 	[cell setIcon:[message icon]];
 	[cell setIconSize:NSMakeSize(16.0, 16.0)];
 	[cell setBadgeCount:[[item representedObject] messagesCount]];
-	
-	/*
-	if (![message parentNode])
-		[cell setIconSize:NSMakeSize(24.0, 24.0)];
-	else
-		[cell setIconSize:NSMakeSize(16.0, 16.0)];
-	 */
 }
 
 - (NSString *)outlineView:(NSOutlineView *)outlineView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tc item:(id)item mouseLocation:(NSPoint)mouseLocation {
@@ -76,5 +71,20 @@
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowCellExpansionForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
 	return NO;
 }
+
+- (IBAction)buildMessagesOutlineViewSingleClick:(id)sender; {
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] != WCPreferencesFilesOpenWithSingleClick)
+		return;
+	
+	[[self project] jumpToObjects:[self selectedObjects]];
+}
+- (IBAction)buildMessagesOutlineViewDoubleClick:(id)sender; {
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] != WCPreferencesFilesOpenWithDoubleClick)
+		return;
+	
+	[[self project] jumpToObjects:[self selectedObjects]];
+}
+
 @synthesize outlineView=_outlineView;
+
 @end

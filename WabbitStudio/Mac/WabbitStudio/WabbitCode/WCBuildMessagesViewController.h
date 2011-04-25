@@ -14,4 +14,7 @@
     IBOutlet NSOutlineView *_outlineView;
 }
 @property (readonly,nonatomic) NSOutlineView *outlineView;
+
+- (IBAction)buildMessagesOutlineViewSingleClick:(id)sender;
+- (IBAction)buildMessagesOutlineViewDoubleClick:(id)sender;
 @end

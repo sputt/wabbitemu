@@ -39,4 +39,5 @@ extern NSString* const kWCPreferencesWindowControllerAdvancedIdentifier;
 }
 - (IBAction)chooseEditorFont:(id)sender;
 - (IBAction)chooseCustomBuildLocation:(id)sender;
+- (IBAction)selectTextEncoding:(NSPopUpButton *)sender;
 @end

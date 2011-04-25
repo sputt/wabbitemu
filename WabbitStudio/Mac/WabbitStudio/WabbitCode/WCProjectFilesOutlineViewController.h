@@ -15,4 +15,6 @@
 }
 @property (readonly,nonatomic) NSOutlineView *outlineView;
 
+- (IBAction)filesOutlineViewSingleClick:(id)sender;
+- (IBAction)filesOutlineViewDoubleClick:(id)sender;
 @end

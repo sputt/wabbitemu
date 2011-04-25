@@ -17,4 +17,10 @@
 	return NSBackgroundStyleRaised;
 }
 
+- (NSColor *)textColor {
+	if ([self isHighlighted])
+		return [NSColor alternateSelectedControlTextColor];
+	return [NSColor darkGrayColor];
+}
+
 @end

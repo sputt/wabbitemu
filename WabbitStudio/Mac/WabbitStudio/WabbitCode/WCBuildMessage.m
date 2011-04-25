@@ -9,6 +9,7 @@
 #import "WCBuildMessage.h"
 #import "WCFile.h"
 #import "NSImage+WCExtensions.h"
+#import "WCTextStorage.h"
 
 
 @implementation WCBuildMessage
@@ -45,6 +46,23 @@
 			return YES;
 	}
 }
+
+- (NSRange)jumpToRange {
+	if ([self messageType] == WCBuildMessageTypeFile)
+		return NSMakeRange(0, 0);
+	return NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0);
+}
+
+- (WCFile *)jumpToFile {
+	return [self file];
+}
+
+- (BOOL)shouldJumpToObject; {
+	if ([self messageType] == WCBuildMessageTypeFile)
+		return NO;
+	return YES;
+}
+
 @synthesize messageType=_messageType;
 @synthesize file=_file;
 @synthesize lineNumber=_lineNumber;

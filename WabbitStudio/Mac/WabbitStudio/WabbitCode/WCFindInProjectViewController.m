@@ -18,6 +18,8 @@
 #import "NSAlert-OAExtensions.h"
 #import "NSTextView+WCExtensions.h"
 #import "WCGeneralPerformer.h"
+#import "WCPreferencesController.h"
+#import "NSUserDefaults+WCExtensions.h"
 
 #define restrict
 #import <RegexKit/RegexKit.h>
@@ -46,8 +48,7 @@
 	
 	[super loadView];
 	
-	[[self outlineView] setDoubleAction:@selector(_findInProjectOutlineViewDoubleAction:)];
-	[[self outlineView] setTarget:[self project]];
+	[[self outlineView] setDoubleAction:@selector(findInProjectOutlineViewDoubleClick:)];
 }
 
 - (NSResponder *)firstResponder {
@@ -515,6 +516,20 @@
 }
 - (IBAction)changeFindSubScope:(NSMenuItem *)sender; {
 	[self setFindSubScope:[sender tag]];
+}
+
+- (void)findInProjectOutlineViewSingleClick:(id)sender {
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] != WCPreferencesFilesOpenWithSingleClick)
+		return;
+	
+	[[self project] jumpToObjects:[self selectedObjects]];
+}
+
+- (void)findInProjectOutlineViewDoubleClick:(id)sender {
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] != WCPreferencesFilesOpenWithDoubleClick)
+		return;
+	
+	[[self project] jumpToObjects:[self selectedObjects]];
 }
 
 - (NSUInteger)countOfFindResults {

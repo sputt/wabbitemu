@@ -7,6 +7,7 @@
 //
 
 #import "WCTreeNode.h"
+#import "WCJumpToObjectProtocol.h"
 
 enum {
 	WCBreakpointTypeProject = 0,
@@ -19,16 +20,16 @@ extern NSString *const kWCBreakpointIsActiveDidChangeNotification;
 
 @class WCFile;
 
-@interface WCBreakpoint : WCTreeNode <NSCoding,NSCopying> {
+@interface WCBreakpoint : WCTreeNode <NSCoding,NSCopying,WCPlistRepresentation,WCJumpToObject> {
 @private
 	__weak WCFile *_file;
     NSUInteger _lineNumber;
 	BOOL _isActive;
 	WCBreakpointType _breakpointType;
 	
-	BOOL _isRam;
 	u_int8_t _page;
 	u_int16_t _address;
+	BOOL _isRam;
 }
 @property (assign,nonatomic) WCFile *file;
 @property (assign,nonatomic) NSUInteger lineNumber;

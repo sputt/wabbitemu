@@ -9,7 +9,7 @@
 #import "WCObject.h"
 
 
-@interface WCBuildDefine : WCObject <NSCopying,NSCoding> {
+@interface WCBuildDefine : WCObject <NSCoding,NSCopying> {
 @private
     NSString *_defineValue; // <name> = <value>, this stores the <value> part
 }

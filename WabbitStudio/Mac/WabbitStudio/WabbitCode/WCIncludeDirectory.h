@@ -10,7 +10,7 @@
 
 @class WCAlias,WCFile;
 
-@interface WCIncludeDirectory : WCObject <NSCoding,NSCopying,NSMutableCopying> {
+@interface WCIncludeDirectory : WCObject <NSCoding,NSCopying,NSMutableCopying,WCPlistRepresentation> {
 @private
     WCAlias *_alias;
 }

@@ -7,6 +7,7 @@
 //
 
 #import "WCTreeNode.h"
+#import "WCJumpToObjectProtocol.h"
 
 
 enum WCSymbolType {
@@ -21,7 +22,7 @@ typedef NSUInteger WCSymbolType;
 
 @class WCFile;
 
-@interface WCSymbol : WCTreeNode {
+@interface WCSymbol : WCTreeNode <WCJumpToObject> {
 @private
 	__weak WCFile *_file;
     WCSymbolType _symbolType;

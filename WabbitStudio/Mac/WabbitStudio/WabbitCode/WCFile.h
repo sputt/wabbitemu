@@ -26,7 +26,7 @@ extern NSString *const kWCFileNameDidChangeNotification;
 
 @class WCTextStorage,WCSymbolScanner,WCProject,WCBuildMessage,WCAlias,WCBreakpoint;
 
-@interface WCFile : WCTreeNode <NSCoding,NSTextViewDelegate> {
+@interface WCFile : WCTreeNode <NSCoding,NSCopying,NSMutableCopying,NSTextViewDelegate,WCPlistRepresentation> {
 @private
 	WCAlias *_alias; // tracks the file we represent
 	NSString *_UUID; // for storing in project settings plist

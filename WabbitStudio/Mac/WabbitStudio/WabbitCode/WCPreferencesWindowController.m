@@ -96,6 +96,10 @@ NSString* const kWCPreferencesWindowControllerAdvancedIdentifier = @"Advanced";
 	}];
 }
 
+- (IBAction)selectTextEncoding:(NSPopUpButton *)sender; {
+	[[NSUserDefaults standardUserDefaults] setObject:[NSNumber numberWithUnsignedInteger:(NSUInteger)[sender selectedTag]] forKey:kWCPreferencesFilesTextEncodingKey];
+}
+
 - (void)changeFont:(id)sender {
 	NSFont *newFont = [(NSFontManager *)sender convertFont:[[NSUserDefaults standardUserDefaults] fontForKey:kWCPreferencesEditorFontKey]];
 	

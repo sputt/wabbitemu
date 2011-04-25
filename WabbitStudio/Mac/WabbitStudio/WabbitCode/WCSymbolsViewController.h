@@ -21,4 +21,6 @@
 @property (copy,nonatomic) NSString *filterString;
 
 - (IBAction)filterSymbols:(id)sender;
+- (IBAction)symbolsOutlineViewSingleClick:(id)sender;
+- (IBAction)symbolsOutlineViewDoubleClick:(id)sender;
 @end

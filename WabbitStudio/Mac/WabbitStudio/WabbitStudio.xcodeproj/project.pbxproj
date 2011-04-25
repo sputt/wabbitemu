@@ -373,6 +373,7 @@
 		078073D713445AC70003DE27 /* WCContextualMenuTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCContextualMenuTableView.m; sourceTree = "<group>"; };
 		078073D913445DC40003DE27 /* WCSetActiveBuildTargetMenuController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSetActiveBuildTargetMenuController.h; sourceTree = "<group>"; };
 		078073DA13445DC70003DE27 /* WCSetActiveBuildTargetMenuController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSetActiveBuildTargetMenuController.m; sourceTree = "<group>"; };
+		0785A1ED1365229D00898FEC /* WCJumpToObjectProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCJumpToObjectProtocol.h; sourceTree = "<group>"; };
 		0787B724133FC9C400BB5590 /* BWToolkitFramework.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BWToolkitFramework.framework; path = WabbitCode/BWToolkitFramework.framework; sourceTree = "<group>"; };
 		07880B5A13413B2600E07231 /* WCFindBarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFindBarViewController.h; sourceTree = "<group>"; };
 		07880B5B13413B2600E07231 /* WCFindBarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFindBarViewController.m; sourceTree = "<group>"; };
@@ -482,6 +483,7 @@
 		07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSymbolsOutlineView.m; sourceTree = "<group>"; };
 		07C8B068135E244D00DC8322 /* WCBreakpointsOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpointsOutlineView.h; sourceTree = "<group>"; };
 		07C8B069135E244D00DC8322 /* WCBreakpointsOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBreakpointsOutlineView.m; sourceTree = "<group>"; };
+		07CBC51F13647BCD00C1CEE7 /* WCPlistRepresentationProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCPlistRepresentationProtocol.h; sourceTree = "<group>"; };
 		07CBCF7B135C141600B72B6B /* Advanced.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Advanced.png; sourceTree = "<group>"; };
 		07CE786A134E410D001B96FC /* NSWindow-NoodleEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSWindow-NoodleEffects.h"; sourceTree = "<group>"; };
 		07CE786B134E410D001B96FC /* NSWindow-NoodleEffects.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSWindow-NoodleEffects.m"; sourceTree = "<group>"; };
@@ -541,6 +543,8 @@
 			isa = PBXGroup;
 			children = (
 				0747E3B9135819B90009EFBF /* WCTabViewContextProtocol.h */,
+				07CBC51F13647BCD00C1CEE7 /* WCPlistRepresentationProtocol.h */,
+				0785A1ED1365229D00898FEC /* WCJumpToObjectProtocol.h */,
 			);
 			name = Protocols;
 			sourceTree = "<group>";
