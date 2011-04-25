@@ -4,11 +4,13 @@
 #ifdef WINVER // ...oops
 #include "resource.h"
 #else
-#include "types.h"
+#include "coretypes.h"
 #endif
 #include "lcd.h"
 #include "gifhandle.h"
+#ifdef WINVER
 #include "fileutilities.h"
+#endif
 
 
 TCHAR *generate_gif_name(TCHAR *fn, int num, TCHAR *dest) {
@@ -131,7 +133,7 @@ unsigned char* GIFGREYLCD(LCD_t *lpLCD) {
 			bit = 7 - ((x / gif_size) & 0x7);
 			col = (x / gif_size) >> 3;
 			tmp = 0;
-			for(i = 0; i < lcd->shades; i++) {
+			for(i = 0; i < lpLCD->shades; i++) {
 				if (lpLCD->queue[i]) 
 					tmp += ((lpLCD->queue[i][((y / gif_size) * LCD_MEM_WIDTH) + col] >> bit) & 0x01);
 			}

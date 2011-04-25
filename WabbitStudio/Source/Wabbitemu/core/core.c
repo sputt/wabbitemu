@@ -307,7 +307,7 @@ int CPU_step(CPU_t* cpu) {
 }
 
 
-
+#ifndef MACVER
 #ifdef DEBUG
 void displayreg(CPU_t *cpu) {
 	puts("");
@@ -332,4 +332,5 @@ void displayreg(CPU_t *cpu) {
 	printf("Seconds = %Lf\n",tc_elapsed(cpu->timer_c));
 	puts("");
 }
+#endif
 #endif

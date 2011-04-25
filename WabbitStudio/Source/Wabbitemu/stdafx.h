@@ -90,6 +90,7 @@ typedef const char *LPCTSTR;
 #include <setjmp.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <sys/types.h>
 #include <stddef.h>
@@ -107,6 +108,7 @@ typedef u_int8_t BYTE, *LPBYTE;
 typedef u_int16_t WORD, *LPWORD;
 typedef u_int32_t DWORD, *LPDWORD;
  */
+/*
 #ifndef TRUE
 #define FALSE (0)
 #define TRUE (!FALSE)
@@ -116,6 +118,7 @@ typedef int BOOL;
 typedef signed char BOOL;
 #endif
 #endif
+*/
 #define MAX_PATH 256
 #define _T(z) z
 #define _tprintf_s printf
