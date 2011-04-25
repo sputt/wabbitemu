@@ -81,7 +81,11 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 	unsigned int equate;
 	label_struct *label = &lpCalc->labels[0];	
 
+#ifdef _WINDOWS
 	_tfopen_s(&labelFile, lpszFileName, _T("r"));
+#else
+	labelFile = fopen(lpszFileName, "r");
+#endif
 	if (labelFile == NULL) {
         _putts(_T("Error opening label files."));
         return 1;
@@ -95,17 +99,29 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 		fgets(readBuf, 256, labelFile);
 		MultiByteToWideChar(CP_ACP, 0, readBuf, -1, buffer, ARRAYSIZE(buffer));
 #else
+#ifdef _WINDOWS
 		_fgetts(buffer, 256, labelFile);
+#else
+		fgets(buffer, 256, labelFile);
+#endif
 #endif
 		i = 0;
 		if (buffer[0] != ';')
+#ifdef _WINDOWS
 			i = _stscanf(buffer, _T("%s = $%X"), name, &equate);
+#else
+			i = sscanf(buffer, "%s = $%X", name, &equate);
+#endif
 		if (i == 2) {
 			length = (int) _tcslen(name);
 			if (!label_search_tios(name, equate)) {
 				
 				label->name = (TCHAR *) malloc((length + 1) * sizeof(TCHAR));
-				StringCbCopy(label->name, length + 1, name);
+#ifdef _WINDOWS
+				StringCchCopy(label->name, length + 1, name);
+#else
+				strcpy(label->name, name);
+#endif
 
 				label->addr = equate & 0xFFFF;
 

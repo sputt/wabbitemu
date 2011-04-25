@@ -502,7 +502,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					ExtractResource(hexFile, resource);
 					FILE *file;
 					_tfopen_s(&file, hexFile, _T("rb"));
-					writeboot(file, &lpCalc->mem_c);
+					writeboot(file, &lpCalc->mem_c, -1);
 					fclose(file);
 					_tremove(hexFile);
 					//if you dont want to load an OS, fine...

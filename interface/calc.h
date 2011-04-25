@@ -113,7 +113,7 @@ typedef struct DEBUG_STATE {
 #define MAX_CALCS	8
 #define MAX_SPEED 100*50
 
-typedef tagCALC CALC, *LPCALC;
+typedef struct tagCALC CALC, *LPCALC;
 
 void calc_turn_on(LPCALC);
 LPCALC calc_slot_new(void);

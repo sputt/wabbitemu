@@ -156,11 +156,6 @@ static TCHAR bli[4][4][8]	= {
 {_T("ldir"),_T("cpir"),_T("inir"),_T("otir")},
 {_T("lddr"),_T("cpdr"),_T("indr"),_T("otdr")}};
 
-void da_display(Z80_info_t *command) {
-	_puttchar(' ');
-	_tprintf_s(da_opcode[command->index].format, command->a1, command->a2, command->a3, command->a4); 
-}
-
 /* returns number of bytes read */
 int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info_t *result) {
 	int i, prefix = 0, pi = 0;
