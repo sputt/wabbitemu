@@ -123,7 +123,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	lcd->mode = (LCD_MODE) QueryWabbitKey(_T("lcd_mode"));
 	lcd->steady_frame = 1.0 / QueryWabbitKey(_T("lcd_freq"));
 #else
-	lcd->shades = 6;
+	lcd->shades = LCD_DEFAULT_SHADES;
 	lcd->mode = MODE_PERFECT_GRAY;
 	lcd->steady_frame = 1.0 / FPS;
 #endif
