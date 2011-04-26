@@ -31,6 +31,9 @@
 		071400CC13669E4C004AA5C6 /* ProjectWindow32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 071400CA13669E4C004AA5C6 /* ProjectWindow32x32.png */; };
 		071400D11366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m in Sources */ = {isa = PBXBuildFile; fileRef = 071400D01366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m */; };
 		07142412133BD78D003D0247 /* WCLineHighlighter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07142411133BD78B003D0247 /* WCLineHighlighter.m */; };
+		07200C6913675B450010AE58 /* WCProjectStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07200C6813675B450010AE58 /* WCProjectStatusView.m */; };
+		07200C6D1367622C0010AE58 /* NSBezierPath+StrokeExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07200C6C1367622C0010AE58 /* NSBezierPath+StrokeExtensions.m */; };
+		07200C70136762D90010AE58 /* NSShadow+MCAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07200C6F136762D90010AE58 /* NSShadow+MCAdditions.m */; };
 		0722EFF5136741EF00CB69BF /* Breakpoints16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF4136741EF00CB69BF /* Breakpoints16x16.png */; };
 		0722EFF71367421D00CB69BF /* Building16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF61367421D00CB69BF /* Building16x16.png */; };
 		0722EFF91367439000CB69BF /* Symbols16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF81367439000CB69BF /* Symbols16x16.png */; };
@@ -253,6 +256,12 @@
 		071400D01366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NS(Attributed)String+Geometrics.m"; sourceTree = "<group>"; };
 		07142410133BD78B003D0247 /* WCLineHighlighter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCLineHighlighter.h; sourceTree = "<group>"; };
 		07142411133BD78B003D0247 /* WCLineHighlighter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCLineHighlighter.m; sourceTree = "<group>"; };
+		07200C6713675B450010AE58 /* WCProjectStatusView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCProjectStatusView.h; sourceTree = "<group>"; };
+		07200C6813675B450010AE58 /* WCProjectStatusView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCProjectStatusView.m; sourceTree = "<group>"; };
+		07200C6B1367622C0010AE58 /* NSBezierPath+StrokeExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBezierPath+StrokeExtensions.h"; sourceTree = "<group>"; };
+		07200C6C1367622C0010AE58 /* NSBezierPath+StrokeExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBezierPath+StrokeExtensions.m"; sourceTree = "<group>"; };
+		07200C6E136762D90010AE58 /* NSShadow+MCAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSShadow+MCAdditions.h"; sourceTree = "<group>"; };
+		07200C6F136762D90010AE58 /* NSShadow+MCAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSShadow+MCAdditions.m"; sourceTree = "<group>"; };
 		0722EFF4136741EF00CB69BF /* Breakpoints16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Breakpoints16x16.png; sourceTree = "<group>"; };
 		0722EFF61367421D00CB69BF /* Building16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Building16x16.png; sourceTree = "<group>"; };
 		0722EFF81367439000CB69BF /* Symbols16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Symbols16x16.png; sourceTree = "<group>"; };
@@ -863,6 +872,8 @@
 				0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */,
 				0756D8DE1363EF5500ECDFFD /* WCGroupBackgroundOutlineView.h */,
 				0756D8DF1363EF5600ECDFFD /* WCGroupBackgroundOutlineView.m */,
+				07200C6713675B450010AE58 /* WCProjectStatusView.h */,
+				07200C6813675B450010AE58 /* WCProjectStatusView.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -907,6 +918,10 @@
 		0769A1D51333DEFB00080A96 /* External */ = {
 			isa = PBXGroup;
 			children = (
+				07200C6E136762D90010AE58 /* NSShadow+MCAdditions.h */,
+				07200C6F136762D90010AE58 /* NSShadow+MCAdditions.m */,
+				07200C6B1367622C0010AE58 /* NSBezierPath+StrokeExtensions.h */,
+				07200C6C1367622C0010AE58 /* NSBezierPath+StrokeExtensions.m */,
 				071400CF1366AF26004AA5C6 /* NS(Attributed)String+Geometrics.h */,
 				071400D01366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m */,
 				070720AB1360EA2D00E7C7CD /* EncodingManager.h */,
@@ -1188,6 +1203,9 @@
 				0756D8D91363DFE200ECDFFD /* WCInfoTextFieldCell.m in Sources */,
 				0756D8E01363EF5700ECDFFD /* WCGroupBackgroundOutlineView.m in Sources */,
 				071400D11366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m in Sources */,
+				07200C6913675B450010AE58 /* WCProjectStatusView.m in Sources */,
+				07200C6D1367622C0010AE58 /* NSBezierPath+StrokeExtensions.m in Sources */,
+				07200C70136762D90010AE58 /* NSShadow+MCAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

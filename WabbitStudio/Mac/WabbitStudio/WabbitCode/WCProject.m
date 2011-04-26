@@ -126,6 +126,8 @@ static NSImage *_appIcon = nil;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[_secondaryStatusString release];
+	[_statusString release];
 	[_currentAddFilesToProjectViewController release];
 	[_codeListing release];
 	[_errorBadge release];
@@ -180,7 +182,7 @@ static NSImage *_appIcon = nil;
 	[toolbar setSizeMode:NSToolbarSizeModeRegular];
 	[toolbar setDelegate:self];
 	
-#ifndef RELEASE
+#ifndef DEBUG
 	[toolbar setAutosavesConfiguration:YES];
 #endif
 	
@@ -307,11 +309,11 @@ static NSImage *_appIcon = nil;
 #pragma mark NSToolbarDelegate
 
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar {
-	return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,NSToolbarSeparatorItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,nil];
+	return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,kWCProjectToolbarStatusViewItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,NSToolbarSeparatorItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,nil];
 }
 
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar {
-	return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,NSToolbarFlexibleSpaceItemIdentifier,nil];
+	return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarStatusViewItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,NSToolbarFlexibleSpaceItemIdentifier,nil];
 }
 
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag {
@@ -907,6 +909,8 @@ static NSImage *_appIcon = nil;
 	}
 	return _projectBreakpoint;
 }
+@synthesize statusString=_statusString;
+@synthesize secondaryStatusString=_secondaryStatusString;
 #pragma mark IBActions
 - (IBAction)addFilesToProject:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -1213,6 +1217,8 @@ static NSImage *_appIcon = nil;
 	[_navBarControl setSelectedIndex:[[_navBarControl selectors] indexOfObject:NSStringFromSelector(_cmd)]];
 }
 - (IBAction)viewBuildMessages:(id)sender; {
+	if ([[NSApplication sharedApplication] keyWindow] != [[[self windowControllers] firstObject] window])
+		[[[self windowControllers] firstObject] showWindow:nil];
 	[self setCurrentViewController:[self buildMessagesViewController]];
 	[_navBarControl setSelectedIndex:[[_navBarControl selectors] indexOfObject:NSStringFromSelector(_cmd)]];
 }
@@ -1225,6 +1231,8 @@ static NSImage *_appIcon = nil;
 	[_navBarControl setSelectedIndex:[[_navBarControl selectors] indexOfObject:NSStringFromSelector(_cmd)]];
 }
 - (IBAction)viewBreakpoints:(id)sender; {
+	if ([[NSApplication sharedApplication] keyWindow] != [[[self windowControllers] firstObject] window])
+		[[[self windowControllers] firstObject] showWindow:nil];
 	[self setCurrentViewController:[self breakpointsViewController]];
 	[_navBarControl setSelectedIndex:[[_navBarControl selectors] indexOfObject:NSStringFromSelector(_cmd)]];
 }
@@ -1562,10 +1570,10 @@ static NSImage *_appIcon = nil;
 			
 			if (errors && warnings) {
 				if (!_errorBadge) {
-					_errorBadge = [[CTBadge badgeWithColor:[NSColor redColor] labelColor:[NSColor whiteColor]] retain];
+					_errorBadge = [[CTBadge badgeWithColor:[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey] labelColor:[NSColor whiteColor]] retain];
 				}
 				if (!_warningBadge) {
-					_warningBadge = [[CTBadge badgeWithColor:[NSColor orangeColor] labelColor:[NSColor whiteColor]] retain];
+					_warningBadge = [[CTBadge badgeWithColor:[NSColor colorWithCalibratedRed:0.941 green:0.741 blue:0.18 alpha:1.0] labelColor:[NSColor whiteColor]] retain];
 				}
 				
 				NSImage *eBadge = [_errorBadge badgeOverlayImageForValue:errors insetX:0.0 y:0.0];
@@ -1578,10 +1586,12 @@ static NSImage *_appIcon = nil;
 				[appImage unlockFocus];
 				 
 				[NSApp setApplicationIconImage:appImage];
+				[self setStatusString:NSLocalizedString(@"Build Failed", @"Build Failed")];
+				[self setSecondaryStatusString:[NSString stringWithFormat:NSLocalizedString(@"%lu error(s), %lu warning(s)", @"errors and warnings format string"),errors,warnings]];
 			}
 			else if (errors) {
 				if (!_errorBadge) {
-					_errorBadge = [[CTBadge badgeWithColor:[NSColor redColor] labelColor:[NSColor whiteColor]] retain];
+					_errorBadge = [[CTBadge badgeWithColor:[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey] labelColor:[NSColor whiteColor]] retain];
 
 				}
 				
@@ -1593,10 +1603,12 @@ static NSImage *_appIcon = nil;
 				[appImage unlockFocus];
 				
 				[NSApp setApplicationIconImage:appImage];
+				[self setStatusString:NSLocalizedString(@"Build Failed", @"Build Failed")];
+				[self setSecondaryStatusString:[NSString stringWithFormat:NSLocalizedString(@"%lu error(s)", @"errors format string"),errors]];
 			}
 			else if (warnings) {
 				if (!_warningBadge) {
-					_warningBadge = [[CTBadge badgeWithColor:[NSColor orangeColor] labelColor:[NSColor whiteColor]] retain];
+					_warningBadge = [[CTBadge badgeWithColor:[NSColor colorWithCalibratedRed:0.941 green:0.741 blue:0.18 alpha:1.0] labelColor:[NSColor whiteColor]] retain];
 				}
 				
 				NSImage *wBadge = [_warningBadge badgeOverlayImageForValue:warnings insetX:0.0 y:0.0];
@@ -1607,6 +1619,8 @@ static NSImage *_appIcon = nil;
 				[appImage unlockFocus];
 				
 				[NSApp setApplicationIconImage:appImage];
+				[self setStatusString:NSLocalizedString(@"Build Succeeded", @"Build Succeeded")];
+				[self setSecondaryStatusString:[NSString stringWithFormat:NSLocalizedString(@"%lu warning(s)", @"warnings format string"),warnings]];
 			}
 			
 			[self viewBuildMessages:nil];
@@ -1624,6 +1638,9 @@ static NSImage *_appIcon = nil;
 			}
 			else
 				[self setCodeListing:nil];
+			
+			[self setStatusString:NSLocalizedString(@"Build Succeeded", @"Build Succeeded")];
+			[self setSecondaryStatusString:NSLocalizedString(@"No Issues", @"No Issues")];
 		}
 		
 		[self setIsBuilding:NO];

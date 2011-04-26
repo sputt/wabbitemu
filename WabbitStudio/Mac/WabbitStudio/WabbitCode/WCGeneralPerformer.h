@@ -15,6 +15,7 @@ extern NSString *const kWCProjectToolbarBuildItemIdentifier;
 extern NSString *const kWCProjectToolbarBuildAndRunItemIdentifier;
 extern NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer;
 
+extern NSString *const kWCProjectToolbarStatusViewItemIdentifier;
 extern NSString *const kWCProjectToolbarProjectWindowItemIdentifier;
 
 @class WCFile,WCProject,WCProjectTemplate,WCFileTemplate,WCDocument,WCBreakpoint;

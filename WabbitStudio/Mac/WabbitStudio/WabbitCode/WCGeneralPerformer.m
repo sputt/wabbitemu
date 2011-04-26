@@ -25,12 +25,14 @@
 #import "NSWindow-NoodleEffects.h"
 #import "WCBreakpoint.h"
 #import "NSGradient+WCExtensions.h"
+#import "WCProjectStatusView.h"
 
 
 NSString *const kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier = @"projectToolbarBuildTargetPopUpButton";
 NSString *const kWCProjectToolbarBuildItemIdentifier = @"projectToolbarBuild";
 NSString *const kWCProjectToolbarBuildAndRunItemIdentifier = @"projectToolbarBuildAndRun";
 NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer = @"projectToolbarBuildAndDebug";
+NSString *const kWCProjectToolbarStatusViewItemIdentifier = @"projectToolbarStatusView";
 
 NSString *const kWCProjectToolbarProjectWindowItemIdentifier = @"projectToolbarProjectWindow";
 
@@ -505,6 +507,15 @@ NSString *const kWCProjectToolbarProjectWindowItemIdentifier = @"projectToolbarP
 		[item setPaletteLabel:[item label]];
 		
 		WCProjectBuildTargetPopUpButton *view = [[[WCProjectBuildTargetPopUpButton alloc] initWithProject:project] autorelease];
+		
+		[item setView:view];
+		[item setMinSize:NSMakeSize(150.0, NSHeight([view frame]))];
+		[item setMaxSize:NSMakeSize(NSWidth([view frame]), NSHeight([view frame]))];
+	}
+	else if ([itemIdentifier isEqualToString:kWCProjectToolbarStatusViewItemIdentifier]) {
+		[item setPaletteLabel:NSLocalizedString(@"Project Status", @"Project Status")];
+		
+		WCProjectStatusView *view = [[[WCProjectStatusView alloc] initWithProject:project] autorelease];
 		
 		[item setView:view];
 		[item setMinSize:NSMakeSize(150.0, NSHeight([view frame]))];

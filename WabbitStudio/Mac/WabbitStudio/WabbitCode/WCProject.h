@@ -71,6 +71,8 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	
 	NSSet *_cachedAbsoluteFilePaths; // to validate files being added from the addFilesToProject: method
 	WCAddFilesToProjectViewController *_currentAddFilesToProjectViewController;
+	NSString *_statusString;
+	NSString *_secondaryStatusString;
 }
 
 @property (readonly,retain,nonatomic) WCProjectFile *projectFile;
@@ -107,6 +109,8 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 @property (readonly,nonatomic) NSArray *fileWindowControllers;
 @property (readonly,retain,nonatomic) NSString *codeListing;
 @property (readonly,nonatomic) WCBreakpoint *projectBreakpoint;
+@property (copy,nonatomic) NSString *statusString;
+@property (copy,nonatomic) NSString *secondaryStatusString;
 
 - (IBAction)addFilesToProject:(id)sender;
 - (IBAction)newFile:(id)sender;
