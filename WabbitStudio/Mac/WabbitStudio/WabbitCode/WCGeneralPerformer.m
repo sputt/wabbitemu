@@ -420,7 +420,7 @@ NSString *const kWCProjectToolbarProjectWindowItemIdentifier = @"projectToolbarP
 		inactiveGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.431 green:0.608 blue:0.792 alpha:0.5] endingColor:[NSColor colorWithCalibratedRed:0.329 green:0.533 blue:0.757 alpha:0.5]];
 		activeStroke = [[NSColor colorWithCalibratedRed:0.235 green:0.443 blue:0.686 alpha:1.0] retain];
 		inactiveStroke = [[NSColor colorWithCalibratedRed:0.235 green:0.443 blue:0.686 alpha:0.5] retain];
-		*/
+		 */
 		
 		// red colors
 		/*
@@ -430,25 +430,28 @@ NSString *const kWCProjectToolbarProjectWindowItemIdentifier = @"projectToolbarP
 		inactiveStroke = [[NSColor colorWithCalibratedRed:0.5 green:0.0 blue:0.0 alpha:0.5] retain];
 		 */
 		// purple colors
-		/*
+		
 		activeGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.65 green:0.0 blue:0.65 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.45 green:0.0 blue:0.45 alpha:1.0]];
 		activeStroke = [[NSColor colorWithCalibratedRed:0.35 green:0.0 blue:0.35 alpha:1.0] retain];
 		inactiveGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.65 green:0.0 blue:0.65 alpha:0.5] endingColor:[NSColor colorWithCalibratedRed:0.45 green:0.0 blue:0.45 alpha:0.5]];
 		inactiveStroke = [[NSColor colorWithCalibratedRed:0.35 green:0.0 blue:0.35 alpha:0.5] retain];
-		 */
+		 
+		// gray colors
+		/*
 		activeGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.6 green:0.6 blue:0.6 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.35 green:0.35 blue:0.35 alpha:1.0]];
 		activeStroke = [[NSColor colorWithCalibratedRed:0.25 green:0.25 blue:0.25 alpha:1.0] retain];
 		inactiveGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.6 green:0.6 blue:0.6 alpha:0.5] endingColor:[NSColor colorWithCalibratedRed:0.35 green:0.35 blue:0.35 alpha:0.5]];
 		inactiveStroke = [[NSColor colorWithCalibratedRed:0.25 green:0.25 blue:0.25 alpha:0.5] retain];
+		 */
 	}
 	
 	NSBezierPath *path = [NSBezierPath bezierPath];
 	[path setLineJoinStyle:NSRoundLineJoinStyle];
 	
 	NSRect bRect = NSInsetRect(rect, 0.0, 1.0);
-	bRect = NSMakeRect(NSMinX(bRect)+2.0, NSMinY(bRect), NSWidth(rect) - 2.0, NSHeight(bRect));
+	//bRect = NSMakeRect(NSMinX(bRect), NSMinY(bRect), NSWidth(rect), NSHeight(bRect));
 	
-	[path moveToPoint:NSMakePoint(NSMaxX(bRect), NSMinY(bRect) + floor(NSHeight(rect) / 2))];
+	[path moveToPoint:NSMakePoint(NSMaxX(bRect), NSMinY(bRect) + floor(NSHeight(rect) / 2.0))];
 	[path lineToPoint:NSMakePoint(NSMaxX(bRect) - 5.0, NSMaxY(bRect))];
 	
 	[path appendBezierPathWithArcWithCenter:NSMakePoint(NSMinX(bRect) + CORNER_RADIUS, NSMaxY(bRect) - CORNER_RADIUS) radius:CORNER_RADIUS startAngle:90 endAngle:180];

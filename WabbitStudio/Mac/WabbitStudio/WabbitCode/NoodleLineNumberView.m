@@ -186,7 +186,7 @@
 			didChangeLineNumber = YES;
 		
 		if (NSMouseInRect(currentPoint, [self bounds], [self isFlipped])) {
-			if (currentBreakpoint == nil) {
+			if (currentBreakpoint == nil && currentLineNumber != NSNotFound) {
 				[startBreakpoint retain];
 				[file removeBreakpoint:startBreakpoint];
 				[startBreakpoint setLineNumber:currentLineNumber];

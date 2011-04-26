@@ -31,6 +31,9 @@
 		071400CC13669E4C004AA5C6 /* ProjectWindow32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 071400CA13669E4C004AA5C6 /* ProjectWindow32x32.png */; };
 		071400D11366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m in Sources */ = {isa = PBXBuildFile; fileRef = 071400D01366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m */; };
 		07142412133BD78D003D0247 /* WCLineHighlighter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07142411133BD78B003D0247 /* WCLineHighlighter.m */; };
+		0722EFF5136741EF00CB69BF /* Breakpoints16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF4136741EF00CB69BF /* Breakpoints16x16.png */; };
+		0722EFF71367421D00CB69BF /* Building16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF61367421D00CB69BF /* Building16x16.png */; };
+		0722EFF91367439000CB69BF /* Symbols16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF81367439000CB69BF /* Symbols16x16.png */; };
 		0724B7AB136390300061AA47 /* WCBadgedTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7A8136390300061AA47 /* WCBadgedTextFieldCell.m */; };
 		0724B7AC136390300061AA47 /* WCIconTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7AA136390300061AA47 /* WCIconTextFieldCell.m */; };
 		0724B7D21363A3D40061AA47 /* WCMultiLineTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7D11363A3D40061AA47 /* WCMultiLineTextFieldCell.m */; };
@@ -60,10 +63,8 @@
 		07463AF313331D0100744B98 /* WCNewProjectWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07463AF213331D0000744B98 /* WCNewProjectWindow.xib */; };
 		07463AF61333212900744B98 /* WCNewProjectWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07463AF51333212700744B98 /* WCNewProjectWindowController.m */; };
 		07463AF813332BCC00744B98 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AF713332BCC00744B98 /* QuartzCore.framework */; };
-		074D80C313620EA00081571E /* Breakpoints16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 074D80C213620EA00081571E /* Breakpoints16x16.png */; };
 		074D80C7136234170081571E /* Files.png in Resources */ = {isa = PBXBuildFile; fileRef = 074D80C6136234170081571E /* Files.png */; };
 		0756D8D91363DFE200ECDFFD /* WCInfoTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */; };
-		0756D8DD1363E9DD00ECDFFD /* Symbols16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0756D8DC1363E9DD00ECDFFD /* Symbols16x16.png */; };
 		0756D8E01363EF5700ECDFFD /* WCGroupBackgroundOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0756D8DF1363EF5600ECDFFD /* WCGroupBackgroundOutlineView.m */; };
 		0758E82A134ABC1200280D9D /* NSColor-NTExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */; };
 		0758E82D134AD2F200280D9D /* WCFindInProjectViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0758E82C134AD2F200280D9D /* WCFindInProjectViewController.m */; };
@@ -157,7 +158,6 @@
 		07B4556D133DAF5200521353 /* WCBuildTargetsInfoSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07B4556B133DAF5200521353 /* WCBuildTargetsInfoSheet.xib */; };
 		07B45579133DC76600521353 /* WCBuildMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B45578133DC76600521353 /* WCBuildMessage.m */; };
 		07B5491E135CE7B200B34C46 /* WCBreakpoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B5491D135CE7B100B34C46 /* WCBreakpoint.m */; };
-		07B54920135D6DE500B34C46 /* ErrorsAndWarnings.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B5491F135D6DE500B34C46 /* ErrorsAndWarnings.png */; };
 		07B54925135D6F8800B34C46 /* WCBreakpointsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B54924135D6F8700B34C46 /* WCBreakpointsViewController.m */; };
 		07B54928135D755B00B34C46 /* WCBreakpointsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07B54926135D755B00B34C46 /* WCBreakpointsView.xib */; };
 		07BBD222135F78E4005C4870 /* MAAttachedWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BBD221135F78E4005C4870 /* MAAttachedWindow.m */; };
@@ -253,6 +253,9 @@
 		071400D01366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NS(Attributed)String+Geometrics.m"; sourceTree = "<group>"; };
 		07142410133BD78B003D0247 /* WCLineHighlighter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCLineHighlighter.h; sourceTree = "<group>"; };
 		07142411133BD78B003D0247 /* WCLineHighlighter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCLineHighlighter.m; sourceTree = "<group>"; };
+		0722EFF4136741EF00CB69BF /* Breakpoints16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Breakpoints16x16.png; sourceTree = "<group>"; };
+		0722EFF61367421D00CB69BF /* Building16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Building16x16.png; sourceTree = "<group>"; };
+		0722EFF81367439000CB69BF /* Symbols16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Symbols16x16.png; sourceTree = "<group>"; };
 		0724B7A7136390300061AA47 /* WCBadgedTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBadgedTextFieldCell.h; sourceTree = "<group>"; };
 		0724B7A8136390300061AA47 /* WCBadgedTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBadgedTextFieldCell.m; sourceTree = "<group>"; };
 		0724B7A9136390300061AA47 /* WCIconTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCIconTextFieldCell.h; sourceTree = "<group>"; };
@@ -305,11 +308,9 @@
 		07463AF51333212700744B98 /* WCNewProjectWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCNewProjectWindowController.m; sourceTree = "<group>"; };
 		07463AF713332BCC00744B98 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = SDKs/MacOSX10.6.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		0747E3B9135819B90009EFBF /* WCTabViewContextProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTabViewContextProtocol.h; sourceTree = "<group>"; };
-		074D80C213620EA00081571E /* Breakpoints16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Breakpoints16x16.png; sourceTree = "<group>"; };
 		074D80C6136234170081571E /* Files.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Files.png; sourceTree = "<group>"; };
 		0756D8D71363DFE200ECDFFD /* WCInfoTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCInfoTextFieldCell.h; sourceTree = "<group>"; };
 		0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCInfoTextFieldCell.m; sourceTree = "<group>"; };
-		0756D8DC1363E9DD00ECDFFD /* Symbols16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Symbols16x16.png; sourceTree = "<group>"; };
 		0756D8DE1363EF5500ECDFFD /* WCGroupBackgroundOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGroupBackgroundOutlineView.h; sourceTree = "<group>"; };
 		0756D8DF1363EF5600ECDFFD /* WCGroupBackgroundOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCGroupBackgroundOutlineView.m; sourceTree = "<group>"; };
 		0758E828134ABC1200280D9D /* NSColor-NTExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSColor-NTExtensions.h"; sourceTree = "<group>"; };
@@ -465,7 +466,6 @@
 		07B45578133DC76600521353 /* WCBuildMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildMessage.m; sourceTree = "<group>"; };
 		07B5491C135CE7B100B34C46 /* WCBreakpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpoint.h; sourceTree = "<group>"; };
 		07B5491D135CE7B100B34C46 /* WCBreakpoint.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBreakpoint.m; sourceTree = "<group>"; };
-		07B5491F135D6DE500B34C46 /* ErrorsAndWarnings.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ErrorsAndWarnings.png; sourceTree = "<group>"; };
 		07B54923135D6F8700B34C46 /* WCBreakpointsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpointsViewController.h; sourceTree = "<group>"; };
 		07B54924135D6F8700B34C46 /* WCBreakpointsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBreakpointsViewController.m; sourceTree = "<group>"; };
 		07B54927135D755B00B34C46 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCBreakpointsView.xib; sourceTree = "<group>"; };
@@ -617,6 +617,9 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				0722EFF81367439000CB69BF /* Symbols16x16.png */,
+				0722EFF61367421D00CB69BF /* Building16x16.png */,
+				0722EFF4136741EF00CB69BF /* Breakpoints16x16.png */,
 				07CB26391367220200220104 /* Warning.opacity */,
 				07CB263A1367220200220104 /* Warning.pdf */,
 				07CB263413671F4400220104 /* Error.opacity */,
@@ -624,11 +627,8 @@
 				071400CA13669E4C004AA5C6 /* ProjectWindow32x32.png */,
 				071400CB13669E4C004AA5C6 /* ProjectWindow32x32.pxm */,
 				07F3D82D13655D9D0035ED48 /* FindInProjectResult16x16.png */,
-				0756D8DC1363E9DD00ECDFFD /* Symbols16x16.png */,
 				074D80C6136234170081571E /* Files.png */,
-				074D80C213620EA00081571E /* Breakpoints16x16.png */,
 				070720A91360C7AE00E7C7CD /* Search16x16.png */,
-				07B5491F135D6DE500B34C46 /* ErrorsAndWarnings.png */,
 				07CBCF7B135C141600B72B6B /* Advanced.png */,
 				07C83BA01350FD700051412B /* spasm */,
 				07911E29134BBA9A00B3DB86 /* BuildAndDebug32x32.png */,
@@ -1048,19 +1048,19 @@
 				070F2F551353F74500641AE3 /* CTBadge_5.pdf in Resources */,
 				072F7AE8135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib in Resources */,
 				07CBCF7C135C141600B72B6B /* Advanced.png in Resources */,
-				07B54920135D6DE500B34C46 /* ErrorsAndWarnings.png in Resources */,
 				07B54928135D755B00B34C46 /* WCBreakpointsView.xib in Resources */,
 				076B6DEF135E644400754CDE /* WCFileWindow.xib in Resources */,
 				07BBD229135F7DE0005C4870 /* WCBreakpointEditView.xib in Resources */,
 				070720AA1360C7AE00E7C7CD /* Search16x16.png in Resources */,
 				070720B01360EA8E00E7C7CD /* SelectEncodingsPanel.nib in Resources */,
-				074D80C313620EA00081571E /* Breakpoints16x16.png in Resources */,
 				074D80C7136234170081571E /* Files.png in Resources */,
-				0756D8DD1363E9DD00ECDFFD /* Symbols16x16.png in Resources */,
 				07F3D82E13655D9D0035ED48 /* FindInProjectResult16x16.png in Resources */,
 				071400CC13669E4C004AA5C6 /* ProjectWindow32x32.png in Resources */,
 				07CB263713671F4400220104 /* Error.pdf in Resources */,
 				07CB263C1367220200220104 /* Warning.pdf in Resources */,
+				0722EFF5136741EF00CB69BF /* Breakpoints16x16.png in Resources */,
+				0722EFF71367421D00CB69BF /* Building16x16.png in Resources */,
+				0722EFF91367439000CB69BF /* Symbols16x16.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

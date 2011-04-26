@@ -10,6 +10,8 @@
 #import "WCDefines.h"
 #import "WCProject.h"
 #import "NSGradient+WCExtensions.h"
+#import "WCBreakpoint.h"
+#import "WCGeneralPerformer.h"
 
 
 @implementation WCProjectNavView
@@ -22,9 +24,9 @@
 	if (!(self = [super initWithFrame:frameRect]))
 		return nil;
 	
-	_images = [[NSArray alloc] initWithObjects:[NSImage imageNamed:@"project"],[NSImage imageNamed:@"ErrorsAndWarnings"],[NSImage imageNamed:@"Search16x16"],[NSImage imageNamed:@"Breakpoints16x16"],[NSImage imageNamed:@"Symbols16x16"], nil];
-	_selectors = [[NSArray alloc] initWithObjects:NSStringFromSelector(@selector(viewProject:)),NSStringFromSelector(@selector(viewBuildMessages:)),NSStringFromSelector(@selector(viewSearch:)),NSStringFromSelector(@selector(viewBreakpoints:)),NSStringFromSelector(@selector(viewSymbols:)), nil];
-	_tooltips = [[NSArray alloc] initWithObjects:NSLocalizedString(@"Show the Project view", @"Show the Project view"),NSLocalizedString(@"Show the Build Messages view", @"Show the Build Messages view"),NSLocalizedString(@"Show the Search view", @"Show the Search view"),NSLocalizedString(@"Show the Breakpoints view", @"Show the Breakpoints view"),NSLocalizedString(@"Show the Symbols view", @"Show the Symbols view"), nil];
+	_images = [[NSArray alloc] initWithObjects:[NSImage imageNamed:@"Group16x16"],[NSImage imageNamed:@"Building16x16"],[NSImage imageNamed:@"Breakpoints16x16"],[NSImage imageNamed:@"Search16x16"],[NSImage imageNamed:@"Symbols16x16"], nil];
+	_selectors = [[NSArray alloc] initWithObjects:NSStringFromSelector(@selector(viewProject:)),NSStringFromSelector(@selector(viewBuildMessages:)),NSStringFromSelector(@selector(viewBreakpoints:)),NSStringFromSelector(@selector(viewSearch:)),NSStringFromSelector(@selector(viewSymbols:)), nil];
+	_tooltips = [[NSArray alloc] initWithObjects:NSLocalizedString(@"Show the Files view", @"Show the Files view"),NSLocalizedString(@"Show the Build Messages view", @"Show the Build Messages view"),NSLocalizedString(@"Show the Breakpoints view", @"Show the Breakpoints view"),NSLocalizedString(@"Show the Search view", @"Show the Search view"),NSLocalizedString(@"Show the Symbols view", @"Show the Symbols view"), nil];
 	
 	return self;
 }
@@ -45,7 +47,7 @@
 	
 	for (u_int8_t index = 0; index < [[self images] count]; index++) {
 		NSImage *image = [[self images] objectAtIndex:index];
-		[image setSize:WCSmallSize];
+		//[image setSize:WCSmallSize];
 		NSSize size = [image size];
 		NSRect frame = NSMakeRect(startX + (size.width * 2 * index), bounds.origin.y, size.width * 2, NSHeight(bounds));
 		
@@ -65,10 +67,7 @@
 	NSUInteger index;
 	
 	for (index = 0; index < [[self images] count]; index++) {
-		NSImage *image = [[self images] objectAtIndex:index];
-		[image setSize:WCSmallSize];
-		NSSize size = [image size];
-		NSRect frame = NSMakeRect(startX + (size.width * 2 * index), bounds.origin.y, size.width * 2, NSHeight(bounds));
+		NSRect frame = NSMakeRect(startX + (32.0 * index), bounds.origin.y, 32.0, NSHeight(bounds));
 		
 		rects[index] = frame;
 	}
@@ -116,9 +115,9 @@
 	
 	for (index = 0; index < [[self images] count]; index++) {
 		NSImage *image = [[self images] objectAtIndex:index];
-		[image setSize:WCSmallSize];
+		//[image setSize:WCSmallSize];
 		NSSize size = [image size];
-		NSRect frame = NSMakeRect(startX + (size.width * 2 * index), bounds.origin.y, size.width * 2, NSHeight(bounds));
+		NSRect frame = NSMakeRect(startX + (32.0 * index), bounds.origin.y, 32.0, NSHeight(bounds));
 		
 		if (index == [self selectedIndex]) {
 			[[NSGradient unifiedSelectedGradient] drawInRect:frame angle:90.0];

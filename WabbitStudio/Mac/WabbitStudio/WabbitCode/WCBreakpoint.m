@@ -33,6 +33,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 }
 
 - (void)dealloc {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	_file = nil;
     [super dealloc];
 }
@@ -122,7 +123,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 - (NSImage *)icon {
 	switch ([self breakpointType]) {
 		case WCBreakpointTypeLine: {
-			NSImage *retval = [[[NSImage alloc] initWithSize:NSMakeSize(24.0, 14.0)] autorelease];
+			NSImage *retval = [[[NSImage alloc] initWithSize:NSMakeSize(24.0, 13.0)] autorelease];
 			[retval setFlipped:YES];
 			
 			[retval lockFocus];
@@ -152,6 +153,8 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	_breakpointType = WCBreakpointTypeLine;
 	_isRam = YES;
 	
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileTextDidChange:) name:NSTextStorageDidProcessEditingNotification object:[_file textStorage]];
+	
 	return self;
 }
 
@@ -174,14 +177,14 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 - (NSRange)breakpointRange {
 	if ([self breakpointType] == WCBreakpointTypeFile)
 		return NSMakeRange(0, 0);
-	return NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0);
+	return NSMakeRange([[[self file] textStorage] safeLineStartIndexForLineNumber:[self lineNumber]], 0);
 }
 @dynamic symbolName;
 - (NSString *)symbolName {
 	switch ([self breakpointType]) {
 		case WCBreakpointTypeLine: {
 			NSArray *symbols = [[[self file] symbolScanner] symbols];
-			WCSymbol *symbol = [symbols objectAtIndex:[symbols symbolIndexForLocation:[[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]]]];
+			WCSymbol *symbol = [symbols objectAtIndex:[symbols symbolIndexForLocation:[[[self file] textStorage] safeLineStartIndexForLineNumber:[self lineNumber]]]];
 			
 			return [symbol name];
 		}
@@ -291,5 +294,10 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 		searchRange = NSMakeRange(NSMaxRange(lineRange), entireRange.length-NSMaxRange(lineRange));
 	}
 	return _address;
+}
+
+- (void)_fileTextDidChange:(NSNotification *)note {
+	[self willChangeValueForKey:@"name"];
+	[self didChangeValueForKey:@"name"];
 }
 @end
