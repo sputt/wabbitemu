@@ -359,17 +359,17 @@ void calc_slot_free(LPCALC lpCalc) {
 
 void calc_turn_on(LPCALC lpCalc) {
 	lpCalc->running = TRUE;
-#ifdef MACVER
-#define FUNCTION6_KEY_CODE 97
-	calc_run_seconds(lpCalc, 1.5);
-	keypad_key_press(&lpCalc->cpu, FUNCTION6_KEY_CODE);
 	calc_run_seconds(lpCalc, 1.0);
-	keypad_key_release(&lpCalc->cpu, FUNCTION6_KEY_CODE);
+#ifdef MACVER
+	keypad_key_press(&lpCalc->cpu, 97);
 #else
-	calc_run_timed(lpCalc, 200);
-	lpCalc->cpu.pio.keypad->on_pressed |= KEY_FALSEPRESS;
-	calc_run_timed(lpCalc, 300);
-	lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_FALSEPRESS;
+	keypad_key_press(&lpCalc->cpu, VK_F12);
+#endif
+	calc_run_seconds(lpCalc, 0.25);
+#ifdef MACVER
+	keypad_key_release(&lpCalc->cpu, 97);
+#else
+	keypad_key_press(&lpCalc->cpu, VK_F12);
 #endif
 }
 
@@ -679,11 +679,8 @@ void free_backups(LPCALC lpCalc) {
 #endif
 
 int calc_run_seconds(LPCALC lpCalc, double seconds) {
-#ifdef MACVER
-	time_t time = (seconds * CLOCKS_PER_SEC) / 1000;
-#else
 	time_t time = (time_t ) (seconds * CLOCKS_PER_SEC);
-#endif
+
 	return calc_run_timed(lpCalc, time);
 }
 
