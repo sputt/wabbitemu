@@ -29,13 +29,15 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class WCBreakpoint,WCBreakpointEditViewController;
+@class WCBreakpoint,WCBreakpointEditViewController,WCBuildMessage;
 
 @interface NoodleLineNumberView : NSRulerView {
 	WCBreakpoint *_currentBreakpoint;
 	NSUInteger _currentLineNumber;
 	CGFloat _currentLocation;
 	WCBreakpointEditViewController *_currentEditViewController;
+	
+	WCBuildMessage *_currentBuildMessage;
 	
 	BOOL _hasSetInitialRulerThickness;
 }

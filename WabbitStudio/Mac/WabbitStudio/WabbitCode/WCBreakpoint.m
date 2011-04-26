@@ -88,7 +88,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 }
 
 - (BOOL)shouldJumpToObject; {
-	if ([self breakpointType] == WCBreakpointTypeFile)
+	if ([self breakpointType] != WCBreakpointTypeLine)
 		return NO;
 	return YES;
 }
@@ -104,7 +104,12 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 		case WCBreakpointTypeLine: {
 			if ([[super name] length])
 				return [super name];
-			return [[[[[self file] textStorage] string] substringWithRange:[[[[self file] textStorage] string] lineRangeForRange:NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0)]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+			
+			NSString *string = [[[[[self file] textStorage] string] substringWithRange:[[[[self file] textStorage] string] lineRangeForRange:NSMakeRange([[[self file] textStorage] safeLineStartIndexForLineNumber:[self lineNumber]], 0)]] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+			
+			if ([string length] == 0 || ([string length] == 1 && [[NSCharacterSet whitespaceAndNewlineCharacterSet] characterIsMember:[string characterAtIndex:0]]))
+				return NSLocalizedString(@"Why did you put a breakpoint on an empty line?", @"Why did you put a breakpoint on an empty line?");
+			return string;
 		}
 		case WCBreakpointTypeFile:
 		case WCBreakpointTypeProject:
@@ -117,7 +122,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 - (NSImage *)icon {
 	switch ([self breakpointType]) {
 		case WCBreakpointTypeLine: {
-			NSImage *retval = [[[NSImage alloc] initWithSize:NSMakeSize(32.0, 14.0)] autorelease];
+			NSImage *retval = [[[NSImage alloc] initWithSize:NSMakeSize(24.0, 14.0)] autorelease];
 			[retval setFlipped:YES];
 			
 			[retval lockFocus];

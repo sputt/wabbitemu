@@ -59,14 +59,6 @@
 	}
 }
 
-- (NSString *)outlineView:(NSOutlineView *)outlineView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tc item:(id)item mouseLocation:(NSPoint)mouseLocation {
-	WCBuildMessage *message = [item representedObject];
-	
-	if ([message messageType] == WCBuildMessageTypeFile)
-		return [[message file] absolutePathForDisplay];
-	return [NSString stringWithFormat:NSLocalizedString(@"%@\n%@ - line %u", @"build message tooltip"),[message name],[[message file] name],[message lineNumber]];
-}
-
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item {
 	if ([[item representedObject] parentNode] == nil)
 		return [outlineView rowHeight];
@@ -74,10 +66,6 @@
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item {
-	return NO;
-}
-
-- (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowCellExpansionForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
 	return NO;
 }
 

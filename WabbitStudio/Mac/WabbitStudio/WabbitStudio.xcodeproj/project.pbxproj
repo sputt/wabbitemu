@@ -7,8 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		07005B4E135426A40094FAFC /* WarningBadge.png in Resources */ = {isa = PBXBuildFile; fileRef = 07005B4C135426A30094FAFC /* WarningBadge.png */; };
-		07005B4F135426A40094FAFC /* ErrorBadge.png in Resources */ = {isa = PBXBuildFile; fileRef = 07005B4D135426A40094FAFC /* ErrorBadge.png */; };
 		0706F50F13391684000C9007 /* NSUserDefaults+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0706F50E13391684000C9007 /* NSUserDefaults+WCExtensions.m */; };
 		0707208C1360A29800E7C7CD /* WCBoolToStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */; };
 		070720981360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */; };
@@ -30,6 +28,8 @@
 		0713964B1347FEDE0022E742 /* Include Files in Resources */ = {isa = PBXBuildFile; fileRef = 0713964A1347FEDE0022E742 /* Include Files */; };
 		0713964E1348004A0022E742 /* WCArrayToCommaSeparatedStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0713964D134800480022E742 /* WCArrayToCommaSeparatedStringTransformer.m */; };
 		0713965113484C130022E742 /* main.z80 in Resources */ = {isa = PBXBuildFile; fileRef = 0713964F134840010022E742 /* main.z80 */; };
+		071400CC13669E4C004AA5C6 /* ProjectWindow32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 071400CA13669E4C004AA5C6 /* ProjectWindow32x32.png */; };
+		071400D11366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m in Sources */ = {isa = PBXBuildFile; fileRef = 071400D01366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m */; };
 		07142412133BD78D003D0247 /* WCLineHighlighter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07142411133BD78B003D0247 /* WCLineHighlighter.m */; };
 		0724B7AB136390300061AA47 /* WCBadgedTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7A8136390300061AA47 /* WCBadgedTextFieldCell.m */; };
 		0724B7AC136390300061AA47 /* WCIconTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7AA136390300061AA47 /* WCIconTextFieldCell.m */; };
@@ -171,6 +171,8 @@
 		07C83BA11350FD700051412B /* spasm in Resources */ = {isa = PBXBuildFile; fileRef = 07C83BA01350FD700051412B /* spasm */; };
 		07C83BA41351BC230051412B /* WCSymbolsOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */; };
 		07C8B06A135E244E00DC8322 /* WCBreakpointsOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C8B069135E244D00DC8322 /* WCBreakpointsOutlineView.m */; };
+		07CB263713671F4400220104 /* Error.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 07CB263513671F4400220104 /* Error.pdf */; };
+		07CB263C1367220200220104 /* Warning.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 07CB263A1367220200220104 /* Warning.pdf */; };
 		07CBCF7C135C141600B72B6B /* Advanced.png in Resources */ = {isa = PBXBuildFile; fileRef = 07CBCF7B135C141600B72B6B /* Advanced.png */; };
 		07CE786C134E410D001B96FC /* NSWindow-NoodleEffects.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE786B134E410D001B96FC /* NSWindow-NoodleEffects.m */; };
 		07CE786F134E637A001B96FC /* WCDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE786E134E637A001B96FC /* WCDocumentController.m */; };
@@ -212,8 +214,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		07005B4C135426A30094FAFC /* WarningBadge.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = WarningBadge.png; sourceTree = "<group>"; };
-		07005B4D135426A40094FAFC /* ErrorBadge.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ErrorBadge.png; sourceTree = "<group>"; };
 		0706F50D13391684000C9007 /* NSUserDefaults+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSUserDefaults+WCExtensions.h"; sourceTree = "<group>"; };
 		0706F50E13391684000C9007 /* NSUserDefaults+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+WCExtensions.m"; sourceTree = "<group>"; };
 		0707208A1360A29800E7C7CD /* WCBoolToStringTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBoolToStringTransformer.h; sourceTree = "<group>"; };
@@ -247,6 +247,10 @@
 		0713964C134800470022E742 /* WCArrayToCommaSeparatedStringTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCArrayToCommaSeparatedStringTransformer.h; sourceTree = "<group>"; };
 		0713964D134800480022E742 /* WCArrayToCommaSeparatedStringTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCArrayToCommaSeparatedStringTransformer.m; sourceTree = "<group>"; };
 		0713964F134840010022E742 /* main.z80 */ = {isa = PBXFileReference; lastKnownFileType = text; path = main.z80; sourceTree = "<group>"; };
+		071400CA13669E4C004AA5C6 /* ProjectWindow32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = ProjectWindow32x32.png; sourceTree = "<group>"; };
+		071400CB13669E4C004AA5C6 /* ProjectWindow32x32.pxm */ = {isa = PBXFileReference; lastKnownFileType = file; path = ProjectWindow32x32.pxm; sourceTree = "<group>"; };
+		071400CF1366AF26004AA5C6 /* NS(Attributed)String+Geometrics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NS(Attributed)String+Geometrics.h"; sourceTree = "<group>"; };
+		071400D01366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NS(Attributed)String+Geometrics.m"; sourceTree = "<group>"; };
 		07142410133BD78B003D0247 /* WCLineHighlighter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCLineHighlighter.h; sourceTree = "<group>"; };
 		07142411133BD78B003D0247 /* WCLineHighlighter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCLineHighlighter.m; sourceTree = "<group>"; };
 		0724B7A7136390300061AA47 /* WCBadgedTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBadgedTextFieldCell.h; sourceTree = "<group>"; };
@@ -484,6 +488,10 @@
 		07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSymbolsOutlineView.m; sourceTree = "<group>"; };
 		07C8B068135E244D00DC8322 /* WCBreakpointsOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpointsOutlineView.h; sourceTree = "<group>"; };
 		07C8B069135E244D00DC8322 /* WCBreakpointsOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBreakpointsOutlineView.m; sourceTree = "<group>"; };
+		07CB263413671F4400220104 /* Error.opacity */ = {isa = PBXFileReference; lastKnownFileType = file; path = Error.opacity; sourceTree = "<group>"; };
+		07CB263513671F4400220104 /* Error.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Error.pdf; sourceTree = "<group>"; };
+		07CB26391367220200220104 /* Warning.opacity */ = {isa = PBXFileReference; lastKnownFileType = file; path = Warning.opacity; sourceTree = "<group>"; };
+		07CB263A1367220200220104 /* Warning.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Warning.pdf; sourceTree = "<group>"; };
 		07CBC51F13647BCD00C1CEE7 /* WCPlistRepresentationProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCPlistRepresentationProtocol.h; sourceTree = "<group>"; };
 		07CBCF7B135C141600B72B6B /* Advanced.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Advanced.png; sourceTree = "<group>"; };
 		07CE786A134E410D001B96FC /* NSWindow-NoodleEffects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSWindow-NoodleEffects.h"; sourceTree = "<group>"; };
@@ -609,6 +617,12 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				07CB26391367220200220104 /* Warning.opacity */,
+				07CB263A1367220200220104 /* Warning.pdf */,
+				07CB263413671F4400220104 /* Error.opacity */,
+				07CB263513671F4400220104 /* Error.pdf */,
+				071400CA13669E4C004AA5C6 /* ProjectWindow32x32.png */,
+				071400CB13669E4C004AA5C6 /* ProjectWindow32x32.pxm */,
 				07F3D82D13655D9D0035ED48 /* FindInProjectResult16x16.png */,
 				0756D8DC1363E9DD00ECDFFD /* Symbols16x16.png */,
 				074D80C6136234170081571E /* Files.png */,
@@ -616,8 +630,6 @@
 				070720A91360C7AE00E7C7CD /* Search16x16.png */,
 				07B5491F135D6DE500B34C46 /* ErrorsAndWarnings.png */,
 				07CBCF7B135C141600B72B6B /* Advanced.png */,
-				07005B4C135426A30094FAFC /* WarningBadge.png */,
-				07005B4D135426A40094FAFC /* ErrorBadge.png */,
 				07C83BA01350FD700051412B /* spasm */,
 				07911E29134BBA9A00B3DB86 /* BuildAndDebug32x32.png */,
 				07911E23134BBA1000B3DB86 /* BuildAndDebug32x32.pxm */,
@@ -895,6 +907,8 @@
 		0769A1D51333DEFB00080A96 /* External */ = {
 			isa = PBXGroup;
 			children = (
+				071400CF1366AF26004AA5C6 /* NS(Attributed)String+Geometrics.h */,
+				071400D01366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m */,
 				070720AB1360EA2D00E7C7CD /* EncodingManager.h */,
 				070720AC1360EA2D00E7C7CD /* EncodingManager.m */,
 				07BBD220135F78E4005C4870 /* MAAttachedWindow.h */,
@@ -1032,8 +1046,6 @@
 				070F2F531353F74500641AE3 /* CTBadge_3.pdf in Resources */,
 				070F2F541353F74500641AE3 /* CTBadge_4.pdf in Resources */,
 				070F2F551353F74500641AE3 /* CTBadge_5.pdf in Resources */,
-				07005B4E135426A40094FAFC /* WarningBadge.png in Resources */,
-				07005B4F135426A40094FAFC /* ErrorBadge.png in Resources */,
 				072F7AE8135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib in Resources */,
 				07CBCF7C135C141600B72B6B /* Advanced.png in Resources */,
 				07B54920135D6DE500B34C46 /* ErrorsAndWarnings.png in Resources */,
@@ -1046,6 +1058,9 @@
 				074D80C7136234170081571E /* Files.png in Resources */,
 				0756D8DD1363E9DD00ECDFFD /* Symbols16x16.png in Resources */,
 				07F3D82E13655D9D0035ED48 /* FindInProjectResult16x16.png in Resources */,
+				071400CC13669E4C004AA5C6 /* ProjectWindow32x32.png in Resources */,
+				07CB263713671F4400220104 /* Error.pdf in Resources */,
+				07CB263C1367220200220104 /* Warning.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1172,6 +1187,7 @@
 				0724B7D21363A3D40061AA47 /* WCMultiLineTextFieldCell.m in Sources */,
 				0756D8D91363DFE200ECDFFD /* WCInfoTextFieldCell.m in Sources */,
 				0756D8E01363EF5700ECDFFD /* WCGroupBackgroundOutlineView.m in Sources */,
+				071400D11366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

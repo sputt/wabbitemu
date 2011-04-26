@@ -44,6 +44,8 @@
 #import "NSAlert-OAExtensions.h"
 #import "MAAttachedWindow.h"
 #import "WCBreakpointEditViewController.h"
+#import "WCBuildMessagesViewController.h"
+
 
 #define DEFAULT_THICKNESS 22.0
 #define RULER_MARGIN 3.0
@@ -55,6 +57,7 @@
 @property (assign,nonatomic) WCBreakpoint *currentBreakpoint;
 @property (assign,nonatomic) NSUInteger currentLineNumber;
 @property (assign,nonatomic) CGFloat currentLocation;
+@property (assign,nonatomic) WCBuildMessage *currentBuildMessage;
 
 - (NSArray *)lineIndices;
 - (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)index inText:(NSString *)text;
@@ -87,6 +90,8 @@
 	[self cleanupUserDefaultsObserving];
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 	_currentEditViewController = nil;
+	_currentBreakpoint = nil;
+	_currentBuildMessage = nil;
     [super dealloc];
 }
 
@@ -211,13 +216,13 @@
 	[[self backgroundColor] set];
 	NSRectFill(bounds);
 	
-	[[NSColor colorWithCalibratedWhite:0.58 alpha:1.0] set];
-	[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
-	
     id view = [self clientView];
 	
-	if (view == nil)
+	if (view == nil) {
+		[[NSColor colorWithCalibratedWhite:0.58 alpha:1.0] set];
+		[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
 		return;
+	}
 	
 	[self removeAllToolTips];
 	
@@ -283,9 +288,10 @@
 							NSRect lineRect = NSMakeRect(bounds.origin.x,ypos,NSWidth(bounds),NSHeight(rects[0]));
 							NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey];
 							
-							[[baseColor colorWithAlphaComponent:0.25] setFill];
-							NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
 							[[baseColor colorWithAlphaComponent:0.5] setFill];
+							NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
+							[[baseColor colorWithAlphaComponent:0.75] setFill];
+							//[baseColor setFill];
 							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
 							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
 						}
@@ -312,9 +318,10 @@
 							NSRect lineRect = NSMakeRect(bounds.origin.x,ypos,NSWidth(bounds),NSHeight(rects[0]));
 							NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorWarningLineHighlightColorKey];
 							
-							[[baseColor colorWithAlphaComponent:0.25] setFill];
+							[[baseColor colorWithAlphaComponent:0.75] setFill];
 							NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
-							[[baseColor colorWithAlphaComponent:0.5] setFill];
+							//[[baseColor colorWithAlphaComponent:0.5] setFill];
+							[baseColor setFill];
 							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
 							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
 						}
@@ -343,6 +350,9 @@
 		if (index > NSMaxRange(range))
 			break;
 	}
+	
+	[[NSColor colorWithCalibratedWhite:0.58 alpha:1.0] set];
+	[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
 }
 #pragma mark Menus
 - (NSMenu *)menu {
@@ -358,6 +368,7 @@
 	[mMenu addItemWithTitle:[NSString stringWithFormat:NSLocalizedString(@"Delete All Breakpoints in \"%@\"\u2026", @"Delete All Breakpoints in File with ellipsis"),[[(WCTextView *)[self clientView] file] name]] action:@selector(_deleteAllBreakpoints:) keyEquivalent:@""];
 	[mMenu addItem:[NSMenuItem separatorItem]];
 	[mMenu addItemWithTitle:NSLocalizedString(@"Reveal in Breakpoints View", @"Reveal in Breakpoints View") action:@selector(_revealInBreakpointsView:) keyEquivalent:@""];
+	[mMenu addItemWithTitle:NSLocalizedString(@"Reveal in Build Messages View", @"Reveal in Build Messages View") action:@selector(_revealInBuildMessagesView:) keyEquivalent:@""];
 	
 	return mMenu;
 }
@@ -372,9 +383,14 @@
 		[self setCurrentBreakpoint:[[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line]];
 		[self setCurrentLocation:p.y];
 		[self setCurrentLineNumber:line];
+		
+		[self setCurrentBuildMessage:[[(WCTextView *)[self clientView] file] warningMessageAtLineNumber:line]];
+		[self setCurrentBuildMessage:[[(WCTextView *)[self clientView] file] errorMessageAtLineNumber:line]];
 	}
-	else
+	else {
+		[self setCurrentBuildMessage:nil];
 		[self setCurrentBreakpoint:nil];
+	}
 	
 	return menu;
 }
@@ -409,6 +425,10 @@
 	}
 	else if ([item action] == @selector(_revealInBreakpointsView:)) {
 		if ([self currentBreakpoint] == nil)
+			return NO;
+	}
+	else if ([item action] == @selector(_revealInBuildMessagesView:)) {
+		if ([self currentBuildMessage] == nil)
 			return NO;
 	}
 	return YES;
@@ -570,6 +590,7 @@
 @synthesize currentBreakpoint=_currentBreakpoint;
 @synthesize currentLineNumber=_currentLineNumber;
 @synthesize currentLocation=_currentLocation;
+@synthesize currentBuildMessage=_currentBuildMessage;
 #pragma mark IBActions
 - (IBAction)_editBreakpoint:(id)sender {
 	if ([self currentBreakpoint] == nil)
@@ -606,6 +627,10 @@
 - (IBAction)_revealInBreakpointsView:(id)sender {
 	[[[(WCTextView *)[self clientView] file] project] viewBreakpoints:nil];
 	[[[[(WCTextView *)[self clientView] file] project] breakpointsViewController] setSelectedObject:[self currentBreakpoint]];
+}
+- (IBAction)_revealInBuildMessagesView:(id)sender {
+	[[[(WCTextView *)[self clientView] file] project] viewBuildMessages:nil];
+	[[[[(WCTextView *)[self clientView] file] project] buildMessagesViewController] setSelectedObject:[self currentBuildMessage]];
 }
 #pragma mark Notifications
 - (void)textDidChange:(NSNotification *)notification {

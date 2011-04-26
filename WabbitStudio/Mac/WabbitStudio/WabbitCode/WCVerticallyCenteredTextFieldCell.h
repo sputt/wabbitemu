@@ -9,10 +9,12 @@
 #import <AppKit/NSTextFieldCell.h>
 
 
-@interface WCVerticallyCenteredTextFieldCell : NSTextFieldCell {
+@interface WCVerticallyCenteredTextFieldCell : NSTextFieldCell <NSCopying> {
 @private
-    
+	BOOL _excludeFileExtensionWhenSelecting;
 }
+@property (assign,nonatomic) BOOL excludeFileExtensionWhenSelecting;
+
 - (NSRect)centeredTitleRectForBounds:(NSRect)bounds;
 
 - (void)commonInit;

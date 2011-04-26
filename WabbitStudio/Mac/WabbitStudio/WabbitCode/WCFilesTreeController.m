@@ -17,6 +17,10 @@
 
 
 @implementation WCFilesTreeController
+- (void)dealloc {
+	[_currentAddToFilesController release];
+	[super dealloc];
+}
 #pragma mark *** Protocol Overrides ***
 #pragma mark NSOutlineViewDataSource
 - (NSDragOperation)outlineView:(NSOutlineView *)outlineView validateDrop:(id <NSDraggingInfo>)info proposedItem:(id)item proposedChildIndex:(NSInteger)index {
@@ -63,7 +67,8 @@
 	else if ([types containsObject:NSFilenamesPboardType]) {
 		NSArray *filePaths = [[info draggingPasteboard] propertyListForType:NSFilenamesPboardType];
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"Add Files to Project", @"add files to project alert title") defaultButton:NSLocalizedString(@"Add", @"add files to project alert default button title") alternateButton:NSLocalizedString(@"Cancel", @"add files to project alert alternate button title") otherButton:nil informativeTextWithFormat:NSLocalizedString(@"Choose options for adding these files to the project", @"add files to project alert message text")];
-		[alert setAccessoryView:[[[[WCAddFilesToProjectViewController alloc] init] autorelease] view]];
+		_currentAddToFilesController = [[WCAddFilesToProjectViewController alloc] init];
+		[alert setAccessoryView:[_currentAddToFilesController view]];
 		[alert beginSheetModalForWindow:[outlineView window] modalDelegate:self didEndSelector:@selector(alertDidEnd:code:info:) contextInfo:(void *)[[NSDictionary dictionaryWithObjectsAndKeys:filePaths,@"filePaths",[item indexPath],@"indexPath",[NSNumber numberWithInteger:index],@"index",nil] retain]];
 		
 	}
@@ -89,10 +94,15 @@
 - (void)alertDidEnd:(NSAlert *)alert code:(NSInteger)code info:(void *)info {
 	// we had to retain the dictionary passed in, autorelease it or we will leak
 	NSDictionary *dict = (NSDictionary *)[(id)info autorelease];
+	[_currentAddToFilesController autorelease];
 	
-	if (code == NSAlertAlternateReturn)
+	if (code == NSAlertAlternateReturn) {
+		_currentAddToFilesController = nil;
 		return;
+	}
 	
 	[[WCGeneralPerformer sharedPerformer] addFilePaths:[dict objectForKey:@"filePaths"] toFile:[[self treeNodeAtIndexPath:[dict objectForKey:@"indexPath"]] representedObject] atIndex:[[dict objectForKey:@"index"] unsignedIntegerValue]];
+	
+	_currentAddToFilesController = nil;
 }
 @end

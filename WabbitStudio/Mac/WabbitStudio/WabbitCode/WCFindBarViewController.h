@@ -25,6 +25,7 @@
 	BOOL _replaceControlsVisible;
 	BOOL _useRegularExpression;
 	BOOL _ignoreCase;
+	BOOL _wrapAround;
 	WCFindScope _findScope;
 	WCFindSubScope _findSubScope;
 	NSString *_matchesString;
@@ -41,6 +42,7 @@
 @property (assign,nonatomic) BOOL replaceControlsVisible;
 @property (assign,nonatomic) BOOL ignoreCase;
 @property (assign,nonatomic) BOOL useRegularExpression;
+@property (assign,nonatomic) BOOL wrapAround;
 @property (assign,nonatomic) WCFindScope findScope;
 @property (assign,nonatomic) WCFindSubScope findSubScope;
 

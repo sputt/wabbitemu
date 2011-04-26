@@ -10,6 +10,7 @@
 #import "WCProject.h"
 #import "WCFile.h"
 #import "WCTextView.h"
+#import "WCGeneralPerformer.h"
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
@@ -37,6 +38,19 @@
 	
 	if (frameString != nil)
 		[[self window] setFrameFromString:frameString];
+	
+	NSToolbar *toolbar = [[[NSToolbar alloc] initWithIdentifier:[NSString stringWithFormat:@"%@ToolbarIdentifier",[self className]]] autorelease];
+	
+	[toolbar setSizeMode:NSToolbarSizeModeRegular];
+	[toolbar setDisplayMode:NSToolbarDisplayModeIconAndLabel];
+	[toolbar setDelegate:self];
+	[toolbar setAllowsUserCustomization:YES];
+	
+#ifndef DEBUG
+	[toolbar setAutosavesConfiguration:YES];
+#endif
+	
+	[[self window] setToolbar:toolbar];
 	
 	[_tabBarControl setHideForSingleTab:NO];
 	[_tabBarControl setCanCloseOnlyTab:NO];
@@ -92,6 +106,18 @@
 	}
 	
 	[fDict setObject:[[self window] stringWithSavedFrame] forKey:kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey];
+}
+
+- (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar {
+	return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,kWCProjectToolbarProjectWindowItemIdentifier,NSToolbarSeparatorItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,nil];
+}
+
+- (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar {
+	return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarProjectWindowItemIdentifier,nil];
+}
+
+- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag {
+	return [[WCGeneralPerformer sharedPerformer] toolbar:toolbar itemForItemIdentifier:itemIdentifier willBeInsertedIntoToolbar:flag inProject:[self project]];
 }
 
 + (id)fileWindowControllerWithFile:(WCFile *)file; {

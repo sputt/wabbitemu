@@ -48,7 +48,8 @@
 #import "WCFileWindowController.h"
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
-#import <BWToolkitFramework/BWToolkitFramework.h>
+#import <BWToolkitFramework/BWAnchoredButtonBar.h>
+#import <BWToolkitFramework/BWAnchoredButton.h>
 
 NSString *const kWCProjectFileKey = @"file";
 NSString *const kWCProjectVersionKey = @"version";
@@ -103,7 +104,7 @@ static NSImage *_appIcon = nil;
 	if ([WCProject class] != self)
 		return;
 	
-	_appIcon = [[NSImage imageNamed:@"NSApplicationIcon"] copy];
+	_appIcon = [[NSImage imageNamed:NSImageNameApplicationIcon] copy];
 }
 
 + (BOOL)canConcurrentlyReadDocumentsOfType:(NSString *)typeName {
@@ -306,49 +307,15 @@ static NSImage *_appIcon = nil;
 #pragma mark NSToolbarDelegate
 
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar {
-	if ([[toolbar identifier] isEqualToString:@"WCProjectToolbarIdentifier"])
-		return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,NSToolbarSeparatorItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,nil];
-	return nil;
+	return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,NSToolbarSeparatorItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,nil];
 }
 
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar {
-	if ([[toolbar identifier] isEqualToString:@"WCProjectToolbarIdentifier"])
-		return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,NSToolbarFlexibleSpaceItemIdentifier,nil];
-	return nil;
+	return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,NSToolbarFlexibleSpaceItemIdentifier,nil];
 }
 
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag {
-	NSToolbarItem *item = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
-	
-	if ([itemIdentifier isEqualToString:kWCProjectToolbarBuildItemIdentifier]) {
-		[item setLabel:NSLocalizedString(@"Build", @"build toolbar item label")];
-		[item setPaletteLabel:[item label]];
-		[item setImage:[NSImage imageNamed:@"Building"]];
-		[item setAction:@selector(build:)];
-	}
-	else if ([itemIdentifier isEqualToString:kWCProjectToolbarBuildAndRunItemIdentifier]) {
-		[item setLabel:NSLocalizedString(@"Build and Run", @"build and run toolbar item label")];
-		[item setPaletteLabel:[item label]];
-		[item setImage:[NSImage imageNamed:@"BuildAndRun32x32"]];
-		//[item setAction:@selector(build:)];
-	}
-	else if ([itemIdentifier isEqualToString:kWCProjectToolbarBuildAndDebugItemIdentifer]) {
-		[item setLabel:NSLocalizedString(@"Build and Debug", @"build and debug toolbar item label")];
-		[item setPaletteLabel:[item label]];
-		[item setImage:[NSImage imageNamed:@"BuildAndDebug32x32"]];
-		//[item setAction:@selector(build:)];
-	}
-	else if ([itemIdentifier isEqualToString:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier]) {
-		[item setLabel:NSLocalizedString(@"Build Target", @"build target pop up button toolbar item label")];
-		[item setPaletteLabel:[item label]];
-		
-		WCProjectBuildTargetPopUpButton *view = [[[WCProjectBuildTargetPopUpButton alloc] initWithProject:self] autorelease];
-												 
-		[item setView:view];
-		[item setMinSize:NSMakeSize(150.0, NSHeight([view frame]))];
-		[item setMaxSize:NSMakeSize(NSWidth([view frame]), NSHeight([view frame]))];
-	}
-	return item;
+	return [[WCGeneralPerformer sharedPerformer] toolbar:toolbar itemForItemIdentifier:itemIdentifier willBeInsertedIntoToolbar:flag inProject:self];
 }
 
 #pragma mark NSOpenSavePanelDelegate
@@ -1332,6 +1299,10 @@ static NSImage *_appIcon = nil;
 		else
 			[[NSWorkspace sharedWorkspace] openFile:[[node representedObject] absolutePath]];
 	}
+}
+
+- (IBAction)projectWindow:(id)sender; {
+	[[[self windowControllers] firstObject] showWindow:nil];
 }
 #pragma mark -
 #pragma mark *** Private Methods ***

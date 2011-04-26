@@ -95,9 +95,6 @@
 	return floor([outlineView rowHeight]*1.5);
 }
 
-- (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowCellExpansionForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
-	return YES;
-}
 #pragma mark NSUserInterfaceValidations
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
 	if ([item action] == @selector(changeFindScope:)) {
@@ -168,6 +165,7 @@
 		NSUInteger matchedFiles = 0;
 		NSUInteger matches = 0;
 		NSDictionary *mAttributes = [[WCGeneralPerformer sharedPerformer] findAttributes];
+		NSParagraphStyle *tlStyle = [[WCGeneralPerformer sharedPerformer] truncateLeftParagraphStyle];
 		
 		for (WCFile *file in files) {
 			NSString *string = [[[[file textStorage] string] copy] autorelease];
@@ -197,6 +195,8 @@
 					
 					NSRange lRange = [string lineRangeForRange:matchRange];
 					NSMutableAttributedString *lString = [[[NSMutableAttributedString alloc] initWithString:[[string substringWithRange:lRange] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]] attributes:attributes] autorelease];
+					if (NSMaxRange(NSMakeRange(matchRange.location-lRange.location, matchRange.length)) > (lRange.length/2))
+						[lString addAttribute:NSParagraphStyleAttributeName value:tlStyle range:NSMakeRange(0, [[lString string] length])];
 					[lString addAttributes:mAttributes range:NSMakeRange(matchRange.location-lRange.location, matchRange.length)];
 					
 					WCFindInProjectResult *result = [WCFindInProjectResult findInProjectResultForFile:file inRange:matchRange withString:lString symbol:nil];
@@ -266,6 +266,8 @@
 						
 						NSRange lRange = [string lineRangeForRange:matchRange];
 						NSMutableAttributedString *lString = [[[NSMutableAttributedString alloc] initWithString:[[string substringWithRange:lRange] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]] attributes:attributes] autorelease];
+						if (NSMaxRange(NSMakeRange(matchRange.location-lRange.location, matchRange.length)) > (lRange.length/2))
+							[lString addAttribute:NSParagraphStyleAttributeName value:tlStyle range:NSMakeRange(0, [[lString string] length])];
 						[lString addAttributes:mAttributes range:NSMakeRange(matchRange.location-lRange.location, matchRange.length)];
 						
 						WCSymbol *mSymbol = nil;
@@ -353,6 +355,7 @@
 		NSUInteger matchedFiles = 0;
 		NSUInteger matches = 0;
 		NSDictionary *mAttributes = [[WCGeneralPerformer sharedPerformer] findAttributes];
+		NSParagraphStyle *tlStyle = [[WCGeneralPerformer sharedPerformer] truncateLeftParagraphStyle];
 		
 		for (WCFile *file in files) {
 			NSMutableString *mString = [[[[file textStorage] string] mutableCopy] autorelease];
@@ -460,6 +463,8 @@
 					NSRange matchRange = [rValue rangeValue];
 					NSRange lRange = [string lineRangeForRange:matchRange];
 					NSMutableAttributedString *lString = [[[NSMutableAttributedString alloc] initWithString:[[string substringWithRange:lRange] stringByTrimmingCharactersInSet:[NSCharacterSet newlineCharacterSet]] attributes:attributes] autorelease];
+					if (NSMaxRange(NSMakeRange(matchRange.location-lRange.location, matchRange.length)) > (lRange.length/2))
+						[lString addAttribute:NSParagraphStyleAttributeName value:tlStyle range:NSMakeRange(0, [[lString string] length])];
 					[lString addAttributes:mAttributes range:NSMakeRange(matchRange.location-lRange.location, matchRange.length)];
 					
 					WCFindInProjectResult *result = [WCFindInProjectResult findInProjectResultForFile:file inRange:matchRange withString:lString symbol:nil];

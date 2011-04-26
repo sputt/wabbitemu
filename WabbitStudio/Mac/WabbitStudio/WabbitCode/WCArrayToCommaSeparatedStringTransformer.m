@@ -21,7 +21,7 @@
 - (id)transformedValue:(id)value {	
 	NSArray *array = (NSArray *)value;
 	
-	if (![array count])
+	if ([array count] == 0)
 		return NS_LOCALIZED_STRING_NONE;
 	return [array componentsJoinedByString:@", "];
 }

@@ -55,6 +55,15 @@ static const CGFloat kIconMarginTop = 2.0; // only applies if centerIcon is not 
 	[super selectWithFrame:aRect inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
 }
 
+- (NSRect)expansionFrameWithFrame:(NSRect)cellFrame inView:(NSView *)view {
+	if ([self icon] == nil)
+		return [super expansionFrameWithFrame:cellFrame inView:view];
+	
+	NSRect rect = [super expansionFrameWithFrame:cellFrame inView:view];
+	rect.size.width += [self iconSize].width+kIconMarginLeft+kIconMarginRight;
+	return rect;
+}
+
 - (NSUInteger)hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView {
 	[self iconRectForBounds:cellFrame remainingRect:&cellFrame];
 	return [super hitTestForEvent:event inRect:cellFrame ofView:controlView];

@@ -12,6 +12,7 @@
 #import "WCGeneralPerformer.h"
 #import "NSArray+WCExtensions.h"
 #import "WCMutableRangeArray.h"
+#import "NSTextView+WCExtensions.h"
 
 #define restrict
 #import <RegexKit/RegexKit.h>
@@ -98,6 +99,7 @@
 @synthesize matchesString=_matchesString;
 @synthesize ignoreCase=_ignoreCase;
 @synthesize useRegularExpression=_useRegularExpression;
+@synthesize wrapAround=_wrapAround;
 @synthesize findScope=_findScope;
 @synthesize findSubScope=_findSubScope;
 @synthesize replaceControlsVisible=_replaceControlsVisible;
@@ -268,6 +270,10 @@
 		NSRange mRange = [[_textView string] rangeOfString:[self findString] options:([self ignoreCase])?(NSCaseInsensitiveSearch):(NSLiteralSearch) range:NSMakeRange(NSMaxRange(sRange), eRange.length-NSMaxRange(sRange))];
 		
 		if (mRange.location == NSNotFound) {
+			if ([self wrapAround]) {
+				[_textView setSelectedRange:WCEmptyRange];
+				[self findNext:nil];
+			}
 			NSBeep();
 			return;
 		}
@@ -292,6 +298,10 @@
 		NSRange mRange = [[_textView string] rangeOfString:[self findString] options:([self ignoreCase])?(NSCaseInsensitiveSearch|NSBackwardsSearch):(NSLiteralSearch|NSBackwardsSearch) range:NSMakeRange(0, sRange.location)];
 		
 		if (mRange.location == NSNotFound) {
+			if ([self wrapAround]) {
+				[_textView setSelectedRange:NSMakeRange([[_textView string] length] - 1, 0)];
+				[self findPrevious:nil];
+			}
 			NSBeep();
 			return;
 		}
@@ -337,6 +347,9 @@
 	}
 	
 	NSArray *ranges = [_findRanges allRangesAsObjects];
+	
+	[_textView replaceCharactersInRanges:ranges withString:[self replaceString]];
+	/*
 	NSMutableArray *strings = [NSMutableArray arrayWithCapacity:[_findRanges count]];
 	for (NSUInteger index = 0; index < [_findRanges count]; index++) {
 		[strings addObject:[self replaceString]];
@@ -355,6 +368,8 @@
 		}
 		[[_textView textStorage] endEditing];
 	}
+	 */
+	
 }
 
 - (IBAction)changeFindScope:(NSMenuItem *)sender; {
@@ -369,6 +384,7 @@
 		return nil;
 	
 	_textView = textView;
+	_wrapAround = YES;
 	_ignoreCase = YES;
 	_useRegularExpression = NO;
 	_findScope = WCFindScopeFile;

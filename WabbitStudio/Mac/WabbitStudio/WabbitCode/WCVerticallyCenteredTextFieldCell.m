@@ -20,17 +20,6 @@
 	return self;
 }
 
-/*
-- (id)initTextCell:(NSString *)stringValue {
-	if (!(self = [super initTextCell:stringValue]))
-		return nil;
-	
-	[self commonInit];
-	
-	return self;
-}
- */
-
 - (id)initWithCoder:(NSCoder *)coder {
 	if (!(self = [super initWithCoder:coder]))
 		return nil;
@@ -38,6 +27,14 @@
 	[self commonInit];
 	
 	return self;
+}
+
+- (id)copyWithZone:(NSZone *)zone {
+	WCVerticallyCenteredTextFieldCell *copy = [super copyWithZone:zone];
+	
+	copy->_excludeFileExtensionWhenSelecting = _excludeFileExtensionWhenSelecting;
+	
+	return copy;
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView *)controlView {	
@@ -49,7 +46,7 @@
 }
 
 - (void)selectWithFrame:(NSRect)aRect inView:(NSView *)controlView editor:(NSText *)textObj delegate:(id)anObject start:(NSInteger)selStart length:(NSInteger)selLength {
-	[super selectWithFrame:[self centeredTitleRectForBounds:aRect] inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
+	[super selectWithFrame:[self centeredTitleRectForBounds:aRect] inView:controlView editor:textObj delegate:anObject start:selStart length:([self excludeFileExtensionWhenSelecting])?[[[self stringValue] stringByDeletingPathExtension] length]:selLength];
 }
 
 - (NSRect)centeredTitleRectForBounds:(NSRect)bounds; {
@@ -60,6 +57,8 @@
 }
 
 - (void)commonInit; {
-	
+	_excludeFileExtensionWhenSelecting = YES;
 }
+
+@synthesize excludeFileExtensionWhenSelecting=_excludeFileExtensionWhenSelecting;
 @end

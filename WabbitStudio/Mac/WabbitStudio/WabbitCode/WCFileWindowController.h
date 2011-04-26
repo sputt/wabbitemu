@@ -11,7 +11,7 @@
 
 @class WCFile,WCProject,PSMTabBarControl,BWAnchoredButtonBar;
 
-@interface WCFileWindowController : NSWindowController <WCTabViewContext,NSWindowDelegate> {
+@interface WCFileWindowController : NSWindowController <WCTabViewContext,NSWindowDelegate,NSToolbarDelegate> {
 @private
 	IBOutlet PSMTabBarControl *_tabBarControl;
 	IBOutlet BWAnchoredButtonBar *_buttonBar;

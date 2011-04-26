@@ -223,6 +223,7 @@
 								<string key="NSFrame">{{323, -1}, {15, 24}}</string>
 								<reference key="NSSuperview" ref="462257645"/>
 								<reference key="NSWindow"/>
+								<reference key="NSNextKeyView"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSImageCell" key="NSCell" id="560061227">
 									<int key="NSCellFlags">130560</int>
@@ -261,7 +262,7 @@
 										<string key="NSFrameSize">{338, 344}</string>
 										<reference key="NSSuperview" ref="109649183"/>
 										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView" ref="421271518"/>
+										<reference key="NSNextKeyView" ref="58399366"/>
 										<bool key="NSEnabled">YES</bool>
 										<object class="_NSCornerView" key="NSCornerView">
 											<nil key="NSNextResponder"/>
@@ -356,7 +357,7 @@
 										<int key="NSTableViewSelectionHighlightStyle">1</int>
 										<int key="NSTableViewDraggingDestinationStyle">1</int>
 										<bool key="NSOutlineViewAutoresizesOutlineColumnKey">NO</bool>
-										<float key="NSOutlineViewIndentationPerLevelKey">14</float>
+										<float key="NSOutlineViewIndentationPerLevelKey">8</float>
 									</object>
 								</object>
 								<string key="NSFrameSize">{338, 344}</string>
@@ -394,7 +395,7 @@
 						<string key="NSFrame">{{0, 23}, {338, 344}}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="109649183"/>
+						<reference key="NSNextKeyView" ref="421271518"/>
 						<int key="NSsFlags">528</int>
 						<reference key="NSVScroller" ref="58399366"/>
 						<reference key="NSHScroller" ref="421271518"/>
@@ -1133,6 +1134,7 @@
 							<string>openInSeparateEditor:</string>
 							<string>openWithFinder:</string>
 							<string>previousTab:</string>
+							<string>projectWindow:</string>
 							<string>rename:</string>
 							<string>showInFinder:</string>
 							<string>ungroup:</string>
@@ -1144,6 +1146,7 @@
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -1180,6 +1183,7 @@
 							<string>openInSeparateEditor:</string>
 							<string>openWithFinder:</string>
 							<string>previousTab:</string>
+							<string>projectWindow:</string>
 							<string>rename:</string>
 							<string>showInFinder:</string>
 							<string>ungroup:</string>
@@ -1233,6 +1237,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">previousTab:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">projectWindow:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

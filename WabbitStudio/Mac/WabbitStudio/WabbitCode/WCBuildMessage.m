@@ -30,9 +30,9 @@
 		case WCBuildMessageTypeFile:
 			return [_file icon];
 		case WCBuildMessageTypeError:
-			return [NSImage imageNamed:@"ErrorBadge"];
+			return [NSImage imageNamed:@"Error"];
 		case WCBuildMessageTypeWarning:
-			return [NSImage imageNamed:@"WarningBadge"];
+			return [NSImage imageNamed:@"Warning"];
 		default:
 			return nil;
 	}

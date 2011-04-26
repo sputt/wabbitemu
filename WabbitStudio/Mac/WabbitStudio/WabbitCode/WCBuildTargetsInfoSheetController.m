@@ -15,7 +15,8 @@
 #import "WCDefines.h"
 #import "WCPreferencesController.h"
 
-#import <BWToolkitFramework/BWToolkitFramework.h>
+#import <BWToolkitFramework/BWAnchoredButtonBar.h>
+#import <BWToolkitFramework/BWAnchoredButton.h>
 
 
 @interface WCBuildTargetsInfoSheetController (Private)

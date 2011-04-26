@@ -46,7 +46,7 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	
 	WCProjectFile *_projectFile; // the root of our file outline view
 	NSMapTable *_filesToFileViewControllers; // maps files to sets of file view controllers
-	NSCountedSet *_openFiles; // open count for each file
+	NSCountedSet *_openFiles; // open count for each file so we know when to prompt to save if the project is being closed
 	
 	NSTask *_buildTask; // SPASM
 	NSMutableArray *_buildTargets;
@@ -56,18 +56,20 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	CTBadge *_warningBadge; // white on orange badge for the number of warnings for the current build task
 	NSString *_codeListing; // lst file that SPASM spit out for the last successful build
 	
-	WCBreakpoint *_projectBreakpoint;
+	WCBreakpoint *_projectBreakpoint; // root breakpoint that coordinates displaying all the breakpoints in the
+									  // breakpoints view on the left
 	
-	NSMutableDictionary *_projectSettings;
+	NSMutableDictionary *_projectSettings; // we keep this updated when things change in the project and write it out
+										   // with each save as <username>.wcodesettings
 	
-	__weak WCProjectNavigationViewController *_currentViewController;
-	WCProjectFilesOutlineViewController *_projectFilesOutlineViewController;
-	WCBuildMessagesViewController *_buildMessagesViewController;
-	WCSymbolsViewController *_symbolsViewController;
-	WCFindInProjectViewController *_findInProjectViewController;
-	WCBreakpointsViewController *_breakpointsViewController;
+	__weak WCProjectNavigationViewController *_currentViewController; // current view displayed on the left
+	WCProjectFilesOutlineViewController *_projectFilesOutlineViewController; // main files view
+	WCBuildMessagesViewController *_buildMessagesViewController; // errors warnings from the current build
+	WCSymbolsViewController *_symbolsViewController; // all symbols in the project by file
+	WCFindInProjectViewController *_findInProjectViewController; // search and replace in the project
+	WCBreakpointsViewController *_breakpointsViewController; // all breakpoints in the project
 	
-	NSSet *_cachedAbsoluteFilePaths;
+	NSSet *_cachedAbsoluteFilePaths; // to validate files being added from the addFilesToProject: method
 	WCAddFilesToProjectViewController *_currentAddFilesToProjectViewController;
 }
 
@@ -133,6 +135,8 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 - (IBAction)previousTab:(id)sender;
 
 - (IBAction)openInSeparateEditor:(id)sender;
+
+- (IBAction)projectWindow:(id)sender;
 
 - (WCFileViewController *)addFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext;
 - (WCFileViewController *)fileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext selectTab:(BOOL)selectTab;

@@ -8,6 +8,7 @@
 
 #import "WCMultiLineTextFieldCell.h"
 #import "WCDefines.h"
+#import "NS(Attributed)String+Geometrics.h"
 
 
 @interface WCMultiLineTextFieldCell ()
@@ -57,6 +58,18 @@
 - (void)selectWithFrame:(NSRect)aRect inView:(NSView *)controlView editor:(NSText *)textObj delegate:(id)anObject start:(NSInteger)selStart length:(NSInteger)selLength {
 	[self secondaryTitleRectForBounds:aRect remainingRect:&aRect];
 	[super selectWithFrame:aRect inView:controlView editor:textObj delegate:anObject start:selStart length:selLength];
+}
+
+- (NSRect)expansionFrameWithFrame:(NSRect)cellFrame inView:(NSView *)view {
+	if ([[self secondaryTitle] length] == 0)
+		return [super expansionFrameWithFrame:cellFrame inView:view];
+	
+	NSSize mSize = [[self attributedStringValue] sizeForWidth:FLT_MAX height:NSHeight(cellFrame)];
+	NSRect mRect = NSMakeRect(NSMinX(cellFrame), NSMinY(cellFrame), mSize.width, mSize.height);
+	NSSize sSize = [[_secondaryTextFieldCell attributedStringValue] sizeForWidth:FLT_MAX height:NSHeight(cellFrame)];
+	NSRect sRect = NSMakeRect(NSMinX(cellFrame), NSMinY(cellFrame)+NSHeight(mRect), sSize.width, sSize.height);
+	
+	return NSUnionRect(mRect, sRect);
 }
 
 - (NSUInteger)hitTestForEvent:(NSEvent *)event inRect:(NSRect)cellFrame ofView:(NSView *)controlView {

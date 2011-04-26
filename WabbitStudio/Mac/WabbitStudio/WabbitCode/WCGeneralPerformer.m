@@ -27,10 +27,12 @@
 #import "NSGradient+WCExtensions.h"
 
 
-NSString *const kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier = @"kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier";
-NSString *const kWCProjectToolbarBuildItemIdentifier = @"kWCProjectToolbarBuildItemIdentifier";
-NSString *const kWCProjectToolbarBuildAndRunItemIdentifier = @"kWCProjectToolbarBuildAndRunItemIdentifier";
-NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer = @"kWCProjectToolbarBuildAndDebugItemIdentifer";
+NSString *const kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier = @"projectToolbarBuildTargetPopUpButton";
+NSString *const kWCProjectToolbarBuildItemIdentifier = @"projectToolbarBuild";
+NSString *const kWCProjectToolbarBuildAndRunItemIdentifier = @"projectToolbarBuildAndRun";
+NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer = @"projectToolbarBuildAndDebug";
+
+NSString *const kWCProjectToolbarProjectWindowItemIdentifier = @"projectToolbarProjectWindow";
 
 @implementation WCGeneralPerformer
 
@@ -397,6 +399,12 @@ NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer = @"kWCProjectToolba
 - (NSDictionary *)findAttributes; {
 	return [NSDictionary dictionaryWithObjectsAndKeys:[self findBackgroundColor],NSBackgroundColorAttributeName,[NSNumber numberWithUnsignedInteger:NSUnderlinePatternSolid|NSUnderlineStyleSingle],NSUnderlineStyleAttributeName,[self findUnderlineColor],NSUnderlineColorAttributeName, nil];
 }
+
+- (NSParagraphStyle *)truncateLeftParagraphStyle; {
+	NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
+	[style setLineBreakMode:NSLineBreakByTruncatingHead];
+	return style;
+}
 #define CORNER_RADIUS 3.0
 #define RULER_MARGIN 3.0
 - (void)drawBreakpoint:(WCBreakpoint *)breakpoint inRect:(NSRect)rect {
@@ -460,5 +468,45 @@ NSString *const kWCProjectToolbarBuildAndDebugItemIdentifer = @"kWCProjectToolba
 		[inactiveStroke setStroke];
 	[path setLineWidth:1.5];
 	[path stroke];
+}
+
+- (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag inProject:(WCProject *)project; {
+	NSToolbarItem *item = [[[NSToolbarItem alloc] initWithItemIdentifier:itemIdentifier] autorelease];
+	
+	if ([itemIdentifier isEqualToString:kWCProjectToolbarBuildItemIdentifier]) {
+		[item setLabel:NSLocalizedString(@"Build", @"build toolbar item label")];
+		[item setPaletteLabel:[item label]];
+		[item setImage:[NSImage imageNamed:@"Building"]];
+		[item setAction:@selector(build:)];
+	}
+	else if ([itemIdentifier isEqualToString:kWCProjectToolbarBuildAndRunItemIdentifier]) {
+		[item setLabel:NSLocalizedString(@"Build and Run", @"build and run toolbar item label")];
+		[item setPaletteLabel:[item label]];
+		[item setImage:[NSImage imageNamed:@"BuildAndRun32x32"]];
+		//[item setAction:@selector(build:)];
+	}
+	else if ([itemIdentifier isEqualToString:kWCProjectToolbarBuildAndDebugItemIdentifer]) {
+		[item setLabel:NSLocalizedString(@"Build and Debug", @"build and debug toolbar item label")];
+		[item setPaletteLabel:[item label]];
+		[item setImage:[NSImage imageNamed:@"BuildAndDebug32x32"]];
+		//[item setAction:@selector(build:)];
+	}
+	else if ([itemIdentifier isEqualToString:kWCProjectToolbarProjectWindowItemIdentifier]) {
+		[item setLabel:NSLocalizedString(@"Project", @"project window toolbar item label")];
+		[item setPaletteLabel:[item label]];
+		[item setImage:[NSImage imageNamed:@"ProjectWindow32x32"]];
+		[item setAction:@selector(projectWindow:)];
+	}
+	else if ([itemIdentifier isEqualToString:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier]) {
+		[item setLabel:NSLocalizedString(@"Build Target", @"build target pop up button toolbar item label")];
+		[item setPaletteLabel:[item label]];
+		
+		WCProjectBuildTargetPopUpButton *view = [[[WCProjectBuildTargetPopUpButton alloc] initWithProject:project] autorelease];
+		
+		[item setView:view];
+		[item setMinSize:NSMakeSize(150.0, NSHeight([view frame]))];
+		[item setMaxSize:NSMakeSize(NSWidth([view frame]), NSHeight([view frame]))];
+	}
+	return item;
 }
 @end

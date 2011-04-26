@@ -87,31 +87,10 @@
 	return NO;
 }
 
-- (NSString *)outlineView:(NSOutlineView *)outlineView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tableColumn item:(id)item mouseLocation:(NSPoint)mouseLocation {
-	if ([outlineView editedRow] != -1)
-		return nil;
-	
-	switch ([[item representedObject] breakpointType]) {
-		case WCBreakpointTypeProject:
-			return nil;
-		case WCBreakpointTypeFile:
-			return [NSString stringWithFormat:NSLocalizedString(@"Name: %@\nLine Breakpoints: %lu", @"file breakpoint tooltip"),[[[item representedObject] file] name],[[[item representedObject] childNodes] count]];
-		case WCBreakpointTypeLine:
-			return [NSString stringWithFormat:NSLocalizedString(@"Name: %@\nSymbol: %@\nAddress: $%04X\nPage: %u", @"line breakpoint tooltip"),[[item representedObject] name],[[item representedObject] symbolName],[(WCBreakpoint *)[item representedObject] address],[[item representedObject] page]];
-		default:
-			break;
-	}
-	return nil;
-}
-
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item {
 	if ([[item representedObject] breakpointType] == WCBreakpointTypeLine)
 		return floor([outlineView rowHeight]*1.5);
 	return [outlineView rowHeight];
-}
-
-- (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowCellExpansionForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
-	return NO;
 }
 
 @synthesize outlineView=_outlineView;

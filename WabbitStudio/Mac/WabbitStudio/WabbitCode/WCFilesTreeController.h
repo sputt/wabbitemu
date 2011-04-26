@@ -10,11 +10,10 @@
 #import <AppKit/NSOutlineView.h>
 
 
-@class WCProject;
+@class WCProject,WCAddFilesToProjectViewController;
 
 @interface WCFilesTreeController : NSTreeController <NSOutlineViewDataSource> {
 @private
-
+	WCAddFilesToProjectViewController *_currentAddToFilesController;
 }
-
 @end
