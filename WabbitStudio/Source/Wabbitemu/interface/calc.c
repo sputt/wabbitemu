@@ -365,11 +365,11 @@ void calc_turn_on(LPCALC lpCalc) {
 #else
 	keypad_key_press(&lpCalc->cpu, VK_F12);
 #endif
-	calc_run_seconds(lpCalc, 0.25);
+	calc_run_seconds(lpCalc, 1.0);
 #ifdef MACVER
 	keypad_key_release(&lpCalc->cpu, 97);
 #else
-	keypad_key_press(&lpCalc->cpu, VK_F12);
+	keypad_key_release(&lpCalc->cpu, VK_F12);
 #endif
 }
 
