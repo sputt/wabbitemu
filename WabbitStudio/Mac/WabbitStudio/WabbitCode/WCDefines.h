@@ -19,6 +19,11 @@
 #define NS_LOCALIZED_STRING_SAVE NSLocalizedString(@"Save",@"Save")
 #define NS_LOCALIZED_STRING_FALSE NSLocalizedString(@"FALSE",@"FALSE")
 #define NS_LOCALIZED_STRING_TRUE NSLocalizedString(@"TRUE",@"TRUE")
+#define NS_LOCALIZED_STRING_LOAD NSLocalizedString(@"Load",@"Load")
+
+#define WCReturnKeyCode 36
+#define WCEnterKeyCode 76
+#define WCFunction6KeyCode 97
 
 // returns a rect with the size of rect1 centered inside rect2
 static inline NSRect WCCenteredRect(NSRect rect1, NSRect rect2) {
@@ -52,6 +57,9 @@ extern const NSRange WCEmptyRange;
 
 // NSMakeSize(16.0,16.0)
 extern const NSSize WCSmallSize;
+// NSMakeSize(32.0,32.0)
+extern const NSSize WCMediumSize;
+
 
 @interface WCDefines : NSObject {
 @private

@@ -22,6 +22,7 @@
 @property (readonly,nonatomic) NSRange findRange;
 @property (readonly,nonatomic) NSAttributedString *findString;
 @property (readonly,nonatomic) WCSymbol *symbol;
+@property (readonly,nonatomic) NSUInteger lineNumber;
 
 + (id)findInProjectResultForFile:(WCFile *)file inRange:(NSRange)range withString:(NSAttributedString *)string symbol:(WCSymbol *)symbol;
 - (id)initWithFile:(WCFile *)file range:(NSRange)range string:(NSAttributedString *)string symbol:(WCSymbol *)symbol;

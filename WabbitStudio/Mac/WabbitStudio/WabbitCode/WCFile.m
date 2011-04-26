@@ -18,6 +18,7 @@
 #import "WCAlias.h"
 #import "NSString+WCExtensions.h"
 #import "WCBreakpoint.h"
+#import "WCDefines.h"
 
 
 NSString *const kWCFileAssemblyUTI = @"org.revsoft.wabbitcode.assembly";
@@ -355,7 +356,7 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 		icon = unsavedIcon;
 	}
 	
-	[icon setSize:NSMakeSize(16.0, 16.0)];
+	[icon setSize:WCSmallSize];
 	
 	return icon;
 }

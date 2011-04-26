@@ -15,6 +15,7 @@
 #import "WCBadgedTextFieldCell.h"
 #import "WCPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
+#import "WCDefines.h"
 
 
 @implementation WCBuildMessagesViewController
@@ -45,24 +46,32 @@
 	WCBuildMessage *message = [item representedObject];
 	
 	[cell setIcon:[message icon]];
-	[cell setIconSize:NSMakeSize(16.0, 16.0)];
-	[cell setBadgeCount:[[item representedObject] messagesCount]];
+	[cell setIconSize:WCSmallSize];
+	[cell setBadgeCount:[message messagesCount]];
+	
+	if ([[item representedObject] parentNode] == nil) {
+		[cell setSecondaryTitle:nil];
+		[cell setCenterIcon:YES];
+	}
+	else {
+		[cell setSecondaryTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ - line %lu", @"build message secondary title"),[[message file] name],[message lineNumber]+1]];
+		[cell setCenterIcon:NO];
+	}
 }
 
 - (NSString *)outlineView:(NSOutlineView *)outlineView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tc item:(id)item mouseLocation:(NSPoint)mouseLocation {
 	WCBuildMessage *message = [item representedObject];
 	
 	if ([message messageType] == WCBuildMessageTypeFile)
-		return [[[message file] alias] absolutePathForDisplay];
-	return [NSString stringWithFormat:NSLocalizedString(@"%@ - line %u\n%@", @"build message tooltip"),[[message file] name],[message lineNumber],[message name]];
+		return [[message file] absolutePathForDisplay];
+	return [NSString stringWithFormat:NSLocalizedString(@"%@\n%@ - line %u", @"build message tooltip"),[message name],[[message file] name],[message lineNumber]];
 }
-/*
+
 - (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item {
-	if (![[item representedObject] parentNode])
-		return 32.0;
-	return [outlineView rowHeight];
+	if ([[item representedObject] parentNode] == nil)
+		return [outlineView rowHeight];
+	return floor([outlineView rowHeight]*1.5);
 }
- */
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item {
 	return NO;

@@ -137,16 +137,24 @@
 	if ([self numberOfLines] == 0)
 		return 0;
 	else if (lineNumber >= [self numberOfLines])
-		lineNumber = [self numberOfLines] - 1;
+		return [self numberOfLines] - 1;
 	return [self lineStartIndexForLineNumber:lineNumber];
 }
 
 - (NSRange)safeRangeForCharacterRange:(NSRange)characterRange; {
 	if ([self numberOfLines] == 0)
 		return WCEmptyRange;
-	if (NSMaxRange(characterRange) >= [[self string] length])
+	else if (NSMaxRange(characterRange) >= [[self string] length])
 		return WCEmptyRange;
 	return characterRange;
+}
+
+- (NSUInteger)safeLineNumberForCharacterIndex:(NSUInteger)characterIndex; {
+	if ([self numberOfLines] == 0)
+		return 0;
+	else if (characterIndex >= [[self string] length])
+		return [self numberOfLines] - 1;
+	return [self lineNumberForCharacterIndex:characterIndex];
 }
 
 - (void)_calculateLineStartIndexes; {

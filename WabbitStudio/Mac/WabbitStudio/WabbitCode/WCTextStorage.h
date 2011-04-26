@@ -22,4 +22,5 @@
 
 - (NSUInteger)safeLineStartIndexForLineNumber:(NSUInteger)lineNumber;
 - (NSRange)safeRangeForCharacterRange:(NSRange)characterRange;
+- (NSUInteger)safeLineNumberForCharacterIndex:(NSUInteger)characterIndex;
 @end

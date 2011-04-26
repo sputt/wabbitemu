@@ -7,6 +7,9 @@
 //
 
 #import "WCContexualMenuOutlineView.h"
+#import "WCDefines.h"
+#import "WCPreferencesController.h"
+#import "NSUserDefaults+WCExtensions.h"
 
 
 @implementation WCContexualMenuOutlineView
@@ -26,10 +29,25 @@
 	return nil;
 }
 
-- (void)mouseDown:(NSEvent *)theEvent {
+- (void)keyDown:(NSEvent *)event {
+	switch ([event keyCode]) {
+		case WCReturnKeyCode:
+		case WCEnterKeyCode:
+			if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] == WCPreferencesFilesOpenWithSingleClick)
+				[self sendAction:[self action] to:[self target]];
+			else if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesFilesOpenWithKey] == WCPreferencesFilesOpenWithDoubleClick)
+				[self sendAction:[self doubleAction] to:[self target]];
+			return;
+		default:
+			break;
+	}
+	[super keyDown:event];
+}
+
+- (void)mouseDown:(NSEvent *)event {
 	// auto expand rows with children on a double click
-	if ([theEvent type] == NSLeftMouseDown &&
-		[theEvent clickCount] == 2) {
+	if ([event type] == NSLeftMouseDown &&
+		[event clickCount] == 2) {
 		
 		if ([[self selectedRowIndexes] count] == 1) {
 			NSUInteger fIndex = [[self selectedRowIndexes] firstIndex];
@@ -46,7 +64,7 @@
 		}
 	}
 	
-	[super mouseDown:theEvent];
+	[super mouseDown:event];
 }
 
 @end

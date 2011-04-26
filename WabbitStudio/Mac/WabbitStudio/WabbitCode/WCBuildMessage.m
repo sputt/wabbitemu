@@ -50,7 +50,7 @@
 - (NSRange)jumpToRange {
 	if ([self messageType] == WCBuildMessageTypeFile)
 		return NSMakeRange(0, 0);
-	return NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0);
+	return NSMakeRange([[[self file] textStorage] safeLineStartIndexForLineNumber:[self lineNumber]], 0);
 }
 
 - (WCFile *)jumpToFile {

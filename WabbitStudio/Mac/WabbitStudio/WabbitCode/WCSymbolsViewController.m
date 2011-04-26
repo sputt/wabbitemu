@@ -16,6 +16,7 @@
 #import "NSObject+WCExtensions.h"
 #import "WCPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
+#import "WCDefines.h"
 
 
 @interface WCSymbolsViewController ()
@@ -82,8 +83,22 @@
 - (void)outlineView:(NSOutlineView *)outlineView willDisplayCell:(id)cell forTableColumn:(NSTableColumn *)tableColumn item:(id)item {
 	
 	[cell setIcon:[item icon]];
-	[cell setIconSize:NSMakeSize(16.0, 16.0)];
 	[cell setBadgeCount:[[item childNodes] count]];
+	
+	if ([item symbolType] == WCSymbolFileType) {
+		[cell setSecondaryTitle:nil];
+		[cell setCenterIcon:YES];
+	}
+	else {
+		[cell setSecondaryTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ - line %lu", @"symbol secondary title"),[[item file] name],[item lineNumber]+1]];
+		[cell setCenterIcon:NO];
+	}
+}
+
+- (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item {
+	if ([item symbolType] == WCSymbolFileType)
+		return [outlineView rowHeight];
+	return floor([outlineView rowHeight]*1.5);
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldEditTableColumn:(NSTableColumn *)tableColumn item:(id)item {
@@ -118,7 +133,7 @@
 	}
 	else if ([item symbolType] == WCSymbolEquateType)
 		return [NSString stringWithFormat:NSLocalizedString(@"File: %@ - line %lu\nName: %@\nValue: %@", @"equate and macro symbol tooltip"),[[item file] name],[[[item file] textStorage] lineStartIndexForCharacterIndex:[item symbolRange].location],[item name],[item symbolValue]];
-	return [NSString stringWithFormat:NSLocalizedString(@"File: %@ - line %lu\nName: %@", @"other symbol tooltip"),[[item file] name],[[[item file] textStorage] lineStartIndexForCharacterIndex:[item symbolRange].location],[item name]];
+	return [NSString stringWithFormat:NSLocalizedString(@"File: %@ - line %lu\nName: %@", @"other symbol tooltip"),[[item file] name],[item lineNumber],[item name]];
 }
 #pragma mark NSOutlineViewDataSource
 - (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item {

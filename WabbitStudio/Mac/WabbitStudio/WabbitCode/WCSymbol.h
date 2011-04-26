@@ -35,6 +35,7 @@ typedef NSUInteger WCSymbolType;
 @property (assign) NSRange symbolRange;
 @property (readonly,nonatomic) NSImage *iconForContextualMenu;
 @property (readonly,nonatomic) NSString *symbolsViewString;
+@property (readonly,nonatomic) NSUInteger lineNumber;
 
 + (id)symbolWithName:(NSString *)name ofType:(WCSymbolType)type inFile:(WCFile *)file withRange:(NSRange)range;
 - (id)initWithName:(NSString *)name type:(WCSymbolType)type file:(WCFile *)file range:(NSRange)range;

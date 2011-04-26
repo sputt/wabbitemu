@@ -14,6 +14,7 @@
 #import "NSTreeController+WCExtensions.h"
 #import "WCPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
+#import "WCDefines.h"
 
 
 @implementation WCBreakpointsViewController
@@ -59,7 +60,7 @@
 	if ([[item representedObject] breakpointType] == WCBreakpointTypeLine)
 		[cell setIconSize:[[[item representedObject] icon] size]];
 	else
-		[cell setIconSize:NSMakeSize(16.0, 16.0)];
+		[cell setIconSize:WCSmallSize];
 	
 	if ([[item representedObject] breakpointType] == WCBreakpointTypeProject ||
 		[[item representedObject] breakpointType] == WCBreakpointTypeLine)

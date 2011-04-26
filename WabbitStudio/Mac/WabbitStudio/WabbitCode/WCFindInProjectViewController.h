@@ -12,7 +12,7 @@
 #import <AppKit/NSSearchField.h>
 
 
-@interface WCFindInProjectViewController : WCProjectNavigationViewController <NSAnimationDelegate,NSUserInterfaceValidations> {
+@interface WCFindInProjectViewController : WCProjectNavigationViewController <NSAnimationDelegate,NSUserInterfaceValidations,NSOutlineViewDelegate> {
 @private
     IBOutlet NSOutlineView *_outlineView;
 	IBOutlet NSSearchField *_searchField;

@@ -36,7 +36,7 @@ static NSMutableDictionary *_symbolIconCache = nil;
 }
 
 - (BOOL)isLeaf {
-	return ([self symbolType] != WCSymbolFileType || ![[self childNodes] count]);
+	return ([self symbolType] != WCSymbolFileType);
 }
 
 @synthesize symbolType=_symbolType;
@@ -222,6 +222,11 @@ static NSMutableDictionary *_symbolIconCache = nil;
 		[_symbolIconCache setObject:icon forKey:key];
 	}
 	return icon;
+}
+
+@dynamic lineNumber;
+- (NSUInteger)lineNumber {
+	return [[[self file] textStorage] safeLineNumberForCharacterIndex:[self symbolRange].location];
 }
 
 + (id)symbolWithName:(NSString *)name ofType:(WCSymbolType)type inFile:(WCFile *)file withRange:(NSRange)range; {

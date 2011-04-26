@@ -191,6 +191,7 @@
 		07F1B80C1342EAE10013B9CC /* NDAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = 07F1B80B1342EAE10013B9CC /* NDAlias.m */; };
 		07F1B8101342EE2C0013B9CC /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07F1B80F1342EE2B0013B9CC /* Carbon.framework */; };
 		07F1B8121342EE9E0013B9CC /* NSURL+NDCarbonUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 07F1B8111342EE9E0013B9CC /* NSURL+NDCarbonUtilities.m */; };
+		07F3D82E13655D9D0035ED48 /* FindInProjectResult16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07F3D82D13655D9D0035ED48 /* FindInProjectResult16x16.png */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -519,6 +520,7 @@
 		07F1B80E1342ED3F0013B9CC /* NSURL+NDCarbonUtilities.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSURL+NDCarbonUtilities.h"; sourceTree = "<group>"; };
 		07F1B80F1342EE2B0013B9CC /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Carbon.framework; sourceTree = DEVELOPER_DIR; };
 		07F1B8111342EE9E0013B9CC /* NSURL+NDCarbonUtilities.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSURL+NDCarbonUtilities.m"; sourceTree = "<group>"; };
+		07F3D82D13655D9D0035ED48 /* FindInProjectResult16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = FindInProjectResult16x16.png; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -607,6 +609,7 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				07F3D82D13655D9D0035ED48 /* FindInProjectResult16x16.png */,
 				0756D8DC1363E9DD00ECDFFD /* Symbols16x16.png */,
 				074D80C6136234170081571E /* Files.png */,
 				074D80C213620EA00081571E /* Breakpoints16x16.png */,
@@ -1042,6 +1045,7 @@
 				074D80C313620EA00081571E /* Breakpoints16x16.png in Resources */,
 				074D80C7136234170081571E /* Files.png in Resources */,
 				0756D8DD1363E9DD00ECDFFD /* Symbols16x16.png in Resources */,
+				07F3D82E13655D9D0035ED48 /* FindInProjectResult16x16.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

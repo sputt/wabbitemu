@@ -20,6 +20,7 @@
 #import "WCGeneralPerformer.h"
 #import "WCPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
+#import "WCDefines.h"
 
 #define restrict
 #import <RegexKit/RegexKit.h>
@@ -71,18 +72,27 @@
 	WCFindInProjectResult *result = [item representedObject];
 	
 	[cell setIcon:[result icon]];
-	[cell setIconSize:NSMakeSize(16.0, 16.0)];
+	[cell setIconSize:WCSmallSize];
 	[cell setBadgeCount:[[result childNodes] count]];
+	[cell setSecondaryTitle:nil];
+	[cell setCenterIcon:YES];
 	
-	if ([result parentNode]) {
+	if ([result parentNode] != nil) {
 		NSMutableAttributedString *string = [[[result findString] mutableCopy] autorelease];
-		[string addAttribute:NSFontAttributeName value:[cell font] range:NSMakeRange(0, [[string string] length])];
 		
 		if ([cell isHighlighted])
 			[string applyFontTraits:NSBoldFontMask range:NSMakeRange(0, [[string string] length])];
 		
 		[cell setAttributedStringValue:string];
+		[cell setSecondaryTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ - line %lu", @"find in project result secondary title"),[[result file] name],[result lineNumber]+1]];
+		[cell setCenterIcon:NO];
 	}
+}
+
+- (CGFloat)outlineView:(NSOutlineView *)outlineView heightOfRowByItem:(id)item {
+	if ([[item representedObject] parentNode] == nil)
+		return [outlineView rowHeight];
+	return floor([outlineView rowHeight]*1.5);
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowCellExpansionForTableColumn:(NSTableColumn *)tableColumn item:(id)item {

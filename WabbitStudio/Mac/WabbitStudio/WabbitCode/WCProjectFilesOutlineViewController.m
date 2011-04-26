@@ -15,6 +15,7 @@
 #import "WCBuildTarget.h"
 #import "WCPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
+#import "WCDefines.h"
 
 
 @implementation WCProjectFilesOutlineViewController
@@ -50,7 +51,7 @@
 	WCFile *file = [item representedObject];
 	
 	[cell setIcon:[file icon]];
-	[cell setIconSize:NSMakeSize(16.0, 16.0)];
+	[cell setIconSize:WCSmallSize];
 	
 	if (![file parentNode]) {
 		//[cell setSecondaryTitle:[NSString stringWithFormat:NSLocalizedString(@"%lu target(s)", @"project file secondary title"),[[[self project] buildTargets] count]]];
