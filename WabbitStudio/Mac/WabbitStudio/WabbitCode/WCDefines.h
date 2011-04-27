@@ -52,11 +52,23 @@ enum {
 };
 typedef NSUInteger WCFindSubScope;
 
+enum {
+	WCProjectBuildStatusNone = 0,
+	WCProjectBuildStatusBuilding,
+	WCProjectBuildStatusSuccess,
+	WCProjectBuildStatusSuccessWarnings,
+	WCProjectBuildStatusFailureErrors,
+	WCProjectBuildStatusErrorsAndWarnings
+};
+typedef NSUInteger WCProjectBuildStatus;
+
 // NSMakeRange(0,0)
 extern const NSRange WCEmptyRange;
 
 // NSMakeSize(16.0,16.0)
 extern const NSSize WCSmallSize;
+// NSMakeSize(12.0,12.0)
+extern const NSSize WCMiniSize;
 // NSMakeSize(32.0,32.0)
 extern const NSSize WCMediumSize;
 

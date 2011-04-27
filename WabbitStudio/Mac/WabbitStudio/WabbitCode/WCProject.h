@@ -9,6 +9,8 @@
 #import <AppKit/NSDocument.h>
 #import "WCTabViewContextProtocol.h"
 #import "WCJumpToObjectProtocol.h"
+#import "WCDefines.h"
+
 
 extern NSString *const kWCProjectFileKey;
 extern NSString *const kWCProjectVersionKey;
@@ -55,6 +57,9 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	CTBadge *_errorBadge; // white on red badge for number of errors for the current build task
 	CTBadge *_warningBadge; // white on orange badge for the number of warnings for the current build task
 	NSString *_codeListing; // lst file that SPASM spit out for the last successful build
+	WCProjectBuildStatus _buildStatus;
+	NSUInteger _totalErrors;
+	NSUInteger _totalWarnings;
 	
 	WCBreakpoint *_projectBreakpoint; // root breakpoint that coordinates displaying all the breakpoints in the
 									  // breakpoints view on the left
@@ -111,6 +116,9 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 @property (readonly,nonatomic) WCBreakpoint *projectBreakpoint;
 @property (copy,nonatomic) NSString *statusString;
 @property (copy,nonatomic) NSString *secondaryStatusString;
+@property (assign,nonatomic) WCProjectBuildStatus buildStatus;
+@property (readonly,nonatomic) NSUInteger totalErrors;
+@property (readonly,nonatomic) NSUInteger totalWarnings;
 
 - (IBAction)addFilesToProject:(id)sender;
 - (IBAction)newFile:(id)sender;

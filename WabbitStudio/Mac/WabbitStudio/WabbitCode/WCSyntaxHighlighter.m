@@ -136,7 +136,7 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 		return;
 	else if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesUseSyntaxHighlightingKey]) {
 		[[_textView layoutManager] removeTemporaryAttribute:NSForegroundColorAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
-		[[_textView layoutManager] removeTemporaryAttribute:NSUnderlineStyleAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
+		//[[_textView layoutManager] removeTemporaryAttribute:NSUnderlineStyleAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
 		[[_textView layoutManager] removeTemporaryAttribute:NSToolTipAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
 		return;
 	}
@@ -153,7 +153,7 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	
 	[[_textView layoutManager] removeTemporaryAttribute:NSForegroundColorAttributeName forCharacterRange:visibleRange];
 	[[_textView layoutManager] removeTemporaryAttribute:NSToolTipAttributeName forCharacterRange:visibleRange];
-	[[_textView layoutManager] removeTemporaryAttribute:NSUnderlineStyleAttributeName forCharacterRange:visibleRange];
+	//[[_textView layoutManager] removeTemporaryAttribute:NSUnderlineStyleAttributeName forCharacterRange:visibleRange];
 	
 	// symbols
 	RKEnumerator *symbolsEnum = [[[RKEnumerator alloc] initWithRegex:kWCSyntaxHighlighterSymbolsRegex string:searchString] autorelease];
@@ -200,8 +200,10 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 		else if (highlightLabels && [labelNamesToSymbols objectForKey:symbolName]) {
 			[[_textView layoutManager] addTemporaryAttribute:NSForegroundColorAttributeName value:labelsColor forCharacterRange:actualRange];
 			
+			/*
 			if ([[labelNamesToSymbols objectForKey:symbolName] symbolType] == WCSymbolFunctionType)
 				[[_textView layoutManager] addTemporaryAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithUnsignedInteger:NSUnderlineStyleSingle|NSUnderlinePatternSolid] forCharacterRange:actualRange];
+			 */
 		}
 		else if (highlightDefines && [defineNamesToSymbols objectForKey:symbolName])
 			[[_textView layoutManager] addTemporaryAttribute:NSForegroundColorAttributeName value:definesColor forCharacterRange:actualRange];

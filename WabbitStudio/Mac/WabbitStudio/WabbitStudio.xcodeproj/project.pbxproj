@@ -116,6 +116,7 @@
 		07880B6D1341953B00E07231 /* WCBuildDefinesArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B6C1341953800E07231 /* WCBuildDefinesArrayController.m */; };
 		07880B761341B84700E07231 /* WCIncludeDirectory.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B751341B84500E07231 /* WCIncludeDirectory.m */; };
 		07880B791341B8F900E07231 /* WCAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B781341B8F600E07231 /* WCAlias.m */; };
+		07905DA91367990B0079A404 /* NSBezierPath+MCAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DA81367990B0079A404 /* NSBezierPath+MCAdditions.m */; };
 		0790C72E134CED4C00AABB1D /* WCMutableRangeArray.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790C72D134CED4C00AABB1D /* WCMutableRangeArray.m */; };
 		0790C731134D6CAE00AABB1D /* NSTextView+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790C730134D6CAE00AABB1D /* NSTextView+WCExtensions.m */; };
 		0790C737134D9DCD00AABB1D /* WCDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790C736134D9DCC00AABB1D /* WCDocument.m */; };
@@ -403,6 +404,8 @@
 		07880B751341B84500E07231 /* WCIncludeDirectory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCIncludeDirectory.m; sourceTree = "<group>"; };
 		07880B771341B8F300E07231 /* WCAlias.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCAlias.h; sourceTree = "<group>"; };
 		07880B781341B8F600E07231 /* WCAlias.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCAlias.m; sourceTree = "<group>"; };
+		07905DA71367990B0079A404 /* NSBezierPath+MCAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBezierPath+MCAdditions.h"; sourceTree = "<group>"; };
+		07905DA81367990B0079A404 /* NSBezierPath+MCAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBezierPath+MCAdditions.m"; sourceTree = "<group>"; };
 		0790C72C134CED4C00AABB1D /* WCMutableRangeArray.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCMutableRangeArray.h; sourceTree = "<group>"; };
 		0790C72D134CED4C00AABB1D /* WCMutableRangeArray.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCMutableRangeArray.m; sourceTree = "<group>"; };
 		0790C72F134D6CAE00AABB1D /* NSTextView+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTextView+WCExtensions.h"; sourceTree = "<group>"; };
@@ -918,6 +921,8 @@
 		0769A1D51333DEFB00080A96 /* External */ = {
 			isa = PBXGroup;
 			children = (
+				07905DA71367990B0079A404 /* NSBezierPath+MCAdditions.h */,
+				07905DA81367990B0079A404 /* NSBezierPath+MCAdditions.m */,
 				07200C6E136762D90010AE58 /* NSShadow+MCAdditions.h */,
 				07200C6F136762D90010AE58 /* NSShadow+MCAdditions.m */,
 				07200C6B1367622C0010AE58 /* NSBezierPath+StrokeExtensions.h */,
@@ -1206,6 +1211,7 @@
 				07200C6913675B450010AE58 /* WCProjectStatusView.m in Sources */,
 				07200C6D1367622C0010AE58 /* NSBezierPath+StrokeExtensions.m in Sources */,
 				07200C70136762D90010AE58 /* NSShadow+MCAdditions.m in Sources */,
+				07905DA91367990B0079A404 /* NSBezierPath+MCAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

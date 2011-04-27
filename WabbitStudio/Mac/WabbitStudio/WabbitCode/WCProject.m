@@ -25,7 +25,6 @@
 #import "WCBuildTargetsInfoSheetController.h"
 #import "WCPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
-#import "WCDefines.h"
 #import "WCAlias.h"
 #import "WCBuildDefine.h"
 #import "WCIncludeDirectory.h"
@@ -95,6 +94,8 @@ static NSImage *_appIcon = nil;
 - (void)_deleteObjects:(NSArray *)objects deleteFiles:(BOOL)deleteFiles;
 
 - (WCFileWindowController *)_openSeparateEditorForFile:(WCFile *)file;
+
+- (void)_createDockIconBadgesIfNecessary;
 @end
 
 @implementation WCProject
@@ -126,6 +127,9 @@ static NSImage *_appIcon = nil;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	if (_buildTask != nil)
+		[_buildTask terminate];
+	[_buildTask release];
 	[_secondaryStatusString release];
 	[_statusString release];
 	[_currentAddFilesToProjectViewController release];
@@ -141,7 +145,6 @@ static NSImage *_appIcon = nil;
 	[_buildMessages release];
 	[_symbolsViewController release];
 	[_findInProjectViewController release];
-	[_buildTask release];
 	[_projectSettings release];
 	[_openFiles release];
 	[_filesToFileViewControllers release];
@@ -911,6 +914,9 @@ static NSImage *_appIcon = nil;
 }
 @synthesize statusString=_statusString;
 @synthesize secondaryStatusString=_secondaryStatusString;
+@synthesize buildStatus=_buildStatus;
+@synthesize totalErrors=_totalErrors;
+@synthesize totalWarnings=_totalWarnings;
 #pragma mark IBActions
 - (IBAction)addFilesToProject:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -1078,6 +1084,7 @@ static NSImage *_appIcon = nil;
 	
 	[[[_buildTask standardOutput] fileHandleForReading] readInBackgroundAndNotify];
 	
+	[self setBuildStatus:WCProjectBuildStatusBuilding];
 	[self setIsBuilding:YES];
 	
 	@try {
@@ -1442,6 +1449,13 @@ static NSImage *_appIcon = nil;
 	[mController showWindow:nil];
 	return mController;
 }
+
+- (void)_createDockIconBadgesIfNecessary {
+	if (_errorBadge == nil || _warningBadge == nil) {
+		_errorBadge = [[CTBadge badgeWithColor:[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey] labelColor:[NSColor whiteColor]] retain];
+		_warningBadge = [[CTBadge badgeWithColor:[NSColor colorWithCalibratedRed:0.941 green:0.741 blue:0.18 alpha:1.0] labelColor:[NSColor whiteColor]] retain];
+	}
+}
 #pragma mark Project Settings
 - (void)_updateProjectSettings; {
 	[[self projectSettings] setObject:[[[self projectFilesOutlineViewController] outlineView] expandedItemUUIDs] forKey:kWCProjectSettingsProjectFilesOutlineViewExpandedItemUUIDsKey];
@@ -1535,7 +1549,7 @@ static NSImage *_appIcon = nil;
 - (void)_readDataFromBuildTask:(NSNotification *)note {	
 	NSData *data = [[note userInfo] objectForKey:NSFileHandleNotificationDataItem];
 	
-	if ([data length]) {
+	if ([data length] > 0) {
 		NSString *message = [[[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding] autorelease];
 		
 		for (NSString *sMessage in [message componentsSeparatedByCharactersInSet:[NSCharacterSet newlineCharacterSet]])
@@ -1556,26 +1570,24 @@ static NSImage *_appIcon = nil;
 				[self _addBuildMessageForString:sMessage];
 		}
 		
-		if ([[self buildMessages] count]) {
-			NSUInteger errors = 0;
-			NSUInteger warnings = 0;
-			for (WCBuildMessage *m in [self buildMessages]) {
-				for (WCBuildMessage *mm in [m childNodes]) {
-					if ([mm messageType] == WCBuildMessageTypeError)
-						errors++;
-					else if ([mm messageType] == WCBuildMessageTypeWarning)
-						warnings++;
-				}
+		NSUInteger errors = 0;
+		NSUInteger warnings = 0;
+		for (WCBuildMessage *m in [self buildMessages]) {
+			for (WCBuildMessage *mm in [m childNodes]) {
+				if ([mm messageType] == WCBuildMessageTypeError)
+					errors++;
+				else if ([mm messageType] == WCBuildMessageTypeWarning)
+					warnings++;
 			}
+		}
+		
+		_totalErrors = errors;
+		_totalWarnings = warnings;
+		
+		if ([[self buildMessages] count]) {
+			[self _createDockIconBadgesIfNecessary];
 			
-			if (errors && warnings) {
-				if (!_errorBadge) {
-					_errorBadge = [[CTBadge badgeWithColor:[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey] labelColor:[NSColor whiteColor]] retain];
-				}
-				if (!_warningBadge) {
-					_warningBadge = [[CTBadge badgeWithColor:[NSColor colorWithCalibratedRed:0.941 green:0.741 blue:0.18 alpha:1.0] labelColor:[NSColor whiteColor]] retain];
-				}
-				
+			if (errors > 0 && warnings > 0) {				
 				NSImage *eBadge = [_errorBadge badgeOverlayImageForValue:errors insetX:0.0 y:0.0];
 				NSImage *wBadge = [_warningBadge badgeOverlayImageForValue:warnings insetX:0.0 y:CTLargeBadgeSize];
 				NSImage *appImage = [[_appIcon copy] autorelease];
@@ -1586,15 +1598,9 @@ static NSImage *_appIcon = nil;
 				[appImage unlockFocus];
 				 
 				[NSApp setApplicationIconImage:appImage];
-				[self setStatusString:NSLocalizedString(@"Build Failed", @"Build Failed")];
-				[self setSecondaryStatusString:[NSString stringWithFormat:NSLocalizedString(@"%lu error(s), %lu warning(s)", @"errors and warnings format string"),errors,warnings]];
+				[self setBuildStatus:WCProjectBuildStatusErrorsAndWarnings];
 			}
-			else if (errors) {
-				if (!_errorBadge) {
-					_errorBadge = [[CTBadge badgeWithColor:[[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey] labelColor:[NSColor whiteColor]] retain];
-
-				}
-				
+			else if (errors > 0) {
 				NSImage *eBadge = [_errorBadge badgeOverlayImageForValue:errors insetX:0.0 y:0.0];
 				NSImage *appImage = [[_appIcon copy] autorelease];
 				
@@ -1603,14 +1609,9 @@ static NSImage *_appIcon = nil;
 				[appImage unlockFocus];
 				
 				[NSApp setApplicationIconImage:appImage];
-				[self setStatusString:NSLocalizedString(@"Build Failed", @"Build Failed")];
-				[self setSecondaryStatusString:[NSString stringWithFormat:NSLocalizedString(@"%lu error(s)", @"errors format string"),errors]];
+				[self setBuildStatus:WCProjectBuildStatusFailureErrors];
 			}
-			else if (warnings) {
-				if (!_warningBadge) {
-					_warningBadge = [[CTBadge badgeWithColor:[NSColor colorWithCalibratedRed:0.941 green:0.741 blue:0.18 alpha:1.0] labelColor:[NSColor whiteColor]] retain];
-				}
-				
+			else {				
 				NSImage *wBadge = [_warningBadge badgeOverlayImageForValue:warnings insetX:0.0 y:0.0];
 				NSImage *appImage = [[_appIcon copy] autorelease];
 				
@@ -1619,15 +1620,11 @@ static NSImage *_appIcon = nil;
 				[appImage unlockFocus];
 				
 				[NSApp setApplicationIconImage:appImage];
-				[self setStatusString:NSLocalizedString(@"Build Succeeded", @"Build Succeeded")];
-				[self setSecondaryStatusString:[NSString stringWithFormat:NSLocalizedString(@"%lu warning(s)", @"warnings format string"),warnings]];
+				[self setBuildStatus:WCProjectBuildStatusSuccessWarnings];
 			}
 			
 			[self viewBuildMessages:nil];
-			
-			for (WCBuildMessage *bm in [self buildMessages]) {
-				[[[self buildMessagesViewController] outlineView] expandItem:[(NSTreeController *)[[[self buildMessagesViewController] outlineView] dataSource] treeNodeForRepresentedObject:bm]];
-			}
+			[[[self buildMessagesViewController] outlineView] expandItem:[[[self buildMessagesViewController] outlineView] itemAtRow:0]];
 		}
 		else {
 			[NSApp setApplicationIconImage:_appIcon];
@@ -1639,8 +1636,7 @@ static NSImage *_appIcon = nil;
 			else
 				[self setCodeListing:nil];
 			
-			[self setStatusString:NSLocalizedString(@"Build Succeeded", @"Build Succeeded")];
-			[self setSecondaryStatusString:NSLocalizedString(@"No Issues", @"No Issues")];
+			[self setBuildStatus:WCProjectBuildStatusSuccess];
 		}
 		
 		[self setIsBuilding:NO];

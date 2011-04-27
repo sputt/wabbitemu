@@ -112,9 +112,9 @@
 			if (NSIntersectsRect(lineRect, visibleRect) && [self needsToDrawRect:lineRect]) {
 				NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey];
 				
-				[[baseColor colorWithAlphaComponent:0.5] setFill];
+				[[baseColor colorWithAlphaComponent:0.4] setFill];
 				NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
-				[[baseColor colorWithAlphaComponent:0.75] setFill];
+				[[baseColor colorWithAlphaComponent:0.6] setFill];
 				//[baseColor setFill];
 				NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
 				NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);

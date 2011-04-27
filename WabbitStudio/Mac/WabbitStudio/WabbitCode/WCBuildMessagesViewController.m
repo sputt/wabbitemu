@@ -46,14 +46,15 @@
 	WCBuildMessage *message = [item representedObject];
 	
 	[cell setIcon:[message icon]];
-	[cell setIconSize:WCSmallSize];
 	[cell setBadgeCount:[message messagesCount]];
 	
 	if ([[item representedObject] parentNode] == nil) {
+		[cell setIconSize:WCSmallSize];
 		[cell setSecondaryTitle:nil];
 		[cell setCenterIcon:YES];
 	}
 	else {
+		[cell setIconSize:WCMiniSize];
 		[cell setSecondaryTitle:[NSString stringWithFormat:NSLocalizedString(@"%@ - line %lu", @"build message secondary title"),[[message file] name],[message lineNumber]+1]];
 		[cell setCenterIcon:NO];
 	}

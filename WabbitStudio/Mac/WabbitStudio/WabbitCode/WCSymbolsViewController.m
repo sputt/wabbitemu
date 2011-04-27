@@ -135,6 +135,10 @@
 		return [NSString stringWithFormat:NSLocalizedString(@"File: %@ - line %lu\nName: %@\nValue: %@", @"equate and macro symbol tooltip"),[[item file] name],[[[item file] textStorage] lineStartIndexForCharacterIndex:[item symbolRange].location],[item name],[item symbolValue]];
 	return [NSString stringWithFormat:NSLocalizedString(@"File: %@ - line %lu\nName: %@", @"other symbol tooltip"),[[item file] name],[item lineNumber],[item name]];
 }
+
+- (BOOL)outlineView:(NSOutlineView *)outlineView shouldShowCellExpansionForTableColumn:(NSTableColumn *)tableColumn item:(id)item {
+	return NO;
+}
 #pragma mark NSOutlineViewDataSource
 - (id)outlineView:(NSOutlineView *)outlineView child:(NSInteger)index ofItem:(id)item {
 	if (!item)
