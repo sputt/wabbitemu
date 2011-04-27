@@ -45,17 +45,17 @@ typedef struct MD5 {
 	/* 32 bit registers */
 	union {
 		struct {
-			unsigned long a;
-			unsigned long b;
-			unsigned long c;
-			unsigned long d;
-			unsigned long x;
-			unsigned long ac;
+			uint32_t a;
+			uint32_t b;
+			uint32_t c;
+			uint32_t d;
+			uint32_t x;
+			uint32_t ac;
 		};
-		unsigned long reg[6];
+		uint32_t reg[6];
 	};
-	unsigned char s;
-	unsigned char mode ;
+	uint8_t s;
+	uint8_t mode ;
 } MD5_t;
 
 typedef struct DELAY {

@@ -357,23 +357,17 @@ void calc_slot_free(LPCALC lpCalc) {
 	}
 }
 
-void calc_turn_on(LPCALC lpCalc) {
+void calc_turn_on(LPCALC lpCalc)
+{
 	lpCalc->running = TRUE;
 	calc_run_seconds(lpCalc, 1.0);
-#ifdef MACVER
-	keypad_key_press(&lpCalc->cpu, 97);
-#else
-	keypad_key_press(&lpCalc->cpu, VK_F12);
-#endif
+	keypad_press(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
 	calc_run_seconds(lpCalc, 1.0);
-#ifdef MACVER
-	keypad_key_release(&lpCalc->cpu, 97);
-#else
-	keypad_key_release(&lpCalc->cpu, VK_F12);
-#endif
+	keypad_release(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
 }
 
-int calc_reset(LPCALC lpCalc) {
+int calc_reset(LPCALC lpCalc)
+{
 	//lpCalc->running = FALSE;
 	return CPU_reset(&lpCalc->cpu);
 }
@@ -466,7 +460,7 @@ int calc_run_frame(LPCALC lpCalc) {
 }
 
 int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
-	unsigned long long time_end = tc_tstates((&lpCalc->timer_c)) + tstates - lpCalc->time_error;
+	uint64_t time_end = tc_tstates((&lpCalc->timer_c)) + tstates - lpCalc->time_error;
 
 	while (lpCalc->running) {
 		if (check_break(&lpCalc->mem_c, lpCalc->cpu.pc) & 1) {
@@ -493,12 +487,12 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 			return 0;
 		}
 
-		unsigned long long oldTStates;
+		uint64_t oldTStates;
 		if(lpCalc->profiler.running)
 			oldTStates = tc_tstates((&lpCalc->timer_c));
 		CPU_step(&lpCalc->cpu);
 		if (lpCalc->profiler.running) {
-			unsigned long long time = tc_tstates((&lpCalc->timer_c)) - oldTStates;
+			uint64_t time = tc_tstates((&lpCalc->timer_c)) - oldTStates;
 			lpCalc->profiler.totalTime += time;
 			if(lpCalc->cpu.pc <= lpCalc->profiler.highAddress && lpCalc->cpu.pc >= lpCalc->profiler.lowAddress )
 				lpCalc->profiler.data[lpCalc->cpu.pc / lpCalc->profiler.blockSize] += (long) time;
@@ -559,7 +553,7 @@ int calc_run_all(void) {
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active == TRUE) {
 				active_calc = j;
-				int time = ((long long) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS / 2;
+				int time = ((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS / 2;
 				calc_run_tstates(&calcs[j], time);
 				frame_counter += time;
 #ifdef WITH_BACKUPS

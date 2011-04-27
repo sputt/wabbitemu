@@ -183,65 +183,65 @@ BOOL WriteChar(CHUNK_t* chunk, char value) {
 }
 
 
-BOOL WriteShort(CHUNK_t* chunk, unsigned short value) {
+BOOL WriteShort(CHUNK_t* chunk, uint16_t value) {
 	int i;
 	unsigned char  *tmppnt;
 	unsigned char  *pnt = (unsigned char *)(&value);
-	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(short));
+	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(value));
 	if (tmppnt == NULL) {
 		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
 #ifdef __BIG_ENDIAN__
-	for(i=sizeof(short)-1;i>=0;i--) {
+	for(i=sizeof(value)-1;i>=0;i--) {
 #else
-	for(i=0;i<sizeof(short);i++) {
+	for(i=0;i<sizeof(value);i++) {
 #endif	
 		chunk->data[i+chunk->size] = *pnt++;
 	}
-	chunk->size += sizeof(short);
+	chunk->size += sizeof(value);
 	return TRUE;
 }
-BOOL WriteInt(CHUNK_t* chunk, unsigned int value) {
+BOOL WriteInt(CHUNK_t* chunk, uint32_t value) {
 	int i;
 	unsigned char *tmppnt;
 	unsigned char *pnt = (unsigned char *)(&value);
-	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(int));
+	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(value));
 	if (tmppnt == NULL) {
 		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
 #ifdef __BIG_ENDIAN__
-	for(i=sizeof(int)-1;i>=0;i--) {
+	for(i=sizeof(value)-1;i>=0;i--) {
 #else
-	for(i = 0;i < sizeof(int); i++) {
+	for(i = 0;i < sizeof(value); i++) {
 #endif
 		chunk->data[i+chunk->size] = *pnt++;
 	}
-	chunk->size += sizeof(int);
+	chunk->size += sizeof(uint32_t);
 	return TRUE;
 }
 
-BOOL WriteLong(CHUNK_t* chunk, unsigned long long value) {
+BOOL WriteLong(CHUNK_t* chunk, uint64_t value) {
 	int i;
 	unsigned char *tmppnt;
 	unsigned char *pnt = (unsigned char *)(&value);
-	tmppnt = (unsigned char  *) realloc(chunk->data, chunk->size + sizeof(long long));
+	tmppnt = (unsigned char  *) realloc(chunk->data, chunk->size + sizeof(value));
 	if (tmppnt == NULL) {
 		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
 #ifdef __BIG_ENDIAN__
-	for(i=sizeof(long long)-1;i>=0;i--) {
+	for(i=sizeof(value)-1;i>=0;i--) {
 #else
-	for(i = 0; i < sizeof(long long); i++) {
+	for(i = 0; i < sizeof(value); i++) {
 #endif
 		chunk->data[i+chunk->size] = *pnt++;
 	}
-	chunk->size += sizeof(long long);
+	chunk->size += sizeof(value);
 	return TRUE;
 }
 
@@ -249,40 +249,40 @@ BOOL WriteFloat(CHUNK_t* chunk, float value) {
 	int i;
 	unsigned char *tmppnt;
 	unsigned char *pnt = (unsigned char *)(&value);
-	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(float));
+	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(value));
 	if (tmppnt == NULL) {
 		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
 #ifdef __BIG_ENDIAN__
-	for(i=sizeof(float)-1;i>=0;i--) {
+	for(i=sizeof(value)-1;i>=0;i--) {
 #else
-	for(i = 0; i < sizeof(float); i++) {
+	for(i = 0; i < sizeof(value); i++) {
 #endif
 		chunk->data[i+chunk->size] = *pnt++;
 	}
-	chunk->size += sizeof(float);
+	chunk->size += sizeof(value);
 	return TRUE;
 }	
 BOOL WriteDouble(CHUNK_t* chunk, double value) {
 	int i;
 	unsigned char *tmppnt;
 	unsigned char *pnt = (unsigned char *)(&value);
-	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(double));
+	tmppnt = (unsigned char *) realloc(chunk->data,chunk->size + sizeof(value));
 	if (tmppnt == NULL) {
 		_putts(_T("Error could not realloc data"));
 		return FALSE;
 	}
 	chunk->data = tmppnt;
 #ifdef __BIG_ENDIAN__
-	for(i=sizeof(double)-1;i>=0;i--) {
+	for(i=sizeof(value)-1;i>=0;i--) {
 #else
-	for(i = 0;i < sizeof(double); i++) {
+	for(i = 0;i < sizeof(value); i++) {
 #endif
 		chunk->data[i+chunk->size] = *pnt++;
 	}
-	chunk->size += sizeof(double);
+	chunk->size += sizeof(value);
 	return TRUE;
 }
 
@@ -314,32 +314,32 @@ unsigned char ReadChar(CHUNK_t* chunk) {
 
 unsigned short ReadShort(CHUNK_t* chunk) {
 	int i;
-	unsigned short value;
+	uint16_t value;
 	unsigned char *pnt = (unsigned char *)(&value);
 #ifdef __BIG_ENDIAN__
-	for(i = sizeof(short) - 1; i >= 0; i--) {
+	for(i = sizeof(value) - 1; i >= 0; i--) {
 #else
-	for(i = 0;i < sizeof(short); i++) {
+	for(i = 0;i < sizeof(value); i++) {
 #endif
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
-	chunk->pnt += sizeof(short);
+	chunk->pnt += sizeof(value);
 	CheckPNT(chunk);
 	return value;
 }
 
 unsigned int ReadInt(CHUNK_t* chunk) {
 	int i;
-	unsigned int value;
+	uint32_t value;
 	unsigned char *pnt = (unsigned char *)(&value);
 #ifdef __BIG_ENDIAN__
-	for(i = sizeof(int) - 1; i >= 0; i--) {
+	for(i = sizeof(value) - 1; i >= 0; i--) {
 #else
-	for(i = 0; i < sizeof(int); i++) {
+	for(i = 0; i < sizeof(value); i++) {
 #endif
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
-	chunk->pnt += sizeof(int);
+	chunk->pnt += sizeof(value);
 	CheckPNT(chunk);
 	return value;
 }
@@ -377,18 +377,19 @@ double ReadDouble(CHUNK_t* chunk) {
 	return value;
 }
 
-unsigned long long ReadLong(CHUNK_t* chunk) {
+uint64_t ReadLong(CHUNK_t* chunk)
+{
 	int i;
-	unsigned long long value;
+	uint64_t value;
 	unsigned char *pnt = (unsigned char *)(&value);
 #ifdef __BIG_ENDIAN__
-	for(i = sizeof(long long) - 1; i >= 0; i--) {
+	for(i = sizeof(value) - 1; i >= 0; i--) {
 #else
-	for(i = 0;i < sizeof(long long); i++) {
+	for(i = 0;i < sizeof(value); i++) {
 #endif
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
-	chunk->pnt += sizeof(long long);
+	chunk->pnt += sizeof(value);
 	CheckPNT(chunk);
 	return value;
 }
@@ -756,7 +757,7 @@ void LoadTIMER(SAVESTATE_t* save, timerc* time) {
 	CHUNK_t* chunk = FindChunk(save,TIMER_tag);
 	chunk->pnt = 0;
 	time->tstates	= ReadLong(chunk);
-	time->freq		= (unsigned long) ReadLong(chunk);
+	time->freq		= (uint32_t) ReadLong(chunk);
 	time->elapsed	= ReadDouble(chunk);
 	time->lasttime	= ReadDouble(chunk);	// this isn't used.
 }
@@ -828,7 +829,8 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 		se_aux->delay.reg[i]	= ReadChar(chunk);
 	}
 	
-	for(i = 0; i < 6; i++) {
+	for(i = 0; i < NumElm(se_aux->md5.reg); i++)
+	{
 		se_aux->md5.reg[i]		= ReadInt(chunk);
 	}
 	se_aux->md5.s				= ReadChar(chunk);

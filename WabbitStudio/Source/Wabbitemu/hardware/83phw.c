@@ -545,7 +545,8 @@ int device_init_83p(CPU_t *cpu) {
 	cpu->pio.link		= link;
 	cpu->pio.stdint		= stdint;
 	//a little hacky but it will work
-	cpu->pio.se_aux		= (SE_AUX_t *) assist;
+	//STP: No it won't, it crashes savestates dumbass
+	//cpu->pio.se_aux		= (SE_AUX_t *) assist;
 	
 	cpu->pio.model		= TI_83P;
 	

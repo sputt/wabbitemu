@@ -1,6 +1,7 @@
 #ifndef _CALC_H
 #define _CALC_H
 
+#include "stdafx.h"
 #include "coretypes.h"
 
 #include "core.h"
