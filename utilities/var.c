@@ -595,7 +595,7 @@ TIFILE_t* newimportvar(LPCTSTR filePath) {
 	FILE *infile = NULL;
 	TIFILE_t *tifile;
 	
-	TCHAR extension[4] = _T("");
+	TCHAR extension[5] = _T("");
 	const char *pext = _tcsrchr(filePath, _T('.'));
 	if (pext != NULL)
 	{

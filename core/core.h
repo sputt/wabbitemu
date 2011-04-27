@@ -91,8 +91,8 @@ union { \
 /* 	Determines frequency provided
  *	to the CPU */
 typedef struct timer_context {
-	long long tstates;
-	unsigned long freq;
+	uint64_t tstates;
+	uint32_t freq;
 	double elapsed;		//this isn't used if using long long only
 	double lasttime;	//<--this isn't used anymore (execpt for sound)
 	int timer_version;
@@ -258,7 +258,7 @@ void displayreg(CPU_t *);
 
 
 #define tc_add( timer_z , num ) \
-	(timer_z)->tstates += (long long) num; \
+	(timer_z)->tstates += (uint64_t) num; \
 	(timer_z)->elapsed += ((double)(num))/((double)(timer_z)->freq);
 
 #define tc_elapsed( timer_z ) \

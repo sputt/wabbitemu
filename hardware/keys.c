@@ -235,7 +235,7 @@ static keyprog_t keygrps[256] = {
     {NUMPAD_THREE, 2, 1}, // 3
     {D, 1, 1}, // Add
     {ADD, 1, 1}, // Add
-    {O, 5, 0}, // Power On/Off
+    {O, KEYGROUP_ON, KEYBIT_ON}, // Power On/Off
     {FUNCTION6, 5, 0}, // Power On/Off
     {ZERO, 4, 0}, // 0
     {NUMPAD_ZERO, 4, 0}, // 0
@@ -341,9 +341,9 @@ keyprog_t defaultkeys[256] = {
 	{ VK_OEM_2, 2, 0 },
 //so much better than harcoding the changes :P
 #ifdef _DEBUG
-	{ VK_NUMPAD0, 5, 0},
+	{ VK_NUMPAD0, KEYGROUP_ON, KEYBIT_ON},
 #else
-	{ VK_F12, 5, 0},
+	{ VK_F12, KEYGROUP_ON, KEYBIT_ON},
 #endif
 #endif
 	{ -1, -1, -1},
@@ -433,9 +433,9 @@ keyprog_t keygrps[256] = {
 	{ VK_OEM_2, 2, 0 },
 //so much better than harcoding the changes :P
 #ifdef _DEBUG
-	{ VK_NUMPAD0, 5, 0},
+	{ VK_NUMPAD0, KEYGROUP_ON, KEYBIT_ON},
 #else
-	{ VK_F12, 5, 0},
+	{ VK_F12, KEYGROUP_ON, KEYBIT_ON},
 #endif
 #endif
 	{ -1, -1, -1},
@@ -505,51 +505,63 @@ void keypad(CPU_t *cpu, device_t *dev) {
 	}	
 }
 
-keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk) {
+void keypad_press(CPU_t *cpu, int group, int bit)
+{
+	if (group == KEYGROUP_ON && bit == KEYBIT_ON)
+	{
+		cpu->pio.keypad->on_pressed |= KEY_KEYBOARDPRESS;
+	}
+	else
+	{
+		cpu->pio.keypad->keys[group][bit] |= KEY_KEYBOARDPRESS;
+	}
+}
+
+keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk)
+{
 	int i;
 	keypad_t * keypad = cpu->pio.keypad;
 
 	if (keypad == NULL) {
 		return NULL;
 	}
-	/*
-#if !defined(WINVER) || !defined(MACVER)
-	if (vk >= 'a' && vk <= 'z') vk += 'A' - 'a';
-#endif
-	 */
-	for(i = 0; i < NumElm(defaultkeys); i++) {
-		if (keygrps[i].vk == vk) {
-			if (keygrps[i].group == 5 && keygrps[i].bit == 0) {
-				keypad->on_pressed |= KEY_KEYBOARDPRESS;
-			}// else {
-			keypad->keys[keygrps[i].group][keygrps[i].bit] |= KEY_KEYBOARDPRESS;
-			//}
+	for(i = 0; i < NumElm(defaultkeys); i++)
+	{
+		if (keygrps[i].vk == vk)
+		{
+			keypad_press(cpu, keygrps[i].group, keygrps[i].bit);
 			return &keygrps[i];
 		}
 	}	
 	return NULL;
 }
 
+void keypad_release(CPU_t *cpu, int group, int bit)
+{
+	if (group == KEYGROUP_ON && bit == KEYBIT_ON)
+	{
+		cpu->pio.keypad->on_pressed &= ~KEY_KEYBOARDPRESS;
+	}
+	else
+	{
+		cpu->pio.keypad->keys[group][bit] &= ~KEY_KEYBOARDPRESS;
+	}
+}
 
 keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
 	int i;
-	keypad_t * keypad = cpu->pio.keypad;
+	keypad_t *keypad = cpu->pio.keypad;
 	
 	if (keypad == NULL)
+	{
 		return NULL;
-	/*
-#if !defined(WINVER) || !defined(MACVER)
-	if (vk >= 'a' && vk <= 'z') vk += 'A' - 'a';
-#endif
-	 */
-	
-	for(i=0; i < NumElm(defaultkeys); i++) {
-		if (keygrps[i].vk == vk) {
-			if (keygrps[i].group == 5 && keygrps[i].bit == 0) {
-				keypad->on_pressed &= (~KEY_KEYBOARDPRESS);
-			} //else {			
-			keypad->keys[keygrps[i].group][keygrps[i].bit] &= (~KEY_KEYBOARDPRESS);
-			//}
+	}
+
+	for(i=0; i < NumElm(defaultkeys); i++)
+	{
+		if (keygrps[i].vk == vk)
+		{	
+			keypad_release(cpu, keygrps[i].group, keygrps[i].bit);
 			return &keygrps[i];
 		}
 	}

@@ -1151,6 +1151,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					CheckMenuItem(GetSubMenu(GetMenu(hwnd), 2), IDM_CALC_SOUND, MF_BYCOMMAND | (lpCalc->audio->enabled ? MF_CHECKED : MF_UNCHECKED));
 					break;
 				}
+				case ID_DEBUG_TURNONCALC:
+					{
+						calc_turn_on(lpCalc);
+						break;
+					}
 				case IDM_CALC_CONNECT: {
 					/*if (!calcs[0].active || !calcs[1].active || link_connect(&calcs[0].cpu, &calcs[1].cpu))						
 						MessageBox(NULL, _T("Connection Failed"), _T("Error"), MB_OK);					
