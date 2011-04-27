@@ -11,10 +11,16 @@
 #import "WCDefines.h"
 #import "WELCDView.h"
 
+#import <BWToolkitFramework/BWAnchoredButtonBar.h>
+
+
 static NSString *const kWECalculatorErrorDomain = @"kWECalculatorErrorDomain";
 static const NSInteger kWECalculatorCreatedMaxCalcs = 1001;
 static const NSInteger kWECalculatorRomLoadFailed = 1002;
 
+@interface WECalculator ()
+- (NSString *)_stringForCalculatorModel:(WECalculatorModel)calculatorModel;
+@end
 
 @implementation WECalculator
 
@@ -22,7 +28,7 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
-
+	[_statusString release];
 	calc_slot_free(_calc);
 	[super dealloc];
 }
@@ -32,6 +38,7 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
+	
 	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] removeLCDView:[self LCDView]];
 }
 
@@ -40,19 +47,20 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 	[super windowControllerDidLoadNib:aController];
 	
 	[[self LCDView] setCalc:[self calc]];
+	[[self LCDView] setIsWidescreen:([self calc]->model == TI_85 || [self calc]->model == TI_86)];
 	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] addLCDView:[self LCDView]];
+	
+	[_buttonBar setIsAtBottom:YES];
+	[_buttonBar setIsResizable:NO];
+	[[_statusTextField cell] setBackgroundStyle:NSBackgroundStyleLight];
 }
 
 - (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError {
-#ifdef DEBUG
-	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
-#endif
 	LPCALC calc = calc_slot_new();
 	
 	if (calc == NULL) {
-		if (outError != NULL) {
+		if (outError != NULL)
 			*outError = [NSError errorWithDomain:kWECalculatorErrorDomain code:kWECalculatorCreatedMaxCalcs userInfo:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"The maximum number of calculators have already been created.", @"The maximum number of calculators have already been created"),NSLocalizedDescriptionKey,NSLocalizedString(@"The maximum number of calculators have already been created.", @"The maximum number of calculators have already been created"),NSLocalizedFailureReasonErrorKey,NSLocalizedString(@"Please close at least one open calculator and try again.", @"Please close at least one open calculator and try again."),NSLocalizedRecoverySuggestionErrorKey, nil]];
-		}
 		return NO;
 	}
 	
@@ -62,29 +70,40 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 }
 
 - (BOOL)loadRom:(NSURL *)romURL error:(NSError **)outError {
-	[self setIsRunning:FALSE];
+	[self setIsRunning:NO];
+	[self setIsLoadingRom:YES];
 	
 	NSString *path = [romURL path];
 	LPCTSTR cPath = [path fileSystemRepresentation];
 	BOOL loaded = rom_load([self calc], cPath);
 	
 	if (!loaded) {
-		if (outError != NULL) {
-			*outError = [NSError errorWithDomain:kWECalculatorErrorDomain code:kWECalculatorRomLoadFailed userInfo:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"The file could not be recognized as a rom or save state.", @"The file could not be recognized as a rom or save state."),NSLocalizedDescriptionKey,NSLocalizedString(@"Please try again with a different file.", @"Please try again with a different file."),NSLocalizedRecoverySuggestionErrorKey, nil]];
-		}
+		if (outError != NULL)
+			*outError = [NSError errorWithDomain:kWECalculatorErrorDomain code:kWECalculatorRomLoadFailed userInfo:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"The file could not be recognized as a rom or save state.", @"The file could not be recognized as a rom or save state."),NSLocalizedDescriptionKey,NSLocalizedString(@"The file could not be recognized as a rom or save state.", @"The file could not be recognized as a rom or save state."),NSLocalizedFailureReasonErrorKey,NSLocalizedString(@"Please try again with a different file.", @"Please try again with a different file."),NSLocalizedRecoverySuggestionErrorKey, nil]];
+		
+		[self setIsLoadingRom:NO];
+		
 		return NO;
 	}
 	
 	if ([self windowForSheet] != nil) {
-		//[self setFileURL:romURL];
-		//[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[self fileURL]];
-		//[[self windowForSheet] makeFirstResponder:[self LCDView]];
+		[self setFileURL:romURL];
+		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[self fileURL]];
 	}
 	
-	//[self setIsRunning:TRUE];
 	calc_turn_on([self calc]);
 	
+	[[self LCDView] setIsWidescreen:([self calc]->model == WECalculatorModelTI85 || [self calc]->model == WECalculatorModelTI86)];	
+	
+	[self setIsLoadingRom:NO];
+	
 	return YES;
+}
+
+- (void)updateStatusString; {
+	if (![self isLoadingRom]) {
+		[self setStatusString:[NSString stringWithFormat:NSLocalizedString(@"%@, FPS: %.2f", @"calculator model and fps status string"),[self _stringForCalculatorModel:[self model]],[self calc]->cpu.pio.lcd->ufps]];
+	}
 }
 
 @synthesize LCDView=_LCDView;
@@ -98,6 +117,15 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 		_calc->running = isRunning;
 	}
 }
+@synthesize isLoadingRom=_isLoadingRom;
+@synthesize statusString=_statusString;
+@dynamic model;
+- (WECalculatorModel)model {
+	if (_calc == NULL)
+		return NSNotFound;
+	return (WECalculatorModel)[self calc]->model;
+}
+@synthesize connectionStatus=_connectionStatus;
 
 - (IBAction)loadRom:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -106,6 +134,7 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 	[panel setPrompt:NS_LOCALIZED_STRING_LOAD];
 	
 	[panel beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSInteger result) {
+		[panel orderOut:nil];
 		if (result != NSFileHandlingPanelOKButton)
 			return;
 		
@@ -137,5 +166,32 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 		const char *cPath = [path fileSystemRepresentation];
 		WriteSave(cPath, savestate, 0);
 	}];
+}
+		 
+- (NSString *)_stringForCalculatorModel:(WECalculatorModel)calculatorModel; {
+	switch ([self calc]->model) {
+		case WECalculatorModelTI73:
+			return NSLocalizedString(@"TI-73", @"TI-73");
+		case WECalculatorModelTI81:
+			return NSLocalizedString(@"TI-81", @"TI-81");
+		case WECalculatorModelTI82:
+			return NSLocalizedString(@"TI-82", @"TI-82");
+		case WECalculatorModelTI83:
+			return NSLocalizedString(@"TI-83", @"TI-83");
+		case WECalculatorModelTI83P:
+			return NSLocalizedString(@"TI-83+", @"TI-83+");
+		case WECalculatorModelTI83PSE:
+			return NSLocalizedString(@"TI-83+SE", @"TI-83+SE");
+		case WECalculatorModelTI84P:
+			return NSLocalizedString(@"TI-84+", @"TI-84+");
+		case WECalculatorModelTI84PSE:
+			return NSLocalizedString(@"TI-84+SE", @"TI-84+SE");
+		case WECalculatorModelTI85:
+			return NSLocalizedString(@"TI-85", @"TI-85");
+		case WECalculatorModelTI86:
+			return NSLocalizedString(@"TI-86", @"TI-86");
+		default:
+			return nil;
+	}
 }
 @end

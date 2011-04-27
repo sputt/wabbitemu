@@ -15,10 +15,15 @@
 @private	
 	GLubyte _buffer[128][192][4];
 	GLubyte _lcd_buffer[128][192][4];
+	GLubyte _wbuffer[128][256][4];
+	GLubyte _wlcd_buffer[128][256][4];
 	GLuint _textures[2];
 	
 	LPCALC _calc;
+	
+	BOOL _isWidescreen;
 }
 
 @property (assign,nonatomic) LPCALC calc;
+@property (assign,nonatomic) BOOL isWidescreen;
 @end

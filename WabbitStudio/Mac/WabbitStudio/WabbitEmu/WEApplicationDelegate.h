@@ -15,8 +15,11 @@
 @private
     NSMutableArray *_LCDViews;
 	NSTimer *_timer;
+	NSTimer *_FPSTimer;
 }
 
 - (void)addLCDView:(WELCDView *)LCDView;
 - (void)removeLCDView:(WELCDView *)LCDView;
+
+- (IBAction)preferences:(id)sender;
 @end

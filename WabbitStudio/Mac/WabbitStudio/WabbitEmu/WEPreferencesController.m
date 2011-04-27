@@ -14,10 +14,15 @@ NSString *const kWEPreferencesDisplayUseLCDWirePatternKey = @"useLCDWirePattern"
 NSString *const kWEPreferencesDisplayLCDShadesKey = @"LCDShades";
 NSString *const kWEPreferencesDisplayLCDModeKey = @"LCDMode";
 
+NSString *const kWEPreferencesGeneralOnStartupKey = @"generalOnStartup";
+
 @implementation WEPreferencesController
 
 + (void)initialize {
 	NSMutableDictionary *preferences = [NSMutableDictionary dictionary];
+	
+	// on startup
+	[preferences setObject:[NSNumber numberWithUnsignedInteger:WEGeneralOnStartupShowOpenPanel] forKey:kWEPreferencesGeneralOnStartupKey];
 	
 	// use LCD wire pattern
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWEPreferencesDisplayUseLCDWirePatternKey];
