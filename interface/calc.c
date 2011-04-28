@@ -591,7 +591,7 @@ void link_step(CPU_t *cpu) {
 
 void port_debug_callback(void *arg1, void *arg2) {
 	CPU_t *cpu = (CPU_t *) arg1;
-	device_t *dev = (device_t *) arg2;
+	//device_t *dev = (device_t *) arg2;
 	LPCALC lpCalc = calc_from_cpu(cpu);
 	gui_debug(lpCalc);
 }

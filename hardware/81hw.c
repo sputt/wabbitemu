@@ -98,7 +98,7 @@ static void port4(CPU_t *cpu, device_t *dev) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
-		LCD_t *lcd = (LCD_t *) dev->aux;
+		//LCD_t *lcd = (LCD_t *) dev->aux;
 	}
 }
 

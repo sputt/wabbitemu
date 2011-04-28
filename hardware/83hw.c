@@ -146,7 +146,7 @@ void setpage83(CPU_t *cpu) {
 
 void port00_82(CPU_t *cpu, device_t *dev) {
 	link_t* link = (link_t *) dev->aux;
-	STDINT_t* stdint = (STDINT_t *) cpu->pio.devices[0x02].aux;
+	//STDINT_t* stdint = (STDINT_t *) cpu->pio.devices[0x02].aux;
 	
 	if (cpu->input) {
 		cpu->bus = ((link->host & 0x03)) << 2;

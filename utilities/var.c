@@ -172,7 +172,7 @@ int ReadIntelHex(FILE *ifile, INTELHEX_t *ihex) {
 }
 
 TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
-	int i, tmp;
+	int i;
 	for(i = 0; i < 256; i++) {
 		tifile->flash->pagesize[i]	= 0;
 		tifile->flash->data[i]		= NULL;
@@ -184,9 +184,9 @@ TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
 	int TotalSize		=  0;
 	int TotalPages		=  0;
 	int done			=  0;
-	int reads;
-	char linebuf[600];
-	char *error;
+	//int reads;
+	//char linebuf[600];
+	//char *error;
 	
 	if (tifile->flash->type == FLASH_TYPE_OS) {
 		// Find the first page, usually after the first line
