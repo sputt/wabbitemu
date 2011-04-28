@@ -12,12 +12,17 @@
 #import "WEPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "WEPreferencesWindowController.h"
+#import "WEConnectionManager.h"
 #include "calc.h"
 
 
 @implementation WEApplicationDelegate
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender {
 	return NO;
+}
+
+- (void)applicationWillFinishLaunching:(NSNotification *)notification {
+	[[WEConnectionManager sharedConnectionManager] connectToWabbitCode];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
@@ -88,7 +93,7 @@
 
 - (void)_FPSTimerFired:(NSTimer *)timer {
 	for (WELCDView *LCDView in _LCDViews)
-		[(WECalculator *)[[[LCDView window] windowController] document] updateStatusString];
+		[[LCDView calculator] updateStatusString];
 	
 	[timer setFireDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
 }

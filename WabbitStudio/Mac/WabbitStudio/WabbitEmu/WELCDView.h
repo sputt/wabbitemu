@@ -11,6 +11,8 @@
 #include "calc.h"
 
 
+@class WECalculator;
+
 @interface WELCDView : NSOpenGLView {
 @private	
 	GLubyte _buffer[128][192][4];
@@ -22,8 +24,11 @@
 	LPCALC _calc;
 	
 	BOOL _isWidescreen;
+	
+	NSArray *_currentFilePaths;
 }
 
+@property (readonly,nonatomic) WECalculator *calculator;
 @property (assign,nonatomic) LPCALC calc;
 @property (assign,nonatomic) BOOL isWidescreen;
 @end

@@ -17,10 +17,13 @@ enum {
 };
 typedef NSUInteger WEWCConnectionStatus;
 
-@protocol WCProjectToWECalculatorConnection <NSObject>
+static NSString *const kWabbitCodeConnectionName = @"org.revsoft.wabbitcode.connection";
+static NSString *const kWabbitEmuConnectionName = @"org.revsoft.wabbitemu.connection";
 
+@protocol WCProjectToWECalculatorConnection <NSObject>
+- (oneway void)connectToWabbitCode;
 @end
 
 @protocol WECalculatorToWCProjectConnection <NSObject>
-
+- (oneway void)connectToWabbitEmu;
 @end

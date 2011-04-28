@@ -9,6 +9,7 @@
 #import "WELCDView.h"
 #import "WECalculator.h"
 #import "WEPreferencesController.h"
+#import "WETransferSheetController.h"
 
 
 static const NSUInteger kLCDWidth = 192;
@@ -16,6 +17,8 @@ static const NSUInteger kLCDWidescreenWidth = 256;
 static const NSUInteger kLCDHeight = 128;
 
 @interface WELCDView ()
+@property (copy,nonatomic) NSArray *currentFilePaths;
+
 - (void)_privateInit;
 - (void)_resizeForWidescreen;
 @end
@@ -32,6 +35,7 @@ static const NSUInteger kLCDHeight = 128;
 }
 
 - (void)dealloc {
+	[_currentFilePaths release];
 	_calc = NULL;
 	glDeleteTextures(2, _textures);
     [super dealloc];
@@ -138,6 +142,27 @@ static const NSUInteger kLCDHeight = 128;
 	glViewport(0, 0, width, height);
 }
 
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+	NSArray *filePaths = [[sender draggingPasteboard] propertyListForType:NSFilenamesPboardType];
+	NSMutableArray *validFilePaths = [NSMutableArray arrayWithCapacity:[filePaths count]];
+	
+	for (NSString *path in filePaths) {
+		NSString *UTI = [[NSWorkspace sharedWorkspace] typeOfFile:path error:NULL];
+		
+		if ([UTI isEqualToString:kWECalculatorProgramUTI] ||
+			[UTI isEqualToString:kWECalculatorApplicationUTI])
+			[validFilePaths addObject:path];
+	}
+	[self setCurrentFilePaths:validFilePaths];
+	return ([validFilePaths count] > 0)?NSDragOperationCopy:NSDragOperationNone;
+}
+
+- (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
+	[WETransferSheetController transferFiles:[self currentFilePaths] toCalculator:(WECalculator *)[[[self window] windowController] document]];
+	return YES;
+}
+
+@synthesize currentFilePaths=_currentFilePaths;
 @synthesize calc=_calc;
 @dynamic isWidescreen;
 - (BOOL)isWidescreen {
@@ -151,8 +176,15 @@ static const NSUInteger kLCDHeight = 128;
 	
 	[self _resizeForWidescreen];
 }
+@dynamic calculator;
+- (WECalculator *)calculator {
+	return (WECalculator *)[[[self window] windowController] document];
+}
 
 - (void)_privateInit {
+
+	[self registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType,nil]];
+	
 	[[self openGLContext] makeCurrentContext];
 	
 	u_int16_t row, col;

@@ -10,13 +10,19 @@
 #import "WEApplicationDelegate.h"
 #import "WCDefines.h"
 #import "WELCDView.h"
+#import "WEConnectionManager.h"
+#import "NSUserDefaults+WCExtensions.h"
+#import "WEPreferencesController.h"
 
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
 
+NSString *const kWECalculatorProgramUTI = @"org.revsoft.wabbitemu.program";
+NSString *const kWECalculatorApplicationUTI = @"org.revsoft.wabbitemu.application";
+
 static NSString *const kWECalculatorErrorDomain = @"kWECalculatorErrorDomain";
 static const NSInteger kWECalculatorCreatedMaxCalcs = 1001;
-static const NSInteger kWECalculatorRomLoadFailed = 1002;
+static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 
 @interface WECalculator ()
 - (NSString *)_stringForCalculatorModel:(WECalculatorModel)calculatorModel;
@@ -28,6 +34,7 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_statusString release];
 	calc_slot_free(_calc);
 	[super dealloc];
@@ -53,6 +60,9 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 	[_buttonBar setIsAtBottom:YES];
 	[_buttonBar setIsResizable:NO];
 	[[_statusTextField cell] setBackgroundStyle:NSBackgroundStyleLight];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_connectionManagerDidConnect:) name:kWEConnectionManagerDidConnectNotification object:[WEConnectionManager sharedConnectionManager]];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_connectionManagerDidDisconnect:) name:kWEConnectionManagerDidDisconnectNotification object:[WEConnectionManager sharedConnectionManager]];
 }
 
 - (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError {
@@ -66,10 +76,10 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 	
 	_calc = calc;
 	
-	return [self loadRom:absoluteURL error:outError];
+	return [self loadRomOrSavestate:absoluteURL error:outError];
 }
 
-- (BOOL)loadRom:(NSURL *)romURL error:(NSError **)outError {
+- (BOOL)loadRomOrSavestate:(NSURL *)romURL error:(NSError **)outError {
 	[self setIsRunning:NO];
 	[self setIsLoadingRom:YES];
 	
@@ -79,7 +89,7 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 	
 	if (!loaded) {
 		if (outError != NULL)
-			*outError = [NSError errorWithDomain:kWECalculatorErrorDomain code:kWECalculatorRomLoadFailed userInfo:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"The file could not be recognized as a rom or save state.", @"The file could not be recognized as a rom or save state."),NSLocalizedDescriptionKey,NSLocalizedString(@"The file could not be recognized as a rom or save state.", @"The file could not be recognized as a rom or save state."),NSLocalizedFailureReasonErrorKey,NSLocalizedString(@"Please try again with a different file.", @"Please try again with a different file."),NSLocalizedRecoverySuggestionErrorKey, nil]];
+			*outError = [NSError errorWithDomain:kWECalculatorErrorDomain code:kWECalculatorRomOrSavestateLoadFailed userInfo:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"The file could not be recognized as a rom or save state.", @"The file could not be recognized as a rom or save state."),NSLocalizedDescriptionKey,NSLocalizedString(@"The file could not be recognized as a rom or save state.", @"The file could not be recognized as a rom or save state."),NSLocalizedFailureReasonErrorKey,NSLocalizedString(@"Please try again with a different file.", @"Please try again with a different file."),NSLocalizedRecoverySuggestionErrorKey, nil]];
 		
 		[self setIsLoadingRom:NO];
 		
@@ -90,6 +100,8 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 		[self setFileURL:romURL];
 		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[self fileURL]];
 	}
+	
+	[self calc]->cpu.pio.lcd->shades = (u_int)[[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWEPreferencesDisplayLCDShadesKey];
 	
 	calc_turn_on([self calc]);
 	
@@ -113,9 +125,8 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 	return (_calc != NULL && _calc->running); 
 }
 - (void)setIsRunning:(BOOL)isRunning {
-	if (_calc != NULL) {
+	if (_calc != NULL)
 		_calc->running = isRunning;
-	}
 }
 @synthesize isLoadingRom=_isLoadingRom;
 @synthesize statusString=_statusString;
@@ -126,6 +137,14 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 	return (WECalculatorModel)[self calc]->model;
 }
 @synthesize connectionStatus=_connectionStatus;
+@dynamic isActive;
+- (BOOL)isActive {
+	return (_calc != NULL && _calc->active);
+}
+- (void)setIsActive:(BOOL)isActive {
+	if (_calc != NULL)
+		_calc->active = isActive;
+}
 
 - (IBAction)loadRom:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -139,7 +158,7 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 			return;
 		
 		NSError *error;
-		if (![self loadRom:[[panel URLs] lastObject] error:&error]) {
+		if (![self loadRomOrSavestate:[[panel URLs] lastObject] error:&error]) {
 			if (error != NULL)
 				[self presentError:error];
 		}
@@ -193,5 +212,13 @@ static const NSInteger kWECalculatorRomLoadFailed = 1002;
 		default:
 			return nil;
 	}
+}
+
+- (void)_connectionManagerDidConnect:(NSNotification *)note {
+	[self setConnectionStatus:WEWCConnectionStatusAvailable];
+}
+
+- (void)_connectionManagerDidDisconnect:(NSNotification *)note {
+	[self setConnectionStatus:WEWCConnectionStatusNone];
 }
 @end

@@ -24,6 +24,9 @@ enum {
 };
 typedef NSUInteger WECalculatorModel;
 
+extern NSString *const kWECalculatorProgramUTI;
+extern NSString *const kWECalculatorApplicationUTI;
+
 @class WELCDView,BWAnchoredButtonBar;
 
 @interface WECalculator : NSDocument <NSWindowDelegate> {
@@ -37,10 +40,12 @@ typedef NSUInteger WECalculatorModel;
 	BOOL _isLoadingRom;
 	NSString *_statusString;
 	WEWCConnectionStatus _connectionStatus;
+	BOOL _isTransferringFiles;
 }
 @property (readonly,nonatomic) LPCALC calc;
 @property (readonly,nonatomic) WELCDView *LCDView;
 @property (assign,nonatomic) BOOL isRunning;
+@property (assign,nonatomic) BOOL isActive;
 @property (assign,nonatomic) BOOL isLoadingRom;
 @property (copy,nonatomic) NSString *statusString;
 @property (readonly,nonatomic) WECalculatorModel model;
@@ -50,7 +55,7 @@ typedef NSUInteger WECalculatorModel;
 
 - (IBAction)saveStateAs:(id)sender;
 
-- (BOOL)loadRom:(NSURL *)romURL error:(NSError **)outError;
+- (BOOL)loadRomOrSavestate:(NSURL *)romURL error:(NSError **)outError;
 
 - (void)updateStatusString;
 @end

@@ -15,12 +15,17 @@
 #import "WCUnsavedFilesWindowController.h"
 #import "WCDocumentController.h"
 #import "WCProject.h"
+#import "WCConnectionManager.h"
 
 
 @implementation WCApplicationDelegate
 
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender {
 	return NO;
+}
+
+- (void)applicationWillFinishLaunching:(NSNotification *)notification {
+	[[WCConnectionManager sharedConnectionManager] connectToWabbitEmu];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
