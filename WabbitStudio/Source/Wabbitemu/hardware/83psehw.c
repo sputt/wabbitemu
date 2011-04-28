@@ -908,7 +908,7 @@ void port55_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 void port56_83pse(CPU_t *cpu, device_t *dev) {
-	USB_t *usb = (USB_t *) dev->aux;
+	//USB_t *usb = (USB_t *) dev->aux;
 	if (!cpu->input && !cpu->output) {
 		
 	}

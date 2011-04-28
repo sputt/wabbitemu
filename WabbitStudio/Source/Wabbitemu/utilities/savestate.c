@@ -984,7 +984,7 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 			_putts(_T("Could not open tmp file for read"));
 			return;
 		}
-		int error;
+		//int error;
 		fputs(DETECT_CMP_STR, cfile);
 		switch(compress) {
 #ifdef ZLIB_WINAPI
@@ -1040,7 +1040,7 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 		if (!tmpfile) {
 			return NULL;
 		}
-		int error;
+		//int error;
 		switch(i) {
 #ifdef ZLIB_WINAPI
 			case ZLIB_CMP:

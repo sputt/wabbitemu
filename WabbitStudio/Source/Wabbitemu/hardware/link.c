@@ -810,7 +810,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	//force reset the applist says BrandonW. seems to work, apps show up :P
 	mem_write(cpu->mem_c, 0x9C87, 0x00);
 
-	u_char *space = &dest[page][PAGE_SIZE - 1];
+	//u_char *space = &dest[page][PAGE_SIZE - 1];
 	u_int i;
 	// Make sure the subsequent pages are empty
 	if (!check_flashpage_empty(dest, page, tifile->flash->pages))

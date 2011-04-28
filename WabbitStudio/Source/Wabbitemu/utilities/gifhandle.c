@@ -161,7 +161,7 @@ void handle_screenshot() {
 	/*if ((gif_write_state != GIF_IDLE) && (!lpCalc->running))
 		gif_write_state = GIF_END;*/
 	int calc_pos = 0;
-	int num_calcs = calc_count();
+	//int num_calcs = calc_count();
 
 	switch (gif_write_state) {
 		case GIF_IDLE: {
