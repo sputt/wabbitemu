@@ -37,7 +37,11 @@
 
 #define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
 
+#ifdef MACVER
+#define FPS 30
+#else
 #define FPS 50
+#endif
 // ticks per frame
 #define TPF (CLOCKS_PER_SEC / FPS)
 // 81 speed
