@@ -9,14 +9,14 @@
 #import "WETransferSheetController.h"
 #import "WECalculator.h"
 #import "NSResponder+WCExtensions.h"
+#import "WETransferFile.h"
 
-
-static void tiFilesRelinquishFunction(const void *item, NSUInteger (*size)(const void *item)) {
-	FreeTiFile((TIFILE_t *)item);
-}
 
 @interface WETransferSheetController ()
-- (void)_transferFiles;
+- (id)_initWithFilePaths:(NSArray *)filePaths calculator:(WECalculator *)calculator;
+- (void)_transferRomsAndSavestates;
+- (void)_setupTransferProgramsAndApps;
+- (void)_transferProgramsAndApps;
 @end
 
 @implementation WETransferSheetController
@@ -25,11 +25,12 @@ static void tiFilesRelinquishFunction(const void *item, NSUInteger (*size)(const
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
+	_currentFile = nil;
 	_calculator = nil;
 	FreeSave(_savestate);
 	[_statusString release];
-	[_filePaths release];
-	[_tiFiles release];
+	[_programsAndApps release];
+	[_romsAndSavestates release];
     [super dealloc];
 }
 
@@ -40,34 +41,138 @@ static void tiFilesRelinquishFunction(const void *item, NSUInteger (*size)(const
 - (void)windowDidLoad {
 	[super windowDidLoad];
 	
-	[self _transferFiles];
+	[self _transferProgramsAndApps];
 }
 
 + (void)transferFiles:(NSArray *)filePaths toCalculator:(WECalculator *)calculator; {
-	WETransferSheetController *controller = [[[self class] alloc] initWithFilePaths:filePaths calculator:calculator];
+	WETransferSheetController *controller = [[[self class] alloc] _initWithFilePaths:filePaths calculator:calculator];
 	
-	[[NSApplication sharedApplication] beginSheet:[controller window] modalForWindow:[calculator windowForSheet] modalDelegate:controller didEndSelector:@selector(_sheetDidEnd:code:info:) contextInfo:NULL];
+	[controller _transferRomsAndSavestates];
+	[controller _setupTransferProgramsAndApps];
 }
 
-+ (id)transferViewControllerWithFilePaths:(NSArray *)filePaths forCalculator:(WECalculator *)calculator; {
-	return [[[[self class] alloc] initWithFilePaths:filePaths calculator:calculator] autorelease];
-}
-- (id)initWithFilePaths:(NSArray *)filePaths calculator:(WECalculator *)calculator; {
+- (id)_initWithFilePaths:(NSArray *)filePaths calculator:(WECalculator *)calculator; {
 	if (!(self = [super initWithWindowNibName:[self windowNibName]]))
 		return nil;
 	
 	_calculator = calculator;
-	_filePaths = [filePaths mutableCopy];
+	_programsAndApps = [[NSMutableArray alloc] init];
+	_romsAndSavestates = [[NSMutableArray alloc] init];
+	
+	for (NSString *filePath in filePaths) {
+		WETransferFile *file = [WETransferFile transferFileWithPath:filePath];
+		
+		switch ([file type]) {
+			case WETransferFileTypeRom:
+			case WETransferFileTypeSavestate:
+				[_romsAndSavestates addObject:file];
+				break;
+			case WETransferFileTypeGroup:
+			case WETransferFileTypeFlash:
+			case WETransferFileTypeVar:
+				[_programsAndApps addObject:file];
+				break;
+			default:
+				break;
+		}
+	}
 	
 	return self;
 }
 
-@synthesize shouldAnimate=_shouldAnimate;
-@synthesize knowsTotalProgress=_knowsTotalProgress;
++ (NSArray *)validateFilePaths:(NSArray *)filePaths; {
+	NSMutableArray *validFilePaths = [NSMutableArray arrayWithCapacity:[filePaths count]];
+	
+	for (NSString *path in filePaths) {
+		NSString *UTI = [[NSWorkspace sharedWorkspace] typeOfFile:path error:NULL];
+		
+		if ([UTI isEqualToString:kWECalculatorProgramUTI] ||
+			[UTI isEqualToString:kWECalculatorApplicationUTI] ||
+			[UTI isEqualToString:kWECalculatorSavestateUTI] ||
+			[UTI isEqualToString:kWECalculatorRomUTI])
+			[validFilePaths addObject:path];
+	}
+	return [[validFilePaths copy] autorelease];
+}
+
 @synthesize calculator=_calculator;
 @synthesize statusString=_statusString;
-@synthesize totalProgress=_totalProgress;
+@synthesize totalSize=_totalSize;
 @synthesize currentProgress=_currentProgress;
+@synthesize currentFile=_currentFile;
+
+- (void)_transferRomsAndSavestates; {
+	if ([_romsAndSavestates count] == 0)
+		return;
+	else if ([_romsAndSavestates count] == 1) {
+		NSError *error;
+		if (![[self calculator] loadRomOrSavestate:[NSURL fileURLWithPath:[[_romsAndSavestates objectAtIndex:0] path]] error:&error])
+			[[self calculator] presentError:error];
+	}
+	else {
+		NSError *error;
+		if (![[self calculator] loadRomOrSavestate:[NSURL fileURLWithPath:[[_romsAndSavestates objectAtIndex:0] path]] error:&error])
+			[[self calculator] presentError:error];
+		
+		[_romsAndSavestates removeObjectAtIndex:0];
+		
+		for (WETransferFile *file in _romsAndSavestates) {
+			if (![[NSDocumentController sharedDocumentController] openDocumentWithContentsOfURL:[NSURL fileURLWithPath:[file path]] display:YES error:&error])
+				[[self calculator] presentError:error];
+		}
+	}
+}
+
+- (void)_setupTransferProgramsAndApps; {
+	if ([_programsAndApps count] == 0) {
+		[self autorelease];
+		return;
+	}
+	
+	[[NSApplication sharedApplication] beginSheet:[self window] modalForWindow:[[self calculator] windowForSheet] modalDelegate:self didEndSelector:@selector(_sheetDidEnd:code:info:) contextInfo:NULL];
+}
+
+- (void)_transferProgramsAndApps; {
+	[_progressIndicator startAnimation:nil];
+	
+	CGFloat totalSize = 0;
+	for (WETransferFile *file in _programsAndApps)
+		totalSize += [file size];
+	
+	[self setTotalSize:totalSize];
+	
+	[_progressIndicator setIndeterminate:NO];
+	
+	[[self calculator] setIsActive:NO];
+	[[self calculator] setIsRunning:NO];
+	
+	NSTimer *timer = [NSTimer scheduledTimerWithTimeInterval:1.0/10 target:self selector:@selector(_timerFired:) userInfo:nil repeats:YES];
+	
+	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
+		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+		LPCALC calc = [[self calculator] calc];
+		
+		for (WETransferFile *file in _programsAndApps) {
+			dispatch_sync(dispatch_get_main_queue(), ^{
+				[self setCurrentFile:file];
+			});
+			
+			TIFILE_t *tifile = [file tifile];
+			
+			calc->cpu.pio.link->vlink_send = 0;
+			
+			link_send_var(&calc->cpu, tifile, SEND_CUR); 
+		}
+		
+		dispatch_async(dispatch_get_main_queue(), ^{
+			[timer invalidate];
+			[[self window] orderOut:nil];
+			[[NSApplication sharedApplication] endSheet:[self window]];
+		});
+		
+		[pool drain];
+	});
+}
 
 - (void)_sheetDidEnd:(NSWindow *)sheet code:(NSInteger)code info:(void *)info {
 	[self autorelease];
@@ -75,93 +180,20 @@ static void tiFilesRelinquishFunction(const void *item, NSUInteger (*size)(const
 	[[self calculator] setIsRunning:YES];
 }
 
-- (void)_transferFiles; {
-	[[self calculator] setIsActive:NO];
-	[[self calculator] setIsRunning:NO];
-	[self setShouldAnimate:YES];
-	
-	_savestate = SaveSlot([[self calculator] calc]);
-	
-	NSPointerFunctions *functions = [[[NSPointerFunctions alloc] initWithOptions:NSPointerFunctionsOpaqueMemory|NSPointerFunctionsOpaquePersonality] autorelease];
-	[functions setRelinquishFunction:&tiFilesRelinquishFunction];
-	
-	_tiFiles = [[NSPointerArray alloc] initWithPointerFunctions:functions];
-	[_tiFiles setCount:[_filePaths count]];
-	
-	NSUInteger totalSize = 0;
-	for (NSUInteger fIndex = 0; fIndex < [_filePaths count]; fIndex++) {
-		NSString *path = [_filePaths objectAtIndex:fIndex];
-		TIFILE_t *tifile = newimportvar([path fileSystemRepresentation]);
-		
-		if (tifile == NULL)
-			continue;
-		
-		[_tiFiles insertPointer:tifile atIndex:fIndex];
-		
-		switch (tifile->type) {
-			case FLASH_TYPE:
-				for (u_int16_t i = 0; i < 256; i++) {
-					totalSize += tifile->flash->pagesize[i];
-				}
-				break;
-			case GROUP_TYPE:
-			case VAR_TYPE:
-				totalSize += tifile->var->length;
-				break;
-			default:
-				break;
-		}
-	}
-	
-#ifdef DEBUG
-	NSLog(@"total size %lu",totalSize);
-#endif
-	
-	[self setTotalProgress:totalSize];
-	[self setKnowsTotalProgress:YES];
-	
-	NSTimer *progressTimer = [NSTimer scheduledTimerWithTimeInterval:1.0/30 target:self selector:@selector(_timerFired:) userInfo:nil repeats:YES];
-	
-	dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-		NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];		
-		NSMutableArray *filePaths = _filePaths;
-		NSPointerArray *tifiles = _tiFiles;
-		CPU_t *cpu = &[[self calculator] calc]->cpu;
-		
-		for (NSUInteger fIndex = 0; fIndex < [filePaths count]; fIndex++) {
-			NSString *path = [filePaths objectAtIndex:fIndex];
-			
-			dispatch_async(dispatch_get_main_queue(), ^{
-				[self setStatusString:[NSString stringWithFormat:NSLocalizedString(@"Transferring %@\u2026", @"transferring file name with ellipsis"),[path lastPathComponent]]];
-			});
-
-			TIFILE_t *tifile = [tifiles pointerAtIndex:fIndex];
-			
-			cpu->pio.link->vlink_send = 0;
-			_lastSentAmount = 0;
-			
-			link_send_var(cpu, tifile, SEND_CUR);
-		}
-		
-		dispatch_async(dispatch_get_main_queue(), ^{
-			[progressTimer invalidate];
-			[[self window] close];
-			[[NSApplication sharedApplication] endSheet:[self window] returnCode:NSOKButton];
-		});
-		
-		[pool drain];
-	});
-}
-
 - (void)_timerFired:(NSTimer *)timer {
-#ifdef DEBUG
-	NSLog(@"amount sent %lu",[[self calculator] calc]->cpu.pio.link->vlink_send);
-#endif
-	if ([[self calculator] calc]->cpu.pio.link->vlink_send < [self totalProgress]) {
-		[self setCurrentProgress:[self currentProgress] + ((CGFloat)[[self calculator] calc]->cpu.pio.link->vlink_send - _lastSentAmount)];
-		_lastSentAmount = [[self calculator] calc]->cpu.pio.link->vlink_send;
+	[self setStatusString:[NSString stringWithFormat:NSLocalizedString(@"Transferring \"%@\" (%lu of %lu)\u2026", @"transfer sheet status string format"),[[[self currentFile] path] lastPathComponent],[_programsAndApps indexOfObject:[self currentFile]]+1,[_programsAndApps count]]];
+	
+	CGFloat currentFileProgress = ABS([[self calculator] calc]->cpu.pio.link->vlink_send - [[self currentFile] currentProgress]);
+	
+	NSLog(@"progress %.0f",currentFileProgress);
+	
+	if (currentFileProgress >= [[self currentFile] size]) {
+		[[self currentFile] setCurrentProgress:0];
+		return;
 	}
-	else
-		[self setKnowsTotalProgress:NO];
+	
+	[self setCurrentProgress:[self currentProgress] + currentFileProgress];
+	
+	[[self currentFile] setCurrentProgress:[[self calculator] calc]->cpu.pio.link->vlink_send];
 }
 @end

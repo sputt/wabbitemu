@@ -182,10 +182,42 @@
 													<string key="NSAction">_popUpItemAction:</string>
 													<reference key="NSTarget" ref="667501448"/>
 												</object>
+												<object class="NSMenuItem" id="856838786">
+													<reference key="NSMenu" ref="855322439"/>
+													<bool key="NSIsDisabled">YES</bool>
+													<bool key="NSIsSeparator">YES</bool>
+													<string key="NSTitle"/>
+													<string key="NSKeyEquiv"/>
+													<int key="NSMnemonicLoc">2147483647</int>
+													<reference key="NSOnImage" ref="5219130"/>
+													<reference key="NSMixedImage" ref="217551004"/>
+													<string key="NSAction">_popUpItemAction:</string>
+													<reference key="NSTarget" ref="667501448"/>
+												</object>
+												<object class="NSMenuItem" id="664484151">
+													<reference key="NSMenu" ref="855322439"/>
+													<string key="NSTitle">Reload Current Rom or Savestate</string>
+													<string key="NSKeyEquiv"/>
+													<int key="NSMnemonicLoc">2147483647</int>
+													<reference key="NSOnImage" ref="5219130"/>
+													<reference key="NSMixedImage" ref="217551004"/>
+													<string key="NSAction">_popUpItemAction:</string>
+													<reference key="NSTarget" ref="667501448"/>
+												</object>
+												<object class="NSMenuItem" id="1063099">
+													<reference key="NSMenu" ref="855322439"/>
+													<string key="NSTitle">Reset Calculator</string>
+													<string key="NSKeyEquiv"/>
+													<int key="NSMnemonicLoc">2147483647</int>
+													<reference key="NSOnImage" ref="5219130"/>
+													<reference key="NSMixedImage" ref="217551004"/>
+													<string key="NSAction">_popUpItemAction:</string>
+													<reference key="NSTarget" ref="667501448"/>
+												</object>
 											</object>
 											<reference key="NSMenuFont" ref="273654401"/>
 										</object>
-										<int key="NSSelectedIndex">1</int>
+										<int key="NSSelectedIndex">4</int>
 										<bool key="NSPullDown">YES</bool>
 										<int key="NSPreferredEdge">1</int>
 										<bool key="NSUsesItemFromMenu">YES</bool>
@@ -424,6 +456,22 @@
 					</object>
 					<int key="connectionID">100065</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">reloadCurrentRomOrSavestate:</string>
+						<reference key="source" ref="613418571"/>
+						<reference key="destination" ref="664484151"/>
+					</object>
+					<int key="connectionID">100069</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">resetCalculator:</string>
+						<reference key="source" ref="613418571"/>
+						<reference key="destination" ref="1063099"/>
+					</object>
+					<int key="connectionID">100070</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -543,6 +591,9 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="448228642"/>
 							<reference ref="1060599044"/>
+							<reference ref="664484151"/>
+							<reference ref="856838786"/>
+							<reference ref="1063099"/>
 						</object>
 						<reference key="parent" ref="667501448"/>
 					</object>
@@ -584,6 +635,21 @@
 						<reference key="object" ref="858352744"/>
 						<reference key="parent" ref="2570611"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">100066</int>
+						<reference key="object" ref="664484151"/>
+						<reference key="parent" ref="855322439"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">100067</int>
+						<reference key="object" ref="856838786"/>
+						<reference key="parent" ref="855322439"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">100068</int>
+						<reference key="object" ref="1063099"/>
+						<reference key="parent" ref="855322439"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -608,8 +674,14 @@
 					<string>100051.IBPluginDependency</string>
 					<string>100052.CustomClassName</string>
 					<string>100052.IBPluginDependency</string>
+					<string>100053.IBPluginDependency</string>
+					<string>100054.IBPluginDependency</string>
+					<string>100055.IBPluginDependency</string>
 					<string>100057.IBPluginDependency</string>
 					<string>100058.IBPluginDependency</string>
+					<string>100066.IBPluginDependency</string>
+					<string>100067.IBPluginDependency</string>
+					<string>100068.IBPluginDependency</string>
 					<string>5.IBEditorWindowLastContentRect</string>
 					<string>5.IBNSWindowAutoPositionCentersHorizontal</string>
 					<string>5.IBNSWindowAutoPositionCentersVertical</string>
@@ -642,6 +714,12 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{133, 170}, {507, 413}}</string>
 					<boolean value="NO"/>
 					<boolean value="NO"/>
@@ -665,7 +743,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">100065</int>
+			<int key="maxID">100070</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -846,10 +924,14 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>loadRom:</string>
+							<string>reloadCurrentRomOrSavestate:</string>
+							<string>resetCalculator:</string>
 							<string>saveStateAs:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 						</object>
@@ -859,12 +941,22 @@
 						<object class="NSArray" key="dict.sortedKeys">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<string>loadRom:</string>
+							<string>reloadCurrentRomOrSavestate:</string>
+							<string>resetCalculator:</string>
 							<string>saveStateAs:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<object class="IBActionInfo">
 								<string key="name">loadRom:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">reloadCurrentRomOrSavestate:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">resetCalculator:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
@@ -959,7 +1051,7 @@
 				<string>{8, 8}</string>
 				<string>{9, 8}</string>
 				<string>{7, 2}</string>
-				<string>{128, 128}</string>
+				<string>{16, 16}</string>
 			</object>
 		</object>
 	</data>

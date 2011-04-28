@@ -19,6 +19,8 @@
 
 NSString *const kWECalculatorProgramUTI = @"org.revsoft.wabbitemu.program";
 NSString *const kWECalculatorApplicationUTI = @"org.revsoft.wabbitemu.application";
+NSString *const kWECalculatorSavestateUTI = @"org.revsoft.wabbitemu.savestate";
+NSString *const kWECalculatorRomUTI = @"org.revsoft.wabbitemu.rom";
 
 static NSString *const kWECalculatorErrorDomain = @"kWECalculatorErrorDomain";
 static const NSInteger kWECalculatorCreatedMaxCalcs = 1001;
@@ -181,10 +183,18 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 			return;
 		}
 		
-		NSString *path = [[panel URL] path];
-		const char *cPath = [path fileSystemRepresentation];
-		WriteSave(cPath, savestate, 0);
+		WriteSave([[[panel URL] path] fileSystemRepresentation], savestate, 0);
 	}];
+}
+
+- (IBAction)reloadCurrentRomOrSavestate:(id)sender; {
+	[self loadRomOrSavestate:[self fileURL] error:NULL];
+}
+- (IBAction)resetCalculator:(id)sender; {
+	[self setIsRunning:NO];
+	calc_reset([self calc]);
+	calc_turn_on([self calc]);
+	[self setIsRunning:YES];
 }
 		 
 - (NSString *)_stringForCalculatorModel:(WECalculatorModel)calculatorModel; {

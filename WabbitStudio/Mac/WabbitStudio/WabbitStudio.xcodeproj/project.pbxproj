@@ -225,6 +225,7 @@
 		07C4D98D13470793004792DD /* WCBuildMessagesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C4D98C13470792004792DD /* WCBuildMessagesOutlineView.m */; };
 		07C4D9911347138C004792DD /* WCSymbolsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C4D98F1347138C004792DD /* WCSymbolsViewController.m */; };
 		07C4D995134714F6004792DD /* WCSymbolsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07C4D993134714F6004792DD /* WCSymbolsView.xib */; };
+		07C55FC3136913DF00BB2325 /* WETransferFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C55FC2136913DF00BB2325 /* WETransferFile.m */; };
 		07C83BA11350FD700051412B /* spasm in Resources */ = {isa = PBXBuildFile; fileRef = 07C83BA01350FD700051412B /* spasm */; };
 		07C83BA41351BC230051412B /* WCSymbolsOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */; };
 		07C8B06A135E244E00DC8322 /* WCBreakpointsOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C8B069135E244D00DC8322 /* WCBreakpointsOutlineView.m */; };
@@ -643,6 +644,8 @@
 		07C4D98E1347138B004792DD /* WCSymbolsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSymbolsViewController.h; sourceTree = "<group>"; };
 		07C4D98F1347138C004792DD /* WCSymbolsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSymbolsViewController.m; sourceTree = "<group>"; };
 		07C4D994134714F6004792DD /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCSymbolsView.xib; sourceTree = "<group>"; };
+		07C55FC1136913DF00BB2325 /* WETransferFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WETransferFile.h; sourceTree = "<group>"; };
+		07C55FC2136913DF00BB2325 /* WETransferFile.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WETransferFile.m; sourceTree = "<group>"; };
 		07C83BA01350FD700051412B /* spasm */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.executable"; path = spasm; sourceTree = "<group>"; };
 		07C83BA21351BC220051412B /* WCSymbolsOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSymbolsOutlineView.h; sourceTree = "<group>"; };
 		07C83BA31351BC230051412B /* WCSymbolsOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCSymbolsOutlineView.m; sourceTree = "<group>"; };
@@ -1180,6 +1183,8 @@
 				07BA69A11367FF0D00AD7FF5 /* WEConnectionManager.m */,
 				07B75E091368AAB1007B13A2 /* WETransferSheetController.h */,
 				07B75E0A1368AAB1007B13A2 /* WETransferSheetController.m */,
+				07C55FC1136913DF00BB2325 /* WETransferFile.h */,
+				07C55FC2136913DF00BB2325 /* WETransferFile.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1632,6 +1637,7 @@
 				07BA69A61368069300AD7FF5 /* WCSingleton.m in Sources */,
 				07B75E0B1368AAB1007B13A2 /* WETransferSheetController.m in Sources */,
 				070E31D41368B85800D0CAE2 /* NSResponder+WCExtensions.m in Sources */,
+				07C55FC3136913DF00BB2325 /* WETransferFile.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

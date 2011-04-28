@@ -26,6 +26,8 @@ typedef NSUInteger WECalculatorModel;
 
 extern NSString *const kWECalculatorProgramUTI;
 extern NSString *const kWECalculatorApplicationUTI;
+extern NSString *const kWECalculatorSavestateUTI;
+extern NSString *const kWECalculatorRomUTI;
 
 @class WELCDView,BWAnchoredButtonBar;
 
@@ -54,6 +56,8 @@ extern NSString *const kWECalculatorApplicationUTI;
 - (IBAction)loadRom:(id)sender;
 
 - (IBAction)saveStateAs:(id)sender;
+- (IBAction)reloadCurrentRomOrSavestate:(id)sender;
+- (IBAction)resetCalculator:(id)sender;
 
 - (BOOL)loadRomOrSavestate:(NSURL *)romURL error:(NSError **)outError;
 

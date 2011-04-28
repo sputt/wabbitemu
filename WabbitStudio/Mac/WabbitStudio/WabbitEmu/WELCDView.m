@@ -144,17 +144,9 @@ static const NSUInteger kLCDHeight = 128;
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
 	NSArray *filePaths = [[sender draggingPasteboard] propertyListForType:NSFilenamesPboardType];
-	NSMutableArray *validFilePaths = [NSMutableArray arrayWithCapacity:[filePaths count]];
 	
-	for (NSString *path in filePaths) {
-		NSString *UTI = [[NSWorkspace sharedWorkspace] typeOfFile:path error:NULL];
-		
-		if ([UTI isEqualToString:kWECalculatorProgramUTI] ||
-			[UTI isEqualToString:kWECalculatorApplicationUTI])
-			[validFilePaths addObject:path];
-	}
-	[self setCurrentFilePaths:validFilePaths];
-	return ([validFilePaths count] > 0)?NSDragOperationCopy:NSDragOperationNone;
+	[self setCurrentFilePaths:[WETransferSheetController validateFilePaths:filePaths]];
+	return ([[self currentFilePaths] count] > 0)?NSDragOperationCopy:NSDragOperationNone;
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {

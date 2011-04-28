@@ -10,32 +10,27 @@
 #include "savestate.h"
 
 
-@class WECalculator;
+@class WECalculator,WETransferFile;
 
 @interface WETransferSheetController : NSWindowController {
 @private
 	IBOutlet NSProgressIndicator *_progressIndicator;
 	
 	__weak WECalculator *_calculator;
-    NSMutableArray *_filePaths;
-	NSPointerArray *_tiFiles;
-	CGFloat _totalProgress;
+    NSMutableArray *_romsAndSavestates;
+	NSMutableArray *_programsAndApps;
+	CGFloat _totalSize;
 	CGFloat _currentProgress;
+	WETransferFile *_currentFile;
 	NSString *_statusString;
 	SAVESTATE_t *_savestate;
-	size_t _lastSentAmount;
-	BOOL _knowsTotalProgress;
-	BOOL _shouldAnimate;
 }
 @property (readonly,nonatomic) WECalculator *calculator;
-@property (assign,nonatomic) CGFloat totalProgress;
+@property (assign,nonatomic) CGFloat totalSize;
 @property (assign,nonatomic) CGFloat currentProgress;
 @property (copy,nonatomic) NSString *statusString;
-@property (assign,nonatomic) BOOL knowsTotalProgress;
-@property (assign,nonatomic) BOOL shouldAnimate;
-@property (assign) BOOL shouldCancel;
+@property (assign,nonatomic) WETransferFile *currentFile;
 
 + (void)transferFiles:(NSArray *)filePaths toCalculator:(WECalculator *)calculator;
-+ (id)transferViewControllerWithFilePaths:(NSArray *)filePaths forCalculator:(WECalculator *)calculator;
-- (id)initWithFilePaths:(NSArray *)filePaths calculator:(WECalculator *)calculator;
++ (NSArray *)validateFilePaths:(NSArray *)filePaths;
 @end

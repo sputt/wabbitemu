@@ -44,7 +44,7 @@
 			<object class="NSWindowTemplate" id="1005">
 				<int key="NSWindowStyleMask">1</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{196, 240}, {350, 81}}</string>
+				<string key="NSWindowRect">{{196, 240}, {288, 72}}</string>
 				<int key="NSWTFlags">544735232</int>
 				<string key="NSWindowTitle">Window</string>
 				<string key="NSWindowClass">NSWindow</string>
@@ -58,29 +58,29 @@
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">1292</int>
 							<object class="NSPSMatrix" key="NSDrawMatrix"/>
-							<string key="NSFrame">{{18, 41}, {314, 20}}</string>
+							<string key="NSFrame">{{19, 40}, {250, 12}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView" ref="795628514"/>
-							<int key="NSpiFlags">16394</int>
+							<int key="NSpiFlags">16650</int>
 							<double key="NSMaxValue">100</double>
 						</object>
 						<object class="NSTextField" id="795628514">
 							<reference key="NSNextResponder" ref="1006"/>
 							<int key="NSvFlags">268</int>
-							<string key="NSFrame">{{17, 20}, {316, 17}}</string>
+							<string key="NSFrame">{{18, 20}, {253, 14}}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<reference key="NSWindow"/>
 							<reference key="NSNextKeyView"/>
 							<bool key="NSEnabled">YES</bool>
 							<object class="NSTextFieldCell" key="NSCell" id="319479440">
 								<int key="NSCellFlags">68288064</int>
-								<int key="NSCellFlags2">272630784</int>
+								<int key="NSCellFlags2">272761856</int>
 								<string key="NSContents">Label</string>
 								<object class="NSFont" key="NSSupport">
 									<string key="NSName">LucidaGrande</string>
-									<double key="NSSize">13</double>
-									<int key="NSfFlags">1044</int>
+									<double key="NSSize">11</double>
+									<int key="NSfFlags">3100</int>
 								</object>
 								<reference key="NSControlView" ref="795628514"/>
 								<object class="NSColor" key="NSBackgroundColor">
@@ -104,7 +104,7 @@
 							</object>
 						</object>
 					</object>
-					<string key="NSFrame">{{7, 11}, {350, 81}}</string>
+					<string key="NSFrame">{{7, 11}, {288, 72}}</string>
 					<reference key="NSSuperview"/>
 					<reference key="NSWindow"/>
 					<reference key="NSNextKeyView" ref="258409365"/>
@@ -142,19 +142,19 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">maxValue: totalProgress</string>
+						<string key="label">maxValue: totalSize</string>
 						<reference key="source" ref="258409365"/>
 						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="292473480">
+						<object class="NSNibBindingConnector" key="connector" id="541681112">
 							<reference key="NSSource" ref="258409365"/>
 							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">maxValue: totalProgress</string>
+							<string key="NSLabel">maxValue: totalSize</string>
 							<string key="NSBinding">maxValue</string>
-							<string key="NSKeyPath">totalProgress</string>
+							<string key="NSKeyPath">totalSize</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">14</int>
+					<int key="connectionID">25</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
@@ -167,48 +167,19 @@
 							<string key="NSLabel">value: currentProgress</string>
 							<string key="NSBinding">value</string>
 							<string key="NSKeyPath">currentProgress</string>
-							<reference key="NSPreviousConnector" ref="292473480"/>
+							<reference key="NSPreviousConnector" ref="541681112"/>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">20</int>
+					<int key="connectionID">26</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">animate: shouldAnimate</string>
-						<reference key="source" ref="258409365"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector" id="992714430">
-							<reference key="NSSource" ref="258409365"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">animate: shouldAnimate</string>
-							<string key="NSBinding">animate</string>
-							<string key="NSKeyPath">shouldAnimate</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">_progressIndicator</string>
+						<reference key="source" ref="1001"/>
+						<reference key="destination" ref="258409365"/>
 					</object>
-					<int key="connectionID">21</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">isIndeterminate: knowsTotalProgress</string>
-						<reference key="source" ref="258409365"/>
-						<reference key="destination" ref="1001"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="258409365"/>
-							<reference key="NSDestination" ref="1001"/>
-							<string key="NSLabel">isIndeterminate: knowsTotalProgress</string>
-							<string key="NSBinding">isIndeterminate</string>
-							<string key="NSKeyPath">knowsTotalProgress</string>
-							<object class="NSDictionary" key="NSOptions">
-								<string key="NS.key.0">NSValueTransformerName</string>
-								<string key="NS.object.0">NSNegateBoolean</string>
-							</object>
-							<reference key="NSPreviousConnector" ref="992714430"/>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">23</int>
+					<int key="connectionID">27</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -323,7 +294,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">23</int>
+			<int key="maxID">27</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
