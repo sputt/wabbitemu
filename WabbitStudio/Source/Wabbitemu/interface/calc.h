@@ -111,7 +111,11 @@ typedef struct DEBUG_STATE {
 } debugger_backup;
 #endif
 
+#ifdef QUICKLOOK
+#define MAX_CALCS	1
+#else
 #define MAX_CALCS	8
+#endif
 #define MAX_SPEED 100*50
 
 typedef struct tagCALC CALC, *LPCALC;
