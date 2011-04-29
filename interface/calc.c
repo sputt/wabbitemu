@@ -364,6 +364,9 @@ void calc_turn_on(LPCALC lpCalc)
 	keypad_press(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
 	calc_run_seconds(lpCalc, 1.0);
 	keypad_release(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
+#ifdef QUICKLOOK
+	calc_run_seconds(lpCalc, 0.5);
+#endif
 }
 
 int calc_reset(LPCALC lpCalc)

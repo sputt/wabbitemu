@@ -19,14 +19,17 @@ typedef uint32_t DWORD, *LPDWORD;
 #endif
 #endif
 
-#ifndef TRUE
-#define FALSE (0)
-#define TRUE (!FALSE)
 #ifdef WINVER
 typedef int BOOL;
 #else
+#ifndef OBJC_BOOL_DEFINED
 typedef signed char BOOL;
 #endif
+#endif
+
+#ifndef TRUE
+#define FALSE (0)
+#define TRUE (!FALSE)
 #endif
 
 #endif /*CORETYPES_H_*/
