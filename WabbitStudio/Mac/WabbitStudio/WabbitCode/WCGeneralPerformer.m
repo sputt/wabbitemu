@@ -488,7 +488,7 @@ NSString *const kWCProjectToolbarProjectWindowItemIdentifier = @"projectToolbarP
 		[item setLabel:NSLocalizedString(@"Build and Run", @"build and run toolbar item label")];
 		[item setPaletteLabel:[item label]];
 		[item setImage:[NSImage imageNamed:@"BuildAndRun32x32"]];
-		//[item setAction:@selector(build:)];
+		[item setAction:@selector(buildAndRun:)];
 	}
 	else if ([itemIdentifier isEqualToString:kWCProjectToolbarBuildAndDebugItemIdentifer]) {
 		[item setLabel:NSLocalizedString(@"Build and Debug", @"build and debug toolbar item label")];

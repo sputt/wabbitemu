@@ -16,7 +16,6 @@
 @property (copy,nonatomic) NSArray *currentFilePaths;
 
 - (void)_privateInit;
-- (void)_resizeForWidescreen;
 @end
 
 @implementation WELCDView
@@ -144,16 +143,9 @@
 	glFinish();
 }
 
-- (void)reshape {
-	NSRect sceneBounds;
-	
-	[ [ self openGLContext ] update ];
-	sceneBounds = [ self bounds ];
-	// Reset current viewport
-	glViewport( 0, 0, sceneBounds.size.width, sceneBounds.size.height );
-}
-
 - (void)prepareOpenGL {
+	[super prepareOpenGL];
+	
 	glClearColor(128.0/255.0, 142.0/255.0, 107.0/255.0, 1.0);
 	
 	glEnable(GL_TEXTURE_RECTANGLE_EXT);
@@ -165,6 +157,14 @@
 	glDisable(GL_TEXTURE_2D);
 	glDisable(GL_DEPTH_TEST);
 	glGenTextures(2, _textures);
+}
+
+- (void)reshape {
+	// comment this out to see something interesting when you have more than one calc open and resize
+	[[self openGLContext] makeCurrentContext];
+	
+	NSRect bounds = [self bounds];
+	glViewport( 0, 0, bounds.size.width, bounds.size.height );
 }
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
@@ -207,8 +207,7 @@
 
 @synthesize currentFilePaths=_currentFilePaths;
 
-
-- (void)commonInit; {
+- (void)commonInit; {	
 	[self registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType, nil]];
 	[self _privateInit];
 }

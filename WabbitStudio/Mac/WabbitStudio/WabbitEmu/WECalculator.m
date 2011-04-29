@@ -39,6 +39,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[_projectIdentifier release];
 	[_statusString release];
 	[_FPSString release];
 	calc_slot_free(_calc);
@@ -50,9 +51,18 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
+	_isClosing = YES;
+	
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWECalculatorWillCloseNotification object:self];
 	
 	[WEApplicationDelegate removeLCDView:[self LCDView]];
+}
+
+- (void)windowControllerWillLoadNib:(NSWindowController *)windowController {
+	[super windowControllerWillLoadNib:windowController];
+	
+	if ([[WEConnectionManager sharedConnectionManager] isConnectedToWabbitCode])
+		[self setConnectionStatus:WEWCConnectionStatusAvailable];
 }
 
 - (void)windowControllerDidLoadNib:(NSWindowController *)aController
@@ -107,7 +117,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[self fileURL]];
 	}
 	
-	[self setStatusString:[self _stringForCalculatorModel:[self model]]];
+	[self updateStatusString];
 	
 	[self calc]->cpu.pio.lcd->shades = (u_int)[[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWEPreferencesDisplayLCDShadesKey];
 	
@@ -123,6 +133,21 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 - (void)updateFPSString; {
 	if (![self isLoadingRom]) {
 		[self setFPSString:[NSString stringWithFormat:NSLocalizedString(@"FPS: %.2f", @"FPS format string"),[self calc]->cpu.pio.lcd->ufps]];
+	}
+}
+
+- (void)updateStatusString {
+	switch ([self connectionStatus]) {
+		case WEWCConnectionStatusAvailable:
+		case WEWCConnectionStatusError:
+		case WEWCConnectionStatusNone:
+			[self setStatusString:[self _stringForCalculatorModel:[self calc]->model]];
+			break;
+		case WEWCConnectionStatusConnected:
+			[[[WEConnectionManager sharedConnectionManager] connectionProxy] requestProjectNameForProjectWithIdentifier:[self projectIdentifier]];
+			break;
+		default:
+			break;
 	}
 }
 
@@ -145,7 +170,18 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 		return NSNotFound;
 	return (WECalculatorModel)[self calc]->model;
 }
-@synthesize connectionStatus=_connectionStatus;
+@dynamic connectionStatus;
+- (WEWCConnectionStatus)connectionStatus {
+	return _connectionStatus;
+}
+- (void)setConnectionStatus:(WEWCConnectionStatus)connectionStatus {
+	if (_connectionStatus == connectionStatus)
+		return;
+	
+	_connectionStatus = connectionStatus;
+	
+	[self updateStatusString];
+}
 @dynamic isActive;
 - (BOOL)isActive {
 	return (_calc != NULL && _calc->active);
@@ -154,6 +190,11 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	if (_calc != NULL)
 		_calc->active = isActive;
 }
+@dynamic calculatorWindow;
+- (NSWindow *)calculatorWindow {
+	return [[[self windowControllers] objectAtIndex:0] window];
+}
+@synthesize projectIdentifier=_projectIdentifier;
 
 - (IBAction)loadRom:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];

@@ -46,7 +46,9 @@ extern NSString *const kWECalculatorWillCloseNotification;
 	NSString *_statusString;
 	NSString *_FPSString;
 	WEWCConnectionStatus _connectionStatus;
-	BOOL _isTransferringFiles;
+	
+	NSString *_projectIdentifier;
+	BOOL _isClosing;
 }
 @property (readonly,nonatomic) LPCALC calc;
 @property (readonly,nonatomic) WELCDView *LCDView;
@@ -57,6 +59,8 @@ extern NSString *const kWECalculatorWillCloseNotification;
 @property (copy,nonatomic) NSString *FPSString;
 @property (readonly,nonatomic) WECalculatorModel model;
 @property (assign,nonatomic) WEWCConnectionStatus connectionStatus;
+@property (readonly,nonatomic) NSWindow *calculatorWindow;
+@property (copy,nonatomic) NSString *projectIdentifier;
 
 - (IBAction)loadRom:(id)sender;
 
@@ -70,4 +74,5 @@ extern NSString *const kWECalculatorWillCloseNotification;
 - (BOOL)loadRomOrSavestate:(NSURL *)romURL error:(NSError **)outError;
 
 - (void)updateFPSString;
+- (void)updateStatusString;
 @end

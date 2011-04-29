@@ -39,6 +39,7 @@ static NSColor *kBorderColor = nil;
 }
 
 - (void)dealloc {
+	[self unbind:@"connectionStatus"];
 	[self unbind:@"statusString"];
 	[self unbind:@"secondaryStatusString"];
 	[self unbind:@"buildStatus"];
@@ -128,6 +129,7 @@ static NSColor *kBorderColor = nil;
 	[self bind:@"statusString" toObject:project withKeyPath:@"statusString" options:nil];
 	[self bind:@"secondaryStatusString" toObject:project withKeyPath:@"secondaryStatusString" options:nil];
 	[self bind:@"buildStatus" toObject:project withKeyPath:@"buildStatus" options:nil];
+	[self bind:@"connectionStatus" toObject:project withKeyPath:@"connectionStatus" options:nil];
 	
 	return self;
 }
@@ -173,6 +175,18 @@ static NSColor *kBorderColor = nil;
 	
 	[self setNeedsDisplay:YES];
 }
+@dynamic connectionStatus;
+- (WEWCConnectionStatus)connectionStatus {
+	return _connectionStatus;
+}
+- (void)setConnectionStatus:(WEWCConnectionStatus)connectionStatus {
+	if (_connectionStatus == connectionStatus)
+		return;
+	
+	_connectionStatus = connectionStatus;
+	
+	[self setNeedsDisplay:YES];
+}
 									
 - (NSDictionary *)defaultAttributesForStatusString {
 	NSShadow *shadow = [[[NSShadow alloc] initWithColor:[NSColor whiteColor] offset:NSMakeSize(1.0, -1.0) blurRadius:1.0] autorelease];
@@ -202,7 +216,7 @@ static NSColor *kBorderColor = nil;
 	NSShadow *shadow = [[[NSShadow alloc] initWithColor:[NSColor whiteColor] offset:NSMakeSize(1.0, -1.0) blurRadius:1.0] autorelease];
 	NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
 	[style setAlignment:NSCenterTextAlignment];
-	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont boldSystemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]],NSFontAttributeName,style,NSParagraphStyleAttributeName,shadow,NSShadowAttributeName,[NSColor colorWithCalibratedRed:0.0 green:0.5 blue:0.0 alpha:1.0],NSForegroundColorAttributeName, nil];
+	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont boldSystemFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]],NSFontAttributeName,style,NSParagraphStyleAttributeName,shadow,NSShadowAttributeName,([[self project] totalWarnings] > 0)?[NSColor textColor]:[NSColor colorWithCalibratedRed:0.0 green:0.5 blue:0.0 alpha:1.0],NSForegroundColorAttributeName, nil];
 	return attributes;
 }
 @end

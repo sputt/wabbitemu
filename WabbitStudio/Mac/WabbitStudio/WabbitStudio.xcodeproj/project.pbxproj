@@ -238,6 +238,58 @@
 		07CE786F134E637A001B96FC /* WCDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE786E134E637A001B96FC /* WCDocumentController.m */; };
 		07CE7872134EB1B8001B96FC /* WCGotoLineSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE7871134EB1B7001B96FC /* WCGotoLineSheetController.m */; };
 		07CE7875134EB23B001B96FC /* WCGotoLineSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07CE7873134EB23B001B96FC /* WCGotoLineSheet.xib */; };
+		07D13284136A7B7300BD5A84 /* WCConnectionStatusToStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D13283136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.m */; };
+		07D13285136A7D1900BD5A84 /* WEConnectionStatusToImageTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BA69931367F37400AD7FF5 /* WEConnectionStatusToImageTransformer.m */; };
+		07D1328F136AAA7300BD5A84 /* QuickLook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07D1328E136AAA7300BD5A84 /* QuickLook.framework */; };
+		07D1329E136AAA7400BD5A84 /* GenerateThumbnailForURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D1329D136AAA7400BD5A84 /* GenerateThumbnailForURL.m */; };
+		07D132A0136AAA7400BD5A84 /* GeneratePreviewForURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D1329F136AAA7400BD5A84 /* GeneratePreviewForURL.m */; };
+		07D132A2136AAA7400BD5A84 /* main.c in Sources */ = {isa = PBXBuildFile; fileRef = 07D132A1136AAA7400BD5A84 /* main.c */; };
+		07D132A9136AAB8500BD5A84 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 07D132A7136AAB8500BD5A84 /* InfoPlist.strings */; };
+		07D132AA136AADD100BD5A84 /* alu.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905DFD1367C9930079A404 /* alu.c */; };
+		07D132AB136AADD100BD5A84 /* alu.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905DFE1367C9930079A404 /* alu.h */; };
+		07D132AC136AADD100BD5A84 /* control.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905DFF1367C9930079A404 /* control.c */; };
+		07D132AD136AADD100BD5A84 /* control.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E001367C9930079A404 /* control.h */; };
+		07D132AE136AADD100BD5A84 /* core.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E011367C9930079A404 /* core.c */; };
+		07D132AF136AADD100BD5A84 /* core.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E021367C9930079A404 /* core.h */; };
+		07D132B0136AADD100BD5A84 /* coretypes.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E031367C9930079A404 /* coretypes.h */; };
+		07D132B1136AADD100BD5A84 /* device.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E041367C9930079A404 /* device.c */; };
+		07D132B2136AADD100BD5A84 /* device.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E051367C9930079A404 /* device.h */; };
+		07D132B3136AADD100BD5A84 /* indexcb.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E061367C9930079A404 /* indexcb.c */; };
+		07D132B4136AADD100BD5A84 /* indexcb.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E071367C9930079A404 /* indexcb.h */; };
+		07D132B5136AADD100BD5A84 /* optable.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E081367C9930079A404 /* optable.h */; };
+		07D132B6136AADDB00BD5A84 /* 81hw.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E1E1367C9930079A404 /* 81hw.c */; };
+		07D132B7136AADDB00BD5A84 /* 81hw.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E1F1367C9930079A404 /* 81hw.h */; };
+		07D132B8136AADDB00BD5A84 /* 83hw.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E201367C9930079A404 /* 83hw.c */; };
+		07D132B9136AADDB00BD5A84 /* 83hw.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E211367C9930079A404 /* 83hw.h */; };
+		07D132BA136AADDB00BD5A84 /* 83phw.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E221367C9930079A404 /* 83phw.c */; };
+		07D132BB136AADDB00BD5A84 /* 83phw.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E231367C9930079A404 /* 83phw.h */; };
+		07D132BC136AADDB00BD5A84 /* 83psehw.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E241367C9930079A404 /* 83psehw.c */; };
+		07D132BD136AADDB00BD5A84 /* 83psehw.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E251367C9930079A404 /* 83psehw.h */; };
+		07D132BE136AADDB00BD5A84 /* 86hw.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E261367C9930079A404 /* 86hw.c */; };
+		07D132BF136AADDB00BD5A84 /* 86hw.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E271367C9930079A404 /* 86hw.h */; };
+		07D132C0136AADDB00BD5A84 /* keys.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E281367C9930079A404 /* keys.c */; };
+		07D132C1136AADDB00BD5A84 /* keys.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E291367C9930079A404 /* keys.h */; };
+		07D132C2136AADDB00BD5A84 /* lcd.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E2A1367C9930079A404 /* lcd.c */; };
+		07D132C3136AADDB00BD5A84 /* lcd.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E2B1367C9930079A404 /* lcd.h */; };
+		07D132C4136AADDB00BD5A84 /* link.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E2C1367C9930079A404 /* link.c */; };
+		07D132C5136AADDB00BD5A84 /* link.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E2D1367C9930079A404 /* link.h */; };
+		07D132C6136AADDB00BD5A84 /* ti_stdint.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E2E1367C9930079A404 /* ti_stdint.h */; };
+		07D132C7136AADE000BD5A84 /* stdafx.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E481367C9930079A404 /* stdafx.h */; };
+		07D132C8136AADE600BD5A84 /* backups.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E301367C9930079A404 /* backups.h */; };
+		07D132C9136AADE600BD5A84 /* calc.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E311367C9930079A404 /* calc.c */; };
+		07D132CA136AADE600BD5A84 /* calc.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E321367C9930079A404 /* calc.h */; };
+		07D132CB136AADE600BD5A84 /* state.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E421367C9930079A404 /* state.c */; };
+		07D132CC136AADE600BD5A84 /* state.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E431367C9930079A404 /* state.h */; };
+		07D132CD136AAE0C00BD5A84 /* savestate.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E5A1367C9930079A404 /* savestate.c */; };
+		07D132CE136AAE0C00BD5A84 /* savestate.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E5B1367C9930079A404 /* savestate.h */; };
+		07D132CF136AAE0C00BD5A84 /* var.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E621367C9930079A404 /* var.c */; };
+		07D132D0136AAE0C00BD5A84 /* var.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E631367C9930079A404 /* var.h */; };
+		07D132D2136AB34E00BD5A84 /* WabbitEmuQuickLook.qlgenerator in CopyFiles */ = {isa = PBXBuildFile; fileRef = 07D1328D136AAA7300BD5A84 /* WabbitEmuQuickLook.qlgenerator */; };
+		07D132D7136AB83900BD5A84 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07D132D6136AB83800BD5A84 /* Cocoa.framework */; };
+		07D132D8136AB86100BD5A84 /* gif.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E521367C9930079A404 /* gif.c */; };
+		07D132D9136AB86100BD5A84 /* gif.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E531367C9930079A404 /* gif.h */; };
+		07D132DA136AB86100BD5A84 /* gifhandle.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E541367C9930079A404 /* gifhandle.c */; };
+		07D132DB136AB86100BD5A84 /* gifhandle.h in Headers */ = {isa = PBXBuildFile; fileRef = 07905E551367C9930079A404 /* gifhandle.h */; };
 		07D28D4B135247C100437AA1 /* WCProjectSplitView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D28D4A135247C100437AA1 /* WCProjectSplitView.m */; };
 		07D28D4E1352588600437AA1 /* WCUnsavedFilesWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D28D4D1352588500437AA1 /* WCUnsavedFilesWindowController.m */; };
 		07D28D541352651000437AA1 /* WCProjectWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D28D531352651000437AA1 /* WCProjectWindow.m */; };
@@ -255,6 +307,27 @@
 		07F1B8121342EE9E0013B9CC /* NSURL+NDCarbonUtilities.m in Sources */ = {isa = PBXBuildFile; fileRef = 07F1B8111342EE9E0013B9CC /* NSURL+NDCarbonUtilities.m */; };
 		07F3D82E13655D9D0035ED48 /* FindInProjectResult16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07F3D82D13655D9D0035ED48 /* FindInProjectResult16x16.png */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXBuildRule section */
+		07D132D3136AB47200BD5A84 /* PBXBuildRule */ = {
+			isa = PBXBuildRule;
+			compilerSpec = com.apple.compilers.proxy.script;
+			fileType = pattern.proxy;
+			isEditable = 1;
+			outputFiles = (
+			);
+		};
+/* End PBXBuildRule section */
+
+/* Begin PBXContainerItemProxy section */
+		07D132D4136AB47600BD5A84 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 07463AA21332AB3500744B98 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 07D1328C136AAA7300BD5A84;
+			remoteInfo = WabbitEmuQuickLook;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		07AC0CE113396F170060F786 /* Copy Private Frameworks */ = {
@@ -281,6 +354,16 @@
 				07BA69861367D6C400AD7FF5 /* Sparkle.framework in Copy Private Frameworks */,
 			);
 			name = "Copy Private Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		07D132D1136AB32400BD5A84 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = QuickLook;
+			dstSubfolderSpec = 1;
+			files = (
+				07D132D2136AB34E00BD5A84 /* WabbitEmuQuickLook.qlgenerator in CopyFiles */,
+			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
@@ -670,6 +753,20 @@
 		07CE7871134EB1B7001B96FC /* WCGotoLineSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCGotoLineSheetController.m; sourceTree = "<group>"; };
 		07CE7874134EB23B001B96FC /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCGotoLineSheet.xib; sourceTree = "<group>"; };
 		07D1327E1369E85B00BD5A84 /* WELCDProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WELCDProtocol.h; sourceTree = "<group>"; };
+		07D13282136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCConnectionStatusToStringTransformer.h; sourceTree = "<group>"; };
+		07D13283136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCConnectionStatusToStringTransformer.m; sourceTree = "<group>"; };
+		07D1328D136AAA7300BD5A84 /* WabbitEmuQuickLook.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WabbitEmuQuickLook.qlgenerator; sourceTree = BUILT_PRODUCTS_DIR; };
+		07D1328E136AAA7300BD5A84 /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
+		07D13290136AAA7300BD5A84 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
+		07D13292136AAA7300BD5A84 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
+		07D13294136AAA7300BD5A84 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
+		07D13298136AAA7400BD5A84 /* WabbitEmuQuickLook-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "WabbitEmuQuickLook-Info.plist"; sourceTree = "<group>"; };
+		07D1329C136AAA7400BD5A84 /* WabbitEmuQuickLook-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WabbitEmuQuickLook-Prefix.pch"; sourceTree = "<group>"; };
+		07D1329D136AAA7400BD5A84 /* GenerateThumbnailForURL.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GenerateThumbnailForURL.m; sourceTree = "<group>"; };
+		07D1329F136AAA7400BD5A84 /* GeneratePreviewForURL.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GeneratePreviewForURL.m; sourceTree = "<group>"; };
+		07D132A1136AAA7400BD5A84 /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
+		07D132A8136AAB8500BD5A84 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = InfoPlist.strings; sourceTree = "<group>"; };
+		07D132D6136AB83800BD5A84 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = SDKs/MacOSX10.6.sdk/System/Library/Frameworks/Cocoa.framework; sourceTree = DEVELOPER_DIR; };
 		07D28D49135247C100437AA1 /* WCProjectSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCProjectSplitView.h; sourceTree = "<group>"; };
 		07D28D4A135247C100437AA1 /* WCProjectSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCProjectSplitView.m; sourceTree = "<group>"; };
 		07D28D4C1352588500437AA1 /* WCUnsavedFilesWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCUnsavedFilesWindowController.h; sourceTree = "<group>"; };
@@ -726,6 +823,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		07D13288136AAA7300BD5A84 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				07D132D7136AB83900BD5A84 /* Cocoa.framework in Frameworks */,
+				07D1328F136AAA7300BD5A84 /* QuickLook.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -755,6 +861,7 @@
 			children = (
 				07463AAD1332AB7700744B98 /* WabbitCode.app */,
 				07905DCB1367BFD60079A404 /* WabbitEmu.app */,
+				07D1328D136AAA7300BD5A84 /* WabbitEmuQuickLook.qlgenerator */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -762,6 +869,7 @@
 		07463AB01332AB7700744B98 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				07D132D6136AB83800BD5A84 /* Cocoa.framework */,
 				07905E971367CA9A0079A404 /* OpenGL.framework */,
 				07F1B80F1342EE2B0013B9CC /* Carbon.framework */,
 				0787B724133FC9C400BB5590 /* BWToolkitFramework.framework */,
@@ -770,6 +878,10 @@
 				07AC0CE3133971DA0060F786 /* PSMTabBarControl.framework */,
 				07463AF713332BCC00744B98 /* QuartzCore.framework */,
 				07463AB11332AB7700744B98 /* Cocoa.framework */,
+				07D1328E136AAA7300BD5A84 /* QuickLook.framework */,
+				07D13290136AAA7300BD5A84 /* ApplicationServices.framework */,
+				07D13292136AAA7300BD5A84 /* CoreServices.framework */,
+				07D13294136AAA7300BD5A84 /* CoreFoundation.framework */,
 				07463AB31332AB7700744B98 /* Other Frameworks */,
 			);
 			name = Frameworks;
@@ -1051,6 +1163,8 @@
 				07200C6813675B450010AE58 /* WCProjectStatusView.m */,
 				07BA69A31368006B00AD7FF5 /* WCConnectionManager.h */,
 				07BA69A41368006B00AD7FF5 /* WCConnectionManager.m */,
+				07D13282136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.h */,
+				07D13283136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1148,6 +1262,7 @@
 		07905DCE1367BFD60079A404 /* WabbitEmu */ = {
 			isa = PBXGroup;
 			children = (
+				07D13286136AA9F700BD5A84 /* QuickLook */,
 				07905DFB1367C9390079A404 /* emulator */,
 				07905DF31367C6780079A404 /* Classes */,
 				07905DFA1367C6B10079A404 /* Xibs */,
@@ -1334,7 +1449,62 @@
 			name = Protocols;
 			sourceTree = "<group>";
 		};
+		07D13286136AA9F700BD5A84 /* QuickLook */ = {
+			isa = PBXGroup;
+			children = (
+				07D132A6136AAB8500BD5A84 /* en.lproj */,
+				07D1329D136AAA7400BD5A84 /* GenerateThumbnailForURL.m */,
+				07D1329F136AAA7400BD5A84 /* GeneratePreviewForURL.m */,
+				07D132A1136AAA7400BD5A84 /* main.c */,
+				07D13298136AAA7400BD5A84 /* WabbitEmuQuickLook-Info.plist */,
+				07D1329C136AAA7400BD5A84 /* WabbitEmuQuickLook-Prefix.pch */,
+			);
+			path = QuickLook;
+			sourceTree = "<group>";
+		};
+		07D132A6136AAB8500BD5A84 /* en.lproj */ = {
+			isa = PBXGroup;
+			children = (
+				07D132A7136AAB8500BD5A84 /* InfoPlist.strings */,
+			);
+			path = en.lproj;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		07D13289136AAA7300BD5A84 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				07D132AB136AADD100BD5A84 /* alu.h in Headers */,
+				07D132AD136AADD100BD5A84 /* control.h in Headers */,
+				07D132AF136AADD100BD5A84 /* core.h in Headers */,
+				07D132B0136AADD100BD5A84 /* coretypes.h in Headers */,
+				07D132B2136AADD100BD5A84 /* device.h in Headers */,
+				07D132B4136AADD100BD5A84 /* indexcb.h in Headers */,
+				07D132B5136AADD100BD5A84 /* optable.h in Headers */,
+				07D132B7136AADDB00BD5A84 /* 81hw.h in Headers */,
+				07D132B9136AADDB00BD5A84 /* 83hw.h in Headers */,
+				07D132BB136AADDB00BD5A84 /* 83phw.h in Headers */,
+				07D132BD136AADDB00BD5A84 /* 83psehw.h in Headers */,
+				07D132BF136AADDB00BD5A84 /* 86hw.h in Headers */,
+				07D132C1136AADDB00BD5A84 /* keys.h in Headers */,
+				07D132C3136AADDB00BD5A84 /* lcd.h in Headers */,
+				07D132C5136AADDB00BD5A84 /* link.h in Headers */,
+				07D132C6136AADDB00BD5A84 /* ti_stdint.h in Headers */,
+				07D132C7136AADE000BD5A84 /* stdafx.h in Headers */,
+				07D132C8136AADE600BD5A84 /* backups.h in Headers */,
+				07D132CA136AADE600BD5A84 /* calc.h in Headers */,
+				07D132CC136AADE600BD5A84 /* state.h in Headers */,
+				07D132CE136AAE0C00BD5A84 /* savestate.h in Headers */,
+				07D132D0136AAE0C00BD5A84 /* var.h in Headers */,
+				07D132D9136AB86100BD5A84 /* gif.h in Headers */,
+				07D132DB136AB86100BD5A84 /* gifhandle.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
 		07463AAC1332AB7700744B98 /* WabbitCode */ = {
@@ -1363,15 +1533,37 @@
 				07905DC81367BFD60079A404 /* Frameworks */,
 				07905DC91367BFD60079A404 /* Resources */,
 				07BA69841367D6A500AD7FF5 /* Copy Private Frameworks */,
+				07D132D1136AB32400BD5A84 /* CopyFiles */,
 			);
 			buildRules = (
+				07D132D3136AB47200BD5A84 /* PBXBuildRule */,
 			);
 			dependencies = (
+				07D132D5136AB47600BD5A84 /* PBXTargetDependency */,
 			);
 			name = WabbitEmu;
 			productName = WabbitEmu;
 			productReference = 07905DCB1367BFD60079A404 /* WabbitEmu.app */;
 			productType = "com.apple.product-type.application";
+		};
+		07D1328C136AAA7300BD5A84 /* WabbitEmuQuickLook */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 07D132A3136AAA7400BD5A84 /* Build configuration list for PBXNativeTarget "WabbitEmuQuickLook" */;
+			buildPhases = (
+				07D13287136AAA7300BD5A84 /* Sources */,
+				07D13288136AAA7300BD5A84 /* Frameworks */,
+				07D13289136AAA7300BD5A84 /* Headers */,
+				07D1328A136AAA7300BD5A84 /* Resources */,
+				07D1328B136AAA7300BD5A84 /* Rez */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = WabbitEmuQuickLook;
+			productName = WabbitEmuQuickLook;
+			productReference = 07D1328D136AAA7300BD5A84 /* WabbitEmuQuickLook.qlgenerator */;
+			productType = "com.apple.product-type.bundle";
 		};
 /* End PBXNativeTarget section */
 
@@ -1395,6 +1587,7 @@
 			targets = (
 				07463AAC1332AB7700744B98 /* WabbitCode */,
 				07905DCA1367BFD60079A404 /* WabbitEmu */,
+				07D1328C136AAA7300BD5A84 /* WabbitEmuQuickLook */,
 			);
 		};
 /* End PBXProject section */
@@ -1481,7 +1674,25 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		07D1328A136AAA7300BD5A84 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				07D132A9136AAB8500BD5A84 /* InfoPlist.strings in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
+
+/* Begin PBXRezBuildPhase section */
+		07D1328B136AAA7300BD5A84 /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXRezBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		07463AA91332AB7700744B98 /* Sources */ = {
@@ -1610,6 +1821,8 @@
 				07200C70136762D90010AE58 /* NSShadow+MCAdditions.m in Sources */,
 				07905DA91367990B0079A404 /* NSBezierPath+MCAdditions.m in Sources */,
 				07BA69A51368006B00AD7FF5 /* WCConnectionManager.m in Sources */,
+				07D13284136A7B7300BD5A84 /* WCConnectionStatusToStringTransformer.m in Sources */,
+				07D13285136A7D1900BD5A84 /* WEConnectionStatusToImageTransformer.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1661,7 +1874,44 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		07D13287136AAA7300BD5A84 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				07D1329E136AAA7400BD5A84 /* GenerateThumbnailForURL.m in Sources */,
+				07D132A0136AAA7400BD5A84 /* GeneratePreviewForURL.m in Sources */,
+				07D132A2136AAA7400BD5A84 /* main.c in Sources */,
+				07D132AA136AADD100BD5A84 /* alu.c in Sources */,
+				07D132AC136AADD100BD5A84 /* control.c in Sources */,
+				07D132AE136AADD100BD5A84 /* core.c in Sources */,
+				07D132B1136AADD100BD5A84 /* device.c in Sources */,
+				07D132B3136AADD100BD5A84 /* indexcb.c in Sources */,
+				07D132B6136AADDB00BD5A84 /* 81hw.c in Sources */,
+				07D132B8136AADDB00BD5A84 /* 83hw.c in Sources */,
+				07D132BA136AADDB00BD5A84 /* 83phw.c in Sources */,
+				07D132BC136AADDB00BD5A84 /* 83psehw.c in Sources */,
+				07D132BE136AADDB00BD5A84 /* 86hw.c in Sources */,
+				07D132C0136AADDB00BD5A84 /* keys.c in Sources */,
+				07D132C2136AADDB00BD5A84 /* lcd.c in Sources */,
+				07D132C4136AADDB00BD5A84 /* link.c in Sources */,
+				07D132C9136AADE600BD5A84 /* calc.c in Sources */,
+				07D132CB136AADE600BD5A84 /* state.c in Sources */,
+				07D132CD136AAE0C00BD5A84 /* savestate.c in Sources */,
+				07D132CF136AAE0C00BD5A84 /* var.c in Sources */,
+				07D132D8136AB86100BD5A84 /* gif.c in Sources */,
+				07D132DA136AB86100BD5A84 /* gifhandle.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		07D132D5136AB47600BD5A84 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 07D1328C136AAA7300BD5A84 /* WabbitEmuQuickLook */;
+			targetProxy = 07D132D4136AB47600BD5A84 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		070720AE1360EA8E00E7C7CD /* SelectEncodingsPanel.nib */ = {
@@ -1884,6 +2134,14 @@
 			name = WCGotoLineSheet.xib;
 			sourceTree = "<group>";
 		};
+		07D132A7136AAB8500BD5A84 /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				07D132A8136AAB8500BD5A84 /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
 		07D28D55135274BC00437AA1 /* WCUnsavedFilesWindow.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -2054,6 +2312,70 @@
 			};
 			name = Release;
 		};
+		07D132A4136AAA7400BD5A84 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "WabbitEmu/QuickLook/WabbitEmuQuickLook-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DEBUG,
+					MACVER,
+					_MACVER,
+					QUICKLOOK,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "WabbitEmu/QuickLook/WabbitEmuQuickLook-Info.plist";
+				INSTALL_PATH = /Library/QuickLook;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = qlgenerator;
+			};
+			name = Debug;
+		};
+		07D132A5136AAA7400BD5A84 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "WabbitEmu/QuickLook/WabbitEmuQuickLook-Prefix.pch";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					MACVER,
+					_MACVER,
+					QUICKLOOK,
+				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
+				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				INFOPLIST_FILE = "WabbitEmu/QuickLook/WabbitEmuQuickLook-Info.plist";
+				INSTALL_PATH = /Library/QuickLook;
+				MACOSX_DEPLOYMENT_TARGET = 10.6;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				WRAPPER_EXTENSION = qlgenerator;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -2083,6 +2405,14 @@
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
+		};
+		07D132A3136AAA7400BD5A84 /* Build configuration list for PBXNativeTarget "WabbitEmuQuickLook" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				07D132A4136AAA7400BD5A84 /* Debug */,
+				07D132A5136AAA7400BD5A84 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
 		};
 /* End XCConfigurationList section */
 	};

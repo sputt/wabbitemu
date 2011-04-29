@@ -7,10 +7,17 @@
 //
 
 #import "WCConnectionManager.h"
+#import "WCProject.h"
+#import "WCDocumentController.h"
 
 
 NSString *const kWCConnectionManagerDidConnectNotification = @"kWCConnectionManagerDidConnectNotification";
 NSString *const kWCConnectionManagerDidDisconnectNotification = @"kWCConnectionManagerDidDisconnectNotification";
+
+@interface WCConnectionManager ()
+- (WCProject *)_projectForProjectIdentifier:(NSString *)projectIdentifier;
+- (void)_addProject:(WCProject *)project;
+@end
 
 @implementation WCConnectionManager
 
@@ -26,16 +33,31 @@ NSString *const kWCConnectionManagerDidDisconnectNotification = @"kWCConnectionM
 		return nil;
 	}
 	
-	[self connectToWabbitEmu];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_projectWillClose:) name:kWCProjectWillCloseNotification object:nil];
     
     return self;
 }
 
-+ (WCConnectionManager *)sharedConnectionManager {
-	return [super sharedController];
+@dynamic connectionProxy;
+- (id<WCProjectToWECalculatorConnection>)connectionProxy {
+	[self connectToWabbitEmu];
+	return _connectionProxy;
 }
 
-- (void)connectToWabbitEmu {
+@dynamic isConnectedToWabbitEmu;
+- (BOOL)isConnectedToWabbitEmu {
+	return ([self connectionProxy] != nil);
+}
+
++ (WCConnectionManager *)sharedConnectionManager {
+	return [self sharedController];
+}
+
+- (void)addProject:(WCProject *)project; {
+	[self _addProject:project];
+}
+
+- (oneway void)connectToWabbitEmu {
 	if (_connectionProxy == nil) {
 		NSDistantObject *proxy = [NSConnection rootProxyForConnectionWithRegisteredName:kWabbitEmuConnectionName host:nil];
 		if (!proxy)
@@ -53,6 +75,51 @@ NSString *const kWCConnectionManagerDidDisconnectNotification = @"kWCConnectionM
 #endif
 		[[NSNotificationCenter defaultCenter] postNotificationName:kWCConnectionManagerDidConnectNotification object:self];
 	}
+}
+
+- (oneway void)requestProjectNameForProjectWithIdentifier:(in bycopy NSString *)projectIdentifier; {
+#ifdef DEBUG
+	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
+#endif
+	
+	WCProject *project = [self _projectForProjectIdentifier:projectIdentifier];
+	
+	if (project == nil)
+		return;
+	
+	[project setConnectionStatus:WEWCConnectionStatusConnected];
+	
+	[[self connectionProxy] projectName:[[project displayName] stringByDeletingPathExtension] forProjectWithIdentifier:[project projectUUID]];
+}
+
+- (oneway void)removeProjectWithIdentifier:(in bycopy NSString *)projectIdentifier; {
+	WCProject *project = [self _projectForProjectIdentifier:projectIdentifier];
+	
+	if (project == nil)
+		return;
+	
+#ifdef DEBUG
+	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
+#endif
+	
+	[_projectIdentifiersToProjects removeObjectForKey:projectIdentifier];
+	
+	if (![project isClosing])
+		[project setConnectionStatus:WEWCConnectionStatusAvailable];
+}
+
+- (WCProject *)_projectForProjectIdentifier:(NSString *)projectIdentifier; {
+	return [_projectIdentifiersToProjects objectForKey:projectIdentifier];
+}
+
+- (void)_addProject:(WCProject *)project; {
+	if (_projectIdentifiersToProjects == nil)
+		_projectIdentifiersToProjects = [[NSMutableDictionary alloc] init];
+	[_projectIdentifiersToProjects setObject:project forKey:[project projectUUID]];
+}
+
+- (void)_projectWillClose:(NSNotification *)note {
+	[self removeProjectWithIdentifier:[[note object] projectUUID]];
 }
 
 - (void)_connectionDidDieNotification:(NSNotification *)note {

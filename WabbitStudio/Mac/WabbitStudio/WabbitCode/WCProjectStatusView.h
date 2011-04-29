@@ -8,6 +8,7 @@
 
 #import <AppKit/NSView.h>
 #import "WCDefines.h"
+#import "WEWCConnectionProtocol.h"
 
 
 @class WCProject;
@@ -18,11 +19,13 @@
 	NSString *_secondaryStatusString;
 	__weak WCProject *_project;
 	WCProjectBuildStatus _buildStatus;
+	WEWCConnectionStatus _connectionStatus;
 }
 @property (copy,nonatomic) NSString *statusString;
 @property (copy,nonatomic) NSString *secondaryStatusString;
 @property (readonly,nonatomic) WCProject *project;
 @property (assign,nonatomic) WCProjectBuildStatus buildStatus;
+@property (assign,nonatomic) WEWCConnectionStatus connectionStatus;
 
 - (id)initWithProject:(WCProject *)project;
 @end

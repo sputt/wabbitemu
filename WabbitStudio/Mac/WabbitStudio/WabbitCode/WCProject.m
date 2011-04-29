@@ -45,6 +45,8 @@
 #import "WCBreakpointsViewController.h"
 #import "WCBreakpoint.h"
 #import "WCFileWindowController.h"
+#import "WCConnectionManager.h"
+#import "NSString+WCExtensions.h"
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
@@ -85,6 +87,7 @@ static NSImage *_appIcon = nil;
 @property (readwrite,retain,nonatomic) WCProjectFile *projectFile;
 @property (readwrite,retain,nonatomic) NSSet *absoluteFilePaths;
 @property (readwrite,retain,nonatomic) NSString *codeListing;
+@property (assign,nonatomic) BOOL shouldRunAfterBuilding;
 
 - (void)_addBuildMessageForString:(NSString *)string;
 
@@ -127,6 +130,7 @@ static NSImage *_appIcon = nil;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[_projectUUID release];
 	if (_buildTask != nil)
 		[_buildTask terminate];
 	[_buildTask release];
@@ -157,6 +161,13 @@ static NSImage *_appIcon = nil;
 	return @"WCProject";
 }
 
+- (void)windowControllerWillLoadNib:(NSWindowController *)windowController {
+	[super windowControllerWillLoadNib:windowController];
+	
+	if ([[WCConnectionManager sharedConnectionManager] isConnectedToWabbitEmu])
+		[self setConnectionStatus:WEWCConnectionStatusAvailable];
+}
+
 - (void)windowControllerDidLoadNib:(NSWindowController *)controller {
 	[super windowControllerDidLoadNib:controller];
 	
@@ -169,6 +180,8 @@ static NSImage *_appIcon = nil;
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileHasUnsavedChanges:) name:kWCFileHasUnsavedChangesNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileNameDidChange:) name:kWCFileNameDidChangeNotification object:nil];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_connectionManagerDidConnect:) name:kWCConnectionManagerDidConnectNotification object:[WCConnectionManager sharedConnectionManager]];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_connectionManagerDidDisconnect:) name:kWCConnectionManagerDidDisconnectNotification object:[WCConnectionManager sharedConnectionManager]];
 
 	[_rightButtonBar setIsAtBottom:YES];
 	[_rightButtonBar setIsResizable:NO];
@@ -432,6 +445,8 @@ static NSImage *_appIcon = nil;
 }
 
 - (void)windowWillClose:(NSNotification *)note {
+	_isClosing = YES;
+	
 	// post our notification
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectWillCloseNotification object:self];
 	
@@ -917,6 +932,14 @@ static NSImage *_appIcon = nil;
 @synthesize buildStatus=_buildStatus;
 @synthesize totalErrors=_totalErrors;
 @synthesize totalWarnings=_totalWarnings;
+@dynamic projectUUID;
+- (NSString *)projectUUID {
+	if (_projectUUID == nil)
+		_projectUUID = [[NSString UUIDString] retain];
+	return _projectUUID;
+}
+@synthesize connectionStatus=_connectionStatus;
+@synthesize isClosing=_isClosing;
 #pragma mark IBActions
 - (IBAction)addFilesToProject:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -980,8 +1003,10 @@ static NSImage *_appIcon = nil;
 					[file saveFile:NULL];
 				break;
 			case WCPreferencesBuildingForUnsavedFilesPromptBeforeSaving:
-				if ([WCUnsavedFilesWindowController runModalForProject:self] == NSCancelButton)
+				if ([WCUnsavedFilesWindowController runModalForProject:self] == NSCancelButton) {
+					[self setShouldRunAfterBuilding:NO];
 					return;
+				}
 				break;
 			case WCPreferencesBuildingForUnsavedFilesNeverSave:
 			default:
@@ -995,6 +1020,7 @@ static NSImage *_appIcon = nil;
 		NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"No Input File", @"active build target has no input file alert message text") defaultButton:NSLocalizedString(@"Edit\u2026", @"Edit\u2026") alternateButton:NS_LOCALIZED_STRING_CANCEL otherButton:nil informativeTextWithFormat:NSLocalizedString(@"The active build target \"%@\" does not have an input file assigned to it. Would you like to edit the target now?", @"active build target has no input file alert informative text"),[bt name]];
 		
 		[alert beginSheetModalForWindow:[self windowForSheet] modalDelegate:self didEndSelector:@selector(_activeBuildTargetHasNoInputFileAlertDidEnd:code:info:) contextInfo:NULL];
+		[self setShouldRunAfterBuilding:NO];
 		return;
 	}
 	
@@ -1009,6 +1035,7 @@ static NSImage *_appIcon = nil;
 			if (![[NSFileManager defaultManager] createDirectoryAtPath:[projectDirectory path] withIntermediateDirectories:YES attributes:nil error:NULL]) {
 				if (![projectDirectory checkResourceIsReachableAndReturnError:NULL]) {
 					NSLog(@"could not create output directory and it does not already exist");
+					[self setShouldRunAfterBuilding:NO];
 					return;
 				}
 			}
@@ -1023,6 +1050,7 @@ static NSImage *_appIcon = nil;
 			if (![[NSFileManager defaultManager] createDirectoryAtPath:[projectDirectory path] withIntermediateDirectories:YES attributes:nil error:NULL]) {
 				if (![projectDirectory checkResourceIsReachableAndReturnError:NULL]) {
 					NSLog(@"could not create output directory and it does not already exist");
+					[self setShouldRunAfterBuilding:NO];
 					return;
 				}
 			}
@@ -1093,6 +1121,13 @@ static NSImage *_appIcon = nil;
 	@catch (NSException *exception) {
 		NSLog(@"exception was thrown when spasm failed");
 	}
+}
+- (IBAction)buildAndRun:(id)sender; {
+	[self setShouldRunAfterBuilding:YES];
+	[self build:nil];
+}
+- (IBAction)buildAndDebug:(id)sender; {
+	
 }
 
 - (IBAction)editBuildTargets:(id)sender; {
@@ -1545,6 +1580,7 @@ static NSImage *_appIcon = nil;
 	_cachedAbsoluteFilePaths = [absoluteFilePaths retain];
 }
 @synthesize codeListing=_codeListing;
+@synthesize shouldRunAfterBuilding=_shouldRunAfterBuilding;
 #pragma mark Notifications
 - (void)_readDataFromBuildTask:(NSNotification *)note {	
 	NSData *data = [[note userInfo] objectForKey:NSFileHandleNotificationDataItem];
@@ -1637,8 +1673,15 @@ static NSImage *_appIcon = nil;
 				[self setCodeListing:nil];
 			
 			[self setBuildStatus:WCProjectBuildStatusSuccess];
+			
+			// send our build file to the emulator
+			if ([self shouldRunAfterBuilding]) {
+				[[WCConnectionManager sharedConnectionManager] addProject:self];
+				[[[WCConnectionManager sharedConnectionManager] connectionProxy] transferFile:[[_buildTask arguments] lastObject] fromProjectWithIdentifier:[self projectUUID]];
+			}
 		}
 		
+		[self setShouldRunAfterBuilding:NO];
 		[self setIsBuilding:NO];
 	}
 }
@@ -1662,6 +1705,14 @@ static NSImage *_appIcon = nil;
 			break;
 		}
 	}
+}
+
+- (void)_connectionManagerDidConnect:(NSNotification *)note {
+	[self setConnectionStatus:WEWCConnectionStatusAvailable];
+}
+
+- (void)_connectionManagerDidDisconnect:(NSNotification *)note {
+	[self setConnectionStatus:WEWCConnectionStatusNone];
 }
 
 #pragma mark Callbacks

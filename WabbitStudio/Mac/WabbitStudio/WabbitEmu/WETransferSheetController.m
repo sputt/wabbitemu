@@ -10,6 +10,7 @@
 #import "WECalculator.h"
 #import "NSResponder+WCExtensions.h"
 #import "WETransferFile.h"
+#import "WEConnectionManager.h"
 
 
 @interface WETransferSheetController ()
@@ -45,8 +46,13 @@
 }
 
 + (void)transferFiles:(NSArray *)filePaths toCalculator:(WECalculator *)calculator; {
-	WETransferSheetController *controller = [[[self class] alloc] _initWithFilePaths:filePaths calculator:calculator];
+	[self transferFiles:filePaths toCalculator:calculator runAfterTransfer:NO];
+}
+
++ (void)transferFiles:(NSArray *)filePaths toCalculator:(WECalculator *)calculator runAfterTransfer:(BOOL)runAfterTransfer; {
+	WETransferSheetController *controller = [[[self class] alloc] _initWithFilePaths:[self validateFilePaths:filePaths] calculator:calculator];
 	
+	[controller setRunProgramOrAppAfterTransfer:runAfterTransfer];
 	[controller _transferRomsAndSavestates];
 	[controller _setupTransferProgramsAndApps];
 }
@@ -100,6 +106,7 @@
 @synthesize totalSize=_totalSize;
 @synthesize currentProgress=_currentProgress;
 @synthesize currentFile=_currentFile;
+@synthesize runProgramOrAppAfterTransfer=_runProgramOrAppAfterTransfer;
 
 - (void)_transferRomsAndSavestates; {
 	if ([_romsAndSavestates count] == 0)
@@ -129,7 +136,7 @@
 		return;
 	}
 	
-	[[NSApplication sharedApplication] beginSheet:[self window] modalForWindow:[[self calculator] windowForSheet] modalDelegate:self didEndSelector:@selector(_sheetDidEnd:code:info:) contextInfo:NULL];
+	[[NSApplication sharedApplication] beginSheet:[self window] modalForWindow:[[self calculator] calculatorWindow] modalDelegate:self didEndSelector:@selector(_sheetDidEnd:code:info:) contextInfo:NULL];
 }
 
 - (void)_transferProgramsAndApps; {
@@ -178,14 +185,16 @@
 	[self autorelease];
 	[[self calculator] setIsActive:YES];
 	[[self calculator] setIsRunning:YES];
+	
+	if ([self runProgramOrAppAfterTransfer]) {
+
+	}
 }
 
 - (void)_timerFired:(NSTimer *)timer {
 	[self setStatusString:[NSString stringWithFormat:NSLocalizedString(@"Transferring \"%@\" (%lu of %lu)\u2026", @"transfer sheet status string format"),[[[self currentFile] path] lastPathComponent],[_programsAndApps indexOfObject:[self currentFile]]+1,[_programsAndApps count]]];
 	
 	CGFloat currentFileProgress = ABS([[self calculator] calc]->cpu.pio.link->vlink_send - [[self currentFile] currentProgress]);
-	
-	NSLog(@"progress %.0f",currentFileProgress);
 	
 	if (currentFileProgress >= [[self currentFile] size]) {
 		[[self currentFile] setCurrentProgress:0];

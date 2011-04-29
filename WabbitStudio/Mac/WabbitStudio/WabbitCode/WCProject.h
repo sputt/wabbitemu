@@ -9,6 +9,7 @@
 #import <AppKit/NSDocument.h>
 #import "WCTabViewContextProtocol.h"
 #import "WCJumpToObjectProtocol.h"
+#import "WEWCConnectionProtocol.h"
 #import "WCDefines.h"
 
 
@@ -51,7 +52,7 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	NSCountedSet *_openFiles; // open count for each file so we know when to prompt to save if the project is being closed
 	
 	NSTask *_buildTask; // SPASM
-	NSMutableArray *_buildTargets;
+	NSMutableArray *_buildTargets; // all the WCBuildTarget objects for this project
 	BOOL _isBuilding;
 	NSMutableArray *_buildMessages; // errors and warnings for the current build task
 	CTBadge *_errorBadge; // white on red badge for number of errors for the current build task
@@ -60,6 +61,10 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	WCProjectBuildStatus _buildStatus;
 	NSUInteger _totalErrors;
 	NSUInteger _totalWarnings;
+	BOOL _shouldRunAfterBuilding;
+	
+	NSString *_projectUUID;
+	WEWCConnectionStatus _connectionStatus;
 	
 	WCBreakpoint *_projectBreakpoint; // root breakpoint that coordinates displaying all the breakpoints in the
 									  // breakpoints view on the left
@@ -76,8 +81,9 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	
 	NSSet *_cachedAbsoluteFilePaths; // to validate files being added from the addFilesToProject: method
 	WCAddFilesToProjectViewController *_currentAddFilesToProjectViewController;
-	NSString *_statusString;
-	NSString *_secondaryStatusString;
+	NSString *_statusString; // the project status views (in the toolbar) bind to this
+	NSString *_secondaryStatusString; // same as above
+	BOOL _isClosing;
 }
 
 @property (readonly,retain,nonatomic) WCProjectFile *projectFile;
@@ -119,11 +125,16 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 @property (assign,nonatomic) WCProjectBuildStatus buildStatus;
 @property (readonly,nonatomic) NSUInteger totalErrors;
 @property (readonly,nonatomic) NSUInteger totalWarnings;
+@property (readonly,nonatomic) NSString *projectUUID;
+@property (assign,nonatomic) WEWCConnectionStatus connectionStatus;
+@property (readonly,nonatomic) BOOL isClosing;
 
 - (IBAction)addFilesToProject:(id)sender;
 - (IBAction)newFile:(id)sender;
 
 - (IBAction)build:(id)sender;
+- (IBAction)buildAndRun:(id)sender;
+- (IBAction)buildAndDebug:(id)sender;
 
 - (IBAction)editBuildTargets:(id)sender;
 
