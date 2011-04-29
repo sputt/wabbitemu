@@ -14,6 +14,7 @@
 
 @interface WELCDView ()
 @property (copy,nonatomic) NSArray *currentFilePaths;
+@property (readonly,nonatomic) NSBitmapImageRep *LCDBitmap;
 
 - (void)_privateInit;
 @end
@@ -30,6 +31,7 @@
 }
 
 - (void)dealloc {
+	[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.useLCDWirePattern"];
 	[_currentFilePaths release];
 	_calc = NULL;
 	glDeleteTextures(2, _textures);
@@ -44,12 +46,80 @@
 	return YES;
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if ([keyPath isEqualToString:@"values.useLCDWirePattern"] && (id)context == self) {
+		[self setNeedsDisplay:YES];
+	}
+	else
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
+
+- (void)mouseDragged:(NSEvent *)event {
+	NSString *directoryPath = NSTemporaryDirectory();
+	NSString *fileName = NSLocalizedString(@"screenshot", @"screenshot");
+	//NSString *fileName = [[NSUserDefaults standardUserDefaults] stringForKey:kWEPrefsScreenShotsFileNameKey];
+	NSBitmapImageFileType fileType = NSPNGFileType;
+	//NSBitmapImageFileType fileType = [[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWEPrefsScreenShotsFormatKey];
+	NSString *fileExtension = @"png";
+	//NSString *fileExtension = [[WEBasicPerformer sharedInstance] fileExtensionForBitmapImageFileType:fileType];
+	NSString *filePath = [directoryPath stringByAppendingPathComponent:[fileName stringByAppendingPathExtension:fileExtension]];
+	
+	// grab our bitmap rep
+	NSBitmapImageRep *bitmap = [self LCDBitmap];
+	// get it's data
+	NSData *bitmapData = [bitmap representationUsingType:fileType properties:nil];
+	// get the dragging pboard
+	NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
+	// get the point for this event, and the drag point which is centered on the image
+	NSPoint dragPoint, location = [self convertPointFromBase:[event locationInWindow]];
+	dragPoint.x = location.x - [bitmap size].width/2;
+	dragPoint.y = location.y - [bitmap size].height/2;
+	// the image that will be dragged
+	NSImage *dragImage = [[[NSImage alloc] initWithSize:[bitmap size]] autorelease];
+	// temp image used to draw into the drag image
+	NSImage *tempImage = [[[NSImage alloc] initWithSize:[bitmap size]] autorelease];
+	[tempImage addRepresentation:bitmap];
+	[dragImage lockFocus];
+	// draw with partial transparency
+	[tempImage compositeToPoint:NSZeroPoint operation:NSCompositeCopy fraction:0.85];
+	[dragImage unlockFocus];
+	
+	// write our temporary file to disk
+	if (![bitmapData writeToFile:filePath options:NSAtomicWrite error:NULL])
+		return;
+	
+	// declare the pboard types, adding our additional type
+	[pboard declareTypes:[NSArray arrayWithObjects:NSFilenamesPboardType, nil] owner:nil];
+	// pass the path to the temporary file we wrote to the pboard
+	[pboard setPropertyList:[NSArray arrayWithObjects:filePath,nil] forType:NSFilenamesPboardType];
+	
+	// initiate the drag
+	[self dragImage:dragImage at:dragPoint offset:NSZeroSize event:event pasteboard:pboard source:self slideBack:YES];
+}
+
 - (void)keyDown:(NSEvent *)event {
 	keypad_key_press(&_calc->cpu, (unsigned int)[event keyCode]);
 }
 
 - (void)keyUp:(NSEvent *)event {
 	keypad_key_release(&_calc->cpu, (unsigned int)[event keyCode]);
+}
+
+- (IBAction)copy:(id)sender {
+	if (_calc == NULL || !_calc->active || !_calc->running) {
+		NSBeep();
+		return;
+	}
+	
+	TCHAR *ans = GetRealAns(&[self calc]->cpu);
+	if (ans != NULL) {
+		NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSGeneralPboard];
+		
+		[pboard declareTypes:[NSArray arrayWithObjects:NSStringPboardType, nil] owner:nil];
+		[pboard setString:[NSString stringWithCString:ans encoding:NSASCIIStringEncoding] forType:NSStringPboardType];
+		
+		free(ans);
+	}
 }
 
 - (void)drawRect:(NSRect)dirtyRect
@@ -168,6 +238,9 @@
 }
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
+	if ([sender draggingSource] == self)
+		return NSDragOperationNone;
+	
 	NSArray *filePaths = [[sender draggingPasteboard] propertyListForType:NSFilenamesPboardType];
 	
 	[self setCurrentFilePaths:[WETransferSheetController validateFilePaths:filePaths]];
@@ -209,7 +282,34 @@
 
 - (void)commonInit; {	
 	[self registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType, nil]];
+	[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.useLCDWirePattern" options:NSKeyValueObservingOptionNew context:(void *)self];
 	[self _privateInit];
+}
+
+@dynamic LCDBitmap;
+- (NSBitmapImageRep *)LCDBitmap {
+	NSUInteger width = ([self isWidescreen])?256:192, height = 128;
+	NSBitmapImageRep *bitmap = [[[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL pixelsWide:width pixelsHigh:height bitsPerSample:8 samplesPerPixel:3 hasAlpha:NO isPlanar:NO colorSpaceName:NSCalibratedRGBColorSpace bytesPerRow:0 bitsPerPixel:0] autorelease];
+	
+	u_int16_t row, col;
+	for (row=0; row<height; row++) {
+		for (col=0; col<width; col++) {
+			NSUInteger pixel[3];
+			if ([self isWidescreen]) {
+				pixel[2] = _wbuffer[row/2][col/2][2];
+				pixel[1] = _wbuffer[row/2][col/2][1];
+				pixel[0] = _wbuffer[row/2][col/2][0];
+			}
+			else {
+				pixel[2] = _buffer[row/2][col/2][2];
+				pixel[1] = _buffer[row/2][col/2][1];
+				pixel[0] = _buffer[row/2][col/2][0];
+			}
+			
+			[bitmap setPixel:pixel atX:col y:row];
+		}
+	}
+	return bitmap;
 }
 
 - (void)_privateInit {

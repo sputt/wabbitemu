@@ -13,9 +13,16 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     LPCTSTR cPath = [[(NSURL *)url path] fileSystemRepresentation];
 	LPCALC calc = calc_slot_new();
-	rom_load(calc, cPath);
 	
-	calc_turn_on(calc);
+	if (calc == NULL)
+		goto CLEANUP;
+	
+	if (!rom_load(calc, cPath))
+		goto CLEANUP;
+	
+	// we cannot get a suitable preview image if the calc is not turned on
+	if ([(NSString *)contentTypeUTI isEqualToString:@"org.revsoft.wabbitemu.rom"])
+		calc_turn_on(calc);
 	
 	NSUInteger width = (calc->model == TI_85 || calc->model == TI_86)?256:192, height = 128;
 	NSBitmapImageRep *bitmap = [[[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL pixelsWide:width pixelsHigh:height bitsPerSample:8 samplesPerPixel:3 hasAlpha:NO isPlanar:NO colorSpaceName:NSCalibratedRGBColorSpace bytesPerRow:0 bitsPerPixel:0] autorelease];
@@ -40,6 +47,7 @@ OSStatus GeneratePreviewForURL(void *thisInterface, QLPreviewRequestRef preview,
 	
 	QLPreviewRequestSetDataRepresentation(preview, (CFDataRef)data, kUTTypeImage, (CFDictionaryRef)properties);
 	
+CLEANUP:
 	calc_slot_free(calc);
 	[pool drain];
 	

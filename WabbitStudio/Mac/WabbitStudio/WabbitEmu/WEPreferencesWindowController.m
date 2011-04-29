@@ -25,6 +25,12 @@
 	[self addView:_advanced label:NSLocalizedString(@"Advanced", @"Advanced")];
 }
 
+- (void)windowWillLoad {
+	[super windowWillLoad];
+	
+	[[NSDocumentController sharedDocumentController] addObserver:self forKeyPath:@"currentDocument" options:NSKeyValueObservingOptionNew context:(void *)self];
+}
+
 - (void)windowDidLoad { 
 	[super windowDidLoad];
 	
@@ -35,13 +41,13 @@
 #endif
 	
 	if ([[[NSDocumentController sharedDocumentController] documents] count] > 0) {
-		WECalculator *calculator = [[[NSDocumentController sharedDocumentController] documents] objectAtIndex:0];
+		WECalculator *calculator = [[NSDocumentController sharedDocumentController] currentDocument];
+		
+		if (calculator == nil)
+			calculator = [[[NSDocumentController sharedDocumentController] documents] lastObject];
 		
 		[_LCDView setCalc:[calculator calc]];
 		[WEApplicationDelegate addLCDView:_LCDView];
-	}
-	else {
-		
 	}
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_calculatorWillClose:) name:kWECalculatorWillCloseNotification object:nil];
@@ -60,17 +66,37 @@
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	if ([[[NSDocumentController sharedDocumentController] documents] count] > 0) {
-		WECalculator *calculator = [[[NSDocumentController sharedDocumentController] documents] objectAtIndex:0];
+		WECalculator *calculator = [[NSDocumentController sharedDocumentController] currentDocument];
+		
+		if (calculator == nil)
+			calculator = [[[NSDocumentController sharedDocumentController] documents] lastObject];
 		
 		[_LCDView setCalc:[calculator calc]];
 		[WEApplicationDelegate addLCDView:_LCDView];
 	}
 }
 
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if ([keyPath isEqualToString:@"currentDocument"] && (id)context == self) {
+		if ([[[NSDocumentController sharedDocumentController] documents] count] > 0) {
+			WECalculator *calculator = [[NSDocumentController sharedDocumentController] currentDocument];
+			
+			if (calculator == nil)
+				calculator = [[[NSDocumentController sharedDocumentController] documents] lastObject];
+			
+			[_LCDView setCalc:[calculator calc]];
+			[WEApplicationDelegate addLCDView:_LCDView];
+		}
+	}
+	else
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
+
 - (void)_calculatorWillClose:(NSNotification *)note {
 	if ([[note object] calc] == [_LCDView calc]) {
 		[_LCDView setCalc:NULL];
 		[WEApplicationDelegate removeLCDView:_LCDView];
+		
 	}
 }
 @end

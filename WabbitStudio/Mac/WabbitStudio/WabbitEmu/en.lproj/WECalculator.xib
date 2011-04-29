@@ -211,7 +211,7 @@
 								<bool key="EncodedWithXMLCoder">YES</bool>
 								<object class="NSMenuItem" id="319372498">
 									<reference key="NSMenu" ref="1014760894"/>
-									<string key="NSTitle">Normal (192x128)</string>
+									<string key="NSTitle">Normal</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="860961308"/>
@@ -219,12 +219,21 @@
 								</object>
 								<object class="NSMenuItem" id="1067793279">
 									<reference key="NSMenu" ref="1014760894"/>
-									<string key="NSTitle">Double (384x256)</string>
+									<string key="NSTitle">2x</string>
 									<string key="NSKeyEquiv"/>
 									<int key="NSMnemonicLoc">2147483647</int>
 									<reference key="NSOnImage" ref="860961308"/>
 									<reference key="NSMixedImage" ref="397929882"/>
 									<int key="NSTag">1</int>
+								</object>
+								<object class="NSMenuItem" id="229980107">
+									<reference key="NSMenu" ref="1014760894"/>
+									<string key="NSTitle">4x</string>
+									<string key="NSKeyEquiv"/>
+									<int key="NSMnemonicLoc">2147483647</int>
+									<reference key="NSOnImage" ref="860961308"/>
+									<reference key="NSMixedImage" ref="397929882"/>
+									<int key="NSTag">2</int>
 								</object>
 							</object>
 						</object>
@@ -428,6 +437,14 @@
 					</object>
 					<int key="connectionID">100105</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">toggleLCDSize:</string>
+						<reference key="source" ref="613418571"/>
+						<reference key="destination" ref="229980107"/>
+					</object>
+					<int key="connectionID">100108</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -581,6 +598,7 @@
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="319372498"/>
 							<reference ref="1067793279"/>
+							<reference ref="229980107"/>
 						</object>
 						<reference key="parent" ref="425756865"/>
 					</object>
@@ -597,6 +615,11 @@
 					<object class="IBObjectRecord">
 						<int key="objectID">100102</int>
 						<reference key="object" ref="1067793279"/>
+						<reference key="parent" ref="1014760894"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">100106</int>
+						<reference key="object" ref="229980107"/>
 						<reference key="parent" ref="1014760894"/>
 					</object>
 				</object>
@@ -624,7 +647,10 @@
 					<string>100095.IBPluginDependency</string>
 					<string>100098.IBPluginDependency</string>
 					<string>100099.IBPluginDependency</string>
+					<string>100100.IBPluginDependency</string>
 					<string>100101.IBPluginDependency</string>
+					<string>100102.IBPluginDependency</string>
+					<string>100106.IBPluginDependency</string>
 					<string>5.IBEditorWindowLastContentRect</string>
 					<string>5.IBNSWindowAutoPositionCentersHorizontal</string>
 					<string>5.IBNSWindowAutoPositionCentersVertical</string>
@@ -657,6 +683,9 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{133, 170}, {507, 413}}</string>
 					<boolean value="NO"/>
 					<boolean value="NO"/>
@@ -680,7 +709,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">100105</int>
+			<int key="maxID">100108</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

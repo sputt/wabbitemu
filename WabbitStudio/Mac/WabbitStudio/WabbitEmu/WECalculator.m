@@ -258,6 +258,9 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 		case 1:
 			lcdSize = NSMakeSize(baseWidth*2, baseHeight*2);
 			break;
+		case 2:
+			lcdSize = NSMakeSize(baseWidth*4, baseHeight*4);
+			break;
 		default:
 			break;
 	}	

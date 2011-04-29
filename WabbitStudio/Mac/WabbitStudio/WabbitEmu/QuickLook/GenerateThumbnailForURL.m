@@ -13,7 +13,12 @@ OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thum
 	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 	LPCTSTR cPath = [[(NSURL *)url path] fileSystemRepresentation];
 	LPCALC calc = calc_slot_new();
-	rom_load(calc, cPath);
+	
+	if (calc == NULL)
+		goto CLEANUP;
+	
+	if (!rom_load(calc, cPath))
+		goto CLEANUP;
 	
 	if ([(NSString *)contentTypeUTI isEqualToString:@"org.revsoft.wabbitemu.rom"])
 		calc_turn_on(calc);
@@ -37,10 +42,11 @@ OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thum
 	}
 	
 	NSData *data = [bitmap representationUsingType:NSPNGFileType properties:nil];
-	NSDictionary *properties = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:NO],(NSString *)kQLThumbnailOptionIconModeKey, nil];
+	//NSDictionary *properties = [NSDictionary dictionaryWithObjectsAndKeys:[NSNumber numberWithBool:YES],(NSString *)kQLThumbnailOptionIconModeKey, nil];
 	
-	QLThumbnailRequestSetImageWithData(thumbnail, (CFDataRef)data, (CFDictionaryRef)properties);
+	QLThumbnailRequestSetImageWithData(thumbnail, (CFDataRef)data, NULL);
 
+CLEANUP:
 	calc_slot_free(calc);
 	[pool drain];
 	
