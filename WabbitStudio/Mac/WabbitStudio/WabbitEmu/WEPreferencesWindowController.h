@@ -9,10 +9,15 @@
 #import "DBPrefsWindowController.h"
 
 
-@interface WEPreferencesWindowController : DBPrefsWindowController {
+@class WEPreviewLCDView;
+
+@interface WEPreferencesWindowController : DBPrefsWindowController <NSWindowDelegate> {
 @private
     IBOutlet NSView *_general;
 	IBOutlet NSView *_advanced;
+	IBOutlet NSView *_calculator;
+	
+	IBOutlet WEPreviewLCDView *_LCDView;
 }
 
 @end

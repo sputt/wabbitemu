@@ -25,6 +25,8 @@
 #define WCEnterKeyCode 76
 #define WCFunction6KeyCode 97
 
+#define WEApplicationDelegate (WEApplicationDelegate *)[[NSApplication sharedApplication] delegate]
+
 // returns a rect with the size of rect1 centered inside rect2
 static inline NSRect WCCenteredRect(NSRect rect1, NSRect rect2) {
 	return NSMakeRect((rect2.origin.x+floor(rect2.size.width/2.0))-floor(rect1.size.width/2.0), (rect2.origin.y+floor(rect2.size.height/2.0))-floor(rect1.size.height/2.0), rect1.size.width, rect1.size.height);

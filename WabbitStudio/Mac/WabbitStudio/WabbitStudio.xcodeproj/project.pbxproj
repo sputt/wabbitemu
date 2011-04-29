@@ -174,6 +174,8 @@
 		079CE50013464E7D0034DFB7 /* WCProjectNavigationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 079CE4FE13464E7D0034DFB7 /* WCProjectNavigationViewController.m */; };
 		079CE504134654A40034DFB7 /* WCBuildMessagesView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 079CE502134654A40034DFB7 /* WCBuildMessagesView.xib */; };
 		079CE51F1346AD310034DFB7 /* WCGradientHeaderTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 079CE51E1346AD2F0034DFB7 /* WCGradientHeaderTableView.m */; };
+		079DF4C013694B0700289058 /* Hardware.png in Resources */ = {isa = PBXBuildFile; fileRef = 079DF4BF13694B0700289058 /* Hardware.png */; };
+		079DF4C413694EB600289058 /* WEPreviewLCDView.m in Sources */ = {isa = PBXBuildFile; fileRef = 079DF4C313694EB600289058 /* WEPreviewLCDView.m */; };
 		07A31DDE133E61950081030A /* NSObject+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07A31DDD133E61950081030A /* NSObject+WCExtensions.m */; };
 		07A31DE3133E6D9A0081030A /* WCBuildTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 07A31DE2133E6D990081030A /* WCBuildTarget.m */; };
 		07AC0CE4133971DA0060F786 /* PSMTabBarControl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07AC0CE3133971DA0060F786 /* PSMTabBarControl.framework */; };
@@ -580,6 +582,9 @@
 		079CE503134654A40034DFB7 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCBuildMessagesView.xib; sourceTree = "<group>"; };
 		079CE51D1346AD2E0034DFB7 /* WCGradientHeaderTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGradientHeaderTableView.h; sourceTree = "<group>"; };
 		079CE51E1346AD2F0034DFB7 /* WCGradientHeaderTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCGradientHeaderTableView.m; sourceTree = "<group>"; };
+		079DF4BF13694B0700289058 /* Hardware.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Hardware.png; sourceTree = "<group>"; };
+		079DF4C213694EB600289058 /* WEPreviewLCDView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEPreviewLCDView.h; sourceTree = "<group>"; };
+		079DF4C313694EB600289058 /* WEPreviewLCDView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEPreviewLCDView.m; sourceTree = "<group>"; };
 		07A31DDC133E61950081030A /* NSObject+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+WCExtensions.h"; sourceTree = "<group>"; };
 		07A31DDD133E61950081030A /* NSObject+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+WCExtensions.m"; sourceTree = "<group>"; };
 		07A31DE1133E6D990081030A /* WCBuildTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildTarget.h; sourceTree = "<group>"; };
@@ -664,6 +669,7 @@
 		07CE7870134EB1B7001B96FC /* WCGotoLineSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGotoLineSheetController.h; sourceTree = "<group>"; };
 		07CE7871134EB1B7001B96FC /* WCGotoLineSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCGotoLineSheetController.m; sourceTree = "<group>"; };
 		07CE7874134EB23B001B96FC /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCGotoLineSheet.xib; sourceTree = "<group>"; };
+		07D1327E1369E85B00BD5A84 /* WELCDProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WELCDProtocol.h; sourceTree = "<group>"; };
 		07D28D49135247C100437AA1 /* WCProjectSplitView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCProjectSplitView.h; sourceTree = "<group>"; };
 		07D28D4A135247C100437AA1 /* WCProjectSplitView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCProjectSplitView.m; sourceTree = "<group>"; };
 		07D28D4C1352588500437AA1 /* WCUnsavedFilesWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCUnsavedFilesWindowController.h; sourceTree = "<group>"; };
@@ -1146,6 +1152,7 @@
 				07905DF31367C6780079A404 /* Classes */,
 				07905DFA1367C6B10079A404 /* Xibs */,
 				07905DCF1367BFD60079A404 /* Supporting Files */,
+				07D1327D1369E82300BD5A84 /* Protocols */,
 			);
 			path = WabbitEmu;
 			sourceTree = "<group>";
@@ -1153,6 +1160,7 @@
 		07905DCF1367BFD60079A404 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				079DF4BF13694B0700289058 /* Hardware.png */,
 				07905DD01367BFD60079A404 /* WabbitEmu-Info.plist */,
 				07905DD11367BFD60079A404 /* InfoPlist.strings */,
 				07905DD41367BFD60079A404 /* WabbitEmu-Prefix.pch */,
@@ -1185,6 +1193,8 @@
 				07B75E0A1368AAB1007B13A2 /* WETransferSheetController.m */,
 				07C55FC1136913DF00BB2325 /* WETransferFile.h */,
 				07C55FC2136913DF00BB2325 /* WETransferFile.m */,
+				079DF4C213694EB600289058 /* WEPreviewLCDView.h */,
+				079DF4C313694EB600289058 /* WEPreviewLCDView.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1312,6 +1322,14 @@
 			isa = PBXGroup;
 			children = (
 				07BA69911367F11B00AD7FF5 /* WEWCConnectionProtocol.h */,
+			);
+			name = Protocols;
+			sourceTree = "<group>";
+		};
+		07D1327D1369E82300BD5A84 /* Protocols */ = {
+			isa = PBXGroup;
+			children = (
+				07D1327E1369E85B00BD5A84 /* WELCDProtocol.h */,
 			);
 			name = Protocols;
 			sourceTree = "<group>";
@@ -1459,6 +1477,7 @@
 				07BA69981367F6CD00AD7FF5 /* WEPreferencesWindow.xib in Resources */,
 				07BA699C1367F7B900AD7FF5 /* Advanced.png in Resources */,
 				070E31D21368B76200D0CAE2 /* WETransferSheet.xib in Resources */,
+				079DF4C013694B0700289058 /* Hardware.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1638,6 +1657,7 @@
 				07B75E0B1368AAB1007B13A2 /* WETransferSheetController.m in Sources */,
 				070E31D41368B85800D0CAE2 /* NSResponder+WCExtensions.m in Sources */,
 				07C55FC3136913DF00BB2325 /* WETransferFile.m in Sources */,
+				079DF4C413694EB600289058 /* WEPreviewLCDView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

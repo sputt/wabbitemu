@@ -43,7 +43,7 @@
 	}
 }
 
-- (void)addLCDView:(WELCDView *)LCDView; {
+- (void)addLCDView:(id <WELCDProtocol>)LCDView; {
 	if (_LCDViews == nil)
 		_LCDViews = [[NSMutableArray alloc] initWithCapacity:MAX_CALCS];
 	
@@ -65,7 +65,7 @@
 		}
 	}
 }
-- (void)removeLCDView:(WELCDView *)LCDView; {
+- (void)removeLCDView:(id <WELCDProtocol>)LCDView; {
 	[_LCDViews removeObject:LCDView];
 	
 	if ([_LCDViews count] == 0) {
@@ -93,7 +93,7 @@
 
 - (void)_FPSTimerFired:(NSTimer *)timer {
 	for (WELCDView *LCDView in _LCDViews)
-		[[LCDView calculator] updateStatusString];
+		[[LCDView calculator] updateFPSString];
 	
 	[timer setFireDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
 }

@@ -37,6 +37,13 @@
 	return self;
 }
 
+- (void)awakeFromNib {
+	[super awakeFromNib];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidBecomeKey:) name:NSWindowDidBecomeMainNotification object:[self window]];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_windowDidResignKey:) name:NSWindowDidResignMainNotification object:[self window]];
+}
+
 - (NSGradient *)gradient {
 	if ([[NSApplication sharedApplication] isActive])
 		return [NSGradient unifiedPressedGradient];
@@ -62,6 +69,14 @@
 }
 
 - (void)_appDidResignActive:(NSNotification *)note {
+	[self setNeedsDisplay:YES];
+}
+
+- (void)_windowDidBecomeKey:(NSNotification *)note {
+	[self setNeedsDisplay:YES];
+}
+
+- (void)_windowDidResignKey:(NSNotification *)note {
 	[self setNeedsDisplay:YES];
 }
 @end

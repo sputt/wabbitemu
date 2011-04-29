@@ -22,6 +22,8 @@ NSString *const kWECalculatorApplicationUTI = @"org.revsoft.wabbitemu.applicatio
 NSString *const kWECalculatorSavestateUTI = @"org.revsoft.wabbitemu.savestate";
 NSString *const kWECalculatorRomUTI = @"org.revsoft.wabbitemu.rom";
 
+NSString *const kWECalculatorWillCloseNotification = @"kWECalculatorWillCloseNotification";
+
 static NSString *const kWECalculatorErrorDomain = @"kWECalculatorErrorDomain";
 static const NSInteger kWECalculatorCreatedMaxCalcs = 1001;
 static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
@@ -38,6 +40,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_statusString release];
+	[_FPSString release];
 	calc_slot_free(_calc);
 	[super dealloc];
 }
@@ -47,8 +50,9 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
+	[[NSNotificationCenter defaultCenter] postNotificationName:kWECalculatorWillCloseNotification object:self];
 	
-	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] removeLCDView:[self LCDView]];
+	[WEApplicationDelegate removeLCDView:[self LCDView]];
 }
 
 - (void)windowControllerDidLoadNib:(NSWindowController *)aController
@@ -57,7 +61,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	
 	[[self LCDView] setCalc:[self calc]];
 	[[self LCDView] setIsWidescreen:([self calc]->model == TI_85 || [self calc]->model == TI_86)];
-	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] addLCDView:[self LCDView]];
+	[WEApplicationDelegate addLCDView:[self LCDView]];
 	
 	[_buttonBar setIsAtBottom:YES];
 	[_buttonBar setIsResizable:NO];
@@ -103,6 +107,8 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[self fileURL]];
 	}
 	
+	[self setStatusString:[self _stringForCalculatorModel:[self model]]];
+	
 	[self calc]->cpu.pio.lcd->shades = (u_int)[[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWEPreferencesDisplayLCDShadesKey];
 	
 	calc_turn_on([self calc]);
@@ -114,9 +120,9 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	return YES;
 }
 
-- (void)updateStatusString; {
+- (void)updateFPSString; {
 	if (![self isLoadingRom]) {
-		[self setStatusString:[NSString stringWithFormat:NSLocalizedString(@"%@, FPS: %.2f", @"calculator model and fps status string"),[self _stringForCalculatorModel:[self model]],[self calc]->cpu.pio.lcd->ufps]];
+		[self setFPSString:[NSString stringWithFormat:NSLocalizedString(@"FPS: %.2f", @"FPS format string"),[self calc]->cpu.pio.lcd->ufps]];
 	}
 }
 
@@ -132,6 +138,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 }
 @synthesize isLoadingRom=_isLoadingRom;
 @synthesize statusString=_statusString;
+@synthesize FPSString=_FPSString;
 @dynamic model;
 - (WECalculatorModel)model {
 	if (_calc == NULL)
@@ -195,6 +202,50 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	calc_reset([self calc]);
 	calc_turn_on([self calc]);
 	[self setIsRunning:YES];
+}
+
+- (IBAction)toggleLCDSize:(id)sender; {
+	CGFloat bottomBorderHeight = [[self windowForSheet] contentBorderThicknessForEdge:NSMinYEdge];
+	NSSize lcdSize = NSZeroSize;
+	CGFloat baseWidth = ([[self LCDView] isWidescreen])?(kLCDWidescreenWidth*2):(kLCDWidth*2);
+	CGFloat baseHeight = (kLCDHeight*2);
+	
+	switch ([sender tag]) {
+		case 0:
+			lcdSize = NSMakeSize(baseWidth, baseHeight);
+			break;
+		case 1:
+			lcdSize = NSMakeSize(baseWidth*2, baseHeight*2);
+			break;
+		default:
+			break;
+	}	
+	
+	NSRect currentRect = [[self windowForSheet] frame];
+	NSRect newRect = [[self windowForSheet] frameRectForContentRect:NSMakeRect(NSMinX(currentRect), NSMinY(currentRect), lcdSize.width, lcdSize.height+bottomBorderHeight)];
+	
+	if (NSHeight(currentRect) < NSHeight(newRect))
+		newRect.origin.y -= NSHeight(newRect) - NSHeight(currentRect);
+	else if (NSHeight(currentRect) > NSHeight(newRect))
+		newRect.origin.y += NSHeight(currentRect) - NSHeight(newRect);
+	
+	[[self windowForSheet] setFrame:newRect display:YES animate:YES];
+}
+
+- (IBAction)resetDisplaySize:(id)sender; {
+	CGFloat bottomBorderHeight = [[self windowForSheet] contentBorderThicknessForEdge:NSMinYEdge];
+	CGFloat baseWidth = ([[self LCDView] isWidescreen])?(kLCDWidescreenWidth*2):(kLCDWidth*2);
+	CGFloat baseHeight = (kLCDHeight*2);
+	NSSize lcdSize = NSMakeSize(baseWidth, baseHeight);
+	NSRect currentRect = [[self windowForSheet] frame];
+	NSRect newRect = [[self windowForSheet] frameRectForContentRect:NSMakeRect(NSMinX(currentRect), NSMinY(currentRect), lcdSize.width, lcdSize.height+bottomBorderHeight)];
+	
+	if (NSHeight(currentRect) < NSHeight(newRect))
+		newRect.origin.y -= NSHeight(newRect) - NSHeight(currentRect);
+	else if (NSHeight(currentRect) > NSHeight(newRect))
+		newRect.origin.y += NSHeight(currentRect) - NSHeight(newRect);
+	
+	[[self windowForSheet] setFrame:newRect display:YES animate:YES];
 }
 		 
 - (NSString *)_stringForCalculatorModel:(WECalculatorModel)calculatorModel; {

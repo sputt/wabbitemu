@@ -12,10 +12,6 @@
 #import "WETransferSheetController.h"
 
 
-static const NSUInteger kLCDWidth = 192;
-static const NSUInteger kLCDWidescreenWidth = 256;
-static const NSUInteger kLCDHeight = 128;
-
 @interface WELCDView ()
 @property (copy,nonatomic) NSArray *currentFilePaths;
 
@@ -29,7 +25,7 @@ static const NSUInteger kLCDHeight = 128;
 	if (!(self = [super initWithCoder:coder]))
 		return nil;
 	
-	[self _privateInit];
+	[self commonInit];
 	
 	return self;
 }
@@ -62,55 +58,67 @@ static const NSUInteger kLCDHeight = 128;
 	if (_calc == NULL || !_calc->active || !_calc->running)
 		return;
 	
-    NSRect frame = [self frame];
-	GLint width = (GLint)NSWidth(frame), height = (GLint)NSHeight(frame);
-	u_char *lcd = LCD_image([self calc]->cpu.pio.lcd);
-	u_int row, col;
+	u_int8_t *lcd = LCD_image([self calc]->cpu.pio.lcd);
+	u_int16_t row, col;
 	
 	glClear(GL_COLOR_BUFFER_BIT);
 	
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWEPreferencesDisplayUseLCDWirePatternKey])
 		glEnable(GL_BLEND);
-	
+	 
 	if ([self isWidescreen]) {
 		for (row=0; row<kLCDHeight; row++) {
 			for (col=0; col<kLCDWidescreenWidth; col++) {
-				u_char val = 255-lcd[(row/2)*128+(col/2)];
+				u_int8_t val = 255-lcd[row*128+col];
 				
 				_wbuffer[row][col][2] = (0x9E*val)/255;
 				_wbuffer[row][col][1] = (0xAB*val)/255;
 				_wbuffer[row][col][0] = (0x88*val)/255;
+				
 			}
 		}
 	}
 	else {
 		for (row=0; row<kLCDHeight; row++) {
 			for (col=0; col<kLCDWidth; col++) {
-				u_char val = 255-lcd[(row/2)*128+(col/2)];
+				u_char val = 255-lcd[(row)*128+(col)];
 				
 				_buffer[row][col][2] = (0x9E*val)/255;
 				_buffer[row][col][1] = (0xAB*val)/255;
 				_buffer[row][col][0] = (0x88*val)/255;
+				
 			}
 		}
 	}
 	
-	glBindTexture(GL_TEXTURE_RECTANGLE_ARB, _textures[0]);
+	CGFloat width = ([self isWidescreen])?kLCDWidescreenWidth:kLCDWidth, height = kLCDHeight;
+	
+	glBindTexture(GL_TEXTURE_RECTANGLE_EXT, _textures[0]);
+	glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_STORAGE_HINT_APPLE, GL_STORAGE_SHARED_APPLE);
+	glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glPixelStoref(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
 	
 	if ([self isWidescreen])
-		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, _wbuffer);
+		glTexImage2D(GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, _wbuffer);
 	else
-		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, _buffer);
-	
+		glTexImage2D(GL_TEXTURE_RECTANGLE_EXT, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, _buffer);
+		
 	glBegin(GL_QUADS);
-	glTexCoord2i(0, 0); glVertex2i(0, 0);
-	glTexCoord2i(width, 0); glVertex2i(width, 0);
-	glTexCoord2i(width, height); glVertex2i(width, height);
-	glTexCoord2i(0, height); glVertex2i(0, height);
+	glTexCoord2f(0.0f, 0.0f);
+	glVertex2f(-1.0f, 1.0f);
+	glTexCoord2f(0.0f, height );
+	glVertex2f(-1.0f, -1.0f);
+	glTexCoord2f(width, height );
+	glVertex2f(1.0f, -1.0f);
+	glTexCoord2f(width, 0.0f );
+	glVertex2f(1.0f, 1.0f);
 	glEnd();
 	
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWEPreferencesDisplayUseLCDWirePatternKey]) {		
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, _textures[1]);
+		glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_STORAGE_HINT_APPLE, GL_STORAGE_SHARED_APPLE);
+		glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glPixelStoref(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
 		
 		if ([self isWidescreen])
 			glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, _wlcd_buffer);
@@ -118,10 +126,14 @@ static const NSUInteger kLCDHeight = 128;
 			glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, _lcd_buffer);
 		
 		glBegin(GL_QUADS);
-		glTexCoord2i(0, 0); glVertex2i(0, 0);
-		glTexCoord2i(width, 0); glVertex2i(width, 0);
-		glTexCoord2i(width, height); glVertex2i(width, height);
-		glTexCoord2i(0, height); glVertex2i(0, height);
+		glTexCoord2f(0.0f, 0.0f);
+		glVertex2f(-1.0f, 1.0f);
+		glTexCoord2f(0.0f, height );
+		glVertex2f(-1.0f, -1.0f);
+		glTexCoord2f(width, height );
+		glVertex2f(1.0f, -1.0f);
+		glTexCoord2f(width, 0.0f );
+		glVertex2f(1.0f, 1.0f);
 		glEnd();
 		
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -133,13 +145,26 @@ static const NSUInteger kLCDHeight = 128;
 }
 
 - (void)reshape {
-	NSRect frame = [self frame];
-	CGFloat width = NSWidth(frame), height = NSHeight(frame);
+	NSRect sceneBounds;
 	
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, width, height, 0, 1.0, 0.0);
-	glViewport(0, 0, width, height);
+	[ [ self openGLContext ] update ];
+	sceneBounds = [ self bounds ];
+	// Reset current viewport
+	glViewport( 0, 0, sceneBounds.size.width, sceneBounds.size.height );
+}
+
+- (void)prepareOpenGL {
+	glClearColor(128.0/255.0, 142.0/255.0, 107.0/255.0, 1.0);
+	
+	glEnable(GL_TEXTURE_RECTANGLE_EXT);
+	
+	glDisable(GL_DITHER);
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_STENCIL_TEST);
+	glDisable(GL_FOG);
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_DEPTH_TEST);
+	glGenTextures(2, _textures);
 }
 
 - (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)sender {
@@ -154,9 +179,16 @@ static const NSUInteger kLCDHeight = 128;
 	return YES;
 }
 
-@synthesize currentFilePaths=_currentFilePaths;
-@synthesize calc=_calc;
-@dynamic isWidescreen;
+- (LPCALC)calc {
+	return _calc;
+}
+- (void)setCalc:(LPCALC)calc {
+	if (_calc == calc)
+		return;
+	
+	_calc = calc;
+}
+
 - (BOOL)isWidescreen {
 	return _isWidescreen;
 }
@@ -166,19 +198,22 @@ static const NSUInteger kLCDHeight = 128;
 	
 	_isWidescreen = isWidescreen;
 	
-	[self _resizeForWidescreen];
+	[[self calculator] resetDisplaySize:nil];
 }
-@dynamic calculator;
+
 - (WECalculator *)calculator {
 	return (WECalculator *)[[[self window] windowController] document];
 }
 
-- (void)_privateInit {
+@synthesize currentFilePaths=_currentFilePaths;
 
-	[self registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType,nil]];
-	
-	[[self openGLContext] makeCurrentContext];
-	
+
+- (void)commonInit; {
+	[self registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType, nil]];
+	[self _privateInit];
+}
+
+- (void)_privateInit {
 	u_int16_t row, col;
 	for (row=0; row<kLCDHeight; row++) {
 		for (col=0; col<kLCDWidth; col++) {
@@ -186,15 +221,6 @@ static const NSUInteger kLCDHeight = 128;
 			_buffer[row][col][3] = 255;
 		}
 	}
-	
-	for (row=0; row < kLCDHeight; row++) {
-		for (col=0; col < kLCDWidescreenWidth; col++) {
-			// alpha channel is always the same, set it once and forget it, while the lcd doesn't have an alpha channel, opengl requires it for textures
-			_wbuffer[row][col][3] = 255;
-		}
-	}
-	
-
 	
 	for (row=0; row<kLCDHeight; row++) {
 		for (col=0; col<kLCDWidth; col++) {
@@ -218,8 +244,15 @@ static const NSUInteger kLCDHeight = 128;
 		}
 	}
 	
-	for (row=0; row < kLCDHeight; row++) {
-		for (col=0; col < kLCDWidescreenWidth; col++) {
+	for (row=0; row<kLCDHeight; row++) {
+		for (col=0; col<kLCDWidescreenWidth; col++) {
+			// alpha channel is always the same, set it once and forget it, while the lcd doesn't have an alpha channel, opengl requires it for textures
+			_wbuffer[row][col][3] = 255;
+		}
+	}
+	
+	for (row=0; row<kLCDHeight; row++) {
+		for (col=0; col<kLCDWidescreenWidth; col++) {
 			if (col%2 == 0 && row%2 == 0) {
 				_wlcd_buffer[row][col][2] = 158;
 				_wlcd_buffer[row][col][1] = 171;
@@ -239,43 +272,5 @@ static const NSUInteger kLCDHeight = 128;
 			_wlcd_buffer[row][col][3] = 108;
 		}
 	}
-	
-	NSRect frame = [self frame];
-	CGFloat width = NSWidth(frame), height = NSHeight(frame);
-	
-	glClearColor(128.0/255.0, 142.0/255.0, 107.0/255.0, 1.0);
-	glViewport(0, 0, width, height);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(0, width, height, 0, 1.0, 0.0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	
-	glGenTextures(2, _textures);
-	glEnable(GL_TEXTURE_RECTANGLE_ARB);
-	
-	glTexParameteri(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_STORAGE_HINT_APPLE, GL_STORAGE_SHARED_APPLE);
-	glPixelStorei(GL_UNPACK_CLIENT_STORAGE_APPLE,  GL_TRUE);
-	
-	glDisable(GL_DITHER);
-	glDisable(GL_ALPHA_TEST);
-	glDisable(GL_STENCIL_TEST);
-	glDisable(GL_FOG);
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_DEPTH_TEST);
-}
-
-- (void)_resizeForWidescreen; {
-	NSRect frame = [[self window] frame];
-	CGFloat delta = kLCDWidescreenWidth - kLCDWidth;
-	if ([self isWidescreen])
-		frame.size.width += delta;
-	else
-		frame.size.width -= delta;
-	
-	NSUInteger mask = [self autoresizingMask];
-	[self setAutoresizingMask:NSViewWidthSizable];
-	[[self window] setFrame:frame display:YES animate:YES];
-	[self setAutoresizingMask:mask];
 }
 @end

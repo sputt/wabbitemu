@@ -8,7 +8,8 @@
 
 #import <AppKit/NSDocument.h>
 #import "WEWCConnectionProtocol.h"
-#include "calc.h"
+#import "WELCDProtocol.h"
+
 
 enum {
 	WECalculatorModelTI73 = TI_73,
@@ -29,6 +30,8 @@ extern NSString *const kWECalculatorApplicationUTI;
 extern NSString *const kWECalculatorSavestateUTI;
 extern NSString *const kWECalculatorRomUTI;
 
+extern NSString *const kWECalculatorWillCloseNotification;
+
 @class WELCDView,BWAnchoredButtonBar;
 
 @interface WECalculator : NSDocument <NSWindowDelegate> {
@@ -41,6 +44,7 @@ extern NSString *const kWECalculatorRomUTI;
 	
 	BOOL _isLoadingRom;
 	NSString *_statusString;
+	NSString *_FPSString;
 	WEWCConnectionStatus _connectionStatus;
 	BOOL _isTransferringFiles;
 }
@@ -50,6 +54,7 @@ extern NSString *const kWECalculatorRomUTI;
 @property (assign,nonatomic) BOOL isActive;
 @property (assign,nonatomic) BOOL isLoadingRom;
 @property (copy,nonatomic) NSString *statusString;
+@property (copy,nonatomic) NSString *FPSString;
 @property (readonly,nonatomic) WECalculatorModel model;
 @property (assign,nonatomic) WEWCConnectionStatus connectionStatus;
 
@@ -59,7 +64,10 @@ extern NSString *const kWECalculatorRomUTI;
 - (IBAction)reloadCurrentRomOrSavestate:(id)sender;
 - (IBAction)resetCalculator:(id)sender;
 
+- (IBAction)toggleLCDSize:(id)sender;
+- (IBAction)resetDisplaySize:(id)sender;
+
 - (BOOL)loadRomOrSavestate:(NSURL *)romURL error:(NSError **)outError;
 
-- (void)updateStatusString;
+- (void)updateFPSString;
 @end
