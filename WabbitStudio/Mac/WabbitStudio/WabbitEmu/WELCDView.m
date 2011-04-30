@@ -10,6 +10,7 @@
 #import "WECalculator.h"
 #import "WEPreferencesController.h"
 #import "WETransferSheetController.h"
+#import "NSObject+WCExtensions.h"
 
 
 @interface WELCDView ()
@@ -31,11 +32,15 @@
 }
 
 - (void)dealloc {
-	[[NSUserDefaultsController sharedUserDefaultsController] removeObserver:self forKeyPath:@"values.useLCDWirePattern"];
+	[self cleanupUserDefaultsObserving];
 	[_currentFilePaths release];
 	_calc = NULL;
 	glDeleteTextures(2, _textures);
     [super dealloc];
+}
+
+- (NSArray *)userDefaultsKeys {
+	return [NSArray arrayWithObjects:kWEPreferencesDisplayUseLCDWirePatternKey, nil];
 }
 
 - (BOOL)isOpaque {
@@ -47,7 +52,7 @@
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-	if ([keyPath isEqualToString:@"values.useLCDWirePattern"] && (id)context == self) {
+	if ([keyPath isEqualToString:kWEPreferencesDisplayUseLCDWirePatternKey]) {
 		[self setNeedsDisplay:YES];
 	}
 	else
@@ -252,16 +257,8 @@
 	return YES;
 }
 
-- (LPCALC)calc {
-	return _calc;
-}
-- (void)setCalc:(LPCALC)calc {
-	if (_calc == calc)
-		return;
-	
-	_calc = calc;
-}
-
+@synthesize calc=_calc;
+@dynamic isWidescreen;
 - (BOOL)isWidescreen {
 	return _isWidescreen;
 }
@@ -282,7 +279,7 @@
 
 - (void)commonInit; {	
 	[self registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType, nil]];
-	[[NSUserDefaultsController sharedUserDefaultsController] addObserver:self forKeyPath:@"values.useLCDWirePattern" options:NSKeyValueObservingOptionNew context:(void *)self];
+	[self setupUserDefaultsObserving];
 	[self _privateInit];
 }
 

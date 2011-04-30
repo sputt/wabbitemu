@@ -8,7 +8,7 @@
 
 #import <AppKit/NSDocument.h>
 #import "WEWCConnectionProtocol.h"
-#import "WELCDProtocol.h"
+#include "calc.h"
 
 
 enum {
@@ -49,6 +49,7 @@ extern NSString *const kWECalculatorWillCloseNotification;
 	
 	NSString *_projectIdentifier;
 	BOOL _isClosing;
+	BOOL _isDebugging;
 }
 @property (readonly,nonatomic) LPCALC calc;
 @property (readonly,nonatomic) WELCDView *LCDView;
@@ -61,6 +62,7 @@ extern NSString *const kWECalculatorWillCloseNotification;
 @property (assign,nonatomic) WEWCConnectionStatus connectionStatus;
 @property (readonly,nonatomic) NSWindow *calculatorWindow;
 @property (copy,nonatomic) NSString *projectIdentifier;
+@property (assign,nonatomic) BOOL isDebugging;
 
 - (IBAction)loadRom:(id)sender;
 
@@ -70,6 +72,8 @@ extern NSString *const kWECalculatorWillCloseNotification;
 
 - (IBAction)toggleLCDSize:(id)sender;
 - (IBAction)resetDisplaySize:(id)sender;
+
+- (IBAction)step:(id)sender;
 
 - (BOOL)loadRomOrSavestate:(NSURL *)romURL error:(NSError **)outError;
 

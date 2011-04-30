@@ -13,6 +13,9 @@
 @implementation WETransferFile
 
 - (void)dealloc {
+#ifdef DEBUG
+	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
+#endif
 	FreeTiFile(_tifile);
 	[_path release];
     [super dealloc];

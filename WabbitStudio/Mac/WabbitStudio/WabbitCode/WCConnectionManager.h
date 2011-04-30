@@ -27,5 +27,4 @@ extern NSString *const kWCConnectionManagerDidDisconnectNotification;
 
 + (WCConnectionManager *)sharedConnectionManager;
 
-- (void)addProject:(WCProject *)project;
 @end

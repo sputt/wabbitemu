@@ -28,7 +28,7 @@ typedef NSUInteger WEWCConnectionStatus;
 static NSString *const kWabbitCodeConnectionName = @"org.revsoft.wabbitcode.connection";
 static NSString *const kWabbitEmuConnectionName = @"org.revsoft.wabbitemu.connection";
 
-@class WECalculator;
+@class WECalculator,WCProject;
 
 @protocol WCProjectToWECalculatorConnection <NSObject>
 @required
@@ -43,4 +43,5 @@ static NSString *const kWabbitEmuConnectionName = @"org.revsoft.wabbitemu.connec
 - (oneway void)connectToWabbitEmu;
 - (oneway void)requestProjectNameForProjectWithIdentifier:(in bycopy NSString *)projectIdentifier;
 - (oneway void)removeProjectWithIdentifier:(in bycopy NSString *)projectIdentifier;
+- (void)addProject:(WCProject *)project;
 @end

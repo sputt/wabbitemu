@@ -13,7 +13,6 @@
 #import "NSUserDefaults+WCExtensions.h"
 #import "WEPreferencesWindowController.h"
 #import "WEConnectionManager.h"
-#include "calc.h"
 
 
 @implementation WEApplicationDelegate
@@ -43,7 +42,7 @@
 	}
 }
 
-- (void)addLCDView:(id <WELCDProtocol>)LCDView; {
+- (void)addLCDView:(WELCDView *)LCDView; {
 	if (_LCDViews == nil)
 		_LCDViews = [[NSMutableArray alloc] initWithCapacity:MAX_CALCS];
 	
@@ -65,7 +64,7 @@
 		}
 	}
 }
-- (void)removeLCDView:(id <WELCDProtocol>)LCDView; {
+- (void)removeLCDView:(WELCDView *)LCDView; {
 	[_LCDViews removeObject:LCDView];
 	
 	if ([_LCDViews count] == 0) {

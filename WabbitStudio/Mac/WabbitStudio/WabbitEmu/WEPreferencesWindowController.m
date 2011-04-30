@@ -21,7 +21,7 @@
 
 - (void)setupToolbar {
 	[self addView:_general label:NSLocalizedString(@"General", @"General") image:[NSImage imageNamed:NSImageNamePreferencesGeneral]];
-	[self addView:_calculator label:NSLocalizedString(@"Hardware", @"Hardware")];
+	[self addView:_calculator label:NSLocalizedString(@"Calculator", @"Calculator") image:[NSImage imageNamed:@"Hardware"]];
 	[self addView:_advanced label:NSLocalizedString(@"Advanced", @"Advanced")];
 }
 

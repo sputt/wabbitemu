@@ -9,9 +9,9 @@
 #import <Foundation/NSObject.h>
 
 
-extern NSString* const kNSObjectSelectorKey;
-extern NSString* const kNSObjectNotificationNameKey;
-extern NSString* const kNSObjectNotificationObjectKey;
+extern NSString *const kNSObjectSelectorKey;
+extern NSString *const kNSObjectNotificationNameKey;
+extern NSString *const kNSObjectNotificationObjectKey;
 
 @interface NSObject (NSObject_WCExtensions)
 - (void)setupUserDefaultsObserving;

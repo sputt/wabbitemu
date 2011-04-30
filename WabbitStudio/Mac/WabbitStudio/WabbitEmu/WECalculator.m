@@ -195,6 +195,18 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	return [[[self windowControllers] objectAtIndex:0] window];
 }
 @synthesize projectIdentifier=_projectIdentifier;
+@dynamic isDebugging;
+- (BOOL)isDebugging {
+	return _isDebugging;
+}
+- (void)setIsDebugging:(BOOL)isDebugging {
+	if (_isDebugging == isDebugging)
+		return;
+	
+	_isDebugging = isDebugging;
+	
+	[self setIsRunning:!isDebugging];
+}
 
 - (IBAction)loadRom:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -272,6 +284,8 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 		newRect.origin.y -= NSHeight(newRect) - NSHeight(currentRect);
 	else if (NSHeight(currentRect) > NSHeight(newRect))
 		newRect.origin.y += NSHeight(currentRect) - NSHeight(newRect);
+	else
+		return;
 	
 	[[self windowForSheet] setFrame:newRect display:YES animate:YES];
 }

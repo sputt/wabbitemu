@@ -300,6 +300,7 @@
 		07EECB811349036000F5BC07 /* File Templates in Resources */ = {isa = PBXBuildFile; fileRef = 07EECB801349036000F5BC07 /* File Templates */; };
 		07EECB851349124600F5BC07 /* WCNewFileAccessoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07EECB831349124600F5BC07 /* WCNewFileAccessoryViewController.m */; };
 		07EECB891349126400F5BC07 /* WCNewFileAccessoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07EECB871349126400F5BC07 /* WCNewFileAccessoryView.xib */; };
+		07F11BB2136B6B7500A3DF25 /* NSObject+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07A31DDD133E61950081030A /* NSObject+WCExtensions.m */; };
 		07F1B8031342A8CE0013B9CC /* WCIncludeDirectoriesArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07F1B8021342A8CD0013B9CC /* WCIncludeDirectoriesArrayController.m */; };
 		07F1B8061342BD580013B9CC /* NSURL+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07F1B8051342BD580013B9CC /* NSURL+WCExtensions.m */; };
 		07F1B80C1342EAE10013B9CC /* NDAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = 07F1B80B1342EAE10013B9CC /* NDAlias.m */; };
@@ -752,7 +753,6 @@
 		07CE7870134EB1B7001B96FC /* WCGotoLineSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGotoLineSheetController.h; sourceTree = "<group>"; };
 		07CE7871134EB1B7001B96FC /* WCGotoLineSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCGotoLineSheetController.m; sourceTree = "<group>"; };
 		07CE7874134EB23B001B96FC /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCGotoLineSheet.xib; sourceTree = "<group>"; };
-		07D1327E1369E85B00BD5A84 /* WELCDProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WELCDProtocol.h; sourceTree = "<group>"; };
 		07D13282136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCConnectionStatusToStringTransformer.h; sourceTree = "<group>"; };
 		07D13283136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCConnectionStatusToStringTransformer.m; sourceTree = "<group>"; };
 		07D1328D136AAA7300BD5A84 /* WabbitEmuQuickLook.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WabbitEmuQuickLook.qlgenerator; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1444,7 +1444,6 @@
 		07D1327D1369E82300BD5A84 /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
-				07D1327E1369E85B00BD5A84 /* WELCDProtocol.h */,
 			);
 			name = Protocols;
 			sourceTree = "<group>";
@@ -1871,6 +1870,7 @@
 				070E31D41368B85800D0CAE2 /* NSResponder+WCExtensions.m in Sources */,
 				07C55FC3136913DF00BB2325 /* WETransferFile.m in Sources */,
 				079DF4C413694EB600289058 /* WEPreviewLCDView.m in Sources */,
+				07F11BB2136B6B7500A3DF25 /* NSObject+WCExtensions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2413,6 +2413,7 @@
 				07D132A5136AAA7400BD5A84 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

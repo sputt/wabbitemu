@@ -7,8 +7,9 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "WELCDProtocol.h"
 
+
+@class WELCDView;
 
 @interface WEApplicationDelegate : NSObject <NSApplicationDelegate> {
 @private
@@ -17,8 +18,8 @@
 	NSTimer *_FPSTimer;
 }
 
-- (void)addLCDView:(id <WELCDProtocol>)LCDView;
-- (void)removeLCDView:(id <WELCDProtocol>)LCDView;
+- (void)addLCDView:(WELCDView *)LCDView;
+- (void)removeLCDView:(WELCDView *)LCDView;
 
 - (IBAction)preferences:(id)sender;
 @end

@@ -8,9 +8,9 @@
 
 #import "NSObject+WCExtensions.h"
 
-NSString* const kNSObjectSelectorKey = @"kNSObjectSelectorKey";
-NSString* const kNSObjectNotificationNameKey = @"kNSObjectNotificationNameKey";
-NSString* const kNSObjectNotificationObjectKey = @"kNSObjectNotificationObjectKey";
+NSString *const kNSObjectSelectorKey = @"kNSObjectSelectorKey";
+NSString *const kNSObjectNotificationNameKey = @"kNSObjectNotificationNameKey";
+NSString *const kNSObjectNotificationObjectKey = @"kNSObjectNotificationObjectKey";
 
 @implementation NSObject (NSObject_WCExtensions)
 - (void)setupUserDefaultsObserving; {
