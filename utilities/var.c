@@ -3,7 +3,7 @@
 #include "var.h"
 #include "calc.h"
 #include "miniunz.h"
-#include <direct.h>
+//#include <direct.h>
 
 char self_test[] = "Self Test?";
 char catalog[] = "CATALOG";
@@ -174,7 +174,8 @@ int ReadIntelHex(FILE *ifile, INTELHEX_t *ihex) {
 	return 1;
 }
 
-TIFILE_t* ImportZipFile(LPCSTR filePath, TIFILE_t *tifile) {
+#ifdef _WINDOWS
+TIFILE_t* ImportZipFile(LPCTSTR filePath, TIFILE_t *tifile) {
 	unzFile uf;
 	TCHAR path[MAX_PATH];
 	uf = unzOpen(filePath);
@@ -184,6 +185,7 @@ TIFILE_t* ImportZipFile(LPCSTR filePath, TIFILE_t *tifile) {
 	unzClose(uf);
 	return err ? NULL: tifile;
 }
+#endif
 
 TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
 	int i;
@@ -630,11 +632,13 @@ TIFILE_t* newimportvar(LPCTSTR filePath) {
 		return tifile;
 	}
 
+#ifdef _WINDOWS
 	if (!_tcsicmp(extension, _T(".tig")) || !_tcsicmp(extension, _T(".zip")) ) {
 		tifile->type = ZIP_TYPE;
 		ImportZipFile(filePath, tifile);
 		return tifile;
 	}
+#endif
 #ifdef WINVER
 	_tfopen_s(&infile, filePath, _T("rb"));
 #else
