@@ -19,7 +19,7 @@ static struct {
 	{_T("cutout"), 					REG_DWORD, 	FALSE},
 	{_T("skin"),					REG_DWORD,	FALSE},
 	{_T("alphablend_lcd"),			REG_DWORD,	TRUE},
-	{_T("version"), 				REG_SZ, 	(LONG_PTR) _T("1.5.4.24")},
+	{_T("version"), 				REG_SZ, 	(LONG_PTR) _T("1.5.4.26")},
 	{_T("rom_path"), 				REG_SZ, 	(LONG_PTR) _T("z.rom")},
 	{_T("shades"),					REG_DWORD,	6},
 	{_T("gif_path"), 				REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},
@@ -43,6 +43,8 @@ static struct {
 	{_T("startY"),					REG_DWORD,  CW_USEDEFAULT},
 	{_T("break_on_exe_violation"),	REG_DWORD,  TRUE},
 	{_T("num_backup_per_sec"),		REG_DWORD,  2},
+	{_T("ram_version"),				REG_DWORD,  0},
+	{_T("lcd_delay"),				REG_DWORD,	60},
 	{NULL,							0,			0},
 };
 
@@ -209,6 +211,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	num_backup_per_sec = (int) QueryWabbitKey(_T("num_backup_per_sec"));
 	lpCalc->bAlwaysOnTop = (BOOL) QueryWabbitKey(_T("always_on_top"));
 	lpCalc->bCustomSkin = (BOOL) QueryWabbitKey(_T("custom_skin"));
+	lpCalc->mem_c.ram_version = (int) QueryWabbitKey(_T("ram_version"));
 	QueryKeyMappings();
 
 	StringCbCopy(gif_file_name, sizeof(gif_file_name), (TCHAR *) QueryWabbitKey(_T("gif_path")));
@@ -286,6 +289,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 			SaveWabbitKey(_T("startX"), REG_DWORD, &startX);
 			SaveWabbitKey(_T("startY"), REG_DWORD, &startY);
 		}
+		SaveWabbitKey(_T("ram_version"), REG_DWORD, &lpCalc->mem_c.ram_version);
 		ACCEL buf[256];
 		int numEntries = CopyAcceleratorTable(haccelmain, NULL, 0);
 		int nUsed = CopyAcceleratorTable(haccelmain, buf, numEntries);
@@ -301,6 +305,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("lcd_mode"), REG_DWORD, &lpCalc->cpu.pio.lcd->mode);
 		DWORD steady = (DWORD) ( 1.0 / lpCalc->cpu.pio.lcd->steady_frame);
 		SaveWabbitKey(_T("lcd_freq"), REG_DWORD, &steady);
+		SaveWabbitKey(_T("lcd_delay"), REG_DWORD, &lpCalc->cpu.pio.lcd->lcd_delay);
 		SaveWabbitKey(_T("num_backup_per_sec"), REG_DWORD, &num_backup_per_sec);
 		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->Scale);
 

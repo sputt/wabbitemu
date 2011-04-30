@@ -171,6 +171,12 @@ GLOBAL int current_backup_index;
 GLOBAL int num_backup_per_sec;
 #endif
 
+#ifdef WITH_AVI
+#include "avi_utils.h"
+GLOBAL HAVI recording_avi;
+GLOBAL BOOL is_recording;
+#endif
+
 GLOBAL u_int frame_counter;
 GLOBAL int startX;
 GLOBAL int startY;

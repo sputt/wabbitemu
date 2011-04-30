@@ -42,6 +42,7 @@
 #include "registry.h"
 #include "sendfileswindows.h"
 #include "state.h"
+#include "avi_utils.h"
 #ifdef USE_COM
 #include "wbded.h"
 #endif
@@ -874,6 +875,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hub_link->client	= &hub_link->host;	//nothing plugged in.
 	link_hub[MAX_CALCS] = hub_link;
 
+	is_recording = FALSE;
+
 	InitCommonControls();
 #ifdef USE_DIRECTX
 	IDirect3D9 *pD3D = Direct3DCreate9(D3D_SDK_VERSION);
@@ -1111,6 +1114,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							if (calcs[i].active)
 								calcs[i].gif_disp_state = GDS_ENDING;
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
+					}
+					break;
+				}
+				case IDM_FILE_AVI: {
+					HMENU hmenu = GetMenu(hwnd);
+					if (is_recording) {
+						CloseAvi(recording_avi);
+						is_recording = FALSE;
+						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_AVI, MF_BYCOMMAND | MF_UNCHECKED);
+					} else {
+						TCHAR lpszFile[MAX_PATH];
+						if (!SaveFile(lpszFile, _T("AVIs (*.avi)\0*.avi\0All Files (*.*)\0*.*\0\0"),
+											_T("Wabbitemu Export AVI"), _T("avi"), OFN_PATHMUSTEXIST)) {
+							recording_avi = CreateAvi(lpszFile, FPS, NULL);
+							is_recording = TRUE;
+							CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_AVI, MF_BYCOMMAND | MF_CHECKED);
+						}
 					}
 					break;
 				}

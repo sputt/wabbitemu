@@ -168,6 +168,111 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	return hdc;
 }
 
+HANDLE DDBToDIB(HBITMAP bitmap, DWORD dwCompression) 
+{
+	BITMAP			bm;
+	BITMAPINFOHEADER	bi;
+	LPBITMAPINFOHEADER 	lpbi;
+	DWORD			dwLen;
+	HANDLE			hDIB;
+	HANDLE			handle;
+	HDC 			hDC;
+
+
+	// The function has no arg for bitfields
+	if(dwCompression == BI_BITFIELDS)
+		return NULL;
+
+	// Get bitmap information
+	GetObject(bitmap, sizeof(bm), (LPSTR) &bm);
+
+	// Initialize the bitmapinfoheader
+	bi.biSize		= sizeof(BITMAPINFOHEADER);
+	bi.biWidth		= bm.bmWidth;
+	bi.biHeight 		= bm.bmHeight;
+	bi.biPlanes 		= 1;
+	bi.biBitCount		= bm.bmPlanes * bm.bmBitsPixel;
+	bi.biCompression	= dwCompression;
+	bi.biSizeImage		= 0;
+	bi.biXPelsPerMeter	= 0;
+	bi.biYPelsPerMeter	= 0;
+	bi.biClrUsed		= 0;
+	bi.biClrImportant	= 0;
+
+	// Compute the size of the  infoheader and the color table
+	int nColors = (1 << bi.biBitCount);
+	if( nColors > 256 ) 
+		nColors = 0;
+	dwLen  = bi.biSize + nColors * sizeof(RGBQUAD);
+
+	// We need a device context to get the DIB from
+	hDC = GetDC(NULL);
+
+	// Allocate enough memory to hold bitmapinfoheader and color table
+	hDIB = GlobalAlloc(GMEM_FIXED, dwLen);
+
+	if (!hDIB){
+		ReleaseDC(NULL,hDC);
+		return NULL;
+	}
+
+	lpbi = (LPBITMAPINFOHEADER) hDIB;
+
+	*lpbi = bi;
+
+	// Call GetDIBits with a NULL lpBits param, so the device driver 
+	// will calculate the biSizeImage field 
+	GetDIBits(hDC, bitmap, 0L, (DWORD) bi.biHeight,
+			(LPBYTE) NULL, (LPBITMAPINFO) lpbi, (DWORD) DIB_RGB_COLORS);
+
+	bi = *lpbi;
+
+	// If the driver did not fill in the biSizeImage field, then compute it
+	// Each scan line of the image is aligned on a DWORD (32bit) boundary
+	if (bi.biSizeImage == 0) {
+		bi.biSizeImage = ((((bi.biWidth * bi.biBitCount) + 31) & ~31) / 8) 
+						* bi.biHeight;
+
+		// If a compression scheme is used the result may infact be larger
+		// Increase the size to account for this.
+		if (dwCompression != BI_RGB)
+			bi.biSizeImage = (bi.biSizeImage * 3) / 2;
+	}
+
+	// Realloc the buffer so that it can hold all the bits
+	dwLen += bi.biSizeImage;
+	if (handle = GlobalReAlloc(hDIB, dwLen, GMEM_MOVEABLE))
+		hDIB = handle;
+	else{
+		GlobalFree(hDIB);
+		ReleaseDC(NULL,hDC);
+		return NULL;
+	}
+
+	// Get the bitmap bits
+	lpbi = (LPBITMAPINFOHEADER)hDIB;
+
+	// FINALLY get the DIB
+	BOOL bGotBits = GetDIBits( hDC, bitmap,
+				0L,				// Start scan line
+				(DWORD)bi.biHeight,		// # of scan lines
+				/*(LPBYTE)lpbi 			// address for bitmap bits
+				+ (bi.biSize + nColors * sizeof(RGBQUAD))*/ (LPBYTE) hDIB,
+				(LPBITMAPINFO)lpbi,		// address of bitmapinfo
+				(DWORD)DIB_RGB_COLORS);		// Use RGB for color table
+
+	if( !bGotBits )
+	{
+		GlobalFree(hDIB);
+		
+		ReleaseDC(NULL,hDC);
+		return NULL;
+	}
+
+	ReleaseDC(NULL, hDC);
+	return hDIB;
+}
+
 void PaintLCD(HWND hwnd, HDC hdcDest) {
 	unsigned char * screen;
 	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -226,6 +331,8 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("BitBlt failed\n"));
 
 	} else {
+
+
 		screen = LCD_image(lcd) ;
 		//screen = GIFGREYLCD();
 
@@ -280,6 +387,37 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			}
 		}
 
+		#ifdef WITH_AVI
+#include "avi_utils.h"
+		HBITMAP hbm;
+		if (is_recording) {
+			BYTE *pBitsDest;
+			hbm = CreateCompatibleBitmap(hdc, rc.right - rc.left, rc.bottom - rc.top);
+			HDC newhdc = CreateCompatibleDC(hdc);
+			SelectObject(newhdc, hbm);
+			BitBlt(newhdc, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top, hdc, 0, 0, SRCCOPY);
+			HANDLE ptr = DDBToDIB(hbm, BI_RGB);
+			BITMAPINFO *nbi = (BITMAPINFO *) malloc(sizeof(BITMAPINFOHEADER));
+			nbi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+			nbi->bmiHeader.biWidth = rc.right - rc.left;
+			nbi->bmiHeader.biHeight = rc.bottom - rc.top;
+			nbi->bmiHeader.biPlanes = 1;
+			nbi->bmiHeader.biBitCount = 32;
+			nbi->bmiHeader.biCompression = BI_RGB;
+			nbi->bmiHeader.biSizeImage = 0;
+			nbi->bmiHeader.biXPelsPerMeter = 0;
+			nbi->bmiHeader.biYPelsPerMeter = 0;
+			nbi->bmiHeader.biClrUsed = MAX_SHADES+1;
+			nbi->bmiHeader.biClrImportant = MAX_SHADES+1;
+			DWORD dwBmpSize = ((nbi->bmiHeader.biWidth * nbi->bmiHeader.biBitCount + 31) / 32) * 4 * nbi->bmiHeader.biHeight;
+			HBITMAP newhbm = CreateDIBSection(newhdc, nbi, DIB_RGB_COLORS, (void **) &pBitsDest, NULL, NULL);
+			memcpy(pBitsDest, ptr, dwBmpSize);
+			AddAviFrame(recording_avi, newhbm);
+			DeleteObject(hbm);
+			DeleteObject(newhbm);
+			free(nbi);
+		}
+#endif
 		if (BitBlt(	hdcDest, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
 			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("Bit blt failed\n"));
 
