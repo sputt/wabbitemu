@@ -544,8 +544,8 @@ void SaveSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	
 	
 	WriteChar(chunk, se_aux->clock.enable);
-	WriteInt(chunk, se_aux->clock.set);
-	WriteInt(chunk, se_aux->clock.base);
+	WriteInt(chunk, (uint32_t)se_aux->clock.set);
+	WriteInt(chunk, (uint32_t)se_aux->clock.base);
 	WriteDouble(chunk, se_aux->clock.lasttime);
 	
 	for(i = 0; i < 7; i++) {

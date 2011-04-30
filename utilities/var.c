@@ -301,8 +301,8 @@ TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 			return FreeTiFile(tifile);
 		tifile->rom->data[i] = tmp;
 	}
-	tifile->rom->size		= size;
-	calc = FindRomVersion(calc, tifile->rom->version, tifile->rom->data, size);
+	tifile->rom->size		= (int)size;
+	calc = FindRomVersion(calc, tifile->rom->version, tifile->rom->data, (int)size);
 	tifile->model			= calc;
 
 	return tifile;
