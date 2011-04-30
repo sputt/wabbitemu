@@ -134,7 +134,7 @@ int mprintf(MFILE* mf, const char *format, ...) {
 	va_list list;
 	va_start(list, format);
 	if (mf->stream) {
-		int temp = fprintf(mf->stream, list);
+		int temp = vfprintf(mf->stream,format,list);
 		va_end(list);
 		return temp;
 	} else {

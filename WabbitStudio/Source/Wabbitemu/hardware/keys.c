@@ -97,7 +97,7 @@ enum {
     NINE = 25,
     ZERO = 29,
 };
-static keyprog_t defaultkeys[256] = {
+keyprog_t defaultkeys[256] = {
     {N, 6, 5}, // 2nd
     {TAB, 6, 5}, // 2nd
     {ESCAPE, 6, 6}, // Mode
