@@ -989,9 +989,12 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 		switch(compress) {
 #ifdef ZLIB_WINAPI
 			case ZLIB_CMP:
-				fputc(ZLIB_CMP, cfile);
-				error = def(ofile, cfile, 9);
-				break;
+				{
+					fputc(ZLIB_CMP, cfile);
+				
+					int error = def(ofile, cfile, 9);
+					break;
+				}
 #endif
 			default:
 				_putts(_T("Error bad compression format selected."));
@@ -1044,8 +1047,10 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 		switch(i) {
 #ifdef ZLIB_WINAPI
 			case ZLIB_CMP:
-				error = inf(ifile,tmpfile);
-				break;
+				{
+					int error = inf(ifile,tmpfile);
+					break;
+				}
 #endif
 			default:
 				fclose(tmpfile);

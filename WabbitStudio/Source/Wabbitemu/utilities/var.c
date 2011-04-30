@@ -4,7 +4,6 @@
 #include "calc.h"
 #include "miniunz.h"
 #include <direct.h>
-#include "dirent.h"
 
 char self_test[] = "Self Test?";
 char catalog[] = "CATALOG";

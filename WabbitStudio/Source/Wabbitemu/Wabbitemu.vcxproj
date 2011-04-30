@@ -368,7 +368,9 @@
     <ResourceCompile Include="gui\Wabbitemu.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Midl Include="interface\Wabbitemu.idl" />
+    <Midl Include="interface\Wabbitemu.idl">
+      <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">X64</TargetEnvironment>
+    </Midl>
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}</ProjectGuid>

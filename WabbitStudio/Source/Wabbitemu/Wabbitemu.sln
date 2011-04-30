@@ -3,14 +3,19 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Wabbitemu", "Wabbitemu.vcxproj", "{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "WabbitemuProxy", "..\WabbitemuProxy\WabbitemuProxy.vcxproj", "{EE0FFBDC-634B-414A-A618-A9B748DD501E}"
+EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 2
+		SccNumberOfProjects = 3
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
-		SccProjectUniqueName0 = Wabbitemu.vcxproj
 		SccLocalPath0 = .
+		SccProjectUniqueName1 = Wabbitemu.vcxproj
 		SccLocalPath1 = .
+		SccProjectUniqueName2 = ..\\WabbitemuProxy\\WabbitemuProxy.vcxproj
+		SccProjectName2 = ../WabbitemuProxy
+		SccLocalPath2 = ..\\WabbitemuProxy
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug DLL|Win32 = Debug DLL|Win32
@@ -57,6 +62,28 @@ Global
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Release|Win32.Build.0 = Wabbitemu Release|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Release|x64.ActiveCfg = Wabbitemu Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitemu Release|x64.Build.0 = Wabbitemu Release|x64
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Debug DLL|Win32.ActiveCfg = Debug|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Debug DLL|Win32.Build.0 = Debug|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Debug DLL|x64.ActiveCfg = Debug|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Debug|Win32.Build.0 = Debug|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Debug|x64.ActiveCfg = Debug|x64
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Debug|x64.Build.0 = Debug|x64
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Release DLL|Win32.ActiveCfg = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Release DLL|Win32.Build.0 = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Release DLL|x64.ActiveCfg = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Release|Win32.ActiveCfg = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Release|Win32.Build.0 = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Release|x64.ActiveCfg = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.WabbitComp Debug|Win32.ActiveCfg = Debug|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.WabbitComp Debug|Win32.Build.0 = Debug|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.WabbitComp Debug|x64.ActiveCfg = Debug|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.WabbitComp Release|Win32.ActiveCfg = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.WabbitComp Release|Win32.Build.0 = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.WabbitComp Release|x64.ActiveCfg = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Wabbitemu Release|Win32.ActiveCfg = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Wabbitemu Release|Win32.Build.0 = Release|Win32
+		{EE0FFBDC-634B-414A-A618-A9B748DD501E}.Wabbitemu Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
