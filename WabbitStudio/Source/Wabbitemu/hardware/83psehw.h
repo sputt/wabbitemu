@@ -3,7 +3,10 @@
 #include "core.h"
 #include "ti_stdint.h"
 
+#ifndef LINK_READ
+#define LINK_READ
 #define LinkRead (((cpu->pio.link->host & 0x03) | (cpu->pio.link->client[0] & 0x03))^3)
+#endif
 #define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
 
 typedef struct TIMER {

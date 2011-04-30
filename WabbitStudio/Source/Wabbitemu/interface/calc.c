@@ -556,7 +556,7 @@ int calc_run_all(void) {
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active == TRUE) {
 				active_calc = j;
-				int time = ((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS / 2;
+				int64_t time = ((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS / 2;
 				calc_run_tstates(&calcs[j], time);
 				frame_counter += time;
 #ifdef WITH_BACKUPS
