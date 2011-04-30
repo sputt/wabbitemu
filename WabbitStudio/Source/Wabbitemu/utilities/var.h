@@ -98,14 +98,15 @@ typedef struct TIFILE {
 #define TI_VAR_HEADER_SIZE 2+2+1+8
 
 
-#define ROM_TYPE	1		//os
-#define FLASH_TYPE	2		//Flash application
+#define ROM_TYPE	1		//Rom
+#define FLASH_TYPE	2		//Flash application or OS
 #define VAR_TYPE	3		//most varibles can be supported under an umbrella type
 #define SAV_TYPE	4		//Wabbit specific saves.
 #define BACKUP_TYPE	5		//Wabbit specific saves.
 #define LABEL_TYPE	6		//Lab file
 #define BREAKPOINT_TYPE 7	//breakpoint file
-#define GROUP_TYPE 	8
+#define GROUP_TYPE 	8		//groups are stored weirdly so they get a weird type
+#define ZIP_TYPE 	9		//zip/tig file
 
 #define FLASH_TYPE_OS 0x23
 #define FLASH_TYPE_APP 0x24

@@ -369,10 +369,11 @@ void calc_turn_on(LPCALC lpCalc)
 #endif
 }
 
-int calc_reset(LPCALC lpCalc)
-{
-	//lpCalc->running = FALSE;
-	return CPU_reset(&lpCalc->cpu);
+int calc_reset(LPCALC lpCalc) {
+	CPU_reset(&lpCalc->cpu);
+	LCD_reset(&lpCalc->cpu);
+	//calc_turn_on(lpCalc);
+	return true;
 }
 
 /* Clear RAM and start calculator at $0000 
@@ -677,7 +678,6 @@ void free_backups(LPCALC lpCalc) {
 
 int calc_run_seconds(LPCALC lpCalc, double seconds) {
 	time_t time = (time_t ) (seconds * CLOCKS_PER_SEC);
-
 	return calc_run_timed(lpCalc, time);
 }
 

@@ -58,6 +58,12 @@
     <Filter Include="Resource Files\Debugger">
       <UniqueIdentifier>{7b7af4d3-eb37-4f7b-bbf0-a047a3ebb75b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Utilities\Compression">
+      <UniqueIdentifier>{7646b74c-6a2a-4d23-95b7-97d5128c6f9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utilities\Compression">
+      <UniqueIdentifier>{c2752ed9-7077-4179-8cc7-e8f71f20a10a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\alu.c">
@@ -216,9 +222,6 @@
     <ClCompile Include="interface\mapeditor.c">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
-    <ClCompile Include="utilities\zpipe.c">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="utilities\fileutilities.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -261,10 +264,28 @@
     <ClCompile Include="gui\guikeylist.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="utilities\SendFile.cpp">
+    <ClCompile Include="utilities\ioapi.c">
+      <Filter>Source Files\Utilities\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\iowin32.c">
+      <Filter>Source Files\Utilities\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\zpipe.c">
+      <Filter>Source Files\Utilities\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\unzip.c">
+      <Filter>Source Files\Utilities\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\miniunz.c">
+      <Filter>Source Files\Utilities\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\avi_utils.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="utilities\sendfileswindows.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\SendFile.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
@@ -446,9 +467,6 @@
     <ClInclude Include="utilities\types.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="utilities\var.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="gui\guiwizard.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -472,12 +490,6 @@
     </ClInclude>
     <ClInclude Include="gui\CGdiPlusBitmap.h">
       <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="utilities\zlib.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="utilities\zconf.h">
-      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="utilities\fileutilities.h">
       <Filter>Header Files\Utilities</Filter>
@@ -503,11 +515,35 @@
     <ClInclude Include="gui\guikeylist.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="utilities\SendFile.h">
+    <ClInclude Include="utilities\ioapi.h">
+      <Filter>Header Files\Utilities\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\iowin32.h">
+      <Filter>Header Files\Utilities\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\zconf.h">
+      <Filter>Header Files\Utilities\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\zlib.h">
+      <Filter>Header Files\Utilities\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\unzip.h">
+      <Filter>Header Files\Utilities\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\var.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\miniunz.h">
+      <Filter>Header Files\Utilities\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\avi_utils.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="utilities\sendfileswindows.h">
-      <Filter>Header Files\Utilities</Filter>
+      <Filter>Source Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\SendFile.h">
+      <Filter>Source Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

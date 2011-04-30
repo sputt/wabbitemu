@@ -89,6 +89,7 @@ typedef struct LCD {
 
 /* Device functions */
 LCD_t *LCD_init(CPU_t*,int);
+void LCD_reset(CPU_t * cpu) ;
 void LCD_command(CPU_t*, device_t*);
 void LCD_data(CPU_t *, device_t *);
 

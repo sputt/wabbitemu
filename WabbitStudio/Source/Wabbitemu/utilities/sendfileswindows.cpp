@@ -188,6 +188,8 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 {
 	TIFILE_t *var = newimportvar(lpszFileName);
 
+	BOOL exec_vio_backup = break_on_exe_violation;
+	break_on_exe_violation = false;
 	LINK_ERR result;
 	if (var != NULL)
 	{
@@ -228,9 +230,45 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 			lpCalc->cpu.pio.link->vlink_send = 0;
 			result = link_send_backup(&lpCalc->cpu, var, (SEND_FLAG) Destination);
 			break;
+		case ZIP_TYPE: {
+#ifdef WINVER
+			WIN32_FIND_DATA FindFileData;
+			HANDLE hFind;
+			TCHAR path[MAX_PATH];
+			TCHAR search[MAX_PATH];
+			StringCbCopy(path, sizeof(path), _tgetenv(_T("appdata")));
+			StringCbCat(path, sizeof(path), _T("\\Wabbitemu\\"));
+			StringCbCopy(search, sizeof(search), path);
+			StringCbCat(search, sizeof(search), _T("*"));
+			hFind = FindFirstFile(search, &FindFileData);
+			if (hFind == INVALID_HANDLE_VALUE) {
+				result = LERR_FILE;
+				break;
+			} else if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+				TCHAR filename[MAX_PATH];
+				StringCbCopy(filename, sizeof(filename), path);
+				StringCbCat(filename, sizeof(filename), FindFileData.cFileName);
+				SendFileToCalc(lpCalc, filename, FALSE, Destination);
+				SendFileToCalc(lpCalc, filename, FALSE, Destination);
+				DeleteFile(filename);
+			}
+			while (FindNextFile(hFind, &FindFileData)) {
+				if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
+					TCHAR filename[MAX_PATH];
+					StringCbCopy(filename, sizeof(filename), path);
+					StringCbCat(filename, sizeof(filename), FindFileData.cFileName);
+					SendFileToCalc(lpCalc, filename, FALSE, Destination);
+					DeleteFile(filename);
+				}
+			}
+			FindClose(hFind);
+			DeleteFile(path);
+			result = LERR_SUCCESS;
+#endif
+			break;
+		}
 		case ROM_TYPE:
-		case SAV_TYPE:
-			{
+		case SAV_TYPE: {
 				FreeTiFile(var);
 				var = NULL;
 				if (rom_load(lpCalc, lpszFileName) == TRUE) {
@@ -241,8 +279,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 				SendMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
 				break;
 			}
-		case LABEL_TYPE:
-			{
+		case LABEL_TYPE: {
 				StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), lpszFileName);
 				_tprintf_s(_T("loading label file for slot %d: %s\n"), lpCalc->slot, lpszFileName);
 				VoidLabels(lpCalc);
@@ -256,7 +293,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 		if (var) {
 			FreeTiFile(var);
 		}
-
+		break_on_exe_violation = exec_vio_backup;
 		return result;
 	}
 	else
@@ -264,6 +301,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 #ifdef WINVER
 		MessageBox(NULL, _T("Invalid file format"), _T("Error"), MB_OK);
 #endif
+		break_on_exe_violation = exec_vio_backup;
 		return LERR_FILE;
 	}
 }

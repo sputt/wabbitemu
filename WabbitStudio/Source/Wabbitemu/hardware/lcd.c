@@ -69,7 +69,9 @@ static void LCD_enqueue(LCD_t *);
 static void LCD_free(LCD_t *);
 u_char *LCD_update_image(LCD_t *lcd);
 
-#define MICROSECONDS(xx) (GetCPUSpeed(cpu) + 1) * xx
+#define NORMAL_DELAY 60		//tstates
+//#define MICROSECONDS(xx) (((cpu->timer_c->freq * 10 / MHZ_6) * xx) / 10)
+#define MICROSECONDS(xx) (((cpu->timer_c->freq * 10 / MHZ_6) * NORMAL_DELAY) / 10) + (xx - NORMAL_DELAY)
 //static FILE *log;
 
 /* 
@@ -122,15 +124,16 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	lcd->shades = (u_int) QueryWabbitKey(_T("shades"));
 	lcd->mode = (LCD_MODE) QueryWabbitKey(_T("lcd_mode"));
 	lcd->steady_frame = 1.0 / QueryWabbitKey(_T("lcd_freq"));
+	lcd->lcd_delay = (u_int) QueryWabbitKey(_T("lcd_delay"));
 #else
 	lcd->shades = LCD_DEFAULT_SHADES;
 	lcd->mode = MODE_PERFECT_GRAY;
 	lcd->steady_frame = 1.0 / FPS;
+	lcd->lcd_delay = NORMAL_DELAY;
 #endif
 	if (lcd->shades > LCD_MAX_SHADES)
 		lcd->shades = LCD_MAX_SHADES;
 
-	lcd->lcd_delay = 60;
 	
 	lcd->time = tc_elapsed(cpu->timer_c);
 	lcd->ufps_last = tc_elapsed(cpu->timer_c);
@@ -139,6 +142,17 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	lcd->write_avg = 0.0f;
 	lcd->write_last = tc_elapsed(cpu->timer_c);
 	return lcd;
+}
+
+void LCD_reset(CPU_t * cpu) {
+	LCD_t *lcd = cpu->pio.lcd;
+	lcd->time = tc_elapsed(cpu->timer_c);
+	lcd->ufps_last = tc_elapsed(cpu->timer_c);
+	lcd->ufps = 0.0f;
+	lcd->lastgifframe = tc_elapsed(cpu->timer_c);
+	lcd->write_avg = 0.0f;
+	lcd->write_last = tc_elapsed(cpu->timer_c);
+	lcd->lcd_delay = NORMAL_DELAY;
 }
 
 /* 
@@ -161,7 +175,8 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
 	if (cpu->pio.model > TI_83P)
 		Add_SE_Delay(cpu);
-	if (MICROSECONDS(lcd->lcd_delay) > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
+	int min_wait = MICROSECONDS(lcd->lcd_delay);
+	if (lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
 		cpu->output = FALSE;
 		if (cpu->input) {
 			cpu->input = FALSE;
@@ -169,8 +184,8 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
 		}
 	}
 
-	
 	if (cpu->output) {
+		lcd->last_tstate = tc_tstates(cpu->timer_c);
 		// Test the bus to determine which command to run
 		CRD_SWITCH(cpu->bus) {
 			CRD_CASE(DPE):
@@ -216,6 +231,13 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 	if (cpu->pio.model > TI_83P)
 		Add_SE_Delay(cpu);
 
+	int min_wait = MICROSECONDS(lcd->lcd_delay);
+	if (lcd->lcd_delay > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
+		cpu->output = FALSE;
+		cpu->input = FALSE;
+		return;
+	}
+
 	// Get a pointer to the byte referenced by the CRD cursor
 	u_int shift = 0;
 	u_char *cursor;
@@ -226,12 +248,6 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 		shift = 10 - (new_y % 8);
 		
 		cursor = &lcd->display[ LCD_OFFSET(new_y / 8, lcd->x, lcd->z) ];
-	}
-	
-	if (MICROSECONDS(lcd->lcd_delay) > (tc_tstates(cpu->timer_c) - lcd->last_tstate)) {
-		cpu->output = FALSE;
-		cpu->input = FALSE;
-		return;
 	}
 
 	if (cpu->output) {

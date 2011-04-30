@@ -2,6 +2,9 @@
 
 #include "var.h"
 #include "calc.h"
+#include "miniunz.h"
+#include <direct.h>
+#include "dirent.h"
 
 char self_test[] = "Self Test?";
 char catalog[] = "CATALOG";
@@ -21,6 +24,7 @@ char txt86[] = "Already Installed";
 int CmpStringCase(char *str1, unsigned char *str2) {
 	return _strnicmp(str1, (char *) str2, strlen(str1));
 }
+
 
 
 int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
@@ -169,6 +173,17 @@ int ReadIntelHex(FILE *ifile, INTELHEX_t *ihex) {
 		return 0;
 	ihex->CheckSum = byte;
 	return 1;
+}
+
+TIFILE_t* ImportZipFile(LPCSTR filePath, TIFILE_t *tifile) {
+	unzFile uf;
+	TCHAR path[MAX_PATH];
+	uf = unzOpen(filePath);
+	StringCbCopy(path, sizeof(path), _tgetenv(_T("appdata")));
+	StringCbCat(path, sizeof(path), _T("\\Wabbitemu"));
+	int err = extract_zip(uf, path);
+	unzClose(uf);
+	return err ? NULL: tifile;
 }
 
 TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
@@ -613,6 +628,12 @@ TIFILE_t* newimportvar(LPCTSTR filePath) {
 
 	if (!_tcsicmp(extension, _T(".brk"))) {
 		tifile->type = BREAKPOINT_TYPE;
+		return tifile;
+	}
+
+	if (!_tcsicmp(extension, _T(".tig")) || !_tcsicmp(extension, _T(".zip")) ) {
+		tifile->type = ZIP_TYPE;
+		ImportZipFile(filePath, tifile);
 		return tifile;
 	}
 #ifdef WINVER
