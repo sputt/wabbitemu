@@ -371,9 +371,9 @@ void calc_turn_on(LPCALC lpCalc)
 
 int calc_reset(LPCALC lpCalc) {
 	CPU_reset(&lpCalc->cpu);
-	LCD_reset(&lpCalc->cpu);
+	LCD_timer_refresh(&lpCalc->cpu);
 	//calc_turn_on(lpCalc);
-	return true;
+	return 0;
 }
 
 /* Clear RAM and start calculator at $0000 

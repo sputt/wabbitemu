@@ -144,7 +144,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	return lcd;
 }
 
-void LCD_reset(CPU_t * cpu) {
+void LCD_timer_refresh(CPU_t * cpu) {
 	LCD_t *lcd = cpu->pio.lcd;
 	lcd->time = tc_elapsed(cpu->timer_c);
 	lcd->ufps_last = tc_elapsed(cpu->timer_c);
@@ -153,6 +153,25 @@ void LCD_reset(CPU_t * cpu) {
 	lcd->write_avg = 0.0f;
 	lcd->write_last = tc_elapsed(cpu->timer_c);
 	lcd->lcd_delay = NORMAL_DELAY;
+}
+
+/* 
+ * Simulates the state of the LCD after a power reset
+ */
+static void LCD_reset(LCD_t *lcd) {
+	lcd->active = FALSE;
+	lcd->word_len = 8;
+	lcd->cursor_mode = Y_UP;
+	lcd->x = 0;
+	lcd->y = 0;
+	lcd->z = 0;
+	lcd->contrast = 32;
+	lcd->last_read = 0;
+	
+	memset(lcd->display, 0, DISPLAY_SIZE);
+	
+	lcd->front = 0;
+	memset(lcd->queue, 0, sizeof(lcd->queue[0]) * LCD_MAX_SHADES);
 }
 
 /* 
@@ -366,27 +385,6 @@ static void LCD_advance_cursor(LCD_t *lcd) {
 			break;
 	}
 }
-
-
-/* 
- * Simulates the state of the LCD after a power reset
- */
-static void LCD_reset(LCD_t *lcd) {
-	lcd->active = FALSE;
-	lcd->word_len = 8;
-	lcd->cursor_mode = Y_UP;
-	lcd->x = 0;
-	lcd->y = 0;
-	lcd->z = 0;
-	lcd->contrast = 32;
-	lcd->last_read = 0;
-	
-	memset(lcd->display, 0, DISPLAY_SIZE);
-	
-	lcd->front = 0;
-	memset(lcd->queue, 0, sizeof(lcd->queue[0]) * LCD_MAX_SHADES);
-}
-
 
 /* 
  * Add a black and white LCD image to the LCD grayscale queue
