@@ -502,7 +502,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 				lpCalc->profiler.data[lpCalc->cpu.pc / lpCalc->profiler.blockSize] += (long) time;
 		}
 		if (tc_tstates((&lpCalc->timer_c)) >= time_end) {
-			lpCalc->time_error = tc_tstates((&lpCalc->timer_c)) - time_end;
+			lpCalc->time_error = (time_t)(tc_tstates((&lpCalc->timer_c)) - time_end);
 			break;
 		}
 	}
