@@ -71,6 +71,10 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 	WCBreakpoint *_projectBreakpoint;
 	BOOL _isLoadingRom;
 	BOOL _isDebugging;
+	WCFile *_currentBreakpointFile;
+	NSUInteger _currentBreakpointLineNumber;
+	WCFile *_programCounterFile;
+	NSUInteger _programCounterLineNumber;
 	
 	NSMutableDictionary *_projectSettings; // we keep this updated when things change in the project and write it out
 										   // with each save as <username>.wcodesettings
@@ -139,10 +143,10 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 @property (readonly,nonatomic) BOOL shouldAnimate;
 @property (readonly,nonatomic) NSArray *allBreakpoints;
 @property (assign,nonatomic) BOOL isDebugging;
-@property (readonly,nonatomic) WCFile *currentDebugFile;
-@property (readonly,nonatomic) NSUInteger currentDebugLineNumber;
-@property (readonly,nonatomic) WCFile *programCounterFile;
-@property (readonly,nonatomic) NSUInteger programCounterLineNumber;
+@property (readonly,assign,nonatomic) WCFile *currentBreakpointFile;
+@property (readonly,assign,nonatomic) NSUInteger currentBreakpointLineNumber;
+@property (readonly,assign,nonatomic) WCFile *programCounterFile;
+@property (readonly,assign,nonatomic) NSUInteger programCounterLineNumber;
 
 - (IBAction)addFilesToProject:(id)sender;
 - (IBAction)newFile:(id)sender;
@@ -193,6 +197,13 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 - (void)jumpToObjects:(NSArray *)objects;
 
 - (void)handleBreakpointCallback;
+- (void)jumpToProgramCounter;
+- (void)updateCurrentBreakpointFileAndLineNumber;
+- (void)updateCurrentBreakpointFile;
+- (void)updateCurrentBreakpointLineNumber;
+- (void)updateProgramCounterFileAndLineNumber;
+- (void)updateProgramCounterFile;
+- (void)updateProgramCounterLineNumber;
 
 - (void)saveProjectFile;
 

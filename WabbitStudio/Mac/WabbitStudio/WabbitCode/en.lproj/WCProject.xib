@@ -111,7 +111,7 @@
 											<object class="NSMutableArray" key="NSTabViewItems">
 												<bool key="EncodedWithXMLCoder">YES</bool>
 											</object>
-											<object class="NSFont" key="NSFont" id="705656784">
+											<object class="NSFont" key="NSFont" id="336454487">
 												<string key="NSName">LucidaGrande</string>
 												<double key="NSSize">13</double>
 												<int key="NSfFlags">1044</int>
@@ -124,7 +124,7 @@
 											<int key="NSvFlags">290</int>
 											<object class="NSMutableArray" key="NSSubviews">
 												<bool key="EncodedWithXMLCoder">YES</bool>
-												<object class="NSButton" id="347895377">
+												<object class="NSButton" id="472721184">
 													<reference key="NSNextResponder" ref="356176268"/>
 													<int key="NSvFlags">268</int>
 													<string key="NSFrame">{{30, -1}, {32, 24}}</string>
@@ -132,17 +132,17 @@
 													<reference key="NSWindow"/>
 													<reference key="NSNextKeyView" ref="590810361"/>
 													<bool key="NSEnabled">YES</bool>
-													<object class="NSButtonCell" key="NSCell" id="455322475">
+													<object class="NSButtonCell" key="NSCell" id="839638733">
 														<int key="NSCellFlags">67239424</int>
 														<int key="NSCellFlags2">134217728</int>
 														<string key="NSContents"/>
-														<reference key="NSSupport" ref="705656784"/>
-														<reference key="NSControlView" ref="347895377"/>
+														<reference key="NSSupport" ref="336454487"/>
+														<reference key="NSControlView" ref="472721184"/>
 														<int key="NSButtonFlags">-2033958657</int>
 														<int key="NSButtonFlags2">134</int>
 														<object class="NSCustomResource" key="NSNormalImage">
 															<string key="NSClassName">NSImage</string>
-															<string key="NSResourceName">StepOver32x32</string>
+															<string key="NSResourceName">StepOver16x16</string>
 														</object>
 														<string key="NSAlternateContents"/>
 														<string key="NSKeyEquivalent"/>
@@ -150,25 +150,25 @@
 														<int key="NSPeriodicInterval">75</int>
 													</object>
 												</object>
-												<object class="NSButton" id="956110139">
+												<object class="NSButton" id="1064057583">
 													<reference key="NSNextResponder" ref="356176268"/>
 													<int key="NSvFlags">268</int>
 													<string key="NSFrame">{{-1, -1}, {32, 24}}</string>
 													<reference key="NSSuperview" ref="356176268"/>
 													<reference key="NSWindow"/>
-													<reference key="NSNextKeyView" ref="347895377"/>
+													<reference key="NSNextKeyView" ref="472721184"/>
 													<bool key="NSEnabled">YES</bool>
-													<object class="NSButtonCell" key="NSCell" id="118239167">
+													<object class="NSButtonCell" key="NSCell" id="43402575">
 														<int key="NSCellFlags">67239424</int>
 														<int key="NSCellFlags2">134217728</int>
 														<string key="NSContents"/>
-														<reference key="NSSupport" ref="705656784"/>
-														<reference key="NSControlView" ref="956110139"/>
+														<reference key="NSSupport" ref="336454487"/>
+														<reference key="NSControlView" ref="1064057583"/>
 														<int key="NSButtonFlags">-2033958657</int>
 														<int key="NSButtonFlags2">134</int>
 														<object class="NSCustomResource" key="NSNormalImage">
 															<string key="NSClassName">NSImage</string>
-															<string key="NSResourceName">Step</string>
+															<string key="NSResourceName">Step16x16</string>
 														</object>
 														<string key="NSAlternateContents"/>
 														<string key="NSKeyEquivalent"/>
@@ -191,7 +191,7 @@
 											<string key="NSFrameSize">{658, 24}</string>
 											<reference key="NSSuperview" ref="754209042"/>
 											<reference key="NSWindow"/>
-											<reference key="NSNextKeyView" ref="956110139"/>
+											<reference key="NSNextKeyView" ref="1064057583"/>
 											<string key="NSClassName">BWAnchoredButtonBar</string>
 										</object>
 									</object>
@@ -342,7 +342,7 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">step:</string>
 						<reference key="source" ref="613418571"/>
-						<reference key="destination" ref="956110139"/>
+						<reference key="destination" ref="1064057583"/>
 					</object>
 					<int key="connectionID">100171</int>
 				</object>
@@ -350,7 +350,7 @@
 					<object class="IBActionConnection" key="connection">
 						<string key="label">stepOver:</string>
 						<reference key="source" ref="613418571"/>
-						<reference key="destination" ref="347895377"/>
+						<reference key="destination" ref="472721184"/>
 					</object>
 					<int key="connectionID">100175</int>
 				</object>
@@ -440,8 +440,8 @@
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
 							<reference ref="590810361"/>
-							<reference ref="956110139"/>
-							<reference ref="347895377"/>
+							<reference ref="1064057583"/>
+							<reference ref="472721184"/>
 						</object>
 						<reference key="parent" ref="754209042"/>
 					</object>
@@ -478,31 +478,31 @@
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">100169</int>
-						<reference key="object" ref="956110139"/>
+						<reference key="object" ref="1064057583"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="118239167"/>
+							<reference ref="43402575"/>
 						</object>
 						<reference key="parent" ref="356176268"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">100170</int>
-						<reference key="object" ref="118239167"/>
-						<reference key="parent" ref="956110139"/>
+						<reference key="object" ref="43402575"/>
+						<reference key="parent" ref="1064057583"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">100172</int>
-						<reference key="object" ref="347895377"/>
+						<reference key="object" ref="472721184"/>
 						<object class="NSMutableArray" key="children">
 							<bool key="EncodedWithXMLCoder">YES</bool>
-							<reference ref="455322475"/>
+							<reference ref="839638733"/>
 						</object>
 						<reference key="parent" ref="356176268"/>
 					</object>
 					<object class="IBObjectRecord">
 						<int key="objectID">100173</int>
-						<reference key="object" ref="455322475"/>
-						<reference key="parent" ref="347895377"/>
+						<reference key="object" ref="839638733"/>
+						<reference key="parent" ref="472721184"/>
 					</object>
 				</object>
 			</object>
@@ -1245,13 +1245,13 @@
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSArray" key="dict.sortedKeys">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>Step</string>
-				<string>StepOver32x32</string>
+				<string>Step16x16</string>
+				<string>StepOver16x16</string>
 			</object>
 			<object class="NSMutableArray" key="dict.values">
 				<bool key="EncodedWithXMLCoder">YES</bool>
-				<string>{32, 32}</string>
-				<string>{32, 32}</string>
+				<string>{16, 16}</string>
+				<string>{16, 16}</string>
 			</object>
 		</object>
 	</data>

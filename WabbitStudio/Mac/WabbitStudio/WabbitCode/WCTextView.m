@@ -105,8 +105,8 @@
 	}
 	
 	if ([[[self file] project] isDebugging]) {
-		if ([[[self file] project] currentDebugFile] == [self file]) {
-			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[(WCTextStorage *)[self textStorage] safeLineStartIndexForLineNumber:[[[self file] project] currentDebugLineNumber]] effectiveRange:NULL];
+		if ([[[self file] project] currentBreakpointFile] == [self file]) {
+			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[(WCTextStorage *)[self textStorage] safeLineStartIndexForLineNumber:[[[self file] project] currentBreakpointLineNumber]] effectiveRange:NULL];
 			
 			if (NSIntersectsRect(lineRect, visibleRect) && [self needsToDrawRect:lineRect]) {
 				NSColor *breakpointColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorBreakpointLineHighlightColorKey];

@@ -214,7 +214,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 		case WCBreakpointTypeProject:
 			return 0;
 		default:
-			return nil;
+			return 0;
 	}
 }
 @synthesize isRam=_isRam;

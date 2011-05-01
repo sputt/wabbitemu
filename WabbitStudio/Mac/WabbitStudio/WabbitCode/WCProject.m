@@ -96,6 +96,10 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 @property (readwrite,retain,nonatomic) NSString *codeListing;
 @property (assign,nonatomic) BOOL shouldRunAfterBuilding;
 @property (readwrite,retain,nonatomic) WCAlias *romOrSavestateAlias;
+@property (readwrite,assign,nonatomic) WCFile *currentBreakpointFile;
+@property (readwrite,assign,nonatomic) NSUInteger currentBreakpointLineNumber;
+@property (readwrite,assign,nonatomic) WCFile *programCounterFile;
+@property (readwrite,assign,nonatomic) NSUInteger programCounterLineNumber;
 
 - (void)_addBuildMessageForString:(NSString *)string;
 
@@ -569,8 +573,6 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 		_calc->breakpoint_owner = (void *)self;
 	}
 	
-	lpDebuggerCalc = [self calc];
-	
 	[self setIsRunning:NO];
 	[self setIsLoadingRom:YES];
 	
@@ -612,9 +614,8 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 	}
 	
 	CPU_step(&[self calc]->cpu);
-	[self addFileViewControllerForFile:[self programCounterFile] inTabViewContext:[self currentTabViewContext]];
-	[[[self currentTabViewContext] selectedTextView] setSelectedLineNumber:[self programCounterLineNumber] scrollRangeToVisible:YES];
-	[[[[[self currentTabViewContext] selectedTextView] enclosingScrollView] verticalRulerView] setNeedsDisplay:YES];
+	
+	[self jumpToProgramCounter];
 }
 
 - (IBAction)stepOver:(id)sender {
@@ -622,6 +623,8 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 		NSBeep();
 		return;
 	}
+	
+	lpDebuggerCalc = [self calc];
 	
 	CPU_t *cpu = &[self calc]->cpu;
 	const int usable_commands[] = { DA_BJUMP, DA_BJUMP_N, DA_BCALL_N, DA_BCALL,
@@ -651,15 +654,15 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 			if (zinflocal.index == usable_commands[i]) {
 				while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && cpu->pc != (zinflocal.addr + zinflocal.size))
 					CPU_step(cpu);
+				
+				[self jumpToProgramCounter];
 				return;
 			}
 		}
 		
 		CPU_step(cpu);
 	}
-	[self addFileViewControllerForFile:[self programCounterFile] inTabViewContext:[self currentTabViewContext]];
-	[[[self currentTabViewContext] selectedTextView] setSelectedLineNumber:[self programCounterLineNumber] scrollRangeToVisible:YES];
-	[[[[[self currentTabViewContext] selectedTextView] enclosingScrollView] verticalRulerView] setNeedsDisplay:YES];
+	[self jumpToProgramCounter];
 }
 
 - (IBAction)stepOut:(id)sender {
@@ -727,9 +730,142 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 
 - (void)handleBreakpointCallback; {
 	[self setIsDebugging:YES];
-	[self addFileViewControllerForFile:[self currentDebugFile] inTabViewContext:[self currentTabViewContext]];
-	[[[self currentTabViewContext] selectedTextView] setSelectedLineNumber:[self currentDebugLineNumber] scrollRangeToVisible:YES];
+	[self jumpToProgramCounter];
 }
+
+- (void)jumpToProgramCounter; {
+	[self updateCurrentBreakpointFileAndLineNumber];
+	[self updateProgramCounterFileAndLineNumber];
+	[self addFileViewControllerForFile:[self programCounterFile] inTabViewContext:[self currentTabViewContext]];
+	[[[self currentTabViewContext] selectedTextView] setSelectedLineNumber:[self programCounterLineNumber] scrollRangeToVisible:YES];
+	[[[[[self currentTabViewContext] selectedTextView] enclosingScrollView] verticalRulerView] setNeedsDisplay:YES];
+}
+
+- (void)updateCurrentBreakpointFileAndLineNumber; {
+	[self updateCurrentBreakpointFile];
+	[self updateCurrentBreakpointLineNumber];
+}
+
+- (void)updateCurrentBreakpointFile; {
+	if (![self isDebugging]) {
+		[self setCurrentBreakpointFile:nil];
+		return;
+	}
+	
+	// update the current breakpoint file
+	uint16_t pc = [self calc]->cpu.pc;
+	for (WCFile *file in [self textFiles]) {
+		for (WCBreakpoint *breakpoint in [file allBreakpoints]) {
+			if ([breakpoint address] == pc) {
+#ifdef DEBUG
+				NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
+#endif
+				[self setCurrentBreakpointFile:file];
+				return;
+			}
+		}
+	}
+	[self setCurrentBreakpointFile:nil];
+}
+- (void)updateCurrentBreakpointLineNumber; {
+	if ([self currentBreakpointFile] == nil) {
+		[self setCurrentBreakpointLineNumber:0];
+		return;
+	}
+	
+	// update the current breakpoint line number
+	uint16_t pc = [self calc]->cpu.pc;
+	for (WCFile *file in [self textFiles]) {
+		for (WCBreakpoint *breakpoint in [file allBreakpoints]) {
+			if ([breakpoint address] == pc) {
+				NSUInteger lineNumber = [breakpoint lineNumber];
+				
+				if (lineNumber == [breakpoint symbolLineNumber])
+					lineNumber++;
+				
+				[self setCurrentBreakpointLineNumber:lineNumber];
+				return;
+			}
+		}
+	}
+	[self setCurrentBreakpointLineNumber:0];
+}
+
+- (void)updateProgramCounterFileAndLineNumber; {
+	[self updateProgramCounterFile];
+	[self updateProgramCounterLineNumber];
+}
+
+- (void)updateProgramCounterFile {
+	// update the program counter file
+	uint8_t page = 0; // this will need to be changed to handle flash applications
+	uint16_t address = [self calc]->cpu.pc;
+	NSString *findString = [NSString stringWithFormat:@"%02u:%04X",page,address];
+	NSRange fRange = [[self codeListing] rangeOfString:findString options:NSLiteralSearch];
+	
+	if (fRange.location == NSNotFound) {
+#ifdef DEBUG
+		NSLog(@"could not find current program counter %04X in listing file for project %@",address,[self displayName]);
+#endif
+		NSBeep();
+		[self setProgramCounterFile:nil];
+		return;
+	}
+	
+	NSRange pRange = [[self codeListing] rangeOfString:@"Listing for file \"" options:NSLiteralSearch|NSBackwardsSearch range:NSMakeRange(0, NSMaxRange(fRange))];
+	NSString *pString = [[self codeListing] substringWithRange:[[self codeListing] lineRangeForRange:pRange]];
+	NSScanner *scanner = [NSScanner scannerWithString:pString];
+	NSString *fPath;
+	
+	if (![scanner scanUpToString:@"\"" intoString:NULL]) {
+		NSBeep();
+		[self setProgramCounterFile:nil];
+		return;
+	}
+	
+	[scanner setScanLocation:[scanner scanLocation] + 1];
+	
+	if (![scanner scanUpToString:@"\"" intoString:&fPath]) {
+		NSBeep();
+		[self setProgramCounterFile:nil];
+		return;
+	}
+	
+	// find the file that matches the path
+	for (WCFile *file in [self textFiles]) {
+		if ([[file absolutePathForDisplay] isEqualToString:fPath]) {
+			[self setProgramCounterFile:file];
+			return;
+		}
+	}
+#ifdef DEBUG
+	NSLog(@"could not find file for path %@",fPath);
+#endif
+	[self setProgramCounterFile:nil];
+}
+
+- (void)updateProgramCounterLineNumber {
+	// find where the listing for our file begins
+	NSString *fileString = [NSString stringWithFormat:@"Listing for file \"%@\"",[[self programCounterFile] absolutePathForDisplay]];
+	NSRange fileRange = [[self codeListing] rangeOfString:fileString options:NSLiteralSearch];
+	
+	uint8_t page = 0; // this will need to be changed to handle flash applications
+	uint16_t address = [self calc]->cpu.pc;
+	NSString *pcString = [NSString stringWithFormat:@"%02u:%04X",page,address];
+	NSRange pcRange = [[self codeListing] rangeOfString:pcString options:NSLiteralSearch|NSBackwardsSearch range:NSMakeRange(NSMaxRange(fileRange), [[self codeListing] length]-NSMaxRange(fileRange))];
+	NSString *lineString = [[self codeListing] substringWithRange:[[self codeListing] lineRangeForRange:pcRange]];
+	NSInteger lineNumber;
+	NSScanner *pcScanner = [NSScanner scannerWithString:lineString];
+	[pcScanner setCharactersToBeSkipped:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	if (![pcScanner scanInteger:&lineNumber]) {
+		[self setProgramCounterLineNumber:0];
+		return;
+	}
+	
+	[self setProgramCounterLineNumber:--lineNumber];
+}
+
 #pragma mark NSKeyValueCoding
 - (NSUInteger)countOfBuildTargets {
 	return [_buildTargets count];
@@ -1148,121 +1284,10 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 	return [[retval copy] autorelease];
 }
 @synthesize isDebugging=_isDebugging;
-@dynamic currentDebugFile;
-- (WCFile *)currentDebugFile {
-	if (![self isDebugging])
-		return nil;
-
-	uint16_t pc = [self calc]->cpu.pc;
-	for (WCFile *file in [self textFiles]) {
-		for (WCBreakpoint *breakpoint in [file allBreakpoints]) {
-			if ([breakpoint address] == pc)
-				return file;
-		}
-	}
-#ifdef DEBUG
-    NSLog(@"current debug file not found for pc %u",pc);
-#endif
-	return nil;
-}
-@dynamic currentDebugLineNumber;
-- (NSUInteger)currentDebugLineNumber {
-	uint16_t pc = [self calc]->cpu.pc;
-	for (WCFile *file in [self textFiles]) {
-		for (WCBreakpoint *breakpoint in [file allBreakpoints]) {
-			if ([breakpoint address] == pc) {
-				NSUInteger lineNumber = [breakpoint lineNumber];
-				
-				/*
-				if (lineNumber == [breakpoint symbolLineNumber])
-					lineNumber++;
-				*/
-				 
-				return lineNumber;
-			}
-		}
-	}
-	return 0;
-}
-@dynamic programCounterFile;
-- (WCFile *)programCounterFile {
-	if (![self isDebugging] || [self codeListing] == nil) {
-		NSBeep();
-		return nil;
-	}
-	
-	uint8_t page = 0; // this will need to be changed to handle flash applications
-	uint16_t address = [self calc]->cpu.pc;
-	NSString *findString = [NSString stringWithFormat:@"%02u:%04X",page,address];
-	NSRange fRange = [[self codeListing] rangeOfString:findString options:NSLiteralSearch];
-	
-	if (fRange.location == NSNotFound) {
-#ifdef DEBUG
-		NSLog(@"could not find current program counter %04X in listing file for project %@",address,[self displayName]);
-#endif
-		NSBeep();
-		return nil;
-	}
-	
-	NSRange pRange = [[self codeListing] rangeOfString:@"Listing for file \"" options:NSLiteralSearch|NSBackwardsSearch range:NSMakeRange(0, NSMaxRange(fRange))];
-	NSString *pString = [[self codeListing] substringWithRange:[[self codeListing] lineRangeForRange:pRange]];
-	NSScanner *scanner = [NSScanner scannerWithString:pString];
-	NSString *fPath;
-	
-	if (![scanner scanUpToString:@"\"" intoString:NULL]) {
-		NSBeep();
-		return nil;
-	}
-	
-	[scanner setScanLocation:[scanner scanLocation] + 1];
-	
-	if (![scanner scanUpToString:@"\"" intoString:&fPath]) {
-		NSBeep();
-		return nil;
-	}
-	
-	// find the file that matches the path
-	for (WCFile *file in [self textFiles]) {
-		if ([[file absolutePathForDisplay] isEqualToString:fPath])
-			return file;
-	}
-#ifdef DEBUG
-    NSLog(@"could not find file for path %@",fPath);
-#endif
-	return nil;
-}
-@dynamic programCounterLineNumber;
-- (NSUInteger)programCounterLineNumber {
-	if (![self isDebugging] || [self codeListing] == nil) {
-		NSBeep();
-		return 0;
-	}
-	
-	WCFile *pcFile = [self programCounterFile];
-	
-	if (pcFile == nil)
-		return 0;
-	
-	// find where the listing for our file begins
-	NSString *fileString = [NSString stringWithFormat:@"Listing for file \"%@\"",[pcFile absolutePathForDisplay]];
-	NSRange fileRange = [[self codeListing] rangeOfString:fileString options:NSLiteralSearch];
-	
-	uint8_t page = 0;
-	uint16_t address = [self calc]->cpu.pc;
-	NSString *pcString = [NSString stringWithFormat:@"%02u:%04X",page,address];
-	NSRange pcRange = [[self codeListing] rangeOfString:pcString options:NSLiteralSearch|NSBackwardsSearch range:NSMakeRange(NSMaxRange(fileRange), [[self codeListing] length]-NSMaxRange(fileRange))];
-	NSString *lineString = [[self codeListing] substringWithRange:[[self codeListing] lineRangeForRange:pcRange]];
-	NSInteger lineNumber;
-	NSScanner *scanner = [NSScanner scannerWithString:lineString];
-	[scanner setCharactersToBeSkipped:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
-	
-	if (![scanner scanInteger:&lineNumber]) {
-		NSBeep();
-		return 0;
-	}
-	
-	return --lineNumber;
-}
+@synthesize currentBreakpointFile=_currentBreakpointFile;
+@synthesize currentBreakpointLineNumber=_currentBreakpointLineNumber;
+@synthesize programCounterFile=_programCounterFile;
+@synthesize programCounterLineNumber=_programCounterLineNumber;
 #pragma mark IBActions
 - (IBAction)addFilesToProject:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];

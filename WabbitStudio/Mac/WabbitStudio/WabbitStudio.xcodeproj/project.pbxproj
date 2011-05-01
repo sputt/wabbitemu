@@ -212,6 +212,9 @@
 		07AE898B136D5BB40014F788 /* Step.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8989136D5BB40014F788 /* Step.pdf */; };
 		07AE898D136D6C8A0014F788 /* disassemble.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E1B1367C9930079A404 /* disassemble.c */; };
 		07AE898F136D6DDD0014F788 /* StepOver32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE898E136D6DDD0014F788 /* StepOver32x32.png */; };
+		07AE8991136D73C60014F788 /* Step16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8990136D73C60014F788 /* Step16x16.png */; };
+		07AE8993136D74180014F788 /* StepOver16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8992136D74180014F788 /* StepOver16x16.png */; };
+		07AE8995136D742D0014F788 /* StepOut16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8994136D742D0014F788 /* StepOut16x16.png */; };
 		07AF6E64133A709D00A2D188 /* NSImage+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AF6E63133A709D00A2D188 /* NSImage+WCExtensions.m */; };
 		07AF6E6A133A7FB200A2D188 /* WCSymbolScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AF6E69133A7FB000A2D188 /* WCSymbolScanner.m */; };
 		07AF6E71133A8F4F00A2D188 /* RegexKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07AF6E70133A8F4F00A2D188 /* RegexKit.framework */; };
@@ -720,6 +723,9 @@
 		07AE8988136D5BB40014F788 /* Step.opacity */ = {isa = PBXFileReference; lastKnownFileType = file; path = Step.opacity; sourceTree = "<group>"; };
 		07AE8989136D5BB40014F788 /* Step.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Step.pdf; sourceTree = "<group>"; };
 		07AE898E136D6DDD0014F788 /* StepOver32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StepOver32x32.png; sourceTree = "<group>"; };
+		07AE8990136D73C60014F788 /* Step16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Step16x16.png; sourceTree = "<group>"; };
+		07AE8992136D74180014F788 /* StepOver16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StepOver16x16.png; sourceTree = "<group>"; };
+		07AE8994136D742D0014F788 /* StepOut16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StepOut16x16.png; sourceTree = "<group>"; };
 		07AF6E62133A709D00A2D188 /* NSImage+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSImage+WCExtensions.h"; sourceTree = "<group>"; };
 		07AF6E63133A709D00A2D188 /* NSImage+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage+WCExtensions.m"; sourceTree = "<group>"; };
 		07AF6E68133A7FAF00A2D188 /* WCSymbolScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSymbolScanner.h; sourceTree = "<group>"; };
@@ -951,6 +957,9 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				07AE8994136D742D0014F788 /* StepOut16x16.png */,
+				07AE8992136D74180014F788 /* StepOver16x16.png */,
+				07AE8990136D73C60014F788 /* Step16x16.png */,
 				07AE898E136D6DDD0014F788 /* StepOver32x32.png */,
 				07AE8988136D5BB40014F788 /* Step.opacity */,
 				07AE8989136D5BB40014F788 /* Step.pdf */,
@@ -1706,6 +1715,9 @@
 				07AE898A136D5BB40014F788 /* Step.opacity in Resources */,
 				07AE898B136D5BB40014F788 /* Step.pdf in Resources */,
 				07AE898F136D6DDD0014F788 /* StepOver32x32.png in Resources */,
+				07AE8991136D73C60014F788 /* Step16x16.png in Resources */,
+				07AE8993136D74180014F788 /* StepOver16x16.png in Resources */,
+				07AE8995136D742D0014F788 /* StepOut16x16.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

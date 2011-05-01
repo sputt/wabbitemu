@@ -277,20 +277,6 @@
 				
 				WCBreakpoint *breakpoint = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:line];
 				if (breakpoint != nil) {
-					if ([[[self file] project] isDebugging] &&
-						[[[self file] project] currentDebugFile] == [self file] &&
-						[[[self file] project] currentDebugLineNumber] == line) {
-						
-						NSRect lineRect = NSMakeRect(NSMinX(bounds), ypos, NSWidth(bounds), NSHeight(rects[0]));
-						NSColor *breakpointColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorBreakpointLineHighlightColorKey];
-						
-						[[breakpointColor colorWithAlphaComponent:0.4] setFill];
-						NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
-						[[breakpointColor colorWithAlphaComponent:0.6] setFill];
-						NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
-						NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
-					}
-					
 					if ([breakpoint isActive])
 						currentTextAttributes = [self markerTextAttributes];
 					else
@@ -301,25 +287,39 @@
 					
 					[[WCGeneralPerformer sharedPerformer] drawBreakpoint:breakpoint inRect:bRect];
 				}
-				else {
+				else
 					currentTextAttributes = textAttributes;
+				
+				if ([[[self file] project] isDebugging] &&
+					[[[self file] project] currentBreakpointFile] == [self file] &&
+					[[[self file] project] currentBreakpointLineNumber] == line) {
 					
-					if ([[[self file] project] isDebugging] &&
-						[[[self file] project] currentDebugFile] == nil &&
-						[[[self file] project] programCounterFile] == [self file] &&
-						[[[self file] project] programCounterLineNumber] == line) {
-						
-						currentTextAttributes = [self markerTextAttributes];
-						
-						NSRect lineRect = NSMakeRect(NSMinX(bounds), ypos, NSWidth(bounds), NSHeight(rects[0]));
-						NSColor *pcColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorProgramCounterHighlightColorKey];
-						
-						[[pcColor colorWithAlphaComponent:0.4] setFill];
-						NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
-						[[pcColor colorWithAlphaComponent:0.6] setFill];
-						NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
-						NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
-					}
+					currentTextAttributes = [self markerTextAttributes];
+					
+					NSRect lineRect = NSMakeRect(NSMinX(bounds), ypos, NSWidth(bounds), NSHeight(rects[0]));
+					NSColor *breakpointColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorBreakpointLineHighlightColorKey];
+					
+					[[breakpointColor colorWithAlphaComponent:0.4] setFill];
+					NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
+					[[breakpointColor colorWithAlphaComponent:0.6] setFill];
+					NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
+					NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
+				}
+				else if ([[[self file] project] isDebugging] &&
+						 [[[self file] project] currentBreakpointFile] == nil &&
+						 [[[self file] project] programCounterFile] == [self file] &&
+						 [[[self file] project] programCounterLineNumber] == line) {
+					
+					currentTextAttributes = [self markerTextAttributes];
+					
+					NSRect lineRect = NSMakeRect(NSMinX(bounds), ypos, NSWidth(bounds), NSHeight(rects[0]));
+					NSColor *pcColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorProgramCounterHighlightColorKey];
+					
+					[[pcColor colorWithAlphaComponent:0.4] setFill];
+					NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
+					[[pcColor colorWithAlphaComponent:0.6] setFill];
+					NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
+					NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
 				}
 				
 				NSArray *errors = [[(WCTextView *)[self clientView] file] errorMessagesAtLineNumber:line];
