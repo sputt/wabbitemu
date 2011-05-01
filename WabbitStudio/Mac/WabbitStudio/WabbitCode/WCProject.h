@@ -9,8 +9,8 @@
 #import <AppKit/NSDocument.h>
 #import "WCTabViewContextProtocol.h"
 #import "WCJumpToObjectProtocol.h"
-#import "WEWCConnectionProtocol.h"
 #import "WCDefines.h"
+#import "RSCalculatorProtocol.h"
 
 
 extern NSString *const kWCProjectFileKey;
@@ -39,7 +39,7 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 
 @class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint,WCAddFilesToProjectViewController;
 
-@interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext> {
+@interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext,RSCalculatorProtocol> {
 @private
 	IBOutlet PSMTabBarControl *_tabBarControl;
 	IBOutlet BWAnchoredButtonBar *_rightButtonBar;
@@ -63,9 +63,7 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	NSUInteger _totalWarnings;
 	BOOL _shouldRunAfterBuilding;
 	
-	NSString *_projectUUID;
-	WEWCConnectionStatus _connectionStatus;
-	
+	LPCALC _calc; // our calc for debugging
 	WCBreakpoint *_projectBreakpoint; // root breakpoint that coordinates displaying all the breakpoints in the
 									  // breakpoints view on the left
 	
@@ -125,9 +123,11 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 @property (assign,nonatomic) WCProjectBuildStatus buildStatus;
 @property (readonly,nonatomic) NSUInteger totalErrors;
 @property (readonly,nonatomic) NSUInteger totalWarnings;
-@property (readonly,nonatomic) NSString *projectUUID;
-@property (assign,nonatomic) WEWCConnectionStatus connectionStatus;
 @property (readonly,nonatomic) BOOL isClosing;
+@property (readonly,nonatomic) LPCALC calc;
+@property (assign,nonatomic) BOOL isActive;
+@property (assign,nonatomic) BOOL isRunning;
+@property (readonly,nonatomic) NSWindow *calculatorWindow;
 
 - (IBAction)addFilesToProject:(id)sender;
 - (IBAction)newFile:(id)sender;

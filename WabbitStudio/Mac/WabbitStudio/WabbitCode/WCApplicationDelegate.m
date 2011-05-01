@@ -15,17 +15,12 @@
 #import "WCUnsavedFilesWindowController.h"
 #import "WCDocumentController.h"
 #import "WCProject.h"
-#import "WCConnectionManager.h"
 
 
 @implementation WCApplicationDelegate
 
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender {
 	return NO;
-}
-
-- (void)applicationWillFinishLaunching:(NSNotification *)notification {
-	[[WCConnectionManager sharedConnectionManager] connectToWabbitEmu];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {
@@ -36,7 +31,7 @@
 			[[WCNewProjectWindowController sharedWindowController] presentWindowController];
 			break;
 		case WCPreferencesOnStartupOpenMostRecentProject:
-			if ([[[WCDocumentController sharedDocumentController] recentProjectURLs] count])
+			if ([[[WCDocumentController sharedDocumentController] recentProjectURLs] count] > 0)
 				[[WCDocumentController sharedDocumentController] openDocumentWithContentsOfURL:[[[WCDocumentController sharedDocumentController] recentProjectURLs] firstObject] display:YES error:NULL];
 			break;
 		case WCPreferencesOnStartupOpenMostRecentDocument:

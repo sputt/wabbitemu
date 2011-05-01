@@ -7,8 +7,7 @@
 //
 
 #import <AppKit/NSDocument.h>
-#import "WEWCConnectionProtocol.h"
-#include "calc.h"
+#import "RSCalculatorProtocol.h"
 
 
 enum {
@@ -34,7 +33,7 @@ extern NSString *const kWECalculatorWillCloseNotification;
 
 @class WELCDView,BWAnchoredButtonBar;
 
-@interface WECalculator : NSDocument <NSWindowDelegate> {
+@interface WECalculator : NSDocument <NSWindowDelegate,RSCalculatorProtocol> {
 @private
 	IBOutlet WELCDView *_LCDView;
 	IBOutlet BWAnchoredButtonBar *_buttonBar;
@@ -45,9 +44,7 @@ extern NSString *const kWECalculatorWillCloseNotification;
 	BOOL _isLoadingRom;
 	NSString *_statusString;
 	NSString *_FPSString;
-	WEWCConnectionStatus _connectionStatus;
 	
-	NSString *_projectIdentifier;
 	BOOL _isClosing;
 	BOOL _isDebugging;
 }
@@ -59,9 +56,7 @@ extern NSString *const kWECalculatorWillCloseNotification;
 @property (copy,nonatomic) NSString *statusString;
 @property (copy,nonatomic) NSString *FPSString;
 @property (readonly,nonatomic) WECalculatorModel model;
-@property (assign,nonatomic) WEWCConnectionStatus connectionStatus;
 @property (readonly,nonatomic) NSWindow *calculatorWindow;
-@property (copy,nonatomic) NSString *projectIdentifier;
 @property (assign,nonatomic) BOOL isDebugging;
 
 - (IBAction)loadRom:(id)sender;
@@ -72,8 +67,6 @@ extern NSString *const kWECalculatorWillCloseNotification;
 
 - (IBAction)toggleLCDSize:(id)sender;
 - (IBAction)resetDisplaySize:(id)sender;
-
-- (IBAction)step:(id)sender;
 
 - (BOOL)loadRomOrSavestate:(NSURL *)romURL error:(NSError **)outError;
 

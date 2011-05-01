@@ -56,6 +56,8 @@ NSString *const kWCPreferencesEditorFontKey = @"editorFont";
 NSString *const kWCPreferencesEditorShowEquateValueTooltipsKey = @"editorShowEquateValueTooltips";
          
 NSString *const kWCPreferencesEditorAutomaticallyIndentNewLinesKey = @"editorAutomaticallyIndentNewLines";
+NSString *const kWCPreferencesEditorTabWidthKey = @"editorTabWidth";
+NSString *const kWCPreferencesEditorIndentUsingKey = @"editorIndentUsing";
          
 NSString *const kWCPreferencesEditorDisplayErrorBadgesKey = @"editorDisplayErrorBadges";
 NSString *const kWCPreferencesEditorErrorLineHighlightKey = @"editorErrorLineHighlight";
@@ -172,6 +174,10 @@ NSString *const kWCPreferencesFilesOpenWithKey = @"filesOpenWith";
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorShowEquateValueTooltipsKey];
 	// editor automatically indent new lines
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorAutomaticallyIndentNewLinesKey];
+	// default tab width
+	[preferences setObject:[NSNumber numberWithUnsignedInteger:4] forKey:kWCPreferencesEditorTabWidthKey];
+	// editor indent using
+	[preferences setObject:[NSNumber numberWithUnsignedInteger:WCPreferencesEditorIndentUsingTabs] forKey:kWCPreferencesEditorIndentUsingKey];
 	
 	// editor display error badges
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorDisplayErrorBadgesKey];

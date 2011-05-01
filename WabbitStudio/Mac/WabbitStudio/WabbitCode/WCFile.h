@@ -76,13 +76,14 @@ extern NSString *const kWCFileNameDidChangeNotification;
 
 - (void)addErrorMessage:(WCBuildMessage *)error;
 - (void)addWarningMessage:(WCBuildMessage *)warning;
-- (WCBuildMessage *)errorMessageAtLineNumber:(NSUInteger)lineNumber;
-- (WCBuildMessage *)warningMessageAtLineNumber:(NSUInteger)lineNumber;
+- (NSArray *)errorMessagesAtLineNumber:(NSUInteger)lineNumber;
+- (NSArray *)warningMessagesAtLineNumber:(NSUInteger)lineNumber;
 - (void)removeAllErrorMessages;
 - (void)removeAllWarningMessages;
 - (void)removeAllBuildMessages;
 - (NSArray *)allErrorMessages;
 - (NSArray *)allWarningMessages;
+- (NSArray *)allBuildMessages;
 - (NSArray *)allBuildMessagesSortedByLineNumber;
 - (NSUInteger)numberOfBuildMessages;
 

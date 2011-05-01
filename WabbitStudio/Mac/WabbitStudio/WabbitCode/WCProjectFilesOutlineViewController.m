@@ -2,7 +2,7 @@
 //  WCProjectFilesOutlineViewController.m
 //  WabbitStudio
 //
-//  Created by William Towe on 4/1/11.
+//  Created by William Towe on 4/1/11.	
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 

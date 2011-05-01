@@ -14,6 +14,11 @@
 
 
 @interface WCTextStorage (Private)
++ (NSFont *)_defaultFont;
++ (NSParagraphStyle *)_defaultParagraphStyle;
++ (NSColor *)_defaultTextColor;
++ (NSColor *)_defaultBackgroundColor;
+
 - (void)_privateInit;
 - (void)_calculateLineStartIndexes;
 - (void)_calculateLineStartIndexesFromLineNumber:(NSUInteger)lineNumber;
@@ -25,7 +30,7 @@
 	if (!(self = [super init]))
 		return nil;
 	
-	_contents = [[NSMutableAttributedString alloc] init];
+	_contents = [[NSMutableAttributedString alloc] initWithString:@"" attributes:[[self class] defaultAttributes]];
 	
 	[self _privateInit];
 	
@@ -36,7 +41,7 @@
 	if (!(self = [super init]))
 		return nil;
 		
-	_contents = [[NSMutableAttributedString alloc] initWithString:string];
+	_contents = [[NSMutableAttributedString alloc] initWithString:string attributes:[[self class] defaultAttributes]];
 	
 	[self _privateInit];
 	
@@ -47,7 +52,7 @@
 	if (!(self = [super init]))
 		return nil;
 		
-	_contents = [[NSMutableAttributedString alloc] initWithString:string attributes:attributes];
+	_contents = [[NSMutableAttributedString alloc] initWithString:string attributes:[[self class] defaultAttributes]];
 	
 	[self _privateInit];
 	
@@ -71,7 +76,7 @@
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	 */
-	//[self cleanupUserDefaultsObserving];
+	[self cleanupUserDefaultsObserving];
 	[_contents release];
 	[_lineStartIndexes release];
     [super dealloc];
@@ -85,19 +90,36 @@
 	return [_contents attributesAtIndex:location effectiveRange:range];
 }
 
-- (void)replaceCharactersInRange:(NSRange)range withString:(NSString *)str {
+- (void)replaceCharactersInRange:(NSRange)range withString:(NSString *)str {	
 	[_contents replaceCharactersInRange:range withString:str];
 	
 	// only calculate line indexes that could have changed; i.e. lines after the line that was edited
 	[self _calculateLineStartIndexesFromLineNumber:[self lineNumberForCharacterIndex:range.location]];
-	//[self _calculateLineStartIndexes];
 	
 	[self edited:NSTextStorageEditedCharacters range:range changeInLength:[str length] - range.length];
 }
 
 - (void)setAttributes:(NSDictionary *)attrs range:(NSRange)range {
-	[_contents setAttributes:attrs range:range];
+	// ensure our attributes don't get changed somehow (e.g. by any text views that we back)
+	[_contents setAttributes:[[self class] defaultAttributes] range:range];
 	[self edited:NSTextStorageEditedAttributes range:range changeInLength:0];
+}
+
+- (NSArray *)userDefaultsKeys {
+	return [NSArray arrayWithObjects:kWCPreferencesEditorFontKey,kWCPreferencesEditorTabWidthKey,kWCPreferencesEditorTextColorKey,kWCPreferencesEditorBackgroundColorKey, nil];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if ([(NSString *)context isEqualToString:kWCPreferencesEditorFontKey])
+		[self setAttributes:[[self class] defaultAttributes] range:NSMakeRange(0, [self length])];
+	else if ([(NSString *)context isEqualToString:kWCPreferencesEditorTabWidthKey])
+		[self setAttributes:[[self class] defaultAttributes] range:NSMakeRange(0, [self length])];
+	else if ([(NSString *)context isEqualToString:kWCPreferencesEditorTextColorKey])
+		[self setAttributes:[[self class] defaultAttributes] range:NSMakeRange(0, [self length])];
+	else if ([(NSString *)context isEqualToString:kWCPreferencesEditorBackgroundColorKey])
+		[self setAttributes:[[self class] defaultAttributes] range:NSMakeRange(0, [self length])];
+	else
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
 - (NSArray *)lineStartIndexes; {
@@ -206,10 +228,45 @@
 		[_lineStartIndexes addObject:[NSNumber numberWithUnsignedInteger:index]];
 }
 
++ (NSDictionary *)defaultAttributes; {
+	return [NSDictionary dictionaryWithObjectsAndKeys:[self _defaultFont],NSFontAttributeName,[self _defaultParagraphStyle],NSParagraphStyleAttributeName,[self _defaultTextColor],NSForegroundColorAttributeName, nil];
+}
+
++ (NSParagraphStyle *)_defaultParagraphStyle; {
+	// Set the width of every tab by first checking the size of the tab in spaces in the current font and then remove all tabs that sets automatically and then set the default tab stop distance
+	NSMutableString *sizeString = [NSMutableString string];
+	NSInteger numberOfSpaces = [[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesEditorTabWidthKey];
+	while (numberOfSpaces--)
+		[sizeString appendString:@" "];
+	
+	NSDictionary *sizeAttribute = [NSDictionary dictionaryWithObjectsAndKeys:[[NSUserDefaults standardUserDefaults] fontForKey:kWCPreferencesEditorFontKey], NSFontAttributeName, nil];
+	CGFloat sizeOfTab = [sizeString sizeWithAttributes:sizeAttribute].width;
+	
+	NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
+	
+	for (id item in [style tabStops])
+		[style removeTabStop:item];
+	
+	[style setDefaultTabInterval:sizeOfTab];
+	
+	return [[style copy] autorelease];
+}
+
++ (NSFont *)_defaultFont {
+	return [[NSUserDefaults standardUserDefaults] fontForKey:kWCPreferencesEditorFontKey];
+}
+
++ (NSColor *)_defaultTextColor; {
+	return [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorTextColorKey];
+}
++ (NSColor *)_defaultBackgroundColor; {
+	return [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorBackgroundColorKey];
+}
+
 - (void)_privateInit; {
 	_lineStartIndexes = [[NSMutableArray alloc] init];
 	
-	//[self setupUserDefaultsObserving];
+	[self setupUserDefaultsObserving];
 	
 	[self _calculateLineStartIndexes];
 }

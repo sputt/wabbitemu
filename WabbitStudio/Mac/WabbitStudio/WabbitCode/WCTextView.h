@@ -42,4 +42,5 @@
 
 - (IBAction)openInSeparateEditor:(id)sender;
 - (IBAction)revealInProjectView:(id)sender;
+
 @end

@@ -8,20 +8,14 @@
 
 #import "WEApplicationDelegate.h"
 #import "WELCDView.h"
-#import "WECalculator.h"
 #import "WEPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "WEPreferencesWindowController.h"
-#import "WEConnectionManager.h"
 
 
 @implementation WEApplicationDelegate
 - (BOOL)applicationShouldOpenUntitledFile:(NSApplication *)sender {
 	return NO;
-}
-
-- (void)applicationWillFinishLaunching:(NSNotification *)notification {
-	[[WEConnectionManager sharedConnectionManager] connectToWabbitCode];
 }
 
 - (void)applicationDidFinishLaunching:(NSNotification *)notification {

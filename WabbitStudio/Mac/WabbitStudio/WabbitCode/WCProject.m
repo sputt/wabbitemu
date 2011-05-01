@@ -45,7 +45,6 @@
 #import "WCBreakpointsViewController.h"
 #import "WCBreakpoint.h"
 #import "WCFileWindowController.h"
-#import "WCConnectionManager.h"
 #import "NSString+WCExtensions.h"
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
@@ -130,7 +129,6 @@ static NSImage *_appIcon = nil;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[_projectUUID release];
 	if (_buildTask != nil)
 		[_buildTask terminate];
 	[_buildTask release];
@@ -161,13 +159,6 @@ static NSImage *_appIcon = nil;
 	return @"WCProject";
 }
 
-- (void)windowControllerWillLoadNib:(NSWindowController *)windowController {
-	[super windowControllerWillLoadNib:windowController];
-	
-	if ([[WCConnectionManager sharedConnectionManager] isConnectedToWabbitEmu])
-		[self setConnectionStatus:WEWCConnectionStatusAvailable];
-}
-
 - (void)windowControllerDidLoadNib:(NSWindowController *)controller {
 	[super windowControllerDidLoadNib:controller];
 	
@@ -180,8 +171,6 @@ static NSImage *_appIcon = nil;
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileHasUnsavedChanges:) name:kWCFileHasUnsavedChangesNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_fileNameDidChange:) name:kWCFileNameDidChangeNotification object:nil];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_connectionManagerDidConnect:) name:kWCConnectionManagerDidConnectNotification object:[WCConnectionManager sharedConnectionManager]];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_connectionManagerDidDisconnect:) name:kWCConnectionManagerDidDisconnectNotification object:[WCConnectionManager sharedConnectionManager]];
 
 	[_rightButtonBar setIsAtBottom:YES];
 	[_rightButtonBar setIsResizable:NO];
@@ -290,13 +279,16 @@ static NSImage *_appIcon = nil;
 - (void)saveDocument:(id)sender {
 	[self saveProjectFile];
 	
-	WCFile *file = [[[self currentTabViewContext] selectedTextView] file];
+	WCTextView *textView = [[self currentTabViewContext] selectedTextView];
+	WCFile *file = [textView file];
 	
 	if (!file)
 		return;
 	
-	NSError *error = nil;
+	if ([textView isCoalescingUndo])
+		[textView breakUndoCoalescing];
 	
+	NSError *error = nil;
 	if (![file saveFile:&error] && error)
 		[self presentError:error];
 }
@@ -932,14 +924,29 @@ static NSImage *_appIcon = nil;
 @synthesize buildStatus=_buildStatus;
 @synthesize totalErrors=_totalErrors;
 @synthesize totalWarnings=_totalWarnings;
-@dynamic projectUUID;
-- (NSString *)projectUUID {
-	if (_projectUUID == nil)
-		_projectUUID = [[NSString UUIDString] retain];
-	return _projectUUID;
-}
-@synthesize connectionStatus=_connectionStatus;
 @synthesize isClosing=_isClosing;
+@synthesize calc=_calc;
+@dynamic isActive;
+- (BOOL)isActive {
+	return (_calc != NULL && _calc->active);
+}
+- (void)setIsActive:(BOOL)isActive {
+	if (_calc != NULL)
+		_calc->active = isActive;
+}
+@dynamic isRunning;
+- (BOOL)isRunning {
+	return (_calc != NULL && _calc->running); 
+}
+- (void)setIsRunning:(BOOL)isRunning {
+	if (_calc != NULL)
+		_calc->running = isRunning;
+}
+@dynamic calculatorWindow;
+- (NSWindow *)calculatorWindow {
+	return [[[self windowControllers] objectAtIndex:0] window];
+}
+
 #pragma mark IBActions
 - (IBAction)addFilesToProject:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -1660,7 +1667,7 @@ static NSImage *_appIcon = nil;
 			}
 			
 			[self viewBuildMessages:nil];
-			[[[self buildMessagesViewController] outlineView] expandItem:[[[self buildMessagesViewController] outlineView] itemAtRow:0]];
+			[[[self buildMessagesViewController] outlineView] expandItem:nil expandChildren:YES];
 		}
 		else {
 			[NSApp setApplicationIconImage:_appIcon];
@@ -1676,8 +1683,7 @@ static NSImage *_appIcon = nil;
 			
 			// send our build file to the emulator
 			if ([self shouldRunAfterBuilding]) {
-				[[WCConnectionManager sharedConnectionManager] addProject:self];
-				[[[WCConnectionManager sharedConnectionManager] connectionProxy] transferFile:[[_buildTask arguments] lastObject] fromProjectWithIdentifier:[self projectUUID]];
+				
 			}
 		}
 		
@@ -1705,14 +1711,6 @@ static NSImage *_appIcon = nil;
 			break;
 		}
 	}
-}
-
-- (void)_connectionManagerDidConnect:(NSNotification *)note {
-	[self setConnectionStatus:WEWCConnectionStatusAvailable];
-}
-
-- (void)_connectionManagerDidDisconnect:(NSNotification *)note {
-	[self setConnectionStatus:WEWCConnectionStatusNone];
 }
 
 #pragma mark Callbacks

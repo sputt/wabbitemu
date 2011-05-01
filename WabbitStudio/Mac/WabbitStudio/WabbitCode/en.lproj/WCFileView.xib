@@ -92,7 +92,7 @@
 										<string key="NSFrameSize">{466, 14}</string>
 										<reference key="NSSuperview" ref="80032388"/>
 										<reference key="NSWindow"/>
-										<reference key="NSNextKeyView" ref="1036145427"/>
+										<reference key="NSNextKeyView" ref="947048589"/>
 										<object class="NSTextContainer" key="NSTextContainer" id="330429200">
 											<object class="NSLayoutManager" key="NSLayoutManager">
 												<object class="NSTextStorage" key="NSTextStorage">
@@ -197,6 +197,7 @@
 								<string key="NSFrame">{{466, 0}, {15, 251}}</string>
 								<reference key="NSSuperview" ref="511833216"/>
 								<reference key="NSWindow"/>
+								<reference key="NSNextKeyView"/>
 								<reference key="NSTarget" ref="511833216"/>
 								<string key="NSAction">_doScroller:</string>
 								<double key="NSCurValue">1</double>
@@ -219,7 +220,7 @@
 						<string key="NSFrameSize">{481, 251}</string>
 						<reference key="NSSuperview" ref="1005"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView" ref="80032388"/>
+						<reference key="NSNextKeyView" ref="1036145427"/>
 						<int key="NSsFlags">16</int>
 						<reference key="NSVScroller" ref="947048589"/>
 						<reference key="NSHScroller" ref="1036145427"/>
@@ -608,26 +609,6 @@
 					<int key="connectionID">71</int>
 				</object>
 				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">font: values.editorFont</string>
-						<reference key="source" ref="510547880"/>
-						<reference key="destination" ref="474829822"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="510547880"/>
-							<reference key="NSDestination" ref="474829822"/>
-							<string key="NSLabel">font: values.editorFont</string>
-							<string key="NSBinding">font</string>
-							<string key="NSKeyPath">values.editorFont</string>
-							<object class="NSDictionary" key="NSOptions">
-								<string key="NS.key.0">NSValueTransformerName</string>
-								<string key="NS.object.0">NSKeyedUnarchiveFromData</string>
-							</object>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">74</int>
-				</object>
-				<object class="IBConnectionRecord">
 					<object class="IBActionConnection" key="connection">
 						<string key="label">addBreakpointAtCurrentLine:</string>
 						<reference key="source" ref="1003"/>
@@ -961,7 +942,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">88</int>
+			<int key="maxID">89</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

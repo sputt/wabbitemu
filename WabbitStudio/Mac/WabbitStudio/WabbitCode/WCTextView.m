@@ -34,6 +34,8 @@
 #define restrict
 #import <RegexKit/RegexKit.h>
 
+@interface WCTextView ()
+@end
 
 @implementation WCTextView
 #pragma mark *** Subclass Overrides ***
@@ -52,8 +54,6 @@
 - (id)initWithCoder:(NSCoder *)decoder {
 	if (!(self = [super initWithCoder:decoder]))
 		return nil;
-	
-	[[self layoutManager] setAllowsNonContiguousLayout:NO];
 	
 	_lineHighlighter = [[WCLineHighlighter alloc] initWithTextView:self];
 	
@@ -104,36 +104,49 @@
 		}
 	}
 	
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayErrorBadgesKey] &&
-		[[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorErrorLineHighlightKey]) {
-		for (WCBuildMessage *error in [_file allErrorMessages]) {
-			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[[_file textStorage] safeLineStartIndexForLineNumber:[error lineNumber]] effectiveRange:NULL];
+	if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayErrorBadgesKey] &&
+		![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayWarningBadgesKey])
+		return;
+	else if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorErrorLineHighlightKey] &&
+			 ![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorWarningLineHighlightKey])
+		return;
+		
+	BOOL displayErrorBadges = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayErrorBadgesKey];
+	BOOL displayWarningBadges = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayWarningBadgesKey];
+	BOOL lineHighlightErrors = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorErrorLineHighlightKey];
+	BOOL lineHighlightWarnings = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorWarningLineHighlightKey];
+	NSColor *errorColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey];
+	NSColor *warningColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorWarningLineHighlightColorKey];
+	NSMutableIndexSet *linesAlreadyDrawn = [NSMutableIndexSet indexSet];
+	
+	for (WCBuildMessage *message in [[self file] allBuildMessages]) {
+		if ([message messageType] == WCBuildMessageTypeError &&
+			displayErrorBadges &&
+			lineHighlightErrors &&
+			![linesAlreadyDrawn containsIndex:[message lineNumber]]) {
+			[linesAlreadyDrawn addIndex:[message lineNumber]];
+			
+			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[(WCTextStorage *)[self textStorage] safeLineStartIndexForLineNumber:[message lineNumber]] effectiveRange:NULL];
 			
 			if (NSIntersectsRect(lineRect, visibleRect) && [self needsToDrawRect:lineRect]) {
-				NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey];
-				
-				[[baseColor colorWithAlphaComponent:0.4] setFill];
+				[[errorColor colorWithAlphaComponent:0.4] setFill];
 				NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
-				[[baseColor colorWithAlphaComponent:0.6] setFill];
-				//[baseColor setFill];
+				[[errorColor colorWithAlphaComponent:0.6] setFill];
 				NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
 				NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
 			}
 		}
-	}
-	
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayWarningBadgesKey] &&
-		[[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorWarningLineHighlightKey]) {
-		for (WCBuildMessage *warning in [_file allWarningMessages]) {
-			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[[_file textStorage] safeLineStartIndexForLineNumber:[warning lineNumber]] effectiveRange:NULL];
+		else if ([message messageType] == WCBuildMessageTypeWarning &&
+				 displayWarningBadges &&
+				 lineHighlightWarnings &&
+				 ![linesAlreadyDrawn containsIndex:[message lineNumber]]) {
+			
+			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[(WCTextStorage *)[self textStorage] safeLineStartIndexForLineNumber:[message lineNumber]] effectiveRange:NULL];
 			
 			if (NSIntersectsRect(lineRect, visibleRect) && [self needsToDrawRect:lineRect]) {
-				NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorWarningLineHighlightColorKey];
-				
-				[[baseColor colorWithAlphaComponent:0.75] setFill];
+				[[warningColor colorWithAlphaComponent:0.4] setFill];
 				NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
-				//[[baseColor colorWithAlphaComponent:0.75] setFill];
-				[baseColor setFill];
+				[[warningColor colorWithAlphaComponent:0.6] setFill];
 				NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
 				NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
 			}
@@ -159,6 +172,7 @@
 	
 	return [[csymbols copy] autorelease];
 }
+
 /*
 - (void)insertCompletion:(NSString *)word forPartialWordRange:(NSRange)charRange movement:(NSInteger)movement isFinal:(BOOL)flag {
 	if (flag && (movement == NSReturnTextMovement || movement == NSTabTextMovement))
@@ -174,10 +188,20 @@
 	
 	return retval;
 }
- 
+
 #pragma mark IBActions
 - (IBAction)insertNewline:(id)sender {
 	[super insertNewline:sender];
+	
+	RKRegex *regex = [[[RKRegex alloc] initWithRegexString:@"^(?<name>[A-z0-9!?]+:)" options:RKCompileUTF8|RKCompileMultiline] autorelease];
+	NSRange lRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location - 1, 0)];
+	RKEnumerator *enumerator = [[[RKEnumerator alloc] initWithRegex:regex string:[self string] inRange:lRange] autorelease];
+	NSRange mRange = [enumerator nextRangeForCaptureName:@"name"];
+	
+	if (mRange.location != NSNotFound) {
+		[self insertTab:nil];		
+		return;
+	}
 	
 	if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorAutomaticallyIndentNewLinesKey])
 		return;
@@ -186,13 +210,47 @@
 	NSScanner *previousLineScanner = [[[NSScanner alloc] initWithString:[[self string] substringWithRange:[[self string] lineRangeForRange:NSMakeRange([self selectedRange].location - 1, 0)]]] autorelease];
 	[previousLineScanner setCharactersToBeSkipped:nil];
 	
-	if ([previousLineScanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:&previousLineWhitespaceString]) {
+	if ([previousLineScanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:&previousLineWhitespaceString])
 		[self insertText:previousLineWhitespaceString];
-	}
 }
 
-- (IBAction)insertTab:(id)sender {
-	[super insertTab:sender];
+- (void)insertTab:(id)sender {
+	if ([[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesEditorIndentUsingKey] == WCPreferencesEditorIndentUsingSpaces) {
+		NSMutableString *spacesString = [NSMutableString string];
+		NSInteger numberOfSpacesPerTab = [[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesEditorTabWidthKey];
+		NSInteger locationOnLine = [self selectedRange].location - [[self string] lineRangeForRange:[self selectedRange]].location;
+		if (numberOfSpacesPerTab != 0) {
+			NSInteger numberOfSpacesLess = locationOnLine % numberOfSpacesPerTab;
+			numberOfSpacesPerTab = numberOfSpacesPerTab - numberOfSpacesLess;
+		}
+		while (numberOfSpacesPerTab--)
+			[spacesString appendString:@" "];
+		
+		[self insertText:spacesString];
+	}
+	else
+		[super insertTab:sender];
+}
+
+- (void)insertText:(id)insertString {
+	if ([insertString isEqualToString:@":"] &&
+		[self selectedRange].length == 0) {
+		
+		RKRegex *regex = [[[RKRegex alloc] initWithRegexString:@"^\\s+(?<name>[A-z0-9!?]+)" options:RKCompileUTF8|RKCompileMultiline] autorelease];
+		NSRange lRange = [[self string] lineRangeForRange:[self selectedRange]];
+		RKEnumerator *enumerator = [[[RKEnumerator alloc] initWithRegex:regex string:[self string] inRange:lRange] autorelease];
+		NSRange mRange = [enumerator nextRangeForCaptureName:@"name"];
+		
+		if (mRange.location == NSNotFound)
+			return;
+		
+		if ([self shouldChangeTextInRange:[enumerator currentRange] replacementString:[[[self string] substringWithRange:mRange] stringByAppendingString:@":"]]) {
+			[self replaceCharactersInRange:[enumerator currentRange] withString:[[[self string] substringWithRange:mRange] stringByAppendingString:@":"]];
+			[self didChangeText];
+		}
+	}
+	else
+		[super insertText:insertString];
 }
 
 - (IBAction)performFindPanelAction:(id)sender {
@@ -299,7 +357,7 @@
 }
 #pragma mark *** Category Overrides ***
 - (NSArray *)userDefaultsKeys {
-	return [NSArray arrayWithObjects:kWCPreferencesEditorTextColorKey,kWCPreferencesEditorBackgroundColorKey,kWCPreferencesEditorErrorLineHighlightKey,kWCPreferencesEditorErrorLineHighlightColorKey,kWCPreferencesEditorWarningLineHighlightKey,kWCPreferencesEditorWarningLineHighlightColorKey,kWCPreferencesEditorWrapLinesKey,kWCPreferencesEditorDisplayErrorBadgesKey,kWCPreferencesEditorDisplayWarningBadgesKey, nil];
+	return [NSArray arrayWithObjects:kWCPreferencesEditorErrorLineHighlightKey,kWCPreferencesEditorErrorLineHighlightColorKey,kWCPreferencesEditorWarningLineHighlightKey,kWCPreferencesEditorWarningLineHighlightColorKey,kWCPreferencesEditorWrapLinesKey,kWCPreferencesEditorDisplayErrorBadgesKey,kWCPreferencesEditorDisplayWarningBadgesKey,kWCPreferencesEditorBackgroundColorKey, nil];
 }
 #pragma mark *** Public Methods ***
 - (void)jumpToSymbol:(WCSymbol *)symbol; {
@@ -315,6 +373,7 @@
 	
 	[textView setSelectedRangeSafely:[symbol symbolRange] scrollRangeToVisible:YES];
 }
+
 #pragma mark Accessors
 @dynamic file;
 - (WCFile *)file {
@@ -519,7 +578,7 @@
 	NSMutableString *newString = [NSMutableString stringWithString:string];
 	
 	if (!range.length) {
-		RKRegex *regex = [[[RKRegex alloc] initWithRegexString:@"^(\t)(.*)" options:RKCompileNoOptions] autorelease];
+		RKRegex *regex = [[[RKRegex alloc] initWithRegexString:@"^(\t)(.*)" options:RKCompileUTF8|RKCompileNoOptions] autorelease];
 		
 		[newString match:regex replace:RKReplaceAll withString:@"$2"];
 		
@@ -530,7 +589,7 @@
 		}
 	}
 	else {
-		RKRegex *regex = [[[RKRegex alloc] initWithRegexString:@"^(\t)(.*)" options:RKCompileMultiline] autorelease];
+		RKRegex *regex = [[[RKRegex alloc] initWithRegexString:@"^(\t)(.*)" options:RKCompileUTF8|RKCompileMultiline] autorelease];
 		
 		[newString match:regex replace:RKReplaceAll withString:@"$2"];
 		
@@ -559,7 +618,7 @@
 	}
 	else {
 		NSMutableString *newString = [NSMutableString stringWithString:string];
-		RKRegex *regex = [[[RKRegex alloc] initWithRegexString:@"^(.*)" options:RKCompileMultiline] autorelease];
+		RKRegex *regex = [[[RKRegex alloc] initWithRegexString:@"^(.*)" options:RKCompileUTF8|RKCompileMultiline] autorelease];
 		
 		[newString match:regex replace:RKReplaceAll withString:@"\t$1"];
 		
@@ -634,6 +693,7 @@
 - (IBAction)_jumpToSymbolFromMenu:(id)sender {
 	[self jumpToSymbol:[sender representedObject]];
 }
+
 #pragma mark Notifications
 - (void)_fileNumberOfBuildMessagesChanged:(NSNotification *)note {
 	[self setNeedsDisplay:YES];

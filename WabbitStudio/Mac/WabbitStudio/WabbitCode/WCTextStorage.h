@@ -14,6 +14,8 @@
 	NSMutableAttributedString *_contents; // our actual storage
 	NSMutableArray *_lineStartIndexes; // stores the starting character index of every line in the text
 }
++ (NSDictionary *)defaultAttributes;
+
 - (NSArray *)lineStartIndexes;
 - (NSUInteger)numberOfLines;
 - (NSUInteger)lineNumberForCharacterIndex:(NSUInteger)characterIndex;

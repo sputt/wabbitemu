@@ -10,7 +10,6 @@
 #import "WECalculator.h"
 #import "NSResponder+WCExtensions.h"
 #import "WETransferFile.h"
-#import "WEConnectionManager.h"
 
 
 @interface WETransferSheetController ()

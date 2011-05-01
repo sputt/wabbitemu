@@ -39,7 +39,6 @@ static NSColor *kBorderColor = nil;
 }
 
 - (void)dealloc {
-	[self unbind:@"connectionStatus"];
 	[self unbind:@"statusString"];
 	[self unbind:@"secondaryStatusString"];
 	[self unbind:@"buildStatus"];
@@ -101,13 +100,13 @@ static NSColor *kBorderColor = nil;
 		NSMutableAttributedString *secondaryStatusString = [[[NSMutableAttributedString alloc] initWithString:NSLocalizedString(@"No Issues", @"No Issues") attributes:[self defaultAttributesForSecondaryStatusString]] autorelease];
 		switch ([self buildStatus]) {
 			case WCProjectBuildStatusErrorsAndWarnings:
-				[secondaryStatusString setAttributedString:[[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:NSLocalizedString(@"%lu errors, %lu warnings", @"errors and warnings secondary status string"),[[self project] totalErrors],[[self project] totalWarnings]] attributes:[self defaultAttributesForSecondaryStatusString]] autorelease]];
+				[secondaryStatusString setAttributedString:[[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:NSLocalizedString(@"%lu error(s), %lu warning(s)", @"errors and warnings secondary status string"),[[self project] totalErrors],[[self project] totalWarnings]] attributes:[self defaultAttributesForSecondaryStatusString]] autorelease]];
 				break;
 			case WCProjectBuildStatusFailureErrors:
-				[secondaryStatusString setAttributedString:[[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:NSLocalizedString(@"%lu errors", @"errors secondary status string"),[[self project] totalErrors]] attributes:[self defaultAttributesForSecondaryStatusString]] autorelease]];
+				[secondaryStatusString setAttributedString:[[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:NSLocalizedString(@"%lu error(s)", @"errors secondary status string"),[[self project] totalErrors]] attributes:[self defaultAttributesForSecondaryStatusString]] autorelease]];
 				break;
 			case WCProjectBuildStatusSuccessWarnings:
-				[secondaryStatusString setAttributedString:[[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:NSLocalizedString(@"%lu warnings", @"warnings secondary status string"),[[self project] totalWarnings]] attributes:[self defaultAttributesForSecondaryStatusString]] autorelease]];
+				[secondaryStatusString setAttributedString:[[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:NSLocalizedString(@"%lu warning(s)", @"warnings secondary status string"),[[self project] totalWarnings]] attributes:[self defaultAttributesForSecondaryStatusString]] autorelease]];
 				break;
 			case WCProjectBuildStatusBuilding:
 			case WCProjectBuildStatusSuccess:
@@ -129,7 +128,6 @@ static NSColor *kBorderColor = nil;
 	[self bind:@"statusString" toObject:project withKeyPath:@"statusString" options:nil];
 	[self bind:@"secondaryStatusString" toObject:project withKeyPath:@"secondaryStatusString" options:nil];
 	[self bind:@"buildStatus" toObject:project withKeyPath:@"buildStatus" options:nil];
-	[self bind:@"connectionStatus" toObject:project withKeyPath:@"connectionStatus" options:nil];
 	
 	return self;
 }
@@ -172,18 +170,6 @@ static NSColor *kBorderColor = nil;
 		return;
 	
 	_buildStatus = buildStatus;
-	
-	[self setNeedsDisplay:YES];
-}
-@dynamic connectionStatus;
-- (WEWCConnectionStatus)connectionStatus {
-	return _connectionStatus;
-}
-- (void)setConnectionStatus:(WEWCConnectionStatus)connectionStatus {
-	if (_connectionStatus == connectionStatus)
-		return;
-	
-	_connectionStatus = connectionStatus;
 	
 	[self setNeedsDisplay:YES];
 }

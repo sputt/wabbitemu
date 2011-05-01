@@ -40,6 +40,7 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 
 @interface WCFile (Private)
 - (void)_setupTextStorageAndSymbolScanner;
+- (void)_setTabWidth;
 @end
 
 @implementation WCFile
@@ -201,7 +202,14 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	if (_lineNumbersToErrorMessages == nil)
 		_lineNumbersToErrorMessages = [[NSMutableDictionary alloc] init];
 	
-	[_lineNumbersToErrorMessages setObject:error forKey:[NSNumber numberWithUnsignedInteger:[error lineNumber]]];
+	NSMutableArray *errors = [_lineNumbersToErrorMessages objectForKey:[NSNumber numberWithUnsignedInteger:[error lineNumber]]];
+	
+	if (errors == nil) {
+		errors = [NSMutableArray arrayWithCapacity:1];
+		[_lineNumbersToErrorMessages setObject:errors forKey:[NSNumber numberWithUnsignedInteger:[error lineNumber]]];
+	}
+	
+	[errors addObject:error];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileNumberOfErrorMessagesChangedNotification object:self];
 }
@@ -209,14 +217,21 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	if (_lineNumbersToWarningMessages == nil)
 		_lineNumbersToWarningMessages = [[NSMutableDictionary alloc] init];
 	
-	[_lineNumbersToWarningMessages setObject:warning forKey:[NSNumber numberWithUnsignedInteger:[warning lineNumber]]];
+	NSMutableArray *warnings = [_lineNumbersToWarningMessages objectForKey:[NSNumber numberWithUnsignedInteger:[warning lineNumber]]];
+	
+	if (warnings == nil) {
+		warnings = [NSMutableArray arrayWithCapacity:1];
+		[_lineNumbersToWarningMessages setObject:warnings forKey:[NSNumber numberWithUnsignedInteger:[warning lineNumber]]];
+	}
+	
+	[warnings addObject:warning];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWCFileNumberOfWarningMessagesChangedNotification object:self];
 }
-- (WCBuildMessage *)errorMessageAtLineNumber:(NSUInteger)lineNumber; {
+- (NSArray *)errorMessagesAtLineNumber:(NSUInteger)lineNumber; {
 	return [_lineNumbersToErrorMessages objectForKey:[NSNumber numberWithUnsignedInteger:lineNumber]];
 }
-- (WCBuildMessage *)warningMessageAtLineNumber:(NSUInteger)lineNumber; {
+- (NSArray *)warningMessagesAtLineNumber:(NSUInteger)lineNumber; {
 	return [_lineNumbersToWarningMessages objectForKey:[NSNumber numberWithUnsignedInteger:lineNumber]];
 }
 - (void)removeAllErrorMessages; {
@@ -234,20 +249,38 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 	[self removeAllWarningMessages];
 }
 - (NSArray *)allErrorMessages; {
-	return [_lineNumbersToErrorMessages allValues];
+	NSMutableArray *retval = [NSMutableArray array];
+	
+	for (NSArray *errors in [_lineNumbersToErrorMessages allValues])
+		[retval addObjectsFromArray:errors];
+	
+	return [[retval copy] autorelease];
 }
 - (NSArray *)allWarningMessages; {
-	return [_lineNumbersToWarningMessages allValues];
+	NSMutableArray *retval = [NSMutableArray array];
+	
+	for (NSArray *warnings in [_lineNumbersToWarningMessages allValues])
+		[retval addObjectsFromArray:warnings];
+	
+	return [[retval copy] autorelease];
+}
+- (NSArray *)allBuildMessages {
+	NSMutableArray *messages = [NSMutableArray array];
+	
+	[messages addObjectsFromArray:[self allErrorMessages]];
+	[messages addObjectsFromArray:[self allWarningMessages]];
+	
+	return [[messages copy] autorelease];
 }
 - (NSArray *)allBuildMessagesSortedByLineNumber; {
 	static NSArray *sortDescriptors = nil;
 	if (!sortDescriptors)
 		sortDescriptors = [[NSArray alloc] initWithObjects:[[[NSSortDescriptor alloc] initWithKey:@"lineNumber" ascending:YES selector:@selector(compare:)] autorelease], nil];
 	
-	NSMutableArray *retval = [NSMutableArray arrayWithCapacity:[_lineNumbersToErrorMessages count]+[_lineNumbersToWarningMessages count]];
+	NSMutableArray *retval = [NSMutableArray array];
 	
-	[retval addObjectsFromArray:[_lineNumbersToWarningMessages allValues]];
-	[retval addObjectsFromArray:[_lineNumbersToErrorMessages allValues]];
+	[retval addObjectsFromArray:[self allErrorMessages]];
+	[retval addObjectsFromArray:[self allWarningMessages]];
 	
 	[retval sortUsingDescriptors:sortDescriptors];
 	
@@ -255,7 +288,7 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 }
 
 - (NSUInteger)numberOfBuildMessages; {
-	return ([_lineNumbersToErrorMessages count]+[_lineNumbersToWarningMessages count]);
+	return ([[self allErrorMessages] count]+[[self allWarningMessages] count]);
 }
 #pragma mark Breakpoints
 - (void)addBreakpoint:(WCBreakpoint *)breakpoint; {
@@ -494,10 +527,31 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 		if (string == nil)
 			string = NSLocalizedString(@"Windoze is stups. That is all.", @"blank file default contents");
 		
-		_textStorage = [[WCTextStorage alloc] initWithString:string attributes:[NSDictionary dictionaryWithObjectsAndKeys:[[NSUserDefaults standardUserDefaults] fontForKey:kWCPreferencesEditorFontKey],NSFontAttributeName, nil]];
+		_textStorage = [[WCTextStorage alloc] initWithString:string];
 		
 		_symbolScanner = [[WCSymbolScanner alloc] initWithFile:self];
 	}
+}
+
+- (void)_setTabWidth {
+	// Set the width of every tab by first checking the size of the tab in spaces in the current font and then remove all tabs that sets automatically and then set the default tab stop distance
+	NSMutableString *sizeString = [NSMutableString string];
+	NSInteger numberOfSpaces = [[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWCPreferencesEditorTabWidthKey];
+	while (numberOfSpaces--) {
+		[sizeString appendString:@" "];
+	}
+	NSDictionary *sizeAttribute = [NSDictionary dictionaryWithObjectsAndKeys:[[NSUserDefaults standardUserDefaults] fontForKey:kWCPreferencesEditorFontKey], NSFontAttributeName, nil];
+	CGFloat sizeOfTab = [sizeString sizeWithAttributes:sizeAttribute].width;
+	
+	NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
+	
+	NSArray *array = [style tabStops];
+	for (id item in array) {
+		[style removeTabStop:item];
+	}
+	[style setDefaultTabInterval:sizeOfTab];
+	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:style, NSParagraphStyleAttributeName, nil];
+	[[self textStorage] addAttributes:attributes range:NSMakeRange(0, [[self textStorage] length])];
 }
 #pragma mark Notifications
 - (void)_didOpenUndoGroup:(NSNotification *)note {

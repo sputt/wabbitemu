@@ -10,7 +10,6 @@
 #import "WEApplicationDelegate.h"
 #import "WCDefines.h"
 #import "WELCDView.h"
-#import "WEConnectionManager.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "WEPreferencesController.h"
 
@@ -39,7 +38,6 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[_projectIdentifier release];
 	[_statusString release];
 	[_FPSString release];
 	calc_slot_free(_calc);
@@ -58,27 +56,19 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	[WEApplicationDelegate removeLCDView:[self LCDView]];
 }
 
-- (void)windowControllerWillLoadNib:(NSWindowController *)windowController {
-	[super windowControllerWillLoadNib:windowController];
-	
-	if ([[WEConnectionManager sharedConnectionManager] isConnectedToWabbitCode])
-		[self setConnectionStatus:WEWCConnectionStatusAvailable];
-}
-
 - (void)windowControllerDidLoadNib:(NSWindowController *)aController
 {
 	[super windowControllerDidLoadNib:aController];
 	
+	[[self LCDView] setCalculator:self];
 	[[self LCDView] setCalc:[self calc]];
 	[[self LCDView] setIsWidescreen:([self calc]->model == TI_85 || [self calc]->model == TI_86)];
+	[self resetDisplaySize:nil];
 	[WEApplicationDelegate addLCDView:[self LCDView]];
 	
 	[_buttonBar setIsAtBottom:YES];
 	[_buttonBar setIsResizable:NO];
 	[[_statusTextField cell] setBackgroundStyle:NSBackgroundStyleLight];
-	
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_connectionManagerDidConnect:) name:kWEConnectionManagerDidConnectNotification object:[WEConnectionManager sharedConnectionManager]];
-	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_connectionManagerDidDisconnect:) name:kWEConnectionManagerDidDisconnectNotification object:[WEConnectionManager sharedConnectionManager]];
 }
 
 - (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError {
@@ -137,17 +127,8 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 }
 
 - (void)updateStatusString {
-	switch ([self connectionStatus]) {
-		case WEWCConnectionStatusAvailable:
-		case WEWCConnectionStatusError:
-		case WEWCConnectionStatusNone:
-			[self setStatusString:[self _stringForCalculatorModel:[self calc]->model]];
-			break;
-		case WEWCConnectionStatusConnected:
-			[[[WEConnectionManager sharedConnectionManager] connectionProxy] requestProjectNameForProjectWithIdentifier:[self projectIdentifier]];
-			break;
-		default:
-			break;
+	if (_calc != NULL) {
+		[self setStatusString:[self _stringForCalculatorModel:[self model]]];
 	}
 }
 
@@ -170,18 +151,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 		return NSNotFound;
 	return (WECalculatorModel)[self calc]->model;
 }
-@dynamic connectionStatus;
-- (WEWCConnectionStatus)connectionStatus {
-	return _connectionStatus;
-}
-- (void)setConnectionStatus:(WEWCConnectionStatus)connectionStatus {
-	if (_connectionStatus == connectionStatus)
-		return;
-	
-	_connectionStatus = connectionStatus;
-	
-	[self updateStatusString];
-}
+
 @dynamic isActive;
 - (BOOL)isActive {
 	return (_calc != NULL && _calc->active);
@@ -190,11 +160,11 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	if (_calc != NULL)
 		_calc->active = isActive;
 }
+
 @dynamic calculatorWindow;
 - (NSWindow *)calculatorWindow {
 	return [[[self windowControllers] objectAtIndex:0] window];
 }
-@synthesize projectIdentifier=_projectIdentifier;
 @dynamic isDebugging;
 - (BOOL)isDebugging {
 	return _isDebugging;
@@ -333,11 +303,4 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	}
 }
 
-- (void)_connectionManagerDidConnect:(NSNotification *)note {
-	[self setConnectionStatus:WEWCConnectionStatusAvailable];
-}
-
-- (void)_connectionManagerDidDisconnect:(NSNotification *)note {
-	[self setConnectionStatus:WEWCConnectionStatusNone];
-}
 @end

@@ -104,7 +104,21 @@
 	
 	_messageType = type;
 	_file = file;
-	_lineNumber = (lineNumber == 0)?0:--lineNumber;
+	
+	if (lineNumber == 0)
+		_lineNumber = 0;
+	else if (lineNumber >= [[file textStorage] numberOfLines]) {
+#ifdef DEBUG
+		NSLog(@"LINE NUMBER OUT OF RANGE!");
+		NSLog(@"file: %@ line: %lu message: %@",[file absolutePathForDisplay],lineNumber,message);
+#endif
+		if ([[file textStorage] safeLineStartIndexForLineNumber:[[file textStorage] numberOfLines] - 1] == [[file textStorage] length])
+			_lineNumber = [[file textStorage] numberOfLines] - 2;
+		else
+			_lineNumber = [[file textStorage] numberOfLines] - 1;
+	}
+	else
+		_lineNumber = --lineNumber;
 	
 	return self;
 }

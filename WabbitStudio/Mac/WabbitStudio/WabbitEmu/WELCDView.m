@@ -7,10 +7,7 @@
 //
 
 #import "WELCDView.h"
-#import "WECalculator.h"
-#import "WEPreferencesController.h"
 #import "WETransferSheetController.h"
-#import "NSObject+WCExtensions.h"
 
 
 @interface WELCDView ()
@@ -32,15 +29,10 @@
 }
 
 - (void)dealloc {
-	[self cleanupUserDefaultsObserving];
 	[_currentFilePaths release];
 	_calc = NULL;
 	glDeleteTextures(2, _textures);
     [super dealloc];
-}
-
-- (NSArray *)userDefaultsKeys {
-	return [NSArray arrayWithObjects:kWEPreferencesDisplayUseLCDWirePatternKey, nil];
 }
 
 - (BOOL)isOpaque {
@@ -49,14 +41,6 @@
 
 - (BOOL)acceptsFirstResponder {
 	return YES;
-}
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-	if ([keyPath isEqualToString:kWEPreferencesDisplayUseLCDWirePatternKey]) {
-		[self setNeedsDisplay:YES];
-	}
-	else
-		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
 - (void)mouseDragged:(NSEvent *)event {
@@ -137,7 +121,7 @@
 	
 	glClear(GL_COLOR_BUFFER_BIT);
 	
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWEPreferencesDisplayUseLCDWirePatternKey])
+	if ([self usesLCDWirePattern])
 		glEnable(GL_BLEND);
 	 
 	if ([self isWidescreen]) {
@@ -188,7 +172,7 @@
 	glVertex2f(1.0f, 1.0f);
 	glEnd();
 	
-	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWEPreferencesDisplayUseLCDWirePatternKey]) {		
+	if ([self usesLCDWirePattern]) {		
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, _textures[1]);
 		glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_STORAGE_HINT_APPLE, GL_STORAGE_SHARED_APPLE);
 		glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -258,28 +242,15 @@
 }
 
 @synthesize calc=_calc;
-@dynamic isWidescreen;
-- (BOOL)isWidescreen {
-	return _isWidescreen;
-}
-- (void)setIsWidescreen:(BOOL)isWidescreen {
-	if (_isWidescreen == isWidescreen)
-		return;
-	
-	_isWidescreen = isWidescreen;
-	
-	[[self calculator] resetDisplaySize:nil];
-}
-
-- (WECalculator *)calculator {
-	return (WECalculator *)[[[self window] windowController] document];
-}
+@synthesize usesLCDWirePattern=_usesLCDWirePattern;
+@synthesize isWidescreen=_isWidescreen;
+@synthesize calculator=_calculator;
 
 @synthesize currentFilePaths=_currentFilePaths;
 
 - (void)commonInit; {	
 	[self registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType, nil]];
-	[self setupUserDefaultsObserving];
+	_usesLCDWirePattern = YES;
 	[self _privateInit];
 }
 

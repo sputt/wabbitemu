@@ -13,16 +13,16 @@ extern NSString *const kWCPreferencesAddFilesToProjectCopyFilesKey;
 
 enum WCPreferencesAddFilesToProjectGroupsOrFolderReferences {
 	WCPreferencesAddFilesToProjectGroups = 0,
-	WCPreferencesAddFilesToProjectFolderReferences = 1
+	WCPreferencesAddFilesToProjectFolderReferences
 };
 typedef NSUInteger WCPreferencesAddFilesToProjectGroupOrFolderReferences;
 extern NSString *const kWCPreferencesAddFilesToProjectGroupOrFolderReferencesKey;
 
 enum WCPreferencesOnStartup {
 	WCPreferencesOnStartupShowNewProjectWindow = 0,
-	WCPreferencesOnStartupOpenMostRecentProject = 1,
-	WCPreferencesOnStartupDoNothing = 2,
-	WCPreferencesOnStartupOpenMostRecentDocument = 3
+	WCPreferencesOnStartupOpenMostRecentProject,
+	WCPreferencesOnStartupDoNothing,
+	WCPreferencesOnStartupOpenMostRecentDocument
 };
 typedef NSUInteger WCPreferencesOnStartup;
 extern NSString *const kWCPreferencesOnStartupKey;
@@ -71,6 +71,14 @@ extern NSString *const kWCPreferencesEditorFontKey;
 extern NSString *const kWCPreferencesEditorShowEquateValueTooltipsKey;
 
 extern NSString *const kWCPreferencesEditorAutomaticallyIndentNewLinesKey;
+extern NSString *const kWCPreferencesEditorTabWidthKey;
+
+enum {
+	WCPreferencesEditorIndentUsingSpaces = 0,
+	WCPreferencesEditorIndentUsingTabs
+};
+typedef NSUInteger WCPreferencesEditorIndentUsing;
+extern NSString *const kWCPreferencesEditorIndentUsingKey;
 
 extern NSString *const kWCPreferencesEditorDisplayErrorBadgesKey;
 extern NSString *const kWCPreferencesEditorErrorLineHighlightKey;
@@ -89,15 +97,15 @@ extern NSString *const kWCPreferencesAdvancedConfirmDeleteOfBreakpointKey;
 
 enum WCPreferencesBuildingForUnsavedFiles {
 	WCPreferencesBuildingForUnsavedFilesAlwaysSave = 0,
-	WCPreferencesBuildingForUnsavedFilesPromptBeforeSaving = 1,
-	WCPreferencesBuildingForUnsavedFilesNeverSave = 2
+	WCPreferencesBuildingForUnsavedFilesPromptBeforeSaving,
+	WCPreferencesBuildingForUnsavedFilesNeverSave
 };
 typedef NSUInteger WCPreferencesBuildingForUnsavedFiles;
 extern NSString *const kWCPreferencesBuildingForUnsavedFilesKey;
 
 enum WCPreferencesBuildingLocation {
 	WCPreferencesBuildingLocationProjectFolder = 0,
-	WCPreferencesBuildingLocationCustom = 1
+	WCPreferencesBuildingLocationCustom
 };
 typedef NSUInteger WCPreferencesBuildingLocation;
 extern NSString *const kWCPreferencesBuildingLocationKey;
@@ -107,7 +115,7 @@ extern NSString *const kWCPreferencesFilesTextEncodingKey;
 
 enum WCPreferencesFilesOpenWith {
 	WCPreferencesFilesOpenWithDoubleClick = 0,
-	WCPreferencesFilesOpenWithSingleClick = 1
+	WCPreferencesFilesOpenWithSingleClick
 };
 typedef NSUInteger WCPreferencesFilesOpenWith;
 extern NSString *const kWCPreferencesFilesOpenWithKey;

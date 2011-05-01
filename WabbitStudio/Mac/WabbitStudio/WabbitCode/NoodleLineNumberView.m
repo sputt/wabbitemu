@@ -45,11 +45,12 @@
 #import "MAAttachedWindow.h"
 #import "WCBreakpointEditViewController.h"
 #import "WCBuildMessagesViewController.h"
+#import "NSArray+WCExtensions.h"
 
 
 #define DEFAULT_THICKNESS 22.0
 #define RULER_MARGIN 3.0
-#define BADGE_THICKNESS 12.0
+#define BADGE_THICKNESS 13.0
 #define CORNER_RADIUS 3.0
 #define BREAKPOINT_HEIGHT 12.0
 
@@ -145,9 +146,9 @@
 }
 #pragma mark Tooltips
 - (NSString *)view:(NSView *)view stringForToolTip:(NSToolTipTag)tag point:(NSPoint)point userData:(void *)data {
-	WCBuildMessage *message = (WCBuildMessage *)data;
+	NSArray *messages = (NSArray *)data;
 	
-	return [message name];
+	return [[messages firstObject] name];
 }
 #pragma mark Mouse Handling
 - (void)mouseDown:(NSEvent *)theEvent {
@@ -206,15 +207,25 @@
 			[[NSCursor disappearingItemCursor] set];
 	}
 	
+	[[NSCursor arrowCursor] set];
+	
 	[pool drain];
 	 
 }
+
+- (void)resetCursorRects {
+	[super resetCursorRects];
+	[self removeAllToolTips];
+}
+
 #pragma mark Drawing
 - (void)drawHashMarksAndLabelsInRect:(NSRect)aRect {
 	NSRect bounds = [self bounds];
 	
 	[[self backgroundColor] set];
 	NSRectFill(bounds);
+	[[NSColor colorWithCalibratedWhite:0.58 alpha:1.0] set];
+	[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
 	
     id view = [self clientView];
 	
@@ -224,7 +235,7 @@
 		return;
 	}
 	
-	[self removeAllToolTips];
+	//[self removeAllToolTips];
 	
 	NSLayoutManager *layoutManager = [view layoutManager];
 	NSTextContainer	*container = [view textContainer];
@@ -278,10 +289,10 @@
 				else
 					currentTextAttributes = textAttributes;
 				
+				NSArray *errors = [[(WCTextView *)[self clientView] file] errorMessagesAtLineNumber:line];
 				if (showErrorBadges) {
-					WCBuildMessage *error = [[(WCTextView *)[self clientView] file] errorMessageAtLineNumber:line];
-					
-					if (error) {
+					if (errors) {
+						WCBuildMessage *error = [errors objectAtIndex:0];
 						if (errorLineHighlight) {
 							currentTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[self font],NSFontAttributeName,[NSColor textColor],NSForegroundColorAttributeName, nil];
 							
@@ -296,22 +307,22 @@
 							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
 						}
 						
-						NSRect drawRect = NSMakeRect(bounds.origin.x,ypos + (NSHeight(rects[0]) - BADGE_THICKNESS)/2.0,BADGE_THICKNESS, BADGE_THICKNESS);
+						NSRect drawRect = NSMakeRect(bounds.origin.x,ypos + floor((NSHeight(rects[0]) - BADGE_THICKNESS)/2.0),BADGE_THICKNESS, BADGE_THICKNESS);
 						drawRect.size.width = drawRect.size.height = BADGE_THICKNESS;
 						
-						NSImage *icon = [error icon];
+						NSImage *icon = ([errors count] == 1)?[error icon]:[NSImage imageNamed:@"ErrorTwo"];
 						[icon setSize:NSMakeSize(BADGE_THICKNESS, BADGE_THICKNESS)];
 						
 						[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
 						
-						[self addToolTipRect:drawRect owner:self userData:(void *)error];
+						[self addToolTipRect:drawRect owner:self userData:(void *)errors];
 					}
 				}
 				
-				if (showWarningBadges) {
-					WCBuildMessage *warning = [[(WCTextView *)[self clientView] file] warningMessageAtLineNumber:line];
-					
-					if (warning) {
+				if (showWarningBadges && errors == nil) {
+					NSArray *warnings = [[(WCTextView *)[self clientView] file] warningMessagesAtLineNumber:line];
+					if (warnings) {
+						WCBuildMessage *warning = [warnings objectAtIndex:0];
 						if (warningLineHighlight) {
 							currentTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[self font],NSFontAttributeName,[NSColor textColor],NSForegroundColorAttributeName, nil];
 							
@@ -320,16 +331,15 @@
 							
 							[[baseColor colorWithAlphaComponent:0.75] setFill];
 							NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
-							//[[baseColor colorWithAlphaComponent:0.5] setFill];
 							[baseColor setFill];
 							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
 							NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
 						}
 						
-						NSRect drawRect = NSMakeRect(bounds.origin.x,ypos + (NSHeight(rects[0]) - BADGE_THICKNESS)/2.0,BADGE_THICKNESS, BADGE_THICKNESS);
+						NSRect drawRect = NSMakeRect(bounds.origin.x,ypos + floor((NSHeight(rects[0]) - BADGE_THICKNESS)/2.0),BADGE_THICKNESS, BADGE_THICKNESS);
 						drawRect.size.width = drawRect.size.height = BADGE_THICKNESS;
 						
-						NSImage *icon = [warning icon];
+						NSImage *icon = ([warnings count] == 1)?[warning icon]:[NSImage imageNamed:@"WarningMultiple"];
 						[icon setSize:NSMakeSize(BADGE_THICKNESS, BADGE_THICKNESS)];
 						
 						[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
@@ -350,9 +360,6 @@
 		if (index > NSMaxRange(range))
 			break;
 	}
-	
-	[[NSColor colorWithCalibratedWhite:0.58 alpha:1.0] set];
-	[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
 }
 #pragma mark Menus
 - (NSMenu *)menu {
@@ -384,8 +391,8 @@
 		[self setCurrentLocation:p.y];
 		[self setCurrentLineNumber:line];
 		
-		[self setCurrentBuildMessage:[[(WCTextView *)[self clientView] file] warningMessageAtLineNumber:line]];
-		[self setCurrentBuildMessage:[[(WCTextView *)[self clientView] file] errorMessageAtLineNumber:line]];
+		[self setCurrentBuildMessage:[[[(WCTextView *)[self clientView] file] warningMessagesAtLineNumber:line] firstObject]];
+		[self setCurrentBuildMessage:[[[(WCTextView *)[self clientView] file] errorMessagesAtLineNumber:line] firstObject]];
 	}
 	else {
 		[self setCurrentBuildMessage:nil];

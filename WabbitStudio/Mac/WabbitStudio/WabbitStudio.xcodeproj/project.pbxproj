@@ -69,6 +69,31 @@
 		07463AF61333212900744B98 /* WCNewProjectWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07463AF51333212700744B98 /* WCNewProjectWindowController.m */; };
 		07463AF813332BCC00744B98 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AF713332BCC00744B98 /* QuartzCore.framework */; };
 		074D80C7136234170081571E /* Files.png in Resources */ = {isa = PBXBuildFile; fileRef = 074D80C6136234170081571E /* Files.png */; };
+		0755A6EE136BE2F000B7C8E4 /* alu.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905DFD1367C9930079A404 /* alu.c */; };
+		0755A6EF136BE2F000B7C8E4 /* control.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905DFF1367C9930079A404 /* control.c */; };
+		0755A6F0136BE2F000B7C8E4 /* core.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E011367C9930079A404 /* core.c */; };
+		0755A6F1136BE2F000B7C8E4 /* device.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E041367C9930079A404 /* device.c */; };
+		0755A6F2136BE2F000B7C8E4 /* indexcb.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E061367C9930079A404 /* indexcb.c */; };
+		0755A6F4136BE2FD00B7C8E4 /* 81hw.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E1E1367C9930079A404 /* 81hw.c */; };
+		0755A6F5136BE2FD00B7C8E4 /* 83hw.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E201367C9930079A404 /* 83hw.c */; };
+		0755A6F6136BE2FD00B7C8E4 /* 83phw.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E221367C9930079A404 /* 83phw.c */; };
+		0755A6F7136BE2FD00B7C8E4 /* 83psehw.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E241367C9930079A404 /* 83psehw.c */; };
+		0755A6F8136BE2FD00B7C8E4 /* 86hw.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E261367C9930079A404 /* 86hw.c */; };
+		0755A6F9136BE2FD00B7C8E4 /* keys.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E281367C9930079A404 /* keys.c */; };
+		0755A6FA136BE2FD00B7C8E4 /* lcd.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E2A1367C9930079A404 /* lcd.c */; };
+		0755A6FB136BE2FD00B7C8E4 /* link.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E2C1367C9930079A404 /* link.c */; };
+		0755A6FC136BE30400B7C8E4 /* calc.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E311367C9930079A404 /* calc.c */; };
+		0755A6FD136BE30400B7C8E4 /* state.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E421367C9930079A404 /* state.c */; };
+		0755A6FE136BE30F00B7C8E4 /* exportvar.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E4D1367C9930079A404 /* exportvar.c */; };
+		0755A6FF136BE30F00B7C8E4 /* gif.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E521367C9930079A404 /* gif.c */; };
+		0755A700136BE30F00B7C8E4 /* gifhandle.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E541367C9930079A404 /* gifhandle.c */; };
+		0755A701136BE30F00B7C8E4 /* label.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E561367C9930079A404 /* label.c */; };
+		0755A702136BE30F00B7C8E4 /* savestate.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E5A1367C9930079A404 /* savestate.c */; };
+		0755A703136BE30F00B7C8E4 /* var.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E621367C9930079A404 /* var.c */; };
+		0755A71A136C0B7D00B7C8E4 /* ErrorTwo.opacity in Resources */ = {isa = PBXBuildFile; fileRef = 0755A718136C0B7D00B7C8E4 /* ErrorTwo.opacity */; };
+		0755A71B136C0B7D00B7C8E4 /* ErrorTwo.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 0755A719136C0B7D00B7C8E4 /* ErrorTwo.pdf */; };
+		0755A71F136C0D8F00B7C8E4 /* WarningMultiple.opacity in Resources */ = {isa = PBXBuildFile; fileRef = 0755A71D136C0D8F00B7C8E4 /* WarningMultiple.opacity */; };
+		0755A720136C0D8F00B7C8E4 /* WarningMultiple.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 0755A71E136C0D8F00B7C8E4 /* WarningMultiple.pdf */; };
 		0756D8D91363DFE200ECDFFD /* WCInfoTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */; };
 		0756D8E01363EF5700ECDFFD /* WCGroupBackgroundOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0756D8DF1363EF5600ECDFFD /* WCGroupBackgroundOutlineView.m */; };
 		0758E82A134ABC1200280D9D /* NSColor-NTExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0758E829134ABC1200280D9D /* NSColor-NTExtensions.m */; };
@@ -211,13 +236,10 @@
 		07BA698D1367DA3D00AD7FF5 /* WECalculatorTopBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BA698C1367DA3D00AD7FF5 /* WECalculatorTopBarView.m */; };
 		07BA698E1367DB3600AD7FF5 /* WCGradientView.m in Sources */ = {isa = PBXBuildFile; fileRef = 075E9FA8134A74BA0034D595 /* WCGradientView.m */; };
 		07BA698F1367EC4B00AD7FF5 /* NSUserDefaults+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0706F50E13391684000C9007 /* NSUserDefaults+WCExtensions.m */; };
-		07BA69941367F37400AD7FF5 /* WEConnectionStatusToImageTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BA69931367F37400AD7FF5 /* WEConnectionStatusToImageTransformer.m */; };
 		07BA69951367F66400AD7FF5 /* DBPrefsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07604AD6133C353300D8A432 /* DBPrefsWindowController.m */; };
 		07BA69981367F6CD00AD7FF5 /* WEPreferencesWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07BA69961367F6CD00AD7FF5 /* WEPreferencesWindow.xib */; };
 		07BA699B1367F71400AD7FF5 /* WEPreferencesWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BA699A1367F71400AD7FF5 /* WEPreferencesWindowController.m */; };
 		07BA699C1367F7B900AD7FF5 /* Advanced.png in Resources */ = {isa = PBXBuildFile; fileRef = 07CBCF7B135C141600B72B6B /* Advanced.png */; };
-		07BA69A21367FF0D00AD7FF5 /* WEConnectionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BA69A11367FF0D00AD7FF5 /* WEConnectionManager.m */; };
-		07BA69A51368006B00AD7FF5 /* WCConnectionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BA69A41368006B00AD7FF5 /* WCConnectionManager.m */; };
 		07BA69A61368069300AD7FF5 /* WCSingleton.m in Sources */ = {isa = PBXBuildFile; fileRef = 0772BEF013367207009D4F32 /* WCSingleton.m */; };
 		07BBD222135F78E4005C4870 /* MAAttachedWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BBD221135F78E4005C4870 /* MAAttachedWindow.m */; };
 		07BBD226135F7CED005C4870 /* WCBreakpointEditViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BBD225135F7CED005C4870 /* WCBreakpointEditViewController.m */; };
@@ -238,8 +260,6 @@
 		07CE786F134E637A001B96FC /* WCDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE786E134E637A001B96FC /* WCDocumentController.m */; };
 		07CE7872134EB1B8001B96FC /* WCGotoLineSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE7871134EB1B7001B96FC /* WCGotoLineSheetController.m */; };
 		07CE7875134EB23B001B96FC /* WCGotoLineSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07CE7873134EB23B001B96FC /* WCGotoLineSheet.xib */; };
-		07D13284136A7B7300BD5A84 /* WCConnectionStatusToStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D13283136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.m */; };
-		07D13285136A7D1900BD5A84 /* WEConnectionStatusToImageTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BA69931367F37400AD7FF5 /* WEConnectionStatusToImageTransformer.m */; };
 		07D1328F136AAA7300BD5A84 /* QuickLook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07D1328E136AAA7300BD5A84 /* QuickLook.framework */; };
 		07D1329E136AAA7400BD5A84 /* GenerateThumbnailForURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D1329D136AAA7400BD5A84 /* GenerateThumbnailForURL.m */; };
 		07D132A0136AAA7400BD5A84 /* GeneratePreviewForURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D1329F136AAA7400BD5A84 /* GeneratePreviewForURL.m */; };
@@ -472,6 +492,11 @@
 		07463AF713332BCC00744B98 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = SDKs/MacOSX10.6.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		0747E3B9135819B90009EFBF /* WCTabViewContextProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTabViewContextProtocol.h; sourceTree = "<group>"; };
 		074D80C6136234170081571E /* Files.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Files.png; sourceTree = "<group>"; };
+		0755A718136C0B7D00B7C8E4 /* ErrorTwo.opacity */ = {isa = PBXFileReference; lastKnownFileType = file; path = ErrorTwo.opacity; sourceTree = "<group>"; };
+		0755A719136C0B7D00B7C8E4 /* ErrorTwo.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = ErrorTwo.pdf; sourceTree = "<group>"; };
+		0755A71D136C0D8F00B7C8E4 /* WarningMultiple.opacity */ = {isa = PBXFileReference; lastKnownFileType = file; path = WarningMultiple.opacity; sourceTree = "<group>"; };
+		0755A71E136C0D8F00B7C8E4 /* WarningMultiple.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = WarningMultiple.pdf; sourceTree = "<group>"; };
+		0755A721136C1A6000B7C8E4 /* RSCalculatorProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSCalculatorProtocol.h; sourceTree = "<group>"; };
 		0756D8D71363DFE200ECDFFD /* WCInfoTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCInfoTextFieldCell.h; sourceTree = "<group>"; };
 		0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCInfoTextFieldCell.m; sourceTree = "<group>"; };
 		0756D8DE1363EF5500ECDFFD /* WCGroupBackgroundOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGroupBackgroundOutlineView.h; sourceTree = "<group>"; };
@@ -709,16 +734,9 @@
 		07B75E0A1368AAB1007B13A2 /* WETransferSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WETransferSheetController.m; sourceTree = "<group>"; };
 		07BA698B1367DA3D00AD7FF5 /* WECalculatorTopBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WECalculatorTopBarView.h; sourceTree = "<group>"; };
 		07BA698C1367DA3D00AD7FF5 /* WECalculatorTopBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WECalculatorTopBarView.m; sourceTree = "<group>"; };
-		07BA69911367F11B00AD7FF5 /* WEWCConnectionProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEWCConnectionProtocol.h; sourceTree = "<group>"; };
-		07BA69921367F37400AD7FF5 /* WEConnectionStatusToImageTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEConnectionStatusToImageTransformer.h; sourceTree = "<group>"; };
-		07BA69931367F37400AD7FF5 /* WEConnectionStatusToImageTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEConnectionStatusToImageTransformer.m; sourceTree = "<group>"; };
 		07BA69971367F6CD00AD7FF5 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WEPreferencesWindow.xib; sourceTree = "<group>"; };
 		07BA69991367F71300AD7FF5 /* WEPreferencesWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEPreferencesWindowController.h; sourceTree = "<group>"; };
 		07BA699A1367F71400AD7FF5 /* WEPreferencesWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEPreferencesWindowController.m; sourceTree = "<group>"; };
-		07BA69A01367FF0D00AD7FF5 /* WEConnectionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEConnectionManager.h; sourceTree = "<group>"; };
-		07BA69A11367FF0D00AD7FF5 /* WEConnectionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEConnectionManager.m; sourceTree = "<group>"; };
-		07BA69A31368006B00AD7FF5 /* WCConnectionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCConnectionManager.h; sourceTree = "<group>"; };
-		07BA69A41368006B00AD7FF5 /* WCConnectionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCConnectionManager.m; sourceTree = "<group>"; };
 		07BBD220135F78E4005C4870 /* MAAttachedWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MAAttachedWindow.h; sourceTree = "<group>"; };
 		07BBD221135F78E4005C4870 /* MAAttachedWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MAAttachedWindow.m; sourceTree = "<group>"; };
 		07BBD224135F7CED005C4870 /* WCBreakpointEditViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBreakpointEditViewController.h; sourceTree = "<group>"; };
@@ -753,8 +771,6 @@
 		07CE7870134EB1B7001B96FC /* WCGotoLineSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGotoLineSheetController.h; sourceTree = "<group>"; };
 		07CE7871134EB1B7001B96FC /* WCGotoLineSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCGotoLineSheetController.m; sourceTree = "<group>"; };
 		07CE7874134EB23B001B96FC /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCGotoLineSheet.xib; sourceTree = "<group>"; };
-		07D13282136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCConnectionStatusToStringTransformer.h; sourceTree = "<group>"; };
-		07D13283136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCConnectionStatusToStringTransformer.m; sourceTree = "<group>"; };
 		07D1328D136AAA7300BD5A84 /* WabbitEmuQuickLook.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WabbitEmuQuickLook.qlgenerator; sourceTree = BUILT_PRODUCTS_DIR; };
 		07D1328E136AAA7300BD5A84 /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
 		07D13290136AAA7300BD5A84 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
@@ -913,6 +929,10 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				0755A71D136C0D8F00B7C8E4 /* WarningMultiple.opacity */,
+				0755A71E136C0D8F00B7C8E4 /* WarningMultiple.pdf */,
+				0755A718136C0B7D00B7C8E4 /* ErrorTwo.opacity */,
+				0755A719136C0B7D00B7C8E4 /* ErrorTwo.pdf */,
 				0722EFF81367439000CB69BF /* Symbols16x16.png */,
 				0722EFF61367421D00CB69BF /* Building16x16.png */,
 				0722EFF4136741EF00CB69BF /* Breakpoints16x16.png */,
@@ -1161,10 +1181,6 @@
 				0756D8DF1363EF5600ECDFFD /* WCGroupBackgroundOutlineView.m */,
 				07200C6713675B450010AE58 /* WCProjectStatusView.h */,
 				07200C6813675B450010AE58 /* WCProjectStatusView.m */,
-				07BA69A31368006B00AD7FF5 /* WCConnectionManager.h */,
-				07BA69A41368006B00AD7FF5 /* WCConnectionManager.m */,
-				07D13282136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.h */,
-				07D13283136A7B7200BD5A84 /* WCConnectionStatusToStringTransformer.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1298,12 +1314,8 @@
 				07905DEE1367C66D0079A404 /* WEPreferencesController.m */,
 				07BA698B1367DA3D00AD7FF5 /* WECalculatorTopBarView.h */,
 				07BA698C1367DA3D00AD7FF5 /* WECalculatorTopBarView.m */,
-				07BA69921367F37400AD7FF5 /* WEConnectionStatusToImageTransformer.h */,
-				07BA69931367F37400AD7FF5 /* WEConnectionStatusToImageTransformer.m */,
 				07BA69991367F71300AD7FF5 /* WEPreferencesWindowController.h */,
 				07BA699A1367F71400AD7FF5 /* WEPreferencesWindowController.m */,
-				07BA69A01367FF0D00AD7FF5 /* WEConnectionManager.h */,
-				07BA69A11367FF0D00AD7FF5 /* WEConnectionManager.m */,
 				07B75E091368AAB1007B13A2 /* WETransferSheetController.h */,
 				07B75E0A1368AAB1007B13A2 /* WETransferSheetController.m */,
 				07C55FC1136913DF00BB2325 /* WETransferFile.h */,
@@ -1436,7 +1448,7 @@
 		07BA69901367F08500AD7FF5 /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
-				07BA69911367F11B00AD7FF5 /* WEWCConnectionProtocol.h */,
+				0755A721136C1A6000B7C8E4 /* RSCalculatorProtocol.h */,
 			);
 			name = Protocols;
 			sourceTree = "<group>";
@@ -1655,6 +1667,10 @@
 				0722EFF5136741EF00CB69BF /* Breakpoints16x16.png in Resources */,
 				0722EFF71367421D00CB69BF /* Building16x16.png in Resources */,
 				0722EFF91367439000CB69BF /* Symbols16x16.png in Resources */,
+				0755A71A136C0B7D00B7C8E4 /* ErrorTwo.opacity in Resources */,
+				0755A71B136C0B7D00B7C8E4 /* ErrorTwo.pdf in Resources */,
+				0755A71F136C0D8F00B7C8E4 /* WarningMultiple.opacity in Resources */,
+				0755A720136C0D8F00B7C8E4 /* WarningMultiple.pdf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1819,9 +1835,27 @@
 				07200C6D1367622C0010AE58 /* NSBezierPath+StrokeExtensions.m in Sources */,
 				07200C70136762D90010AE58 /* NSShadow+MCAdditions.m in Sources */,
 				07905DA91367990B0079A404 /* NSBezierPath+MCAdditions.m in Sources */,
-				07BA69A51368006B00AD7FF5 /* WCConnectionManager.m in Sources */,
-				07D13284136A7B7300BD5A84 /* WCConnectionStatusToStringTransformer.m in Sources */,
-				07D13285136A7D1900BD5A84 /* WEConnectionStatusToImageTransformer.m in Sources */,
+				0755A6EE136BE2F000B7C8E4 /* alu.c in Sources */,
+				0755A6EF136BE2F000B7C8E4 /* control.c in Sources */,
+				0755A6F0136BE2F000B7C8E4 /* core.c in Sources */,
+				0755A6F1136BE2F000B7C8E4 /* device.c in Sources */,
+				0755A6F2136BE2F000B7C8E4 /* indexcb.c in Sources */,
+				0755A6F4136BE2FD00B7C8E4 /* 81hw.c in Sources */,
+				0755A6F5136BE2FD00B7C8E4 /* 83hw.c in Sources */,
+				0755A6F6136BE2FD00B7C8E4 /* 83phw.c in Sources */,
+				0755A6F7136BE2FD00B7C8E4 /* 83psehw.c in Sources */,
+				0755A6F8136BE2FD00B7C8E4 /* 86hw.c in Sources */,
+				0755A6F9136BE2FD00B7C8E4 /* keys.c in Sources */,
+				0755A6FA136BE2FD00B7C8E4 /* lcd.c in Sources */,
+				0755A6FB136BE2FD00B7C8E4 /* link.c in Sources */,
+				0755A6FC136BE30400B7C8E4 /* calc.c in Sources */,
+				0755A6FD136BE30400B7C8E4 /* state.c in Sources */,
+				0755A6FE136BE30F00B7C8E4 /* exportvar.c in Sources */,
+				0755A6FF136BE30F00B7C8E4 /* gif.c in Sources */,
+				0755A700136BE30F00B7C8E4 /* gifhandle.c in Sources */,
+				0755A701136BE30F00B7C8E4 /* label.c in Sources */,
+				0755A702136BE30F00B7C8E4 /* savestate.c in Sources */,
+				0755A703136BE30F00B7C8E4 /* var.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1861,10 +1895,8 @@
 				07BA698D1367DA3D00AD7FF5 /* WECalculatorTopBarView.m in Sources */,
 				07BA698E1367DB3600AD7FF5 /* WCGradientView.m in Sources */,
 				07BA698F1367EC4B00AD7FF5 /* NSUserDefaults+WCExtensions.m in Sources */,
-				07BA69941367F37400AD7FF5 /* WEConnectionStatusToImageTransformer.m in Sources */,
 				07BA69951367F66400AD7FF5 /* DBPrefsWindowController.m in Sources */,
 				07BA699B1367F71400AD7FF5 /* WEPreferencesWindowController.m in Sources */,
-				07BA69A21367FF0D00AD7FF5 /* WEConnectionManager.m in Sources */,
 				07BA69A61368069300AD7FF5 /* WCSingleton.m in Sources */,
 				07B75E0B1368AAB1007B13A2 /* WETransferSheetController.m in Sources */,
 				070E31D41368B85800D0CAE2 /* NSResponder+WCExtensions.m in Sources */,
@@ -2165,7 +2197,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_ENABLE_OBJC_GC = unsupported;
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 			};
 			name = Debug;
 		};
@@ -2173,7 +2205,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				GCC_ENABLE_OBJC_GC = unsupported;
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 			};
 			name = Release;
 		};
@@ -2195,9 +2227,13 @@
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "WabbitCode/WabbitCode-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = DEBUG;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					DEBUG,
+					_MACVER,
+					MACVER,
+				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -2229,8 +2265,11 @@
 				GCC_ENABLE_OBJC_GC = unsupported;
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "WabbitCode/WabbitCode-Prefix.pch";
-				GCC_PREPROCESSOR_DEFINITIONS = "";
-				GCC_TREAT_WARNINGS_AS_ERRORS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					_MACVER,
+					MACVER,
+				);
+				GCC_TREAT_WARNINGS_AS_ERRORS = NO;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;

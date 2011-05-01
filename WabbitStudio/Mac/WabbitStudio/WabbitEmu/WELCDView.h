@@ -8,14 +8,13 @@
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
-#include "calc.h"
+#import "RSCalculatorProtocol.h"
 
 
 #define kLCDWidth 96
 #define kLCDWidescreenWidth 128
 #define kLCDHeight 64
 
-@class WECalculator;
 
 @interface WELCDView : NSOpenGLView {
 @private	
@@ -25,15 +24,18 @@
 	GLubyte _wlcd_buffer[kLCDHeight][kLCDWidescreenWidth][4];
 	GLuint _textures[2];
 	
+	__weak id <RSCalculatorProtocol> _calculator;
 	LPCALC _calc;
 	BOOL _isWidescreen;
+	BOOL _usesLCDWirePattern;
 	
 	NSArray *_currentFilePaths;
 }
 
 @property (assign,nonatomic) LPCALC calc;
+@property (assign,nonatomic) id <RSCalculatorProtocol> calculator;
 @property (assign,nonatomic) BOOL isWidescreen;
-@property (readonly,nonatomic) WECalculator *calculator;
+@property (assign,nonatomic) BOOL usesLCDWirePattern;
 
 - (void)commonInit;
 @end

@@ -69,7 +69,6 @@
 							<string key="NSFrameSize">{500, 23}</string>
 							<reference key="NSSuperview" ref="1006"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<string key="NSClassName">BWAnchoredButtonBar</string>
 						</object>
 						<object class="NSTabView" id="1031344450">

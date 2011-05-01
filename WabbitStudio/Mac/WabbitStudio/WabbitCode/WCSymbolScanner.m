@@ -51,7 +51,7 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 	// '(?<name> ...)' names the capture for the name of the equate so we can extract it later
 	// then we skip any whitespace and look for '=', '.equ', '.EQU', 'equ', or 'EQU' which tells us we have an equate
 	// again, skip whitespace then look for the value of equate which '(?<value> ...)' captures so we can get at it later
-	kWCSymbolScannerEquatesRegex = [[RKRegex alloc] initWithRegexString:@"^(?<name>[A-z0-9!?]*)(?:\\s*=\\s*|\\s+\\.equ\\s+|\\s+\\.EQU\\s+|\\s+equ\\s+|\\s+EQU\\s+)(?<value>[-+$._!? ()A-z0-9]+)" options:RKCompileUTF8|RKCompileMultiline];
+	kWCSymbolScannerEquatesRegex = [[RKRegex alloc] initWithRegexString:@"^(?<name>[A-z0-9!?]*)(?:\\s*=\\s*|\\s+\\.equ\\s+|\\s+\\.EQU\\s+|\\s+equ\\s+|\\s+EQU\\s+)(?<value>[-+*$._!? ()A-z0-9]+)" options:RKCompileUTF8|RKCompileMultiline];
 	// general pattern for defines
 	// same as the previous cases, but we have to for '#define' or '#DEFINE' to start off the match
 	kWCSymbolScannerDefinesRegex = [[RKRegex alloc] initWithRegexString:@"(?:#define|#DEFINE)\\s+(?<name>[A-z0-9_!?.]+)" options:RKCompileUTF8];
@@ -165,7 +165,6 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 		NSMutableDictionary *defineNamesToSymbols = [NSMutableDictionary dictionary];
 		NSMutableDictionary *macroNamesToSymbols = [NSMutableDictionary dictionary];
 		
-		
 		// find all multiline comments, ignore symbols found within the found ranges
 		RKEnumerator *mCommentEnum = [[[RKEnumerator alloc] initWithRegex:kWCSyntaxHighlighterMultilineCommentsRegex string:string] autorelease];
 		
@@ -225,7 +224,8 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 				 
 				if ([equateNamesToSymbols objectForKey:compareName] == nil) {
 					WCSymbolType type = WCSymbolLabelType;
-					if ([string rangeOfString:[NSString stringWithFormat:@"call %@",compareName] options:(labelsAreCaseSensitive)?NSLiteralSearch:NSCaseInsensitiveSearch].location != NSNotFound)
+					if ([string rangeOfString:[NSString stringWithFormat:@"call %@",compareName] options:(labelsAreCaseSensitive)?NSLiteralSearch:NSCaseInsensitiveSearch].location != NSNotFound ||
+						[string rangeOfString:[NSString stringWithFormat:@"call\t%@",compareName] options:(labelsAreCaseSensitive)?NSLiteralSearch:NSCaseInsensitiveSearch].location != NSNotFound)
 						type = WCSymbolFunctionType;
 					
 					WCSymbol *existingSymbol = nil;
