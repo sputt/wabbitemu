@@ -16,4 +16,7 @@
 
 - (void)setSelectedRangeSafely:(NSRange)range;
 - (void)setSelectedRangeSafely:(NSRange)range scrollRangeToVisible:(BOOL)scrollRangeToVisible;
+
+- (void)setSelectedLineNumber:(NSUInteger)lineNumber;
+- (void)setSelectedLineNumber:(NSUInteger)lineNumber scrollRangeToVisible:(BOOL)scrollRangeToVisible;
 @end

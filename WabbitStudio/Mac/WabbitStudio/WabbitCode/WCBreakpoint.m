@@ -201,6 +201,22 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 		return [NSString stringWithFormat:NSLocalizedString(@"%@ - line %lu", @"breakpoint symbol name and line number"),[self symbolName],[self lineNumber]+1];
 	return [self name];
 }
+@dynamic symbolLineNumber;
+- (NSUInteger)symbolLineNumber {
+	switch ([self breakpointType]) {
+		case WCBreakpointTypeLine: {
+			NSArray *symbols = [[[self file] symbolScanner] symbols];
+			WCSymbol *symbol = [symbols objectAtIndex:[symbols symbolIndexForLocation:[[[self file] textStorage] safeLineStartIndexForLineNumber:[self lineNumber]]]];
+			
+			return [symbol lineNumber];
+		}
+		case WCBreakpointTypeFile:
+		case WCBreakpointTypeProject:
+			return 0;
+		default:
+			return nil;
+	}
+}
 @synthesize isRam=_isRam;
 @synthesize page=_page;
 @dynamic address;
@@ -225,7 +241,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 	}
 	
 	// find the contents of our line within our file
-	NSString *lineString = [[[[self file] textStorage] string] substringWithRange:[[[[self file] textStorage] string] lineRangeForRange:NSMakeRange([[[self file] textStorage] lineStartIndexForLineNumber:[self lineNumber]], 0)]];
+	NSString *lineString = [[[[self file] textStorage] string] substringWithRange:[[[[self file] textStorage] string] lineRangeForRange:NSMakeRange([[[self file] textStorage] safeLineStartIndexForLineNumber:[self lineNumber]], 0)]];
 	
 	NSRange entireRange = NSMakeRange(0, [codeListing length]);
 	NSRange searchRange = NSMakeRange(NSMaxRange(fileRange), [codeListing length]-NSMaxRange(fileRange));

@@ -24,11 +24,6 @@ enum {
 };
 typedef NSUInteger WECalculatorModel;
 
-extern NSString *const kWECalculatorProgramUTI;
-extern NSString *const kWECalculatorApplicationUTI;
-extern NSString *const kWECalculatorSavestateUTI;
-extern NSString *const kWECalculatorRomUTI;
-
 extern NSString *const kWECalculatorWillCloseNotification;
 
 @class WELCDView,BWAnchoredButtonBar;
@@ -68,7 +63,9 @@ extern NSString *const kWECalculatorWillCloseNotification;
 - (IBAction)toggleLCDSize:(id)sender;
 - (IBAction)resetDisplaySize:(id)sender;
 
-- (BOOL)loadRomOrSavestate:(NSURL *)romURL error:(NSError **)outError;
+- (IBAction)step:(id)sender;
+- (IBAction)stepOver:(id)sender;
+- (IBAction)stepOut:(id)sender;
 
 - (void)updateFPSString;
 - (void)updateStatusString;

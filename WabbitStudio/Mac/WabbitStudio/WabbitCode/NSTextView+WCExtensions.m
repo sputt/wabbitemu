@@ -73,4 +73,19 @@
 	if (scrollRangeToVisible)
 		[self scrollRangeToVisible:range];
 }
+
+- (void)setSelectedLineNumber:(NSUInteger)lineNumber; {
+	[self setSelectedLineNumber:lineNumber scrollRangeToVisible:NO];
+}
+- (void)setSelectedLineNumber:(NSUInteger)lineNumber scrollRangeToVisible:(BOOL)scrollRangeToVisible; {
+	NSString *string = [self string];
+	NSUInteger numberOfLines, index, stringLength = [string length];
+	for (index = 0, numberOfLines = 0; index < stringLength; numberOfLines++) {
+		if (numberOfLines == lineNumber) {
+			[self setSelectedRangeSafely:NSMakeRange(index, 0) scrollRangeToVisible:YES];
+			return;
+		}
+		index = NSMaxRange([string lineRangeForRange:NSMakeRange(index, 0)]);
+	}
+}
 @end

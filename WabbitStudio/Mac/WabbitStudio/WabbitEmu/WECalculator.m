@@ -16,11 +16,6 @@
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
 
-NSString *const kWECalculatorProgramUTI = @"org.revsoft.wabbitemu.program";
-NSString *const kWECalculatorApplicationUTI = @"org.revsoft.wabbitemu.application";
-NSString *const kWECalculatorSavestateUTI = @"org.revsoft.wabbitemu.savestate";
-NSString *const kWECalculatorRomUTI = @"org.revsoft.wabbitemu.rom";
-
 NSString *const kWECalculatorWillCloseNotification = @"kWECalculatorWillCloseNotification";
 
 static NSString *const kWECalculatorErrorDomain = @"kWECalculatorErrorDomain";
@@ -89,9 +84,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	[self setIsRunning:NO];
 	[self setIsLoadingRom:YES];
 	
-	NSString *path = [romURL path];
-	LPCTSTR cPath = [path fileSystemRepresentation];
-	BOOL loaded = rom_load([self calc], cPath);
+	BOOL loaded = rom_load([self calc], [[romURL path] fileSystemRepresentation]);
 	
 	if (!loaded) {
 		if (outError != NULL)
@@ -118,6 +111,18 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	[self setIsLoadingRom:NO];
 	
 	return YES;
+}
+
+- (void)simulateKeyPress:(uint16_t)keyCode {
+	[self simulateKeyPress:keyCode lastKeyPressInSeries:NO];
+}
+
+- (void)simulateKeyPress:(uint16_t)keyCode lastKeyPressInSeries:(BOOL)lastKeyPressInSeries; {
+	keypad_key_press(&[self calc]->cpu, keyCode);
+	calc_run_seconds([self calc], 0.25);
+	keypad_key_release(&[self calc]->cpu, keyCode);
+	if (!lastKeyPressInSeries)
+		calc_run_seconds([self calc], 0.25);
 }
 
 - (void)updateFPSString; {
@@ -275,7 +280,19 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	
 	[[self windowForSheet] setFrame:newRect display:YES animate:YES];
 }
-		 
+
+- (IBAction)step:(id)sender; {
+	
+}
+
+- (IBAction)stepOver:(id)sender {
+	
+}
+
+- (IBAction)stepOut:(id)sender {
+	
+}
+
 - (NSString *)_stringForCalculatorModel:(WECalculatorModel)calculatorModel; {
 	switch ([self calc]->model) {
 		case WECalculatorModelTI73:

@@ -208,6 +208,10 @@
 		07AC0CE9133973A10060F786 /* WCFileViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AC0CE71339739B0060F786 /* WCFileViewController.m */; };
 		07AC0CED133973FD0060F786 /* WCFileView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07AC0CEB133973FD0060F786 /* WCFileView.xib */; };
 		07AC0CFB1339A8A50060F786 /* WCTextStorage.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AC0CFA1339A8960060F786 /* WCTextStorage.m */; };
+		07AE898A136D5BB40014F788 /* Step.opacity in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8988136D5BB40014F788 /* Step.opacity */; };
+		07AE898B136D5BB40014F788 /* Step.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8989136D5BB40014F788 /* Step.pdf */; };
+		07AE898D136D6C8A0014F788 /* disassemble.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E1B1367C9930079A404 /* disassemble.c */; };
+		07AE898F136D6DDD0014F788 /* StepOver32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE898E136D6DDD0014F788 /* StepOver32x32.png */; };
 		07AF6E64133A709D00A2D188 /* NSImage+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AF6E63133A709D00A2D188 /* NSImage+WCExtensions.m */; };
 		07AF6E6A133A7FB200A2D188 /* WCSymbolScanner.m in Sources */ = {isa = PBXBuildFile; fileRef = 07AF6E69133A7FB000A2D188 /* WCSymbolScanner.m */; };
 		07AF6E71133A8F4F00A2D188 /* RegexKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07AF6E70133A8F4F00A2D188 /* RegexKit.framework */; };
@@ -260,6 +264,15 @@
 		07CE786F134E637A001B96FC /* WCDocumentController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE786E134E637A001B96FC /* WCDocumentController.m */; };
 		07CE7872134EB1B8001B96FC /* WCGotoLineSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07CE7871134EB1B7001B96FC /* WCGotoLineSheetController.m */; };
 		07CE7875134EB23B001B96FC /* WCGotoLineSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07CE7873134EB23B001B96FC /* WCGotoLineSheet.xib */; };
+		07D113CC136CF43C00E3814E /* WCDebuggerWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D113CB136CF43C00E3814E /* WCDebuggerWindowController.m */; };
+		07D113D0136CF47D00E3814E /* WCDebuggerWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07D113CE136CF47D00E3814E /* WCDebuggerWindow.xib */; };
+		07D113D1136CF87300E3814E /* WCDefines.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790CB7F1345858E00FAEA63 /* WCDefines.m */; };
+		07D113D4136D04C200E3814E /* WCApplicationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D113D3136D04C200E3814E /* WCApplicationController.m */; };
+		07D113D5136D13B500E3814E /* WELCDView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEC1367C66D0079A404 /* WELCDView.m */; };
+		07D113D6136D13BF00E3814E /* WETransferSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B75E0A1368AAB1007B13A2 /* WETransferSheetController.m */; };
+		07D113D7136D13D800E3814E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07905E971367CA9A0079A404 /* OpenGL.framework */; };
+		07D113D8136D13E800E3814E /* WETransferFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C55FC2136913DF00BB2325 /* WETransferFile.m */; };
+		07D113E9136D1BAC00E3814E /* WETransferSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 070E31D01368B76200D0CAE2 /* WETransferSheet.xib */; };
 		07D1328F136AAA7300BD5A84 /* QuickLook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07D1328E136AAA7300BD5A84 /* QuickLook.framework */; };
 		07D1329E136AAA7400BD5A84 /* GenerateThumbnailForURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D1329D136AAA7400BD5A84 /* GenerateThumbnailForURL.m */; };
 		07D132A0136AAA7400BD5A84 /* GeneratePreviewForURL.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D1329F136AAA7400BD5A84 /* GeneratePreviewForURL.m */; };
@@ -704,6 +717,9 @@
 		07AC0CEC133973FD0060F786 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCFileView.xib; sourceTree = "<group>"; };
 		07AC0CF91339A8900060F786 /* WCTextStorage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTextStorage.h; sourceTree = "<group>"; };
 		07AC0CFA1339A8960060F786 /* WCTextStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCTextStorage.m; sourceTree = "<group>"; };
+		07AE8988136D5BB40014F788 /* Step.opacity */ = {isa = PBXFileReference; lastKnownFileType = file; path = Step.opacity; sourceTree = "<group>"; };
+		07AE8989136D5BB40014F788 /* Step.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Step.pdf; sourceTree = "<group>"; };
+		07AE898E136D6DDD0014F788 /* StepOver32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StepOver32x32.png; sourceTree = "<group>"; };
 		07AF6E62133A709D00A2D188 /* NSImage+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSImage+WCExtensions.h"; sourceTree = "<group>"; };
 		07AF6E63133A709D00A2D188 /* NSImage+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSImage+WCExtensions.m"; sourceTree = "<group>"; };
 		07AF6E68133A7FAF00A2D188 /* WCSymbolScanner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSymbolScanner.h; sourceTree = "<group>"; };
@@ -771,6 +787,11 @@
 		07CE7870134EB1B7001B96FC /* WCGotoLineSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGotoLineSheetController.h; sourceTree = "<group>"; };
 		07CE7871134EB1B7001B96FC /* WCGotoLineSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCGotoLineSheetController.m; sourceTree = "<group>"; };
 		07CE7874134EB23B001B96FC /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCGotoLineSheet.xib; sourceTree = "<group>"; };
+		07D113CA136CF43C00E3814E /* WCDebuggerWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCDebuggerWindowController.h; sourceTree = "<group>"; };
+		07D113CB136CF43C00E3814E /* WCDebuggerWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCDebuggerWindowController.m; sourceTree = "<group>"; };
+		07D113CF136CF47D00E3814E /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCDebuggerWindow.xib; sourceTree = "<group>"; };
+		07D113D2136D04C200E3814E /* WCApplicationController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCApplicationController.h; sourceTree = "<group>"; };
+		07D113D3136D04C200E3814E /* WCApplicationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCApplicationController.m; sourceTree = "<group>"; };
 		07D1328D136AAA7300BD5A84 /* WabbitEmuQuickLook.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WabbitEmuQuickLook.qlgenerator; sourceTree = BUILT_PRODUCTS_DIR; };
 		07D1328E136AAA7300BD5A84 /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
 		07D13290136AAA7300BD5A84 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
@@ -820,6 +841,7 @@
 			files = (
 				07F1B8101342EE2C0013B9CC /* Carbon.framework in Frameworks */,
 				07463AF813332BCC00744B98 /* QuartzCore.framework in Frameworks */,
+				07D113D7136D13D800E3814E /* OpenGL.framework in Frameworks */,
 				07463AB21332AB7700744B98 /* Cocoa.framework in Frameworks */,
 				07AC0CE4133971DA0060F786 /* PSMTabBarControl.framework in Frameworks */,
 				07AF6E71133A8F4F00A2D188 /* RegexKit.framework in Frameworks */,
@@ -929,6 +951,9 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				07AE898E136D6DDD0014F788 /* StepOver32x32.png */,
+				07AE8988136D5BB40014F788 /* Step.opacity */,
+				07AE8989136D5BB40014F788 /* Step.pdf */,
 				0755A71D136C0D8F00B7C8E4 /* WarningMultiple.opacity */,
 				0755A71E136C0D8F00B7C8E4 /* WarningMultiple.pdf */,
 				0755A718136C0B7D00B7C8E4 /* ErrorTwo.opacity */,
@@ -1003,6 +1028,7 @@
 				07B54926135D755B00B34C46 /* WCBreakpointsView.xib */,
 				076B6DED135E644400754CDE /* WCFileWindow.xib */,
 				07BBD227135F7DE0005C4870 /* WCBreakpointEditView.xib */,
+				07D113CE136CF47D00E3814E /* WCDebuggerWindow.xib */,
 			);
 			name = Xibs;
 			path = en.lproj;
@@ -1181,6 +1207,10 @@
 				0756D8DF1363EF5600ECDFFD /* WCGroupBackgroundOutlineView.m */,
 				07200C6713675B450010AE58 /* WCProjectStatusView.h */,
 				07200C6813675B450010AE58 /* WCProjectStatusView.m */,
+				07D113CA136CF43C00E3814E /* WCDebuggerWindowController.h */,
+				07D113CB136CF43C00E3814E /* WCDebuggerWindowController.m */,
+				07D113D2136D04C200E3814E /* WCApplicationController.h */,
+				07D113D3136D04C200E3814E /* WCApplicationController.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1671,6 +1701,11 @@
 				0755A71B136C0B7D00B7C8E4 /* ErrorTwo.pdf in Resources */,
 				0755A71F136C0D8F00B7C8E4 /* WarningMultiple.opacity in Resources */,
 				0755A720136C0D8F00B7C8E4 /* WarningMultiple.pdf in Resources */,
+				07D113D0136CF47D00E3814E /* WCDebuggerWindow.xib in Resources */,
+				07D113E9136D1BAC00E3814E /* WETransferSheet.xib in Resources */,
+				07AE898A136D5BB40014F788 /* Step.opacity in Resources */,
+				07AE898B136D5BB40014F788 /* Step.pdf in Resources */,
+				07AE898F136D6DDD0014F788 /* StepOver32x32.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1856,6 +1891,12 @@
 				0755A701136BE30F00B7C8E4 /* label.c in Sources */,
 				0755A702136BE30F00B7C8E4 /* savestate.c in Sources */,
 				0755A703136BE30F00B7C8E4 /* var.c in Sources */,
+				07D113CC136CF43C00E3814E /* WCDebuggerWindowController.m in Sources */,
+				07D113D4136D04C200E3814E /* WCApplicationController.m in Sources */,
+				07D113D5136D13B500E3814E /* WELCDView.m in Sources */,
+				07D113D6136D13BF00E3814E /* WETransferSheetController.m in Sources */,
+				07D113D8136D13E800E3814E /* WETransferFile.m in Sources */,
+				07AE898D136D6C8A0014F788 /* disassemble.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1903,6 +1944,7 @@
 				07C55FC3136913DF00BB2325 /* WETransferFile.m in Sources */,
 				079DF4C413694EB600289058 /* WEPreviewLCDView.m in Sources */,
 				07F11BB2136B6B7500A3DF25 /* NSObject+WCExtensions.m in Sources */,
+				07D113D1136CF87300E3814E /* WCDefines.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2164,6 +2206,14 @@
 				07CE7874134EB23B001B96FC /* en */,
 			);
 			name = WCGotoLineSheet.xib;
+			sourceTree = "<group>";
+		};
+		07D113CE136CF47D00E3814E /* WCDebuggerWindow.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				07D113CF136CF47D00E3814E /* en */,
+			);
+			name = WCDebuggerWindow.xib;
 			sourceTree = "<group>";
 		};
 		07D132A7136AAB8500BD5A84 /* InfoPlist.strings */ = {

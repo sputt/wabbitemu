@@ -7,13 +7,13 @@
 //
 
 #import "WETransferSheetController.h"
-#import "WECalculator.h"
 #import "NSResponder+WCExtensions.h"
 #import "WETransferFile.h"
+#import "WCDefines.h"
 
 
 @interface WETransferSheetController ()
-- (id)_initWithFilePaths:(NSArray *)filePaths calculator:(WECalculator *)calculator;
+- (id)_initWithFilePaths:(NSArray *)filePaths calculator:(id <RSCalculatorProtocol>)calculator;
 - (void)_transferRomsAndSavestates;
 - (void)_setupTransferProgramsAndApps;
 - (void)_transferProgramsAndApps;
@@ -44,11 +44,11 @@
 	[self _transferProgramsAndApps];
 }
 
-+ (void)transferFiles:(NSArray *)filePaths toCalculator:(WECalculator *)calculator; {
++ (void)transferFiles:(NSArray *)filePaths toCalculator:(id <RSCalculatorProtocol>)calculator; {
 	[self transferFiles:filePaths toCalculator:calculator runAfterTransfer:NO];
 }
 
-+ (void)transferFiles:(NSArray *)filePaths toCalculator:(WECalculator *)calculator runAfterTransfer:(BOOL)runAfterTransfer; {
++ (void)transferFiles:(NSArray *)filePaths toCalculator:(id <RSCalculatorProtocol>)calculator runAfterTransfer:(BOOL)runAfterTransfer; {
 	WETransferSheetController *controller = [[[self class] alloc] _initWithFilePaths:[self validateFilePaths:filePaths] calculator:calculator];
 	
 	[controller setRunProgramOrAppAfterTransfer:runAfterTransfer];
@@ -56,7 +56,7 @@
 	[controller _setupTransferProgramsAndApps];
 }
 
-- (id)_initWithFilePaths:(NSArray *)filePaths calculator:(WECalculator *)calculator; {
+- (id)_initWithFilePaths:(NSArray *)filePaths calculator:(id <RSCalculatorProtocol>)calculator; {
 	if (!(self = [super initWithWindowNibName:[self windowNibName]]))
 		return nil;
 	
@@ -186,7 +186,29 @@
 	[[self calculator] setIsRunning:YES];
 	
 	if ([self runProgramOrAppAfterTransfer]) {
-
+#ifdef DEBUG
+		NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
+#endif
+		calc_run_seconds([[self calculator] calc], 1.0);
+		// 2nd
+		[[self calculator] simulateKeyPress:48];
+		// 0 for catalog
+		[[self calculator] simulateKeyPress:29];
+		// down
+		[[self calculator] simulateKeyPress:125];
+		[[self calculator] simulateKeyPress:125];
+		[[self calculator] simulateKeyPress:125];
+		[[self calculator] simulateKeyPress:125];
+		[[self calculator] simulateKeyPress:125];
+		[[self calculator] simulateKeyPress:125];
+		// return
+		[[self calculator] simulateKeyPress:36];
+		// programs
+		[[self calculator] simulateKeyPress:38];
+		// return
+		[[self calculator] simulateKeyPress:36];
+		// return
+		[[self calculator] simulateKeyPress:36 lastKeyPressInSeries:YES];
 	}
 }
 

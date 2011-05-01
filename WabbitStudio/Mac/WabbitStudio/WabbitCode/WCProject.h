@@ -36,13 +36,16 @@ extern NSString *const kWCProjectSettingsOpenFileUUIDsKey;
 extern NSString *const kWCProjectSettingsSelectedFileUUIDKey;
 extern NSString *const kWCProjectSettingsFileSettingsDictionaryKey;
 extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey;
+extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 
-@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint,WCAddFilesToProjectViewController;
+@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint,WCAddFilesToProjectViewController,WCAlias,WCDebuggerWindowController;
 
 @interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext,RSCalculatorProtocol> {
 @private
 	IBOutlet PSMTabBarControl *_tabBarControl;
 	IBOutlet BWAnchoredButtonBar *_rightButtonBar;
+	IBOutlet BWAnchoredButtonBar *_debuggerButtonBar;
+	IBOutlet NSImageView *_rightSplitterHandleImageView;
 	IBOutlet NSSplitView *_splitView;
 	IBOutlet NSView *_swapView;
 	IBOutlet WCProjectNavView *_navBarControl;
@@ -64,8 +67,10 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 	BOOL _shouldRunAfterBuilding;
 	
 	LPCALC _calc; // our calc for debugging
-	WCBreakpoint *_projectBreakpoint; // root breakpoint that coordinates displaying all the breakpoints in the
-									  // breakpoints view on the left
+	WCAlias *_romOrSavestateAlias;
+	WCBreakpoint *_projectBreakpoint;
+	BOOL _isLoadingRom;
+	BOOL _isDebugging;
 	
 	NSMutableDictionary *_projectSettings; // we keep this updated when things change in the project and write it out
 										   // with each save as <username>.wcodesettings
@@ -127,7 +132,17 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 @property (readonly,nonatomic) LPCALC calc;
 @property (assign,nonatomic) BOOL isActive;
 @property (assign,nonatomic) BOOL isRunning;
+@property (assign,nonatomic) BOOL isLoadingRom;
 @property (readonly,nonatomic) NSWindow *calculatorWindow;
+@property (readonly,retain,nonatomic) WCAlias *romOrSavestateAlias;
+@property (readonly,nonatomic) WCDebuggerWindowController *debuggerWindowController;
+@property (readonly,nonatomic) BOOL shouldAnimate;
+@property (readonly,nonatomic) NSArray *allBreakpoints;
+@property (assign,nonatomic) BOOL isDebugging;
+@property (readonly,nonatomic) WCFile *currentDebugFile;
+@property (readonly,nonatomic) NSUInteger currentDebugLineNumber;
+@property (readonly,nonatomic) WCFile *programCounterFile;
+@property (readonly,nonatomic) NSUInteger programCounterLineNumber;
 
 - (IBAction)addFilesToProject:(id)sender;
 - (IBAction)newFile:(id)sender;
@@ -161,6 +176,12 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 
 - (IBAction)projectWindow:(id)sender;
 
+- (IBAction)runAfterBuilding:(id)sender;
+
+- (IBAction)step:(id)sender;
+- (IBAction)stepOver:(id)sender;
+- (IBAction)stepOut:(id)sender;
+
 - (WCFileViewController *)addFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext;
 - (WCFileViewController *)fileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext selectTab:(BOOL)selectTab;
 - (void)removeFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext;
@@ -170,6 +191,8 @@ extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFra
 - (void)removeAllBuildMessages;
 - (void)jumpToObject:(id <WCJumpToObject>)object;
 - (void)jumpToObjects:(NSArray *)objects;
+
+- (void)handleBreakpointCallback;
 
 - (void)saveProjectFile;
 

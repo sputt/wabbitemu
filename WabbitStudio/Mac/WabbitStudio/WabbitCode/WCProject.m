@@ -46,6 +46,9 @@
 #import "WCBreakpoint.h"
 #import "WCFileWindowController.h"
 #import "NSString+WCExtensions.h"
+#import "WCDebuggerWindowController.h"
+#import "WETransferSheetController.h"
+#include "disassemble.h"
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
@@ -74,6 +77,7 @@ NSString *const kWCProjectSettingsOpenFileUUIDsKey = @"projectOpenFileUUIDs";
 NSString *const kWCProjectSettingsSelectedFileUUIDKey = @"projectSelectedFileUUID";
 NSString *const kWCProjectSettingsFileSettingsDictionaryKey = @"projectFileSettingsDictionary";
 NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey = @"projectFileSettingsFileSeparateWindowFrame";
+NSString *const kWCProjectSettingsRomOrSavestateAliasKey = @"projectSettingsRomOrSavestateAlias";
 
 static NSString *const kWCProjectErrorDomain = @"org.revsoft.wabbitcode.project.error";
 static const NSInteger kWCProjectDataFileMovedErrorCode = 1001;
@@ -82,11 +86,16 @@ static const NSInteger kWCProjectDataFileOldVersionErrorCode = 1003;
 
 static NSImage *_appIcon = nil;
 
+static void ProjectBreakpointCallback(LPCALC calc, void *info) {
+	[(WCProject *)info handleBreakpointCallback];
+}
+
 @interface WCProject ()
 @property (readwrite,retain,nonatomic) WCProjectFile *projectFile;
 @property (readwrite,retain,nonatomic) NSSet *absoluteFilePaths;
 @property (readwrite,retain,nonatomic) NSString *codeListing;
 @property (assign,nonatomic) BOOL shouldRunAfterBuilding;
+@property (readwrite,retain,nonatomic) WCAlias *romOrSavestateAlias;
 
 - (void)_addBuildMessageForString:(NSString *)string;
 
@@ -116,6 +125,10 @@ static NSImage *_appIcon = nil;
 	return NO;
 }
 
++ (NSSet *)keyPathsForValuesAffectingShouldAnimate {
+    return [NSSet setWithObjects:@"isBuilding",@"isLoadingRom", nil];
+}
+
 - (NSUndoManager *)undoManager {
 	return nil;
 }
@@ -129,6 +142,7 @@ static NSImage *_appIcon = nil;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[_romOrSavestateAlias release];
 	if (_buildTask != nil)
 		[_buildTask terminate];
 	[_buildTask release];
@@ -174,6 +188,8 @@ static NSImage *_appIcon = nil;
 
 	[_rightButtonBar setIsAtBottom:YES];
 	[_rightButtonBar setIsResizable:NO];
+	[_debuggerButtonBar setIsAtBottom:YES];
+	[_debuggerButtonBar setIsResizable:NO];
 	
 	[self setCurrentViewController:[self projectFilesOutlineViewController]];
 	
@@ -339,8 +355,8 @@ static NSImage *_appIcon = nil;
 	return YES;
 }
 
-#define kWCProjectSplitViewLeftMin 150.0
-#define kWCProjectSplitViewRightMin 300.0
+#define kWCProjectSplitViewLeftMin 175.0
+#define kWCProjectSplitViewRightMin 350.0
 
 - (CGFloat)splitView:(NSSplitView *)splitView constrainMaxCoordinate:(CGFloat)proposedMaximumPosition ofSubviewAt:(NSInteger)dividerIndex {
 	if (dividerIndex == 0)
@@ -520,6 +536,156 @@ static NSImage *_appIcon = nil;
 	}
 	return retval;
 }
+#pragma mark RSCalculatorProtocol
+@synthesize calc=_calc;
+@dynamic isActive;
+- (BOOL)isActive {
+	return (_calc != NULL && _calc->active);
+}
+- (void)setIsActive:(BOOL)isActive {
+	if (_calc != NULL)
+		_calc->active = isActive;
+}
+@dynamic isRunning;
+- (BOOL)isRunning {
+	return (_calc != NULL && _calc->running); 
+}
+- (void)setIsRunning:(BOOL)isRunning {
+	if (_calc != NULL)
+		_calc->running = isRunning;
+}
+@synthesize isLoadingRom=_isLoadingRom;
+@dynamic calculatorWindow;
+- (NSWindow *)calculatorWindow {
+	return [[self debuggerWindowController] window];
+}
+- (BOOL)loadRomOrSavestate:(NSURL *)fileURL error:(NSError **)outError; {
+	if (_calc == NULL) {
+		_calc = calc_slot_new();
+		if (_calc == NULL)
+			return NO;
+		
+		_calc->breakpoint_callback = &ProjectBreakpointCallback;
+		_calc->breakpoint_owner = (void *)self;
+	}
+	
+	lpDebuggerCalc = [self calc];
+	
+	[self setIsRunning:NO];
+	[self setIsLoadingRom:YES];
+	
+	BOOL loaded = rom_load([self calc], [[fileURL path] fileSystemRepresentation]);
+	
+	if (!loaded) {
+		[self setIsLoadingRom:NO];
+		
+		return NO;
+	}
+	
+	for (WCBreakpoint *breakpoint in [self allBreakpoints]) {
+		set_break(&_calc->mem_c, TRUE, 1, [breakpoint address]);
+	}
+	
+	calc_turn_on([self calc]);
+	
+	[self setIsLoadingRom:NO];
+	
+	return YES;
+}
+
+- (void)simulateKeyPress:(uint16_t)keyCode {
+	[self simulateKeyPress:keyCode lastKeyPressInSeries:NO];
+}
+
+- (void)simulateKeyPress:(uint16_t)keyCode lastKeyPressInSeries:(BOOL)lastKeyPressInSeries; {
+	keypad_key_press(&[self calc]->cpu, keyCode);
+	calc_run_seconds([self calc], 0.25);
+	keypad_key_release(&[self calc]->cpu, keyCode);
+	if (!lastKeyPressInSeries)
+		calc_run_seconds([self calc], 0.25);
+}
+
+- (IBAction)step:(id)sender; {
+	if (![self isDebugging]) {
+		NSBeep();
+		return;
+	}
+	
+	CPU_step(&[self calc]->cpu);
+	[self addFileViewControllerForFile:[self programCounterFile] inTabViewContext:[self currentTabViewContext]];
+	[[[self currentTabViewContext] selectedTextView] setSelectedLineNumber:[self programCounterLineNumber] scrollRangeToVisible:YES];
+	[[[[[self currentTabViewContext] selectedTextView] enclosingScrollView] verticalRulerView] setNeedsDisplay:YES];
+}
+
+- (IBAction)stepOver:(id)sender {
+	if (![self isDebugging]) {
+		NSBeep();
+		return;
+	}
+	
+	CPU_t *cpu = &[self calc]->cpu;
+	const int usable_commands[] = { DA_BJUMP, DA_BJUMP_N, DA_BCALL_N, DA_BCALL,
+		DA_BLI, DA_CALL_X, DA_CALL_CC_X, DA_HALT, DA_RST_X};
+	int i;
+	double time = tc_elapsed(cpu->timer_c);
+	Z80_info_t zinflocal;
+	
+	disassemble(cpu->mem_c, cpu->pc, 1, &zinflocal);
+	
+	if (cpu->halt) {
+		if (cpu->iff1) {
+			while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && cpu->halt == TRUE )
+				CPU_step(cpu);
+		} else {
+			cpu->halt = FALSE;
+		}
+	} else if (zinflocal.index == DA_CALL_X || zinflocal.index == DA_CALL_CC_X) {
+		uint16_t old_stack = cpu->sp;
+		CPU_step(cpu);
+		if (cpu->sp != old_stack) {
+			//CPU_stepout(cpu);
+			[self stepOut:nil];
+		}
+	} else {
+		for (i = 0; i < NumElm(usable_commands); i++) {
+			if (zinflocal.index == usable_commands[i]) {
+				while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && cpu->pc != (zinflocal.addr + zinflocal.size))
+					CPU_step(cpu);
+				return;
+			}
+		}
+		
+		CPU_step(cpu);
+	}
+	[self addFileViewControllerForFile:[self programCounterFile] inTabViewContext:[self currentTabViewContext]];
+	[[[self currentTabViewContext] selectedTextView] setSelectedLineNumber:[self programCounterLineNumber] scrollRangeToVisible:YES];
+	[[[[[self currentTabViewContext] selectedTextView] enclosingScrollView] verticalRulerView] setNeedsDisplay:YES];
+}
+
+- (IBAction)stepOut:(id)sender {
+	CPU_t *cpu = &[self calc]->cpu;
+	double time = tc_elapsed(cpu->timer_c);
+	uint16_t old_sp = cpu->sp;
+	
+	while ((tc_elapsed(cpu->timer_c) - time) < 15.0) {
+		waddr_t old_pc = addr_to_waddr(cpu->mem_c, cpu->pc);
+		CPU_step(cpu);
+		
+		if (cpu->sp > old_sp) {
+			Z80_info_t zinflocal;
+			disassemble(cpu->mem_c, old_pc.addr, 1, &zinflocal);
+			
+			if (zinflocal.index == DA_RET 		||
+				zinflocal.index == DA_RET_CC 	||
+				zinflocal.index == DA_RETI		||
+				zinflocal.index == DA_RETN) {
+				
+				return;
+			}
+			
+		}
+	}
+}
 #pragma mark -
 #pragma mark *** Public Methods ***
 - (NSArray *)symbolsForSymbolName:(NSString *)name; {
@@ -557,6 +723,12 @@ static NSImage *_appIcon = nil;
 	[self setAbsoluteFilePaths:[NSSet setWithArray:[[[self projectFile] descendantNodes] valueForKeyPath:@"absolutePath"]]];
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectNumberOfFilesDidChangeNotification object:self];
+}
+
+- (void)handleBreakpointCallback; {
+	[self setIsDebugging:YES];
+	[self addFileViewControllerForFile:[self currentDebugFile] inTabViewContext:[self currentTabViewContext]];
+	[[[self currentTabViewContext] selectedTextView] setSelectedLineNumber:[self currentDebugLineNumber] scrollRangeToVisible:YES];
 }
 #pragma mark NSKeyValueCoding
 - (NSUInteger)countOfBuildTargets {
@@ -925,28 +1097,172 @@ static NSImage *_appIcon = nil;
 @synthesize totalErrors=_totalErrors;
 @synthesize totalWarnings=_totalWarnings;
 @synthesize isClosing=_isClosing;
-@synthesize calc=_calc;
-@dynamic isActive;
-- (BOOL)isActive {
-	return (_calc != NULL && _calc->active);
+@dynamic romOrSavestateAlias;
+- (WCAlias *)romOrSavestateAlias {
+	// see if the alias is stored in our project settings
+	if (_romOrSavestateAlias == nil) {
+		NSData *aliasData = [[self projectSettings] objectForKey:kWCProjectSettingsRomOrSavestateAliasKey];
+		if (aliasData != nil) {
+			WCAlias *alias = [NSKeyedUnarchiver unarchiveObjectWithData:aliasData];
+			if (alias != nil)
+				[self setRomOrSavestateAlias:alias];
+		}
+	}
+	return _romOrSavestateAlias;
 }
-- (void)setIsActive:(BOOL)isActive {
-	if (_calc != NULL)
-		_calc->active = isActive;
+- (void)setRomOrSavestateAlias:(WCAlias *)romOrSavestateAlias {
+	if (_romOrSavestateAlias == romOrSavestateAlias)
+		return;
+	
+	[_romOrSavestateAlias release];
+	_romOrSavestateAlias = [romOrSavestateAlias retain];
 }
-@dynamic isRunning;
-- (BOOL)isRunning {
-	return (_calc != NULL && _calc->running); 
+@dynamic debuggerWindowController;
+- (WCDebuggerWindowController *)debuggerWindowController {
+	WCDebuggerWindowController *retval = nil;
+	for (id controller in [self windowControllers]) {
+		if ([controller isKindOfClass:[WCDebuggerWindowController class]]) { 
+			retval = controller;
+			break;
+		}
+	}
+	
+	if (retval == nil) {
+		retval = [[[WCDebuggerWindowController alloc] init] autorelease];
+		[self addWindowController:retval];
+	}
+	
+	return retval;
 }
-- (void)setIsRunning:(BOOL)isRunning {
-	if (_calc != NULL)
-		_calc->running = isRunning;
+@dynamic shouldAnimate;
+- (BOOL)shouldAnimate {
+	return ([self isBuilding] || [self isLoadingRom]);
 }
-@dynamic calculatorWindow;
-- (NSWindow *)calculatorWindow {
-	return [[[self windowControllers] objectAtIndex:0] window];
+@dynamic allBreakpoints;
+- (NSArray *)allBreakpoints {
+	NSMutableArray *retval = [NSMutableArray array];
+	
+	for (WCFile *file in [self textFiles])
+		[retval addObjectsFromArray:[file allBreakpoints]];
+	
+	return [[retval copy] autorelease];
 }
+@synthesize isDebugging=_isDebugging;
+@dynamic currentDebugFile;
+- (WCFile *)currentDebugFile {
+	if (![self isDebugging])
+		return nil;
 
+	uint16_t pc = [self calc]->cpu.pc;
+	for (WCFile *file in [self textFiles]) {
+		for (WCBreakpoint *breakpoint in [file allBreakpoints]) {
+			if ([breakpoint address] == pc)
+				return file;
+		}
+	}
+#ifdef DEBUG
+    NSLog(@"current debug file not found for pc %u",pc);
+#endif
+	return nil;
+}
+@dynamic currentDebugLineNumber;
+- (NSUInteger)currentDebugLineNumber {
+	uint16_t pc = [self calc]->cpu.pc;
+	for (WCFile *file in [self textFiles]) {
+		for (WCBreakpoint *breakpoint in [file allBreakpoints]) {
+			if ([breakpoint address] == pc) {
+				NSUInteger lineNumber = [breakpoint lineNumber];
+				
+				/*
+				if (lineNumber == [breakpoint symbolLineNumber])
+					lineNumber++;
+				*/
+				 
+				return lineNumber;
+			}
+		}
+	}
+	return 0;
+}
+@dynamic programCounterFile;
+- (WCFile *)programCounterFile {
+	if (![self isDebugging] || [self codeListing] == nil) {
+		NSBeep();
+		return nil;
+	}
+	
+	uint8_t page = 0; // this will need to be changed to handle flash applications
+	uint16_t address = [self calc]->cpu.pc;
+	NSString *findString = [NSString stringWithFormat:@"%02u:%04X",page,address];
+	NSRange fRange = [[self codeListing] rangeOfString:findString options:NSLiteralSearch];
+	
+	if (fRange.location == NSNotFound) {
+#ifdef DEBUG
+		NSLog(@"could not find current program counter %04X in listing file for project %@",address,[self displayName]);
+#endif
+		NSBeep();
+		return nil;
+	}
+	
+	NSRange pRange = [[self codeListing] rangeOfString:@"Listing for file \"" options:NSLiteralSearch|NSBackwardsSearch range:NSMakeRange(0, NSMaxRange(fRange))];
+	NSString *pString = [[self codeListing] substringWithRange:[[self codeListing] lineRangeForRange:pRange]];
+	NSScanner *scanner = [NSScanner scannerWithString:pString];
+	NSString *fPath;
+	
+	if (![scanner scanUpToString:@"\"" intoString:NULL]) {
+		NSBeep();
+		return nil;
+	}
+	
+	[scanner setScanLocation:[scanner scanLocation] + 1];
+	
+	if (![scanner scanUpToString:@"\"" intoString:&fPath]) {
+		NSBeep();
+		return nil;
+	}
+	
+	// find the file that matches the path
+	for (WCFile *file in [self textFiles]) {
+		if ([[file absolutePathForDisplay] isEqualToString:fPath])
+			return file;
+	}
+#ifdef DEBUG
+    NSLog(@"could not find file for path %@",fPath);
+#endif
+	return nil;
+}
+@dynamic programCounterLineNumber;
+- (NSUInteger)programCounterLineNumber {
+	if (![self isDebugging] || [self codeListing] == nil) {
+		NSBeep();
+		return 0;
+	}
+	
+	WCFile *pcFile = [self programCounterFile];
+	
+	if (pcFile == nil)
+		return 0;
+	
+	// find where the listing for our file begins
+	NSString *fileString = [NSString stringWithFormat:@"Listing for file \"%@\"",[pcFile absolutePathForDisplay]];
+	NSRange fileRange = [[self codeListing] rangeOfString:fileString options:NSLiteralSearch];
+	
+	uint8_t page = 0;
+	uint16_t address = [self calc]->cpu.pc;
+	NSString *pcString = [NSString stringWithFormat:@"%02u:%04X",page,address];
+	NSRange pcRange = [[self codeListing] rangeOfString:pcString options:NSLiteralSearch|NSBackwardsSearch range:NSMakeRange(NSMaxRange(fileRange), [[self codeListing] length]-NSMaxRange(fileRange))];
+	NSString *lineString = [[self codeListing] substringWithRange:[[self codeListing] lineRangeForRange:pcRange]];
+	NSInteger lineNumber;
+	NSScanner *scanner = [NSScanner scannerWithString:lineString];
+	[scanner setCharactersToBeSkipped:[NSCharacterSet whitespaceAndNewlineCharacterSet]];
+	
+	if (![scanner scanInteger:&lineNumber]) {
+		NSBeep();
+		return 0;
+	}
+	
+	return --lineNumber;
+}
 #pragma mark IBActions
 - (IBAction)addFilesToProject:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
@@ -1221,7 +1537,11 @@ static NSImage *_appIcon = nil;
 	
 	// we allow deletes of groups that are empty or only contain other empty groups
 	for (WCFile *file in files) {
-		if (![file isDirectory]) {
+		if ([file isKindOfClass:[WCProjectFile class]]) {
+			NSBeep();
+			return;
+		}
+		else if (![file isDirectory]) {
 			canDeleteWithoutAlert = NO;
 			break;
 		}
@@ -1360,6 +1680,17 @@ static NSImage *_appIcon = nil;
 
 - (IBAction)projectWindow:(id)sender; {
 	[[[self windowControllers] firstObject] showWindow:nil];
+}
+
+- (IBAction)runAfterBuilding:(id)sender; {
+	NSError *error;
+	if (![self loadRomOrSavestate:[[self romOrSavestateAlias] URL] error:&error]) {
+		[self presentError:error];
+		return;
+	}
+	
+	[[self debuggerWindowController] showWindow:nil];
+	[WETransferSheetController transferFiles:[NSArray arrayWithObjects:[[_buildTask arguments] lastObject], nil] toCalculator:self runAfterTransfer:YES];
 }
 #pragma mark -
 #pragma mark *** Private Methods ***
@@ -1506,6 +1837,8 @@ static NSImage *_appIcon = nil;
 	[[self projectSettings] setObject:[[[[self tabBarControl] tabView] tabViewItems] valueForKeyPath:@"identifier.UUID"] forKey:kWCProjectSettingsOpenFileUUIDsKey];
 	if ([[[self tabBarControl] tabView] numberOfTabViewItems])
 		[[self projectSettings] setObject:[[[[self tabBarControl] tabView] selectedTabViewItem] valueForKeyPath:@"identifier.UUID"] forKey:kWCProjectSettingsSelectedFileUUIDKey];
+	if ([self romOrSavestateAlias] != nil)
+		[[self projectSettings] setObject:[NSKeyedArchiver archivedDataWithRootObject:[self romOrSavestateAlias]] forKey:kWCProjectSettingsRomOrSavestateAliasKey];
 	
 	// file specific settings
 	NSMutableDictionary *fileDict = [[self projectSettings] objectForKey:kWCProjectSettingsFileSettingsDictionaryKey];
@@ -1683,7 +2016,32 @@ static NSImage *_appIcon = nil;
 			
 			// send our build file to the emulator
 			if ([self shouldRunAfterBuilding]) {
-				
+				if ([self romOrSavestateAlias] == nil) {
+					NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"No Rom or Savestate Selected For Running", @"rom or savestate for running message") defaultButton:NS_LOCALIZED_STRING_CHOOSE_ELLIPSIS alternateButton:NS_LOCALIZED_STRING_CANCEL otherButton:nil informativeTextWithFormat:NSLocalizedString(@"Would you like to choose one now?", @"rom or savestate for running informative text")];
+					
+					[alert beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSAlert *mAlert,NSInteger result) {
+						if (result != NSAlertDefaultReturn)
+							return;
+						
+						[[mAlert window] orderOut:nil];
+						
+						NSOpenPanel *panel = [NSOpenPanel openPanel];
+						
+						[panel setAllowedFileTypes:[NSArray arrayWithObjects:kWECalculatorRomUTI,kWECalculatorSavestateUTI, nil]];
+						
+						[panel beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSInteger result) {
+							if (result != NSFileHandlingPanelOKButton)
+								return;
+							
+							[panel orderOut:nil];
+							[self setRomOrSavestateAlias:[WCAlias aliasWithURL:[[panel URLs] lastObject]]];
+							[self runAfterBuilding:nil];
+						}];
+					}];
+				}
+				else {
+					[self runAfterBuilding:nil];
+				}
 			}
 		}
 		

@@ -56,6 +56,7 @@ NSString *const kWCPreferencesEditorFontKey = @"editorFont";
 NSString *const kWCPreferencesEditorShowEquateValueTooltipsKey = @"editorShowEquateValueTooltips";
          
 NSString *const kWCPreferencesEditorAutomaticallyIndentNewLinesKey = @"editorAutomaticallyIndentNewLines";
+NSString *const kWCPreferencesEditorAutomaticallyIndentAfterLabelsKey = @"editorAutomaticallyIndentAfterLabels";
 NSString *const kWCPreferencesEditorTabWidthKey = @"editorTabWidth";
 NSString *const kWCPreferencesEditorIndentUsingKey = @"editorIndentUsing";
          
@@ -66,6 +67,8 @@ NSString *const kWCPreferencesEditorDisplayWarningBadgesKey = @"editorDisplayWar
 NSString *const kWCPreferencesEditorWarningLineHighlightKey = @"editorWarningLineHighlight";
 NSString *const kWCPreferencesEditorWarningLineHighlightColorKey = @"editorWarningLineHighlightColor";
 NSString *const kWCPreferencesEditorWrapLinesKey = @"editorWrapLines";
+NSString *const kWCPreferencesEditorBreakpointLineHighlightColorKey = @"editorBreakpointLineHighlightColor";
+NSString *const kWCPreferencesEditorProgramCounterHighlightColorKey = @"editorProgramCounterHighlightColor";
          
 NSString *const kWCPreferencesNewBuildTargetsCopyActiveBuildTargetKey = @"advancedNewBuildTargetsCopyActiveBuildTarget";
 NSString *const kWCPreferencesAdvancedConfirmDeleteOfBreakpointKey = @"confirmDeleteOfBreakpoint";
@@ -174,6 +177,8 @@ NSString *const kWCPreferencesFilesOpenWithKey = @"filesOpenWith";
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorShowEquateValueTooltipsKey];
 	// editor automatically indent new lines
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorAutomaticallyIndentNewLinesKey];
+	// editor automatically indent after labels
+	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorAutomaticallyIndentAfterLabelsKey];
 	// default tab width
 	[preferences setObject:[NSNumber numberWithUnsignedInteger:4] forKey:kWCPreferencesEditorTabWidthKey];
 	// editor indent using
@@ -192,6 +197,11 @@ NSString *const kWCPreferencesFilesOpenWithKey = @"filesOpenWith";
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorWarningLineHighlightKey];
 	// editor warning line highlight color
 	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor colorWithCalibratedRed:0.961 green:0.937 blue:0.58 alpha:1.0]] forKey:kWCPreferencesEditorWarningLineHighlightColorKey];
+	
+	// editor breakpoint line highlight color
+	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor colorWithCalibratedRed:0.0 green:0.5 blue:0.0 alpha:1.0]] forKey:kWCPreferencesEditorBreakpointLineHighlightColorKey];
+	// editor program counter line highlight color
+	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor colorWithCalibratedRed:0.0 green:0.0 blue:0.5 alpha:1.0]] forKey:kWCPreferencesEditorProgramCounterHighlightColorKey];
 	
 	// editor wrap lines
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorWrapLinesKey];

@@ -104,6 +104,35 @@
 		}
 	}
 	
+	if ([[[self file] project] isDebugging]) {
+		if ([[[self file] project] currentDebugFile] == [self file]) {
+			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[(WCTextStorage *)[self textStorage] safeLineStartIndexForLineNumber:[[[self file] project] currentDebugLineNumber]] effectiveRange:NULL];
+			
+			if (NSIntersectsRect(lineRect, visibleRect) && [self needsToDrawRect:lineRect]) {
+				NSColor *breakpointColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorBreakpointLineHighlightColorKey];
+				
+				[[breakpointColor colorWithAlphaComponent:0.4] setFill];
+				NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
+				[[breakpointColor colorWithAlphaComponent:0.6] setFill];
+				NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
+				NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
+			}
+		}
+		else if ([[[self file] project] programCounterFile] == [self file]) {
+			NSRect lineRect = [[self layoutManager] lineFragmentRectForGlyphAtIndex:[(WCTextStorage *)[self textStorage] safeLineStartIndexForLineNumber:[[[self file] project] programCounterLineNumber]] effectiveRange:NULL];
+			
+			if (NSIntersectsRect(lineRect, visibleRect) && [self needsToDrawRect:lineRect]) {
+				NSColor *pcColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorProgramCounterHighlightColorKey];
+				
+				[[pcColor colorWithAlphaComponent:0.4] setFill];
+				NSRectFillUsingOperation(lineRect, NSCompositeSourceOver);
+				[[pcColor colorWithAlphaComponent:0.6] setFill];
+				NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y, lineRect.size.width, 1.0), NSCompositeSourceOver);
+				NSRectFillUsingOperation(NSMakeRect(lineRect.origin.x, lineRect.origin.y+lineRect.size.height - 1.0, lineRect.size.width, 1.0), NSCompositeSourceOver);
+			}
+		}
+	}
+	
 	if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayErrorBadgesKey] &&
 		![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorDisplayWarningBadgesKey])
 		return;
@@ -193,25 +222,26 @@
 - (IBAction)insertNewline:(id)sender {
 	[super insertNewline:sender];
 	
-	RKRegex *regex = [[[RKRegex alloc] initWithRegexString:@"^(?<name>[A-z0-9!?]+:)" options:RKCompileUTF8|RKCompileMultiline] autorelease];
-	NSRange lRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location - 1, 0)];
-	RKEnumerator *enumerator = [[[RKEnumerator alloc] initWithRegex:regex string:[self string] inRange:lRange] autorelease];
-	NSRange mRange = [enumerator nextRangeForCaptureName:@"name"];
-	
-	if (mRange.location != NSNotFound) {
-		[self insertTab:nil];		
-		return;
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorAutomaticallyIndentAfterLabelsKey]) {
+		RKRegex *regex = [[[RKRegex alloc] initWithRegexString:@"^(?<name>[A-z0-9!?]+:)" options:RKCompileUTF8|RKCompileMultiline] autorelease];
+		NSRange lRange = [[self string] lineRangeForRange:NSMakeRange([self selectedRange].location - 1, 0)];
+		RKEnumerator *enumerator = [[[RKEnumerator alloc] initWithRegex:regex string:[self string] inRange:lRange] autorelease];
+		NSRange mRange = [enumerator nextRangeForCaptureName:@"name"];
+		
+		if (mRange.location != NSNotFound) {
+			[self insertTab:nil];		
+			return;
+		}
 	}
 	
-	if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorAutomaticallyIndentNewLinesKey])
-		return;
-	
-	NSString *previousLineWhitespaceString = nil;
-	NSScanner *previousLineScanner = [[[NSScanner alloc] initWithString:[[self string] substringWithRange:[[self string] lineRangeForRange:NSMakeRange([self selectedRange].location - 1, 0)]]] autorelease];
-	[previousLineScanner setCharactersToBeSkipped:nil];
-	
-	if ([previousLineScanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:&previousLineWhitespaceString])
-		[self insertText:previousLineWhitespaceString];
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorAutomaticallyIndentNewLinesKey]) {
+		NSString *previousLineWhitespaceString = nil;
+		NSScanner *previousLineScanner = [[[NSScanner alloc] initWithString:[[self string] substringWithRange:[[self string] lineRangeForRange:NSMakeRange([self selectedRange].location - 1, 0)]]] autorelease];
+		[previousLineScanner setCharactersToBeSkipped:nil];
+		
+		if ([previousLineScanner scanCharactersFromSet:[NSCharacterSet whitespaceCharacterSet] intoString:&previousLineWhitespaceString])
+			[self insertText:previousLineWhitespaceString];
+	}
 }
 
 - (void)insertTab:(id)sender {

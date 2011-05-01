@@ -71,6 +71,7 @@ extern NSString *const kWCPreferencesEditorFontKey;
 extern NSString *const kWCPreferencesEditorShowEquateValueTooltipsKey;
 
 extern NSString *const kWCPreferencesEditorAutomaticallyIndentNewLinesKey;
+extern NSString *const kWCPreferencesEditorAutomaticallyIndentAfterLabelsKey;
 extern NSString *const kWCPreferencesEditorTabWidthKey;
 
 enum {
@@ -87,6 +88,8 @@ extern NSString *const kWCPreferencesEditorDisplayWarningBadgesKey;
 extern NSString *const kWCPreferencesEditorWarningLineHighlightKey;
 extern NSString *const kWCPreferencesEditorWarningLineHighlightColorKey;
 extern NSString *const kWCPreferencesEditorWrapLinesKey;
+extern NSString *const kWCPreferencesEditorBreakpointLineHighlightColorKey;
+extern NSString *const kWCPreferencesEditorProgramCounterHighlightColorKey;
 
 extern NSString *const kWCPreferencesBuildingTreatWarningsAsErrorsKey;
 

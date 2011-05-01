@@ -16,6 +16,7 @@
 #define NS_LOCALIZED_STRING_DONE NSLocalizedString(@"Done",@"Done")
 #define NS_LOCALIZED_STRING_NONE NSLocalizedString(@"None",@"None")
 #define NS_LOCALIZED_STRING_CHOOSE NSLocalizedString(@"Choose",@"Choose")
+#define NS_LOCALIZED_STRING_CHOOSE_ELLIPSIS NSLocalizedString(@"Choose\u2026",@"Choose with ellipsis")
 #define NS_LOCALIZED_STRING_SAVE NSLocalizedString(@"Save",@"Save")
 #define NS_LOCALIZED_STRING_FALSE NSLocalizedString(@"FALSE",@"FALSE")
 #define NS_LOCALIZED_STRING_TRUE NSLocalizedString(@"TRUE",@"TRUE")
@@ -74,6 +75,10 @@ extern const NSSize WCMiniSize;
 // NSMakeSize(32.0,32.0)
 extern const NSSize WCMediumSize;
 
+extern NSString *const kWECalculatorProgramUTI;
+extern NSString *const kWECalculatorApplicationUTI;
+extern NSString *const kWECalculatorSavestateUTI;
+extern NSString *const kWECalculatorRomUTI;
 
 @interface WCDefines : NSObject {
 @private

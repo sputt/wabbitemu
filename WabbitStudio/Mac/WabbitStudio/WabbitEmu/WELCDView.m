@@ -237,7 +237,7 @@
 }
 
 - (BOOL)performDragOperation:(id<NSDraggingInfo>)sender {
-	[WETransferSheetController transferFiles:[self currentFilePaths] toCalculator:(WECalculator *)[[[self window] windowController] document]];
+	[WETransferSheetController transferFiles:[self currentFilePaths] toCalculator:[self calculator]];
 	return YES;
 }
 

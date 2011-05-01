@@ -29,7 +29,7 @@
 
 #import <Cocoa/Cocoa.h>
 
-@class WCBreakpoint,WCBreakpointEditViewController,WCBuildMessage;
+@class WCBreakpoint,WCBreakpointEditViewController,WCBuildMessage,WCFile;
 
 @interface NoodleLineNumberView : NSRulerView {
 	WCBreakpoint *_currentBreakpoint;
@@ -42,6 +42,7 @@
 	BOOL _hasSetInitialRulerThickness;
 }
 @property (assign,nonatomic) WCBreakpointEditViewController *currentEditViewController;
+@property (readonly,nonatomic) WCFile *file;
 
 - (id)initWithScrollView:(NSScrollView *)aScrollView;
 
