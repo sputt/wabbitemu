@@ -484,7 +484,12 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 				lpCalc->pCalcNotify->Breakpoint(pCalcAddress);
 			} else {
 #endif
+#ifndef MACVER
 				gui_debug(lpCalc);
+#else
+				lpCalc->running = FALSE;
+				lpCalc->breakpoint_callback(lpCalc,lpCalc->breakpoint_owner);
+#endif
 #ifdef WINVER
 			}
 #endif

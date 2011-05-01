@@ -36,6 +36,10 @@ typedef struct profiler {
 } profiler_t;
 
 typedef struct tagCALC {
+#ifdef MACVER
+	void (*breakpoint_callback)(struct tagCALC*,void*);
+	void *breakpoint_owner;
+#endif
 	int slot;
 	TCHAR rom_path[MAX_PATH];
 	char rom_version[32];
