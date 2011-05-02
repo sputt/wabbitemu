@@ -8,6 +8,7 @@
 
 #import "WELCDView.h"
 #import "WETransferSheetController.h"
+#import "RSCalculator.h"
 
 
 @interface WELCDView ()
@@ -29,8 +30,8 @@
 }
 
 - (void)dealloc {
+	_calculator = nil;
 	[_currentFilePaths release];
-	_calc = NULL;
 	glDeleteTextures(2, _textures);
     [super dealloc];
 }
@@ -87,20 +88,20 @@
 }
 
 - (void)keyDown:(NSEvent *)event {
-	keypad_key_press(&_calc->cpu, (unsigned int)[event keyCode]);
+	keypad_key_press(&[[self calculator] calc]->cpu, (unsigned int)[event keyCode]);
 }
 
 - (void)keyUp:(NSEvent *)event {
-	keypad_key_release(&_calc->cpu, (unsigned int)[event keyCode]);
+	keypad_key_release(&[[self calculator] calc]->cpu, (unsigned int)[event keyCode]);
 }
 
 - (IBAction)copy:(id)sender {
-	if (_calc == NULL || !_calc->active || !_calc->running) {
+	if ([self calculator] == nil || ![[self calculator] isActive] || ![[self calculator] isRunning]) {
 		NSBeep();
 		return;
 	}
 	
-	TCHAR *ans = GetRealAns(&[self calc]->cpu);
+	TCHAR *ans = GetRealAns(&[[self calculator] calc]->cpu);
 	if (ans != NULL) {
 		NSPasteboard *pboard = [NSPasteboard pasteboardWithName:NSGeneralPboard];
 		
@@ -113,10 +114,10 @@
 
 - (void)drawRect:(NSRect)dirtyRect
 {	
-	if (_calc == NULL || !_calc->active || !_calc->running)
+	if ([self calculator] == nil || ![[self calculator] isActive] || ![[self calculator] isRunning])
 		return;
 	
-	u_int8_t *lcd = LCD_image([self calc]->cpu.pio.lcd);
+	u_int8_t *lcd = LCD_image([[self calculator] calc]->cpu.pio.lcd);
 	u_int16_t row, col;
 	
 	glClear(GL_COLOR_BUFFER_BIT);
@@ -241,10 +242,9 @@
 	return YES;
 }
 
-@synthesize calc=_calc;
+@synthesize calculator=_calculator;
 @synthesize usesLCDWirePattern=_usesLCDWirePattern;
 @synthesize isWidescreen=_isWidescreen;
-@synthesize calculator=_calculator;
 
 @synthesize currentFilePaths=_currentFilePaths;
 

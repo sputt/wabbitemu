@@ -10,10 +10,11 @@
 #import "NSResponder+WCExtensions.h"
 #import "WETransferFile.h"
 #import "WCDefines.h"
+#import "RSCalculator.h"
 
 
 @interface WETransferSheetController ()
-- (id)_initWithFilePaths:(NSArray *)filePaths calculator:(id <RSCalculatorProtocol>)calculator;
+- (id)_initWithFilePaths:(NSArray *)filePaths calculator:(RSCalculator *)calculator;
 - (void)_transferRomsAndSavestates;
 - (void)_setupTransferProgramsAndApps;
 - (void)_transferProgramsAndApps;
@@ -44,11 +45,11 @@
 	[self _transferProgramsAndApps];
 }
 
-+ (void)transferFiles:(NSArray *)filePaths toCalculator:(id <RSCalculatorProtocol>)calculator; {
++ (void)transferFiles:(NSArray *)filePaths toCalculator:(RSCalculator *)calculator; {
 	[self transferFiles:filePaths toCalculator:calculator runAfterTransfer:NO];
 }
 
-+ (void)transferFiles:(NSArray *)filePaths toCalculator:(id <RSCalculatorProtocol>)calculator runAfterTransfer:(BOOL)runAfterTransfer; {
++ (void)transferFiles:(NSArray *)filePaths toCalculator:(RSCalculator *)calculator runAfterTransfer:(BOOL)runAfterTransfer; {
 	WETransferSheetController *controller = [[[self class] alloc] _initWithFilePaths:[self validateFilePaths:filePaths] calculator:calculator];
 	
 	[controller setRunProgramOrAppAfterTransfer:runAfterTransfer];
@@ -56,7 +57,7 @@
 	[controller _setupTransferProgramsAndApps];
 }
 
-- (id)_initWithFilePaths:(NSArray *)filePaths calculator:(id <RSCalculatorProtocol>)calculator; {
+- (id)_initWithFilePaths:(NSArray *)filePaths calculator:(RSCalculator *)calculator; {
 	if (!(self = [super initWithWindowNibName:[self windowNibName]]))
 		return nil;
 	
@@ -113,18 +114,18 @@
 	else if ([_romsAndSavestates count] == 1) {
 		NSError *error;
 		if (![[self calculator] loadRomOrSavestate:[NSURL fileURLWithPath:[[_romsAndSavestates objectAtIndex:0] path]] error:&error])
-			[[self calculator] presentError:error];
+			[[[self calculator] owner] presentError:error];
 	}
 	else {
 		NSError *error;
 		if (![[self calculator] loadRomOrSavestate:[NSURL fileURLWithPath:[[_romsAndSavestates objectAtIndex:0] path]] error:&error])
-			[[self calculator] presentError:error];
+			[[[self calculator] owner] presentError:error];
 		
 		[_romsAndSavestates removeObjectAtIndex:0];
 		
 		for (WETransferFile *file in _romsAndSavestates) {
 			if (![[NSDocumentController sharedDocumentController] openDocumentWithContentsOfURL:[NSURL fileURLWithPath:[file path]] display:YES error:&error])
-				[[self calculator] presentError:error];
+				[[[self calculator] owner] presentError:error];
 		}
 	}
 }
@@ -135,7 +136,7 @@
 		return;
 	}
 	
-	[[NSApplication sharedApplication] beginSheet:[self window] modalForWindow:[[self calculator] calculatorWindow] modalDelegate:self didEndSelector:@selector(_sheetDidEnd:code:info:) contextInfo:NULL];
+	[[NSApplication sharedApplication] beginSheet:[self window] modalForWindow:[[[self calculator] owner] windowForSheet] modalDelegate:self didEndSelector:@selector(_sheetDidEnd:code:info:) contextInfo:NULL];
 }
 
 - (void)_transferProgramsAndApps; {

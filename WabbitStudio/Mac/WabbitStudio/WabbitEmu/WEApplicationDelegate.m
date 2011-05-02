@@ -11,6 +11,8 @@
 #import "WEPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "WEPreferencesWindowController.h"
+#import "RSCalculator.h"
+#include "calc.h"
 
 
 @implementation WEApplicationDelegate
@@ -86,7 +88,7 @@
 
 - (void)_FPSTimerFired:(NSTimer *)timer {
 	for (WELCDView *LCDView in _LCDViews)
-		[[LCDView calculator] updateFPSString];
+		[[[LCDView calculator] owner] updateFPSString];
 	
 	[timer setFireDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
 }

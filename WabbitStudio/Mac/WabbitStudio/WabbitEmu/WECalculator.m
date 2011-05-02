@@ -12,6 +12,7 @@
 #import "WELCDView.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "WEPreferencesController.h"
+#import "RSCalculator.h"
 
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
@@ -35,7 +36,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_statusString release];
 	[_FPSString release];
-	calc_slot_free(_calc);
+	[_calculator release];
 	[super dealloc];
 }
 
@@ -55,9 +56,8 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 {
 	[super windowControllerDidLoadNib:aController];
 	
-	[[self LCDView] setCalculator:self];
-	[[self LCDView] setCalc:[self calc]];
-	[[self LCDView] setIsWidescreen:([self calc]->model == TI_85 || [self calc]->model == TI_86)];
+	[[self LCDView] setCalculator:[self calculator]];
+	[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
 	[self resetDisplaySize:nil];
 	[WEApplicationDelegate addLCDView:[self LCDView]];
 	
@@ -67,104 +67,35 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 }
 
 - (BOOL)readFromURL:(NSURL *)absoluteURL ofType:(NSString *)typeName error:(NSError **)outError {
-	LPCALC calc = calc_slot_new();
+	RSCalculator *calculator = [RSCalculator calculatorWithOwner:self breakpointSelector:@selector(handleBreakpoint)];
 	
-	if (calc == NULL) {
+	if (calculator == nil) {
 		if (outError != NULL)
 			*outError = [NSError errorWithDomain:kWECalculatorErrorDomain code:kWECalculatorCreatedMaxCalcs userInfo:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"The maximum number of calculators have already been created.", @"The maximum number of calculators have already been created"),NSLocalizedDescriptionKey,NSLocalizedString(@"The maximum number of calculators have already been created.", @"The maximum number of calculators have already been created"),NSLocalizedFailureReasonErrorKey,NSLocalizedString(@"Please close at least one open calculator and try again.", @"Please close at least one open calculator and try again."),NSLocalizedRecoverySuggestionErrorKey, nil]];
 		return NO;
 	}
 	
-	_calc = calc;
+	_calculator = [calculator retain];
 	
-	return [self loadRomOrSavestate:absoluteURL error:outError];
-}
-
-- (BOOL)loadRomOrSavestate:(NSURL *)romURL error:(NSError **)outError {
-	[self setIsRunning:NO];
-	[self setIsLoadingRom:YES];
-	
-	BOOL loaded = rom_load([self calc], [[romURL path] fileSystemRepresentation]);
-	
-	if (!loaded) {
-		if (outError != NULL)
-			*outError = [NSError errorWithDomain:kWECalculatorErrorDomain code:kWECalculatorRomOrSavestateLoadFailed userInfo:[NSDictionary dictionaryWithObjectsAndKeys:NSLocalizedString(@"The file could not be recognized as a rom or save state.", @"The file could not be recognized as a rom or save state."),NSLocalizedDescriptionKey,NSLocalizedString(@"The file could not be recognized as a rom or save state.", @"The file could not be recognized as a rom or save state."),NSLocalizedFailureReasonErrorKey,NSLocalizedString(@"Please try again with a different file.", @"Please try again with a different file."),NSLocalizedRecoverySuggestionErrorKey, nil]];
-		
-		[self setIsLoadingRom:NO];
-		
-		return NO;
-	}
-	
-	if ([self windowForSheet] != nil) {
-		[self setFileURL:romURL];
-		[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[self fileURL]];
-	}
-	
-	[self updateStatusString];
-	
-	[self calc]->cpu.pio.lcd->shades = (u_int)[[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWEPreferencesDisplayLCDShadesKey];
-	
-	calc_turn_on([self calc]);
-	
-	[[self LCDView] setIsWidescreen:([self calc]->model == WECalculatorModelTI85 || [self calc]->model == WECalculatorModelTI86)];	
-	
-	[self setIsLoadingRom:NO];
-	
-	return YES;
-}
-
-- (void)simulateKeyPress:(uint16_t)keyCode {
-	[self simulateKeyPress:keyCode lastKeyPressInSeries:NO];
-}
-
-- (void)simulateKeyPress:(uint16_t)keyCode lastKeyPressInSeries:(BOOL)lastKeyPressInSeries; {
-	keypad_key_press(&[self calc]->cpu, keyCode);
-	calc_run_seconds([self calc], 0.25);
-	keypad_key_release(&[self calc]->cpu, keyCode);
-	if (!lastKeyPressInSeries)
-		calc_run_seconds([self calc], 0.25);
+	return [[self calculator] loadRomOrSavestate:[absoluteURL path] error:outError];
 }
 
 - (void)updateFPSString; {
-	if (![self isLoadingRom]) {
-		[self setFPSString:[NSString stringWithFormat:NSLocalizedString(@"FPS: %.2f", @"FPS format string"),[self calc]->cpu.pio.lcd->ufps]];
+	if (![[self calculator] isBusy]) {
+		[self setFPSString:[NSString stringWithFormat:NSLocalizedString(@"FPS: %.2f", @"FPS format string"),[[self calculator] calc]->cpu.pio.lcd->ufps]];
 	}
 }
 
 - (void)updateStatusString {
-	if (_calc != NULL) {
-		[self setStatusString:[self _stringForCalculatorModel:[self model]]];
+	if ([[self calculator] calc] != NULL) {
+		[self setStatusString:[self _stringForCalculatorModel:[[self calculator] model]]];
 	}
 }
 
 @synthesize LCDView=_LCDView;
-@synthesize calc=_calc;
-@dynamic isRunning;
-- (BOOL)isRunning {
-	return (_calc != NULL && _calc->running); 
-}
-- (void)setIsRunning:(BOOL)isRunning {
-	if (_calc != NULL)
-		_calc->running = isRunning;
-}
-@synthesize isLoadingRom=_isLoadingRom;
+@synthesize calculator=_calculator;
 @synthesize statusString=_statusString;
 @synthesize FPSString=_FPSString;
-@dynamic model;
-- (WECalculatorModel)model {
-	if (_calc == NULL)
-		return NSNotFound;
-	return (WECalculatorModel)[self calc]->model;
-}
-
-@dynamic isActive;
-- (BOOL)isActive {
-	return (_calc != NULL && _calc->active);
-}
-- (void)setIsActive:(BOOL)isActive {
-	if (_calc != NULL)
-		_calc->active = isActive;
-}
 
 @dynamic calculatorWindow;
 - (NSWindow *)calculatorWindow {
@@ -179,8 +110,6 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 		return;
 	
 	_isDebugging = isDebugging;
-	
-	[self setIsRunning:!isDebugging];
 }
 
 - (IBAction)loadRom:(id)sender; {
@@ -195,7 +124,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 			return;
 		
 		NSError *error;
-		if (![self loadRomOrSavestate:[[panel URLs] lastObject] error:&error]) {
+		if (![[self calculator] loadRomOrSavestate:[[[panel URLs] lastObject] path] error:&error]) {
 			if (error != NULL)
 				[self presentError:error];
 		}
@@ -211,7 +140,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 		if (result != NSFileHandlingPanelOKButton)
 			return;
 		
-		SAVESTATE_t *savestate = SaveSlot([self calc]);
+		SAVESTATE_t *savestate = SaveSlot([[self calculator] calc]);
 		
 		if (savestate == NULL) {
 			NSLog(@"savestate was NULL!");
@@ -223,13 +152,13 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 }
 
 - (IBAction)reloadCurrentRomOrSavestate:(id)sender; {
-	[self loadRomOrSavestate:[self fileURL] error:NULL];
+	[[self calculator] loadRomOrSavestate:[[self fileURL] path] error:NULL];
 }
 - (IBAction)resetCalculator:(id)sender; {
-	[self setIsRunning:NO];
-	calc_reset([self calc]);
-	calc_turn_on([self calc]);
-	[self setIsRunning:YES];
+	[[self calculator] setIsRunning:NO];
+	calc_reset([[self calculator] calc]);
+	calc_turn_on([[self calculator] calc]);
+	[[self calculator] setIsRunning:YES];
 }
 
 - (IBAction)toggleLCDSize:(id)sender; {
@@ -294,7 +223,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 }
 
 - (NSString *)_stringForCalculatorModel:(WECalculatorModel)calculatorModel; {
-	switch ([self calc]->model) {
+	switch (calculatorModel) {
 		case WECalculatorModelTI73:
 			return NSLocalizedString(@"TI-73", @"TI-73");
 		case WECalculatorModelTI81:

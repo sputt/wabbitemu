@@ -10,7 +10,6 @@
 #import "WCTabViewContextProtocol.h"
 #import "WCJumpToObjectProtocol.h"
 #import "WCDefines.h"
-#import "RSCalculatorProtocol.h"
 
 
 extern NSString *const kWCProjectFileKey;
@@ -38,9 +37,9 @@ extern NSString *const kWCProjectSettingsFileSettingsDictionaryKey;
 extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey;
 extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 
-@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint,WCAddFilesToProjectViewController,WCAlias,WCDebuggerWindowController;
+@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint,WCAddFilesToProjectViewController,WCAlias,WCDebuggerWindowController,RSCalculator;
 
-@interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext,RSCalculatorProtocol> {
+@interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext> {
 @private
 	IBOutlet PSMTabBarControl *_tabBarControl;
 	IBOutlet BWAnchoredButtonBar *_rightButtonBar;
@@ -65,11 +64,11 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 	NSUInteger _totalErrors;
 	NSUInteger _totalWarnings;
 	BOOL _shouldRunAfterBuilding;
+	BOOL _shouldDebugAfterBuilding;
 	
-	LPCALC _calc; // our calc for debugging
+	RSCalculator *_calculator;
 	WCAlias *_romOrSavestateAlias;
 	WCBreakpoint *_projectBreakpoint;
-	BOOL _isLoadingRom;
 	BOOL _isDebugging;
 	WCFile *_currentBreakpointFile;
 	NSUInteger _currentBreakpointLineNumber;
@@ -133,11 +132,7 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 @property (readonly,nonatomic) NSUInteger totalErrors;
 @property (readonly,nonatomic) NSUInteger totalWarnings;
 @property (readonly,nonatomic) BOOL isClosing;
-@property (readonly,nonatomic) LPCALC calc;
-@property (assign,nonatomic) BOOL isActive;
-@property (assign,nonatomic) BOOL isRunning;
-@property (assign,nonatomic) BOOL isLoadingRom;
-@property (readonly,nonatomic) NSWindow *calculatorWindow;
+@property (readonly,nonatomic) RSCalculator *calculator;
 @property (readonly,retain,nonatomic) WCAlias *romOrSavestateAlias;
 @property (readonly,nonatomic) WCDebuggerWindowController *debuggerWindowController;
 @property (readonly,nonatomic) BOOL shouldAnimate;
@@ -181,10 +176,10 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 - (IBAction)projectWindow:(id)sender;
 
 - (IBAction)runAfterBuilding:(id)sender;
+- (IBAction)debugAfterBuilding:(id)sender;
 
 - (IBAction)step:(id)sender;
 - (IBAction)stepOver:(id)sender;
-- (IBAction)stepOut:(id)sender;
 
 - (WCFileViewController *)addFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext;
 - (WCFileViewController *)fileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext selectTab:(BOOL)selectTab;

@@ -7,17 +7,16 @@
 //
 
 #import <AppKit/NSWindowController.h>
-#import "RSCalculatorProtocol.h"
-//#include "savestate.h"
+#include "savestate.h"
 
 
-@class WETransferFile;
+@class WETransferFile,RSCalculator;
 
 @interface WETransferSheetController : NSWindowController {
 @private
 	IBOutlet NSProgressIndicator *_progressIndicator;
 	
-	__weak id <RSCalculatorProtocol> _calculator;
+	__weak RSCalculator *_calculator;
     NSMutableArray *_romsAndSavestates;
 	NSMutableArray *_programsAndApps;
 	CGFloat _totalSize;
@@ -28,14 +27,14 @@
 	
 	BOOL _runProgramOrAppAfterTransfer;
 }
-@property (readonly,nonatomic) id <RSCalculatorProtocol> calculator;
+@property (readonly,nonatomic) RSCalculator *calculator;
 @property (assign,nonatomic) CGFloat totalSize;
 @property (assign,nonatomic) CGFloat currentProgress;
 @property (copy,nonatomic) NSString *statusString;
 @property (assign,nonatomic) WETransferFile *currentFile;
 @property (assign,nonatomic) BOOL runProgramOrAppAfterTransfer;
 
-+ (void)transferFiles:(NSArray *)filePaths toCalculator:(id <RSCalculatorProtocol>)calculator;
-+ (void)transferFiles:(NSArray *)filePaths toCalculator:(id <RSCalculatorProtocol>)calculator runAfterTransfer:(BOOL)runAfterTransfer;
++ (void)transferFiles:(NSArray *)filePaths toCalculator:(RSCalculator *)calculator;
++ (void)transferFiles:(NSArray *)filePaths toCalculator:(RSCalculator *)calculator runAfterTransfer:(BOOL)runAfterTransfer;
 + (NSArray *)validateFilePaths:(NSArray *)filePaths;
 @end

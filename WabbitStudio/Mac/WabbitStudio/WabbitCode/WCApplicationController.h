@@ -7,7 +7,6 @@
 //
 
 #import "WCSingleton.h"
-#import "RSCalculatorProtocol.h"
 
 
 @class WELCDView;

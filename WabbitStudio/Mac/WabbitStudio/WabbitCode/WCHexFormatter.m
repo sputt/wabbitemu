@@ -14,14 +14,11 @@
 
 - (NSString *)stringForObjectValue:(id)object {
 	if ([object isKindOfClass:[NSNumber class]])
-		return [NSString stringWithFormat:@"$%04X",[object unsignedShortValue]];
-	return [NSString stringWithFormat:@"$%04X",[object integerValue]];
+		return [NSString stringWithFormat:@"%04X",[object unsignedShortValue]];
+	return [NSString stringWithFormat:@"%04X",[object integerValue]];
 }
 
 - (BOOL)getObjectValue:(id *)object forString:(NSString *)string errorDescription:(NSString **)error {
-#ifdef DEBUG
-	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
-#endif
 	string = [string stringByRemovingInvalidHexDigits];
 	
 	if (!string || [string length] == 0) {

@@ -48,7 +48,8 @@
 #import "NSString+WCExtensions.h"
 #import "WCDebuggerWindowController.h"
 #import "WETransferSheetController.h"
-#include "disassemble.h"
+#import "RSCalculator.h"
+
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
@@ -86,15 +87,12 @@ static const NSInteger kWCProjectDataFileOldVersionErrorCode = 1003;
 
 static NSImage *_appIcon = nil;
 
-static void ProjectBreakpointCallback(LPCALC calc, void *info) {
-	[(WCProject *)info handleBreakpointCallback];
-}
-
 @interface WCProject ()
 @property (readwrite,retain,nonatomic) WCProjectFile *projectFile;
 @property (readwrite,retain,nonatomic) NSSet *absoluteFilePaths;
 @property (readwrite,retain,nonatomic) NSString *codeListing;
 @property (assign,nonatomic) BOOL shouldRunAfterBuilding;
+@property (assign,nonatomic) BOOL shouldDebugAfterBuilding;
 @property (readwrite,retain,nonatomic) WCAlias *romOrSavestateAlias;
 @property (readwrite,assign,nonatomic) WCFile *currentBreakpointFile;
 @property (readwrite,assign,nonatomic) NSUInteger currentBreakpointLineNumber;
@@ -146,6 +144,7 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[_calculator release];
 	[_romOrSavestateAlias release];
 	if (_buildTask != nil)
 		[_buildTask terminate];
@@ -541,153 +540,10 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 	return retval;
 }
 #pragma mark RSCalculatorProtocol
-@synthesize calc=_calc;
-@dynamic isActive;
-- (BOOL)isActive {
-	return (_calc != NULL && _calc->active);
-}
-- (void)setIsActive:(BOOL)isActive {
-	if (_calc != NULL)
-		_calc->active = isActive;
-}
-@dynamic isRunning;
-- (BOOL)isRunning {
-	return (_calc != NULL && _calc->running); 
-}
-- (void)setIsRunning:(BOOL)isRunning {
-	if (_calc != NULL)
-		_calc->running = isRunning;
-}
-@synthesize isLoadingRom=_isLoadingRom;
-@dynamic calculatorWindow;
-- (NSWindow *)calculatorWindow {
-	return [[self debuggerWindowController] window];
-}
-- (BOOL)loadRomOrSavestate:(NSURL *)fileURL error:(NSError **)outError; {
-	if (_calc == NULL) {
-		_calc = calc_slot_new();
-		if (_calc == NULL)
-			return NO;
-		
-		_calc->breakpoint_callback = &ProjectBreakpointCallback;
-		_calc->breakpoint_owner = (void *)self;
-	}
-	
-	[self setIsRunning:NO];
-	[self setIsLoadingRom:YES];
-	
-	BOOL loaded = rom_load([self calc], [[fileURL path] fileSystemRepresentation]);
-	
-	if (!loaded) {
-		[self setIsLoadingRom:NO];
-		
-		return NO;
-	}
-	
-	for (WCBreakpoint *breakpoint in [self allBreakpoints]) {
-		set_break(&_calc->mem_c, TRUE, 1, [breakpoint address]);
-	}
-	
-	calc_turn_on([self calc]);
-	
-	[self setIsLoadingRom:NO];
-	
-	return YES;
-}
 
-- (void)simulateKeyPress:(uint16_t)keyCode {
-	[self simulateKeyPress:keyCode lastKeyPressInSeries:NO];
-}
-
-- (void)simulateKeyPress:(uint16_t)keyCode lastKeyPressInSeries:(BOOL)lastKeyPressInSeries; {
-	keypad_key_press(&[self calc]->cpu, keyCode);
-	calc_run_seconds([self calc], 0.25);
-	keypad_key_release(&[self calc]->cpu, keyCode);
-	if (!lastKeyPressInSeries)
-		calc_run_seconds([self calc], 0.25);
-}
-
-- (IBAction)step:(id)sender; {
-	if (![self isDebugging]) {
-		NSBeep();
-		return;
-	}
-	
-	CPU_step(&[self calc]->cpu);
-	
+- (void)handleBreakpointCallback; {
+	[self setIsDebugging:YES];
 	[self jumpToProgramCounter];
-}
-
-- (IBAction)stepOver:(id)sender {
-	if (![self isDebugging]) {
-		NSBeep();
-		return;
-	}
-	
-	lpDebuggerCalc = [self calc];
-	
-	CPU_t *cpu = &[self calc]->cpu;
-	const int usable_commands[] = { DA_BJUMP, DA_BJUMP_N, DA_BCALL_N, DA_BCALL,
-		DA_BLI, DA_CALL_X, DA_CALL_CC_X, DA_HALT, DA_RST_X};
-	int i;
-	double time = tc_elapsed(cpu->timer_c);
-	Z80_info_t zinflocal;
-	
-	disassemble(cpu->mem_c, cpu->pc, 1, &zinflocal);
-	
-	if (cpu->halt) {
-		if (cpu->iff1) {
-			while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && cpu->halt == TRUE )
-				CPU_step(cpu);
-		} else {
-			cpu->halt = FALSE;
-		}
-	} else if (zinflocal.index == DA_CALL_X || zinflocal.index == DA_CALL_CC_X) {
-		uint16_t old_stack = cpu->sp;
-		CPU_step(cpu);
-		if (cpu->sp != old_stack) {
-			//CPU_stepout(cpu);
-			[self stepOut:nil];
-		}
-	} else {
-		for (i = 0; i < NumElm(usable_commands); i++) {
-			if (zinflocal.index == usable_commands[i]) {
-				while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && cpu->pc != (zinflocal.addr + zinflocal.size))
-					CPU_step(cpu);
-				
-				[self jumpToProgramCounter];
-				return;
-			}
-		}
-		
-		CPU_step(cpu);
-	}
-	[self jumpToProgramCounter];
-}
-
-- (IBAction)stepOut:(id)sender {
-	CPU_t *cpu = &[self calc]->cpu;
-	double time = tc_elapsed(cpu->timer_c);
-	uint16_t old_sp = cpu->sp;
-	
-	while ((tc_elapsed(cpu->timer_c) - time) < 15.0) {
-		waddr_t old_pc = addr_to_waddr(cpu->mem_c, cpu->pc);
-		CPU_step(cpu);
-		
-		if (cpu->sp > old_sp) {
-			Z80_info_t zinflocal;
-			disassemble(cpu->mem_c, old_pc.addr, 1, &zinflocal);
-			
-			if (zinflocal.index == DA_RET 		||
-				zinflocal.index == DA_RET_CC 	||
-				zinflocal.index == DA_RETI		||
-				zinflocal.index == DA_RETN) {
-				
-				return;
-			}
-			
-		}
-	}
 }
 #pragma mark -
 #pragma mark *** Public Methods ***
@@ -728,11 +584,6 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectNumberOfFilesDidChangeNotification object:self];
 }
 
-- (void)handleBreakpointCallback; {
-	[self setIsDebugging:YES];
-	[self jumpToProgramCounter];
-}
-
 - (void)jumpToProgramCounter; {
 	[self updateCurrentBreakpointFileAndLineNumber];
 	[self updateProgramCounterFileAndLineNumber];
@@ -753,7 +604,7 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 	}
 	
 	// update the current breakpoint file
-	uint16_t pc = [self calc]->cpu.pc;
+	uint16_t pc = [[self calculator] programCounter];
 	for (WCFile *file in [self textFiles]) {
 		for (WCBreakpoint *breakpoint in [file allBreakpoints]) {
 			if ([breakpoint address] == pc) {
@@ -774,7 +625,7 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 	}
 	
 	// update the current breakpoint line number
-	uint16_t pc = [self calc]->cpu.pc;
+	uint16_t pc = [[self calculator] programCounter];
 	for (WCFile *file in [self textFiles]) {
 		for (WCBreakpoint *breakpoint in [file allBreakpoints]) {
 			if ([breakpoint address] == pc) {
@@ -799,7 +650,7 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 - (void)updateProgramCounterFile {
 	// update the program counter file
 	uint8_t page = 0; // this will need to be changed to handle flash applications
-	uint16_t address = [self calc]->cpu.pc;
+	uint16_t address = [[self calculator] programCounter];
 	NSString *findString = [NSString stringWithFormat:@"%02u:%04X",page,address];
 	NSRange fRange = [[self codeListing] rangeOfString:findString options:NSLiteralSearch];
 	
@@ -850,7 +701,7 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 	NSRange fileRange = [[self codeListing] rangeOfString:fileString options:NSLiteralSearch];
 	
 	uint8_t page = 0; // this will need to be changed to handle flash applications
-	uint16_t address = [self calc]->cpu.pc;
+	uint16_t address = [[self calculator] programCounter];
 	NSString *pcString = [NSString stringWithFormat:@"%02u:%04X",page,address];
 	NSRange pcRange = [[self codeListing] rangeOfString:pcString options:NSLiteralSearch|NSBackwardsSearch range:NSMakeRange(NSMaxRange(fileRange), [[self codeListing] length]-NSMaxRange(fileRange))];
 	NSString *lineString = [[self codeListing] substringWithRange:[[self codeListing] lineRangeForRange:pcRange]];
@@ -1270,9 +1121,16 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 	
 	return retval;
 }
+@dynamic calculator;
+- (RSCalculator *)calculator {
+	if (_calculator == nil) {
+		_calculator = [[RSCalculator alloc] initWithOwner:self breakpointSelector:@selector(handleBreakpointCallback)];
+	}
+	return _calculator;
+}
 @dynamic shouldAnimate;
 - (BOOL)shouldAnimate {
-	return ([self isBuilding] || [self isLoadingRom]);
+	return ([self isBuilding]);
 }
 @dynamic allBreakpoints;
 - (NSArray *)allBreakpoints {
@@ -1353,6 +1211,7 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 			case WCPreferencesBuildingForUnsavedFilesPromptBeforeSaving:
 				if ([WCUnsavedFilesWindowController runModalForProject:self] == NSCancelButton) {
 					[self setShouldRunAfterBuilding:NO];
+					[self setShouldDebugAfterBuilding:NO];
 					return;
 				}
 				break;
@@ -1369,6 +1228,7 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 		
 		[alert beginSheetModalForWindow:[self windowForSheet] modalDelegate:self didEndSelector:@selector(_activeBuildTargetHasNoInputFileAlertDidEnd:code:info:) contextInfo:NULL];
 		[self setShouldRunAfterBuilding:NO];
+		[self setShouldDebugAfterBuilding:NO];
 		return;
 	}
 	
@@ -1384,6 +1244,7 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 				if (![projectDirectory checkResourceIsReachableAndReturnError:NULL]) {
 					NSLog(@"could not create output directory and it does not already exist");
 					[self setShouldRunAfterBuilding:NO];
+					[self setShouldDebugAfterBuilding:NO];
 					return;
 				}
 			}
@@ -1399,6 +1260,7 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 				if (![projectDirectory checkResourceIsReachableAndReturnError:NULL]) {
 					NSLog(@"could not create output directory and it does not already exist");
 					[self setShouldRunAfterBuilding:NO];
+					[self setShouldDebugAfterBuilding:NO];
 					return;
 				}
 			}
@@ -1475,7 +1337,8 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 	[self build:nil];
 }
 - (IBAction)buildAndDebug:(id)sender; {
-	
+	[self setShouldDebugAfterBuilding:YES];
+	[self build:nil];
 }
 
 - (IBAction)editBuildTargets:(id)sender; {
@@ -1709,13 +1572,50 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 
 - (IBAction)runAfterBuilding:(id)sender; {
 	NSError *error;
-	if (![self loadRomOrSavestate:[[self romOrSavestateAlias] URL] error:&error]) {
-		[self presentError:error];
+	if (![[self calculator] loadRomOrSavestate:[[self romOrSavestateAlias] absolutePath] error:&error]) {
+		if (error != NULL)
+			[self presentError:error];
 		return;
 	}
 	
 	[[self debuggerWindowController] showWindow:nil];
-	[WETransferSheetController transferFiles:[NSArray arrayWithObjects:[[_buildTask arguments] lastObject], nil] toCalculator:self runAfterTransfer:YES];
+	[WETransferSheetController transferFiles:[NSArray arrayWithObjects:[[_buildTask arguments] lastObject], nil] toCalculator:[self calculator] runAfterTransfer:YES];
+}
+
+- (IBAction)debugAfterBuilding:(id)sender; {
+	NSError *error;
+	if (![[self calculator] loadRomOrSavestate:[[self romOrSavestateAlias] absolutePath] error:&error]) {
+		if (error != NULL)
+			[self presentError:error];
+		return;
+	}
+	
+	for (WCBreakpoint *breakpoint in [self allBreakpoints]) {
+		if ([breakpoint isActive])
+			[[self calculator] setBreakpointOfType:RSBreakpointTypeRam atAddress:[breakpoint address] onPage:1];
+	}
+	
+	[[self debuggerWindowController] showWindow:nil];
+	[WETransferSheetController transferFiles:[NSArray arrayWithObjects:[[_buildTask arguments] lastObject], nil] toCalculator:[self calculator] runAfterTransfer:YES];
+}
+
+- (IBAction)step:(id)sender; {
+	if (![self isDebugging]) {
+		NSBeep();
+		return;
+	}
+	
+	[[self calculator] step];
+	[self jumpToProgramCounter];
+}
+- (IBAction)stepOver:(id)sender; {
+	if (![self isDebugging]) {
+		NSBeep();
+		return;
+	}
+	
+	[[self calculator] stepOut];
+	[self jumpToProgramCounter];
 }
 #pragma mark -
 #pragma mark *** Private Methods ***
@@ -1946,6 +1846,7 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 }
 @synthesize codeListing=_codeListing;
 @synthesize shouldRunAfterBuilding=_shouldRunAfterBuilding;
+@synthesize shouldDebugAfterBuilding=_shouldDebugAfterBuilding;
 #pragma mark Notifications
 - (void)_readDataFromBuildTask:(NSNotification *)note {	
 	NSData *data = [[note userInfo] objectForKey:NSFileHandleNotificationDataItem];
@@ -2064,13 +1965,40 @@ static void ProjectBreakpointCallback(LPCALC calc, void *info) {
 						}];
 					}];
 				}
-				else {
+				else
 					[self runAfterBuilding:nil];
+			}
+			else if ([self shouldDebugAfterBuilding]) {
+				if ([self romOrSavestateAlias] == nil) {
+					NSAlert *alert = [NSAlert alertWithMessageText:NSLocalizedString(@"No Rom or Savestate Selected For Debugging", @"rom or savestate for debugging message") defaultButton:NS_LOCALIZED_STRING_CHOOSE_ELLIPSIS alternateButton:NS_LOCALIZED_STRING_CANCEL otherButton:nil informativeTextWithFormat:NSLocalizedString(@"Would you like to choose one now?", @"rom or savestate for debugging informative text")];
+					
+					[alert beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSAlert *mAlert,NSInteger result) {
+						if (result != NSAlertDefaultReturn)
+							return;
+						
+						[[mAlert window] orderOut:nil];
+						
+						NSOpenPanel *panel = [NSOpenPanel openPanel];
+						
+						[panel setAllowedFileTypes:[NSArray arrayWithObjects:kWECalculatorRomUTI,kWECalculatorSavestateUTI, nil]];
+						
+						[panel beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSInteger result) {
+							if (result != NSFileHandlingPanelOKButton)
+								return;
+							
+							[panel orderOut:nil];
+							[self setRomOrSavestateAlias:[WCAlias aliasWithURL:[[panel URLs] lastObject]]];
+							[self debugAfterBuilding:nil];
+						}];
+					}];
 				}
+				else
+					[self debugAfterBuilding:nil];
 			}
 		}
 		
 		[self setShouldRunAfterBuilding:NO];
+		[self setShouldDebugAfterBuilding:NO];
 		[self setIsBuilding:NO];
 	}
 }

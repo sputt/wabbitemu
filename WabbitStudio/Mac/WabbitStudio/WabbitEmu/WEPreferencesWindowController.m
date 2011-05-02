@@ -11,6 +11,7 @@
 #import "WEPreviewLCDView.h"
 #import "WEApplicationDelegate.h"
 #import "WCDefines.h"
+#import "RSCalculator.h"
 
 
 @implementation WEPreferencesWindowController
@@ -46,7 +47,7 @@
 		if (calculator == nil)
 			calculator = [[[NSDocumentController sharedDocumentController] documents] lastObject];
 		
-		[_LCDView setCalc:[calculator calc]];
+		[_LCDView setCalculator:[calculator calculator]];
 		[WEApplicationDelegate addLCDView:_LCDView];
 	}
 	
@@ -57,7 +58,7 @@
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
-	[_LCDView setCalc:NULL];
+	[_LCDView setCalculator:nil];
 	[WEApplicationDelegate removeLCDView:_LCDView];
 }
 
@@ -71,7 +72,7 @@
 		if (calculator == nil)
 			calculator = [[[NSDocumentController sharedDocumentController] documents] lastObject];
 		
-		[_LCDView setCalc:[calculator calc]];
+		[_LCDView setCalculator:[calculator calculator]];
 		[WEApplicationDelegate addLCDView:_LCDView];
 	}
 }
@@ -84,7 +85,7 @@
 			if (calculator == nil)
 				calculator = [[[NSDocumentController sharedDocumentController] documents] lastObject];
 			
-			[_LCDView setCalc:[calculator calc]];
+			[_LCDView setCalculator:[calculator calculator]];
 			[WEApplicationDelegate addLCDView:_LCDView];
 		}
 	}
@@ -93,8 +94,8 @@
 }
 
 - (void)_calculatorWillClose:(NSNotification *)note {
-	if ([[note object] calc] == [_LCDView calc]) {
-		[_LCDView setCalc:NULL];
+	if ([[note object] calculator] == [_LCDView calculator]) {
+		[_LCDView setCalculator:nil];
 		[WEApplicationDelegate removeLCDView:_LCDView];
 		
 	}

@@ -8,6 +8,7 @@
 
 #import "WCApplicationController.h"
 #import "WELCDView.h"
+#include "calc.h"
 
 
 @implementation WCApplicationController

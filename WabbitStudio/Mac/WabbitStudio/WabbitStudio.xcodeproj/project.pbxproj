@@ -253,6 +253,8 @@
 		07BBD229135F7DE0005C4870 /* WCBreakpointEditView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07BBD227135F7DE0005C4870 /* WCBreakpointEditView.xib */; };
 		07BBD22C135F9330005C4870 /* WCHexFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BBD22B135F9330005C4870 /* WCHexFormatter.m */; };
 		07BBD22F135F960A005C4870 /* WCReturnAndEscapeButton.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BBD22E135F9609005C4870 /* WCReturnAndEscapeButton.m */; };
+		07C047D4136E490400598DD5 /* RSCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C047D3136E490400598DD5 /* RSCalculator.m */; };
+		07C047D5136E614900598DD5 /* RSCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C047D3136E490400598DD5 /* RSCalculator.m */; };
 		07C4D98D13470793004792DD /* WCBuildMessagesOutlineView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C4D98C13470792004792DD /* WCBuildMessagesOutlineView.m */; };
 		07C4D9911347138C004792DD /* WCSymbolsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C4D98F1347138C004792DD /* WCSymbolsViewController.m */; };
 		07C4D995134714F6004792DD /* WCSymbolsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07C4D993134714F6004792DD /* WCSymbolsView.xib */; };
@@ -512,7 +514,7 @@
 		0755A719136C0B7D00B7C8E4 /* ErrorTwo.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = ErrorTwo.pdf; sourceTree = "<group>"; };
 		0755A71D136C0D8F00B7C8E4 /* WarningMultiple.opacity */ = {isa = PBXFileReference; lastKnownFileType = file; path = WarningMultiple.opacity; sourceTree = "<group>"; };
 		0755A71E136C0D8F00B7C8E4 /* WarningMultiple.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = WarningMultiple.pdf; sourceTree = "<group>"; };
-		0755A721136C1A6000B7C8E4 /* RSCalculatorProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSCalculatorProtocol.h; sourceTree = "<group>"; };
+		0755A721136C1A6000B7C8E4 /* RSCalculatorOwnerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSCalculatorOwnerProtocol.h; sourceTree = "<group>"; };
 		0756D8D71363DFE200ECDFFD /* WCInfoTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCInfoTextFieldCell.h; sourceTree = "<group>"; };
 		0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCInfoTextFieldCell.m; sourceTree = "<group>"; };
 		0756D8DE1363EF5500ECDFFD /* WCGroupBackgroundOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGroupBackgroundOutlineView.h; sourceTree = "<group>"; };
@@ -768,6 +770,8 @@
 		07BBD22B135F9330005C4870 /* WCHexFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCHexFormatter.m; sourceTree = "<group>"; };
 		07BBD22D135F9609005C4870 /* WCReturnAndEscapeButton.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCReturnAndEscapeButton.h; sourceTree = "<group>"; };
 		07BBD22E135F9609005C4870 /* WCReturnAndEscapeButton.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCReturnAndEscapeButton.m; sourceTree = "<group>"; };
+		07C047D2136E490400598DD5 /* RSCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSCalculator.h; sourceTree = "<group>"; };
+		07C047D3136E490400598DD5 /* RSCalculator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSCalculator.m; sourceTree = "<group>"; };
 		07C4D98B13470792004792DD /* WCBuildMessagesOutlineView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildMessagesOutlineView.h; sourceTree = "<group>"; };
 		07C4D98C13470792004792DD /* WCBuildMessagesOutlineView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildMessagesOutlineView.m; sourceTree = "<group>"; };
 		07C4D98E1347138B004792DD /* WCSymbolsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCSymbolsViewController.h; sourceTree = "<group>"; };
@@ -1479,6 +1483,7 @@
 		07B75E081368A2E0007B13A2 /* Shared */ = {
 			isa = PBXGroup;
 			children = (
+				07C047D0136E48B400598DD5 /* Classes */,
 				07BA69901367F08500AD7FF5 /* Protocols */,
 			);
 			path = Shared;
@@ -1487,9 +1492,18 @@
 		07BA69901367F08500AD7FF5 /* Protocols */ = {
 			isa = PBXGroup;
 			children = (
-				0755A721136C1A6000B7C8E4 /* RSCalculatorProtocol.h */,
+				0755A721136C1A6000B7C8E4 /* RSCalculatorOwnerProtocol.h */,
 			);
 			name = Protocols;
+			sourceTree = "<group>";
+		};
+		07C047D0136E48B400598DD5 /* Classes */ = {
+			isa = PBXGroup;
+			children = (
+				07C047D2136E490400598DD5 /* RSCalculator.h */,
+				07C047D3136E490400598DD5 /* RSCalculator.m */,
+			);
+			name = Classes;
 			sourceTree = "<group>";
 		};
 		07D1327D1369E82300BD5A84 /* Protocols */ = {
@@ -1909,6 +1923,7 @@
 				07D113D6136D13BF00E3814E /* WETransferSheetController.m in Sources */,
 				07D113D8136D13E800E3814E /* WETransferFile.m in Sources */,
 				07AE898D136D6C8A0014F788 /* disassemble.c in Sources */,
+				07C047D4136E490400598DD5 /* RSCalculator.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1957,6 +1972,7 @@
 				079DF4C413694EB600289058 /* WEPreviewLCDView.m in Sources */,
 				07F11BB2136B6B7500A3DF25 /* NSObject+WCExtensions.m in Sources */,
 				07D113D1136CF87300E3814E /* WCDefines.m in Sources */,
+				07C047D5136E614900598DD5 /* RSCalculator.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
