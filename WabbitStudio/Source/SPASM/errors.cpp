@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #define _ERRORS_CPP
-#include "Errors.h"
+#include "errors.h"
 
 #include "spasm.h"
 #include "console.h"

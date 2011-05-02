@@ -60,6 +60,7 @@
 #include <gmp.h>
 #include <openssl/md5.h>
 #include <math.h>
+#include <errno.h>
 
 #define __inout
 
