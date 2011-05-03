@@ -737,19 +737,19 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">value: values.useLCDWirePattern</string>
+						<string key="label">value: values.LCDUseWirePattern</string>
 						<reference key="source" ref="920371784"/>
 						<reference key="destination" ref="807686855"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="920371784"/>
 							<reference key="NSDestination" ref="807686855"/>
-							<string key="NSLabel">value: values.useLCDWirePattern</string>
+							<string key="NSLabel">value: values.LCDUseWirePattern</string>
 							<string key="NSBinding">value</string>
-							<string key="NSKeyPath">values.useLCDWirePattern</string>
+							<string key="NSKeyPath">values.LCDUseWirePattern</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">49</int>
+					<int key="connectionID">50</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -1111,7 +1111,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">49</int>
+			<int key="maxID">50</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

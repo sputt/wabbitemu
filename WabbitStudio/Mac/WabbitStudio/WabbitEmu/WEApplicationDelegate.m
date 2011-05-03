@@ -87,8 +87,10 @@
 }
 
 - (void)_FPSTimerFired:(NSTimer *)timer {
-	for (WELCDView *LCDView in _LCDViews)
-		[[[LCDView calculator] owner] updateFPSString];
+	for (WELCDView *LCDView in _LCDViews) {
+		if ([[[LCDView calculator] owner] respondsToSelector:@selector(updateFPSString)])
+			[[[LCDView calculator] owner] updateFPSString];
+	}
 	
 	[timer setFireDate:[NSDate dateWithTimeIntervalSinceNow:1.0]];
 }

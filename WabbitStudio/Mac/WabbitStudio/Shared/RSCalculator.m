@@ -17,6 +17,8 @@ static void RSCalculatorBreakpointCallback(LPCALC theCalc,void *info) {
 	[[calculator owner] performSelector:[calculator breakpointSelector]];
 }
 
+NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDidChangeNotification";
+
 @implementation RSCalculator
 
 + (NSSet *)keyPathsForValuesAffectingStackPointer {
@@ -179,6 +181,7 @@ static void RSCalculatorBreakpointCallback(LPCALC theCalc,void *info) {
 	[self setIsRunning:NO];
 	[self setIsBusy:YES];
 	
+	RSCalculatorModel oldModel = [self model];
 	BOOL loaded = rom_load([self calc], [romOrSavestatePath fileSystemRepresentation]);
 	
 	if (!loaded) {
@@ -189,7 +192,11 @@ static void RSCalculatorBreakpointCallback(LPCALC theCalc,void *info) {
 	
 	calc_turn_on([self calc]);
 	
+	[self setIsRunning:YES];
 	[self setIsBusy:NO];
+	
+	if (oldModel != [self model])
+		[[NSNotificationCenter defaultCenter] postNotificationName:kRSCalculatorModelDidChangeNotification object:self];
 	
 	return YES;
 }
@@ -235,6 +242,54 @@ static void RSCalculatorBreakpointCallback(LPCALC theCalc,void *info) {
 	if ([self calc] == NULL)
 		return NSNotFound;
 	return (RSCalculatorModel)[self calc]->model;
+}
+#pragma mark Skin Images
+@dynamic skinImage;
+- (NSImage *)skinImage {
+	switch ([self model]) {
+		case RSCalculatorModelTI73:
+			return [NSImage imageNamed:@"ti-73"];
+		case RSCalculatorModelTI82:
+			return [NSImage imageNamed:@"ti-82"];
+		case RSCalculatorModelTI83:
+			return [NSImage imageNamed:@"ti-83"];
+		case RSCalculatorModelTI83P:
+			return [NSImage imageNamed:@"ti-83+"];
+		case RSCalculatorModelTI83PSE:
+			return [NSImage imageNamed:@"ti-83+se"];
+		case RSCalculatorModelTI84P:
+			return [NSImage imageNamed:@"ti-84+"];
+		case RSCalculatorModelTI84PSE:
+			return [NSImage imageNamed:@"ti-84+se"];
+		case RSCalculatorModelTI85:
+			return [NSImage imageNamed:@"ti-85"];
+		case RSCalculatorModelTI86:
+			return [NSImage imageNamed:@"ti-86"];
+		default:
+			return nil;
+	}
+}
+@dynamic keymapImage;
+- (NSImage *)keymapImage {
+	switch ([self model]) {
+		case RSCalculatorModelTI82:
+			return [NSImage imageNamed:@"ti-82keymap"];
+		case RSCalculatorModelTI83:
+			return [NSImage imageNamed:@"ti-83keymap"];
+		case RSCalculatorModelTI73:
+		case RSCalculatorModelTI83P:
+		case RSCalculatorModelTI83PSE:
+			return [NSImage imageNamed:@"ti-83+keymap"];
+		case RSCalculatorModelTI84P:
+		case RSCalculatorModelTI84PSE:
+			return [NSImage imageNamed:@"ti-84+sekeymap"];
+		case RSCalculatorModelTI85:
+			return [NSImage imageNamed:@"ti-85keymap"];
+		case RSCalculatorModelTI86:
+			return [NSImage imageNamed:@"ti-86keymap"];
+		default:
+			return nil;
+	}
 }
 #pragma mark Program Counter
 @dynamic programCounter;

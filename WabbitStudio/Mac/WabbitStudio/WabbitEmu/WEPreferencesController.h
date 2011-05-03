@@ -9,7 +9,6 @@
 #import <Foundation/NSObject.h>
 
 
-extern NSString *const kWEPreferencesDisplayUseLCDWirePatternKey;
 extern NSString *const kWEPreferencesDisplayLCDShadesKey;
 extern NSString *const kWEPreferencesDisplayLCDModeKey;
 

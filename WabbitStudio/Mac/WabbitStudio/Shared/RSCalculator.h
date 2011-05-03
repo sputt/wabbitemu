@@ -31,6 +31,8 @@ enum {
 };
 typedef NSUInteger RSBreakpointType;
 
+extern NSString *const kRSCalculatorModelDidChangeNotification;
+
 @interface RSCalculator : NSObject {
 @private
     LPCALC _calc;
@@ -45,6 +47,8 @@ typedef NSUInteger RSBreakpointType;
 @property (readonly,nonatomic) NSDocument <RSCalculatorOwner> *owner;
 @property (readonly,nonatomic) SEL breakpointSelector;
 @property (readonly,nonatomic) RSCalculatorModel model;
+@property (readonly,nonatomic) NSImage *skinImage;
+@property (readonly,nonatomic) NSImage *keymapImage;
 
 @property (assign,nonatomic) uint16_t programCounter;
 @property (assign,nonatomic) uint16_t stackPointer;

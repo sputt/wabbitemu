@@ -7,17 +7,20 @@
 //
 
 #import "DBPrefsWindowController.h"
+#import "RSCalculatorOwnerProtocol.h"
 
 
-@class WEPreviewLCDView;
+@class WEPreviewLCDView,RSCalculator;
 
-@interface WEPreferencesWindowController : DBPrefsWindowController <NSWindowDelegate> {
+@interface WEPreferencesWindowController : DBPrefsWindowController <NSWindowDelegate,RSCalculatorOwner> {
 @private
     IBOutlet NSView *_general;
 	IBOutlet NSView *_advanced;
 	IBOutlet NSView *_calculator;
 	
 	IBOutlet WEPreviewLCDView *_LCDView;
+	
+	RSCalculator *_mcalculator;
 }
 
 @end

@@ -14,6 +14,8 @@
 #define kLCDWidescreenWidth 128
 #define kLCDHeight 64
 
+extern NSString *const kLCDUseWirePatternKey;
+
 @class RSCalculator;
 
 @interface WELCDView : NSOpenGLView {
@@ -24,16 +26,14 @@
 	GLubyte _wlcd_buffer[kLCDHeight][kLCDWidescreenWidth][4];
 	GLuint _textures[2];
 	
-	__weak RSCalculator *_calculator;
+	RSCalculator *_calculator;
 	BOOL _isWidescreen;
-	BOOL _usesLCDWirePattern;
 	
 	NSArray *_currentFilePaths;
 }
 
-@property (assign,nonatomic) RSCalculator *calculator;
+@property (retain,nonatomic) RSCalculator *calculator;
 @property (assign,nonatomic) BOOL isWidescreen;
-@property (assign,nonatomic) BOOL usesLCDWirePattern;
 
 - (void)commonInit;
 @end

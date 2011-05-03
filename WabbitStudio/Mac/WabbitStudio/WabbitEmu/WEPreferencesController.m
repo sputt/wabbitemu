@@ -7,10 +7,10 @@
 //
 
 #import "WEPreferencesController.h"
+#import "WELCDView.h"
 #include "lcd.h"
 
 
-NSString *const kWEPreferencesDisplayUseLCDWirePatternKey = @"useLCDWirePattern";
 NSString *const kWEPreferencesDisplayLCDShadesKey = @"LCDShades";
 NSString *const kWEPreferencesDisplayLCDModeKey = @"LCDMode";
 
@@ -25,7 +25,7 @@ NSString *const kWEPreferencesGeneralOnStartupKey = @"generalOnStartup";
 	[preferences setObject:[NSNumber numberWithUnsignedInteger:WEGeneralOnStartupShowOpenPanel] forKey:kWEPreferencesGeneralOnStartupKey];
 	
 	// use LCD wire pattern
-	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWEPreferencesDisplayUseLCDWirePatternKey];
+	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kLCDUseWirePatternKey];
 	// default LCD shades; lcd->shades
 	[preferences setObject:[NSNumber numberWithUnsignedInteger:4] forKey:kWEPreferencesDisplayLCDShadesKey];
 	// default LCD Mode; lcd->mode

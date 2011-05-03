@@ -12,11 +12,10 @@
 @class RSCalculator;
 
 @protocol RSCalculatorOwner <NSObject>
-@required
+@optional
 @property (readonly,nonatomic) RSCalculator *calculator;
 @property (readonly,nonatomic) NSWindow *calculatorWindow;
 @property (assign,nonatomic) BOOL isDebugging;
-
-@optional
+@property (readonly,nonatomic) BOOL isBorderlessSkin;
 - (void)updateFPSString;
 @end

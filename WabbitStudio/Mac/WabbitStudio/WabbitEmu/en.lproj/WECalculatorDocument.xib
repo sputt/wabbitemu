@@ -49,7 +49,7 @@
 				<string key="NSWindowRect">{{300, 600}, {192, 150}}</string>
 				<int key="NSWTFlags">544735232</int>
 				<string key="NSWindowTitle">Window</string>
-				<string key="NSWindowClass">NSWindow</string>
+				<string key="NSWindowClass">RSCalculatorWindow</string>
 				<string key="NSViewClass">View</string>
 				<string key="NSWindowContentMinSize">{192, 150}</string>
 				<object class="NSView" key="NSWindowView" id="568628114">
@@ -425,6 +425,78 @@
 					</object>
 					<int key="connectionID">100110</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: isBorderlessSkin</string>
+						<reference key="source" ref="206938962"/>
+						<reference key="destination" ref="512844837"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="206938962"/>
+							<reference key="NSDestination" ref="512844837"/>
+							<string key="NSLabel">hidden: isBorderlessSkin</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">isBorderlessSkin</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">100111</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: isBorderlessSkin</string>
+						<reference key="source" ref="579666836"/>
+						<reference key="destination" ref="512844837"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="579666836"/>
+							<reference key="NSDestination" ref="512844837"/>
+							<string key="NSLabel">hidden: isBorderlessSkin</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">isBorderlessSkin</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">100112</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: isBorderlessSkin</string>
+						<reference key="source" ref="905015612"/>
+						<reference key="destination" ref="512844837"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="905015612"/>
+							<reference key="NSDestination" ref="512844837"/>
+							<string key="NSLabel">hidden: isBorderlessSkin</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">isBorderlessSkin</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">100113</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">hidden: isBorderlessSkin</string>
+						<reference key="source" ref="175073734"/>
+						<reference key="destination" ref="512844837"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="175073734"/>
+							<reference key="NSDestination" ref="512844837"/>
+							<string key="NSLabel">hidden: isBorderlessSkin</string>
+							<string key="NSBinding">hidden</string>
+							<string key="NSKeyPath">isBorderlessSkin</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">100114</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">initialFirstResponder</string>
+						<reference key="source" ref="275939982"/>
+						<reference key="destination" ref="585114207"/>
+					</object>
+					<int key="connectionID">100115</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -689,7 +761,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">100110</int>
+			<int key="maxID">100115</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -823,6 +895,14 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">RSCalculatorWindow</string>
+					<string key="superclassName">NSWindow</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/RSCalculatorWindow.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">WECalculatorDocument</string>
 					<string key="superclassName">NSDocument</string>
 					<object class="NSMutableDictionary" key="actions">
@@ -835,9 +915,11 @@
 							<string>resetDisplaySize:</string>
 							<string>saveStateAs:</string>
 							<string>toggleLCDSize:</string>
+							<string>toggleSkinView:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -856,6 +938,7 @@
 							<string>resetDisplaySize:</string>
 							<string>saveStateAs:</string>
 							<string>toggleLCDSize:</string>
+							<string>toggleSkinView:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -881,6 +964,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">toggleLCDSize:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">toggleSkinView:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 						</object>

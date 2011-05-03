@@ -12,7 +12,7 @@
 
 extern NSString *const kWECalculatorWillCloseNotification;
 
-@class WELCDView,BWAnchoredButtonBar,RSCalculator;
+@class WELCDView,BWAnchoredButtonBar,RSCalculator,RSCalculatorSkinView;
 
 @interface WECalculatorDocument : NSDocument <NSWindowDelegate,RSCalculatorOwner> {
 @private
@@ -24,6 +24,8 @@ extern NSString *const kWECalculatorWillCloseNotification;
 	
 	NSString *_statusString;
 	NSString *_FPSString;
+	BOOL _hasSkin;
+	BOOL _isBorderlessSkin;
 	
 	BOOL _isClosing;
 	BOOL _isDebugging;
@@ -34,6 +36,8 @@ extern NSString *const kWECalculatorWillCloseNotification;
 @property (copy,nonatomic) NSString *FPSString;
 @property (readonly,nonatomic) NSWindow *calculatorWindow;
 @property (assign,nonatomic) BOOL isDebugging;
+@property (assign,nonatomic) BOOL hasSkin;
+@property (assign,nonatomic) BOOL isBorderlessSkin;
 
 - (IBAction)loadRom:(id)sender;
 
@@ -43,6 +47,8 @@ extern NSString *const kWECalculatorWillCloseNotification;
 
 - (IBAction)toggleLCDSize:(id)sender;
 - (IBAction)resetDisplaySize:(id)sender;
+
+- (IBAction)toggleSkinView:(id)sender;
 
 - (void)updateFPSString;
 - (void)updateStatusString;

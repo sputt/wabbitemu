@@ -11,6 +11,8 @@
 #import "RSCalculator.h"
 
 
+NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
+
 @interface WELCDView ()
 @property (copy,nonatomic) NSArray *currentFilePaths;
 @property (readonly,nonatomic) NSBitmapImageRep *LCDBitmap;
@@ -30,7 +32,7 @@
 }
 
 - (void)dealloc {
-	_calculator = nil;
+	[_calculator release];
 	[_currentFilePaths release];
 	glDeleteTextures(2, _textures);
     [super dealloc];
@@ -122,7 +124,7 @@
 	
 	glClear(GL_COLOR_BUFFER_BIT);
 	
-	if ([self usesLCDWirePattern])
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:kLCDUseWirePatternKey])
 		glEnable(GL_BLEND);
 	 
 	if ([self isWidescreen]) {
@@ -173,7 +175,7 @@
 	glVertex2f(1.0f, 1.0f);
 	glEnd();
 	
-	if ([self usesLCDWirePattern]) {		
+	if ([[NSUserDefaults standardUserDefaults] boolForKey:kLCDUseWirePatternKey]) {		
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, _textures[1]);
 		glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_STORAGE_HINT_APPLE, GL_STORAGE_SHARED_APPLE);
 		glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -243,14 +245,12 @@
 }
 
 @synthesize calculator=_calculator;
-@synthesize usesLCDWirePattern=_usesLCDWirePattern;
 @synthesize isWidescreen=_isWidescreen;
 
 @synthesize currentFilePaths=_currentFilePaths;
 
 - (void)commonInit; {	
 	[self registerForDraggedTypes:[NSArray arrayWithObjects:NSFilenamesPboardType, nil]];
-	_usesLCDWirePattern = YES;
 	[self _privateInit];
 }
 
