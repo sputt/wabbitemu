@@ -7,7 +7,7 @@
 //
 
 #import "WEPreferencesWindowController.h"
-#import "WECalculator.h"
+#import "WECalculatorDocument.h"
 #import "WEPreviewLCDView.h"
 #import "WEApplicationDelegate.h"
 #import "WCDefines.h"
@@ -42,7 +42,7 @@
 #endif
 	
 	if ([[[NSDocumentController sharedDocumentController] documents] count] > 0) {
-		WECalculator *calculator = [[NSDocumentController sharedDocumentController] currentDocument];
+		WECalculatorDocument *calculator = [[NSDocumentController sharedDocumentController] currentDocument];
 		
 		if (calculator == nil)
 			calculator = [[[NSDocumentController sharedDocumentController] documents] lastObject];
@@ -67,7 +67,7 @@
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	if ([[[NSDocumentController sharedDocumentController] documents] count] > 0) {
-		WECalculator *calculator = [[NSDocumentController sharedDocumentController] currentDocument];
+		WECalculatorDocument *calculator = [[NSDocumentController sharedDocumentController] currentDocument];
 		
 		if (calculator == nil)
 			calculator = [[[NSDocumentController sharedDocumentController] documents] lastObject];
@@ -80,7 +80,7 @@
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 	if ([keyPath isEqualToString:@"currentDocument"] && (id)context == self) {
 		if ([[[NSDocumentController sharedDocumentController] documents] count] > 0) {
-			WECalculator *calculator = [[NSDocumentController sharedDocumentController] currentDocument];
+			WECalculatorDocument *calculator = [[NSDocumentController sharedDocumentController] currentDocument];
 			
 			if (calculator == nil)
 				calculator = [[[NSDocumentController sharedDocumentController] documents] lastObject];

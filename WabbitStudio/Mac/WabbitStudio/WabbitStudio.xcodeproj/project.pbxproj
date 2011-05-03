@@ -149,10 +149,10 @@
 		07905DD61367BFD60079A404 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DD51367BFD60079A404 /* main.m */; };
 		07905DD91367BFD60079A404 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 07905DD71367BFD60079A404 /* Credits.rtf */; };
 		07905DEF1367C66D0079A404 /* WEApplicationDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DE81367C66D0079A404 /* WEApplicationDelegate.m */; };
-		07905DF01367C66D0079A404 /* WECalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEA1367C66D0079A404 /* WECalculator.m */; };
+		07905DF01367C66D0079A404 /* WECalculatorDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEA1367C66D0079A404 /* WECalculatorDocument.m */; };
 		07905DF11367C66D0079A404 /* WELCDView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEC1367C66D0079A404 /* WELCDView.m */; };
 		07905DF21367C66D0079A404 /* WEPreferencesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEE1367C66D0079A404 /* WEPreferencesController.m */; };
-		07905DF81367C6AB0079A404 /* WECalculator.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07905DF41367C6AB0079A404 /* WECalculator.xib */; };
+		07905DF81367C6AB0079A404 /* WECalculatorDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07905DF41367C6AB0079A404 /* WECalculatorDocument.xib */; };
 		07905DF91367C6AB0079A404 /* WEMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07905DF61367C6AB0079A404 /* WEMainMenu.xib */; };
 		07905E671367C9930079A404 /* alu.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905DFD1367C9930079A404 /* alu.c */; };
 		07905E681367C9930079A404 /* control.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905DFF1367C9930079A404 /* control.c */; };
@@ -234,13 +234,16 @@
 		07B54925135D6F8800B34C46 /* WCBreakpointsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B54924135D6F8700B34C46 /* WCBreakpointsViewController.m */; };
 		07B54928135D755B00B34C46 /* WCBreakpointsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07B54926135D755B00B34C46 /* WCBreakpointsView.xib */; };
 		07B75E0B1368AAB1007B13A2 /* WETransferSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B75E0A1368AAB1007B13A2 /* WETransferSheetController.m */; };
+		07B7AD42136EAA9B00B414A7 /* Screenshots.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B7AD41136EAA9B00B414A7 /* Screenshots.png */; };
+		07B7AD44136EAC3400B414A7 /* Hardware.png in Resources */ = {isa = PBXBuildFile; fileRef = 079DF4BF13694B0700289058 /* Hardware.png */; };
+		07B7AD46136EAD4200B414A7 /* 5.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B7AD45136EAD4200B414A7 /* 5.png */; };
+		07B7AD48136EAE9000B414A7 /* 045.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B7AD47136EAE9000B414A7 /* 045.png */; };
 		07BA69811367D68F00AD7FF5 /* BWToolkitFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0787B724133FC9C400BB5590 /* BWToolkitFramework.framework */; };
 		07BA69831367D69300AD7FF5 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07604ADD133C9A4C00D8A432 /* Sparkle.framework */; };
 		07BA69851367D6C100AD7FF5 /* BWToolkitFramework.framework in Copy Private Frameworks */ = {isa = PBXBuildFile; fileRef = 0787B724133FC9C400BB5590 /* BWToolkitFramework.framework */; };
 		07BA69861367D6C400AD7FF5 /* Sparkle.framework in Copy Private Frameworks */ = {isa = PBXBuildFile; fileRef = 07604ADD133C9A4C00D8A432 /* Sparkle.framework */; };
 		07BA69891367D8D000AD7FF5 /* NSGradient+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A391358EBED006EE420 /* NSGradient+WCExtensions.m */; };
 		07BA698A1367D90E00AD7FF5 /* WCFileViewStatusBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */; };
-		07BA698D1367DA3D00AD7FF5 /* WECalculatorTopBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BA698C1367DA3D00AD7FF5 /* WECalculatorTopBarView.m */; };
 		07BA698E1367DB3600AD7FF5 /* WCGradientView.m in Sources */ = {isa = PBXBuildFile; fileRef = 075E9FA8134A74BA0034D595 /* WCGradientView.m */; };
 		07BA698F1367EC4B00AD7FF5 /* NSUserDefaults+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0706F50E13391684000C9007 /* NSUserDefaults+WCExtensions.m */; };
 		07BA69951367F66400AD7FF5 /* DBPrefsWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07604AD6133C353300D8A432 /* DBPrefsWindowController.m */; };
@@ -610,13 +613,13 @@
 		07905DD81367BFD60079A404 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; name = en; path = en.lproj/Credits.rtf; sourceTree = "<group>"; };
 		07905DE71367C66D0079A404 /* WEApplicationDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEApplicationDelegate.h; sourceTree = "<group>"; };
 		07905DE81367C66D0079A404 /* WEApplicationDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEApplicationDelegate.m; sourceTree = "<group>"; };
-		07905DE91367C66D0079A404 /* WECalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WECalculator.h; sourceTree = "<group>"; };
-		07905DEA1367C66D0079A404 /* WECalculator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WECalculator.m; sourceTree = "<group>"; };
+		07905DE91367C66D0079A404 /* WECalculatorDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WECalculatorDocument.h; sourceTree = "<group>"; };
+		07905DEA1367C66D0079A404 /* WECalculatorDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WECalculatorDocument.m; sourceTree = "<group>"; };
 		07905DEB1367C66D0079A404 /* WELCDView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WELCDView.h; sourceTree = "<group>"; };
 		07905DEC1367C66D0079A404 /* WELCDView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WELCDView.m; sourceTree = "<group>"; };
 		07905DED1367C66D0079A404 /* WEPreferencesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEPreferencesController.h; sourceTree = "<group>"; };
 		07905DEE1367C66D0079A404 /* WEPreferencesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEPreferencesController.m; sourceTree = "<group>"; };
-		07905DF51367C6AB0079A404 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/WECalculator.xib; sourceTree = "<group>"; };
+		07905DF51367C6AB0079A404 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/WECalculatorDocument.xib; sourceTree = "<group>"; };
 		07905DF71367C6AB0079A404 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/WEMainMenu.xib; sourceTree = "<group>"; };
 		07905DFD1367C9930079A404 /* alu.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = alu.c; sourceTree = "<group>"; };
 		07905DFE1367C9930079A404 /* alu.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = alu.h; sourceTree = "<group>"; };
@@ -756,8 +759,9 @@
 		07B54927135D755B00B34C46 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCBreakpointsView.xib; sourceTree = "<group>"; };
 		07B75E091368AAB1007B13A2 /* WETransferSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WETransferSheetController.h; sourceTree = "<group>"; };
 		07B75E0A1368AAB1007B13A2 /* WETransferSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WETransferSheetController.m; sourceTree = "<group>"; };
-		07BA698B1367DA3D00AD7FF5 /* WECalculatorTopBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WECalculatorTopBarView.h; sourceTree = "<group>"; };
-		07BA698C1367DA3D00AD7FF5 /* WECalculatorTopBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WECalculatorTopBarView.m; sourceTree = "<group>"; };
+		07B7AD41136EAA9B00B414A7 /* Screenshots.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Screenshots.png; sourceTree = "<group>"; };
+		07B7AD45136EAD4200B414A7 /* 5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 5.png; sourceTree = "<group>"; };
+		07B7AD47136EAE9000B414A7 /* 045.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 045.png; sourceTree = "<group>"; };
 		07BA69971367F6CD00AD7FF5 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WEPreferencesWindow.xib; sourceTree = "<group>"; };
 		07BA69991367F71300AD7FF5 /* WEPreferencesWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEPreferencesWindowController.h; sourceTree = "<group>"; };
 		07BA699A1367F71400AD7FF5 /* WEPreferencesWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEPreferencesWindowController.m; sourceTree = "<group>"; };
@@ -961,6 +965,9 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				07B7AD47136EAE9000B414A7 /* 045.png */,
+				07B7AD45136EAD4200B414A7 /* 5.png */,
+				07B7AD41136EAA9B00B414A7 /* Screenshots.png */,
 				07AE8994136D742D0014F788 /* StepOut16x16.png */,
 				07AE8992136D74180014F788 /* StepOver16x16.png */,
 				07AE8990136D73C60014F788 /* Step16x16.png */,
@@ -1349,14 +1356,12 @@
 			children = (
 				07905DE71367C66D0079A404 /* WEApplicationDelegate.h */,
 				07905DE81367C66D0079A404 /* WEApplicationDelegate.m */,
-				07905DE91367C66D0079A404 /* WECalculator.h */,
-				07905DEA1367C66D0079A404 /* WECalculator.m */,
+				07905DE91367C66D0079A404 /* WECalculatorDocument.h */,
+				07905DEA1367C66D0079A404 /* WECalculatorDocument.m */,
 				07905DEB1367C66D0079A404 /* WELCDView.h */,
 				07905DEC1367C66D0079A404 /* WELCDView.m */,
 				07905DED1367C66D0079A404 /* WEPreferencesController.h */,
 				07905DEE1367C66D0079A404 /* WEPreferencesController.m */,
-				07BA698B1367DA3D00AD7FF5 /* WECalculatorTopBarView.h */,
-				07BA698C1367DA3D00AD7FF5 /* WECalculatorTopBarView.m */,
 				07BA69991367F71300AD7FF5 /* WEPreferencesWindowController.h */,
 				07BA699A1367F71400AD7FF5 /* WEPreferencesWindowController.m */,
 				07B75E091368AAB1007B13A2 /* WETransferSheetController.h */,
@@ -1372,7 +1377,7 @@
 		07905DFA1367C6B10079A404 /* Xibs */ = {
 			isa = PBXGroup;
 			children = (
-				07905DF41367C6AB0079A404 /* WECalculator.xib */,
+				07905DF41367C6AB0079A404 /* WECalculatorDocument.xib */,
 				07905DF61367C6AB0079A404 /* WEMainMenu.xib */,
 				07BA69961367F6CD00AD7FF5 /* WEPreferencesWindow.xib */,
 				070E31D01368B76200D0CAE2 /* WETransferSheet.xib */,
@@ -1732,6 +1737,10 @@
 				07AE8991136D73C60014F788 /* Step16x16.png in Resources */,
 				07AE8993136D74180014F788 /* StepOver16x16.png in Resources */,
 				07AE8995136D742D0014F788 /* StepOut16x16.png in Resources */,
+				07B7AD42136EAA9B00B414A7 /* Screenshots.png in Resources */,
+				07B7AD44136EAC3400B414A7 /* Hardware.png in Resources */,
+				07B7AD46136EAD4200B414A7 /* 5.png in Resources */,
+				07B7AD48136EAE9000B414A7 /* 045.png in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1741,7 +1750,7 @@
 			files = (
 				07905DD31367BFD60079A404 /* InfoPlist.strings in Resources */,
 				07905DD91367BFD60079A404 /* Credits.rtf in Resources */,
-				07905DF81367C6AB0079A404 /* WECalculator.xib in Resources */,
+				07905DF81367C6AB0079A404 /* WECalculatorDocument.xib in Resources */,
 				07905DF91367C6AB0079A404 /* WEMainMenu.xib in Resources */,
 				07BA69981367F6CD00AD7FF5 /* WEPreferencesWindow.xib in Resources */,
 				07BA699C1367F7B900AD7FF5 /* Advanced.png in Resources */,
@@ -1933,7 +1942,7 @@
 			files = (
 				07905DD61367BFD60079A404 /* main.m in Sources */,
 				07905DEF1367C66D0079A404 /* WEApplicationDelegate.m in Sources */,
-				07905DF01367C66D0079A404 /* WECalculator.m in Sources */,
+				07905DF01367C66D0079A404 /* WECalculatorDocument.m in Sources */,
 				07905DF11367C66D0079A404 /* WELCDView.m in Sources */,
 				07905DF21367C66D0079A404 /* WEPreferencesController.m in Sources */,
 				07905E671367C9930079A404 /* alu.c in Sources */,
@@ -1960,7 +1969,6 @@
 				07905E951367C9930079A404 /* var.c in Sources */,
 				07BA69891367D8D000AD7FF5 /* NSGradient+WCExtensions.m in Sources */,
 				07BA698A1367D90E00AD7FF5 /* WCFileViewStatusBarView.m in Sources */,
-				07BA698D1367DA3D00AD7FF5 /* WECalculatorTopBarView.m in Sources */,
 				07BA698E1367DB3600AD7FF5 /* WCGradientView.m in Sources */,
 				07BA698F1367EC4B00AD7FF5 /* NSUserDefaults+WCExtensions.m in Sources */,
 				07BA69951367F66400AD7FF5 /* DBPrefsWindowController.m in Sources */,
@@ -2130,12 +2138,12 @@
 			name = Credits.rtf;
 			sourceTree = "<group>";
 		};
-		07905DF41367C6AB0079A404 /* WECalculator.xib */ = {
+		07905DF41367C6AB0079A404 /* WECalculatorDocument.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				07905DF51367C6AB0079A404 /* en */,
 			);
-			name = WECalculator.xib;
+			name = WECalculatorDocument.xib;
 			path = ..;
 			sourceTree = "<group>";
 		};

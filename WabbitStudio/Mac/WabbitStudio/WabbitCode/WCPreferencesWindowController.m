@@ -66,6 +66,8 @@ NSString* const kWCPreferencesWindowControllerAdvancedIdentifier = @"Advanced";
 	[self addView:_debugging label:NSLocalizedString(@"Debugging", @"debugging prefs title") image:[NSImage imageNamed:kWCPreferencesWindowControllerDebuggingIdentifier]];
 	[self addView:_editor label:NSLocalizedString(@"Editor", @"editor prefs title") image:[NSImage imageNamed:kWCPreferencesWindowControllerEditorIdentifier]];
 	[self addView:_files label:NSLocalizedString(@"Files", @"files prefs title") image:[NSImage imageNamed:NSImageNameMultipleDocuments]];
+	[self addView:_hardware label:NSLocalizedString(@"Hardware", @"Hardware")];
+	[self addView:_screenshots label:NSLocalizedString(@"Screenshots", @"Screenshots") image:[NSImage imageNamed:@"045"]];
 	[self addView:_advanced label:NSLocalizedString(@"Advanced", @"advanced prefs title") image:[NSImage imageNamed:kWCPreferencesWindowControllerAdvancedIdentifier]];
 }
 

@@ -1,12 +1,12 @@
 //
-//  WECalculator.m
+//  WECalculatorDocument.m
 //  WabbitEmu Beta
 //
 //  Created by William Towe on 4/25/11.
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WECalculator.h"
+#import "WECalculatorDocument.h"
 #import "WEApplicationDelegate.h"
 #import "WCDefines.h"
 #import "WELCDView.h"
@@ -23,11 +23,11 @@ static NSString *const kWECalculatorErrorDomain = @"kWECalculatorErrorDomain";
 static const NSInteger kWECalculatorCreatedMaxCalcs = 1001;
 static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 
-@interface WECalculator ()
-- (NSString *)_stringForCalculatorModel:(WECalculatorModel)calculatorModel;
+@interface WECalculatorDocument ()
+- (NSString *)_stringForCalculatorModel:(RSCalculatorModel)calculatorModel;
 @end
 
-@implementation WECalculator
+@implementation WECalculatorDocument
 
 - (void)dealloc {
 #ifdef DEBUG
@@ -41,7 +41,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 }
 
 - (NSString *)windowNibName {
-	return @"WECalculator";
+	return @"WECalculatorDocument";
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
@@ -58,6 +58,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	
 	[[self LCDView] setCalculator:[self calculator]];
 	[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
+	[self updateStatusString];
 	[self resetDisplaySize:nil];
 	[WEApplicationDelegate addLCDView:[self LCDView]];
 	
@@ -99,7 +100,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 
 @dynamic calculatorWindow;
 - (NSWindow *)calculatorWindow {
-	return [[[self windowControllers] objectAtIndex:0] window];
+	return [self windowForSheet];
 }
 @dynamic isDebugging;
 - (BOOL)isDebugging {
@@ -127,7 +128,11 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 		if (![[self calculator] loadRomOrSavestate:[[[panel URLs] lastObject] path] error:&error]) {
 			if (error != NULL)
 				[self presentError:error];
+			return;
 		}
+		
+		[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
+		[self updateStatusString];
 	}];
 }
 
@@ -222,27 +227,27 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	
 }
 
-- (NSString *)_stringForCalculatorModel:(WECalculatorModel)calculatorModel; {
+- (NSString *)_stringForCalculatorModel:(RSCalculatorModel)calculatorModel; {
 	switch (calculatorModel) {
-		case WECalculatorModelTI73:
+		case RSCalculatorModelTI73:
 			return NSLocalizedString(@"TI-73", @"TI-73");
-		case WECalculatorModelTI81:
+		case RSCalculatorModelTI81:
 			return NSLocalizedString(@"TI-81", @"TI-81");
-		case WECalculatorModelTI82:
+		case RSCalculatorModelTI82:
 			return NSLocalizedString(@"TI-82", @"TI-82");
-		case WECalculatorModelTI83:
+		case RSCalculatorModelTI83:
 			return NSLocalizedString(@"TI-83", @"TI-83");
-		case WECalculatorModelTI83P:
+		case RSCalculatorModelTI83P:
 			return NSLocalizedString(@"TI-83+", @"TI-83+");
-		case WECalculatorModelTI83PSE:
+		case RSCalculatorModelTI83PSE:
 			return NSLocalizedString(@"TI-83+SE", @"TI-83+SE");
-		case WECalculatorModelTI84P:
+		case RSCalculatorModelTI84P:
 			return NSLocalizedString(@"TI-84+", @"TI-84+");
-		case WECalculatorModelTI84PSE:
+		case RSCalculatorModelTI84PSE:
 			return NSLocalizedString(@"TI-84+SE", @"TI-84+SE");
-		case WECalculatorModelTI85:
+		case RSCalculatorModelTI85:
 			return NSLocalizedString(@"TI-85", @"TI-85");
-		case WECalculatorModelTI86:
+		case RSCalculatorModelTI86:
 			return NSLocalizedString(@"TI-86", @"TI-86");
 		default:
 			return nil;

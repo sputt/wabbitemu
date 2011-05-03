@@ -38,7 +38,7 @@
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="580458321">
 			<bool key="EncodedWithXMLCoder">YES</bool>
 			<object class="NSCustomObject" id="512844837">
-				<string key="NSClassName">WECalculator</string>
+				<string key="NSClassName">WECalculatorDocument</string>
 			</object>
 			<object class="NSCustomObject" id="613418571">
 				<string key="NSClassName">FirstResponder</string>
@@ -339,22 +339,6 @@
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">animate: isLoadingRom</string>
-						<reference key="source" ref="206938962"/>
-						<reference key="destination" ref="512844837"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="206938962"/>
-							<reference key="NSDestination" ref="512844837"/>
-							<string key="NSLabel">animate: isLoadingRom</string>
-							<string key="NSBinding">animate</string>
-							<string key="NSKeyPath">isLoadingRom</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">100088</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
 						<string key="label">value: FPSString</string>
 						<reference key="source" ref="579666836"/>
 						<reference key="destination" ref="512844837"/>
@@ -424,6 +408,22 @@
 						<reference key="destination" ref="229980107"/>
 					</object>
 					<int key="connectionID">100108</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">animate: calculator.isBusy</string>
+						<reference key="source" ref="206938962"/>
+						<reference key="destination" ref="512844837"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="206938962"/>
+							<reference key="NSDestination" ref="512844837"/>
+							<string key="NSLabel">animate: calculator.isBusy</string>
+							<string key="NSBinding">animate</string>
+							<string key="NSKeyPath">calculator.isBusy</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">100110</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -689,7 +689,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">100108</int>
+			<int key="maxID">100110</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -823,7 +823,7 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">WECalculator</string>
+					<string key="className">WECalculatorDocument</string>
 					<string key="superclassName">NSDocument</string>
 					<object class="NSMutableDictionary" key="actions">
 						<bool key="EncodedWithXMLCoder">YES</bool>
@@ -926,7 +926,7 @@
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WECalculator.h</string>
+						<string key="minorKey">./Classes/WECalculatorDocument.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

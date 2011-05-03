@@ -23,7 +23,7 @@
 				<string>org.revsoft.wabbitemu.rom</string>
 			</array>
 			<key>NSDocumentClass</key>
-			<string>WECalculator</string>
+			<string>WECalculatorDocument</string>
 		</dict>
 		<dict>
 			<key>CFBundleTypeExtensions</key>
@@ -80,7 +80,7 @@
 			<key>LSTypeIsPackage</key>
 			<false/>
 			<key>NSDocumentClass</key>
-			<string>WECalculator</string>
+			<string>WECalculatorDocument</string>
 			<key>NSPersistentStoreTypeKey</key>
 			<string>Binary</string>
 		</dict>

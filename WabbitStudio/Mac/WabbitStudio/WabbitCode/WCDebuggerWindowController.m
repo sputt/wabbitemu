@@ -34,6 +34,8 @@
 	
 	[[self animatingOutlineView] addView:_registersView withImage:[NSImage imageNamed:NSImageNamePreferencesGeneral] label:NSLocalizedString(@"Registers", @"registers view label") expanded:YES];
 	[[self animatingOutlineView] addView:_flagsView withImage:[NSImage imageNamed:NSImageNameDotMac] label:NSLocalizedString(@"Flags", @"registers view label") expanded:YES];
+	
+	[_LCDDrawer toggle:nil];
 }
 
 - (void)windowWillClose:(NSNotification *)notification {

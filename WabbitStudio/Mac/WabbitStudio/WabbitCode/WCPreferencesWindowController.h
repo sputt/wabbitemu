@@ -28,6 +28,8 @@ extern NSString* const kWCPreferencesWindowControllerAdvancedIdentifier;
 	IBOutlet NSView *_editor;
 	IBOutlet NSView *_advanced;
 	IBOutlet NSView *_files;
+	IBOutlet NSView *_hardware;
+	IBOutlet NSView *_screenshots;
 	
 	IBOutlet WCTextView *_textView;
 	IBOutlet NSScrollView *_scrollView;

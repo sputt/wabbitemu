@@ -14,6 +14,7 @@
 
 @interface WCDebuggerWindowController : NSWindowController <NSWindowDelegate> {
 @private
+	IBOutlet NSDrawer *_LCDDrawer;
     IBOutlet WELCDView *_LCDView;
 	IBOutlet TLAnimatingOutlineView *_animatingOutlineView;
 	IBOutlet NSView *_registersView;

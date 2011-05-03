@@ -12,18 +12,18 @@
 
 
 enum {
-	WECalculatorModelTI73 = TI_73,
-	WECalculatorModelTI81 = TI_81,
-	WECalculatorModelTI82 = TI_82,
-	WECalculatorModelTI83 = TI_83,
-	WECalculatorModelTI83P = TI_83P,
-	WECalculatorModelTI83PSE = TI_83PSE,
-	WECalculatorModelTI84P = TI_84P,
-	WECalculatorModelTI84PSE = TI_84PSE,
-	WECalculatorModelTI85 = TI_85,
-	WECalculatorModelTI86 = TI_86
+	RSCalculatorModelTI73 = TI_73,
+	RSCalculatorModelTI81 = TI_81,
+	RSCalculatorModelTI82 = TI_82,
+	RSCalculatorModelTI83 = TI_83,
+	RSCalculatorModelTI83P = TI_83P,
+	RSCalculatorModelTI83PSE = TI_83PSE,
+	RSCalculatorModelTI84P = TI_84P,
+	RSCalculatorModelTI84PSE = TI_84PSE,
+	RSCalculatorModelTI85 = TI_85,
+	RSCalculatorModelTI86 = TI_86
 };
-typedef NSUInteger WECalculatorModel;
+typedef NSUInteger RSCalculatorModel;
 
 enum {
 	RSBreakpointTypeRam = 0,
@@ -44,7 +44,7 @@ typedef NSUInteger RSBreakpointType;
 @property (assign,nonatomic) BOOL isBusy;
 @property (readonly,nonatomic) NSDocument <RSCalculatorOwner> *owner;
 @property (readonly,nonatomic) SEL breakpointSelector;
-@property (readonly,nonatomic) WECalculatorModel model;
+@property (readonly,nonatomic) RSCalculatorModel model;
 
 @property (assign,nonatomic) uint16_t programCounter;
 @property (assign,nonatomic) uint16_t stackPointer;

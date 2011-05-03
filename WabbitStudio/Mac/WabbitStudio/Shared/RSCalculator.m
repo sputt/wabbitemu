@@ -231,10 +231,10 @@ static void RSCalculatorBreakpointCallback(LPCALC theCalc,void *info) {
 @synthesize owner=_owner;
 @synthesize breakpointSelector=_breakpointSelector;
 @dynamic model;
-- (WECalculatorModel)model {
+- (RSCalculatorModel)model {
 	if ([self calc] == NULL)
 		return NSNotFound;
-	return (WECalculatorModel)[self calc]->model;
+	return (RSCalculatorModel)[self calc]->model;
 }
 #pragma mark Program Counter
 @dynamic programCounter;

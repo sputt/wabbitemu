@@ -113,12 +113,12 @@
 		return;
 	else if ([_romsAndSavestates count] == 1) {
 		NSError *error;
-		if (![[self calculator] loadRomOrSavestate:[NSURL fileURLWithPath:[[_romsAndSavestates objectAtIndex:0] path]] error:&error])
+		if (![[self calculator] loadRomOrSavestate:[[_romsAndSavestates objectAtIndex:0] path] error:&error])
 			[[[self calculator] owner] presentError:error];
 	}
 	else {
 		NSError *error;
-		if (![[self calculator] loadRomOrSavestate:[NSURL fileURLWithPath:[[_romsAndSavestates objectAtIndex:0] path]] error:&error])
+		if (![[self calculator] loadRomOrSavestate:[[_romsAndSavestates objectAtIndex:0] path] error:&error])
 			[[[self calculator] owner] presentError:error];
 		
 		[_romsAndSavestates removeObjectAtIndex:0];

@@ -49,7 +49,7 @@
 
 
 #define DEFAULT_THICKNESS 22.0
-#define RULER_MARGIN 3.0
+#define RULER_MARGIN 4.0
 #define BADGE_THICKNESS 13.0
 #define CORNER_RADIUS 3.0
 #define BREAKPOINT_HEIGHT 12.0
@@ -283,7 +283,7 @@
 						currentTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[self font],NSFontAttributeName,[NSColor textColor],NSForegroundColorAttributeName, nil];
 					
 					NSRect bRect = NSMakeRect(NSMinX(bounds), ypos, NSWidth(bounds), NSHeight(rects[0]));
-					bRect = NSInsetRect(bRect, 1.0, 1.0);
+					bRect = NSInsetRect(bRect, 0.5, 1.0);
 					
 					[[WCGeneralPerformer sharedPerformer] drawBreakpoint:breakpoint inRect:bRect];
 				}
@@ -490,7 +490,8 @@
 @synthesize currentEditViewController=_currentEditViewController;
 
 - (NSFont *)font {
-	return [NSFont labelFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
+	//return [NSFont userFixedPitchFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
+	return [NSFont fontWithName:@"Menlo" size:[NSFont systemFontSizeForControlSize:NSMiniControlSize]];
 }
 
 - (NSColor *)textColor {

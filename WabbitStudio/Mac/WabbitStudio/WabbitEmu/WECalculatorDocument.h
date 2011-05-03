@@ -1,5 +1,5 @@
 //
-//  WECalculator.h
+//  WECalculatorDocument.h
 //  WabbitEmu Beta
 //
 //  Created by William Towe on 4/25/11.
@@ -14,7 +14,7 @@ extern NSString *const kWECalculatorWillCloseNotification;
 
 @class WELCDView,BWAnchoredButtonBar,RSCalculator;
 
-@interface WECalculator : NSDocument <NSWindowDelegate,RSCalculatorOwner> {
+@interface WECalculatorDocument : NSDocument <NSWindowDelegate,RSCalculatorOwner> {
 @private
 	IBOutlet WELCDView *_LCDView;
 	IBOutlet BWAnchoredButtonBar *_buttonBar;
@@ -22,7 +22,6 @@ extern NSString *const kWECalculatorWillCloseNotification;
 	
 	RSCalculator *_calculator;
 	
-	BOOL _isLoadingRom;
 	NSString *_statusString;
 	NSString *_FPSString;
 	

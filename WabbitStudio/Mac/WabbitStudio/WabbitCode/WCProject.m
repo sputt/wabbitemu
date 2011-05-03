@@ -1578,8 +1578,8 @@ static NSImage *_appIcon = nil;
 		return;
 	}
 	
-	[[self debuggerWindowController] showWindow:nil];
 	[WETransferSheetController transferFiles:[NSArray arrayWithObjects:[[_buildTask arguments] lastObject], nil] toCalculator:[self calculator] runAfterTransfer:YES];
+	[[self debuggerWindowController] showWindow:nil];
 }
 
 - (IBAction)debugAfterBuilding:(id)sender; {
@@ -1595,8 +1595,8 @@ static NSImage *_appIcon = nil;
 			[[self calculator] setBreakpointOfType:RSBreakpointTypeRam atAddress:[breakpoint address] onPage:1];
 	}
 	
-	[[self debuggerWindowController] showWindow:nil];
 	[WETransferSheetController transferFiles:[NSArray arrayWithObjects:[[_buildTask arguments] lastObject], nil] toCalculator:[self calculator] runAfterTransfer:YES];
+	[[self debuggerWindowController] showWindow:nil];
 }
 
 - (IBAction)step:(id)sender; {
