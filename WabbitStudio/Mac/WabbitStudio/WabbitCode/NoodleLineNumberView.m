@@ -152,7 +152,7 @@
 }
 #pragma mark Mouse Handling
 - (void)mouseDown:(NSEvent *)theEvent {
-	if ([[(WCTextView *)[self clientView] file] project] == nil)
+	if ([[self file] project] == nil)
 		return;
 	
 	NSUInteger startLineNumber = [self lineNumberForLocation:[self convertPointFromBase:[theEvent locationInWindow]].y];
@@ -160,7 +160,7 @@
 	if (startLineNumber == NSNotFound)
 		return;
 	
-	WCFile *file = [(WCTextView *)[self clientView] file];
+	WCFile *file = [self file];
 	WCBreakpoint *startBreakpoint = [file breakpointAtLineNumber:startLineNumber];
 	if (startBreakpoint == nil) {
 		startBreakpoint = [WCBreakpoint breakpointWithLineNumber:startLineNumber inFile:file];
@@ -181,7 +181,7 @@
 		
 		NSPoint currentPoint = [self convertPointFromBase:[event locationInWindow]];
 		NSUInteger currentLineNumber = [self lineNumberForLocation:currentPoint.y];
-		WCBreakpoint *currentBreakpoint = [[(WCTextView *)[self clientView] file] breakpointAtLineNumber:currentLineNumber];
+		WCBreakpoint *currentBreakpoint = [[self file] breakpointAtLineNumber:currentLineNumber];
 		
 		if (!didChangeLineNumber && startLineNumber != currentLineNumber)
 			didChangeLineNumber = YES;
@@ -326,10 +326,11 @@
 				if (showErrorBadges) {
 					if (errors) {
 						WCBuildMessage *error = [errors objectAtIndex:0];
+						NSRect lineRect = NSMakeRect(bounds.origin.x,ypos,NSWidth(bounds),NSHeight(rects[0]));
+						
 						if (errorLineHighlight) {
 							currentTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[self font],NSFontAttributeName,[NSColor textColor],NSForegroundColorAttributeName, nil];
 							
-							NSRect lineRect = NSMakeRect(bounds.origin.x,ypos,NSWidth(bounds),NSHeight(rects[0]));
 							NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorErrorLineHighlightColorKey];
 							
 							[[baseColor colorWithAlphaComponent:0.5] setFill];
@@ -347,7 +348,7 @@
 						
 						[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
 						
-						[self addToolTipRect:drawRect owner:self userData:(void *)errors];
+						[self addToolTipRect:lineRect owner:self userData:(void *)errors];
 					}
 				}
 				
@@ -355,10 +356,11 @@
 					NSArray *warnings = [[(WCTextView *)[self clientView] file] warningMessagesAtLineNumber:line];
 					if (warnings) {
 						WCBuildMessage *warning = [warnings objectAtIndex:0];
+						NSRect lineRect = NSMakeRect(bounds.origin.x,ypos,NSWidth(bounds),NSHeight(rects[0]));
+						
 						if (warningLineHighlight) {
 							currentTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[self font],NSFontAttributeName,[NSColor textColor],NSForegroundColorAttributeName, nil];
 							
-							NSRect lineRect = NSMakeRect(bounds.origin.x,ypos,NSWidth(bounds),NSHeight(rects[0]));
 							NSColor *baseColor = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEditorWarningLineHighlightColorKey];
 							
 							[[baseColor colorWithAlphaComponent:0.75] setFill];
@@ -376,7 +378,7 @@
 						
 						[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
 						
-						[self addToolTipRect:drawRect owner:self userData:(void *)warning];
+						[self addToolTipRect:lineRect owner:self userData:(void *)warnings];
 					}
 				}
 				

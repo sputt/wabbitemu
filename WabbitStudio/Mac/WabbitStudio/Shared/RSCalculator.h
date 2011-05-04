@@ -37,14 +37,14 @@ extern NSString *const kRSCalculatorModelDidChangeNotification;
 @private
     LPCALC _calc;
 	BOOL _isBusy;
-	__weak NSDocument <RSCalculatorOwner> *_owner;
+	__weak id <RSCalculatorOwner> _owner;
 	SEL _breakpointSelector;
 }
 @property (readonly,nonatomic) LPCALC calc;
 @property (assign,nonatomic) BOOL isActive;
 @property (assign,nonatomic) BOOL isRunning;
 @property (assign,nonatomic) BOOL isBusy;
-@property (readonly,nonatomic) NSDocument <RSCalculatorOwner> *owner;
+@property (readonly,nonatomic) id <RSCalculatorOwner> owner;
 @property (readonly,nonatomic) SEL breakpointSelector;
 @property (readonly,nonatomic) RSCalculatorModel model;
 @property (readonly,nonatomic) NSImage *skinImage;
@@ -81,6 +81,6 @@ extern NSString *const kRSCalculatorModelDidChangeNotification;
 
 - (void)setBreakpointOfType:(RSBreakpointType)breakpointType atAddress:(uint16_t)address onPage:(uint8_t)page;
 
-+ (RSCalculator *)calculatorWithOwner:(NSDocument <RSCalculatorOwner> *)owner breakpointSelector:(SEL)breakpointSelector;
-- (id)initWithOwner:(NSDocument <RSCalculatorOwner> *)owner breakpointSelector:(SEL)breakpointSelector;
++ (RSCalculator *)calculatorWithOwner:(id <RSCalculatorOwner>)owner breakpointSelector:(SEL)breakpointSelector;
+- (id)initWithOwner:(id <RSCalculatorOwner>)owner breakpointSelector:(SEL)breakpointSelector;
 @end

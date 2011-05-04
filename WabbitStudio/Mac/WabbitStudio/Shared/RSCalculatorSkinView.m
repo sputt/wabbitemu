@@ -10,6 +10,9 @@
 #import "RSCalculator.h"
 
 
+NSString *const kRSCalculatorSkinViewUseSkinsKey = @"appearanceUseSkins";
+NSString *const kRSCalculatorSkinViewUseBorderlessSkinsKey = @"appearanceUseBorderlessSkins";
+
 @implementation RSCalculatorSkinView
 
 - (void)dealloc {
@@ -26,7 +29,7 @@
 }
 
 - (void)mouseDown:(NSEvent *)event {
-	if ([self calculator] == nil || ![[self calculator] isActive] || ![[self calculator] isRunning])
+	if ([self calculator] == nil || ![[self calculator] isRunning])
 		return;
 	
 	NSImage *keymap = [[self calculator] keymapImage];
@@ -90,16 +93,15 @@ finalize_buttons:
 	if (!_shouldMoveWindowOnMouseDragged)
 		return;
 	
-    NSWindow *window = [self window];
-	NSPoint windowOrigin = [window frame].origin;
+	NSPoint windowOrigin = [[self window] frame].origin;
 	
-    [window setFrameOrigin:NSMakePoint(windowOrigin.x + [theEvent deltaX], windowOrigin.y - [theEvent deltaY])];
+    [[self window] setFrameOrigin:NSMakePoint(windowOrigin.x + [theEvent deltaX], windowOrigin.y - [theEvent deltaY])];
 }
 
 - (void)mouseUp:(NSEvent *)event {
 	_shouldMoveWindowOnMouseDragged = NO;
 	
-	if ([self calculator] == nil || ![[self calculator] isActive] || ![[self calculator] isRunning])
+	if ([self calculator] == nil || ![[self calculator] isRunning])
 		return;
 	
 	NSImage *keymap = [[self calculator] keymapImage];

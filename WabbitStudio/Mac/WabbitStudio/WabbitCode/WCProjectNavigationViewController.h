@@ -20,7 +20,6 @@
 }
 @property (readonly,nonatomic) WCProject *project;
 @property (readonly,nonatomic) NSImageView *splitterHandleImageView;
-@property (readonly,nonatomic) NSString *viewNibName;
 @property (readonly,nonatomic) NSTreeNode *selectedNode;
 @property (readonly,nonatomic) NSArray *selectedNodes;
 @property (assign,nonatomic) id selectedObject;

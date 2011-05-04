@@ -80,10 +80,10 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
     [super dealloc];
 }
 
-+ (RSCalculator *)calculatorWithOwner:(NSDocument <RSCalculatorOwner> *)owner breakpointSelector:(SEL)breakpointSelector; {
++ (RSCalculator *)calculatorWithOwner:(id <RSCalculatorOwner>)owner breakpointSelector:(SEL)breakpointSelector; {
 	return [[[[self class] alloc] initWithOwner:owner breakpointSelector:breakpointSelector] autorelease];
 }
-- (id)initWithOwner:(NSDocument <RSCalculatorOwner> *)owner breakpointSelector:(SEL)breakpointSelector; {
+- (id)initWithOwner:(id <RSCalculatorOwner>)owner breakpointSelector:(SEL)breakpointSelector; {
 	if (!(self = [super init]))
 		return nil;
 	

@@ -17,5 +17,8 @@
 @property (readonly,nonatomic) NSWindow *calculatorWindow;
 @property (assign,nonatomic) BOOL isDebugging;
 @property (readonly,nonatomic) BOOL isBorderlessSkin;
+
 - (void)updateFPSString;
+- (BOOL)presentError:(NSError *)error;
+- (NSWindow *)windowForSheet;
 @end

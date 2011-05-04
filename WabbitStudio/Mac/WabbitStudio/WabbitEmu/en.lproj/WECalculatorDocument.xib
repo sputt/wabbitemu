@@ -46,7 +46,7 @@
 			<object class="NSWindowTemplate" id="275939982">
 				<int key="NSWindowStyleMask">15</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{300, 600}, {192, 150}}</string>
+				<string key="NSWindowRect">{{1138, 682}, {192, 150}}</string>
 				<int key="NSWTFlags">544735232</int>
 				<string key="NSWindowTitle">Window</string>
 				<string key="NSWindowClass">RSCalculatorWindow</string>
@@ -64,7 +64,6 @@
 							<string key="NSFrame">{{170, 3}, {16, 16}}</string>
 							<reference key="NSSuperview" ref="568628114"/>
 							<reference key="NSWindow"/>
-							<reference key="NSNextKeyView"/>
 							<int key="NSpiFlags">28938</int>
 							<double key="NSMaxValue">100</double>
 						</object>
@@ -181,6 +180,7 @@
 				<string key="NSScreenRect">{{0, 0}, {1680, 1028}}</string>
 				<string key="NSMinSize">{192, 172}</string>
 				<string key="NSMaxSize">{1e+13, 1e+13}</string>
+				<string key="NSFrameAutosaveName"/>
 				<bool key="NSAutorecalculatesContentBorderThicknessMinY">NO</bool>
 				<double key="NSContentBorderThicknessMinY">22</double>
 			</object>
@@ -259,6 +259,24 @@
 						<string key="NSAction">_popUpItemAction:</string>
 					</object>
 					<object class="NSMenuItem" id="200545751">
+						<reference key="NSMenu" ref="913054367"/>
+						<bool key="NSIsDisabled">YES</bool>
+						<bool key="NSIsSeparator">YES</bool>
+						<string key="NSTitle"/>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="860961308"/>
+						<reference key="NSMixedImage" ref="397929882"/>
+					</object>
+					<object class="NSMenuItem" id="575975846">
+						<reference key="NSMenu" ref="913054367"/>
+						<string key="NSTitle">Start/Stop Emulation</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="860961308"/>
+						<reference key="NSMixedImage" ref="397929882"/>
+					</object>
+					<object class="NSMenuItem" id="1016982876">
 						<reference key="NSMenu" ref="913054367"/>
 						<bool key="NSIsDisabled">YES</bool>
 						<bool key="NSIsSeparator">YES</bool>
@@ -497,6 +515,30 @@
 					</object>
 					<int key="connectionID">100115</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">value: statusImage</string>
+						<reference key="source" ref="175073734"/>
+						<reference key="destination" ref="512844837"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="175073734"/>
+							<reference key="NSDestination" ref="512844837"/>
+							<string key="NSLabel">value: statusImage</string>
+							<string key="NSBinding">value</string>
+							<string key="NSKeyPath">statusImage</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">100116</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">toggleEmulation:</string>
+						<reference key="source" ref="613418571"/>
+						<reference key="destination" ref="575975846"/>
+					</object>
+					<int key="connectionID">100125</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -559,6 +601,8 @@
 							<reference ref="204268932"/>
 							<reference ref="425756865"/>
 							<reference ref="51260242"/>
+							<reference ref="575975846"/>
+							<reference ref="1016982876"/>
 						</object>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -674,6 +718,16 @@
 						<reference key="object" ref="229980107"/>
 						<reference key="parent" ref="1014760894"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">100122</int>
+						<reference key="object" ref="575975846"/>
+						<reference key="parent" ref="913054367"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">100123</int>
+						<reference key="object" ref="1016982876"/>
+						<reference key="parent" ref="913054367"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -703,6 +757,8 @@
 					<string>100101.IBPluginDependency</string>
 					<string>100102.IBPluginDependency</string>
 					<string>100106.IBPluginDependency</string>
+					<string>100122.IBPluginDependency</string>
+					<string>100123.IBPluginDependency</string>
 					<string>5.IBEditorWindowLastContentRect</string>
 					<string>5.IBNSWindowAutoPositionCentersHorizontal</string>
 					<string>5.IBNSWindowAutoPositionCentersVertical</string>
@@ -738,6 +794,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{133, 170}, {507, 413}}</string>
 					<boolean value="NO"/>
 					<boolean value="NO"/>
@@ -761,7 +819,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">100115</int>
+			<int key="maxID">100125</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -912,8 +970,8 @@
 							<string>loadRom:</string>
 							<string>reloadCurrentRomOrSavestate:</string>
 							<string>resetCalculator:</string>
-							<string>resetDisplaySize:</string>
 							<string>saveStateAs:</string>
+							<string>showDebugger:</string>
 							<string>toggleLCDSize:</string>
 							<string>toggleSkinView:</string>
 						</object>
@@ -935,8 +993,8 @@
 							<string>loadRom:</string>
 							<string>reloadCurrentRomOrSavestate:</string>
 							<string>resetCalculator:</string>
-							<string>resetDisplaySize:</string>
 							<string>saveStateAs:</string>
+							<string>showDebugger:</string>
 							<string>toggleLCDSize:</string>
 							<string>toggleSkinView:</string>
 						</object>
@@ -955,11 +1013,11 @@
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">resetDisplaySize:</string>
+								<string key="name">saveStateAs:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">
-								<string key="name">saveStateAs:</string>
+								<string key="name">showDebugger:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 							<object class="IBActionInfo">

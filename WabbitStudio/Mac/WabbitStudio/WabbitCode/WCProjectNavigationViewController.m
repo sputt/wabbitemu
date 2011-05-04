@@ -8,6 +8,7 @@
 
 #import "WCProjectNavigationViewController.h"
 #import "NSArray+WCExtensions.h"
+#import "NSViewController+RSExtensions.h"
 
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
@@ -27,8 +28,6 @@
 
 @synthesize project=_project;
 @synthesize splitterHandleImageView=_splitterHandleImageView;
-// subclasses must override this to return the correct view nib name
-@dynamic viewNibName;
 @dynamic selectedObject;
 - (id)selectedObject {
 	return [[self selectedObjects] firstObject];

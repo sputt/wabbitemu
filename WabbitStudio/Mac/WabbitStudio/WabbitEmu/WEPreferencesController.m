@@ -8,6 +8,7 @@
 
 #import "WEPreferencesController.h"
 #import "WELCDView.h"
+#import "RSCalculatorSkinView.h"
 #include "lcd.h"
 
 
@@ -30,6 +31,11 @@ NSString *const kWEPreferencesGeneralOnStartupKey = @"generalOnStartup";
 	[preferences setObject:[NSNumber numberWithUnsignedInteger:4] forKey:kWEPreferencesDisplayLCDShadesKey];
 	// default LCD Mode; lcd->mode
 	[preferences setObject:[NSNumber numberWithUnsignedInteger:MODE_PERFECT_GRAY] forKey:kWEPreferencesDisplayLCDModeKey];
+	
+	// appearance skins
+	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kRSCalculatorSkinViewUseSkinsKey];
+	// appearance borderless skins
+	[preferences setObject:[NSNumber numberWithBool:NO] forKey:kRSCalculatorSkinViewUseBorderlessSkinsKey];
 	
 	[[NSUserDefaults standardUserDefaults] registerDefaults:preferences];
 }

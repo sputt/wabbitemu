@@ -17,6 +17,7 @@
     IBOutlet NSView *_general;
 	IBOutlet NSView *_advanced;
 	IBOutlet NSView *_calculator;
+	IBOutlet NSView *_appearance;
 	
 	IBOutlet WEPreviewLCDView *_LCDView;
 	

@@ -9,6 +9,9 @@
 #import <AppKit/NSImageView.h>
 
 
+extern NSString *const kRSCalculatorSkinViewUseSkinsKey;
+extern NSString *const kRSCalculatorSkinViewUseBorderlessSkinsKey;
+
 @class RSCalculator;
 
 @interface RSCalculatorSkinView : NSImageView {

@@ -89,12 +89,37 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 	[self dragImage:dragImage at:dragPoint offset:NSZeroSize event:event pasteboard:pboard source:self slideBack:YES];
 }
 
-- (void)keyDown:(NSEvent *)event {
-	keypad_key_press(&[[self calculator] calc]->cpu, (unsigned int)[event keyCode]);
-}
-
-- (void)keyUp:(NSEvent *)event {
-	keypad_key_release(&[[self calculator] calc]->cpu, (unsigned int)[event keyCode]);
+- (void)keyDown:(NSEvent *)fEvent {
+	if ([self calculator] == nil || ![[self calculator] isRunning])
+		return;
+	
+	CPU_t *cpu = &[[self calculator] calc]->cpu;
+	NSMutableIndexSet *keyCodesForKeysPressed = [NSMutableIndexSet indexSet];
+	
+	[keyCodesForKeysPressed addIndex:[fEvent keyCode]];
+	
+	keypad_key_press(cpu, [fEvent keyCode]);
+	
+	// create a pool to flush each time through the cycle
+	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+	// track!
+	NSEvent *event = nil;
+	while([keyCodesForKeysPressed count] != 0) {
+		[pool drain];
+		pool = [[NSAutoreleasePool alloc] init];
+	
+		event = [[self window] nextEventMatchingMask:NSKeyDownMask|NSKeyUpMask];
+		
+		if ([event type] == NSKeyDown && ![keyCodesForKeysPressed containsIndex:[event keyCode]]) {
+			[keyCodesForKeysPressed addIndex:[event keyCode]];
+			keypad_key_press(cpu, [event keyCode]);
+		}
+		else if ([event type] == NSKeyUp && [keyCodesForKeysPressed containsIndex:[event keyCode]]) {
+			[keyCodesForKeysPressed removeIndex:[event keyCode]];
+			keypad_key_release(cpu, [event keyCode]);
+		}
+	}
+	[pool drain];
 }
 
 - (IBAction)copy:(id)sender {
@@ -177,14 +202,14 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 	
 	if ([[NSUserDefaults standardUserDefaults] boolForKey:kLCDUseWirePatternKey]) {		
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, _textures[1]);
-		glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_STORAGE_HINT_APPLE, GL_STORAGE_SHARED_APPLE);
+		glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_STORAGE_HINT_APPLE, GL_STORAGE_CACHED_APPLE);
 		glTexParameterf(GL_TEXTURE_RECTANGLE_EXT, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glPixelStoref(GL_UNPACK_CLIENT_STORAGE_APPLE, GL_TRUE);
 		
 		if ([self isWidescreen])
-			glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, _wlcd_buffer);
+			glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, kLCDDisplayWidescreenWidth, kLCDDisplayHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, _wlcd_buffer);
 		else
-			glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, width, height, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, _lcd_buffer);
+			glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGBA, kLCDDisplayWidth, kLCDDisplayHeight, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, _lcd_buffer);
 		
 		glBegin(GL_QUADS);
 		glTexCoord2f(0.0f, 0.0f);
@@ -289,8 +314,8 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 		}
 	}
 	
-	for (row=0; row<kLCDHeight; row++) {
-		for (col=0; col<kLCDWidth; col++) {
+	for (row=0; row<kLCDDisplayHeight; row++) {
+		for (col=0; col<kLCDDisplayWidth; col++) {
 			if (col%2 == 0 && row%2 == 0) {
 				_lcd_buffer[row][col][2] = 158;
 				_lcd_buffer[row][col][1] = 171;
@@ -318,8 +343,8 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 		}
 	}
 	
-	for (row=0; row<kLCDHeight; row++) {
-		for (col=0; col<kLCDWidescreenWidth; col++) {
+	for (row=0; row<kLCDDisplayHeight; row++) {
+		for (col=0; col<kLCDDisplayWidescreenWidth; col++) {
 			if (col%2 == 0 && row%2 == 0) {
 				_wlcd_buffer[row][col][2] = 158;
 				_wlcd_buffer[row][col][1] = 171;

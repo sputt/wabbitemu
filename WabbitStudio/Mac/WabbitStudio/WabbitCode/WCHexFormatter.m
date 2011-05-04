@@ -10,6 +10,30 @@
 #import "NSString+WCExtensions.h"
 
 
+@implementation NSString (WCHexFormatter_Extensions)
+
+- (NSString *)stringByRemovingInvalidHexDigits; {
+	if (!self || [self length] == 0)
+		return nil;
+	
+	static NSCharacterSet *allowedCharacters = nil;
+	if (!allowedCharacters)
+		allowedCharacters = [[NSCharacterSet characterSetWithCharactersInString:@"0123456789abcdefABCDEF"] retain];
+	NSUInteger trimLength = 0, length = [self length];
+	unichar buffer[length];
+	
+	for (NSUInteger index = 0; index < length; index++) {
+		if ([allowedCharacters characterIsMember:[self characterAtIndex:index]])
+			buffer[trimLength++] = [self characterAtIndex:index];
+	}
+	
+	if (trimLength == 0)
+		return nil;
+	return [[[NSString alloc] initWithCharacters:buffer length:trimLength] autorelease];
+}
+
+@end
+
 @implementation WCHexFormatter
 
 - (NSString *)stringForObjectValue:(id)object {
