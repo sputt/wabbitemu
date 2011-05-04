@@ -393,7 +393,7 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		// Send the VAR with Backup style header
 		link_send_pkt(cpu, CID_VAR, &bkhdr);
 
-		int virtKey = cpu->pio.model = TI_85 ? VK_F1 : VK_RETURN;
+		int virtKey = cpu->pio.model == TI_85 ? VK_F1 : VK_RETURN;
 		keypad_key_press(cpu, virtKey);
 
 		// Receive the ACK
