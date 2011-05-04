@@ -37,7 +37,7 @@ namespace WabbitC
                 }
             }
 			IncludeDirs.LocalIncludes.Insert(0, Environment.CurrentDirectory);
-            Compiler.DoCompile(InputFile, opLevel);
+            Compiler.DoCompileFile(InputFile, opLevel);
         }
     }
 }

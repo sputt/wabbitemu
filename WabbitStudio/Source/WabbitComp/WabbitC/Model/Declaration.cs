@@ -13,9 +13,10 @@ namespace WabbitC.Model
 
         public Declaration()
         {
+            Properties = new HashSet<string>();
         }
 
-        public Declaration(Type declarationType, String name)
+        public Declaration(Type declarationType, String name) : this()
         {
             Type = declarationType;
             Name = name;
@@ -61,5 +62,6 @@ namespace WabbitC.Model
 		public Immediate ConstValue;
 		public Statement ConstStatement;
         public bool IsAlive;
+        public HashSet<String> Properties;
     }
 }

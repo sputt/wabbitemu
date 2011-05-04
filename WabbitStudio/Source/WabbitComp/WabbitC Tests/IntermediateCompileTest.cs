@@ -33,7 +33,7 @@ namespace WabbitC_Tests
 
         private void RunIntermediateTest(string name, string args = "")
         {
-            int passCount = int.MaxValue;
+            var passCount = Compiler.PassCount.PassAlls;
             if (testContextInstance.DataRow != null)
             {
                 if (Boolean.Parse(testContextInstance.DataRow["Enabled"].ToString()) == false)
@@ -44,10 +44,14 @@ namespace WabbitC_Tests
                 }
 
                 args = testContextInstance.DataRow["Args"].ToString();
-                passCount = int.Parse(testContextInstance.DataRow["PassCount"].ToString());
-                if (passCount == -1)
+                int passNum = int.Parse(testContextInstance.DataRow["PassCount"].ToString());
+                if (passNum == -1)
                 {
-                    passCount = int.MaxValue;
+                    passCount = Compiler.PassCount.PassAlls;
+                }
+                else
+                {
+                    passCount = (Compiler.PassCount)passNum;
                 }
                 Debug.WriteLine("Running config " + testContextInstance.DataRow["Name"] + ": " + args);
             }
@@ -56,7 +60,7 @@ namespace WabbitC_Tests
             var compiler = new Compiler();
 
             Compiler.OptimizeLevel opLevel = WabbitC.Optimizer.Optimizer.ParseCommandLine(args);
-			Compiler.DoCompile(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_expected.c", opLevel, passCount);
+			Compiler.DoCompileFile(CurDir + @"\..\..\..\WabbitC Tests\C Files\" + name + "_expected.c", opLevel, passCount);
 
             System.Diagnostics.Process p = new System.Diagnostics.Process();
             p.StartInfo.WorkingDirectory = CurDir + @"\..\..\..\WabbitC Tests";

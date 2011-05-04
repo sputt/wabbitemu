@@ -18,7 +18,7 @@ namespace WabbitC.Optimizer
 			while (functions.MoveNext())
 			{
 				Block block = functions.Current.Code;
-				var basicBlocks = block.GetBasicBlocks();
+				var basicBlocks = BasicBlock.GetBasicBlocks(block);
 				block.Statements.Clear();
 				for (int i = 0; i < basicBlocks.Count; i++)
 				{

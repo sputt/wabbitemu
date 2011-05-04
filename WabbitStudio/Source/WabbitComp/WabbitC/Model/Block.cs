@@ -6,6 +6,7 @@ using System.Diagnostics;
 
 using WabbitC.Model.Types;
 using WabbitC.Model.Statements;
+using WabbitC.Optimizer;
 
 namespace WabbitC.Model
 {
@@ -18,13 +19,13 @@ namespace WabbitC.Model
             Block = block;
         }
 
-        public void Add(Statement item)
+        public new void Add(Statement item)
         {
             item.Block = Block;
             base.Add(item);
         }
 
-        public void AddRange(IEnumerable<Statement> collection)
+        public new void AddRange(IEnumerable<Statement> collection)
         {
             foreach (Statement st in collection)
             {
@@ -33,13 +34,13 @@ namespace WabbitC.Model
             base.AddRange(collection);
         }
 
-        public void Insert(int index, Statement item)
+        public new void Insert(int index, Statement item)
         {
             item.Block = Block;
             base.Insert(index, item);
         }
 
-        public void InsertRange(int index, IEnumerable<Statement> collection)
+        public new void InsertRange(int index, IEnumerable<Statement> collection)
         {
             foreach (Statement st in collection)
             {
@@ -51,6 +52,21 @@ namespace WabbitC.Model
 
     class Block : IEnumerable<Block>, IEnumerable<Statement>
     {
+        /// <summary>
+        /// Returns the variables live at the end of the block.
+        /// Should only be called on basic blocks. At least thats really where
+        /// you'll get useful from :P
+        /// </summary>
+        public static List<Declaration> GetLiveVariables(Block block)
+        {
+            LiveChartClass chart = new LiveChartClass(block);
+            chart.GenerateVariableChart();
+            var liveVars = from VariableReuseClass var in chart
+                           where var.livePoints.Last() == true
+                           select var.decl;
+            return liveVars.ToList<Declaration>();
+        }
+
         public Block Parent;
         public FunctionType Function;
         public HashSet<Type> Types;
@@ -131,45 +147,6 @@ namespace WabbitC.Model
             IncrementTempDeclarationNumber(this);
             return label;
         }
-
-		public List<Block> GetBasicBlocks()
-		{
-			var blocks = new List<Block>();
-			Block currentBlock = new Block(this);
-			currentBlock.Declarations = this.Declarations;
-			currentBlock.Function = this.Function;
-			currentBlock.stack = stack;
-			for (int i = 0; i < Statements.Count; i++)
-			{
-				var statement = Statements[i];
-				if (statement.GetType() == typeof(Goto) || statement.GetType() == typeof(Label))
-				{
-					blocks.Add(currentBlock);
-					if (statement.GetType() == typeof(Goto))
-					{
-						currentBlock.Statements.Add(statement);
-						currentBlock = new Block(this);
-						currentBlock.Declarations = this.Declarations;
-						currentBlock.Function = this.Function;
-						currentBlock.stack = stack;
-					}
-					else
-					{
-						currentBlock = new Block(this);
-						currentBlock.Declarations = this.Declarations;
-						currentBlock.Function = this.Function;
-						currentBlock.stack = stack;
-						currentBlock.Statements.Add(statement);
-					}
-				}
-				else
-				{
-					currentBlock.Statements.Add(statement);
-				}
-			}
-			blocks.Add(currentBlock);
-			return blocks;
-		}
 
         static public Block ParseBlock(ref List<Token>.Enumerator tokens, Block parent)
         {
@@ -358,8 +335,11 @@ namespace WabbitC.Model
 								else
 								{
 									//TODO: check for comma operator
-									Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-									tokens.MoveNext();
+                                    if (tokens.Current.Type != TokenType.ArgSeparator)
+                                    {
+                                        Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+                                        tokens.MoveNext();
+                                    }
 								}
 							}
 						}
@@ -428,6 +408,14 @@ namespace WabbitC.Model
 			}
 			return sb.ToString();
 		}
+
+        /*public override bool Equals(object obj)
+        {
+            if (obj.GetType() != typeof(Block))
+                return base.Equals(obj);
+            var block = (Block)obj;
+            return this.Function.ToDeclarationString() == block.Function.ToDeclarationString();
+        }*/
 
         #region IEnumerable Members
 

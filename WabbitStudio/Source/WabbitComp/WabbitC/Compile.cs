@@ -52,13 +52,33 @@ namespace WabbitC
         /// Parses a file and outputs a .asm file
         /// </summary>
         /// <returns></returns>
-        public static bool DoCompile(string inputFile, OptimizeLevel opLevel = OptimizeLevel.OptimizeNone, int passCount = int.MaxValue)
+        public static bool DoCompileFile(string inputFile, OptimizeLevel opLevel = OptimizeLevel.OptimizeNone, PassCount passCount = PassCount.PassAlls)
         {
 			optimizeLevel = opLevel;
             string fileContents = TryOpenFile(inputFile);
             if (string.IsNullOrEmpty(fileContents))
                 return false;
+            var module = DoCompile(fileContents);
+            
+            var asmWriter = new StreamWriter(Path.GetFileNameWithoutExtension(inputFile) + "_compiled.z80");
+            asmWriter.Write(AssemblyGenerator.GenerateCode(ref module));
+            asmWriter.Close();
 
+            string outputFile = inputFile.Replace("expected", "actual");
+            if (outputFile.Equals(inputFile))
+            {
+                outputFile = Path.GetFileNameWithoutExtension(inputFile) + "_compiled.c";
+            }
+
+            var writer = new StreamWriter(outputFile);
+            writer.Write(module.ToString().Replace("\r\n", "\n").Replace("\n", "\r\n"));
+            writer.Close();
+
+            return true;
+        }
+
+        static Module DoCompile(string fileContents, OptimizeLevel opLevel = OptimizeLevel.OptimizeNone, PassCount passCount = PassCount.PassAlls)
+        {
             var tokenizerTokens = Tokenizer.Tokenize(fileContents);
 
 			var preprocessorParser = new PreprocessorParser(tokenizerTokens);
@@ -77,13 +97,13 @@ namespace WabbitC
             WriteModule(currentModule, 1);
 
             // Statement passes
-            if (passCount >= 2)
+            if (passCount >= PassCount.Pass2)
             {
                 StatementPasses.BlockCollapse.Run(currentModule);
                 StatementPasses.IfGotoConversion.Run(currentModule);
                 StatementPasses.LoopGotoConversion.Run(currentModule);
-				StatementPasses.ReorderDeclarations.Run(currentModule);
-				StatementPasses.MarkRecursiveFunctions.Run(currentModule);
+                StatementPasses.ReorderDeclarations.Run(currentModule);
+                StatementPasses.MarkRecursiveFunctions.Run(currentModule);
             }
             WriteModule(currentModule, 2);
 
@@ -92,8 +112,9 @@ namespace WabbitC
 
             WriteModule(currentModule, 3);
 
-            if (passCount >= 3)
+            if (passCount >= PassCount.Pass3)
             {
+                StatementPasses.ReplaceLocalsWithGlobals.Run(currentModule);
 				StatementPasses.ApplyCallingConvention.Run(currentModule);
 				StatementPasses.LabelMerger.Run(currentModule);
 				StatementPasses.RemovePointlessGotos.Run(currentModule);
@@ -103,27 +124,22 @@ namespace WabbitC
 				StatementPasses.RemoveMathImmediates.Run(currentModule);
 
 				StatementPasses.RegisterAllocator.SmarterRegisterAllocator.Run(currentModule);
-
-				var asmString = AssemblyGenerator.GenerateCode(ref currentModule);
-				var asmWriter = new StreamWriter(Path.GetFileNameWithoutExtension(inputFile) + "_compiled.z80");
-				asmWriter.Write(asmString);
-				asmWriter.Close();
             }
 
 			currentModule.IntermediateStrings.Add("#include <string.h>");
             string code = currentModule.ToString();
+            var asmCode = AssemblyGenerator.GenerateCode(ref currentModule);
 
-            string outputFile = inputFile.Replace("expected", "actual");
-            if (outputFile.Equals(inputFile))
-            {
-                outputFile = Path.GetFileNameWithoutExtension(inputFile) + "_compiled.c";
-            }
+            return currentModule;
+        }
 
-            var writer = new StreamWriter(outputFile);
-            writer.Write(code.Replace("\r\n", "\n").Replace("\n", "\r\n"));
-            writer.Close();
-
-            return true;
+        //TODO: make more descriptive
+        public enum PassCount
+        {
+            Pass1 = 1,
+            Pass2 = 2,
+            Pass3 = 3,
+            PassAlls = Int32.MaxValue
         }
 
         public static string TryOpenFile(string inputFile)

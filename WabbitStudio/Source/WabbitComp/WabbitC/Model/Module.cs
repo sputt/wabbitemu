@@ -5,6 +5,7 @@ using System.Text;
 using System.Diagnostics;
 
 using WabbitC.Model.Types;
+using System.Collections;
 
 namespace WabbitC.Model
 {
@@ -13,10 +14,9 @@ namespace WabbitC.Model
 		public List<string> IntermediateStrings;
 		public ISet<Declaration> GeneralPurposeRegisters;
 		public ISet<Declaration> Registers;
+        public List<KeyValuePair<Declaration, List<int>>> GlobalVariables = new List<KeyValuePair<Declaration, List<int>>>();
 
-		public Module()
-		{
-		}
+		public Module() { }
 
         public void UpdateModule(Block block)
         {
@@ -57,9 +57,23 @@ namespace WabbitC.Model
             this.Parent = null;
         }
 
-		public void AddGlobalVariable(Declaration decl)
-		{
+        int tempGlobals = 0;
+        private string NewTempGlobal()
+        {
+            return "__global" + tempGlobals++;
+        }
 
+		public Declaration AllocateGlobalVariable(Declaration decl, int level)
+		{
+            foreach (var possibleOverlap in GlobalVariables) {
+                if (possibleOverlap.Key.Type.Equals(decl.Type) && !possibleOverlap.Value.Contains(level)) {
+                    possibleOverlap.Value.Add(level);
+                    return possibleOverlap.Key;
+                }
+            }
+            var newDecl = new Declaration(decl.Type, NewTempGlobal());
+            GlobalVariables.Add(new KeyValuePair<Declaration, List<int>>(newDecl, new List<int>() { level }));
+            return newDecl;
 		}
 
         public IEnumerator<Declaration> GetFunctionEnumerator()
@@ -86,6 +100,10 @@ namespace WabbitC.Model
 			{
 				result += s + Environment.NewLine;
 			}
+            foreach (var variable in GlobalVariables)
+            {
+                result += variable.Key.ToDeclarationString() + Environment.NewLine;
+            }
 			result += base.ToString();
 			return result;
 		}

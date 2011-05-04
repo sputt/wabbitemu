@@ -58,6 +58,7 @@
     <Compile Include="CompoundAssignmentRemoverTest.cs" />
     <Compile Include="ForLoopRemoverTest.cs" />
     <Compile Include="HelperTest.cs" />
+    <Compile Include="LiveAnalysisTest.cs" />
     <Compile Include="OptimizerTest.cs" />
     <Compile Include="ExpressionTest.cs" />
     <Compile Include="IntermediateCompileTest.cs" />

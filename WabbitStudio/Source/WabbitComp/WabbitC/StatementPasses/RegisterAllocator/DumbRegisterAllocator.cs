@@ -29,7 +29,7 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 					}
 					else
 					{
-						module.AddGlobalVariable(decl);
+						module.AllocateGlobalVariable(decl, int.MaxValue);
 					}
 				}
 

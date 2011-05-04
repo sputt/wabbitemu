@@ -19,7 +19,7 @@ namespace WabbitC.Optimizer
                 Declaration decl = module.Declarations[i];
 				if (decl.Code != null)
 				{
-					var basicBlocks = decl.Code.GetBasicBlocks();
+					var basicBlocks = BasicBlock.GetBasicBlocks(decl.Code);
 					decl.Code.Statements.Clear();
 					for (int j = 0; j < basicBlocks.Count; j++)
 					{

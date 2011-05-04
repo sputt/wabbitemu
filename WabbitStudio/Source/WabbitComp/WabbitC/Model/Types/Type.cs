@@ -46,6 +46,13 @@ namespace WabbitC.Model
             return this.MemberwiseClone();
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType().BaseType != typeof(Type))
+                return base.Equals(obj);
+            var type = (Type) obj;
+            return type.IndirectionLevels == this.IndirectionLevels && this.Size == type.Size;
+        }
         
     }
 }

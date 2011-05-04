@@ -19,7 +19,7 @@ namespace WabbitC.StatementPasses
 			while (functions.MoveNext())
 			{
 				Block block = functions.Current.Code;
-				List<Block> basicBlocks = block.GetBasicBlocks();
+				var basicBlocks = BasicBlock.GetBasicBlocks(block);
 
 				foreach (var decl in block.Declarations)
 				{
