@@ -760,9 +760,8 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	
 	u_int page;
 	for (page = upages.start; page >= upages.end + tifile->flash->pages
-			&& dest[page][0x00] == 0x80 && dest[page][0x01] == 0x0F; 
-			page -= dest[page][0x1C]) {
-
+			&& dest[page][0x00] == 0x80 && dest[page][0x01] == 0x0F; ) {
+		int i;
 		//different size app need to send the long way
 		if (!memcmp(&dest[page][0x12], &tifile->flash->data[0][0x12], 8)) {
 			if (dest[page][0x1C] != tifile->flash->pages)
@@ -800,6 +799,12 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 			printf("Found already\n");
 			return LERR_SUCCESS;
 		}
+		//apparently non user apps have a slightly different header
+		for (i = 0; i < PAGE_SIZE; i++)
+			if (dest[page][i] == 0x80 && dest[page][i + 1] == 0x81)
+				break;
+		i += 2;
+		page -= dest[page][i];
 	}
 
 	if (page < upages.end)
@@ -825,7 +830,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	// Delay for a few seconds so the calc will be responsive
 	cpu->pio.link->vlink_size = 100;
 	for (cpu->pio.link->vlink_send = 0; cpu->pio.link->vlink_send < 100; cpu->pio.link->vlink_send += 20) {
-		link_wait(cpu, MHZ_6*1);
+		link_wait(cpu, MHZ_6 * 1);
 	}
 	return LERR_SUCCESS;
 }

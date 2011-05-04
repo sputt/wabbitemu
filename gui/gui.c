@@ -388,30 +388,7 @@ int gui_frame_update(LPCALC lpCalc) {
 			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
 		}
 	}
-	/*lpCalc->skinGraphics->Clear(Color::Gray);
-	if (lpCalc->model == TI_84PSE) {
-		if (DrawFaceplateRegion(lpCalc->skinGraphics))
-			MessageBox(NULL, "Unable to draw faceplate", "error", MB_OK);
-	}
-	lpCalc->skinGraphics->DrawImage(hbmSkin, 0, 0, skinWidth, skinHeight);
-	lpCalc->skinGraphics->Flush();
 	
-	RECT rc;
-	GetClientRect(lpCalc->hwndFrame, &rc);
-	HBITMAP skin;
-	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
-		hbmSkin.m_pBitmap->GetHBITMAP(Color::AlphaMask, &skin);
-		if (EnableCutout(lpCalc->hwndFrame, skin) != 0) {
-			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
-		}
-	}
-	if (lpCalc->hwndStatusBar != NULL)
-		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
-
-	ReleaseDC(lpCalc->hwndFrame, hdc);
-	DeleteObject(skin);
-	SendMessage(lpCalc->hwndFrame, WM_SIZE, 0, 0);
-	return 0;*/
 	HBITMAP hbmSkinOld, hbmKeymapOld;
 	//translate to regular gdi compatibility to simplify coding :/
 	m_pBitmapKeymap->GetHBITMAP(Color::White, &hbmKeymapOld);
