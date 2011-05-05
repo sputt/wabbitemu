@@ -6,7 +6,15 @@
 
 //http://www.z80.info/decoding.htm
 
-
+// %r - register
+// %g - relative address
+// %a - 2 byte address
+// %x - 1 hex string
+// %s - regular string
+// %d - decimal number
+// %h - signed offset
+// %c - condition
+// %l - label string
 Z80_com_t da_opcode[256] = {
 {_T("  nop"), 				4, 	0},
 {_T("  ex %r,%r"),			4, 	0},
@@ -713,9 +721,6 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			}
 		}
 		sprintf(result->expanded, szFormat, mod_a1,mod_a2,result->a3,result->a4);
-		OutputDebugString(result->expanded);
-		OutputDebugString("\n");
-		//printf("%0.4X: ",start_addr); da_display(result); putchar('\n');
 	}
 	
 	return i;
