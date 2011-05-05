@@ -27,4 +27,6 @@
 
 - (void)scrollToAddress:(uint16_t)address;
 
+- (IBAction)gotoAddress:(id)sender;
+
 @end

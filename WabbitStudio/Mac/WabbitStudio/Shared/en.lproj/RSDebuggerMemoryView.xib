@@ -58,7 +58,7 @@
 								<string key="NSFrameSize">{349, 118}</string>
 								<reference key="NSSuperview" ref="388830020"/>
 								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView" ref="42643764"/>
+								<reference key="NSNextKeyView" ref="43422883"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSTableHeaderView" key="NSHeaderView" id="806737685">
 									<reference key="NSNextResponder" ref="719617901"/>
@@ -172,7 +172,6 @@
 						<string key="NSFrame">{{349, 17}, {15, 118}}</string>
 						<reference key="NSSuperview" ref="388841144"/>
 						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView"/>
 						<reference key="NSTarget" ref="388841144"/>
 						<string key="NSAction">_doScroller:</string>
 						<double key="NSCurValue">37</double>
@@ -210,7 +209,7 @@
 				<string key="NSFrameSize">{364, 135}</string>
 				<reference key="NSSuperview"/>
 				<reference key="NSWindow"/>
-				<reference key="NSNextKeyView" ref="43422883"/>
+				<reference key="NSNextKeyView" ref="388830020"/>
 				<int key="NSsFlags">16</int>
 				<reference key="NSVScroller" ref="42643764"/>
 				<reference key="NSHScroller" ref="43422883"/>
@@ -265,6 +264,14 @@
 						<reference key="destination" ref="1001"/>
 					</object>
 					<int key="connectionID">16</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBOutletConnection" key="connection">
+						<string key="label">_tableViewController</string>
+						<reference key="source" ref="897668658"/>
+						<reference key="destination" ref="1001"/>
+					</object>
+					<int key="connectionID">17</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -376,7 +383,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>RSMemoryTableView</string>
+					<string>RSDebuggerMemoryTableView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
@@ -392,7 +399,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">16</int>
+			<int key="maxID">17</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -451,8 +458,49 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">RSDebuggerMemoryTableView</string>
+					<string key="superclassName">NSTableView</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">gotoAddress:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">gotoAddress:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">gotoAddress:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
+					<object class="NSMutableDictionary" key="outlets">
+						<string key="NS.key.0">_tableViewController</string>
+						<string key="NS.object.0">RSDebuggerMemoryViewController</string>
+					</object>
+					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
+						<string key="NS.key.0">_tableViewController</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">_tableViewController</string>
+							<string key="candidateClassName">RSDebuggerMemoryViewController</string>
+						</object>
+					</object>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBProjectSource</string>
+						<string key="minorKey">./Classes/RSDebuggerMemoryTableView.h</string>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">RSDebuggerMemoryViewController</string>
 					<string key="superclassName">NSViewController</string>
+					<object class="NSMutableDictionary" key="actions">
+						<string key="NS.key.0">gotoAddress:</string>
+						<string key="NS.object.0">id</string>
+					</object>
+					<object class="NSMutableDictionary" key="actionInfosByName">
+						<string key="NS.key.0">gotoAddress:</string>
+						<object class="IBActionInfo" key="NS.object.0">
+							<string key="name">gotoAddress:</string>
+							<string key="candidateClassName">id</string>
+						</object>
+					</object>
 					<object class="NSMutableDictionary" key="outlets">
 						<string key="NS.key.0">_memoryTableView</string>
 						<string key="NS.object.0">NSTableView</string>
@@ -467,14 +515,6 @@
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/RSDebuggerMemoryViewController.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">RSMemoryTableView</string>
-					<string key="superclassName">NSTableView</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/RSMemoryTableView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">

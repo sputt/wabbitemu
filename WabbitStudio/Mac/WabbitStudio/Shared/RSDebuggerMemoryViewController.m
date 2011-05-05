@@ -103,7 +103,7 @@
 	for (rowIndex = 0; rowIndex < [self numberOfRows]; rowIndex++) {
 		uint16_t rowStartAddress = startAddress + (rowIndex * bytesPerRow);
 		
-		if (address <= rowStartAddress + bytesPerRow) {
+		if (address < rowStartAddress + bytesPerRow) {
 			
 			[_memoryTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
 			[_memoryTableView scrollRowToVisible:rowIndex];
@@ -125,6 +125,10 @@
 	return self;
 }
 
+- (IBAction)gotoAddress:(id)sender; {
+	
+}
+
 @synthesize calculator=_calculator;
 @dynamic startAddress;
 - (uint16_t)startAddress {
@@ -135,22 +139,31 @@
 	
 	[_memoryTableView reloadData];
 }
-@synthesize numberOfRows=_numberOfRows;
+@dynamic numberOfRows;
+- (NSUInteger)numberOfRows {
+	return _numberOfRows;
+}
+- (void)setNumberOfRows:(NSUInteger)numberOfRows {
+	if (_numberOfRows == numberOfRows)
+		return;
+	
+	_numberOfRows = numberOfRows;
+	
+	[_memoryTableView reloadData];
+}
+
+#define CALC_MEMORY_SIZE 64384
 
 - (void)_adjustMemoryTableViewColumns {
 	CGFloat byteColumnWidth = 25.0 + [_memoryTableView intercellSpacing].width;
 	
-	CGFloat addressColumnWidth = NSWidth([[_memoryTableView headerView] headerRectOfColumn:0]);
+	CGFloat addressColumnWidth = NSWidth([[_memoryTableView headerView] headerRectOfColumn:0]) + [_memoryTableView intercellSpacing].width;
 	CGFloat availableWidth = NSWidth([[(NSScrollView *)[self view] contentView] documentVisibleRect]) - addressColumnWidth - NSWidth([[(NSScrollView *)[self view] verticalScroller] frame]);
 	NSUInteger currentNumberOfByteColumns = [_memoryTableView numberOfColumns] - 1;
 	NSUInteger maxNumberOfByteColumns = (NSUInteger)floor(availableWidth/byteColumnWidth);
 	
 	if (currentNumberOfByteColumns < maxNumberOfByteColumns) {
 		while (currentNumberOfByteColumns++ < maxNumberOfByteColumns) {
-#ifdef DEBUG
-			//NSLog(@"adding column");
-#endif
-			
 			NSTableColumn *column = [[[NSTableColumn alloc] initWithIdentifier:[NSString stringWithFormat:@"%u", currentNumberOfByteColumns - 1]] autorelease];
 			[column setWidth:byteColumnWidth - [_memoryTableView intercellSpacing].width];
 			[column setResizingMask:NSTableColumnNoResizing];
@@ -158,21 +171,14 @@
 			[_memoryTableView addTableColumn:column];
 		}
 		
-		[self setNumberOfRows:64384/maxNumberOfByteColumns];
-		//[_memoryTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
-		[_memoryTableView reloadData];
+		[self setNumberOfRows:CALC_MEMORY_SIZE/maxNumberOfByteColumns];
 	}
 	else if (currentNumberOfByteColumns > maxNumberOfByteColumns) {
 		while (currentNumberOfByteColumns-- > maxNumberOfByteColumns) {
-#ifdef DEBUG
-			//NSLog(@"removing column");
-#endif
 			[_memoryTableView removeTableColumn:[[_memoryTableView tableColumns] lastObject]];
 		}
 		
-		[self setNumberOfRows:64384/maxNumberOfByteColumns];
-		//[_memoryTableView performSelector:@selector(reloadData) withObject:nil afterDelay:0.0];
-		[_memoryTableView reloadData];
+		[self setNumberOfRows:CALC_MEMORY_SIZE/maxNumberOfByteColumns];
 	}
 }
 

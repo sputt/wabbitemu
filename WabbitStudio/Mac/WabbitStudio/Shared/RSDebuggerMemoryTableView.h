@@ -9,9 +9,13 @@
 #import <AppKit/NSTableView.h>
 
 
-@interface RSMemoryTableView : NSTableView {
+@class RSDebuggerMemoryViewController;
+
+@interface RSDebuggerMemoryTableView : NSTableView {
 @private
-    
+    IBOutlet RSDebuggerMemoryViewController *_tableViewController;
 }
+
+- (IBAction)gotoAddress:(id)sender;
 
 @end

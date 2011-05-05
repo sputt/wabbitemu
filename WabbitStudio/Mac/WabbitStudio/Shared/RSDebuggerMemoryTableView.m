@@ -6,12 +6,14 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "RSMemoryTableView.h"
+#import "RSDebuggerMemoryTableView.h"
 #import "RSDebuggerMemoryHeaderView.h"
 #import "WCTwoDigitHexFormatter.h"
+#import "RSDebuggerMemoryViewController.h"
+#import "RSDebuggerMemoryGotoAddressSheetController.h"
 
 
-@implementation RSMemoryTableView
+@implementation RSDebuggerMemoryTableView
 
 - (id)initWithCoder:(NSCoder *)coder {
 	if (!(self = [super initWithCoder:coder]))
@@ -37,6 +39,10 @@
 	[[tableColumn dataCell] setFormatter:[[[WCTwoDigitHexFormatter alloc] init] autorelease]];
 	[[tableColumn dataCell] setFont:[NSFont fontWithName:@"Menlo" size:[NSFont systemFontSizeForControlSize:[[tableColumn dataCell] controlSize]]]];
 	[super addTableColumn:tableColumn];
+}
+
+- (IBAction)gotoAddress:(id)sender; {
+	[RSDebuggerMemoryGotoAddressSheetController presentGotoAddressSheetForTableViewController:_tableViewController];
 }
 
 @end
