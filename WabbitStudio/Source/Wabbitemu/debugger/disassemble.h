@@ -131,6 +131,7 @@ typedef struct Z80_info {
 	};
 	int size;			/* Size of command */
 	unsigned short addr;
+	TCHAR expanded[32];
 } Z80_info_t;
 
 typedef struct Z80_command {
