@@ -643,6 +643,78 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			}
 		}
 		result->size = addr - start_addr;
+
+		INT_PTR mod_a1 = result->a1;
+		INT_PTR mod_a2 = result->a2;
+
+		// Expand the format
+		TCHAR szFormat[32] = {0};
+		TCHAR *in = da_opcode[result->index].format;
+		TCHAR *out = szFormat;
+		while (*in != '\0')
+		{
+			if (*in == '%')
+			{
+				switch (*(in + 1))
+				{
+				case _T('g'):
+					{
+						unsigned short addr = result->addr + 2;
+						if (result->index == DA_JR_CC_X)
+							mod_a2 = (addr + ((char) result->a2)) & 0xFFFF;
+						else
+							mod_a1 = (addr + ((char) result->a1)) & 0xFFFF;
+						// Fall through
+					}
+				case _T('a'):
+					{
+						LPCTSTR sz = _T("$%04X");
+						strcat(out, sz);
+						out += strlen(sz);
+						in += 2;
+						break;
+					}
+				case _T('h'):
+					{
+						LPCTSTR sz = _T("%+d");
+						strcat(out, sz);
+						out += strlen(sz);
+						in += 2;
+						break;
+					}
+				case _T('r'):
+				case _T('c'):
+				case _T('l'):
+					{
+						*out++ = *in++;
+						*out++ = 's';
+						in++;
+						break;
+					}
+				case _T('x'):
+					{
+						LPCTSTR sz = _T("$%02X");
+						strcat(out, sz);
+						out += strlen(sz);
+						in += 2;
+						break;
+					}
+				default:
+					{
+						*out++ = *in++;
+						*out++ = *in++;
+						break;
+					}
+				}
+			}
+			else
+			{
+				*(out++) = *(in++);
+			}
+		}
+		sprintf(result->expanded, szFormat, mod_a1,mod_a2,result->a3,result->a4);
+		OutputDebugString(result->expanded);
+		OutputDebugString("\n");
 		//printf("%0.4X: ",start_addr); da_display(result); putchar('\n');
 	}
 	
