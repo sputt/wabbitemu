@@ -9,13 +9,15 @@
 #import <AppKit/NSWindowController.h>
 
 
-@class RSDebuggerDetailsViewController,WECalculatorDocument;
+@class RSDebuggerDetailsViewController,WECalculatorDocument,RSDebuggerMemoryViewController;
 
-@interface WEDebuggerWindowController : NSWindowController <NSWindowDelegate> {
+@interface WEDebuggerWindowController : NSWindowController <NSWindowDelegate,NSSplitViewDelegate> {
 @private
 	IBOutlet NSSplitView *_verticalSplitView;
+	IBOutlet NSSplitView *_horizontalSplitView;
 	
     RSDebuggerDetailsViewController *_detailsViewController;
+	RSDebuggerMemoryViewController *_memoryViewController;
 }
 @property (readonly,nonatomic) WECalculatorDocument *calculatorDocument;
 @end

@@ -7,17 +7,26 @@
 //
 
 #import <AppKit/NSViewController.h>
+#import "TLAnimatingOutlineView.h"
 
 
 @class RSCalculator;
 
-@interface RSDebuggerDetailsViewController : NSViewController {
+@interface RSDebuggerDetailsViewController : NSViewController <TLAnimatingOutlineViewDelegate> {
 @private
-	IBOutlet NSView *_documentView;
+	IBOutlet NSView *_registersView;
+	IBOutlet NSView *_flagsView;
+	IBOutlet NSView *_cpuView;
+	IBOutlet NSView *_memoryMapView;
+	IBOutlet NSView *_interruptsView;
+	IBOutlet NSView *_displayView;
+	
+	IBOutlet TLAnimatingOutlineView *_animatingOutlineView;
 	
     RSCalculator *_calculator;
 }
 @property (retain,nonatomic) RSCalculator *calculator;
+@property (readonly,nonatomic) TLAnimatingOutlineView *animatingOutlineView;
 
 - (id)initWithCalculator:(RSCalculator *)calculator;
 
