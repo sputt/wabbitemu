@@ -94,6 +94,7 @@ static inline u_int8_t BinaryValueForCharacter(unichar character) {
 
 @interface NSString (WCHexFormatter_Extensions)
 - (NSString *)stringByRemovingInvalidHexDigits;
+- (NSString *)stringByRemovingInvalidBaseTenDigits;
 @end
 
 @interface WCHexFormatter : NSFormatter {

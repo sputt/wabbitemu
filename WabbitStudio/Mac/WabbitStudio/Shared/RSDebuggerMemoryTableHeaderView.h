@@ -9,7 +9,7 @@
 #import <AppKit/NSTableHeaderView.h>
 
 
-@interface RSDebuggerMemoryHeaderView : NSTableHeaderView {
+@interface RSDebuggerMemoryTableHeaderView : NSTableHeaderView {
 @private
     
 }

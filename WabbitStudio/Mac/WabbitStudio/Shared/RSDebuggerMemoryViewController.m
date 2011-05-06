@@ -10,9 +10,15 @@
 #import "RSCalculator.h"
 #import "NSViewController+RSExtensions.h"
 #import "WCTwoDigitHexFormatter.h"
+#import "RSDebuggerMemoryTableView.h"
+#import "RSDebuggerMemoryTableColumn.h"
 
 
 @interface RSDebuggerMemoryViewController ()
+@property (readonly,nonatomic) uint16_t startAddress;
+@property (assign,nonatomic) NSUInteger numberOfRows;
+@property (readonly,nonatomic) NSUInteger bytesPerRow;
+
 - (void)_adjustMemoryTableViewColumns;
 @end
 
@@ -25,13 +31,13 @@
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_calculator removeObserver:self forKeyPath:@"programCounter"];
+	[_memoryTableView setDelegate:nil];
+	[_memoryTableView setDataSource:nil];
 	[_calculator release];
     [super dealloc];
 }
 
 - (void)loadView {
-	[self setNumberOfRows:128];
-	
 	[super loadView];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_frameDidChange:) name:NSViewFrameDidChangeNotification object:[(NSScrollView *)[self view] contentView]];
@@ -42,6 +48,7 @@
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 	if ([keyPath isEqualToString:@"programCounter"] && context == self) {
 		[self scrollToAddress:[[self calculator] programCounter]];
+		[_memoryTableView reloadData];
 	}
 	else
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
@@ -66,15 +73,22 @@
 - (void)tableView:(NSTableView *)tableView setObjectValue:(id)object forTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row {
 	NSUInteger bytesPerRow = [_memoryTableView numberOfColumns] - 1;
 	uint16_t address = [self startAddress] + (row * bytesPerRow);
+	uint16_t writeAddress = (uint16_t)(address + [[tableColumn identifier] integerValue]);
 	
-	mem_write(&[[self calculator] calc]->mem_c, address + [[tableColumn identifier] integerValue], [object unsignedCharValue]);
+	mem_write(&[[self calculator] calc]->mem_c, writeAddress, [object unsignedCharValue]);
+}
+
+- (BOOL)tableView:(NSTableView *)tableView shouldEditTableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row {
+	if ([[tableView tableColumns] objectAtIndex:0] == tableColumn)
+		return NO;
+	return YES;
 }
 
 - (NSString *)tableView:(NSTableView *)tableView toolTipForCell:(NSCell *)cell rect:(NSRectPointer)rect tableColumn:(NSTableColumn *)tableColumn row:(NSInteger)row mouseLocation:(NSPoint)mouseLocation {
 	if ([[tableView tableColumns] objectAtIndex:0] == tableColumn)
 		return nil;
 	
-	NSUInteger bytesPerRow = [_memoryTableView numberOfColumns] - 1;
+	NSUInteger bytesPerRow = [self bytesPerRow];
 	uint16_t address = [self startAddress] + (row * bytesPerRow);
 	uint16_t readAddress = (uint16_t)(address + [[tableColumn identifier] integerValue]);
 	
@@ -85,26 +99,27 @@
 	if ([[tableView tableColumns] objectAtIndex:0] == tableColumn)
 		return;
 	
-	NSUInteger bytesPerRow = [_memoryTableView numberOfColumns] - 1;
+	NSUInteger bytesPerRow = [self bytesPerRow];
 	uint16_t address = [self startAddress] + (row * bytesPerRow);
 	uint16_t readAddress = (uint16_t)(address + [[tableColumn identifier] integerValue]);
 	
-	if (readAddress == [[self calculator] programCounter])
+	if (readAddress == [[self calculator] programCounter]) {
 		[[cell formatter] setShouldDrawWithProgramCounterAttributes:YES];
+		[[cell formatter] setCellIsHighlighted:[cell isHighlighted]];
+	}
 	else
 		[[cell formatter] setShouldDrawWithProgramCounterAttributes:NO];
 }
 
 - (void)scrollToAddress:(uint16_t)address; {
 	uint16_t startAddress = [self startAddress];
-	NSUInteger bytesPerRow = [_memoryTableView numberOfColumns] - 1;
+	NSUInteger bytesPerRow = [self bytesPerRow];
 	NSUInteger rowIndex;
 	
 	for (rowIndex = 0; rowIndex < [self numberOfRows]; rowIndex++) {
 		uint16_t rowStartAddress = startAddress + (rowIndex * bytesPerRow);
 		
 		if (address < rowStartAddress + bytesPerRow) {
-			
 			[_memoryTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
 			[_memoryTableView scrollRowToVisible:rowIndex];
 			return;
@@ -125,19 +140,11 @@
 	return self;
 }
 
-- (IBAction)gotoAddress:(id)sender; {
-	
-}
-
 @synthesize calculator=_calculator;
+@synthesize memoryTableView=_memoryTableView;
 @dynamic startAddress;
 - (uint16_t)startAddress {
-	return _startAddress;
-}
-- (void)setStartAddress:(uint16_t)startAddress {	
-	_startAddress = startAddress;
-	
-	[_memoryTableView reloadData];
+	return 0;
 }
 @dynamic numberOfRows;
 - (NSUInteger)numberOfRows {
@@ -151,29 +158,34 @@
 	
 	[_memoryTableView reloadData];
 }
+@dynamic bytesPerRow;
+- (NSUInteger)bytesPerRow {
+	return [_memoryTableView numberOfColumns] - 1;
+}
 
 #define CALC_MEMORY_SIZE 64384
+#define MIN_COLUMN_WIDTH 25.0
 
 - (void)_adjustMemoryTableViewColumns {
-	CGFloat byteColumnWidth = 25.0 + [_memoryTableView intercellSpacing].width;
+	CGFloat byteColumnWidth = MIN_COLUMN_WIDTH + [_memoryTableView intercellSpacing].width;
 	
-	CGFloat addressColumnWidth = NSWidth([[_memoryTableView headerView] headerRectOfColumn:0]) + [_memoryTableView intercellSpacing].width;
-	CGFloat availableWidth = NSWidth([[(NSScrollView *)[self view] contentView] documentVisibleRect]) - addressColumnWidth - NSWidth([[(NSScrollView *)[self view] verticalScroller] frame]);
-	NSUInteger currentNumberOfByteColumns = [_memoryTableView numberOfColumns] - 1;
+	CGFloat addressColumnWidth = [(NSTableColumn *)[[_memoryTableView tableColumns] objectAtIndex:0] width] + [_memoryTableView intercellSpacing].width;
+	CGFloat availableWidth = NSWidth([[(NSScrollView *)[self view] contentView] documentVisibleRect]) - addressColumnWidth;
+	NSUInteger currentNumberOfByteColumns = [self bytesPerRow];
 	NSUInteger maxNumberOfByteColumns = (NSUInteger)floor(availableWidth/byteColumnWidth);
 	
 	if (currentNumberOfByteColumns < maxNumberOfByteColumns) {
 		while (currentNumberOfByteColumns++ < maxNumberOfByteColumns) {
-			NSTableColumn *column = [[[NSTableColumn alloc] initWithIdentifier:[NSString stringWithFormat:@"%u", currentNumberOfByteColumns - 1]] autorelease];
+			RSDebuggerMemoryTableColumn *column = [[[RSDebuggerMemoryTableColumn alloc] initWithIdentifier:[NSString stringWithFormat:@"%u", currentNumberOfByteColumns - 1]] autorelease];
+			
 			[column setWidth:byteColumnWidth - [_memoryTableView intercellSpacing].width];
-			[column setResizingMask:NSTableColumnNoResizing];
-			[[column headerCell] setTitle:NSLocalizedString(@"Memory",@"memory view memory table column title")];
+			
 			[_memoryTableView addTableColumn:column];
 		}
 		
 		[self setNumberOfRows:CALC_MEMORY_SIZE/maxNumberOfByteColumns];
 	}
-	else if (currentNumberOfByteColumns > maxNumberOfByteColumns) {
+	else {
 		while (currentNumberOfByteColumns-- > maxNumberOfByteColumns) {
 			[_memoryTableView removeTableColumn:[[_memoryTableView tableColumns] lastObject]];
 		}

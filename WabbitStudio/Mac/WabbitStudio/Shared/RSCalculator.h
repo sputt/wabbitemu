@@ -70,6 +70,37 @@ extern NSString *const kRSCalculatorModelDidChangeNotification;
 @property (assign,nonatomic) BOOL hcFlag;
 @property (assign,nonatomic) BOOL nFlag;
 
+@property (assign,nonatomic) BOOL CPUHalt;
+@property (assign,nonatomic) uint8_t CPUBus;
+@property (assign,nonatomic) uint32_t CPUFrequency;
+
+@property (assign,nonatomic) BOOL memoryMapBank0RamOrFlash;
+@property (assign,nonatomic) BOOL memoryMapBank0Readonly;
+@property (assign,nonatomic) uint8_t memoryMapBank0Page;
+@property (assign,nonatomic) BOOL memoryMapBank1RamOrFlash;
+@property (assign,nonatomic) BOOL memoryMapBank1Readonly;
+@property (assign,nonatomic) uint8_t memoryMapBank1Page;
+@property (assign,nonatomic) BOOL memoryMapBank2RamOrFlash;
+@property (assign,nonatomic) BOOL memoryMapBank2Readonly;
+@property (assign,nonatomic) uint8_t memoryMapBank2Page;
+@property (assign,nonatomic) BOOL memoryMapBank3RamOrFlash;
+@property (assign,nonatomic) BOOL memoryMapBank3Readonly;
+@property (assign,nonatomic) uint8_t memoryMapBank3Page;
+
+@property (assign,nonatomic) BOOL interruptsIFF1;
+@property (readonly,nonatomic) double interruptsNextTimer1;
+@property (readonly,nonatomic) double interruptsTimer1Duration;
+@property (assign,nonatomic) BOOL interruptsIFF2;
+@property (readonly,nonatomic) double interruptsNextTimer2;
+@property (readonly,nonatomic) double interruptsTimer2Duration;
+
+@property (assign,nonatomic) BOOL displayActive;
+@property (assign,nonatomic) uint32_t displayContrast;
+@property (assign,nonatomic) int32_t displayX;
+@property (assign,nonatomic) int32_t displayY;
+@property (assign,nonatomic) int32_t displayZ;
+@property (assign,nonatomic) LCD_CURSOR_MODE displayCursorMode;
+
 - (void)step;
 - (void)stepOver;
 - (void)stepOut;

@@ -28,7 +28,7 @@
 
 - (void)windowDidLoad {
     [super windowDidLoad];
-    
+	
 	[[self LCDView] setCalculator:[[self calculatorOwner] calculator]];
 	[[WCApplicationController sharedApplicationController] addLCDView:_LCDView];
 	
@@ -37,6 +37,8 @@
 	
 	[_LCDDrawer toggle:nil];
 }
+
+
 
 - (void)windowWillClose:(NSNotification *)notification {
 	[[WCApplicationController sharedApplicationController] removeLCDView:_LCDView];

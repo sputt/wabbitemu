@@ -33,7 +33,7 @@
 	
 	[_animatingOutlineView addView:_registersView withImage:[NSImage imageNamed:@"Registers16x16"] label:NSLocalizedString(@"Registers", @"registers detail view label") expanded:YES];
 	[_animatingOutlineView addView:_flagsView withImage:[NSImage imageNamed:@"Flags16x16"] label:NSLocalizedString(@"Flags", @"flags detail view label") expanded:YES];
-	[_animatingOutlineView addView:_cpuView withImage:nil label:NSLocalizedString(@"CPU", @"cpu detail view label") expanded:NO];
+	[_animatingOutlineView addView:_cpuView withImage:[NSImage imageNamed:@"CPU16x16"] label:NSLocalizedString(@"CPU", @"cpu detail view label") expanded:NO];
 	[_animatingOutlineView addView:_memoryMapView withImage:[NSImage imageNamed:@"MemoryMap16x16"] label:NSLocalizedString(@"Memory Map", @"memory map detail view label") expanded:NO];
 	[_animatingOutlineView addView:_interruptsView withImage:[NSImage imageNamed:@"Interrupts16x16"] label:NSLocalizedString(@"Interrupts", @"interrupts detail view label") expanded:NO];
 	[_animatingOutlineView addView:_displayView withImage:[NSImage imageNamed:@"Display16x16"] label:NSLocalizedString(@"Display", @"display detail view label") expanded:NO];

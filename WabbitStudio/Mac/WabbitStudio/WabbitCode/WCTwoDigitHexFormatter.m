@@ -11,7 +11,7 @@
 
 @implementation WCTwoDigitHexFormatter
 
-- (NSString *)stringForObjectValue:(id)object {
+- (NSString *)stringForObjectValue:(id)object {	
 	if ([object isKindOfClass:[NSNumber class]])
 		return [NSString stringWithFormat:@"%02x",[object unsignedShortValue]];
 	return [NSString stringWithFormat:@"%02x",[object integerValue]];
@@ -21,11 +21,15 @@
 	NSString *string = [self stringForObjectValue:obj];
 	NSMutableAttributedString *attributedString = [[[NSMutableAttributedString alloc] initWithString:string attributes:attrs] autorelease];
 	
-	if ([self shouldDrawWithProgramCounterAttributes])
+	if ([self shouldDrawWithProgramCounterAttributes]) {
 		[attributedString addAttribute:NSForegroundColorAttributeName value:[NSColor redColor] range:NSMakeRange(0, [attributedString length])];
-	
+		
+		if ([self cellIsHighlighted])
+			[attributedString applyFontTraits:NSBoldFontMask range:NSMakeRange(0, [attributedString length])];
+	}
 	return attributedString;
 }
 
 @synthesize shouldDrawWithProgramCounterAttributes=_shouldDrawWithProgramCounterAttributes;
+@synthesize cellIsHighlighted=_cellIsHighlighted;
 @end

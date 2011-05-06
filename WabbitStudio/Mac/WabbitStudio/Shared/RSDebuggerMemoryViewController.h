@@ -9,24 +9,20 @@
 #import <AppKit/NSViewController.h>
 
 
-@class RSCalculator;
+@class RSCalculator,RSDebuggerMemoryTableView;
 
 @interface RSDebuggerMemoryViewController : NSViewController <NSTableViewDataSource,NSTableViewDelegate> {
 @private
-	IBOutlet NSTableView *_memoryTableView;
+	IBOutlet RSDebuggerMemoryTableView *_memoryTableView;
 	
     RSCalculator *_calculator;
-	uint16_t _startAddress;
 	NSUInteger _numberOfRows;
 }
-@property (retain,nonatomic) RSCalculator *calculator;
-@property (assign,nonatomic) uint16_t startAddress;
-@property (assign,nonatomic) NSUInteger numberOfRows;
+@property (readonly,nonatomic) RSCalculator *calculator;
+@property (readonly,nonatomic) RSDebuggerMemoryTableView *memoryTableView;
 
 - (id)initWithCalculator:(RSCalculator *)calculator;
 
 - (void)scrollToAddress:(uint16_t)address;
-
-- (IBAction)gotoAddress:(id)sender;
 
 @end

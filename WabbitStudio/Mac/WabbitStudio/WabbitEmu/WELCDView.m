@@ -155,7 +155,7 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 	if ([self isWidescreen]) {
 		for (row=0; row<kLCDHeight; row++) {
 			for (col=0; col<kLCDWidescreenWidth; col++) {
-				u_int8_t val = 255-lcd[row*128+col];
+				u_int8_t val = 255-lcd[row*kLCDWidescreenWidth+col];
 				
 				_wbuffer[row][col][2] = (0x9E*val)/255;
 				_wbuffer[row][col][1] = (0xAB*val)/255;
@@ -167,7 +167,7 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 	else {
 		for (row=0; row<kLCDHeight; row++) {
 			for (col=0; col<kLCDWidth; col++) {
-				u_char val = 255-lcd[(row)*128+(col)];
+				u_char val = 255-lcd[(row)*kLCDWidescreenWidth+(col)];
 				
 				_buffer[row][col][2] = (0x9E*val)/255;
 				_buffer[row][col][1] = (0xAB*val)/255;
@@ -281,23 +281,17 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 
 @dynamic LCDBitmap;
 - (NSBitmapImageRep *)LCDBitmap {
-	NSUInteger width = ([self isWidescreen])?256:192, height = 128;
+	NSUInteger width = ([self isWidescreen])?kLCDDisplayWidescreenWidth:kLCDDisplayWidth, height = kLCDDisplayHeight;
 	NSBitmapImageRep *bitmap = [[[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL pixelsWide:width pixelsHigh:height bitsPerSample:8 samplesPerPixel:3 hasAlpha:NO isPlanar:NO colorSpaceName:NSCalibratedRGBColorSpace bytesPerRow:0 bitsPerPixel:0] autorelease];
 	
+	u_int8_t *lcd = LCD_image([[self calculator] calc]->cpu.pio.lcd);
 	u_int16_t row, col;
 	for (row=0; row<height; row++) {
 		for (col=0; col<width; col++) {
+			u_int8_t val = 255-lcd[(row/2)*kLCDWidescreenWidth+(col/2)];
 			NSUInteger pixel[3];
-			if ([self isWidescreen]) {
-				pixel[2] = _wbuffer[row/2][col/2][2];
-				pixel[1] = _wbuffer[row/2][col/2][1];
-				pixel[0] = _wbuffer[row/2][col/2][0];
-			}
-			else {
-				pixel[2] = _buffer[row/2][col/2][2];
-				pixel[1] = _buffer[row/2][col/2][1];
-				pixel[0] = _buffer[row/2][col/2][0];
-			}
+			
+			pixel[0] = pixel[1] = pixel[2] = val;
 			
 			[bitmap setPixel:pixel atX:col y:row];
 		}

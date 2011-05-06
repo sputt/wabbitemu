@@ -6,10 +6,10 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "RSDebuggerMemoryHeaderView.h"
+#import "RSDebuggerMemoryTableHeaderView.h"
 
 
-@implementation RSDebuggerMemoryHeaderView
+@implementation RSDebuggerMemoryTableHeaderView
 
 - (NSRect)headerRectOfColumn:(NSInteger)index {
 	if (index == 0)

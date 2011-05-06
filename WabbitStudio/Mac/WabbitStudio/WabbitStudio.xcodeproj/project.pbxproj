@@ -180,6 +180,18 @@
 		07880B6D1341953B00E07231 /* WCBuildDefinesArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B6C1341953800E07231 /* WCBuildDefinesArrayController.m */; };
 		07880B761341B84700E07231 /* WCIncludeDirectory.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B751341B84500E07231 /* WCIncludeDirectory.m */; };
 		07880B791341B8F900E07231 /* WCAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B781341B8F600E07231 /* WCAlias.m */; };
+		0789496413732DD600B671C1 /* WCVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */; };
+		078949681373330700B671C1 /* RSDebuggerMemoryTableColumn.m in Sources */ = {isa = PBXBuildFile; fileRef = 078949671373330600B671C1 /* RSDebuggerMemoryTableColumn.m */; };
+		078949691373330700B671C1 /* RSDebuggerMemoryTableColumn.m in Sources */ = {isa = PBXBuildFile; fileRef = 078949671373330600B671C1 /* RSDebuggerMemoryTableColumn.m */; };
+		0789496C137337B200B671C1 /* RSDebuggerDisassemblyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0789496B137337B100B671C1 /* RSDebuggerDisassemblyViewController.m */; };
+		0789496D137337B200B671C1 /* RSDebuggerDisassemblyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0789496B137337B100B671C1 /* RSDebuggerDisassemblyViewController.m */; };
+		07894970137338EA00B671C1 /* RSDebuggerDisassemblyView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0789496E137338EA00B671C1 /* RSDebuggerDisassemblyView.xib */; };
+		07894971137338EA00B671C1 /* RSDebuggerDisassemblyView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 0789496E137338EA00B671C1 /* RSDebuggerDisassemblyView.xib */; };
+		078949741373433C00B671C1 /* WCNoLimitHexFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 078949731373433B00B671C1 /* WCNoLimitHexFormatter.m */; };
+		078949751373433C00B671C1 /* WCNoLimitHexFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 078949731373433B00B671C1 /* WCNoLimitHexFormatter.m */; };
+		0789497813734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0789497713734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m */; };
+		0789497913734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0789497713734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m */; };
+		078AAD8A1373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 078AAD891373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m */; };
 		07905DA91367990B0079A404 /* NSBezierPath+MCAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DA81367990B0079A404 /* NSBezierPath+MCAdditions.m */; };
 		07905DCD1367BFD60079A404 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AB11332AB7700744B98 /* Cocoa.framework */; };
 		07905DD31367BFD60079A404 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 07905DD11367BFD60079A404 /* InfoPlist.strings */; };
@@ -248,7 +260,6 @@
 		07AE898A136D5BB40014F788 /* Step.opacity in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8988136D5BB40014F788 /* Step.opacity */; };
 		07AE898B136D5BB40014F788 /* Step.pdf in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8989136D5BB40014F788 /* Step.pdf */; };
 		07AE898D136D6C8A0014F788 /* disassemble.c in Sources */ = {isa = PBXBuildFile; fileRef = 07905E1B1367C9930079A404 /* disassemble.c */; };
-		07AE898F136D6DDD0014F788 /* StepOver32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE898E136D6DDD0014F788 /* StepOver32x32.png */; };
 		07AE8991136D73C60014F788 /* Step16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8990136D73C60014F788 /* Step16x16.png */; };
 		07AE8993136D74180014F788 /* StepOver16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8992136D74180014F788 /* StepOver16x16.png */; };
 		07AE8995136D742D0014F788 /* StepOut16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8994136D742D0014F788 /* StepOut16x16.png */; };
@@ -265,6 +276,17 @@
 		07AF6EA8133B291400A2D188 /* Editor.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AF6EA7133B291400A2D188 /* Editor.png */; };
 		07AF6EAC133B2A8900A2D188 /* Debugging.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AF6EAB133B2A8900A2D188 /* Debugging.png */; };
 		07AF6EB0133B343700A2D188 /* sample_assembly.z80 in Resources */ = {isa = PBXBuildFile; fileRef = 07AF6EAF133B342300A2D188 /* sample_assembly.z80 */; };
+		07B14621137287EC002157CF /* StepOver32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B14620137287EC002157CF /* StepOver32x32.png */; };
+		07B14622137287EC002157CF /* StepOver32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B14620137287EC002157CF /* StepOver32x32.png */; };
+		07B146251372880C002157CF /* Step32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B146241372880C002157CF /* Step32x32.png */; };
+		07B146261372880C002157CF /* Step32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B146241372880C002157CF /* Step32x32.png */; };
+		07B14629137289D2002157CF /* RSDebuggerStackViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B14628137289D2002157CF /* RSDebuggerStackViewController.m */; };
+		07B1462A137289D2002157CF /* RSDebuggerStackViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B14628137289D2002157CF /* RSDebuggerStackViewController.m */; };
+		07B1462B137293D3002157CF /* StepOut16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8994136D742D0014F788 /* StepOut16x16.png */; };
+		07B1462C137293D3002157CF /* StepOver16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8992136D74180014F788 /* StepOver16x16.png */; };
+		07B1462D137293D3002157CF /* Step16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 07AE8990136D73C60014F788 /* Step16x16.png */; };
+		07B1463013729559002157CF /* CPU16x16.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 07B1462F13729559002157CF /* CPU16x16.tiff */; };
+		07B1463113729559002157CF /* CPU16x16.tiff in Resources */ = {isa = PBXBuildFile; fileRef = 07B1462F13729559002157CF /* CPU16x16.tiff */; };
 		07B4556D133DAF5200521353 /* WCBuildTargetsInfoSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07B4556B133DAF5200521353 /* WCBuildTargetsInfoSheet.xib */; };
 		07B45579133DC76600521353 /* WCBuildMessage.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B45578133DC76600521353 /* WCBuildMessage.m */; };
 		07B5491E135CE7B200B34C46 /* WCBreakpoint.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B5491D135CE7B100B34C46 /* WCBreakpoint.m */; };
@@ -309,8 +331,8 @@
 		07BD0D581371E74500F04712 /* RSDebuggerMemoryTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D561371E74500F04712 /* RSDebuggerMemoryTableView.m */; };
 		07BD0D5B1371E9ED00F04712 /* RSDebuggerMemoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07BD0D591371E9ED00F04712 /* RSDebuggerMemoryView.xib */; };
 		07BD0D5C1371E9ED00F04712 /* RSDebuggerMemoryView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07BD0D591371E9ED00F04712 /* RSDebuggerMemoryView.xib */; };
-		07BD0D5F1371ECA900F04712 /* RSDebuggerMemoryHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryHeaderView.m */; };
-		07BD0D601371ECA900F04712 /* RSDebuggerMemoryHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryHeaderView.m */; };
+		07BD0D5F1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m */; };
+		07BD0D601371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m */; };
 		07BD0D6313722EB800F04712 /* WCTwoDigitHexFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D6213722EB800F04712 /* WCTwoDigitHexFormatter.m */; };
 		07BD0D6413722EB800F04712 /* WCTwoDigitHexFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D6213722EB800F04712 /* WCTwoDigitHexFormatter.m */; };
 		07BD0D67137259DA00F04712 /* RSDebuggerMemoryGotoAddressSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D66137259D900F04712 /* RSDebuggerMemoryGotoAddressSheetController.m */; };
@@ -701,6 +723,17 @@
 		07880B751341B84500E07231 /* WCIncludeDirectory.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCIncludeDirectory.m; sourceTree = "<group>"; };
 		07880B771341B8F300E07231 /* WCAlias.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCAlias.h; sourceTree = "<group>"; };
 		07880B781341B8F600E07231 /* WCAlias.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCAlias.m; sourceTree = "<group>"; };
+		078949661373330600B671C1 /* RSDebuggerMemoryTableColumn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerMemoryTableColumn.h; sourceTree = "<group>"; };
+		078949671373330600B671C1 /* RSDebuggerMemoryTableColumn.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerMemoryTableColumn.m; sourceTree = "<group>"; };
+		0789496A137337B100B671C1 /* RSDebuggerDisassemblyViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerDisassemblyViewController.h; sourceTree = "<group>"; };
+		0789496B137337B100B671C1 /* RSDebuggerDisassemblyViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerDisassemblyViewController.m; sourceTree = "<group>"; };
+		0789496F137338EA00B671C1 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = RSDebuggerDisassemblyView.xib; sourceTree = "<group>"; };
+		078949721373433B00B671C1 /* WCNoLimitHexFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCNoLimitHexFormatter.h; sourceTree = "<group>"; };
+		078949731373433B00B671C1 /* WCNoLimitHexFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCNoLimitHexFormatter.m; sourceTree = "<group>"; };
+		0789497613734BAA00B671C1 /* RSDebuggerDisassemblyTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerDisassemblyTableView.h; sourceTree = "<group>"; };
+		0789497713734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerDisassemblyTableView.m; sourceTree = "<group>"; };
+		078AAD881373788000B0421D /* RSDebuggerDisassemblyTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerDisassemblyTextFieldCell.h; sourceTree = "<group>"; };
+		078AAD891373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerDisassemblyTextFieldCell.m; sourceTree = "<group>"; };
 		07905DA71367990B0079A404 /* NSBezierPath+MCAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBezierPath+MCAdditions.h"; sourceTree = "<group>"; };
 		07905DA81367990B0079A404 /* NSBezierPath+MCAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBezierPath+MCAdditions.m"; sourceTree = "<group>"; };
 		07905DCB1367BFD60079A404 /* WabbitEmu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WabbitEmu.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -825,7 +858,6 @@
 		07AC0CFA1339A8960060F786 /* WCTextStorage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCTextStorage.m; sourceTree = "<group>"; };
 		07AE8988136D5BB40014F788 /* Step.opacity */ = {isa = PBXFileReference; lastKnownFileType = file; path = Step.opacity; sourceTree = "<group>"; };
 		07AE8989136D5BB40014F788 /* Step.pdf */ = {isa = PBXFileReference; lastKnownFileType = image.pdf; path = Step.pdf; sourceTree = "<group>"; };
-		07AE898E136D6DDD0014F788 /* StepOver32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StepOver32x32.png; sourceTree = "<group>"; };
 		07AE8990136D73C60014F788 /* Step16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Step16x16.png; sourceTree = "<group>"; };
 		07AE8992136D74180014F788 /* StepOver16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StepOver16x16.png; sourceTree = "<group>"; };
 		07AE8994136D742D0014F788 /* StepOut16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StepOut16x16.png; sourceTree = "<group>"; };
@@ -847,6 +879,11 @@
 		07AF6EA7133B291400A2D188 /* Editor.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Editor.png; sourceTree = "<group>"; };
 		07AF6EAB133B2A8900A2D188 /* Debugging.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Debugging.png; sourceTree = "<group>"; };
 		07AF6EAF133B342300A2D188 /* sample_assembly.z80 */ = {isa = PBXFileReference; lastKnownFileType = text; path = sample_assembly.z80; sourceTree = "<group>"; };
+		07B14620137287EC002157CF /* StepOver32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = StepOver32x32.png; sourceTree = "<group>"; };
+		07B146241372880C002157CF /* Step32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Step32x32.png; sourceTree = "<group>"; };
+		07B14627137289D2002157CF /* RSDebuggerStackViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerStackViewController.h; sourceTree = "<group>"; };
+		07B14628137289D2002157CF /* RSDebuggerStackViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerStackViewController.m; sourceTree = "<group>"; };
+		07B1462F13729559002157CF /* CPU16x16.tiff */ = {isa = PBXFileReference; lastKnownFileType = image.tiff; path = CPU16x16.tiff; sourceTree = "<group>"; };
 		07B4556C133DAF5200521353 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCBuildTargetsInfoSheet.xib; sourceTree = "<group>"; };
 		07B45577133DC76500521353 /* WCBuildMessage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildMessage.h; sourceTree = "<group>"; };
 		07B45578133DC76600521353 /* WCBuildMessage.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBuildMessage.m; sourceTree = "<group>"; };
@@ -882,8 +919,8 @@
 		07BD0D551371E74500F04712 /* RSDebuggerMemoryTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerMemoryTableView.h; sourceTree = "<group>"; };
 		07BD0D561371E74500F04712 /* RSDebuggerMemoryTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerMemoryTableView.m; sourceTree = "<group>"; };
 		07BD0D5A1371E9ED00F04712 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = RSDebuggerMemoryView.xib; sourceTree = "<group>"; };
-		07BD0D5D1371ECA900F04712 /* RSDebuggerMemoryHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerMemoryHeaderView.h; sourceTree = "<group>"; };
-		07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerMemoryHeaderView.m; sourceTree = "<group>"; };
+		07BD0D5D1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerMemoryTableHeaderView.h; sourceTree = "<group>"; };
+		07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerMemoryTableHeaderView.m; sourceTree = "<group>"; };
 		07BD0D6113722EB700F04712 /* WCTwoDigitHexFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTwoDigitHexFormatter.h; sourceTree = "<group>"; };
 		07BD0D6213722EB800F04712 /* WCTwoDigitHexFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCTwoDigitHexFormatter.m; sourceTree = "<group>"; };
 		07BD0D65137259D900F04712 /* RSDebuggerMemoryGotoAddressSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerMemoryGotoAddressSheetController.h; sourceTree = "<group>"; };
@@ -1025,6 +1062,9 @@
 		071B845E136F967F0046E023 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				07B1462F13729559002157CF /* CPU16x16.tiff */,
+				07B146241372880C002157CF /* Step32x32.png */,
+				07B14620137287EC002157CF /* StepOver32x32.png */,
 				07BD0D4E1371E31D00F04712 /* Interrupts16x16.png */,
 				07BD0D4B1371E28800F04712 /* MemoryMap16x16.png */,
 				07BD0D481371E05500F04712 /* Display16x16.png */,
@@ -1124,7 +1164,6 @@
 				07AE8994136D742D0014F788 /* StepOut16x16.png */,
 				07AE8992136D74180014F788 /* StepOver16x16.png */,
 				07AE8990136D73C60014F788 /* Step16x16.png */,
-				07AE898E136D6DDD0014F788 /* StepOver32x32.png */,
 				07AE8988136D5BB40014F788 /* Step.opacity */,
 				07AE8989136D5BB40014F788 /* Step.pdf */,
 				0755A71D136C0D8F00B7C8E4 /* WarningMultiple.opacity */,
@@ -1386,6 +1425,8 @@
 				07D113D3136D04C200E3814E /* WCApplicationController.m */,
 				07BD0D6113722EB700F04712 /* WCTwoDigitHexFormatter.h */,
 				07BD0D6213722EB800F04712 /* WCTwoDigitHexFormatter.m */,
+				078949721373433B00B671C1 /* WCNoLimitHexFormatter.h */,
+				078949731373433B00B671C1 /* WCNoLimitHexFormatter.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1681,10 +1722,20 @@
 				07BD0D521371E4BE00F04712 /* RSDebuggerMemoryViewController.m */,
 				07BD0D551371E74500F04712 /* RSDebuggerMemoryTableView.h */,
 				07BD0D561371E74500F04712 /* RSDebuggerMemoryTableView.m */,
-				07BD0D5D1371ECA900F04712 /* RSDebuggerMemoryHeaderView.h */,
-				07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryHeaderView.m */,
+				07BD0D5D1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.h */,
+				07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m */,
 				07BD0D65137259D900F04712 /* RSDebuggerMemoryGotoAddressSheetController.h */,
 				07BD0D66137259D900F04712 /* RSDebuggerMemoryGotoAddressSheetController.m */,
+				07B14627137289D2002157CF /* RSDebuggerStackViewController.h */,
+				07B14628137289D2002157CF /* RSDebuggerStackViewController.m */,
+				078949661373330600B671C1 /* RSDebuggerMemoryTableColumn.h */,
+				078949671373330600B671C1 /* RSDebuggerMemoryTableColumn.m */,
+				0789496A137337B100B671C1 /* RSDebuggerDisassemblyViewController.h */,
+				0789496B137337B100B671C1 /* RSDebuggerDisassemblyViewController.m */,
+				0789497613734BAA00B671C1 /* RSDebuggerDisassemblyTableView.h */,
+				0789497713734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m */,
+				078AAD881373788000B0421D /* RSDebuggerDisassemblyTextFieldCell.h */,
+				078AAD891373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1723,6 +1774,7 @@
 				07E657601370D94400C8536B /* RSDebuggerDetailsView.xib */,
 				07BD0D591371E9ED00F04712 /* RSDebuggerMemoryView.xib */,
 				07BD0D6913725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib */,
+				0789496E137338EA00B671C1 /* RSDebuggerDisassemblyView.xib */,
 			);
 			name = Xibs;
 			path = en.lproj;
@@ -1931,7 +1983,6 @@
 				07D113E9136D1BAC00E3814E /* WETransferSheet.xib in Resources */,
 				07AE898A136D5BB40014F788 /* Step.opacity in Resources */,
 				07AE898B136D5BB40014F788 /* Step.pdf in Resources */,
-				07AE898F136D6DDD0014F788 /* StepOver32x32.png in Resources */,
 				07AE8991136D73C60014F788 /* Step16x16.png in Resources */,
 				07AE8993136D74180014F788 /* StepOver16x16.png in Resources */,
 				07AE8995136D742D0014F788 /* StepOut16x16.png in Resources */,
@@ -1963,6 +2014,10 @@
 				07BD0D4F1371E31D00F04712 /* Interrupts16x16.png in Resources */,
 				07BD0D5B1371E9ED00F04712 /* RSDebuggerMemoryView.xib in Resources */,
 				07BD0D6B13725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib in Resources */,
+				07B14621137287EC002157CF /* StepOver32x32.png in Resources */,
+				07B146251372880C002157CF /* Step32x32.png in Resources */,
+				07B1463013729559002157CF /* CPU16x16.tiff in Resources */,
+				07894970137338EA00B671C1 /* RSDebuggerDisassemblyView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2005,6 +2060,13 @@
 				07BD0D501371E31D00F04712 /* Interrupts16x16.png in Resources */,
 				07BD0D5C1371E9ED00F04712 /* RSDebuggerMemoryView.xib in Resources */,
 				07BD0D6C13725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib in Resources */,
+				07B14622137287EC002157CF /* StepOver32x32.png in Resources */,
+				07B146261372880C002157CF /* Step32x32.png in Resources */,
+				07B1462B137293D3002157CF /* StepOut16x16.png in Resources */,
+				07B1462C137293D3002157CF /* StepOver16x16.png in Resources */,
+				07B1462D137293D3002157CF /* Step16x16.png in Resources */,
+				07B1463113729559002157CF /* CPU16x16.tiff in Resources */,
+				07894971137338EA00B671C1 /* RSDebuggerDisassemblyView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2188,9 +2250,14 @@
 				07E6575E1370D81400C8536B /* NSViewController+RSExtensions.m in Sources */,
 				07BD0D531371E4BE00F04712 /* RSDebuggerMemoryViewController.m in Sources */,
 				07BD0D571371E74500F04712 /* RSDebuggerMemoryTableView.m in Sources */,
-				07BD0D5F1371ECA900F04712 /* RSDebuggerMemoryHeaderView.m in Sources */,
+				07BD0D5F1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m in Sources */,
 				07BD0D6313722EB800F04712 /* WCTwoDigitHexFormatter.m in Sources */,
 				07BD0D67137259DA00F04712 /* RSDebuggerMemoryGotoAddressSheetController.m in Sources */,
+				07B14629137289D2002157CF /* RSDebuggerStackViewController.m in Sources */,
+				078949681373330700B671C1 /* RSDebuggerMemoryTableColumn.m in Sources */,
+				0789496C137337B200B671C1 /* RSDebuggerDisassemblyViewController.m in Sources */,
+				078949741373433C00B671C1 /* WCNoLimitHexFormatter.m in Sources */,
+				0789497813734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2253,9 +2320,16 @@
 				07C40FC71371040000667F54 /* RSNavigatorControl.m in Sources */,
 				07BD0D541371E4BE00F04712 /* RSDebuggerMemoryViewController.m in Sources */,
 				07BD0D581371E74500F04712 /* RSDebuggerMemoryTableView.m in Sources */,
-				07BD0D601371ECA900F04712 /* RSDebuggerMemoryHeaderView.m in Sources */,
+				07BD0D601371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m in Sources */,
 				07BD0D6413722EB800F04712 /* WCTwoDigitHexFormatter.m in Sources */,
 				07BD0D68137259DA00F04712 /* RSDebuggerMemoryGotoAddressSheetController.m in Sources */,
+				07B1462A137289D2002157CF /* RSDebuggerStackViewController.m in Sources */,
+				0789496413732DD600B671C1 /* WCVerticallyCenteredTextFieldCell.m in Sources */,
+				078949691373330700B671C1 /* RSDebuggerMemoryTableColumn.m in Sources */,
+				0789496D137337B200B671C1 /* RSDebuggerDisassemblyViewController.m in Sources */,
+				078949751373433C00B671C1 /* WCNoLimitHexFormatter.m in Sources */,
+				0789497913734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m in Sources */,
+				078AAD8A1373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2395,6 +2469,14 @@
 				07880B6013413BD200E07231 /* en */,
 			);
 			name = WCFindBarView.xib;
+			sourceTree = "<group>";
+		};
+		0789496E137338EA00B671C1 /* RSDebuggerDisassemblyView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				0789496F137338EA00B671C1 /* en */,
+			);
+			name = RSDebuggerDisassemblyView.xib;
 			sourceTree = "<group>";
 		};
 		07905DD11367BFD60079A404 /* InfoPlist.strings */ = {
