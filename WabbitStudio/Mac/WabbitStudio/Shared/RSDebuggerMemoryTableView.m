@@ -8,10 +8,7 @@
 
 #import "RSDebuggerMemoryTableView.h"
 #import "RSDebuggerMemoryTableHeaderView.h"
-#import "WCTwoDigitHexFormatter.h"
-#import "RSDebuggerMemoryViewController.h"
-#import "RSDebuggerMemoryGotoAddressSheetController.h"
-#import "WCVerticallyCenteredTextFieldCell.h"
+#import "RSDebuggerGotoAddressSheetController.h"
 
 
 @implementation RSDebuggerMemoryTableView
@@ -22,30 +19,11 @@
 	
 	[self setHeaderView:[[[RSDebuggerMemoryTableHeaderView alloc] init] autorelease]];
 	
-	for (NSTableColumn *tableColumn in [self tableColumns]) {
-		//[tableColumn setDataCell:[[[WCVerticallyCenteredTextFieldCell alloc] init] autorelease]];
-		//[[tableColumn dataCell] setControlSize:NSSmallControlSize];
-		//[[tableColumn dataCell] setFormatter:[[[WCHexFormatter alloc] init] autorelease]];
-		//[[tableColumn dataCell] setFont:[NSFont fontWithName:@"Menlo" size:[NSFont systemFontSizeForControlSize:[[tableColumn dataCell] controlSize]]]];
-	}
-	
 	return self;
 }
 
-- (void)dealloc {
-    [super dealloc];
-}
-
-- (void)addTableColumn:(NSTableColumn *)tableColumn {
-	//[tableColumn setDataCell:[[[WCVerticallyCenteredTextFieldCell alloc] init] autorelease]];
-	//[[tableColumn dataCell] setControlSize:NSSmallControlSize];
-	//[[tableColumn dataCell] setFormatter:[[[WCTwoDigitHexFormatter alloc] init] autorelease]];
-	//[[tableColumn dataCell] setFont:[NSFont fontWithName:@"Menlo" size:[NSFont systemFontSizeForControlSize:[[tableColumn dataCell] controlSize]]]];
-	[super addTableColumn:tableColumn];
-}
-
 - (IBAction)gotoAddress:(id)sender; {
-	[RSDebuggerMemoryGotoAddressSheetController presentGotoAddressSheetForTableViewController:_tableViewController];
+	[RSDebuggerGotoAddressSheetController presentGotoAddressSheetForGotoAddressController:_gotoAddressController];
 }
 
 @end

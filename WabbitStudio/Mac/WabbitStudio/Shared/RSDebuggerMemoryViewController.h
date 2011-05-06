@@ -7,11 +7,12 @@
 //
 
 #import <AppKit/NSViewController.h>
+#import "RSGotoAddressControllerProtocol.h"
 
 
 @class RSCalculator,RSDebuggerMemoryTableView;
 
-@interface RSDebuggerMemoryViewController : NSViewController <NSTableViewDataSource,NSTableViewDelegate> {
+@interface RSDebuggerMemoryViewController : NSViewController <NSTableViewDataSource,NSTableViewDelegate,RSGotoAddressController> {
 @private
 	IBOutlet RSDebuggerMemoryTableView *_memoryTableView;
 	

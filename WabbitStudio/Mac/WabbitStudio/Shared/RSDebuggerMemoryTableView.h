@@ -7,13 +7,13 @@
 //
 
 #import <AppKit/NSTableView.h>
+#import "RSGotoAddressControllerProtocol.h"
 
 
-@class RSDebuggerMemoryViewController;
 
 @interface RSDebuggerMemoryTableView : NSTableView {
 @private
-    IBOutlet RSDebuggerMemoryViewController *_tableViewController;
+    IBOutlet id <RSGotoAddressController> _gotoAddressController;
 }
 
 - (IBAction)gotoAddress:(id)sender;
