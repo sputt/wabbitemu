@@ -208,9 +208,7 @@
 	}
 	
 	[[NSCursor arrowCursor] set];
-	
 	[pool drain];
-	 
 }
 
 - (void)resetCursorRects {
@@ -283,7 +281,7 @@
 						currentTextAttributes = [NSDictionary dictionaryWithObjectsAndKeys:[self font],NSFontAttributeName,[NSColor textColor],NSForegroundColorAttributeName, nil];
 					
 					NSRect bRect = NSMakeRect(NSMinX(bounds), ypos, NSWidth(bounds), NSHeight(rects[0]));
-					bRect = NSInsetRect(bRect, 0.5, 1.0);
+					bRect = NSInsetRect(bRect, 0.5, 0.0);
 					
 					[[WCGeneralPerformer sharedPerformer] drawBreakpoint:breakpoint inRect:bRect];
 				}
