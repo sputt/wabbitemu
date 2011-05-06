@@ -26,7 +26,7 @@
 #define WCEnterKeyCode 76
 #define WCFunction6KeyCode 97
 
-#define WEApplicationDelegate (WEApplicationDelegate *)[[NSApplication sharedApplication] delegate]
+#define WESharedApplicationDelegate (WESharedApplicationDelegate *)[[NSApplication sharedApplication] delegate]
 
 // returns a rect with the size of rect1 centered inside rect2
 static inline NSRect WCCenteredRect(NSRect rect1, NSRect rect2) {
