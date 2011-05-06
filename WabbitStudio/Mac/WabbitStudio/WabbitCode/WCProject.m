@@ -50,6 +50,7 @@
 #import "WETransferSheetController.h"
 #import "RSCalculator.h"
 #import "RSDebuggerDetailsViewController.h"
+#import "RSDebuggerMemoryViewController.h"
 
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
@@ -145,6 +146,9 @@ static NSImage *_appIcon = nil;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[_rightNavigatorControl setDataSource:nil];
+	[_debuggerMemoryViewController release];
+	[_debuggerDetailsViewController release];
 	[_calculator removeObserver:self forKeyPath:@"programCounter"];
 	[_calculator release];
 	[_romOrSavestateAlias release];
@@ -197,6 +201,8 @@ static NSImage *_appIcon = nil;
 	[_debuggerButtonBar setIsResizable:NO];
 	
 	[self setCurrentViewController:[self projectFilesOutlineViewController]];
+	
+	[_rightNavigatorControl setSelectedItemIndex:0];
 	
 	[self _applyProjectSettings];
 	
@@ -335,6 +341,13 @@ static NSImage *_appIcon = nil;
 }
 #pragma mark -
 #pragma mark *** Protocol Overrides ***
+#pragma mark NSKeyValueObserving
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if ([keyPath isEqualToString:@"programCounter"] && context == self)
+		[self jumpToProgramCounter];
+	else
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+}
 #pragma mark NSToolbarDelegate
 
 - (NSArray *)toolbarAllowedItemIdentifiers:(NSToolbar *)toolbar {
@@ -525,7 +538,7 @@ static NSImage *_appIcon = nil;
 - (NSString *)tabView:(NSTabView *)tabView toolTipForTabViewItem:(NSTabViewItem *)tabViewItem; {
 	return [(WCFile *)[tabViewItem identifier] absolutePathForDisplay];
 }
-#pragma mark WCTabViewContextProtocol
+#pragma mark WCTabViewContext
 - (NSWindow *)tabWindow; {
 	return [[[self windowControllers] lastObject] window];
 }
@@ -543,16 +556,9 @@ static NSImage *_appIcon = nil;
 	}
 	return retval;
 }
-#pragma mark RSCalculatorProtocol
+#pragma mark RSCalculatorOwner
 
 - (void)handleBreakpointCallback; {
-	if (_debuggerDetailsViewController == nil) {
-		_debuggerDetailsViewController = [[RSDebuggerDetailsViewController alloc] initWithCalculator:[self calculator]];
-		
-		[[_debuggerDetailsViewController view] setFrameSize:[_debuggerDetailsView frame].size];
-		[_debuggerDetailsView addSubview:[_debuggerDetailsViewController view]];
-	}
-	
 	[self setIsDebugging:YES];
 	[self jumpToProgramCounter];
 }
@@ -586,6 +592,45 @@ static NSImage *_appIcon = nil;
 	
 	[[self debuggerWindowController] showWindow:nil];
 }
+#pragma mark RSNavigatorControlDataSource
+
+- (NSUInteger)numberOfItemsInNavigatorControl:(RSNavigatorControl *)navigatorControl {
+	if (navigatorControl == _rightNavigatorControl) {
+		return 2;
+	}
+	return 0;
+}
+
+- (NSSize)imageSizeForNavigatorControl:(RSNavigatorControl *)navigatorControl {
+	return WCSmallSize;
+}
+
+- (CGFloat)itemWidthForNavigatorControl:(RSNavigatorControl *)navigatorControl {
+	return (WCSmallSize.width*2);
+}
+
+- (NSImage *)navigatorControl:(RSNavigatorControl *)navigatorControl imageForItemAtIndex:(NSUInteger)itemIndex {
+	return [NSImage imageNamed:NSImageNameFolderSmart];
+}
+
+- (NSView *)navigatorControl:(RSNavigatorControl *)navigatorControl viewForItemAtIndex:(NSUInteger)itemIndex {
+	if (navigatorControl == _rightNavigatorControl) {
+		if (itemIndex == 0) {
+			if (_debuggerDetailsViewController == nil)
+				_debuggerDetailsViewController = [[RSDebuggerDetailsViewController alloc] initWithCalculator:[self calculator]];
+			
+			return [_debuggerDetailsViewController view];
+		}
+		else {
+			if (_debuggerMemoryViewController == nil)
+				_debuggerMemoryViewController = [[RSDebuggerMemoryViewController alloc] initWithCalculator:[self calculator]];
+			
+			return [_debuggerMemoryViewController view];
+		}
+	}
+	return nil;
+}
+
 #pragma mark -
 #pragma mark *** Public Methods ***
 - (NSArray *)symbolsForSymbolName:(NSString *)name; {

@@ -30,8 +30,8 @@
 	NSUInteger _selectedItemIndex;
 	NSUInteger _pressedItemIndex;
 }
-@property (assign,nonatomic) id <RSNavigatorDataSource> dataSource;
+@property (assign,nonatomic) IBOutlet id <RSNavigatorDataSource> dataSource;
+@property (assign,nonatomic) IBOutlet NSView *swapView;
 @property (assign,nonatomic) NSUInteger selectedItemIndex;
 @property (assign,nonatomic) NSUInteger pressedItemIndex;
-@property (assign,nonatomic) NSView *swapView;
 @end

@@ -11,6 +11,7 @@
 #import "WCJumpToObjectProtocol.h"
 #import "RSCalculatorOwnerProtocol.h"
 #import "WCDefines.h"
+#import "RSNavigatorControl.h"
 
 
 extern NSString *const kWCProjectFileKey;
@@ -38,9 +39,9 @@ extern NSString *const kWCProjectSettingsFileSettingsDictionaryKey;
 extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey;
 extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 
-@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint,WCAddFilesToProjectViewController,WCAlias,WCDebuggerWindowController,RSCalculator,RSDebuggerDetailsViewController;
+@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint,WCAddFilesToProjectViewController,WCAlias,WCDebuggerWindowController,RSCalculator,RSDebuggerDetailsViewController,RSDebuggerMemoryViewController;
 
-@interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext,RSCalculatorOwner> {
+@interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext,RSCalculatorOwner,RSNavigatorDataSource> {
 @private
 	IBOutlet PSMTabBarControl *_tabBarControl;
 	IBOutlet BWAnchoredButtonBar *_rightButtonBar;
@@ -49,7 +50,7 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 	IBOutlet NSSplitView *_splitView;
 	IBOutlet NSView *_swapView;
 	IBOutlet WCProjectNavView *_navBarControl;
-	IBOutlet NSView *_debuggerDetailsView;
+	IBOutlet RSNavigatorControl *_rightNavigatorControl;
 	
 	WCProjectFile *_projectFile; // the root of our file outline view
 	NSMapTable *_filesToFileViewControllers; // maps files to sets of file view controllers
@@ -77,6 +78,7 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 	WCFile *_programCounterFile;
 	NSUInteger _programCounterLineNumber;
 	RSDebuggerDetailsViewController *_debuggerDetailsViewController;
+	RSDebuggerMemoryViewController *_debuggerMemoryViewController;
 	
 	NSMutableDictionary *_projectSettings; // we keep this updated when things change in the project and write it out
 										   // with each save as <username>.wcodesettings

@@ -109,13 +109,13 @@
 		NSImage *imageForItem = [[self dataSource] navigatorControl:self imageForItemAtIndex:itemIndex];
 		
 		if ([self selectedItemIndex] == itemIndex) {
-			[[NSGradient unifiedPressedGradient] drawInRect:rectForItem angle:90.0];
+			[[NSGradient unifiedSelectedGradient] drawInRect:rectForItem angle:90.0];
 			[[NSColor lightGrayColor] setFill];
 			NSRectFill(NSMakeRect(NSMinX(rectForItem), NSMinY(rectForItem), 1.0, NSHeight(rectForItem)));
 			NSRectFill(NSMakeRect(NSMinX(rectForItem)+NSWidth(rectForItem), NSMinY(rectForItem), 1.0, NSHeight(rectForItem)));
 		}
 		else if ([self pressedItemIndex] == itemIndex) {
-			[[NSGradient unifiedSelectedGradient] drawInRect:rectForItem angle:90.0];
+			[[NSGradient unifiedPressedGradient] drawInRect:rectForItem angle:90.0];
 			[[NSColor lightGrayColor] setFill];
 			NSRectFill(NSMakeRect(NSMinX(rectForItem), NSMinY(rectForItem), 1.0, NSHeight(rectForItem)));
 			NSRectFill(NSMakeRect(NSMinX(rectForItem)+NSWidth(rectForItem), NSMinY(rectForItem), 1.0, NSHeight(rectForItem)));

@@ -22,6 +22,10 @@ static void RSCalculatorBreakpointCallback(LPCALC theCalc,void *info) {
 
 NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDidChangeNotification";
 
+@interface RSCalculator ()
+@property (assign,nonatomic) BOOL isRomOrSavestateLoaded;
+@end
+
 @implementation RSCalculator
 + (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
 	// most things only depend on the program counter changing
@@ -173,11 +177,10 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 			Z80_info_t zinflocal;
 			disassemble(cpu->mem_c, old_pc.addr, 1, &zinflocal);
 			
-			if (zinflocal.index == DA_RET 		||
-				zinflocal.index == DA_RET_CC 	||
-				zinflocal.index == DA_RETI		||
+			if (zinflocal.index == DA_RET ||
+				zinflocal.index == DA_RET_CC ||
+				zinflocal.index == DA_RETI ||
 				zinflocal.index == DA_RETN) {
-				
 				return;
 			}
 			
@@ -188,18 +191,19 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 - (BOOL)loadRomOrSavestate:(NSString *)romOrSavestatePath error:(NSError **)outError; {
 	[self setIsRunning:NO];
 	[self setIsBusy:YES];
+	[self setIsRomOrSavestateLoaded:NO];
 	
 	RSCalculatorModel oldModel = [self model];
 	BOOL loaded = rom_load([self calc], [romOrSavestatePath fileSystemRepresentation]);
 	
 	if (!loaded) {
 		[self setIsBusy:NO];
-		
 		return NO;
 	}
 	
 	calc_turn_on([self calc]);
 	
+	[self setIsRomOrSavestateLoaded:YES];
 	[self setIsRunning:YES];
 	[self setIsBusy:NO];
 	
@@ -299,18 +303,18 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 @synthesize calc=_calc;
 @dynamic isActive;
 - (BOOL)isActive {
-	return ([self calc] != NULL && [self calc]->active);
+	return ([self isRomOrSavestateLoaded] && [self calc]->active);
 }
 - (void)setIsActive:(BOOL)isActive {
-	if ([self calc] != NULL)
+	if ([self isRomOrSavestateLoaded])
 		[self calc]->active = isActive;
 }
 @dynamic isRunning;
 - (BOOL)isRunning {
-	return ([self calc] != NULL && [self calc]->running);
+	return ([self isRomOrSavestateLoaded] && [self calc]->running);
 }
 - (void)setIsRunning:(BOOL)isRunning {
-	if ([self calc] != NULL)
+	if ([self isRomOrSavestateLoaded])
 		[self calc]->active = isRunning;
 }
 @synthesize isBusy=_isBusy;
@@ -318,10 +322,11 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 @synthesize breakpointSelector=_breakpointSelector;
 @dynamic model;
 - (RSCalculatorModel)model {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return NSNotFound;
 	return (RSCalculatorModel)[self calc]->model;
 }
+@synthesize isRomOrSavestateLoaded=_isRomOrSavestateLoaded;
 #pragma mark Skin Images
 @dynamic skinImage;
 - (NSImage *)skinImage {
@@ -373,34 +378,34 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 #pragma mark Program Counter
 @dynamic programCounter;
 - (uint16_t)programCounter {
-	if ([self calc] != NULL)
+	if ([self isRomOrSavestateLoaded])
 		return [self calc]->cpu.pc;
 	return 0;
 }
 - (void)setProgramCounter:(uint16_t)programCounter {
-	if ([self calc] != NULL)
+	if ([self isRomOrSavestateLoaded])
 		[self calc]->cpu.pc = programCounter;
 }
 #pragma mark Stack Pointer
 @dynamic stackPointer;
 - (uint16_t)stackPointer {
-	if ([self calc] != NULL)
+	if ([self isRomOrSavestateLoaded])
 		return [self calc]->cpu.sp;
 	return 0;
 }
 - (void)setStackPointer:(uint16_t)stackPointer {
-	if ([self calc] != NULL)
+	if ([self isRomOrSavestateLoaded])
 		[self calc]->cpu.sp = stackPointer;
 }
 #pragma mark Registers
 @dynamic registerAF;
 - (uint16_t)registerAF {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.af;
 }
 - (void)setRegisterAF:(uint16_t)registerAF {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return;
 	
 	[self calc]->cpu.af = registerAF;
@@ -408,12 +413,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic registerAFPrime;
 - (uint16_t)registerAFPrime {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.afp;
 }
 - (void)setRegisterAFPrime:(uint16_t)registerAFPrime {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return;
 	
 	[self calc]->cpu.afp = registerAFPrime;
@@ -421,12 +426,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic registerBC;
 - (uint16_t)registerBC {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.bc;
 }
 - (void)setRegisterBC:(uint16_t)registerBC {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return;
 	
 	[self calc]->cpu.bc = registerBC;
@@ -434,12 +439,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic registerBCPrime;
 - (uint16_t)registerBCPrime {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.bcp;
 }
 - (void)setRegisterBCPrime:(uint16_t)registerBCPrime {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return;
 	
 	[self calc]->cpu.bcp = registerBCPrime;
@@ -447,12 +452,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic registerDE;
 - (uint16_t)registerDE {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.de;
 }
 - (void)setRegisterDE:(uint16_t)registerDE {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return;
 	
 	[self calc]->cpu.de = registerDE;
@@ -460,12 +465,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic registerDEPrime;
 - (uint16_t)registerDEPrime {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.dep;
 }
 - (void)setRegisterDEPrime:(uint16_t)registerDEPrime {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return;
 	
 	[self calc]->cpu.dep = registerDEPrime;
@@ -473,12 +478,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic registerHL;
 - (uint16_t)registerHL {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.hl;
 }
 - (void)setRegisterHL:(uint16_t)registerHL {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return;
 	
 	[self calc]->cpu.hl = registerHL;
@@ -486,12 +491,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic registerHLPrime;
 - (uint16_t)registerHLPrime {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.hlp;
 }
 - (void)setRegisterHLPrime:(uint16_t)registerHLPrime {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return;
 	
 	[self calc]->cpu.hlp = registerHLPrime;
@@ -499,12 +504,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic registerIX;
 - (uint16_t)registerIX {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.ix;
 }
 - (void)setRegisterIX:(uint16_t)registerIX {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return;
 	
 	[self calc]->cpu.ix = registerIX;
@@ -512,19 +517,19 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic registerIY;
 - (uint16_t)registerIY {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.iy;
 }
 - (void)setRegisterIY:(uint16_t)registerIY {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return;
 	
 	[self calc]->cpu.iy = registerIY;
 }
 #pragma mark Flags
 - (BOOL)zFlag {
-	return ([self calc] != NULL && ([self calc]->cpu.f & ZERO_MASK) != 0);
+	return ([self isRomOrSavestateLoaded] && ([self calc]->cpu.f & ZERO_MASK) != 0);
 }
 
 - (void)setZFlag:(BOOL)value {	
@@ -532,7 +537,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 }
 
 - (BOOL)cFlag {
-	return ([self calc] != NULL && ([self calc]->cpu.f & CARRY_MASK) != 0);
+	return ([self isRomOrSavestateLoaded] && ([self calc]->cpu.f & CARRY_MASK) != 0);
 }
 
 - (void)setCFlag:(BOOL)value {
@@ -540,7 +545,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 }
 
 - (BOOL)sFlag {
-	return ([self calc] != NULL && ([self calc]->cpu.f & SIGN_MASK) != 0);
+	return ([self isRomOrSavestateLoaded] && ([self calc]->cpu.f & SIGN_MASK) != 0);
 }
 
 - (void)setSFlag:(BOOL)value {
@@ -548,7 +553,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 }
 
 - (BOOL)pvFlag {
-	return ([self calc] != NULL && ([self calc]->cpu.f & PV_MASK) != 0);
+	return ([self isRomOrSavestateLoaded] && ([self calc]->cpu.f & PV_MASK) != 0);
 }
 
 - (void)setPvFlag:(BOOL)value {
@@ -556,7 +561,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 }
 
 - (BOOL)hcFlag {
-	return ([self calc] != NULL && ([self calc]->cpu.f & HC_MASK) != 0);
+	return ([self isRomOrSavestateLoaded] && ([self calc]->cpu.f & HC_MASK) != 0);
 }
 
 - (void)setHcFlag:(BOOL)value {
@@ -564,7 +569,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 }
 
 - (BOOL)nFlag {
-	return ([self calc] != NULL && ([self calc]->cpu.f & N_MASK) != 0);
+	return ([self isRomOrSavestateLoaded] && ([self calc]->cpu.f & N_MASK) != 0);
 }
 
 - (void)setNFlag:(BOOL)value {
@@ -573,14 +578,14 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 #pragma mark CPU
 @dynamic CPUHalt;
 - (BOOL)CPUHalt {
-	return ([self calc] != NULL && [self calc]->cpu.halt);
+	return ([self isRomOrSavestateLoaded] && [self calc]->cpu.halt);
 }
 - (void)setCPUHalt:(BOOL)CPUHalt {	
 	[self calc]->cpu.halt = CPUHalt;
 }
 @dynamic CPUBus;
 - (uint8_t)CPUBus {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.bus;
 }
@@ -590,7 +595,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic CPUFrequency;
 - (uint32_t)CPUFrequency {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->timer_c.freq;
 }
@@ -600,7 +605,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 #pragma mark Memory Map
 @dynamic memoryMapBank0RamOrFlash;
 - (BOOL)memoryMapBank0RamOrFlash {
-	return ([self calc] != NULL && [self calc]->mem_c.banks[0].ram);
+	return ([self isRomOrSavestateLoaded] && [self calc]->mem_c.banks[0].ram);
 }
 - (void)setMemoryMapBank0RamOrFlash:(BOOL)memoryMapBank0RamOrFlash {
 	[self calc]->mem_c.banks[0].ram = memoryMapBank0RamOrFlash;
@@ -608,7 +613,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank0Readonly;
 - (BOOL)memoryMapBank0Readonly {
-	return ([self calc] != NULL && [self calc]->mem_c.banks[0].read_only);
+	return ([self isRomOrSavestateLoaded] && [self calc]->mem_c.banks[0].read_only);
 }
 - (void)setMemoryMapBank0Readonly:(BOOL)memoryMapBank0Readonly {
 	[self calc]->mem_c.banks[0].read_only = memoryMapBank0Readonly;
@@ -616,7 +621,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank0Page;
 - (uint8_t)memoryMapBank0Page {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->mem_c.banks[0].page;
 }
@@ -626,7 +631,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank1RamOrFlash;
 - (BOOL)memoryMapBank1RamOrFlash {
-	return ([self calc] != NULL && [self calc]->mem_c.banks[1].ram);
+	return ([self isRomOrSavestateLoaded] && [self calc]->mem_c.banks[1].ram);
 }
 - (void)setMemoryMapBank1RamOrFlash:(BOOL)memoryMapBank1RamOrFlash {
 	[self calc]->mem_c.banks[1].ram = memoryMapBank1RamOrFlash;
@@ -634,7 +639,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank1Readonly;
 - (BOOL)memoryMapBank1Readonly {
-	return ([self calc] != NULL && [self calc]->mem_c.banks[1].read_only);
+	return ([self isRomOrSavestateLoaded] && [self calc]->mem_c.banks[1].read_only);
 }
 - (void)setMemoryMapBank1Readonly:(BOOL)memoryMapBank1Readonly {
 	[self calc]->mem_c.banks[1].read_only = memoryMapBank1Readonly;
@@ -642,7 +647,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank1Page;
 - (uint8_t)memoryMapBank1Page {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->mem_c.banks[1].page;
 }
@@ -652,7 +657,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank2RamOrFlash;
 - (BOOL)memoryMapBank2RamOrFlash {
-	return ([self calc] != NULL && [self calc]->mem_c.banks[2].ram);
+	return ([self isRomOrSavestateLoaded] && [self calc]->mem_c.banks[2].ram);
 }
 - (void)setMemoryMapBank2RamOrFlash:(BOOL)memoryMapBank2RamOrFlash {
 	[self calc]->mem_c.banks[2].ram = memoryMapBank2RamOrFlash;
@@ -660,7 +665,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank2Readonly;
 - (BOOL)memoryMapBank2Readonly {
-	return ([self calc] != NULL && [self calc]->mem_c.banks[2].read_only);
+	return ([self isRomOrSavestateLoaded] && [self calc]->mem_c.banks[2].read_only);
 }
 - (void)setMemoryMapBank2Readonly:(BOOL)memoryMapBank2Readonly {
 	[self calc]->mem_c.banks[2].read_only = memoryMapBank2Readonly;
@@ -668,7 +673,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank2Page;
 - (uint8_t)memoryMapBank2Page {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->mem_c.banks[2].page;
 }
@@ -678,7 +683,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank3RamOrFlash;
 - (BOOL)memoryMapBank3RamOrFlash {
-	return ([self calc] != NULL && [self calc]->mem_c.banks[3].ram);
+	return ([self isRomOrSavestateLoaded] && [self calc]->mem_c.banks[3].ram);
 }
 - (void)setMemoryMapBank3RamOrFlash:(BOOL)memoryMapBank3RamOrFlash {
 	[self calc]->mem_c.banks[3].ram = memoryMapBank3RamOrFlash;
@@ -686,7 +691,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank3Readonly;
 - (BOOL)memoryMapBank3Readonly {
-	return ([self calc] != NULL && [self calc]->mem_c.banks[3].read_only);
+	return ([self isRomOrSavestateLoaded] && [self calc]->mem_c.banks[3].read_only);
 }
 - (void)setMemoryMapBank3Readonly:(BOOL)memoryMapBank3Readonly {
 	[self calc]->mem_c.banks[3].read_only = memoryMapBank3Readonly;
@@ -694,7 +699,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic memoryMapBank3Page;
 - (uint8_t)memoryMapBank3Page {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->mem_c.banks[3].page;
 }
@@ -704,7 +709,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 #pragma mark Interrupts
 @dynamic interruptsIFF1;
 - (BOOL)interruptsIFF1 {
-	return ([self calc] != NULL && [self calc]->cpu.iff1);
+	return ([self isRomOrSavestateLoaded] && [self calc]->cpu.iff1);
 }
 - (void)setInterruptsIFF1:(BOOL)interruptsIFF1 {
 	[self calc]->cpu.iff1 = interruptsIFF1;
@@ -712,21 +717,21 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic interruptsNextTimer1;
 - (double)interruptsNextTimer1 {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return (([self calc]->timer_c.elapsed - [self calc]->cpu.pio.stdint->lastchk1) * 1000);
 }
 
 @dynamic interruptsTimer1Duration;
 - (double)interruptsTimer1Duration {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return ([self calc]->cpu.pio.stdint->timermax1 * 1000);
 }
 
 @dynamic interruptsIFF2;
 - (BOOL)interruptsIFF2 {
-	return ([self calc] != NULL && [self calc]->cpu.iff2);
+	return ([self isRomOrSavestateLoaded] && [self calc]->cpu.iff2);
 }
 - (void)setInterruptsIFF2:(BOOL)interruptsIFF2 {	
 	[self calc]->cpu.iff2 = interruptsIFF2;
@@ -734,21 +739,21 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic interruptsNextTimer2;
 - (double)interruptsNextTimer2 {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return (([self calc]->timer_c.elapsed - [self calc]->cpu.pio.stdint->lastchk2) * 1000);
 }
 
 @dynamic interruptsTimer2Duration;
 - (double)interruptsTimer2Duration {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return ([self calc]->cpu.pio.stdint->timermax2 * 1000);
 }
 #pragma mark Display
 @dynamic displayActive;
 - (BOOL)displayActive {
-	return ([self calc] != NULL && [self calc]->cpu.pio.lcd->active);
+	return ([self isRomOrSavestateLoaded] && [self calc]->cpu.pio.lcd->active);
 }
 - (void)setDisplayActive:(BOOL)displayActive {
 	[self calc]->cpu.pio.lcd->active = displayActive;
@@ -756,7 +761,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic displayContrast;
 - (uint32_t)displayContrast {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.pio.lcd->contrast;
 }
@@ -766,7 +771,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic displayX;
 - (int32_t)displayX {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.pio.lcd->x;
 }
@@ -776,7 +781,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic displayY;
 - (int32_t)displayY {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.pio.lcd->y;
 }
@@ -786,7 +791,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic displayZ;
 - (int32_t)displayZ {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return 0;
 	return [self calc]->cpu.pio.lcd->z;
 }
@@ -796,7 +801,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @dynamic displayCursorMode;
 - (LCD_CURSOR_MODE)displayCursorMode {
-	if ([self calc] == NULL)
+	if (![self isRomOrSavestateLoaded])
 		return MODE_NONE;
 	return [self calc]->cpu.pio.lcd->cursor_mode;
 }

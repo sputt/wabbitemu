@@ -104,6 +104,20 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	return [[self calculator] loadRomOrSavestate:[absoluteURL path] error:outError];
 }
 
+- (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)userInterfaceItem {
+	if ([userInterfaceItem action] == @selector(loadRom:)) {
+		if ([self isDebugging])
+			return NO;
+		return YES;
+	}
+	else if ([userInterfaceItem action] == @selector(transferFiles:)) {
+		if ([self isDebugging])
+			return NO;
+		return YES;
+	}
+	return [super validateUserInterfaceItem:userInterfaceItem];
+}
+
 - (void)handleBreakpoint {
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);

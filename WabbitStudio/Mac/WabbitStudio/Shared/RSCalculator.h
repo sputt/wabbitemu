@@ -41,6 +41,7 @@ extern NSString *const kRSCalculatorModelDidChangeNotification;
 	BOOL _isBusy;
 	__weak id <RSCalculatorOwner> _owner;
 	SEL _breakpointSelector;
+	BOOL _isRomOrSavestateLoaded;
 }
 @property (readonly,nonatomic) LPCALC calc;
 @property (assign,nonatomic) BOOL isActive;

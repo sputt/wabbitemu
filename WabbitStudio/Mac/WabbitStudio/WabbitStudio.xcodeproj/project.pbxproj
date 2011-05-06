@@ -81,6 +81,7 @@
 		072C8A3A1358EBED006EE420 /* NSGradient+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A391358EBED006EE420 /* NSGradient+WCExtensions.m */; };
 		072C8A3D1358EFCF006EE420 /* RSRTVArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3C1358EFCF006EE420 /* RSRTVArrayController.m */; };
 		072C8A401358F05A006EE420 /* WCFileViewStatusBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */; };
+		072D0C481374AEF300A9155F /* RSNavigatorControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C40FC61371040000667F54 /* RSNavigatorControl.m */; };
 		072F7AE41359622E00FEFE5F /* WCAddDocumentToProjectSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 072F7AE31359622E00FEFE5F /* WCAddDocumentToProjectSheetController.m */; };
 		072F7AE8135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 072F7AE6135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib */; };
 		073043B613405E0300BD7154 /* WCBuildTargetsInfoSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 073043B513405E0300BD7154 /* WCBuildTargetsInfoSheetController.m */; };
@@ -2265,6 +2266,7 @@
 				078949741373433C00B671C1 /* WCNoLimitHexFormatter.m in Sources */,
 				0789497813734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m in Sources */,
 				079E02091374676800D947DD /* RSDebuggerStackTableView.m in Sources */,
+				072D0C481374AEF300A9155F /* RSNavigatorControl.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

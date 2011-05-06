@@ -14,7 +14,7 @@ extern NSString *const kWECalculatorWillCloseNotification;
 
 @class WELCDView,BWAnchoredButtonBar,RSCalculator,RSCalculatorSkinView,WEDebuggerWindowController;
 
-@interface WECalculatorDocument : NSDocument <NSWindowDelegate,RSCalculatorOwner> {
+@interface WECalculatorDocument : NSDocument <NSWindowDelegate,RSCalculatorOwner,NSUserInterfaceValidations> {
 @private
 	IBOutlet WELCDView *_LCDView;
 	IBOutlet BWAnchoredButtonBar *_buttonBar;
