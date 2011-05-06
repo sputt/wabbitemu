@@ -487,6 +487,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 #ifndef MACVER
 				gui_debug(lpCalc);
 #else
+				printf("hit a breakpoint in runtstates\n");
 				lpCalc->running = FALSE;
 				lpCalc->breakpoint_callback(lpCalc,lpCalc->breakpoint_owner);
 #endif
