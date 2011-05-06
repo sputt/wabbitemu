@@ -49,6 +49,7 @@
 #import "WCDebuggerWindowController.h"
 #import "WETransferSheetController.h"
 #import "RSCalculator.h"
+#import "RSDebuggerDetailsViewController.h"
 
 
 #import <PSMTabBarControl/PSMTabBarControl.h>
@@ -144,6 +145,7 @@ static NSImage *_appIcon = nil;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[_calculator removeObserver:self forKeyPath:@"programCounter"];
 	[_calculator release];
 	[_romOrSavestateAlias release];
 	if (_buildTask != nil)
@@ -353,7 +355,7 @@ static NSImage *_appIcon = nil;
 }
 #pragma mark NSSplitViewDelegate
 - (BOOL)splitView:(NSSplitView *)splitView shouldAdjustSizeOfSubview:(NSView *)view {
-	if ([[splitView subviews] firstObject] == view)
+	if ([[splitView subviews] firstObject] == view || [[splitView subviews] lastObject] == view)
 		return NO;
 	return YES;
 }
@@ -374,6 +376,8 @@ static NSImage *_appIcon = nil;
 }
 
 - (NSRect)splitView:(NSSplitView *)splitView additionalEffectiveRectOfDividerAtIndex:(NSInteger)dividerIndex {
+	if (dividerIndex == 1)
+		return [splitView convertRect:[_rightSplitterHandleImageView frame] fromView:_rightSplitterHandleImageView];
 	return [splitView convertRectToBase:[[(id)[self currentViewController] splitterHandleImageView] frame]];
 }
 
@@ -542,8 +546,45 @@ static NSImage *_appIcon = nil;
 #pragma mark RSCalculatorProtocol
 
 - (void)handleBreakpointCallback; {
+	if (_debuggerDetailsViewController == nil) {
+		_debuggerDetailsViewController = [[RSDebuggerDetailsViewController alloc] initWithCalculator:[self calculator]];
+		
+		[[_debuggerDetailsViewController view] setFrameSize:[_debuggerDetailsView frame].size];
+		[_debuggerDetailsView addSubview:[_debuggerDetailsViewController view]];
+	}
+	
 	[self setIsDebugging:YES];
 	[self jumpToProgramCounter];
+}
+
+- (void)transferFinished; {
+	for (WCBreakpoint *breakpoint in [self allBreakpoints]) {
+		if ([breakpoint isActive])
+			[[self calculator] setBreakpointOfType:RSBreakpointTypeNormal atAddress:[breakpoint address]];
+	}
+	
+	calc_run_seconds([[self calculator] calc], 1.0);
+	// 2nd
+	[[self calculator] simulateKeyPress:48];
+	// 0 for catalog
+	[[self calculator] simulateKeyPress:29];
+	// down
+	[[self calculator] simulateKeyPress:125];
+	[[self calculator] simulateKeyPress:125];
+	[[self calculator] simulateKeyPress:125];
+	[[self calculator] simulateKeyPress:125];
+	[[self calculator] simulateKeyPress:125];
+	[[self calculator] simulateKeyPress:125];
+	// return
+	[[self calculator] simulateKeyPress:36];
+	// programs
+	[[self calculator] simulateKeyPress:38];
+	// return
+	[[self calculator] simulateKeyPress:36];
+	// return
+	[[self calculator] simulateKeyPress:36 lastKeyPressInSeries:YES];
+	
+	[[self debuggerWindowController] showWindow:nil];
 }
 #pragma mark -
 #pragma mark *** Public Methods ***
@@ -1125,6 +1166,8 @@ static NSImage *_appIcon = nil;
 - (RSCalculator *)calculator {
 	if (_calculator == nil) {
 		_calculator = [[RSCalculator alloc] initWithOwner:self breakpointSelector:@selector(handleBreakpointCallback)];
+		
+		[_calculator addObserver:self forKeyPath:@"programCounter" options:NSKeyValueObservingOptionNew context:(void *)self];
 	}
 	return _calculator;
 }
@@ -1590,13 +1633,7 @@ static NSImage *_appIcon = nil;
 		return;
 	}
 	
-	for (WCBreakpoint *breakpoint in [self allBreakpoints]) {
-		if ([breakpoint isActive])
-			[[self calculator] setBreakpointOfType:RSBreakpointTypeRam atAddress:[breakpoint address] onPage:1];
-	}
-	
-	[WETransferSheetController transferFiles:[NSArray arrayWithObjects:[[_buildTask arguments] lastObject], nil] toCalculator:[self calculator] runAfterTransfer:YES];
-	[[self debuggerWindowController] showWindow:nil];
+	[WETransferSheetController transferFiles:[NSArray arrayWithObjects:[[_buildTask arguments] lastObject], nil] toCalculator:[self calculator] finishedSelector:@selector(transferFinished)];
 }
 
 - (IBAction)step:(id)sender; {
@@ -1606,7 +1643,6 @@ static NSImage *_appIcon = nil;
 	}
 	
 	[[self calculator] step];
-	[self jumpToProgramCounter];
 }
 - (IBAction)stepOver:(id)sender; {
 	if (![self isDebugging]) {
@@ -1614,8 +1650,7 @@ static NSImage *_appIcon = nil;
 		return;
 	}
 	
-	[[self calculator] stepOut];
-	[self jumpToProgramCounter];
+	[[self calculator] stepOver];
 }
 #pragma mark -
 #pragma mark *** Private Methods ***

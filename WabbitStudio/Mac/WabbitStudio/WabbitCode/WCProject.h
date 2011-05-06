@@ -38,7 +38,7 @@ extern NSString *const kWCProjectSettingsFileSettingsDictionaryKey;
 extern NSString *const kWCProjectSettingsFileSettingsFileSeparateEditorWindowFrameKey;
 extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 
-@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint,WCAddFilesToProjectViewController,WCAlias,WCDebuggerWindowController,RSCalculator;
+@class WCProjectFile,PSMTabBarControl,WCFileViewController,WCFile,WCBuildTarget,BWAnchoredButtonBar,WCProjectFilesOutlineViewController,WCProjectNavigationViewController,WCBuildMessagesViewController,WCBuildMessage,WCSymbolsViewController,WCSymbol,WCFindInProjectViewController,WCFindInProjectResult,WCProjectNavView,CTBadge,WCBreakpointsViewController,WCBreakpoint,WCAddFilesToProjectViewController,WCAlias,WCDebuggerWindowController,RSCalculator,RSDebuggerDetailsViewController;
 
 @interface WCProject : NSDocument <NSSplitViewDelegate,NSOutlineViewDelegate,NSUserInterfaceValidations,NSOpenSavePanelDelegate,NSToolbarDelegate,NSWindowDelegate,NSTabViewDelegate,WCTabViewContext,RSCalculatorOwner> {
 @private
@@ -49,6 +49,7 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 	IBOutlet NSSplitView *_splitView;
 	IBOutlet NSView *_swapView;
 	IBOutlet WCProjectNavView *_navBarControl;
+	IBOutlet NSView *_debuggerDetailsView;
 	
 	WCProjectFile *_projectFile; // the root of our file outline view
 	NSMapTable *_filesToFileViewControllers; // maps files to sets of file view controllers
@@ -75,6 +76,7 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 	NSUInteger _currentBreakpointLineNumber;
 	WCFile *_programCounterFile;
 	NSUInteger _programCounterLineNumber;
+	RSDebuggerDetailsViewController *_debuggerDetailsViewController;
 	
 	NSMutableDictionary *_projectSettings; // we keep this updated when things change in the project and write it out
 										   // with each save as <username>.wcodesettings
