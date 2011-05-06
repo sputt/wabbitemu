@@ -99,7 +99,9 @@ static inline u_int8_t BinaryValueForCharacter(unichar character) {
 
 @interface WCHexFormatter : NSFormatter {
 @private
-    
+    BOOL _shouldDrawWithProgramCounterAttributes;
+	BOOL _cellIsHighlighted;
 }
-
+@property (assign,nonatomic) BOOL shouldDrawWithProgramCounterAttributes;
+@property (assign,nonatomic) BOOL cellIsHighlighted;
 @end
