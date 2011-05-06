@@ -84,14 +84,34 @@ NSString *const kDisassemblyTableColumnSizeIdentifier = @"size";
 	}
 }
 
+- (IBAction)setProgramCounterToSelectedAddress:(id)sender; {
+	if ([self clickedRow] == -1) {
+		NSBeep();
+		return;
+	}
+	
+	NSNumber *addressAtRow = [[self dataSource] tableView:self objectValueForTableColumn:[self tableColumnWithIdentifier:kDisassemblyTableColumnAddressIdentifier] row:[self clickedRow]];
+	
+	[[(id <RSGotoAddressController>)[self dataSource] calculator] setProgramCounter:[addressAtRow unsignedShortValue]];
+}
+
 - (IBAction)gotoAddress:(id)sender; {
 	[RSDebuggerGotoAddressSheetController presentGotoAddressSheetForGotoAddressController:(id <RSGotoAddressController>)[self dataSource]];
 }
 
+- (void)gotoProgramCounter:(id)sender {
+	[(id <RSGotoAddressController>)[self dataSource] scrollToAddress:[[(id <RSGotoAddressController>)[self dataSource] calculator] programCounter]];
+}
+
 - (IBAction)toggleBreakpoint:(id)sender; {
-	[[self selectedRowIndexes] enumerateIndexesUsingBlock:^(NSUInteger rowIndex,BOOL *stop) {
-		[[(id <RSGotoAddressController>)[self dataSource] calculator] toggleBreakpointOfType:RSBreakpointTypeNormal atAddress:[[[self dataSource] tableView:self objectValueForTableColumn:[self tableColumnWithIdentifier:kDisassemblyTableColumnAddressIdentifier] row:rowIndex] unsignedShortValue]];
-	}];
+	if ([self clickedRow] != -1) {
+		[[(id <RSGotoAddressController>)[self dataSource] calculator] toggleBreakpointOfType:RSBreakpointTypeNormal atAddress:[[[self dataSource] tableView:self objectValueForTableColumn:[self tableColumnWithIdentifier:kDisassemblyTableColumnAddressIdentifier] row:[self clickedRow]] unsignedShortValue]];
+	}
+	else {
+		[[self selectedRowIndexes] enumerateIndexesUsingBlock:^(NSUInteger rowIndex,BOOL *stop) {
+			[[(id <RSGotoAddressController>)[self dataSource] calculator] toggleBreakpointOfType:RSBreakpointTypeNormal atAddress:[[[self dataSource] tableView:self objectValueForTableColumn:[self tableColumnWithIdentifier:kDisassemblyTableColumnAddressIdentifier] row:rowIndex] unsignedShortValue]];
+		}];
+	}
 	[self setNeedsDisplay:YES];
 }
 

@@ -7,15 +7,14 @@
 //
 
 #import <AppKit/NSTableView.h>
-#import "RSGotoAddressControllerProtocol.h"
-
 
 
 @interface RSDebuggerMemoryTableView : NSTableView {
 @private
-    IBOutlet id <RSGotoAddressController> _gotoAddressController;
+    
 }
 
 - (IBAction)gotoAddress:(id)sender;
+- (IBAction)gotoProgramCounter:(id)sender;
 
 @end

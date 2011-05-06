@@ -216,6 +216,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 		case RSBreakpointTypeNormal:
 			set_break(&[self calc]->mem_c, bank->ram, bank->page, address);
 			break;
+		case RSBreakpointTypeRead:
+			set_mem_read_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			break;
+		case RSBreakpointTypeWrite:
+			set_mem_write_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			break;	
 		default:
 			break;
 	}
@@ -227,6 +233,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 	switch (breakpointType) {
 		case RSBreakpointTypeNormal:
 			clear_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			break;
+		case RSBreakpointTypeRead:
+			clear_mem_read_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			break;
+		case RSBreakpointTypeWrite:
+			clear_mem_write_break(&[self calc]->mem_c, bank->ram, bank->page, address);
 			break;
 		default:
 			break;
@@ -243,6 +255,18 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 			else
 				set_break(&[self calc]->mem_c, bank->ram, bank->page, address);
 			break;
+		case RSBreakpointTypeRead:
+			if (check_mem_read_break(&[self calc]->mem_c, address))
+				clear_mem_read_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			else
+				set_mem_read_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			break;
+		case RSBreakpointTypeWrite:
+			if (check_mem_write_break(&[self calc]->mem_c, address))
+				clear_mem_write_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			else
+				set_mem_write_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			break;
 		default:
 			break;
 	}
@@ -253,11 +277,11 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 	
 	if (check_break(&[self calc]->mem_c, address))
 		return RSBreakpointTypeNormal;
+	else if (check_mem_read_break(&[self calc]->mem_c, address))
+		return RSBreakpointTypeRead;
+	else if (check_mem_write_break(&[self calc]->mem_c, address))
+		return RSBreakpointTypeWrite;
 	return RSBreakpointTypeNone;
-}
-
-- (void)setBreakpointOfType:(RSBreakpointType)breakpointType atAddress:(uint16_t)address onPage:(uint8_t)page; {
-	set_break(&[self calc]->mem_c, (breakpointType == RSBreakpointTypeRam)?TRUE:FALSE, page, address);
 }
 
 - (void)simulateKeyPress:(uint16_t)keyCode {

@@ -32,6 +32,12 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 
 @implementation WECalculatorDocument
 
++ (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
+	if ([key isEqualToString:@"statusImage"])
+		return [NSSet setWithObjects:@"isDebugging",@"calculator.isRunning", nil];
+	return [super keyPathsForValuesAffectingValueForKey:key];
+}
+
 - (void)dealloc {
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
@@ -62,7 +68,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	
 	[[self calculator] calc]->cpu.pio.lcd->shades = (uint32_t)[[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWEPreferencesDisplayLCDShadesKey];
 	[[self LCDView] setCalculator:[self calculator]];
-	[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
+	//[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
 	[self updateStatusString];
 	//[self resetDisplaySize:nil];
 	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] addLCDView:[self LCDView]];
@@ -76,7 +82,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
 	if ([(NSString *)context isEqualToString:kRSCalculatorSkinViewUseSkinsKey])
-		[self toggleSkinView:nil];
+		return;
 	else
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
@@ -170,7 +176,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 			return;
 		}
 		
-		[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
+		//[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
 		[self updateStatusString];
 		
 		if ([self windowForSheet] != nil) {
@@ -373,6 +379,10 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	}
 }
 
+- (IBAction)toggleEmulation:(id)sender; {
+	[[self calculator] setIsRunning:![[self calculator] isRunning]];
+}
+
 - (IBAction)showDebugger:(id)sender; {
 	[[self calculator] setIsRunning:NO];
 	[self setIsDebugging:YES];
@@ -409,7 +419,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 
 - (void)_calculatorModelDidChange:(NSNotification *)note {
 	[self updateFPSString];
-	[_LCDView setIsWidescreen:([[self calculator] model] == RSCalculatorModelTI85 || [[self calculator] model] == RSCalculatorModelTI86)];
+	//[_LCDView setIsWidescreen:([[self calculator] model] == RSCalculatorModelTI85 || [[self calculator] model] == RSCalculatorModelTI86)];
 	[self toggleSkinView:nil];
 }
 

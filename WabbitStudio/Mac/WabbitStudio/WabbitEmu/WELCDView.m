@@ -32,6 +32,7 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 }
 
 - (void)dealloc {
+	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_calculator release];
 	[_currentFilePaths release];
 	glDeleteTextures(2, _textures);
@@ -269,7 +270,24 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 	return YES;
 }
 
-@synthesize calculator=_calculator;
+@dynamic calculator;
+- (RSCalculator *)calculator {
+	return _calculator;
+}
+- (void)setCalculator:(RSCalculator *)calculator {
+	if (_calculator == calculator)
+		return;
+	
+	if (_calculator != nil)
+		[[NSNotificationCenter defaultCenter] removeObserver:self name:kRSCalculatorModelDidChangeNotification object:_calculator];
+	
+	[_calculator release];
+	_calculator = [calculator retain];
+	
+	[self setIsWidescreen:([[self calculator] model] == RSCalculatorModelTI85 || [[self calculator] model] == RSCalculatorModelTI86)];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_calculatorModelDidChange:) name:kRSCalculatorModelDidChangeNotification object:_calculator];
+}
 @synthesize isWidescreen=_isWidescreen;
 
 @synthesize currentFilePaths=_currentFilePaths;
@@ -358,5 +376,9 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 			_wlcd_buffer[row][col][3] = 108;
 		}
 	}
+}
+
+- (void)_calculatorModelDidChange:(NSNotification *)note {
+	[self setIsWidescreen:([[self calculator] model] == RSCalculatorModelTI85 || [[self calculator] model] == RSCalculatorModelTI86)];
 }
 @end

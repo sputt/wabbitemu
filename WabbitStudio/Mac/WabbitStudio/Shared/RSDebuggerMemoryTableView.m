@@ -9,6 +9,7 @@
 #import "RSDebuggerMemoryTableView.h"
 #import "RSDebuggerMemoryTableHeaderView.h"
 #import "RSDebuggerGotoAddressSheetController.h"
+#import "RSCalculator.h"
 
 
 @implementation RSDebuggerMemoryTableView
@@ -23,7 +24,16 @@
 }
 
 - (IBAction)gotoAddress:(id)sender; {
-	[RSDebuggerGotoAddressSheetController presentGotoAddressSheetForGotoAddressController:_gotoAddressController];
+	[RSDebuggerGotoAddressSheetController presentGotoAddressSheetForGotoAddressController:(id <RSGotoAddressController>)[self dataSource]];
+}
+
+- (IBAction)gotoProgramCounter:(id)sender; {
+	if ([self clickedRow] == -1) {
+		NSBeep();
+		return;
+	}
+	
+	[(id <RSGotoAddressController>)[self dataSource] scrollToAddress:[[(id <RSGotoAddressController>)[self dataSource] calculator] programCounter]];
 }
 
 @end

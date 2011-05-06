@@ -22,6 +22,8 @@ extern NSString *const kDisassemblyTableColumnSizeIdentifier;
 }
 
 - (IBAction)gotoAddress:(id)sender;
+- (IBAction)gotoProgramCounter:(id)sender;
 - (IBAction)toggleBreakpoint:(id)sender;
+- (IBAction)setProgramCounterToSelectedAddress:(id)sender;
 
 @end

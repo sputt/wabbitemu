@@ -13,9 +13,6 @@
 #import "WCHexFormatter.h"
 
 
-NSString *const kRSDebuggerStackTableColumnAddressIdentifier = @"address";
-NSString *const kRSDebuggerStackTableColumnStackIdentifier = @"stack";
-
 @interface RSDebuggerStackViewController ()
 @property (assign,nonatomic) NSUInteger numberOfRows;
 @property (assign,nonatomic) uint16_t startAddress;
@@ -123,7 +120,7 @@ NSString *const kRSDebuggerStackTableColumnStackIdentifier = @"stack";
 	for (rowIndex = 0; rowIndex < [self numberOfRows]; rowIndex++) {
 		uint16_t rowAddress = [self startAddress] + (rowIndex * BYTES_PER_ROW);
 		
-		if (rowAddress <= address) {
+		if (rowAddress >= address) {
 			[_stackTableView selectRowIndexes:[NSIndexSet indexSetWithIndex:rowIndex] byExtendingSelection:NO];
 			[_stackTableView scrollRowToVisible:rowIndex];
 			return;

@@ -51,6 +51,8 @@ extern NSString *const kWECalculatorWillCloseNotification;
 
 - (IBAction)toggleSkinView:(id)sender;
 
+- (IBAction)toggleEmulation:(id)sender;
+
 - (IBAction)showDebugger:(id)sender;
 
 - (void)updateFPSString;

@@ -9,11 +9,16 @@
 #import <AppKit/NSTableView.h>
 
 
+extern NSString *const kRSDebuggerStackTableColumnAddressIdentifier;
+extern NSString *const kRSDebuggerStackTableColumnStackIdentifier;
+
 @interface RSDebuggerStackTableView : NSTableView {
 @private
     
 }
 
+- (IBAction)setStackPointerToSelectedAddress:(id)sender;
 - (IBAction)gotoAddress:(id)sender;
+- (IBAction)gotoStackPointer:(id)sender;
 
 @end
