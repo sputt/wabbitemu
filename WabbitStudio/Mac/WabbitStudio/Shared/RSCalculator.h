@@ -27,7 +27,9 @@ typedef NSUInteger RSCalculatorModel;
 
 enum {
 	RSBreakpointTypeRam = 0,
-	RSBreakpointTypeFlash
+	RSBreakpointTypeFlash,
+	RSBreakpointTypeNormal,
+	RSBreakpointTypeNone
 };
 typedef NSUInteger RSBreakpointType;
 
@@ -110,6 +112,10 @@ extern NSString *const kRSCalculatorModelDidChangeNotification;
 
 - (BOOL)loadRomOrSavestate:(NSString *)romOrSavestatePath error:(NSError **)outError;
 
+- (void)setBreakpointOfType:(RSBreakpointType)breakpointType atAddress:(uint16_t)address;
+- (void)clearBreakpointOfType:(RSBreakpointType)breakpointType atAddress:(uint16_t)address;
+- (void)toggleBreakpointOfType:(RSBreakpointType)breakpointType atAddress:(uint16_t)address;
+- (RSBreakpointType)checkBreakpointAtAddress:(uint16_t)address;
 - (void)setBreakpointOfType:(RSBreakpointType)breakpointType atAddress:(uint16_t)address onPage:(uint8_t)page;
 
 + (RSCalculator *)calculatorWithOwner:(id <RSCalculatorOwner>)owner breakpointSelector:(SEL)breakpointSelector;

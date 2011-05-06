@@ -20,6 +20,7 @@
 		[self setBackgroundColor:[NSColor clearColor]];
 		[self setOpaque:NO];
 		[self setHasShadow:NO];
+		[self setExcludedFromWindowsMenu:NO];
 	}
 	
 	return self;

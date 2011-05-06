@@ -14,6 +14,7 @@
 
 
 static void RSCalculatorBreakpointCallback(LPCALC theCalc,void *info) {
+	NSLog(@"hit a breakpoint");
 	RSCalculator *calculator = (RSCalculator *)info;
 	
 	[[calculator owner] performSelector:[calculator breakpointSelector]];
@@ -106,10 +107,12 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 - (void)step; {
 	[self willChangeValueForKey:@"programCounter"];
+	[self willChangeValueForKey:@"stackPointer"];
 	
 	CPU_step(&[self calc]->cpu);
 	
 	[self didChangeValueForKey:@"programCounter"];
+	[self didChangeValueForKey:@"stackPointer"];
 }
 
 - (void)stepOver; {
@@ -125,6 +128,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 	disassemble(cpu->mem_c, cpu->pc, 1, &zinflocal);
 	
 	[self willChangeValueForKey:@"programCounter"];
+	[self willChangeValueForKey:@"stackPointer"];
 	
 	if (cpu->halt) {
 		if (cpu->iff1) {
@@ -151,6 +155,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 	}
 	
 	[self didChangeValueForKey:@"programCounter"];
+	[self didChangeValueForKey:@"stackPointer"];
 }
 
 - (void)stepOut; {
@@ -202,6 +207,53 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 		[[NSNotificationCenter defaultCenter] postNotificationName:kRSCalculatorModelDidChangeNotification object:self];
 	
 	return YES;
+}
+
+- (void)setBreakpointOfType:(RSBreakpointType)breakpointType atAddress:(uint16_t)address; {
+	bank_t *bank = &[self calc]->mem_c.banks[mc_bank(address)];
+	
+	switch (breakpointType) {
+		case RSBreakpointTypeNormal:
+			set_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			break;
+		default:
+			break;
+	}
+}
+
+- (void)clearBreakpointOfType:(RSBreakpointType)breakpointType atAddress:(uint16_t)address; {
+	bank_t *bank = &[self calc]->mem_c.banks[mc_bank(address)];
+	
+	switch (breakpointType) {
+		case RSBreakpointTypeNormal:
+			clear_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			break;
+		default:
+			break;
+	}
+}
+
+- (void)toggleBreakpointOfType:(RSBreakpointType)breakpointType atAddress:(uint16_t)address; {
+	bank_t *bank = &[self calc]->mem_c.banks[mc_bank(address)];
+	
+	switch (breakpointType) {
+		case RSBreakpointTypeNormal:
+			if (check_break(&[self calc]->mem_c, address))
+				clear_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			else
+				set_break(&[self calc]->mem_c, bank->ram, bank->page, address);
+			break;
+		default:
+			break;
+	}
+}
+
+- (RSBreakpointType)checkBreakpointAtAddress:(uint16_t)address; {
+	//bank_t *bank = &[self calc]->mem_c.banks[mc_bank(address)];
+	
+	if (check_break(&[self calc]->mem_c, address))
+		return RSBreakpointTypeNormal;
+	return RSBreakpointTypeNone;
 }
 
 - (void)setBreakpointOfType:(RSBreakpointType)breakpointType atAddress:(uint16_t)address onPage:(uint8_t)page; {

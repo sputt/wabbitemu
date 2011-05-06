@@ -105,10 +105,10 @@ finalize_buttons:
 		return;
 	
 	NSImage *keymap = [[self calculator] keymapImage];
-	NSBitmapImageRep *bitmap = (NSBitmapImageRep *)[keymap bestRepresentationForRect:NSZeroRect context:nil hints:nil];
+	//NSBitmapImageRep *bitmap = (NSBitmapImageRep *)[keymap bestRepresentationForRect:NSZeroRect context:nil hints:nil];
 	
 #ifdef DEBUG
-	NSAssert(bitmap != nil, @"bitmap for keymap image was nil!");
+	NSAssert(keymap != nil, @"keymap image was nil!");
 #endif
 	
 	uint8_t group, bit;
