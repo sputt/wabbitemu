@@ -16,6 +16,7 @@
 #import "RSCalculatorSkinView.h"
 #import "NSObject+WCExtensions.h"
 #import "WEDebuggerWindowController.h"
+#import "WETransferSheetController.h"
 
 #import <BWToolkitFramework/BWAnchoredButtonBar.h>
 
@@ -161,7 +162,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 - (IBAction)loadRom:(id)sender; {
 	NSOpenPanel *panel = [NSOpenPanel openPanel];
 	
-	[panel setAllowedFileTypes:[NSArray arrayWithObjects:@"rom",@"sav", nil]];
+	[panel setAllowedFileTypes:[NSArray arrayWithObjects:kWECalculatorRomUTI,kWECalculatorSavestateUTI, nil]];
 	[panel setPrompt:NS_LOCALIZED_STRING_LOAD];
 	
 	[panel beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSInteger result) {
@@ -183,6 +184,21 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 			[self setFileURL:[[panel URLs] lastObject]];
 			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[[panel URLs] lastObject]];
 		}
+	}];
+}
+
+- (IBAction)transferFiles:(id)sender; {
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+	
+	[panel setAllowedFileTypes:[NSArray arrayWithObjects:kWECalculatorProgramUTI, nil]];
+	[panel setPrompt:NSLocalizedString(@"Transfer", @"transfer files open panel prompt")];
+	
+	[panel beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSInteger result) {
+		[panel orderOut:nil];
+		if (result != NSFileHandlingPanelOKButton)
+			return;
+		
+		[WETransferSheetController transferFiles:[panel filenames] toCalculator:[self calculator]];
 	}];
 }
 

@@ -42,6 +42,7 @@ extern NSString *const kWECalculatorWillCloseNotification;
 @property (readonly,nonatomic) WEDebuggerWindowController *debuggerWindowController;
 
 - (IBAction)loadRom:(id)sender;
+- (IBAction)transferFiles:(id)sender;
 
 - (IBAction)saveStateAs:(id)sender;
 - (IBAction)reloadCurrentRomOrSavestate:(id)sender;

@@ -259,6 +259,14 @@
 						<reference key="NSMixedImage" ref="397929882"/>
 						<string key="NSAction">_popUpItemAction:</string>
 					</object>
+					<object class="NSMenuItem" id="887868457">
+						<reference key="NSMenu" ref="913054367"/>
+						<string key="NSTitle">Transfer Files…</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="860961308"/>
+						<reference key="NSMixedImage" ref="397929882"/>
+					</object>
 					<object class="NSMenuItem" id="200545751">
 						<reference key="NSMenu" ref="913054367"/>
 						<bool key="NSIsDisabled">YES</bool>
@@ -514,6 +522,14 @@
 					</object>
 					<int key="connectionID">100116</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">transferFiles:</string>
+						<reference key="source" ref="613418571"/>
+						<reference key="destination" ref="887868457"/>
+					</object>
+					<int key="connectionID">100130</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -576,6 +592,7 @@
 							<reference ref="204268932"/>
 							<reference ref="425756865"/>
 							<reference ref="51260242"/>
+							<reference ref="887868457"/>
 						</object>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -691,6 +708,11 @@
 						<reference key="object" ref="229980107"/>
 						<reference key="parent" ref="1014760894"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">100129</int>
+						<reference key="object" ref="887868457"/>
+						<reference key="parent" ref="913054367"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -720,6 +742,7 @@
 					<string>100101.IBPluginDependency</string>
 					<string>100102.IBPluginDependency</string>
 					<string>100106.IBPluginDependency</string>
+					<string>100129.IBPluginDependency</string>
 					<string>5.IBEditorWindowLastContentRect</string>
 					<string>5.IBNSWindowAutoPositionCentersHorizontal</string>
 					<string>5.IBNSWindowAutoPositionCentersVertical</string>
@@ -755,6 +778,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{133, 170}, {507, 413}}</string>
 					<boolean value="NO"/>
 					<boolean value="NO"/>
@@ -778,7 +802,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">100128</int>
+			<int key="maxID">100130</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">
@@ -934,9 +958,11 @@
 							<string>toggleEmulation:</string>
 							<string>toggleLCDSize:</string>
 							<string>toggleSkinView:</string>
+							<string>transferFiles:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
+							<string>id</string>
 							<string>id</string>
 							<string>id</string>
 							<string>id</string>
@@ -959,6 +985,7 @@
 							<string>toggleEmulation:</string>
 							<string>toggleLCDSize:</string>
 							<string>toggleSkinView:</string>
+							<string>transferFiles:</string>
 						</object>
 						<object class="NSMutableArray" key="dict.values">
 							<bool key="EncodedWithXMLCoder">YES</bool>
@@ -992,6 +1019,10 @@
 							</object>
 							<object class="IBActionInfo">
 								<string key="name">toggleSkinView:</string>
+								<string key="candidateClassName">id</string>
+							</object>
+							<object class="IBActionInfo">
+								<string key="name">transferFiles:</string>
 								<string key="candidateClassName">id</string>
 							</object>
 						</object>
