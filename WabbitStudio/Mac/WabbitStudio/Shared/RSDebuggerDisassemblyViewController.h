@@ -7,19 +7,15 @@
 //
 
 #import <AppKit/NSViewController.h>
+#import "RSGotoAddressControllerProtocol.h"
 #include "disassemble.h"
 
 
-extern NSString *const kDisassemblyTableColumnAddressIdentifier;
-extern NSString *const kDisassemblyTableColumnDataIdentifier;
-extern NSString *const kDisassemblyTableColumnDisassemblyIdentifier;
-extern NSString *const kDisassemblyTableColumnSizeIdentifier;
+@class RSCalculator,RSDebuggerDisassemblyTableView;
 
-@class RSCalculator;
-
-@interface RSDebuggerDisassemblyViewController : NSViewController <NSTableViewDataSource,NSTableViewDelegate> {
+@interface RSDebuggerDisassemblyViewController : NSViewController <NSTableViewDataSource,NSTableViewDelegate,RSGotoAddressController> {
 @private
-	IBOutlet NSTableView *_disassemblyTableView;
+	IBOutlet RSDebuggerDisassemblyTableView *_disassemblyTableView;
 	
     RSCalculator *_calculator;
 	Z80_info_t *_info;
@@ -27,8 +23,11 @@ extern NSString *const kDisassemblyTableColumnSizeIdentifier;
 	uint16_t _startAddress;
 }
 @property (readonly,nonatomic) RSCalculator *calculator;
+@property (readonly,nonatomic) RSDebuggerDisassemblyTableView *disassemblyTableView;
 
 - (id)initWithCalculator:(RSCalculator *)calculator;
 
 - (void)scrollToAddress:(uint16_t)address;
+
+- (NSAttributedString *)attributedStringByHighlightingAttributedString:(NSAttributedString *)attributedString;
 @end
