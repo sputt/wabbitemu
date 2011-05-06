@@ -41,7 +41,7 @@
 	
 	[_LCDView setCalculator:_mcalculator];
 	
-	[WEApplicationDelegate addLCDView:_LCDView];
+	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] addLCDView:_LCDView];
 }
 
 @end

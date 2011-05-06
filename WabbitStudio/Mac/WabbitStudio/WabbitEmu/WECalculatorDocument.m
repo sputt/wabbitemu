@@ -52,7 +52,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWECalculatorWillCloseNotification object:self];
 	
-	[WEApplicationDelegate removeLCDView:[self LCDView]];
+	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] removeLCDView:[self LCDView]];
 }
 
 - (void)windowControllerDidLoadNib:(NSWindowController *)windowController {
@@ -65,7 +65,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
 	[self updateStatusString];
 	//[self resetDisplaySize:nil];
-	[WEApplicationDelegate addLCDView:[self LCDView]];
+	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] addLCDView:[self LCDView]];
 	
 	[_buttonBar setIsAtBottom:YES];
 	[_buttonBar setIsResizable:NO];
@@ -95,6 +95,13 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_calculatorModelDidChange:) name:kRSCalculatorModelDidChangeNotification object:[self calculator]];
 	
 	return [[self calculator] loadRomOrSavestate:[absoluteURL path] error:outError];
+}
+
+- (void)handleBreakpoint {
+#ifdef DEBUG
+	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
+#endif
+	[self showDebugger:nil];
 }
 
 - (void)updateFPSString; {
@@ -165,6 +172,11 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 		
 		[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
 		[self updateStatusString];
+		
+		if ([self windowForSheet] != nil) {
+			[self setFileURL:[[panel URLs] lastObject]];
+			[[NSDocumentController sharedDocumentController] noteNewRecentDocumentURL:[[panel URLs] lastObject]];
+		}
 	}];
 }
 
@@ -364,19 +376,8 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 - (IBAction)showDebugger:(id)sender; {
 	[[self calculator] setIsRunning:NO];
 	[self setIsDebugging:YES];
+	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] removeLCDView:[self LCDView]];
 	[[self debuggerWindowController] showWindow:nil];
-}
-
-- (IBAction)step:(id)sender; {
-	[[self calculator] step];
-}
-
-- (IBAction)stepOver:(id)sender {
-	[[self calculator] stepOver];
-}
-
-- (IBAction)stepOut:(id)sender {
-	[[self calculator] stepOut];
 }
 
 - (NSString *)_stringForCalculatorModel:(RSCalculatorModel)calculatorModel; {

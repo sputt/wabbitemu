@@ -1,5 +1,5 @@
 //
-//  WEApplicationDelegateDelegate.m
+//  WESharedApplicationDelegateDelegate.m
 //  wabbitcomp
 //
 //  Created by William Towe on 4/24/11.

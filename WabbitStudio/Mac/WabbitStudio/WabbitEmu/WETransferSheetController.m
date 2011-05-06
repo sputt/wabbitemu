@@ -26,6 +26,7 @@
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
+	_finishedSelector = NULL;
 	_currentFile = nil;
 	_calculator = nil;
 	FreeSave(_savestate);
@@ -47,6 +48,14 @@
 
 + (void)transferFiles:(NSArray *)filePaths toCalculator:(RSCalculator *)calculator; {
 	[self transferFiles:filePaths toCalculator:calculator runAfterTransfer:NO];
+}
+
++ (void)transferFiles:(NSArray *)filePaths toCalculator:(RSCalculator *)calculator finishedSelector:(SEL)finishedSelector; {
+	WETransferSheetController *controller = [[[self class] alloc] _initWithFilePaths:[self validateFilePaths:filePaths] calculator:calculator];
+	
+	[controller setFinishedSelector:finishedSelector];
+	[controller _transferRomsAndSavestates];
+	[controller _setupTransferProgramsAndApps];
 }
 
 + (void)transferFiles:(NSArray *)filePaths toCalculator:(RSCalculator *)calculator runAfterTransfer:(BOOL)runAfterTransfer; {
@@ -107,6 +116,7 @@
 @synthesize currentProgress=_currentProgress;
 @synthesize currentFile=_currentFile;
 @synthesize runProgramOrAppAfterTransfer=_runProgramOrAppAfterTransfer;
+@synthesize finishedSelector=_finishedSelector;
 
 - (void)_transferRomsAndSavestates; {
 	if ([_romsAndSavestates count] == 0)
@@ -211,6 +221,9 @@
 		// return
 		[[self calculator] simulateKeyPress:36 lastKeyPressInSeries:YES];
 	}
+	
+	if ([self finishedSelector] != NULL)
+		[[[self calculator] owner] performSelector:[self finishedSelector]];
 }
 
 - (void)_timerFired:(NSTimer *)timer {

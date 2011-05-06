@@ -26,6 +26,7 @@
 	SAVESTATE_t *_savestate;
 	
 	BOOL _runProgramOrAppAfterTransfer;
+	SEL _finishedSelector;
 }
 @property (readonly,nonatomic) RSCalculator *calculator;
 @property (assign,nonatomic) CGFloat totalSize;
@@ -33,8 +34,10 @@
 @property (copy,nonatomic) NSString *statusString;
 @property (assign,nonatomic) WETransferFile *currentFile;
 @property (assign,nonatomic) BOOL runProgramOrAppAfterTransfer;
+@property (assign,nonatomic) SEL finishedSelector;
 
 + (void)transferFiles:(NSArray *)filePaths toCalculator:(RSCalculator *)calculator;
++ (void)transferFiles:(NSArray *)filePaths toCalculator:(RSCalculator *)calculator finishedSelector:(SEL)finishedSelector;
 + (void)transferFiles:(NSArray *)filePaths toCalculator:(RSCalculator *)calculator runAfterTransfer:(BOOL)runAfterTransfer;
 + (NSArray *)validateFilePaths:(NSArray *)filePaths;
 @end
