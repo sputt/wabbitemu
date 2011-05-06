@@ -73,7 +73,6 @@
 		07200C6913675B450010AE58 /* WCProjectStatusView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07200C6813675B450010AE58 /* WCProjectStatusView.m */; };
 		07200C6D1367622C0010AE58 /* NSBezierPath+StrokeExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07200C6C1367622C0010AE58 /* NSBezierPath+StrokeExtensions.m */; };
 		07200C70136762D90010AE58 /* NSShadow+MCAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07200C6F136762D90010AE58 /* NSShadow+MCAdditions.m */; };
-		0722EFF5136741EF00CB69BF /* Breakpoints16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF4136741EF00CB69BF /* Breakpoints16x16.png */; };
 		0722EFF71367421D00CB69BF /* Building16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF61367421D00CB69BF /* Building16x16.png */; };
 		0722EFF91367439000CB69BF /* Symbols16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF81367439000CB69BF /* Symbols16x16.png */; };
 		0724B7AB136390300061AA47 /* WCBadgedTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7A8136390300061AA47 /* WCBadgedTextFieldCell.m */; };
@@ -86,7 +85,6 @@
 		072F7AE8135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 072F7AE6135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib */; };
 		073043B613405E0300BD7154 /* WCBuildTargetsInfoSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 073043B513405E0300BD7154 /* WCBuildTargetsInfoSheetController.m */; };
 		073043B91340714700BD7154 /* NSPopUpButton+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 073043B81340714700BD7154 /* NSPopUpButton+WCExtensions.m */; };
-		07463AB21332AB7700744B98 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AB11332AB7700744B98 /* Cocoa.framework */; };
 		07463ABC1332AB7700744B98 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 07463ABA1332AB7700744B98 /* InfoPlist.strings */; };
 		07463ABF1332AB7700744B98 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 07463ABE1332AB7700744B98 /* main.m */; };
 		07463AC21332AB7700744B98 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 07463AC01332AB7700744B98 /* Credits.rtf */; };
@@ -192,8 +190,13 @@
 		0789497813734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0789497713734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m */; };
 		0789497913734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 0789497713734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m */; };
 		078AAD8A1373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 078AAD891373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m */; };
+		078AAD8B13739F3600B0421D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07D132D6136AB83800BD5A84 /* Cocoa.framework */; };
+		078AAD8C13739F5600B0421D /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07D132D6136AB83800BD5A84 /* Cocoa.framework */; };
+		078AAD8E1373A18600B0421D /* Breakpoint32x32.png in Resources */ = {isa = PBXBuildFile; fileRef = 078AAD8D1373A18600B0421D /* Breakpoint32x32.png */; };
+		078AAD931373D1DC00B0421D /* Breakpoints16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 078AAD921373D1DC00B0421D /* Breakpoints16x16.png */; };
+		078AAD941373DEA600B0421D /* RegexKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07AF6E70133A8F4F00A2D188 /* RegexKit.framework */; };
+		078AAD951373DEB000B0421D /* RegexKit.framework in Copy Private Frameworks */ = {isa = PBXBuildFile; fileRef = 07AF6E70133A8F4F00A2D188 /* RegexKit.framework */; };
 		07905DA91367990B0079A404 /* NSBezierPath+MCAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DA81367990B0079A404 /* NSBezierPath+MCAdditions.m */; };
-		07905DCD1367BFD60079A404 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AB11332AB7700744B98 /* Cocoa.framework */; };
 		07905DD31367BFD60079A404 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 07905DD11367BFD60079A404 /* InfoPlist.strings */; };
 		07905DD61367BFD60079A404 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DD51367BFD60079A404 /* main.m */; };
 		07905DD91367BFD60079A404 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 07905DD71367BFD60079A404 /* Credits.rtf */; };
@@ -250,6 +253,10 @@
 		079CE51F1346AD310034DFB7 /* WCGradientHeaderTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 079CE51E1346AD2F0034DFB7 /* WCGradientHeaderTableView.m */; };
 		079DF4C013694B0700289058 /* Hardware.png in Resources */ = {isa = PBXBuildFile; fileRef = 079DF4BF13694B0700289058 /* Hardware.png */; };
 		079DF4C413694EB600289058 /* WEPreviewLCDView.m in Sources */ = {isa = PBXBuildFile; fileRef = 079DF4C313694EB600289058 /* WEPreviewLCDView.m */; };
+		079E02041374618100D947DD /* RSDebuggerStackView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 079E02021374618100D947DD /* RSDebuggerStackView.xib */; };
+		079E02051374618100D947DD /* RSDebuggerStackView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 079E02021374618100D947DD /* RSDebuggerStackView.xib */; };
+		079E02091374676800D947DD /* RSDebuggerStackTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 079E02081374676800D947DD /* RSDebuggerStackTableView.m */; };
+		079E020A1374676800D947DD /* RSDebuggerStackTableView.m in Sources */ = {isa = PBXBuildFile; fileRef = 079E02081374676800D947DD /* RSDebuggerStackTableView.m */; };
 		07A31DDE133E61950081030A /* NSObject+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07A31DDD133E61950081030A /* NSObject+WCExtensions.m */; };
 		07A31DE3133E6D9A0081030A /* WCBuildTarget.m in Sources */ = {isa = PBXBuildFile; fileRef = 07A31DE2133E6D990081030A /* WCBuildTarget.m */; };
 		07AC0CE4133971DA0060F786 /* PSMTabBarControl.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07AC0CE3133971DA0060F786 /* PSMTabBarControl.framework */; };
@@ -293,10 +300,8 @@
 		07B54925135D6F8800B34C46 /* WCBreakpointsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B54924135D6F8700B34C46 /* WCBreakpointsViewController.m */; };
 		07B54928135D755B00B34C46 /* WCBreakpointsView.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07B54926135D755B00B34C46 /* WCBreakpointsView.xib */; };
 		07B75E0B1368AAB1007B13A2 /* WETransferSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B75E0A1368AAB1007B13A2 /* WETransferSheetController.m */; };
-		07B7AD42136EAA9B00B414A7 /* Screenshots.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B7AD41136EAA9B00B414A7 /* Screenshots.png */; };
 		07B7AD44136EAC3400B414A7 /* Hardware.png in Resources */ = {isa = PBXBuildFile; fileRef = 079DF4BF13694B0700289058 /* Hardware.png */; };
-		07B7AD46136EAD4200B414A7 /* 5.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B7AD45136EAD4200B414A7 /* 5.png */; };
-		07B7AD48136EAE9000B414A7 /* 045.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B7AD47136EAE9000B414A7 /* 045.png */; };
+		07B7AD46136EAD4200B414A7 /* Screenshots.png in Resources */ = {isa = PBXBuildFile; fileRef = 07B7AD45136EAD4200B414A7 /* Screenshots.png */; };
 		07BA69811367D68F00AD7FF5 /* BWToolkitFramework.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0787B724133FC9C400BB5590 /* BWToolkitFramework.framework */; };
 		07BA69831367D69300AD7FF5 /* Sparkle.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07604ADD133C9A4C00D8A432 /* Sparkle.framework */; };
 		07BA69851367D6C100AD7FF5 /* BWToolkitFramework.framework in Copy Private Frameworks */ = {isa = PBXBuildFile; fileRef = 0787B724133FC9C400BB5590 /* BWToolkitFramework.framework */; };
@@ -335,10 +340,10 @@
 		07BD0D601371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m */; };
 		07BD0D6313722EB800F04712 /* WCTwoDigitHexFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D6213722EB800F04712 /* WCTwoDigitHexFormatter.m */; };
 		07BD0D6413722EB800F04712 /* WCTwoDigitHexFormatter.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D6213722EB800F04712 /* WCTwoDigitHexFormatter.m */; };
-		07BD0D67137259DA00F04712 /* RSDebuggerMemoryGotoAddressSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D66137259D900F04712 /* RSDebuggerMemoryGotoAddressSheetController.m */; };
-		07BD0D68137259DA00F04712 /* RSDebuggerMemoryGotoAddressSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D66137259D900F04712 /* RSDebuggerMemoryGotoAddressSheetController.m */; };
-		07BD0D6B13725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07BD0D6913725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib */; };
-		07BD0D6C13725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07BD0D6913725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib */; };
+		07BD0D67137259DA00F04712 /* RSDebuggerGotoAddressSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D66137259D900F04712 /* RSDebuggerGotoAddressSheetController.m */; };
+		07BD0D68137259DA00F04712 /* RSDebuggerGotoAddressSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07BD0D66137259D900F04712 /* RSDebuggerGotoAddressSheetController.m */; };
+		07BD0D6B13725E6000F04712 /* RSDebuggerGotoAddressSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07BD0D6913725E6000F04712 /* RSDebuggerGotoAddressSheet.xib */; };
+		07BD0D6C13725E6000F04712 /* RSDebuggerGotoAddressSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07BD0D6913725E6000F04712 /* RSDebuggerGotoAddressSheet.xib */; };
 		07C047D4136E490400598DD5 /* RSCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C047D3136E490400598DD5 /* RSCalculator.m */; };
 		07C047D5136E614900598DD5 /* RSCalculator.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C047D3136E490400598DD5 /* RSCalculator.m */; };
 		07C40FC71371040000667F54 /* RSNavigatorControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C40FC61371040000667F54 /* RSNavigatorControl.m */; };
@@ -493,6 +498,7 @@
 			files = (
 				07BA69851367D6C100AD7FF5 /* BWToolkitFramework.framework in Copy Private Frameworks */,
 				07BA69861367D6C400AD7FF5 /* Sparkle.framework in Copy Private Frameworks */,
+				078AAD951373DEB000B0421D /* RegexKit.framework in Copy Private Frameworks */,
 			);
 			name = "Copy Private Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -577,7 +583,6 @@
 		07200C6C1367622C0010AE58 /* NSBezierPath+StrokeExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBezierPath+StrokeExtensions.m"; sourceTree = "<group>"; };
 		07200C6E136762D90010AE58 /* NSShadow+MCAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSShadow+MCAdditions.h"; sourceTree = "<group>"; };
 		07200C6F136762D90010AE58 /* NSShadow+MCAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSShadow+MCAdditions.m"; sourceTree = "<group>"; };
-		0722EFF4136741EF00CB69BF /* Breakpoints16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Breakpoints16x16.png; sourceTree = "<group>"; };
 		0722EFF61367421D00CB69BF /* Building16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Building16x16.png; sourceTree = "<group>"; };
 		0722EFF81367439000CB69BF /* Symbols16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Symbols16x16.png; sourceTree = "<group>"; };
 		0724B7A7136390300061AA47 /* WCBadgedTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBadgedTextFieldCell.h; sourceTree = "<group>"; };
@@ -600,7 +605,6 @@
 		073043B71340714700BD7154 /* NSPopUpButton+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSPopUpButton+WCExtensions.h"; sourceTree = "<group>"; };
 		073043B81340714700BD7154 /* NSPopUpButton+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSPopUpButton+WCExtensions.m"; sourceTree = "<group>"; };
 		07463AAD1332AB7700744B98 /* WabbitCode.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WabbitCode.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		07463AB11332AB7700744B98 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
 		07463AB41332AB7700744B98 /* AppKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AppKit.framework; path = System/Library/Frameworks/AppKit.framework; sourceTree = SDKROOT; };
 		07463AB51332AB7700744B98 /* CoreData.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreData.framework; path = System/Library/Frameworks/CoreData.framework; sourceTree = SDKROOT; };
 		07463AB61332AB7700744B98 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -734,6 +738,9 @@
 		0789497713734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerDisassemblyTableView.m; sourceTree = "<group>"; };
 		078AAD881373788000B0421D /* RSDebuggerDisassemblyTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerDisassemblyTextFieldCell.h; sourceTree = "<group>"; };
 		078AAD891373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerDisassemblyTextFieldCell.m; sourceTree = "<group>"; };
+		078AAD8D1373A18600B0421D /* Breakpoint32x32.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Breakpoint32x32.png; sourceTree = "<group>"; };
+		078AAD8F1373A28F00B0421D /* RSGotoAddressControllerProtocol.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSGotoAddressControllerProtocol.h; sourceTree = "<group>"; };
+		078AAD921373D1DC00B0421D /* Breakpoints16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Breakpoints16x16.png; sourceTree = "<group>"; };
 		07905DA71367990B0079A404 /* NSBezierPath+MCAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSBezierPath+MCAdditions.h"; sourceTree = "<group>"; };
 		07905DA81367990B0079A404 /* NSBezierPath+MCAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSBezierPath+MCAdditions.m"; sourceTree = "<group>"; };
 		07905DCB1367BFD60079A404 /* WabbitEmu.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WabbitEmu.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -846,6 +853,9 @@
 		079DF4BF13694B0700289058 /* Hardware.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Hardware.png; sourceTree = "<group>"; };
 		079DF4C213694EB600289058 /* WEPreviewLCDView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEPreviewLCDView.h; sourceTree = "<group>"; };
 		079DF4C313694EB600289058 /* WEPreviewLCDView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEPreviewLCDView.m; sourceTree = "<group>"; };
+		079E02031374618100D947DD /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = RSDebuggerStackView.xib; sourceTree = "<group>"; };
+		079E02071374676800D947DD /* RSDebuggerStackTableView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerStackTableView.h; sourceTree = "<group>"; };
+		079E02081374676800D947DD /* RSDebuggerStackTableView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerStackTableView.m; sourceTree = "<group>"; };
 		07A31DDC133E61950081030A /* NSObject+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+WCExtensions.h"; sourceTree = "<group>"; };
 		07A31DDD133E61950081030A /* NSObject+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+WCExtensions.m"; sourceTree = "<group>"; };
 		07A31DE1133E6D990081030A /* WCBuildTarget.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBuildTarget.h; sourceTree = "<group>"; };
@@ -894,9 +904,7 @@
 		07B54927135D755B00B34C46 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCBreakpointsView.xib; sourceTree = "<group>"; };
 		07B75E091368AAB1007B13A2 /* WETransferSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WETransferSheetController.h; sourceTree = "<group>"; };
 		07B75E0A1368AAB1007B13A2 /* WETransferSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WETransferSheetController.m; sourceTree = "<group>"; };
-		07B7AD41136EAA9B00B414A7 /* Screenshots.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Screenshots.png; sourceTree = "<group>"; };
-		07B7AD45136EAD4200B414A7 /* 5.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 5.png; sourceTree = "<group>"; };
-		07B7AD47136EAE9000B414A7 /* 045.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = 045.png; sourceTree = "<group>"; };
+		07B7AD45136EAD4200B414A7 /* Screenshots.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Screenshots.png; sourceTree = "<group>"; };
 		07BA69971367F6CD00AD7FF5 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WEPreferencesWindow.xib; sourceTree = "<group>"; };
 		07BA69991367F71300AD7FF5 /* WEPreferencesWindowController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEPreferencesWindowController.h; sourceTree = "<group>"; };
 		07BA699A1367F71400AD7FF5 /* WEPreferencesWindowController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEPreferencesWindowController.m; sourceTree = "<group>"; };
@@ -923,9 +931,9 @@
 		07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerMemoryTableHeaderView.m; sourceTree = "<group>"; };
 		07BD0D6113722EB700F04712 /* WCTwoDigitHexFormatter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTwoDigitHexFormatter.h; sourceTree = "<group>"; };
 		07BD0D6213722EB800F04712 /* WCTwoDigitHexFormatter.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCTwoDigitHexFormatter.m; sourceTree = "<group>"; };
-		07BD0D65137259D900F04712 /* RSDebuggerMemoryGotoAddressSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerMemoryGotoAddressSheetController.h; sourceTree = "<group>"; };
-		07BD0D66137259D900F04712 /* RSDebuggerMemoryGotoAddressSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerMemoryGotoAddressSheetController.m; sourceTree = "<group>"; };
-		07BD0D6A13725E6000F04712 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = RSDebuggerMemoryGotoAddressSheet.xib; sourceTree = "<group>"; };
+		07BD0D65137259D900F04712 /* RSDebuggerGotoAddressSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSDebuggerGotoAddressSheetController.h; sourceTree = "<group>"; };
+		07BD0D66137259D900F04712 /* RSDebuggerGotoAddressSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSDebuggerGotoAddressSheetController.m; sourceTree = "<group>"; };
+		07BD0D6A13725E6000F04712 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = RSDebuggerGotoAddressSheet.xib; sourceTree = "<group>"; };
 		07C047D2136E490400598DD5 /* RSCalculator.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSCalculator.h; sourceTree = "<group>"; };
 		07C047D3136E490400598DD5 /* RSCalculator.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSCalculator.m; sourceTree = "<group>"; };
 		07C40FC51371040000667F54 /* RSNavigatorControl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSNavigatorControl.h; sourceTree = "<group>"; };
@@ -962,9 +970,6 @@
 		07D113D3136D04C200E3814E /* WCApplicationController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCApplicationController.m; sourceTree = "<group>"; };
 		07D1328D136AAA7300BD5A84 /* WabbitEmuQuickLook.qlgenerator */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WabbitEmuQuickLook.qlgenerator; sourceTree = BUILT_PRODUCTS_DIR; };
 		07D1328E136AAA7300BD5A84 /* QuickLook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickLook.framework; path = System/Library/Frameworks/QuickLook.framework; sourceTree = SDKROOT; };
-		07D13290136AAA7300BD5A84 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = System/Library/Frameworks/ApplicationServices.framework; sourceTree = SDKROOT; };
-		07D13292136AAA7300BD5A84 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = System/Library/Frameworks/CoreServices.framework; sourceTree = SDKROOT; };
-		07D13294136AAA7300BD5A84 /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		07D13298136AAA7400BD5A84 /* WabbitEmuQuickLook-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "WabbitEmuQuickLook-Info.plist"; sourceTree = "<group>"; };
 		07D1329C136AAA7400BD5A84 /* WabbitEmuQuickLook-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "WabbitEmuQuickLook-Prefix.pch"; sourceTree = "<group>"; };
 		07D1329D136AAA7400BD5A84 /* GenerateThumbnailForURL.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = GenerateThumbnailForURL.m; sourceTree = "<group>"; };
@@ -1015,10 +1020,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				078AAD8B13739F3600B0421D /* Cocoa.framework in Frameworks */,
 				07F1B8101342EE2C0013B9CC /* Carbon.framework in Frameworks */,
 				07463AF813332BCC00744B98 /* QuartzCore.framework in Frameworks */,
 				07D113D7136D13D800E3814E /* OpenGL.framework in Frameworks */,
-				07463AB21332AB7700744B98 /* Cocoa.framework in Frameworks */,
 				07AC0CE4133971DA0060F786 /* PSMTabBarControl.framework in Frameworks */,
 				07AF6E71133A8F4F00A2D188 /* RegexKit.framework in Frameworks */,
 				07604ADE133C9A4C00D8A432 /* Sparkle.framework in Frameworks */,
@@ -1030,9 +1035,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				078AAD8C13739F5600B0421D /* Cocoa.framework in Frameworks */,
 				07905E981367CA9A0079A404 /* OpenGL.framework in Frameworks */,
-				07905DCD1367BFD60079A404 /* Cocoa.framework in Frameworks */,
 				07BA69811367D68F00AD7FF5 /* BWToolkitFramework.framework in Frameworks */,
+				078AAD941373DEA600B0421D /* RegexKit.framework in Frameworks */,
 				07BA69831367D69300AD7FF5 /* Sparkle.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1062,6 +1068,7 @@
 		071B845E136F967F0046E023 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
+				078AAD8D1373A18600B0421D /* Breakpoint32x32.png */,
 				07B1462F13729559002157CF /* CPU16x16.tiff */,
 				07B146241372880C002157CF /* Step32x32.png */,
 				07B14620137287EC002157CF /* StepOver32x32.png */,
@@ -1122,11 +1129,7 @@
 				07AF6E70133A8F4F00A2D188 /* RegexKit.framework */,
 				07AC0CE3133971DA0060F786 /* PSMTabBarControl.framework */,
 				07463AF713332BCC00744B98 /* QuartzCore.framework */,
-				07463AB11332AB7700744B98 /* Cocoa.framework */,
 				07D1328E136AAA7300BD5A84 /* QuickLook.framework */,
-				07D13290136AAA7300BD5A84 /* ApplicationServices.framework */,
-				07D13292136AAA7300BD5A84 /* CoreServices.framework */,
-				07D13294136AAA7300BD5A84 /* CoreFoundation.framework */,
 				07463AB31332AB7700744B98 /* Other Frameworks */,
 			);
 			name = Frameworks;
@@ -1158,9 +1161,8 @@
 		07463AB81332AB7700744B98 /* Supporting Files */ = {
 			isa = PBXGroup;
 			children = (
-				07B7AD47136EAE9000B414A7 /* 045.png */,
-				07B7AD45136EAD4200B414A7 /* 5.png */,
-				07B7AD41136EAA9B00B414A7 /* Screenshots.png */,
+				078AAD921373D1DC00B0421D /* Breakpoints16x16.png */,
+				07B7AD45136EAD4200B414A7 /* Screenshots.png */,
 				07AE8994136D742D0014F788 /* StepOut16x16.png */,
 				07AE8992136D74180014F788 /* StepOver16x16.png */,
 				07AE8990136D73C60014F788 /* Step16x16.png */,
@@ -1172,7 +1174,6 @@
 				0755A719136C0B7D00B7C8E4 /* ErrorTwo.pdf */,
 				0722EFF81367439000CB69BF /* Symbols16x16.png */,
 				0722EFF61367421D00CB69BF /* Building16x16.png */,
-				0722EFF4136741EF00CB69BF /* Breakpoints16x16.png */,
 				07CB26391367220200220104 /* Warning.opacity */,
 				07CB263A1367220200220104 /* Warning.pdf */,
 				07CB263413671F4400220104 /* Error.opacity */,
@@ -1701,6 +1702,7 @@
 			isa = PBXGroup;
 			children = (
 				0755A721136C1A6000B7C8E4 /* RSCalculatorOwnerProtocol.h */,
+				078AAD8F1373A28F00B0421D /* RSGotoAddressControllerProtocol.h */,
 			);
 			name = Protocols;
 			sourceTree = "<group>";
@@ -1724,8 +1726,8 @@
 				07BD0D561371E74500F04712 /* RSDebuggerMemoryTableView.m */,
 				07BD0D5D1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.h */,
 				07BD0D5E1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m */,
-				07BD0D65137259D900F04712 /* RSDebuggerMemoryGotoAddressSheetController.h */,
-				07BD0D66137259D900F04712 /* RSDebuggerMemoryGotoAddressSheetController.m */,
+				07BD0D65137259D900F04712 /* RSDebuggerGotoAddressSheetController.h */,
+				07BD0D66137259D900F04712 /* RSDebuggerGotoAddressSheetController.m */,
 				07B14627137289D2002157CF /* RSDebuggerStackViewController.h */,
 				07B14628137289D2002157CF /* RSDebuggerStackViewController.m */,
 				078949661373330600B671C1 /* RSDebuggerMemoryTableColumn.h */,
@@ -1736,6 +1738,8 @@
 				0789497713734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m */,
 				078AAD881373788000B0421D /* RSDebuggerDisassemblyTextFieldCell.h */,
 				078AAD891373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m */,
+				079E02071374676800D947DD /* RSDebuggerStackTableView.h */,
+				079E02081374676800D947DD /* RSDebuggerStackTableView.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -1773,8 +1777,9 @@
 			children = (
 				07E657601370D94400C8536B /* RSDebuggerDetailsView.xib */,
 				07BD0D591371E9ED00F04712 /* RSDebuggerMemoryView.xib */,
-				07BD0D6913725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib */,
+				07BD0D6913725E6000F04712 /* RSDebuggerGotoAddressSheet.xib */,
 				0789496E137338EA00B671C1 /* RSDebuggerDisassemblyView.xib */,
+				079E02021374618100D947DD /* RSDebuggerStackView.xib */,
 			);
 			name = Xibs;
 			path = en.lproj;
@@ -1972,7 +1977,6 @@
 				071400CC13669E4C004AA5C6 /* ProjectWindow32x32.png in Resources */,
 				07CB263713671F4400220104 /* Error.pdf in Resources */,
 				07CB263C1367220200220104 /* Warning.pdf in Resources */,
-				0722EFF5136741EF00CB69BF /* Breakpoints16x16.png in Resources */,
 				0722EFF71367421D00CB69BF /* Building16x16.png in Resources */,
 				0722EFF91367439000CB69BF /* Symbols16x16.png in Resources */,
 				0755A71A136C0B7D00B7C8E4 /* ErrorTwo.opacity in Resources */,
@@ -1986,10 +1990,8 @@
 				07AE8991136D73C60014F788 /* Step16x16.png in Resources */,
 				07AE8993136D74180014F788 /* StepOver16x16.png in Resources */,
 				07AE8995136D742D0014F788 /* StepOut16x16.png in Resources */,
-				07B7AD42136EAA9B00B414A7 /* Screenshots.png in Resources */,
 				07B7AD44136EAC3400B414A7 /* Hardware.png in Resources */,
-				07B7AD46136EAD4200B414A7 /* 5.png in Resources */,
-				07B7AD48136EAE9000B414A7 /* 045.png in Resources */,
+				07B7AD46136EAD4200B414A7 /* Screenshots.png in Resources */,
 				071B846C136F96A00046E023 /* ti-73.png in Resources */,
 				071B846E136F96A00046E023 /* ti-82.png in Resources */,
 				071B8470136F96A00046E023 /* ti-82keymap.png in Resources */,
@@ -2013,11 +2015,13 @@
 				07BD0D4C1371E28800F04712 /* MemoryMap16x16.png in Resources */,
 				07BD0D4F1371E31D00F04712 /* Interrupts16x16.png in Resources */,
 				07BD0D5B1371E9ED00F04712 /* RSDebuggerMemoryView.xib in Resources */,
-				07BD0D6B13725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib in Resources */,
+				07BD0D6B13725E6000F04712 /* RSDebuggerGotoAddressSheet.xib in Resources */,
 				07B14621137287EC002157CF /* StepOver32x32.png in Resources */,
 				07B146251372880C002157CF /* Step32x32.png in Resources */,
 				07B1463013729559002157CF /* CPU16x16.tiff in Resources */,
 				07894970137338EA00B671C1 /* RSDebuggerDisassemblyView.xib in Resources */,
+				078AAD931373D1DC00B0421D /* Breakpoints16x16.png in Resources */,
+				079E02041374618100D947DD /* RSDebuggerStackView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2059,7 +2063,7 @@
 				07BD0D4D1371E28800F04712 /* MemoryMap16x16.png in Resources */,
 				07BD0D501371E31D00F04712 /* Interrupts16x16.png in Resources */,
 				07BD0D5C1371E9ED00F04712 /* RSDebuggerMemoryView.xib in Resources */,
-				07BD0D6C13725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib in Resources */,
+				07BD0D6C13725E6000F04712 /* RSDebuggerGotoAddressSheet.xib in Resources */,
 				07B14622137287EC002157CF /* StepOver32x32.png in Resources */,
 				07B146261372880C002157CF /* Step32x32.png in Resources */,
 				07B1462B137293D3002157CF /* StepOut16x16.png in Resources */,
@@ -2067,6 +2071,8 @@
 				07B1462D137293D3002157CF /* Step16x16.png in Resources */,
 				07B1463113729559002157CF /* CPU16x16.tiff in Resources */,
 				07894971137338EA00B671C1 /* RSDebuggerDisassemblyView.xib in Resources */,
+				078AAD8E1373A18600B0421D /* Breakpoint32x32.png in Resources */,
+				079E02051374618100D947DD /* RSDebuggerStackView.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2252,12 +2258,13 @@
 				07BD0D571371E74500F04712 /* RSDebuggerMemoryTableView.m in Sources */,
 				07BD0D5F1371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m in Sources */,
 				07BD0D6313722EB800F04712 /* WCTwoDigitHexFormatter.m in Sources */,
-				07BD0D67137259DA00F04712 /* RSDebuggerMemoryGotoAddressSheetController.m in Sources */,
+				07BD0D67137259DA00F04712 /* RSDebuggerGotoAddressSheetController.m in Sources */,
 				07B14629137289D2002157CF /* RSDebuggerStackViewController.m in Sources */,
 				078949681373330700B671C1 /* RSDebuggerMemoryTableColumn.m in Sources */,
 				0789496C137337B200B671C1 /* RSDebuggerDisassemblyViewController.m in Sources */,
 				078949741373433C00B671C1 /* WCNoLimitHexFormatter.m in Sources */,
 				0789497813734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m in Sources */,
+				079E02091374676800D947DD /* RSDebuggerStackTableView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2322,7 +2329,7 @@
 				07BD0D581371E74500F04712 /* RSDebuggerMemoryTableView.m in Sources */,
 				07BD0D601371ECA900F04712 /* RSDebuggerMemoryTableHeaderView.m in Sources */,
 				07BD0D6413722EB800F04712 /* WCTwoDigitHexFormatter.m in Sources */,
-				07BD0D68137259DA00F04712 /* RSDebuggerMemoryGotoAddressSheetController.m in Sources */,
+				07BD0D68137259DA00F04712 /* RSDebuggerGotoAddressSheetController.m in Sources */,
 				07B1462A137289D2002157CF /* RSDebuggerStackViewController.m in Sources */,
 				0789496413732DD600B671C1 /* WCVerticallyCenteredTextFieldCell.m in Sources */,
 				078949691373330700B671C1 /* RSDebuggerMemoryTableColumn.m in Sources */,
@@ -2330,6 +2337,7 @@
 				078949751373433C00B671C1 /* WCNoLimitHexFormatter.m in Sources */,
 				0789497913734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m in Sources */,
 				078AAD8A1373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m in Sources */,
+				079E020A1374676800D947DD /* RSDebuggerStackTableView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2537,6 +2545,14 @@
 			name = WCBuildMessagesView.xib;
 			sourceTree = "<group>";
 		};
+		079E02021374618100D947DD /* RSDebuggerStackView.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				079E02031374618100D947DD /* en */,
+			);
+			name = RSDebuggerStackView.xib;
+			sourceTree = "<group>";
+		};
 		07AC0CEB133973FD0060F786 /* WCFileView.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
@@ -2593,12 +2609,12 @@
 			name = RSDebuggerMemoryView.xib;
 			sourceTree = "<group>";
 		};
-		07BD0D6913725E6000F04712 /* RSDebuggerMemoryGotoAddressSheet.xib */ = {
+		07BD0D6913725E6000F04712 /* RSDebuggerGotoAddressSheet.xib */ = {
 			isa = PBXVariantGroup;
 			children = (
 				07BD0D6A13725E6000F04712 /* en */,
 			);
-			name = RSDebuggerMemoryGotoAddressSheet.xib;
+			name = RSDebuggerGotoAddressSheet.xib;
 			sourceTree = "<group>";
 		};
 		07C4D993134714F6004792DD /* WCSymbolsView.xib */ = {
