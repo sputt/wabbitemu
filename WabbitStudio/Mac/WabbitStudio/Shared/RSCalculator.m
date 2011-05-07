@@ -82,10 +82,18 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 }
 
 - (void)dealloc {
+	[(id)_owner removeObserver:self forKeyPath:@"isDebugging"];
 	_owner = nil;
 	_breakpointSelector = NULL;
 	calc_slot_free(_calc);
     [super dealloc];
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
+	if ([keyPath isEqualToString:@"isDebugging"] && context == self)
+		[self setProgramCounter:[self programCounter]];
+	else
+		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
 }
 
 + (RSCalculator *)calculatorWithOwner:(id <RSCalculatorOwner>)owner breakpointSelector:(SEL)breakpointSelector; {
@@ -97,8 +105,10 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 	
 	_calc = calc_slot_new();
 	
-	if (_calc == NULL)
+	if (_calc == NULL) {
+		[self release];
 		return nil;
+	}
 	
 	_owner = owner;
 	_breakpointSelector = breakpointSelector;
@@ -106,17 +116,17 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 	_calc->breakpoint_callback = &RSCalculatorBreakpointCallback;
 	_calc->breakpoint_owner = (void *)self;
 	
+	[(id)_owner addObserver:self forKeyPath:@"isDebugging" options:NSKeyValueObservingOptionNew context:(void *)self];
+	
 	return self;
 }
 
 - (void)step; {
 	[self willChangeValueForKey:@"programCounter"];
-	[self willChangeValueForKey:@"stackPointer"];
 	
 	CPU_step(&[self calc]->cpu);
 	
 	[self didChangeValueForKey:@"programCounter"];
-	[self didChangeValueForKey:@"stackPointer"];
 }
 
 - (void)stepOver; {
@@ -132,7 +142,6 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 	disassemble(cpu->mem_c, cpu->pc, 1, &zinflocal);
 	
 	[self willChangeValueForKey:@"programCounter"];
-	[self willChangeValueForKey:@"stackPointer"];
 	
 	if (cpu->halt) {
 		if (cpu->iff1) {
@@ -152,14 +161,14 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 			if (zinflocal.index == usable_commands[i]) {
 				while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && cpu->pc != (zinflocal.addr + zinflocal.size))
 					CPU_step(cpu);
-				return;
+				goto DID_CHANGE_VALUE_FOR_KEY;
 			}
 		}
 		CPU_step(cpu);
 	}
 	
+DID_CHANGE_VALUE_FOR_KEY:
 	[self didChangeValueForKey:@"programCounter"];
-	[self didChangeValueForKey:@"stackPointer"];
 }
 
 - (void)stepOut; {

@@ -30,6 +30,7 @@
 
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[(NSObject *)[_calculator owner] removeObserver:self forKeyPath:@"isDebugging"];
 	[_calculator removeObserver:self forKeyPath:@"programCounter"];
 	[_memoryTableView setDelegate:nil];
 	[_memoryTableView setDataSource:nil];
@@ -49,6 +50,9 @@
 	if ([keyPath isEqualToString:@"programCounter"] && context == self) {
 		[self scrollToAddress:[[self calculator] programCounter]];
 		[_memoryTableView reloadData];
+	}
+	else if ([keyPath isEqualToString:@"isDebugging"] && context == self) {
+		[self _adjustMemoryTableViewColumns];
 	}
 	else
 		[super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
@@ -136,6 +140,7 @@
 	_calculator = [calculator retain];
 	
 	[calculator addObserver:self forKeyPath:@"programCounter" options:NSKeyValueObservingOptionNew context:(void *)self];
+	[(NSObject *)[calculator owner] addObserver:self forKeyPath:@"isDebugging" options:NSKeyValueObservingOptionNew context:(void *)self];
 	
 	return self;
 }
@@ -167,6 +172,11 @@
 #define MIN_COLUMN_WIDTH 25.0
 
 - (void)_adjustMemoryTableViewColumns {
+	if (![[[self calculator] owner] isDebugging]) {
+		[self setNumberOfRows:0];
+		return;
+	}
+	
 	CGFloat byteColumnWidth = MIN_COLUMN_WIDTH + [_memoryTableView intercellSpacing].width;
 	
 	CGFloat addressColumnWidth = [(NSTableColumn *)[[_memoryTableView tableColumns] objectAtIndex:0] width] + [_memoryTableView intercellSpacing].width;

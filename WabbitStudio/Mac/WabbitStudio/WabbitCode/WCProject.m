@@ -355,7 +355,7 @@ static NSImage *_appIcon = nil;
 }
 
 - (NSArray *)toolbarDefaultItemIdentifiers:(NSToolbar *)toolbar {
-	return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarStatusViewItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,NSToolbarFlexibleSpaceItemIdentifier,nil];
+	return [NSArray arrayWithObjects:kWCProjectToolbarBuildTargetPopUpButtonItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarStatusViewItemIdentifier,NSToolbarFlexibleSpaceItemIdentifier,kWCProjectToolbarBuildItemIdentifier,kWCProjectToolbarBuildAndRunItemIdentifier,kWCProjectToolbarBuildAndDebugItemIdentifer,nil];
 }
 
 - (NSToolbarItem *)toolbar:(NSToolbar *)toolbar itemForItemIdentifier:(NSString *)itemIdentifier willBeInsertedIntoToolbar:(BOOL)flag {
@@ -610,7 +610,13 @@ static NSImage *_appIcon = nil;
 }
 
 - (NSImage *)navigatorControl:(RSNavigatorControl *)navigatorControl imageForItemAtIndex:(NSUInteger)itemIndex {
-	return [NSImage imageNamed:NSImageNameFolderSmart];
+	if (navigatorControl == _rightNavigatorControl) {
+		if (itemIndex == 0)
+			return [NSImage imageNamed:NSImageNameInfo];
+		else
+			return [NSImage imageNamed:@"Memory16x16"];
+	}
+	return nil;
 }
 
 - (NSView *)navigatorControl:(RSNavigatorControl *)navigatorControl viewForItemAtIndex:(NSUInteger)itemIndex {

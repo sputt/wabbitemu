@@ -12,6 +12,7 @@
 #import "NS(Attributed)String+Geometrics.h"
 #import "WCProject.h"
 #import "NSBezierPath+MCAdditions.h"
+#import "WCFile.h"
 
 
 static NSShadow *kDropShadow = nil;
@@ -32,13 +33,17 @@ static NSColor *kBorderColor = nil;
 	if ([WCProjectStatusView class] != self)
 		return;
 	
-	kBackgroundGradient = [[NSGradient alloc] initWithColorsAndLocations:[NSColor colorWithCalibratedRed:0.929 green:0.945 blue:0.882 alpha:1.0],0.0,[NSColor colorWithCalibratedRed:0.902 green:0.922 blue:0.835 alpha:1.0],0.5,[NSColor colorWithCalibratedRed:0.871 green:0.894 blue:0.78 alpha:1.0],0.5,[NSColor colorWithCalibratedRed:0.949 green:0.961 blue:0.878 alpha:1.0],1.0, nil];
+	// iTunes style
+	//kBackgroundGradient = [[NSGradient alloc] initWithColorsAndLocations:[NSColor colorWithCalibratedRed:0.929 green:0.945 blue:0.882 alpha:1.0],0.0,[NSColor colorWithCalibratedRed:0.902 green:0.922 blue:0.835 alpha:1.0],0.5,[NSColor colorWithCalibratedRed:0.871 green:0.894 blue:0.78 alpha:1.0],0.5,[NSColor colorWithCalibratedRed:0.949 green:0.961 blue:0.878 alpha:1.0],1.0, nil];
+	// Xcode style
+	kBackgroundGradient = [[NSGradient alloc] initWithColorsAndLocations:[NSColor colorWithCalibratedRed:0.957 green:0.976 blue:1.0 alpha:1.0],0.0,[NSColor colorWithCalibratedRed:0.871 green:0.894 blue:0.918 alpha:1.0],0.5,[NSColor colorWithCalibratedRed:0.831 green:0.851 blue:0.867 alpha:1.0],0.5,[NSColor colorWithCalibratedRed:0.82 green:0.847 blue:0.89 alpha:1.0],1.0, nil];
 	kDropShadow = [[NSShadow alloc] initWithColor:[NSColor colorWithCalibratedWhite:.863 alpha:.75] offset:NSMakeSize(0, -1.0) blurRadius:1.0];
 	kInnerShadow = [[NSShadow alloc] initWithColor:[NSColor colorWithCalibratedWhite:0.0 alpha:.52] offset:NSMakeSize(0.0, -1.0) blurRadius:4.0];
 	kBorderColor = [[NSColor colorWithCalibratedWhite:0.569 alpha:1.0] retain];
 }
 
 - (void)dealloc {
+	[self unbind:@"isDebugging"];
 	[self unbind:@"statusString"];
 	[self unbind:@"secondaryStatusString"];
 	[self unbind:@"buildStatus"];
@@ -68,8 +73,15 @@ static NSColor *kBorderColor = nil;
 	
 	[path fillWithInnerShadow:kInnerShadow];
 	
+	if ([self isDebugging]) {
+		NSAttributedString *attributedString = [[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:NSLocalizedString(@"Debugging %@", @"project status view debugging status string"),[[self project] displayName]] attributes:[self defaultAttributesForStatusString]] autorelease];
+		[attributedString drawInRect:WCCenteredRectWithSize(NSMakeSize(NSWidth(top), [attributedString size].height), top)];
+		
+		NSAttributedString *secondaryAttributedString = [[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:NSLocalizedString(@"Hit breakpoint in \"%@\" - line %lu", @"project status view debugging secondary status string"),[[[self project] currentBreakpointFile] name],[[self project] currentBreakpointLineNumber]] attributes:[self defaultAttributesForSecondaryStatusString]] autorelease];
+		[secondaryAttributedString drawInRect:WCCenteredRectWithSize(NSMakeSize(NSWidth(bottom), [attributedString size].height), bottom)];
+	}
 	// draw our strings normally if no build status has been set
-	if ([self buildStatus] == WCProjectBuildStatusNone) {
+	else if ([self buildStatus] == WCProjectBuildStatusNone) {
 		NSAttributedString *attributedString = [[[NSAttributedString alloc] initWithString:[self statusString] attributes:[self defaultAttributesForStatusString]] autorelease];
 		
 		[attributedString drawInRect:WCCenteredRectWithSize(NSMakeSize(NSWidth(top), [attributedString size].height), top)];
@@ -120,7 +132,7 @@ static NSColor *kBorderColor = nil;
 }
 
 - (id)initWithProject:(WCProject *)project; {
-	if (!(self = [super initWithFrame:NSMakeRect(0.0, 0.0, 250.0, 35.0)]))
+	if (!(self = [super initWithFrame:NSMakeRect(0.0, 0.0, 350.0, 35.0)]))
 		return nil;
 	
 	_project = project;
@@ -128,6 +140,7 @@ static NSColor *kBorderColor = nil;
 	[self bind:@"statusString" toObject:project withKeyPath:@"statusString" options:nil];
 	[self bind:@"secondaryStatusString" toObject:project withKeyPath:@"secondaryStatusString" options:nil];
 	[self bind:@"buildStatus" toObject:project withKeyPath:@"buildStatus" options:nil];
+	[self bind:@"isDebugging" toObject:project withKeyPath:@"isDebugging" options:nil];
 	
 	return self;
 }
@@ -170,6 +183,18 @@ static NSColor *kBorderColor = nil;
 		return;
 	
 	_buildStatus = buildStatus;
+	
+	[self setNeedsDisplay:YES];
+}
+@dynamic isDebugging;
+- (BOOL)isDebugging {
+	return _isDebugging;
+}
+- (void)setIsDebugging:(BOOL)isDebugging {
+	if (_isDebugging == isDebugging)
+		return;
+	
+	_isDebugging = isDebugging;
 	
 	[self setNeedsDisplay:YES];
 }

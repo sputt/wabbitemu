@@ -10,6 +10,7 @@
 #import "RSDebuggerMemoryTableHeaderView.h"
 #import "RSDebuggerGotoAddressSheetController.h"
 #import "RSCalculator.h"
+#import "NSView+WCExtensions.h"
 
 
 @implementation RSDebuggerMemoryTableView
@@ -21,6 +22,19 @@
 	[self setHeaderView:[[[RSDebuggerMemoryTableHeaderView alloc] init] autorelease]];
 	
 	return self;
+}
+
+- (BOOL)shouldDrawBackgroundString {
+	return ([self numberOfRows] == 0);
+}
+
+- (NSString *)backgroundString {
+	return NSLocalizedString(@"No Debug Session", @"debugger memory view background string");
+}
+
+- (void)drawBackgroundInClipRect:(NSRect)clipRect {
+	[super drawBackgroundInClipRect:clipRect];
+	[self drawBackgroundString];
 }
 
 - (IBAction)gotoAddress:(id)sender; {
