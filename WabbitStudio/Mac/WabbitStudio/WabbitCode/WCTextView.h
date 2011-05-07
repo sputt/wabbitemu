@@ -18,6 +18,7 @@
     WCSyntaxHighlighter *_syntaxHighlighter; // handles the coloring of keywords and symbols
 	WCLineHighlighter *_lineHighlighter; // handles the line highlight
 	__weak WCFindBarViewController *_findBarViewController;
+	NSTimer *_mouseMovedTimer;
 }
 @property (assign,nonatomic) WCFile *file;
 @property (readonly,nonatomic) NSString *currentSymbolString;
@@ -26,6 +27,8 @@
 @property (assign,nonatomic) WCFindBarViewController *findBarViewController;
 
 - (void)jumpToSymbol:(WCSymbol *)symbol;
+- (NSString *)symbolStringForRange:(NSRange)range;
+- (NSRange)symbolRangeForRange:(NSRange)range;
 
 - (IBAction)jumpToDefinition:(id)sender;
 - (IBAction)jumpToNextBuildMessage:(id)sender;

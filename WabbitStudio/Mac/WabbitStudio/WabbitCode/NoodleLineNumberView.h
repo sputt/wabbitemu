@@ -40,6 +40,7 @@
 	WCBuildMessage *_currentBuildMessage;
 	
 	BOOL _hasSetInitialRulerThickness;
+	NSTimer *_mouseMovedTimer;
 }
 @property (assign,nonatomic) WCBreakpointEditViewController *currentEditViewController;
 @property (readonly,nonatomic) WCFile *file;

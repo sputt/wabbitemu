@@ -46,6 +46,8 @@
 #import "WCBreakpointEditViewController.h"
 #import "WCBuildMessagesViewController.h"
 #import "NSArray+WCExtensions.h"
+#import "WCTooltip.h"
+#import "WCTooltipManager.h"
 
 
 #define DEFAULT_THICKNESS 22.0
@@ -80,6 +82,9 @@
 		
 		[self setupNotificationObserving];
 		[self setupUserDefaultsObserving];
+		
+		NSTrackingArea *tArea = [[[NSTrackingArea alloc] initWithRect:[self visibleRect] options:(NSTrackingActiveInKeyWindow|NSTrackingInVisibleRect|NSTrackingMouseMoved) owner:self userInfo:nil] autorelease];
+		[self addTrackingArea:tArea];
     }
     return self;
 }
@@ -144,12 +149,6 @@
 	// return an integral value here.
     return ceilf(MAX(defaultThickness, reqThickness));
 }
-#pragma mark Tooltips
-- (NSString *)view:(NSView *)view stringForToolTip:(NSToolTipTag)tag point:(NSPoint)point userData:(void *)data {
-	NSArray *messages = (NSArray *)data;
-	
-	return [[messages firstObject] name];
-}
 #pragma mark Mouse Handling
 - (void)mouseDown:(NSEvent *)theEvent {
 	if ([[self file] project] == nil)
@@ -211,9 +210,47 @@
 	[pool drain];
 }
 
-- (void)resetCursorRects {
-	[super resetCursorRects];
-	[self removeAllToolTips];
+- (void)mouseMoved:(NSEvent *)theEvent {
+	[super mouseMoved:theEvent];
+	
+	if (_mouseMovedTimer == nil)
+		_mouseMovedTimer = [NSTimer scheduledTimerWithTimeInterval:kTooltipDelay target:self selector:@selector(_mouseMovedTimerFired:) userInfo:nil repeats:NO];
+	else {
+		[_mouseMovedTimer setFireDate:[NSDate dateWithTimeIntervalSinceNow:kTooltipDelay]];
+		
+		[[WCTooltipManager sharedTooltipManager] hideTooltip];
+	}
+}
+
+- (void)_mouseMovedTimerFired:(NSTimer *)timer {
+	_mouseMovedTimer = nil;
+	if (!NSMouseInRect([[[self window] currentEvent] locationInWindow], [self convertRectToBase:[self visibleRect]], [self isFlipped]))
+		return;
+	
+	NSUInteger lineNumber = [self lineNumberForLocation:[self convertPointFromBase:[[[self window] currentEvent] locationInWindow]].y];
+	
+	if (lineNumber == NSNotFound)
+		return;
+	
+	NSArray *errors = [[self file] errorMessagesAtLineNumber:lineNumber];
+	NSArray *warnings = [[self file] warningMessagesAtLineNumber:lineNumber];
+	
+	if ([errors count] == 0 && [warnings count] == 0)
+		return;
+	
+	NSMutableString *tString = [NSMutableString string];
+	
+	for (WCBuildMessage *message in errors)
+		[tString appendFormat:NSLocalizedString(@"error: %@\n", @"ruler view build message error tooltip format string"),[message name]];
+	for (WCBuildMessage *message in warnings)
+		[tString appendFormat:NSLocalizedString(@"warning: %@\n", @"ruler view build message warning tooltip format string"),[message name]];
+	
+	NSPoint tPoint = [[self window] convertBaseToScreen:[[[self window] currentEvent] locationInWindow]];
+	
+	tPoint.x += floor([[NSCursor currentSystemCursor] image].size.width/2.0);
+	tPoint.y -= floor([[NSCursor currentSystemCursor] image].size.height/2.0);
+	
+	[[WCTooltipManager sharedTooltipManager] showTooltip:[WCTooltip tooltipWithString:tString atLocation:tPoint]];
 }
 
 #pragma mark Drawing
@@ -232,8 +269,6 @@
 		[NSBezierPath strokeLineFromPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMinY(bounds)) toPoint:NSMakePoint(NSMaxX(bounds) - 0.5, NSMaxY(bounds))];
 		return;
 	}
-	
-	//[self removeAllToolTips];
 	
 	NSLayoutManager *layoutManager = [view layoutManager];
 	NSTextContainer	*container = [view textContainer];
@@ -345,8 +380,6 @@
 						[icon setSize:NSMakeSize(BADGE_THICKNESS, BADGE_THICKNESS)];
 						
 						[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
-						
-						[self addToolTipRect:lineRect owner:self userData:(void *)errors];
 					}
 				}
 				
@@ -375,8 +408,6 @@
 						[icon setSize:NSMakeSize(BADGE_THICKNESS, BADGE_THICKNESS)];
 						
 						[icon drawInRect:drawRect fromRect:NSZeroRect operation:NSCompositeSourceOver fraction:1.0 respectFlipped:YES hints:nil];
-						
-						[self addToolTipRect:lineRect owner:self userData:(void *)warnings];
 					}
 				}
 				

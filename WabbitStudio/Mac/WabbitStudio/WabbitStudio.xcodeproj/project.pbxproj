@@ -429,6 +429,11 @@
 		07D28D4E1352588600437AA1 /* WCUnsavedFilesWindowController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D28D4D1352588500437AA1 /* WCUnsavedFilesWindowController.m */; };
 		07D28D541352651000437AA1 /* WCProjectWindow.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D28D531352651000437AA1 /* WCProjectWindow.m */; };
 		07D28D57135274BC00437AA1 /* WCUnsavedFilesWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07D28D55135274BC00437AA1 /* WCUnsavedFilesWindow.xib */; };
+		07D5B5F71375CADA000D72FF /* WCTooltipManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D5B5F61375CADA000D72FF /* WCTooltipManager.m */; };
+		07D5B5FB1375CC9B000D72FF /* WCTooltipPanel.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D5B5FA1375CC9B000D72FF /* WCTooltipPanel.m */; };
+		07D5B5FE1375CD44000D72FF /* WCTooltipView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D5B5FD1375CD44000D72FF /* WCTooltipView.m */; };
+		07D5B6011375CD88000D72FF /* WCTooltipPanel.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07D5B5FF1375CD88000D72FF /* WCTooltipPanel.xib */; };
+		07D5B6041375CEAE000D72FF /* WCTooltip.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D5B6031375CEAE000D72FF /* WCTooltip.m */; };
 		07E02058134BFBD40017B9BF /* NSTreeNode+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07E02057134BFBD40017B9BF /* NSTreeNode+WCExtensions.m */; };
 		07E0205B134C0C3C0017B9BF /* WCProjectBuildTargetPopUpButtonCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 07E0205A134C0C3C0017B9BF /* WCProjectBuildTargetPopUpButtonCell.m */; };
 		07E44E2A13503ECA00EBD5EA /* WCProjectNavView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07E44E2913503ECA00EBD5EA /* WCProjectNavView.m */; };
@@ -990,6 +995,15 @@
 		07D28D521352651000437AA1 /* WCProjectWindow.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCProjectWindow.h; sourceTree = "<group>"; };
 		07D28D531352651000437AA1 /* WCProjectWindow.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCProjectWindow.m; sourceTree = "<group>"; };
 		07D28D56135274BC00437AA1 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCUnsavedFilesWindow.xib; sourceTree = "<group>"; };
+		07D5B5F51375CADA000D72FF /* WCTooltipManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTooltipManager.h; sourceTree = "<group>"; };
+		07D5B5F61375CADA000D72FF /* WCTooltipManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCTooltipManager.m; sourceTree = "<group>"; };
+		07D5B5F91375CC9B000D72FF /* WCTooltipPanel.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTooltipPanel.h; sourceTree = "<group>"; };
+		07D5B5FA1375CC9B000D72FF /* WCTooltipPanel.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCTooltipPanel.m; sourceTree = "<group>"; };
+		07D5B5FC1375CD44000D72FF /* WCTooltipView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTooltipView.h; sourceTree = "<group>"; };
+		07D5B5FD1375CD44000D72FF /* WCTooltipView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCTooltipView.m; sourceTree = "<group>"; };
+		07D5B6001375CD88000D72FF /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCTooltipPanel.xib; sourceTree = "<group>"; };
+		07D5B6021375CEAE000D72FF /* WCTooltip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCTooltip.h; sourceTree = "<group>"; };
+		07D5B6031375CEAE000D72FF /* WCTooltip.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCTooltip.m; sourceTree = "<group>"; };
 		07E02056134BFBD40017B9BF /* NSTreeNode+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSTreeNode+WCExtensions.h"; sourceTree = "<group>"; };
 		07E02057134BFBD40017B9BF /* NSTreeNode+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSTreeNode+WCExtensions.m"; sourceTree = "<group>"; };
 		07E02059134C0C3C0017B9BF /* WCProjectBuildTargetPopUpButtonCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCProjectBuildTargetPopUpButtonCell.h; sourceTree = "<group>"; };
@@ -1249,6 +1263,7 @@
 				076B6DED135E644400754CDE /* WCFileWindow.xib */,
 				07BBD227135F7DE0005C4870 /* WCBreakpointEditView.xib */,
 				07D113CE136CF47D00E3814E /* WCDebuggerWindow.xib */,
+				07D5B5FF1375CD88000D72FF /* WCTooltipPanel.xib */,
 			);
 			name = Xibs;
 			path = en.lproj;
@@ -1435,6 +1450,14 @@
 				07BD0D6213722EB800F04712 /* WCTwoDigitHexFormatter.m */,
 				078949721373433B00B671C1 /* WCNoLimitHexFormatter.h */,
 				078949731373433B00B671C1 /* WCNoLimitHexFormatter.m */,
+				07D5B5F51375CADA000D72FF /* WCTooltipManager.h */,
+				07D5B5F61375CADA000D72FF /* WCTooltipManager.m */,
+				07D5B5F91375CC9B000D72FF /* WCTooltipPanel.h */,
+				07D5B5FA1375CC9B000D72FF /* WCTooltipPanel.m */,
+				07D5B5FC1375CD44000D72FF /* WCTooltipView.h */,
+				07D5B5FD1375CD44000D72FF /* WCTooltipView.m */,
+				07D5B6021375CEAE000D72FF /* WCTooltip.h */,
+				07D5B6031375CEAE000D72FF /* WCTooltip.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -2030,6 +2053,7 @@
 				078AAD931373D1DC00B0421D /* Breakpoints16x16.png in Resources */,
 				079E02041374618100D947DD /* RSDebuggerStackView.xib in Resources */,
 				0738A7661374FF50004A2DDB /* Memory16x16.png in Resources */,
+				07D5B6011375CD88000D72FF /* WCTooltipPanel.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2274,6 +2298,10 @@
 				0789497813734BAB00B671C1 /* RSDebuggerDisassemblyTableView.m in Sources */,
 				079E02091374676800D947DD /* RSDebuggerStackTableView.m in Sources */,
 				072D0C481374AEF300A9155F /* RSNavigatorControl.m in Sources */,
+				07D5B5F71375CADA000D72FF /* WCTooltipManager.m in Sources */,
+				07D5B5FB1375CC9B000D72FF /* WCTooltipPanel.m in Sources */,
+				07D5B5FE1375CD44000D72FF /* WCTooltipView.m in Sources */,
+				07D5B6041375CEAE000D72FF /* WCTooltip.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2667,6 +2695,14 @@
 				07D28D56135274BC00437AA1 /* en */,
 			);
 			name = WCUnsavedFilesWindow.xib;
+			sourceTree = "<group>";
+		};
+		07D5B5FF1375CD88000D72FF /* WCTooltipPanel.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				07D5B6001375CD88000D72FF /* en */,
+			);
+			name = WCTooltipPanel.xib;
 			sourceTree = "<group>";
 		};
 		07E657601370D94400C8536B /* RSDebuggerDetailsView.xib */ = {

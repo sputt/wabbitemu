@@ -51,7 +51,7 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	kWCSyntaxHighlighterBinariesRegex = [[RKRegex alloc] initWithRegexString:@"(?:%[01]+\\b)|(?:(?<=[^$%]\\b)[01]+b)" options:RKCompileUTF8];
 	kWCSyntaxHighlighterCommentsRegex = [[RKRegex alloc] initWithRegexString:@";+.*$" options:RKCompileUTF8|RKCompileMultiline];
 	
-	kWCSyntaxHighlighterSymbolsRegex = [[RKRegex alloc] initWithRegexString:@"[A-z0-9_!?.]+" options:RKCompileUTF8];
+	kWCSyntaxHighlighterSymbolsRegex = [[RKRegex alloc] initWithRegexString:@"[A-z0-9!?.]+" options:RKCompileUTF8];
 }
 
 - (id)initWithTextView:(WCTextView *)textView; {
@@ -120,7 +120,7 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 }
 
 - (NSArray *)notificationDictionaries {
-	return [NSArray arrayWithObjects:[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_textViewBoundsDidChange:)),kNSObjectSelectorKey,NSViewBoundsDidChangeNotification,kNSObjectNotificationNameKey,[[_textView enclosingScrollView] contentView],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_textViewFrameDidChange:)),kNSObjectSelectorKey,NSViewFrameDidChangeNotification,kNSObjectNotificationNameKey,[[_textView enclosingScrollView] contentView],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_symbolScannerFinishedScanning:)),kNSObjectSelectorKey,kWCSymbolScannerFinishedScanningNotification,kNSObjectNotificationNameKey,[[_textView file] symbolScanner],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_symbolScannerFinishedScanningHighlightImmediately:)),kNSObjectSelectorKey,kWCSymbolScannerFinishedScanningAfterSymbolsCaseSensitiveDidChangeNotification,kNSObjectNotificationNameKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileTextDidChange:)),kNSObjectSelectorKey,NSTextStorageDidProcessEditingNotification,kNSObjectNotificationNameKey,[[_textView file] textStorage],kNSObjectNotificationObjectKey, nil], nil];
+	return [NSArray arrayWithObjects:[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_textViewBoundsDidChange:)),kNSObjectSelectorKey,NSViewBoundsDidChangeNotification,kNSObjectNotificationNameKey,[[_textView enclosingScrollView] contentView],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_textViewFrameDidChange:)),kNSObjectSelectorKey,NSViewFrameDidChangeNotification,kNSObjectNotificationNameKey,[[_textView enclosingScrollView] contentView],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_symbolScannerFinishedScanning:)),kNSObjectSelectorKey,kWCSymbolScannerFinishedScanningNotification,kNSObjectNotificationNameKey,[[_textView file] symbolScanner],kNSObjectNotificationObjectKey, nil],[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_symbolScannerFinishedScanningHighlightImmediately:)),kNSObjectSelectorKey,kWCSymbolScannerFinishedScanningAfterSymbolsCaseSensitiveDidChangeNotification,kNSObjectNotificationNameKey, nil],/*[NSDictionary dictionaryWithObjectsAndKeys:NSStringFromSelector(@selector(_fileTextDidChange:)),kNSObjectSelectorKey,NSTextStorageDidProcessEditingNotification,kNSObjectNotificationNameKey,[[_textView file] textStorage],kNSObjectNotificationObjectKey, nil],*/ nil];
 }
 
 - (NSArray *)userDefaultsKeys {
@@ -137,7 +137,7 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	else if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesUseSyntaxHighlightingKey]) {
 		[[_textView layoutManager] removeTemporaryAttribute:NSForegroundColorAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
 		//[[_textView layoutManager] removeTemporaryAttribute:NSUnderlineStyleAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
-		[[_textView layoutManager] removeTemporaryAttribute:NSToolTipAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
+		//[[_textView layoutManager] removeTemporaryAttribute:NSToolTipAttributeName forCharacterRange:NSMakeRange(0, [[_textView string] length])];
 		return;
 	}
 	
@@ -152,7 +152,7 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	NSString *searchString = [string substringWithRange:searchRange];
 	
 	[[_textView layoutManager] removeTemporaryAttribute:NSForegroundColorAttributeName forCharacterRange:visibleRange];
-	[[_textView layoutManager] removeTemporaryAttribute:NSToolTipAttributeName forCharacterRange:visibleRange];
+	//[[_textView layoutManager] removeTemporaryAttribute:NSToolTipAttributeName forCharacterRange:visibleRange];
 	//[[_textView layoutManager] removeTemporaryAttribute:NSUnderlineStyleAttributeName forCharacterRange:visibleRange];
 	
 	// symbols
@@ -183,7 +183,7 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	BOOL highlightEquates = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEquatesKey];
 	BOOL highlightDefines = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesDefinesKey];
 	BOOL highlightMacros = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesMacrosKey];
-	BOOL showEquateValues = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorShowEquateValueTooltipsKey];
+	//BOOL showEquateValues = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorShowEquateValueTooltipsKey];
 	BOOL symbolsAreCaseSensitive = [[[[_textView file] project] activeBuildTarget] symbolsAreCaseSensitive];
 	
 	while ([symbolsEnum nextRanges] != NULL) {
@@ -194,8 +194,10 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 		if (highlightEquates && [equateNamesToSymbols objectForKey:symbolName]) {
 			[[_textView layoutManager] addTemporaryAttribute:NSForegroundColorAttributeName value:equatesColor forCharacterRange:actualRange];
 			
+			/*
 			if (showEquateValues)
 				[[_textView layoutManager] addTemporaryAttribute:NSToolTipAttributeName value:[[equateNamesToSymbols objectForKey:symbolName] symbolValue] forCharacterRange:actualRange];
+			 */
 		}
 		else if (highlightLabels && [labelNamesToSymbols objectForKey:symbolName]) {
 			[[_textView layoutManager] addTemporaryAttribute:NSForegroundColorAttributeName value:labelsColor forCharacterRange:actualRange];
@@ -350,10 +352,6 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 
 - (void)_textViewFrameDidChange:(NSNotification *)note {
 	[self performSyntaxHighlighting];
-}
-
-- (void)_fileTextDidChange:(NSNotification *)note {
-
 }
 
 - (void)_symbolScannerFinishedScanning:(NSNotification *)note {

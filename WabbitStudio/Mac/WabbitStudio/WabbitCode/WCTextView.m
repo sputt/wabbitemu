@@ -29,6 +29,8 @@
 #import "WCFileWindowController.h"
 #import "WCProjectFilesOutlineViewController.h"
 #import "NSTreeController+WCExtensions.h"
+#import "WCTooltipManager.h"
+#import "WCTooltip.h"
 
 // without this xcode complains about the restrict qualifiers in the regexkit header
 #define restrict
@@ -43,6 +45,8 @@
 #ifdef DEBUG
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
+	if (_mouseMovedTimer != nil)
+		[_mouseMovedTimer invalidate];
 	[self cleanupUserDefaultsObserving];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
 	[_syntaxHighlighter release];
@@ -64,7 +68,6 @@
 
 - (void)awakeFromNib {
 	[super awakeFromNib];
-	
 	[self toggleWrapLines:nil];
 }
 
@@ -73,8 +76,60 @@
 	
 	if ([event type] == NSLeftMouseDown &&
 		[event clickCount] == 2 &&
-		([event modifierFlags] & NSCommandKeyMask))
+		(([event modifierFlags] & NSCommandKeyMask) != 0)) {
+		
+		NSRange range = [self symbolRangeForRange:NSMakeRange([self characterIndexForInsertionAtPoint:[self convertPointFromBase:[event locationInWindow]]], 0)];
+		
+		if (range.location == NSNotFound)
+			return;
+		
+		[self setSelectedRange:range];
 		[self jumpToDefinition:nil];
+	}
+}
+
+- (void)mouseMoved:(NSEvent *)theEvent {
+	[super mouseMoved:theEvent];
+	
+	if (_mouseMovedTimer == nil)
+		_mouseMovedTimer = [NSTimer scheduledTimerWithTimeInterval:kTooltipDelay target:self selector:@selector(_mouseMovedTimerFired:) userInfo:nil repeats:NO];
+	else {
+		[_mouseMovedTimer setFireDate:[NSDate dateWithTimeIntervalSinceNow:kTooltipDelay]];
+		
+		[[WCTooltipManager sharedTooltipManager] hideTooltip];
+	}
+}
+
+- (void)_mouseMovedTimerFired:(NSTimer *)timer {
+	_mouseMovedTimer = nil;
+	if (!NSMouseInRect([[[self window] currentEvent] locationInWindow], [self convertRectToBase:[self visibleRect]], [self isFlipped]))
+		return;
+	
+	NSString *string = [self symbolStringForRange:NSMakeRange([self characterIndexForInsertionAtPoint:[self convertPointFromBase:[[[self window] currentEvent] locationInWindow]]],0)];
+	
+	if (string == nil)
+		return;
+	
+	NSArray *symbols = ([[self file] project] == nil)?[[[self file] symbolScanner] symbolsForSymbolName:string]:[[[self file] project] symbolsForSymbolName:string];
+	
+	if ([symbols count] == 0)
+		return;
+	
+	NSMutableString *tString = [NSMutableString string];
+	
+	for (WCSymbol *symbol in symbols) {
+		if ([symbol symbolType] == WCSymbolEquateType)
+			[tString appendFormat:@"%@ = %@\n",[symbol name],[symbol symbolValue]];
+		else
+			[tString appendFormat:@"%@\n",[symbol name]];
+	}
+	
+	NSPoint tPoint = [[self window] convertBaseToScreen:[[[self window] currentEvent] locationInWindow]];
+	
+	tPoint.x += floor([[NSCursor currentSystemCursor] image].size.width/2.0);
+	tPoint.y -= floor([[NSCursor currentSystemCursor] image].size.height/2.0);
+	
+	[[WCTooltipManager sharedTooltipManager] showTooltip:[WCTooltip tooltipWithString:tString atLocation:tPoint]];
 }
 
 - (void)drawViewBackgroundInRect:(NSRect)rect {
@@ -208,6 +263,17 @@
 		[super insertCompletion:word forPartialWordRange:charRange movement:movement isFinal:flag];
 }
  */
+
+- (NSRange)selectionRangeForProposedRange:(NSRange)proposedCharRange granularity:(NSSelectionGranularity)granularity {
+	if (granularity != NSSelectByWord || [[self string] length] == proposedCharRange.location || [[NSApp currentEvent] clickCount] != 2)
+		return [super selectionRangeForProposedRange:proposedCharRange granularity:granularity];
+	
+	NSRange range = [self symbolRangeForRange:proposedCharRange];
+	
+	if (range.location != NSNotFound)
+		return range;
+	return [super selectionRangeForProposedRange:proposedCharRange granularity:granularity];
+}
 
 - (NSMenu *)menu {
 	NSMenu *retval = [[[super menu] copy] autorelease];
@@ -404,6 +470,27 @@
 	[textView setSelectedRangeSafely:[symbol symbolRange] scrollRangeToVisible:YES];
 }
 
+- (NSString *)symbolStringForRange:(NSRange)range; {
+	NSRange fRange = [self symbolRangeForRange:range];
+	if (fRange.location != NSNotFound)
+		return [[self string] substringWithRange:fRange];
+	return nil;
+}
+
+- (NSRange)symbolRangeForRange:(NSRange)range; {
+	NSString *string = [self string];
+	
+	// search the line string for anything that looks like a symbol name
+	RKEnumerator *lineEnum = [[[RKEnumerator alloc] initWithRegex:kWCSyntaxHighlighterSymbolsRegex string:string inRange:[string lineRangeForRange:range]] autorelease];
+	
+	while ([lineEnum nextRanges] != NULL) {
+		NSRangePointer matchRange = [lineEnum currentRanges];
+		
+		if (NSLocationInRange(range.location, *matchRange))
+			return *matchRange;
+	}
+	return WCNotFoundRange;
+}
 #pragma mark Accessors
 @dynamic file;
 - (WCFile *)file {
@@ -424,22 +511,9 @@
 }
 @dynamic currentSymbolString;
 - (NSString *)currentSymbolString {
-	NSString *string = [self string];
-	NSRange selectedRange = [self selectedRange];
-	NSRange lineRange = [string lineRangeForRange:selectedRange];
-	NSString *lineString = [string substringWithRange:lineRange];
-	
-	// search the line string for anything that looks like a symbol name
-	RKEnumerator *lineEnum = [[[RKEnumerator alloc] initWithRegex:kWCSyntaxHighlighterSymbolsRegex string:lineString] autorelease];
-	
-	while ([lineEnum nextRanges] != NULL) {
-		NSRangePointer matchRange = [lineEnum currentRanges];
-
-		if (NSLocationInRange(selectedRange.location, NSMakeRange(lineRange.location + matchRange->location, matchRange->length)))
-			return [lineString substringWithRange:*matchRange];
-	}
-	return nil;
+	return [self symbolStringForRange:[self selectedRange]];
 }
+
 @synthesize fileViewController=_fileViewController;
 @synthesize syntaxHighlighter=_syntaxHighlighter;
 @synthesize findBarViewController=_findBarViewController;

@@ -9,6 +9,7 @@
 #import "WCDefines.h"
 
 const NSRange WCEmptyRange = (NSRange){0,0};
+const NSRange WCNotFoundRange = (NSRange){NSNotFound,0};
 
 const NSSize WCSmallSize = (NSSize){16.0,16.0};
 const NSSize WCMiniSize = (NSSize){14.0,14.0};

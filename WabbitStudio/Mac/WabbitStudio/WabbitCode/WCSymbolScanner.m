@@ -115,13 +115,15 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 	BOOL labelsAreCaseSensitive = [[[[self file] project] activeBuildTarget] symbolsAreCaseSensitive];
 	NSString *compareName = (labelsAreCaseSensitive)?name:[name lowercaseString];
 	
-	for (WCSymbol *symbol in [self symbols]) {
-		NSString *sname = (labelsAreCaseSensitive)?[symbol name]:[[symbol name] lowercaseString];
-		
-		if ([sname isEqualToString:compareName]) {
-			[retval addObject:symbol];
-		}
-	}
+	if ([[self equateNamesToSymbols] objectForKey:compareName])
+		[retval addObject:[[self equateNamesToSymbols] objectForKey:compareName]];
+	else if ([[self labelNamesToSymbols] objectForKey:compareName])
+		[retval addObject:[[self labelNamesToSymbols] objectForKey:compareName]];
+	if ([[self defineNamesToSymbols] objectForKey:compareName])
+		[retval addObject:[[self defineNamesToSymbols] objectForKey:compareName]];
+	if ([[self macroNamesToSymbols] objectForKey:compareName])
+		[retval addObject:[[self macroNamesToSymbols] objectForKey:compareName]];
+	
 	return [[retval copy] autorelease];
 }
 

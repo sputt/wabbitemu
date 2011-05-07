@@ -67,6 +67,7 @@ typedef NSUInteger WCProjectBuildStatus;
 
 // NSMakeRange(0,0)
 extern const NSRange WCEmptyRange;
+extern const NSRange WCNotFoundRange;
 
 // NSMakeSize(16.0,16.0)
 extern const NSSize WCSmallSize;
