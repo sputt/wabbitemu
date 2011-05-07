@@ -10,17 +10,12 @@
 #import "RSCalculatorOwnerProtocol.h"
 
 
-@class WELCDView,TLAnimatingOutlineView;
+@class WELCDView;
 
 @interface WCDebuggerWindowController : NSWindowController <NSWindowDelegate> {
 @private
-	IBOutlet NSDrawer *_LCDDrawer;
     IBOutlet WELCDView *_LCDView;
-	IBOutlet TLAnimatingOutlineView *_animatingOutlineView;
-	IBOutlet NSView *_registersView;
-	IBOutlet NSView *_flagsView;
 }
 @property (readonly,nonatomic) id <RSCalculatorOwner> calculatorOwner;
 @property (readonly,nonatomic) WELCDView *LCDView;
-@property (readonly,nonatomic) TLAnimatingOutlineView *animatingOutlineView;
 @end

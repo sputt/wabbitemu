@@ -415,6 +415,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 
 - (IBAction)showDebugger:(id)sender; {
 	[[self calculator] setIsRunning:NO];
+	[[self calculator] setIsDebugging:YES];
 	[self setIsDebugging:YES];
 	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] removeLCDView:[self LCDView]];
 	[[self debuggerWindowController] showWindow:nil];

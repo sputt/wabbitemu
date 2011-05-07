@@ -82,7 +82,6 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 }
 
 - (void)dealloc {
-	[(id)_owner removeObserver:self forKeyPath:@"isDebugging"];
 	_owner = nil;
 	_breakpointSelector = NULL;
 	calc_slot_free(_calc);
@@ -116,7 +115,7 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 	_calc->breakpoint_callback = &RSCalculatorBreakpointCallback;
 	_calc->breakpoint_owner = (void *)self;
 	
-	[(id)_owner addObserver:self forKeyPath:@"isDebugging" options:NSKeyValueObservingOptionNew context:(void *)self];
+	//[(id)_owner addObserver:self forKeyPath:@"isDebugging" options:NSKeyValueObservingOptionNew context:(void *)self];
 	
 	return self;
 }
@@ -336,6 +335,7 @@ DID_CHANGE_VALUE_FOR_KEY:
 	return (RSCalculatorModel)[self calc]->model;
 }
 @synthesize isRomOrSavestateLoaded=_isRomOrSavestateLoaded;
+@synthesize isDebugging=_isDebugging;
 #pragma mark Skin Images
 @dynamic skinImage;
 - (NSImage *)skinImage {

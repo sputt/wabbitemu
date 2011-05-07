@@ -37,6 +37,12 @@
 	[self drawBackgroundString];
 }
 
+- (void)drawGridInClipRect:(NSRect)clipRect {
+	if ([self shouldDrawBackgroundString])
+		return;
+	[super drawGridInClipRect:clipRect];
+}
+
 - (IBAction)gotoAddress:(id)sender; {
 	[RSDebuggerGotoAddressSheetController presentGotoAddressSheetForGotoAddressController:(id <RSGotoAddressController>)[self dataSource]];
 }

@@ -146,7 +146,6 @@ static NSImage *_appIcon = nil;
 	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
 #endif
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[_rightNavigatorControl setDataSource:nil];
 	[_debuggerMemoryViewController release];
 	[_debuggerDetailsViewController release];
 	[_calculator removeObserver:self forKeyPath:@"programCounter"];
@@ -560,6 +559,7 @@ static NSImage *_appIcon = nil;
 
 - (void)handleBreakpointCallback; {
 	[self setIsDebugging:YES];
+	[[self calculator] setIsDebugging:YES];
 	[self jumpToProgramCounter];
 }
 
@@ -596,7 +596,7 @@ static NSImage *_appIcon = nil;
 
 - (NSUInteger)numberOfItemsInNavigatorControl:(RSNavigatorControl *)navigatorControl {
 	if (navigatorControl == _rightNavigatorControl) {
-		return 2;
+		return (_isClosing)?0:2;
 	}
 	return 0;
 }

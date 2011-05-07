@@ -295,6 +295,24 @@
 						<reference key="NSMixedImage" ref="397929882"/>
 						<string key="NSAction">_popUpItemAction:</string>
 					</object>
+					<object class="NSMenuItem" id="907674364">
+						<reference key="NSMenu" ref="913054367"/>
+						<bool key="NSIsDisabled">YES</bool>
+						<bool key="NSIsSeparator">YES</bool>
+						<string key="NSTitle"/>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="860961308"/>
+						<reference key="NSMixedImage" ref="397929882"/>
+					</object>
+					<object class="NSMenuItem" id="578959604">
+						<reference key="NSMenu" ref="913054367"/>
+						<string key="NSTitle">Show Debugger</string>
+						<string key="NSKeyEquiv"/>
+						<int key="NSMnemonicLoc">2147483647</int>
+						<reference key="NSOnImage" ref="860961308"/>
+						<reference key="NSMixedImage" ref="397929882"/>
+					</object>
 				</object>
 				<object class="NSFont" key="NSMenuFont">
 					<string key="NSName">LucidaGrande</string>
@@ -530,6 +548,14 @@
 					</object>
 					<int key="connectionID">100130</int>
 				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBActionConnection" key="connection">
+						<string key="label">showDebugger:</string>
+						<reference key="source" ref="613418571"/>
+						<reference key="destination" ref="578959604"/>
+					</object>
+					<int key="connectionID">100133</int>
+				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
 				<object class="NSArray" key="orderedObjects">
@@ -593,6 +619,8 @@
 							<reference ref="425756865"/>
 							<reference ref="51260242"/>
 							<reference ref="887868457"/>
+							<reference ref="907674364"/>
+							<reference ref="578959604"/>
 						</object>
 						<reference key="parent" ref="0"/>
 					</object>
@@ -713,6 +741,16 @@
 						<reference key="object" ref="887868457"/>
 						<reference key="parent" ref="913054367"/>
 					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">100131</int>
+						<reference key="object" ref="907674364"/>
+						<reference key="parent" ref="913054367"/>
+					</object>
+					<object class="IBObjectRecord">
+						<int key="objectID">100132</int>
+						<reference key="object" ref="578959604"/>
+						<reference key="parent" ref="913054367"/>
+					</object>
 				</object>
 			</object>
 			<object class="NSMutableDictionary" key="flattenedProperties">
@@ -743,6 +781,8 @@
 					<string>100102.IBPluginDependency</string>
 					<string>100106.IBPluginDependency</string>
 					<string>100129.IBPluginDependency</string>
+					<string>100131.IBPluginDependency</string>
+					<string>100132.IBPluginDependency</string>
 					<string>5.IBEditorWindowLastContentRect</string>
 					<string>5.IBNSWindowAutoPositionCentersHorizontal</string>
 					<string>5.IBNSWindowAutoPositionCentersVertical</string>
@@ -779,6 +819,8 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
+					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>{{133, 170}, {507, 413}}</string>
 					<boolean value="NO"/>
 					<boolean value="NO"/>
@@ -802,7 +844,7 @@
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">100130</int>
+			<int key="maxID">100133</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

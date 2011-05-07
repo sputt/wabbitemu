@@ -50,7 +50,7 @@
 				<string key="NSClassName">NSApplication</string>
 			</object>
 			<object class="NSScrollView" id="842555714">
-				<nil key="NSNextResponder"/>
+				<reference key="NSNextResponder"/>
 				<int key="NSvFlags">274</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -64,7 +64,7 @@
 								<int key="NSvFlags">258</int>
 								<string key="NSFrameSize">{259, 344}</string>
 								<reference key="NSSuperview" ref="171948044"/>
-								<reference key="NSNextKeyView" ref="766701194"/>
+								<reference key="NSNextKeyView" ref="226785703"/>
 								<string key="NSClassName">TLAnimatingOutlineView</string>
 							</object>
 						</object>
@@ -88,6 +88,7 @@
 						<int key="NSvFlags">-2147483392</int>
 						<string key="NSFrame">{{229, 0}, {15, 344}}</string>
 						<reference key="NSSuperview" ref="842555714"/>
+						<reference key="NSNextKeyView"/>
 						<reference key="NSTarget" ref="842555714"/>
 						<string key="NSAction">_doScroller:</string>
 						<double key="NSCurValue">1</double>
@@ -107,7 +108,8 @@
 					</object>
 				</object>
 				<string key="NSFrameSize">{244, 344}</string>
-				<reference key="NSNextKeyView" ref="171948044"/>
+				<reference key="NSSuperview"/>
+				<reference key="NSNextKeyView" ref="766701194"/>
 				<int key="NSsFlags">656</int>
 				<reference key="NSVScroller" ref="226785703"/>
 				<reference key="NSHScroller" ref="766701194"/>
@@ -599,7 +601,6 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{17, 18}, {42, 18}}</string>
 						<reference key="NSSuperview" ref="163703047"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="6016956"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="1045972305">
@@ -628,7 +629,6 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{30, 42}, {29, 18}}</string>
 						<reference key="NSSuperview" ref="163703047"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="321764426"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="724210877">
@@ -652,7 +652,6 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{71, 42}, {28, 18}}</string>
 						<reference key="NSSuperview" ref="163703047"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="568508179"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="284569852">
@@ -676,7 +675,6 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{64, 18}, {35, 18}}</string>
 						<reference key="NSSuperview" ref="163703047"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="556840194"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="767773256">
@@ -700,7 +698,6 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{105, 42}, {29, 18}}</string>
 						<reference key="NSSuperview" ref="163703047"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="160514891"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="270489090">
@@ -724,7 +721,6 @@
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{104, 18}, {30, 18}}</string>
 						<reference key="NSSuperview" ref="163703047"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="48983454">
@@ -746,7 +742,6 @@
 				</object>
 				<string key="NSFrameSize">{152, 78}</string>
 				<reference key="NSSuperview"/>
-				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="483204404"/>
 				<string key="NSClassName">NSView</string>
 			</object>
@@ -2461,6 +2456,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{17, 20}, {98, 14}}</string>
 						<reference key="NSSuperview" ref="277294083"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="1011024927"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="830743177">
@@ -2478,6 +2474,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{117, 42}, {62, 14}}</string>
 						<reference key="NSSuperview" ref="277294083"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="106253514"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="204614671">
@@ -2551,6 +2548,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{40, 42}, {75, 14}}</string>
 						<reference key="NSSuperview" ref="277294083"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="151973116"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="64656697">
@@ -2568,6 +2566,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{17, 64}, {98, 14}}</string>
 						<reference key="NSSuperview" ref="277294083"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="510946508"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="611845290">
@@ -2585,6 +2584,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{61, 106}, {41, 18}}</string>
 						<reference key="NSSuperview" ref="277294083"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="578475419"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="200174802">
@@ -2608,6 +2608,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{117, 86}, {62, 14}}</string>
 						<reference key="NSSuperview" ref="277294083"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="603403274"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="1054017191">
@@ -2681,6 +2682,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{117, 20}, {62, 14}}</string>
 						<reference key="NSSuperview" ref="277294083"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="847638555">
@@ -2754,6 +2756,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{117, 64}, {62, 14}}</string>
 						<reference key="NSSuperview" ref="277294083"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="171801026"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="907834349">
@@ -2827,6 +2830,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{17, 106}, {41, 18}}</string>
 						<reference key="NSSuperview" ref="277294083"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="994604637"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSButtonCell" key="NSCell" id="470133010">
@@ -2850,6 +2854,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 						<int key="NSvFlags">268</int>
 						<string key="NSFrame">{{40, 86}, {75, 14}}</string>
 						<reference key="NSSuperview" ref="277294083"/>
+						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="1056774784"/>
 						<bool key="NSEnabled">YES</bool>
 						<object class="NSTextFieldCell" key="NSCell" id="336003051">
@@ -2865,6 +2870,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<string key="NSFrameSize">{196, 142}</string>
 				<reference key="NSSuperview"/>
+				<reference key="NSWindow"/>
 				<reference key="NSNextKeyView" ref="722956536"/>
 				<string key="NSClassName">NSView</string>
 			</object>
@@ -4691,803 +4697,803 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="326930853"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="326930853"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">378</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="979716913"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="979716913"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">379</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="455076553"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="455076553"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">380</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="532133534"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="532133534"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">381</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="582731447"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="582731447"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">382</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="807758629"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="807758629"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">383</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="625032189"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="625032189"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">384</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="1017528648"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="1017528648"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">385</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="499687869"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="499687869"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">386</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="882884084"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="882884084"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">387</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="180187286"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="180187286"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">393</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="835157154"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="835157154"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">394</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="659616451"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="659616451"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">395</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="399418013"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="399418013"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">396</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="468053154"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="468053154"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">397</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="84298874"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="84298874"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">398</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="959658142"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="959658142"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">399</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="833845231"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="833845231"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">400</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="176593518"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="176593518"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">401</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="89284475"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="89284475"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">402</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="456591106"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="456591106"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">403</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="396054223"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="396054223"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">404</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="62230235"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="62230235"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">405</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="829413383"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="829413383"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">406</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="328329464"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="328329464"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">407</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="917000015"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="917000015"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">408</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="572659904"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="572659904"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">409</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="342832855"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="342832855"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">410</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="1001357070"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="1001357070"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">411</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="300757816"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="300757816"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">412</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="722956536"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="722956536"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">413</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="994604637"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="994604637"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">414</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
+						<string key="label">enabled: selection.isDebugging</string>
 						<reference key="source" ref="763933376"/>
 						<reference key="destination" ref="852238187"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="763933376"/>
 							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">415</int>
+					<int key="connectionID">434</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="471263735"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="471263735"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">416</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="834109091"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="834109091"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">417</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="327551503"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="327551503"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">418</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="857673247"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="857673247"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">419</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="5412478"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="5412478"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">420</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="332924577"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="332924577"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">421</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="112245948"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="112245948"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">422</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="566541624"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="566541624"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">423</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="769936625"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="769936625"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">424</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="283733005"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="283733005"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">425</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
-						<reference key="source" ref="790474344"/>
-						<reference key="destination" ref="852238187"/>
-						<object class="NSNibBindingConnector" key="connector">
-							<reference key="NSSource" ref="790474344"/>
-							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
-							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
-							<int key="NSNibBindingConnectorVersion">2</int>
-						</object>
-					</object>
-					<int key="connectionID">426</int>
-				</object>
-				<object class="IBConnectionRecord">
-					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
+						<string key="label">enabled: selection.isDebugging</string>
 						<reference key="source" ref="483204404"/>
 						<reference key="destination" ref="852238187"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="483204404"/>
 							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">427</int>
+					<int key="connectionID">435</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
+						<string key="label">enabled: selection.isDebugging</string>
 						<reference key="source" ref="321764426"/>
 						<reference key="destination" ref="852238187"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="321764426"/>
 							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">428</int>
+					<int key="connectionID">437</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
+						<string key="label">enabled: selection.isDebugging</string>
 						<reference key="source" ref="568508179"/>
 						<reference key="destination" ref="852238187"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="568508179"/>
 							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">429</int>
+					<int key="connectionID">438</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
+						<string key="label">enabled: selection.isDebugging</string>
 						<reference key="source" ref="160514891"/>
 						<reference key="destination" ref="852238187"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="160514891"/>
 							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">430</int>
+					<int key="connectionID">439</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
+						<string key="label">enabled: selection.isDebugging</string>
 						<reference key="source" ref="6016956"/>
 						<reference key="destination" ref="852238187"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="6016956"/>
 							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">431</int>
+					<int key="connectionID">440</int>
 				</object>
 				<object class="IBConnectionRecord">
 					<object class="IBBindingConnection" key="connection">
-						<string key="label">enabled: selection.owner.isDebugging</string>
+						<string key="label">enabled: selection.isDebugging</string>
 						<reference key="source" ref="556840194"/>
 						<reference key="destination" ref="852238187"/>
 						<object class="NSNibBindingConnector" key="connector">
 							<reference key="NSSource" ref="556840194"/>
 							<reference key="NSDestination" ref="852238187"/>
-							<string key="NSLabel">enabled: selection.owner.isDebugging</string>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
 							<string key="NSBinding">enabled</string>
-							<string key="NSKeyPath">selection.owner.isDebugging</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
 							<int key="NSNibBindingConnectorVersion">2</int>
 						</object>
 					</object>
-					<int key="connectionID">432</int>
+					<int key="connectionID">441</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="572659904"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="572659904"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">442</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="342832855"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="342832855"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">443</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="1001357070"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="1001357070"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">444</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="300757816"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="300757816"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">445</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="326930853"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="326930853"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">446</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="979716913"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="979716913"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">447</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="807758629"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="807758629"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">448</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="455076553"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="455076553"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">449</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="625032189"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="625032189"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">450</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="532133534"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="532133534"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">451</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="1017528648"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="1017528648"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">452</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="582731447"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="582731447"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">453</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="499687869"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="499687869"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">454</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="882884084"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="882884084"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">455</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="180187286"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="180187286"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">456</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="835157154"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="835157154"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">457</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="659616451"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="659616451"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">458</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="399418013"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="399418013"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">459</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="468053154"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="468053154"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">460</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="84298874"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="84298874"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">461</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="959658142"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="959658142"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">462</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="833845231"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="833845231"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">463</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="176593518"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="176593518"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">464</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="89284475"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="89284475"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">465</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="456591106"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="456591106"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">466</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="396054223"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="396054223"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">467</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="62230235"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="62230235"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">468</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="829413383"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="829413383"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">469</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="328329464"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="328329464"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">470</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="917000015"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="917000015"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">471</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="332924577"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="332924577"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">472</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="471263735"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="471263735"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">473</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="112245948"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="112245948"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">474</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="834109091"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="834109091"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">475</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="566541624"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="566541624"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">476</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="327551503"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="327551503"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">477</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="769936625"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="769936625"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">478</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="857673247"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="857673247"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">479</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="283733005"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="283733005"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">480</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="5412478"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="5412478"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">481</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="790474344"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="790474344"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">482</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="722956536"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="722956536"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">483</int>
+				</object>
+				<object class="IBConnectionRecord">
+					<object class="IBBindingConnection" key="connection">
+						<string key="label">enabled: selection.isDebugging</string>
+						<reference key="source" ref="994604637"/>
+						<reference key="destination" ref="852238187"/>
+						<object class="NSNibBindingConnector" key="connector">
+							<reference key="NSSource" ref="994604637"/>
+							<reference key="NSDestination" ref="852238187"/>
+							<string key="NSLabel">enabled: selection.isDebugging</string>
+							<string key="NSBinding">enabled</string>
+							<string key="NSKeyPath">selection.isDebugging</string>
+							<int key="NSNibBindingConnectorVersion">2</int>
+						</object>
+					</object>
+					<int key="connectionID">484</int>
 				</object>
 			</object>
 			<object class="IBMutableOrderedSet" key="objectRecords">
@@ -5540,7 +5546,6 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<reference ref="802855287"/>
 							<reference ref="834109091"/>
 							<reference ref="566541624"/>
-							<reference ref="112245948"/>
 							<reference ref="649607233"/>
 							<reference ref="171853288"/>
 							<reference ref="830005561"/>
@@ -5556,6 +5561,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<reference ref="5412478"/>
 							<reference ref="327551503"/>
 							<reference ref="471263735"/>
+							<reference ref="112245948"/>
 						</object>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">Registers</string>
@@ -6114,11 +6120,11 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<reference ref="959658142"/>
 							<reference ref="925601645"/>
 							<reference ref="399418013"/>
-							<reference ref="917000015"/>
 							<reference ref="327089569"/>
 							<reference ref="859846913"/>
 							<reference ref="445849437"/>
 							<reference ref="1013058404"/>
+							<reference ref="917000015"/>
 						</object>
 						<reference key="parent" ref="0"/>
 						<string key="objectName">MemoryMap</string>
@@ -7676,7 +7682,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 				<reference key="dict.values" ref="0"/>
 			</object>
 			<nil key="sourceID"/>
-			<int key="maxID">432</int>
+			<int key="maxID">484</int>
 		</object>
 		<object class="IBClassDescriber" key="IBDocument.Classes">
 			<object class="NSMutableArray" key="referencedPartialClassDescriptions">

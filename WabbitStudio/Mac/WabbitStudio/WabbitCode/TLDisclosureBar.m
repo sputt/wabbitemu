@@ -33,6 +33,7 @@
 #import "TLDisclosureBar.h"
 
 #import "TLCollapsibleView.h"
+#import "NSGradient+WCExtensions.h"
 
 #define TL_DISCLOSURE_BAR_SUBVIEW_SPACING 6.0f
 #define TL_DISCLOSURE_BAR_TEXT_WIDTH_PADDING 10.0f
@@ -107,14 +108,21 @@
 		return nil;
 	
 	self.drawsBorder = YES;
+	//self.drawsBorder = NO;
 	self.borderSidesMask = (TLMinYEdge|TLMaxYEdge);
-	self.drawsHighlight = YES;
+	//self.drawsHighlight = YES;
+	self.drawsHighlight = NO;
 	[self setAutoresizesSubviews:YES];
 	[self setAutoresizingMask:NSViewWidthSizable];
 	
+	/*
 	self.activeFillGradient = [[[NSGradient alloc] initWithColors:[NSArray arrayWithObjects:[NSColor colorWithCalibratedWhite:0.916 alpha:1.0],[NSColor colorWithCalibratedWhite:0.814 alpha:1.0],nil]] autorelease];
 	self.inactiveFillGradient = [[[NSGradient alloc] initWithColors:[NSArray arrayWithObjects:[NSColor colorWithCalibratedWhite:0.916 alpha:1.0],[NSColor colorWithCalibratedWhite:0.916 alpha:1.0],nil]] autorelease];
 	self.clickedFillGradient = [[[NSGradient alloc] initWithColors:[NSArray arrayWithObjects:[NSColor colorWithCalibratedWhite:0.83f alpha:1.0f],nil]] autorelease];
+	 */
+	self.activeFillGradient = [[[NSGradient alloc] initWithColorsAndLocations:[NSColor colorWithCalibratedRed:0.925 green:0.929 blue:0.973 alpha:1.0],0.0,[NSColor colorWithCalibratedRed:0.882 green:0.894 blue:0.949 alpha:1.0],0.5,[NSColor colorWithCalibratedRed:0.847 green:0.851 blue:0.918 alpha:1.0],0.5,[NSColor colorWithCalibratedRed:0.749 green:0.757 blue:0.827 alpha:1.0],1.0, nil] autorelease];
+	self.inactiveFillGradient = self.activeFillGradient;
+	self.clickedFillGradient = [[[NSGradient alloc] initWithColorsAndLocations:[NSColor colorWithCalibratedRed:0.749 green:0.757 blue:0.827 alpha:1.0],0.0,[NSColor colorWithCalibratedRed:0.882 green:0.894 blue:0.949 alpha:1.0],0.5,[NSColor colorWithCalibratedRed:0.847 green:0.851 blue:0.918 alpha:1.0],0.5,[NSColor colorWithCalibratedRed:0.749 green:0.757 blue:0.827 alpha:1.0],1.0, nil] autorelease];
 	
 	NSRect disclosureFrame = frame;
 	disclosureFrame.origin.x += TL_DISCLOSURE_BAR_MINX_PADDING;

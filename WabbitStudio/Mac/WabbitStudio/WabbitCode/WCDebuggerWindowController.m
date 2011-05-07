@@ -9,7 +9,7 @@
 #import "WCDebuggerWindowController.h"
 #import "WCApplicationController.h"
 #import "WELCDView.h"
-#import "TLAnimatingOutlineView.h"
+#import "RSCalculator.h"
 
 
 @implementation WCDebuggerWindowController
@@ -31,11 +31,6 @@
 	
 	[[self LCDView] setCalculator:[[self calculatorOwner] calculator]];
 	[[WCApplicationController sharedApplicationController] addLCDView:_LCDView];
-	
-	[[self animatingOutlineView] addView:_registersView withImage:[NSImage imageNamed:NSImageNamePreferencesGeneral] label:NSLocalizedString(@"Registers", @"registers view label") expanded:YES];
-	[[self animatingOutlineView] addView:_flagsView withImage:[NSImage imageNamed:NSImageNameDotMac] label:NSLocalizedString(@"Flags", @"registers view label") expanded:YES];
-	
-	[_LCDDrawer toggle:nil];
 }
 
 
@@ -43,6 +38,7 @@
 - (void)windowWillClose:(NSNotification *)notification {
 	[[WCApplicationController sharedApplicationController] removeLCDView:_LCDView];
 	[[self calculatorOwner] setIsDebugging:NO];
+	[[[self calculatorOwner] calculator] setIsDebugging:NO];
 }
 
 @dynamic calculatorOwner;
@@ -50,5 +46,4 @@
 	return (id <RSCalculatorOwner>)[self document];
 }
 @synthesize LCDView=_LCDView;
-@synthesize animatingOutlineView=_animatingOutlineView;
 @end

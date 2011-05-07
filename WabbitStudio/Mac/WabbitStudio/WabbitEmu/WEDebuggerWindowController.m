@@ -29,6 +29,7 @@ NSString *const kRSDebuggerWindowToolbarToggleBreakpointIdentifier = @"toggleBre
 }
 
 - (void)dealloc {
+	[_stackViewController release];
 	[_detailsViewController release];
 	[_memoryViewController release];
 	[_disassemblyViewController release];
@@ -115,6 +116,7 @@ NSString *const kRSDebuggerWindowToolbarToggleBreakpointIdentifier = @"toggleBre
 
 - (void)windowWillClose:(NSNotification *)notification {
 	[[self calculatorDocument] setIsDebugging:NO];
+	[[[self calculatorDocument] calculator] setIsDebugging:NO];
 	[[[self calculatorDocument] calculator] setIsRunning:YES];
 	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] addLCDView:[[self calculatorDocument] LCDView]];
 }

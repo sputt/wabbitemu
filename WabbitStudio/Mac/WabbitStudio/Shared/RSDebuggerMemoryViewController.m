@@ -30,7 +30,7 @@
 
 - (void)dealloc {
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
-	[(NSObject *)[_calculator owner] removeObserver:self forKeyPath:@"isDebugging"];
+	[_calculator removeObserver:self forKeyPath:@"isDebugging"];
 	[_calculator removeObserver:self forKeyPath:@"programCounter"];
 	[_memoryTableView setDelegate:nil];
 	[_memoryTableView setDataSource:nil];
@@ -130,7 +130,6 @@
 		}
 	}
 	
-	NSBeep();
 }
 
 - (id)initWithCalculator:(RSCalculator *)calculator; {
@@ -140,7 +139,7 @@
 	_calculator = [calculator retain];
 	
 	[calculator addObserver:self forKeyPath:@"programCounter" options:NSKeyValueObservingOptionNew context:(void *)self];
-	[(NSObject *)[calculator owner] addObserver:self forKeyPath:@"isDebugging" options:NSKeyValueObservingOptionNew context:(void *)self];
+	[calculator addObserver:self forKeyPath:@"isDebugging" options:NSKeyValueObservingOptionNew context:(void *)self];
 	
 	return self;
 }
@@ -196,9 +195,8 @@
 		[self setNumberOfRows:CALC_MEMORY_SIZE/maxNumberOfByteColumns];
 	}
 	else {
-		while (currentNumberOfByteColumns-- > maxNumberOfByteColumns) {
+		while (currentNumberOfByteColumns-- > maxNumberOfByteColumns)
 			[_memoryTableView removeTableColumn:[[_memoryTableView tableColumns] lastObject]];
-		}
 		
 		[self setNumberOfRows:CALC_MEMORY_SIZE/maxNumberOfByteColumns];
 	}

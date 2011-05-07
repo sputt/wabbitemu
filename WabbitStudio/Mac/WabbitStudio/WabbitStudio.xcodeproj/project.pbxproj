@@ -88,6 +88,8 @@
 		073043B91340714700BD7154 /* NSPopUpButton+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 073043B81340714700BD7154 /* NSPopUpButton+WCExtensions.m */; };
 		0738A7631374F1B5004A2DDB /* NSView+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 075EB12E133F431200A34611 /* NSView+WCExtensions.m */; };
 		0738A7661374FF50004A2DDB /* Memory16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0738A7651374FF50004A2DDB /* Memory16x16.png */; };
+		0738A76913750239004A2DDB /* NSShadow+MCAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07200C6F136762D90010AE58 /* NSShadow+MCAdditions.m */; };
+		0738A76A13750241004A2DDB /* NSBezierPath+MCAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DA81367990B0079A404 /* NSBezierPath+MCAdditions.m */; };
 		07463ABC1332AB7700744B98 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 07463ABA1332AB7700744B98 /* InfoPlist.strings */; };
 		07463ABF1332AB7700744B98 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 07463ABE1332AB7700744B98 /* main.m */; };
 		07463AC21332AB7700744B98 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 07463AC01332AB7700744B98 /* Credits.rtf */; };
@@ -2346,6 +2348,8 @@
 				078AAD8A1373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m in Sources */,
 				079E020A1374676800D947DD /* RSDebuggerStackTableView.m in Sources */,
 				0738A7631374F1B5004A2DDB /* NSView+WCExtensions.m in Sources */,
+				0738A76913750239004A2DDB /* NSShadow+MCAdditions.m in Sources */,
+				0738A76A13750241004A2DDB /* NSBezierPath+MCAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

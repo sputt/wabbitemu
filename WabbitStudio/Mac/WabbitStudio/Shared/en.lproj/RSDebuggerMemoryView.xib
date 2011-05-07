@@ -158,6 +158,7 @@
 								<int key="NSTvFlags">446693376</int>
 								<reference key="NSDelegate"/>
 								<reference key="NSDataSource"/>
+								<int key="NSGridStyleMask">1</int>
 								<int key="NSColumnAutoresizingStyle">4</int>
 								<int key="NSDraggingSourceMaskForLocal">15</int>
 								<int key="NSDraggingSourceMaskForNonLocal">0</int>
