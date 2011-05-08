@@ -1601,8 +1601,6 @@
 				07905DE81367C66D0079A404 /* WEApplicationDelegate.m */,
 				07905DE91367C66D0079A404 /* WECalculatorDocument.h */,
 				07905DEA1367C66D0079A404 /* WECalculatorDocument.m */,
-				07905DEB1367C66D0079A404 /* RSLCDView.h */,
-				07905DEC1367C66D0079A404 /* RSLCDView.m */,
 				07905DED1367C66D0079A404 /* WEPreferencesController.h */,
 				07905DEE1367C66D0079A404 /* WEPreferencesController.m */,
 				07BA69991367F71300AD7FF5 /* WEPreferencesWindowController.h */,
@@ -1756,6 +1754,8 @@
 		07C047D0136E48B400598DD5 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				07905DEB1367C66D0079A404 /* RSLCDView.h */,
+				07905DEC1367C66D0079A404 /* RSLCDView.m */,
 				07C047D2136E490400598DD5 /* RSCalculator.h */,
 				07C047D3136E490400598DD5 /* RSCalculator.m */,
 				071B845A136F8BAA0046E023 /* RSCalculatorSkinView.h */,
