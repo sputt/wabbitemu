@@ -1,5 +1,5 @@
 //
-//  WELCDView.h
+//  RSLCDView.h
 //  WabbitEmu Beta
 //
 //  Created by William Towe on 4/24/11.
@@ -7,7 +7,6 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import <OpenGL/OpenGL.h>
 
 
 #define kLCDWidth 96
@@ -21,13 +20,13 @@ extern NSString *const kLCDUseWirePatternKey;
 
 @class RSCalculator;
 
-@interface WELCDView : NSOpenGLView {
+@interface RSLCDView : NSOpenGLView {
 @private	
-	GLubyte _buffer[kLCDHeight][kLCDWidth][4];
-	GLubyte _lcd_buffer[kLCDDisplayHeight][kLCDDisplayWidth][4];
-	GLubyte _wbuffer[kLCDHeight][kLCDWidescreenWidth][4];
-	GLubyte _wlcd_buffer[kLCDDisplayHeight][kLCDDisplayWidescreenWidth][4];
-	GLuint _textures[2];
+	uint8_t _buffer[kLCDHeight][kLCDWidth][4];
+	uint8_t _lcd_buffer[kLCDDisplayHeight][kLCDDisplayWidth][4];
+	uint8_t _wbuffer[kLCDHeight][kLCDWidescreenWidth][4];
+	uint8_t _wlcd_buffer[kLCDDisplayHeight][kLCDDisplayWidescreenWidth][4];
+	uint32_t _textures[2];
 	
 	RSCalculator *_calculator;
 	BOOL _isWidescreen;

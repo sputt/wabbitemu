@@ -7,7 +7,7 @@
 //
 
 #import "WEApplicationDelegate.h"
-#import "WELCDView.h"
+#import "RSLCDView.h"
 #import "WEPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "WEPreferencesWindowController.h"
@@ -38,7 +38,7 @@
 	}
 }
 
-- (void)addLCDView:(WELCDView *)LCDView; {
+- (void)addLCDView:(RSLCDView *)LCDView; {
 	if (_LCDViews == nil)
 		_LCDViews = [[NSMutableArray alloc] initWithCapacity:MAX_CALCS];
 	
@@ -60,7 +60,7 @@
 		}
 	}
 }
-- (void)removeLCDView:(WELCDView *)LCDView; {
+- (void)removeLCDView:(RSLCDView *)LCDView; {
 	[_LCDViews removeObject:LCDView];
 	
 	if ([_LCDViews count] == 0) {
@@ -80,14 +80,14 @@
 - (void)_timerFired:(NSTimer *)timer {
 	calc_run_all();
 	
-	for (WELCDView *LCDView in _LCDViews)
+	for (RSLCDView *LCDView in _LCDViews)
 		[LCDView setNeedsDisplay:YES];
 	
 	[timer setFireDate:[NSDate dateWithTimeIntervalSinceNow:1.0/FPS]];
 }
 
 - (void)_FPSTimerFired:(NSTimer *)timer {
-	for (WELCDView *LCDView in _LCDViews) {
+	for (RSLCDView *LCDView in _LCDViews) {
 		if ([[[LCDView calculator] owner] respondsToSelector:@selector(updateFPSString)])
 			[[[LCDView calculator] owner] updateFPSString];
 	}

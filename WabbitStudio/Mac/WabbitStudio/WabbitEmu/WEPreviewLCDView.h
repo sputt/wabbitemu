@@ -6,10 +6,10 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WELCDView.h"
+#import "RSLCDView.h"
 
 
-@interface WEPreviewLCDView : WELCDView {
+@interface WEPreviewLCDView : RSLCDView {
 @private
     
 }

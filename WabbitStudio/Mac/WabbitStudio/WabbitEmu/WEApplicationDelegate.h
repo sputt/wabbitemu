@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 
 
-@class WELCDView;
+@class RSLCDView;
 
 @interface WEApplicationDelegate : NSObject <NSApplicationDelegate> {
 @private
@@ -18,8 +18,8 @@
 	NSTimer *_FPSTimer;
 }
 
-- (void)addLCDView:(WELCDView *)LCDView;
-- (void)removeLCDView:(WELCDView *)LCDView;
+- (void)addLCDView:(RSLCDView *)LCDView;
+- (void)removeLCDView:(RSLCDView *)LCDView;
 
 - (IBAction)preferences:(id)sender;
 @end

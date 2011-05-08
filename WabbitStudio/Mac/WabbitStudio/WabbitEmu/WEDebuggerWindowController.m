@@ -14,7 +14,7 @@
 #import "RSDebuggerDisassemblyViewController.h"
 #import "WCDefines.h"
 #import "WEApplicationDelegate.h"
-#import "WELCDView.h"
+#import "RSLCDView.h"
 #import "RSDebuggerStackViewController.h"
 
 

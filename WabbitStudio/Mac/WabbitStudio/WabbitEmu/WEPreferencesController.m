@@ -7,7 +7,7 @@
 //
 
 #import "WEPreferencesController.h"
-#import "WELCDView.h"
+#import "RSLCDView.h"
 #import "RSCalculatorSkinView.h"
 #include "lcd.h"
 

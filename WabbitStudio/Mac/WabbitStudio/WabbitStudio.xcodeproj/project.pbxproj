@@ -78,6 +78,9 @@
 		0724B7AB136390300061AA47 /* WCBadgedTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7A8136390300061AA47 /* WCBadgedTextFieldCell.m */; };
 		0724B7AC136390300061AA47 /* WCIconTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7AA136390300061AA47 /* WCIconTextFieldCell.m */; };
 		0724B7D21363A3D40061AA47 /* WCMultiLineTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7D11363A3D40061AA47 /* WCMultiLineTextFieldCell.m */; };
+		07280E101376555100441286 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AF713332BCC00744B98 /* QuartzCore.framework */; };
+		07280E111376559600441286 /* JLNDragEffectManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 07280E0E1376525300441286 /* JLNDragEffectManager.m */; };
+		07280E121376559800441286 /* JLNDragEffectManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 07280E0E1376525300441286 /* JLNDragEffectManager.m */; };
 		072C8A3A1358EBED006EE420 /* NSGradient+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A391358EBED006EE420 /* NSGradient+WCExtensions.m */; };
 		072C8A3D1358EFCF006EE420 /* RSRTVArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3C1358EFCF006EE420 /* RSRTVArrayController.m */; };
 		072C8A401358F05A006EE420 /* WCFileViewStatusBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */; };
@@ -207,7 +210,7 @@
 		07905DD91367BFD60079A404 /* Credits.rtf in Resources */ = {isa = PBXBuildFile; fileRef = 07905DD71367BFD60079A404 /* Credits.rtf */; };
 		07905DEF1367C66D0079A404 /* WEApplicationDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DE81367C66D0079A404 /* WEApplicationDelegate.m */; };
 		07905DF01367C66D0079A404 /* WECalculatorDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEA1367C66D0079A404 /* WECalculatorDocument.m */; };
-		07905DF11367C66D0079A404 /* WELCDView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEC1367C66D0079A404 /* WELCDView.m */; };
+		07905DF11367C66D0079A404 /* RSLCDView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEC1367C66D0079A404 /* RSLCDView.m */; };
 		07905DF21367C66D0079A404 /* WEPreferencesController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEE1367C66D0079A404 /* WEPreferencesController.m */; };
 		07905DF81367C6AB0079A404 /* WECalculatorDocument.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07905DF41367C6AB0079A404 /* WECalculatorDocument.xib */; };
 		07905DF91367C6AB0079A404 /* WEMainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07905DF61367C6AB0079A404 /* WEMainMenu.xib */; };
@@ -370,7 +373,7 @@
 		07D113D0136CF47D00E3814E /* WCDebuggerWindow.xib in Resources */ = {isa = PBXBuildFile; fileRef = 07D113CE136CF47D00E3814E /* WCDebuggerWindow.xib */; };
 		07D113D1136CF87300E3814E /* WCDefines.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790CB7F1345858E00FAEA63 /* WCDefines.m */; };
 		07D113D4136D04C200E3814E /* WCApplicationController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07D113D3136D04C200E3814E /* WCApplicationController.m */; };
-		07D113D5136D13B500E3814E /* WELCDView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEC1367C66D0079A404 /* WELCDView.m */; };
+		07D113D5136D13B500E3814E /* RSLCDView.m in Sources */ = {isa = PBXBuildFile; fileRef = 07905DEC1367C66D0079A404 /* RSLCDView.m */; };
 		07D113D6136D13BF00E3814E /* WETransferSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07B75E0A1368AAB1007B13A2 /* WETransferSheetController.m */; };
 		07D113D7136D13D800E3814E /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07905E971367CA9A0079A404 /* OpenGL.framework */; };
 		07D113D8136D13E800E3814E /* WETransferFile.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C55FC2136913DF00BB2325 /* WETransferFile.m */; };
@@ -601,6 +604,8 @@
 		0724B7AA136390300061AA47 /* WCIconTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCIconTextFieldCell.m; sourceTree = "<group>"; };
 		0724B7D01363A3D40061AA47 /* WCMultiLineTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCMultiLineTextFieldCell.h; sourceTree = "<group>"; };
 		0724B7D11363A3D40061AA47 /* WCMultiLineTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCMultiLineTextFieldCell.m; sourceTree = "<group>"; };
+		07280E0D1376525300441286 /* JLNDragEffectManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JLNDragEffectManager.h; sourceTree = "<group>"; };
+		07280E0E1376525300441286 /* JLNDragEffectManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JLNDragEffectManager.m; sourceTree = "<group>"; };
 		072C8A381358EBED006EE420 /* NSGradient+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSGradient+WCExtensions.h"; sourceTree = "<group>"; };
 		072C8A391358EBED006EE420 /* NSGradient+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSGradient+WCExtensions.m"; sourceTree = "<group>"; };
 		072C8A3B1358EFCF006EE420 /* RSRTVArrayController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSRTVArrayController.h; sourceTree = "<group>"; };
@@ -764,8 +769,8 @@
 		07905DE81367C66D0079A404 /* WEApplicationDelegate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEApplicationDelegate.m; sourceTree = "<group>"; };
 		07905DE91367C66D0079A404 /* WECalculatorDocument.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WECalculatorDocument.h; sourceTree = "<group>"; };
 		07905DEA1367C66D0079A404 /* WECalculatorDocument.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WECalculatorDocument.m; sourceTree = "<group>"; };
-		07905DEB1367C66D0079A404 /* WELCDView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WELCDView.h; sourceTree = "<group>"; };
-		07905DEC1367C66D0079A404 /* WELCDView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WELCDView.m; sourceTree = "<group>"; };
+		07905DEB1367C66D0079A404 /* RSLCDView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSLCDView.h; sourceTree = "<group>"; };
+		07905DEC1367C66D0079A404 /* RSLCDView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSLCDView.m; sourceTree = "<group>"; };
 		07905DED1367C66D0079A404 /* WEPreferencesController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WEPreferencesController.h; sourceTree = "<group>"; };
 		07905DEE1367C66D0079A404 /* WEPreferencesController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WEPreferencesController.m; sourceTree = "<group>"; };
 		07905DF51367C6AB0079A404 /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = en.lproj/WECalculatorDocument.xib; sourceTree = "<group>"; };
@@ -1059,6 +1064,7 @@
 				07905E981367CA9A0079A404 /* OpenGL.framework in Frameworks */,
 				07BA69811367D68F00AD7FF5 /* BWToolkitFramework.framework in Frameworks */,
 				078AAD941373DEA600B0421D /* RegexKit.framework in Frameworks */,
+				07280E101376555100441286 /* QuartzCore.framework in Frameworks */,
 				07BA69831367D69300AD7FF5 /* Sparkle.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1115,6 +1121,15 @@
 				071B846A136F96A00046E023 /* ti83+se.png */,
 			);
 			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		07280E0B1376522C00441286 /* External */ = {
+			isa = PBXGroup;
+			children = (
+				07280E0D1376525300441286 /* JLNDragEffectManager.h */,
+				07280E0E1376525300441286 /* JLNDragEffectManager.m */,
+			);
+			name = External;
 			sourceTree = "<group>";
 		};
 		07463AA01332AB3500744B98 = {
@@ -1586,8 +1601,8 @@
 				07905DE81367C66D0079A404 /* WEApplicationDelegate.m */,
 				07905DE91367C66D0079A404 /* WECalculatorDocument.h */,
 				07905DEA1367C66D0079A404 /* WECalculatorDocument.m */,
-				07905DEB1367C66D0079A404 /* WELCDView.h */,
-				07905DEC1367C66D0079A404 /* WELCDView.m */,
+				07905DEB1367C66D0079A404 /* RSLCDView.h */,
+				07905DEC1367C66D0079A404 /* RSLCDView.m */,
 				07905DED1367C66D0079A404 /* WEPreferencesController.h */,
 				07905DEE1367C66D0079A404 /* WEPreferencesController.m */,
 				07BA69991367F71300AD7FF5 /* WEPreferencesWindowController.h */,
@@ -1722,6 +1737,7 @@
 				07E6575B1370D7F300C8536B /* Categories */,
 				07C047D0136E48B400598DD5 /* Classes */,
 				07E657561370D72C00C8536B /* Xibs */,
+				07280E0B1376522C00441286 /* External */,
 				071B845E136F967F0046E023 /* Supporting Files */,
 				07BA69901367F08500AD7FF5 /* Protocols */,
 			);
@@ -2277,7 +2293,7 @@
 				0755A703136BE30F00B7C8E4 /* var.c in Sources */,
 				07D113CC136CF43C00E3814E /* WCDebuggerWindowController.m in Sources */,
 				07D113D4136D04C200E3814E /* WCApplicationController.m in Sources */,
-				07D113D5136D13B500E3814E /* WELCDView.m in Sources */,
+				07D113D5136D13B500E3814E /* RSLCDView.m in Sources */,
 				07D113D6136D13BF00E3814E /* WETransferSheetController.m in Sources */,
 				07D113D8136D13E800E3814E /* WETransferFile.m in Sources */,
 				07AE898D136D6C8A0014F788 /* disassemble.c in Sources */,
@@ -2302,6 +2318,7 @@
 				07D5B5FB1375CC9B000D72FF /* WCTooltipPanel.m in Sources */,
 				07D5B5FE1375CD44000D72FF /* WCTooltipView.m in Sources */,
 				07D5B6041375CEAE000D72FF /* WCTooltip.m in Sources */,
+				07280E111376559600441286 /* JLNDragEffectManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2312,7 +2329,7 @@
 				07905DD61367BFD60079A404 /* main.m in Sources */,
 				07905DEF1367C66D0079A404 /* WEApplicationDelegate.m in Sources */,
 				07905DF01367C66D0079A404 /* WECalculatorDocument.m in Sources */,
-				07905DF11367C66D0079A404 /* WELCDView.m in Sources */,
+				07905DF11367C66D0079A404 /* RSLCDView.m in Sources */,
 				07905DF21367C66D0079A404 /* WEPreferencesController.m in Sources */,
 				07905E671367C9930079A404 /* alu.c in Sources */,
 				07905E681367C9930079A404 /* control.c in Sources */,
@@ -2378,6 +2395,7 @@
 				0738A7631374F1B5004A2DDB /* NSView+WCExtensions.m in Sources */,
 				0738A76913750239004A2DDB /* NSShadow+MCAdditions.m in Sources */,
 				0738A76A13750241004A2DDB /* NSBezierPath+MCAdditions.m in Sources */,
+				07280E121376559800441286 /* JLNDragEffectManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

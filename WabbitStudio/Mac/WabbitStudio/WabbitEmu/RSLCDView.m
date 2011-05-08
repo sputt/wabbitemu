@@ -1,26 +1,28 @@
 //
-//  WELCDView.m
+//  RSLCDView.m
 //  WabbitEmu Beta
 //
 //  Created by William Towe on 4/24/11.
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WELCDView.h"
+#import "RSLCDView.h"
 #import "WETransferSheetController.h"
 #import "RSCalculator.h"
+
+#import <OpenGL/OpenGL.h>
 
 
 NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 
-@interface WELCDView ()
+@interface RSLCDView ()
 @property (copy,nonatomic) NSArray *currentFilePaths;
 @property (readonly,nonatomic) NSBitmapImageRep *LCDBitmap;
 
 - (void)_privateInit;
 @end
 
-@implementation WELCDView
+@implementation RSLCDView
 
 - (id)initWithCoder:(NSCoder *)coder {
 	if (!(self = [super initWithCoder:coder]))
@@ -309,7 +311,9 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 			u_int8_t val = 255-lcd[(row/2)*kLCDWidescreenWidth+(col/2)];
 			NSUInteger pixel[3];
 			
-			pixel[0] = pixel[1] = pixel[2] = val;
+			pixel[2] = val;
+			pixel[1] = val;
+			pixel[0] = val;
 			
 			[bitmap setPixel:pixel atX:col y:row];
 		}

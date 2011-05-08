@@ -199,7 +199,7 @@
 					<string>{196, 240}</string>
 					<string>{{357, 418}, {480, 270}}</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>WELCDView</string>
+					<string>RSLCDView</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 				</object>
 			</object>
@@ -274,80 +274,30 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
-					<string key="className">TLAnimatingOutlineView</string>
-					<string key="superclassName">NSView</string>
+					<string key="className">RSLCDView</string>
+					<string key="superclassName">NSOpenGLView</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/TLAnimatingOutlineView.h</string>
+						<string key="minorKey">./Classes/RSLCDView.h</string>
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
 					<string key="className">WCDebuggerWindowController</string>
 					<string key="superclassName">NSWindowController</string>
 					<object class="NSMutableDictionary" key="outlets">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>_LCDDrawer</string>
-							<string>_LCDView</string>
-							<string>_animatingOutlineView</string>
-							<string>_flagsView</string>
-							<string>_registersView</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>NSDrawer</string>
-							<string>WELCDView</string>
-							<string>TLAnimatingOutlineView</string>
-							<string>NSView</string>
-							<string>NSView</string>
-						</object>
+						<string key="NS.key.0">_LCDView</string>
+						<string key="NS.object.0">RSLCDView</string>
 					</object>
 					<object class="NSMutableDictionary" key="toOneOutletInfosByName">
-						<bool key="EncodedWithXMLCoder">YES</bool>
-						<object class="NSArray" key="dict.sortedKeys">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<string>_LCDDrawer</string>
-							<string>_LCDView</string>
-							<string>_animatingOutlineView</string>
-							<string>_flagsView</string>
-							<string>_registersView</string>
-						</object>
-						<object class="NSMutableArray" key="dict.values">
-							<bool key="EncodedWithXMLCoder">YES</bool>
-							<object class="IBToOneOutletInfo">
-								<string key="name">_LCDDrawer</string>
-								<string key="candidateClassName">NSDrawer</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">_LCDView</string>
-								<string key="candidateClassName">WELCDView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">_animatingOutlineView</string>
-								<string key="candidateClassName">TLAnimatingOutlineView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">_flagsView</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
-							<object class="IBToOneOutletInfo">
-								<string key="name">_registersView</string>
-								<string key="candidateClassName">NSView</string>
-							</object>
+						<string key="NS.key.0">_LCDView</string>
+						<object class="IBToOneOutletInfo" key="NS.object.0">
+							<string key="name">_LCDView</string>
+							<string key="candidateClassName">RSLCDView</string>
 						</object>
 					</object>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCDebuggerWindowController.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">WELCDView</string>
-					<string key="superclassName">NSOpenGLView</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WELCDView.h</string>
 					</object>
 				</object>
 			</object>

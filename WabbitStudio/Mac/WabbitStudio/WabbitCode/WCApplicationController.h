@@ -9,7 +9,7 @@
 #import "WCSingleton.h"
 
 
-@class WELCDView;
+@class RSLCDView;
 
 @interface WCApplicationController : WCSingleton {
 @private
@@ -18,6 +18,6 @@
 }
 + (WCApplicationController *)sharedApplicationController;
 
-- (void)addLCDView:(WELCDView *)LCDView;
-- (void)removeLCDView:(WELCDView *)LCDView;
+- (void)addLCDView:(RSLCDView *)LCDView;
+- (void)removeLCDView:(RSLCDView *)LCDView;
 @end

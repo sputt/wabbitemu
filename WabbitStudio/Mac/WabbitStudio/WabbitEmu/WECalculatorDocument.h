@@ -12,11 +12,11 @@
 
 extern NSString *const kWECalculatorWillCloseNotification;
 
-@class WELCDView,BWAnchoredButtonBar,RSCalculator,RSCalculatorSkinView,WEDebuggerWindowController;
+@class RSLCDView,BWAnchoredButtonBar,RSCalculator,RSCalculatorSkinView,WEDebuggerWindowController;
 
 @interface WECalculatorDocument : NSDocument <NSWindowDelegate,RSCalculatorOwner,NSUserInterfaceValidations> {
 @private
-	IBOutlet WELCDView *_LCDView;
+	IBOutlet RSLCDView *_LCDView;
 	IBOutlet BWAnchoredButtonBar *_buttonBar;
 	IBOutlet NSTextField *_statusTextField;
 	
@@ -31,7 +31,7 @@ extern NSString *const kWECalculatorWillCloseNotification;
 	BOOL _isDebugging;
 }
 @property (readonly,nonatomic) RSCalculator *calculator;
-@property (readonly,nonatomic) WELCDView *LCDView;
+@property (readonly,nonatomic) RSLCDView *LCDView;
 @property (copy,nonatomic) NSString *statusString;
 @property (copy,nonatomic) NSString *FPSString;
 @property (readonly,nonatomic) NSWindow *calculatorWindow;

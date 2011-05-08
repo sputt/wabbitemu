@@ -8,7 +8,7 @@
 
 #import "WCDebuggerWindowController.h"
 #import "WCApplicationController.h"
-#import "WELCDView.h"
+#import "RSLCDView.h"
 #import "RSCalculator.h"
 
 

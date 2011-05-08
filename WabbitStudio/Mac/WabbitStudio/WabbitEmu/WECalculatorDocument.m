@@ -9,7 +9,7 @@
 #import "WECalculatorDocument.h"
 #import "WEApplicationDelegate.h"
 #import "WCDefines.h"
-#import "WELCDView.h"
+#import "RSLCDView.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "WEPreferencesController.h"
 #import "RSCalculator.h"
