@@ -15,6 +15,8 @@
 
 const CGFloat kTooltipDelay = 0.35;
 
+static const CFTimeInterval kTooltipFadeDuration = 0.5;
+
 @implementation WCTooltipManager
 
 + (WCTooltipManager *)sharedTooltipManager; {
@@ -30,6 +32,11 @@ const CGFloat kTooltipDelay = 0.35;
 #ifdef DEBUG
 		NSAssert(_tooltipPanel != nil, @"tooltipPanel cannot be nil!");
 #endif
+		
+		CAAnimation *animation = [CABasicAnimation animation];
+		[animation setDuration:kTooltipFadeDuration];
+		[animation setDelegate:self];
+		[_tooltipPanel setAnimations:[NSDictionary dictionaryWithObject:animation forKey:@"alphaValue"]];
 	}
 	
 	if (_isShowingTooltip)
@@ -37,7 +44,11 @@ const CGFloat kTooltipDelay = 0.35;
 	
 	_isShowingTooltip = YES;
 	
-	NSSize maxSize = [[tooltip string] sizeForWidth:FLT_MAX height:FLT_MAX attributes:[tooltip attributesForTooltip]];
+	NSSize maxSize;
+	if ([tooltip attributedString] == nil)
+		maxSize = [[tooltip string] sizeForWidth:FLT_MAX height:FLT_MAX attributes:[tooltip attributesForTooltip]];
+	else
+		maxSize = [[tooltip attributedString] sizeForWidth:FLT_MAX height:FLT_MAX];
 	
 	[_tooltipPanel setFrame:[_tooltipPanel frameRectForContentRect:NSMakeRect(0.0, 0.0, maxSize.width+kTooltipLeftMargin+kTooltipRightMargin, maxSize.height+kTooltipTopMargin+kTooltipBottomMargin)] display:NO];
 	
@@ -53,8 +64,11 @@ const CGFloat kTooltipDelay = 0.35;
 	_isShowingTooltip = NO;
 	
 	[[_tooltipPanel animator] setAlphaValue:0.0];
-	//[_tooltipPanel performSelector:@selector(orderOut:) withObject:nil afterDelay:0.25];
-	//[_tooltipPanel orderOut:nil];
 }
 
+- (void)animationDidStop:(CAAnimation *)animation finished:(BOOL)flag  {
+	// Detect the end of fade out and close the window
+	if(0.0 == [_tooltipPanel alphaValue] && flag)
+		[_tooltipPanel orderOut:nil];
+}
 @end

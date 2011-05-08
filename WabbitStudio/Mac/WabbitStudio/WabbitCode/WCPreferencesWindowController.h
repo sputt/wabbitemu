@@ -9,14 +9,6 @@
 #import "DBPrefsWindowController.h"
 
 
-extern NSString* const kWCPreferencesWindowControllerGeneralIdentifier;
-extern NSString* const kWCPreferencesWindowControllerAppearanceIdentifier;
-extern NSString* const kWCPreferencesWindowControllerBuildingIdentifier;
-extern NSString* const kWCPreferencesWindowControllerDebuggingIdentifier;
-extern NSString* const kWCPreferencesWindowControllerEditorIdentifier;
-extern NSString* const kWCPreferencesWindowControllerUpdatesIdentifier;
-extern NSString* const kWCPreferencesWindowControllerAdvancedIdentifier;
-
 @class WCTextView,WCFile;
 
 @interface WCPreferencesWindowController : DBPrefsWindowController {

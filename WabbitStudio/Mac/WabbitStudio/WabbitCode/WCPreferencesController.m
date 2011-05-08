@@ -7,6 +7,7 @@
 //
 
 #import "WCPreferencesController.h"
+#import "RSLCDView.h"
 
 
 NSString *const kWCPreferencesAddFilesToProjectCopyFilesKey = @"advancedAddFilesToProjectCopyFiles";
@@ -196,7 +197,7 @@ NSString *const kWCPreferencesFilesOpenWithKey = @"filesOpenWith";
 	// editor warning line highlight
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorWarningLineHighlightKey];
 	// editor warning line highlight color
-	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor colorWithCalibratedRed:0.961 green:0.937 blue:0.58 alpha:1.0]] forKey:kWCPreferencesEditorWarningLineHighlightColorKey];
+	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor colorWithCalibratedRed:0.965 green:0.89 blue:0.58 alpha:1.0]] forKey:kWCPreferencesEditorWarningLineHighlightColorKey];
 	
 	// editor breakpoint line highlight color
 	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor colorWithCalibratedRed:0.0 green:0.5 blue:0.0 alpha:1.0]] forKey:kWCPreferencesEditorBreakpointLineHighlightColorKey];
@@ -224,6 +225,9 @@ NSString *const kWCPreferencesFilesOpenWithKey = @"filesOpenWith";
 	[preferences setObject:[NSNumber numberWithUnsignedInteger:NSUTF8StringEncoding] forKey:kWCPreferencesFilesTextEncodingKey];
 	// files open with
 	[preferences setObject:[NSNumber numberWithUnsignedInteger:WCPreferencesFilesOpenWithDoubleClick] forKey:kWCPreferencesFilesOpenWithKey];
+	
+	// lcd use wire pattern
+	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kLCDUseWirePatternKey];
 	
 	[[NSUserDefaults standardUserDefaults] registerDefaults:preferences];
 }

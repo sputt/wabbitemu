@@ -418,12 +418,16 @@ NSString *const kWCProjectToolbarProjectWindowItemIdentifier = @"projectToolbarP
 	if (!activeGradient) {
 		// xcode like colors
 		/*
-		activeGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.431 green:0.608 blue:0.792 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.329 green:0.533 blue:0.757 alpha:1.0]];
+		activeGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.431 green:0.608 blue:0.796 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.329 green:0.533 blue:0.757 alpha:1.0]];
 		inactiveGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.431 green:0.608 blue:0.792 alpha:0.5] endingColor:[NSColor colorWithCalibratedRed:0.329 green:0.533 blue:0.757 alpha:0.5]];
 		activeStroke = [[NSColor colorWithCalibratedRed:0.235 green:0.443 blue:0.686 alpha:1.0] retain];
 		inactiveStroke = [[NSColor colorWithCalibratedRed:0.235 green:0.443 blue:0.686 alpha:0.5] retain];
-		 */
-		
+		*/
+		// orange colors
+		activeGradient = [[NSGradient alloc] initWithStartingColor:[NSColor orangeColor] endingColor:[NSColor colorWithCalibratedRed:0.85 green:0.35 blue:0.0 alpha:1.0]];
+		inactiveGradient = [[NSGradient alloc] initWithStartingColor:[[NSColor orangeColor] colorWithAlphaComponent:0.5] endingColor:[[NSColor colorWithCalibratedRed:0.85 green:0.35 blue:0.0 alpha:1.0] colorWithAlphaComponent:0.5]];
+		activeStroke = [[NSColor colorWithCalibratedRed:0.7 green:0.2 blue:0.0 alpha:1.0] retain];
+		inactiveStroke = [[[NSColor colorWithCalibratedRed:0.7 green:0.2 blue:1.0 alpha:1.0] colorWithAlphaComponent:0.5] retain];
 		// red colors
 		/*
 		activeGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.85 green:0.0 blue:0.0 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.65 green:0.0 blue:0.0 alpha:1.0]];
@@ -432,12 +436,12 @@ NSString *const kWCProjectToolbarProjectWindowItemIdentifier = @"projectToolbarP
 		inactiveStroke = [[NSColor colorWithCalibratedRed:0.5 green:0.0 blue:0.0 alpha:0.5] retain];
 		 */
 		// purple colors
-		
+		/*
 		activeGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.65 green:0.0 blue:0.65 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.45 green:0.0 blue:0.45 alpha:1.0]];
 		activeStroke = [[NSColor colorWithCalibratedRed:0.35 green:0.0 blue:0.35 alpha:1.0] retain];
 		inactiveGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.65 green:0.0 blue:0.65 alpha:0.5] endingColor:[NSColor colorWithCalibratedRed:0.45 green:0.0 blue:0.45 alpha:0.5]];
 		inactiveStroke = [[NSColor colorWithCalibratedRed:0.35 green:0.0 blue:0.35 alpha:0.5] retain];
-		 
+		 */
 		// gray colors
 		/*
 		activeGradient = [[NSGradient alloc] initWithStartingColor:[NSColor colorWithCalibratedRed:0.6 green:0.6 blue:0.6 alpha:1.0] endingColor:[NSColor colorWithCalibratedRed:0.35 green:0.35 blue:0.35 alpha:1.0]];

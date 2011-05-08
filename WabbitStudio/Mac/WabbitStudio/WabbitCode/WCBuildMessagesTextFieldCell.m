@@ -15,7 +15,7 @@
 	if ([self isHighlighted])
 		return [super badgeFillColor];
 	else if ([self hasOnlyWarnings])
-		return [NSColor colorWithCalibratedRed:0.918 green:0.816 blue:0.447 alpha:1.0];
+		return [NSColor colorWithCalibratedRed:0.965 green:0.89 blue:0.58 alpha:1.0];
 	return [NSColor colorWithCalibratedRed:0.75 green:0.0 blue:0.0 alpha:1.0];
 }
 

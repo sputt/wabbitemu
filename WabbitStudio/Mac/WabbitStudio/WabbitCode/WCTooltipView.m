@@ -28,10 +28,17 @@ const CGFloat kTooltipBottomMargin = 2.0;
 	[[NSColor colorWithCalibratedRed:0.506 green:0.518 blue:0.525 alpha:1.0] setStroke];
 	[[NSBezierPath bezierPathWithRect:[self bounds]] strokeInside];
 	
-	NSDictionary *attributes = [[self tooltip] attributesForTooltip];
-	NSAttributedString *attributedString = [[[NSAttributedString alloc] initWithString:[[self tooltip] string] attributes:attributes] autorelease];
-	
-	[attributedString drawInRect:WCCenteredRectWithSize(NSMakeSize(NSWidth([self bounds])-kTooltipLeftMargin-kTooltipRightMargin, [attributedString size].height), [self bounds])];
+	if ([[self tooltip] attributedString] == nil) {
+		NSDictionary *attributes = [[self tooltip] attributesForTooltip];
+		NSAttributedString *attributedString = [[[NSAttributedString alloc] initWithString:[[self tooltip] string] attributes:attributes] autorelease];
+		
+		[attributedString drawInRect:WCCenteredRectWithSize(NSMakeSize(NSWidth([self bounds])-kTooltipLeftMargin-kTooltipRightMargin, [attributedString size].height), [self bounds])];
+	}
+	else {
+		NSAttributedString *attributedString = [[self tooltip] attributedString];
+		
+		[attributedString drawInRect:WCCenteredRectWithSize(NSMakeSize(NSWidth([self bounds])-floor((kTooltipLeftMargin+kTooltipRightMargin)/2.0), [attributedString size].height), [self bounds])];
+	}
 }
 
 @dynamic tooltip;

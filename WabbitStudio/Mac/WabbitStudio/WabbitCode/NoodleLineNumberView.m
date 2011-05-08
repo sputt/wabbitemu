@@ -238,19 +238,31 @@
 	if ([errors count] == 0 && [warnings count] == 0)
 		return;
 	
-	NSMutableString *tString = [NSMutableString string];
+	NSMutableAttributedString *tString = [[[NSMutableAttributedString alloc] init] autorelease];
 	
-	for (WCBuildMessage *message in errors)
-		[tString appendFormat:NSLocalizedString(@"error: %@\n", @"ruler view build message error tooltip format string"),[message name]];
-	for (WCBuildMessage *message in warnings)
-		[tString appendFormat:NSLocalizedString(@"warning: %@\n", @"ruler view build message warning tooltip format string"),[message name]];
+	for (WCBuildMessage *message in errors) {
+		NSMutableAttributedString *mString = [[[NSMutableAttributedString alloc] initWithString:NSLocalizedString(@"error", @"error") attributes:[WCTooltip defaultTooltipAttributes]] autorelease];
+		[mString addAttribute:NSForegroundColorAttributeName value:[NSColor colorWithCalibratedRed:0.75 green:0.0 blue:0.0 alpha:1.0] range:NSMakeRange(0, [mString length])];
+		[mString applyFontTraits:NSBoldFontMask range:NSMakeRange(0, [mString length])];
+		[tString appendAttributedString:mString];
+		[tString appendAttributedString:[[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@": %@\n",[message name]] attributes:[WCTooltip defaultTooltipAttributes]] autorelease]];
+	}
+	for (WCBuildMessage *message in warnings) {
+		NSMutableAttributedString *mString = [[[NSMutableAttributedString alloc] initWithString:NSLocalizedString(@"warning", @"warning") attributes:[WCTooltip defaultTooltipAttributes]] autorelease];
+		[mString applyFontTraits:NSBoldFontMask range:NSMakeRange(0, [mString length])];
+		[tString appendAttributedString:mString];
+		[tString appendAttributedString:[[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@": %@\n",[message name]] attributes:[WCTooltip defaultTooltipAttributes]] autorelease]];
+	}
+	
+	[tString deleteCharactersInRange:NSMakeRange([tString length] - 1, 1)];
+	//[tString addAttributes:[WCTooltip defaultTooltipAttributes] range:NSMakeRange(0, [tString length])];
 	
 	NSPoint tPoint = [[self window] convertBaseToScreen:[[[self window] currentEvent] locationInWindow]];
 	
 	tPoint.x += floor([[NSCursor currentSystemCursor] image].size.width/2.0);
 	tPoint.y -= floor([[NSCursor currentSystemCursor] image].size.height/2.0);
 	
-	[[WCTooltipManager sharedTooltipManager] showTooltip:[WCTooltip tooltipWithString:tString atLocation:tPoint]];
+	[[WCTooltipManager sharedTooltipManager] showTooltip:[WCTooltip tooltipWithAttributedString:tString atLocation:tPoint]];
 }
 
 #pragma mark Drawing

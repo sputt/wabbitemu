@@ -20,7 +20,6 @@
 		[self setBackgroundColor:[NSColor clearColor]];
 		[self setOpaque:NO];
 		[self setHasShadow:NO];
-		[self setExcludedFromWindowsMenu:NO];
 	}
 	
 	return self;
@@ -28,6 +27,8 @@
 
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)anItem {
 	if ([anItem action] == @selector(performClose:) && [self styleMask] == NSBorderlessWindowMask)
+		return YES;
+	else if ([anItem action] == @selector(performMiniaturize:) && [self styleMask] == NSBorderlessWindowMask)
 		return YES;
 	return [super validateUserInterfaceItem:anItem];
 }
@@ -40,9 +41,21 @@
 		[super performClose:nil];
 }
 
+- (void)performMiniaturize:(id)sender {
+	// we want to still miniaturize from the menu command if we are borderless
+	if ([self styleMask] == NSBorderlessWindowMask)
+		[self miniaturize:nil];
+	else
+		[super performMiniaturize:nil];
+}
+
 // must override this so our borderless window can still become key
 - (BOOL)canBecomeKeyWindow {
 	return ([self styleMask] == NSBorderlessWindowMask)?YES:[super canBecomeKeyWindow];
+}
+
+- (BOOL)canBecomeMainWindow {
+	return ([self styleMask] == NSBorderlessWindowMask)?YES:[super canBecomeMainWindow];
 }
 
 @end

@@ -67,6 +67,9 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	
 	[windowController setShouldCloseDocument:YES];
 	
+	if ([[windowController window] styleMask] == NSBorderlessWindowMask)
+		[[NSApplication sharedApplication] addWindowsItem:[windowController window] title:[self displayName] filename:NO];
+	
 	[[self calculator] calc]->cpu.pio.lcd->shades = (uint32_t)[[NSUserDefaults standardUserDefaults] unsignedIntegerForKey:kWEPreferencesDisplayLCDShadesKey];
 	[[self LCDView] setCalculator:[self calculator]];
 	//[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
