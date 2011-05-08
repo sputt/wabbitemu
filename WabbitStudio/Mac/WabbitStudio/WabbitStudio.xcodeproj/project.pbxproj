@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		0706F50F13391684000C9007 /* NSUserDefaults+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0706F50E13391684000C9007 /* NSUserDefaults+WCExtensions.m */; };
 		0707208C1360A29800E7C7CD /* WCBoolToStringTransformer.m in Sources */ = {isa = PBXBuildFile; fileRef = 0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */; };
-		070720981360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */; };
+		070720981360B5AC00E7C7CD /* RSVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720971360B5AC00E7C7CD /* RSVerticallyCenteredTextFieldCell.m */; };
 		070720AA1360C7AE00E7C7CD /* Search16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 070720A91360C7AE00E7C7CD /* Search16x16.png */; };
 		070720AD1360EA2D00E7C7CD /* EncodingManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720AC1360EA2D00E7C7CD /* EncodingManager.m */; };
 		070720B01360EA8E00E7C7CD /* SelectEncodingsPanel.nib in Resources */ = {isa = PBXBuildFile; fileRef = 070720AE1360EA8E00E7C7CD /* SelectEncodingsPanel.nib */; };
@@ -81,9 +81,9 @@
 		07200C70136762D90010AE58 /* NSShadow+MCAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 07200C6F136762D90010AE58 /* NSShadow+MCAdditions.m */; };
 		0722EFF71367421D00CB69BF /* Building16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF61367421D00CB69BF /* Building16x16.png */; };
 		0722EFF91367439000CB69BF /* Symbols16x16.png in Resources */ = {isa = PBXBuildFile; fileRef = 0722EFF81367439000CB69BF /* Symbols16x16.png */; };
-		0724B7AB136390300061AA47 /* WCBadgedTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7A8136390300061AA47 /* WCBadgedTextFieldCell.m */; };
-		0724B7AC136390300061AA47 /* WCIconTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7AA136390300061AA47 /* WCIconTextFieldCell.m */; };
-		0724B7D21363A3D40061AA47 /* WCMultiLineTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7D11363A3D40061AA47 /* WCMultiLineTextFieldCell.m */; };
+		0724B7AB136390300061AA47 /* RSBadgedTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7A8136390300061AA47 /* RSBadgedTextFieldCell.m */; };
+		0724B7AC136390300061AA47 /* RSIconTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7AA136390300061AA47 /* RSIconTextFieldCell.m */; };
+		0724B7D21363A3D40061AA47 /* RSMultiLineTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0724B7D11363A3D40061AA47 /* RSMultiLineTextFieldCell.m */; };
 		07280E101376555100441286 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 07463AF713332BCC00744B98 /* QuartzCore.framework */; };
 		07280E111376559600441286 /* JLNDragEffectManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 07280E0E1376525300441286 /* JLNDragEffectManager.m */; };
 		07280E121376559800441286 /* JLNDragEffectManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 07280E0E1376525300441286 /* JLNDragEffectManager.m */; };
@@ -192,7 +192,7 @@
 		07880B6D1341953B00E07231 /* WCBuildDefinesArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B6C1341953800E07231 /* WCBuildDefinesArrayController.m */; };
 		07880B761341B84700E07231 /* WCIncludeDirectory.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B751341B84500E07231 /* WCIncludeDirectory.m */; };
 		07880B791341B8F900E07231 /* WCAlias.m in Sources */ = {isa = PBXBuildFile; fileRef = 07880B781341B8F600E07231 /* WCAlias.m */; };
-		0789496413732DD600B671C1 /* WCVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */; };
+		0789496413732DD600B671C1 /* RSVerticallyCenteredTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 070720971360B5AC00E7C7CD /* RSVerticallyCenteredTextFieldCell.m */; };
 		078949681373330700B671C1 /* RSDebuggerMemoryTableColumn.m in Sources */ = {isa = PBXBuildFile; fileRef = 078949671373330600B671C1 /* RSDebuggerMemoryTableColumn.m */; };
 		078949691373330700B671C1 /* RSDebuggerMemoryTableColumn.m in Sources */ = {isa = PBXBuildFile; fileRef = 078949671373330600B671C1 /* RSDebuggerMemoryTableColumn.m */; };
 		0789496C137337B200B671C1 /* RSDebuggerDisassemblyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 0789496B137337B100B671C1 /* RSDebuggerDisassemblyViewController.m */; };
@@ -250,7 +250,7 @@
 		0790CB6F1344F81400FAEA63 /* BuildTargetOutputTypesToFileExtensions.plist in Resources */ = {isa = PBXBuildFile; fileRef = 0790CB6E1344F81400FAEA63 /* BuildTargetOutputTypesToFileExtensions.plist */; };
 		0790CB7113451A4500FAEA63 /* Project Templates in Resources */ = {isa = PBXBuildFile; fileRef = 0790CB7013451A4500FAEA63 /* Project Templates */; };
 		0790CB7413451B9400FAEA63 /* WCProjectTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790CB7313451B7B00FAEA63 /* WCProjectTemplate.m */; };
-		0790CB7913454C8000FAEA63 /* WCGradientTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790CB7813454C5C00FAEA63 /* WCGradientTextFieldCell.m */; };
+		0790CB7913454C8000FAEA63 /* WCGradientBackgroundTextFieldCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790CB7813454C5C00FAEA63 /* WCGradientBackgroundTextFieldCell.m */; };
 		0790CB80134585AF00FAEA63 /* WCDefines.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790CB7F1345858E00FAEA63 /* WCDefines.m */; };
 		0790CB8313458E5700FAEA63 /* NSAlert-OAExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 0790CB8213458E5300FAEA63 /* NSAlert-OAExtensions.m */; };
 		07911E22134BAD4900B3DB86 /* WCTemplate.m in Sources */ = {isa = PBXBuildFile; fileRef = 07911E21134BAD4300B3DB86 /* WCTemplate.m */; };
@@ -539,8 +539,8 @@
 		0706F50E13391684000C9007 /* NSUserDefaults+WCExtensions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSUserDefaults+WCExtensions.m"; sourceTree = "<group>"; };
 		0707208A1360A29800E7C7CD /* WCBoolToStringTransformer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBoolToStringTransformer.h; sourceTree = "<group>"; };
 		0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBoolToStringTransformer.m; sourceTree = "<group>"; };
-		070720961360B5AB00E7C7CD /* WCVerticallyCenteredTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCVerticallyCenteredTextFieldCell.h; sourceTree = "<group>"; };
-		070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCVerticallyCenteredTextFieldCell.m; sourceTree = "<group>"; };
+		070720961360B5AB00E7C7CD /* RSVerticallyCenteredTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSVerticallyCenteredTextFieldCell.h; sourceTree = "<group>"; };
+		070720971360B5AC00E7C7CD /* RSVerticallyCenteredTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSVerticallyCenteredTextFieldCell.m; sourceTree = "<group>"; };
 		070720A91360C7AE00E7C7CD /* Search16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Search16x16.png; sourceTree = "<group>"; };
 		070720AB1360EA2D00E7C7CD /* EncodingManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EncodingManager.h; sourceTree = "<group>"; };
 		070720AC1360EA2D00E7C7CD /* EncodingManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EncodingManager.m; sourceTree = "<group>"; };
@@ -616,12 +616,12 @@
 		07200C6F136762D90010AE58 /* NSShadow+MCAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSShadow+MCAdditions.m"; sourceTree = "<group>"; };
 		0722EFF61367421D00CB69BF /* Building16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Building16x16.png; sourceTree = "<group>"; };
 		0722EFF81367439000CB69BF /* Symbols16x16.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Symbols16x16.png; sourceTree = "<group>"; };
-		0724B7A7136390300061AA47 /* WCBadgedTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCBadgedTextFieldCell.h; sourceTree = "<group>"; };
-		0724B7A8136390300061AA47 /* WCBadgedTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCBadgedTextFieldCell.m; sourceTree = "<group>"; };
-		0724B7A9136390300061AA47 /* WCIconTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCIconTextFieldCell.h; sourceTree = "<group>"; };
-		0724B7AA136390300061AA47 /* WCIconTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCIconTextFieldCell.m; sourceTree = "<group>"; };
-		0724B7D01363A3D40061AA47 /* WCMultiLineTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCMultiLineTextFieldCell.h; sourceTree = "<group>"; };
-		0724B7D11363A3D40061AA47 /* WCMultiLineTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCMultiLineTextFieldCell.m; sourceTree = "<group>"; };
+		0724B7A7136390300061AA47 /* RSBadgedTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSBadgedTextFieldCell.h; sourceTree = "<group>"; };
+		0724B7A8136390300061AA47 /* RSBadgedTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSBadgedTextFieldCell.m; sourceTree = "<group>"; };
+		0724B7A9136390300061AA47 /* RSIconTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSIconTextFieldCell.h; sourceTree = "<group>"; };
+		0724B7AA136390300061AA47 /* RSIconTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSIconTextFieldCell.m; sourceTree = "<group>"; };
+		0724B7D01363A3D40061AA47 /* RSMultiLineTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSMultiLineTextFieldCell.h; sourceTree = "<group>"; };
+		0724B7D11363A3D40061AA47 /* RSMultiLineTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSMultiLineTextFieldCell.m; sourceTree = "<group>"; };
 		07280E0D1376525300441286 /* JLNDragEffectManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JLNDragEffectManager.h; sourceTree = "<group>"; };
 		07280E0E1376525300441286 /* JLNDragEffectManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JLNDragEffectManager.m; sourceTree = "<group>"; };
 		072C8A381358EBED006EE420 /* NSGradient+WCExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSGradient+WCExtensions.h"; sourceTree = "<group>"; };
@@ -856,8 +856,8 @@
 		0790CB7013451A4500FAEA63 /* Project Templates */ = {isa = PBXFileReference; lastKnownFileType = folder; path = "Project Templates"; sourceTree = "<group>"; };
 		0790CB7213451B6C00FAEA63 /* WCProjectTemplate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCProjectTemplate.h; sourceTree = "<group>"; };
 		0790CB7313451B7B00FAEA63 /* WCProjectTemplate.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCProjectTemplate.m; sourceTree = "<group>"; };
-		0790CB7713454C4D00FAEA63 /* WCGradientTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGradientTextFieldCell.h; sourceTree = "<group>"; };
-		0790CB7813454C5C00FAEA63 /* WCGradientTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCGradientTextFieldCell.m; sourceTree = "<group>"; };
+		0790CB7713454C4D00FAEA63 /* WCGradientBackgroundTextFieldCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCGradientBackgroundTextFieldCell.h; sourceTree = "<group>"; };
+		0790CB7813454C5C00FAEA63 /* WCGradientBackgroundTextFieldCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCGradientBackgroundTextFieldCell.m; sourceTree = "<group>"; };
 		0790CB7E1345858100FAEA63 /* WCDefines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCDefines.h; sourceTree = "<group>"; };
 		0790CB7F1345858E00FAEA63 /* WCDefines.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCDefines.m; sourceTree = "<group>"; };
 		0790CB8113458E4E00FAEA63 /* NSAlert-OAExtensions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSAlert-OAExtensions.h"; sourceTree = "<group>"; };
@@ -1315,12 +1315,6 @@
 		0769A1C71333D74C00080A96 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
-				0724B7D01363A3D40061AA47 /* WCMultiLineTextFieldCell.h */,
-				0724B7D11363A3D40061AA47 /* WCMultiLineTextFieldCell.m */,
-				0724B7A7136390300061AA47 /* WCBadgedTextFieldCell.h */,
-				0724B7A8136390300061AA47 /* WCBadgedTextFieldCell.m */,
-				0724B7A9136390300061AA47 /* WCIconTextFieldCell.h */,
-				0724B7AA136390300061AA47 /* WCIconTextFieldCell.m */,
 				070D558B1337BD3600847B1A /* WCFilesTreeController.h */,
 				070D558C1337BD3600847B1A /* WCFilesTreeController.m */,
 				070D559A133859C200847B1A /* WCPreferencesController.h */,
@@ -1395,8 +1389,8 @@
 				078073DA13445DC70003DE27 /* WCSetActiveBuildTargetMenuController.m */,
 				0790CB7213451B6C00FAEA63 /* WCProjectTemplate.h */,
 				0790CB7313451B7B00FAEA63 /* WCProjectTemplate.m */,
-				0790CB7713454C4D00FAEA63 /* WCGradientTextFieldCell.h */,
-				0790CB7813454C5C00FAEA63 /* WCGradientTextFieldCell.m */,
+				0790CB7713454C4D00FAEA63 /* WCGradientBackgroundTextFieldCell.h */,
+				0790CB7813454C5C00FAEA63 /* WCGradientBackgroundTextFieldCell.m */,
 				0790CB7E1345858100FAEA63 /* WCDefines.h */,
 				0790CB7F1345858E00FAEA63 /* WCDefines.m */,
 				07968AC01345B01500E74BC6 /* WCNoEmptySelectionCollectionView.h */,
@@ -1477,8 +1471,6 @@
 				07BBD22E135F9609005C4870 /* WCReturnAndEscapeButton.m */,
 				0707208A1360A29800E7C7CD /* WCBoolToStringTransformer.h */,
 				0707208B1360A29800E7C7CD /* WCBoolToStringTransformer.m */,
-				070720961360B5AB00E7C7CD /* WCVerticallyCenteredTextFieldCell.h */,
-				070720971360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m */,
 				0756D8D71363DFE200ECDFFD /* WCInfoTextFieldCell.h */,
 				0756D8D81363DFE200ECDFFD /* WCInfoTextFieldCell.m */,
 				0756D8DE1363EF5500ECDFFD /* WCGroupBackgroundOutlineView.h */,
@@ -1784,6 +1776,14 @@
 		07C047D0136E48B400598DD5 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				070720961360B5AB00E7C7CD /* RSVerticallyCenteredTextFieldCell.h */,
+				070720971360B5AC00E7C7CD /* RSVerticallyCenteredTextFieldCell.m */,
+				0724B7D01363A3D40061AA47 /* RSMultiLineTextFieldCell.h */,
+				0724B7D11363A3D40061AA47 /* RSMultiLineTextFieldCell.m */,
+				0724B7A7136390300061AA47 /* RSBadgedTextFieldCell.h */,
+				0724B7A8136390300061AA47 /* RSBadgedTextFieldCell.m */,
+				0724B7A9136390300061AA47 /* RSIconTextFieldCell.h */,
+				0724B7AA136390300061AA47 /* RSIconTextFieldCell.m */,
 				07905DEB1367C66D0079A404 /* RSLCDView.h */,
 				07905DEC1367C66D0079A404 /* RSLCDView.m */,
 				07C047D2136E490400598DD5 /* RSCalculator.h */,
@@ -2241,7 +2241,7 @@
 				078073D813445ACA0003DE27 /* WCContextualMenuTableView.m in Sources */,
 				078073DB13445DCB0003DE27 /* WCSetActiveBuildTargetMenuController.m in Sources */,
 				0790CB7413451B9400FAEA63 /* WCProjectTemplate.m in Sources */,
-				0790CB7913454C8000FAEA63 /* WCGradientTextFieldCell.m in Sources */,
+				0790CB7913454C8000FAEA63 /* WCGradientBackgroundTextFieldCell.m in Sources */,
 				0790CB80134585AF00FAEA63 /* WCDefines.m in Sources */,
 				0790CB8313458E5700FAEA63 /* NSAlert-OAExtensions.m in Sources */,
 				07968ABF1345945000E74BC6 /* NSOutlineView+WCExtensions.m in Sources */,
@@ -2293,11 +2293,11 @@
 				07BBD22C135F9330005C4870 /* WCHexFormatter.m in Sources */,
 				07BBD22F135F960A005C4870 /* WCReturnAndEscapeButton.m in Sources */,
 				0707208C1360A29800E7C7CD /* WCBoolToStringTransformer.m in Sources */,
-				070720981360B5AC00E7C7CD /* WCVerticallyCenteredTextFieldCell.m in Sources */,
+				070720981360B5AC00E7C7CD /* RSVerticallyCenteredTextFieldCell.m in Sources */,
 				070720AD1360EA2D00E7C7CD /* EncodingManager.m in Sources */,
-				0724B7AB136390300061AA47 /* WCBadgedTextFieldCell.m in Sources */,
-				0724B7AC136390300061AA47 /* WCIconTextFieldCell.m in Sources */,
-				0724B7D21363A3D40061AA47 /* WCMultiLineTextFieldCell.m in Sources */,
+				0724B7AB136390300061AA47 /* RSBadgedTextFieldCell.m in Sources */,
+				0724B7AC136390300061AA47 /* RSIconTextFieldCell.m in Sources */,
+				0724B7D21363A3D40061AA47 /* RSMultiLineTextFieldCell.m in Sources */,
 				0756D8D91363DFE200ECDFFD /* WCInfoTextFieldCell.m in Sources */,
 				0756D8E01363EF5700ECDFFD /* WCGroupBackgroundOutlineView.m in Sources */,
 				071400D11366AF26004AA5C6 /* NS(Attributed)String+Geometrics.m in Sources */,
@@ -2421,7 +2421,7 @@
 				07BD0D6413722EB800F04712 /* WCTwoDigitHexFormatter.m in Sources */,
 				07BD0D68137259DA00F04712 /* RSDebuggerGotoAddressSheetController.m in Sources */,
 				07B1462A137289D2002157CF /* RSDebuggerStackViewController.m in Sources */,
-				0789496413732DD600B671C1 /* WCVerticallyCenteredTextFieldCell.m in Sources */,
+				0789496413732DD600B671C1 /* RSVerticallyCenteredTextFieldCell.m in Sources */,
 				078949691373330700B671C1 /* RSDebuggerMemoryTableColumn.m in Sources */,
 				0789496D137337B200B671C1 /* RSDebuggerDisassemblyViewController.m in Sources */,
 				078949751373433C00B671C1 /* WCNoLimitHexFormatter.m in Sources */,

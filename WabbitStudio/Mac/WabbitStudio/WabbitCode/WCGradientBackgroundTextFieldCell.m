@@ -6,9 +6,9 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCGradientTextFieldCell.h"
+#import "WCGradientBackgroundTextFieldCell.h"
 
-@implementation WCGradientTextFieldCell
+@implementation WCGradientBackgroundTextFieldCell
 
 - (NSBackgroundStyle)backgroundStyle {
 	return ([self drawGradient])?NSBackgroundStyleRaised:[super backgroundStyle];

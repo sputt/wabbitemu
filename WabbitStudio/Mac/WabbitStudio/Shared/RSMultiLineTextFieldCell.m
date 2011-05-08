@@ -6,16 +6,17 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCMultiLineTextFieldCell.h"
+#import "RSMultiLineTextFieldCell.h"
 #import "WCDefines.h"
 #import "NS(Attributed)String+Geometrics.h"
+#import "WCInfoTextFieldCell.h"
 
 
-@interface WCMultiLineTextFieldCell ()
+@interface RSMultiLineTextFieldCell ()
 - (NSAttributedString *)_attributedStringForSecondaryTitle;
 @end
 
-@implementation WCMultiLineTextFieldCell
+@implementation RSMultiLineTextFieldCell
 
 - (void)dealloc {
 	[_secondaryTextFieldCell release];
@@ -23,7 +24,7 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-	WCMultiLineTextFieldCell *copy = [super copyWithZone:zone];
+	RSMultiLineTextFieldCell *copy = [super copyWithZone:zone];
 	
 	copy->_secondaryTextFieldCell = [_secondaryTextFieldCell copyWithZone:zone];
 	

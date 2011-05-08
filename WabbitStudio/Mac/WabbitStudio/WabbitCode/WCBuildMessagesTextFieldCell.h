@@ -6,10 +6,10 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCBadgedTextFieldCell.h"
+#import "RSBadgedTextFieldCell.h"
 
 
-@interface WCBuildMessagesTextFieldCell : WCBadgedTextFieldCell {
+@interface WCBuildMessagesTextFieldCell : RSBadgedTextFieldCell {
 @private
     BOOL _hasOnlyWarnings;
 }

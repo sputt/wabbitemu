@@ -6,11 +6,11 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCVerticallyCenteredTextFieldCell.h"
+#import "RSVerticallyCenteredTextFieldCell.h"
 #import "WCDefines.h"
 
 
-@implementation WCVerticallyCenteredTextFieldCell
+@implementation RSVerticallyCenteredTextFieldCell
 - (id)init {
 	if (!(self = [super init]))
 		return nil;
@@ -30,7 +30,7 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-	WCVerticallyCenteredTextFieldCell *copy = [super copyWithZone:zone];
+	RSVerticallyCenteredTextFieldCell *copy = [super copyWithZone:zone];
 	
 	copy->_excludeFileExtensionWhenSelecting = _excludeFileExtensionWhenSelecting;
 	

@@ -6,10 +6,10 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCMultiLineTextFieldCell.h"
+#import "RSMultiLineTextFieldCell.h"
 
 
-@interface WCIconTextFieldCell : WCMultiLineTextFieldCell <NSCopying> {
+@interface RSIconTextFieldCell : RSMultiLineTextFieldCell <NSCopying> {
 @private
     NSImage *_icon; // always on the left edge
 	NSSize _iconSize; // default is 16x16

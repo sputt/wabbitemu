@@ -6,10 +6,12 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCInfoTextFieldCell.h"
+#import "RSVerticallyCenteredTextFieldCell.h"
 
 
-@interface WCMultiLineTextFieldCell : WCVerticallyCenteredTextFieldCell <NSCopying> {
+@class WCInfoTextFieldCell;
+
+@interface RSMultiLineTextFieldCell : RSVerticallyCenteredTextFieldCell <NSCopying> {
 @private
 	WCInfoTextFieldCell *_secondaryTextFieldCell;
 }

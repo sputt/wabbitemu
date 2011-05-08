@@ -6,7 +6,7 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCBadgedTextFieldCell.h"
+#import "RSBadgedTextFieldCell.h"
 #import "WCDefines.h"
 #import "NS(Attributed)String+Geometrics.h"
 
@@ -26,16 +26,16 @@ static NSColor *kBadgeSelectedBackgroundColor = nil;
 static NSColor *kBadgeKeyBackgroundColor = nil;
 static NSColor *kBadgeBackgroundColor = nil;
 
-@interface WCBadgedTextFieldCell ()
+@interface RSBadgedTextFieldCell ()
 - (NSAttributedString *)_attributedStringForBadgeCount;
 - (NSColor *)_textColorForBadgeString;
 - (NSColor *)_backgroundColorForBadgeString;
 @end
 
-@implementation WCBadgedTextFieldCell
+@implementation RSBadgedTextFieldCell
 
 + (void)initialize {
-	if ([WCBadgedTextFieldCell class] != self)
+	if ([RSBadgedTextFieldCell class] != self)
 		return;
 	
 	kBadgeTextColor = [[NSColor alternateSelectedControlTextColor] retain];
@@ -48,7 +48,7 @@ static NSColor *kBadgeBackgroundColor = nil;
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-	WCBadgedTextFieldCell *copy = [super copyWithZone:zone];
+	RSBadgedTextFieldCell *copy = [super copyWithZone:zone];
 	
 	copy->_badgeCount = _badgeCount;
 	

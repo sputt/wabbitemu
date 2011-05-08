@@ -6,10 +6,10 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCIconTextFieldCell.h"
+#import "RSIconTextFieldCell.h"
 
 
-@interface WCGradientTextFieldCell : WCIconTextFieldCell {
+@interface WCGradientBackgroundTextFieldCell : RSIconTextFieldCell {
 @private
 	BOOL _drawGradient; // our corresponding NSTableView class actually draws the gradient
 }

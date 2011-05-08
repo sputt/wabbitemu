@@ -7,7 +7,7 @@
 //
 
 #import "RSDebuggerMemoryTableColumn.h"
-#import "WCVerticallyCenteredTextFieldCell.h"
+#import "RSVerticallyCenteredTextFieldCell.h"
 #import "WCTwoDigitHexFormatter.h"
 
 
@@ -21,7 +21,7 @@
 	[[self headerCell] setTitle:NSLocalizedString(@"Memory",@"memory view memory table column title")];
 	[self setHeaderToolTip:NSLocalizedString(@"Memory view", @"memory view memory table column tooltip")];
 	
-	WCVerticallyCenteredTextFieldCell *dataCell = [[[WCVerticallyCenteredTextFieldCell alloc] initTextCell:@""] autorelease];
+	RSVerticallyCenteredTextFieldCell *dataCell = [[[RSVerticallyCenteredTextFieldCell alloc] initTextCell:@""] autorelease];
 
 	[dataCell setAlignment:NSCenterTextAlignment];
 	[dataCell setControlSize:NSSmallControlSize];

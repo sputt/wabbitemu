@@ -6,14 +6,14 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCIconTextFieldCell.h"
+#import "RSIconTextFieldCell.h"
 #import "WCDefines.h"
 
 static const CGFloat kIconMarginLeft = 2.0;
 static const CGFloat kIconMarginRight = 2.0;
 static const CGFloat kIconMarginTop = 2.0; // only applies if centerIcon is not set to YES
 
-@implementation WCIconTextFieldCell
+@implementation RSIconTextFieldCell
 
 - (void)dealloc {
 	[_icon release];
@@ -21,7 +21,7 @@ static const CGFloat kIconMarginTop = 2.0; // only applies if centerIcon is not 
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-	WCIconTextFieldCell *copy = [super copyWithZone:zone];
+	RSIconTextFieldCell *copy = [super copyWithZone:zone];
 	
 	copy->_icon = [_icon retain];
 	copy->_iconSize = _iconSize;

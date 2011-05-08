@@ -9,7 +9,7 @@
 #import <AppKit/NSTextFieldCell.h>
 
 
-@interface WCVerticallyCenteredTextFieldCell : NSTextFieldCell <NSCopying> {
+@interface RSVerticallyCenteredTextFieldCell : NSTextFieldCell <NSCopying> {
 @private
 	BOOL _excludeFileExtensionWhenSelecting;
 }

@@ -6,10 +6,10 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCVerticallyCenteredTextFieldCell.h"
+#import "RSVerticallyCenteredTextFieldCell.h"
 
 
-@interface RSDebuggerDisassemblyTextFieldCell : WCVerticallyCenteredTextFieldCell {
+@interface RSDebuggerDisassemblyTextFieldCell : RSVerticallyCenteredTextFieldCell {
 @private
     
 }

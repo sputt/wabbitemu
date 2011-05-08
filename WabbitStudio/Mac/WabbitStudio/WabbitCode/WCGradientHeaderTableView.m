@@ -7,7 +7,7 @@
 //
 
 #import "WCGradientHeaderTableView.h"
-#import "WCGradientTextFieldCell.h"
+#import "WCGradientBackgroundTextFieldCell.h"
 
 @implementation WCGradientHeaderTableView
 
@@ -17,7 +17,7 @@
 	NSRange rowRange = [self rowsInRect:clipRect];
 	
 	for (NSUInteger row = rowRange.location; row < NSMaxRange(rowRange); row++) {
-		WCGradientTextFieldCell *cell = (WCGradientTextFieldCell *)[self preparedCellAtColumn:0 row:row];
+		WCGradientBackgroundTextFieldCell *cell = (WCGradientBackgroundTextFieldCell *)[self preparedCellAtColumn:0 row:row];
 		if ([cell drawGradient]) {
 			NSRect rowRect = [self rectOfRow:row];
 			

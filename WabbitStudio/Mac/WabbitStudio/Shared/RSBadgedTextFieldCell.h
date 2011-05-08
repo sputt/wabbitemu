@@ -6,10 +6,10 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCIconTextFieldCell.h"
+#import "RSIconTextFieldCell.h"
 
 
-@interface WCBadgedTextFieldCell : WCIconTextFieldCell <NSCopying> {
+@interface RSBadgedTextFieldCell : RSIconTextFieldCell <NSCopying> {
 @private
     NSUInteger _badgeCount;
 }

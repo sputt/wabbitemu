@@ -3,24 +3,15 @@
 	<data>
 		<int key="IBDocument.SystemTarget">1060</int>
 		<string key="IBDocument.SystemVersion">10J869</string>
-		<string key="IBDocument.InterfaceBuilderVersion">1306</string>
+		<string key="IBDocument.InterfaceBuilderVersion">844</string>
 		<string key="IBDocument.AppKitVersion">1038.35</string>
 		<string key="IBDocument.HIToolboxVersion">461.00</string>
 		<object class="NSMutableDictionary" key="IBDocument.PluginVersions">
 			<string key="NS.key.0">com.apple.InterfaceBuilder.CocoaPlugin</string>
-			<string key="NS.object.0">1306</string>
+			<string key="NS.object.0">844</string>
 		</object>
-		<object class="NSArray" key="IBDocument.IntegratedClassDependencies">
+		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<string>NSCustomObject</string>
-			<string>NSTextFieldCell</string>
-			<string>NSScrollView</string>
-			<string>NSMenu</string>
-			<string>NSMenuItem</string>
-			<string>NSTableHeaderView</string>
-			<string>NSTableColumn</string>
-			<string>NSScroller</string>
-			<string>NSTableView</string>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -31,7 +22,9 @@
 			<object class="NSArray" key="dict.sortedKeys" id="0">
 				<bool key="EncodedWithXMLCoder">YES</bool>
 			</object>
-			<reference key="dict.values" ref="0"/>
+			<object class="NSMutableArray" key="dict.values">
+				<bool key="EncodedWithXMLCoder">YES</bool>
+			</object>
 		</object>
 		<object class="NSMutableArray" key="IBDocument.RootObjects" id="1000">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -45,7 +38,7 @@
 				<string key="NSClassName">NSApplication</string>
 			</object>
 			<object class="NSScrollView" id="388841144">
-				<reference key="NSNextResponder"/>
+				<nil key="NSNextResponder"/>
 				<int key="NSvFlags">4370</int>
 				<object class="NSMutableArray" key="NSSubviews">
 					<bool key="EncodedWithXMLCoder">YES</bool>
@@ -59,15 +52,13 @@
 								<int key="NSvFlags">4352</int>
 								<string key="NSFrameSize">{349, 118}</string>
 								<reference key="NSSuperview" ref="388830020"/>
-								<reference key="NSWindow"/>
-								<reference key="NSNextKeyView" ref="42643764"/>
+								<reference key="NSNextKeyView" ref="43422883"/>
 								<bool key="NSEnabled">YES</bool>
 								<object class="NSTableHeaderView" key="NSHeaderView" id="806737685">
 									<reference key="NSNextResponder" ref="719617901"/>
 									<int key="NSvFlags">256</int>
 									<string key="NSFrameSize">{349, 17}</string>
 									<reference key="NSSuperview" ref="719617901"/>
-									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="430094446"/>
 									<reference key="NSTableView" ref="897668658"/>
 								</object>
@@ -76,7 +67,6 @@
 									<int key="NSvFlags">256</int>
 									<string key="NSFrame">{{349, 0}, {16, 17}}</string>
 									<reference key="NSSuperview" ref="388841144"/>
-									<reference key="NSWindow"/>
 									<reference key="NSNextKeyView" ref="388830020"/>
 								</object>
 								<object class="NSMutableArray" key="NSTableColumns">
@@ -168,7 +158,6 @@
 						</object>
 						<string key="NSFrame">{{0, 17}, {349, 118}}</string>
 						<reference key="NSSuperview" ref="388841144"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="897668658"/>
 						<reference key="NSDocView" ref="897668658"/>
 						<reference key="NSBGColor" ref="705238986"/>
@@ -179,8 +168,6 @@
 						<int key="NSvFlags">256</int>
 						<string key="NSFrame">{{349, 17}, {15, 118}}</string>
 						<reference key="NSSuperview" ref="388841144"/>
-						<reference key="NSWindow"/>
-						<reference key="NSNextKeyView"/>
 						<reference key="NSTarget" ref="388841144"/>
 						<string key="NSAction">_doScroller:</string>
 						<double key="NSCurValue">37</double>
@@ -191,7 +178,6 @@
 						<int key="NSvFlags">-2147483392</int>
 						<string key="NSFrame">{{-100, -100}, {223, 15}}</string>
 						<reference key="NSSuperview" ref="388841144"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="719617901"/>
 						<int key="NSsFlags">1</int>
 						<reference key="NSTarget" ref="388841144"/>
@@ -207,7 +193,6 @@
 						</object>
 						<string key="NSFrameSize">{349, 17}</string>
 						<reference key="NSSuperview" ref="388841144"/>
-						<reference key="NSWindow"/>
 						<reference key="NSNextKeyView" ref="806737685"/>
 						<reference key="NSDocView" ref="806737685"/>
 						<reference key="NSBGColor" ref="705238986"/>
@@ -216,15 +201,12 @@
 					<reference ref="430094446"/>
 				</object>
 				<string key="NSFrameSize">{364, 135}</string>
-				<reference key="NSSuperview"/>
-				<reference key="NSWindow"/>
-				<reference key="NSNextKeyView" ref="43422883"/>
+				<reference key="NSNextKeyView" ref="388830020"/>
 				<int key="NSsFlags">16</int>
 				<reference key="NSVScroller" ref="42643764"/>
 				<reference key="NSHScroller" ref="43422883"/>
 				<reference key="NSContentView" ref="388830020"/>
 				<reference key="NSHeaderClipView" ref="719617901"/>
-				<reference key="NSCornerView" ref="430094446"/>
 				<bytes key="NSScrollAmts">QSAAAEEgAABBmAAAQZgAAA</bytes>
 			</object>
 			<object class="NSCustomObject" id="5130183">
@@ -463,7 +445,7 @@
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
-					<string>WCVerticallyCenteredTextFieldCell</string>
+					<string>RSVerticallyCenteredTextFieldCell</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
 					<string>com.apple.InterfaceBuilder.CocoaPlugin</string>
@@ -479,13 +461,17 @@
 			<object class="NSMutableDictionary" key="unlocalizedProperties">
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<reference key="dict.sortedKeys" ref="0"/>
-				<reference key="dict.values" ref="0"/>
+				<object class="NSMutableArray" key="dict.values">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+				</object>
 			</object>
 			<nil key="activeLocalization"/>
 			<object class="NSMutableDictionary" key="localizations">
 				<bool key="EncodedWithXMLCoder">YES</bool>
 				<reference key="dict.sortedKeys" ref="0"/>
-				<reference key="dict.values" ref="0"/>
+				<object class="NSMutableArray" key="dict.values">
+					<bool key="EncodedWithXMLCoder">YES</bool>
+				</object>
 			</object>
 			<nil key="sourceID"/>
 			<int key="maxID">25</int>
@@ -707,19 +693,19 @@
 					</object>
 				</object>
 				<object class="IBPartialClassDescription">
+					<string key="className">RSVerticallyCenteredTextFieldCell</string>
+					<string key="superclassName">NSTextFieldCell</string>
+					<object class="IBClassDescriptionSource" key="sourceIdentifier">
+						<string key="majorKey">IBUserSource</string>
+						<string key="minorKey"/>
+					</object>
+				</object>
+				<object class="IBPartialClassDescription">
 					<string key="className">WCHexFormatter</string>
 					<string key="superclassName">NSFormatter</string>
 					<object class="IBClassDescriptionSource" key="sourceIdentifier">
 						<string key="majorKey">IBProjectSource</string>
 						<string key="minorKey">./Classes/WCHexFormatter.h</string>
-					</object>
-				</object>
-				<object class="IBPartialClassDescription">
-					<string key="className">WCVerticallyCenteredTextFieldCell</string>
-					<string key="superclassName">NSTextFieldCell</string>
-					<object class="IBClassDescriptionSource" key="sourceIdentifier">
-						<string key="majorKey">IBProjectSource</string>
-						<string key="minorKey">./Classes/WCVerticallyCenteredTextFieldCell.h</string>
 					</object>
 				</object>
 			</object>
@@ -731,6 +717,7 @@
 			<integer value="3000" key="NS.object.0"/>
 		</object>
 		<bool key="IBDocument.PluginDeclaredDependenciesTrackSystemTargetVersion">YES</bool>
+		<nil key="IBDocument.LastKnownRelativeProjectPath"/>
 		<int key="IBDocument.defaultPropertyAccessControl">3</int>
 		<object class="NSMutableDictionary" key="IBDocument.LastKnownImageSizes">
 			<bool key="EncodedWithXMLCoder">YES</bool>

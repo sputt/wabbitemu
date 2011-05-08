@@ -6,10 +6,10 @@
 //  Copyright 2011 Revolution Software. All rights reserved.
 //
 
-#import "WCVerticallyCenteredTextFieldCell.h"
+#import "RSVerticallyCenteredTextFieldCell.h"
 
 
-@interface WCInfoTextFieldCell : WCVerticallyCenteredTextFieldCell {
+@interface WCInfoTextFieldCell : RSVerticallyCenteredTextFieldCell {
 @private
     
 }
