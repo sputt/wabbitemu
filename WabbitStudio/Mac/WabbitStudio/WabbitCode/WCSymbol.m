@@ -14,16 +14,8 @@
 #import "WCAlias.h"
 #import "WCTextStorage.h"
 
-static NSMutableDictionary *_symbolIconCache = nil;
 
 @implementation WCSymbol
-
-+ (void)initialize {
-	if ([WCSymbol class] != self)
-		return;
-	
-	_symbolIconCache = [[NSMutableDictionary alloc] init];
-}
 
 - (void)dealloc {
 	[_symbolValue release];
@@ -74,154 +66,32 @@ static NSMutableDictionary *_symbolIconCache = nil;
 - (NSImage *)icon {
 	if ([self symbolType] == WCSymbolFileType)
 		return [[self file] icon];
-	
-	NSString *key = [NSString stringWithFormat:@"%umedium", [self symbolType]];
-	NSImage *icon = [_symbolIconCache objectForKey:key];
-	
-	if (!icon) {
-		icon = [[[NSImage alloc] initWithSize:NSMakeSize(14.0, 14.0)] autorelease];
-		
-		static NSDictionary *attributes = nil;
-		if (!attributes) {
-			NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
-			[style setAlignment:NSCenterTextAlignment];
-			
-			NSShadow *shadow = [[[NSShadow alloc] init] autorelease];
-			[shadow setShadowOffset:NSMakeSize(1.0, -1.0)];
-			[shadow setShadowBlurRadius:1.0];
-			 
-			attributes = [[NSDictionary alloc] initWithObjectsAndKeys:[NSFont labelFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]], NSFontAttributeName, [NSColor whiteColor], NSForegroundColorAttributeName, style, NSParagraphStyleAttributeName,shadow,NSShadowAttributeName, nil];
-		}
-		
-		NSString *letter = nil;
-		NSColor *color = nil;
-		
-		switch (_symbolType) {
-			case WCSymbolFunctionType:
-				letter = @"F";
-				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesLabelsColorKey];
-				break;
-			case WCSymbolLabelType:
-				letter = @"L";
-				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesLabelsColorKey];
-				break;
-			case WCSymbolEquateType:
-				letter = @"E";
-				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEquatesColorKey];
-				break;
-			case WCSymbolMacroType:
-				letter = @"#";
-				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesMacrosColorKey];
-				break;
-			case WCSymbolDefineType:
-				letter = @"#";
-				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesDefinesColorKey];
-				break;
-			default:
-				break;
-		}
-		
-		NSAttributedString *string = [[[NSAttributedString alloc] initWithString:letter attributes:attributes] autorelease];
-		NSRect bounds = NSMakeRect(0.0, 0.0, [icon size].width, [icon size].height);
-		NSRect title = [string boundingRectWithSize:bounds.size options:NSStringDrawingOneShot];
-		NSRect draw = bounds;
-		draw.size.height = title.size.height;
-		draw.origin.y = bounds.origin.y + (floorf(bounds.size.height/2) - floorf(title.size.height/2));
-		
-		NSColor *strokeColor = [color darkerColor];
-		NSGradient *gradient = [[[NSGradient alloc] initWithStartingColor:strokeColor endingColor:color] autorelease];
-		//NSShadow *shadow = [[[NSShadow alloc] init] autorelease];
-		//[shadow setShadowBlurRadius:1.0];
-		//[shadow setShadowOffset:NSMakeSize(1.0, -1.0)];
-		NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:bounds xRadius:5.0 yRadius:5.0];
-		
-		[icon lockFocus];
-		//[color setFill];
-		//[path fill];
-		[gradient drawInBezierPath:path angle:90.0];
-		[strokeColor setStroke];
-		[path setLineWidth:2.0];
-		//[shadow set];
-		[path stroke];
-		[string drawInRect:draw];
-		[icon unlockFocus];
-		
-		[_symbolIconCache setObject:icon forKey:key];
-	}
-	return icon;
+	else if ([self symbolType] == WCSymbolLabelType)
+		return [NSImage imageNamed:@"LabelSymbol"];
+	else if ([self symbolType] == WCSymbolFunctionType)
+		return [NSImage imageNamed:@"FunctionSymbol"];
+	else if ([self symbolType] == WCSymbolEquateType)
+		return [NSImage imageNamed:@"EquateSymbol"];
+	else if ([self symbolType] == WCSymbolDefineType)
+		return [NSImage imageNamed:@"DefineSymbol"];
+	else if ([self symbolType] == WCSymbolMacroType)
+		return [NSImage imageNamed:@"MacroSymbol"];
+	return nil;
 }
 
 @dynamic iconForContextualMenu;
 - (NSImage *)iconForContextualMenu {
-	NSString *key = [NSString stringWithFormat:@"%usmall", _symbolType];
-	NSImage *icon = [_symbolIconCache objectForKey:key];
-	
-	if (!icon) {
-		icon = [[[NSImage alloc] initWithSize:NSMakeSize(12.0, 12.0)] autorelease];
-		
-		static NSDictionary *attributes = nil;
-		if (!attributes) {
-			NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
-			[style setAlignment:NSCenterTextAlignment];
-			attributes = [[NSDictionary alloc] initWithObjectsAndKeys:[NSFont menuFontOfSize:[NSFont systemFontSizeForControlSize:NSMiniControlSize]], NSFontAttributeName, [NSColor whiteColor], NSForegroundColorAttributeName, style, NSParagraphStyleAttributeName, nil];
-		}
-		
-		NSString *letter = nil;
-		NSColor *color = nil;
-		
-		switch (_symbolType) {
-			case WCSymbolFunctionType:
-				letter = @"F";
-				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesLabelsColorKey];
-				break;
-			case WCSymbolLabelType:
-				letter = @"L";
-				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesLabelsColorKey];
-				break;
-			case WCSymbolEquateType:
-				letter = @"E";
-				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesEquatesColorKey];
-				break;
-			case WCSymbolMacroType:
-				letter = @"#";
-				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesMacrosColorKey];
-				break;
-			case WCSymbolDefineType:
-				letter = @"#";
-				color = [[NSUserDefaults standardUserDefaults] colorForKey:kWCPreferencesDefinesColorKey];
-				break;
-			default:
-				break;
-		}
-		
-		NSAttributedString *string = [[[NSAttributedString alloc] initWithString:letter attributes:attributes] autorelease];
-		NSRect bounds = NSMakeRect(0.0, 0.0, [icon size].width, [icon size].height);
-		NSRect title = [string boundingRectWithSize:bounds.size options:NSStringDrawingOneShot];
-		NSRect draw = bounds;
-		draw.size.height = title.size.height;
-		draw.origin.y = bounds.origin.y + (floorf(bounds.size.height/2) - floorf(title.size.height/2));
-		
-		NSColor *strokeColor = [color darkerColor];
-		NSGradient *gradient = [[[NSGradient alloc] initWithStartingColor:strokeColor endingColor:color] autorelease];
-		//NSShadow *shadow = [[[NSShadow alloc] init] autorelease];
-		//[shadow setShadowBlurRadius:1.0];
-		//[shadow setShadowOffset:NSMakeSize(1.0, -1.0)];
-		NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:bounds xRadius:5.0 yRadius:5.0];
-		
-		[icon lockFocus];
-		//[color setFill];
-		//[path fill];
-		[gradient drawInBezierPath:path angle:90.0];
-		[strokeColor setStroke];
-		[path setLineWidth:2.0];
-		//[shadow set];
-		[path stroke];
-		[string drawInRect:draw];
-		[icon unlockFocus];
-		
-		[_symbolIconCache setObject:icon forKey:key];
-	}
-	return icon;
+	if ([self symbolType] == WCSymbolLabelType)
+		return [NSImage imageNamed:@"LabelSymbol"];
+	else if ([self symbolType] == WCSymbolFunctionType)
+		return [NSImage imageNamed:@"FunctionSymbol"];
+	else if ([self symbolType] == WCSymbolEquateType)
+		return [NSImage imageNamed:@"EquateSymbol"];
+	else if ([self symbolType] == WCSymbolDefineType)
+		return [NSImage imageNamed:@"DefineSymbol"];
+	else if ([self symbolType] == WCSymbolMacroType)
+		return [NSImage imageNamed:@"MacroSymbol"];
+	return nil;
 }
 
 @dynamic lineNumber;

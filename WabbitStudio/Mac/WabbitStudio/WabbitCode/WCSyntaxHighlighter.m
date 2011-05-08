@@ -44,14 +44,14 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	kWCSyntaxHighlighterOpCodesRegex = [[RKRegex alloc] initWithRegexString:@"\\b(?:adc|add|and|bit|call|ccf|cpdr|cpd|cpir|cpi|cpl|cp|daa|dec|di|djnz|ei|exx|ex|halt|im|inc|indr|ind|inir|ini|in|jp|jr|lddr|ldd|ldir|ldi|ld|neg|nop|or|otdr|otir|outd|outi|out|pop|push|res|reti|retn|ret|rla|rlca|rlc|rld|rl|rra|rrca|rrc|rrd|rr|rst|sbc|scf|set|sla|sll|sra|srl|sub|xor)\\b" options:RKCompileUTF8];
 	kWCSyntaxHighlighterConditionalsRegex = [[RKRegex alloc] initWithRegexString:@"\\b(?:nz|nv|nc|po|pe|c|p|m|n|z|v)\\b" options:RKCompileUTF8];
 	kWCSyntaxHighlighterRegistersRegex = [[RKRegex alloc] initWithRegexString:@"\\b(?:ixh|iyh|ixl|iyl|sp|af|pc|bc|de|hl|ix|iy|a|f|b|c|d|e|h|l|r|i)\\b" options:RKCompileUTF8];
-	kWCSyntaxHighlighterPreOpsRegex = [[RKRegex alloc] initWithRegexString:@"#\\w+" options:RKCompileUTF8];
+	kWCSyntaxHighlighterPreOpsRegex = [[RKRegex alloc] initWithRegexString:@"^\\s*#\\w+" options:RKCompileUTF8|RKCompileMultiline];
 	kWCSyntaxHighlighterStringsRegex = [[RKRegex alloc] initWithRegexString:@"\".*?\"" options:RKCompileUTF8];
 	kWCSyntaxHighlighterNumbersRegex = [[RKRegex alloc] initWithRegexString:@"\\b[0-9]+\\b" options:RKCompileUTF8];
 	kWCSyntaxHighlighterHexadeicmalsRegex = [[RKRegex alloc] initWithRegexString:@"(?:\\$[0-9a-fA-F]+\\b)|(?:(?<=[^$%]\\b)[0-9a-fA-F]+h\\b)" options:RKCompileUTF8];
 	kWCSyntaxHighlighterBinariesRegex = [[RKRegex alloc] initWithRegexString:@"(?:%[01]+\\b)|(?:(?<=[^$%]\\b)[01]+b)" options:RKCompileUTF8];
-	kWCSyntaxHighlighterCommentsRegex = [[RKRegex alloc] initWithRegexString:@";+.*$" options:RKCompileUTF8|RKCompileMultiline];
+	kWCSyntaxHighlighterCommentsRegex = [[RKRegex alloc] initWithRegexString:@";+.*" options:RKCompileUTF8];
 	
-	kWCSyntaxHighlighterSymbolsRegex = [[RKRegex alloc] initWithRegexString:@"[A-z0-9!?.]+" options:RKCompileUTF8];
+	kWCSyntaxHighlighterSymbolsRegex = [[RKRegex alloc] initWithRegexString:@"\\b(?:[A-z0-9.!?]+)\\b" options:RKCompileUTF8];
 }
 
 - (id)initWithTextView:(WCTextView *)textView; {
@@ -166,24 +166,23 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	NSDictionary *defineNamesToSymbols = nil;
 	NSDictionary *macroNamesToSymbols = nil;
 	
-	if ([[_textView file] project]) {
-		labelNamesToSymbols = [[[_textView file] project] labelNamesToSymbols];
-		equateNamesToSymbols = [[[_textView file] project] equateNamesToSymbols];
-		defineNamesToSymbols = [[[_textView file] project] defineNamesToSymbols];
-		macroNamesToSymbols = [[[_textView file] project] macroNamesToSymbols];
-	}
-	else {
+	if ([[_textView file] project] == nil) {
 		labelNamesToSymbols = [[[_textView file] symbolScanner] labelNamesToSymbols];
 		equateNamesToSymbols = [[[_textView file] symbolScanner] equateNamesToSymbols];
 		defineNamesToSymbols = [[[_textView file] symbolScanner] defineNamesToSymbols];
 		macroNamesToSymbols = [[[_textView file] symbolScanner] macroNamesToSymbols];
+	}
+	else {
+		labelNamesToSymbols = [[[_textView file] project] labelNamesToSymbols];
+		equateNamesToSymbols = [[[_textView file] project] equateNamesToSymbols];
+		defineNamesToSymbols = [[[_textView file] project] defineNamesToSymbols];
+		macroNamesToSymbols = [[[_textView file] project] macroNamesToSymbols];
 	}
 	
 	BOOL highlightLabels = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesLabelsKey];
 	BOOL highlightEquates = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEquatesKey];
 	BOOL highlightDefines = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesDefinesKey];
 	BOOL highlightMacros = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesMacrosKey];
-	//BOOL showEquateValues = [[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorShowEquateValueTooltipsKey];
 	BOOL symbolsAreCaseSensitive = [[[[_textView file] project] activeBuildTarget] symbolsAreCaseSensitive];
 	
 	while ([symbolsEnum nextRanges] != NULL) {
@@ -193,19 +192,9 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 		
 		if (highlightEquates && [equateNamesToSymbols objectForKey:symbolName]) {
 			[[_textView layoutManager] addTemporaryAttribute:NSForegroundColorAttributeName value:equatesColor forCharacterRange:actualRange];
-			
-			/*
-			if (showEquateValues)
-				[[_textView layoutManager] addTemporaryAttribute:NSToolTipAttributeName value:[[equateNamesToSymbols objectForKey:symbolName] symbolValue] forCharacterRange:actualRange];
-			 */
 		}
 		else if (highlightLabels && [labelNamesToSymbols objectForKey:symbolName]) {
 			[[_textView layoutManager] addTemporaryAttribute:NSForegroundColorAttributeName value:labelsColor forCharacterRange:actualRange];
-			
-			/*
-			if ([[labelNamesToSymbols objectForKey:symbolName] symbolType] == WCSymbolFunctionType)
-				[[_textView layoutManager] addTemporaryAttribute:NSUnderlineStyleAttributeName value:[NSNumber numberWithUnsignedInteger:NSUnderlineStyleSingle|NSUnderlinePatternSolid] forCharacterRange:actualRange];
-			 */
 		}
 		else if (highlightDefines && [defineNamesToSymbols objectForKey:symbolName])
 			[[_textView layoutManager] addTemporaryAttribute:NSForegroundColorAttributeName value:definesColor forCharacterRange:actualRange];

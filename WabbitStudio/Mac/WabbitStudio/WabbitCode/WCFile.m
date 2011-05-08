@@ -454,9 +454,9 @@ static NSMutableDictionary *_UTIsToUnsavedIcons = nil;
 
 @dynamic project;
 - (WCProject *)project {
-	if (!_project)
-		_project = [[self parentNode] project];
-	return _project;
+	if (_project != nil)
+		return _project;
+	return [[self parentNode] project];
 }
 - (void)setProject:(WCProject *)project {
 	_project = project;

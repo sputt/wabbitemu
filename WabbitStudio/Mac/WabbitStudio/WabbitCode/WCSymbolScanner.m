@@ -54,10 +54,10 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 	kWCSymbolScannerEquatesRegex = [[RKRegex alloc] initWithRegexString:@"^(?<name>[A-z0-9!?]*)(?:\\s*=\\s*|\\s+\\.equ\\s+|\\s+\\.EQU\\s+|\\s+equ\\s+|\\s+EQU\\s+)(?<value>[-+*$.!? ()A-z0-9]+)" options:RKCompileUTF8|RKCompileMultiline];
 	// general pattern for defines
 	// same as the previous cases, but we have to for '#define' or '#DEFINE' to start off the match
-	kWCSymbolScannerDefinesRegex = [[RKRegex alloc] initWithRegexString:@"(?:#define|#DEFINE)\\s+(?<name>[A-z0-9_!?.]+)" options:RKCompileUTF8];
+	kWCSymbolScannerDefinesRegex = [[RKRegex alloc] initWithRegexString:@"^\\s*(?:#define|#DEFINE)\\s+(?<name>[A-z0-9!?.]+)" options:RKCompileUTF8|RKCompileMultiline];
 	// general pattern for macros
 	// same as above, but we check for '#macro' and '#MACRO' instead
-	kWCSymbolScannerMacrosRegex = [[RKRegex alloc] initWithRegexString:@"(?:#macro|#MACRO)\\s+(?<name>[A-z0-9_!?.]+)" options:RKCompileUTF8];
+	kWCSymbolScannerMacrosRegex = [[RKRegex alloc] initWithRegexString:@"^\\s*(?:#macro|#MACRO)\\s+(?<name>[A-z0-9!?.]+)" options:RKCompileUTF8|RKCompileMultiline];
 	// pattern for multiline comments
 	// the first part of the alteration has the *? qualifier after the dot to ensure it doesn't consume the '#endcomment'
 	kWCSyntaxHighlighterMultilineCommentsRegex = [[RKRegex alloc] initWithRegexString:@"(?:#comment.*?#endcomment)|(?:#comment.*)" options:RKCompileUTF8|RKCompileDotAll|RKCompileMultiline];
@@ -123,6 +123,30 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 		[retval addObject:[[self defineNamesToSymbols] objectForKey:compareName]];
 	if ([[self macroNamesToSymbols] objectForKey:compareName])
 		[retval addObject:[[self macroNamesToSymbols] objectForKey:compareName]];
+	
+	return [[retval copy] autorelease];
+}
+
+- (NSArray *)equatesForSymbolName:(NSString *)name; {
+	NSMutableArray *retval = [NSMutableArray array];
+	BOOL labelsAreCaseSensitive = [[[[self file] project] activeBuildTarget] symbolsAreCaseSensitive];
+	NSString *compareName = (labelsAreCaseSensitive)?name:[name lowercaseString];
+	
+	if ([[self equateNamesToSymbols] objectForKey:compareName])
+		[retval addObject:[[self equateNamesToSymbols] objectForKey:compareName]];
+	
+	return [[retval copy] autorelease];
+}
+
+- (NSArray *)valueSymbolsForSymbolName:(NSString *)name; {
+	NSMutableArray *retval = [NSMutableArray array];
+	BOOL labelsAreCaseSensitive = [[[[self file] project] activeBuildTarget] symbolsAreCaseSensitive];
+	NSString *compareName = (labelsAreCaseSensitive)?name:[name lowercaseString];
+	
+	if ([[self equateNamesToSymbols] objectForKey:compareName])
+		[retval addObject:[[self equateNamesToSymbols] objectForKey:compareName]];
+	if ([[self defineNamesToSymbols] objectForKey:compareName])
+		[retval addObject:[[self defineNamesToSymbols] objectForKey:compareName]];
 	
 	return [[retval copy] autorelease];
 }
@@ -334,6 +358,7 @@ static RKRegex *kWCSymbolScannerMacrosRegex = nil;
 			NSString *symbolName = (symbolsAreCaseSensitive)?[symbol name]:[[symbol name] lowercaseString];
 			switch ([symbol symbolType]) {
 				case WCSymbolLabelType:
+				case WCSymbolFunctionType:
 					[labels setObject:symbol forKey:symbolName];
 					break;
 				case WCSymbolEquateType:

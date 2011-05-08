@@ -122,6 +122,7 @@
 					equates++;
 					break;
 				case WCSymbolLabelType:
+				case WCSymbolFunctionType:
 					labels++;
 					break;
 				case WCSymbolFileType:

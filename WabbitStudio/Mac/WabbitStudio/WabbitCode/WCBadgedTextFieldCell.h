@@ -14,6 +14,8 @@
     NSUInteger _badgeCount;
 }
 @property (assign,nonatomic) NSUInteger badgeCount;
+@property (readonly,nonatomic) NSColor *badgeFillColor;
+@property (readonly,nonatomic) NSColor *badgeTextColor;
 
 - (NSRect)badgeRectForBounds:(NSRect)bounds remainingRect:(NSRectPointer)remainingRect;
 @end

@@ -648,6 +648,24 @@ static NSImage *_appIcon = nil;
 	
 	return [[retval copy] autorelease];
 }
+- (NSArray *)equatesForSymbolName:(NSString *)name; {
+	NSMutableArray *retval = [NSMutableArray array];
+	
+	for (WCFile *file in [self textFiles]) {
+		[retval addObjectsFromArray:[[file symbolScanner] equatesForSymbolName:name]];
+	}
+	
+	return [[retval copy] autorelease];
+}
+- (NSArray *)valueSymbolsForSymbolName:(NSString *)name; {
+	NSMutableArray *retval = [NSMutableArray array];
+	
+	for (WCFile *file in [self textFiles]) {
+		[retval addObjectsFromArray:[[file symbolScanner] valueSymbolsForSymbolName:name]];
+	}
+	
+	return [[retval copy] autorelease];
+}
 - (void)jumpToObject:(id <WCJumpToObject>)object; {
 	[self jumpToObjects:[NSArray arrayWithObject:object]];
 }

@@ -47,8 +47,8 @@
 #endif
 	if (_mouseMovedTimer != nil)
 		[_mouseMovedTimer invalidate];
-	[self cleanupUserDefaultsObserving];
 	[[NSNotificationCenter defaultCenter] removeObserver:self];
+	[self cleanupUserDefaultsObserving];
 	[_syntaxHighlighter release];
 	[_lineHighlighter release];
 	_file = nil;
@@ -60,6 +60,8 @@
 		return nil;
 	
 	_lineHighlighter = [[WCLineHighlighter alloc] initWithTextView:self];
+	
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_selectionDidChange:) name:NSTextViewDidChangeSelectionNotification object:self];
 	
 	[self setupUserDefaultsObserving];
 	
@@ -91,6 +93,9 @@
 - (void)mouseMoved:(NSEvent *)theEvent {
 	[super mouseMoved:theEvent];
 	
+	if (![[NSUserDefaults standardUserDefaults] boolForKey:kWCPreferencesEditorShowEquateValueTooltipsKey])
+		return;
+	
 	if (_mouseMovedTimer == nil)
 		_mouseMovedTimer = [NSTimer scheduledTimerWithTimeInterval:kTooltipDelay target:self selector:@selector(_mouseMovedTimerFired:) userInfo:nil repeats:NO];
 	else {
@@ -110,19 +115,15 @@
 	if (string == nil)
 		return;
 	
-	NSArray *symbols = ([[self file] project] == nil)?[[[self file] symbolScanner] symbolsForSymbolName:string]:[[[self file] project] symbolsForSymbolName:string];
+	NSArray *symbols = ([[self file] project] == nil)?[[[self file] symbolScanner] equatesForSymbolName:string]:[[[self file] project] equatesForSymbolName:string];
 	
 	if ([symbols count] == 0)
 		return;
 	
 	NSMutableString *tString = [NSMutableString string];
 	
-	for (WCSymbol *symbol in symbols) {
-		if ([symbol symbolType] == WCSymbolEquateType)
-			[tString appendFormat:@"%@ = %@\n",[symbol name],[symbol symbolValue]];
-		else
-			[tString appendFormat:@"%@\n",[symbol name]];
-	}
+	for (WCSymbol *symbol in symbols)
+		[tString appendFormat:@"%@\n",[symbol symbolValue]];
 	
 	NSPoint tPoint = [[self window] convertBaseToScreen:[[[self window] currentEvent] locationInWindow]];
 	
@@ -806,4 +807,7 @@
 	[self setNeedsDisplay:YES];
 }
 
+- (void)_selectionDidChange:(NSNotification *)note {
+	[[WCTooltipManager sharedTooltipManager] hideTooltip];
+}
 @end

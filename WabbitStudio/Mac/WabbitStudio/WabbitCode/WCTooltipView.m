@@ -12,8 +12,8 @@
 #import "NSBezierPath+StrokeExtensions.h"
 
 
-const CGFloat kTooltipLeftMargin = 2.0;
-const CGFloat kTooltipRightMargin = 2.0;
+const CGFloat kTooltipLeftMargin = 1.0;
+const CGFloat kTooltipRightMargin = 1.0;
 const CGFloat kTooltipTopMargin = 2.0;
 const CGFloat kTooltipBottomMargin = 2.0;
 

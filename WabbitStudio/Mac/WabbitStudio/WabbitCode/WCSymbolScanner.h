@@ -42,4 +42,6 @@ extern RKRegex *kWCSyntaxHighlighterMultilineCommentsRegex;
 - (void)scanSymbols;
 
 - (NSArray *)symbolsForSymbolName:(NSString *)name;
+- (NSArray *)equatesForSymbolName:(NSString *)name;
+- (NSArray *)valueSymbolsForSymbolName:(NSString *)name;
 @end

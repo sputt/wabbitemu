@@ -33,7 +33,9 @@
 @synthesize location=_location;
 @dynamic attributesForTooltip;
 - (NSDictionary *)attributesForTooltip {
-	return [NSDictionary dictionaryWithObjectsAndKeys:[NSFont labelFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]],NSFontAttributeName, nil];
+	NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
+	[style setAlignment:NSCenterTextAlignment];
+	return [NSDictionary dictionaryWithObjectsAndKeys:[NSFont labelFontOfSize:[NSFont systemFontSizeForControlSize:NSSmallControlSize]],NSFontAttributeName,style,NSParagraphStyleAttributeName, nil];
 }
 
 @end

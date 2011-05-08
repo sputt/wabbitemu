@@ -63,7 +63,7 @@ static NSColor *kBadgeBackgroundColor = nil;
 		NSRect fillRect = WCCenteredRect(NSMakeRect(NSMinX(badgeRect)+kBadgeMarginLeft, NSMinY(badgeRect)+kBadgeMarginTop, NSWidth(badgeRect)-kBadgeMarginLeft-kBadgeMarginRight, size.height+kBadgeInsetTop+kBadgeInsetTop), badgeRect);
 		NSBezierPath *path = [NSBezierPath bezierPathWithRoundedRect:fillRect xRadius:8.0 yRadius:8.0];
 		
-		[[self _backgroundColorForBadgeString] setFill];
+		[[self badgeFillColor] setFill];
 		[path fill];
 		
 		[attributedString drawInRect:NSMakeRect(NSMinX(fillRect)+kBadgeInsetLeft, NSMinY(fillRect)+kBadgeInsetTop, NSWidth(fillRect)-floor((kBadgeInsetLeft+kBadgeInsetRight)/2.0), NSHeight(fillRect)-floor((kBadgeMarginTop+kBadgeMarginTop)/2.0))];
@@ -89,6 +89,14 @@ static NSColor *kBadgeBackgroundColor = nil;
 }
 
 @synthesize badgeCount=_badgeCount;
+@dynamic badgeFillColor;
+- (NSColor *)badgeFillColor {
+	return [self _backgroundColorForBadgeString];
+}
+@dynamic badgeTextColor;
+- (NSColor *)badgeTextColor {
+	return [self _textColorForBadgeString];
+}
 
 - (NSColor *)_textColorForBadgeString; {
 	if ([self isHighlighted] &&
@@ -114,7 +122,7 @@ static NSColor *kBadgeBackgroundColor = nil;
 - (NSAttributedString *)_attributedStringForBadgeCount; {
 	NSMutableParagraphStyle *style = [[[NSParagraphStyle defaultParagraphStyle] mutableCopy] autorelease];
 	[style setAlignment:NSCenterTextAlignment];
-	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont boldSystemFontOfSize:[NSFont systemFontSizeForControlSize:[self controlSize]]],NSFontAttributeName,[self _textColorForBadgeString],NSForegroundColorAttributeName,style,NSParagraphStyleAttributeName, nil];
+	NSDictionary *attributes = [NSDictionary dictionaryWithObjectsAndKeys:[NSFont boldSystemFontOfSize:[NSFont systemFontSizeForControlSize:[self controlSize]]],NSFontAttributeName,[self badgeTextColor],NSForegroundColorAttributeName,style,NSParagraphStyleAttributeName, nil];
 	NSAttributedString *attributedString = [[[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%lu",[self badgeCount]] attributes:attributes] autorelease];
 	
 	return attributedString;

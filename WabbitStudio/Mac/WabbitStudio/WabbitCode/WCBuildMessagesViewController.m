@@ -12,7 +12,7 @@
 #import "WCBuildMessage.h"
 #import "WCAlias.h"
 #import "NSTreeController+WCExtensions.h"
-#import "WCBadgedTextFieldCell.h"
+#import "WCBuildMessagesTextFieldCell.h"
 #import "WCPreferencesController.h"
 #import "NSUserDefaults+WCExtensions.h"
 #import "WCDefines.h"
@@ -47,6 +47,10 @@
 	
 	[cell setIcon:[message icon]];
 	[cell setBadgeCount:[message messagesCount]];
+	if ([message errorsCount] == 0)
+		[cell setHasOnlyWarnings:YES];
+	else
+		[cell setHasOnlyWarnings:NO];
 	
 	if ([[item representedObject] parentNode] == nil) {
 		[cell setIconSize:WCSmallSize];

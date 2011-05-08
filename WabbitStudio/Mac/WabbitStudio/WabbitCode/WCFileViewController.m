@@ -14,6 +14,7 @@
 #import "WCSymbol.h"
 #import "WCSymbolScanner.h"
 #import "NSArray+WCExtensions.h"
+#import "WCDefines.h"
 
 
 @interface WCFileViewController ()
@@ -134,6 +135,7 @@
 				WCSymbol *symbol = [symbols objectAtIndex:count++];
 				
 				[item setTitle:[symbol name]];
+				[[symbol icon] setSize:WCMiniSize];
 				[item setImage:[symbol icon]];
 				[item setIndentationLevel:([symbol symbolType] == WCSymbolFunctionType)?0:1];
 				[item setRepresentedObject:symbol];

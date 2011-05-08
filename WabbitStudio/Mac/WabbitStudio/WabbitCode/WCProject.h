@@ -191,6 +191,8 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 - (void)removeFileViewControllerForFile:(WCFile *)file inTabViewContext:(id <WCTabViewContext>)tabViewContext;
 
 - (NSArray *)symbolsForSymbolName:(NSString *)name;
+- (NSArray *)equatesForSymbolName:(NSString *)name;
+- (NSArray *)valueSymbolsForSymbolName:(NSString *)name;
 
 - (void)removeAllBuildMessages;
 - (void)jumpToObject:(id <WCJumpToObject>)object;

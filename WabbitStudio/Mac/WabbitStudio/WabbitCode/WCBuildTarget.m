@@ -122,7 +122,7 @@ static NSDictionary *_outputTypesToFileExtensions = nil;
 	_generateLabelFile = [[coder decodeObjectForKey:kWCBuildTargetGenerateLabelFileKey] boolValue];
 	_generateCodeListing = [[coder decodeObjectForKey:kWCBuildTargetGenerateCodeListingKey] boolValue];
 	_symbolsAreCaseSensitive = [[coder decodeObjectForKey:kWCBuildTargetLabelsAreCaseSensitiveKey] boolValue];
-	_isActive = [[coder decodeObjectForKey:kWCBuildTargetGenerateLabelFileKey] boolValue];
+	_isActive = [[coder decodeObjectForKey:@"isActive"] boolValue];
 	
 	return self;
 }
