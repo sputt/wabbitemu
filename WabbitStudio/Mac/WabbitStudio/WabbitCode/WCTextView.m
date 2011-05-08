@@ -480,6 +480,9 @@
 - (NSRange)symbolRangeForRange:(NSRange)range; {
 	NSString *string = [self string];
 	
+	if (string == nil || [string length] == 0)
+		return WCNotFoundRange;
+	
 	// search the line string for anything that looks like a symbol name
 	RKEnumerator *lineEnum = [[[RKEnumerator alloc] initWithRegex:kWCSyntaxHighlighterSymbolsRegex string:string inRange:[string lineRangeForRange:range]] autorelease];
 	

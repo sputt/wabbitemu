@@ -8,15 +8,16 @@
 
 #import "WCBadgedTextFieldCell.h"
 #import "WCDefines.h"
+#import "NS(Attributed)String+Geometrics.h"
 
 
 static const CGFloat kBadgeMarginLeft = 2.0;
 static const CGFloat kBadgeMarginRight = 2.0;
 static const CGFloat kBadgeMarginTop = 1.0;
-static const CGFloat kBadgeInsetLeft = 4.0;
-static const CGFloat kBadgeInsetRight = 3.0;
+static const CGFloat kBadgeInsetLeft = 2.0;
+static const CGFloat kBadgeInsetRight = 2.0;
 static const CGFloat kBadgeInsetTop = 1.0;
-static const CGFloat kBadgeMinWidth = (25.0)-(kBadgeMarginLeft+kBadgeMarginRight+kBadgeInsetLeft+kBadgeInsetRight);
+static const CGFloat kBadgeMinWidth = (22.0)-(kBadgeMarginLeft+kBadgeMarginRight+kBadgeInsetLeft+kBadgeInsetRight);
 static NSColor *kBadgeTextColor = nil;
 static NSColor *kBadgeSelectedKeyTextColor = nil;
 static NSColor *kBadgeSelectedNonKeyTextColor = nil;
@@ -65,7 +66,7 @@ static NSColor *kBadgeBackgroundColor = nil;
 		[[self _backgroundColorForBadgeString] setFill];
 		[path fill];
 		
-		[attributedString drawInRect:NSMakeRect(NSMinX(fillRect)+kBadgeInsetLeft, NSMinY(fillRect)+kBadgeInsetTop, NSWidth(fillRect)-kBadgeInsetLeft-kBadgeInsetRight, NSHeight(fillRect)-kBadgeMarginTop-kBadgeMarginTop)];
+		[attributedString drawInRect:NSMakeRect(NSMinX(fillRect)+kBadgeInsetLeft, NSMinY(fillRect)+kBadgeInsetTop, NSWidth(fillRect)-floor((kBadgeInsetLeft+kBadgeInsetRight)/2.0), NSHeight(fillRect)-floor((kBadgeMarginTop+kBadgeMarginTop)/2.0))];
 	}
 	
 	[super drawInteriorWithFrame:cellFrame inView:controlView];
@@ -75,8 +76,7 @@ static NSColor *kBadgeBackgroundColor = nil;
 	if ([self badgeCount] == 0)
 		return NSZeroRect;
 	
-	NSAttributedString *badgeString = [self _attributedStringForBadgeCount];
-	NSSize size = [badgeString size];
+	NSSize size = [[self _attributedStringForBadgeCount] sizeForWidth:FLT_MAX height:FLT_MAX];
 	
 	NSRect left, right;
 	CGFloat baseWidth = (size.width < kBadgeMinWidth)?kBadgeMinWidth:size.width;
