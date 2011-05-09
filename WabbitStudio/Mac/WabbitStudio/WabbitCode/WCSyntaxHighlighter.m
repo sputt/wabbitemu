@@ -51,7 +51,7 @@ RKRegex *kWCSyntaxHighlighterSymbolsRegex = nil;
 	kWCSyntaxHighlighterBinariesRegex = [[RKRegex alloc] initWithRegexString:@"(?:%[01]+\\b)|(?:(?<=[^$%]\\b)[01]+b)" options:RKCompileUTF8];
 	kWCSyntaxHighlighterCommentsRegex = [[RKRegex alloc] initWithRegexString:@";+.*" options:RKCompileUTF8];
 	
-	kWCSyntaxHighlighterSymbolsRegex = [[RKRegex alloc] initWithRegexString:@"\\b(?:[A-z0-9.!?]+)\\b" options:RKCompileUTF8];
+	kWCSyntaxHighlighterSymbolsRegex = [[RKRegex alloc] initWithRegexString:@"\\b(?:[A-z0-9.!?]+)" options:RKCompileUTF8];
 }
 
 - (id)initWithTextView:(WCTextView *)textView; {

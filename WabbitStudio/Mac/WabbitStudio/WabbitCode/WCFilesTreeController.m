@@ -76,7 +76,7 @@
 }
 
 - (BOOL)outlineView:(NSOutlineView *)outlineView writeItems:(NSArray *)items toPasteboard:(NSPasteboard *)pboard {
-	NSArray *realItems = [items valueForKeyPath:@"representedObject"];
+	//NSArray *realItems = [items valueForKeyPath:@"representedObject"];
 	NSMutableArray *types = [[[pboard types] mutableCopy] autorelease];
 	
 	[types addObject:WCFilesOutlineViewPboardType];
@@ -85,7 +85,7 @@
 	[pboard declareTypes:types owner:nil];
 	
 	[pboard setData:[NSKeyedArchiver archivedDataWithRootObject:[items valueForKeyPath:@"indexPath"]] forType:WCFilesOutlineViewPboardType];
-	[pboard setPropertyList:[realItems valueForKeyPath:@"filePath"] forType:NSFilenamesPboardType];
+	//[pboard setPropertyList:[realItems valueForKeyPath:@"filePath"] forType:NSFilenamesPboardType];
 	
 	return YES;
 }
