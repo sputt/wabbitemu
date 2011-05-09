@@ -84,11 +84,11 @@
 	}
 	
 	NSInteger index = [string length];
-	u_int32_t total = 0, exponent = 0, base = 16;
+	uint32_t total = 0, exponent = 0, base = 16;
 	
 	while (index > 0) {
-		u_int8_t value = HexValueForCharacter([string characterAtIndex:--index]);
-		total += value * (u_int32_t)powf(base, exponent++);
+		uint8_t value = HexValueForCharacter([string characterAtIndex:--index]);
+		total += value * (uint32_t)powf(base, exponent++);
 	}
 	
 	*object = [NSNumber numberWithUnsignedInt:total];

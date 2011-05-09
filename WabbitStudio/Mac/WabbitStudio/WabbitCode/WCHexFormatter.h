@@ -9,7 +9,7 @@
 #import <Foundation/NSFormatter.h>
 
 
-static inline u_int8_t HexValueForCharacter(unichar character) {
+static inline uint8_t HexValueForCharacter(unichar character) {
 	switch (character) {
 		case '0':
 			return 0;
@@ -54,7 +54,7 @@ static inline u_int8_t HexValueForCharacter(unichar character) {
 	}
 }
 
-static inline u_int8_t ValueForCharacter(unichar character) {
+static inline uint8_t ValueForCharacter(unichar character) {
 	switch (character) {
 		case '0':
 			return 0;
@@ -81,7 +81,7 @@ static inline u_int8_t ValueForCharacter(unichar character) {
 	}
 }
 
-static inline u_int8_t BinaryValueForCharacter(unichar character) {
+static inline uint8_t BinaryValueForCharacter(unichar character) {
 	switch (character) {
 		case '0':
 			return 0;

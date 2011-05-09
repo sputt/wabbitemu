@@ -18,7 +18,7 @@
 
 extern NSString *const kLCDUseWirePatternKey;
 
-@class RSCalculator;
+@class RSCalculator,RSCalculatorSkinView;
 
 @interface RSLCDView : NSOpenGLView {
 @private	
@@ -35,9 +35,15 @@ extern NSString *const kLCDUseWirePatternKey;
 }
 
 @property (retain,nonatomic) RSCalculator *calculator;
+@property (readonly,nonatomic) RSCalculatorSkinView *skinView;
 @property (assign,nonatomic) BOOL isWidescreen;
+@property (readonly,nonatomic) BOOL hasSkin;
+@property (readonly,nonatomic) BOOL skinIsBorderless;
 
 - (void)commonInit;
 
+- (void)adjustSkinViewRespectingUserDefaults:(BOOL)respectUserDefaults;
+
 - (IBAction)toggleScreenCapture:(id)sender;
+- (IBAction)saveScreenCaptureAs:(id)sender;
 @end

@@ -35,7 +35,7 @@
 	
 	switch (_type) {
 		case WETransferFileTypeFlash:
-			for (u_int16_t page = 0; page < 256; page++)
+			for (uint16_t page = 0; page < 256; page++)
 				_size += _tifile->flash->pagesize[page];
 			break;
 		case WETransferFileTypeGroup:

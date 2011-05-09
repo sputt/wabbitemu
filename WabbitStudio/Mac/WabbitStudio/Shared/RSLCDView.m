@@ -10,6 +10,7 @@
 #import "WETransferSheetController.h"
 #import "RSCalculator.h"
 #import "RSScreenCaptureIndicatorBar.h"
+#import "RSCalculatorSkinView.h"
 #include "gif.h"
 
 #import <OpenGL/OpenGL.h>
@@ -149,8 +150,8 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 	if ([self calculator] == nil || ![[self calculator] isActive] || ![[self calculator] isRunning])
 		return;
 	
-	u_int8_t *lcd = LCD_image([[self calculator] calc]->cpu.pio.lcd);
-	u_int16_t row, col;
+	uint8_t *lcd = LCD_image([[self calculator] calc]->cpu.pio.lcd);
+	uint16_t row, col;
 	
 	glClear(GL_COLOR_BUFFER_BIT);
 	
@@ -160,7 +161,7 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 	if ([self isWidescreen]) {
 		for (row=0; row<kLCDHeight; row++) {
 			for (col=0; col<kLCDWidescreenWidth; col++) {
-				u_int8_t val = 255-lcd[row*kLCDWidescreenWidth+col];
+				uint8_t val = 255-lcd[row*kLCDWidescreenWidth+col];
 				
 				_wbuffer[row][col][2] = (0x9E*val)/255;
 				_wbuffer[row][col][1] = (0xAB*val)/255;
@@ -292,8 +293,26 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_calculatorModelDidChange:) name:kRSCalculatorModelDidChangeNotification object:_calculator];
 }
+@dynamic skinView;
+- (RSCalculatorSkinView *)skinView {
+	RSCalculatorSkinView *retval = nil;
+	for (id view in [[self superview] subviews]) {
+		if ([view isKindOfClass:[RSCalculatorSkinView class]]) {
+			retval = view;
+			break;
+		}
+	}
+	return retval;
+}
 @synthesize isWidescreen=_isWidescreen;
-
+@dynamic hasSkin;
+- (BOOL)hasSkin {
+	return ([self skinView] != nil);
+}
+@dynamic skinIsBorderless;
+- (BOOL)skinIsBorderless {
+	return ([[self window] styleMask] == NSBorderlessWindowMask);
+}
 @synthesize currentFilePaths=_currentFilePaths;
 
 - (void)commonInit; {	
@@ -306,11 +325,11 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 	NSUInteger width = ([self isWidescreen])?kLCDDisplayWidescreenWidth:kLCDDisplayWidth, height = kLCDDisplayHeight;
 	NSBitmapImageRep *bitmap = [[[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL pixelsWide:width pixelsHigh:height bitsPerSample:8 samplesPerPixel:3 hasAlpha:NO isPlanar:NO colorSpaceName:NSCalibratedRGBColorSpace bytesPerRow:0 bitsPerPixel:0] autorelease];
 	
-	u_int8_t *lcd = LCD_image([[self calculator] calc]->cpu.pio.lcd);
-	u_int16_t row, col;
+	uint8_t *lcd = LCD_image([[self calculator] calc]->cpu.pio.lcd);
+	uint16_t row, col;
 	for (row=0; row<height; row++) {
 		for (col=0; col<width; col++) {
-			u_int8_t val = 255-lcd[(row/2)*kLCDWidescreenWidth+(col/2)];
+			uint8_t val = 255-lcd[(row/2)*kLCDWidescreenWidth+(col/2)];
 			NSUInteger pixel[3];
 			
 			pixel[2] = val;
@@ -323,25 +342,128 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 	return bitmap;
 }
 
+- (void)adjustSkinViewRespectingUserDefaults:(BOOL)respectUserDefaults; {	
+	if ((respectUserDefaults && ![[NSUserDefaults standardUserDefaults] boolForKey:kRSCalculatorSkinViewUseSkinsKey]) ||
+		(!respectUserDefaults && ![self hasSkin]))
+		return;
+	
+	BOOL useBorderlessSkin = ((respectUserDefaults && [[NSUserDefaults standardUserDefaults] boolForKey:kRSCalculatorSkinViewUseBorderlessSkinsKey]) || (!respectUserDefaults && [self skinIsBorderless]));
+	RSCalculatorSkinView *skinView = [self skinView];
+	
+	if (!useBorderlessSkin && respectUserDefaults)
+		[[self window] setStyleMask:(NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask)];
+	
+	NSImage *skin = [[self calculator] skinImage];
+	
+	[skinView removeFromSuperviewWithoutNeedingDisplay];
+	
+	skinView = [[[RSCalculatorSkinView alloc] initWithCalculator:[self calculator] frame:NSMakeRect(0, 0, [skin size].width, [skin size].height)] autorelease];
+	
+	[skinView setImage:skin];
+	
+	[self setAutoresizingMask:NSViewNotSizable];
+	
+	CGFloat newWidth = [skin size].width;
+	CGFloat newHeight = (useBorderlessSkin)?[skin size].height:[skin size].height + [[self window] contentBorderThicknessForEdge:NSMinYEdge];
+	NSRect currentRect = [[self window] frame];
+	NSRect newRect = [[self window] frameRectForContentRect:NSMakeRect(NSMinX(currentRect), NSMinY(currentRect), newWidth, newHeight)];
+	
+	if (NSHeight(currentRect) < NSHeight(newRect))
+		newRect.origin.y -= NSHeight(newRect) - NSHeight(currentRect);
+	else if (NSHeight(currentRect) > NSHeight(newRect))
+		newRect.origin.y += NSHeight(currentRect) - NSHeight(newRect);
+	
+	[[self window] setFrame:newRect display:YES];
+	
+	[[[self window] contentView] addSubview:skinView positioned:NSWindowBelow relativeTo:self];
+	
+	[skinView setFrameOrigin:NSMakePoint([skinView frame].origin.x, (useBorderlessSkin)?[skinView frame].origin.y:[skinView frame].origin.y + [[self window] contentBorderThicknessForEdge:NSMinYEdge])];
+	
+	NSImage *keymap = [[self calculator] keymapImage];
+	if (keymap) {
+		NSBitmapImageRep *bitmap = (NSBitmapImageRep *)[keymap bestRepresentationForRect:NSZeroRect context:nil hints:nil];
+		if (bitmap) {
+			NSSize size = [bitmap size];
+			NSUInteger width = size.width, height = size.height;
+			NSUInteger i, j;
+			NSUInteger pixels[4];
+			NSPoint point = NSZeroPoint;
+			NSPoint endPoint = NSZeroPoint;
+			
+			for (i = 0; i < width; i++) {
+				for (j = 0; j < height; j++) {
+					[bitmap getPixel:pixels atX:i y:j];
+					
+					// red marks the start of the area for the lcd
+					if (pixels[0] == 255 && pixels[1] == 0 && pixels[2] == 0) {
+						point.x = i;
+						point.y = j;
+						
+						while (pixels[0] == 255 && pixels[1] == 0 && pixels[2] == 0)
+							[bitmap getPixel:pixels atX:i++ y:j];
+						
+						endPoint.x = i;
+						i = point.x;
+						
+						[bitmap getPixel:pixels atX:i y:j];
+						
+						while (pixels[0] == 255 && pixels[1] == 0 && pixels[2] == 0)
+							[bitmap getPixel:pixels atX:i y:j++];
+						
+						endPoint.y = j;
+						break;
+					}
+				}
+				
+				if (!NSEqualPoints(point, NSZeroPoint))
+					break;
+			}
+			
+			if (!NSEqualPoints(point, NSZeroPoint)) {					
+				[self setFrameOrigin:NSMakePoint(point.x, ((useBorderlessSkin)?[skin size].height:[skin size].height+[[self window] contentBorderThicknessForEdge:NSMinYEdge])-(point.y + (endPoint.y-point.y)))];
+				[self setFrameSize:NSMakeSize(endPoint.x-point.x, endPoint.y-point.y)];
+			}
+		}
+	}
+}
+
 - (IBAction)toggleScreenCapture:(id)sender; {
 	if ([[self calculator] isDebugging] || ![[self calculator] isRunning])
 		return;
 	
-	/*
-	if ([[self calculator] calc]->gif_disp_state == GIF_START) {
+	if ([[self calculator] calc]->gif_disp_state == GIF_IDLE) {
+		const char *gifPath = [[[NSHomeDirectory() stringByAppendingPathComponent:@"Desktop"] stringByAppendingPathComponent:@"screencapture.gif"] fileSystemRepresentation];
 		
+		calc_start_screenshot([[self calculator] calc], gifPath);
+	}
+	else if ([[self calculator] calc]->gif_disp_state == GIF_START) {
 		calc_stop_screenshot([[self calculator] calc]);
 	}
-	else if ([[self calculator] calc]->gif_disp_state == GIF_IDLE) {
+}
+
+- (IBAction)saveScreenCaptureAs:(id)sender; {
+	if ([[self calculator] isDebugging] ||
+		![[self calculator] isRunning] ||
+		[[self calculator] calc]->gif_disp_state != GIF_IDLE)
+		return;
+	
+	NSSavePanel *panel = [NSSavePanel savePanel];
+
+	[panel setRequiredFileType:(NSString *)kUTTypeGIF];
+	[panel setMessage:NSLocalizedString(@"Choose a name and location for your screen capture.", @"save screen capture as save panel message")];
+	[panel setCanCreateDirectories:YES];
+	[panel setNameFieldStringValue:NSLocalizedString(@"screen_capture", @"save screen capture as save panel name field string value")];
+	
+	[panel beginSheetModalForWindow:[self window] completionHandler:^(NSInteger result) {
+		if (result != NSFileHandlingPanelOKButton)
+			return;
 		
-		
-		calc_start_screenshot([[self calculator] calc], [[[NSHomeDirectory() stringByAppendingPathComponent:@"Desktop"] stringByAppendingPathComponent:@"screencapture.gif"] fileSystemRepresentation]);
-	}
-	 */
+		[self toggleScreenCapture:nil];
+	}];
 }
 
 - (void)_privateInit {
-	u_int16_t row, col;
+	uint16_t row, col;
 	for (row=0; row<kLCDHeight; row++) {
 		for (col=0; col<kLCDWidth; col++) {
 			// alpha channel is always the same, set it once and forget it, while the lcd doesn't have an alpha channel, opengl requires it for textures
@@ -403,5 +525,6 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 
 - (void)_calculatorModelDidChange:(NSNotification *)note {
 	[self setIsWidescreen:([[self calculator] model] == RSCalculatorModelTI85 || [[self calculator] model] == RSCalculatorModelTI86)];
+	[self adjustSkinViewRespectingUserDefaults:NO];
 }
 @end

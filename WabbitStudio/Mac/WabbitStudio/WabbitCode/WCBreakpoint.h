@@ -27,8 +27,8 @@ extern NSString *const kWCBreakpointIsActiveDidChangeNotification;
 	BOOL _isActive;
 	WCBreakpointType _breakpointType;
 	
-	u_int8_t _page;
-	u_int16_t _address;
+	uint8_t _page;
+	uint16_t _address;
 	BOOL _isRam;
 }
 @property (assign,nonatomic) WCFile *file;
@@ -37,8 +37,8 @@ extern NSString *const kWCBreakpointIsActiveDidChangeNotification;
 @property (assign,nonatomic) WCBreakpointType breakpointType;
 @property (readonly,nonatomic) NSRange breakpointRange;
 @property (assign,nonatomic) BOOL isRam;
-@property (assign,nonatomic) u_int8_t page;
-@property (readonly,nonatomic) u_int16_t address;
+@property (assign,nonatomic) uint8_t page;
+@property (readonly,nonatomic) uint16_t address;
 @property (readonly,nonatomic) NSString *symbolName;
 @property (readonly,nonatomic) NSString *symbolNameAndLineNumber;
 @property (readonly,nonatomic) NSUInteger symbolLineNumber;

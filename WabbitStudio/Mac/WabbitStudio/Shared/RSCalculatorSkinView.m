@@ -135,6 +135,13 @@ finalize_buttons:
 	}
 }
 
+- (NSImageScaling)imageScaling {
+	return NSImageScaleNone;
+}
+- (NSImageFrameStyle)imageFrameStyle {
+	return NSImageFrameNone;
+}
+
 - (id)initWithCalculator:(RSCalculator *)calculator frame:(NSRect)frame; {
 	if (!(self = [super initWithFrame:frame]))
 		return nil;

@@ -89,7 +89,9 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	[_buttonBar setIsResizable:NO];
 	[[_statusTextField cell] setBackgroundStyle:NSBackgroundStyleLight];
 	
-	[self toggleSkinView:nil];
+	[_LCDView adjustSkinViewRespectingUserDefaults:YES];
+	[self setHasSkin:[_LCDView hasSkin]];
+	[self setIsBorderlessSkin:[_LCDView skinIsBorderless]];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
@@ -202,7 +204,6 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 			return;
 		}
 		
-		//[[self LCDView] setIsWidescreen:([[self calculator] calc]->model == TI_85 || [[self calculator] calc]->model == TI_86)];
 		[self updateStatusString];
 		
 		if ([self windowForSheet] != nil) {
@@ -230,7 +231,10 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 - (IBAction)saveStateAs:(id)sender; {
 	NSSavePanel *panel = [NSSavePanel savePanel];
 	
-	[panel setRequiredFileType:@"sav"];
+	[panel setRequiredFileType:kWECalculatorSavestateUTI];
+	[panel setMessage:NSLocalizedString(@"Choose a name and location for your save state.", @"save state as save panel message")];
+	[panel setCanCreateDirectories:YES];
+	[panel setNameFieldStringValue:NSLocalizedString(@"save_state", @"save state as save panel name field string value")];
 	
 	[panel beginSheetModalForWindow:[self windowForSheet] completionHandler:^(NSInteger result) {
 		if (result != NSFileHandlingPanelOKButton)
@@ -293,133 +297,6 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 	[[self windowForSheet] setFrame:newRect display:YES animate:YES];
 }
 
-- (IBAction)toggleSkinView:(id)sender; {
-	if ([self windowForSheet] == nil)
-		return;
-	
-	BOOL useSkins = [[NSUserDefaults standardUserDefaults] boolForKey:kRSCalculatorSkinViewUseSkinsKey];
-	BOOL useBorderlessSkin = [[NSUserDefaults standardUserDefaults] boolForKey:kRSCalculatorSkinViewUseBorderlessSkinsKey];
-	
-	[self setHasSkin:useSkins];
-	[self setIsBorderlessSkin:useBorderlessSkin];
-	
-	RSCalculatorSkinView *skinView = nil;
-	for (NSView *view in [[[self windowForSheet] contentView] subviews]) {
-		if ([view isKindOfClass:[RSCalculatorSkinView class]]) {
-			skinView = (RSCalculatorSkinView *)view;
-			break;
-		}
-	}
-	
-	NSUInteger baseWindowMask = (NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask);
-	
-	if (!useSkins) {
-		if (skinView) {
-			[[self windowForSheet] setStyleMask:baseWindowMask|NSResizableWindowMask];
-			
-			// remove the view and resize the window frame
-			[skinView removeFromSuperviewWithoutNeedingDisplay];
-			
-			CGFloat bottomBorderHeight = [[self windowForSheet] contentBorderThicknessForEdge:NSMinYEdge];
-			CGFloat baseWidth = ([[self LCDView] isWidescreen])?kLCDDisplayWidescreenWidth:kLCDDisplayWidth;
-			CGFloat baseHeight = kLCDDisplayHeight;
-			NSSize lcdSize = NSMakeSize(baseWidth, baseHeight);
-			NSRect currentRect = [[self windowForSheet] frame];
-			NSRect newRect = [[self windowForSheet] frameRectForContentRect:NSMakeRect(NSMinX(currentRect), NSMinY(currentRect), lcdSize.width, lcdSize.height+bottomBorderHeight)];
-			
-			if (NSHeight(currentRect) < NSHeight(newRect))
-				newRect.origin.y -= NSHeight(newRect) - NSHeight(currentRect);
-			else if (NSHeight(currentRect) > NSHeight(newRect))
-				newRect.origin.y += NSHeight(currentRect) - NSHeight(newRect);
-			
-			[[self windowForSheet] setFrame:newRect display:YES];
-			
-			[_LCDView setFrameOrigin:NSMakePoint(0.0, [[self windowForSheet] contentBorderThicknessForEdge:NSMinYEdge])];
-			[_LCDView setAutoresizingMask:NSViewMaxXMargin|NSViewMaxYMargin|NSViewWidthSizable|NSViewHeightSizable];
-		}
-	}
-	else {
-		if (!useBorderlessSkin)
-			[[self windowForSheet] setStyleMask:baseWindowMask];
-		
-		NSImage *skin = [[self calculator] skinImage];
-		
-		
-		[skinView removeFromSuperviewWithoutNeedingDisplay];
-		
-		skinView = [[[RSCalculatorSkinView alloc] initWithCalculator:[self calculator] frame:NSMakeRect(0, 0, [skin size].width, [skin size].height)] autorelease];
-		
-		[skinView setImageScaling:NSImageScaleNone];
-		
-		[skinView setImage:skin];
-		 
-		[_LCDView setAutoresizingMask:NSViewNotSizable];
-		
-		CGFloat newWidth = [skin size].width;
-		CGFloat newHeight = (useBorderlessSkin)?[skin size].height:[skin size].height + [[self windowForSheet] contentBorderThicknessForEdge:NSMinYEdge];
-		NSRect currentRect = [[self windowForSheet] frame];
-		NSRect newRect = [[self windowForSheet] frameRectForContentRect:NSMakeRect(NSMinX(currentRect), NSMinY(currentRect), newWidth, newHeight)];
-		
-		if (NSHeight(currentRect) < NSHeight(newRect))
-			newRect.origin.y -= NSHeight(newRect) - NSHeight(currentRect);
-		else if (NSHeight(currentRect) > NSHeight(newRect))
-			newRect.origin.y += NSHeight(currentRect) - NSHeight(newRect);
-		
-		[[self windowForSheet] setFrame:newRect display:YES];
-		
-		[[[self windowForSheet] contentView] addSubview:skinView positioned:NSWindowBelow relativeTo:_LCDView];
-		
-		[skinView setFrameOrigin:NSMakePoint([skinView frame].origin.x, (useBorderlessSkin)?[skinView frame].origin.y:[skinView frame].origin.y + [[self windowForSheet] contentBorderThicknessForEdge:NSMinYEdge])];
-		
-		NSImage *keymap = [[self calculator] keymapImage];
-		if (keymap) {
-			NSBitmapImageRep *bitmap = (NSBitmapImageRep *)[keymap bestRepresentationForRect:NSZeroRect context:nil hints:nil];
-			if (bitmap) {
-				NSSize size = [bitmap size];
-				NSUInteger width = size.width, height = size.height;
-				NSUInteger i, j;
-				NSUInteger pixels[4];
-				NSPoint point = NSZeroPoint;
-				NSPoint endPoint = NSZeroPoint;
-				
-				for (i = 0; i < width; i++) {
-					for (j = 0; j < height; j++) {
-						[bitmap getPixel:pixels atX:i y:j];
-						
-						// red marks the start of the area for the lcd
-						if (pixels[0] == 255 && pixels[1] == 0 && pixels[2] == 0) {
-							point.x = i;
-							point.y = j;
-							
-							while (pixels[0] == 255 && pixels[1] == 0 && pixels[2] == 0)
-								[bitmap getPixel:pixels atX:i++ y:j];
-							
-							endPoint.x = i;
-							i = point.x;
-							
-							[bitmap getPixel:pixels atX:i y:j];
-							
-							while (pixels[0] == 255 && pixels[1] == 0 && pixels[2] == 0)
-								[bitmap getPixel:pixels atX:i y:j++];
-							
-							endPoint.y = j;
-							break;
-						}
-					}
-					
-					if (!NSEqualPoints(point, NSZeroPoint))
-						break;
-				}
-				
-				if (!NSEqualPoints(point, NSZeroPoint)) {					
-					[_LCDView setFrameOrigin:NSMakePoint(point.x, ((useBorderlessSkin)?[skin size].height:[skin size].height+[[self windowForSheet] contentBorderThicknessForEdge:NSMinYEdge])-(point.y + (endPoint.y-point.y)))];
-					[_LCDView setFrameSize:NSMakeSize(endPoint.x-point.x, endPoint.y-point.y)];
-				}
-			}
-		}
-	}
-}
-
 - (IBAction)toggleEmulation:(id)sender; {
 	[[self calculator] setIsRunning:![[self calculator] isRunning]];
 }
@@ -462,7 +339,7 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 - (void)_calculatorModelDidChange:(NSNotification *)note {
 	[self updateFPSString];
 	//[_LCDView setIsWidescreen:([[self calculator] model] == RSCalculatorModelTI85 || [[self calculator] model] == RSCalculatorModelTI86)];
-	[self toggleSkinView:nil];
+	//[self toggleSkinView:nil];
 }
 
 @end

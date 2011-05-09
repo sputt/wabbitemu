@@ -220,7 +220,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 @synthesize isRam=_isRam;
 @synthesize page=_page;
 @dynamic address;
-- (u_int16_t)address {
+- (uint16_t)address {
 	if ([[[self file] project] codeListing] == nil) {
 #ifdef DEBUG
 		NSLog(@"no listing file for project of %@",[[self file] name]);
@@ -282,7 +282,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 				return _address;
 			}
 			
-			[self setPage:(u_int8_t)page];
+			[self setPage:(uint8_t)page];
 			
 			// skip past the ':'
 			[scanner setScanLocation:[scanner scanLocation]+1];
@@ -299,7 +299,7 @@ NSString *const kWCBreakpointIsActiveDidChangeNotification = @"kWCBreakpointIsAc
 #ifdef DEBUG
 			NSLog(@"found page and address for line %lu in file %@",[self lineNumber]+1,[[self file] name]);
 #endif
-			_address = (u_int16_t)newAddress;
+			_address = (uint16_t)newAddress;
 			break;
 		}
 		

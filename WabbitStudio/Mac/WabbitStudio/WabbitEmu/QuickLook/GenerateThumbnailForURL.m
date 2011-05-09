@@ -26,11 +26,11 @@ OSStatus GenerateThumbnailForURL(void *thisInterface, QLThumbnailRequestRef thum
 	NSUInteger width = (calc->model == TI_85 || calc->model == TI_86)?256:192, height = 128;
 	NSBitmapImageRep *bitmap = [[[NSBitmapImageRep alloc] initWithBitmapDataPlanes:NULL pixelsWide:width pixelsHigh:height bitsPerSample:8 samplesPerPixel:3 hasAlpha:NO isPlanar:NO colorSpaceName:NSCalibratedRGBColorSpace bytesPerRow:0 bitsPerPixel:0] autorelease];
 	
-	u_int8_t *lcdptr = LCD_image(calc->cpu.pio.lcd);
-	u_int16_t row, col;
+	uint8_t *lcdptr = LCD_image(calc->cpu.pio.lcd);
+	uint16_t row, col;
 	for (row=0; row<height; row++) {
 		for (col=0; col<width; col++) {
-			u_int8_t val = 255-lcdptr[(row/2)*128+(col/2)];
+			uint8_t val = 255-lcdptr[(row/2)*128+(col/2)];
 			NSUInteger pixel[3] = {
 				(0x9E*val)/255,
 				(0xAB*val)/255,
