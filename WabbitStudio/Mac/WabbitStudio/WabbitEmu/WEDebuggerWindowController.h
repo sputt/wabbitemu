@@ -17,6 +17,9 @@
 	IBOutlet NSSplitView *_horizontalSplitView;
 	IBOutlet NSView *_leftBottomDummyView;
 	IBOutlet NSView *_rightBottomDummyView;
+	IBOutlet NSImageView *_statusImageView;
+	IBOutlet NSTextField *_statusTextField;
+	IBOutlet NSProgressIndicator *_progressIndicator;
 	
     RSDebuggerDetailsViewController *_detailsViewController;
 	RSDebuggerMemoryViewController *_memoryViewController;

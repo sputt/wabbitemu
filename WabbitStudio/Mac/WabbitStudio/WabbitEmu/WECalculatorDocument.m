@@ -57,9 +57,17 @@ static const NSInteger kWECalculatorRomOrSavestateLoadFailed = 1002;
 - (void)windowWillClose:(NSNotification *)notification {	
 	_isClosing = YES;
 	
+#ifdef DEBUG
+	NSLog(@"%@ called in %@",NSStringFromSelector(_cmd),[self className]);
+#endif
+	
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWECalculatorWillCloseNotification object:self];
 	
 	[(WEApplicationDelegate *)[[NSApplication sharedApplication] delegate] removeLCDView:[self LCDView]];
+	
+	[_statusImageView unbind:@"value"];
+	[_statusTextField unbind:@"value"];
+	[_progressIndicator unbind:@"animate"];
 }
 
 - (void)windowControllerDidLoadNib:(NSWindowController *)windowController {

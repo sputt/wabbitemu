@@ -19,6 +19,8 @@ extern NSString *const kWECalculatorWillCloseNotification;
 	IBOutlet RSLCDView *_LCDView;
 	IBOutlet BWAnchoredButtonBar *_buttonBar;
 	IBOutlet NSTextField *_statusTextField;
+	IBOutlet NSImageView *_statusImageView;
+	IBOutlet NSProgressIndicator *_progressIndicator;
 	
 	RSCalculator *_calculator;
 	

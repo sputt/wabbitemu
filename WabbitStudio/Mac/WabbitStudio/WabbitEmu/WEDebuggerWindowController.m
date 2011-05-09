@@ -115,6 +115,10 @@ NSString *const kRSDebuggerWindowToolbarToggleBreakpointIdentifier = @"toggleBre
 }
 
 - (void)windowWillClose:(NSNotification *)notification {
+	[_statusImageView unbind:@"value"];
+	[_statusTextField unbind:@"value"];
+	[_progressIndicator unbind:@"animate"];
+	
 	[[self calculatorDocument] setIsDebugging:NO];
 	[[[self calculatorDocument] calculator] setIsDebugging:NO];
 	[[[self calculatorDocument] calculator] setIsRunning:YES];
