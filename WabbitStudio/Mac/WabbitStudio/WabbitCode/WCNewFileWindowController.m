@@ -10,7 +10,7 @@
 #import "NSArray+WCExtensions.h"
 #import "WCGeneralPerformer.h"
 #import "WCProject.h"
-#import "WCGradientTextFieldCell.h"
+#import "WCGradientBackgroundTextFieldCell.h"
 #import "WCFile.h"
 #import "WCFileTemplate.h"
 #import "WCNewFileAccessoryViewController.h"

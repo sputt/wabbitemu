@@ -38,4 +38,6 @@ extern NSString *const kLCDUseWirePatternKey;
 @property (assign,nonatomic) BOOL isWidescreen;
 
 - (void)commonInit;
+
+- (IBAction)toggleScreenCapture:(id)sender;
 @end

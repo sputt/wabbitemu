@@ -7,7 +7,7 @@
 //
 
 #import "WCBreakpointsViewController.h"
-#import "WCBadgedTextFieldCell.h"
+#import "RSBadgedTextFieldCell.h"
 #import "WCBreakpoint.h"
 #import "WCProject.h"
 #import "WCProjectFile.h"

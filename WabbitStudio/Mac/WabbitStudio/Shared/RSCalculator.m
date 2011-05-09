@@ -28,8 +28,10 @@ NSString *const kRSCalculatorModelDidChangeNotification = @"kRSCalculatorModelDi
 
 @implementation RSCalculator
 + (NSSet *)keyPathsForValuesAffectingValueForKey:(NSString *)key {
+	if ([key isEqualToString:@"programCounter"])
+		return [NSSet setWithObjects:@"isDebugging", nil];
 	// most things only depend on the program counter changing
-	if ([key isEqualToString:@"stackPointer"] ||
+	else if ([key isEqualToString:@"stackPointer"] ||
 		[key isEqualToString:@"registerAFPrime"] ||
 		[key isEqualToString:@"registerBC"] ||
 		[key isEqualToString:@"registerBCPrime"] ||

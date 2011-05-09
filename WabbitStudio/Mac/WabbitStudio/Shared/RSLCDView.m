@@ -9,6 +9,8 @@
 #import "RSLCDView.h"
 #import "WETransferSheetController.h"
 #import "RSCalculator.h"
+#import "RSScreenCaptureIndicatorBar.h"
+#include "gif.h"
 
 #import <OpenGL/OpenGL.h>
 
@@ -319,6 +321,23 @@ NSString *const kLCDUseWirePatternKey = @"LCDUseWirePattern";
 		}
 	}
 	return bitmap;
+}
+
+- (IBAction)toggleScreenCapture:(id)sender; {
+	if ([[self calculator] isDebugging] || ![[self calculator] isRunning])
+		return;
+	
+	/*
+	if ([[self calculator] calc]->gif_disp_state == GIF_START) {
+		
+		calc_stop_screenshot([[self calculator] calc]);
+	}
+	else if ([[self calculator] calc]->gif_disp_state == GIF_IDLE) {
+		
+		
+		calc_start_screenshot([[self calculator] calc], [[[NSHomeDirectory() stringByAppendingPathComponent:@"Desktop"] stringByAppendingPathComponent:@"screencapture.gif"] fileSystemRepresentation]);
+	}
+	 */
 }
 
 - (void)_privateInit {

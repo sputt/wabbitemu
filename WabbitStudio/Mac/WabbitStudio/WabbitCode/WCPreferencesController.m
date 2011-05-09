@@ -190,7 +190,7 @@ NSString *const kWCPreferencesFilesOpenWithKey = @"filesOpenWith";
 	// editor error line highlight
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorErrorLineHighlightKey];
 	// editor error line highlight color
-	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor colorWithCalibratedRed:0.839 green:0.098 blue:0.137 alpha:1.0]] forKey:kWCPreferencesEditorErrorLineHighlightColorKey];
+	[preferences setObject:[NSKeyedArchiver archivedDataWithRootObject:[NSColor colorWithCalibratedRed:0.75 green:0.0 blue:0.0 alpha:1.0]] forKey:kWCPreferencesEditorErrorLineHighlightColorKey];
 	
 	// editor display warning badges
 	[preferences setObject:[NSNumber numberWithBool:YES] forKey:kWCPreferencesEditorDisplayWarningBadgesKey];

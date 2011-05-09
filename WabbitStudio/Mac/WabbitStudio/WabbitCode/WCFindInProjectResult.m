@@ -17,8 +17,8 @@
 @implementation WCFindInProjectResult
 
 - (void)dealloc {
-	_symbol = nil;
 	_file = nil;
+	[_symbol release];
 	[_findString release];
     [super dealloc];
 }
@@ -34,7 +34,9 @@
 		return [[self file] icon];
 	else if ([self symbol] != nil)
 		return [[self symbol] icon];
-	return [NSImage imageNamed:@"FindInProjectResult16x16"];
+	//return [NSImage imageNamed:@"FindInProjectResult16x16"];
+	//return [[NSWorkspace sharedWorkspace] iconForFileType:@"textClipping"];
+	return nil;
 }
 
 - (NSRange)jumpToRange {
@@ -67,7 +69,7 @@
 		return nil;
 	
 	_file = file; 
-	_symbol = symbol;
+	_symbol = [symbol retain];
 	_findRange = range;
 	_findString = [string copy];
 	

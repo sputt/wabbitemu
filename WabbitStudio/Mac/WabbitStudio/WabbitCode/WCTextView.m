@@ -62,6 +62,7 @@
 	_lineHighlighter = [[WCLineHighlighter alloc] initWithTextView:self];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_selectionDidChange:) name:NSTextViewDidChangeSelectionNotification object:self];
+	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(_boundsDidChange:) name:NSViewBoundsDidChangeNotification object:[[self enclosingScrollView] contentView]];
 	
 	[self setupUserDefaultsObserving];
 	
@@ -808,6 +809,10 @@
 }
 
 - (void)_selectionDidChange:(NSNotification *)note {
+	[[WCTooltipManager sharedTooltipManager] hideTooltip];
+}
+
+- (void)_boundsDidChange:(NSNotification *)note {
 	[[WCTooltipManager sharedTooltipManager] hideTooltip];
 }
 @end

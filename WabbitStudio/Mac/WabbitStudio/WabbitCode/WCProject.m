@@ -9,7 +9,7 @@
 #import "WCProject.h"
 #import "NSArray+WCExtensions.h"
 #import "WCProjectFile.h"
-#import "WCBadgedTextFieldCell.h"
+#import "RSBadgedTextFieldCell.h"
 #import "NSFileManager+WCExtensions.h"
 #import "WCGeneralPerformer.h"
 #import "NSOutlineView+WCExtensions.h"
@@ -476,6 +476,9 @@ static NSImage *_appIcon = nil;
 	
 	// post our notification
 	[[NSNotificationCenter defaultCenter] postNotificationName:kWCProjectWillCloseNotification object:self];
+	
+	// set the app icon back to normal
+	[[NSApplication sharedApplication] setApplicationIconImage:_appIcon];
 	
 	// save the project file before removing the tabs
 	[self saveProjectFile];

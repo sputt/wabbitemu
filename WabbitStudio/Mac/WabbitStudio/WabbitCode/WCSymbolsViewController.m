@@ -8,7 +8,7 @@
 
 #import "WCSymbolsViewController.h"
 #import "WCProject.h"
-#import "WCBadgedTextFieldCell.h"
+#import "RSBadgedTextFieldCell.h"
 #import "WCFile.h"
 #import "WCSymbol.h"
 #import "WCTextStorage.h"

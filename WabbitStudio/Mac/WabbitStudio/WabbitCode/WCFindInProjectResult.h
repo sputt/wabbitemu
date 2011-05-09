@@ -14,7 +14,7 @@
 @interface WCFindInProjectResult : WCTreeNode <WCJumpToObject> {
 @private
 	__weak WCFile *_file;
-	__weak WCSymbol *_symbol;
+	WCSymbol *_symbol;
 	NSRange _findRange; // the matching range
 	NSAttributedString *_findString; // string containing the entire line(s) that the match is contained in
 }

@@ -7,13 +7,12 @@
 //
 
 #import "WCNewProjectWindowController.h"
-#import <QuartzCore/QuartzCore.h>
 #import "WCLinkedView.h"
 #import "NSArray+WCExtensions.h"
 #import "WCGeneralPerformer.h"
 #import "WCProject.h"
 #import "WCProjectTemplate.h"
-#import "WCGradientTextFieldCell.h"
+#import "WCGradientBackgroundTextFieldCell.h"
 #import "WCFile.h"
 #import "WCBuildTarget.h"
 #import "WCDefines.h"

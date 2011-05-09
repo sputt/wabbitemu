@@ -90,6 +90,8 @@
 		072C8A3A1358EBED006EE420 /* NSGradient+WCExtensions.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A391358EBED006EE420 /* NSGradient+WCExtensions.m */; };
 		072C8A3D1358EFCF006EE420 /* RSRTVArrayController.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3C1358EFCF006EE420 /* RSRTVArrayController.m */; };
 		072C8A401358F05A006EE420 /* WCFileViewStatusBarView.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */; };
+		072C9781137770CE002855E4 /* RSScreenCaptureIndicatorBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C9780137770CD002855E4 /* RSScreenCaptureIndicatorBar.m */; };
+		072C9782137770CE002855E4 /* RSScreenCaptureIndicatorBar.m in Sources */ = {isa = PBXBuildFile; fileRef = 072C9780137770CD002855E4 /* RSScreenCaptureIndicatorBar.m */; };
 		072D0C481374AEF300A9155F /* RSNavigatorControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 07C40FC61371040000667F54 /* RSNavigatorControl.m */; };
 		072F7AE41359622E00FEFE5F /* WCAddDocumentToProjectSheetController.m in Sources */ = {isa = PBXBuildFile; fileRef = 072F7AE31359622E00FEFE5F /* WCAddDocumentToProjectSheetController.m */; };
 		072F7AE8135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib in Resources */ = {isa = PBXBuildFile; fileRef = 072F7AE6135966D700FEFE5F /* WCAddDocumentToProjectSheet.xib */; };
@@ -630,6 +632,8 @@
 		072C8A3C1358EFCF006EE420 /* RSRTVArrayController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSRTVArrayController.m; sourceTree = "<group>"; };
 		072C8A3E1358F059006EE420 /* WCFileViewStatusBarView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCFileViewStatusBarView.h; sourceTree = "<group>"; };
 		072C8A3F1358F059006EE420 /* WCFileViewStatusBarView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCFileViewStatusBarView.m; sourceTree = "<group>"; };
+		072C977F137770CC002855E4 /* RSScreenCaptureIndicatorBar.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RSScreenCaptureIndicatorBar.h; sourceTree = "<group>"; };
+		072C9780137770CD002855E4 /* RSScreenCaptureIndicatorBar.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RSScreenCaptureIndicatorBar.m; sourceTree = "<group>"; };
 		072F7AE21359622E00FEFE5F /* WCAddDocumentToProjectSheetController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WCAddDocumentToProjectSheetController.h; sourceTree = "<group>"; };
 		072F7AE31359622E00FEFE5F /* WCAddDocumentToProjectSheetController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = WCAddDocumentToProjectSheetController.m; sourceTree = "<group>"; };
 		072F7AE7135966D700FEFE5F /* en */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = en; path = WCAddDocumentToProjectSheet.xib; sourceTree = "<group>"; };
@@ -1816,6 +1820,8 @@
 				078AAD891373788100B0421D /* RSDebuggerDisassemblyTextFieldCell.m */,
 				079E02071374676800D947DD /* RSDebuggerStackTableView.h */,
 				079E02081374676800D947DD /* RSDebuggerStackTableView.m */,
+				072C977F137770CC002855E4 /* RSScreenCaptureIndicatorBar.h */,
+				072C9780137770CD002855E4 /* RSScreenCaptureIndicatorBar.m */,
 			);
 			name = Classes;
 			sourceTree = "<group>";
@@ -2355,6 +2361,7 @@
 				07D5B6041375CEAE000D72FF /* WCTooltip.m in Sources */,
 				07280E111376559600441286 /* JLNDragEffectManager.m in Sources */,
 				0712127913765F6800F66C23 /* WCBuildMessagesTextFieldCell.m in Sources */,
+				072C9781137770CE002855E4 /* RSScreenCaptureIndicatorBar.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2432,6 +2439,7 @@
 				0738A76913750239004A2DDB /* NSShadow+MCAdditions.m in Sources */,
 				0738A76A13750241004A2DDB /* NSBezierPath+MCAdditions.m in Sources */,
 				07280E121376559800441286 /* JLNDragEffectManager.m in Sources */,
+				072C9782137770CE002855E4 /* RSScreenCaptureIndicatorBar.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -80,8 +80,7 @@ extern NSString *const kWCProjectSettingsRomOrSavestateAliasKey;
 	RSDebuggerDetailsViewController *_debuggerDetailsViewController;
 	RSDebuggerMemoryViewController *_debuggerMemoryViewController;
 	
-	NSMutableDictionary *_projectSettings; // we keep this updated when things change in the project and write it out
-										   // with each save as <username>.wcodesettings
+	NSMutableDictionary *_projectSettings; // we keep this updated when things change in the project and write it out with each save as <username>.wcodesettings
 	
 	__weak WCProjectNavigationViewController *_currentViewController; // current view displayed on the left
 	WCProjectFilesOutlineViewController *_projectFilesOutlineViewController; // main files view
