@@ -118,7 +118,7 @@ namespace WabbitC.Optimizer
             var genVars = Gen(blocks, block);
             var killVars = Kill(blocks, block);
             block.OutVars = LiveOut(blocks, block);
-            block.InVars = genVars.Union(block.OutVars.Except(killVars));
+            block.InVars = genVars.Union(block.OutVars.Except(killVars)).ToList();
             return block.InVars;
         }
 

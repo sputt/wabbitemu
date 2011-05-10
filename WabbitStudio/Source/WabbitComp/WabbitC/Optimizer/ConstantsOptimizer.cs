@@ -23,7 +23,7 @@ namespace WabbitC.Optimizer
 					decl.Code.Statements.Clear();
 					for (int j = 0; j < basicBlocks.Count; j++)
 					{
-						Block basicBlock = basicBlocks[j];
+						var basicBlock = basicBlocks[j];
 						OptimizeBlock(ref basicBlock);
 						decl.Code.Statements.AddRange(basicBlock);
 					}
@@ -31,8 +31,13 @@ namespace WabbitC.Optimizer
             }
         }
 
-        public static void OptimizeBlock(ref Block block)
+        public static void OptimizeBlock(ref BasicBlock block)
         {
+            if (block.EntryPoints.Count > 1)
+            {
+                foreach (var decl in block.InVars)
+                    decl.ConstValue = null;
+            }
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];

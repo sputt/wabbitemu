@@ -387,7 +387,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			}
 		}
 
-		#ifdef WITH_AVI
+#ifdef WITH_AVI
 #include "avi_utils.h"
 		HBITMAP hbm;
 		if (is_recording) {

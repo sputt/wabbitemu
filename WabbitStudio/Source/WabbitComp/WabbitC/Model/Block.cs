@@ -318,29 +318,49 @@ namespace WabbitC.Model
 							}
 							else
 							{
-								var decl = new Declaration(resultType, resultName);
-								thisBlock.Declarations.Add(decl);
+                                do
+                                {
+                                    var decl = new Declaration(resultType, resultName);
+                                    thisBlock.Declarations.Add(decl);
 
-								// Handle declarations with initial values
-								if (tokens.Current.Text == "=")
-								{
-									tokens.MoveNext();
-
-									var valueList = Tokenizer.GetStatement(ref tokens);
-									StatementHelper.Parse(thisBlock, decl, valueList);
-
-									Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
-									tokens.MoveNext();
-								}
-								else
-								{
-									//TODO: check for comma operator
-                                    if (tokens.Current.Type != TokenType.ArgSeparator)
+                                    // Handle declarations with initial values
+                                    if (tokens.Current.Text == "=")
                                     {
-                                        Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
                                         tokens.MoveNext();
+
+                                        var valueList = Tokenizer.GetStatement(ref tokens);
+                                        StatementHelper.Parse(thisBlock, decl, valueList);
+
+                                        if (tokens.Current.Text != ",")
+                                        {
+                                            Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            tokens.MoveNext();
+                                            Debug.Assert(tokens.Current.Type == TokenType.StringType);
+                                            resultName = tokens.Current.Text;
+                                            tokens.MoveNext();
+                                        }
                                     }
-								}
+                                    else
+                                    {
+                                        if (tokens.Current.Text != ",")
+                                        {
+                                            Debug.Assert(tokens.Current.Type == TokenType.StatementEnd);
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            tokens.MoveNext();
+                                            Debug.Assert(tokens.Current.Type == TokenType.StringType);
+                                            resultName = tokens.Current.Text;
+                                            tokens.MoveNext();
+                                        }
+                                    }
+                                } while (true);
+                                tokens.MoveNext();
 							}
 						}
 					}

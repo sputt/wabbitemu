@@ -63,7 +63,7 @@ namespace WabbitC
         public static List<Token> GetStatement(ref List<Token>.Enumerator tokens)
         {
             var tokenList = new List<Token>();
-            while (tokens.Current.Type != TokenType.StatementEnd)
+            while (tokens.Current.Type != TokenType.StatementEnd && tokens.Current != ",")
             {
                 tokenList.Add(tokens.Current);
                 tokens.MoveNext();
