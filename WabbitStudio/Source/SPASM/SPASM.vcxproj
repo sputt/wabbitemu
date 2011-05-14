@@ -462,7 +462,7 @@
       <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Static Library Debug|x64'">X64</TargetEnvironment>
       <HeaderFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SPASM_i.h</HeaderFileName>
       <InterfaceIdentifierFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SPASM_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">SPASM_p.c</ProxyFileName>
+      <ProxyFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\SPASM_p.c</ProxyFileName>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static Library Debug|Win32'">true</ExcludedFromBuild>
     </Midl>
   </ItemGroup>

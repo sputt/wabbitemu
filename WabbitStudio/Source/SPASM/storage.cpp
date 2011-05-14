@@ -3,7 +3,6 @@
 #define MAX_REUSABLES 512
 
 #include "spasm.h"
-//#include <stdbool.h>
 #include "storage.h"
 #include "utils.h"
 #include "hash.h"

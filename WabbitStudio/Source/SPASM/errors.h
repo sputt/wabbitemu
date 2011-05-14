@@ -32,6 +32,8 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_INVALID_HEX_DIGIT			0x201
 #define SPASM_ERR_INVALID_BINARY_DIGIT		0x202
 
+#define SPASM_ERR_FCREATE_NOFILE			0x301
+
 #ifndef _ERRORS_CPP
 extern
 #endif
@@ -62,6 +64,8 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_INVALID_DECIMAL_DIGIT,	_T("Invalid digit '%c' in the decimal number '%s'")},
 	{SPASM_ERR_INVALID_HEX_DIGIT,		_T("Invalid digit '%c' in the hexadecimal number '%s'")},
 	{SPASM_ERR_INVALID_BINARY_DIGIT,	_T("Invalid digit '%c' in the binary number '%s'")},
+
+	{SPASM_ERR_FCREATE_NOFILE,			_T("No buffer was selected for the fcreate call")},
 
 }
 #endif

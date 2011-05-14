@@ -1,7 +1,6 @@
 #ifndef __SPASM_H
 #define __SPASM_H
 
-//#include <stdbool.h>
 #include "storage.h"
 #include "list.h"
 #include "expand_buf.h"

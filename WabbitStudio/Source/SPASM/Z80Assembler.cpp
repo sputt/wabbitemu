@@ -14,6 +14,7 @@
 HRESULT CZ80Assembler::FinalConstruct()
 {
 	printf("Constructing Z80 Assembler\n");
+	init_storage();
 	m_pStmOutput = NULL;
 	return S_OK;
 }
@@ -21,6 +22,7 @@ HRESULT CZ80Assembler::FinalConstruct()
 void CZ80Assembler::FinalRelease()
 {
 	printf("Destructing Z80 Assembler\n");
+	free_storage();
 }
 
 STDMETHODIMP CZ80Assembler::get_Output(IStream **ppOutput)
@@ -71,20 +73,36 @@ STDMETHODIMP CZ80Assembler::ClearDefines()
 
 STDMETHODIMP CZ80Assembler::AddDefine(BSTR bstrName, VARIANT varValue)
 {
-//	default_define_pair_t *ddp = (default_define_pair_t*)malloc_chk (sizeof(*ddp));
-//	strncpy(ddp->name, lpName, sizeof(ddp->name));
-//	if (lpValue == NULL) {
-//		strcpy(ddp->value, "1");
-//	} else {
-//		strncpy(ddp->value, lpValue, sizeof(ddp->value));
-//	}
-//	default_defines = list_append(default_defines, ddp);
-//#ifdef LOG
-//	fprintf(logfile, "AddDefine: %s %d\n", ddp->name, ddp->value);
-//	fflush(logfile);
-//#endif
-//	return 0;
-	return E_NOTIMPL;
+	if (V_VT(&varValue) == VT_EMPTY || V_VT(&varValue) == VT_ERROR)
+	{
+		V_VT(&varValue) = VT_UI4;
+		V_UI4(&varValue) = 1;
+	}
+
+	VARIANT varDefine;
+	VariantInit(&varDefine);
+	V_VT(&varDefine) = VT_BSTR;
+	V_BSTR(&varDefine) = SysAllocString(L"");
+	HRESULT hr = VariantChangeType(&varDefine, &varValue, 0, VT_BSTR);
+	if (FAILED(hr))
+	{
+		return hr;
+	}
+
+	CW2A szName(bstrName);
+
+	bool fRedefined = false;
+	define_t *define = add_define(strdup(szName), &fRedefined);
+	if (define != NULL)
+	{
+		CW2A szContents(V_BSTR(&varDefine));
+		define->contents = strdup(szContents);
+		return S_OK;
+	}
+	else
+	{
+		return E_FAIL;
+	}
 }
 
 STDMETHODIMP CZ80Assembler::ClearIncludeDirectories()
@@ -125,10 +143,7 @@ STDMETHODIMP CZ80Assembler::Assemble(VARIANT varInput, int *lpInt)
 		output_filename = strdup(m_bstrOutputFile);
 	}
 
-	init_storage();
 	*lpInt = run_assembly();
-
-	free_storage();
 
 	GlobalUnlock(hGlobal);
 

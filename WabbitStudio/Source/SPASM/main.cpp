@@ -223,6 +223,7 @@ int main (int argc, char **argv)
 {
 	int curr_arg = 1;
 	bool case_sensitive = false;
+	bool is_storage_initialized = false;
 
 	use_colors = true;
 	save_console_attributes ();
@@ -252,12 +253,15 @@ int main (int argc, char **argv)
 	//init stuff
 	mode = MODE_NORMAL;
 	in_macro = 0;
-	init_storage();
 	
 	//otherwise, get any options
 
 	while (curr_arg < argc) {
-		if (argv[curr_arg][0] == '-')
+		if (argv[curr_arg][0] == '-'
+#ifdef _WINDOWS
+			|| argv[curr_arg][0] == '/'
+#endif
+			)
 		{
 			switch (argv[curr_arg][1])
 			{
@@ -314,6 +318,12 @@ int main (int argc, char **argv)
 				char *ptr;
 				define_t *define;
 
+				if (!is_storage_initialized)
+				{
+					init_storage();
+					is_storage_initialized = true;
+				}
+
 				if (strlen (argv[curr_arg]) > 2) {
 					ptr = &argv[curr_arg][2];
 				} else {
@@ -362,7 +372,7 @@ int main (int argc, char **argv)
 				{
 #ifndef _TEST
 #ifdef _WINDOWS
-					//FreeConsole();
+					FreeConsole();
 					//system("PAUSE");
 					printf("Waiting for a client...\n");
 					return _AtlModule.WinMain(SW_HIDE);
@@ -401,6 +411,11 @@ int main (int argc, char **argv)
 			output_filename = change_extension (curr_input_file, "bin");
 	}
 
+	if (!is_storage_initialized)
+	{
+		init_storage();
+		is_storage_initialized = true;
+	}
 	output_contents = (unsigned char *) malloc(output_buf_size);
 	int error = run_assembly();
 	free(output_filename);
@@ -408,6 +423,8 @@ int main (int argc, char **argv)
 		free(curr_input_file);
 	if (include_dirs)
 		list_free(include_dirs, true);
+
+	free_storage();
 
 #ifdef _WINDOWS
 	if (IsDebuggerPresent())

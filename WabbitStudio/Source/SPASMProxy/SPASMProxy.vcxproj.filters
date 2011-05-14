@@ -9,16 +9,23 @@
       <UniqueIdentifier>{bf736d04-6258-4f94-8c52-97504bac43de}</UniqueIdentifier>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Generated Files\32-Bit">
+      <UniqueIdentifier>{22db8725-60c9-47e1-af27-cf84a070fe55}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Generated Files\64-Bit">
+      <UniqueIdentifier>{4860dc9e-3bc0-42c3-87a3-579277cd0409}</UniqueIdentifier>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\SPASM\SPASM_p.c">
-      <Filter>Generated Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\SPASM\SPASM_i.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="..\SPASM\dlldata.c">
       <Filter>Generated Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\SPASM\x64\SPASM_p.c">
+      <Filter>Generated Files\64-Bit</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

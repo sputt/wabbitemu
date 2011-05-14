@@ -100,6 +100,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;REGISTER_PROXY_DLL;_DEBUG;_WINDOWS;_USRDLL;SPASMPROXY_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\SPASM\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -150,7 +151,7 @@
   <ItemGroup>
     <ClCompile Include="..\SPASM\dlldata.c" />
     <ClCompile Include="..\SPASM\SPASM_i.c" />
-    <ClCompile Include="..\SPASM\SPASM_p.c" />
+    <ClCompile Include="..\SPASM\x64\SPASM_p.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\SPASM\SPASM_h.h" />

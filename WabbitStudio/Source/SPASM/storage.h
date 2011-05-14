@@ -2,7 +2,7 @@
 #define __STORAGE_H
 
 #include "list.h"
-//#include <stdbool.h>
+
 #if !defined(MAX_PATH) && !defined(_MSC_VER)
 	#include <limits.h>
 	#define MAX_PATH PATH_MAX

@@ -334,11 +334,13 @@ char *handle_opcode_or_macro (char *ptr) {
 				eb_free(eb_fcreate);
 			}
 			eb_fcreate = eb_init(128);
+			fcreate_bufs[cur_buf] = eb_fcreate;
 			ptr += 2;
 		} else if (!strcasecmp (name, "wr") && *ptr == '(') {
 			expand_buf_t *eb_fcreate = fcreate_bufs[cur_buf];
 			if (eb_fcreate == NULL) {
 				eb_fcreate = eb_init(128);
+				fcreate_bufs[cur_buf] = eb_fcreate;
 			}
 
 			ptr = parse_emit_string(++ptr, ES_FCREATE, eb_fcreate);
@@ -346,46 +348,51 @@ char *handle_opcode_or_macro (char *ptr) {
 			eb_append(eb_fcreate, NEWLINE, strlen(NEWLINE));
 		} else if (!strcasecmp (name, "run") && *ptr == '(') {
 			expand_buf_t *eb_fcreate = fcreate_bufs[cur_buf];
-			char *fcreate_string = eb_extract(eb_fcreate);
-
-			//make sure the listing for this line is finished up BEFORE
-			// the new file is parsed and writes its listing stuff all over
-			if (mode & MODE_LIST && listing_on && !listing_for_line_done)
-				do_listing_for_line (skip_to_next_line (line_start));
-
-			if (mode & MODE_LIST && listing_on) {
-				char include_banner[128] = "Listing for built-in fcreate" NEWLINE;
-				listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
+			if (eb_fcreate == NULL)
+			{
+				SetLastSPASMError(SPASM_ERR_FCREATE_NOFILE);
 			}
+			else
+			{
+				char *fcreate_string = eb_extract(eb_fcreate);
 
-			// Thanks for this Don
-			int old_line_num = line_num;
-			char *old_input_file = curr_input_file;
-			int old_in_macro = in_macro;
-			char *old_line_start = line_start;
-			int old_old_line_num = old_line_num;
-			curr_input_file = "Built-in fcreate";
+				//make sure the listing for this line is finished up BEFORE
+				// the new file is parsed and writes its listing stuff all over
+				if (mode & MODE_LIST && listing_on && !listing_for_line_done)
+					do_listing_for_line (skip_to_next_line (line_start));
 
-			run_first_pass(fcreate_string);
+				if (mode & MODE_LIST && listing_on) {
+					char include_banner[128] = "Listing for built-in fcreate" NEWLINE;
+					listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
+				}
 
-			curr_input_file = old_input_file;
-			line_num = old_line_num;
-			in_macro = old_in_macro;
-			line_start = old_line_start;
-			old_line_num = old_old_line_num;
+				// Thanks for this Don
+				int old_line_num = line_num;
+				char *old_input_file = curr_input_file;
+				int old_in_macro = in_macro;
+				char *old_line_start = line_start;
+				int old_old_line_num = old_line_num;
+				curr_input_file = "Built-in fcreate";
 
-			if (mode & MODE_LIST && listing_on && !listing_for_line_done)
-				listing_for_line_done = true;
+				run_first_pass(fcreate_string);
 
-			if (mode & MODE_LIST && listing_on) {
-				char include_banner[MAX_PATH + 64];
-				snprintf(include_banner, sizeof (include_banner), "Listing for file \"%s\"" NEWLINE, curr_input_file);
-				listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
+				curr_input_file = old_input_file;
+				line_num = old_line_num;
+				in_macro = old_in_macro;
+				line_start = old_line_start;
+				old_line_num = old_old_line_num;
+
+				if (mode & MODE_LIST && listing_on && !listing_for_line_done)
+					listing_for_line_done = true;
+
+				if (mode & MODE_LIST && listing_on) {
+					char include_banner[MAX_PATH + 64];
+					snprintf(include_banner, sizeof (include_banner), "Listing for file \"%s\"" NEWLINE, curr_input_file);
+					listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
+				}
+
+				free(fcreate_string);
 			}
-
-			free(fcreate_string);
-			eb_free(eb_fcreate);
-			eb_fcreate = NULL;
 			ptr += 2;
 		} else
 #endif

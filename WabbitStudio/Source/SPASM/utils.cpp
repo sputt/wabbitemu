@@ -3,7 +3,6 @@
 //max depth of #defines
 #define RECURSION_LIMIT 20
 
-//#include <stdbool.h>
 #include "storage.h"
 #include "parser.h"
 #include "utils.h"

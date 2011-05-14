@@ -22,7 +22,7 @@ interface IZ80Assembler : IDispatch
 	HRESULT OutputFile([out, retval] BSTR *FileName);
     [propput, helpstring("Output file for the assembly")]
 	HRESULT OutputFile([in] BSTR FileName);
-
+	
 	[helpstring("Clear the preprocessor definitions")]
     HRESULT ClearDefines();
 	[helpstring("Adds a preprocessor definition")]

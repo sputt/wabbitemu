@@ -61,6 +61,7 @@
 #include <openssl/md5.h>
 #include <math.h>
 #include <errno.h>
+#include <stdbool.h>
 
 #define __inout
 

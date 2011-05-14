@@ -54,6 +54,13 @@ typedef struct tagBITMAPINFOHEADER{
 } __attribute__((packed)) BITMAPINFOHEADER,*LPBITMAPINFOHEADER,*PBITMAPINFOHEADER;
 #endif
 
+#ifdef _L
+#undef _L
+#endif
+#ifdef _W
+#undef _W
+#endif
+
 #ifdef __BIG_ENDIAN__
 #define _L(Z) ((LONG) _DW(Z))
 #define _DW(Z) ((((Z)&0xFF)<<24) + (((Z)&0xFF00)<<8) + (((Z)&0xFF0000)>>8) + (((Z)&0xFF000000)>>24))
