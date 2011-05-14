@@ -54,19 +54,12 @@ typedef struct tagBITMAPINFOHEADER{
 } __attribute__((packed)) BITMAPINFOHEADER,*LPBITMAPINFOHEADER,*PBITMAPINFOHEADER;
 #endif
 
-#ifdef _L
-#undef _L
-#endif
-#ifdef _W
-#undef _W
-#endif
-
 #ifdef __BIG_ENDIAN__
-#define _L(Z) ((LONG) _DW(Z))
+#define _ZL(Z) ((LONG) _DW(Z))
 #define _DW(Z) ((((Z)&0xFF)<<24) + (((Z)&0xFF00)<<8) + (((Z)&0xFF0000)>>8) + (((Z)&0xFF000000)>>24))
 #define _W(Z) ((((Z)&0xFF)<<8) + (((Z)&0xFF00)>>8))
 #else
-#define _L(Z) (Z)
+#define _ZL(Z) (Z)
 #define _DW(Z) (Z)
 #define _W(Z) (Z)
 #endif
@@ -497,7 +490,7 @@ static void handle_bitmap (FILE *file, const RECT *r, const BITMAPFILEHEADER *bf
 	//printf("handle_bitmap on: %d %d %d %d\n", r->left, r->top, r->right, r->bottom);
 	
 	// Bytes, padded to the nearest 32-bit
-	const LONG biScanWidth = ((_L(bi->biWidth) * _W(bi->biBitCount)) + 31) / 32 * 4;
+	const LONG biScanWidth = ((_ZL(bi->biWidth) * _W(bi->biBitCount)) + 31) / 32 * 4;
 	const DWORD biImageSize = (_DW(bf->bfSize) - _DW(bf->bfOffBits));
 //	if (biImageSize % biScanWidth != 0) {
 //		printf("Scan width calculation incorrect! (image size: %ld, scan: %ld)\n", biImageSize, biScanWidth);
@@ -552,7 +545,7 @@ static void handle_bitmap (FILE *file, const RECT *r, const BITMAPFILEHEADER *bf
 		{
 			RGBQUAD rgb = {255, 255, 255, 0};
 			
-			if (bit >= _L(bi->biWidth) * _W(bi->biBitCount) || bit >= r->right * _W(bi->biBitCount)) {
+			if (bit >= _ZL(bi->biWidth) * _W(bi->biBitCount) || bit >= r->right * _W(bi->biBitCount)) {
 				// Output the brightest shade, then continue
 				//pOutput[r->bottom - r->top - 1 - row][col]
 				OUTPUT_ACCESS(r->bottom - r->top - 1 - row, col) = 0;
@@ -861,8 +854,8 @@ static char *handle_preop_include (char *ptr)
 		}
 	
 		if (img_map == NULL || parse_f("__BM_MAP") == 0) {
-			int width = _L(bi.biWidth);
-			int height = _L(bi.biHeight);
+			int width = _ZL(bi.biWidth);
+			int height = _ZL(bi.biHeight);
 			
 			r.left = 0;
 			r.top = 0;
@@ -912,8 +905,8 @@ static char *handle_preop_include (char *ptr)
 				goto map_done;
 			}
 
-			width 	= (_L(bi.biWidth) - (width * 2 * padding)) / width;
-			height 	= (_L(bi.biHeight) - (height * 2 * padding)) / height;
+			width 	= (_ZL(bi.biWidth) - (width * 2 * padding)) / width;
+			height 	= (_ZL(bi.biHeight) - (height * 2 * padding)) / height;
 
 			if (base_name) {
 				strcpy(suffix, "_WIDTH");
@@ -923,8 +916,8 @@ static char *handle_preop_include (char *ptr)
 				add_label(strdup(base_name), height);
 			}
 		
-			for (left = 0; left < _L(bi.biWidth); left += width + 2*padding) {
-				for (top = _L(bi.biHeight) - height - 2*padding; top >= 0 ; top -= height + 2*padding) {
+			for (left = 0; left < _ZL(bi.biWidth); left += width + 2*padding) {
+				for (top = _ZL(bi.biHeight) - height - 2*padding; top >= 0 ; top -= height + 2*padding) {
 					int min_w = parse_f("__BM_MIN_W");
 					if (count == 1) goto map_done;
 					if (count != 0) count--;
