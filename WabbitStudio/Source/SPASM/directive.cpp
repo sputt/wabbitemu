@@ -260,8 +260,10 @@ char *handle_directive (const char *ptr) {
 				}
 
 				//if the output's redirected to a file, process it now
+				save_console_attributes();
 				set_console_attributes (COLOR_GREEN);
 				ptr = parse_emit_string (ptr, ES_ECHO, echo_target);
+				restore_console_attributes();
 			} else {
 				char expr[256];
 				read_expr (&ptr, expr, "");
@@ -276,9 +278,11 @@ char *handle_directive (const char *ptr) {
 				}
 				else if (GetSPASMErrorSessionErrorCount(session) > 0)
 				{
+					save_console_attributes();
 					set_console_attributes(COLOR_GREEN);
 					int internal_session = StartSPASMErrorSession();
 					parse_emit_string (expr, ES_ECHO, stdout);
+					restore_console_attributes();
 					EndSPASMErrorSession(internal_session);
 
 					ReplaySPASMErrorSession(session);

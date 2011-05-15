@@ -8,12 +8,6 @@
 #include "utils.h"
 #include "errors.h"
 
-#undef  show_fatal_error_prefix
-#define show_fatal_error_prefix(zcif, zln) printf ("signer: error: ")
-
-#undef  show_warning_prefix
-#define show_warning_prefix(zcif, zln) printf ("signer: warning: ")
-
 #define name    (header8xk + 17)
 #define hleng   sizeof(header8xk)
 unsigned char header8xk[] = {
@@ -91,6 +85,10 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	FILE *outfile;
 	int i, calc;
 
+	curr_input_file = strdup(_T("signer"));
+	line_num = -1;
+
+
 	//get the type from the extension of the output filename
 	for (i = strlen (output_filename); output_filename[i] != '.' && i; i--);
 	if (i != 0) {
@@ -154,8 +152,9 @@ void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, c
 
 /* Check if size will fit in mem with signature */
     if ((tempnum = ((size+96)%16384))) {
-        if (tempnum < 97) {
-			show_fatal_error ("The last page must have room for the signature!\n Roughly 96 bytes.");
+        if (tempnum < 97)
+		{
+			SetLastSPASMError(SPASM_ERR_SIGNER_ROOM_FOR_SIG);
 			return;
 		}
         if (tempnum<1024 && (size+96)>>14) {
@@ -166,7 +165,7 @@ void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, c
 /* Fix app header fields */
 /* Length Field: set to size of app - 6 */
     if (!(buffer[0] == 0x80 && buffer[1] == 0x0F)) {
-        show_fatal_error ("Length field not present.");
+		SetLastSPASMError(SPASM_ERR_SIGNER_MISSING_LENGTH);
 		return;
 	}
     size -= 6;
@@ -178,13 +177,13 @@ void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, c
 /* Program Type Field: Must be present and shareware (0104) */
     pnt = findfield(0x12, buffer);
     if (!pnt || ( buffer[pnt++]!=1) || (buffer[pnt]!=4) ) {
-        show_fatal_error ("Program type field missing or incorrect.");
+		SetLastSPASMError(SPASM_ERR_SIGNER_PRGM_TYPE);
 		return;
 	}
 /* Pages Field: Corrects page num*/
     pnt = findfield(0x81, buffer);
     if (!pnt) {
-        show_fatal_error ("Pages field missing.");
+		SetLastSPASMError(SPASM_ERR_SIGNER_MISSING_PAGES);
 		return;
 	}
     
@@ -194,7 +193,7 @@ void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, c
 /* Name Field: MUST BE 8 CHARACTERS, no checking if valid */
     pnt = findfield(0x48, buffer);
     if (!pnt) {
-        show_fatal_error ("Name field missing.");
+		SetLastSPASMError(SPASM_ERR_SIGNER_MISSING_NAME);
 		return;
 	}
     for (i=0; i < 8 ;i++) name[i]=buffer[i+pnt];

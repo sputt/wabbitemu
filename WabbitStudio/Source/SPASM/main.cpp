@@ -121,7 +121,6 @@ int run_assembly()
 	//add the the input file's path to the include directories
 	include_dirs = list_prepend (include_dirs, strdup (temp_path));
 
-	set_console_attributes (COLOR_WHITE);
 	printf ("Pass one... \n");
 
 	ClearSPASMErrorSessions();
@@ -139,13 +138,10 @@ int run_assembly()
 	//...and if there's output, run the second pass and write it to the output file
 	if (mode & MODE_NORMAL || mode & MODE_LIST)
 	{
-
-		set_console_attributes (COLOR_WHITE);
 		printf ("Pass two... \n");
 
 		run_second_pass ();
 
-		set_console_attributes (COLOR_WHITE);
 		printf ("Done\n");
 		
 		//run the output through the appropriate program export and write it to a file

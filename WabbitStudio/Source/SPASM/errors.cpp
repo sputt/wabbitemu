@@ -36,6 +36,7 @@ static void PrintSPASMError(const LPERRORINSTANCE lpError)
 	assert(lpError != NULL);
 	if ((lpError->dwErrorCode != SPASM_ERR_SUCCESS) || (lpError->lpszErrorText != NULL))
 	{
+		save_console_attributes();
 		set_console_attributes(COLOR_RED);
 		if (lpError->lpszAnnotation != NULL)
 		{
@@ -47,6 +48,7 @@ static void PrintSPASMError(const LPERRORINSTANCE lpError)
 		OutputDebugString(lpError->lpszErrorText);
 		OutputDebugString(_T("\n"));
 #endif
+		restore_console_attributes();
 	}
 }
 
@@ -282,8 +284,16 @@ void SetLastSPASMError(DWORD dwErrorCode, ...)
 			break;
 		}
 	}
-	StringCchPrintf(szBuffer, ARRAYSIZE(szBuffer), _T("%s:%d: error SE%03X: %s"),
-		lpErr->lpszFileName, lpErr->line_num, lpErr->dwErrorCode, szDescription);
+	if (lpErr->line_num != -1)
+	{
+		StringCchPrintf(szBuffer, ARRAYSIZE(szBuffer), _T("%s:%d: error SE%03X: %s"),
+			lpErr->lpszFileName, lpErr->line_num, lpErr->dwErrorCode, szDescription);
+	}
+	else
+	{
+		StringCchPrintf(szBuffer, ARRAYSIZE(szBuffer), _T("%s: error SE%03X: %s"),
+			lpErr->lpszFileName, lpErr->dwErrorCode, szDescription);
+	}
 
 	lpErr->lpszErrorText = _strdup(szBuffer);
 

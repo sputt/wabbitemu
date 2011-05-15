@@ -374,6 +374,7 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="bitmap.cpp" />
     <ClCompile Include="console.cpp" />
     <ClCompile Include="directive.cpp" />
     <ClCompile Include="dll.cpp">
@@ -426,6 +427,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="bitmap.h" />
     <ClInclude Include="console.h" />
     <ClInclude Include="directive.h" />
     <ClInclude Include="errors.h" />

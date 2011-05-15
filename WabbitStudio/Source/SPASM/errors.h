@@ -27,12 +27,19 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_UNKNOWN_OPCODE			0x113
 #define SPASM_ERR_EQUATE_MISSING_LABEL		0x114
 #define SPASM_ERR_EXCEEDED_RECURSION_LIMIT	0x115
+#define SPASM_ERR_UNMATCHED_IF				0x116
 
 #define SPASM_ERR_INVALID_DECIMAL_DIGIT		0x200
 #define SPASM_ERR_INVALID_HEX_DIGIT			0x201
 #define SPASM_ERR_INVALID_BINARY_DIGIT		0x202
 
 #define SPASM_ERR_FCREATE_NOFILE			0x301
+
+#define SPASM_ERR_SIGNER_MISSING_LENGTH		0x501
+#define SPASM_ERR_SIGNER_PRGM_TYPE			0x502
+#define SPASM_ERR_SIGNER_MISSING_PAGES		0x503
+#define SPASM_ERR_SIGNER_MISSING_NAME		0x504
+#define SPASM_ERR_SIGNER_ROOM_FOR_SIG		0x505
 
 #ifndef _ERRORS_CPP
 extern
@@ -66,7 +73,13 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_INVALID_BINARY_DIGIT,	_T("Invalid digit '%c' in the binary number '%s'")},
 
 	{SPASM_ERR_FCREATE_NOFILE,			_T("No buffer was selected for the fcreate call")},
+	{SPASM_ERR_UNMATCHED_IF,			_T("Unbalanced #IF/#ENDIF")},
 
+	{SPASM_ERR_SIGNER_MISSING_LENGTH,	_T("Length field missing")},
+	{SPASM_ERR_SIGNER_PRGM_TYPE,		_T("Program type field missing or incorrect")},
+	{SPASM_ERR_SIGNER_MISSING_PAGES,	_T("Page count field missing")},
+	{SPASM_ERR_SIGNER_MISSING_NAME,		_T("Name field missing")},
+	{SPASM_ERR_SIGNER_ROOM_FOR_SIG,		_T("Not enough room for signature on last page")},
 }
 #endif
 ;
