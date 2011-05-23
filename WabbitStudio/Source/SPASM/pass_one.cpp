@@ -262,7 +262,7 @@ char *run_first_pass_line_sec (char *ptr) {
 		return ptr;
 
 	} else {
-		show_fatal_error ("Can't figure out this line %s", ptr);
+		SetLastSPASMError(SPASM_ERR_SYNTAX);
 		return ptr;
 	}
 }

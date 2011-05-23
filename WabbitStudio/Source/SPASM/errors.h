@@ -28,6 +28,9 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_EQUATE_MISSING_LABEL		0x114
 #define SPASM_ERR_EXCEEDED_RECURSION_LIMIT	0x115
 #define SPASM_ERR_UNMATCHED_IF				0x116
+#define SPASM_ERR_STRAY_PREOP				0x117
+#define SPASM_ERR_EXPRESSION_EXPECTED		0x118
+#define SPASM_ERR_SYNTAX					0x119
 
 #define SPASM_ERR_INVALID_DECIMAL_DIGIT		0x200
 #define SPASM_ERR_INVALID_HEX_DIGIT			0x201
@@ -67,6 +70,9 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_UNKNOWN_OPCODE,			_T("Unknown opcode '%s'")},
 	{SPASM_ERR_EQUATE_MISSING_LABEL,	_T("Equate is missing corresponding label")},
 	{SPASM_ERR_EXCEEDED_RECURSION_LIMIT,_T("Recursion depth limit exceeded")},
+	{SPASM_ERR_EXPRESSION_EXPECTED,		_T("Expecting an expression, statement ended early")},
+	{SPASM_ERR_SYNTAX,					_T("Unknown syntax")},
+
 
 	{SPASM_ERR_INVALID_DECIMAL_DIGIT,	_T("Invalid digit '%c' in the decimal number '%s'")},
 	{SPASM_ERR_INVALID_HEX_DIGIT,		_T("Invalid digit '%c' in the hexadecimal number '%s'")},
@@ -74,6 +80,7 @@ SPASMERROR g_ErrorCodes[]
 
 	{SPASM_ERR_FCREATE_NOFILE,			_T("No buffer was selected for the fcreate call")},
 	{SPASM_ERR_UNMATCHED_IF,			_T("Unbalanced #IF/#ENDIF")},
+	{SPASM_ERR_STRAY_PREOP,				_T("Stray #%s")},
 
 	{SPASM_ERR_SIGNER_MISSING_LENGTH,	_T("Length field missing")},
 	{SPASM_ERR_SIGNER_PRGM_TYPE,		_T("Program type field missing or incorrect")},
