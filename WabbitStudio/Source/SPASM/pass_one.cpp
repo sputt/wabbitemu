@@ -191,7 +191,7 @@ char *run_first_pass_line_sec (char *ptr) {
 
 		//find the end of the label
 		label_end = skip_to_name_end (ptr);
-		if (*skip_whitespace (label_end) == '(')
+		if (*label_end == '(')
 			return handle_opcode_or_macro (ptr);
 
 		name = strndup (ptr, label_end - ptr);
