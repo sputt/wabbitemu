@@ -66,6 +66,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace Revsoft.Wabbitcode
 {
@@ -127,8 +128,6 @@ namespace Revsoft.Wabbitcode
 		public event EventHandler SelectionsChanged;
         // Node being dragged
         private TreeNode dragNode = null;
-        // Temporary drop node for selection
-        private TreeNode tempDropNode = null;
         // Timer for scrolling
         private Timer timer = new Timer();
         //ImageList for ghosting
@@ -872,14 +871,22 @@ namespace Revsoft.Wabbitcode
 				Update();
 				if (tn.BackColor != SelectionBackColor)
 				{
-					g.DrawRectangle(new Pen(new SolidBrush(SelectionBackColor), 1), rect);
+					var sb = new SolidBrush(SelectionBackColor);
+					Pen p = new Pen(sb, 1);
+					g.DrawRectangle(p, rect);
+					p.Dispose();
+					sb.Dispose();
 				}
 			}
 			else
 			{
 				if (tn.BackColor != SelectionBackColor)
 				{
-					g.DrawRectangle(new Pen(new SolidBrush(BackColor), 1), tnMostRecentSelectedNode.Bounds.X, tnMostRecentSelectedNode.Bounds.Y, tnMostRecentSelectedNode.Bounds.Width, tnMostRecentSelectedNode.Bounds.Height);
+					var sb = new SolidBrush(BackColor);
+					Pen p = new Pen(sb, 1);
+					g.DrawRectangle(p, tnMostRecentSelectedNode.Bounds.X, tnMostRecentSelectedNode.Bounds.Y, tnMostRecentSelectedNode.Bounds.Width, tnMostRecentSelectedNode.Bounds.Height);
+					p.Dispose();
+					sb.Dispose();
 				}
 				this.Invalidate(rect, false);
 				Update();
@@ -925,7 +932,77 @@ namespace Revsoft.Wabbitcode
 
 		#endregion
 
-		#region OnMouseUp, OnMouseDown
+		#region OnMouseUp, OnMouseDown, OnKeyPress
+
+
+		string word = "";
+		long lastKeyPress = 0;
+		/// <summary>
+		/// Max time between keypresses to allow when typing to find something on the tree. Measured in ticks (ms * 10k)
+		/// </summary>
+		const int MAX_TIME_BETWEEN_KEYPRESS = 750 * 10000;
+		protected override void OnKeyPress(KeyPressEventArgs e)
+		{
+			long time = DateTime.Now.Ticks;
+			if (time - lastKeyPress > MAX_TIME_BETWEEN_KEYPRESS)
+				word = "";
+			lastKeyPress = time;
+			word += e.KeyChar;
+			var node = SelectedNode;
+			if (node == null)
+				node = Nodes[0];
+
+			var foundNode = FindVisibleNodeStartsWith(node, word);
+			if (foundNode != null)
+			{
+				SelectNode(node, false, TreeViewAction.ByKeyboard);
+				SelectNode(foundNode, true, TreeViewAction.ByKeyboard);
+				SetFocusToNode(foundNode, true);
+				foundNode.EnsureVisible();
+			}
+			else
+			{
+				foundNode = FindVisibleNodeStartsWith(node, word.Substring(word.Length - 1));
+				if (foundNode != null)
+				{
+					SelectNode(node, false, TreeViewAction.ByKeyboard);
+					SelectNode(foundNode, true, TreeViewAction.ByKeyboard);
+					SetFocusToNode(foundNode, true);
+					foundNode.EnsureVisible();
+				}
+			}
+			base.OnKeyPress(e);
+		}
+
+		/// <summary>
+		/// Finds a visible node that starts with the specified text
+		/// </summary>
+		/// <param name="node"></param>
+		/// <param name="text"></param>
+		/// <returns></returns>
+		private TreeNode FindVisibleNodeStartsWith(TreeNode startNode, string text)
+		{
+			var node = startNode;
+			if (node == null || Nodes.Count < 1)
+				return null;
+			bool firstPass = true;
+			if (text.Length == 1)
+			{
+				node = node.NextVisibleNode;
+				firstPass = false;
+			}
+			
+			while (!node.Text.ToLower().StartsWith(text) && (node != startNode || firstPass))
+			{
+				firstPass = false;
+				node = node.NextVisibleNode;
+				if (node == null)
+					node = Nodes[0];
+			}
+			if (node == startNode && firstPass == false)
+				return null;
+			return node;
+		}
 
 		/// <summary>
 		/// Occurs when mouse button is up after a click.
@@ -1707,10 +1784,6 @@ namespace Revsoft.Wabbitcode
         private const int WM_USER = 0x400;
         private const int EM_GETEVENTMASK = (WM_USER + 59);
         private const int EM_SETEVENTMASK = (WM_USER + 69);
-
-        [DllImport("user32", CharSet = CharSet.Auto)]
-        private extern static IntPtr SendMessage(IntPtr hWnd, int msg, int wParam, IntPtr lParam);
-        IntPtr eventMask = IntPtr.Zero;
 
         TreeNode nodePointedTo;
         private Color oldBackColor;
