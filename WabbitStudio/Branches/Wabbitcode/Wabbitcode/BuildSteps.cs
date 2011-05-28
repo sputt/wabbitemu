@@ -11,18 +11,28 @@ namespace Revsoft.Wabbitcode
 {
     public partial class BuildSteps : Form
     {
+		private bool isInternal = false;
 		private BuildConfig currentConfig;
         public BuildSteps()
         {
             InitializeComponent();
             GetBuildConfigs();
+			isInternal = true;
 			configBox.SelectedIndex = ProjectService.CurrentConfigIndex;
+			isInternal = false;
         }
 
         private void GetBuildConfigs()
         {
 			foreach (BuildConfig config in ProjectService.BuildConfigs)
 				configBox.Items.Add(config);
+			if (configBox.Items.Count == 0)
+			{
+				ProjectService.BuildConfigs.Add(new BuildConfig("Debug"));
+				ProjectService.BuildConfigs.Add(new BuildConfig("Release"));
+				GetBuildConfigs();
+			}
+
         }
 
         private void PopulateListBox()
@@ -41,6 +51,7 @@ namespace Revsoft.Wabbitcode
 			IBuildStep stepToAdd = new InternalBuildStep(count, StepType.Assemble, fileName , Path.ChangeExtension(fileName, "8xk"));
 			currentConfig.Steps.Add(stepToAdd);
 			buildSeqList.Items.Insert(count, stepToAdd);
+			needsSave = true;
         }
 
         private void deleteDirButton_Click(object sender, EventArgs e)
@@ -50,6 +61,7 @@ namespace Revsoft.Wabbitcode
                 return;
 			bool found = currentConfig.Steps.Remove(selectedItem);
 			buildSeqList.Items.Remove(selectedItem);
+			needsSave = true;
         }
 
         private bool needsSave = false;
@@ -174,14 +186,14 @@ namespace Revsoft.Wabbitcode
                 step.InputFile = FileOperations.NormalizePath(Path.Combine(ProjectService.ProjectDirectory, inputBox.Text));
             else if (step.GetType() == typeof(ExternalBuildStep))
                 step.InputFile = inputBox.Text;
-            needsSave = true;
+			needsSave = !isInternal;
         }
 
         private void outputBox_TextChanged(object sender, EventArgs e)
         {
             InternalBuildStep step = (InternalBuildStep)buildSeqList.SelectedItem;
             step.OutputFile = FileOperations.NormalizePath(Path.Combine(ProjectService.ProjectDirectory, outputBox.Text));
-            needsSave = true;
+            needsSave = !isInternal;
         }
 
         private void actionBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -191,7 +203,7 @@ namespace Revsoft.Wabbitcode
             buildSeqList.Items[buildSeqList.SelectedIndex] = step;
             currentConfig.Steps[buildSeqList.SelectedIndex] = step;
             UpdateStepOptions();
-            needsSave = true;
+            needsSave = !isInternal;
         }
 
         private void browseInput_Click(object sender, EventArgs e)
@@ -218,6 +230,7 @@ namespace Revsoft.Wabbitcode
                 Title = "Add Existing File",
             };
             DialogResult result = openFileDialog.ShowDialog();
+			openFileDialog.Dispose();
             return result != DialogResult.OK ? null : openFileDialog.FileName;
         }
     }

@@ -537,7 +537,7 @@ namespace Revsoft.Wabbitcode.Services
 						createdName = Path.ChangeExtension(fileName, "8xk");
 						break;
 					default:
-						MessageBox.Show("You cannont debug a non 83/84 Plus file!");
+						MessageBox.Show("You cannot debug a non 83/84 Plus file!");
 						CancelDebug();
 						return;
 				}
@@ -570,36 +570,42 @@ namespace Revsoft.Wabbitcode.Services
 			debugger = new CWabbitemu(createdName);
 #endif
 			stepStack = new Stack<int>();
-            StreamReader reader;
+            StreamReader reader = null;
             string listFileText, symFileText = "";
-#if !DEBUG
-            try
-            {
-#endif
-                reader = new StreamReader(listName);
-                listFileText = reader.ReadToEnd();
-                reader.Close();
-#if !DEBUG
-            }
-            catch (Exception ex)
-            {
-                DockingService.ShowError("Error reading list file: \n" + ex);
-                CancelDebug();
-                return;
-            }
-            try
-            {
-#endif
-                reader = new StreamReader(symName);
-                symFileText = reader.ReadToEnd();
-                reader.Close();
-#if !DEBUG
-            }
-            catch (Exception ex)
-            {
-                DockingService.ShowError("Error reading symbol file: \n" + ex);
-            }
-#endif
+			try
+			{
+				reader = new StreamReader(listName);
+				listFileText = reader.ReadToEnd();
+			}
+			catch (Exception ex)
+			{
+				DockingService.ShowError("Error reading list file: \n" + ex);
+				CancelDebug();
+				return;
+			}
+			finally
+			{
+				if (reader != null)
+					reader.Close();
+			}
+			try
+			{
+				reader = new StreamReader(symName);
+				symFileText = reader.ReadToEnd();
+
+			}
+			catch (Exception ex)
+			{
+				DockingService.ShowError("Error reading symbol file: \n" + ex);
+			}
+			finally
+			{
+				if (reader != null)
+				{
+					reader.Dispose();
+					reader.Close();
+				}
+			}
 
 			debugTable = new Dictionary<ListFileKey, ListFileValue>();
 			ParseListFile(listFileText, fileName, Path.GetDirectoryName(fileName));
@@ -635,6 +641,8 @@ namespace Revsoft.Wabbitcode.Services
                 for (int i = 0; i < 17; i++)
                     appReader.Read();
                 appReader.ReadBlock(buffer, 0, 8);
+
+				appReader.Dispose();
                 appReader.Close();
                 string appName = new string(buffer).Trim();
 #if NEW_DEBUGGING
@@ -782,7 +790,7 @@ namespace Revsoft.Wabbitcode.Services
             }
             catch (Exception ex)
             {
-                DockingService.ShowError("Error in closing the debugger");
+                DockingService.ShowError("Error in closing the debugger", ex);
             }
 #endif
 #endif
@@ -894,6 +902,11 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			isBreakpointed = false;
 			IntPtr calculatorHandle = NativeMethods.FindWindow("z80", "Wabbitemu");
+			if ((int) calculatorHandle == 0)
+			{
+				StartDebug();
+				return;
+			}
 			//switch to the emulator
 			NativeMethods.SetForegroundWindow(calculatorHandle);
 #if NEW_DEBUGGING

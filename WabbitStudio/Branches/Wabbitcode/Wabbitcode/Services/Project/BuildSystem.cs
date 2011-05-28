@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Revsoft.Wabbitcode.Classes;
 using System.Xml;
+using System.IO;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -19,7 +20,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			get
 			{
-				if (currentConfigIndex == -1)
+				if (currentConfigIndex > buildConfigs.Count - 1 || currentConfigIndex == -1)
 					return null;
 				return buildConfigs[currentConfigIndex];
 			}
@@ -33,6 +34,8 @@ namespace Revsoft.Wabbitcode.Services.Project
         {
             get
             {
+				if (CurrentConfig == null)
+					return null;
                 int counter = CurrentConfig.Steps.Count - 1;
                 if (counter < 0)
                     return null;
@@ -105,9 +108,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 			int counter = 0;
 			writer.WriteStartElement("BuildSystem");
 			string includes = "";
-			foreach(string include in ProjectService.IncludeDirs)
+			string projDir = ProjectService.ProjectDirectory;
+			foreach (string include in ProjectService.IncludeDirs)
 				if (!string.IsNullOrEmpty(include))
-				includes += include + ";";
+					if (!Path.IsPathRooted(include))
+						includes += include + ";";
+					else
+						includes += FileOperations.GetRelativePath(projDir, include) + ";";
 			writer.WriteAttributeString("IncludeDirs", includes);
 			foreach (BuildConfig config in buildConfigs)
 			{
@@ -117,15 +124,16 @@ namespace Revsoft.Wabbitcode.Services.Project
 					Type type = step.GetType();
 					writer.WriteStartElement(type.Name);
 					writer.WriteAttributeString("Count", counter.ToString());
-					writer.WriteAttributeString("InputFile", step.InputFile);
+					writer.WriteAttributeString("InputFile", FileOperations.GetRelativePath(projDir, step.InputFile));
 					if (type == typeof(ExternalBuildStep))
 					{
 						writer.WriteAttributeString("Arguments", ((ExternalBuildStep)step).Arguments);
 					}
 					else if (type == typeof(InternalBuildStep))
 					{
-						writer.WriteAttributeString("OutputFile", ((InternalBuildStep)step).OutputFile);
-						writer.WriteAttributeString("StepType", Convert.ToInt16(((InternalBuildStep)step).StepType).ToString());
+						var intStep = (InternalBuildStep)step;
+						writer.WriteAttributeString("OutputFile", FileOperations.GetRelativePath(projDir, intStep.OutputFile));
+						writer.WriteAttributeString("StepType", Convert.ToInt16(intStep.StepType).ToString());
 					}
 					writer.WriteEndElement();
 				}
@@ -136,13 +144,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		internal void ReadXML(XmlTextReader reader)
 		{
+			string root = Path.GetDirectoryName(ProjectService.ProjectDirectory);
 			reader.MoveToNextElement();
 			if (reader.Name != "BuildSystem")
 				throw new ArgumentException("Invalid XML Format");
 			string[] includeDirs = reader.GetAttribute("IncludeDirs").Split(';');
 			foreach (string include in includeDirs)
 				if (!string.IsNullOrEmpty(include))
-					ProjectService.IncludeDirs.Add(include);
+					ProjectService.IncludeDirs.Add(Path.Combine(root, include));
 			while (reader.MoveToNextElement())
 			{
 				string configName = reader.Name;
@@ -157,13 +166,16 @@ namespace Revsoft.Wabbitcode.Services.Project
 				{
 					case "ExternalBuildStep":
 						string arguments = reader.GetAttribute("Arguments");
-						ExternalBuildStep exstep = new ExternalBuildStep(count, inputFile, arguments);
+						ExternalBuildStep exstep = new ExternalBuildStep(count,
+										Path.Combine(root, inputFile), arguments);
 						configToAdd.Steps.Add(exstep);
 						break;
 					case "InternalBuildStep":
 						string outputFile = reader.GetAttribute("OutputFile");
 						StepType type = (StepType)Convert.ToInt16(reader.GetAttribute("StepType"));
-						InternalBuildStep instep = new InternalBuildStep(count, type, inputFile, outputFile);
+						InternalBuildStep instep = new InternalBuildStep(count, type,
+													Path.Combine(root, inputFile),
+													Path.Combine(root, outputFile));
 						configToAdd.Steps.Add(instep);
 						break;
 					default:

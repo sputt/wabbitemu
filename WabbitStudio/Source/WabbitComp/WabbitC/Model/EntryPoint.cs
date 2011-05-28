@@ -7,10 +7,15 @@ namespace WabbitC.Model
 {
     class EntryPoint
     {
-        public Block entryPoint;
-        public EntryPoint(Block entryBlock)
+        public BasicBlock entryPoint;
+        public EntryPoint(BasicBlock entryBlock)
         {
             entryPoint = entryBlock;
+        }
+
+        public override string ToString()
+        {
+            return entryPoint.Statements.ToString();
         }
     }
 }

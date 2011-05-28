@@ -32,6 +32,7 @@ namespace Revsoft.Wabbitcode
                 Pen p = new Pen(Color.Black);
                 g.DrawLine(p, horz, 0, horz, horzRuler.Height);
                 horz += 16;
+				p.Dispose();
             }
             int vert = 0;
             image = new Bitmap(vertRuler.Width, vertRuler.Height);
@@ -42,6 +43,7 @@ namespace Revsoft.Wabbitcode
                 Pen p = new Pen(Color.Black);
                 g.DrawLine(p, 0, vert, vertRuler.Width, vert);
                 vert += 16;
+				p.Dispose();
             }
 
         }

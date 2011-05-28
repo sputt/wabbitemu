@@ -54,6 +54,13 @@ namespace Revsoft.Wabbitcode.Services.Project
             set { stepType = value; }
 		}
 
+		/// <summary>
+		/// Creates a new build step using the built in spasm functions
+		/// </summary>
+		/// <param name="number">Build step number (0 indexed)</param>
+		/// <param name="type">Type of internal operation to peform</param>
+		/// <param name="inputFile">File to input to spasm</param>
+		/// <param name="outputFile">File expected to be received</param>
 		public InternalBuildStep(int number, StepType type, string inputFile, string outputFile)
 		{
 			stepNumber = number;

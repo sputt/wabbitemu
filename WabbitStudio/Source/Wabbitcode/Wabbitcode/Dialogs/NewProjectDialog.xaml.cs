@@ -36,9 +36,7 @@ namespace Revsoft.Wabbitcode.Dialogs
             reader.WhitespaceHandling = WhitespaceHandling.None;
             reader.MoveToContent();
             if (reader.Name != "templates")
-            {
                 throw new InvalidDataException("Invalid XML Format: unable to find head node");
-            }
             reader.MoveToNextElement();
             while (reader.MoveToNextElement())
             {

@@ -25,7 +25,7 @@ namespace WabbitC.Optimizer.Loop
 			var statements = from Statement st in block where st.GetType() == typeof(While) select st;
 			foreach (While statement in statements)
 			{
-				OptimizeLoopBlock(ref statement.Body);
+				//OptimizeLoopBlock(ref statement.Body);
 			}
 		}
 

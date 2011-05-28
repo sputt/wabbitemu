@@ -385,7 +385,7 @@ namespace Revsoft.Wabbitcode.Classes
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("Error creating highlighting file!\n" + ex.ToString());
+				Services.DockingService.ShowError("Error creating highlighting file!", ex);
 			}
             //create new provider with the temp directory
             FileSyntaxModeProvider fsmProvider = new FileSyntaxModeProvider(Application.UserAppDataPath);

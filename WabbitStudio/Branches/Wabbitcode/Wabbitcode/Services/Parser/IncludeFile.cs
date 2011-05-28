@@ -8,9 +8,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
 {
 	class IncludeFile : IIncludeFile
 	{
-		public IncludeFile(int counter, string file, string description, ParserInformation parent)
+		public IncludeFile(DocLocation loc, string file, string description, ParserInformation parent)
 		{
-			Offset = counter;
+			Location = loc;
 			IncludedFile = file;
 			Description = description;
 			Parent = parent;
@@ -21,7 +21,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			get { return IncludedFile; }
 		}
 
-		public int Offset
+		public DocLocation Location
 		{
 			get;
 			set;

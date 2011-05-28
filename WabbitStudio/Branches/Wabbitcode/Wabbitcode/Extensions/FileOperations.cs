@@ -18,7 +18,12 @@ namespace Revsoft.Wabbitcode
 
 		public static string GetRelativePath(string absolutePath, string relativeTo)
 		{
-            if (absolutePath == relativeTo)
+			Uri uri1 = new Uri(absolutePath);
+			Uri uri2 = new Uri(relativeTo);
+			Uri relativeUri = uri1.MakeRelativeUri(uri2);
+			return Uri.UnescapeDataString(Uri.UnescapeDataString(relativeUri.OriginalString));
+
+            /*if (absolutePath == relativeTo)
                 return "";
 			string[] absoluteDirectories = absolutePath.Split('\\');
 			string[] relativeDirectories = relativeTo.Split('\\');
@@ -45,7 +50,7 @@ namespace Revsoft.Wabbitcode
 			for (index = lastCommonRoot + 1; index < relativeDirectories.Length - 1; index++)
 				relativePath.Append(relativeDirectories[index] + "\\");
 			relativePath.Append(relativeDirectories[relativeDirectories.Length - 1]);
-			return relativePath.ToString();
+			return relativePath.ToString();*/
 		}
 
 		/// <summary>

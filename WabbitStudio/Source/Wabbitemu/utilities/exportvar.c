@@ -11,7 +11,6 @@ const char fileheader[]= {
     '*','*','T','I','8','3','F','*',0x1A,0x0A,0x00};
 const char flashheader[] = {
 	'*','*','T','I','F','L','*','*'} ;
-
 const char comment[42] = "File Exported by Wabbitemu.";
 
 TCHAR type_ext[][4] = {
@@ -57,9 +56,6 @@ TCHAR type_ext[][4] = {
 	_T("")
 };
 
-
-
-
 MFILE *mopen(const char *filename, const char * mode) {
 	MFILE* mf= (MFILE *) malloc(sizeof(MFILE));
 	memset(mf, 0, sizeof(MFILE));
@@ -87,6 +83,7 @@ int mclose(MFILE* mf) {
 	free(mf);
 	return 0;
 }
+
 int meof(MFILE* mf) {
 	if (!mf) return EOF;
 	if (mf->stream) {
@@ -242,12 +239,12 @@ MFILE *ExportApp(int slot, char *fn, apphdr_t *app) {
 	//filler
 	for (i = 0; i < 24; i++) mputc(0x00, outfile);
 	//size of intel hex
-	tempnum =  77 * (data_size>>5) + app->page_count * 17 + 11;
+	tempnum =  77 * (data_size >> 5) + app->page_count * 17 + 11;
 	int size = data_size & 0x1F;
-    if (size) tempnum += (size<<1) + 13;
+    if (size) tempnum += (size << 1) + 13;
 	mputc(tempnum & 0xFF, outfile);	//little endian
     mputc((tempnum >> 8) & 0xFF, outfile);
-    mputc((tempnum >> 16)& 0xFF, outfile);
+    mputc((tempnum >> 16) & 0xFF, outfile);
     mputc(tempnum >> 24, outfile);
 	//data
 	intelhex(outfile, buffer, data_size);
@@ -295,11 +292,10 @@ void intelhex (MFILE* outfile, const unsigned char* buffer, int size) {
 }
 
 //Prog’s, List AppVar and Group
-
 MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
 	MFILE *outfile;
 	unsigned char mem[0x10020];
-    int i,b,size;
+    int i, b, size;
     int page = sym->page;
     unsigned int a = sym->address;
     unsigned short chksum = 0;
@@ -314,17 +310,17 @@ MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
 
     a = 0;
     if (sym->page) {
-		if (	sym->type_ID == ListObj		|| 
-				sym->type_ID == ProgObj 	||
-				sym->type_ID == ProtProgObj || 
-				sym->type_ID == GroupObj 	) {
-			a += 3+6;
+		if (sym->type_ID == ListObj		|| 
+			sym->type_ID == ProgObj 	||
+			sym->type_ID == ProtProgObj ||
+			sym->type_ID == AppVarObj	||
+			sym->type_ID == GroupObj ) {
+			a += 3 + 6;
 			b = mem[a];
-			a += b+1;
+			a += b + 1;
 		} else {
-			a += 9+3;
+			a += 9 + 3;
 		}
-	
 	}
 
 	switch(sym->type_ID) {
@@ -335,11 +331,11 @@ MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
 			size = 18;
 			break;
 		case ListObj:
-			size = mem[a] + (mem[a+1] * 256);
+			size = mem[a] + (mem[a + 1] * 256);
 			size = (size * 9) + 2;
 			break;
 		case CListObj:
-			size = mem[a] + (mem[a+1] * 256);
+			size = mem[a] + (mem[a + 1] * 256);
 			size = (size * 18) + 2;
 			break;
 		case MatObj:
@@ -376,7 +372,7 @@ MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
     chksum += mputc(0x00, outfile);
 
     chksum += mputc(size & 0xFF, outfile);
-    chksum += mputc(size>>8, outfile);
+    chksum += mputc(size >> 8, outfile);
     chksum += mputc(sym->type_ID, outfile);
     
     for(i = 0; i < 8 && sym->name[i]; i++) chksum += mputc(sym->name[i], outfile);

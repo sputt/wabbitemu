@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using WabbitC.Model.Statements;
 using WabbitC.Optimizer;
+using System.Diagnostics;
 
 namespace WabbitC.Model
 {
@@ -45,7 +46,7 @@ namespace WabbitC.Model
             if (currentBlock.Statements.Count > 0)
                 blocks.Add(currentBlock);
 
-            Block prevBlock = null;
+            BasicBlock prevBlock = null;
             foreach (var tempblock in blocks)
             {
                 if (prevBlock != null)
@@ -54,19 +55,15 @@ namespace WabbitC.Model
                 if (lastStatement.GetType() == typeof(Goto))
                 {
                     var gotoStatement = ((Goto)lastStatement);
-                    if (gotoStatement.CondDecl == null)
+                    prevBlock = gotoStatement.CondDecl == null ? null : tempblock;
+                    foreach (var jumpBlock in blocks)
                     {
-                        prevBlock = tempblock;
-                        foreach (var jumpBlock in blocks)
+                        var label = jumpBlock.Statements.First() as Label;
+                        if (label == gotoStatement.TargetLabel)
                         {
-                            var label = jumpBlock.Statements.First() as Label;
-                            if (label == gotoStatement.TargetLabel)
-                                jumpBlock.EntryPoints.Add(new EntryPoint(tempblock));
+                            jumpBlock.EntryPoints.Add(new EntryPoint(tempblock));
+                            break;
                         }
-                    }
-                    else
-                    {
-                        prevBlock = null;
                     }
                 }
                 else
@@ -82,6 +79,54 @@ namespace WabbitC.Model
         public IEnumerable<Declaration> OutVars;
         public IEnumerable<Declaration> InVars;
 
+        IEnumerable<Declaration> OldOutVars = null;
+        IEnumerable<Declaration> OldInVars = null;
+
+        /// <summary>
+        /// Clones the list of InVars allowing them to retain info about their state at the end of the block
+        /// </summary>
+        public void FreezeInVars()
+        {
+            var newVars = new List<Declaration>();
+            foreach (var inVar in InVars)
+            {
+                newVars.Add((Declaration)inVar.Clone());   
+            }
+            OldInVars = InVars;
+            InVars = newVars;
+        }
+
+        /// <summary>
+        /// Restores the InVars to their original state before a freeze. Must have called FreezeInVars previously
+        /// </summary>
+        public void UnFreezeInVars()
+        {
+            Debug.Assert(OldInVars != null);
+            InVars = OldInVars;
+        }
+
+        /// <summary>
+        /// Clones the list of OutVars allowing them to retain info about their state at the end of the block
+        /// </summary>
+        public void FreezeOutVars()
+        {
+            var newVars = new List<Declaration>();
+            foreach (var outVar in OutVars)
+            {
+                newVars.Add((Declaration)outVar.Clone());
+            }
+            OldOutVars = OutVars;
+            OutVars = newVars;
+        }
+
+        /// <summary>
+        /// Restores the OutVars to their original state before a freeze. Must have called FreezeOutVars previously
+        /// </summary>
+        public void UnFreezeOutVars()
+        {
+            Debug.Assert(OldOutVars != null);
+            OutVars = OldOutVars;
+        }
         
         public BasicBlock(Block parent)
         {

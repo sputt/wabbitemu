@@ -109,6 +109,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 #endif
 				reader = new StreamReader(file);
 				lines = reader.ReadToEnd();
+                //NewParser.NewParser.ParseFile(file);
 #if DEBUG
                 reader.Close();
 #endif
@@ -140,6 +141,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		delegate void ProgressDelegate(int percent);
 		internal static ParserInformation ParseFile(string file, string lines)
 		{
+			int line = 0;
             if (string.IsNullOrEmpty(file))
             {
                 System.Diagnostics.Debug.WriteLine("No file name specified");
@@ -160,7 +162,12 @@ namespace Revsoft.Wabbitcode.Services.Parser
                     throw new Exception("Repeat!");
 				if (percent + 5 <= newPercent){
 					percent = newPercent;
-					DockingService.MainForm.Invoke(progressDelegate, percent);
+					try
+					{
+						DockingService.MainForm.Invoke(progressDelegate, percent);
+					}
+					//we've quit for some reason lets get out
+					catch (ObjectDisposedException) { return null; }
 				}
 				//handle label other xx = 22 type define
 				if (IsValidLabelChar(lines[counter]))
@@ -171,7 +178,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					if (newCounter < lines.Length && lines[newCounter] == ':')
 					{
 						//its definitely a label
-						Label labelToAdd = new Label(counter, labelName, false, description, info);
+						Label labelToAdd = new Label(new DocLocation(line, counter), labelName, description, info);
 						info.LabelsList.Add(labelToAdd);
 					}
 					else
@@ -181,8 +188,8 @@ namespace Revsoft.Wabbitcode.Services.Parser
                             break;
 						if (lines[tempCounter] == '=')
 						{
-							counter++;
-							int temp = SkipWhitespace(lines, counter);
+							tempCounter++;
+							int temp = SkipWhitespace(lines, tempCounter);
 							if (temp == -1)
 								continue;
 							else
@@ -190,8 +197,8 @@ namespace Revsoft.Wabbitcode.Services.Parser
 							newCounter = SkipToEOCL(lines, counter);
 							string contents = lines.Substring(counter, newCounter - counter).Trim();
 							//its a define
-							Define defineToAdd = new Define(counter, labelName, contents, description, info, EvaluateContents(contents));
-							info.DefinesList.Add(defineToAdd);
+							var defineToAdd = new Equate(new DocLocation(line, counter), labelName, contents, description, info);
+							info.LabelsList.Add(defineToAdd);
 						}
 						else if (lines[tempCounter] == '(')
 						{
@@ -211,13 +218,13 @@ namespace Revsoft.Wabbitcode.Services.Parser
                                 secondWordStart = SkipWhitespace(lines, secondWordStart);
                                 int secondWordEnd = SkipToEOCL(lines, secondWordStart);
                                 string contents = lines.Substring(secondWordStart, secondWordEnd - secondWordStart);
-                                Define defineToAdd = new Define(counter, labelName, contents, description, info, EvaluateContents(contents));
+								Define defineToAdd = new Define(new DocLocation(line, counter), labelName, contents, description, info, 0x4000);//EvaluateContents(contents));
                                 info.DefinesList.Add(defineToAdd);
                             }
                             else
                             {
                                 //it must be a label with no colon
-                                Label labelToAdd = new Label(counter, labelName, true, description, info);
+								Label labelToAdd = new Label(new DocLocation(line, counter), labelName, description, info);
                                 info.LabelsList.Add(labelToAdd);
                             }
 						}
@@ -244,7 +251,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					counter = SkipWhitespace(lines, newCounter);
 					newCounter = SkipToEOCL(lines, counter);
 					string contents = lines.Substring(counter, newCounter - counter);
-                    Define defineToAdd = new Define(counter, defineName, contents, description, info, EvaluateContents(contents));
+					Define defineToAdd = new Define(new DocLocation(line, counter), defineName, contents, description, info, 0x4000);//EvaluateContents(contents));
 					info.DefinesList.Add(defineToAdd);
 					counter = SkipWhitespace(lines, newCounter);
 					counter = SkipToEOL(lines, counter);
@@ -268,7 +275,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
                     if (newCounter != -1)
                     {
                         string contents = lines.Substring(counter, newCounter - counter);
-                        Macro macroToAdd = new Macro(counter, macroName, args, contents, description, info);
+                        Macro macroToAdd = new Macro(new DocLocation(line, counter), macroName, args, contents, description, info);
                         info.MacrosList.Add(macroToAdd);
                         counter = newCounter + endMacroString.Length;
                     }
@@ -292,7 +299,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 					else
 					{
 						string includeFile = lines.Substring(counter, newCounter - counter);
-						IncludeFile includeToAdd = new IncludeFile(counter, includeFile, description, info);
+						IncludeFile includeToAdd = new IncludeFile(new DocLocation(line, counter), includeFile, description, info);
 						info.IncludeFilesList.Add(includeToAdd);
                         counter = SkipToEOL(lines, newCounter);
 					}
@@ -301,6 +308,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 				{
 					counter = SkipToEOL(lines, counter);
 				}
+				line++;
 			}
             RemoveParseData(file);
             lock (ProjectService.ParseInfo) {
@@ -314,14 +322,19 @@ namespace Revsoft.Wabbitcode.Services.Parser
             else
             {
                 baseDir = ProjectService.ProjectDirectory;
-                FindIncludedFiles(ProjectService.Project.BuildSystem.MainFile);
+                FindIncludedFiles(baseDir);
             }
-			HideProgressDelegate hideProgress = DockingService.MainForm.HideProgressBar;
-			DockingService.MainForm.Invoke(hideProgress);
+			try
+			{
+				HideProgressDelegate hideProgress = DockingService.MainForm.HideProgressBar;
+				DockingService.MainForm.Invoke(hideProgress);
+			}
+			//we've quit for some reason lets get out
+			catch (ObjectDisposedException) { return null; }
 			return info;
 		}
 
-        private static int EvaluateContents(string contents)
+        /*public static int EvaluateContents(string contents)
         {
             List<IParserData> parserData = new List<IParserData>();
             string text = contents.ToLower();
@@ -330,13 +343,16 @@ namespace Revsoft.Wabbitcode.Services.Parser
                 return value;
             lock (ProjectService.ParseInfo)
             {
-                foreach (ParserInformation info in ProjectService.ParseInfo)
+                for (int i = 0; i < ProjectService.ParseInfo.Count; i++)
+                {
+                    var info = ProjectService.ParseInfo[i];
                     foreach (IParserData data in info.GeneratedList)
                         if (data.Name.ToLower() == text)
                         {
                             parserData.Add(data);
                             break;
                         }
+                }
             }
             if (parserData.Count > 0)
             {
@@ -351,14 +367,14 @@ namespace Revsoft.Wabbitcode.Services.Parser
             }
             else
                 return 0;
-        }
+        }*/
 
 		private static int SkipToEOL(string substring, int counter)
 		{
 			while (IsValidIndex(substring, counter + Environment.NewLine.Length) &&
-				(substring.Substring(counter, Environment.NewLine.Length) != Environment.NewLine || substring[counter] == commentChar))
+				(substring[counter] != '\n' || substring[counter] == commentChar))
 				counter++;
-			counter += Environment.NewLine.Length;
+			counter++;			//skip newline
 			return !IsValidIndex(substring, counter) ? -1 : counter;
 		}
 

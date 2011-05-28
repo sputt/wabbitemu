@@ -31,8 +31,13 @@ namespace WabbitC.Model.Statements.Math
         Immediate IMathOperator.Apply()
         {
 			var imm = RValue as Immediate;
-			if (imm == null)
-				return null;
+            if (imm == null)
+            {
+                var decl = (Declaration) RValue;
+                if (decl.ConstValue == null)
+                    return null;
+                imm = decl.ConstValue;
+            }
 			LValue.ConstValue = LValue.ConstValue + imm;
             return LValue.ConstValue;
         }

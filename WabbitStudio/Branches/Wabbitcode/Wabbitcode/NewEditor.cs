@@ -390,7 +390,12 @@ namespace Revsoft.Wabbitcode
             docChanged = false;
 			UpdateTabText();
             UpdateIcons();
-            UpdateAll();
+            //try out projects cache of parse info
+            parseInfo = ProjectService.GetParseInfo(filename);
+            if (parseInfo == null)
+                UpdateAll();
+            else
+                UpdateLabelBox();
             if (!ProjectService.IsInternal && ProjectService.ContainsFile(filename))
                 editorBox.Document.FoldingManager.DeserializeFromString(ProjectService.Project.FindFile(filename).FileFoldings);
         }
@@ -437,6 +442,9 @@ namespace Revsoft.Wabbitcode
 					file.FileFoldings = editorBox.Document.FoldingManager.SerializeToString();
                 }
             }
+			foreach (var item in queuedFiles)
+				AbortableThreadPool.Cancel(item, true);
+
             if (!DocumentChanged) 
                 return;
 			if (string.IsNullOrEmpty(FileName))
@@ -565,11 +573,13 @@ namespace Revsoft.Wabbitcode
 			textChangedTimer.Enabled = false;
 		}
 
+		List<WorkItem> queuedFiles = new List<WorkItem>();
         void UpdateAll()
         {
             ThreadPool.QueueUserWorkItem(new WaitCallback(GetCodeInfo));
             infoLinesQueued++;
-            ThreadPool.QueueUserWorkItem(new WaitCallback(ParseFile));
+            var item = AbortableThreadPool.QueueUserWorkItem(new WaitCallback(ParseFile));
+			queuedFiles.Add(item);
         }
 
 		private void UpdateTabText()
@@ -794,7 +804,7 @@ namespace Revsoft.Wabbitcode
                         if (parseInfo.LabelsList[i].Name == "_")
                             parserData.Add(parseInfo.LabelsList[i]);
                     i = 0;
-                    while (i < parserData.Count && parserData[i].Offset < editorBox.ActiveTextAreaControl.Caret.Offset)
+                    while (i < parserData.Count && parserData[i].Location.Offset < editorBox.ActiveTextAreaControl.Caret.Offset)
                         i++;
                     if (negate)
                         i += steps;
@@ -830,7 +840,7 @@ namespace Revsoft.Wabbitcode
                 {
                     DockingService.FindResults.NewFindResults(text, ProjectService.ProjectName);
                     foreach (IParserData data in parserData)
-                        DockingService.FindResults.AddFindResult(data.Parent.SourceFile, data.Offset, "0");
+                        DockingService.FindResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, "0");
                     DockingService.ShowDockPanel(DockingService.FindResults);
                 }
             }
@@ -1747,7 +1757,7 @@ namespace Revsoft.Wabbitcode
                         switch (command.ToLower())
                         {
                             case "ld":
-                                if (firstArg == "")
+                                if (string.IsNullOrEmpty(firstArg))
                                 {
                                     Add16BitRegs(ref resultList);
                                     resultList.Add(new CodeCompletionData("sp", 3));
@@ -1795,7 +1805,7 @@ namespace Revsoft.Wabbitcode
                             case "in":
                             case "out":
                                 int temp;
-                                if (firstArg == "")
+								if (string.IsNullOrEmpty(firstArg))
                                 {
                                     resultList.Add(new CodeCompletionData("a", 3));
                                     resultList.Add(new CodeCompletionData("(C)", 3));
@@ -1808,7 +1818,7 @@ namespace Revsoft.Wabbitcode
                             case "bit":
                             case "set":
                             case "res":
-                                if (firstArg == "")
+                                if (string.IsNullOrEmpty(firstArg))
                                 {
                                     resultList.Add(new CodeCompletionData("0", 6));
                                     resultList.Add(new CodeCompletionData("1", 6));
@@ -1825,7 +1835,7 @@ namespace Revsoft.Wabbitcode
                             case "add":
                             case "adc":
                             case "sbc":
-                                if (firstArg == "")
+                                if (string.IsNullOrEmpty(firstArg))
                                 {
                                     resultList.Add(new CodeCompletionData("a", 3));
                                     resultList.Add(new CodeCompletionData("hl", 3));
@@ -1865,7 +1875,7 @@ namespace Revsoft.Wabbitcode
                                 Add8BitRegs(ref resultList);
                                 return resultList.ToArray();
                             case "sub":
-                                if (firstArg == "")
+                                if (string.IsNullOrEmpty(firstArg))
                                     resultList.Add(new CodeCompletionData("a", 3));
                                 else
                                     Add8BitRegs(ref resultList);
@@ -1883,7 +1893,7 @@ namespace Revsoft.Wabbitcode
                             case "ret":
                             case "djnz":
                                 //possible to have conditions
-                                if (command != "djnz" && firstArg == "")
+                                if (command != "djnz" && string.IsNullOrEmpty(firstArg))
                                 {
                                     resultList.Add(new CodeCompletionData("z", 2));
                                     resultList.Add(new CodeCompletionData("nz", 2));

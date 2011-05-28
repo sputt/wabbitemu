@@ -23,7 +23,8 @@ namespace Revsoft.Wabbitcode.Services
 		/// <summary>
 		/// Each string is the path to a recently opened file. Is also stored in properties as a big long string.
 		/// </summary>
-		private static List<string> recentFileList = new List<string>(5);
+		private static string[] recentFileList = new string[10];
+		private static int recentFileIndex = 0;
 
 		public static newEditor ActiveDocument
 		{
@@ -102,8 +103,7 @@ namespace Revsoft.Wabbitcode.Services
 			doc.ToolTipText = filename;
 			doc.MdiParent = DockingService.MainForm;
 			doc.OpenFile(filename);
-			if (!recentFileList.Contains(filename))
-				recentFileList.Add(filename);
+			AddRecentFile(filename);
 			SaveRecentFileList();
 			GetRecentFiles();
 			DockingService.MainForm.IncrementProgress(90);
@@ -166,6 +166,7 @@ namespace Revsoft.Wabbitcode.Services
 				Title = "Save File As"
 			};
 			DialogResult saved = saveFileDialog.ShowDialog();
+			saveFileDialog.Dispose();
 			if (saved != DialogResult.OK)
 				return false;
 			string fileName = saveFileDialog.FileName;
@@ -211,7 +212,7 @@ namespace Revsoft.Wabbitcode.Services
 			ParserInformation info = item.Parent;
 			string file = info.SourceFile;
 			newEditor child = GotoFile(file);
-            child.ScrollToOffset(item.Offset);
+            child.ScrollToOffset(item.Location.Offset);
 		}
 
 		private static List<ListFileKey> highlights = new List<ListFileKey>();
@@ -261,13 +262,30 @@ namespace Revsoft.Wabbitcode.Services
 		}
 
 		/// <summary>
+		/// Adds a string to the recent file list
+		/// </summary>
+		/// <param name="filename">Full path of the file to save to the list</param>
+		private static void AddRecentFile(string filename)
+		{
+			if (!recentFileList.Contains(filename))
+			{
+				if (recentFileIndex == recentFileList.Length)
+				{
+					Array.ConstrainedCopy(recentFileList, 1, recentFileList, 0, recentFileList.Length - 1);
+					recentFileIndex--;
+				}
+				recentFileList[recentFileIndex++] = filename;
+			}
+		}
+
+		/// <summary>
 		/// This takes the string array of recent files, joins them into a large string and saves it in Properties.
 		/// </summary>
 		private static void SaveRecentFileList()
 		{
             StringBuilder list = new StringBuilder();
             foreach (string file in recentFileList)
-                list.AppendLine(file);
+                list.Append(file + "\n");
 			Settings.Default.recentFiles = list.ToString();
 		}
 
@@ -281,7 +299,7 @@ namespace Revsoft.Wabbitcode.Services
 			string[] list = line.Split('\n');
 			foreach (string file in list)
 			{
-				if (string.IsNullOrEmpty(file))
+				if (string.IsNullOrEmpty(file.Trim()))
 					continue;
 				DockingService.MainForm.AddRecentItem(file);
 			}

@@ -4,6 +4,8 @@
 #include "link.h"
 #include "label.h"
 
+//Sends a file to the given calculator
+//from the given filename
 LINK_ERR SendFile(const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination)
 {
 	TIFILE_t *var = newimportvar(lpszFileName);

@@ -2,24 +2,19 @@
 //#define NEW_DEBUGGING
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
-using System.Globalization;
 using System.IO;
-using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 using Revsoft.TextEditor;
-using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Parser;
+
 #if NEW_DEBUGGING
 using Revsoft.Wabbitcode.Services.Debugger;
 #endif
@@ -35,15 +30,6 @@ namespace Revsoft.Wabbitcode
         {
             InitializeComponent();
 			RestoreWindow();
-            FileLocations.InitDirs();
-			if (Settings.Default.firstRun)
-			{
-				Settings.Default.Upgrade();
-				Settings.Default.firstRun = false;
-				Settings.Default.Save();
-			}
-            Classes.Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
-			Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
 
 			toolBarManager = new ToolbarManager.ToolBarManager(this, this);
 			if (Settings.Default.mainToolBar)
@@ -56,7 +42,6 @@ namespace Revsoft.Wabbitcode
 			DockingService.InitPanels();
             if (args.Length == 0)
                 LoadStartupProject();
-			HighlightingClass.MakeHighlightingFile();
 			DockingService.LoadConfig();
             if (!ProjectService.IsInternal)
                 DockingService.ProjectViewer.BuildProjTree();
@@ -77,46 +62,42 @@ namespace Revsoft.Wabbitcode
 
 		private void RestoreWindow()
 		{
-#if !DEBUG
             try
             {
-#endif
                 this.WindowState = Settings.Default.WindowState;
                 this.Size = Settings.Default.WindowSize;
-#if !DEBUG
             }
             catch (Exception ex)
             {
                 DockingService.ShowError("Error restoring the window size", ex);
             }
-#endif
-
 		}
 
         private void LoadStartupProject()
         {
             if (string.IsNullOrEmpty(Settings.Default.startupProject))
                 return;
-#if !DEBUG
             try
             {
-#endif
+				bool valid = false;
                 if (File.Exists(Settings.Default.startupProject))
-                    ProjectService.OpenProject(Settings.Default.startupProject);
+                    valid = ProjectService.OpenProject(Settings.Default.startupProject);
                 else
                 {
                     Settings.Default.startupProject = "";
-                    DockingService.ShowError("Error: Project file not found!");
+                    DockingService.ShowError("Error: Project file not found");
                 }
-                if (ProjectService.IsInternal)
+                if (ProjectService.IsInternal || !valid)
                     ProjectService.CreateInternalProject();
-#if !DEBUG
             }
             catch (Exception ex)
             {
-                DockingService.ShowError("Error loading startup project", ex);
+				ProjectService.CreateInternalProject();
+				var result = MessageBox.Show("There was an error loading the startup project, would you like to remove it?\n" + ex.ToString(),
+									"Error", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
+				if (result == DialogResult.Yes)
+					Settings.Default.startupProject = "";
             }
-#endif
         }
 
 		private void HandleArgs(string[] args)
@@ -141,7 +122,7 @@ namespace Revsoft.Wabbitcode
 							}
 							catch (FileNotFoundException)
 							{
-                                DockingService.ShowError("Error: File not found!");
+                                DockingService.ShowError("Error: File not found");
 							}
 							catch (Exception ex)
 							{
@@ -305,7 +286,9 @@ namespace Revsoft.Wabbitcode
         {
             RenameForm newNameForm = new RenameForm();
             newNameForm.Text = "New File";
-            if (newNameForm.ShowDialog() != DialogResult.OK)
+            var result = newNameForm.ShowDialog() != DialogResult.OK;
+			newNameForm.Dispose();
+			if (result)
                 return;
             string name = newNameForm.NewText;
             DockingService.ProjectViewer.AddNewFile(name);
@@ -335,6 +318,7 @@ namespace Revsoft.Wabbitcode
         {
             IncludeDir includes = new IncludeDir();
             includes.ShowDialog();
+			includes.Dispose();
         }
 
         #region FileMenu
@@ -369,8 +353,10 @@ namespace Revsoft.Wabbitcode
 				RestoreDirectory = true,
 				Title = "Open Project File",
 			};
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-                ProjectService.OpenProject(openFileDialog.FileName);
+			if (openFileDialog.ShowDialog() == DialogResult.OK)
+				if (!ProjectService.OpenProject(openFileDialog.FileName))
+					ProjectService.CreateInternalProject();
+
         }
 
         private void saveMenuItem_Click(object sender, EventArgs e)
@@ -766,6 +752,7 @@ namespace Revsoft.Wabbitcode
         {
             BuildSteps build = new BuildSteps();
             build.ShowDialog();
+			build.Dispose();
         }
 
         #endregion
@@ -987,7 +974,6 @@ namespace Revsoft.Wabbitcode
 
         #region Debugging
 
-        private TextMarker highlight;
         bool showToolbar = true;
 
         private void startDebugMenuItem_Click(object sender, EventArgs e)
@@ -1059,6 +1045,50 @@ namespace Revsoft.Wabbitcode
 				}*/
 				#endregion
         }
+
+		private void startWithoutDebugMenuItem_Click(object sender, EventArgs e)
+		{
+			if (ProjectService.CurrentBuildConfig == null)
+			{
+				DockingService.ShowError("No config setup");
+				return;
+			}
+			ThreadPool.QueueUserWorkItem(AssemblerService.AssembleProject);
+			//wait till we notice that it is building
+			while (!AssemblerService.IsBuildingProject)
+				Application.DoEvents();
+			//then wait till it builds
+			while (AssemblerService.IsBuildingProject)
+				Application.DoEvents();
+			if (ProjectService.Project.ProjectOutputs.Count < 1)
+			{
+				DockingService.ShowError("No project outputs detected");
+				return;
+			}
+			string createdName = ProjectService.Project.ProjectOutputs[0];
+			Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
+			Process wabbit = null;
+			foreach (Process potential in Process.GetProcesses())
+			{
+				if (!potential.ProcessName.ToLower().Contains("wabbitemu"))
+					continue;
+				wabbit = potential;
+				break;
+			}
+			if (wabbit == null)
+			{
+				wabbit = new Process
+								{
+									StartInfo =
+										{
+											Arguments = "\"" + createdName + "\"",
+											FileName = FileLocations.WabbitemuFile,
+										},
+									EnableRaisingEvents = true
+								};
+				wabbit.Start();
+			}
+		}
 
 		private const int WM_KEYDOWN = 0x0100;
         private const int VK_SHIFT = 16;
@@ -1390,73 +1420,39 @@ namespace Revsoft.Wabbitcode
                 DocumentService.SaveDocument(child);
         }
 
-        private Thread updateThread;
         private void updateMenuItem_Click(object sender, EventArgs e)
         {
-            if (updateThread != null && updateThread.IsAlive)
-                return;
-            updateThread = new Thread(updateApp);
-            updateThread.Start();
-            while (updateThread.IsAlive)
-                Application.DoEvents();
-            Application.Exit();
-        }
-
-        private Version curVersion =  Assembly.GetExecutingAssembly().GetName().Version;
-        private delegate bool OurDelegate(bool newVersion);
-        private void updateApp()
-        {
-            bool newVersion = CheckForNewVersion();
-            bool downloadIt = (bool) Invoke(new OurDelegate(OnAskUser), new Object[] {newVersion});
-            if (!downloadIt)
-                return;
-            Process updater = new Process
-                                  {
-                                      StartInfo = {
-                                          WorkingDirectory = Directory.GetCurrentDirectory(),
-                                          Arguments = "-R Revsoft.Wabbitcode.exe Revsoft.Wabbitcode.exe http://group.revsoft.org/Wabbitcode/Revsoft.Wabbitcode.exe Revsoft.TextEditor.dll http://group.revsoft.org/Wabbitcode/Revsoft.TextEditor.dll Revsoft.Docking.dll http://group.revsoft.org/Wabbitcode/Revsoft.Docking.dll IWabbitemu.dll http://group.revsoft.org/Wabbitcode/IWabbitemu.dll",
-                                          FileName = "Revsoft.Autoupdater.exe" }
-                                  };
-            updater.Start();
-        }
-
-        private bool CheckForNewVersion()
-        {
-            try
-            {
-                WebClient Client = new WebClient();
-                Stream strm = Client.OpenRead("http://group.revsoft.org/Wabbitcode/WabbitcodeVersion.txt");
-                StreamReader sr = new StreamReader(strm);
-                Version newVer = new Version(sr.ReadLine());
-                return curVersion.CompareTo(newVer) < 0;
-            }
-            catch(Exception ex)
-            {
-                MessageBox.Show(ex.ToString());
-            }
-            return false;
-        }
-
-        private static bool OnAskUser(bool newVersion)   
-        {   
-            if (!newVersion)   
-            {   
-                MessageBox.Show("No updates available", "Check for updates");   
-                return false;   
-            }   
-            return DialogResult.Yes ==  MessageBox.Show("Download new version?", "Check for updates", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+			try
+			{
+				if (UpdateService.CheckForUpdate())
+				{
+					var result = MessageBox.Show("New version available. Download now?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+					if (result == System.Windows.Forms.DialogResult.Yes)
+						UpdateService.StartUpdater();
+				}
+				else
+				{
+					MessageBox.Show("No new updates");
+				}
+			}
+			catch (Exception ex)
+			{
+				DockingService.ShowError("Error updating", ex);
+			}
         }
 
         private void aboutMenuItem_Click(object sender, EventArgs e)
         {
             AboutBox box = new AboutBox();
             box.ShowDialog();
+			box.Dispose();
         }
 
         private void newBreakpointMenuItem_Click(object sender, EventArgs e)
         {
             NewBreakpointForm form = new NewBreakpointForm();
             form.ShowDialog();
+			form.Dispose();
         }
 
 		private void toggleBreakpointMenuItem_Click(object sender, EventArgs e)

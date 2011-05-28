@@ -48,6 +48,14 @@ namespace WabbitC.Model
             }
             base.InsertRange(index, collection);
         }
+
+        public override string ToString()
+        {
+            var sb = new StringBuilder();
+            foreach (var statement in this)
+                sb.AppendLine(statement.ToString());
+            return sb.ToString();
+        }
     }
 
     class Block : IEnumerable<Block>, IEnumerable<Statement>
@@ -73,6 +81,7 @@ namespace WabbitC.Model
         public List<Declaration> Declarations;
         public BlockStatements Statements;
 		public StackAllocator stack;
+        public HashSet<String> Properties;
         public int TempDeclarationNumber = 0;
 
 		public Module Module
@@ -374,6 +383,7 @@ namespace WabbitC.Model
             Declarations = new List<Declaration>();
             Types = new HashSet<Type>();
             Statements = new BlockStatements(this);
+            Properties = new HashSet<string>();
         }
 
 		public Block(Block parent) : this()
@@ -396,10 +406,7 @@ namespace WabbitC.Model
 
             if (Statements != null)
             {
-                foreach (Statement statement in Statements)
-                {
-					result += statement + Environment.NewLine;
-                }
+                result += Statements.ToString();
             }
             if (this.GetType() != typeof(Module))
             {
@@ -411,7 +418,6 @@ namespace WabbitC.Model
 		public string ToAssemblyString() 
 		{
 			var sb = new StringBuilder();
-//			string tabs = "\t";
 			foreach (var statement in Statements)
 			{
 				var asmString = statement.ToAssemblyString();
@@ -419,12 +425,7 @@ namespace WabbitC.Model
 					continue;
 				if (statement.GetType() != typeof(Label) && asmString.Length > 0 && asmString[0] != '\t')
 					sb.Append("\t");
-				//asmString = asmString.Replace(Environment.NewLine, Environment.NewLine + tabs);
 				sb.AppendLine(asmString);
-				/*if (statement.GetType() == typeof(Push))
-					tabs += "\t";
-				else if (statement.GetType() == typeof(Pop))
-					tabs = tabs.Remove(tabs.Length - 1);*/
 			}
 			return sb.ToString();
 		}

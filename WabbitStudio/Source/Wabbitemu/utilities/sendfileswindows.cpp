@@ -219,7 +219,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 					}
 					if (var->flash->type == FLASH_TYPE_OS) {
 						calc_reset(lpCalc);
-						//calc_turn_on(lpCalc);
+						calc_turn_on(lpCalc);
 					}
 					lpCalc->running = TRUE;
 				}
@@ -250,7 +250,6 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 				StringCbCat(filename, sizeof(filename), FindFileData.cFileName);
 				SendFileToCalc(lpCalc, filename, FALSE, Destination);
 				SendFileToCalc(lpCalc, filename, FALSE, Destination);
-				DeleteFile(filename);
 			}
 			while (FindNextFile(hFind, &FindFileData)) {
 				if (!(FindFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)) {
@@ -276,6 +275,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 				} else {
 					result = LERR_LINK;
 				}
+				//calc_turn_on(lpCalc);
 				SendMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
 				break;
 			}

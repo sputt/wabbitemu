@@ -580,7 +580,7 @@ namespace Revsoft.Wabbitcode
 
     /// <summary>Bundles a group of markers together so that they can be cleared 
     /// together.</summary>
-    public class HighlightGroup : IDisposable
+    public sealed class HighlightGroup : IDisposable
     {
         List<TextMarker> _markers = new List<TextMarker>();
         TextEditorControl _editor;

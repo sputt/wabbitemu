@@ -19,21 +19,17 @@ namespace Revsoft.Wabbitcode.Classes
 
         internal static void InitDirs()
         {
-#if !DEBUG
             try
             {
-#endif
                 Directory.CreateDirectory(WabbitcodeFolder);
                 Directory.CreateDirectory(TemplatesDir);
                 Directory.CreateDirectory(IncludesDir);
                 Directory.CreateDirectory(ProjectsDir);
-#if !DEBUG
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Unable to create directories\n" + ex.ToString());
+                Services.DockingService.ShowError("Unable to create directories", ex);
             }
-#endif
         }
     }
 }

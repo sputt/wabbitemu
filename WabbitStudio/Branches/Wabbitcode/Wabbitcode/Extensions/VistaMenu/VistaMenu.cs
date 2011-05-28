@@ -6,6 +6,7 @@ using System.Drawing;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Classes;
 
 
 //VistaMenu v1.7, created by Wyatt O'Day
@@ -28,19 +29,6 @@ namespace Revsoft.Wabbitcode.VistaMenu
 
         private bool formHasBeenIntialized;
         private bool isVistaOrLater;
-
-        #region Imports
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern bool SetMenuItemInfo(HandleRef hMenu, int uItem, bool fByPosition, MENUITEMINFO_T_RW lpmii);
-
-        [DllImport("user32.dll", CharSet = CharSet.Auto)]
-        public static extern bool SetMenuInfo(HandleRef hMenu, MENUINFO lpcmi);
-
-        [DllImport("gdi32.dll")]
-        public static extern bool DeleteObject(IntPtr hObject);
-
-        #endregion
 
 
         public VistaMenu()
@@ -75,7 +63,7 @@ namespace Revsoft.Wabbitcode.VistaMenu
                 foreach (DictionaryEntry de in properties)
                 {
                     if (((Properties)de.Value).renderBmpHbitmap != IntPtr.Zero)
-                        DeleteObject(((Properties)de.Value).renderBmpHbitmap);
+						NativeMethods.DeleteObject(((Properties)de.Value).renderBmpHbitmap);
                 }
 
 
@@ -87,7 +75,7 @@ namespace Revsoft.Wabbitcode.VistaMenu
             base.Dispose(disposing);
         }
 
-        bool IExtenderProvider.CanExtend(object o)
+        public bool CanExtend(object o)
         {
             if(o is MenuItem)
             {
@@ -142,7 +130,7 @@ namespace Revsoft.Wabbitcode.VistaMenu
                 //Destroy old bitmap object
                 if (prop.renderBmpHbitmap != IntPtr.Zero)
                 {
-                    DeleteObject(prop.renderBmpHbitmap);
+					NativeMethods.DeleteObject(prop.renderBmpHbitmap);
                     prop.renderBmpHbitmap = IntPtr.Zero;
                 }
 
@@ -178,11 +166,11 @@ namespace Revsoft.Wabbitcode.VistaMenu
 
 
 
-        void ISupportInitialize.BeginInit()
+        public void BeginInit()
         {
         }
 
-        readonly MENUINFO mnuInfo = new MENUINFO();
+		readonly NativeMethods.MENUINFO mnuInfo = new NativeMethods.MENUINFO();
 
         void AddVistaMenuItem(MenuItem mnuItem)
         {
@@ -198,7 +186,7 @@ namespace Revsoft.Wabbitcode.VistaMenu
                     ((MenuItem)mnuItem.Parent).Popup += MenuItem_Popup;
 
                 //intialize all the topmost menus to be of type "MNS_CHECKORBMP" (for Vista classic theme)
-                SetMenuInfo(new HandleRef(null, mnuItem.Parent.Handle), mnuInfo);
+                NativeMethods.SetMenuInfo(new HandleRef(null, mnuItem.Parent.Handle), mnuInfo);
 
 
                 mnuBitmapChildren = new List<MenuItem> {mnuItem};
@@ -231,7 +219,7 @@ namespace Revsoft.Wabbitcode.VistaMenu
             }
         }
 
-        void ISupportInitialize.EndInit()
+        public void EndInit()
         {
             if (!DesignMode)
             {
@@ -276,7 +264,7 @@ namespace Revsoft.Wabbitcode.VistaMenu
             //get the list of children menuitems to "refresh"
             List<MenuItem> mnuBitmapChildren = (List<MenuItem>)menuParents[parentHandle];
 
-            MENUITEMINFO_T_RW menuItemInfo = new MENUITEMINFO_T_RW();
+			NativeMethods.MENUITEMINFO_T_RW menuItemInfo = new NativeMethods.MENUITEMINFO_T_RW();
 
             foreach (MenuItem menuItem in mnuBitmapChildren)
             {
@@ -284,40 +272,11 @@ namespace Revsoft.Wabbitcode.VistaMenu
                 menuItemInfo.hbmpItem = ((Properties)properties[menuItem]).renderBmpHbitmap;
 
                 //refresh the menu item
-                SetMenuItemInfo(new HandleRef(null, parentHandle),
+				NativeMethods.SetMenuItemInfo(new HandleRef(null, parentHandle),
                                 (int)typeof(MenuItem).InvokeMember("MenuID", BindingFlags.DeclaredOnly | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.GetProperty, null, menuItem, null),
                                 false,
                                 menuItemInfo);
             }
         }
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    public class MENUITEMINFO_T_RW
-    {
-        public int cbSize = Marshal.SizeOf(typeof(MENUITEMINFO_T_RW));
-        public int fMask = 0x00000080; //MIIM_BITMAP = 0x00000080
-        public int fType;
-        public int fState;
-        public int wID;
-        public IntPtr hSubMenu = IntPtr.Zero;
-        public IntPtr hbmpChecked = IntPtr.Zero;
-        public IntPtr hbmpUnchecked = IntPtr.Zero;
-        public IntPtr dwItemData = IntPtr.Zero;
-        public IntPtr dwTypeData = IntPtr.Zero;
-        public int cch;
-        public IntPtr hbmpItem = IntPtr.Zero;
-    }
-
-    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Auto)]
-    public class MENUINFO
-    {
-        public int cbSize = Marshal.SizeOf(typeof(MENUINFO));
-        public int fMask = 0x00000010; //MIM_STYLE;
-        public int dwStyle = 0x04000000; //MNS_CHECKORBMP;
-        public uint cyMax;
-        public IntPtr hbrBack = IntPtr.Zero;
-        public int dwContextHelpID;
-        public IntPtr dwMenuData = IntPtr.Zero;
     }
 }

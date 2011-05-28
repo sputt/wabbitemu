@@ -121,7 +121,7 @@ namespace Revsoft.Wabbitcode.Classes
 			}
 			catch (COMException ex)
 			{
-				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
+				DockingService.ShowError("Error Talking to Wabbit!!!", ex);
 				return new Z80_State();
 			}
 			catch (Exception)
@@ -139,10 +139,10 @@ namespace Revsoft.Wabbitcode.Classes
                 pWabbitemu.SetState(0, ref state);
 #if !DEBUG
             }
-            catch (COMException ex)
-            {
-                MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-            }
+			catch (COMException ex)
+			{
+				DockingService.ShowError("Error Talking to Wabbit", ex);
+			}
 #endif
         }
 
@@ -155,10 +155,10 @@ namespace Revsoft.Wabbitcode.Classes
                 pWabbitemu.SetBreakpoint(0, DockingService.MainForm.Handle, Convert.ToInt16(isInRAM), (byte)page, (ushort)address);
 #if !DEBUG
             }
-            catch (COMException ex)
-            {
-                MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-            }
+			catch (COMException ex)
+			{
+				DockingService.ShowError("Error Talking to Wabbit", ex);
+			}
 #endif
         }
         public void setBreakpoint(breakpoint breakpoint)
@@ -170,10 +170,10 @@ namespace Revsoft.Wabbitcode.Classes
 				pWabbitemu.SetBreakpoint(0, DockingService.MainForm.Handle, breakpoint.IsRam, breakpoint.Page, breakpoint.Address);
 #if !DEBUG
             }
-            catch (COMException ex)
-            {
-                MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-            }
+			catch (COMException ex)
+			{
+				DockingService.ShowError("Error Talking to Wabbit", ex);
+			}
 #endif
         }
 
@@ -188,9 +188,9 @@ namespace Revsoft.Wabbitcode.Classes
 			}
 			catch (COMException ex)
 			{
-				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
+				DockingService.ShowError("Error Talking to Wabbit", ex);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return;
 			}
@@ -205,10 +205,10 @@ namespace Revsoft.Wabbitcode.Classes
                 pWabbitemu.ClearBreakpoint(0, breakpoint.IsRam, breakpoint.Page, breakpoint.Address);
 #if !DEBUG
             }
-            catch (COMException ex)
-            {
-                MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-            }
+			catch (COMException ex)
+			{
+				DockingService.ShowError("Error Talking to Wabbit", ex);
+			}
 #endif
         }
 
@@ -221,10 +221,10 @@ namespace Revsoft.Wabbitcode.Classes
                 pWabbitemu.Step(0);
 #if !DEBUG
             }
-            catch (COMException ex)
-            {
-                MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-            }
+			catch (COMException ex)
+			{
+				DockingService.ShowError("Error Talking to Wabbit", ex);
+			}
 #endif
         }
 
@@ -237,10 +237,10 @@ namespace Revsoft.Wabbitcode.Classes
                 pWabbitemu.StepOver(0);
 #if !DEBUG
             }
-            catch (COMException ex)
-            {
-                MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-            }
+			catch (COMException ex)
+			{
+				DockingService.ShowError("Error Talking to Wabbit", ex);
+			}
 #endif
         }
 
@@ -255,7 +255,7 @@ namespace Revsoft.Wabbitcode.Classes
 			}
 			catch (COMException ex)
 			{
-				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
+				DockingService.ShowError("Error Talking to Wabbit", ex);
 			}
 #endif
 		}
@@ -271,9 +271,9 @@ namespace Revsoft.Wabbitcode.Classes
 			}
 			catch (COMException ex)
 			{
-				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
+				DockingService.ShowError("Error Talking to Wabbit", ex);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return;
 			}
@@ -292,9 +292,9 @@ namespace Revsoft.Wabbitcode.Classes
 			}
 			catch (COMException ex)
 			{
-				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
+				DockingService.ShowError("Error Talking to Wabbit", ex);
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return;
 			}
@@ -318,11 +318,11 @@ namespace Revsoft.Wabbitcode.Classes
 				return temp;
 #if !DEBUG
 			}
-			catch (COMException ex)
+			catch (COMException)
 			{
 				return null;
 			}
-			catch (Exception ex)
+			catch (Exception)
 			{
 				return null;
 			}
@@ -353,11 +353,11 @@ namespace Revsoft.Wabbitcode.Classes
                 return result;
 #if !DEBUG
             }
-            catch (COMException ex)
-            {
-                MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-                return null;
-            }
+			catch (COMException ex)
+			{
+				DockingService.ShowError("Error Talking to Wabbit", ex);
+				return null;
+			}
 #endif
         }        
 
@@ -374,7 +374,7 @@ namespace Revsoft.Wabbitcode.Classes
 			}
 			catch (COMException ex)
 			{
-				MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
+				DockingService.ShowError("Error Talking to Wabbit", ex);
 			}
 			catch (Exception)
 			{ }
@@ -391,10 +391,10 @@ namespace Revsoft.Wabbitcode.Classes
                 pWabbitemu.SetMemState(0, ref state);
 #if !DEBUG
             }
-            catch (COMException ex)
-            {
-                MessageBox.Show("Error Talking to Wabbit!!!\n" + ex);
-            }
+			catch (COMException ex)
+			{
+				DockingService.ShowError("Error Talking to Wabbit", ex);
+			}
 #endif
         }
 

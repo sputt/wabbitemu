@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.VisualBasic.ApplicationServices;
+﻿using Microsoft.VisualBasic.ApplicationServices;
 
 namespace Revsoft.Wabbitcode
 {
@@ -31,7 +27,7 @@ namespace Revsoft.Wabbitcode
             // but don't try to run it.
             string[] args = new string[this.CommandLineArgs.Count];
             this.CommandLineArgs.CopyTo(args, 0);
-            this.MainForm = new MainFormRedone(args);
+			this.MainForm = new MainFormRedone(args);
         }
 
         /// <summary>

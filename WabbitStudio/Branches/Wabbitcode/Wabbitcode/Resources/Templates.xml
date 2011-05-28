@@ -1,0 +1,26 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<templates>
+  <!--All file paths based from "%HOMEPATH%\My Documents\Wabbitcode\Templates-->
+	<model name="Binary">
+		<template name="Binary" ext=".bin">default.asm</template>
+	</model>
+  <model name="TI-82">
+    <template name="CRaSH" ext=".82p">crash.asm</template>
+  </model>
+  <model name="TI-83">
+    <template name="AShell Program" ext=".83p">ashell.asm</template>
+    <template name="Ion Program" ext=".83p">ion83.asm</template>
+    <template name="Nostub Program" ext=".83p">nostub83.asm</template>
+    <template name="Venus Program" ext=".83p">venus.asm</template>
+  </model>
+  <model name="TI-83 Plus">
+    <template name="Application" ext=".8xk">app.asm</template>
+    <template name="DoorsCS Program" ext=".8xp">dcs.asm</template>
+    <template name="Ion Program" ext=".8xp">ion83p.asm</template>
+    <template name="MirageOS Program" ext=".8xp">mirage.asm</template>
+    <template name="Nostub Program" ext=".8xp">nostub83p.asm</template>
+  </model>
+  <model name="TI-86">
+    <template name="Nostub Program" ext=".86p">nostub86.asm</template>
+  </model>
+</templates>

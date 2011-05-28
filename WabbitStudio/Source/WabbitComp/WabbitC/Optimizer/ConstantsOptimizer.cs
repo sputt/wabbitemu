@@ -31,18 +31,42 @@ namespace WabbitC.Optimizer
             }
         }
 
+        const string constOptString = "Optimized";
+        const string constOptInProgressString = "Optimizing";
         public static void OptimizeBlock(ref BasicBlock block)
         {
-            if (block.EntryPoints.Count > 1)
+            if (block.Properties.Contains(constOptString) || block.Properties.Contains(constOptInProgressString))
+                return;
+            block.Properties.Add(constOptInProgressString);
+            block.FreezeOutVars();
+            for (int i = 0; i < block.Declarations.Count; i++)
+			{
+				block.Declarations[i].ConstValue = null;
+			}
+            foreach (var entryPoint in block.EntryPoints)
             {
-                foreach (var decl in block.InVars)
-                    decl.ConstValue = null;
+                if (!entryPoint.entryPoint.Properties.Contains(constOptString) && !entryPoint.entryPoint.Properties.Contains(constOptInProgressString))
+                    OptimizeBlock(ref entryPoint.entryPoint);
             }
+            foreach (var entryPoint in block.EntryPoints)
+            {
+                foreach (var outVar in entryPoint.entryPoint.OutVars)
+                {
+                    var decl = block.FindDeclaration(outVar.Name);
+                    if (decl.ConstValue == null)
+                        decl.ConstValue = outVar.ConstValue;
+                    else if (decl.ConstValue != outVar.ConstValue)
+                        decl.ConstValue = null;
+                }
+            }
+            if (block.Properties.Contains(constOptString))
+                return;
+            block.UnFreezeOutVars();
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
                 System.Type type = statement.GetType();
-				if (type == typeof(Annotation))
+				if (type == typeof(Annotation) || type == typeof(Label))
 				{
 					continue;
 				}
@@ -125,10 +149,14 @@ namespace WabbitC.Optimizer
 						i = j;
 				}
             }
-			for (int i = 0; i < block.Declarations.Count; i++)
+            block.FreezeOutVars();
+            //mark that were all done with this one
+            block.Properties.Remove(constOptInProgressString);
+            block.Properties.Add(constOptString);
+			/*for (int i = 0; i < block.Declarations.Count; i++)
 			{
 				block.Declarations[i].ConstValue = null;
-			}
+			}*/
         }
     }
 }

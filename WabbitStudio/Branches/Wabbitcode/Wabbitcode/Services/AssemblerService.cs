@@ -15,7 +15,7 @@ namespace Revsoft.Wabbitcode.Services
 {
 	public static class AssemblerService
 	{
-		public static List<Errors> ErrorsInFiles { get; set; }
+		public static readonly List<Errors> ErrorsInFiles = new List<Errors>();
 		const string quote = "\"";
 		public static bool AssembleFile(string filePath, string assembledName, bool sendFileEmu)
 		{
@@ -43,13 +43,13 @@ namespace Revsoft.Wabbitcode.Services
 			//some strings we'll need to build 
 			string originalDir = ProjectService.IsInternal ? Path.GetDirectoryName(filePath) : ProjectService.ProjectDirectory;
 			string includedir = "-I \"" + Application.StartupPath + "\"";
-			if (Properties.Settings.Default.includeDir != "" || !ProjectService.IsInternal)
+			if (!string.IsNullOrEmpty(Properties.Settings.Default.includeDir) || !ProjectService.IsInternal)
 			{
 				List<string> dirs = ProjectService.IsInternal ? 
 							Properties.Settings.Default.includeDir.Split('\n').ToList<string>() :
 							ProjectService.Project.IncludeDir;
 				foreach (string dir in dirs)
-					if (dir != "")
+					if (!string.IsNullOrEmpty(dir))
 						includedir += ";\"" + dir + "\"";
 			}
 			string fileName = Path.GetFileName(filePath);
@@ -203,12 +203,12 @@ namespace Revsoft.Wabbitcode.Services
 			//some strings we'll need to build 
 			string originalDir = Path.GetDirectoryName(filePath);
 			string includedir = "-I \"" + Application.StartupPath + "\"";
-			if (Properties.Settings.Default.includeDir != "")
+			if (!string.IsNullOrEmpty(Properties.Settings.Default.includeDir))
 			{
 				string[] dirs = Properties.Settings.Default.includeDir.Split('\n');
 				foreach (string dir in dirs)
 				{
-					if (dir != "")
+					if (!string.IsNullOrEmpty(dir))
 						includedir += ";\"" + dir + "\"";
 				}
 			}
@@ -327,7 +327,7 @@ namespace Revsoft.Wabbitcode.Services
 
         internal static void InitAssembler()
         {
-            ErrorsInFiles = new List<Errors>();
+            
         }
     }
 }

@@ -6,7 +6,7 @@ using WabbitC.Model.Statements;
 
 namespace WabbitC.Model
 {
-    class Declaration : Datum
+    class Declaration : Datum, ICloneable
     {
         public Type Type;
         public String Name;
@@ -51,6 +51,14 @@ namespace WabbitC.Model
             }
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType() != typeof(Declaration))
+                return base.Equals(obj);
+            var decl = (Declaration)obj;
+            return decl.Name == this.Name && this.Type.Equals(decl.Type);
+        }
+
         public override string ToString()
         {
             return Name;
@@ -63,5 +71,10 @@ namespace WabbitC.Model
 		public Statement ConstStatement;
         public bool IsAlive;
         public HashSet<String> Properties;
+
+        public object Clone()
+        {
+            return this.MemberwiseClone();
+        }
     }
 }

@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include <atlbase.h>
 #include "Wabbitemu_h.h"
 #include "WabbitemuClassFactory.h"
 #include "calc.h"
@@ -54,6 +55,99 @@ HRESULT CALLBACK DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID * ppvObj
 HRESULT CALLBACK DllCanUnloadNow(void)
 {
 	return S_FALSE;
+}
+
+HRESULT CALLBACK DllRegisterServer(void)
+{
+	USES_CONVERSION;
+	WCHAR *clsidString;
+	StringFromCLSID(CLSID_Wabbitemu, &clsidString);
+	HKEY hkey;
+	RegCreateKey(HKEY_CLASSES_ROOT, _T("Wabbit.Wabbitemu.1\\"), &hkey);
+	RegSetValue(hkey, NULL, REG_SZ, _T("Wabbitemu Z80 Emulator"), 0);
+	RegCloseKey(hkey);
+
+	RegCreateKey(HKEY_CLASSES_ROOT, _T("Wabbit.Wabbitemu.1\\CLSID\\"), &hkey);
+	RegSetValueW(hkey, NULL, REG_SZ, clsidString, 0);
+	RegCloseKey(hkey);
+
+	RegCreateKey(HKEY_CLASSES_ROOT, _T("Wabbit.Wabbitemu\\"), &hkey);
+	RegSetValue(hkey, NULL, REG_SZ, _T("Wabbitemu Z80 Emulator"), 0);
+	RegCloseKey(hkey);
+
+	RegCreateKey(HKEY_CLASSES_ROOT, _T("Wabbit.Wabbitemu\\CLSID\\"), &hkey);
+	RegSetValueW(hkey, NULL, REG_SZ, clsidString, 0);
+	RegCloseKey(hkey);
+
+	WCHAR clsidFolder[1024];
+	WCHAR buf[MAX_PATH];
+	GetModuleFileNameW(g_hInst, buf, sizeof(buf));
+	StringCbPrintfW(clsidFolder, sizeof(clsidFolder), L"%s\\%s\\%s", L"CLSID", clsidString, L"InprocServer32\\");
+	RegCreateKeyW(HKEY_CLASSES_ROOT, clsidFolder, &hkey);
+	RegSetValueW(hkey, NULL, REG_SZ, buf, 0);
+	RegCloseKey(hkey);
+	StringCbPrintfW(clsidFolder, sizeof(clsidFolder), L"%s\\%s\\%s", L"CLSID", clsidString, L"InprocServer32\\ThreadingModel\\");
+	RegCreateKeyW(HKEY_CLASSES_ROOT, clsidFolder, &hkey);
+	RegSetValueW(hkey, NULL, REG_SZ, L"Both", 0);
+	RegCloseKey(hkey);
+	StringCbPrintfW(clsidFolder, sizeof(clsidFolder), L"%s\\%s\\%s", L"CLSID", clsidString, L"ProgID\\");
+	RegCreateKeyW(HKEY_CLASSES_ROOT, clsidFolder, &hkey);
+	RegSetValueW(hkey, NULL, REG_SZ, L"Wabbit.Wabbitemu.1", 0);
+	RegCloseKey(hkey);
+	StringCbPrintfW(clsidFolder, sizeof(clsidFolder), L"%s\\%s\\%s", L"CLSID", clsidString, L"VersionIndependentProgID\\");
+	RegCreateKeyW(HKEY_CLASSES_ROOT, clsidFolder, &hkey);
+	RegSetValueW(hkey, NULL, REG_SZ, L"Wabbit.Wabbitemu", 0);
+	RegCloseKey(hkey);
+	 
+    return S_OK;
+}
+
+HRESULT CALLBACK DllUnregisterServer(void)
+{
+	HRESULT hr;
+	USES_CONVERSION;
+	WCHAR *clsidString;
+	StringFromCLSID(CLSID_Wabbitemu, &clsidString);
+	HKEY hkey;
+	RegOpenKeyEx(HKEY_CLASSES_ROOT, _T("Wabbit.Wabbitemu.1\\"), 0, DELETE , &hkey);
+	hr = RegDeleteKey(hkey, _T("CLSID\\"));
+	if (hr != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+
+	RegOpenKeyEx(HKEY_CLASSES_ROOT, NULL, 0, DELETE, &hkey);
+	hr = RegDeleteTree(hkey, _T("Wabbit.Wabbitemu.1\\"));
+	if (hr != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+
+	RegOpenKeyEx(HKEY_CLASSES_ROOT, _T("Wabbit.Wabbitemu\\"), 0, DELETE, &hkey);
+	hr = RegDeleteKey(hkey, _T("CLSID\\"));
+	if (hr != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+
+	hr = RegDeleteTree(HKEY_CLASSES_ROOT, _T("Wabbit.Wabbitemu\\"));
+	if (hr != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+
+	WCHAR clsidFolder[1024];
+	StringCbPrintfW(clsidFolder, sizeof(clsidFolder), L"%s\\%s\\", L"CLSID", clsidString);
+	RegOpenKeyExW(HKEY_CLASSES_ROOT, clsidFolder, 0, DELETE, &hkey);
+	hr = RegDeleteKeyW(hkey, L"VersionIndependentProgID\\");
+	if (hr != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	hr = RegDeleteKeyW(hkey, L"ProgID\\");
+	if (hr != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	hr = RegDeleteKeyW(hkey, L"InprocServer32\\ThreadingModel\\");
+	if (hr != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	hr = RegDeleteKeyW(hkey, L"InprocServer32\\");
+	if (hr != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;
+	RegOpenKeyExW(HKEY_CLASSES_ROOT, L"CLSID", 0, DELETE, &hkey);
+	hr = RegDeleteKeyW(hkey, clsidString);
+	if (hr != ERROR_SUCCESS)
+		return SELFREG_E_CLASS;	 
+    return S_OK;
 }
 
 #endif

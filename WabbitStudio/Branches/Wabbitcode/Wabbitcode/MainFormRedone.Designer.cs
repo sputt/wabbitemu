@@ -149,6 +149,7 @@
             this.hexFileMenuItem = new System.Windows.Forms.MenuItem();
             this.debugMenuItem = new System.Windows.Forms.MenuItem();
             this.startDebugMenuItem = new System.Windows.Forms.MenuItem();
+			this.startWithoutDebugMenuItem = new System.Windows.Forms.MenuItem();
             this.stopDebugMenuItem = new System.Windows.Forms.MenuItem();
             this.menuItem71 = new System.Windows.Forms.MenuItem();
             this.runMenuItem = new System.Windows.Forms.MenuItem();
@@ -640,7 +641,6 @@
             this.dirViewMenuItem,
             this.macroManagerMenuItem,
             this.menuItem2,
-            this.breakManagerMenuItem,
             this.debugPanelsMenuItem,
             this.menuItem46,
             this.outWinMenuItem,
@@ -720,13 +720,6 @@
             this.menuItem2.Index = 6;
             this.menuItem2.Text = "-";
             // 
-            // breakManagerMenuItem
-            // 
-            this.breakManagerMenuItem.Index = 7;
-            this.breakManagerMenuItem.Tag = "breakManager";
-            this.breakManagerMenuItem.Text = "Breakpoint Manager";
-            this.breakManagerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
             // debugPanelMenuItem
             // 
             this.debugPanelMenuItem.Index = 0;
@@ -754,66 +747,74 @@
             this.varTrackMenuItem.Tag = "varTrack";
             this.varTrackMenuItem.Text = "Variable Tracking";
             this.varTrackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+			// 
+			// breakManagerMenuItem
+			// 
+			this.breakManagerMenuItem.Index = 4;
+			this.breakManagerMenuItem.Tag = "breakManager";
+			this.breakManagerMenuItem.Text = "Breakpoint Manager";
+			this.breakManagerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
             // 
             // debugMenuItem
             // 
-            this.debugPanelsMenuItem.Index = 8;
+            this.debugPanelsMenuItem.Index = 7;
             this.debugPanelsMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
 				this.debugPanelMenuItem,
 				this.callStackMenuItem,
 				this.stackViewerMenuItem,
 				this.varTrackMenuItem,
+				this.breakManagerMenuItem,
 			});
             this.debugPanelsMenuItem.Text = "Debug";
             // 
             // menuItem46
             // 
-            this.menuItem46.Index = 9;
+            this.menuItem46.Index = 8;
             this.menuItem46.Text = "-";
             // 
             // outWinMenuItem
             // 
-            this.outWinMenuItem.Index = 10;
+            this.outWinMenuItem.Index = 9;
             this.outWinMenuItem.Tag = "outputWindow";
             this.outWinMenuItem.Text = "Output Window";
             this.outWinMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
             // 
             // errListMenuItem
             // 
-            this.errListMenuItem.Index = 11;
+            this.errListMenuItem.Index = 10;
             this.errListMenuItem.Tag = "errorList";
             this.errListMenuItem.Text = "Error List";
             this.errListMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
             // 
             // findResultsMenuItem
             // 
-            this.findResultsMenuItem.Index = 12;
+            this.findResultsMenuItem.Index = 11;
             this.findResultsMenuItem.Tag = "FindResults";
             this.findResultsMenuItem.Text = "Find Results";
             this.findResultsMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
             // 
             // statusBarMenuItem
             // 
-            this.statusBarMenuItem.Index = 13;
+            this.statusBarMenuItem.Index = 12;
             this.statusBarMenuItem.Tag = "statusBar";
             this.statusBarMenuItem.Text = "Status Bar";
             this.statusBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
             // 
             // menuItem48
             // 
-            this.menuItem48.Index = 14;
+            this.menuItem48.Index = 13;
             this.menuItem48.Text = "-";
             // 
             // lineNumMenuItem
             // 
-            this.lineNumMenuItem.Index = 15;
+            this.lineNumMenuItem.Index = 14;
             this.lineNumMenuItem.Tag = "lineNumbers";
             this.lineNumMenuItem.Text = "Line Numbers";
             this.lineNumMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
             // 
             // iconBarMenuItem
             // 
-            this.iconBarMenuItem.Index = 16;
+            this.iconBarMenuItem.Index = 15;
             this.iconBarMenuItem.Tag = "iconBar";
             this.iconBarMenuItem.Text = "Icon Bar";
             this.iconBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
@@ -967,6 +968,7 @@
             this.debugMenuItem.Index = 6;
             this.debugMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.startDebugMenuItem,
+			this.startWithoutDebugMenuItem,
             this.stopDebugMenuItem,
             this.menuItem71,
             this.runMenuItem,
@@ -986,30 +988,37 @@
             this.startDebugMenuItem.Shortcut = System.Windows.Forms.Shortcut.F5;
             this.startDebugMenuItem.Text = "Start Debug";
             this.startDebugMenuItem.Click += new System.EventHandler(this.startDebugMenuItem_Click);
+			// 
+			// startWithoutDebugMenuItem
+			// 
+			this.startWithoutDebugMenuItem.Index = 1;
+			this.startWithoutDebugMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlF5;
+			this.startWithoutDebugMenuItem.Text = "Start Without Debug";
+			this.startWithoutDebugMenuItem.Click += new System.EventHandler(this.startWithoutDebugMenuItem_Click);
             // 
             // stopDebugMenuItem
             // 
             this.stopDebugMenuItem.Enabled = false;
-            this.stopDebugMenuItem.Index = 1;
+            this.stopDebugMenuItem.Index = 2;
             this.stopDebugMenuItem.Text = "Stop Debug";
             this.stopDebugMenuItem.Click += new System.EventHandler(this.cancelDebug_Click);
             // 
             // menuItem71
             // 
-            this.menuItem71.Index = 2;
+            this.menuItem71.Index = 3;
             this.menuItem71.Text = "-";
             // 
             // runMenuItem
             // 
             this.runMenuItem.Enabled = false;
-            this.runMenuItem.Index = 3;
+            this.runMenuItem.Index = 4;
             this.runMenuItem.Text = "Run";
             this.runMenuItem.Click += new System.EventHandler(this.runMenuItem_Click);
             // 
             // stepMenuItem
             // 
             this.stepMenuItem.Enabled = false;
-            this.stepMenuItem.Index = 4;
+            this.stepMenuItem.Index = 5;
             this.stepMenuItem.Shortcut = System.Windows.Forms.Shortcut.F7;
             this.stepMenuItem.Text = "Step";
             this.stepMenuItem.Click += new System.EventHandler(this.stepButton_Click);
@@ -1017,7 +1026,7 @@
             // stepOverMenuItem
             // 
             this.stepOverMenuItem.Enabled = false;
-            this.stepOverMenuItem.Index = 5;
+            this.stepOverMenuItem.Index = 6;
             this.stepOverMenuItem.Shortcut = System.Windows.Forms.Shortcut.F8;
             this.stepOverMenuItem.Text = "Step Over";
             this.stepOverMenuItem.Click += new System.EventHandler(this.stepOverMenuItem_Click);
@@ -1025,19 +1034,19 @@
             // stepOutMenuItem
             // 
             this.stepOutMenuItem.Enabled = false;
-            this.stepOutMenuItem.Index = 6;
+            this.stepOutMenuItem.Index = 7;
             this.stepOutMenuItem.Shortcut = System.Windows.Forms.Shortcut.ShiftF8;
             this.stepOutMenuItem.Text = "Step Out";
             this.stepOutMenuItem.Click += new System.EventHandler(stepOutMenuItem_Click);
             // 
             // menuItem4
             // 
-            this.menuItem4.Index = 7;
+            this.menuItem4.Index = 8;
             this.menuItem4.Text = "-";
             // 
             // menuItem11
             // 
-            this.menuItem11.Index = 8;
+            this.menuItem11.Index = 9;
             this.menuItem11.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.newBreakpointMenuItem,
             this.newDataBreakpointMenuItem});
@@ -1109,10 +1118,10 @@
             // 
             this.statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel,
+			this.progressBar,
             this.lineCodeInfo,
             this.lineStatusLabel,
-            this.colStatusLabel,
-            this.progressBar});
+            this.colStatusLabel});
             this.statusBar.Location = new System.Drawing.Point(0, 330);
             this.statusBar.Name = "statusBar";
             this.statusBar.Size = new System.Drawing.Size(691, 22);
@@ -1679,6 +1688,7 @@
         private System.Windows.Forms.MenuItem hexFileMenuItem;
         private System.Windows.Forms.MenuItem debugMenuItem;
         private System.Windows.Forms.MenuItem startDebugMenuItem;
+		private System.Windows.Forms.MenuItem startWithoutDebugMenuItem;
         private System.Windows.Forms.MenuItem stopDebugMenuItem;
         private System.Windows.Forms.MenuItem menuItem71;
         private System.Windows.Forms.MenuItem stepMenuItem;
