@@ -156,9 +156,6 @@
     <ClCompile Include="gui\guispeed.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="utilities\expandpane.c">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="utilities\exportvar.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -287,6 +284,12 @@
     </ClCompile>
     <ClCompile Include="utilities\SendFile.cpp">
       <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\expandpane.c">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CPio.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -544,6 +547,9 @@
     </ClInclude>
     <ClInclude Include="utilities\SendFile.h">
       <Filter>Source Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CPio.h">
+      <Filter>Source Files\Interface\COM</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

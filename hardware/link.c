@@ -743,6 +743,17 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	return LERR_SUCCESS;
 }
 
+int get_page_size(u_char (*dest)[PAGE_SIZE], int page) {
+	int i;
+	//apparently non user apps have a slightly different header
+	//therefore we have to actually find the identifier
+	for (i = 0; i < PAGE_SIZE; i++)
+		if (dest[page][i] == 0x80 && dest[page][i + 1] == 0x81)
+			break;
+	i += 2;
+	return i;
+}
+
 /* Forceload a TI-83+ series APP
  * On error: Returns an error code */
 static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
@@ -758,17 +769,17 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	if (upages.start == -1)
 		return LERR_MODEL;
 	
-	u_int page;
+	int page;
 	for (page = upages.start; page >= upages.end + tifile->flash->pages
 			&& dest[page][0x00] == 0x80 && dest[page][0x01] == 0x0F; ) {
-		int i;
+		int page_size;
 		//different size app need to send the long way
 		if (!memcmp(&dest[page][0x12], &tifile->flash->data[0][0x12], 8)) {
 			if (dest[page][0x1C] != tifile->flash->pages)
 			{
 				//or we can forceload it still ;D
 				//theres probably some good reason jim didnt write this code :|
-				int pageDiff = tifile->flash->pages - dest[page][0x1C];
+				int pageDiff = tifile->flash->pages - get_page_size(dest, page);
 				int currentPage = page - tifile->flash->pages;
 				while (!check_flashpage_empty(dest, currentPage, tifile->flash->pages) && currentPage >= upages.end)
 					currentPage--;
@@ -778,11 +789,12 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 					while (++currentPage < page)
 						memcpy(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE);
 				} else {
-					//need to copy the other way
-					int tempPage = currentPage;
-					currentPage = page - tifile->flash->pages;
-					while (--currentPage >= tempPage)
-						memcpy(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE);
+					//we don't need to copy any new data, we just want to mark
+					//the old pages as free for the OS to use
+					u_int end_page = currentPage;
+					for (u_int i = page; i > end_page; i--) {
+						memset(dest[i], 0xFF, PAGE_SIZE);
+					}
 				}
 			}
 			u_int i;
@@ -799,15 +811,11 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 			printf("Found already\n");
 			return LERR_SUCCESS;
 		}
-		//apparently non user apps have a slightly different header
-		for (i = 0; i < PAGE_SIZE; i++)
-			if (dest[page][i] == 0x80 && dest[page][i + 1] == 0x81)
-				break;
-		i += 2;
-		page -= dest[page][i];
+		page_size = get_page_size(dest, page);
+		page -= dest[page][page_size];
 	}
 
-	if (page < upages.end)
+	if (page - tifile->flash->pages < upages.end)
 		return LERR_MEM;
 
 	//mark the app as non trial

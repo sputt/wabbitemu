@@ -214,6 +214,15 @@ interface IKeypad : IUnknown
 	HRESULT ReleaseVirtKey([in] int Key);
 }
 
+[
+	uuid(59fc4b09-d16b-4f00-b240-7741da7dde5a),
+	object,
+]
+interface IPio : IUnknown
+{
+
+}
+
 interface IWabbitemu;
 
 [

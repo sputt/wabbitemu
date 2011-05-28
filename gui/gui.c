@@ -852,7 +852,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	hub_link->client	= &hub_link->host;	//nothing plugged in.
 	link_hub[MAX_CALCS] = hub_link;
 
+#ifdef WITH_AVI
 	is_recording = FALSE;
+#endif
 
 	InitCommonControls();
 #ifdef USE_DIRECTX
@@ -1096,6 +1098,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case IDM_FILE_AVI: {
 					HMENU hmenu = GetMenu(hwnd);
+#ifdef WITH_AVI
 					if (is_recording) {
 						CloseAvi(recording_avi);
 						is_recording = FALSE;
@@ -1109,6 +1112,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_AVI, MF_BYCOMMAND | MF_CHECKED);
 						}
 					}
+#endif
 					break;
 				}
 				case IDM_FILE_CLOSE:

@@ -1,3 +1,4 @@
+#ifdef WITH_AVI
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
@@ -332,3 +333,4 @@ unsigned int FormatAviMessage(HRESULT code, char *buf,unsigned int len)
   return mlen;
 }
 
+#endif

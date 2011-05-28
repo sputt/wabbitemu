@@ -3,7 +3,6 @@
 #include "var.h"
 #include "calc.h"
 #include "miniunz.h"
-//#include <direct.h>
 
 char self_test[] = "Self Test?";
 char catalog[] = "CATALOG";

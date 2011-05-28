@@ -2,4 +2,5 @@ LIBRARY	"WabbitemuVS2008"
 EXPORTS
 	DllGetClassObject PRIVATE
 	DllCanUnloadNow PRIVATE
-	
+	DllRegisterServer PRIVATE
+	DllUnregisterServer PRIVATE

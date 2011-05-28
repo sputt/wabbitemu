@@ -359,6 +359,7 @@ void calc_slot_free(LPCALC lpCalc) {
 
 void calc_turn_on(LPCALC lpCalc)
 {
+	BOOL running = lpCalc->running;
 	lpCalc->running = TRUE;
 	calc_run_seconds(lpCalc, 1.0);
 	keypad_press(&lpCalc->cpu, KEYGROUP_ON, KEYBIT_ON);
@@ -367,6 +368,7 @@ void calc_turn_on(LPCALC lpCalc)
 #ifdef QUICKLOOK
 	calc_run_seconds(lpCalc, 0.5);
 #endif
+	lpCalc->running = running;
 }
 
 int calc_reset(LPCALC lpCalc) {
@@ -488,7 +490,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 				gui_debug(lpCalc);
 #else
 				printf("hit a breakpoint in runtstates\n");
-				lpCalc->running = FALSE;
+				lpCalc->running = FALSE; 
 				lpCalc->breakpoint_callback(lpCalc,lpCalc->breakpoint_owner);
 #endif
 #ifdef WINVER
@@ -586,7 +588,8 @@ int calc_run_all(void) {
 		}
 
 		//this code handles screenshotting if were actually taking screenshots right now
-		if (active_calc >= 0 && ((tc_elapsed(calcs[active_calc].cpu.timer_c) - calcs[active_calc].cpu.pio.lcd->lastgifframe) >= 0.01)) {
+		if (active_calc >= 0 && calcs[active_calc].cpu.timer_c != NULL &&
+				((tc_elapsed(calcs[active_calc].cpu.timer_c) - calcs[active_calc].cpu.pio.lcd->lastgifframe) >= 0.01)) {
 			handle_screenshot();
 			calcs[active_calc].cpu.pio.lcd->lastgifframe += 0.01;
 		}

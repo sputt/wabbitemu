@@ -4,7 +4,6 @@
 
 typedef struct keypad {
 	unsigned char group;
-	uint64_t last_read;
 	unsigned char keys[8][8], on_pressed;
 } keypad_t;
 
