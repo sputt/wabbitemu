@@ -113,6 +113,11 @@ namespace Revsoft.Wabbitcode.Services.Parser
             }
         }
 
+        public override string ToString()
+        {
+            return sourceFile;
+        }
+
 		/*public IEnumerator<IParserData> GetEnumerator()
 		{
 			return (IEnumerator<IParserData>)new IParserEnumerator(this);
@@ -172,9 +177,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
             IParserData datax = x as IParserData;
             IParserData datay = y as IParserData;
 
-            if (datax == null || datay == null || datax.Offset == datay.Offset)
+            if (datax == null || datay == null || datax.Location.Offset == datay.Location.Offset)
                 return 0;
-            if (datax.Offset > datay.Offset)
+            if (datax.Location.Offset > datay.Location.Offset)
                 return 1;
             else
                 return -1;

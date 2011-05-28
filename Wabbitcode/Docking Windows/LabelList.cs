@@ -57,23 +57,17 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			labelsBox.Items.Clear();
 			foreach (IParserData data in list.LabelsList)
 			{
-                Type dataType = data.GetType();
-                if (dataType == typeof(Services.Parser.Label))
+                if (data is Services.Parser.Label)
                 {
-                    ILabel label = data as ILabel;
-                    if ((ShowEquates && label.IsEquate && !label.IsReusable) || (!label.IsReusable && !label.IsEquate))
-                        labelsBox.Items.Add(label);
+                    if (!((ILabel)data).IsReusable)
+                        labelsBox.Items.Add(data);
                 }
-                else if (dataType == typeof(Macro))
-                {
-                    labelsBox.Items.Add(data);
-                }
-                else if (dataType == typeof(Define))
+                else if (data is Equate || data is Define)
                 {
                     if (ShowEquates)
                         labelsBox.Items.Add(data);
                 }
-                else if (dataType == typeof(IncludeFile))
+                else if (data is Macro || data is IncludeFile)
                 {
                     labelsBox.Items.Add(data);
                 }					

@@ -73,12 +73,13 @@ namespace Revsoft.Wabbitcode.Services
 			get { return projectWatcher; }
 		}
 
-		public static void OpenProject(string fileName)
+		public static bool OpenProject(string fileName)
 		{
             if (!OpenProject(fileName, false))
-                return;
+                return false;
 			DockingService.MainForm.UpdateProjectMenu(true);
             DockingService.ProjectViewer.BuildProjTree();
+			return true;
 		}
 
 		public static bool OpenProject(string fileName, bool closeFiles)
@@ -86,20 +87,10 @@ namespace Revsoft.Wabbitcode.Services
 			if (closeFiles)
 				foreach (Form mdiChild in DockingService.Documents)
 					mdiChild.Close();
-#if !DEBUG
-            try
-            {
-#endif
-                project = new ProjectClass(fileName);
-                project.OpenProject(fileName);
-#if !DEBUG
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Error opening project\n" + ex.ToString());
-                return false;
-            }
-#endif
+            project = new ProjectClass(fileName);
+            project.OpenProject(fileName);
+            
+
             if (!InitWatcher(project.ProjectDirectory))
                 return false;
             if (closeFiles)
@@ -112,6 +103,11 @@ namespace Revsoft.Wabbitcode.Services
 
 			//ThreadStart threadStart = new ThreadStart(GetIncludeDirectories);
             ThreadPool.QueueUserWorkItem(ParseFiles);
+
+			if (Settings.Default.startupProject != fileName)
+				if (MessageBox.Show("Would you like to make this your default project?", "Startup Project",
+									MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+					Settings.Default.startupProject = fileName;
             return true;
 		}
 
@@ -222,7 +218,9 @@ namespace Revsoft.Wabbitcode.Services
 		internal static void CreateInternalProject()
 		{
 			project = new ProjectClass();
+			isInternal = true;
 			DockingService.MainForm.UpdateProjectMenu(false);
+			DockingService.ProjectViewer.BuildProjTree();
 		}
 
 		internal static void CreateNewProject(string projectFile, string projectName)
@@ -310,9 +308,15 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static ParserInformation GetParseInfo(string file)
 		{
-			foreach (ParserInformation info in parseInfo)
-				if (info.SourceFile.ToLower() == file.ToLower())
-					return info;
+            lock (parseInfo)
+            {
+                for (int i = 0; i < parseInfo.Count; i++)
+                {
+                    var info = parseInfo[i];
+                    if (info.SourceFile.ToLower() == file.ToLower())
+                        return info;
+                }
+            }
 			return null;
 		}
 

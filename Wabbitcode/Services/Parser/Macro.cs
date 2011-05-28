@@ -7,9 +7,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
 {
 	class Macro : IMacro
 	{
-		public Macro(int counter, string macroName, List<string> args, string contents, string description, ParserInformation parent)
+		public Macro(DocLocation loc, string macroName, List<string> args, string contents, string description, ParserInformation parent)
 		{
-			Offset = counter;
+			Location = loc;
 			Name = macroName;
 			Contents = contents;
 			Description = description;
@@ -21,7 +21,8 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			get;
 			set;
 		}
-		public int Offset
+
+		public DocLocation Location
 		{
 			get;
 			set;

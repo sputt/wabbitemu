@@ -78,6 +78,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			this.projViewer.DragDrop += new System.Windows.Forms.DragEventHandler(this.projViewer_DragDrop);
 			this.projViewer.DragOver += new System.Windows.Forms.DragEventHandler(this.projViewer_DragOver);
 			this.projViewer.DoubleClick += new System.EventHandler(this.projectViewer_DoubleClick);
+            this.projViewer.KeyDown += new System.Windows.Forms.KeyEventHandler(projectViewer_KeyDown);
 			// 
 			// projectIcons
 			// 

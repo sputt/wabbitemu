@@ -25,7 +25,7 @@
     <UpgradeBackupLocation>
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkSubset>
     </TargetFrameworkSubset>
     <IsWebBootstrapper>true</IsWebBootstrapper>
@@ -74,6 +74,8 @@
     <DebugType>Full</DebugType>
     <ErrorReport>prompt</ErrorReport>
     <UseVSHostingProcess>true</UseVSHostingProcess>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -97,6 +99,8 @@
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <GenerateSerializationAssemblies>On</GenerateSerializationAssemblies>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>ExtendedCorrectnessRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Platform)' == 'AnyCPU' ">
     <GenerateSerializationAssemblies>Auto</GenerateSerializationAssemblies>
@@ -570,7 +574,6 @@
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System">
       <Name>System</Name>
@@ -618,8 +621,10 @@
       <DependentUpon>StackViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\AsmFormattingStrategy.cs" />
+    <Compile Include="Extensions\AbortableThreadPool.cs" />
     <Compile Include="Extensions\Forms.cs" />
     <Compile Include="IStreamWrapper.cs" />
+    <Compile Include="ListBoxItem.cs" />
     <Compile Include="Properties\TempSettings.Designer.cs">
       <DependentUpon>TempSettings.settings</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -640,10 +645,13 @@
     <Compile Include="Services\Debugger\CSymbolTable.cs" />
     <Compile Include="Services\Debugger\CWabbitemu.cs" />
     <Compile Include="Services\Debugger\WabbitcodeBreakpoint.cs" />
+    <Compile Include="Services\NewParser\ParserLine.cs" />
+    <Compile Include="Services\NewParser\NewParser.cs" />
     <Compile Include="Services\ParserService.cs" />
     <Compile Include="Services\DebuggerService.cs" />
     <Compile Include="Classes\ErrorsClass.cs" />
     <Compile Include="Classes\HighlightingClass.cs" />
+    <Compile Include="Services\Parser\Equate.cs" />
     <Compile Include="Services\Parser\Define.cs" />
     <Compile Include="Services\Parser\IDefine.cs" />
     <Compile Include="Services\Parser\IIncludeFile.cs" />
@@ -877,6 +885,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\Hardware-Chip.ico" />
+    <Compile Include="Services\UpdateService.cs" />
     <EmbeddedResource Include="AboutBox.resx">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </EmbeddedResource>
@@ -937,6 +946,7 @@
     <EmbeddedResource Include="Resources\TemplatesSource\nostub83p.asm" />
     <EmbeddedResource Include="Resources\TemplatesSource\nostub86.asm" />
     <EmbeddedResource Include="Resources\TemplatesIncludes\relocate.inc" />
+    <EmbeddedResource Include="Resources\Templates.xml" />
     <Content Include="Resources\Wabbitcode.ico" />
     <EmbeddedResource Include="BitmapViewer.resx">
       <DependentUpon>BitmapViewer.cs</DependentUpon>
@@ -1025,6 +1035,17 @@
   </ItemGroup>
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <COMReference Include="WabbitemuLib">
+      <Guid>{EDA903F6-7BB8-437F-978F-8F1A2B8B65DB}</Guid>
+      <VersionMajor>3</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

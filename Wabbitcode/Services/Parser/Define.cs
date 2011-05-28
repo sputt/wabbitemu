@@ -8,9 +8,9 @@ namespace Revsoft.Wabbitcode.Services.Parser
 {
 	class Define : IDefine
 	{
-		public Define(int counter, string macroName, string contents, string description, ParserInformation parent, int value)
+		public Define(DocLocation loc, string macroName, string contents, string description, ParserInformation parent, int value)
 		{
-			Offset = counter;
+			Location = loc;
 			Name = macroName;
 			Contents = contents;
 			Description = description;
@@ -23,7 +23,8 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			get;
 			set;
 		}
-		public int Offset
+
+		public DocLocation Location
 		{
 			get;
 			set;

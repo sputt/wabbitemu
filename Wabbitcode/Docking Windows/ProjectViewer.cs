@@ -25,6 +25,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             projViewer.Nodes.Clear();
             projViewer.TreeViewNodeSorter = new NodeSorter();
 			ProjectFolder folder = ProjectService.MainFolder;
+			if (folder == null)
+				return;
 			RecurseAddNodes(folder, null);
 			if (projViewer.Nodes.Count > 0)
                 projViewer.Nodes[0].Expand();
@@ -85,6 +87,20 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             };
             process.Start();
 
+        }
+
+        private void projectViewer_KeyDown(object sender, KeyEventArgs e)
+        {
+			switch (e.KeyCode)
+			{
+				case Keys.Enter:
+					foreach (TreeNode node in projViewer.SelectedNodes)
+						OpenNode(node);
+					break;
+				case Keys.Delete:
+					DeleteNodes(projViewer.SelectedNodes);
+					break;
+			} 
         }
 
         private void projectViewer_DoubleClick(object sender, EventArgs e)
@@ -172,6 +188,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
             string oldName = node.Text;
             RenameForm renameForm = new RenameForm();
+			renameForm.Text = "Rename Folder";
             DialogResult result = renameForm.ShowDialog();
             if (result != DialogResult.OK)
                 return;
@@ -250,25 +267,44 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             OpenAs(file);
         }
 
+		public void DeleteNodes(NodesCollection nodes)
+		{
+			if (nodes.Count < 1)
+				return;
+			DialogResult results;
+			string message = nodes.Count > 1 ? "Would you like to delete the selected files permanently?" : 
+											"Delete '" + nodes[0].Text + "' permanently?";
+
+			results = MessageBox.Show(message, "Delete Contents", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+
+			if (results != DialogResult.Yes)
+				return;
+			foreach (TreeNode node in nodes)
+				DeleteNode(node);
+
+			projViewer.SelectedNodes.Clear();
+			projViewer.Sort();
+		}
+
+		public void DeleteNode(TreeNode node)
+		{
+			if (node.Tag is ProjectFolder)
+			{
+				var folder = (ProjectFolder)node.Tag;
+				folder.Remove();
+				node.Remove();
+			}
+			else
+			{
+				string fileName = Path.Combine(Path.GetDirectoryName(ProjectService.ProjectDirectory), node.FullPath);
+				File.Delete(fileName);
+				node.Remove();
+			}
+		}
+
         private void delMenuItem_Click(object sender, EventArgs e)
         {
-            string projectLoc = ProjectService.ProjectDirectory;
-            DialogResult results;
-            if (projViewer.SelectedNodes.Count > 1)
-                results = MessageBox.Show("Would you like to delete the selected files?", "Delete Files?",
-                                          MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            else
-                results = MessageBox.Show("Would you like to delete " + projViewer.SelectedNode.Text + "?",
-                                          "Delete File?", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
-            if (results != DialogResult.Yes)
-                return;
-            foreach (TreeNode node in projViewer.SelectedNodes)
-            {
-                string fileName = Path.Combine(Path.GetDirectoryName(projectLoc), node.FullPath);//.Substring(0, projectLoc.LastIndexOf('\\') + 1) + node.FullPath;
-                File.Delete(fileName);
-                node.Remove();
-            }
-            projViewer.Sort();
+			DeleteNodes(projViewer.SelectedNodes);
         }
 
         private void newFolderContextItem_Click(object sender, EventArgs e)
@@ -327,10 +363,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                     original.Remove();
                     newNode.Nodes.Add(original);
                 }
-                else if (original.Tag.GetType() == typeof(ProjectFile))
+                else if (original.Tag is ProjectFile)
                 {
-                    ProjectFile file = original.Tag as ProjectFile;
-                    ProjectFolder newParent = newNode.Tag as ProjectFolder;
+                    ProjectFile file = (ProjectFile)original.Tag;
+                    ProjectFolder newParent = (ProjectFolder)newNode.Tag;
                     if (file.Folder == newParent)
                         continue;
                     file.Remove();
@@ -363,17 +399,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void delFMenuItem_Click(object sender, EventArgs e)
         {
-			if (MessageBox.Show("Are you sure you want to remove this folder from the project?", "Delete Folder", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) == DialogResult.No)
-                return;
-            foreach (TreeNode original in projViewer.SelectedNodes)
-            {
-                ProjectFolder folder = original.Tag as ProjectFolder;
-                folder.Remove();
-                original.Remove();
-            }
-			//ProjectService.Project.saveProject();
-            projViewer.Sort();
-
+			DeleteNodes(projViewer.SelectedNodes);
         }
 
         private void openExplorerMenuItem_Click(object sender, EventArgs e)

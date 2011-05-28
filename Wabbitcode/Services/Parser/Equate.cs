@@ -5,15 +5,22 @@ using System.Text;
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
-	class Label : ILabel
+	class Equate : ILabel
 	{
-		public Label(DocLocation loc, string labelName, string description, ParserInformation parent)
+		public Equate(DocLocation loc, string labelName, string value, string description, ParserInformation parent)
 		{
 			LabelName = labelName;
 			Location = loc;
 			Description = description;
 			Parent = parent;
+            Value = value;
 		}
+
+        public string Value
+        {
+            get;
+            set;
+        }
 
 		public string Name
 		{
@@ -64,13 +71,13 @@ namespace Revsoft.Wabbitcode.Services.Parser
 
 		public override bool Equals(object obj)
 		{
-			if (obj.GetType() != typeof(Label))
-				return false;
-			Label label2 = obj as Label;
+			if (obj.GetType() != typeof(Equate))
+				return base.Equals(obj);
+			Equate label2 = obj as Equate;
 			return Location.Offset == label2.Location.Offset && LabelName == label2.LabelName;
 		}
 
-		public static bool operator ==(Label label1, Label label2)
+		public static bool operator ==(Equate label1, Equate label2)
 		{
 			if ((object)label1 == null || (object)label2 == null)
 				if ((object)label1 == null && (object)label2 == null)
@@ -80,7 +87,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			return label1.Location.Offset == label2.Location.Offset && label1.LabelName == label2.LabelName;
 		}
 
-		public static bool operator !=(Label label1, Label label2)
+		public static bool operator !=(Equate label1, Equate label2)
 		{
 			if ((object)label1 == null || (object)label2 == null)
 				if ((object)label1 != null && (object)label2 != null)

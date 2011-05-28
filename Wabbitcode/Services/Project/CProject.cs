@@ -90,11 +90,6 @@ namespace Revsoft.Wabbitcode.Services.Project
 			//mainFolder = new ProjectFolder();
 
             Settings.Default.includeDir = "";
-
-            if (Settings.Default.startupProject != projectFile)
-                if (MessageBox.Show("Would you like to make this your default project?", "Startup Project",
-                                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                    Settings.Default.startupProject = projectFile;
         }
 
 		internal void CreateNewProject(string projectFile, string projectName)

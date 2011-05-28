@@ -79,6 +79,7 @@ namespace Revsoft.Wabbitcode.VistaMenu
                               //arrow width
                               + ((((MenuItem)sender).IsParent) ? ARROW_MARGIN : 0);
             }
+			font.Dispose();
         }
 
         void MenuItem_DrawItem(object sender, DrawItemEventArgs e)
@@ -228,6 +229,7 @@ namespace Revsoft.Wabbitcode.VistaMenu
                                       textRect,
                                       ((MenuItem)sender).Enabled ? (isSelected ? SystemColors.HighlightText : SystemColors.MenuText) : SystemColors.GrayText,
                                       TextFormatFlags.SingleLine | TextFormatFlags.NoClipping);
+				font.Dispose();
             }
         }
     }

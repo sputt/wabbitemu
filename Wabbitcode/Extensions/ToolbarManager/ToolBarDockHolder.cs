@@ -16,11 +16,11 @@ namespace Revsoft.Wabbitcode.ToolbarManager
         private Form _form = new Form();
         private Panel _panel;
         private ToolBarDockArea _preferredDockedArea;
+		private Container components;
 
         private Point _preferredDockedLocation = new Point(0, 0);
         private DockStyle _style = DockStyle.Top;
         private string _toolbarTitle = string.Empty;
-        private Container components;
 
         public ToolBarDockHolder(ToolBarManager dm, Control c, DockStyle style)
         {

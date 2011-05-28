@@ -3,7 +3,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
-using System.Windows.Forms;
 using System.Net;
 using System.Security.Principal;
 using System.Security;
@@ -88,7 +87,8 @@ namespace Revsoft.AutoUpdater
                     else
                     {
                         Console.WriteLine(Path.GetFileName(filePath) + " is up to date");
-                        File.Delete(Path.Combine(Application.UserAppDataPath, Path.GetFileName(filePath)));
+                        File.Delete(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                                                    Path.GetFileName(filePath)));
                     }
                 }
                 catch (Exception ex)
@@ -148,7 +148,7 @@ namespace Revsoft.AutoUpdater
             try
             {
                 string fileName = Path.GetFileName(filePath);
-                string tempPath = Path.Combine(Application.UserAppDataPath, fileName);
+                string tempPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), fileName);
                 Client = new WebClient();
                 Client.DownloadFile(downloadPath, tempPath);
             }
@@ -162,7 +162,7 @@ namespace Revsoft.AutoUpdater
 
         static bool NeedsUpdate(string filePath)
         {
-            string tempPath = Path.Combine(Application.UserAppDataPath, Path.GetFileName(filePath));
+            string tempPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), Path.GetFileName(filePath));
             if (!File.Exists(filePath))
                 return true;
             FileVersionInfo info = FileVersionInfo.GetVersionInfo(filePath);
@@ -183,7 +183,7 @@ namespace Revsoft.AutoUpdater
         static void Update(string filePath)
         {
             string fileName =  Path.GetFileName(filePath);
-            string tempPath = Path.Combine(Application.UserAppDataPath, fileName);
+            string tempPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), fileName);
             File.Delete(filePath);
             File.Move(tempPath, filePath);
             Console.WriteLine(fileName + " successfully updated");

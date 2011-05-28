@@ -196,19 +196,15 @@ namespace Revsoft.Wabbitcode.Services
 		internal static void LoadConfig()
 		{
 			DeserializeDockContent dockContent = new DeserializeDockContent(GetContentFromPersistString);
-#if !DEBUG
             try
 			{
-#endif
 			if (File.Exists(FileLocations.ConfigFile))
 				dockPanel.LoadFromXml(FileLocations.ConfigFile, dockContent);
-#if !DEBUG
 			}
 			catch (Exception ex)
 			{
                 ShowError("Error Loading the DockPanel Config File", ex);
 			}
-#endif
         }
 
 		private static IDockContent GetContentFromPersistString(string persistString)

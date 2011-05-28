@@ -8,8 +8,19 @@ namespace Revsoft.Wabbitcode.Services.Parser
 	public interface IParserData
 	{
 		string Name { get; }
-		int Offset { get; set; }
+		DocLocation Location { get; set; }
 		string Description { get; set; }
 		ParserInformation Parent { get; set; }
+	}
+
+	public class DocLocation
+	{
+		public int Offset { get; set; }
+		public int Line { get; set; }
+		public DocLocation(int line, int offset)
+		{
+			Line = line;
+			Offset = offset;
+		}
 	}
 }
