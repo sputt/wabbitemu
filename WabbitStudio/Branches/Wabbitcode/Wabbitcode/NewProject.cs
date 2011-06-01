@@ -20,7 +20,14 @@ namespace Revsoft.Wabbitcode
             CreateTemplates();
             if (!Directory.Exists(FileLocations.ProjectsDir))
                 Directory.CreateDirectory(FileLocations.ProjectsDir);
-			ParseTemplatesFile();
+			try
+			{
+				ParseTemplatesFile();
+			}
+			catch (Exception ex)
+			{
+				DockingService.ShowError("Error loading templates file", ex);
+			}
 			locTextBox.Text = FileLocations.ProjectsDir;
         }
 
@@ -43,32 +50,7 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
-		private void HandleModelNode(ref XmlTextReader reader)
-		{
-			var modelName = reader.GetAttribute("name");
-			if (modelName == null)
-				throw new InvalidDataException("Invalid XML Format: no model name specified");
-			TabPage page = new TabPage(modelName);
-			tabControl.TabPages.Add(page);
-			ListBox box = new ListBox() { Name = "templatesBox", Dock = DockStyle.Fill };
-			while (reader.Read())
-			{
-				if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "model")
-					break;
-				else if (reader.Name == "template" && reader.NodeType == XmlNodeType.Element)
-				{
-					var templateName = reader.GetAttribute("name");
-					var ext = reader.GetAttribute("ext");
-					if (!reader.Read())
-						throw new InvalidDataException("Invalid XML: Unexpected file end");
-					var file = reader.Value;
-					box.Items.Add(new ListBoxItem() { Text = templateName, File = file, ext = ext });
-				}
-			}
-			page.Controls.Add(box);
-		}
-
-        private void browseLoc_Click(object sender, EventArgs e)
+		private void browseLoc_Click(object sender, EventArgs e)
         {
             folderBrowserDialog.SelectedPath = FileLocations.ProjectsDir;
             DialogResult browseFile = folderBrowserDialog.ShowDialog();
@@ -80,7 +62,14 @@ namespace Revsoft.Wabbitcode
         {
 			string projectDir = locTextBox.Text.Trim();
 			string projectName = nameTextBox.Text.Trim();
-			var item = (ListBoxItem)(((ListBox)tabControl.SelectedTab.Controls["templatesBox"]).SelectedItems[0]);
+			var listBox = (ListBox)tabControl.SelectedTab.Controls["templatesBox"];
+			if (listBox.SelectedItem == null)
+			{
+				DockingService.ShowError("You must select an output type for this project");
+				cancelQuit = true;
+				return;
+			}
+			var item = (ListBoxItem)listBox.SelectedItem;
 			string outputExt = item.ext;
 			if (string.IsNullOrEmpty(projectDir))
 			{
@@ -103,7 +92,25 @@ namespace Revsoft.Wabbitcode
 
 			ProjectService.CreateNewProject(projectFile, projectName);
 			var folder = ProjectService.MainFolder;
-			GetFiles(projectDir, fileTypesBox.Text, ref folder);
+			if (projFromDirBox.Checked)
+				GetFiles(projectDir, fileTypesBox.Text, ref folder);
+			else
+			{
+				string mainFile = Path.Combine(projectDir, projectName + ".asm");
+				try
+				{
+					File.Copy(item.File, mainFile);
+				}
+				catch (IOException ex)
+				{
+					if (ex.Message.Contains("exists"))
+						if (MessageBox.Show("'" + projectName + ".asm'  already exists. Overwrite?", "Error", MessageBoxButtons.YesNo, MessageBoxIcon.None) == DialogResult.Yes)
+							File.Copy(item.File, mainFile, true);
+				}
+				ProjectService.AddFile(folder, mainFile);
+				DocumentService.OpenDocument(mainFile);
+			}
+			ProjectService.IncludeDirs.Add(FileLocations.IncludesDir);
 			var debug = ProjectService.BuildConfigs[0];
 			var release = ProjectService.BuildConfigs[1];
 			debug.Steps.Add(new InternalBuildStep(0, StepType.All, Path.Combine(projectDir, projectName) + ".asm", Path.Combine(projectDir, projectName) + outputExt));
@@ -145,6 +152,34 @@ namespace Revsoft.Wabbitcode
             fileTypesBox.Visible = projFromDirBox.Checked;
             fileTypesLabel.Visible = projFromDirBox.Checked;
         }
+
+		#region Templates
+
+		private void HandleModelNode(ref XmlTextReader reader)
+		{
+			var modelName = reader.GetAttribute("name");
+			if (modelName == null)
+				throw new InvalidDataException("Invalid XML Format: no model name specified");
+			TabPage page = new TabPage(modelName);
+			tabControl.TabPages.Add(page);
+			ListBox box = new ListBox() { Name = "templatesBox", Dock = DockStyle.Fill };
+			while (reader.Read())
+			{
+				if (reader.NodeType == XmlNodeType.EndElement && reader.Name == "model")
+					break;
+				else if (reader.Name == "template" && reader.NodeType == XmlNodeType.Element)
+				{
+					var templateName = reader.GetAttribute("name");
+					var ext = reader.GetAttribute("ext");
+					if (!reader.Read())
+						throw new InvalidDataException("Invalid XML: Unexpected file end");
+					var file = reader.Value;
+					box.Items.Add(new ListBoxItem() { Text = templateName, File = Path.Combine(
+										Path.Combine(FileLocations.TemplatesDir, modelName), file), ext = ext });
+				}
+			}
+			page.Controls.Add(box);
+		}
 
 		private void CreateTemplates()
 		{
@@ -201,5 +236,6 @@ namespace Revsoft.Wabbitcode
             }
 #endif
 		}
-    }
+		#endregion
+	}
 }

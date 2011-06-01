@@ -37,7 +37,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             IsFlash = !isRam;
         }
 
-        public dynamic Read(ushort Address, [System.Runtime.InteropServices.OptionalAttribute]object ByteCount)
+        public object Read(ushort Address, [System.Runtime.InteropServices.OptionalAttribute]object ByteCount)
         {
             throw new NotImplementedException();
         }
@@ -46,6 +46,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         {
             throw new NotImplementedException();
         }
-    }
+	}
 }
 #endif

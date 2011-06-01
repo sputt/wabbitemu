@@ -1,12 +1,10 @@
-﻿//#define USE_DLL
-//#define NEW_DEBUGGING
-using System;
+﻿using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Threading;
+using System.Linq;
 using System.Windows.Forms;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
@@ -170,6 +168,8 @@ namespace Revsoft.Wabbitcode
 			toggleBookmarkMenuItem.Enabled = enabled;
 			nextBookmarkMenuItem.Enabled = enabled;
 			prevBookmarkMenuItem.Enabled = enabled;
+			gLineMenuItem.Enabled = enabled;
+			gLabelMenuItem.Enabled = enabled;
 			
 			//View Menu
 			lineNumMenuItem.Enabled = enabled;
@@ -189,9 +189,19 @@ namespace Revsoft.Wabbitcode
 				UpdateDebugStuff();
 			toggleBreakpointMenuItem.Enabled = enabled;
 			if (ProjectService.IsInternal)
+			{
 				startDebugMenuItem.Enabled = enabled;
+				startWithoutDebugMenuItem.Enabled = enabled;
+				runMenuItem.Enabled = enabled;
+				runDebuggerToolButton.Enabled = enabled;
+			}
 			else
+			{
+				runMenuItem.Enabled = true;
+				runDebuggerToolButton.Enabled = true;
 				startDebugMenuItem.Enabled = true;
+				startWithoutDebugMenuItem.Enabled = true;
+			}
 
             //Window Menu
             windowMenuItem.Enabled = enabled;
@@ -356,7 +366,7 @@ namespace Revsoft.Wabbitcode
 			if (openFileDialog.ShowDialog() == DialogResult.OK)
 				if (!ProjectService.OpenProject(openFileDialog.FileName))
 					ProjectService.CreateInternalProject();
-
+			UpdateMenus(DockingService.Documents.Count() > 0);
         }
 
         private void saveMenuItem_Click(object sender, EventArgs e)
@@ -1048,46 +1058,7 @@ namespace Revsoft.Wabbitcode
 
 		private void startWithoutDebugMenuItem_Click(object sender, EventArgs e)
 		{
-			if (ProjectService.CurrentBuildConfig == null)
-			{
-				DockingService.ShowError("No config setup");
-				return;
-			}
-			ThreadPool.QueueUserWorkItem(AssemblerService.AssembleProject);
-			//wait till we notice that it is building
-			while (!AssemblerService.IsBuildingProject)
-				Application.DoEvents();
-			//then wait till it builds
-			while (AssemblerService.IsBuildingProject)
-				Application.DoEvents();
-			if (ProjectService.Project.ProjectOutputs.Count < 1)
-			{
-				DockingService.ShowError("No project outputs detected");
-				return;
-			}
-			string createdName = ProjectService.Project.ProjectOutputs[0];
-			Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
-			Process wabbit = null;
-			foreach (Process potential in Process.GetProcesses())
-			{
-				if (!potential.ProcessName.ToLower().Contains("wabbitemu"))
-					continue;
-				wabbit = potential;
-				break;
-			}
-			if (wabbit == null)
-			{
-				wabbit = new Process
-								{
-									StartInfo =
-										{
-											Arguments = "\"" + createdName + "\"",
-											FileName = FileLocations.WabbitemuFile,
-										},
-									EnableRaisingEvents = true
-								};
-				wabbit.Start();
-			}
+			DebuggerService.StartWithoutDebug();
 		}
 
 		private const int WM_KEYDOWN = 0x0100;
@@ -1116,8 +1087,6 @@ namespace Revsoft.Wabbitcode
 			//DockingService.DebugPanel.Enabled = DebuggerService.IsBreakpointed;
 			//DockingService.CallStack.Enabled = DebuggerService.IsBreakpointed;
 			//DockingService.TrackWindow.Enabled = DebuggerService.IsBreakpointed;
-            runMenuItem.Enabled = true;
-            runDebuggerToolButton.Enabled = true;
 			stepMenuItem.Enabled = DebuggerService.IsBreakpointed && DebuggerService.IsDebugging;
 			stepToolButton.Enabled = DebuggerService.IsBreakpointed && DebuggerService.IsDebugging;
 			stepOverMenuItem.Enabled = DebuggerService.IsBreakpointed && DebuggerService.IsDebugging;

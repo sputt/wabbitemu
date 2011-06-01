@@ -9,11 +9,13 @@ using Microsoft.Win32;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Properties;
+using System.Linq;
 #if NEW_DEBUGGING
 using WabbitemuLib;
 using Revsoft.Wabbitcode.Services.Debugger;
 #endif
 using System.Text;
+using System.Diagnostics;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -106,9 +108,6 @@ namespace Revsoft.Wabbitcode.Services
 				return;
 			if (debugger != null)
 			{
-				//int page = newBreakpoint.Page;
-				//if (isAnApp)
-				//    page = (byte) (apppage - newBreakpoint.Page);
 #if NEW_DEBUGGING
                 //debugger.ClearBreakpoint(new CPage(newBreakpoint.Page, newBreakpoint.IsRam), newBreakpoint.Address);
 #else
@@ -419,7 +418,7 @@ namespace Revsoft.Wabbitcode.Services
 				if (oldSP > currentSP - 2)
 				{
 #if NEW_DEBUGGING
-                    DockingService.CallStack.AddStackData(oldSP, debugger.Read(oldSP) + debugger.Read((ushort)(oldSP + 1)) * 256);
+                    DockingService.CallStack.AddStackData(oldSP, (int)debugger.Read(oldSP) + (int)debugger.Read((ushort)(oldSP + 1)) * 256);
 #else
 					DockingService.CallStack.AddStackData(oldSP, debugger.readMem(oldSP) + debugger.readMem((ushort)(oldSP + 1)) * 256);
 #endif
@@ -495,7 +494,8 @@ namespace Revsoft.Wabbitcode.Services
                         return;
                     }
                     symName = ProjectService.Project.LabelOutputs[0];
-					error = AssemblerService.ErrorsInFiles.Count == 0;
+					var errorList = from err in AssemblerService.ErrorsInFiles where !err.isWarning select err;
+					error = errorList.Count() == 0;
 				}
 				else
 				{
@@ -509,7 +509,13 @@ namespace Revsoft.Wabbitcode.Services
 				fileName = DocumentService.ActiveFileName;
 				if (string.IsNullOrEmpty(fileName))
 				{
-					if (MessageBox.Show("Would you like to save this file?", "Save", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+					DockingService.ShowError("No files open, cannot debug");
+					CancelDebug();
+					return;
+				}
+				else if (DocumentService.ActiveDocument.DocumentChanged)
+				{
+					if (MessageBox.Show("You must save before you debug. Would you like to save this file?", "Save", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
 					{
 						DocumentService.SaveDocument();
 						fileName = DocumentService.ActiveFileName;
@@ -537,15 +543,14 @@ namespace Revsoft.Wabbitcode.Services
 						createdName = Path.ChangeExtension(fileName, "8xk");
 						break;
 					default:
-						MessageBox.Show("You cannot debug a non 83/84 Plus file!");
+						MessageBox.Show("You cannot debug a non 83/84 Plus file");
 						CancelDebug();
 						return;
 				}
 			}
 			if (!isDebugging || !error)
 			{
-				if (
-					MessageBox.Show("There were errors assembling. Would you like to continue and try to debug?",
+				if (MessageBox.Show("There were errors assembling. Would you like to continue and try to debug?",
 									"Continue", MessageBoxButtons.YesNo, MessageBoxIcon.Error) == DialogResult.No)
 				{
 					CancelDebug();
@@ -562,7 +567,16 @@ namespace Revsoft.Wabbitcode.Services
             }
             catch(Exception)
             {
-                //display file browser here...
+				var openFileDialog = new OpenFileDialog()
+				{
+					Filter = "ROMS (*.rom)|*.rom",
+					Title = "Open ROM file"
+				};
+				if (openFileDialog.ShowDialog() != DialogResult.OK)
+				{
+					CancelDebug();
+					return;
+				}
             }
             debugger.LoadFile(romFile);
             debugger.LoadFile(createdName);
@@ -579,7 +593,7 @@ namespace Revsoft.Wabbitcode.Services
 			}
 			catch (Exception ex)
 			{
-				DockingService.ShowError("Error reading list file: \n" + ex);
+				DockingService.ShowError("Error reading list file:", ex);
 				CancelDebug();
 				return;
 			}
@@ -596,7 +610,7 @@ namespace Revsoft.Wabbitcode.Services
 			}
 			catch (Exception ex)
 			{
-				DockingService.ShowError("Error reading symbol file: \n" + ex);
+				DockingService.ShowError("Error reading symbol file:", ex);
 			}
 			finally
 			{
@@ -930,7 +944,51 @@ namespace Revsoft.Wabbitcode.Services
             debugger.setBreakpoint(newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
 #endif
         }
-    }
+
+		internal static void StartWithoutDebug()
+		{
+			if (ProjectService.CurrentBuildConfig == null)
+			{
+				DockingService.ShowError("No config setup");
+				return;
+			}
+			ThreadPool.QueueUserWorkItem(AssemblerService.AssembleProject);
+			//wait till we notice that it is building
+			while (!AssemblerService.IsBuildingProject)
+				Application.DoEvents();
+			//then wait till it builds
+			while (AssemblerService.IsBuildingProject)
+				Application.DoEvents();
+			if (ProjectService.Project.ProjectOutputs.Count < 1)
+			{
+				DockingService.ShowError("No project outputs detected");
+				return;
+			}
+			string createdName = ProjectService.Project.ProjectOutputs[0];
+			Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
+			Process wabbit = null;
+			foreach (Process potential in Process.GetProcesses())
+			{
+				if (!potential.ProcessName.ToLower().Contains("wabbitemu"))
+					continue;
+				wabbit = potential;
+				break;
+			}
+			if (wabbit == null)
+			{
+				wabbit = new Process
+				{
+					StartInfo =
+					{
+						Arguments = "\"" + createdName + "\"",
+						FileName = FileLocations.WabbitemuFile,
+					},
+					EnableRaisingEvents = true
+				};
+				wabbit.Start();
+			}
+		}
+	}
 
 	public class ListFileKey : IEquatable<ListFileKey>
 	{
