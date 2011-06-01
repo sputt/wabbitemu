@@ -265,7 +265,7 @@ namespace Revsoft.Wabbitcode.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(".\\wabbitemu.exe")]
+        [global::System.Configuration.DefaultSettingValueAttribute("%HOMEDIR%\\Wabbitcode\\Wabbitemu.exe")]
         public string wabbitLoc {
             get {
                 return ((string)(this["wabbitLoc"]));
@@ -356,18 +356,6 @@ namespace Revsoft.Wabbitcode.Properties {
             }
             set {
                 this["ptiLoc"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(".\\vti.exe")]
-        public string vtiLoc {
-            get {
-                return ((string)(this["vtiLoc"]));
-            }
-            set {
-                this["vtiLoc"] = value;
             }
         }
         
@@ -817,18 +805,6 @@ namespace Revsoft.Wabbitcode.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("True")]
-        public bool mouseWheelZoom {
-            get {
-                return ((bool)(this["mouseWheelZoom"]));
-            }
-            set {
-                this["mouseWheelZoom"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("False")]
         public bool recentlyUpdated {
             get {
@@ -836,6 +812,18 @@ namespace Revsoft.Wabbitcode.Properties {
             }
             set {
                 this["recentlyUpdated"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool mouseWheelZoom {
+            get {
+                return ((bool)(this["mouseWheelZoom"]));
+            }
+            set {
+                this["mouseWheelZoom"] = value;
             }
         }
         
@@ -884,6 +872,42 @@ namespace Revsoft.Wabbitcode.Properties {
             }
             set {
                 this["convertTabs"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool createFolders {
+            get {
+                return ((bool)(this["createFolders"]));
+            }
+            set {
+                this["createFolders"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("%HOMEDIR%\\Wabbitcode\\Wabbitemu.exe")]
+        public string assemblerLoc {
+            get {
+                return ((string)(this["assemblerLoc"]));
+            }
+            set {
+                this["assemblerLoc"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string configLoc {
+            get {
+                return ((string)(this["configLoc"]));
+            }
+            set {
+                this["configLoc"] = value;
             }
         }
     }

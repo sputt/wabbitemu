@@ -78,7 +78,7 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\..\..\Release\</OutputPath>
     <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
     <BaseAddress>285212672</BaseAddress>
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
@@ -826,7 +826,6 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Services\Project\ProjectStuff.cs" />
-    <Compile Include="Properties\TempSettings.cs" />
     <Compile Include="RenameForm.cs">
       <SubType>Form</SubType>
     </Compile>
