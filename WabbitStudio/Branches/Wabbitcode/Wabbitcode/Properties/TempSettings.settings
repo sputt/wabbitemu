@@ -63,7 +63,7 @@
       <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="wabbitLoc" Type="System.String" Scope="User">
-      <Value Profile="(Default)">.\wabbitemu.exe</Value>
+      <Value Profile="(Default)">%HOMEDIR%\Wabbitcode\Wabbitemu.exe</Value>
     </Setting>
     <Setting Name="emuName" Type="System.String" Scope="User">
       <Value Profile="(Default)">Wabbitemu</Value>
@@ -85,9 +85,6 @@
     </Setting>
     <Setting Name="ptiLoc" Type="System.String" Scope="User">
       <Value Profile="(Default)">.\pti.exe</Value>
-    </Setting>
-    <Setting Name="vtiLoc" Type="System.String" Scope="User">
-      <Value Profile="(Default)">.\vti.exe</Value>
     </Setting>
     <Setting Name="opcodeColor" Type="System.Drawing.Color" Scope="User">
       <Value Profile="(Default)">96, 63, 205</Value>
@@ -200,11 +197,11 @@
     <Setting Name="WindowSize" Type="System.Drawing.Size" Scope="User">
       <Value Profile="(Default)">500, 300</Value>
     </Setting>
-    <Setting Name="mouseWheelZoom" Type="System.Boolean" Scope="User">
-      <Value Profile="(Default)">True</Value>
-    </Setting>
     <Setting Name="recentlyUpdated" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
+    </Setting>
+    <Setting Name="mouseWheelZoom" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
     <Setting Name="referencesHighlighter" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
@@ -217,6 +214,15 @@
     </Setting>
     <Setting Name="convertTabs" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="createFolders" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="assemblerLoc" Type="System.String" Scope="User">
+      <Value Profile="(Default)">%HOMEDIR%\Wabbitcode\Wabbitemu.exe</Value>
+    </Setting>
+    <Setting Name="configLoc" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
     </Setting>
   </Settings>
 </SettingsFile>

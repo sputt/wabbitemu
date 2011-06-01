@@ -84,15 +84,15 @@ namespace Revsoft.Wabbitcode
             //this is fucking badass code right here
             foreach (Control control in highlightBox.Controls)
             {
-                if (control.GetType() == typeof (CheckBox))
+                if (control is CheckBox)
                     ((CheckBox) control).Checked = (bool) Settings.Default[control.Name];
-                if (control.GetType() == typeof (Button))
+                if (control is Button)
                     control.BackColor = (Color) Settings.Default[control.Name];
             }
             //output stuff
             foreach (Control control in outTypeBox.Controls)
             {
-                if (control.GetType() == typeof (RadioButton))
+                if (control is RadioButton)
                     ((RadioButton)control).Checked = Settings.Default.outputFile == control.TabIndex;
             }
             caseSenseBox.Checked = Settings.Default.caseSensitive;
@@ -102,6 +102,13 @@ namespace Revsoft.Wabbitcode
             tabSizeUpDown.Value = Settings.Default.tabSize;
             saveAutoBox.Checked = Settings.Default.autoSaveProject;
             convertTabsToSpacesBox.Checked = Settings.Default.convertTabs;
+			wabbitFolderCheck.Checked = Settings.Default.createFolders;
+			assemblerLocBox.Text = Environment.ExpandEnvironmentVariables(Settings.Default.assemblerLoc.Replace("%docs%",
+													Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
+			wabbitLocBox.Text = Environment.ExpandEnvironmentVariables(Settings.Default.wabbitLoc.Replace("%docs%", 
+													Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
+			dockConfigLoc.Text = Environment.ExpandEnvironmentVariables(Settings.Default.wabbitLoc.Replace("%docs%",
+													Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
         }
 
         private void fontBox_SelectedIndexChanged(object sender, EventArgs e)
@@ -180,15 +187,6 @@ namespace Revsoft.Wabbitcode
         private void enableAutoCompleteBox_CheckedChanged(object sender, EventArgs e)
         {
             TempSettings.Default.enableAutoTrigger = enableAutoTriggerBox.Checked;
-            /*TempSettings.Default.enableAutoComplete = enableAutoCompleteBox.Checked;
-            foreach (newEditor child in parentForm.MdiChildren)
-            {
-            }
-            if (!enableAutoCompleteBox.Checked)
-            {
-                enableAutoCompleteBox.Checked = true;
-                MessageBox.Show("Hmm...i dont know enough about the text editor to remove this. its too cool to be disabled anyway");
-            }*/
         }
 
         private void enableRefHighlighterBox_CheckedChanged(object sender, EventArgs e)
@@ -333,5 +331,49 @@ namespace Revsoft.Wabbitcode
         {
             TempSettings.Default.convertTabs = convertTabsToSpacesBox.Checked;
         }
+
+		private void wabbitFolderCheck_CheckedChanged(object sender, EventArgs e)
+		{
+			TempSettings.Default.createFolders = wabbitFolderCheck.Checked;
+		}
+
+		private void browseAssembler_Click(object sender, EventArgs e)
+		{
+			var openFile = new OpenFileDialog()
+			{
+				Filter = "Executables (*.exe)|*.exe",
+				Title = "SPASM Location"
+			};
+			if (openFile.ShowDialog() != DialogResult.OK)
+				return;
+			assemblerLocBox.Text = openFile.FileName;
+			TempSettings.Default.assemblerLoc = openFile.FileName;
+		}
+
+		private void browseWabbit_Click(object sender, EventArgs e)
+		{
+			var openFile = new OpenFileDialog()
+			{
+				Filter = "Executables (*.exe)|*.exe",
+				Title = "Wabbitemu Location"
+			};
+			if (openFile.ShowDialog() != DialogResult.OK)
+				return;
+			wabbitLocBox.Text = openFile.FileName;
+			TempSettings.Default.wabbitLoc = openFile.FileName;
+		}
+
+		private void dockConfigBrowse_Click(object sender, EventArgs e)
+		{
+			var openFile = new OpenFileDialog()
+			{
+				Filter = "Configuration files (*.config)|*.config",
+				Title = "Dock Panel Config Location"
+			};
+			if (openFile.ShowDialog() != DialogResult.OK)
+				return;
+			wabbitLocBox.Text = openFile.FileName;
+			TempSettings.Default.configLoc = openFile.FileName;
+		}
     }
 }

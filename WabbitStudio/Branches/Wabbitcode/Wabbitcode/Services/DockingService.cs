@@ -241,6 +241,10 @@ namespace Revsoft.Wabbitcode.Services
 			try
 			{
 #endif
+				string dir = Path.GetDirectoryName(FileLocations.ConfigFile);
+				if (!Directory.Exists(dir))
+					if (MessageBox.Show("Directory '" + dir + "' does not exist. Would you like to create it?", "Directory does not exist", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
+						Properties.Settings.Default.configLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "DockPanel.config");
 				if (File.Exists(FileLocations.ConfigFile))
 					File.Delete(FileLocations.ConfigFile);
 				dockPanel.SaveAsXml(FileLocations.ConfigFile);

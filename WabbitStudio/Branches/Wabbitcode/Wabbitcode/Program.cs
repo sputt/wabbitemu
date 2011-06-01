@@ -27,11 +27,10 @@ namespace Revsoft.Wabbitcode
 			{
 				Services.DockingService.ShowError("Error upgrading settings", ex);
 			}
-			FileLocations.InitDirs();
-			Classes.Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
-			Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
-			HighlightingClass.MakeHighlightingFile();
 			Application.EnableVisualStyles();
+			FileLocations.InitDirs();
+			FileLocations.InitFiles();
+			HighlightingClass.MakeHighlightingFile();
 			if (UpdateService.CheckForUpdate())
 			{
 				var result = MessageBox.Show("New version available. Download now?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
