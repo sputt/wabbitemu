@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-using Revsoft.TextEditor.Document;
-using Revsoft.TextEditor;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
-using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Services;
+using System.Windows.Forms;
+using Revsoft.TextEditor;
+using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Docking_Windows;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Project;
 
 namespace Revsoft.Wabbitcode

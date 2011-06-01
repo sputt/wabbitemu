@@ -110,9 +110,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 				reader = new StreamReader(file);
 				lines = reader.ReadToEnd();
                 //NewParser.NewParser.ParseFile(file);
-#if DEBUG
                 reader.Close();
-#endif
 				return ParseFile(file, lines);
 #if !DEBUG
 			}

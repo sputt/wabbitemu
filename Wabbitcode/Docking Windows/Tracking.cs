@@ -235,10 +235,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                         if (isGrayscale)
                             anotherbyte = DebuggerService.Debugger.readMem((ushort)(vartoadd.address + grayscale + i));
 #endif
-                        /*while (abyte.Length < 8)
-                            abyte = '0' + abyte;
-						while (anotherbyte.Length < 8)
-							anotherbyte = '0' + anotherbyte;*/
                         for (int bit = 128; bit > 0; bit /= 2)
                         {
 							if (isGrayscale)
@@ -281,7 +277,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 					else
                     {
 #if NEW_DEBUGGING
-                        vartoadd.value = String.Join(" ", DebuggerService.Debugger.Read(vartoadd.address, vartoadd.numBytes));
+						for (int i = 0; i < vartoadd.numBytes; i++)
+							vartoadd.value += DebuggerService.Debugger.Read((ushort)(vartoadd.address + i)).ToString();
 #else
                         for (int i = 0; i < vartoadd.numBytes; i++)
 							vartoadd.value += ((char)DebuggerService.Debugger.readMem((ushort)(vartoadd.address + i))).ToString();
@@ -308,7 +305,43 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                     for (int i = 0; i < vartoadd.numBytes * 2; i+=2)
 					{
 #if NEW_DEBUGGING
-                        vartoadd.value += ReadMem(0, (ushort)(vartoadd.address + i + 1)).ToString("X2") + ReadMem(0, (ushort)(vartoadd.address + i)).ToString("X2") + " ";
+						byte baseValue = (byte)DebuggerService.Debugger.Read((ushort)(vartoadd.address + i + 1));
+						byte baseValue2 = (byte)DebuggerService.Debugger.Read((ushort)(vartoadd.address + i));
+						string value;
+						string value2;
+						switch ((variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value.ToString()))
+						{
+							case "Decimal":
+								vartoadd.value += Convert.ToString(baseValue, convertMethod) + Convert.ToString(baseValue2, convertMethod) + " ";
+								break;
+							case "Binary":
+								value = Convert.ToString(baseValue, convertMethod);
+								while (value.Length < 8)
+									value = "0" + value;
+								value2 = Convert.ToString(baseValue2, convertMethod);
+								while (value2.Length < 8)
+									value2 = "0" + value2;
+								vartoadd.value += value + value2 + " ";
+								break;
+							case "Octal":
+								value = Convert.ToString(baseValue, convertMethod);
+								while (value.Length < 4)
+									value = "0" + value;
+								value2 = Convert.ToString(baseValue2, convertMethod);
+								while (value2.Length < 4)
+									value2 = "0" + value2;
+								vartoadd.value += value + value2 + " ";
+								break;
+							default:
+								value = Convert.ToString(baseValue, convertMethod);
+								while (value.Length < 2)
+									value = "0" + value;
+								value2 = Convert.ToString(baseValue2, convertMethod);
+								while (value2.Length < 2)
+									value2 = "0" + value2;
+								vartoadd.value += value + value2 + " ";
+								break;
+						}
 #else
                         byte baseValue = DebuggerService.Debugger.readMem((ushort)(vartoadd.address + i + 1));
 						byte baseValue2 = DebuggerService.Debugger.readMem((ushort)(vartoadd.address + i));
