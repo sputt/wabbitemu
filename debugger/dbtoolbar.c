@@ -892,12 +892,14 @@ HMENU CreateRewindMenu() {
 	TCHAR buf[256];
 	int i;
 	rewindmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_DISASM_REWIND_MENU));
+#if WITH_BACKUPS
 	float j = 1 / ((float) num_backup_per_sec);
 	for (i = 0; i < MAX_BACKUPS; i++) {
 		StringCbPrintf(buf, sizeof(buf), "%.2f", j * (i + 1));
 		StringCbCat(buf, sizeof(buf), _T(" seconds"));
 		ModifyMenu(rewindmenu, IDM_05SECOND + i, MF_BYCOMMAND | MF_STRING, 0, buf);
 	}
+#endif
 	return rewindmenu;
 }
 

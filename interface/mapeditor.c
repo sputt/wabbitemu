@@ -114,8 +114,7 @@ HRESULT CALLBACK DllUnregisterServer(void)
 	if (hr != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
-	RegOpenKeyEx(HKEY_CLASSES_ROOT, NULL, 0, DELETE, &hkey);
-	hr = RegDeleteTree(hkey, _T("Wabbit.Wabbitemu.1\\"));
+	hr = RegDeleteKey(HKEY_CLASSES_ROOT, _T("Wabbit.Wabbitemu.1\\"));
 	if (hr != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
@@ -124,7 +123,7 @@ HRESULT CALLBACK DllUnregisterServer(void)
 	if (hr != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
-	hr = RegDeleteTree(HKEY_CLASSES_ROOT, _T("Wabbit.Wabbitemu\\"));
+	hr = RegDeleteKey(HKEY_CLASSES_ROOT, _T("Wabbit.Wabbitemu\\"));
 	if (hr != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;
 
