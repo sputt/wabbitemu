@@ -634,7 +634,8 @@ void mod_timer(CPU_t *cpu,XTAL_t* xtal) {
 			Modify_interrupt_device(cpu, 0x32, 0);
 			break;
 		case 1:
-			Modify_interrupt_device(cpu, 0x32, 8);
+			//Modify_interrupt_device(cpu, 0x32, 8);
+			Modify_interrupt_device(cpu, 0x32, 1);
 			break;
 		case 2:
 		case 3:
@@ -675,28 +676,28 @@ void port30_83pse(CPU_t *cpu, device_t *dev) {
 			case 0x01: {
 				switch (timer->clock & 0x07) {
 					case 0x00:
-						timer->divsor = 3.0f;
+						timer->divsor = 3.0;
 						break;
 					case 0x01:
-						timer->divsor = 32.0f;
+						timer->divsor = 32.0;
 						break;
 					case 0x02:
-						timer->divsor = 327.000f;
+						timer->divsor = 327.000;
 						break;
 					case 0x03:
-						timer->divsor = 3276.00f;
+						timer->divsor = 3276.00;
 						break;
 					case 0x04:
-						timer->divsor = 1.0f;
+						timer->divsor = 1.0;
 						break;
 					case 0x05:
-						timer->divsor = 16.0f;
+						timer->divsor = 16.0;
 						break;
 					case 0x06:
-						timer->divsor = 256.0f;
+						timer->divsor = 256.0;
 						break;
 					case 0x07:
-						timer->divsor = 4096.0f;
+						timer->divsor = 4096.0;
 						break;
 				}
 				break;
@@ -752,16 +753,17 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 
 	}
 */
-	xtal->ticks = (long long) (tc_elapsed(cpu->timer_c) * 32768.0f);
-	xtal->lastTime = ((double) xtal->ticks / 32768.0f);
+	xtal->ticks = (unsigned long long) (tc_elapsed(cpu->timer_c) * 32768.0);
+	xtal->lastTime = ((double) xtal->ticks / 32768.0);
 	
 
 
 	int i;
-	for(i = 0; i < 3; i++) {
+	for(i = 0; i < NumElm(xtal->timers); i++)
+	{
 		timer = &xtal->timers[i];
-		if (timer->active) {
-			
+		if (timer->active)
+		{
 			switch(((timer->clock & 0xC0) >> 6) & 0x03) {
 				case 0:
 					break;
@@ -1464,11 +1466,20 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.breakpoint_callback = port_debug_callback;
 	cpu->pio.model		= TI_83PSE;
 	
+	/*
 	Append_interrupt_device(cpu, 0x00, 1);
 	Append_interrupt_device(cpu, 0x03, 8);
 	Append_interrupt_device(cpu, 0x11, 128);
 	Append_interrupt_device(cpu, 0x09, 3);
 	Append_interrupt_device(cpu, 0x32, 8);
+	*/
+	// Turning of the instruction skip stuff temporarily
+	// To attempt to diagnose some timing issues
+	Append_interrupt_device(cpu, 0x00, 1);
+	Append_interrupt_device(cpu, 0x03, 1);
+	Append_interrupt_device(cpu, 0x11, 128);
+	Append_interrupt_device(cpu, 0x09, 1);
+	Append_interrupt_device(cpu, 0x32, 1);
 	return 0;
 }
 
