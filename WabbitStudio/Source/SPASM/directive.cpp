@@ -105,14 +105,15 @@ char *handle_directive (const char *ptr) {
 			}
 
 			if (size < 0) {
-				show_error ("Size to fill must be positive (given %d)", size);
 				SetLastSPASMError(SPASM_ERR_SIZE_MUST_BE_POSITIVE, szSize);
 				listing_on = old_listing_on;
 				break;
 			}
 
 			if (fill_value < -128 || fill_value > 255)
-				show_warning ("Value to fill '%d' can't fit in 8 bits, truncating", fill_value);
+			{
+				SetLastSPASMWarning(SPASM_WARN_TRUNCATING_8);
+			}
 
 			program_counter += size;
 			stats_datasize += size;
@@ -212,8 +213,8 @@ char *handle_directive (const char *ptr) {
 			// You can ignore class, etc
 			ptr = skip_to_code_line_end (ptr);
 			break;
-		addinstr_fail:
-			show_error ("Missing required information for ADDINSTR (mnemonic, args, data, and size required)");
+addinstr_fail:
+			SetLastSPASMError(SPASM_ERR_INVALID_ADDINSTR);
 			if (instr && instr->args) free ((void *) instr->args);
 			if (instr) free (instr);
 			ptr = NULL;
@@ -255,7 +256,7 @@ char *handle_directive (const char *ptr) {
 				}
 				echo_target = fopen (fix_filename (temp_filename), target_format);
 				if (echo_target == NULL) {
-					show_error ("Failed to open file '%s' for echo redirection", filename);
+					SetLastSPASMError(SPASM_ERR_NO_ACCESS, filename);
 					return NULL;
 				}
 
@@ -307,10 +308,13 @@ char *handle_directive (const char *ptr) {
 		}
 		case 10: //ERROR
 		{
-			show_error_prefix (curr_input_file, line_num);
-			error_occurred = true;
-			if (exit_code < EXIT_FATAL_ERROR) exit_code = EXIT_FATAL_ERROR;
-			ptr = parse_emit_string (ptr, ES_ECHO, stdout);
+			expand_buf_t *eb = eb_init(64);
+			ptr = parse_emit_string(ptr, ES_FCREATE, eb);
+
+			char *error_str = eb_extract(eb);
+			eb_free(eb);
+
+			SetLastSPASMError(SPASM_ERR_CUSTOM, error_str);
 			break;
 		}
 		case 11: //LIST
@@ -342,10 +346,9 @@ char *handle_directive (const char *ptr) {
 
 			read_expr (&ptr, value_str, "");
 			if (!parse_num (value_str, &value) && parser_forward_ref_err) {
-				show_error ("Equates can't have forward references");
 			} else {
 				if (last_label == NULL)
-					show_error ("Equate is missing label");
+					SetLastSPASMError(SPASM_ERR_EQUATE_MISSING_LABEL);
 				else
 					last_label->value = value;
 			}
@@ -385,7 +388,7 @@ char *handle_directive (const char *ptr) {
 				}
 				
 				if (!(isalpha(name[0]))) {
-					show_error("Invalid option '%s'", name);
+					SetLastSPASMError(SPASM_ERR_INVALID_OPTION, name);
 					return (char *) ptr;
 				}
 				

@@ -183,9 +183,18 @@ void AddSPASMErrorSessionAnnotation(int nSession, LPCTSTR lpszFormat, ...)
 	StringCchPrintf(szBuffer, ARRAYSIZE(szBuffer), _T("%s:%d: %s"),
 		curr_input_file, line_num, szDescription);
 
-	((LPERRORINSTANCE) g_ErrorList->data)->lpszAnnotation = _tcsdup(szBuffer);
-
 	va_end(valist);
+
+	list_t *pList = (list_t *) g_ErrorList;
+	while (pList != NULL)
+	{
+		LPERRORINSTANCE lpErr = (LPERRORINSTANCE) pList->data;
+		if (lpErr->nSession >= nSession)
+		{
+			lpErr->lpszAnnotation = _tcsdup(szBuffer);
+		}
+		pList = pList->next;
+	}
 }
 
 void EndSPASMErrorSession(int nSession)
@@ -252,6 +261,21 @@ DWORD GetLastSPASMError()
 	}
 	return SPASM_ERR_SUCCESS;
 }
+
+int GetLastSPASMErrorLine()
+{
+	list_t *pList = (list_t *) g_ErrorList;
+	while (pList != NULL)
+	{
+		LPERRORINSTANCE lpError = (LPERRORINSTANCE) pList->data;
+		if (lpError->dwErrorCode != SPASM_ERR_SUCCESS)
+		{
+			return lpError->line_num;
+		}
+		pList = pList->next;
+	}
+	return SPASM_ERR_SUCCESS;
+}
 #endif
 
 
@@ -310,7 +334,7 @@ void SetLastSPASMWarning(DWORD dwErrorCode, ...)
 	va_list valist;
 	va_start(valist, dwErrorCode);
 
-	SetLastSPASMProblem(dwErrorCode, TRUE, valist);
+	SetLastSPASMProblem(dwErrorCode, true, valist);
 
 	va_end(valist);
 }
@@ -320,7 +344,7 @@ void SetLastSPASMError(DWORD dwErrorCode, ...)
 	va_list valist;
 	va_start(valist, dwErrorCode);
 
-	SetLastSPASMProblem(dwErrorCode, FALSE, valist);
+	SetLastSPASMProblem(dwErrorCode, false, valist);
 
 	va_end(valist);
 }

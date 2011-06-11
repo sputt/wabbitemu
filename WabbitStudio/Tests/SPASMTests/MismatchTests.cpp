@@ -63,12 +63,16 @@ namespace SPASMTestsVS2008
 		[TestMethod]
 		void Mismatch1()
 		{
-			Assert::AreEqual(SPASM_ERR_UNMATCHED_IF, RunTest("mismatch1.z80"));
+			RunTest("mismatch1.z80");
+			Assert::AreEqual(SPASM_ERR_UNMATCHED_IF, (int) GetLastSPASMError(), "Wrong error code");
+			Assert::AreEqual(1, GetLastSPASMErrorLine(), "Wrong error line");
 		}
 		[TestMethod]
 		void Mismatch2()
 		{
-			Assert::AreEqual(SPASM_ERR_UNMATCHED_IF, RunTest("mismatch2.z80"));
+			RunTest("mismatch2.z80");
+			Assert::AreEqual(SPASM_ERR_UNMATCHED_IF, (int) GetLastSPASMError(), "Wrong error code");
+			Assert::AreEqual(5, GetLastSPASMErrorLine(), "Wrong error line");
 		}
 		[TestMethod]
 		void Mismatch3()
@@ -79,6 +83,11 @@ namespace SPASMTestsVS2008
 		void Mismatch4()
 		{
 			Assert::AreEqual(SPASM_ERR_UNMATCHED_IF, RunTest("mismatch4.z80"));
+		}
+		[TestMethod]
+		void Mismatch5()
+		{
+			Assert::AreEqual(SPASM_ERR_SUCCESS, RunTest("mismatch5.z80"));
 		}
 	};
 }

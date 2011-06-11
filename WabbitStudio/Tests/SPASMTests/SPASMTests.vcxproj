@@ -213,6 +213,7 @@
     <None Include="mismatch2.z80" />
     <None Include="mismatch3.z80" />
     <None Include="mismatch4.z80" />
+    <None Include="mismatch5.z80" />
     <None Include="PreprocessorTests.z80">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>

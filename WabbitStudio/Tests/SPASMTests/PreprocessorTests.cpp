@@ -109,5 +109,29 @@ namespace SPASMTestsVS2008
 		{
 			RunTest(__FUNCTION__);
 		}
+
+		[TestMethod]
+		void LessThan()
+		{
+			RunTest(__FUNCTION__);
+		}
+
+		[TestMethod]
+		void LessThanEqualTo()
+		{
+			RunTest(__FUNCTION__);
+		}
+
+		[TestMethod]
+		void DoubleEquals()
+		{
+			RunTest(__FUNCTION__);
+		}
+
+		[TestMethod]
+		void Equals()
+		{
+			RunTest(__FUNCTION__);
+		}
 	};
 }

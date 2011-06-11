@@ -17,7 +17,7 @@ static char *handle_preop_include (char *ptr);
 char *handle_preop_import (char *ptr);
 char *handle_preop_if (char *ptr);
 char *handle_preop_elif (char *ptr);
-static char *skip_until (char *ptr, int skip_until, int argc, ...);
+static char *skip_until (char *ptr, int *line, int argc, ...);
 
 extern bool case_sensitive;
 static define_t *last_define = NULL;
@@ -86,7 +86,9 @@ char *handle_preop (char *ptr) {
 				{
 					SetLastSPASMError(SPASM_ERR_ELIF_WITHOUT_IF);
 				}
-				ptr = skip_until(ptr, 0, 1, "#endif");
+				int session = StartSPASMErrorSession();
+				ptr = skip_until(ptr, &line_num, 1, "#endif");
+				EndSPASMErrorSession(session);
 				break;
 			}
 		case 3: //IFDEF
@@ -101,6 +103,7 @@ char *handle_preop (char *ptr) {
 				return ptr;
 			}
 
+			nIfLevel++;
 			name_end = skip_to_name_end (ptr);
 			name = strndup (ptr, name_end - ptr);
 			//if it's defined, do all the normal #if stuff
@@ -123,6 +126,7 @@ char *handle_preop (char *ptr) {
 				return ptr;
 			}
 
+			nIfLevel++;
 			name_end = skip_to_name_end (ptr);
 			name = strndup (ptr, name_end - ptr);
 
@@ -141,7 +145,9 @@ char *handle_preop (char *ptr) {
 			}
 			else
 			{
-				ptr = skip_until (ptr, 0, 3, "#else", "#elif", "#endif");
+				int session = StartSPASMErrorSession();
+				ptr = skip_until (ptr, &line_num, 3, "#else", "#elif", "#endif");
+				EndSPASMErrorSession(session);
 			}
 			break;
 		}
@@ -176,7 +182,7 @@ char *handle_preop (char *ptr) {
 		case 10: //COMMENT
 		{
 			int session = StartSPASMErrorSession();
-			ptr = skip_until (ptr, 0, 1, "#endcomment");
+			ptr = skip_until (ptr, &line_num, 1, "#endcomment");
 			EndSPASMErrorSession(session);
 			break;
 		}
@@ -213,7 +219,7 @@ char *handle_preop (char *ptr) {
 			fInMacro = true;
 			//now find the end of the macro (at the end of the file or an #endmacro directive)
 			//ptr = skip_to_next_line (ptr);
-			macro_end = skip_until (ptr, 0, 1, "#endmacro");
+			macro_end = skip_until (ptr, &line_num, 1, "#endmacro");
 
 			//...and copy everything up to the end into the contents
 			set_define (macro, ptr, macro_end - ptr, false);
@@ -657,16 +663,15 @@ char *handle_preop_elif (char *ptr)
 
 char *do_if (char *ptr, int condition)
 {
-	char *result  = NULL;
+	// Generate an error if the matching endif isn't found
+	char *endif = skip_until (ptr, NULL, 1, "#endif");
 	if (condition)
 	{
-		// Check for the endif
-		result = skip_until (ptr, 0, 1, "#endif");
 		return ptr;
 	}
 	else
 	{
-		result = skip_until (ptr, 0, 3, "#else", "#elif", "#endif");
+		char *result = skip_until (ptr, &line_num, 3, "#else", "#elif", "#endif");
 		if (line_has_word(result, _T("#else"), 5))
 		{
 			result = skip_to_code_line_end(result);
@@ -715,14 +720,15 @@ char *parse_arg_defs (const char *ptr, define_t *define) {
 }
 
 
-char *skip_until (char *ptr, int starting_level, int argc, ...)
+char *skip_until (char *ptr, int *pnLine, int argc, ...)
 {
-	starting_level = 0;
-	int level = starting_level;
+	int level = 0;
 	va_list argp;
 
 	if (argc == 0) return ptr;
-	
+
+	int line_num_copy = line_num;
+
 	while (*ptr && !error_occurred) {
 		char *line = ptr;
 		char *line_end = skip_to_next_line(ptr);
@@ -733,7 +739,7 @@ char *skip_until (char *ptr, int starting_level, int argc, ...)
 				level++;
 			} else if (level > 0 && line_has_word (line, "#ENDIF", 6)) {
 				level--;
-			} else if (level >= starting_level)
+			} else if (level >= 0)
 			{
 				int i;
 				// Test all of the words that mark the end of the skipping
@@ -743,6 +749,10 @@ char *skip_until (char *ptr, int starting_level, int argc, ...)
 					char *word = va_arg(argp, char *);
 					if (line_has_word (line, word, strlen (word)))
 					{
+						if (pnLine != NULL)
+						{
+							*pnLine = line_num_copy;
+						}	
 						return line;
 					}
 				}
@@ -753,10 +763,15 @@ char *skip_until (char *ptr, int starting_level, int argc, ...)
 		} while (line < line_end && !error_occurred);
 			
 		ptr = line_end;
-		line_num++;
+		line_num_copy++;
+
 	}
 
+	// Will be issued for line_num of the start
 	SetLastSPASMError(SPASM_ERR_UNMATCHED_IF);
-	
+	if (pnLine != NULL)
+	{
+		*pnLine = line_num_copy;
+	}	
 	return ptr;
 }

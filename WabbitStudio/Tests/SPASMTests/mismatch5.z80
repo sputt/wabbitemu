@@ -1,0 +1,38 @@
+#if 1
+ nop
+ nop
+#else
+ nop
+ nop
+#endif
+
+#if 1 \ nop \ #else \ nop \ #endif
+
+#if 1
+#endif
+
+#if 1
+#else\ #endif
+
+#define bob
+
+#ifdef bob
+
+#endif
+
+#ifndef bob
+#endif
+
+#if 1\ #if 0\ #else\ #endif\#endif
+
+#if 1
+#elif 0
+#else
+#endif
+
+#if 1
+#if 2
+#elif 3
+#endif
+#else
+#endif

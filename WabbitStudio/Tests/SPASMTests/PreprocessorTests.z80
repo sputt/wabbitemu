@@ -90,3 +90,61 @@
     .echo >> OUTPUT_FILE "FAIL9"
   #endif
 #endmacro
+
+#macro LessThan
+  .echo > OUTPUT_FILE ""
+
+  #define bob 20
+  #if bob < 20
+    .echo >> OUTPUT_FILE "FAIL"
+  #else
+    .echo >> OUTPUT_FILE "PASS"
+  #endif
+#endmacro
+
+#macro LessThanEqualTo
+  .echo > OUTPUT_FILE ""
+
+  #define bob 20
+  #if bob <= 20
+    .echo >> OUTPUT_FILE "PA"
+  #else
+    .echo >> OUTPUT_FILE "FAIL1"
+  #endif
+
+  #if bob <= 21
+    .echo >> OUTPUT_FILE "S"
+  #else
+    .echo >> OUTPUT_FILE "FAIL2"
+  #endif
+
+  #if bob <= 19
+    .echo >> OUTPUT_FILE "FAIL3"
+  #else
+    .echo >> OUTPUT_FILE "S"
+  #endif
+#endmacro
+
+#macro DoubleEquals
+   .echo > OUTPUT_FILE ""
+   #define test 20
+   #if test == 20
+     .echo >> OUTPUT_FILE "PA"
+   #endif
+   #if test==20
+     .echo >> OUTPUT_FILE "SS"
+   #endif
+#endmacro
+
+#macro Equals
+   .echo > OUTPUT_FILE ""
+   #define test 20
+   #if test = 20
+     .echo >> OUTPUT_FILE "PA"
+   #endif
+   #if test=10
+     .echo >> OUTPUT_FILE "FAIL"
+   #else
+     .echo >> OUTPUT_FILE "SS"
+   #endif
+#endmacro

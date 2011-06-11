@@ -40,10 +40,10 @@ typedef enum tagMATHOP
 	// Conditions
 	M_AND,
 	M_OR,
-	M_LT,
-	M_GT,
 	M_LTE,
 	M_GTE,
+	M_LT,
+	M_GT,
 	M_EQUALS,
 	M_NOTEQUALS,
 
@@ -65,10 +65,10 @@ MathDefs[] =
 	// Conditions
 	{M_AND, "&&"},
 	{M_OR, "||"},
-	{M_LT, "<"},
-	{M_GT, ">"},
 	{M_LTE, "<="},
 	{M_GTE, ">="},
+	{M_LT, "<"},
+	{M_GT, ">"},
 	{M_EQUALS, "=="},
 	{M_EQUALS, "="},
 	{M_NOTEQUALS, "!="},

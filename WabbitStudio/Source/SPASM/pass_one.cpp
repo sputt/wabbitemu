@@ -423,9 +423,11 @@ char *handle_opcode_or_macro (char *ptr) {
 					full_macro[0] = ' ';
 					strcpy(&full_macro[1], define->contents);
 
+					const char *old_filename = curr_input_file;
 					int old_line_num = line_num;
+					curr_input_file = define->input_file;
 					line_num = define->line_num;
-
+	
 					int session = StartSPASMErrorSession();
 					while (curr_line != NULL && *curr_line && !error_occurred)
 					{
@@ -433,11 +435,12 @@ char *handle_opcode_or_macro (char *ptr) {
 						curr_line = skip_to_next_line(next_line);
 						line_num++;
 					}
+					curr_input_file = (char *) old_filename;
 					line_num = old_line_num;
 
 					if (GetSPASMErrorSessionErrorCount(session) > 0)
 					{
-						show_error("Error during invocation of macro '%s'", define->name);
+						AddSPASMErrorSessionAnnotation(session, "Error during invocation of macro '%s'", define->name);
 						ReplaySPASMErrorSession(session);
 					}
 					EndSPASMErrorSession(session);

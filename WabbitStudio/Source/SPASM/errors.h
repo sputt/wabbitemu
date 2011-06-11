@@ -36,6 +36,8 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_NAME_EXPECTED				0x122
 #define SPASM_ERR_NO_PREVIOUS_DEFINE		0x123
 #define SPASM_ERR_ELIF_WITHOUT_IF			0x124
+#define SPASM_ERR_INVALID_OPTION			0x125
+#define SPASM_ERR_INVALID_ADDINSTR			0x126
 
 #define SPASM_ERR_INVALID_DECIMAL_DIGIT		0x200
 #define SPASM_ERR_INVALID_HEX_DIGIT			0x201
@@ -49,6 +51,8 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_SIGNER_MISSING_NAME		0x504
 #define SPASM_ERR_SIGNER_ROOM_FOR_SIG		0x505
 
+
+#define SPASM_ERR_CUSTOM					0x600
 
 #define SPASM_WARN_TRUNCATING_8				0x800
 #define SPASM_WARN_TRUNCATING_16			0x801
@@ -86,6 +90,8 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_NAME_EXPECTED,			_T("Expecting a name, expression ended early")},
 	{SPASM_ERR_NO_PREVIOUS_DEFINE,		_T("No previous define to continue")},
 	{SPASM_ERR_ELIF_WITHOUT_IF,			_T("Use of #ELIF outside of an #IF expression")},
+	{SPASM_ERR_INVALID_OPTION,			_T("The option %s does not exist")},
+	{SPASM_ERR_INVALID_ADDINSTR,		_T("Missing required information for .ADDINSTR")},
 
 	{SPASM_ERR_INVALID_DECIMAL_DIGIT,	_T("Invalid digit '%c' in the decimal number '%s'")},
 	{SPASM_ERR_INVALID_HEX_DIGIT,		_T("Invalid digit '%c' in the hexadecimal number '%s'")},
@@ -100,6 +106,8 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_SIGNER_MISSING_PAGES,	_T("Page count field missing")},
 	{SPASM_ERR_SIGNER_MISSING_NAME,		_T("Name field missing")},
 	{SPASM_ERR_SIGNER_ROOM_FOR_SIG,		_T("Not enough room for signature on last page")},
+
+	{SPASM_ERR_CUSTOM,					_T("%s")},
 
 	{SPASM_WARN_TRUNCATING_8,			_T("Value too large for 8-bits, truncation required")},
 	{SPASM_WARN_TRUNCATING_16,			_T("Value too large for 16-bits, truncation required")},
@@ -120,4 +128,5 @@ void AddSPASMErrorSessionAnnotation(int nSession, LPCTSTR lpszFormat, ...);
 bool IsErrorInSPASMErrorSession(int nSession, DWORD dwErrorCode);
 #ifdef _TEST
 DWORD GetLastSPASMError();
+int GetLastSPASMErrorLine();
 #endif
