@@ -187,6 +187,7 @@
     <ClCompile Include="AssemblyInfo.cpp" />
     <ClCompile Include="LabelTests.cpp" />
     <ClCompile Include="MacroTests.cpp" />
+    <ClCompile Include="MismatchTests.cpp" />
     <ClCompile Include="ParserTests.cpp" />
     <ClCompile Include="PreprocessorTests.cpp" />
     <ClCompile Include="stdafx.cpp">
@@ -208,6 +209,10 @@
     <None Include="echofill.z80">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>
+    <None Include="mismatch1.z80" />
+    <None Include="mismatch2.z80" />
+    <None Include="mismatch3.z80" />
+    <None Include="mismatch4.z80" />
     <None Include="PreprocessorTests.z80">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </None>

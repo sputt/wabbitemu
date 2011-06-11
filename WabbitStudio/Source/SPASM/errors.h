@@ -31,6 +31,11 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_STRAY_PREOP				0x117
 #define SPASM_ERR_EXPRESSION_EXPECTED		0x118
 #define SPASM_ERR_SYNTAX					0x119
+#define SPASM_ERR_JUMP_EXCEEDED				0x120
+#define SPASM_ERR_INDEX_OFFSET_EXCEEDED		0x121
+#define SPASM_ERR_NAME_EXPECTED				0x122
+#define SPASM_ERR_NO_PREVIOUS_DEFINE		0x123
+#define SPASM_ERR_ELIF_WITHOUT_IF			0x124
 
 #define SPASM_ERR_INVALID_DECIMAL_DIGIT		0x200
 #define SPASM_ERR_INVALID_HEX_DIGIT			0x201
@@ -43,6 +48,10 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_SIGNER_MISSING_PAGES		0x503
 #define SPASM_ERR_SIGNER_MISSING_NAME		0x504
 #define SPASM_ERR_SIGNER_ROOM_FOR_SIG		0x505
+
+
+#define SPASM_WARN_TRUNCATING_8				0x800
+#define SPASM_WARN_TRUNCATING_16			0x801
 
 #ifndef _ERRORS_CPP
 extern
@@ -72,7 +81,11 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_EXCEEDED_RECURSION_LIMIT,_T("Recursion depth limit exceeded")},
 	{SPASM_ERR_EXPRESSION_EXPECTED,		_T("Expecting an expression, statement ended early")},
 	{SPASM_ERR_SYNTAX,					_T("Unknown syntax")},
-
+	{SPASM_ERR_JUMP_EXCEEDED,			_T("Relative jump distance exceeded (distance %d)")},
+	{SPASM_ERR_INDEX_OFFSET_EXCEEDED,	_T("Index register offset exceeded (offset %d)")},
+	{SPASM_ERR_NAME_EXPECTED,			_T("Expecting a name, expression ended early")},
+	{SPASM_ERR_NO_PREVIOUS_DEFINE,		_T("No previous define to continue")},
+	{SPASM_ERR_ELIF_WITHOUT_IF,			_T("Use of #ELIF outside of an #IF expression")},
 
 	{SPASM_ERR_INVALID_DECIMAL_DIGIT,	_T("Invalid digit '%c' in the decimal number '%s'")},
 	{SPASM_ERR_INVALID_HEX_DIGIT,		_T("Invalid digit '%c' in the hexadecimal number '%s'")},
@@ -87,11 +100,15 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_SIGNER_MISSING_PAGES,	_T("Page count field missing")},
 	{SPASM_ERR_SIGNER_MISSING_NAME,		_T("Name field missing")},
 	{SPASM_ERR_SIGNER_ROOM_FOR_SIG,		_T("Not enough room for signature on last page")},
+
+	{SPASM_WARN_TRUNCATING_8,			_T("Value too large for 8-bits, truncation required")},
+	{SPASM_WARN_TRUNCATING_16,			_T("Value too large for 16-bits, truncation required")},
 }
 #endif
 ;
 
 void SetLastSPASMError(DWORD dwErrorCode, ...);
+void SetLastSPASMWarning(DWORD dwErrorCode, ...);
 //DWORD GetLastSPASMError();
 int StartSPASMErrorSession(void);
 int GetSPASMErrorSessionErrorCount(int nSession);

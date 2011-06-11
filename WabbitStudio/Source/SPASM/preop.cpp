@@ -17,11 +17,12 @@ static char *handle_preop_include (char *ptr);
 char *handle_preop_import (char *ptr);
 char *handle_preop_if (char *ptr);
 char *handle_preop_elif (char *ptr);
-char *skip_until (char *ptr, int argc, ...);
+static char *skip_until (char *ptr, int skip_until, int argc, ...);
 
 extern bool case_sensitive;
 static define_t *last_define = NULL;
-static bool fInIf = false;
+static int nIfLevel = 0;
+static bool fInMacro = false;
 
 /*
  * Handles a preop, returns the new
@@ -75,10 +76,19 @@ char *handle_preop (char *ptr) {
 		}
 		case 2: //IF
 		{
+			nIfLevel++;
 			ptr = handle_preop_if (ptr);
-			fInIf = true;
 			break;
 		}
+		case 6: // ELIF
+			{
+				if (nIfLevel == 0)
+				{
+					SetLastSPASMError(SPASM_ERR_ELIF_WITHOUT_IF);
+				}
+				ptr = skip_until(ptr, 0, 1, "#endif");
+				break;
+			}
 		case 3: //IFDEF
 		{
 			char *name_end, *name;
@@ -124,34 +134,22 @@ char *handle_preop (char *ptr) {
 			break;
 		}
 		case 5: //ELSE
-		case 6: //ELSE IF
 		{
-			if (fInIf == false)
+			if (nIfLevel == 0)
 			{
 				SetLastSPASMError(SPASM_ERR_STRAY_PREOP, preops[preop]);
 			}
 			else
 			{
-				int session = StartSPASMErrorSession();
-				ptr = skip_until (ptr, 3, "#else", "#elif", "#endif");
-				if (IsErrorInSPASMErrorSession(session, SPASM_ERR_UNMATCHED_IF) && GetSPASMErrorSessionErrorCount(session) == 1)
-				{
-					EndSPASMErrorSession(session);
-					SetLastSPASMError(SPASM_ERR_UNMATCHED_IF);
-				}
-				else
-				{
-					ReplaySPASMErrorSession(session);
-					EndSPASMErrorSession(session);
-				}
+				ptr = skip_until (ptr, 0, 3, "#else", "#elif", "#endif");
 			}
 			break;
 		}
 		case 7: //ENDIF
 		{
-			if (fInIf == true)
+			if (nIfLevel > 0)
 			{
-				fInIf = false;
+				nIfLevel--;
 			}
 			else
 			{
@@ -164,7 +162,7 @@ char *handle_preop (char *ptr) {
 		{
 			//get the name of the define to remove
 			if (is_end_of_code_line (ptr)) {
-				show_error ("#UNDEF is missing name");
+				SetLastSPASMError(SPASM_ERR_NAME_EXPECTED);
 				return ptr;
 			}
 
@@ -178,7 +176,7 @@ char *handle_preop (char *ptr) {
 		case 10: //COMMENT
 		{
 			int session = StartSPASMErrorSession();
-			ptr = skip_until (ptr, 1, "#endcomment");
+			ptr = skip_until (ptr, 0, 1, "#endcomment");
 			EndSPASMErrorSession(session);
 			break;
 		}
@@ -188,7 +186,7 @@ char *handle_preop (char *ptr) {
 			define_t *macro;
 
 			if (is_end_of_code_line (ptr)) {
-				show_fatal_error ("Macro is missing name");
+				SetLastSPASMError(SPASM_ERR_NAME_EXPECTED);
 				return ptr;
 			}
 
@@ -212,15 +210,21 @@ char *handle_preop (char *ptr) {
 
 			macro->line_num++;
 			
+			fInMacro = true;
 			//now find the end of the macro (at the end of the file or an #endmacro directive)
 			//ptr = skip_to_next_line (ptr);
-			macro_end = skip_until (ptr, 1, "#endmacro");
+			macro_end = skip_until (ptr, 0, 1, "#endmacro");
 
 			//...and copy everything up to the end into the contents
-			set_define (macro, ptr, macro_end - ptr - strlen("#endmacro"), false);
+			set_define (macro, ptr, macro_end - ptr, false);
 			ptr = macro_end;
 			break;
 		}
+		case 13: //ENDMACRO
+			{
+				fInMacro = false;
+				break;
+			}
 		case 14: //IMPORT
 		{
 			ptr = handle_preop_import (ptr);
@@ -229,7 +233,7 @@ char *handle_preop (char *ptr) {
 		case 15: //DEFCONT
 		{
 			if (last_define == NULL) {
-				show_error("DEFCONT used without previous define");
+				SetLastSPASMError(SPASM_ERR_NO_PREVIOUS_DEFINE);
 				break;
 			}
 			char *defcont_start = ptr;
@@ -261,7 +265,7 @@ char *handle_preop_define (const char *ptr) {
 	bool redefined;
 
 	if (is_end_of_code_line (ptr)) {
-		show_error ("#DEFINE is missing name");
+		SetLastSPASMError(SPASM_ERR_NAME_EXPECTED);
 		return (char *) ptr;
 	}
 
@@ -463,7 +467,6 @@ static char *handle_preop_include (char *ptr)
 	
 	if (IsFileBitmap(file))
 	{
-		//jkdlfjk bitmap stuff
 		handle_bitmap(file);
 		fclose (file);
 	}
@@ -617,7 +620,8 @@ char *handle_preop_if (char *ptr) {
  * location in file
  */
 
-char *handle_preop_elif (char *ptr) {
+char *handle_preop_elif (char *ptr)
+{
 	char *expr_end, *expr;
 	int condition;
 
@@ -636,7 +640,7 @@ char *handle_preop_elif (char *ptr) {
 	parse_num (expr, &condition);
 	free(expr);
 	
-	return do_elif(expr_end + 1, condition);
+	//return do_elif(expr_end + 1, condition);
 }
 
 
@@ -651,48 +655,29 @@ char *handle_preop_elif (char *ptr) {
  * true or false
  */
 
-char *do_if (char *ptr, int condition) {
-	if (condition) return ptr;
-	
-	int session = StartSPASMErrorSession();
-	char *result =  skip_until (ptr, 3, "#else", "#elif", "#endif");
-	if (IsErrorInSPASMErrorSession(session, SPASM_ERR_UNMATCHED_IF) && GetSPASMErrorSessionErrorCount(session) == 1)
+char *do_if (char *ptr, int condition)
+{
+	char *result  = NULL;
+	if (condition)
 	{
-		EndSPASMErrorSession(session);
-		SetLastSPASMError(SPASM_ERR_UNMATCHED_IF);
+		// Check for the endif
+		result = skip_until (ptr, 0, 1, "#endif");
+		return ptr;
 	}
 	else
 	{
-		ReplaySPASMErrorSession(session);
-		EndSPASMErrorSession(session);
-	}
-	return result;
-}
-
-/*
- * Skips the appropriate
- * parts of #IF blocks,
- * returns pointer to location
- * in file, needs to be passed
- * whether the condition is
- * true or false
- */
-
-char *do_elif (char *ptr, int condition) {
-	if (condition) {
-		while(!line_has_word(ptr, _T("#elif"), 5) &&
-				!line_has_word(ptr, _T("#else"), 5) &&
-				!line_has_word(ptr, _T("#endif"), 6))
+		result = skip_until (ptr, 0, 3, "#else", "#elif", "#endif");
+		if (line_has_word(result, _T("#else"), 5))
 		{
-			ptr = run_first_pass_line(ptr);
-			ptr = skip_to_next_line(ptr);
+			result = skip_to_code_line_end(result);
 		}
-		return skip_until(ptr, 1, _T("#endif"));
+		else if (line_has_word(result, _T("#elif"), 5))
+		{
+			result = handle_preop_if(skip_whitespace(result) + 5);
+		}
+		return result;
 	}
-	
-	return do_if(ptr, 0);
 }
-
 
 /*
  * Parses argument definitions
@@ -730,9 +715,10 @@ char *parse_arg_defs (const char *ptr, define_t *define) {
 }
 
 
-char *skip_until (char *ptr, int argc, ...)
+char *skip_until (char *ptr, int starting_level, int argc, ...)
 {
-	int level = 1;
+	starting_level = 0;
+	int level = starting_level;
 	va_list argp;
 
 	if (argc == 0) return ptr;
@@ -742,31 +728,22 @@ char *skip_until (char *ptr, int argc, ...)
 		char *line_end = skip_to_next_line(ptr);
 		
 		do {
-			bool word_found = false;
-			
-			// Test for nesting
+			// Test for nesting (includes #ifdef and #ifndef also)
 			if (line_has_word (line, "#IF", 3)) {
 				level++;
 			} else if (level > 0 && line_has_word (line, "#ENDIF", 6)) {
 				level--;
-			} else if (level == 0){
+			} else if (level >= starting_level)
+			{
 				int i;
 				// Test all of the words that mark the end of the skipping
 				va_start(argp, argc);
 				i = argc;
-				while (i-- && !word_found) {
+				while (i--) {
 					char *word = va_arg(argp, char *);
-					if (line_has_word (line, word, strlen (word))) {
-						word_found = true;
-						
-						//a little hacky but bleh...
-						if (!strcmp(word, _T("#elif"))) {
-							ptr = skip_whitespace(ptr);
-							ptr += 5;
-							ptr = skip_whitespace(ptr);
-							return handle_preop_elif(ptr);
-						}
-						return next_expr(line, "\\\r\n");
+					if (line_has_word (line, word, strlen (word)))
+					{
+						return line;
 					}
 				}
 				va_end(argp);
@@ -779,10 +756,7 @@ char *skip_until (char *ptr, int argc, ...)
 		line_num++;
 	}
 
-	if (level > 0)
-	{
-		SetLastSPASMError(SPASM_ERR_UNMATCHED_IF);
-	}
+	SetLastSPASMError(SPASM_ERR_UNMATCHED_IF);
 	
 	return ptr;
 }

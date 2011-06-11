@@ -95,6 +95,7 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 	{
 		//write the value now
 		write_arg (value, type, or_value);
+		ReplaySPASMErrorSession(session);
 	}
 
 	EndSPASMErrorSession(session);
@@ -214,8 +215,9 @@ void run_second_pass () {
 			case OUTPUT_SHOW:
 			{
 				define_t *define;
-				if (!(define = search_defines (output_list->expr))) {
-					show_error ("Can't find macro '%s'", output_list->expr);
+				if (!(define = search_defines (output_list->expr)))
+				{
+					SetLastSPASMError(SPASM_ERR_LABEL_NOT_FOUND, output_list->expr);
 					break;
 				}
 				show_define (define);
@@ -247,7 +249,9 @@ void write_arg (int value, arg_type type, int or_value) {
 	switch (type) {
 		case ARG_NUM_8:
 			if (value < -128 || value > 255)
-				show_warning ("Number is too large to fit in 8 bits, truncating");
+			{
+				SetLastSPASMWarning(SPASM_WARN_TRUNCATING_8);
+			}
 			write_out (value & 0xFF);
 			break;
 		case ARG_NUM_16:
@@ -259,15 +263,17 @@ void write_arg (int value, arg_type type, int or_value) {
 			value &= 0xFFFF;
 			value -= ((program_counter & 0xFFFF)+ 2);
 			
-			if (abs (value - 1) > 128) {
-				show_error ("Relative jump distance is over 128 bytes (%d)", value);
+			if (abs (value - 1) > 128)
+			{
+				SetLastSPASMError(SPASM_ERR_JUMP_EXCEEDED, value);
 				value = 0;
 			}
 			write_out (value & 0xFF);
 			break;
 		case ARG_IX_IY_OFFSET:
-			if (value > 127 || value < -128) {
-				show_error ("ix/iy offset can only range from -127 to +128");
+			if (value > 127 || value < -128)
+			{
+				SetLastSPASMError(SPASM_ERR_INDEX_OFFSET_EXCEEDED, value);
 				value = 0;
 			}
 			write_out (value & 0xFF);

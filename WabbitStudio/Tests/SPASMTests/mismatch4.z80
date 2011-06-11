@@ -1,0 +1,9 @@
+#if 0
+ nop
+#if 1
+
+#endif
+ nop
+#else
+ nop
+#define test 2

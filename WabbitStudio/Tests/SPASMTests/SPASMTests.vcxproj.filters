@@ -16,6 +16,9 @@
     <Filter Include="Test Files">
       <UniqueIdentifier>{8a643f5d-c43a-4392-9cc0-c92882e760bb}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test Files\#IF/#ENDIF Matching">
+      <UniqueIdentifier>{83130226-7b0e-4e1e-b832-61d0040d14eb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="AssemblyInfo.cpp">
@@ -37,6 +40,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PreprocessorTests.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MismatchTests.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -63,6 +69,18 @@
     </None>
     <None Include="PreprocessorTests.z80">
       <Filter>Test Files</Filter>
+    </None>
+    <None Include="mismatch1.z80">
+      <Filter>Test Files\#IF/#ENDIF Matching</Filter>
+    </None>
+    <None Include="mismatch2.z80">
+      <Filter>Test Files\#IF/#ENDIF Matching</Filter>
+    </None>
+    <None Include="mismatch3.z80">
+      <Filter>Test Files\#IF/#ENDIF Matching</Filter>
+    </None>
+    <None Include="mismatch4.z80">
+      <Filter>Test Files\#IF/#ENDIF Matching</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
