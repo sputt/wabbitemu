@@ -65,8 +65,7 @@ void Append_interrupt_device(CPU_t *cpu, int port, int skip) {
 	for(i = 0; i < 256; i++) {
 		if (cpu->pio.interrupt[i] == -1) {
 			cpu->pio.interrupt[i] = port;
-			if ( skip > 0 ) cpu->pio.skip_factor[i] = skip;
-			else cpu->pio.skip_factor[i] = 0;
+			cpu->pio.skip_factor[i] = skip;
 			break;
 		}
 	}
@@ -76,8 +75,7 @@ void Modify_interrupt_device(CPU_t *cpu, int port, int skip) {
 	int i;
 	for(i = 0; i < 256; i++) {
 		if (cpu->pio.interrupt[i] == port) {
-			if (skip > 0) cpu->pio.skip_factor[i] = skip;
-			else cpu->pio.skip_factor[i] = 0;
+			cpu->pio.skip_factor[i] = skip;
 			break;
 		} else if (cpu->pio.interrupt[i] == -1) break;
 	}
