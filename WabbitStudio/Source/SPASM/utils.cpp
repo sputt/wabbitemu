@@ -56,7 +56,7 @@ char *skip_to_name_end (const char *ptr) {
 	return (char *) ptr;
 }
 
-char *skip_to_code_line_end (const char *ptr) {
+char *skip_to_line_end (const char *ptr) {
 	bool in_escape = false, in_quotes = false;
 
 	if (ptr == NULL)
@@ -71,6 +71,15 @@ char *skip_to_code_line_end (const char *ptr) {
 	}
 
 	return (char *) ptr;
+}
+
+const char *skip_to_code_line_end(const char *ptr)
+{
+	const char *next = next_code_line((char *) ptr);
+	if (*next == '\0')
+		return next;
+	while (is_end_of_code_line (--next)) ;
+	return next + 1;
 }
 
 char *skip_whitespace (const char *ptr) {
@@ -429,7 +438,7 @@ char* reduce_string (char* input) {
 	*output = '\0';
 
 	// Count the quotes
-	if (quote_count == 2)
+	if (quote_count >= 2)
 	{
 		if (input[0] == '"' && input[strlen(input) - 1] == '"')
 		{

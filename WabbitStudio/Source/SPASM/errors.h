@@ -56,6 +56,8 @@ SPASMERROR, *LPSPASMERROR;
 
 #define SPASM_WARN_TRUNCATING_8				0x800
 #define SPASM_WARN_TRUNCATING_16			0x801
+#define SPASM_WARN_SMALL_LAST_PAGE			0x802
+#define SPASM_WARN_UNKNOWN_EXTENSION		0x803
 
 #ifndef _ERRORS_CPP
 extern
@@ -111,6 +113,8 @@ SPASMERROR g_ErrorCodes[]
 
 	{SPASM_WARN_TRUNCATING_8,			_T("Value too large for 8-bits, truncation required")},
 	{SPASM_WARN_TRUNCATING_16,			_T("Value too large for 16-bits, truncation required")},
+	{SPASM_WARN_SMALL_LAST_PAGE,		_T("Only %d bytes are used on the last APP page")},
+	{SPASM_WARN_UNKNOWN_EXTENSION,		_T("Unrecognized file extension, assuming binary")},
 }
 #endif
 ;

@@ -559,8 +559,8 @@ void add_arg(char *name, char *value, list_t *arg_set) {
 	new_arg->name = name;
 	new_arg->contents = value;
 	new_arg->num_args = 0;
-	//new_arg->line_num = line_num;
-	//new_arg->input_file = curr_input_file;
+	new_arg->line_num = line_num;
+	new_arg->input_file = strdup(curr_input_file);
 
 	hash_insert((hash_t *) arg_set->data, new_arg);
 }

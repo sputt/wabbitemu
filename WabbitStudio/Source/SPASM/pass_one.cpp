@@ -158,7 +158,7 @@ char *run_first_pass_line (char *ptr) {
 		if (*ptr == '\\')
 			ptr++;
 		
-		//char *code_end = skip_to_code_line_end(ptr);
+		//char *code_end = skip_to_line_end(ptr);
 		//printf("line %d: %s\n", line_num, strndup(ptr, code_end - ptr));
 		//parse what's on the line
 		ptr = run_first_pass_line_sec (ptr);
@@ -389,9 +389,20 @@ char *handle_opcode_or_macro (char *ptr) {
 			free (name);
 
 			//if there are arguments, parse them
+			int args_session = StartSPASMErrorSession();
 			args_end = parse_args(ptr, define, &args);
-			if (!args_end)
-				return ptr;
+			
+			if (GetSPASMErrorSessionErrorCount(args_session) > 0)
+			{
+				ReplaySPASMErrorSession(args_session);
+				EndSPASMErrorSession(args_session);
+				return args_end;
+			}
+			else
+			{
+				EndSPASMErrorSession(args_session);
+			}
+
 			ptr = args_end;
 
 			in_macro++;
@@ -400,7 +411,7 @@ char *handle_opcode_or_macro (char *ptr) {
 			
 			//see if any code is left on the line
 			if (!is_end_of_code_line (skip_whitespace (ptr))) {
-				char *line_end = skip_to_code_line_end (ptr);
+				char *line_end = skip_to_line_end (ptr);
 				char *full_line = (char *) malloc_chk (strlen (define->contents) + line_end - ptr + 1);
 				
 				strcpy (full_line, define->contents);
@@ -527,6 +538,7 @@ char *match_opcode_args (char *ptr, char **arg_ptrs, char **arg_end_ptrs, opcode
 		
 		//if it doesn't match any instructions for this opcode, show an error and skip to line end
 		SetLastSPASMError(SPASM_ERR_INVALID_OPERANDS, curr_opcode->name);
+
 	} else
 		*curr_instr = &(curr_opcode->instrs[instr_num]);
 

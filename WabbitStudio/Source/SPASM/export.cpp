@@ -85,7 +85,7 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	FILE *outfile;
 	int i, calc;
 
-	curr_input_file = strdup(_T("signer"));
+	curr_input_file = strdup(_T("exporter"));
 	line_num = -1;
 
 
@@ -100,12 +100,12 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 		}
 
 		if (calc == 10) {
-			show_warning ("Output extension not recognized, assuming .bin");
+			SetLastSPASMWarning(SPASM_WARN_UNKNOWN_EXTENSION);
 			calc = 9;
 		}
 
 	} else {
-		show_warning ("No output extension given, assuming .bin");
+		//show_warning ("No output extension given, assuming .bin");
 		calc = 9;
 	}
 
@@ -152,13 +152,14 @@ void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, c
 
 /* Check if size will fit in mem with signature */
     if ((tempnum = ((size+96)%16384))) {
-        if (tempnum < 97)
+        if (tempnum < 97 && size > 16384)
 		{
 			SetLastSPASMError(SPASM_ERR_SIGNER_ROOM_FOR_SIG);
 			return;
 		}
-        if (tempnum<1024 && (size+96)>>14) {
-			show_warning ("Warning: There are only %d bytes on the last page.\n", tempnum);
+        if (tempnum<1024 && (size+96)>>14)
+		{
+			SetLastSPASMWarning(SPASM_WARN_SMALL_LAST_PAGE, tempnum);
 		}
     }
 

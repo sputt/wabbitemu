@@ -170,11 +170,11 @@ char *parse_define (define_t *define)
 		else if (is_end_of_code_line(curr_line) == false)
 		{
 			//otherwise, it must be a value, so return that
-			lpszResult = strndup(curr_line, skip_to_code_line_end (curr_line) - curr_line);
+			lpszResult = strndup(curr_line, skip_to_code_line_end(curr_line) - curr_line);
 			break;
 		}
 
-		curr_line = skip_to_next_line(next_line);
+		curr_line = next_code_line(next_line);
 		line_num++;
 	}
 

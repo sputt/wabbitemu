@@ -211,7 +211,7 @@ char *handle_directive (const char *ptr) {
 			}
 
 			// You can ignore class, etc
-			ptr = skip_to_code_line_end (ptr);
+			ptr = skip_to_line_end (ptr);
 			break;
 addinstr_fail:
 			SetLastSPASMError(SPASM_ERR_INVALID_ADDINSTR);
@@ -273,7 +273,7 @@ addinstr_fail:
 				int session = StartSPASMErrorSession();
 				parse_emit_string (expr, ES_ECHO, NULL);
 
-				if (IsSPASMErrorSessionFatal(session) == false)
+				if (IsSPASMErrorSessionFatal(session) == true)
 				{
 					add_pass_two_output (expr, OUTPUT_ECHO);
 				}

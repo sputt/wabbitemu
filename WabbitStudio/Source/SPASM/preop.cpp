@@ -223,12 +223,13 @@ char *handle_preop (char *ptr) {
 
 			//...and copy everything up to the end into the contents
 			set_define (macro, ptr, macro_end - ptr, false);
+			fInMacro = false;
+			macro_end = skip_to_line_end(macro_end);
 			ptr = macro_end;
 			break;
 		}
 		case 13: //ENDMACRO
 			{
-				fInMacro = false;
 				break;
 			}
 		case 14: //IMPORT
@@ -279,7 +280,7 @@ char *handle_preop_define (const char *ptr) {
 	name_end = skip_to_name_end (ptr);
 	define = add_define (strndup (ptr, name_end - ptr), &redefined);
 	if (define == NULL)
-		return skip_to_code_line_end (ptr);
+		return skip_to_line_end (ptr);
 
 	last_define = define;
 	
@@ -295,7 +296,7 @@ char *handle_preop_define (const char *ptr) {
 			return (char *) ptr;
 		}
 
-		value_end = skip_to_code_line_end (ptr);
+		value_end = skip_to_line_end (ptr);
 		set_define (define, ptr, value_end - ptr, redefined);
 		ptr = value_end;
 	} else {
@@ -321,6 +322,8 @@ char *handle_preop_define (const char *ptr) {
 			new_value = eval (expr);
 			set_define (define, new_value, -1, redefined);
 			free (new_value);
+			if (*eval_ptr == ')')
+				eval_ptr++;
 			ptr = eval_ptr;
 
 		//handle CONCAT, concatenate contents
@@ -374,7 +377,7 @@ char *handle_preop_define (const char *ptr) {
 			ptr = eval_ptr;
 			
 		} else {
-			value_end = skip_to_code_line_end (ptr);
+			value_end = skip_to_line_end (ptr);
 			set_define (define, ptr, value_end - ptr, redefined);
 			ptr = value_end;
 		}
@@ -599,7 +602,8 @@ char *handle_preop_import (char *ptr) {
  */
 
 char *handle_preop_if (char *ptr) {
-	char *expr_end, *expr;
+	const char *expr_end;
+	char *expr;
 	int condition;
 
 	if (is_end_of_code_line (ptr)) {
@@ -607,17 +611,14 @@ char *handle_preop_if (char *ptr) {
 		return ptr;
 	}
 
-	expr_end = next_code_line (ptr) - 1;
-	while (is_end_of_code_line (expr_end))
-		expr_end--;
-//	expr_end = skip_to_code_line_end (ptr);
-	
-	expr = strndup (ptr, expr_end - ptr + 1);
+	expr_end = skip_to_code_line_end(ptr);
+
+	expr = strndup (ptr, expr_end - ptr);
 	
 	parse_num (expr, &condition);
 	free(expr);
 	
-	return do_if (expr_end + 1, condition);
+	return do_if ((char *) expr_end, condition);
 }
 
 /*
@@ -636,10 +637,10 @@ char *handle_preop_elif (char *ptr)
 		return ptr;
 	}
 
-	expr_end = next_code_line (ptr) - 1;
+	expr_end = (char *) skip_to_code_line_end(ptr);
 	while (is_end_of_code_line (expr_end))
 		expr_end--;
-//	expr_end = skip_to_code_line_end (ptr);
+//	expr_end = skip_to_line_end (ptr);
 	
 	expr = strndup (ptr, expr_end - ptr + 1);
 	
@@ -674,7 +675,7 @@ char *do_if (char *ptr, int condition)
 		char *result = skip_until (ptr, &line_num, 3, "#else", "#elif", "#endif");
 		if (line_has_word(result, _T("#else"), 5))
 		{
-			result = skip_to_code_line_end(result);
+			result = next_code_line(result) - 1;
 		}
 		else if (line_has_word(result, _T("#elif"), 5))
 		{
@@ -739,7 +740,7 @@ char *skip_until (char *ptr, int *pnLine, int argc, ...)
 				level++;
 			} else if (level > 0 && line_has_word (line, "#ENDIF", 6)) {
 				level--;
-			} else if (level >= 0)
+			} else if (level == 0)
 			{
 				int i;
 				// Test all of the words that mark the end of the skipping

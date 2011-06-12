@@ -99,6 +99,18 @@ namespace SPASMTestsVS2008
 		}
 
 		[TestMethod]
+		void Else2()
+		{
+			RunTest(__FUNCTION__);
+		}
+
+		[TestMethod]
+		void Else3()
+		{
+			RunTest(__FUNCTION__);
+		}
+
+		[TestMethod]
 		void If()
 		{
 			RunTest(__FUNCTION__);
@@ -106,6 +118,12 @@ namespace SPASMTestsVS2008
 
 		[TestMethod]
 		void Elif()
+		{
+			RunTest(__FUNCTION__);
+		}
+
+		[TestMethod]
+		void Elif2()
 		{
 			RunTest(__FUNCTION__);
 		}

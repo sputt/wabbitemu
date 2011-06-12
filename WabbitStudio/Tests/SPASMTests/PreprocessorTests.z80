@@ -33,6 +33,41 @@
   #endif
 #endmacro
 
+#macro Else2
+  .echo > OUTPUT_FILE ""
+
+  #define you_win
+
+  #define test
+  #ifndef test
+    #ifndef ap
+    
+    #else
+      #undef you_win
+    #endif
+  #endif
+
+  #ifdef you_win
+    .echo >> OUTPUT_FILE "PASS"
+  #else
+    .echo >> OUTPUT_FILE "FAIL"
+  #endif
+#endmacro
+
+#macro Else3
+  .echo > OUTPUT_FILE ""
+
+  #define w 2
+  #ifndef w\ #define ww 12\ #else\ #define ww eval(w)\ #endif
+
+  #if ww = 2
+    .echo >> OUTPUT_FILE "PASS"
+  #else
+    .echo >> OUTPUT_FILE "FAIL"
+  #endif
+
+#endmacro
+
 #macro If
   .echo > OUTPUT_FILE ""
   #define if_test 20
@@ -89,6 +124,12 @@
   #else
     .echo >> OUTPUT_FILE "FAIL9"
   #endif
+#endmacro
+
+#macro Elif2
+  .echo > OUTPUT_FILE ""
+  #define if_test 20
+  #if if_test = 21\ .echo >> OUTPUT_FILE "FAIL1"\ #elif if_test = 20\ .echo >> OUTPUT_FILE "PASS"\ #else\ .echo >> OUTPUT_FILE "FAIL2"\ #endif
 #endmacro
 
 #macro LessThan
