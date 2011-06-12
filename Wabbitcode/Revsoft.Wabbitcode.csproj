@@ -32,7 +32,7 @@
     <SourceAnalysisOverrideSettingsFile>C:\Users\Christopher\Documents\All Programs\SharpDevelop\bin\..\Settings\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
     <NoStdLib>False</NoStdLib>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-    <TargetFrameworkProfile />
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
@@ -63,9 +63,9 @@
     <CheckForOverflowUnderflow>false</CheckForOverflowUnderflow>
     <ConfigurationOverrideFile>
     </ConfigurationOverrideFile>
-    <DefineConstants>TRACE;DEBUG;NEW_DEBUGGING2</DefineConstants>
+    <DefineConstants>TRACE;DEBUG;NEW_DEBUGGING1</DefineConstants>
     <DebugSymbols>false</DebugSymbols>
-    <FileAlignment>4096</FileAlignment>
+    <FileAlignment>512</FileAlignment>
     <Optimize>false</Optimize>
     <RegisterForComInterop>false</RegisterForComInterop>
     <RemoveIntegerChecks>false</RemoveIntegerChecks>
@@ -580,7 +580,6 @@
       <Name>System</Name>
     </Reference>
     <Reference Include="System.Data" />
-    <Reference Include="System.Design" />
     <Reference Include="System.Drawing">
       <Name>System.Drawing</Name>
     </Reference>
@@ -624,6 +623,12 @@
     <Compile Include="Extensions\AsmFormattingStrategy.cs" />
     <Compile Include="Extensions\AbortableThreadPool.cs" />
     <Compile Include="Extensions\Forms.cs" />
+    <Compile Include="Form1.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Form1.designer.cs">
+      <DependentUpon>Form1.cs</DependentUpon>
+    </Compile>
     <Compile Include="IStreamWrapper.cs" />
     <Compile Include="ListBoxItem.cs" />
     <Compile Include="Properties\TempSettings.Designer.cs">
@@ -791,12 +796,6 @@
     <Compile Include="Services\Project\ProjectFolder.cs" />
     <Compile Include="Services\ThreadingService.cs" />
     <Compile Include="Settings.cs" />
-    <Compile Include="WabbitemuClient.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="WabbitemuClient.Designer.cs">
-      <DependentUpon>WabbitemuClient.cs</DependentUpon>
-    </Compile>
     <Compile Include="IncludeDir.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -849,6 +848,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Docking Windows\MacroManager.resx">
       <DependentUpon>MacroManager.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Form1.resx">
+      <DependentUpon>Form1.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Refactor.resx">
       <DependentUpon>Refactor.cs</DependentUpon>
@@ -988,9 +990,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Extensions\TreeView.resx">
       <DependentUpon>TreeView.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="WabbitemuClient.resx">
-      <DependentUpon>WabbitemuClient.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

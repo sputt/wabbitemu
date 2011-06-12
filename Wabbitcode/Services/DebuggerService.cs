@@ -21,21 +21,13 @@ namespace Revsoft.Wabbitcode.Services
 {
 	public static class DebuggerService
 	{
-#if NEW_DEBUGGING
-        private static Wabbitemu debugger;
-        public static Wabbitemu Debugger
-        {
-            get { return debugger; }
-            set { debugger = value; }
-        }
-#else
 		private static CWabbitemu debugger;
         public static CWabbitemu Debugger
 		{
 			get { return debugger; }
 			set { debugger = value; }
 		}
-#endif
+
         private static List<WabbitcodeBreakpoint> breakpoints = new List<WabbitcodeBreakpoint>();
 		private static Stack<int> stepStack;
 		private static bool isDebugging;
@@ -558,28 +550,7 @@ namespace Revsoft.Wabbitcode.Services
 				}
 			}
 #if NEW_DEBUGGING
-            debugger = new Wabbitemu();
-            string romFile = "";
-            try 
-            {
-                RegistryKey romKey = Registry.CurrentUser.OpenSubKey("Software\\Wabbitemu");
-                romFile = romKey.GetValue("rom_path").ToString();
-            }
-            catch(Exception)
-            {
-				var openFileDialog = new OpenFileDialog()
-				{
-					Filter = "ROMS (*.rom)|*.rom",
-					Title = "Open ROM file"
-				};
-				if (openFileDialog.ShowDialog() != DialogResult.OK)
-				{
-					CancelDebug();
-					return;
-				}
-            }
-            debugger.LoadFile(romFile);
-            debugger.LoadFile(createdName);
+			debugger = new CWabbitemu(createdName);
 #else
 			debugger = new CWabbitemu(createdName);
 #endif
@@ -791,7 +762,8 @@ namespace Revsoft.Wabbitcode.Services
             oldSP = 0xFFFF;
             DockingService.CallStack.Clear();
 #if NEW_DEBUGGING
-            debugger.Running = false;
+			if (debugger != null)
+				debugger.Running = false;
 #else
 #if !DEBUG
             try

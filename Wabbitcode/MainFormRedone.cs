@@ -262,7 +262,7 @@ namespace Revsoft.Wabbitcode
             else
             {
 				UpdateMenus(false);
-				DockingService.LabelList.ClearLabels();
+				DockingService.LabelList.DisableLabelBox();
             }
             UpdateTitle();
         }
@@ -988,6 +988,9 @@ namespace Revsoft.Wabbitcode
 
         private void startDebugMenuItem_Click(object sender, EventArgs e)
         {
+			/*var form = new Form1();
+			form.ShowDialog();
+			return;*/
 			if (DebuggerService.IsDebugging)
 				DebuggerService.Run();
 			else
@@ -1449,6 +1452,7 @@ namespace Revsoft.Wabbitcode
 
 		internal void StartDebug()
 		{
+			
 			showToolbar = Settings.Default.debugToolbar;
 			Settings.Default.debugToolbar = true;
 			if (!showToolbar)
@@ -1548,7 +1552,7 @@ namespace Revsoft.Wabbitcode
 		{
 			DockingService.DebugPanel.UpdateFlags();
 			DockingService.DebugPanel.UpdateRegisters();
-			DockingService.DebugPanel.updateScreen();
+			DockingService.DebugPanel.UpdateScreen();
 		}
 
 		internal void UpdateTrackPanel()

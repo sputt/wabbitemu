@@ -1,13 +1,11 @@
-//#define NEW_DEBUGGING
 using System;
-#if NEW_DEBUGGING
-using System.Runtime.InteropServices;
-#endif
 using System.Windows.Forms;
 using Revsoft.Docking;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
+using System.Drawing;
+using System.Runtime.InteropServices;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
@@ -46,17 +44,12 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 return;
             DocumentService.GotoLine(key.FileName, key.LineNumber);
         }
-#if NEW_DEBUGGING
-        [DllImport("libWabbitemu.dll")]
-        private static extern CWabbitemu.Z80_State GetState(int slot);
-        [DllImport("libWabbitemu.dll")]
-        private static extern void SetState(int slot, CWabbitemu.Z80_State state);
-#endif
+
         public void UpdateRegisters()
         {
 #if NEW_DEBUGGING
             //HACK: I just wanna make this work :P
-            CWabbitemu.Z80_State state = GetState(0);
+			CWabbitemu.Z80_State state = new CWabbitemu.Z80_State();// GetState(0);
 #else
             CWabbitemu.Z80_State state = DebuggerService.Debugger.getState();
 #endif
@@ -74,10 +67,21 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             spBox.Text = state.SP.ToString("X4");
         }
 
-        public void updateScreen()
+		IntPtr scan0 = Marshal.AllocHGlobal(128 * 64);
+        public void UpdateScreen()
         {
-            //HACK: Same, i dont need a pic right now
-            //screenPicBox.Image = GlobalClass.mainForm.debugger.DrawScreen();
+#if NEW_DEBUGGING
+			var calcBitmap = new Bitmap(128, 64, 128, System.Drawing.Imaging.PixelFormat.Format8bppIndexed, scan0);
+			var palette = calcBitmap.Palette;
+			for (int i = 0; i < 255; i++)
+			{
+				palette.Entries[i] = Color.FromArgb(0x9e * (256 - i) / 255, (0xAB * (256 - i)) / 255, (0x88 * (256 - i)) / 255);
+			}
+			calcBitmap.Palette = palette;
+			screenPicBox.Image = calcBitmap;
+#else
+            screenPicBox.Image = DebuggerService.Debugger.DrawScreen();
+#endif
         }
 
         bool updating;
@@ -86,7 +90,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             updating = true;
 #if NEW_DEBUGGING
             //HACK: I just wanna make this work :P
-            CWabbitemu.Z80_State state = GetState(0);
+			CWabbitemu.Z80_State state = new CWabbitemu.Z80_State();// GetState(0);
 #else
             CWabbitemu.Z80_State state = DebuggerService.Debugger.getState();
 #endif
@@ -105,11 +109,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void RegisterBox_KeyPress(object sender, KeyPressEventArgs e)
         {
+			if (!DebuggerService.IsDebugging)
+				return;
             if (e.KeyChar == (char)Keys.Enter)
             {
 #if NEW_DEBUGGING
                 //HACK: I just wanna make this work :P
-                CWabbitemu.Z80_State state = GetState(0);
+				CWabbitemu.Z80_State state = new CWabbitemu.Z80_State();// GetState(0);
 #else
 				CWabbitemu.Z80_State state = DebuggerService.Debugger.getState();
 #endif
@@ -129,7 +135,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                     state.PC = Convert.ToUInt16(pcBox.Text, 16);
 #if NEW_DEBUGGING
                 //HACK: I just wanna make this work :P
-                SetState(0, state);
+                //SetState(0, state);
 #else
 					DebuggerService.Debugger.setState(state);
 #endif
@@ -143,11 +149,11 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void zflagBox_CheckedChanged(object sender, EventArgs e)
         {
-            if (updating)
+            if (updating || !DebuggerService.IsDebugging)
                 return;
 #if NEW_DEBUGGING
             //HACK: I just wanna make this work :P
-            CWabbitemu.Z80_State state = GetState(0);
+			CWabbitemu.Z80_State state = new CWabbitemu.Z80_State();// GetState(0);
 #else
 			CWabbitemu.Z80_State state = DebuggerService.Debugger.getState();
 #endif
@@ -160,7 +166,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 state.AF |= f;
 #if NEW_DEBUGGING
                 //HACK: I just wanna make this work :P
-                SetState(0, state);
+                //SetState(0, state);
 #else
 				DebuggerService.Debugger.setState(state);
 #endif
