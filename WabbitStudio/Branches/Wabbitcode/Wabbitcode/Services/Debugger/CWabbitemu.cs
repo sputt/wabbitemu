@@ -1,16 +1,110 @@
 ﻿using System;
+using System.Windows.Forms;
+using Microsoft.Win32;
+using WabbitemuLib;
+using Revsoft.Wabbitcode.Services;
+#if NEW_DEBUGGING
+using Revsoft.Wabbitcode.Services.Debugger;
+#else
 using System.Diagnostics;
 using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Threading;
-using System.Windows.Forms;
-using Revsoft.Wabbitcode.Services;
-using System.Text;
+#endif
 
 namespace Revsoft.Wabbitcode.Classes
 {
     public class CWabbitemu
     {
+		Wabbitemu debugger;
+
+#if NEW_DEBUGGING
+		public CWabbitemu(string file)
+		{
+            string romFile = "";
+            try 
+            {
+                RegistryKey romKey = Registry.CurrentUser.OpenSubKey("Software\\Wabbitemu");
+                romFile = romKey.GetValue("rom_path").ToString();
+            }
+            catch(Exception)
+            {
+				var openFileDialog = new OpenFileDialog()
+				{
+					Filter = "ROMS (*.rom)|*.rom",
+					Title = "Open ROM file"
+				};
+				if (openFileDialog.ShowDialog() != DialogResult.OK)
+				{
+					DebuggerService.CancelDebug();
+					return;
+				}
+            }
+			debugger = new Wabbitemu();
+            debugger.LoadFile(romFile);
+            debugger.LoadFile(file);
+		}
+
+		public IZ80 CPU
+		{
+			get { return debugger.CPU; }
+		}
+
+		public Array Apps
+		{
+			get { return debugger.Apps; }
+		}
+
+		public bool Running
+		{
+			get { return debugger.Running; }
+			set { debugger.Running = value; }
+		}
+
+		public dynamic Read(ushort address, byte byteCount = 0)
+		{
+			return debugger.Read(address, byteCount);
+		}
+
+		public void SetBreakpoint(CPage cPage, ushort addr)
+		{
+			debugger.SetBreakpoint(cPage, addr, DockingService.MainForm.Handle);
+		}
+
+		public void Step()
+		{
+			debugger.Step();
+		}
+
+		public void StepOver()
+		{
+			debugger.StepOver();
+		}
+
+		public struct Z80_State
+		{
+			public ushort AF, BC, HL, DE;
+			public ushort AFP, BCP, HLP, DEP;
+			public ushort IX, IY, PC, SP;
+			public byte I, R, Bus, IFF1, IFF2;
+			public byte IMode;
+			public double secondsElapsed;
+			public int Freq;
+			public int Halt;
+		}
+
+		public struct MEMSTATE
+		{
+			public int ram0;
+			public byte page0;
+			public int ram1;
+			public byte page1;
+			public int ram2;
+			public byte page2;
+			public int ram3;
+			public byte page3;
+		}
+#else
         readonly IWabbitemu pWabbitemu;
         readonly Process wabbit;
         public CWabbitemu(string file)
@@ -336,19 +430,16 @@ namespace Revsoft.Wabbitcode.Classes
             try
             {
 #endif
-                int counter = 0;
+				const int SCREEN_WIDTH = 128;
+				const int SCREEN_HEIGHT = 64;
                 pWabbitemu.DrawScreen(0, screenArray);
-                Bitmap screen = new Bitmap(128, 64);
-                for (int y = 0; y < 64; y++)
-                {
-                    for (int x = 0; x < 128; x++)
-                    {
-                        int pixColor = 255 - screenArray[counter];
-                        int alpha = pixColor == 231 ? 0 : 255;
-                        screen.SetPixel(x, y, Color.FromArgb(alpha, pixColor, pixColor, pixColor));
-                        counter++;
-                    }
-                }
+				var screen = new Bitmap(SCREEN_WIDTH, SCREEN_HEIGHT);
+                for (int y = 0; y < SCREEN_HEIGHT; y++)
+					for (int x = 0; x < SCREEN_WIDTH; x++)
+					{
+						int pixColor = screenArray[y * SCREEN_WIDTH + x];
+						screen.SetPixel(x, y, Color.FromArgb(0xFF, Color.FromArgb(0x9e * (256 - pixColor) / 255, (0xAB * (256 - pixColor)) / 255, (0x88 * (256 - pixColor)) / 255)));
+					}
                 Bitmap result = screen.ResizeImage(256, 128);
                 return result;
 #if !DEBUG
@@ -488,5 +579,6 @@ namespace Revsoft.Wabbitcode.Classes
             void StepOut([In] uint uSlot);
 			void Pause([In] uint uSlot);
         }
+#endif
 	}
 }

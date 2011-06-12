@@ -39,8 +39,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private void alphaBox_CheckedChanged(object sender, EventArgs e)
         {
             Properties.Settings.Default.alphabetizeLabels = alphaBox.Checked;
-			//this is the retardedest thing ever :|
-			//
 			labelsBox.Sorted = alphaBox.Checked;
 			DocumentService.ActiveDocument.UpdateLabelBox();
         }
@@ -86,6 +84,21 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				return;
 			DocumentService.GotoLabel((ILabel)labelsBox.SelectedItem);
 			DockingService.ActiveDocument.Focus();
+		}
+
+		internal void DisableLabelBox()
+		{
+			ClearLabels();
+			labelsBox.Enabled = false;
+			alphaBox.Enabled = false;
+			includeEquatesBox.Enabled = false;
+		}
+
+		internal void EnableLabelBox()
+		{
+			labelsBox.Enabled = true;
+			alphaBox.Enabled = true;
+			includeEquatesBox.Enabled = true;
 		}
 	}
 }

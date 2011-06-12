@@ -491,7 +491,10 @@ namespace Revsoft.Wabbitcode
         public void UpdateLabelBox()
         {
 			if (parseInfo != null)
+			{
+				DockingService.LabelList.EnableLabelBox();
 				DockingService.LabelList.AddLabels(parseInfo);
+			}
         }
 
         private void cutContext_Click(object sender, EventArgs e)
