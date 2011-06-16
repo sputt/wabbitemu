@@ -432,7 +432,6 @@ namespace Revsoft.Wabbitcode.Services
 		
 		private delegate void AssembleProjectDelegate();
 		private delegate void StartDebugDelegate();
-		private delegate void UpdateBreaksDelegate();
 		internal static void StartDebug()
 		{
 			Thread debugThread = new Thread(InitDebug);
@@ -443,12 +442,13 @@ namespace Revsoft.Wabbitcode.Services
 		private static void InitDebug()
 		{
 			isDebugging = true;
-			string listName, symName, fileName = "", startAddress, createdName;
+			isBreakpointed = false;
+			string listName, symName, fileName = "", createdName;
 			bool error = true;
 			if (!ProjectService.IsInternal)
 			{
 				int outputType = ProjectService.Project.GetOutputType();
-				startAddress = outputType == 5 ? "4080" : "9D95";
+				isAnApp = outputType == 5;
 				bool configFound = false;
 				foreach (Services.Project.BuildConfig config in ProjectService.BuildConfigs)
 					if (config.Name.ToLower() == "debug")
@@ -527,11 +527,9 @@ namespace Revsoft.Wabbitcode.Services
 				switch (Settings.Default.outputFile)
 				{
 					case 4:
-						startAddress = "9D95";
 						createdName = Path.ChangeExtension(fileName, "8xp");
 						break;
 					case 5:
-						startAddress = "4080";
 						createdName = Path.ChangeExtension(fileName, "8xk");
 						break;
 					default:
@@ -549,11 +547,7 @@ namespace Revsoft.Wabbitcode.Services
 					return;
 				}
 			}
-#if NEW_DEBUGGING
-			debugger = new CWabbitemu(createdName);
-#else
-			debugger = new CWabbitemu(createdName);
-#endif
+			
 			stepStack = new Stack<int>();
             StreamReader reader = null;
             string listFileText, symFileText = "";
@@ -596,108 +590,14 @@ namespace Revsoft.Wabbitcode.Services
 			ParseListFile(listFileText, fileName, Path.GetDirectoryName(fileName));
 			symTable = new SymbolTableClass();
 			symTable.ParseSymFile(symFileText);
-			if (startAddress == "4080")
-			{
-				isAnApp = true;
-#if NEW_DEBUGGING
-                if (debugger.Apps.Length == 0)
-                {
-                    CancelDebug();
-                    return;
-                }
-                while (((TIApplication)debugger.Apps.GetValue(0))/*[0]*/.PageCount == 0)
-                    Thread.Sleep(500);
-#else
-                CWabbitemu.AppEntry[] appList = new CWabbitemu.AppEntry[20];
-				while (appList[0].page_count == 0)
-				{
-					appList = debugger.getAppList();
-					if (appList == null)
-					{
-						CancelDebug();
-						return;
-					}
-                    Thread.Sleep(500);
-				}
-#endif
-				int counter = 0;
-                char[] buffer = new char[8];
-                StreamReader appReader = new StreamReader(createdName);
-                for (int i = 0; i < 17; i++)
-                    appReader.Read();
-                appReader.ReadBlock(buffer, 0, 8);
 
-				appReader.Dispose();
-                appReader.Close();
-                string appName = new string(buffer).Trim();
-#if NEW_DEBUGGING
-                foreach (TIApplication app in debugger.Apps)
-                {
-                    if (app.Name.Trim() == appName)
-                        break;
-                    counter++;
-                }
-                if (counter > debugger.Apps.Length)
-                {
-                    if (MessageBox.Show("Unable to find the app, would you like to try and continue and debug?", "Missing App", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
-                    {
-                        CancelDebug();
-                        return;
-                    }
-                    counter = 0;
-                }
-                appPage = (byte) ((TIApplication)debugger.Apps.GetValue(counter))/*[counter]*/.Page.Index;
-#else
-				foreach (CWabbitemu.AppEntry app in appList)
-				{
-                    StringBuilder sb = new StringBuilder();
-                    sb.Append(app.name1);
-                    sb.Append(app.name2);
-                    sb.Append(app.name3);
-                    sb.Append(app.name4);
-                    sb.Append(app.name5);
-                    sb.Append(app.name6);
-                    sb.Append(app.name7);
-                    sb.Append(app.name8);
-					if (sb.ToString().Trim().ToLower() == appName.ToLower())
-						break;
-					counter++;
-				}
-				if (counter == appList.Length)
-				{
-                    if (MessageBox.Show("Unable to find the app, would you like to try and continue and debug?", "Missing App", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
-                    {
-                        CancelDebug();
-                        return;
-                    }
-                    counter = 0;
-				}
-				appPage = (byte)appList[counter].page;
-				//apps key
-				debugger.sendKeyPress(Keys.B);
-				Thread.Sleep(50);
-				debugger.releaseKeyPress(Keys.B);
-				while (counter != -1)
-				{
-					debugger.sendKeyPress(Keys.Down);
-					Thread.Sleep(50);
-					debugger.releaseKeyPress(Keys.Down);
-					counter--;
-				}
-				debugger.sendKeyPress(Keys.Enter);
-				Thread.Sleep(50);
-				debugger.releaseKeyPress(Keys.Enter);
-#endif
-			}
-
-			UpdateBreaksDelegate updateBreaks = DockingService.MainForm.UpdateBreakpoints;
-			DockingService.MainForm.Invoke(updateBreaks);
-			UpdateBreaksDelegate updateDebugStuff = DockingService.MainForm.UpdateDebugStuff;
-			DockingService.MainForm.Invoke(updateDebugStuff);
+			InitDebugDelegate initDebug = DockingService.MainForm.InitDebug;
+			DockingService.MainForm.Invoke(initDebug, isAnApp, createdName);
 			//staticLabelsParser.DoWork += new DoWorkEventHandler(staticLabelsParser_DoWork);
 			//if (!staticLabelsParser.IsBusy && !DockingService.MainForm.IsDisposed && !DockingService.MainForm.Disposing)
 			//	staticLabelsParser.RunWorkerAsync();
 		}
+		private delegate void InitDebugDelegate(bool isAnApp, string createdName);
 
         private delegate void AddMarkersDelegate(List<TextMarker> markers);
         private static void staticLabelsParser_DoWork(object sender, DoWorkEventArgs e)
@@ -732,7 +632,7 @@ namespace Revsoft.Wabbitcode.Services
                 if (editorText[counter] == ';')
                     while (editorText[counter] != '\n')
                         counter++;
-                newCounter = Parser.ParserService.GetWord(editorText, counter);
+                newCounter = ParserService.GetWord(editorText, counter);
                 if (newCounter == -1)
                 {
                     counter++;

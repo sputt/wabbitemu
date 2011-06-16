@@ -61,5 +61,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		{
 			 findResultsBox.Text += "Done Searching";
 		}
+
+		internal void AddFindResult(Reference reference)
+		{
+			AddFindResult(reference.File, reference.Line, reference.LineContents);
+		}
 	}
 }

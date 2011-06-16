@@ -41,7 +41,12 @@ namespace Revsoft.Wabbitcode.Services
 
 		public static string ProjectName
 		{
-			get { return project.ProjectName; }
+			get
+			{
+				if (project == null)
+					return null;
+				return project.ProjectName;
+			}
 			set { project.ProjectName = value; }
 		}
 
@@ -206,7 +211,7 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		private static void UpdateFileChanged(newEditor doc, string fileName)
+		internal static void UpdateFileChanged(newEditor doc, string fileName)
 		{
 			projectWatcher.EnableRaisingEvents = false;
 			DialogResult result = MessageBox.Show(fileName + " modified outside the editor.\nLoad changes?", "File modified", MessageBoxButtons.YesNo);
@@ -333,6 +338,7 @@ namespace Revsoft.Wabbitcode.Services
 		public static int CurrentConfigIndex
 		{
 			get { return project.BuildSystem.CurrentConfigIndex; }
+			set { project.BuildSystem.CurrentConfigIndex = value; }
 		}
 
 		public static BuildConfig CurrentBuildConfig

@@ -1,9 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <PublishUrlHistory>http://group.revsoft.org/Wabbitcode/|publish\</PublishUrlHistory>
-    <InstallUrlHistory>
-    </InstallUrlHistory>
+    <PublishUrlHistory>publish\|http://wabbit.codeplex.com/releases/clickonce/|http://group.revsoft.org/Wabbitcode/</PublishUrlHistory>
+    <InstallUrlHistory>http://wabbit.codeplex.com/releases/clickonce/</InstallUrlHistory>
     <SupportUrlHistory>http://www.revsoft.org/phpBB2/viewforum.php%3ff=25</SupportUrlHistory>
     <UpdateUrlHistory>
     </UpdateUrlHistory>
@@ -20,5 +19,10 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
+    <StartArguments>
+    </StartArguments>
+  </PropertyGroup>
+  <PropertyGroup>
+    <EnableSecurityDebugging>false</EnableSecurityDebugging>
   </PropertyGroup>
 </Project>

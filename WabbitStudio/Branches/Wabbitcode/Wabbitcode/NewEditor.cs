@@ -103,16 +103,9 @@ namespace Revsoft.Wabbitcode
 			editorBox.LineViewerStyle = Settings.Default.lineEnabled ? LineViewerStyle.FullRow : LineViewerStyle.None;
             editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += new ToolTipRequestEventHandler(TextArea_ToolTipRequest);
             editorBox.Document.FormattingStrategy = new Extensions.AsmFormattingStrategy();
+			codeChecker.DoWork += new DoWorkEventHandler(codeCheck_DoWork);
             
             CodeCompletionKeyHandler.Attach(this, editorBox);
-
-			/*parserThread = new Thread(ParseFile);
-			parserThread.Priority = ThreadPriority.Lowest;
-			parserThread.Start();
-
-			codeInfoThread = new Thread(GetCodeInfo);
-			codeInfoThread.Priority = ThreadPriority.BelowNormal;
-			codeInfoThread.Start();*/
         }
 
         public TextEditorControl EditorBox
@@ -152,35 +145,6 @@ namespace Revsoft.Wabbitcode
 		}
 
         delegate void UpdateLabelBoxDelegate();
-		/*EditorUpdateRequest RequestUpdate = new EditorUpdateRequest();
-		private void ParseFile()
-		{
-			while (!RequestUpdate.RequestQuit)
-			{
-				Thread.Sleep(200);
-				if (RequestUpdate.UpdateLabels && DocumentService.ActiveFileName != null &&
-								FileName.ToLower() == DocumentService.ActiveFileName.ToLower())
-				{
-					parseInfo = ParserService.ParseFile(FileName, EditorText);
-					UpdateLabelBoxDelegate updateLabelDelegate = new UpdateLabelBoxDelegate(UpdateLabelBox);
-					BeginInvoke(updateLabelDelegate, null);
-					RequestUpdate.UpdateLabels = false;
-				}
-			}
-		}
-
-		private void GetCodeInfo()
-		{
-			while (!RequestUpdate.RequestQuit)
-			{
-				if (RequestUpdate.UpdateCodeInfo)
-				{
-					GetCodeInfo(codeInfoLines);
-				}
-				Thread.Sleep(100);
-			}
-		}*/
-
         private void ParseFile(object data)
         {
             parseInfo = ParserService.ParseFile(FileName, EditorText);
@@ -265,12 +229,6 @@ namespace Revsoft.Wabbitcode
                 ThreadPool.QueueUserWorkItem(new WaitCallback(GetCodeInfo), codeInfoLines);
                 infoLinesQueued++;
             }
-
-            editorBox.Document.MarkerStrategy.RemoveAll(marker => marker.Tag == "Code Check");
-#if CHECK_CODE
-            if (!codeChecker.IsBusy)// && !ProjectService.IsInternal)
-                codeChecker.RunWorkerAsync(editorBox.Text.Split('\n')[editorBox.ActiveTextAreaControl.Caret.Line]);
-#endif
         }
 
         static int infoLinesQueued = 0;
@@ -287,7 +245,7 @@ namespace Revsoft.Wabbitcode
             {
                 isUpdatingRefs = true;
                 int offset = editorBox.ActiveTextAreaControl.Caret.Offset;
-                string word = editorBox.Document.GetWord(offset);
+				string word = GetWord();
                 ThreadPool.QueueUserWorkItem(new WaitCallback(GetHighlightReferences), new ReferencesHighlightData(offset, word, editorBox.Document.TextContent));
             }
             //update code info
@@ -365,9 +323,9 @@ namespace Revsoft.Wabbitcode
         public void UpdateIcons()
         {
             editorBox.ActiveTextAreaControl.TextArea.Document.IconManager.ClearIcons();
-            foreach (Errors errorWarning in AssemblerService.ErrorsInFiles)
+            foreach (Error errorWarning in AssemblerService.ErrorsInFiles)
             {
-                if (errorWarning.file != editorBox.FileName)
+                if (string.Compare(errorWarning.file, editorBox.FileName, StringComparison.OrdinalIgnoreCase) != 0)
                     continue;
                 Bitmap newIcon;
                 if (errorWarning.isWarning)
@@ -377,7 +335,7 @@ namespace Revsoft.Wabbitcode
                 MarginIcon marginIcon = new MarginIcon(newIcon, errorWarning.lineNum - 1, errorWarning.toolTip);
                 editorBox.Document.IconManager.AddIcon(marginIcon);
             }
-        }      
+        }
 
 		private ParserInformation parseInfo;
         public void OpenFile(string filename)
@@ -405,24 +363,20 @@ namespace Revsoft.Wabbitcode
 			DocumentService.InternalSave = true;
             bool saved = true;
             stackTop = editorBox.Document.UndoStack.UndoItemCount;
-#if !DEBUG
             try
             {
-#endif
                 editorBox.SaveFile(FileName);
-#if !DEBUG
             }
             catch (Exception ex)
             {
-				DocumentService.InternalSave = false;
                 saved = false;
                 DockingService.ShowError("Error saving the file", ex);
             }
-#endif
             editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
             TabText = Path.GetFileName(FileName);
             docChanged = false;
             DockingService.MainForm.UpdateTitle();
+			DocumentService.InternalSave = false;
             return saved;
         }
 
@@ -524,20 +478,15 @@ namespace Revsoft.Wabbitcode
             editorBox.ActiveTextAreaControl.SelectionManager.SetSelection(selectStart, selectEnd);
         }
 
-#if CHECK_CODE
-        private List<TextMarker> codeCheckMarkers = new List<TextMarker>();
-#endif
-
 		private static void UpdateTimerCallback(object input)
 		{
 
 		}
 
-        //private static Process wabbitspasm;
         private int stackTop;
 		private System.Windows.Forms.Timer textChangedTimer = new System.Windows.Forms.Timer()
 		{
-			Interval = 5000,
+			Interval = 1000,
 			Enabled = false
 		};
 
@@ -572,7 +521,6 @@ namespace Revsoft.Wabbitcode
 		void  textChangedTimer_Tick(object sender, EventArgs e)
 		{
             UpdateAll();
-			//RequestUpdate.UpdateAll();
 			textChangedTimer.Enabled = false;
 		}
 
@@ -583,6 +531,8 @@ namespace Revsoft.Wabbitcode
             infoLinesQueued++;
             var item = AbortableThreadPool.QueueUserWorkItem(new WaitCallback(ParseFile));
 			queuedFiles.Add(item);
+			if (!codeChecker.IsBusy)
+				codeChecker.RunWorkerAsync();
         }
 
 		private void UpdateTabText()
@@ -593,106 +543,6 @@ namespace Revsoft.Wabbitcode
 			else
 				TabText = "New Document" + changedString;
 		}
-
-#if CHECK_CODE
-        private void codeCheck_DoWork(object sender, DoWorkEventArgs e)
-        {
-            foreach (TextMarker marker in codeCheckMarkers)
-                editorBox.Document.MarkerStrategy.RemoveMarker(marker);
-            codeCheckMarkers.Clear();
-
-			wabbitspasm = new Process
-			{
-				StartInfo =
-				{
-					FileName = Path.Combine(Application.StartupPath, "spasm.exe"),
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					UseShellExecute = false,
-					CreateNoWindow = true
-				}
-			};
-			string filePath = editorBox.FileName;
-            /*XmlNodeList buildConfigs = GlobalClass.project.getBuildConfigs();
-            XmlNodeList steps = buildConfigs[Settings.Default.buildConfig].ChildNodes;
-            string assembledName = "";
-            foreach (XmlElement step in steps)
-            {
-                //int error = 0;
-                //if (step.Attributes["action"].Value[0] != 'C')
-                string originalDir = Path.GetDirectoryName(step.InnerText);
-                //string fileName;
-                if (step.Attributes["action"].Value[0] != 'C') 
-                    continue;
-                filePath = step.InnerText;
-                assembledName = Path.Combine(originalDir, GlobalClass.project.getProjectName() + "." +
-                                                          MainFormRedone.getExtension(Convert.ToInt32(step.Attributes["type"].Value)));
-            }
-
-            GlobalClass.getResource("Revsoft.Wabbitcode.Resources.spasm.exe", "spasm.exe");            
-            //Get our emulator
-            GlobalClass.getResource("Revsoft.Wabbitcode.Resources.Wabbitemu.exe", "Wabbitemu.exe");
-            //create two new processes to run
-            //setup wabbitspasm to run silently
-            //some strings we'll need to build 
-            string includedir = "-I \"" + Application.StartupPath + "\"";
-            if (Settings.Default.includeDir != "" || !ProjectService.IsInternal)
-            {
-                string[] dirs = ProjectService.IsInternal ? Settings.Default.includeDir.Split('\n') : GlobalClass.project.getIncludeDirs();
-                foreach (string dir in dirs)
-                {
-                    if (dir != "")
-                        includedir += ";\"" + dir + "\"";
-                }
-            }
-                // filePath.Substring(filePath.LastIndexOf('\\') + 1, filePath.Length - filePath.LastIndexOf('\\') - 1);
-            //string assembledName = Path.ChangeExtension(fileName, outputFileExt);
-
-            string fileContents = fixIncludeFiles(filePath);*/
-			string originaldir = filePath.Substring(0, filePath.LastIndexOf('\\'));
-            const string quote = "\"";
-			wabbitspasm.StartInfo.Arguments = "-V " + quote + e.Argument.ToString().TrimEnd() +quote;
-            wabbitspasm.StartInfo.WorkingDirectory = originaldir;
-            wabbitspasm.Start();
-            string output = wabbitspasm.StandardOutput.ReadToEnd();
-            foreach (string line in output.Split('\n'))
-            {
-                addSquiggle squiggleDelegate = addSquiggleLine;
-                int firstColon;
-                string file;
-                string description;
-                int lineNum;
-                int secondColon;
-                int thirdColon;
-                if (line.Contains("error"))
-                {
-                    firstColon = line.IndexOf(':', 3);
-                    file = line.Substring(0, firstColon);
-                    if (editorBox.FileName != file)
-                        continue;
-                    secondColon = line.IndexOf(':', firstColon + 1);
-                    thirdColon = line.IndexOf(':', secondColon + 1);
-                    lineNum = Convert.ToInt32(line.Substring(firstColon + 1, secondColon - firstColon - 1));
-                    description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-                    if (description == "Couldn't open output file\r")
-                        continue;
-                    Invoke(squiggleDelegate, new object[] { lineNum - 2, Color.Red, description });
-                }
-                if (!line.Contains("warning"))
-                    continue;
-                firstColon = line.IndexOf(':', 3);
-                file = line.Substring(0, firstColon);
-                if (editorBox.FileName != file)
-                    continue;
-                secondColon = line.IndexOf(':', firstColon + 1);
-                thirdColon = line.IndexOf(':', secondColon + 1);
-                lineNum = Convert.ToInt32(line.Substring(firstColon + 1, secondColon - firstColon - 1));
-                description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-                if (description == "Couldn't open output file\r")
-                    continue;
-                Invoke(squiggleDelegate, new object[] { lineNum - 1, Color.Gold, description });
-            }
-        }
 
         private string fixIncludeFiles(string fileName)
         {
@@ -721,45 +571,7 @@ namespace Revsoft.Wabbitcode
             return fileContents;
         }
 
-        private delegate void addSquiggle(int newLineNumber, Color underlineColor, string description);
-        private void addSquiggleLine(int newLineNumber, Color underlineColor, string description)
-        {
-            TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
-            int start = textArea.Document.GetOffsetForLineNumber(newLineNumber);
-            int length = editorBox.Text.Split('\n')[newLineNumber].Length - 1;
-            string text;
-            if (description.Contains("Can't") || description.Contains("isn't"))
-            {
-                int quote1 = description.IndexOf('\'');
-                if (description.Contains("Can't"))
-                    quote1 = description.IndexOf('\'', 7);
-                int quote2 = description.IndexOf('\'', quote1 + 1);
-                length = quote2 - quote1 - 1;
-                text = description.Substring(quote1 + 1, length);
-                start = textArea.Document.TextContent.IndexOf(text, start);
-            }
-            else if (description.Contains("No such file or directory"))
-            {
-                text = description.Substring(0, description.IndexOf(':', 4));
-                length = text.Length;
-                start = textArea.Document.TextContent.IndexOf(text, start);
-            }
-            else
-            {
-                while (textArea.Document.TextContent[start] == ' ' || textArea.Document.TextContent[start] == '\t')
-                {
-                    start++;
-                    length--;
-                }
-            }
-            TextMarker highlight = new TextMarker(start, length, TextMarkerType.WaveLine, underlineColor);
-            highlight.ToolTip = description;
-            highlight.Tag = "Code Check";
-            editorBox.Document.MarkerStrategy.AddMarker(highlight);
-        }
-#endif
-
-        private void newEditor_DragEnter(object sender, DragEventArgs e)
+		private void newEditor_DragEnter(object sender, DragEventArgs e)
         {
 			DockingService.MainForm.MainFormRedone_DragEnter(sender, e);
         }
@@ -867,6 +679,29 @@ namespace Revsoft.Wabbitcode
             offset++;
             editorBox.Document.Replace(offset, item.Text.Length, item.Text);
         }
+
+		private void findRefContext_Click(object sender, EventArgs e)
+		{
+			string word = GetWord();
+			DockingService.FindResults.NewFindResults(word, ProjectService.ProjectName);
+			var refs = ParserService.FindAllReferences(word);
+			foreach (var reference in refs)
+				foreach (var fileRef in reference)
+					DockingService.FindResults.AddFindResult(fileRef);
+			DockingService.FindResults.DoneSearching();
+			DockingService.ShowDockPanel(DockingService.FindResults);
+		}
+
+		private void renameContext_Click(object sender, EventArgs e)
+		{
+			RefactorForm form = new RefactorForm();
+			form.ShowDialog();
+		}
+
+		private void extractMethodContext_Click(object sender, EventArgs e)
+		{
+
+		}
 
         private void editorBox_MouseClick(object sender, MouseEventArgs e)
         {
@@ -1114,7 +949,7 @@ namespace Revsoft.Wabbitcode
 				}
 
 				updateCodeInfo update = DockingService.MainForm.UpdateCodeInfo;
-				DockingService.MainForm.Invoke(update, new[] { size, min, max });
+				DockingService.MainForm.Invoke(update, size, min, max);
                 infoLinesQueued = infoLinesQueued > 1 ? 1 : 0;
 
             }
@@ -1357,6 +1192,97 @@ namespace Revsoft.Wabbitcode
             }
         }
 
+		private List<TextMarker> codeCheckMarkers = new List<TextMarker>();
+		private void codeCheck_DoWork(object sender, DoWorkEventArgs e)
+		{
+			codeCheckMarkers.Clear();
+			try
+			{
+				if (ProjectService.IsInternal)
+					;
+				else
+					ThreadPool.QueueUserWorkItem(AssemblerService.AssembleProject, true);
+				while (!AssemblerService.IsBuildingProject)
+					Thread.Sleep(50);
+				while (AssemblerService.IsBuildingProject)
+					Thread.Sleep(50);
+				RemoveCodeMarkersDelegate removeMarkers = RemoveCodeMarkers;
+				removeMarkers();
+				AddSquiggleDelegate AddSquiggleLineDelegate = newEditor.addSquiggleLine;
+				foreach (var item in AssemblerService.ErrorsInFiles)
+					if (string.Compare(item.file, fileName, true) == 0)
+					{
+						DockingService.MainForm.Invoke(AddSquiggleLineDelegate, this, item.lineNum, item.isWarning ? Color.Yellow : Color.Red, item.description);
+						UpdateDocumentDelegate updateDelegate = UpdateDocument;
+						DockingService.MainForm.Invoke(updateDelegate, item.lineNum);
+					}
+					else
+					{
+						foreach (newEditor doc in DockingService.Documents)
+						{
+							if (string.Compare(item.file, doc.FileName, true) == 0)
+							{
+								DockingService.MainForm.Invoke(AddSquiggleLineDelegate, doc, item.lineNum, item.isWarning ? Color.Yellow : Color.Red, item.description);
+								UpdateDocumentDelegate updateDelegate = doc.UpdateDocument;
+								DockingService.MainForm.Invoke(updateDelegate, item.lineNum);
+							}						
+						}
+					}
+			}
+			catch (Exception) { }
+		}
+
+		delegate void UpdateDocumentDelegate(int line);
+		public void UpdateDocument(int line)
+		{
+			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
+		}
+
+		delegate void RemoveCodeMarkersDelegate();
+		private void RemoveCodeMarkers()
+		{
+			foreach (newEditor doc in DockingService.Documents)
+				doc.EditorBox.Document.MarkerStrategy.RemoveAll(marker => marker.Tag == "Code Check");
+		}
+
+		private delegate void AddSquiggleDelegate(newEditor doc, int newLineNumber, Color underlineColor, string description);
+		public static void addSquiggleLine(newEditor doc, int newLineNumber, Color underlineColor, string description)
+		{
+			TextArea textArea = doc.EditorBox.ActiveTextAreaControl.TextArea;
+			int start = textArea.Document.GetOffsetForLineNumber(newLineNumber - 1);
+			int length;
+			string text;
+			if (description.Contains("Can't") || description.Contains("isn't"))
+			{
+				int quote1 = description.IndexOf('\'');
+				if (description.Contains("Can't"))
+					quote1 = description.IndexOf('\'', 7);
+				int quote2 = description.IndexOf('\'', quote1 + 1);
+				length = quote2 - quote1 - 1;
+				text = description.Substring(quote1 + 1, length);
+				start = textArea.Document.TextContent.IndexOf(text, start);
+			}
+			else if (description.Contains("No such file or directory"))
+			{
+				text = description.Substring(0, description.IndexOf(':', 4));
+				length = text.Length;
+				start = textArea.Document.TextContent.IndexOf(text, start);
+			}
+			else
+			{
+				length = doc.EditorBox.Text.Split('\n')[newLineNumber].Length - 1;
+				while (textArea.Document.TextContent[start] == ' ' || textArea.Document.TextContent[start] == '\t')
+				{
+					start++;
+					length--;
+				}
+			}
+			TextMarker highlight = new TextMarker(start, length, TextMarkerType.WaveLine, underlineColor);
+			highlight.ToolTip = description;
+			highlight.Tag = "Code Check";
+			doc.EditorBox.Document.MarkerStrategy.AddMarker(highlight);
+		}
+
         internal void AddSquiggleLine(int newLineNumber, Color underlineColor, string description)
         {
             TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
@@ -1487,7 +1413,13 @@ namespace Revsoft.Wabbitcode
                 spacesString.Append(' ');
             editorBox.Document.TextContent = editorBox.Document.TextContent.Replace(spacesString.ToString(), "\t");
         }
-    }
+
+		internal string GetWord()
+		{
+			int offset = editorBox.ActiveTextAreaControl.Caret.Offset;
+			return editorBox.Document.GetWord(offset);
+		}
+	}
 
     class CodeCompletionProvider : ICompletionDataProvider
     {

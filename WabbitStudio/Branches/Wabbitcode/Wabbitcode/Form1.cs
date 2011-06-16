@@ -4,6 +4,7 @@ using System.Windows.Forms;
 using WabbitemuLib;
 using System.Runtime.InteropServices;
 using System.Drawing.Drawing2D;
+using Revsoft.Wabbitcode.Classes;
 
 namespace Revsoft.Wabbitcode
 {
@@ -54,14 +55,6 @@ namespace Revsoft.Wabbitcode
 
 		IntPtr last_shift;
 
-		[DllImport("user32.dll")]
-		internal static extern short GetKeyState(int key);
-
-		private const int WM_KEYDOWN = 0x0100;
-		private const int WM_KEYUP = 0x0101;
-		private const int VK_SHIFT = 16;
-		private const int VK_LSHIFT = 0xA0;
-		private const int VK_RSHIFT = 0xA1;
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 		{
 			
@@ -72,17 +65,17 @@ namespace Revsoft.Wabbitcode
 		{
 			switch (msg.Msg)
 			{
-				case WM_KEYDOWN:
-					if ((int)msg.WParam == VK_SHIFT)
+				case NativeMethods.WM_KEYDOWN:
+					if ((int)msg.WParam == NativeMethods.VK_SHIFT)
 					{
-						if ((GetKeyState(VK_LSHIFT) & 0xFF00) != 0)
-							msg.WParam = last_shift = (IntPtr)VK_LSHIFT;
+						if ((NativeMethods.GetKeyState(NativeMethods.VK_LSHIFT) & 0xFF00) != 0)
+							msg.WParam = last_shift = (IntPtr)NativeMethods.VK_LSHIFT;
 						else
-							msg.WParam = last_shift = (IntPtr)VK_RSHIFT;
+							msg.WParam = last_shift = (IntPtr)NativeMethods.VK_RSHIFT;
 					}
 					break;
-				case WM_KEYUP:
-					if ((int)msg.WParam == VK_SHIFT)
+				case NativeMethods.WM_KEYUP:
+					if ((int)msg.WParam == NativeMethods.VK_SHIFT)
 					{
 						msg.WParam = last_shift;
 					}

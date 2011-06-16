@@ -41,6 +41,10 @@ namespace Revsoft.Wabbitcode
             this.selectAllContext = new System.Windows.Forms.MenuItem();
             this.setNextStateMenuItem = new System.Windows.Forms.MenuItem();
             this.fixCaseContext = new System.Windows.Forms.MenuItem();
+			this.renameContext = new System.Windows.Forms.MenuItem();
+			this.extractMethodContext = new System.Windows.Forms.MenuItem();
+			this.refactorContext = new System.Windows.Forms.MenuItem();
+			this.findRefContext = new System.Windows.Forms.MenuItem();
             this.bgotoButton = new System.Windows.Forms.MenuItem();
             this.contextMenu1 = new System.Windows.Forms.ContextMenu();
             this.saveMenuItem = new System.Windows.Forms.MenuItem();
@@ -48,6 +52,7 @@ namespace Revsoft.Wabbitcode
             this.closeAllOtherMenuItem = new System.Windows.Forms.MenuItem();
             this.closeAllMenuItem = new System.Windows.Forms.MenuItem();
             this.menuItem5 = new System.Windows.Forms.MenuItem();
+			this.menuItem6 = new System.Windows.Forms.MenuItem();
             this.copyPathMenuItem = new System.Windows.Forms.MenuItem();
             this.openFolderMenuItem = new System.Windows.Forms.MenuItem();
             this.codeChecker = new System.ComponentModel.BackgroundWorker();
@@ -99,6 +104,9 @@ namespace Revsoft.Wabbitcode
             this.copyContext,
             this.pasteContext,
             this.menuItem4,
+			this.refactorContext,
+			this.findRefContext,
+			this.menuItem5,
             this.selectAllContext,
             this.setNextStateMenuItem,
             this.fixCaseContext,
@@ -126,23 +134,57 @@ namespace Revsoft.Wabbitcode
             // 
             this.menuItem4.Index = 3;
             this.menuItem4.Text = "-";
+			// 
+			// refactorContext
+			// 
+			this.refactorContext.Index = 4;
+			this.refactorContext.Text = "Refactor";
+			this.refactorContext.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+				this.renameContext,
+				this.extractMethodContext,
+			});
+
+			// 
+			// renameContext
+			// 
+			this.renameContext.Index = 0;
+			this.renameContext.Text = "Rename";
+			this.renameContext.Click += new System.EventHandler(this.renameContext_Click);
+			
+			// 
+			// extractMethodContext
+			// 
+			this.extractMethodContext.Index = 1;
+			this.extractMethodContext.Text = "Extract Method";
+			this.extractMethodContext.Click += new System.EventHandler(this.extractMethodContext_Click);
+			// 
+			// findRefContext
+			// 
+			this.findRefContext.Index = 5;
+			this.findRefContext.Text = "Find References";
+			this.findRefContext.Click += new System.EventHandler(this.findRefContext_Click);
+			// 
+			// menuItem5
+			// 
+			this.menuItem5.Index = 6;
+			this.menuItem5.Text = "-";
             // 
             // selectAllContext
             // 
-            this.selectAllContext.Index = 4;
+            this.selectAllContext.Index = 7;
             this.selectAllContext.Text = "Select All";
             this.selectAllContext.Click += new System.EventHandler(this.selectAllContext_Click);
             // 
             // setNextStateMenuItem
             // 
-            this.setNextStateMenuItem.Index = 5;
+            this.setNextStateMenuItem.Index = 8;
             this.setNextStateMenuItem.Text = "Set Next Statement";
             this.setNextStateMenuItem.Visible = false;
             this.setNextStateMenuItem.Click += new System.EventHandler(this.setNextStateMenuItem_Click);
             // 
             // fixCaseContext
             // 
-            this.fixCaseContext.Index = 6;
+            this.fixCaseContext.Index = 9;
             this.fixCaseContext.Text = "Fix Case";
             this.fixCaseContext.Visible = false;
             this.fixCaseContext.Click += new System.EventHandler(this.fixCaseContext_Click);
@@ -150,7 +192,7 @@ namespace Revsoft.Wabbitcode
             // bgotoButton
             // 
             this.bgotoButton.Enabled = false;
-            this.bgotoButton.Index = 7;
+            this.bgotoButton.Index = 10;
             this.bgotoButton.Text = "Goto";
             this.bgotoButton.Click += new System.EventHandler(this.bgotoButton_Click);
             // 
@@ -161,7 +203,7 @@ namespace Revsoft.Wabbitcode
             this.closeAllOtherMenuItem,
             this.closeAllMenuItem,
             this.saveMenuItem,
-            this.menuItem5,
+            this.menuItem6,
             this.copyPathMenuItem,
             this.openFolderMenuItem});
             // 
@@ -189,10 +231,10 @@ namespace Revsoft.Wabbitcode
             this.closeAllMenuItem.Text = "Close All";
             this.closeAllMenuItem.Click += new System.EventHandler(this.closeAllMenuItem_Click);
             // 
-            // menuItem5
+            // menuItem6
             // 
-            this.menuItem5.Index = 3;
-            this.menuItem5.Text = "-";
+            this.menuItem6.Index = 3;
+            this.menuItem6.Text = "-";
             // 
             // copyPathMenuItem
             // 
@@ -236,6 +278,10 @@ namespace Revsoft.Wabbitcode
         private MenuItem cutContext;
         private MenuItem copyContext;
         private MenuItem pasteContext;
+		private MenuItem refactorContext;
+		private MenuItem renameContext;
+		private MenuItem extractMethodContext;
+		private MenuItem findRefContext;
         private MenuItem fixCaseContext;
         private MenuItem menuItem4;
         private MenuItem selectAllContext;
@@ -245,6 +291,7 @@ namespace Revsoft.Wabbitcode
         private MenuItem closeAllOtherMenuItem;
         private MenuItem closeAllMenuItem;
         private MenuItem menuItem5;
+		private MenuItem menuItem6;
         private MenuItem copyPathMenuItem;
         private MenuItem openFolderMenuItem;
         private MenuItem setNextStateMenuItem;

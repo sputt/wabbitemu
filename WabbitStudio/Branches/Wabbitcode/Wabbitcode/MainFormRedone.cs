@@ -12,9 +12,12 @@ using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
+using System.Threading;
+using System.Text;
 
 #if NEW_DEBUGGING
 using Revsoft.Wabbitcode.Services.Debugger;
+using WabbitemuLib;
 #endif
 
 namespace Revsoft.Wabbitcode
@@ -46,6 +49,7 @@ namespace Revsoft.Wabbitcode
 			HandleArgs(args);
 			UpdateMenus(DockingService.ActiveDocument != null);
 			UpdateChecks();
+			UpdateConfig();
 
             DocumentService.GetRecentFiles();
         }
@@ -518,6 +522,20 @@ namespace Revsoft.Wabbitcode
             DockingService.FindForm.ShowFor(DockingService.ActiveDocument.EditorBox, true, true);
         }
 
+		private void findAllRefsMenuItem_Click(object sender, EventArgs e)
+		{
+			if (DockingService.ActiveDocument == null)
+				return;
+			string word = DockingService.ActiveDocument.GetWord();
+			DockingService.FindResults.NewFindResults(word, ProjectService.ProjectName);
+			var refs = ParserService.FindAllReferences(word);
+			foreach (var reference in refs)
+				foreach (var fileRef in reference)
+					DockingService.FindResults.AddFindResult(fileRef);
+			DockingService.FindResults.DoneSearching();
+			DockingService.ShowDockPanel(DockingService.FindResults);
+		}
+
         private void makeUpperMenuItem_Click(object sender, EventArgs e)
         {
             if (DockingService.ActiveDocument == null)
@@ -743,9 +761,24 @@ namespace Revsoft.Wabbitcode
 
         #endregion
 
-        #region Project Menu
+		#region Refactor Menu
 
-        private void closeProjMenuItem_Click(object sender, EventArgs e)
+		private void renameMenuItem_Click(object sender, EventArgs e)
+		{
+			RefactorForm form = new RefactorForm();
+			form.ShowDialog();
+		}
+
+		private void extractMethodMenuItem_Click(object sender, EventArgs e)
+		{
+
+		}
+
+		#endregion
+
+		#region Project Menu
+
+		private void closeProjMenuItem_Click(object sender, EventArgs e)
         {
 			CloseProject();
         }
@@ -793,7 +826,7 @@ namespace Revsoft.Wabbitcode
                 return;
 			DockingService.ActiveDocument.SaveFile();
 			AssemblerService.CreateSymTable(DocumentService.ActiveFileName,
-											Path.ChangeExtension(DocumentService.ActiveFileName, "lab"));
+											Path.ChangeExtension(DocumentService.ActiveFileName, "lab"), false);
         }
 
         private void countCodeMenuItem_Click(object sender, EventArgs e)
@@ -935,7 +968,7 @@ namespace Revsoft.Wabbitcode
             if (errors)
 				DockingService.ShowDockPanel(DockingService.OutputWindow); 
             //its more fun with colors
-            DockingService.ErrorList.ParseOutput(outputText, originaldir);
+            DockingService.ErrorList.ParseOutput();
             if (errors)
 				DockingService.ShowDockPanel(DockingService.ErrorList); 
             //tell if the assembly was successful
@@ -988,76 +1021,111 @@ namespace Revsoft.Wabbitcode
 
         private void startDebugMenuItem_Click(object sender, EventArgs e)
         {
-			/*var form = new Form1();
-			form.ShowDialog();
-			return;*/
 			if (DebuggerService.IsDebugging)
 				DebuggerService.Run();
 			else
 				DebuggerService.StartDebug();
-				#region OldDebug
-				//Kept for sentimental reasons
-				//((Wabbitcode.newEditor)(ActiveMdiChild)).editorBox.ActiveTextAreaControl.Enabled = false;
-
-				//old stuff?
-				//string locInfo = debugTable[page + ":" + startAddress].ToString();
-				//string file = locInfo.Substring(0, locInfo.LastIndexOf(':'));
-				//string line = locInfo.Substring(locInfo.LastIndexOf(':') + 1, locInfo.Length - locInfo.LastIndexOf(':') - 1);
-				/*
-				if (Path.GetExtension(createdName) == ".8xk")
-				{
-					isAnApp = true;
-					Wabbitemu.AppEntry[] appList = debugger.getAppList();
-					apppage = appList[0].page;
-					debugger.setBreakpoint(false, apppage, 0x4080);
-				}
-				else
-				{
-					debugger.sendKeyPress((int)Keys.F12);
-					debugger.releaseKeyPress((int)Keys.F12);
-					System.Threading.Thread.Sleep(2000);
-					debugger.setBreakpoint(true, 1, 0x9D95);
-				}*/
-				/*try
-				{
-					while (debugging)
-					{
-						Application.DoEvents();
-					}
-                
-						//calcScreen.Image = debugger.DrawScreen();
-						var currentLoc = new Wabbitemu.breakpoint();
-						currentLoc.Address = debugger.getState().PC;
-						currentLoc.Page = byte.Parse(getPageNum(currentLoc.Address.ToString("X")), NumberStyles.HexNumber);
-						currentLoc.IsRam = getRamState(currentLoc.Address.ToString("X"));
-						bool breakpointed = false;
-						foreach (Wabbitemu.breakpoint breakpoint in breakpoints)
-						{
-							if (breakpoint.Page == currentLoc.Page && breakpoint.Address == currentLoc.Address)
-								breakpointed = true;
-						}
-						while (breakpointed)
-						{
-							//updateRegisters();
-							//updateFlags();
-							//updateCPUStatus();
-							//updateInterrupts();
-							if (stepOverClicked)
-								step(debugTable);
-							Application.DoEvents();
-						}
-						debugger.step();
-						//System.Threading.Thread.Sleep(2000);
-						Application.DoEvents();
-					}
-				}
-				catch (COMException ex)
-				{
-					if (ex.ErrorCode != -2147023174)
-						MessageBox.Show(ex.ToString());
-				}*/
-				#endregion
         }
+
+		public void InitDebug(bool isAnApp, string createdName)
+		{
+			DebuggerService.Debugger = new CWabbitemu(createdName);
+			if (isAnApp)
+			{
+#if NEW_DEBUGGING
+				if (DebuggerService.Debugger.Apps.Length == 0)
+				{
+					CancelDebug();
+					return;
+				}
+				while (((TIApplication)DebuggerService.Debugger.Apps.GetValue(0)).PageCount == 0)
+					Thread.Sleep(500);
+#else
+                CWabbitemu.AppEntry[] appList = new CWabbitemu.AppEntry[20];
+				while (appList[0].page_count == 0)
+				{
+					appList = DebuggerService.Debugger.getAppList();
+					if (appList == null)
+					{
+						CancelDebug();
+						return;
+					}
+                    Thread.Sleep(500);
+				}
+#endif
+				int counter = 0;
+				char[] buffer = new char[8];
+				StreamReader appReader = new StreamReader(createdName);
+				for (int i = 0; i < 17; i++)
+					appReader.Read();
+				appReader.ReadBlock(buffer, 0, 8);
+
+				appReader.Dispose();
+				appReader.Close();
+				string appName = new string(buffer).Trim();
+#if NEW_DEBUGGING
+				foreach (TIApplication app in DebuggerService.Debugger.Apps)
+				{
+					if (app.Name.Trim() == appName)
+						break;
+					counter++;
+				}
+				if (counter > DebuggerService.Debugger.Apps.Length)
+				{
+					if (MessageBox.Show("Unable to find the app, would you like to try and continue and debug?", "Missing App", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
+					{
+						CancelDebug();
+						return;
+					}
+					counter = 0;
+				}
+				byte appPage = (byte)((TIApplication)DebuggerService.Debugger.Apps.GetValue(counter)).Page.Index;
+#else
+				foreach (CWabbitemu.AppEntry app in appList)
+				{
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append(app.name1);
+                    sb.Append(app.name2);
+                    sb.Append(app.name3);
+                    sb.Append(app.name4);
+                    sb.Append(app.name5);
+                    sb.Append(app.name6);
+                    sb.Append(app.name7);
+                    sb.Append(app.name8);
+					if (sb.ToString().Trim().ToLower() == appName.ToLower())
+						break;
+					counter++;
+				}
+				if (counter == appList.Length)
+				{
+                    if (MessageBox.Show("Unable to find the app, would you like to try and continue and debug?", "Missing App", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
+                    {
+                        CancelDebug();
+                        return;
+                    }
+                    counter = 0;
+				}
+				DebuggerService.AppPage = (byte)appList[counter].page;
+				//apps key
+				DebuggerService.Debugger.sendKeyPress(Keys.B);
+				Thread.Sleep(50);
+				DebuggerService.Debugger.releaseKeyPress(Keys.B);
+				while (counter != -1)
+				{
+					DebuggerService.Debugger.sendKeyPress(Keys.Down);
+					Thread.Sleep(50);
+					DebuggerService.Debugger.releaseKeyPress(Keys.Down);
+					counter--;
+				}
+				DebuggerService.Debugger.sendKeyPress(Keys.Enter);
+				Thread.Sleep(50);
+				DebuggerService.Debugger.releaseKeyPress(Keys.Enter);
+#endif
+			}
+			UpdateDebugStuff();
+			UpdateBreakpoints();
+		}
+
 
 		private void startWithoutDebugMenuItem_Click(object sender, EventArgs e)
 		{
@@ -1085,12 +1153,27 @@ namespace Revsoft.Wabbitcode
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
+		public void UpdateConfig()
+		{
+			if (ProjectService.IsInternal)
+				return;
+			foreach (var config in ProjectService.BuildConfigs)
+				configBox.Items.Add(config);
+			configBox.SelectedIndex = ProjectService.CurrentConfigIndex;
+		}
+
+		void configBox_SelectedIndexChanged(object sender, System.EventArgs e)
+		{
+			ProjectService.CurrentConfigIndex = configBox.SelectedIndex;
+		}
+
         public void UpdateDebugStuff()
         {
 			//DockingService.DebugPanel.Enabled = DebuggerService.IsBreakpointed;
 			//DockingService.CallStack.Enabled = DebuggerService.IsBreakpointed;
 			//DockingService.TrackWindow.Enabled = DebuggerService.IsBreakpointed;
 			stepMenuItem.Enabled = DebuggerService.IsBreakpointed && DebuggerService.IsDebugging;
+			gotoCurrentToolButton.Enabled = DebuggerService.IsBreakpointed && DebuggerService.IsDebugging;
 			stepToolButton.Enabled = DebuggerService.IsBreakpointed && DebuggerService.IsDebugging;
 			stepOverMenuItem.Enabled = DebuggerService.IsBreakpointed && DebuggerService.IsDebugging;
 			stepOverToolButton.Enabled = DebuggerService.IsBreakpointed && DebuggerService.IsDebugging;
@@ -1113,6 +1196,11 @@ namespace Revsoft.Wabbitcode
             }
             base.WndProc(ref m);
         }
+
+		private void gotoCurrentToolButton_Click(object sender, EventArgs e)
+		{
+			DocumentService.GotoCurrentDebugLine();
+		}
 
         private void stepButton_Click(object sender, EventArgs e)
         {

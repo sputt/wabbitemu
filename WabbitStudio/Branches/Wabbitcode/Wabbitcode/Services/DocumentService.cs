@@ -233,6 +233,11 @@ namespace Revsoft.Wabbitcode.Services
             GotoFile(highlights[debugIndex].FileName).HighlightCall(highlights[debugIndex].LineNumber);
 		}
 
+		internal static void GotoCurrentDebugLine()
+		{
+			GotoFile(highlights[debugIndex].FileName);
+		}
+
 		public static void HighlightLine(int newLineNumber, Color foregroundColor)
 		{
             ListFileKey value = new ListFileKey(ActiveFileName, newLineNumber);

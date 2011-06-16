@@ -12,7 +12,8 @@ namespace Revsoft.Wabbitcode.Classes
 		{
 			get
 			{
-				return Settings.Default.wabbitLoc.Replace("%docs%", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
+				return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "wabbitemu.exe");
+				//return Settings.Default.wabbitLoc.Replace("%docs%", Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 			}
 		}
 		public static string SpasmFile
@@ -81,15 +82,11 @@ namespace Revsoft.Wabbitcode.Classes
 		internal static void InitFiles()
 		{
 			string dir = Path.GetDirectoryName(SpasmFile);
-			if (!Directory.Exists(dir))
-				if (MessageBox.Show("Directory '" + dir + "' does not exist. Would you like to create it?", "Directory does not exist", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
-					Settings.Default.assemblerLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "spasm.exe");
-			Classes.Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
-			dir = Path.GetDirectoryName(WabbitemuFile);
-			if (!Directory.Exists(dir))
-				if (MessageBox.Show("Directory '" + dir + "' does not exist. Would you like to create it?", "Directory does not exist", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
-					Settings.Default.wabbitLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "wabbitemu.exe");
-			Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
+			if (!File.Exists(FileLocations.SpasmFile))
+				Classes.Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
+			if (!File.Exists(FileLocations.WabbitemuFile))
+				//Settings.Default.wabbitLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "wabbitemu.exe");
+				Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
 		}
     }
 }

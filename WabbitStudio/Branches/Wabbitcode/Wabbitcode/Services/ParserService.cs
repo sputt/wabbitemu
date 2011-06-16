@@ -3,16 +3,102 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode;
+using Revsoft.Wabbitcode.Services.Parser;
 
-namespace Revsoft.Wabbitcode.Services.Parser
+namespace Revsoft.Wabbitcode.Services
 {
 	public static class ParserService
 	{
-        internal static void IsSafeRefactor(string line, int index)
-        {
+		public static List<List<Reference>> FindAllReferences(string refString)
+		{
+			var refsList = new List<List<Reference>>();
+			if (ProjectService.IsInternal)
+			{
+				var files = DockingService.Documents;
+				foreach (var file in files)
+				{
+					var refs = FindAllReferencesInFile(((newEditor)file).ToolTipText, refString);
+					if (refs.Count > 0)
+						refsList.Add(refs);
+				}
+			}
+			else
+			{
+				var files = ProjectService.Project.GetProjectFiles();
+				foreach (var file in files)
+				{
+					var refs = FindAllReferencesInFile(Path.Combine(ProjectService.ProjectDirectory, file.FileFullPath), refString);
+					if (refs.Count > 0)
+						refsList.Add(refs);
+				}
+			}
+			return refsList;
+		}
 
-        }
+		/// <summary>
+		/// Finds all references to the given text.
+		/// </summary>
+		/// <param name="file">Fully rooted path to the file</param>
+		/// <param name="refString">String to find references to</param>
+		public static List<Reference> FindAllReferencesInFile(string file, string refString)
+		{
+			string word = refString;
+			if (!Properties.Settings.Default.caseSensitive)
+				word = refString.ToLower();
+			int len = refString.Length;
+			var refs = new List<Reference>();
+			var reader = new StreamReader(file);
+			var lines = reader.ReadToEnd().Split('\n');
+			for (int i = 0; i < lines.Length; i++)
+			{
+				string line = lines[i];
+				string originalLine = line;
+				if (!Properties.Settings.Default.caseSensitive)
+					line = line.ToLower();
+				int commentIndex = line.IndexOf(commentChar);
+				if (commentIndex != -1)
+					line = line.Remove(commentIndex);
+				if (line.Trim().StartsWith("#comment"))
+				{
+					while (!line.Trim().StartsWith("#endcomment"))
+					{
+						line = lines[++i];
+						if (!Properties.Settings.Default.caseSensitive)
+							line = line.ToLower();
+					}
+					continue;
+				}
+				int refactorIndex = line.IndexOf(word);
+				if ((refactorIndex == -1) || (refactorIndex != 0 && !delimeters.Contains(line[refactorIndex - 1])) 
+						|| (refactorIndex + len < line.Length && !delimeters.Contains(line[refactorIndex + len])))
+					continue;
+				List<int> quotes = new List<int>();
+				int quoteIndex = 0;
+				while (line.IndexOf('\"', quoteIndex) != -1)
+				{
+					quoteIndex = line.IndexOf('\"', quoteIndex);
+					quotes.Add(quoteIndex++);
+				}
+				bool inQuote = false;
+				for (int j = 0; j < quotes.Count; j++)
+					if (refactorIndex > quotes[j])
+					{
+						if (j + 1 < quotes.Count && refactorIndex >= quotes[j + 1])
+							continue;
+						if (j % 2 == 0)
+							inQuote = true;
+						break;
+					}
+				if (inQuote)
+					continue;
+				refs.Add(new Reference(file, i, refactorIndex, refString, originalLine));
+			}
+			reader.Close();
+			reader.Dispose();
+			return refs;
+		}
 
         static string currentLine;
         static int currentIndex;
@@ -103,28 +189,25 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		{
 			string lines = null;
 			StreamReader reader = null;
-#if !DEBUG
 			try
 			{
-#endif
 				reader = new StreamReader(file);
 				lines = reader.ReadToEnd();
                 //NewParser.NewParser.ParseFile(file);
                 reader.Close();
 				return ParseFile(file, lines);
-#if !DEBUG
 			}
 			catch (FileNotFoundException ex)
 			{
-				DialogResult result = MessageBox.Show(ex.FileName + " not found, would you like to remove it from the project?",
-					"File not found", MessageBoxButtons.YesNo, MessageBoxIcon.None);
-				if (result == DialogResult.Yes)
+				System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(ex.FileName + " not found, would you like to remove it from the project?",
+					"File not found", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.None);
+				if (result == System.Windows.Forms.DialogResult.Yes)
 					ProjectService.DeleteFile(file);
 				return null;
 			}
 			catch (Exception ex)
 			{
-				MessageBox.Show("File: " + file + "\n" + ex.ToString());
+				DockingService.ShowError("Error parsing file: " + file, ex);
 				return null;
 			}
 			finally
@@ -132,7 +215,6 @@ namespace Revsoft.Wabbitcode.Services.Parser
 				if (reader != null)
 					reader.Close();
 			}
-#endif
 		}
 
 		delegate void HideProgressDelegate();

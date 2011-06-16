@@ -79,6 +79,7 @@
             this.findMenuItem = new System.Windows.Forms.MenuItem();
             this.replaceMenuItem = new System.Windows.Forms.MenuItem();
             this.findInFilesMenuItem = new System.Windows.Forms.MenuItem();
+			this.findAllRefsMenuItem = new System.Windows.Forms.MenuItem();
             this.replaceInFilesMenuItem = new System.Windows.Forms.MenuItem();
             this.menuItem25 = new System.Windows.Forms.MenuItem();
             this.insertMenuItem = new System.Windows.Forms.MenuItem();
@@ -110,6 +111,9 @@
             this.labelListMenuItem = new System.Windows.Forms.MenuItem();
             this.projViewMenuItem = new System.Windows.Forms.MenuItem();
             this.dirViewMenuItem = new System.Windows.Forms.MenuItem();
+			this.renameMenuItem = new System.Windows.Forms.MenuItem();
+			this.extractMethodMenuItem = new System.Windows.Forms.MenuItem();
+			this.refactorMenuItem = new System.Windows.Forms.MenuItem();
             this.macroManagerMenuItem = new System.Windows.Forms.MenuItem();
             this.menuItem2 = new System.Windows.Forms.MenuItem();
             this.breakManagerMenuItem = new System.Windows.Forms.MenuItem();
@@ -181,6 +185,7 @@
             this.pauseToolButton = new System.Windows.Forms.ToolStripButton();
             this.stopToolButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+			this.gotoCurrentToolButton = new System.Windows.Forms.ToolStripButton();
             this.stepToolButton = new System.Windows.Forms.ToolStripButton();
             this.stepOverToolButton = new System.Windows.Forms.ToolStripButton();
             this.stepOutToolButton = new System.Windows.Forms.ToolStripButton();
@@ -227,6 +232,7 @@
             this.fileMenuItem,
             this.editMenuItem,
             this.viewMenuItem,
+			this.refactorMenuItem,
             this.projMenuItem,
             this.macrosMenuItem,
             this.asmMenuItem,
@@ -461,7 +467,8 @@
             this.findMenuItem,
             this.replaceMenuItem,
             this.findInFilesMenuItem,
-            this.replaceInFilesMenuItem});
+            this.replaceInFilesMenuItem,
+			this.findAllRefsMenuItem});
             this.menuItem7.Text = "Find and Replace";
             // 
             // findMenuItem
@@ -491,6 +498,12 @@
             this.replaceInFilesMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftH;
             this.replaceInFilesMenuItem.Text = "Replace in files";
             this.replaceInFilesMenuItem.Click += new System.EventHandler(this.replaceInFilesMenuItem_Click);
+			// 
+			// findAllRefsMenuItem
+			// 
+			this.findAllRefsMenuItem.Index = 4;
+			this.findAllRefsMenuItem.Text = "Find all references";
+			this.findAllRefsMenuItem.Click += new System.EventHandler(this.findAllRefsMenuItem_Click);
             // 
             // menuItem25
             // 
@@ -818,10 +831,29 @@
             this.iconBarMenuItem.Tag = "iconBar";
             this.iconBarMenuItem.Text = "Icon Bar";
             this.iconBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+			// 
+			// refactorMenuItem
+			// 
+			this.refactorMenuItem.Index = 3;
+			this.refactorMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
+            this.renameMenuItem,
+            this.extractMethodMenuItem});
+			this.refactorMenuItem.Text = "Refactor";
+			// 
+			// renameMenuItem
+			// 
+			this.renameMenuItem.Index = 0;
+			this.renameMenuItem.Text = "Rename";
+			this.renameMenuItem.Click += new System.EventHandler(renameMenuItem_Click);
+			// 
+			// extractMethodMenuItem
+			// 
+			this.extractMethodMenuItem.Index = 1;
+			this.extractMethodMenuItem.Text = "Extract Method";
             // 
             // projMenuItem
             // 
-            this.projMenuItem.Index = 3;
+            this.projMenuItem.Index = 4;
             this.projMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.addNewFileMenuItem,
             this.existingFileMenuItem,
@@ -883,7 +915,7 @@
             // macrosMenuItem
             // 
             this.macrosMenuItem.Enabled = false;
-            this.macrosMenuItem.Index = 4;
+            this.macrosMenuItem.Index = 5;
             this.macrosMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.runMacroMenuItem,
             this.recMacroMenuItem,
@@ -907,7 +939,7 @@
             // 
             // asmMenuItem
             // 
-            this.asmMenuItem.Index = 5;
+            this.asmMenuItem.Index = 6;
             this.asmMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.assembleMenuItem,
             this.includeDirButton,
@@ -965,7 +997,7 @@
             // 
             // debugMenuItem
             // 
-            this.debugMenuItem.Index = 6;
+            this.debugMenuItem.Index = 7;
             this.debugMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.startDebugMenuItem,
 			this.startWithoutDebugMenuItem,
@@ -1083,13 +1115,13 @@
             // 
             // windowMenuItem
             // 
-            this.windowMenuItem.Index = 7;
+            this.windowMenuItem.Index = 8;
             this.windowMenuItem.MdiList = true;
             this.windowMenuItem.Text = "Window";
             // 
             // helpMenuItem
             // 
-            this.helpMenuItem.Index = 8;
+            this.helpMenuItem.Index = 9;
             this.helpMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
             this.showHelpMenuItem,
             this.updateMenuItem,
@@ -1188,6 +1220,7 @@
             this.pauseToolButton,
             this.stopToolButton,
             this.toolStripSeparator1,
+			this.gotoCurrentToolButton,
             this.stepToolButton,
             this.stepOverToolButton,
             this.stepOutToolButton});
@@ -1201,7 +1234,7 @@
             // runDebuggerToolButton
             // 
             this.runDebuggerToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.runDebuggerToolButton.Image = ((System.Drawing.Image)(resources.GetObject("runDebuggerToolButton.Image")));
+            this.runDebuggerToolButton.Image = ((System.Drawing.Image)(resources.GetObject("runToolButton.Image")));
             this.runDebuggerToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.runDebuggerToolButton.Name = "runDebuggerToolButton";
             this.runDebuggerToolButton.Size = new System.Drawing.Size(23, 22);
@@ -1235,6 +1268,17 @@
             this.toolStripSeparator1.Name = "toolStripSeparator1";
             this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
             this.toolStripSeparator1.TextDirection = System.Windows.Forms.ToolStripTextDirection.Vertical90;
+			// 
+			// gotoCurrentButton
+			// 
+			this.gotoCurrentToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.gotoCurrentToolButton.Enabled = false;
+			this.gotoCurrentToolButton.Image = ((System.Drawing.Image)(resources.GetObject("gotoCurrentToolButton.Image")));
+			this.gotoCurrentToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.gotoCurrentToolButton.Name = "gotoCurrentLineToolButton";
+			this.gotoCurrentToolButton.Size = new System.Drawing.Size(23, 22);
+			this.gotoCurrentToolButton.Text = "Goto Current Line";
+			this.gotoCurrentToolButton.Click += new System.EventHandler(this.gotoCurrentToolButton_Click);
             // 
             // stepToolButton
             // 
@@ -1299,10 +1343,12 @@
             this.configBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.configBox.Name = "configBox";
             this.configBox.Size = new System.Drawing.Size(135, 23);
+			this.configBox.SelectedIndexChanged += new System.EventHandler(configBox_SelectedIndexChanged);
             // 
             // mainToolBar
             // 
             this.mainToolBar.AllowItemReorder = true;
+			this.mainToolBar.AutoSize = false;
             this.mainToolBar.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
             this.mainToolBar.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.mainToolBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -1320,11 +1366,11 @@
             this.toolStripSeparator2,
             this.runToolButton,
 			this.configBox});
-            this.mainToolBar.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.HorizontalStackWithOverflow;
+            this.mainToolBar.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.StackWithOverflow;
             this.mainToolBar.Location = new System.Drawing.Point(0, 0);
             this.mainToolBar.Name = "mainToolBar";
             this.mainToolBar.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.mainToolBar.Size = new System.Drawing.Size(900, 25);
+            this.mainToolBar.Size = new System.Drawing.Size(2000, 25);
             this.mainToolBar.TabIndex = 15;
             this.mainToolBar.Text = "Main Toolbar";
             // 
@@ -1675,6 +1721,9 @@
         private System.Windows.Forms.MenuItem iconBarMenuItem;
         private System.Windows.Forms.MenuItem projViewMenuItem;
         private System.Windows.Forms.MenuItem dirViewMenuItem;
+		private System.Windows.Forms.MenuItem refactorMenuItem;
+		private System.Windows.Forms.MenuItem renameMenuItem;
+		private System.Windows.Forms.MenuItem extractMethodMenuItem;
         private System.Windows.Forms.MenuItem closeProjMenuItem;
         private System.Windows.Forms.MenuItem addNewFileMenuItem;
         private System.Windows.Forms.MenuItem runMacroMenuItem;
@@ -1736,6 +1785,7 @@
         private System.Windows.Forms.ToolStripButton stopToolButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton stepToolButton;
+		private System.Windows.Forms.ToolStripButton gotoCurrentToolButton;
         private System.Windows.Forms.ToolStrip mainToolBar;
         private System.Windows.Forms.ToolStripButton newToolStripButton;
         private System.Windows.Forms.ToolStripButton openToolStripButton;
@@ -1757,6 +1807,7 @@
         private System.Windows.Forms.MenuItem findMenuItem;
         private System.Windows.Forms.MenuItem replaceMenuItem;
         private System.Windows.Forms.MenuItem findInFilesMenuItem;
+		private System.Windows.Forms.MenuItem findAllRefsMenuItem;
         private System.Windows.Forms.MenuItem replaceInFilesMenuItem;
         private System.Windows.Forms.ToolStripButton saveAllToolButton;
         private System.Windows.Forms.MenuItem refreshMenuItem;
