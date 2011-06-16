@@ -37,7 +37,7 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <PublishUrl>http://group.revsoft.org/Wabbitcode/</PublishUrl>
+    <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Web</InstallFrom>
     <UpdateEnabled>true</UpdateEnabled>
@@ -47,13 +47,15 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
+    <InstallUrl>http://wabbit.codeplex.com/releases/clickonce/</InstallUrl>
     <SupportUrl>http://www.revsoft.org/phpBB2/viewforum.php%3ff=25</SupportUrl>
     <ProductName>Wabbitcode</ProductName>
     <PublisherName>Revolution Software</PublisherName>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
-    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationRevision>1</ApplicationRevision>
     <ApplicationVersion>0.5.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
+    <PublishWizardCompleted>true</PublishWizardCompleted>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -75,7 +77,7 @@
     <ErrorReport>prompt</ErrorReport>
     <UseVSHostingProcess>true</UseVSHostingProcess>
     <RunCodeAnalysis>false</RunCodeAnalysis>
-    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>..\..\..\Release\</OutputPath>
@@ -573,6 +575,18 @@
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
+  <PropertyGroup>
+    <ManifestCertificateThumbprint>79B57BE87AD3212BEB0DE2379A6B125C3DC486CA</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>Revsoft.Wabbitcode_TemporaryKey.pfx</ManifestKeyFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <GenerateManifests>true</GenerateManifests>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignManifests>true</SignManifests>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualBasic" />
@@ -794,6 +808,7 @@
     <Compile Include="Services\Project\IProject.cs" />
     <Compile Include="Services\Project\ProjectFile.cs" />
     <Compile Include="Services\Project\ProjectFolder.cs" />
+    <Compile Include="Services\Parser\Reference.cs" />
     <Compile Include="Services\ThreadingService.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="IncludeDir.cs">
@@ -863,7 +878,7 @@
       <DependentUpon>Preferences.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
+      <Generator>PublicResXFileCodeGenerator</Generator>
       <SubType>Designer</SubType>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
@@ -886,6 +901,7 @@
     <EmbeddedResource Include="Resources\Z80Asm.xshd" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\GotoCurrent.png" />
     <Content Include="Resources\Hardware-Chip.ico" />
     <Compile Include="Services\UpdateService.cs" />
     <EmbeddedResource Include="AboutBox.resx">
@@ -991,8 +1007,14 @@
     <EmbeddedResource Include="Extensions\TreeView.resx">
       <DependentUpon>TreeView.cs</DependentUpon>
     </EmbeddedResource>
+    <None Include="Revsoft.Wabbitcode_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0,Profile=Client">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 Client Profile %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
       <Visible>False</Visible>
       <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
@@ -1001,7 +1023,7 @@
     <BootstrapperPackage Include="Microsoft.Net.Framework.2.0">
       <Visible>False</Visible>
       <ProductName>.NET Framework 2.0 %28x86%29</ProductName>
-      <Install>true</Install>
+      <Install>false</Install>
     </BootstrapperPackage>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.0">
       <Visible>False</Visible>

@@ -357,7 +357,7 @@ namespace Revsoft.Wabbitcode.ToolbarManager
             // 
             this._panel.Dock = System.Windows.Forms.DockStyle.Fill;
             this._panel.Name = "_panel";
-            this._panel.Size = new System.Drawing.Size(384, 25);
+            this._panel.Size = new System.Drawing.Size(500, 25);
             this._panel.TabIndex = 0;
             // 
             // ToolBarDockHolder
@@ -370,7 +370,7 @@ namespace Revsoft.Wabbitcode.ToolbarManager
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 6.75F, System.Drawing.FontStyle.Regular,
                                                 System.Drawing.GraphicsUnit.Point, ((System.Byte) (0)));
             this.Name = "ToolBarDockHolder";
-            this.Size = new System.Drawing.Size(384, 25);
+            this.Size = new System.Drawing.Size(500, 25);
             this.MouseUp += new System.Windows.Forms.MouseEventHandler(this.ToolBarDockHolder_MouseUp);
             this.Paint += new System.Windows.Forms.PaintEventHandler(this.ToolBarDockHolder_Paint);
             this.MouseEnter += new System.EventHandler(this.ToolBarDockHolder_MouseEnter);

@@ -14,6 +14,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 		public int CurrentConfigIndex
 		{
 			get { return currentConfigIndex; }
+			set { currentConfigIndex = value; }
 		}
 
 		public BuildConfig CurrentConfig
@@ -95,12 +96,12 @@ namespace Revsoft.Wabbitcode.Services.Project
 			get { return buildConfigs; }
 		}
 		
-		public void Build()
+		public void Build(bool silent = false)
 		{
 			if (buildConfigs.Count < 1 || currentConfigIndex == -1)
 				System.Windows.Forms.MessageBox.Show("No config set up");
 			else
-				buildConfigs[currentConfigIndex].Build();
+				buildConfigs[currentConfigIndex].Build(silent);
 		}
 
 		internal void CreateXML(XmlTextWriter writer)

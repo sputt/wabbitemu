@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Classes;
-#if USE_DLL
+#if USE_ATL
 using SPASM;
 #endif
 //using Revsoft.Wabbitcode.Extensions;
@@ -15,20 +15,14 @@ namespace Revsoft.Wabbitcode.Services
 {
 	public static class AssemblerService
 	{
-		public static readonly List<Errors> ErrorsInFiles = new List<Errors>();
+		public static readonly List<Error> ErrorsInFiles = new List<Error>();
 		const string quote = "\"";
-		public static bool AssembleFile(string filePath, string assembledName, bool sendFileEmu)
+		public static bool AssembleFile(string filePath, string assembledName, bool silent)
 		{
-			Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
-			//Clear any other assemblings
-            //this needs to be done when the button is pressed, as the project build system uses this function
-            //DockingService.OutputWindow.ClearOutput();
-			//Get our emulator
-			Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
 #if !USE_DLL
 			//create two new processes to run
 			//setup wabbitspasm to run silently
-			Process wabbitspasm = new Process
+			var wabbitspasm = new Process
 			{
 				StartInfo =
 				{
@@ -57,7 +51,7 @@ namespace Revsoft.Wabbitcode.Services
 			wabbitspasm.StartInfo.Arguments = includedir + caseSensitive + "-T -L " + quote + filePath + quote + " " + quote + assembledName + quote;
 			wabbitspasm.StartInfo.WorkingDirectory = originalDir;
 			wabbitspasm.Start();
-#else
+#elif USE_ATL
             AssemblerClass Assembler = new AssemblerClass();
             string originalDir = filePath.Substring(0, filePath.LastIndexOf('\\'));
             //ShowMessage();
@@ -103,41 +97,80 @@ namespace Revsoft.Wabbitcode.Services
                                 wabbitspasm.StandardOutput.ReadToEnd();
 #endif
 			bool errors = outputText.Contains("error");
-			showPanelDelegate showPanels = new showPanelDelegate(ShowErrorPanels);
-			DockingService.MainForm.Invoke(showPanels, new[] { outputText, originalDir });
-			if (errors)
+			ParseOutput(outputText, originalDir);
+			if (!silent)
 			{
-				
+				showPanelDelegate showPanels = new showPanelDelegate(ShowErrorPanels);
+				DockingService.MainForm.Invoke(showPanels, outputText, originalDir);
 			}
-			//we need to check for errors
-			//if (Settings.Default.sendFileEmu && sendFileEmu && !errors)
-				//SendFileEmu(assembledName);
 			//tell if the assembly was successful
 			return !errors;
 		}
 
-		private delegate void showPanelDelegate(string text, string originaldir);
-		private static void ShowErrorPanels(string outputText, string originaldir)
+		public static void ParseOutput(string outputText, string startDir)
 		{
-#if !DEBUG
+			AssemblerService.ErrorsInFiles.Clear();
+			string[] lines = outputText.Split('\n');
+			foreach (string line in lines)
+			{
+				int thirdColon, secondColon, firstColon;
+				string file, lineNum, description;
+				if (line.Contains("error"))
+				{
+					firstColon = line.IndexOf(':', 3);
+					secondColon = line.IndexOf(':', firstColon + 1);
+					thirdColon = line.IndexOf(':', secondColon + 1);
+					if (firstColon < 0 || secondColon < 0 || thirdColon < 0)
+					{
+						AssemblerService.ErrorsInFiles[AssemblerService.ErrorsInFiles.Count - 1].description += line;
+					}
+					else
+					{
+						file = Path.Combine(startDir, line.Substring(0, firstColon));
+						lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
+						description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
+						ErrorsInFiles.Add(new Error(file, Convert.ToInt32(lineNum), description, false));
+					}
+				}
+				if (!line.Contains("warning"))
+					continue;
+				firstColon = line.IndexOf(':', 3);
+				secondColon = line.IndexOf(':', firstColon + 1);
+				thirdColon = line.IndexOf(':', secondColon + 1);
+				if (firstColon < 0 || secondColon < 0 || thirdColon < 0)
+				{
+					ErrorsInFiles[ErrorsInFiles.Count - 1].description += line;
+				}
+				else
+				{
+					file = Path.Combine(startDir, line.Substring(0, firstColon));
+					lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
+					description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
+					ErrorsInFiles.Add(new Error(file, Convert.ToInt32(lineNum), description, true));
+				}
+			}
+		}
+
+		private delegate void showPanelDelegate(string outputText, string originalDir);
+		private static void ShowErrorPanels(string outputText, string originalDir)
+		{
 			try
 			{
-#endif
                 DockingService.OutputWindow.SetText(outputText);
 				DockingService.OutputWindow.HighlightOutput();
 				//its more fun with colors
-				DockingService.ErrorList.ParseOutput(outputText, originaldir);
+				DockingService.ErrorList.ParseOutput();
 				DockingService.ShowDockPanel(DockingService.ErrorList);
 				DockingService.ShowDockPanel(DockingService.OutputWindow);
                 if (DockingService.ActiveDocument != null)
                     DockingService.ActiveDocument.Refresh();
-#if !DEBUG
+				foreach (newEditor child in DockingService.Documents)
+					child.UpdateIcons();
             }
 			catch (Exception ex)
 			{
 				MessageBox.Show(ex.ToString());
 			}
-#endif
 		}
 
 		//static Thread assemblerThread;
@@ -145,24 +178,19 @@ namespace Revsoft.Wabbitcode.Services
 		{
             if (!ProjectService.IsInternal)
                 ThreadPool.QueueUserWorkItem(new WaitCallback(AssembleProject));
-            //assemblerThread = new Thread(AssembleProject);
             else if (DockingService.ActiveDocument != null)
             {
                 bool saved = DockingService.ActiveDocument.SaveFile();
                 if (saved)
                     ThreadPool.QueueUserWorkItem(new WaitCallback(AssembleFile));
-                    //assemblerThread = new Thread(AssembleFile);
             }
-            else
-                return;
-			//assemblerThread.Priority = ThreadPriority.BelowNormal;
-			//assemblerThread.Start();
+            else return;
 		}
 
 		private static void AssembleFile(object data)
 		{
 			string text = DockingService.ActiveDocument.FileName;
-			AssembleFile(text, Path.ChangeExtension(text, GetExtension(Properties.Settings.Default.outputFile)), true);			
+			AssembleFile(text, Path.ChangeExtension(text, GetExtension(Properties.Settings.Default.outputFile)), false);
 		}
 
         private static bool isBuildProj;
@@ -172,13 +200,17 @@ namespace Revsoft.Wabbitcode.Services
         }
 		public static void AssembleProject(object data)
 		{
+			bool silent = false;
+			if (data != null)
+				silent = (bool)data;
             isBuildProj = true;
-            DockingService.OutputWindow.ClearOutput();
-			ProjectService.Project.BuildSystem.Build();
+			if (!silent)
+				DockingService.OutputWindow.ClearOutput();
+			ProjectService.Project.BuildSystem.Build(silent);
             isBuildProj = false;
 		}
 
-		public static bool CreateSymTable(string filePath, string assembledName)
+		public static bool CreateSymTable(string filePath, string assembledName, bool silent)
 		{
 			Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
 			//Clear any other assemblings
@@ -269,22 +301,13 @@ namespace Revsoft.Wabbitcode.Services
 #else
                                                 + wabbitspasm.StandardOutput.ReadToEnd();
 #endif
-			DockingService.OutputWindow.SetText(outputText);
-			//its more fun with colors
-			DockingService.OutputWindow.HighlightOutput();
-
 			bool errors = outputText.Contains("error");
-			if (errors)
-				DockingService.ShowDockPanel(DockingService.OutputWindow);
-			//its more fun with colors
-			DockingService.ErrorList.ParseOutput(outputText, originalDir);
-			if (errors)
-				DockingService.ShowDockPanel(DockingService.ErrorList);
-			//tell if the assembly was successful
-			//if (error != 0)
-			//    return false;
-			//else
-			//    return true;
+			ParseOutput(outputText, originalDir);
+			if (!silent)
+			{
+				showPanelDelegate showPanels = new showPanelDelegate(ShowErrorPanels);
+				DockingService.MainForm.Invoke(showPanels, outputText, originalDir);
+			}
 			return !errors;
 		}
 
