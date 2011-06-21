@@ -43,9 +43,6 @@
 #include "sendfileswindows.h"
 #include "state.h"
 #include "avi_utils.h"
-#ifdef USE_COM
-#include "wbded.h"
-#endif
 #ifdef USE_GDIPLUS
 #include "CGdiPlusBitmap.h"
 #endif
@@ -70,6 +67,7 @@ HACCEL haccelmain;
 POINT drop_pt;
 BOOL gif_anim_advance;
 BOOL silent_mode = FALSE;
+BOOL is_exiting = FALSE;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
@@ -1071,9 +1069,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 														ROMS  (*.rom; .bin)\0*.rom;*.bin\0\
 														All Files (*.*)\0*.*\0\0");
 					ZeroMemory(FileName, MAX_PATH);
-					SaveFile(FileName, (TCHAR *) lpstrFilter, _T("Wabbitemu Save State"), _T("sav"), OFN_PATHMUSTEXIST);
-					SAVESTATE_t *save = SaveSlot(lpCalc);
-					gui_savestate(hwnd, save, FileName, lpCalc);
+					if (!SaveFile(FileName, (TCHAR *) lpstrFilter, _T("Wabbitemu Save State"), _T("sav"), OFN_PATHMUSTEXIST)) {
+						SAVESTATE_t *save = SaveSlot(lpCalc);
+						gui_savestate(hwnd, save, FileName, lpCalc);
+					}
 					break;
 				}
 				case IDM_FILE_GIF: {
@@ -1125,6 +1124,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						int res = MessageBox(NULL, buf, _T("Wabbitemu"), MB_YESNO);
 						if (res == IDCANCEL || res == IDNO)
 							break;
+						is_exiting = TRUE;
 						PostQuitMessage(0);
 					}
 					SendMessage(hwnd, WM_CLOSE, 0, 0);
@@ -1669,7 +1669,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				//for some reason this fails...:/
 				if (!lpCalc->SkinEnabled || !lpCalc->bCutout)
 					UnregisterDropWindow(hwnd, lpCalc->pDropTarget);
-				lpCalc->pDropTarget = NULL;
 
 				//if (link_connected(lpCalc->slot))
 				//	link_disconnect(&lpCalc->cpu);

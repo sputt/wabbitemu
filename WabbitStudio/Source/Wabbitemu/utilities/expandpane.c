@@ -273,6 +273,7 @@ static LRESULT CALLBACK ExpandButtonProc(HWND hwnd, UINT Message, WPARAM wParam,
 				HBITMAP hbmButtons = LoadBitmap(g_hInst, _T("expandpanebuttons"));
 				hdcButtons = CreateCompatibleDC(GetDC(hwnd));
 				SelectObject(hdcButtons, hbmButtons);
+				DeleteObject(hbmButtons);
 			}
 
 			HDC hdcDest, hdc;

@@ -155,84 +155,86 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 	DWORD dwVersion = GetVersion();
 	DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
 	BOOL fIsWindows7 = (dwMajorVersion >= 0x06) ? TRUE : FALSE;
-	if (fIsWindows7 == TRUE)
-	{
-		hbmRight = LoadBitmap(g_hInst, _T("TBRIGHT7"));
-	}
-	else
-	{
-		hbmRight = LoadBitmap(g_hInst, _T("TBRIGHT"));
-	}
-	SelectObject(hdcRight, hbmRight);
+	if (IsAppThemed()) {
+		if (fIsWindows7 == TRUE)
+		{
+			hbmRight = LoadBitmap(g_hInst, _T("TBRIGHT7"));
+		}
+		else
+		{
+			hbmRight = LoadBitmap(g_hInst, _T("TBRIGHT"));
+		}
+		SelectObject(hdcRight, hbmRight);
 
-	StretchBlt(hdcBuf, 0, 0, r->right - r->left, r->bottom - r->top,
-			hdcRight, 0, r->top, 1, r->bottom - r->top, SRCCOPY);
+		StretchBlt(hdcBuf, 0, 0, r->right - r->left, r->bottom - r->top,
+				hdcRight, 0, r->top, 1, r->bottom - r->top, SRCCOPY);
 
-	DeleteObject(hbmRight);
-	DeleteDC(hdcRight);
+		DeleteObject(hbmRight);
+		DeleteDC(hdcRight);
 
+		// Set up the alpha function for the bitmap with alpha values
+		BLENDFUNCTION bf;
+		bf.BlendOp = AC_SRC_OVER;
+		bf.BlendFlags = 0;
+		bf.SourceConstantAlpha = 255;
+		bf.AlphaFormat = AC_SRC_ALPHA;
 
-	// Set up the alpha function for the bitmap with alpha values
-	BLENDFUNCTION bf;
-	bf.BlendOp = AC_SRC_OVER;
-	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = 255;
-	bf.AlphaFormat = AC_SRC_ALPHA;
+		// Create the header for the bitmap with alpha values
+		BITMAPINFO bmi;
+		ZeroMemory(&bmi, sizeof(BITMAPINFO));
 
-	// Create the header for the bitmap with alpha values
-	BITMAPINFO bmi;
-	ZeroMemory(&bmi, sizeof(BITMAPINFO));
+		BITMAPINFOHEADER *bi = &bmi.bmiHeader;
+		bi->biSize = sizeof(BITMAPINFOHEADER);
+		bi->biWidth = r->right - r->left;
+		bi->biHeight = 1;
+		bi->biPlanes = 1;
+		bi->biBitCount = 32;
+		bi->biCompression = BI_RGB;
 
-	BITMAPINFOHEADER *bi = &bmi.bmiHeader;
-	bi->biSize = sizeof(BITMAPINFOHEADER);
-	bi->biWidth = r->right - r->left;
-	bi->biHeight = 1;
-	bi->biPlanes = 1;
-	bi->biBitCount = 32;
-	bi->biCompression = BI_RGB;
+		int width = bi->biWidth;
+		int height = bi->biHeight;
 
-	int width = bi->biWidth;
-	int height = bi->biHeight;
+		if (fIsWindows7 == FALSE)
+		{
+			HDC hdcGrad = CreateCompatibleDC(hdc);
+			// Create a solid brush of the gradient color
+			HBRUSH hbrGrad = CreateSolidBrush(RGB(0, 190, 0));
+			SelectObject(hdcGrad, hbrGrad);
 
-	if (fIsWindows7 == FALSE)
-	{
-		HDC hdcGrad = CreateCompatibleDC(hdc);
-		// Create a solid brush of the gradient color
-		HBRUSH hbrGrad = CreateSolidBrush(RGB(0, 190, 0));
-		SelectObject(hdcGrad, hbrGrad);
-
-		SelectObject(hdcGrad, GetStockObject(DC_PEN));
-		SetDCPenColor(hdcGrad, RGB(0, 190, 0));
+			SelectObject(hdcGrad, GetStockObject(DC_PEN));
+			SetDCPenColor(hdcGrad, RGB(0, 190, 0));
 
 		
-		BYTE *pBits;
-		HBITMAP hbmGrad = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**) &pBits, NULL, 0);
+			BYTE *pBits;
+			HBITMAP hbmGrad = CreateDIBSection(NULL, &bmi, DIB_RGB_COLORS, (void**) &pBits, NULL, 0);
 
-		SelectObject(hdcGrad, hbmGrad);
+			SelectObject(hdcGrad, hbmGrad);
 
-		// Fill it with green
-		Rectangle(hdcGrad, 0, 0, width, height);
+			// Fill it with green
+			Rectangle(hdcGrad, 0, 0, width, height);
 
-		int x;
+			int x;
 
-		BYTE * pPixel = pBits;
-		for (x = r->left; x < r->right; x++, pPixel+=4) {
-			pPixel[3] = (BYTE) (255*(x+1)/rc.right/8);
+			BYTE * pPixel = pBits;
+			for (x = r->left; x < r->right; x++, pPixel+=4) {
+				pPixel[3] = (BYTE) (255*(x+1)/rc.right/8);
 
-			pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
-			pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
-			pPixel[2] = pPixel[2] * pPixel[3] / 0xFF;
+				pPixel[0] = pPixel[0] * pPixel[3] / 0xFF;
+				pPixel[1] = pPixel[1] * pPixel[3] / 0xFF;
+				pPixel[2] = pPixel[2] * pPixel[3] / 0xFF;
 
+			}
+
+			AlphaBlend(	hdcBuf, 0, 0, r->right - r->left, r->bottom - r->top,
+						hdcGrad, 0, 0, r->right - r->left, 1,
+						bf);
+
+			DeleteObject(hbmGrad);
+			DeleteDC(hdcGrad);
 		}
-
-		AlphaBlend(	hdcBuf, 0, 0, r->right - r->left, r->bottom - r->top,
-					hdcGrad, 0, 0, r->right - r->left, 1,
-					bf);
-
-		DeleteObject(hbmGrad);
-		DeleteDC(hdcGrad);
+	} else {
+		FillRect(hdcBuf, &rc, GetSysColorBrush(COLOR_MENU));
 	}
-
 	BitBlt(hdc, 0, 0, r->right - r->left, r->bottom - r->top, hdcBuf, 0, 0, SRCCOPY);
 
 	DeleteObject(hbmBuf);
@@ -745,7 +747,6 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 
 			HDC hdcBtn = CreateCompatibleDC(hdc);
 			HBITMAP hbmPrior = (HBITMAP) SelectObject(hdcBtn, tbb->hbmIcon);
-
 			AlphaBlend(	hdcBuf, 4 + ox, 4 + oy, 16, 16,
 						hdcBtn, 0, 0, 16, 16,
 						bf);
@@ -786,6 +787,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			return 0;
 		case WM_DESTROY: {
 			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			DeleteObject(tbb->hbmIcon);
 			free(tbb);
 			return 0;
 		}
@@ -1112,27 +1114,31 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			HBITMAP hbmBuf = CreateCompatibleBitmap(hdc, rc.right, rc.bottom);
 			SelectObject(hdcBuf, hbmBuf);
 
-			HDC hdcRight = CreateCompatibleDC(hdcBuf);
-			HBITMAP hbmRight = LoadBitmap(g_hInst, fIsWindows7 == TRUE ? _T("TBRIGHT7") : _T("TBRIGHT"));
-			SelectObject(hdcRight, hbmRight);
+			if (IsAppThemed()) {
+				HDC hdcRight = CreateCompatibleDC(hdcBuf);
+				HBITMAP hbmRight = LoadBitmap(g_hInst, fIsWindows7 == TRUE ? _T("TBRIGHT7") : _T("TBRIGHT"));
+				SelectObject(hdcRight, hbmRight);
 
-			if (rc.right > 3 + 120) {
-				StretchBlt(hdcBuf, 3, 0, rc.right - 123, 32, hdcRight, 0, 0, 1, 32, SRCCOPY);
+				if (rc.right > 3 + 120) {
+					StretchBlt(hdcBuf, 3, 0, rc.right - 123, 32, hdcRight, 0, 0, 1, 32, SRCCOPY);
+				}
+
+				BitBlt(hdcBuf, rc.right - 120, 0, 120, 32, hdcRight, 0, 0, SRCCOPY);
+
+				DeleteObject(hbmRight);
+				DeleteDC(hdcRight);
+
+				HDC hdcLeft = CreateCompatibleDC(hdcBuf);
+				HBITMAP hbmLeft = LoadBitmap(g_hInst, fIsWindows7 == TRUE ? _T("TBLEFT7") : _T("TBLEFT"));
+				SelectObject(hdcLeft, hbmLeft);
+
+				BitBlt(hdcBuf, 0, 0, 3, 32, hdcLeft, 0, 0, SRCCOPY);
+
+				DeleteObject(hbmLeft);
+				DeleteDC(hdcLeft);
+			} else {
+				FillRect(hdcBuf, &rc, GetSysColorBrush(COLOR_MENU));
 			}
-
-			BitBlt(hdcBuf, rc.right - 120, 0, 120, 32, hdcRight, 0, 0, SRCCOPY);
-
-			DeleteObject(hbmRight);
-			DeleteDC(hdcRight);
-
-			HDC hdcLeft = CreateCompatibleDC(hdcBuf);
-			HBITMAP hbmLeft = LoadBitmap(g_hInst, fIsWindows7 == TRUE ? _T("TBLEFT7") : _T("TBLEFT"));
-			SelectObject(hdcLeft, hbmLeft);
-
-			BitBlt(hdcBuf, 0, 0, 3, 32, hdcLeft, 0, 0, SRCCOPY);
-
-			DeleteObject(hbmLeft);
-			DeleteDC(hdcLeft);
 
 			// Set up the alpha function for the bitmap with alpha values
 			BLENDFUNCTION bf;

@@ -722,6 +722,7 @@
     <None Include="gui\ti-81.png">
       <Filter>Resource Files\Skins</Filter>
     </None>
+    <None Include="ti-81.png" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">

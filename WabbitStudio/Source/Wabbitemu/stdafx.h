@@ -28,12 +28,16 @@
 #include <ShObjIdl.h>
 #include <assert.h>
 #include <setjmp.h>
+#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
+#include <crtdbg.h>
+
 #include <stdio.h>
 #include <sys/types.h>
 #include <mmsystem.h>
 #include <stddef.h>
 #include <time.h>
+
 
 #ifdef __cplusplus
 #ifdef USE_GDIPLUS

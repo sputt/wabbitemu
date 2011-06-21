@@ -245,8 +245,11 @@ void clear_break(memc *mem, BOOL ram, int page, uint16_t addr);
 void clear_mem_write_break(memc *, BOOL, int, uint16_t);
 void clear_mem_read_break(memc *, BOOL, int, uint16_t);
 BOOL check_break(memc *, uint16_t);
+BOOL check_wmem_break(memc *, waddr);
 BOOL check_mem_write_break(memc *, uint16_t);
 BOOL check_mem_read_break(memc *, uint16_t);
+BOOL check_wmem_read_break(memc *mem, waddr_t waddr);
+BOOL check_wmem_write_break(memc *mem, waddr_t waddr);
 
 int tc_init(timerc*, int);
 int CPU_init(CPU_t*, memc*, timerc*);

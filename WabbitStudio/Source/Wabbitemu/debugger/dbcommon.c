@@ -7,7 +7,7 @@
 
 extern HINSTANCE g_hInst;
 
-unsigned short goto_addr;
+unsigned int goto_addr;
 int find_value;
 BOOL search_backwards;
 
@@ -31,18 +31,10 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 					if (result[0] != '$') {
 						label_struct *label;
 						label = lookup_label(lpDebuggerCalc, result);
-#ifdef WINVER
 						if (label == NULL) _stscanf_s(result, _T("%x"), &goto_addr);
-#else
-						if (label == NULL) sscanf(result, "%x", &goto_addr);
-#endif
 						else goto_addr = label->addr;
 					} else {
-#ifdef WINVER
 						_stscanf_s(result+1, _T("%x"), &goto_addr);
-#else
-						sscanf(result+1, "%x", &goto_addr);
-#endif
 					}
 					EndDialog(hwndDlg, IDOK);
 					return TRUE;

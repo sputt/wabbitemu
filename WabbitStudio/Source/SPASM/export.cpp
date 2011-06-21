@@ -72,12 +72,13 @@ const char typearray[] = {
     };
 
 const char extensions[][4] = {
-    "73P","82P","83P","8XP","85P","86P","85S","86S","8XK","BIN"};
+    "73P","82P","83P","8XP","85P","86P","85S","86S","8XK","ROM","BIN"};
 
 int findfield ( unsigned char byte, const unsigned char* buffer );
 int siggen (const unsigned char* hashbuf, unsigned char* sigbuf, int* outf);
-void intelhex (FILE * outfile , const unsigned char* buffer, int size);
+void intelhex (FILE * outfile , const unsigned char* buffer, int size, unsigned int address = 0x4000);
 void alphanumeric (char* namestring);
+void makerom (const unsigned char *output_contents, DWORD output_len, FILE *outfile);
 void makeapp (const unsigned char *output_contents, DWORD output_len, FILE *outfile, const char *prgmname);
 void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, const char *prgmname, int calc);
 
@@ -94,19 +95,19 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	if (i != 0) {
 		const char *ext = output_filename + i + 1;
 
-		for (calc = 0; calc < 10; calc++) {
+		for (calc = 0; calc < 11; calc++) {
 			if (!_stricmp (ext, extensions[calc]))
 				break;
 		}
 
-		if (calc == 10) {
+		if (calc == 11) {
 			SetLastSPASMWarning(SPASM_WARN_UNKNOWN_EXTENSION);
-			calc = 9;
+			calc = 10;
 		}
 
 	} else {
 		//show_warning ("No output extension given, assuming .bin");
-		calc = 9;
+		calc = 10;
 	}
 
 	//open the output file
@@ -131,7 +132,9 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	//then decide how to write the contents
 	if (calc == 8) //8XK
 		makeapp (output_contents, (DWORD) output_len, outfile, prgmname);
-	else if (calc == 9) { //BIN
+	else if (calc == 9)
+		makerom(output_contents, (DWORD) output_len, outfile);
+	else if (calc == 10) { //BIN
 		for (i = 0; i < output_len; i++)
 			fputc(output_contents[i], outfile);
     } else
@@ -140,6 +143,15 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	fclose (outfile);
 }
 
+void makerom (const unsigned char *output_contents, DWORD size, FILE *outfile) {
+	unsigned char *buffer;
+	unsigned int i;
+	const int final_size = 512*1024;
+	for(i = 0; i < size; i++)
+		fputc(output_contents[i], outfile);
+	for (; i < final_size; i++)
+		fputc(0xFF, outfile);
+}
 
 void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, const char* prgmname) {
     unsigned char *buffer;
@@ -602,11 +614,11 @@ void alphanumeric (char* namestring) {
 /* Convert binary buffer to intel hex in ti format
  * All pages addressed to $4000 and are only $4000
  * bytes long. */
-void intelhex (FILE* outfile, const unsigned char* buffer, int size) {
+void intelhex (FILE* outfile, const unsigned char* buffer, int size, unsigned int address) {
     const char hexstr[] = "0123456789ABCDEF";
     int page = 0;
     int bpnt = 0;
-    unsigned int address,ci,temp,i;
+    unsigned int ci,temp,i;
     unsigned char chksum;
     unsigned char outbuf[128];
     
@@ -615,7 +627,6 @@ void intelhex (FILE* outfile, const unsigned char* buffer, int size) {
     while (bpnt < size){
         fprintf(outfile,":02000002%04X%02X\r\n",page,(unsigned char) ( (~(0x04 + page)) +1));
         page++;
-        address = 0x4000;   
         for (i = 0; bpnt < size && i < 512; i++) {
              chksum = (address>>8) + (address & 0xFF);
              for(ci = 0; ((ci < 64) && (bpnt < size)); ci++) {

@@ -14,7 +14,8 @@ static void port0(CPU_t *cpu, device_t *dev) {
 		cpu->bus = 0;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		dev->aux = (LPVOID) ((cpu->bus & 0x1f) << 8);
+		int temp = ((cpu->bus & 0x1f) << 8);
+		dev->aux = &temp;
 		port10(cpu, dev);
 		cpu->output = FALSE;
 		device_t devt;
@@ -120,8 +121,17 @@ static void port6(CPU_t *cpu, device_t *dev) {
 	}
 }
 
+static void port7(CPU_t *cpu, device_t *dev) {
+	if (cpu->input) {
+		cpu->bus = 0x00;
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		cpu->output = FALSE;
+	}
+}
+
 static void port10(CPU_t *cpu, device_t *dev) {
-	int screen_addr = (int) dev->aux;
+	int screen_addr = *((int *)dev->aux);
 	// Output the entire LCD
 	LCD_t *lcd = cpu->pio.lcd;
 	memcpy(lcd->display, cpu->mem_c->banks[mc_bank(screen_addr)].addr + mc_base(screen_addr), DISPLAY_SIZE);
@@ -221,11 +231,11 @@ int device_init_81(CPU_t *cpu) {
 
 	cpu->pio.devices[0x10].active = TRUE;
 	cpu->pio.devices[0x10].aux = NULL;
-	cpu->pio.devices[0x10].code = (devp) &port10;
+	cpu->pio.devices[0x10].code = (devp) &port0;
 
 	cpu->pio.devices[0x11].active = TRUE;
 	cpu->pio.devices[0x11].aux = lcd;
-	cpu->pio.devices[0x11].code = (devp) &LCD_data;
+	cpu->pio.devices[0x11].code = (devp) &keypad;
 	
 	cpu->pio.lcd		= lcd;
 	cpu->pio.keypad		= keyp;

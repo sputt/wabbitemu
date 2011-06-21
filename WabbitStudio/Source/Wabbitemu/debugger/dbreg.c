@@ -40,11 +40,7 @@ void ValueDraw(HDC hdc, RECT *dr, int i) {
 	TCHAR szRegVal[16];
 
 	dr->right = dr->left + kRegAddr;
-#ifdef WINVER
 	StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%s"), reg_offset[i].name);
-#else
-	sprintf(szRegVal, "%s", reg_offset[i].name);
-#endif
 	SelectObject(hdc, hfontLucida);
 	SetTextColor(hdc, DBCOLOR_HILIGHT);
 	DrawText(hdc, szRegVal, -1, dr, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
@@ -55,17 +51,9 @@ void ValueDraw(HDC hdc, RECT *dr, int i) {
 	SelectObject(hdc, hfontLucida);
 
 	if (i < REG16_ROWS * REG16_COLS) {
-#ifdef WINVER
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%04X"), reg16(reg_offset[i].offset));
-#else
-		sprintf(szRegVal, "%04X", reg16(reg_offset[i].offset));
-#endif
 		DrawText(hdc, szRegVal, -1, dr, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
-#ifdef WINVER
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%02X"), reg8(reg_offset[i].offset));
-#else
-		sprintf(szRegVal, "%02X", reg8(reg_offset[i].offset));
-#endif
 		DrawText(hdc, szRegVal, -1, dr, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 	}
 	val_locs[i] = *dr;
@@ -137,18 +125,10 @@ void CreateEditField(HWND hwnd, POINT p) {
 	TCHAR rval[8];
 	int edit_width = 4;
 	if (vi < REG16_ROWS * REG16_COLS) {
-#ifdef WINVER
 		StringCbPrintf(rval, sizeof(rval), _T("%04X"), reg16(reg_offset[vi].offset));
-#else
-		sprintf(rval, "%04X", reg16(reg_offset[vi].offset));
-#endif
 		edit_width = 4;
 	} else {
-#ifdef WINVER
 		StringCbPrintf(rval, sizeof(rval), _T("%02X"), reg8(reg_offset[vi].offset));
-#else
-		sprintf(rval, "%02X", reg8(reg_offset[vi].offset));
-#endif
 		edit_width = 2;
 	}
 
@@ -340,11 +320,7 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 		for (i = 0; i < 4; i++)
 		{
 			char bank[16];
-#ifdef WINVER
 			sprintf_s(bank, "Bank %d", i);
-#else
-			sprintf(bank, "Bank %d", i);
-#endif
 			DrawTextA(hdc, bank, -1, &rc, DT_LEFT);
 			OffsetRect(&rc, 0, kRegRow);
 		}
@@ -563,11 +539,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 		ntimer = tc_elapsed(&lpDebuggerCalc->timer_c) - lpDebuggerCalc->cpu.pio.stdint->lastchk1;
 		ntimer *= 1000;
-#ifdef WINVER
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
-#else
-		sprintf(szRegVal, "%0.4lf ms", ntimer);
-#endif
 		SelectObject(hdc, hfontSegoe);
 		DrawText(hdc, _T("Next Timer1"), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
@@ -581,11 +553,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 		ntimer = lpDebuggerCalc->cpu.pio.stdint->timermax1;
 		ntimer *= 1000;
-#ifdef WINVER
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
-#else
-		sprintf(szRegVal, "%0.4lf ms", ntimer);
-#endif
 
 		SelectObject(hdc, hfontLucida);
 		OffsetRect(&rc, kRegAddr*3, 0);
@@ -598,11 +566,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 		ntimer = tc_elapsed(&lpDebuggerCalc->timer_c) - lpDebuggerCalc->cpu.pio.stdint->lastchk2;
 		ntimer *= 1000;
-#ifdef WINVER
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
-#else
-		sprintf(szRegVal, "%0.4lf ms", ntimer);
-#endif
 
 		SelectObject(hdc, hfontLucida);
 		OffsetRect(&rc, kRegAddr*3, 0);
@@ -614,11 +578,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 		ntimer = lpDebuggerCalc->cpu.pio.stdint->timermax2;
 		ntimer *= 1000;
-#ifdef WINVER
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
-#else
-		sprintf(szRegVal, "%0.4lf ms", ntimer);
-#endif
 
 		SelectObject(hdc, hfontLucida);
 		OffsetRect(&rc, kRegAddr*3, 0);

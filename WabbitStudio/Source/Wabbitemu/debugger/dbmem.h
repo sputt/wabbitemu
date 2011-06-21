@@ -4,6 +4,12 @@
 #include "gui.h"
 #include "calc.h"
 
+enum MemViewType {
+	REGULAR,			//view paged memory
+	FLASH,				//view all flash pages
+	RAM,				//view all ram pages
+};
+
 typedef struct mempane_settings {
 	int memNum;						// mempane number
 	int addr;						// Top left address
@@ -14,6 +20,7 @@ typedef struct mempane_settings {
 	int track;						// register to track
 	int iAddr, iData;
 	double diff;
+	MemViewType type;				//type of tab this is (aka what do we display)
 	HWND hwndHeader;
 	HWND cmbMode;
 	HWND hwndTip;					// hWnd for the tooltip

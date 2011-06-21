@@ -8,6 +8,7 @@
 #include "expandpane.h"
 
 extern keyprog_t keygrps[256];
+TCHAR *verString = _T("1.5.6.20");
 
 static HKEY hkeyTarget;
 
@@ -19,7 +20,7 @@ static struct {
 	{_T("cutout"), 					REG_DWORD, 	FALSE},
 	{_T("skin"),					REG_DWORD,	FALSE},
 	{_T("alphablend_lcd"),			REG_DWORD,	TRUE},
-	{_T("version"), 				REG_SZ, 	(LONG_PTR) _T("1.5.5.21")},
+	{_T("version"), 				REG_SZ, 	(LONG_PTR) verString},
 	{_T("rom_path"), 				REG_SZ, 	(LONG_PTR) _T("z.rom")},
 	{_T("shades"),					REG_DWORD,	6},
 	{_T("gif_path"), 				REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},

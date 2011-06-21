@@ -331,18 +331,18 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 				break;
 			case FLOAT4:
 				if (vfs->size == sizeof(float))
-					_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%*.4f"), vfs->max_digits, *((float *) vfs->data));
+					StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%*.4f"), vfs->max_digits, *((float *) vfs->data));
 				else
-					_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%*.4f"), vfs->max_digits, *((double *) vfs->data));
+					StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%*.4f"), vfs->max_digits, *((double *) vfs->data));
 				break;
 			case DEC3:
-				_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%*d"), vfs->max_digits, *((unsigned int *) vfs->data));
+				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%*d"), vfs->max_digits, *((unsigned int *) vfs->data));
 				break;
 			case CHAR1:
-				_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%c"), *((_TUCHAR *) vfs->data));
+				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%c"), *((_TUCHAR *) vfs->data));
 				break;
 			default:
-				_tprintf_s(vfs->szValue, sizeof(vfs->szValue), _T("%d"), *((unsigned int *) vfs->data));
+				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%d"), *((unsigned int *) vfs->data));
 				break;
 			}
 

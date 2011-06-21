@@ -89,7 +89,12 @@ typedef struct USB {
 	unsigned int USBEventMask;		//Whether interrupts should be generated when USB lines change
 	BOOL LineInterrupt;
 	BOOL ProtocolInterrupt;
+	BOOL ProtocolInterruptEnabled;
 	unsigned int DevAddress;		//Current USB device address
+
+	unsigned char Port4A;
+	unsigned char Port4C;
+	unsigned char Port54;
 } USB_t;
 
 enum USB_MASK {

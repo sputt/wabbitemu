@@ -6,11 +6,11 @@
 #include "resource.h"
 #include "expandpane.h"
 
-#define COLUMN_X_OFFSET 7
+#define COLUMN_X_OFFSET (7 + (mps->type == REGULAR ? 0 : 3))
 
 extern HWND hwndLastFocus;
 extern HINSTANCE g_hInst;
-extern unsigned short goto_addr;
+extern unsigned int goto_addr;
 extern int find_value;
 extern HFONT hfontLucida, hfontLucidaBold, hfontSegoe;
 
@@ -27,8 +27,8 @@ static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
 	GetTextMetrics(hdc, &tm);
 	ReleaseDC(hwnd, hdc);
 
-
-	int x = pt.x - tm.tmAveCharWidth * 7 - COLUMN_X_OFFSET - (int) (mps->diff - mps->cxMem - 2 * tm.tmAveCharWidth) / 2;
+	int sidebar_width = (7 + (mps->type == REGULAR ? 0 : 3));
+	int x = pt.x - tm.tmAveCharWidth * sidebar_width - COLUMN_X_OFFSET - (int) (mps->diff - mps->cxMem - 2 * tm.tmAveCharWidth) / 2;
 	int y = pt.y - cyHeader;
 
 	int row = y/mps->cyRow;
@@ -37,7 +37,7 @@ static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
 	int addr = mps->addr + ((col + (mps->nCols * row)) * mps->mode);
 
 	if (r != NULL) {
-		r->left = tm.tmAveCharWidth*7 + COLUMN_X_OFFSET + (int) (mps->diff * col);
+		r->left = tm.tmAveCharWidth * sidebar_width + COLUMN_X_OFFSET + (int) (mps->diff * col);
 		r->right = r->left + mps->cxMem - 2*tm.tmAveCharWidth;
 		r->top = cyHeader + (row*mps->cyRow);
 		r->bottom = r->top + tm.tmHeight;
@@ -46,12 +46,28 @@ static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
 	return addr;
 }
 
+int GetMaxAddr(mempane_settings *mps) {
+	switch (mps->type) {
+		case REGULAR:
+			return 0x10000;
+		case FLASH:
+			return lpDebuggerCalc->cpu.mem_c->flash_size;
+		case RAM:
+			return lpDebuggerCalc->cpu.mem_c->ram_size;
+	}
+}
+
 
 static void ScrollUp(HWND hwnd) {
 	mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-	if (mps->addr > 0)
-		mps->addr -= mps->nCols * mps->mode;
+	if (mps->addr > 0) {
+		int temp = mps->addr - mps->nCols * mps->mode;
+		if (temp > 0)
+			mps->addr = temp;
+		else
+			mps->addr = 0;
+	}
 
 	InvalidateRect(hwnd, NULL, FALSE);
 	UpdateWindow(hwnd);
@@ -60,8 +76,8 @@ static void ScrollUp(HWND hwnd) {
 static void ScrollDown(HWND hwnd) {
 	mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-	int data_length = mps->nCols * mps->nRows * mps->mode;
-	if (mps->addr + data_length - mps->nCols * mps->mode <= 0xFFFF)
+	int data_length = mps->cyRow * mps->nRows * mps->mode;
+	if (mps->addr + data_length - mps->cyRow * mps->mode <= GetMaxAddr(mps))
 		mps->addr += mps->nCols * mps->mode;
 
 	InvalidateRect(hwnd, NULL, FALSE);
@@ -101,6 +117,25 @@ static VALUE_FORMAT GetValueFormat(mp_settings *mps) {
 		break;
 	}
 	return format;
+}
+
+waddr_t GetWaddr(mempane_settings *mps, uint16_t addr) {
+	waddr_t waddr;
+	switch (mps->type) {
+		case REGULAR:
+			return addr_to_waddr(lpDebuggerCalc->cpu.mem_c, addr);
+		case FLASH:
+			waddr.addr = addr % 0x4000;
+			waddr.is_ram = FALSE;
+			waddr.page = addr / 0x4000;
+			break;
+		case RAM:
+			waddr.addr = addr % 0x4000;
+			waddr.is_ram = TRUE;
+			waddr.page = addr / 0x4000;
+			break;
+	}
+	return waddr;
 }
 
 
@@ -166,26 +201,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		    mps->iAddr = 0;
 
 		    Header_InsertItem(mps->hwndHeader, 0, &hdi);
-
-			if (mps->track == -1) {
-				mps->cmbMode = CreateWindow(
-					_T("COMBOBOX"),
-					_T(""),
-					CBS_DROPDOWNLIST | WS_CHILD | WS_VISIBLE,
-					0, 0, 1, 1,
-					//mps->hwndHeader,
-					hwnd,
-					(HMENU) 1001, g_hInst, NULL);
-
-				ComboBox_AddString(mps->cmbMode, _T("Byte"));
-				ComboBox_AddString(mps->cmbMode, _T("Word"));
-				ComboBox_AddString(mps->cmbMode, _T("Text"));
-
-				ComboBox_SetCurSel(mps->cmbMode, 0);
-				SendMessage(mps->cmbMode, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
-
-			}
-
 			/*
 			mps->hwndTip = CreateWindowEx(
 					NULL,
@@ -219,12 +234,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			mps->cyRow = 4 * tm.tmHeight / 3;
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 
+			//we need to get the registry-stored address the user was last on
 			TCHAR buffer[64];
-#ifdef WINVER
 			StringCbPrintf(buffer, sizeof(buffer), _T("Mem%i"), mps->memNum);
-#else
-			sprintf(buffer, "Mem%i", mps->memNum);
-#endif
 			int value = (int) QueryDebugKey(buffer);
 			mps->addr = value;
 			return 0;
@@ -293,6 +305,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			BOOL isBinary = FALSE;
 			TCHAR memfmt[8];
+			//calculate how our data should be presented to the user
 			VALUE_FORMAT format = GetValueFormat(mps);
 			switch (format) {
 				case DEC3:
@@ -316,19 +329,20 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 			}
 
-			MoveToEx(hdc, tm.tmAveCharWidth * 7 - 1, cyHeader, NULL);
-			LineTo(hdc, tm.tmAveCharWidth * 7 - 1, r.bottom);
+			int sidebar_width = (7 + (mps->type == REGULAR ? 0 : 3));
+			MoveToEx(hdc, tm.tmAveCharWidth * sidebar_width - 1, cyHeader, NULL);
+			LineTo(hdc, tm.tmAveCharWidth * sidebar_width - 1, r.bottom);
 
 			int i, j, 	rows = (r.bottom - r.top + mps->cyRow - 1)/mps->cyRow,
 						cols =
-						(r.right - r.left - tm.tmAveCharWidth * 7) /
+						(r.right - r.left - tm.tmAveCharWidth * sidebar_width) /
 						(kMemWidth + 2 * tm.tmAveCharWidth);
 
 			mps->nRows = rows;
 			mps->nCols = cols;
 			mps->cxMem = kMemWidth + 2 * tm.tmAveCharWidth;
 
-			double diff = r.right - r.left - tm.tmAveCharWidth*7 - (cols * mps->cxMem);
+			double diff = r.right - r.left - tm.tmAveCharWidth * sidebar_width - (cols * mps->cxMem);
 			if (cols != 1) {
 				diff /= cols - 1;
 			}
@@ -337,19 +351,29 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			mps->diff = diff;
 			int addr = mps->addr;
 
-			unsigned int value;
+			unsigned int value, max_addr;
 			r.left = COLUMN_X_OFFSET;
-
+			char page;
 			for (	i = 0, r.bottom = r.top + mps->cyRow;
 					i < rows;
 					i++, OffsetRect(&r, 0, mps->cyRow)) {
 				TCHAR szVal[32];
-				if (addr < 0)
-					StringCbCopy(szVal, sizeof(szVal), _T("0000"));
-				else
-					StringCbPrintf(szVal, sizeof(szVal), _T("%04X"), addr);
+				if (mps->type == REGULAR) {
+					if (addr < 0)
+						StringCbCopy(szVal, sizeof(szVal), _T("0000"));
+					else
+						StringCbPrintf(szVal, sizeof(szVal), _T("%04X"), addr);
+				} else {
+					if (addr < 0)
+						StringCbPrintf(szVal, sizeof(szVal), _T("%02X 0000"), addr / 0x4000);
+					else
+						StringCbPrintf(szVal, sizeof(szVal), _T("%02X %04X"), addr / 0x4000 + (mps->type == RAM ? 0x80 : 0), addr % 0x4000);
+				}
 
-				if (addr < 0x10000) {
+				max_addr = GetMaxAddr(mps);
+
+				//draw the address bolded on theright
+				if (addr < max_addr) {
 					SelectObject(hdc, mps->hfontAddr);
 					DrawText(hdc, szVal, -1, &r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 				}
@@ -375,9 +399,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 
 				for (j = 0; j < cols; j++) {
-
+					//rect defining the size of the memory were viewing
 					CopyRect(&dr, &r);
-					dr.left = tm.tmAveCharWidth * 7 + COLUMN_X_OFFSET + (int) (diff * j);
+					dr.left = tm.tmAveCharWidth * sidebar_width + COLUMN_X_OFFSET + (int) (diff * j);
 					dr.right = dr.left + kMemWidth;
 
 					int b;
@@ -394,27 +418,39 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					value = 0;
 
-					if (addr >= 0x10000) break;
+					if (addr >= max_addr) break;
 					if (addr >= 0) {
 						int shift;
+						waddr_t waddr = GetWaddr(mps, addr);
 						for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
-							value += mem_read(lpDebuggerCalc->cpu.mem_c, addr + b) << shift;
+							waddr.addr = (addr + b) % 0x4000;
+							waddr.page = (addr + b) / 0x4000;
+							value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
 						}
+						waddr = GetWaddr(mps, addr);
 						if (isBinary)
 							StringCbCopy(szVal, sizeof(szVal), byte_to_binary(value, mps->mode - 1));
 						else
 							StringCbPrintf(szVal, sizeof(szVal), memfmt, value);
 
+#define COLOR_BREAKPOINT		(RGB(230, 160, 180))
 #define COLOR_MEMPOINT_WRITE	(RGB(255, 177, 100))
 #define COLOR_MEMPOINT_READ		(RGB(255, 250, 145))
-						if (check_mem_write_break(lpDebuggerCalc->cpu.mem_c, addr)) {
+						if (check_wmem_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
+							InflateRect(&dr, 2, 0);
+							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_BREAKPOINT, 255);
+							if (isSel)
+								DrawFocusRect(hdc, &dr);
+							InflateRect(&dr, -2, 0);
+						}
+						if (check_wmem_write_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_WRITE, 255);
 							if (isSel)
 								DrawFocusRect(hdc, &dr);
 							InflateRect(&dr, -2, 0);
 						}
-						if (check_mem_read_break(lpDebuggerCalc->cpu.mem_c, addr)) {
+						if (check_wmem_read_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_READ , 255);
 							if (isSel)
@@ -551,21 +587,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}
 					break;
 				}
-				case CBN_SELCHANGE:
-				{
-					int mode = ComboBox_GetCurSel((HWND) lParam) + 1;
-					if (mode == 3) {
-						mps->bText = TRUE;
-						mode = 1;
-					} else {
-						mps->bText = FALSE;
-					}
-					mps->mode = mode;
-					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
-					SetFocus(hwnd);
-					SendMessage(hwnd, WM_SIZE, 0, 0);
-					break;
-				}
 			}
 			HWND hwndDialog;
 			switch(LOWORD(wParam))
@@ -590,7 +611,24 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case DB_GOTO: {
 					int result;
 					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC) GotoDialogProc);
-					if (result == IDOK) mps->addr = goto_addr;
+					if (result == IDOK) {
+						switch (mps->type) {
+							case REGULAR:
+								goto_addr = goto_addr & 0xFFFF;
+								break;
+							case FLASH:
+								goto_addr = (goto_addr & 0xFFFF) + ((goto_addr >> 16) * 0x4000);
+								if (goto_addr > GetMaxAddr(mps))
+									goto_addr = GetMaxAddr(mps) - 1;
+								break;
+							case RAM:
+								goto_addr = ((goto_addr & 0xFFFF) % 0x4000) + ((goto_addr >> 16) * 0x4000);
+								if (goto_addr > GetMaxAddr(mps))
+									goto_addr = GetMaxAddr(mps) - 1;
+								break;
+						}
+						mps->addr = goto_addr;
+					}
 					SetFocus(hwnd);
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
@@ -646,8 +684,11 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					int value = 0;
 					int shift, b;
+					waddr_t waddr = GetWaddr(mps, addr);
 					for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
-						value += mem_read(lpDebuggerCalc->cpu.mem_c, mps->sel+b) << shift;
+						waddr.addr = (addr + b) % 0x4000;
+						waddr.page = (addr + b) / 0x4000;
+						value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
 					}
 
 					TCHAR szFmt[8];

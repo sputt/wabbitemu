@@ -106,6 +106,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 			lcd->base_level = BASE_LEVEL_83P;
 			break;
 		case TI_83PSE:
+		case TI_84P:
 			lcd->base_level = BASE_LEVEL_83PSE;
 			break;
 		default:
@@ -261,7 +262,8 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 	u_int shift = 0;
 	u_char *cursor;
 	if (lcd->word_len) {
-		cursor = &lcd->display[ LCD_OFFSET(lcd->y, lcd->x, lcd->z) ];
+		int temp =  LCD_OFFSET(lcd->y, lcd->x, lcd->z);
+		cursor = &lcd->display[temp];
 	} else {
 		u_int new_y = lcd->y * 6;
 		shift = 10 - (new_y % 8);

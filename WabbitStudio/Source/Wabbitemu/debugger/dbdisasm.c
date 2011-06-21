@@ -22,7 +22,7 @@ extern HWND hwndLastFocus;
 extern Z80_com_t da_opcode[256];
 
 extern HINSTANCE g_hInst;
-extern unsigned short goto_addr;
+extern unsigned int goto_addr;
 extern int find_value;
 extern BOOL search_backwards;
 
@@ -30,11 +30,7 @@ void sprint_addr(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
 
 	SetTextColor(hdc, RGB(0, 0, 0));
-#ifdef WINVER
 	_stprintf_s(s, _T("%04X"), zinf->addr);
-#else
-	sprintf(s, "%04X", zinf->addr);
-#endif
 
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -48,11 +44,7 @@ void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	if (zinf->size == 0) return;
 
 	for (j = 0; j < zinf->size; j++) {
-#ifdef WINVER
 		StringCbPrintf(s + (j*2), sizeof(s), _T("%02x"), mem_read(lpDebuggerCalc->cpu.mem_c, zinf->addr+j));
-#else
-		sprintf(s + (j*2), "%02x", mem_read(lpDebuggerCalc->cpu.mem_c, zinf->addr+j));
-#endif
 	}
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -66,11 +58,7 @@ void sprint_size(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (zinf->size == 0) return;
-#ifdef WINVER
 	StringCbPrintf(s, sizeof(s), _T("%d"), zinf->size);
-#else
-	sprintf(s, "%d", zinf->size);
-#endif
 
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -81,17 +69,9 @@ void sprint_clocks(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (da_opcode[zinf->index].clocks != -1) {
 		if (da_opcode[zinf->index].clocks_cond) {
-#ifdef WINVER
 			StringCbPrintf(s, sizeof(s), _T("%d/%d"), da_opcode[zinf->index].clocks, da_opcode[zinf->index].clocks_cond);
-#else
-			sprintf(s, "%d/%d", da_opcode[zinf->index].clocks, da_opcode[zinf->index].clocks_cond);
-#endif
 		} else {
-#ifdef WINVER
 			StringCbPrintf(s, sizeof(s), _T("%d"), da_opcode[zinf->index].clocks);
-#else
-			sprintf(s, "%d", da_opcode[zinf->index].clocks);
-#endif
 		}
 	} else {
 		*s = '\0';
@@ -1007,8 +987,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case DB_GOTO: {
 					int result;
 					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC) GotoDialogProc);
-					if (result == IDOK) SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, goto_addr), 0);
-					dps->nSel = goto_addr;
+					if (result == IDOK) SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, goto_addr & 0xFFFF), 0);
+					dps->nSel = goto_addr & 0xFFFF;
 					SetFocus(hwnd);
 					return 0;
 				}
@@ -1215,17 +1195,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					total_cond += da_opcode[zinf[j].index].clocks_cond;
 				}
 
-#ifdef WINVER
 				StringCbPrintf(szTip, sizeof(szTip), _T("$%04X : $%04X\n%d bytes\n%d/%d clocks\n"),
 						zinf[dps->iSel].addr, zinf[dps->iSel+dps->NumSel-1].addr,
 						total_bytes,
 						total, total + total_cond);
-#else
-				sprintf(szTip,"$%04X : $%04X\n%d bytes\n%d/%d clocks\n",
-						zinf[dps->iSel].addr, zinf[dps->iSel+dps->NumSel-1].addr,
-						total_bytes,
-						total, total + total_cond);
-#endif
+
 				toolInfo.lpszText = szTip;
 				SendMessage(hwndTip, TTM_SETTOOLINFO, 0, (LPARAM) &toolInfo);
 

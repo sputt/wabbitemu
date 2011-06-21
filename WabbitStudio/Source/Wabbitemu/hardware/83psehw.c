@@ -891,14 +891,94 @@ void clock_read(CPU_t *cpu, device_t *dev) {
 	}
 }
 
+#define BIT(bit) (1 << bit)
+
 #define USB_LINE_INTERRUPT_MASK 0x04;
 #define USB_PROTOCOL_INTERRUPT_MASK 0x10;
+
+void GenerateUSBEvent(CPU_t *cpu, USB_t *usb, int bit, BOOL lowToHigh) {
+	if (lowToHigh) {
+		usb->USBEvents |= BIT(bit);
+		usb->USBEvents &= ~BIT(bit - 1);
+	} else {
+		usb->USBEvents |= BIT(bit);
+		usb->USBEvents &= ~BIT(bit + 1);
+	}
+	usb->LineInterrupt = TRUE;
+	//is this all i need?
+	cpu->interrupt = TRUE;
+}
+
+void port4A_83pse(CPU_t *cpu, device_t *dev) {
+	USB_t *usb = (USB_t *) dev->aux;
+	if (cpu->input) {
+		cpu->bus = usb->Port4A;
+		if ((usb->Port54 & BIT(2)) && (usb->Port54 & BIT(6)) && (usb->Port4C & BIT(3)) && (usb->USBLineState & VBUS_HIGH_MASK))
+			cpu->bus += BIT(0);
+		if (!((usb->Port54 & BIT(2)) && (usb->Port54 & BIT(6)) && (usb->Port4C & BIT(3)) && (usb->USBLineState & VBUS_HIGH_MASK)))
+			cpu->bus += BIT(2);
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		usb->Port4A = cpu->bus & (BIT(3) | BIT(4) | BIT(5));
+		if (cpu->bus & BIT(3)) {
+			if (!(usb->USBLineState & BIT(3))) {
+				GenerateUSBEvent(cpu, usb, 3, TRUE);
+			}
+			usb->USBLineState |= VBUS_HIGH_MASK;
+		}
+		cpu->output = FALSE;
+	}
+}
+
+void port4C_83pse(CPU_t *cpu, device_t *dev) {
+	USB_t *usb = (USB_t *) dev->aux;
+	if (cpu->input) {
+		cpu->bus = 0x2 | usb->Port4C;
+		if (usb->Port54 & BIT(2))
+			cpu->bus |= BIT(4);
+		if (!(usb->Port54 & BIT(6)))
+			cpu->bus |= BIT(5);
+		if (usb->Port54 & BIT(7))
+			cpu->bus |= BIT(6);
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		usb->Port4C = cpu->bus & BIT(3);
+		cpu->output = FALSE;
+	}
+}
+
+void port4D_83pse(CPU_t *cpu, device_t *dev) {
+	USB_t *usb = (USB_t *) dev->aux;
+	if (cpu->input) {
+		cpu->bus = usb->USBLineState;
+		//not too worried about this next stuff, no good reading D+/-
+		if (usb->Port54 & BIT(2) && usb->Port54 & BIT(6) && usb->Port4C & BIT(3) && usb->USBLineState & VBUS_HIGH_MASK)
+			cpu->bus |= BIT(1) & ~BIT(0);
+		else
+			cpu->bus |= BIT(0) & ~BIT(1);
+
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		cpu->output = FALSE;
+	}
+}
+
+void port54_83pse(CPU_t *cpu, device_t *dev) {
+	USB_t *usb = (USB_t *) dev->aux;
+	if (cpu->input) {
+		cpu->bus = usb->Port54 & (BIT(0) | BIT(1) | BIT(2) | BIT(6) | BIT(7));
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		cpu->output = FALSE;
+		usb->Port54 = cpu->bus & (BIT(0) | BIT(1) | BIT(2) | BIT(6) | BIT(7));
+	}
+}
 
 void port55_83pse(CPU_t *cpu, device_t *dev) {
 	USB_t *usb = (USB_t *) dev->aux; 
 	if (cpu->input) {
 		//default value. unknown event in bit 0, bits 1 and 3 are "normally set"
-		cpu->bus = 0x0B;
+		cpu->bus = BIT(0) | BIT(1) | BIT(3);
 		//inverse logic here, if the bit is cleared, the interrupt was triggered
 		if (!usb->LineInterrupt)
 			cpu->bus += USB_LINE_INTERRUPT_MASK;
@@ -910,13 +990,55 @@ void port55_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 void port56_83pse(CPU_t *cpu, device_t *dev) {
-	//USB_t *usb = (USB_t *) dev->aux;
-	if (!cpu->input && !cpu->output) {
-		
-	}
-
+	USB_t *usb = (USB_t *) dev->aux;
 	if (cpu->input) {
-		
+		cpu->bus = usb->USBEvents;
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		cpu->output = FALSE;
+	}
+}
+
+void port57_83pse(CPU_t *cpu, device_t *dev) {
+	USB_t *usb = (USB_t *) dev->aux;
+	if (cpu->input) {
+		cpu->bus = usb->USBEventMask;
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		usb->USBEventMask = cpu->bus;
+		cpu->output = FALSE;
+	}
+}
+
+void port5B_83pse(CPU_t *cpu, device_t *dev) {
+	USB_t *usb = (USB_t *) dev->aux;
+	if (cpu->input) {
+		cpu->bus = 0x00;
+		if (usb->ProtocolInterruptEnabled)
+			cpu->bus += BIT(0);
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		usb->ProtocolInterruptEnabled = cpu->bus & BIT(0);
+		cpu->output = FALSE;
+	}
+}
+
+void port80_83pse(CPU_t *cpu, device_t *dev) {
+	USB_t *usb = (USB_t *) dev->aux;
+	if (cpu->input) {
+		cpu->bus = usb->DevAddress & ~BIT(7);
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		usb->DevAddress = cpu->bus & ~BIT(7);
+		cpu->output = FALSE;
+	}
+}
+
+
+void port_83pse(CPU_t *cpu, device_t *dev) {
+	USB_t *usb = (USB_t *) dev->aux;
+	if (cpu->input) {
+		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
 	}
@@ -1438,13 +1560,21 @@ int device_init_83pse(CPU_t *cpu) {
 
 
 /*Fake USB*/
+	cpu->pio.devices[0x4A].active = TRUE;
+	cpu->pio.devices[0x4A].aux = &se_aux->usb;
+	cpu->pio.devices[0x4A].code = (devp) &port4A_83pse;	
+
 	cpu->pio.devices[0x4C].active = TRUE;
 	cpu->pio.devices[0x4C].aux = &se_aux->usb;
-	cpu->pio.devices[0x4C].code = (devp) &fake_usb;	
+	cpu->pio.devices[0x4C].code = (devp) &port4C_83pse;	
 
 	cpu->pio.devices[0x4D].active = TRUE;
 	cpu->pio.devices[0x4D].aux = &se_aux->usb;
-	cpu->pio.devices[0x4D].code = (devp) &fake_usb;
+	cpu->pio.devices[0x4D].code = (devp) &port4D_83pse;
+
+	cpu->pio.devices[0x55].active = TRUE;
+	cpu->pio.devices[0x55].aux = &se_aux->usb;
+	cpu->pio.devices[0x55].code = (devp) &port54_83pse;
 
 	cpu->pio.devices[0x55].active = TRUE;
 	cpu->pio.devices[0x55].aux = &se_aux->usb;
@@ -1452,11 +1582,19 @@ int device_init_83pse(CPU_t *cpu) {
 
 	cpu->pio.devices[0x56].active = TRUE;
 	cpu->pio.devices[0x56].aux = &se_aux->usb;
-	cpu->pio.devices[0x56].code = (devp) &fake_usb;
+	cpu->pio.devices[0x56].code = (devp) &port56_83pse;
 
 	cpu->pio.devices[0x57].active = TRUE;
 	cpu->pio.devices[0x57].aux = &se_aux->usb;
-	cpu->pio.devices[0x57].code = (devp) &fake_usb;
+	cpu->pio.devices[0x57].code = (devp) &port57_83pse;
+
+	cpu->pio.devices[0x5B].active = TRUE;
+	cpu->pio.devices[0x5B].aux = &se_aux->usb;
+	cpu->pio.devices[0x5B].code = (devp) &port5B_83pse;
+
+	cpu->pio.devices[0x80].active = TRUE;
+	cpu->pio.devices[0x80].aux = &se_aux->usb;
+	cpu->pio.devices[0x80].code = (devp) &port80_83pse;
 	
 	cpu->pio.lcd		= lcd;
 	cpu->pio.keypad		= keyp;
