@@ -24,6 +24,7 @@ extern POINT drop_pt;
 extern RECT db_rect;
 extern HINSTANCE g_hInst;
 extern HDC hdcSkin;
+extern BOOL is_exiting;
 
 static int alphablendfail = 0;
 
@@ -701,12 +702,10 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_DESTROY: {
 				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				lpCalc->hwndLCD = NULL;
-				if (calc_count() == 0)
+				if (calc_count() == 1 && is_exiting)
 					free(bi);
 				_tprintf_s(_T("Unregistering drop window\n"));
-				if (lpCalc->pDropTarget != NULL) {
-					UnregisterDropWindow(hwnd, (IDropTarget *) lpCalc->pDropTarget);
-				}
+				UnregisterDropWindow(hwnd, (IDropTarget *) lpCalc->pDropTarget);
 				return 0;
 			}
 		default:

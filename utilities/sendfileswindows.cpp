@@ -120,6 +120,8 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 	if (fSoundBackup == TRUE)
 		playsound(lpCalc->audio);
 	current_file_sending = NULL;
+	lpsi->FileList->clear();
+	lpsi->DestinationList->clear();
 	return 0;
 }
 
@@ -199,8 +201,6 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 		case VAR_TYPE:
 		case FLASH_TYPE:
 			{
-				if (var->type == FLASH_TYPE)
-					lpCalc->running = FALSE;
 				lpCalc->cpu.pio.link->vlink_size = var->length;
 				lpCalc->cpu.pio.link->vlink_send = 0;
 
@@ -221,7 +221,6 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 						calc_reset(lpCalc);
 						calc_turn_on(lpCalc);
 					}
-					lpCalc->running = TRUE;
 				}
 				break;
 			}

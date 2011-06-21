@@ -26,11 +26,12 @@ HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
 static unsigned int cyGripper = 10;
 static unsigned int cyDisasm = 350, cyMem;
 
+#define MAX_MEM_TABS 5*3
 #define MAX_TABS 5
 static ep_state expand_pane_state = {0};
 HWND hdisasm, hreg, hmem, hPortMon;
 static int total_mem_pane;
-static HWND hmemlist[MAX_TABS];
+static HWND hmemlist[MAX_MEM_TABS];
 static long long code_count_tstates = -1;
 
 
@@ -101,6 +102,45 @@ int CALLBACK EnumFontFamExProc(
 	return 0;
 }
 
+void AddMemTab(mempane_settings *mps, MemViewType type) {
+	ShowWindow(hmemlist[TabCtrl_GetCurSel(hmem)], SW_HIDE);
+	mps[total_mem_pane + 1].addr = 0x0000;
+	mps[total_mem_pane + 1].mode = MEM_BYTE;
+	mps[total_mem_pane + 1].sel = 0x000;
+	mps[total_mem_pane + 1].track = -1;
+	mps[total_mem_pane + 1].memNum = total_mem_pane;
+	mps[total_mem_pane + 1].type = type;
+
+	hmemlist[total_mem_pane] = CreateWindow(
+		g_szMemName,
+		_T("Memory"),
+		WS_VISIBLE | WS_CHILD,
+		3, 20, 100, 100,
+		hmem,
+		(HMENU) ID_MEM,
+		g_hInst, &mps[total_mem_pane + 1]);
+	TCHAR buffer[64];
+	switch (type) {
+		case REGULAR:
+			StringCbPrintf(buffer, sizeof(buffer), _T("Mem %i"), (total_mem_pane + 3) / 3);
+			break;
+		case FLASH:
+			StringCbPrintf(buffer, sizeof(buffer), _T("Flash %i"), (total_mem_pane + 3) / 3);
+			break;
+		case RAM:
+			StringCbPrintf(buffer, sizeof(buffer), _T("RAM %i"), (total_mem_pane + 3) / 3);
+			break;
+	}
+	TCITEM tie;
+	tie.mask = TCIF_TEXT | TCIF_IMAGE;
+	tie.iImage = -1;
+	tie.pszText = buffer;
+	tie.lParam = (LPARAM)hmemlist[total_mem_pane];
+	TabCtrl_InsertItem(hmem, total_mem_pane, &tie);
+	TabCtrl_SetCurSel(hmem, total_mem_pane);
+	total_mem_pane++;
+}
+
 extern HWND hwndPrev;
 
 LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -139,12 +179,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			lpDebuggerCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 			LOGFONT lf;
 			memset(&lf, 0, sizeof(LOGFONT));
-#ifdef WINVER
 			StringCbCopy(lf.lfFaceName, sizeof(lf.lfFaceName), _T("Lucida Console"));
-#else
-			strcpy(lf.lfFaceName, "Lucida Console");
-#endif
-
 			EnumFontFamiliesEx(
 					GetDC(NULL),
 					&lf,
@@ -159,18 +194,10 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			LOGFONT lfSegoe;
 			memset(&lfSegoe, 0, sizeof(LOGFONT));
-#ifdef WINVER
 			StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Segoe UI"));
-#else
-			strcpy(lfSegoe.lfFaceName, "Segoe UI");
-#endif
 
 			if (EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
-#ifdef WINVER
 				StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Tahoma"));
-#else
-				strcpy(lfSegoe.lfFaceName, "Tahoma");
-#endif
 				EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0);
 			}
 
@@ -224,7 +251,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			    (HMENU) ID_MEMTAB,
 			    g_hInst, NULL);
 			SetWindowFont(hmem, hfontSegoe, TRUE);
-			mps[1].addr = 0x0000;
+			/*mps[1].addr = 0x0000;
 			mps[1].mode = MEM_BYTE;
 			mps[1].display = dispType;
 			mps[1].sel = 0x000;
@@ -237,19 +264,19 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				3, 20, 100, 100,
 				hmem,
 				(HMENU) ID_MEM,
-				g_hInst, &mps[1]);
-			total_mem_pane = 1;
-			int panes_to_add = (int) (QueryDebugKey((TCHAR *) MemPaneString) - 1);
+				g_hInst, &mps[1]);*/
+			total_mem_pane = 0;
+			int panes_to_add = (int) (QueryDebugKey((TCHAR *) MemPaneString));
 			while (panes_to_add > 0) {
 				SendMessage(hwnd, WM_COMMAND, IDM_VIEW_ADDMEM, 0);
 				panes_to_add--;
 			}
-			TCITEM tie;
+			/*TCITEM tie;
 			tie.mask = TCIF_TEXT | TCIF_IMAGE;
 			tie.iImage = -1;
 			tie.pszText = _T("Mem 1");
 			tie.lParam = (LPARAM)hmem;
-			TabCtrl_InsertItem(hmem, 0, &tie);
+			TabCtrl_InsertItem(hmem, 0, &tie);*/
 
 			int selIndex = (int) QueryDebugKey((TCHAR *) MemSelIndexString);
 			TabCtrl_SetCurSel(hmem, selIndex);
@@ -458,11 +485,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_CHECKED);
 				} else {
 					TCHAR buffer[256];
-#ifdef WINVER
 					StringCbPrintf(buffer, sizeof(buffer), _T("%i T-States"), (int)(lpDebuggerCalc->cpu.timer_c->tstates - code_count_tstates));
-#else
-					sprintf(buffer, "%i T-States", (int)(lpDebuggerCalc->cpu.timer_c->tstates - code_count_tstates));
-#endif
 					MessageBox(NULL, buffer, _T("Code Counter"), MB_OK);
 					code_count_tstates = -1;
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_COUNT, MF_BYCOMMAND | MF_UNCHECKED);
@@ -491,11 +514,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 						lpDebuggerCalc->profiler.running = TRUE;
 						break;
 					}
-#ifdef WINVER
 					_tfopen_s(&file, buffer, _T("wb"));
-#else
-					file = fopen(buffer, "wb");
-#endif
 					_ftprintf_s(file, _T("Total Tstates: %i\r\n"), lpDebuggerCalc->profiler.totalTime);
 					for(i = lpDebuggerCalc->profiler.lowAddress / lpDebuggerCalc->profiler.blockSize;
 							i < ARRAYSIZE(lpDebuggerCalc->profiler.data) &&
@@ -516,7 +535,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_DEC, MF_BYCOMMAND | MF_UNCHECKED);
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_BIN, MF_BYCOMMAND | MF_UNCHECKED);
 				dispType = HEX;
-				mps[1].display = dispType;
+				mps[TabCtrl_GetCurSel(hmem) + 1].display = dispType;
 				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 				break;
 			case IDM_DISPLAYBASE_BIN:
@@ -524,7 +543,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_DEC, MF_BYCOMMAND | MF_UNCHECKED);
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_BIN, MF_BYCOMMAND | MF_CHECKED);
 				dispType = BIN;
-				mps[1].display = dispType;
+				mps[TabCtrl_GetCurSel(hmem) + 1].display = dispType;
 				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 				break;
 			case IDM_DISPLAYBASE_DEC:
@@ -532,43 +551,47 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_DEC, MF_BYCOMMAND | MF_CHECKED);
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_BIN, MF_BYCOMMAND | MF_UNCHECKED);
 				dispType = DEC;
-				mps[1].display = dispType;
+				mps[TabCtrl_GetCurSel(hmem) + 1].display = dispType;
 				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 				break;
+			case IDM_VIEW_BYTE: {
+				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_BYTE, MF_BYCOMMAND | MF_CHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_WORD, MF_BYCOMMAND | MF_UNCHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_CHAR, MF_BYCOMMAND | MF_UNCHECKED);
+				int index = TabCtrl_GetCurSel(hmem) + 1;
+				mps[index].mode = 1;
+				mps[index].bText = FALSE;
+				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				break;
+			}
+			case IDM_VIEW_WORD: {
+				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_BYTE, MF_BYCOMMAND | MF_UNCHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_WORD, MF_BYCOMMAND | MF_CHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_CHAR, MF_BYCOMMAND | MF_UNCHECKED);
+				int index = TabCtrl_GetCurSel(hmem) + 1;
+				mps[index].mode = 2;
+				mps[index].bText = FALSE;
+				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				break;
+			}
+			case IDM_VIEW_CHAR: {
+				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_BYTE, MF_BYCOMMAND | MF_UNCHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_WORD, MF_BYCOMMAND | MF_UNCHECKED);
+				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_CHAR, MF_BYCOMMAND | MF_CHECKED);
+				int index = TabCtrl_GetCurSel(hmem) + 1;
+				mps[index].mode = 1;
+				mps[index].bText = TRUE;
+				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				break;
+			}
 			case IDM_VIEW_ADDMEM: {
 				HMENU hMenu = GetMenu(hwnd);
 				EnableMenuItem(hMenu, IDM_VIEW_DELMEM, MF_BYCOMMAND | MF_ENABLED);
-				if (total_mem_pane + 1 > MAX_TABS)
+				if (total_mem_pane + 1 > MAX_MEM_TABS)
 					break;
-				ShowWindow(hmemlist[TabCtrl_GetCurSel(hmem)], SW_HIDE);
-				mps[total_mem_pane + 1].addr = 0x0000;
-				mps[total_mem_pane + 1].mode = MEM_BYTE;
-				mps[total_mem_pane + 1].sel = 0x000;
-				mps[total_mem_pane + 1].track = -1;
-				mps[total_mem_pane + 1].memNum = total_mem_pane;
-
-				hmemlist[total_mem_pane] = CreateWindow(
-					g_szMemName,
-					_T("Memory"),
-					WS_VISIBLE | WS_CHILD,
-					3, 20, 100, 100,
-					hmem,
-					(HMENU) ID_MEM,
-					g_hInst, &mps[total_mem_pane + 1]);
-				TCHAR buffer[64];
-#ifdef WINVER
-				StringCbPrintf(buffer, sizeof(buffer), _T("Mem %i"), total_mem_pane + 1);
-#else
-				sprintf(buffer, "Mem %i", total_mem_pane + 1);
-#endif
-				TCITEM tie;
-				tie.mask = TCIF_TEXT | TCIF_IMAGE;
-				tie.iImage = -1;
-				tie.pszText = buffer;
-				tie.lParam = (LPARAM)hmemlist[total_mem_pane];
-				TabCtrl_InsertItem(hmem, total_mem_pane, &tie);
-				TabCtrl_SetCurSel(hmem, total_mem_pane);
-				total_mem_pane++;
+				AddMemTab(mps, REGULAR);
+				AddMemTab(mps, FLASH);
+				AddMemTab(mps, RAM);
 				if (total_mem_pane == MAX_TABS)
 					EnableMenuItem(hMenu, IDM_VIEW_ADDMEM, MF_BYCOMMAND | MF_DISABLED);
 				SendMessage(hwnd, WM_SIZE, 0, 0);
@@ -578,14 +601,19 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			case IDM_VIEW_DELMEM: {
 				HMENU hMenu = GetMenu(hwnd);
 				EnableMenuItem(hMenu, IDM_VIEW_ADDMEM, MF_BYCOMMAND | MF_ENABLED);
-				if (total_mem_pane == 1)
+				if (total_mem_pane == 3)
 					break;
-				total_mem_pane--;
-				if (total_mem_pane == 1)
+				total_mem_pane -= 3;
+				if (total_mem_pane == 3)
 					EnableMenuItem(hMenu, IDM_VIEW_DELMEM, MF_BYCOMMAND | MF_DISABLED);
+				if (TabCtrl_GetCurSel(hmem) >= total_mem_pane)
+					TabCtrl_SetCurSel(hmem, total_mem_pane - 1);
 				TabCtrl_DeleteItem(hmem, total_mem_pane);
-				TabCtrl_SetCurSel(hmem, total_mem_pane - 1);
+				TabCtrl_DeleteItem(hmem, total_mem_pane + 1);
+				TabCtrl_DeleteItem(hmem, total_mem_pane + 2);
 				hmemlist[total_mem_pane] = NULL;
+				hmemlist[total_mem_pane + 1] = NULL;
+				hmemlist[total_mem_pane + 2] = NULL;
 				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 				break;
 			}
@@ -672,7 +700,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			GradientFill(hdc,vert,2,&gRect,1,GRADIENT_FILL_RECT_V);
 
-			#define DOT_WIDTH	4
+#define DOT_WIDTH	4
 
 			HBRUSH hbr = CreateSolidBrush(DarkEdge); //GetSysColorBrush(COLOR_BTNSHADOW);
 
@@ -727,14 +755,14 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 			return 0;
 		case WM_DESTROY: {
-			CPU_step((&lpDebuggerCalc->cpu));
+			CPU_step(&lpDebuggerCalc->cpu);
 			lpDebuggerCalc->running = TRUE;
 			calc_unpause_linked();
 			GetWindowPlacement(hwnd, &db_placement);
 			db_maximized = IsMaximized(hwnd);
 
 			int selIndex = TabCtrl_GetCurSel(hmem);
-			SaveDebugKey((TCHAR *) MemPaneString, (DWORD *) total_mem_pane);
+			SaveDebugKey((TCHAR *) MemPaneString, (DWORD *) (total_mem_pane / 3));
 			SaveDebugKey((TCHAR *) MemSelIndexString, (DWORD *) selIndex);
 			GetExpandPaneState(&expand_pane_state);
 			return 0;

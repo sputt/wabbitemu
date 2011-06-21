@@ -821,7 +821,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	//mark the app as non trial
 	fix_certificate(cpu, page);
 	//force reset the applist says BrandonW. seems to work, apps show up :P
-	mem_write(cpu->mem_c, 0x9C87, 0x00);
+	//mem_write(cpu->mem_c, 0x9C87, 0x00);
 
 	//u_char *space = &dest[page][PAGE_SIZE - 1];
 	u_int i;
@@ -834,12 +834,13 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 
 	cpu->mem_c->upper -= tifile->flash->pages;
 	// Discard any error link_send_app returns
-	link_send_app(cpu, tifile);
+//	link_send_app(cpu, tifile);
 	// Delay for a few seconds so the calc will be responsive
-	cpu->pio.link->vlink_size = 100;
+/*	cpu->pio.link->vlink_size = 100;
 	for (cpu->pio.link->vlink_send = 0; cpu->pio.link->vlink_send < 100; cpu->pio.link->vlink_send += 20) {
 		link_wait(cpu, MHZ_6 * 1);
 	}
+*/
 	return LERR_SUCCESS;
 }
 

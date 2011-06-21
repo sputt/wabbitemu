@@ -315,6 +315,7 @@
     <None Include="gui\wabbitemu.ico" />
     <None Include="gui\Wabbitemu.tlb" />
     <None Include="interface\Wabbitemu.def" />
+    <None Include="ti-81.png" />
     <None Include="Wabbitemu.tlb" />
   </ItemGroup>
   <ItemGroup>

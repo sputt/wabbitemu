@@ -71,14 +71,26 @@ BOOL check_break(memc *mem, uint16_t addr) {
 	return mem->breaks[bank->ram][PAGE_SIZE * bank->page + mc_base(addr)] & NORMAL_BREAK;
 }
 
+BOOL check_wmem_break(memc *mem, waddr waddr) {
+	return mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & NORMAL_BREAK;
+}
+
 BOOL check_mem_write_break(memc *mem, uint16_t addr) {
 	bank_t *bank = &mem->banks[mc_bank(addr)];
 	return mem->breaks[bank->ram][PAGE_SIZE * bank->page + mc_base(addr)] & MEM_WRITE_BREAK;
 }
 
+BOOL check_wmem_write_break(memc *mem, waddr_t waddr) {
+	return mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & MEM_WRITE_BREAK;
+}
+
 BOOL check_mem_read_break(memc *mem, uint16_t addr) {
 	bank_t *bank = &mem->banks[mc_bank(addr)];
 	return mem->breaks[bank->ram][PAGE_SIZE * bank->page + mc_base(addr)] & MEM_READ_BREAK;
+}
+
+BOOL check_wmem_read_break(memc *mem, waddr_t waddr) {
+	return mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & MEM_READ_BREAK;
 }
 
 void set_break(memc *mem, BOOL ram, int page, uint16_t addr) {
