@@ -55,25 +55,6 @@ void InitBitmapInfo(BITMAPINFO *pbmi, ULONG cbInfo, LONG cx, LONG cy, WORD bpp)
     pbmi->bmiHeader.biBitCount = bpp;
 }
 
-HRESULT Create32BitHBITMAP(HDC hdc, const SIZE *psize, void **ppvBits, HBITMAP* phBmp)
-{
-    *phBmp = NULL;
-
-    BITMAPINFO bmi;
-    InitBitmapInfo(&bmi, sizeof(bmi), psize->cx, psize->cy, 32);
-
-    HDC hdcUsed = hdc ? hdc : GetDC(NULL);
-    if (hdcUsed)
-    {
-        *phBmp = CreateDIBSection(hdcUsed, &bmi, DIB_RGB_COLORS, ppvBits, NULL, 0);
-        if (hdc != hdcUsed)
-        {
-            ReleaseDC(NULL, hdcUsed);
-        }
-    }
-    return (NULL == *phBmp) ? E_OUTOFMEMORY : S_OK;
-}
-
 HRESULT AddBitmapToMenuItem(HMENU hmenu, int iItem, BOOL fByPosition, HBITMAP hbmp)
 {
     HRESULT hr = E_FAIL;

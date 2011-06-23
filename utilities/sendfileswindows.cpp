@@ -219,7 +219,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 					}
 					if (var->flash->type == FLASH_TYPE_OS) {
 						calc_reset(lpCalc);
-						calc_turn_on(lpCalc);
+						//calc_turn_on(lpCalc);
 					}
 				}
 				break;

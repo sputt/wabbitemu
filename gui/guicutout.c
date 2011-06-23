@@ -177,9 +177,7 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 			lpCalc->hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
 
 	SetWindowTheme(lpCalc->hwndLCD, (LPCWSTR) _T(" "), (LPCWSTR) _T(" "));
-	HDC hScreen = GetDC(NULL);
 	
-
 	if (lpCalc->model == TI_84PSE) {
 			BITMAPINFOHEADER bih;
 			ZeroMemory(&bih, sizeof(BITMAPINFOHEADER));
@@ -229,14 +227,14 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 					pPixel+=4;
 				}
 			}
-
 			SetDIBitsToDevice(lpCalc->hdcSkin, 0, 0, width, height, 0, 0, 0,
 					height,
 					bitmap,
 					bi, DIB_RGB_COLORS);
 			/*HBITMAP testBitmap = CreateCompatibleBitmap(lpCalc->hdcSkin, width, height);
-			error = SetDIBits(lpCalc->hdcSkin, testBitmap, 0, height, bitmap, bi, DIB_RGB_COLORS);
-			SelectObject(lpCalc->hdcSkin, testBitmap);*/
+			error = SetDIBits(lpCalc->hdcSkin, testBitmap, 0, height, bitmap, bi, DIB_RGB_COLORS);*/
+			//SelectObject(lpCalc->hdcSkin, testBitmap);
+			DeleteObject(rgn);
 			free(bitmap);
 			free(bi);
 	}
@@ -261,12 +259,13 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 	SetWindowLongPtr(lpCalc->hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
 	SetWindowLongPtr(lpCalc->hwndFrame, GWL_STYLE, WS_VISIBLE | WS_POPUP);
 
+	HDC hScreen = GetDC(NULL);
 	int done = UpdateLayeredWindow(lpCalc->hwndFrame, hScreen, NULL, &size, lpCalc->hdcSkin, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
 	DWORD error;
 	if (!done)
 		error = GetLastError();
 
-	ReleaseDC(0, hScreen);
+	ReleaseDC(NULL, hScreen);
 	UpdateWindow(lpCalc->hwndLCD);
 	SendMessage(lpCalc->hwndFrame, WM_MOVE, 0, 0);
 

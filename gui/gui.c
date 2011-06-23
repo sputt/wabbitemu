@@ -1044,7 +1044,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			switch (LOWORD(wParam)) {
 				case IDM_FILE_NEW: {
 						LPCALC lpCalcNew = calc_slot_new();
-						if (rom_load(lpCalcNew, lpCalc->rom_path) == TRUE) {
+						if (rom_load(lpCalcNew, lpCalc->rom_path) || rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey("rom_path"))) {
 							lpCalcNew->SkinEnabled = lpCalc->SkinEnabled;
 							lpCalcNew->bCutout = lpCalc->bCutout;
 							lpCalcNew->Scale = lpCalc->Scale;
@@ -1054,6 +1054,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							gui_frame(lpCalcNew);
 						} else {
 							calc_slot_free(lpCalcNew);
+							SendMessage(hwnd, WM_COMMAND, IDM_HELP_WIZARD, 0);
 						}
 						break;
 				}
@@ -1092,6 +1093,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							if (calcs[i].active)
 								calcs[i].gif_disp_state = GDS_ENDING;
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
+					}
+					break;
+				}
+				case IDM_FILE_STILLGIF: {
+					BOOL start_screenshot = get_gif_filename();
+					if (start_screenshot) {
+						LCD_t *lcd = lpCalc->cpu.pio.lcd;
+						gif_xs = lcd->width * gif_size;
+						gif_ys = SCRYSIZE * gif_size;
+						GIFGREYLCD(lcd);
+
+						unsigned int i, j;
+						for (i = 0; i < SCRYSIZE * gif_size; i++)
+							for (j = 0; j < lcd->width * gif_size; j++)
+								gif_frame[i * gif_xs + j] = lpCalc->cpu.pio.lcd->gif[i][j];
+
+						gif_write_state = GIF_START;
+						gif_writer(lcd->shades);
+
+						gif_write_state = GIF_END;
+						gif_writer(lcd->shades);
 					}
 					break;
 				}
