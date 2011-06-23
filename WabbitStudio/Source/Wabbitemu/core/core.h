@@ -239,11 +239,19 @@ unsigned char mem_write(memc*, unsigned short, char);
 waddr_t addr_to_waddr(memc*, uint16_t);
 
 void set_break(memc *, BOOL, int, uint16_t);
+void set_wmem_break(memc *, waddr_t waddr);
 void set_mem_write_break(memc *, BOOL, int, uint16_t);
+void set_wmem_write_break(memc *, waddr_t waddr);
 void set_mem_read_break(memc *, BOOL, int, uint16_t);
+void set_wmem_read_break(memc *, waddr_t waddr);
+
 void clear_break(memc *mem, BOOL ram, int page, uint16_t addr);
+void clear_wmem_break(memc *mem, waddr_t waddr);
 void clear_mem_write_break(memc *, BOOL, int, uint16_t);
+void clear_wmem_write(memc *, waddr_t waddr);
 void clear_mem_read_break(memc *, BOOL, int, uint16_t);
+void clear_wmem_read_break(memc *, waddr_t waddr);
+
 BOOL check_break(memc *, uint16_t);
 BOOL check_wmem_break(memc *, waddr);
 BOOL check_mem_write_break(memc *, uint16_t);

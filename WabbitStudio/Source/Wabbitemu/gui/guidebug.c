@@ -95,10 +95,12 @@ int CALLBACK EnumFontFamExProc(
   DWORD FontType,           // type of font
   LPARAM lParam             // application-defined data
 ) {
+	HDC hdc = GetDC(NULL);
 	LOGFONT *lplf = &lpelfe->elfLogFont;
-	lplf->lfHeight = -MulDiv(9, GetDeviceCaps(GetDC(NULL), LOGPIXELSY), 72);
+	lplf->lfHeight = -MulDiv(9, GetDeviceCaps(hdc, LOGPIXELSY), 72);
 	lplf->lfWidth = 0;
 	*((HFONT *) lParam) = CreateFontIndirect(lplf);
+	ReleaseDC(NULL, hdc);
 	return 0;
 }
 
@@ -180,8 +182,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			LOGFONT lf;
 			memset(&lf, 0, sizeof(LOGFONT));
 			StringCbCopy(lf.lfFaceName, sizeof(lf.lfFaceName), _T("Lucida Console"));
+			HDC hdc = GetDC(NULL);
 			EnumFontFamiliesEx(
-					GetDC(NULL),
+					hdc,
 					&lf,
 					(FONTENUMPROC) EnumFontFamExProc,
 					(LPARAM) &hfontLucida,
@@ -191,14 +194,19 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			lf.lfWeight = FW_BOLD;
 
 			hfontLucidaBold = CreateFontIndirect(&lf);
+			ReleaseDC(NULL, hdc);
 
 			LOGFONT lfSegoe;
 			memset(&lfSegoe, 0, sizeof(LOGFONT));
 			StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Segoe UI"));
 
-			if (EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
+			hdc = GetDC(NULL);
+			if (EnumFontFamiliesEx(hdc, &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
 				StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Tahoma"));
-				EnumFontFamiliesEx(GetDC(NULL), &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0);
+				ReleaseDC(NULL, hdc);
+				hdc = GetDC(NULL);
+				EnumFontFamiliesEx(hdc, &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0);
+				ReleaseDC(NULL, hdc);
 			}
 
 			//need to do this before we add the tabs (sizes)
@@ -251,20 +259,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			    (HMENU) ID_MEMTAB,
 			    g_hInst, NULL);
 			SetWindowFont(hmem, hfontSegoe, TRUE);
-			/*mps[1].addr = 0x0000;
-			mps[1].mode = MEM_BYTE;
-			mps[1].display = dispType;
-			mps[1].sel = 0x000;
-			mps[1].track = -1;
-
-			hmemlist[0] = CreateWindow(
-				g_szMemName,
-				_T("Memory"),
-				WS_VISIBLE | WS_CHILD | WS_CLIPSIBLINGS,
-				3, 20, 100, 100,
-				hmem,
-				(HMENU) ID_MEM,
-				g_hInst, &mps[1]);*/
 			total_mem_pane = 0;
 			int panes_to_add = (int) (QueryDebugKey((TCHAR *) MemPaneString));
 			while (panes_to_add > 0) {
@@ -765,6 +759,12 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			SaveDebugKey((TCHAR *) MemPaneString, (DWORD *) (total_mem_pane / 3));
 			SaveDebugKey((TCHAR *) MemSelIndexString, (DWORD *) selIndex);
 			GetExpandPaneState(&expand_pane_state);
+			DeleteObject(hfontLucida);
+			hfontLucida = NULL;
+			DeleteObject(hfontLucidaBold);
+			hfontLucidaBold = NULL;
+			DeleteObject(hfontSegoe);
+			hfontSegoe = NULL;
 			return 0;
 		}
 	}

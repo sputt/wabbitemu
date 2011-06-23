@@ -453,14 +453,12 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			dps->cyRow = 4 * tm.tmHeight / 3;
 			dps->nPane = dps->nSel;
 
-			// Set column widths
-			if (!dps->hdrs[0].cx) {
-				dps->hdrs[0].hfont = dps->hfontAddr;
-				dps->hdrs[1].hfont = dps->hfontData;
-				dps->hdrs[2].hfont = dps->hfontDisasm;
-				dps->hdrs[3].hfont = dps->hfontData;
-				dps->hdrs[3].hfont = dps->hfontData;
-			}
+			// Set column fonts (need to reset so that the newly allocated fonts work)
+			dps->hdrs[0].hfont = dps->hfontAddr;
+			dps->hdrs[1].hfont = dps->hfontData;
+			dps->hdrs[2].hfont = dps->hfontDisasm;
+			dps->hdrs[3].hfont = dps->hfontData;
+			dps->hdrs[3].hfont = dps->hfontData;
 
 			InitCommonControls();
 			// Create the header window
@@ -469,7 +467,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
                 0, 0, 1, 1, hwnd, (HMENU) ID_DISASMSIZE, g_hInst,
                 (LPVOID) NULL);
 
-			SendMessage(dps->hwndHeader, WM_SETFONT, (WPARAM) hfontSegoe, TRUE);
+			SetWindowFont(dps->hwndHeader, hfontSegoe, TRUE);
 
 			hdl.prc = &rc;
 			hdl.pwpos = &wp;

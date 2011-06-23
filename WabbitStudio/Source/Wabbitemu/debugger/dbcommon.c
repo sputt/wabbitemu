@@ -112,44 +112,26 @@ int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value) {
 		switch (format) {
 		case HEX2:
 		case HEX4:
-#ifdef WINVER
 			_stscanf_s(result, _T("%x"), (int*) value);
-#else
-			sscanf(result, "%x", (int*) value);
-#endif
 			if (*((int *) value) > max_value)
 				*((int *) value) = max_value;
 			break;
 		case FLOAT2:
 		case FLOAT4:
 			if (size == sizeof(float))
-#ifdef WINVER
 				_stscanf_s(result, _T("%f"), (float *) value);
 			else
 				_stscanf_s(result, _T("%lf"), (double *) value);
-#else
-				sscanf(result, "%f", (float *) value);
-			else
-				sscanf(result, "%lf", (double *) value);
-#endif
 			if (*((float *) value) > max_value)
 				*((float *) value) = (float) max_value;
 			break;
 		case DEC3:
-#ifdef WINVER
 			_stscanf_s(result, _T("%d"), (int*) value);
-#else
-			sscanf(result, "%d", (int*) value);
-#endif
 			if (*((int *) value) > max_value)
 				*((int *) value) = max_value;
 			break;
 		case CHAR1:
-#ifdef WINVER
 			_stscanf_s(result, _T("%c"), (char*) value);
-#else
-			sscanf(result, "%c", (char*) value);
-#endif
 			if (*((char *) value) > max_value)
 				*((char *) value) = max_value;
 			break;

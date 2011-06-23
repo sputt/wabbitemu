@@ -459,8 +459,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						}
 						addr += mps->mode;
 
-						SelectObject(hdc, mps->hfontData);
+						HGDIOBJ obj = SelectObject(hdc, mps->hfontData);
 						DrawText(hdc, szVal, -1, &dr, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
+						SelectObject(hdc, obj);
 					} else {
 						addr += mps->mode;
 					}
@@ -621,17 +622,25 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 								if (goto_addr > GetMaxAddr(mps))
 									goto_addr = GetMaxAddr(mps) - 1;
 								break;
-							case RAM:
-								goto_addr = ((goto_addr & 0xFFFF) % 0x4000) + ((goto_addr >> 16) * 0x4000);
+							case RAM: {						
+								goto_addr = ((goto_addr & 0xFFFF) % 0x4000) + (((goto_addr >> 16) % 0x80) * 0x4000);
 								if (goto_addr > GetMaxAddr(mps))
 									goto_addr = GetMaxAddr(mps) - 1;
 								break;
+							}
 						}
 						mps->addr = goto_addr;
 					}
 					SetFocus(hwnd);
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
+				}
+				case DB_BREAKPOINT: {
+					waddr_t waddr = GetWaddr(mps, mps->sel);
+					if (check_wmem_break(&lpDebuggerCalc->mem_c, waddr))
+						clear_wmem_break(&lpDebuggerCalc->mem_c, waddr);
+					else
+						set_wmem_break(&lpDebuggerCalc->mem_c, waddr);
 				}
 				case DB_MEMPOINT_WRITE: {
 					bank_t *bank = &lpDebuggerCalc->mem_c.banks[mc_bank(mps->sel)];

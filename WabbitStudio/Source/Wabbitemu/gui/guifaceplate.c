@@ -31,27 +31,6 @@ static POINT ptRgnEdge[] = {{75,675},
 	graphics->FillPolygon(brush, (Point *) ptRgn, nPoints, FillMode::FillModeWinding);
 	return 0;
 }*/
-int DrawFaceplateRegion(HDC hdc, COLORREF ref) {
-	unsigned int nPoints = (sizeof(ptRgnEdge) / sizeof(POINT)) * 2;
-	POINT ptRgn[(sizeof(ptRgnEdge) / sizeof(POINT)) * 2];
-
-	// Copy points and their reverses to the new array
-	memcpy(ptRgn, ptRgnEdge, (nPoints / 2) * sizeof(POINT));
-
-	u_int i;
-	for (i = nPoints/2; i < nPoints; i++) {
-		ptRgn[i].x = 350 - ptRgnEdge[nPoints - i - 1].x;
-		ptRgn[i].y = ptRgnEdge[nPoints - i - 1].y;
-	}
-
-	HRGN hrgn = CreatePolygonRgn(ptRgn, nPoints, WINDING);
-	if (hrgn == NULL)
-		return 1;
-	HBRUSH hFaceplateColor = CreateSolidBrush(ref);
-	FillRgn(hdc, hrgn, hFaceplateColor);
-	DeleteObject(hFaceplateColor);
-	return 0;
-}
 
 HRGN GetRegion()
 {
@@ -70,4 +49,15 @@ HRGN GetRegion()
 	HRGN hrgn = CreatePolygonRgn(ptRgn, nPoints, WINDING);
 	return hrgn;
 
+}
+
+int DrawFaceplateRegion(HDC hdc, COLORREF ref) {
+	HRGN hrgn = GetRegion();
+	if (hrgn == NULL)
+		return 1;
+	HBRUSH hFaceplateColor = CreateSolidBrush(ref);
+	FillRgn(hdc, hrgn, hFaceplateColor);
+	DeleteObject(hFaceplateColor);
+	DeleteObject(hrgn);
+	return 0;
 }

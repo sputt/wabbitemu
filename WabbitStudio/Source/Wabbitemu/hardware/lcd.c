@@ -225,7 +225,24 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
 				lcd->y = CRD_DATA(SYE);
 				break;
 			CRD_CASE(SZE):
+				int old_z = lcd->z;
 				lcd->z = CRD_DATA(SZE);
+				//old_z is second because we want a postive value if were moving up
+				int bytes_to_copy = LCD_MEM_WIDTH * (lcd->z - old_z);
+				if (bytes_to_copy < 0) {
+					bytes_to_copy = -bytes_to_copy;
+					//display is moving up by lcd->z - old_z rows
+					uint8_t *temp = (uint8_t *) malloc(bytes_to_copy);
+					memcpy(temp, lcd->display, bytes_to_copy);
+					memmove(lcd->display, lcd->display + bytes_to_copy, DISPLAY_SIZE - bytes_to_copy);
+					memcpy(lcd->display + DISPLAY_SIZE - bytes_to_copy, temp, bytes_to_copy);
+				} else if (bytes_to_copy > 0) {
+					//display is moving down
+					uint8_t *temp = (uint8_t *) malloc(bytes_to_copy);
+					memcpy(temp, lcd->display + DISPLAY_SIZE - bytes_to_copy, bytes_to_copy);
+					memmove(lcd->display + bytes_to_copy, lcd->display, DISPLAY_SIZE - bytes_to_copy);
+					memcpy(lcd->display, temp, bytes_to_copy);
+				}
 				break;
 			CRD_CASE(SXE):
 				lcd->x = CRD_DATA(SXE);
