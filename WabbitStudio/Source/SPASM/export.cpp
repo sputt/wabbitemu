@@ -470,10 +470,13 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
 		strcat(name_buf, prgmname);
 		namestring = strdup (name_buf);
 	} else {
-		char *p = (char *) prgmname, *lastSlash = (char *) prgmname;
-		while ((p = strchr(p, '/')) != NULL) {
-			printf("%p", p);
-			lastSlash = ++p;
+		size_t len = strlen(prgmname);
+		char *p = (char *) prgmname + len, *lastSlash;
+		for (int i = len; i >= 0; i--, p--) {
+			if (*p == '\\' || *p == '/') {
+				lastSlash = ++p;
+				break;
+			}
 		}
 		namestring = strdup (lastSlash);
 	    /* The name must be Capital lettes and numbers */

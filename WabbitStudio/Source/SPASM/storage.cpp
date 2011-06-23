@@ -172,7 +172,7 @@ static void destroy_label_value (label_t *label) {
  * Inits label, define, and macro
  * storage tables
  */
-
+#define NUM_BUILTIN_DEFINES 10
 void init_storage() {
 	define_t *define;
 	char* test ;
