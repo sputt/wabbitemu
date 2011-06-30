@@ -144,7 +144,6 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 }
 
 void makerom (const unsigned char *output_contents, DWORD size, FILE *outfile) {
-	unsigned char *buffer;
 	unsigned int i;
 	const int final_size = 512*1024;
 	for(i = 0; i < size; i++)

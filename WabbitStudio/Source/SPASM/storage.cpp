@@ -39,7 +39,7 @@ void write_defines_callback(define_t *, list_t *label_list);
 /*
  * Writes a label file
  */
-
+#define NUM_BUILTIN_DEFINES 7
 void write_labels (char *filename) {
 	FILE *symtable;
 	label_t hdr_node;
@@ -64,11 +64,11 @@ void write_labels (char *filename) {
 	suppress_errors = false;
 	
 	node = label_list.next;
-	
+	int index = 0;
 	while (node != NULL) {
 		label_t *label = (label_t *) node->data;
 		fprintf (symtable, "%s = $%.4X\n", label->name, label->value);
-		
+		index++;
 		node = node->next;
 	}
 
@@ -172,7 +172,6 @@ static void destroy_label_value (label_t *label) {
  * Inits label, define, and macro
  * storage tables
  */
-#define NUM_BUILTIN_DEFINES 10
 void init_storage() {
 	define_t *define;
 	char* test ;

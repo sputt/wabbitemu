@@ -423,6 +423,7 @@ int main (int argc, char **argv)
 	free_storage();
 
 #ifdef _WINDOWS
+	_CrtDumpMemoryLeaks();
 	if (IsDebuggerPresent())
 	{
 		system("PAUSE");

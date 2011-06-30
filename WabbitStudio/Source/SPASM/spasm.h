@@ -1,6 +1,7 @@
 #ifndef __SPASM_H
 #define __SPASM_H
 
+
 #include "storage.h"
 #include "list.h"
 #include "expand_buf.h"
@@ -29,6 +30,7 @@ typedef enum {
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #define snprintf sprintf_s
+
 #else
 #define NEWLINE "\n"
 #define PATH_SEPARATOR '/'

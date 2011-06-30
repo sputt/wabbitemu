@@ -130,6 +130,7 @@ void EndSPASMErrorSession(int nSession);
 void ClearSPASMErrorSessions(void);
 void AddSPASMErrorSessionAnnotation(int nSession, LPCTSTR lpszFormat, ...);
 bool IsErrorInSPASMErrorSession(int nSession, DWORD dwErrorCode);
+void FreeSPASMErrorSessions(void);
 #ifdef _TEST
 DWORD GetLastSPASMError();
 int GetLastSPASMErrorLine();

@@ -201,7 +201,7 @@ void EndSPASMErrorSession(int nSession)
 {
 	list_t *pList = (list_t *) g_ErrorList;
 	
-	list_t *pPrev = NULL;
+	list_t *pPrev = NULL, *old_list = NULL;
 	while (((LPERRORINSTANCE) pList->data)->nSession != nSession)
 	{
 		LPERRORINSTANCE lpErr = (LPERRORINSTANCE) pList->data;
@@ -220,7 +220,6 @@ void EndSPASMErrorSession(int nSession)
 		{
 			pPrev = pList;
 		}
-		
 		pList = pList->next;
 		assert(pList != NULL);
 	}
@@ -244,6 +243,22 @@ void ClearSPASMErrorSessions(void)
 	lpErr->nPrintSession = -1;
 
 	g_ErrorList = (errorlist_t *) list_prepend(NULL, lpErr);
+}
+
+void FreeSPASMErrorSessions(void)
+{
+	list_t *pList = (list_t *) g_ErrorList;
+	
+	list_t *pNext = NULL;
+	while (pList)
+	{
+		LPERRORINSTANCE lpErr = (LPERRORINSTANCE) pList->data;
+		
+		pNext = pList->next;
+		FreeErrorInstance(lpErr);
+		list_free_node(pList);
+		pList = pNext;
+	}
 }
 
 #ifdef _TEST

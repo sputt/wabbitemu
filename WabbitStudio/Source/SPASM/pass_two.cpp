@@ -265,7 +265,7 @@ void write_arg (int value, arg_type type, int or_value) {
 			value &= 0xFFFF;
 			value -= ((program_counter & 0xFFFF)+ 2);
 			
-			if (abs (value - 1) > 128)
+			if (value < -128 || value > 127)
 			{
 				SetLastSPASMError(SPASM_ERR_JUMP_EXCEEDED, value);
 				value = 0;
