@@ -13,7 +13,7 @@ LDFLAGS+= -lc -lgmp -lm -lcrypto
 		$(CC) $(CXXFLAGS) $< -o $@
 
 SRC = main.cpp opcodes.cpp pass_one.cpp pass_two.cpp utils.cpp export.cpp preop.cpp directive.cpp console.cpp \
-expand_buf.cpp hash.cpp list.cpp parser.cpp storage.cpp errors.cpp
+expand_buf.cpp hash.cpp list.cpp parser.cpp storage.cpp errors.cpp bitmap.cpp
 OBJ = $(addsuffix .o, $(basename $(SRC)))
 OBJ_FILES = $(addsuffix .o, $(basename $(notdir $(SRC))))
 	 

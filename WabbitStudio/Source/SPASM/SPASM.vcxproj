@@ -461,6 +461,7 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Makefile" />
     <None Include="SPASM.rgs" />
     <None Include="Z80Assembler.rgs" />
   </ItemGroup>
