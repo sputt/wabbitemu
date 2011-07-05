@@ -430,6 +430,7 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</CompileAs>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static Library Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="Z80Label.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bitmap.h" />
@@ -453,6 +454,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="Z80Assembler.h" />
+    <ClInclude Include="Z80Label.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SPASM.rc">

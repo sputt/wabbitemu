@@ -79,6 +79,9 @@
     <ClCompile Include="bitmap.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Z80Label.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -143,6 +146,9 @@
     </ClInclude>
     <ClInclude Include="debug.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Z80Label.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

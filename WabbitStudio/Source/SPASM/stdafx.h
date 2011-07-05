@@ -25,6 +25,8 @@
 #include <atlctl.h>
 #include <atlconv.h>
 
+using namespace ATL;
+
 #include <comutil.h>
 
 #include <windows.h>

@@ -3,6 +3,22 @@ import "ocidl.idl";
 
 [
 	object,
+	uuid(D9992A64-45EC-492B-8577-3F3EC929076A),
+	dual,
+	nonextensible,
+	pointer_default(unique)
+]
+interface IZ80Label : IDispatch
+{
+	[propget]
+	HRESULT Name([out, retval] BSTR *Name);
+
+	[propget, id(DISPID_VALUE)]
+	HRESULT Value([out, retval] DWORD *Value);
+};
+
+[
+	object,
 	uuid(38516350-2EF5-48DE-8C13-FEEAD1CAC91A),
 	dual,
 	nonextensible,
@@ -35,16 +51,22 @@ interface IZ80Assembler : IDispatch
 
 	[helpstring("Run the assembly")]
 	HRESULT Assemble([in, optional] VARIANT Input, [out, retval] int *Return);
+
+	[helpstring("List of labels from the assembly"), propget]
+	HRESULT Labels([out, retval] SAFEARRAY(IZ80Label *) *Labels);
 };
 
 [
 	uuid(16387CF3-1B28-46C0-ABA9-5DEC7A8FA7AA),
-	version(1.1),
-	helpstring("SPASM Z80 Assembler 1.1 Type Library"),
+	version(1.2),
+	helpstring("SPASM Z80 Assembler 1.2 Type Library"),
 ]
 library SPASM
 {
 	importlib("stdole2.tlb");
+
+	interface IZ80Label;
+
 	[
 		uuid(BDD26FAE-A388-4860-9D4E-669809BC8EC2)		
 	]

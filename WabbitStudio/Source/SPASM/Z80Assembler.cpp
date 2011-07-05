@@ -3,11 +3,17 @@
 #include "stdafx.h"
 #include <comdef.h>
 #include "Z80Assembler.h"
+#include "Z80Label.h"
 
 #include "spasm.h"
 #include "utils.h"
 #include "storage.h"
 #include "list.h"
+#include "hash.h"
+
+extern hash_t *label_table;
+
+LONG CZ80Assembler::m_lIndex;
 
 // CZ80Assembler
 
@@ -163,5 +169,30 @@ STDMETHODIMP CZ80Assembler::Assemble(VARIANT varInput, int *lpInt)
 	
 	m_pStmOutput = pStream;
 
+	return S_OK;
+}
+
+void get_label_callback(label_t *label, LPSAFEARRAY lpsa)
+{
+	CComObject<CZ80Label> *Label = new CComObject<CZ80Label>();
+	Label->Initialize(label);
+	Label->AddRef();
+
+	SafeArrayPutElement(lpsa, &CZ80Assembler::m_lIndex, Label);
+	CZ80Assembler::m_lIndex++;
+}
+
+STDMETHODIMP CZ80Assembler::get_Labels(LPSAFEARRAY *ppsa)
+{
+	SAFEARRAYBOUND sab = {0};
+	sab.cElements = label_table->used;
+	sab.lLbound = 0;
+
+	LPSAFEARRAY lpsa = SafeArrayCreate(VT_DISPATCH, 1, &sab);
+
+	m_lIndex = 0;
+	hash_enum(label_table, (HASH_ENUM_CALLBACK) get_label_callback, lpsa);
+
+	*ppsa = lpsa;
 	return S_OK;
 }
