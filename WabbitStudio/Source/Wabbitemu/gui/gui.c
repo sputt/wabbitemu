@@ -1535,7 +1535,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			int cyMenu = hmenu == NULL ? 0 : GetSystemMetrics(SM_CYMENU);
 			if ((lpCalc->bCutout && lpCalc->SkinEnabled))	
 				rc.bottom += cyMenu;
-			int desired_height = lpCalc->SkinEnabled ?  lpCalc->rectSkin.bottom : desired_height = 128;
+			int desired_height = lpCalc->SkinEnabled ?  lpCalc->rectSkin.bottom : 128;
 
 			int status_height;
 			if (lpCalc->hwndStatusBar == NULL) {

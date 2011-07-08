@@ -7,6 +7,7 @@
 #include "dbcommon.h"
 #include "dbdisasm.h"
 #include "dbmonitor.h"
+#include "dbbreakpoints.h"
 #include "dbprofile.h"
 #include "dbreg.h"
 #include "expandpane.h"
@@ -29,7 +30,7 @@ static unsigned int cyDisasm = 350, cyMem;
 #define MAX_MEM_TABS 5*3
 #define MAX_TABS 5
 static ep_state expand_pane_state = {0};
-HWND hdisasm, hreg, hmem, hPortMon;
+HWND hdisasm, hreg, hmem, hPortMon, hBreakpoints;
 static int total_mem_pane;
 static HWND hmemlist[MAX_MEM_TABS];
 static long long code_count_tstates = -1;
@@ -56,7 +57,7 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 	case ID_MEMTAB: {
 		MoveWindow(hwndChild, 3, cyDisasm + cyGripper, rcParent->right - 103 - REG_PANE_WIDTH - 3, cyMem - cyGripper - 3, TRUE);
 		HWND curTab = hmemlist[TabCtrl_GetCurSel(hwndChild)];
-		MoveWindow(curTab, 3, 26, rcParent->right - REG_PANE_WIDTH - 113, rcParent->bottom, TRUE);
+		MoveWindow(curTab, 3, 26, rcParent->right - REG_PANE_WIDTH - 123, cyMem - cyGripper - 32, TRUE);
 		SendMessage(curTab, WM_SIZE, 0, 0);
 		SendMessage(curTab, WM_USER, DB_UPDATE, 0);
 		break;
@@ -65,7 +66,7 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 		MoveWindow(hwndChild, 0, 0, rcParent->right, rcParent->bottom, TRUE);
 		break;*/
 	case ID_STACK:
-		MoveWindow(hwndChild, rcParent->right - 100 - REG_PANE_WIDTH, cyDisasm + cyGripper, 100, cyMem- cyGripper, TRUE);
+		MoveWindow(hwndChild, rcParent->right - 110 - REG_PANE_WIDTH, cyDisasm + cyGripper, 110, cyMem- cyGripper, TRUE);
 		break;
 	case ID_REG:
 		//printf("Reg: left: %d, top:% d, height: %d\n", rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, rcParent->bottom);
@@ -116,8 +117,8 @@ void AddMemTab(mempane_settings *mps, MemViewType type) {
 	hmemlist[total_mem_pane] = CreateWindow(
 		g_szMemName,
 		_T("Memory"),
-		WS_VISIBLE | WS_CHILD,
-		3, 20, 100, 100,
+		WS_VISIBLE | WS_CHILD | WS_VSCROLL,
+		3, 20, 100, 10,
 		hmem,
 		(HMENU) ID_MEM,
 		g_hInst, &mps[total_mem_pane + 1]);
@@ -235,7 +236,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			CreateWindow(
 				g_szDisasmName,
 				_T("disasm"),
-				WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN,
+				WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL,
 				0, 0, 1, 1,
 				hwnd,
 				(HMENU) ID_DISASM,
@@ -260,7 +261,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			    g_hInst, NULL);
 			SetWindowFont(hmem, hfontSegoe, TRUE);
 			total_mem_pane = 0;
-			int panes_to_add = (int) (QueryDebugKey((TCHAR *) MemPaneString));
+			int panes_to_add = max(1, (int) (QueryDebugKey((TCHAR *) MemPaneString)));
 			while (panes_to_add > 0) {
 				SendMessage(hwnd, WM_COMMAND, IDM_VIEW_ADDMEM, 0);
 				panes_to_add--;
@@ -617,6 +618,15 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				} else {
 					hPortMon = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_PORT_MONITOR), hwnd, (DLGPROC) PortMonitorDialogProc);
 					ShowWindow(hPortMon, SW_SHOW);
+				}
+				break;
+			}
+			case IDM_VIEW_BREAKPOINTS: {
+				if (IsWindow(hBreakpoints)) {
+					SwitchToThisWindow(hBreakpoints, TRUE);
+				} else {
+					hBreakpoints = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_BREAKPOINT), hwnd, (DLGPROC) BreakpointsDialogProc);
+					ShowWindow(hBreakpoints, SW_SHOW);
 				}
 				break;
 			}

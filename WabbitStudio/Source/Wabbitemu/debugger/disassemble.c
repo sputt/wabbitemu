@@ -89,7 +89,7 @@ Z80_com_t da_opcode[256] = {
 {_T("  rrd"),			18,	0},
 {_T("  rld"),			18, 0},
 {_T("  nop"),			8,	0},
-{_T("  %s"),			-2,	0},
+{_T("  %s"),			21,	16},
 {_T("  %s (%r%h)->%r"),	23,	0},
 {_T("  bit %d,(%r%h)->%r"),	23,	0},
 {_T("  res %d,(%r%h)->%r"),	23,	0},
@@ -171,8 +171,8 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 		int start_addr = result->addr = addr;
 
 
-		TCHAR* labelname = FindAddressLabel(lpDebuggerCalc, lpDebuggerCalc->cpu.mem_c->banks[addr >> 14].ram,
-											lpDebuggerCalc->cpu.mem_c->banks[addr>>14].page, addr);
+		TCHAR *labelname = FindAddressLabel(lpDebuggerCalc, lpDebuggerCalc->cpu.mem_c->banks[mc_bank(addr)].ram,
+											lpDebuggerCalc->cpu.mem_c->banks[mc_bank(addr)].page, addr);
 
 		if (labelname) {
 			result->index = DA_LABEL;
@@ -277,12 +277,12 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			if (z == 3) {
 				if (q == 0) {
 					result->index = DA_LD__X__RP;
-					result->a1 = mem_read16(memc, addr);
+					result->a1 = mem_read_16(memc, addr);
 					result->a2 = (INT_PTR) rp[p];
 				} else {
 					result->index = DA_LD_RP__X_;
 					result->a1 = (INT_PTR) rp[p];
-					result->a2 = mem_read16(memc, addr);
+					result->a2 = mem_read_16(memc, addr);
 				}
 			} else
 			if (z == 4) {
@@ -357,7 +357,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			if (z == 1) {	/* ix, iy ready */
 				if (q == 0) {
 					result->index = DA_LD_RP_X;
-					result->a2 = mem_read16(memc, addr);
+					result->a2 = mem_read_16(memc, addr);
 					if (prefix && p == 2) {
 						result->a1 = (INT_PTR) ri[pi];
 					} else {
@@ -401,10 +401,10 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 						if (prefix) {
 							result->index = DA_LD__X__RI;
 							result->a2 = (INT_PTR) ri[pi];
-							result->a1 = mem_read16(memc, addr);
+							result->a1 = mem_read_16(memc, addr);
 						} else {
 							result->index = DA_LD__X__HL;
-							result->a1 = mem_read16(memc, addr);
+							result->a1 = mem_read_16(memc, addr);
 							result->a2 = (INT_PTR) rp[R_HL];
 						}
 						break;							
@@ -412,21 +412,21 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 						if (prefix) {
 							result->index = DA_LD_RI__X_;
 							result->a1 = (INT_PTR) ri[pi];
-							result->a2 = mem_read16(memc, addr);
+							result->a2 = mem_read_16(memc, addr);
 						} else {
 							result->index = DA_LD_HL__X_;
 							result->a1 = (INT_PTR) rp[R_HL];
-							result->a2 = mem_read16(memc, addr);
+							result->a2 = mem_read_16(memc, addr);
 							
 						}
 						break;
 					case 6:	result->index = DA_LD__X__A;
-							result->a1 = mem_read16(memc, addr);
+							result->a1 = mem_read_16(memc, addr);
 							result->a2 = (INT_PTR) r[R_A];
 							break;
 					case 7:	result->index = DA_LD_A__X_;
 							result->a1 = (INT_PTR) r[R_A];
-							result->a2 = mem_read16(memc, addr);
+							result->a2 = mem_read_16(memc, addr);
 							break;	
 				}				
 			} else
@@ -549,13 +549,13 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			if (z == 2) {
 				result->index = DA_JP_CC_X;
 				result->a1 = (INT_PTR) cc[y];
-				result->a2 = mem_read16(memc, addr);
+				result->a2 = mem_read_16(memc, addr);
 			} else
 			if (z == 3) {
 				switch (y) {
 					case 0:
 						result->index = DA_JP_X;
-						result->a1 = mem_read16(memc, addr);
+						result->a1 = mem_read_16(memc, addr);
 						break;
 					case 2:
 						result->index = DA_OUT__X__A;
@@ -584,7 +584,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			if (z == 4) {
 				result->index = DA_CALL_CC_X;
 				result->a1 = (INT_PTR) cc[y];
-				result->a2 = mem_read16(memc, addr);
+				result->a2 = mem_read_16(memc, addr);
 			} else
 			if (z == 5) {
 				if (q == 0) {
@@ -593,11 +593,11 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				} else {
 					if (p == 0) {
 						result->index = DA_CALL_X;
-						result->a1 = mem_read16(memc, addr);
+						result->a1 = mem_read_16(memc, addr);
 
 						if ((result->a1 == 0x0050) && lpDebuggerCalc->model >= TI_83P) {
 							result->index = DA_BJUMP;
-							result->a1 = mem_read16(memc, addr);
+							result->a1 = mem_read_16(memc, addr);
 							TCHAR* Name = FindBcall((int) result->a1);
 							if (Name == NULL) {
 								result->index = DA_BJUMP_N;
@@ -635,7 +635,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			if (z == 7) {
 				if ((y == 5) && (lpDebuggerCalc->model >= TI_83P)) {
 					result->index = DA_BCALL;
-					int tmp = mem_read16(memc, addr);
+					int tmp = mem_read_16(memc, addr);
 					TCHAR* Name = FindBcall(tmp);
 					if (Name == NULL) {
 						result->index = DA_BCALL_N;

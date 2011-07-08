@@ -24,9 +24,10 @@ void ClearDevices(CPU_t* cpu) {
 int device_output(CPU_t *cpu, unsigned char dev) {
 	if (cpu->pio.devices[dev].active) {
 		cpu->output = TRUE;
+		if (!cpu->pio.devices[dev].protected_port || !cpu->mem_c->flash_locked)
+			cpu->pio.devices[dev].code(cpu, &(cpu->pio.devices[dev]));
 		if (cpu->pio.devices[dev].breakpoint)
 			cpu->pio.breakpoint_callback(cpu, &(cpu->pio.devices[dev]));
-		cpu->pio.devices[dev].code(cpu, &(cpu->pio.devices[dev]));
 		if (cpu->output) {
 			/* Device is not responding */
 			cpu->output = FALSE;

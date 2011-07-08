@@ -380,6 +380,7 @@ int calc_reset(LPCALC lpCalc) {
 
 /* Clear RAM and start calculator at $0000 
  * 10/20/10 Calc84 says that starting at $0000 is wrong we need to start on the boot page,
+ * 6/29/11 which turns out to be in bank 0 so we start at $0000 anyway.
  */
 int CPU_reset(CPU_t *lpCPU) {
 	lpCPU->sp			= 0;
@@ -394,53 +395,67 @@ int CPU_reset(CPU_t *lpCPU) {
 	lpCPU->output		= FALSE;
 	lpCPU->input		= FALSE;
 	lpCPU->prefix		= 0;
+	lpCPU->pc			= 0;
 	lpCPU->mem_c->port27_remap_count = 0;
 	lpCPU->mem_c->port28_remap_count = 0;
+	lpCPU->mem_c->ram_lower = 0x00 * 0x400;
+	lpCPU->mem_c->ram_upper = 0x00 * 0x400 + 0x3FF;
+	lpCPU->mem_c->banks = lpCPU->mem_c->normal_banks;
+	lpCPU->mem_c->boot_mapped = FALSE;
 	if (lpCPU->pio.model >= TI_83P) {
-		lpCPU->pc		= 0x8000;
 		switch (lpCPU->pio.model) {
+			case TI_73:
 			case TI_83P: {
 				/*	Address										page	write?	ram?	no exec?	*/
-				bank_state_t banks[5] = {
+				/*bank_state_t banks[5] = {
 					{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
 					{lpCPU->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
 					{lpCPU->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
 					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
 					{NULL,										0,		FALSE,	FALSE,	FALSE}
 				};
-				memcpy(lpCPU->mem_c->banks, banks, sizeof(banks));
+				lpCPU->pc = 0x4000;*/
+				memset(lpCPU->mem_c->protected_page, 0, sizeof(lpCPU->mem_c->protected_page));
+				lpCPU->mem_c->protected_page_set = 0;
+				bank_state_t banks[5] = {
+					{lpCPU->mem_c->flash +  0x01f * PAGE_SIZE, 	0x1f, 	FALSE,	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
+					{NULL,										0,		FALSE,	FALSE,	FALSE}
+				};
+				memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
 				break;
 			}
 			case TI_83PSE:
 			case TI_84PSE: {
 				/*	Address										page	write?	ram?	no exec?	*/
 				bank_state_t banks[5] = {
-					{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash + 0x7f * PAGE_SIZE,	0x7f, 	FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash + 0x7f * PAGE_SIZE,	0x7f, 	FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	TRUE},
+					{lpCPU->mem_c->flash +  0x07f * PAGE_SIZE, 	0x7f, 	FALSE,	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
 					{NULL,										0,		FALSE,	FALSE,	FALSE}
 				};
 
-				memcpy(lpCPU->mem_c->banks, banks, sizeof(banks));
+				memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
 				break;
 			}
 			case TI_84P: {
 				/*	Address										page	write?	ram?	no exec?	*/
 				bank_state_t banks[5] = {
-					{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash + 0x3f * PAGE_SIZE,	0x3f, 	FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash + 0x3f * PAGE_SIZE,	0x3f, 	FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	TRUE},
+					{lpCPU->mem_c->flash + 0x3f * PAGE_SIZE,	0x3f,	FALSE,	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->flash,						0, 		FALSE, 	FALSE, 	FALSE},
+					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
 					{NULL,										0,		FALSE,	FALSE,	FALSE}
 				};
-				memcpy(lpCPU->mem_c->banks, banks, sizeof(banks));
+				memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
 				break;
 			}
 		}
 	} else {
 		//memset(lpCalc->mem_c.ram, 0, lpCalc->mem_c.ram_size);
-		lpCPU->pc			= 0;
 	}
 	return 0;
 }
@@ -469,7 +484,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	uint64_t time_end = tc_tstates((&lpCalc->timer_c)) + tstates - lpCalc->time_error;
 
 	while (lpCalc->running) {
-		if (check_break(&lpCalc->mem_c, lpCalc->cpu.pc) & 1) {
+		if (check_break(&lpCalc->mem_c, addr_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc)) & 1) {
 #ifdef WINVER
 			lpCalc->running = FALSE;
 			bank_t *bank = &lpCalc->mem_c.banks[mc_bank(lpCalc->cpu.pc)];

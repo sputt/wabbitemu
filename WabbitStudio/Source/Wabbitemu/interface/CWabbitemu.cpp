@@ -80,7 +80,11 @@ STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress, VARIANT varC
 	int iPage;
 	pPage->get_Index(&iPage);
 
-	set_break(&m_lpCalc->mem_c, !IsFlash, iPage, wAddress);
+	waddr_t waddr;
+	waddr.addr = wAddress;
+	waddr.page = iPage;
+	waddr.is_ram = !IsFlash;
+	set_break(&m_lpCalc->mem_c, waddr);
 
 	if (V_VT(&varCalcNotify) == VT_UNKNOWN)
 	{

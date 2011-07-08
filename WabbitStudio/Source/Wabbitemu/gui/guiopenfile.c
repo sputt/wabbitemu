@@ -174,7 +174,7 @@ void GetOpenSendFileName(HWND hwnd) {
 	filestroffset++;		/* DOUBLE CHECK THIS */
 	filename = filepath + ofn.nFileOffset;
 
-	int send_mode = SEND_CUR;
+	SEND_FLAG send_mode = SEND_CUR;
 	if (!HookOptions.bFileSettings) {
 		send_mode = SEND_RAM;
 		if (HookOptions.bArchive) send_mode = SEND_ARC;
@@ -191,6 +191,6 @@ void GetOpenSendFileName(HWND hwnd) {
 		filestroffset[len] = 0;
 		filename += len + 1;
 		LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-		SendFileToCalc(lpCalc, filestr, TRUE);
+		SendFileToCalc(lpCalc, filestr, TRUE, send_mode);
 	}
 }

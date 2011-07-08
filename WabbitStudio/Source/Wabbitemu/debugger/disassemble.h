@@ -3,7 +3,7 @@
 
 #include "core.h"
 
-#define mem_read16(mc, adr) (unsigned int) ((addr += 2, mem_read(memc, addr-2) + (mem_read(memc, addr-1) << 8)) & 0xFFFF)
+#define mem_read_16(mc, adr) (unsigned int) ((addr += 2, mem_read(memc, addr-2) + (mem_read(memc, addr-1) << 8)) & 0xFFFF)
 
 #define DA_NOP	0
 #define DA_EX_AF_AF_	1

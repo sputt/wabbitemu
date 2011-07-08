@@ -156,121 +156,66 @@ void port4_83pse(CPU_t *cpu, device_t *dev) {
 		stdint->timermax2 = ( stdint->freq[freq] / 2.0f );
 		stdint->lastchk2  = stdint->lastchk1 + ( stdint->freq[freq] / 4.0f );
 
-		if ( ( cpu->bus & 1 ) == 1) {
-			if ( !cpu->mem_c->boot_mapped ) {
-				memmove(&cpu->mem_c->banks[2],&cpu->mem_c->banks[1],sizeof(bank_state_t)*3);
-				memmove(&cpu->mem_c->banks[1],&cpu->mem_c->banks[4],sizeof(bank_state_t)*1);
-			}
+		if (cpu->bus & 1) {
 			cpu->mem_c->boot_mapped = TRUE;
-		}else {
-			if ( cpu->mem_c->boot_mapped ) {
-				memmove(&cpu->mem_c->banks[1],&cpu->mem_c->banks[2],sizeof(bank_state_t)*3);
-			}
+			cpu->mem_c->banks = cpu->mem_c->bootmap_banks;
+			update_bootmap_pages(cpu->mem_c);
+		} else {
 			cpu->mem_c->boot_mapped = FALSE;
+			cpu->mem_c->banks = cpu->mem_c->normal_banks;
 		}
 		cpu->output = FALSE;
 	}	
 }
 
-
 void port5_83pse(CPU_t *cpu, device_t *dev) {
-	if (cpu->mem_c->boot_mapped) {
-		memmove(&cpu->mem_c->banks[1],&cpu->mem_c->banks[2],sizeof(bank_state_t)*3);
-	}
 	if (cpu->input) {
 		cpu->bus = cpu->mem_c->banks[3].page;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->mem_c->banks[3].page		= ((cpu->bus & 0x7f) % cpu->mem_c->ram_pages );
-		cpu->mem_c->banks[3].addr		= cpu->mem_c->ram+(cpu->mem_c->banks[3].page * PAGE_SIZE);
-		cpu->mem_c->banks[3].read_only	= FALSE;
-		// the next line isn't correct...
-		cpu->mem_c->banks[3].no_exec	= (cpu->mem_c->banks[3].page % 2) ^ 1;
-
+		change_page(cpu, 3, (cpu->bus & 0x7f) % cpu->mem_c->ram_pages, TRUE);
 		cpu->output = FALSE;
-	}
-	if (cpu->mem_c->boot_mapped) {
-		memmove(&cpu->mem_c->banks[2], &cpu->mem_c->banks[1], sizeof(bank_state_t) * 3);
-		memmove(&cpu->mem_c->banks[1], &cpu->mem_c->banks[4], sizeof(bank_state_t) * 1);
 	}
 }
 
 void port6_83pse(CPU_t *cpu, device_t *dev) {
-	if (cpu->mem_c->boot_mapped) {
-		memmove(&cpu->mem_c->banks[1], &cpu->mem_c->banks[2], sizeof(bank_state_t) * 3);
-	}
 	if (cpu->input) {
 		cpu->bus = ((cpu->mem_c->banks[1].ram) << 7) + cpu->mem_c->banks[1].page;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->mem_c->banks[1].ram = (cpu->bus >> 7) & 1;
-		if (cpu->mem_c->banks[1].ram) {
-			cpu->mem_c->banks[1].page		= (cpu->bus & 0x7f) % cpu->mem_c->ram_pages;
-			cpu->mem_c->banks[1].addr		= cpu->mem_c->ram + (cpu->mem_c->banks[1].page * PAGE_SIZE);
-			cpu->mem_c->banks[1].read_only	= FALSE;
-			// the next line isn't correct...
-			cpu->mem_c->banks[1].no_exec	= (cpu->mem_c->banks[1].page % 2) ^ 1;
-		} else {
-			cpu->mem_c->banks[1].page		= ((cpu->bus & 0x7f) % cpu->mem_c->flash_pages);
-			cpu->mem_c->banks[1].addr		= cpu->mem_c->flash + (cpu->mem_c->banks[1].page * PAGE_SIZE);
-			cpu->mem_c->banks[1].read_only	= (cpu->mem_c->banks[1].page == 0x3f && cpu->pio.model == TI_84P) || cpu->mem_c->banks[1].page == 0x7f;
-			//factor in port 22 and 23
-			cpu->mem_c->banks[1].no_exec	= cpu->mem_c->banks[1].page < cpu->mem_c->upper && cpu->mem_c->banks[1].page >= cpu->mem_c->lower;
-		}
+		BOOL ram = (cpu->bus >> 7) & 1;
+		if (ram)
+			change_page(cpu, 1, (cpu->bus & 0x7f) % cpu->mem_c->ram_pages, ram);
+		else
+			change_page(cpu, 1, (cpu->bus & 0x7f) % cpu->mem_c->flash_pages, ram);
 		cpu->output = FALSE;
-	}
-	if (cpu->mem_c->boot_mapped) {
-		memmove(&cpu->mem_c->banks[2], &cpu->mem_c->banks[1], sizeof(bank_state_t) * 3);
-		memmove(&cpu->mem_c->banks[1], &cpu->mem_c->banks[4], sizeof(bank_state_t) * 1);
 	}
 }
 
 void port7_83pse(CPU_t *cpu, device_t *dev) {
-	if (cpu->mem_c->boot_mapped)
-		memmove(&cpu->mem_c->banks[1], &cpu->mem_c->banks[2], sizeof(bank_state_t) * 3);
 	if (cpu->input) {
 		cpu->bus = ((cpu->mem_c->banks[2].ram) << 7) + cpu->mem_c->banks[2].page;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->mem_c->banks[2].ram = (cpu->bus >> 7) & 1;
-		if (cpu->mem_c->banks[2].ram) {
-			cpu->mem_c->banks[2].page		= ((cpu->bus & 0x7f) % cpu->mem_c->ram_pages);
-			cpu->mem_c->banks[2].addr		= cpu->mem_c->ram + (cpu->mem_c->banks[2].page * PAGE_SIZE);
-			cpu->mem_c->banks[2].read_only	= FALSE;
-			// the next line isn't correct...
-			cpu->mem_c->banks[2].no_exec	= (cpu->mem_c->banks[2].page % 2) ^ 1;
-		} else {
-			cpu->mem_c->banks[2].page		= ((cpu->bus & 0x7f) % cpu->mem_c->flash_pages);
-			cpu->mem_c->banks[2].addr		= cpu->mem_c->flash + (cpu->mem_c->banks[2].page * PAGE_SIZE);
-			cpu->mem_c->banks[2].read_only	= FALSE;
-			cpu->mem_c->banks[2].no_exec	= FALSE;
-			if (cpu->mem_c->banks[2].page == 0x1f) cpu->mem_c->banks[2].read_only = TRUE;
-		}
+		BOOL ram = (cpu->bus >> 7) & 1;
+		if (ram)
+			change_page(cpu, 2, (cpu->bus & 0x7f) % cpu->mem_c->ram_pages, ram);
+		else
+			change_page(cpu, 2, (cpu->bus & 0x7f) % cpu->mem_c->flash_pages, ram);
 		cpu->output = FALSE;
-	}
-	if (cpu->mem_c->boot_mapped) {
-		memmove(&cpu->mem_c->banks[2], &cpu->mem_c->banks[1], sizeof(bank_state_t) * 3);
-		memmove(&cpu->mem_c->banks[1], &cpu->mem_c->banks[4], sizeof(bank_state_t) * 1);
 	}
 }
 
-
+//Flash locking port
+//0 if locked, 1 if unlocked
 void port14_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
-		cpu->bus = cpu->mem_c->flash_locked;
+		cpu->bus = !cpu->mem_c->flash_locked;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		int bank = cpu->pc>>14;
-		if (!cpu->mem_c->banks[bank].ram) {
-			//priveleged pages are as follows
-			// TI 83+SE = 7C, 7D, 7F
-			// TI-84+ = 2F, 3C, 3D, 3F
-			// TI 84+SE = 6F, 7C, 7D, 7F
-			if ((cpu->mem_c->banks[bank].page >= cpu->mem_c->flash_pages - 4) ||
-				((cpu->mem_c->banks[bank].page == cpu->mem_c->flash_pages - 0x11) && (cpu->pio.model >= TI_84P))) {
-				cpu->mem_c->flash_locked = cpu->bus & 0x01;
-			}
-		}
+		if (!cpu->mem_c->banks[bank].ram && is_priveleged_page(cpu))
+			cpu->mem_c->flash_locked = !(cpu->bus & 0x01);
 		cpu->output = FALSE;
 	}
 }
@@ -582,33 +527,56 @@ void port20_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 void port21_83pse(CPU_t *cpu, device_t *dev) {
+	SE_AUX_t *se_aux = (SE_AUX_t *) dev->aux;
 	if (cpu->input) {
-		cpu->bus = cpu->pio.model == TI_84P ? 0x00 : 0x01;
+		cpu->bus = se_aux->model_bits + ((cpu->mem_c->prot_mode) >> 4);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
+		se_aux->model_bits = cpu->bus & 0x3;
+		cpu->mem_c->prot_mode = (RAM_PROT_MODE) ((cpu->bus & 0x30) >> 4);
 	}
 }
 
 void port22_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
-		cpu->bus = cpu->mem_c->lower;
+		cpu->bus = cpu->mem_c->flash_lower;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->mem_c->lower = cpu->bus;
+		cpu->mem_c->flash_lower = cpu->bus;
 		cpu->output = FALSE;
 	}
 }
 
 void port23_83pse(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
-		cpu->bus = cpu->mem_c->upper;
+		cpu->bus = cpu->mem_c->flash_upper;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->mem_c->upper = cpu->bus;
+		cpu->mem_c->flash_upper = cpu->bus;
 		cpu->output = FALSE;
 	}
 }
+
+void port25_83pse(CPU_t *cpu, device_t *dev) {
+	if (cpu->input) {
+		cpu->bus = cpu->mem_c->ram_lower / 0x400;
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		cpu->mem_c->ram_lower = cpu->bus * 0x400;
+		cpu->output = FALSE;
+	}
+}
+void port26_83pse(CPU_t *cpu, device_t *dev) {
+	if (cpu->input) {
+		cpu->bus = (cpu->mem_c->ram_upper - 0x3FF) / 0x400;
+		cpu->input = FALSE;
+	} else if (cpu->output) {
+		cpu->mem_c->ram_upper = cpu->bus * 0x400 + 0x3FF;
+		cpu->output = FALSE;
+	}
+}
+
 
 void delay_ports(CPU_t *cpu, device_t *dev) {
 	DELAY_t *delay = (DELAY_t *) dev->aux;
@@ -1173,9 +1141,10 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				} else if (spage < 256) {
 // I comment this off because this is the boot page
 // it suppose to be write protected...
-//					for(i=0x7C000;i<0x80000;i++) {
-//						cpu->mem_c->flash[i]=0xFF;
-//					}
+//BuckeyeDude 6/27/11: new info has been discovered boot code is writeable under certain conditions
+					for(i = 0x1FC000; i < 0x200000; i++) {
+						cpu->mem_c->flash[i] = 0xFF;
+					}
 				}
 			}
 			endflash(cpu);
@@ -1285,13 +1254,13 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 						cpu->mem_c->flash[i]=0xFF;
 					}
 				} else if (spage < 128) {
-/*
+
 // I comment this off because this is the boot page
 // it suppose to be write protected...
-					for(i=0x7C000;i<0x80000;i++) {
-						cpu->mem_c->flash[i]=0xFF;
+					for(i = 0xFC000; i < 0x100000; i++) {
+						cpu->mem_c->flash[i] = 0xFF;
 					}
-*/
+
 				}
 			}
 			endflash(cpu);
@@ -1435,6 +1404,9 @@ int device_init_83pse(CPU_t *cpu) {
 /* Flash locking */
 	cpu->pio.devices[0x14].active = TRUE;
 	cpu->pio.devices[0x14].code = (devp) port14_83pse;
+	//I know this seems silly but the way we check for protected ports is done by flash
+	//is unlocked and this is how you unlock flash so...
+	//cpu->pio.devices[0x14].protected_port = TRUE;
 	
 
 // MD5
@@ -1450,18 +1422,31 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.devices[0x20].code = (devp) port20_83pse;
 	
 	
-/* page locking */
+/* page locking and hardware */
 	cpu->pio.devices[0x21].active = TRUE;
-	cpu->pio.devices[0x21].aux = NULL;
+	cpu->pio.devices[0x21].aux = se_aux;
 	cpu->pio.devices[0x21].code = (devp) port21_83pse;
+	cpu->pio.devices[0x21].protected_port = TRUE;
 
 	cpu->pio.devices[0x22].active = TRUE;
 	cpu->pio.devices[0x22].aux = NULL;
 	cpu->pio.devices[0x22].code = (devp) port22_83pse;
+	cpu->pio.devices[0x22].protected_port = TRUE;
 
 	cpu->pio.devices[0x23].active = TRUE;
 	cpu->pio.devices[0x23].aux = NULL;
 	cpu->pio.devices[0x23].code = (devp) port23_83pse;
+	cpu->pio.devices[0x23].protected_port = TRUE;
+
+	cpu->pio.devices[0x25].active = TRUE;
+	cpu->pio.devices[0x25].aux = NULL;
+	cpu->pio.devices[0x25].code = (devp) port25_83pse;
+	cpu->pio.devices[0x25].protected_port = TRUE;
+
+	cpu->pio.devices[0x26].active = TRUE;
+	cpu->pio.devices[0x26].aux = NULL;
+	cpu->pio.devices[0x26].code = (devp) port26_83pse;
+	cpu->pio.devices[0x26].protected_port = TRUE;
 
 
 // weird ass remap stuff
@@ -1633,8 +1618,8 @@ int memory_init_83pse(memc *mc) {
 	mc->ram_pages = 8;
 
 	mc->flash_version = 2;
-	mc->upper = 0x60;
-	mc->lower = 0x10;
+	mc->flash_upper = 0x60;
+	mc->flash_lower = 0x10;
 	
 	mc->flash_size = mc->flash_pages * PAGE_SIZE;
 	mc->flash = (unsigned char *) calloc(mc->flash_pages, PAGE_SIZE);
@@ -1644,6 +1629,8 @@ int memory_init_83pse(memc *mc) {
 	mc->ram_size = mc->ram_pages * PAGE_SIZE;
 	mc->ram = (unsigned char *) calloc(mc->ram_pages, PAGE_SIZE);
 	mc->ram_break = (unsigned char *) calloc(mc->ram_pages, PAGE_SIZE);
+	mc->ram_lower = 0x00 * 0x400;
+	mc->ram_upper = 0x00 * 0x400 + 0x3FF;
 	
 	if (!mc->flash || !mc->ram ) {
 		_tprintf_s(_T("Couldn't allocate memory in memory_init_83pse\n"));
@@ -1652,19 +1639,22 @@ int memory_init_83pse(memc *mc) {
 
 	mc->boot_mapped				= FALSE;
 	mc->flash_locked			= TRUE;
+	mc->prot_mode				= MODE0;
 
 	/* Organize bank states here */
 	
 	/*	Address								page	write?	ram?	no exec?	*/
 	bank_state_t banks[5] = {
-		{mc->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-		{mc->flash + 0x7f * PAGE_SIZE,		0x7f, 	FALSE, 	FALSE, 	FALSE},
-		{mc->flash + 0x7f * PAGE_SIZE,		0x7f, 	FALSE, 	FALSE, 	FALSE},
-		{mc->ram,							0,		FALSE,	TRUE,	TRUE},
+		{mc->flash +  0x07f * PAGE_SIZE, 	0x7f, 	FALSE,	FALSE, 	FALSE},
+		{mc->flash,							0,		FALSE, 	FALSE, 	FALSE},
+		{mc->flash,							0,	 	FALSE, 	FALSE, 	FALSE},
+		{mc->ram,							0,		FALSE,	TRUE,	FALSE},
 		{NULL,								0,		FALSE,	FALSE,	FALSE}
 	};
 
-	memcpy(mc->banks, banks, sizeof(banks));
+	memcpy(mc->normal_banks, banks, sizeof(banks));
+	update_bootmap_pages(mc);
+	mc->banks					= mc->normal_banks;
 	return 0;
 }
 
@@ -1679,8 +1669,8 @@ int memory_init_84p(memc *mc) {
 	mc->ram_pages = 8;
 
 	mc->flash_version = 3;
-	mc->upper = 0x30;
-	mc->lower = 0x10;
+	mc->flash_upper = 0x30;
+	mc->flash_lower = 0x10;
 
 	mc->flash_size = mc->flash_pages * PAGE_SIZE;
 	mc->flash = (unsigned char *) calloc(mc->flash_pages, PAGE_SIZE);
@@ -1698,18 +1688,21 @@ int memory_init_84p(memc *mc) {
 
 	mc->boot_mapped				= FALSE;
 	mc->flash_locked			= TRUE;
+	mc->prot_mode				= MODE0;
 
 	/* Organize bank states here */
 
 	/*	Address								page	write?	ram?	no exec?	*/
 	bank_state_t banks[5] = {
-		{mc->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-		{mc->flash + 0x3f * PAGE_SIZE,		0x3f, 	FALSE, 	FALSE, 	FALSE},
-		{mc->flash + 0x3f * PAGE_SIZE,		0x3f, 	FALSE, 	FALSE, 	FALSE},
-		{mc->ram,							0,		FALSE,	TRUE,	TRUE},
-		{NULL,								0,		FALSE,	FALSE,	FALSE}
+		{mc->flash + 0x3f * PAGE_SIZE,	0x3f,	FALSE,	FALSE, 	FALSE},
+		{mc->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
+		{mc->flash,						0, 		FALSE, 	FALSE, 	FALSE},
+		{mc->ram,						0,		FALSE,	TRUE,	FALSE},
+		{NULL,							0,		FALSE,	FALSE,	FALSE}
 	};
 
-	memcpy(mc->banks, banks, sizeof(banks));
+	memcpy(mc->normal_banks, banks, sizeof(banks));
+	update_bootmap_pages(mc);
+	mc->banks					= mc->normal_banks;
 	return 0;
 }

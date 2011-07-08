@@ -288,7 +288,6 @@ Global
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.SPASM Release|Mixed Platforms.Build.0 = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.SPASM Release|Win32.ActiveCfg = Release|Win32
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.SPASM Release|x64.ActiveCfg = Release|x64
-		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.SPASM Release|x64.Build.0 = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.SPASM Release|X86.ActiveCfg = Release|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Any CPU.ActiveCfg = Debug|x64
 		{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Wabbitemu Release|x64
@@ -406,7 +405,8 @@ Global
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.SPASM Release|Mixed Platforms.Build.0 = Release|x64
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.SPASM Release|Win32.ActiveCfg = Release|Win32
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.SPASM Release|Win32.Build.0 = Release|Win32
-		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.SPASM Release|x64.ActiveCfg = Release|Win32
+		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.SPASM Release|x64.ActiveCfg = Release|x64
+		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.SPASM Release|x64.Build.0 = Release|x64
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.SPASM Release|X86.ActiveCfg = Release|Win32
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Wabbitcode Debug|Any CPU.ActiveCfg = Debug|x64
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Wabbitcode Debug|Mixed Platforms.ActiveCfg = Debug|x64

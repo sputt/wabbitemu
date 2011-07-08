@@ -24,7 +24,7 @@ typedef struct {
 
 
 #define CUR_MAJOR 0
-#define CUR_MINOR 0
+#define CUR_MINOR 1
 #define CUR_BUILD 1
 
 
@@ -47,7 +47,9 @@ typedef struct {
 #define LINK_tag		"LINK"
 #define STDINT_tag		"STDI"
 #define SE_AUX_tag		"SEAX"
+#define USB_tag			"USB "
 #define REMAP_tag		"RMAP"
+#define RAM_LIMIT_tag	"RMLM"
 
 void WriteSave(const TCHAR *, SAVESTATE_t *, int);
 void LoadSlot(SAVESTATE_t* , void *);

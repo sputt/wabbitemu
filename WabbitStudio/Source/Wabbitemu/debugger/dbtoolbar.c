@@ -938,9 +938,24 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					break;
 				}
 #endif
-				case 999:
-					SendMessage(GetParent(hwnd), WM_COMMAND, DB_RUN, 0);
+				case 999: {
+					TBBTN *tbb = (TBBTN *) GetWindowLongPtr((HWND) lParam, GWLP_USERDATA);
+					if (tbb->hbmIcon)
+						DeleteObject(tbb->hbmIcon);
+					if (lpDebuggerCalc->running) {
+						tbb->hbmIcon = LoadBitmap(g_hInst, _T("DBRun"));
+						Edit_SetText(tbb->hwnd, _T("Run"));
+						SendMessage(GetParent(hwnd), WM_COMMAND, DB_STOP, 0);
+					} else {
+						tbb->hbmIcon = LoadBitmap(g_hInst, _T("DBStop"));
+						Edit_SetText(tbb->hwnd, _T("Stop"));
+						SendMessage(GetParent(hwnd), WM_COMMAND, DB_RUN, 0);
+					}
+					RECT rc;
+					GetClientRect(tbb->hwnd, &rc);
+					InvalidateRect(tbb->hwnd, &rc, TRUE);
 					break;
+				}
 				case 1000:
 					SendMessage(GetParent(hwnd), WM_COMMAND, DB_BREAKPOINT, 0);
 					break;

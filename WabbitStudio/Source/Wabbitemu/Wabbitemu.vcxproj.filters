@@ -291,6 +291,9 @@
     <ClCompile Include="interface\CPio.cpp">
       <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
+    <ClCompile Include="debugger\dbbreakpoints.c">
+      <Filter>Source Files\Debugger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -551,6 +554,9 @@
     <ClInclude Include="interface\CPio.h">
       <Filter>Source Files\Interface\COM</Filter>
     </ClInclude>
+    <ClInclude Include="debugger\dbbreakpoints.h">
+      <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\small_close.bmp">
@@ -723,6 +729,10 @@
     <None Include="gui\ti-81.png">
       <Filter>Resource Files\Skins</Filter>
     </None>
+    <None Include="gui\stop.bmp">
+      <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="stop.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">
