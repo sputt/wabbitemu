@@ -22,7 +22,6 @@ typedef struct mempane_settings {
 	double diff;
 	MemViewType type;				//type of tab this is (aka what do we display)
 	HWND hwndHeader;
-	HWND cmbMode;
 	HWND hwndTip;					// hWnd for the tooltip
 	int addrTrack;
 	BOOL bText;						// If in text mode

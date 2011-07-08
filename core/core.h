@@ -125,6 +125,22 @@ typedef struct waddr {
 	uint16_t addr;
 } waddr_t;
 
+enum RAM_PROT_MODE {
+	MODE0 = 0,			//Execution is allowed on pages 81h, 83h, 85h, 87h, 89h, 8Bh, 8Dh, and 8Fh. 
+	MODE1 = 1,			//Execution is allowed on pages 81h, 85h, 89h, and 8Dh. 
+	MODE2 = 2,			//Execution is allowed on pages 81h and 89h. 
+	MODE3 = 3,			//Execution is allowed on pages 81h only. 
+};
+
+enum BREAK_TYPE {
+	NORMAL_BREAK = 0x1,
+	MEM_WRITE_BREAK = 0x2,
+	MEM_READ_BREAK = 0x4,
+	CLEAR_NORMAL_BREAK = MEM_READ_BREAK | MEM_WRITE_BREAK,
+	CLEAR_MEM_WRITE_BREAK = MEM_READ_BREAK | NORMAL_BREAK,
+	CLEAR_MEM_READ_BREAK = MEM_WRITE_BREAK | NORMAL_BREAK,
+};
+
 typedef struct memory_context {
 	/* to be defined */
 	//unsigned char (*flash)[PAGE_SIZE];	//Pointer to flash memory
@@ -146,12 +162,15 @@ typedef struct memory_context {
 	int step;					// These 3 are for flash programming
 	unsigned char cmd;			// step tells what cycle of the command you are on,
 
-	bank_state_t banks[5];		//Current state of each bank
+	bank_state_t *banks;		//pointer to the correct bank state currently
+	bank_state_t normal_banks[5];		//Current state of each bank
 								// structure 5 is used to preserve the 4th in boot map
-	BOOL boot_mapped;			//Special mapping used in boot that rotates location of pages
+	bank_state_t bootmap_banks[5];			//used to hold a backup of the banks when this is boot mapped
+	BOOL boot_mapped;			//Special mapping used in boot that changes how paging works
 	BOOL flash_locked;			//Whether flash is writeable or not.
 	int protected_page_set;		//Special for the 83p, used to determine which group of pages you are referring to
 	int protected_page[4];		//Special for the 83p, used to determine which page of a set to protect
+	RAM_PROT_MODE prot_mode;
 
 	int flash_version;
 	int ram_version;
@@ -163,8 +182,11 @@ typedef struct memory_context {
 	int read_NOP_ram_tstates;
 	int write_ram_tstates;
 
-	unsigned char upper;
-	unsigned char lower;
+	unsigned char flash_upper;
+	unsigned char flash_lower;
+
+	unsigned short ram_upper;
+	unsigned short ram_lower;
 
 	int port27_remap_count;		// amount of 64 byte chunks remapped from RAM page 0 to bank 3
 	int port28_remap_count;		// amount of 64 byte chunks remapped from RAM page 1 to bank 1
@@ -181,6 +203,7 @@ typedef struct device {
 	void *aux;
 	devp code;
 	BOOL breakpoint;
+	BOOL protected_port;
 } device_t;
 
 
@@ -238,26 +261,21 @@ unsigned short mem_read16(memc*, unsigned short);
 unsigned char mem_write(memc*, unsigned short, char);
 waddr_t addr_to_waddr(memc*, uint16_t);
 
-void set_break(memc *, BOOL, int, uint16_t);
-void set_wmem_break(memc *, waddr_t waddr);
-void set_mem_write_break(memc *, BOOL, int, uint16_t);
-void set_wmem_write_break(memc *, waddr_t waddr);
-void set_mem_read_break(memc *, BOOL, int, uint16_t);
-void set_wmem_read_break(memc *, waddr_t waddr);
+void set_break(memc *, waddr_t waddr);
+void set_mem_write_break(memc *, waddr_t waddr);
+void set_mem_read_break(memc *, waddr_t waddr);
 
-void clear_break(memc *mem, BOOL ram, int page, uint16_t addr);
-void clear_wmem_break(memc *mem, waddr_t waddr);
-void clear_mem_write_break(memc *, BOOL, int, uint16_t);
-void clear_wmem_write(memc *, waddr_t waddr);
-void clear_mem_read_break(memc *, BOOL, int, uint16_t);
-void clear_wmem_read_break(memc *, waddr_t waddr);
+void clear_break(memc *mem, waddr_t waddr);
+void clear_mem_write_break(memc *, waddr_t waddr);
+void clear_mem_read_break(memc *, waddr_t waddr);
 
-BOOL check_break(memc *, uint16_t);
-BOOL check_wmem_break(memc *, waddr);
-BOOL check_mem_write_break(memc *, uint16_t);
-BOOL check_mem_read_break(memc *, uint16_t);
-BOOL check_wmem_read_break(memc *mem, waddr_t waddr);
-BOOL check_wmem_write_break(memc *mem, waddr_t waddr);
+BOOL check_break(memc *, waddr_t);
+BOOL check_mem_read_break(memc *mem, waddr_t waddr);
+BOOL check_mem_write_break(memc *mem, waddr_t waddr);
+
+BOOL is_priveleged_page(CPU_t *cpu);
+void change_page(CPU_t *cpu, int bank, char page, BOOL ram);
+void update_bootmap_pages(memc *mem_c);
 
 int tc_init(timerc*, int);
 int CPU_init(CPU_t*, memc*, timerc*);

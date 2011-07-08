@@ -502,11 +502,18 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 		    GetClientRect(hwnd, &toolInfo.rect);
 		    SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 
-
 			GetWindowRect(dps->hwndHeader, &hdrRect);
-
 			cyHeader = hdrRect.bottom - hdrRect.top;
 
+			SCROLLINFO si;
+			si.cbSize = sizeof(SCROLLINFO);
+			si.fMask = SIF_POS | SIF_RANGE | SIF_PAGE;
+			si.nMax = 0xFFFF;
+			si.nMin = 0x0000;
+			si.nPage = 32;
+			si.nPos = dps->nPane;
+			si.nTrackPos = dps->nPane;
+			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 			dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
 			for (i = 1; i < PC_TRAILS; i++) {
@@ -521,7 +528,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			HDLAYOUT hdl;
 
 			GetClientRect(hwnd, &rc);
-
 
 			hdl.prc = &rc;
 			hdl.pwpos = &wp;
@@ -791,14 +797,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				BOOL breakpoint = FALSE;
 				memory_context_t *calc_mem = &lpDebuggerCalc->mem_c;
-				if (check_break(calc_mem, zinf[i].addr)) {
+				waddr_t waddr = addr_to_waddr(calc_mem, zinf[i].addr);
+				if (check_break(calc_mem, waddr)) {
 					vert [0] .Red    = GetRValue(COLOR_BREAKPOINT) << 8;
 					vert [0] .Green  = GetGValue(COLOR_BREAKPOINT) << 8;
 					vert [0] .Blue   = GetBValue(COLOR_BREAKPOINT) << 8;
 					breakpoint = TRUE;
 					do_gradient = TRUE;
 				}
-				if (check_mem_write_break(calc_mem, zinf[i].addr)) {
+				if (check_mem_write_break(calc_mem, waddr)) {
 					if (breakpoint) {
 						vert [0] .Red    |= GetRValue(COLOR_MEMPOINT_WRITE) << 8;
 						vert [0] .Green  |= GetGValue(COLOR_MEMPOINT_WRITE) << 8;
@@ -811,7 +818,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					breakpoint = TRUE;
 					do_gradient = TRUE;
 				}
-				if (check_mem_read_break(calc_mem, zinf[i].addr)) {
+				if (check_mem_read_break(calc_mem, waddr)) {
 					if (breakpoint) {
 						vert [0] .Red    |= GetRValue(COLOR_MEMPOINT_READ) << 8;
 						vert [0] .Green  |= GetGValue(COLOR_MEMPOINT_READ) << 8;
@@ -964,9 +971,18 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					lpDebuggerCalc->running = TRUE;
 					break;
 				}
+				case DB_STOP: {
+					int i;
+					EnableWindow(hwnd, TRUE);
+					SendMessage(hwnd, WM_COMMAND, DB_DISASM, lpDebuggerCalc->cpu.pc);
+					db_step_finish(hwnd);
+					lpDebuggerCalc->running = FALSE;
+					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					break;
+				}
 				case IDM_RUN_STEP:
 				case DB_STEP: {
-					CPU_step((&lpDebuggerCalc->cpu));
+					CPU_step(&lpDebuggerCalc->cpu);
 					db_step_finish(hwnd);
 					break;
 				}
@@ -991,12 +1007,17 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					return 0;
 				}
 				case DB_FIND_NEXT: {
+					unsigned short value = find_value - 1;
 					int addr = search_backwards ? dps->nSel - 1 : dps->nSel + 1;
-					while (addr < 0xFFFF && mem_read(&lpDebuggerCalc->mem_c, addr) != find_value) {
+					while (addr <= 0xFFFF && addr >= 0x0000 && value != find_value) {
 						if (search_backwards)
 							addr--;
 						else
 							addr++;
+						if (find_value > 0xFF)
+							value = mem_read16(&lpDebuggerCalc->mem_c, addr);
+						else
+							value = mem_read(&lpDebuggerCalc->mem_c, addr);
 					}
 					if (addr > 0xFFFF || addr < 0x0000) {
 						MessageBox(NULL, _T("Value not found"), _T("Find results"), MB_OK);
@@ -1015,35 +1036,35 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_BREAKPOINT: {
-					bank_t *bank = &lpDebuggerCalc->mem_c.banks[mc_bank(dps->nSel)];
+					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
 
-					if (check_break(&lpDebuggerCalc->mem_c, dps->nSel)) {
-						clear_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, dps->nSel);
+					if (check_break(&lpDebuggerCalc->mem_c, waddr)) {
+						clear_break(&lpDebuggerCalc->mem_c, waddr);
 					} else {
-						set_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, dps->nSel);
+						set_break(&lpDebuggerCalc->mem_c, waddr);
 					}
 					InvalidateSel(hwnd, dps->iSel);
 					break;
 				}
 				case DB_MEMPOINT_WRITE: {
-					bank_t *bank = &lpDebuggerCalc->mem_c.banks[mc_bank(dps->nSel)];
+					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
 
-					if (check_mem_write_break(&lpDebuggerCalc->mem_c, dps->nSel)) {
-						clear_mem_write_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, dps->nSel);
+					if (check_mem_write_break(&lpDebuggerCalc->mem_c, waddr)) {
+						clear_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
 					} else {
-						set_mem_write_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, dps->nSel);
+						set_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
 					}
 					InvalidateSel(hwnd, dps->iSel);
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
 				}
 				case DB_MEMPOINT_READ: {
-					bank_t *bank = &lpDebuggerCalc->mem_c.banks[mc_bank(dps->nSel)];
+					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
 
-					if (check_mem_read_break(&lpDebuggerCalc->mem_c, dps->nSel)) {
-						clear_mem_read_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, dps->nSel);
+					if (check_mem_read_break(&lpDebuggerCalc->mem_c, waddr)) {
+						clear_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
 					} else {
-						set_mem_read_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, dps->nSel);
+						set_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
 					}
 					InvalidateSel(hwnd, dps->iSel);
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
@@ -1268,7 +1289,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case 'P':
 					SendMessage(GetParent(hwnd), WM_COMMAND, IDM_VIEW_PORTMONITOR, 0);
 					break;
-
+				case 'B':
+					SendMessage(GetParent(hwnd), WM_COMMAND, IDM_VIEW_BREAKPOINTS, 0);
+					break;
 			}
 
 			if (bCenter && (dps->nSel < dps->nPane || dps->nSel > dps->nPane + dps->nPage)) {
@@ -1364,6 +1387,14 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dps->nPane -= last_pagedown;
 					break;
 			}
+
+			SCROLLINFO si;
+			si.cbSize = sizeof(SCROLLINFO);
+			si.fMask = SIF_POS  | SIF_PAGE;
+			si.nPage = last_pagedown;
+			si.nPos = dps->nPane;
+			si.nTrackPos = dps->nPane;
+			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 			SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 			{

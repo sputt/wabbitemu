@@ -479,10 +479,10 @@ void SaveMEM(SAVESTATE_t* save, memc* mem) {
 	WriteInt(chunk, mem->flash_version);	
 
 	for(i = 0; i < 5; i++) {
-		WriteInt(chunk, mem->banks[i].page);
-		WriteInt(chunk, mem->banks[i].read_only);
-		WriteInt(chunk, mem->banks[i].ram);
-		WriteInt(chunk, mem->banks[i].no_exec);
+		WriteInt(chunk, mem->normal_banks[i].page);
+		WriteInt(chunk, mem->normal_banks[i].read_only);
+		WriteInt(chunk, mem->normal_banks[i].ram);
+		WriteInt(chunk, mem->normal_banks[i].no_exec);
 	}
 	
 	WriteInt(chunk, mem->read_OP_flash_tstates);
@@ -492,8 +492,8 @@ void SaveMEM(SAVESTATE_t* save, memc* mem) {
 	WriteInt(chunk, mem->read_NOP_ram_tstates);
 	WriteInt(chunk, mem->write_ram_tstates);
 	
-	WriteInt(chunk, mem->upper);
-	WriteInt(chunk, mem->lower);
+	WriteInt(chunk, mem->flash_upper);
+	WriteInt(chunk, mem->flash_lower);
 
 	chunk = NewChunk(save, ROM_tag);
 	WriteBlock(chunk, mem->flash, mem->flash_size);
@@ -504,6 +504,12 @@ void SaveMEM(SAVESTATE_t* save, memc* mem) {
 	chunk = NewChunk(save, REMAP_tag);
 	WriteInt(chunk, mem->port27_remap_count);
 	WriteInt(chunk, mem->port28_remap_count);
+
+	chunk = NewChunk(save, RAM_LIMIT_tag);
+	WriteInt(chunk, mem->ram_upper);
+	WriteInt(chunk, mem->ram_lower);
+
+
 }
 
 void SaveTIMER(SAVESTATE_t *save, timerc *time) {
@@ -542,21 +548,22 @@ void SaveSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	if (!se_aux) return;
 	CHUNK_t* chunk = NewChunk(save, SE_AUX_tag);
 	
+	if (save->model > TI_83P) {
+		WriteChar(chunk, se_aux->clock.enable);
+		WriteInt(chunk, (uint32_t)se_aux->clock.set);
+		WriteInt(chunk, (uint32_t)se_aux->clock.base);
+		WriteDouble(chunk, se_aux->clock.lasttime);
 	
-	WriteChar(chunk, se_aux->clock.enable);
-	WriteInt(chunk, (uint32_t)se_aux->clock.set);
-	WriteInt(chunk, (uint32_t)se_aux->clock.base);
-	WriteDouble(chunk, se_aux->clock.lasttime);
+		for(i = 0; i < 7; i++) {
+			WriteChar(chunk, se_aux->delay.reg[i]);
+		}
 	
-	for(i = 0; i < 7; i++) {
-		WriteChar(chunk, se_aux->delay.reg[i]);
+		for(i = 0; i < 6; i++) {
+			WriteInt(chunk, se_aux->md5.reg[i]);
+		}
+		WriteChar(chunk, se_aux->md5.s);
+		WriteChar(chunk, se_aux->md5.mode);
 	}
-	
-	for(i = 0; i < 6; i++) {
-		WriteInt(chunk, se_aux->md5.reg[i]);
-	}
-	WriteChar(chunk, se_aux->md5.s);
-	WriteChar(chunk, se_aux->md5.mode);
 	
 	
 	WriteChar(chunk, se_aux->linka.link_enable);
@@ -570,6 +577,9 @@ void SaveSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	WriteInt(chunk, se_aux->linka.sending);
 	WriteDouble(chunk, se_aux->linka.last_access);
 	WriteInt(chunk, se_aux->linka.bit);
+
+	if (save->model < TI_83PSE)
+		return;
 	
 	WriteDouble(chunk, se_aux->xtal.lastTime);
 	WriteLong(chunk, se_aux->xtal.ticks);
@@ -586,6 +596,18 @@ void SaveSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 		WriteChar(chunk, se_aux->xtal.timers[i].count);
 		WriteChar(chunk, se_aux->xtal.timers[i].max);
 	}
+	WriteInt(chunk, se_aux->model_bits);
+	chunk = NewChunk(save, USB_tag);
+	WriteInt(chunk, se_aux->usb.USBLineState);
+	WriteInt(chunk, se_aux->usb.USBEvents);
+	WriteInt(chunk, se_aux->usb.USBEventMask);
+	WriteInt(chunk, se_aux->usb.LineInterrupt);
+	WriteInt(chunk, se_aux->usb.ProtocolInterrupt);
+	WriteInt(chunk, se_aux->usb.ProtocolInterruptEnabled);
+	WriteInt(chunk, se_aux->usb.DevAddress);
+	WriteChar(chunk, se_aux->usb.Port4A);
+	WriteChar(chunk, se_aux->usb.Port4C);
+	WriteChar(chunk, se_aux->usb.Port54);
 }
 
 void SaveLCD(SAVESTATE_t* save, LCD_t* lcd) {
@@ -713,17 +735,21 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	mem->flash_version = ReadInt(chunk);
 	
 	for(i=0;i<5;i++) {
-		mem->banks[i].page		= ReadInt(chunk);
-		mem->banks[i].read_only	= ReadInt(chunk);
-		mem->banks[i].ram		= ReadInt(chunk);
-		mem->banks[i].no_exec	= ReadInt(chunk);
-		if (mem->banks[i].ram) {
-			mem->banks[i].addr = mem->ram+(mem->banks[i].page*PAGE_SIZE);
+		mem->normal_banks[i].page		= ReadInt(chunk);
+		mem->normal_banks[i].read_only	= ReadInt(chunk);
+		mem->normal_banks[i].ram		= ReadInt(chunk);
+		mem->normal_banks[i].no_exec	= ReadInt(chunk);
+		if (mem->normal_banks[i].ram) {
+			mem->normal_banks[i].addr = mem->ram+(mem->normal_banks[i].page*PAGE_SIZE);
 		} else {
-			mem->banks[i].addr = mem->flash+(mem->banks[i].page*PAGE_SIZE);
+			mem->normal_banks[i].addr = mem->flash+(mem->normal_banks[i].page*PAGE_SIZE);
 		}
-
 	}
+	if (mem->boot_mapped) {
+		update_bootmap_pages(mem);
+		mem->banks = mem->bootmap_banks;
+	} else
+		mem->banks = mem->normal_banks;
 	
 	mem->read_OP_flash_tstates	= ReadInt(chunk);
 	mem->read_NOP_flash_tstates	= ReadInt(chunk);
@@ -732,8 +758,8 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	mem->read_NOP_ram_tstates	= ReadInt(chunk);
 	mem->write_ram_tstates		= ReadInt(chunk);
 
-	mem->upper = ReadInt(chunk);
-	mem->lower = ReadInt(chunk);
+	mem->flash_upper = ReadInt(chunk);
+	mem->flash_lower = ReadInt(chunk);
 
 	chunk = FindChunk(save,ROM_tag);
 	chunk->pnt = 0;
@@ -744,11 +770,17 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	ReadBlock(chunk, (unsigned char *)mem->ram, mem->ram_size);	
 
 	
-	chunk = FindChunk(save,REMAP_tag);
+	chunk = FindChunk(save, REMAP_tag);
 	if (chunk) {
 		chunk->pnt = 0;
 		mem->port27_remap_count = ReadInt(chunk);
 		mem->port28_remap_count = ReadInt(chunk);
+	}
+	chunk = FindChunk(save, RAM_LIMIT_tag);
+	if (chunk) {
+		chunk->pnt = 0;
+		mem->ram_upper = ReadInt(chunk);
+		mem->ram_lower = ReadInt(chunk);
 	}
 }
 
@@ -819,22 +851,24 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	CHUNK_t* chunk = FindChunk(save,SE_AUX_tag);
 	if (!chunk) return;
 	
+	BOOL is_83p = save->model < TI_83PSE && save->version_minor == 1;
+	if (!is_83p) {
+		se_aux->clock.enable		= ReadChar(chunk);
+		se_aux->clock.set			= ReadInt(chunk);
+		se_aux->clock.base			= ReadInt(chunk);
+		se_aux->clock.lasttime		= ReadDouble(chunk);
 	
-	se_aux->clock.enable		= ReadChar(chunk);
-	se_aux->clock.set			= ReadInt(chunk);
-	se_aux->clock.base			= ReadInt(chunk);
-	se_aux->clock.lasttime		= ReadDouble(chunk);
+		for(i = 0; i < 7; i++) {
+			se_aux->delay.reg[i]	= ReadChar(chunk);
+		}
 	
-	for(i = 0; i < 7; i++) {
-		se_aux->delay.reg[i]	= ReadChar(chunk);
+		for(i = 0; i < NumElm(se_aux->md5.reg); i++)
+		{
+			se_aux->md5.reg[i]		= ReadInt(chunk);
+		}
+		se_aux->md5.s				= ReadChar(chunk);
+		se_aux->md5.mode			= ReadChar(chunk);
 	}
-	
-	for(i = 0; i < NumElm(se_aux->md5.reg); i++)
-	{
-		se_aux->md5.reg[i]		= ReadInt(chunk);
-	}
-	se_aux->md5.s				= ReadChar(chunk);
-	se_aux->md5.mode			= ReadChar(chunk);
 	
 	
 	se_aux->linka.link_enable	= ReadChar(chunk);
@@ -852,6 +886,9 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	se_aux->xtal.lastTime		= ReadDouble(chunk);
 	se_aux->xtal.ticks			= ReadLong(chunk);
 
+	if (is_83p)
+		return;
+
 	for(i = 0; i < 3; i++) {
 		se_aux->xtal.timers[i].lastTstates	= ReadLong(chunk);
 		se_aux->xtal.timers[i].lastTicks	= ReadDouble(chunk);
@@ -865,6 +902,24 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 		se_aux->xtal.timers[i].count		= ReadChar(chunk);
 		se_aux->xtal.timers[i].max			= ReadChar(chunk);
 	}
+	if (save->version_minor >= 1)
+		se_aux->model_bits = ReadInt(chunk);
+	else
+		se_aux->model_bits = save->model == TI_84P ? 0 : 1;
+	chunk = FindChunk(save, USB_tag);
+	if (!chunk) return;
+	chunk->pnt = 0;
+
+	se_aux->usb.USBLineState = ReadInt(chunk);
+	se_aux->usb.USBEvents = ReadInt(chunk);
+	se_aux->usb.USBEventMask = ReadInt(chunk);
+	se_aux->usb.LineInterrupt = ReadInt(chunk);
+	se_aux->usb.ProtocolInterrupt = ReadInt(chunk);
+	se_aux->usb.ProtocolInterruptEnabled = ReadInt(chunk);
+	se_aux->usb.DevAddress = ReadInt(chunk);
+	se_aux->usb.Port4A = ReadChar(chunk);
+	se_aux->usb.Port4C = ReadChar(chunk);
+	se_aux->usb.Port54 = ReadChar(chunk);
 }
 
 
@@ -1075,7 +1130,7 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 			return NULL;
 		}
 		compressed = TRUE;
-		fread(string,1,8,ifile);
+		fread(string, 1, 8, ifile);
 	}
 		
 	if (strncmp(DETECT_STR, string, 8) != 0){

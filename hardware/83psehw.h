@@ -115,6 +115,7 @@ typedef struct SE_AUX {
 	LINKASSIST_t linka;
 	XTAL_t xtal;
 	USB_t usb;
+	int model_bits;
 } SE_AUX_t;
 
 STDINT_t *INT83PSE_init(CPU_t*);

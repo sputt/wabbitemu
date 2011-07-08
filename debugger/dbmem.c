@@ -256,7 +256,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			SetWindowPos(mps->hwndHeader, wp.hwndInsertAfter, wp.x, wp.y,
 				wp.cx, wp.cy, wp.flags);
 
-
 			TCHAR szHeader[64];
 			StringCbPrintf(szHeader, sizeof(szHeader), _T("Memory (%d Columns)"), mps->nCols);
 			HDITEM hdi;
@@ -266,16 +265,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			hdi.cxy = rc.right - tm.tmAveCharWidth*6;
 			Header_SetItem(mps->hwndHeader, mps->iData, &hdi);
 
-			if (mps->cmbMode) {
-				DWORD dwBaseUnits = GetDialogBaseUnits();
-				SetWindowPos(mps->cmbMode,
-						HWND_TOP, //mps->hwndHeader,
-						wp.cx - COLUMN_X_OFFSET - (26 * LOWORD(dwBaseUnits))/4 + 2,
-						0,
-						(26 * LOWORD(dwBaseUnits))/4,
-						cyHeader,
-						0);
-			}
 			return 0;
 		}
 		case WM_MOUSEACTIVATE:
@@ -424,7 +413,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						waddr_t waddr = GetWaddr(mps, addr);
 						for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
 							waddr.addr = (addr + b) % 0x4000;
-							waddr.page = (addr + b) / 0x4000;
+							waddr.page = !waddr.is_ram ? (addr + b) / 0x4000 : (waddr.addr ? waddr.page : waddr.page + 1);
 							value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
 						}
 						waddr = GetWaddr(mps, addr);
@@ -436,21 +425,21 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 #define COLOR_BREAKPOINT		(RGB(230, 160, 180))
 #define COLOR_MEMPOINT_WRITE	(RGB(255, 177, 100))
 #define COLOR_MEMPOINT_READ		(RGB(255, 250, 145))
-						if (check_wmem_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
+						if (check_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_BREAKPOINT, 255);
 							if (isSel)
 								DrawFocusRect(hdc, &dr);
 							InflateRect(&dr, -2, 0);
 						}
-						if (check_wmem_write_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
+						if (check_mem_write_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_WRITE, 255);
 							if (isSel)
 								DrawFocusRect(hdc, &dr);
 							InflateRect(&dr, -2, 0);
 						}
-						if (check_wmem_read_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
+						if (check_mem_read_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_READ , 255);
 							if (isSel)
@@ -497,14 +486,15 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_MOUSEWHEEL:
 		{
 			int zDelta = GET_WHEEL_DELTA_WPARAM(wParam);
+			int i;
 
-			if (zDelta > 0) ScrollUp(hwnd);
-			else ScrollDown(hwnd);
+			WPARAM sbtype;
+			if (zDelta > 0) sbtype = SB_LINEUP;
+			else sbtype = SB_LINEDOWN;
 
-			if (LOWORD(wParam) & MK_CONTROL) {
-				if (zDelta > 0) ScrollUp(hwnd);
-				else ScrollDown(hwnd);
-			}
+
+			for (i = 0; i < abs(zDelta); i += WHEEL_DELTA)
+				SendMessage(hwnd, WM_VSCROLL, sbtype, 0);
 
 			return 0;
 		}
@@ -516,13 +506,11 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			printf("Wparam: %d (%c)\n", wParam, wParam);
 			int data_length = mps->nCols * mps->nRows * mps->mode;
 			switch (wParam) {
-				case VK_DOWN:
-					if (mps->sel + mps->nCols * mps->mode < 0x10000)
-						mps->sel += mps->nCols * mps->mode;
+				case VK_NEXT:
+					SendMessage(hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
 					break;
-				case VK_UP:
-					if (mps->sel - mps->nCols * mps->mode >= 0)
-						mps->sel -= mps->nCols * mps->mode;
+				case VK_PRIOR:
+					SendMessage(hwnd, WM_VSCROLL, SB_PAGEUP, 0);
 					break;
 				case VK_RIGHT:
 
@@ -540,13 +528,17 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					else if (mps->sel >= mps->mode)
 						mps->sel-=mps->mode;
 					break;
-				case VK_NEXT:
-					if (mps->addr + data_length <= 0xFFFF)
-						mps->addr += mps->nCols * mps->mode * 4;
+				case VK_UP:
+					if (mps->sel - mps->nCols * mps->mode >= 0)
+						mps->sel -= mps->nCols * mps->mode;
+					if (mps->sel < mps->addr)
+						SendMessage(hwnd, WM_VSCROLL, SB_LINEUP, 0);
 					break;
-				case VK_PRIOR:
-					if (mps->addr - mps->nCols * mps->mode * 4 >= 0)
-						mps->addr -= mps->nCols * mps->mode * 4;
+				case VK_DOWN:
+					if (mps->sel + mps->nCols * mps->mode < 0x10000)
+						mps->sel += mps->nCols * mps->mode;
+					if (mps->sel > mps->addr + data_length)
+						SendMessage(hwnd, WM_VSCROLL, SB_LINEDOWN, 0);
 					break;
 				case VK_RETURN:
 					SendMessage(hwnd, WM_LBUTTONDBLCLK, 0, MAKELPARAM(mps->xSel, mps->ySel));
@@ -565,6 +557,61 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 			SendMessage(hwnd, WM_USER, DB_UPDATE, 1);
 			return 0;
+		}
+		case WM_VSCROLL: {
+			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			int data_length = mps->nCols * mps->nRows * mps->mode;
+
+			SCROLLINFO si;
+			si.cbSize = sizeof(SCROLLINFO);
+			si.fMask = SIF_PAGE | SIF_RANGE;
+			si.nPage = data_length;
+			si.nMax = GetMaxAddr(mps) + 1;
+			si.nMin = mps->memNum == -1 ? lpDebuggerCalc->cpu.sp : 0x0000;
+			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
+			si.fMask = SIF_TRACKPOS | SIF_RANGE;
+			GetScrollInfo(hwnd, SB_VERT, &si);
+
+			switch (LOWORD(wParam)) {
+				case SB_TOP:			//Home key
+					mps->addr = si.nMin;
+					break;
+				case SB_BOTTOM:
+					mps->addr = GetMaxAddr(mps) - data_length;
+					break;
+				case SB_LINEUP:
+					mps->addr -= mps->nCols * mps->mode;
+					if (mps->addr < si.nMin)
+						mps->addr = si.nMin;
+					break;
+				case SB_LINEDOWN:
+					if (mps->addr + data_length < GetMaxAddr(mps))
+						mps->addr += mps->nCols * mps->mode;
+					break;
+				case SB_THUMBTRACK: {
+					int val = si.nTrackPos > mps->addr ? mps->nCols * mps->mode : 0;
+					mps->addr = si.nTrackPos - ((si.nTrackPos - si.nMin) % (mps->nCols * mps->mode)) + val;
+					break;
+				}
+				case SB_PAGEDOWN:
+					if (mps->addr + data_length < GetMaxAddr(mps))
+						mps->addr += mps->nCols * mps->mode * 4;
+					break;
+				case SB_PAGEUP:
+					if (mps->addr - mps->nCols * mps->mode * 4 >= 0)
+						mps->addr -= mps->nCols * mps->mode * 4;
+					break;
+			}
+
+			si.cbSize = sizeof(SCROLLINFO);
+			si.fMask = SIF_POS;
+			si.nPos = mps->addr;
+			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
+			SendMessage(hwnd, WM_USER, DB_UPDATE, 1);
+
+			return mps->cyRow;
 		}
 		case WM_COMMAND:
 		{
@@ -631,33 +678,39 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						}
 						mps->addr = goto_addr;
 					}
+					SCROLLINFO si;
+					si.cbSize = sizeof(SCROLLINFO);
+					si.fMask = SIF_POS;
+					si.nPos = mps->addr;
+					SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
 					SetFocus(hwnd);
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
 				}
 				case DB_BREAKPOINT: {
 					waddr_t waddr = GetWaddr(mps, mps->sel);
-					if (check_wmem_break(&lpDebuggerCalc->mem_c, waddr))
-						clear_wmem_break(&lpDebuggerCalc->mem_c, waddr);
+					if (check_break(&lpDebuggerCalc->mem_c, waddr))
+						clear_break(&lpDebuggerCalc->mem_c, waddr);
 					else
-						set_wmem_break(&lpDebuggerCalc->mem_c, waddr);
+						set_break(&lpDebuggerCalc->mem_c, waddr);
 				}
 				case DB_MEMPOINT_WRITE: {
-					bank_t *bank = &lpDebuggerCalc->mem_c.banks[mc_bank(mps->sel)];
-					if (check_mem_write_break(&lpDebuggerCalc->mem_c, mps->sel))
-						clear_mem_write_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, mps->sel);
+					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, mps->sel);
+					if (check_mem_write_break(&lpDebuggerCalc->mem_c, waddr))
+						clear_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
 					else
-						set_mem_write_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, mps->sel);
+						set_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
 
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
 				}
 				case DB_MEMPOINT_READ: {
-					bank_t *bank = &lpDebuggerCalc->mem_c.banks[mc_bank(mps->sel)];
-					if (check_mem_read_break(&lpDebuggerCalc->mem_c, mps->sel))
-						clear_mem_read_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, mps->sel);
+					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, mps->sel);
+					if (check_mem_read_break(&lpDebuggerCalc->mem_c, waddr))
+						clear_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
 					else
-						set_mem_read_break(&lpDebuggerCalc->mem_c, bank->ram, bank->page, mps->sel);
+						set_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
 
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
@@ -749,6 +802,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					if (mps->track != -1 && lParam == 0) {
 						mps->addr = ((unsigned short*) &lpDebuggerCalc->cpu)[mps->track/2];
 					}
+					
+					//setup the scroll bar 8 isnt used
+					SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(8, 0), 0);
 					InvalidateRect(hwnd, NULL, FALSE);
 					UpdateWindow(hwnd);
 					break;

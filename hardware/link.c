@@ -832,7 +832,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 	}
 
-	cpu->mem_c->upper -= tifile->flash->pages;
+	cpu->mem_c->flash_upper -= tifile->flash->pages;
 	// Discard any error link_send_app returns
 //	link_send_app(cpu, tifile);
 	// Delay for a few seconds so the calc will be responsive

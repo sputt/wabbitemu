@@ -295,12 +295,19 @@ void HookZelda(void (*fnCallback)(void) ) {
 			break;
 		}
 	}
-	set_break(&calcs[0].mem_c, lab->IsRAM, lab->page, lab->addr);
+	waddr_t waddr;
+	waddr.addr = lab->addr;
+	waddr.page = lab->page;
+	waddr.is_ram = lab->IsRAM;
+	set_break(&calcs[0].mem_c, waddr);
 
 	label_struct *menu_lab = lookup_label(&calcs[0], _T("sub_sync"));
 	if (menu_lab != NULL)
 	{
-		set_break(&calcs[0].mem_c, menu_lab->IsRAM, menu_lab->page, menu_lab->addr);
+		waddr.addr = menu_lab->addr;
+		waddr.page = menu_lab->page;
+		waddr.is_ram = menu_lab->IsRAM;
+		set_break(&calcs[0].mem_c, waddr);
 	}
 	fnFrameCallback = fnCallback;
 }

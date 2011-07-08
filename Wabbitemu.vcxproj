@@ -64,6 +64,7 @@
     <ClCompile Include="core\core.c" />
     <ClCompile Include="core\device.c" />
     <ClCompile Include="core\indexcb.c" />
+    <ClCompile Include="debugger\dbbreakpoints.c" />
     <ClCompile Include="debugger\dbcommon.c" />
     <ClCompile Include="debugger\dbdisasm.c" />
     <ClCompile Include="debugger\dbmem.c" />
@@ -178,6 +179,7 @@
     <ClInclude Include="core\device.h" />
     <ClInclude Include="core\indexcb.h" />
     <ClInclude Include="core\optable.h" />
+    <ClInclude Include="debugger\dbbreakpoints.h" />
     <ClInclude Include="debugger\dbcommon.h" />
     <ClInclude Include="debugger\dbdisasm.h" />
     <ClInclude Include="debugger\dbmem.h" />
@@ -292,6 +294,7 @@
     <None Include="gui\small_close.bmp" />
     <None Include="gui\step.bmp" />
     <None Include="gui\stepover.bmp" />
+    <None Include="gui\stop.bmp" />
     <None Include="gui\TI-73.png" />
     <None Include="gui\ti-81.png" />
     <None Include="gui\TI-82.png" />
@@ -315,6 +318,7 @@
     <None Include="gui\wabbitemu.ico" />
     <None Include="gui\Wabbitemu.tlb" />
     <None Include="interface\Wabbitemu.def" />
+    <None Include="stop.bmp" />
     <None Include="ti-81.png" />
     <None Include="Wabbitemu.tlb" />
   </ItemGroup>
@@ -464,6 +468,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">
     <LinkIncremental>false</LinkIncremental>

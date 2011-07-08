@@ -308,7 +308,8 @@ int memory_init_86(memc *mc) {
 		{NULL,								0,		FALSE,	FALSE,	FALSE}
 	};
 
-	memcpy(mc->banks, banks, sizeof(banks));
+	memcpy(mc->normal_banks, banks, sizeof(banks));
+	mc->banks = mc->normal_banks;
 	return 0;
 }
 
