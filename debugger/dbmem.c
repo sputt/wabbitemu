@@ -804,7 +804,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}
 					
 					//setup the scroll bar 8 isnt used
-					SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(8, 0), 0);
+					//SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(8, 0), 0);
 					InvalidateRect(hwnd, NULL, FALSE);
 					UpdateWindow(hwnd);
 					break;

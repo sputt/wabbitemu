@@ -489,6 +489,13 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			}
 			return 0;
 		}
+		case WM_SETTEXT:
+			{
+				SendMessage(hwnd, WM_SETREDRAW, FALSE, NULL);
+				DefWindowProc(hwnd, Message, wParam, lParam);
+				SendMessage(hwnd, WM_SETREDRAW, TRUE, NULL);
+				return 0;
+			}
 		case WM_PAINT:
 		{
 			TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, (int) GWLP_USERDATA);
@@ -800,6 +807,7 @@ int CreateToolbarButton(HWND hwndParent, TCHAR *szCaption, TCHAR *szTooltip, TCH
 		WS_CHILD | BS_PUSHBUTTON,
 		x, y, 60, 24,
 		hwndParent, (HMENU) ID, g_hInst, NULL);
+	SetWindowFont(hwndBtn, hfontSegoe, FALSE);
 
 	tbb->hwnd = hwndBtn;
 	prevBtn = tbb;
