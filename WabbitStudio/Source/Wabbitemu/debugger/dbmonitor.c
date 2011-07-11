@@ -5,6 +5,7 @@
 #include "calc.h"
 #include "resource.h"
 #include "dbcommon.h"
+#include "device.h"
 
 #define PORT_MIN_COL_WIDTH 40
 #define PORT_ROW_SIZE 15
@@ -13,14 +14,12 @@ extern HINSTANCE g_hInst;
 extern HFONT hfontSegoe;
 int line_sel;
 static CPU_t *port_cpu = NULL;
+static int port_map[0xFF];
+static HWND hwndEditControl;
+WNDPROC wpOrigEditProc;
 #define COLOR_BREAKPOINT		(RGB(230, 160, 180))
 #define COLOR_SELECTION			(RGB(153, 222, 253))
-
-CPU_t* CPU_clone(CPU_t *cpu) {
-	CPU_t *new_cpu = (CPU_t *) malloc(sizeof(CPU_t));
-	memcpy(new_cpu, cpu, sizeof(CPU_t));
-	return new_cpu;
-}
+#define DB_CREATE 0
 
 // CreateListView: Creates a list-view control in report view.
 // Returns the handle to the new control
@@ -80,11 +79,83 @@ static BOOL InsertListViewItems(HWND hWndListView, int cItems)
     return TRUE;
 }
 
+void CloseSaveEdit(HWND hwndEditControl) {
+	if (hwndEditControl) {
+		TCHAR buf[10];
+		Edit_GetText(hwndEditControl, buf, ARRAYSIZE(buf));
+		int value = GetWindowLongPtr(hwndEditControl, GWLP_USERDATA);
+		int row_num = LOWORD(value);
+		int col_num = HIWORD(value);
+		value = 0;
+		TCHAR *str = buf;
+		switch (col_num) {
+			case 1:
+				if (*str == '$')
+					str++;
+				else if (str[strlen(str) - 1] == 'h')
+					str[strlen(str) - 1] = '\0';
+				xtoi(str, &value);
+				break;
+			case 2:
+				value = atoi(str);
+				break;
+			case 3: {
+				int len = strlen(str) - 1;
+				if (*str == '%')
+					str++;
+				else if (str[len] == 'b')
+					str[strlen(str) - 1] = '\0';
+				for (int i = 0; i < len; i++) {
+					value <<= 1;
+					if (str[i] == '1') {
+						value += 1;
+					} else if (str[i] != '0') {
+						//error parsing assume 0
+						value = 0;
+						break;
+					}
+				}
+				break;
+			}
+		}
+		value &= 0xFF;
+		int port_num = port_map[row_num];
+		BOOL output_backup = lpDebuggerCalc->cpu.output;
+		int bus_backup = lpDebuggerCalc->cpu.bus;
+		lpDebuggerCalc->cpu.bus = value;
+		lpDebuggerCalc->cpu.output = TRUE;
+		lpDebuggerCalc->cpu.pio.devices[port_num].code(&lpDebuggerCalc->cpu, &(lpDebuggerCalc->cpu.pio.devices[port_num]));
+		lpDebuggerCalc->cpu.output = output_backup;
+		lpDebuggerCalc->cpu.bus = bus_backup;
 
-#define DB_CREATE 0
+		if (port_cpu != NULL)
+			free(port_cpu);
+		port_cpu = CPU_clone(&lpDebuggerCalc->cpu);
+
+		DestroyWindow(hwndEditControl);
+		hwndEditControl = NULL;
+	}
+}
+
+LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { 
+    switch (uMsg) {
+		case WM_KEYDOWN:
+			if (wParam == VK_RETURN)
+				CloseSaveEdit(hwnd);
+			else if (wParam == VK_ESCAPE) {
+				hwndEditControl = NULL;
+				DestroyWindow(hwnd);
+			} else {
+				return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam);
+			}
+			return TRUE;
+		default:
+			return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam); 
+	}
+} 
+
 LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndListView;
-	static int port_map[0xFF];
 	static int start_row, last_port, cyHeader;
 	switch(Message) {
 		case WM_INITDIALOG: {
@@ -148,9 +219,54 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			return FALSE;
 		}
 		case WM_NOTIFY: {
-#define MAX_COUNT 10
 			switch (((LPNMHDR) lParam)->code) 
 			{
+				case LVN_ITEMCHANGING:
+					CloseSaveEdit(hwndEditControl);
+					break;
+				case LVN_KEYDOWN: {
+					LPNMLVKEYDOWN pnkd = (LPNMLVKEYDOWN) lParam;
+					if (hwndEditControl) {
+						if (pnkd->wVKey == VK_ESCAPE) {
+							DestroyWindow(hwndEditControl);
+							hwndEditControl = NULL;
+						} else {
+							SendMessage(hwndEditControl, WM_KEYDOWN, pnkd->wVKey, 0);
+						}
+					}
+					break;
+				}
+				case NM_DBLCLK: {
+					NMITEMACTIVATE *lpnmitem = (NMITEMACTIVATE *)lParam;
+					int row_num = lpnmitem->iItem;
+					int col_num = lpnmitem->iSubItem;
+					//no editing the port num
+					if (col_num == 0)
+						return FALSE;
+
+					TCHAR buf[32];
+					ListView_GetItemText(hwndListView, row_num, col_num, buf, ARRAYSIZE(buf));
+					RECT rc;
+					LVITEMINDEX lvii;
+					lvii.iItem = row_num;
+					lvii.iGroup = 0;
+					ListView_GetItemIndexRect(hwndListView, &lvii, col_num, LVIR_BOUNDS, &rc);
+					//rc is now the rect we want to use for the edit control
+					hwndEditControl = CreateWindow(_T("EDIT"), buf,
+						WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT| ES_MULTILINE,
+						rc.left,
+						rc.top,
+						rc.right - rc.left,
+						rc.bottom - rc.top,
+						hwndListView, 0, g_hInst, NULL);
+					SendMessage(hwndEditControl, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+					wpOrigEditProc = (WNDPROC) SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG) EditSubclassProc); 
+					Edit_LimitText(hwndEditControl, 9);
+					Edit_SetSel(hwndEditControl, 0, strlen(buf));
+					SetWindowLongPtr(hwndEditControl, GWLP_USERDATA, MAKELPARAM(row_num, col_num));
+					SetFocus(hwndEditControl);
+					break;
+				}
 				case LVN_GETDISPINFO: 
 				{
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
@@ -160,16 +276,16 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					switch (plvdi->item.iSubItem)
 					{
 						case 0:
-							StringCchPrintf(plvdi->item.pszText, MAX_COUNT, _T("%02X"), port_num);
+							StringCchPrintf(plvdi->item.pszText, 10, _T("%02X"), port_num);
 							break;
 						case 1:
-							StringCbPrintf(plvdi->item.pszText, MAX_COUNT, _T("$%02X"), port_cpu->bus);
+							StringCbPrintf(plvdi->item.pszText, 10, _T("$%02X"), port_cpu->bus);
 							break;	
 						case 2:
-							StringCbPrintf(plvdi->item.pszText, MAX_COUNT, _T("%d"), port_cpu->bus);
+							StringCbPrintf(plvdi->item.pszText, 10, _T("%d"), port_cpu->bus);
 							break;
 						case 3:
-							StringCbPrintf(plvdi->item.pszText, MAX_COUNT, _T("%%%s"), byte_to_binary(port_cpu->bus)); 
+							StringCbPrintf(plvdi->item.pszText, 10, _T("%%%s"), byte_to_binary(port_cpu->bus)); 
 							break;
 					}
 

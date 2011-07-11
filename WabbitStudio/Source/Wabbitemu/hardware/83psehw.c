@@ -7,6 +7,9 @@
 #include "device.h"
 #include "calc.h"
 #include <math.h>
+#ifdef WINVER
+#include "dbbreakpoints.h"
+#endif
 
 /*
 	NOTE ABOUT 83+SE AND 84+SE:
@@ -1078,12 +1081,15 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 					puts("Fast");
 					cpu->mem_c->cmd = 0x20;		//Fastmode
 					cpu->mem_c->step = 6;
+				} else if (data == 0x90) {		//Auto select
+					cpu->mem_c->cmd = 0x90;
+					cpu->mem_c->step++;
 				} else endflash(cpu);
 			} else endflash(cpu);
 			break;
 		case 3:
 			if (cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
-				(*(cpu->mem_c->banks[bank].addr +(addr & 0x3fff))) &= data;  //AND LOGIC!!
+				(*(cpu->mem_c->banks[bank].addr + (addr & 0x3fff))) &= data;  //AND LOGIC!!
 //				if (cpu->mem_c->banks[bank].page == 0x1E) printf("\n");
 //				if (cpu->mem_c->banks[bank].page == 0x1E || cpu->mem_c->banks[bank].page == 0x08 ) {
 //					printf("Address: %02X:%04X  <- %02X  \n",cpu->mem_c->banks[bank].page ,addr&0x3fff,data);
@@ -1105,8 +1111,8 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 		case 5:
 			if ((addr & 0x0FFF) == 0x0AAA) {
 				if (data == 0x10) {			//Erase entire chip...Im not sure if 
-					int i;					//boot page is included, so I'll leave it off
-					for(i = 0; i < (cpu->mem_c->flash_size - PAGE_SIZE) ; i++ ) {
+					int i;					//boot page is included, so I'll leave it off. DrDnar 7/8/11: boot sector is included
+					for(i = 0; i < cpu->mem_c->flash_size; i++ ) {
 						cpu->mem_c->flash[i] = 0xFF;
 					}
 				} 
@@ -1194,6 +1200,13 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				} else if ( data == 0x80 ) {
 					cpu->mem_c->cmd = 0x80;		//Erase
 					cpu->mem_c->step++;
+				} else if ( data == 0x20 ) {
+					puts("Fast");
+					cpu->mem_c->cmd = 0x20;		//Fastmode
+					cpu->mem_c->step = 6;
+				} else if (data == 0x90) {		//Auto select
+					cpu->mem_c->cmd = 0x90;
+					cpu->mem_c->step++;
 				} else endflash(cpu);
 			} else endflash(cpu);
 			break;
@@ -1265,6 +1278,23 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			}
 			endflash(cpu);
 			break;
+		case 6:
+			if (data == 0x90) {
+				cpu->mem_c->step = 7;	//check if exit fastmode
+			} else if (data == 0xA0) {
+				cpu->mem_c->step = 8;	//write byte in fastmode
+			}
+			break;
+		case 7:
+			if (data == 0xF0) {
+				endflash(cpu);
+			} else cpu->mem_c->step = 6;
+			break;
+		case 8:
+			(*(cpu->mem_c->banks[bank].addr + (addr & 0x3fff))) &= data;  //AND LOGIC!!
+			cpu->mem_c->step = 6;
+			break;
+
 		default:
 			endflash(cpu);
 			break;
@@ -1612,6 +1642,9 @@ int memory_init_83pse(memc *mc) {
 	
 	mc->mem_read_break_callback = mem_debug_callback;
 	mc->mem_write_break_callback = mem_debug_callback;
+#ifdef WINVER
+	mc->breakpoint_manager_callback = check_break_callback;
+#endif
 
 	/* Set Number of Pages here */
 	mc->flash_pages = 128;

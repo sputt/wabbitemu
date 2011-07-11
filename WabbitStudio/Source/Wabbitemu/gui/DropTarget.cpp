@@ -199,22 +199,35 @@ static BOOL WriteStreamToFile(IStream *pStream, LPCTSTR lpszFileName) {
 	//pStream->g
 }
 
+extern BOOL is_archive_only;
+extern BOOL is_calc_file;
 BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 	STGMEDIUM stgmed;
 	TCHAR path[MAX_PATH];
-	BOOL valid = FALSE;
+	BOOL valid = TRUE;
+	is_archive_only = TRUE;
+	is_calc_file = TRUE;
 	for (UINT i = 0; i < m_nAccepted; i++) {
 		if (SUCCEEDED(pDataObject->GetData(&m_pAccepted[i], &stgmed))) {
 			switch (m_pAccepted[i].cfFormat) {
 				case CF_HDROP: {
 					PVOID pData = GlobalLock(stgmed.hGlobal);
-					DragQueryFile((HDROP) pData, i, path, ARRAYSIZE(path));
-					TIFILE_t *tifile = newimportvar(path);
-					valid = tifile != NULL;
-					calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
-					if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
-						valid = FALSE;
-					FreeTiFile(tifile);
+					int count = DragQueryFile((HDROP) pData, ~0, path, 256);
+					while (count--) {
+						DragQueryFile((HDROP) pData, count, path, ARRAYSIZE(path));
+						TIFILE_t *tifile = newimportvar(path, TRUE);
+						valid = tifile != NULL;
+						//check if we can go in either ram or archive
+						if (tifile && tifile->flash == NULL)
+							is_archive_only = FALSE;
+						//check if were a file that doesnt go in ram or archive
+						if (tifile && (tifile->type == ROM_TYPE || tifile->type == SAV_TYPE || tifile->type == LABEL_TYPE || tifile->type == BREAKPOINT_TYPE))
+							is_calc_file = FALSE;
+						calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+						if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
+							valid = FALSE;
+						FreeTiFile(tifile);
+					}
 					GlobalUnlock(stgmed.hGlobal);
 					break;
 				}
@@ -242,8 +255,12 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 										fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
 										fclose(file);
 
-										TIFILE_t *tifile = newimportvar(path);
+										TIFILE_t *tifile = newimportvar(path, TRUE);
 										valid = tifile != NULL;
+										if (tifile->flash == NULL)
+											is_archive_only = FALSE;
+										if (tifile->rom || tifile->save)
+											is_calc_file = FALSE;
 										calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
 										if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
 											valid = FALSE;

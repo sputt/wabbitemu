@@ -732,7 +732,6 @@
     <None Include="gui\stop.bmp">
       <Filter>Resource Files\Debugger</Filter>
     </None>
-    <None Include="stop.bmp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">

@@ -650,8 +650,9 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			}
 			}
 		}
-		result->size = addr - start_addr;
+		result->size = abs((addr - start_addr) & 0xFFFF);
 
+#ifndef WINVER
 		INT_PTR mod_a1 = result->a1;
 		INT_PTR mod_a2 = result->a2;
 
@@ -721,6 +722,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			}
 		}
 		sprintf(result->expanded, szFormat, mod_a1,mod_a2,result->a3,result->a4);
+#endif
 	}
 	
 	return i;

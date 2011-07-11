@@ -225,24 +225,8 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
 				lcd->y = CRD_DATA(SYE);
 				break;
 			CRD_CASE(SZE):
-				int old_z = lcd->z;
 				lcd->z = CRD_DATA(SZE);
-				//old_z is second because we want a postive value if were moving up
-				int bytes_to_copy = LCD_MEM_WIDTH * (lcd->z - old_z);
-				if (bytes_to_copy < 0) {
-					bytes_to_copy = -bytes_to_copy;
-					//display is moving up by lcd->z - old_z rows
-					uint8_t *temp = (uint8_t *) malloc(bytes_to_copy);
-					memcpy(temp, lcd->display, bytes_to_copy);
-					memmove(lcd->display, lcd->display + bytes_to_copy, DISPLAY_SIZE - bytes_to_copy);
-					memcpy(lcd->display + DISPLAY_SIZE - bytes_to_copy, temp, bytes_to_copy);
-				} else if (bytes_to_copy > 0) {
-					//display is moving down
-					uint8_t *temp = (uint8_t *) malloc(bytes_to_copy);
-					memcpy(temp, lcd->display + DISPLAY_SIZE - bytes_to_copy, bytes_to_copy);
-					memmove(lcd->display + bytes_to_copy, lcd->display, DISPLAY_SIZE - bytes_to_copy);
-					memcpy(lcd->display, temp, bytes_to_copy);
-				}
+				LCD_enqueue(lcd);
 				break;
 			CRD_CASE(SXE):
 				lcd->x = CRD_DATA(SXE);
@@ -279,13 +263,13 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 	u_int shift = 0;
 	u_char *cursor;
 	if (lcd->word_len) {
-		int temp =  LCD_OFFSET(lcd->y, lcd->x, lcd->z);
+		int temp =  LCD_OFFSET(lcd->y, lcd->x, 0);
 		cursor = &lcd->display[temp];
 	} else {
 		u_int new_y = lcd->y * 6;
 		shift = 10 - (new_y % 8);
 		
-		cursor = &lcd->display[ LCD_OFFSET(new_y / 8, lcd->x, lcd->z) ];
+		cursor = &lcd->display[ LCD_OFFSET(new_y / 8, lcd->x, 0) ];
 	}
 
 	if (cpu->output) {
@@ -413,7 +397,15 @@ static void LCD_enqueue(LCD_t *lcd) {
 	if (lcd->front == 0) lcd->front = lcd->shades;
 	lcd->front--;
 	
-	memcpy(lcd->queue[lcd->front], lcd->display, DISPLAY_SIZE);
+	for (int i = 0; i < LCD_HEIGHT; i++)
+		for (int j = 0; j < LCD_MEM_WIDTH; j++)
+			lcd->queue[lcd->front][LCD_OFFSET(j, i, 64 - lcd->z)] = lcd->display[LCD_OFFSET(j, i, 0)];
+	//7/8/11 BuckeyeDude: does not work with z-addressing properly
+	//we now copy to display assuming z offset is 0 always here 
+	//when we enqueue the lcd->z property is taken into account
+	//this means if you are using lcd->display directly which you shouldnt
+	//be then you will no z-addressing
+	//memcpy(lcd->queue[lcd->front], lcd->display, DISPLAY_SIZE);
 }
 
 

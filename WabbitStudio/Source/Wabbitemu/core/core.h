@@ -155,6 +155,10 @@ typedef struct memory_context {
 		u_char *breaks[2];
 	};
 
+#ifdef WINVER
+	BOOL (*breakpoint_manager_callback)(memory_context *, BREAK_TYPE, waddr_t);
+#endif
+
 	int flash_size;
 	int flash_pages;
 	int ram_size;
@@ -269,6 +273,10 @@ void clear_break(memc *mem, waddr_t waddr);
 void clear_mem_write_break(memc *, waddr_t waddr);
 void clear_mem_read_break(memc *, waddr_t waddr);
 
+void disable_break(memc *mem, waddr_t waddr);
+void disable_mem_write_break(memc *, waddr_t waddr);
+void disable_mem_read_break(memc *, waddr_t waddr);
+
 BOOL check_break(memc *, waddr_t);
 BOOL check_mem_read_break(memc *mem, waddr_t waddr);
 BOOL check_mem_write_break(memc *mem, waddr_t waddr);
@@ -282,7 +290,7 @@ int CPU_init(CPU_t*, memc*, timerc*);
 int CPU_step(CPU_t*);
 unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr);
 unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data);
-
+CPU_t* CPU_clone(CPU_t *cpu);
 
 #ifdef DEBUG
 void displayreg(CPU_t *);

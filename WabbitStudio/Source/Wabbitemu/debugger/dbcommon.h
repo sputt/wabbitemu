@@ -13,6 +13,7 @@ int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value = INT_MAX);
 LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int opacity);
 const char* byte_to_binary(int x, BOOL isWord = FALSE);
+int xtoi(const TCHAR* xs, int* result);
 
 typedef enum {
 	HEX2,

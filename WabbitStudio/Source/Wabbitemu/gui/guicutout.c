@@ -23,7 +23,7 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 
 		case WM_PAINT: {
 				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				BOOL fDown = (BOOL) GetWindowLong(hwnd, 0);
+				BOOL fDown = (BOOL) GetWindowLongPtr(hwnd, 0);
 
 				TCHAR szWindowName[256];
 				GetWindowText(hwnd, szWindowName, ARRAYSIZE(szWindowName));
@@ -77,7 +77,7 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 		}
 
 		case WM_LBUTTONDOWN: {
-				SetWindowLong(hwnd, 0, (LONG) TRUE);
+				SetWindowLongPtr(hwnd, 0, (LONG_PTR) TRUE);
 				SetCapture(hwnd);
 				InvalidateRect(hwnd, NULL, FALSE);
 				UpdateWindow(hwnd);
@@ -93,7 +93,7 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				} else if (_tcsicmp(szWindowName, _T("wabbitclose")) == 0) {
 					SendMessage(lpCalc->hwndFrame, WM_CLOSE, 0, 0);
 				}
-				SetWindowLong(hwnd, 0, (LONG) FALSE);
+				SetWindowLongPtr(hwnd, 0, (LONG_PTR) FALSE);
 				ReleaseCapture();
 				InvalidateRect(hwnd, NULL, FALSE);
 				UpdateWindow(hwnd);
@@ -297,7 +297,7 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 		g_hInst,
 		(LPVOID) lpCalc);
 	if (lpCalc->hwndSmallClose == NULL) return 1;
-	SetWindowLong(lpCalc->hwndSmallClose, GWL_STYLE, WS_VISIBLE);
+	SetWindowLongPtr(lpCalc->hwndSmallClose, GWL_STYLE, WS_VISIBLE);
 
 	lpCalc->hwndSmallMinimize = CreateWindowEx(
 		0,
@@ -311,7 +311,7 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 		g_hInst,
 		(LPVOID) lpCalc);
 	if (lpCalc->hwndSmallMinimize == NULL) return 1;
-	SetWindowLong(lpCalc->hwndSmallMinimize, GWL_STYLE, WS_VISIBLE);
+	SetWindowLongPtr(lpCalc->hwndSmallMinimize, GWL_STYLE, WS_VISIBLE);
 
 	if (!lpCalc->SkinEnabled) {
 		RECT wr;
@@ -358,8 +358,8 @@ int DisableCutout(HWND hwndFrame) {
 			0, 0, lpCalc->cpu.pio.lcd->width*scale, 64*scale,
 			hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID) GetWindowLongPtr(hwndFrame, GWLP_USERDATA));
 
-	SetWindowLong(hwndFrame, GWL_EXSTYLE, 0);
-	SetWindowLong(hwndFrame, GWL_STYLE, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));
+	SetWindowLongPtr(hwndFrame, GWL_EXSTYLE, 0);
+	SetWindowLongPtr(hwndFrame, GWL_STYLE, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));
 
 	if (!lpCalc->SkinEnabled) {
 		// If there's a menu bar, include its height in the skin offset

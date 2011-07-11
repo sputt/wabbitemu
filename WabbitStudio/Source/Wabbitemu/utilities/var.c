@@ -424,6 +424,7 @@ void ReadTiFileHeader(FILE *infile, TIFILE_t *tifile) {
 	if (!_strnicmp(headerString, FLASH_HEADER, 8)) {
 		tifile->type = FLASH_TYPE;
 		tifile->flash = (TIFLASH_t*) malloc(sizeof(TIFLASH_t));
+		ZeroMemory(tifile->flash, sizeof(TIFLASH_t));
 		if (tifile->flash == NULL) {
 			FreeTiFile(tifile);
 			return;
@@ -606,7 +607,7 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	return tifile;
 }
 
-TIFILE_t* newimportvar(LPCTSTR filePath) {
+TIFILE_t* newimportvar(LPCTSTR filePath, BOOL only_check_header) {
 	FILE *infile = NULL;
 	TIFILE_t *tifile;
 	
@@ -634,7 +635,8 @@ TIFILE_t* newimportvar(LPCTSTR filePath) {
 #ifdef _WINDOWS
 	if (!_tcsicmp(extension, _T(".tig")) || !_tcsicmp(extension, _T(".zip")) ) {
 		tifile->type = ZIP_TYPE;
-		ImportZipFile(filePath, tifile);
+		if (!only_check_header)
+			ImportZipFile(filePath, tifile);
 		return tifile;
 	}
 #endif
@@ -643,10 +645,18 @@ TIFILE_t* newimportvar(LPCTSTR filePath) {
 #else
 	infile = fopen(filePath, "rb");
 #endif
-	if (infile == NULL)
+	if (infile == NULL) {
+		fclose(infile);
 		return FreeTiFile(tifile);
+	}
 
 	ReadTiFileHeader(infile, tifile);
+	//the last part is to make sure we dont allow files that cant be imported but
+	//assumed to be ROMs until we try to read data. Why? because we dont read the
+	//size of the data till we import. Since importing a ROM is fast and I don't
+	//care enough to fix and this was meant to speed checking files on drop its fine
+	if (only_check_header && tifile->type != ROM_TYPE)
+		return tifile;
 
 	tifile = ImportVarData(infile, tifile, 0);
 	fclose(infile);

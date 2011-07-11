@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 
 #include "guidebug.h"
 
@@ -13,10 +13,12 @@
 #include "expandpane.h"
 #include "resource.h"
 #include "fileutilities.h"
+#include "gifhandle.h"
 
 
 extern HINSTANCE g_hInst;
 
+void WriteHumanReadableDump(LPCALC lpCalc, TCHAR *path);
 
 WINDOWPLACEMENT db_placement = { NULL };
 BOOL db_maximized = FALSE;
@@ -487,6 +489,13 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				}
 				break;
 			}
+			case IDM_TOOLS_DUMP: {
+				TCHAR path[MAX_PATH];
+				if (!SaveFile(path, _T("Text Files (*.txt)\0*.txt\0All Files (*.*)\0*.*\0\0"), _T("Save Dump"), _T("txt"), OFN_PATHMUSTEXIST)) {
+					WriteHumanReadableDump(lpDebuggerCalc, path);
+				}
+				break;
+			}
 			case IDM_TOOLS_PROFILE: {
 				lpDebuggerCalc->profiler.running = !lpDebuggerCalc->profiler.running;
 				HMENU hmenu = GetMenu(hwnd);
@@ -630,12 +639,14 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				}
 				break;
 			}
-			default:
-				//if (GetFocus() == hdisasm || GetFocus() == htoolbar)
-				SendMessage(hdisasm, Message, wParam, lParam);
-				/*else if (GetFocus() == hmem)
-					SendMessage(hdisasm, Message, wParam, lParam);*/
+			extern HWND hwndLastFocus;
+			default: {
+				if (hmemlist[TabCtrl_GetCurSel(hmem)] == hwndLastFocus)
+					SendMessage(hmemlist[TabCtrl_GetCurSel(hmem)], Message, wParam, lParam);
+				else
+					SendMessage(hdisasm, Message, wParam, lParam);
 				break;
+				}
 			}
 			break;
 		}
@@ -752,6 +763,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					if (IsWindow(hPortMon)) {
 						SendMessage(hPortMon, WM_USER, DB_UPDATE, 0); 
 					}
+					if (IsWindow(hBreakpoints)) {
+						SendMessage(hBreakpoints, WM_USER, DB_UPDATE, 0); 
+					}
 					break;
 				case DB_RESUME:
 					EnumChildWindows(hwnd, EnumDebugResume, 0);
@@ -782,3 +796,79 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 }
 
 
+void WriteHumanReadableDump(LPCALC lpCalc, TCHAR *path) {
+	FILE *file;
+	_tfopen_s(&file, path, "w");
+	
+	//Write CPU output
+	_fputts(_T("CPU Registers:\n"), file);
+	_ftprintf_s(file, _T("AF: %04X\AF': %04X\n"), lpCalc->cpu.af, lpCalc->cpu.afp);
+	_ftprintf_s(file, _T("BC: %04X\tBC': %04X\n"), lpCalc->cpu.bc, lpCalc->cpu.bcp);
+	_ftprintf_s(file, _T("DE: %04X\tDE': %04X\n"), lpCalc->cpu.de, lpCalc->cpu.dep);
+	_ftprintf_s(file, _T("HL: %04X\tHL': %04X\n"), lpCalc->cpu.hl, lpCalc->cpu.hlp);
+	_ftprintf_s(file, _T("IX: %04X\tIY: %04X\n"), lpCalc->cpu.ix, lpCalc->cpu.iy);
+	_ftprintf_s(file, _T("PC: %04X\tSP: %04X\n"), lpCalc->cpu.pc, lpCalc->cpu.sp);
+	
+	_fputts(_T("\nCPU Status:\n"), file);
+	_ftprintf_s(file, _T("Bus: %02X\n"), lpCalc->cpu.bus);
+	_ftprintf(file, _T("%s %s"), _T("Halted:"), lpCalc->cpu.halt ? _T("True\n") : _T("False\n"));
+	_ftprintf_s(file, _T("Freq: %d\n"), lpCalc->cpu.timer_c->freq);
+	_ftprintf_s(file, _T("T-States: %d\n"), lpCalc->cpu.timer_c->tstates);
+	
+	_fputts(_T("\nInterrupt Status:\n"), file);
+	_ftprintf(file, _T("%s %s"), _T("Interrupt:"), lpCalc->cpu.interrupt ? _T("True\n") : _T("False\n"));
+	_ftprintf(file, _T("%s %s"), _T("IFF1:"), lpCalc->cpu.iff1 ? _T("True\n") : _T("False\n"));
+	_ftprintf(file, _T("%s %s"), _T("IFF2:"), lpCalc->cpu.iff2 ? _T("True\n") : _T("False\n"));
+	_ftprintf_s(file, _T("IM %d\n"), lpCalc->cpu.imode);
+	
+	_fputts(_T("\nDisplay:\n"), file);
+	uint8_t (*lcd)[LCD_WIDTH] = (uint8_t(*)[LCD_WIDTH]) GIFGREYLCD(lpCalc->cpu.pio.lcd);
+	for (int i = 0; i < LCD_HEIGHT * 4; i += 4) {
+		for (int j = 0; j < lpCalc->cpu.pio.lcd->width * 2; j += 2) {
+			if (lcd[i][j] < lpCalc->cpu.pio.lcd->shades / 4)
+				_fputtc(' ', file);
+			/*else if (lcd[i][j] < lpCalc->cpu.pio.lcd->shades / 2)
+				_fputtc(176, file);
+			else if (lcd[i][j] < lpCalc->cpu.pio.lcd->shades * 3 / 4)
+				_fputtc(178 , file);*/
+			else
+				_fputtc('#', file);
+		}
+		_fputtc('\n', file);
+	}
+	
+	_fputts(_T("\nPorts:\n"), file);
+	CPU_t *cpu = CPU_clone(&lpDebuggerCalc->cpu);
+	for (int i = 0; i < 256; i++) {
+		device_t *device = &cpu->pio.devices[i];
+		if (device->active)
+		{
+			cpu->input = TRUE;
+			device->code(cpu, device);
+			_ftprintf_s(file, _T("Port %02X: %02X\n"), i, cpu->bus);
+		}
+	}
+	free(cpu);
+
+	_fputts(_T("\nFlash:\n"), file);
+	for (int page = 0; page < lpDebuggerCalc->cpu.mem_c->flash_pages; page++) {
+		for (int addr = 0; addr < PAGE_SIZE; addr += 32) {
+			_ftprintf_s(file, _T("%02X %04X: "), page, addr);
+			for (int i = 0; i < 32; i++)
+				_ftprintf_s(file, _T("%02X "), lpDebuggerCalc->cpu.mem_c->flash[page * PAGE_SIZE + addr + i]);
+			_fputtc('\n', file);
+		}
+	}
+
+	_fputts(_T("\nRAM:\n"), file);
+	for (int page = 0; page < lpDebuggerCalc->cpu.mem_c->ram_pages; page++) {
+		for (int addr = 0; addr < PAGE_SIZE; addr += 32) {
+			_ftprintf_s(file, _T("%02X %04X: "), page, addr);
+			for (int i = 0; i < 32; i++)
+				_ftprintf_s(file, _T("%02X "), lpDebuggerCalc->cpu.mem_c->ram[page * PAGE_SIZE + addr + i]);
+			_fputtc('\n', file);
+		}
+	}
+
+	fclose(file);
+}
