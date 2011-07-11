@@ -1,14 +1,5 @@
 #include "stdafx.h"
-
 #include "keys.h"
-
-#ifdef WINVER
-#elif MACVER
-#else
-#ifdef GTK
-#include <gdk/gdkkeysyms.h>
-#endif
-#endif
 
 #ifdef MACVER
 enum {
@@ -475,7 +466,7 @@ void keypad(CPU_t *cpu, device_t *dev) {
 		for (group = 0; group < 7; group++) {
 			for (keybit = 0; keybit < 8; keybit++) {
 				if (keypad->keys[group][keybit]) {
-					keymap[group] |= (1<<keybit);
+					keymap[group] |= (1 << keybit);
 				}
 			}
 		}
@@ -483,7 +474,7 @@ void keypad(CPU_t *cpu, device_t *dev) {
 		for (group = 0; group < 7; group++) {
 			for (i = 0; i < 7; i++) {
 				if (keymap[group] & keymap[i]) {
-					keymapbug[group] |= keymap[group]|keymap[i];
+					keymapbug[group] |= keymap[group] | keymap[i];
 				}
 			}
 		}

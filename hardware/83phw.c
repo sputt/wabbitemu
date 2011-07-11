@@ -7,6 +7,9 @@
 #include "device.h"
 #include "calc.h"
 #include "83psehw.h"
+#ifdef WINVER
+#include "dbbreakpoints.h"
+#endif
 
 static double timer_freq83p[4] = { 1.0f / 560.0f, 1.0f / 248.0f, 1.0f / 170.0f, 1.0f / 118.0f };
 
@@ -309,6 +312,9 @@ void flashwrite83p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				} else if (data == 0x80) {
 					cpu->mem_c->cmd = 0x80;		//Erase
 					cpu->mem_c->step++;
+				} else if (data == 0x90) {		//Auto select
+					cpu->mem_c->cmd = 0x90;
+					cpu->mem_c->step++;
 				} else endflash(cpu);
 			} else endflash(cpu);
 			break;
@@ -509,6 +515,9 @@ int memory_init_83p(memc *mc) {
 
 	mc->mem_read_break_callback = mem_debug_callback;
 	mc->mem_write_break_callback = mem_debug_callback;
+#ifdef WINVER
+	mc->breakpoint_manager_callback = check_break_callback;
+#endif
 
 	// page protection for the 83p
 	mc->protected_page_set = 0;

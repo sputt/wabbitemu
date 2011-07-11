@@ -402,7 +402,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 
 		/*
 		case WM_MOUSEMOVE: {
-			ep_settings *eps = (ep_settings*) GetWindowLong(hwnd, GWL_USERDATA);
+			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			if (GET_Y_LPARAM(lParam) < tm.tmHeight*3/2) {
 				if (wParam != MK_LBUTTON) {
@@ -430,7 +430,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			// Fall through to mouseleave
 		}
 		case WM_MOUSELEAVE: {
-			ep_settings *eps = (ep_settings*) GetWindowLong(hwnd, GWL_USERDATA);
+			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			if (eps->bHot != FALSE) {
 				eps->bHot = FALSE;
@@ -515,7 +515,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 
 			DWORD dwHeight = tm.tmHeight*3/2;
 			DWORD dwWidth = prc.right - prc.left - GetSystemMetrics(SM_CXVSCROLL);
-			int index = GetWindowLong(hwnd, GWL_ID) - EXPAND_PANE_BASE_ID;
+			int index = GetWindowLongPtr(hwnd, GWLP_ID) - EXPAND_PANE_BASE_ID;
 
 			// Add in all the previous windows
 			int cy = 2;
@@ -601,7 +601,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			return 0;
 		}
 		case WM_DESTROY: {
-			ep_settings *eps = (ep_settings*) GetWindowLong(hwnd, GWLP_USERDATA);
+			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			TCHAR name[256];
 			GetWindowText(hwnd, name, ARRAYSIZE(name));
 			SaveDebugKey(name, (DWORD*)eps->ExpandState);

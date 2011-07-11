@@ -884,7 +884,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		haccelmain = LoadAccelerators(g_hInst, _T("Z80Accel"));
 
     while (GetMessage(&Msg, NULL, 0, 0)) {
-		HACCEL haccel = haccelmain;
+		HACCEL haccel = NULL;
 		HWND hwndtop = GetForegroundWindow();
 		if (hwndtop) {
 			if (hwndtop == FindWindow(g_szDebugName, NULL) ) {

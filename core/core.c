@@ -58,16 +58,35 @@ waddr_t addr_to_waddr(memc *mem_c, uint16_t addr) {
 }
 
 BOOL check_break(memc *mem, waddr waddr) {
-	return mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & NORMAL_BREAK;
+	if (!(mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & NORMAL_BREAK))
+		return FALSE;
+#ifdef WINVER
+	if (mem->breakpoint_manager_callback)
+		return mem->breakpoint_manager_callback(mem, NORMAL_BREAK, waddr);
+#endif
+	return TRUE;
 }
 BOOL check_mem_write_break(memc *mem, waddr_t waddr) {
-	return mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & MEM_WRITE_BREAK;
+	if (!(mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & MEM_WRITE_BREAK))
+		return FALSE;
+#ifdef WINVER
+	if (mem->breakpoint_manager_callback)
+		return mem->breakpoint_manager_callback(mem, MEM_WRITE_BREAK, waddr);
+#endif
+	return TRUE;
 }
 BOOL check_mem_read_break(memc *mem, waddr_t waddr) {
-	return mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & MEM_READ_BREAK;
+	if (!(mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & MEM_READ_BREAK))
+		return FALSE;
+#ifdef WINVER
+	if (mem->breakpoint_manager_callback)
+		return mem->breakpoint_manager_callback(mem, MEM_READ_BREAK, waddr);
+#endif
+	return TRUE;
 }
 
 extern void add_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr);
+extern void rem_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr);
 
 void set_break(memc *mem, waddr_t waddr) {
 	mem->breaks[waddr.is_ram % 2][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] |= NORMAL_BREAK;
@@ -90,12 +109,21 @@ void set_mem_read_break(memc *mem, waddr_t waddr) {
 
 void clear_break(memc *mem, waddr_t waddr) {
 	mem->breaks[waddr.is_ram % 2][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] &= CLEAR_NORMAL_BREAK;
+#ifdef WINVER
+	rem_breakpoint(mem, NORMAL_BREAK, waddr);
+#endif
 }
 void clear_mem_write_break(memc *mem, waddr_t waddr) {
 	mem->breaks[waddr.is_ram % 2][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] &= CLEAR_MEM_WRITE_BREAK;
+	#ifdef WINVER
+	rem_breakpoint(mem, MEM_WRITE_BREAK, waddr);
+#endif
 }
 void clear_mem_read_break(memc *mem, waddr_t waddr) {
 	mem->breaks[waddr.is_ram % 2][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] &= CLEAR_MEM_READ_BREAK;
+#ifdef WINVER
+	rem_breakpoint(mem, MEM_READ_BREAK, waddr);
+#endif
 }
 
 unsigned char mem_write(memc *mem, unsigned short addr, char data) {
@@ -175,18 +203,13 @@ static BOOL is_allowed_exec(CPU_t *cpu) {
 			return TRUE;
 		} else if (bank.page < 0x08)
 			return TRUE;
-		else if (bank.page < 0x10)
-			group_offset = 0;
-		else if (bank.page < 0x18)
-			group_offset = 1;
-		else if (bank.page < 0x1B)
-			group_offset = 2;
-		else return TRUE;
-		protected_val = cpu->mem_c->protected_page[group_offset];
+		else if (bank.page >= 0x1C)
+			return TRUE;
+		protected_val = cpu->mem_c->protected_page[(bank.page - 8) / 8];
 		//yay for awesome looking code :D
 		//basically this checks whether the bit corresponding to the page
 		//is set indicating no exec is allowed
-		return !(protected_val & (0x01 << (bank.page - 8) % 8));
+		return !(protected_val & (0x01 << ((bank.page - 8) % 8)));
 	} else {
 		if (!bank.ram)			//if its flash and between page limits
 		return bank.page > cpu->mem_c->flash_upper || bank.page <= cpu->mem_c->flash_lower;
@@ -280,6 +303,28 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 	} else {
 		/*if (cpu->mem_c->step > 4) cpu->bus = 0xFF; // Flash status read, apparently
 		else cpu->mem_c->step = 0;*/				// calc84: says this is better
+		if (cpu->mem_c->cmd == 0x90 && cpu->mem_c->step == 3) {
+			if (addr == 0) {
+				//1 indicates an AMD chip
+				cpu->bus = 1;
+			} else if (addr == 2) {
+			//B9 for 512 K chip, C4 for 2 MB chips, and DA for 1 MB chips.
+				switch (cpu->pio.model) {
+					case TI_84P:
+						cpu->bus = 0xDA;
+						break;
+					case TI_83PSE:
+					case TI_84PSE:
+						cpu->bus = 0xC4;
+						break;
+					default:
+						cpu->bus = 0xB9;
+						break;
+				}
+			} else if (addr == 4) {
+				cpu->bus = 0;
+			}
+		}
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_NOP_flash_tstates);
 	}
@@ -298,7 +343,8 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
-		if (!cpu->mem_c->flash_locked && 00) {
+		if (!cpu->mem_c->flash_locked &&  1) {
+			
 			switch(cpu->mem_c->flash_version) {
 				case 00:
 					break;
@@ -395,6 +441,11 @@ int CPU_step(CPU_t* cpu) {
 	return 0;
 }
 
+CPU_t* CPU_clone(CPU_t *cpu) {
+	CPU_t *new_cpu = (CPU_t *) malloc(sizeof(CPU_t));
+	memcpy(new_cpu, cpu, sizeof(CPU_t));
+	return new_cpu;
+}
 
 #ifndef MACVER
 #ifdef DEBUG

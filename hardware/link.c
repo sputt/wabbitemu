@@ -751,7 +751,7 @@ int get_page_size(u_char (*dest)[PAGE_SIZE], int page) {
 		if (dest[page][i] == 0x80 && dest[page][i + 1] == 0x81)
 			break;
 	i += 2;
-	return i;
+	return dest[page][i];
 }
 
 /* Forceload a TI-83+ series APP
@@ -775,27 +775,43 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 		int page_size;
 		//different size app need to send the long way
 		if (!memcmp(&dest[page][0x12], &tifile->flash->data[0][0x12], 8)) {
-			if (dest[page][0x1C] != tifile->flash->pages)
+			if (get_page_size(dest, page) != tifile->flash->pages)
 			{
 				//or we can forceload it still ;D
 				//theres probably some good reason jim didnt write this code :|
 				int pageDiff = tifile->flash->pages - get_page_size(dest, page);
 				int currentPage = page - tifile->flash->pages;
-				while (!check_flashpage_empty(dest, currentPage, tifile->flash->pages) && currentPage >= upages.end)
-					currentPage--;
-				if (currentPage - pageDiff < upages.end)
-					return LERR_MEM;
-				if (pageDiff > 0) {
-					while (++currentPage < page)
-						memcpy(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE);
-				} else {
-					//we don't need to copy any new data, we just want to mark
-					//the old pages as free for the OS to use
-					u_int end_page = currentPage;
-					for (u_int i = page; i > end_page; i--) {
-						memset(dest[i], 0xFF, PAGE_SIZE);
+				u_int end_page = pageDiff > 0 ? currentPage : currentPage + pageDiff;
+				while (!check_flashpage_empty(dest, end_page, 1) && end_page >= upages.end)
+					end_page -= get_page_size(dest, end_page);
+				if (end_page != currentPage) {
+					if (pageDiff > 0) {
+						if (end_page - pageDiff < upages.end)
+							return LERR_MEM;
+						memmove(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE * (end_page - currentPage));
+						if (cpu->pio.model == TI_83P) {
+							//mark pages unprotected
+							for (int i = end_page - 7; i <= end_page + pageDiff - 8; i++) {
+								cpu->mem_c->protected_page[i / 8] &= ~(1 << (i % 8));
+							}
+						}
+					} else {
+						//we don't need to copy any new data, we just want to mark
+						//the old pages as free for the OS to use
+						//-pageDiff is used because its still negative
+						if (end_page > currentPage)
+							memmove(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE * (end_page - currentPage));
+						memset(dest[end_page-pageDiff], 0xFF, (-pageDiff) * PAGE_SIZE);
+						if (cpu->pio.model == TI_83P) {
+							//mark pages as protected
+							for (int i = end_page - 7; i <= end_page - pageDiff - 8; i++) {
+								cpu->mem_c->protected_page[i / 8] |= 1 << (i % 8);
+							}
+						}
 					}
 				}
+				//fix page execution permissions
+				cpu->mem_c->flash_upper -= pageDiff;
 			}
 			u_int i;
 			for (i = 0; i < tifile->flash->pages; i++, page--) {
@@ -808,6 +824,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 			for (i = 0; i < applist.count; i++) {
 				fix_certificate(cpu, applist.apps[i].page);
 			}
+
 			printf("Found already\n");
 			return LERR_SUCCESS;
 		}
@@ -820,8 +837,8 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 
 	//mark the app as non trial
 	fix_certificate(cpu, page);
-	//force reset the applist says BrandonW. seems to work, apps show up :P
-	//mem_write(cpu->mem_c, 0x9C87, 0x00);
+	//force reset the applist says BrandonW. seems to work, apps show up (sometimes)
+	mem_write(cpu->mem_c, 0x9C87, 0x00);
 
 	//u_char *space = &dest[page][PAGE_SIZE - 1];
 	u_int i;
@@ -833,6 +850,10 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	}
 
 	cpu->mem_c->flash_upper -= tifile->flash->pages;
+	for (i = page - 7; i <= page + tifile->flash->pages - 8; i++) {
+		//-8 is for the start of user mem
+		cpu->mem_c->protected_page[i / 8] &= ~(1 << (i % 8));
+	}
 	// Discard any error link_send_app returns
 //	link_send_app(cpu, tifile);
 	// Delay for a few seconds so the calc will be responsive

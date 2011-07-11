@@ -418,6 +418,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 	static int cyHeader;
 	static int max_right;
 	static int nClick;
+	static int last_pagedown = 32;
 
 	switch (Message) {
 		case WM_SETFOCUS: {
@@ -507,12 +508,12 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			SCROLLINFO si;
 			si.cbSize = sizeof(SCROLLINFO);
-			si.fMask = SIF_POS | SIF_RANGE | SIF_PAGE;
-			si.nMax = 0xFFFF;
-			si.nMin = 0x0000;
+			si.fMask = SIF_POS | SIF_PAGE | SIF_RANGE;
 			si.nPage = 32;
 			si.nPos = dps->nPane;
 			si.nTrackPos = dps->nPane;
+			si.nMin = 0;
+			si.nMax = 0xFFFF;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 			dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
@@ -547,6 +548,24 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 				dps->nPage = zlast->addr + zlast->size - zfirst->addr;
 			}
+
+			//calculate the correct ending page
+			int max_addr;
+			Z80_info_t zup[128];
+			int nPane_old = dps->nPane;
+			max_addr = 0xFFFF - (5 * dps->nRows);
+			do {
+				disassemble(lpDebuggerCalc->cpu.mem_c, ++max_addr, dps->nRows, zup);
+			} while (zup[dps->nRows - 1].addr != 0xFFFF);
+
+			max_addr = zup[0].addr + last_pagedown;
+
+			SCROLLINFO si;
+			si.cbSize = sizeof(SCROLLINFO);
+			si.fMask = SIF_RANGE;
+			si.nMax = max_addr;
+			si.nMin = 0x0000;
+			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 			return 0;
 		}
 		case WM_CONTEXTMENU: {
@@ -1035,6 +1054,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					ShowWindow(hwndDialog, SW_SHOW);
 					break;
 				}
+				//extern HWND hBreakpoints;
 				case DB_BREAKPOINT: {
 					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
 
@@ -1044,6 +1064,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						set_break(&lpDebuggerCalc->mem_c, waddr);
 					}
 					InvalidateSel(hwnd, dps->iSel);
+					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					break;
 				}
 				case DB_MEMPOINT_WRITE: {
@@ -1206,8 +1227,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 				SendMessage(hwndTip, TTM_SETMAXTIPWIDTH, 0, 150);
 
-
-
 				for (j = dps->iSel; j != dps->iSel + dps->NumSel; j++) {
 					total_bytes += zinf[j].size;
 					total += da_opcode[zinf[j].index].clocks;
@@ -1326,14 +1345,17 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_VSCROLL: {
-			static int last_pagedown = 32;
 
+			SCROLLINFO si;
+			si.cbSize = sizeof(SCROLLINFO);
+			si.fMask = SIF_RANGE;
+			GetScrollInfo(hwnd, SB_VERT, &si);
 			switch (LOWORD(wParam)) {
 				case SB_TOP:			//Home key
 					dps->nPane = 0;
 					break;
 				case SB_BOTTOM:
-					dps->nPane = 0x10000 - (4*dps->nRows);
+					dps->nPane = si.nMax - last_pagedown;
 					break;
 				case SB_LINEUP:
 				{
@@ -1388,8 +1410,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 			}
 
-			SCROLLINFO si;
-			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_POS  | SIF_PAGE;
 			si.nPage = last_pagedown;
 			si.nPos = dps->nPane;

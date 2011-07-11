@@ -925,6 +925,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 		}
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
+				case DB_BREAKPOINT:
 				case DB_MEMPOINT_READ:
 				case DB_MEMPOINT_WRITE:
 					SendMessage(hwndLastFocus, WM_COMMAND, wParam, 0);
@@ -965,7 +966,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					break;
 				}
 				case 1000:
-					SendMessage(GetParent(hwnd), WM_COMMAND, DB_BREAKPOINT, 0);
+					SendMessage(hwndLastFocus, WM_COMMAND, DB_BREAKPOINT, 0);
 					break;
 				case 1001:
 					SendMessage(hwndLastFocus, WM_COMMAND, DB_MEMPOINT_WRITE, 0);

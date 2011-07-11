@@ -29,8 +29,12 @@ extern BOOL is_exiting;
 static int alphablendfail = 0;
 
 BITMAPINFO *bi = NULL;
+BOOL is_archive_only = FALSE;
+BOOL is_calc_file = FALSE;
 
-HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
+HDC DrawDragPanes(HWND hwnd, HDC hdcDest) {
+	if (!is_calc_file)
+		return NULL;
 	RECT rl, rr, clientRect;
 	GetClientRect(hwnd, &clientRect);
 	SIZE TxtSize;
@@ -41,7 +45,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	CopyRect(&rl, &clientRect);
 	CopyRect(&rr, &clientRect);
 
-	if (lpCalc->model >= TI_83P) {
+	if (lpCalc->model >= TI_83P && !is_archive_only) {
 		rl.right = rr.left = rr.right / 2;
 	}
 
@@ -69,6 +73,8 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 	GRADIENT_RECT gRect[2];
 
 	if (lpCalc->model >= TI_83P) {
+		if (is_archive_only)
+			rr = rl;
 
 		FillRect(hdc, &rr, hbrArchive);
 
@@ -117,51 +123,53 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest, int mode) {
 		TextOut(hdc, TxtPt.x+rr.left, TxtPt.y, txtArch, (int) _tcslen(txtArch));
 	}
 
-	FillRect(hdc, &rl, hbrRAM);
+	if (!is_archive_only) {
+		FillRect(hdc, &rl, hbrRAM);
 
-	if (PtInRect(&rl, pt)) {
-		gRect[0].UpperLeft  = 0;
-		gRect[0].LowerRight = 1;
-		gRect[1].UpperLeft  = 2;
-		gRect[1].LowerRight = 3;
-		vert[0].x      = rl.left;
-		vert[0].y      = rl.top;
-		vert[0].Red    = 0x3000;
-		vert[0].Green  = 0x7000;
-		vert[0].Blue   = 0x2000;
-		vert[1].x      = rl.right / 3;
-		vert[1].y      = rl.bottom;
-		vert[1].Red    = 0x6000;
-		vert[1].Green  = 0xC000;
-		vert[1].Blue   = 0x4000;
+		if (PtInRect(&rl, pt)) {
+			gRect[0].UpperLeft  = 0;
+			gRect[0].LowerRight = 1;
+			gRect[1].UpperLeft  = 2;
+			gRect[1].LowerRight = 3;
+			vert[0].x      = rl.left;
+			vert[0].y      = rl.top;
+			vert[0].Red    = 0x3000;
+			vert[0].Green  = 0x7000;
+			vert[0].Blue   = 0x2000;
+			vert[1].x      = rl.right / 3;
+			vert[1].y      = rl.bottom;
+			vert[1].Red    = 0x6000;
+			vert[1].Green  = 0xC000;
+			vert[1].Blue   = 0x4000;
 
-		GradientFill(hdc, vert, 2, gRect, 1, GRADIENT_FILL_RECT_H);
-		//0x60, 0xC0, 0x40
-		vert[2].x      = 2*rl.right / 3;
-		vert[2].y      = rl.bottom;
-		vert[2].Red    = 0x6000;
-		vert[2].Green  = 0xC000;
-		vert[2].Blue   = 0x4000;
-		vert[3].x      = rl.right;
-		vert[3].y      = rl.top;
-		vert[3].Red    = 0x3000;
-		vert[3].Green  = 0x7000;
-		vert[3].Blue   = 0x2000;
+			GradientFill(hdc, vert, 2, gRect, 1, GRADIENT_FILL_RECT_H);
+			//0x60, 0xC0, 0x40
+			vert[2].x      = 2*rl.right / 3;
+			vert[2].y      = rl.bottom;
+			vert[2].Red    = 0x6000;
+			vert[2].Green  = 0xC000;
+			vert[2].Blue   = 0x4000;
+			vert[3].x      = rl.right;
+			vert[3].y      = rl.top;
+			vert[3].Red    = 0x3000;
+			vert[3].Green  = 0x7000;
+			vert[3].Blue   = 0x2000;
 
-		GradientFill(hdc, &vert[2], 2, &gRect[0], 1, GRADIENT_FILL_RECT_H);
+			GradientFill(hdc, &vert[2], 2, &gRect[0], 1, GRADIENT_FILL_RECT_H);
+		}
+
+		const TCHAR txtRam[] = _T("RAM");
+		if ( GetTextExtentPoint32(hdc, txtRam, (int) _tcslen(txtRam), &TxtSize) ) {
+			TxtPt.x = ((rl.right - rl.left)-TxtSize.cx)/2;
+			TxtPt.y = ((rl.bottom - rl.top)-TxtSize.cy)/2;
+			if ( TxtPt.x < 0 ) TxtPt.x =0;
+			if ( TxtPt.y < 0 ) TxtPt.y =0;
+		} else {
+			TxtPt.x = rl.left+5;
+			TxtPt.y = rl.top+52;
+		}
+		TextOut(hdc, TxtPt.x, TxtPt.y, txtRam, (int) _tcslen(txtRam));
 	}
-
-	const TCHAR txtRam[] = _T("RAM");
-	if ( GetTextExtentPoint32(hdc, txtRam, (int) _tcslen(txtRam), &TxtSize) ) {
-		TxtPt.x = ((rl.right - rl.left)-TxtSize.cx)/2;
-		TxtPt.y = ((rl.bottom - rl.top)-TxtSize.cy)/2;
-		if ( TxtPt.x < 0 ) TxtPt.x =0;
-		if ( TxtPt.y < 0 ) TxtPt.y =0;
-	} else {
-		TxtPt.x = rl.left+5;
-		TxtPt.y = rl.top+52;
-	}
-	TextOut(hdc, TxtPt.x, TxtPt.y, txtRam, (int) _tcslen(txtRam));
 
 	DeleteObject(hbrRAM);
 	DeleteObject(hbrArchive);
@@ -313,7 +321,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 		if (lpCalc->do_drag == TRUE) {
 
-			hdcOverlay = DrawDragPanes(hwnd, hdcDest, 0);
+			hdcOverlay = DrawDragPanes(hwnd, hdcDest);
 			BLENDFUNCTION bf;
 			bf.BlendOp = AC_SRC_OVER;
 			bf.BlendFlags = 0;
@@ -360,7 +368,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 		if (lpCalc->do_drag == TRUE) {
 
-			hdcOverlay = DrawDragPanes(hwnd, hdcDest, 0);
+			hdcOverlay = DrawDragPanes(hwnd, hdcDest);
 
 			if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
 						hdcOverlay, 0, 0, rc.right, rc.bottom,
@@ -683,7 +691,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		case WM_DROPFILES: {
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			TCHAR *FileNames = NULL;
 			TCHAR fn[256];
 			int count = DragQueryFile((HDROP) wParam, ~0, fn, 256);
 

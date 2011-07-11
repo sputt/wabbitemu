@@ -119,7 +119,7 @@ static VALUE_FORMAT GetValueFormat(mp_settings *mps) {
 	return format;
 }
 
-waddr_t GetWaddr(mempane_settings *mps, uint16_t addr) {
+waddr_t GetWaddr(mempane_settings *mps, int addr) {
 	waddr_t waddr;
 	switch (mps->type) {
 		case REGULAR:
@@ -555,7 +555,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				default:
 					return 0;
 			}
-			SendMessage(hwnd, WM_USER, DB_UPDATE, 1);
+			SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 			return 0;
 		}
 		case WM_VSCROLL: {
@@ -609,7 +609,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			si.nPos = mps->addr;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
-			SendMessage(hwnd, WM_USER, DB_UPDATE, 1);
+			SendMessage(hwnd, WM_USER, DB_UPDATE, WM_VSCROLL);
 
 			return mps->cyRow;
 		}
@@ -694,25 +694,34 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						clear_break(&lpDebuggerCalc->mem_c, waddr);
 					else
 						set_break(&lpDebuggerCalc->mem_c, waddr);
+
+					RECT rc;
+					GetClientRect(hwnd, &rc);
+					InvalidateRect(hwnd, &rc, FALSE);
+					break;
 				}
 				case DB_MEMPOINT_WRITE: {
-					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, mps->sel);
+					waddr_t waddr = GetWaddr(mps, mps->sel);
 					if (check_mem_write_break(&lpDebuggerCalc->mem_c, waddr))
 						clear_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
 					else
 						set_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
 
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					RECT rc;
+					GetClientRect(hwnd, &rc);
+					InvalidateRect(hwnd, &rc, FALSE);
 					break;
 				}
 				case DB_MEMPOINT_READ: {
-					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, mps->sel);
+					waddr_t waddr = GetWaddr(mps, mps->sel);
 					if (check_mem_read_break(&lpDebuggerCalc->mem_c, waddr))
 						clear_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
 					else
 						set_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
 
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					RECT rc;
+					GetClientRect(hwnd, &rc);
+					InvalidateRect(hwnd, &rc, FALSE);
 					break;
 				}
 			}
@@ -804,8 +813,11 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}
 					
 					//setup the scroll bar 8 isnt used
-					//SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(8, 0), 0);
-					InvalidateRect(hwnd, NULL, FALSE);
+					if (lParam != WM_VSCROLL)
+						SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(8, 0), 0);
+					RECT rc;
+					GetClientRect(hwnd, &rc);
+					InvalidateRect(hwnd, &rc, FALSE);
 					UpdateWindow(hwnd);
 					break;
 				}

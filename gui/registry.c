@@ -8,7 +8,7 @@
 #include "expandpane.h"
 
 extern keyprog_t keygrps[256];
-TCHAR *verString = _T("1.5.6.20");
+TCHAR *verString = _T("1.5.7.7");
 
 static HKEY hkeyTarget;
 

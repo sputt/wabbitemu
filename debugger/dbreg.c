@@ -378,7 +378,7 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 }
 
 LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND chkHalt;
+	static HWND chkHalt, editFreq;
 	static double freq;
 
 	switch (Message) {
@@ -416,6 +416,11 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 						break;
 				}
 				SendMessage(lpDebuggerCalc->hwndDebug, WM_USER, DB_UPDATE, 0);
+				break;
+			case EN_CHANGE: {
+				lpDebuggerCalc->cpu.timer_c->freq = freq * 1000000.0;
+				break;
+			}
 		}
 		return 0;
 	}
