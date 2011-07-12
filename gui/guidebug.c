@@ -109,6 +109,11 @@ int CALLBACK EnumFontFamExProc(
 
 void AddMemTab(mempane_settings *mps, MemViewType type) {
 	ShowWindow(hmemlist[TabCtrl_GetCurSel(hmem)], SW_HIDE);
+	if (total_mem_pane >= MAX_TABS)
+	{
+		return;
+	}
+
 	mps[total_mem_pane + 1].addr = 0x0000;
 	mps[total_mem_pane + 1].mode = MEM_BYTE;
 	mps[total_mem_pane + 1].sel = 0x000;

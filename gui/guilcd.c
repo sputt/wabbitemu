@@ -453,6 +453,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				{CF_HDROP, 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL},
 				{RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL}
 			};
+
 			RegisterDropWindow(hwnd, (IDropTarget **) &lpCalc->pDropTarget);
 			lpCalc->pDropTarget->AddAcceptedFormat(&fmtetc[0]);
 			lpCalc->pDropTarget->AddAcceptedFormat(&fmtetc[1]);

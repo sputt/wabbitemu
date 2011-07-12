@@ -62,9 +62,9 @@ void UnregisterDropWindow(HWND hwnd, IDropTarget *pDropTarget) {
 		return;
 
 	RevokeDragDrop(hwnd);
-
-	CoLockObjectExternal((IUnknown *) pDropTarget, FALSE, TRUE);
 	pDropTarget->Release();
+
+	CoLockObjectExternal((IUnknown *) pDropTarget, FALSE, FALSE);
 }
 
 
@@ -72,10 +72,12 @@ void UnregisterDropWindow(HWND hwnd, IDropTarget *pDropTarget) {
  * IUnknown methods
  */
 ULONG __stdcall CDropTarget::AddRef(void) {
+	OutputDebugString(_T("CDropTarget AddRef\n"));
 	return InterlockedIncrement(&m_lRefCount);
 }
 
 ULONG __stdcall CDropTarget::Release(void) {
+	OutputDebugString(_T("CDropTarget Release\n"));
 	LONG lRefCount = InterlockedDecrement(&m_lRefCount);
 	if (lRefCount == 0) {
 		m_pDropTargetHelper->Release();
