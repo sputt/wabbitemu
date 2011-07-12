@@ -953,8 +953,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 
-			IDropTarget *pDropTarget = NULL;
-			RegisterDropWindow(hwnd, &pDropTarget);
+			//RegisterDropWindow(hwnd, (IDropTarget **) &lpCalc->pDropTarget);
 
 			// Force the current skin setting to be enacted
 			lpCalc->SkinEnabled = !lpCalc->SkinEnabled;
@@ -1687,10 +1686,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (lpCalc->hwndSmallMinimize)
 					DestroyWindow(lpCalc->hwndSmallMinimize);
 				lpCalc->hwndSmallMinimize = NULL;
-
-				//for some reason this fails...:/
-				if (!lpCalc->SkinEnabled || !lpCalc->bCutout)
-					UnregisterDropWindow(hwnd, lpCalc->pDropTarget);
 
 				//if (link_connected(lpCalc->slot))
 				//	link_disconnect(&lpCalc->cpu);

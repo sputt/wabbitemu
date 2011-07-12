@@ -199,7 +199,8 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, const TCHAR 
 }
 
 TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, const TCHAR *fmt, ...) {
-    TCHAR *p, end_buf[1024] = _T("\0");
+    TCHAR *p;
+	static TCHAR end_buf[1024] = _T("\0");
     va_list argp;
     
     mspf_size = 0;

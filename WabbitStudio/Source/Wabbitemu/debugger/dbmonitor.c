@@ -79,7 +79,7 @@ static BOOL InsertListViewItems(HWND hWndListView, int cItems)
     return TRUE;
 }
 
-void CloseSaveEdit(HWND hwndEditControl) {
+static void CloseSaveEdit(HWND hwndEditControl) {
 	if (hwndEditControl) {
 		TCHAR buf[10];
 		Edit_GetText(hwndEditControl, buf, ARRAYSIZE(buf));
@@ -137,7 +137,7 @@ void CloseSaveEdit(HWND hwndEditControl) {
 	}
 }
 
-LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { 
+static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { 
     switch (uMsg) {
 		case WM_KEYDOWN:
 			if (wParam == VK_RETURN)
@@ -262,7 +262,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					SendMessage(hwndEditControl, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
 					wpOrigEditProc = (WNDPROC) SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG_PTR) EditSubclassProc); 
 					Edit_LimitText(hwndEditControl, 9);
-					Edit_SetSel(hwndEditControl, 0, strlen(buf));
+					Edit_SetSel(hwndEditControl, 0, _tcslen(buf));
 					SetWindowLongPtr(hwndEditControl, GWLP_USERDATA, MAKELPARAM(row_num, col_num));
 					SetFocus(hwndEditControl);
 					break;
