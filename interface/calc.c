@@ -402,11 +402,10 @@ int CPU_reset(CPU_t *lpCPU) {
 	lpCPU->mem_c->ram_upper = 0x00 * 0x400 + 0x3FF;
 	lpCPU->mem_c->banks = lpCPU->mem_c->normal_banks;
 	lpCPU->mem_c->boot_mapped = FALSE;
-	if (lpCPU->pio.model >= TI_83P) {
+	if (lpCPU->pio.model >= TI_73) {
 		switch (lpCPU->pio.model) {
 			case TI_73:
 			case TI_83P: {
-				/*	Address										page	write?	ram?	no exec?	*/
 				/*bank_state_t banks[5] = {
 					{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
 					{lpCPU->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
@@ -417,6 +416,7 @@ int CPU_reset(CPU_t *lpCPU) {
 				lpCPU->pc = 0x4000;*/
 				memset(lpCPU->mem_c->protected_page, 0, sizeof(lpCPU->mem_c->protected_page));
 				lpCPU->mem_c->protected_page_set = 0;
+				/*	Address										page	write?	ram?	no exec?	*/
 				bank_state_t banks[5] = {
 					{lpCPU->mem_c->flash +  0x01f * PAGE_SIZE, 	0x1f, 	FALSE,	FALSE, 	FALSE},
 					{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},

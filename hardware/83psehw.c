@@ -417,6 +417,25 @@ void port0D_83pse(CPU_t *cpu, device_t *dev) {
 	}
 }
 
+void port0E_83pse(CPU_t *cpu, device_t *dev) {
+	if (cpu->input) {
+		cpu->input = FALSE;
+		cpu->bus = *((int *)dev->aux);
+	} else if (cpu->output) {
+		cpu->output = FALSE;
+		*((int *)dev->aux) = cpu->bus & 0x3;
+	}
+}
+
+void port0F_83pse(CPU_t *cpu, device_t *dev) {
+	if (cpu->input) {
+		cpu->input = FALSE;
+		cpu->bus = *((int *)dev->aux);
+	} else if (cpu->output) {
+		cpu->output = FALSE;
+		*((int *)dev->aux) = cpu->bus & 0x3;
+	}
+}
 
 
 unsigned long calc_md5(MD5_t* md5) {
@@ -558,6 +577,16 @@ void port23_83pse(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		cpu->mem_c->flash_upper = cpu->bus;
 		cpu->output = FALSE;
+	}
+}
+
+void port24_83pse(CPU_t *cpu, device_t *dev) {
+	if (cpu->input) {
+		cpu->input = FALSE;
+		cpu->bus = *((int *)dev->aux);
+	} else if (cpu->output) {
+		cpu->output = FALSE;
+		*((int *)dev->aux) = cpu->bus & 0x3;
 	}
 }
 
@@ -1420,6 +1449,14 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.devices[0x0D].active = TRUE;
 	cpu->pio.devices[0x0D].aux = &se_aux->linka;
 	cpu->pio.devices[0x0D].code = (devp) port0D_83pse;
+
+	cpu->pio.devices[0x0E].active = TRUE;
+	cpu->pio.devices[0x0E].aux = &cpu->mem_c->port0E;
+	cpu->pio.devices[0x0E].code = (devp) port0E_83pse;
+
+	cpu->pio.devices[0x0F].active = TRUE;
+	cpu->pio.devices[0x0F].aux = &cpu->mem_c->port0F;
+	cpu->pio.devices[0x0F].code = (devp) port0F_83pse;
 	
 /* LCD */
 	LCD_t *lcd = LCD_init(cpu, TI_83PSE);
@@ -1467,6 +1504,11 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.devices[0x23].aux = NULL;
 	cpu->pio.devices[0x23].code = (devp) port23_83pse;
 	cpu->pio.devices[0x23].protected_port = TRUE;
+
+	cpu->pio.devices[0x24].active = TRUE;
+	cpu->pio.devices[0x24].aux = &cpu->mem_c->port24;
+	cpu->pio.devices[0x24].code = (devp) port24_83pse;
+	cpu->pio.devices[0x24].protected_port = TRUE;
 
 	cpu->pio.devices[0x25].active = TRUE;
 	cpu->pio.devices[0x25].aux = NULL;

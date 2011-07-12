@@ -192,6 +192,10 @@ typedef struct memory_context {
 	unsigned short ram_upper;
 	unsigned short ram_lower;
 
+	int port0E;
+	int port0F;
+	int port24;
+
 	int port27_remap_count;		// amount of 64 byte chunks remapped from RAM page 0 to bank 3
 	int port28_remap_count;		// amount of 64 byte chunks remapped from RAM page 1 to bank 1
 
