@@ -260,7 +260,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 						rc.bottom - rc.top,
 						hwndListView, 0, g_hInst, NULL);
 					SendMessage(hwndEditControl, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
-					wpOrigEditProc = (WNDPROC) SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG) EditSubclassProc); 
+					wpOrigEditProc = (WNDPROC) SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG_PTR) EditSubclassProc); 
 					Edit_LimitText(hwndEditControl, 9);
 					Edit_SetSel(hwndEditControl, 0, strlen(buf));
 					SetWindowLongPtr(hwndEditControl, GWLP_USERDATA, MAKELPARAM(row_num, col_num));

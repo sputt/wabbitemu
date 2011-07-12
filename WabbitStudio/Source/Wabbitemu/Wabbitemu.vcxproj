@@ -750,7 +750,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Full</Optimization>
       <PreprocessorDefinitions>WIN32;_WIN64;_WINDOWS;NDEBUG;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;HIGH_SHADE_GIF;USE_GDIPLUS;ZLIB_WINAPI;WITH_AVI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
