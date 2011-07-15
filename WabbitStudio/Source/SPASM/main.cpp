@@ -222,8 +222,9 @@ int main (int argc, char **argv)
 	bool is_storage_initialized = false;
 
 	use_colors = true;
-	save_console_attributes ();
-	atexit (restore_console_attributes);
+	extern WORD user_attributes;
+	user_attributes = save_console_attributes ();
+	atexit (restore_console_attributes_at_exit);
 
 	//if there aren't enough args, show info
 	if (argc < 2) {

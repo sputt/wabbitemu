@@ -11,6 +11,7 @@
 #include "parser.h"
 #include "directive.h"
 #include "opcodes.h"
+#include "console.h"
 
 extern char *curr_input_file;
 extern int line_num;
@@ -257,7 +258,10 @@ define_t *add_define (char *name, bool *redefined) {
 		show_error ("conflicting definition of '%s'", name);
 		if (suppress_errors == false) {
 			show_error_prefix (conflict_label->input_file, conflict_label->line_num);
+			WORD attr = save_console_attributes();
+			set_console_attributes (COLOR_RED);
 			printf ("previous definition of '%s' was here\n", name);
+			restore_console_attributes(attr);
 		}
 		return NULL;
 	}
@@ -498,7 +502,10 @@ label_t *add_label (char *name, int value) {
 		show_error ("conflicting definition of '%s'", name);
 		if (suppress_errors == false) {
 			show_error_prefix (conflict_define->input_file, conflict_define->line_num);
+			WORD attr = save_console_attributes();
+			set_console_attributes (COLOR_RED);
 			printf ("previous definition of '%s' was here\n", name);
+			restore_console_attributes(attr);
 		}
 		return NULL;
 	}
@@ -508,7 +515,10 @@ label_t *add_label (char *name, int value) {
 			new_label->value = value;
 			show_warning ("redefinition of '%s'", name);
 			show_warning_prefix (new_label->input_file, new_label->line_num);
+			WORD attr = save_console_attributes();
+			set_console_attributes (COLOR_YELLOW);
 			printf ("previous definition of '%s' was here\n", name);
+			restore_console_attributes(attr);
 		}
 	} else {
 		new_label = (label_t *)malloc_chk (sizeof (label_t));

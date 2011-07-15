@@ -35,7 +35,7 @@ static void PrintSPASMError(const LPERRORINSTANCE lpError)
 	assert(lpError != NULL);
 	if ((lpError->dwErrorCode != SPASM_ERR_SUCCESS) || (lpError->lpszErrorText != NULL))
 	{
-		save_console_attributes();
+		WORD orig_attributes = save_console_attributes();
 		set_console_attributes(lpError->fIsWarning ? COLOR_YELLOW : COLOR_RED);
 		if (lpError->lpszAnnotation != NULL)
 		{
@@ -47,7 +47,7 @@ static void PrintSPASMError(const LPERRORINSTANCE lpError)
 		OutputDebugString(lpError->lpszErrorText);
 		OutputDebugString(_T("\n"));
 #endif
-		restore_console_attributes();
+		restore_console_attributes(orig_attributes);
 	}
 }
 

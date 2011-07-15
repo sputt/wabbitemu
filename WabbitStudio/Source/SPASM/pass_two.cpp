@@ -205,13 +205,13 @@ void run_second_pass () {
 		switch (output_list->type) {
 			case OUTPUT_ECHO:
 				{
-					save_console_attributes();
+					WORD orig_attributes = save_console_attributes();
 					set_console_attributes (COLOR_GREEN);
 					int session = StartSPASMErrorSession();
 					parse_emit_string (output_list->expr, ES_ECHO, stdout);
 					ReplaySPASMErrorSession(session);
 					EndSPASMErrorSession(session);
-					restore_console_attributes();
+					restore_console_attributes(orig_attributes);
 					break;
 				}
 			case OUTPUT_SHOW:
