@@ -469,14 +469,17 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
 		strcat(name_buf, prgmname);
 		namestring = strdup (name_buf);
 	} else {
+		int i;
 		size_t len = strlen(prgmname);
-		char *p = (char *) prgmname + len, *lastSlash;
-		for (int i = len; i >= 0; i--, p--) {
+		char *p = (char *) prgmname + len - 1, *lastSlash;
+		for (i = len - 1; i >= 0; i--, p--) {
 			if (*p == '\\' || *p == '/') {
 				lastSlash = ++p;
 				break;
 			}
 		}
+		if (i == -1)
+			lastSlash = ++p;
 		namestring = strdup (lastSlash);
 	    /* The name must be Capital lettes and numbers */
 	    if (calc < 4) {
