@@ -34,7 +34,8 @@ typedef enum {
 #else
 #define NEWLINE "\n"
 #define PATH_SEPARATOR '/'
-#define WRONG_PATH_SEPARATOR '\\'
+#define WRONG_PATH_SEPARATOR '\\'\
+typedef unsigned short WORD;
 #endif
 
 #ifdef __MAIN_C
