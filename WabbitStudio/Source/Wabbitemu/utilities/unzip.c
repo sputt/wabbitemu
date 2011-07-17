@@ -346,7 +346,7 @@ local int unz64local_getLong64 (const zlib_filefunc64_32_def* pzlib_filefunc_def
 }
 
 /* My own strcmpi / strcasecmp */
-local int strcmpcasenosensitive_internal (const char* fileName1, const char* fileName2)
+local int strcmpcasenosensitive_internal (const TCHAR *fileName1, const TCHAR *fileName2)
 {
     for (;;)
     {
@@ -387,8 +387,8 @@ local int strcmpcasenosensitive_internal (const char* fileName1, const char* fil
         (like 1 on Unix, 2 on Windows)
 
 */
-extern int ZEXPORT unzStringFileNameCompare (const char*  fileName1,
-                                                 const char*  fileName2,
+extern int ZEXPORT unzStringFileNameCompare (const TCHAR*  fileName1,
+                                                 const TCHAR*  fileName2,
                                                  int iCaseSensitivity)
 
 {
@@ -396,7 +396,7 @@ extern int ZEXPORT unzStringFileNameCompare (const char*  fileName1,
         iCaseSensitivity=CASESENSITIVITYDEFAULTVALUE;
 
     if (iCaseSensitivity==1)
-        return strcmp(fileName1,fileName2);
+        return _tcscmp(fileName1,fileName2);
 
     return STRCMPCASENOSENTIVEFUNCTION(fileName1,fileName2);
 }
@@ -790,7 +790,7 @@ extern unzFile ZEXPORT unzOpen2_64 (const void *path,
         return unzOpenInternal(path, NULL, 1);
 }
 
-extern unzFile ZEXPORT unzOpen (const char *path)
+extern unzFile ZEXPORT unzOpen (const TCHAR *path)
 {
     return unzOpenInternal(path, NULL, 0);
 }
@@ -869,22 +869,22 @@ local int unz64local_GetCurrentFileInfoInternal OF((unzFile file,
                                                   unz_file_info64 *pfile_info,
                                                   unz_file_info64_internal
                                                   *pfile_info_internal,
-                                                  char *szFileName,
+                                                  TCHAR *szFileName,
                                                   uLong fileNameBufferSize,
                                                   void *extraField,
                                                   uLong extraFieldBufferSize,
-                                                  char *szComment,
+                                                  TCHAR *szComment,
                                                   uLong commentBufferSize));
 
 local int unz64local_GetCurrentFileInfoInternal (unzFile file,
                                                   unz_file_info64 *pfile_info,
                                                   unz_file_info64_internal
                                                   *pfile_info_internal,
-                                                  char *szFileName,
+                                                  TCHAR *szFileName,
                                                   uLong fileNameBufferSize,
                                                   void *extraField,
                                                   uLong extraFieldBufferSize,
-                                                  char *szComment,
+                                                  TCHAR *szComment,
                                                   uLong commentBufferSize)
 {
     unz64_s* s;
@@ -1123,9 +1123,9 @@ local int unz64local_GetCurrentFileInfoInternal (unzFile file,
 */
 extern int ZEXPORT unzGetCurrentFileInfo64 (unzFile file,
                                           unz_file_info64 * pfile_info,
-                                          char * szFileName, uLong fileNameBufferSize,
+                                          TCHAR * szFileName, uLong fileNameBufferSize,
                                           void *extraField, uLong extraFieldBufferSize,
-                                          char* szComment,  uLong commentBufferSize)
+                                          TCHAR* szComment,  uLong commentBufferSize)
 {
     return unz64local_GetCurrentFileInfoInternal(file,pfile_info,NULL,
                                                 szFileName,fileNameBufferSize,
@@ -1135,9 +1135,9 @@ extern int ZEXPORT unzGetCurrentFileInfo64 (unzFile file,
 
 extern int ZEXPORT unzGetCurrentFileInfo (unzFile file,
                                           unz_file_info * pfile_info,
-                                          char * szFileName, uLong fileNameBufferSize,
+                                          TCHAR * szFileName, uLong fileNameBufferSize,
                                           void *extraField, uLong extraFieldBufferSize,
-                                          char* szComment,  uLong commentBufferSize)
+                                          TCHAR* szComment,  uLong commentBufferSize)
 {
     int err;
     unz_file_info64 file_info64;
@@ -1229,7 +1229,7 @@ extern int ZEXPORT unzGoToNextFile (unzFile  file)
   UNZ_OK if the file is found. It becomes the current file.
   UNZ_END_OF_LIST_OF_FILE if the file is not found
 */
-extern int ZEXPORT unzLocateFile (unzFile file, const char *szFileName, int iCaseSensitivity)
+extern int ZEXPORT unzLocateFile (unzFile file, const TCHAR *szFileName, int iCaseSensitivity)
 {
     unz64_s* s;
     int err;
@@ -1246,7 +1246,7 @@ extern int ZEXPORT unzLocateFile (unzFile file, const char *szFileName, int iCas
     if (file==NULL)
         return UNZ_PARAMERROR;
 
-    if (strlen(szFileName)>=UNZ_MAXFILENAMEINZIP)
+    if (_tcslen(szFileName)>=UNZ_MAXFILENAMEINZIP)
         return UNZ_PARAMERROR;
 
     s=(unz64_s*)file;
@@ -1263,7 +1263,7 @@ extern int ZEXPORT unzLocateFile (unzFile file, const char *szFileName, int iCas
 
     while (err == UNZ_OK)
     {
-        char szCurrentFileName[UNZ_MAXFILENAMEINZIP+1];
+        TCHAR szCurrentFileName[UNZ_MAXFILENAMEINZIP+1];
         err = unzGetCurrentFileInfo64(file,NULL,
                                     szCurrentFileName,sizeof(szCurrentFileName)-1,
                                     NULL,0,NULL,0);

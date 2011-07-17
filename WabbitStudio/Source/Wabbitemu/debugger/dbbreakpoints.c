@@ -164,6 +164,7 @@ BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
 		return FALSE;
 	if (!lpBreak->active)
 		return FALSE;
+	return TRUE;
 }
 
 #define DB_CREATE 0
@@ -178,20 +179,20 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			LVCOLUMN listCol;
 			memset(&listCol, 0, sizeof(LVCOLUMN));
 			listCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-			listCol.pszText = "Label";
+			listCol.pszText = _T("Label");
 			listCol.cx = 112;
 			SendMessage(hwndListView, LVM_INSERTCOLUMN, 0, (LPARAM)&listCol);
 			listCol.cx = 110;
-			listCol.pszText = "Type";
+			listCol.pszText = _T("Type");
 			SendMessage(hwndListView, LVM_INSERTCOLUMN, 1, (LPARAM)&listCol);
 			listCol.cx = 60;
-			listCol.pszText = "Address";
+			listCol.pszText = _T("Address");
 			SendMessage(hwndListView, LVM_INSERTCOLUMN, 2, (LPARAM)&listCol);
 			listCol.cx = 40;
-			listCol.pszText = "Page";
+			listCol.pszText = _T("Page");
 			SendMessage(hwndListView, LVM_INSERTCOLUMN, 3, (LPARAM)&listCol);
 			listCol.cx = 60;
-			listCol.pszText = "In Ram";
+			listCol.pszText = _T("In Ram");
 			SendMessage(hwndListView, LVM_INSERTCOLUMN, 4, (LPARAM)&listCol);
 			SendMessage(hwndListView, WM_SETFONT, (WPARAM) hfontSegoe, TRUE);
 

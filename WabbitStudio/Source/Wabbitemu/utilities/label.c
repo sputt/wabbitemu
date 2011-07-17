@@ -75,7 +75,9 @@ BOOL label_search_tios(TCHAR *label,int equate) {
 int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 	FILE *labelFile = NULL;
 	int i, length;
-	//char readBuf[256];
+#ifdef _UNICODE
+	char readBuf[256];
+#endif
 	TCHAR buffer[256];
 	TCHAR name[256];
 	unsigned int equate;

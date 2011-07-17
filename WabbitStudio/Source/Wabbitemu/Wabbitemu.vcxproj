@@ -73,6 +73,7 @@
     <ClCompile Include="debugger\dbreg.c" />
     <ClCompile Include="debugger\dbtoolbar.c" />
     <ClCompile Include="debugger\dbvalue.c" />
+    <ClCompile Include="debugger\dbwatch.c" />
     <ClCompile Include="debugger\disassemble.c" />
     <ClCompile Include="gui\DataObject.cpp" />
     <ClCompile Include="gui\displayoptionstest.c" />
@@ -204,6 +205,7 @@
     <ClInclude Include="debugger\dbtoolbar.h" />
     <ClInclude Include="debugger\dbtrack.h" />
     <ClInclude Include="debugger\dbvalue.h" />
+    <ClInclude Include="debugger\dbwatch.h" />
     <ClInclude Include="debugger\disassemble.h" />
     <ClInclude Include="gui\CGdiPlusBitmap.h" />
     <ClInclude Include="gui\DataObject.h" />
@@ -333,7 +335,6 @@
     <None Include="gui\wabbitemu.ico" />
     <None Include="gui\Wabbitemu.tlb" />
     <None Include="interface\Wabbitemu.def" />
-    <None Include="ti-81.png" />
     <None Include="Wabbitemu.tlb" />
   </ItemGroup>
   <ItemGroup>

@@ -1,24 +1,27 @@
 #include "stdafx.h"
 
-#include "dbmonitor.h"
+#include "dbwatch.h"
 #include "guidebug.h"
 #include "calc.h"
 #include "resource.h"
 #include "dbcommon.h"
 #include "device.h"
 
-#define PORT_MIN_COL_WIDTH 40
-#define PORT_ROW_SIZE 15
-
 extern HINSTANCE g_hInst;
 extern HFONT hfontSegoe;
-static CPU_t *port_cpu = NULL;
-static int port_map[0xFF];
 static HWND hwndEditControl;
 static WNDPROC wpOrigEditProc;
-#define COLOR_BREAKPOINT		(RGB(230, 160, 180))
-#define COLOR_SELECTION			(RGB(153, 222, 253))
-#define DB_CREATE 0
+
+#define MAX_WATCHPOINTS 20
+typedef struct watchpoint {
+	TCHAR label[64];
+	waddr_t waddr;
+	waddr_t waddr_is_valid;
+} watchpoint_t;
+
+int num_watch;
+
+static watchpoint_t * watchpoints[MAX_WATCHPOINTS];
 
 // CreateListView: Creates a list-view control in report view.
 // Returns the handle to the new control
@@ -30,24 +33,24 @@ static WNDPROC wpOrigEditProc;
 //
 static HWND CreateListView (HWND hwndParent) 
 {
-    RECT rcClient;                       // The parent window's client area.
+	RECT rcClient;                       // The parent window's client area.
 
-    GetClientRect (hwndParent, &rcClient); 
+	GetClientRect (hwndParent, &rcClient); 
 
-    // Create the list-view window in report view with label editing enabled.
-    HWND hWndListView = CreateWindow(WC_LISTVIEW, 
-                                     _T(""),
-									 WS_CHILD | LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | WS_VISIBLE,
-                                     0, 0,
-                                     rcClient.right - rcClient.left,
-                                     rcClient.bottom - rcClient.top,
-                                     hwndParent,
-                                     (HMENU)NULL,
-                                     g_hInst,
-                                     NULL);
+	// Create the list-view window in report view with label editing enabled.
+	HWND hWndListView = CreateWindow(WC_LISTVIEW, 
+									 _T(""),
+									 WS_CHILD | LVS_REPORT | LVS_SINGLESEL | LVS_EDITLABELS | LVS_NOSORTHEADER | WS_VISIBLE,
+									 0, 0,
+									 rcClient.right - rcClient.left,
+									 rcClient.bottom - rcClient.top,
+									 hwndParent,
+									 (HMENU)NULL,
+									 g_hInst,
+									 NULL);
 	ListView_SetExtendedListViewStyle(hWndListView, LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT);
 
-    return (hWndListView);
+	return (hWndListView);
 }
 
 // InsertListViewItems: Inserts items into a list view. 
@@ -56,26 +59,30 @@ static HWND CreateListView (HWND hwndParent)
 // Returns TRUE if successful, and FALSE otherwise.
 static BOOL InsertListViewItems(HWND hWndListView, int cItems)
 {
-    LVITEM lvI;
+	LVITEM lvI;
 
-    // Initialize LVITEM members that are common to all items.
-    lvI.pszText   = LPSTR_TEXTCALLBACK; // Sends an LVN_GETDISPINFO message.
-    lvI.mask      = LVIF_TEXT;
-    lvI.stateMask = 0;
-    lvI.iSubItem  = 0;
-    lvI.state     = 0;
+	// Initialize LVITEM members that are common to all items.
+	lvI.pszText   = LPSTR_TEXTCALLBACK; // Sends an LVN_GETDISPINFO message.
+	lvI.mask      = LVIF_TEXT;
+	lvI.stateMask = 0;
+	lvI.iSubItem  = 0;
+	lvI.state     = 0;
 
-    // Initialize LVITEM members that are different for each item.
-    for (int index = 0; index < cItems; index++)
-    {
+	// Initialize LVITEM members that are different for each item.
+	for (int index = 0; index < cItems; index++)
+	{
 		lvI.iItem = index;
-    
-        // Insert items into the list.
-        if (ListView_InsertItem(hWndListView, &lvI) == -1)
-            return FALSE;
-    }
+		watchpoints[num_watch] = (watchpoint_t *) malloc(sizeof(watchpoint_t));
+		watchpoint_t *watch = watchpoints[num_watch];
+		ZeroMemory(watch, sizeof(watchpoint_t));
+		StringCbCopy(watch->label, sizeof(watch->label), _T("New Label"));
+		num_watch++;
+		// Insert items into the list.
+		if (ListView_InsertItem(hWndListView, &lvI) == -1)
+			return FALSE;
+	}
 
-    return TRUE;
+	return TRUE;
 }
 
 static int GetValue(TCHAR *str) 
@@ -130,29 +137,36 @@ static void CloseSaveEdit(HWND hwndEditControl) {
 		int value = GetWindowLongPtr(hwndEditControl, GWLP_USERDATA);
 		int row_num = LOWORD(value);
 		int col_num = HIWORD(value);
-		//handles getting the user input and converting it to an int
-		//can convert bin, hex, and dec
-		value = GetValue(buf) & 0xFF;
-		int port_num = port_map[row_num];
-		BOOL output_backup = lpDebuggerCalc->cpu.output;
-		int bus_backup = lpDebuggerCalc->cpu.bus;
-		lpDebuggerCalc->cpu.bus = value;
-		lpDebuggerCalc->cpu.output = TRUE;
-		lpDebuggerCalc->cpu.pio.devices[port_num].code(&lpDebuggerCalc->cpu, &(lpDebuggerCalc->cpu.pio.devices[port_num]));
-		lpDebuggerCalc->cpu.output = output_backup;
-		lpDebuggerCalc->cpu.bus = bus_backup;
+		if (col_num != 0)
+			value = GetValue(buf);
 
-		if (port_cpu != NULL)
-			free(port_cpu);
-		port_cpu = CPU_clone(&lpDebuggerCalc->cpu);
+		watchpoint_t *watch = watchpoints[row_num];
 
+		switch (col_num) {
+			case 0:	
+				StringCbCopy(watch->label, sizeof(watch->label), buf);
+				break;
+			case 1:
+				watch->waddr.addr = value & 0xFFFF;
+				watch->waddr_is_valid.addr = TRUE;
+				break;
+			case 2:
+				watch->waddr.page = value &0xFF;
+				watch->waddr_is_valid.page = TRUE;
+				break;
+			case 3:
+				watch->waddr.is_ram = value & 0x1;
+				watch->waddr_is_valid.is_ram = TRUE;
+				break;
+		}
+		
 		DestroyWindow(hwndEditControl);
 		hwndEditControl = NULL;
 	}
 }
 
 static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { 
-    switch (uMsg) {
+	switch (uMsg) {
 		case WM_KEYDOWN:
 			if (wParam == VK_RETURN)
 				CloseSaveEdit(hwnd);
@@ -163,63 +177,56 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 				return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam);
 			}
 			return TRUE;
+		case WM_KILLFOCUS:
+			CloseSaveEdit(hwnd);
+			return TRUE;
 		default:
 			return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam); 
 	}
 } 
 
-LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndListView;
 	switch(Message) {
-		case WM_INITDIALOG: {
+		case WM_CREATE: {
 			RECT rc, hdrRect;
 			hwndListView = CreateListView(hwnd);
-			int count = 0;
-			for (int i = 0; i < 0xFF; i++) {
-				if (lpDebuggerCalc->cpu.pio.devices[i].active) {
-					port_map[count] = i;
-					count++;
-				}
-			}
 			LVCOLUMN listCol;
 			memset(&listCol, 0, sizeof(LVCOLUMN));
 			listCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
-			listCol.pszText = _T("Port Number");
+			listCol.pszText = _T("Label");
 			listCol.cx = 100;
 			// Inserting Couloms as much as we want
 			SendMessage(hwndListView,LVM_INSERTCOLUMN,0,(LPARAM)&listCol); // Insert/Show the coloum
 			listCol.cx = 90;
-			listCol.pszText = _T("Hex");
+			listCol.pszText = _T("Address");
 			SendMessage(hwndListView,LVM_INSERTCOLUMN,1,(LPARAM)&listCol);
 			listCol.cx = 130;
-			listCol.pszText = _T("Decimal");
+			listCol.pszText = _T("Page");
 			SendMessage(hwndListView,LVM_INSERTCOLUMN,2,(LPARAM)&listCol);
 			listCol.cx = 110;
-			listCol.pszText = _T("Binary");
+			listCol.pszText = _T("Is Ram");
 			SendMessage(hwndListView,LVM_INSERTCOLUMN,3,(LPARAM)&listCol);
 			SendMessage(hwndListView, WM_SETFONT, (WPARAM) hfontSegoe, TRUE);
 
-			InsertListViewItems(hwndListView, count);
-
-			SendMessage(hwnd, WM_USER, DB_CREATE, 0);
-			return TRUE;
+			num_watch = 0;
+			InsertListViewItems(hwndListView, 1);
+			return FALSE;
 		}
+		case WM_SIZE:
+			MoveWindow(hwndListView, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+			return FALSE;
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
-				case IDM_PORT_SETBREAKPOINT: {
-					int port = port_map[ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED)];
-					lpDebuggerCalc->cpu.pio.devices[port].breakpoint = !lpDebuggerCalc->cpu.pio.devices[port].breakpoint;
-					break;
-				}
-				case IDM_PORT_EXIT:
-					EndDialog(hwnd, IDCANCEL);
-					break;
 			}
 			return FALSE;
 		}
 		case WM_NOTIFY: {
 			switch (((LPNMHDR) lParam)->code) 
 			{
+				case LVN_ENDLABELEDIT:
+
+					break;
 				case LVN_ITEMCHANGING:
 					CloseSaveEdit(hwndEditControl);
 					break;
@@ -239,9 +246,8 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					NMITEMACTIVATE *lpnmitem = (NMITEMACTIVATE *)lParam;
 					int row_num = lpnmitem->iItem;
 					int col_num = lpnmitem->iSubItem;
-					//no editing the port num
 					if (col_num == 0)
-						return FALSE;
+						break;
 
 					TCHAR buf[32];
 					ListView_GetItemText(hwndListView, row_num, col_num, buf, ARRAYSIZE(buf));
@@ -269,60 +275,65 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				case LVN_GETDISPINFO: 
 				{
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
-					int port_num = port_map[plvdi->item.iItem];
-					port_cpu->input = TRUE;
-					port_cpu->pio.devices[port_num].code(port_cpu, &(port_cpu->pio.devices[port_num]));
+					watchpoint_t *watch = plvdi->item.iItem > num_watch ? NULL : watchpoints[plvdi->item.iItem];
 					switch (plvdi->item.iSubItem)
 					{
 						case 0:
-							StringCchPrintf(plvdi->item.pszText, 10, _T("%02X"), port_num);
+							StringCbCopy(plvdi->item.pszText, 65, watch->label);
 							break;
 						case 1:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("$%02X"), port_cpu->bus);
+							if (watch->waddr_is_valid.addr)
+								StringCbPrintf(plvdi->item.pszText, 6, _T("$%04X"), watch->waddr.addr);
+							else
+								plvdi->item.pszText = _T("");
 							break;	
 						case 2:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("%d"), port_cpu->bus);
+							if (watch->waddr_is_valid.page)
+								StringCbPrintf(plvdi->item.pszText, 4, _T("$%02X"), watch->waddr.page);
+							else
+								plvdi->item.pszText = _T("");
 							break;
 						case 3:
-							StringCbPrintf(plvdi->item.pszText, 10, _T("%%%s"), byte_to_binary(port_cpu->bus)); 
+							if (watch->waddr_is_valid.is_ram)
+								if (watch->waddr.is_ram)
+									StringCbCopy(plvdi->item.pszText, 5, _T("True")); 
+								else
+									StringCbCopy(plvdi->item.pszText, 6, _T("False"));
+							else
+								plvdi->item.pszText = _T("");
 							break;
 					}
 
 					break;
 				}
-				case NM_CUSTOMDRAW:
-				{
-					int iRow;
-					LPNMLVCUSTOMDRAW pListDraw = (LPNMLVCUSTOMDRAW)lParam; 
-                    switch(pListDraw->nmcd.dwDrawStage) 
-                    { 
-                    case CDDS_PREPAINT: 
-                        SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW); 
-                        return TRUE;
-                    case CDDS_ITEMPREPAINT: 
-                    case CDDS_ITEMPREPAINT | CDDS_SUBITEM: 
-                        iRow = (int)pListDraw->nmcd.dwItemSpec; 
-                        if (lpDebuggerCalc->cpu.pio.devices[port_map[iRow]].breakpoint) { 
-                            // pListDraw->clrText   = RGB(252, 177, 0); 
-                            pListDraw->clrTextBk = COLOR_BREAKPOINT; 
-                            SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NEWFONT); 
-                        }
-                        return TRUE;
-                    default: 
-                        SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_DODEFAULT);
-                        return TRUE;
-                    }
-				}
+				//case NM_CUSTOMDRAW:
+				//{
+				//	int iRow;
+				//	LPNMLVCUSTOMDRAW pListDraw = (LPNMLVCUSTOMDRAW)lParam; 
+	//                switch(pListDraw->nmcd.dwDrawStage) 
+	//                { 
+	//                case CDDS_PREPAINT: 
+	//                    SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW); 
+	//                    return TRUE;
+	//                case CDDS_ITEMPREPAINT: 
+	//                case CDDS_ITEMPREPAINT | CDDS_SUBITEM: 
+	//                    iRow = (int)pListDraw->nmcd.dwItemSpec; 
+	//                    if (lpDebuggerCalc->cpu.pio.devices[port_map[iRow]].breakpoint) { 
+	//                        // pListDraw->clrText   = RGB(252, 177, 0); 
+	//                        pListDraw->clrTextBk = COLOR_BREAKPOINT; 
+	//                        SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NEWFONT); 
+	//                    }
+	//                    return TRUE;
+	//                default: 
+	//                    SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_DODEFAULT);
+	//                    return TRUE;
+	//                }
+				//}
 			}
 			return FALSE;
 		}
 		case WM_USER: {
 			switch (wParam) {
-				case DB_CREATE:
-					if (port_cpu != NULL)
-						free(port_cpu);
-					port_cpu = CPU_clone(&lpDebuggerCalc->cpu);
-					break;
 				case DB_UPDATE: {
 					RECT rc;
 					GetClientRect(hwnd, &rc);
@@ -332,9 +343,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			}
 			return TRUE;
 		}
-		case WM_CLOSE:
-			DestroyWindow(hwnd);
-			return FALSE;
+		default:
+			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
-	return FALSE;
 }

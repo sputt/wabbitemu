@@ -19,7 +19,7 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 	switch (Message) {
 		case WM_INITDIALOG:
 			edtAddr = GetDlgItem(hwndDlg, IDC_EDTGOTOADDR);
-			SetFocus(GetDlgItem(hwndDlg, IDC_EDTGOTOADDR));
+			SetFocus(edtAddr);
 			hwndPrev = GetParent(hwndDlg);
 			return FALSE;
 		case WM_COMMAND:
@@ -82,11 +82,11 @@ INT_PTR CALLBACK FindDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 	return FALSE;
 }
 
-const char* byte_to_binary(int x, BOOL isWord) {
-	static char b[17];
+const TCHAR* byte_to_binary(int x, BOOL isWord) {
+	static TCHAR b[17];
 	b[0] = '\0';
 	int z;
-	char *p = b;
+	TCHAR *p = b;
 	for (z = 32768; z > 0; z >>= 1) {
 		*p++ = x & z ? '1' : '0';
 	}
@@ -189,20 +189,20 @@ int xtoi(const TCHAR* xs, int* result) {
 		// Nothing to convert
 		return 1;
 	// Converting more than 32bit hexadecimal value?
-	if (szlen>8) return 2; // exit
+	if (szlen > 8) return 2; // exit
 	// Begin conversion here
 	*result = 0;
 	fact = 1;
 	// Run until no more character to convert
-	for(i = szlen-1; i >= 0; i--) {
+	for(i = szlen - 1; i >= 0; i--) {
 		if (isxdigit(*(xs + i))) {
-			if (*(xs+i)>=97) {
+			if (*(xs + i) >= 97) {
 				xv = ( *(xs+i) - 97) + 10;
 			}
-			else if ( *(xs+i) >= 65) {
-				xv = (*(xs+i) - 65) + 10;
+			else if ( *(xs + i) >= 65) {
+				xv = (*(xs + i) - 65) + 10;
 			} else {
-				xv = *(xs+i) - 48;
+				xv = *(xs + i) - 48;
 			}
 			*result += (xv * fact);
 			fact *= 16;
@@ -214,5 +214,5 @@ int xtoi(const TCHAR* xs, int* result) {
 			return 4;
 		}
 	}
-	return 0;
+	return ERROR_SUCCESS;
 }

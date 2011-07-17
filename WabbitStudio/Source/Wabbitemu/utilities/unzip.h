@@ -150,8 +150,8 @@ typedef struct unz_file_info_s
     tm_unz tmu_date;
 } unz_file_info;
 
-extern int ZEXPORT unzStringFileNameCompare OF ((const char* fileName1,
-                                                 const char* fileName2,
+extern int ZEXPORT unzStringFileNameCompare OF ((const TCHAR* fileName1,
+                                                 const TCHAR* fileName2,
                                                  int iCaseSensitivity));
 /*
    Compare two filename (fileName1,fileName2).
@@ -163,7 +163,7 @@ extern int ZEXPORT unzStringFileNameCompare OF ((const char* fileName1,
 */
 
 
-extern unzFile ZEXPORT unzOpen OF((const char *path));
+extern unzFile ZEXPORT unzOpen OF((const TCHAR *path));
 extern unzFile ZEXPORT unzOpen64 OF((const void *path));
 /*
   Open a Zip file. path contain the full pathname (by example,
@@ -181,7 +181,7 @@ extern unzFile ZEXPORT unzOpen64 OF((const void *path));
 */
 
 
-extern unzFile ZEXPORT unzOpen2 OF((const char *path,
+extern unzFile ZEXPORT unzOpen2 OF((const TCHAR *path,
                                     zlib_filefunc_def* pzlib_filefunc_def));
 /*
    Open a Zip file, like unzOpen, but provide a set of file low level API
@@ -214,7 +214,7 @@ extern int ZEXPORT unzGetGlobalInfo64 OF((unzFile file,
 
 
 extern int ZEXPORT unzGetGlobalComment OF((unzFile file,
-                                           char *szComment,
+                                           TCHAR *szComment,
                                            uLong uSizeBuf));
 /*
   Get the global comment string of the ZipFile, in the szComment buffer.
@@ -240,7 +240,7 @@ extern int ZEXPORT unzGoToNextFile OF((unzFile file));
 */
 
 extern int ZEXPORT unzLocateFile OF((unzFile file,
-                     const char *szFileName,
+                     const TCHAR *szFileName,
                      int iCaseSensitivity));
 /*
   Try locate the file szFileName in the zipfile.
@@ -287,20 +287,20 @@ extern int ZEXPORT unzGoToFilePos64(
 
 extern int ZEXPORT unzGetCurrentFileInfo64 OF((unzFile file,
                          unz_file_info64 *pfile_info,
-                         char *szFileName,
+                         TCHAR *szFileName,
                          uLong fileNameBufferSize,
                          void *extraField,
                          uLong extraFieldBufferSize,
-                         char *szComment,
+                         TCHAR *szComment,
                          uLong commentBufferSize));
 
 extern int ZEXPORT unzGetCurrentFileInfo OF((unzFile file,
                          unz_file_info *pfile_info,
-                         char *szFileName,
+                         TCHAR *szFileName,
                          uLong fileNameBufferSize,
                          void *extraField,
                          uLong extraFieldBufferSize,
-                         char *szComment,
+                         TCHAR *szComment,
                          uLong commentBufferSize));
 /*
   Get Info about the current file

@@ -557,7 +557,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					break_on_exe_violation = Button_GetCheck(exeViolation_check);
 					TCHAR buf[256];
 					Edit_GetText(backupTime_edit, buf, ARRAYSIZE(buf));
-					double persec = atof(buf);
+					double persec = _ttof(buf);
 					if (persec == 0.0)
 						persec = 50.0;
 					num_backup_per_sec = (int) (100 / persec);
@@ -586,7 +586,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 #ifdef WITH_BACKUPS
 			Button_SetCheck(doBackups_check, do_backups);
 			TCHAR buf[256];
-			StringCbPrintf(buf, sizeof(buf), "%.2f", 100 / ((float) num_backup_per_sec));
+			StringCbPrintf(buf, sizeof(buf), _T("%.2f"), 100 / ((float) num_backup_per_sec));
 			Edit_SetText(backupTime_edit, buf);
 #endif
 			Button_SetCheck(wizard_check, show_wizard);
@@ -715,7 +715,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 
 INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND edtRom_path, edtRom_version, edtRom_model, edtRom_size, stcRom_image, saveState_check,
-			ramPages_check, edtLCD_delay;
+			ramPages_check, edtLCD_delay, old83p_check;
 	static HBITMAP hbmTI83P = NULL;
 	switch (Message) {
 		case WM_INITDIALOG: {
@@ -727,6 +727,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			saveState_check = GetDlgItem(hwnd, IDC_CHKSAVE);
 			ramPages_check = GetDlgItem(hwnd, IDC_CHK_RAMPAGES);
 			edtLCD_delay = GetDlgItem(hwnd, IDC_EDT_LCDDELAY);
+			old83p_check = GetDlgItem(hwnd, IDC_CHK_83P_OLD);
 
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
@@ -770,9 +771,10 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					TCHAR buf[64];
 					u_int delay;
 					exit_save_state = Button_GetCheck(saveState_check);
-					lpCalc->mem_c.ram_version = Button_GetCheck(ramPages_check) ? 2 : 0;
+					lpCalc->cpu.mem_c->ram_version = Button_GetCheck(ramPages_check) ? 2 : 0;
+					lpCalc->cpu.cpu_version = Button_GetCheck(old83p_check) ? 1 : 0;
 					Edit_GetText(edtLCD_delay,buf, ARRAYSIZE(buf));
-					delay = atoi(buf);
+					delay = _ttoi(buf);
 					if (delay != 0)
 						lpCalc->cpu.pio.lcd->lcd_delay = delay;
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
@@ -787,7 +789,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		// Update all of the ROM attributes
 		case WM_USER: {
 			TCHAR buf[64];
-			StringCbPrintf(buf, sizeof(buf), "%i", lpCalc->cpu.pio.lcd->lcd_delay);
+			StringCbPrintf(buf, sizeof(buf), _T("%i"), lpCalc->cpu.pio.lcd->lcd_delay);
 			Button_SetCheck(saveState_check, exit_save_state);
 			Edit_SetText(edtRom_path, lpCalc->rom_path);
 			Edit_SetText(edtLCD_delay, buf);
@@ -799,7 +801,8 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			Edit_SetText(edtRom_version, lpCalc->rom_version);
 #endif
 			Edit_SetText(edtRom_model, CalcModelTxt[lpCalc->model]);
-			Button_SetCheck(ramPages_check, lpCalc->mem_c.ram_version == 2);
+			Button_SetCheck(ramPages_check, lpCalc->cpu.mem_c->ram_version == 2);
+			Button_SetCheck(old83p_check, lpCalc->cpu.cpu_version);
 			TCHAR szRomSize[16];
 			StringCbPrintf(szRomSize, sizeof(szRomSize), _T("%0.1f KB"), (float) lpCalc->cpu.mem_c->flash_size / 1024.0f);
 			Edit_SetText(edtRom_size, szRomSize);
@@ -1043,7 +1046,7 @@ void RemoveEmuKey() {
 		for(i = 0; i < nEmuUsed; i++)
 			if (keygrps[i].bit == bit && keygrps[i].group == group) {
 				TCHAR *name = NameFromVKey(keygrps[i].vk);
-				BOOL sameKey = strcmp(buf, name);
+				BOOL sameKey = _tcscmp(buf, name);
 				free(name);
 				if (sameKey)
 					continue;
@@ -1248,7 +1251,7 @@ void AddNormalKeys(TCHAR *base, key_string keystrings[KEY_STRING_SIZE]) {
 	li.iSubItem = 0;	// browse this menu checking for submenus
 	int i;
 	for (i = 0; i < KEY_STRING_SIZE; i++) {
-		if (strcmp(keystrings[i].text, _T(""))) {
+		if (_tcscmp(keystrings[i].text, _T(""))) {
 			li.pszText = (LPTSTR)(LPCTSTR) keystrings[i].text;
 			li.iItem = ListView_GetItemCount(hListMenu);
 			li.lParam = MAKELPARAM(keystrings[i].bit, keystrings[i].group);

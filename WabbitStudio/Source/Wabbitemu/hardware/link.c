@@ -829,7 +829,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 			return LERR_SUCCESS;
 		}
 		page_size = get_page_size(dest, page);
-		page -= dest[page][page_size];
+		page -= page_size;
 	}
 
 	if (page - tifile->flash->pages < upages.end)

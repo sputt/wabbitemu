@@ -32,7 +32,7 @@ static unsigned int cyDisasm = 350, cyMem;
 #define MAX_MEM_TABS 5*3
 #define MAX_TABS 5
 static ep_state expand_pane_state = {0};
-HWND hdisasm, hreg, hmem, hPortMon, hBreakpoints;
+HWND htoolbar, hdisasm, hreg, hmem, hwatch, hPortMon, hBreakpoints;
 static int total_mem_pane;
 static HWND hmemlist[MAX_MEM_TABS];
 static long long code_count_tstates = -1;
@@ -57,10 +57,10 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 		MoveWindow(hwndChild, 0, CY_TOOLBAR, rcParent->right - REG_PANE_WIDTH, cyDisasm - CY_TOOLBAR, TRUE);
 		break;
 	case ID_MEMTAB: {
-		MoveWindow(hwndChild, 3, cyDisasm + cyGripper, rcParent->right - 103 - REG_PANE_WIDTH - 3, cyMem - cyGripper - 3, TRUE);
-		HWND curTab = hmemlist[TabCtrl_GetCurSel(hwndChild)];
-		MoveWindow(curTab, 3, 26, rcParent->right - REG_PANE_WIDTH - 123, cyMem - cyGripper - 32, TRUE);
-		SendMessage(curTab, WM_SIZE, 0, 0);
+		MoveWindow(hwndChild, 3, cyDisasm + cyGripper, rcParent->right - 103 - REG_PANE_WIDTH - 8, cyMem - cyGripper - 3, TRUE);
+		int index = TabCtrl_GetCurSel(hwndChild);
+		HWND curTab = index == total_mem_pane ? hwatch : hmemlist[index];
+		MoveWindow(curTab, 3, 24, rcParent->right - REG_PANE_WIDTH - 118, cyMem - cyGripper - 32, TRUE);
 		SendMessage(curTab, WM_USER, DB_UPDATE, 0);
 		break;
 	}
@@ -110,9 +110,7 @@ int CALLBACK EnumFontFamExProc(
 void AddMemTab(mempane_settings *mps, MemViewType type) {
 	ShowWindow(hmemlist[TabCtrl_GetCurSel(hmem)], SW_HIDE);
 	if (total_mem_pane >= MAX_TABS)
-	{
 		return;
-	}
 
 	mps[total_mem_pane + 1].addr = 0x0000;
 	mps[total_mem_pane + 1].mode = MEM_BYTE;
@@ -149,6 +147,27 @@ void AddMemTab(mempane_settings *mps, MemViewType type) {
 	TabCtrl_InsertItem(hmem, total_mem_pane, &tie);
 	TabCtrl_SetCurSel(hmem, total_mem_pane);
 	total_mem_pane++;
+}
+
+void AddWatchTab(HWND hwnd) {
+	if (hwatch)
+		return;
+
+	hwatch = CreateWindow(
+		g_szWatchName,
+		_T(""),
+		WS_VISIBLE | WS_CHILD,
+		3, 20, 400, 200,
+		hmem,
+		(HMENU) ID_WATCH,
+		g_hInst, NULL);
+	TCITEM tie;
+	tie.mask = TCIF_TEXT | TCIF_IMAGE;
+	tie.iImage = -1;
+	tie.pszText = _T("Watch");
+	tie.lParam = (LPARAM)hwatch;
+	TabCtrl_InsertItem(hmem, 0, &tie);
+	TabCtrl_SetCurSel(hmem, 0);
 }
 
 extern HWND hwndPrev;
@@ -235,7 +254,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 
 			/* Create diassembly window */
-
 			//ZeroMemory(&dps, sizeof(dps));
 			dps.nSel = lpDebuggerCalc->cpu.pc;
 
@@ -249,7 +267,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				(HMENU) ID_DISASM,
 				g_hInst, &dps);
 
-			CreateWindow(
+			htoolbar = CreateWindow(
 				g_szToolbar,
 				_T("toolbar"),
 				WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN,
@@ -267,18 +285,15 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			    (HMENU) ID_MEMTAB,
 			    g_hInst, NULL);
 			SetWindowFont(hmem, hfontSegoe, TRUE);
+
+			AddWatchTab(hwnd);
+
 			total_mem_pane = 0;
 			int panes_to_add = max(1, (int) (QueryDebugKey((TCHAR *) MemPaneString)));
 			while (panes_to_add > 0) {
 				SendMessage(hwnd, WM_COMMAND, IDM_VIEW_ADDMEM, 0);
 				panes_to_add--;
 			}
-			/*TCITEM tie;
-			tie.mask = TCIF_TEXT | TCIF_IMAGE;
-			tie.iImage = -1;
-			tie.pszText = _T("Mem 1");
-			tie.lParam = (LPARAM)hmem;
-			TabCtrl_InsertItem(hmem, 0, &tie);*/
 
 			int selIndex = (int) QueryDebugKey((TCHAR *) MemSelIndexString);
 			TabCtrl_SetCurSel(hmem, selIndex);
@@ -668,6 +683,10 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 							else
 								ShowWindow(hmemlist[i], SW_HIDE);
 						}
+						if (index == total_mem_pane)
+							ShowWindow(hwatch, SW_SHOW);
+						else
+							ShowWindow(hwatch, SW_HIDE);
 						SendMessage(hwnd, WM_SIZE, 0 , 0);
 					} else if (header->hwndFrom == hdisasm) {
 
@@ -794,6 +813,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			hfontLucidaBold = NULL;
 			DeleteObject(hfontSegoe);
 			hfontSegoe = NULL;
+			hwatch = NULL;
 			return 0;
 		}
 	}
@@ -803,7 +823,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 void WriteHumanReadableDump(LPCALC lpCalc, TCHAR *path) {
 	FILE *file;
-	_tfopen_s(&file, path, "w");
+	_tfopen_s(&file, path, _T("w"));
 	
 	//Write CPU output
 	_fputts(_T("CPU Registers:\n"), file);

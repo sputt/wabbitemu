@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "dbdisasm.h"
+#include "dbtoolbar.h"
 #include "core.h"
 #include "guicontext.h"
 #include "calc.h"
@@ -262,7 +263,7 @@ void CPU_stepout(CPU_t *cpu) {
  */
 void CPU_stepover(CPU_t *cpu) {
 	const int usable_commands[] = { DA_BJUMP, DA_BJUMP_N, DA_BCALL_N, DA_BCALL,
-							  		DA_BLI, DA_CALL_X, DA_CALL_CC_X, DA_HALT, DA_RST_X};
+									DA_BLI, DA_CALL_X, DA_CALL_CC_X, DA_HALT, DA_RST_X};
 	int i;
 	double time = tc_elapsed(cpu->timer_c);
 	Z80_info_t zinflocal;
@@ -464,9 +465,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			InitCommonControls();
 			// Create the header window
 			dps->hwndHeader = CreateWindowEx(0, WC_HEADER, (LPCTSTR) NULL,
-                WS_CHILD |  HDS_HORZ | WS_VISIBLE | HDS_FULLDRAG | HDS_DRAGDROP,
-                0, 0, 1, 1, hwnd, (HMENU) ID_DISASMSIZE, g_hInst,
-                (LPVOID) NULL);
+				WS_CHILD |  HDS_HORZ | WS_VISIBLE | HDS_FULLDRAG | HDS_DRAGDROP,
+				0, 0, 1, 1, hwnd, (HMENU) ID_DISASMSIZE, g_hInst,
+				(LPVOID) NULL);
 
 			SetWindowFont(dps->hwndHeader, hfontSegoe, TRUE);
 
@@ -492,16 +493,16 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					hwnd, NULL, g_hInst, NULL);
 
 			SetWindowPos(hwndTip, HWND_TOPMOST,0, 0, 0, 0,
-			             SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+						 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			SendMessage(hwndTip, TTM_ACTIVATE, TRUE, 0);
 
 			toolInfo.cbSize = sizeof(toolInfo);
-		    toolInfo.hwnd = hwnd;
-		    toolInfo.uFlags = TTF_IDISHWND | TTF_TRACK | TTF_ABSOLUTE;
-		    toolInfo.uId = (UINT_PTR)hwnd;
-		    toolInfo.lpszText = _T("");
-		    GetClientRect(hwnd, &toolInfo.rect);
-		    SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+			toolInfo.hwnd = hwnd;
+			toolInfo.uFlags = TTF_IDISHWND | TTF_TRACK | TTF_ABSOLUTE;
+			toolInfo.uId = (UINT_PTR)hwnd;
+			toolInfo.lpszText = _T("");
+			GetClientRect(hwnd, &toolInfo.rect);
+			SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 
 			GetWindowRect(dps->hwndHeader, &hdrRect);
 			cyHeader = hdrRect.bottom - hdrRect.top;
@@ -614,23 +615,23 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					in_changing = TRUE;
 
 
- 					hdi.mask = HDI_LPARAM;
- 					SendMessage(hwndHeader, HDM_GETITEM, ((NMHEADER*) lParam)->iItem, (LPARAM) &hdi);
+					hdi.mask = HDI_LPARAM;
+					SendMessage(hwndHeader, HDM_GETITEM, ((NMHEADER*) lParam)->iItem, (LPARAM) &hdi);
 
 
- 					GetClientRect(hwnd, &rc);
- 					iCol = (int) hdi.lParam;
- 					if (lphdi->cxy > rc.right - rc.left) lphdi->cxy = rc.right - rc.left - 6;
+					GetClientRect(hwnd, &rc);
+					iCol = (int) hdi.lParam;
+					if (lphdi->cxy > rc.right - rc.left) lphdi->cxy = rc.right - rc.left - 6;
 
- 					if (iCol == dpsDisasm && lphdi->cxy < COLUMN_X_OFFSET*5) {
- 						in_changing = FALSE;
- 						return TRUE;
- 					} else if (lphdi->cxy < COLUMN_X_OFFSET*3) {
- 						in_changing = FALSE;
- 						return TRUE;
- 					} else {
- 						dps->hdrs[iCol].cx = lphdi->cxy;
- 					}
+					if (iCol == dpsDisasm && lphdi->cxy < COLUMN_X_OFFSET*5) {
+						in_changing = FALSE;
+						return TRUE;
+					} else if (lphdi->cxy < COLUMN_X_OFFSET*3) {
+						in_changing = FALSE;
+						return TRUE;
+					} else {
+						dps->hdrs[iCol].cx = lphdi->cxy;
+					}
 
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 
@@ -682,7 +683,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case NM_RELEASEDCAPTURE: {
 					// If the addr column isn't in the leftmost anymore, restore the old layout
-				 	int lpiNewArray[8];
+					int lpiNewArray[8];
 					SendMessage(hwndHeader, HDM_GETORDERARRAY, (WPARAM) iSize, (LPARAM) lpiNewArray);
 
 					if (lpiNewArray[0] != dpsAddr) {
@@ -771,8 +772,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			gRect.UpperLeft  = 0;
 			gRect.LowerRight = 1;
 
-			if (IsRectEmpty(&ps.rcPaint))
+			if (IsRectEmpty(&ps.rcPaint)) {
+				EndPaint(hwnd, &ps);
+
+				DeleteObject(hbm);
+				DeleteDC(hdc);
 				return 0;
+			}
 
 			/*printf("rcPaint: %ld %ld %ld %ld\n",
 					ps.rcPaint.left,
@@ -864,7 +870,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 
 				// Draw the columns
- 				for (iItem = 0; iItem < iSize; iItem++, tr.left = tr.right) {
+				for (iItem = 0; iItem < iSize; iItem++, tr.left = tr.right) {
 					int iCol;
 					SendMessage(dps->hwndHeader, HDM_GETITEM, SendMessage(dps->hwndHeader, HDM_ORDERTOINDEX, iItem, 0), (LPARAM) &hdi);
 					iCol = (int) hdi.lParam;
@@ -876,9 +882,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					}
 				}
 
- 				max_right = tr.right;
+				max_right = tr.right;
 				tr.left = 0;
- 				tr.right = rc.right;
+				tr.right = rc.right;
 				if (zinf[i].addr == dps->nKey && hwnd == GetFocus()) {
 					//dps->iSel = i;
 					RECT fr;
@@ -1054,7 +1060,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					ShowWindow(hwndDialog, SW_SHOW);
 					break;
 				}
-				//extern HWND hBreakpoints;
 				case DB_BREAKPOINT: {
 					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
 
@@ -1436,6 +1441,12 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case DB_RESUME:
 					dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
 					EnableWindow(hwnd, TRUE);
+					//this will chnage so the run/stop button says Run
+					extern HWND htoolbar;
+					HWND hButton = FindWindowEx(htoolbar, NULL, _T("BUTTON"), _T("Stop"));
+					TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
+					ChangeRunButtonIconAndText(tbb);
+					
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
 			}

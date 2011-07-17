@@ -327,6 +327,11 @@ static LRESULT CALLBACK ExpandButtonProc(HWND hwnd, UINT Message, WPARAM wParam,
 			EndPaint(hwnd, &ps);
 			return 0;
 		}
+		case WM_DESTROY: 
+			if (hdcButtons) {
+				DeleteObject(hdcButtons);
+				hdcButtons = NULL;
+			}
 		default:
 			return CallWindowProc(OldButtonProc, hwnd, Message, wParam, lParam);
 	}

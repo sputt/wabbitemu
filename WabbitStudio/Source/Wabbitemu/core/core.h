@@ -258,6 +258,7 @@ typedef struct CPU {
 	memc *mem_c;
 	timerc *timer_c;
 	void (*exe_violation_callback)(void *);
+	int cpu_version;
 } CPU_t;
 
 typedef void (*opcodep)(CPU_t*);

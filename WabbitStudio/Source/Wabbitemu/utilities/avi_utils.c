@@ -49,7 +49,7 @@ typedef struct
 } TAviUtil;
 
 
-HAVI CreateAvi(const char *fn, int frameperiod, const WAVEFORMATEX *wfx)
+HAVI CreateAvi(const TCHAR *fn, int frameperiod, const WAVEFORMATEX *wfx)
 { IAVIFile *pfile;
   AVIFileInit();
   HRESULT hr = AVIFileOpen(&pfile, fn, OF_WRITE|OF_CREATE, NULL);
@@ -238,7 +238,7 @@ HRESULT AddAviAudio(HAVI avi, void *dat, unsigned long numbytes)
 
 
 
-HRESULT AddAviWav(HAVI avi, const char *src, DWORD flags)
+HRESULT AddAviWav(HAVI avi, const TCHAR *src, DWORD flags)
 { if (avi==NULL) return AVIERR_BADHANDLE;
   if (flags!=SND_MEMORY && flags!=SND_FILENAME) return AVIERR_BADFLAGS;
   if (src==0) return AVIERR_BADPARAM;

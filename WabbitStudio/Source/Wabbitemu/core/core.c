@@ -273,7 +273,7 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 	//the boot page is mapped to bank 0 to start
 	//if code is run from an address of whatever page is mapped to port 6
 	//then the page is changed to page 0. why? who the fuck knows
-	if (cpu->mem_c->banks[0].page != 0 && (cpu->mem_c->boot_mapped && (bank_num == 1 || bank_num == 2)) || (!cpu->mem_c->boot_mapped && bank_num == 1))
+	if (cpu->mem_c->banks[0].page != 0 && (cpu->mem_c->boot_mapped && (bank_num == 1 || bank_num == 2) && !bank.ram) || ((!cpu->mem_c->boot_mapped && bank_num == 1) && !bank.ram))
 		change_page(cpu, 0, 0, FALSE);
 	if (!is_allowed_exec(cpu)) {
 		if (break_on_exe_violation)
@@ -304,11 +304,11 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 		/*if (cpu->mem_c->step > 4) cpu->bus = 0xFF; // Flash status read, apparently
 		else cpu->mem_c->step = 0;*/				// calc84: says this is better
 		if (cpu->mem_c->cmd == 0x90 && cpu->mem_c->step == 3) {
-			if (addr == 0) {
+			if ((addr & 0x3FFF) == 0) {
 				//1 indicates an AMD chip
 				cpu->bus = 1;
-			} else if (addr == 2) {
-			//B9 for 512 K chip, C4 for 2 MB chips, and DA for 1 MB chips.
+			} else if ((addr & 0x3FFF) == 2) {
+			//B9 for new 512 K chips, 23 for old 512 K chips, C4 for 2 MB chips, and DA for 1 MB chips.
 				switch (cpu->pio.model) {
 					case TI_84P:
 						cpu->bus = 0xDA;
@@ -318,10 +318,13 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 						cpu->bus = 0xC4;
 						break;
 					default:
-						cpu->bus = 0xB9;
+						if (cpu->cpu_version == 1)
+							cpu->bus = 0x23;
+						else
+							cpu->bus = 0xB9;
 						break;
 				}
-			} else if (addr == 4) {
+			} else if ((addr & 0x3FFF) == 4) {
 				cpu->bus = 0;
 			}
 		}
@@ -343,8 +346,9 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
-		if (!cpu->mem_c->flash_locked &&  1) {
-			
+		if (!cpu->mem_c->flash_locked && // 1) {
+			(((cpu->mem_c->banks[bank].page != 0x3F && cpu->mem_c->banks[bank].page != 0x2F) || cpu->pio.se_aux->model_bits & 0x3) &&
+			((cpu->mem_c->banks[bank].page != 0x7F && cpu->mem_c->banks[bank].page != 0x6F) || cpu->pio.se_aux->model_bits & 0x2 || !(cpu->pio.se_aux->model_bits & 0x1)))) {
 			switch(cpu->mem_c->flash_version) {
 				case 00:
 					break;

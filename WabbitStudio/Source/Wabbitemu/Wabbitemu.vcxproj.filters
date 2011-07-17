@@ -294,6 +294,9 @@
     <ClCompile Include="debugger\dbbreakpoints.c">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="debugger\dbwatch.c">
+      <Filter>Source Files\Debugger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -557,6 +560,9 @@
     <ClInclude Include="debugger\dbbreakpoints.h">
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>
+    <ClInclude Include="debugger\dbwatch.h">
+      <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\small_close.bmp">
@@ -725,7 +731,6 @@
     <None Include="gui\downarrow7.bmp">
       <Filter>Resource Files\Debugger</Filter>
     </None>
-    <None Include="ti-81.png" />
     <None Include="gui\ti-81.png">
       <Filter>Resource Files\Skins</Filter>
     </None>
