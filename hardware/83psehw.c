@@ -216,9 +216,23 @@ void port14_83pse(CPU_t *cpu, device_t *dev) {
 		cpu->bus = !cpu->mem_c->flash_locked;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		int bank = cpu->pc>>14;
-		if (!cpu->mem_c->banks[bank].ram && is_priveleged_page(cpu))
+		if (!cpu->mem_c->banks[mc_bank(cpu->pc)].ram && is_priveleged_page(cpu))
 			cpu->mem_c->flash_locked = !(cpu->bus & 0x01);
+		cpu->output = FALSE;
+	}
+}
+
+void port15_83pse(CPU_t *cpu, device_t *dev) {
+	if (cpu->input) {
+		if (cpu->pio.model == TI_83PSE)
+			cpu->bus = 0x33;
+		else if (!cpu->mem_c->ram_version)
+			cpu->bus = 0x44;
+		else
+			cpu->bus = 0x55;
+
+		cpu->input = FALSE;
+	} else if (cpu->output) {
 		cpu->output = FALSE;
 	}
 }
@@ -1110,27 +1124,31 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 					puts("Fast");
 					cpu->mem_c->cmd = 0x20;		//Fastmode
 					cpu->mem_c->step = 6;
-				} else if (data == 0x90) {		//Auto select
-					cpu->mem_c->cmd = 0x90;
+				} else if (data == 0x90) {
+					cpu->mem_c->cmd = 0x90;		//Auto select
 					cpu->mem_c->step++;
 				} else endflash(cpu);
 			} else endflash(cpu);
 			break;
-		case 3:
+		case 3: {
+			int value = 0;
 			if (cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
+				value = *(cpu->mem_c->banks[bank].addr + (addr & 0x3fff));
 				(*(cpu->mem_c->banks[bank].addr + (addr & 0x3fff))) &= data;  //AND LOGIC!!
-//				if (cpu->mem_c->banks[bank].page == 0x1E) printf("\n");
-//				if (cpu->mem_c->banks[bank].page == 0x1E || cpu->mem_c->banks[bank].page == 0x08 ) {
-//					printf("Address: %02X:%04X  <- %02X  \n",cpu->mem_c->banks[bank].page ,addr&0x3fff,data);
-//				}
-//				if (cpu->mem_c->banks[bank].page == 0x7E) printf("%04X <= %02X \n",addr,data);
+				if ((~((~value) | (~data))) != value)
+					value = (~value) & 0x80 | 0x20;
 				endflash(cpu);
 			}
 			if ((addr & 0x0FFF) == 0x0AAA) {
 				if (data==0xAA) cpu->mem_c->step++;
 			}
-			if (data == 0xF0) endflash(cpu);
+			if (data == 0xF0) { 
+				if (value)
+					cpu->bus = value;
+				endflash(cpu);
+			}
 			break;
+		}
 		case 4:
 			if ((addr & 0x0FFF) == 0x0555 ) {
 				if (data == 0x55) cpu->mem_c->step++;
@@ -1196,11 +1214,14 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				endflash(cpu);
 			} else cpu->mem_c->step = 6;
 			break;
-		case 8:
+		case 8: {
+			int value = *(cpu->mem_c->banks[bank].addr + (addr & 0x3fff));
 			(*(cpu->mem_c->banks[bank].addr + (addr & 0x3fff))) &= data;  //AND LOGIC!!
+			if ((~((~value) | (~data))) != value)
+				cpu->bus = (~value) & 0x80 | 0x20;
 			cpu->mem_c->step = 6;
 			break;
-
+		}
 		default:
 			endflash(cpu);
 			break;

@@ -58,9 +58,9 @@
 
 int do_extract_currentfile(unzFile uf, TCHAR *dirToExtractTo)
 {
-    char filename_inzip[256];
-    char* filename_withoutpath;
-    char* p;
+    TCHAR filename_inzip[256];
+    TCHAR* filename_withoutpath;
+    TCHAR* p;
     int err = UNZ_OK;
     FILE *fout = NULL;
     void *buf;
@@ -73,7 +73,7 @@ int do_extract_currentfile(unzFile uf, TCHAR *dirToExtractTo)
 
     if (err != UNZ_OK)
     {
-        printf(_T("error %d with zipfile in unzGetCurrentFileInfo\n"), err);
+        _tprintf(_T("error %d with zipfile in unzGetCurrentFileInfo\n"), err);
         return err;
     }
 
@@ -81,7 +81,7 @@ int do_extract_currentfile(unzFile uf, TCHAR *dirToExtractTo)
     buf = (void *) malloc(size_buf);
     if (buf == NULL)
     {
-        printf(_T("Error allocating memory\n"));
+        _tprintf(_T("Error allocating memory\n"));
         return UNZ_INTERNALERROR;
     }
 
@@ -94,15 +94,15 @@ int do_extract_currentfile(unzFile uf, TCHAR *dirToExtractTo)
     }
 
 	//make sure this exists
-	_mkdir(dirToExtractTo);
-    strcpy(write_filename, dirToExtractTo);
-	strcat(write_filename, _T("/"));
-	strcat(write_filename, filename_withoutpath);
+	_tmkdir(dirToExtractTo);
+    _tcscpy(write_filename, dirToExtractTo);
+	_tcscat(write_filename, _T("/"));
+	_tcscat(write_filename, filename_withoutpath);
 
     err = unzOpenCurrentFile(uf);
     if (err != UNZ_OK)
     {
-        printf(_T("error %d with zipfile in unzOpenCurrentFile\n"), err);
+        _tprintf(_T("error %d with zipfile in unzOpenCurrentFile\n"), err);
     }
 
     if (err == UNZ_OK)
@@ -111,26 +111,26 @@ int do_extract_currentfile(unzFile uf, TCHAR *dirToExtractTo)
 
         if (fout == NULL)
         {
-            printf(_T("error opening %s\n"), write_filename);
+            _tprintf(_T("error opening %s\n"), write_filename);
         }
     }
 
     if (fout != NULL)
     {
-        printf(_T(" extracting: %s\n"), write_filename);
+        _tprintf(_T(" extracting: %s\n"), write_filename);
 
         do
         {
             err = unzReadCurrentFile(uf, buf, size_buf);
             if (err  <0)
             {
-                printf(_T("error %d with zipfile in unzReadCurrentFile\n"), err);
+                _tprintf(_T("error %d with zipfile in unzReadCurrentFile\n"), err);
                 break;
             }
             if (err > 0)
                 if (fwrite(buf, err, 1, fout) != 1)
                 {
-                    printf(_T("error in writing extracted file\n"));
+                    _tprintf(_T("error in writing extracted file\n"));
                     err = UNZ_ERRNO;
                     break;
                 }
@@ -147,7 +147,7 @@ int do_extract_currentfile(unzFile uf, TCHAR *dirToExtractTo)
         err = unzCloseCurrentFile (uf);
         if (err != UNZ_OK)
         {
-            printf(_T("error %d with zipfile in unzCloseCurrentFile\n"), err);
+            _tprintf(_T("error %d with zipfile in unzCloseCurrentFile\n"), err);
         }
     }
     else
@@ -166,7 +166,7 @@ int extract_zip(unzFile uf, TCHAR *dirToExtractTo)
 
     err = unzGetGlobalInfo64(uf, &gi);
     if (err != UNZ_OK)
-        printf(_T("error %d with zipfile in unzGetGlobalInfo \n"), err);
+        _tprintf(_T("error %d with zipfile in unzGetGlobalInfo \n"), err);
 
     for (i = 0; i < gi.number_entry; i++)
     {
@@ -178,7 +178,7 @@ int extract_zip(unzFile uf, TCHAR *dirToExtractTo)
             err = unzGoToNextFile(uf);
             if (err != UNZ_OK)
             {
-                printf(_T("error %d with zipfile in unzGoToNextFile\n"), err);
+                _tprintf(_T("error %d with zipfile in unzGoToNextFile\n"), err);
                 break;
             }
         }

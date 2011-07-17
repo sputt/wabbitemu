@@ -21,6 +21,7 @@
 #include "dbtoolbar.h"
 #include "dbtrack.h"
 #include "dbdisasm.h"
+#include "dbwatch.h"
 
 #include "guibuttons.h"
 #include "guicontext.h"
@@ -665,6 +666,13 @@ void RegisterWindowClasses(void) {
 	wc.lpszClassName = g_szMemName;
 	wc.hbrBackground = NULL;
 	RegisterClassEx(&wc);
+
+	//watchpoints
+	wc.style = CS_DBLCLKS;
+	wc.lpfnWndProc = WatchProc;
+	wc.lpszClassName = g_szWatchName;
+	wc.hbrBackground = NULL;
+	RegisterClassEx(&wc);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
@@ -1043,7 +1051,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			switch (LOWORD(wParam)) {
 				case IDM_FILE_NEW: {
 						LPCALC lpCalcNew = calc_slot_new();
-						if (rom_load(lpCalcNew, lpCalc->rom_path) || rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey("rom_path"))) {
+						if (rom_load(lpCalcNew, lpCalc->rom_path) || rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey(_T("rom_path")))) {
 							lpCalcNew->SkinEnabled = lpCalc->SkinEnabled;
 							lpCalcNew->bCutout = lpCalc->bCutout;
 							lpCalcNew->Scale = lpCalc->Scale;

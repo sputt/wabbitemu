@@ -101,18 +101,18 @@ static voidpf ZCALLBACK fopen_file_func (voidpf opaque, const char* filename, in
 static voidpf ZCALLBACK fopen64_file_func (voidpf opaque, const void* filename, int mode)
 {
     FILE* file = NULL;
-    const char* mode_fopen = NULL;
+    const TCHAR *mode_fopen = NULL;
     if ((mode & ZLIB_FILEFUNC_MODE_READWRITEFILTER)==ZLIB_FILEFUNC_MODE_READ)
-        mode_fopen = "rb";
+        mode_fopen = _T("rb");
     else
     if (mode & ZLIB_FILEFUNC_MODE_EXISTING)
-        mode_fopen = "r+b";
+        mode_fopen = _T("r+b");
     else
     if (mode & ZLIB_FILEFUNC_MODE_CREATE)
-        mode_fopen = "wb";
+        mode_fopen = _T("wb");
 
     if ((filename!=NULL) && (mode_fopen != NULL))
-        file = fopen64((const char*)filename, mode_fopen);
+        file = fopen64((const TCHAR *) filename, mode_fopen);
     return file;
 }
 

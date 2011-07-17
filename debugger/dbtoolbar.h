@@ -5,6 +5,27 @@
 #include "core.h"
 #include "disassemble.h"
 
+typedef enum {
+	MOUSE_UP,
+	MOUSE_DOWN,
+	MOUSE_DOWN_SPLIT
+} TOOL_BUTTON_STATE;
+
+typedef struct TBBTN_tag{
+	HWND hwnd;
+	int bHotLit;
+	BOOL bFading;
+	TOOL_BUTTON_STATE MouseState;
+	BOOL bSplitButton;
+	struct TBBTN_tag *prev, *next;
+	int trans_state;
+	UINT_PTR uIDTimer;
+	HBITMAP hbmIcon;
+	HMENU hMenu;
+} TBBTN;
+
+void ChangeRunButtonIconAndText(TBBTN *tbb);
+
 LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 #endif /*DBTOOLBAR_H_*/

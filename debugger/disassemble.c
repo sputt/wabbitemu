@@ -480,10 +480,10 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 					result->index = DA_HALT;
 				} else {
 					result->index = DA_LD_R_R;
-					result->a1 = (INT_PTR) r[y];
+					result->a1 = (INT_PTR) (prefix ? r8i[pi][y] : r[y]);
 					if (result->a1 == (INT_PTR) r[R__HL_])
 						result->index = DA_LD__HL__R;
-					result->a2 = (INT_PTR) r[z];
+					result->a2 = (INT_PTR) (prefix ? r8i[pi][z] : r[z]);
 					if (result->a2 == (INT_PTR) r[R__HL_])
 						result->index = DA_LD_R__HL_;
 					if (prefix) {

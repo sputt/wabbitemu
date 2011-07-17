@@ -9,7 +9,7 @@ DECLARE_HANDLE(HAVI);
 // An HAVI identifies an avi file that is being created
 
 
-HAVI CreateAvi(const char *fn, int frameperiod, const WAVEFORMATEX *wfx);
+HAVI CreateAvi(const TCHAR *fn, int frameperiod, const WAVEFORMATEX *wfx);
 // CreateAvi - call this to start the creation of the avi file.
 // The period is the number of ms between each bitmap frame.
 // The waveformat can be null if you're not going to add any audio,
@@ -23,7 +23,7 @@ HRESULT AddAviAudio(HAVI avi, void *dat, unsigned long numbytes);
 // wfx parameter to CreateAVI. This fails if NULL was given.
 // Both return S_OK if okay, otherwise one of the AVI errors.
 
-HRESULT AddAviWav(HAVI avi, const char *wav, DWORD flags);
+HRESULT AddAviWav(HAVI avi, const TCHAR *wav, DWORD flags);
 // AddAviWav - a convenient way to add an entire wave file to the avi.
 // The wav file may be in in memory (in which case flags=SND_MEMORY)
 // or a file on disk (in which case flags=SND_FILENAME).
@@ -49,7 +49,7 @@ HRESULT CloseAvi(HAVI avi);
 
 
 
-unsigned int FormatAviMessage(HRESULT code, char *buf,unsigned int len);
+unsigned int FormatAviMessage(HRESULT code, TCHAR *buf,unsigned int len);
 // FormatAviMessage - given an error code, formats it as a string.
 // It returns the length of the error message. If buf/len points
 // to a real buffer, then it also writes as much as possible into there.

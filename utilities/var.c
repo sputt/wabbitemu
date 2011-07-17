@@ -612,10 +612,14 @@ TIFILE_t* newimportvar(LPCTSTR filePath, BOOL only_check_header) {
 	TIFILE_t *tifile;
 	
 	TCHAR extension[5] = _T("");
-	const char *pext = _tcsrchr(filePath, _T('.'));
+	const TCHAR *pext = _tcsrchr(filePath, _T('.'));
 	if (pext != NULL)
 	{
+#ifdef _WINDOWS
+		StringCbCopy(extension, sizeof(extension), pext);
+#else
 		_tcscpy_s(extension, pext);
+#endif
 	}
 
 	tifile = InitTiFile();
@@ -645,18 +649,18 @@ TIFILE_t* newimportvar(LPCTSTR filePath, BOOL only_check_header) {
 #else
 	infile = fopen(filePath, "rb");
 #endif
-	if (infile == NULL) {
-		fclose(infile);
+	if (infile == NULL) 
 		return FreeTiFile(tifile);
-	}
 
 	ReadTiFileHeader(infile, tifile);
 	//the last part is to make sure we dont allow files that cant be imported but
 	//assumed to be ROMs until we try to read data. Why? because we dont read the
 	//size of the data till we import. Since importing a ROM is fast and I don't
-	//care enough to fix and this was meant to speed checking files on drop its fine
-	if (only_check_header && tifile->type != ROM_TYPE)
+	//care enough to fix and this was meant for speed checking files on drop its fine
+	if (only_check_header && tifile->type != ROM_TYPE) {
+		fclose(infile);
 		return tifile;
+	}
 
 	tifile = ImportVarData(infile, tifile, 0);
 	fclose(infile);

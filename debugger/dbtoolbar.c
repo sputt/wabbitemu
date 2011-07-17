@@ -19,24 +19,6 @@ HWND hwndLastFocus;
 #define FADE_SOLID 10
 #define FADE_SPEED 20
 
-typedef enum {
-	MOUSE_UP,
-	MOUSE_DOWN,
-	MOUSE_DOWN_SPLIT
-} TOOL_BUTTON_STATE;
-
-typedef struct TBBTN_tag{
-	HWND hwnd;
-	int bHotLit;
-	BOOL bFading;
-	TOOL_BUTTON_STATE MouseState;
-	BOOL bSplitButton;
-	struct TBBTN_tag *prev, *next;
-	int trans_state;
-	UINT_PTR uIDTimer;
-	HBITMAP hbmIcon;
-	HMENU hMenu;
-} TBBTN;
 
 #if !USE_GDIPLUS
 typedef DWORD ARGB;
@@ -45,81 +27,81 @@ typedef DWORD ARGB;
 
 void InitBitmapInfo(BITMAPINFO *pbmi, ULONG cbInfo, LONG cx, LONG cy, WORD bpp)
 {
-    ZeroMemory(pbmi, cbInfo);
-    pbmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-    pbmi->bmiHeader.biPlanes = 1;
-    pbmi->bmiHeader.biCompression = BI_RGB;
+	ZeroMemory(pbmi, cbInfo);
+	pbmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+	pbmi->bmiHeader.biPlanes = 1;
+	pbmi->bmiHeader.biCompression = BI_RGB;
 
-    pbmi->bmiHeader.biWidth = cx;
-    pbmi->bmiHeader.biHeight = cy;
-    pbmi->bmiHeader.biBitCount = bpp;
+	pbmi->bmiHeader.biWidth = cx;
+	pbmi->bmiHeader.biHeight = cy;
+	pbmi->bmiHeader.biBitCount = bpp;
 }
 
 HRESULT AddBitmapToMenuItem(HMENU hmenu, int iItem, BOOL fByPosition, HBITMAP hbmp)
 {
-    HRESULT hr = E_FAIL;
+	HRESULT hr = E_FAIL;
 
-    MENUITEMINFO mii = { sizeof(mii) };
-    mii.fMask = MIIM_BITMAP;
-    mii.hbmpItem = hbmp;
-    if (SetMenuItemInfo(hmenu, iItem, fByPosition, &mii)) {
-        hr = S_OK;
-    }
+	MENUITEMINFO mii = { sizeof(mii) };
+	mii.fMask = MIIM_BITMAP;
+	mii.hbmpItem = hbmp;
+	if (SetMenuItemInfo(hmenu, iItem, fByPosition, &mii)) {
+		hr = S_OK;
+	}
 
-    return hr;
+	return hr;
 }
 
 HRESULT ConvertToPARGB32(HDC hdc, ARGB *pargb, HBITMAP hbmp, SIZE sizImage, int cxRow)
 {
-    BITMAPINFO bmi;
-    InitBitmapInfo(&bmi, sizeof(bmi), sizImage.cx, sizImage.cy, 32);
+	BITMAPINFO bmi;
+	InitBitmapInfo(&bmi, sizeof(bmi), sizImage.cx, sizImage.cy, 32);
 
-    HRESULT hr = E_OUTOFMEMORY;
-    HANDLE hHeap = GetProcessHeap();
-    void *pvBits = HeapAlloc(hHeap, 0, bmi.bmiHeader.biWidth * 4 * bmi.bmiHeader.biHeight);
-    if (pvBits) {
-        hr = E_UNEXPECTED;
-        if (GetDIBits(hdc, hbmp, 0, bmi.bmiHeader.biHeight, pvBits, &bmi, DIB_RGB_COLORS) == bmi.bmiHeader.biHeight) {
-            ULONG cxDelta = cxRow - bmi.bmiHeader.biWidth;
-            ARGB *pargbMask = (ARGB*)pvBits;
-            ULONG y;
-            for (y = bmi.bmiHeader.biHeight; y; y--) {
-            	ULONG x;
-                for (x = bmi.bmiHeader.biWidth; x; x--) {
-                    if (*pargbMask++) {
-                        // transparent pixel
-                        *pargb++ = 0;
-                    } else {
-                        // opaque pixel
-                        *pargb++ |= 0xFF000000;
-                    }
-                }
-                pargb += cxDelta;
-            }
-            hr = S_OK;
-        }
-        HeapFree(hHeap, 0, pvBits);
-    }
+	HRESULT hr = E_OUTOFMEMORY;
+	HANDLE hHeap = GetProcessHeap();
+	void *pvBits = HeapAlloc(hHeap, 0, bmi.bmiHeader.biWidth * 4 * bmi.bmiHeader.biHeight);
+	if (pvBits) {
+		hr = E_UNEXPECTED;
+		if (GetDIBits(hdc, hbmp, 0, bmi.bmiHeader.biHeight, pvBits, &bmi, DIB_RGB_COLORS) == bmi.bmiHeader.biHeight) {
+			ULONG cxDelta = cxRow - bmi.bmiHeader.biWidth;
+			ARGB *pargbMask = (ARGB*)pvBits;
+			ULONG y;
+			for (y = bmi.bmiHeader.biHeight; y; y--) {
+				ULONG x;
+				for (x = bmi.bmiHeader.biWidth; x; x--) {
+					if (*pargbMask++) {
+						// transparent pixel
+						*pargb++ = 0;
+					} else {
+						// opaque pixel
+						*pargb++ |= 0xFF000000;
+					}
+				}
+				pargb += cxDelta;
+			}
+			hr = S_OK;
+		}
+		HeapFree(hHeap, 0, pvBits);
+	}
 
-    return hr;
+	return hr;
 }
 
 BOOL HasAlpha(ARGB *pargb, SIZE sizImage, int cxRow)
 {
-    ULONG cxDelta = cxRow - sizImage.cx;
-    ULONG y;
-    for (y = sizImage.cy; y; y--) {
-    	ULONG x;
-        for (x = sizImage.cx; x; x--) {
-            if (*pargb++ & 0xFF000000) {
-                return TRUE;
-            }
-        }
+	ULONG cxDelta = cxRow - sizImage.cx;
+	ULONG y;
+	for (y = sizImage.cy; y; y--) {
+		ULONG x;
+		for (x = sizImage.cx; x; x--) {
+			if (*pargb++ & 0xFF000000) {
+				return TRUE;
+			}
+		}
 
-        pargb += cxDelta;
-    }
+		pargb += cxDelta;
+	}
 
-    return FALSE;
+	return FALSE;
 }
 
 void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
@@ -210,6 +192,7 @@ void PaintToolbarBackground(HWND hwndToolbar, HDC hdc, LPRECT r) {
 						hdcGrad, 0, 0, r->right - r->left, 1,
 						bf);
 
+			DeleteObject(hbrGrad);
 			DeleteObject(hbmGrad);
 			DeleteDC(hdcGrad);
 		}
@@ -484,8 +467,8 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			if (PtInRect(&rect, p) && tbb->bSplitButton) {
 				HMENU hMenuTrackPopup = GetSubMenu(tbb->hMenu, 0);
 				TrackPopupMenu(hMenuTrackPopup,
-				            TPM_LEFTALIGN | TPM_RIGHTBUTTON,
-				            wr.left, wr.bottom + 1, 0, hwnd, NULL);
+							TPM_LEFTALIGN | TPM_RIGHTBUTTON,
+							wr.left, wr.bottom + 1, 0, hwnd, NULL);
 			}
 			return 0;
 		}
@@ -845,17 +828,17 @@ int CreateToolbarButton(HWND hwndParent, TCHAR *szCaption, TCHAR *szTooltip, TCH
 				hwndParent, NULL, g_hInst, NULL);
 
 		SetWindowPos(hwndTip, HWND_TOPMOST,0, 0, 0, 0,
-		             SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+					 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 		SendMessage(hwndTip, TTM_ACTIVATE, TRUE, 0);
 	}
 
 	TOOLINFO toolInfo = {0};
 	toolInfo.cbSize = sizeof(toolInfo);
-    toolInfo.hwnd = hwndParent;
-    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-    toolInfo.uId = (UINT_PTR) hwndBtn;
-    toolInfo.lpszText = szTooltip;
-    SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &toolInfo);
+	toolInfo.hwnd = hwndParent;
+	toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+	toolInfo.uId = (UINT_PTR) hwndBtn;
+	toolInfo.lpszText = szTooltip;
+	SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM) &toolInfo);
 
 	return x + 4 + 16 + 8 + r.right + 4 + 4 + splitSize;
 }
@@ -886,12 +869,27 @@ HMENU CreateRewindMenu() {
 #if WITH_BACKUPS
 	float j = 1 / ((float) num_backup_per_sec);
 	for (i = 0; i < MAX_BACKUPS; i++) {
-		StringCbPrintf(buf, sizeof(buf), "%.2f", j * (i + 1));
+		StringCbPrintf(buf, sizeof(buf), _T("%.2f"), j * (i + 1));
 		StringCbCat(buf, sizeof(buf), _T(" seconds"));
 		ModifyMenu(rewindmenu, IDM_05SECOND + i, MF_BYCOMMAND | MF_STRING, 0, buf);
 	}
 #endif
 	return rewindmenu;
+}
+
+void ChangeRunButtonIconAndText(TBBTN *tbb) {
+	if (tbb->hbmIcon)
+		DeleteObject(tbb->hbmIcon);
+	if (lpDebuggerCalc->running) {
+		tbb->hbmIcon = LoadBitmap(g_hInst, _T("DBStop"));
+		Edit_SetText(tbb->hwnd, _T("Stop"));
+	} else {
+		tbb->hbmIcon = LoadBitmap(g_hInst, _T("DBRun"));
+		Edit_SetText(tbb->hwnd, _T("Run"));
+	}
+	RECT rc;
+	GetClientRect(tbb->hwnd, &rc);
+	InvalidateRect(tbb->hwnd, &rc, TRUE);
 }
 
 LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -949,20 +947,11 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 #endif
 				case 999: {
 					TBBTN *tbb = (TBBTN *) GetWindowLongPtr((HWND) lParam, GWLP_USERDATA);
-					if (tbb->hbmIcon)
-						DeleteObject(tbb->hbmIcon);
-					if (lpDebuggerCalc->running) {
-						tbb->hbmIcon = LoadBitmap(g_hInst, _T("DBRun"));
-						Edit_SetText(tbb->hwnd, _T("Run"));
+					if (lpDebuggerCalc->running)
 						SendMessage(GetParent(hwnd), WM_COMMAND, DB_STOP, 0);
-					} else {
-						tbb->hbmIcon = LoadBitmap(g_hInst, _T("DBStop"));
-						Edit_SetText(tbb->hwnd, _T("Stop"));
+					else
 						SendMessage(GetParent(hwnd), WM_COMMAND, DB_RUN, 0);
-					}
-					RECT rc;
-					GetClientRect(tbb->hwnd, &rc);
-					InvalidateRect(tbb->hwnd, &rc, TRUE);
+					ChangeRunButtonIconAndText(tbb);
 					break;
 				}
 				case 1000:
@@ -1202,6 +1191,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							bf);
 
 				DeleteObject(hbmGrad);
+				DeleteObject(hbrGrad);
 				DeleteDC(hdcGrad);
 			}
 

@@ -533,12 +533,12 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	return 0;
 }
 
-BOOL calc_start_screenshot(calc_t *calc, const char *filename)
+BOOL calc_start_screenshot(calc_t *calc, const TCHAR *filename)
 {
 	if (gif_write_state == GIF_IDLE)
 	{
 		gif_write_state = GIF_START;
-		strcpy(gif_file_name, filename);
+		_tcscpy(gif_file_name, filename);
 		return TRUE;
 	}
 	else

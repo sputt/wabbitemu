@@ -55,6 +55,7 @@ int GetMaxAddr(mempane_settings *mps) {
 		case RAM:
 			return lpDebuggerCalc->cpu.mem_c->ram_size;
 	}
+	return NULL;
 }
 
 
@@ -167,8 +168,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			mps->hwndHeader = CreateWindowEx(0, WC_HEADER, (LPCTSTR) NULL,
 				WS_CHILD | WS_VISIBLE | HDS_HORZ |/* HDS_FULLDRAG | HDS_DRAGDROP |*/ WS_CLIPSIBLINGS,
-                0, 0, 1, 1, hwnd, (HMENU) ID_SIZE, g_hInst,
-                (LPVOID) NULL);
+				0, 0, 1, 1, hwnd, (HMENU) ID_SIZE, g_hInst,
+				(LPVOID) NULL);
 
 			SendMessage(mps->hwndHeader, WM_SETFONT, (WPARAM) hfontSegoe, TRUE);
 
@@ -181,26 +182,26 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			SetWindowPos(mps->hwndHeader, wp.hwndInsertAfter, wp.x, wp.y,
 				wp.cx, wp.cy, wp.flags);
 
-		    HDITEM hdi;
+			HDITEM hdi;
 
-		    hdi.mask = HDI_TEXT | HDI_FORMAT | HDI_WIDTH;
+			hdi.mask = HDI_TEXT | HDI_FORMAT | HDI_WIDTH;
 			TCHAR pszText[32];
 			GetWindowText(hwnd, pszText, sizeof(pszText));
-		    hdi.pszText = pszText;
-		    hdi.cxy = 1;
-		    hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]);
-		    hdi.fmt = HDF_LEFT | HDF_STRING;
-		    mps->iData = 1;
+			hdi.pszText = pszText;
+			hdi.cxy = 1;
+			hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]);
+			hdi.fmt = HDF_LEFT | HDF_STRING;
+			mps->iData = 1;
 
-		    Header_InsertItem(mps->hwndHeader, 0, &hdi);
+			Header_InsertItem(mps->hwndHeader, 0, &hdi);
 
 
-		    hdi.pszText = _T("Addr");
-		    hdi.cxy = tm.tmAveCharWidth*7;
-		    hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]);
-		    mps->iAddr = 0;
+			hdi.pszText = _T("Addr");
+			hdi.cxy = tm.tmAveCharWidth*7;
+			hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]);
+			mps->iAddr = 0;
 
-		    Header_InsertItem(mps->hwndHeader, 0, &hdi);
+			Header_InsertItem(mps->hwndHeader, 0, &hdi);
 			/*
 			mps->hwndTip = CreateWindowEx(
 					NULL,
@@ -211,24 +212,24 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					hwnd, NULL, g_hInst, NULL);
 
 			SetWindowPos(mps->hwndTip, HWND_TOPMOST,0, 0, 0, 0,
-			             SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+						 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			SendMessage(mps->hwndTip, TTM_ACTIVATE, TRUE, 0);
 
 			TOOLINFO toolInfo = {0};
 			toolInfo.cbSize = sizeof(toolInfo);
-		    toolInfo.hwnd = hwnd;
-		    toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
-		    toolInfo.uId = (UINT_PTR) hwnd;
-		    toolInfo.lpszText = LPSTR_TEXTCALLBACK;
-		    SendMessage(mps->hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+			toolInfo.hwnd = hwnd;
+			toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;
+			toolInfo.uId = (UINT_PTR) hwnd;
+			toolInfo.lpszText = LPSTR_TEXTCALLBACK;
+			SendMessage(mps->hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
 			*/
 
 
-		    RECT r;
-		    GetWindowRect(mps->hwndHeader, &r);
-		    cyHeader = r.bottom - r.top;
+			RECT r;
+			GetWindowRect(mps->hwndHeader, &r);
+			cyHeader = r.bottom - r.top;
 
-		    mps->hfontData = hfontLucida;
+			mps->hfontData = hfontLucida;
 			mps->hfontAddr = hfontLucidaBold;
 
 			mps->cyRow = 4 * tm.tmHeight / 3;
@@ -356,7 +357,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					if (addr < 0)
 						StringCbPrintf(szVal, sizeof(szVal), _T("%02X 0000"), addr / 0x4000);
 					else
-						StringCbPrintf(szVal, sizeof(szVal), _T("%02X %04X"), addr / 0x4000 + (mps->type == RAM ? 0x80 : 0), addr % 0x4000);
+						StringCbPrintf(szVal, sizeof(szVal), _T("%02X %04X"), addr / 0x4000 + 
+											(mps->type == RAM ? (lpDebuggerCalc->cpu.pio.model <= TI_83P ? 0x40 : 0x80) : 0), addr % 0x4000);
 				}
 
 				max_addr = GetMaxAddr(mps);
@@ -758,8 +760,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					waddr_t waddr = GetWaddr(mps, addr);
 					for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
 						waddr.addr = (addr + b) % 0x4000;
-						waddr.page = (addr + b) / 0x4000;
-						value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
+							waddr.page = !waddr.is_ram ? (addr + b) / 0x4000 : (waddr.addr ? waddr.page : waddr.page + 1);
+							value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
 					}
 
 					TCHAR szFmt[8];
