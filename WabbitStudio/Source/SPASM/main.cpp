@@ -337,6 +337,8 @@ int main (int argc, char **argv)
 				define = add_define (strdup (name), NULL);
 				if (*skip_whitespace (ptr) != '\0')
 					define->contents = strdup (ptr);
+				else
+					set_define (define, "1", 1, false);
 				break;
 			}
 			case 'V':
