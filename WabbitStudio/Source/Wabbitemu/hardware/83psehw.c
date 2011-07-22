@@ -907,8 +907,8 @@ void clock_read(CPU_t *cpu, device_t *dev) {
 
 #define BIT(bit) (1 << bit)
 
-#define USB_LINE_INTERRUPT_MASK 0x04;
-#define USB_PROTOCOL_INTERRUPT_MASK 0x10;
+#define USB_LINE_INTERRUPT_MASK BIT(2);
+#define USB_PROTOCOL_INTERRUPT_MASK BIT(4);
 
 void GenerateUSBEvent(CPU_t *cpu, USB_t *usb, int bit, BOOL lowToHigh) {
 	if (lowToHigh) {

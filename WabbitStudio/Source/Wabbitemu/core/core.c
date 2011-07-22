@@ -192,7 +192,7 @@ BOOL is_priveleged_page(CPU_t *cpu) {
 
 static BOOL is_allowed_exec(CPU_t *cpu) {
 	bank_state_t  bank = cpu->mem_c->banks[mc_bank(cpu->pc)];
-	if (cpu->pio.model == TI_83P || cpu->pio.model == TI_73) {
+	if (cpu->pio.model <= TI_83P) {
 		int protected_val, group_offset;
 		if (bank.ram) {
 			protected_val = cpu->mem_c->protected_page[3];

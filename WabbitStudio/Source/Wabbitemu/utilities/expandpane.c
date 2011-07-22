@@ -3,6 +3,7 @@
 #include "expandpane.h"
 #include "coretypes.h"
 #include "dbcommon.h"
+#include "registry.h"
 
 extern HINSTANCE g_hInst;
 extern HFONT hfontSegoe;
@@ -103,6 +104,7 @@ void ArrangeExpandPanes(void) {
 void DrawExpandPanes(void) {
 	int i;
 	for (i = 0; i < TotalPanes; i++) {
+		InvalidateRect(ExpandPanes[i], NULL, FALSE);
 		SendMessage(ExpandPanes[i], WM_PAINT, 0, 0);
 	}
 }
@@ -523,7 +525,8 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			int index = GetWindowLongPtr(hwnd, GWLP_ID) - EXPAND_PANE_BASE_ID;
 
 			// Add in all the previous windows
-			int cy = 2;
+			extern int regPanesYScroll;
+			int cy = regPanesYScroll;
 			int i;
 			for (i = 0; i < index; i++) {
 				RECT rc;
@@ -579,6 +582,8 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		{
 			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
+			InvalidateRect(eps->hwndBtn, NULL, FALSE);
+			InvalidateRect(eps->hwndHeader, NULL, FALSE);
 			PAINTSTRUCT ps;
 			HDC hdc;
 			HBRUSH hbr = GetStockBrush(WHITE_BRUSH);
@@ -609,7 +614,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			TCHAR name[256];
 			GetWindowText(hwnd, name, ARRAYSIZE(name));
-			SaveDebugKey(name, (DWORD*)eps->ExpandState);
+			SaveDebugKey(name, REG_DWORD, &eps->ExpandState);
 			ID--;
 			free(eps);
 		}
@@ -617,48 +622,4 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
 	return 0;
-}
-
-INT_PTR QueryDebugKey(TCHAR *name) {
-	HKEY hkeySoftware;
-	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
-
-	HKEY hkeyWabbit, hkeyDebugger;
-	DWORD dwDisposition;
-	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0,
-			NULL, REG_OPTION_NON_VOLATILE,
-			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
-
-	RegCreateKeyEx(hkeyWabbit, _T("Debugger"), 0,
-				NULL, REG_OPTION_NON_VOLATILE,
-				KEY_ALL_ACCESS, NULL, &hkeyDebugger, &dwDisposition);
-
-	LONG len = sizeof(DWORD);
-	DWORD dwResult;
-
-	LONG rqvx_res = RegQueryValueEx(hkeyDebugger, name, NULL, NULL, (LPBYTE)&dwResult, (LPDWORD)&len);
-	if (rqvx_res == ERROR_FILE_NOT_FOUND) {
-		_tprintf_s(_T("Error querying debug registry"));
-		dwResult = EP_CLOSED;
-	}
-
-	RegCloseKey(hkeyDebugger);
-	RegCloseKey(hkeyWabbit);
-	RegCloseKey(hkeySoftware);
-
-	return dwResult;
-}
-
-void SaveDebugKey(TCHAR *name, DWORD *value) {
-	HKEY hkeyDebugger;
-	HRESULT res;
-	res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu\\Debugger"), 0, KEY_ALL_ACCESS, &hkeyDebugger);
-	if (FAILED(res))
-	{
-		_tprintf_s(_T("Failed opening Debug registry"));
-		return;
-	}
-	int error = RegSetValueEx(hkeyDebugger, name, 0, REG_DWORD, (const BYTE*) &value, sizeof(REG_DWORD));
-	if (error != ERROR_SUCCESS)
-		error +=1;
 }

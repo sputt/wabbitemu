@@ -249,8 +249,8 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 
 			trbShades = GetDlgItem(hwndDlg, IDC_TRBDISPLAYSHADES);
 			SendMessage(trbShades, TBM_SETRANGE,
-			    (WPARAM) TRUE,
-			    (LPARAM) MAKELONG(2, LCD_MAX_SHADES));
+				(WPARAM) TRUE,
+				(LPARAM) MAKELONG(2, LCD_MAX_SHADES));
 			SendMessage(trbShades, TBM_SETTICFREQ, 1, 0);
 
 			SendMessage(trbShades, TBM_SETPOS, TRUE, lcd->shades + 1);
@@ -264,8 +264,8 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 
 			trbFPS = GetDlgItem(hwndDlg, IDC_TRBDISPLAYFPS);
 			SendMessage(trbFPS, TBM_SETRANGE,
-						    (WPARAM) TRUE,
-						    (LPARAM) MAKELONG(20, 80));
+							(WPARAM) TRUE,
+							(LPARAM) MAKELONG(20, 80));
 			SendMessage(trbFPS, TBM_SETTICFREQ, 10, 0);
 			SendMessage(trbFPS, TBM_SETPOS, TRUE, MAKELPARAM(displayFPS, 0));
 
@@ -405,15 +405,8 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(chkCustom, lpCalc->bCustomSkin);
 			SendMessage(hColorSelect, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) LoadBitmap(g_hInst, _T("SkinPicker")));
 			backupFaceplate = lpCalc->FaceplateColor;
-#ifndef _UNICODE
-			CW2A skinPath(lpCalc->skin_path);
-			CW2A keyPath(lpCalc->keymap_path);
-			Edit_SetText(hSkinText, skinPath);
-			Edit_SetText(hKeyText, keyPath);
-#else
 			Edit_SetText(hSkinText, lpCalc->skin_path);
 			Edit_SetText(hKeyText, lpCalc->keymap_path);
-#endif
 			return 0;
 		}
 		case WM_COMMAND: {
@@ -470,7 +463,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 			return TRUE;
 		}
 		case WM_NOTIFY: {
-    		switch (((NMHDR FAR *) lParam)->code) {
+			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_RESET: {
 					lpCalc->FaceplateColor = backupFaceplate;
 					gui_frame_update(lpCalc);
@@ -485,19 +478,9 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 
 					TCHAR lpStrFile[MAX_PATH];
 					Edit_GetText(hSkinText, lpStrFile, sizeof(lpStrFile));
-#ifndef _UNICODE
-					CA2W lpWStrFile(lpStrFile);
-					StringCbCopyW(lpCalc->skin_path, sizeof(lpCalc->skin_path), lpWStrFile);
-#else
 					StringCbCopy(lpCalc->skin_path, sizeof(lpCalc->skin_path), lpStrFile);
-#endif
 					Edit_GetText(hKeyText, lpStrFile, sizeof(lpStrFile));
-#ifndef _UNICODE
-					CA2W lpWStrFile2(lpStrFile);
-					StringCbCopyW(lpCalc->keymap_path, sizeof(lpCalc->skin_path), lpWStrFile2);
-#else
 					StringCbCopy(lpCalc->keymap_path, sizeof(lpCalc->skin_path), lpStrFile);
-#endif
 					gui_frame_update(lpCalc);
 					return TRUE;
 				}
@@ -607,13 +590,13 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 
 			hwndSpeed = GetDlgItem(hwndDlg, IDC_TRBGIFFPS);
 			SendMessage(hwndSpeed, TBM_SETRANGE,
-			    (WPARAM) TRUE,
-			    (LPARAM) MAKELONG(0, TBRTICS));
+				(WPARAM) TRUE,
+				(LPARAM) MAKELONG(0, TBRTICS));
 			SendMessage(hwndSpeed, TBM_SETTICFREQ, 1, 0);
 
 			int speedPos = 0;
 			if (gif_base_delay_start != 0) {
-			 	speedPos = ((100 / gif_base_delay_start) - 9) / TBRSTEP;
+				speedPos = ((100 / gif_base_delay_start) - 9) / TBRSTEP;
 			}
 
 			SendMessage(hwndSpeed, TBM_SETPOS, TRUE, speedPos);
@@ -644,7 +627,7 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 			return TRUE;
 		}
 		case WM_NOTIFY:
-    		switch (((NMHDR FAR *) lParam)->code) {
+			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
 
 					int speedPos = (int) SendMessage(hwndSpeed, TBM_GETPOS, 0, 0);

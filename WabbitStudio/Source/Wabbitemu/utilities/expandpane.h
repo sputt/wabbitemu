@@ -12,8 +12,6 @@ typedef struct {
 
 #define g_szExpandPane	_T("wabexppane")
 
-INT_PTR QueryDebugKey(TCHAR *);
-void SaveDebugKey(TCHAR *, DWORD*);
 void GetExpandPaneState(ep_state *);
 void SetExpandPaneState(const ep_state *);
 void ArrangeExpandPanes(void);

@@ -297,6 +297,15 @@
     <ClCompile Include="debugger\dbwatch.c">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="core\alu_reverse.c">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\indexcb_reverse.c">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="core\control_reverse.c">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -562,6 +571,15 @@
     </ClInclude>
     <ClInclude Include="debugger\dbwatch.h">
       <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="core\alu_reverse.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\indexcb_reverse.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\control_reverse.h">
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

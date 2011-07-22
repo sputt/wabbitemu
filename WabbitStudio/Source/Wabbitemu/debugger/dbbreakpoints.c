@@ -138,11 +138,11 @@ void UpdateItemsListView(HWND hwndListView) {
 		lvI.iSubItem	= 0;
 		lvI.state		= 0;
 		lvI.iItem		= i;
-    
+	
 		BOOL active = lpBreak->active;
-        // Insert items into the list.
-        if (ListView_InsertItem(hwndListView, &lvI) == -1)
-            return;
+		// Insert items into the list.
+		if (ListView_InsertItem(hwndListView, &lvI) == -1)
+			return;
 		lpBreak->active = active;
 		ListView_SetCheckState(hwndListView, i, lpBreak->active);
 		lpBreak = lpBreak->next;
@@ -181,20 +181,20 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			listCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
 			listCol.pszText = _T("Label");
 			listCol.cx = 112;
-			SendMessage(hwndListView, LVM_INSERTCOLUMN, 0, (LPARAM)&listCol);
+			ListView_InsertColumn(hwndListView, 0, &listCol);
 			listCol.cx = 110;
 			listCol.pszText = _T("Type");
-			SendMessage(hwndListView, LVM_INSERTCOLUMN, 1, (LPARAM)&listCol);
+			ListView_InsertColumn(hwndListView, 1, &listCol);
 			listCol.cx = 60;
 			listCol.pszText = _T("Address");
-			SendMessage(hwndListView, LVM_INSERTCOLUMN, 2, (LPARAM)&listCol);
+			ListView_InsertColumn(hwndListView, 2, &listCol);
 			listCol.cx = 40;
 			listCol.pszText = _T("Page");
-			SendMessage(hwndListView, LVM_INSERTCOLUMN, 3, (LPARAM)&listCol);
+			ListView_InsertColumn(hwndListView, 3, &listCol);
 			listCol.cx = 60;
 			listCol.pszText = _T("In Ram");
-			SendMessage(hwndListView, LVM_INSERTCOLUMN, 4, (LPARAM)&listCol);
-			SendMessage(hwndListView, WM_SETFONT, (WPARAM) hfontSegoe, TRUE);
+			ListView_InsertColumn(hwndListView, 4, &listCol);
+			SetWindowFont(hwndListView, hfontSegoe, TRUE);
 
 			ListView_SetExtendedListViewStyle(hwndListView, LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES);
 

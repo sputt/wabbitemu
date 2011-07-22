@@ -11,6 +11,7 @@
 #include "dbprofile.h"
 #include "dbreg.h"
 #include "expandpane.h"
+#include "registry.h"
 #include "resource.h"
 #include "fileutilities.h"
 #include "gifhandle.h"
@@ -804,8 +805,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			db_maximized = IsMaximized(hwnd);
 
 			int selIndex = TabCtrl_GetCurSel(hmem);
-			SaveDebugKey((TCHAR *) MemPaneString, (DWORD *) (total_mem_pane / 3));
-			SaveDebugKey((TCHAR *) MemSelIndexString, (DWORD *) selIndex);
+			int groupIndex = total_mem_pane / 3;
+			SaveDebugKey((TCHAR *) MemPaneString, REG_DWORD, &groupIndex);
+			SaveDebugKey((TCHAR *) MemSelIndexString, REG_DWORD, &selIndex);
 			GetExpandPaneState(&expand_pane_state);
 			DeleteObject(hfontLucida);
 			hfontLucida = NULL;
@@ -827,7 +829,7 @@ void WriteHumanReadableDump(LPCALC lpCalc, TCHAR *path) {
 	
 	//Write CPU output
 	_fputts(_T("CPU Registers:\n"), file);
-	_ftprintf_s(file, _T("AF: %04X\AF': %04X\n"), lpCalc->cpu.af, lpCalc->cpu.afp);
+	_ftprintf_s(file, _T("AF: %04X\tAF': %04X\n"), lpCalc->cpu.af, lpCalc->cpu.afp);
 	_ftprintf_s(file, _T("BC: %04X\tBC': %04X\n"), lpCalc->cpu.bc, lpCalc->cpu.bcp);
 	_ftprintf_s(file, _T("DE: %04X\tDE': %04X\n"), lpCalc->cpu.de, lpCalc->cpu.dep);
 	_ftprintf_s(file, _T("HL: %04X\tHL': %04X\n"), lpCalc->cpu.hl, lpCalc->cpu.hlp);

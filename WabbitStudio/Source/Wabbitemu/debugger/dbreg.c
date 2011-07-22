@@ -17,6 +17,7 @@ extern HWND hdisasm;
 #define DBREG_ORGX	12
 #define DBREG_ORGY	0
 SCROLLINFO si;
+int regPanesYScroll;
 
 struct db_reg {
 	unsigned int offset;
@@ -261,7 +262,7 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				kRegAddr * 3 + ((kRegAddr - check_width) / 2), row_y, kRegAddr / 2, kRegRow,
 				hwnd, (HMENU) (30 + i), g_hInst, NULL);
-			SendMessage(chkRO[i], WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+			SetWindowFont(chkRO[i], hfontSegoe, TRUE);
 		}
 
 		return 0;
@@ -402,7 +403,7 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 			0, 0, 3*kRegAddr, kRegRow,
 			hwnd, (HMENU) 1, g_hInst, NULL);
-		SendMessage(chkHalt, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+		SetWindowFont(chkHalt, hfontSegoe, TRUE);
 
 		return 0;
 	}
@@ -481,7 +482,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 			0, 0, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 1, g_hInst, NULL);
-		SendMessage(chkIff1, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+		SetWindowFont(chkIff1, hfontSegoe, TRUE);
 
 		chkIff2 =
 		CreateWindowEx(
@@ -491,7 +492,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 			2*kRegAddr, 0, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 2, g_hInst, NULL);
-		SendMessage(chkIff2, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+		SetWindowFont(chkIff2, hfontSegoe, TRUE);
 
 		HWND hwndValue = CreateValueField(hwnd, _T("IM"), kRegAddr, &lpDebuggerCalc->cpu.imode, 1, 2, HEX2);
 		SetWindowPos(hwndValue, NULL, 0, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
@@ -605,10 +606,8 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	case WM_USER:
 		switch (wParam) {
 		case DB_UPDATE:
-			SendMessage(chkIff1, BM_SETCHECK,
-			lpDebuggerCalc->cpu.iff1 ? BST_CHECKED : BST_UNCHECKED, 0);
-			SendMessage(chkIff2, BM_SETCHECK,
-			lpDebuggerCalc->cpu.iff2 ? BST_CHECKED : BST_UNCHECKED, 0);
+			Button_SetCheck(chkIff1, lpDebuggerCalc->cpu.iff1 ? BST_CHECKED : BST_UNCHECKED);
+			Button_SetCheck(chkIff2, lpDebuggerCalc->cpu.iff2 ? BST_CHECKED : BST_UNCHECKED);
 
 			InvalidateRect(hwnd, NULL, FALSE);
 			break;
@@ -676,7 +675,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 			0, 0, 3*kRegAddr, kRegRow,
 			hwnd, (HMENU) IDC_LCD_ON, g_hInst, NULL);
-		SendMessage(chkOn, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+		SetWindowFont(chkOn, hfontSegoe, TRUE);
 
 		grpMode =
 		CreateWindow(
@@ -685,8 +684,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
 			0, 3*kRegRow, 5*kRegAddr, 7*kRegRow/2,
 			hwnd, (HMENU) 34234, g_hInst, NULL);
-
-		SendMessage(grpMode, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+		SetWindowFont(grpMode, hfontSegoe, TRUE);
 
 		rdoXinc =
 		CreateWindow(
@@ -695,7 +693,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON | WS_GROUP,
 			kRegAddr/2, 4*kRegRow, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 84354, g_hInst, NULL);
-		SendMessage(rdoXinc, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+		SetWindowFont(rdoXinc, hfontSegoe, TRUE);
 
 		rdoYinc =
 		CreateWindow(
@@ -704,7 +702,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON ,
 			2*kRegAddr + kRegAddr*2/3, 4*kRegRow, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 84355, g_hInst, NULL);
-		SendMessage(rdoYinc, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+		SetWindowFont(rdoYinc, hfontSegoe, TRUE);
 
 		rdoXdec =
 		CreateWindow(
@@ -713,7 +711,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON ,
 			kRegAddr/2, 5*kRegRow, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 84356, g_hInst, NULL);
-		SendMessage(rdoXdec, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+		SetWindowFont(rdoXdec, hfontSegoe, TRUE);
 
 		rdoYdec =
 		CreateWindow(
@@ -722,7 +720,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON ,
 			2*kRegAddr + kRegAddr*2/3, 5*kRegRow, 2*kRegAddr, kRegRow,
 			hwnd, (HMENU) 84357, g_hInst, NULL);
-		SendMessage(rdoYdec, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+		SetWindowFont(rdoYdec, hfontSegoe, TRUE);
 
 		return 0;
 	}
@@ -772,20 +770,19 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	case WM_USER:
 		switch (wParam) {
 		case DB_UPDATE:
-			SendMessage(chkOn, BM_SETCHECK,
-			lpDebuggerCalc->cpu.pio.lcd->active ? BST_CHECKED : BST_UNCHECKED, 0);
+			Button_SetCheck(chkOn, lpDebuggerCalc->cpu.pio.lcd->active ? BST_CHECKED : BST_UNCHECKED);
 
-			SendMessage(rdoXdec, BM_SETCHECK, BST_UNCHECKED, 0);
-			SendMessage(rdoXinc, BM_SETCHECK, BST_UNCHECKED, 0);
-			SendMessage(rdoYinc, BM_SETCHECK, BST_UNCHECKED, 0);
-			SendMessage(rdoYdec, BM_SETCHECK, BST_UNCHECKED, 0);
+			Button_SetCheck(rdoXdec, BST_UNCHECKED);
+			Button_SetCheck(rdoXinc, BST_UNCHECKED);
+			Button_SetCheck(rdoYinc, BST_UNCHECKED);
+			Button_SetCheck(rdoYdec, BST_UNCHECKED);
 
 			switch (lpDebuggerCalc->cpu.pio.lcd->cursor_mode)
 			{
-			case X_UP:		SendMessage(rdoXdec, BM_SETCHECK, BST_CHECKED, 0); break;
-			case X_DOWN:	SendMessage(rdoXinc, BM_SETCHECK, BST_CHECKED, 0); break;
-			case Y_UP:		SendMessage(rdoYinc, BM_SETCHECK, BST_CHECKED, 0); break;
-			case Y_DOWN:	SendMessage(rdoYdec, BM_SETCHECK, BST_CHECKED, 0); break;
+			case X_UP:		Button_SetCheck(rdoXdec, BST_CHECKED); break;
+			case X_DOWN:	Button_SetCheck(rdoXinc, BST_CHECKED); break;
+			case Y_UP:		Button_SetCheck(rdoYinc, BST_CHECKED); break;
+			case Y_DOWN:	Button_SetCheck(rdoYdec, BST_CHECKED); break;
 			default:
 				break;
 			}
@@ -820,7 +817,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				0, FLAGS_TOP, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_Z, g_hInst, NULL);
-			SendMessage(chk_z, WM_SETFONT, (WPARAM) hfontFlags, (LPARAM) TRUE);
+			SetWindowFont(chk_z, hfontFlags, TRUE);
 
 			chk_c =
 			CreateWindow(
@@ -829,7 +826,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				2*kRegAddr, FLAGS_TOP, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_C, g_hInst, NULL);
-			SendMessage(chk_c, WM_SETFONT, (WPARAM) hfontFlags, (LPARAM) TRUE);
+			SetWindowFont(chk_c, hfontFlags, TRUE);
 
 			chk_s =
 			CreateWindow(
@@ -838,7 +835,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				4*kRegAddr, FLAGS_TOP, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_S, g_hInst, NULL);
-			SendMessage(chk_s, WM_SETFONT, (WPARAM) hfontFlags, (LPARAM) TRUE);
+			SetWindowFont(chk_s, hfontFlags, TRUE);
 
 			chk_pv =
 			CreateWindow(
@@ -847,7 +844,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				0, FLAGS_TOP + kRegRow, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_PV, g_hInst, NULL);
-			SendMessage(chk_pv, WM_SETFONT, (WPARAM) hfontFlags, (LPARAM) TRUE);
+			SetWindowFont(chk_pv, hfontFlags, TRUE);
 
 			chk_hc =
 			CreateWindow(
@@ -856,7 +853,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				2*kRegAddr, FLAGS_TOP + kRegRow, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_HC, g_hInst, NULL);
-			SendMessage(chk_hc, WM_SETFONT, (WPARAM) hfontFlags, (LPARAM) TRUE);
+			SetWindowFont(chk_hc, hfontFlags, TRUE);
 
 			chk_n =
 			CreateWindow(
@@ -865,7 +862,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
 				4*kRegAddr, FLAGS_TOP + kRegRow, 3*kRegAddr/2, kRegRow,
 				hwnd, (HMENU) REG_CHK_N, g_hInst, NULL);
-			SendMessage(chk_n, WM_SETFONT, (WPARAM) hfontFlags, (LPARAM) TRUE);
+			SetWindowFont(chk_n, hfontFlags, TRUE);
 
 			SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 			return 0;
@@ -929,18 +926,12 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 		case WM_USER: {
 			switch (wParam) {
 			case DB_UPDATE: {
-				SendMessage(chk_z, BM_SETCHECK,
-				(lpDebuggerCalc->cpu.f & ZERO_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
-				SendMessage(chk_c, BM_SETCHECK,
-				(lpDebuggerCalc->cpu.f & CARRY_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
-				SendMessage(chk_s, BM_SETCHECK,
-				(lpDebuggerCalc->cpu.f & SIGN_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
-				SendMessage(chk_pv, BM_SETCHECK,
-				(lpDebuggerCalc->cpu.f & PV_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
-				SendMessage(chk_hc, BM_SETCHECK,
-				(lpDebuggerCalc->cpu.f & HC_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
-				SendMessage(chk_n, BM_SETCHECK,
-				(lpDebuggerCalc->cpu.f & N_MASK) ? BST_CHECKED : BST_UNCHECKED, 0);
+				Button_SetCheck(chk_z, (lpDebuggerCalc->cpu.f & ZERO_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_c, (lpDebuggerCalc->cpu.f & CARRY_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_s, (lpDebuggerCalc->cpu.f & SIGN_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_pv, (lpDebuggerCalc->cpu.f & PV_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_hc, (lpDebuggerCalc->cpu.f & HC_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_n, (lpDebuggerCalc->cpu.f & N_MASK) ? BST_CHECKED : BST_UNCHECKED);
 				break;
 			}
 			}
@@ -1088,40 +1079,29 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 		case WM_SIZE:
 		{
-			ArrangeExpandPanes();
-			int height = GetExpandPanesHeight() + 50;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
-			si.cbSize = sizeof(si);
+			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask  = SIF_ALL;
 			GetScrollInfo (hwnd, SB_VERT, &si);
-			double percent;
-			if (si.nMax != 0)
-				percent = (double) si.nPos / (double) si.nMax;
-			else
-				percent = 0;
+			ArrangeExpandPanes();
+			int height = GetExpandPanesHeight() + 7;
+			//positive diff we opened a pane, negative diff we closed
+			int diff = height - si.nMax;
 
 			si.fMask = SIF_RANGE | SIF_PAGE | SIF_POS;
-			if (height < rc.bottom) {
-				si.nPage = rc.bottom;
-				height = 0;
-			}
-			else
-				height -= rc.bottom;
-			si.cbSize = sizeof(SCROLLINFO);
 			si.nMin = 0;
 			si.nMax = height;
-			si.nPos = 0;
-			si.nPos = 0;//(int) (percent * height);
-			if (height != 0)
-				si.nPage = 40 - rc.bottom  / height;
+			si.nPage = rc.bottom;
+			regPanesYScroll = min(0, max(0, si.nPos + diff));
+			if (diff < 0)
+				si.nPos = max(0, si.nPos + diff);
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-			if (percent != 0.0) {
-				ScrollWindow(hwnd, 0, -si.nPos, NULL, NULL);
-			}
+
+			/*if (si.nPos != 0)
+				ScrollWindow(hwnd, 0, -si.nPos, NULL, NULL);*/
 
 			DrawExpandPanes();
-			InvalidateRect(hwnd, NULL, TRUE);
 			UpdateWindow(hwnd);
 			return 0;
 		}
@@ -1185,11 +1165,11 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			 SetScrollInfo (hwnd, SB_VERT, &si, TRUE);
 			 GetScrollInfo (hwnd, SB_VERT, &si);
 			 // If the position has changed, scroll window and update it
+			 regPanesYScroll = -si.nPos;
 			 if (si.nPos != yPos)
-			 {
 				  ScrollWindow(hwnd, 0, yPos - si.nPos, NULL, NULL);
-				  UpdateWindow(hwnd);
-			 }
+			 DrawExpandPanes();
+			 UpdateWindow(hwnd);
 			break;
 		}
 		case WM_COMMAND:

@@ -41,7 +41,7 @@ TCHAR* FindAddressLabel(LPCALC lpCalc, BOOL IsRAM, uint8_t page, uint16_t addr) 
 //-------------------------------------------
 // True means label is found and is the same
 //
-BOOL label_search_tios(TCHAR *label,int equate) {
+BOOL label_search_tios(TCHAR *label, int equate) {
 	int i,b;
 	
 	if (!label) return FALSE;
@@ -80,6 +80,14 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 #endif
 	TCHAR buffer[256];
 	TCHAR name[256];
+#ifdef _WINDOWS
+	TCHAR *fileName = ((TCHAR *) lpszFileName) + _tcslen(lpszFileName);
+#else
+	TCHAR *fileName = ((TCHAR *) lpszFileName) + strlen(lpszFileName);
+#endif
+	while (*--fileName != '\\');
+	fileName++;
+
 	unsigned int equate;
 	label_struct *label = &lpCalc->labels[0];	
 
@@ -89,14 +97,14 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 	labelFile = fopen(lpszFileName, "r");
 #endif
 	if (labelFile == NULL) {
-        _putts(_T("Error opening label files."));
-        return 1;
-    }
-    
-    // Clear out the old labels
-    VoidLabels(lpCalc);
+		_putts(_T("Error opening label files."));
+		return 1;
+	}
+	
+	// Clear out the old labels
+	VoidLabels(lpCalc);
 
-    while (!feof(labelFile)) {
+	while (!feof(labelFile)) {
 #ifdef _UNICODE
 		fgets(readBuf, 256, labelFile);
 		MultiByteToWideChar(CP_ACP, 0, readBuf, -1, buffer, ARRAYSIZE(buffer));
@@ -131,11 +139,24 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 					int page_offset = (equate >> 16) & 0xFF;
 					
 					label->IsRAM = FALSE;
-					if (lpCalc->last_transferred_app == NULL)
-						label->page = lpCalc->mem_c.flash_pages - page_offset;
-					else
-						label->page = lpCalc->last_transferred_app->page - page_offset;
-
+					if (lpCalc->last_transferred_app == NULL) {
+						upages_t upage;
+						state_userpages(&lpCalc->cpu, &upage);
+						label->page = upage.start;
+					} else {
+						applist_t applist;
+						state_build_applist(&lpCalc->cpu, &applist);
+						for (int i = 0; i < applist.count; i++) {
+							int len = 8;
+							TCHAR *ptr = applist.apps[i].name + len - 1;
+							while (isspace(*ptr--))
+								len--;
+							if (!_strnicmp(fileName, applist.apps[i].name, len)) {
+								label->page = applist.apps[i].page;
+								break;
+							}
+						}
+					}
 				} else {
 					label->IsRAM = TRUE;
 					label->page = 1;
@@ -143,11 +164,11 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 				label++;
 			}
 		}
-    }
-    fclose(labelFile);
-    return 0;
+	}
+	fclose(labelFile);
+	return 0;
 }
-    
+	
 /*
 void ImportBcalls(char* fn) {
 	int i,address;
