@@ -164,7 +164,7 @@ int memory_init_81(memc *mc) {
 	mc->mem_write_break_callback = mem_debug_callback;
 	
 	/* Set Number of Pages here */
-	mc->flash_pages = 32;
+	mc->flash_pages = 2;
 	mc->ram_pages = 2;
 
 	mc->flash_version = 1;
@@ -190,8 +190,8 @@ int memory_init_81(memc *mc) {
 	/*	Address								page	write?	ram?	no exec?	*/
 	bank_state_t banks[5] = {
 		{mc->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-		{mc->flash+0x1f*PAGE_SIZE,			0x1f, 	FALSE, 	FALSE, 	FALSE},
-		{mc->flash+0x1f*PAGE_SIZE,			0x1f, 	FALSE, 	FALSE, 	FALSE},
+		{mc->flash+0x1*PAGE_SIZE,			0x1, 	FALSE, 	FALSE, 	FALSE},
+		{mc->flash+0x1*PAGE_SIZE,			0x1, 	FALSE, 	FALSE, 	FALSE},
 		{mc->ram,							0,		FALSE,	TRUE,	FALSE},
 		{NULL,								0,		FALSE,	FALSE,	FALSE}
 	};
@@ -226,6 +226,9 @@ int device_init_81(CPU_t *cpu) {
 	cpu->pio.devices[0x04].active = TRUE;
 	cpu->pio.devices[0x04].code = (devp) &port4;
 	cpu->pio.devices[0x04].aux = lcd;
+
+	cpu->pio.devices[0x05].active = TRUE;
+	cpu->pio.devices[0x05].code = (devp) &port5;
 
 	cpu->pio.devices[0x06].active = TRUE;
 	cpu->pio.devices[0x06].code = (devp) &port6;

@@ -350,7 +350,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			vfs->hot.left = vfs->cxName;
 
 			SendMessage(vfs->hwndTip, TTM_SETMAXTIPWIDTH, 0, 150);
-			SendMessage(vfs->hwndTip, WM_SETFONT, (WPARAM) hfontLucida, TRUE);
+			SetWindowFont(vfs->hwndTip, hfontLucida, TRUE);
 			SendMessage(vfs->hwndTip, TTM_SETDELAYTIME, TTDT_AUTOMATIC, MAKELONG(GetDoubleClickTime() * 5, 0));
 
 			StringCbPrintf(vfs->szTip, sizeof(vfs->szTip), _T("%c: %3d (%s)\n%c: %3d (%s)"),

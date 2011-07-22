@@ -60,10 +60,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\alu.c" />
+    <ClCompile Include="core\alu_reverse.c" />
     <ClCompile Include="core\control.c" />
+    <ClCompile Include="core\control_reverse.c" />
     <ClCompile Include="core\core.c" />
     <ClCompile Include="core\device.c" />
     <ClCompile Include="core\indexcb.c" />
+    <ClCompile Include="core\indexcb_reverse.c" />
     <ClCompile Include="debugger\dbbreakpoints.c" />
     <ClCompile Include="debugger\dbcommon.c" />
     <ClCompile Include="debugger\dbdisasm.c" />
@@ -189,11 +192,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\alu.h" />
+    <ClInclude Include="core\alu_reverse.h" />
     <ClInclude Include="core\control.h" />
+    <ClInclude Include="core\control_reverse.h" />
     <ClInclude Include="core\core.h" />
     <ClInclude Include="core\coretypes.h" />
     <ClInclude Include="core\device.h" />
     <ClInclude Include="core\indexcb.h" />
+    <ClInclude Include="core\indexcb_reverse.h" />
     <ClInclude Include="core\optable.h" />
     <ClInclude Include="debugger\dbbreakpoints.h" />
     <ClInclude Include="debugger\dbcommon.h" />

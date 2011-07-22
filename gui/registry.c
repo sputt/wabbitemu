@@ -46,6 +46,24 @@ static struct {
 	{_T("num_backup_per_sec"),		REG_DWORD,  2},
 	{_T("ram_version"),				REG_DWORD,  0},
 	{_T("lcd_delay"),				REG_DWORD,	60},
+	//Debugger stuff
+	{_T("CPU_Status"),				REG_DWORD,	0},
+	{_T("Disp Type"),				REG_DWORD,	0},
+	{_T("Display"),					REG_DWORD,	0},
+	{_T("Flags"),					REG_DWORD,	0},
+	{_T("Interrupts"),				REG_DWORD,	0},
+	{_T("Memory Map"),				REG_DWORD,	0},
+	{_T("Mem0"),					REG_DWORD,	0},
+	{_T("Mem1"),					REG_DWORD,	0},
+	{_T("Mem2"),					REG_DWORD,	0},
+	{_T("Mem3"),					REG_DWORD,	0},
+	{_T("Mem4"),					REG_DWORD,	0},
+	{_T("Mem5"),					REG_DWORD,	0},
+	{_T("MemSelIndex"),				REG_DWORD,	0},
+	{_T("NumMemPanes"),				REG_DWORD,	0},
+	{_T("NumWatchKey"),				REG_DWORD,	0},
+	{_T("Registers"),				REG_DWORD,	0},
+	{_T("WatchLocsKey"),			REG_SZ,		(LONG_PTR) _T("")},
 	{NULL,							0,			0},
 };
 
@@ -79,7 +97,7 @@ HRESULT LoadRegistryDefaults(HKEY hkey) {
 	return S_OK;
 }
 
-LONG_PTR GetKeyData(HKEY hkeyWabbit, LPCTSTR lpszName) {
+LONG_PTR GetKeyData(HKEY hkeyWabbit, LPCTSTR lpszName, BOOL skip_defaults = FALSE) {
 	DWORD type;
 	DWORD len;
 	u_int i;
@@ -186,17 +204,8 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 		LoadRegistryDefaults(hkeyWabbit);
 	
 	StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), (TCHAR *) QueryWabbitKey(_T("rom_path")));
-#ifdef _UNICODE
-	StringCbCopyW(lpCalc->skin_path, sizeof(lpCalc->skin_path), (WCHAR *) QueryWabbitKey(_T("skin_path")));
-	StringCbCopyW(lpCalc->keymap_path, sizeof(lpCalc->keymap_path), (WCHAR *) QueryWabbitKey(_T("keymap_path")));
-#else
-	char *temp = (char *) QueryWabbitKey(_T("skin_path"));
-	CA2W skinPath(temp);
-	StringCbCopyW(lpCalc->skin_path, sizeof(lpCalc->skin_path), skinPath);
-	temp = (char *) QueryWabbitKey(_T("keymap_path"));
-	CA2W keyPath(temp);
-	StringCbCopyW(lpCalc->keymap_path, sizeof(lpCalc->keymap_path), keyPath);
-#endif
+	StringCbCopy(lpCalc->skin_path, sizeof(lpCalc->skin_path), (TCHAR *) QueryWabbitKey(_T("skin_path")));
+	StringCbCopy(lpCalc->keymap_path, sizeof(lpCalc->keymap_path), (TCHAR *) QueryWabbitKey(_T("keymap_path")));
 	lpCalc->SkinEnabled = (BOOL) QueryWabbitKey(_T("skin"));
 	lpCalc->bCutout = (BOOL) QueryWabbitKey(_T("cutout"));
 	lpCalc->bAlphaBlendLCD = (BOOL) QueryWabbitKey(_T("alphablend_lcd"));
@@ -230,27 +239,39 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 }
 
 
-void SaveWabbitKeyA(char *name, int type, void *value) {
-	size_t len;
+//void SaveWabbitKeyA(char *name, int type, void *value) {
+//	size_t len;
+//
+//	if (type == REG_DWORD)
+//		len = sizeof(DWORD);
+//	else if (type == REG_SZ)
+//		StringCbLengthA((char *) value, MAX_PATH, &len);
+//	
+//	RegSetValueExA(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
+//}
+//
+//void SaveWabbitKeyW(WCHAR *name, int type, void *value) {
+//	size_t len;
+//
+//	if (type == REG_DWORD) {
+//		len = sizeof(DWORD);
+//	} else if (type == REG_SZ) {
+//		StringCbLengthW((WCHAR *) value, MAX_PATH, &len);
+//	}
+//	
+//	RegSetValueExW(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
+//}
 
-	if (type == REG_DWORD)
-		len = sizeof(DWORD);
-	else if (type == REG_SZ)
-		StringCbLengthA((char *) value, MAX_PATH, &len);
-	
-	RegSetValueExA(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
-}
-
-void SaveWabbitKeyW(WCHAR *name, int type, void *value) {
+void SaveWabbitKey(TCHAR *name, int type, void *value) {
 	size_t len;
 
 	if (type == REG_DWORD) {
 		len = sizeof(DWORD);
 	} else if (type == REG_SZ) {
-		StringCbLengthW((WCHAR *) value, MAX_PATH, &len);
+		StringCbLength((TCHAR *) value, MAX_PATH, &len);
 	}
 	
-	RegSetValueExW(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
+	RegSetValueEx(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
 }
 
 
@@ -279,8 +300,8 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 
 		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpCalc->FaceplateColor);
 		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);		
-		SaveWabbitKeyW(L"skin_path", REG_SZ, &lpCalc->skin_path);
-		SaveWabbitKeyW(L"keymap_path", REG_SZ, &lpCalc->keymap_path);
+		SaveWabbitKey(_T("skin_path"), REG_SZ, &lpCalc->skin_path);
+		SaveWabbitKey(_T("keymap_path"), REG_SZ, &lpCalc->keymap_path);
 		if (startX != CW_USEDEFAULT) {
 			RECT rc;
 			GetWindowRect(lpCalc->hwndFrame, &rc);
@@ -310,9 +331,54 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("num_backup_per_sec"), REG_DWORD, &num_backup_per_sec);
 		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->Scale);
 
-		SaveDebugKey((TCHAR *) DisplayTypeString, (DWORD *) dispType);
+		SaveDebugKey((TCHAR *) DisplayTypeString, REG_DWORD, &dispType);
 
 	}
 	RegCloseKey(hkeyWabbit);
 	return S_OK;
+}
+
+//If you query a REG_SZ you MUST free the buffer it returns
+LONG_PTR QueryDebugKey(TCHAR *name) {
+	HKEY hkeySoftware;
+	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
+
+	HKEY hkeyWabbit, hkeyDebugger;
+	DWORD dwDisposition;
+	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0,
+			NULL, REG_OPTION_NON_VOLATILE,
+			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
+
+	RegCreateKeyEx(hkeyWabbit, _T("Debugger"), 0,
+				NULL, REG_OPTION_NON_VOLATILE,
+				KEY_ALL_ACCESS, NULL, &hkeyDebugger, &dwDisposition);
+
+	LONG_PTR result = GetKeyData(hkeyDebugger, name);
+
+	RegCloseKey(hkeyDebugger);
+	RegCloseKey(hkeyWabbit);
+	RegCloseKey(hkeySoftware);
+
+	return result;
+}
+
+void SaveDebugKey(TCHAR *name, int type, void *value) {
+	HKEY hkeyDebugger;
+	HRESULT res;
+	res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu\\Debugger"), 0, KEY_ALL_ACCESS, &hkeyDebugger);
+	if (FAILED(res))
+	{
+		_tprintf_s(_T("Failed opening Debug registry"));
+		return;
+	}
+
+	size_t len;
+	if (type == REG_DWORD)
+		len = sizeof(DWORD);
+	else if (type == REG_SZ)
+		StringCbLength((TCHAR *) value, 4096, &len);
+
+	int error = RegSetValueEx(hkeyDebugger, name, 0, type, (LPBYTE) value, len);
+	if (error != ERROR_SUCCESS)
+		error +=1;
 }

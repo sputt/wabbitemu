@@ -699,6 +699,7 @@ BOOL check_flashpage_empty(u_char (*dest)[PAGE_SIZE], u_int page, u_int num_page
  * page: the page the application you want to mark is on
  */
 void fix_certificate(CPU_t *cpu, u_int page) {
+
 	u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) cpu->mem_c->flash;
 	upages_t upages;
 	state_userpages(cpu, &upages);

@@ -180,6 +180,8 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			result->size = 0;
 			result++;
 			result->addr = addr;
+			if (++i >= count)
+				break;
 		}
 
 		unsigned char data = mem_read(memc, addr++);

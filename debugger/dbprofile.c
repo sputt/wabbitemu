@@ -11,20 +11,17 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		case WM_COMMAND: {
 			switch(LOWORD(wParam)) {
 				case IDC_PROFILE_OK: {
-					char string[9];
+					TCHAR string[9];
 					int output;
 					HWND hWndEdit;
-					hWndEdit = GetDlgItem(hwnd, IDC_LOW_EDT);
-					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
-					xtoi((const TCHAR *)&string, &output);
+					GetDlgItemText(hwnd, IDC_LOW_EDT, string, 8);
+					xtoi(string, &output);
 					lpDebuggerCalc->profiler.lowAddress = output;
-					hWndEdit = GetDlgItem(hwnd, IDC_HIGH_EDT);
-					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
-					xtoi((const TCHAR *)&string, &output);
+					GetDlgItemText(hwnd, IDC_HIGH_EDT, string, 8);
+					xtoi(string, &output);
 					lpDebuggerCalc->profiler.highAddress = output;
-					hWndEdit = GetDlgItem(hwnd, IDC_BLOCK_EDT);
-					SendMessage(hWndEdit, WM_GETTEXT, 8, (LPARAM)&string);
-					output = _tstoi((const TCHAR *) &string);
+					GetDlgItemText(hwnd, IDC_BLOCK_EDT, string, 8);
+					output = _tstoi(string);
 					lpDebuggerCalc->profiler.blockSize = output;
 					EndDialog(hwnd, IDOK);
 					break;

@@ -564,21 +564,17 @@ void calc_unpause_linked() {
 			calcs[i].running = TRUE;
 }
 
-#define FRAME_SUBDIVISIONS	1024
+#define FRAME_SUBDIVISIONS	(1024)
 int calc_run_all(void) {
-	int i, j, hub_val, active_calc = -1;
+	int i, j, active_calc = -1;
 
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
-		for (j = 0, hub_val = 0x0; j < MAX_CALCS; j++) {
-			if (link_hub[j] != NULL)
-				hub_val |= link_hub[j]->host;
-		}
-		if (link_hub[MAX_CALCS] != NULL)
-		{
-			link_hub[MAX_CALCS]->host = hub_val;
-		}
+		link_hub[MAX_CALCS]->host = 0;
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active == TRUE) {
+				if (link_hub[j] != NULL)
+					link_hub[MAX_CALCS]->host |= link_hub[j]->host;
+
 				active_calc = j;
 				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS / 2;
 				calc_run_tstates(&calcs[j], time);

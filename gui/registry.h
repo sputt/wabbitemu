@@ -7,12 +7,17 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc);
 HRESULT LoadRegistryDefaults();
 HRESULT SaveRegistrySettings(const LPCALC lpCalc);
 INT_PTR QueryWabbitKey(LPCTSTR lpszName);
-void SaveWabbitKeyA(char *name, int type, void *value);
-void SaveWabbitKeyW(WCHAR *name, int type, void *value);
-#ifdef _UNICODE
-#define SaveWabbitKey SaveWabbitKeyW
-#else
-#define SaveWabbitKey SaveWabbitKeyA
-#endif
+void SaveWabbitKey(TCHAR *name, int type, void *value);
+//void SaveWabbitKeyA(char *name, int type, void *value);
+//void SaveWabbitKeyW(WCHAR *name, int type, void *value);
+//#ifdef _UNICODE
+//#define SaveWabbitKey SaveWabbitKeyW
+//#else
+//#define SaveWabbitKey SaveWabbitKeyA
+//#endif
+
+
+LONG_PTR QueryDebugKey(TCHAR *);
+void SaveDebugKey(TCHAR *, int type, void *value);
 
 #endif /*REGISTRY_H_*/

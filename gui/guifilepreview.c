@@ -98,9 +98,9 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			
 #ifdef WINVER
 			FILE *prgFile;
-			fopen_s(&prgFile, (char*) lParam, "rb");
+			fopen_s(&prgFile, (char*) lParam, _T("rb"));
 #else
-			FILE *prgFile = fopen((char*) lParam, "rb");
+			FILE *prgFile = fopen((char*) lParam, _T("rb"));
 #endif
 			if (!prgFile) goto NoFilePreview;
 	
@@ -110,8 +110,8 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			LCD_t lcd;
 			LoadLCD(save, &lcd);
 			
-			SendMessage(edtAuthor, WM_SETTEXT, 0, (LPARAM) save->author);
-			SendMessage(edtComment, WM_SETTEXT, 0, (LPARAM) save->comment);
+			Edit_SetText(edtAuthor, save->author);
+			Edit_SetText(edtComment, save->comment);
 			
 			HDC hdc = CreateCompatibleDC(NULL);
 			HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmPreview);
@@ -131,8 +131,8 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 		NoFilePreviewNotSave:
 			fclose(prgFile);
 		NoFilePreview:
-			SendMessage(edtAuthor, WM_SETTEXT, 0, (LPARAM) "");
-			SendMessage(edtComment, WM_SETTEXT, 0, (LPARAM) "");
+			Edit_SetText(edtAuthor, _T(""));
+			Edit_SetText(edtComment, _T(""));
 			
 			hdc = CreateCompatibleDC(NULL);
 			hbmOld = (HBITMAP) SelectObject(hdc, hbmPreview);

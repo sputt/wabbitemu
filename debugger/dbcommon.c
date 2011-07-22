@@ -151,8 +151,7 @@ LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	switch (Message) {
 		case WM_PAINT:
 		{	
-			SendMessage(hwnd, WM_SETFONT, 
-				(WPARAM) hfontLucida, (LPARAM) FALSE);
+			SetWindowFont(hwnd, hfontLucida, FALSE);
 			break;
 		}
 		case WM_KEYDOWN:

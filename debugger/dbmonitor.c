@@ -30,24 +30,24 @@ static WNDPROC wpOrigEditProc;
 //
 static HWND CreateListView (HWND hwndParent) 
 {
-    RECT rcClient;                       // The parent window's client area.
+	RECT rcClient;                       // The parent window's client area.
 
-    GetClientRect (hwndParent, &rcClient); 
+	GetClientRect (hwndParent, &rcClient); 
 
-    // Create the list-view window in report view with label editing enabled.
-    HWND hWndListView = CreateWindow(WC_LISTVIEW, 
-                                     _T(""),
+	// Create the list-view window in report view with label editing enabled.
+	HWND hWndListView = CreateWindow(WC_LISTVIEW, 
+									 _T(""),
 									 WS_CHILD | LVS_REPORT | LVS_SINGLESEL | LVS_NOSORTHEADER | WS_VISIBLE,
-                                     0, 0,
-                                     rcClient.right - rcClient.left,
-                                     rcClient.bottom - rcClient.top,
-                                     hwndParent,
-                                     (HMENU)NULL,
-                                     g_hInst,
-                                     NULL);
+									 0, 0,
+									 rcClient.right - rcClient.left,
+									 rcClient.bottom - rcClient.top,
+									 hwndParent,
+									 (HMENU)NULL,
+									 g_hInst,
+									 NULL);
 	ListView_SetExtendedListViewStyle(hWndListView, LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT);
 
-    return (hWndListView);
+	return (hWndListView);
 }
 
 // InsertListViewItems: Inserts items into a list view. 
@@ -56,26 +56,26 @@ static HWND CreateListView (HWND hwndParent)
 // Returns TRUE if successful, and FALSE otherwise.
 static BOOL InsertListViewItems(HWND hWndListView, int cItems)
 {
-    LVITEM lvI;
+	LVITEM lvI;
 
-    // Initialize LVITEM members that are common to all items.
-    lvI.pszText   = LPSTR_TEXTCALLBACK; // Sends an LVN_GETDISPINFO message.
-    lvI.mask      = LVIF_TEXT;
-    lvI.stateMask = 0;
-    lvI.iSubItem  = 0;
-    lvI.state     = 0;
+	// Initialize LVITEM members that are common to all items.
+	lvI.pszText   = LPSTR_TEXTCALLBACK; // Sends an LVN_GETDISPINFO message.
+	lvI.mask      = LVIF_TEXT;
+	lvI.stateMask = 0;
+	lvI.iSubItem  = 0;
+	lvI.state     = 0;
 
-    // Initialize LVITEM members that are different for each item.
-    for (int index = 0; index < cItems; index++)
-    {
+	// Initialize LVITEM members that are different for each item.
+	for (int index = 0; index < cItems; index++)
+	{
 		lvI.iItem = index;
-    
-        // Insert items into the list.
-        if (ListView_InsertItem(hWndListView, &lvI) == -1)
-            return FALSE;
-    }
+	
+		// Insert items into the list.
+		if (ListView_InsertItem(hWndListView, &lvI) == -1)
+			return FALSE;
+	}
 
-    return TRUE;
+	return TRUE;
 }
 
 static int GetValue(TCHAR *str) 
@@ -147,15 +147,16 @@ static void CloseSaveEdit(HWND hwndEditControl) {
 		port_cpu = CPU_clone(&lpDebuggerCalc->cpu);
 
 		DestroyWindow(hwndEditControl);
-		hwndEditControl = NULL;
 	}
 }
 
 static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { 
-    switch (uMsg) {
+	switch (uMsg) {
 		case WM_KEYDOWN:
-			if (wParam == VK_RETURN)
+			if (wParam == VK_RETURN) {
 				CloseSaveEdit(hwnd);
+				hwndEditControl = NULL;
+			}
 			else if (wParam == VK_ESCAPE) {
 				hwndEditControl = NULL;
 				DestroyWindow(hwnd);
@@ -186,18 +187,17 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			listCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
 			listCol.pszText = _T("Port Number");
 			listCol.cx = 100;
-			// Inserting Couloms as much as we want
-			SendMessage(hwndListView,LVM_INSERTCOLUMN,0,(LPARAM)&listCol); // Insert/Show the coloum
+			ListView_InsertColumn(hwndListView, 0, &listCol);
 			listCol.cx = 90;
 			listCol.pszText = _T("Hex");
-			SendMessage(hwndListView,LVM_INSERTCOLUMN,1,(LPARAM)&listCol);
+			ListView_InsertColumn(hwndListView, 1, &listCol);
 			listCol.cx = 130;
 			listCol.pszText = _T("Decimal");
-			SendMessage(hwndListView,LVM_INSERTCOLUMN,2,(LPARAM)&listCol);
+			ListView_InsertColumn(hwndListView, 2, &listCol);
 			listCol.cx = 110;
 			listCol.pszText = _T("Binary");
-			SendMessage(hwndListView,LVM_INSERTCOLUMN,3,(LPARAM)&listCol);
-			SendMessage(hwndListView, WM_SETFONT, (WPARAM) hfontSegoe, TRUE);
+			ListView_InsertColumn(hwndListView, 3, &listCol);
+			SetWindowFont(hwndListView, hfontSegoe, TRUE);
 
 			InsertListViewItems(hwndListView, count);
 
@@ -222,6 +222,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			{
 				case LVN_ITEMCHANGING:
 					CloseSaveEdit(hwndEditControl);
+					hwndEditControl = NULL;
 					break;
 				case LVN_KEYDOWN: {
 					LPNMLVKEYDOWN pnkd = (LPNMLVKEYDOWN) lParam;
@@ -258,7 +259,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 						rc.right - rc.left,
 						rc.bottom - rc.top,
 						hwndListView, 0, g_hInst, NULL);
-					SendMessage(hwndEditControl, WM_SETFONT, (WPARAM) hfontSegoe, (LPARAM) TRUE);
+					SetWindowFont(hwndEditControl, hfontSegoe, TRUE);
 					wpOrigEditProc = (WNDPROC) SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG_PTR) EditSubclassProc); 
 					Edit_LimitText(hwndEditControl, 9);
 					Edit_SetSel(hwndEditControl, 0, _tcslen(buf));
@@ -294,24 +295,24 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				{
 					int iRow;
 					LPNMLVCUSTOMDRAW pListDraw = (LPNMLVCUSTOMDRAW)lParam; 
-                    switch(pListDraw->nmcd.dwDrawStage) 
-                    { 
-                    case CDDS_PREPAINT: 
-                        SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW); 
-                        return TRUE;
-                    case CDDS_ITEMPREPAINT: 
-                    case CDDS_ITEMPREPAINT | CDDS_SUBITEM: 
-                        iRow = (int)pListDraw->nmcd.dwItemSpec; 
-                        if (lpDebuggerCalc->cpu.pio.devices[port_map[iRow]].breakpoint) { 
-                            // pListDraw->clrText   = RGB(252, 177, 0); 
-                            pListDraw->clrTextBk = COLOR_BREAKPOINT; 
-                            SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NEWFONT); 
-                        }
-                        return TRUE;
-                    default: 
-                        SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_DODEFAULT);
-                        return TRUE;
-                    }
+					switch(pListDraw->nmcd.dwDrawStage) 
+					{ 
+					case CDDS_PREPAINT: 
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NOTIFYITEMDRAW); 
+						return TRUE;
+					case CDDS_ITEMPREPAINT: 
+					case CDDS_ITEMPREPAINT | CDDS_SUBITEM: 
+						iRow = (int)pListDraw->nmcd.dwItemSpec; 
+						if (lpDebuggerCalc->cpu.pio.devices[port_map[iRow]].breakpoint) { 
+							// pListDraw->clrText   = RGB(252, 177, 0); 
+							pListDraw->clrTextBk = COLOR_BREAKPOINT; 
+							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NEWFONT); 
+						}
+						return TRUE;
+					default: 
+						SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_DODEFAULT);
+						return TRUE;
+					}
 				}
 			}
 			return FALSE;

@@ -103,23 +103,6 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 	difference += ((dwTimer - prevTimer) & 0x003F) - TPF;
 	prevTimer = dwTimer;
 
-
-	/* 12/15 BuckeyeDude:
-	I have no clue what this code does apart from make it impossible to have >2 cores open at once
-	and cause calculators to runs slower as more are opened. Brilliant work :|
-	int i;
-	for (i = 0; i < MAX_CALCS; i++) {
-		if (calcs[i].active) {
-			static int frameskip = 0;
-			frameskip = (frameskip + 1) % 3;
-
-			if (frameskip == 0) {
-				difference = 0;
-				return;
-			}
-		}
-	}*/
-
 	// Are we greater than Ticks Per Frame that would call for
 	// a frame skip?
 	if (difference > -TPF) {
@@ -180,10 +163,10 @@ int gui_debug(LPCALC lpCalc) {
 	hdebug = CreateWindowEx(
 		WS_EX_APPWINDOW,
 		g_szDebugName,
-        buf,
+		buf,
 		flags | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
-        pos.left, pos.top, pos.right, pos.bottom,
-        0, 0, g_hInst, (LPVOID) lpCalc);
+		pos.left, pos.top, pos.right, pos.bottom,
+		0, 0, g_hInst, (LPVOID) lpCalc);
 	if (set_place)
 		SetWindowPlacement(hdebug, &db_placement);
 
@@ -193,25 +176,25 @@ int gui_debug(LPCALC lpCalc) {
 }
 
 int gui_frame(LPCALC lpCalc) {
- 	RECT r;
+	RECT r;
 
- 	if (!lpCalc->Scale)
+	if (!lpCalc->Scale)
 		lpCalc->Scale = 2;
 	if (lpCalc->SkinEnabled) {
- 		SetRect(&r, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
- 	} else {
- 		SetRect(&r, 0, 0, 128 * lpCalc->Scale, 64 * lpCalc->Scale);
- 	}
+		SetRect(&r, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
+	} else {
+		SetRect(&r, 0, 0, 128 * lpCalc->Scale, 64 * lpCalc->Scale);
+	}
 	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 	r.bottom += GetSystemMetrics(SM_CYMENU);
 
 	lpCalc->hwndFrame = CreateWindowEx(
 		0, //WS_EX_APPWINDOW,
 		g_szAppName,
-        _T("Z80"),
+		_T("Z80"),
 		(WS_TILEDWINDOW |  (silent_mode ? 0 : WS_VISIBLE) | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */),
-        startX, startY, r.right - r.left, r.bottom - r.top,
-        NULL, 0, g_hInst, (LPVOID) lpCalc);
+		startX, startY, r.right - r.left, r.bottom - r.top,
+		NULL, 0, g_hInst, (LPVOID) lpCalc);
 
 	SetWindowText(lpCalc->hwndFrame, _T("Wabbitemu"));
 	HDC hdc = GetDC(lpCalc->hwndFrame);
@@ -255,8 +238,17 @@ int gui_frame_update(LPCALC lpCalc) {
 	CGdiPlusBitmapResource hbmSkin, hbmKeymap;
 	Bitmap *m_pBitmapSkin = NULL, *m_pBitmapKeymap = NULL;
 	if (lpCalc->bCustomSkin) {
+#ifdef _UNICODE
 		m_pBitmapSkin = new Bitmap(lpCalc->skin_path);
 		m_pBitmapKeymap = new Bitmap(lpCalc->keymap_path);
+#else
+		wchar_t widePath[MAX_PATH];
+		size_t converted;
+		mbstowcs_s(&converted, widePath, lpCalc->skin_path, (size_t) ARRAYSIZE(widePath));
+		m_pBitmapSkin = new Bitmap(widePath);
+		mbstowcs_s(&converted, widePath, lpCalc->keymap_path, (size_t) ARRAYSIZE(widePath));
+		m_pBitmapKeymap = new Bitmap(widePath);
+#endif
 	}
 	if (!m_pBitmapSkin || m_pBitmapSkin->GetWidth() == 0 || m_pBitmapKeymap->GetWidth() == 0) {
 		if (lpCalc->bCustomSkin) {
@@ -357,8 +349,8 @@ int gui_frame_update(LPCALC lpCalc) {
 			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
 			// Create status bar
 			if (lpCalc->hwndStatusBar != NULL) {
-				SendMessage(lpCalc->hwndStatusBar, WM_DESTROY, 0, 0);
-				SendMessage(lpCalc->hwndStatusBar, WM_CLOSE, 0, 0);
+				DestroyWindow(lpCalc->hwndStatusBar);
+				CloseWindow(lpCalc->hwndStatusBar);
 			}
 			SetRect(&rc, 0, 0, 128 * lpCalc->Scale, 64 * lpCalc->Scale);
 			int iStatusWidths[] = { 100, -1 };
@@ -377,8 +369,8 @@ int gui_frame_update(LPCALC lpCalc) {
 			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 		} else {
 			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_CHECKED);
-			SendMessage(lpCalc->hwndStatusBar, WM_DESTROY, 0, 0);
-			SendMessage(lpCalc->hwndStatusBar, WM_CLOSE, 0, 0);
+			DestroyWindow(lpCalc->hwndStatusBar);
+			CloseWindow(lpCalc->hwndStatusBar);
 			lpCalc->hwndStatusBar = NULL;
 			RECT rc;
 			CopyRect(&rc, &lpCalc->rectSkin);
@@ -635,6 +627,7 @@ void RegisterWindowClasses(void) {
 	wc.style = 0;
 	RegisterClassEx(&wc);
 
+	// Debugger
 	wc.lpfnWndProc = DebugProc;
 	wc.style = CS_DBLCLKS;
 	wc.lpszClassName = g_szDebugName;
@@ -642,6 +635,7 @@ void RegisterWindowClasses(void) {
 	wc.hbrBackground = (HBRUSH) (COLOR_BTNFACE+1);
 	RegisterClassEx(&wc);
 
+	// Disassembly
 	wc.lpszMenuName = NULL;
 	wc.style = 0;
 	wc.lpfnWndProc = DisasmProc;
@@ -656,18 +650,20 @@ void RegisterWindowClasses(void) {
 	wc.hbrBackground = NULL;
 	RegisterClassEx(&wc);
 
+	// Expanding Panes
 	wc.style = 0;
 	wc.lpfnWndProc = ExpandPaneProc;
 	wc.lpszClassName = g_szExpandPane;
 	RegisterClassEx(&wc);
 
+	// Memory Viewer
 	wc.style = CS_DBLCLKS;
 	wc.lpfnWndProc = MemProc;
 	wc.lpszClassName = g_szMemName;
 	wc.hbrBackground = NULL;
 	RegisterClassEx(&wc);
 
-	//watchpoints
+	// Watchpoints
 	wc.style = CS_DBLCLKS;
 	wc.lpfnWndProc = WatchProc;
 	wc.lpszClassName = g_szWatchName;
@@ -714,7 +710,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		size_t numConv;
 		wcstombs_s(&numConv, tmpstring, argv[1], 512);
 #endif
-		if ((tmpstring[0] == '-') && (toupper(tmpstring[1]) == 'N'))
+		if ((*tmpstring == '-' || *tmpstring == '/') && (toupper(tmpstring[1]) == 'N'))
 			loadfiles = TRUE;
 		else {
 			if (!loadfiles) {
@@ -728,7 +724,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #else
 					wcstombs(tmpstring, argv[i], 512);
 #endif
-					if (tmpstring[0] != '-') {
+					if (*tmpstring != '-' && *tmpstring != '/') {
 						size_t strLen;
 						cds.lpData = tmpstring;
 						StringCbLength(tmpstring, 512, &strLen);
@@ -747,7 +743,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 	}
 	
-	if (Findhwnd && loadfiles)
+	if (Findhwnd && loadfiles && !load_files_first)
 		SendMessage(Findhwnd, WM_COMMAND, IDM_FILE_NEW, 0);
 
 	if (!loadfiles) {
@@ -755,7 +751,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		exit(0);
 	}
 
-    g_hInst = hInstance;
+	g_hInst = hInstance;
 
 	RegisterWindowClasses();
 
@@ -837,7 +833,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				size_t numConv;
 				wcstombs_s(&numConv, tmpstring, argv[i], 512);
 #endif
-				if (tmpstring[0] != '-') {
+				if (*tmpstring != '-' && *tmpstring != '/') {
 					SendFileToCalc(lpCalc, tmpstring, TRUE, ram);
 				} else if (toupper(tmpstring[1]) == 'R') {
 					ram = SEND_RAM;
@@ -891,8 +887,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	if (!haccelmain)
 		haccelmain = LoadAccelerators(g_hInst, _T("Z80Accel"));
 
-    while (GetMessage(&Msg, NULL, 0, 0)) {
-		HACCEL haccel = NULL;
+	extern HWND hPortMon;
+	while (GetMessage(&Msg, NULL, 0, 0)) {
+		HACCEL haccel = haccelmain;
 		HWND hwndtop = GetForegroundWindow();
 		if (hwndtop) {
 			if (hwndtop == FindWindow(g_szDebugName, NULL) ) {
@@ -904,6 +901,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				else
 					hwndtop = FindWindowEx(hwndtop, NULL, g_szLCDName, NULL);
 				SetForegroundWindow(hwndtop);
+			} else if (hwndtop == hPortMon) {
+				haccel = NULL;
 			}
 		}
 
@@ -918,16 +917,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		if (hwndProp == NULL || PropSheet_IsDialogMessage(hwndProp, &Msg) == FALSE) {
 			if (!TranslateAccelerator(hwndtop, haccel, &Msg)) {
 				TranslateMessage(&Msg);
-	        	DispatchMessage(&Msg);
+				DispatchMessage(&Msg);
 			}
 		} else {
 			// Get the current tab
 			HWND hwndPropTabCtrl = PropSheet_GetTabControl(hwndProp);
 			PropPageLast = TabCtrl_GetCurSel(hwndPropTabCtrl);
 		}
-    }
+	}
 
-    // Make sure the GIF has terminated
+	// Make sure the GIF has terminated
 	if (gif_write_state == GIF_FRAME) {
 		gif_write_state = GIF_END;
 		handle_screenshot();
@@ -947,7 +946,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	_CrtDumpMemoryLeaks();
 #endif
 
-    return (int) Msg.wParam;
+	return (int) Msg.wParam;
 }
 
 static HWND hListDialog;
@@ -1621,8 +1620,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			ctxtPt.y = GET_Y_LPARAM(lParam);
 
 			HMENU hmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_FRAME_MENU));
-		    // TrackPopupMenu cannot display the menu bar so get
-		    // a handle to the first shortcut menu.
+			// TrackPopupMenu cannot display the menu bar so get
+			// a handle to the first shortcut menu.
 			hmenu = GetSubMenu(hmenu, 0);
 
 			if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenu)) {

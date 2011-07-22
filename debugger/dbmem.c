@@ -4,7 +4,7 @@
 #include "dbmem.h"
 #include "dbcommon.h"
 #include "resource.h"
-#include "expandpane.h"
+#include "registry.h"
 
 #define COLUMN_X_OFFSET (7 + (mps->type == REGULAR ? 0 : 3))
 
@@ -171,7 +171,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				0, 0, 1, 1, hwnd, (HMENU) ID_SIZE, g_hInst,
 				(LPVOID) NULL);
 
-			SendMessage(mps->hwndHeader, WM_SETFONT, (WPARAM) hfontSegoe, TRUE);
+			SetWindowFont(mps->hwndHeader, hfontSegoe, TRUE);
 
 			WINDOWPOS wp;
 			HDLAYOUT hdl;
@@ -415,7 +415,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						waddr_t waddr = GetWaddr(mps, addr);
 						for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
 							waddr.addr = (addr + b) % 0x4000;
-							waddr.page = !waddr.is_ram ? (addr + b) / 0x4000 : (waddr.addr ? waddr.page : waddr.page + 1);
+							waddr.page = !waddr.is_ram ? (addr + b) / 0x4000 : (waddr.addr && b ? waddr.page : GetWaddr(mps, addr + b).page);
 							value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
 						}
 						waddr = GetWaddr(mps, addr);
@@ -667,7 +667,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 								goto_addr = goto_addr & 0xFFFF;
 								break;
 							case FLASH:
-								goto_addr = (goto_addr & 0xFFFF) + ((goto_addr >> 16) * 0x4000);
+								goto_addr = ((goto_addr & 0xFFFF) % 0x4000) + ((goto_addr >> 16) * 0x4000);
 								if (goto_addr > GetMaxAddr(mps))
 									goto_addr = GetMaxAddr(mps) - 1;
 								break;
@@ -726,6 +726,11 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					InvalidateRect(hwnd, &rc, FALSE);
 					break;
 				}
+				case DB_STEP:
+				case DB_STEPOVER:
+					extern HWND hdisasm;
+					SendMessage(hdisasm, WM_COMMAND, wParam, 0);
+					break;
 			}
 			return 0;
 		}
@@ -831,7 +836,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				TCHAR buffer[64];
 				StringCbPrintf(buffer, sizeof(buffer), _T("Mem%i"), mps->memNum);
 				DWORD value = mps->addr;
-				SaveDebugKey(buffer, (DWORD *) value);
+				SaveDebugKey(buffer, REG_DWORD, &value);
 			}
 			return 0;
 		}
