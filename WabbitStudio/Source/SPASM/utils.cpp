@@ -94,13 +94,13 @@ char *skip_whitespace (const char *ptr) {
 
 bool is_arg (char test) {
 	return (test == '*' || test == '&' || test == '%' ||
-	        test == '@' || test == '^');
+			test == '@' || test == '^');
 }
 
 
 char *next_expr (const char *ptr, const char *delims) {
-    bool in_string = false, // "xxx xxx xx"
-	     in_escape = false;	// \n
+	bool in_string = false, // "xxx xxx xx"
+		 in_escape = false;	// \n
 	int in_quote = 0;		// 'x'
 
 	/* Is there a word left to get? */
@@ -109,7 +109,7 @@ char *next_expr (const char *ptr, const char *delims) {
 	if (is_end_of_code_line (ptr) || *ptr == ')') 
 		return (char *) ptr;
 
-    while (*ptr != '\0' && !((strpbrk (ptr, delims) == ptr || is_end_of_code_line (ptr))
+	while (*ptr != '\0' && !((strpbrk (ptr, delims) == ptr || is_end_of_code_line (ptr))
 				&& !in_escape && !in_string && in_quote == 0)) {
 
 		if (!in_escape) {
@@ -120,7 +120,7 @@ char *next_expr (const char *ptr, const char *delims) {
 				case '\'':
 					if (!in_string && in_quote == 0) in_quote = 3; 
 					break;		
-	        	case '\\': 	
+				case '\\': 	
 					in_escape = true;
 					break;
 				default:
@@ -134,7 +134,7 @@ char *next_expr (const char *ptr, const char *delims) {
 			in_escape = false;
 		}
 		ptr++;
-    }
+	}
 
 	return (char *) ptr;
 }
@@ -274,8 +274,8 @@ bool line_has_word (char *ptr, const char *word, int word_len) {
  */
 
 bool read_expr_impl(const char ** const ptr, char word[256], const char *delims) {
-    bool in_string = false, // "xxx xxx xx"
-	     in_escape = false;	// \n
+	bool in_string = false, // "xxx xxx xx"
+		 in_escape = false;	// \n
 	int in_quote = 0;		// 'x'
 	int level = 0;
 	char *word_ptr = word;
@@ -289,7 +289,7 @@ bool read_expr_impl(const char ** const ptr, char word[256], const char *delims)
 		return false;
 	}
 
-    while (**ptr != '\0' && !((strpbrk (*ptr, delims) == *ptr || is_end_of_code_line (*ptr))
+	while (**ptr != '\0' && !((strpbrk (*ptr, delims) == *ptr || is_end_of_code_line (*ptr))
 				&& !in_escape && !in_string && in_quote == 0 && level == 0)) {
 
 		if (!in_escape) {
@@ -300,7 +300,7 @@ bool read_expr_impl(const char ** const ptr, char word[256], const char *delims)
 				case '\'':
 					if (!in_string && in_quote == 0) in_quote = 3; 
 					break;		
-	        	case '\\': 	
+				case '\\': 	
 					in_escape = true;
 					break;
 				case '(':
@@ -333,18 +333,18 @@ bool read_expr_impl(const char ** const ptr, char word[256], const char *delims)
 		if (word)
 			*word_ptr++ = **ptr;
 		(*ptr)++;
-    }
-    
+	}
+	
 finish_read_expr:
-    // Remove whitespace at the end
+	// Remove whitespace at the end
 	if (word) {
-	    while (word_ptr > word && isspace((unsigned char) word_ptr[-1])) 
-	    	*(--word_ptr) = '\0';
+		while (word_ptr > word && isspace((unsigned char) word_ptr[-1])) 
+			*(--word_ptr) = '\0';
 		*word_ptr = '\0';
 	}
 
-    /* input is either the delimiter or null */
-    if (is_end_of_code_line (*ptr)) return true;
+	/* input is either the delimiter or null */
+	if (is_end_of_code_line (*ptr)) return true;
 	return true;
 }
  
@@ -411,19 +411,19 @@ char *escape_string(const char *input)
  */
 
 char* reduce_string (char* input) {
-    char *output = input;
+	char *output = input;
 
 	int quote_count = 0;
-    for (int i = 0; input[i] != '\0'; i++, output++)
+	for (int i = 0; input[i] != '\0'; i++, output++)
 	{
-        if (input[i] == '\\')
+		if (input[i] == '\\')
 		{
 			int value;
-            char pbuf[8] = "'\\ '";
-            pbuf[2] = input[++i];
+			char pbuf[8] = "'\\ '";
+			pbuf[2] = input[++i];
 			parse_num (pbuf, &value);
-            *output = value;
-        }
+			*output = value;
+		}
 		else if (input[i] == '"')
 		{
 			quote_count++;
@@ -431,9 +431,9 @@ char* reduce_string (char* input) {
 		}
 		else
 		{
-            *output = input[i];
-        }
-    }
+			*output = input[i];
+		}
+	}
 
 	*output = '\0';
 
@@ -446,8 +446,8 @@ char* reduce_string (char* input) {
 			memmove(input, input + 1, strlen(input));
 		}
 	}
-    
-    return input;
+	
+	return input;
 }
 
 
@@ -774,7 +774,7 @@ void show_error_prefix(const char *zcif, const int zln) {
 	//sprintf(szPrefix, "%s:%d: error: ", zcif, zln);
 	//OutputDebugString(szPrefix);
 #endif
-    set_console_attributes (COLOR_RED);
+	set_console_attributes (COLOR_RED);
 	printf ("%s:%d: error: ", zcif, zln);
 #ifdef WIN32
 	restore_console_attributes(attr);
@@ -830,7 +830,7 @@ void show_warning_prefix(const char *zcif, int zln) {
 #ifdef WIN32
 	WORD attr = save_console_attributes();
 #endif
-    set_console_attributes (COLOR_YELLOW);
+	set_console_attributes (COLOR_YELLOW);
 	printf ("%s:%d: warning: ", zcif, zln);
 #ifdef WIN32
 		restore_console_attributes(attr);
