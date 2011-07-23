@@ -231,6 +231,14 @@ typedef struct pio_context {
 	devp breakpoint_callback;
 } pio_context_t, pioc;
 
+typedef struct reverse_time {
+	BYTE flag;
+	regpair(upper_data, lower_data, data);
+	BYTE bus;
+	BYTE r;
+	reverse_time *prev;
+} reverse_time_t;
+
 typedef struct CPU {
 	/* Register bank 0 */
 	regpair(a, f, af);
@@ -259,6 +267,7 @@ typedef struct CPU {
 	timerc *timer_c;
 	void (*exe_violation_callback)(void *);
 	int cpu_version;
+	reverse_time_t *prev_instruction;
 } CPU_t;
 
 typedef void (*opcodep)(CPU_t*);
@@ -307,6 +316,10 @@ void displayreg(CPU_t *);
 	(timer_z)->tstates += (uint64_t) num; \
 	(timer_z)->elapsed += ((double)(num))/((double)(timer_z)->freq);
 
+#define tc_sub( timer_z , num ) \
+	(timer_z)->tstates -= (uint64_t) num; \
+	(timer_z)->elapsed -= ((double)(num))/((double)(timer_z)->freq);
+
 #define tc_elapsed( timer_z ) \
 	((timer_z)->elapsed)
 
@@ -317,8 +330,12 @@ void displayreg(CPU_t *);
 #define SEtc_add( timer_z , num ) \
 	timer_z->tstates += num; \
 	timer_z->elapsed += ((double)(num))/((double)(timer_z)->freq);
+#define SEtc_sub( timer_z , num ) \
+	timer_z->tstates -= num; \
+	timer_z->elapsed -= ((double)(num))/((double)(timer_z)->freq);
 #else
 #define SEtc_add( timer_z , num )
+#define SEtc_sub( timer_z , num )
 #endif
 
 

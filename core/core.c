@@ -9,6 +9,12 @@
 #include "83phw.h"
 #include "83psehw.h"
 #include "optable.h"
+#ifdef WITH_REVERSE
+#include "alu_reverse.h"
+#include "indexcb_reverse.h"
+#include "control_reverse.h"
+#include "optable_reverse.h"
+#endif
 
 unsigned char mem_read(memc *mem, unsigned short addr) {
 	if ((mem->port27_remap_count > 0) && !mem->boot_mapped && (mc_bank(addr) == 3) && (addr >= (0x10000 - 64*mem->port27_remap_count)) && addr >= 0xFB64) {
@@ -180,7 +186,7 @@ static void handle_pio(CPU_t *cpu) {
 }
 
 BOOL is_priveleged_page(CPU_t *cpu) {
-	//priveleged pages are as follows
+	//privileged pages are as follows
 	// TI 83+		= 1C, 1D, 1F
 	// TI 83+SE		= 7C, 7D, 7F
 	// TI-84+		= 2F, 3C, 3D, 3F
@@ -214,7 +220,7 @@ static BOOL is_allowed_exec(CPU_t *cpu) {
 		if (!bank.ram)			//if its flash and between page limits
 		return bank.page > cpu->mem_c->flash_upper || bank.page <= cpu->mem_c->flash_lower;
 		if (bank.page & (2 >> (cpu->mem_c->prot_mode + 1)))
-			return TRUE;		//we know were in ram so lets check if the page is allowed in the mem prot mode
+			return TRUE;		//we know were in ram so lets check if the page is allowed in the mem protected mode
 								//execution is allowed on 2^(mode+1)
 		memc *mem = cpu->mem_c;
 		//finally we check ports 25/26 to see if its ok to execute on this page
@@ -353,10 +359,10 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 				case 00:
 					break;
 				case 01:	//TI83+
-					flashwrite83p(cpu, addr, data);		// in a seperate function for now, flash writes aren't the same across calcs
+					flashwrite83p(cpu, addr, data);		// in a separate function for now, flash writes aren't the same across calcs
 					break;
 				case 02:	//TI83+SE, TI84+SE
-					flashwrite83pse(cpu, addr, data);	// in a seperate function for now, flash writes aren't the same across calcs
+					flashwrite83pse(cpu, addr, data);	// in a separate function for now, flash writes aren't the same across calcs
 					break;
 				case 03:	//TI84+
 					flashwrite84p(cpu, addr, data);
@@ -370,6 +376,78 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 	return cpu->bus = data;
 }
 
+#ifdef WITH_REVERSE
+static int CPU_opcode_fetch_reverse(CPU_t *cpu) {
+	cpu->r = cpu->prev_instruction->r;
+	cpu->pc--;
+
+	int bank_num = mc_bank(cpu->pc);
+	bank_state_t  bank = cpu->mem_c->banks[bank_num];
+
+	if (bank.ram)
+		SEtc_sub(cpu->timer_c, cpu->mem_c->read_OP_ram_tstates);
+	else
+		SEtc_sub(cpu->timer_c, cpu->mem_c->read_OP_flash_tstates);
+
+	cpu->bus = mem_read(cpu->mem_c, cpu->pc);
+	return cpu->bus;
+}
+
+static void CPU_opcode_run_reverse(CPU_t *cpu) {
+	cpu->f = cpu->prev_instruction->flag;
+	opcode_reverse[cpu->bus](cpu);
+}
+
+static void CPU_CB_opcode_run_reverse(CPU_t *cpu) {
+	if (cpu->prefix) {
+		CPU_opcode_fetch_reverse(cpu);
+		char backup = cpu->bus;
+		CPU_mem_read(cpu, --cpu->pc);
+		char offset = cpu->bus;
+		cpu->bus = backup;
+		ICB_opcode_reverse[cpu->bus](cpu, offset);
+	} else {
+		CPU_opcode_fetch_reverse(cpu);
+		CBtab_reverse[cpu->bus](cpu);
+	}
+}
+
+static void CPU_ED_opcode_run_reverse(CPU_t *cpu) {
+	CPU_opcode_fetch_reverse(cpu);
+	EDtab_reverse[cpu->bus](cpu);
+}
+
+int CPU_step_reverse(CPU_t* cpu) {
+	//if (cpu->interrupt && !cpu->ei_block) handle_interrupt(cpu);
+
+	//handle_pio(cpu);
+
+	if (cpu->halt == FALSE) {
+		CPU_opcode_fetch(cpu);
+		if (cpu->bus == 0xDD || cpu->bus == 0xFD) {
+			cpu->prefix = cpu->bus;
+			CPU_opcode_fetch(cpu);
+			CPU_opcode_run(cpu);
+			cpu->prefix = 0;
+		} else {
+			CPU_opcode_run(cpu);
+		}
+	} else {
+		/* If the CPU is in halt */
+		tc_sub(cpu->timer_c, 4 * HALT_SCALE);
+		cpu->r = (cpu->r & 0x80) + ((cpu->r+1 * HALT_SCALE) & 0x7F);
+	}
+
+	//cpu->interrupt = 0;
+	//cpu->ei_block = FALSE;
+	return 0;
+}
+
+void CPU_add_prev_instr(CPU_t *cpu) {
+
+}
+#endif
+
 static void CPU_opcode_run(CPU_t *cpu) {
 	opcode[cpu->bus](cpu);
 }
@@ -379,7 +457,7 @@ static void CPU_CB_opcode_run(CPU_t *cpu) {
 		CPU_mem_read(cpu, cpu->pc++);				//read the offset, NOT INST
 		char offset = cpu->bus;
 		CPU_opcode_fetch(cpu);						//cb opcode, this is an INST
-		cpu->r = ((cpu->r - 1) & 0x7f) + (cpu->r & 0x80);		//CHEAP BUG FIX
+		cpu->r = ((cpu->r - 1) & 0x7f) + (cpu->r & 0x80);
 		ICB_opcode[cpu->bus](cpu,offset);
 	} else {
 		CPU_opcode_fetch(cpu);

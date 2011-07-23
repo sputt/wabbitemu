@@ -41,10 +41,11 @@ void add_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 {
 	breakpoint_t *new_break = (breakpoint_t *) malloc(sizeof(breakpoint_t));
 	new_break->active = TRUE;
-	new_break->end_addr = waddr.addr;
+	new_break->end_addr = waddr.addr % 0x4000;
 	new_break->next = NULL;
 	new_break->type = type;
 	new_break->waddr = waddr;
+	new_break->waddr.addr %= 0x4000;
 	StringCbPrintf(new_break->label, sizeof(new_break->label), _T("%04X"), waddr.addr);
 	LPCALC lpCalc = NULL;
 	int i;
@@ -155,7 +156,10 @@ BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
 	breakpoint_t *lpBreak = list_breakpoints[lpDebuggerCalc->slot];
 	if (lpBreak == NULL)
 		return FALSE;
-	
+
+	//necessary because of page handling
+	waddr.addr %= 0x4000;
+
 	while (lpBreak->next != NULL && (lpBreak->waddr.addr != waddr.addr ||
 		lpBreak->waddr.page != waddr.page || lpBreak->waddr.is_ram != waddr.is_ram || lpBreak->type != type)) {
 		lpBreak = lpBreak->next;
@@ -280,7 +284,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					}
 
 					//ok i know this is really hacky but now we need to go find the last one 
-					//(the one we just added) and move it to where the old one was so it doesnt
+					//(the one we just added) and move it to where the old one was so it doesn't
 					//look like the list was fucked
 					lpBreak = list_breakpoints[lpDebuggerCalc->slot];
 					breakpoint_t *lpNewLastBreak = lpBreak;

@@ -15,7 +15,7 @@
 	NOTE ABOUT 83+SE AND 84+SE:
 		There is no difference in hardware code between the 83+SE
 	and the 84+SE.  The reason is that there should be zero code interaction
-	so makeing seperate hardware models would be overkill.
+	so making separate hardware models would be overkill.
 */
 
 //Interrupts on SE calculators are based on the crystal timers
@@ -100,7 +100,7 @@ void port3_83pse(CPU_t *cpu, device_t *dev) {
 
 /*
 	Standard interrupt
-	ocurrs on a base frequency
+	occurs on a base frequency
 	when mask timer continues to tick but 
 	does not generate an interrupt. */
 	if (stdint->intactive & 0x02) {
@@ -114,7 +114,7 @@ void port3_83pse(CPU_t *cpu, device_t *dev) {
 
 /*
 	Double speed standard interrupt
-	ocurrs (1/(4*frequency)) second after standard timer.
+	occurs (1/(4*frequency)) second after standard timer.
 	when mask timer continues to tick but 
 	does not generate an interrupt. */
 	if (stdint->intactive & 0x04) {
@@ -153,7 +153,7 @@ void port4_83pse(CPU_t *cpu, device_t *dev) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		/* I'm not sure if this is how the interrupts work. */
-		/* but for practicallity its close enough for now. */
+		/* but for practicality its close enough for now. */
 		int freq = ((cpu->bus & 6) >> 1);
 		stdint->timermax1 = stdint->freq[freq];
 		stdint->timermax2 = ( stdint->freq[freq] / 2.0f );
@@ -277,7 +277,7 @@ void port9_83pse(CPU_t *cpu, device_t *dev) {
 			if (assist->sending) {
 				assist->ready = FALSE;
 				switch ((LinkRead) & 0x03) {
-					case 00:	// bit Acknoledged
+					case 00:	// bit Acknowledged
 						if (link->host) {
 							assist->bit++;
 						}
@@ -1122,7 +1122,7 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 					cpu->mem_c->step++;
 				} else if ( data == 0x20 ) {
 					puts("Fast");
-					cpu->mem_c->cmd = 0x20;		//Fastmode
+					cpu->mem_c->cmd = 0x20;		//Fast mode
 					cpu->mem_c->step = 6;
 				} else if (data == 0x90) {
 					cpu->mem_c->cmd = 0x90;		//Auto select
@@ -1204,9 +1204,9 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			break;
 		case 6:
 			if (data == 0x90) {
-				cpu->mem_c->step = 7;	//check if exit fastmode
+				cpu->mem_c->step = 7;	//check if exit fast mode
 			} else if (data == 0xA0) {
-				cpu->mem_c->step = 8;	//write byte in fastmode
+				cpu->mem_c->step = 8;	//write byte in fast mode
 			}
 			break;
 		case 7:
@@ -1252,7 +1252,7 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 					cpu->mem_c->step++;
 				} else if ( data == 0x20 ) {
 					puts("Fast");
-					cpu->mem_c->cmd = 0x20;		//Fastmode
+					cpu->mem_c->cmd = 0x20;		//Fast mode
 					cpu->mem_c->step = 6;
 				} else if (data == 0x90) {		//Auto select
 					cpu->mem_c->cmd = 0x90;
@@ -1283,9 +1283,9 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			break;
 		case 5:
 			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0x10) {			//Erase entire chip...Im not sure if
-					int i;					//boot page is included, so I'll leave it off
-					for( i = 0; i < (cpu->mem_c->flash_size - PAGE_SIZE) ; i++ ) {
+				if (data == 0x10) {			//Erase entire chips
+					int i;
+					for( i = 0; i < (cpu->mem_c->flash_size) ; i++ ) {
 						cpu->mem_c->flash[i] = 0xFF;
 					}
 				}
@@ -1330,9 +1330,9 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			break;
 		case 6:
 			if (data == 0x90) {
-				cpu->mem_c->step = 7;	//check if exit fastmode
+				cpu->mem_c->step = 7;	//check if exit fast mode
 			} else if (data == 0xA0) {
-				cpu->mem_c->step = 8;	//write byte in fastmode
+				cpu->mem_c->step = 8;	//write byte in fast mode
 			}
 			break;
 		case 7:
@@ -1355,7 +1355,7 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 
 /*----------------------------------------------*/
 /*												*/
-/*				Intialize						*/
+/*				Initialize						*/
 /*												*/
 /*----------------------------------------------*/
 
