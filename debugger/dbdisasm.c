@@ -52,7 +52,7 @@ void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
 }
 
 void sprint_command(HDC hdc, Z80_info_t *zinf, RECT *r) {
-	MyDrawText(lpDebuggerCalc, hdc, r, zinf, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+	MyDrawText(lpDebuggerCalc, hdc, r, zinf, REGULAR, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
 }
 
 void sprint_size(HDC hdc, Z80_info_t *zinf, RECT *r) {
@@ -934,7 +934,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						StringCbCat(copy_line, sizeof(copy_line), buf);
 						StringCbCat(copy_line, sizeof(copy_line), _T(": "));
 						//print the command
-						TCHAR *test_string = mysprintf(lpDebuggerCalc, zinf_line, da_opcode[zinf_line->index].format,
+						TCHAR *test_string = mysprintf(lpDebuggerCalc, zinf_line, REGULAR, da_opcode[zinf_line->index].format,
 														zinf_line->a1, zinf_line->a2, zinf_line->a3, zinf_line->a4);
 						StringCbCat(copy_line, sizeof(copy_line), test_string);
 						StringCbCat(copy_line, sizeof(copy_line), _T("\t;"));

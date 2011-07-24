@@ -67,7 +67,7 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, ViewType typ
 	if (calc_size == FALSE) {
 		calc_size = TRUE;
 		
-		MyDrawText(lpCalc, hdc, rc, zinf, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+		MyDrawText(lpCalc, hdc, rc, zinf, REGULAR, fmt, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
 		
 		TCHAR szFilltext[1024];
 		memset(szFilltext, 'A', mspf_size);
@@ -270,7 +270,7 @@ TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, ViewType type, const TCHAR *fm
 				}
 				case 'a': //address
 					{
-						unsigned short addr = zinf->addr + 2;
+						unsigned short addr = zinf->waddr.addr + 2;
 						TCHAR *name;
 						int val;
 						val = (int) va_arg(argp, INT_PTR);
