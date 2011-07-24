@@ -681,14 +681,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			}
 			return FALSE;
 		}
-		case WM_PAINT: {
-			PAINTSTRUCT ps;
-			HDC hdc, hdcDest;
+		case WM_PAINT:
+			{
 			unsigned int i;
-			HBITMAP hbm;
 			RECT rc;
-			int lpiArray[8];
-			int iSize;
+			
 			HDITEM hdi = {0};
 			int iItem;
 			RECT tr;
@@ -699,24 +696,27 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			GetClientRect(hwnd, &rc);
 
-			hdcDest = BeginPaint(hwnd, &ps);
+			RECT ur;
+			GetUpdateRect(hwnd, &ur, FALSE);
 
-			hdc = CreateCompatibleDC(hdcDest);
-			hbm = CreateCompatibleBitmap(hdcDest, rc.right, rc.bottom);
+			int nCols = Header_GetItemCount(dps->hwndHeader);
+			if (nCols == 0)
+			{
+				return 0;
+			}
+
+			PAINTSTRUCT ps;
+			HDC hdcDest = BeginPaint(hwnd, &ps);
+
+			HDC hdc = CreateCompatibleDC(hdcDest);
+			HBITMAP hbm = CreateCompatibleBitmap(hdcDest, rc.right, rc.bottom);
 			SelectObject(hdc, hbm);
 
 			FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
 
 
-			iSize = Header_GetItemCount(dps->hwndHeader);
-			if (iSize == 0) {
-				EndPaint(hwnd, &ps);
-
-				DeleteObject(hbm);
-				DeleteDC(hdc);
-				return 0;
-			}
-			Header_GetOrderArray(dps->hwndHeader, iSize, lpiArray);
+			int lpiArray[8];
+			Header_GetOrderArray(dps->hwndHeader, nCols, lpiArray);
 
 
 			hdi.mask = HDI_LPARAM;
@@ -724,27 +724,29 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			SelectObject(hdc, GetStockObject(DC_PEN));
 			SetDCPenColor(hdc, GetSysColor(COLOR_BTNFACE));
 
-			dps->max_right = 0;
-			for (iItem = 0; iItem < iSize; iItem++) {
-				int iCol;
+			//dps->max_right = 0;
+			//for (iItem = 0; iItem < nCols; iItem++)
+			//{
+			//	int iCol;
 
-				Header_GetItem(dps->hwndHeader, Header_OrderToIndex(dps->hwndHeader, iItem), &hdi);
-				iCol = (int) hdi.lParam;
-				if (iCol != -1) {
-					dps->max_right += dps->hdrs[iCol].cx;
-					MoveToEx(hdc, dps->max_right - 1, dps->cyHeader, NULL);
-					LineTo(hdc, dps->max_right - 1, rc.bottom);
-				}
-			}
+			//	Header_GetItem(dps->hwndHeader, Header_OrderToIndex(dps->hwndHeader, iItem), &hdi);
+			//	iCol = (int) hdi.lParam;
+			//	if (iCol != -1) {
+			//		dps->max_right += dps->hdrs[iCol].cx;
+			//		MoveToEx(hdc, dps->max_right - 1, dps->cyHeader, NULL);
+			//		LineTo(hdc, dps->max_right - 1, rc.bottom);
+			//	}
+			//}
+
 
 			if (dps->iSel + dps->NumSel > 0) {
-				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iSel, dps->max_right, dps->cyRow * dps->iSel + dps->cyRow*dps->NumSel};
+				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iSel, rc.right - rc.left, dps->cyRow * dps->iSel + dps->cyRow*dps->NumSel};
 				OffsetRect(&sr, 0, dps->cyHeader);
 				DrawItemSelection(hdc, &sr, hwnd == GetFocus(), FALSE, 220);
 			}
 
 			if (dps->iHot != -1) {
-				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iHot, dps->max_right, dps->cyRow * dps->iHot + dps->cyRow};
+				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iHot, rc.right - rc.left, dps->cyRow * dps->iHot + dps->cyRow};
 				OffsetRect(&sr, 0, dps->cyHeader);
 				DrawItemSelection(hdc, &sr, TRUE, FALSE, 130);
 			}
@@ -756,27 +758,16 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			CopyRect(&tr, &rc);
 			tr.bottom = dps->cyRow;
-
-			OffsetRect(&tr, 0, dps->cyHeader);
+			
 
 			gRect.UpperLeft  = 0;
 			gRect.LowerRight = 1;
 
-			if (IsRectEmpty(&ps.rcPaint)) {
-				EndPaint(hwnd, &ps);
 
-				DeleteObject(hbm);
-				DeleteDC(hdc);
-				return 0;
-			}
+			i = max((ur.top - dps->cyHeader) / (int) dps->cyRow, 0);
+			OffsetRect(&tr, 0, dps->cyHeader + (i * dps->cyRow));
 
-			i = (ps.rcPaint.top /*- dps->cyHeader*/) / dps->cyRow;
-			//HACK: fixes problem with updating, not sure why
-			if (i > 0)
-				i--;
-			OffsetRect(&tr, 0, dps->cyRow * i);
-
-			end_i = (ps.rcPaint.bottom /*- dps->cyHeader*/ + dps->cyRow - 1) / dps->cyRow;
+			end_i = (ur.bottom - dps->cyHeader + dps->cyRow - 1 - 1) / dps->cyRow;
 
 			for (; i < end_i; i++, OffsetRect(&tr, 0, dps->cyRow)) {
 				BOOL do_gradient = FALSE;
@@ -854,7 +845,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 
 				// Draw the columns
-				for (iItem = 0; iItem < iSize; iItem++, tr.left = tr.right) {
+				for (iItem = 0; iItem < nCols; iItem++, tr.left = tr.right) {
 					int iCol;
 					Header_GetItem(dps->hwndHeader, Header_OrderToIndex(dps->hwndHeader, iItem), &hdi);
 					iCol = (int) hdi.lParam;
@@ -862,7 +853,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						tr.right = tr.left + dps->hdrs[iCol].cx;
 						SelectObject(hdc, dps->hdrs[iCol].hfont);
 						dps->hdrs[iCol].lpfnCallback(hdc, &dps->zinf[i], &tr);
-
+											
+						//MoveToEx(hdc, tr.right - 1, tr.top, NULL);
+						//LineTo(hdc, tr.right - 1, tr.bottom);
 					}
 				}
 
@@ -1131,7 +1124,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			dps->nKey = dps->nSel;
 			dps->nClick = dps->zinf[y/dps->cyRow].waddr.addr;
 			dps->NumSel = 1;
-			SendMessage(hwnd, WM_PAINT, 0, 0);
 			InvalidateSel(hwnd, dps->iSel);
 			UpdateWindow(hwnd);
 
