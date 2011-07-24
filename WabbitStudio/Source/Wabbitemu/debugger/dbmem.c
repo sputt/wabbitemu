@@ -2,7 +2,6 @@
 
 #include "core.h"
 #include "dbmem.h"
-#include "dbcommon.h"
 #include "resource.h"
 #include "registry.h"
 
@@ -46,7 +45,7 @@ static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
 	return addr;
 }
 
-int GetMaxAddr(mempane_settings *mps) {
+static int GetMaxAddr(mempane_settings *mps) {
 	switch (mps->type) {
 		case REGULAR:
 			return 0x10000;
@@ -120,7 +119,7 @@ static VALUE_FORMAT GetValueFormat(mp_settings *mps) {
 	return format;
 }
 
-waddr_t GetWaddr(mempane_settings *mps, int addr) {
+static waddr_t GetWaddr(mempane_settings *mps, int addr) {
 	waddr_t waddr;
 	switch (mps->type) {
 		case REGULAR:
@@ -167,7 +166,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			InitCommonControls();
 
 			mps->hwndHeader = CreateWindowEx(0, WC_HEADER, (LPCTSTR) NULL,
-				WS_CHILD | WS_VISIBLE | HDS_HORZ |/* HDS_FULLDRAG | HDS_DRAGDROP |*/ WS_CLIPSIBLINGS,
+				WS_CHILD | WS_VISIBLE | HDS_HORZ | WS_CLIPSIBLINGS,
 				0, 0, 1, 1, hwnd, (HMENU) ID_SIZE, g_hInst,
 				(LPVOID) NULL);
 
@@ -363,7 +362,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 				max_addr = GetMaxAddr(mps);
 
-				//draw the address bolded on theright
+				//draw the address bolded on the right
 				if (addr < max_addr) {
 					SelectObject(hdc, mps->hfontAddr);
 					DrawText(hdc, szVal, -1, &r, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
@@ -505,7 +504,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			RECT r;
 			GetClientRect(hwnd, &r);
 			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			printf("Wparam: %d (%c)\n", wParam, wParam);
 			int data_length = mps->nCols * mps->nRows * mps->mode;
 			switch (wParam) {
 				case VK_NEXT:
@@ -819,7 +817,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						mps->addr = ((unsigned short*) &lpDebuggerCalc->cpu)[mps->track/2];
 					}
 					
-					//setup the scroll bar 8 isnt used
+					//setup the scroll bar 8 isn't used
 					if (lParam != WM_VSCROLL)
 						SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(8, 0), 0);
 					RECT rc;

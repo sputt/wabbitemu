@@ -29,6 +29,18 @@ typedef struct disasmpane_settings {
 	disasmhdr_t hdrs[8];
 	HWND hwndHeader;
 	int nPCs[PC_TRAILS];
+	//converted from static
+	HWND hwndTip;
+	BOOL IsDragging;
+	int last_pagedown;
+	DWORD dwDragCountdown;
+	Z80_info_t zinf[256];
+	int nClick;
+	int max_right;
+	int cyHeader;
+	POINT MousePoint;
+	TOOLINFO toolInfo;
+	ViewType type;
 } disasmpane_settings_t, dp_settings;
 
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);

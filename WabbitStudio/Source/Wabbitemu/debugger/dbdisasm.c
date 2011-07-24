@@ -31,7 +31,7 @@ void sprint_addr(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
 
 	SetTextColor(hdc, RGB(0, 0, 0));
-	_stprintf_s(s, _T("%04X"), zinf->addr);
+	_stprintf_s(s, _T("%04X"), zinf->waddr.addr);
 
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -45,7 +45,7 @@ void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	if (zinf->size == 0) return;
 
 	for (j = 0; j < zinf->size; j++) {
-		StringCbPrintf(s + (j*2), sizeof(s), _T("%02x"), mem_read(lpDebuggerCalc->cpu.mem_c, zinf->addr+j));
+		StringCbPrintf(s + (j*2), sizeof(s), _T("%02x"), mem_read(lpDebuggerCalc->cpu.mem_c, zinf->waddr.addr + j));
 	}
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -87,17 +87,14 @@ void InvalidateSel(HWND hwnd, int sel) {
 	dp_settings *dps = (dp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	HDC hdc = GetDC(hwnd);
 
-	RECT r;
-	RECT hdrRect;
+	RECT r, hdrRect;
 
 	GetClientRect(hwnd, &r);
 	r.top = sel*dps->cyRow; r.bottom = r.top + (dps->cyRow * dps->NumSel);
 
 
 	GetWindowRect(dps->hwndHeader, &hdrRect);
-
 	OffsetRect(&r, 0, hdrRect.bottom - hdrRect.top);
-
 	InvalidateRect(hwnd, &r, TRUE);
 
 	ReleaseDC(hwnd, hdc);
@@ -132,21 +129,18 @@ void DrawSelectionRect(HDC hdc, RECT *r) {
 	SelectObject(hdc, GetStockObject(NULL_BRUSH));
 
 	Rectangle(hdc, r->left, r->top, r->right, r->bottom);
+	HDC hdcSel = CreateCompatibleDC(hdc);
+	HBITMAP hbmSel = CreateCompatibleBitmap(hdc, 1, 1);
+	SelectObject(hdcSel, hbmSel);
 
-	{
-		HDC hdcSel = CreateCompatibleDC(hdc);
-		HBITMAP hbmSel = CreateCompatibleBitmap(hdc, 1, 1);
-		SelectObject(hdcSel, hbmSel);
+	SetPixel(hdcSel, 0, 0, GetSysColor(COLOR_HIGHLIGHT));
 
-		SetPixel(hdcSel, 0, 0, GetSysColor(COLOR_HIGHLIGHT));
+	AlphaBlend(	hdc, r->left+1, r->top+1, r->right - r->left - 2, r->bottom - r->top - 2,
+				hdcSel, 0, 0, 1, 1,
+				bf);
 
-		AlphaBlend(	hdc, r->left+1, r->top+1, r->right - r->left - 2, r->bottom - r->top - 2,
-					hdcSel, 0, 0, 1, 1,
-					bf);
-
-		DeleteObject(hbmSel);
-		DeleteDC(hdcSel);
-	}
+	DeleteObject(hbmSel);
+	DeleteDC(hdcSel);
 }
 
 void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int opacity) {
@@ -244,7 +238,7 @@ void CPU_stepout(CPU_t *cpu) {
 
 		if (cpu->sp > old_sp) {
 			Z80_info_t zinflocal;
-			disassemble(cpu->mem_c, old_pc.addr, 1, &zinflocal);
+			disassemble(cpu->mem_c, REGULAR, addr_to_waddr(cpu->mem_c, old_pc.addr), 1, &zinflocal);
 
 			if (zinflocal.index == DA_RET 		||
 				zinflocal.index == DA_RET_CC 	||
@@ -268,7 +262,7 @@ void CPU_stepover(CPU_t *cpu) {
 	double time = tc_elapsed(cpu->timer_c);
 	Z80_info_t zinflocal;
 
-	disassemble(cpu->mem_c, cpu->pc, 1, &zinflocal);
+	disassemble(cpu->mem_c, REGULAR, addr_to_waddr(cpu->mem_c, cpu->pc), 1, &zinflocal);
 
 	if (cpu->halt) {
 		if (cpu->iff1) {
@@ -283,9 +277,9 @@ void CPU_stepover(CPU_t *cpu) {
 		if (cpu->sp != old_stack)
 			CPU_stepout(cpu);
 	} else {
-		for (i = 0; i < NumElm(usable_commands); i++) {
+		for (i = 0; i < ARRAYSIZE(usable_commands); i++) {
 			if (zinflocal.index == usable_commands[i]) {
-				while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && cpu->pc != (zinflocal.addr + zinflocal.size))
+				while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && cpu->pc != (zinflocal.waddr.addr + zinflocal.size))
 					CPU_step(cpu);
 				return;
 			}
@@ -298,8 +292,8 @@ void CPU_stepover(CPU_t *cpu) {
 
 void disasmhdr_show(HWND hwndHeader, disasmhdr_t* hdrs) {
 	int lpiNewArray[8];
-	int iSize = (int) SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
-	SendMessage(hwndHeader, HDM_GETORDERARRAY, (WPARAM) iSize, (LPARAM) lpiNewArray);
+	int iSize = Header_GetItemCount(hwndHeader);
+	Header_GetOrderArray(hwndHeader, iSize, lpiNewArray);
 }
 
 int disasmhdr_insert(HWND hwndHeader, disasmhdr_t* dhdr) {
@@ -318,19 +312,19 @@ int disasmhdr_insert(HWND hwndHeader, disasmhdr_t* dhdr) {
 	hdi.fmt = HDF_LEFT | HDF_STRING;
 	hdi.lParam = dhdr->index;
 
-	iSize = (int) SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
+	iSize = Header_GetItemCount(hwndHeader);
 	return Header_InsertItem(hwndHeader, iSize + 1, &hdi);
 }
 
 int disasmhdr_find(HWND hwndHeader, int index) {
 	HDITEM hdi;
-	int iSize = (int) SendMessage(hwndHeader, HDM_GETITEMCOUNT, 0, 0);
+	int iSize = Header_GetItemCount(hwndHeader);
 	int i;
 
 	hdi.mask = HDI_LPARAM;
 
 	for (i = 0; i < iSize; i++) {
-		SendMessage(hwndHeader, HDM_GETITEM, i, (LPARAM) &hdi);
+		Header_GetItem(hwndHeader, i, &hdi);
 		if (hdi.lParam == index) return i;
 	}
 	return -1;
@@ -346,32 +340,40 @@ int disasmhdr_toggle(HWND hwndHeader, disasmhdr_t* dhdr) {
 	}
 }
 
+static int GetMaxAddr(dp_settings *dps) {
+	switch (dps->type) {
+		case REGULAR:
+			return 0x10000;
+		case FLASH:
+			return lpDebuggerCalc->cpu.mem_c->flash_size;
+		case RAM:
+			return lpDebuggerCalc->cpu.mem_c->ram_size;
+	}
+}
 
 extern HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
-static disasmpane_settings_t *dps;
-static Z80_info_t zinf[256];
 
-static int addr_to_index(int addr) {
+static int addr_to_index(dp_settings *dps, int addr) {
 	u_int i = 0;
 	for (i = 0; i < dps->nRows; i++) {
-		if (zinf[i].addr == addr)
+		if (dps->zinf[i].waddr.addr == addr)
 			return i;
 	}
 	return -1;
 }
 
-static int next_select(int addr) {
-	int i = addr_to_index(addr);
+static int next_select(dp_settings *dps, int addr) {
+	int i = addr_to_index(dps, addr);
 	if (i > 255)
 		return -1;
-	return zinf[i+1].addr;
+	return dps->zinf[i+1].waddr.addr;
 }
 
-static int prev_select(int addr) {
-	int i = addr_to_index(addr);
+static int prev_select(dp_settings *dps, int addr) {
+	int i = addr_to_index(dps, addr);
 	if (i < 1)
 		return -1;
-	return zinf[i-1].addr;
+	return dps->zinf[i-1].waddr.addr;
 }
 
 void cycle_pcs(dp_settings *dps) {
@@ -383,10 +385,9 @@ void cycle_pcs(dp_settings *dps) {
 	dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
 }
 
-void db_step_finish(HWND hwnd) {
-	unsigned short past_last = lpDebuggerCalc->cpu.pc - zinf[dps->nRows-1].addr + zinf[dps->nRows-1].size;
-	unsigned short before_first = zinf[0].addr - lpDebuggerCalc->cpu.pc;
-	//InvalidateSel(hwnd, dps->iPC);
+void db_step_finish(HWND hwnd, dp_settings *dps) {
+	unsigned short past_last = lpDebuggerCalc->cpu.pc - dps->zinf[dps->nRows-1].waddr.addr + dps->zinf[dps->nRows-1].size;
+	unsigned short before_first = dps->zinf[0].waddr.addr - lpDebuggerCalc->cpu.pc;
 	InvalidateSel(hwnd, dps->iSel);
 	dps->nSel = (&lpDebuggerCalc->cpu)->pc;
 	if (past_last >= 0 || before_first > 0) {
@@ -405,35 +406,28 @@ void db_step_finish(HWND hwnd) {
 		UpdateWindow(hwnd);
 	}
 
-	//InvalidateSel(hwnd, dps->iPC);
 	cycle_pcs(dps);
 	SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 }
 
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static TEXTMETRIC tm;
-	static BOOL IsDragging = FALSE;
-	static POINT MousePoint;
-	static HWND hwndTip;
-	static TOOLINFO toolInfo;
-	static int cyHeader;
-	static int max_right;
-	static int nClick;
-	static int last_pagedown = 32;
 
 	switch (Message) {
 		case WM_SETFOCUS: {
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			hwndLastFocus = hwnd;
 			InvalidateSel(hwnd, dps->iSel);
 			UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_KILLFOCUS: {
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			InvalidateSel(hwnd, dps->iSel);
 			UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_CREATE: {
+			TEXTMETRIC tm;
 			HDC hdc = GetDC(hwnd);
 			RECT rc;
 			int i;
@@ -443,7 +437,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			GetClientRect(hwnd, &rc);
 
-			dps = (disasmpane_settings_t *) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			dp_settings *dps = (dp_settings *) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) dps);
 
 			dps->hfontDisasm = hfontLucida;
@@ -473,39 +467,33 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			hdl.prc = &rc;
 			hdl.pwpos = &wp;
-			SendMessage(dps->hwndHeader, HDM_LAYOUT, 0, (LPARAM) &hdl);
+			Header_Layout(dps->hwndHeader, &hdl);
 			SetWindowPos(dps->hwndHeader, wp.hwndInsertAfter, wp.x, wp.y,
 				wp.cx, wp.cy, wp.flags);
 
 			// Add all of the columns
-
 			for (i = 0; i < NumElm(dps->hdrs); i++) {
 				if (dps->hdrs[i].index != -1) dps->hdrs[i].index = disasmhdr_insert(dps->hwndHeader, &dps->hdrs[i]);
 			}
 
-
-			hwndTip = CreateWindowEx(
+			dps->hwndTip = CreateWindowEx(
 					0,
 					TOOLTIPS_CLASS,
 					NULL, WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
 					CW_USEDEFAULT, CW_USEDEFAULT,
 					CW_USEDEFAULT, CW_USEDEFAULT,
 					hwnd, NULL, g_hInst, NULL);
+			SendMessage(dps->hwndTip, TTM_ACTIVATE, TRUE, 0);
 
-			SetWindowPos(hwndTip, HWND_TOPMOST,0, 0, 0, 0,
-						 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
-			SendMessage(hwndTip, TTM_ACTIVATE, TRUE, 0);
-
-			toolInfo.cbSize = sizeof(toolInfo);
-			toolInfo.hwnd = hwnd;
-			toolInfo.uFlags = TTF_IDISHWND | TTF_TRACK | TTF_ABSOLUTE;
-			toolInfo.uId = (UINT_PTR)hwnd;
-			toolInfo.lpszText = _T("");
-			GetClientRect(hwnd, &toolInfo.rect);
-			SendMessage(hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+			dps->toolInfo.cbSize = sizeof(TOOLINFO);
+			dps->toolInfo.hwnd = hwnd;
+			dps->toolInfo.uFlags = TTF_IDISHWND | TTF_TRACK | TTF_ABSOLUTE;
+			dps->toolInfo.uId = (UINT_PTR)hwnd;
+			dps->toolInfo.lpszText = _T("");
+			SendMessage(dps->hwndTip, TTM_ADDTOOL, 0, (LPARAM) &dps->toolInfo);
 
 			GetWindowRect(dps->hwndHeader, &hdrRect);
-			cyHeader = hdrRect.bottom - hdrRect.top;
+			dps->cyHeader = hdrRect.bottom - hdrRect.top;
 
 			SCROLLINFO si;
 			si.cbSize = sizeof(SCROLLINFO);
@@ -521,50 +509,48 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			for (i = 1; i < PC_TRAILS; i++) {
 				dps->nPCs[i] = -1;
 			}
+			dps->last_pagedown = 32;
 			return 0;
 		}
 		case WM_SIZE:	{
 			RECT rc;
-
 			WINDOWPOS wp;
 			HDLAYOUT hdl;
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			GetClientRect(hwnd, &rc);
-
 			hdl.prc = &rc;
 			hdl.pwpos = &wp;
-			SendMessage(dps->hwndHeader, HDM_LAYOUT, 0, (LPARAM) &hdl);
+			Header_Layout(dps->hwndHeader, &hdl);
 			SetWindowPos(dps->hwndHeader, wp.hwndInsertAfter, wp.x, wp.y,
 				wp.cx, wp.cy, wp.flags);
 
-			if (rc.bottom < cyHeader) rc.bottom = cyHeader;
+			if (rc.bottom < dps->cyHeader) rc.bottom = dps->cyHeader;
 			if (dps->cyRow == 0) return 0;
-			dps->nRows = (rc.bottom - cyHeader)/dps->cyRow + 1;
+			dps->nRows = (rc.bottom - dps->cyHeader)/dps->cyRow + 1;
 
 			SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 			// Assign page length to include length sum of all commands on screen
-			{
-				Z80_info_t 	*zfirst 	= &zinf[0],
-							*zlast 	= &zinf[dps->nRows-1];
-
-				dps->nPage = zlast->addr + zlast->size - zfirst->addr;
-			}
+			Z80_info_t 	*zfirst 	= &dps->zinf[0],
+						*zlast 	= &dps->zinf[dps->nRows-1];
+			dps->nPage = zlast->waddr.addr + zlast->size - zfirst->waddr.addr;
 
 			//calculate the correct ending page
-			int max_addr;
+			int last_top_page_addr;
 			Z80_info_t zup[128];
 			int nPane_old = dps->nPane;
-			max_addr = 0xFFFF - (5 * dps->nRows);
+			last_top_page_addr = 0xFFFF - (5 * dps->nRows);
 			do {
-				disassemble(lpDebuggerCalc->cpu.mem_c, ++max_addr, dps->nRows, zup);
-			} while (zup[dps->nRows - 1].addr != 0xFFFF);
+				disassemble(lpDebuggerCalc->cpu.mem_c, REGULAR, 
+					addr_to_waddr(lpDebuggerCalc->cpu.mem_c, ++last_top_page_addr), dps->nRows, zup);
+			} while (zup[dps->nRows - 1].waddr.addr != GetMaxAddr(dps));
 
-			max_addr = zup[0].addr + last_pagedown;
+			last_top_page_addr = zup[0].waddr.addr + dps->last_pagedown;
 
 			SCROLLINFO si;
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_RANGE;
-			si.nMax = max_addr;
+			si.nMax = last_top_page_addr;
 			si.nMin = 0x0000;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 			return 0;
@@ -594,16 +580,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_NOTIFY: {
-			int iSize = (int) SendMessage(((NMHDR*) lParam)->hwndFrom, HDM_GETITEMCOUNT, 0, 0);
+			int iSize = Header_GetItemCount(((NMHDR*) lParam)->hwndFrom);
 			static int lpiArray[8];
 			HWND hwndHeader = ((NMHDR*)lParam)->hwndFrom;
 			switch (((NMHDR*) lParam)->code) {
 				case HDN_BEGINTRACK:
-					//if (((NMHEADER*) lParam)->iItem == 0)
-					//	return TRUE;
 				case HDN_ITEMCHANGING:
 				case HDN_ENDTRACK:
 				{
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					HDITEM *lphdi = ((NMHEADER*) lParam)->pitem;
 					static BOOL in_changing = FALSE;
 					HDITEM hdi;
@@ -616,7 +601,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 
 					hdi.mask = HDI_LPARAM;
-					SendMessage(hwndHeader, HDM_GETITEM, ((NMHEADER*) lParam)->iItem, (LPARAM) &hdi);
+					Header_GetItem(hwndHeader, ((NMHEADER*) lParam)->iItem, &hdi);
 
 
 					GetClientRect(hwnd, &rc);
@@ -643,13 +628,14 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					HMENU hmenu;
 					POINT p;
 					int i;
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 					hmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_DISASM_HEADER_MENU));
 					if (!hmenu) break;
 					hmenu = GetSubMenu(hmenu, 0);
 
 
-					for (i = 0; i < NumElm(dps->hdrs); i++) {
+					for (i = 0; i < ARRAYSIZE(dps->hdrs); i++) {
 						UINT check = MF_BYPOSITION;
 						int iHdr = disasmhdr_find(dps->hwndHeader, i);
 						if (iHdr != -1) {
@@ -668,26 +654,23 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					return TRUE;
 				}
 				case HDN_BEGINDRAG:
-					SendMessage(hwndHeader, HDM_GETORDERARRAY, (WPARAM) iSize, (LPARAM) lpiArray);
-
+					Header_GetOrderArray(hwndHeader, iSize, lpiArray);
 					if (((NMHEADER*) lParam)->iItem == 0) {
-
 						// Stop the drag operation
 						SendMessage(hwndHeader, WM_LBUTTONUP, 0, 0);
 						return TRUE;
 					}
 					return FALSE;
 				case HDN_ENDDRAG: {
-
 					return FALSE;
 				}
 				case NM_RELEASEDCAPTURE: {
 					// If the addr column isn't in the leftmost anymore, restore the old layout
 					int lpiNewArray[8];
-					SendMessage(hwndHeader, HDM_GETORDERARRAY, (WPARAM) iSize, (LPARAM) lpiNewArray);
+					Header_GetOrderArray(hwndHeader, iSize, lpiNewArray);
 
 					if (lpiNewArray[0] != dpsAddr) {
-						SendMessage(hwndHeader, HDM_SETORDERARRAY, (WPARAM) iSize, (LPARAM) lpiArray);
+						Header_SetOrderArray(hwndHeader, iSize, lpiArray);
 						return TRUE;
 					}
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
@@ -712,6 +695,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			TRIVERTEX vert[2];
 			u_int end_i;
 			GRADIENT_RECT gRect;
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			GetClientRect(hwnd, &rc);
 
@@ -724,9 +708,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
 
 
-			iSize = (int) SendMessage(dps->hwndHeader, HDM_GETITEMCOUNT, 0, 0);
-			if (iSize == 0) return 0;
-			SendMessage(dps->hwndHeader, HDM_GETORDERARRAY, (WPARAM) iSize, (LPARAM) lpiArray);
+			iSize = Header_GetItemCount(dps->hwndHeader);
+			if (iSize == 0) {
+				EndPaint(hwnd, &ps);
+
+				DeleteObject(hbm);
+				DeleteDC(hdc);
+				return 0;
+			}
+			Header_GetOrderArray(dps->hwndHeader, iSize, lpiArray);
 
 
 			hdi.mask = HDI_LPARAM;
@@ -734,28 +724,28 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			SelectObject(hdc, GetStockObject(DC_PEN));
 			SetDCPenColor(hdc, GetSysColor(COLOR_BTNFACE));
 
-			max_right = 0;
+			dps->max_right = 0;
 			for (iItem = 0; iItem < iSize; iItem++) {
 				int iCol;
 
-				SendMessage(dps->hwndHeader, HDM_GETITEM, SendMessage(dps->hwndHeader, HDM_ORDERTOINDEX, iItem, 0), (LPARAM) &hdi);
+				Header_GetItem(dps->hwndHeader, Header_OrderToIndex(dps->hwndHeader, iItem), &hdi);
 				iCol = (int) hdi.lParam;
 				if (iCol != -1) {
-					max_right += dps->hdrs[iCol].cx;
-					MoveToEx(hdc, max_right - 1, cyHeader, NULL);
-					LineTo(hdc, max_right - 1, rc.bottom);
+					dps->max_right += dps->hdrs[iCol].cx;
+					MoveToEx(hdc, dps->max_right - 1, dps->cyHeader, NULL);
+					LineTo(hdc, dps->max_right - 1, rc.bottom);
 				}
 			}
 
 			if (dps->iSel + dps->NumSel > 0) {
-				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iSel, max_right, dps->cyRow * dps->iSel + dps->cyRow*dps->NumSel};
-				OffsetRect(&sr, 0, cyHeader);
+				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iSel, dps->max_right, dps->cyRow * dps->iSel + dps->cyRow*dps->NumSel};
+				OffsetRect(&sr, 0, dps->cyHeader);
 				DrawItemSelection(hdc, &sr, hwnd == GetFocus(), FALSE, 220);
 			}
 
 			if (dps->iHot != -1) {
-				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iHot, max_right, dps->cyRow * dps->iHot + dps->cyRow};
-				OffsetRect(&sr, 0, cyHeader);
+				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iHot, dps->max_right, dps->cyRow * dps->iHot + dps->cyRow};
+				OffsetRect(&sr, 0, dps->cyHeader);
 				DrawItemSelection(hdc, &sr, TRUE, FALSE, 130);
 			}
 
@@ -767,7 +757,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			CopyRect(&tr, &rc);
 			tr.bottom = dps->cyRow;
 
-			OffsetRect(&tr, 0, cyHeader);
+			OffsetRect(&tr, 0, dps->cyHeader);
 
 			gRect.UpperLeft  = 0;
 			gRect.LowerRight = 1;
@@ -780,25 +770,20 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				return 0;
 			}
 
-			/*printf("rcPaint: %ld %ld %ld %ld\n",
-					ps.rcPaint.left,
-					ps.rcPaint.top,
-					ps.rcPaint.right,
-					ps.rcPaint.bottom);
-
-			printf("starting i: %d\n",(ps.rcPaint.top - cyHeader)/dps->cyRow);*/
-
-			i = (ps.rcPaint.top - cyHeader) / dps->cyRow;
+			i = (ps.rcPaint.top /*- dps->cyHeader*/) / dps->cyRow;
+			//HACK: fixes problem with updating, not sure why
+			if (i > 0)
+				i--;
 			OffsetRect(&tr, 0, dps->cyRow * i);
 
-			end_i = (ps.rcPaint.bottom - cyHeader + dps->cyRow - 1) / dps->cyRow;
+			end_i = (ps.rcPaint.bottom /*- dps->cyHeader*/ + dps->cyRow - 1) / dps->cyRow;
 
 			for (; i < end_i; i++, OffsetRect(&tr, 0, dps->cyRow)) {
 				BOOL do_gradient = FALSE;
 
 				int pc_i;
 				for (pc_i = 0; pc_i < PC_TRAILS && !do_gradient; pc_i++) {
-					if ((dps->nPCs[pc_i] == zinf[i].addr) && (zinf[i].index != DA_LABEL)) {
+					if ((dps->nPCs[pc_i] == dps->zinf[i].waddr.addr) && (dps->zinf[i].index != DA_LABEL)) {
 						///dps->iPC = i;
 						vert[0].Red = 0xFF00;
 						vert[0].Green = 0xFF00;
@@ -822,15 +807,14 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				BOOL breakpoint = FALSE;
 				memory_context_t *calc_mem = &lpDebuggerCalc->mem_c;
-				waddr_t waddr = addr_to_waddr(calc_mem, zinf[i].addr);
-				if (check_break(calc_mem, waddr)) {
+				if (check_break(calc_mem, dps->zinf[i].waddr)) {
 					vert [0] .Red    = GetRValue(COLOR_BREAKPOINT) << 8;
 					vert [0] .Green  = GetGValue(COLOR_BREAKPOINT) << 8;
 					vert [0] .Blue   = GetBValue(COLOR_BREAKPOINT) << 8;
 					breakpoint = TRUE;
 					do_gradient = TRUE;
 				}
-				if (check_mem_write_break(calc_mem, waddr)) {
+				if (check_mem_write_break(calc_mem, dps->zinf[i].waddr)) {
 					if (breakpoint) {
 						vert [0] .Red    |= GetRValue(COLOR_MEMPOINT_WRITE) << 8;
 						vert [0] .Green  |= GetGValue(COLOR_MEMPOINT_WRITE) << 8;
@@ -843,7 +827,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					breakpoint = TRUE;
 					do_gradient = TRUE;
 				}
-				if (check_mem_read_break(calc_mem, waddr)) {
+				if (check_mem_read_break(calc_mem, dps->zinf[i].waddr)) {
 					if (breakpoint) {
 						vert [0] .Red    |= GetRValue(COLOR_MEMPOINT_READ) << 8;
 						vert [0] .Green  |= GetGValue(COLOR_MEMPOINT_READ) << 8;
@@ -872,32 +856,32 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				// Draw the columns
 				for (iItem = 0; iItem < iSize; iItem++, tr.left = tr.right) {
 					int iCol;
-					SendMessage(dps->hwndHeader, HDM_GETITEM, SendMessage(dps->hwndHeader, HDM_ORDERTOINDEX, iItem, 0), (LPARAM) &hdi);
+					Header_GetItem(dps->hwndHeader, Header_OrderToIndex(dps->hwndHeader, iItem), &hdi);
 					iCol = (int) hdi.lParam;
 					if (iCol != -1) {
 						tr.right = tr.left + dps->hdrs[iCol].cx;
 						SelectObject(hdc, dps->hdrs[iCol].hfont);
-						dps->hdrs[iCol].lpfnCallback(hdc, &zinf[i], &tr);
+						dps->hdrs[iCol].lpfnCallback(hdc, &dps->zinf[i], &tr);
 
 					}
 				}
 
-				max_right = tr.right;
+				dps->max_right = tr.right;
 				tr.left = 0;
 				tr.right = rc.right;
-				if (zinf[i].addr == dps->nKey && hwnd == GetFocus()) {
+				if (dps->zinf[i].waddr.addr == dps->nKey && hwnd == GetFocus()) {
 					//dps->iSel = i;
 					RECT fr;
 					CopyRect(&fr, &tr);
 					fr.left += COLUMN_X_OFFSET / 2;
-					fr.right = max_right;
+					fr.right = dps->max_right;
 					InflateRect(&fr, -1, -1);
 					DrawFocusRect(hdc, &fr);
 				}
 			}
 
-			if (IsDragging == TRUE) {
-				POINT p = {MousePoint.x, MousePoint.y};
+			if (dps->IsDragging == TRUE) {
+				POINT p = {dps->MousePoint.x, dps->MousePoint.y};
 
 				RECT sr;
 				SetRect(&sr, dps->DragStart.x, dps->DragStart.y, p.x, p.y);
@@ -906,7 +890,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			GetClientRect(hwnd, &rc);
 			if (IsWindowEnabled(hwnd))
-				BitBlt(hdcDest, 0, cyHeader, rc.right, rc.bottom, hdc, 0, cyHeader, SRCCOPY);
+				BitBlt(hdcDest, 0, dps->cyHeader, rc.right, rc.bottom, hdc, 0, dps->cyHeader, SRCCOPY);
 			else {
 				HBITMAP hbmSizer = CreateCompatibleBitmap(NULL, rc.right - rc.left, rc.bottom - rc.top);
 				SelectObject(hdcDest, hbmSizer);
@@ -932,18 +916,20 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case DB_COPYLINE: {
 					int i, j;
 					Z80_info *zinf_line;
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					TCHAR *disassembly = (TCHAR *) LocalAlloc(LMEM_FIXED, 1024);
 					memset(disassembly, 0, 1024);
 					TCHAR copy_line[512];
 					TCHAR buf[512];
 					for (i = 0; i < dps->NumSel; i++) {
-						zinf_line = &zinf[dps->iSel + i];
+						zinf_line = &dps->zinf[dps->iSel + i];
 						//print the address
-						StringCbPrintf(copy_line, sizeof(copy_line), _T("%04X"), zinf_line->addr);
+						StringCbPrintf(copy_line, sizeof(copy_line), _T("%04X"), zinf_line->waddr.addr);
 						StringCbCat(copy_line, sizeof(copy_line), _T(":"));
 						//print the data
 						for (j = 0; j < zinf_line->size; j++) {
-							StringCbPrintf(buf + (j*2), sizeof(buf), _T("%02x"), mem_read(lpDebuggerCalc->cpu.mem_c, zinf_line->addr+j));
+							StringCbPrintf(buf + (j*2), sizeof(buf), _T("%02x"), 
+								mem_read(lpDebuggerCalc->cpu.mem_c, zinf_line->waddr.addr+j));
 						}
 						StringCbCat(copy_line, sizeof(copy_line), buf);
 						StringCbCat(copy_line, sizeof(copy_line), _T(": "));
@@ -978,14 +964,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_DISASM: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					u_int addr = (u_int) lParam;
-					disassemble(&lpDebuggerCalc->mem_c, addr, dps->nRows, zinf);
+					disassemble(&lpDebuggerCalc->mem_c, REGULAR, addr_to_waddr(lpDebuggerCalc->cpu.mem_c, addr), dps->nRows, dps->zinf);
 					break;
 				}
 				case IDM_RUN_RUN:
 				case DB_RUN: {
 					int i;
-					//SendMessage(hwnd, WM_COMMAND, DB_STEP, 0);
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					EnableWindow(hwnd, FALSE);
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					for (i = 0; i < PC_TRAILS; i++) {
@@ -998,32 +985,37 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case DB_STOP: {
 					int i;
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					EnableWindow(hwnd, TRUE);
 					SendMessage(hwnd, WM_COMMAND, DB_DISASM, lpDebuggerCalc->cpu.pc);
-					db_step_finish(hwnd);
+					db_step_finish(hwnd, dps);
 					lpDebuggerCalc->running = FALSE;
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
 				}
 				case IDM_RUN_STEP:
 				case DB_STEP: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					CPU_step(&lpDebuggerCalc->cpu);
-					db_step_finish(hwnd);
+					db_step_finish(hwnd, dps);
 					break;
 				}
 				case IDM_RUN_STEPOVER:
 				case DB_STEPOVER: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					CPU_stepover(&lpDebuggerCalc->cpu);
-					db_step_finish(hwnd);
+					db_step_finish(hwnd, dps);
 					break;
 				}
 				case IDM_RUN_STEPOUT: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					CPU_stepout(&lpDebuggerCalc->cpu);
-					db_step_finish(hwnd);
+					db_step_finish(hwnd, dps);
 					break;
 				}
 				case DB_DISASM_GOTO:
 				case DB_GOTO: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					int result;
 					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC) GotoDialogProc);
 					if (result == IDOK) SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, goto_addr & 0xFFFF), 0);
@@ -1032,6 +1024,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					return 0;
 				}
 				case DB_FIND_NEXT: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					unsigned short value = find_value - 1;
 					int addr = search_backwards ? dps->nSel - 1 : dps->nSel + 1;
 					while (addr <= 0xFFFF && addr >= 0x0000 && value != find_value) {
@@ -1061,6 +1054,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_BREAKPOINT: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
 
 					if (check_break(&lpDebuggerCalc->mem_c, waddr)) {
@@ -1073,6 +1067,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_MEMPOINT_WRITE: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
 
 					if (check_mem_write_break(&lpDebuggerCalc->mem_c, waddr)) {
@@ -1085,6 +1080,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_MEMPOINT_READ: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
 
 					if (check_mem_read_break(&lpDebuggerCalc->mem_c, waddr)) {
@@ -1100,14 +1096,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case IDM_DISASMDISASM:
 				case IDM_DISASMSIZE:
 				case IDM_DISASMCLOCKS: {
-					disasmhdr_toggle(dps->hwndHeader,
-						&dps->hdrs[LOWORD(wParam) - IDM_DISASMADDR]);
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					disasmhdr_toggle(dps->hwndHeader, &dps->hdrs[LOWORD(wParam) - IDM_DISASMADDR]);
 
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
 				}
 				case DB_SET_PC: {
-					lpDebuggerCalc->cpu.pc = zinf[dps->iSel].addr;
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					lpDebuggerCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
 					cycle_pcs(dps);
 					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 					break;
@@ -1119,6 +1116,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			RECT hdrRect;
 			RECT r;
 			int y;
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			GetWindowRect(dps->hwndHeader, &hdrRect);
 
@@ -1129,9 +1127,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			InvalidateSel(hwnd, dps->iSel);
 			r.top = y -  (y % dps->cyRow); r.bottom = r.top + dps->cyRow;
 			dps->iSel = y/dps->cyRow;
-			dps->nSel = zinf[y/dps->cyRow].addr;
+			dps->nSel = dps->zinf[y/dps->cyRow].waddr.addr;
 			dps->nKey = dps->nSel;
-			nClick = zinf[y/dps->cyRow].addr;
+			dps->nClick = dps->zinf[y/dps->cyRow].waddr.addr;
 			dps->NumSel = 1;
 			SendMessage(hwnd, WM_PAINT, 0, 0);
 			InvalidateSel(hwnd, dps->iSel);
@@ -1146,39 +1144,41 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 		case WM_LBUTTONUP: {
 			RECT hdrRect;
 			int y;
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			GetWindowRect(dps->hwndHeader, &hdrRect);
-			y = GET_Y_LPARAM(lParam) - cyHeader;
+			y = GET_Y_LPARAM(lParam) - dps->cyHeader;
 
 			ReleaseCapture();
 			InvalidateRect(hwnd, NULL, FALSE);
-			IsDragging = FALSE;
-			SendMessage(hwndTip, TTM_TRACKACTIVATE, FALSE, (LPARAM) &toolInfo);
+			dps->IsDragging = FALSE;
+			dps->toolInfo.lParam = FALSE;
+			SendMessage(dps->hwndTip, TTM_TRACKACTIVATE, FALSE, (LPARAM) &dps->toolInfo);
 			return 0;
 		}
 		case WM_MOUSELEAVE: {
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			InvalidateSel(hwnd, dps->iHot);
 			dps->iHot = -1;
 			return 0;
 		}
 		case WM_MOUSEMOVE: {
-			static DWORD dwDragCountdown = 0;
-			int total = 0, total_cond = 0, total_bytes = 0;
-
-			MousePoint.x = GET_X_LPARAM(lParam);
-			MousePoint.y = GET_Y_LPARAM(lParam);
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dps->MousePoint.x = GET_X_LPARAM(lParam);
+			dps->MousePoint.y = GET_Y_LPARAM(lParam);
 
 			if (wParam != MK_LBUTTON) {
-				dwDragCountdown = 0;
-				IsDragging = FALSE;
-				SendMessage(hwndTip, TTM_TRACKACTIVATE, FALSE, (LPARAM) &toolInfo);
+				dps->dwDragCountdown = 0;
+				dps->IsDragging = FALSE;
+				dps->toolInfo.lParam = FALSE;
+				SendMessage(dps->hwndTip, TTM_TRACKACTIVATE, FALSE, (LPARAM) &dps->toolInfo);
 
 				InvalidateSel(hwnd, dps->iHot);
 
-				if (MousePoint.x < max_right) {
+				if (dps->MousePoint.x < dps->max_right) {
 					TRACKMOUSEEVENT tme;
 
-					dps->iHot = (MousePoint.y - cyHeader) / dps->cyRow;
+					dps->iHot = (dps->MousePoint.y - dps->cyHeader) / dps->cyRow;
 					InvalidateSel(hwnd, dps->iHot);
 
 					tme.cbSize = sizeof(tme);
@@ -1189,76 +1189,83 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				} else {
 					dps->iHot = -1;
 				}
-			} else if (IsDragging == FALSE) {
-				if (++dwDragCountdown < (DWORD) GetSystemMetrics(SM_CXDRAG)) return 0;
+			} else if (dps->IsDragging == FALSE) {
+				if (++dps->dwDragCountdown < (DWORD) GetSystemMetrics(SM_CXDRAG)) return 0;
 
-				IsDragging = TRUE;
+				dps->IsDragging = TRUE;
 			}
 
-			if (IsDragging == TRUE) {
-
+			if (dps->IsDragging == TRUE) {
 				RECT r, rc;
-				TCHAR szTip[64];
-				int j;
 
-				if (MousePoint.y > dps->DragStart.y) {
-					SetRect(&r, dps->DragStart.x, dps->DragStart.y, MousePoint.x, MousePoint.y);
+				if (dps->MousePoint.y > dps->DragStart.y) {
+					SetRect(&r, dps->DragStart.x, dps->DragStart.y, dps->MousePoint.x, dps->MousePoint.y);
 				} else {
-					SetRect(&r, dps->DragStart.x, MousePoint.y, MousePoint.x, dps->DragStart.y);
+					SetRect(&r, dps->DragStart.x, dps->MousePoint.y, dps->MousePoint.x, dps->DragStart.y);
 				}
 
-				if (MousePoint.x < dps->DragStart.x) {
-					r.left = MousePoint.x;
+				if (dps->MousePoint.x < dps->DragStart.x) {
+					r.left = dps->MousePoint.x;
 					r.right = dps->DragStart.x;
 				}
 
 				GetClientRect(hwnd, &rc);
 
-				if (r.top < cyHeader) r.top = cyHeader;
+				if (r.top < dps->cyHeader) r.top = dps->cyHeader;
 				if (r.bottom > rc.bottom) r.bottom = rc.bottom;
 				if (r.left < 0) r.left = 0;
 				if (r.right > rc.right) r.right = rc.right;
 
 				InvalidateRect(hwnd, &r, FALSE);
-				OffsetRect(&r, 0, -cyHeader);
+				OffsetRect(&r, 0, -dps->cyHeader);
 
 				InvalidateSel(hwnd, dps->iSel);
 
-				dps->nSel = zinf[r.top/dps->cyRow].addr;
+				dps->nSel = dps->zinf[r.top/dps->cyRow].waddr.addr;
 				dps->iSel = r.top/dps->cyRow;
 				dps->NumSel = r.bottom/dps->cyRow - dps->iSel + 1;
 
 				InvalidateSel(hwnd, dps->iSel);
 
-				SendMessage(hwndTip, TTM_SETMAXTIPWIDTH, 0, 150);
+				//update tooltip text
+				int total_bytes = 0, total = 0, total_cond = 0;
+				TCHAR szTip[64], szOldTip[64];
+				dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-				for (j = dps->iSel; j != dps->iSel + dps->NumSel; j++) {
-					total_bytes += zinf[j].size;
-					total += da_opcode[zinf[j].index].clocks;
-					total_cond += da_opcode[zinf[j].index].clocks_cond;
+				for (int j = dps->iSel; j != dps->iSel + dps->NumSel; j++) {
+					total_bytes += dps->zinf[j].size;
+					total += da_opcode[dps->zinf[j].index].clocks;
+					total_cond += da_opcode[dps->zinf[j].index].clocks_cond;
 				}
 
+				dps->toolInfo.lpszText = szOldTip;
+				SendMessage(dps->hwndTip, TTM_GETTEXT, ARRAYSIZE(szOldTip), (LPARAM) &dps->toolInfo);
 				StringCbPrintf(szTip, sizeof(szTip), _T("$%04X : $%04X\n%d bytes\n%d/%d clocks\n"),
-						zinf[dps->iSel].addr, zinf[dps->iSel+dps->NumSel-1].addr,
-						total_bytes,
-						total, total + total_cond);
-
-				toolInfo.lpszText = szTip;
-				SendMessage(hwndTip, TTM_SETTOOLINFO, 0, (LPARAM) &toolInfo);
+					dps->zinf[dps->iSel].waddr.addr, dps->zinf[dps->iSel+dps->NumSel-1].waddr.addr,
+					total_bytes,
+					total, total + total_cond);
+				if (_tcsicmp(szTip, dps->toolInfo.lpszText)) {
+					dps->toolInfo.lpszText = szTip;
+					SendMessage(dps->hwndTip, TTM_UPDATETIPTEXT, 0, (LPARAM) &dps->toolInfo);
+				}
 
 				UpdateWindow(hwnd);
-
-				{
-					POINT p = {MousePoint.x, MousePoint.y};
-					ClientToScreen(hwnd, &p);
-					SendMessage(hwndTip, TTM_TRACKPOSITION, 0, MAKELONG(p.x + 10, p.y - 20));
-					SendMessage(hwndTip, TTM_TRACKACTIVATE, TRUE, (LPARAM) &toolInfo);
+				POINT p = {dps->MousePoint.x, dps->MousePoint.y};
+				ClientToScreen(hwnd, &p);
+				SendMessage(dps->hwndTip, TTM_TRACKPOSITION, 0, MAKELONG(p.x + 10, p.y - 20));
+				if (!dps->toolInfo.lParam) {
+					dps->toolInfo.lpszText = szTip;
+					SendMessage(dps->hwndTip, TTM_SETTOOLINFO, 0, (LPARAM) &dps->toolInfo);
+					SendMessage(dps->hwndTip, TTM_SETMAXTIPWIDTH, 0, 150);
+					SendMessage(dps->hwndTip, TTM_TRACKACTIVATE, TRUE, (LPARAM) &dps->toolInfo);
+					dps->toolInfo.lParam = TRUE;
 				}
 			}
 
 			return 0;
 		}
 		case WM_KEYDOWN: {
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			int Q1 = dps->nRows/4, Q3 = dps->nRows - dps->nRows/4 - 1;
 
 			BOOL bCenter = FALSE;
@@ -1266,30 +1273,28 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			switch (wParam) {
 				case VK_DOWN:
-					dps->nKey = next_select(dps->nKey);
+					dps->nKey = next_select(dps, dps->nKey);
 
 					if (GetKeyState(VK_SHIFT) & 0x80000000) {
-						dps->nSel = min(nClick, dps->nKey);
-						dps->NumSel = abs(addr_to_index(dps->nKey)
-											- addr_to_index(nClick)) + 1;
+						dps->nSel = min(dps->nClick, dps->nKey);
+						dps->NumSel = abs(addr_to_index(dps, dps->nKey) - addr_to_index(dps, dps->nClick)) + 1;
 					} else {
 						dps->nSel = dps->nKey;
-						nClick = dps->nSel;
+						dps->nClick = dps->nSel;
 						dps->NumSel = 1;
 					}
 					bCenter = TRUE;
 					break;
 				case VK_UP:
 				{
-					dps->nKey = prev_select(dps->nKey);
+					dps->nKey = prev_select(dps, dps->nKey);
 
 					if (GetKeyState(VK_SHIFT) & 0x80000000) {
-						dps->nSel = min(nClick, dps->nKey);
-						dps->NumSel = abs(addr_to_index(dps->nKey)
-											- addr_to_index(nClick)) + 1;
+						dps->nSel = min(dps->nClick, dps->nKey);
+						dps->NumSel = abs(addr_to_index(dps, dps->nKey) - addr_to_index(dps, dps->nClick)) + 1;
 					} else {
 						dps->nSel = dps->nKey;
-						nClick = dps->nSel;
+						dps->nClick = dps->nSel;
 						dps->NumSel = 1;
 					}
 					bCenter = TRUE;
@@ -1326,7 +1331,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				return 0;
 			}
 
-			dps->iSel = addr_to_index(dps->nSel);
+			dps->iSel = addr_to_index(dps, dps->nSel);
 			// it's on the screen
 			if (dps->iSel < Q1) SendMessage(hwnd, WM_VSCROLL, SB_LINEUP, 0);
 			else if (dps->iSel > Q3) SendMessage(hwnd, WM_VSCROLL, SB_LINEDOWN, 0);
@@ -1350,7 +1355,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_VSCROLL: {
-
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			SCROLLINFO si;
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_RANGE;
@@ -1360,7 +1365,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dps->nPane = 0;
 					break;
 				case SB_BOTTOM:
-					dps->nPane = si.nMax - last_pagedown;
+					dps->nPane = si.nMax - dps->last_pagedown;
 					break;
 				case SB_LINEUP:
 				{
@@ -1372,34 +1377,34 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 					// Disasm 6 commands such that the 6th is equal to the first
 					// visible command
-
 					do {
-						disassemble(lpDebuggerCalc->cpu.mem_c, --dps->nPane, LINEUP_DEPTH, zup);
-					} while (zup[LINEUP_DEPTH-2].addr > zinf[0].addr && dps->nPane);
+						disassemble(lpDebuggerCalc->cpu.mem_c, dps->type,
+							addr_to_waddr(lpDebuggerCalc->cpu.mem_c, --dps->nPane), LINEUP_DEPTH, zup);
+					} while (zup[LINEUP_DEPTH-2].waddr.addr > dps->zinf[0].waddr.addr && dps->nPane);
 
 
-					for (i = 0; i < LINEUP_DEPTH && zup[i].addr != zinf[0].addr; i++);
+					for (i = 0; i < LINEUP_DEPTH && zup[i].waddr.addr != dps->zinf[0].waddr.addr; i++);
 					if (dps->nPane == 0) {
 						if (i == 0) return 0;
-						dps->nPane = zup[i - 1].addr;
+						dps->nPane = zup[i - 1].waddr.addr;
 					} else {
 						if (i == LINEUP_DEPTH || i == 0) {
 							dps->nPane = nPane_old - 1;
 						} else {
-							dps->nPane = zup[i - 1].addr;
+							dps->nPane = zup[i - 1].waddr.addr;
 						}
 					}
 					dps->iSel++;
 					break;
 				}
 				case SB_LINEDOWN:
-					if (zinf[0].addr + dps->nPage == 0x10000) return 0;
+					if (dps->zinf[0].waddr.addr + dps->nPage == GetMaxAddr(dps)) return 0;
 
-					if (zinf[0].size) {
-						dps->nPane += zinf[0].size;
+					if (dps->zinf[0].size) {
+						dps->nPane += dps->zinf[0].size;
 					} else {
 						// label
-						dps->nPane += zinf[1].size;
+						dps->nPane += dps->zinf[1].size;
 					}
 					dps->iSel--;
 					break;
@@ -1407,31 +1412,32 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dps->nPane = HIWORD(wParam);
 					break;
 				case SB_PAGEDOWN:
-					last_pagedown = zinf[dps->nRows - 2].addr - dps->nPane;
-					dps->nPane += last_pagedown;
+					dps->last_pagedown = dps->zinf[dps->nRows - 2].waddr.addr - dps->nPane;
+					dps->nPane += dps->last_pagedown;
 					break;
 				case SB_PAGEUP:
-					dps->nPane -= last_pagedown;
+					dps->nPane -= dps->last_pagedown;
 					break;
 			}
 
 			si.fMask = SIF_POS  | SIF_PAGE;
-			si.nPage = last_pagedown;
+			si.nPage = dps->last_pagedown;
 			si.nPos = dps->nPane;
 			si.nTrackPos = dps->nPane;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 			SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 			{
-				Z80_info_t 	*zfirst = &zinf[0],
-							*zlast 	= &zinf[dps->nRows-1];
+				Z80_info_t 	*zfirst = &dps->zinf[0],
+							*zlast 	= &dps->zinf[dps->nRows-1];
 
-				dps->nPage = zlast->addr + zlast->size - zfirst->addr;
+				dps->nPage = zlast->waddr.addr + zlast->size - zfirst->waddr.addr;
 				InvalidateRect(hwnd, NULL, TRUE);
 			}
 			return dps->nPane;
 		}
 		case WM_USER: {
+			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			switch (wParam) {
 				case DB_UPDATE:
 					SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
@@ -1441,7 +1447,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case DB_RESUME:
 					dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
 					EnableWindow(hwnd, TRUE);
-					//this will chnage so the run/stop button says Run
+					//this will change so the run/stop button says Run
 					extern HWND htoolbar;
 					HWND hButton = FindWindowEx(htoolbar, NULL, _T("BUTTON"), _T("Stop"));
 					TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);

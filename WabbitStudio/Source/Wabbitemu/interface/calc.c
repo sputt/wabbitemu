@@ -490,7 +490,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 			bank_t *bank = &lpCalc->mem_c.banks[mc_bank(lpCalc->cpu.pc)];
 
 			Z80_info_t z[2];
-			disassemble(&lpCalc->mem_c, lpCalc->cpu.pc, 1, z);
+			disassemble(&lpCalc->mem_c, REGULAR, addr_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc), 1, z);
 
 			if (lpCalc->pCalcNotify != NULL) {
 				
@@ -504,7 +504,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 #ifndef MACVER
 				gui_debug(lpCalc);
 #else
-				printf("hit a breakpoint in runtstates\n");
+				printf("hit a breakpoint in run tstates\n");
 				lpCalc->running = FALSE; 
 				lpCalc->breakpoint_callback(lpCalc,lpCalc->breakpoint_owner);
 #endif
@@ -598,7 +598,7 @@ int calc_run_all(void) {
 			}
 		}
 
-		//this code handles screenshotting if were actually taking screenshots right now
+		//this code handles screenshoting if were actually taking screenshots right now
 		if (active_calc >= 0 && calcs[active_calc].cpu.timer_c != NULL &&
 				((tc_elapsed(calcs[active_calc].cpu.timer_c) - calcs[active_calc].cpu.pio.lcd->lastgifframe) >= 0.01)) {
 			handle_screenshot();
@@ -657,7 +657,7 @@ void restore_backup(int index, LPCALC lpCalc) {
 		free_backup(backup->next);
 		index--;
 	}
-	//shouldnt happen
+	//shouldn't happen
 	if (backup != NULL)
 		LoadSlot(backup->save, lpCalc);
 	backups[slot] = backup;

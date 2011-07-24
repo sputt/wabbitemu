@@ -30,12 +30,15 @@ HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
 static unsigned int cyGripper = 10;
 static unsigned int cyDisasm = 350, cyMem;
 
-#define MAX_MEM_TABS 5*3
 #define MAX_TABS 5
+#define MAX_MEM_TABS MAX_TABS*3
+#define MAX_DISASM_TABS MAX_TABS*3
+
 static ep_state expand_pane_state = {0};
 HWND htoolbar, hdisasm, hreg, hmem, hwatch, hPortMon, hBreakpoints;
-static int total_mem_pane;
+static int total_mem_pane, total_disasm_pane;
 static HWND hmemlist[MAX_MEM_TABS];
+static HWND hdisasmlist[MAX_DISASM_TABS];
 static long long code_count_tstates = -1;
 
 
@@ -52,11 +55,27 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 	idChild = (int) GetWindowLongPtr(hwndChild, GWL_ID);
 	switch (idChild) {
 	case ID_TOOLBAR:
-		MoveWindow(hwndChild, 0, 0, rcParent->right, CY_TOOLBAR, TRUE);
+		MoveWindow(hwndChild, 0, 0, rcParent->right, CY_TOOLBAR, TRUE); 
 		break;
-	case ID_DISASM:
+	case ID_DISASMTAB: {
+		RECT tabRc;
+		tabRc.left = 0;
+		tabRc.top = CY_TOOLBAR;
+		tabRc.right = rcParent->right - REG_PANE_WIDTH;
+		tabRc.bottom = cyDisasm;
+		MoveWindow(hwndChild, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, TRUE);
+		int index = TabCtrl_GetCurSel(hwndChild);
+		tabRc.top = 0;
+		tabRc.bottom = cyDisasm - CY_TOOLBAR;
+		TabCtrl_AdjustRect(hwndChild, FALSE, &tabRc);
+		HWND curTab = hdisasmlist[index];
+		MoveWindow(curTab, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, TRUE);
+		SendMessage(curTab, WM_USER, DB_UPDATE, 0);
+		break;
+	}
+	/*case ID_DISASM:
 		MoveWindow(hwndChild, 0, CY_TOOLBAR, rcParent->right - REG_PANE_WIDTH, cyDisasm - CY_TOOLBAR, TRUE);
-		break;
+		break;*/
 	case ID_MEMTAB: {
 		MoveWindow(hwndChild, 3, cyDisasm + cyGripper, rcParent->right - 103 - REG_PANE_WIDTH - 8, cyMem - cyGripper - 3, TRUE);
 		int index = TabCtrl_GetCurSel(hwndChild);
@@ -108,7 +127,73 @@ int CALLBACK EnumFontFamExProc(
 	return 0;
 }
 
-void AddMemTab(mempane_settings *mps, MemViewType type) {
+void AddDisasmTab(dp_settings *dps, ViewType type) {
+	if (total_disasm_pane >= MAX_TABS)
+		return;
+	ZeroMemory(&dps[total_disasm_pane + 1], sizeof(dp_settings));
+	dps[total_disasm_pane + 1].hdrs[0].nCharsWidth = 7;
+	StringCbCopy(dps[total_disasm_pane + 1].hdrs[0].pszText, sizeof(dps[total_disasm_pane + 1].hdrs[0].pszText), _T("Addr"));
+	dps[total_disasm_pane + 1].hdrs[0].lpfnCallback = &sprint_addr;
+	dps[total_disasm_pane + 1].hdrs[1].index = 1;
+	dps[total_disasm_pane + 1].hdrs[1].nCharsWidth = 11;
+	StringCbCopy(dps[total_disasm_pane + 1].hdrs[1].pszText, sizeof(dps[total_disasm_pane + 1].hdrs[1].pszText), _T("Data"));
+	dps[total_disasm_pane + 1].hdrs[1].lpfnCallback = &sprint_data;
+	dps[total_disasm_pane + 1].hdrs[2].index = 2;
+	dps[total_disasm_pane + 1].hdrs[2].nCharsWidth = 45;
+	StringCbCopy(dps[total_disasm_pane + 1].hdrs[2].pszText, sizeof(dps[total_disasm_pane + 1].hdrs[2].pszText), _T("Disassembly"));
+	dps[total_disasm_pane + 1].hdrs[2].lpfnCallback = &sprint_command;
+	dps[total_disasm_pane + 1].hdrs[3].index = 3;
+	dps[total_disasm_pane + 1].hdrs[3].nCharsWidth = 6;
+	StringCbCopy(dps[total_disasm_pane + 1].hdrs[3].pszText, sizeof(dps[total_disasm_pane + 1].hdrs[3].pszText), _T("Size"));
+	dps[total_disasm_pane + 1].hdrs[3].uFormat = DT_CENTER;
+	dps[total_disasm_pane + 1].hdrs[3].lpfnCallback = &sprint_size;
+	dps[total_disasm_pane + 1].hdrs[4].index = 4;
+	dps[total_disasm_pane + 1].hdrs[4].nCharsWidth = 8;
+	StringCbCopy(dps[total_disasm_pane + 1].hdrs[4].pszText, sizeof(dps[total_disasm_pane + 1].hdrs[4].pszText), _T("Clocks"));
+	dps[total_disasm_pane + 1].hdrs[4].uFormat = DT_CENTER;
+	dps[total_disasm_pane + 1].hdrs[4].lpfnCallback = &sprint_clocks;
+	dps[total_disasm_pane + 1].hdrs[5].index = -1;
+	dps[total_disasm_pane + 1].hdrs[5].lpfnCallback = &sprint_addr;
+	dps[total_disasm_pane + 1].hdrs[6].index = -1;
+	dps[total_disasm_pane + 1].hdrs[6].lpfnCallback = &sprint_addr;
+	dps[total_disasm_pane + 1].hdrs[7].index = -1;
+	dps[total_disasm_pane + 1].hdrs[7].lpfnCallback = &sprint_addr;
+	dps->type = type;
+
+	if (type == REGULAR)
+		dps[total_disasm_pane + 1].nSel = lpDebuggerCalc->cpu.pc;
+
+	hdisasmlist[total_disasm_pane] = CreateWindow(
+		g_szDisasmName,
+		_T("Disasm"),
+		WS_VISIBLE | WS_CHILD | WS_VSCROLL,
+		3, 20, 100, 10,
+		hdisasm,
+		(HMENU) ID_DISASM,
+		g_hInst, &dps[total_disasm_pane + 1]);
+	TCHAR buffer[64];
+	switch (type) {
+		case REGULAR:
+			StringCbPrintf(buffer, sizeof(buffer), _T("Disasm %i"), (total_disasm_pane + 3) / 3);
+			break;
+		case FLASH:
+			StringCbPrintf(buffer, sizeof(buffer), _T("Flash %i"), (total_disasm_pane + 3) / 3);
+			break;
+		case RAM:
+			StringCbPrintf(buffer, sizeof(buffer), _T("RAM %i"), (total_disasm_pane + 3) / 3);
+			break;
+	}
+	TCITEM tie;
+	tie.mask = TCIF_TEXT | TCIF_IMAGE;
+	tie.iImage = -1;
+	tie.pszText = buffer;
+	tie.lParam = (LPARAM)hdisasmlist[total_disasm_pane];
+	TabCtrl_InsertItem(hdisasm, total_disasm_pane, &tie);
+	TabCtrl_SetCurSel(hdisasm, total_disasm_pane);
+	total_disasm_pane++;
+}
+
+void AddMemTab(mempane_settings *mps, ViewType type) {
 	ShowWindow(hmemlist[TabCtrl_GetCurSel(hmem)], SW_HIDE);
 	if (total_mem_pane >= MAX_TABS)
 		return;
@@ -177,21 +262,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	static double ratioDisasm;
 
 	static mp_settings mps[1 + MAX_TABS];
-	static dp_settings dps = {
-		0, 0, 0, 0, 0, 0, 0,
-		{0, 0},
-		0, 0, 0,
-		NULL, NULL, NULL, NULL,
-		{{0, 0, 7, _T("Addr"), &sprint_addr, 0, NULL},
-		{1, 0, 11, _T("Data"), &sprint_data, 0, NULL},
-		{2, 0, 45, _T("Disassembly"), &sprint_command, 0, NULL},
-		{3, 0, 6, _T("Size"), &sprint_size, DT_CENTER, NULL},
-		{4, 0, 8, _T("Clocks"), &sprint_clocks, DT_CENTER, NULL},
-		{-1, 0, 0, _T(""), &sprint_addr, 0, NULL},
-		{-1, 0, 0, _T(""), &sprint_addr, 0, NULL},
-		{-1, 0, 0, _T(""), &sprint_addr, 0, NULL},},
-		NULL,
-		{0, 0, 0, 0}};
+	static dp_settings dps[1 + MAX_TABS];
 
 	static BOOL bDrag = FALSE, bHot = FALSE;
 	static int offset_click;
@@ -201,7 +272,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	static const TCHAR* MemPaneString = _T("NumMemPane");
 	static const TCHAR* DisasmPaneString = _T("NumDisasmPane");
 	static const TCHAR* MemSelIndexString = _T("MemSelIndex");
-	static const TCHAR* DisasmSelString = _T("DiasmSelIndex");
+	static const TCHAR* DisasmSelIndexString = _T("DiasmSelIndex");
 
 	switch (Message) {
 		case WM_CREATE:
@@ -230,7 +301,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			hdc = GetDC(NULL);
 			if (EnumFontFamiliesEx(hdc, &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0) != 0) {
-				StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("Tahoma"));
+				StringCbCopy(lfSegoe.lfFaceName, sizeof(lfSegoe.lfFaceName), _T("MS Shell Dlg"));
 				ReleaseDC(NULL, hdc);
 				hdc = GetDC(NULL);
 				EnumFontFamiliesEx(hdc, &lfSegoe, (FONTENUMPROC) EnumFontFamExProc, (LPARAM) &hfontSegoe, 0);
@@ -254,19 +325,30 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					break;
 			}
 
-			/* Create diassembly window */
-			//ZeroMemory(&dps, sizeof(dps));
-			dps.nSel = lpDebuggerCalc->cpu.pc;
+			hdisasm = CreateWindow(
+				WC_TABCONTROL, _T(""),
+			    WS_CHILD | WS_CLIPSIBLINGS | WS_VISIBLE,
+			    0, 0, 1, 1,
+			    hwnd,
+			    (HMENU) ID_DISASMTAB,
+			    g_hInst, NULL);
+			SetWindowFont(hdisasm, hfontSegoe, TRUE);
 
-			hdisasm =
-			CreateWindow(
-				g_szDisasmName,
-				_T("disasm"),
-				WS_VISIBLE | WS_CHILD | WS_CLIPCHILDREN | WS_VSCROLL,
-				0, 0, 1, 1,
-				hwnd,
-				(HMENU) ID_DISASM,
-				g_hInst, &dps);
+			/* Create disassembly window */
+			total_disasm_pane = 0;
+			int panes_to_add = max(1, (int) (QueryDebugKey((TCHAR *) DisasmPaneString)));
+			while (panes_to_add > 0) {
+				SendMessage(hwnd, WM_COMMAND, IDM_VIEW_ADDDISASM, 0);
+				panes_to_add--;
+			}
+
+			int selIndex = (int) QueryDebugKey((TCHAR *) DisasmSelIndexString);
+			TabCtrl_SetCurSel(hdisasm, selIndex);
+			NMHDR hdr;
+			hdr.code = TCN_SELCHANGE;
+			hdr.idFrom = 1; // not needed
+			hdr.hwndFrom = hdisasm;
+			SendMessage(hwnd, WM_NOTIFY, MAKEWPARAM(0, 0), (LPARAM) &hdr);
 
 			htoolbar = CreateWindow(
 				g_szToolbar,
@@ -290,20 +372,18 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			AddWatchTab(hwnd);
 
 			total_mem_pane = 0;
-			int panes_to_add = max(1, (int) (QueryDebugKey((TCHAR *) MemPaneString)));
+			panes_to_add = max(1, (int) (QueryDebugKey((TCHAR *) MemPaneString)));
 			while (panes_to_add > 0) {
 				SendMessage(hwnd, WM_COMMAND, IDM_VIEW_ADDMEM, 0);
 				panes_to_add--;
 			}
 
-			int selIndex = (int) QueryDebugKey((TCHAR *) MemSelIndexString);
+			selIndex = (int) QueryDebugKey((TCHAR *) MemSelIndexString);
 			TabCtrl_SetCurSel(hmem, selIndex);
-			NMHDR hdr;
 			hdr.code = TCN_SELCHANGE;
 			hdr.idFrom = 1; // not needed
 			hdr.hwndFrom = hmem;
 			SendMessage(hwnd, WM_NOTIFY, MAKEWPARAM(0, 0), (LPARAM) &hdr);
-
 
 			hreg =
 			CreateWindow(
@@ -642,6 +722,42 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 				break;
 			}
+			case IDM_VIEW_ADDDISASM: {
+				HMENU hMenu = GetMenu(hwnd);
+				EnableMenuItem(hMenu, IDM_VIEW_DELDISASM, MF_BYCOMMAND | MF_ENABLED);
+				if (total_disasm_pane + 1 > MAX_DISASM_TABS)
+					break;
+				AddDisasmTab(dps, REGULAR);
+				AddDisasmTab(dps, FLASH);
+				AddDisasmTab(dps, RAM);
+				if (total_disasm_pane == MAX_TABS)
+					EnableMenuItem(hMenu, IDM_VIEW_ADDDISASM, MF_BYCOMMAND | MF_DISABLED);
+				SendMessage(hwnd, WM_SIZE, 0, 0);
+				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				break;
+			}
+			case IDM_VIEW_DELDISASM: {
+				HMENU hMenu = GetMenu(hwnd);
+				EnableMenuItem(hMenu, IDM_VIEW_ADDDISASM, MF_BYCOMMAND | MF_ENABLED);
+				if (total_disasm_pane == 3)
+					break;
+				total_disasm_pane -= 3;
+				if (total_disasm_pane == 3)
+					EnableMenuItem(hMenu, IDM_VIEW_DELDISASM, MF_BYCOMMAND | MF_DISABLED);
+				if (TabCtrl_GetCurSel(hdisasm) >= total_disasm_pane)
+					TabCtrl_SetCurSel(hdisasm, total_disasm_pane - 1);
+				TabCtrl_DeleteItem(hdisasm, total_disasm_pane);
+				TabCtrl_DeleteItem(hdisasm, total_disasm_pane + 1);
+				TabCtrl_DeleteItem(hdisasm, total_disasm_pane + 2);
+				DestroyWindow(hdisasmlist[total_disasm_pane]);
+				DestroyWindow(hdisasmlist[total_disasm_pane + 1]);
+				DestroyWindow(hdisasmlist[total_disasm_pane + 2]);
+				hdisasmlist[total_disasm_pane] = NULL;
+				hdisasmlist[total_disasm_pane + 1] = NULL;
+				hdisasmlist[total_disasm_pane + 2] = NULL;
+				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				break;
+			}
 			case IDM_VIEW_PORTMONITOR: {
 				if (IsWindow(hPortMon)) {
 					SwitchToThisWindow(hPortMon, TRUE);
@@ -664,6 +780,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			default: {
 				if (hmemlist[TabCtrl_GetCurSel(hmem)] == hwndLastFocus)
 					SendMessage(hmemlist[TabCtrl_GetCurSel(hmem)], Message, wParam, lParam);
+				else if (hdisasmlist[TabCtrl_GetCurSel(hdisasm)] == hwndLastFocus)
+					SendMessage(hdisasmlist[TabCtrl_GetCurSel(hdisasm)], Message, wParam, lParam);
 				else
 					SendMessage(hdisasm, Message, wParam, lParam);
 				break;
@@ -690,7 +808,15 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 							ShowWindow(hwatch, SW_HIDE);
 						SendMessage(hwnd, WM_SIZE, 0 , 0);
 					} else if (header->hwndFrom == hdisasm) {
-
+						int i;
+						int index = TabCtrl_GetCurSel(hdisasm);
+						for (i = 0; i < total_disasm_pane; i++) {
+							if (i == index)
+								ShowWindow(hdisasmlist[i], SW_SHOW);
+							else
+								ShowWindow(hdisasmlist[i], SW_HIDE);
+						}
+						SendMessage(hwnd, WM_SIZE, 0 , 0);
 					}
 				}
 			}

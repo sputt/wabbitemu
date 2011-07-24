@@ -25,7 +25,7 @@ static WNDPROC wpOrigEditProc;
 // TO DO:  The calling procedure should determine whether the handle is NULL, in case 
 // of an error in creation.
 //
-// HINST hInst: The global handle to the applicadtion instance.
+// HINST hInst: The global handle to the application instance.
 // HWND  hWndParent: The handle to the control's parent window. 
 //
 static HWND CreateListView (HWND hwndParent) 

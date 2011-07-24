@@ -164,39 +164,73 @@ static TCHAR bli[4][4][8]	= {
 {_T("ldir"),_T("cpir"),_T("inir"),_T("otir")},
 {_T("lddr"),_T("cpdr"),_T("indr"),_T("otdr")}};
 
+waddr_t GetNextAddr(memory_context_t *memc, ViewType type, waddr_t waddr) {
+	switch (type) {
+		case REGULAR:
+			waddr = addr_to_waddr(memc, waddr.addr + 1);
+			break;
+		case RAM:
+		case FLASH:
+			if (!(++waddr.addr % 0x4000))
+				waddr.page++;
+			break;
+	}
+	return waddr;
+}
+
+waddr_t OffsetWaddr(memory_context_t *memc, ViewType type, waddr_t waddr, int offset) {
+	switch (type) {
+		case REGULAR:
+			waddr = addr_to_waddr(memc, waddr.addr + offset);
+			break;
+		case RAM:
+		case FLASH: {
+			int old_abs_addr = waddr.addr % 0x4000;
+			waddr.addr += offset;
+			int new_abs_addr = waddr.addr % 0x4000;
+			if (old_abs_addr > new_abs_addr)
+				waddr.page++;
+			break;
+		}
+	}
+	return waddr;
+}
+
 /* returns number of bytes read */
-int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info_t *result) {
+int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count, Z80_info_t *result) {
 	int i, prefix = 0, pi = 0;
 	for (i = 0; i < count; i++, result++, prefix = 0) {
-		int start_addr = result->addr = addr;
+		waddr_t start_addr = result->waddr = waddr;
 
-
-		TCHAR *labelname = FindAddressLabel(lpDebuggerCalc, lpDebuggerCalc->cpu.mem_c->banks[mc_bank(addr)].ram,
-											lpDebuggerCalc->cpu.mem_c->banks[mc_bank(addr)].page, addr);
+		TCHAR *labelname = FindAddressLabel(lpDebuggerCalc, waddr);
 
 		if (labelname) {
 			result->index = DA_LABEL;
 			result->a1 = (INT_PTR) labelname;
 			result->size = 0;
 			result++;
-			result->addr = addr;
+			result->waddr = waddr;
 			if (++i >= count)
 				break;
 		}
 
-		unsigned char data = mem_read(memc, addr++);
+		unsigned char data = wmem_read(memc, waddr);
+		waddr = GetNextAddr(memc, type, waddr);
 		
 		if (data == 0xDD || data == 0xFD) {
 			prefix = data;
 			pi = (prefix >> 5) & 1;
-			data = mem_read(memc, addr++);
+			data = wmem_read(memc, waddr);
+			waddr = GetNextAddr(memc, type, waddr);
 		}
 		if (data == 0xCB) {
 			int offset;
-			data = mem_read(memc, addr++);
+			data = wmem_read(memc, waddr);
+			waddr = GetNextAddr(memc, type, waddr);
 			if (prefix) {
 				offset = (char) data;
-				data = mem_read(memc, addr++);
+				data = wmem_read(memc, waddr);
+				waddr = GetNextAddr(memc, type, waddr);
 			}
 			int x = (data & 0xC0) >> 6;
 			int y = (data & 0x38) >> 3;
@@ -249,7 +283,8 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				}
 			}
 		} else if (data == 0xED) {
-			data = mem_read(memc, addr++);
+			data = wmem_read(memc, waddr);
+			waddr = GetNextAddr(memc, type, waddr);
 			int x = (data & 0xC0) >> 6;
 			int y = (data & 0x38) >> 3;
 			int z = (data & 0x07);
@@ -279,12 +314,16 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			if (z == 3) {
 				if (q == 0) {
 					result->index = DA_LD__X__RP;
-					result->a1 = mem_read_16(memc, addr);
+					result->a1 = wmem_read16(memc, waddr);
+					waddr = GetNextAddr(memc, type, waddr);
+					waddr = GetNextAddr(memc, type, waddr);
 					result->a2 = (INT_PTR) rp[p];
 				} else {
 					result->index = DA_LD_RP__X_;
 					result->a1 = (INT_PTR) rp[p];
-					result->a2 = mem_read_16(memc, addr);
+					result->a2 = wmem_read16(memc, waddr);
+					waddr = GetNextAddr(memc, type, waddr);
+					waddr = GetNextAddr(memc, type, waddr);
 				}
 			} else
 			if (z == 4) {
@@ -327,7 +366,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			int z = (data & 0x07);
 			int p = (data & 0x30) >> 4;
 			int q = y & 1;
-			int offset = mem_read(memc, addr);
+			int offset = wmem_read(memc, waddr);
 				
 			if (x == 0) {
 				
@@ -343,23 +382,28 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 						break;
 					case 2: 
 						result->index = DA_DJNZ_X;
-						result->a1 = mem_read(memc, addr++);
+						result->a1 = wmem_read(memc, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
 						break;
 					case 3: 
 						result->index = DA_JR_X; 
-						result->a1 = mem_read(memc, addr++);
+						result->a1 = wmem_read(memc, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
 						break;
 					default:
 						result->index = DA_JR_CC_X;
 						result->a1 = (INT_PTR) cc[y-4];
-						result->a2 = mem_read(memc, addr++);
+						result->a2 = wmem_read(memc, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
 						break;
 				}
 			} else
 			if (z == 1) {	/* ix, iy ready */
 				if (q == 0) {
 					result->index = DA_LD_RP_X;
-					result->a2 = mem_read_16(memc, addr);
+					result->a2 = wmem_read16(memc, waddr);
+					waddr = GetNextAddr(memc, type, waddr);
+					waddr = GetNextAddr(memc, type, waddr);
 					if (prefix && p == 2) {
 						result->a1 = (INT_PTR) ri[pi];
 					} else {
@@ -403,10 +447,14 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 						if (prefix) {
 							result->index = DA_LD__X__RI;
 							result->a2 = (INT_PTR) ri[pi];
-							result->a1 = mem_read_16(memc, addr);
+							result->a1 = wmem_read16(memc, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
 						} else {
 							result->index = DA_LD__X__HL;
-							result->a1 = mem_read_16(memc, addr);
+							result->a1 = wmem_read16(memc, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
 							result->a2 = (INT_PTR) rp[R_HL];
 						}
 						break;							
@@ -414,21 +462,29 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 						if (prefix) {
 							result->index = DA_LD_RI__X_;
 							result->a1 = (INT_PTR) ri[pi];
-							result->a2 = mem_read_16(memc, addr);
+							result->a2 = wmem_read16(memc, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
 						} else {
 							result->index = DA_LD_HL__X_;
 							result->a1 = (INT_PTR) rp[R_HL];
-							result->a2 = mem_read_16(memc, addr);
+							result->a2 = wmem_read16(memc, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
 							
 						}
 						break;
 					case 6:	result->index = DA_LD__X__A;
-							result->a1 = mem_read_16(memc, addr);
+							result->a1 = wmem_read16(memc, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
 							result->a2 = (INT_PTR) r[R_A];
 							break;
 					case 7:	result->index = DA_LD_A__X_;
 							result->a1 = (INT_PTR) r[R_A];
-							result->a2 = mem_read_16(memc, addr);
+							result->a2 = wmem_read16(memc, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
 							break;	
 				}				
 			} else
@@ -444,7 +500,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				if (prefix && y == 6) {
 					result->index += (DA_INC_RI - DA_INC_R);
 					result->a2 = offset;
-					addr++;
+					waddr = GetNextAddr(memc, type, waddr);
 				}
 					
 			} else
@@ -456,10 +512,12 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				if (prefix && y == 6) {
 					result->index = DA_LD_RI_X;
 					result->a2 = offset;
-					addr++;
-					result->a3 = (INT_PTR) mem_read(memc, addr++);
+					waddr = GetNextAddr(memc, type, waddr);
+					result->a3 = (INT_PTR) wmem_read(memc, waddr);
+					waddr = GetNextAddr(memc, type, waddr);
 				} else {
-					result->a2 = (INT_PTR) mem_read(memc, addr++);
+					result->a2 = (INT_PTR) wmem_read(memc, waddr);
+					waddr = GetNextAddr(memc, type, waddr);
 				}
 			} else {	/* ix, iy ready */
 				switch (y) {
@@ -490,13 +548,13 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 						result->index = DA_LD_R__HL_;
 					if (prefix) {
 						if (y == 6) {
-							addr++;
+							waddr = GetNextAddr(memc, type, waddr);
 							result->index = DA_LD_RI_R;
 							result->a1 = (INT_PTR) ri[pi];
 							result->a3 = result->a2;
 							result->a2 = offset;
 						} else if (z == 6) {
-							addr++;
+							waddr = GetNextAddr(memc, type, waddr);
 							result->a2 = (INT_PTR) ri[pi];
 							result->index = DA_LD_R_RI;
 							result->a3 = offset;
@@ -518,7 +576,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				if (prefix && z == 6) {
 					result->index += (DA_ALU_RI - DA_ALU);
 					*(a++) = offset;
-					addr++;
+					waddr = GetNextAddr(memc, type, waddr);
 				}
 					
 			} else
@@ -551,23 +609,29 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			if (z == 2) {
 				result->index = DA_JP_CC_X;
 				result->a1 = (INT_PTR) cc[y];
-				result->a2 = mem_read_16(memc, addr);
+				result->a2 = wmem_read16(memc, waddr);
+				waddr = GetNextAddr(memc, type, waddr);
+				waddr = GetNextAddr(memc, type, waddr);
 			} else
 			if (z == 3) {
 				switch (y) {
 					case 0:
 						result->index = DA_JP_X;
-						result->a1 = mem_read_16(memc, addr);
+						result->a1 = wmem_read16(memc, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
 						break;
 					case 2:
 						result->index = DA_OUT__X__A;
-						result->a1 = mem_read(memc, addr++);
+						result->a1 = wmem_read(memc, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
 						result->a2 = (INT_PTR) r[R_A];
 						break;
 					case 3:
 						result->index = DA_IN_A__X_;
 						result->a1 = (INT_PTR) r[R_A];
-						result->a2 = mem_read(memc, addr++);
+						result->a2 = wmem_read(memc, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
 						break;
 					case 4:	
 						result->index = (prefix ? DA_EX__SP__RI : DA_EX__SP__HL);
@@ -586,7 +650,9 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			if (z == 4) {
 				result->index = DA_CALL_CC_X;
 				result->a1 = (INT_PTR) cc[y];
-				result->a2 = mem_read_16(memc, addr);
+				result->a2 = wmem_read16(memc, waddr);
+				waddr = GetNextAddr(memc, type, waddr);
+				waddr = GetNextAddr(memc, type, waddr);
 			} else
 			if (z == 5) {
 				if (q == 0) {
@@ -595,11 +661,15 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				} else {
 					if (p == 0) {
 						result->index = DA_CALL_X;
-						result->a1 = mem_read_16(memc, addr);
+						result->a1 = wmem_read16(memc, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
 
 						if ((result->a1 == 0x0050) && lpDebuggerCalc->model >= TI_83P) {
 							result->index = DA_BJUMP;
-							result->a1 = mem_read_16(memc, addr);
+							result->a1 = wmem_read16(memc, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
+							waddr = GetNextAddr(memc, type, waddr);
 							TCHAR* Name = FindBcall((int) result->a1);
 							if (Name == NULL) {
 								result->index = DA_BJUMP_N;
@@ -632,12 +702,15 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 				}
 				result->index = DA_ALU_X;
 				result->a1 = (INT_PTR) alu[y];
-				result->a2 = (INT_PTR) mem_read(memc, addr++);
+				result->a2 = (INT_PTR) wmem_read(memc, waddr);
+				waddr = GetNextAddr(memc, type, waddr);
 			} else
 			if (z == 7) {
 				if ((y == 5) && (lpDebuggerCalc->model >= TI_83P)) {
 					result->index = DA_BCALL;
-					int tmp = mem_read_16(memc, addr);
+					int tmp = wmem_read16(memc, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
 					TCHAR* Name = FindBcall(tmp);
 					if (Name == NULL) {
 						result->index = DA_BCALL_N;
@@ -652,7 +725,7 @@ int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info
 			}
 			}
 		}
-		result->size = abs((addr - start_addr) & 0xFFFF);
+		result->size = abs((waddr.addr - start_addr.addr) & 0xFFFF);
 
 #ifndef WINVER
 		INT_PTR mod_a1 = result->a1;

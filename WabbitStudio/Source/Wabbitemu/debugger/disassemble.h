@@ -2,8 +2,7 @@
 #define DISASSEMBLE_H
 
 #include "core.h"
-
-#define mem_read_16(mc, adr) (unsigned int) ((addr += 2, mem_read(memc, addr-2) + (mem_read(memc, addr-1) << 8)) & 0xFFFF)
+#include "dbcommon.h"
 
 #define DA_NOP	0
 #define DA_EX_AF_AF_	1
@@ -130,7 +129,7 @@ typedef struct Z80_info {
 		INT_PTR a[4];
 	};
 	int size;			/* Size of command */
-	unsigned short addr;
+	waddr_t waddr;
 	TCHAR expanded[32];
 } Z80_info_t;
 
@@ -144,7 +143,9 @@ typedef struct Z80_command {
 #endif
 } Z80_com_t;
 
-int disassemble(memory_context_t *memc, unsigned short addr, int count, Z80_info_t *result);
+int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count, Z80_info_t *result);
+waddr_t GetNextAddr(memory_context_t *memc, ViewType type, waddr_t waddr);
+waddr_t OffsetWaddr(memory_context_t *memc, ViewType type, waddr_t waddr, int offset);
 
 
 #endif /* #ifndef DISASSEMBLE_H */

@@ -398,7 +398,7 @@ int gui_frame_update(LPCALC lpCalc) {
 			MessageBox(NULL, _T("Unable to draw faceplate"), _T("Error"), MB_OK);
 	}
 
-	//this needs to be done so we can alphablend the screen
+	//this needs to be done so we can alpha blend the screen
 	HBITMAP oldSkin = (HBITMAP) SelectObject(hdcOverlay, hbmSkinOld);
 	BLENDFUNCTION bf;
 	bf.BlendOp = AC_SRC_OVER;
@@ -545,7 +545,7 @@ int gui_frame_update(LPCALC lpCalc) {
 		if (DrawFaceplateRegion(lpCalc->hdcSkin, lpCalc->FaceplateColor))
 			MessageBox(NULL, "Unable to draw faceplate", "error", MB_OK);
 	}
-	//this needs to be done so we can alphablend the screen
+	//this needs to be done so we can alpha blend the screen
 	HDC hdcOverlay = CreateCompatibleDC(lpCalc->hdcSkin);
 	HBITMAP bmpGray = LoadBitmap(g_hInst, CalcModelTxt[lpCalc->model]);
 	SelectObject(hdcOverlay, bmpGray);
