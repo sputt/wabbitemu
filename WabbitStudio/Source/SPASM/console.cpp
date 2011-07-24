@@ -3,10 +3,8 @@
 #include "console.h"
 #include "spasm.h"
 
-#ifdef WIN32
 //saved console attributes, to be restored on exit
 WORD user_attributes;
-#endif
 
 void restore_console_attributes_at_exit () {
 	if (!use_colors) return;
@@ -28,19 +26,19 @@ void restore_console_attributes (WORD orig_attributes) {
 
 WORD save_console_attributes () {
 #ifdef WIN32
-    CONSOLE_SCREEN_BUFFER_INFO csbiScreenBufferInfo;
-    GetConsoleScreenBufferInfo (GetStdHandle (STD_OUTPUT_HANDLE), &csbiScreenBufferInfo);
-    return csbiScreenBufferInfo.wAttributes;
+	CONSOLE_SCREEN_BUFFER_INFO csbiScreenBufferInfo;
+	GetConsoleScreenBufferInfo (GetStdHandle (STD_OUTPUT_HANDLE), &csbiScreenBufferInfo);
+	return csbiScreenBufferInfo.wAttributes;
 #endif
 }
 
 bool set_console_attributes (unsigned short attr) {
 	if (!use_colors) return true;
 #ifdef WIN32
-    return SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), (WORD)attr);
+	return SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), (WORD)attr);
 #elif !defined(MACVER)
 	printf ("\x1b[1;%d;40m", attr);
-    return true;
+	return true;
 #endif
 }
 
