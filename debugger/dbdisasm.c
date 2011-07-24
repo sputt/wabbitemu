@@ -343,7 +343,7 @@ int disasmhdr_toggle(HWND hwndHeader, disasmhdr_t* dhdr) {
 static int GetMaxAddr(dp_settings *dps) {
 	switch (dps->type) {
 		case REGULAR:
-			return 0x10000;
+			return 0xFFFF;
 		case FLASH:
 			return lpDebuggerCalc->cpu.mem_c->flash_size;
 		case RAM:
@@ -541,9 +541,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			int nPane_old = dps->nPane;
 			last_top_page_addr = 0xFFFF - (5 * dps->nRows);
 			do {
-				disassemble(lpDebuggerCalc->cpu.mem_c, REGULAR, 
+				disassemble(lpDebuggerCalc->cpu.mem_c, dps->type, 
 					addr_to_waddr(lpDebuggerCalc->cpu.mem_c, ++last_top_page_addr), dps->nRows, zup);
-			} while (zup[dps->nRows - 1].waddr.addr != GetMaxAddr(dps));
+			} while ((int) zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= GetMaxAddr(dps));
 
 			last_top_page_addr = zup[0].waddr.addr + dps->last_pagedown;
 
