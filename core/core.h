@@ -275,6 +275,7 @@ typedef void (*index_opcodep)(CPU_t*, char);
 
 unsigned char mem_read(memc*, unsigned short);
 uint8_t wmem_read(memc*, waddr_t);
+uint16_t wmem_read16(memc *mem, waddr_t waddr);
 unsigned short mem_read16(memc*, unsigned short);
 unsigned char mem_write(memc*, unsigned short, char);
 waddr_t addr_to_waddr(memc*, uint16_t);

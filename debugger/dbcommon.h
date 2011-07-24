@@ -33,6 +33,13 @@ typedef enum {
 	BIN,
 } DISPLAY_BASE;
 
+typedef enum {
+	REGULAR,			//view paged memory
+	FLASH,				//view all flash pages
+	RAM,				//view all ram pages
+} ViewType;
+
+
 static const TCHAR* DisplayTypeString = _T("Disp_Type");
 
 void SubclassEdit(HWND hwndEdt, int edit_width, VALUE_FORMAT format);

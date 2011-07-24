@@ -35,12 +35,20 @@ unsigned char mem_read(memc *mem, unsigned short addr) {
 // Fetches a byte using a "wide" unique address
 uint8_t wmem_read(memc *mem, waddr_t waddr) {
 	if (waddr.is_ram) {
-		return mem->ram[waddr.page * PAGE_SIZE + waddr.addr];
+		return mem->ram[waddr.page * PAGE_SIZE + (waddr.addr % 0x4000)];
 	} else {
-		return mem->flash[waddr.page * PAGE_SIZE + waddr.addr];
+		return mem->flash[waddr.page * PAGE_SIZE + (waddr.addr % 0x4000)];
 	}
 }
-
+uint16_t wmem_read16(memc *mem, waddr_t waddr) {
+	if (waddr.is_ram) {
+		return mem->ram[waddr.page * PAGE_SIZE + (waddr.addr % 0x4000)] +
+			(mem->ram[waddr.page * PAGE_SIZE + ((waddr.addr + 1) % 0x4000)] << 8);
+	} else {
+		return mem->flash[waddr.page * PAGE_SIZE + (waddr.addr % 0x4000)] +
+			(mem->flash[waddr.page * PAGE_SIZE + ((waddr.addr + 1) % 0x4000)] << 8);
+	}
+}
 uint8_t wmem_write(memc *mem, waddr_t waddr, uint8_t data) {
 	if (waddr.is_ram) {
 		return mem->ram[waddr.page * PAGE_SIZE + waddr.addr] = data;
@@ -141,7 +149,7 @@ unsigned char mem_write(memc *mem, unsigned short addr, char data) {
 	}
 	//handle missing ram pages
 	if (mem->ram_version == 2) {
-		if (mem->banks[mc_bank(addr)].ram == TRUE && mem->banks[mc_bank(addr)].page > 2) {
+		if (mem->banks[mc_bank(addr)].ram && mem->banks[mc_bank(addr)].page > 2) {
 			return mem->ram[2*PAGE_SIZE + mc_base(addr)] = data;
 		}
 	}
