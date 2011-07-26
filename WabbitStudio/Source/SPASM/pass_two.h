@@ -6,7 +6,8 @@ typedef enum {
 	ARG_NUM_16,
 	ARG_ADDR_OFFSET,
 	ARG_IX_IY_OFFSET,
-	ARG_BIT_NUM
+	ARG_BIT_NUM,
+	ARG_RST
 } arg_type;
 
 typedef enum {

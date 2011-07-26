@@ -630,7 +630,7 @@ LINK_ERR link_send_app(CPU_t *cpu, TIFILE_t *tifile) {
 			return LERR_LINK;
 		uint16_t page, offset;
 		for (page = 0; page < tifile->flash->pages; page++) {
-			for (offset = 0; offset < 0x4000 && offset
+			for (offset = 0; offset < PAGE_SIZE && offset
 					< tifile->flash->pagesize[page]; offset += 0x80) {
 
 				// Send the flash header
@@ -638,7 +638,7 @@ LINK_ERR link_send_app(CPU_t *cpu, TIFILE_t *tifile) {
 				flash_hdr.sizeLSB = link_endian(0x0080);
 				flash_hdr.type_ID = FlashObj;
 				flash_hdr.sizeMSB = link_endian(0x0000);
-				flash_hdr.offset = link_endian(offset + 0x4000);
+				flash_hdr.offset = link_endian(offset + PAGE_SIZE);
 				flash_hdr.page = link_endian(page);
 				link_send_pkt(cpu, CID_VAR, &flash_hdr);
 

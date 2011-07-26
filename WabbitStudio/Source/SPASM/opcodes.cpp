@@ -617,7 +617,8 @@ instr rst_instrs[] = {
 	{"20H", {0xE7}, 1, 11, 11, false, 0x00, 1},
 	{"28H", {0xEF}, 1, 11, 11, false, 0x00, 1},
 	{"30H", {0xF7}, 1, 11, 11, false, 0x00, 1},
-	{"38H", {0xFF}, 1, 11, 11, false, 0x00, 1}};
+	{"38H", {0xFF}, 1, 11, 11, false, 0x00, 1},
+	{"#",   {0xFF}, 0, 11, 11, false, 0x00, 1}};
 
 instr sbc_instrs[] = {
 	{"A,IXH", {0x9C, 0xDD}, 2, 0, 0, false, 0x00, 2},

@@ -27,8 +27,8 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 	int value;
 
 	//if we're in code counter or stats mode, where we don't need actual expressions, then just skip this crap
-	if (mode & MODE_CODE_COUNTER)
-		return;
+	/*if (mode & MODE_CODE_COUNTER)
+		return;*/
 
 	if (type == ARG_IX_IY_OFFSET) {
 		//if it's an IX or IY offset, it's allowed to have a + in front of it, so skip that
@@ -82,8 +82,9 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 		new_expr->expr = expand_expr (expr);
 
 		//and write a blank value in its place
-		if (type == ARG_ADDR_OFFSET)
+		if (type == ARG_ADDR_OFFSET) {
 			type = ARG_NUM_8;
+		}
 		write_arg (0, type, 0);
 
 	}
@@ -93,8 +94,26 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 	}
 	else
 	{
+		if (type == ARG_RST) {
+			switch (value) {
+				case 0x00:
+				case 0x08:
+				case 0x10:
+				case 0x18:
+				case 0x20:
+				case 0x28:
+				case 0x30:
+				case 0x38:
+					write_arg(value + 0xC7, type, or_value);
+					break;
+				default:
+					SetLastSPASMError(SPASM_ERR_INVALID_RST_OPERANDS);
+					break;
+			}
+		} else {
 		//write the value now
-		write_arg (value, type, or_value);
+			write_arg (value, type, or_value);
+		}
 		ReplaySPASMErrorSession(session);
 	}
 
@@ -176,10 +195,27 @@ void run_second_pass () {
 			//if that was successful, then write it to the file
 			if (mode & MODE_LIST)
 				listing_offset = expr_list->listing_offset;
-
-			out_ptr = expr_list->out_ptr;
-			listing_on = expr_list->listing_on;
-			write_arg (value, expr_list->type, expr_list->or_value);
+			if (expr_list->type == ARG_RST) {
+				switch (value) {
+					case 0x00:
+					case 0x08:
+					case 0x10:
+					case 0x18:
+					case 0x20:
+					case 0x28:
+					case 0x30:
+					case 0x38:
+						write_arg(value + 0xC7, expr_list->type, expr_list->or_value);
+						break;
+					default:
+						SetLastSPASMError(SPASM_ERR_INVALID_RST_OPERANDS);
+						break;
+				}
+			} else {
+				out_ptr = expr_list->out_ptr;
+				listing_on = expr_list->listing_on;
+				write_arg (value, expr_list->type, expr_list->or_value);
+			}
 		}
 		free (expr_list->expr);
 		old_expr = expr_list;

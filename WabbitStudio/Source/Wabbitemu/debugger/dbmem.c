@@ -126,14 +126,14 @@ static waddr_t GetWaddr(mempane_settings *mps, int addr) {
 		case REGULAR:
 			return addr_to_waddr(lpDebuggerCalc->cpu.mem_c, addr);
 		case FLASH:
-			waddr.addr = addr % 0x4000;
+			waddr.addr = addr % PAGE_SIZE;
 			waddr.is_ram = FALSE;
-			waddr.page = addr / 0x4000;
+			waddr.page = addr / PAGE_SIZE;
 			break;
 		case RAM:
-			waddr.addr = addr % 0x4000;
+			waddr.addr = addr % PAGE_SIZE;
 			waddr.is_ram = TRUE;
-			waddr.page = addr / 0x4000;
+			waddr.page = addr / PAGE_SIZE;
 			break;
 	}
 	return waddr;
@@ -202,17 +202,12 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			mps->iAddr = 0;
 
 			Header_InsertItem(mps->hwndHeader, 0, &hdi);
-			/*
-			mps->hwndTip = CreateWindowEx(
-					NULL,
+			mps->hwndTip = CreateWindow(
 					TOOLTIPS_CLASS,
-					NULL, WS_POPUP | TTS_ALWAYSTIP,
+					NULL, WS_POPUP | TTS_ALWAYSTIP | TTS_NOPREFIX,
 					CW_USEDEFAULT, CW_USEDEFAULT,
 					CW_USEDEFAULT, CW_USEDEFAULT,
 					hwnd, NULL, g_hInst, NULL);
-
-			SetWindowPos(mps->hwndTip, HWND_TOPMOST,0, 0, 0, 0,
-						 SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
 			SendMessage(mps->hwndTip, TTM_ACTIVATE, TRUE, 0);
 
 			TOOLINFO toolInfo = {0};
@@ -222,7 +217,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			toolInfo.uId = (UINT_PTR) hwnd;
 			toolInfo.lpszText = LPSTR_TEXTCALLBACK;
 			SendMessage(mps->hwndTip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
-			*/
 
 
 			RECT r;
@@ -355,10 +349,10 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						StringCbPrintf(szVal, sizeof(szVal), _T("%04X"), addr);
 				} else {
 					if (addr < 0)
-						StringCbPrintf(szVal, sizeof(szVal), _T("%02X 0000"), addr / 0x4000);
+						StringCbPrintf(szVal, sizeof(szVal), _T("%02X 0000"), addr / PAGE_SIZE);
 					else
-						StringCbPrintf(szVal, sizeof(szVal), _T("%02X %04X"), addr / 0x4000 + 
-											(mps->type == RAM ? (lpDebuggerCalc->cpu.pio.model <= TI_83P ? 0x40 : 0x80) : 0), addr % 0x4000);
+						StringCbPrintf(szVal, sizeof(szVal), _T("%02X %04X"), addr / PAGE_SIZE + 
+										(mps->type == RAM ? (lpDebuggerCalc->cpu.pio.model <= TI_83P ? 0x40 : 0x80) : 0), addr % PAGE_SIZE);
 				}
 
 				max_addr = GetMaxAddr(mps);
@@ -414,8 +408,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						int shift;
 						waddr_t waddr = GetWaddr(mps, addr);
 						for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
-							waddr.addr = (addr + b) % 0x4000;
-							waddr.page = !waddr.is_ram ? (addr + b) / 0x4000 : (waddr.addr && b ? waddr.page : GetWaddr(mps, addr + b).page);
+							waddr.addr = (addr + b) % PAGE_SIZE;
+							waddr.page = !waddr.is_ram ? (addr + b) / PAGE_SIZE : (waddr.addr && b ? waddr.page : GetWaddr(mps, addr + b).page);
 							value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
 						}
 						waddr = GetWaddr(mps, addr);
@@ -480,7 +474,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					NMTTDISPINFO *nmtdi = (NMTTDISPINFO *) lParam;
 					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-					StringCbPrintf(nmtdi->szText, sizeof(nmtdi->szText), _T("%d"), mem_read(&lpDebuggerCalc->mem_c, mps->addrTrack));					return TRUE;
+					StringCbPrintf(nmtdi->szText, sizeof(nmtdi->szText), _T("%02X %04X"),
+										mps->addrTrack / PAGE_SIZE, mps->addrTrack % PAGE_SIZE);
+					return TRUE;
 				}
 			}
 			return FALSE;
@@ -666,12 +662,12 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 								goto_addr = goto_addr & 0xFFFF;
 								break;
 							case FLASH:
-								goto_addr = ((goto_addr & 0xFFFF) % 0x4000) + ((goto_addr >> 16) * 0x4000);
+								goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + ((goto_addr >> 16) * PAGE_SIZE);
 								if (goto_addr > GetMaxAddr(mps))
 									goto_addr = GetMaxAddr(mps) - 1;
 								break;
 							case RAM: {						
-								goto_addr = ((goto_addr & 0xFFFF) % 0x4000) + (((goto_addr >> 16) % 0x80) * 0x4000);
+								goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + (((goto_addr >> 16) % 0x80) * PAGE_SIZE);
 								if (goto_addr > GetMaxAddr(mps))
 									goto_addr = GetMaxAddr(mps) - 1;
 								break;
@@ -736,8 +732,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_LBUTTONDBLCLK:
 		case WM_LBUTTONDOWN:
 		{
-			SetFocus(hwnd);
-
 			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			RECT rc;
 			GetClientRect(hwnd, &rc);
@@ -763,8 +757,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					int shift, b;
 					waddr_t waddr = GetWaddr(mps, addr);
 					for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
-						waddr.addr = (addr + b) % 0x4000;
-							waddr.page = !waddr.is_ram ? (addr + b) / 0x4000 : (waddr.addr ? waddr.page : waddr.page + 1);
+						waddr.addr = (addr + b) % PAGE_SIZE;
+							waddr.page = !waddr.is_ram ? (addr + b) / PAGE_SIZE: (waddr.addr ? waddr.page : waddr.page + 1);
 							value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
 					}
 
@@ -789,9 +783,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 			}
 			SendMessage(hwnd, WM_USER, DB_UPDATE, 1);
+			SetFocus(hwnd);
 			return 0;
 		}
-		/*
 		case WM_MOUSEMOVE:
 		{
 			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -801,14 +795,13 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			int thisAddr = AddrFromPoint(hwnd, pt, NULL);
 			if (thisAddr != addrTrackPrev) {
 				mps->addrTrack = thisAddr;
-				// Force the tooltip to redisplay
-#define TTM_POPUP WM_USER+34
+				//Close the tooltip
 				if (IsWindowVisible(mps->hwndTip))
-					SendMessage(mps->hwndTip, TTM_POPUP, 0, 0);
+					SendMessage(mps->hwndTip, TTM_POP, 0, 0);
 			}
 			addrTrackPrev = thisAddr;
 			return 0;
-		}*/
+		}
 		case WM_USER:
 			switch (wParam) {
 				case DB_UPDATE:

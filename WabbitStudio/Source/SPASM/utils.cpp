@@ -94,7 +94,7 @@ char *skip_whitespace (const char *ptr) {
 
 bool is_arg (char test) {
 	return (test == '*' || test == '&' || test == '%' ||
-			test == '@' || test == '^');
+		test == '@' || test == '^' || test == '#');
 }
 
 

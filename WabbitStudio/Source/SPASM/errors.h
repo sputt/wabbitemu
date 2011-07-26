@@ -38,6 +38,7 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_ELIF_WITHOUT_IF			0x124
 #define SPASM_ERR_INVALID_OPTION			0x125
 #define SPASM_ERR_INVALID_ADDINSTR			0x126
+#define SPASM_ERR_INVALID_RST_OPERANDS		0x127
 
 #define SPASM_ERR_INVALID_DECIMAL_DIGIT		0x200
 #define SPASM_ERR_INVALID_HEX_DIGIT			0x201
@@ -80,6 +81,7 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_SIZE_MUST_BE_POSITIVE,	_T("The value '%s' is a size and must be positive")},
 	{SPASM_ERR_FILENAME_EXPECTED,		_T("Expecting a filename, none was provided")},
 	{SPASM_ERR_INVALID_OPERANDS,		_T("The opcode %s was given invalid operands")},
+	{SPASM_ERR_INVALID_RST_OPERANDS,	_T("The opcode rst was given invalid operands")},
 	{SPASM_ERR_UNKNOWN_PREOP,			_T("Unknown preprocessor command '#%s'")},
 	{SPASM_ERR_UNKNOWN_DIRECTIVE,		_T("Unknown assembler directive '.%s'")},
 	{SPASM_ERR_UNKNOWN_OPCODE,			_T("Unknown opcode '%s'")},

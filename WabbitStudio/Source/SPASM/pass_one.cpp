@@ -381,8 +381,7 @@ char *handle_opcode_or_macro (char *ptr) {
 			ptr += 2;
 		} else
 #endif
-		if ((define = search_defines (name)))
-		{
+		if ((define = search_defines (name))) {
 			list_t *args = NULL;
 			char *args_end;
 
@@ -614,6 +613,10 @@ void write_instruction_data (instr *curr_instr, char **arg_ptrs, char **arg_end_
 				case '^': //bit number
 					has_bit_arg = true;
 					bit_arg_text = arg_text;
+					break;
+				case '#':
+					add_pass_two_expr (arg_text, ARG_RST, 0);
+					free(arg_text);
 					break;
 			}
 		}

@@ -18,7 +18,7 @@ typedef struct mempane_settings {
 	ViewType type;					//type of tab this is (aka what do we display)
 	HWND hwndHeader;
 	HWND hwndTip;					// hWnd for the tooltip
-	int addrTrack;
+	int addrTrack;					//addr for tooltip
 	BOOL bText;						// If in text mode
 	HFONT hfontAddr, hfontData;
 	int nRows, nCols;				// number of rows and cols
