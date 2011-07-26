@@ -199,9 +199,6 @@ TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
 	int TotalSize		=  0;
 	int TotalPages		=  0;
 	int done			=  0;
-	//int reads;
-	//char linebuf[600];
-	//char *error;
 	
 	if (tifile->flash->type == FLASH_TYPE_OS) {
 		// Find the first page, usually after the first line
@@ -230,7 +227,7 @@ TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
 		switch ( record.Type ) {
 			case 00:
 				if (CurrentPage > -1) {
-					for(i = 0; (i < record.DataSize) && (((i + record.Address) & 0x3FFF) < 0x4000); i++) {
+					for(i = 0; (i < record.DataSize) && (((i + record.Address) & 0x3FFF) < PAGE_SIZE); i++) {
 						tifile->flash->data[CurrentPage][(i + record.Address) & 0x3FFF] = record.Data[i];
 					}
 					if ( HighestAddress < i + record.Address ) HighestAddress = (int) (i + record.Address);
@@ -243,14 +240,14 @@ TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
 					FreeTiFile(tifile);
 					return NULL;
 				}
-				TotalSize += (HighestAddress - 0x4000);
-				tifile->flash->pagesize[CurrentPage] = (HighestAddress - 0x4000);
+				TotalSize += (HighestAddress - PAGE_SIZE);
+				tifile->flash->pagesize[CurrentPage] = (HighestAddress - PAGE_SIZE);
 				tifile->flash->pages = TotalPages;
 				break;
 			case 02:
 				if (CurrentPage > -1) {
-					TotalSize += 0x4000;
-					tifile->flash->pagesize[CurrentPage] = (HighestAddress - 0x4000);
+					TotalSize += PAGE_SIZE;
+					tifile->flash->pagesize[CurrentPage] = (HighestAddress - PAGE_SIZE);
 				}
 				TotalPages++;
 				CurrentPage = ((record.Data[0] << 8) | record.Data[1]) & 0x7F;
@@ -653,8 +650,8 @@ TIFILE_t* newimportvar(LPCTSTR filePath, BOOL only_check_header) {
 		return FreeTiFile(tifile);
 
 	ReadTiFileHeader(infile, tifile);
-	//the last part is to make sure we dont allow files that cant be imported but
-	//assumed to be ROMs until we try to read data. Why? because we dont read the
+	//the last part is to make sure we don't allow files that cant be imported but
+	//assumed to be ROMs until we try to read data. Why? because we don't read the
 	//size of the data till we import. Since importing a ROM is fast and I don't
 	//care enough to fix and this was meant for speed checking files on drop its fine
 	if (only_check_header && tifile->type != ROM_TYPE) {

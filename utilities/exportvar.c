@@ -8,7 +8,7 @@
 void intelhex (MFILE*, const unsigned char*, int);
 
 const char fileheader[]= {
-    '*','*','T','I','8','3','F','*',0x1A,0x0A,0x00};
+	'*','*','T','I','8','3','F','*',0x1A,0x0A,0x00};
 const char flashheader[] = {
 	'*','*','T','I','F','L','*','*'} ;
 const char comment[42] = "File Exported by Wabbitemu.";
@@ -169,7 +169,7 @@ void AddrOffset(int *page,unsigned int *address, int offset) {
 		int pi = (offset >= 0) ? 1 : -1;
 		*address += offset;
 		while (*address >= 0x8000) {
-			*address -= 0x4000;
+			*address -= PAGE_SIZE;
 			*page += pi;
 		}
 	} else {
@@ -184,7 +184,7 @@ int VarRead(int slot, int page, unsigned int address) {
 	if (address > 0xFFFF) return -1;
 	if (page) {
 		if (address >= 0x4000 && address < 0x8000) {
-			mem = calcs[slot].mem_c.flash[(PAGE_SIZE * page) + address - 0x4000];
+			mem = calcs[slot].mem_c.flash[(PAGE_SIZE * page) + address - PAGE_SIZE];
 		} else {
 			return -1;
 		}
@@ -192,7 +192,7 @@ int VarRead(int slot, int page, unsigned int address) {
 		if (address >= 0xC000)
 			mem = calcs[slot].mem_c.ram[address - 0xC000];
 		else if (address >= 0x8000 && address < 0xC000)
-			mem = calcs[slot].mem_c.ram[address - 0x4000];
+			mem = calcs[slot].mem_c.ram[address - PAGE_SIZE];
 		else return -1;
 	}
 	return mem;
@@ -213,8 +213,8 @@ MFILE *ExportApp(int slot, char *fn, apphdr_t *app) {
 	}
 	outfile = mopen(fn, "wb");
 	// Lots of pointless header crap 
-    for(i = 0; i < 8; i++) mputc(flashheader[i], outfile);
-    //version, major.minor
+	for(i = 0; i < 8; i++) mputc(flashheader[i], outfile);
+	//version, major.minor
 	mputc(0x01, outfile);
 	mputc(0x01, outfile);
 	//flags
@@ -241,11 +241,11 @@ MFILE *ExportApp(int slot, char *fn, apphdr_t *app) {
 	//size of intel hex
 	tempnum =  77 * (data_size >> 5) + app->page_count * 17 + 11;
 	int size = data_size & 0x1F;
-    if (size) tempnum += (size << 1) + 13;
+	if (size) tempnum += (size << 1) + 13;
 	mputc(tempnum & 0xFF, outfile);	//little endian
-    mputc((tempnum >> 8) & 0xFF, outfile);
-    mputc((tempnum >> 16) & 0xFF, outfile);
-    mputc(tempnum >> 24, outfile);
+	mputc((tempnum >> 8) & 0xFF, outfile);
+	mputc((tempnum >> 16) & 0xFF, outfile);
+	mputc(tempnum >> 24, outfile);
 	//data
 	intelhex(outfile, buffer, data_size);
 	//checksum
@@ -261,55 +261,55 @@ MFILE *ExportApp(int slot, char *fn, apphdr_t *app) {
  * stolen from spasm's export.c  to make my 1/2 hour deadline
  */
 void intelhex (MFILE* outfile, const unsigned char* buffer, int size) {
-    const char hexstr[] = "0123456789ABCDEF";
-    int page = 0;
-    int bpnt = 0;
-    unsigned int address, ci, temp, i;
-    unsigned char chksum;
-    unsigned char outbuf[128];
-    
-    //We are in binary mode, we must handle carridge return ourselves.
+	const char hexstr[] = "0123456789ABCDEF";
+	int page = 0;
+	int bpnt = 0;
+	unsigned int address, ci, temp, i;
+	unsigned char chksum;
+	unsigned char outbuf[128];
+	
+	//We are in binary mode, we must handle carridge return ourselves.
    
-    while (bpnt < size) {
-        mprintf(outfile, ":02000002%04X%02X\r\n", page, (unsigned char) ((~(0x04 + page)) + 1));
-        page++;
-        address = 0x4000;   
-        for (i = 0; bpnt < size && i < 512; i++) {
-             chksum = (address >> 8) + (address & 0xFF);
-             for(ci = 0; (ci < 64) && (bpnt < size); ci++) {
-                temp = buffer[bpnt++];
-                outbuf[ci++] = hexstr[temp >> 4];
-                outbuf[ci] = hexstr[temp & 0x0F];
-                chksum += temp;
-            }
-            outbuf[ci] = 0;
-            ci >>= 1;
-            mprintf(outfile,":%02X%04X00%s%02X\r\n",ci,address,outbuf,(unsigned char)(~(chksum + ci) + 1));
-            address += 0x20;
-        }         
-    }
-    mprintf(outfile,":00000001FF");
+	while (bpnt < size) {
+		mprintf(outfile, ":02000002%04X%02X\r\n", page, (unsigned char) ((~(0x04 + page)) + 1));
+		page++;
+		address = 0x4000;   
+		for (i = 0; bpnt < size && i < 512; i++) {
+			 chksum = (address >> 8) + (address & 0xFF);
+			 for(ci = 0; (ci < 64) && (bpnt < size); ci++) {
+				temp = buffer[bpnt++];
+				outbuf[ci++] = hexstr[temp >> 4];
+				outbuf[ci] = hexstr[temp & 0x0F];
+				chksum += temp;
+			}
+			outbuf[ci] = 0;
+			ci >>= 1;
+			mprintf(outfile,":%02X%04X00%s%02X\r\n",ci,address,outbuf,(unsigned char)(~(chksum + ci) + 1));
+			address += 0x20;
+		}         
+	}
+	mprintf(outfile,":00000001FF");
 }
 
 //Prog’s, List AppVar and Group
 MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
 	MFILE *outfile;
 	unsigned char mem[0x10020];
-    int i, b, size;
-    int page = sym->page;
-    unsigned int a = sym->address;
-    unsigned short chksum = 0;
-    
-    //Technically no variable can be larger than 65536 bytes,
-    //to make reading easier I'm gonna copy all the max file size 
-    //into mem.
-    for(i = 0; i < 0x10020 && (b = VarRead(slot, page, a)) != -1; i++) {
+	int i, b, size;
+	int page = sym->page;
+	unsigned int a = sym->address;
+	unsigned short chksum = 0;
+	
+	//Technically no variable can be larger than 65536 bytes,
+	//to make reading easier I'm gonna copy all the max file size 
+	//into mem.
+	for(i = 0; i < 0x10020 && (b = VarRead(slot, page, a)) != -1; i++) {
 		mem[i] = b;
 		AddrOffset(&page, &a, 1);
 	}
 
-    a = 0;
-    if (sym->page) {
+	a = 0;
+	if (sym->page) {
 		if (sym->type_ID == ListObj		|| 
 			sym->type_ID == ProgObj 	||
 			sym->type_ID == ProtProgObj ||
@@ -358,43 +358,43 @@ MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
 			printf("Unknown obj: %02X\n", sym->type_ID);
 			break;
 	}
-    	
-    outfile = mopen(fn,"wb");
+		
+	outfile = mopen(fn,"wb");
 
-    // Lots of pointless header crap 
-    for(i = 0; i < 11; i++) mputc(fileheader[i],outfile);
-    for(i = 0; i < 42; i++) mputc(comment[i],outfile);
-    mputc((size+17) &  0xFF, outfile);
-    mputc((size+17) >> 0x08, outfile);
-    
+	// Lots of pointless header crap 
+	for(i = 0; i < 11; i++) mputc(fileheader[i],outfile);
+	for(i = 0; i < 42; i++) mputc(comment[i],outfile);
+	mputc((size+17) &  0xFF, outfile);
+	mputc((size+17) >> 0x08, outfile);
+	
 
-    chksum  = mputc(0x0D, outfile);
-    chksum += mputc(0x00, outfile);
+	chksum  = mputc(0x0D, outfile);
+	chksum += mputc(0x00, outfile);
 
-    chksum += mputc(size & 0xFF, outfile);
-    chksum += mputc(size >> 8, outfile);
-    chksum += mputc(sym->type_ID, outfile);
-    
-    for(i = 0; i < 8 && sym->name[i]; i++) chksum += mputc(sym->name[i], outfile);
-    for(;i < 8; i++) mputc(0, outfile);
+	chksum += mputc(size & 0xFF, outfile);
+	chksum += mputc(size >> 8, outfile);
+	chksum += mputc(sym->type_ID, outfile);
+	
+	for(i = 0; i < 8 && sym->name[i]; i++) chksum += mputc(sym->name[i], outfile);
+	for(;i < 8; i++) mputc(0, outfile);
 
 
-    chksum += mputc(0x00, outfile); // sym->Resevered[1]
+	chksum += mputc(0x00, outfile); // sym->Resevered[1]
 
 	if (sym->page)
-	    chksum += mputc(0x80, outfile); // archived
+		chksum += mputc(0x80, outfile); // archived
 	else
 		chksum += mputc(0x00, outfile);
 
-    chksum += mputc(size & 0xFF, outfile);
-    chksum += mputc(size >> 8, outfile);
+	chksum += mputc(size & 0xFF, outfile);
+	chksum += mputc(size >> 8, outfile);
 
-    // Actual program data!
-    for(i = 0; i < size; i++) {
-        chksum += mputc(mem[a++], outfile);
-    }
+	// Actual program data!
+	for(i = 0; i < size; i++) {
+		chksum += mputc(mem[a++], outfile);
+	}
 
-    mputc(chksum & 0xFF, outfile);
-    mputc((chksum >> 8) & 0xFF, outfile);
+	mputc(chksum & 0xFF, outfile);
+	mputc((chksum >> 8) & 0xFF, outfile);
 	return outfile;
 }

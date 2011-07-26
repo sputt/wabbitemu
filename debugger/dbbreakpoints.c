@@ -41,11 +41,11 @@ void add_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 {
 	breakpoint_t *new_break = (breakpoint_t *) malloc(sizeof(breakpoint_t));
 	new_break->active = TRUE;
-	new_break->end_addr = waddr.addr % 0x4000;
+	new_break->end_addr = waddr.addr % PAGE_SIZE;
 	new_break->next = NULL;
 	new_break->type = type;
 	new_break->waddr = waddr;
-	new_break->waddr.addr %= 0x4000;
+	new_break->waddr.addr %= PAGE_SIZE;
 	StringCbPrintf(new_break->label, sizeof(new_break->label), _T("%04X"), waddr.addr);
 	LPCALC lpCalc = NULL;
 	int i;
@@ -158,7 +158,7 @@ BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
 		return FALSE;
 
 	//necessary because of page handling
-	waddr.addr %= 0x4000;
+	waddr.addr %= PAGE_SIZE;
 
 	while (lpBreak->next != NULL && (lpBreak->waddr.addr != waddr.addr ||
 		lpBreak->waddr.page != waddr.page || lpBreak->waddr.is_ram != waddr.is_ram || lpBreak->type != type)) {
