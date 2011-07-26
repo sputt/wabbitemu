@@ -67,6 +67,7 @@
     <ClCompile Include="core\device.c" />
     <ClCompile Include="core\indexcb.c" />
     <ClCompile Include="core\indexcb_reverse.c" />
+    <ClCompile Include="DBPaneContainer.cpp" />
     <ClCompile Include="debugger\dbbreakpoints.c" />
     <ClCompile Include="debugger\dbcommon.c" />
     <ClCompile Include="debugger\dbdisasm.c" />
@@ -201,6 +202,7 @@
     <ClInclude Include="core\indexcb.h" />
     <ClInclude Include="core\indexcb_reverse.h" />
     <ClInclude Include="core\optable.h" />
+    <ClInclude Include="DBPaneContainer.h" />
     <ClInclude Include="debugger\dbbreakpoints.h" />
     <ClInclude Include="debugger\dbcommon.h" />
     <ClInclude Include="debugger\dbdisasm.h" />

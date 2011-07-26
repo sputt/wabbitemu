@@ -306,6 +306,9 @@
     <ClCompile Include="core\control_reverse.c">
       <Filter>Source Files\Core</Filter>
     </ClCompile>
+    <ClCompile Include="DBPaneContainer.cpp">
+      <Filter>Source Files\Debugger</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -580,6 +583,9 @@
     </ClInclude>
     <ClInclude Include="core\control_reverse.h">
       <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="DBPaneContainer.h">
+      <Filter>Header Files\Debugger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
