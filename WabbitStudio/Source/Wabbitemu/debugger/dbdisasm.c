@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "guidebug.h"
 #include "dbdisasm.h"
 #include "dbtoolbar.h"
 #include "core.h"

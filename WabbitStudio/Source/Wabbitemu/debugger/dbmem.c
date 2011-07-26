@@ -4,6 +4,7 @@
 #include "dbmem.h"
 #include "resource.h"
 #include "registry.h"
+#include "guidebug.h"
 
 #define COLUMN_X_OFFSET (7 + (mps->type == REGULAR ? 0 : 3))
 

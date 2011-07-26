@@ -2,6 +2,8 @@
 
 #include "guidebug.h"
 
+#include "DBPaneContainer.h"
+
 #include "calc.h"
 #include "dbmem.h"
 #include "dbcommon.h"
@@ -52,7 +54,8 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 	if ((HWND) lParam != GetParent(hwndChild))
 		return TRUE;
 
-	idChild = (int) GetWindowLongPtr(hwndChild, GWL_ID);
+	idChild = GetWindowID(hwndChild);
+	
 	switch (idChild) {
 	case ID_TOOLBAR:
 		MoveWindow(hwndChild, 0, 0, rcParent->right, CY_TOOLBAR, TRUE); 
@@ -92,9 +95,15 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 		break;
 	case ID_REG:
 		//printf("Reg: left: %d, top:% d, height: %d\n", rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, rcParent->bottom);
-		SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
+		//SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
 		//MoveWindow(hwndChild, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom, TRUE);
+		ShowWindow(hwndChild, SW_HIDE);
 		break;
+	case ID_PANECONTAINER:
+		{
+			SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
+			break;
+		}
 	}
 	SendMessage(hwndChild, WM_USER, DB_UPDATE, 0);
 	return TRUE;
@@ -394,6 +403,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				hwnd,
 				(HMENU) ID_REG,
 				g_hInst, NULL);
+
+			CreatePaneContainer(hwnd);
 
 			mps[0].addr = lpDebuggerCalc->cpu.sp;
 			mps[0].mode = MEM_WORD;
