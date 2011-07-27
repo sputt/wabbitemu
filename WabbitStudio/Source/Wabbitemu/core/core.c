@@ -35,18 +35,18 @@ unsigned char mem_read(memc *mem, unsigned short addr) {
 // Fetches a byte using a "wide" unique address
 uint8_t wmem_read(memc *mem, waddr_t waddr) {
 	if (waddr.is_ram) {
-		return mem->ram[waddr.page * PAGE_SIZE + (waddr.addr % 0x4000)];
+		return mem->ram[waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE)];
 	} else {
-		return mem->flash[waddr.page * PAGE_SIZE + (waddr.addr % 0x4000)];
+		return mem->flash[waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE)];
 	}
 }
 uint16_t wmem_read16(memc *mem, waddr_t waddr) {
 	if (waddr.is_ram) {
-		return mem->ram[waddr.page * PAGE_SIZE + (waddr.addr % 0x4000)] +
-			(mem->ram[waddr.page * PAGE_SIZE + ((waddr.addr + 1) % 0x4000)] << 8);
+		return mem->ram[waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE)] +
+			(mem->ram[waddr.page * PAGE_SIZE + ((waddr.addr + 1) % PAGE_SIZE)] << 8);
 	} else {
-		return mem->flash[waddr.page * PAGE_SIZE + (waddr.addr % 0x4000)] +
-			(mem->flash[waddr.page * PAGE_SIZE + ((waddr.addr + 1) % 0x4000)] << 8);
+		return mem->flash[waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE)] +
+			(mem->flash[waddr.page * PAGE_SIZE + ((waddr.addr + 1) % PAGE_SIZE)] << 8);
 	}
 }
 uint8_t wmem_write(memc *mem, waddr_t waddr, uint8_t data) {
@@ -232,7 +232,7 @@ static BOOL is_allowed_exec(CPU_t *cpu) {
 								//execution is allowed on 2^(mode+1)
 		memc *mem = cpu->mem_c;
 		//finally we check ports 25/26 to see if its ok to execute on this page
-		int global_addr = bank.page * 0x4000 + (cpu->pc & 0x3FFF);
+		int global_addr = bank.page * PAGE_SIZE + (cpu->pc & 0x3FFF);
 		if ((mem->port27_remap_count > 0) && !mem->boot_mapped && (mc_bank(cpu->pc) == 3) && (cpu->pc >= (0x10000 - 64*mem->port27_remap_count)) && cpu->pc >= 0xFB64)
 			global_addr = 0*PAGE_SIZE + mc_base(cpu->pc);
 		else if ((mem->port28_remap_count > 0) && !mem->boot_mapped && (mc_bank(cpu->pc) == 2) && (mc_base(cpu->pc) < 64*mem->port28_remap_count))
@@ -360,9 +360,7 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
-		if (!cpu->mem_c->flash_locked && // 1) {
-			(((cpu->mem_c->banks[bank].page != 0x3F && cpu->mem_c->banks[bank].page != 0x2F) || cpu->pio.se_aux->model_bits & 0x3) &&
-			((cpu->mem_c->banks[bank].page != 0x7F && cpu->mem_c->banks[bank].page != 0x6F) || cpu->pio.se_aux->model_bits & 0x2 || !(cpu->pio.se_aux->model_bits & 0x1)))) {
+		if (!cpu->mem_c->flash_locked &&  1) {
 			switch(cpu->mem_c->flash_version) {
 				case 00:
 					break;

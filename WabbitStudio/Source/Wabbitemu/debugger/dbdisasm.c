@@ -350,6 +350,7 @@ static int GetMaxAddr(dp_settings *dps) {
 		case RAM:
 			return lpDebuggerCalc->cpu.mem_c->ram_size;
 	}
+	return -1;
 }
 
 extern HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
@@ -378,19 +379,24 @@ static int prev_select(dp_settings *dps, int addr) {
 }
 
 void cycle_pcs(dp_settings *dps) {
-	int i;
-	for (i = PC_TRAILS-1; i > 0; i--) {
-		dps->nPCs[i] = dps->nPCs[i-1];
+	for (int i = PC_TRAILS - 1; i > 0; i--) {
+		dps->nPCs[i] = dps->nPCs[i - 1];
 	}
 
 	dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
 }
 
+void invalidate_pcs(HWND hwnd, dp_settings *dps) {
+	for (int i = 0; i < PC_TRAILS; i++) {
+		InvalidateSel(hwnd, addr_to_index(dps, dps->nPCs[i]));
+	}
+}
+
 void db_step_finish(HWND hwnd, dp_settings *dps) {
-	unsigned short past_last = lpDebuggerCalc->cpu.pc - dps->zinf[dps->nRows-1].waddr.addr + dps->zinf[dps->nRows-1].size;
-	unsigned short before_first = dps->zinf[0].waddr.addr - lpDebuggerCalc->cpu.pc;
+	short past_last = lpDebuggerCalc->cpu.pc - dps->zinf[dps->nRows-1].waddr.addr + dps->zinf[dps->nRows-1].size;
+	short before_first = dps->zinf[0].waddr.addr - lpDebuggerCalc->cpu.pc;
 	InvalidateSel(hwnd, dps->iSel);
-	dps->nSel = (&lpDebuggerCalc->cpu)->pc;
+	dps->nSel = lpDebuggerCalc->cpu.pc;
 	if (past_last >= 0 || before_first > 0) {
 		int iQ1;
 		SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, lpDebuggerCalc->cpu.pc), 0);
@@ -407,7 +413,9 @@ void db_step_finish(HWND hwnd, dp_settings *dps) {
 		UpdateWindow(hwnd);
 	}
 
+	invalidate_pcs(hwnd, dps);
 	cycle_pcs(dps);
+	InvalidateSel(hwnd, addr_to_index(dps, dps->nPCs[0]));
 	SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 }
 
@@ -619,6 +627,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						dps->hdrs[iCol].cx = lphdi->cxy;
 					}
 
+					InvalidateRect(hwnd, NULL, FALSE);
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 
 					in_changing = FALSE;
@@ -674,6 +683,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						Header_SetOrderArray(hwndHeader, iSize, lpiArray);
 						return TRUE;
 					}
+					InvalidateRect(hwnd, NULL, FALSE);
 					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
 					return 0;
 				}
@@ -739,15 +749,14 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			//	}
 			//}
 
-
 			if (dps->iSel + dps->NumSel > 0) {
-				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iSel, rc.right - rc.left, dps->cyRow * dps->iSel + dps->cyRow*dps->NumSel};
+				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iSel, dps->max_right, dps->cyRow * dps->iSel + dps->cyRow*dps->NumSel};
 				OffsetRect(&sr, 0, dps->cyHeader);
 				DrawItemSelection(hdc, &sr, hwnd == GetFocus(), FALSE, 220);
 			}
 
 			if (dps->iHot != -1) {
-				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iHot, rc.right - rc.left, dps->cyRow * dps->iHot + dps->cyRow};
+				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iHot, dps->max_right, dps->cyRow * dps->iHot + dps->cyRow};
 				OffsetRect(&sr, 0, dps->cyHeader);
 				DrawItemSelection(hdc, &sr, TRUE, FALSE, 130);
 			}
@@ -834,10 +843,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 
 				if (do_gradient) {
-					int i, width = 0;
-					for (i = 0; i < ARRAYSIZE(dps->hdrs); i++) {
-						width += dps->hdrs[i].cx;
-					}
+					int i, width = dps->max_right;
 					vert[0].x      = tr.left;
 					vert[0].y      = tr.top;
 					vert[1].x      = width;

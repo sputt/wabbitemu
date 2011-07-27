@@ -94,16 +94,16 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 		MoveWindow(hwndChild, rcParent->right - 110 - REG_PANE_WIDTH, cyDisasm + cyGripper, 110, cyMem- cyGripper, TRUE);
 		break;
 	case ID_REG:
-		//printf("Reg: left: %d, top:% d, height: %d\n", rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, rcParent->bottom);
-		//SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
-		//MoveWindow(hwndChild, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom, TRUE);
-		ShowWindow(hwndChild, SW_HIDE);
+		printf("Reg: left: %d, top:% d, height: %d\n", rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, rcParent->bottom);
+		SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
+		MoveWindow(hwndChild, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom, TRUE);
+		//ShowWindow(hwndChild, SW_HIDE);
 		break;
-	case ID_PANECONTAINER:
+	/*case ID_PANECONTAINER:
 		{
 			SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
 			break;
-		}
+		}*/
 	}
 	SendMessage(hwndChild, WM_USER, DB_UPDATE, 0);
 	return TRUE;
