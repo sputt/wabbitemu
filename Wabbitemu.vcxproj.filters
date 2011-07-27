@@ -584,8 +584,11 @@
     <ClInclude Include="core\control_reverse.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
+    <ClInclude Include="core\optable_reverse.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
     <ClInclude Include="DBPaneContainer.h">
-      <Filter>Header Files\Debugger</Filter>
+      <Filter>Source Files\Debugger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
