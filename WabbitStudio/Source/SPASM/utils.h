@@ -4,11 +4,12 @@
 #include "storage.h"
 
 #define MAX_ARG_LEN	256
-#define ARG_CONTEXT_INITIALIZER {"", true}
+#define ARG_CONTEXT_INITIALIZER {"", true, false}
 typedef struct arg_context
 {
 	char arg[MAX_ARG_LEN];
 	bool fExpectingMore;
+	bool fLiteralArg;
 } arg_context_t;
 
 char *eval (const char *expr);
@@ -25,6 +26,7 @@ char *next_expr (const char *ptr, const char *delims);
 bool read_expr_impl(__inout const char ** const ptr, char word[256], const char *delims);
 char *extract_arg_string(const char ** const ptr, arg_context_t *context);
 char *parse_args (const char *ptr, define_t *define, list_t **arg_local_labels);
+char *replace_literal_args (const char *ptr, define_t *define, list_t **curr_arg_set);
 bool line_has_word (char *ptr, const char *word, int word_len);
 char *escape_string(const char *input);
 char *reduce_string (char* input);

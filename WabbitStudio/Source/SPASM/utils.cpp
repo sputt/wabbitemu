@@ -220,7 +220,10 @@ char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 					break;
 				}
 
-				add_arg(strdup(define->args[num_args++]), eval(word), *curr_arg_set);
+				if (*define->args[num_args] == '@')
+					add_arg(strdup(define->args[num_args++]), strdup(word), *curr_arg_set);
+				else
+					add_arg(strdup(define->args[num_args++]), eval(word), *curr_arg_set);
 			}
 		}
 	}
@@ -238,6 +241,55 @@ char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 	}*/
 
 	if (*ptr == ')') ptr++;
+	return (char *) ptr;
+}
+
+/*
+ * Parses the arguments for a macro,
+ * and replaces @* arguments with their
+ * contents
+ */
+
+char *replace_literal_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
+	char word[MAX_ARG_LEN], *new_ptr;
+
+	if (curr_arg_set == NULL)
+		return NULL;
+
+	if (*ptr != '(' && define->num_args == 0)
+		return (char *) ptr;
+
+	//Buckeye: we don't need to check for a label because |ld blah will generate a
+	//syntax error no matter what we replace blah with (unless its \\ something
+	//which  I'll let you use as a hack)
+	ptr = skip_whitespace(ptr + 1);
+	ptr = skip_to_name_end(ptr);
+	if (*ptr == '(')
+	{
+		ptr++;
+	}
+
+	ptr = skip_whitespace(ptr + 1);
+	while ((new_ptr = skip_to_name_end(ptr)) != NULL && ptr != new_ptr)
+	{
+		int old_len = new_ptr - ptr;
+		strncpy(word, ptr, old_len);
+		word[old_len] = '\0';
+		for (int i = 0; i < define->num_args; i++) {
+			if (*define->args[i] == '@' && !strcasecmp(define->args[i] + 1, word)) {
+				define_t *arg_define = search_defines(define->args[i]);
+				int new_len = strlen(arg_define->contents);
+				if (old_len != new_len) {
+					memmove((char *) ptr + new_len, ptr + old_len, sizeof(char) * old_len + 2);
+				}
+				//don't copy the \0
+				strncpy((char *) ptr, arg_define->contents, new_len);
+			}
+		}
+		if (*new_ptr == ',')
+			new_ptr++;
+		ptr = skip_whitespace(new_ptr);
+	}
 	return (char *) ptr;
 }
 

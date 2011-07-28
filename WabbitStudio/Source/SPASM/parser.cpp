@@ -460,9 +460,9 @@ const char *find_next_condition (const char *ptr) {
 	int depth = 0;
 	while (!is_end_of_code_line (ptr)) {
 		if (depth == 0 &&
-		    (((*ptr == '&' || *ptr == '|') && *(ptr + 1) == *ptr)
-		    || *ptr == '=' || *ptr == '!' ||
-		    ((*ptr == '<' || *ptr == '>') && *(ptr + 1) != *ptr)))
+			(((*ptr == '&' || *ptr == '|') && *(ptr + 1) == *ptr)
+			|| *ptr == '=' || *ptr == '!' ||
+			((*ptr == '<' || *ptr == '>') && *(ptr + 1) != *ptr)))
 			break;
 		switch (*ptr) {
 			case '(': depth++; break;
@@ -637,10 +637,10 @@ static const char *parse_num_full (const char *expr, int *value, int depth) {
  */
 
 int conv_hex (const char* str, const char *end) {
-    int acc = 0;
+	int acc = 0;
 	const char *start = str;
 
-    while (str < end) {
+	while (str < end) {
 		char hexchar = toupper (*str);
 		
 		if (!isxdigit (*str))
@@ -653,12 +653,12 @@ int conv_hex (const char* str, const char *end) {
 			return -1;
 		}
 		
-        acc <<= 4;
-        if (hexchar > '9') acc+= hexchar - ('A' - 10);    
-        else acc+= hexchar - '0';
-        str++;
-    }
-    return acc;
+		acc <<= 4;
+		if (hexchar > '9') acc+= hexchar - ('A' - 10);    
+		else acc+= hexchar - '0';
+		str++;
+	}
+	return acc;
 }
 
 
@@ -667,13 +667,13 @@ int conv_hex (const char* str, const char *end) {
  */
 
 static int conv_dec (const char* str, const char *end) {
-    int acc = 0;
-    const char *start = str;
+	int acc = 0;
+	const char *start = str;
 
-    while (str < end) {
-        acc *= 10;
-        
-        if (!isdigit ((unsigned char) *str))
+	while (str < end) {
+		acc *= 10;
+		
+		if (!isdigit ((unsigned char) *str))
 		{
 			char number[256];
 			strncpy(number, start, end - start);
@@ -681,12 +681,12 @@ static int conv_dec (const char* str, const char *end) {
 
 			SetLastSPASMError(SPASM_ERR_INVALID_DECIMAL_DIGIT, *str, number);
 			return -1;
-        }
-        
-        acc += *str-'0';
-        str++;
-    }
-    return acc;
+		}
+		
+		acc += *str-'0';
+		str++;
+	}
+	return acc;
 }
 
 
@@ -695,13 +695,13 @@ static int conv_dec (const char* str, const char *end) {
  */
 
 static int conv_bin (const char* str, const char *end) {
-    int acc = 0;
-    const char *start = str;
+	int acc = 0;
+	const char *start = str;
 
-    while (str < end) {
-        acc <<= 1;
-        
-        if (!(*str == '0' || *str == '1'))
+	while (str < end) {
+		acc <<= 1;
+		
+		if (!(*str == '0' || *str == '1'))
 		{
 			char number[256];
 			strncpy(number, start, end - start);
@@ -709,11 +709,11 @@ static int conv_bin (const char* str, const char *end) {
 
 			SetLastSPASMError(SPASM_ERR_INVALID_BINARY_DIGIT, *str, number);
 			return -1;
-        }
-        
-        if (*str == '1') acc++;
-        str++;
-    }
-    return acc;
+		}
+		
+		if (*str == '1') acc++;
+		str++;
+	}
+	return acc;
 }
 

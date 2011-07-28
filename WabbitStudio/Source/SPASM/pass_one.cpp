@@ -427,11 +427,17 @@ char *handle_opcode_or_macro (char *ptr) {
 				else
 				{
 					//parse each line in the macro (prefix with space)
-					char *full_macro = (char *) malloc(strlen(define->contents) + 2);
+					//Buckeye: this malloc size is extra so that we can simply replace
+					//@params and not worry about reallocating
+					char *full_macro = (char *) malloc(MAX_ARG_LEN * 3);
 					char *curr_line = full_macro;
 
 					full_macro[0] = ' ';
 					strcpy(&full_macro[1], define->contents);
+					char *replace_args_ptr = full_macro;
+					full_macro[strlen(define->contents) + 1] = '\0';
+
+					replace_args_ptr = replace_literal_args(replace_args_ptr, define, &args);
 
 					const char *old_filename = curr_input_file;
 					int old_line_num = line_num;
