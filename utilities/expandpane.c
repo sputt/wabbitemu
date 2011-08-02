@@ -571,7 +571,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			PanesHeight += dwHeight;
 
 			RECT rc;
-			MoveWindow(hwnd, 2, cy, dwWidth - 4, dwHeight, TRUE);
+			MoveWindow(hwnd, 2, cy, dwWidth - 4, dwHeight, FALSE);
 			GetClientRect(hwnd, &rc);
 			SetWindowPos(eps->hwndHeader, HWND_TOP, 0, 0, rc.right - rc.left, tm.tmHeight*3/2, 0);
 			SetWindowPos(eps->hwndBtn, NULL, dwWidth - 24 - 8, (tm.tmHeight*3/2 - 20)/2, 20, 20, SWP_NOZORDER);

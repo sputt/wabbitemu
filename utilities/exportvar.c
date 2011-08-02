@@ -56,14 +56,14 @@ TCHAR type_ext[][4] = {
 	_T("")
 };
 
-MFILE *mopen(const char *filename, const char * mode) {
+MFILE *mopen(const TCHAR *filename, const TCHAR * mode) {
 	MFILE* mf= (MFILE *) malloc(sizeof(MFILE));
 	memset(mf, 0, sizeof(MFILE));
 	if (filename) {
 #ifdef WINVER
 		fopen_s(&mf->stream, filename, mode);
 #else
-		mf->stream = fopen(filename,mode);
+		mf->stream = fopen(filename, mode);
 #endif
 		if (!mf->stream) {
 			free(mf);
@@ -164,7 +164,7 @@ int msize(MFILE* mf) {
 }
 
 		
-void AddrOffset(int *page,unsigned int *address, int offset) {
+void AddrOffset(int *page, unsigned int *address, int offset) {
 	if (*page) {
 		int pi = (offset >= 0) ? 1 : -1;
 		*address += offset;
@@ -179,35 +179,35 @@ void AddrOffset(int *page,unsigned int *address, int offset) {
 	
 
 //Page 0 is interpreted as ram.
-int VarRead(int slot, int page, unsigned int address) {
+int VarRead(LPCALC lpCalc, int page, unsigned int address) {
 	unsigned char mem;
 	if (address > 0xFFFF) return -1;
 	if (page) {
 		if (address >= 0x4000 && address < 0x8000) {
-			mem = calcs[slot].mem_c.flash[(PAGE_SIZE * page) + address - PAGE_SIZE];
+			mem = lpCalc->cpu.mem_c->flash[(PAGE_SIZE * page) + address - PAGE_SIZE];
 		} else {
 			return -1;
 		}
 	} else {
 		if (address >= 0xC000)
-			mem = calcs[slot].mem_c.ram[address - 0xC000];
+			mem = lpCalc->cpu.mem_c->ram[address - 0xC000];
 		else if (address >= 0x8000 && address < 0xC000)
-			mem = calcs[slot].mem_c.ram[address - PAGE_SIZE];
+			mem = lpCalc->cpu.mem_c->ram[address - PAGE_SIZE];
 		else return -1;
 	}
 	return mem;
 }
 
 
-MFILE *ExportApp(int slot, char *fn, apphdr_t *app) {
+MFILE *ExportApp(LPCALC lpCalc, TCHAR *fn, apphdr_t *app) {
 	MFILE *outfile;
 	unsigned int tempnum;
 	int i, data_size = PAGE_SIZE * app->page_count;
-	unsigned char *buffer = (unsigned char *) malloc(data_size);
+	uint8_t *buffer = (uint8_t *) malloc(data_size);
 	memset(buffer, 0, data_size);
-	unsigned char *temp_point = buffer;
+	uint8_t *temp_point = buffer;
 	for (tempnum = app->page; tempnum > app->page - app->page_count; tempnum--) {
-		u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) calcs[slot].cpu.mem_c->flash;
+		u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) lpCalc->cpu.mem_c->flash;
 		memcpy(temp_point, &dest[tempnum], PAGE_SIZE);
 		temp_point += PAGE_SIZE;
 	}
@@ -249,11 +249,67 @@ MFILE *ExportApp(int slot, char *fn, apphdr_t *app) {
 	//data
 	intelhex(outfile, buffer, data_size);
 	//checksum
-	//this is the best checksum code i've ever seen...
+	//TODO: this is the best checksum code i've ever seen...
 
 	//DONE :D
 	return outfile;
 }
+
+//MFILE *ExportOS(LPCALC lpCalc, TCHAR *fn, int page_count) {
+//	MFILE *outfile;
+//	unsigned int tempnum;
+//	int i, data_size = PAGE_SIZE * page_count;
+//	unsigned char *buffer = (unsigned char *) malloc(data_size);
+//	memset(buffer, 0, data_size);
+//	unsigned char *temp_point = buffer;
+//	for (tempnum = app->page; tempnum > app->page - app->page_count; tempnum--) {
+//		u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) calcs[slot].cpu.mem_c->flash;
+//		memcpy(temp_point, &dest[tempnum], PAGE_SIZE);
+//		temp_point += PAGE_SIZE;
+//	}
+//	outfile = mopen(fn, "wb");
+//	// Lots of pointless header crap 
+//	for(i = 0; i < 8; i++) mputc(flashheader[i], outfile);
+//	//version, major.minor
+//	mputc(0x01, outfile);
+//	mputc(0x01, outfile);
+//	//flags
+//	mputc(0x01, outfile);
+//	//object type
+//	mputc(0x88, outfile);
+//	//date
+//	mputc(0x01, outfile);
+//	mputc(0x01, outfile);
+//	mputc(0x19, outfile);
+//	mputc(0x97, outfile);
+//	//name length...wtf? its always 8
+//	mputc(0x08, outfile);
+//	//name
+//	for (i = 0; i < 8; i++) mputc(app->name[i], outfile);
+//	//filler
+//	for (i = 0; i < 23; i++) mputc(0x00, outfile);
+//	//device
+//	mputc(0x73, outfile);
+//	//its an app not an OS/cert/license
+//	mputc(0x24, outfile);
+//	//filler
+//	for (i = 0; i < 24; i++) mputc(0x00, outfile);
+//	//size of intel hex
+//	tempnum =  77 * (data_size >> 5) + page_count * 17 + 11;
+//	int size = data_size & 0x1F;
+//	if (size) tempnum += (size << 1) + 13;
+//	mputc(tempnum & 0xFF, outfile);	//little endian
+//	mputc((tempnum >> 8) & 0xFF, outfile);
+//	mputc((tempnum >> 16) & 0xFF, outfile);
+//	mputc(tempnum >> 24, outfile);
+//	//data
+//	intelhex(outfile, buffer, data_size);
+//	//checksum
+//	//TODO: this is the best checksum code i've ever seen...
+//
+//	//DONE :D
+//	return outfile;
+//}
 
 /* Convert binary buffer to intel hex in ti format
  * All pages addressed to $4000 and are only $4000
@@ -284,7 +340,7 @@ void intelhex (MFILE* outfile, const unsigned char* buffer, int size) {
 			}
 			outbuf[ci] = 0;
 			ci >>= 1;
-			mprintf(outfile,":%02X%04X00%s%02X\r\n",ci,address,outbuf,(unsigned char)(~(chksum + ci) + 1));
+			mprintf(outfile,":%02X%04X00%s%02X\r\n", ci, address, outbuf, (unsigned char)(~(chksum + ci) + 1));
 			address += 0x20;
 		}         
 	}
@@ -292,7 +348,7 @@ void intelhex (MFILE* outfile, const unsigned char* buffer, int size) {
 }
 
 //Prog’s, List AppVar and Group
-MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
+MFILE *ExportVar(LPCALC lpCalc, TCHAR* fn, symbol83P_t* sym) {
 	MFILE *outfile;
 	unsigned char mem[0x10020];
 	int i, b, size;
@@ -303,7 +359,7 @@ MFILE *ExportVar(int slot, char* fn, symbol83P_t* sym) {
 	//Technically no variable can be larger than 65536 bytes,
 	//to make reading easier I'm gonna copy all the max file size 
 	//into mem.
-	for(i = 0; i < 0x10020 && (b = VarRead(slot, page, a)) != -1; i++) {
+	for(i = 0; i < 0x10020 && (b = VarRead(lpCalc, page, a)) != -1; i++) {
 		mem[i] = b;
 		AddrOffset(&page, &a, 1);
 	}

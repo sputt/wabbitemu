@@ -416,7 +416,7 @@ void db_step_finish(HWND hwnd, dp_settings *dps) {
 	invalidate_pcs(hwnd, dps);
 	cycle_pcs(dps);
 	InvalidateSel(hwnd, addr_to_index(dps, dps->nPCs[0]));
-	SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+	Debug_UpdateWindow(GetParent(hwnd));
 }
 
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -628,7 +628,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					}
 
 					InvalidateRect(hwnd, NULL, FALSE);
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(GetParent(hwnd));
 
 					in_changing = FALSE;
 					return FALSE;
@@ -684,7 +684,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						return TRUE;
 					}
 					InvalidateRect(hwnd, NULL, FALSE);
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(GetParent(hwnd));
 					return 0;
 				}
 				default:
@@ -966,7 +966,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case DB_DISASM: {
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					u_int addr = (u_int) lParam;
-					disassemble(&lpDebuggerCalc->mem_c, REGULAR, addr_to_waddr(lpDebuggerCalc->cpu.mem_c, addr), dps->nRows, dps->zinf);
+					disassemble(&lpDebuggerCalc->mem_c, dps->type, addr_to_waddr(lpDebuggerCalc->cpu.mem_c, addr), dps->nRows, dps->zinf);
 					break;
 				}
 				case IDM_RUN_RUN:
@@ -974,7 +974,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					int i;
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					EnableWindow(hwnd, FALSE);
-					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(hwnd);
 					for (i = 0; i < PC_TRAILS; i++) {
 						dps->nPCs[i] = -1;
 					}
@@ -987,10 +987,10 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					int i;
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					EnableWindow(hwnd, TRUE);
-					SendMessage(hwnd, WM_COMMAND, DB_DISASM, lpDebuggerCalc->cpu.pc);
+					SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 					db_step_finish(hwnd, dps);
 					lpDebuggerCalc->running = FALSE;
-					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(hwnd);
 					break;
 				}
 				case IDM_RUN_STEP:
@@ -1041,7 +1041,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						MessageBox(NULL, _T("Value not found"), _T("Find results"), MB_OK);
 						break;
 					}
-					dps->nSel = addr;
+					dps->nPane = addr;
 					SetFocus(hwnd);
 					SendMessage(hwnd, WM_COMMAND, DB_DISASM, addr);
 					InvalidateRect(hwnd, NULL, FALSE);
@@ -1063,7 +1063,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						set_break(&lpDebuggerCalc->mem_c, waddr);
 					}
 					InvalidateSel(hwnd, dps->iSel);
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(GetParent(hwnd));
 					break;
 				}
 				case DB_MEMPOINT_WRITE: {
@@ -1076,7 +1076,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						set_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
 					}
 					InvalidateSel(hwnd, dps->iSel);
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(GetParent(hwnd));
 					break;
 				}
 				case DB_MEMPOINT_READ: {
@@ -1089,7 +1089,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						set_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
 					}
 					InvalidateSel(hwnd, dps->iSel);
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(GetParent(hwnd));
 					break;
 				}
 				case IDM_DISASMDATA:
@@ -1099,14 +1099,14 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					disasmhdr_toggle(dps->hwndHeader, &dps->hdrs[LOWORD(wParam) - IDM_DISASMADDR]);
 
-					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(hwnd);
 					break;
 				}
 				case DB_SET_PC: {
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					lpDebuggerCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
 					cycle_pcs(dps);
-					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(hwnd);
 					break;
 				}
 			}
@@ -1314,12 +1314,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case 'F':
 					SendMessage(hwnd, WM_COMMAND, DB_OPEN_FIND, 0);
 					break;
-				case 'P':
-					SendMessage(GetParent(hwnd), WM_COMMAND, IDM_VIEW_PORTMONITOR, 0);
-					break;
-				case 'B':
-					SendMessage(GetParent(hwnd), WM_COMMAND, IDM_VIEW_BREAKPOINTS, 0);
-					break;
 			}
 
 			if (bCenter && (dps->nSel < dps->nPane || dps->nSel > dps->nPane + dps->nPage)) {
@@ -1452,7 +1446,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
 					ChangeRunButtonIconAndText(tbb);
 					
-					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(hwnd);
 					break;
 			}
 			return 0;

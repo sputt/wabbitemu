@@ -15,6 +15,9 @@ void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int o
 const TCHAR * byte_to_binary(int x, BOOL isWord = FALSE);
 int xtoi(const TCHAR *xs, int* result);
 
+#define Debug_UpdateWindow(hwnd) SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+#define Debug_CreateWindow(hwnd) SendMessage(hwnd, WM_USER, DB_CREATE, 0);
+
 typedef enum {
 	HEX2,
 	HEX4,

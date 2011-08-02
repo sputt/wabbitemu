@@ -297,7 +297,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 				ValueSubmit(vfs->hwndVal, (TCHAR *) vfs->data, (int) vfs->size, vfs->max_value);
 				vfs->editing = FALSE;
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(0, EN_CHANGE), (LPARAM) hwnd);
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				return 0;
 			case EN_CANCEL:
 				vfs->editing = FALSE;

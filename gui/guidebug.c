@@ -58,7 +58,7 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 	
 	switch (idChild) {
 	case ID_TOOLBAR:
-		MoveWindow(hwndChild, 0, 0, rcParent->right, CY_TOOLBAR, TRUE); 
+		MoveWindow(hwndChild, 0, 0, rcParent->right, CY_TOOLBAR, FALSE); 
 		break;
 	case ID_DISASMTAB: {
 		RECT tabRc;
@@ -66,24 +66,24 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 		tabRc.top = CY_TOOLBAR;
 		tabRc.right = rcParent->right - REG_PANE_WIDTH;
 		tabRc.bottom = cyDisasm;
-		MoveWindow(hwndChild, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, TRUE);
+		MoveWindow(hwndChild, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, FALSE);
 		int index = TabCtrl_GetCurSel(hwndChild);
 		tabRc.top = 0;
 		tabRc.bottom = cyDisasm - CY_TOOLBAR;
 		TabCtrl_AdjustRect(hwndChild, FALSE, &tabRc);
 		HWND curTab = hdisasmlist[index];
-		MoveWindow(curTab, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, TRUE);
+		MoveWindow(curTab, tabRc.left, tabRc.top, tabRc.right - tabRc.left, tabRc.bottom - tabRc.top, FALSE);
 		SendMessage(curTab, WM_USER, DB_UPDATE, 0);
 		break;
 	}
 	/*case ID_DISASM:
-		MoveWindow(hwndChild, 0, CY_TOOLBAR, rcParent->right - REG_PANE_WIDTH, cyDisasm - CY_TOOLBAR, TRUE);
+		MoveWindow(hwndChild, 0, CY_TOOLBAR, rcParent->right - REG_PANE_WIDTH, cyDisasm - CY_TOOLBAR, FALSE);
 		break;*/
 	case ID_MEMTAB: {
-		MoveWindow(hwndChild, 3, cyDisasm + cyGripper, rcParent->right - 103 - REG_PANE_WIDTH - 8, cyMem - cyGripper - 3, TRUE);
+		MoveWindow(hwndChild, 3, cyDisasm + cyGripper, rcParent->right - 103 - REG_PANE_WIDTH - 8, cyMem - cyGripper - 3, FALSE);
 		int index = TabCtrl_GetCurSel(hwndChild);
 		HWND curTab = index == total_mem_pane ? hwatch : hmemlist[index];
-		MoveWindow(curTab, 3, 24, rcParent->right - REG_PANE_WIDTH - 118, cyMem - cyGripper - 32, TRUE);
+		MoveWindow(curTab, 3, 24, rcParent->right - REG_PANE_WIDTH - 118, cyMem - cyGripper - 32, FALSE);
 		SendMessage(curTab, WM_USER, DB_UPDATE, 0);
 		break;
 	}
@@ -91,12 +91,12 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 		MoveWindow(hwndChild, 0, 0, rcParent->right, rcParent->bottom, TRUE);
 		break;*/
 	case ID_STACK:
-		MoveWindow(hwndChild, rcParent->right - 110 - REG_PANE_WIDTH, cyDisasm + cyGripper, 110, cyMem- cyGripper, TRUE);
+		MoveWindow(hwndChild, rcParent->right - 110 - REG_PANE_WIDTH, cyDisasm + cyGripper, 110, cyMem- cyGripper, FALSE);
 		break;
 	case ID_REG:
 		printf("Reg: left: %d, top:% d, height: %d\n", rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, rcParent->bottom);
 		SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
-		MoveWindow(hwndChild, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom, TRUE);
+		MoveWindow(hwndChild, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom, FALSE);
 		//ShowWindow(hwndChild, SW_HIDE);
 		break;
 	/*case ID_PANECONTAINER:
@@ -287,6 +287,17 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		case WM_CREATE:
 		{
 			lpDebuggerCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			keypad_t *keypad = lpDebuggerCalc->cpu.pio.keypad;
+			//handle keys already down (just send release)
+			//i send the message here so that things like logging are handled
+			for (int group = 0; group < 8; group++) {
+				for (int bit = 0; bit < 8; bit++) {
+					if (keypad->keys[group][bit]) {
+						keypad_vk_release(lpDebuggerCalc->hwndFrame, group, bit);
+					}
+				}
+			}
+
 			LOGFONT lf;
 			memset(&lf, 0, sizeof(LOGFONT));
 			StringCbCopy(lf.lfFaceName, sizeof(lf.lfFaceName), _T("Lucida Console"));
@@ -435,7 +446,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			hwndPrev = hdisasm;
 			SetFocus(hdisasm);
 			SendMessage(hwnd, WM_SIZE, 0, 0);
-			SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+			Debug_UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_SIZING:
@@ -583,7 +594,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		}
 		case WM_COMMAND: {
 			printf("Got a command\n");
-			switch (wParam) {
+			switch (LOWORD(wParam)) {
 			case IDM_DEBUG_EXIT:
 				DestroyWindow(hwnd);
 				break;
@@ -652,7 +663,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_BIN, MF_BYCOMMAND | MF_UNCHECKED);
 				dispType = HEX;
 				mps[TabCtrl_GetCurSel(hmem) + 1].display = dispType;
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				break;
 			case IDM_DISPLAYBASE_BIN:
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_HEX, MF_BYCOMMAND | MF_UNCHECKED);
@@ -660,7 +671,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_BIN, MF_BYCOMMAND | MF_CHECKED);
 				dispType = BIN;
 				mps[TabCtrl_GetCurSel(hmem) + 1].display = dispType;
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				break;
 			case IDM_DISPLAYBASE_DEC:
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_HEX, MF_BYCOMMAND | MF_UNCHECKED);
@@ -668,7 +679,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_BIN, MF_BYCOMMAND | MF_UNCHECKED);
 				dispType = DEC;
 				mps[TabCtrl_GetCurSel(hmem) + 1].display = dispType;
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				break;
 			case IDM_VIEW_BYTE: {
 				CheckMenuItem(GetMenu(hwnd), IDM_VIEW_BYTE, MF_BYCOMMAND | MF_CHECKED);
@@ -677,7 +688,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				int index = TabCtrl_GetCurSel(hmem) + 1;
 				mps[index].mode = 1;
 				mps[index].bText = FALSE;
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				break;
 			}
 			case IDM_VIEW_WORD: {
@@ -687,7 +698,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				int index = TabCtrl_GetCurSel(hmem) + 1;
 				mps[index].mode = 2;
 				mps[index].bText = FALSE;
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				break;
 			}
 			case IDM_VIEW_CHAR: {
@@ -697,7 +708,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				int index = TabCtrl_GetCurSel(hmem) + 1;
 				mps[index].mode = 1;
 				mps[index].bText = TRUE;
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				break;
 			}
 			case IDM_VIEW_ADDMEM: {
@@ -711,7 +722,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				if (total_mem_pane == MAX_TABS)
 					EnableMenuItem(hMenu, IDM_VIEW_ADDMEM, MF_BYCOMMAND | MF_DISABLED);
 				SendMessage(hwnd, WM_SIZE, 0, 0);
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				break;
 			}
 			case IDM_VIEW_DELMEM: {
@@ -730,7 +741,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				hmemlist[total_mem_pane] = NULL;
 				hmemlist[total_mem_pane + 1] = NULL;
 				hmemlist[total_mem_pane + 2] = NULL;
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				break;
 			}
 			case IDM_VIEW_ADDDISASM: {
@@ -744,7 +755,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				if (total_disasm_pane == MAX_TABS)
 					EnableMenuItem(hMenu, IDM_VIEW_ADDDISASM, MF_BYCOMMAND | MF_DISABLED);
 				SendMessage(hwnd, WM_SIZE, 0, 0);
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				break;
 			}
 			case IDM_VIEW_DELDISASM: {
@@ -766,9 +777,10 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				hdisasmlist[total_disasm_pane] = NULL;
 				hdisasmlist[total_disasm_pane + 1] = NULL;
 				hdisasmlist[total_disasm_pane + 2] = NULL;
-				SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(hwnd);
 				break;
 			}
+			case DB_PORTMONITOR:
 			case IDM_VIEW_PORTMONITOR: {
 				if (IsWindow(hPortMon)) {
 					SwitchToThisWindow(hPortMon, TRUE);
@@ -778,6 +790,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				}
 				break;
 			}
+			case DB_BREAKPOINTS:
 			case IDM_VIEW_BREAKPOINTS: {
 				if (IsWindow(hBreakpoints)) {
 					SwitchToThisWindow(hBreakpoints, TRUE);

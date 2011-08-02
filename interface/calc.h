@@ -13,6 +13,7 @@
 #include "Wabbitemu_h.h"
 #include "sound.h"
 #include "DropTarget.h"
+#include "dbbreakpoints.h"
 #endif
 
 #include "label.h"
@@ -75,15 +76,14 @@ typedef struct tagCALC {
 	HDC hdcSkin;
 	HDC hdcButtons;
 	HDC hdcKeymap;
+	breakpoint_t *cond_breakpoints;
 #else
 	pthread_t hdlThread;
 #endif
 
 	BOOL running;
-	//BOOL send;
 	int speed;
 	BYTE breakpoints[0x10000];
-	//BOOL warp;
 	label_struct labels[6000];
 	profiler_t profiler;
 
@@ -154,6 +154,7 @@ int calc_init_83p(LPCALC);
 int calc_init_84p(LPCALC);
 int calc_init_83pse(LPCALC);
 LPCALC calc_from_cpu(CPU_t *);
+LPCALC calc_from_memc(memc *);
 void calc_erase_certificate(unsigned char *, int);
 void port_debug_callback(void *, void *);
 void mem_debug_callback(void *);

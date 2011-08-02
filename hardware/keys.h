@@ -30,6 +30,11 @@ keyprog_t *keypad_key_release(CPU_t*, unsigned int vk);
 void keypad_press(CPU_t *cpu, int group, int bit);
 void keypad_release(CPU_t *cpu, int group, int bit);
 
+#ifdef WINVER
+//used by the debugger to fix stuck keys
+void keypad_vk_release(HWND hwnd, int group, int bit);
+#endif
+
 #define KEY_VALUE_MASK		(0x0F)
 
 #define KEY_KEYBOARDPRESS	0x01

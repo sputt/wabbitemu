@@ -91,7 +91,7 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				if (_tcsicmp(szWindowName, _T("wabbitminimize")) == 0) {
 					ShowWindow(lpCalc->hwndFrame, SW_MINIMIZE);
 				} else if (_tcsicmp(szWindowName, _T("wabbitclose")) == 0) {
-					SendMessage(lpCalc->hwndFrame, WM_CLOSE, 0, 0);
+					CloseWindow(lpCalc->hwndFrame);
 				}
 				SetWindowLongPtr(hwnd, 0, (LONG_PTR) FALSE);
 				ReleaseCapture();

@@ -85,7 +85,7 @@ void HandleEditMessages(HWND hwnd, WPARAM wParam, LPARAM lParam) {
 				ValueSubmit(hwndVal, ((TCHAR *) (&lpDebuggerCalc->cpu)) + reg_offset[vi].offset, 1);
 
 			}
-			SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+			Debug_UpdateWindow(GetParent(hwnd));
 		}
 		hwndVal = NULL;
 		return;
@@ -185,7 +185,7 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		dp_settings *dps = (dp_settings *) GetWindowLongPtr(hdisasm, GWLP_USERDATA);
 		if (!_tcscmp(vfs->szName, _T("pc")))
 			cycle_pcs(dps);
-		SendMessage(lpDebuggerCalc->hwndDebug, WM_USER, DB_UPDATE, 0);
+		Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
 		return 0;
 	}
 	case WM_PAINT:
@@ -281,8 +281,8 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 			}
 			break;
 		}
-		SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
-		SendMessage(lpDebuggerCalc->hwndDebug, WM_USER, DB_UPDATE, 0);
+		Debug_UpdateWindow(hwnd);
+		Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
 		return 0;
 	}
 	case WM_PAINT:
@@ -416,10 +416,10 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 						lpDebuggerCalc->cpu.halt = !lpDebuggerCalc->cpu.halt;
 						break;
 				}
-				SendMessage(lpDebuggerCalc->hwndDebug, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
 				break;
 			case EN_CHANGE: {
-				lpDebuggerCalc->cpu.timer_c->freq = freq * 1000000.0;
+				lpDebuggerCalc->cpu.timer_c->freq = (uint32_t)(freq * 1000000.0);
 				break;
 			}
 		}
@@ -453,8 +453,7 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	case WM_USER:
 		switch (wParam) {
 		case DB_UPDATE:
-			SendMessage(chkHalt, BM_SETCHECK,
-			lpDebuggerCalc->cpu.halt ? BST_CHECKED : BST_UNCHECKED, 0);
+			Button_SetCheck(chkHalt, lpDebuggerCalc->cpu.halt ? BST_CHECKED : BST_UNCHECKED);
 			break;
 		case VF_DESELECT_CHILDREN:
 			EnumChildWindows(hwnd, EnumDeselectChildren, (LPARAM) hwnd);
@@ -523,7 +522,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 						lpDebuggerCalc->cpu.iff2 = !lpDebuggerCalc->cpu.iff2;
 						break;
 				}
-				SendMessage(lpDebuggerCalc->hwndDebug, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
 		}
 		return 0;
 	}
@@ -738,7 +737,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					lpDebuggerCalc->cpu.pio.lcd->cursor_mode = Y_DOWN;
 				else if ((HWND) lParam == rdoYinc)
 					lpDebuggerCalc->cpu.pio.lcd->cursor_mode = Y_UP;
-				SendMessage(lpDebuggerCalc->hwndDebug, WM_USER, DB_UPDATE, 0);
+				Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
 		}
 		return 0;
 	}
@@ -864,7 +863,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				hwnd, (HMENU) REG_CHK_N, g_hInst, NULL);
 			SetWindowFont(chk_n, hfontFlags, TRUE);
 
-			SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+			Debug_UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_CTLCOLORSTATIC:
@@ -900,7 +899,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 							lpDebuggerCalc->cpu.f ^= N_MASK;
 							break;
 					}
-					SendMessage(lpDebuggerCalc->hwndDebug, WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
 					return 0;
 			}
 
@@ -1194,7 +1193,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							((TCHAR *) (&lpDebuggerCalc->cpu)) + reg_offset[vi].offset, 1);
 
 					}
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(GetParent(hwnd));
 				}
 				hwndVal = NULL;
 			}

@@ -212,7 +212,6 @@
     <ClInclude Include="Debugger\dbprofile.h" />
     <ClInclude Include="debugger\dbreg.h" />
     <ClInclude Include="debugger\dbtoolbar.h" />
-    <ClInclude Include="debugger\dbtrack.h" />
     <ClInclude Include="debugger\dbvalue.h" />
     <ClInclude Include="debugger\dbwatch.h" />
     <ClInclude Include="debugger\disassemble.h" />

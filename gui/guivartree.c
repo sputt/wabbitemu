@@ -48,13 +48,6 @@ HWND CreateVarTreeList() {
 	return NULL;
 }
 
-#ifdef USE_COM
-HRESULT CreateDropSource(WB_IDropSource **ppDropSource);
-HRESULT CreateDataObject(FORMATETC *fmtetc, STGMEDIUM *stgmeds, UINT count, WB_IDataObject **ppDataObject);
-void SetDropSourceDataObject(WB_IDropSource *pDropSource, WB_IDataObject *pDataObject);
-#endif
-
-
 INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
     switch (Message) {
         case WM_INITDIALOG:
@@ -108,11 +101,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						free(fd);
 						break;
 					}
-#ifdef WINVER
 					_tfopen_s(&file, export_file_name, _T("wb"));
-#else
-					file = fopen(export_file_name, "wb");
-#endif
 					fwrite(buf, 1, fd->nFileSizeLow, file);
 					fclose(file);
 					free(buf);
@@ -227,11 +216,7 @@ int SetVarName(FILEDESCRIPTOR *fd) {
 									All Files (*.*)\0*.*\0\0");
 	const TCHAR lpstrTitle[] = _T("Wabbitemu Export");
 	TCHAR lpstrFile[MAX_PATH];
-#ifdef WINVER
 	StringCbCopy(lpstrFile, sizeof(lpstrFile), fd->cFileName);
-#else
-	strcpy(lpstrFile, fd->cFileName);
-#endif
 	size_t i = _tcslen(lpstrFile);
 	lpstrFile[i] = '\0';
 	defExt = &lpstrFile[i];
@@ -275,11 +260,7 @@ int SetVarName(FILEDESCRIPTOR *fd) {
 
 	if (SaveFile(lpstrFile, lpstrFilter, lpstrTitle, defExt, OFN_PATHMUSTEXIST))
 		return 1;
-#ifdef WINVER
 	StringCbCopy(export_file_name, sizeof(export_file_name), lpstrFile);
-#else
-	strcpy(export_file_name, lpstrFile);
-#endif
 	return 0;
 }
 
@@ -332,14 +313,9 @@ void RefreshTreeView(BOOL New) {
 		
 		/*It's an 83+ compatible with a known rom(hopefully)*/
 		if (calcs[slot].active && calcs[slot].model >= TI_83P &&
-#ifdef WINVER
 			sscanf_s(calcs[slot].rom_version, "%f", &ver) == 1) {
-#else
-			sscanf(calcs[slot].rom_version,"%f",&ver) == 1) {
-#endif
-				
 
-			/* This slot has not yet been initlised. */
+			/* This slot has not yet been initialized. */
 			/* so set up the Root */
 			if (Tree[slot].model == 0) {
 				tvs.hParent				= TVI_ROOT;
@@ -485,20 +461,12 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 			for(i = 0; i < Tree[slot].applist.count; i++) {
 				if (Tree[slot].hApps[i] == hSelect) {
 					if (App_Name_to_String(&Tree[slot].applist.apps[i], string)) {
-#ifdef WINVER
 						StringCbCat(string, sizeof(string), _T(".8xk"));
-#else
-						strcat(string, ".8xk");
-#endif
-						MFILE *outfile = ExportApp(slot, NULL, &Tree[slot].applist.apps[i]);
+						MFILE *outfile = ExportApp(&calcs[slot], NULL, &Tree[slot].applist.apps[i]);
 						fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
 						fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 						fd->nFileSizeLow = msize(outfile);
-#ifdef WINVER
 						StringCbCopy(fd->cFileName, sizeof(fd->cFileName), string);
-#else
-						strcpy(fd->cFileName, string);
-#endif
 						mclose(outfile);
 						return fd;
 					}
@@ -509,22 +477,13 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 			for(i = 0; i < (u_int) (Tree[slot].sym.last - Tree[slot].sym.symbols + 1); i++) {
 				if (Tree[slot].hVars[i] == hSelect) {
 					if (Symbol_Name_to_String(&Tree[slot].sym.symbols[i], string)) {
-#ifdef WINVER
 						StringCbCat(string, sizeof(string), _T("."));
 						StringCbCat(string, sizeof(string), (const TCHAR *) type_ext[Tree[slot].sym.symbols[i].type_ID]);
-#else
-						strcat(string, ".");
-						strcat(string, (const char *) type_ext[Tree[slot].sym.symbols[i].type_ID]);
-#endif
-						MFILE *outfile = ExportVar(slot, NULL, &Tree[slot].sym.symbols[i]);
+						MFILE *outfile = ExportVar(&calcs[slot], NULL, &Tree[slot].sym.symbols[i]);
 						fd->dwFlags = FD_ATTRIBUTES | FD_FILESIZE;
 						fd->dwFileAttributes = FILE_ATTRIBUTE_NORMAL;
 						fd->nFileSizeLow = msize(outfile);
-#ifdef WINVER
 						StringCbCopy(fd->cFileName, sizeof(fd->cFileName), string);
-#else
-						strcpy(fd->cFileName, string);
-#endif
 						mclose(outfile);
 						return fd;
 					}
@@ -546,7 +505,7 @@ void *FillFileBuffer(HTREEITEM hSelect, void *buf) {
 			_tprintf_s(_T("model found\n"));
 			for(i = 0; i < Tree[slot].applist.count; i++) {
 				if (Tree[slot].hApps[i] == hSelect) {
-					MFILE *outfile = ExportApp(slot, NULL, &Tree[slot].applist.apps[i]);
+					MFILE *outfile = ExportApp(&calcs[slot], NULL, &Tree[slot].applist.apps[i]);
 					if(!outfile) _putts(_T("MFile not found"));
 					_tprintf_s(_T("size: %d\n"), outfile->size);
 					for(b = 0; b < outfile->size; b++) {
@@ -561,11 +520,11 @@ void *FillFileBuffer(HTREEITEM hSelect, void *buf) {
 			for(i = 0; i < (u_int) (Tree[slot].sym.last - Tree[slot].sym.symbols + 1); i++) {
 				if (Tree[slot].hVars[i] == hSelect) {
 					if (Symbol_Name_to_String(&Tree[slot].sym.symbols[i], string)) {
-						MFILE *outfile = ExportVar(slot, NULL, &Tree[slot].sym.symbols[i]);
+						MFILE *outfile = ExportVar(&calcs[slot], NULL, &Tree[slot].sym.symbols[i]);
 						if(!outfile) _putts(_T("MFile not found"));
 						_tprintf_s(_T("size: %d\n"), outfile->size);
 						for(b = 0; b < outfile->size; b++) {
-							_tprintf_s(_T("%02X"),outfile->data[b]);
+							_tprintf_s(_T("%02X"), outfile->data[b]);
 							buffer[b] = outfile->data[b];
 						}
 						_tprintf_s(_T("\n"));

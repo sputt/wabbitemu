@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "dbtoolbar.h"
-#include "dbtrack.h"
 #include "resource.h"
 #include "guicontext.h"
 

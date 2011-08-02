@@ -1682,20 +1682,22 @@ int device_init_83pse(CPU_t *cpu) {
 	cpu->pio.breakpoint_callback = port_debug_callback;
 	cpu->pio.model		= TI_83PSE;
 	
-	/*
+	
 	Append_interrupt_device(cpu, 0x00, 1);
 	Append_interrupt_device(cpu, 0x03, 8);
 	Append_interrupt_device(cpu, 0x11, 128);
 	Append_interrupt_device(cpu, 0x09, 3);
 	Append_interrupt_device(cpu, 0x32, 8);
-	*/
-	// Turning of the instruction skip stuff temporarily
+	
+	// Turning off the instruction skip stuff temporarily
 	// To attempt to diagnose some timing issues
-	Append_interrupt_device(cpu, 0x00, 1);
+	//BuckeyeDude: 7/27/11 this destroys cpu, need to find the correct
+	//way to do these timings
+	/*Append_interrupt_device(cpu, 0x00, 1);
 	Append_interrupt_device(cpu, 0x03, 1);
 	Append_interrupt_device(cpu, 0x11, 128);
 	Append_interrupt_device(cpu, 0x09, 1);
-	Append_interrupt_device(cpu, 0x32, 1);
+	Append_interrupt_device(cpu, 0x32, 1);*/
 	return 0;
 }
 

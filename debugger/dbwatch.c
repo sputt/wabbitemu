@@ -408,7 +408,7 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 							ListView_DeleteItem(hwndListView, index);
 							if (num_watch == 0)
 								InsertListViewItems(hwndListView, 1);
-							SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+							Debug_UpdateWindow(hwnd);
 						}
 					}
 					break;
@@ -538,9 +538,10 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			}
 			SaveDebugKey((TCHAR *) watchKey, REG_SZ, buf);
 			SaveDebugKey((TCHAR *) numWatchKey, REG_DWORD, &num_watch);
-			break;
+			return FALSE;
 		}
 		default:
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
+	return FALSE;
 }

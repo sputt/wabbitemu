@@ -201,7 +201,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 
 			InsertListViewItems(hwndListView, count);
 
-			SendMessage(hwnd, WM_USER, DB_CREATE, 0);
+			Debug_CreateWindow(hwnd);
 			return TRUE;
 		}
 		case WM_COMMAND: {

@@ -184,7 +184,6 @@ void handle_screenshot() {
 				lcd = calcs[calc_num].cpu.pio.lcd;
 #ifdef USE_GIF_SIZES
 				gif_indiv_xs = lcd->width * gif_size;
-				//FIXME: Add in lcd height variable
 #else
 				gif_xs = SCRXSIZE;
 				gif_ys = SCRYSIZE;			
