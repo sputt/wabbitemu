@@ -122,6 +122,7 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 	current_file_sending = NULL;
 	lpsi->FileList->clear();
 	lpsi->DestinationList->clear();
+	lpsi->iCurrentFile = 0;
 	return 0;
 }
 

@@ -548,7 +548,7 @@ keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
 		return NULL;
 	}
 
-	for(i=0; i < NumElm(defaultkeys); i++)
+	for(i = 0; i < NumElm(defaultkeys); i++)
 	{
 		if (keygrps[i].vk == vk)
 		{	
@@ -558,3 +558,18 @@ keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
 	}
 	return NULL;
 }
+
+#ifdef WINVER
+void keypad_vk_release(HWND hwnd, int group, int bit) {
+	for(int i = 0; i < ARRAYSIZE(defaultkeys); i++) {
+		if (keygrps[i].group == group && keygrps[i].bit == bit) {	
+			//TODO: fix lparam
+			//this is sent as a message and not HandleKeyUp because
+			//i can't get an LPCALC in here. It would be nice
+			//to somehow seperate the skin logic from that but
+			//still update the skin somehow
+			SendMessage(hwnd, WM_KEYUP, keygrps[i].vk, 0);
+		}
+	}
+}
+#endif

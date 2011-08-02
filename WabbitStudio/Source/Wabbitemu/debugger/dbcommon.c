@@ -100,7 +100,7 @@ int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value) {
 	int got_line;
 	if (hwndDlg == NULL) return 0;
 	((WORD*)result)[0] = sizeof(result);	//string size
-	got_line = (int) Edit_GetLine(hwndDlg, 0, result, sizeof(result));//SendMessage(hwndDlg, EM_GETLINE, (WPARAM) 0, (LPARAM) result);
+	got_line = (int) Edit_GetLine(hwndDlg, 0, result, sizeof(result));
 	
 	VALUE_FORMAT format = (VALUE_FORMAT) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	

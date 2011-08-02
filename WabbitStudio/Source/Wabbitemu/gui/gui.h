@@ -54,7 +54,6 @@ int gui_debug(calc_t *lpCalc);
 int gui_frame(calc_t *lpCalc);
 int gui_frame_update(calc_t *lpCalc);
 void gui_draw(calc_t *lpCalc);
-INT_PTR CALLBACK AboutDialogProc(HWND, UINT, WPARAM, LPARAM);
 void LogKeypress(int group, int bit, UINT vk, BOOL keyDown, int model);
 #ifdef USE_DIRECTX
 #include <d3d9.h>

@@ -446,9 +446,6 @@
     <ClInclude Include="debugger\dbtoolbar.h">
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>
-    <ClInclude Include="debugger\dbtrack.h">
-      <Filter>Header Files\Debugger</Filter>
-    </ClInclude>
     <ClInclude Include="debugger\dbvalue.h">
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>

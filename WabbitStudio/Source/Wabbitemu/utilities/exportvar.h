@@ -15,9 +15,9 @@ typedef struct {
 	int eof;
 } MFILE;
 
-MFILE *ExportVar(int, char *, symbol83P_t *);
-MFILE *ExportApp(int, char *, apphdr_t *); 
-MFILE *mopen(const char *, const char *);
+MFILE *ExportVar(LPCALC, TCHAR *, symbol83P_t *);
+MFILE *ExportApp(LPCALC, TCHAR *, apphdr_t *); 
+MFILE *mopen(const TCHAR *filename, const TCHAR *mode);
 int mclose(MFILE *);
 int meof(MFILE *);
 int mgetc(MFILE *);

@@ -19,7 +19,6 @@
 #include "dbmem.h"
 #include "dbreg.h"
 #include "dbtoolbar.h"
-#include "dbtrack.h"
 #include "dbdisasm.h"
 #include "dbwatch.h"
 
@@ -72,6 +71,9 @@ BOOL is_exiting = FALSE;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+
+INT_PTR CALLBACK AboutDialogProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK ExportOSDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 
 void gui_draw(calc_t *lpCalc) {
@@ -504,8 +506,8 @@ int gui_frame_update(LPCALC lpCalc) {
 			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
 			// Create status bar
 			if (!lpCalc->hwndStatusBar) {
-				SendMessage(lpCalc->hwndStatusBar, WM_DESTROY, 0, 0);
-				SendMessage(lpCalc->hwndStatusBar, WM_CLOSE, 0, 0);
+				DestroyWindow(lpCalc->hwndStatusBar);
+				CloseWindow(lpCalc->hwndStatusBar);
 			}
 			SetRect(&rc, 0, 0, 128*lpCalc->Scale, 64*lpCalc->Scale);
 			int iStatusWidths[] = {100, -1};
@@ -525,8 +527,8 @@ int gui_frame_update(LPCALC lpCalc) {
 			//InvalidateRect(lpCalc->hwndFrame, NULL, FALSE);
 		} else {
 			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_CHECKED);
-			SendMessage(lpCalc->hwndStatusBar, WM_DESTROY, 0, 0);
-			SendMessage(lpCalc->hwndStatusBar, WM_CLOSE, 0, 0);
+			DestoryWindow(lpCalc->hwndStatusBar);
+			CloseWindow(lpCalc->hwndStatusBar);
 			lpCalc->hwndStatusBar = NULL;
 			//SetRect(&lpCalc->rectSkin, 0, 0, 350, 725);
 			RECT rc;
@@ -887,7 +889,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	if (!haccelmain)
 		haccelmain = LoadAccelerators(g_hInst, _T("Z80Accel"));
 
-	extern HWND hPortMon;
+	extern HWND hPortMon, hBreakpoints;
 	while (GetMessage(&Msg, NULL, 0, 0)) {
 		HACCEL haccel = haccelmain;
 		HWND hwndtop = GetForegroundWindow();
@@ -901,7 +903,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				else
 					hwndtop = FindWindowEx(hwndtop, NULL, g_szLCDName, NULL);
 				SetForegroundWindow(hwndtop);
-			} else if (hwndtop == hPortMon) {
+			} else if (hwndtop == hPortMon || hwndtop == hBreakpoints) {
 				haccel = NULL;
 			}
 		}
@@ -1077,8 +1079,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 														All Files (*.*)\0*.*\0\0");
 					ZeroMemory(FileName, MAX_PATH);
 					if (!SaveFile(FileName, (TCHAR *) lpstrFilter, _T("Wabbitemu Save State"), _T("sav"), OFN_PATHMUSTEXIST)) {
-						SAVESTATE_t *save = SaveSlot(lpCalc);
-						gui_savestate(hwnd, save, FileName, lpCalc);
+						TCHAR extension[5] = _T("");
+						const TCHAR *pext = _tcsrchr(FileName, _T('.'));
+						if (pext != NULL)
+						{
+							StringCbCopy(extension, sizeof(extension), pext);
+						}
+						if (!_tcsicmp(extension, _T(".rom")) || !_tcsicmp(extension, _T(".bin"))) {
+							ExportRom(FileName, lpCalc);
+							StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), FileName);
+						} else if (!_tcsicmp(extension, _T(".8xu"))) {
+							HWND hExportOS = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_EXPORT_OS), hwnd, (DLGPROC) ExportOSDialogProc);
+							ShowWindow(hExportOS, SW_SHOW);
+						} else {
+							SAVESTATE_t *save = SaveSlot(lpCalc);
+							gui_savestate(hwnd, save, FileName, lpCalc);
+						}
 					}
 					break;
 				}
@@ -1143,7 +1159,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case IDM_FILE_CLOSE:
-					return SendMessage(hwnd, WM_CLOSE, 0, 0);
+					return CloseWindow(hwnd);
 				case IDM_FILE_EXIT:
 					if (calc_count() > 1) {
 						TCHAR buf[256];
@@ -1155,7 +1171,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						is_exiting = TRUE;
 						PostQuitMessage(0);
 					}
-					SendMessage(hwnd, WM_CLOSE, 0, 0);
+					CloseWindow(hwnd);
 					break;
 				case IDM_EDIT_COPY: {
 					HLOCAL ans;
@@ -1750,17 +1766,61 @@ void LogKeypress(int group, int bit, UINT vk, BOOL keyDown, int model) {
 
 INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch (Message) {
-	case WM_INITDIALOG:
-		return FALSE;
-	case WM_COMMAND:
-		switch (LOWORD(wParam)) {
-		case IDOK:
-			EndDialog(hwndDlg, IDOK);
-			return TRUE;
+		case WM_INITDIALOG:
+			return FALSE;
+		case WM_COMMAND:
+			switch (LOWORD(wParam)) {
+				case IDOK:
+					EndDialog(hwndDlg, IDOK);
+					return TRUE;
+				case IDCANCEL:
+					EndDialog(hwndDlg, IDCANCEL);
+					break;
+			}
+	}
+	return FALSE;
+}
+
+INT_PTR CALLBACK ExportOSDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
+	static HWND hListPagesOnCalc, hListPagesToExport;
+	static LPCALC lpCalc;
+	switch (Message) {
+		case WM_INITDIALOG: {
+			lpCalc = (LPCALC) GetWindowLongPtr(GetParent(hwndDlg), GWLP_USERDATA);
+			hListPagesOnCalc = GetDlgItem(hwndDlg, IDC_LIST_ONCALCPAGES);
+			hListPagesToExport = GetDlgItem(hwndDlg, IDC_LIST_EXPORTPAGES);
+			TCHAR temp[64];
+			for (int i = 0; i < lpCalc->cpu.mem_c->flash_pages; i++) {
+				StringCbPrintf(temp, sizeof(temp), _T("%02X"), i);
+				SendMessage(hListPagesOnCalc, LB_ADDSTRING, 0, (LPARAM) temp);
+			}
+			return FALSE;
 		}
-	case IDCANCEL:
-		EndDialog(hwndDlg, IDCANCEL);
-		break;
+		case WM_COMMAND:
+			switch (LOWORD(wParam)) {
+				case IDOK:
+					EndDialog(hwndDlg, IDOK);
+					return TRUE;
+				case IDCANCEL:
+					EndDialog(hwndDlg, IDCANCEL);
+					break;
+				case IDC_BTN_ADDPAGE: {
+					int index = SendMessage(hListPagesOnCalc, LB_GETCURSEL, 0, 0);
+					TCHAR temp[64];
+					SendMessage(hListPagesOnCalc, LB_GETTEXT, index, (LPARAM) temp);
+					SendMessage(hListPagesOnCalc, LB_DELETESTRING, index, 0);
+					SendMessage(hListPagesToExport, LB_ADDSTRING, 0, (LPARAM) temp);
+					break;
+				}
+				case IDC_BTN_REMPAGE: {
+					int index = SendMessage(hListPagesToExport, LB_GETCURSEL, 0, 0);
+					TCHAR temp[64];
+					SendMessage(hListPagesToExport, LB_GETTEXT, index, (LPARAM) temp);
+					SendMessage(hListPagesToExport, LB_DELETESTRING, index, 0);
+					SendMessage(hListPagesOnCalc, LB_ADDSTRING, 0, (LPARAM) temp);
+					break;
+				}
+			}
 	}
 	return FALSE;
 }

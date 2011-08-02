@@ -6,39 +6,16 @@
 #include "resource.h"
 #include "dbcommon.h"
 
-enum CONDITIONAL_BREAKPOINT_TYPE
-{
-	HIT_COUNT_CONDITION,
-	REGISTER_CONDITION,
-	MEMORY_CONDITION,
-	TIMER_CONDITION,
-	INTERRUPT_CONDITION
-};
-
-typedef struct breakpoint_condition
-{
-	CONDITIONAL_BREAKPOINT_TYPE type;
-	void *data;
-
-} breakpoint_condition_t;
-
-typedef struct breakpoint
-{
-	TCHAR label[32];
-	BREAK_TYPE type;
-	waddr_t waddr;
-	uint16_t end_addr;			//end of block memory 
-	BOOL active;
-	breakpoint *next;
-	breakpoint_condition_t conditions[10];
-} breakpoint_t;
-
 extern HINSTANCE g_hInst;
 extern HFONT hfontSegoe;
-breakpoint_t *list_breakpoints[MAX_CALCS];
+static BOOL is_updating_break = FALSE;
+
+INT_PTR CALLBACK ConditionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 void add_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 {
+	if (is_updating_break)
+		return;
 	breakpoint_t *new_break = (breakpoint_t *) malloc(sizeof(breakpoint_t));
 	new_break->active = TRUE;
 	new_break->end_addr = waddr.addr % PAGE_SIZE;
@@ -47,38 +24,27 @@ void add_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 	new_break->waddr = waddr;
 	new_break->waddr.addr %= PAGE_SIZE;
 	StringCbPrintf(new_break->label, sizeof(new_break->label), _T("%04X"), waddr.addr);
-	LPCALC lpCalc = NULL;
-	int i;
-	for (i = 0; i < MAX_CALCS; i++) {
-		if (calcs[i].cpu.mem_c == mem) {
-			lpCalc = &calcs[i];
-			break;
-		}
-	}
-	if (lpCalc == NULL)
-		return;
-	breakpoint_t *lpBreak = list_breakpoints[lpCalc->slot];
+	LPCALC lpCalc = calc_from_memc(mem);
+	breakpoint_t *lpBreak = lpCalc->cond_breakpoints;
 	if (lpBreak != NULL) {
 		while (lpBreak->next != NULL)
 			lpBreak = lpBreak->next;
 		lpBreak->next = new_break;
-	} else
-		list_breakpoints[lpCalc->slot] = new_break;
+	} else {
+		lpCalc->cond_breakpoints = new_break;
+	}
 }
 
 void rem_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 {
-	LPCALC lpCalc = NULL;
-	int i;
-	for (i = 0; i < MAX_CALCS; i++) {
-		if (calcs[i].cpu.mem_c == mem) {
-			lpCalc = &calcs[i];
-			break;
-		}
-	}
-	if (lpCalc == NULL)
+	//we just want to clear in the break list,
+	//not in the manager. I like this better than creating
+	//another set of functions in core.c. If we ever
+	//have more than one debugger open we may need to fix this
+	if (is_updating_break)
 		return;
-	breakpoint_t *lpPrevBreak, *lpBreak = list_breakpoints[lpCalc->slot];
+	LPCALC lpCalc = calc_from_memc(mem);
+	breakpoint_t *lpPrevBreak, *lpBreak = lpCalc->cond_breakpoints;
 	while (lpBreak->next != NULL) {
 		if (lpBreak->waddr.addr == waddr.addr && lpBreak->waddr.page == waddr.page &&
 			lpBreak->waddr.is_ram == waddr.is_ram && lpBreak->type == type) {
@@ -90,14 +56,89 @@ void rem_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 	}
 	if (lpBreak->waddr.addr == waddr.addr && lpBreak->waddr.page == waddr.page &&
 		lpBreak->waddr.is_ram == waddr.is_ram && lpBreak->type == type) {
-		if (lpBreak == list_breakpoints[lpCalc->slot]) {
-			list_breakpoints[lpCalc->slot] = lpBreak->next;
+		if (lpBreak == lpCalc->cond_breakpoints) {
+			lpCalc->cond_breakpoints = lpBreak->next;
 			free(lpBreak);
 		} else {
 			lpPrevBreak->next = lpBreak->next;
 			free(lpBreak);
 		}
 	}
+}
+
+//returns true if it should break, false otherwise
+BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
+	LPCALC lpCalc = calc_from_memc(mem);
+	breakpoint_t *lpBreak = lpCalc->cond_breakpoints;
+	if (lpBreak == NULL)
+		return FALSE;
+
+	//necessary because of page handling
+	waddr.addr %= PAGE_SIZE;
+
+	while (lpBreak->next != NULL && (lpBreak->waddr.addr != waddr.addr ||
+		lpBreak->waddr.page != waddr.page || lpBreak->waddr.is_ram != waddr.is_ram || lpBreak->type != type)) {
+		lpBreak = lpBreak->next;
+	}
+	if (lpBreak->waddr.addr != waddr.addr || lpBreak->waddr.page != waddr.page || lpBreak->waddr.is_ram != waddr.is_ram)
+		return FALSE;
+	if (!lpBreak->active)
+		return FALSE;
+	int result = TRUE;
+	for (int i = 0; i < lpBreak->num_conditions; i++) {
+		switch (lpBreak->conditions[i].type) {
+			case CONDITION_HIT_COUNT: {
+				condition_hitcount_t *cond = (condition_hitcount_t *) lpBreak->conditions[i].data;
+				cond->hit_count++;
+				switch (cond->condition) {
+					case TRIGGER_EQUAL:
+						result = cond->hit_count == cond->trigger_value;
+						break;
+					case TRIGGER_GREATER_EQUAL:
+						result = cond->hit_count >= cond->trigger_value;
+						break;
+					case TRIGGER_MULTIPLE_OF:
+						result = !(cond->hit_count % cond->trigger_value);
+						break;
+				}
+				break;
+			}
+			case CONDITION_REGISTER: {
+				condition_register_t *cond = (condition_register_t *) lpBreak->conditions[i].data;
+				int value = cond->is_word ? *((uint16_t *) cond->reg) : *((uint8_t *) cond->reg);
+				switch (cond->condition) {
+					case TRIGGER_EQUAL:
+						result = value == cond->trigger_value;
+						break;
+					case TRIGGER_GREATER_EQUAL:
+						result = value >= cond->trigger_value;
+						break;
+					case TRIGGER_MULTIPLE_OF:
+						result = !(value % cond->trigger_value);
+						break;
+				}
+				break;
+			}
+			case CONDITION_MEMORY: {
+				condition_memory_t *cond = (condition_memory_t *) lpBreak->conditions[i].data;
+				int value = cond->is_word ? wmem_read16(lpDebuggerCalc->cpu.mem_c, cond->waddr) : 
+											wmem_read(lpDebuggerCalc->cpu.mem_c, cond->waddr);
+				switch (cond->condition) {
+					case TRIGGER_EQUAL:
+						result = value == cond->trigger_value;
+						break;
+					case TRIGGER_GREATER_EQUAL:
+						result = value >= cond->trigger_value;
+						break;
+					case TRIGGER_MULTIPLE_OF:
+						result = !(value % cond->trigger_value);
+						break;
+				}
+				break;
+			}
+		}
+	}
+	return TRUE;
 }
 
 int GetWaddrData(HWND hwnd, waddr_t *waddr) {
@@ -120,7 +161,7 @@ void UpdateItemsListView(HWND hwndListView) {
 	is_updating = TRUE;
 	ListView_DeleteAllItems(hwndListView);
 	int count = 0;
-	breakpoint_t *lpBreak = list_breakpoints[lpDebuggerCalc->slot];
+	breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
 	if (lpBreak != NULL) {
 		count++;
 		while (lpBreak->next != NULL) {
@@ -129,7 +170,7 @@ void UpdateItemsListView(HWND hwndListView) {
 		}
 	}
 
-	lpBreak = list_breakpoints[lpDebuggerCalc->slot];
+	lpBreak = lpDebuggerCalc->cond_breakpoints;
 	for (int i = 0; i < count; i++) {
 		LVITEM lvI;
 		// Initialize LVITEM members that are common to all items.
@@ -149,26 +190,6 @@ void UpdateItemsListView(HWND hwndListView) {
 		lpBreak = lpBreak->next;
 	}
 	is_updating = FALSE;
-}
-
-//returns true if it should break, false otherwise
-BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
-	breakpoint_t *lpBreak = list_breakpoints[lpDebuggerCalc->slot];
-	if (lpBreak == NULL)
-		return FALSE;
-
-	//necessary because of page handling
-	waddr.addr %= PAGE_SIZE;
-
-	while (lpBreak->next != NULL && (lpBreak->waddr.addr != waddr.addr ||
-		lpBreak->waddr.page != waddr.page || lpBreak->waddr.is_ram != waddr.is_ram || lpBreak->type != type)) {
-		lpBreak = lpBreak->next;
-	}
-	if (lpBreak->waddr.addr != waddr.addr || lpBreak->waddr.page != waddr.page || lpBreak->waddr.is_ram != waddr.is_ram)
-		return FALSE;
-	if (!lpBreak->active)
-		return FALSE;
-	return TRUE;
 }
 
 #define DB_CREATE 0
@@ -204,13 +225,13 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 
 			UpdateItemsListView(hwndListView);
 
-			SendMessage(hwnd, WM_USER, DB_CREATE, 0);
+			Debug_CreateWindow(hwnd);
 			return TRUE;
 		}
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
 				case IDC_REM_BREAK: {
-					breakpoint_t *lpBreak = list_breakpoints[lpDebuggerCalc->slot];
+					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
 					for (int i = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED); i > 0; i--)
 						lpBreak = lpBreak->next;
 					switch (lpBreak->type) {
@@ -225,7 +246,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 							break;
 					}
 					UpdateItemsListView(hwndListView);
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(GetParent(hwnd));
 					break;
 				}
 				case IDC_ADD_BREAK: {
@@ -242,7 +263,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					}
 					
 					UpdateItemsListView(hwndListView);
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(GetParent(hwnd));
 					break;
 				}
 				case IDC_UPDATE_BREAK: {
@@ -250,18 +271,12 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					if (GetWaddrData(hwnd, &waddr) == -1)
 						break;
 
-					breakpoint_t *lpBreak, *lpNextBreak, *lpPrevBreak = list_breakpoints[lpDebuggerCalc->slot];
-					for (int i = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED) - 1; i > 0; i--)
-						lpPrevBreak = lpPrevBreak->next;
-					//were the first element in the list there is no previous
-					if (lpPrevBreak == list_breakpoints[lpDebuggerCalc->slot])
-						lpBreak = lpPrevBreak;
-					else
-						lpBreak = lpPrevBreak->next;
-					lpNextBreak = lpBreak->next;
+					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
+					for (int i = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED); i > 0; i--)
+						lpBreak = lpBreak->next;
 
-					TCHAR label[32];
-					StringCchCopy(label, ARRAYSIZE(label), lpBreak->label);
+					//this is a small hack that lets us keep our current pointer
+					is_updating_break = TRUE;
 					switch (lpBreak->type) {
 						case NORMAL_BREAK:
 							clear_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
@@ -273,38 +288,27 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 							clear_mem_write_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
 							break;
 					}
-					lpBreak = NULL;
 
 					if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_NORMAL))) {
 						set_break(lpDebuggerCalc->cpu.mem_c, waddr);
+						lpBreak->type = NORMAL_BREAK;
 					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_WRITE))) {
 						set_mem_write_break(lpDebuggerCalc->cpu.mem_c, waddr);
+						lpBreak->type = MEM_WRITE_BREAK;
 					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_READ))) {
 						set_mem_read_break(lpDebuggerCalc->cpu.mem_c, waddr);
+						lpBreak->type = MEM_READ_BREAK;
 					}
-
-					//ok i know this is really hacky but now we need to go find the last one 
-					//(the one we just added) and move it to where the old one was so it doesn't
-					//look like the list was fucked
-					lpBreak = list_breakpoints[lpDebuggerCalc->slot];
-					breakpoint_t *lpNewLastBreak = lpBreak;
-					while (lpBreak->next != NULL) {
-						lpNewLastBreak = lpBreak;
-						lpBreak = lpBreak->next;
-					}
-					//thank god this is a linked list and not a dumbass array
-					lpNewLastBreak->next = NULL;
-					if (lpPrevBreak != lpBreak) {
-						lpBreak->next = lpPrevBreak->next;
-						lpPrevBreak->next = lpBreak;
-					} else {
-						lpBreak->next = list_breakpoints[lpDebuggerCalc->slot];
-						list_breakpoints[lpDebuggerCalc->slot] = lpBreak;
-					}
-					StringCchCopy(lpBreak->label, ARRAYSIZE(lpBreak->label), label);
+					lpBreak->waddr = waddr;
+					is_updating_break = FALSE;
 
 					UpdateItemsListView(hwndListView);
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(GetParent(hwnd));
+					break;
+				}
+				case IDC_COND_BREAK: {
+					HWND hConditions = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_CONDITION), hwnd, (DLGPROC) ConditionsDialogProc);
+					ShowWindow(hConditions, SW_SHOW);
 					break;
 				}
 			}
@@ -331,7 +335,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *) lParam; 
 					if (plvdi->item.pszText == NULL)
 						return TRUE;
-					breakpoint_t *lpBreak = list_breakpoints[lpDebuggerCalc->slot];
+					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
 					for (int i = plvdi->item.iItem; i > 0; i--)
 						lpBreak = lpBreak->next;
 					StringCbCopy(lpBreak->label, sizeof(lpBreak->label), plvdi->item.pszText);
@@ -339,7 +343,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				}
 				case LVN_ITEMCHANGED: {
 					NMLISTVIEW *pnmv = (NMLISTVIEW *) lParam;
-					breakpoint_t *lpBreak = list_breakpoints[lpDebuggerCalc->slot];
+					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
 					for (int i = pnmv->iItem; i > 0; i--)
 						lpBreak = lpBreak->next;
 					
@@ -350,7 +354,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 						else
 							lpBreak->active = TRUE;
 						ListView_SetCheckState(hwndListView, pnmv->iItem, lpBreak->active);
-						SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+						Debug_UpdateWindow(GetParent(hwnd));
 					}
 					break;
 				}
@@ -358,6 +362,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					NMITEMACTIVATE *plvdi = (NMITEMACTIVATE *) lParam; 
 					if (plvdi->iItem == -1) {
 						Button_Enable(GetDlgItem(hwnd, IDC_UPDATE_BREAK), FALSE);
+
 						Edit_SetText(GetDlgItem(hwnd, IDC_EDT_ADDR), _T(""));
 						Edit_SetText(GetDlgItem(hwnd, IDC_EDT_PAGE), _T(""));
 						Button_SetCheck(GetDlgItem(hwnd, IDC_CHK_RAM), FALSE);
@@ -368,7 +373,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					}
 					Button_Enable(GetDlgItem(hwnd, IDC_UPDATE_BREAK), TRUE);
 
-					breakpoint_t *lpBreak = list_breakpoints[lpDebuggerCalc->slot];
+					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
 					for (int i = plvdi->iItem; i > 0; i--)
 						lpBreak = lpBreak->next;
 					TCHAR temp[32];
@@ -385,7 +390,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				}
 				case LVN_GETDISPINFO: {
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
-					breakpoint_t *lpBreak = list_breakpoints[lpDebuggerCalc->slot];
+					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
 					for (int i = plvdi->item.iItem; i > 0; i--)
 						lpBreak = lpBreak->next;
 
@@ -444,6 +449,23 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 		case WM_CLOSE:
 			DestroyWindow(hwnd);
 			return FALSE;
+	}
+	return FALSE;
+}
+
+INT_PTR CALLBACK ConditionsDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
+	switch (Message) {
+		case WM_INITDIALOG:
+			return FALSE;
+		case WM_COMMAND:
+			switch (LOWORD(wParam)) {
+				case IDOK:
+					EndDialog(hwndDlg, IDOK);
+					return TRUE;
+				case IDCANCEL:
+					EndDialog(hwndDlg, IDCANCEL);
+					break;
+			}
 	}
 	return FALSE;
 }

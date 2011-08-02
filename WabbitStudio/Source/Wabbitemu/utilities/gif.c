@@ -23,11 +23,8 @@
 #include "stdafx.h"
 
 #include "calc.h"
-
-#ifdef WINVER // FIXME: ...
-#include "gui.h"
-#else
-#include "coretypes.h"
+#ifndef WINVER
+#include "coretypes.h
 #endif
 
 //#include "gif.h" // uhh...

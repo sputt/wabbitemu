@@ -474,8 +474,12 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					NMTTDISPINFO *nmtdi = (NMTTDISPINFO *) lParam;
 					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-					StringCbPrintf(nmtdi->szText, sizeof(nmtdi->szText), _T("%02X %04X"),
-										mps->addrTrack / PAGE_SIZE, mps->addrTrack % PAGE_SIZE);
+					if (mps->type == REGULAR) {
+						StringCbPrintf(nmtdi->szText, sizeof(nmtdi->szText), _T("%04X"), mps->addrTrack);
+					} else {
+						StringCbPrintf(nmtdi->szText, sizeof(nmtdi->szText), _T("%02X %04X"),
+							mps->addrTrack / PAGE_SIZE, mps->addrTrack % PAGE_SIZE);
+					}
 					return TRUE;
 				}
 			}
@@ -552,7 +556,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				default:
 					return 0;
 			}
-			SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+			Debug_UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_VSCROLL: {
@@ -624,7 +628,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					for (i = 0; i < mps->mode; i++) {
 						mem_write(&lpDebuggerCalc->mem_c, mps->sel + i, data[i]);
 					}
-					SendMessage(GetParent(hwnd), WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(GetParent(hwnd));
 					hwndVal = NULL;
 					if (HIWORD(wParam) != EN_KILLFOCUS) {
 						SendMessage(hwnd, WM_KEYDOWN, VK_TAB, 0);
@@ -650,7 +654,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}
 					mps->addr = addr;
 					SetFocus(hwnd);
-					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(hwnd);
 					break;
 				}
 				case DB_GOTO: {
@@ -682,7 +686,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 					SetFocus(hwnd);
-					SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
+					Debug_UpdateWindow(hwnd);
 					break;
 				}
 				case DB_BREAKPOINT: {
@@ -782,7 +786,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					SubclassEdit(hwndVal, (mps->mode == 3) ? 1 : mps->mode * 2, format);
 				}
 			}
-			SendMessage(hwnd, WM_USER, DB_UPDATE, 1);
+			Debug_UpdateWindow(hwnd);
 			SetFocus(hwnd);
 			return 0;
 		}

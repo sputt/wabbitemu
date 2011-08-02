@@ -569,11 +569,11 @@ int calc_run_all(void) {
 	int i, j, active_calc = -1;
 
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
-		link_hub[MAX_CALCS]->host = 0;
+		/*link_hub[MAX_CALCS]->host = 0;*/
 		for (j = 0; j < MAX_CALCS; j++) {
 			if (calcs[j].active == TRUE) {
-				if (link_hub[j] != NULL)
-					link_hub[MAX_CALCS]->host |= link_hub[j]->host;
+				/*if (link_hub[j] != NULL)
+					link_hub[MAX_CALCS]->host |= link_hub[j]->host;*/
 
 				active_calc = j;
 				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS / 2;
@@ -720,6 +720,15 @@ LPCALC calc_from_cpu(CPU_t *cpu) {
 	for (i = 0; i < MAX_CALCS; i++) {
 		if (&calcs[i].cpu == cpu)
 			return &calcs[i];
+	}
+	return NULL;
+}
+
+LPCALC calc_from_memc(memc *memc) {
+	for (int i = 0; i < MAX_CALCS; i++) {
+		if (calcs[i].cpu.mem_c == memc) {
+			return &calcs[i];
+		}
 	}
 	return NULL;
 }
