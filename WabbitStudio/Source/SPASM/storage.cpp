@@ -75,7 +75,7 @@ void write_labels (char *filename) {
 
 	fclose (symtable);
 	
-	list_free (label_list.next, true);
+	list_free (label_list.next, true, NULL);
 }
 
 /*
@@ -295,7 +295,7 @@ define_t *add_define (char *name, bool *redefined) {
 	if (redefined != NULL)
 		*redefined = false;
 
-	define = (define_t *) malloc_chk (sizeof (define_t));
+	define = (define_t *) malloc (sizeof (define_t));
 	if (define != NULL) {
 		int curr_arg;
 
@@ -521,7 +521,7 @@ label_t *add_label (char *name, int value) {
 			restore_console_attributes(attr);
 		}
 	} else {
-		new_label = (label_t *)malloc_chk (sizeof (label_t));
+		new_label = (label_t *)malloc (sizeof (label_t));
 		
 		if (new_label != NULL) {
 			new_label->name = name;
@@ -562,14 +562,14 @@ void add_arg(char *name, char *value, list_t *arg_set) {
 		name = new_name;
 	}
 
-	new_arg = (define_t *) malloc_chk(sizeof(define_t));
+	new_arg = (define_t *) malloc(sizeof(define_t));
 	memset(new_arg, 0x00, sizeof(define_t));
 
 	new_arg->name = name;
 	new_arg->contents = value;
 	new_arg->num_args = 0;
 	new_arg->line_num = line_num;
-	new_arg->input_file = strdup(curr_input_file);
+	new_arg->input_file = curr_input_file;
 
 	hash_insert((hash_t *) arg_set->data, new_arg);
 }

@@ -549,7 +549,7 @@ bool is_abs_path(const char *filename) {
  */
 
 char *strup (const char *input) {	
-	char *new_string = (char *) malloc_chk (strlen (input) + 1);
+	char *new_string = (char *) malloc (strlen (input) + 1);
 	int i;
 	for (i = 0; input[i] != '\0'; i++)
 		new_string[i] = toupper (input[i]);
@@ -619,13 +619,13 @@ char *get_file_contents (const char *filename) {
 
 
 	// now allocate the memory and read in the contents
-	buffer = (char *) malloc_chk (size + 1);
+	buffer = (char *) malloc (size + 1);
 
 	const unsigned char utf8_endian_mark[] = {0xEF, 0xBB, 0xBF};
 	fread(buffer, 1, sizeof(utf8_endian_mark), file);
 	if (memcmp(buffer, &utf8_endian_mark, sizeof(utf8_endian_mark)) == 0) {
 		size -= sizeof(utf8_endian_mark);
-		p = (char *) malloc_chk (size + 1);
+		p = (char *) malloc (size + 1);
 		memcpy(p, buffer + sizeof(utf8_endian_mark), size);
 		free(buffer);
 	} else {
@@ -667,7 +667,7 @@ bool define_with_value (const char *name, const int value) {
 
 char *change_extension (const char *filename, const char *ext) {
 	char *dot;
-	char *new_fn = (char *) malloc_chk(strlen(filename) + strlen(ext) + 2);
+	char *new_fn = (char *) malloc(strlen(filename) + strlen(ext) + 2);
 	strcpy(new_fn, filename);
 	
 	dot = strrchr(new_fn, '.');
@@ -682,7 +682,7 @@ char *strndup (const char *str, int len)
 {
 	char *dupstr;
 
-	dupstr = (char *) malloc_chk(len + 1);
+	dupstr = (char *) malloc(len + 1);
 	if (dupstr) {
 		strncpy (dupstr, str, len);
 		dupstr[len] = '\0';
@@ -806,7 +806,7 @@ char *expand_expr (const char *expr) {
  * of memory
  */
 
-/*void *malloc_chk (size_t size) {
+/*void *malloc (size_t size) {
 	void *ret = malloc (size);
 	if (ret != NULL)
 		return ret;

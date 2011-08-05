@@ -220,7 +220,7 @@
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <MinimalRebuild>false</MinimalRebuild>
+      <ForcedIncludeFiles>debug.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -432,6 +432,9 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="storage.cpp" />
+    <ClCompile Include="trie.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
+    </ClCompile>
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="Z80Assembler.cpp">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</CompileAs>
@@ -459,6 +462,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="storage.h" />
     <ClInclude Include="targetver.h" />
+    <ClInclude Include="trie.h" />
     <ClInclude Include="utils.h" />
     <ClInclude Include="Z80Assembler.h" />
     <ClInclude Include="Z80Label.h" />

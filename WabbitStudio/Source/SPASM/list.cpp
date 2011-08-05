@@ -14,7 +14,7 @@
 EXPORT list_t *list_append (list_t *first_node, void *data) {
 	list_t *curr_node, *new_node;
 
-	new_node = (list_t *)malloc_chk (sizeof (list_t));
+	new_node = (list_t *)malloc (sizeof (list_t));
 	new_node->data = data;
 	new_node->next = NULL;
 
@@ -39,7 +39,7 @@ EXPORT list_t *list_append (list_t *first_node, void *data) {
 EXPORT list_t *list_prepend (list_t *first_node, void *data) {
 	list_t *new_node;
 
-	new_node = (list_t *)malloc_chk (sizeof (list_t));
+	new_node = (list_t *)malloc (sizeof (list_t));
 	new_node->data = data;
 	new_node->next = first_node;
 	return new_node;
@@ -52,7 +52,7 @@ EXPORT list_t *list_prepend (list_t *first_node, void *data) {
 EXPORT list_t *list_insert(list_t *prev, void *data) {
 	list_t *new_next;
 	
-	new_next = (list_t *) malloc_chk(sizeof(list_t));
+	new_next = (list_t *) malloc(sizeof(list_t));
 	new_next->data = data;
 	new_next->next = prev->next;
 	
@@ -99,12 +99,18 @@ EXPORT void list_free_node (list_t *first_node) {
  * Frees an entire list
  */
 
-EXPORT void list_free (list_t *curr_node, bool free_data) {
+EXPORT void list_free (list_t *curr_node, bool free_data, void (*free_callback)(void *)) {
 	
 	while (curr_node) {
 		list_t *next = curr_node->next;
 		if (free_data && curr_node->data)
+		{
+			if (free_callback != NULL)
+			{
+				free_callback(curr_node->data);
+			}
 			free(curr_node->data);
+		}
 		
 		list_free_node(curr_node);
 		curr_node = next;

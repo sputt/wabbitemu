@@ -71,6 +71,14 @@ static void FreeErrorInstance(LPERRORINSTANCE lpErr)
 	{
 		free(lpErr->lpszErrorText);
 	}
+	if (lpErr->lpszAnnotation != NULL)
+	{
+		free(lpErr->lpszAnnotation);
+	}
+	if (lpErr->lpszFileName != NULL)
+	{
+		free(lpErr->lpszFileName);
+	}
 	free(lpErr);
 }
 
@@ -215,12 +223,17 @@ void EndSPASMErrorSession(int nSession)
 		   {
 			   pPrev->next = pList->next;
 		   }
+
+		   FreeErrorInstance(lpErr);
+		   list_t *pListOld = pList;
+		   pList = pList->next;
+		   list_free_node(pListOld);
 		}
 		else
 		{
 			pPrev = pList;
+			pList = pList->next;
 		}
-		pList = pList->next;
 		assert(pList != NULL);
 	}
 	((LPERRORINSTANCE) pList->data)->nSession = -1;
@@ -230,7 +243,7 @@ void EndSPASMErrorSession(int nSession)
 
 void ClearSPASMErrorSessions(void)
 {
-	list_free((list_t *) g_ErrorList, true);
+	list_free((list_t *) g_ErrorList, true, (void (*)(void *)) FreeErrorInstance);
 	g_nErrorSession = 0;
 	suppress_errors = false;
 

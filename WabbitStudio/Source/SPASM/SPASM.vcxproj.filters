@@ -82,6 +82,9 @@
     <ClCompile Include="Z80Label.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="trie.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -149,6 +152,9 @@
     </ClInclude>
     <ClInclude Include="Z80Label.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="trie.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

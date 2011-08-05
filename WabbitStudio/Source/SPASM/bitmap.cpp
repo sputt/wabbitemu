@@ -171,8 +171,8 @@ static void handle_bitmap_internal(FILE *file, const RECT *r, const BITMAPFILEHE
 	
 	// Read in the image
 #define BITS_ACCESS(zr, zc) pBits[((zr) * biScanWidth) + (zc)]
-	//BYTE (*pBits)[biScanWidth] = malloc_chk(biScanWidth * (r->bottom - r->top));
-	BYTE *pBits = (BYTE *) malloc_chk(biScanWidth * (r->bottom - r->top));
+	//BYTE (*pBits)[biScanWidth] = malloc(biScanWidth * (r->bottom - r->top));
+	BYTE *pBits = (BYTE *) malloc(biScanWidth * (r->bottom - r->top));
 	fread ((BYTE *) pBits, biScanWidth * (r->bottom - r->top), 1, file);
 
 	// Create the mask buffer
@@ -180,13 +180,13 @@ static void handle_bitmap_internal(FILE *file, const RECT *r, const BITMAPFILEHE
 	const DWORD biByteSize = (r->bottom - r->top) * biOutputRowSize;
 	
 #define OUTPUT_ACCESS(zr, zc) pOutput[((zr) * biOutputRowSize) + (zc)]
-	//BYTE (*pOutput)[biOutputRowSize] = malloc_chk(biByteSize);
-	BYTE *pOutput = (BYTE *) malloc_chk(biByteSize);
+	//BYTE (*pOutput)[biOutputRowSize] = malloc(biByteSize);
+	BYTE *pOutput = (BYTE *) malloc(biByteSize);
 	memset (pOutput, 0, biByteSize);
 	
 #define MASK_ACCESS(zr, zc) pMask[((zr) * biOutputRowSize) + (zc)]
-	//BYTE (*pMask)[biOutputRowSize] = malloc_chk(biByteSize);
-	BYTE *pMask = (BYTE *) malloc_chk(biByteSize);
+	//BYTE (*pMask)[biOutputRowSize] = malloc(biByteSize);
+	BYTE *pMask = (BYTE *) malloc(biByteSize);
 	memset (pMask, 1, biByteSize);
 	
 	RGBQUAD rgbMask = {0, 255, 0, 0};

@@ -11,11 +11,11 @@
  */
 //TODO: the size increase is exponential, I am not sure an init_size is necessary
 expand_buf *eb_init (size_t init_size) {
-	expand_buf_t *new_buf = (expand_buf_t *) malloc_chk (sizeof (expand_buf_t));
+	expand_buf_t *new_buf = (expand_buf_t *) malloc (sizeof (expand_buf_t));
 	
 	if (init_size == -1) init_size = 64;
 	
-	new_buf->start = (unsigned char *) malloc_chk(init_size);
+	new_buf->start = (unsigned char *) malloc(init_size);
 	new_buf->end = new_buf->start;
 	new_buf->size = init_size;
 	

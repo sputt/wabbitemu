@@ -165,7 +165,7 @@ void makeapp (const unsigned char *output_contents, DWORD size, FILE *outfile, c
 	unsigned int total_size;
 
 	/* Copy file to memory */
-	buffer = (unsigned char *) malloc_chk (size+256);
+	buffer = (unsigned char *) malloc (size+256);
 	memcpy (buffer, output_contents, sizeof (char) * size);
 
 /* Check if size will fit in mem with signature */

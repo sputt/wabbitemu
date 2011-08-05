@@ -126,7 +126,7 @@ char *handle_directive (const char *ptr) {
 		}
 		case 8: //ADDINSTR
 		{
-			instr *instr = (struct _instr *) malloc_chk (sizeof (struct _instr));
+			instr *instr = (struct _instr *) malloc (sizeof (struct _instr));
 			char word[256];
 			unsigned int result;
 			char *mnemonic;
@@ -185,7 +185,7 @@ char *handle_directive (const char *ptr) {
 				base += i + 1;
 			}
 
-			new_opcode = (opcode *)  malloc_chk (sizeof (opcode));
+			new_opcode = (opcode *)  malloc (sizeof (opcode));
 			new_opcode->name = mnemonic;
 			new_opcode->num_instrs = 1;
 			new_opcode->use_count = 0;
@@ -405,7 +405,7 @@ addinstr_fail:
 					return NULL;
 				}
 
-				define_name = (char *) malloc_chk (strlen (name) + 3);
+				define_name = (char *) malloc (strlen (name) + 3);
 				strcat (strcpy (define_name, "__"), name);
 
 				define = add_define (define_name, NULL);
@@ -559,13 +559,11 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 					}
 				}
 			}
-			else if (IsSPASMErrorSessionFatal(session) == false)
+			else if (IsSPASMErrorSessionFatal(session) == false && type != ES_FCREATE)
 			{
 				switch (type) 
 				{
 				case ES_ECHO:
-					break;
-				case ES_FCREATE:
 					break;
 				case ES_BYTE: 
 					{

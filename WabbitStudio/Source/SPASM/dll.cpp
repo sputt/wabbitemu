@@ -37,7 +37,7 @@ extern "C"
 		stdout->_file = _open_osfhandle((long)GetStdHandle(STD_OUTPUT_HANDLE), _O_TEXT);    
 		stdin->_file  = _open_osfhandle((long)GetStdHandle(STD_INPUT_HANDLE), _O_TEXT);  
 		*/
-			output_contents = (unsigned char *) malloc_chk (output_buf_size);
+			output_contents = (unsigned char *) malloc (output_buf_size);
 			setvbuf(stdout, output_text, _IOFBF, 65536);
 			break;
 		case DLL_THREAD_ATTACH:
@@ -97,7 +97,7 @@ extern "C"
 
 	__declspec (dllexport) int __stdcall
 	AddDefine(const char *lpName, const char *lpValue) {
-		default_define_pair_t *ddp = (default_define_pair_t*)malloc_chk (sizeof(*ddp));
+		default_define_pair_t *ddp = (default_define_pair_t*)malloc (sizeof(*ddp));
 		strncpy(ddp->name, lpName, sizeof(ddp->name));
 		if (lpValue == NULL) {
 			strcpy(ddp->value, "1");
@@ -186,7 +186,7 @@ extern "C"
 
 		output_filename = NULL;
 		mode = MODE_NORMAL | MODE_COMMANDLINE;
-		input_contents = (char *) malloc_chk (strlen(szCommand) + 1 + 2);
+		input_contents = (char *) malloc (strlen(szCommand) + 1 + 2);
 		
 		strcpy(input_contents, " ");
 		strcat(input_contents, szCommand);

@@ -14,7 +14,7 @@
 #include "errors.h"
 
 #define LISTING_BUF_SIZE 65536	//initial size of buffer for output listing
-#define malloc_chk malloc
+#define malloc malloc
 
 void write_file (const unsigned char *, int, const char *);
 
@@ -132,7 +132,7 @@ int run_assembly()
 		release_file_contents(input_contents);
 	}
 	input_contents = NULL;
-	list_free (include_dirs, true);
+	list_free (include_dirs, true, NULL);
 	include_dirs = NULL;
 
 	//...and if there's output, run the second pass and write it to the output file
@@ -177,7 +177,7 @@ int run_assembly()
 		}
 		
 		//free the output buffer and all the names of input files
-		list_free(input_files, true);
+		list_free(input_files, true, NULL);
 		input_files = NULL;
 	}
 
@@ -359,7 +359,7 @@ int main (int argc, char **argv)
 				
 				mode |= MODE_COMMANDLINE;
 				curr_input_file = "-v";
-				input_contents = (char *) malloc_chk (strlen(line) + 1 + 2);
+				input_contents = (char *) malloc (strlen(line) + 1 + 2);
 				output_filename = change_extension (curr_input_file, "bin");
 					
 				strcpy(input_contents, " ");
@@ -371,7 +371,7 @@ int main (int argc, char **argv)
 				{
 #ifndef _TEST
 #ifdef _WINDOWS
-					FreeConsole();
+					//FreeConsole();
 					//system("PAUSE");
 					printf("Waiting for a client...\n");
 					return _AtlModule.WinMain(SW_HIDE);
@@ -421,7 +421,7 @@ int main (int argc, char **argv)
 	if (curr_input_file && !(mode & MODE_COMMANDLINE))
 		free(curr_input_file);
 	if (include_dirs)
-		list_free(include_dirs, true);
+		list_free(include_dirs, true, NULL);
 
 	free_storage();
 

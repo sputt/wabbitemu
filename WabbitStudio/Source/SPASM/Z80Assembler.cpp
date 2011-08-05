@@ -72,7 +72,7 @@ STDMETHODIMP CZ80Assembler::get_OutputFile(LPBSTR lpbstrOutputFile)
 
 STDMETHODIMP CZ80Assembler::ClearDefines()
 {
-	list_free(default_defines, true);
+	list_free(default_defines, true, NULL);
 	default_defines = NULL;
 	return S_OK;
 }
@@ -113,7 +113,7 @@ STDMETHODIMP CZ80Assembler::AddDefine(BSTR bstrName, VARIANT varValue)
 
 STDMETHODIMP CZ80Assembler::ClearIncludeDirectories()
 {
-	list_free(include_dirs, true);
+	list_free(include_dirs, true, NULL);
 	include_dirs = NULL;
 	return S_OK;
 }

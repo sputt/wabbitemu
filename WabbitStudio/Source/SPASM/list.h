@@ -17,6 +17,6 @@ EXPORT list_t *list_append (list_t *first_node, void *data);
 EXPORT list_t *list_prepend (list_t *first_node, void *data);
 EXPORT list_t *list_remove (list_t *first_node, list_t *remove_node);
 EXPORT void list_free_node (list_t *first_node);
-EXPORT void list_free(list_t *, bool);
+EXPORT void list_free (list_t *curr_node, bool free_data, void (*free_callback)(void *));
 
 #endif

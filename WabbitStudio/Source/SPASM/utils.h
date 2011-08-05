@@ -40,14 +40,9 @@ bool define_with_value (const char *name, const int value);
 #if defined(MACVER) || defined(WIN32)
 char *strndup (const char *str, int len);
 int strnlen (const char *str, int maxlen);
-#ifdef WIN32
-#define strdup _strdup
-#endif
 #endif
 
 char *expand_expr (const char *expr);
-//void *malloc_chk (size_t);
-#define malloc_chk malloc
 
 extern char *curr_input_file;
 extern int line_num;
