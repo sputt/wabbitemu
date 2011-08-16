@@ -7,6 +7,7 @@
 // ED OPCODES
 
 void neg(CPU_t *cpu) {
+	tc_add(cpu->timer_c, 8);
 	int result = -cpu->a;
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + hcsubchk(0,cpu->a,0) + 
@@ -44,7 +45,7 @@ void adc_hl_reg16(CPU_t *cpu) {
 void sbc_hl_reg16(CPU_t *cpu) {
 	int result;
 	int reg;
-	tc_add(cpu->timer_c,15);
+	tc_add(cpu->timer_c, 15);
 	switch (((cpu->bus)>>4)&0x03) {
 		case 0x00:
 			reg = cpu->bc;
@@ -1448,7 +1449,7 @@ void rla(CPU_t *cpu) {
 }
 void rlca(CPU_t *cpu) {
 	int result = ((cpu->a<<1)+(((cpu->a)>>7)&1))&255;
-    tc_add(cpu->timer_c,4);
+	tc_add(cpu->timer_c,4);
 	cpu->f = unaffect(SIGN_MASK +ZERO_MASK+PV_MASK) + 
 		 x5chk(result) + x3chk(result)+ (((cpu->a)>>7)&1);
 	cpu->a =result;

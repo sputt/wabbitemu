@@ -45,9 +45,11 @@ static HWND CreateListView (HWND hwndParent)
 									 (HMENU)NULL,
 									 g_hInst,
 									 NULL);
+	
 	ListView_SetExtendedListViewStyle(hWndListView, LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT);
+	SetWindowTheme(hWndListView, L"explorer", NULL);
 
-	return (hWndListView);
+	return hWndListView;
 }
 
 // InsertListViewItems: Inserts items into a list view. 

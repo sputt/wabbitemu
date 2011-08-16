@@ -273,35 +273,35 @@ void ld_a_r(CPU_t *cpu) {
 
 
 void out_reg(CPU_t *cpu) { 
-     int test = (cpu->bus>>3)&7; 
-     tc_add(cpu->timer_c,12); 
-     switch(test) { 
-          case 0x00: 
-               cpu->bus=cpu->b; 
-               break; 
-          case 0x01: 
-               cpu->bus=cpu->c; 
-               break; 
-          case 0x02: 
-               cpu->bus=cpu->d; 
-               break; 
-          case 0x03: 
-               cpu->bus=cpu->e; 
-               break; 
-          case 0x04: 
-               cpu->bus=cpu->h; 
-               break; 
-          case 0x05: 
-               cpu->bus=cpu->l; 
-               break; 
-          case 0x06: 
-               cpu->bus=0; 
-               break; 
-          case 0x07: 
-               cpu->bus=cpu->a; 
-               break; 
-     } 
-     device_output(cpu, cpu->c); 
+	 int test = (cpu->bus>>3)&7; 
+	 tc_add(cpu->timer_c,12); 
+	 switch(test) { 
+		  case 0x00: 
+			   cpu->bus=cpu->b; 
+			   break; 
+		  case 0x01: 
+			   cpu->bus=cpu->c; 
+			   break; 
+		  case 0x02: 
+			   cpu->bus=cpu->d; 
+			   break; 
+		  case 0x03: 
+			   cpu->bus=cpu->e; 
+			   break; 
+		  case 0x04: 
+			   cpu->bus=cpu->h; 
+			   break; 
+		  case 0x05: 
+			   cpu->bus=cpu->l; 
+			   break; 
+		  case 0x06: 
+			   cpu->bus=0; 
+			   break; 
+		  case 0x07: 
+			   cpu->bus=cpu->a; 
+			   break; 
+	 } 
+	 device_output(cpu, cpu->c); 
 }
 
 
