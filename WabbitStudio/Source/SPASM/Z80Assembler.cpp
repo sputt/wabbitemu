@@ -185,7 +185,7 @@ void get_label_callback(label_t *label, LPSAFEARRAY lpsa)
 STDMETHODIMP CZ80Assembler::get_Labels(LPSAFEARRAY *ppsa)
 {
 	SAFEARRAYBOUND sab = {0};
-	sab.cElements = label_table->used;
+	sab.cElements = (ULONG) label_table->used;
 	sab.lLbound = 0;
 
 	LPSAFEARRAY lpsa = SafeArrayCreate(VT_DISPATCH, 1, &sab);

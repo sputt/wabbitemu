@@ -735,20 +735,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			SelectObject(hdc, GetStockObject(DC_PEN));
 			SetDCPenColor(hdc, GetSysColor(COLOR_BTNFACE));
 
-			//dps->max_right = 0;
-			//for (iItem = 0; iItem < nCols; iItem++)
-			//{
-			//	int iCol;
-
-			//	Header_GetItem(dps->hwndHeader, Header_OrderToIndex(dps->hwndHeader, iItem), &hdi);
-			//	iCol = (int) hdi.lParam;
-			//	if (iCol != -1) {
-			//		dps->max_right += dps->hdrs[iCol].cx;
-			//		MoveToEx(hdc, dps->max_right - 1, dps->cyHeader, NULL);
-			//		LineTo(hdc, dps->max_right - 1, rc.bottom);
-			//	}
-			//}
-
 			if (dps->iSel + dps->NumSel > 0) {
 				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iSel, dps->max_right, dps->cyRow * dps->iSel + dps->cyRow*dps->NumSel};
 				OffsetRect(&sr, 0, dps->cyHeader);
@@ -860,9 +846,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						tr.right = tr.left + dps->hdrs[iCol].cx;
 						SelectObject(hdc, dps->hdrs[iCol].hfont);
 						dps->hdrs[iCol].lpfnCallback(hdc, &dps->zinf[i], &tr);
-											
-						//MoveToEx(hdc, tr.right - 1, tr.top, NULL);
-						//LineTo(hdc, tr.right - 1, tr.bottom);
 					}
 				}
 
@@ -1420,13 +1403,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 			SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
-			{
-				Z80_info_t 	*zfirst = &dps->zinf[0],
-							*zlast 	= &dps->zinf[dps->nRows-1];
+			Z80_info_t *zfirst = &dps->zinf[0]; 
+			Z80_info_t *zlast = &dps->zinf[dps->nRows-1];
 
-				dps->nPage = zlast->waddr.addr + zlast->size - zfirst->waddr.addr;
-				InvalidateRect(hwnd, NULL, TRUE);
-			}
+			dps->nPage = zlast->waddr.addr + zlast->size - zfirst->waddr.addr;
+			InvalidateRect(hwnd, NULL, TRUE);
 			return dps->nPane;
 		}
 		case WM_USER: {

@@ -6,10 +6,10 @@
 
 
  /* File created by MIDL compiler version 7.00.0555 */
-/* at Sun Apr 24 00:37:39 2011
+/* at Tue Aug 02 01:10:47 2011
  */
 /* Compiler settings for interface\Wabbitemu.idl:
-    Oicf, W2, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
@@ -77,6 +77,9 @@ MIDL_DEFINE_GUID(IID, IID_IPage,0xB61370EF,0x8BEF,0x4bb9,0xAF,0x88,0xFF,0x7F,0xF
 
 
 MIDL_DEFINE_GUID(IID, IID_IKeypad,0x9BD2CC22,0x5E1D,0x41c1,0xA1,0x34,0xF2,0x44,0x10,0xEF,0x63,0x01);
+
+
+MIDL_DEFINE_GUID(IID, IID_IPio,0x59fc4b09,0xd16b,0x4f00,0xb2,0x40,0x77,0x41,0xda,0x7d,0xde,0x5a);
 
 
 MIDL_DEFINE_GUID(IID, IID_ICalcAddress,0xA24DA6E6,0xBD47,0x444d,0x89,0x1F,0xBB,0x36,0x88,0x72,0xC3,0x4F);

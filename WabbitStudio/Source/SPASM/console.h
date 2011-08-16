@@ -20,7 +20,7 @@
 WORD save_console_attributes ();
 void restore_console_attributes_at_exit ();
 void restore_console_attributes (WORD orig_attributes);
-bool set_console_attributes (unsigned short);
+BOOL set_console_attributes (unsigned short);
 
 #endif
 

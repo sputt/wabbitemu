@@ -30,6 +30,7 @@ typedef enum {
 #define strcasecmp _stricmp
 #define strncasecmp _strnicmp
 #define snprintf sprintf_s
+#define strdup _strdup
 
 #else
 #define NEWLINE "\n"
@@ -65,7 +66,7 @@ GLOBAL char *input_contents;
 GLOBAL unsigned char *out_ptr, *output_contents;
 GLOBAL bool error_occurred, suppress_errors;
 GLOBAL expand_buf *listing_buf;
-GLOBAL int listing_offset;
+GLOBAL size_t listing_offset;
 GLOBAL bool listing_on;
 GLOBAL bool listing_for_line_done;	//true if listing for this line has already been done
 GLOBAL char *line_start;	//saved start of current line

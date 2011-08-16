@@ -32,7 +32,7 @@ WORD save_console_attributes () {
 #endif
 }
 
-bool set_console_attributes (unsigned short attr) {
+BOOL set_console_attributes (unsigned short attr) {
 	if (!use_colors) return true;
 #ifdef WIN32
 	return SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), (WORD)attr);

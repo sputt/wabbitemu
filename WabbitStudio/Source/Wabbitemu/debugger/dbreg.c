@@ -16,7 +16,7 @@ extern HWND hdisasm;
 
 #define DBREG_ORGX	12
 #define DBREG_ORGY	0
-SCROLLINFO si;
+static SCROLLINFO si;
 int regPanesYScroll;
 
 struct db_reg {
@@ -32,7 +32,6 @@ static const struct db_reg reg_offset[] = {
 	coff(ix, "ix"), coff(sp, "sp"),
 	coff(iy, "iy"), coff(pc, "pc"),
 	coff(i, "i"), coff(imode, "im"), coff(r, "r")};
-	//coff(halt,"hlt"), coff(iff1,"iff1"),coff(iff2,"iff2")};
 
 static RECT val_locs[NumElm(reg_offset)];
 static int kRegRow, kRegAddr;
@@ -1101,7 +1100,6 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				ScrollWindow(hwnd, 0, -si.nPos, NULL, NULL);*/
 
 			DrawExpandPanes();
-			UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_MOUSEWHEEL: {
@@ -1119,7 +1117,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_VSCROLL: {
-			// Get all the vertial scroll bar information
+			// Get all the vertical scroll bar information
 			 si.cbSize = sizeof (si);
 			 si.fMask  = SIF_ALL;
 			 GetScrollInfo (hwnd, SB_VERT, &si);

@@ -5,6 +5,7 @@
 
 #include "stdafx.h"
 
+#include "spasm.h"
 #include "utils.h"
 #include "errors.h"
 
@@ -14,7 +15,7 @@ unsigned char header8xk[] = {
 	'*','*','T','I','F','L','*','*',    /* required identifier */
 	1, 1,                               /* version */
 	1, 0x88,                            /* unsure, but always set like this */
-	0x01, 0x01, 0x19, 0x97,             /* Always sets date to jan. 1, 1997 */
+	0x01, 0x01, 0x19, 0x97,             /* Always sets date to Jan. 1, 1997 */
 	8,                                  /* Length of name. */
 	0,0,0,0,0,0,0,0};                   /* space for the name */
 
@@ -87,6 +88,8 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	FILE *outfile;
 	int i, calc;
 
+	if (curr_input_file && !(mode & MODE_COMMANDLINE))
+		free(curr_input_file);
 	curr_input_file = strdup(_T("exporter"));
 	line_num = -1;
 
@@ -488,7 +491,7 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
 		if (i == -1)
 			lastSlash = ++p;
 		namestring = strdup (lastSlash);
-		/* The name must be Capital lettes and numbers */
+		/* The name must be Capital letters and numbers */
 		if (calc < 4) {
 			alphanumeric (namestring);
 		}
@@ -502,9 +505,9 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
 	/* size must be smaller than z80 mem */
 	if (size > 24000) {
 		if (size > 65000) {
-			show_warning ("File size is greater than 64k");
+			SetLastSPASMWarning(SPASM_WARN_SIGNER_SIZE_64K);
 		} else {
-			show_warning ("File size is greater than 24k");
+			SetLastSPASMWarning(SPASM_WARN_SIGNER_SIZE_24K);
 		}
 	}
 	
@@ -561,7 +564,7 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
 	
 	/* The actual name is placed with padded with zeros */
 	if (calc<4 && calc != 1) { //i know...just leave it for now.
-		if (!((temp=namestring[0])>='A' && temp<='Z')) show_warning ("First character in name must be a letter.");
+		if (!((temp = namestring[0]) >='A' && temp <= 'Z')) SetLastSPASMWarning(SPASM_WARN_SIGNER_INVALID_FIRST_LETTER);
 	}
 	for(i = 0; i < 8 && namestring[i]; i++) chksum += fputc(namestring[i], outfile);
 	if (calc != 4 && calc!=6) {
@@ -581,7 +584,7 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
 	
 	/* check for BB 6D on 83+ */
 	if ((calc == 3) && !((((unsigned char) output_contents[0]) == 0xBB) && (((unsigned char) output_contents[1]) == 0x6D))) {
-		show_warning ("83+ program does not begin with bytes BB 6D.");
+		SetLastSPASMWarning(SPASM_WARN_SIGNER_MISSING_PROG_MARK);
 	}
 	if (calc == 5) {
 	   chksum += fputc (0x8E, outfile);
@@ -604,7 +607,6 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
 	/* short little endian Checksum */
 	fputc (chksum & 0xFF,outfile);
 	fputc ((chksum >> 8) & 0xFF,outfile);
-//    printf("%s (%d bytes) was successfully generated!\n",filestring,size);
 
 	free (namestring);
 }
@@ -614,16 +616,15 @@ void alphanumeric (char* namestring) {
 	char temp;
 
 	while ((temp = *namestring)) {
-		if (temp>='a' && temp<='z') *namestring = temp =(temp-('a'-'A'));
-		if (!( ((temp>='A') && (temp<='Z')) || (temp>='0' && temp<='9') || (temp==0) ) ) {
-			show_warning ("Invalid characters in name. Alphanumeric Only.");
+		if (!isalnum(temp) || (temp == '\0')) {
+			SetLastSPASMWarning(SPASM_WARN_SIGNER_INVALID_CHAR_NAME);
 		}
 		namestring++;
 	}
 }
 
 
-/* Convert binary buffer to intel hex in ti format
+/* Convert binary buffer to Intel hex in TI format
  * All pages addressed to $4000 and are only $4000
  * bytes long. */
 void intelhex (FILE* outfile, const unsigned char* buffer, int size, unsigned int address) {
@@ -634,24 +635,24 @@ void intelhex (FILE* outfile, const unsigned char* buffer, int size, unsigned in
 	unsigned char chksum;
 	unsigned char outbuf[128];
 	
-	//We are in binary mode, we must handle carridge return ourselves.
+	//We are in binary mode, we must handle carriage return ourselves.
    
 	while (bpnt < size){
-		fprintf(outfile,":02000002%04X%02X\r\n",page,(unsigned char) ( (~(0x04 + page)) +1));
+		fprintf(outfile, ":02000002%04X%02X\r\n", page, (unsigned char) ( (~(0x04 + page)) + 1));
 		page++;
 		for (i = 0; bpnt < size && i < 512; i++) {
 			 chksum = (address>>8) + (address & 0xFF);
 			 for(ci = 0; ((ci < 64) && (bpnt < size)); ci++) {
 				temp = buffer[bpnt++];
-				outbuf[ci++] = hexstr[temp>>4];
-				outbuf[ci] = hexstr[temp&0x0F];
+				outbuf[ci++] = hexstr[temp >> 4];
+				outbuf[ci] = hexstr[temp & 0x0F];
 				chksum += temp;
 			}
 			outbuf[ci] = 0;
-			ci>>=1;
-			fprintf(outfile,":%02X%04X00%s%02X\r\n",ci,address,outbuf,(unsigned char)( ~(chksum + ci)+1));
+			ci >>= 1;
+			fprintf(outfile, ":%02X%04X00%s%02X\r\n", ci, address, outbuf, (unsigned char)( ~(chksum + ci)+1));
 			address +=0x20;
 		}         
 	}
-	fprintf(outfile,":00000001FF");
+	fprintf(outfile, ":00000001FF");
 }

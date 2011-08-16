@@ -14,7 +14,6 @@
 #include "errors.h"
 
 #define LISTING_BUF_SIZE 65536	//initial size of buffer for output listing
-#define malloc malloc
 
 void write_file (const unsigned char *, int, const char *);
 

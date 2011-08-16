@@ -18,8 +18,8 @@ static int ID = EXPAND_PANE_BASE_ID;
 //#define MAX_SLIDE_SPEED 	8
 //#define SLIDE_ACCEL 		0.65
 
-#define MAX_SLIDE_SPEED 	14
-#define SLIDE_ACCEL 		1.0
+#define MAX_SLIDE_SPEED 	20
+#define SLIDE_ACCEL 		1.3
 
 #define MAX_FADE (600/20)
 //static int expand_pane_selection = -1;
@@ -434,7 +434,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						return 0;
 				}
 			}
-			// Fall through to mouseleave
+			// Fall through to mouse leave
 		}
 		case WM_MOUSELEAVE: {
 			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -460,7 +460,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 				InvalidateRect(hwnd, NULL, FALSE);
 			}
 
-			// if I started declerating now, how far would I get
+			// if I started decelerating now, how far would I get
 			double FramesLeft = ceil(eps->SlideSpeed / SLIDE_ACCEL);
 
 			double HowFar = eps->VisibleHeight;
@@ -568,12 +568,13 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 
 			if (eps->ExpandState != EP_CLOSED)
 				dwHeight = tm.tmHeight*3/2 + (DWORD) eps->VisibleHeight;
-			PanesHeight += dwHeight;
+			//accounts for a gap the MoveWindow y = 2 below
+			PanesHeight += dwHeight + 2;
 
 			RECT rc;
-			MoveWindow(hwnd, 2, cy, dwWidth - 4, dwHeight, FALSE);
+			MoveWindow(hwnd, 2, cy, dwWidth - 4, dwHeight, TRUE);
 			GetClientRect(hwnd, &rc);
-			SetWindowPos(eps->hwndHeader, HWND_TOP, 0, 0, rc.right - rc.left, tm.tmHeight*3/2, 0);
+			SetWindowPos(eps->hwndHeader, HWND_TOP, 0, 0, dwWidth, tm.tmHeight*3/2, 0);
 			SetWindowPos(eps->hwndBtn, NULL, dwWidth - 24 - 8, (tm.tmHeight*3/2 - 20)/2, 20, 20, SWP_NOZORDER);
 
 			return 0;
@@ -608,6 +609,8 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			FillRect(hdc, &r, hbr);
 
 			EndPaint(hwnd, &ps);
+			InvalidateRect(eps->contents, NULL, FALSE);
+			UpdateWindow(eps->contents);
 			return 0;
 		}
 		case WM_DESTROY: {

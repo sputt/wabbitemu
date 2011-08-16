@@ -82,7 +82,7 @@ static void handle_bitmap_header(const RECT *r, const BITMAPFILEHEADER *bf, cons
 
 			if (!strcasecmp(p, "w")) {
 				if (r->right - r->left > 255)
-					show_warning("Bitmap width overflows 'w'; use 'ww' instead");
+					SetLastSPASMWarning(SPASM_WARN_BITMAP_WIDTH_OVERFLOW);
 				write_out(r->right - r->left);
 			}
 			else if (!strcasecmp(p, "ww")) {
@@ -92,7 +92,7 @@ static void handle_bitmap_header(const RECT *r, const BITMAPFILEHEADER *bf, cons
 			}
 			else if (!strcasecmp(p, "h")) {
 				if ((r->bottom - r->top) > 255)
-					show_warning("Bitmap height overflows 'h'; use 'hh' instead");
+					SetLastSPASMWarning(SPASM_WARN_BITMAP_HEIGHT_OVERFLOW);
 				write_out((r->bottom - r->top));
 			}
 			else if (!strcasecmp(p, "hh")) {
@@ -110,7 +110,7 @@ static void handle_bitmap_header(const RECT *r, const BITMAPFILEHEADER *bf, cons
 
 				if (!strcasecmp(p, "s")) {
 					if (size > 255)
-						show_warning("Bitmap size overflows 's'; use 'ss' instead");
+						SetLastSPASMWarning(SPASM_WARN_BITMAP_SIZE_OVERFLOW);
 					write_out(size);
 				} else {
 					write_out(size & 0xFF);
@@ -119,7 +119,7 @@ static void handle_bitmap_header(const RECT *r, const BITMAPFILEHEADER *bf, cons
 				}
 				
 			} else {
-				show_warning("Unknown BM_HEADER token '%s'", p);
+				SetLastSPASMWarning(SPASM_WARN_BITMAP_UNKNOWN_TOKEN, p);
 				write_out(0);
 			}
 			program_counter++;
@@ -132,9 +132,9 @@ static void handle_bitmap_header(const RECT *r, const BITMAPFILEHEADER *bf, cons
 #ifdef _WIN32
 static unsigned int log2(unsigned int value)
 {
-    unsigned int l = 0;
-    while( (value >> l) > 1 ) ++l;
-    return l;
+	unsigned int l = 0;
+	while( (value >> l) > 1 ) ++l;
+	return l;
 }
 #endif
 
@@ -353,7 +353,7 @@ void handle_bitmap(FILE *file)
 	fread (&bi, sizeof (BITMAPINFOHEADER), 1, file);
 
 	if (_DW(bi.biSize) != sizeof (BITMAPINFOHEADER) || _DW(bi.biCompression) != BI_RGB) {
-		show_error ("Bitmap file of this type not supported: size: %ld, compression: %ld\n", _DW(bi.biSize), _DW(bi.biCompression));
+		SetLastSPASMError (SPASM_ERR_BITMAP_INVALID, _DW(bi.biSize), _DW(bi.biCompression));
 		return;
 	}
 
@@ -426,7 +426,7 @@ void handle_bitmap(FILE *file)
 		if (padding == -1) padding = 0;
 
 		if (width == 0 && height == 0) {
-			show_error("At least either of width or height must be given for an image map");
+			SetLastSPASMError(SPASM_ERR_BITMAP_NO_DIM);
 			goto map_done;
 		}
 

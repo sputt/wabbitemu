@@ -96,7 +96,7 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 	case ID_REG:
 		printf("Reg: left: %d, top:% d, height: %d\n", rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, rcParent->bottom);
 		SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
-		MoveWindow(hwndChild, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom, FALSE);
+		MoveWindow(hwndChild, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, FALSE);
 		//ShowWindow(hwndChild, SW_HIDE);
 		break;
 	/*case ID_PANECONTAINER:
@@ -287,16 +287,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		case WM_CREATE:
 		{
 			lpDebuggerCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-			keypad_t *keypad = lpDebuggerCalc->cpu.pio.keypad;
-			//handle keys already down (just send release)
-			//i send the message here so that things like logging are handled
-			for (int group = 0; group < 8; group++) {
-				for (int bit = 0; bit < 8; bit++) {
-					if (keypad->keys[group][bit]) {
-						keypad_vk_release(lpDebuggerCalc->hwndFrame, group, bit);
-					}
-				}
-			}
 
 			LOGFONT lf;
 			memset(&lf, 0, sizeof(LOGFONT));

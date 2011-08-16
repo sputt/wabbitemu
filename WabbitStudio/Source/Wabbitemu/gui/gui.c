@@ -1661,6 +1661,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			info->ptMaxTrackSize.y = rc.bottom - rc.top;
 			return 0;
 		}
+		case WM_KILLFOCUS: {
+			keypad_t *keypad = lpCalc->cpu.pio.keypad;
+			//handle keys already down (just send release)
+			//i send the message here so that things like logging are handled
+			for (int group = 0; group < 8; group++) {
+				for (int bit = 0; bit < 8; bit++) {
+					if (keypad->keys[group][bit]) {
+						keypad_vk_release(hwnd, group, bit);
+					}
+				}
+			}
+			return 0;
+		}
 		case WM_CLOSE:
 			if (calc_count() == 1) {
 				if (exit_save_state)
@@ -1772,7 +1785,7 @@ INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 			switch (LOWORD(wParam)) {
 				case IDOK:
 					EndDialog(hwndDlg, IDOK);
-					return TRUE;
+					break;
 				case IDCANCEL:
 					EndDialog(hwndDlg, IDCANCEL);
 					break;

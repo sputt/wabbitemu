@@ -2,6 +2,7 @@
 #define __UTILS_H
 
 #include "storage.h"
+#include "modp_ascii.h"
 
 #define MAX_ARG_LEN	256
 #define ARG_CONTEXT_INITIALIZER {"", true, false}
@@ -39,6 +40,8 @@ char *change_extension (const char *filename, const char *new_ext);
 bool define_with_value (const char *name, const int value);
 #if defined(MACVER) || defined(WIN32)
 char *strndup (const char *str, int len);
+#endif
+#ifdef MACVER
 int strnlen (const char *str, int maxlen);
 #endif
 
