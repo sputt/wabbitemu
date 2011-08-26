@@ -37,6 +37,7 @@ typedef enum {
 #define PATH_SEPARATOR '/'
 #define WRONG_PATH_SEPARATOR '\\'
 typedef unsigned short WORD;
+typedef int BOOL;
 #endif
 
 #ifdef __MAIN_C

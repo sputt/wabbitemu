@@ -42,7 +42,7 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 		}
 	}
 
-	LPERRORSESSION session = StartSPASMErrorSession();
+	int session = StartSPASMErrorSession();
 	bool fResult = parse_num (expr, &value);
 	if ((fResult == false) && (IsSPASMErrorSessionFatal(session) == false))
 	{
@@ -114,8 +114,7 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 		//write the value now
 			write_arg (value, type, or_value);
 		}
-		if (GetSPASMErrorSessionErrorCount(session) > 0)
-			ReplaySPASMErrorSession(session);
+		ReplaySPASMErrorSession(session);
 	}
 
 	EndSPASMErrorSession(session);
@@ -124,7 +123,7 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 
 /*
  * Adds an expression to be
- * echoed on the second pass
+ * echo'ed on the second pass
  *
  * Allocates a copy
  */
@@ -175,6 +174,9 @@ void run_second_pass () {
 
 	pass_one = false;
 
+	//FILE *file = fopen ("passtwoexprs.txt", "w");
+
+	//printf("running through the list %p\n", expr_list);
 	while (expr_list)
 	{
 		//go through each expression and evaluate it
@@ -185,6 +187,9 @@ void run_second_pass () {
 		set_curr_reusable(expr_list->curr_reusable);
 #endif
 
+		//fprintf(file, "%s:%d:offset(%d): %s\n", curr_input_file, line_num, expr_list->out_ptr - output_contents, expr_list->expr);
+
+		//printf("passtwoexpr: '%s'\n", expr_list->expr);
 		if (parse_num (expr_list->expr, &value))
 		{
 			//if that was successful, then write it to the file
@@ -218,6 +223,8 @@ void run_second_pass () {
 		free (old_expr);
 	}
 
+	//fclose(file);
+
 	out_ptr = saved_out_ptr;
 	if (mode & MODE_LIST)
 		listing_offset = saved_listing_offset;
@@ -236,7 +243,7 @@ void run_second_pass () {
 				{
 					WORD orig_attributes = save_console_attributes();
 					set_console_attributes (COLOR_GREEN);
-					LPERRORSESSION session = StartSPASMErrorSession();
+					int session = StartSPASMErrorSession();
 					parse_emit_string (output_list->expr, ES_ECHO, stdout);
 					ReplaySPASMErrorSession(session);
 					EndSPASMErrorSession(session);
@@ -311,7 +318,7 @@ void write_arg (int value, arg_type type, int or_value) {
 			break;
 		case ARG_BIT_NUM:
 			if (value < 0 || value > 7) {
-				SetLastSPASMError(SPASM_ERR_BIT_RANGE_INVALID);
+				show_error ("Bit number can only range from 0 to 7");
 				value = 0;
 			}
 			write_out (((value & 0x07) << 3) | or_value);
