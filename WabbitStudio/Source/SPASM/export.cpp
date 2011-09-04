@@ -131,17 +131,31 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 		prgmname[i] = '\0';
 
 	//then decide how to write the contents
-	if (calc == 8) //8XK
+	switch (calc)
+	{
+	//8xp
+	case 3:
+		makeprgm (output_contents, output_len, outfile, prgmname, calc);
+		break;
+	//8xk
+	case 8:
 		makeapp (output_contents, (DWORD) output_len, outfile, prgmname);
-	else if (calc == 9)
+		break;
+	//rom
+	case 9:
 		makerom(output_contents, (DWORD) output_len, outfile);
-	else if (calc == 10)
+		break;
+	//hex
+	case 10:
 		makehex(output_contents, (DWORD) output_len, outfile);
-	else if (calc == ARRAYSIZE(extensions)) { //BIN
+		break;
+	//bin
+	default:
 		for (i = 0; i < output_len; i++)
 			fputc(output_contents[i], outfile);
-	} else
-		makeprgm (output_contents, output_len, outfile, prgmname, calc);
+		break;
+	}
+		
 
 	fclose (outfile);
 }
