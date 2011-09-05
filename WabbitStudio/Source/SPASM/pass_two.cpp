@@ -48,8 +48,6 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 	{
 		expr_t *new_expr;
 
-		suppress_errors = false;
-
 		//if that didn't work, then add it to the pass two expression list
 		new_expr = (expr_t *)malloc (sizeof (expr_t));
 		new_expr->program_counter = program_counter;

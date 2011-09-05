@@ -334,6 +334,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>mpir.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <LinkTimeCodeGeneration>UseLinkTimeCodeGeneration</LinkTimeCodeGeneration>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Message>Performing registration</Message>
@@ -375,10 +376,11 @@
     </ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>mpir.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <Profile>true</Profile>
     </Link>
     <PostBuildEvent>
       <Message>Performing registration</Message>
@@ -399,6 +401,7 @@
     <ClCompile Include="hash.cpp" />
     <ClCompile Include="list.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="modp_ascii.cpp" />
     <ClCompile Include="opcodes.cpp" />
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="pass_one.cpp" />
@@ -434,6 +437,11 @@
     <ClCompile Include="storage.cpp" />
     <ClCompile Include="trie.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Static Library Debug|Win32'">CompileAsCpp</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Static Library Debug|x64'">CompileAsCpp</CompileAs>
     </ClCompile>
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="Z80Assembler.cpp">
@@ -451,6 +459,7 @@
     <ClInclude Include="expand_buf.h" />
     <ClInclude Include="hash.h" />
     <ClInclude Include="list.h" />
+    <ClInclude Include="modp_ascii.h" />
     <ClInclude Include="opcodes.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="pass_one.h" />

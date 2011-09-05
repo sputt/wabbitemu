@@ -52,11 +52,12 @@ int run_assembly()
 #endif
 	exit_code = EXIT_NORMAL;
 	
+	/*extern int generic_map[256];
+	ZeroMemory(generic_map, 256);*/
 	program_counter = 0x0000;
 	stats_codesize = stats_datasize = stats_mintime = stats_maxtime = 0;
 	last_label = NULL;
 	error_occurred = false;
-	suppress_errors = false;
 	listing_offset = 0;
 	listing_for_line_done = false;
 	line_start = NULL;
@@ -122,7 +123,6 @@ int run_assembly()
 
 	printf ("Pass one... \n");
 
-	ClearSPASMErrorSessions();
 	run_first_pass ((char *) input_contents);
 
 	//free include dirs when done
@@ -219,6 +219,8 @@ int main (int argc, char **argv)
 	int curr_arg = 1;
 	bool case_sensitive = false;
 	bool is_storage_initialized = false;
+
+	//_CrtSetBreakAlloc(176);
 
 	use_colors = true;
 	extern WORD user_attributes;
@@ -415,13 +417,20 @@ int main (int argc, char **argv)
 		is_storage_initialized = true;
 	}
 	output_contents = (unsigned char *) malloc(output_buf_size);
+	ClearSPASMErrorSessions();
+	int session = StartSPASMErrorSession();
 	int error = run_assembly();
+	ReplaySPASMErrorSession(session);
+	EndSPASMErrorSession(session);
+
 	free(output_filename);
 	if (curr_input_file && !(mode & MODE_COMMANDLINE))
 		free(curr_input_file);
 	if (include_dirs)
 		list_free(include_dirs, true, NULL);
 
+	free(output_contents);
+	ClearSPASMErrorSessions(true);
 	free_storage();
 
 #ifdef _WINDOWS

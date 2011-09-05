@@ -65,7 +65,7 @@ GLOBAL char temp_path[MAX_PATH];
 GLOBAL char *curr_input_file, *output_filename;
 GLOBAL char *input_contents;
 GLOBAL unsigned char *out_ptr, *output_contents;
-GLOBAL bool error_occurred, suppress_errors;
+GLOBAL bool error_occurred;
 GLOBAL expand_buf *listing_buf;
 GLOBAL size_t listing_offset;
 GLOBAL bool listing_on;

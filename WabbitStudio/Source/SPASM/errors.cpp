@@ -25,10 +25,8 @@ typedef struct _errorlist {
 	struct _errorlist *next;
 } errorlist_t;
 
-static errorlist_t *g_ErrorList2;
-static int g_nErrorSession = 0;
-
-#define g_ErrorList g_ErrorList2
+errorlist_t *g_ErrorList;
+int g_nErrorSession = 0;
 
 static void PrintSPASMError(const LPERRORINSTANCE lpError)
 {
@@ -57,7 +55,7 @@ static LPERRORINSTANCE AllocErrorInstance()
 	lpErr->dwErrorCode = SPASM_ERR_SUCCESS;
 	lpErr->line_num = -1;
 	lpErr->lpszFileName = NULL;
-	lpErr->fSuppressErrors = suppress_errors;
+	//lpErr->fSuppressErrors = suppress_errors;
 	lpErr->nSession = g_nErrorSession;
 	lpErr->nPrintSession = -1;
 	lpErr->lpszErrorText = NULL;
@@ -80,30 +78,20 @@ static void FreeErrorInstance(LPERRORINSTANCE lpErr)
 		free(lpErr->lpszFileName);
 	}
 	free(lpErr);
+	lpErr = NULL;
 }
 
 int StartSPASMErrorSession(void)
 {
-	LPERRORINSTANCE lpLastInstance = (LPERRORINSTANCE) g_ErrorList->data;
-	if (lpLastInstance->nSession == -1)
-	{
-		lpLastInstance->nSession = g_nErrorSession;
-		lpLastInstance->fSuppressErrors = suppress_errors;
-	}
-	else
-	{
-		LPERRORINSTANCE lpErr = AllocErrorInstance();
-		g_ErrorList = (errorlist_t *) list_prepend((list_t *) g_ErrorList, lpErr);
-	}
-	suppress_errors = true;
-	return g_nErrorSession++;
+	//suppress_errors = true;
+	return ++g_nErrorSession;
 }
 
 int GetSPASMErrorSessionErrorCount(int nSession)
 {
 	int nCount = 0;
 	list_t *pList = (list_t *) g_ErrorList;
-	while (((LPERRORINSTANCE) pList->data)->nSession != nSession)
+	while ((pList != NULL) && ((LPERRORINSTANCE) pList->data)->nSession == nSession)
 	{
 		if (((LPERRORINSTANCE) pList->data)->dwErrorCode != SPASM_ERR_SUCCESS)
 		{
@@ -111,7 +99,6 @@ int GetSPASMErrorSessionErrorCount(int nSession)
 		}
 		pList = pList->next;
 	}
-	assert(pList != NULL);
 	return nCount;
 }
 
@@ -119,7 +106,7 @@ bool IsSPASMErrorSessionFatal(int nSession)
 {
 	bool fIsFatal = false;
 	list_t *pList = (list_t *) g_ErrorList;
-	while (((LPERRORINSTANCE) pList->data)->nSession != nSession)
+	while ((pList != NULL) && ((LPERRORINSTANCE) pList->data)->nSession == nSession)
 	{
 		DWORD dwError = ((LPERRORINSTANCE) pList->data)->dwErrorCode;
 		if (!(dwError == SPASM_ERR_LOCAL_LABEL_FORWARD_REF ||
@@ -131,42 +118,51 @@ bool IsSPASMErrorSessionFatal(int nSession)
 			break;
 		}
 		pList = pList->next;
-		assert(pList != NULL);
 	}
 	return fIsFatal;
 }
 
-static void ReplayErrorRecursive(const list_t *pList, int nSession)
+static void ReplayErrorRecursive(const list_t *pList)
 {
-	if (((LPERRORINSTANCE) pList->data)->nSession == nSession)
+	if (pList == NULL)
 		return;
 
-	ReplayErrorRecursive(pList->next, nSession);
-	PrintSPASMError((LPERRORINSTANCE) pList->data);
+	ReplayErrorRecursive(pList->next);
+	if (((LPERRORINSTANCE) pList->data)->nSession == 1)
+	{
+		PrintSPASMError((LPERRORINSTANCE) pList->data);
+	}
 }
 
 void ReplaySPASMErrorSession(int nSession)
 {
-	list_t *pList = (list_t *) g_ErrorList;
-	while (((LPERRORINSTANCE) pList->data)->nSession != nSession)
+	if (nSession == 1)
 	{
-		((LPERRORINSTANCE) pList->data)->nPrintSession = nSession;
-		pList = pList->next;
-		assert(pList != NULL);
+		ReplayErrorRecursive((list_t *) g_ErrorList);
+	}
+	else
+	{
+		list_t *pList = (list_t *) g_ErrorList;
+		while ((pList != NULL) && ((LPERRORINSTANCE) pList->data)->nSession == nSession)
+		{
+			// Move it up to the next error level
+			((LPERRORINSTANCE) pList->data)->nSession--;
+			pList = pList->next;
+		}
 	}
 
-	if (((LPERRORINSTANCE) pList->data)->fSuppressErrors == true)
-	{
-		return;
-	}
+	//if (((LPERRORINSTANCE) pList->data)->fSuppressErrors == true)
+	//{
+	//	return;
+	//}
 
-	ReplayErrorRecursive((list_t *) g_ErrorList, nSession);
+	
 }
 
 bool IsErrorInSPASMErrorSession(int nSession, DWORD dwErrorCode)
 {
 	list_t *pList = (list_t *) g_ErrorList;
-	while (((LPERRORINSTANCE) pList->data)->nSession != nSession)
+	while ((pList != NULL) && ((LPERRORINSTANCE) pList->data)->nSession == nSession)
 	{
 		LPERRORINSTANCE lpError = (LPERRORINSTANCE) pList->data;
 		if (lpError->dwErrorCode == dwErrorCode)
@@ -174,7 +170,6 @@ bool IsErrorInSPASMErrorSession(int nSession, DWORD dwErrorCode)
 			return true;
 		}
 		pList = pList->next;
-		assert(pList != NULL);
 	}
 	return false;
 }
@@ -199,6 +194,10 @@ void AddSPASMErrorSessionAnnotation(int nSession, LPCTSTR lpszFormat, ...)
 		LPERRORINSTANCE lpErr = (LPERRORINSTANCE) pList->data;
 		if (lpErr->nSession >= nSession)
 		{
+			if (lpErr->lpszAnnotation != NULL)
+			{
+				free(lpErr->lpszAnnotation);
+			}
 			lpErr->lpszAnnotation = _tcsdup(szBuffer);
 		}
 		pList = pList->next;
@@ -210,52 +209,41 @@ void EndSPASMErrorSession(int nSession)
 	list_t *pList = (list_t *) g_ErrorList;
 	
 	list_t *pPrev = NULL, *old_list = NULL;
-	while (((LPERRORINSTANCE) pList->data)->nSession != nSession)
+	while ((pList != NULL) && ((LPERRORINSTANCE) pList->data)->nSession == nSession)
 	{
 		LPERRORINSTANCE lpErr = (LPERRORINSTANCE) pList->data;
-		if (lpErr->nPrintSession > nSession || lpErr->nPrintSession == -1)
-		{
-		   if (pPrev == NULL)
-		   {
-			   g_ErrorList = (errorlist_t *) pList->next;
-		   }
-		   else
-		   {
-			   pPrev->next = pList->next;
-		   }
 
-		   FreeErrorInstance(lpErr);
-		   list_t *pListOld = pList;
-		   pList = pList->next;
-		   list_free_node(pListOld);
+		if (pPrev == NULL)
+		{
+			g_ErrorList = (errorlist_t *) pList->next;
 		}
 		else
 		{
-			pPrev = pList;
-			pList = pList->next;
+			pPrev->next = pList->next;
 		}
-		assert(pList != NULL);
+
+		FreeErrorInstance(lpErr);
+		list_t *pListOld = pList;
+		pList = pList->next;
+		list_free_node(pListOld);
+
+		//assert(pList != NULL);
+		if (pList == NULL)
+			break;
 	}
-	((LPERRORINSTANCE) pList->data)->nSession = -1;
-	suppress_errors = ((LPERRORINSTANCE) pList->data)->fSuppressErrors;
+
+	g_nErrorSession--;
 }
 
 
-void ClearSPASMErrorSessions(void)
+void ClearSPASMErrorSessions(bool fCompletelyFree)
 {
-	list_free((list_t *) g_ErrorList, true, (void (*)(void *)) FreeErrorInstance);
+	if (g_ErrorList != NULL)
+	{
+		list_free((list_t *) g_ErrorList, true, (void (*)(void *)) FreeErrorInstance);
+	}
 	g_nErrorSession = 0;
-	suppress_errors = false;
-
-	LPERRORINSTANCE lpErr = (LPERRORINSTANCE) malloc(sizeof(ERRORINSTANCE));
-	lpErr->dwErrorCode = SPASM_ERR_SUCCESS;
-	lpErr->line_num = -1;
-	lpErr->lpszFileName = NULL;
-	lpErr->fSuppressErrors = false;
-	lpErr->nSession = -1;
-	lpErr->nPrintSession = -1;
-
-	g_ErrorList = (errorlist_t *) list_prepend(NULL, lpErr);
+	g_ErrorList = NULL;
 }
 
 void FreeSPASMErrorSessions(void)
@@ -318,7 +306,7 @@ static void SetLastSPASMProblem(DWORD dwErrorCode, bool fIsWarning, va_list vali
 	lpErr->dwErrorCode = dwErrorCode;
 	lpErr->line_num = line_num;
 	lpErr->lpszFileName = _strdup(curr_input_file);
-	lpErr->fSuppressErrors = suppress_errors;
+	//lpErr->fSuppressErrors = suppress_errors;
 	lpErr->fIsWarning = fIsWarning;
 	
 	TCHAR szBuffer[256];
@@ -335,26 +323,27 @@ static void SetLastSPASMProblem(DWORD dwErrorCode, bool fIsWarning, va_list vali
 	}
 
 	LPCTSTR lpszProblemType = (fIsWarning) ? _T("warning") : _T("error");
+	LPCTSTR lpszProblemCode = (fIsWarning) ? _T("SW") : _T("SE");
 
 	if (lpErr->line_num != -1)
 	{
-		StringCchPrintf(szBuffer, ARRAYSIZE(szBuffer), _T("%s:%d: %s SE%03X: %s"),
-			lpErr->lpszFileName, lpErr->line_num, lpszProblemType, lpErr->dwErrorCode, szDescription);
+		StringCchPrintf(szBuffer, ARRAYSIZE(szBuffer), _T("%s:%d: %s %s%03X: %s"),
+			lpErr->lpszFileName, lpErr->line_num, lpszProblemType, lpszProblemCode, lpErr->dwErrorCode, szDescription);
 	}
 	else
 	{
-		StringCchPrintf(szBuffer, ARRAYSIZE(szBuffer), _T("%s: %s SE%03X: %s"),
-			lpErr->lpszFileName, lpszProblemType, lpErr->dwErrorCode, szDescription);
+		StringCchPrintf(szBuffer, ARRAYSIZE(szBuffer), _T("%s: %s %s%03X: %s"),
+			lpErr->lpszFileName, lpszProblemType, lpszProblemCode, lpErr->dwErrorCode, szDescription);
 	}
 
 	lpErr->lpszErrorText = _strdup(szBuffer);
 
 	g_ErrorList = (errorlist_t *) list_prepend((list_t *) g_ErrorList, (LPVOID) lpErr);
 
-	if (suppress_errors == false)
-	{
-		PrintSPASMError(lpErr);
-	}
+	//if (suppress_errors == false)
+	//{
+		//PrintSPASMError(lpErr);
+	//}
 }
 
 void SetLastSPASMWarning(DWORD dwErrorCode, ...)

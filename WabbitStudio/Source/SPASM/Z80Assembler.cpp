@@ -79,6 +79,8 @@ STDMETHODIMP CZ80Assembler::ClearDefines()
 
 STDMETHODIMP CZ80Assembler::AddDefine(BSTR bstrName, VARIANT varValue)
 {
+	curr_input_file = strdup("COM Interface");
+
 	if (V_VT(&varValue) == VT_EMPTY || V_VT(&varValue) == VT_ERROR)
 	{
 		V_VT(&varValue) = VT_UI4;
@@ -99,6 +101,8 @@ STDMETHODIMP CZ80Assembler::AddDefine(BSTR bstrName, VARIANT varValue)
 
 	bool fRedefined = false;
 	define_t *define = add_define(strdup(szName), &fRedefined);
+	free(curr_input_file);
+
 	if (define != NULL)
 	{
 		CW2A szContents(V_BSTR(&varDefine));

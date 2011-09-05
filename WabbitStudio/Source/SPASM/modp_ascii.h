@@ -32,7 +32,7 @@ BEGIN_C
  * \param[in,out] str the input string
  * \param[in] len the length of input string (the strlen)
  */
-void modp_toupper(char* str, size_t len);
+void modp_toupper(char* str, int size_t);
 
 /** \brief make lower case copy of input string
  *
@@ -55,7 +55,7 @@ void modp_toupper_copy(char* dest, const char* str, size_t len);
  * \param[in] len the length of input string (the strlen)
  *
  */
-void modp_tolower(char* str, size_t len);
+void modp_tolower(char* str, size_t size);
 
 /** \brief make lower case copy of input string
  *
@@ -70,7 +70,7 @@ void modp_tolower(char* str, size_t len);
  * This is based on the algorithm by Paul Hsieh
  * http://www.azillionmonkeys.com/qed/asmexample.html
  */
-void modp_tolower_copy(char* dest, const char* str, int len);
+void modp_tolower_copy(char* dest, const char* str, size_t len);
 
 /** \brief turn a string into 7-bit printable ascii.
  *
@@ -81,7 +81,7 @@ void modp_tolower_copy(char* dest, const char* str, int len);
  * \param[in] len the length of input string (the strlen)
  *
  */
-void modp_toprint(char* str, int len);
+void modp_toprint(char* str, size_t len);
 
 /** \brief make a printable copy of a string
  *
@@ -96,8 +96,55 @@ void modp_toprint(char* str, int len);
  * bytes.  This appends a trailing NULL character at the end of
  * dest!
  */
-void modp_toprint_copy(char* dest, const char* str, int len);
+void modp_toprint_copy(char* dest, const char* str, size_t len);
 
 END_C
+
+#ifdef __cplusplus
+#include <string>
+
+namespace modp {
+
+    inline std::string& toupper(std::string& str)
+    {
+        modp_toupper(const_cast<char*>(str.c_str()), str.size());
+        return str;
+    }
+
+    inline std::string toupper(const std::string& str)
+    {
+        std::string s(str);
+        modp_toupper_copy(const_cast<char*>(s.c_str()), s.data(), s.size());
+        return s;
+    }
+
+    inline std::string tolower(const std::string& str)
+    {
+        std::string s(str);
+        modp_tolower_copy(const_cast<char*>(s.c_str()), s.data(), s.size());
+        return s;
+    }
+
+    inline std::string& tolower(std::string& str)
+    {
+        modp_tolower(const_cast<char*>(str.c_str()), str.size());
+        return str;
+    }
+
+    inline std::string toprint(const std::string& str)
+    {
+        std::string s(str);
+        modp_toprint_copy(const_cast<char*>(s.c_str()), s.data(), s.size());
+        return s;
+    }
+
+    inline std::string& toprint(std::string& str)
+    {
+        modp_toprint(const_cast<char*>(str.c_str()), str.size());
+        return str;
+    }
+}
+
+#endif  /* __cplusplus */
 
 #endif  /* MODP_ASCII */

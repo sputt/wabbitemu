@@ -10,42 +10,42 @@
  */
 
 unsigned int murmur_hash (const char *data, int len) {
-    // 'm' and 'r' are mixing constants generated offline.
-    // They're not really 'magic', they just happen to work well.
+	// 'm' and 'r' are mixing constants generated offline.
+	// They're not really 'magic', they just happen to work well.
 
-    const unsigned int m = 0x7fd652ad;
-    const int r = 16;
+	const unsigned int m = 0x7fd652ad;
+	const int r = 16;
 
-    // Initialize the hash to a 'random' value
+	// Initialize the hash to a 'random' value
 
-    unsigned int h = 0xdeadbeef;
+	unsigned int h = 0xdeadbeef;
   
-    // Mix 4 bytes at a time into the hash
+	// Mix 4 bytes at a time into the hash
 
-    while (len >= 4) {
-        h += *((unsigned int *)data);
-        h *= m;
-        h ^= h >> r;
+	while (len >= 4) {
+		h += *((unsigned int *)data);
+		h *= m;
+		h ^= h >> r;
 
-        data += 4;
-        len -= 4;
-    }
+		data += 4;
+		len -= 4;
+	}
 
-    // Handle the last few bytes of the input array
+	// Handle the last few bytes of the input array
 
 	switch (len) {
-	    case 3:
-	    	h += data[2] << 16;
-	    case 2:
-	    	h += data[1] << 8;
-	    case 1:
+		case 3:
+			h += data[2] << 16;
+		case 2:
+			h += data[1] << 8;
+		case 1:
 			h += data[0];
 			h *= m;
 			h ^= h >> r;
 	}
   
-    // Do a few final mixes of the hash to ensure the last few
-    // bytes are well-incorporated.
+	// Do a few final mixes of the hash to ensure the last few
+	// bytes are well-incorporated.
 
 	h *= m;
 	h ^= h >> 10;

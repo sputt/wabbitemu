@@ -5,11 +5,44 @@
 
 #include "storage.h"
 #include "parser.h"
+#include "hash.h"
 #include "utils.h"
 #include "expand_buf.h"
 #include "console.h"
 #include "spasm.h"
 #include "errors.h"
+
+
+static void destroy_char_value (label_t *label) {
+	if (label->name)
+		free (label->name);
+	if (label)
+		free (label);
+}
+
+/* Routine prototype */
+char * __cdecl mystrpbrk (const char * string, const char * control) {
+	const unsigned char *str =  (const unsigned char *) string;
+	const unsigned char *ctrl = (const unsigned char *) control;
+
+	int map[256];
+	ZeroMemory(map, sizeof(map));
+
+	while (*ctrl)
+	{
+		map[*ctrl] = TRUE;
+		ctrl++;
+	}
+
+	/* 1st char in control map stops search */
+	while (*str)
+	{
+			if (map[*str++])
+				return((char *)--str);
+			//str++;
+	}
+	return NULL;
+}
 
 /*
  * Returns true if ptr has reached what is the end of an assembly
@@ -109,31 +142,60 @@ char *next_expr (const char *ptr, const char *delims) {
 	if (is_end_of_code_line (ptr) || *ptr == ')') 
 		return (char *) ptr;
 
-	while (*ptr != '\0' && !((strpbrk (ptr, delims) == ptr || is_end_of_code_line (ptr))
-				&& !in_escape && !in_string && in_quote == 0)) {
+	if (strlen(delims) == 1) {
+		while (*ptr != '\0' && !((strchr (ptr, delims[0]) == ptr || is_end_of_code_line (ptr))
+					&& !in_escape && !in_string && in_quote == 0)) {
 
-		if (!in_escape) {
-			switch( *ptr ) {
-				case '"': 	
-					if (in_quote == 0) in_string = !in_string; 
-					break;
-				case '\'':
-					if (!in_string && in_quote == 0) in_quote = 3; 
-					break;		
-				case '\\': 	
-					in_escape = true;
-					break;
-				default:
-					/* 	If this char wasn't ', redo the inside */
-					if (in_quote == 1) {
-						ptr -= 2;
-					}
-			}	
-			if (in_quote) in_quote--;
-		} else {
-			in_escape = false;
+			if (!in_escape) {
+				switch( *ptr ) {
+					case '"': 	
+						if (in_quote == 0) in_string = !in_string; 
+						break;
+					case '\'':
+						if (!in_string && in_quote == 0) in_quote = 3; 
+						break;		
+					case '\\': 	
+						in_escape = true;
+						break;
+					default:
+						/* 	If this char wasn't ', redo the inside */
+						if (in_quote == 1) {
+							ptr -= 2;
+						}
+				}	
+				if (in_quote) in_quote--;
+			} else {
+				in_escape = false;
+			}
+			ptr++;
 		}
-		ptr++;
+	} else {
+		while (*ptr != '\0' && !((mystrpbrk (ptr, delims) == ptr || is_end_of_code_line (ptr))
+					&& !in_escape && !in_string && in_quote == 0)) {
+
+			if (!in_escape) {
+				switch( *ptr ) {
+					case '"': 	
+						if (in_quote == 0) in_string = !in_string; 
+						break;
+					case '\'':
+						if (!in_string && in_quote == 0) in_quote = 3; 
+						break;		
+					case '\\': 	
+						in_escape = true;
+						break;
+					default:
+						/* 	If this char wasn't ', redo the inside */
+						if (in_quote == 1) {
+							ptr -= 2;
+						}
+				}	
+				if (in_quote) in_quote--;
+			} else {
+				in_escape = false;
+			}
+			ptr++;
+		}
 	}
 
 	return (char *) ptr;
@@ -166,10 +228,8 @@ char *next_code_line(char *ptr) {
 char *eval (const char *expr)
 {
 	char result[256], *expr_value;
-	bool suppress_backup = suppress_errors;
 	int value;
 
-	suppress_errors = true;
 	int session = StartSPASMErrorSession();
 	bool fResult = parse_num (expr, &value);
 	EndSPASMErrorSession(session);
@@ -182,7 +242,6 @@ char *eval (const char *expr)
 	{
 		expr_value = expand_expr (expr);
 	}
-	suppress_errors = suppress_backup;
 	return expr_value;
 }
 
@@ -221,9 +280,15 @@ char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 				}
 
 				if (*define->args[num_args] == '@')
+				{
 					add_arg(strdup(define->args[num_args++]), strdup(word), *curr_arg_set);
+				}
 				else
+				{
+					//char *evald_word = eval(word);
 					add_arg(strdup(define->args[num_args++]), eval(word), *curr_arg_set);
+					//free(evald_word);
+				}
 			}
 		}
 	}
@@ -341,7 +406,8 @@ bool read_expr_impl(const char ** const ptr, char word[256], const char *delims)
 		return false;
 	}
 
-	while (**ptr != '\0' && !((strpbrk (*ptr, delims) == *ptr || is_end_of_code_line (*ptr))
+	if (strlen(delims) == 1) {
+		while (**ptr != '\0' && !((strchr (*ptr, delims[0]) == *ptr || is_end_of_code_line (*ptr))
 				&& !in_escape && !in_string && in_quote == 0 && level == 0)) {
 
 		if (!in_escape) {
@@ -386,7 +452,53 @@ bool read_expr_impl(const char ** const ptr, char word[256], const char *delims)
 			*word_ptr++ = **ptr;
 		(*ptr)++;
 	}
-	
+	} else {
+		while (**ptr != '\0' && !((mystrpbrk (*ptr, delims) == *ptr || is_end_of_code_line (*ptr))
+					&& !in_escape && !in_string && in_quote == 0 && level == 0)) {
+
+			if (!in_escape) {
+				switch( **ptr ) {
+					case '"': 	
+						if (in_quote == 0) in_string = !in_string; 
+						break;
+					case '\'':
+						if (!in_string && in_quote == 0) in_quote = 3; 
+						break;		
+					case '\\': 	
+						in_escape = true;
+						break;
+					case '(':
+						if (!in_string && in_quote == 0) level++;
+						break;
+					case ')':
+						if (!in_string && in_quote == 0) level--;
+						if (level < 0) {
+							//(*ptr)--; //12/29/2010 stp not sure
+							goto finish_read_expr;
+						}
+						break;
+					default:
+						/* 	If this char wasn't ', redo the inside */
+						if (in_quote == 1) {
+							*ptr -= 2;
+							word_ptr -= 2;
+						}
+				}	
+				if (in_quote) in_quote--;
+			} else {
+				in_escape = false;
+			}
+			if (word_ptr - word >= 254) {
+				show_fatal_error ("Expression is too long - must be 255 chars or less");
+				if (word)
+					strcpy (word, "0");
+				return true;
+			}
+			if (word)
+				*word_ptr++ = **ptr;
+			(*ptr)++;
+		}
+	}
 finish_read_expr:
 	// Remove whitespace at the end
 	if (word) {
@@ -502,7 +614,6 @@ char* reduce_string (char* input) {
 	return input;
 }
 
-
 /*
  * Replaces backslashes in filename
  * with forward slashes to work across
@@ -550,11 +661,13 @@ bool is_abs_path(const char *filename) {
 
 char *strup (const char *input) {	
 	char *new_string = (char *) malloc (strlen (input) + 1);
-	int i;
+	/*int i;
 	for (i = 0; input[i] != '\0'; i++)
 		new_string[i] = toupper (input[i]);
 
-	new_string[i] = '\0';
+	new_string[i] = '\0';*/
+	//modp_toupper_copy(new_string, input, strlen(input));
+	modp_toupper_copy(new_string, input, strlen(input));
 	return new_string;
 }
 
@@ -678,17 +791,17 @@ char *change_extension (const char *filename, const char *ext) {
 }
 
 #if defined(WIN32) || defined(MACVER)
-char *strndup (const char *str, int len)
-{
-	char *dupstr;
-
-	dupstr = (char *) malloc(len + 1);
-	if (dupstr) {
-		strncpy (dupstr, str, len);
-		dupstr[len] = '\0';
-	}
-	return dupstr;
-}
+//char *strndup (const char *str, int len)
+//{
+//	char *dupstr;
+//
+//	dupstr = (char *) malloc(len + 1);
+//	if (dupstr) {
+//		strncpy (dupstr, str, len);
+//		dupstr[len] = '\0';
+//	}
+//	return dupstr;
+//}
 
 int strnlen (const char *str, int maxlen) {
 	int len = 0;
@@ -857,22 +970,22 @@ void show_fatal_error(const char *text, ...) {
 	WORD attr = save_console_attributes();
 	set_console_attributes (COLOR_RED);
 #endif
-	if (!suppress_errors) {
-		va_list args;
-		if (exit_code < EXIT_FATAL_ERROR) exit_code = EXIT_FATAL_ERROR;
 
-		show_error_prefix(curr_input_file, line_num);
+	va_list args;
+	if (exit_code < EXIT_FATAL_ERROR) exit_code = EXIT_FATAL_ERROR;
+
+	show_error_prefix(curr_input_file, line_num);
 #ifdef WIN32
-		OutputDebugString(text);
-		OutputDebugString(TEXT("\n"));
+	OutputDebugString(text);
+	OutputDebugString(TEXT("\n"));
 #endif
 
-		va_start(args, text);
+	va_start(args, text);
 
-		vprintf (text, args);
-		putchar ('\n');
-		error_occurred = true;
-	}
+	vprintf (text, args);
+	putchar ('\n');
+	error_occurred = true;
+
 #ifdef WIN32
 	restore_console_attributes(attr);
 #endif
@@ -894,23 +1007,22 @@ void show_warning(const char *text, ...) {
 	WORD attr = save_console_attributes();
 	set_console_attributes (COLOR_YELLOW);
 #endif
-	if (!suppress_errors) {
-		va_list args;
-		if (exit_code < EXIT_WARNINGS) exit_code = EXIT_WARNINGS;
 
-		show_warning_prefix(curr_input_file, line_num);
+	va_list args;
+	if (exit_code < EXIT_WARNINGS) exit_code = EXIT_WARNINGS;
+
+	show_warning_prefix(curr_input_file, line_num);
 #ifdef WIN32
-		OutputDebugString(text);
-		OutputDebugString(TEXT("\n"));
+	OutputDebugString(text);
+	OutputDebugString(TEXT("\n"));
 #endif
 
-		va_start(args, text);
+	va_start(args, text);
 
-		vprintf (text, args);
-		putchar ('\n');
+	vprintf (text, args);
+	putchar ('\n');
 #ifdef WIN32
-		restore_console_attributes(attr);
+	restore_console_attributes(attr);
 #endif
-	}
 }
 

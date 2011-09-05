@@ -109,7 +109,10 @@ EXPORT void list_free (list_t *curr_node, bool free_data, void (*free_callback)(
 			{
 				free_callback(curr_node->data);
 			}
-			free(curr_node->data);
+			else
+			{
+				free(curr_node->data);
+			}
 		}
 		
 		list_free_node(curr_node);

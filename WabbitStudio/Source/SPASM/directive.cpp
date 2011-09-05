@@ -29,15 +29,12 @@ char *handle_directive (const char *ptr) {
 	while (isalpha (*name_end))
 		name_end++;
 
-	name = strndup (ptr, name_end - ptr);
-
 	dir = 0;
 	while (dirs[dir]) {
-		if (!strcasecmp (dirs[dir], name))
+		if (!strncasecmp (dirs[dir], ptr, name_end - ptr))
 			break;
 		dir++;
 	}
-	free (name);
 
 	if (!dirs[dir])
 		return handle_opcode_or_macro ((char *) ptr - 1);
@@ -315,6 +312,7 @@ addinstr_fail:
 			eb_free(eb);
 
 			SetLastSPASMError(SPASM_ERR_CUSTOM, error_str);
+			free(error_str);
 			break;
 		}
 		case 11: //LIST
@@ -482,8 +480,6 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 	int session;
 	bool fWasParsed;
 	char *name_end;
-
-	bool old_suppress_errors = suppress_errors;
 
 	level++;
 
@@ -658,7 +654,7 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 				else
 				{
 echo_error:
-					ReplaySPASMErrorSession(session);
+					
 					switch (type)
 					{
 					case ES_ECHO:
@@ -671,10 +667,13 @@ echo_error:
 						}
 					case ES_FCREATE:
 						{
+							SetLastSPASMError(SPASM_ERR_LABEL_NOT_FOUND, word);
 							eb_append((expand_buf_t *) echo_target, "(error)", -1);
 							break;
 						}
 					}
+
+					ReplaySPASMErrorSession(session);
 				}
 			}
 			EndSPASMErrorSession(session);

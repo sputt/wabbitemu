@@ -14,6 +14,7 @@ void eb_overwrite (expand_buf *buf, int offset, const char *text, size_t length)
 void eb_erase (expand_buf *buf, int offset, size_t length);
 char eb_get_char (expand_buf *buf, int offset);
 char *eb_extract (expand_buf *buf);
+
 void eb_free (expand_buf *buf);
 
 #endif

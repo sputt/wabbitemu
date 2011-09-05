@@ -41,6 +41,7 @@ namespace SPASMTestsVS2008
 		// Run the file, return the error code
 		int RunTest(const char *file_name)
 		{
+			ClearSPASMErrorSessions();
 			char full_filename[256] = "..\\..\\..\\..\\..\\Tests\\SPASMTests\\";
 			strcat_s(full_filename, file_name);
 

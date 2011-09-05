@@ -5,14 +5,11 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASMTests", "..\..\Tests\S
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASM", "SPASM.vcxproj", "{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASMProxy", "..\SPASMProxy\SPASMProxy.vcxproj", "{CDF8905C-4B2E-437B-BD53-05F49E853EC3}"
-	ProjectSection(ProjectDependencies) = postProject
-		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F} = {106FF797-6997-43F1-88E3-7D6C0D8A6F3F}
-	EndProjectSection
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{339D2AC9-17A8-4F03-BCB0-6148573892BC}"
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 4
+		SccNumberOfProjects = 3
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath0 = .
@@ -21,9 +18,6 @@ Global
 		SccLocalPath1 = ..\\..\\Tests\\SPASMTests
 		SccProjectUniqueName2 = SPASM.vcxproj
 		SccLocalPath2 = .
-		SccProjectUniqueName3 = ..\\SPASMProxy\\SPASMProxy.vcxproj
-		SccProjectName3 = ../SPASMProxy
-		SccLocalPath3 = ..\\SPASMProxy
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -52,13 +46,6 @@ Global
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|Win32.ActiveCfg = Static Library Debug|Win32
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|Win32.Build.0 = Static Library Debug|Win32
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|x64.ActiveCfg = Static Library Debug|x64
-		{CDF8905C-4B2E-437B-BD53-05F49E853EC3}.Debug|Win32.ActiveCfg = Debug|Win32
-		{CDF8905C-4B2E-437B-BD53-05F49E853EC3}.Debug|x64.ActiveCfg = Debug|x64
-		{CDF8905C-4B2E-437B-BD53-05F49E853EC3}.Debug|x64.Build.0 = Debug|x64
-		{CDF8905C-4B2E-437B-BD53-05F49E853EC3}.Release|Win32.ActiveCfg = Release|Win32
-		{CDF8905C-4B2E-437B-BD53-05F49E853EC3}.Release|x64.ActiveCfg = Release|x64
-		{CDF8905C-4B2E-437B-BD53-05F49E853EC3}.Static Library Debug|Win32.ActiveCfg = Debug|Win32
-		{CDF8905C-4B2E-437B-BD53-05F49E853EC3}.Static Library Debug|x64.ActiveCfg = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

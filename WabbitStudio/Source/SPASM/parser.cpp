@@ -87,11 +87,9 @@ MathDefs[] =
 
 extern char *curr_input_file;
 extern int line_num;
-extern bool suppress_errors;
 extern bool error_occurred;
 extern bool pass_one;
 extern unsigned int program_counter;
-extern bool suppress_errors;
 
 static const char *parse_single_num (const char *expr, int *value);
 static const char *parse_num_full (const char *expr, int *value, int depth);
@@ -334,7 +332,8 @@ static const char *parse_single_num (const char *expr, int *value) {
 
 						//or the "eval" macro
 					} else if (!strcasecmp (name, "eval") && *expr == '(') {
-						show_warning ("eval() has no effect except in #define");
+						free(name);
+						//show_warning ("eval() has no effect except in #define");
 						expr = parse_num_full (expr, value, 0);
 						//then a normal label
 					}
@@ -346,6 +345,8 @@ static const char *parse_single_num (const char *expr, int *value) {
 						int char_index;
 						char parse_buf[256];
 						char *rfn;
+
+						free(name);
 
 						expr++;
 						read_expr(&expr, filename, ",");

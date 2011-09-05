@@ -31,10 +31,12 @@ namespace SPASMTestsVS2008
 		[TestInitialize]
 		void Init()
 		{
+			ClearSPASMErrorSessions();
+
 			OutputDebugString(TEXT("Start\n"));
 			output_contents = (unsigned char *) malloc(output_buf_size);
 			init_storage();
-			curr_input_file = "..\\..\\..\\..\\..\\Tests\\SPASMTests\\PreprocessorTests.z80";
+			curr_input_file = _strdup("..\\..\\..\\..\\..\\Tests\\SPASMTests\\PreprocessorTests.z80");
 			output_filename = "output.bin";
 			mode = MODE_LIST;
 

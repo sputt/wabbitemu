@@ -253,6 +253,14 @@ char *run_first_pass_line_sec (char *ptr) {
 }
 
 
+static define_t *search_defines_helper(const char *name_start, size_t len)
+{
+	char *name = strndup(name_start, len);
+	define_t *result = search_defines(name);
+	free(name);
+	return result;
+}
+
 /*
  * Handles an opcode or macro,
  * returns the new location in
@@ -260,21 +268,23 @@ char *run_first_pass_line_sec (char *ptr) {
  */
 
 char *handle_opcode_or_macro (char *ptr) {
-	char *name_end, *name;
+	char *name_end;
+	char *name_start = ptr;
 	opcode *curr_opcode;
 
 	//first get the name
 	name_end = skip_to_name_end (ptr);
-	name = strndup (ptr, name_end - ptr);
 	ptr = name_end;
 
 	//try to match it against opcodes first
 	curr_opcode = all_opcodes;
 	while (curr_opcode && curr_opcode->name) {
-		if (!strcasecmp (name, curr_opcode->name))
+		if (!strncasecmp (name_start, curr_opcode->name, max(strlen(curr_opcode->name), name_end - name_start)))
 			break;
 		curr_opcode = curr_opcode->next;
 	}
+
+	
 
 	//if it was found, then find the right instruction
 	if (curr_opcode && curr_opcode->name) {
@@ -286,7 +296,6 @@ char *handle_opcode_or_macro (char *ptr) {
 
 		//try to match them to one of the opcode's sets of arguments
 		ptr = match_opcode_args (ptr, arg_ptrs, arg_end_ptrs, curr_opcode, &curr_instr);
-		free (name);
 		if (curr_instr != NULL)
 		{
 			//if that worked, write data + args
@@ -303,7 +312,7 @@ char *handle_opcode_or_macro (char *ptr) {
 		//if this name doesn't match an opcode, it must be a macro (#macro OR #define)
 		define_t *define;
 #ifdef USE_BUILTIN_FCREATE
-		if (!strcasecmp (name, "buf") && *ptr == '(') {
+		if (!strncasecmp (name_start, "buf", name_end - name_start) && *ptr == '(') {
 		    char buf[256];
 			int value;
 			cur_buf = read_expr(ptr, buf, _T(")"));
@@ -313,7 +322,7 @@ char *handle_opcode_or_macro (char *ptr) {
 				SetLastSPASMError(SPASM_ERR_INVALID_OPERANDS);
 			}
 			ptr += 2;
-		} else if (!strcasecmp (name, "clr") && *ptr == '(') {
+		} else if (!strncasecmp (name_start, "clr", name_end - name_start) && *ptr == '(') {
 			expand_buf_t *eb_fcreate = fcreate_bufs[cur_buf];
 			if (eb_fcreate != NULL) {
 				eb_free(eb_fcreate);
@@ -321,7 +330,7 @@ char *handle_opcode_or_macro (char *ptr) {
 			eb_fcreate = eb_init(128);
 			fcreate_bufs[cur_buf] = eb_fcreate;
 			ptr += 2;
-		} else if (!strcasecmp (name, "wr") && *ptr == '(') {
+		} else if (!strncasecmp (name_start, "wr", name_end - name_start) && *ptr == '(') {
 			expand_buf_t *eb_fcreate = fcreate_bufs[cur_buf];
 			if (eb_fcreate == NULL) {
 				eb_fcreate = eb_init(128);
@@ -331,7 +340,7 @@ char *handle_opcode_or_macro (char *ptr) {
 			ptr = parse_emit_string(++ptr, ES_FCREATE, eb_fcreate);
 			ptr++;
 			eb_append(eb_fcreate, NEWLINE, strlen(NEWLINE));
-		} else if (!strcasecmp (name, "run") && *ptr == '(') {
+		} else if (!strncasecmp (name_start, "run", name_end - name_start) && *ptr == '(') {
 			expand_buf_t *eb_fcreate = fcreate_bufs[cur_buf];
 			if (eb_fcreate == NULL)
 			{
@@ -359,6 +368,8 @@ char *handle_opcode_or_macro (char *ptr) {
 				int old_old_line_num = old_line_num;
 				curr_input_file = "Built-in fcreate";
 
+				int session = StartSPASMErrorSession();
+
 				run_first_pass(fcreate_string);
 
 				curr_input_file = old_input_file;
@@ -377,15 +388,24 @@ char *handle_opcode_or_macro (char *ptr) {
 				}
 
 				free(fcreate_string);
+				eb_free(fcreate_bufs[cur_buf]);
+				fcreate_bufs[cur_buf] = NULL;
+
+				if (GetSPASMErrorSessionErrorCount(session) > 0)
+				{
+					AddSPASMErrorSessionAnnotation(session, "Error during invocation of fcreate");
+					ReplaySPASMErrorSession(session);
+				}
+				EndSPASMErrorSession(session);
 			}
 			ptr += 2;
 		} else
 #endif
-		if ((define = search_defines (name))) {
+
+		if ((define = search_defines_helper(name_start, name_end - name_start)))
+		{
 			list_t *args = NULL;
 			char *args_end;
-
-			free (name);
 
 			//if there are arguments, parse them
 			int args_session = StartSPASMErrorSession();
@@ -449,10 +469,11 @@ char *handle_opcode_or_macro (char *ptr) {
 						curr_line = skip_to_next_line(next_line);
 						line_num++;
 					}
+
 					curr_input_file = (char *) old_filename;
 					line_num = old_line_num;
 
-					if (GetSPASMErrorSessionErrorCount(session) > 0)
+					if (IsSPASMErrorSessionFatal(session))
 					{
 						AddSPASMErrorSessionAnnotation(session, "Error during invocation of macro '%s'", define->name);
 						ReplaySPASMErrorSession(session);
@@ -468,6 +489,7 @@ char *handle_opcode_or_macro (char *ptr) {
 			remove_arg_set(args);
 
 		} else {
+			char *name = strndup(name_start, name_end - name_start);
 			SetLastSPASMError(SPASM_ERR_UNKNOWN_OPCODE, name);
 			free (name);
 		}
@@ -512,7 +534,7 @@ char *match_opcode_args (char *ptr, char **arg_ptrs, char **arg_end_ptrs, opcode
 					break;
 
 				arg_ptrs[curr_arg_num] = curr_arg_file;
-				read_expr (&curr_arg_file, trash_buf, ",");
+				BOOL test = read_expr (&curr_arg_file, trash_buf, ",");
 				if (*(curr_arg_file - 1) == ',')
 					curr_arg_file--;
 				arg_end_ptrs[curr_arg_num] = curr_arg_file;

@@ -26,6 +26,7 @@ namespace SPASMTestsVS2008
 	{
 	private:
 		TestContext^ testContextInstance;
+		int session;
 
 	public: 
 		/// <summary>
@@ -47,11 +48,13 @@ namespace SPASMTestsVS2008
 		[TestInitialize]
 		void Init()
 		{
+			ClearSPASMErrorSessions();
+			session = StartSPASMErrorSession();
 			String ^cwd = Directory::GetCurrentDirectory();
 
 			output_contents = (unsigned char *) malloc(output_buf_size);
 			init_storage();
-			curr_input_file = "..\\..\\..\\..\\..\\Tests\\SPASMTests\\Tests.asm";
+			curr_input_file = _strdup("..\\..\\..\\..\\..\\Tests\\SPASMTests\\Tests.asm");
 			output_filename = "output.bin";
 			mode = MODE_NORMAL;
 			int nResult = run_assembly();
@@ -63,6 +66,7 @@ namespace SPASMTestsVS2008
 		[TestCleanup]
 		void Cleanup()
 		{
+			EndSPASMErrorSession(session);
 			free_storage();
 			free(output_contents);
 		}

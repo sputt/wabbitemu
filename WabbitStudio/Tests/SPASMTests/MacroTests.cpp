@@ -45,9 +45,11 @@ namespace SPASMTestsVS2008
 		[TestInitialize]
 		void Init()
 		{
+			ClearSPASMErrorSessions();
+
 			output_contents = (unsigned char *) malloc(output_buf_size);
 			init_storage();
-			curr_input_file = "..\\..\\..\\..\\..\\Tests\\SPASMTests\\Tests.asm";
+			curr_input_file = strdup("..\\..\\..\\..\\..\\Tests\\SPASMTests\\Tests.asm");
 			output_filename = "output.bin";
 			mode = MODE_NORMAL;
 

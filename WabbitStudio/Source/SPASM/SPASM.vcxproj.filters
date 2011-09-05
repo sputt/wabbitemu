@@ -85,6 +85,9 @@
     <ClCompile Include="trie.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="modp_ascii.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -154,6 +157,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="trie.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="modp_ascii.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

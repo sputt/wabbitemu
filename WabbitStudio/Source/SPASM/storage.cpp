@@ -12,10 +12,10 @@
 #include "directive.h"
 #include "opcodes.h"
 #include "console.h"
+#include "errors.h"
 
 extern char *curr_input_file;
 extern int line_num;
-extern bool suppress_errors;
 extern bool error_occurred;
 
 #ifdef USE_REUSABLES
@@ -59,10 +59,10 @@ void write_labels (char *filename) {
 	label_list.data = &hdr_node;
 	label_list.next = NULL;
 	
-	suppress_errors = true;
+	int session = StartSPASMErrorSession();
 	hash_enum (label_table, (HASH_ENUM_CALLBACK) write_labels_callback, &label_list);
 	hash_enum (define_table, (HASH_ENUM_CALLBACK) write_defines_callback, &label_list);
-	suppress_errors = false;
+	EndSPASMErrorSession(session);
 	
 	node = label_list.next;
 	int index = 0;
@@ -152,6 +152,8 @@ static void destroy_define_value (define_t *define) {
 		free (define->contents);
 	if (define->name)
 		free (define->name);
+	if (define->input_file)
+		free(define->input_file);
 
 	for (curr_arg = 0; curr_arg < MAX_ARGS; curr_arg++) {
 		if (define->args[curr_arg] != NULL) {
@@ -164,8 +166,9 @@ static void destroy_define_value (define_t *define) {
 static void destroy_label_value (label_t *label) {
 	if (label->name)
 		free (label->name);
-	if (label)
-		free (label);
+	if (label->input_file)
+		free(label->input_file);
+	free (label);
 }
 
 
@@ -188,7 +191,7 @@ void init_storage() {
 	add_define (strdup ("FALSE"), NULL)->contents = strdup ("0");
 	add_define (strdup ("__BM_SHD"), NULL)->contents = strdup ("2");
 	add_define (strdup ("__BM_MSK_RGB"), NULL)->contents = strdup ("RGB(0, 255, 0)");
-	
+
 	(define = add_define (strdup ("RGB"), NULL))->contents = strdup ("((__R) << 16)|((__G) << 8)|(__B)");
 	test = strdup ("__R,__G,__B)");
 	parse_arg_defs (test, define);
@@ -207,6 +210,8 @@ void init_storage() {
 EXPORT void free_storage() {
 	opcode *next_opcode = NULL, *last_opcode = NULL, *curr_opcode = all_opcodes;
 	all_opcodes = opcode_list;
+
+	list_free(input_files, true, NULL);
 
 	hash_free(label_table);
 	label_table = NULL;
@@ -256,13 +261,13 @@ define_t *add_define (char *name, bool *redefined) {
 	
 	if ((conflict_label = search_labels(name))) {
 		show_error ("conflicting definition of '%s'", name);
-		if (suppress_errors == false) {
+		//if (suppress_errors == false) {
 			show_error_prefix (conflict_label->input_file, conflict_label->line_num);
 			WORD attr = save_console_attributes();
 			set_console_attributes (COLOR_RED);
 			printf ("previous definition of '%s' was here\n", name);
 			restore_console_attributes(attr);
-		}
+		//}
 		return NULL;
 	}
 	
@@ -301,7 +306,7 @@ define_t *add_define (char *name, bool *redefined) {
 
 		define->name = name;
 		define->line_num = line_num;
-		define->input_file = curr_input_file;
+		define->input_file = strdup(curr_input_file);
 		define->contents = NULL;
 		define->num_args = 0;
 
@@ -325,7 +330,6 @@ define_t *search_defines (const char *name) {
 	define_t *result = NULL;
 	char *search_name;
 	list_t *curr_arg_set = arg_list;
-	bool old_suppress_errors;
 	unsigned int curr_hash;
 
 	//make name uppercase if needed for case-insensitivity
@@ -345,9 +349,6 @@ define_t *search_defines (const char *name) {
 	//if that doesn't work, look in the global define table
 	if (!result)
 		result = (define_t *)hash_lookup (define_table, search_name);
-
-	old_suppress_errors = suppress_errors;
-	suppress_errors = true;
 	
 #define MHASH(Z) (murmur_hash(Z, strlen(Z)))
 
@@ -372,8 +373,6 @@ define_t *search_defines (const char *name) {
 	
 	if (!case_sensitive)
 		free (search_name);
-	
-	suppress_errors = old_suppress_errors;
 
 	//make sure any empty arguments get returned as undefined
 	//if (result && result->contents == NULL) result = NULL;
@@ -422,6 +421,8 @@ void set_define (define_t *define, const char *str, int len, bool redefined) {
 	} else {
 		char *result, *temp;
 		hash_t *old_list = define_table;
+		list_t *old_arg_list = arg_list;
+		//arg_list = NULL;
 
 		define_table = hash_init (1, (HASH_REMOVE_CALLBACK) destroy_define_value);
 		
@@ -436,6 +437,7 @@ void set_define (define_t *define, const char *str, int len, bool redefined) {
 
 		hash_free(define_table);
 		define_table = old_list;
+		arg_list = old_arg_list;
 	}
 }
 
@@ -500,13 +502,13 @@ label_t *add_label (char *name, int value) {
 
 	if ((conflict_define = search_defines(name))) {
 		show_error ("conflicting definition of '%s'", name);
-		if (suppress_errors == false) {
+		//if (suppress_errors == false) {
 			show_error_prefix (conflict_define->input_file, conflict_define->line_num);
 			WORD attr = save_console_attributes();
 			set_console_attributes (COLOR_RED);
 			printf ("previous definition of '%s' was here\n", name);
 			restore_console_attributes(attr);
-		}
+		//}
 		return NULL;
 	}
 	
@@ -526,7 +528,7 @@ label_t *add_label (char *name, int value) {
 		if (new_label != NULL) {
 			new_label->name = name;
 			new_label->line_num = line_num;
-			new_label->input_file = curr_input_file;
+			new_label->input_file = strdup(curr_input_file);
 			new_label->value = value;
 			
 			hash_insert (label_table, new_label);
@@ -563,13 +565,13 @@ void add_arg(char *name, char *value, list_t *arg_set) {
 	}
 
 	new_arg = (define_t *) malloc(sizeof(define_t));
-	memset(new_arg, 0x00, sizeof(define_t));
+	memset(new_arg, 0, sizeof(define_t));
 
 	new_arg->name = name;
 	new_arg->contents = value;
 	new_arg->num_args = 0;
 	new_arg->line_num = line_num;
-	new_arg->input_file = curr_input_file;
+	new_arg->input_file = strdup(curr_input_file);
 
 	hash_insert((hash_t *) arg_set->data, new_arg);
 }

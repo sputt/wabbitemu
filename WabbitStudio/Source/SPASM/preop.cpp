@@ -252,6 +252,7 @@ char *handle_preop (char *ptr) {
 			strncat(new_contents, defcont_start, ptr - defcont_start);
 			new_contents[defcont_len] = '\0';
 			set_define(last_define, new_contents, -1, true);
+			free(new_contents);
 			ptr--;
 		}
 	}
@@ -353,8 +354,7 @@ char *handle_preop_define (const char *ptr) {
 					{
 						if (define->contents == NULL)
 						{
-							show_error("'%s' is not yet fully defined", arg);
-						
+							SetLastSPASMError(SPASM_ERR_DEFINE_HAS_NO_VALUE, arg);
 						}
 						else
 						{
@@ -372,7 +372,9 @@ char *handle_preop_define (const char *ptr) {
 					}
 				}
 			}
-			set_define (define, eb_extract (buffer), -1, redefined);
+			char *contents = eb_extract (buffer);
+			set_define (define, contents, -1, redefined);
+			free(contents);
 			eb_free(buffer);
 			ptr = eval_ptr;
 			
@@ -478,6 +480,7 @@ static char *handle_preop_include (char *ptr)
 	{
 		handle_bitmap(file);
 		fclose (file);
+		free (file_path);
 	}
 	else
 	{

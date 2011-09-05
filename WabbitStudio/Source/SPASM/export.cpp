@@ -87,6 +87,7 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	FILE *outfile;
 	int i, calc;
 
+	free(curr_input_file);
 	curr_input_file = strdup(_T("exporter"));
 	line_num = -1;
 
@@ -516,9 +517,9 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
 	/* size must be smaller than z80 mem */
 	if (size > 24000) {
 		if (size > 65000) {
-			show_warning ("File size is greater than 64k");
+			SetLastSPASMWarning(SPASM_WARN_SIGNER_FILE_SIZE_64KB);
 		} else {
-			show_warning ("File size is greater than 24k");
+			SetLastSPASMWarning(SPASM_WARN_SIGNER_FILE_SIZE_24KB);
 		}
 	}
 	
