@@ -14,12 +14,6 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					TCHAR string[9];
 					int output;
 					HWND hWndEdit;
-					GetDlgItemText(hwnd, IDC_LOW_EDT, string, 8);
-					xtoi(string, &output);
-					lpDebuggerCalc->profiler.lowAddress = output;
-					GetDlgItemText(hwnd, IDC_HIGH_EDT, string, 8);
-					xtoi(string, &output);
-					lpDebuggerCalc->profiler.highAddress = output;
 					GetDlgItemText(hwnd, IDC_BLOCK_EDT, string, 8);
 					output = _tstoi(string);
 					lpDebuggerCalc->profiler.blockSize = output;

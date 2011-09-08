@@ -27,13 +27,14 @@ typedef enum {
 } gif_disp_states;
 
 #define MIN_BLOCK_SIZE 16
+#define MAX_FLASH_PAGE_SIZE 0x80
+#define MAX_RAM_PAGE_SIZE 0x08
 typedef struct profiler {
 	BOOL running;
 	int blockSize;
-	int lowAddress;
-	int highAddress;
 	long long totalTime;
-	long data[0x10000 / MIN_BLOCK_SIZE];
+	long flash_data[MAX_FLASH_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
+	long ram_data[MAX_RAM_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
 } profiler_t;
 
 typedef struct tagCALC {

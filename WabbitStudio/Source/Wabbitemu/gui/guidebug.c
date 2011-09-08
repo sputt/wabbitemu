@@ -94,9 +94,9 @@ BOOL CALLBACK EnumDebugResize(HWND hwndChild, LPARAM lParam) {
 		MoveWindow(hwndChild, rcParent->right - 110 - REG_PANE_WIDTH, cyDisasm + cyGripper, 110, cyMem- cyGripper, FALSE);
 		break;
 	case ID_REG:
-		printf("Reg: left: %d, top:% d, height: %d\n", rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, rcParent->bottom);
+		//printf("Reg: left: %d, top:% d, height: %d\n", rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, rcParent->bottom);
 		SetWindowPos(hwndChild, HWND_TOP, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, 0);
-		MoveWindow(hwndChild, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, FALSE);
+		//MoveWindow(hwndChild, rcParent->right - REG_PANE_WIDTH, CY_TOOLBAR, REG_PANE_WIDTH, rcParent->bottom - CY_TOOLBAR, FALSE);
 		//ShowWindow(hwndChild, SW_HIDE);
 		break;
 	/*case ID_PANECONTAINER:
@@ -614,15 +614,15 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				HMENU hmenu = GetMenu(hwnd);
 				if (lpDebuggerCalc->profiler.running) {
 					int result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGPROFILE), hwnd, (DLGPROC) ProfileDialogProc);
-					if (result == IDCANCEL)
+					if (result == IDCANCEL) {
 						lpDebuggerCalc->profiler.running = !lpDebuggerCalc->profiler.running;
-					else {
-						memset(lpDebuggerCalc->profiler.data, 0, MIN_BLOCK_SIZE * sizeof(long));
+					} else {
+						ZeroMemory(lpDebuggerCalc->profiler.flash_data, sizeof(lpDebuggerCalc->profiler.flash_data));
+						ZeroMemory(lpDebuggerCalc->profiler.ram_data, sizeof(lpDebuggerCalc->profiler.ram_data));
 						CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_CHECKED);
 					}
 				} else {
 					FILE* file;
-					int i;
 					double data;
 					TCHAR buffer[MAX_PATH];
 					if (BrowseFile(buffer, _T("	Text file  (*.txt)\0*.txt\0	All Files (*.*)\0*.*\0\0"),
@@ -631,15 +631,42 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 						lpDebuggerCalc->profiler.running = TRUE;
 						break;
 					}
+					profiler_t *profiler = &lpDebuggerCalc->profiler;
 					_tfopen_s(&file, buffer, _T("wb"));
-					_ftprintf_s(file, _T("Total Tstates: %i\r\n"), lpDebuggerCalc->profiler.totalTime);
-					for(i = lpDebuggerCalc->profiler.lowAddress / lpDebuggerCalc->profiler.blockSize;
-							i < ARRAYSIZE(lpDebuggerCalc->profiler.data) &&
-							i < (lpDebuggerCalc->profiler.highAddress / lpDebuggerCalc->profiler.blockSize); i++) {
-						data = (double) lpDebuggerCalc->profiler.data[i] / (double) lpDebuggerCalc->profiler.totalTime;
-						if (data != 0.0)
-							_ftprintf_s(file, _T("$%04X - $%04X: %f%% %d tstates\r\n"), i * lpDebuggerCalc->profiler.blockSize, ((i + 1) *
-											lpDebuggerCalc->profiler.blockSize) - 1, data, lpDebuggerCalc->profiler.data[i]);
+					_ftprintf_s(file, _T("Total Tstates: %i\r\n"), profiler->totalTime);
+					_ftprintf_s(file, _T("Flash Memory:\r\n"));
+					for (int j = 0; j < lpDebuggerCalc->cpu.mem_c->flash_pages; j++)
+					{
+						for (int i = 0; i < PAGE_SIZE / profiler->blockSize; i++) 
+						{
+							data = (double) profiler->flash_data[j][i] / (double) profiler->totalTime;
+							if (data != 0.0) 
+							{
+								_ftprintf_s(file, _T("%02X: $%04X - $%04X:\t%f%%\t%d tstates\r\n"), 
+												j,
+												i * profiler->blockSize, 
+												((i + 1) * profiler->blockSize) - 1,
+												data * 100,
+												profiler->flash_data[j][i]);
+							}
+						}
+					}
+					_ftprintf_s(file, _T("\r\nRAM:\r\n"));
+					for (int j = 0; j < lpDebuggerCalc->cpu.mem_c->ram_pages; j++)
+					{
+						for (int i = 0; i < PAGE_SIZE / profiler->blockSize; i++) 
+						{
+							data = (double) profiler->ram_data[j][i] / (double) profiler->totalTime;
+							if (data != 0.0) 
+							{
+								_ftprintf_s(file, _T("$%02X: $%04X - $%04X:\t%f%%\t%d tstates\r\n"), 
+												j,
+												i * profiler->blockSize, 
+												((i + 1) * profiler->blockSize) - 1,
+												data,
+												profiler->ram_data[j][i]);
+							}
+						}
 					}
 					fclose(file);
 					CheckMenuItem(GetSubMenu(hmenu, 3), IDM_TOOLS_PROFILE, MF_BYCOMMAND | MF_UNCHECKED);
