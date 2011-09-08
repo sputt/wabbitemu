@@ -416,7 +416,7 @@ void db_step_finish(HWND hwnd, dp_settings *dps) {
 	invalidate_pcs(hwnd, dps);
 	cycle_pcs(dps);
 	InvalidateSel(hwnd, addr_to_index(dps, dps->nPCs[0]));
-	Debug_UpdateWindow(GetParent(hwnd));
+	Debug_UpdateWindow(GetParent(GetParent(hwnd)));
 }
 
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -961,9 +961,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					for (i = 0; i < PC_TRAILS; i++) {
 						dps->nPCs[i] = -1;
 					}
-					CPU_step((&lpDebuggerCalc->cpu));
+					CPU_step(&lpDebuggerCalc->cpu);
 					calc_unpause_linked();
-					lpDebuggerCalc->running = TRUE;
+					SendMessage(lpDebuggerCalc->hwndFrame, WM_COMMAND, IDM_CALC_PAUSE, 0);
 					break;
 				}
 				case DB_STOP: {

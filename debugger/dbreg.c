@@ -238,7 +238,7 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 			SetWindowPos(hwndValue, NULL, kRegAddr * 4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-			rdoType[2 *i] =
+			rdoType[2 * i] =
 				CreateWindow(
 					_T("BUTTON"),
 					_T(""),
@@ -1100,6 +1100,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				ScrollWindow(hwnd, 0, -si.nPos, NULL, NULL);*/
 
 			DrawExpandPanes();
+			UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_MOUSEWHEEL: {

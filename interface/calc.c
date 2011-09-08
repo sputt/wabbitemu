@@ -481,7 +481,7 @@ int calc_run_frame(LPCALC lpCalc) {
 }
 
 int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
-	uint64_t time_end = tc_tstates((&lpCalc->timer_c)) + tstates - lpCalc->time_error;
+	uint64_t time_end = tc_tstates(&lpCalc->timer_c) + tstates - lpCalc->time_error;
 
 	while (lpCalc->running) {
 		if (check_break(&lpCalc->mem_c, addr_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc)) & 1) {
@@ -513,16 +513,22 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 #endif
 			return 0;
 		}
-
 		uint64_t oldTStates;
-		if(lpCalc->profiler.running)
-			oldTStates = tc_tstates((&lpCalc->timer_c));
+		uint16_t oldPC;
+		if (lpCalc->profiler.running) {
+			oldTStates = tc_tstates(&lpCalc->timer_c);
+			oldPC = lpCalc->cpu.pc % PAGE_SIZE;
+		}
 		CPU_step(&lpCalc->cpu);
 		if (lpCalc->profiler.running) {
-			uint64_t time = tc_tstates((&lpCalc->timer_c)) - oldTStates;
+			uint64_t time = tc_tstates(&lpCalc->timer_c) - oldTStates;
 			lpCalc->profiler.totalTime += time;
-			if(lpCalc->cpu.pc <= lpCalc->profiler.highAddress && lpCalc->cpu.pc >= lpCalc->profiler.lowAddress )
-				lpCalc->profiler.data[lpCalc->cpu.pc / lpCalc->profiler.blockSize] += (long) time;
+			bank_t bank = lpCalc->cpu.mem_c->banks[mc_bank(oldPC)];
+			if (bank.ram) {
+				lpCalc->profiler.ram_data[bank.page][oldPC / lpCalc->profiler.blockSize] += (long) time;
+			} else {
+				lpCalc->profiler.flash_data[bank.page][oldPC / lpCalc->profiler.blockSize] += (long) time;
+			}
 		}
 		if (tc_tstates((&lpCalc->timer_c)) >= time_end) {
 			lpCalc->time_error = (time_t)(tc_tstates((&lpCalc->timer_c)) - time_end);
