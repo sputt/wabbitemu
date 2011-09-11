@@ -340,7 +340,8 @@ char *replace_literal_args (const char *ptr, define_t *define, list_t **curr_arg
 		int old_len = new_ptr - ptr;
 		strncpy(word, ptr, old_len);
 		word[old_len] = '\0';
-		for (int i = 0; i < define->num_args; i++) {
+		int i;
+		for (i = 0; i < define->num_args; i++) {
 			if (*define->args[i] == '@' && !strcasecmp(define->args[i] + 1, word)) {
 				define_t *arg_define = search_defines(define->args[i]);
 				int new_len = strlen(arg_define->contents);
@@ -546,7 +547,8 @@ char *escape_string(const char *input)
 
 	eb_append(escape_string, "\"", 1);
 
-	for (unsigned int i = 0; i < strlen(input); i++)
+	unsigned int i;
+	for (i = 0; i < strlen(input); i++)
 	{
 		switch (*input)
 		{
