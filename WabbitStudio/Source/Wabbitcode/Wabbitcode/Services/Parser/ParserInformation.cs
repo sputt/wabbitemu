@@ -14,12 +14,12 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			get { return sourceFile; }
 		}
 
-        private bool isIncluded = false;
-        public bool IsIncluded
-        {
-            get { return isIncluded; }
-            set { isIncluded = value; }
-        }
+		private bool isIncluded = false;
+		public bool IsIncluded
+		{
+			get { return isIncluded; }
+			set { isIncluded = value; }
+		}
 		public ParserInformation(string file)
 		{
 			sourceFile = file;
@@ -78,40 +78,40 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			set;
 		}
 
-        IParserData[] generatedList;
-        public IParserData[] GeneratedList
-        {
-            get
-            {
-                int counter = 0;
-                int size = LabelsList.Count + DefinesList.Count +
-                            IncludeFilesList.Count + MacrosList.Count;
-                generatedList = new IParserData[size];
-                foreach (IParserData label in LabelsList)
-                {
-                    generatedList[counter] = label;
-                    counter++;
-                }
-                foreach (IParserData define in DefinesList)
-                {
-                    generatedList[counter] = define;
-                    counter++;
-                }
-                foreach (IParserData include in IncludeFilesList)
-                {
-                    generatedList[counter] = include;
-                    counter++;
-                }
-                foreach (IParserData macro in MacrosList)
-                {
-                    generatedList[counter] = macro;
-                    counter++;
-                }
-                ParserDataSorter sorter = new ParserDataSorter();
-                Array.Sort(generatedList, sorter);
-                return generatedList;
-            }
-        }
+		IParserData[] generatedList;
+		public IParserData[] GeneratedList
+		{
+			get
+			{
+				int counter = 0;
+				int size = LabelsList.Count + DefinesList.Count +
+							IncludeFilesList.Count + MacrosList.Count;
+				generatedList = new IParserData[size];
+				foreach (IParserData label in LabelsList)
+				{
+					generatedList[counter] = label;
+					counter++;
+				}
+				foreach (IParserData define in DefinesList)
+				{
+					generatedList[counter] = define;
+					counter++;
+				}
+				foreach (IParserData include in IncludeFilesList)
+				{
+					generatedList[counter] = include;
+					counter++;
+				}
+				foreach (IParserData macro in MacrosList)
+				{
+					generatedList[counter] = macro;
+					counter++;
+				}
+				ParserDataSorter sorter = new ParserDataSorter();
+				Array.Sort(generatedList, sorter);
+				return generatedList;
+			}
+		}
 
 		/*public IEnumerator<IParserData> GetEnumerator()
 		{
@@ -124,7 +124,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		}*/
 	}
 
-	public class IParserEnumerator : IEnumerator<IParserData>
+	public sealed class IParserEnumerator : IEnumerator<IParserData>
 	{
 		private ParserInformation parserData;
 		private int position = -1;
@@ -137,7 +137,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		{
 			get
 			{
-                return parserData.GeneratedList[position];
+				return parserData.GeneratedList[position];
 			}
 		}
 
@@ -154,7 +154,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		public bool MoveNext()
 		{
 			position++;
-            return position < parserData.GeneratedList.Length;
+			return position < parserData.GeneratedList.Length;
 		}
 
 		public void Reset()
@@ -163,21 +163,21 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		}
 	}
 
-    public class ParserDataSorter : IComparer
-    {
-        // Compare the length of the strings, or the strings
-        // themselves, if they are the same length.
-        public int Compare(object x, object y)
-        {
-            IParserData datax = x as IParserData;
-            IParserData datay = y as IParserData;
+	public class ParserDataSorter : IComparer
+	{
+		// Compare the length of the strings, or the strings
+		// themselves, if they are the same length.
+		public int Compare(object x, object y)
+		{
+			IParserData datax = x as IParserData;
+			IParserData datay = y as IParserData;
 
-            if (datax == null || datay == null || datax.Offset == datay.Offset)
-                return 0;
-            if (datax.Offset > datay.Offset)
-                return 1;
-            else
-                return -1;
-        }
-    }
+			if (datax == null || datay == null || datax.Offset == datay.Offset)
+				return 0;
+			if (datax.Offset > datay.Offset)
+				return 1;
+			else
+				return -1;
+		}
+	}
 }

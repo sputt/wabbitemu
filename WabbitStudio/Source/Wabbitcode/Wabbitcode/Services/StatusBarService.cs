@@ -29,7 +29,7 @@ namespace Revsoft.Wabbitcode.Services
         /// </summary>
         /// <param name="name">Name of the task progressing</param>
         /// <param name="progress">Amount of progress to draw</param>
-        /// <param name="status">Opeartion status determining the color of the bar to draw</param>
+        /// <param name="status">Operation status determining the color of the bar to draw</param>
         void SetProgress(double progress, string name = "", OperationStatus status = OperationStatus.Normal);
 
         void ShowProgress();

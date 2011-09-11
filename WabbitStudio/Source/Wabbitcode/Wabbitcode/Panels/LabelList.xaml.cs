@@ -12,42 +12,48 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AvalonDock;
+using Revsoft.Wabbitcode.Interface;
+using System.ComponentModel;
 
 namespace Revsoft.Wabbitcode.Panels
 {
-    /// <summary>
-    /// Interaction logic for LabelList.xaml
-    /// </summary>
-    public partial class LabelList : DockableContent, IWabbitcodePanel
-    {
-        public LabelList()
-        {
-            InitializeComponent();
-        }
+	/// <summary>
+	/// Interaction logic for LabelList.xaml
+	/// </summary>
+	public partial class LabelList : DockableContent, IWabbitcodePanel
+	{
+		public LabelList()
+		{
+			InitializeComponent();
+		}
 
-        public void Cut()
-        {
-            throw new NotImplementedException();
-        }
+		#region IClipboard
+		public void Cut()
+		{
+			throw new NotImplementedException();
+		}
 
-        public void Copy()
-        {
-            throw new NotImplementedException();
-        }
+		public void Copy()
+		{
+			throw new NotImplementedException();
+		}
 
-        public void Paste()
-        {
-            throw new NotImplementedException();
-        }
+		public void Paste()
+		{
+			throw new NotImplementedException();
+		}
+		#endregion
 
-        public void Undo()
-        {
-            throw new NotImplementedException();
-        }
+		#region IUndoable
+		public void Undo()
+		{
+			throw new NotImplementedException();
+		}
 
-        public void Redo()
-        {
-            throw new NotImplementedException();
-        }
-    }
+		public void Redo()
+		{
+			throw new NotImplementedException();
+		}
+		#endregion
+	}
 }

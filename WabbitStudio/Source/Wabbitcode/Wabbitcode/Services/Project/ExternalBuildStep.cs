@@ -1,99 +1,86 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Diagnostics;
 using System.IO;
+using System.Security.Permissions;
+using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Utilities;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
 	public class ExternalBuildStep : IBuildStep
 	{
-		string args;
-		public string Arguments
-		{
-			get { return args; }
-		}
+		public IProject Project { get; private set; }
 
-		string input;
-		public string InputFile
-		{
-			get { return input; }
-            set { input = value; }
-		}
+		public string Arguments { get; private set; }
 
-		int stepNumber;
-		public int StepNumber
-		{
-			get { return stepNumber; }
-			set { stepNumber = value; }
-		}
+		public FilePath InputFile { get; set; }
+
+		public int StepNumber { get; set; }
+
+		public Action<string> Callback { get; set; }
 
 		public ExternalBuildStep(int number, string commandLine)
 		{
-			stepNumber = number;
+			StepNumber = number;
 			int spaceIndex = commandLine.IndexOf(' ');
 			if (spaceIndex == -1)
 			{
-				input = commandLine;
-				args = "";
+				InputFile = new FilePath(commandLine);
+				Arguments = "";
 			}
 			else
 			{
-				input = commandLine.Substring(0, spaceIndex);
-				args = commandLine.Substring(spaceIndex, commandLine.Length - spaceIndex);
+				InputFile = new FilePath(commandLine.Substring(0, spaceIndex));
+				Arguments = commandLine.Substring(spaceIndex, commandLine.Length - spaceIndex);
 			}
 
 		}
 
 		public ExternalBuildStep(int number, string program, string arguments)
 		{
-			stepNumber = number;
-			input = program;
-			args = arguments;
+			StepNumber = number;
+			InputFile = new FilePath(program);
+			Arguments = arguments;
 		}
 
+		[SecurityPermission(SecurityAction.LinkDemand)]
 		public bool Build()
 		{
-#if !DEBUG
+			Process cmd = new Process
+			{
+				StartInfo =
+				{
+					FileName = InputFile,
+					WorkingDirectory = Project.ProjectDirectory,
+					UseShellExecute = false,
+					CreateNoWindow = true,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					Arguments = Arguments,
+				}
+			};
+			cmd.Exited += externalProgramExit;
 			try
 			{
-#endif
-				Process cmd = new Process
-				{
-					StartInfo =
-					{
-						FileName = input,
-                        WorkingDirectory = ProjectService.CurrentProject.ProjectDirectory,
-						UseShellExecute = false,
-						CreateNoWindow = true,
-						RedirectStandardOutput = true,
-						RedirectStandardError = true,
-						Arguments = args,
-					}
-				};
-				cmd.Exited += new EventHandler(externalProgramExit);
 				cmd.Start();
 				return true;
-#if !DEBUG
 			}
 			catch (Exception)
 			{
 				return false;
 			}
-#endif
 		}
 
 		private void externalProgramExit(object sender, EventArgs e)
 		{
 			Process cmd = (Process)sender;
-			DockingService.OutputWindow.AddText(cmd.StandardOutput.ReadToEnd());
+			Callback(cmd.StandardOutput.ReadToEnd());
 		}
 
 
 		public string Description
 		{
-			get { return "Run " + Path.GetFileName(input); }
+			get { return "Run " + Path.GetFileName(InputFile); }
 		}
 
 		public override string ToString()
@@ -103,7 +90,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		public object Clone()
 		{
-			return new ExternalBuildStep(this.stepNumber, this.input, this.args);
+			return new ExternalBuildStep(StepNumber, InputFile, Arguments);
 		}
 	}
 }

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Revsoft.Wabbitcode.Interface;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
-	public class BuildConfig : ICloneable
+	public class BuildConfig : IBuildConfig, ICloneable
 	{
 		private string name;
 		public string Name
@@ -19,9 +18,16 @@ namespace Revsoft.Wabbitcode.Services.Project
 			get { return steps; }
 		}
 
-		public BuildConfig(string name)
+		IProject project;
+		public IProject Project
+		{
+			get { return project; }
+		}
+
+		public BuildConfig(IProject project, string name)
 		{
 			this.name = name;
+			this.project = project;
 		}
 
 		public void SortSteps()
@@ -32,9 +38,9 @@ namespace Revsoft.Wabbitcode.Services.Project
 		public void Build()
 		{
 			SortSteps();
-			ProjectService.CurrentProject.ProjectOutputs.Clear();
-            ProjectService.CurrentProject.ListOutputs.Clear();
-			ProjectService.CurrentProject.LabelOutputs.Clear();
+			Project.ProjectOutputs.Clear();
+			Project.ListOutputs.Clear();
+			Project.LabelOutputs.Clear();
 			foreach (IBuildStep step in steps)
 				step.Build();
 		}
@@ -66,10 +72,10 @@ namespace Revsoft.Wabbitcode.Services.Project
 			return name;
 		}
 
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+		public override int GetHashCode()
+		{
+			return name.GetHashCode() +  48 * steps.Count.GetHashCode();
+		}
 
 		public override bool Equals(object obj)
 		{
@@ -84,7 +90,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		public object Clone()
 		{
-			BuildConfig clone = new BuildConfig(this.name);
+			BuildConfig clone = new BuildConfig(project, this.name);
 			clone.steps = new List<IBuildStep>();
 			int counter = 0;
 			foreach (IBuildStep step in this.steps)

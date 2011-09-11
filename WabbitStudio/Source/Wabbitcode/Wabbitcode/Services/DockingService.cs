@@ -1,135 +1,139 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Windows;
 using AvalonDock;
-using ICSharpCode.AvalonEdit;
+using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Panels;
-using System.Collections.Generic;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    public static class DockingService
-    {
-        static DockingManager dockManager;
-        public static MainWindow MainWindow { get; private set; }
+	public class DockingService : IDockingService
+	{
+		public DockingManager DockManager { get; private set; }
+		public MainWindow MainWindow { get; private set; }
 
-        public static IWabbitcodePanel ActivePanel { get { return (IWabbitcodePanel) dockManager.ActiveContent; } }
-        public static ManagedContent ActiveContent { get { return dockManager.ActiveContent; } }
-        public static Editor ActiveDocument { get { return (Editor) dockManager.ActiveDocument; } }
+		public IWabbitcodePanel ActivePanel { get { return (IWabbitcodePanel) DockManager.ActiveContent; } }
+		public ManagedContent ActiveContent { get { return DockManager.ActiveContent; } }
+		public Editor ActiveDocument { get { return (Editor) DockManager.ActiveDocument; } }
+		public ManagedContentCollection<DocumentContent> Documents
+		{
+			get
+			{
+				if (DockManager != null)
+					return DockManager.Documents;
+				return null;
+			}
+		}
 
-        public static WabbitcodeStatusBarService StatusBar { get; private set; }
-        public static LabelList LabelList { get; private set; }
-        public static ProjectViewer ProjectViewer { get; private set; }
-        public static OutputWindow OutputWindow { get; private set; }
-        public static ErrorList ErrorList { get; private set; }
-        
-        internal static void InitDocking(MainWindow main, DockingManager manager)
-        {
-            MainWindow = main;
-            dockManager = manager;
+		public WabbitcodeStatusBarService StatusBar { get; private set; }
+		public LabelList LabelList { get; private set; }
+		public ProjectViewer ProjectViewer { get; private set; }
+		public OutputWindow OutputWindow { get; private set; }
+		public ErrorList ErrorList { get; private set; }
 
-            Application.Current.Resources["ThemeDictionary"] = new ResourceDictionary();
-            ThemeFactory.ChangeTheme("dev2010");
+		private IPathsService pathsService;
 
-            MainWindow.WindowState = PropertyService.GetWabbitcodeProperty("WindowState");
-            MainWindow.Top = PropertyService.GetWabbitcodeProperty("Top");
-            MainWindow.Left = PropertyService.GetWabbitcodeProperty("Left");
-            MainWindow.Width = PropertyService.GetWabbitcodeProperty("Width");
-            MainWindow.Height = PropertyService.GetWabbitcodeProperty("Height");
+		public void InitService(params Object[] objects)
+		{
+			DockingManager DockManager = objects[0] as DockingManager;
+			if (DockManager == null)
+				throw new ArgumentException("First parameter is not of type DockingManager");
+			MainWindow mainWindow = objects[1] as MainWindow;
+			if (mainWindow == null)
+				throw new ArgumentException("Second parameter is not of type MainWindow");
 
-            dockManager.DeserializationCallback = new DockingManager.DeserializationCallbackHandler(DeserializationCallback);
-        }
+			pathsService = ServiceFactory.Instance.GetServiceInstance<PathsService>();
 
-        internal static void DeserializationCallback(object s, DeserializationCallbackEventArgs e)
-        {
-            if (e.Name != "EditorDocument")
-                return;
-            e.Content = new Editor();
-        }
+			this.DockManager = DockManager;
+			this.MainWindow = mainWindow;
+			Application.Current.Resources["ThemeDictionary"] = new ResourceDictionary();
+			ThemeFactory.ChangeTheme("dev2010");
 
-        static readonly DependencyProperty ErrorListProperty =
-                                DependencyProperty.Register("ErrorListVisible", typeof(ObservableCollection<Editor>),
-                                    typeof(MainWindow), new UIPropertyMetadata(null));
+			MainWindow.WindowState = PropertyService.GetWabbitcodeProperty("WindowState");
+			MainWindow.Top = PropertyService.GetWabbitcodeProperty("Top");
+			MainWindow.Left = PropertyService.GetWabbitcodeProperty("Left");
+			MainWindow.Width = PropertyService.GetWabbitcodeProperty("Width");
+			MainWindow.Height = PropertyService.GetWabbitcodeProperty("Height");
 
-        internal static void InitPanels(WabbitcodeStatusBar statusBar)
-        {
-            StatusBar = new WabbitcodeStatusBarService(statusBar);
+			DockManager.DeserializationCallback = new DockingManager.DeserializationCallbackHandler(DeserializationCallback);
+		}
 
-            //Init Normal Panels
-            LabelList = new LabelList();
-            LabelList.Show(dockManager, AnchorStyle.Right);
+		private void DeserializationCallback(object s, DeserializationCallbackEventArgs e)
+		{
+			if (e.Name != "EditorDocument")
+				return;
+			e.Content = new Editor();
+		}
 
-            ProjectViewer = new ProjectViewer();
-            ProjectViewer.Show(dockManager, AnchorStyle.Left);
+		public void InitPanels(WabbitcodeStatusBar statusBar)
+		{
+			StatusBar = new WabbitcodeStatusBarService(statusBar);
 
-            OutputWindow = new OutputWindow();
-            OutputWindow.Show(dockManager, AnchorStyle.Bottom);
+			//Init Normal Panels
+			LabelList = new LabelList();
+			LabelList.Show(DockManager, AnchorStyle.Right);
 
-            ErrorList = new ErrorList();
-            ErrorList.Show(dockManager, AnchorStyle.Bottom);
+			ProjectViewer = new ProjectViewer();
+			ProjectViewer.Show(DockManager, AnchorStyle.Left);
 
-            if (File.Exists(WabbitcodePaths.DockConfig))
-            {
-#if !DEBUG
-                try {
-#endif
-                dockManager.RestoreLayout(WabbitcodePaths.DockConfig);
-#if !DEBUG
-                } catch (Exception) { }
-#endif
-            }
+			OutputWindow = new OutputWindow();
+			OutputWindow.Show(DockManager, AnchorStyle.Bottom);
+
+			ErrorList = new ErrorList();
+			ErrorList.Show(DockManager, AnchorStyle.Bottom);
+
+			if (File.Exists(pathsService.DockConfig))
+			{
+				try
+				{
+					DockManager.RestoreLayout(pathsService.DockConfig);
+				} catch (Exception) { }
+			}
+			IDocumentService documentService = ServiceFactory.Instance.GetServiceInstance<DocumentService>();
 			try
 			{
 				DocumentContent[] docs = new DocumentContent[Documents.Count];
 				Documents.CopyTo(docs, 0);
 				foreach (Editor doc in docs)
-					DocumentService.OpenDocuments.Add(doc);
+					documentService.OpenDocument(doc);
 			}
 			catch (Exception ex)
 			{
-				ShowError("ERROR", ex);
+				ShowError("Error restoring documents", ex);
 			}
-        }
+		}
 
-        internal static void DestoryDocking()
-        {
-            PropertyService.SaveWabbitcodeProperty("WindowState", MainWindow.WindowState);
-            PropertyService.SaveWabbitcodeProperty("Top", MainWindow.Top);
-            PropertyService.SaveWabbitcodeProperty("Left", MainWindow.Left);
-            PropertyService.SaveWabbitcodeProperty("Width", MainWindow.Width);
-            PropertyService.SaveWabbitcodeProperty("Height", MainWindow.Height);
-            PropertyService.Save();
+		public void DestroyService()
+		{
+			PropertyService.SaveWabbitcodeProperty("WindowState", MainWindow.WindowState);
+			PropertyService.SaveWabbitcodeProperty("Top", MainWindow.Top);
+			PropertyService.SaveWabbitcodeProperty("Left", MainWindow.Left);
+			PropertyService.SaveWabbitcodeProperty("Width", MainWindow.Width);
+			PropertyService.SaveWabbitcodeProperty("Height", MainWindow.Height);
+			PropertyService.Save();
 
-            dockManager.SaveLayout(WabbitcodePaths.DockConfig);
-        }
+			DockManager.SaveLayout(pathsService.DockConfig);
+		}
 
-        public static void ShowError(string error)
-        {
-            MessageBox.Show(error, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+		public static void ShowError(string error)
+		{
+			MessageBox.Show(error, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+		}
 
-        public static void ShowError(string error, Exception ex)
-        {
-            StringBuilder sb = new StringBuilder(error);
-            sb.Append("\n");
-            sb.Append(ex.ToString());
-            MessageBox.Show(sb.ToString(), "Error", MessageBoxButton.OK, MessageBoxImage.Error);
-        }
+		public static void ShowError(string error, Exception ex)
+		{
+			ShowError(error + "\n" + ex.ToString());
+		}
 
-        internal static void ShowDockPanel(DockableContent doc)
-        {
-            doc.Show(dockManager);
-        }
+		public void ShowDockPanel(DockableContent doc)
+		{
+			doc.Show(DockManager);
+		}
 
-        internal static void ShowDockPanel(DocumentContent doc)
-        {
-            doc.Show(dockManager);
-            doc.Activate();
-        }
-
-        public static ManagedContentCollection<DocumentContent> Documents { get { return dockManager.Documents; } }
-    }
+		public void ShowDockPanel(DocumentContent doc)
+		{
+			doc.Show(DockManager);
+			doc.Activate();
+		}
+	}
 }

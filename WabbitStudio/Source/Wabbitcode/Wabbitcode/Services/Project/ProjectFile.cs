@@ -1,13 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-using Revsoft.Wabbitcode;
+﻿using System.IO;
+using Revsoft.Wabbitcode.Interface;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
-	public class ProjectFile
+	public class ProjectFile : IProjectFile
 	{
 		private IProject parent;
 		public IProject Parent 
@@ -40,19 +36,9 @@ namespace Revsoft.Wabbitcode.Services.Project
 			set { filePath = value; }
 		}
 
-		private string fileFoldings;
-		public string FileFoldings
-		{
-			get { return fileFoldings; }
-			set { fileFoldings = value; }
-		}
+		public string FileFoldings { get; set; }
 
-        private ProjectFolder folder;
-        public ProjectFolder Folder
-        {
-            get { return folder; }
-            set { folder = value; }
-        }
+		public IProjectFolder Folder { get; set; }
 
 
 		public ProjectFile(IProject project, string fullPath)
@@ -66,11 +52,26 @@ namespace Revsoft.Wabbitcode.Services.Project
 			return filePath;
 		}
 
+		public override int GetHashCode()
+		{
+			return filePath.GetHashCode();
+		}
 
-        internal void Remove()
-        {
-            folder.Files.Remove(this);
-            folder = null;
-        }
-    }
+		public override bool Equals(object obj)
+		{
+			IProjectFile file = obj as IProjectFile;
+			if (file == null)
+			{
+				return base.Equals(obj);
+			}
+			return FileFullPath.Equals(file.FileFullPath);
+		}
+
+
+		public void Remove()
+		{
+			Folder.Files.Remove(this);
+			Folder = null;
+		}
+	}
 }
