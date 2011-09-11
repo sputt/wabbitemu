@@ -1,19 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.IO;
+using Revsoft.Wabbitcode.Interface;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
-	public class ProjectFolder
+	public class ProjectFolder : IProjectFolder
 	{
-		private string name;
-		public string Name
-		{
-			get { return name; }
-            set { name = value; }
-		}
+		public string Name { get; set; }
 
 		private IProject parent;
 		public IProject Parent
@@ -21,36 +14,46 @@ namespace Revsoft.Wabbitcode.Services.Project
 			get { return parent; }
 		}
 
-		private List<ProjectFolder> folders;
-		public List<ProjectFolder> Folders
+		private IList<IProjectFolder> folders;
+		public IList<IProjectFolder> Folders
 		{
 			get { return folders; }
 		}
 
-		private List<ProjectFile> files;
-		public List<ProjectFile> Files
+		private IList<IProjectFile> files;
+		public IList<IProjectFile> Files
 		{
 			get { return files; }
 		}
 
-        private ProjectFolder parentFolder;
-        public ProjectFolder ParentFolder
-        {
-            get { return parentFolder; }
-            set { parentFolder = value; }
-        }
+		public IProjectFolder ParentFolder { get; set; }
 
 		public ProjectFolder(IProject parent, string folderName)
 		{
 			this.parent = parent;
-			this.name = folderName;
-			files = new List<ProjectFile>();
-			folders = new List<ProjectFolder>();
+			this.Name = folderName;
+			files = new List<IProjectFile>();
+			folders = new List<IProjectFolder>();
 		}
 
 		public override string ToString()
 		{
-			return name;
+			return Name;
+		}
+
+		public override bool Equals(object obj)
+		{
+			IProjectFolder folder = obj as IProjectFolder;
+			if (folder == null)
+			{
+				return base.Equals(obj);
+			}
+			return Name.Equals(folder.Name);
+		}
+
+		public override int GetHashCode()
+		{
+			return Name.GetHashCode();
 		}
 
 		/// <summary>
@@ -58,10 +61,10 @@ namespace Revsoft.Wabbitcode.Services.Project
 		/// </summary>
 		/// <param name="folder"></param>
 		/// <returns>Returns folder found, otherwise null</returns>
-		internal ProjectFolder FindFolder(string folder)
+		public IProjectFolder FindFolder(string folder)
 		{
-			foreach (ProjectFolder subFolder in folders)
-				if (subFolder.name == folder)
+			foreach (IProjectFolder subFolder in folders)
+				if (subFolder.Name == folder)
 					return subFolder;
 			return null;
 		}
@@ -71,33 +74,33 @@ namespace Revsoft.Wabbitcode.Services.Project
 		/// </summary>
 		/// <param name="file">The file name to search for, not full path</param>
 		/// <returns>File found otherwise null</returns>
-		internal ProjectFile FindFile(string file)
+		public IProjectFile FindFile(string file)
 		{
-			foreach (ProjectFile subFile in files)
+			foreach (IProjectFile subFile in files)
 				if (Path.GetFileName(subFile.FileFullPath).ToLower() == file.ToLower())
 					return subFile;
 			return null;
 		}
 
-        internal void AddFile(ProjectFile file)
-        {
-            files.Add(file);
-            file.Folder = this;
-            parent.NeedsSave = true;
-        }
+		public void AddFile(IProjectFile file)
+		{
+			files.Add(file);
+			file.Folder = this;
+			parent.NeedsSave = true;
+		}
 
-        internal void AddFolder(ProjectFolder subFolder)
-        {
-            folders.Add(subFolder);
-            subFolder.ParentFolder = this;
-            parent.NeedsSave = true;
-        }
+		public void AddFolder(IProjectFolder subFolder)
+		{
+			folders.Add(subFolder);
+			subFolder.ParentFolder = this;
+			parent.NeedsSave = true;
+		}
 
-        internal void Remove()
-        {
-            parentFolder.Folders.Remove(this);
-            parentFolder = null;
-            parent.NeedsSave = true;
-        }
-    }
+		public void Remove()
+		{
+			ParentFolder.Folders.Remove(this);
+			ParentFolder = null;
+			parent.NeedsSave = true;
+		}
+	}
 }

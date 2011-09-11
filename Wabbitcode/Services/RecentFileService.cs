@@ -1,31 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using Revsoft.Wabbitcode.Interface.Services;
+using Revsoft.Wabbitcode.Utilities;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    public static class RecentFileService
-    {
-        static List<string> recentFileList = new List<string>();
+	public class RecentFileService : IRecentFileService
+	{
+		List<FilePath> recentFileList;
 
-        internal static void AddRecentFile(string filePath)
-        {
-            if (recentFileList.Contains(filePath))
-                return;
-            recentFileList.Add(filePath);
-        }
+		public void AddRecentFile(string filePath)
+		{
+			AddRecentFile(new FilePath(filePath));
+		}
 
+		public void AddRecentFile(FilePath filePath)
+		{
+			if (recentFileList.Contains(filePath))
+				return;
+			recentFileList.Add(filePath);
+		}
 
+		public void SaveRecentFileList()
+		{
+			
+		}
 
-        internal static void SaveRecentFileList()
-        {
-            
-        }
+		public IList<FilePath> GetRecentFiles()
+		{
+			return recentFileList;
+		}
 
-        internal static void GetRecentFiles()
-        {
-            
-        }
-    }
+		public void InitService(params Object[] objects)
+		{
+			recentFileList = new List<FilePath>();
+		}
+
+		public void DestroyService() 
+		{
+			SaveRecentFileList();
+		}
+	}
 }

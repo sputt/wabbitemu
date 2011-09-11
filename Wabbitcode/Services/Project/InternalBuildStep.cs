@@ -1,65 +1,54 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
+﻿using System.IO;
+using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Utilities;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
 	public class InternalBuildStep : IBuildStep
 	{
-		int stepNumber;
-		public int StepNumber
+		public IProject Project
 		{
-			get { return stepNumber; }
-			set { stepNumber = value; }
+			get;
+			private set;
 		}
 
-		string input;
-		public string InputFile
+		public int StepNumber { get; set; }
+
+		public FilePath InputFile  { get; set; }
+
+		public string InputFileRelative
 		{
-			get { return input; }
-            set { input = value; }
+			get
+			{
+				return Path.Combine(FileOperations.GetRelativePath(Path.GetDirectoryName(InputFile),
+					Project.ProjectDirectory), Path.GetFileName(InputFile));
+			}
 		}
 
-        public string InputFileRelative
-        {
-            get
-            {
-                return Path.Combine(FileOperations.GetRelativePath(Path.GetDirectoryName(input),
-                    ProjectService.CurrentProject.ProjectDirectory), Path.GetFileName(input));
-            }
-        }
+		public FilePath OutputFile { get; set; }
 
-		string output;
-		public string OutputFile
+		public string OutputFileRelative
 		{
-			get { return output; }
-            set { output = value; }
+			get
+			{
+				return Path.Combine(FileOperations.GetRelativePath(Path.GetDirectoryName(OutputFile),
+					Project.ProjectDirectory), Path.GetFileName(OutputFile));
+			}
 		}
-
-        public string OutputFileRelative
-        {
-            get
-            {
-                return Path.Combine(FileOperations.GetRelativePath(Path.GetDirectoryName(output),
-                    ProjectService.CurrentProject.ProjectDirectory), Path.GetFileName(output));
-            }
-        }
 
 		StepType stepType;
 		public StepType StepType
 		{
 			get { return stepType; }
-            set { stepType = value; }
+			set { stepType = value; }
 		}
 
-		public InternalBuildStep(int number, StepType type, string inputFile, string outputFile)
+		public InternalBuildStep(IProject project, int number, StepType type, string inputFile, string outputFile)
 		{
-			stepNumber = number;
+			StepNumber  = number;
 			stepType = type;
-			input = inputFile;
-			output = outputFile;
+			InputFile = new FilePath(inputFile);
+			OutputFile = new FilePath(outputFile);
 		}
 
 		public bool Build()
@@ -67,21 +56,25 @@ namespace Revsoft.Wabbitcode.Services.Project
 			bool errors = false;
 			switch (stepType)
 			{
-				case Project.StepType.All:
-					errors |= AssemblerService.AssembleFile(input, output, true);
-					ProjectService.CurrentProject.ProjectOutputs.Add(output);
-                    ProjectService.CurrentProject.ListOutputs.Add(Path.ChangeExtension(output, "lst"));
-                    ProjectService.CurrentProject.LabelOutputs.Add(Path.ChangeExtension(output, "lab"));
+				case StepType.All:
+					errors |= AssemblerService.Instance.AssembleFile(InputFile, OutputFile, flags: AssemblyFlags.Assemble | AssemblyFlags.Label | AssemblyFlags.List);
+					Project.ProjectOutputs.Add(OutputFile);
+					Project.ListOutputs.Add(Path.ChangeExtension(OutputFile, "lst"));
+					Project.LabelOutputs.Add(Path.ChangeExtension(OutputFile, "lab"));
 					break;
-				case Project.StepType.Listing:
-
+				case StepType.Listing:
+					errors |= AssemblerService.Instance.AssembleFile(InputFile, OutputFile, flags: AssemblyFlags.Assemble | AssemblyFlags.List);
+					Project.ProjectOutputs.Add(OutputFile);
+					Project.ListOutputs.Add(Path.ChangeExtension(OutputFile, "lst"));
 					break;
-				case Project.StepType.SymbolTable:
-
+				case StepType.SymbolTable:
+					errors |= AssemblerService.Instance.AssembleFile(InputFile, OutputFile, flags: AssemblyFlags.Assemble | AssemblyFlags.Label);
+					Project.ProjectOutputs.Add(OutputFile);
+					Project.LabelOutputs.Add(Path.ChangeExtension(OutputFile, "lab"));
 					break;
 				default:
-					errors |= AssemblerService.AssembleFile(input, output, true);
-					ProjectService.CurrentProject.ProjectOutputs.Add(output);
+					errors |= AssemblerService.Instance.AssembleFile(InputFile, OutputFile);
+					Project.ProjectOutputs.Add(OutputFile);
 					break;
 			}
 			return errors;
@@ -92,14 +85,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			get
 			{
-				string fileName = Path.GetFileName(input);
+				string fileName = Path.GetFileName(InputFile);
 				switch (stepType)
 				{
-					case Project.StepType.All:
+					case StepType.All:
 						return "Assemble and list " + fileName;
-					case Project.StepType.Listing:
+					case StepType.Listing:
 						return "List " + fileName;
-					case Project.StepType.SymbolTable:
+					case StepType.SymbolTable:
 						return "Symbolize " + fileName;
 					default:
 						return "Assemble " + fileName;
@@ -114,7 +107,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		public object Clone()
 		{
-			return new InternalBuildStep(this.stepNumber, this.stepType, this.input, this.output);
+			return new InternalBuildStep(Project, StepNumber, stepType, InputFile, OutputFile);
 		}
 	}
 

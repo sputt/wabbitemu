@@ -32,5 +32,8 @@
     <Setting Name="OutputWindowFont" Type="System.Windows.Media.FontFamily" Scope="User">
       <Value Profile="(Default)">Courier New</Value>
     </Setting>
+    <Setting Name="TabSize" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">4</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

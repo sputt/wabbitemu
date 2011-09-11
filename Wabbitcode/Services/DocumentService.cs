@@ -1,124 +1,124 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using AvalonDock;
-using ICSharpCode.AvalonEdit;
-using Microsoft.Win32;
 using System.IO;
-using Revsoft.Wabbitcode.Panels;
+using System.Xml;
 using ICSharpCode.AvalonEdit.Highlighting;
-using System.Collections.ObjectModel;
-using System.Windows;
-using Revsoft.Wabbitcode.Services.Parser;
+using ICSharpCode.AvalonEdit.Highlighting.Xshd;
+using Microsoft.Win32;
+using Revsoft.Wabbitcode.Interface.Services;
+using Revsoft.Wabbitcode.Panels;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    public static class DocumentService
-    {
-        public static ObservableCollection<Editor> OpenDocuments
-        {
-            get { return (ObservableCollection<Editor>)DockingService.MainWindow.GetValue(DocumentsProperty); }
-            set { DockingService.MainWindow.SetValue(DocumentsProperty, value); }
-        }
+	public class DocumentService : IDocumentService
+	{
+		public List<Editor> OpenDocuments;
+		IRecentFileService recentFileService;
+		IProjectService projectService;
 
-        public static readonly DependencyProperty DocumentsProperty =
-                                DependencyProperty.Register("OpenDocuments", typeof(ObservableCollection<Editor>),
-                                    typeof(MainWindow), new UIPropertyMetadata(null));
+		public void InitService(params Object[] objects)
+		{
+			recentFileService = ServiceFactory.Instance.GetServiceInstance<RecentFileService>();
+			projectService = ServiceFactory.Instance.GetServiceInstance<ProjectService>();
+			OpenDocuments = new List<Editor>();
+			InitHighlighting();
+		}
 
-        internal static void InitDocuments()
-        {
-            OpenDocuments = new ObservableCollection<Editor>();
-            InitHighlighting();
-        }
+		public void DestroyService() { }
 
-        internal static Editor CreateDocument(string title)
-        {
-            var editor = new Editor() { Title = title };
-            OpenDocuments.Add(editor);
-            editor.Activate();
-            return editor;
-        }
+		public Editor CreateDocument(string title)
+		{
+			var editor = new Editor() { Title = title };
+			OpenDocuments.Add(editor);
+			editor.Activate();
+			return editor;
+		}
 
-        internal static void OpenDocument()
-        {
-            var openFileDialog = new OpenFileDialog()
-            {
-                CheckFileExists = true,
-                DefaultExt = "*.asm",
-                Filter = "All Know File Types | *.asm; *.inc; *.z80; *.wcodeproj| Assembly Files (*.asm)|*.asm|Z80" +
-                            "Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|Project Files (*.wcodeproj)" +
-                           "|*.wcodeproj|All Files(*.*)|*.*",
-                FilterIndex = 0,
-                RestoreDirectory = true,
-                Multiselect = true,
-                Title = "Open File",
-            };
-            var result = openFileDialog.ShowDialog();
-            if (result == false)
-                return;
-            foreach (string fileName in openFileDialog.FileNames)
-            {
-                string extCheck = Path.GetExtension(fileName).ToLower();
-                if (extCheck == ".wcodeproj")
-                    ProjectService.OpenProject(fileName);
-                else
-                    OpenDocument(fileName);
-            }
-        }
+		public void OpenDocument()
+		{
+			var openFileDialog = new OpenFileDialog()
+			{
+				CheckFileExists = true,
+				DefaultExt = "*.asm",
+				Filter = "All Know File Types | *.asm; *.inc; *.z80; *.wcodeproj| Assembly Files (*.asm)|*.asm|Z80" +
+							"Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|Project Files (*.wcodeproj)" +
+						   "|*.wcodeproj|All Files(*.*)|*.*",
+				FilterIndex = 0,
+				RestoreDirectory = true,
+				Multiselect = true,
+				Title = "Open File",
+			};
+			var result = openFileDialog.ShowDialog();
+			if (result != true)
+				return;
+			foreach (string fileName in openFileDialog.FileNames)
+			{
+				if (string.Equals(Path.GetExtension(fileName),  ".wcodeproj"))
+					projectService.OpenProject(fileName);
+				else
+					OpenDocument(fileName);
+			}
+		}
 
-        internal static Editor OpenDocument(string filename)
-        {
-#if !DEBUG
-            try
-            {
-#endif
-                var doc = new Editor();
-                OpenDocuments.Add(doc);
-                //DockingService.StatusBar.ShowProgress();
-                //DockingService.StatusBar.SetProgress(.1, "Open", OperationStatus.Error);
-                OpenDocument(doc, filename);
-                //DockingService.StatusBar.SetProgress(.9, "Open", OperationStatus.Error);
-                //DockingService.StatusBar.HideProgress();
-                DockingService.ShowDockPanel(doc);
-                return doc;
-#if !DEBUG
-            }
-            catch (Exception ex)
-            {
-                StringBuilder builder = new StringBuilder();
-                builder.Append("Error opening file ");
-                builder.AppendLine(filename);
-                builder.Append(ex);
-                DockingService.ShowError(builder.ToString());
-                return null;
-            }
-#endif
-        }
+		public Editor OpenDocument(string filename)
+		{
+			try
+			{
+				var doc = new Editor();
+				OpenDocuments.Add(doc);
+				//DockingService.StatusBar.ShowProgress();
+				//DockingService.StatusBar.SetProgress(.1, "Open", OperationStatus.Error);
+				OpenDocument(doc, filename);
+				//DockingService.StatusBar.SetProgress(.9, "Open", OperationStatus.Error);
+				//DockingService.StatusBar.HideProgress();
+				IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<DockingService>();
+				dockingService.ShowDockPanel(doc);
+				doc.Activate();
+				return doc;
+			}
+			catch (Exception ex)
+			{
+				DockingService.ShowError("Error opening file " + filename, ex);
+				return null;
+			}
+		}
 
-        internal static void OpenDocument(Editor doc, string filename)
-        {
-            doc.OpenFile(filename);
-            ParserService.ParseFile(filename);
-            RecentFileService.AddRecentFile(filename);
-            RecentFileService.SaveRecentFileList();
-            RecentFileService.GetRecentFiles();
-        }
+		public void OpenDocument(Editor doc, string filename)
+		{
+			doc.OpenFile(filename);
+			projectService.CurrentProject.ParserService.ParseFile(filename);
+			recentFileService.AddRecentFile(filename);
+			recentFileService.SaveRecentFileList();
+			recentFileService.GetRecentFiles();
+		}
 
-        internal static void InitHighlighting()
-        {
-            IHighlightingDefinition asmHighlighting;
-            using (Stream s = typeof(MainWindow).Assembly.GetManifestResourceStream("Revsoft.Wabbitcode.Resources.Z80Asm.xshd"))
-            {
-                if (s == null)
-                    throw new InvalidOperationException("Could not find embedded resource");
-                using (System.Xml.XmlReader reader = new System.Xml.XmlTextReader(s))
-                {
-                    asmHighlighting = ICSharpCode.AvalonEdit.Highlighting.Xshd.HighlightingLoader.Load(reader, HighlightingManager.Instance);
-                }
-            }
-            // and register it in the HighlightingManager
-            HighlightingManager.Instance.RegisterHighlighting("Z80 Asm", new string[] { ".inc", ".z80", ".asm" }, asmHighlighting);
-        }
-    }
+		public void OpenDocument(Editor doc)
+		{
+			OpenDocuments.Add(doc);
+		}
+
+		private void InitHighlighting()
+		{
+			IHighlightingDefinition asmHighlighting;
+			Stream s = null;
+			try
+			{
+				s = typeof(MainWindow).Assembly.GetManifestResourceStream("Revsoft.Wabbitcode.Resources.Z80Asm.xshd");
+				using (XmlReader reader = new XmlTextReader(s))
+				{
+					s = null;
+					asmHighlighting = HighlightingLoader.Load(reader, HighlightingManager.Instance);
+					// and register it in the HighlightingManager
+					HighlightingManager.Instance.RegisterHighlighting("Z80 Asm", new string[] { ".inc", ".z80", ".asm" }, asmHighlighting);
+				}
+			}
+			finally
+			{
+				if (s != null)
+				{
+					s.Dispose();
+				}
+			}
+		}
+	}
 }

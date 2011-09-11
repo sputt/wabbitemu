@@ -69,6 +69,30 @@
     <CodeAnalysisIgnoreBuiltInRules>true</CodeAnalysisIgnoreBuiltInRules>
   </PropertyGroup>
   <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>..\bin\Debug\</OutputPath>
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\Release\</OutputPath>
+    <Optimize>true</Optimize>
+    <FileAlignment>4096</FileAlignment>
+    <WarningLevel>1</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+    <CodeAnalysisRuleSet>C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\Rule Sets\MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisIgnoreGeneratedCode>true</CodeAnalysisIgnoreGeneratedCode>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'WabbitComp Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\WabbitComp Debug\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'WabbitComp Release|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <OutputPath>bin\WabbitComp Release\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System" />
@@ -88,13 +112,14 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\AbstractClassFactory.cs" />
     <Compile Include="Dialogs\AboutBox.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="Dialogs\AboutBox.Designer.cs">
       <DependentUpon>AboutBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="AppBase.cs">
+    <Compile Include="GUI\AppBase.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="AsmFoldingStrategy.cs" />
@@ -102,11 +127,13 @@
     <Compile Include="Dialogs\NewProjectDialog.xaml.cs">
       <DependentUpon>NewProjectDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ExtensionMethods.cs" />
-    <Compile Include="FileOperations.cs">
+    <Compile Include="Utilities\ExtensionMethods.cs" />
+    <Compile Include="Utilities\FileOperations.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="MainWindow.xaml.cs">
+    <Compile Include="Interface\IUndoable.cs" />
+    <Compile Include="Interface\Services\IPathsService.cs" />
+    <Compile Include="GUI\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
@@ -118,7 +145,9 @@
       <DependentUpon>ErrorList.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Panels\Interface\IWabbitcodePanel.cs">
+    <Compile Include="Interface\IEditor.cs" />
+    <Compile Include="Interface\IClipboard.cs" />
+    <Compile Include="Interface\IWabbitcodePanel.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Panels\LabelList.xaml.cs">
@@ -151,6 +180,7 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <AutoGen>True</AutoGen>
     </Compile>
+    <Compile Include="Services\ServiceFactory.cs" />
     <Compile Include="Services\Assembler.cs" />
     <Compile Include="Services\AssemblerService.cs">
       <SubType>Code</SubType>
@@ -161,6 +191,16 @@
     <Compile Include="Services\DocumentService.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Utilities\FilePath.cs" />
+    <Compile Include="Interface\Services\IAssemblerService.cs" />
+    <Compile Include="Interface\Services\IService.cs" />
+    <Compile Include="Interface\Services\IDocumentService.cs" />
+    <Compile Include="Interface\Services\IDockingService.cs" />
+    <Compile Include="Interface\IAssembler.cs" />
+    <Compile Include="Interface\Services\IParserService.cs" />
+    <Compile Include="Interface\Services\IProjectService.cs" />
+    <Compile Include="Interface\Services\IRecentFileService.cs" />
+    <Compile Include="Interface\IFilePath.cs" />
     <Compile Include="Services\ParserService.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -184,28 +224,29 @@
     <Compile Include="Services\Project\BuildSystem.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Services\Project\CProject.cs">
+    <Compile Include="Interface\IBuildConfig.cs" />
+    <Compile Include="Interface\IBuildSystem.cs" />
+    <Compile Include="Interface\IProjectFile.cs" />
+    <Compile Include="Interface\IProjectFolder.cs" />
+    <Compile Include="Services\Project\Project.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\Project\ExternalBuildStep.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Services\Project\IBuildStep.cs">
+    <Compile Include="Interface\IBuildStep.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\Project\InternalBuildStep.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Services\Project\IProject.cs">
+    <Compile Include="Interface\IProject.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\Project\ProjectFile.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\Project\ProjectFolder.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Services\Project\ProjectStuff.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\PropertyService.cs">
@@ -221,14 +262,16 @@
     <Compile Include="Services\WabbitcodeStatusBar.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="WabbitcodePaths.cs">
+    <Compile Include="Services\PathsService.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Utilities\Converters.cs" />
+    <Compile Include="Utilities\NativeMethods.cs" />
     <Page Include="Dialogs\NewProjectDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="MainWindow.xaml">
+    <Page Include="GUI\MainWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -274,16 +317,6 @@
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <None Include="Wabbitcode_TemporaryKey.pfx" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AvalonDock\src\AvalonDock.csproj">
-      <Project>{87E61430-4243-45F2-B74E-0A4C096CEBF3}</Project>
-      <Name>AvalonDock</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\AvalonEdit\ICSharpCode.AvalonEdit\ICSharpCode.AvalonEdit.csproj">
-      <Project>{6C55B776-26D4-4DB3-A6AB-87E783B2F3D1}</Project>
-      <Name>ICSharpCode.AvalonEdit</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -333,6 +366,9 @@
     <EmbeddedResource Include="Resources\Templates.xml" />
   </ItemGroup>
   <ItemGroup>
+    <Resource Include="Resources\Project Icons\FolderOpen_16x16.png" />
+    <Resource Include="Resources\Project Icons\Folder_16x16.png" />
+    <Resource Include="Resources\Project Icons\GenericDocument_16x16.png" />
     <Content Include="Resources\Templates\Includes\app.inc" />
     <Content Include="Resources\Templates\Includes\dcs.inc" />
     <Content Include="Resources\Templates\Includes\ion.inc" />
@@ -355,6 +391,16 @@
     <Content Include="Resources\Templates\Source\nostub83p.asm" />
     <Content Include="Resources\Templates\Source\nostub86.asm" />
     <Content Include="Resources\Templates\Source\venus.asm" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AvalonDock\AvalonDock\AvalonDock.csproj">
+      <Project>{87E61430-4243-45F2-B74E-0A4C096CEBF3}</Project>
+      <Name>AvalonDock</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\AvalonEdit\ICSharpCode.AvalonEdit\ICSharpCode.AvalonEdit.csproj">
+      <Project>{6C55B776-26D4-4DB3-A6AB-87E783B2F3D1}</Project>
+      <Name>ICSharpCode.AvalonEdit</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
