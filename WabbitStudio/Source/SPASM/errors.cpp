@@ -236,7 +236,7 @@ void EndSPASMErrorSession(int nSession)
 }
 
 
-void ClearSPASMErrorSessions(bool fCompletelyFree)
+void ClearSPASMErrorSessions()
 {
 	if (g_ErrorList != NULL)
 	{

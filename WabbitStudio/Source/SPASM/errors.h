@@ -139,7 +139,7 @@ int GetSPASMErrorSessionErrorCount(int nSession);
 bool IsSPASMErrorSessionFatal(int nSession);
 void ReplaySPASMErrorSession(int nSession);
 void EndSPASMErrorSession(int nSession);
-void ClearSPASMErrorSessions(bool fCompletelyFree = false);
+void ClearSPASMErrorSessions();
 void AddSPASMErrorSessionAnnotation(int nSession, LPCTSTR lpszFormat, ...);
 bool IsErrorInSPASMErrorSession(int nSession, DWORD dwErrorCode);
 void FreeSPASMErrorSessions(void);

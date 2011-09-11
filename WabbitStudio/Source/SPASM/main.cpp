@@ -430,7 +430,7 @@ int main (int argc, char **argv)
 		list_free(include_dirs, true, NULL);
 
 	free(output_contents);
-	ClearSPASMErrorSessions(true);
+	ClearSPASMErrorSessions();
 	free_storage();
 
 #ifdef _WINDOWS
