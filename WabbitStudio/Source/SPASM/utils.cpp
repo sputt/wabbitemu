@@ -21,16 +21,16 @@ static void destroy_char_value (label_t *label) {
 }
 
 /* Routine prototype */
-char * __cdecl mystrpbrk (const char * string, const char * control) {
+char *mystrpbrk (const char * string, const char * control) {
 	const unsigned char *str =  (const unsigned char *) string;
 	const unsigned char *ctrl = (const unsigned char *) control;
 
 	int map[256];
-	ZeroMemory(map, sizeof(map));
+	memset(map, 0, sizeof(map));
 
 	while (*ctrl)
 	{
-		map[*ctrl] = TRUE;
+		map[*ctrl] = true;
 		ctrl++;
 	}
 
