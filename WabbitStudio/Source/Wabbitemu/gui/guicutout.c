@@ -91,7 +91,7 @@ static LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPA
 				if (_tcsicmp(szWindowName, _T("wabbitminimize")) == 0) {
 					ShowWindow(lpCalc->hwndFrame, SW_MINIMIZE);
 				} else if (_tcsicmp(szWindowName, _T("wabbitclose")) == 0) {
-					CloseWindow(lpCalc->hwndFrame);
+					SendMessage(lpCalc->hwndFrame, WM_CLOSE, 0, 0);
 				}
 				SetWindowLongPtr(hwnd, 0, (LONG_PTR) FALSE);
 				ReleaseCapture();
@@ -154,7 +154,7 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 	u_int width = lpCalc->rectSkin.right;
 	u_int height = lpCalc->rectSkin.bottom;
 
-	int scale = lpCalc->Scale;
+	int scale = lpCalc->scale;
 	if (lpCalc->SkinEnabled)
 		scale = 2;
 
@@ -345,7 +345,7 @@ int DisableCutout(HWND hwndFrame) {
 	//BOOL disableTransition = TRUE;
 	//DwmSetWindowAttribute(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 
-	int scale = lpCalc->Scale;
+	int scale = lpCalc->scale;
 	if (lpCalc->SkinEnabled)
 		scale = 2;
 	if (lpCalc->hwndLCD)

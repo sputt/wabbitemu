@@ -748,6 +748,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) oldVal);
 			}
 
+			SetFocus(hwnd);
+
 			POINT pt = {x, y};
 			RECT r;
 			int addr = AddrFromPoint(hwnd, pt, &r);
@@ -787,7 +789,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 			}
 			Debug_UpdateWindow(hwnd);
-			SetFocus(hwnd);
 			return 0;
 		}
 		case WM_MOUSEMOVE:

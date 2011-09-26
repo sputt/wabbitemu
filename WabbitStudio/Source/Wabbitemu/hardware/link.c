@@ -703,12 +703,12 @@ void fix_certificate(CPU_t *cpu, u_int page) {
 	u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) cpu->mem_c->flash;
 	upages_t upages;
 	state_userpages(cpu, &upages);
-	//there is probably some logic here that im missing...
+	//there is probably some logic here that I'm missing...
 	//the 83p wtf is up with that offset
 	int offset = 0x1E50;
 	if (cpu->pio.model == TI_83P)
 		offset = 0x1F18;
-	//erase the part of the certifcate that marks it as a trial app
+	//erase the part of the certificate that marks it as a trial app
 	dest[cpu->mem_c->flash_pages-2][offset + 2 * (upages.start - page)] = 0x80;
 	dest[cpu->mem_c->flash_pages-2][offset+1 + 2 * (upages.start - page)] = 0x00;
 }
@@ -722,14 +722,32 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	if (tifile->flash == NULL)
 		return LERR_FILE;
 
+	BOOL bClearSector = FALSE;
 	for (i = 0; i < ARRAYSIZE(tifile->flash->data); i++) {
-		if (tifile->flash->data[i] == NULL)
-			continue;
-		if (i > 10)
+		if (tifile->flash->data[i] == NULL) {
+			if (bClearSector) {
+				
+			} else {
+				continue;
+			}
+		}
+		if (!bClearSector) {
+			for (int j = i - 1; j >= (i / 4) * 4; j--) {
+				memset(dest[j], 0xFF, PAGE_SIZE);
+			}
+		}
+		bClearSector = TRUE;
+		if (i > 0x10) {
 			page = i + cpu->mem_c->flash_pages - 0x20;
-		else
+		} else {
 			page = i;
+		}
+
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
+
+		if (page % 4) {
+			bClearSector = FALSE;
+		}
 	}
 
 	//valid OS
@@ -755,7 +773,7 @@ int get_page_size(u_char (*dest)[PAGE_SIZE], int page) {
 	return dest[page][i];
 }
 
-/* Forceload a TI-83+ series APP
+/* Force load a TI-83+ series APP
  * On error: Returns an error code */
 static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) cpu->mem_c->flash;
@@ -778,8 +796,8 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 		if (!memcmp(&dest[page][0x12], &tifile->flash->data[0][0x12], 8)) {
 			if (get_page_size(dest, page) != tifile->flash->pages)
 			{
-				//or we can forceload it still ;D
-				//theres probably some good reason jim didnt write this code :|
+				//or we can force load it still ;D
+				//there's probably some good reason Jim didn't write this code :|
 				int pageDiff = tifile->flash->pages - get_page_size(dest, page);
 				int currentPage = page - tifile->flash->pages;
 				u_int end_page = pageDiff > 0 ? currentPage : currentPage + pageDiff;
@@ -838,7 +856,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 
 	//mark the app as non trial
 	fix_certificate(cpu, page);
-	//force reset the applist says BrandonW. seems to work, apps show up (sometimes)
+	//force reset the app list says BrandonW. seems to work, apps show up (sometimes)
 	mem_write(cpu->mem_c, 0x9C87, 0x00);
 
 	//u_char *space = &dest[page][PAGE_SIZE - 1];

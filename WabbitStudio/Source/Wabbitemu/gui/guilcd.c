@@ -345,7 +345,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		screen = LCD_image(lcd) ;
 		//screen = GIFGREYLCD();
 
-		if (lcd->width * lpCalc->Scale != (rc.right - rc.left))
+		if (lcd->width * lpCalc->scale != (rc.right - rc.left))
 			SetStretchBltMode(hdc, HALFTONE);
 		else
 			SetStretchBltMode(hdc, BLACKONWHITE);
@@ -440,7 +440,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 	static POINT ptOffset;
 
-    switch (Message) {
+	switch (Message) {
 		case WM_CREATE:
 		{
 			HDC hdc = GetDC(hwnd);
@@ -454,11 +454,13 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				{RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW), 0, DVASPECT_CONTENT, -1, TYMED_HGLOBAL}
 			};
 
-			RegisterDropWindow(hwnd, (IDropTarget **) &lpCalc->pDropTarget);
-			lpCalc->pDropTarget->AddAcceptedFormat(&fmtetc[0]);
-			lpCalc->pDropTarget->AddAcceptedFormat(&fmtetc[1]);
+			if (lpCalc->hwndLCD == NULL) {
+				RegisterDropWindow(hwnd, (IDropTarget **) &lpCalc->pDropTarget);
+				lpCalc->pDropTarget->AddAcceptedFormat(&fmtetc[0]);
+				lpCalc->pDropTarget->AddAcceptedFormat(&fmtetc[1]);
+			}
 
-            if (bi == NULL) {
+			if (bi == NULL) {
 				bi = (BITMAPINFO *) malloc(sizeof(BITMAPINFOHEADER) + (MAX_SHADES+1)*sizeof(RGBQUAD));
 				bi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 				bi->bmiHeader.biWidth = 128;
@@ -480,8 +482,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					bi->bmiColors[i].rgbGreen = (0xAB*(256-(LCD_HIGH/MAX_SHADES)*i))/255;
 					bi->bmiColors[i].rgbBlue = (0x88*(256-(LCD_HIGH/MAX_SHADES)*i))/255;
 				}
-            }
-            ReleaseDC(hwnd, hdc);
+			}
+			ReleaseDC(hwnd, hdc);
 
 			return 0;
 		}
@@ -508,7 +510,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_NCCALCSIZE:
-		    return 0;
+			return 0;
 		case WM_SIZE: {
 			InvalidateRect(hwnd, NULL, TRUE);
 			return 0;
@@ -516,13 +518,12 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_CONTEXTMENU:
 			{
 				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				const TCHAR names[][32] = {_T("File"), _T("Edit"), _T("Calculator"), _T("Debug"), _T("Help")};
+				const TCHAR names[][32] = {_T("File"), _T("View"), _T("Calculator"), _T("Debug"), _T("Help")};
 				HMENU hmenuMain = GetMenu(lpCalc->hwndFrame);
 				if (hmenuMain == NULL)
 					return 0;
 				HMENU hmenuContext = CreatePopupMenu();
-				int i;
-				for (i = 0; i < 5; i++)
+				for (int i = 0; i < ARRAYSIZE(names); i++)
 					InsertMenu(hmenuContext, -1, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), (LPCTSTR) names[i]);
 
 				if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenuContext))
@@ -657,11 +658,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					HRESULT result, hres;
 					result = CoCreateInstance(
-            			CLSID_DragDropHelper,
-            			NULL,
-            			CLSCTX_INPROC_SERVER,
-            			IID_IDragSourceHelper,
-            			(LPVOID *) &pDragSourceHelper);
+						CLSID_DragDropHelper,
+						NULL,
+						CLSCTX_INPROC_SERVER,
+						IID_IDragSourceHelper,
+						(LPVOID *) &pDragSourceHelper);
 
 					pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource->m_pDataobject);
 					DWORD dwEffect = DROPEFFECT_NONE;
@@ -709,11 +710,13 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 		case WM_DESTROY: {
 				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				lpCalc->hwndLCD = NULL;
 				if (calc_count() == 1 && is_exiting)
 					free(bi);
-				_tprintf_s(_T("Unregistering drop window\n"));
-				UnregisterDropWindow(hwnd, (IDropTarget *) lpCalc->pDropTarget);
+
+				if (hwnd == lpCalc->hwndLCD) {
+					UnregisterDropWindow(hwnd, (IDropTarget *) lpCalc->pDropTarget);
+					lpCalc->hwndLCD = NULL;
+				}
 				return 0;
 			}
 		default:
@@ -798,7 +801,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
-    return 0;
+	return 0;
 }
 
 

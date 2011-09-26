@@ -8,7 +8,7 @@
 #include "expandpane.h"
 
 extern keyprog_t keygrps[256];
-TCHAR *verString = _T("1.5.7.7");
+TCHAR *verString = _T("1.5.9.26");
 
 static HKEY hkeyTarget;
 
@@ -209,7 +209,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	lpCalc->SkinEnabled = (BOOL) QueryWabbitKey(_T("skin"));
 	lpCalc->bCutout = (BOOL) QueryWabbitKey(_T("cutout"));
 	lpCalc->bAlphaBlendLCD = (BOOL) QueryWabbitKey(_T("alphablend_lcd"));
-	lpCalc->Scale = (int) QueryWabbitKey(_T("screen_scale"));
+	lpCalc->scale = (int) QueryWabbitKey(_T("screen_scale"));
 	lpCalc->FaceplateColor = (COLORREF) QueryWabbitKey(_T("faceplate_color"));
 	exit_save_state = (BOOL) QueryWabbitKey(_T("exit_save_state"));
 	load_files_first = (BOOL) QueryWabbitKey(_T("load_files_first"));
@@ -329,7 +329,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("lcd_freq"), REG_DWORD, &steady);
 		SaveWabbitKey(_T("lcd_delay"), REG_DWORD, &lpCalc->cpu.pio.lcd->lcd_delay);
 		SaveWabbitKey(_T("num_backup_per_sec"), REG_DWORD, &num_backup_per_sec);
-		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->Scale);
+		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->scale);
 
 		SaveDebugKey((TCHAR *) DisplayTypeString, REG_DWORD, &dispType);
 

@@ -62,7 +62,7 @@ void port0_83pse(CPU_t *cpu, device_t *dev) {
 void port2_83pse(CPU_t *cpu, device_t *dev) {
 
 	if (cpu->input) {
-		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE3 : 0xC3) | ((cpu->mem_c->flash_locked) ? 4 : 0);
+		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE3 : 0xC3) | ((cpu->mem_c->flash_locked) ? 0 : 4);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;

@@ -26,6 +26,7 @@
 #include "guicontext.h"
 #include "guicutout.h"
 #include "guidebug.h"
+#include "guidetached.h"
 #include "guifaceplate.h"
 #include "guiglow.h"
 #include "guikeylist.h"
@@ -79,6 +80,10 @@ INT_PTR CALLBACK ExportOSDialogProc(HWND, UINT, WPARAM, LPARAM);
 void gui_draw(calc_t *lpCalc) {
 	if (lpCalc->hwndLCD != NULL) {
 		InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
+	}
+
+	if (lpCalc->hwndDetachedLCD != NULL) {
+		InvalidateRect(lpCalc->hwndDetachedLCD, NULL, FALSE);
 	}
 
 	if (lpCalc->gif_disp_state != GDS_IDLE) {
@@ -180,12 +185,12 @@ int gui_debug(LPCALC lpCalc) {
 int gui_frame(LPCALC lpCalc) {
 	RECT r;
 
-	if (!lpCalc->Scale)
-		lpCalc->Scale = 2;
+	if (!lpCalc->scale)
+		lpCalc->scale = 2;
 	if (lpCalc->SkinEnabled) {
 		SetRect(&r, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	} else {
-		SetRect(&r, 0, 0, 128 * lpCalc->Scale, 64 * lpCalc->Scale);
+		SetRect(&r, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
 	}
 	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 	r.bottom += GetSystemMetrics(SM_CYMENU);
@@ -348,13 +353,13 @@ int gui_frame_update(LPCALC lpCalc) {
 	if (hmenu != NULL) {
 		if (!lpCalc->SkinEnabled) {
 			RECT rc;
-			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
+			CheckMenuItem(GetSubMenu(hmenu, 1), IDM_VIEW_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
 			// Create status bar
 			if (lpCalc->hwndStatusBar != NULL) {
 				DestroyWindow(lpCalc->hwndStatusBar);
 				CloseWindow(lpCalc->hwndStatusBar);
 			}
-			SetRect(&rc, 0, 0, 128 * lpCalc->Scale, 64 * lpCalc->Scale);
+			SetRect(&rc, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
 			int iStatusWidths[] = { 100, -1 };
 			lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, lpCalc->hwndFrame, (HMENU) 99, g_hInst, NULL);
 			SendMessage(lpCalc->hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
@@ -370,7 +375,7 @@ int gui_frame_update(LPCALC lpCalc) {
 			SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
 			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 		} else {
-			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_CHECKED);
+			CheckMenuItem(GetSubMenu(hmenu, 1), IDM_VIEW_SKIN, MF_BYCOMMAND | MF_CHECKED);
 			DestroyWindow(lpCalc->hwndStatusBar);
 			CloseWindow(lpCalc->hwndStatusBar);
 			lpCalc->hwndStatusBar = NULL;
@@ -503,7 +508,7 @@ int gui_frame_update(LPCALC lpCalc) {
 	if (hmenu != NULL) {
 		if (!lpCalc->SkinEnabled) {
 			RECT rc;
-			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
+			CheckMenuItem(GetSubMenu(hmenu, 1), IDM_VIEW_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
 			// Create status bar
 			if (!lpCalc->hwndStatusBar) {
 				DestroyWindow(lpCalc->hwndStatusBar);
@@ -526,7 +531,7 @@ int gui_frame_update(LPCALC lpCalc) {
 			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 			//InvalidateRect(lpCalc->hwndFrame, NULL, FALSE);
 		} else {
-			CheckMenuItem(GetSubMenu(hmenu, 2), IDM_CALC_SKIN, MF_BYCOMMAND | MF_CHECKED);
+			CheckMenuItem(GetSubMenu(hmenu, 1), IDM_VIEW_SKIN, MF_BYCOMMAND | MF_CHECKED);
 			DestoryWindow(lpCalc->hwndStatusBar);
 			CloseWindow(lpCalc->hwndStatusBar);
 			lpCalc->hwndStatusBar = NULL;
@@ -669,6 +674,13 @@ void RegisterWindowClasses(void) {
 	wc.style = CS_DBLCLKS;
 	wc.lpfnWndProc = WatchProc;
 	wc.lpszClassName = g_szWatchName;
+	wc.hbrBackground = NULL;
+	RegisterClassEx(&wc);
+
+	// Detached LCD
+	wc.style = CS_DBLCLKS;
+	wc.lpfnWndProc = DetachedProc;
+	wc.lpszClassName = g_szDetachedName;
 	wc.hbrBackground = NULL;
 	RegisterClassEx(&wc);
 }
@@ -903,7 +915,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				else
 					hwndtop = FindWindowEx(hwndtop, NULL, g_szLCDName, NULL);
 				SetForegroundWindow(hwndtop);
-			} else if (hwndtop == hPortMon || hwndtop == hBreakpoints) {
+			} else {
 				haccel = NULL;
 			}
 		}
@@ -966,7 +978,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			// Force the current skin setting to be enacted
 			lpCalc->SkinEnabled = !lpCalc->SkinEnabled;
-			SendMessage(hwnd, WM_COMMAND, IDM_CALC_SKIN, 0);
+			SendMessage(hwnd, WM_COMMAND, IDM_VIEW_SKIN, 0);
 			return 0;
 		}
 		case WM_USER:
@@ -1055,7 +1067,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						if (rom_load(lpCalcNew, lpCalc->rom_path) || rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey(_T("rom_path")))) {
 							lpCalcNew->SkinEnabled = lpCalc->SkinEnabled;
 							lpCalcNew->bCutout = lpCalc->bCutout;
-							lpCalcNew->Scale = lpCalc->Scale;
+							lpCalcNew->scale = lpCalc->scale;
 							lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
 							lpCalcNew->bAlphaBlendLCD = lpCalc->bAlphaBlendLCD;
 							calc_turn_on(lpCalcNew);
@@ -1173,7 +1185,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}
 					CloseWindow(hwnd);
 					break;
-				case IDM_EDIT_COPY: {
+				case IDM_CALC_COPY: {
 					HLOCAL ans;
 					ans = (HLOCAL) GetRealAns(&lpCalc->cpu);
 					OpenClipboard(hwnd);
@@ -1186,9 +1198,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					
 					break;
 				}
-				case IDM_CALC_SKIN: {
+				case IDM_VIEW_SKIN: {
 					lpCalc->SkinEnabled = !lpCalc->SkinEnabled;
 					gui_frame_update(lpCalc);
+					break;
+				}
+				case IDM_VIEW_LCD: {
+					if (lpCalc->hwndDetachedLCD || lpCalc->hwndDetachedFrame) {
+						break;
+					}
+					RECT r;
+					SetRect(&r, 0, 0, lpCalc->cpu.pio.lcd->width * lpCalc->scale, 64 * lpCalc->scale);
+					AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
+
+					lpCalc->hwndDetachedFrame  = CreateWindowEx(
+						0,
+						g_szDetachedName,
+						_T("Z80"),
+						(WS_TILEDWINDOW | WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX | WS_MINIMIZEBOX),
+						startX, startY, r.right - r.left, r.bottom - r.top,
+						NULL, 0, g_hInst, (LPVOID) lpCalc);
+
+					SetWindowText(lpCalc->hwndDetachedFrame, _T("LCD"));
+
+					if (lpCalc->hwndDetachedFrame == NULL) return -1;
+
 					break;
 				}
 				case IDM_CALC_SOUND: {
@@ -1211,8 +1245,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					StringCbCat(buf, sizeof(buf), _T(" Connected"));
 					SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) buf);
 					StringCbPrintf(buf, sizeof(buf), _T("Wabbitemu (%d)"), lpCalc->slot + 1);
-					SetWindowText(hwnd, buf);
-					//MessageBox(NULL, _T("Connection Successful"), _T("Success"), MB_OK);					
+					SetWindowText(hwnd, buf);			
 					break;
 				}
 				case IDM_CALC_PAUSE: {
@@ -1226,10 +1259,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}
 					break;
 				}
-				case IDM_CALC_VARIABLES:
+				case IDM_VIEW_VARIABLES:
 					CreateVarTreeList();
 					break;
-				case IDM_CALC_KEYSPRESSED:
+				case IDM_VIEW_KEYSPRESSED:
 					if (IsWindow(hListDialog)) {
 						SwitchToThisWindow(hListDialog, TRUE);
 					} else {
@@ -1522,7 +1555,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			else if (cy_mult > cx_mult)
 				AdjustHeight += (cy_mult - cx_mult) * 64;
 
-			lpCalc->Scale = max(cx_mult, cy_mult);
+			lpCalc->scale = min(cx_mult, cy_mult);
 
 			switch (wParam) {
 			case WMSZ_BOTTOMLEFT:
