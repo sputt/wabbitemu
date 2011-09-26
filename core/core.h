@@ -65,7 +65,7 @@
 
 /* 	Macro to form a register pair
  *		Can refer to pair by
- *		either contituent given
+ *		either constituent given
  *	Example:
  *		regpair(h, l, hl);
  *		---
@@ -97,8 +97,8 @@ union { \
 typedef struct timer_context {
 	uint64_t tstates;
 	uint32_t freq;
-	double elapsed;		//this isn't used if using long long only
-	double lasttime;	//<--this isn't used anymore (execpt for sound)
+	double elapsed;		//this isn't used if using long long only (see next line)
+	double lasttime;	//<--this isn't used anymore (except for sound and interrupts)
 	int timer_version;
 } timer_context_t, timerc;
 
@@ -268,6 +268,7 @@ typedef struct CPU {
 	void (*exe_violation_callback)(void *);
 	int cpu_version;
 	reverse_time_t *prev_instruction;
+	BOOL do_opcode_callback;
 } CPU_t;
 
 typedef void (*opcodep)(CPU_t*);

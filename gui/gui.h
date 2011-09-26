@@ -26,6 +26,8 @@
 #define g_szWabbitName 	_T("wabbit")
 #define g_szToolbar		_T("wabtool")
 #define g_szSubbar		_T("wabsub")
+#define g_szDetachedName 	_T("wabbitdetached")
+#define g_szDetachedLCDName 	_T("wabbitdetachedlcd")
 
 #define ID_STATUSBAR	50
 

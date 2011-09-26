@@ -309,6 +309,9 @@
     <ClCompile Include="DBPaneContainer.cpp">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="guidetached.c">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -586,6 +589,9 @@
     </ClInclude>
     <ClInclude Include="DBPaneContainer.h">
       <Filter>Source Files\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="guidetached.h">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

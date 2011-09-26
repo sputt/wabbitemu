@@ -61,13 +61,16 @@ typedef struct tagCALC {
 	CDropTarget *pDropTarget;
 	HWND hwndFrame;
 	HWND hwndLCD;
+	HWND hwndDetachedFrame;
+	HWND hwndDetachedLCD;
 	HWND hwndStatusBar;
 	HWND hwndDebug;
 	HWND hwndSmallClose;
 	HWND hwndSmallMinimize;
 
 	BOOL SkinEnabled;
-	DWORD Scale;
+	DWORD scale;
+	DWORD detached_scale;
 	BOOL bCutout;
 	HANDLE hdlThread;
 	

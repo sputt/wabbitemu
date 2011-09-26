@@ -200,7 +200,6 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
 		cpu->output = FALSE;
 		if (cpu->input) {
 			cpu->input = FALSE;
-			cpu->bus = 0x80;
 		}
 	}
 
@@ -403,7 +402,7 @@ static void LCD_enqueue(LCD_t *lcd) {
 	//7/8/11 BuckeyeDude: does not work with z-addressing properly
 	//we now copy to display assuming z offset is 0 always here 
 	//when we enqueue the lcd->z property is taken into account
-	//this means if you are using lcd->display directly which you shouldnt
+	//this means if you are using lcd->display directly which you shouldn't
 	//be then you will no z-addressing
 	//memcpy(lcd->queue[lcd->front], lcd->display, DISPLAY_SIZE);
 }

@@ -8,6 +8,7 @@
 #include "fileutilities.h"
 #include "DropSource.h"
 #include "DataObject.h"
+#include "gui.h"
 
 #include "exportvar.h"
 #include "resource.h"
@@ -37,55 +38,58 @@ BOOL VarTreeOpen(BOOL refresh) {
 HWND CreateVarTreeList() {
 	INITCOMMONCONTROLSEX icc ;
 	if (!VarTreeOpen(TRUE)) {
-	    icc.dwSize = sizeof(icc);
-	    icc.dwICC = ICC_TREEVIEW_CLASSES;
+		icc.dwSize = sizeof(icc);
+		icc.dwICC = ICC_TREEVIEW_CLASSES;
 		if (!InitCommonControlsEx(&icc)) return NULL;
-	    return  CreateDialog(g_hInst, 
-				            MAKEINTRESOURCE(IDD_VARLIST), 
-				            NULL, 
-				            DlgVarlist);
+		return  CreateDialog(g_hInst, 
+							MAKEINTRESOURCE(IDD_VARLIST), 
+							NULL, 
+							DlgVarlist);
 	}
 	return NULL;
 }
 
 INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-    switch (Message) {
-        case WM_INITDIALOG:
-        {
-            g_hwndVarTree = GetDlgItem(hwnd, IDC_TRV1);
-            HIMAGELIST hIL = ImageList_LoadImage(g_hInst, _T("TIvarIcons"), 
-                                                    16, 0, RGB(0,255,0),
+	switch (Message) {
+		case WM_INITDIALOG:
+		{
+			g_hwndVarTree = GetDlgItem(hwnd, IDC_TRV1);
+			HIMAGELIST hIL = ImageList_LoadImage(g_hInst, _T("TIvarIcons"), 
+													16, 0, RGB(0,255,0),
 													IMAGE_BITMAP, LR_CREATEDIBSECTION);
-            if (!hIL) _tprintf_s(_T("Imagelist not loaded"));
-            else TreeView_SetImageList(g_hwndVarTree, hIL, TVSIL_NORMAL);
-            
-            if (VTrc.bottom == -1) {
-	            GetWindowRect(hwnd, &VTrc);	
+			if (!hIL) _tprintf_s(_T("Imagelist not loaded"));
+			else TreeView_SetImageList(g_hwndVarTree, hIL, TVSIL_NORMAL);
+			
+			if (VTrc.bottom == -1) {
+				GetWindowRect(hwnd, &VTrc);	
 			} else {
 				MoveWindow(hwnd,VTrc.left,VTrc.top,VTrc.right-VTrc.left,VTrc.bottom-VTrc.top,TRUE);
 			}
-            RefreshTreeView(TRUE);
-            return TRUE;
-        }
-        case WM_SIZE: {
+			RefreshTreeView(TRUE);
+			return TRUE;
+		}
+		case WM_SIZE: {
 			GetWindowRect(hwnd, &VTrc);
 			int width = VTrc.right - VTrc.left - 14 - 6;
 			int height = VTrc.bottom-VTrc.top - 38 - 30 - 73;
 			MoveWindow(g_hwndVarTree, 6, 30, width, height, TRUE);
 			break;
 		}
-        case WM_COMMAND: {
-            switch (LOWORD(wParam)) {
-                case IDC_REFRESH_VAR_LIST:
+		case WM_COMMAND: {
+			switch (LOWORD(wParam)) {
+				case IDC_REFRESH_VAR_LIST:
 					RefreshTreeView(FALSE);
-                    break;
+					break;
+				case IDM_VARGOTODEBUGGER:
+//					gui_debug(lpCalc);
+					break;
 				case IDM_VARTREEEXPORT:
 				case IDC_EXPORT_VAR: {
 					char *buf;
 					FILE *file;
 					HTREEITEM item = TreeView_GetSelection(g_hwndVarTree);
 					//HACK: yes i know FILEDESCRIPTOR is not meant for this.
-					//but i dont want to rework the routines to return the attributes differently
+					//but i don't want to rework the routines to return the attributes differently
 					FILEDESCRIPTOR *fd;
 					fd = (FILEDESCRIPTOR *) malloc(sizeof(FILEDESCRIPTOR));
 					if (fd == NULL)
@@ -110,10 +114,10 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				default:
 					break;
-            }
-            return TRUE;
-        }
-        case WM_NOTIFY: {
+			}
+			return TRUE;
+		}
+		case WM_NOTIFY: {
 			NMTREEVIEW *nmtv = (LPNMTREEVIEW) lParam;
 			switch (((NMHDR*) lParam)->code) {
 				case NM_DBLCLK:	{
@@ -195,7 +199,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			GetWindowRect(hwnd, &VTrc);	
 			DestroyWindow(hwnd);
 			return TRUE;
-    }
+	}
    return FALSE;
 }
 
