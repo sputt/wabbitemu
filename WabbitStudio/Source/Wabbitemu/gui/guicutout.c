@@ -182,7 +182,7 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 			BITMAPINFOHEADER bih;
 			ZeroMemory(&bih, sizeof(BITMAPINFOHEADER));
 			bih.biSize = sizeof(BITMAPINFOHEADER);
-			/*bih.biWidth = width;
+			bih.biWidth = width;
 			bih.biHeight = height;
 			bih.biPlanes = 1;
 			bih.biBitCount = 32;
@@ -191,25 +191,22 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 			bih.biXPelsPerMeter = 0;
 			bih.biYPelsPerMeter = 0;
 			bih.biClrUsed = 0;
-			bih.biClrImportant = 0;*/
+			bih.biClrImportant = 0;
 			LPBITMAPINFO bi = (LPBITMAPINFO) malloc(sizeof(BITMAPINFOHEADER) + sizeof(DWORD) * 3);
 			bi->bmiHeader = bih;
 			// Gets the "bits" from the bitmap and copies them into a buffer
 			// which is pointed to by lpbitmap.
-			int error = GetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
-				height,
-				NULL,
-				bi, DIB_RGB_COLORS);
+		
 			DWORD dwBmpSize = ((width * bi->bmiHeader.biBitCount + 31) / 32) * 4 * height;
 			LPBYTE bitmap = (LPBYTE) malloc(dwBmpSize);
 
 		
-			error = GetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
+			int error = GetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
 				height,
 				bitmap,
 				bi, DIB_RGB_COLORS);
 
-			//this really sucked to figure out, but basically you can't fuck with
+			//this really sucked to figure out, but basically you can't touch
 			//the alpha channel in a bitmap unless you use GetDIBits to get it
 			//in an array, change the highest byte, then reset with SetDIBits
 			//This colors the faceplate that way
@@ -220,20 +217,17 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 				for(x = 0; x < width; x++) {
 					if (PtInRegion(rgn, x, height - y)) {
 						//pPixel[0] = 0x00;
-						//pPixel[1] = 0x00;
-						//pPixel[2] = 0x00;
+						//pPixel[1] = 0xFF;
+						//pPixel[2] = 0xFF;
 						pPixel[3] = 0xFF;
 					}
 					pPixel+=4;
 				}
 			}
-			SetDIBitsToDevice(lpCalc->hdcSkin, 0, 0, width, height, 0, 0, 0,
+			error = SetDIBitsToDevice(lpCalc->hdcSkin, 0, 0, width, height, 0, 0, 0,
 					height,
 					bitmap,
 					bi, DIB_RGB_COLORS);
-			/*HBITMAP testBitmap = CreateCompatibleBitmap(lpCalc->hdcSkin, width, height);
-			error = SetDIBits(lpCalc->hdcSkin, testBitmap, 0, height, bitmap, bi, DIB_RGB_COLORS);*/
-			//SelectObject(lpCalc->hdcSkin, testBitmap);
 			DeleteObject(rgn);
 			free(bitmap);
 			free(bi);

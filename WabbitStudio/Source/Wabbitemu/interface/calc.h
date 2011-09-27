@@ -38,7 +38,9 @@ typedef struct profiler {
 } profiler_t;
 
 typedef struct tagCALC {
-#ifdef MACVER
+#ifdef WINVER
+	int (*breakpoint_callback)(struct tagCALC*);
+#elif MACVER
 	void (*breakpoint_callback)(struct tagCALC*,void*);
 	void *breakpoint_owner;
 #endif

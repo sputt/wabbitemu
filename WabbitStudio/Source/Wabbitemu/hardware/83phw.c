@@ -53,7 +53,7 @@ static void port0(CPU_t *cpu, device_t *dev) {
 
 static void port2(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
-		cpu->bus = 0x3B | ((cpu->mem_c->flash_locked) ? 4 : 0);
+		cpu->bus = (cpu->pio.model == TI_73 ? 0x39 : 0x3B) | ((cpu->mem_c->flash_locked) ? 4 : 0);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;

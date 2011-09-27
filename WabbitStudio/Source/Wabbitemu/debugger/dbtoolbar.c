@@ -768,7 +768,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 }
 
 static TBBTN *prevBtn = NULL;
-int CreateToolbarButton(HWND hwndParent, TCHAR *szCaption, TCHAR *szTooltip, TCHAR *szIcon, int x, int y, int ID, BOOL splitButton, HMENU hMenu) {
+int CreateToolbarButton(HWND hwndParent, TCHAR *szCaption, TCHAR *szTooltip, TCHAR *szIcon, int x, int y, int ID, BOOL splitButton, HMENU hMenu = NULL) {
 	static HWND hwndTip = NULL;
 
 	TBBTN *tbb = (TBBTN *) malloc(sizeof(TBBTN));
@@ -899,15 +899,15 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			prevBtn = NULL;
 			SelectObject(GetDC(hwnd), hfontSegoe);
 			int next = 4;
-			next = CreateToolbarButton(hwnd, _T("Run"), _T("Run the calculator."), _T("DBRun"), next, 4, 999, FALSE, (HMENU) NULL);
-			next = CreateToolbarButton(hwnd, _T("Toggle Breakpoint"), _T("Toggle the breakpoint on the current selection."), _T("DBBreak"), next, 4, 1000, FALSE, (HMENU) NULL);
+			next = CreateToolbarButton(hwnd, _T("Run"), _T("Run the calculator."), _T("DBRun"), next, 4, 999, FALSE);
+			next = CreateToolbarButton(hwnd, _T("Toggle Breakpoint"), _T("Toggle the breakpoint on the current selection."), _T("DBBreak"), next, 4, 1000, FALSE);
 			HMENU hmenu = LoadMenu(g_hInst, (LPCTSTR) IDR_DISASM_WATCH_MENU);
 			next = CreateToolbarButton(hwnd, _T("Toggle Watchpoint"), _T("Toggle a memory breakpoint at the current selection."), _T("DBMemBreak"), next, 4, 1001, TRUE, hmenu);
-			next = CreateToolbarButton(hwnd, _T("Step"), _T("Run a single command."), _T("DBStep"), next, 4, 1002, FALSE, (HMENU) NULL);
-			next = CreateToolbarButton(hwnd, _T("Step Over"), _T("Run a single line."), _T("DBStepOver"), next, 4, 1003, FALSE, (HMENU) NULL);
-			next = CreateToolbarButton(hwnd, _T("Goto"), _T("Goto an address in RAM or Flash."), _T("DBGoto"), next, 4, 1004, FALSE, (HMENU) NULL);
-			hmenu = CreateRewindMenu();
-			next = CreateToolbarButton(hwnd, _T("Rewind"), _T("Restores to a previous state."), NULL, next, 4, 1005, TRUE, hmenu);
+			next = CreateToolbarButton(hwnd, _T("Step"), _T("Run a single command."), _T("DBStep"), next, 4, 1002, FALSE);
+			next = CreateToolbarButton(hwnd, _T("Step Over"), _T("Run a single line."), _T("DBStepOver"), next, 4, 1003, FALSE);
+			next = CreateToolbarButton(hwnd, _T("Goto"), _T("Goto an address in RAM or Flash."), _T("DBGoto"), next, 4, 1004, FALSE);
+			/*hmenu = CreateRewindMenu();
+			next = CreateToolbarButton(hwnd, _T("Rewind"), _T("Restores to a previous state."), NULL, next, 4, 1005, TRUE, hmenu);*/
 			//next = CreateToolbarButton(hwnd, "Track", "Create a variable track window.", "DBGoto", next, 4, 1005);
 			TCHAR *szChevronBMP;
 			DWORD dwVersion = GetVersion();
@@ -916,7 +916,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				szChevronBMP = _T("CHEVRON");
 			else
 				szChevronBMP = _T("CHEVRON7");
-			next = CreateToolbarButton(hwnd, _T(""), _T("Display additional commands."), szChevronBMP, next, 4, 1006, FALSE, (int)NULL);
+			next = CreateToolbarButton(hwnd, _T(""), _T("Display additional commands."), szChevronBMP, next, 4, 1006, FALSE);
 
 			return 0;
 		}

@@ -206,6 +206,7 @@ int gui_frame(LPCALC lpCalc) {
 	SetWindowText(lpCalc->hwndFrame, _T("Wabbitemu"));
 	HDC hdc = GetDC(lpCalc->hwndFrame);
 	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
+	lpCalc->breakpoint_callback = gui_debug;
 
 	//this is now (intuitively) created in guicutout.c (Enable/Disable cutout function)
 	/*lpCalc->hwndLCD = CreateWindowEx(

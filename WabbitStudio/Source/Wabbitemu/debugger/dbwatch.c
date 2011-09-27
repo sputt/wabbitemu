@@ -136,7 +136,8 @@ static int GetValue(TCHAR *str)
 		is_hex = TRUE;
 	}
 	if (is_hex) {
-		if (xtoi(str, &value) != ERROR_SUCCESS)
+		value = xtoi(str);
+		if (value == INT_MAX)
 			value = 0;
 	} else if (is_bin) {
 		for (int i = 0; i < len; i++) {

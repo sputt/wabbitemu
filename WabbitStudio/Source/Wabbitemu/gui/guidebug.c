@@ -140,7 +140,7 @@ void AddDisasmTab(dp_settings *dps, ViewType type) {
 	if (total_disasm_pane >= MAX_TABS)
 		return;
 	ZeroMemory(&dps[total_disasm_pane + 1], sizeof(dp_settings));
-	dps[total_disasm_pane + 1].hdrs[0].nCharsWidth = 7;
+	dps[total_disasm_pane + 1].hdrs[0].nCharsWidth = 10;
 	StringCbCopy(dps[total_disasm_pane + 1].hdrs[0].pszText, sizeof(dps[total_disasm_pane + 1].hdrs[0].pszText), _T("Addr"));
 	dps[total_disasm_pane + 1].hdrs[0].lpfnCallback = &sprint_addr;
 	dps[total_disasm_pane + 1].hdrs[1].index = 1;
@@ -167,7 +167,7 @@ void AddDisasmTab(dp_settings *dps, ViewType type) {
 	dps[total_disasm_pane + 1].hdrs[6].lpfnCallback = &sprint_addr;
 	dps[total_disasm_pane + 1].hdrs[7].index = -1;
 	dps[total_disasm_pane + 1].hdrs[7].lpfnCallback = &sprint_addr;
-	dps->type = type;
+	dps[total_disasm_pane + 1].type = type;
 
 	if (type == REGULAR)
 		dps[total_disasm_pane + 1].nSel = lpDebuggerCalc->cpu.pc;
@@ -673,7 +673,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				}
 				break;
 			}
-
 			case IDM_DISPLAYBASE_HEX:
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_HEX, MF_BYCOMMAND | MF_CHECKED);
 				CheckMenuItem(GetMenu(hwnd), IDM_DISPLAYBASE_DEC, MF_BYCOMMAND | MF_UNCHECKED);
@@ -815,6 +814,18 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					hBreakpoints = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_BREAKPOINT), hwnd, (DLGPROC) BreakpointsDialogProc);
 					ShowWindow(hBreakpoints, SW_SHOW);
 				}
+				break;
+			}
+			case DB_DISASM_GOTO_ADDR: {
+				waddr_t waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, (int) lParam);
+				int addr = waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE);
+				DisasmGotoAddress(hdisasmlist[TabCtrl_GetCurSel(hdisasm)], (int) lParam);
+				break;
+			}
+			case DB_MEM_GOTO_ADDR: {
+				waddr_t waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, (int) lParam);
+				int addr = waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE);
+				MemGotoAddress(hmemlist[TabCtrl_GetCurSel(hmem)], (int) lParam);
 				break;
 			}
 			extern HWND hwndLastFocus;

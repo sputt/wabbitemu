@@ -62,7 +62,8 @@ void port0_83pse(CPU_t *cpu, device_t *dev) {
 void port2_83pse(CPU_t *cpu, device_t *dev) {
 
 	if (cpu->input) {
-		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE3 : 0xC3) | ((cpu->mem_c->flash_locked) ? 0 : 4);
+		cpu->bus =  (cpu->pio.model >= TI_84P ? 0xE1 : 0xC1) | (cpu->mem_c->flash_locked ? 0 : 4) 
+			| (((tc_tstates(cpu->timer_c) - cpu->pio.lcd->last_tstate) > cpu->pio.lcd->lcd_delay) ? 2 : 0);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
