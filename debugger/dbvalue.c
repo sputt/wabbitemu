@@ -11,6 +11,8 @@
 extern HINSTANCE g_hInst;
 extern HFONT hfontLucida;
 
+extern HWND hdisasm, hmem;
+
 static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 
@@ -304,10 +306,17 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 				return 0;
 			default:
 			switch (LOWORD(wParam)) {
-			case IDM_REGPANE_EDIT:
-				SendMessage(hwnd, WM_LBUTTONDBLCLK, 0, 0);
-				return 0;
+				case IDM_REGPANE_EDIT:
+					SendMessage(hwnd, WM_LBUTTONDBLCLK, 0, 0);
+					return 0;
+				case IDM_REGPANE_VIEW_MEM:
+					SendMessage(GetParent(hmem), WM_COMMAND, MAKEWPARAM(DB_MEM_GOTO_ADDR, 0), xtoi(vfs->szValue));
+					return 0;
+				case IDM_REGPANE_VIEW_DISASM:
+					SendMessage(GetParent(hdisasm), WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0), xtoi(vfs->szValue));
+					return 0;
 			}
+			
 		}
 		return 0;
 	}

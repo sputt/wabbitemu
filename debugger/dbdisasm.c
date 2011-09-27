@@ -32,7 +32,21 @@ void sprint_addr(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
 
 	SetTextColor(hdc, RGB(0, 0, 0));
-	_stprintf_s(s, _T("%04X"), zinf->waddr.addr);
+	int page = zinf->waddr.page;
+	if (zinf->waddr.is_ram) {
+		switch (lpDebuggerCalc->cpu.pio.model) {
+			case TI_83P:
+			case TI_73:
+				page += 0x40;
+				break;
+			case TI_83PSE:
+			case TI_84P:
+			case TI_84PSE:
+				page += 0x80;
+				break;
+		}
+	}
+	_stprintf_s(s, _T("%02X %04X"), page, zinf->waddr.addr);
 
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -45,8 +59,15 @@ void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
 
 	if (zinf->size == 0) return;
 
+	waddr_t waddr = zinf->waddr;
 	for (j = 0; j < zinf->size; j++) {
-		StringCbPrintf(s + (j*2), sizeof(s), _T("%02x"), mem_read(lpDebuggerCalc->cpu.mem_c, zinf->waddr.addr + j));
+		waddr.addr = zinf->waddr.addr + j;
+		if (waddr.addr % PAGE_SIZE < zinf->waddr.addr % PAGE_SIZE) {
+			waddr.page++;
+			//we don't handle ram changes here because things should never cross pages
+			//therefore i don't really care
+		}
+		StringCbPrintf(s + (j*2), sizeof(s), _T("%02x"), wmem_read(lpDebuggerCalc->cpu.mem_c, waddr));
 	}
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
@@ -82,7 +103,17 @@ void sprint_clocks(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 }
 
+void DisasmGotoAddress(HWND hwnd, int addr) {
+	dp_settings *dps = (dp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	SCROLLINFO si;
+	si.cbSize = sizeof(SCROLLINFO);
+	si.fMask = SIF_POS;
+	si.nPos = addr;
+	SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
+	SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, addr), 0);
+	dps->nSel = addr;
+}
 
 void InvalidateSel(HWND hwnd, int sel) {
 	dp_settings *dps = (dp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -356,10 +387,14 @@ static int GetMaxAddr(dp_settings *dps) {
 extern HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
 
 static int addr_to_index(dp_settings *dps, int addr) {
-	u_int i = 0;
-	for (i = 0; i < dps->nRows; i++) {
-		if (dps->zinf[i].waddr.addr == addr)
-			return i;
+	for (u_int i = 0; i < dps->nRows; i++) {
+		if (dps->type == REGULAR) {
+			if (dps->zinf[i].waddr.addr == addr)
+				return i;
+		} else {
+			if (dps->zinf[i].waddr.addr == addr % PAGE_SIZE && dps->zinf[i].waddr.page == addr / PAGE_SIZE)
+				return i;
+		}
 	}
 	return -1;
 }
@@ -396,7 +431,19 @@ void db_step_finish(HWND hwnd, dp_settings *dps) {
 	short past_last = lpDebuggerCalc->cpu.pc - dps->zinf[dps->nRows-1].waddr.addr + dps->zinf[dps->nRows-1].size;
 	short before_first = dps->zinf[0].waddr.addr - lpDebuggerCalc->cpu.pc;
 	InvalidateSel(hwnd, dps->iSel);
-	dps->nSel = lpDebuggerCalc->cpu.pc;
+	if (dps->type == REGULAR) {
+		dps->nSel = lpDebuggerCalc->cpu.pc;
+	} else {
+		waddr_t waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, lpDebuggerCalc->cpu.pc);
+		dps->nSel = waddr.page * PAGE_SIZE + waddr.addr;
+
+		SCROLLINFO si;
+		si.cbSize = sizeof(SCROLLINFO);
+		si.fMask = SIF_POS;
+		si.nPos = dps->nSel;
+		SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+	}
+	
 	if (past_last >= 0 || before_first > 0) {
 		int iQ1;
 		SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, lpDebuggerCalc->cpu.pc), 0);
@@ -511,7 +558,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			si.nPos = dps->nPane;
 			si.nTrackPos = dps->nPane;
 			si.nMin = 0;
-			si.nMax = 0xFFFF;
+			si.nMax = GetMaxAddr(dps);
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 			dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
@@ -548,13 +595,29 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			int last_top_page_addr;
 			Z80_info_t zup[128];
 			int nPane_old = dps->nPane;
-			last_top_page_addr = 0xFFFF - (5 * dps->nRows);
-			do {
-				disassemble(lpDebuggerCalc->cpu.mem_c, dps->type, 
-					addr_to_waddr(lpDebuggerCalc->cpu.mem_c, ++last_top_page_addr), dps->nRows, zup);
-			} while ((int) zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= GetMaxAddr(dps));
+			last_top_page_addr = GetMaxAddr(dps) - (5 * dps->nRows);
+			waddr_t waddr;
+			if (dps->type == REGULAR) {
+				do {
+					waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, ++last_top_page_addr);
+					disassemble(lpDebuggerCalc->cpu.mem_c, dps->type, waddr, dps->nRows, zup);
+				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= 0xFFFF);
+			} else {
+				do {
+					waddr.page = ++last_top_page_addr / PAGE_SIZE;
+					waddr.addr = last_top_page_addr % PAGE_SIZE;
+					waddr.is_ram = dps->type == RAM;
+					disassemble(lpDebuggerCalc->cpu.mem_c, dps->type, waddr, dps->nRows, zup);
+				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= PAGE_SIZE);
+					
+				}
 
-			last_top_page_addr = zup[0].waddr.addr + dps->last_pagedown;
+			int total_size = 0;
+			for (int i = 0; i < dps->nRows; i++) {
+				total_size += zup[i].size;
+			}
+
+			last_top_page_addr = GetMaxAddr(dps) - total_size + dps->last_pagedown;
 
 			SCROLLINFO si;
 			si.cbSize = sizeof(SCROLLINFO);
@@ -770,7 +833,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 				int pc_i;
 				for (pc_i = 0; pc_i < PC_TRAILS && !do_gradient; pc_i++) {
-					if ((dps->nPCs[pc_i] == dps->zinf[i].waddr.addr) && (dps->zinf[i].index != DA_LABEL)) {
+					waddr_t pc_waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, dps->nPCs[pc_i]);
+					if (pc_waddr.addr == dps->zinf[i].waddr.addr && pc_waddr.page == dps->zinf[i].waddr.page
+						&& pc_waddr.is_ram == dps->zinf[i].waddr.is_ram && (dps->zinf[i].index != DA_LABEL)) {
 						///dps->iPC = i;
 						vert[0].Red = 0xFF00;
 						vert[0].Green = 0xFF00;
@@ -949,7 +1014,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case DB_DISASM: {
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					u_int addr = (u_int) lParam;
-					disassemble(&lpDebuggerCalc->mem_c, dps->type, addr_to_waddr(lpDebuggerCalc->cpu.mem_c, addr), dps->nRows, dps->zinf);
+					waddr_t waddr;
+					if (dps->type == REGULAR) {
+						waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, addr);
+					} else {
+						waddr.page = addr / PAGE_SIZE;
+						waddr.addr = addr % PAGE_SIZE;
+						waddr.is_ram = dps->type == RAM;
+					}
+					disassemble(&lpDebuggerCalc->mem_c, dps->type, waddr, dps->nRows, dps->zinf);
 					break;
 				}
 				case IDM_RUN_RUN:
@@ -1001,8 +1074,25 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					int result;
 					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC) GotoDialogProc);
-					if (result == IDOK) SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, goto_addr & 0xFFFF), 0);
-					dps->nSel = goto_addr & 0xFFFF;
+					if (result == IDOK) {
+						switch (dps->type) {
+							case REGULAR:
+								goto_addr = goto_addr & 0xFFFF;
+								break;
+							case FLASH:
+								goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + ((goto_addr >> 16) * PAGE_SIZE);
+								if (goto_addr > GetMaxAddr(dps))
+									goto_addr = GetMaxAddr(dps) - 1;
+								break;
+							case RAM: {						
+								goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + (((goto_addr >> 16) % 0x80) * PAGE_SIZE);
+								if (goto_addr > GetMaxAddr(dps))
+									goto_addr = GetMaxAddr(dps) - 1;
+								break;
+							}
+						}
+						DisasmGotoAddress(hwnd, goto_addr);
+					}
 					SetFocus(hwnd);
 					return 0;
 				}
@@ -1010,7 +1100,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					unsigned short value = find_value - 1;
 					int addr = search_backwards ? dps->nSel - 1 : dps->nSel + 1;
-					while (addr <= 0xFFFF && addr >= 0x0000 && value != find_value) {
+					while (addr <= GetMaxAddr(dps) && addr >= 0x0000 && value != find_value) {
 						if (search_backwards)
 							addr--;
 						else
@@ -1020,7 +1110,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						else
 							value = mem_read(&lpDebuggerCalc->mem_c, addr);
 					}
-					if (addr > 0xFFFF || addr < 0x0000) {
+					if (addr > GetMaxAddr(dps) || addr < 0x0000) {
 						MessageBox(NULL, _T("Value not found"), _T("Find results"), MB_OK);
 						break;
 					}
@@ -1038,7 +1128,14 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case DB_BREAKPOINT: {
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
+					waddr_t waddr;
+					if (dps->type == REGULAR) {
+						waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
+					} else {
+						waddr.page = dps->nSel / PAGE_SIZE;
+						waddr.addr = dps->nSel % PAGE_SIZE;
+						waddr.is_ram = dps->type == RAM;
+					}
 
 					if (check_break(&lpDebuggerCalc->mem_c, waddr)) {
 						clear_break(&lpDebuggerCalc->mem_c, waddr);
@@ -1051,7 +1148,14 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case DB_MEMPOINT_WRITE: {
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
+					waddr_t waddr;
+					if (dps->type == REGULAR) {
+						waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
+					} else {
+						waddr.page = dps->nSel / PAGE_SIZE;
+						waddr.addr = dps->nSel % PAGE_SIZE;
+						waddr.is_ram = dps->type == RAM;
+					}
 
 					if (check_mem_write_break(&lpDebuggerCalc->mem_c, waddr)) {
 						clear_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
@@ -1064,7 +1168,14 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case DB_MEMPOINT_READ: {
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
+					waddr_t waddr;
+					if (dps->type == REGULAR) {
+						waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
+					} else {
+						waddr.page = dps->nSel / PAGE_SIZE;
+						waddr.addr = dps->nSel % PAGE_SIZE;
+						waddr.is_ram = dps->type == RAM;
+					}
 
 					if (check_mem_read_break(&lpDebuggerCalc->mem_c, waddr)) {
 						clear_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
@@ -1087,7 +1198,12 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case DB_SET_PC: {
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					lpDebuggerCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
+					if (dps->type == REGULAR) {
+						lpDebuggerCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
+					} else {
+						
+					}
+					
 					cycle_pcs(dps);
 					Debug_UpdateWindow(hwnd);
 					break;
@@ -1110,7 +1226,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			InvalidateSel(hwnd, dps->iSel);
 			r.top = y -  (y % dps->cyRow); r.bottom = r.top + dps->cyRow;
 			dps->iSel = y/dps->cyRow;
-			dps->nSel = dps->zinf[y/dps->cyRow].waddr.addr;
+			if (dps->type == REGULAR) {
+				dps->nSel = dps->zinf[y/dps->cyRow].waddr.addr;
+			} else {
+				dps->nSel = dps->zinf[y/dps->cyRow].waddr.addr % PAGE_SIZE + dps->zinf[y/dps->cyRow].waddr.page * PAGE_SIZE;
+			}
 			dps->nKey = dps->nSel;
 			dps->nClick = dps->zinf[y/dps->cyRow].waddr.addr;
 			dps->NumSel = 1;
@@ -1203,7 +1323,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 				InvalidateSel(hwnd, dps->iSel);
 
-				dps->nSel = dps->zinf[r.top/dps->cyRow].waddr.addr;
+				if (dps->type == REGULAR) {
+					dps->nSel = dps->zinf[r.top/dps->cyRow].waddr.addr;
+				} else {
+					dps->nSel = dps->zinf[r.top/dps->cyRow].waddr.addr % PAGE_SIZE + dps->zinf[r.top/dps->cyRow].waddr.page * PAGE_SIZE;
+				}
 				dps->iSel = r.top/dps->cyRow;
 				dps->NumSel = r.bottom/dps->cyRow - dps->iSel + 1;
 
@@ -1334,7 +1458,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			SCROLLINFO si;
 			si.cbSize = sizeof(SCROLLINFO);
-			si.fMask = SIF_RANGE;
+			si.fMask = SIF_RANGE | SIF_TRACKPOS;
 			GetScrollInfo(hwnd, SB_VERT, &si);
 			switch (LOWORD(wParam)) {
 				case SB_TOP:			//Home key
@@ -1351,30 +1475,51 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					int nPane_old = dps->nPane;
 					if (dps->nPane == 0) return 0;
 
+					waddr_t waddr;
 					// Disasm 6 commands such that the 6th is equal to the first
 					// visible command
 					do {
-						disassemble(lpDebuggerCalc->cpu.mem_c, dps->type,
-							addr_to_waddr(lpDebuggerCalc->cpu.mem_c, --dps->nPane), LINEUP_DEPTH, zup);
-					} while (zup[LINEUP_DEPTH-2].waddr.addr > dps->zinf[0].waddr.addr && dps->nPane);
+						if (dps->type == REGULAR) {
+							waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, --dps->nPane);
+						} else {
+							waddr.page = --dps->nPane / PAGE_SIZE;
+							waddr.addr = dps->nPane % PAGE_SIZE;
+							waddr.is_ram = dps->type == RAM;
+						}
+						disassemble(lpDebuggerCalc->cpu.mem_c, dps->type, waddr, LINEUP_DEPTH, zup);
+					} while (zup[LINEUP_DEPTH - 2].waddr.addr > dps->zinf[0].waddr.addr && dps->nPane);
 
 
 					for (i = 0; i < LINEUP_DEPTH && zup[i].waddr.addr != dps->zinf[0].waddr.addr; i++);
 					if (dps->nPane == 0) {
 						if (i == 0) return 0;
-						dps->nPane = zup[i - 1].waddr.addr;
+						if (dps->type == REGULAR) {
+							dps->nPane = zup[i - 1].waddr.addr;
+						} else {
+							dps->nPane = zup[i - 1].waddr.page * PAGE_SIZE + zup[i - 1].waddr.addr % PAGE_SIZE;
+						}
 					} else {
 						if (i == LINEUP_DEPTH || i == 0) {
 							dps->nPane = nPane_old - 1;
 						} else {
-							dps->nPane = zup[i - 1].waddr.addr;
+							if (dps->type == REGULAR) {
+								dps->nPane = zup[i - 1].waddr.addr;
+							} else {
+								dps->nPane = zup[i - 1].waddr.page * PAGE_SIZE + zup[i - 1].waddr.addr % PAGE_SIZE;
+							}
 						}
 					}
 					dps->iSel++;
 					break;
 				}
-				case SB_LINEDOWN:
-					if (dps->zinf[0].waddr.addr + dps->nPage == GetMaxAddr(dps)) return 0;
+				case SB_LINEDOWN: {
+					int addr;
+					if (dps->type == REGULAR) {
+						addr = dps->zinf[0].waddr.addr;
+					} else {
+						addr = dps->zinf[0].waddr.page * PAGE_SIZE + dps->zinf[0].waddr.addr % PAGE_SIZE;
+					}
+					if (addr + dps->nPage == GetMaxAddr(dps)) return 0;
 
 					if (dps->zinf[0].size) {
 						dps->nPane += dps->zinf[0].size;
@@ -1384,14 +1529,20 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					}
 					dps->iSel--;
 					break;
+				}
 				case SB_THUMBTRACK:
-					dps->nPane = HIWORD(wParam);
+					dps->iSel += dps->nPane - si.nTrackPos;
+					//we need a 32 bit int so we use the value grabbed during GetScrollInfo
+					//I think its better to grab it always then make a separate call here
+					dps->nPane = si.nTrackPos;
 					break;
 				case SB_PAGEDOWN:
+					dps->iSel +=dps->last_pagedown;
 					dps->last_pagedown = dps->zinf[dps->nRows - 2].waddr.addr - dps->nPane;
 					dps->nPane += dps->last_pagedown;
 					break;
 				case SB_PAGEUP:
+					dps->iSel -=dps->last_pagedown;
 					dps->nPane -= dps->last_pagedown;
 					break;
 			}

@@ -13,7 +13,7 @@ int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value = INT_MAX);
 LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int opacity);
 const TCHAR * byte_to_binary(int x, BOOL isWord = FALSE);
-int xtoi(const TCHAR *xs, int* result);
+int xtoi(const TCHAR *xs);
 
 #define Debug_UpdateWindow(hwnd) SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 #define Debug_CreateWindow(hwnd) SendMessage(hwnd, WM_USER, DB_CREATE, 0);

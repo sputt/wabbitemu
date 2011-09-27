@@ -171,7 +171,8 @@ waddr_t GetNextAddr(memory_context_t *memc, ViewType type, waddr_t waddr) {
 			break;
 		case RAM:
 		case FLASH:
-			if (!(++waddr.addr % PAGE_SIZE))
+			waddr.addr = (waddr.addr + 1) % PAGE_SIZE;
+			if (!(waddr.addr % PAGE_SIZE))
 				waddr.page++;
 			break;
 	}
@@ -185,9 +186,9 @@ waddr_t OffsetWaddr(memory_context_t *memc, ViewType type, waddr_t waddr, int of
 			break;
 		case RAM:
 		case FLASH: {
-			int old_abs_addr = waddr.addr % PAGE_SIZE;
-			waddr.addr += offset;
-			int new_abs_addr = waddr.addr % PAGE_SIZE;
+			int old_abs_addr = waddr.addr;
+			waddr.addr = (waddr.addr + offset) % PAGE_SIZE;
+			int new_abs_addr = waddr.addr;
 			if (old_abs_addr > new_abs_addr)
 				waddr.page++;
 			break;
@@ -725,7 +726,7 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 			}
 			}
 		}
-		result->size = abs((waddr.addr - start_addr.addr) & 0xFFFF);
+		result->size = abs(((unsigned short)(waddr.addr - start_addr.addr)) & 0xFF);
 
 #ifndef WINVER
 		INT_PTR mod_a1 = result->a1;

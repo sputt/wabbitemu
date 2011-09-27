@@ -200,6 +200,8 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
 		cpu->output = FALSE;
 		if (cpu->input) {
 			cpu->input = FALSE;
+			//this is set so that the sign flag will be properly set to indicate an error
+			cpu->bus = 0x80;
 		}
 	}
 

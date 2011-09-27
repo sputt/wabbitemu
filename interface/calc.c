@@ -15,13 +15,9 @@
 #include "link.h"
 
 #ifdef _WINDOWS
-#include "gui.h"
 #include "disassemble.h"
 #include "CCalcAddress.h"
 #include "CPage.h"
-#include "gifhandle.h"
-#else
-static void gui_debug(calc_t *calc) {}
 #endif
 
 /*
@@ -502,7 +498,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 			} else {
 #endif
 #ifndef MACVER
-				gui_debug(lpCalc);
+				lpCalc->breakpoint_callback(lpCalc);
 #else
 				printf("hit a breakpoint in run tstates\n");
 				lpCalc->running = FALSE; 

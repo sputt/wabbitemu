@@ -143,14 +143,15 @@ BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
 
 int GetWaddrData(HWND hwnd, waddr_t *waddr) {
 	waddr->is_ram = Button_GetCheck(GetDlgItem(hwnd, IDC_CHK_RAM));
-	int val;
 	TCHAR buf[5];
 	Edit_GetText(GetDlgItem(hwnd, IDC_EDT_ADDR), buf, ARRAYSIZE(buf));
-	if (xtoi(buf, &val))
+	int val = xtoi(buf);
+	if (val == INT_MAX)
 		return -1;
 	waddr->addr = val;
 	Edit_GetText(GetDlgItem(hwnd, IDC_EDT_PAGE), buf, ARRAYSIZE(buf));
-	if (xtoi(buf, &val))
+	val = xtoi(buf);
+	if (val == INT_MAX)
 		return -1;
 	waddr->page = val;
 	return 0;

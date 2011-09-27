@@ -181,37 +181,10 @@ void SubclassEdit(HWND hwndEdt, int edit_width, VALUE_FORMAT format) {
 }
 
 // Converts a hexadecimal string to integer
-int xtoi(const TCHAR* xs, int* result) {
-	int i, szlen = (int) _tcslen(xs);
-	int xv, fact;
-	if (szlen <= 0)
-		// Nothing to convert
-		return 1;
-	// Converting more than 32bit hexadecimal value?
-	if (szlen > 8) return 2; // exit
-	// Begin conversion here
-	*result = 0;
-	fact = 1;
-	// Run until no more character to convert
-	for(i = szlen - 1; i >= 0; i--) {
-		if (isxdigit(*(xs + i))) {
-			if (*(xs + i) >= 97) {
-				xv = ( *(xs+i) - 97) + 10;
-			}
-			else if ( *(xs + i) >= 65) {
-				xv = (*(xs + i) - 65) + 10;
-			} else {
-				xv = *(xs + i) - 48;
-			}
-			*result += (xv * fact);
-			fact *= 16;
-		} else {
-		// Conversion was abnormally terminated
-		// by non hexadecimal digit, hence
-		// returning only the converted with
-		// an error value 4 (illegal hex character)
-			return 4;
-		}
-	}
-	return ERROR_SUCCESS;
+int xtoi(const TCHAR* xs) {
+	int val;
+	int error = sscanf(xs, _T("%X"), &val);
+	if (error == EOF)
+		return INT_MAX;
+	return val;
 }

@@ -120,6 +120,20 @@ static VALUE_FORMAT GetValueFormat(mp_settings *mps) {
 	return format;
 }
 
+void MemGotoAddress(HWND hwnd, int addr) {
+	mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+
+	SCROLLINFO si;
+	si.cbSize = sizeof(SCROLLINFO);
+	si.fMask = SIF_POS;
+	si.nPos = mps->addr;
+	SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
+
+	mps->addr = addr;
+
+	Debug_UpdateWindow(hwnd);
+}
+
 static waddr_t GetWaddr(mempane_settings *mps, int addr) {
 	waddr_t waddr;
 	switch (mps->type) {
@@ -262,9 +276,6 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			return 0;
 		}
-		case WM_MOUSEACTIVATE:
-			SetFocus(hwnd);
-			return 0;
 		case WM_PAINT:
 		{
 			HDC hdc, hdcDest;
@@ -406,17 +417,17 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					if (addr >= max_addr) break;
 					if (addr >= 0) {
 						int shift;
-						waddr_t waddr = GetWaddr(mps, addr);
+						waddr_t waddr;
 						for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
-							waddr.addr = (addr + b) % PAGE_SIZE;
-							waddr.page = !waddr.is_ram ? (addr + b) / PAGE_SIZE : (waddr.addr && b ? waddr.page : GetWaddr(mps, addr + b).page);
+							waddr = GetWaddr(mps, addr + b);
 							value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
 						}
 						waddr = GetWaddr(mps, addr);
-						if (isBinary)
+						if (isBinary) {
 							StringCbCopy(szVal, sizeof(szVal), byte_to_binary(value, mps->mode - 1));
-						else
+						} else {
 							StringCbPrintf(szVal, sizeof(szVal), memfmt, value);
+						}
 
 #define COLOR_BREAKPOINT		(RGB(230, 160, 180))
 #define COLOR_MEMPOINT_WRITE	(RGB(255, 177, 100))
@@ -677,13 +688,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 								break;
 							}
 						}
-						mps->addr = goto_addr;
+						MemGotoAddress(hwnd, goto_addr);
 					}
-					SCROLLINFO si;
-					si.cbSize = sizeof(SCROLLINFO);
-					si.fMask = SIF_POS;
-					si.nPos = mps->addr;
-					SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 					SetFocus(hwnd);
 					Debug_UpdateWindow(hwnd);
@@ -800,9 +806,15 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			int thisAddr = AddrFromPoint(hwnd, pt, NULL);
 			if (thisAddr != addrTrackPrev) {
 				mps->addrTrack = thisAddr;
+				//this is done because once you click on it the control will not display the tooltip
+				//deactivating then reactivating fixes this
+				SendMessage(mps->hwndTip, TTM_ACTIVATE, FALSE, 0);
+				SendMessage(mps->hwndTip, TTM_ACTIVATE, TRUE, 0);
+
 				//Close the tooltip
-				if (IsWindowVisible(mps->hwndTip))
+				if (IsWindowVisible(mps->hwndTip)) {
 					SendMessage(mps->hwndTip, TTM_POP, 0, 0);
+				}
 			}
 			addrTrackPrev = thisAddr;
 			return 0;

@@ -18,12 +18,13 @@ typedef struct disasmhdr {
 } disasmhdr_t;
 
 typedef struct disasmpane_settings {
-	unsigned short nSel, nPane;
+	unsigned int nSel, nPane;
 	int iSel, iPC;
 	int iHot;
 	int nKey;
 	int NumSel;
 	POINT DragStart;
+	//nRows = number of visible rows (including partially visible ones)
 	unsigned int cyRow, nRows, nPage;
 	HFONT hfontAddr, hfontData, hfontDisasm, hfontHeader;
 	disasmhdr_t hdrs[8];
@@ -62,5 +63,6 @@ void cycle_pcs(dp_settings *);
 #define DB_DISASM		40
 
 void cycle_pcs(dp_settings *dps);
+void DisasmGotoAddress(HWND hwnd, int addr);
 
 #endif
