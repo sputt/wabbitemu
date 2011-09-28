@@ -42,7 +42,7 @@
  * </PRE>
  */
 #include "stdafx.h"
-#ifdef _WINDOWS
+#ifndef _WINDOWS
 typedef char uint8_t;
 typedef int uint32_t;
 #endif

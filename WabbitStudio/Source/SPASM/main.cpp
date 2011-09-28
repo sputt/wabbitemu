@@ -336,7 +336,7 @@ int main (int argc, char **argv)
 				read_expr (&ptr, name, "=");
 
 				define = add_define (strdup (name), NULL);
-				if (*skip_whitespace (ptr) != '\0')
+				if (*skip_whitespace (++ptr) != '\0')
 					define->contents = strdup (ptr);
 				else
 					set_define (define, "1", 1, false);

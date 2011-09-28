@@ -92,26 +92,8 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 	}
 	else
 	{
-		if (type == ARG_RST) {
-			switch (value) {
-				case 0x00:
-				case 0x08:
-				case 0x10:
-				case 0x18:
-				case 0x20:
-				case 0x28:
-				case 0x30:
-				case 0x38:
-					write_arg(value + 0xC7, type, or_value);
-					break;
-				default:
-					SetLastSPASMError(SPASM_ERR_INVALID_RST_OPERANDS);
-					break;
-			}
-		} else {
 		//write the value now
-			write_arg (value, type, or_value);
-		}
+		write_arg (value, type, or_value);
 		ReplaySPASMErrorSession(session);
 	}
 
@@ -288,8 +270,26 @@ void write_arg (int value, arg_type type, int or_value) {
 			{
 				SetLastSPASMWarning(SPASM_WARN_TRUNCATING_8);
 			}
-			write_out (value & 0xFF);
+			write_out(value & 0xFF);
 			break;
+		case ARG_RST: {
+			switch (value) {
+				case 0x00:
+				case 0x08:
+				case 0x10:
+				case 0x18:
+				case 0x20:
+				case 0x28:
+				case 0x30:
+				case 0x38:
+					write_out(value + 0xC7);
+					break;
+				default:
+					SetLastSPASMError(SPASM_ERR_INVALID_RST_OPERANDS);
+					break;
+			}
+			break;
+		}
 		case ARG_NUM_16:
 			//no range checking for 16 bits, as higher bits of labels are used to store page info
 			write_out (value & 0xFF);

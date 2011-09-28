@@ -455,6 +455,7 @@ char *handle_opcode_or_macro (char *ptr) {
 					full_macro[0] = ' ';
 					strcpy(&full_macro[1], define->contents);
 
+					//char *replace_args_ptr = full_macro;
 					//replace_args_ptr = replace_literal_args(replace_args_ptr, define, &args);
 
 					const char *old_filename = curr_input_file;

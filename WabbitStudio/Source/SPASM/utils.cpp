@@ -37,9 +37,8 @@ char *mystrpbrk (const char * string, const char * control) {
 	/* 1st char in control map stops search */
 	while (*str)
 	{
-			if (map[*str++])
-				return((char *)--str);
-			//str++;
+		if (map[*str++])
+			return((char *)--str);
 	}
 	return NULL;
 }
@@ -317,6 +316,7 @@ char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 
 char *replace_literal_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 	char word[MAX_ARG_LEN], *new_ptr;
+	int totalLen = strlen(ptr);
 
 	if (curr_arg_set == NULL)
 		return NULL;
@@ -346,7 +346,7 @@ char *replace_literal_args (const char *ptr, define_t *define, list_t **curr_arg
 				define_t *arg_define = search_defines(define->args[i]);
 				int new_len = strlen(arg_define->contents);
 				if (old_len != new_len) {
-					memmove((char *) ptr + new_len, ptr + old_len, sizeof(char) * old_len + 2);
+					memmove((char *) ptr + new_len, ptr + old_len, sizeof(char) * old_len + 3);
 				}
 				//don't copy the \0
 				strncpy((char *) ptr, arg_define->contents, new_len);
