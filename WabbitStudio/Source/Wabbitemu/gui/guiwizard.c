@@ -438,7 +438,9 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case PSN_WIZNEXT: {
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
 						Static_SetText(hStaticProgress, _T("Downloading OS..."));
-						DownloadOS(_T(""), ComboBox_GetCurSel(hComboOS) == 0);
+						BOOL succeeded = DownloadOS(_T(""), ComboBox_GetCurSel(hComboOS) == 0);
+						if (!succeeded)
+							MessageBox(NULL, _T("Unable to download file"), _T("Download failed"), MB_OK);
 					} else {
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
@@ -454,7 +456,9 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
 						Static_SetText(hStaticProgress, _T("Downloading OS..."));
-						DownloadOS(_T(""), ComboBox_GetCurSel(hComboOS) == 0);
+						BOOL succeeded = DownloadOS(_T(""), ComboBox_GetCurSel(hComboOS) == 0);
+						if (!succeeded)
+							MessageBox(NULL, _T("Unable to download file"), _T("Download failed"), MB_OK);
 					} else {
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
@@ -508,9 +512,13 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					//if you dont want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
 						TIFILE_t *tifile = newimportvar(osPath);
-						forceload_os(&lpCalc->cpu, tifile);
-						if (Button_GetCheck(hRadioDownload) == BST_CHECKED)
-							_tremove(osPath);
+						if (tifile == NULL) {
+							MessageBox(NULL, _T("Error: OS file is corrupt"), _T("Error"), MB_OK);
+						} else {
+							forceload_os(&lpCalc->cpu, tifile);
+							if (Button_GetCheck(hRadioDownload) == BST_CHECKED)
+								_tremove(osPath);
+						}
 					}
 					calc_erase_certificate(lpCalc->mem_c.flash,lpCalc->mem_c.flash_size);
 					calc_reset(lpCalc);
@@ -571,8 +579,6 @@ static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version)
 			break;
 	}
 	HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, NULL);
-	if (!SUCCEEDED(hr))
-		MessageBox(NULL, _T("Unable to download file"), _T("Download failed"), MB_OK);
 	return SUCCEEDED(hr);
 }
 
@@ -599,6 +605,26 @@ DWORD WINAPI StartTIConnect(LPVOID lpParam) {
 	return TRUE;
 }
 
+//true if can be found. False otherwise
+BOOL CanFindTIConnectProg() {
+	TCHAR *env;
+	size_t envLen;
+	FILE *connectProg;
+	SYSTEM_INFO sysInfo;
+	GetSystemInfo(&sysInfo);
+	if (sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
+		_tdupenv_s(&env, &envLen, _T("programfiles(x86)"));
+	else
+		_tdupenv_s(&env, &envLen, _T("programfiles"));
+	StringCbCat(TIConnectPath, sizeof(TIConnectPath), env);
+	free(env);
+	//yes i know hard coding is bad :/
+	StringCbCat(TIConnectPath, sizeof(TIConnectPath), _T("\\TI Education\\TI Connect\\TISendTo.exe"));
+	BOOL found =  _tfopen_s(&connectProg, TIConnectPath, _T("r")) != 0;
+	if (connectProg)
+		fclose(connectProg);
+	return found;
+}
 
 INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static BOOL inited = FALSE;
@@ -608,26 +634,14 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			hButtonAuto = GetDlgItem(hwnd, IDC_BUTTON_AUTO);
 			hButtonManual = GetDlgItem(hwnd, IDC_BUTTON_MANUAL);
 			hStaticError = GetDlgItem(hwnd, IDC_STATIC_ERROR);
-			TCHAR *env;
-			size_t envLen;
-			SYSTEM_INFO sysInfo;
-			GetSystemInfo(&sysInfo);
-			if (sysInfo.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-				_tdupenv_s(&env, &envLen, _T("programfiles(x86)"));
-			else
-				_tdupenv_s(&env, &envLen, _T("programfiles"));
-			StringCbCat(TIConnectPath, sizeof(TIConnectPath), env);
-			free(env);
-			//yes i know hard coding is bad :/
-			StringCbCat(TIConnectPath, sizeof(TIConnectPath), _T("\\TI Education\\TI Connect\\TISendTo.exe"));
+			
 			ExtractDumperProg();
-			FILE *connectProg;
-			if (_tfopen_s(&connectProg, TIConnectPath, _T("r")) != 0) {
+			
+			if (CanFindTIConnectProg()) {
 				Static_SetText(hStaticError, _T("Unable to find TI Connect, please manually send the dumper program."));
 				Button_Enable(hButtonAuto, FALSE);
 				ShowWindow(hStaticError, SW_SHOW);
-			} else
-				fclose(connectProg);
+			}
 			return FALSE;
 		}
 		case WM_COMMAND: {
@@ -643,7 +657,7 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 							NULL);					// returns the thread identifier
 					} else {
 						TCHAR buf[MAX_PATH], ch;
-						if (!SaveFile(buf, _T("	83 Plus Program  (*.8xp)\0*.8xp\0	All Files (*.*)\0*.*\0\0"),
+						if (!SaveFile(buf, _T("83 Plus Program  (*.8xp)\0*.8xp\0All Files (*.*)\0*.*\0\0"),
 							_T("Wabbitemu Save ROM Dumper"), _T("8xp"))) {
 							FILE *start, *end;
 							_tfopen_s(&start, dumperPath, _T("rb"));
@@ -806,10 +820,13 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					lpCalc->cpu.pio.model = model;
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
 					FILE *file;
-					_tfopen_s(&file, browse, _T("rb") );
-					//goto the name to see whcih one we have
+					_tfopen_s(&file, browse, _T("rb"));
+					if (file == NULL) {
+						MessageBox(NULL, _T("Error opening first boot page file"), _T("Error"), MB_OK);
+					}
+					//goto the name to see which one we have (in TI var header)
 					fseek(file, 66, SEEK_SET);
-					TCHAR ch = _fgettc(file);
+					char ch = fgetc(file);
 					//goto the first byte of data
 					fseek(file, 74, SEEK_SET);
 					int page;
@@ -822,7 +839,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					}
 					else {
 						int i;
-						page = lpCalc->mem_c.flash_pages - 0x11;;
+						page = lpCalc->mem_c.flash_pages - 0x11;
 						for (i = 0; i < PAGE_SIZE; i++)
 							flash[page][i] = fgetc(file);
 					}
@@ -831,7 +848,10 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					if (model >= TI_84P) {
 						Edit_GetText(hEditVar2, browse, MAX_PATH);
 						_tfopen_s(&file, browse, _T("rb"));
-						//goto the name to see whcih one we have
+						if (file == NULL) {
+							MessageBox(NULL, _T("Error opening second boot page file"), _T("Error"), MB_OK);
+						}
+						//goto the name to see which one we have
 						fseek(file, 66, SEEK_SET);
 						char ch = fgetc(file);
 						//goto the first byte of data
@@ -850,7 +870,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						}
 					}
 
-					//if you dont want to load an OS, fine...
+					//if you don't want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
 						TIFILE_t *tifile = newimportvar(osPath);
 						forceload_os(&lpCalc->cpu, tifile);						
@@ -859,7 +879,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					}
 					calc_erase_certificate(lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
 					calc_reset(lpCalc);
-					calc_turn_on(lpCalc);
+					//calc_turn_on(lpCalc);
 					gui_frame(lpCalc);
 					//write the output from file
 					ExportRom(buffer, lpCalc);					

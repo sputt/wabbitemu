@@ -205,11 +205,11 @@ TCHAR* FindBcall(int address) {
 }
 
 
-void FindFlags(int flag,int bit, TCHAR **flagstring, TCHAR **bitstring) {
+void FindFlags(int flag, int bit, TCHAR **flagstring, TCHAR **bitstring) {
 	int i,b;
-	for(i=0; flags83p[i].flag != -1; i++ ) {
+	for(i = 0; flags83p[i].flag != -1; i++ ) {
 		if (flags83p[i].flag == flag) {
-			for(b=0;b<8;b++) {
+			for(b = 0; b < 8; b++) {
 				if (flags83p[i].bits[b].bit == bit) {
 					*flagstring = flags83p[i].name;
 					*bitstring  = flags83p[i].bits[b].name;

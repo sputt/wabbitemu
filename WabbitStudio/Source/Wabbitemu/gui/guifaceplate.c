@@ -1,5 +1,6 @@
 #include "stdafx.h"
 
+#include "gui.h"
 #include "calc.h"
 
 
@@ -12,26 +13,6 @@ static POINT ptRgnEdge[] = {{75,675},
 							{37,273},
 							{37,568}};
 
-/*int DrawFaceplateRegion(Graphics *graphics, int colorVal) {
-	int nPoints = (sizeof(ptRgnEdge) / sizeof(Point)) * 2;
-	Point ptRgn[(sizeof(ptRgnEdge) / sizeof(POINT)) * 2];
-
-	// Copy points and their reverses to the new array
-	memcpy(ptRgn, ptRgnEdge, (nPoints / 2) * sizeof(POINT));
-
-	int i;
-	for (i = nPoints/2; i < nPoints; i++) {
-		ptRgn[i].X = 350 - ptRgnEdge[nPoints - i - 1].x;
-		ptRgn[i].Y = ptRgnEdge[nPoints - i - 1].y;
-	}
-
-	Color color(GetRValue(colorVal), GetGValue(colorVal), GetBValue(colorVal));
-	SolidBrush solidBrush(color);
-	Brush *brush = solidBrush.Clone();
-	graphics->FillPolygon(brush, (Point *) ptRgn, nPoints, FillMode::FillModeWinding);
-	return 0;
-}*/
-
 HRGN GetRegion()
 {
 	unsigned int nPoints = (sizeof(ptRgnEdge) / sizeof(POINT)) * 2;
@@ -42,7 +23,7 @@ HRGN GetRegion()
 
 	u_int i;
 	for (i = nPoints/2; i < nPoints; i++) {
-		ptRgn[i].x = 350 - ptRgnEdge[nPoints - i - 1].x;
+		ptRgn[i].x = SKIN_WIDTH - ptRgnEdge[nPoints - i - 1].x;
 		ptRgn[i].y = ptRgnEdge[nPoints - i - 1].y;
 	}
 

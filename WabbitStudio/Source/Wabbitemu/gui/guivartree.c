@@ -24,27 +24,55 @@ static BOOL Tree_init = FALSE;
 
 void test_function(int num);
 
-BOOL VarTreeOpen(BOOL refresh) {
+BOOL VarTreeOpen() {
 	HWND vardialog = FindWindow(NULL, _T("Calculator Variables"));
 	if (vardialog) {
-		if (refresh) {
-			RefreshTreeView(FALSE);
-		}
+		RefreshTreeView(FALSE);
 		return TRUE;
 	}
 	return FALSE;
 }
 
-HWND CreateVarTreeList() {
+HWND CreateVarTreeList(HWND hwndParent, LPCALC lpCalc) {
 	INITCOMMONCONTROLSEX icc ;
-	if (!VarTreeOpen(TRUE)) {
+	if (!VarTreeOpen()) {
 		icc.dwSize = sizeof(icc);
 		icc.dwICC = ICC_TREEVIEW_CLASSES;
-		if (!InitCommonControlsEx(&icc)) return NULL;
-		return  CreateDialog(g_hInst, 
-							MAKEINTRESOURCE(IDD_VARLIST), 
-							NULL, 
-							DlgVarlist);
+		if (!InitCommonControlsEx(&icc)) {
+			return NULL;
+		}
+		HWND hwndDialog = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_VARLIST), NULL, DlgVarlist);
+		SetWindowLongPtr(hwndDialog, GWLP_USERDATA, (LONG_PTR) lpCalc);
+		return hwndDialog;
+	}
+	return NULL;
+}
+
+//TODO: well this code is a mess. We need to refactor this, so that the HTREEITEM is somehow
+//mapped to the to either the symlist_t or applist_t item. Ideally this would be the LPARAM 
+//of the LPTREEVIEW, but a dictionary mapping would be fine as well
+apphdr_t *  GetAppVariable(HTREEITEM hTreeItem) {
+	for (u_int slot = 0; slot < MAX_CALCS; slot++) {
+		if (Tree[slot].model) {
+			for(u_int i = 0; i < Tree[slot].applist.count; i++) {
+				if (Tree[slot].hApps[i] == hTreeItem) {
+					return &Tree[slot].applist.apps[i];
+				}
+			}
+		}
+	}
+	return NULL;
+}
+
+symbol83P_t * GetSymbolVariable(HTREEITEM hTreeItem) {
+	for (u_int slot = 0; slot < MAX_CALCS; slot++) {
+		if (Tree[slot].model) {
+			for(u_int i = 0; i < (u_int) (Tree[slot].sym.last - Tree[slot].sym.symbols + 1); i++) {
+				if (Tree[slot].hVars[i] == hTreeItem) {
+					return &Tree[slot].sym.symbols[i];
+				}
+			}
+		}
 	}
 	return NULL;
 }
@@ -57,8 +85,11 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			HIMAGELIST hIL = ImageList_LoadImage(g_hInst, _T("TIvarIcons"), 
 													16, 0, RGB(0,255,0),
 													IMAGE_BITMAP, LR_CREATEDIBSECTION);
-			if (!hIL) _tprintf_s(_T("Imagelist not loaded"));
-			else TreeView_SetImageList(g_hwndVarTree, hIL, TVSIL_NORMAL);
+			if (!hIL) {
+				_tprintf_s(_T("Imagelist not loaded"));
+			} else {
+				TreeView_SetImageList(g_hwndVarTree, hIL, TVSIL_NORMAL);
+			}
 			
 			if (VTrc.bottom == -1) {
 				GetWindowRect(hwnd, &VTrc);	
@@ -70,7 +101,7 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 		}
 		case WM_SIZE: {
 			GetWindowRect(hwnd, &VTrc);
-			int width = VTrc.right - VTrc.left - 14 - 6;
+			int width = VTrc.right - VTrc.left - 14 - 6 - 8;
 			int height = VTrc.bottom-VTrc.top - 38 - 30 - 73;
 			MoveWindow(g_hwndVarTree, 6, 30, width, height, TRUE);
 			break;
@@ -80,9 +111,31 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case IDC_REFRESH_VAR_LIST:
 					RefreshTreeView(FALSE);
 					break;
-				case IDM_VARGOTODEBUGGER:
-//					gui_debug(lpCalc);
+				case IDM_VARGOTODEBUGGER: {
+					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					HTREEITEM hTreeItem = TreeView_GetSelection(g_hwndVarTree);
+					waddr_t waddr;
+					symbol83P_t *symbol = NULL;
+					apphdr_t *app = GetAppVariable(hTreeItem);
+					if (app) {
+						waddr.page = app->page;
+						waddr.addr = 0x4080;
+						waddr.is_ram = FALSE;
+					} else {
+						symbol = GetSymbolVariable(hTreeItem);
+						if (symbol) {
+							waddr.page = symbol->page;
+							waddr.addr = symbol->address;
+							waddr.is_ram = symbol->page == 0;
+						}
+					}
+					
+					if (app || symbol) {
+						HWND hwndDebugger = gui_debug(lpCalc);
+						SendMessage(hwndDebugger, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);
+					}
 					break;
+				}
 				case IDM_VARTREEEXPORT:
 				case IDC_EXPORT_VAR: {
 					char *buf;
@@ -92,8 +145,9 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					//but i don't want to rework the routines to return the attributes differently
 					FILEDESCRIPTOR *fd;
 					fd = (FILEDESCRIPTOR *) malloc(sizeof(FILEDESCRIPTOR));
-					if (fd == NULL)
+					if (fd == NULL) {
 						MessageBox(NULL, _T("BAD"), _T("FUCK"), MB_OK);
+					}
 					if (!FillDesc(item, fd)) {
 						free (fd);
 						break;
@@ -120,24 +174,56 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 		case WM_NOTIFY: {
 			NMTREEVIEW *nmtv = (LPNMTREEVIEW) lParam;
 			switch (((NMHDR*) lParam)->code) {
-				case NM_DBLCLK:	{
-//					int slot;
-//					for(slot=0;slot<MAX_CALCS;slot++) {
-//						DispSymbols(&Tree[slot].sym);
-//					}
+				case TVN_SELCHANGED: {
+					TCHAR string[MAX_PATH];
+					apphdr_t *app;
+					symbol83P_t *symbol;
+					if (app = GetAppVariable(nmtv->itemNew.hItem)) {
+						if (App_Name_to_String(app, string)) {
+							SetDlgItemText(hwnd, IDC_VAR_NAME, string);
+							StringCbPrintf(string, sizeof(string), _T("%02X"), app->page);
+							SetDlgItemText(hwnd, IDC_VAR_PAGE, string);
+						}
+					} else if (symbol = GetSymbolVariable(nmtv->itemNew.hItem)) {
+						if (Symbol_Name_to_String(symbol, string)) {
+							SetDlgItemText(hwnd, IDC_VAR_NAME, string);
+							StringCbPrintf(string, sizeof(string), _T("%04X"), symbol->address);
+							SetDlgItemText(hwnd, IDC_VAR_ADDRESS, string);
+							StringCbPrintf(string, sizeof(string), _T("%02X"), symbol->page);
+							SetDlgItemText(hwnd, IDC_VAR_PAGE, string);
+							SetDlgItemText(hwnd, IDC_VAR_RAM, symbol->page == 0 ? _T("True") : _T("False"));
+						}
+					}
 					break;
 				}
 				case NM_RCLICK: {
-					// Working on this ...
 					HMENU hmenu;
 					hmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_VARTREE_MENU));
 					
 					hmenu = GetSubMenu(hmenu, 0); 
 
-					POINT p;
+					POINT p, pt = {0};
 					GetCursorPos(&p);
-					
-					OnContextMenu(hwnd, p.x, p.y, hmenu);
+					pt.x = p.x;
+					pt.y = p.y;
+					int error = ScreenToClient(g_hwndVarTree, &p);
+
+					TVHITTESTINFO tvht;
+					tvht.pt = p;
+					TreeView_HitTest(g_hwndVarTree, &tvht);
+
+					HTREEITEM hTreeItem = tvht.hItem;
+					if (!hTreeItem) {
+						DestroyMenu(hmenu);
+						return TRUE;
+					}
+					TreeView_SelectItem(g_hwndVarTree, hTreeItem);
+
+					apphdr_t *app = GetAppVariable(hTreeItem);
+					symbol83P_t *symbol = GetSymbolVariable(hTreeItem);
+					if (app || symbol) {
+						OnContextMenu(hwnd, pt.x, pt.y, hmenu);
+					}
 
 					DestroyMenu(hmenu); 
 					return TRUE;
@@ -262,7 +348,7 @@ int SetVarName(FILEDESCRIPTOR *fd) {
 			break;
 	}
 
-	if (SaveFile(lpstrFile, lpstrFilter, lpstrTitle, defExt, OFN_PATHMUSTEXIST))
+	if (SaveFile(lpstrFile, lpstrFilter, lpstrTitle, defExt, OFN_PATHMUSTEXIST, filterIndex))
 		return 1;
 	StringCbCopy(export_file_name, sizeof(export_file_name), lpstrFile);
 	return 0;
@@ -450,6 +536,7 @@ void RefreshTreeView(BOOL New) {
 					}
 				}
 			}
+			TreeView_Expand(g_hwndVarTree, Tree[slot].hRoot, TVE_EXPAND);
 		}
 	}
 }

@@ -8,7 +8,7 @@
 #include "expandpane.h"
 
 extern keyprog_t keygrps[256];
-TCHAR *verString = _T("1.5.9.26");
+TCHAR *verString = _T("1.5.10.9");
 
 static HKEY hkeyTarget;
 
@@ -47,7 +47,7 @@ static struct {
 	{_T("ram_version"),				REG_DWORD,  0},
 	{_T("lcd_delay"),				REG_DWORD,	60},
 	//Debugger stuff
-	{_T("CPU_Status"),				REG_DWORD,	0},
+	{_T("CPU Status"),				REG_DWORD,	0},
 	{_T("Disp Type"),				REG_DWORD,	0},
 	{_T("Display"),					REG_DWORD,	0},
 	{_T("Flags"),					REG_DWORD,	0},
@@ -218,7 +218,9 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	sync_cores = (BOOL) QueryWabbitKey(_T("sync_cores"));
 	startX = (int) QueryWabbitKey(_T("startX"));
 	startY = (int) QueryWabbitKey(_T("startY"));
+#ifdef WITH_BACKUPS
 	num_backup_per_sec = (int) QueryWabbitKey(_T("num_backup_per_sec"));
+#endif
 	lpCalc->bAlwaysOnTop = (BOOL) QueryWabbitKey(_T("always_on_top"));
 	lpCalc->bCustomSkin = (BOOL) QueryWabbitKey(_T("custom_skin"));
 	lpCalc->mem_c.ram_version = (int) QueryWabbitKey(_T("ram_version"));
@@ -328,7 +330,9 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		DWORD steady = (DWORD) ( 1.0 / lpCalc->cpu.pio.lcd->steady_frame);
 		SaveWabbitKey(_T("lcd_freq"), REG_DWORD, &steady);
 		SaveWabbitKey(_T("lcd_delay"), REG_DWORD, &lpCalc->cpu.pio.lcd->lcd_delay);
+#ifdef WITH_BACKUPS
 		SaveWabbitKey(_T("num_backup_per_sec"), REG_DWORD, &num_backup_per_sec);
+#endif
 		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->scale);
 
 		SaveDebugKey((TCHAR *) DisplayTypeString, REG_DWORD, &dispType);

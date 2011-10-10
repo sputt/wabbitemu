@@ -113,6 +113,7 @@ void DisasmGotoAddress(HWND hwnd, int addr) {
 
 	SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, addr), 0);
 	dps->nSel = addr;
+	Debug_UpdateWindow(hwnd);
 }
 
 void InvalidateSel(HWND hwnd, int sel) {
@@ -431,33 +432,39 @@ void db_step_finish(HWND hwnd, dp_settings *dps) {
 	short past_last = lpDebuggerCalc->cpu.pc - dps->zinf[dps->nRows-1].waddr.addr + dps->zinf[dps->nRows-1].size;
 	short before_first = dps->zinf[0].waddr.addr - lpDebuggerCalc->cpu.pc;
 	InvalidateSel(hwnd, dps->iSel);
+	BOOL changeScrollbar = TRUE;
 	if (dps->type == REGULAR) {
 		dps->nSel = lpDebuggerCalc->cpu.pc;
 	} else {
 		waddr_t waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, lpDebuggerCalc->cpu.pc);
-		dps->nSel = waddr.page * PAGE_SIZE + waddr.addr;
-
+		if ((waddr.is_ram && dps->type == RAM) || (!waddr.is_ram && dps->type == FLASH)) {
+			dps->nSel = waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE);
+		} else {
+			changeScrollbar = FALSE;
+		}
+	}
+	if (changeScrollbar) {
 		SCROLLINFO si;
 		si.cbSize = sizeof(SCROLLINFO);
 		si.fMask = SIF_POS;
 		si.nPos = dps->nSel;
 		SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
-	}
 	
-	if (past_last >= 0 || before_first > 0) {
-		int iQ1;
-		SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, lpDebuggerCalc->cpu.pc), 0);
-		iQ1 = dps->nRows/4;
-		if (iQ1 == 0) 
-			return;
-		while (iQ1--) SendMessage(hwnd, WM_VSCROLL, SB_LINEUP, 0);
-		UpdateWindow(hwnd);
-	} else if (past_last > 0) {
-		SendMessage(hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
-	} else if (before_first > 0) {
-		SendMessage(hwnd, WM_VSCROLL, SB_PAGEUP, 0);
-	} else {
-		UpdateWindow(hwnd);
+		if (past_last >= 0 || before_first > 0) {
+			int iQ1;
+			SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, lpDebuggerCalc->cpu.pc), 0);
+			iQ1 = dps->nRows/4;
+			if (iQ1 == 0) 
+				return;
+			while (iQ1--) SendMessage(hwnd, WM_VSCROLL, SB_LINEUP, 0);
+			UpdateWindow(hwnd);
+		} else if (past_last > 0) {
+			SendMessage(hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
+		} else if (before_first > 0) {
+			SendMessage(hwnd, WM_VSCROLL, SB_PAGEUP, 0);
+		} else {
+			UpdateWindow(hwnd);
+		}
 	}
 
 	invalidate_pcs(hwnd, dps);
@@ -608,7 +615,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					waddr.addr = last_top_page_addr % PAGE_SIZE;
 					waddr.is_ram = dps->type == RAM;
 					disassemble(lpDebuggerCalc->cpu.mem_c, dps->type, waddr, dps->nRows, zup);
-				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= PAGE_SIZE);
+				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= 4);
 					
 				}
 
@@ -772,6 +779,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			RECT ur;
 			GetUpdateRect(hwnd, &ur, FALSE);
+			if (ur.bottom - ur.top == 0 || ur.left - ur.right == 0) {
+				return 0;
+			}
 
 			int nCols = Header_GetItemCount(dps->hwndHeader);
 			if (nCols == 0)
@@ -834,7 +844,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				int pc_i;
 				for (pc_i = 0; pc_i < PC_TRAILS && !do_gradient; pc_i++) {
 					waddr_t pc_waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, dps->nPCs[pc_i]);
-					if (pc_waddr.addr == dps->zinf[i].waddr.addr && pc_waddr.page == dps->zinf[i].waddr.page
+					if ((pc_waddr.addr % PAGE_SIZE == dps->zinf[i].waddr.addr % PAGE_SIZE) && pc_waddr.page == dps->zinf[i].waddr.page
 						&& pc_waddr.is_ram == dps->zinf[i].waddr.is_ram && (dps->zinf[i].index != DA_LABEL)) {
 						///dps->iPC = i;
 						vert[0].Red = 0xFF00;
@@ -1085,7 +1095,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 									goto_addr = GetMaxAddr(dps) - 1;
 								break;
 							case RAM: {						
-								goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + (((goto_addr >> 16) % 0x80) * PAGE_SIZE);
+								goto_addr = ((goto_addr & 0xFFFF) % PAGE_SIZE) + (((goto_addr >> 16) & 0x7) * PAGE_SIZE);
 								if (goto_addr > GetMaxAddr(dps))
 									goto_addr = GetMaxAddr(dps) - 1;
 								break;
@@ -1575,8 +1585,10 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					//this will change so the run/stop button says Run
 					extern HWND htoolbar;
 					HWND hButton = FindWindowEx(htoolbar, NULL, _T("BUTTON"), _T("Stop"));
-					TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
-					ChangeRunButtonIconAndText(tbb);
+					if (hButton) {
+						TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
+						ChangeRunButtonIconAndText(tbb);
+					}
 					
 					Debug_UpdateWindow(hwnd);
 					break;

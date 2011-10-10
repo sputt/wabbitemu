@@ -130,6 +130,7 @@ void MemGotoAddress(HWND hwnd, int addr) {
 	SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 	mps->addr = addr;
+	mps->sel = addr;
 
 	Debug_UpdateWindow(hwnd);
 }
@@ -211,7 +212,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 
 			hdi.pszText = _T("Addr");
-			hdi.cxy = tm.tmAveCharWidth*7;
+			hdi.cxy = tm.tmAveCharWidth * (7 + (mps->type == REGULAR ? 0 : 3));
 			hdi.cchTextMax = sizeof(hdi.pszText)/sizeof(hdi.pszText[0]);
 			mps->iAddr = 0;
 
@@ -273,6 +274,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			hdi.pszText = szHeader;
 			hdi.cxy = rc.right - tm.tmAveCharWidth*6;
 			Header_SetItem(mps->hwndHeader, mps->iData, &hdi);
+
+			//fixes drawing scrollbar arrows on stack
+			SendMessage(hwnd, WM_NCPAINT, 0, 0);
 
 			return 0;
 		}
@@ -579,6 +583,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			si.fMask = SIF_PAGE | SIF_RANGE;
 			si.nPage = data_length;
 			si.nMax = GetMaxAddr(mps) + 1;
+			//if == -1 then were displaying the stack
 			si.nMin = mps->memNum == -1 ? lpDebuggerCalc->cpu.sp : 0x0000;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 

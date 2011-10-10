@@ -39,9 +39,9 @@ typedef struct profiler {
 
 typedef struct tagCALC {
 #ifdef WINVER
-	int (*breakpoint_callback)(struct tagCALC*);
+	HWND (*breakpoint_callback)(struct tagCALC *);
 #elif MACVER
-	void (*breakpoint_callback)(struct tagCALC*,void*);
+	void (*breakpoint_callback)(struct tagCALC *, void *);
 	void *breakpoint_owner;
 #endif
 	int slot;
