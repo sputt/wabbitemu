@@ -19,11 +19,6 @@ HWND hwndLastFocus;
 #define FADE_SPEED 20
 
 
-#if !USE_GDIPLUS
-typedef DWORD ARGB;
-#endif
-
-
 void InitBitmapInfo(BITMAPINFO *pbmi, ULONG cbInfo, LONG cx, LONG cy, WORD bpp)
 {
 	ZeroMemory(pbmi, cbInfo);

@@ -1,6 +1,7 @@
 #include "stdafx.h"
 
 #include "guibuttons.h"
+#include "guicutout.h"
 #include "gui.h"
 #include "resource.h"
 
@@ -39,32 +40,23 @@ extern HINSTANCE g_hInst;
 //creates a rect around the button
 static RECT FindButtonRect(LPCALC lpCalc, HDC hdcKeymap, POINT *pt) {
 	RECT brect = {0,0,0,0};
-	int mult = 1;
-	int width,height, x, y;
+	int x, y;
 	int bit, group;
 	COLORREF colormatch, colortest;
-	
 
 	colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
 	
-	if (GetRValue(colormatch) != 0 ) return brect;
+	if (GetRValue(colormatch) != 0 ) {
+	return brect;
+  }
 		
-		
-	bit		= GetBValue(colormatch)>>4;
-	group	= GetGValue(colormatch)>>4;
-
-	if (lpCalc->model == TI_84P || lpCalc->model == TI_84PSE)
-		*ButtonCenter = ButtonCenter84;
-	else
-		*ButtonCenter = ButtonCenter83;
+	bit		= GetBValue(colormatch) >> 4;
+	group	= GetGValue(colormatch) >> 4;
 	
-	brect.right		= (*ButtonCenter)[bit+(group<<3)].x*mult;
-	brect.left		= (*ButtonCenter)[bit+(group<<3)].x*mult;
-	brect.top		= (*ButtonCenter)[bit+(group<<3)].y*mult;
-	brect.bottom	= (*ButtonCenter)[bit+(group<<3)].y*mult;
-	
-	width	= SKIN_WIDTH*mult;
-	height	= SKIN_HEIGHT*mult;
+	brect.right		= (*ButtonCenter)[bit+(group<<3)].x;
+	brect.left		= (*ButtonCenter)[bit+(group<<3)].x;
+	brect.top		= (*ButtonCenter)[bit+(group<<3)].y;
+	brect.bottom	= (*ButtonCenter)[bit+(group<<3)].y;
 	
 	//Find the vertical center
 	y = ( brect.top + brect.bottom )/2;
@@ -78,7 +70,7 @@ static RECT FindButtonRect(LPCALC lpCalc, HDC hdcKeymap, POINT *pt) {
 	
 	//Search for right edge
 	colortest = colormatch;
-	for(x = brect.right; (colortest == colormatch) && ( x < width ) ; x++) {
+	for(x = brect.right; (colortest == colormatch) && ( x < SKIN_WIDTH ) ; x++) {
 		colortest = GetPixel(hdcKeymap, x, y);
 	}
 	brect.right = x-1;
@@ -96,7 +88,7 @@ static RECT FindButtonRect(LPCALC lpCalc, HDC hdcKeymap, POINT *pt) {
 	
 	//Search for bottom edge
 	colortest = colormatch;
-	for(y = brect.bottom; (colortest == colormatch) && ( y < height ) ; y++) {
+	for(y = brect.bottom; (colortest == colormatch) && ( y < SKIN_HEIGHT ) ; y++) {
 		colortest = GetPixel(hdcKeymap, x, y);
 	}
 	brect.bottom = y-1;
@@ -160,23 +152,20 @@ void DrawButtonState(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT 
 }
 
 
-void DrawButtonLockAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
+void DrawButtonStatesAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 	keypad_t *keypad = lpCalc->cpu.pio.keypad;
 	int group, bit;
-	int mult;
-	//RECT cr;
 	POINT pt;
-	//GetClientRect(hwnd, &cr);
-	//if ((cr.bottom-cr.top)>=SKIN_HEIGHT-10) 
-	mult = 1;
-	//else mult = 0.75f;
 	for(group = 0; group < 7; group++) {
 		for(bit = 0; bit < 8; bit++) {
 			if ((*ButtonCenter)[bit + (group << 3)].x != 0xFFF) {
-				pt.x	= (*ButtonCenter)[bit + (group << 3)].x * mult;
-				pt.y	= (*ButtonCenter)[bit + (group << 3)].y * mult;
-				if (keypad->keys[group][bit] & KEY_LOCKPRESS) {
+				pt.x	= (*ButtonCenter)[bit + (group << 3)].x;
+				pt.y	= (*ButtonCenter)[bit + (group << 3)].y;
+				int val = keypad->keys[group][bit];
+				if (val & KEY_LOCKPRESS) {
 					DrawButtonState(lpCalc, hdcSkin, hdcKeymap, &pt, DBS_LOCK | DBS_DOWN);
+				} else if ((val & KEY_MOUSEPRESS) || (val & KEY_KEYBOARDPRESS)) {
+					DrawButtonState(lpCalc, hdcSkin, hdcKeymap, &pt, DBS_PRESS | DBS_DOWN);
 				}
 			}
 		}
@@ -184,11 +173,14 @@ void DrawButtonLockAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 	
 	group	= 5;
 	bit		= 0;
-	pt.x	= (*ButtonCenter)[bit + (group << 3)].x * mult;
-	pt.y	= (*ButtonCenter)[bit + (group << 3)].y * mult;
-	if (lpCalc->cpu.pio.keypad->on_pressed & KEY_LOCKPRESS) {
-		DrawButtonState(lpCalc, hdcSkin, hdcKeymap, &pt, DBS_LOCK | DBS_DOWN);
-	}
+	pt.x	= (*ButtonCenter)[bit + (group << 3)].x;
+	pt.y	= (*ButtonCenter)[bit + (group << 3)].y;
+  int val = lpCalc->cpu.pio.keypad->on_pressed;
+	if (val & KEY_LOCKPRESS) {
+	DrawButtonState(lpCalc, hdcSkin, hdcKeymap, &pt, DBS_LOCK | DBS_DOWN);
+  } else if ((val & KEY_MOUSEPRESS) || (val & KEY_KEYBOARDPRESS)) {
+	DrawButtonState(lpCalc, hdcSkin, hdcKeymap, &pt, DBS_PRESS | DBS_DOWN);
+  }
 }
 
 static int last_shift;
@@ -209,25 +201,11 @@ void HandleKeyDown(LPCALC lpCalc, unsigned int key) {
 		}
 		last_shift = key;
 	}
-	//CopySkinToButtons();
 	keyprog_t *kp = keypad_key_press(&lpCalc->cpu, key);
 	if (!kp)
 		return;
 	LogKeypress(kp->group, kp->bit, key, TRUE, lpCalc->cpu.pio.model);
-	if (!(lpCalc->bCutout && lpCalc->SkinEnabled)) {
-		extern POINT ButtonCenter83[64];
-		extern POINT ButtonCenter84[64];
-		if (!(lpCalc->cpu.pio.keypad->keys[kp->group][kp->bit] & KEY_STATEDOWN)) {
-			if (lpCalc->model == TI_84P || lpCalc->model == TI_84PSE) {
-				DrawButtonState(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap, &ButtonCenter84[kp->bit+(kp->group << 3)], DBS_DOWN | DBS_PRESS);
-			} else {
-				DrawButtonState(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap, &ButtonCenter83[kp->bit+(kp->group << 3)], DBS_DOWN | DBS_PRESS);
-			}
-			lpCalc->cpu.pio.keypad->keys[kp->group][kp->bit] |= KEY_STATEDOWN;
-			SendMessage(lpCalc->hwndFrame, WM_SIZE, 0, 0);
-			FinalizeButtons(lpCalc);
-		}
-	}
+	FinalizeButtons(lpCalc);
 }
 
 void HandleKeyUp(LPCALC lpCalc, unsigned int key) {
@@ -236,28 +214,30 @@ void HandleKeyUp(LPCALC lpCalc, unsigned int key) {
 	keyprog_t *kp = keypad_key_release(&lpCalc->cpu, key);
 	if (kp)
 		LogKeypress(kp->group, kp->bit, key, FALSE, lpCalc->cpu.pio.model);
-	//CopySkinToButtons();
 	FinalizeButtons(lpCalc);
 }
 
 void FinalizeButtons(LPCALC lpCalc) {
 	int group, bit;
 	keypad_t *kp = lpCalc->cpu.pio.keypad;
-	for(group=0;group<7;group++) {
-		for(bit=0;bit<8;bit++) {
-			if ((kp->keys[group][bit] & KEY_STATEDOWN) &&
-				((kp->keys[group][bit] & KEY_MOUSEPRESS) == 0) &&
-				((kp->keys[group][bit] & KEY_KEYBOARDPRESS) == 0)) {
-				/*if (lpCalc->model == TI_84P || lpCalc->model == TI_84PSE) {
-					DrawButtonState(lpCalc->hdcButtons, lpCalc->hdcKeymap, &ButtonCenter84[bit+(group<<3)], DBS_UP | DBS_PRESS);
-					} else {
-					DrawButtonState(lpCalc->hdcButtons, lpCalc->hdcKeymap, &ButtonCenter83[bit+(group<<3)], DBS_UP | DBS_PRESS);
-				}*/
-					kp->keys[group][bit] &= (~KEY_STATEDOWN);
-					//SendMessage(hwnd, WM_SIZE, 0, 0);
+	if (lpCalc->model >= TI_84P)
+		*ButtonCenter = ButtonCenter84;
+	else
+		*ButtonCenter = ButtonCenter83;
+
+	for(group = 0; group < 7; group++) {
+		for(bit = 0; bit < 8; bit++) {
+			int val = kp->keys[group][bit];
+			if (((val & KEY_STATEDOWN) && (val & KEY_MOUSEPRESS) == 0 || (val & KEY_KEYBOARDPRESS) == 0)) {
+				kp->keys[group][bit] &= ~KEY_STATEDOWN;
 			}
 		}
 	}
-	InvalidateRect(lpCalc->hwndFrame, &lpCalc->rectSkin, TRUE);
-	UpdateWindow(lpCalc->hwndFrame);
+	if (lpCalc->bCutout && lpCalc->SkinEnabled) {
+		EnableCutout(lpCalc);
+	} else {
+		DrawButtonStatesAll(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap);
+		InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);
+		UpdateWindow(lpCalc->hwndFrame);
+	}
 }

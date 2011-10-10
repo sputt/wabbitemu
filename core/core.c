@@ -297,10 +297,11 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 	if (!bank.ram) endflash(cpu);						//I DON'T THINK THIS IS CORRECT
 	cpu->bus = mem_read(cpu->mem_c, cpu->pc);			//However it shouldn't be a problem
 															//assuming you know how to write to flash
-	if (bank.ram)
+	if (bank.ram) {
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_OP_ram_tstates);
-	else
+	} else {
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_OP_flash_tstates);
+	}
 	cpu->pc++;
 	cpu->r = (cpu->r & 0x80) + ((cpu->r + 1) & 0x7F);		//note: prefix opcodes inc the r reg to. so bit 7,h has 2 incs.
 	return cpu->bus;

@@ -543,10 +543,10 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					double persec = _ttof(buf);
 					if (persec == 0.0)
 						persec = 50.0;
-					num_backup_per_sec = (int) (100 / persec);
 					//we need to persist this immediately
 					SaveWabbitKey(_T("load_files_first"), REG_DWORD, &load_files_first);
 #ifdef WITH_BACKUPS
+					num_backup_per_sec = (int) (100 / persec);
 					do_backups = Button_GetCheck(doBackups_check);
 					if (!do_backups) {
 						for (i = 0; i < MAX_CALCS; i++)

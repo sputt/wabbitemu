@@ -29,9 +29,6 @@ typedef struct{
 	symlist_t sym;
 } VARTREEVIEW_t;
 
-
-
-
 enum { 
 	TI_ICON_BLANK,
 	TI_ICON_84PSE,
@@ -56,7 +53,7 @@ enum {
 
 
 BOOL VarTreeOpen(BOOL refresh);
-HWND CreateVarTreeList();
+HWND CreateVarTreeList(HWND hwndParent, LPCALC lpCalc);
 int SetVarName(FILEDESCRIPTOR *fd);
 void DeleteChildren(HWND hwnd, HTREEITEM parent);
 void RefreshTreeView(BOOL New);

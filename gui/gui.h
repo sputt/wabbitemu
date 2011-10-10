@@ -3,8 +3,8 @@
 
 #include "calc.h"
 
-#define SKIN_WIDTH	314
-#define SKIN_HEIGHT	688
+#define SKIN_WIDTH	350
+#define SKIN_HEIGHT	725
 
 #define WABBITVER		_T("1.5")
 
@@ -28,6 +28,7 @@
 #define g_szSubbar		_T("wabsub")
 #define g_szDetachedName 	_T("wabbitdetached")
 #define g_szDetachedLCDName 	_T("wabbitdetachedlcd")
+#define g_szSmallButtonsName _T("WABBITSMALLBUTTON")
 
 #define ID_STATUSBAR	50
 
@@ -52,7 +53,7 @@
 #define MEM_WORD		2
 #define MEM_DWORD		4
 
-int gui_debug(calc_t *lpCalc);
+HWND gui_debug(calc_t *lpCalc);
 int gui_frame(calc_t *lpCalc);
 int gui_frame_update(calc_t *lpCalc);
 void gui_draw(calc_t *lpCalc);

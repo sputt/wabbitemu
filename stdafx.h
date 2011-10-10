@@ -40,10 +40,8 @@
 
 
 #ifdef __cplusplus
-#ifdef USE_GDIPLUS
 #include <gdiplus.h>
 using namespace Gdiplus;
-#endif
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>

@@ -816,16 +816,63 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				}
 				break;
 			}
-			case DB_DISASM_GOTO_ADDR: {
-				waddr_t waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, (int) lParam);
-				int addr = waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE);
+			case DB_REGULAR_DISASM_GOTO_ADDR: {
+				LPNMHDR pnmhdr = (LPNMHDR) malloc(sizeof(NMHDR));
+				pnmhdr->code = TCN_SELCHANGE;
+				pnmhdr->hwndFrom = hdisasm;
+				//first mapped disasm tab
+				TabCtrl_SetCurSel(hdisasm, 0);
+				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
+				free(pnmhdr);
 				DisasmGotoAddress(hdisasmlist[TabCtrl_GetCurSel(hdisasm)], (int) lParam);
 				break;
 			}
-			case DB_MEM_GOTO_ADDR: {
-				waddr_t waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, (int) lParam);
-				int addr = waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE);
+			case DB_REGULAR_MEM_GOTO_ADDR: {
+				LPNMHDR pnmhdr = (LPNMHDR) malloc(sizeof(NMHDR));
+				pnmhdr->code = TCN_SELCHANGE;
+				pnmhdr->hwndFrom = hdisasm;
+				//first mapped mem tab
+				TabCtrl_SetCurSel(hdisasm, 0);
+				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
+				free(pnmhdr);
 				MemGotoAddress(hmemlist[TabCtrl_GetCurSel(hmem)], (int) lParam);
+				break;
+			}
+			case DB_DISASM_GOTO_ADDR: {
+				waddr_t *waddr = (waddr_t *) lParam;
+				//whose dumbass idea was this? you need to manually send the SELCHANGE notify :|
+				LPNMHDR pnmhdr = (LPNMHDR) malloc(sizeof(NMHDR));
+				pnmhdr->code = TCN_SELCHANGE;
+				pnmhdr->hwndFrom = hdisasm;
+				if (waddr->is_ram) {
+					//first ram tab
+					TabCtrl_SetCurSel(hdisasm, 2); 
+				} else {
+					//first flash tab
+					TabCtrl_SetCurSel(hdisasm, 1);
+				}
+				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
+				free(pnmhdr);
+				int addr = (waddr->addr % PAGE_SIZE) + waddr->page * PAGE_SIZE;
+				DisasmGotoAddress(hdisasmlist[TabCtrl_GetCurSel(hdisasm)], addr);
+				break;
+			}
+			case DB_MEM_GOTO_ADDR: {
+				waddr_t *waddr = (waddr_t *) lParam;
+				LPNMHDR pnmhdr = (LPNMHDR) malloc(sizeof(NMHDR));
+				pnmhdr->code = TCN_SELCHANGE;
+				pnmhdr->hwndFrom = hmem;
+				if (waddr->is_ram) {
+					//first ram tab
+					TabCtrl_SetCurSel(hmem, 2); 
+				} else {
+					//first flash tab
+					TabCtrl_SetCurSel(hmem, 1);
+				}
+				SendMessage(hwnd, WM_NOTIFY, TCN_SELCHANGE, (LPARAM) pnmhdr);
+				free(pnmhdr);
+				int addr = (waddr->addr % PAGE_SIZE) + waddr->page * PAGE_SIZE;
+				MemGotoAddress(hmemlist[TabCtrl_GetCurSel(hmem)], addr);
 				break;
 			}
 			extern HWND hwndLastFocus;

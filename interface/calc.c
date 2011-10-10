@@ -578,25 +578,8 @@ int calc_run_all(void) {
 					link_hub[MAX_CALCS]->host |= link_hub[j]->host;*/
 
 				active_calc = j;
-				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS / 2;
+				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
 				calc_run_tstates(&calcs[j], time);
-				frame_counter += time;
-#ifdef WITH_BACKUPS
-				if (frame_counter >= calcs[j].timer_c.freq / num_backup_per_sec) {
-					frame_counter = 0;
-					if (do_backups && calcs[j].speed <= 100)
-						do_backup(&calcs[j]);
-				}
-#endif
-				calc_run_tstates(&calcs[j], time);
-				frame_counter += time;
-#ifdef WITH_BACKUPS
-				if (frame_counter >= calcs[j].timer_c.freq / num_backup_per_sec) {
-					frame_counter = 0;
-					if (do_backups && calcs[j].speed <= 100)
-						do_backup(&calcs[j]);
-				}
-#endif
 			}
 		}
 

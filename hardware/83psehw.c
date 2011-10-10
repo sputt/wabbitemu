@@ -22,6 +22,8 @@
 // however for now this will do.
 static double timer_freq83pse[4] = { 1.0 / 512.0, 1.0 / 227.0, 1.0 / 156.0, 1.0 / 108.0 };
 
+void UpdateDelays(CPU_t *cpu, DELAY_t *delay);
+
 void port0_83pse(CPU_t *cpu, device_t *dev) {
 	link_t * link = (link_t *) dev->aux;
 
@@ -559,6 +561,7 @@ void port20_83pse(CPU_t *cpu, device_t *dev) {
 				cpu->timer_c->freq = MHZ_6;
 				break;
 		}
+		UpdateDelays(cpu, &cpu->pio.se_aux->delay);
 		cpu->output = FALSE;
 	}
 }
@@ -624,6 +627,17 @@ void port26_83pse(CPU_t *cpu, device_t *dev) {
 	}
 }
 
+void UpdateDelays(CPU_t *cpu, DELAY_t *delay) {
+	// Update memory access delays
+	int enable = delay->reg[GetCPUSpeed(cpu)];
+	int select = delay->reg[0x2E - 0x29];
+	cpu->mem_c->read_OP_flash_tstates = (enable & 1) && (select & 0x01);
+	cpu->mem_c->read_NOP_flash_tstates = (enable & 1) && (select & 0x02);
+	cpu->mem_c->write_flash_tstates = (enable & 1) && (select & 0x04);
+	cpu->mem_c->read_OP_ram_tstates = (enable & 2) && (select & 0x10);
+	cpu->mem_c->read_NOP_ram_tstates = (enable & 2) && (select & 0x20);
+	cpu->mem_c->write_ram_tstates = (enable & 2) && (select & 0x40);
+}
 
 void delay_ports(CPU_t *cpu, device_t *dev) {
 	DELAY_t *delay = (DELAY_t *) dev->aux;
@@ -633,12 +647,12 @@ void delay_ports(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		delay->reg[(DEV_INDEX(dev) - 0x29)] = cpu->bus;
 		cpu->output = FALSE;
+		UpdateDelays(cpu, delay);
 	}
 }
 
 
-
-void mod_timer(CPU_t *cpu,XTAL_t* xtal) {
+void mod_timer(CPU_t *cpu, XTAL_t* xtal) {
 	int a, b, c;
 	a = ((xtal->timers[0].clock & 0xC0) >> 6) & 0x03;
 	b = ((xtal->timers[1].clock & 0xC0) >> 6) & 0x03;

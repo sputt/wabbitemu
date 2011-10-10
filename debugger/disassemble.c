@@ -249,12 +249,12 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 				case 3:	result->index = (result->a2 == (INT_PTR) r[R__HL_] && !prefix) ? DA_SET__HL_ : DA_SET; break; /* X = 3 */
 			}
 			if (prefix) {
-				TCHAR *flagname, *bitname;
+				TCHAR *flagname = NULL, *bitname = NULL;
 				FindFlags(offset, y, &flagname, &bitname);
 
 				/* Special IY flags*/
 				if ((prefix == 0xFD) &&
-					(x!=0) &&
+					(x != 0) &&
 					(lpDebuggerCalc->cpu.iy == 0x89F0) &&
 					(lpDebuggerCalc->model >= TI_83P) &&
 					flagname && bitname) {

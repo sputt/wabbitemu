@@ -722,21 +722,19 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	if (tifile->flash == NULL)
 		return LERR_FILE;
 
-	BOOL bClearSector = FALSE;
+	//BOOL bClearSector = FALSE;
 	for (i = 0; i < ARRAYSIZE(tifile->flash->data); i++) {
 		if (tifile->flash->data[i] == NULL) {
-			if (bClearSector) {
-				
-			} else {
+			//if (!bClearSector) {
 				continue;
-			}
+			//}
 		}
-		if (!bClearSector) {
-			for (int j = i - 1; j >= (i / 4) * 4; j--) {
+		/*if (!bClearSector) {
+			for (int j = i - 1; j >= (i / 4) * 4 && i > 0; j--) {
 				memset(dest[j], 0xFF, PAGE_SIZE);
 			}
 		}
-		bClearSector = TRUE;
+		bClearSector = TRUE;*/
 		if (i > 0x10) {
 			page = i + cpu->mem_c->flash_pages - 0x20;
 		} else {
@@ -745,9 +743,9 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 
-		if (page % 4) {
+		/*if (page % 4) {
 			bClearSector = FALSE;
-		}
+		}*/
 	}
 
 	//valid OS

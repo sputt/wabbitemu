@@ -1,5 +1,9 @@
 #include "stdafx.h"
 
+#include <io.h>
+#include <fcntl.h>
+
+
 #include "gui.h"
 #include "resource.h"
 #include "uxtheme.h"
@@ -44,9 +48,7 @@
 #include "sendfileswindows.h"
 #include "state.h"
 #include "avi_utils.h"
-#ifdef USE_GDIPLUS
 #include "CGdiPlusBitmap.h"
-#endif
 
 
 #ifdef _M_IX86
@@ -131,7 +133,7 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 
 extern WINDOWPLACEMENT db_placement;
 
-int gui_debug(LPCALC lpCalc) {
+HWND gui_debug(LPCALC lpCalc) {
 	TCHAR buf[256];
 	if (link_connected_hub(lpCalc->slot))
 		StringCbPrintf(buf, sizeof(buf), _T("Debugger (%d)"), lpCalc->slot + 1);
@@ -163,7 +165,7 @@ int gui_debug(LPCALC lpCalc) {
 		} else {
 			SwitchToThisWindow(hdebug, TRUE);
 			SendMessage(hdebug, WM_USER, DB_RESUME, 0);
-			return -1;
+			return hdebug;
 		}
 	}
 	
@@ -179,7 +181,7 @@ int gui_debug(LPCALC lpCalc) {
 
 	lpCalc->hwndDebug = hdebug;
 	SendMessage(hdebug, WM_SIZE, 0, 0);
-	return 0;
+	return hdebug;
 }
 
 int gui_frame(LPCALC lpCalc) {
@@ -229,7 +231,6 @@ int gui_frame(LPCALC lpCalc) {
 	return 0;
 }
 
-#ifdef USE_GDIPLUS
 int gui_frame_update(LPCALC lpCalc) {
 	int skinWidth = 0, skinHeight = 0, keymapWidth = -1, keymapHeight = -1;
 	HDC hdc = GetDC(lpCalc->hwndFrame);
@@ -345,11 +346,7 @@ int gui_frame_update(LPCALC lpCalc) {
 	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	SelectObject(lpCalc->hdcButtons, hbmTemp);
 	DeleteObject(hbmTemp);
-	//this is moved here so going from cutout->skinless creates the lcd now
-	if (lpCalc->bCutout && !lpCalc->SkinEnabled) {
-		DisableCutout(lpCalc->hwndFrame);
-		lpCalc->bCutout = TRUE;
-	} else DisableCutout(lpCalc->hwndFrame);
+	
 	HMENU hmenu = GetMenu(lpCalc->hwndFrame);	
 	if (hmenu != NULL) {
 		if (!lpCalc->SkinEnabled) {
@@ -371,7 +368,7 @@ int gui_frame_update(LPCALC lpCalc) {
 			rc.bottom += src.bottom - src.top;
 			if (hmenu)
 				rc.bottom += GetSystemMetrics(SM_CYMENU);
-			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOREDRAW | SWP_NOMOVE | SWP_NOZORDER);
 			GetClientRect(lpCalc->hwndFrame, &rc);
 			SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
 			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
@@ -384,7 +381,7 @@ int gui_frame_update(LPCALC lpCalc) {
 			CopyRect(&rc, &lpCalc->rectSkin);
 			AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
 			rc.bottom += GetSystemMetrics(SM_CYMENU);
-			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
+			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOREDRAW | SWP_NOZORDER | SWP_NOMOVE);
 		}
 	}
 	
@@ -416,18 +413,27 @@ int gui_frame_update(LPCALC lpCalc) {
 	AlphaBlend(lpCalc->hdcSkin, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, hdcOverlay,
 		lpCalc->rectSkin.left, lpCalc->rectSkin.top, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, bf);
 	BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
+	FinalizeButtons(lpCalc);
 	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
-		if (EnableCutout(lpCalc, hbmSkinOld) != 0)
+		if (EnableCutout(lpCalc) != 0)
 			MessageBox(NULL, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
+	} else {
+		DisableCutout(lpCalc->hwndFrame);
 	}
-	if (lpCalc->hwndStatusBar != NULL)
+	if (lpCalc->hwndStatusBar != NULL) {
 		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
+	}
 	SendMessage(lpCalc->hwndFrame, WM_SIZE, 0, 0);
 
-	if (lpCalc->bAlwaysOnTop)
-		SetWindowPos(lpCalc->hwndFrame, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-	else
-		SetWindowPos(lpCalc->hwndFrame, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+	if (lpCalc->bAlwaysOnTop) {
+		if (!(GetWindowLong(lpCalc->hwndFrame, GWL_EXSTYLE) & WS_EX_TOPMOST)) {
+			SetWindowPos(lpCalc->hwndFrame, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		}
+	} else {
+		if (GetWindowLong(lpCalc->hwndFrame, GWL_EXSTYLE) & WS_EX_TOPMOST) {
+			SetWindowPos(lpCalc->hwndFrame, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		}
+	}
 
 	if (lpCalc->bCustomSkin) {
 		delete m_pBitmapKeymap;
@@ -440,150 +446,6 @@ int gui_frame_update(LPCALC lpCalc) {
 	ReleaseDC(lpCalc->hwndFrame, hdc);
 	return 0;
 }
-#else
-int gui_frame_update(LPCALC lpCalc) {
-	BITMAP skinSize, keymapSize;
-	HBITMAP hbmOldKeymap, hbmKeymap, hbmSkin, hbmOldSkin;
-	HDC hdc = GetDC(lpCalc->hwndFrame);
-	if (lpCalc->hdcKeymap)
-		ReleaseDC(lpCalc->hwndFrame, lpCalc->hdcKeymap);
-	if (lpCalc->hdcSkin)
-		ReleaseDC(lpCalc->hwndFrame, lpCalc->hdcSkin);
-
-	lpCalc->hdcKeymap = CreateCompatibleDC(hdc);
-	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
-	hbmSkin = LoadBitmap(g_hInst, CalcModelTxt[lpCalc->model]);
-	if (hbmSkin) {
-		hbmOldSkin = (HBITMAP) SelectObject(lpCalc->hdcSkin, hbmSkin);
-		GetObject(hbmSkin, sizeof(BITMAP), &skinSize);
-	}
-	TCHAR *name = (TCHAR *) malloc(strlen(CalcModelTxt[lpCalc->model]) + 7);
-	strcpy(name, CalcModelTxt[lpCalc->model]);
-	strcat(name, "Keymap");
-	hbmKeymap = LoadBitmap(g_hInst, name);
-	if (hbmKeymap) {
-		hbmOldKeymap = (HBITMAP) SelectObject(lpCalc->hdcKeymap, hbmKeymap);
-		GetObject(hbmKeymap, sizeof(BITMAP), &keymapSize);	//skin and keymap must match
-	}
-	free(name);
-	int x, y, foundX = 0, foundY = 0;
-	bool foundScreen = FALSE;
-	if (hbmSkin == NULL || skinSize.bmWidth != keymapSize.bmWidth || skinSize.bmHeight != keymapSize.bmHeight) {
-		lpCalc->SkinEnabled = false;
-		MessageBox(NULL, "Skin and Keymap are not the same size", "error",  MB_OK);
-		//load default data
-		lpCalc->rectLCD.left = 0;
-		lpCalc->rectLCD.top = 0;
-		lpCalc->rectLCD.right = lpCalc->cpu.pio.lcd->width*2;
-		lpCalc->rectLCD.bottom = 128;
-	} else {
-		lpCalc->rectSkin.right = skinSize.bmWidth;
-		lpCalc->rectSkin.bottom = skinSize.bmHeight;		//find the screen size
-		for(y = 0; y < skinSize.bmHeight && foundScreen == false; y++) {
-			for (x = 0; x < skinSize.bmWidth && foundScreen == false; x++) {
-				COLORREF pixel = GetPixel(lpCalc->hdcKeymap, x, y);
-				if (pixel == RGB(255, 0, 0) && foundScreen != true)	{
-					foundX = x;
-					foundY = y;	
-					foundScreen = true;	
-				}
-			}
-		}
-		lpCalc->rectLCD.left = foundX;
-		lpCalc->rectLCD.top = foundY;
-		COLORREF pixel;
-		do {
-			foundX++;
-			pixel = GetPixel(lpCalc->hdcKeymap, foundX, foundY);
-		} while (pixel == RGB(255, 0, 0));
-		lpCalc->rectLCD.right = foundX--;
-		do { 
-			foundY++;
-			pixel = GetPixel(lpCalc->hdcKeymap, foundX, foundY);
-		} while (pixel == RGB(255, 0, 0));
-		lpCalc->rectLCD.bottom = foundY;
-	}
-	if (!lpCalc->hwndFrame)
-		return 0;
-	HMENU hmenu = GetMenu(lpCalc->hwndFrame);
-	if (hmenu != NULL) {
-		if (!lpCalc->SkinEnabled) {
-			RECT rc;
-			CheckMenuItem(GetSubMenu(hmenu, 1), IDM_VIEW_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
-			// Create status bar
-			if (!lpCalc->hwndStatusBar) {
-				DestroyWindow(lpCalc->hwndStatusBar);
-				CloseWindow(lpCalc->hwndStatusBar);
-			}
-			SetRect(&rc, 0, 0, 128*lpCalc->Scale, 64*lpCalc->Scale);
-			int iStatusWidths[] = {100, -1};
-			lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, lpCalc->hwndFrame, (HMENU)99, g_hInst, NULL);
-			SendMessage(lpCalc->hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
-			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
-			RECT src;
-			GetWindowRect(lpCalc->hwndStatusBar, &src);
-			AdjustWindowRect(&rc, (WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~WS_MAXIMIZEBOX, FALSE);
-			rc.bottom += src.bottom - src.top;
-			if (hmenu)
-				rc.bottom += GetSystemMetrics(SM_CYMENU);
-			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
-			GetClientRect(lpCalc->hwndFrame, &rc);
-			SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
-			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
-			//InvalidateRect(lpCalc->hwndFrame, NULL, FALSE);
-		} else {
-			CheckMenuItem(GetSubMenu(hmenu, 1), IDM_VIEW_SKIN, MF_BYCOMMAND | MF_CHECKED);
-			DestoryWindow(lpCalc->hwndStatusBar);
-			CloseWindow(lpCalc->hwndStatusBar);
-			lpCalc->hwndStatusBar = NULL;
-			//SetRect(&lpCalc->rectSkin, 0, 0, 350, 725);
-			RECT rc;
-			CopyRect(&rc, &lpCalc->rectSkin);
-			AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
-			rc.bottom += GetSystemMetrics(SM_CYMENU);
-			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
-			//InvalidateRect(hwnd, NULL, TRUE);
-		}
-	}
-	RECT rc;
-	GetClientRect(lpCalc->hwndFrame, &rc);
-	if (!lpCalc->SkinEnabled || !lpCalc->bCutout)
-		FillRect(lpCalc->hdcSkin, &rc, GetStockBrush(GRAY_BRUSH));
-	if (lpCalc->model == TI_84PSE) {
-		if (DrawFaceplateRegion(lpCalc->hdcSkin, lpCalc->FaceplateColor))
-			MessageBox(NULL, "Unable to draw faceplate", "error", MB_OK);
-	}
-	//this needs to be done so we can alpha blend the screen
-	HDC hdcOverlay = CreateCompatibleDC(lpCalc->hdcSkin);
-	HBITMAP bmpGray = LoadBitmap(g_hInst, CalcModelTxt[lpCalc->model]);
-	SelectObject(hdcOverlay, bmpGray);
-	BLENDFUNCTION bf;
-	bf.BlendOp = AC_SRC_OVER;
-	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = 255;
-	bf.AlphaFormat = AC_SRC_ALPHA;
-	AlphaBlend(lpCalc->hdcSkin, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, hdcOverlay,
-		lpCalc->rectSkin.left, lpCalc->rectSkin.top, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, bf);
-	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
-		if (EnableCutout(lpCalc->hwndFrame, hbmSkin) != 0) {
-			MessageBox(NULL, "Couldn't cutout window", "error",  MB_OK);
-		}
-	} else if (lpCalc->bCutout && !lpCalc->SkinEnabled) {
-		DisableCutout(lpCalc->hwndFrame);
-		lpCalc->bCutout = TRUE;
-	} else {
-		DisableCutout(lpCalc->hwndFrame);
-	}
-	if (lpCalc->hwndStatusBar != NULL)
-		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
-
-	ReleaseDC(lpCalc->hwndFrame, hdc);
-	DeleteObject(hbmOldKeymap);
-	DeleteObject(hbmOldSkin);
-	SendMessage(lpCalc->hwndFrame, WM_SIZE, 0, 0);
-	return 0;
-}
-#endif
 
 /*
  * Checks based on the existence of the main window and the LCD window whether we need
@@ -684,6 +546,13 @@ void RegisterWindowClasses(void) {
 	wc.lpszClassName = g_szDetachedName;
 	wc.hbrBackground = NULL;
 	RegisterClassEx(&wc);
+
+	// Small cutout buttons
+	wc.style = CS_DBLCLKS;
+	wc.lpfnWndProc = SmallButtonProc;
+	wc.lpszClassName = g_szSmallButtonsName;
+	wc.hbrBackground = NULL;
+	RegisterClassEx(&wc);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
@@ -773,12 +642,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// initialize com events
 	OleInitialize(NULL);
 
-#ifdef USE_GDIPLUS
 	// Initialize GDI+.
 	GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR gdiplusToken;
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-#endif
 
 
 	if (argv && argc > 1) {
@@ -911,11 +778,20 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				haccel = hacceldebug;
 			} else if (hwndtop == FindWindow(g_szAppName, NULL) ) {
 				haccel = haccelmain;
-				if (lpCalc->bCutout && lpCalc->SkinEnabled)
+				if (lpCalc->bCutout && lpCalc->SkinEnabled) {
 					hwndtop = FindWindow(g_szLCDName, NULL);
-				else
+				} else {
 					hwndtop = FindWindowEx(hwndtop, NULL, g_szLCDName, NULL);
+				}
 				SetForegroundWindow(hwndtop);
+			} else if (lpCalc->bCutout && lpCalc->SkinEnabled) {
+				if (hwndtop == FindWindow(g_szLCDName, NULL) || hwndtop == FindWindow(g_szAppName, NULL) ||
+					hwndtop == FindWindow(g_szSmallButtonsName, g_szSmallClose) ||
+					hwndtop == FindWindow(g_szSmallButtonsName, g_szSmallMinimize)) {
+					hwndtop = FindWindow(g_szLCDName, NULL);
+				} else {
+					haccel = NULL;	
+				}
 			} else {
 				haccel = NULL;
 			}
@@ -950,10 +826,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//free the link we setup to act as our hub
 	free(hub_link);
 	
-#ifdef USE_GDIPLUS
 	// Shutdown GDI+
 	GdiplusShutdown(gdiplusToken);
-#endif
 
 	// Shutdown COM
 	OleUninitialize();
@@ -1182,9 +1056,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						if (res == IDCANCEL || res == IDNO)
 							break;
 						is_exiting = TRUE;
-						PostQuitMessage(0);
 					}
-					CloseWindow(hwnd);
+					PostQuitMessage(0);
 					break;
 				case IDM_CALC_COPY: {
 					HLOCAL ans;
@@ -1261,7 +1134,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case IDM_VIEW_VARIABLES:
-					CreateVarTreeList();
+					CreateVarTreeList(hwnd, lpCalc);
 					break;
 				case IDM_VIEW_KEYSPRESSED:
 					if (IsWindow(hListDialog)) {
@@ -1295,13 +1168,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				case IDM_FRAME_BTOGGLE:
 					SendMessage(hwnd, WM_MBUTTONDOWN, MK_MBUTTON, MAKELPARAM(ctxtPt.x, ctxtPt.y));
-					InvalidateRect(hwnd, &lpCalc->rectSkin, TRUE);
-					UpdateWindow(hwnd);
 					break;
 				case IDM_FRAME_BUNLOCK: {
 					RECT rc;
 					keypad_t *kp = (keypad_t *) lpCalc->cpu.pio.devices[1].aux;
-					int group,bit;
+					int group, bit;
 					GetClientRect(hwnd, &rc);
 					for(group = 0; group < 7; group++) {
 						for(bit = 0; bit < 8; bit++) {
@@ -1310,9 +1181,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					}
 					lpCalc->cpu.pio.keypad->on_pressed &= (~KEY_LOCKPRESS);
 
-					InvalidateRect(hwnd, &lpCalc->rectSkin, TRUE);
-					UpdateWindow(hwnd);
-					SendMessage(hwnd, WM_SIZE, 0, 0);
+					FinalizeButtons(lpCalc);
 					break;
 				}
 				case IDM_SPEED_QUARTER: {
@@ -1401,17 +1270,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			static POINT pt;
 			keypad_t *kp = lpCalc->cpu.pio.keypad;
 
-			//CopySkinToButtons();
-			if (Message == WM_LBUTTONDOWN) {
+			if (Message == WM_LBUTTONDOWN) { 
 				SetCapture(hwnd);
 				pt.x	= GET_X_LPARAM(lParam);
 				pt.y	= GET_Y_LPARAM(lParam);
+				printf("WM_LBUTTONDOWN x: %d, y: %d, \n", pt.x, pt.y);
 				if (lpCalc->bCutout) {
 					pt.y += GetSystemMetrics(SM_CYCAPTION);	
 					pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
 				}
 			} else {
 				ReleaseCapture();
+				printf("WM_LBUTTONUP\n");
 			}
 
 			for(group = 0; group < 7; group++) {
@@ -1422,32 +1292,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_MOUSEPRESS;
 
-			if (wParam != MK_LBUTTON) {
-				FinalizeButtons(lpCalc);
-				return 0;
-			}
+			if (wParam == MK_LBUTTON) {
+				COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
+				if (GetRValue(c) == 0xFF) {
+					printf("Color was 0xFF exiting\n");
+					FinalizeButtons(lpCalc);
+					return 0;
+				}
 
-			COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
-			if (GetRValue(c) == 0xFF) {
-				FinalizeButtons(lpCalc);
-				return 0;
-			}
-
-			if ( (GetGValue(c) >> 4) == 0x05 && (GetBValue(c) >> 4) == 0x00){
-				lpCalc->cpu.pio.keypad->on_pressed |= KEY_MOUSEPRESS;
-			} else {
-				kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] |= KEY_MOUSEPRESS;
-				if ((kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] & KEY_STATEDOWN) == 0) {
-					DrawButtonState(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_PRESS);
-					kp->keys[GetGValue(c) >> 4][GetBValue(c) >> 4] |= KEY_STATEDOWN;
-					//SendMessage(hwnd, WM_SIZE, 0, 0);
+				printf("Color value: %X2\n", c);
+				group = GetGValue(c) >> 4;
+				bit	= GetBValue(c) >> 4;
+				if (group == 0x05 && bit == 0x00){
+					lpCalc->cpu.pio.keypad->on_pressed |= KEY_MOUSEPRESS;
+				} else {
+					kp->keys[group][bit] |= KEY_MOUSEPRESS;
+					if ((kp->keys[group][bit] & KEY_STATEDOWN) == 0) {
+						kp->keys[group][bit] |= KEY_STATEDOWN;
+					}
 				}
 			}
-		InvalidateRect(hwnd, &lpCalc->rectSkin, TRUE);
-		UpdateWindow(hwnd);
-
-		//extern POINT ButtonCenter83[64];
-		//extern POINT ButtonCenter84[64];
+			FinalizeButtons(lpCalc);
 			return 0;
 		}
 		case WM_MBUTTONDOWN: {
@@ -1457,29 +1322,22 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			pt.x	= GET_X_LPARAM(lParam);
 			pt.y	= GET_Y_LPARAM(lParam);
+			if (lpCalc->bCutout) {
+				pt.y += GetSystemMetrics(SM_CYCAPTION);	
+				pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
+			}
 
 			COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
 			if (GetRValue(c) == 0xFF) return 0;
-			group	= GetGValue(c)>>4;
-			bit		= GetBValue(c)>>4;
+			group	= GetGValue(c) >> 4;
+			bit		= GetBValue(c) >> 4;
 
 			if (group== 0x05 && bit == 0x00) {
 				lpCalc->cpu.pio.keypad->on_pressed ^= KEY_LOCKPRESS;
-				if ( lpCalc->cpu.pio.keypad->on_pressed &  KEY_LOCKPRESS ) {
-					DrawButtonState(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
-				} else {
-					DrawButtonState(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap, &pt, DBS_LOCK | DBS_UP);
-				}
-			}
-			kp->keys[group][bit] ^= KEY_LOCKPRESS;
-			if (kp->keys[group][bit] &  KEY_LOCKPRESS ) {
-				DrawButtonState(lpCalc, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_DOWN | DBS_LOCK);
 			} else {
-				DrawButtonState(lpCalc, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_LOCK | DBS_UP);
+				kp->keys[group][bit] ^= KEY_LOCKPRESS;
 			}
-			InvalidateRect(hwnd, &lpCalc->rectSkin, TRUE);
-			UpdateWindow(hwnd);
-			SendMessage(hwnd, WM_SIZE, 0, 0);
+			FinalizeButtons(lpCalc);
 			return 0;
 		}
 
@@ -1488,7 +1346,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_KEYUP:
-			HandleKeyUp(lpCalc, wParam);
+			if (wParam) {
+				HandleKeyUp(lpCalc, wParam);
+			}
 			return 0;
 		case WM_SIZING: {
 			if (lpCalc->SkinEnabled)
@@ -1540,7 +1400,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			// Make sure the width is a nice clean proportional sizing
 			AdjustWidth = (prc->right - prc->left - ClientAdjustWidth) % 128;
-			//AdjustHeight = (prc->bottom - prc->top) % lpCalc->cpu.pio.lcd->height;
 			AdjustHeight = (prc->bottom - prc->top - ClientAdjustHeight) % 64;
 
 			int cx_mult = (prc->right - prc->left - ClientAdjustWidth) / 128;
@@ -1687,7 +1546,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			if (!lpCalc->SkinEnabled)
 				break;
 			MINMAXINFO *info = (MINMAXINFO *) lParam;
-			RECT rc = { 0, 0, 350, 725 };
+			RECT rc = { 0, 0, SKIN_WIDTH, SKIN_HEIGHT };
 			AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 			info->ptMinTrackSize.x = rc.right - rc.left;
 			info->ptMinTrackSize.y = rc.bottom - rc.top;

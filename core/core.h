@@ -328,17 +328,16 @@ void displayreg(CPU_t *);
 #define tc_tstates( timer_z ) \
 	((timer_z)->tstates)
 
-#ifdef UseSEtiming
 #define SEtc_add( timer_z , num ) \
-	timer_z->tstates += num; \
-	timer_z->elapsed += ((double)(num))/((double)(timer_z)->freq);
+	if (cpu->pio.model >= TI_83PSE) {\
+		timer_z->tstates += num; \
+		timer_z->elapsed += ((double)(num))/((double)(timer_z)->freq);\
+	}
 #define SEtc_sub( timer_z , num ) \
-	timer_z->tstates -= num; \
-	timer_z->elapsed -= ((double)(num))/((double)(timer_z)->freq);
-#else
-#define SEtc_add( timer_z , num )
-#define SEtc_sub( timer_z , num )
-#endif
+	if (cpu->pio.model >= TI_83PSE) {\
+		timer_z->tstates -= num; \
+		timer_z->elapsed -= ((double)(num))/((double)(timer_z)->freq);\
+	}
 
 
 #define endflash(cpu_v) cpu_v->mem_c->step=0;

@@ -10,13 +10,11 @@ BOOL WINAPI OnContextMenu(HWND hwnd, int x, int y, HMENU hmenu) {
 	ScreenToClient(hwnd, &pt);
 	
 	if (PtInRect(&rc, pt)) {
-		ClientToScreen(hwnd, &pt);
-		
 		TrackPopupMenu(hmenu, 
-            TPM_LEFTALIGN | TPM_RIGHTBUTTON, 
-            pt.x, pt.y, 0, hwnd, NULL); 
+			TPM_LEFTALIGN | TPM_RIGHTBUTTON, 
+			x, y, 0, hwnd, NULL); 
  
-	    // Destroy the menu. 
+		// Destroy the menu. 
 		return TRUE;
 	}
 
