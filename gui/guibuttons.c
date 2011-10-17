@@ -118,13 +118,62 @@ void LogKeypress(LPCALC lpCalc, int group, int bit, UINT vk) {
 	}
 }	
 
+
+void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state)
+{
+	RECT brect = FindButtonRect(hdcKeymap, pt);
+	int width = brect.right - brect.left;
+	int height = brect.bottom - brect.top;
+	COLORREF colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
+	if (GetRValue(colormatch) != 0) return;
+
+	for(int y = 0; y < height; y++) {
+		for(int x = 0; x < width; x++) {
+			
+			COLORREF colortest = GetPixel(hdcKeymap, x + brect.left, y + brect.top);
+			if (colormatch == colortest) {
+				COLORREF skincolor = GetPixel(hdcSkin,x + brect.left, y + brect.top);
+				unsigned char red, blue, green;
+				red = GetRValue(skincolor);
+				blue = GetBValue(skincolor);
+				green = GetGValue(skincolor);
+				
+				if (state & DBS_COPY) {
+					SetPixel(hdc, x, y, skincolor);
+				}
+				else
+				{
+					if (state & DBS_DOWN) {
+						// button is down
+						if (state & DBS_LOCK)
+							SetPixel(hdc, x, y, RGB((red / 2) + 128 , blue / 2, green / 2));
+						else if (state & DBS_PRESS)
+							SetPixel(hdc, x, y, RGB(red / 2, blue / 2, green / 2));
+					} else {
+						if (state & DBS_LOCK)
+							SetPixel(hdc, x, y, RGB((red - 128) * 2 , blue * 2, green * 2));
+						else if (state & DBS_PRESS)
+							SetPixel(hdc, x, y, RGB(red * 2 , blue * 2, green * 2));
+					}
+				}
+				
+			} else {
+				if (hdcSkin != NULL) {
+					if (state != DBS_COPY)
+					{
+						COLORREF skincolor = GetPixel(hdcSkin,x + brect.left, y + brect.top);
+						SetPixel(hdc, x, y, skincolor);
+					}
+				}
+			}
+		}
+	}
+}
+
+
 void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state) {
 	RECT brect;
-	COLORREF colormatch;
 	int x, y, width, height;
-
-	colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
-	if (GetRValue(colormatch) != 0) return;
 	
 	brect = FindButtonRect(hdcKeymap, pt);
 	if (IsRectEmpty(&brect)) return;
@@ -136,35 +185,7 @@ void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state) {
 	HBITMAP hbmButton = CreateCompatibleBitmap(hdcSkin,width,height);
 	SelectObject(hdc, hbmButton);
 
-
-	for(y = 0; y < height; y++) {
-		for(x = 0; x < width; x++) {
-			COLORREF skincolor = GetPixel(hdcSkin,x + brect.left, y + brect.top);
-			COLORREF colortest = GetPixel(hdcKeymap, x + brect.left, y + brect.top);
-			if (colormatch == colortest) {
-				unsigned char red, blue, green;
-				red = GetRValue(skincolor);
-				blue = GetBValue(skincolor);
-				green = GetGValue(skincolor);
-				
-				if (state & DBS_DOWN) {
-					// button is down
-					if (state & DBS_LOCK)
-						SetPixel(hdc, x, y, RGB((red / 2) + 128 , blue / 2, green / 2));
-					else if (state & DBS_PRESS)
-						SetPixel(hdc, x, y, RGB(red / 2, blue / 2, green / 2));
-				} else {
-					if (state & DBS_LOCK)
-						SetPixel(hdc, x, y, RGB((red - 128) * 2 , blue * 2, green * 2));
-					else if (state & DBS_PRESS)
-						SetPixel(hdc, x, y, RGB(red * 2 , blue * 2, green * 2));
-				}
-				
-			} else {
-				SetPixel(hdc, x, y, skincolor);
-			}
-		}
-	}
+	DrawButtonStateNoSkin(hdc, hdcSkin, hdcKeymap, pt, state);
 	
 	BitBlt(hdcSkin, brect.left, brect.top, width, height,
 				hdc, 0, 0, SRCCOPY);
@@ -172,64 +193,6 @@ void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state) {
 	DeleteObject(hbmButton);
 	DeleteObject(hdc);
 }
-
-#define MAX_KEY_WIDTH 48
-#define MAX_KEY_HEIGHT 48
-HBITMAP DrawButtonAndMask(LPCALC lpCalc, POINT pt, HBITMAP *hbmButton, HBITMAP *hbmMask) {
-	RECT brect;
-	COLORREF colormatch;
-	int x, y, width, height;
-
-	colormatch = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
-	if (GetRValue(colormatch) != 0) return NULL;
-	
-	brect = FindButtonRect(lpCalc->hdcKeymap, &pt);
-	if (IsRectEmpty(&brect)) return NULL;
-
-	width = brect.right - brect.left;
-	height = brect.bottom - brect.top;
-	
-	HDC hdc = CreateCompatibleDC(lpCalc->hdcKeymap);
-	HBITMAP blankBitmap = CreateCompatibleBitmap(lpCalc->hdcKeymap, MAX_KEY_WIDTH, MAX_KEY_HEIGHT);
-	HBITMAP hButton = CreateCompatibleBitmap(lpCalc->hdcKeymap, MAX_KEY_WIDTH, MAX_KEY_HEIGHT);
-	SelectObject(hdc, blankBitmap);
-	/*HDC hdcMask = CreateCompatibleDC(lpCalc->hdcKeymap);
-	*hbmMask = CreateCompatibleBitmap(lpCalc->hdcKeymap, MAX_KEY_WIDTH, MAX_KEY_HEIGHT);
-	SelectObject(hdcMask, *hbmMask);*/
-	RECT rc = { 0, 0, 48, 48};
-	int error = BitBlt(hdc, 0, 0, MAX_KEY_WIDTH, MAX_KEY_HEIGHT, lpCalc->hdcKeymap, brect.left, brect.top, SRCCOPY);
-	FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
-	BITMAPINFO bi;
-	bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-	bi.bmiHeader.biWidth = MAX_KEY_WIDTH;
-	bi.bmiHeader.biHeight = MAX_KEY_HEIGHT;
-	bi.bmiHeader.biPlanes = 1;
-	bi.bmiHeader.biBitCount = 24;
-	bi.bmiHeader.biCompression = BI_RGB;
-	bi.bmiHeader.biSizeImage = 0;
-	bi.bmiHeader.biXPelsPerMeter = 0;
-	bi.bmiHeader.biYPelsPerMeter = 0;
-	bi.bmiHeader.biClrUsed = 0;
-	bi.bmiHeader.biClrImportant = 0;
-	DWORD dwBmpSize = ((MAX_KEY_WIDTH * bi.bmiHeader.biBitCount + 31) / 32) * 4 * MAX_KEY_HEIGHT;
-	LPBYTE bitmap = (LPBYTE) malloc(dwBmpSize);
-	error = GetDIBits(hdc, hButton, 0, MAX_KEY_HEIGHT, NULL, &bi, DIB_RGB_COLORS);
-	LPBYTE pPixel = bitmap;
-	for(y = 0; y < height; y++) {
-		for(x = 0; x < width; x++) {
-			pPixel += 4;
-		}
-	}
-	free(bitmap);
-	//BitBlt(hdcMask, (MAX_KEY_WIDTH - width) / 2, (MAX_KEY_HEIGHT - height) / 2, width, height,
-	//	lpCalc->hdcKeymap, brect.left, brect.right, SRCCOPY);
-
-	//MaskBlt(hdc, (48 - width) / 2, (48 - height) / 2, 48, 48,
-	//	lpCalc->hdcSkin, brect.left, brect.top,
-	//	*hbmMask, (MAX_KEY_WIDTH - width) / 2, (MAX_KEY_HEIGHT - height) / 2, SRCCOPY);
-	return hButton;
-}
-
 
 void DrawButtonStatesAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap) {
 	keypad_t *keypad = lpCalc->cpu.pio.keypad;
