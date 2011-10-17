@@ -53,7 +53,7 @@ static void port0(CPU_t *cpu, device_t *dev) {
 
 static void port2(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
-		cpu->bus = (cpu->pio.model == TI_73 ? 0x39 : 0x3B) | ((cpu->mem_c->flash_locked) ? 4 : 0);
+		cpu->bus = (cpu->pio.model == TI_73 ? 0x39 : 0x3B) | (cpu->mem_c->flash_locked ? 0 : 4);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
@@ -91,7 +91,7 @@ static void port3(CPU_t *cpu, device_t *dev) {
 
 /*
 	Standard interrupt
-	ocurrs on a base frequency
+	occurs on a base frequency
 	when mask timer continues to tick but 
 	does not generate an interrupt. */
 	if (stdint->intactive & 0x02) {
@@ -140,7 +140,7 @@ static void port4(CPU_t *cpu, device_t *dev) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		/* I'm not sure if this is how the interrupts work. */
-		/* but for practicallity its close enough for now. */
+		/* but for practicality its close enough for now. */
 		int freq = ((cpu->bus & 6) >> 1);
 		stdint->timermax1 = stdint->freq[freq];
 		stdint->timermax2 = stdint->freq[freq] / 2.0f;

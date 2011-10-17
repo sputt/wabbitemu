@@ -14,6 +14,8 @@
 #include "indexcb_reverse.h"
 #include "control_reverse.h"
 #include "optable_reverse.h"
+#include "reverse_info.h"
+#include "reverse_info_table.h"
 #endif
 
 unsigned char mem_read(memc *mem, unsigned short addr) {
@@ -361,7 +363,9 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
-		if (!cpu->mem_c->flash_locked &&  1) {
+		if (!cpu->mem_c->flash_locked && // 1) {
+			(((cpu->mem_c->banks[bank].page != 0x3F && cpu->mem_c->banks[bank].page != 0x2F) || cpu->pio.se_aux->model_bits & 0x3) &&
+			((cpu->mem_c->banks[bank].page != 0x7F && cpu->mem_c->banks[bank].page != 0x6F) || cpu->pio.se_aux->model_bits & 0x2 || !(cpu->pio.se_aux->model_bits & 0x1)))) {
 			switch(cpu->mem_c->flash_version) {
 				case 00:
 					break;
@@ -391,17 +395,17 @@ static int CPU_opcode_fetch_reverse(CPU_t *cpu) {
 	int bank_num = mc_bank(cpu->pc);
 	bank_state_t  bank = cpu->mem_c->banks[bank_num];
 
-	if (bank.ram)
+	if (bank.ram) {
 		SEtc_sub(cpu->timer_c, cpu->mem_c->read_OP_ram_tstates);
-	else
+	} else {
 		SEtc_sub(cpu->timer_c, cpu->mem_c->read_OP_flash_tstates);
+	}
 
-	cpu->bus = mem_read(cpu->mem_c, cpu->pc);
+	cpu->bus = cpu->prev_instruction->bus;
 	return cpu->bus;
 }
 
 static void CPU_opcode_run_reverse(CPU_t *cpu) {
-	cpu->f = cpu->prev_instruction->flag;
 	opcode_reverse[cpu->bus](cpu);
 }
 
@@ -430,19 +434,24 @@ int CPU_step_reverse(CPU_t* cpu) {
 	//handle_pio(cpu);
 
 	if (cpu->halt == FALSE) {
-		CPU_opcode_fetch(cpu);
+		reverse_time_t *old_instruction = cpu->prev_instruction;
+		cpu->prev_instruction = cpu->prev_instruction->prev;
+		free(old_instruction);
 		if (cpu->bus == 0xDD || cpu->bus == 0xFD) {
 			cpu->prefix = cpu->bus;
-			CPU_opcode_fetch(cpu);
-			CPU_opcode_run(cpu);
+			CPU_opcode_fetch_reverse(cpu);
+			CPU_opcode_run_reverse(cpu);
 			cpu->prefix = 0;
 		} else {
-			CPU_opcode_run(cpu);
+			CPU_opcode_run_reverse(cpu);
 		}
 	} else {
 		/* If the CPU is in halt */
 		tc_sub(cpu->timer_c, 4 * HALT_SCALE);
-		cpu->r = (cpu->r & 0x80) + ((cpu->r+1 * HALT_SCALE) & 0x7F);
+		cpu->r = cpu->prev_instruction->r;
+		reverse_time_t *old_instruction = cpu->prev_instruction;
+		cpu->prev_instruction = cpu->prev_instruction->prev;
+		free(old_instruction);
 	}
 
 	//cpu->interrupt = 0;
@@ -450,12 +459,38 @@ int CPU_step_reverse(CPU_t* cpu) {
 	return 0;
 }
 
-void CPU_add_prev_instr(CPU_t *cpu) {
+static void CPU_CB_opcode_run_reverse_info(CPU_t *cpu) {
+	//if (cpu->prefix) {
+	//	CPU_mem_read(cpu, cpu->pc++);				//read the offset, NOT INST
+	//	char offset = cpu->bus;
+	//	CPU_opcode_fetch(cpu);						//cb opcode, this is an INST
+	//	cpu->r = ((cpu->r - 1) & 0x7f) + (cpu->r & 0x80);
+	//	ICB_opcode[cpu->bus](cpu,offset);
+	//} else {
+	//	CPU_opcode_fetch(cpu);
+	//	CBtab[cpu->bus](cpu);
+	//}
+}
 
+static void CPU_ED_opcode_run_reverse_info(CPU_t *cpu) {
+	//CPU_opcode_fetch(cpu);
+	//EDtab[cpu->bus](cpu);
+}
+
+void CPU_add_prev_instr(CPU_t *cpu) {
+	reverse_time_t *old = cpu->prev_instruction;
+	cpu->prev_instruction = (reverse_time_t *) malloc(sizeof(reverse_time_t));
+	cpu->prev_instruction->prev = old;
+	cpu->prev_instruction->flag = cpu->f;
+	cpu->prev_instruction->bus = cpu->bus;
+	cpu->prev_instruction->r = cpu->r;
 }
 #endif
 
 static void CPU_opcode_run(CPU_t *cpu) {
+#ifdef WITH_REVERSE
+	opcode_reverse_info[cpu->bus](cpu);
+#endif
 	opcode[cpu->bus](cpu);
 }
 
@@ -490,6 +525,9 @@ static void handle_interrupt(CPU_t *cpu) {
 			tc_add(cpu->timer_c, 8);
 			cpu->halt = FALSE;
 			cpu->bus = 0xFF;
+#ifdef WITH_REVERSE
+			CPU_add_prev_instr(cpu);
+#endif
 			CPU_opcode_run(cpu);
 		} else if (cpu->imode == 2) {
 			tc_add(cpu->timer_c, 19);
@@ -515,11 +553,13 @@ int CPU_step(CPU_t* cpu) {
 			CPU_opcode_run(cpu);
 			cpu->prefix = 0;
 		} else {
+#ifdef WITH_REVERSE
+			CPU_add_prev_instr(cpu);
+#endif
 			CPU_opcode_run(cpu);
 		}
 	} else {
 		/* If the CPU is in halt */
-		#define HALT_SCALE	3
 		tc_add(cpu->timer_c, 4 * HALT_SCALE);
 		cpu->r = (cpu->r & 0x80) + ((cpu->r+1 * HALT_SCALE) & 0x7F);
 	}

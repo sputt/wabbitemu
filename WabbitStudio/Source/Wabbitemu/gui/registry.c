@@ -212,7 +212,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	lpCalc->scale = (int) QueryWabbitKey(_T("screen_scale"));
 	lpCalc->FaceplateColor = (COLORREF) QueryWabbitKey(_T("faceplate_color"));
 	exit_save_state = (BOOL) QueryWabbitKey(_T("exit_save_state"));
-	load_files_first = (BOOL) QueryWabbitKey(_T("load_files_first"));
+	new_calc_on_load_files = (BOOL) QueryWabbitKey(_T("load_files_first"));
 	do_backups = (BOOL) QueryWabbitKey(_T("do_backups"));
 	show_wizard = (BOOL) QueryWabbitKey(_T("show_wizard"));
 	sync_cores = (BOOL) QueryWabbitKey(_T("sync_cores"));
@@ -294,7 +294,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("gif_autosave"), REG_DWORD, &gif_autosave);
 		SaveWabbitKey(_T("gif_useinc"), REG_DWORD, &gif_use_increasing);
 		SaveWabbitKey(_T("exit_save_state"), REG_DWORD, &exit_save_state);
-		SaveWabbitKey(_T("load_files_first"), REG_DWORD, &load_files_first);
+		SaveWabbitKey(_T("load_files_first"), REG_DWORD, &new_calc_on_load_files);
 		SaveWabbitKey(_T("do_backups"), REG_DWORD, &do_backups);
 		SaveWabbitKey(_T("show_wizard"), REG_DWORD, &show_wizard);
 		SaveWabbitKey(_T("sync_cores"), REG_DWORD, &sync_cores);

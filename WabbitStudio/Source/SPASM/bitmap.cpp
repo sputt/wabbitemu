@@ -132,9 +132,9 @@ static void handle_bitmap_header(const RECT *r, const BITMAPFILEHEADER *bf, cons
 #ifdef _WIN32
 static unsigned int log2(unsigned int value)
 {
-    unsigned int l = 0;
-    while( (value >> l) > 1 ) ++l;
-    return l;
+	unsigned int l = 0;
+	while( (value >> l) > 1 ) ++l;
+	return l;
 }
 #endif
 

@@ -535,7 +535,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					int i;
 					startX = startY = Button_GetCheck(saveWindow_check) ? 0 : CW_USEDEFAULT;
 					exit_save_state = Button_GetCheck(saveState_check);
-					load_files_first = Button_GetCheck(loadFiles_check);
+					new_calc_on_load_files = Button_GetCheck(loadFiles_check);
 					show_wizard = Button_GetCheck(wizard_check);
 					break_on_exe_violation = Button_GetCheck(exeViolation_check);
 					TCHAR buf[256];
@@ -544,7 +544,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					if (persec == 0.0)
 						persec = 50.0;
 					//we need to persist this immediately
-					SaveWabbitKey(_T("load_files_first"), REG_DWORD, &load_files_first);
+					SaveWabbitKey(_T("load_files_first"), REG_DWORD, &new_calc_on_load_files);
 #ifdef WITH_BACKUPS
 					num_backup_per_sec = (int) (100 / persec);
 					do_backups = Button_GetCheck(doBackups_check);
@@ -565,7 +565,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			break;
 		case WM_USER: {
 			Button_SetCheck(saveState_check, exit_save_state);
-			Button_SetCheck(loadFiles_check, load_files_first);
+			Button_SetCheck(loadFiles_check, new_calc_on_load_files);
 #ifdef WITH_BACKUPS
 			Button_SetCheck(doBackups_check, do_backups);
 			TCHAR buf[256];

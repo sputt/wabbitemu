@@ -53,10 +53,9 @@ typedef struct breakpoint
 	waddr_t waddr;
 	uint16_t end_addr;			//end of block memory 
 	BOOL active;
-	breakpoint *next;
 	breakpoint_condition_t conditions[10];
 	int num_conditions;
-} breakpoint_t;
+} breakpoint_t, *LPBREAKPOINT;
 
 LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 void add_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr);

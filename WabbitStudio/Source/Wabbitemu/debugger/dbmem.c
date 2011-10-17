@@ -738,6 +738,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case DB_STEP:
 				case DB_STEPOVER:
+				case DB_STEPBACK:
 					extern HWND hdisasm;
 					SendMessage(hdisasm, WM_COMMAND, wParam, 0);
 					break;

@@ -69,6 +69,7 @@ typedef struct tagCALC {
 	HWND hwndDebug;
 	HWND hwndSmallClose;
 	HWND hwndSmallMinimize;
+	HWND hwndListDialog;
 
 	BOOL SkinEnabled;
 	DWORD scale;
@@ -82,7 +83,13 @@ typedef struct tagCALC {
 	HDC hdcSkin;
 	HDC hdcButtons;
 	HDC hdcKeymap;
-	breakpoint_t *cond_breakpoints;
+	union {
+		struct {
+			breakpoint_t **flash_cond_break;
+			breakpoint_t **ram_cond_break;
+		};
+		breakpoint_t **cond_breakpoints[2];
+	};
 #else
 	pthread_t hdlThread;
 #endif
@@ -192,7 +199,7 @@ GLOBAL u_int frame_counter;
 GLOBAL int startX;
 GLOBAL int startY;
 GLOBAL BOOL exit_save_state;
-GLOBAL BOOL load_files_first;
+GLOBAL BOOL new_calc_on_load_files;
 GLOBAL BOOL do_backups;
 GLOBAL BOOL show_wizard;
 GLOBAL BOOL break_on_exe_violation;

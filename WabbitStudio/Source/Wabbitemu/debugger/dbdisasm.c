@@ -434,11 +434,13 @@ void db_step_finish(HWND hwnd, dp_settings *dps) {
 	InvalidateSel(hwnd, dps->iSel);
 	BOOL changeScrollbar = TRUE;
 	if (dps->type == REGULAR) {
-		dps->nSel = lpDebuggerCalc->cpu.pc;
+		dps->nKey = dps->nSel = lpDebuggerCalc->cpu.pc;
+		dps->iSel = 0;
 	} else {
 		waddr_t waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, lpDebuggerCalc->cpu.pc);
 		if ((waddr.is_ram && dps->type == RAM) || (!waddr.is_ram && dps->type == FLASH)) {
-			dps->nSel = waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE);
+			dps->nKey = dps->nSel = waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE);
+			dps->iSel = 0;
 		} else {
 			changeScrollbar = FALSE;
 		}
@@ -927,7 +929,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				dps->max_right = tr.right;
 				tr.left = 0;
 				tr.right = rc.right;
-				if (dps->zinf[i].waddr.addr == dps->nKey && hwnd == GetFocus()) {
+				
+				if (dps->zinf[i].waddr.page * PAGE_SIZE + (dps->zinf[i].waddr.addr % PAGE_SIZE) == dps->nKey && hwnd == GetFocus()) {
 					//dps->iSel = i;
 					RECT fr;
 					CopyRect(&fr, &tr);
@@ -1079,6 +1082,12 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					db_step_finish(hwnd, dps);
 					break;
 				}
+#ifdef WITH_REVERSE
+				case DB_STEPBACK: {
+					CPU_step_reverse(&lpDebuggerCalc->cpu);
+					break;
+				}
+#endif
 				case DB_DISASM_GOTO:
 				case DB_GOTO: {
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);

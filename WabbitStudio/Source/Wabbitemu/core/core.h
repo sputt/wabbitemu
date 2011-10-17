@@ -233,7 +233,8 @@ typedef struct pio_context {
 
 typedef struct reverse_time {
 	BYTE flag;
-	regpair(upper_data, lower_data, data);
+	regpair(upper_data1, lower_data1, data1);
+	regpair(upper_data2, lower_data2, data2);
 	BYTE bus;
 	BYTE r;
 	reverse_time *prev;
@@ -268,6 +269,7 @@ typedef struct CPU {
 	void (*exe_violation_callback)(void *);
 	int cpu_version;
 	reverse_time_t *prev_instruction;
+	reverse_time_t *first_intruction;
 	BOOL do_opcode_callback;
 } CPU_t;
 
@@ -307,6 +309,11 @@ int CPU_step(CPU_t*);
 unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr);
 unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data);
 CPU_t* CPU_clone(CPU_t *cpu);
+#define HALT_SCALE	3
+
+#ifdef WITH_REVERSE
+int CPU_step_reverse(CPU_t* cpu);
+#endif
 
 #ifdef DEBUG
 void displayreg(CPU_t *);

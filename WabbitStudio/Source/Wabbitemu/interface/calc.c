@@ -84,6 +84,8 @@ static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	/* END INTIALIZE 83 */
 
 #ifdef WINVER // FIXME: dirty cheater!
+	lpCalc->flash_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.flash_pages, PAGE_SIZE);
+	lpCalc->ram_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.ram_pages, PAGE_SIZE);
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
@@ -105,6 +107,8 @@ static int calc_init_86(LPCALC lpCalc) {
 	/* END INTIALIZE 86 */
 
 #ifdef WINVER // FIXME: dirty cheater!
+	lpCalc->flash_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.flash_pages, PAGE_SIZE);
+	lpCalc->ram_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.ram_pages, PAGE_SIZE);
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
@@ -124,6 +128,8 @@ int calc_init_83p(LPCALC lpCalc) {
 	/* END INTIALIZE 83+ */
 
 #ifdef WINVER // FIXME: dirty cheater!
+	lpCalc->flash_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.flash_pages, PAGE_SIZE);
+	lpCalc->ram_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.ram_pages, PAGE_SIZE);
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
@@ -142,6 +148,8 @@ int calc_init_83pse(LPCALC lpCalc) {
 	device_init_83pse(&lpCalc->cpu);
 	/* END INTIALIZE 83+se */
 #ifdef WINVER // FIXME: dirty cheater!
+	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
+	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
@@ -164,6 +172,8 @@ int calc_init_84p(LPCALC lpCalc) {
 	/* END INTIALIZE 84+ */
 
 #ifdef WINVER // FIXME: dirty cheater!
+	lpCalc->flash_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.flash_pages, PAGE_SIZE);
+	lpCalc->ram_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.ram_pages, PAGE_SIZE);
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
@@ -320,6 +330,11 @@ void calc_slot_free(LPCALC lpCalc) {
 #ifdef WINVER
 		KillSound(lpCalc->audio);
 		lpCalc->audio = NULL;
+
+		free(lpCalc->flash_cond_break);
+		lpCalc->flash_cond_break = NULL;
+		free(lpCalc->ram_cond_break);
+		lpCalc->ram_cond_break = NULL;
 #endif
 
 		free(lpCalc->mem_c.flash);

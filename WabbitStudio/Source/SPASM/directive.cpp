@@ -443,6 +443,7 @@ addinstr_fail:
  */
 
 void show_define (define_t *define) {
+	WORD console_attrib = save_console_attributes();
 	set_console_attributes (COLOR_BLUE);
 	fputs (define->name, stdout);
 	if (define->num_args > 0) {
@@ -455,6 +456,8 @@ void show_define (define_t *define) {
 		}
 		putchar (')');
 	}
+	putchar ('\n');
+	restore_console_attributes(console_attrib);
 
 #ifdef WIN32
 	if (define->contents != NULL)

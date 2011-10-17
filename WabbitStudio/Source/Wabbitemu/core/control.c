@@ -584,7 +584,7 @@ void ld_mem16_hlf(CPU_t *cpu) {
 	if (!cpu->prefix) {
 		CPU_mem_write(cpu, reg++, cpu->l);
 		CPU_mem_write(cpu, reg, cpu->h);
-		tc_add(cpu->timer_c,16);
+		tc_add(cpu->timer_c, 16);
 	} else if (cpu->prefix == 0xDD) {
 		CPU_mem_write(cpu, reg++, cpu->ixl);
 		CPU_mem_write(cpu, reg, cpu->ixh);

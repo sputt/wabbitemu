@@ -13,6 +13,6 @@ int DrawFaceplateRegion(Graphics *graphics);
 #else
 int DrawFaceplateRegion(HDC, COLORREF);
 #endif
-HRGN GetRegion();
+HRGN GetFaceplateRegion();
 
 #endif /* GUIFACEPLATE_H_ */

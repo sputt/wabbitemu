@@ -8,80 +8,43 @@
 
 extern HINSTANCE g_hInst;
 extern HFONT hfontSegoe;
-static BOOL is_updating_break = FALSE;
 
 INT_PTR CALLBACK ConditionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 void add_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 {
-	if (is_updating_break)
-		return;
 	breakpoint_t *new_break = (breakpoint_t *) malloc(sizeof(breakpoint_t));
 	new_break->active = TRUE;
 	new_break->end_addr = waddr.addr % PAGE_SIZE;
-	new_break->next = NULL;
 	new_break->type = type;
 	new_break->waddr = waddr;
 	new_break->waddr.addr %= PAGE_SIZE;
+	new_break->num_conditions = 0;
 	StringCbPrintf(new_break->label, sizeof(new_break->label), _T("%04X"), waddr.addr);
 	LPCALC lpCalc = calc_from_memc(mem);
-	breakpoint_t *lpBreak = lpCalc->cond_breakpoints;
-	if (lpBreak != NULL) {
-		while (lpBreak->next != NULL)
-			lpBreak = lpBreak->next;
-		lpBreak->next = new_break;
-	} else {
-		lpCalc->cond_breakpoints = new_break;
-	}
+	lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] = new_break;
 }
 
 void rem_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 {
-	//we just want to clear in the break list,
-	//not in the manager. I like this better than creating
-	//another set of functions in core.c. If we ever
-	//have more than one debugger open we may need to fix this
-	if (is_updating_break)
-		return;
 	LPCALC lpCalc = calc_from_memc(mem);
-	breakpoint_t *lpPrevBreak, *lpBreak = lpCalc->cond_breakpoints;
-	while (lpBreak->next != NULL) {
-		if (lpBreak->waddr.addr == waddr.addr && lpBreak->waddr.page == waddr.page &&
-			lpBreak->waddr.is_ram == waddr.is_ram && lpBreak->type == type) {
-			break;
-		} else {
-			lpPrevBreak = lpBreak;
-			lpBreak = lpBreak->next;
-		}
-	}
-	if (lpBreak->waddr.addr == waddr.addr && lpBreak->waddr.page == waddr.page &&
-		lpBreak->waddr.is_ram == waddr.is_ram && lpBreak->type == type) {
-		if (lpBreak == lpCalc->cond_breakpoints) {
-			lpCalc->cond_breakpoints = lpBreak->next;
-			free(lpBreak);
-		} else {
-			lpPrevBreak->next = lpBreak->next;
-			free(lpBreak);
-		}
-	}
+	breakpoint_t *lpBreak = lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)];
+	if (lpBreak == NULL)
+		return;
+	free(lpBreak);
+	lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] = NULL;
 }
 
 //returns true if it should break, false otherwise
 BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
 	LPCALC lpCalc = calc_from_memc(mem);
-	breakpoint_t *lpBreak = lpCalc->cond_breakpoints;
+	breakpoint_t *lpBreak = lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)];
 	if (lpBreak == NULL)
 		return FALSE;
 
 	//necessary because of page handling
 	waddr.addr %= PAGE_SIZE;
 
-	while (lpBreak->next != NULL && (lpBreak->waddr.addr != waddr.addr ||
-		lpBreak->waddr.page != waddr.page || lpBreak->waddr.is_ram != waddr.is_ram || lpBreak->type != type)) {
-		lpBreak = lpBreak->next;
-	}
-	if (lpBreak->waddr.addr != waddr.addr || lpBreak->waddr.page != waddr.page || lpBreak->waddr.is_ram != waddr.is_ram)
-		return FALSE;
 	if (!lpBreak->active)
 		return FALSE;
 	int result = TRUE;
@@ -89,7 +52,10 @@ BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
 		switch (lpBreak->conditions[i].type) {
 			case CONDITION_HIT_COUNT: {
 				condition_hitcount_t *cond = (condition_hitcount_t *) lpBreak->conditions[i].data;
-				cond->hit_count++;
+				waddr_t pcWaddr = addr_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc);
+				if (pcWaddr.addr % PAGE_SIZE == waddr.addr && pcWaddr.page == waddr.page && pcWaddr.is_ram == waddr.is_ram) {
+					cond->hit_count++;
+				}
 				switch (cond->condition) {
 					case TRIGGER_EQUAL:
 						result = cond->hit_count == cond->trigger_value;
@@ -159,28 +125,25 @@ int GetWaddrData(HWND hwnd, waddr_t *waddr) {
 
 static BOOL is_updating = FALSE;
 void UpdateItemsListView(HWND hwndListView) {
+	if (is_updating)
+		return;
 	is_updating = TRUE;
 	ListView_DeleteAllItems(hwndListView);
-	int count = 0;
-	breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
-	if (lpBreak != NULL) {
-		count++;
-		while (lpBreak->next != NULL) {
-			lpBreak = lpBreak->next;
-			count++;
-		}
-	}
+	int i;
 
-	lpBreak = lpDebuggerCalc->cond_breakpoints;
-	for (int i = 0; i < count; i++) {
+	for (i = 0; i < lpDebuggerCalc->cpu.mem_c->flash_size; i++) {
+		if (lpDebuggerCalc->flash_cond_break[i] == NULL)
+			continue;
+		LPBREAKPOINT lpBreak = lpDebuggerCalc->flash_cond_break[i];
 		LVITEM lvI;
 		// Initialize LVITEM members that are common to all items.
 		lvI.pszText		= LPSTR_TEXTCALLBACK; // Sends an LVN_GETDISPINFO message.
-		lvI.mask		= LVIF_TEXT;
+		lvI.mask		= LVIF_TEXT | LVIF_PARAM;
 		lvI.stateMask	= 0;
 		lvI.iSubItem	= 0;
 		lvI.state		= 0;
 		lvI.iItem		= i;
+		lvI.lParam		= (LPARAM) lpBreak;
 	
 		BOOL active = lpBreak->active;
 		// Insert items into the list.
@@ -188,7 +151,27 @@ void UpdateItemsListView(HWND hwndListView) {
 			return;
 		lpBreak->active = active;
 		ListView_SetCheckState(hwndListView, i, lpBreak->active);
-		lpBreak = lpBreak->next;
+	}
+	for (int j = 0; j < lpDebuggerCalc->cpu.mem_c->ram_size; j++) {
+		if (lpDebuggerCalc->ram_cond_break[j] == NULL)
+			continue;
+		LPBREAKPOINT lpBreak = lpDebuggerCalc->ram_cond_break[j];
+		LVITEM lvI;
+		// Initialize LVITEM members that are common to all items.
+		lvI.pszText		= LPSTR_TEXTCALLBACK; // Sends an LVN_GETDISPINFO message.
+		lvI.mask		= LVIF_TEXT | LVIF_PARAM;
+		lvI.stateMask	= 0;
+		lvI.iSubItem	= 0;
+		lvI.state		= 0;
+		lvI.iItem		= i + j;
+		lvI.lParam		= (LPARAM) lpBreak;
+	
+		BOOL active = lpBreak->active;
+		// Insert items into the list.
+		if (ListView_InsertItem(hwndListView, &lvI) == -1)
+			return;
+		lpBreak->active = active;
+		ListView_SetCheckState(hwndListView, j, lpBreak->active);
 	}
 	is_updating = FALSE;
 }
@@ -223,6 +206,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			SetWindowFont(hwndListView, hfontSegoe, TRUE);
 
 			ListView_SetExtendedListViewStyle(hwndListView, LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES);
+			SetWindowTheme(hwndListView, L"explorer", NULL);
 
 			UpdateItemsListView(hwndListView);
 
@@ -232,9 +216,13 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
 				case IDC_REM_BREAK: {
-					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
-					for (int i = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED); i > 0; i--)
-						lpBreak = lpBreak->next;
+					int selIndex = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED);
+					LVITEM item;
+					item.mask = LVIF_PARAM;
+					item.iItem = selIndex;
+					item.iSubItem = 0;
+					ListView_GetItem(hwndListView, &item);
+					LPBREAKPOINT lpBreak = (LPBREAKPOINT) item.lParam;
 					switch (lpBreak->type) {
 						case NORMAL_BREAK:
 							clear_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
@@ -272,12 +260,14 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					if (GetWaddrData(hwnd, &waddr) == -1)
 						break;
 
-					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
-					for (int i = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED); i > 0; i--)
-						lpBreak = lpBreak->next;
+					int selIndex = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED);
+					LVITEM item;
+					item.mask = LVIF_PARAM;
+					item.iItem = selIndex;
+					item.iSubItem = 0;
+					ListView_GetItem(hwndListView, &item);
+					LPBREAKPOINT lpBreak = (LPBREAKPOINT) item.lParam;
 
-					//this is a small hack that lets us keep our current pointer
-					is_updating_break = TRUE;
 					switch (lpBreak->type) {
 						case NORMAL_BREAK:
 							clear_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
@@ -301,7 +291,6 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 						lpBreak->type = MEM_READ_BREAK;
 					}
 					lpBreak->waddr = waddr;
-					is_updating_break = FALSE;
 
 					UpdateItemsListView(hwndListView);
 					Debug_UpdateWindow(GetParent(hwnd));
@@ -336,17 +325,14 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *) lParam; 
 					if (plvdi->item.pszText == NULL)
 						return TRUE;
-					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
-					for (int i = plvdi->item.iItem; i > 0; i--)
-						lpBreak = lpBreak->next;
+					LPBREAKPOINT lpBreak = (LPBREAKPOINT) plvdi->item.lParam;
 					StringCbCopy(lpBreak->label, sizeof(lpBreak->label), plvdi->item.pszText);
 					break;
 				}
 				case LVN_ITEMCHANGED: {
 					NMLISTVIEW *pnmv = (NMLISTVIEW *) lParam;
-					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
-					for (int i = pnmv->iItem; i > 0; i--)
-						lpBreak = lpBreak->next;
+
+					LPBREAKPOINT lpBreak = (LPBREAKPOINT) pnmv->lParam;
 					
 					if (pnmv->uChanged & LVIF_STATE && !is_updating &&
 						(pnmv->uNewState & LVIS_STATEIMAGEMASK) != (pnmv->uOldState & LVIS_STATEIMAGEMASK)) {
@@ -374,9 +360,12 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					}
 					Button_Enable(GetDlgItem(hwnd, IDC_UPDATE_BREAK), TRUE);
 
-					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
-					for (int i = plvdi->iItem; i > 0; i--)
-						lpBreak = lpBreak->next;
+					LVITEM item;
+					item.mask = LVIF_PARAM;
+					item.iItem = plvdi->iItem;
+					item.iSubItem = 0;
+					ListView_GetItem(hwndListView, &item);
+					LPBREAKPOINT lpBreak = (LPBREAKPOINT) item.lParam;
 					TCHAR temp[32];
 					StringCbPrintf(temp, sizeof(temp), _T("%04X"), lpBreak->waddr.addr);
 					Edit_SetText(GetDlgItem(hwnd, IDC_EDT_ADDR), temp);
@@ -391,9 +380,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 				}
 				case LVN_GETDISPINFO: {
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
-					breakpoint_t *lpBreak = lpDebuggerCalc->cond_breakpoints;
-					for (int i = plvdi->item.iItem; i > 0; i--)
-						lpBreak = lpBreak->next;
+					LPBREAKPOINT lpBreak = (LPBREAKPOINT) plvdi->item.lParam;
 
 					switch (plvdi->item.iSubItem)
 					{

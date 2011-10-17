@@ -13,7 +13,7 @@ static POINT ptRgnEdge[] = {{75,675},
 							{37,273},
 							{37,568}};
 
-HRGN GetRegion()
+HRGN GetFaceplateRegion()
 {
 	unsigned int nPoints = (sizeof(ptRgnEdge) / sizeof(POINT)) * 2;
 	POINT ptRgn[(sizeof(ptRgnEdge) / sizeof(POINT)) * 2];
@@ -33,7 +33,7 @@ HRGN GetRegion()
 }
 
 int DrawFaceplateRegion(HDC hdc, COLORREF ref) {
-	HRGN hrgn = GetRegion();
+	HRGN hrgn = GetFaceplateRegion();
 	if (hrgn == NULL)
 		return 1;
 	HBRUSH hFaceplateColor = CreateSolidBrush(ref);

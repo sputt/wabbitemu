@@ -20,7 +20,7 @@ void ldd_reverse(CPU_t *cpu) {
 	cpu->de++;
 	cpu->hl++;
 	cpu->bc++;
-	reg = cpu->prev_instruction->data;
+	reg = cpu->prev_instruction->data1;
 	CPU_mem_write(cpu, cpu->de, reg);
 }
 
@@ -36,7 +36,7 @@ void lddr_reverse(CPU_t *cpu) {
 	cpu->bc++;
 	cpu->hl++;
 	cpu->de++;
-	reg = cpu->prev_instruction->data;
+	reg = cpu->prev_instruction->data1;
 	CPU_mem_write(cpu, cpu->de, reg);
 }
 
@@ -49,7 +49,7 @@ void ldi_reverse(CPU_t *cpu) {
 	cpu->hl--;
 	cpu->de--;
 
-	reg = cpu->prev_instruction->data;
+	reg = cpu->prev_instruction->data1;
 	CPU_mem_write(cpu,cpu->de, reg);
 }
 
@@ -67,12 +67,12 @@ void ldir_reverse(CPU_t *cpu) {
 	cpu->hl++;
 	cpu->de++;
 	
-	reg = cpu->prev_instruction->data;
+	reg = cpu->prev_instruction->data1;
 	CPU_mem_write(cpu, cpu->de, reg);
 }
 
 void ld_mem16_reg16_reverse(CPU_t *cpu) {
-	int result = cpu->prev_instruction->data;
+	int result = cpu->prev_instruction->data1;
 	unsigned short address = mem_read(cpu->mem_c, --cpu->pc) << 8;
 	address |= mem_read(cpu->mem_c, --cpu->pc);
 
@@ -81,10 +81,10 @@ void ld_mem16_reg16_reverse(CPU_t *cpu) {
 	tc_sub(cpu->timer_c, 20);
 }
 
-void ld_reg16_mem16(CPU_t *cpu) {
+void ld_reg16_mem16_reverse(CPU_t *cpu) {
 	cpu->pc -= 2;
 	int test = (mem_read(cpu->mem_c, cpu->pc) >> 4) & 3;
-	unsigned short result = cpu->prev_instruction->data;
+	unsigned short result = cpu->prev_instruction->data1;
 
 	switch (test) {
 		case 00:
@@ -103,261 +103,145 @@ void ld_reg16_mem16(CPU_t *cpu) {
 	tc_sub(cpu->timer_c, 20);
 }
 
-void IM0(CPU_t *cpu) {
-	tc_sub(cpu->timer_c,8);
-	cpu->imode = 0;
+void IM0_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 8);
+	cpu->imode = cpu->prev_instruction->lower_data1;
 }
-void IM1(CPU_t *cpu) {
-	tc_sub(cpu->timer_c,8);
-	cpu->imode = 1;
+void IM1_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 8);
+	cpu->imode = cpu->prev_instruction->lower_data1;
 }
-void IM2(CPU_t *cpu) {
-	tc_sub(cpu->timer_c,8);
-	cpu->imode = 2;
+void IM2_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 8);
+	cpu->imode = cpu->prev_instruction->lower_data1;
 }
 
-void in_reg_c(CPU_t *cpu) {
-	tc_sub(cpu->timer_c,12);
-	int test = (cpu->bus>>3)&7;
-	device_input(cpu, cpu->c);
-	switch(test) {
-		case 0x00:
-			cpu->b=cpu->bus;
-			break;
-		case 0x01:
-			cpu->c=cpu->bus;
-			break;
-		case 0x02:
-			cpu->d=cpu->bus;
-			break;
-		case 0x03:
-			cpu->e=cpu->bus;
-			break;
-		case 0x04:
-			cpu->h=cpu->bus;
-			break;
-		case 0x05:
-			cpu->l=cpu->bus;
-			break;
-		case 0x06:
-			break;
-		case 0x07:
-			cpu->a=cpu->bus;
-			break;
-	}
-	cpu->f = signchk(cpu->bus) + zerochk(cpu->bus) +
-		 x5chk(cpu->bus) + x3chk(cpu->bus) + 
-		 parity(cpu->bus) + unaffect(CARRY_MASK);
+void in_reg_c_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 12);
+	cpu->f = cpu->prev_instruction->flag;
 }
 
 
-void ind(CPU_t *cpu) {
+void ind_reverse(CPU_t *cpu) {
+	int result, tmp;
+	tc_sub(cpu->timer_c, 16);
+	cpu->f = cpu->prev_instruction->flag;
+	cpu->b++;
+	cpu->hl++;
+
+	CPU_mem_write(cpu, cpu->hl, cpu->prev_instruction->lower_data1);
+	
+}
+
+void indr_reverse(CPU_t *cpu) {
 	int result,tmp;
 	tc_sub(cpu->timer_c,16);
-	device_input(cpu, cpu->c);
-	result = cpu->bus;
-	CPU_mem_write(cpu,cpu->hl,cpu->bus);
-	cpu->b--;
-	cpu->hl--;
-	tmp = result+ ((cpu->c-1) & 255);
-	cpu->f = signchk(cpu->b) + zerochk(cpu->b) +
-		 x5chk(cpu->b) + dohc( tmp>255 ) + 
-		 x3chk(cpu->b) +  parity((tmp&7)^cpu->b) + 
-		 (((result&128)!=0)? N_MASK:0) +
-		 carry( tmp>255 ); 
-}
-
-void indr(CPU_t *cpu) {
-	int result,tmp;
-	tc_sub(cpu->timer_c,16);
-	device_input(cpu, cpu->c);
-	result = cpu->bus;
-	CPU_mem_write(cpu,cpu->hl,cpu->bus);
-	cpu->b--;
-	cpu->hl--;
-	tmp = result+ ((cpu->c-1) & 255);
-	cpu->f = signchk(cpu->b) + zerochk(cpu->b) +
-		 x5chk(cpu->b) + dohc( tmp>255 ) + 
-		 x3chk(cpu->b) +  parity((tmp&7)^cpu->b) + 
-		 (((result&128)!=0)? N_MASK:0) +
-		 carry( tmp>255 );
-	if (cpu->b!=0) {
-		cpu->pc -=2;
+	if (cpu->b != 0) {
+		cpu->pc += 2;
 		tc_sub(cpu->timer_c, 21-16);
 	}
-}
-void ini(CPU_t *cpu) {
-	int result,tmp;
-	tc_sub(cpu->timer_c,16);
-	device_input(cpu, cpu->c);
-	result = cpu->bus;
-	CPU_mem_write(cpu,cpu->hl,cpu->bus);
-	cpu->b--;
-	cpu->hl++;
-	tmp = result+ ((cpu->c+1) & 255);
-	cpu->f = signchk(cpu->b) + zerochk(cpu->b) +
-		 x5chk(cpu->b) + dohc( tmp>255 ) + 
-		 x3chk(cpu->b) +  parity((tmp&7)^cpu->b) + 
-		 (((result&128)!=0)? N_MASK:0) +
-		 carry( tmp>255 ); 
-}
-
-void inir(CPU_t *cpu) {
-	int result,tmp;
-	tc_sub(cpu->timer_c,16);
-	device_input(cpu, cpu->c);
-	result = cpu->bus;
-	CPU_mem_write(cpu,cpu->hl,cpu->bus);
-	cpu->b--;
-	cpu->hl++;
-	tmp = result+ ((cpu->c+1) & 255);
-	cpu->f = signchk(cpu->b) + zerochk(cpu->b) +
-		 x5chk(cpu->b) + dohc( tmp>255 ) + 
-		 x3chk(cpu->b) +  parity((tmp&7)^cpu->b) + 
-		 (((result&128)!=0)? N_MASK:0) +
-		 carry( tmp>255 );
-	if (cpu->b!=0) {
-		cpu->pc -=2;
-		tc_sub(cpu->timer_c, 21-16);
-	}
-}
-
-void ld_i_a(CPU_t *cpu) {
-	tc_sub(cpu->timer_c, 9);
-	cpu->i = cpu->a;
-}
-void ld_r_a(CPU_t *cpu) {
-	tc_sub(cpu->timer_c, 9);
-	cpu->r = cpu->a;
-}
-void ld_a_i(CPU_t *cpu) {
-	tc_sub(cpu->timer_c, 9);
-	cpu->a = cpu->i;
-	cpu->f = signchk(cpu->a) + zerochk(cpu->a) +
-		 x5chk(cpu->a) + x3chk(cpu->a) + 
-		 doparity(cpu->iff2!=0) + unaffect(CARRY_MASK);
-}
-void ld_a_r(CPU_t *cpu) {
-	tc_sub(cpu->timer_c, 9);
-	cpu->a = cpu->r;
-	cpu->f = signchk(cpu->a) + zerochk(cpu->a) +
-		 x5chk(cpu->a) + x3chk(cpu->a) + 
-		 doparity(cpu->iff2!=0) + unaffect(CARRY_MASK);
-}
-
-
-void out_reg(CPU_t *cpu) { 
-	 int test = (cpu->bus>>3)&7; 
-	 tc_sub(cpu->timer_c,12); 
-	 switch(test) { 
-		  case 0x00: 
-			   cpu->bus=cpu->b; 
-			   break; 
-		  case 0x01: 
-			   cpu->bus=cpu->c; 
-			   break; 
-		  case 0x02: 
-			   cpu->bus=cpu->d; 
-			   break; 
-		  case 0x03: 
-			   cpu->bus=cpu->e; 
-			   break; 
-		  case 0x04: 
-			   cpu->bus=cpu->h; 
-			   break; 
-		  case 0x05: 
-			   cpu->bus=cpu->l; 
-			   break; 
-		  case 0x06: 
-			   cpu->bus=0; 
-			   break; 
-		  case 0x07: 
-			   cpu->bus=cpu->a; 
-			   break; 
-	 } 
-	 device_output(cpu, cpu->c); 
-}
-
-
-
-void outd(CPU_t *cpu) {
-	int result,tmp;
-	tc_sub(cpu->timer_c,16);
-	result=CPU_mem_read(cpu,cpu->hl);
-	device_output(cpu, cpu->c);
+	cpu->f = cpu->prev_instruction->flag;
 	cpu->b--;
 	cpu->hl--;
-	tmp = result+ cpu->l;
-	cpu->f = signchk(cpu->b) + zerochk(cpu->b) +
-		 x5chk(cpu->b) + dohc( tmp>255 ) + 
-		 x3chk(cpu->b) +  parity((tmp&0x07)^cpu->b) + 
-		 (((result&0x80)!=0)? N_MASK:0) +
-		 carry( tmp>255 ); 
+	CPU_mem_write(cpu,cpu->hl,cpu->prev_instruction->lower_data1);	
 }
-
-void otdr(CPU_t *cpu) {
+void ini_reverse(CPU_t *cpu) {
 	int result,tmp;
-	tc_sub(cpu->timer_c,16);
-	result=CPU_mem_read(cpu,cpu->hl);
-	device_output(cpu, cpu->c);
-	cpu->b--;
+	tc_sub(cpu->timer_c, 16);
+	cpu->f = cpu->prev_instruction->flag;
+	cpu->b++;
 	cpu->hl--;
-	tmp = result+ cpu->l;
-	cpu->f = signchk(cpu->b) + zerochk(cpu->b) +
-		 x5chk(cpu->b) + dohc( tmp>255 ) + 
-		 x3chk(cpu->b) +  parity((tmp&0x07)^cpu->b) + 
-		 (((result&0x80)!=0)? N_MASK:0) +
-		 carry( tmp>255 ); 
-	if (cpu->b!=0) {
-		cpu->pc -=2;
-		tc_sub(cpu->timer_c, 21-16);
-	}
-}
-void outi(CPU_t *cpu) {
-	int result,tmp;
-	tc_sub(cpu->timer_c,16);
-	result=CPU_mem_read(cpu,cpu->hl);
-	device_output(cpu, cpu->c);
-	cpu->b--;
-	cpu->hl++;
-	tmp = result+ cpu->l;
-	cpu->f = signchk(cpu->b) + zerochk(cpu->b) +
-		 x5chk(cpu->b) + dohc( tmp>255 ) + 
-		 x3chk(cpu->b) +  parity((tmp&0x07)^cpu->b) + 
-		 (((result&0x80)!=0)? N_MASK:0) +
-		 carry( tmp>255 ); 
+
+	CPU_mem_write(cpu, cpu->hl, cpu->prev_instruction->lower_data1);
 }
 
-void otir(CPU_t *cpu) {
+void inir_reverse(CPU_t *cpu) {
 	int result,tmp;
 	tc_sub(cpu->timer_c,16);
-	result=CPU_mem_read(cpu,cpu->hl);
-	device_output(cpu, cpu->c);
-	cpu->b--;
-	cpu->hl++;
-	tmp = result+ cpu->l;
-	cpu->f = signchk(cpu->b) + zerochk(cpu->b) +
-		 x5chk(cpu->b) + dohc( tmp>255 ) + 
-		 x3chk(cpu->b) +  parity((tmp&0x07)^cpu->b) + 
-		 (((result&0x80)!=0)? N_MASK:0) +
-		 carry( tmp>255 ); 
-	if (cpu->b!=0) {
-		cpu->pc -=2;
+	if (cpu->b != 0) {
+		cpu->pc += 2;
 		tc_sub(cpu->timer_c, 21-16);
 	}
+	cpu->f = cpu->prev_instruction->flag;
+	cpu->b++;
+	cpu->hl--;
+
+	CPU_mem_write(cpu, cpu->hl, cpu->prev_instruction->lower_data1);	
 }
 
-void reti(CPU_t *cpu) {
-	tc_sub(cpu->timer_c,14);
-	cpu->pc = CPU_mem_read(cpu, cpu->sp++);
-	cpu->pc |= CPU_mem_read(cpu, cpu->sp++) << 8;
-	cpu->iff1 = cpu->iff2;
+void ld_i_a_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 9);
+	cpu->i = cpu->prev_instruction->lower_data1;
 }
-void retn(CPU_t *cpu) {
-	tc_sub(cpu->timer_c,14);
-	cpu->pc = CPU_mem_read(cpu, cpu->sp++);
-	cpu->pc |= CPU_mem_read(cpu, cpu->sp++) << 8;
-	cpu->iff1 = cpu->iff2;
+void ld_r_a_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 9);
+	cpu->r = cpu->prev_instruction->lower_data1;
+}
+void ld_a_i_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 9);
+	cpu->a = cpu->prev_instruction->lower_data1;
+	cpu->f = cpu->prev_instruction->flag;
+}
+void ld_a_r_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 9);
+	cpu->a = cpu->prev_instruction->lower_data1;
+	cpu->f = cpu->prev_instruction->flag;
+}
+
+void out_reg_reverse(CPU_t *cpu) { 
+	 tc_sub(cpu->timer_c, 12); 
+}
+
+void outd_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 16);
+	cpu->f = cpu->prev_instruction->flag;
+	cpu->b++;
+	cpu->hl++;	
+}
+
+void otdr_reverse(CPU_t *cpu) {
+	int result,tmp;
+	tc_sub(cpu->timer_c, 16);
+	
+	if (cpu->b != 0) {
+		cpu->pc += 2;
+		tc_sub(cpu->timer_c, 21-16);
+	}
+	cpu->f = cpu->prev_instruction->flag;
+
+	cpu->b++;
+	cpu->hl++;
+}
+void outi_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 16);
+	cpu->f = cpu->prev_instruction->flag;
+	cpu->b++;
+	cpu->hl--;
+}
+
+void otir_reverse(CPU_t *cpu) {
+	int result,tmp;
+	tc_sub(cpu->timer_c, 16);
+	if (cpu->b != 0) {
+		cpu->pc += 2;
+		tc_sub(cpu->timer_c, 21-16);
+	}
+	cpu->f = cpu->prev_instruction->flag;
+	cpu->b++;
+	cpu->hl--;
+}
+
+void reti_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 14);
+	cpu->sp -= 2;
+	cpu->iff1 = cpu->prev_instruction->lower_data2;
+	cpu->pc = cpu->prev_instruction->data1;
+}
+void retn_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 14);
+	cpu->sp -= 2;
+	cpu->iff1 = cpu->prev_instruction->lower_data2;
+	cpu->pc = cpu->prev_instruction->data1;
 }
 
 //
@@ -366,48 +250,42 @@ void retn(CPU_t *cpu) {
 
 //-----------------
 // SCF
-void scf(CPU_t *cpu) {
+void scf_reverse(CPU_t *cpu) {
 	tc_sub(cpu->timer_c,4);
-	cpu->f = unaffect( SIGN_MASK+ZERO_MASK+PV_MASK) +
-		 x5chk(cpu->a) + x3chk(cpu->a) + CARRY_MASK;
+	cpu->f = cpu->prev_instruction->flag;
 }
 //-----------------
 // CCF
-void ccf(CPU_t *cpu) {
+void ccf_reverse(CPU_t *cpu) {
 	tc_sub(cpu->timer_c,4);
-	cpu->f = unaffect( SIGN_MASK+ZERO_MASK+PV_MASK) +
-		 x5chk(cpu->a|cpu->f) + dohc( (cpu->f&CARRY_MASK)!=0 ) + 
-		 x3chk(cpu->a|cpu->f) + ((cpu->f&CARRY_MASK)^CARRY_MASK);
-}
-void rst(CPU_t *cpu) {
-	int reg = (cpu->bus&0x38);
-	tc_sub(cpu->timer_c,11);
-	CPU_mem_write(cpu,--cpu->sp,(cpu->pc>>8)&0xFF);
-	CPU_mem_write(cpu,--cpu->sp,cpu->pc&0xFF);
-	cpu->pc = reg;
+	cpu->f = cpu->prev_instruction->flag;
 }
 
-void out(CPU_t *cpu) {
-	int port = CPU_mem_read(cpu, cpu->pc++);
-	tc_sub(cpu->timer_c,11);
-	cpu->bus = cpu->a;
-	device_output(cpu, port);
-}
-void in(CPU_t *cpu) {
-	int port = CPU_mem_read(cpu, cpu->pc++);
-	tc_sub(cpu->timer_c,11);
-	device_input(cpu, port);
-	cpu->a = cpu->bus;
+void rst_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 11);
+	cpu->pc = cpu->prev_instruction->data1;
+	CPU_mem_write(cpu, cpu->sp++, cpu->prev_instruction->lower_data2);
+	CPU_mem_write(cpu, cpu->sp++, cpu->prev_instruction->upper_data2);
 }
 
-void ret(CPU_t *cpu) {
-	tc_sub(cpu->timer_c,10);
-	cpu->pc = CPU_mem_read(cpu, cpu->sp++);
-	cpu->pc |= CPU_mem_read(cpu, cpu->sp++) << 8;
+void out_reverse(CPU_t *cpu) {
+	cpu->pc--;
+	tc_sub(cpu->timer_c, 11);
 }
-void ret_condition(CPU_t *cpu) {
+void in_reverse(CPU_t *cpu) {
+	cpu->pc--;
+	tc_sub(cpu->timer_c, 11);
+	cpu->a = cpu->prev_instruction->lower_data1;
+}
+
+void ret_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 10);
+	cpu->pc = cpu->prev_instruction->data1;
+	cpu->sp -= 2;
+}
+void ret_condition_reverse(CPU_t *cpu) {
 	int succeed = FALSE;
-	tc_sub(cpu->timer_c,5);
+	tc_sub(cpu->timer_c, 5);
 	switch ((cpu->bus >> 3) & 0x07) {
 		case 0:	if (!(cpu->f & ZERO_MASK)) succeed = TRUE;
 				break;
@@ -426,27 +304,26 @@ void ret_condition(CPU_t *cpu) {
 		case 7:	if ((cpu->f & SIGN_MASK)) succeed = TRUE;
 				break;
 	}
-	if (succeed == TRUE) {
-		cpu->pc = CPU_mem_read(cpu,cpu->sp++);
-		cpu->pc |= CPU_mem_read(cpu, cpu->sp++) << 8;
+	if (!succeed) {
+		cpu->pc = cpu->prev_instruction->data1;
+		cpu->sp -= 2;
 		tc_sub(cpu->timer_c, 6);
 	}
 }
-void call(CPU_t *cpu) {
-	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
-	address |= CPU_mem_read(cpu, cpu->pc++) << 8;
-	
-	CPU_mem_write(cpu, --cpu->sp, cpu->pc >> 8);
-	CPU_mem_write(cpu, --cpu->sp, cpu->pc & 0xFF);
-	cpu->pc = address;
-	tc_sub(cpu->timer_c,17);
+void call_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 17);
+	cpu->pc = cpu->prev_instruction->data1;
+	CPU_mem_write(cpu, cpu->sp++, cpu->prev_instruction->lower_data2);
+	CPU_mem_write(cpu, cpu->sp++, cpu->prev_instruction->upper_data2);
+
+	cpu->pc -= 2;
 }
 
-void call_condition(CPU_t *cpu) {
+void call_condition_reverse(CPU_t *cpu) {
 	int succeed = FALSE;
 	int condition = (cpu->bus >> 3) & 0x07;
-	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
-	address |= CPU_mem_read(cpu, cpu->pc++) << 8;
+	unsigned short address = CPU_mem_read(cpu, --cpu->pc) << 8;
+	address |= CPU_mem_read(cpu, --cpu->pc);
 	
 	switch (condition) {
 		case 0:	if (!(cpu->f & ZERO_MASK)) succeed = TRUE;
@@ -466,55 +343,34 @@ void call_condition(CPU_t *cpu) {
 		case 7:	if ((cpu->f & SIGN_MASK)) succeed = TRUE;
 				break;
 	}
-	tc_sub(cpu->timer_c,10);
-	if (succeed) {
-		CPU_mem_write(cpu, --cpu->sp, cpu->pc >> 8);
-		CPU_mem_write(cpu, --cpu->sp, cpu->pc & 0xFF);
-		cpu->pc = address;
+	tc_sub(cpu->timer_c, 10);
+	if (!succeed) {
+		cpu->pc = cpu->prev_instruction->data2;
+		CPU_mem_write(cpu, cpu->sp++, cpu->prev_instruction->lower_data1);
+		CPU_mem_write(cpu, cpu->sp++, cpu->prev_instruction->upper_data1);
 		tc_sub(cpu->timer_c, 7);
 	}
 }
 
-void push_reg16(CPU_t *cpu) {
-	unsigned short reg;
+void push_reg16_reverse(CPU_t *cpu) {
 	int time = 11;
+	CPU_mem_write(cpu, cpu->sp++, cpu->prev_instruction->lower_data1);
+	CPU_mem_write(cpu, cpu->sp++, cpu->prev_instruction->upper_data1);
 	
-	switch ((cpu->bus >> 4) & 0x03) {
-		case 0:
-			reg = cpu->bc;
-			break;
-		case 1:
-			reg = cpu->de;
-			break;
-		case 2:
-			if (!cpu->prefix) {
-				reg = cpu->hl;
-			} else if (cpu->prefix == 0xDD) {
-				reg = cpu->ix;
-				time +=4;
-			} else {
-				reg = cpu->iy;
-				time +=4;
-			}
-			break;
-		case 3:
-			reg = cpu->af;
-			break;
+	if (((cpu->bus >> 4) & 0x03) == 2) {
+		if (cpu->prefix) {
+			time +=4;
+		}
 	}
-	CPU_mem_write(cpu, --cpu->sp, reg >> 8);
-	CPU_mem_write(cpu, --cpu->sp, reg & 0xFF);
+	
 	tc_sub(cpu->timer_c, time);
 }
 
-void pop_reg16(CPU_t *cpu) {
-	int old_bus = cpu->bus;
-	/* Back up the bus, since memory reads will write to it as well */
-	unsigned short reg = CPU_mem_read(cpu, cpu->sp++);
-	reg |= CPU_mem_read(cpu, cpu->sp++) << 8;
-
+void pop_reg16_reverse(CPU_t *cpu) {
+	unsigned short reg = cpu->prev_instruction->data1;
 	int time = 10;
 	
-	switch ( (old_bus>>4) & 0x03) {
+	switch ((cpu->bus >> 4) & 0x03) {
 		case 0:
 			cpu->bc = reg;
 			break;
@@ -536,114 +392,108 @@ void pop_reg16(CPU_t *cpu) {
 			cpu->af = reg;
 			break;
 	}
+	cpu->sp -= 2;
 	tc_sub(cpu->timer_c, time);
 }
 
-void ld_sp_hl(CPU_t *cpu) {
+void ld_sp_hl_reverse(CPU_t *cpu) {
 	if (!cpu->prefix) {
-		cpu->sp = cpu->hl;
-		tc_sub(cpu->timer_c,6);
-	} else if (cpu->prefix == 0xDD) {
-		cpu->sp = cpu->ix;
-		tc_sub(cpu->timer_c,10);
+		cpu->sp = cpu->prev_instruction->data1;
+		tc_sub(cpu->timer_c, 6);
 	} else {
-		cpu->sp = cpu->iy;
-		tc_sub(cpu->timer_c,10);
+		cpu->sp = cpu->prev_instruction->data1;
+		tc_sub(cpu->timer_c, 10);
 	}
 }
-void ld_mem16_hlf(CPU_t *cpu) {
-	unsigned short reg = CPU_mem_read(cpu, cpu->pc++);
-	reg |= CPU_mem_read(cpu, cpu->pc++) << 8;
+void ld_mem16_hlf_reverse(CPU_t *cpu) {
+	unsigned short reg = CPU_mem_read(cpu, --cpu->pc);
+	reg |= CPU_mem_read(cpu, --cpu->pc) << 8;
 
 	if (!cpu->prefix) {
-		CPU_mem_write(cpu, reg++, cpu->l);
-		CPU_mem_write(cpu, reg, cpu->h);
+		CPU_mem_write(cpu, reg, cpu->prev_instruction->lower_data1);
+		CPU_mem_write(cpu, --reg, cpu->prev_instruction->upper_data1);
+		tc_sub(cpu->timer_c, 16);
+	} else if (cpu->prefix == 0xDD) {
+		CPU_mem_write(cpu, reg, cpu->prev_instruction->lower_data1);
+		CPU_mem_write(cpu, --reg, cpu->prev_instruction->upper_data1);
+		tc_sub(cpu->timer_c, 20);
+	} else {
+		CPU_mem_write(cpu, reg, cpu->prev_instruction->lower_data1);
+		CPU_mem_write(cpu, --reg, cpu->prev_instruction->upper_data1);
+		tc_sub(cpu->timer_c, 20);
+	}		
+}
+
+void ld_hlf_mem16_reverse(CPU_t *cpu) {
+	cpu->pc -= 2;
+	if (!cpu->prefix) {
+		cpu->hl = cpu->prev_instruction->data1;
 		tc_sub(cpu->timer_c,16);
 	} else if (cpu->prefix == 0xDD) {
-		CPU_mem_write(cpu, reg++, cpu->ixl);
-		CPU_mem_write(cpu, reg, cpu->ixh);
+		cpu->ix = cpu->prev_instruction->data1;
 		tc_sub(cpu->timer_c,20);
 	} else {
-		CPU_mem_write(cpu, reg++, cpu->iyl);
-		CPU_mem_write(cpu, reg, cpu->iyh);
+		cpu->iy = cpu->prev_instruction->data1;
 		tc_sub(cpu->timer_c,20);
 	}		
 }
 
-void ld_hlf_mem16(CPU_t *cpu) {
-	unsigned short mem = CPU_mem_read(cpu, cpu->pc++);
-	mem |= CPU_mem_read(cpu, cpu->pc++) << 8;
-	unsigned short reg = CPU_mem_read(cpu, mem);
-	reg |= CPU_mem_read(cpu, mem + 1) << 8;
-	if (!cpu->prefix) {
-		cpu->hl = reg;
-		tc_sub(cpu->timer_c,16);
-	} else if (cpu->prefix == 0xDD) {
-		cpu->ix = reg;
-		tc_sub(cpu->timer_c,20);
-	} else {
-		cpu->iy = reg;
-		tc_sub(cpu->timer_c,20);
-	}		
-}
-
-void ld_hl_num16(CPU_t *cpu) {
-	unsigned short reg = CPU_mem_read(cpu, cpu->pc++);
-	reg |= CPU_mem_read(cpu, cpu->pc++) << 8;
+void ld_hl_num16_reverse(CPU_t *cpu) {
+	cpu->pc -= 2;
 
 	if (!cpu->prefix) {
-		cpu->hl = reg;
-		tc_sub(cpu->timer_c,10);
+		cpu->hl = cpu->prev_instruction->data1;
+		tc_sub(cpu->timer_c, 10);
 	} else if (cpu->prefix == 0xDD) {
-		cpu->ix = reg;
-		tc_sub(cpu->timer_c,14);
+		cpu->ix = cpu->prev_instruction->data1;
+		tc_sub(cpu->timer_c, 14);
 	} else {
-		cpu->iy = reg;
-		tc_sub(cpu->timer_c,14);
+		cpu->iy = cpu->prev_instruction->data1;
+		tc_sub(cpu->timer_c, 14);
 	}	
 }
-void ld_de_num16(CPU_t *cpu) {
-	cpu->de = CPU_mem_read(cpu, cpu->pc++);
-	cpu->de |= CPU_mem_read(cpu, cpu->pc++) << 8;
+void ld_de_num16_reverse(CPU_t *cpu) {
+	cpu->pc -= 2;
+	cpu->de = cpu->prev_instruction->data1;
 
 	tc_sub(cpu->timer_c, 10);
 }
-void ld_bc_num16(CPU_t *cpu) {
-	cpu->bc = CPU_mem_read(cpu, cpu->pc++);
-	cpu->bc |= CPU_mem_read(cpu, cpu->pc++) << 8;
+void ld_bc_num16_reverse(CPU_t *cpu) {
+	cpu->pc -= 2;
+	cpu->bc = cpu->prev_instruction->data1;
+	tc_sub(cpu->timer_c, 10);
+}
+void ld_sp_num16_reverse(CPU_t *cpu) {
+	cpu->pc -= 2;
+	cpu->sp = cpu->prev_instruction->data1;
 	tc_sub(cpu->timer_c,10);
 }
-void ld_sp_num16(CPU_t *cpu) {
-	cpu->sp = CPU_mem_read(cpu, cpu->pc++);
-	cpu->sp |= CPU_mem_read(cpu, cpu->pc++) << 8;
-	tc_sub(cpu->timer_c,10);
-}
-void ld_a_mem16(CPU_t *cpu) {
-	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
-	address |= CPU_mem_read(cpu, cpu->pc++) << 8;
-	cpu->a = CPU_mem_read(cpu, address);
+void ld_a_mem16_reverse(CPU_t *cpu) {
+	cpu->pc -= 2;
+	cpu->a = cpu->prev_instruction->lower_data1;
 	tc_sub(cpu->timer_c, 13);
 }
-void ld_a_bc(CPU_t *cpu) {
-	tc_sub(cpu->timer_c,7);
-	cpu->a = CPU_mem_read(cpu, cpu->bc);
+void ld_a_bc_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 7);
+	cpu->a = cpu->prev_instruction->lower_data1;
 }
-void ld_a_de(CPU_t *cpu) {
-	tc_sub(cpu->timer_c,7);
-	cpu->a = CPU_mem_read(cpu,cpu->de);
+void ld_a_de_reverse(CPU_t *cpu) {
+	tc_sub(cpu->timer_c, 7);
+	cpu->a = cpu->prev_instruction->lower_data1;
 }
-void ld_mem16_a(CPU_t *cpu) {
-	unsigned short address = CPU_mem_read(cpu, cpu->pc++);
-	address |= CPU_mem_read(cpu, cpu->pc++) << 8;
-	CPU_mem_write(cpu, address, cpu->a);
+void ld_mem16_a_reverse(CPU_t *cpu) {
+	unsigned short address = CPU_mem_read(cpu, --cpu->pc) << 8;
+	address |= CPU_mem_read(cpu, --cpu->pc);
+	CPU_mem_write(cpu, address, cpu->prev_instruction->lower_data1);
+
 	tc_sub(cpu->timer_c, 13);
 }
-void ld_bc_a(CPU_t *cpu) {
-	CPU_mem_write(cpu, cpu->bc, cpu->a);
+void ld_bc_a_reverse(CPU_t *cpu) {
+	CPU_mem_write(cpu, cpu->bc, cpu->prev_instruction->lower_data1);
 	tc_sub(cpu->timer_c, 7);
 }
-void ld_de_a(CPU_t *cpu) {
-	CPU_mem_write(cpu, cpu->de, cpu->a);
+void ld_de_a_reverse(CPU_t *cpu) {
+	CPU_mem_write(cpu, cpu->de, cpu->prev_instruction->lower_data1);
 	tc_sub(cpu->timer_c, 7);
 }
 
@@ -651,7 +501,7 @@ void ld_r_num8_reverse(CPU_t *cpu) {
 	int reg;
 	int test = (cpu->bus >> 3) & 7;
 	tc_sub(cpu->timer_c, 7);
-	reg = cpu->prev_instruction->lower_data;
+	reg = cpu->prev_instruction->lower_data1;
 	switch(test) {
 		case 0x00:
 			cpu->b = reg;
@@ -701,41 +551,19 @@ void ld_r_num8_reverse(CPU_t *cpu) {
 }
 
 void ld_r_r_reverse(CPU_t *cpu) {
-	int reg;
 	int test = (cpu->bus >> 3) & 7;
 	int test2 = cpu->bus & 7;
 	tc_sub(cpu->timer_c, 4);
 
+	int reg = cpu->prev_instruction->data1;
 	switch(test2) {
-		case 0x00:
-		case 0x01:
-		case 0x02:
-		case 0x03:
-		case 0x07:
-			reg = cpu->prev_instruction->data;
-			break;
 		case 0x04:
-			reg = cpu->prev_instruction->data;
-			if (cpu->prefix && test == 6)
-				break;
-			index_ext (
-				;,
-				tc_sub(cpu->timer_c, 4);,
-				tc_sub(cpu->timer_c, 4);
-			)
-			break;
 		case 0x05:
-			reg = cpu->prev_instruction->data;
 			if (cpu->prefix && test == 6)
 				break;
-			index_ext (
-				;,
-				tc_sub(cpu->timer_c, 4);,
-				tc_sub(cpu->timer_c, 4);
-			)
+			tc_sub(cpu->timer_c, 4);
 			break;
 		case 0x06:
-			reg = cpu->prev_instruction->data;
 			if (!cpu->prefix) {
 				tc_sub(cpu->timer_c, 3);
 			} else {
@@ -758,14 +586,10 @@ void ld_r_r_reverse(CPU_t *cpu) {
 			cpu->e = reg;
 			break;
 		case 0x04:
-			reg = cpu->prev_instruction->data;
+			reg = cpu->prev_instruction->data1;
 			if (cpu->prefix && test2 == 6)
 				break;
-			index_ext (
-				;,
-				tc_sub(cpu->timer_c, 4);,
-				tc_sub(cpu->timer_c, 4);
-			)
+			tc_sub(cpu->timer_c, 4);
 			break;
 		case 0x05:
 			if (cpu->prefix && test2 == 6) {
@@ -852,42 +676,40 @@ void exx_reverse(CPU_t *cpu) {
 	tc_sub(cpu->timer_c, 4);
 }
 
-void ex_af_afp(CPU_t *cpu) {
+void ex_af_afp_reverse(CPU_t *cpu) {
 	unsigned short reg;
-	swappair(cpu->af,cpu->afp);
+	swappair(cpu->af, cpu->afp);
 	tc_sub(cpu->timer_c,4);
 }	
 
 void jp_hl_reverse(CPU_t *cpu) {
-	index_ext (
-		cpu->pc = cpu->hl;
-		tc_sub(cpu->timer_c, 4);,
-		
-		cpu->pc = cpu->ix;
-		tc_sub(cpu->timer_c, 8);,
-
-		cpu->pc = cpu->iy;
+	if (!cpu->prefix) {
+		cpu->pc = cpu->prev_instruction->data1;
+		tc_sub(cpu->timer_c, 4);
+	} else {
+		cpu->pc = cpu->prev_instruction->data1;
 		tc_sub(cpu->timer_c, 8);
-	)	
+	}
 }
+
 void jp_reverse(CPU_t *cpu) {
-	cpu->pc = cpu->prev_instruction->data;
+	cpu->pc = cpu->prev_instruction->data1;
 	tc_sub(cpu->timer_c, 10);
 }
 
 void jr_reverse(CPU_t *cpu) {
-	cpu->pc = cpu->prev_instruction->data;
+	cpu->pc = cpu->prev_instruction->data1;
 	tc_sub(cpu->timer_c, 12);
 }
 
 void jp_condition_reverse(CPU_t *cpu) {
-	cpu->pc = cpu->prev_instruction->data;
+	cpu->pc = cpu->prev_instruction->data1;
 
 	tc_sub(cpu->timer_c, 10);
 }
 
 void jr_condition_reverse(CPU_t *cpu) {
-	cpu->pc = cpu->prev_instruction->data;
+	cpu->pc = cpu->prev_instruction->data1;
 	int condition = (CPU_mem_read(cpu, cpu->pc) >> 3) & 3;
 
 	tc_sub(cpu->timer_c, 7);
@@ -912,7 +734,7 @@ void jr_condition_reverse(CPU_t *cpu) {
 }
 
 void djnz_reverse(CPU_t *cpu) {
-	cpu->pc = cpu->prev_instruction->data;
+	cpu->pc = cpu->prev_instruction->data1;
 	tc_sub(cpu->timer_c, 8);
 	if (!cpu->b++) {
 		tc_sub(cpu->timer_c, 5);
@@ -922,12 +744,14 @@ void djnz_reverse(CPU_t *cpu) {
 void ei_reverse(CPU_t *cpu) {
 	tc_sub(cpu->timer_c, 4);
 
-	cpu->iff1 = cpu->iff2 = cpu->prev_instruction->lower_data;
-	cpu->ei_block = cpu->prev_instruction->upper_data;
+	cpu->iff1 = cpu->prev_instruction->lower_data1;
+	cpu->iff2 = cpu->prev_instruction->lower_data2;
+	cpu->ei_block = cpu->prev_instruction->upper_data1;
 }
 
 void di_reverse(CPU_t *cpu) {
 	tc_sub(cpu->timer_c, 4);
-	cpu->iff1 = cpu->iff2 = cpu->prev_instruction->lower_data;
+	cpu->iff1 = cpu->prev_instruction->lower_data1;
+	cpu->iff2 = cpu->prev_instruction->lower_data2;
 }
 #endif

@@ -11,7 +11,9 @@
 void FinalizeButtons(LPCALC lpCalc);
 void HandleKeyDown(LPCALC lpCalc, unsigned int);
 void HandleKeyUp(LPCALC lpCalc, unsigned int);
-void DrawButtonState(LPCALC lpCalc, HDC, HDC, POINT *, UINT);
+void DrawButtonState(HDC, HDC, POINT *, UINT);
 void DrawButtonStatesAll(LPCALC lpCalc, HDC hdcSkin, HDC hdcKeymap);
+void LogKeypress(LPCALC lpCalc, int group, int bit, UINT vk);
+HBITMAP DrawButtonAndMask(LPCALC lpCalc, POINT pt, HBITMAP *hbmButton, HBITMAP *hbmMask);
 
 #endif /* GUIBUTTONS_H */
