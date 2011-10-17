@@ -12,16 +12,40 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		case WM_INITDIALOG: {
 			POINT pt;
 			hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
-			hImageList = ImageList_Create(48, 48, ILC_COLOR32, 8*7, 0);
+			hImageList = ImageList_Create(48, 48, ILC_COLOR32 | ILC_MASK, 8*7, 0);
 			lpCalc = (LPCALC) GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+
+			HDC hdcMask = CreateCompatibleDC(lpCalc->hdcButtons);
+			HBITMAP hbmMask = CreateCompatibleBitmap(lpCalc->hdcButtons, 48, 48);
+			SelectObject(hdcMask, hbmMask);
+
+			HDC hdcButton = CreateCompatibleDC(lpCalc->hdcButtons);
+			HBITMAP hbmButton  = CreateCompatibleBitmap(lpCalc->hdcButtons, 48, 48);
+			SelectObject(hdcButton, hbmButton);
+
 			for(int group = 0; group < 7; group++) {
 				for(int bit = 0; bit < 8; bit++) {
 					if ((*ButtonCenter)[bit + (group << 3)].x != 0xFFF) {
-						HBITMAP hbmButton, hbmMask;
 						pt.x	= (*ButtonCenter)[bit + (group << 3)].x;
 						pt.y	= (*ButtonCenter)[bit + (group << 3)].y;
-						hbmButton = DrawButtonAndMask(lpCalc, pt, &hbmButton, &hbmMask);
-						ImageList_Add(hImageList, hbmButton, NULL);
+
+
+						HDC hdc = CreateCompatibleDC(lpCalc->hdcButtons);
+						HBITMAP hbm = CreateCompatibleBitmap(lpCalc->hdcButtons, 48, 48);
+						HGDIOBJ hbmOld = SelectObject(hdc, hbm);
+
+						RECT r = {0, 0, 48, 48};
+						SetDCBrushColor(hdc, RGB(0, 255, 0));
+						FillRect(hdc, &r, GetStockBrush(DC_BRUSH));
+						
+						//BitBlt(hdc, 0, 0, 48, 48, lpCalc->hdcButtons, pt.x - 24, pt.y - 24, SRCCOPY);
+						DrawButtonStateNoSkin(hdc, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_COPY);
+
+						SelectObject(hdc, hbmOld);
+						DeleteDC(hdc);
+
+						//hbmButton = DrawButtonAndMask(lpCalc, pt, &hbmButton, &hbmMask);
+						ImageList_AddMasked(hImageList, hbm, RGB(0, 255, 0));
 						DeleteObject(hbmButton);
 					}
 				}
@@ -34,6 +58,11 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			lItem.iImage = 1;
 			lItem.iItem = 0;
 			lItem.pszText = _T("Test");
+			ListView_InsertItem(hListKeys, &lItem);
+
+			lItem.iImage = 2;
+			lItem.iItem = 1;
+			lItem.pszText = _T("Test2");
 			ListView_InsertItem(hListKeys, &lItem);
 			return TRUE;
 		}
