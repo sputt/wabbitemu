@@ -312,6 +312,9 @@
     <ClCompile Include="guidetached.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="reverse_info.c">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -592,6 +595,12 @@
     </ClInclude>
     <ClInclude Include="guidetached.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="reverse_info_table.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="reverse_info.h">
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

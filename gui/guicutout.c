@@ -153,9 +153,25 @@ static LRESULT CALLBACK TestButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-/* Using a preset list of points, cut around the edges to make the
- * frame window transparent.  Also create buttons to allow minimize
- * and close while in skin mode
+static CGdiPlusBitmapResource hbmSkin;
+static HBITMAP skinBitmap;
+static LPBITMAPINFO bi;
+static BITMAPINFOHEADER bih;
+
+void DestroyCutoutResources() {
+	if (hbmSkin) {
+		hbmSkin.Empty();
+	}
+	if (skinBitmap) {
+		DeleteObject(skinBitmap);
+	}
+	if (bi) {
+		free(bi);
+	}
+}
+
+/* Using a layered window, make the frame window transparent.
+ * Also create buttons to allow minimize and close while in skin mode
  */
 int EnableCutout(LPCALC lpCalc) {
 	if (lpCalc == NULL || lpCalc->SkinEnabled == FALSE) {
@@ -199,25 +215,26 @@ int EnableCutout(LPCALC lpCalc) {
 	SetWindowTheme(lpCalc->hwndLCD, (LPCWSTR) _T(" "), (LPCWSTR) _T(" "));
 	
 	if (lpCalc->model == TI_84PSE) {
-		BITMAPINFOHEADER bih;
-		ZeroMemory(&bih, sizeof(BITMAPINFOHEADER));
-		bih.biSize = sizeof(BITMAPINFOHEADER);
-		bih.biWidth = width;
-		bih.biHeight = height;
-		bih.biPlanes = 1;
-		bih.biBitCount = 32;
-		bih.biCompression = BI_RGB;
-		bih.biSizeImage = 0;
-		bih.biXPelsPerMeter = 0;
-		bih.biYPelsPerMeter = 0;
-		bih.biClrUsed = 0;
-		bih.biClrImportant = 0;
-		LPBITMAPINFO bi = (LPBITMAPINFO) malloc(sizeof(BITMAPINFOHEADER) + sizeof(DWORD) * 3);
-		bi->bmiHeader = bih;
-		bi->bmiColors[0].rgbBlue = 0;
-		bi->bmiColors[0].rgbGreen = 0;
-		bi->bmiColors[0].rgbRed = 0;
-		bi->bmiColors[0].rgbReserved = 0;
+		if (!bi) {
+			ZeroMemory(&bih, sizeof(BITMAPINFOHEADER));
+			bih.biSize = sizeof(BITMAPINFOHEADER);
+			bih.biWidth = width;
+			bih.biHeight = height;
+			bih.biPlanes = 1;
+			bih.biBitCount = 32;
+			bih.biCompression = BI_RGB;
+			bih.biSizeImage = 0;
+			bih.biXPelsPerMeter = 0;
+			bih.biYPelsPerMeter = 0;
+			bih.biClrUsed = 0;
+			bih.biClrImportant = 0;
+			bi = (LPBITMAPINFO) malloc(sizeof(BITMAPINFOHEADER) + sizeof(DWORD) * 3);
+			bi->bmiHeader = bih;
+			bi->bmiColors[0].rgbBlue = 0;
+			bi->bmiColors[0].rgbGreen = 0;
+			bi->bmiColors[0].rgbRed = 0;
+			bi->bmiColors[0].rgbReserved = 0;
+		}
 		// Gets the "bits" from the bitmap and copies them into a buffer
 		// which is pointed to by lpbitmap.
 		
@@ -231,10 +248,12 @@ int EnableCutout(LPCALC lpCalc) {
 		SelectObject(tempHDC, tempBitmap);
 		DrawFaceplateRegion(tempHDC, lpCalc->FaceplateColor);
 
-		CGdiPlusBitmapResource hbmSkin;
-		hbmSkin.Load(CalcModelTxt[lpCalc->model], _T("PNG"), g_hInst);
-		HBITMAP skinBitmap;
-		hbmSkin.m_pBitmap->GetHBITMAP(Color::AlphaMask, &skinBitmap);
+		if (!hbmSkin) {
+			hbmSkin.Load(CalcModelTxt[lpCalc->model], _T("PNG"), g_hInst);
+		}
+		if (!skinBitmap) {
+			hbmSkin.m_pBitmap->GetHBITMAP(Color::AlphaMask, &skinBitmap);
+		}
 		SelectObject(lpCalc->hdcButtons, skinBitmap);
 		AlphaBlend(tempHDC, 0, 0, width, height, lpCalc->hdcButtons, 0, 0, width, height, bf);
 
@@ -250,7 +269,7 @@ int EnableCutout(LPCALC lpCalc) {
 		//in an array, change the highest byte, then reset with SetDIBits
 		//This colors the faceplate that way
 		BYTE* pPixel = bitmap;
-		HRGN rgn = GetRegion();
+		HRGN rgn = GetFaceplateRegion();
 		unsigned int x, y;
 		for(y = 0; y < height; y++) {
 			for(x = 0; x < width; x++) {
@@ -268,7 +287,6 @@ int EnableCutout(LPCALC lpCalc) {
 		DeleteDC(tempHDC);
 		DeleteObject(tempBitmap);
 		free(bitmap);
-		free(bi);
 	}
 
 	RECT rc;
@@ -381,7 +399,7 @@ int DisableCutout(HWND hwndFrame) {
 	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwndFrame, GWLP_USERDATA);
 	if (hasDWM) {
 		BOOL disableTransition = TRUE;
-		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, "DwmSetWindowAttribute");
+		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, _T("DwmSetWindowAttribute"));
 		if (SetAttrib != NULL) {
 			SetAttrib(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 		}
@@ -393,7 +411,7 @@ int DisableCutout(HWND hwndFrame) {
 		scale = 2;
 	if (lpCalc->hwndLCD)
 		DestroyWindow(lpCalc->hwndLCD);
-	lpCalc->hwndLCD = CreateWindowEx(
+		lpCalc->hwndLCD = CreateWindowEx(
 			0,
 			g_szLCDName,
 			_T("LCD"),

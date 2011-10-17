@@ -10,6 +10,16 @@
 void state_userpages(CPU_t *, upages_t*);
 TCHAR *symbol_to_string(CPU_t *, symbol83P_t *, TCHAR *);
 
+int find_header(u_char (*dest)[PAGE_SIZE], int page, int ident1, int ident2) {
+	int i;
+	//apparently non user apps have a slightly different header
+	//therefore we have to actually find the identifier
+	for (i = 0; i < PAGE_SIZE; i++)
+		if (dest[page][i] == ident1 && dest[page][i + 1] == ident2)
+			return dest[page][i + 2];
+	return -1;	
+}
+
 /* Generate a list of applications */
 void state_build_applist(CPU_t *cpu, applist_t *applist) {
 	applist->count = 0;
@@ -29,22 +39,25 @@ void state_build_applist(CPU_t *cpu, applist_t *applist) {
 	
 	// Starting at the first userpage, search for all the apps
 	// As soon as page doesn't have one, you're done
-	u_int page;
+	u_int page, page_size;
 	for (	page = upages.start, applist->count = 0;
-	
 			page >= upages.end &&
-			applist->count < sizeof(applist->apps)/sizeof(applist->apps[0]) &&
+			applist->count < ARRAYSIZE(applist->apps) &&
 			flash[page][0x00] == 0x80 && flash[page][0x01] == 0x0F &&
-			flash[page][0x10] == 0x80 && flash[page][0x11] == 0x48 &&
-			flash[page][0x1A] == 0x80 && flash[page][0x1B] == 0x81;
+			find_header(flash, page, 0x80, 0x48) != -1 &&
+			(page_size = find_header(flash, page, 0x80, 0x81)) != -1;
 			
-			page -= flash[page][0x1C], applist->count++) {
+			page -= page_size, applist->count++) {
 		
 		apphdr_t *ah = &applist->apps[applist->count];
-		memcpy(ah->name, &flash[page][0x12], 8);
+		u_int i;
+		for (i = 0; i < PAGE_SIZE; i++)
+			if (flash[page][i] == 0x80 && flash[page][i + 1] == 0x48)
+				break;
+		memcpy(ah->name, &flash[page][i + 2], 8);
 		ah->name[8] = '\0';
 		ah->page = page;
-		ah->page_count = flash[page][0x1C];
+		ah->page_count = find_header(flash, page, 0x80, 0x81);
 
 	}
 }

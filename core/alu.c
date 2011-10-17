@@ -142,6 +142,7 @@ void rld(CPU_t *cpu) {
 	int result;
 
 	tc_add(cpu->timer_c,18);
+
 	result = (CPU_mem_read(cpu,cpu->hl)<<4)+(cpu->a&0x0f);
 	CPU_mem_write(cpu,cpu->hl,result&0xff);
 	cpu->a = (cpu->a&0xF0)+((result>>8)&0x0F);
@@ -152,6 +153,7 @@ void rld(CPU_t *cpu) {
 void rrd(CPU_t *cpu) {
 	int result,tmp;
 	tc_add(cpu->timer_c,18);
+
 	result = (CPU_mem_read(cpu,cpu->hl)>>4)+((cpu->a&0x0f)<<4);
 	tmp = cpu->bus;
 	CPU_mem_write(cpu,cpu->hl,result&0xff);

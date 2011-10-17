@@ -346,7 +346,7 @@ int gui_frame_update(LPCALC lpCalc) {
 	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	SelectObject(lpCalc->hdcButtons, hbmTemp);
 	DeleteObject(hbmTemp);
-	
+
 	HMENU hmenu = GetMenu(lpCalc->hwndFrame);	
 	if (hmenu != NULL) {
 		if (!lpCalc->SkinEnabled) {
@@ -364,10 +364,8 @@ int gui_frame_update(LPCALC lpCalc) {
 			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 			RECT src;
 			GetWindowRect(lpCalc->hwndStatusBar, &src);
-			AdjustWindowRect(&rc, (WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~WS_MAXIMIZEBOX, FALSE);
+			AdjustWindowRect(&rc, (WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~WS_MAXIMIZEBOX, hmenu != NULL);
 			rc.bottom += src.bottom - src.top;
-			if (hmenu)
-				rc.bottom += GetSystemMetrics(SM_CYMENU);
 			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOREDRAW | SWP_NOMOVE | SWP_NOZORDER);
 			GetClientRect(lpCalc->hwndFrame, &rc);
 			SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
@@ -434,6 +432,7 @@ int gui_frame_update(LPCALC lpCalc) {
 			SetWindowPos(lpCalc->hwndFrame, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 		}
 	}
+	RedrawWindow(lpCalc->hwndFrame, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
 
 	if (lpCalc->bCustomSkin) {
 		delete m_pBitmapKeymap;
@@ -448,17 +447,27 @@ int gui_frame_update(LPCALC lpCalc) {
 }
 
 /*
+ * Searches for a window with Wabbit's registered lcd class
+ */
+HWND find_existing_lcd(HWND hwndParent) 
+{
+	HWND FindChildhwnd = FindWindowEx(hwndParent, NULL, g_szLCDName, NULL);
+	if (FindChildhwnd == NULL)
+		FindChildhwnd = FindWindowEx(NULL, NULL, g_szLCDName, NULL);
+	return FindChildhwnd;
+}
+
+/*
  * Checks based on the existence of the main window and the LCD window whether we need
  * to spawn a new process
+ * returns false if there is no existing process
+ * returns true if there is an existing process found
  */
-bool check_no_new_process(HWND Findhwnd, HWND *FindChildhwnd) {
+bool check_no_new_process(HWND Findhwnd) {
 	if (Findhwnd == NULL) {
-		return true;
+		return false;
 	} else {
-		*FindChildhwnd = FindWindowEx(Findhwnd, NULL, g_szLCDName, NULL);
-		if (*FindChildhwnd == NULL)
-			*FindChildhwnd = FindWindowEx(NULL, NULL, g_szLCDName, NULL);
-		return *FindChildhwnd == NULL;
+		return find_existing_lcd(Findhwnd) != NULL;
 	}
 }
 
@@ -555,38 +564,32 @@ void RegisterWindowClasses(void) {
 	RegisterClassEx(&wc);
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-   LPSTR lpszCmdParam, int nCmdShow) {
+#define MAX_FILES 255
+struct ParsedCmdArgs
+{
+	LPTSTR rom_files[MAX_FILES];
+	LPTSTR utility_files[MAX_FILES];
+	LPTSTR archive_files[MAX_FILES];
+	LPTSTR ram_files[MAX_FILES];
+	int num_rom_files;
+	int num_utility_files;
+	int num_archive_files;
+	int num_ram_files;
+	BOOL silent_mode;
+	BOOL force_new_instance;
+	BOOL force_focus;
+};
 
-	MSG Msg;
-	
-	LPWSTR *argv;
-	int argc;
+ParsedCmdArgs* ParseCommandLineArgs()
+{
+	ParsedCmdArgs *parsedArgs = (ParsedCmdArgs *) malloc(sizeof(ParsedCmdArgs));
+	ZeroMemory(parsedArgs, sizeof(ParsedCmdArgs));
 	TCHAR tmpstring[512];
-	bool loadfiles = false;
-	int length,i;
-
-	length = GetModuleFileName(NULL, ExeDir, 512);
-	//LCD_X = 63+16+1;	//LCD_Y = 74+16+2;
-	if (length) {
-		for(i = length; i > 0 && (ExeDir[i] != '\\'); i--);
-		if (i) ExeDir[i+1] = 0;
-	}
-
-	//this is here so we get our load_files_first setting
-	load_files_first = QueryWabbitKey(_T("load_files_first"));
-
-	argv = CommandLineToArgvW(GetCommandLineW(), &argc);
-
-	HWND Findhwnd = NULL, FindChildhwnd = NULL;
-	Findhwnd = FindWindow(g_szAppName, NULL);
-	loadfiles = check_no_new_process(Findhwnd, &FindChildhwnd);
-	// If there is a setting to load files into a new calc each time and there is a calc already running
-	// ask it to create a new core to load into
-	if (load_files_first && Findhwnd)
-		SendMessage(Findhwnd, WM_COMMAND, IDM_FILE_NEW, 0);
-
 	SEND_FLAG ram = SEND_CUR;
+	int argc;
+	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+
+
 	if (argv && argc > 1) {
 #ifdef _UNICODE
 		StringCbCopy(tmpstring, sizeof(tmpstring), argv[1]);
@@ -594,44 +597,128 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		size_t numConv;
 		wcstombs_s(&numConv, tmpstring, argv[1], 512);
 #endif
-		if ((*tmpstring == '-' || *tmpstring == '/') && (toupper(tmpstring[1]) == 'N'))
-			loadfiles = TRUE;
-		else {
-			if (!loadfiles) {
-				COPYDATASTRUCT cds;
-				TCHAR *FileNames = NULL;
-				cds.dwData = ram;
-				for(i = 1; i < argc; i++) {
-					memset(tmpstring, 0, 512);
+		TCHAR* FileNames = NULL;
+		for(int i = 1; i < argc; i++) {
+			memset(tmpstring, 0, 512);
 #ifdef _UNICODE
-					StringCbCopy(tmpstring, sizeof(tmpstring), argv[i]);
+			_tcscpy(tmpstring, argv[i]);
 #else
-					wcstombs(tmpstring, argv[i], 512);
+			size_t numConv;
+			wcstombs_s(&numConv, tmpstring, argv[i], 512);
 #endif
-					if (*tmpstring != '-' && *tmpstring != '/') {
-						size_t strLen;
-						cds.lpData = tmpstring;
-						StringCbLength(tmpstring, 512, &strLen);
-						cds.cbData = strLen;
-						SendMessage(FindChildhwnd, WM_COPYDATA, (WPARAM) NULL, (LPARAM) &cds);
-					} else {
-						if (toupper(tmpstring[1]) == 'F')
-							SwitchToThisWindow(FindChildhwnd, TRUE);
-						else if (toupper(tmpstring[1]) == 'R')
-							ram = SEND_RAM;
-						else if (toupper(tmpstring[1]) == 'A')
-							ram = SEND_ARC;
-					}
+			char secondChar = toupper(tmpstring[1]);
+			if (*tmpstring != '-' && *tmpstring != '/') {
+				TCHAR *temp = (TCHAR *) malloc(strlen(tmpstring) + 1);
+				StringCbCopy(temp, strlen(tmpstring) + 1, tmpstring);
+				temp[strlen(tmpstring) + 1] = '\0';
+				TCHAR extension[5] = _T("");
+				const TCHAR *pext = _tcsrchr(tmpstring, _T('.'));
+				if (pext != NULL) {
+					StringCbCopy(extension, sizeof(extension), pext);
 				}
+				if (!_tcsicmp(extension, _T(".rom")) || !_tcsicmp(extension, _T(".sav")) || !_tcsicmp(extension, _T(".clc"))) {
+					parsedArgs->rom_files[parsedArgs->num_rom_files++] = temp;
+				}
+				else if (!_tcsicmp(extension, _T(".brk")) || !_tcsicmp(extension, _T(".lab")) 
+					|| !_tcsicmp(extension, _T(".zip")) || !_tcsicmp(extension, _T(".tig"))) {
+						parsedArgs->utility_files[parsedArgs->num_utility_files++] = temp;
+				}
+				else if (ram) {
+					parsedArgs->ram_files[parsedArgs->num_ram_files++] = temp;
+				} else {
+					parsedArgs->archive_files[parsedArgs->num_archive_files++] = temp;
+				}
+			} else if (secondChar == 'R') {
+				ram = SEND_RAM;
+			} else if (secondChar == 'A') {
+				ram = SEND_ARC;
+			} else if (secondChar == 'S') {
+				parsedArgs->silent_mode = TRUE;
+			} else if (secondChar == 'F') {
+				parsedArgs->force_focus = TRUE;
+			} else if (secondChar == 'N') {
+				parsedArgs->force_new_instance = TRUE;
 			}
 		}
 	}
-	
-	if (Findhwnd && loadfiles && !load_files_first)
-		SendMessage(Findhwnd, WM_COMMAND, IDM_FILE_NEW, 0);
+	return parsedArgs;
+}
 
-	if (!loadfiles) {
-		SwitchToThisWindow(FindChildhwnd, TRUE);
+void LoadAlreadyExistingWabbit(LPARAM lParam, LPTSTR filePath, SEND_FLAG sendLoc)
+{
+	HWND hwnd = (HWND) lParam;
+	COPYDATASTRUCT cds;
+	cds.dwData = sendLoc;
+	size_t strLen;
+	cds.lpData = filePath;
+	StringCbLength(filePath, 512, &strLen);
+	cds.cbData = strLen;
+	//now technically we are finding the HWND each time we do a load
+	//but since this is not speed critical I'm not worried.
+	//if it is an issue we can pull this out into a static var
+	SendMessage(hwnd, WM_COPYDATA, (WPARAM) NULL, (LPARAM) &cds);
+}
+
+void LoadToLPCALC(LPARAM lParam, LPTSTR filePath, SEND_FLAG sendLoc)
+{
+	LPCALC lpCalc = (LPCALC) lParam;
+	SendFileToCalc(lpCalc, filePath, TRUE, sendLoc);
+}
+
+void LoadCommandlineFiles(ParsedCmdArgs *parsedArgs, LPARAM lParam,  void (*load_callback)(LPARAM, LPTSTR, SEND_FLAG))
+{
+	//load ROMs first
+	for (int i = 0; i < parsedArgs->num_rom_files; i++) {
+		load_callback(lParam, parsedArgs->rom_files[i], SEND_ARC);
+	}
+	//then archived files
+	for (int i = 0; i < parsedArgs->num_archive_files; i++) {
+		load_callback(lParam, parsedArgs->archive_files[i], SEND_ARC);
+	}
+	//then ram
+	for (int i = 0; i < parsedArgs->num_ram_files; i++) {
+		load_callback(lParam, parsedArgs->ram_files[i], SEND_RAM);
+	}
+	//finally utility files (label, break, etc)
+	for (int i = 0; i < parsedArgs->num_utility_files; i++) {
+		load_callback(lParam, parsedArgs->utility_files[i], SEND_ARC);
+	}
+}
+
+
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+   LPSTR lpszCmdParam, int nCmdShow)
+{
+	MSG Msg;
+	bool alreadyRunningWabbit = false;
+	int i;
+
+	//this is here so we get our load_files_first setting
+	new_calc_on_load_files = QueryWabbitKey(_T("load_files_first"));
+
+	ParsedCmdArgs *parsedArgs = ParseCommandLineArgs();
+
+	HWND alreadyRunningHwnd = NULL;
+	alreadyRunningHwnd = FindWindow(g_szAppName, NULL);
+	alreadyRunningWabbit = check_no_new_process(alreadyRunningHwnd);
+	// If there is a setting to load files into a new calc each time and there is a calc already running
+	// ask it to create a new core to load into
+	if (new_calc_on_load_files && alreadyRunningHwnd) {
+		HWND tempHwnd;
+		SendMessage(alreadyRunningHwnd, WM_COMMAND, IDM_FILE_NEW, 0);
+		for (int i = 9001; i > 0; i--) {
+			tempHwnd = FindWindow(g_szAppName, NULL);
+			if (tempHwnd != alreadyRunningHwnd)
+				break;
+		}
+		alreadyRunningHwnd = tempHwnd;
+	}
+	
+	if (alreadyRunningWabbit) {
+		LoadCommandlineFiles(parsedArgs, (LPARAM) find_existing_lcd(alreadyRunningHwnd), LoadAlreadyExistingWabbit);
+		if (parsedArgs->force_focus) {
+			SwitchToThisWindow(alreadyRunningHwnd, TRUE);
+		}
 		exit(0);
 	}
 
@@ -647,23 +734,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ULONG_PTR gdiplusToken;
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-
-	if (argv && argc > 1) {
-		for (i = 1; i < argc; i++) {
-			memset(tmpstring, 0, 512);
-#ifdef _UNICODE
-			_tcscpy(tmpstring, argv[i]);
-#else
-			size_t numConv;
-			wcstombs_s(&numConv, tmpstring, argv[i], 512);
-#endif
-			if (tmpstring[0] == '/' || tmpstring[0] == '-') {
-				if (toupper(tmpstring[1]) == 'S') {
-					silent_mode = TRUE;
-				}
-			}
-		}
-	}
+	silent_mode = parsedArgs->silent_mode;
 
 	LPCALC lpCalc = calc_slot_new();
 	LoadRegistrySettings(lpCalc);
@@ -671,31 +742,44 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	if (rom_load(lpCalc, lpCalc->rom_path) == TRUE) {
 		gui_frame(lpCalc);
 	} else {
-		calc_slot_free(lpCalc);
 
-		if (show_wizard) {
-			BOOL wizardError = DoWizardSheet(NULL);
-			//save wizard show
-			SaveWabbitKey(_T("show_wizard"), REG_DWORD, &show_wizard);
-			SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
-			if (wizardError)
-				return EXIT_FAILURE;
-			LoadRegistrySettings(lpCalc);
-		} else {
-			const TCHAR lpstrFilter[] 	= _T("Known types ( *.sav; *.rom) \0*.sav;*.rom\0\
-												Save States  (*.sav)\0*.sav\0\
-												ROMs  (*.rom)\0*.rom\0\
-												All Files (*.*)\0*.*\0\0");
-			const TCHAR lpstrTitle[] = _T("Wabbitemu: Please select a ROM or save state");
-			const TCHAR lpstrDefExt[] = _T("rom");
-			TCHAR* FileName = (TCHAR *) malloc(MAX_PATH);
-			ZeroMemory(FileName, MAX_PATH);
-			if (!BrowseFile(FileName, lpstrFilter, lpstrTitle, lpstrDefExt, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST)) {
-				lpCalc = calc_slot_new();
-				if (rom_load(lpCalc, FileName) == TRUE)
+		BOOL loadedRom = FALSE;
+		if (parsedArgs->num_rom_files > 0) {
+			for (int i = 0; i < parsedArgs->num_rom_files; i++) {
+				if (rom_load(lpCalc, parsedArgs->rom_files[i])) {
 					gui_frame(lpCalc);
-				else return EXIT_FAILURE;
-			} else return EXIT_FAILURE;
+					loadedRom = TRUE;
+					break;
+				}
+			}
+		}
+		if (!loadedRom) {
+			calc_slot_free(lpCalc);
+
+			if (show_wizard) {
+				BOOL wizardError = DoWizardSheet(NULL);
+				//save wizard show
+				SaveWabbitKey(_T("show_wizard"), REG_DWORD, &show_wizard);
+				SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
+				if (wizardError)
+					return EXIT_FAILURE;
+				LoadRegistrySettings(lpCalc);
+			} else {
+				const TCHAR lpstrFilter[] 	= _T("Known types ( *.sav; *.rom) \0*.sav;*.rom\0\
+													Save States  (*.sav)\0*.sav\0\
+													ROMs  (*.rom)\0*.rom\0\
+													All Files (*.*)\0*.*\0\0");
+				const TCHAR lpstrTitle[] = _T("Wabbitemu: Please select a ROM or save state");
+				const TCHAR lpstrDefExt[] = _T("rom");
+				TCHAR* FileName = (TCHAR *) malloc(MAX_PATH);
+				ZeroMemory(FileName, MAX_PATH);
+				if (!BrowseFile(FileName, lpstrFilter, lpstrTitle, lpstrDefExt, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST)) {
+					lpCalc = calc_slot_new();
+					if (rom_load(lpCalc, FileName) == TRUE)
+						gui_frame(lpCalc);
+					else return EXIT_FAILURE;
+				} else return EXIT_FAILURE;
+			}
 		}
 	}
 
@@ -703,29 +787,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	state_build_applist(&lpCalc->cpu, &lpCalc->applist);
 	VoidLabels(lpCalc);
+	LoadCommandlineFiles(parsedArgs, (LPARAM) lpCalc, LoadToLPCALC);
 
-	if (loadfiles) {
-		if (argv && argc > 1) {
-			TCHAR* FileNames = NULL;
-			for(i = 1; i < argc; i++) {
-				memset(tmpstring, 0, 512);
-#ifdef _UNICODE
-				_tcscpy(tmpstring, argv[i]);
-#else
-				size_t numConv;
-				wcstombs_s(&numConv, tmpstring, argv[i], 512);
-#endif
-				if (*tmpstring != '-' && *tmpstring != '/') {
-					SendFileToCalc(lpCalc, tmpstring, TRUE, ram);
-				} else if (toupper(tmpstring[1]) == 'R') {
-					ram = SEND_RAM;
-				} else if (toupper(tmpstring[1]) == 'A') {
-					ram = SEND_ARC;
-				}
-			}
-		}
-	}
-	loadfiles = FALSE;
 	//initialize linking hub
 	memset(link_hub, 0, sizeof(link_hub));
 	link_t *hub_link = (link_t *) malloc(sizeof(link_t)); 
@@ -741,27 +804,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 
 	InitCommonControls();
-#ifdef USE_DIRECTX
-	IDirect3D9 *pD3D = Direct3DCreate9(D3D_SDK_VERSION);
-
-	D3DPRESENT_PARAMETERS d3dpp;
-	ZeroMemory( &d3dpp, sizeof(d3dpp) );
-	d3dpp.Windowed = TRUE;
-	d3dpp.SwapEffect = D3DSWAPEFFECT_DISCARD;
-	d3dpp.BackBufferCount = 1;
-
-	if (pD3D->CreateDevice(
-			D3DADAPTER_DEFAULT,
-			D3DDEVTYPE_HAL,
-			lpCalc->hwndLCD,
-			D3DCREATE_SOFTWARE_VERTEXPROCESSING|D3DCREATE_FPU_PRESERVE ,
-			&d3dpp,
-			&pd3dDevice) != D3D_OK) {
-		printf("failed to create device\n");
-		exit(1);
-	}
-#endif
-
 	// Set the one global timer for all calcs
 	SetTimer(NULL, 0, TPF, TimerProc);
 
@@ -838,7 +880,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	return (int) Msg.wParam;
 }
 
-static HWND hListDialog;
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	//static HDC hdcKeymap;
 	static POINT ctxtPt;
@@ -923,6 +964,29 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			HDC hdc;
 			hdc = BeginPaint(hwnd, &ps);
 			if (lpCalc->SkinEnabled) {
+				/*HBITMAP blankBitmap = CreateCompatibleBitmap(lpCalc->hdcKeymap, 48, 48);
+				HBITMAP hButton = CreateCompatibleBitmap(lpCalc->hdcKeymap, 48, 48);
+				SelectObject(hdc, blankBitmap);
+				HDC hdcMask = CreateCompatibleDC(lpCalc->hdcKeymap);
+				HBITMAP hbmMask = CreateCompatibleBitmap(hdc, 48, 48);
+				BITMAPINFO bi;
+				bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+				bi.bmiHeader.biWidth = 48;
+				bi.bmiHeader.biHeight = 48;
+				bi.bmiHeader.biPlanes = 1;
+				bi.bmiHeader.biBitCount = 24;
+				bi.bmiHeader.biCompression = BI_RGB;
+				bi.bmiHeader.biSizeImage = 0;
+				bi.bmiHeader.biXPelsPerMeter = 0;
+				bi.bmiHeader.biYPelsPerMeter = 0;
+				bi.bmiHeader.biClrUsed = 0;
+				bi.bmiHeader.biClrImportant = 0;
+				int error = GetDIBits(hdc, hbmMask, 0, 48, NULL, &bi, DIB_RGB_COLORS);
+				error = BitBlt(hdcMask, (48 - 33) / 2, (48 - 31) / 2, 33, 31, lpCalc->hdcKeymap, 236, 331, SRCCOPY);
+				error = MaskBlt(hdc, (48 - 33) / 2, (48 - 31) / 2, 48, 48,
+					lpCalc->hdcButtons, 236, 331,
+					hbmMask, (48 - 33) / 2, (48 - 31) / 2, SRCCOPY);
+				error = GetLastError();*/
 				BitBlt(hdc, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcButtons, 0, 0, SRCCOPY);
 				BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
 			} else {
@@ -945,6 +1009,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							lpCalcNew->scale = lpCalc->scale;
 							lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
 							lpCalcNew->bAlphaBlendLCD = lpCalc->bAlphaBlendLCD;
+
 							calc_turn_on(lpCalcNew);
 							gui_frame(lpCalcNew);
 						} else {
@@ -1137,11 +1202,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					CreateVarTreeList(hwnd, lpCalc);
 					break;
 				case IDM_VIEW_KEYSPRESSED:
-					if (IsWindow(hListDialog)) {
-						SwitchToThisWindow(hListDialog, TRUE);
+					if (IsWindow(lpCalc->hwndListDialog)) {
+						SwitchToThisWindow(lpCalc->hwndListDialog, TRUE);
 					} else {
-						hListDialog = (HWND) CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_KEYS_LIST), hwnd, (DLGPROC) KeysListProc);
-						ShowWindow(hListDialog, SW_SHOW);
+						lpCalc->hwndListDialog = (HWND) CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_KEYS_LIST), hwnd, (DLGPROC) KeysListProc);
+						ShowWindow(lpCalc->hwndListDialog, SW_SHOW);
 					}
 					break;
 				case IDM_CALC_OPTIONS:
@@ -1584,6 +1649,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					FreeSave(save);
 				}
 
+				DestroyCutoutResources();
+
 				_tprintf_s(_T("Saving registry settings\n"));
 				SaveRegistrySettings(lpCalc);
 
@@ -1643,31 +1710,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
 	return 0;
-}
-
-extern key_string ti83pkeystrings[KEY_STRING_SIZE];
-extern key_string ti86keystrings[KEY_STRING_SIZE];
-void LogKeypress(int group, int bit, UINT vk, BOOL keyDown, int model) {
-	if (hListDialog) {
-		int i;
-		TCHAR buf[256];
-		key_string *keystrings = model == TI_85 || model == TI_86 ? ti86keystrings : ti83pkeystrings;
-		if (keyDown)
-			StringCbCopy(buf, sizeof(buf), _T("Key down: "));
-		else
-			StringCbCopy(buf, sizeof(buf), _T("Key up: "));
-		for (i = 0; i < KEY_STRING_SIZE; i++) {
-			if (keystrings[i].group == group && keystrings[i].bit == bit)
-				break;
-		}
-		StringCbCat(buf, sizeof(buf),keystrings[i].text);
-		StringCbCat(buf, sizeof(buf), _T(" ("));
-		TCHAR *name = NameFromVKey(vk);
-		StringCbCat(buf, sizeof(buf), name);
-		StringCbCat(buf, sizeof(buf), _T(")"));
-		free(name);
-		SendMessage(hListDialog, WM_USER, ADD_LISTBOX_ITEM, (LPARAM) &buf);
-	}
 }
 
 INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {

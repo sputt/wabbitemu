@@ -51,7 +51,7 @@ HWND CreateVarTreeList(HWND hwndParent, LPCALC lpCalc) {
 //TODO: well this code is a mess. We need to refactor this, so that the HTREEITEM is somehow
 //mapped to the to either the symlist_t or applist_t item. Ideally this would be the LPARAM 
 //of the LPTREEVIEW, but a dictionary mapping would be fine as well
-apphdr_t *  GetAppVariable(HTREEITEM hTreeItem) {
+apphdr_t *GetAppVariable(HTREEITEM hTreeItem) {
 	for (u_int slot = 0; slot < MAX_CALCS; slot++) {
 		if (Tree[slot].model) {
 			for(u_int i = 0; i < Tree[slot].applist.count; i++) {
@@ -64,9 +64,11 @@ apphdr_t *  GetAppVariable(HTREEITEM hTreeItem) {
 	return NULL;
 }
 
-symbol83P_t * GetSymbolVariable(HTREEITEM hTreeItem) {
+symbol83P_t *GetSymbolVariable(HTREEITEM hTreeItem) {
 	for (u_int slot = 0; slot < MAX_CALCS; slot++) {
 		if (Tree[slot].model) {
+			if (Tree[slot].sym.last == NULL || Tree[slot].sym.symbols == NULL)
+				return NULL;
 			for(u_int i = 0; i < (u_int) (Tree[slot].sym.last - Tree[slot].sym.symbols + 1); i++) {
 				if (Tree[slot].hVars[i] == hTreeItem) {
 					return &Tree[slot].sym.symbols[i];

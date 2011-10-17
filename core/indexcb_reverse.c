@@ -9,40 +9,26 @@
 
 //------------------
 // Bit num,reg
-void bit_ind(CPU_t *cpu, char offset) {
-	int result, reg;
-	unsigned short address;
-	int test_mask = (1 << ((cpu->bus >> 3) & 0x07));
-	tc_add(cpu->timer_c,20);
-	if (cpu->prefix == IX_PREFIX) {
-		address = cpu->ix + offset;
-	} else {
-		address = cpu->iy + offset;
-	}
-	reg = CPU_mem_read(cpu,address);
-	result = reg & test_mask;
-	cpu->f = signchk(result) + zerochk(result) +
-		 x5chk16(address) + HC_MASK +
-		 x3chk16(address)+ parity(result) + unaffect(CARRY_MASK);
+void bit_ind_reverse(CPU_t *cpu, char offset) {
+	tc_sub(cpu->timer_c, 20);
+	cpu->f = cpu->prev_instruction->flag;
 }
 
 //------------------
 // RES num,reg
-void res_ind(CPU_t *cpu, char offset) {
+void res_ind_reverse(CPU_t *cpu, char offset) {
 	int reg;
 	int save = (cpu->bus & 0x07);
 	unsigned char bit = ~(1 << ((cpu->bus >> 3)& 0x07));
 	
-	tc_add(cpu->timer_c, 23);
+	tc_sub(cpu->timer_c, 23);
 	if (cpu->prefix == IX_PREFIX) {
-		reg = CPU_mem_read(cpu, cpu->ix + offset);
-		CPU_mem_write(cpu, cpu->ix + offset, reg & bit);
+		CPU_mem_write(cpu, cpu->ix + offset, cpu->prev_instruction->lower_data2);
 	} else {
-		reg = CPU_mem_read(cpu, cpu->iy + offset);
-		CPU_mem_write(cpu, cpu->iy + offset, reg & bit);
+		CPU_mem_write(cpu, cpu->iy + offset, cpu->prev_instruction->lower_data2);
 	}
 	
-	reg &= bit;
+	reg = cpu->prev_instruction->lower_data1;
 	switch(save) {
 		case 0:
 			cpu->b = reg;
@@ -70,20 +56,20 @@ void res_ind(CPU_t *cpu, char offset) {
 
 //------------------
 // SET num,reg
-void set_ind(CPU_t *cpu, char offset) {
+void set_ind_reverse(CPU_t *cpu, char offset) {
 	int reg;
-	unsigned char bit = (1 << ((cpu->bus >> 3)& 0x07));
-	int save = (cpu->bus & 0x07);
-	tc_add(cpu->timer_c, 23);
+	unsigned char bit = 1 << ((cpu->bus >> 3) & 0x07);
+	int save = cpu->bus & 0x07;
+	tc_sub(cpu->timer_c, 23);
 	if (cpu->prefix == IX_PREFIX) {
 		reg = CPU_mem_read(cpu, cpu->ix + offset);
-		CPU_mem_write(cpu, cpu->ix + offset, reg | bit);
+		CPU_mem_write(cpu, cpu->ix + offset, cpu->prev_instruction->lower_data2);
 	} else {
 		reg = CPU_mem_read(cpu, cpu->iy + offset);
-		CPU_mem_write(cpu, cpu->iy + offset, reg | bit);
+		CPU_mem_write(cpu, cpu->iy + offset, cpu->prev_instruction->lower_data2);
 	}
 	
-	reg |= bit;
+	reg = cpu->prev_instruction->lower_data1;
 	switch(save) {
 		case 0:
 			cpu->b = reg;
@@ -111,369 +97,289 @@ void set_ind(CPU_t *cpu, char offset) {
 }
 
 
-void rl_ind(CPU_t *cpu, char offset) {
-	int result;
-	int carry;
-	int save = (cpu->bus & 0x07);
-	tc_add(cpu->timer_c,23);
+void rl_ind_reverse(CPU_t *cpu, char offset) {
+	int save = cpu->bus & 0x07;
+	tc_sub(cpu->timer_c, 23);
+	cpu->f = cpu->prev_instruction->flag;
+
 	if (cpu->prefix == IX_PREFIX) {
-		result = CPU_mem_read(cpu, cpu->ix + offset);
-		carry = (result>>7)&1;
-		result = (result<<1)+(cpu->f&1);
-		CPU_mem_write(cpu, cpu->ix + offset, result);
-	} else {
-		result = CPU_mem_read(cpu, cpu->iy + offset);
-		carry = (result >> 7) & 1;
-		result = (result << 1) + (cpu->f & 1);
-		CPU_mem_write(cpu, cpu->iy + offset, result);
+		CPU_mem_write(cpu, cpu->ix + offset, cpu->prev_instruction->lower_data1);
+	} else {;
+		CPU_mem_write(cpu, cpu->iy + offset, cpu->prev_instruction->lower_data1);
 	}
-	cpu->f = signchk(result) + zerochk(result) +
-		 x5chk(result) + x3chk(result)+
-		 parity(result) + carry;
 		 
 
 	switch(save) {
 		case 0:
-			cpu->b = result;
+			cpu->b = cpu->prev_instruction->lower_data2;
 			break;
 		case 1:
-			cpu->c = result;
+			cpu->c = cpu->prev_instruction->lower_data2;
 			break;
 		case 2:
-			cpu->d = result;
+			cpu->d = cpu->prev_instruction->lower_data2;
 			break;
 		case 3:
-			cpu->e = result;
+			cpu->e = cpu->prev_instruction->lower_data2;
 			break;
 		case 4:
-			cpu->h = result;
+			cpu->h = cpu->prev_instruction->lower_data2;
 			break;
 		case 5:
-			cpu->l = result;
+			cpu->l = cpu->prev_instruction->lower_data2;
 			break;
 		case 7:
-			cpu->a = result;
-			break;
-	}
-		 
-}
-
-void rlc_ind(CPU_t *cpu, char offset) {
-	int result;
-	int carry;
-	int save = (cpu->bus & 0x07);
-	tc_add(cpu->timer_c, 23);
-	if (cpu->prefix == IX_PREFIX) {
-		result = CPU_mem_read(cpu, cpu->ix + offset);
-		carry = (result>>7)&1;
-		result = (result << 1) + carry;
-		CPU_mem_write(cpu, cpu->ix + offset, result);
-	} else {
-		result = CPU_mem_read(cpu, cpu->iy + offset);
-		carry = (result>>7)&1;
-		result = (result<<1) + carry;
-		CPU_mem_write(cpu, cpu->iy + offset, result);
-	}
-	cpu->f = signchk(result) + zerochk(result) +
-		 x5chk(result) + x3chk(result)+
-		 parity(result) + carry;
-		 
-	switch(save) {
-		case 0:
-			cpu->b = result;
-			break;
-		case 1:
-			cpu->c = result;
-			break;
-		case 2:
-			cpu->d = result;
-			break;
-		case 3:
-			cpu->e = result;
-			break;
-		case 4:
-			cpu->h = result;
-			break;
-		case 5:
-			cpu->l = result;
-			break;
-		case 7:
-			cpu->a = result;
+			cpu->a = cpu->prev_instruction->lower_data2;
 			break;
 	}
 }
 
-void rr_ind(CPU_t *cpu, char offset) {
-	int result;
-	int carry;
-	int save = (cpu->bus & 0x07);
-	tc_add(cpu->timer_c,23);
+void rlc_ind_reverse(CPU_t *cpu, char offset) {
+	int save = cpu->bus & 0x07;
+	tc_sub(cpu->timer_c, 23);
 	if (cpu->prefix == IX_PREFIX) {
-		result = CPU_mem_read(cpu, cpu->ix + offset);
-		carry = result & 1;
-		result = (result>>1) + ((cpu->f & 1)<<7);
-		CPU_mem_write(cpu, cpu->ix + offset, result);
+		CPU_mem_write(cpu, cpu->ix + offset, cpu->prev_instruction->lower_data1);
 	} else {
-		result = CPU_mem_read(cpu, cpu->iy + offset);
-		carry = result & 1;
-		result = (result>>1) + ((cpu->f & 1)<<7);
-		CPU_mem_write(cpu, cpu->iy + offset, result);
+		CPU_mem_write(cpu, cpu->iy + offset, cpu->prev_instruction->lower_data1);
 	}
-	cpu->f = signchk(result) + zerochk(result) +
-		 x5chk(result) + x3chk(result)+
-		 parity(result) + carry;
-
-	switch(save) {
+	cpu->f = cpu->prev_instruction->flag;
+		 
+	switch (save) {
 		case 0:
-			cpu->b = result;
+			cpu->b = cpu->prev_instruction->lower_data2;
 			break;
 		case 1:
-			cpu->c = result;
+			cpu->c = cpu->prev_instruction->lower_data2;
 			break;
 		case 2:
-			cpu->d = result;
+			cpu->d = cpu->prev_instruction->lower_data2;
 			break;
 		case 3:
-			cpu->e = result;
+			cpu->e = cpu->prev_instruction->lower_data2;
 			break;
 		case 4:
-			cpu->h = result;
+			cpu->h = cpu->prev_instruction->lower_data2;
 			break;
 		case 5:
-			cpu->l = result;
+			cpu->l = cpu->prev_instruction->lower_data2;
 			break;
 		case 7:
-			cpu->a = result;
+			cpu->a = cpu->prev_instruction->lower_data2;
 			break;
 	}
 }
 
-void rrc_ind(CPU_t *cpu, char offset) {
-	int result;
-	int carry;
-	int save = (cpu->bus & 0x07);
-	tc_add(cpu->timer_c,23);
+void rr_ind_reverse(CPU_t *cpu, char offset) {
+	int save = cpu->bus & 0x07;
+	tc_sub(cpu->timer_c, 23);
 	if (cpu->prefix == IX_PREFIX) {
-		result = CPU_mem_read(cpu, cpu->ix + offset);
-		carry = result & 1;
-		result = (result>>1) + (carry << 7);
-		CPU_mem_write(cpu, cpu->ix + offset, result);
+		CPU_mem_write(cpu, cpu->ix + offset, cpu->prev_instruction->lower_data1);
 	} else {
-		result = CPU_mem_read(cpu, cpu->iy + offset);
-		carry = result & 1;
-		result = (result>>1) + (carry << 7);
-		CPU_mem_write(cpu, cpu->iy + offset, result);
+		CPU_mem_write(cpu, cpu->iy + offset, cpu->prev_instruction->lower_data1);
 	}
-	cpu->f = signchk(result) + zerochk(result) +
-		 x5chk(result) + x3chk(result)+
-		 parity(result) + carry;
+	cpu->f = cpu->prev_instruction->flag;
+
+	switch(save) {
+		case 0:
+			cpu->b = cpu->prev_instruction->lower_data2;
+			break;
+		case 1:
+			cpu->c = cpu->prev_instruction->lower_data2;
+			break;
+		case 2:
+			cpu->d = cpu->prev_instruction->lower_data2;
+			break;
+		case 3:
+			cpu->e = cpu->prev_instruction->lower_data2;
+			break;
+		case 4:
+			cpu->h = cpu->prev_instruction->lower_data2;
+			break;
+		case 5:
+			cpu->l = cpu->prev_instruction->lower_data2;
+			break;
+		case 7:
+			cpu->a = cpu->prev_instruction->lower_data2;
+			break;
+	}
+}
+
+void rrc_ind_reverse(CPU_t *cpu, char offset) {
+	int save = (cpu->bus & 0x07);
+	tc_sub(cpu->timer_c,23);
+	if (cpu->prefix == IX_PREFIX) {
+		CPU_mem_write(cpu, cpu->ix + offset, cpu->prev_instruction->lower_data1);
+	} else {
+		CPU_mem_write(cpu, cpu->iy + offset, cpu->prev_instruction->lower_data1);
+	}
+	cpu->f = cpu->prev_instruction->flag;
 		 
 	switch(save) {
 		case 0:
-			cpu->b = result;
+			cpu->b = cpu->prev_instruction->lower_data2;
 			break;
 		case 1:
-			cpu->c = result;
+			cpu->c = cpu->prev_instruction->lower_data2;
 			break;
 		case 2:
-			cpu->d = result;
+			cpu->d = cpu->prev_instruction->lower_data2;
 			break;
 		case 3:
-			cpu->e = result;
+			cpu->e = cpu->prev_instruction->lower_data2;
 			break;
 		case 4:
-			cpu->h = result;
+			cpu->h = cpu->prev_instruction->lower_data2;
 			break;
 		case 5:
-			cpu->l = result;
+			cpu->l = cpu->prev_instruction->lower_data2;
 			break;
 		case 7:
-			cpu->a = result;
+			cpu->a = cpu->prev_instruction->lower_data2;
 			break;
 	}		 
 
 }
 
-void sll_ind(CPU_t *cpu, char offset) {
-	int result;
-	int carry;
-	int save = (cpu->bus & 0x07);
-	tc_add(cpu->timer_c, 23);
+void sll_ind_reverse(CPU_t *cpu, char offset) {
+	int save = cpu->bus & 0x07;
+	tc_sub(cpu->timer_c, 23);
 	
 	if (cpu->prefix == IX_PREFIX) {
-		result = CPU_mem_read(cpu, cpu->ix + offset);
-		carry = (result>>7)&1;
-		result = (result<<1) + 1;
-		CPU_mem_write(cpu, cpu->ix + offset, result);
+		CPU_mem_write(cpu, cpu->ix + offset, cpu->prev_instruction->lower_data1);
 	} else {
-		result = CPU_mem_read(cpu, cpu->iy + offset);
-		carry = (result>>7)&1;
-		result = (result<<1) + 1;
-		CPU_mem_write(cpu, cpu->iy + offset, result);
+		CPU_mem_write(cpu, cpu->iy + offset, cpu->prev_instruction->lower_data1);
 	}
-	cpu->f = signchk(result) + zerochk(result) +
-		 x5chk(result) + x3chk(result)+
-		 parity(result) + carry;
+	cpu->f = cpu->prev_instruction->flag;
 		 
 	switch(save) {
 		case 0:
-			cpu->b = result;
+			cpu->b = cpu->prev_instruction->lower_data2;
 			break;
 		case 1:
-			cpu->c = result;
+			cpu->c = cpu->prev_instruction->lower_data2;
 			break;
 		case 2:
-			cpu->d = result;
+			cpu->d = cpu->prev_instruction->lower_data2;
 			break;
 		case 3:
-			cpu->e = result;
+			cpu->e = cpu->prev_instruction->lower_data2;
 			break;
 		case 4:
-			cpu->h = result;
+			cpu->h = cpu->prev_instruction->lower_data2;
 			break;
 		case 5:
-			cpu->l = result;
+			cpu->l = cpu->prev_instruction->lower_data2;
 			break;
 		case 7:
-			cpu->a = result;
+			cpu->a = cpu->prev_instruction->lower_data2;
 			break;
 	}
 		 
 }
 
-void srl_ind(CPU_t *cpu, char offset) {
-	int result;
-	int carry;
+void srl_ind_reverse(CPU_t *cpu, char offset) {
 	int save = (cpu->bus & 0x07);
-	tc_add(cpu->timer_c, 23);
+	tc_sub(cpu->timer_c, 23);
 	if (cpu->prefix == IX_PREFIX) {
-		result = CPU_mem_read(cpu, cpu->ix + offset);
-		carry = result & 1;
-		result = (result>>1);
-		CPU_mem_write(cpu, cpu->ix + offset, result);
+		CPU_mem_write(cpu, cpu->ix + offset, cpu->prev_instruction->lower_data1);
 	} else {
-		result = CPU_mem_read(cpu, cpu->iy + offset);
-		carry = result & 1;
-		result = (result>>1);
-		CPU_mem_write(cpu, cpu->iy + offset, result);
+		CPU_mem_write(cpu, cpu->iy + offset, cpu->prev_instruction->lower_data1);
 	}
-	cpu->f = signchk(result) + zerochk(result) +
-		 x5chk(result) + x3chk(result)+
-		 parity(result) + carry;
+	cpu->f = cpu->prev_instruction->flag;
 		 
 	switch(save) {
 		case 0:
-			cpu->b = result;
+			cpu->b = cpu->prev_instruction->lower_data2;
 			break;
 		case 1:
-			cpu->c = result;
+			cpu->c = cpu->prev_instruction->lower_data2;
 			break;
 		case 2:
-			cpu->d = result;
+			cpu->d = cpu->prev_instruction->lower_data2;
 			break;
 		case 3:
-			cpu->e = result;
+			cpu->e = cpu->prev_instruction->lower_data2;
 			break;
 		case 4:
-			cpu->h = result;
+			cpu->h = cpu->prev_instruction->lower_data2;
 			break;
 		case 5:
-			cpu->l = result;
+			cpu->l = cpu->prev_instruction->lower_data2;
 			break;
 		case 7:
-			cpu->a = result;
+			cpu->a = cpu->prev_instruction->lower_data2;
 			break;
 	}
 }
 
-void sla_ind(CPU_t *cpu, char offset) {
-	int result;
-	int carry;
-	int save = (cpu->bus & 0x07);
-	tc_add(cpu->timer_c, 23);
+void sla_ind_reverse(CPU_t *cpu, char offset) {
+	int save = cpu->bus & 0x07;
+	tc_sub(cpu->timer_c, 23);
 
 	if (cpu->prefix == IX_PREFIX) {
-		result = CPU_mem_read(cpu, cpu->ix + offset);
-		carry = (result>>7)&1;
-		result*=2;
-		CPU_mem_write(cpu, cpu->ix + offset, result);
+		CPU_mem_write(cpu, cpu->ix + offset, cpu->prev_instruction->lower_data1);
 	} else {
-		result = CPU_mem_read(cpu, cpu->iy + offset);
-		carry = (result>>7)&1;
-		result*=2;
-		CPU_mem_write(cpu, cpu->iy + offset, result);
+		CPU_mem_write(cpu, cpu->iy + offset, cpu->prev_instruction->lower_data1);
 	}
-	cpu->f = signchk(result) + zerochk(result) +
-		 x5chk(result) + x3chk(result)+
-		 parity(result) + carry;
+	cpu->f = cpu->prev_instruction->flag;
 		 
 	switch(save) {
 		case 0:
-			cpu->b = result;
+			cpu->b = cpu->prev_instruction->lower_data2;
 			break;
 		case 1:
-			cpu->c = result;
+			cpu->c = cpu->prev_instruction->lower_data2;
 			break;
 		case 2:
-			cpu->d = result;
+			cpu->d = cpu->prev_instruction->lower_data2;
 			break;
 		case 3:
-			cpu->e = result;
+			cpu->e = cpu->prev_instruction->lower_data2;
 			break;
 		case 4:
-			cpu->h = result;
+			cpu->h = cpu->prev_instruction->lower_data2;
 			break;
 		case 5:
-			cpu->l = result;
+			cpu->l = cpu->prev_instruction->lower_data2;
 			break;
 		case 7:
-			cpu->a = result;
+			cpu->a = cpu->prev_instruction->lower_data2;
 			break;
 	}
 
 }
 
-void sra_ind(CPU_t *cpu, char offset) {
-	int result;
-	int carry;
+void sra_ind_reverse(CPU_t *cpu, char offset) {
 	int save = (cpu->bus & 0x07);
-	tc_add(cpu->timer_c, 23);
+	tc_sub(cpu->timer_c, 23);
 	if (cpu->prefix == IX_PREFIX) {
-		result = CPU_mem_read(cpu, cpu->ix + offset);
-		carry = result & 1;
-		result = ((result>>1)+(result&0x80))&0xFF;
-		CPU_mem_write(cpu, cpu->ix + offset, result);
+		CPU_mem_write(cpu, cpu->ix + offset, cpu->prev_instruction->lower_data1);
 	} else {
-		result = CPU_mem_read(cpu, cpu->iy + offset);
-		carry = result & 1;
-		result = ((result>>1)+(result&0x80))&0xFF;
-		CPU_mem_write(cpu, cpu->iy + offset, result);
+		CPU_mem_write(cpu, cpu->iy + offset, cpu->prev_instruction->lower_data1);
 	}
-	cpu->f = signchk(result) + zerochk(result) +
-		 x5chk(result) + x3chk(result)+
-		 parity(result) + carry;
+	cpu->f = cpu->prev_instruction->flag;
 		 
 	switch(save) {
 		case 0:
-			cpu->b = result;
+			cpu->b = cpu->prev_instruction->lower_data2;
 			break;
 		case 1:
-			cpu->c = result;
+			cpu->c = cpu->prev_instruction->lower_data2;
 			break;
 		case 2:
-			cpu->d = result;
+			cpu->d = cpu->prev_instruction->lower_data2;
 			break;
 		case 3:
-			cpu->e = result;
+			cpu->e = cpu->prev_instruction->lower_data2;
 			break;
 		case 4:
-			cpu->h = result;
+			cpu->h = cpu->prev_instruction->lower_data2;
 			break;
 		case 5:
-			cpu->l = result;
+			cpu->l = cpu->prev_instruction->lower_data2;
 			break;
 		case 7:
-			cpu->a = result;
+			cpu->a = cpu->prev_instruction->lower_data2;
 			break;
 		default:
 			break;

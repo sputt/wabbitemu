@@ -684,7 +684,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			if (size && string)	{
 				TCHAR *FileNames = (TCHAR *) malloc(size);
-				memset(FileNames, 0, size);
+				memset(FileNames, 0, size + 1);
 				memcpy(FileNames, string, size);
 				SendFileToCalc(lpCalc, FileNames, ram);
 			}
