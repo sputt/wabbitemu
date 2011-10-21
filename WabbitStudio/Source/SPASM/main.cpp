@@ -253,6 +253,8 @@ int main (int argc, char **argv)
 	in_macro = 0;
 	
 	//otherwise, get any options
+	curr_input_file = strdup("Commandline");
+	const char * const starting_input_file = curr_input_file;
 
 	while (curr_arg < argc) {
 		if (argv[curr_arg][0] == '-'
@@ -386,9 +388,9 @@ int main (int argc, char **argv)
 
 		} else {
 			//if it's not a flag, then it must be a filename
-			if (curr_input_file && !output_filename)
+			if (curr_input_file && (curr_input_file != starting_input_file) && !output_filename)
 				output_filename = strdup(argv[curr_arg]);
-			else if (!curr_input_file)
+			else if ((!curr_input_file) || (curr_input_file == starting_input_file))
 				curr_input_file = strdup(argv[curr_arg]);
 
 		}
