@@ -188,9 +188,17 @@ int CPU_init(CPU_t *cpu, memc *mem_c, timerc *timer_c) {
 static void handle_pio(CPU_t *cpu) {
 	int i;
 	for (i = 0; cpu->pio.interrupt[i] != -1; i++) {
-		if (cpu->pio.skip_factor[i]) {
-			if (cpu->pio.skip_count[i] == 0x00) device_control(cpu, cpu->pio.interrupt[i]);
-			cpu->pio.skip_count[i] = (cpu->pio.skip_count[i] + 1) % cpu->pio.skip_factor[i];
+		int skip_factor = cpu->pio.skip_factor[i];
+		int skip_count = cpu->pio.skip_count[i];
+		if (skip_factor) {
+			if (!cpu->pio.skip_count[i]) {
+				device_control(cpu, cpu->pio.interrupt[i]);
+			}
+			//cpu->pio.skip_count[i] = (skip_count + 1) % skip_factor;
+			cpu->pio.skip_count[i]++;
+			if (skip_count + 1 == skip_factor) {
+				cpu->pio.skip_count[i] = 0;
+			}
 		}
 	}
 }
@@ -363,9 +371,7 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
-		if (!cpu->mem_c->flash_locked && // 1) {
-			(((cpu->mem_c->banks[bank].page != 0x3F && cpu->mem_c->banks[bank].page != 0x2F) || cpu->pio.se_aux->model_bits & 0x3) &&
-			((cpu->mem_c->banks[bank].page != 0x7F && cpu->mem_c->banks[bank].page != 0x6F) || cpu->pio.se_aux->model_bits & 0x2 || !(cpu->pio.se_aux->model_bits & 0x1)))) {
+		if (!cpu->mem_c->flash_locked &&  1) {
 			switch(cpu->mem_c->flash_version) {
 				case 00:
 					break;
