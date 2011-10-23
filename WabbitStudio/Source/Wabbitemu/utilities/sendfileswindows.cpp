@@ -34,7 +34,7 @@ LPCTSTR g_szLinkErrorDescriptions[] =
 	_T("No error"),
 	_T("Virtual link error"),
 	_T("Link timed out"),
-	_T("Error forceloading application"),
+	_T("Error force loading application"),
 	_T("Invalid checksum on a packet"),
 	_T("The virtual link was not initialized"),
 	_T("Not enough free space on the calculator"),
@@ -208,7 +208,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 				result = link_send_var(&lpCalc->cpu, var, (SEND_FLAG) Destination);
 				if (var->type == FLASH_TYPE)
 				{
-					// Rebuild the applist
+					// Rebuild the app list
 					state_build_applist(&lpCalc->cpu, &lpCalc->applist);
 
 					u_int i;

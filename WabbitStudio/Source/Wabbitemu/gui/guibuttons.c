@@ -99,24 +99,87 @@ static RECT FindButtonRect(HDC hdcKeymap, POINT *pt) {
 
 extern key_string ti83pkeystrings[KEY_STRING_SIZE];
 extern key_string ti86keystrings[KEY_STRING_SIZE];
-void LogKeypress(LPCALC lpCalc, int group, int bit, UINT vk) {
-	if (lpCalc->hwndListDialog) {
-		int i;
-		TCHAR buf[256];
-		key_string *keystrings = lpCalc->model == TI_85 || lpCalc->model == TI_86 ? ti86keystrings : ti83pkeystrings;
-		for (i = 0; i < KEY_STRING_SIZE; i++) {
-			if (keystrings[i].group == group && keystrings[i].bit == bit)
+void LogKeypress(LPCALC lpCalc, int group, int bit) {
+	int i;
+	key_string *keystrings = lpCalc->model == TI_85 || lpCalc->model == TI_86 ? ti86keystrings : ti83pkeystrings;
+	for (i = 0; i < KEY_STRING_SIZE; i++) {
+		if (keystrings[i].group == group && keystrings[i].bit == bit)
+			break;
+	}
+	if (i == KEY_STRING_SIZE)
+		return;
+	key_string *current = (key_string *) malloc(sizeof(key_string));
+	current->bit = bit;
+	current->group = group;
+	current->next = lpCalc->last_keypress_head;
+	current->text = (TCHAR *) malloc(strlen(keystrings[i].text) + 1);
+	StringCbCopy(current->text, strlen(keystrings[i].text) + 1, keystrings[i].text);
+	lpCalc->last_keypress_head = current;
+	lpCalc->num_keypresses++;
+
+	if (lpCalc->num_keypresses > MAX_KEYPRESS_HISTORY) {
+		key_string *current = lpCalc->last_keypress_head;
+		key_string *last = current;
+		while (current) {
+			if (current->next != NULL) {
+				last = current;
+				current = current->next;
+			} else {
 				break;
+			}
 		}
-		StringCbCat(buf, sizeof(buf),keystrings[i].text);
-		StringCbCat(buf, sizeof(buf), _T(" ("));
-		TCHAR *name = NameFromVKey(vk);
-		StringCbCat(buf, sizeof(buf), name);
-		StringCbCat(buf, sizeof(buf), _T(")"));
-		free(name);
-		SendMessage(lpCalc->hwndListDialog, WM_USER, ADD_LISTBOX_ITEM, (LPARAM) &buf);
+		free(current->text);
+		free(current);
+		last->next = NULL;
+	}
+
+	if (lpCalc->hwndKeyListDialog) {
+		SendMessage(lpCalc->hwndKeyListDialog, WM_USER, REFRESH_LISTVIEW, 0);
 	}
 }	
+
+void DrawButtonShadow(HDC hdc, HDC hdcKeymap, POINT *pt)
+{
+	RECT brect = FindButtonRect(hdcKeymap, pt);
+	int width = brect.right - brect.left;
+	int height = brect.bottom - brect.top;
+	COLORREF colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
+	if (GetRValue(colormatch) != 0) {
+		return;
+	}
+
+	for(int y = 0; y < height; y++) {
+		for(int x = 0; x < width; x++) {
+			
+			COLORREF colortest = GetPixel(hdcKeymap, x + brect.left, y + brect.top);
+			if (colormatch == colortest) {
+				COLORREF colortestdown = GetPixel(hdcKeymap, x + brect.left, y + brect.top + 1);
+				COLORREF colortestup = GetPixel(hdcKeymap, x + brect.left, y + brect.top - 1);
+				COLORREF colortestright = GetPixel(hdcKeymap, x + brect.left + 1, y + brect.top);
+				COLORREF colortestleft = GetPixel(hdcKeymap, x + brect.left - 1, y + brect.top);
+#define SHADOW_OFFSET 100
+				if (GetRValue(colortestdown) == 0xFF) {
+					for (int i = 1; i < 3; i++) {
+						SetPixel(hdc, x, y + i,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+					}
+				} else if (GetRValue(colortestup) == 0xFF) {
+					for (int i = 1; i < 3; i++) {
+						SetPixel(hdc, x, y - i,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+					}
+				}
+				if (GetRValue(colortestright) == 0xFF) {
+					for (int i = 1; i < 3; i++) {
+						SetPixel(hdc, x + i, y,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+					}
+				} else if (GetRValue(colortestleft) == 0xFF) {
+					for (int i = 1; i < 3; i++) {
+						SetPixel(hdc, x - i, y,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+					}
+				}
+			}
+		}
+	}
+}
 
 
 void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state)
@@ -125,7 +188,9 @@ void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT 
 	int width = brect.right - brect.left;
 	int height = brect.bottom - brect.top;
 	COLORREF colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
-	if (GetRValue(colormatch) != 0) return;
+	if (GetRValue(colormatch) != 0) {
+		return;
+	}
 
 	for(int y = 0; y < height; y++) {
 		for(int x = 0; x < width; x++) {
@@ -140,30 +205,23 @@ void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT 
 				
 				if (state & DBS_COPY) {
 					SetPixel(hdc, x, y, skincolor);
-				}
-				else
-				{
-					if (state & DBS_DOWN) {
-						// button is down
-						if (state & DBS_LOCK)
-							SetPixel(hdc, x, y, RGB((red / 2) + 128 , blue / 2, green / 2));
-						else if (state & DBS_PRESS)
-							SetPixel(hdc, x, y, RGB(red / 2, blue / 2, green / 2));
-					} else {
-						if (state & DBS_LOCK)
-							SetPixel(hdc, x, y, RGB((red - 128) * 2 , blue * 2, green * 2));
-						else if (state & DBS_PRESS)
-							SetPixel(hdc, x, y, RGB(red * 2 , blue * 2, green * 2));
-					}
+				} else if (state & DBS_DOWN) {
+					// button is down
+					if (state & DBS_LOCK)
+						SetPixel(hdc, x, y, RGB((red / 2) + 128 , blue / 2, green / 2));
+					else if (state & DBS_PRESS)
+						SetPixel(hdc, x, y, RGB(red / 2, blue / 2, green / 2));
+				} else {
+					if (state & DBS_LOCK)
+						SetPixel(hdc, x, y, RGB((red - 128) * 2 , blue * 2, green * 2));
+					else if (state & DBS_PRESS)
+						SetPixel(hdc, x, y, RGB(red * 2 , blue * 2, green * 2));
 				}
 				
 			} else {
-				if (hdcSkin != NULL) {
-					if (state != DBS_COPY)
-					{
-						COLORREF skincolor = GetPixel(hdcSkin,x + brect.left, y + brect.top);
-						SetPixel(hdc, x, y, skincolor);
-					}
+				if (hdcSkin != NULL && state != DBS_COPY) {
+					COLORREF skincolor = GetPixel(hdcSkin,x + brect.left, y + brect.top);
+					SetPixel(hdc, x, y, skincolor);
 				}
 			}
 		}
@@ -229,10 +287,11 @@ static int last_shift;
 void HandleKeyDown(LPCALC lpCalc, unsigned int key) {
 	/* make this an accel*/
 	if (key == VK_F8) {
-		if (lpCalc->speed == 100)
+		if (lpCalc->speed == 100) {
 			SendMessage(lpCalc->hwndFrame, WM_COMMAND, IDM_SPEED_QUADRUPLE, 0);
-		else
+		} else {
 			SendMessage(lpCalc->hwndFrame, WM_COMMAND, IDM_SPEED_NORMAL, 0);
+		}
 	}
 
 	if (key == VK_SHIFT) {
@@ -246,7 +305,7 @@ void HandleKeyDown(LPCALC lpCalc, unsigned int key) {
 	keyprog_t *kp = keypad_key_press(&lpCalc->cpu, key);
 	if (!kp)
 		return;
-	LogKeypress(lpCalc, kp->group, kp->bit, key);
+	LogKeypress(lpCalc, kp->group, kp->bit);
 	FinalizeButtons(lpCalc);
 }
 

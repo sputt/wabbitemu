@@ -8,7 +8,7 @@
 #include "expandpane.h"
 #include "dbvalue.h"
 #include "dbdisasm.h"
-
+#include "resource.h"
 
 extern HINSTANCE g_hInst;
 extern HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
@@ -181,9 +181,8 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	case WM_COMMAND:
 	{
 		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr((HWND) lParam, GWLP_USERDATA);
-		dp_settings *dps = (dp_settings *) GetWindowLongPtr(hdisasm, GWLP_USERDATA);
 		if (!_tcscmp(vfs->szName, _T("pc")))
-			cycle_pcs(dps);
+			SendMessage(GetParent(hdisasm), WM_COMMAND, DB_CYCLEPCS, 0);
 		Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
 		return 0;
 	}

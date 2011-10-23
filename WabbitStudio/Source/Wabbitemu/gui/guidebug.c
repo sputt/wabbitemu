@@ -888,7 +888,8 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 			default: {
 				SendMessage(hdisasmlist[TabCtrl_GetCurSel(hdisasm)], Message, wParam, lParam);
-					 }
+				break;
+			}
 			}
 			break;
 		}

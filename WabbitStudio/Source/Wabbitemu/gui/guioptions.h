@@ -1,6 +1,8 @@
 #ifndef GUIOPTIONS_H
 #define GUIOPTIONS_H
 
+#include "calc.h"
+
 INT_PTR CALLBACK DisplayOptionsProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK GIFOptionsProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK GeneralOptionsProc(HWND, UINT, WPARAM, LPARAM);
@@ -21,12 +23,6 @@ void AssignEmuKey(HWND);
 void RemoveEmuKey();
 TCHAR* NameFromVKey(UINT nVK);
 
-#define KEY_STRING_SIZE 56
-struct key_string{
-	TCHAR *text;
-	int group;
-	int bit;
-};
 void AddNormalKeys(TCHAR *, key_string keystrings[KEY_STRING_SIZE]);
 
 

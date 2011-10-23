@@ -346,7 +346,6 @@
     <None Include="gui\TI83PSE.bmp" />
     <None Include="gui\tsmall.ico" />
     <None Include="gui\wabbitemu.ico" />
-    <None Include="gui\Wabbitemu.tlb" />
     <None Include="interface\Wabbitemu.def" />
     <None Include="Wabbitemu.tlb" />
   </ItemGroup>
@@ -642,6 +641,7 @@
       <FloatingPointExceptions>false</FloatingPointExceptions>
       <CreateHotpatchableImage>false</CreateHotpatchableImage>
       <MinimalRebuild>false</MinimalRebuild>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

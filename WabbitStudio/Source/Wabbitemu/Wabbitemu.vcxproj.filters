@@ -625,9 +625,6 @@
     <None Include="gui\tsmall.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="gui\Wabbitemu.tlb">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="Wabbitemu.tlb" />
     <None Include="interface\Wabbitemu.def">
       <Filter>Source Files\Interface\COM</Filter>

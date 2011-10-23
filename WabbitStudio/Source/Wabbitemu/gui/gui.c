@@ -1202,11 +1202,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					CreateVarTreeList(hwnd, lpCalc);
 					break;
 				case IDM_VIEW_KEYSPRESSED:
-					if (IsWindow(lpCalc->hwndListDialog)) {
-						SwitchToThisWindow(lpCalc->hwndListDialog, TRUE);
+					if (IsWindow(lpCalc->hwndKeyListDialog)) {
+						SwitchToThisWindow(lpCalc->hwndKeyListDialog, TRUE);
 					} else {
-						lpCalc->hwndListDialog = (HWND) CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_KEYS_LIST), hwnd, (DLGPROC) KeysListProc);
-						ShowWindow(lpCalc->hwndListDialog, SW_SHOW);
+						lpCalc->hwndKeyListDialog = (HWND) CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_KEYS_LIST), hwnd, (DLGPROC) KeysListProc);
+						ShowWindow(lpCalc->hwndKeyListDialog, SW_SHOW);
 					}
 					break;
 				case IDM_CALC_OPTIONS:
@@ -1368,6 +1368,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				printf("Color value: %X2\n", c);
 				group = GetGValue(c) >> 4;
 				bit	= GetBValue(c) >> 4;
+				LogKeypress(lpCalc, group, bit);
 				if (group == 0x05 && bit == 0x00){
 					lpCalc->cpu.pio.keypad->on_pressed |= KEY_MOUSEPRESS;
 				} else {
