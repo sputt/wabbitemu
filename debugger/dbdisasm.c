@@ -1088,6 +1088,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 #endif
+				case DB_CYCLEPCS: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					cycle_pcs(dps);
+					break;
+				}
 				case DB_DISASM_GOTO:
 				case DB_GOTO: {
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);

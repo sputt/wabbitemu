@@ -37,6 +37,14 @@ typedef struct profiler {
 	long ram_data[MAX_RAM_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
 } profiler_t;
 
+#define KEY_STRING_SIZE 56
+struct key_string {
+	TCHAR *text;
+	int group;
+	int bit;
+	key_string *next;
+};
+
 typedef struct tagCALC {
 #ifdef WINVER
 	HWND (*breakpoint_callback)(struct tagCALC *);
@@ -69,7 +77,7 @@ typedef struct tagCALC {
 	HWND hwndDebug;
 	HWND hwndSmallClose;
 	HWND hwndSmallMinimize;
-	HWND hwndListDialog;
+	HWND hwndKeyListDialog;
 
 	BOOL SkinEnabled;
 	DWORD scale;
@@ -78,6 +86,9 @@ typedef struct tagCALC {
 	HANDLE hdlThread;
 	
 	clock_t sb_refresh;
+
+	key_string *last_keypress_head;
+	int num_keypresses;
 
 	BOOL do_drag;
 	HDC hdcSkin;

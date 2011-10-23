@@ -83,8 +83,9 @@ void Modify_interrupt_device(CPU_t *cpu, int port, int skip) {
 }
 
 int device_control(CPU_t *cpu, unsigned char dev) {
-	if (cpu->pio.devices[dev].active) {
-		cpu->pio.devices[dev].code(cpu, &(cpu->pio.devices[dev]));
+	device_t *device = &cpu->pio.devices[dev];
+	if (device->active) {
+		device->code(cpu, device);
 	}
 	return 0;
 }
