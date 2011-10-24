@@ -414,7 +414,7 @@ addinstr_fail:
 		}
 		case 16: //SEEK
 		{
-			unsigned int value;
+			int value;
 			char value_str[256];
 
 			read_expr (&ptr, value_str, "");
