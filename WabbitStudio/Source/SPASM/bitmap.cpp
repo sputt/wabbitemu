@@ -8,7 +8,7 @@
 #include "parser.h"
 
 #ifndef WIN32
-typedef u_int32_t LONG;
+typedef int32_t LONG;
 typedef u_int16_t UINT;
 typedef u_int8_t BYTE;
 typedef u_int16_t WORD;
