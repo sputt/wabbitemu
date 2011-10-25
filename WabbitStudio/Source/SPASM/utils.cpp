@@ -267,7 +267,7 @@ char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 	//then parse each argument and store its value
 	if (*ptr == '(') {
 		ptr = skip_whitespace(ptr + 1);
-		if (*ptr != ')')
+		if (*ptr != ')' && !is_end_of_code_line(ptr))
 		{
 			char *word = NULL;
 			arg_context_t context = ARG_CONTEXT_INITIALIZER;

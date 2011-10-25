@@ -125,7 +125,7 @@ char *handle_directive (const char *ptr) {
 		{
 			instr *instr = (struct _instr *) malloc (sizeof (struct _instr));
 			char word[256];
-			unsigned int result;
+			int result;
 			char *mnemonic;
 			size_t i, base = 0, size_left;
 			int j;
@@ -144,7 +144,7 @@ char *handle_directive (const char *ptr) {
 
 			// Instruction data
 			if (!read_expr (&ptr, word, " \t")) goto addinstr_fail;
-	        result = conv_hex (word, word + strlen (word));
+	        conv_hex (word, word + strlen (word), &result);
 	        instr->instr_size = strlen (word) / 2;
 
 	        for (j = instr->instr_size - 1; j >= 0; j--)
@@ -163,7 +163,9 @@ char *handle_directive (const char *ptr) {
 
 			// End data ...
 			if (read_expr (&ptr, word, " \t")) {
-				instr->end_data = conv_hex (word, word + strlen (word));
+				int output;
+				conv_hex (word, word + strlen (word), &output);
+				instr->end_data = (unsigned char) output;
 				instr->has_end_data = true;
 			}
 

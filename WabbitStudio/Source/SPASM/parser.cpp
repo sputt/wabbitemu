@@ -93,8 +93,8 @@ extern unsigned int program_counter;
 
 static const char *parse_single_num (const char *expr, int *value);
 static const char *parse_num_full (const char *expr, int *value, int depth);
-static int conv_dec (const char* str, const char *end);
-static int conv_bin (const char* str, const char *end);
+static BOOL conv_dec (const char* str, const char *end, int *output);
+static BOOL conv_bin (const char* str, const char *end, int *output);
 
 //set when the parser hits an undefined #define or label
 bool parser_forward_ref_err;
@@ -248,8 +248,8 @@ static const char *parse_single_num (const char *expr, int *value) {
 			if (isxdigit ((unsigned char) *expr)) {
 				while (isalnum(*expr))
 					expr++;
-				*value = conv_hex (num_start, expr);
-				if (*value == -1)
+				BOOL success = conv_hex (num_start, expr, value);
+				if (!success)
 				{
 					return NULL;
 				}
@@ -264,8 +264,8 @@ static const char *parse_single_num (const char *expr, int *value) {
 			const char *num_start = ++expr;
 			while (isalnum(*expr))
 				expr++;
-			*value = conv_bin (num_start, expr);
-			if (*value == -1)
+			BOOL succeeded = conv_bin (num_start, expr, value);
+			if (!succeeded)
 			{
 				return NULL;
 			}
@@ -428,14 +428,15 @@ static const char *parse_single_num (const char *expr, int *value) {
 				//Find the end of the number
 				while (isalnum ((unsigned char) expr[1])) expr++;
 
+				BOOL success;
 				switch (toupper (expr[0])) {
-		case 'H':	*value = conv_hex (expr_start, expr++);	break;
-		case 'B':	*value = conv_bin (expr_start, expr++); break;
-		case 'D':	*value = conv_dec (expr_start, expr++); break;
-		default:	*value = conv_dec (expr_start, ++expr); break;
+		case 'H':	success = conv_hex (expr_start, expr++, value);	break;
+		case 'B':	success = conv_bin (expr_start, expr++, value); break;
+		case 'D':	success = conv_dec (expr_start, expr++, value); break;
+		default:	success = conv_dec (expr_start, ++expr, value); break;
 				}
 
-				if (*value == -1)
+				if (!success)
 				{
 					return NULL;
 				}
@@ -635,9 +636,10 @@ static const char *parse_num_full (const char *expr, int *value, int depth) {
 
 /*
  * Evaluates a hexadecimal string
+ * returns true if succeeded, false otherwise
  */
 
-int conv_hex (const char* str, const char *end) {
+int conv_hex (const char* str, const char *end, int *output_num) {
 	int acc = 0;
 	const char *start = str;
 
@@ -651,23 +653,28 @@ int conv_hex (const char* str, const char *end) {
 			number[end - start] = '\0';
 
 			SetLastSPASMError(SPASM_ERR_INVALID_HEX_DIGIT, *str, number);
-			return -1;
+			return FALSE;
 		}
 		
 		acc <<= 4;
-		if (hexchar > '9') acc+= hexchar - ('A' - 10);    
-		else acc+= hexchar - '0';
+		if (hexchar > '9') {
+			acc+= hexchar - ('A' - 10);
+		} else {
+			acc += hexchar - '0';
+		}
 		str++;
 	}
-	return acc;
+	*output_num = acc;
+	return TRUE;
 }
 
 
 /*
  * Evaluates a decimal string
+ * returns true if succeeded, false otherwise
  */
 
-static int conv_dec (const char* str, const char *end) {
+static BOOL conv_dec (const char* str, const char *end, int *output_num) {
 	int acc = 0;
 	const char *start = str;
 
@@ -681,21 +688,23 @@ static int conv_dec (const char* str, const char *end) {
 			number[end - start] = '\0';
 
 			SetLastSPASMError(SPASM_ERR_INVALID_DECIMAL_DIGIT, *str, number);
-			return -1;
+			return FALSE;
 		}
 		
 		acc += *str-'0';
 		str++;
 	}
-	return acc;
+	*output_num = acc;
+	return TRUE;
 }
 
 
 /*
  * Evaluates a binary string
+ * returns true if succeeded, false otherwise
  */
 
-static int conv_bin (const char* str, const char *end) {
+static BOOL conv_bin (const char* str, const char *end, int *output_num) {
 	int acc = 0;
 	const char *start = str;
 
@@ -709,12 +718,13 @@ static int conv_bin (const char* str, const char *end) {
 			number[end - start] = '\0';
 
 			SetLastSPASMError(SPASM_ERR_INVALID_BINARY_DIGIT, *str, number);
-			return -1;
+			return FALSE;
 		}
 		
 		if (*str == '1') acc++;
 		str++;
 	}
-	return acc;
+	*output_num = acc;
+	return TRUE;
 }
 

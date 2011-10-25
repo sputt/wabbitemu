@@ -638,22 +638,23 @@ void alphanumeric (char* namestring) {
 }
 
 
-/* Convert binary buffer to intel hex in ti format
+/* Convert binary buffer to Intel hex in TI format
  * All pages addressed to $4000 and are only $4000
  * bytes long. */
-void intelhex (FILE* outfile, const unsigned char* buffer, int size, unsigned int address) {
+void intelhex (FILE* outfile, const unsigned char* buffer, int size, unsigned int base_address) {
 	const char hexstr[] = "0123456789ABCDEF";
 	int page = 0;
 	int bpnt = 0;
-	unsigned int ci,temp,i;
+	unsigned int ci, temp, i, address;
 	unsigned char chksum;
 	unsigned char outbuf[128];
 	
-	//We are in binary mode, we must handle carridge return ourselves.
+	//We are in binary mode, we must handle carriage return ourselves.
    
 	while (bpnt < size){
 		fprintf(outfile,":02000002%04X%02X\r\n",page,(unsigned char) ( (~(0x04 + page)) +1));
 		page++;
+		address = base_address;
 		for (i = 0; bpnt < size && i < 512; i++) {
 			 chksum = (address>>8) + (address & 0xFF);
 			 for(ci = 0; ((ci < 64) && (bpnt < size)); ci++) {
