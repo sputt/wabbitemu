@@ -42,27 +42,27 @@ TCHAR* FindAddressLabel(LPCALC lpCalc, waddr_t waddr) {
 // True means label is found and is the same
 //
 BOOL label_search_tios(TCHAR *label, int equate) {
-	int i,b;
-	
-	if (!label) return FALSE;
+	if (!label) {
+		return FALSE;
+	}
 
-	for(i=0;bcalls[i].address != -1; i++ ) {
+	for(int i = 0; bcalls[i].address != -1; i++ ) {
 		if (_tcscmp(label, bcalls[i].name) == 0) {
-			if (bcalls[i].address == (equate&0xFFFF) ) {
+			if (bcalls[i].address == (equate & 0xFFFF) ) {
 				return TRUE;
 			}
 		}
 	}
 	
-	for(i=0; flags83p[i].flag != -1; i++ ) {
+	for(int i = 0; flags83p[i].flag != -1; i++ ) {
 		if (_tcscmp(label, flags83p[i].name) == 0) {
-			if (flags83p[i].flag == (equate&0xFFFF)) {
+			if (flags83p[i].flag == (equate & 0xFFFF)) {
 				return TRUE;
 			}
 		}
-		for(b=0;b<8;b++) {
+		for(int b = 0; b < 8; b++) {
 			if (_tcscmp(label, flags83p[i].bits[b].name) == 0) {
-				if (flags83p[i].bits[b].bit == (equate&0xFFFF)) {
+				if (flags83p[i].bits[b].bit == (equate & 0xFFFF)) {
 					return TRUE;
 				}
 			}
@@ -195,8 +195,7 @@ void ImportBcalls(char* fn) {
 }
 */
 TCHAR* FindBcall(int address) {
-	int i;
-	for(i=0;bcalls[i].address != -1; i++ ) {
+	for(int i = 0; bcalls[i].address != -1; i++ ) {
 		if (bcalls[i].address == address) {
 			return bcalls[i].name;
 		}
