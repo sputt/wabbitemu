@@ -171,6 +171,7 @@ typedef struct memory_context {
 								// structure 5 is used to preserve the 4th in boot map
 	bank_state_t bootmap_banks[5];			//used to hold a backup of the banks when this is boot mapped
 	BOOL boot_mapped;			//Special mapping used in boot that changes how paging works
+	BOOL hasChangedPage0;		//Check if bootcode is still mapped to page 0 or not
 	BOOL flash_locked;			//Whether flash is writeable or not.
 	int protected_page_set;		//Special for the 83p, used to determine which group of pages you are referring to
 	int protected_page[4];		//Special for the 83p, used to determine which page of a set to protect

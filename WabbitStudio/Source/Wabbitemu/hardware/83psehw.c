@@ -529,16 +529,17 @@ void md5ports(CPU_t *cpu, device_t *dev) {
 }
 
 int GetCPUSpeed(CPU_t *cpu) {
-	switch (cpu->timer_c->freq) {				
+	switch (cpu->timer_c->freq) {
+			case MHZ_6:
+				return 0x00;
 			case MHZ_15:
 				return 0x01;
 			case MHZ_20:
 				return 0x02;
 			case MHZ_25:
 				return 0x03;
-			default:
-				return 0x00;
 		}
+	return 0;
 }
 
 void port20_83pse(CPU_t *cpu, device_t *dev) {
@@ -754,13 +755,13 @@ void port31_83pse(CPU_t *cpu, device_t *dev) {
 	XTAL_t* xtal = (XTAL_t *) dev->aux;
 	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev) - 0x30) / 3];
 	if (cpu->input) {
-		cpu->bus  = timer->loop ? 1 : 0;
+		cpu->bus  = timer->loop;
 		cpu->bus += timer->interrupt ? 2 : 0;
 		cpu->bus += timer->underflow ? 4 : 0;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		timer->loop			= (cpu->bus & 0x01) ? 1 : 0;
-		timer->interrupt	= (cpu->bus & 0x02) ? 1 : 0;
+		timer->loop			= cpu->bus & 0x01;
+		timer->interrupt	= cpu->bus & 0x02 ? 1 : 0;
 		timer->underflow	= FALSE;
 		timer->generate		= FALSE;
 		cpu->output = FALSE;
@@ -786,7 +787,7 @@ void port32_83pse(CPU_t *cpu, device_t *dev) {
 					break;
 				case 1:
 					if ((timer->lastTicks + timer->divsor) < xtal->ticks ) {
-						timer->lastTicks+=timer->divsor;
+						timer->lastTicks += timer->divsor;
 						timer->count--;
 						if (!timer->count) {
 							if (!timer->underflow) {
