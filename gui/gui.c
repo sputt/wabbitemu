@@ -1564,8 +1564,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					correctSize.bottom -= correctSize.top;
 				SetWindowPos(hwnd, NULL, 0, 0, correctSize.right, correctSize.bottom , SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
 			}
-			MoveWindow(lpCalc->hwndLCD, screen.left + client.left, screen.top + client.top,
-				screen.right-screen.left, screen.bottom-screen.top, FALSE);
+			RECT windowRect;
+			GetWindowRect(hwnd, &windowRect);
+
+			if (windowRect.bottom - windowRect.top != screen.bottom - screen.top ||
+				windowRect.right - windowRect.left != screen.right - screen.left)
+			{
+				MoveWindow(lpCalc->hwndLCD, screen.left + client.left, screen.top + client.top,
+					screen.right-screen.left, screen.bottom-screen.top, FALSE);
+			}
 			ValidateRect(hwnd, &screen);
 			//printf("screen: %d\n", screen.right - screen.left);
 			if (lpCalc->hwndStatusBar != NULL)

@@ -332,11 +332,13 @@ void FinalizeButtons(LPCALC lpCalc) {
 			}
 		}
 	}
-	if (lpCalc->bCutout && lpCalc->SkinEnabled) {
-		EnableCutout(lpCalc);
-	} else {
-		DrawButtonStatesAll(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap);
-		InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);
-		UpdateWindow(lpCalc->hwndFrame);
+	if (lpCalc->SkinEnabled) {
+		if (lpCalc->bCutout) {
+			EnableCutout(lpCalc);
+		} else {
+			DrawButtonStatesAll(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap);
+			InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);
+			UpdateWindow(lpCalc->hwndFrame);
+		}
 	}
 }
