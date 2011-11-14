@@ -55,20 +55,19 @@ namespace WabbitC.Optimizer
 				var newStatements = new List<Statement>();
 
 				//actual optimization code
-				System.Type type = statement.GetType();
-				if (type == typeof(Move))
+				if (statement is Move)
 				{
 					var move = statement as Move;
 					curExp = new CSEStore(index, move.LValue, move.RValue);
 					move.LValue.ConstStatement = move;
 				}
-				else if (type.BaseType == typeof(ConditionStatement))
+				else if (statement is ConditionStatement)
 				{
 					var cond = statement as ConditionStatement;
 					curExp = new CSEStore(index, cond.CondDecl, cond.CondValue, cond.Operator);
 					cond.LValue.ConstStatement = statement;
 				}
-				else if (type.BaseType == typeof(MathStatement))
+				else if (statement is MathStatement)
 				{
 					var math = statement as MathStatement;
 					if (curExp == null)
@@ -89,7 +88,7 @@ namespace WabbitC.Optimizer
 						{
 							//do not check shit like test *= test;
 							bool add = curExp.Operand2 != curExp.Operand1;
-							if (possibleSubExp.Count > 0 && ((math.GetType() == typeof(Add) || math.GetType() == typeof(Sub)) && math.RValue.GetType() == typeof(Immediate)))
+							if (possibleSubExp.Count > 0 && (math is Add || math is Sub) && math.RValue is Immediate)
 							{
 								Immediate imm = math.RValue as Immediate;
 								Immediate newImm = new Immediate(imm.Value);
@@ -182,7 +181,7 @@ namespace WabbitC.Optimizer
 
 		public override bool Equals(object obj)
 		{
-			if (obj.GetType() != typeof(CSEStore))
+			if (!(obj is CSEStore))
 				return base.Equals(obj);
 			var cse = obj as CSEStore;
 			return this.Operand1.Equals(cse.Operand1) && this.Operand2.Equals(cse.Operand2) && this.Operator.Equals(cse.Operator);

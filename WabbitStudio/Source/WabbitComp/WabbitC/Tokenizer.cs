@@ -373,7 +373,7 @@ namespace WabbitC
 
 		public override bool Equals(object obj)
 		{
-			if (obj.GetType() != typeof(Token))
+			if (!(obj is Token))
 				return base.Equals(obj);
 			Token tok = (Token)obj;
 			return (Text == tok.Text) && (Type == tok.Type);

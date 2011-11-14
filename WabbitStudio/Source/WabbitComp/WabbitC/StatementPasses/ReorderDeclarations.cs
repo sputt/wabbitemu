@@ -22,7 +22,7 @@ namespace WabbitC.StatementPasses
 			{
 				Block block = functions.Current.Code;
 				var decls = from Declaration d in block.Declarations 
-							where d.Type.GetType() == typeof(WabbitC.Model.Types.Array)
+							where d.Type is Model.Types.Array
 							select d;
 
 				Declaration[] arrayDecls = decls.ToArray<Declaration>();

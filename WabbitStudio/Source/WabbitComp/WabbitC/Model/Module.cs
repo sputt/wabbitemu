@@ -79,7 +79,7 @@ namespace WabbitC.Model
         public IEnumerator<Declaration> GetFunctionEnumerator()
         {
             var functions = from d in Declarations
-                            where (d.Type.GetType() == typeof(FunctionType) || d.Type.GetType().BaseType == typeof(FunctionType)) && d.Code != null
+                            where (d.Type is FunctionType) && d.Code != null
                             select d;
             return functions.GetEnumerator();
         }
@@ -95,7 +95,7 @@ namespace WabbitC.Model
 
 		public override string ToString()
 		{
-			string result = "";
+			string result = String.Empty;
 			foreach (string s in IntermediateStrings)
 			{
 				result += s + Environment.NewLine;

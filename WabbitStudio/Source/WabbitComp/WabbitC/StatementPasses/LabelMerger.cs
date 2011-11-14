@@ -15,7 +15,7 @@ namespace WabbitC.StatementPasses
 		private static void ReplaceLabelReferences(Block block, Label labelToReplace, Label newLabel)
 		{
 			var statements = from Statement s in block
-							 where s.GetType() == typeof(Goto)
+							 where s is Goto
 							 select s;
 			foreach (Goto jump in statements)
 			{
@@ -39,7 +39,7 @@ namespace WabbitC.StatementPasses
                 foreach (Statement statement in statements)
                 {
                     Label curLab = null;
-                    if (statement.GetType() == typeof(Label))
+                    if (statement is Label)
                     {
 						curLab = statement as Label;
                     }

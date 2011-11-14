@@ -24,11 +24,11 @@ namespace WabbitC.Model.Statements
         public override ISet<Declaration> GetReferencedDeclarations()
         {
             var Result = new HashSet<Declaration>();
-            if (StoreAddress.GetType() == typeof(Declaration))
+            if (StoreAddress is Declaration)
             {
                 Result.Add(StoreAddress as Declaration);
             }
-            if (Value.GetType() == typeof(Declaration))
+            if (Value is Declaration)
             {
                 Result.Add(Value as Declaration);
             }
@@ -38,7 +38,7 @@ namespace WabbitC.Model.Statements
         public override string ToString()
         {
             Type type;
-            if (Value.GetType() == typeof(Declaration))
+            if (Value is Declaration)
             {
                 type = (Value as Declaration).Type;
             }
@@ -52,7 +52,7 @@ namespace WabbitC.Model.Statements
 		public override string ToAssemblyString()
 		{
 			Type type;
-			if (Value.GetType() == typeof(Declaration))
+			if (Value is Declaration)
 			{
 				type = (Value as Declaration).Type;
 			}

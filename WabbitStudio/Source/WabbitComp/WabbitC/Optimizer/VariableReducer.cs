@@ -28,18 +28,17 @@ namespace WabbitC.Optimizer
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
-                var type = statement.GetType();
-				if (type == typeof(Annotation) || type == typeof(Assignment) || type == typeof(Label))
+				if (statement is Annotation || statement is Assignment || statement is Label)
 				{
 					continue;
 				}
-				else if (type == typeof(ReturnMove))
+				else if (statement is ReturnMove)
 				{
 					var retMove = statement as ReturnMove;
 					if (retMove.RValue == block.FindDeclaration("__hl"))
 						block.Statements.Remove(statement);
 				}
-				else if (type == typeof(Move))
+				else if (statement is Move)
 				{
 					var move = statement as Move;
 					if (move.RValue.ConstStatement != null)
@@ -54,19 +53,19 @@ namespace WabbitC.Optimizer
 						move.LValue.ConstStatement = move;
 					}
 				}
-				else if (type.BaseType == typeof(ConditionStatement))
+				else if (statement is ConditionStatement)
 				{
 					var cond = statement as ConditionStatement;
 					cond.LValue.ConstStatement = cond;
 				}
-				else if (type.BaseType == typeof(MathStatement))
+				else if (statement is MathStatement)
 				{
 					var math = statement as MathStatement;
 					var refed = math.RValue as Declaration;
 					if (refed != null)
 					{
 						var newStatement = refed.ConstStatement;
-						if (newStatement != null && newStatement.GetType() == typeof(Move))
+						if (newStatement != null && newStatement is Move)
 						{
 							math.ReplaceDeclaration(refed, newStatement.GetReferencedDeclarations().First());
 							block.Statements[i] = math;
@@ -79,9 +78,9 @@ namespace WabbitC.Optimizer
 						if (math.LValue.ConstStatement != null)
 						{
 							var newStatement = math.LValue.ConstStatement;
-							if (type == typeof(Not))
+							if (statement is Not)
 							{
-								if (newStatement.GetType().BaseType == typeof(ConditionStatement))
+								if (newStatement is ConditionStatement)
 								{
 									var newBlock = new Block(block);
 									var cond = newStatement as ConditionStatement;
@@ -115,7 +114,7 @@ namespace WabbitC.Optimizer
 						}
 					}
 				}
-				else if (type == typeof(FunctionCall))
+				else if (statement is FunctionCall)
 				{
 					var funcCall = statement as FunctionCall;
 					for (int j = 0; j < funcCall.Params.Count; j++)
@@ -123,7 +122,7 @@ namespace WabbitC.Optimizer
 						var param = funcCall.Params[j];
 						if (param.ConstStatement != null)
 						{
-							if (param.ConstStatement.GetType() == typeof(Move))
+							if (param.ConstStatement is Move)
 							{
 								param = (param.ConstStatement as Move).RValue;
 							}
@@ -132,7 +131,7 @@ namespace WabbitC.Optimizer
 					}
 					funcCall.LValue.ConstStatement = funcCall;
 				}
-				else if (type == typeof(Goto))
+				else if (statement is Goto)
 				{
 					var gotoType = statement as Goto;
 					int j;
@@ -160,11 +159,11 @@ namespace WabbitC.Optimizer
 							i = j;
 					}*/
 				}
-				else if (type == typeof(Return))
+				else if (statement is Return)
 				{
 					var returnStatement = statement as Return;
 					var returnVal = returnStatement.ReturnReg as Declaration;
-					if (returnVal.ConstStatement != null && returnVal.ConstStatement.GetType() == typeof(Move))
+					if (returnVal.ConstStatement != null && returnVal.ConstStatement is Move)
 					{
 						var newStatement = returnVal.ConstStatement;
 						var lValue = newStatement.GetModifiedDeclarations().First();

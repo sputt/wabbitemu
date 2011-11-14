@@ -54,7 +54,7 @@ namespace WabbitC.Model.Statements
 
         public FunctionCall(Declaration returnDecl, Declaration func, List<Declaration> funcParams)
         {
-            Debug.Assert(func.Type.GetType() == typeof(FunctionType));
+            Debug.Assert(func.Type is FunctionType);
             LValue = returnDecl;
             Function = func;
             Params = funcParams;
@@ -75,7 +75,7 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-            string result = "";
+            string result = String.Empty;
             if (LValue != null)
             {
                 result += LValue.Name + " = ";

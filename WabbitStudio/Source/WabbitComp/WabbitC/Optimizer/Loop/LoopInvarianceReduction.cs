@@ -22,7 +22,7 @@ namespace WabbitC.Optimizer.Loop
 
 		public static void OptimizeBlock(ref Block block)
 		{
-			var statements = from Statement st in block where st.GetType() == typeof(While) select st;
+			var statements = from Statement st in block where st is While select st;
 			foreach (While statement in statements)
 			{
 				//OptimizeLoopBlock(ref statement.Body);

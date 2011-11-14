@@ -20,7 +20,7 @@ namespace WabbitC.Optimizer
 				Block block = functions.Current.Code;
 
 				var maths = from Statement s in block
-							where s.GetType() == typeof(Mult) || s.GetType() == typeof(Div)
+							where s is Mult || s is Div
 							select s;
 
 				foreach (MathStatement op in maths)

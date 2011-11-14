@@ -130,7 +130,7 @@ namespace WabbitC
 			else
 			{
 				//#include ""
-				sb.Append(fileContents[i].Text.Replace("\"", ""));
+				sb.Append(fileContents[i].Text.Replace("\"", String.Empty));
 				includeFile = ResolveInclude(sb.ToString(), IncludeDirs.LocalIncludes);
 			}
 			if (!string.IsNullOrEmpty(includeFile))

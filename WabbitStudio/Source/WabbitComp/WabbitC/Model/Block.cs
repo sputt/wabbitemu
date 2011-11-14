@@ -89,7 +89,7 @@ namespace WabbitC.Model
 			get
 			{
 				Block curBlock = this;
-				while (curBlock != null && curBlock.GetType() != typeof(Module))
+				while (curBlock != null && !(curBlock is Module))
 				{
 					curBlock = curBlock.Parent;
 				}
@@ -138,7 +138,7 @@ namespace WabbitC.Model
 
         public Declaration CreateTempDeclaration(Type type)
         {
-            if (type.GetType() == typeof(Types.Array))
+            if (type is Types.Array)
             {
                 type = (type as Types.Array).GetArrayPointerType();
             }
@@ -267,7 +267,7 @@ namespace WabbitC.Model
 					}
 					else
 					{
-						String resultName = "";
+						String resultName = String.Empty;
 						Type resultType = TypeHelper.ParseType(ref tokens);
 						if (resultType == null)
 						{
@@ -393,8 +393,8 @@ namespace WabbitC.Model
 
         public override string ToString()
         {
-            string result = "";
-            if (this.GetType() != typeof(Module))
+            string result = String.Empty;
+            if (!(this is Module))
             {
                 result += "{" + Environment.NewLine;
             }
@@ -408,7 +408,7 @@ namespace WabbitC.Model
             {
                 result += Statements.ToString();
             }
-            if (this.GetType() != typeof(Module))
+            if (!(this is Module))
             {
 				result += "}" + Environment.NewLine;
             }
@@ -421,9 +421,9 @@ namespace WabbitC.Model
 			foreach (var statement in Statements)
 			{
 				var asmString = statement.ToAssemblyString();
-				if (asmString == "")
+				if (string.IsNullOrEmpty(asmString))
 					continue;
-				if (statement.GetType() != typeof(Label) && asmString.Length > 0 && asmString[0] != '\t')
+				if (statement is Label && asmString.Length > 0 && asmString[0] != '\t')
 					sb.Append("\t");
 				sb.AppendLine(asmString);
 			}

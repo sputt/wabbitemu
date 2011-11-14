@@ -405,8 +405,8 @@ namespace WabbitC_Tests
 			for (int i = 0; i < expected.Count; i++)
 			{
 				Assert.IsTrue(expected[i].Tokens.SequenceEqual<Token>(actual[i].Tokens),
-					"Expected: \"" + string.Join<Token>("", expected[i].Tokens.ToArray()) + "\" " +
-					"Actual: \"" + string.Join<Token>("", actual[i].Tokens.ToArray()) + "\"");
+					"Expected: \"" + string.Join<Token>(String.Empty, expected[i].Tokens.ToArray()) + "\" " +
+					"Actual: \"" + string.Join<Token>(String.Empty, actual[i].Tokens.ToArray()) + "\"");
 			}
 		}
     }

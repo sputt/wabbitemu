@@ -33,8 +33,8 @@ namespace WabbitC.Model.Statements
 
 		public override string ToAssemblyString()
 		{
-			if (LValue == RValue)
-				return "";
+            if (LValue == RValue)
+                return String.Empty;
 			return "ld " + LValue.Name + "," + RValue.Name;
 		}
     }

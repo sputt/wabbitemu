@@ -38,7 +38,7 @@ namespace WabbitC.StatementPasses
 
 
 				var statements = from Statement s in block
-								 where s.GetType() == typeof(FunctionCall)
+								 where s is FunctionCall
 								 select s;
 				foreach (FunctionCall call in statements)
 				{
@@ -65,7 +65,7 @@ namespace WabbitC.StatementPasses
 				Label endLabel = new Label("__function_cleanup");
 
 				var returns = from Statement s in block
-					where s.GetType() == typeof(Return)
+					where s is Return
 					select s;
 				foreach (Return curReturn in returns)
 				{
@@ -76,7 +76,7 @@ namespace WabbitC.StatementPasses
 
 					var assignment = block.Statements[index - 1];
 					Datum returnVal = curReturn.ReturnReg;
-					if (assignment.GetType() == typeof(Assignment))
+					if (assignment is Assignment)
 					{
 						block.Statements.Remove(assignment);
 						index--;

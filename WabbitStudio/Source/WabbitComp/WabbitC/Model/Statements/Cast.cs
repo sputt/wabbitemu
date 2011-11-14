@@ -26,7 +26,7 @@ namespace WabbitC.Model.Statements
         public override ISet<Declaration> GetReferencedDeclarations()
         {
 			var results = new HashSet<Declaration>();
-            if (RValue.GetType() == typeof(Declaration))
+            if (RValue is Declaration)
             {
 				results.Add(RValue as Declaration);
 			}

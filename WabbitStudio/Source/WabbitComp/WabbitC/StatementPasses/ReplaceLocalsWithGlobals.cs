@@ -18,7 +18,7 @@ namespace WabbitC.StatementPasses
 		{
             level = 0;
             var functions = from d in module.Declarations
-                            where (d.Type.GetType() == typeof(FunctionType) || d.Type.GetType().BaseType == typeof(FunctionType)) && d.Code != null
+                            where d.Type is FunctionType && d.Code != null
                             select d;
             foreach (var function in functions)
 			{
@@ -32,10 +32,12 @@ namespace WabbitC.StatementPasses
         {
             Block block = function.Code;
             var calledFunc = from s in block.Statements
-                             where s.GetType() == typeof(FunctionCall)
+                             where s is FunctionCall
                              select s;
             foreach (FunctionCall func in calledFunc)
+            {
                 RecurseCalls(module, functions, func.Function);
+            }
 
             ReplaceLocals(module, block);
         }

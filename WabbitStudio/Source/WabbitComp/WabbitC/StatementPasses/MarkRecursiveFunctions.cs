@@ -14,12 +14,12 @@ namespace WabbitC.StatementPasses
 		public static void Run(Module module)
         {
             var functions = from d in module.Declarations 
-                            where d.Type.GetType() == typeof(FunctionType) && d.Code != null
+                            where d.Type is FunctionType && d.Code != null
                             select d;
             foreach (var decl in functions)
             {
 				var funcCalls = from func in decl.Code.Statements
-								where func.GetType() == typeof(FunctionCall)
+								where func is FunctionCall
 								select func;
 				foreach (FunctionCall call in funcCalls)
 				{

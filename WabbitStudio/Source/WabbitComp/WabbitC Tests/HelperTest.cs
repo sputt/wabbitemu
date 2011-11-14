@@ -82,7 +82,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void GetMostReferencedVariablesTest()
 		{
-			Block block = new Block(); // TODO: Initialize to an appropriate value
+			Block block = new Block();
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "b"));
@@ -101,7 +101,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void GetMostModifiedVariablesTest()
 		{
-			Block block = new Block(); // TODO: Initialize to an appropriate value
+			Block block = new Block();
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "b"));
@@ -302,7 +302,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void LeastImportant2()
 		{
-			Block block = new Block(); // TODO: Initialize to an appropriate value
+			Block block = new Block();
 			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));

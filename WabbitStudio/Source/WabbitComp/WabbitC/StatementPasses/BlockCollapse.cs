@@ -29,7 +29,7 @@ namespace WabbitC.StatementPasses
         public static void Run(Module module)
         {
             var functions = from d in module.Declarations 
-                            where d.Type.GetType() == typeof(FunctionType) && d.Code != null
+                            where d.Type is FunctionType && d.Code != null
                             select d.Code;
             foreach (Block block in functions)
             {

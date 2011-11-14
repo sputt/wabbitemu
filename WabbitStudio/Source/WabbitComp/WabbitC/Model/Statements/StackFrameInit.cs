@@ -42,7 +42,7 @@ namespace WabbitC.Model.Statements
 
 		public override string ToString()
 		{
-			return InitBlock.ToString().Replace("{", "").Replace("}", "");
+			return InitBlock.ToString().Replace("{", String.Empty).Replace("}", String.Empty);
 		}
 
 		public override string ToAssemblyString()

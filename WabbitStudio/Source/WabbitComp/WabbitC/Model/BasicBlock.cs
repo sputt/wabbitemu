@@ -20,7 +20,7 @@ namespace WabbitC.Model
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
-                if (statement.GetType() == typeof(Goto) || statement.GetType() == typeof(Return))
+                if (statement is Goto || statement is Return)
                 {
                     blocks.Add(currentBlock);
                     currentBlock.Statements.Add(statement);
@@ -29,7 +29,7 @@ namespace WabbitC.Model
                     currentBlock.Function = block.Function;
                     currentBlock.stack = block.stack;
                 }
-                else if (statement.GetType() == typeof(Label) && currentBlock.Statements.Count > 0)
+                else if (statement is Label && currentBlock.Statements.Count > 0)
                 {
                     blocks.Add(currentBlock);
                     currentBlock = new BasicBlock(block);
@@ -52,7 +52,7 @@ namespace WabbitC.Model
                 if (prevBlock != null)
                     tempblock.EntryPoints.Add(new EntryPoint(prevBlock));
                 var lastStatement = tempblock.Statements.Last();
-                if (lastStatement.GetType() == typeof(Goto))
+                if (lastStatement is Goto)
                 {
                     var gotoStatement = ((Goto)lastStatement);
                     prevBlock = gotoStatement.CondDecl == null ? null : tempblock;

@@ -48,7 +48,7 @@ namespace WabbitC.Model
 
         public override bool Equals(object obj)
         {
-            if (obj.GetType().BaseType != typeof(Type))
+            if (!(obj is Type))
                 return base.Equals(obj);
             var type = (Type) obj;
             return type.IndirectionLevels == this.IndirectionLevels && this.Size == type.Size;

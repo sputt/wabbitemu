@@ -19,11 +19,11 @@ namespace WabbitC.Model.Statements
         public override string ToString()
         {
 			//TODO: Make this true for structures too
-            if (Decl.Type.GetType() == typeof(WabbitC.Model.Types.Array))
+            if (Decl.Type is WabbitC.Model.Types.Array)
             {
                 // It refers to the stack, not stored in the stack
                 Type type;
-                if (Decl.Type.GetType() == typeof(Types.Array))
+                if (Decl.Type is Types.Array)
                 {
                     type = (Decl.Type as Types.Array).GetArrayPointerType();
                 }

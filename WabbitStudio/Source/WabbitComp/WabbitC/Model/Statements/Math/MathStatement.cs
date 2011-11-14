@@ -82,7 +82,7 @@ namespace WabbitC.Model.Statements.Math
 
 		public override ISet<Declaration> GetReferencedDeclarations()
         {
-            if (RValue != null && RValue.GetType() == typeof(Declaration))
+            if (RValue != null && (RValue is Declaration))
             {
 				return new HashSet<Declaration>() { LValue, RValue as Declaration };
             }

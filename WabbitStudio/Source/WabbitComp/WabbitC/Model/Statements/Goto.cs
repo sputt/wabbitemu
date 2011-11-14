@@ -85,18 +85,17 @@ namespace WabbitC.Model.Statements
 			Declaration lastMoveDecl = null;
 			foreach (var statement in condStatements)
 			{
-				var type = statement.GetType();
-				if (type == typeof(Goto))
+				if (statement is Goto)
 				{
 					var gotoStatement = statement as Goto;
 					
 				}
-				else if (type == typeof(Move))
+				else if (statement is Move)
 				{
 					var move = statement as Move;
 					lastMoveDecl = move.LValue;
 				}
-				else if (type == typeof(Math.Not))
+				else if (statement is Math.Not)
 				{
 					switch (cond)
 					{
@@ -114,11 +113,11 @@ namespace WabbitC.Model.Statements
 							break;
 					}
 				}
-				else if (type == typeof(Equals))
+				else if (statement is Equals)
 				{
 					cond = GotoCondition.Z;
 				}
-				else if (type == typeof(NotEquals))
+				else if (statement is NotEquals)
 				{
 					cond = GotoCondition.NZ;
 				}

@@ -31,7 +31,7 @@ namespace WabbitC.Model
             }
             else
             {
-				if (Type.GetType() == typeof(Types.FunctionType) || Type.GetType().BaseType == typeof(Types.FunctionType))
+				if (Type is Types.FunctionType)
                 {
                     string funcType = Type.ToDeclarationString(Name);
                     if (Code != null)
@@ -53,7 +53,7 @@ namespace WabbitC.Model
 
         public override bool Equals(object obj)
         {
-            if (obj.GetType() != typeof(Declaration))
+            if (!(obj is Declaration))
                 return base.Equals(obj);
             var decl = (Declaration)obj;
             return decl.Name == this.Name && this.Type.Equals(decl.Type);

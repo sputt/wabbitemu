@@ -22,7 +22,7 @@ namespace WabbitC.Model.Statements
         public override ISet<Declaration> GetReferencedDeclarations()
         {
             var temp = new HashSet<Declaration>();
-			if (RValue.GetType() == typeof(Declaration))
+			if (RValue is Declaration)
 				temp.Add((Declaration)RValue);
 			return temp;
         }

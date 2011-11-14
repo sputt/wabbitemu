@@ -102,7 +102,7 @@ namespace WabbitC_Tests
 		//[TestMethod]
         public void Return()
         {
-            RunIntermediateTest("returntest", "");
+            RunIntermediateTest("returntest");
         }
 
 		[DataSource("Microsoft.VisualStudio.TestTools.DataSource.CSV",

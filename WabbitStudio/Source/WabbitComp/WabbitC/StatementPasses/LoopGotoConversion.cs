@@ -21,10 +21,10 @@ namespace WabbitC.StatementPasses
                     Block block = functions.Current.Code;
 
                     var whileLoops = from Statement st in block
-                                     where st.GetType() == typeof(While)
+                                     where st is While
                                      select st;
 					var doWhileLoops = from Statement st in block
-									 where st.GetType() == typeof(DoWhile)
+									 where st is DoWhile
 									 select st;
                     foreach (While loop in whileLoops)
                     {

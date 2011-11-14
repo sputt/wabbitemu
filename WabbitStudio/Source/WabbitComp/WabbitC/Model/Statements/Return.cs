@@ -16,7 +16,7 @@ namespace WabbitC.Model.Statements
 
         public override ISet<Declaration> GetReferencedDeclarations()
         {
-            if (ReturnReg != null && ReturnReg.GetType() == typeof(Declaration))
+            if (ReturnReg != null && ReturnReg is Declaration)
             {
                 return new HashSet<Declaration>() { ReturnReg as Declaration };
             }

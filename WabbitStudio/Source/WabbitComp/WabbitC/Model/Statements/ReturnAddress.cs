@@ -36,7 +36,7 @@ namespace WabbitC.Model.Statements
 
 		public override string ToAssemblyString()
 		{
-			return "";
+            return String.Empty;
 		}
 	}
 }

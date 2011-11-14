@@ -20,7 +20,7 @@ namespace WabbitC.StatementPasses
 				Block block = functions.Current.Code;
 
 				var maths = from Statement s in block
-							where s.GetType() == typeof(Add) || s.GetType() == typeof(Sub)
+							where s is Add || s is Sub
 							select s;
 				foreach (MathStatement op in maths)
 				{
@@ -35,7 +35,7 @@ namespace WabbitC.StatementPasses
 							for (int i = 0; i < immValue; i++)
 							{
 								Statement replacement = null;
-								if (op.GetType() == typeof(Sub))
+								if (op is Sub)
 								{
 									replacement = new Dec(op.LValue);
 								}

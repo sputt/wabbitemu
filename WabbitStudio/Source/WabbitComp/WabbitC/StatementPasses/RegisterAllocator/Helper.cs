@@ -367,7 +367,7 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 						return steps;
 					}
 				}
-				if (curStatement.GetType() != typeof(Label))
+				if (!(curStatement is Label))
 				{
 					steps++;
 				}

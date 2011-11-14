@@ -20,10 +20,10 @@ namespace WabbitC.StatementPasses
 				Block block = functions.Current.Code;
 
 				var maths = from Statement s in block
-							where s.GetType() == typeof(Add) || s.GetType() == typeof(Sub) 
+							where s is Add || s is Sub 
 							select s;
 				var conds = from Statement s in block
-							where s.GetType().BaseType == typeof(ConditionStatement)
+							where s is ConditionStatement
 							select s;
 
 				foreach (MathStatement op in maths)
@@ -35,7 +35,7 @@ namespace WabbitC.StatementPasses
 
 						int offset = block.Statements.IndexOf(op);
 
-						if (op.GetType() == typeof(Sub))
+						if (op is Sub)
 						{
 							imm.Negate();
 							block.Statements.Remove(op);
@@ -48,7 +48,7 @@ namespace WabbitC.StatementPasses
 
 				foreach (ConditionStatement cond in conds)
 				{
-					if (cond.CondValue.GetType() == typeof(Immediate))
+					if (cond.CondValue is Immediate)
 					{
 						Immediate imm = (Immediate)cond.CondValue;
 						Declaration temp = block.CreateTempDeclaration(imm.Type);

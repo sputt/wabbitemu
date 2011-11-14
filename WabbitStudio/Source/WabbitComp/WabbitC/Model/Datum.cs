@@ -21,11 +21,11 @@ namespace WabbitC.Model
 
         public override string ToString()
         {
-            if (this.GetType() == typeof(Immediate))
+            if (this is Immediate)
             {
                 return ((Immediate) this).Value;
             }
-            else if (this.GetType() == typeof(Declaration))
+            else if (this is Declaration)
             {
                 return ((Declaration)this).Name;
             }

@@ -78,7 +78,7 @@ namespace WabbitC.Optimizer
 							liveChart[modIndex].livePoints[k] = false;
 							statementToChange.ReplaceDeclaration(oldDecl, newDecl);
 							//remove test = test; type statements
-							if (statementToChange.GetType() == typeof(Move) && ((Move)statementToChange).LValue == ((Move)statementToChange).RValue)
+							if (statementToChange is Move && ((Move)statementToChange).LValue == ((Move)statementToChange).RValue)
 							{
 								block.Statements.Remove(statementToChange);
 								for (int index = 0; index < liveChart.Count; index++)

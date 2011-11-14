@@ -33,12 +33,11 @@ namespace WabbitC.Optimizer
                 for (int i = 0; i < block.Statements.Count; i++)
                 {
                     var statement = block.Statements[i];
-                    var type = statement.GetType();
-					if (type == typeof(Annotation) || type == typeof(Label) || type == typeof(Goto))
+					if (statement is Annotation || statement is Label || statement is Goto)
 					{
 						continue;
 					} 
-					else if (type == typeof(Assignment))
+					else if (statement is Assignment)
 					{
 						var assignment = statement as Assignment;
 						var decl = block.FindDeclaration(assignment.LValue.Name);
@@ -49,7 +48,7 @@ namespace WabbitC.Optimizer
 							changedInstructions = true;
 						}
 					}
-					else if (type.BaseType == typeof(MathStatement))
+					else if (statement is MathStatement)
 					{
 						var math = statement as MathStatement;
 						var decl = block.FindDeclaration(math.LValue.Name);
@@ -60,7 +59,7 @@ namespace WabbitC.Optimizer
 							changedInstructions = true;
 						}
 					}
-					else if (type.BaseType == typeof(ConditionStatement))
+					else if (statement is ConditionStatement)
 					{
 						var cond = statement as ConditionStatement;
 						var decl = block.FindDeclaration(cond.LValue.Name);
@@ -71,7 +70,7 @@ namespace WabbitC.Optimizer
 							changedInstructions = true;
 						}
 					}
-					else if (type == typeof(Move))
+					else if (statement is Move)
 					{
 						var move = statement as Move;
 						var decl = block.FindDeclaration(move.LValue.Name);
@@ -84,7 +83,7 @@ namespace WabbitC.Optimizer
 							changedInstructions = true;
 						}
 					}
-					else if(type == typeof(FunctionCall))
+					else if(statement is FunctionCall)
 					{
 						var func = statement as FunctionCall;
 						var decl = block.FindDeclaration(func.LValue.Name);
@@ -122,8 +121,7 @@ namespace WabbitC.Optimizer
                 var statement = block.Statements[i];
 				var modified = statement.GetModifiedDeclarations();
 				var refed = statement.GetReferencedDeclarations();
-				var type = statement.GetType();
-				if ((type == typeof(Move) || type == typeof(Assignment)) && modified.Contains(declaration))
+				if ((statement is Move || statement is Assignment) && modified.Contains(declaration))
 					isReassigned = i;
 				if (refed.Contains(declaration) && deadInstructions[i])
 					isRefed = i;

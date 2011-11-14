@@ -53,7 +53,7 @@ namespace WabbitC.Model.Statements
 
 		public override ISet<Declaration> GetReferencedDeclarations()
         {
-            if (CondValue.GetType() == typeof(Declaration))
+            if (CondValue is Declaration)
             {
 				return new HashSet<Declaration>() { CondDecl, CondValue as Declaration };
             }

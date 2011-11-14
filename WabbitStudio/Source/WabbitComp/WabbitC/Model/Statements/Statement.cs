@@ -86,7 +86,7 @@ namespace WabbitC.Model.Statements
 
 		public virtual string ToAssemblyString()
 		{
-			return "";
+			return String.Empty;
 		}
 
         public void ReplaceDeclaration(Declaration declToReplace, Declaration newDecl)

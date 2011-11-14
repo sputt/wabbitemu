@@ -65,17 +65,16 @@ namespace WabbitC.Optimizer
             for (int i = 0; i < block.Statements.Count; i++)
             {
                 var statement = block.Statements[i];
-                System.Type type = statement.GetType();
-				if (type == typeof(Annotation) || type == typeof(Label))
+				if (statement is Annotation || statement is Label)
 				{
 					continue;
 				}
-                else if (type == typeof(Assignment))
+                else if (statement is Assignment)
                 {
                     var assignment = statement as Assignment;
 					assignment.LValue.ConstValue = new Immediate(assignment.RValue.Value);
                 }
-                else if (type == typeof(Move))
+                else if (statement is Move)
                 {
                     var move = statement as Move;
                     if (move.RValue.ConstValue != null)
@@ -90,7 +89,7 @@ namespace WabbitC.Optimizer
 						move.LValue.ConstValue = null;
                     }
                 }
-				else if (type.BaseType == typeof(ConditionStatement))
+				else if (statement is ConditionStatement)
 				{
 					var cond = statement as ConditionStatement;
 					if (cond.CondDecl.ConstValue != null)
@@ -103,7 +102,7 @@ namespace WabbitC.Optimizer
 						cond.LValue.ConstValue = null;
 					}
 				}
-				else if (type.BaseType == typeof(MathStatement))
+				else if (statement is MathStatement)
 				{
 					var math = statement as MathStatement;
 					var imath = statement as IMathOperator;
@@ -132,7 +131,7 @@ namespace WabbitC.Optimizer
 						}
 					}
 				}
-				else if (type == typeof(Goto))
+				else if (statement is Goto)
 				{
 					var gotoType = statement as Goto;
 					if (gotoType.CondDecl != null)

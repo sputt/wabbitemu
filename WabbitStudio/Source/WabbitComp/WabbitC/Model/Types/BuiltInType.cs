@@ -102,7 +102,7 @@ namespace WabbitC.Model.Types
 
         public override bool Equals(object obj)
         {
-            if (obj.GetType() != typeof(BuiltInType))
+            if (!(obj is BuiltInType))
             {
                 return false;
             }

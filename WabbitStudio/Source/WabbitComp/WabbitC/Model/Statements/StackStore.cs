@@ -18,9 +18,9 @@ namespace WabbitC.Model.Statements
 
         public override string ToString()
         {
-			if (Decl.Type.GetType() == typeof(WabbitC.Model.Types.Array))
+			if (Decl.Type is WabbitC.Model.Types.Array)
             {
-                return "";
+                return String.Empty;
             }
             else
             {

@@ -82,8 +82,8 @@ namespace WabbitC_Tests
             actual = target.Run(tokenList);
 
             Assert.IsTrue(expected.SequenceEqual<Token>(actual),
-                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
-                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+                "Expected: \"" + string.Join<Token>(String.Empty, expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>(String.Empty, actual.ToArray()) + "\"");
         }
 
         [TestMethod()]
@@ -98,8 +98,8 @@ namespace WabbitC_Tests
             actual = target.Run(tokenList);
 
             Assert.IsTrue(expected.SequenceEqual<Token>(actual),
-                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
-                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+                "Expected: \"" + string.Join<Token>(String.Empty, expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>(String.Empty, actual.ToArray()) + "\"");
         }
 
         [TestMethod()]
@@ -114,8 +114,8 @@ namespace WabbitC_Tests
             actual = target.Run(tokenList);
 
             Assert.IsTrue(expected.SequenceEqual<Token>(actual),
-                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
-                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+                "Expected: \"" + string.Join<Token>(String.Empty, expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>(String.Empty, actual.ToArray()) + "\"");
         }
 
         [TestMethod()]
@@ -130,8 +130,8 @@ namespace WabbitC_Tests
             actual = target.Run(tokenList);
 
             Assert.IsTrue(expected.SequenceEqual<Token>(actual),
-                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
-                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+                "Expected: \"" + string.Join<Token>(String.Empty, expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>(String.Empty, actual.ToArray()) + "\"");
         }
 
         [TestMethod()]
@@ -146,8 +146,8 @@ namespace WabbitC_Tests
             actual = target.Run(tokenList);
 
             Assert.IsTrue(expected.SequenceEqual<Token>(actual),
-                "Expected: \"" + string.Join<Token>("", expected.ToArray()) + "\" " +
-                "Actual: \"" + string.Join<Token>("", actual.ToArray()) + "\"");
+                "Expected: \"" + string.Join<Token>(String.Empty, expected.ToArray()) + "\" " +
+                "Actual: \"" + string.Join<Token>(String.Empty, actual.ToArray()) + "\"");
         }
     }
 }

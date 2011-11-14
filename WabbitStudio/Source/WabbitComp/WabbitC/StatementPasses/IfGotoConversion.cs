@@ -19,7 +19,7 @@ namespace WabbitC.StatementPasses
                 if (functions.Current.Code != null)
                 {
                     var ifs = from Statement st in functions.Current.Code
-                                     where st.GetType() == typeof(If)
+                                     where st is If
                                      select st;
                     foreach (If ifStatement in ifs)
                     {

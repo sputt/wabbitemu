@@ -87,7 +87,7 @@ namespace WabbitC.Optimizer
             {
                 var statement = block.Statements[i];
                 var modified = statement.GetModifiedDeclarations();
-                if (modified.Contains(decl) && statement.GetType().BaseType != typeof(MathStatement))
+                if (modified.Contains(decl) && !(statement is MathStatement))
                     assigned = i;
 
                 var refed = statement.GetReferencedDeclarations();
@@ -150,7 +150,7 @@ namespace WabbitC.Optimizer
 
                     }
                     var modified = from s in statement.GetModifiedDeclarations()
-                                   where s.GetType().BaseType != typeof(MathStatement)
+                                   where !(s is MathStatement)
                                    select s;
                     foreach (var mod in modified)
                     {
@@ -173,7 +173,7 @@ namespace WabbitC.Optimizer
                 foreach (var statement in block.Statements)
                 {
                     var modified = from s in statement.GetModifiedDeclarations()
-                                   where s.GetType().BaseType != typeof(MathStatement)
+                                   where !(s is MathStatement)
                                    select s;
                     foreach (var mod in modified)
                         killVars.Add(mod);

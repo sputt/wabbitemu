@@ -54,7 +54,7 @@ namespace WabbitC.Model.Statements
 
 		public override string ToString()
 		{
-			return CleanupBlock.ToString().Replace("{", "").Replace("}", "");
+			return CleanupBlock.ToString().Replace("{", String.Empty).Replace("}", String.Empty);
 		}
 
 		public override string ToAssemblyString()
