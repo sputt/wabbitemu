@@ -85,6 +85,9 @@
     <None Include="mismatch5.z80">
       <Filter>Test Files\#IF/#ENDIF Matching</Filter>
     </None>
+    <None Include="DefineInMacro.asm">
+      <Filter>Test Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="app.rc">

@@ -4,9 +4,9 @@
 
 #macro RecursiveMacro1(x)
   #if x > 1
-    1 + RecursiveMacro1(x - 1)
+	1 + RecursiveMacro1(x - 1)
   #else
-    1
+	1
   #endif
 #endmacro
 
@@ -14,13 +14,13 @@
 
 #macro FibonacciMacro(x)
   #if x = 0
-    0
+	0
   #else
-    #if x = 1
-      1
-    #else
-      FibonacciMacro(x - 1) + FibonacciMacro(x - 2)
-    #endif
+	#if x = 1
+	  1
+	#else
+	  FibonacciMacro(x - 1) + FibonacciMacro(x - 2)
+	#endif
   #endif
 #endmacro
 
@@ -55,11 +55,11 @@
 
 #macro InternalConcatMacro3(string, times)
   #if times = 0
-    .echo >> ConcatMacro3.txt string
-    #undef gfirst
+	.echo >> ConcatMacro3.txt string
+	#undef gfirst
   #else
-    #define string concat(string, ",\"X\"")
-    InternalConcatMacro3(string, times - 1)
+	#define string concat(string, ",\"X\"")
+	InternalConcatMacro3(string, times - 1)
   #endif
 #endmacro
 
@@ -70,10 +70,10 @@
 
 #macro InternalConcatMacro4(string, times)
   #if times = 0
-    .echo >> ConcatMacro4.txt string
+	.echo >> ConcatMacro4.txt string
   #else
-    #define string string,"X"
-    InternalConcatMacro4(string, times - 1)
+	#define string string,"X"
+	InternalConcatMacro4(string, times - 1)
   #endif
 #endmacro
 
@@ -85,10 +85,10 @@
 
 #macro InternalConcatMacro5(times, char, base)
   #if times > 0
-    #define base base,char
-    InternalConcatMacro5(times - 1, char, base)
+	#define base base,char
+	InternalConcatMacro5(times - 1, char, base)
   #else
-    .echo >> ConcatMacro5.txt base
+	.echo >> ConcatMacro5.txt base
   #endif
 #endmacro
 
@@ -98,10 +98,10 @@
 
 #macro Fixed14Power(val, pow)
   #if pow = 0
-    16384
+	16384
   #else
-    #define prev_val eval(Fixed14Power(val, pow - 1))
-    val * prev_val / 16384
+	#define prev_val eval(Fixed14Power(val, pow - 1))
+	val * prev_val / 16384
   #endif
 #endmacro
 
