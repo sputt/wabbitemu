@@ -176,8 +176,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			ProjectFile file = (ProjectFile)node.Tag;
 			string newFileName = Path.Combine(Path.GetDirectoryName(file.FileFullPath), newName);
 			File.Move(file.FileFullPath, newFileName);
-            foreach (newEditor editor in DockingService.Documents)
-                if (editor.FileName.ToUpper() == file.FileFullPath.ToUpper())
+            foreach (NewEditor editor in DockingService.Documents)
+                if (string.Equals(editor.FileName, file.FileFullPath, StringComparison.OrdinalIgnoreCase))
                     editor.FileName = newFileName;
 			file.FileFullPath = newFileName;
             node.Text = newName;
@@ -314,7 +314,12 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 parent = projViewer.Nodes[0];
             if (parent.Tag.GetType() == typeof(ProjectFile))
                 parent = parent.Parent;
-            ProjectFolder folder = new ProjectFolder(ProjectService.Project, "New Folder");
+			RenameForm newNameForm = new RenameForm();
+			newNameForm.Text = "New Folder";
+			if (newNameForm.ShowDialog() != DialogResult.OK)
+				return;
+			string name = newNameForm.NewText;
+            ProjectFolder folder = new ProjectFolder(ProjectService.Project, name);
             AddFolder(folder, parent);
             ((ProjectFolder)parent.Tag).AddFolder(folder);
             projViewer.Sort();

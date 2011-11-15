@@ -56,7 +56,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void delAllBreakToolStripButton_Click(object sender, EventArgs e)
         {
-            foreach (newEditor child in DockingService.Documents)
+            foreach (NewEditor child in DockingService.Documents)
                 child.ClearBreakpoints();
             DebuggerService.Breakpoints.Clear();
             UpdateManager();

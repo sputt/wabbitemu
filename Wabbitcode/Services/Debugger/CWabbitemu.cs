@@ -16,9 +16,8 @@ namespace Revsoft.Wabbitcode.Classes
 {
     public class CWabbitemu
     {
-		Wabbitemu debugger;
-
 #if NEW_DEBUGGING
+		Wabbitemu debugger;
 		public CWabbitemu(string file)
 		{
             string romFile = "";
@@ -105,7 +104,7 @@ namespace Revsoft.Wabbitcode.Classes
 			public byte page3;
 		}
 #else
-        readonly IWabbitemu pWabbitemu;
+		readonly IWabbitemu pWabbitemu;
         readonly Process wabbit;
         public CWabbitemu(string file)
         {
@@ -117,7 +116,7 @@ namespace Revsoft.Wabbitcode.Classes
 				wabbit = null;
 				foreach (Process potential in Process.GetProcesses())
 				{
-					if (!potential.ProcessName.ToLower().Contains("wabbitemu"))
+					if (!potential.ProcessName.Contains("wabbitemu", StringComparison.OrdinalIgnoreCase))
 						continue;
 					wabbit = potential;
 					break;
@@ -426,30 +425,29 @@ namespace Revsoft.Wabbitcode.Classes
         readonly byte[] screenArray = new byte[128 * 64];
         public Bitmap DrawScreen()
         {
-#if !DEBUG
+			Bitmap result = null;
             try
             {
-#endif
 				const int SCREEN_WIDTH = 128;
 				const int SCREEN_HEIGHT = 64;
                 pWabbitemu.DrawScreen(0, screenArray);
-				var screen = new Bitmap(SCREEN_WIDTH, SCREEN_HEIGHT);
-                for (int y = 0; y < SCREEN_HEIGHT; y++)
-					for (int x = 0; x < SCREEN_WIDTH; x++)
-					{
-						int pixColor = screenArray[y * SCREEN_WIDTH + x];
-						screen.SetPixel(x, y, Color.FromArgb(0xFF, Color.FromArgb(0x9e * (256 - pixColor) / 255, (0xAB * (256 - pixColor)) / 255, (0x88 * (256 - pixColor)) / 255)));
-					}
-                Bitmap result = screen.ResizeImage(256, 128);
+				using (var screen = new Bitmap(SCREEN_WIDTH, SCREEN_HEIGHT))
+				{
+					for (int y = 0; y < SCREEN_HEIGHT; y++)
+						for (int x = 0; x < SCREEN_WIDTH; x++)
+						{
+							int pixColor = screenArray[y * SCREEN_WIDTH + x];
+							screen.SetPixel(x, y, Color.FromArgb(0xFF, Color.FromArgb(0x9e * (256 - pixColor) / 255, (0xAB * (256 - pixColor)) / 255, (0x88 * (256 - pixColor)) / 255)));
+						}
+					result = screen.ResizeImage(256, 128);
+				}
                 return result;
-#if !DEBUG
             }
 			catch (COMException ex)
 			{
 				DockingService.ShowError("Error Talking to Wabbit", ex);
 				return null;
 			}
-#endif
         }        
 
         public MEMSTATE getMemState()

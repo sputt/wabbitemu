@@ -81,12 +81,19 @@ namespace Revsoft.Wabbitcode.Classes
 
 		internal static void InitFiles()
 		{
-			string dir = Path.GetDirectoryName(SpasmFile);
-			if (!File.Exists(FileLocations.SpasmFile))
-				Classes.Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
-			if (!File.Exists(FileLocations.WabbitemuFile))
-				//Settings.Default.wabbitLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "wabbitemu.exe");
-				Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
+			try
+			{
+				string dir = Path.GetDirectoryName(SpasmFile);
+				if (!File.Exists(FileLocations.SpasmFile))
+					Classes.Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
+				if (!File.Exists(FileLocations.WabbitemuFile))
+					//Settings.Default.wabbitLoc = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "wabbitemu.exe");
+					Classes.Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
+			}
+			catch (Exception ex)
+			{
+				Services.DockingService.ShowError("Unable to initialize files", ex);
+			}
 		}
     }
 }

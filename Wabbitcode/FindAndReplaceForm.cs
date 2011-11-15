@@ -423,8 +423,15 @@ namespace Revsoft.Wabbitcode
                 _region = null;
             }
         }
-        public void Dispose() { ClearScanRegion(); GC.SuppressFinalize(this); }
-        ~TextEditorSearcher() { Dispose(); }
+        public void Dispose() 
+		{ 
+			ClearScanRegion();
+			GC.SuppressFinalize(this); 
+		}
+        ~TextEditorSearcher() 
+		{ 
+			Dispose(); 
+		}
 
         /// <summary>Begins the start offset for searching</summary>
         public int BeginOffset

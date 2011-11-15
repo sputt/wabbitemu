@@ -33,21 +33,21 @@ namespace Revsoft.Wabbitcode.Services
 				if (dockPanel == null)
 					return documents;
 				foreach (IDockContent doc in dockPanel.Documents)
-					if (doc.GetType() == typeof(newEditor))
+					if (doc.GetType() == typeof(NewEditor))
 						documents.Add(doc);
 				return documents;
 			}
 		}
 
-		public static newEditor ActiveDocument
+		public static NewEditor ActiveDocument
 		{
 			get
 			{
 				if (dockPanel.ActiveDocument == null)
 					return null;
-				if (dockPanel.ActiveDocument.GetType() != typeof(newEditor))
+				if (dockPanel.ActiveDocument.GetType() != typeof(NewEditor))
 					return null;
-				return dockPanel.ActiveDocument as newEditor;
+				return dockPanel.ActiveDocument as NewEditor;
 			}
 		}
 
@@ -139,11 +139,11 @@ namespace Revsoft.Wabbitcode.Services
 			get { return breakManager; }
 		}
 
-        private static bool initialized;
-        public static bool HasBeenInited
-        {
-            get { return initialized; }
-        }
+		private static bool initialized;
+		public static bool HasBeenInited
+		{
+			get { return initialized; }
+		}
 
 		public static void ShowDockPanel(DockContent panel)
 		{
@@ -161,31 +161,27 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static void InitPanels()
 		{
-#if !DEBUG
-            try
-            {
-#endif
-                projectViewer = new ProjectViewer();
-                directoryViewer = new DirectoryViewer();
-                errorList = new ErrorList();
-                trackWindow = new TrackingWindow();
-                debugPanel = new DebugPanel();
-                callStack = new CallStack();
-                labelList = new LabelList();
-                outputWindow = new OutputWindow();
-                findForm = new FindAndReplaceForm();
-                findResults = new FindResultsWindow();
-                macroManager = new MacroManager();
-                breakManager = new BreakpointManager();
-                stackViewer = new StackViewer();
-                initialized = true;
-#if !DEBUG
-            }
-            catch (Exception ex)
-            {
-                ShowError("Error in InitPanels", ex);
-            }
-#endif
+			try
+			{
+				projectViewer = new ProjectViewer();
+				directoryViewer = new DirectoryViewer();
+				errorList = new ErrorList();
+				trackWindow = new TrackingWindow();
+				debugPanel = new DebugPanel();
+				callStack = new CallStack();
+				labelList = new LabelList();
+				outputWindow = new OutputWindow();
+				findForm = new FindAndReplaceForm();
+				findResults = new FindResultsWindow();
+				macroManager = new MacroManager();
+				breakManager = new BreakpointManager();
+				stackViewer = new StackViewer();
+				initialized = true;
+			}
+			catch (Exception ex)
+			{
+				ShowError("Error in InitPanels", ex);
+			}
 		}
 
 		internal static void InitDocking(DockPanel dockingPanel)
@@ -195,17 +191,17 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static void LoadConfig()
 		{
-			DeserializeDockContent dockContent = new DeserializeDockContent(GetContentFromPersistString);
-            try
+			try
 			{
-			if (File.Exists(FileLocations.ConfigFile))
-				dockPanel.LoadFromXml(FileLocations.ConfigFile, dockContent);
+				DeserializeDockContent dockContent = new DeserializeDockContent(GetContentFromPersistString);
+				if (File.Exists(FileLocations.ConfigFile))
+					dockPanel.LoadFromXml(FileLocations.ConfigFile, dockContent);
 			}
 			catch (Exception ex)
 			{
-                ShowError("Error Loading the DockPanel Config File", ex);
+				ShowError("Error Loading the DockPanel Config File", ex);
 			}
-        }
+		}
 
 		private static IDockContent GetContentFromPersistString(string persistString)
 		{
@@ -227,20 +223,29 @@ namespace Revsoft.Wabbitcode.Services
 				return DockingService.DirectoryViewer;
 
 			string[] parsedStrings = persistString.Split(';');
-			if (parsedStrings.Length != 6 || parsedStrings[0] != typeof(newEditor).ToString() || !File.Exists(parsedStrings[1]))
+			if (parsedStrings.Length != 6 || parsedStrings[0] != typeof(NewEditor).ToString() || !File.Exists(parsedStrings[1]))
 				return null;
-            newEditor doc = DocumentService.OpenDocument(parsedStrings[1]);
-            doc.SetPosition(int.Parse(parsedStrings[2]), int.Parse(parsedStrings[3]),
-                                                        int.Parse(parsedStrings[4]), int.Parse(parsedStrings[5]));
-            return doc;
+			NewEditor doc = DocumentService.OpenDocument(parsedStrings[1]);
+			doc.SetPosition(int.Parse(parsedStrings[2]), int.Parse(parsedStrings[3]),
+														int.Parse(parsedStrings[4]), int.Parse(parsedStrings[5]));
+			return doc;
 		}
 
 		internal static void Destroy()
 		{
-#if !DEBUG
+			foreach (NewEditor editor in Documents)
+			{
+				try
+				{
+					editor.Dispose();
+				}
+				catch (Exception ex)
+				{
+					ShowError("Error destroying documents", ex);
+				}
+			}
 			try
 			{
-#endif
 				string dir = Path.GetDirectoryName(FileLocations.ConfigFile);
 				if (!Directory.Exists(dir))
 					if (MessageBox.Show("Directory '" + dir + "' does not exist. Would you like to create it?", "Directory does not exist", MessageBoxButtons.YesNo, MessageBoxIcon.Exclamation) != DialogResult.Yes)
@@ -248,14 +253,12 @@ namespace Revsoft.Wabbitcode.Services
 				if (File.Exists(FileLocations.ConfigFile))
 					File.Delete(FileLocations.ConfigFile);
 				dockPanel.SaveAsXml(FileLocations.ConfigFile);
-                initialized = false;
-#if !DEBUG
+				initialized = false;
 			}
 			catch (Exception ex)
 			{
-                ShowError("Error saving DockPanel.config file!", ex);
+				ShowError("Error saving DockPanel.config file!", ex);
 			}
-#endif
 		}
 
 		public static DialogResult RequestDialog(string text, string caption, MessageBoxButtons buttons, MessageBoxIcon icon)
@@ -263,17 +266,17 @@ namespace Revsoft.Wabbitcode.Services
 			return DialogResult.None;
 		}
 
-        public static void ShowError(string error)
-        {
-            MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
+		public static void ShowError(string error)
+		{
+			MessageBox.Show(error, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+		}
 
-        public static void ShowError(string error, Exception ex)
-        {
-            StringBuilder sb = new StringBuilder(error);
-            sb.Append("\n");
-            sb.Append(ex.ToString());
-            MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-        }
-    }
+		public static void ShowError(string error, Exception ex)
+		{
+			StringBuilder sb = new StringBuilder(error);
+			sb.Append("\n");
+			sb.Append(ex.ToString());
+			MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+		}
+	}
 }

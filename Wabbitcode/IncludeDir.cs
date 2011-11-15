@@ -19,15 +19,11 @@ namespace Revsoft.Wabbitcode
 				Settings.Default.includeDir.Split('\n').ToList<string>() :
 				ProjectService.IncludeDirs;
 			foreach (string dir in directories)
-			{
 				if (!string.IsNullOrEmpty(dir))
-				{
 					if (ProjectService.IsInternal)
 						includeDirList.Items.Add(dir);
 					else
-						includeDirList.Items.Add(FileOperations.GetRelativePath(ProjectService.ProjectDirectory, dir));
-				}
-			}
+						includeDirList.Items.Add(FileOperations.GetRelativePath(ProjectService.ProjectFile, dir));
         }
 
         private void addDirButton_Click(object sender, EventArgs e)
@@ -51,14 +47,12 @@ namespace Revsoft.Wabbitcode
             if (ProjectService.IsInternal)
                 Properties.Settings.Default.includeDir = "";
             string temp = "";
-			string baseDir = ProjectService.IsInternal ? "" : Path.GetDirectoryName(ProjectService.ProjectDirectory);
+			string baseDir = ProjectService.IsInternal ? "" : ProjectService.ProjectFile;
 			foreach (string includeDir in includeDirList.Items)
-			{
 				if (ProjectService.IsInternal)
 					temp += includeDir + '\n';
 				else
-					temp += Path.Combine(baseDir, includeDir) + '\n';
-			}
+					temp += new Uri(Path.Combine(Path.GetDirectoryName(ProjectService.ProjectFile), includeDir)).AbsolutePath;
             if (ProjectService.IsInternal)
                 Properties.Settings.Default.includeDir = temp;
             else

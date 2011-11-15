@@ -45,7 +45,7 @@ namespace Revsoft.Wabbitcode.Classes
 				return false;
 			WabbitcodeBreakpoint break2 = obj as WabbitcodeBreakpoint;
 			return (Address == break2.Address && Page == break2.Page && IsRam == break2.IsRam) ||
-					(file == break2.file && lineNumber == break2.lineNumber);
+					(string.Equals(file, break2.file, StringComparison.OrdinalIgnoreCase) && lineNumber == break2.lineNumber);
 		}
 
         public override int GetHashCode()

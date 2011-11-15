@@ -109,13 +109,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 			int counter = 0;
 			writer.WriteStartElement("BuildSystem");
 			string includes = "";
-			string projDir = ProjectService.ProjectDirectory;
+			string projFile = ProjectService.ProjectFile;
 			foreach (string include in ProjectService.IncludeDirs)
 				if (!string.IsNullOrEmpty(include))
 					if (!Path.IsPathRooted(include))
 						includes += include + ";";
 					else
-						includes += FileOperations.GetRelativePath(projDir, include) + ";";
+						includes += FileOperations.GetRelativePath(projFile, include) + ";";
 			writer.WriteAttributeString("IncludeDirs", includes);
 			foreach (BuildConfig config in buildConfigs)
 			{
@@ -125,7 +125,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 					Type type = step.GetType();
 					writer.WriteStartElement(type.Name);
 					writer.WriteAttributeString("Count", counter.ToString());
-					writer.WriteAttributeString("InputFile", FileOperations.GetRelativePath(projDir, step.InputFile));
+					writer.WriteAttributeString("InputFile", FileOperations.GetRelativePath(projFile, step.InputFile));
 					if (type == typeof(ExternalBuildStep))
 					{
 						writer.WriteAttributeString("Arguments", ((ExternalBuildStep)step).Arguments);
@@ -133,7 +133,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 					else if (type == typeof(InternalBuildStep))
 					{
 						var intStep = (InternalBuildStep)step;
-						writer.WriteAttributeString("OutputFile", FileOperations.GetRelativePath(projDir, intStep.OutputFile));
+						writer.WriteAttributeString("OutputFile", FileOperations.GetRelativePath(projFile, intStep.OutputFile));
 						writer.WriteAttributeString("StepType", Convert.ToInt16(intStep.StepType).ToString());
 					}
 					writer.WriteEndElement();
@@ -145,14 +145,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		internal void ReadXML(XmlTextReader reader)
 		{
-			string root = Path.GetDirectoryName(ProjectService.ProjectDirectory);
+			string root = ProjectService.ProjectDirectory;
 			reader.MoveToNextElement();
 			if (reader.Name != "BuildSystem")
 				throw new ArgumentException("Invalid XML Format");
 			string[] includeDirs = reader.GetAttribute("IncludeDirs").Split(';');
 			foreach (string include in includeDirs)
 				if (!string.IsNullOrEmpty(include))
-					ProjectService.IncludeDirs.Add(Path.Combine(root, include));
+					ProjectService.IncludeDirs.Add((Uri.UnescapeDataString(new Uri(Path.Combine(root, include)).AbsolutePath)));
 			while (reader.MoveToNextElement())
 			{
 				string configName = reader.Name;

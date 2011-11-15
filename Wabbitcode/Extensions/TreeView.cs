@@ -67,6 +67,7 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Diagnostics;
+using Revsoft.Wabbitcode.Classes;
 
 namespace Revsoft.Wabbitcode
 {
@@ -126,13 +127,13 @@ namespace Revsoft.Wabbitcode
 		public event TreeViewEventHandler AfterDeselect;
 		public event TreeViewEventHandler BeforeDeselect;
 		public event EventHandler SelectionsChanged;
-        // Node being dragged
-        private TreeNode dragNode = null;
-        // Timer for scrolling
-        private Timer timer = new Timer();
-        //ImageList for ghosting
-        private ImageList imageListDrag;
-	    private ImageList imageListTreeView;
+		// Node being dragged
+		private TreeNode dragNode = null;
+		// Timer for scrolling
+		private Timer timer = new Timer();
+		//ImageList for ghosting
+		private ImageList imageListDrag;
+		private ImageList imageListTreeView;
 
 
 		protected void OnAfterDeselect(TreeNode tn)
@@ -256,9 +257,9 @@ namespace Revsoft.Wabbitcode
 			{
 				if (!blnInternalCall)
 				{
-                    if (SelectedNodes.Count > 0)
-                        return SelectedNodes[0];
-                    return null;
+					if (SelectedNodes.Count > 0)
+						return SelectedNodes[0];
+					return null;
 					//throw new NotSupportedException("Use SelectedNodes instead of SelectedNode.");
 				}
 				else
@@ -274,7 +275,7 @@ namespace Revsoft.Wabbitcode
 				}
 				else
 				{
-                    base.SelectedNode = value;
+					base.SelectedNode = value;
 				}
 			}
 		}
@@ -924,10 +925,10 @@ namespace Revsoft.Wabbitcode
 		{
 			components = new System.ComponentModel.Container();
 
-            timer.Interval = 200;
-            timer.Tick += new EventHandler(timer_Tick);
-            imageListTreeView = new ImageList(this.components);
-            imageListDrag = new ImageList(this.components);
+			timer.Interval = 200;
+			timer.Tick += new EventHandler(timer_Tick);
+			imageListTreeView = new ImageList(this.components);
+			imageListDrag = new ImageList(this.components);
 		}
 
 		#endregion
@@ -1052,15 +1053,15 @@ namespace Revsoft.Wabbitcode
 			return blnPlusMinusClicked;
 		}
 
-        private bool IsIconClicked(TreeNode tn, MouseEventArgs e)
-        {
-            int intNodeLevel = GetNodeLevel(tn);
-            bool blnIconClicked = false;
-            if (e.X < 4 + (intNodeLevel * 4))
-                blnIconClicked = true;
+		private bool IsIconClicked(TreeNode tn, MouseEventArgs e)
+		{
+			int intNodeLevel = GetNodeLevel(tn);
+			bool blnIconClicked = false;
+			if (e.X < 4 + (intNodeLevel * 4))
+				blnIconClicked = true;
 
-            return blnIconClicked;
-        }
+			return blnIconClicked;
+		}
 
 		private bool IsTextClicked(TreeNode tn, MouseEventArgs e)
 		{
@@ -1191,7 +1192,7 @@ namespace Revsoft.Wabbitcode
 			if (e.Button == MouseButtons.Left)
 			{
 				blnWasDoubleClick = (intMouseClicks == 2);
-                
+				
 				TreeNode tnTemp = null;
 				int intNodeLevelStart;
 
@@ -1700,16 +1701,16 @@ namespace Revsoft.Wabbitcode
 
 		#endregion
 
-        private const int WM_ERASEBKGND = 0x0014;
+		private const int WM_ERASEBKGND = 0x0014;
 
-        protected override void WndProc(ref Message msg)
-        {
-            if (msg.Msg == WM_ERASEBKGND)
-            {
-                return;
-            }
-            base.WndProc(ref msg);
-        }
+		protected override void WndProc(ref Message msg)
+		{
+			if (msg.Msg == WM_ERASEBKGND)
+			{
+				return;
+			}
+			base.WndProc(ref msg);
+		}
 
 
 		#region OnItemDrag
@@ -1720,286 +1721,254 @@ namespace Revsoft.Wabbitcode
 		/// <param name="e"></param>
 		protected override void OnItemDrag(ItemDragEventArgs e)
 		{
-            //SendMessage(Handle, WM_SETREDRAW, 0, IntPtr.Zero);
-            //eventMask = SendMessage(Handle, EM_GETEVENTMASK, 0, IntPtr.Zero);
+			//SendMessage(Handle, WM_SETREDRAW, 0, IntPtr.Zero);
+			//eventMask = SendMessage(Handle, EM_GETEVENTMASK, 0, IntPtr.Zero);
 			e = new ItemDragEventArgs(MouseButtons.Left, this.SelectedNodes);
-            // Get drag node and select it
-            dragNode = ((NodesCollection)e.Item)[0];
-		    NodesCollection nodes = (NodesCollection) e.Item;
+			// Get drag node and select it
+			dragNode = ((NodesCollection)e.Item)[0];
+			NodesCollection nodes = (NodesCollection) e.Item;
 
-            blnInternalCall = true;
-            SelectedNode = dragNode;
-            blnInternalCall = false;
+			blnInternalCall = true;
+			SelectedNode = dragNode;
+			blnInternalCall = false;
 
-            //components = new System.ComponentModel.Container();
-            /*imageListTreeView = new ImageList(this.components);
-            imageListDrag = new ImageList(this.components);
+			//components = new System.ComponentModel.Container();
+			/*imageListTreeView = new ImageList(this.components);
+			imageListDrag = new ImageList(this.components);
 
-            // Reset image list used for drag image
-            imageListDrag.Images.Clear();
-            imageListDrag.ImageSize = new Size(dragNode.Bounds.Size.Width + Indent, dragNode.Bounds.Height * nodes.Count);
+			// Reset image list used for drag image
+			imageListDrag.Images.Clear();
+			imageListDrag.ImageSize = new Size(dragNode.Bounds.Size.Width + Indent, dragNode.Bounds.Height * nodes.Count);
 
-            // Create new bitmap
-            // This bitmap will contain the tree node image to be dragged
-            Bitmap bmp = new Bitmap(dragNode.Bounds.Width + Indent, dragNode.Bounds.Height * nodes.Count);
+			// Create new bitmap
+			// This bitmap will contain the tree node image to be dragged
+			Bitmap bmp = new Bitmap(dragNode.Bounds.Width + Indent, dragNode.Bounds.Height * nodes.Count);
 
-            // Get graphics from bitmap
-            Graphics gfx = Graphics.FromImage(bmp);
+			// Get graphics from bitmap
+			Graphics gfx = Graphics.FromImage(bmp);
 
-            // Draw node icon into the bitmap
-            gfx.DrawImage(bmp, 0, 0);
-		    float counter = 0;
-            for (int i = 0; i < nodes.Count; i++ )
-            {
-                // Draw node label into bitmap
-                gfx.DrawString(nodes[i].Text, Font, new SolidBrush(ForeColor), Indent, counter * nodes[i].Bounds.Height);
-                counter++;
-            }
+			// Draw node icon into the bitmap
+			gfx.DrawImage(bmp, 0, 0);
+			float counter = 0;
+			for (int i = 0; i < nodes.Count; i++ )
+			{
+				// Draw node label into bitmap
+				gfx.DrawString(nodes[i].Text, Font, new SolidBrush(ForeColor), Indent, counter * nodes[i].Bounds.Height);
+				counter++;
+			}
 
-		    // Add bitmap to imagelist
-            imageListDrag.Images.Add(bmp);*/
+			// Add bitmap to imagelist
+			imageListDrag.Images.Add(bmp);*/
 
-            // Get mouse position in client coordinates
-            Point p = PointToClient(MousePosition);
+			// Get mouse position in client coordinates
+			Point p = PointToClient(MousePosition);
 
-            // Compute delta between mouse position and node bounds
-            int dx = p.X + Indent - dragNode.Bounds.Left;
-            int dy = p.Y - dragNode.Bounds.Top;
+			// Compute delta between mouse position and node bounds
+			int dx = p.X + Indent - dragNode.Bounds.Left;
+			int dy = p.Y - dragNode.Bounds.Top;
 
-            base.OnItemDrag(e);
+			base.OnItemDrag(e);
 
-            // Begin dragging image
-            //if (DragHelper.ImageList_BeginDrag(imageListDrag.Handle, 0, dx, dy))
-            //{
-                // Begin dragging
-            DoDragDrop(SelectedNodes, DragDropEffects.Move);//DoDragDrop(bmp, DragDropEffects.Move);
-                // End dragging image
-                //DragHelper.ImageList_EndDrag();
-            //}
-            //SendMessage(Handle, EM_SETEVENTMASK, 0, eventMask);
-            //SendMessage(Handle, WM_SETREDRAW, 1, IntPtr.Zero);
+			// Begin dragging image
+			//if (DragHelper.ImageList_BeginDrag(imageListDrag.Handle, 0, dx, dy))
+			//{
+				// Begin dragging
+			DoDragDrop(SelectedNodes, DragDropEffects.Move);//DoDragDrop(bmp, DragDropEffects.Move);
+				// End dragging image
+				//DragHelper.ImageList_EndDrag();
+			//}
+			//SendMessage(Handle, EM_SETEVENTMASK, 0, eventMask);
+			//SendMessage(Handle, WM_SETREDRAW, 1, IntPtr.Zero);
 		}
 
-        private const int WM_SETREDRAW = 0x000B;
-        private const int WM_USER = 0x400;
-        private const int EM_GETEVENTMASK = (WM_USER + 59);
-        private const int EM_SETEVENTMASK = (WM_USER + 69);
+		private const int WM_SETREDRAW = 0x000B;
+		private const int WM_USER = 0x400;
+		private const int EM_GETEVENTMASK = (WM_USER + 59);
+		private const int EM_SETEVENTMASK = (WM_USER + 69);
 
-        TreeNode nodePointedTo;
-        private Color oldBackColor;
-        private Color oldForeColor;
+		TreeNode nodePointedTo;
+		private Color oldBackColor;
+		private Color oldForeColor;
 
-        protected override void OnDragOver(DragEventArgs e)
-        {
-            //SetStyle(ControlStyles.UserPaint, true);
-            //SetStyle(ControlStyles.AllPaintingInWmPaint, true);
-            //SetStyle(ControlStyles.DoubleBuffer, true);
-            //SendMessage(Handle, WM_SETREDRAW, 0, IntPtr.Zero);
-            //eventMask = SendMessage(Handle, EM_GETEVENTMASK, 0, IntPtr.Zero);
-            // Compute drag position and move image
+		protected override void OnDragOver(DragEventArgs e)
+		{
+			//SetStyle(ControlStyles.UserPaint, true);
+			//SetStyle(ControlStyles.AllPaintingInWmPaint, true);
+			//SetStyle(ControlStyles.DoubleBuffer, true);
+			//SendMessage(Handle, WM_SETREDRAW, 0, IntPtr.Zero);
+			//eventMask = SendMessage(Handle, EM_GETEVENTMASK, 0, IntPtr.Zero);
+			// Compute drag position and move image
 
-            // Get actual drop node
-            TreeNode dropNode = GetNodeAt(PointToClient(new Point(e.X, e.Y)));
-            //DragHelper.ImageList_DragShowNolock(false);
-            if (nodePointedTo != null)
-            {
-                nodePointedTo.BackColor = oldBackColor;
-                nodePointedTo.ForeColor = oldForeColor;
-            }
-            nodePointedTo = dropNode;
-            e.Effect = SelectedNodes.Contains(nodePointedTo)  ? DragDropEffects.None : DragDropEffects.All;
-            if (nodePointedTo == null)
-                return;
-            if (nodePointedTo.Tag.GetType() == typeof(Revsoft.Wabbitcode.Services.Project.ProjectFile))
-                nodePointedTo = nodePointedTo.Parent;
-            oldBackColor = nodePointedTo.BackColor;
-            oldForeColor = nodePointedTo.ForeColor;
-            nodePointedTo.BackColor = SystemColors.Highlight;
-            nodePointedTo.ForeColor = SystemColors.HighlightText;
-            //DragHelper.ImageList_DragShowNolock(true);
-            // if mouse is on a new node select it
-            /*if (tempDropNode != dropNode)
-            {
-                DragHelper.ImageList_DragShowNolock(false);
-                blnInternalCall = true;
-                SelectedNode = dropNode;
-                blnInternalCall = false;
-                DragHelper.ImageList_DragShowNolock(true);
-                tempDropNode = dropNode;
-            }*/
-            //Point formP = PointToClient(new Point(e.X, e.Y));
-            //DragHelper.ImageList_DragMove(formP.X - Left, formP.Y - Top);
+			// Get actual drop node
+			TreeNode dropNode = GetNodeAt(PointToClient(new Point(e.X, e.Y)));
+			//DragHelper.ImageList_DragShowNolock(false);
+			if (nodePointedTo != null)
+			{
+				nodePointedTo.BackColor = oldBackColor;
+				nodePointedTo.ForeColor = oldForeColor;
+			}
+			nodePointedTo = dropNode;
+			e.Effect = SelectedNodes.Contains(nodePointedTo)  ? DragDropEffects.None : DragDropEffects.All;
+			if (nodePointedTo == null)
+				return;
+			if (nodePointedTo.Tag.GetType() == typeof(Revsoft.Wabbitcode.Services.Project.ProjectFile))
+				nodePointedTo = nodePointedTo.Parent;
+			oldBackColor = nodePointedTo.BackColor;
+			oldForeColor = nodePointedTo.ForeColor;
+			nodePointedTo.BackColor = SystemColors.Highlight;
+			nodePointedTo.ForeColor = SystemColors.HighlightText;
+			//DragHelper.ImageList_DragShowNolock(true);
+			// if mouse is on a new node select it
+			/*if (tempDropNode != dropNode)
+			{
+				DragHelper.ImageList_DragShowNolock(false);
+				blnInternalCall = true;
+				SelectedNode = dropNode;
+				blnInternalCall = false;
+				DragHelper.ImageList_DragShowNolock(true);
+				tempDropNode = dropNode;
+			}*/
+			//Point formP = PointToClient(new Point(e.X, e.Y));
+			//DragHelper.ImageList_DragMove(formP.X - Left, formP.Y - Top);
 
-            // Avoid that drop node is child of drag node 
-            TreeNode tmpNode = dropNode;
-            while (tmpNode.Parent != null)
-            {
-                if (tmpNode.Parent == dragNode) 
-                    e.Effect = DragDropEffects.None;
-                tmpNode = tmpNode.Parent;
-            }
+			// Avoid that drop node is child of drag node 
+			TreeNode tmpNode = dropNode;
+			while (tmpNode.Parent != null)
+			{
+				if (tmpNode.Parent == dragNode) 
+					e.Effect = DragDropEffects.None;
+				tmpNode = tmpNode.Parent;
+			}
 
-            base.OnDragOver(e);
-            Refresh();
-            //SendMessage(Handle, EM_SETEVENTMASK, 0, eventMask);
-            //SendMessage(Handle, WM_SETREDRAW, 1, IntPtr.Zero);
-        }
+			base.OnDragOver(e);
+			Refresh();
+			//SendMessage(Handle, EM_SETEVENTMASK, 0, eventMask);
+			//SendMessage(Handle, WM_SETREDRAW, 1, IntPtr.Zero);
+		}
 
-        protected override void OnDragDrop(DragEventArgs e)
-        {
-            // Unlock updates
-            //DragHelper.ImageList_DragLeave(Handle);
+		protected override void OnDragDrop(DragEventArgs e)
+		{
+			// Unlock updates
+			//DragHelper.ImageList_DragLeave(Handle);
 
-            // Get drop node
-            TreeNode dropNode = GetNodeAt(PointToClient(new Point(e.X, e.Y)));
+			// Get drop node
+			TreeNode dropNode = GetNodeAt(PointToClient(new Point(e.X, e.Y)));
 
-            // If drop node isn't equal to drag node, add drag node as child of drop node
-            if (dragNode != dropNode)
-            {
-                // Remove drag node from parent
-                /*if (dragNode.Parent == null)
-                    Nodes.Remove(dragNode);
-                else
-                    dragNode.Parent.Nodes.Remove(dragNode);
+			// If drop node isn't equal to drag node, add drag node as child of drop node
+			if (dragNode != dropNode)
+			{
+				// Remove drag node from parent
+				/*if (dragNode.Parent == null)
+					Nodes.Remove(dragNode);
+				else
+					dragNode.Parent.Nodes.Remove(dragNode);
 
-                // Add drag node to drop node
-                dropNode.Nodes.Add(dragNode);
-                dropNode.ExpandAll();*/
+				// Add drag node to drop node
+				dropNode.Nodes.Add(dragNode);
+				dropNode.ExpandAll();*/
 
-                // Set drag node to null
-                dragNode = null;
+				// Set drag node to null
+				dragNode = null;
 
-                // Disable scroll timer
-                timer.Enabled = false;
-            }
-            if (nodePointedTo != null)
-            {
-                nodePointedTo.BackColor = oldBackColor;
-                nodePointedTo.ForeColor = oldForeColor;
-            }
+				// Disable scroll timer
+				timer.Enabled = false;
+			}
+			if (nodePointedTo != null)
+			{
+				nodePointedTo.BackColor = oldBackColor;
+				nodePointedTo.ForeColor = oldForeColor;
+			}
 
-            base.OnDragDrop(e);
-        }
+			base.OnDragDrop(e);
+		}
 
-        protected override void OnDragEnter(DragEventArgs e)
-        {
-            //DragHelper.ImageList_DragEnter(Handle, e.X - Left, e.Y - Top);
+		protected override void OnDragEnter(DragEventArgs e)
+		{
+			//DragHelper.ImageList_DragEnter(Handle, e.X - Left, e.Y - Top);
 
-            timer.Interval = 200;
-            timer.Tick += new EventHandler(timer_Tick);
-            // Enable timer for scrolling dragged item
-            timer.Enabled = true;
-            
-            base.OnDragEnter(e);
-        }
+			timer.Interval = 200;
+			timer.Tick += new EventHandler(timer_Tick);
+			// Enable timer for scrolling dragged item
+			timer.Enabled = true;
+			
+			base.OnDragEnter(e);
+		}
 
-        protected override void OnDragLeave(EventArgs e)
-        {
-            //DragHelper.ImageList_DragLeave(Handle);
+		protected override void OnDragLeave(EventArgs e)
+		{
+			//DragHelper.ImageList_DragLeave(Handle);
 
-            // Disable timer for scrolling dragged item
-            timer.Enabled = false;
-            if (nodePointedTo != null)
-            {
-                nodePointedTo.BackColor = oldBackColor;
-                nodePointedTo.ForeColor = oldForeColor;
-            }
-            base.OnDragLeave(e);
-        }
+			// Disable timer for scrolling dragged item
+			timer.Enabled = false;
+			if (nodePointedTo != null)
+			{
+				nodePointedTo.BackColor = oldBackColor;
+				nodePointedTo.ForeColor = oldForeColor;
+			}
+			base.OnDragLeave(e);
+		}
 
-        protected override void OnGiveFeedback(GiveFeedbackEventArgs e)
-        {
-            if (e.Effect == DragDropEffects.Move)
-            {
-                // Show pointer cursor while dragging
-                e.UseDefaultCursors = false;
-                Cursor = Cursors.Default;
-            }
-            else e.UseDefaultCursors = true;
+		protected override void OnGiveFeedback(GiveFeedbackEventArgs e)
+		{
+			if (e.Effect == DragDropEffects.Move)
+			{
+				// Show pointer cursor while dragging
+				e.UseDefaultCursors = false;
+				Cursor = Cursors.Default;
+			}
+			else e.UseDefaultCursors = true;
 
-            base.OnGiveFeedback(e);
-        }
+			base.OnGiveFeedback(e);
+		}
 
-        private void timer_Tick(object sender, EventArgs e)
-        {
-            // get node at mouse position
-            Point pt = PointToClient(MousePosition);
-            TreeNode node = GetNodeAt(pt);
+		private void timer_Tick(object sender, EventArgs e)
+		{
+			// get node at mouse position
+			Point pt = PointToClient(MousePosition);
+			TreeNode node = GetNodeAt(pt);
 
-            if (node == null) return;
+			if (node == null) return;
 
-            // if mouse is near to the top, scroll up
-            if (pt.Y < 30)
-            {
-                // set actual node to the upper one
-                if (node.PrevVisibleNode != null)
-                {
-                    node = node.PrevVisibleNode;
+			// if mouse is near to the top, scroll up
+			if (pt.Y < 30)
+			{
+				// set actual node to the upper one
+				if (node.PrevVisibleNode != null)
+				{
+					node = node.PrevVisibleNode;
 
-                    // hide drag image
-                    DragHelper.ImageList_DragShowNolock(false);
-                    // scroll and refresh
-                    node.EnsureVisible();
-                    Refresh();
-                    // show drag image
-                    DragHelper.ImageList_DragShowNolock(true);
+					// hide drag image
+					NativeMethods.ImageList_DragShowNolock(false);
+					// scroll and refresh
+					node.EnsureVisible();
+					Refresh();
+					// show drag image
+					NativeMethods.ImageList_DragShowNolock(true);
 
-                }
-            }
-            // if mouse is near to the bottom, scroll down
-            else if (pt.Y > Size.Height - 30)
-            {
-                if (node.NextVisibleNode != null)
-                {
-                    node = node.NextVisibleNode;
+				}
+			}
+			// if mouse is near to the bottom, scroll down
+			else if (pt.Y > Size.Height - 30)
+			{
+				if (node.NextVisibleNode != null)
+				{
+					node = node.NextVisibleNode;
 
-                    DragHelper.ImageList_DragShowNolock(false);
-                    node.EnsureVisible();
-                    Refresh();
-                    DragHelper.ImageList_DragShowNolock(true);
-                }
-            }
-        }
+					NativeMethods.ImageList_DragShowNolock(false);
+					node.EnsureVisible();
+					Refresh();
+					NativeMethods.ImageList_DragShowNolock(true);
+				}
+			}
+		}
 
 		#endregion
 
-    }
+	}
 
-    #region DragHelper
-    public class DragHelper
-    {
-        [DllImport("comctl32.dll")]
-        public static extern bool InitCommonControls();
+	#region SelectedNodesCollection
 
-        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
-        public static extern bool ImageList_BeginDrag(IntPtr himlTrack, int
-            iTrack, int dxHotspot, int dyHotspot);
-
-        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
-        public static extern bool ImageList_DragMove(int x, int y);
-
-        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
-        public static extern void ImageList_EndDrag();
-
-        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
-        public static extern bool ImageList_DragEnter(IntPtr hwndLock, int x, int y);
-
-        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
-        public static extern bool ImageList_DragLeave(IntPtr hwndLock);
-
-        [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
-        public static extern bool ImageList_DragShowNolock(bool fShow);
-
-        static DragHelper()
-        {
-            InitCommonControls();
-        }
-    }
-    #endregion
-
-    #region SelectedNodesCollection
-
-    /// <summary>
+	/// <summary>
 	/// Collection of selected nodes.
 	/// </summary>
 	public class NodesCollection : CollectionBase
@@ -2036,8 +2005,8 @@ namespace Revsoft.Wabbitcode
 		public TreeNode this[int index]
 		{
 			get { 
-                return ((TreeNode)List[index]); 
-            }
+				return ((TreeNode)List[index]); 
+			}
 		}
 
 		/// <summary>

@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.Xml;
 using Revsoft.Wabbitcode.Services;
+using System;
 
 namespace Revsoft.Wabbitcode.Classes
 {
@@ -50,6 +51,11 @@ namespace Revsoft.Wabbitcode.Classes
 			}
 
 			return true;
+		}
+
+		public static bool Contains(this string source, string toCheck, StringComparison comp)
+		{
+			return source.IndexOf(toCheck, comp) >= 0;
 		}
 	}
 }

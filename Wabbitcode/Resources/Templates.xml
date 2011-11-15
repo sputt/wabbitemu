@@ -3,6 +3,7 @@
   <!--All file paths based from "%HOMEPATH%\My Documents\Wabbitcode\Templates-->
 	<model name="Binary">
 		<template name="Binary" ext=".bin">default.asm</template>
+		<template name="ROM File" ext=".rom">default.asm</template>
 	</model>
   <model name="TI-82">
     <template name="CRaSH" ext=".82p">crash.asm</template>

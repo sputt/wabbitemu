@@ -35,6 +35,7 @@ namespace Revsoft.Wabbitcode
                 fontBox.Items.Add(family.Name);
                 outFontBox.Items.Add(family.Name);
             }
+			f.Dispose();
             foreach (int num in fontSizes)
             {
                 fontSizeBox.Items.Add(num);
@@ -104,8 +105,6 @@ namespace Revsoft.Wabbitcode
             convertTabsToSpacesBox.Checked = Settings.Default.convertTabs;
 			wabbitFolderCheck.Checked = Settings.Default.createFolders;
 			assemblerLocBox.Text = Environment.ExpandEnvironmentVariables(Settings.Default.assemblerLoc.Replace("%docs%",
-													Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
-			wabbitLocBox.Text = Environment.ExpandEnvironmentVariables(Settings.Default.wabbitLoc.Replace("%docs%", 
 													Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
 			dockConfigLoc.Text = Environment.ExpandEnvironmentVariables(Settings.Default.wabbitLoc.Replace("%docs%",
 													Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)));
@@ -229,7 +228,7 @@ namespace Revsoft.Wabbitcode
 				}
 				DockingService.OutputWindow.UpdateFont(Settings.Default.outputFont);
 				HighlightingClass.MakeHighlightingFile();
-				foreach (newEditor child in DockingService.Documents)
+				foreach (NewEditor child in DockingService.Documents)
 				{
                     child.UpdateOptions(TempSettings.Default);
 					//if (child.FileName != null)
@@ -350,19 +349,6 @@ namespace Revsoft.Wabbitcode
 			TempSettings.Default.assemblerLoc = openFile.FileName;
 		}
 
-		private void browseWabbit_Click(object sender, EventArgs e)
-		{
-			var openFile = new OpenFileDialog()
-			{
-				Filter = "Executables (*.exe)|*.exe",
-				Title = "Wabbitemu Location"
-			};
-			if (openFile.ShowDialog() != DialogResult.OK)
-				return;
-			wabbitLocBox.Text = openFile.FileName;
-			TempSettings.Default.wabbitLoc = openFile.FileName;
-		}
-
 		private void dockConfigBrowse_Click(object sender, EventArgs e)
 		{
 			var openFile = new OpenFileDialog()
@@ -372,8 +358,13 @@ namespace Revsoft.Wabbitcode
 			};
 			if (openFile.ShowDialog() != DialogResult.OK)
 				return;
-			wabbitLocBox.Text = openFile.FileName;
+			dockConfigLoc.Text = openFile.FileName;
 			TempSettings.Default.configLoc = openFile.FileName;
+		}
+
+		private void checkUpdatesBox_CheckedChanged(object sender, EventArgs e)
+		{
+			TempSettings.Default.checkUpdates = checkUpdatesBox.Checked;
 		}
     }
 }

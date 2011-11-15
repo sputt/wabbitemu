@@ -134,7 +134,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             string fileName = projectLoc.Substring(0, projectLoc.LastIndexOf('\\')) + '\\' + dirViewer.SelectedNode.FullPath;
             if (ParentForm == null)
                 return;
-			newEditor doc = DocumentService.CreateNewDocument();
+			NewEditor doc = DocumentService.CreateNewDocument();
             doc.TabText = Path.GetFileName(fileName);
             doc.Text = Path.GetFileName(fileName);
             doc.ToolTipText = fileName;
@@ -174,7 +174,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private void openMenuItem_Click(object sender, EventArgs e)
         {
 			string fileName = Path.GetDirectoryName(ProjectService.ProjectDirectory) +'\\' + dirViewer.SelectedNode.FullPath;
-            newEditor doc = DocumentService.CreateNewDocument();
+            NewEditor doc = DocumentService.CreateNewDocument();
             doc.TabText = Path.GetFileName(fileName);
             doc.Text = Path.GetFileName(fileName);
             doc.ToolTipText = fileName;

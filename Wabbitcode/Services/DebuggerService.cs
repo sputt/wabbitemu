@@ -451,7 +451,7 @@ namespace Revsoft.Wabbitcode.Services
 				isAnApp = outputType == 5;
 				bool configFound = false;
 				foreach (Services.Project.BuildConfig config in ProjectService.BuildConfigs)
-					if (config.Name.ToLower() == "debug")
+					if (string.Equals(config.Name, "Debug", StringComparison.OrdinalIgnoreCase))
 						configFound = true;
 				if (configFound)
 				{
@@ -605,7 +605,7 @@ namespace Revsoft.Wabbitcode.Services
             string text;
             if (e.Argument == null)
             {
-                foreach (newEditor child in DockingService.Documents)
+                foreach (NewEditor child in DockingService.Documents)
                 {
                     text = child.EditorText;
                     List<TextMarker> markers = GetStaticLabels(text);
@@ -615,7 +615,7 @@ namespace Revsoft.Wabbitcode.Services
             }
             else
             {
-                newEditor child = ((newEditor)e.Argument);
+                NewEditor child = ((NewEditor)e.Argument);
                 text = child.EditorText;
                 List<TextMarker> markers = GetStaticLabels(text);
                 child.AddMarkers(markers);
@@ -841,7 +841,7 @@ namespace Revsoft.Wabbitcode.Services
 			Process wabbit = null;
 			foreach (Process potential in Process.GetProcesses())
 			{
-				if (!potential.ProcessName.ToLower().Contains("wabbitemu"))
+				if (!potential.ProcessName.Contains("wabbitemu", StringComparison.OrdinalIgnoreCase))
 					continue;
 				wabbit = potential;
 				break;
