@@ -93,8 +93,8 @@ extern unsigned int program_counter;
 
 static const char *parse_single_num (const char *expr, int *value);
 static const char *parse_num_full (const char *expr, int *value, int depth);
-static BOOL conv_dec (const char* str, const char *end, int *output);
-static BOOL conv_bin (const char* str, const char *end, int *output);
+static bool conv_dec (const char* str, const char *end, int *output);
+static bool conv_bin (const char* str, const char *end, int *output);
 
 //set when the parser hits an undefined #define or label
 bool parser_forward_ref_err;
@@ -248,7 +248,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 			if (isxdigit ((unsigned char) *expr)) {
 				while (isalnum(*expr))
 					expr++;
-				BOOL success = conv_hex (num_start, expr, value);
+				bool success = conv_hex (num_start, expr, value);
 				if (!success)
 				{
 					return NULL;
@@ -264,7 +264,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 			const char *num_start = ++expr;
 			while (isalnum(*expr))
 				expr++;
-			BOOL succeeded = conv_bin (num_start, expr, value);
+			bool succeeded = conv_bin (num_start, expr, value);
 			if (!succeeded)
 			{
 				return NULL;
@@ -428,7 +428,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 				//Find the end of the number
 				while (isalnum ((unsigned char) expr[1])) expr++;
 
-				BOOL success;
+				bool success;
 				switch (toupper (expr[0])) {
 		case 'H':	success = conv_hex (expr_start, expr++, value);	break;
 		case 'B':	success = conv_bin (expr_start, expr++, value); break;
@@ -639,7 +639,7 @@ static const char *parse_num_full (const char *expr, int *value, int depth) {
  * returns true if succeeded, false otherwise
  */
 
-int conv_hex (const char* str, const char *end, int *output_num) {
+bool conv_hex (const char* str, const char *end, int *output_num) {
 	int acc = 0;
 	const char *start = str;
 
@@ -674,7 +674,7 @@ int conv_hex (const char* str, const char *end, int *output_num) {
  * returns true if succeeded, false otherwise
  */
 
-static BOOL conv_dec (const char* str, const char *end, int *output_num) {
+static bool conv_dec (const char* str, const char *end, int *output_num) {
 	int acc = 0;
 	const char *start = str;
 
@@ -704,7 +704,7 @@ static BOOL conv_dec (const char* str, const char *end, int *output_num) {
  * returns true if succeeded, false otherwise
  */
 
-static BOOL conv_bin (const char* str, const char *end, int *output_num) {
+static bool conv_bin (const char* str, const char *end, int *output_num) {
 	int acc = 0;
 	const char *start = str;
 

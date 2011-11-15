@@ -153,27 +153,28 @@ void DrawButtonShadow(HDC hdc, HDC hdcKeymap, POINT *pt)
 			
 			COLORREF colortest = GetPixel(hdcKeymap, x + brect.left, y + brect.top);
 			if (colormatch == colortest) {
-				COLORREF colortestdown = GetPixel(hdcKeymap, x + brect.left, y + brect.top + 1);
-				COLORREF colortestup = GetPixel(hdcKeymap, x + brect.left, y + brect.top - 1);
-				COLORREF colortestright = GetPixel(hdcKeymap, x + brect.left + 1, y + brect.top);
-				COLORREF colortestleft = GetPixel(hdcKeymap, x + brect.left - 1, y + brect.top);
+				COLORREF colortestup = GetPixel(hdcKeymap, x + brect.left, y + brect.top + 1);
+				COLORREF colortestdown = GetPixel(hdcKeymap, x + brect.left, y + brect.top - 1);
+				COLORREF colortestleft = GetPixel(hdcKeymap, x + brect.left + 1, y + brect.top);
+				COLORREF colortestright = GetPixel(hdcKeymap, x + brect.left - 1, y + brect.top);
 #define SHADOW_OFFSET 100
+#define SHADOW_SIZE 5
 				if (GetRValue(colortestdown) == 0xFF) {
-					for (int i = 1; i < 3; i++) {
-						SetPixel(hdc, x, y + i,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+					for (int i = 1; i < SHADOW_SIZE; i++) {
+						SetPixel(hdc, x, y - i,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
 					}
 				} else if (GetRValue(colortestup) == 0xFF) {
-					for (int i = 1; i < 3; i++) {
-						SetPixel(hdc, x, y - i,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+					for (int i = 1; i < SHADOW_SIZE; i++) {
+						SetPixel(hdc, x, y + i,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
 					}
 				}
 				if (GetRValue(colortestright) == 0xFF) {
-					for (int i = 1; i < 3; i++) {
-						SetPixel(hdc, x + i, y,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+					for (int i = 1; i < SHADOW_SIZE; i++) {
+						SetPixel(hdc, x - i, y,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
 					}
 				} else if (GetRValue(colortestleft) == 0xFF) {
-					for (int i = 1; i < 3; i++) {
-						SetPixel(hdc, x - i, y,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+					for (int i = 1; i < SHADOW_SIZE; i++) {
+						SetPixel(hdc, x + i, y,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
 					}
 				}
 			}

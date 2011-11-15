@@ -112,7 +112,8 @@ bool IsSPASMErrorSessionFatal(int nSession)
 		if (!(dwError == SPASM_ERR_LOCAL_LABEL_FORWARD_REF ||
 			  dwError == SPASM_ERR_LABEL_NOT_FOUND ||
 			  dwError == SPASM_ERR_INDEX_OFFSET_EXCEEDED ||
-			  dwError == SPASM_ERR_SUCCESS))
+			  dwError == SPASM_ERR_SUCCESS ||
+			  dwError == SPASM_ERR_RECURSION_DEPTH))
 		{
 			fIsFatal = true;
 			break;

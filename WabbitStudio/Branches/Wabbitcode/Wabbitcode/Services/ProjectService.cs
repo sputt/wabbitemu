@@ -189,7 +189,7 @@ namespace Revsoft.Wabbitcode.Services
 			//throw new NotImplementedException();
 		}
 
-		delegate void FileChangedDelegate(newEditor doc, string fileName);
+		delegate void FileChangedDelegate(NewEditor doc, string fileName);
 		static void projectWatcher_Changed(object sender, FileSystemEventArgs e)
 		{
 			switch (e.ChangeType)
@@ -197,9 +197,9 @@ namespace Revsoft.Wabbitcode.Services
 				case WatcherChangeTypes.Changed:
 					if (!DocumentService.InternalSave && !string.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
 					{
-						foreach (newEditor doc in DockingService.Documents)
+						foreach (NewEditor doc in DockingService.Documents)
 						{
-							if (doc.FileName.Equals(e.FullPath, StringComparison.OrdinalIgnoreCase))
+							if (string.Equals(doc.FileName, e.FullPath, StringComparison.OrdinalIgnoreCase))
 							{
 								FileChangedDelegate fileChanged = UpdateFileChanged;
 								DockingService.MainForm.Invoke(fileChanged, new object[] { doc, e.FullPath });
@@ -211,7 +211,7 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		internal static void UpdateFileChanged(newEditor doc, string fileName)
+		internal static void UpdateFileChanged(NewEditor doc, string fileName)
 		{
 			projectWatcher.EnableRaisingEvents = false;
 			DialogResult result = MessageBox.Show(fileName + " modified outside the editor.\nLoad changes?", "File modified", MessageBoxButtons.YesNo);
@@ -318,7 +318,7 @@ namespace Revsoft.Wabbitcode.Services
                 for (int i = 0; i < parseInfo.Count; i++)
                 {
                     var info = parseInfo[i];
-                    if (info.SourceFile.ToLower() == file.ToLower())
+                    if (string.Equals(info.SourceFile, file))
                         return info;
                 }
             }

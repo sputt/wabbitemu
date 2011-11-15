@@ -11,8 +11,8 @@ using System.Text;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
-    public class ProjectClass : IProject
-    {
+	public class ProjectClass : IProject
+	{
 		private string projectDirectory;
 		public string ProjectDirectory
 		{
@@ -39,12 +39,12 @@ namespace Revsoft.Wabbitcode.Services.Project
 			set { projectName = value; }
 		}
 
-        private bool needsSave = false;
-        public bool NeedsSave
-        {
-            get { return needsSave; }
-            set { needsSave = value; }
-        }
+		private bool needsSave = false;
+		public bool NeedsSave
+		{
+			get { return needsSave; }
+			set { needsSave = value; }
+		}
 
 		private BuildSystem buildSystem = new BuildSystem(false);
 		public BuildSystem BuildSystem
@@ -82,15 +82,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 			
 		}
 
-        public ProjectClass(string projectFile)
-        {
+		public ProjectClass(string projectFile)
+		{
 			ProjectService.IsInternal = false;
 			this.projectFile = projectFile;
 			projectDirectory = Path.GetDirectoryName(projectFile);
-			//mainFolder = new ProjectFolder();
 
-            Settings.Default.includeDir = "";
-        }
+			Settings.Default.includeDir = "";
+		}
 
 		internal void CreateNewProject(string projectFile, string projectName)
 		{
@@ -104,34 +103,37 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		internal void OpenProject(string projectFile)
 		{
-			FileStream stream = new FileStream(projectFile, FileMode.Open);
-			XmlTextReader reader = new XmlTextReader(stream);
-			reader.WhitespaceHandling = WhitespaceHandling.None;
-			reader.MoveToContent();
-			while (!reader.Name.Equals("WabbitcodeProject"))
+			using (FileStream stream = new FileStream(projectFile, FileMode.Open))
 			{
-				if (!reader.MoveToNextElement())
-					throw new ArgumentException("Invalid XML Format");
-			}
+				using (XmlTextReader reader = new XmlTextReader(stream) { WhitespaceHandling = WhitespaceHandling.None })
+				{
+					reader.MoveToContent();
+					while (!reader.Name.Equals("WabbitcodeProject"))
+					{
+						if (!reader.MoveToNextElement())
+							throw new ArgumentException("Invalid XML Format");
+					}
 
-			string formatVersion = reader.GetAttribute("Version");
-			DialogResult result = DialogResult.Yes;
-			if (formatVersion != ProjectFileVersion)
-				result = MessageBox.Show("Project Version is not up to date.\nTry to load anyway?", "Invalid Version", MessageBoxButtons.YesNo);
-			if (result != DialogResult.Yes)
-				return;
-			projectName = reader.GetAttribute("Name");
-			reader.MoveToNextElement();
-			if (reader.Name != "Folder")
-				throw new ArgumentException("Invalid XML Format");
-			mainFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
-			RecurseReadFolders(reader, ref mainFolder);
-			buildSystem.ReadXML(reader);
-			reader.Close();
-			stream.Close();
+					string formatVersion = reader.GetAttribute("Version");
+					DialogResult result = DialogResult.Yes;
+					if (formatVersion != ProjectFileVersion)
+						result = MessageBox.Show("Project Version is not up to date.\nTry to load anyway?", "Invalid Version", MessageBoxButtons.YesNo);
+					if (result != DialogResult.Yes)
+						return;
+					projectName = reader.GetAttribute("Name");
+					reader.MoveToNextElement();
+					if (reader.Name != "Folder")
+						throw new ArgumentException("Invalid XML Format");
+					mainFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
+					RecurseReadFolders(reader, ref mainFolder);
+					buildSystem.ReadXML(reader);
+				}
+			}
 		}
-        #region XML
-        private void RecurseReadFolders(XmlTextReader reader, ref ProjectFolder folder)
+
+		#region XML
+
+		private void RecurseReadFolders(XmlTextReader reader, ref ProjectFolder folder)
 		{
 			if (reader.IsEmptyElement)
 				return;
@@ -188,8 +190,10 @@ namespace Revsoft.Wabbitcode.Services.Project
 			}
 			writer.WriteEndElement();
 		}
-        #endregion
-        internal List<ProjectFile> GetProjectFiles()
+
+		#endregion
+
+		internal List<ProjectFile> GetProjectFiles()
 		{
 			List<ProjectFile> files = new List<ProjectFile>();
 			RecurseAddFiles(ref files, mainFolder);
@@ -205,73 +209,73 @@ namespace Revsoft.Wabbitcode.Services.Project
 		}
 
 
-        public ProjectFolder AddFolder(string dirName, ProjectFolder parentFolder)
-        {
-            ProjectFolder folder = new ProjectFolder(this, dirName);
-            parentFolder.AddFolder(folder);
-            return folder;
-        }
+		public ProjectFolder AddFolder(string dirName, ProjectFolder parentFolder)
+		{
+			ProjectFolder folder = new ProjectFolder(this, dirName);
+			parentFolder.AddFolder(folder);
+			return folder;
+		}
 
-        public ProjectFile AddFile(ProjectFolder parentFolder, string fullPath)
-        {
-            ProjectFile file = new ProjectFile(this, fullPath);
-            parentFolder.AddFile(file);
-            return file;
-        }
+		public ProjectFile AddFile(ProjectFolder parentFolder, string fullPath)
+		{
+			ProjectFile file = new ProjectFile(this, fullPath);
+			parentFolder.AddFile(file);
+			return file;
+		}
 
-        public bool ContainsFile(string fullPath)
-        {
-            fileFound = null;
-            return RecurseSearchFolders(MainFolder, Path.GetFileName(fullPath));
-        }
+		public bool ContainsFile(string fullPath)
+		{
+			fileFound = null;
+			return RecurseSearchFolders(MainFolder, Path.GetFileName(fullPath));
+		}
 
-        private ProjectFile fileFound;
-        private bool RecurseSearchFolders(ProjectFolder folder, string file)
-        {
-            if (fileFound == null)
-                fileFound = folder.FindFile(file);
-            if (fileFound != null)
-                return true;
-            bool returnVal = false;
-            foreach (ProjectFolder subFolder in folder.Folders)
-                returnVal |= RecurseSearchFolders(subFolder, file);
-            if (fileFound != null)
-                return true;
-            return returnVal;
-        }
+		private ProjectFile fileFound;
+		private bool RecurseSearchFolders(ProjectFolder folder, string file)
+		{
+			if (fileFound == null)
+				fileFound = folder.FindFile(file);
+			if (fileFound != null)
+				return true;
+			bool returnVal = false;
+			foreach (ProjectFolder subFolder in folder.Folders)
+				returnVal |= RecurseSearchFolders(subFolder, file);
+			if (fileFound != null)
+				return true;
+			return returnVal;
+		}
 
-        public ProjectFile FindFile(string fullPath)
-        {
-            if (fileFound != null && fileFound.FileFullPath == fullPath)
-                return fileFound;
-            fileFound = null;
-            if (ContainsFile(fullPath))
-                return fileFound;
-            return null;
-        }
+		public ProjectFile FindFile(string fullPath)
+		{
+			if (fileFound != null && string.Equals(fileFound.FileFullPath, fullPath, StringComparison.OrdinalIgnoreCase))
+				return fileFound;
+			fileFound = null;
+			if (ContainsFile(fullPath))
+				return fileFound;
+			return null;
+		}
 
-        public void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir)
-        {
-            parentDir.Folders.Remove(dir);
-        }
+		public void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir)
+		{
+			parentDir.Folders.Remove(dir);
+		}
 
-        public void DeleteFile(ProjectFolder parentDir, ProjectFile file)
-        {
-            file.Remove();
-        }
+		public void DeleteFile(ProjectFolder parentDir, ProjectFile file)
+		{
+			file.Remove();
+		}
 
-        internal int GetOutputType()
-        {
-            foreach(IBuildStep step in buildSystem.CurrentConfig.Steps){
-                if (step.GetType() == typeof(InternalBuildStep))
-                {
-                    string outputFile = ((InternalBuildStep)step).OutputFile;
-                    if (Path.GetExtension(outputFile) == ".8xk")
-                        return 5;
-                }
-            }
-            //otherwise we assume its a program
-            return 4;
-        }
-    }
+		internal int GetOutputType()
+		{
+			foreach(IBuildStep step in buildSystem.CurrentConfig.Steps){
+				if (step.GetType() == typeof(InternalBuildStep))
+				{
+					string outputFile = ((InternalBuildStep)step).OutputFile;
+					if (Path.GetExtension(outputFile) == ".8xk")
+						return 5;
+				}
+			}
+			//otherwise we assume its a program
+			return 4;
+		}
+	}
 }

@@ -128,8 +128,11 @@ namespace Revsoft.Wabbitcode.Services
 					{
 						file = Path.Combine(startDir, line.Substring(0, firstColon));
 						lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
+						int lineNumber;
+						if (!int.TryParse(lineNum, out lineNumber))
+							lineNumber = -1;
 						description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-						ErrorsInFiles.Add(new Error(file, Convert.ToInt32(lineNum), description, false));
+						ErrorsInFiles.Add(new Error(file, lineNumber, description, false));
 					}
 				}
 				if (!line.Contains("warning"))
@@ -164,7 +167,7 @@ namespace Revsoft.Wabbitcode.Services
 				DockingService.ShowDockPanel(DockingService.OutputWindow);
                 if (DockingService.ActiveDocument != null)
                     DockingService.ActiveDocument.Refresh();
-				foreach (newEditor child in DockingService.Documents)
+				foreach (NewEditor child in DockingService.Documents)
 					child.UpdateIcons();
             }
 			catch (Exception ex)
@@ -219,7 +222,7 @@ namespace Revsoft.Wabbitcode.Services
 			Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
 #if !USE_DLL
 			//create two new processes to run
-			Process wabbitspasm = new Process
+			var wabbitspasm = new Process
 			{
 				StartInfo =
 				{

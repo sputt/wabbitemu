@@ -21,7 +21,11 @@ namespace Revsoft.Wabbitcode
 			Uri uri1 = new Uri(absolutePath);
 			Uri uri2 = new Uri(relativeTo);
 			Uri relativeUri = uri1.MakeRelativeUri(uri2);
-			return Uri.UnescapeDataString(Uri.UnescapeDataString(relativeUri.OriginalString));
+			var uriString = Uri.UnescapeDataString(Uri.UnescapeDataString(relativeUri.OriginalString));
+			var dir = Path.GetFileName(absolutePath);
+			if (uriString.StartsWith(dir))
+				uriString = uriString.Remove(0, dir.Length + 1);		//+1 for /
+			return uriString;
 
             /*if (absolutePath == relativeTo)
                 return "";

@@ -37,19 +37,23 @@ typedef struct {
 
 #define SAVE_HEADERSIZE	116
 
-#define INFO_tag		"INFO"
-#define CPU_tag			"CPU "
-#define MEM_tag			"MEMC"
-#define ROM_tag			"ROM "
-#define RAM_tag			"RAM "
-#define TIMER_tag		"TIME"
-#define LCD_tag			"LCD "
-#define LINK_tag		"LINK"
-#define STDINT_tag		"STDI"
-#define SE_AUX_tag		"SEAX"
-#define USB_tag			"USB "
-#define REMAP_tag		"RMAP"
-#define RAM_LIMIT_tag	"RMLM"
+#define INFO_tag				"INFO"
+#define CPU_tag					"CPU "
+#define MEM_tag					"MEMC"
+#define ROM_tag					"ROM "
+#define RAM_tag					"RAM "
+#define TIMER_tag				"TIME"
+#define LCD_tag					"LCD "
+#define LINK_tag				"LINK"
+#define STDINT_tag				"STDI"
+#define SE_AUX_tag				"SEAX"
+#define USB_tag					"USB "
+#define REMAP_tag				"RMAP"
+#define RAM_LIMIT_tag			"RMLM"
+#define RAM_BREAKS_tag			"RBRK"
+#define FLASH_BREAKS_tag		"FBRK"
+#define NUM_FLASH_BREAKS_tag	"NFBK"
+#define NUM_RAM_BREAKS_tag		"NRBK"
 
 void WriteSave(const TCHAR *, SAVESTATE_t *, int);
 void LoadSlot(SAVESTATE_t* , void *);

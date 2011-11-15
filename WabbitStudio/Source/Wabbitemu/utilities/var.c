@@ -2,7 +2,9 @@
 
 #include "var.h"
 #include "calc.h"
+#ifdef _WINDOWS
 #include "miniunz.h"
+#endif
 
 char self_test[] = "Self Test?";
 char catalog[] = "CATALOG";
@@ -22,8 +24,6 @@ char txt86[] = "Already Installed";
 int CmpStringCase(char *str1, unsigned char *str2) {
 	return _strnicmp(str1, (char *) str2, strlen(str1));
 }
-
-
 
 int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 	int i,b;

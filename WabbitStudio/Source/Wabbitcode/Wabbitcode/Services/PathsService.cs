@@ -69,6 +69,8 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
+		#region IService
+		
 		public void InitService(params Object[] objects)
 		{
 			Directory.CreateDirectory(ApplicationAppData);
@@ -78,5 +80,7 @@ namespace Revsoft.Wabbitcode.Services
 		}
 
 		public void DestroyService() { }
+
+		#endregion
 	}
 }

@@ -274,7 +274,7 @@ char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 			while ((word = extract_arg_string(&ptr, &context)) != NULL)
 			{
 				if (num_args >= define->num_args) {
-					show_warning ("Macro '%s' was given too many arguments, ignoring extras", define->name);
+					SetLastSPASMWarning(SPASM_WARN_MACRO_TOO_MANY_ARGS, define->name);
 					break;
 				}
 
@@ -830,7 +830,7 @@ void expand_expr_full (const char *expr, expand_buf *new_expr, int depth) {
 	int name_len;
 
 	if (depth > RECURSION_LIMIT) {
-		show_fatal_error ("Expression is too deep (only %d levels allowed)", RECURSION_LIMIT);
+		SetLastSPASMError (SPASM_ERR_RECURSION_DEPTH, RECURSION_LIMIT);
 		return;
 	}
 

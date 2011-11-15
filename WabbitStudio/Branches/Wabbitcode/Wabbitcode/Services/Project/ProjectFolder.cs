@@ -74,7 +74,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 		internal ProjectFile FindFile(string file)
 		{
 			foreach (ProjectFile subFile in files)
-				if (Path.GetFileName(subFile.FileFullPath).ToLower() == file.ToLower())
+				if (string.Equals(Path.GetFileName(subFile.FileFullPath), file, StringComparison.OrdinalIgnoreCase))
 					return subFile;
 			return null;
 		}

@@ -14,6 +14,13 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			get { return sourceFile; }
 		}
 
+		private bool parsingIncludes = false;
+		public bool ParsingIncludes
+		{
+			get { return parsingIncludes; }
+			set { parsingIncludes = value; }
+		}
+
         private bool isIncluded = false;
         public bool IsIncluded
         {

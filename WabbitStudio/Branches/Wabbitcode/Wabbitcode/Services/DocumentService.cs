@@ -15,18 +15,18 @@ namespace Revsoft.Wabbitcode.Services
 {
 	public static class DocumentService
 	{
-        public enum FixableErrorType
-        {
-            RelativeJump,
+		public enum FixableErrorType
+		{
+			RelativeJump,
 
-        }
+		}
 		/// <summary>
 		/// Each string is the path to a recently opened file. Is also stored in properties as a big long string.
 		/// </summary>
 		private static string[] recentFileList = new string[10];
 		private static int recentFileIndex = 0;
 
-		public static newEditor ActiveDocument
+		public static NewEditor ActiveDocument
 		{
 			get { return DockingService.ActiveDocument; }
 		}
@@ -41,60 +41,63 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		public static newEditor CreateNewDocument()
+		public static NewEditor CreateNewDocument()
 		{
-			newEditor doc = new newEditor { Text = "New Document", TabText = "New Document" };
+			NewEditor doc = new NewEditor { Text = "New Document", TabText = "New Document" };
 			doc.SetHighlighting("Z80 Assembly");
 			return doc;
 		}
 
 		public static void OpenDocument()
 		{
-			OpenFileDialog openFileDialog = new OpenFileDialog()
-            {
+			var openFileDialog = new OpenFileDialog()
+			{
 				CheckFileExists = true,
 				DefaultExt = "*.asm",
-                Filter = "All Know File Types | *.asm; *.z80; *.wcodeproj| Assembly Files (*.asm)|*.asm|Z80" +
-                           " Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|Project Files (*.wcodeproj)"+
+				Filter = "All Know File Types | *.asm; *.z80; *.wcodeproj| Assembly Files (*.asm)|*.asm|Z80" +
+						   " Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|Project Files (*.wcodeproj)"+
 						   "|*.wcodeproj|All Files(*.*)|*.*",
-                FilterIndex = 0,
-                RestoreDirectory = true,
-                Title = "Open File",
-            };
+				FilterIndex = 0,
+				RestoreDirectory = true,
+				Multiselect = true,
+				Title = "Open File",
+			};
 			if (openFileDialog.ShowDialog() != DialogResult.OK)
 				return;
-			string fileName = openFileDialog.FileName;
-			string extCheck = Path.GetExtension(fileName).ToLower();
-			if (extCheck == ".wcodeproj")
-				ProjectService.OpenProject(fileName);
-			else
-				OpenDocument(fileName);
+			foreach (var fileName in openFileDialog.FileNames)
+			{
+				string extCheck = Path.GetExtension(fileName);
+				if (string.Equals(extCheck, ".wcodeproj", StringComparison.OrdinalIgnoreCase))
+					ProjectService.OpenProject(fileName);
+				else
+					OpenDocument(fileName);	
+			}
 		}
 
-        internal static newEditor OpenDocument(string filename)
-        {
+		internal static NewEditor OpenDocument(string filename)
+		{
 #if !DEBUG
-            try
-            {
+			try
+			{
 #endif
-                newEditor doc = new newEditor();
-                OpenDocument(doc, filename);
-                return doc;
+				NewEditor doc = new NewEditor();
+				OpenDocument(doc, filename);
+				return doc;
 #if !DEBUG
-            }
-            catch (Exception ex)
-            {
-                StringBuilder builder = new StringBuilder();
-                builder.Append("Error opening file ");
-                builder.AppendLine(filename);
-                builder.Append(ex);
-                DockingService.ShowError(builder.ToString());
-                return null;
-            }
+			}
+			catch (Exception ex)
+			{
+				StringBuilder builder = new StringBuilder();
+				builder.Append("Error opening file ");
+				builder.AppendLine(filename);
+				builder.Append(ex);
+				DockingService.ShowError(builder.ToString());
+				return null;
+			}
 #endif
-        }
+		}
 
-		internal static void OpenDocument(newEditor doc, string filename)
+		internal static void OpenDocument(NewEditor doc, string filename)
 		{
 			DockingService.MainForm.IncrementProgress(10);
 
@@ -121,7 +124,7 @@ namespace Revsoft.Wabbitcode.Services
 			SaveDocument(ActiveDocument);
 		}
 
-		internal static void SaveDocument(newEditor doc)
+		internal static void SaveDocument(NewEditor doc)
 		{
 			SaveFileDialog saveFileDialog = new SaveFileDialog()
 			{
@@ -134,7 +137,7 @@ namespace Revsoft.Wabbitcode.Services
 			};
 			if (ProjectService.ProjectWatcher != null)
 				ProjectService.ProjectWatcher.EnableRaisingEvents = false;
-			if (doc.FileName == null)
+			if (string.IsNullOrEmpty(doc.FileName))
 			{
 				if (saveFileDialog.ShowDialog() != DialogResult.OK)
 					return;
@@ -142,7 +145,7 @@ namespace Revsoft.Wabbitcode.Services
 					return;
 				doc.FileName = saveFileDialog.FileName;
 			}
-			if (doc.FileName != "")
+			if (!string.IsNullOrEmpty(doc.FileName))
 				doc.SaveFile();
 			if (ProjectService.ProjectWatcher != null)
 				ProjectService.ProjectWatcher.EnableRaisingEvents = true;
@@ -178,41 +181,40 @@ namespace Revsoft.Wabbitcode.Services
 			return true;
 		}
 
-		public static newEditor GotoFile(string file)
+		public static NewEditor GotoFile(string file)
 		{
-			string fileToLower = file.ToLower();
-			newEditor editorBox = ActiveDocument;
+			NewEditor editorBox = ActiveDocument;
 			if (editorBox == null)
-                return OpenDocument(fileToLower);
+				return OpenDocument(file);
 
-			if (fileToLower == ActiveFileName.ToLower())
+			if (string.Equals(file, ActiveFileName, StringComparison.OrdinalIgnoreCase))
 				return ActiveDocument;
-			foreach (newEditor child in DockingService.Documents)
-				if (child.FileName != null && child.FileName.ToLower() == fileToLower)
+			foreach (NewEditor child in DockingService.Documents)
+				if (!string.IsNullOrEmpty(child.FileName) && string.Equals(child.FileName, file, StringComparison.OrdinalIgnoreCase))
 				{
 					child.Show();
-                    return child;
+					return child;
 				}
-            return OpenDocument(fileToLower);
+			return OpenDocument(file);
 		}
 
 		public static void GotoLine(int scrollToLine)
 		{
-            ActiveDocument.ScrollToLine(scrollToLine);
+			ActiveDocument.ScrollToLine(scrollToLine);
 		}
 
 		public static void GotoLine(string file, int scrollToLine)
 		{
-			newEditor child = GotoFile(file);
-            child.ScrollToLine(scrollToLine);
+			NewEditor child = GotoFile(file);
+			child.ScrollToLine(scrollToLine);
 		}
 
 		public static void GotoLabel(IParserData item)
 		{
 			ParserInformation info = item.Parent;
 			string file = info.SourceFile;
-			newEditor child = GotoFile(file);
-            child.ScrollToOffset(item.Location.Offset);
+			NewEditor child = GotoFile(file);
+			child.ScrollToOffset(item.Location.Offset);
 		}
 
 		private static List<ListFileKey> highlights = new List<ListFileKey>();
@@ -230,7 +232,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal static void HighlightCall()
 		{
-            GotoFile(highlights[debugIndex].FileName).HighlightCall(highlights[debugIndex].LineNumber);
+			GotoFile(highlights[debugIndex].FileName).HighlightCall(highlights[debugIndex].LineNumber);
 		}
 
 		internal static void GotoCurrentDebugLine()
@@ -240,19 +242,19 @@ namespace Revsoft.Wabbitcode.Services
 
 		public static void HighlightLine(int newLineNumber, Color foregroundColor)
 		{
-            ListFileKey value = new ListFileKey(ActiveFileName, newLineNumber);
-            highlights.Add(value);
-            ActiveDocument.HighlightLine(newLineNumber, foregroundColor);
+			ListFileKey value = new ListFileKey(ActiveFileName, newLineNumber);
+			highlights.Add(value);
+			ActiveDocument.HighlightLine(newLineNumber, foregroundColor);
 		}
 
 		public static void RemoveDebugHighlight()
 		{
-            if (ActiveDocument == null || highlights.Count == 0 || debugIndex < 0)
-                return;
-            ListFileKey key = highlights[debugIndex];
-            GotoFile(key.FileName).RemoveDebugHighlight(key.LineNumber);
-            highlights.Remove(key);
-            debugIndex = -1;
+			if (ActiveDocument == null || highlights.Count == 0 || debugIndex < 0)
+				return;
+			ListFileKey key = highlights[debugIndex];
+			GotoFile(key.FileName).RemoveDebugHighlight(key.LineNumber);
+			highlights.Remove(key);
+			debugIndex = -1;
 		}
 
 		public static void RemoveHighlight(int index)
@@ -260,7 +262,7 @@ namespace Revsoft.Wabbitcode.Services
 			if (ActiveDocument == null || highlights.Count == 0)
 				return;
 			ListFileKey key = highlights[index];
-            GotoFile(key.FileName).RemoveHighlight(key.LineNumber);
+			GotoFile(key.FileName).RemoveHighlight(key.LineNumber);
 			highlights.Remove(key);
 			if (index <= debugIndex)
 				debugIndex--;
@@ -288,9 +290,9 @@ namespace Revsoft.Wabbitcode.Services
 		/// </summary>
 		private static void SaveRecentFileList()
 		{
-            StringBuilder list = new StringBuilder();
-            foreach (string file in recentFileList)
-                list.Append(file + "\n");
+			StringBuilder list = new StringBuilder();
+			foreach (string file in recentFileList)
+				list.Append(file + "\n");
 			Settings.Default.recentFiles = list.ToString();
 		}
 
@@ -299,7 +301,7 @@ namespace Revsoft.Wabbitcode.Services
 		/// </summary>
 		internal static void GetRecentFiles()
 		{
-            DockingService.MainForm.ClearRecentItems();
+			DockingService.MainForm.ClearRecentItems();
 			string line = Settings.Default.recentFiles;
 			string[] list = line.Split('\n');
 			foreach (string file in list)

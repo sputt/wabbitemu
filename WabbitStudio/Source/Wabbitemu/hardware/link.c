@@ -353,7 +353,6 @@ static void link_RTS(CPU_t *cpu, TIVAR_t *var, int dest) {
 		link_send_pkt(cpu, CID_RTS, &var_hdr);
 }
 
-#ifdef _WINDOWS
 LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 	if (link_init(cpu))
 		return LERR_NOTINIT;
@@ -393,20 +392,21 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		// Send the VAR with Backup style header
 		link_send_pkt(cpu, CID_VAR, &bkhdr);
 
-		int virtKey = cpu->pio.model == TI_85 ? VK_F1 : VK_RETURN;
-		keypad_key_press(cpu, virtKey);
+		int group = cpu->pio.model == TI_85 ? 6 : 1;
+		int bit = cpu->pio.model == TI_85 ? 4 : 0;
+		keypad_press(cpu, group, bit);
 
 		// Receive the ACK
 		link_recv_pkt(cpu, &rpkt, data);
 		if (rpkt.command_ID != CID_ACK) {
-			keypad_key_release(cpu, virtKey);
+			keypad_release(cpu, group, bit);
 			return LERR_LINK;
 		}
 
 		// Receive Clear To Send
 		link_recv_pkt(cpu, &rpkt, data);
 		if (rpkt.command_ID != CID_CTS) {
-			keypad_key_release(cpu, virtKey);
+			keypad_release(cpu, group, bit);
 			if (rpkt.command_ID == CID_EXIT) {
 				link_send_pkt(cpu, CID_ACK, NULL);
 				return LERR_MEM;
@@ -424,7 +424,7 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		// Receive the ACK
 		link_recv_pkt(cpu, &rpkt, data);
 		if (rpkt.command_ID != CID_ACK) {
-			keypad_key_release(cpu, virtKey);
+			keypad_release(cpu, group, bit);
 			return LERR_LINK;
 		}
 
@@ -436,7 +436,7 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		// Receive the ACK
 		link_recv_pkt(cpu, &rpkt, data);
 		if (rpkt.command_ID != CID_ACK) {
-			keypad_key_release(cpu, virtKey);
+			keypad_release(cpu, group, bit);
 			return LERR_LINK;
 		}
 
@@ -448,14 +448,14 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 		// Receive the ACK
 		link_recv_pkt(cpu, &rpkt, data);
 		if (rpkt.command_ID != CID_ACK) {
-			keypad_key_release(cpu, virtKey);
+			keypad_release(cpu, group, bit);
 			return LERR_LINK;
 		}
 
 		// Send the End of Transmission
 		if (cpu->pio.model != TI_82)
 			link_send_pkt(cpu, CID_EOT, NULL);
-		keypad_key_release(cpu, virtKey);
+		keypad_release(cpu, group, bit);
 		break;
 	}
 	default:
@@ -463,7 +463,6 @@ LINK_ERR link_send_backup(CPU_t *cpu, TIFILE_t *tifile, SEND_FLAG dest) {
 	}
 	return LERR_SUCCESS;
 }
-#endif
 
 // Order that VTI uses:
 // Packet 1

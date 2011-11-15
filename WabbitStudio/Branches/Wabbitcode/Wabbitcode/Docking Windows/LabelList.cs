@@ -10,38 +10,38 @@ using Revsoft.Wabbitcode.Services.Parser;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
-    public partial class LabelList : ToolWindow
-    {
-        public LabelList()
-        {
-            InitializeComponent();
-        }
+	public partial class LabelList : ToolWindow
+	{
+		public LabelList()
+		{
+			InitializeComponent();
+		}
 
-        private void LabelList_VisibleChanged(object sender, EventArgs e)
-        {
+		private void LabelList_VisibleChanged(object sender, EventArgs e)
+		{
 			DockingService.MainForm.UpdateChecks();
-        }
+		}
 
-        private void labelsBox_DoubleClick(object sender, EventArgs e)
-        {
-            if (labelsBox.SelectedItem == null)
-                return;
+		private void labelsBox_DoubleClick(object sender, EventArgs e)
+		{
+			if (labelsBox.SelectedItem == null)
+				return;
 			DocumentService.GotoLabel((ILabel)labelsBox.SelectedItem);
 			DockingService.ActiveDocument.Focus();
-        }
+		}
 
-        private void includeEquatesBox_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.showEquates = includeEquatesBox.Checked;
+		private void includeEquatesBox_CheckedChanged(object sender, EventArgs e)
+		{
+			Properties.Settings.Default.showEquates = includeEquatesBox.Checked;
 			DocumentService.ActiveDocument.UpdateLabelBox();
-        }
+		}
 
-        private void alphaBox_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.alphabetizeLabels = alphaBox.Checked;
+		private void alphaBox_CheckedChanged(object sender, EventArgs e)
+		{
+			Properties.Settings.Default.alphabetizeLabels = alphaBox.Checked;
 			labelsBox.Sorted = alphaBox.Checked;
 			DocumentService.ActiveDocument.UpdateLabelBox();
-        }
+		}
 
 		public override void Copy()
 		{
@@ -55,20 +55,20 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			labelsBox.Items.Clear();
 			foreach (IParserData data in list.LabelsList)
 			{
-                if (data is Services.Parser.Label)
-                {
-                    if (!((ILabel)data).IsReusable)
-                        labelsBox.Items.Add(data);
-                }
-                else if (data is Equate || data is Define)
-                {
-                    if (ShowEquates)
-                        labelsBox.Items.Add(data);
-                }
-                else if (data is Macro || data is IncludeFile)
-                {
-                    labelsBox.Items.Add(data);
-                }					
+				if (data is Services.Parser.Label)
+				{
+					if (!((ILabel)data).IsReusable)
+						labelsBox.Items.Add(data);
+				}
+				else if (data is Equate || data is Define)
+				{
+					if (ShowEquates)
+						labelsBox.Items.Add(data);
+				}
+				else if (data is Macro || data is IncludeFile)
+				{
+					labelsBox.Items.Add(data);
+				}					
 			}
 			NativeMethods.TurnOnDrawing(labelsBox.Handle);
 		}

@@ -26,25 +26,32 @@ namespace Revsoft.Wabbitcode
             Bitmap image = new Bitmap(horzRuler.Width, horzRuler.Height);
             horzRuler.Image = image;
             int horz = 0;
-            while (horz < horzRuler.Width)
-            {
-                Graphics g = Graphics.FromImage(horzRuler.Image);
-                Pen p = new Pen(Color.Black);
-                g.DrawLine(p, horz, 0, horz, horzRuler.Height);
-                horz += 16;
-				p.Dispose();
-            }
+			using (Graphics g = Graphics.FromImage(horzRuler.Image))
+			{
+				using (Pen p = new Pen(Color.Black))
+				{
+					while (horz < horzRuler.Width)
+					{
+
+						g.DrawLine(p, horz, 0, horz, horzRuler.Height);
+						horz += 16;
+					}
+				}
+			}
             int vert = 0;
             image = new Bitmap(vertRuler.Width, vertRuler.Height);
             vertRuler.Image = image;
-            while (vert < vertRuler.Height)
-            {
-                Graphics g = Graphics.FromImage(vertRuler.Image);
-                Pen p = new Pen(Color.Black);
-                g.DrawLine(p, 0, vert, vertRuler.Width, vert);
-                vert += 16;
-				p.Dispose();
-            }
+			using (Graphics g = Graphics.FromImage(vertRuler.Image))
+			{
+				using (Pen p = new Pen(Color.Black))
+				{
+					while (vert < vertRuler.Height)
+					{
+						g.DrawLine(p, 0, vert, vertRuler.Width, vert);
+						vert += 16;
+					}
+				}
+			}
 
         }
 

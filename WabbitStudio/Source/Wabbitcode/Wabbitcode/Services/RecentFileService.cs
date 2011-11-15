@@ -31,6 +31,8 @@ namespace Revsoft.Wabbitcode.Services
 			return recentFileList;
 		}
 
+		#region IService
+		
 		public void InitService(params Object[] objects)
 		{
 			recentFileList = new List<FilePath>();
@@ -40,5 +42,7 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			SaveRecentFileList();
 		}
+
+		#endregion
 	}
 }

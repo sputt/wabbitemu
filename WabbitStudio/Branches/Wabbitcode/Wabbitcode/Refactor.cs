@@ -69,10 +69,10 @@ namespace Revsoft.Wabbitcode
 			{
 				bool alreadyOpen = false;
 				string fileName = file[0].File;
-				newEditor openDoc = null;
-				foreach (newEditor doc in DockingService.Documents)
+				NewEditor openDoc = null;
+				foreach (NewEditor doc in DockingService.Documents)
 				{
-					if (doc.FileName.Equals(fileName, StringComparison.OrdinalIgnoreCase))
+					if (string.Equals(doc.FileName, fileName, StringComparison.OrdinalIgnoreCase))
 					{
 						alreadyOpen = true;
 						editor = doc.EditorBox;

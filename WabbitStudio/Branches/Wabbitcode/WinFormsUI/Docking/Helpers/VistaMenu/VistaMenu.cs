@@ -316,8 +316,8 @@ namespace Revsoft.Docking
         public int fMask = 0x00000010; //MIM_STYLE;
         public int dwStyle = 0x04000000; //MNS_CHECKORBMP;
         public uint cyMax;
-        public IntPtr hbrBack = IntPtr.Zero;
+        private IntPtr hbrBack = IntPtr.Zero;
         public int dwContextHelpID;
-        public IntPtr dwMenuData = IntPtr.Zero;
+        private IntPtr dwMenuData = IntPtr.Zero;
     }
 }

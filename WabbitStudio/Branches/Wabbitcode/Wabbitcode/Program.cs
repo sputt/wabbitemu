@@ -31,15 +31,22 @@ namespace Revsoft.Wabbitcode
 			FileLocations.InitDirs();
 			FileLocations.InitFiles();
 			HighlightingClass.MakeHighlightingFile();
-			if (UpdateService.CheckForUpdate())
+			try
 			{
-				var result = MessageBox.Show("New version available. Download now?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
-				if (result == System.Windows.Forms.DialogResult.Yes)
+				if (UpdateService.CheckForUpdate())
 				{
-					UpdateService.StartUpdater();
-					Application.Exit();
-					return;
+					var result = MessageBox.Show("New version available. Download now?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+					if (result == System.Windows.Forms.DialogResult.Yes)
+					{
+						UpdateService.StartUpdater();
+						Application.Exit();
+						return;
+					}
 				}
+			}
+			catch (Exception ex)
+			{
+				Services.DockingService.ShowError("Error checking for updates", ex);
 			}
 			AppBase appBase = new AppBase();
             appBase.Run(args);

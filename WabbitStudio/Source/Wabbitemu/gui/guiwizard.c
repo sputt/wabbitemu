@@ -7,6 +7,7 @@
 #include "registry.h"
 #include <commdlg.h>
 #include "resource.h"
+#include "exportvar.h"
 
 #ifdef WITH_TILP
 #include <libti\ticables.h>
@@ -450,7 +451,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					Static_SetText(hStaticProgress, _T("Creating ROM file..."));
 					ShowWindow(hProgressBar, SW_SHOW);
 					TCHAR buffer[MAX_PATH];
-					SaveFile(buffer, _T("Roms  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
+					SaveFile(buffer, _T("ROMs  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST);
 					SendMessage(hProgressBar, PBM_SETSTEP, (WPARAM) 25, 0);
 					SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
@@ -526,16 +527,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					gui_frame(lpCalc);
 					//write the output from file
-					_tfopen_s(&file, buffer, _T("wb"));
-					TCHAR *rom = (TCHAR *) lpCalc->mem_c.flash;
-					int size = lpCalc->mem_c.flash_size;
-					if (size != 0 && rom != NULL && file !=NULL) {
-						u_int i;
-						for(i = 0; i < size; i++) {
-							fputc(rom[i], file);
-						}
-						fclose(file);
-					}
+					MFILE *romfile = ExportRom(buffer, lpCalc);
+					mclose(romfile);
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					break;
 				}
@@ -882,7 +875,8 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					//calc_turn_on(lpCalc);
 					gui_frame(lpCalc);
 					//write the output from file
-					ExportRom(buffer, lpCalc);					
+					MFILE *mfile = ExportRom(buffer, lpCalc);					
+					mclose(mfile);
 					break;
 				}
 				case PSN_QUERYCANCEL:
@@ -895,20 +889,6 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			return FALSE;
 	}
 	return FALSE;
-}
-
-void ExportRom(TCHAR *lpszFile, LPCALC lpCalc) {
-	FILE *file;
-	_tfopen_s(&file, lpszFile, _T("wb"));
-	char* rom = (char *) lpCalc->mem_c.flash;
-	int size = lpCalc->mem_c.flash_size;
-	if (size != 0 && rom != NULL && file !=NULL) {
-		u_int i;
-		for(i = 0; i < size; i++) {
-			fputc(rom[i], file);
-		}
-		fclose(file);
-	}
 }
 
 INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {

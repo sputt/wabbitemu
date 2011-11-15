@@ -111,7 +111,7 @@ void add_pass_two_expr (char *expr, arg_type type, int or_value) {
 void add_pass_two_output (char *expr, output_type type) {
 	output_t *new_output;
 
-	new_output = (output_t *)malloc (sizeof (output_t));
+	new_output = (output_t *) malloc (sizeof (output_t));
 	new_output->program_counter = program_counter;
 	new_output->line_num = line_num;
 #ifdef USE_REUSABLES

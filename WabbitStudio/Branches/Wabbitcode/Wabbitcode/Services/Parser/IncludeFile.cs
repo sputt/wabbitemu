@@ -45,9 +45,22 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			set;
 		}
 
-        public override string ToString()
-        {
-            return Path.GetFileName(Name);
-        }
+		public override string ToString()
+		{
+			return Path.GetFileName(Name);
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (!(obj is IIncludeFile))
+				return base.Equals(obj);
+			var include = (IIncludeFile)obj;
+			return string.Equals(include.IncludedFile, this.IncludedFile, StringComparison.OrdinalIgnoreCase);
+		}
+
+		public override int GetHashCode()
+		{
+			return Name.GetHashCode();
+		}
 	}
 }

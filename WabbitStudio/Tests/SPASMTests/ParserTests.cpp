@@ -1,7 +1,6 @@
 #pragma unmanaged
 
 #pragma comment(lib, "spasm.lib")
-#include <windows.h>
 
 #include "..\..\Source\SPASM\pass_one.h"
 #include "..\..\Source\SPASM\pass_two.h"
