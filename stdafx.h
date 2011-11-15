@@ -86,6 +86,8 @@ typedef const char *LPCTSTR;
 #define _tcscpy_s strcpy
 #define _tcslen strlen
 #define _tcscmp strcmp
+#define _tcsncmp strncmp
+#define ZeroMemory(dest, size) memset(dest, 0, size)
 
 #elif defined(_MACVER)
 #include <assert.h>

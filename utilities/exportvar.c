@@ -5,7 +5,7 @@
 #include "link.h"
 #include "exportvar.h"
 
-void intelhex (MFILE*, const unsigned char*, int);
+void intelhex (MFILE*, const unsigned char*, int size, int page = 0, int start_address = 0x4000);
 
 const char fileheader[]= {
 	'*','*','T','I','8','3','F','*',0x1A,0x0A,0x00};
@@ -238,7 +238,7 @@ MFILE *ExportApp(LPCALC lpCalc, TCHAR *fn, apphdr_t *app) {
 	mputc(0x24, outfile);
 	//filler
 	for (i = 0; i < 24; i++) mputc(0x00, outfile);
-	//size of intel hex
+	//size of Intel hex
 	tempnum =  77 * (data_size >> 5) + app->page_count * 17 + 11;
 	int size = data_size & 0x1F;
 	if (size) tempnum += (size << 1) + 13;
@@ -248,88 +248,100 @@ MFILE *ExportApp(LPCALC lpCalc, TCHAR *fn, apphdr_t *app) {
 	mputc(tempnum >> 24, outfile);
 	//data
 	intelhex(outfile, buffer, data_size);
+	mprintf(outfile,":00000001FF");
 	//checksum
-	//TODO: this is the best checksum code i've ever seen...
+	//TODO: this is the best checksum code I've ever seen...
 
 	//DONE :D
 	return outfile;
 }
 
-//MFILE *ExportOS(LPCALC lpCalc, TCHAR *fn, int page_count) {
-//	MFILE *outfile;
-//	unsigned int tempnum;
-//	int i, data_size = PAGE_SIZE * page_count;
-//	unsigned char *buffer = (unsigned char *) malloc(data_size);
-//	memset(buffer, 0, data_size);
-//	unsigned char *temp_point = buffer;
-//	for (tempnum = app->page; tempnum > app->page - app->page_count; tempnum--) {
-//		u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) calcs[slot].cpu.mem_c->flash;
-//		memcpy(temp_point, &dest[tempnum], PAGE_SIZE);
-//		temp_point += PAGE_SIZE;
-//	}
-//	outfile = mopen(fn, "wb");
-//	// Lots of pointless header crap 
-//	for(i = 0; i < 8; i++) mputc(flashheader[i], outfile);
-//	//version, major.minor
-//	mputc(0x01, outfile);
-//	mputc(0x01, outfile);
-//	//flags
-//	mputc(0x01, outfile);
-//	//object type
-//	mputc(0x88, outfile);
-//	//date
-//	mputc(0x01, outfile);
-//	mputc(0x01, outfile);
-//	mputc(0x19, outfile);
-//	mputc(0x97, outfile);
-//	//name length...wtf? its always 8
-//	mputc(0x08, outfile);
-//	//name
-//	for (i = 0; i < 8; i++) mputc(app->name[i], outfile);
-//	//filler
-//	for (i = 0; i < 23; i++) mputc(0x00, outfile);
-//	//device
-//	mputc(0x73, outfile);
-//	//its an app not an OS/cert/license
-//	mputc(0x24, outfile);
-//	//filler
-//	for (i = 0; i < 24; i++) mputc(0x00, outfile);
-//	//size of intel hex
-//	tempnum =  77 * (data_size >> 5) + page_count * 17 + 11;
-//	int size = data_size & 0x1F;
-//	if (size) tempnum += (size << 1) + 13;
-//	mputc(tempnum & 0xFF, outfile);	//little endian
-//	mputc((tempnum >> 8) & 0xFF, outfile);
-//	mputc((tempnum >> 16) & 0xFF, outfile);
-//	mputc(tempnum >> 24, outfile);
-//	//data
-//	intelhex(outfile, buffer, data_size);
-//	//checksum
-//	//TODO: this is the best checksum code i've ever seen...
-//
-//	//DONE :D
-//	return outfile;
-//}
+/*
+ * Exports an OS based on the pages copied into buffer
+ * Expects buffer to be a multiple of PAGE_SIZE
+ * size defines the total size of the buffer
+ */
+MFILE * ExportOS(TCHAR *lpszFile, unsigned char *buffer, int size) {
+	MFILE *file = mopen(lpszFile, _T("wb"));
+	int i;
+	// Lots of pointless header crap 
+	for(i = 0; i < 8; i++) mputc(flashheader[i], file);
+	//version, major.minor
+	mputc(0x01, file);
+	mputc(0x01, file);
+	//flags
+	mputc(0x01, file);
+	//object type
+	mputc(0x88, file);
+	//date
+	mputc(0x01, file);
+	mputc(0x01, file);
+	mputc(0x19, file);
+	mputc(0x97, file);
+	//name length...wtf? its always 8
+	mputc(0x08, file);
+	//name
+	char name[9] = "basecode";
+	for (i = 0; i < 8; i++) mputc(name[i], file);
+	//filler
+	for (i = 0; i < 23; i++) mputc(0x00, file);
+	//device
+	mputc(0x73, file);
+	//its an app not an OS/cert/license
+	mputc(0x23, file);
+	//filler
+	for (i = 0; i < 24; i++) mputc(0x00, file);
+	//size of Intel hex
+	int tempnum =  77 * (size >> 5) + (size / PAGE_SIZE) * 17 + 11;
+	int size = size & 0x1F;
+	if (size) tempnum += (size << 1) + 13;
+	mputc(tempnum & 0xFF, file);	//little endian
+	mputc((tempnum >> 8) & 0xFF, file);
+	mputc((tempnum >> 16) & 0xFF, file);
+	mputc(tempnum >> 24, file);
+	*(buffer + 0x56) = 0xFF;
+	mprintf(file, _T("\r\n"));
+	//page 0 needs to start at 0x0000
+	intelhex(file, (const unsigned char *) buffer, PAGE_SIZE, 0, 0x0000);
+	if (size - PAGE_SIZE > 0) {
+		intelhex(file, (const unsigned char *) buffer + PAGE_SIZE, size - PAGE_SIZE, 1,  0x4000);
+	}
+	mprintf(file, _T(":00000001FF"));
+	//TODO: checksum
+	return file;
+}
 
-/* Convert binary buffer to intel hex in ti format
- * All pages addressed to $4000 and are only $4000
- * bytes long. 
+MFILE * ExportRom(TCHAR *lpszFile, LPCALC lpCalc) {
+	MFILE *file = mopen(lpszFile, _T("wb"));
+	char* rom = (char *) lpCalc->mem_c.flash;
+	int size = lpCalc->mem_c.flash_size;
+	if (size != 0 && rom != NULL && file !=NULL) {
+		u_int i;
+		for(i = 0; i < size; i++) {
+			mputc(rom[i], file);
+		}
+	}
+	return file;
+}
+
+
+/* Convert binary buffer to Intel hex in TI format
+ * All pages are only $4000 bytes long. 
  * stolen from spasm's export.c  to make my 1/2 hour deadline
  */
-void intelhex (MFILE* outfile, const unsigned char* buffer, int size) {
+void intelhex (MFILE* outfile, const unsigned char* buffer, int size, int page, int start_address) {
 	const char hexstr[] = "0123456789ABCDEF";
-	int page = 0;
 	int bpnt = 0;
 	unsigned int address, ci, temp, i;
 	unsigned char chksum;
 	unsigned char outbuf[128];
 	
-	//We are in binary mode, we must handle carridge return ourselves.
+	//We are in binary mode, we must handle carriage return ourselves.
    
 	while (bpnt < size) {
-		mprintf(outfile, ":02000002%04X%02X\r\n", page, (unsigned char) ((~(0x04 + page)) + 1));
+		mprintf(outfile, ":02000002%04X%02X\r\n", page & 0x1F, (unsigned char) ((~(0x04 + page)) + 1));
 		page++;
-		address = 0x4000;   
+		address = start_address;   
 		for (i = 0; bpnt < size && i < 512; i++) {
 			 chksum = (address >> 8) + (address & 0xFF);
 			 for(ci = 0; (ci < 64) && (bpnt < size); ci++) {
@@ -344,7 +356,6 @@ void intelhex (MFILE* outfile, const unsigned char* buffer, int size) {
 			address += 0x20;
 		}         
 	}
-	mprintf(outfile,":00000001FF");
 }
 
 //Prog’s, List AppVar and Group

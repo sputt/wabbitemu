@@ -19,6 +19,7 @@
 #include "link.h"
 #include "keys.h"
 #include "fileutilities.h"
+#include "exportvar.h"
 
 #include "dbmem.h"
 #include "dbreg.h"
@@ -1028,6 +1029,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					const TCHAR lpstrFilter[] = _T("Known File types ( *.sav; *.rom; *.bin) \0*.sav;*.rom;*.bin\0\
 														Save States  (*.sav)\0*.sav\0\
 														ROMS  (*.rom; .bin)\0*.rom;*.bin\0\
+														OSes (*.8xu)\0*.8xu\0\
 														All Files (*.*)\0*.*\0\0");
 					ZeroMemory(FileName, MAX_PATH);
 					if (!SaveFile(FileName, (TCHAR *) lpstrFilter, _T("Wabbitemu Save State"), _T("sav"), OFN_PATHMUSTEXIST)) {
@@ -1038,10 +1040,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							StringCbCopy(extension, sizeof(extension), pext);
 						}
 						if (!_tcsicmp(extension, _T(".rom")) || !_tcsicmp(extension, _T(".bin"))) {
-							ExportRom(FileName, lpCalc);
+							MFILE *file = ExportRom(FileName, lpCalc);
 							StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), FileName);
+							mclose(file);
 						} else if (!_tcsicmp(extension, _T(".8xu"))) {
-							HWND hExportOS = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_EXPORT_OS), hwnd, (DLGPROC) ExportOSDialogProc);
+							HWND hExportOS = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_EXPORT_OS), hwnd, (DLGPROC) ExportOSDialogProc, (LPARAM) FileName);
 							ShowWindow(hExportOS, SW_SHOW);
 						} else {
 							SAVESTATE_t *save = SaveSlot(lpCalc);
@@ -1103,7 +1106,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						if (!SaveFile(lpszFile, _T("AVIs (*.avi)\0*.avi\0All Files (*.*)\0*.*\0\0"),
 											_T("Wabbitemu Export AVI"), _T("avi"), OFN_PATHMUSTEXIST)) {
 							recording_avi = CreateAvi(lpszFile, FPS, NULL);
+							//create an initial first frame so we can set compression
 							is_recording = TRUE;
+							/*AVICOMPRESSOPTIONS opts;
+							ZeroMemory(&opts,sizeof(opts));
+							opts.fccHandler = mmioFOURCC('d','i','v','x');
+							SetAviVideoCompression(recording_avi, hbm, &opts, true, hwnd);*/
 							CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_AVI, MF_BYCOMMAND | MF_CHECKED);
 						}
 					}
@@ -1738,44 +1746,65 @@ INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 }
 
 INT_PTR CALLBACK ExportOSDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND hListPagesOnCalc, hListPagesToExport;
+	static HWND hListPagesToExport;
 	static LPCALC lpCalc;
+	static TCHAR lpFileName[MAX_PATH];
 	switch (Message) {
 		case WM_INITDIALOG: {
 			lpCalc = (LPCALC) GetWindowLongPtr(GetParent(hwndDlg), GWLP_USERDATA);
-			hListPagesOnCalc = GetDlgItem(hwndDlg, IDC_LIST_ONCALCPAGES);
+			StringCbCopy(lpFileName, sizeof(lpFileName), (TCHAR *) lParam);			
 			hListPagesToExport = GetDlgItem(hwndDlg, IDC_LIST_EXPORTPAGES);
+			SetWindowTheme(hListPagesToExport, L"Explorer", NULL);
+			ListView_SetExtendedListViewStyle(hListPagesToExport, LVS_EX_CHECKBOXES);
 			TCHAR temp[64];
-			for (int i = 0; i < lpCalc->cpu.mem_c->flash_pages; i++) {
+			int totalPages = lpCalc->cpu.mem_c->flash_pages;
+			for (int i = 0; i < totalPages; i++) {
+				LVITEM item;
+				item.mask = LVIF_TEXT;		
 				StringCbPrintf(temp, sizeof(temp), _T("%02X"), i);
-				SendMessage(hListPagesOnCalc, LB_ADDSTRING, 0, (LPARAM) temp);
+				item.pszText = temp;
+				item.iItem = i;
+				item.iSubItem = 0;
+				ListView_InsertItem(hListPagesToExport, &item);
+				upages_t pages;
+				state_userpages(&lpCalc->cpu, &pages);
+				if (i < pages.end - 1|| (i > pages.start && (i & 0xF) != 0xE && (i & 0xF) != 0xF))
+				{
+					ListView_SetCheckState(hListPagesToExport, i, TRUE);
+				}
 			}
 			return FALSE;
 		}
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
-				case IDOK:
+				case IDOK: {
+					int bufferSize = 0;
+					u_char (*flash)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) lpCalc->cpu.mem_c->flash;
+					unsigned char *buffer = NULL;
+					unsigned char *bufferPtr = buffer;
+					int currentPage = -1;
+					for (int i = 0; i < lpCalc->cpu.mem_c->flash_pages; i++) {
+						if (ListView_GetCheckState(hListPagesToExport, i)) {
+							bufferSize += PAGE_SIZE;
+							unsigned char *new_buffer = (unsigned char *) malloc(bufferSize);
+							if (buffer) {
+								memcpy(new_buffer, buffer, bufferSize - PAGE_SIZE);
+								free(buffer);
+							}
+							buffer = new_buffer;
+							bufferPtr = buffer + bufferSize - PAGE_SIZE;
+							memcpy(bufferPtr, flash[i], PAGE_SIZE);
+						}
+					}
+					MFILE *file = ExportOS(lpFileName, buffer, bufferSize);
+					mclose(file);
+					free(buffer);
 					EndDialog(hwndDlg, IDOK);
 					return TRUE;
+				}
 				case IDCANCEL:
 					EndDialog(hwndDlg, IDCANCEL);
 					break;
-				case IDC_BTN_ADDPAGE: {
-					int index = SendMessage(hListPagesOnCalc, LB_GETCURSEL, 0, 0);
-					TCHAR temp[64];
-					SendMessage(hListPagesOnCalc, LB_GETTEXT, index, (LPARAM) temp);
-					SendMessage(hListPagesOnCalc, LB_DELETESTRING, index, 0);
-					SendMessage(hListPagesToExport, LB_ADDSTRING, 0, (LPARAM) temp);
-					break;
-				}
-				case IDC_BTN_REMPAGE: {
-					int index = SendMessage(hListPagesToExport, LB_GETCURSEL, 0, 0);
-					TCHAR temp[64];
-					SendMessage(hListPagesToExport, LB_GETTEXT, index, (LPARAM) temp);
-					SendMessage(hListPagesToExport, LB_DELETESTRING, index, 0);
-					SendMessage(hListPagesOnCalc, LB_ADDSTRING, 0, (LPARAM) temp);
-					break;
-				}
 			}
 	}
 	return FALSE;

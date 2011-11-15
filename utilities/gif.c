@@ -24,7 +24,7 @@
 
 #include "calc.h"
 #ifndef WINVER
-#include "coretypes.h
+#include "coretypes.h"
 #endif
 
 //#include "gif.h" // uhh...

@@ -509,7 +509,33 @@ void SaveMEM(SAVESTATE_t* save, memc* mem) {
 	WriteInt(chunk, mem->ram_upper);
 	WriteInt(chunk, mem->ram_lower);
 
+	int count = 0;
+	chunk = NewChunk(save, FLASH_BREAKS_tag);
+	for (int i = 0; i < mem->flash_size; i++)
+	{
+		if (mem->flash_break[i])
+		{
+			count++;
+			WriteInt(chunk, i);
+			WriteInt(chunk, mem->flash_break[i]);
+		}
+	}
+	chunk = NewChunk(save, NUM_FLASH_BREAKS_tag);
+	WriteInt(chunk, count);
 
+	count = 0;
+	chunk = NewChunk(save, RAM_BREAKS_tag);
+	for (int i = 0; i < mem->ram_size; i++)
+	{
+		if (mem->ram_break[i])
+		{
+			count++;
+			WriteInt(chunk, i);
+			WriteInt(chunk, mem->ram_break[i]);
+		}
+	}
+	chunk = NewChunk(save, NUM_RAM_BREAKS_tag);
+	WriteInt(chunk, count);
 }
 
 void SaveTIMER(SAVESTATE_t *save, timerc *time) {
@@ -661,7 +687,7 @@ SAVESTATE_t* SaveSlot(void *lpInput) {
 }
 
 void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
-	CHUNK_t* chunk = FindChunk(save,CPU_tag);
+	CHUNK_t* chunk = FindChunk(save, CPU_tag);
 	
 	chunk->pnt = 0;
 	
@@ -710,7 +736,7 @@ void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	
 	cpu->prefix = ReadInt(chunk);
 	int i;
-	for(i=0; i<256; i++) {
+	for(i = 0; i < 256; i++) {
 		cpu->pio.interrupt[i] = ReadInt(chunk);
 		cpu->pio.skip_factor[i] = ReadInt(chunk);
 		cpu->pio.skip_count[i] = ReadInt(chunk);
@@ -734,7 +760,7 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	mem->flash_locked= ReadInt(chunk);
 	mem->flash_version = ReadInt(chunk);
 	
-	for(i=0;i<5;i++) {
+	for(i = 0; i < 5; i++) {
 		mem->normal_banks[i].page		= ReadInt(chunk);
 		mem->normal_banks[i].read_only	= ReadInt(chunk);
 		mem->normal_banks[i].ram		= ReadInt(chunk);
@@ -761,11 +787,11 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	mem->flash_upper = ReadInt(chunk);
 	mem->flash_lower = ReadInt(chunk);
 
-	chunk = FindChunk(save,ROM_tag);
+	chunk = FindChunk(save, ROM_tag);
 	chunk->pnt = 0;
 	ReadBlock(chunk, (unsigned char *)mem->flash, mem->flash_size);
 	
-	chunk = FindChunk(save,RAM_tag);
+	chunk = FindChunk(save, RAM_tag);
 	chunk->pnt = 0;
 	ReadBlock(chunk, (unsigned char *)mem->ram, mem->ram_size);	
 
@@ -781,6 +807,62 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 		chunk->pnt = 0;
 		mem->ram_upper = ReadInt(chunk);
 		mem->ram_lower = ReadInt(chunk);
+	}
+
+	chunk = FindChunk(save, NUM_FLASH_BREAKS_tag);
+	if (chunk) {
+		int num_flash_breaks = ReadInt(chunk);
+		chunk = FindChunk(save, FLASH_BREAKS_tag);
+		if (chunk) {
+			for (int i = 0; i < num_flash_breaks; i++)
+			{
+				int addr = ReadInt(chunk);
+				waddr_t waddr;
+				waddr.addr = addr % PAGE_SIZE;
+				waddr.page = addr / PAGE_SIZE;
+				waddr.is_ram = FALSE;
+				BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
+				switch (type) {
+				case MEM_READ_BREAK:
+					set_mem_read_break(mem, waddr);
+					break;
+				case MEM_WRITE_BREAK:
+					set_mem_read_break(mem, waddr);
+					break;
+				default:
+					set_break(mem, waddr);
+					break;
+				}
+			}
+		}
+	}
+
+	chunk = FindChunk(save, NUM_RAM_BREAKS_tag);
+	if (chunk) {
+		int num_ram_breaks = ReadInt(chunk);
+		chunk = FindChunk(save, FLASH_BREAKS_tag);
+		if (chunk) {
+			for (int i = 0; i < num_ram_breaks; i++)
+			{
+				int addr = ReadInt(chunk);
+				waddr_t waddr;
+				waddr.addr = addr % PAGE_SIZE;
+				waddr.page = addr / PAGE_SIZE;
+				waddr.is_ram = TRUE;
+				BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
+				switch (type) {
+				case MEM_READ_BREAK:
+					set_mem_read_break(mem, waddr);
+					break;
+				case MEM_WRITE_BREAK:
+					set_mem_read_break(mem, waddr);
+					break;
+				default:
+					set_break(mem, waddr);
+					break;
+				}
+			}
+		}
 	}
 }
 

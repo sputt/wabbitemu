@@ -13,6 +13,5 @@ BOOL DoWizardSheet(HWND);
 int BrowseOSFile(TCHAR *);
 void ExtractDumperProg();
 void ExtractResource(TCHAR *, HRSRC);
-void ExportRom(TCHAR *lpszFile, LPCALC lpCalc);
 
 #endif

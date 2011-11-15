@@ -15,6 +15,7 @@
 #include "fileutilities.h"
 #include "guiwizard.h"
 #include "dbcommon.h"
+#include "exportvar.h"
 
 extern HINSTANCE g_hInst;
 extern BITMAPINFO *bi;
@@ -495,7 +496,8 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 }
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check, saveWindow_check, exeViolation_check, backupTime_edit;
+	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check, saveWindow_check,
+		exeViolation_check, backupTime_edit, invalidFlash_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			saveState_check = GetDlgItem(hwnd, IDC_CHK_SAVE);
@@ -506,6 +508,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			saveWindow_check = GetDlgItem(hwnd, IDC_CHK_SAVEWINDOW);
 			exeViolation_check = GetDlgItem(hwnd, IDC_CHK_BRK_EXE_VIOLATION);
 			backupTime_edit = GetDlgItem(hwnd, IDC_EDT_BACKUPTIME);
+			invalidFlash_check = GetDlgItem(hwnd, IDC_CHK_BRK_INVALID_FLASH);
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
 		case WM_COMMAND: {
@@ -521,6 +524,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 						case IDC_CHK_REWINDING:
 						case IDC_CHK_SHOWWIZARD:
 						case IDC_CHK_BRK_EXE_VIOLATION:
+						case IDC_CHK_BRK_INVALID_FLASH:
 							break;
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
@@ -538,6 +542,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					new_calc_on_load_files = Button_GetCheck(loadFiles_check);
 					show_wizard = Button_GetCheck(wizard_check);
 					break_on_exe_violation = Button_GetCheck(exeViolation_check);
+					break_on_invalid_flash = Button_GetCheck(invalidFlash_check);
 					TCHAR buf[256];
 					Edit_GetText(backupTime_edit, buf, ARRAYSIZE(buf));
 					double persec = _ttof(buf);
@@ -735,7 +740,8 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 							TCHAR lpszFile[MAX_PATH];
 							if (!SaveFile(lpszFile, _T("Roms  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 											_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST)) {
-								ExportRom(lpszFile, lpCalc);
+								MFILE *file = ExportRom(lpszFile, lpCalc);
+								mclose(file);
 							}
 							break;
 						}
