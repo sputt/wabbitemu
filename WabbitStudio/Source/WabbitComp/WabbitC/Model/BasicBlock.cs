@@ -10,6 +10,19 @@ namespace WabbitC.Model
 {
     class BasicBlock : Block
     {
+        /// <summary>
+        /// Returns the variables live at the end of the block.
+        /// </summary>
+        public static List<Declaration> GetLiveVariables(Block block)
+        {
+            LiveChartClass chart = new LiveChartClass(block);
+            chart.GenerateVariableChart();
+            var liveVars = from VariableReuseClass var in chart
+                           where var.livePoints.Last() == true
+                           select var.decl;
+            return liveVars.ToList<Declaration>();
+        }
+
         public static List<BasicBlock> GetBasicBlocks(Block block)
         {
             var blocks = new List<BasicBlock>();

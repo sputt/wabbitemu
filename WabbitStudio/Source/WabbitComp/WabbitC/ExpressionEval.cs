@@ -684,15 +684,11 @@ namespace WabbitC
 			if (token.Type == TokenType.StringType)
 			{
 				PreprocessorDefine define = PreprocessorParser.DefineValue(token);
-				if (define != null)
+				if (define != null && define is ReplacementDefine)
 				{
-					Type defineType = define.GetType();
-					if (defineType == typeof(ReplacementDefine))
-					{
-						ReplacementDefine replaceDefine = (ReplacementDefine)define;
-						token = replaceDefine.Value;
-						CheckTokenReplace(ref token);
-					}
+					ReplacementDefine replaceDefine = (ReplacementDefine)define;
+					token = replaceDefine.Value;
+					CheckTokenReplace(ref token);
 				}
 			}
 		}
@@ -701,9 +697,13 @@ namespace WabbitC
 		public static List<Token> ToTokens(List<Expression> exps)
 		{
 			var evalTokens = new List<Token>();
-			foreach(Expression exp in exps)
-				if (exp.Args == null)
-					evalTokens.AddRange(exp.Tokens);
+            foreach (Expression exp in exps)
+            {
+                if (exp.Args == null)
+                {
+                    evalTokens.AddRange(exp.Tokens);
+                }
+            }
 			return evalTokens;
 		}
 

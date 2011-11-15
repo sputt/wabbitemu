@@ -60,21 +60,6 @@ namespace WabbitC.Model
 
     class Block : IEnumerable<Block>, IEnumerable<Statement>
     {
-        /// <summary>
-        /// Returns the variables live at the end of the block.
-        /// Should only be called on basic blocks. At least thats really where
-        /// you'll get useful from :P
-        /// </summary>
-        public static List<Declaration> GetLiveVariables(Block block)
-        {
-            LiveChartClass chart = new LiveChartClass(block);
-            chart.GenerateVariableChart();
-            var liveVars = from VariableReuseClass var in chart
-                           where var.livePoints.Last() == true
-                           select var.decl;
-            return liveVars.ToList<Declaration>();
-        }
-
         public Block Parent;
         public FunctionType Function;
         public HashSet<Type> Types;
