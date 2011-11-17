@@ -8,71 +8,30 @@ using WabbitC.Model.Statements;
 using WabbitC.Model.Statements.Math;
 using System.Diagnostics;
 
-namespace WabbitC.Optimizer
+namespace WabbitC.Optimizer.Loop
 {
 	static class ConstantsOptimizer
 	{
-		public static void Optimize(ref Block module)
+		public static void Optimize(ref Module module)
 		{
-			for (int i = 0; i < module.Declarations.Count; i++)
+			var functions = module.GetFunctionEnumerator();
+			while (functions.MoveNext())
 			{
-				Declaration decl = module.Declarations[i];
-				if (decl.Code != null)
-				{
-					var basicBlocks = BasicBlock.GetBasicBlocks(decl.Code);
-					decl.Code.Statements.Clear();
-					for (int j = 0; j < basicBlocks.Count; j++)
-					{
-						var basicBlock = basicBlocks[j];
-						OptimizeBlock(ref basicBlock);
-						decl.Code.Statements.AddRange(basicBlock);
-					}
-				}
+				Block block = functions.Current.Code;
+				var loops = block.Statements.Where(l => l is While || l is DoWhile);
+				foreach (var loop in loops)
+					OptimizeBlock(ref loop.Block);
 			}
 		}
 
 		const string constOptString = "Optimized";
 		const string constOptInProgressString = "Optimizing";
-		public static void OptimizeBlock(ref BasicBlock block)
+		public static void OptimizeBlock(ref Block block)
 		{
-			if (block.Properties.Contains(constOptString))
-				return;
-			if (!block.Properties.Contains(constOptInProgressString))
-			{
-				block.Properties.Add(constOptInProgressString);
-				block.FreezeOutVars();
-				block.FreezeInVars();
-				for (int i = 0; i < block.Declarations.Count; i++)
-				{
-					block.Declarations[i].ConstValue = null;
-				}
-				for (int i = 0; i < block.EntryPoints.Count; i++)
-				{
-					var entryPoint = block.EntryPoints[i];
-					if (!entryPoint.Properties.Contains(constOptString) &&
-						!entryPoint.Properties.Contains(constOptInProgressString))
-						OptimizeBlock(ref entryPoint);
-				}
-				foreach (var entryPoint in block.EntryPoints)
-				{
-					foreach (var outVar in entryPoint.OutVars)
-					{
-						var decl = block.FindDeclaration(outVar.Name);
-						if (decl.ConstValue == null)
-							decl.ConstValue = outVar.ConstValue;
-						else if (!decl.ConstValue.Equals(outVar.ConstValue) && outVar.ConstValue != null)
-							decl.ConstValue = null;
-					}
-				}
-			}
-			if (block.Properties.Contains(constOptString))
-				return;
-			block.UnFreezeOutVars();
-			block.UnFreezeInVars();
 			for (int i = 0; i < block.Statements.Count; i++)
 			{
 				var statement = block.Statements[i];
-				if (statement is Annotation || statement is Label)
+				if (statement is Annotation || statement is Label || statement is Goto)
 				{
 					continue;
 				}
@@ -102,7 +61,7 @@ namespace WabbitC.Optimizer
 					if (cond.CondDecl.ConstValue != null)
 					{
 						//var immediate = new Immediate(cond.LValue.ConstValue.Value);
-						
+
 					}
 					else
 					{
@@ -138,7 +97,7 @@ namespace WabbitC.Optimizer
 						}
 					}
 				}
-				/*else if (statement is Goto)
+				else if (statement is Goto)
 				{
 					var gotoType = statement as Goto;
 					if (gotoType.CondDecl != null)
@@ -153,9 +112,8 @@ namespace WabbitC.Optimizer
 						statement = block.Statements[++j];
 					if (j != block.Statements.Count)
 						i = j;
-				}*/
+				}
 			}
-			block.FreezeOutVars();
 			//mark that were all done with this one
 			block.Properties.Remove(constOptInProgressString);
 			block.Properties.Add(constOptString);

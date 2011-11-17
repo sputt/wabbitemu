@@ -5,15 +5,15 @@ using System.Text;
 
 namespace WabbitC.TokenPasses
 {
-    class CharacterRemover : TokenPass
-    {
-        private bool IsCharacter(ref List<Token>.Enumerator tokens, out char parsedChar)
-        {
-            var tokenList = new List<Token>();
+	class CharacterRemover : TokenPass
+	{
+		private bool IsCharacter(ref List<Token>.Enumerator tokens, out char parsedChar)
+		{
+			var tokenList = new List<Token>();
 			parsedChar = '\0';
-            if (tokens.Current.Text == "'")
-            {
-                tokens.MoveNext();
+			if (tokens.Current.Text == "'")
+			{
+				tokens.MoveNext();
 
 				if (tokens.Current.Text == "\\")
 				{
@@ -44,59 +44,63 @@ namespace WabbitC.TokenPasses
 						case "'":
 							parsedChar = '\'';
 							break;
-						case "\"":
-							parsedChar = '\"';
-							break;
 						case "\\":
 							parsedChar = '\\';
-							break;
-						case "?":
-							parsedChar = '?';
 							break;
 						case "0":
 							parsedChar = '\0';
 							break;
-						case "x":
-							tokens.MoveNext();
-							parsedChar = Convert.ToChar(Convert.ToInt16(tokens.Current.Text));
+						default:
+							if (tokens.Current.Text.StartsWith("x"))
+							{
+								parsedChar = Convert.ToChar(Convert.ToInt16(tokens.Current.Text.Substring(1)));
+							}
+							else
+							{
+								throw new Exception("Invalid escape sequence");
+							}
 							break;
 					}
 				}
 				else
 				{
+					if (tokens.Current.Text.Length != 1)
+					{
+						throw new Exception("Too many characters in single quote");
+					}
 					parsedChar = tokens.Current.Text[0];
 				}
 				tokens.MoveNext();
 				if (tokens.Current.Text != "'")
-					throw new Exception("Invalid character");
+					throw new Exception("Too many characters in single quote");
 			
 				return true;
-            }
+			}
 			return false;
-        }
+		}
 
-        public override List<Token> Run(List<Token> tokenList)
-        {
-            var newTokenList = new List<Token>();
-            var tokens = tokenList.GetEnumerator();
-            while (tokens.MoveNext())
-            {
-                var currentTokens = tokens;
+		public override List<Token> Run(List<Token> tokenList)
+		{
+			var newTokenList = new List<Token>();
+			var tokens = tokenList.GetEnumerator();
+			while (tokens.MoveNext())
+			{
+				var currentTokens = tokens;
 				char parsedChar;
-                var result = IsCharacter(ref currentTokens, out parsedChar);
+				var result = IsCharacter(ref currentTokens, out parsedChar);
 
-                if (result)
-                {
-                    newTokenList.Add(Tokenizer.ToToken(Convert.ToInt16(parsedChar).ToString()));
+				if (result)
+				{
+					newTokenList.Add(Tokenizer.ToToken(Convert.ToInt16(parsedChar).ToString()));
 					tokens = currentTokens;
-                }
-                else
-                {
-                    newTokenList.Add(tokens.Current);
-                }
-            }
+				}
+				else
+				{
+					newTokenList.Add(tokens.Current);
+				}
+			}
 
-            return newTokenList;
-        }
-    }
+			return newTokenList;
+		}
+	}
 }

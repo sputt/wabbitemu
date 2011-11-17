@@ -1,4 +1,20 @@
-//#include "wabbitc.h"
+#include "wabbitc.h"
+
+int loop(int arg)
+{
+	int total;
+	int i = 0, j, k = 5;
+
+	total = 0;
+	for (i = 0; i < arg; i+= 1)
+	{
+		j = 5+k;
+		total += i + j;
+	}
+
+	return total;
+}
+
 
 /*int factorial(int n) {
 	if (n == 0) {
@@ -29,7 +45,7 @@
 	return d;
 }*/
 
-int fibonacci(int n)
+/*int fibonacci(int n)
 {
 	if (n == 0)
 	{
@@ -43,4 +59,4 @@ int fibonacci(int n)
 	{
 		return fibonacci(n - 2) + fibonacci(n - 1);
 	}
-}
+}*/

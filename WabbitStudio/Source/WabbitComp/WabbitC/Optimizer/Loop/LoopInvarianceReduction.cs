@@ -31,12 +31,12 @@ namespace WabbitC.Optimizer.Loop
 
 		public static void OptimizeLoopBlock(ref Block block)
 		{
-            var blocks = BasicBlock.GetBasicBlocks(block);
-            for (int i = 0; i < blocks.Count; i++)
-            {
-                var basicBlock = blocks[i];
-                ConstantsOptimizer.OptimizeBlock(ref basicBlock);
-            }
+			var blocks = BasicBlock.GetBasicBlocks(block);
+			for (int i = 0; i < blocks.Count; i++)
+			{
+				var basicBlock = blocks[i];
+				//Loop.ConstantsOptimizer.OptimizeBlock(ref basicBlock);
+			}
 			Dictionary<Declaration, bool> variantDecls = new Dictionary<Declaration, bool>();
 			foreach (var decl in block.Declarations)
 			{

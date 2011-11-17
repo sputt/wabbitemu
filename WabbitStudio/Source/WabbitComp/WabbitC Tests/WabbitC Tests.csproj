@@ -53,10 +53,12 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BracerTest.cs" />
+    <Compile Include="TokenPass Tests\BracerTest.cs" />
     <Compile Include="CastHelperTest.cs" />
-    <Compile Include="CompoundAssignmentRemoverTest.cs" />
-    <Compile Include="ForLoopRemoverTest.cs" />
+    <Compile Include="TokenPass Tests\CompoundAssignmentRemoverTest.cs" />
+    <Compile Include="TokenPass Tests\CharRemoverTest.cs" />
+    <Compile Include="TokenPass Tests\ArrrayDerefTest.cs" />
+    <Compile Include="TokenPass Tests\ForLoopRemoverTest.cs" />
     <Compile Include="HelperTest.cs" />
     <Compile Include="LiveAnalysisTest.cs" />
     <Compile Include="OptimizerTest.cs" />
@@ -72,8 +74,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bracer_result.c" />
-    <Content Include="bracer_test.c" />
+    <Content Include="TokenPass Tests\bracer_result.c" />
+    <Content Include="TokenPass Tests\bracer_test.c" />
     <Content Include="C Files\bubblesort_expected.c" />
     <Content Include="C Files\cast_expected.c" />
     <Content Include="C Files\fibonacci_expected.c" />

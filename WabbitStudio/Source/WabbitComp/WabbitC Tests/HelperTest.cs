@@ -10,17 +10,15 @@ using WabbitC.Model.Types;
 
 namespace WabbitC_Tests
 {
-    
-    
-    /// <summary>
-    ///This is a test class for HelperTest and is intended
-    ///to contain all HelperTest Unit Tests
-    ///</summary>
+	
+	
+	/// <summary>
+	///This is a test class for HelperTest and is intended
+	///to contain all HelperTest Unit Tests
+	///</summary>
 	[TestClass()]
 	public class HelperTest
 	{
-
-
 		private TestContext testContextInstance;
 
 		/// <summary>
@@ -91,8 +89,8 @@ namespace WabbitC_Tests
 			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("a")));
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("b"), block.FindDeclaration("a")));
 
-			RegisterHelper target = new RegisterHelper(block); // TODO: Initialize to an appropriate value
-			List<Declaration> expected = new List<Declaration>() { block.FindDeclaration("a"), block.FindDeclaration("b") }; // TODO: Initialize to an appropriate value
+			RegisterHelper target = new RegisterHelper(block);
+			List<Declaration> expected = new List<Declaration>() { block.FindDeclaration("a"), block.FindDeclaration("b") };
 			List<Declaration> actual;
 			actual = target.GetMostReferencedVariables();
 			Assert.IsTrue(expected.SequenceEqual<Declaration>(actual));
@@ -111,7 +109,7 @@ namespace WabbitC_Tests
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("b"), block.FindDeclaration("a")));
 
 			RegisterHelper target = new RegisterHelper(block);
-			List<Declaration> expected = new List<Declaration>() { block.FindDeclaration("b"), block.FindDeclaration("a") }; // TODO: Initialize to an appropriate value
+			List<Declaration> expected = new List<Declaration>() { block.FindDeclaration("b"), block.FindDeclaration("a") };
 			List<Declaration> actual;
 			actual = target.GetMostModifiedVariables();
 			Assert.IsTrue(expected.SequenceEqual<Declaration>(actual));
@@ -123,7 +121,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void AllocTest1()
 		{
-			Block block = new Block(); // TODO: Initialize to an appropriate value
+			Block block = new Block();
 			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
@@ -149,7 +147,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void AllocTest2()
 		{
-			Block block = new Block(); // TODO: Initialize to an appropriate value
+			Block block = new Block();
 			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("char"), "a"));
@@ -187,7 +185,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void AllocTest3()
 		{
-			Block block = new Block(); // TODO: Initialize to an appropriate value
+			Block block = new Block();
 			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
@@ -215,7 +213,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void AllocTest4()
 		{
-			Block block = new Block(); // TODO: Initialize to an appropriate value
+			Block block = new Block();
 			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
@@ -255,7 +253,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void AllocTest5()
 		{
-			Block block = new Block(); // TODO: Initialize to an appropriate value
+			Block block = new Block();
 			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
@@ -279,7 +277,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void LeastImportant1()
 		{
-			Block block = new Block(); // TODO: Initialize to an appropriate value
+			Block block = new Block();
 			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
@@ -290,7 +288,7 @@ namespace WabbitC_Tests
 			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("c")));
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("b"), block.FindDeclaration("a")));
 
-			RegisterHelper target = new RegisterHelper(block); // TODO: Initialize to an appropriate value
+			RegisterHelper target = new RegisterHelper(block);
 			var statements = new List<Statement>();
 			target.AllocateRegister(block.FindDeclaration("a"), ref statements);
 			target.AllocateRegister(block.FindDeclaration("b"), ref statements);
@@ -320,7 +318,7 @@ namespace WabbitC_Tests
 			block.Statements.Add(lbl);
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("c"), block.FindDeclaration("b")));
 
-			RegisterHelper target = new RegisterHelper(block); // TODO: Initialize to an appropriate value
+			RegisterHelper target = new RegisterHelper(block);
 			var statements = new List<Statement>();
 			target.AllocateRegister(block.FindDeclaration("a"), ref statements);
 			target.AllocateRegister(block.FindDeclaration("c"), ref statements);
@@ -332,7 +330,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void LeastImportant3()
 		{
-			Block block = new Block(); // TODO: Initialize to an appropriate value
+			Block block = new Block();
 			AddRegisters(block);
 
 			block.Declarations.Add(new Declaration(new WabbitC.Model.Types.BuiltInType("int"), "a"));
@@ -352,7 +350,7 @@ namespace WabbitC_Tests
 			block.Statements.Add(new Move(block.FindDeclaration("b"), block.FindDeclaration("b")));
 			block.Statements.Add(new WabbitC.Model.Statements.Math.Add(block.FindDeclaration("c"), block.FindDeclaration("b")));
 
-			RegisterHelper target = new RegisterHelper(block); // TODO: Initialize to an appropriate value
+			RegisterHelper target = new RegisterHelper(block);
 			var statements = new List<Statement>();
 			target.AllocateRegister(block.FindDeclaration("a"), ref statements);
 			target.AllocateRegister(block.FindDeclaration("c"), ref statements);

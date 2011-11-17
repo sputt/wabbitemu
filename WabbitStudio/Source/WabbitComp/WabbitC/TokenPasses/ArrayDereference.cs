@@ -65,8 +65,13 @@ namespace WabbitC.TokenPasses
 					if (result.Count > 1)
 					{
 						newTokenList.AddRange(Tokenizer.Tokenize("("));
+						//IsArrayDeref is a little hacky, to avoid int a[10], it doesn't recognize
+						//a[10] as valid. So we need to fake this as the beginning of the next line
 						result.Insert(0, new Token(";"));
-						newTokenList.AddRange(Run(result));
+						result = Run(result);
+						//remove our inserted token
+						result.RemoveAt(0);
+						newTokenList.AddRange(result);
 						newTokenList.AddRange(Tokenizer.Tokenize(")"));
 					}
 					else

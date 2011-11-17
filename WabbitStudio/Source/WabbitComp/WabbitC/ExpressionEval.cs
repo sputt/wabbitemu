@@ -4,9 +4,9 @@ using System.Text;
 
 namespace WabbitC
 {
-    public class Expression
-    {
-        List<Token> tokens;
+	public class Expression
+	{
+		List<Token> tokens;
 		/// <summary>
 		/// The list of tokens in the current expression
 		/// </summary>
@@ -18,16 +18,16 @@ namespace WabbitC
 		/// <summary>
 		/// Returns the first Token in the expression
 		/// </summary>
-        public Token Token
-        {
-            get
-            {
-                if (tokens.Count == 0)
-                    return null;
-                else
-                    return tokens[0];
-            }
-        }
+		public Token Token
+		{
+			get
+			{
+				if (tokens.Count == 0)
+					return null;
+				else
+					return tokens[0];
+			}
+		}
 
 		List<Expression> args;
 		/// <summary>
@@ -59,7 +59,7 @@ namespace WabbitC
 			get { return operands; }
 		}
 
-        bool isPrefix = false;
+		bool isPrefix = false;
 		/// <summary>
 		/// Returns true if this ++ or -- operator is a prefix operator
 		/// Only valid if expression is ++ or --
@@ -69,10 +69,10 @@ namespace WabbitC
 			get { return isPrefix; }
 		}
 
-        public Expression(List<Token> tokens)
-        {
-            this.tokens = tokens;
-        }
+		public Expression(List<Token> tokens)
+		{
+			this.tokens = tokens;
+		}
 
 		private Expression(List<Token> tokens, int operands)
 		{
@@ -92,14 +92,14 @@ namespace WabbitC
 		/// </summary>
 		/// <returns>An RPN stack of the evaluated tokens. Highest index of
 		/// the list is the top of the stack</returns>
-        public List<Expression> Eval()
-        {
+		public List<Expression> Eval()
+		{
 			ReplaceDefines();
 			OptimizeTokens();
 			var test = FillStack(this);
 			CalculateStack(ref test);
 			return test;
-        }
+		}
 
 		private static List<Token> ReadBetweenParens(List<Token> tokens, int i, int nParen, ref int j)
 		{
@@ -199,10 +199,10 @@ namespace WabbitC
 			}
 		}
 
-        private bool IsBannedParenOptimze(Token token)
-        {
-            return token == "-" || token == "/";
-        }
+		private bool IsBannedParenOptimze(Token token)
+		{
+			return token == "-" || token == "/";
+		}
 
 
 		private void CalculateStack(ref List<Expression> expressions)
@@ -244,11 +244,11 @@ namespace WabbitC
 		{
 			if (tokens.Count < 1)
 				return null;
-            if (tokens.Count == 1)
-                if (tokens[0].Type == TokenType.OperatorType)
-                    return null;
-                else
-                    return new Expression(tokens);
+			if (tokens.Count == 1)
+				if (tokens[0].Type == TokenType.OperatorType)
+					return null;
+				else
+					return new Expression(tokens);
 			Stack<Token> stack = new Stack<Token>();
 			int i = tokens.Count;
 			Expression result = null;
@@ -306,10 +306,10 @@ namespace WabbitC
 				case "~":
 					result = ~tok1;
 					break;
-                case "-":
+				case "-":
 					//negation is just subtraction from 0
-                    result = Token.ZeroToken - tok1;
-                    break;
+					result = Token.ZeroToken - tok1;
+					break;
 			}
 			return result;
 		}
@@ -337,10 +337,10 @@ namespace WabbitC
 				case "^":
 					result = tok1 ^ tok2;
 					break;
-                case "=":
+				case "=":
 					//we cant eval =
-                    result = null;
-                    break;
+					result = null;
+					break;
 				case "&":
 					result = tok1 & tok2;
 					break;
@@ -446,11 +446,11 @@ namespace WabbitC
 							break;
 						case 1:
 							//if we have a pre/post operator we need to make sure we specify which it is
-                            if (op.Token == "++" || op.Token == "--")
-                                if (leftSide.Token == null)
-                                    op.isPrefix = true;
-                                else
-                                    op.isPrefix = false;
+							if (op.Token == "++" || op.Token == "--")
+								if (leftSide.Token == null)
+									op.isPrefix = true;
+								else
+									op.isPrefix = false;
 							if (leftSide.Tokens.Count > 0)
 								stack.Insert(i + 1, leftSide);
 							else
@@ -726,5 +726,5 @@ namespace WabbitC
 			sb.Append(tokens[tokens.Count - 1]);
 			return sb.ToString();
 		}
-    }
+	}
 }

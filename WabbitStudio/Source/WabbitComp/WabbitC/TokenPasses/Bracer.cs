@@ -7,45 +7,45 @@ using System.Diagnostics;
 
 namespace WabbitC.TokenPasses
 {
-    class Bracer : TokenPass
-    {
-        private List<Token> SkipParens(ref List<Token>.Enumerator tokens)
-        {
-            Debug.Assert(tokens.Current.Type == TokenType.OpenParen);
-            var tokenList = new List<Token>();
+	class Bracer : TokenPass
+	{
+		private List<Token> SkipParens(ref List<Token>.Enumerator tokens)
+		{
+			Debug.Assert(tokens.Current.Type == TokenType.OpenParen);
+			var tokenList = new List<Token>();
 
-            tokenList.Add(tokens.Current);
-            tokens.MoveNext();
+			tokenList.Add(tokens.Current);
+			tokens.MoveNext();
 
-            int nCount = 1;
-            while (nCount > 0)
-            {
-                if (tokens.Current.Text == "(")
-                    nCount++;
-                else if (tokens.Current.Text == ")")
-                    nCount--;
+			int nCount = 1;
+			while (nCount > 0)
+			{
+				if (tokens.Current.Text == "(")
+					nCount++;
+				else if (tokens.Current.Text == ")")
+					nCount--;
 
-                tokenList.Add(tokens.Current);
-                if (nCount > 0)
-                {
-                    tokens.MoveNext();
-                }
-            }
-            return tokenList;
-        }
+				tokenList.Add(tokens.Current);
+				if (nCount > 0)
+				{
+					tokens.MoveNext();
+				}
+			}
+			return tokenList;
+		}
 		
 
-        private List<Token> GetStatement(ref List<Token>.Enumerator tokens)
-        {
+		private List<Token> GetStatement(ref List<Token>.Enumerator tokens)
+		{
 			bool isIfStatement = false;
 			if (tokens.Current == "if")
 				isIfStatement = true;
-            var tokenList = new List<Token>();
-            while (tokens.Current.Type != TokenType.StatementEnd)
-            {
-                tokenList.Add(tokens.Current);
-                tokens.MoveNext();
-            }
+			var tokenList = new List<Token>();
+			while (tokens.Current.Type != TokenType.StatementEnd)
+			{
+				tokenList.Add(tokens.Current);
+				tokens.MoveNext();
+			}
 			tokenList.Add(tokens.Current);
 			var temp = tokens;
 			tokens.MoveNext();
@@ -72,17 +72,17 @@ namespace WabbitC.TokenPasses
 			{
 				tokens = temp;
 			}
-            return tokenList;
-        }
+			return tokenList;
+		}
 
-        private List<Token> BraceBlock(ref List<Token>.Enumerator tokens)
-        {
-            var tokenList = new List<Token>();
+		private List<Token> BraceBlock(ref List<Token>.Enumerator tokens)
+		{
+			var tokenList = new List<Token>();
 
-            if (tokens.Current.Type == TokenType.OpenBlock)
-            {
+			if (tokens.Current.Type == TokenType.OpenBlock)
+			{
 				int nParen = 0;
-                tokenList.Add(tokens.Current);
+				tokenList.Add(tokens.Current);
 				tokens.MoveNext();
 				while (tokens.Current.Type != TokenType.CloseBlock || nParen != 0)
 				{
@@ -94,17 +94,17 @@ namespace WabbitC.TokenPasses
 					tokens.MoveNext();
 				}
 				tokenList.Add(tokens.Current);
-            }
-            else
-            {
-                tokenList.Add(Token.OpenBraceToken);
+			}
+			else
+			{
+				tokenList.Add(Token.OpenBraceToken);
 
 				var listStatement = GetStatement(ref tokens);
 				tokenList.AddRange(this.Run(listStatement));
 				tokenList.Add(Token.CloseBraceToken);				
-            }
-            return tokenList;
-        }
+			}
+			return tokenList;
+		}
 
 		private List<Token> HandleIfWhileFor(ref List<Token>.Enumerator tokens)
 		{
@@ -135,7 +135,9 @@ namespace WabbitC.TokenPasses
 					tokenList.AddRange(HandleElseDo(ref tokens));
 				}
 				else
+				{
 					tokens = tempSave;
+				}
 				tokenList.Add(Token.CloseBraceToken);
 			}
 			else
@@ -156,38 +158,38 @@ namespace WabbitC.TokenPasses
 			return tokenList;
 		}
 
-        private List<Token> RunBracer(ref List<Token>.Enumerator tokens)
-        {
-            var tokenList = new List<Token>();
-            while (tokens.MoveNext())
-            {
-                tokenList.Add(tokens.Current);
+		private List<Token> RunBracer(ref List<Token>.Enumerator tokens)
+		{
+			var tokenList = new List<Token>();
+			while (tokens.MoveNext())
+			{
+				tokenList.Add(tokens.Current);
 
-                if (tokens.Current.Type == TokenType.ReservedKeyword)
-                {
-                    switch (tokens.Current.Text)
-                    {
-                        case "if":
-                        case "while":
-                        case "for":
+				if (tokens.Current.Type == TokenType.ReservedKeyword)
+				{
+					switch (tokens.Current.Text)
+					{
+						case "if":
+						case "while":
+						case "for":
 							tokenList.AddRange(HandleIfWhileFor(ref tokens));
-                            break;
+							break;
 
-                        case "else":
-                        case "do":
+						case "else":
+						case "do":
 							tokenList.AddRange(HandleElseDo(ref tokens));
-                            break;
-                    }
-                }
-            }
+							break;
+					}
+				}
+			}
 
-            return tokenList;
-        }
+			return tokenList;
+		}
 
-        public override List<Token> Run(List<Token> tokenList)
-        {
-            var tokens = tokenList.GetEnumerator();
-            return RunBracer(ref tokens);
-        }
-    }
+		public override List<Token> Run(List<Token> tokenList)
+		{
+			var tokens = tokenList.GetEnumerator();
+			return RunBracer(ref tokens);
+		}
+	}
 }

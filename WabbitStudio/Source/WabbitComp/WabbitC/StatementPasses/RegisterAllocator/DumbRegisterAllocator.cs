@@ -11,11 +11,11 @@ using WabbitC.Model.Types;
 
 namespace WabbitC.StatementPasses.RegisterAllocator
 {
-    static class DumbRegisterAllocator
-    {
-        public static void Run(Module module)
-        {
-            var functions = module.GetFunctionEnumerator();
+	static class DumbRegisterAllocator
+	{
+		public static void Run(Module module)
+		{
+			var functions = module.GetFunctionEnumerator();
 			while (functions.MoveNext())
 			{
 				Block block = functions.Current.Code;
@@ -90,6 +90,6 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 
 				block.Declarations.Clear();
 			}
-        }
-    }
+		}
+	}
 }

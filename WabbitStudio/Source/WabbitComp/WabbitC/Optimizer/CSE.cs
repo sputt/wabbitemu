@@ -37,8 +37,8 @@ namespace WabbitC.Optimizer
 				Add the expression to our set of possible redundant expressions.
 			If the expression, or its equivalent, has been seen exactly once before,
 				1. Create a temporary variable to hold the computation.
-				2. Add an instruction immediatly prior to the first time the instruction was seen.
-				3. Replace the first and second occurances with the temporary variable.
+				2. Add an instruction immediately prior to the first time the instruction was seen.
+				3. Replace the first and second occurrences with the temporary variable.
 			If the expression, or its equivalent, has been seen more than twice,
 				Replace the expression with its temporary variable.
 		*/

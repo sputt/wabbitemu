@@ -7,6 +7,7 @@ using WabbitC.Model;
 using WabbitC.Model.Statements;
 using WabbitC.Model.Types;
 using System.Diagnostics;
+using WabbitC.Optimizer;
 
 namespace WabbitC.StatementPasses.RegisterAllocator
 {
@@ -19,25 +20,64 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 			{
 				Block block = functions.Current.Code;
 				var basicBlocks = BasicBlock.GetBasicBlocks(block);
+				var irGraphs = BuildInterferenceGraph(basicBlocks);
 
-				foreach (var decl in block.Declarations)
-				{
-					block.stack.ReserveSpace(decl);
-				}
+				//block.Statements.Clear();
+				//for (int i = 0; i < basicBlocks.Count; i++)
+				//{
+				//    Block basicBlock = basicBlocks[i];
+				//    AllocateBlock(ref basicBlock);
+				//    block.Statements.AddRange(basicBlock.Statements);
+				//}
 
-				block.Statements.Clear();
-				for (int i = 0; i < basicBlocks.Count; i++)
-				{
-					Block basicBlock = basicBlocks[i];
-					AllocateBlock(ref basicBlock);
-					block.Statements.AddRange(basicBlock.Statements);
-				}
+				//block.Statements.Insert(0, new StackFrameInit(block, block.stack.Size));
+				//block.Statements.Add(new StackFrameCleanup(block, block.stack.Size));
 
-				block.Statements.Insert(0, new StackFrameInit(block, block.stack.Size));
-				block.Statements.Add(new StackFrameCleanup(block, block.stack.Size));
-
-				block.Declarations.Clear();
+				//block.Declarations.Clear();
 			}
+		}
+
+		static List<Dictionary<Declaration, ISet<Declaration>>> BuildInterferenceGraph(List<BasicBlock> blocks)
+		{
+			var graphs = new List<Dictionary<Declaration, ISet<Declaration>>>();
+			foreach (var block in blocks)
+			{
+				var graph = new Dictionary<Declaration, ISet<Declaration>>();
+				LiveChartClass liveChart = new LiveChartClass(block);
+				liveChart.GenerateVariableChart(true);
+				foreach (var keyValuePair in liveChart)
+				{
+					foreach (var declToCompare in liveChart)
+					{
+						if (keyValuePair.Equals(declToCompare))
+							continue;
+						bool constructEdge = false;
+						for (int i = 0; i < keyValuePair.Value.Count; i++)
+						{
+							if (keyValuePair.Value[i] && declToCompare.Value[i])
+							{
+								constructEdge = true;
+							}
+						}
+						if (constructEdge)
+						{
+							//we don't check if these are flipped so we store 2x extra data
+							//i think this will be good later so we don't have to do two lookups
+							//just need to remember to treat them as the same
+							ISet<Declaration> interferenceNodes;
+							if (!graph.TryGetValue(keyValuePair.Key, out interferenceNodes))
+							{
+								interferenceNodes = new HashSet<Declaration>();
+								graph[keyValuePair.Key] = interferenceNodes;
+							}
+							interferenceNodes.Add(declToCompare.Key);
+						}
+					}
+				}
+				graphs.Add(graph);
+			}
+
+			return graphs;
 		}
 
 		static void AllocateBlock(ref Block block)

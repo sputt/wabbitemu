@@ -77,7 +77,6 @@
     <Compile Include="CastHelper.cs" />
     <Compile Include="Model\Datum.cs" />
     <Compile Include="Model\Declaration.cs" />
-    <Compile Include="Model\EntryPoint.cs" />
     <Compile Include="Model\Immediate.cs" />
     <Compile Include="Model\Statements\BlockCopyReverse.cs" />
     <Compile Include="Model\Statements\Dec.cs" />
@@ -135,6 +134,7 @@
     <Compile Include="Optimizer\ConstantsOptimizer.cs" />
     <Compile Include="Optimizer\CSE.cs" />
     <Compile Include="Optimizer\LiveVariableAnalysis.cs" />
+    <Compile Include="Optimizer\Loop\ConstantsOptimizer.cs" />
     <Compile Include="Optimizer\Loop\LoopInvarianceReduction.cs" />
     <Compile Include="Optimizer\Loop\Optimizer.cs" />
     <Compile Include="Optimizer\Loop\StrengthReduction.cs" />
@@ -187,7 +187,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>del "$(SolutionDir)$(ConfigurationName)\WabbitC Output Builder.exe" 2&gt; nul</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

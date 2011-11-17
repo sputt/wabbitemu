@@ -11,8 +11,8 @@ using WabbitC.StatementPasses.RegisterAllocator;
 
 namespace WabbitC.StatementPasses
 {
-    static class SuperRegisterAllocator
-    {
+	static class SuperRegisterAllocator
+	{
 		public static void Run(Module module)
 		{
 			var functions = module.GetFunctionEnumerator();
@@ -96,5 +96,5 @@ namespace WabbitC.StatementPasses
 				}
 			}
 		}
-    }
+	}
 }

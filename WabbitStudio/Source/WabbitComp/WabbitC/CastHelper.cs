@@ -5,64 +5,64 @@ using System.Text;
 
 namespace WabbitC
 {
-    public static class CastHelper
-    {
-        private static List<string> ReservedModifiers = 
-            new List<string>() {"const", "volatile", "struct", "union", "enum"};
+	public static class CastHelper
+	{
+		private static List<string> ReservedModifiers = 
+			new List<string>() {"const", "volatile", "struct", "union", "enum"};
 
-        private static bool HandleIndirectionSection(ref List<Token>.Enumerator tokens)
-        {
-            int parenCount = 0;
-            while (!(parenCount == 0 && tokens.Current.Text == ")"))
-            {
+		private static bool HandleIndirectionSection(ref List<Token>.Enumerator tokens)
+		{
+			int parenCount = 0;
+			while (!(parenCount == 0 && tokens.Current.Text == ")"))
+			{
+				tokens.MoveNext();
+			}
+			return true;
+		}
 
-                tokens.MoveNext();
-            }
-            return true;
-        }
+		public static bool IsCast(List<Token> tokenList)
+		{
+			List<Token>.Enumerator tokens = tokenList.GetEnumerator();
+			tokens.MoveNext();
+			if (tokens.Current != "(")
+			{
+				return false;
+			}
+			tokens.MoveNext();
 
-        public static bool IsCast(List<Token> tokenList)
-        {
-            List<Token>.Enumerator tokens = tokenList.GetEnumerator();
-            tokens.MoveNext();
-            if (tokens.Current != "(")
-            {
-                return false;
-            }
-            tokens.MoveNext();
+			// Loop through reserved modifiers
+			while (ReservedModifiers.Contains(tokens.Current))
+			{
 
-            // Loop through reserved modifiers
-            while (ReservedModifiers.Contains(tokens.Current))
-            {
+				tokens.MoveNext();
+			}
 
-                tokens.MoveNext();
-            }
+			// Loop through some strings, must have 1
+			int nCount = 0;
+			bool moveNext = true;
+			while (tokens.Current != "*" && tokens.Current != ")" && moveNext)
+			{
+				if (tokens.Current.Type != TokenType.StringType && 
+					tokens.Current.Type != TokenType.ReservedKeyword)
+				{
+					return false;
+				}
+				nCount++;
+				moveNext = tokens.MoveNext();
+			}
 
-            // Loop through some strings, must have 1
-            int nCount = 0;
-            while (tokens.Current != "*" && tokens.Current != ")")
-            {
-                if (tokens.Current.Type != TokenType.StringType && 
-                    tokens.Current.Type != TokenType.ReservedKeyword)
-                {
-                    return false;
-                }
-                nCount++;
-                tokens.MoveNext();
-            }
+			if (nCount == 0 || !moveNext)
+			{
+				return false;
+			}
 
-            if (nCount == 0)
-            {
-                return false;
-            }
+		   HandleIndirectionSection(ref tokens);
 
-           HandleIndirectionSection(ref tokens);
-
-           if (tokens.Current != ")")
-           {
-               return false;
-           }
-           return true;
-        }
-    }
+		   if (tokens.Current != ")")
+		   {
+			   return false;
+		   }
+		   return true;
+		}
+	}
 }

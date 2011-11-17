@@ -10,24 +10,24 @@ using System.Collections;
 
 namespace WabbitC.Optimizer
 {
-    static class VariableReducer
-    {
-        public static void Optimize(ref Module module)
-        {
-            for (int i = 0; i < module.Declarations.Count; i++)
-            {
-                Declaration decl = module.Declarations[i];
+	static class VariableReducer
+	{
+		public static void Optimize(ref Module module)
+		{
+			for (int i = 0; i < module.Declarations.Count; i++)
+			{
+				Declaration decl = module.Declarations[i];
 				if (decl.Code != null)
 					OptimizeBlock(ref decl.Code);
-            }
-        }
+			}
+		}
 
-        public static void OptimizeBlock(ref Block block)
-        {
+		public static void OptimizeBlock(ref Block block)
+		{
 			var gotoTable = new Hashtable();
-            for (int i = 0; i < block.Statements.Count; i++)
-            {
-                var statement = block.Statements[i];
+			for (int i = 0; i < block.Statements.Count; i++)
+			{
+				var statement = block.Statements[i];
 				if (statement is Annotation || statement is Assignment || statement is Label)
 				{
 					continue;
@@ -46,7 +46,7 @@ namespace WabbitC.Optimizer
 						var newStatement = (Statement) move.RValue.ConstStatement.Clone();
 						newStatement.ReplaceDeclaration(move.RValue, move.LValue);
 						block.Statements[i] = newStatement;
-						i--;	//rerun current statement to correctly populate LValue conststatement
+						i--;	//rerun current statement to correctly populate LValue const statement
 					}
 					else
 					{
@@ -149,7 +149,9 @@ namespace WabbitC.Optimizer
 						}
 					}
 					for (int k = 0; k < block.Declarations.Count; k++)
+					{
 						block.Declarations[k].ConstStatement = null;
+					}
 					/*else
 					{
 						j = i + 1;
@@ -171,8 +173,8 @@ namespace WabbitC.Optimizer
 						//block.Statements.Remove(newStatement);
 					}
 				}
-            }
-        }
+			}
+		}
 
-    }
+	}
 }

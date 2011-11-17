@@ -6,134 +6,132 @@ using System.Linq;
 
 namespace WabbitC_Tests
 {
-    
-    
-    /// <summary>
-    ///This is a test class for ExpressionTest and is intended
-    ///to contain all ExpressionTest Unit Tests
-    ///</summary>
-    [TestClass()]
-    public class ExpressionTest
-    {
+	
+	
+	/// <summary>
+	///This is a test class for ExpressionTest and is intended
+	///to contain all ExpressionTest Unit Tests
+	///</summary>
+	[TestClass()]
+	public class ExpressionTest
+	{
+		private TestContext testContextInstance;
+
+		/// <summary>
+		///Gets or sets the test context which provides
+		///information about and functionality for the current test run.
+		///</summary>
+		public TestContext TestContext
+		{
+			get
+			{
+				return testContextInstance;
+			}
+			set
+			{
+				testContextInstance = value;
+			}
+		}
+
+		#region Additional test attributes
+		// 
+		//You can use the following additional attributes as you write your tests:
+		//
+		//Use ClassInitialize to run code before running the first test in the class
+		//[ClassInitialize()]
+		//public static void MyClassInitialize(TestContext testContext)
+		//{
+		//}
+		//
+		//Use ClassCleanup to run code after all tests in a class have run
+		//[ClassCleanup()]
+		//public static void MyClassCleanup()
+		//{
+		//}
+		//
+		//Use TestInitialize to run code before running each test
+		//[TestInitialize()]
+		//public void MyTestInitialize()
+		//{
+		//}
+		//
+		//Use TestCleanup to run code after each test has run
+		//[TestCleanup()]
+		//public void MyTestCleanup()
+		//{
+		//}
+		//
+		#endregion
 
 
-        private TestContext testContextInstance;
+		/// <summary>
+		///A test for Eval
+		///</summary>
+		[TestMethod()]
+		public void EvalTest1()
+		{
 
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
-        }
+			List<Token> tokens = Tokenizer.Tokenize("test = test2 = 20");
+			Expression target = new Expression(tokens); 
 
-        #region Additional test attributes
-        // 
-        //You can use the following additional attributes as you write your tests:
-        //
-        //Use ClassInitialize to run code before running the first test in the class
-        //[ClassInitialize()]
-        //public static void MyClassInitialize(TestContext testContext)
-        //{
-        //}
-        //
-        //Use ClassCleanup to run code after all tests in a class have run
-        //[ClassCleanup()]
-        //public static void MyClassCleanup()
-        //{
-        //}
-        //
-        //Use TestInitialize to run code before running each test
-        //[TestInitialize()]
-        //public void MyTestInitialize()
-        //{
-        //}
-        //
-        //Use TestCleanup to run code after each test has run
-        //[TestCleanup()]
-        //public void MyTestCleanup()
-        //{
-        //}
-        //
-        #endregion
-
-
-        /// <summary>
-        ///A test for Eval
-        ///</summary>
-        [TestMethod()]
-        public void EvalTest1()
-        {
-
-			List<Token> tokens = Tokenizer.Tokenize("test = test2 = 20");// TODO: Initialize to an appropriate value
-            Expression target = new Expression(tokens); // TODO: Initialize to an appropriate value
-
-			List<Expression> expected = new List<Expression>(); // TODO: Initialize to an appropriate value
+			List<Expression> expected = new List<Expression>(); 
 			expected.Add(new Expression(Tokenizer.ToToken("=")));
 			expected.Add(new Expression(Tokenizer.ToToken("test")));
-            expected.Add(new Expression(Tokenizer.ToToken("=")));
-            expected.Add(new Expression(Tokenizer.ToToken("test2")));
-            expected.Add(new Expression(Tokenizer.ToToken("20")));
-            
-            List<Expression> actual;
-            actual = target.Eval();
+			expected.Add(new Expression(Tokenizer.ToToken("=")));
+			expected.Add(new Expression(Tokenizer.ToToken("test2")));
+			expected.Add(new Expression(Tokenizer.ToToken("20")));
+			
+			List<Expression> actual;
+			actual = target.Eval();
 			Compare(expected, actual);
-        }
+		}
 
-        [TestMethod()]
-        public void EvalTest2()
-        {
-			List<Token> tokens = Tokenizer.Tokenize("test + (test2 + 20)"); // TODO: Initialize to an appropriate value
-            Expression target = new Expression(tokens); // TODO: Initialize to an appropriate value
+		[TestMethod()]
+		public void EvalTest2()
+		{
+			List<Token> tokens = Tokenizer.Tokenize("test + (test2 + 20)"); 
+			Expression target = new Expression(tokens); 
 
 			List<Expression> expected = new List<Expression>();
 			expected.Add(new Expression(Tokenizer.ToToken("+")));
-            expected.Add(new Expression(Tokenizer.ToToken("+")));
-            expected.Add(new Expression(Tokenizer.ToToken("test")));
-            expected.Add(new Expression(Tokenizer.ToToken("test2")));
+			expected.Add(new Expression(Tokenizer.ToToken("+")));
+			expected.Add(new Expression(Tokenizer.ToToken("test")));
+			expected.Add(new Expression(Tokenizer.ToToken("test2")));
 			expected.Add(new Expression(Tokenizer.ToToken("20")));
 
-            List<Expression> actual;
-            actual = target.Eval();
+			List<Expression> actual;
+			actual = target.Eval();
 			Compare(expected, actual);
-        }
+		}
 
 		[TestMethod()]
 		public void EvalTest3()
 		{
-			List<Token> tokens = Tokenizer.Tokenize("20 / (10 - 8) + 9 * 7"); ; // TODO: Initialize to an appropriate value
-			Expression target = new Expression(tokens); // TODO: Initialize to an appropriate value
+			List<Token> tokens = Tokenizer.Tokenize("20 / (10 - 8) + 9 * 7"); ; 
+			Expression target = new Expression(tokens); 
 
-			List<Expression> expected = new List<Expression>(); // TODO: Initialize to an appropriate value
+			List<Expression> expected = new List<Expression>(); 
 			expected.Add(new Expression(Tokenizer.ToToken("73")));
 			List<Expression> actual;
 			actual = target.Eval();
 			Compare(expected, actual);
 		}
 
-        [TestMethod()]
-        public void EvalTest4()
-        {
+		[TestMethod()]
+		public void EvalTest4()
+		{
 
 			List<Token> tokens = Tokenizer.Tokenize("!test");
-            Expression target = new Expression(tokens);
+			Expression target = new Expression(tokens);
 
-            List<Expression> expected = new List<Expression>();
-            expected.Add(new Expression(Tokenizer.ToToken("!")));
-            expected.Add(new Expression(Tokenizer.ToToken("test")));
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("!")));
+			expected.Add(new Expression(Tokenizer.ToToken("test")));
 
-            List<Expression> actual;
-            actual = target.Eval();
+			List<Expression> actual;
+			actual = target.Eval();
 			Compare(expected, actual);
-        }
+		}
 
 		[TestMethod()]
 		public void EvalTest5()
@@ -175,21 +173,21 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-        public void EvalTest7()
-        {
+		public void EvalTest7()
+		{
 			List<Token> tokens = Tokenizer.Tokenize("*test * 2"); ;
-            Expression target = new Expression(tokens);
+			Expression target = new Expression(tokens);
 
-            List<Expression> expected = new List<Expression>();
-            expected.Add(new Expression(Tokenizer.ToToken("*")));
-            expected.Add(new Expression(Tokenizer.ToToken("*")));
-            expected.Add(new Expression(Tokenizer.ToToken("test")));
-            expected.Add(new Expression(Tokenizer.ToToken("2")));
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("*")));
+			expected.Add(new Expression(Tokenizer.ToToken("*")));
+			expected.Add(new Expression(Tokenizer.ToToken("test")));
+			expected.Add(new Expression(Tokenizer.ToToken("2")));
 
-            List<Expression> actual;
-            actual = target.Eval();
+			List<Expression> actual;
+			actual = target.Eval();
 			Compare(expected, actual);
-        }
+		}
 
 		[TestMethod()]
 		public void EvalTest8()
@@ -299,22 +297,22 @@ namespace WabbitC_Tests
 			Assert.IsTrue(actual[1].IsCast, "Not marked as a cast properly");
 		}
 
-        [TestMethod()]
-        public void CastTest4()
-        {
-            List<Token> tokens = Tokenizer.Tokenize("(test)-342");
-            Expression target = new Expression(tokens);
+		[TestMethod()]
+		public void CastTest4()
+		{
+			List<Token> tokens = Tokenizer.Tokenize("(test)-342");
+			Expression target = new Expression(tokens);
 
-            List<Expression> expected = new List<Expression>();
-            expected.Add(new Expression(Tokenizer.Tokenize("(test)")));
-            expected.Add(new Expression(Tokenizer.ToToken("-")));
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.Tokenize("(test)")));
+			expected.Add(new Expression(Tokenizer.ToToken("-")));
 			expected.Add(new Expression(Tokenizer.ToToken("342")));
 
-            List<Expression> actual;
-            actual = target.Eval();
-            Compare(expected, actual);
-            Assert.IsTrue(actual[0].IsCast, "Not marked as a cast properly");
-        }
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+			Assert.IsTrue(actual[0].IsCast, "Not marked as a cast properly");
+		}
 
 		[TestMethod()]
 		public void CommaOperatorTest1()
@@ -336,35 +334,35 @@ namespace WabbitC_Tests
 			Compare(expected, actual);
 		}
 
-        [TestMethod()]
-        public void TripleDerefTest()
-        {
+		[TestMethod()]
+		public void TripleDerefTest()
+		{
 			var tokens = Tokenizer.Tokenize("***test");
-            var target = new Expression(tokens);
+			var target = new Expression(tokens);
 
-            var actual = target.Eval();
+			var actual = target.Eval();
 
-            Assert.AreEqual(1, actual[0].Operands, "First dereference operand count wrong");
-            Assert.AreEqual(1, actual[1].Operands, "Second dereference operand count wrong");
+			Assert.AreEqual(1, actual[0].Operands, "First dereference operand count wrong");
+			Assert.AreEqual(1, actual[1].Operands, "Second dereference operand count wrong");
 			Assert.AreEqual(1, actual[2].Operands, "Third dereference operand count wrong");
-            Assert.AreEqual("test", actual[3].Tokens[0], "Was not parsed correctly");
-        }
+			Assert.AreEqual("test", actual[3].Tokens[0], "Was not parsed correctly");
+		}
 
-        [TestMethod()]
-        public void AddressOfTest()
-        {
-            var tokens = Tokenizer.Tokenize("ptest = &test");
-            var target = new Expression(tokens);
-            List<Expression> expected = new List<Expression>();
-            expected.Add(new Expression(Tokenizer.ToToken("=")));
-            expected.Add(new Expression(Tokenizer.ToToken("ptest")));
-            expected.Add(new Expression(Tokenizer.ToToken("&")));
-            expected.Add(new Expression(Tokenizer.ToToken("test")));
+		[TestMethod()]
+		public void AddressOfTest()
+		{
+			var tokens = Tokenizer.Tokenize("ptest = &test");
+			var target = new Expression(tokens);
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("=")));
+			expected.Add(new Expression(Tokenizer.ToToken("ptest")));
+			expected.Add(new Expression(Tokenizer.ToToken("&")));
+			expected.Add(new Expression(Tokenizer.ToToken("test")));
 
-            List<Expression> actual;
-            actual = target.Eval();
-            Compare(expected, actual);
-        }
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+		}
 
 		[TestMethod()]
 		public void OptimizeTest1()
@@ -386,19 +384,19 @@ namespace WabbitC_Tests
 			Compare(expected, actual);
 		}
 
-        [TestMethod()]
-        public void DoubleNegative()
-        {
-            List<Token> tokens = Tokenizer.Tokenize("-(-300)"); ;
-            Expression target = new Expression(tokens);
+		[TestMethod()]
+		public void DoubleNegative()
+		{
+			List<Token> tokens = Tokenizer.Tokenize("-(-300)"); ;
+			Expression target = new Expression(tokens);
 
-            List<Expression> expected = new List<Expression>();
-            expected.Add(new Expression(Tokenizer.ToToken("300")));
+			List<Expression> expected = new List<Expression>();
+			expected.Add(new Expression(Tokenizer.ToToken("300")));
 
-            List<Expression> actual;
-            actual = target.Eval();
-            Compare(expected, actual);
-        }
+			List<Expression> actual;
+			actual = target.Eval();
+			Compare(expected, actual);
+		}
 
 		void Compare(List<Expression> expected, List<Expression> actual)
 		{
@@ -409,5 +407,5 @@ namespace WabbitC_Tests
 					"Actual: \"" + string.Join<Token>(String.Empty, actual[i].Tokens.ToArray()) + "\"");
 			}
 		}
-    }
+	}
 }
