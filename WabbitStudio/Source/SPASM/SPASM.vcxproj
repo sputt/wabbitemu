@@ -332,7 +332,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;USE_GMP;USE_REUSABLES;USE_BUILTIN_FCREATE;_CRT_SECURE_NO_WARNINGS;STRSAFE_NO_DEPRECATE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;USE_GMP;USE_REUSABLES;USE_BUILTIN_FCREATE;_CRT_SECURE_NO_WARNINGS;STRSAFE_NO_DEPRECATE;_DEBUG;_WIN64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -410,7 +410,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;USE_GMP;USE_REUSABLES;USE_BUILTIN_FCREATE;_CRT_SECURE_NO_WARNINGS;STRSAFE_NO_DEPRECATE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN64;WIN32;_WINDOWS;USE_GMP;USE_REUSABLES;USE_BUILTIN_FCREATE;_CRT_SECURE_NO_WARNINGS;STRSAFE_NO_DEPRECATE;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
@@ -548,7 +548,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>WIN64;_WINDOWS;USE_GMP;USE_REUSABLES;USE_BUILTIN_FCREATE;_CRT_SECURE_NO_WARNINGS;STRSAFE_NO_DEPRECATE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN64;_WINDOWS;USE_GMP;USE_REUSABLES;USE_BUILTIN_FCREATE;_CRT_SECURE_NO_WARNINGS;STRSAFE_NO_DEPRECATE;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>
       </AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>

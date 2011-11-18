@@ -86,7 +86,7 @@ extern "C"
 
 	__declspec (dllexport) int __stdcall 
 	ClearDefines() {
-		list_free(default_defines, true);
+		list_free(default_defines, true, NULL);
 		default_defines = NULL;
 	#ifdef LOG
 		fprintf(logfile, "ClearDefines");
@@ -114,7 +114,7 @@ extern "C"
 
 	__declspec (dllexport) int __stdcall
 	ClearIncludes() {
-		list_free(include_dirs, true);
+		list_free(include_dirs, true, NULL);
 		include_dirs = NULL;
 	#ifdef LOG
 		fprintf(logfile, "ClearIncludes\n");

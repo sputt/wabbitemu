@@ -16,7 +16,7 @@ typedef struct _mh_hash_table {
 typedef void (*HASH_ENUM_CALLBACK)(void *, void *);
 typedef void (*HASH_REMOVE_CALLBACK)(void *);
 
-unsigned int murmur_hash (const char *data, int len);
+unsigned int murmur_hash (const void *data, int len, unsigned int seed = 0xdeadbeef);
 
 hash_t *hash_init (size_t size, void remove_callback(void *));
 void *hash_insert (hash_t *ht, void *store);
