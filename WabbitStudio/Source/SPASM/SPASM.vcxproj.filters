@@ -162,6 +162,9 @@
     <ClInclude Include="modp_ascii.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="SPASM_h.h">
+      <Filter>Generated Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Z80Assembler.rgs">

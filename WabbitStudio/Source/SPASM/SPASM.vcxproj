@@ -168,7 +168,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
     <LinkIncremental>true</LinkIncremental>
-    <PostBuildEventUseInBuild>false</PostBuildEventUseInBuild>
+    <PostBuildEventUseInBuild>true</PostBuildEventUseInBuild>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='DLL Debug|x64'">
     <IgnoreImportLibrary>true</IgnoreImportLibrary>
@@ -736,6 +736,7 @@
     <ClInclude Include="preop.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="spasm.h" />
+    <ClInclude Include="SPASM_h.h" />
     <ClInclude Include="SPASM_i.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="storage.h" />

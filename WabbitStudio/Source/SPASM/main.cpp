@@ -78,7 +78,6 @@ int run_assembly()
 	output_list_tail = NULL;
 
 	assert(curr_input_file != NULL);
-	assert(output_filename != NULL);
 
 	//read in the input file
 	if (!(mode & MODE_COMMANDLINE))
@@ -214,13 +213,10 @@ int run_assembly()
 }
 
 int main (int argc, char **argv)
-//int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hReserved, LPSTR lpszCommandLine, int nCmdShow)
 {
 	int curr_arg = 1;
 	bool case_sensitive = false;
 	bool is_storage_initialized = false;
-
-	//_CrtSetBreakAlloc(176);
 
 	use_colors = true;
 	extern WORD user_attributes;
@@ -374,9 +370,7 @@ int main (int argc, char **argv)
 				{
 #ifndef _TEST
 #ifdef _WINDOWS
-					//FreeConsole();
-					//system("PAUSE");
-					printf("Waiting for a client...\n");
+					FreeConsole();
 					return _AtlModule.WinMain(SW_HIDE);
 #endif
 #else

@@ -1,7 +1,6 @@
 // Z80Assembler.cpp : Implementation of CZ80Assembler
 
 #include "stdafx.h"
-#include <comdef.h>
 #include "Z80Assembler.h"
 #include "Z80Label.h"
 
@@ -15,11 +14,8 @@ extern hash_t *label_table;
 
 LONG CZ80Assembler::m_lIndex;
 
-// CZ80Assembler
-
 HRESULT CZ80Assembler::FinalConstruct()
 {
-	printf("Constructing Z80 Assembler\n");
 	init_storage();
 	m_pStmOutput = NULL;
 	return S_OK;
@@ -27,7 +23,6 @@ HRESULT CZ80Assembler::FinalConstruct()
 
 void CZ80Assembler::FinalRelease()
 {
-	printf("Destructing Z80 Assembler\n");
 	free_storage();
 }
 
@@ -53,7 +48,7 @@ STDMETHODIMP CZ80Assembler::put_InputFile(BSTR bstrInputFile)
 
 STDMETHODIMP CZ80Assembler::get_InputFile(LPBSTR lpbstrInputFile)
 {
-	*lpbstrInputFile = m_bstrInputFile;
+	*lpbstrInputFile = SysAllocString(m_bstrInputFile);
 	return S_OK;
 }
 
@@ -65,7 +60,7 @@ STDMETHODIMP CZ80Assembler::put_OutputFile(BSTR bstrOutputFile)
 
 STDMETHODIMP CZ80Assembler::get_OutputFile(LPBSTR lpbstrOutputFile)
 {
-	*lpbstrOutputFile = m_bstrOutputFile;
+	*lpbstrOutputFile = SysAllocString(m_bstrOutputFile);
 	return S_OK;
 }
 
@@ -176,26 +171,30 @@ STDMETHODIMP CZ80Assembler::Assemble(VARIANT varInput, int *lpInt)
 	return S_OK;
 }
 
-void get_label_callback(label_t *label, LPSAFEARRAY lpsa)
+void CZ80Assembler::get_label_callback(label_t *label, CComSafeArray<IDispatch *> *lpsa)
 {
-	CComObject<CZ80Label> *Label = new CComObject<CZ80Label>();
-	Label->Initialize(label);
-	Label->AddRef();
+	CComObject<CZ80Label> *pLabelObj = NULL;
+	CComObject<CZ80Label>::CreateInstance(&pLabelObj);
+	pLabelObj->AddRef();
+	pLabelObj->Initialize(label);
 
-	SafeArrayPutElement(lpsa, &CZ80Assembler::m_lIndex, Label);
-	CZ80Assembler::m_lIndex++;
+	IZ80Label *pLabel;
+	pLabelObj->QueryInterface(&pLabel);
+	
+	pLabelObj->Release();
+
+	lpsa->SetAt(m_lIndex++, pLabel, FALSE);
 }
 
 STDMETHODIMP CZ80Assembler::get_Labels(LPSAFEARRAY *ppsa)
 {
-	SAFEARRAYBOUND sab = {0};
-	sab.cElements = (ULONG) label_table->used;
-	sab.lLbound = 0;
+	CComSafeArray<IDispatch *> sa((ULONG) label_table->used);
 
-	LPSAFEARRAY lpsa = SafeArrayCreate(VT_DISPATCH, 1, &sab);
+	m_lIndex = sa.GetLowerBound(0);
+	hash_enum(label_table, (HASH_ENUM_CALLBACK) get_label_callback, &sa);
 
-	m_lIndex = 0;
-	hash_enum(label_table, (HASH_ENUM_CALLBACK) get_label_callback, lpsa);
+	LPSAFEARRAY lpsa;
+	sa.CopyTo(&lpsa);
 
 	*ppsa = lpsa;
 	return S_OK;

@@ -24,6 +24,7 @@
 #include <atlcom.h>
 #include <atlctl.h>
 #include <atlconv.h>
+#include <atlsafe.h>
 
 using namespace ATL;
 
@@ -47,6 +48,8 @@ using namespace ATL;
 #include <tchar.h>
 #include <strsafe.h>
 #include <assert.h>
+
+#include <comdef.h>
 
 #include <gmp\gmp.h>
 #else

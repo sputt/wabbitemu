@@ -3,10 +3,9 @@
 #pragma once
 #include "resource.h"       // main symbols
 #include "list.h"
+#include "storage.h"
 
 #include "SPASM_i.h"
-
-using namespace ATL;
 
 typedef struct
 {
@@ -20,13 +19,9 @@ default_define_pair_t;
 class ATL_NO_VTABLE CZ80Assembler :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CZ80Assembler, &CLSID_Z80Assembler>,
-	public IDispatchImpl<IZ80Assembler, &IID_IZ80Assembler, &LIBID_SPASM, /*wMajor =*/ 1, /*wMinor =*/ 2>
+	public IDispatchImpl<IZ80Assembler, &IID_IZ80Assembler, &LIBID_SPASM, 1, 2>
 {
 public:
-	CZ80Assembler()
-	{
-	}
-
 	DECLARE_REGISTRY_RESOURCEID(IDR_Z80ASSEMBLER)
 
 	BEGIN_COM_MAP(CZ80Assembler)
@@ -57,9 +52,12 @@ public:
 	STDMETHOD(Assemble)(VARIANT varInput, int *lpReturn);
 
 	STDMETHOD(get_Labels)(LPSAFEARRAY *lpsa);
-	static LONG m_lIndex;
+	
 
 private:
+	static LONG m_lIndex;
+	static void get_label_callback(label_t *label, CComSafeArray<IDispatch *> *lpsa);
+
 	LPSTREAM m_pStmOutput;
 
 	_bstr_t m_bstrInputFile;

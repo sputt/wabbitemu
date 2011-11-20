@@ -53,7 +53,7 @@ interface IZ80Assembler : IDispatch
 	HRESULT Assemble([in, optional] VARIANT Input, [out, retval] int *Return);
 
 	[helpstring("List of labels from the assembly"), propget]
-	HRESULT Labels([out, retval] SAFEARRAY(IZ80Label *) *Labels);
+	HRESULT Labels([out, retval] SAFEARRAY(IDispatch *) *Labels);
 };
 
 [
