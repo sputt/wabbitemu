@@ -21,14 +21,21 @@ namespace WabbitC.TokenPasses
 				{
 					tokens = currentTokens;
 					newTokenList.AddRange(result[0]);
-					newTokenList.Add(Tokenizer.ToToken("while"));
-					newTokenList.Add(Token.OpenParenToken);
-					//add in loop
-					newTokenList.AddRange(result[1]);
-					newTokenList.Add(Token.CloseParenToken);
+                    newTokenList.Add(Tokenizer.ToToken("if"));
+                    newTokenList.Add(Token.OpenParenToken);
+                    newTokenList.AddRange(result[1]);
+                    newTokenList.Add(Token.CloseParenToken);
+                    newTokenList.Add(Token.OpenBraceToken);
+                    newTokenList.Add(Tokenizer.ToToken("do"));
 					newTokenList.Add(Token.OpenBraceToken);
 					newTokenList.AddRange(result[2]);
 					newTokenList.Add(Token.CloseBraceToken);
+                    newTokenList.Add(Tokenizer.ToToken("while"));
+                    newTokenList.Add(Token.OpenParenToken);
+                    newTokenList.AddRange(result[1]);
+                    newTokenList.Add(Token.CloseParenToken);
+                    newTokenList.Add(Token.StatementEndToken);
+                    newTokenList.Add(Token.CloseBraceToken);
 				}
 				else
 				{
