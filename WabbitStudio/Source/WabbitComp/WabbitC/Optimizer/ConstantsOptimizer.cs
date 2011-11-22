@@ -20,12 +20,40 @@ namespace WabbitC.Optimizer
 				if (decl.Code != null)
 				{
 					var basicBlocks = BasicBlock.GetBasicBlocks(decl.Code);
-					decl.Code.Statements.Clear();
 					for (int j = 0; j < basicBlocks.Count; j++)
 					{
 						var basicBlock = basicBlocks[j];
 						OptimizeBlock(ref basicBlock);
-						decl.Code.Statements.AddRange(basicBlock);
+					}
+				}
+			}
+			for (int i = 0; i < module.Declarations.Count; i++)
+			{
+				Declaration decl = module.Declarations[i];
+				if (decl.Code != null)
+				{
+					var basicBlocks = BasicBlock.GetBasicBlocks(decl.Code);
+					decl.Code.Statements.Clear();
+					for (int j = 0; j < basicBlocks.Count; j++)
+					{
+						var basicBlock = basicBlocks[j];
+						for (int k = 0; k < basicBlock.Statements.Count; k++)
+						{
+							var statement = basicBlock.Statements[k];
+							if (statement is ILValue)
+							{
+								var lValue = ((ILValue)statement).LValue;
+								if (lValue.ConstValue != null)
+								{
+									var newAssignment = new Assignment(lValue, new Immediate(int.Parse(lValue.ConstValue.Value.Text)));
+									decl.Code.Statements.Add(newAssignment);
+								}
+							}
+							else
+							{
+								decl.Code.Statements.Add(statement);
+							}
+						}
 					}
 				}
 			}
@@ -35,40 +63,40 @@ namespace WabbitC.Optimizer
 		const string constOptInProgressString = "Optimizing";
 		public static void OptimizeBlock(ref BasicBlock block)
 		{
-			if (block.Properties.Contains(constOptString))
-				return;
-			if (!block.Properties.Contains(constOptInProgressString))
-			{
-				block.Properties.Add(constOptInProgressString);
-				block.FreezeOutVars();
-				block.FreezeInVars();
-				for (int i = 0; i < block.Declarations.Count; i++)
-				{
-					block.Declarations[i].ConstValue = null;
-				}
-				for (int i = 0; i < block.EntryPoints.Count; i++)
-				{
-					var entryPoint = block.EntryPoints[i];
-					if (!entryPoint.Properties.Contains(constOptString) &&
-						!entryPoint.Properties.Contains(constOptInProgressString))
-						OptimizeBlock(ref entryPoint);
-				}
-				foreach (var entryPoint in block.EntryPoints)
-				{
-					foreach (var outVar in entryPoint.OutVars)
-					{
-						var decl = block.FindDeclaration(outVar.Name);
-						if (decl.ConstValue == null)
-							decl.ConstValue = outVar.ConstValue;
-						else if (!decl.ConstValue.Equals(outVar.ConstValue) && outVar.ConstValue != null)
-							decl.ConstValue = null;
-					}
-				}
-			}
-			if (block.Properties.Contains(constOptString))
-				return;
-			block.UnFreezeOutVars();
-			block.UnFreezeInVars();
+			//if (block.Properties.Contains(constOptString))
+			//    return;
+			//if (!block.Properties.Contains(constOptInProgressString))
+			//{
+			//    block.Properties.Add(constOptInProgressString);
+			//    block.FreezeOutVars();
+			//    block.FreezeInVars();
+			//    for (int i = 0; i < block.Declarations.Count; i++)
+			//    {
+			//        block.Declarations[i].ConstValue = null;
+			//    }
+			//    for (int i = 0; i < block.EntryPoints.Count; i++)
+			//    {
+			//        var entryPoint = block.EntryPoints[i];
+			//        if (!entryPoint.Properties.Contains(constOptString) &&
+			//            !entryPoint.Properties.Contains(constOptInProgressString))
+			//            OptimizeBlock(ref entryPoint);
+			//    }
+			//    foreach (var entryPoint in block.EntryPoints)
+			//    {
+			//        foreach (var outVar in entryPoint.OutVars)
+			//        {
+			//            var decl = block.FindDeclaration(outVar.Name);
+			//            if (decl.ConstValue == null)
+			//                decl.ConstValue = outVar.ConstValue;
+			//            else if (!decl.ConstValue.Equals(outVar.ConstValue) && outVar.ConstValue != null)
+			//                decl.ConstValue = null;
+			//        }
+			//    }
+			//}
+			//if (block.Properties.Contains(constOptString))
+			//    return;
+			//block.UnFreezeOutVars();
+			//block.UnFreezeInVars();
 			for (int i = 0; i < block.Statements.Count; i++)
 			{
 				var statement = block.Statements[i];
@@ -79,21 +107,24 @@ namespace WabbitC.Optimizer
 				else if (statement is Assignment)
 				{
 					var assignment = statement as Assignment;
-					assignment.LValue.ConstValue = new Immediate(assignment.RValue.Value);
+					assignment.LValue.ConstValue = new Immediate(((Immediate)assignment.RValue).Value);
 				}
 				else if (statement is Move)
 				{
 					var move = statement as Move;
-					if (move.RValue.ConstValue != null)
+					if (((Declaration)move.RValue).ConstValue != null)
 					{
-						var immediate = new Immediate(move.RValue.ConstValue.Value);
-						var assigment = new Assignment(move.LValue, immediate);
-						block.Statements[i] = assigment;
+						var immediate = new Immediate(((Declaration)move.RValue).ConstValue.Value);
 						move.LValue.ConstValue = immediate;
 					}
 					else
 					{
 						move.LValue.ConstValue = null;
+						for (int j = 0; j < block.ExitPoints.Count; j++)
+						{
+							var exitPoint = block.ExitPoints[j];
+							OptimizeBlock(ref exitPoint);
+						}
 					}
 				}
 				else if (statement is ConditionStatement)
@@ -128,8 +159,8 @@ namespace WabbitC.Optimizer
 								int result;
 								result = int.Parse(immediate.Value);
 								var newImmediate = new Immediate(Tokenizer.ToToken(result.ToString()));
-								var assigment = new Assignment(lValue, newImmediate);
-								block.Statements[i] = assigment;
+								//i think this is an issue
+								math.LValue.ConstValue = newImmediate;
 							}
 						}
 						else
@@ -155,10 +186,10 @@ namespace WabbitC.Optimizer
 						i = j;
 				}*/
 			}
-			block.FreezeOutVars();
-			//mark that were all done with this one
-			block.Properties.Remove(constOptInProgressString);
-			block.Properties.Add(constOptString);
+			//block.FreezeOutVars();
+			////mark that were all done with this one
+			//block.Properties.Remove(constOptInProgressString);
+			//block.Properties.Add(constOptString);
 			/*for (int i = 0; i < block.Declarations.Count; i++)
 			{
 				block.Declarations[i].ConstValue = null;

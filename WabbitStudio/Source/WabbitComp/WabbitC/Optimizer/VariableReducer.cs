@@ -41,10 +41,10 @@ namespace WabbitC.Optimizer
 				else if (statement is Move)
 				{
 					var move = statement as Move;
-					if (move.RValue.ConstStatement != null)
+					if (((Declaration)move.RValue).ConstStatement != null)
 					{
-						var newStatement = (Statement) move.RValue.ConstStatement.Clone();
-						newStatement.ReplaceDeclaration(move.RValue, move.LValue);
+						var newStatement = (Statement)((Declaration)move.RValue).ConstStatement.Clone();
+						newStatement.ReplaceDeclaration((Declaration)move.RValue, move.LValue);
 						block.Statements[i] = newStatement;
 						i--;	//rerun current statement to correctly populate LValue const statement
 					}
@@ -124,7 +124,7 @@ namespace WabbitC.Optimizer
 						{
 							if (param.ConstStatement is Move)
 							{
-								param = (param.ConstStatement as Move).RValue;
+								param = (Declaration) (param.ConstStatement as Move).RValue;
 							}
 						}
 						funcCall.Params[j] = param;

@@ -10,8 +10,7 @@ namespace WabbitC.Optimizer
 {
 	static class Optimizer
 	{
-
-		public static bool ConstantTracking = false;
+		public static bool ConstantTracking = true;
 		static bool DeadCodeOptimization = true;
 		static bool DeadVariableRemoval = true;
 		static bool VariableReduction = true;

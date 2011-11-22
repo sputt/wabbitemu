@@ -75,8 +75,10 @@
     <Compile Include="Model\BasicBlock.cs" />
     <Compile Include="Model\Block.cs" />
     <Compile Include="CastHelper.cs" />
+    <Compile Include="Model\IRValue.cs" />
     <Compile Include="Model\Datum.cs" />
     <Compile Include="Model\Declaration.cs" />
+    <Compile Include="Model\ILValue.cs" />
     <Compile Include="Model\Immediate.cs" />
     <Compile Include="Model\Statements\BlockCopyReverse.cs" />
     <Compile Include="Model\Statements\Dec.cs" />

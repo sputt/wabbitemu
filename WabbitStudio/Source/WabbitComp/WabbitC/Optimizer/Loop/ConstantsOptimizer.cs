@@ -38,14 +38,14 @@ namespace WabbitC.Optimizer.Loop
 				else if (statement is Assignment)
 				{
 					var assignment = statement as Assignment;
-					assignment.LValue.ConstValue = new Immediate(assignment.RValue.Value);
+					assignment.LValue.ConstValue = new Immediate(((Immediate) assignment.RValue).Value);
 				}
 				else if (statement is Move)
 				{
 					var move = statement as Move;
-					if (move.RValue.ConstValue != null)
+					if (((Declaration)move.RValue).ConstValue != null)
 					{
-						var immediate = new Immediate(move.RValue.ConstValue.Value);
+						var immediate = new Immediate(((Declaration)move.RValue).ConstValue.Value);
 						var assigment = new Assignment(move.LValue, immediate);
 						block.Statements[i] = assigment;
 						move.LValue.ConstValue = immediate;

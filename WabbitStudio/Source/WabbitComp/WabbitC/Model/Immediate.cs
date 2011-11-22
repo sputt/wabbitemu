@@ -58,9 +58,13 @@ namespace WabbitC.Model
 		public override bool Equals(object obj)
 		{
 			if (obj == null)
+			{
 				return false;
+			}
 			if (!(obj is Immediate))
+			{
 				return base.Equals(obj);
+			}
 			var imm = obj as Immediate;
 			return imm.Value == this.Value;
 		}
