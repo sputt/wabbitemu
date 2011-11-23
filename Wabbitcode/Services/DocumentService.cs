@@ -10,16 +10,18 @@ using Revsoft.Wabbitcode.Panels;
 
 namespace Revsoft.Wabbitcode.Services
 {
+	[ServiceDependency("RecentFileService")]
+	[ServiceDependency("ProjectService")]
+	[ServiceDependency("DockingService")]
 	public class DocumentService : IDocumentService
 	{
 		public List<Editor> OpenDocuments;
 		IRecentFileService recentFileService;
 		IProjectService projectService;
+		IDockingService dockingService;
 
 		public void InitService(params Object[] objects)
 		{
-			recentFileService = ServiceFactory.Instance.GetServiceInstance<RecentFileService>();
-			projectService = ServiceFactory.Instance.GetServiceInstance<ProjectService>();
 			OpenDocuments = new List<Editor>();
 			InitHighlighting();
 		}
@@ -34,32 +36,6 @@ namespace Revsoft.Wabbitcode.Services
 			return editor;
 		}
 
-		public void OpenDocument()
-		{
-			var openFileDialog = new OpenFileDialog()
-			{
-				CheckFileExists = true,
-				DefaultExt = "*.asm",
-				Filter = "All Know File Types | *.asm; *.inc; *.z80; *.wcodeproj| Assembly Files (*.asm)|*.asm|Z80" +
-							"Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|Project Files (*.wcodeproj)" +
-						   "|*.wcodeproj|All Files(*.*)|*.*",
-				FilterIndex = 0,
-				RestoreDirectory = true,
-				Multiselect = true,
-				Title = "Open File",
-			};
-			var result = openFileDialog.ShowDialog();
-			if (result != true)
-				return;
-			foreach (string fileName in openFileDialog.FileNames)
-			{
-				if (string.Equals(Path.GetExtension(fileName),  ".wcodeproj"))
-					projectService.OpenProject(fileName);
-				else
-					OpenDocument(fileName);
-			}
-		}
-
 		public Editor OpenDocument(string filename)
 		{
 			try
@@ -71,7 +47,6 @@ namespace Revsoft.Wabbitcode.Services
 				OpenDocument(doc, filename);
 				//DockingService.StatusBar.SetProgress(.9, "Open", OperationStatus.Error);
 				//DockingService.StatusBar.HideProgress();
-				IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<DockingService>();
 				dockingService.ShowDockPanel(doc);
 				doc.Activate();
 				return doc;

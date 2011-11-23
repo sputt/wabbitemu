@@ -19,16 +19,10 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void DestroyService()
 		{
-
+			Assembler = null;
 		}
 
 		#endregion
-
-		static readonly IAssemblerService instance = new AssemblerService();
-		public static IAssemblerService Instance
-		{
-			get { return instance; }
-		}
 
 		public Assembler Assembler { get; private set; }
 
@@ -49,23 +43,17 @@ namespace Revsoft.Wabbitcode.Services
 			Assembler.ClearIncludeDirs();
 			Assembler.ClearDefines();
 			Assembler.AddIncludeDir(originalDir);
-			//if the user has some include directories we need to format them
-			/*if (Properties.Settings.Default.includeDir != "")
-			{
-				string[] dirs = Properties.Settings.Default.includeDir.Split('\n');
-				foreach (string dir in dirs)
-					if (dir != "")
-						Assembler.AddIncludeDirectory(dir);
-			}*/
+			
 			Assembler.SetInputFile(inputPath);
 			Assembler.SetOutputFile(outputPath);
 
 			//Assembler.SetFlags(SPASM.AssemblyFlags.MODE_NORMAL | AssemblyFlags.MODE_LIST);
-			//assemble that fucker
-			Assembler.Assemble();
+			string output = Assembler.Assemble();
 
-			string output = Assembler.GetOutput();
-			callback(output);
+			if (callback != null)
+			{
+				callback(output);
+			}
 			return true;
 		}
 	}

@@ -5,7 +5,7 @@ using Revsoft.Wabbitcode.Services;
 
 namespace Revsoft.Wabbitcode.Interface.Services
 {
-	interface IProjectService : IService
+	public interface IProjectService : IService
 	{
 		IProject CurrentProject { get; set; }
 		event ProjectService.ChangingHandler CurrentProjectChanged;

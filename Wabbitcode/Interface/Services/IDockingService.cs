@@ -4,7 +4,7 @@ using Revsoft.Wabbitcode.Interface;
 using AvalonDock;
 namespace Revsoft.Wabbitcode.Services
 {
-	interface IDockingService : IService
+	public interface IDockingService : IService
 	{
 		ManagedContent ActiveContent { get; }
 		Editor ActiveDocument { get; }

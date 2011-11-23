@@ -31,5 +31,8 @@ namespace Revsoft.Wabbitcode
 
 		static readonly RoutedUICommand findAllReferencesCommand = new RoutedUICommand("Find All References", "Find All References", typeof(RoutedUICommand));
 		public static RoutedUICommand FindAllReferences { get { return findAllReferencesCommand; } }
+
+		static readonly RoutedUICommand gotoDefinitionCommand = new RoutedUICommand("Goto Definition", "Goto Definition", typeof(RoutedUICommand));
+		public static RoutedUICommand GotoDefinition { get { return gotoDefinitionCommand; } }
 	}
 }

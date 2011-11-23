@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Revsoft.Wabbitcode.Interface;
 
-namespace Revsoft.Wabbitcode
+namespace Revsoft.Wabbitcode.Utilities
 {
 	public abstract class AbstractServiceFactory
 	{

@@ -19,7 +19,7 @@ namespace Revsoft.Wabbitcode.Services
 		StatusBarItem cursorStatusBarPanel = new StatusBarItem();
 		StatusBarItem modeStatusBarPanel = new StatusBarItem();
 
-		//IDockingService dockingService;
+		public IDockingService DockingService { get; set; }
 
 		public StatusBarItem CursorStatusBarPanel
 		{
@@ -88,7 +88,6 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void DisplayProgress(string taskName, double workDone, OperationStatus status)
 		{
-			IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<DockingService>();
 			if (!statusProgressBarIsVisible)
 			{
 				statusProgressBarItem.Visibility = Visibility.Visible;
@@ -114,7 +113,7 @@ namespace Revsoft.Wabbitcode.Services
 					taskbarProgressState = TaskbarItemProgressState.Normal;
 			}
 
-			TaskbarItemInfo taskbar = dockingService.MainWindow.TaskbarItemInfo;
+			TaskbarItemInfo taskbar = DockingService.MainWindow.TaskbarItemInfo;
 			if (taskbar != null)
 			{
 				taskbar.ProgressState = taskbarProgressState;
@@ -168,7 +167,6 @@ namespace Revsoft.Wabbitcode.Services
 
 		void DoHideProgress()
 		{
-			IDockingService dockingService = ServiceFactory.Instance.GetServiceInstance<DockingService>();
 			if (!statusProgressBarIsVisible)
 			{
 				// make stuff look nice and delay it a little more by using an animation
@@ -184,7 +182,7 @@ namespace Revsoft.Wabbitcode.Services
 					{
 						statusProgressBarItem.Visibility = Visibility.Collapsed;
 						jobNamePanel.Content = currentTaskName = "";
-						var taskbar = dockingService.MainWindow.TaskbarItemInfo;
+						var taskbar = DockingService.MainWindow.TaskbarItemInfo;
 						if (taskbar != null)
 							taskbar.ProgressState = TaskbarItemProgressState.None;
 						StopHideProgress();

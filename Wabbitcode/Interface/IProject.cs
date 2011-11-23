@@ -3,6 +3,7 @@ using Revsoft.Wabbitcode.Interface.Services;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 using System.IO;
+using Revsoft.Wabbitcode.Services;
 
 namespace Revsoft.Wabbitcode.Interface
 {
@@ -16,7 +17,8 @@ namespace Revsoft.Wabbitcode.Interface
 		bool NeedsSave { get; set; }
 		bool IsInternal { get; }
 		IBuildSystem BuildSystem { get; }
-		IList<ParserInformation> ParseInfo { get; }
+
+		IAssemblerService AssemblerService { get; }
 		IParserService ParserService { get; }
 
 		IList<string> ProjectOutputs { get; }
@@ -31,7 +33,6 @@ namespace Revsoft.Wabbitcode.Interface
 		void DeleteFile(string fullPath);
 		IProjectFile FindFile(string fullPath);
 
-		ParserInformation GetParseInfo(string fullPath);
 		IList<IProjectFile> GetProjectFiles();
 
 		Project.AssemblerOutputType GetOutputType();

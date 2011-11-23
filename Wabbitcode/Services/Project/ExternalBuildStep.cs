@@ -19,24 +19,25 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		public Action<string> Callback { get; set; }
 
-		public ExternalBuildStep(int number, string commandLine)
+		public ExternalBuildStep(IProject project, int number, string commandLine)
 		{
+			Project = project;
 			StepNumber = number;
 			int spaceIndex = commandLine.IndexOf(' ');
 			if (spaceIndex == -1)
 			{
 				InputFile = new FilePath(commandLine);
-				Arguments = "";
+				Arguments = String.Empty;
 			}
 			else
 			{
 				InputFile = new FilePath(commandLine.Substring(0, spaceIndex));
-				Arguments = commandLine.Substring(spaceIndex, commandLine.Length - spaceIndex);
+				Arguments = commandLine.Substring(spaceIndex + 1, commandLine.Length - spaceIndex - 1);
 			}
 
 		}
 
-		public ExternalBuildStep(int number, string program, string arguments)
+		public ExternalBuildStep(IProject project, int number, string program, string arguments)
 		{
 			StepNumber = number;
 			InputFile = new FilePath(program);
@@ -83,6 +84,24 @@ namespace Revsoft.Wabbitcode.Services.Project
 			get { return "Run " + Path.GetFileName(InputFile); }
 		}
 
+		public override int GetHashCode()
+		{
+			return StepNumber.GetHashCode() + Project.GetHashCode();
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (obj is IBuildStep)
+			{
+				var step = (IBuildStep) obj;
+				return StepNumber.Equals(step.StepNumber);
+			}
+			else
+			{
+				return base.Equals(obj);
+			}
+		}
+
 		public override string ToString()
 		{
 			return Description;
@@ -90,7 +109,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		public object Clone()
 		{
-			return new ExternalBuildStep(StepNumber, InputFile, Arguments);
+			return new ExternalBuildStep(Project, StepNumber, InputFile, Arguments);
 		}
 	}
 }

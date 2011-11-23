@@ -156,7 +156,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 				{
 					case "ExternalBuildStep":
 						string arguments = reader.GetAttribute("Arguments");
-						ExternalBuildStep exstep = new ExternalBuildStep(count, inputFile, arguments);
+						ExternalBuildStep exstep = new ExternalBuildStep(Project, count, inputFile, arguments);
 						configToAdd.Steps.Add(exstep);
 						break;
 					case "InternalBuildStep":

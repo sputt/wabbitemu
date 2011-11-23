@@ -5,6 +5,7 @@ using System.Xml;
 using Revsoft.Wabbitcode.Interface.Services;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Utilities;
 
 namespace Revsoft.Wabbitcode.Dialogs
 {
@@ -16,10 +17,11 @@ namespace Revsoft.Wabbitcode.Dialogs
 		IPathsService pathsService;
 		IProjectService projectService;
 
-		public NewProjectDialog()
+		public NewProjectDialog(IProjectService projectService, IPathsService pathsService)
 		{
-			pathsService = ServiceFactory.Instance.GetServiceInstance<PathsService>();
-			projectService = ServiceFactory.Instance.GetServiceInstance<ProjectService>();
+			this.projectService = projectService;
+			this.pathsService = pathsService;
+			
 			InitializeComponent();
 			ParseTemplatesFile();
 			projectDirBox.Text = pathsService.ProjectDirectory;

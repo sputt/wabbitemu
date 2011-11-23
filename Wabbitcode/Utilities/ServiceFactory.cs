@@ -5,7 +5,7 @@ using System.Text;
 using Revsoft.Wabbitcode.Interface;
 using System.Reflection;
 
-namespace Revsoft.Wabbitcode
+namespace Revsoft.Wabbitcode.Utilities
 {
 	public class ServiceFactory : AbstractServiceFactory
 	{
@@ -77,6 +77,24 @@ namespace Revsoft.Wabbitcode
 			T newInstance = Activator.CreateInstance<T>();
 			IService newService = (IService)newInstance;
 			listFactory.Add(newService);
+
+			var attributesList = typeof(T).GetCustomAttributes(true).Where(d => d is Services.ServiceDependencyAttribute);
+			foreach (var dependency in attributesList)
+			{
+				string dependsName = ((Services.ServiceDependencyAttribute)dependency).DependencyName;
+				Type serviceType = Type.GetType("Revsoft.Wabbitcode.Services." + dependsName);
+				var foundService = listFactory.FirstOrDefault(service => service.GetType() == serviceType);
+				if (foundService == null)
+				{
+					foundService = (IService) Activator.CreateInstance(serviceType, true);
+					listFactory.Add(foundService);
+				}
+				var field = typeof(T).GetField(char.ToLower(dependsName[0]) + dependsName.Substring(1), BindingFlags.NonPublic | BindingFlags.Instance);
+				if (field == null) {
+					throw new MissingFieldException();
+				}
+				field.SetValue(newService, foundService);
+			}
 			newService.InitService(objects);
 			return newInstance;
 		}

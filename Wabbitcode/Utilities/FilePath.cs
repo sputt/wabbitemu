@@ -1,5 +1,6 @@
 ﻿using System;
 using Revsoft.Wabbitcode.Interface;
+using System.IO;
 
 namespace Revsoft.Wabbitcode.Utilities
 {
@@ -37,5 +38,14 @@ namespace Revsoft.Wabbitcode.Utilities
 		{
 			return path.Path;
 		}
+
+		#region Static Methods
+
+		public static FilePath ChangeExtention(FilePath path, string ext)
+		{
+			return new FilePath(System.IO.Path.ChangeExtension(path, ext));
+		}
+
+		#endregion
 	}
 }

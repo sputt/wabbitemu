@@ -26,6 +26,7 @@ namespace Revsoft.Wabbitcode
 		IDocumentService DocumentService { get; set; }
 		IPathsService PathsService { get; set; }
 		IProjectService ProjectService { get; set; }
+		IRecentFileService RecentFileService { get; set; }
 		
 		#endregion
 
@@ -185,11 +186,12 @@ namespace Revsoft.Wabbitcode
 
 		private void Window_Initialized(object sender, EventArgs e)
 		{
+			PathsService = ServiceFactory.Instance.GetServiceInstance<PathsService>();
+			RecentFileService = ServiceFactory.Instance.GetServiceInstance<RecentFileService>();
 			DockingService = ServiceFactory.Instance.GetServiceInstance<DockingService>(dockManager, this);
+			ProjectService = ServiceFactory.Instance.GetServiceInstance<ProjectService>();
 			DocumentService = ServiceFactory.Instance.GetServiceInstance<DocumentService>();
 			AssemblerService = ServiceFactory.Instance.GetServiceInstance<AssemblerService>();
-			PathsService = ServiceFactory.Instance.GetServiceInstance<PathsService>();
-			ProjectService = ServiceFactory.Instance.GetServiceInstance<ProjectService>();
 		}
 
 		private void dockManager_Loaded(object sender, RoutedEventArgs e)
@@ -211,13 +213,34 @@ namespace Revsoft.Wabbitcode
 
 		private void NewProject_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-			var dialog = new NewProjectDialog();
+			var dialog = new NewProjectDialog(ProjectService, PathsService);
 			dialog.ShowDialog();
 		}
 
 		private void OpenFile_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-			DocumentService.OpenDocument();
+			var openFileDialog = new OpenFileDialog()
+			{
+				CheckFileExists = true,
+				DefaultExt = "*.asm",
+				Filter = "All Know File Types | *.asm; *.inc; *.z80; *.wcodeproj| Assembly Files (*.asm)|*.asm|Z80" +
+							"Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|Project Files (*.wcodeproj)" +
+						   "|*.wcodeproj|All Files(*.*)|*.*",
+				FilterIndex = 0,
+				RestoreDirectory = true,
+				Multiselect = true,
+				Title = "Open File",
+			};
+			var result = openFileDialog.ShowDialog();
+			if (result != true)
+				return;
+			foreach (string fileName in openFileDialog.FileNames)
+			{
+				if (string.Equals(Path.GetExtension(fileName), ".wcodeproj"))
+					ProjectService.OpenProject(fileName);
+				else
+					DocumentService.OpenDocument(fileName);
+			}
 		}
 
 		private void OpenProject_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -297,17 +320,31 @@ namespace Revsoft.Wabbitcode
 		}
 		#endregion
 
+		#region Assemble Menu
+		
 		private void Assemble_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
 			var filePath = DockingService.ActiveDocument.FilePath;
-			var outputPath = new FilePath(Path.ChangeExtension(filePath, ".8xk"));
-			AssemblerService.AssembleFile(filePath, outputPath);
+			//TODO: replace with a file extension specified by the user
+			var outputPath = FilePath.ChangeExtention(filePath, ".8xk");
+			AssemblerService.AssembleFile(filePath, outputPath, null, AssemblyFlags.Assemble,
+				(outputText) =>
+				{
+					DockingService.OutputWindow.ClearText();
+					DockingService.OutputWindow.AddText(outputText);
+				});
 		}
+
+		#endregion
+
+		#region Help Menu
 
 		private void About_Executed(object snder, ExecutedRoutedEventArgs e)
 		{
 			var aboutBox = new AboutBox();
 			aboutBox.ShowDialog();
 		}
+
+		#endregion
 	}
 }

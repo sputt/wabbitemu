@@ -4,9 +4,11 @@ using System.Windows;
 using AvalonDock;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Panels;
+using Revsoft.Wabbitcode.Utilities;
 
 namespace Revsoft.Wabbitcode.Services
 {
+	[ServiceDependency("PathsService")]
 	public class DockingService : IDockingService
 	{
 		public DockingManager DockManager { get; private set; }
@@ -35,17 +37,13 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void InitService(params Object[] objects)
 		{
-			DockingManager DockManager = objects[0] as DockingManager;
+			DockManager = objects[0] as DockingManager;
 			if (DockManager == null)
 				throw new ArgumentException("First parameter is not of type DockingManager");
-			MainWindow mainWindow = objects[1] as MainWindow;
-			if (mainWindow == null)
+			MainWindow = objects[1] as MainWindow;
+			if (MainWindow == null)
 				throw new ArgumentException("Second parameter is not of type MainWindow");
 
-			pathsService = ServiceFactory.Instance.GetServiceInstance<PathsService>();
-
-			this.DockManager = DockManager;
-			this.MainWindow = mainWindow;
 			Application.Current.Resources["ThemeDictionary"] = new ResourceDictionary();
 			ThemeFactory.ChangeTheme("dev2010");
 
@@ -67,7 +65,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void InitPanels(WabbitcodeStatusBar statusBar)
 		{
-			StatusBar = new WabbitcodeStatusBarService(statusBar);
+			StatusBar = new WabbitcodeStatusBarService(this, statusBar);
 
 			//Init Normal Panels
 			LabelList = new LabelList();
