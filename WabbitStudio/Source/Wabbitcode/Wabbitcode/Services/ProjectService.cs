@@ -6,6 +6,7 @@ using Revsoft.Wabbitcode.Interface.Services;
 
 namespace Revsoft.Wabbitcode.Services
 {
+	[ServiceDependency("PathsService")]
 	public class ProjectService : IProjectService
 	{
 		private IPathsService pathsService;
@@ -27,12 +28,11 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void InitService(params Object[] objects)
 		{
-			pathsService = ServiceFactory.Instance.GetServiceInstance<PathsService>();
-
 			OpenProjects = new List<IProject>();
 			CurrentProject = new Project.Project(true);
 			if (!File.Exists(pathsService.TemplatesConfig))
 			{
+				//TODO: check we don't need to write this to disk
 				string templateXML = ResourceService.GetResource("Templates.xml");
 				using (var sw = new StreamWriter(pathsService.TemplatesConfig))
 				{

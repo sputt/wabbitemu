@@ -55,6 +55,10 @@
     <OutputPath>..\..\bin\Debug\</OutputPath>
     <DocumentationFile>..\..\bin\Debug\ICSharpCode.AvalonEdit.xml</DocumentationFile>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|AnyCPU'">
+    <OutputPath>..\..\..\..\bin\Release\</OutputPath>
+    <DocumentationFile>..\..\..\..\bin\Release\ICSharpCode.AvalonEdit.xml</DocumentationFile>
+  </PropertyGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Reference Include="PresentationCore">

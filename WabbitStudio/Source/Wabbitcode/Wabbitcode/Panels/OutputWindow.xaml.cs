@@ -16,44 +16,49 @@ using Revsoft.Wabbitcode.Interface;
 
 namespace Revsoft.Wabbitcode.Panels
 {
-    /// <summary>
-    /// Interaction logic for LabelList.xaml
-    /// </summary>
-    public partial class OutputWindow : DockableContent, IWabbitcodePanel
-    {
-        public OutputWindow()
-        {
-            InitializeComponent();
-        }
+	/// <summary>
+	/// Interaction logic for LabelList.xaml
+	/// </summary>
+	public partial class OutputWindow : DockableContent, IWabbitcodePanel
+	{
+		public OutputWindow()
+		{
+			InitializeComponent();
+		}
 
-        public void Cut()
-        {
-            throw new InvalidOperationException();
-        }
+		public void Cut()
+		{
+			throw new InvalidOperationException();
+		}
 
-        public void Copy()
-        {
-            OutputBox.Copy();
-        }
+		public void Copy()
+		{
+			OutputBox.Copy();
+		}
 
-        public void Paste()
-        {
-            throw new InvalidOperationException();
-        }
+		public void Paste()
+		{
+			throw new InvalidOperationException();
+		}
 
-        public void Undo()
-        {
-            throw new InvalidOperationException();
-        }
+		public void Undo()
+		{
+			throw new InvalidOperationException();
+		}
 
-        public void Redo()
-        {
-            throw new InvalidOperationException();
-        }
+		public void Redo()
+		{
+			throw new InvalidOperationException();
+		}
 
-        internal new void AddText(string text)
-        {
-            OutputBox.Text += text;
-        }
-    }
+		internal void ClearText()
+		{
+			OutputBox.Clear();
+		}
+
+		internal new void AddText(string text)
+		{
+			OutputBox.Text += text;
+		}
+	}
 }

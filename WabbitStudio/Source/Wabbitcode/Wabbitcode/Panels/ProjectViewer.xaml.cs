@@ -4,6 +4,7 @@ using AvalonDock;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Interface.Services;
 using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Utilities;
 
 namespace Revsoft.Wabbitcode.Panels
 {

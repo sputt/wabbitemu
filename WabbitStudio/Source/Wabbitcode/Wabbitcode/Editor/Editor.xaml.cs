@@ -142,7 +142,9 @@ namespace Revsoft.Wabbitcode.Panels
 				case "IsOriginalFile":
 					this.Title = Path.GetFileName(FilePath);
 					if (!editor.Document.UndoStack.IsOriginalFile)
+					{
 						this.Title += "*";
+					}
 					break;
 			}
 		}
