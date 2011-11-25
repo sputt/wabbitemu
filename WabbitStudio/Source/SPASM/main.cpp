@@ -357,12 +357,11 @@ int main (int argc, char **argv)
 				}
 				
 				mode |= MODE_COMMANDLINE;
-				curr_input_file = "-v";
+				curr_input_file = strdup("-v");
 				input_contents = (char *) malloc (strlen(line) + 1 + 2);
 				output_filename = change_extension (curr_input_file, "bin");
 					
-				strcpy(input_contents, " ");
-				strcat(input_contents, line);
+				strcpy(input_contents, line);
 				strcat(input_contents, "\n");
 				break;
 			}
@@ -420,7 +419,7 @@ int main (int argc, char **argv)
 	EndSPASMErrorSession(session);
 
 	free(output_filename);
-	if (curr_input_file && !(mode & MODE_COMMANDLINE))
+	if (curr_input_file)
 		free(curr_input_file);
 	if (include_dirs)
 		list_free(include_dirs, true, NULL);
