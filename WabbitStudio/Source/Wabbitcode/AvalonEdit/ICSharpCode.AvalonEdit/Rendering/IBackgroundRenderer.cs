@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 4142 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Windows.Media;
@@ -15,9 +11,6 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	/// You can use background renderers to draw non-interactive elements on the TextView
 	/// without introducing new UIElements.
 	/// </summary>
-	/// <remarks>Background renderer will draw only if their associated known
-	/// layer chooses to draw them. For example, background renderers in the caret
-	/// layer will be invisible when the caret is hidden.</remarks>
 	public interface IBackgroundRenderer
 	{
 		/// <summary>

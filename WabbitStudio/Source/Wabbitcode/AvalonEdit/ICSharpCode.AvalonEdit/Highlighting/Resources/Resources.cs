@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5583 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.IO;
@@ -29,10 +25,11 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			
 			hlm.RegisterHighlighting("JavaScript", new[] { ".js" }, "JavaScript-Mode.xshd");
 			hlm.RegisterHighlighting("HTML", new[] { ".htm", ".html" }, "HTML-Mode.xshd");
-			hlm.RegisterHighlighting("ASP/XHTML", new[] { ".asp", ".aspx", ".asax", ".asmx" }, "ASPX.xshd");
+			hlm.RegisterHighlighting("ASP/XHTML", new[] { ".asp", ".aspx", ".asax", ".asmx", ".ascx", ".master" }, "ASPX.xshd");
 			
 			hlm.RegisterHighlighting("Boo", new[] { ".boo" }, "Boo.xshd");
 			hlm.RegisterHighlighting("Coco", new[] { ".atg" }, "Coco-Mode.xshd");
+			hlm.RegisterHighlighting("CSS", new[] { ".css" }, "CSS-Mode.xshd");
 			hlm.RegisterHighlighting("C++", new[] { ".c", ".h", ".cc", ".cpp" , ".hpp" }, "CPP-Mode.xshd");
 			hlm.RegisterHighlighting("Java", new[] { ".java" }, "Java-Mode.xshd");
 			hlm.RegisterHighlighting("Patch", new[] { ".patch", ".diff" }, "Patch-Mode.xshd");

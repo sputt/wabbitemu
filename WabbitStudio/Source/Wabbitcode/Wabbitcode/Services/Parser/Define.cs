@@ -8,7 +8,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 {
 	class Define : IDefine
 	{
-		public Define(int counter, string macroName, string contents, string description, ParserInformation parent, int value)
+		public Define(int counter, string macroName, string contents, string description, ParserInformation parent, int? value = null)
 		{
 			Offset = counter;
 			Name = macroName;
@@ -41,7 +41,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			set;
 		}
 
-        public int Value
+        public int? Value
         {
             get;
             set;
@@ -61,9 +61,37 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			set;
 		}
 
+        #region Override
+
         public override string ToString()
         {
             return Name;
         }
-	}
+
+        #endregion
+
+        #region IComparable
+
+        public int CompareTo(IParserData other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+            if (Offset == other.Offset)
+            {
+                return 0;
+            }
+            if (Offset > other.Offset)
+            {
+                return 1;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        #endregion
+    }
 }

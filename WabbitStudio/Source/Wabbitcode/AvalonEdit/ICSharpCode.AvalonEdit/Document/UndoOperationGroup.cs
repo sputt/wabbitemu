@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5454 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Diagnostics;
@@ -26,9 +22,8 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 			
 			Debug.Assert(numops > 0 , "UndoOperationGroup : numops should be > 0");
-			if (numops > stack.Count) {
-				numops = stack.Count;
-			}
+			Debug.Assert(numops <= stack.Count);
+			
 			undolist = new IUndoableOperation[numops];
 			for (int i = 0; i < numops; ++i) {
 				undolist[i] = stack.PopBack();

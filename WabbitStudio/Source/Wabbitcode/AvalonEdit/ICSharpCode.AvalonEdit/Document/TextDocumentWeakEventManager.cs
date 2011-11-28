@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 3635 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using ICSharpCode.AvalonEdit.Utils;
@@ -95,6 +91,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Weak event manager for the <see cref="TextDocument.LineCountChanged"/> event.
 		/// </summary>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+		[Obsolete("The TextDocument.LineCountChanged event will be removed in a future version. Use PropertyChangedEventManager instead.")]
 		public sealed class LineCountChanged : WeakEventManagerBase<LineCountChanged, TextDocument>
 		{
 			/// <inheritdoc/>
@@ -114,6 +111,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// Weak event manager for the <see cref="TextDocument.TextLengthChanged"/> event.
 		/// </summary>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1034:NestedTypesShouldNotBeVisible")]
+		[Obsolete("The TextDocument.TextLengthChanged event will be removed in a future version. Use PropertyChangedEventManager instead.")]
 		public sealed class TextLengthChanged : WeakEventManagerBase<TextLengthChanged, TextDocument>
 		{
 			/// <inheritdoc/>

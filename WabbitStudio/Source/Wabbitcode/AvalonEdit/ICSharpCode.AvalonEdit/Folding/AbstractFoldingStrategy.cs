@@ -1,14 +1,9 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5529 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using ICSharpCode.AvalonEdit.Document;
 using System.Collections.Generic;
-using System.Text;
 
 namespace ICSharpCode.AvalonEdit.Folding
 {
@@ -17,7 +12,6 @@ namespace ICSharpCode.AvalonEdit.Folding
 	/// </summary>
 	public abstract class AbstractFoldingStrategy
 	{
-
 		/// <summary>
 		/// Create <see cref="NewFolding"/>s for the specified document and updates the folding manager with them.
 		/// </summary>

@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5529 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.ComponentModel;
@@ -34,7 +30,9 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			this.start = start;
 			this.end = end;
 			#if DEBUG
-			this.ID = "#" + (nextId++);
+			unchecked {
+				this.ID = " #" + (nextId++);
+			}
 			#endif
 		}
 		
@@ -53,7 +51,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public DocumentLine Start {
 			get { return start; }
-			internal set { 
+			internal set {
 				start = value;
 				// TODO: raised property changed event (but only after the operation is complete)
 			}
@@ -67,7 +65,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		public DocumentLine End {
 			get { return end; }
 			internal set {
-				end = value; 
+				end = value;
 				// TODO: raised property changed event (but only after the operation is complete)
 			}
 		}
@@ -114,7 +112,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Globalization", "CA1305:SpecifyIFormatProvider", MessageId = "System.Int32.ToString")]
 		public override string ToString()
 		{
-			return "[CollapsedSection " + ID + " Start=" + (start != null ? start.LineNumber.ToString() : "null")
+			return "[CollapsedSection" + ID + " Start=" + (start != null ? start.LineNumber.ToString() : "null")
 				+ " End=" + (end != null ? end.LineNumber.ToString() : "null") + " IsCollapsed=" + isCollapsed + "]";
 		}
 	}

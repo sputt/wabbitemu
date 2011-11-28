@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5235 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -16,7 +12,6 @@ using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Rendering;
 using ICSharpCode.AvalonEdit.Utils;
-using System.Text;
 
 namespace ICSharpCode.AvalonEdit.Folding
 {
@@ -25,26 +20,32 @@ namespace ICSharpCode.AvalonEdit.Folding
 	/// </summary>
 	public class FoldingManager : IWeakEventListener
 	{
-		internal readonly TextView textView;
 		internal readonly TextDocument document;
 		
+		internal readonly List<TextView> textViews = new List<TextView>();
 		readonly TextSegmentCollection<FoldingSection> foldings;
 		
 		#region Constructor
 		/// <summary>
 		/// Creates a new FoldingManager instance.
 		/// </summary>
-		public FoldingManager(TextView textView, TextDocument document)
+		public FoldingManager(TextDocument document)
 		{
-			if (textView == null)
-				throw new ArgumentNullException("textView");
 			if (document == null)
 				throw new ArgumentNullException("document");
-			this.textView = textView;
 			this.document = document;
 			this.foldings = new TextSegmentCollection<FoldingSection>();
 			document.VerifyAccess();
 			TextDocumentWeakEventManager.Changed.AddListener(document, this);
+		}
+		
+		/// <summary>
+		/// Creates a new FoldingManager instance.
+		/// </summary>
+		[Obsolete("Use the (TextDocument) constructor instead.")]
+		public FoldingManager(TextView textView, TextDocument document)
+			: this(document)
+		{
 		}
 		#endregion
 		
@@ -78,6 +79,57 @@ namespace ICSharpCode.AvalonEdit.Folding
 		}
 		#endregion
 		
+		#region Manage TextViews
+		internal void AddToTextView(TextView textView)
+		{
+			if (textView == null || textViews.Contains(textView))
+				throw new ArgumentException();
+			textViews.Add(textView);
+			foreach (FoldingSection fs in foldings) {
+				if (fs.collapsedSections != null) {
+					Array.Resize(ref fs.collapsedSections, textViews.Count);
+					fs.collapsedSections[fs.collapsedSections.Length - 1] = fs.CollapseSection(textView);
+				}
+			}
+		}
+		
+		internal void RemoveFromTextView(TextView textView)
+		{
+			int pos = textViews.IndexOf(textView);
+			if (pos < 0)
+				throw new ArgumentException();
+			foreach (FoldingSection fs in foldings) {
+				if (fs.collapsedSections != null) {
+					CollapsedLineSection[] c = new CollapsedLineSection[textViews.Count];
+					Array.Copy(fs.collapsedSections, 0, c, 0, pos);
+					Array.Copy(fs.collapsedSections, pos + 1, c, pos, c.Length - pos);
+					fs.collapsedSections = c;
+				}
+			}
+		}
+		
+		internal CollapsedLineSection[] CollapseLines(DocumentLine start, DocumentLine end)
+		{
+			CollapsedLineSection[] c = new CollapsedLineSection[textViews.Count];
+			for (int i = 0; i < c.Length; i++) {
+				c[i] = textViews[i].CollapseLines(start, end);
+			}
+			return c;
+		}
+		
+		internal void Redraw()
+		{
+			foreach (TextView textView in textViews)
+				textView.Redraw();
+		}
+		
+		internal void Redraw(FoldingSection fs)
+		{
+			foreach (TextView textView in textViews)
+				textView.Redraw(fs);
+		}
+		#endregion
+		
 		#region Create / Remove / Clear
 		/// <summary>
 		/// Creates a folding for the specified text section.
@@ -88,7 +140,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 				throw new ArgumentException("startOffset must be less than endOffset");
 			FoldingSection fs = new FoldingSection(this, startOffset, endOffset);
 			foldings.Add(fs);
-			textView.Redraw(fs, DispatcherPriority.Normal);
+			Redraw(fs);
 			return fs;
 		}
 		
@@ -101,7 +153,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 				throw new ArgumentNullException("fs");
 			fs.IsFolded = false;
 			foldings.Remove(fs);
-			textView.Redraw(fs, DispatcherPriority.Normal);
+			Redraw(fs);
 		}
 		
 		/// <summary>
@@ -113,7 +165,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 			foreach (FoldingSection s in foldings)
 				s.IsFolded = false;
 			foldings.Clear();
-			textView.Redraw();
+			Redraw();
 		}
 		#endregion
 		
@@ -269,13 +321,15 @@ namespace ICSharpCode.AvalonEdit.Folding
 			FoldingMargin margin;
 			FoldingElementGenerator generator;
 			
-			public FoldingManagerInstallation(TextArea textArea) : base(textArea.TextView, textArea.Document)
+			public FoldingManagerInstallation(TextArea textArea) : base(textArea.Document)
 			{
 				this.textArea = textArea;
 				margin = new FoldingMargin() { FoldingManager = this };
 				generator = new FoldingElementGenerator() { FoldingManager = this };
 				textArea.LeftMargins.Add(margin);
-				textArea.TextView.ElementGenerators.Add(generator);
+				textArea.TextView.Services.AddService(typeof(FoldingManager), this);
+				// HACK: folding only works correctly when it has highest priority
+				textArea.TextView.ElementGenerators.Insert(0, generator);
 				textArea.Caret.PositionChanged += textArea_Caret_PositionChanged;
 			}
 			
@@ -310,6 +364,7 @@ namespace ICSharpCode.AvalonEdit.Folding
 					textArea.Caret.PositionChanged -= textArea_Caret_PositionChanged;
 					textArea.LeftMargins.Remove(margin);
 					textArea.TextView.ElementGenerators.Remove(generator);
+					textArea.TextView.Services.RemoveService(typeof(FoldingManager));
 					margin = null;
 					generator = null;
 					textArea = null;
@@ -328,56 +383,5 @@ namespace ICSharpCode.AvalonEdit.Folding
 			}
 		}
 		#endregion
-
-        #region Serialization
-
-        /// <summary>
-        /// Creates foldings based on the input string. Expects the output from the ToString method.
-        /// </summary>
-        /// <param name="serializedFoldings">String created from ToString method</param>
-        public void LoadFromString(string serializedFoldings)
-        {
-            string[] splitFoldings = serializedFoldings.Split('|');
-            foreach (string attributes in splitFoldings)
-            {
-                string[] items = attributes.Split(',');
-                if (items.Length != 5)
-                    continue;
-                int startOffset = Convert.ToInt32(items[0]);
-                int endOffset = Convert.ToInt32(items[1]);
-                FoldingSection newFolding = this.CreateFolding(startOffset, endOffset);
-                newFolding.IsFolded = Convert.ToBoolean(items[2]);
-                newFolding.Title = items[3];
-                newFolding.Tag = items[4];
-            }
-            
-        }
-
-        /// <summary>
-        /// Creates a string that represents the current state of foldings in the document. Used to save
-        /// and recreate foldings in conjunction with LoadFromString method
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            foreach (FoldingSection folding in foldings)
-            {
-                sb.Append(folding.StartOffset);
-                sb.Append(",");
-                sb.Append(folding.EndOffset);
-                sb.Append(",");
-                sb.Append(folding.IsFolded);
-                sb.Append(",");
-                sb.Append(folding.Title);
-                sb.Append(",");
-                sb.Append(folding.Tag);
-                sb.Append("|");
-            }
-            return sb.ToString();
-        }
-
-
-        #endregion
-    }
+	}
 }

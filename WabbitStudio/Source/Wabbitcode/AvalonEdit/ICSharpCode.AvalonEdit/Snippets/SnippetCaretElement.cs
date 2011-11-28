@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5529 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Windows.Input;
@@ -27,6 +23,7 @@ namespace ICSharpCode.AvalonEdit.Snippets
 		internal static void SetCaret(InsertionContext context)
 		{
 			TextAnchor pos = context.Document.CreateAnchor(context.InsertionPosition);
+			pos.MovementType = AnchorMovementType.BeforeInsertion;
 			pos.SurviveDeletion = true;
 			context.Deactivated += (sender, e) => {
 				if (e.Reason == DeactivateReason.ReturnPressed || e.Reason == DeactivateReason.NoActiveElements) {

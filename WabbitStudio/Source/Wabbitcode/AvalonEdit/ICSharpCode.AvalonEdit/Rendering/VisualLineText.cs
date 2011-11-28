@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5412 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -57,8 +53,27 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				throw new ArgumentNullException("context");
 			
 			int relativeOffset = startVisualColumn - VisualColumn;
-			string text = context.Document.GetText(context.VisualLine.FirstDocumentLine.Offset + RelativeTextOffset + relativeOffset, DocumentLength - relativeOffset);
-			return new TextCharacters(text, 0, text.Length, this.TextRunProperties);
+			StringSegment text = context.GetText(context.VisualLine.FirstDocumentLine.Offset + RelativeTextOffset + relativeOffset, DocumentLength - relativeOffset);
+			return new TextCharacters(text.Text, text.Offset, text.Count, this.TextRunProperties);
+		}
+		
+		/// <inheritdoc/>
+		public override bool IsWhitespace(int visualColumn)
+		{
+			int offset = visualColumn - this.VisualColumn + parentVisualLine.FirstDocumentLine.Offset + this.RelativeTextOffset;
+			return char.IsWhiteSpace(parentVisualLine.Document.GetCharAt(offset));
+		}
+		
+		/// <inheritdoc/>
+		public override TextSpan<CultureSpecificCharacterBufferRange> GetPrecedingText(int visualColumnLimit, ITextRunConstructionContext context)
+		{
+			if (context == null)
+				throw new ArgumentNullException("context");
+			
+			int relativeOffset = visualColumnLimit - VisualColumn;
+			StringSegment text = context.GetText(context.VisualLine.FirstDocumentLine.Offset + RelativeTextOffset, relativeOffset);
+			CharacterBufferRange range = new CharacterBufferRange(text.Text, text.Offset, text.Count);
+			return new TextSpan<CultureSpecificCharacterBufferRange>(range.Length, new CultureSpecificCharacterBufferRange(this.TextRunProperties.CultureInfo, range));
 		}
 		
 		/// <inheritdoc/>

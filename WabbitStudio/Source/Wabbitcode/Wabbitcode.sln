@@ -23,24 +23,25 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASM", "..\SPASM\SPASM.vcx
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
+		SccNumberOfProjects = 6
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 		SccProjectUniqueName0 = Wabbitcode\\Wabbitcode.csproj
 		SccProjectName0 = Wabbitcode
-		SccAuxPath0 = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath0 = Wabbitcode
-		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccProjectUniqueName1 = AvalonEdit\\ICSharpCode.AvalonEdit\\ICSharpCode.AvalonEdit.csproj
 		SccProjectName1 = AvalonEdit/ICSharpCode.AvalonEdit
-		SccAuxPath1 = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath1 = AvalonEdit\\ICSharpCode.AvalonEdit
-		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
 		SccProjectUniqueName2 = ..\\SPASM\\SPASM.vcxproj
 		SccProjectName2 = ../SPASM
-		SccAuxPath2 = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath2 = ..\\SPASM
-		SccProvider2 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName3 = WabbitcodeTest\\WabbitcodeTest.csproj
+		SccProjectName3 = WabbitcodeTest
+		SccLocalPath3 = WabbitcodeTest
+		SccLocalPath4 = .
+		SccProjectUniqueName5 = AvalonDock\\AvalonDock\\AvalonDock.csproj
+		SccProjectName5 = AvalonDock/AvalonDock
+		SccLocalPath5 = AvalonDock\\AvalonDock
 	EndGlobalSection
 	GlobalSection(TestCaseManagementSettings) = postSolution
 		CategoryFile = Wabbitcode.vsmdi

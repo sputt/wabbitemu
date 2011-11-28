@@ -1,14 +1,10 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5762 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-
 using ICSharpCode.AvalonEdit.Utils;
 
 namespace ICSharpCode.AvalonEdit.Document
@@ -217,6 +213,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			undoGroupDepth--;
 			//Util.LoggingService.Debug("Close undo group (new depth=" + undoGroupDepth + ")");
 			if (undoGroupDepth == 0) {
+				Debug.Assert(state == StateListen || actionCountInUndoGroup == 0);
 				if (actionCountInUndoGroup == optionalActionCount) {
 					// only optional actions: don't store them
 					for (int i = 0; i < optionalActionCount; i++) {
@@ -227,9 +224,11 @@ namespace ICSharpCode.AvalonEdit.Document
 					undostack.PushBack(new UndoOperationGroup(undostack, actionCountInUndoGroup));
 					FileModified(-actionCountInUndoGroup + 1 + optionalActionCount);
 				}
+				//if (state == StateListen) {
 				EnforceSizeLimit();
 				allowContinue = true;
 				RecalcIsOriginalFile(); // can raise event
+				//}
 			}
 		}
 		
@@ -244,6 +243,28 @@ namespace ICSharpCode.AvalonEdit.Document
 			}
 			if (state != StateListen) {
 				throw new InvalidOperationException("This method cannot be called while an undo operation is being performed");
+			}
+		}
+		
+		List<TextDocument> affectedDocuments;
+		
+		internal void RegisterAffectedDocument(TextDocument document)
+		{
+			if (affectedDocuments == null)
+				affectedDocuments = new List<TextDocument>();
+			if (!affectedDocuments.Contains(document)) {
+				affectedDocuments.Add(document);
+				document.BeginUpdate();
+			}
+		}
+		
+		void CallEndUpdateOnAffectedDocuments()
+		{
+			if (affectedDocuments != null) {
+				foreach (TextDocument doc in affectedDocuments) {
+					doc.EndUpdate();
+				}
+				affectedDocuments = null;
 			}
 		}
 		
@@ -264,8 +285,9 @@ namespace ICSharpCode.AvalonEdit.Document
 					RunUndo(uedit);
 				} finally {
 					state = StateListen;
+					FileModified(-1);
+					CallEndUpdateOnAffectedDocuments();
 				}
-				FileModified(-1);
 				RecalcIsOriginalFile();
 				if (undostack.Count == 0)
 					NotifyPropertyChanged("CanUndo");
@@ -298,8 +320,9 @@ namespace ICSharpCode.AvalonEdit.Document
 					RunRedo(uedit);
 				} finally {
 					state = StateListen;
+					FileModified(1);
+					CallEndUpdateOnAffectedDocuments();
 				}
-				FileModified(1);
 				RecalcIsOriginalFile();
 				if (redostack.Count == 0)
 					NotifyPropertyChanged("CanRedo");
@@ -349,14 +372,15 @@ namespace ICSharpCode.AvalonEdit.Document
 			if (state == StateListen && sizeLimit > 0) {
 				bool wasEmpty = undostack.Count == 0;
 				
-				StartUndoGroup();
+				bool needsUndoGroup = undoGroupDepth == 0;
+				if (needsUndoGroup) StartUndoGroup();
 				undostack.PushBack(operation);
 				actionCountInUndoGroup++;
 				if (isOptional)
 					optionalActionCount++;
 				else
 					FileModified(1);
-				EndUndoGroup();
+				if (needsUndoGroup) EndUndoGroup();
 				if (wasEmpty)
 					NotifyPropertyChanged("CanUndo");
 				ClearRedoStack();
@@ -371,7 +395,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			if (redostack.Count != 0) {
 				redostack.Clear();
 				NotifyPropertyChanged("CanRedo");
-				// if the "orginal file" marker is on the redo stack: remove it
+				// if the "original file" marker is on the redo stack: remove it
 				if (elementsOnUndoUntilOriginalFile < 0)
 					elementsOnUndoUntilOriginalFile = int.MinValue;
 			}
@@ -394,29 +418,14 @@ namespace ICSharpCode.AvalonEdit.Document
 			ClearRedoStack();
 		}
 		
-		internal void AttachToDocument(TextDocument document)
-		{
-			document.UpdateStarted += document_UpdateStarted;
-			document.UpdateFinished += document_UpdateFinished;
-			document.Changing += document_Changing;
-		}
-		
-		void document_UpdateStarted(object sender, EventArgs e)
-		{
-			StartUndoGroup();
-		}
-		
-		void document_UpdateFinished(object sender, EventArgs e)
-		{
-			EndUndoGroup();
-		}
-		
-		void document_Changing(object sender, DocumentChangeEventArgs e)
+		internal void Push(TextDocument document, DocumentChangeEventArgs e)
 		{
 			if (state == StatePlayback)
 				throw new InvalidOperationException("Document changes during undo/redo operations are not allowed.");
-			TextDocument document = (TextDocument)sender;
-			Push(new DocumentChangeOperation(document, e));
+			if (state == StatePlaybackModifyDocument)
+				state = StatePlayback; // allow only 1 change per expected modification
+			else
+				Push(new DocumentChangeOperation(document, e));
 		}
 		
 		/// <summary>

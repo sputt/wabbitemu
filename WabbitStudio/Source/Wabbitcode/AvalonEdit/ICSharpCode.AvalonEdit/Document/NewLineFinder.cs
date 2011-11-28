@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5747 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -14,24 +10,21 @@ namespace ICSharpCode.AvalonEdit.Document
 {
 	static class NewLineFinder
 	{
+		static readonly char[] newline = { '\r', '\n' };
+		
 		/// <summary>
 		/// Gets the location of the next new line character, or SimpleSegment.Invalid
 		/// if none is found.
 		/// </summary>
 		internal static SimpleSegment NextNewLine(string text, int offset)
 		{
-			for (int i = offset; i < text.Length; i++) {
-				switch (text[i]) {
-					case '\r':
-						if (i + 1 < text.Length) {
-							if (text[i + 1] == '\n') {
-								return new SimpleSegment(i, 2);
-							}
-						}
-						goto case '\n';
-					case '\n':
-						return new SimpleSegment(i, 1);
+			int pos = text.IndexOfAny(newline, offset);
+			if (pos >= 0) {
+				if (text[pos] == '\r') {
+					if (pos + 1 < text.Length && text[pos + 1] == '\n')
+						return new SimpleSegment(pos, 2);
 				}
+				return new SimpleSegment(pos, 1);
 			}
 			return SimpleSegment.Invalid;
 		}
@@ -43,18 +36,13 @@ namespace ICSharpCode.AvalonEdit.Document
 		internal static SimpleSegment NextNewLine(ITextSource text, int offset)
 		{
 			int textLength = text.TextLength;
-			for (int i = offset; i < textLength; i++) {
-				switch (text.GetCharAt(i)) {
-					case '\r':
-						if (i + 1 < textLength) {
-							if (text.GetCharAt(i + 1) == '\n') {
-								return new SimpleSegment(i, 2);
-							}
-						}
-						goto case '\n';
-					case '\n':
-						return new SimpleSegment(i, 1);
+			int pos = text.IndexOfAny(newline, offset, textLength - offset);
+			if (pos >= 0) {
+				if (text.GetCharAt(pos) == '\r') {
+					if (pos + 1 < textLength && text.GetCharAt(pos + 1) == '\n')
+						return new SimpleSegment(pos, 2);
 				}
+				return new SimpleSegment(pos, 1);
 			}
 			return SimpleSegment.Invalid;
 		}

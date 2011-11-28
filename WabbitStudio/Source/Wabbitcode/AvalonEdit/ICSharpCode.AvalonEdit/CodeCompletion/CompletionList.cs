@@ -1,13 +1,10 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5931 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
@@ -198,7 +195,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		// SelectItem gets called twice for every typed character (once from FormatLine), this helps execute SelectItem only once
 		string currentText;
 		ObservableCollection<ICompletionData> currentList;
-			
+		
 		/// <summary>
 		/// Selects the best match, and filter the items if turned on using <see cref="IsFiltering" />.
 		/// </summary>
@@ -219,19 +216,23 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		}
 		
 		/// <summary>
-		/// Filters CompletionList items to show only those matching given text, and selects the best match.
+		/// Filters CompletionList items to show only those matching given query, and selects the best match.
 		/// </summary>
-		void SelectItemFiltering(string text)
+		void SelectItemFiltering(string query)
 		{
 			// if the user just typed one more character, don't filter all data but just filter what we are already displaying
-			var listToFilter = (this.currentList != null && (!string.IsNullOrEmpty(this.currentText)) && (!string.IsNullOrEmpty(text)) &&
-			                    text.StartsWith(this.currentText)) ?
-								 this.currentList : this.completionData;
+			var listToFilter = (this.currentList != null && (!string.IsNullOrEmpty(this.currentText)) && (!string.IsNullOrEmpty(query)) &&
+			                    query.StartsWith(this.currentText, StringComparison.Ordinal)) ?
+				this.currentList : this.completionData;
 			
-			var itemsWithQualities = 
+			var matchingItems =
 				from item in listToFilter
-				select new { Item = item, Quality = GetMatchQuality(item.Text, text) };
-			var matchingItems = itemsWithQualities.Where(item => item.Quality > 0);
+				let quality = GetMatchQuality(item.Text, query)
+				where quality > 0
+				select new { Item = item, Quality = quality };
+			
+			// e.g. "DateTimeKind k = (*cc here suggests DateTimeKind*)"
+			ICompletionData suggestedItem = listBox.SelectedIndex != -1 ? (ICompletionData)(listBox.Items[listBox.SelectedIndex]) : null;
 			
 			var listBoxItems = new ObservableCollection<ICompletionData>();
 			int bestIndex = -1;
@@ -239,9 +240,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			double bestPriority = 0;
 			int i = 0;
 			foreach (var matchingItem in matchingItems) {
-				double priority = matchingItem.Item.Priority;
+				double priority = matchingItem.Item == suggestedItem ? double.PositiveInfinity : matchingItem.Item.Priority;
 				int quality = matchingItem.Quality;
-				if (quality > bestQuality || (quality == bestQuality && priority > bestPriority)) {
+				if (quality > bestQuality || (quality == bestQuality && (priority > bestPriority))) {
 					bestIndex = i;
 					bestPriority = priority;
 					bestQuality = quality;
@@ -255,20 +256,20 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		}
 		
 		/// <summary>
-		/// Selects the item that starts with the specified text.
+		/// Selects the item that starts with the specified query.
 		/// </summary>
-		void SelectItemWithStart(string startText)
+		void SelectItemWithStart(string query)
 		{
-			if (string.IsNullOrEmpty(startText))
+			if (string.IsNullOrEmpty(query))
 				return;
 			
-			int selectedItem = listBox.SelectedIndex;
+			int suggestedIndex = listBox.SelectedIndex;
 			
 			int bestIndex = -1;
 			int bestQuality = -1;
 			double bestPriority = 0;
 			for (int i = 0; i < completionData.Count; ++i) {
-				int quality = GetMatchQuality(completionData[i].Text, startText);
+				int quality = GetMatchQuality(completionData[i].Text, query);
 				if (quality < 0)
 					continue;
 				
@@ -277,10 +278,10 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 				if (bestQuality < quality) {
 					useThisItem = true;
 				} else {
-					if (bestIndex == selectedItem) {
-						// martin.konicek: I'm not sure what this does. This item could have higher priority, why not select it?
+					if (bestIndex == suggestedIndex) {
 						useThisItem = false;
-					} else if (i == selectedItem) {
+					} else if (i == suggestedIndex) {
+						// prefer recommendedItem, regardless of its priority
 						useThisItem = bestQuality == quality;
 					} else {
 						useThisItem = bestQuality == quality && bestPriority < priority;
@@ -313,41 +314,46 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 
 		int GetMatchQuality(string itemText, string query)
 		{
+			if (itemText == null)
+				throw new ArgumentNullException("itemText", "ICompletionData.Text returned null");
+			
 			// Qualities:
-			//		-1 = no match
-			//		1 = match CamelCase
-			//		2 = match sustring
-			// 		3 = match substring case sensitive
-			//		4 = match CamelCase when length of query is 1 or 2 characters
-			//		5 = match start
-			// 		6 = match start case sensitive
-			// 		7 = full match
 			//  	8 = full match case sensitive
+			// 		7 = full match
+			// 		6 = match start case sensitive
+			//		5 = match start
+			//		4 = match CamelCase when length of query is 1 or 2 characters
+			// 		3 = match substring case sensitive
+			//		2 = match sustring
+			//		1 = match CamelCase
+			//		-1 = no match
 			if (query == itemText)
 				return 8;
-			if (string.Equals(itemText, query, StringComparison.OrdinalIgnoreCase))
+			if (string.Equals(itemText, query, StringComparison.InvariantCultureIgnoreCase))
 				return 7;
 			
-			if (itemText.StartsWith(query))
+			if (itemText.StartsWith(query, StringComparison.InvariantCulture))
 				return 6;
-			if (itemText.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+			if (itemText.StartsWith(query, StringComparison.InvariantCultureIgnoreCase))
 				return 5;
 			
 			bool? camelCaseMatch = null;
 			if (query.Length <= 2) {
 				camelCaseMatch = CamelCaseMatch(itemText, query);
-				if (camelCaseMatch.GetValueOrDefault(false)) return 4;
+				if (camelCaseMatch == true) return 4;
 			}
 			
 			// search by substring, if filtering (i.e. new behavior) turned on
-			if (IsFiltering && itemText.Contains(query))
-				return 3;
-			if (IsFiltering && itemText.IndexOf(query, StringComparison.OrdinalIgnoreCase) >= 0)
-				return 2;
-			
+			if (IsFiltering) {
+				if (itemText.IndexOf(query, StringComparison.InvariantCulture) >= 0)
+					return 3;
+				if (itemText.IndexOf(query, StringComparison.InvariantCultureIgnoreCase) >= 0)
+					return 2;
+			}
+				
 			if (!camelCaseMatch.HasValue)
 				camelCaseMatch = CamelCaseMatch(itemText, query);
-			if (camelCaseMatch.GetValueOrDefault(false))
+			if (camelCaseMatch == true)
 				return 1;
 			
 			return -1;
@@ -358,8 +364,8 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			int i = 0;
 			foreach (char upper in text.Where(c => char.IsUpper(c))) {
 				if (i > query.Length - 1)
-					return true;	// return true here for CamelCase partial match (CQ match CodeQualityAnalysis)
-				if (char.ToUpper(query[i]) != upper)
+					return true;	// return true here for CamelCase partial match ("CQ" matches "CodeQualityAnalysis")
+				if (char.ToUpper(query[i], CultureInfo.InvariantCulture) != upper)
 					return false;
 				i++;
 			}

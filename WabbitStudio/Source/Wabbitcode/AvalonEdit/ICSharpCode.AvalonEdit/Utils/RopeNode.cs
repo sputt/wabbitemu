@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5529 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Diagnostics;
@@ -125,7 +121,7 @@ namespace ICSharpCode.AvalonEdit.Utils
 			return node.StoreElements(0, arr, index, length);
 		}
 		
-		static RopeNode<T> CreateNodes(int totalLength)
+		internal static RopeNode<T> CreateNodes(int totalLength)
 		{
 			int leafCount = (totalLength + NodeSize - 1) / NodeSize;
 			return CreateNodes(leafCount, totalLength);

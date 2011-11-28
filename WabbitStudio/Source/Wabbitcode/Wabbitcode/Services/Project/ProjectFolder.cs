@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {

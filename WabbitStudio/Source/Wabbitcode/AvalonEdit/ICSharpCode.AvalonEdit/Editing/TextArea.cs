@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5747 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -324,7 +320,9 @@ namespace ICSharpCode.AvalonEdit.Editing
 			public RestoreCaretAndSelectionUndoAction(TextArea textArea)
 			{
 				this.textAreaReference = new WeakReference(textArea);
-				this.caretPosition = textArea.Caret.Position;
+				// Just save the old caret position, no need to validate here.
+				// If we restore it, we'll validate it anyways.
+				this.caretPosition = textArea.Caret.NonValidatedPosition;
 				this.selection = textArea.Selection;
 			}
 			
@@ -383,10 +381,31 @@ namespace ICSharpCode.AvalonEdit.Editing
 				if (value == null)
 					throw new ArgumentNullException("value");
 				if (!object.Equals(selection, value)) {
-					Debug.WriteLine("Selection change from " + selection + " to " + value);
+					//Debug.WriteLine("Selection change from " + selection + " to " + value);
 					if (textView != null) {
-						textView.Redraw(selection.SurroundingSegment, DispatcherPriority.Background);
-						textView.Redraw(value.SurroundingSegment, DispatcherPriority.Background);
+						ISegment oldSegment = selection.SurroundingSegment;
+						ISegment newSegment = value.SurroundingSegment;
+						if (selection is SimpleSelection && value is SimpleSelection && oldSegment != null && newSegment != null) {
+							// perf optimization:
+							// When a simple selection changes, don't redraw the whole selection, but only the changed parts.
+							int oldSegmentOffset = oldSegment.Offset;
+							int newSegmentOffset = newSegment.Offset;
+							if (oldSegmentOffset != newSegmentOffset) {
+								textView.Redraw(Math.Min(oldSegmentOffset, newSegmentOffset),
+								                Math.Abs(oldSegmentOffset - newSegmentOffset),
+								                DispatcherPriority.Background);
+							}
+							int oldSegmentEndOffset = oldSegment.EndOffset;
+							int newSegmentEndOffset = newSegment.EndOffset;
+							if (oldSegmentEndOffset != newSegmentEndOffset) {
+								textView.Redraw(Math.Min(oldSegmentEndOffset, newSegmentEndOffset),
+								                Math.Abs(oldSegmentEndOffset - newSegmentEndOffset),
+								                DispatcherPriority.Background);
+							}
+						} else {
+							textView.Redraw(oldSegment, DispatcherPriority.Background);
+							textView.Redraw(newSegment, DispatcherPriority.Background);
+						}
 					}
 					selection = value;
 					if (SelectionChanged != null)

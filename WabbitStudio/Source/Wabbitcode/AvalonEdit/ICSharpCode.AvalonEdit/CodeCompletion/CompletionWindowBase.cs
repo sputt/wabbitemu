@@ -1,17 +1,13 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5906 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Linq;
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Threading;
-
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Editing;
 using ICSharpCode.AvalonEdit.Rendering;
@@ -52,6 +48,11 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		public int EndOffset { get; set; }
 		
 		/// <summary>
+		/// Gets whether the window was opened above the current line.
+		/// </summary>
+		protected bool IsUp { get; private set; }
+		
+		/// <summary>
 		/// Creates a new CompletionWindowBase.
 		/// </summary>
 		public CompletionWindowBase(TextArea textArea)
@@ -75,7 +76,8 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			if (document != null) {
 				document.Changing += textArea_Document_Changing;
 			}
-			this.TextArea.PreviewLostKeyboardFocus += TextAreaLostFocus;
+			// LostKeyboardFocus seems to be more reliable than PreviewLostKeyboardFocus - see SD-1729
+			this.TextArea.LostKeyboardFocus += TextAreaLostFocus;
 			this.TextArea.TextView.ScrollOffsetChanged += TextViewScrollOffsetChanged;
 			this.TextArea.DocumentChanged += TextAreaDocumentChanged;
 			if (parentWindow != null) {
@@ -100,7 +102,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			if (document != null) {
 				document.Changing -= textArea_Document_Changing;
 			}
-			this.TextArea.PreviewLostKeyboardFocus -= TextAreaLostFocus;
+			this.TextArea.LostKeyboardFocus -= TextAreaLostFocus;
 			this.TextArea.TextView.ScrollOffsetChanged -= TextViewScrollOffsetChanged;
 			this.TextArea.DocumentChanged -= TextAreaDocumentChanged;
 			if (parentWindow != null) {
@@ -157,7 +159,18 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		
 		void TextViewScrollOffsetChanged(object sender, EventArgs e)
 		{
-			UpdatePosition();
+			// Workaround for crash #1580 (reproduction steps unknown):
+			// NullReferenceException in System.Windows.Window.CreateSourceWindow()
+			if (!sourceIsInitialized)
+				return;
+			
+			IScrollInfo scrollInfo = this.TextArea.TextView;
+			Rect visibleRect = new Rect(scrollInfo.HorizontalOffset, scrollInfo.VerticalOffset, scrollInfo.ViewportWidth, scrollInfo.ViewportHeight);
+			// close completion window when the user scrolls so far that the anchor position is leaving the visible area
+			if (visibleRect.Contains(visualLocation) || visibleRect.Contains(visualLocationTop))
+				UpdatePosition();
+			else
+				Close();
 		}
 		
 		void TextAreaDocumentChanged(object sender, EventArgs e)
@@ -249,6 +262,8 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			}
 		}
 		
+		bool sourceIsInitialized;
+		
 		/// <inheritdoc/>
 		protected override void OnSourceInitialized(EventArgs e)
 		{
@@ -259,6 +274,7 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			} else {
 				SetPosition(this.TextArea.Caret.Position);
 			}
+			sourceIsInitialized = true;
 		}
 		
 		/// <inheritdoc/>
@@ -311,6 +327,9 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 				}
 				if (bounds.Bottom > workingScreen.Bottom) {
 					bounds.Y = locationTop.Y - bounds.Height;
+					IsUp = true;
+				} else {
+					IsUp = false;
 				}
 				if (bounds.Y < workingScreen.Top) {
 					bounds.Y = workingScreen.Top;
@@ -320,6 +339,15 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			bounds = bounds.TransformFromDevice(textView);
 			this.Left = bounds.X;
 			this.Top = bounds.Y;
+		}
+		
+		/// <inheritdoc/>
+		protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
+		{
+			base.OnRenderSizeChanged(sizeInfo);
+			if (sizeInfo.HeightChanged && IsUp) {
+				this.Top += sizeInfo.PreviousSize.Height - sizeInfo.NewSize.Height;
+			}
 		}
 		
 		/// <summary>

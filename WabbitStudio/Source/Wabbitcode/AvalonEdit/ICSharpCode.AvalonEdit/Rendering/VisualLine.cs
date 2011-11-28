@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5412 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using ICSharpCode.AvalonEdit.Utils;
 using System;
@@ -26,6 +22,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	{
 		TextView textView;
 		List<VisualLineElement> elements;
+		internal bool hasInlineObjects;
 		
 		/// <summary>
 		/// Gets the document to which this VisualLine belongs.
@@ -56,7 +53,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// Gets the start offset of the VisualLine inside the document.
 		/// This is equivalent to <c>FirstDocumentLine.Offset</c>.
 		/// </summary>
-		public int StartOffset { 
+		public int StartOffset {
 			get {
 				return FirstDocumentLine.Offset;
 			}
@@ -140,8 +137,14 @@ namespace ICSharpCode.AvalonEdit.Rendering
 								askInterestOffset = 0;
 								offset += element.DocumentLength;
 								if (offset > currentLineEnd) {
-									LastDocumentLine = document.GetLineByOffset(offset);
-									currentLineEnd = LastDocumentLine.Offset + LastDocumentLine.Length;
+									DocumentLine newEndLine = document.GetLineByOffset(offset);
+									if (newEndLine == this.LastDocumentLine) {
+										throw new InvalidOperationException(
+											"The VisualLineElementGenerator " + g.GetType().Name +
+											" produced an element which ends within the line delimiter");
+									}
+									currentLineEnd = newEndLine.Offset + newEndLine.Length;
+									this.LastDocumentLine = newEndLine;
 								}
 								break;
 							}
@@ -310,12 +313,30 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		
 		/// <summary>
 		/// Gets the visual column from a document position (relative to top left of the document).
+		/// If the user clicks between two visual columns, rounds to the nearest column.
 		/// </summary>
 		public int GetVisualColumn(Point point)
 		{
 			TextLine textLine = GetTextLineByVisualYPosition(point.Y);
 			CharacterHit ch = textLine.GetCharacterHitFromDistance(point.X);
 			return ch.FirstCharacterIndex + ch.TrailingLength;
+		}
+		
+		/// <summary>
+		/// Gets the visual column from a document position (relative to top left of the document).
+		/// If the user clicks between two visual columns, returns the first of those columns.
+		/// </summary>
+		public int GetVisualColumnFloor(Point point)
+		{
+			TextLine textLine = GetTextLineByVisualYPosition(point.Y);
+			if (point.X > textLine.WidthIncludingTrailingWhitespace) {
+				// GetCharacterHitFromDistance returns a hit with FirstCharacterIndex=last character inline
+				// and TrailingLength=1 when clicking behind the line, so the floor function needs to handle this case
+				// specially end return the line's end column instead.
+				return GetTextLineVisualStartColumn(textLine) + textLine.Length;
+			}
+			CharacterHit ch = textLine.GetCharacterHitFromDistance(point.X);
+			return ch.FirstCharacterIndex;
 		}
 		
 		/// <summary>

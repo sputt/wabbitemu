@@ -2,12 +2,12 @@
 using System.Diagnostics;
 using System.IO;
 using System.Security.Permissions;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 using Revsoft.Wabbitcode.Utilities;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
-	public class ExternalBuildStep : IBuildStep
+	public class ExternalBuildStep : IExternalBuildStep
 	{
 		public IProject Project { get; private set; }
 
@@ -18,6 +18,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 		public int StepNumber { get; set; }
 
 		public Action<string> Callback { get; set; }
+
+        public bool IsMainOutput
+        {
+            get { return false; }
+        }
 
 		public ExternalBuildStep(IProject project, int number, string commandLine)
 		{
@@ -111,5 +116,5 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			return new ExternalBuildStep(Project, StepNumber, InputFile, Arguments);
 		}
-	}
+    }
 }

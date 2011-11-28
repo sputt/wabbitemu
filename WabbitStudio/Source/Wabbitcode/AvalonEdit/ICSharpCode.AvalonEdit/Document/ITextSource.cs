@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5674 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using ICSharpCode.AvalonEdit.Utils;
 using System;
@@ -46,6 +42,15 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <remarks>This is the same as Text[offset], but is more efficient because
 		/// it doesn't require creating a String object.</remarks>
 		char GetCharAt(int offset);
+		
+		/// <summary>
+		/// Gets the index of the first occurrence of any character in the specified array.
+		/// </summary>
+		/// <param name="anyOf"></param>
+		/// <param name="startIndex">Start index of the search.</param>
+		/// <param name="count">Length of the area to search.</param>
+		/// <returns>The first index where any character was found; or -1 if no occurrence was found.</returns>
+		int IndexOfAny(char[] anyOf, int startIndex, int count);
 		
 		/// <summary>
 		/// Retrieves the text for a portion of the document.
@@ -152,6 +157,14 @@ namespace ICSharpCode.AvalonEdit.Document
 		{
 			return CreateSnapshot().CreateReader();
 		}
+		
+		/// <inheritdoc/>
+		public int IndexOfAny(char[] anyOf, int startIndex, int count)
+		{
+			int offset = viewedSegment.Offset;
+			int result = baseTextSource.IndexOfAny(anyOf, startIndex + offset, count);
+			return result >= 0 ? result - offset : result;
+		}
 	}
 	
 	/// <summary>
@@ -215,6 +228,12 @@ namespace ICSharpCode.AvalonEdit.Document
 		public ITextSource CreateSnapshot(int offset, int length)
 		{
 			return new StringTextSource(text.Substring(offset, length));
+		}
+		
+		/// <inheritdoc/>
+		public int IndexOfAny(char[] anyOf, int startIndex, int count)
+		{
+			return text.IndexOfAny(anyOf, startIndex, count);
 		}
 	}
 	
@@ -290,6 +309,12 @@ namespace ICSharpCode.AvalonEdit.Document
 		public ITextSource CreateSnapshot(int offset, int length)
 		{
 			return new RopeTextSource(rope.GetRange(offset, length));
+		}
+		
+		/// <inheritdoc/>
+		public int IndexOfAny(char[] anyOf, int startIndex, int count)
+		{
+			return rope.IndexOfAny(anyOf, startIndex, count);
 		}
 	}
 }

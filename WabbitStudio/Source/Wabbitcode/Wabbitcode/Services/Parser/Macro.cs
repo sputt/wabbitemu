@@ -51,21 +51,48 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			set;
 		}
 
-        public override string ToString()
-        {
-            return Name;
-        }
-
-
         public bool IsWord
         {
             get { return true; }                    //assume that it returns a 16 bit val
         }
 
-        public int Value
+        public int? Value
         {
             get;
             set;
         }
+
+        #region Overrides
+
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        #endregion
+
+        #region IComparable
+
+        public int CompareTo(IParserData other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+            if (Offset == other.Offset)
+            {
+                return 0;
+            }
+            if (Offset > other.Offset)
+            {
+                return 1;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        #endregion
     }
 }

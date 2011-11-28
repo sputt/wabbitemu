@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5454 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Diagnostics;
@@ -27,6 +23,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		public void Undo(UndoStack stack)
 		{
 			Debug.Assert(stack.state == UndoStack.StatePlayback);
+			stack.RegisterAffectedDocument(document);
 			stack.state = UndoStack.StatePlaybackModifyDocument;
 			this.Undo();
 			stack.state = UndoStack.StatePlayback;
@@ -35,6 +32,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		public void Redo(UndoStack stack)
 		{
 			Debug.Assert(stack.state == UndoStack.StatePlayback);
+			stack.RegisterAffectedDocument(document);
 			stack.state = UndoStack.StatePlaybackModifyDocument;
 			this.Redo();
 			stack.state = UndoStack.StatePlayback;

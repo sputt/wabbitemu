@@ -1,9 +1,6 @@
-﻿using Revsoft.Wabbitcode.Services.Project;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using Revsoft.Wabbitcode.Interface;
-using System.IO;
-using Moq;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 
 namespace WabbitcodeTest
 {

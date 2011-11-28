@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 4907 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -113,8 +109,8 @@ namespace ICSharpCode.AvalonEdit.Editing
 			if (e == null)
 				throw new ArgumentNullException("e");
 			return new SimpleSelection(
-				e.GetNewOffset(startOffset, AnchorMovementType.AfterInsertion),
-				e.GetNewOffset(endOffset, AnchorMovementType.AfterInsertion)
+				e.GetNewOffset(startOffset, AnchorMovementType.Default),
+				e.GetNewOffset(endOffset, AnchorMovementType.Default)
 			);
 		}
 		

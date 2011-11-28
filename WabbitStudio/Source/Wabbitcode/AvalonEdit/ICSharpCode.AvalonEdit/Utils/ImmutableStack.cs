@@ -1,12 +1,9 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 4619 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 namespace ICSharpCode.AvalonEdit.Utils
@@ -58,6 +55,12 @@ namespace ICSharpCode.AvalonEdit.Utils
 		{
 			if (IsEmpty)
 				throw new InvalidOperationException("Operation not valid on empty stack.");
+			return value;
+		}
+		
+		internal T UnsafePeek()
+		{
+			Debug.Assert(!IsEmpty);
 			return value;
 		}
 		
