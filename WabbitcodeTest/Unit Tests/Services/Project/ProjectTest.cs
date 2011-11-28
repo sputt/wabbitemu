@@ -1,19 +1,13 @@
-﻿using Revsoft.Wabbitcode.Services.Project;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using Revsoft.Wabbitcode.Interface;
-using Revsoft.Wabbitcode.Services.Parser;
-using System.Collections.Generic;
-using System.Xml;
+﻿using System.Collections.Generic;
 using System.IO;
-using Revsoft.Wabbitcode.Services;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 using WabbitcodeTest.Helpers;
 
 namespace WabbitcodeTest
 {
-	
-	
-	/// <summary>
+    /// <summary>
 	///This is a test class for ProjectTest and is intended
 	///to contain all ProjectTest Unit Tests
 	///</summary>
@@ -126,7 +120,6 @@ namespace WabbitcodeTest
 			Assert.AreEqual(Path.GetDirectoryName(projectFile), actual.ProjectDirectory);
 			Assert.AreEqual(projectFile, actual.ProjectFile);
 			Assert.AreEqual("TestProject1", actual.ProjectName);
-			Assert.AreEqual(false, actual.IsInternal);
 			Assert.AreEqual(9, actual.IncludeDirs.Count);
 			Assert.AreEqual(1, actual.MainFolder.Folders.Count);
 		}
@@ -332,7 +325,6 @@ namespace WabbitcodeTest
 			Assert.AreEqual(Path.GetDirectoryName(projectFile), actual.ProjectDirectory);
 			Assert.AreEqual(projectFile, actual.ProjectFile);
 			Assert.AreEqual("TestProject1", actual.ProjectName);
-			Assert.AreEqual(false, actual.IsInternal);
 			Assert.AreEqual(9, actual.IncludeDirs.Count);
 			Assert.AreEqual(1, actual.MainFolder.Folders.Count);
 		}
@@ -353,18 +345,6 @@ namespace WabbitcodeTest
 			Assert.AreEqual(expected.BuildConfigs.Count, actual.BuildConfigs.Count);
 			Assert.AreEqual(expected.MainFile, actual.MainFile);
 			Assert.AreEqual(expected.Project.ProjectFile, actual.Project.ProjectFile);
-		}
-
-		/// <summary>
-		///A test for IsInternal
-		///</summary>
-		[TestMethod()]
-		public void IsInternalTest()
-		{
-			IProject target = new Project(true);
-
-			bool expected = true;
-			Assert.AreEqual(expected, target.IsInternal);
 		}
 
 		/// <summary>

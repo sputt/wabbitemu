@@ -5,6 +5,7 @@ using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Interface.Services;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Utilities;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 
 namespace Revsoft.Wabbitcode.Panels
 {
@@ -40,10 +41,14 @@ namespace Revsoft.Wabbitcode.Panels
 		private void RecurseAddNodes(IProjectFolder folder, TreeViewItem parentNode)
 		{
 			var nodeAdded = AddFolder(folder, parentNode);
-			foreach (IProjectFolder subFolder in folder.Folders)
-				RecurseAddNodes(subFolder, nodeAdded);
-			foreach (IProjectFile file in folder.Files)
-				AddFile(file, nodeAdded);
+            foreach (IProjectFolder subFolder in folder.Folders)
+            {
+                RecurseAddNodes(subFolder, nodeAdded);
+            }
+            foreach (IProjectFile file in folder.Files)
+            {
+                AddFile(file, nodeAdded);
+            }
 		}
 
 		private TreeViewItem AddFolder(IProjectFolder folder, TreeViewItem parent)
@@ -68,10 +73,14 @@ namespace Revsoft.Wabbitcode.Panels
 				Tag = file,
 				Header = System.IO.Path.GetFileName(file.FileFullPath),
 			};
-			if (parent == null)
-				projViewer.Items.Add(nodeFile);
-			else
-				parent.Items.Add(nodeFile);
+            if (parent == null)
+            {
+                projViewer.Items.Add(nodeFile);
+            }
+            else
+            {
+                parent.Items.Add(nodeFile);
+            }
 		}
 
 		public void Cut()

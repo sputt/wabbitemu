@@ -1,11 +1,8 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5263 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,14 +26,6 @@ namespace ICSharpCode.AvalonEdit.Editing
 			DefaultStyleKeyProperty.OverrideMetadata(typeof(LineNumberMargin),
 			                                         new FrameworkPropertyMetadata(typeof(LineNumberMargin)));
 		}
-
-        /// <summary>
-        /// Sets margin of line number
-        /// </summary>
-        public LineNumberMargin()
-        {
-            this.Margin = new Thickness(3);
-        }
 		
 		TextArea textArea;
 		
@@ -101,11 +90,11 @@ namespace ICSharpCode.AvalonEdit.Editing
 		protected override void OnDocumentChanged(TextDocument oldDocument, TextDocument newDocument)
 		{
 			if (oldDocument != null) {
-				TextDocumentWeakEventManager.LineCountChanged.RemoveListener(oldDocument, this);
+				PropertyChangedEventManager.RemoveListener(oldDocument, this, "LineCount");
 			}
 			base.OnDocumentChanged(oldDocument, newDocument);
 			if (newDocument != null) {
-				TextDocumentWeakEventManager.LineCountChanged.AddListener(newDocument, this);
+				PropertyChangedEventManager.AddListener(newDocument, this, "LineCount");
 			}
 			OnDocumentLineCountChanged();
 		}
@@ -113,7 +102,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 		/// <inheritdoc cref="IWeakEventListener.ReceiveWeakEvent"/>
 		protected virtual bool ReceiveWeakEvent(Type managerType, object sender, EventArgs e)
 		{
-			if (managerType == typeof(TextDocumentWeakEventManager.LineCountChanged)) {
+			if (managerType == typeof(PropertyChangedEventManager)) {
 				OnDocumentLineCountChanged();
 				return true;
 			}

@@ -1,15 +1,12 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 4388 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.TextFormatting;
+using ICSharpCode.AvalonEdit.Utils;
 
 namespace ICSharpCode.AvalonEdit.Rendering
 {
@@ -80,6 +77,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public void SetBackgroundBrush(Brush value)
 		{
+			ExtensionMethods.CheckIsFrozen(value);
 			backgroundBrush = value;
 		}
 		
@@ -147,6 +145,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public void SetForegroundBrush(Brush value)
 		{
+			ExtensionMethods.CheckIsFrozen(value);
 			foregroundBrush = value;
 		}
 		
@@ -181,6 +180,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public void SetTextDecorations(TextDecorationCollection value)
 		{
+			ExtensionMethods.CheckIsFrozen(value);
 			textDecorations = value;
 		}
 		
@@ -200,6 +200,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		/// </summary>
 		public void SetTextEffects(TextEffectCollection value)
 		{
+			ExtensionMethods.CheckIsFrozen(value);
 			textEffects = value;
 		}
 	}

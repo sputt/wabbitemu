@@ -112,6 +112,9 @@
     <Reference Include="PresentationFramework" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Services\InternalProject.cs" />
+    <Compile Include="Services\Project\Interface\IExternalBuildStep.cs" />
+    <Compile Include="Services\Project\Interface\IInternalBuildStep.cs" />
     <Compile Include="Services\ServiceDependencyAttribute.cs" />
     <Compile Include="Utilities\AbstractClassFactory.cs" />
     <Compile Include="Dialogs\AboutBox.cs">
@@ -206,12 +209,12 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\Parser\Define.cs" />
-    <Compile Include="Services\Parser\IDefine.cs" />
-    <Compile Include="Services\Parser\IIncludeFile.cs" />
-    <Compile Include="Services\Parser\ILabel.cs" />
-    <Compile Include="Services\Parser\IMacro.cs" />
+    <Compile Include="Services\Parser\Interface\IDefine.cs" />
+    <Compile Include="Services\Parser\Interface\IIncludeFile.cs" />
+    <Compile Include="Services\Parser\Interface\ILabel.cs" />
+    <Compile Include="Services\Parser\Interface\IMacro.cs" />
     <Compile Include="Services\Parser\IncludeFile.cs" />
-    <Compile Include="Services\Parser\IParserData.cs" />
+    <Compile Include="Services\Parser\Interface\IParserData.cs" />
     <Compile Include="Services\Parser\Label.cs" />
     <Compile Include="Services\Parser\Macro.cs" />
     <Compile Include="Services\Parser\ParsedLineSec.cs" />
@@ -225,23 +228,23 @@
     <Compile Include="Services\Project\BuildSystem.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Interface\IBuildConfig.cs" />
-    <Compile Include="Interface\IBuildSystem.cs" />
-    <Compile Include="Interface\IProjectFile.cs" />
-    <Compile Include="Interface\IProjectFolder.cs" />
+    <Compile Include="Services\Project\Interface\IBuildConfig.cs" />
+    <Compile Include="Services\Project\Interface\IBuildSystem.cs" />
+    <Compile Include="Services\Project\Interface\IProjectFile.cs" />
+    <Compile Include="Services\Project\Interface\IProjectFolder.cs" />
     <Compile Include="Services\Project\Project.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\Project\ExternalBuildStep.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Interface\IBuildStep.cs">
+    <Compile Include="Services\Project\Interface\IBuildStep.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\Project\InternalBuildStep.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Interface\IProject.cs">
+    <Compile Include="Services\Project\Interface\IProject.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Services\Project\ProjectFile.cs">

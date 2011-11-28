@@ -1,22 +1,19 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 4142 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Diagnostics;
 using System.Windows.Media.TextFormatting;
 
 using ICSharpCode.AvalonEdit.Document;
+using ICSharpCode.AvalonEdit.Utils;
 
 namespace ICSharpCode.AvalonEdit.Rendering
 {
 	/// <summary>
 	/// WPF TextSource implementation that creates TextRuns for a VisualLine.
 	/// </summary>
-	class VisualLineTextSource : TextSource, ITextRunConstructionContext
+	sealed class VisualLineTextSource : TextSource, ITextRunConstructionContext
 	{
 		public VisualLineTextSource(VisualLine visualLine)
 		{
@@ -46,7 +43,8 @@ namespace ICSharpCode.AvalonEdit.Rendering
 						InlineObjectRun inlineRun = run as InlineObjectRun;
 						if (inlineRun != null) {
 							inlineRun.VisualLine = VisualLine;
-							TextView.textLayer.AddInlineObject(inlineRun);
+							VisualLine.hasInlineObjects = true;
+							TextView.AddInlineObject(inlineRun);
 						}
 						return run;
 					}
@@ -60,12 +58,45 @@ namespace ICSharpCode.AvalonEdit.Rendering
 		
 		public override TextSpan<CultureSpecificCharacterBufferRange> GetPrecedingText(int textSourceCharacterIndexLimit)
 		{
-			throw new NotImplementedException();
+			try {
+				foreach (VisualLineElement element in VisualLine.Elements) {
+					if (textSourceCharacterIndexLimit > element.VisualColumn
+					    && textSourceCharacterIndexLimit <= element.VisualColumn + element.VisualLength)
+					{
+						TextSpan<CultureSpecificCharacterBufferRange> span = element.GetPrecedingText(textSourceCharacterIndexLimit, this);
+						if (span == null)
+							break;
+						int relativeOffset = textSourceCharacterIndexLimit - element.VisualColumn;
+						if (span.Length > relativeOffset)
+							throw new ArgumentException("The returned TextSpan is too long.", element.GetType().Name + ".GetPrecedingText");
+						return span;
+					}
+				}
+				CharacterBufferRange empty = CharacterBufferRange.Empty;
+				return new TextSpan<CultureSpecificCharacterBufferRange>(empty.Length, new CultureSpecificCharacterBufferRange(null, empty));
+			} catch (Exception ex) {
+				Debug.WriteLine(ex.ToString());
+				throw;
+			}
 		}
 		
 		public override int GetTextEffectCharacterIndexFromTextSourceCharacterIndex(int textSourceCharacterIndex)
 		{
-			throw new NotImplementedException();
+			throw new NotSupportedException();
+		}
+		
+		string cachedString;
+		int cachedStringOffset;
+		
+		public StringSegment GetText(int offset, int length)
+		{
+			if (cachedString != null) {
+				if (offset >= cachedStringOffset && offset + length <= cachedStringOffset + cachedString.Length) {
+					return new StringSegment(cachedString, offset - cachedStringOffset, length);
+				}
+			}
+			cachedStringOffset = offset;
+			return new StringSegment(cachedString = this.Document.GetText(offset, length));
 		}
 	}
 }

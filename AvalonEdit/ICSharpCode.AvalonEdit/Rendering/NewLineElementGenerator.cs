@@ -1,15 +1,11 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5263 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
-
+using System.Windows.Media.TextFormatting;
 using ICSharpCode.AvalonEdit.Document;
 using ICSharpCode.AvalonEdit.Utils;
 
@@ -18,7 +14,7 @@ namespace ICSharpCode.AvalonEdit.Rendering
 	// This class is internal because it does not need to be accessed by the user - it can be configured using TextEditorOptions.
 	
 	/// <summary>
-	/// Elements generator that displays "�" at the end of lines.
+	/// Elements generator that displays "¶" at the end of lines.
 	/// </summary>
 	/// <remarks>
 	/// This element generator can be easily enabled and configured using the
@@ -58,19 +54,12 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			} else {
 				return null;
 			}
-			FormattedText text = TextFormatterFactory.CreateFormattedText(
-				CurrentContext.TextView,
-				newlineText,
-				CurrentContext.GlobalTextRunProperties.Typeface,
-				CurrentContext.GlobalTextRunProperties.FontRenderingEmSize,
-				Brushes.LightGray
-			);
-			return new NewLineTextElement(text);
+			return new NewLineTextElement(CurrentContext.TextView.cachedElements.GetTextForNonPrintableCharacter(newlineText, CurrentContext));
 		}
 		
 		sealed class NewLineTextElement : FormattedTextElement
 		{
-			public NewLineTextElement(FormattedText text) : base(text, 0)
+			public NewLineTextElement(TextLine text) : base(text, 0)
 			{
 				BreakBefore = LineBreakCondition.BreakPossible;
 				BreakAfter = LineBreakCondition.BreakRestrained;
@@ -86,6 +75,11 @@ namespace ICSharpCode.AvalonEdit.Rendering
 				} else {
 					return -1;
 				}
+			}
+			
+			public override bool IsWhitespace(int visualColumn)
+			{
+				return true;
 			}
 			
 			public override bool HandlesLineBorders {

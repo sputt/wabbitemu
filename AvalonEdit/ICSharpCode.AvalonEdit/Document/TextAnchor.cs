@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5207 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using ICSharpCode.AvalonEdit.Utils;
@@ -60,7 +56,7 @@ namespace ICSharpCode.AvalonEdit.Document
 		/// <remarks>Anchor movement is ambiguous if text is inserted exactly at the anchor's location.
 		/// Does the anchor stay before the inserted text, or does it move after it?
 		/// The property <see cref="MovementType"/> will be used to determine which of these two options the anchor will choose.
-		/// The default value is <see cref="AnchorMovementType.BeforeInsertion"/>.</remarks>
+		/// The default value is <see cref="AnchorMovementType.Default"/>.</remarks>
 		public AnchorMovementType MovementType { get; set; }
 		
 		/// <summary>
@@ -178,21 +174,21 @@ namespace ICSharpCode.AvalonEdit.Document
 	/// </summary>
 	public enum AnchorMovementType
 	{
-        /// <summary>
-        /// When text is inserted at the anchor position, the type of the insertion
-        /// determines where the caret moves to. For normal insertions, the anchor will stay
-        /// behind the inserted text.
-        /// </summary>
-        Default,
-        /// <summary>
-        /// When text is inserted at the anchor position, the anchor will stay
-        /// before the inserted text.
-        /// </summary>
-        BeforeInsertion,
-        /// <summary>
-        /// When text is insered at the anchor position, the anchor will move
-        /// after the inserted text.
-        /// </summary>
-        AfterInsertion
+		/// <summary>
+		/// When text is inserted at the anchor position, the type of the insertion
+		/// determines where the caret moves to. For normal insertions, the anchor will stay
+		/// behind the inserted text.
+		/// </summary>
+		Default,
+		/// <summary>
+		/// When text is inserted at the anchor position, the anchor will stay
+		/// before the inserted text.
+		/// </summary>
+		BeforeInsertion,
+		/// <summary>
+		/// When text is insered at the anchor position, the anchor will move
+		/// after the inserted text.
+		/// </summary>
+		AfterInsertion
 	}
 }

@@ -78,24 +78,37 @@ namespace Revsoft.Wabbitcode.Utilities
 			IService newService = (IService)newInstance;
 			listFactory.Add(newService);
 
+            //Our custom attribute that means we are dependent on this service
 			var attributesList = typeof(T).GetCustomAttributes(true).Where(d => d is Services.ServiceDependencyAttribute);
 			foreach (var dependency in attributesList)
 			{
 				string dependsName = ((Services.ServiceDependencyAttribute)dependency).DependencyName;
+                //TODO: remove the hardcoding of the class location
 				Type serviceType = Type.GetType("Revsoft.Wabbitcode.Services." + dependsName);
 				var foundService = listFactory.FirstOrDefault(service => service.GetType() == serviceType);
 				if (foundService == null)
 				{
+                    //we haven't already initialized this service, lets do that
 					foundService = (IService) Activator.CreateInstance(serviceType, true);
 					listFactory.Add(foundService);
 				}
+                //find the field that we want to store the service in
 				var field = typeof(T).GetField(char.ToLower(dependsName[0]) + dependsName.Substring(1), BindingFlags.NonPublic | BindingFlags.Instance);
-				if (field == null) {
+				if (field == null)
+                {
+                    //if we hit this there is a problem in the code
 					throw new MissingFieldException();
 				}
 				field.SetValue(newService, foundService);
 			}
-			newService.InitService(objects);
+            try
+            {
+                newService.InitService(objects);
+            }
+            catch
+            {
+                throw;
+            }
 			return newInstance;
 		}
 

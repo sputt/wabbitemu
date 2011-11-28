@@ -1,14 +1,14 @@
-﻿using Revsoft.Wabbitcode.Services.Project;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using Revsoft.Wabbitcode.Interface;
-using System.Xml;
+﻿using System;
 using System.Collections.Generic;
+using System.Xml;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Services.Project.Interface;
+using Revsoft.Wabbitcode.Utilities;
 
 namespace WabbitcodeTest
 {
-    
-    
     /// <summary>
     ///This is a test class for BuildSystemTest and is intended
     ///to contain all BuildSystemTest Unit Tests
@@ -16,8 +16,6 @@ namespace WabbitcodeTest
 	[TestClass()]
 	public class BuildSystemTest
 	{
-
-
 		private TestContext testContextInstance;
 
 		/// <summary>
@@ -73,11 +71,22 @@ namespace WabbitcodeTest
 		[TestMethod()]
 		public void BuildSystemConstructorTest()
 		{
-			IProject project = null; // TODO: Initialize to an appropriate value
-			bool CreateDefaults = false; // TODO: Initialize to an appropriate value
-			BuildSystem target = new BuildSystem(project, CreateDefaults);
-			Assert.Inconclusive("TODO: Implement code to verify target");
+            Mock<IProject> projectMock = new Mock<IProject>(MockBehavior.Strict);
+			bool CreateDefaults = false;
+			BuildSystem target = new BuildSystem(projectMock.Object, CreateDefaults);
+            Assert.AreEqual(projectMock.Object, target.Project);
+            Assert.AreEqual(0, target.BuildConfigs.Count);
 		}
+
+        [TestMethod()]
+        public void BuildSystemConstructorTest_CreateDefaults()
+        {
+            Mock<IProject> projectMock = new Mock<IProject>(MockBehavior.Strict);
+            bool CreateDefaults = true;
+            BuildSystem target = new BuildSystem(projectMock.Object, CreateDefaults);
+            Assert.AreEqual(projectMock.Object, target.Project);
+            Assert.AreEqual(2, target.BuildConfigs.Count);
+        }
 
 		/// <summary>
 		///A test for Build
@@ -85,12 +94,39 @@ namespace WabbitcodeTest
 		[TestMethod()]
 		public void BuildTest()
 		{
-			IProject project = null; // TODO: Initialize to an appropriate value
-			bool CreateDefaults = false; // TODO: Initialize to an appropriate value
-			BuildSystem target = new BuildSystem(project, CreateDefaults); // TODO: Initialize to an appropriate value
+            var projectMock = new Mock<IProject>(MockBehavior.Strict);
+            var configMock = new Mock<IBuildConfig>(MockBehavior.Strict);
+            configMock.Setup(c => c.Build()).Verifiable();
+			bool CreateDefaults = false;
+			BuildSystem target = new BuildSystem(projectMock.Object, CreateDefaults);
+            target.BuildConfigs.Add(configMock.Object);
 			target.Build();
-			Assert.Inconclusive("A method that does not return a value cannot be verified.");
+
+            configMock.Verify();
 		}
+
+        /// <summary>
+        ///A test for Build
+        ///</summary>
+        [TestMethod()]
+        public void BuildTest_NoConfig()
+        {
+            var projectMock = new Mock<IProject>(MockBehavior.Strict);
+            bool CreateDefaults = false;
+            BuildSystem target = new BuildSystem(projectMock.Object, CreateDefaults);
+            try
+            {
+                target.Build();
+            }
+            catch (Exception ex)
+            {
+                if (!ex.Message.Contains("config"))
+                {
+                    Assert.Fail("Incorrect exception");
+                }
+            }
+            Assert.Fail("Exception was not thrown");
+        }
 
 		/// <summary>
 		///A test for CreateXML
@@ -157,12 +193,23 @@ namespace WabbitcodeTest
 		[TestMethod()]
 		public void MainFileTest()
 		{
-			IProject project = null; // TODO: Initialize to an appropriate value
-			bool CreateDefaults = false; // TODO: Initialize to an appropriate value
-			BuildSystem target = new BuildSystem(project, CreateDefaults); // TODO: Initialize to an appropriate value
-			string actual;
-			actual = target.MainFile;
-			Assert.Inconclusive("Verify the correctness of this test method.");
+            FilePath inputPath = new FilePath(@"C:\Users\Test\Test.asm");
+            var projectMock = new Mock<IProject>(MockBehavior.Strict);
+            var configMock = new Mock<IBuildConfig>(MockBehavior.Strict);
+            var stepMock = new Mock<IInternalBuildStep>(MockBehavior.Strict);
+            var stepsList = new List<IBuildStep>();
+            configMock.Setup(c => c.Steps).Returns(stepsList);
+            stepMock.Setup(s => s.IsMainOutput).Returns(true).Verifiable();
+            stepMock.Setup(s => s.InputFile).Returns(inputPath);
+            stepsList.Add(stepMock.Object);
+
+            bool CreateDefaults = false;
+            BuildSystem target = new BuildSystem(projectMock.Object, CreateDefaults);
+            target.AddConfig(configMock.Object, true);
+            Assert.AreEqual(inputPath, target.MainFile);
+
+            configMock.Verify();
+            stepMock.Verify();
 		}
 
 		/// <summary>
@@ -171,29 +218,23 @@ namespace WabbitcodeTest
 		[TestMethod()]
 		public void MainOutputTest()
 		{
-			IProject project = null; // TODO: Initialize to an appropriate value
-			bool CreateDefaults = false; // TODO: Initialize to an appropriate value
-			BuildSystem target = new BuildSystem(project, CreateDefaults); // TODO: Initialize to an appropriate value
-			string actual;
-			actual = target.MainOutput;
-			Assert.Inconclusive("Verify the correctness of this test method.");
-		}
+            FilePath outputPath = new FilePath(@"C:\Users\Test\Test.8xp");
+            var projectMock = new Mock<IProject>(MockBehavior.Strict);
+            var configMock = new Mock<IBuildConfig>(MockBehavior.Strict);
+            var stepMock = new Mock<IInternalBuildStep>(MockBehavior.Strict);
+            var stepsList = new List<IBuildStep>();
+            configMock.Setup(c => c.Steps).Returns(stepsList);
+            stepMock.Setup(s => s.IsMainOutput).Returns(true).Verifiable();
+            stepMock.Setup(s => s.OutputFile).Returns(outputPath);
+            stepsList.Add(stepMock.Object);
 
-		/// <summary>
-		///A test for Project
-		///</summary>
-		[TestMethod()]
-		[DeploymentItem("Wabbitcode.exe")]
-		public void ProjectTest()
-		{
-			PrivateObject param0 = null; // TODO: Initialize to an appropriate value
-			BuildSystem_Accessor target = new BuildSystem_Accessor(param0); // TODO: Initialize to an appropriate value
-			IProject expected = null; // TODO: Initialize to an appropriate value
-			IProject actual;
-			target.Project = expected;
-			actual = target.Project;
-			Assert.AreEqual(expected, actual);
-			Assert.Inconclusive("Verify the correctness of this test method.");
+            bool CreateDefaults = false;
+            BuildSystem target = new BuildSystem(projectMock.Object, CreateDefaults);
+            target.AddConfig(configMock.Object, true);
+            Assert.AreEqual(outputPath, target.MainOutput);
+
+            configMock.Verify();
+            stepMock.Verify();
 		}
 	}
 }

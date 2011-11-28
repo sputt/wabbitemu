@@ -6,6 +6,7 @@ using System.Xml;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Interface.Services;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -66,12 +67,6 @@ namespace Revsoft.Wabbitcode.Services.Project
 		/// </summary>
 		public IList<string> LabelOutputs { get; private set; }
 
-		/// <summary>
-		/// Indicates whether the projects actually exists as a file on disk or 
-		/// only in memory for Wabbitcode to manage
-		/// </summary>
-		public bool IsInternal { get; set; }
-
 		Project(IAssemblerService assemblerService, IParserService parserService) 
 		{
 			BuildSystem = new BuildSystem(this, false);
@@ -85,9 +80,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 			ParserService = parserService;
 		}
 
-		public Project(bool isInternal)
+		public Project()
 		{
-			IsInternal = isInternal;
 			ParserService = new ParserService();
 		}
 
@@ -111,21 +105,29 @@ namespace Revsoft.Wabbitcode.Services.Project
 				reader.MoveToContent();
 				while (!reader.Name.Equals("WabbitcodeProject"))
 				{
-					if (!reader.MoveToNextElement())
-						throw new InvalidDataException("Invalid XML Format");
+                    if (!reader.MoveToNextElement())
+                    {
+                        throw new InvalidDataException("Invalid XML Format");
+                    }
 				}
 
 				string formatVersion = reader.GetAttribute("Version");
-				if (formatVersion != ProjectFileVersion)
-					throw new Exception("Invalid Version");
+                if (formatVersion != ProjectFileVersion)
+                {
+                    throw new Exception("Invalid Version");
+                }
 				ProjectFile = projectFile;
 				ProjectDirectory = reader.GetAttribute("Directory");
-				if (ProjectDirectory == null)
-					ProjectDirectory = Path.GetDirectoryName(projectFile);
+                if (ProjectDirectory == null)
+                {
+                    ProjectDirectory = Path.GetDirectoryName(projectFile);
+                }
 				ProjectName = reader.GetAttribute("Name");
 				reader.MoveToNextElement();
-				if (reader.Name != "Folder")
-					throw new ArgumentException("Invalid XML Format");
+                if (reader.Name != "Folder")
+                {
+                    throw new ArgumentException("Invalid XML Format");
+                }
 				IProjectFolder mainFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
 				RecurseReadFolders(reader, ref mainFolder);
 				MainFolder = mainFolder;
@@ -314,9 +316,9 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			foreach (IBuildStep step in BuildSystem.CurrentConfig.Steps)
 			{
-				if (step.GetType() == typeof(InternalBuildStep))
+				if (step is IInternalBuildStep)
 				{
-					InternalBuildStep iStep = (InternalBuildStep)step;
+					IInternalBuildStep iStep = (IInternalBuildStep)step;
 					string outputFile = iStep.OutputFile;
 					string ext = Path.GetExtension(outputFile);
 					return new AssemblerOutputType(ext);

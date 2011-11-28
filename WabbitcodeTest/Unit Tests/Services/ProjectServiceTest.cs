@@ -1,9 +1,9 @@
-﻿using Revsoft.Wabbitcode.Services;
+﻿using System.Collections.Generic;
+using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using Revsoft.Wabbitcode.Interface;
-using System.Collections.Generic;
 using Revsoft.Wabbitcode.Interface.Services;
+using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 
 namespace WabbitcodeTest
 {
@@ -64,26 +64,16 @@ namespace WabbitcodeTest
 		//
 		#endregion
 
-
-		/// <summary>
-		///A test for ProjectService Constructor
-		///</summary>
-		[TestMethod()]
-		public void ProjectServiceConstructorTest()
-		{
-			ProjectService target = new ProjectService();
-			Assert.Inconclusive("TODO: Implement code to verify target");
-		}
-
 		/// <summary>
 		///A test for DestroyService
 		///</summary>
 		[TestMethod()]
 		public void DestroyServiceTest()
 		{
-			ProjectService target = new ProjectService(); // TODO: Initialize to an appropriate value
+			ProjectService target = new ProjectService();
 			target.DestroyService();
-			Assert.Inconclusive("A method that does not return a value cannot be verified.");
+            Assert.IsNull(target.CurrentProject);
+            Assert.IsNull(target.OpenProjects);
 		}
 
 		/// <summary>
@@ -105,8 +95,9 @@ namespace WabbitcodeTest
 		public void OpenProjectTest()
 		{
 			ProjectService target = new ProjectService(); // TODO: Initialize to an appropriate value
-			string fileName = string.Empty; // TODO: Initialize to an appropriate value
-			target.OpenProject(fileName);
+			string fileName = @"C:\Users\Test\Test.asm";
+            Stream stream = null;
+			target.OpenProject(stream, fileName);
 			Assert.Inconclusive("A method that does not return a value cannot be verified.");
 		}
 

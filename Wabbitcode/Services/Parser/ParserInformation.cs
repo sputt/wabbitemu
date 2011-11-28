@@ -6,7 +6,7 @@ using System.Text;
 
 namespace Revsoft.Wabbitcode.Services.Parser
 {
-	public class ParserInformation //: IEnumerable<IParserData>
+	public class ParserInformation : IEnumerable<IParserData>
 	{
 		private string sourceFile;
 		public string SourceFile
@@ -20,29 +20,24 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			get { return isIncluded; }
 			set { isIncluded = value; }
 		}
+
+        ParserDataSorter dataSorter;
+
 		public ParserInformation(string file)
 		{
+            dataSorter = new ParserDataSorter();
 			sourceFile = file;
-			//IncludeDirList = new List<string>();
-			GlobalDefinesList = new List<string>();
-			IncludeFilesList = new List<IIncludeFile>();
-			MacrosList = new List<IMacro>();
-			DefinesList = new List<IDefine>();
-			LabelsList = new List<ILabel>();
+            GlobalDefinesList = new SortedSet<string>();
+            IncludeFilesList = new SortedSet<IIncludeFile>(dataSorter as IComparer<IIncludeFile>);
+            MacrosList = new SortedSet<IMacro>(dataSorter as IComparer<IMacro>);
+            DefinesList = new SortedSet<IDefine>(dataSorter as IComparer<IDefine>);
+            LabelsList = new SortedSet<ILabel>(dataSorter as IComparer<ILabel>);
 		}
-		/// <summary>
-		/// This is all the directories to include with spasm
-		/// </summary>
-		/*public List<string> IncludeDirList
-		{
-			get;
-			set;
-		}*/
 
 		/// <summary>
 		/// All the defines created globally (outside of any file)
 		/// </summary>
-		public List<string> GlobalDefinesList
+		public SortedSet<string> GlobalDefinesList
 		{
 			get;
 			set;
@@ -51,19 +46,19 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		/// <summary>
 		/// Returns a list of all files included in the file.
 		/// </summary>
-		public List<IIncludeFile> IncludeFilesList
+        public SortedSet<IIncludeFile> IncludeFilesList
 		{
 			get;
 			set;
 		}
 
-		public List<IMacro> MacrosList
+		public SortedSet<IMacro> MacrosList
 		{
 			get;
 			set;
 		}
 
-		public List<IDefine> DefinesList
+        public SortedSet<IDefine> DefinesList
 		{
 			get;
 			set;
@@ -72,96 +67,43 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		/// <summary>
 		/// List of all Labels in the file.
 		/// </summary>
-		public List<ILabel> LabelsList
+        public SortedSet<ILabel> LabelsList
 		{
 			get;
 			set;
 		}
 
-		IParserData[] generatedList;
-		public IParserData[] GeneratedList
-		{
-			get
-			{
-				int counter = 0;
-				int size = LabelsList.Count + DefinesList.Count +
-							IncludeFilesList.Count + MacrosList.Count;
-				generatedList = new IParserData[size];
-				foreach (IParserData label in LabelsList)
-				{
-					generatedList[counter] = label;
-					counter++;
-				}
-				foreach (IParserData define in DefinesList)
-				{
-					generatedList[counter] = define;
-					counter++;
-				}
-				foreach (IParserData include in IncludeFilesList)
-				{
-					generatedList[counter] = include;
-					counter++;
-				}
-				foreach (IParserData macro in MacrosList)
-				{
-					generatedList[counter] = macro;
-					counter++;
-				}
-				ParserDataSorter sorter = new ParserDataSorter();
-				Array.Sort(generatedList, sorter);
-				return generatedList;
-			}
-		}
+        public IEnumerator<IParserData> GetEnumerator()
+        {
+            IParserData dataToReturn = null;
+            IEnumerator includeEnumerator = IncludeFilesList.GetEnumerator();
+            includeEnumerator.Reset();
+            bool hasNextInclude = includeEnumerator.MoveNext();
+            IEnumerator definesEnumerator = DefinesList.GetEnumerator();
+            definesEnumerator.Reset();
+            bool hasNextDefine = definesEnumerator.MoveNext();
+            IEnumerator labelsEnumerator = LabelsList.GetEnumerator();
+            labelsEnumerator.Reset();
+            bool hasNextLabel = labelsEnumerator.MoveNext();
+            IEnumerator macrosEnumerator = MacrosList.GetEnumerator();
+            macrosEnumerator.Reset();
+            bool hasNextMacro = macrosEnumerator.MoveNext();
+            while (hasNextInclude || hasNextDefine || hasNextLabel || hasNextMacro)
+            {
+                if (hasNextInclude)
+                {
+                    dataToReturn = (IParserData) includeEnumerator.Current;
+                }
 
-		/*public IEnumerator<IParserData> GetEnumerator()
-		{
-			return (IEnumerator<IParserData>)new IParserEnumerator(this);
-		}
+            }
+            return null;
+        }
 
-		IEnumerator IEnumerable.GetEnumerator()
-		{
-			return (IEnumerator)new IParserEnumerator(this);
-		}*/
-	}
-
-	public sealed class IParserEnumerator : IEnumerator<IParserData>
-	{
-		private ParserInformation parserData;
-		private int position = -1;
-		public IParserEnumerator(ParserInformation data)
-		{
-			parserData = data;            
-		}
-
-		public IParserData Current
-		{
-			get
-			{
-				return parserData.GeneratedList[position];
-			}
-		}
-
-		public void Dispose()
-		{
-			return;
-		}
-
-		object IEnumerator.Current
-		{
-			get { return position; }
-		}
-
-		public bool MoveNext()
-		{
-			position++;
-			return position < parserData.GeneratedList.Length;
-		}
-
-		public void Reset()
-		{
-			position = -1;
-		}
-	}
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            throw new NotImplementedException();
+        }
+    }
 
 	public class ParserDataSorter : IComparer
 	{
@@ -172,12 +114,18 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			IParserData datax = x as IParserData;
 			IParserData datay = y as IParserData;
 
-			if (datax == null || datay == null || datax.Offset == datay.Offset)
-				return 0;
-			if (datax.Offset > datay.Offset)
-				return 1;
-			else
-				return -1;
+            if (datax == null || datay == null || datax.Offset == datay.Offset)
+            {
+                return 0;
+            }
+            if (datax.Offset > datay.Offset)
+            {
+                return 1;
+            }
+            else
+            {
+                return -1;
+            }
 		}
 	}
 }

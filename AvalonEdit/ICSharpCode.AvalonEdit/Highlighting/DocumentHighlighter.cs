@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5766 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -94,6 +90,22 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 			InvalidateHighlighting();
 		}
 		
+		ImmutableStack<HighlightingSpan> initialSpanStack = SpanStack.Empty;
+		
+		/// <summary>
+		/// Gets/sets the the initial span stack of the document. Default value is <see cref="SpanStack.Empty" />.
+		/// </summary>
+		public ImmutableStack<HighlightingSpan> InitialSpanStack {
+			get { return initialSpanStack; }
+			set {
+				if (value == null)
+					initialSpanStack = SpanStack.Empty;
+				else
+					initialSpanStack = value;
+				InvalidateHighlighting();
+			}
+		}
+		
 		/// <summary>
 		/// Invalidates all stored highlighting info.
 		/// When the document changes, the highlighting is invalidated automatically, this method
@@ -103,7 +115,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		{
 			CheckIsHighlighting();
 			storedSpanStacks.Clear();
-			storedSpanStacks.Add(SpanStack.Empty);
+			storedSpanStacks.Add(initialSpanStack);
 			storedSpanStacks.InsertRange(1, document.LineCount, null);
 			isValid.Clear();
 			isValid.Add(true);
@@ -118,6 +130,7 @@ namespace ICSharpCode.AvalonEdit.Highlighting
 		/// </summary>
 		/// <param name="line">The line to highlight.</param>
 		/// <returns>A <see cref="HighlightedLine"/> line object that represents the highlighted sections.</returns>
+		[ObsoleteAttribute("Use the (int lineNumber) overload instead")]
 		public HighlightedLine HighlightLine(DocumentLine line)
 		{
 			if (!document.Lines.Contains(line))

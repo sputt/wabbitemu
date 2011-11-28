@@ -1,19 +1,13 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5529 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Threading;
 using System.Xml;
-
-using ICSharpCode.AvalonEdit.Document;
 
 namespace ICSharpCode.AvalonEdit.Utils
 {
@@ -191,5 +185,12 @@ namespace ICSharpCode.AvalonEdit.Utils
 			return new Rect(rect.Location.ToWpf(), rect.Size.ToWpf());
 		}
 		#endregion
+		
+		[Conditional("DEBUG")]
+		public static void CheckIsFrozen(Freezable f)
+		{
+			if (f != null && !f.IsFrozen)
+				Debug.WriteLine("Performance warning: Not frozen: " + f.ToString());
+		}
 	}
 }

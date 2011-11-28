@@ -1,22 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Xml;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Services.Project.Interface;
+using System.Linq;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
 	public class BuildSystem : IBuildSystem
 	{
-		private int currentConfigIndex = 0;
+        IList<IBuildConfig> buildConfigs = new List<IBuildConfig>();
+        public IList<IBuildConfig> BuildConfigs
+        {
+            get { return buildConfigs; }
+        }
 
+        public IProject Project { get; private set; }
+
+		private int currentConfigIndex = -1;
 		public IBuildConfig CurrentConfig
 		{
-			get
-			{
-				if (currentConfigIndex == -1)
-					return null;
-				return buildConfigs[currentConfigIndex];
-			}
+            get
+            {
+                if (currentConfigIndex == -1)
+                {
+                    return null;
+                }
+                if (currentConfigIndex >= buildConfigs.Count)
+                {
+                    currentConfigIndex = buildConfigs.Count - 1;
+                }
+                return buildConfigs[currentConfigIndex];
+            }
 			set
 			{
 				currentConfigIndex = buildConfigs.IndexOf(value);
@@ -27,22 +41,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			get
 			{
-				int counter = CurrentConfig.Steps.Count - 1;
-				if (counter < 0)
-					return null;
-				InternalBuildStep step = null;
-				while (counter >= 0)
-				{
-					if (CurrentConfig.Steps[counter].GetType() == typeof(InternalBuildStep))
-					{
-						step = (InternalBuildStep)CurrentConfig.Steps[counter];
-						break;
-					}
-					counter--;
-				}
-				if (counter < 0)
-					return null;
-				return step.InputFile;
+                if (CurrentConfig == null)
+                {
+                    return null;
+                }
+                return CurrentConfig.Steps.FirstOrDefault(s => s.IsMainOutput).InputFile;
 			}
 		}
 
@@ -50,27 +53,20 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			get
 			{
-				int counter = CurrentConfig.Steps.Count - 1;
-				if (counter < 0)
-					return null;
-				InternalBuildStep step = null;
-				while (counter >= 0)
-				{
-					if (CurrentConfig.Steps[counter].GetType() == typeof(InternalBuildStep))
-					{
-						step = (InternalBuildStep)CurrentConfig.Steps[counter];
-						break;
-					}
-					counter--;
-				}
-				if (counter < 0)
-					return null;
-				return step.OutputFile;
+                if (CurrentConfig == null)
+                {
+                    return null;
+                }
+                return ((IInternalBuildStep)CurrentConfig.Steps.FirstOrDefault(s => s.IsMainOutput)).OutputFile;
 			}
 		}
 
 		public BuildSystem(IProject project, bool CreateDefaults)
 		{
+            if (project == null)
+            {
+                throw new ArgumentNullException();
+            }
 			if (CreateDefaults)
 			{
 				BuildConfig debug = new BuildConfig(project, "Debug");
@@ -81,20 +77,30 @@ namespace Revsoft.Wabbitcode.Services.Project
 			Project = project;
 		}
 
-		IList<IBuildConfig> buildConfigs = new List<IBuildConfig>();
-		public IList<IBuildConfig> BuildConfigs
-		{
-			get { return buildConfigs; }
-		}
+        public void AddConfig(IBuildConfig config, bool isNewCurrentConfig)
+        {
+            buildConfigs.Add(config);
+            if (isNewCurrentConfig)
+            {
+                currentConfigIndex = buildConfigs.Count - 1;
+            }
+        }
 
-		public IProject Project { get; private set; }
-		
+        public void RemoveConfig(IBuildConfig config)
+        {
+
+        }
+
 		public void Build()
 		{
-			if (buildConfigs.Count < 1 || currentConfigIndex == -1)
-				throw new Exception("No config set up");
-			else
-				buildConfigs[currentConfigIndex].Build();
+            if (buildConfigs.Count < 1 || currentConfigIndex == -1)
+            {
+                throw new Exception("No config set up");
+            }
+            else
+            {
+                buildConfigs[currentConfigIndex].Build();
+            }
 		}
 
 		public void CreateXML(XmlTextWriter writer)

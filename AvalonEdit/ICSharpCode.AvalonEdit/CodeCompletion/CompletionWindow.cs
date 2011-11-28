@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5906 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Diagnostics;
@@ -52,8 +48,6 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 			toolTip.Placement = PlacementMode.Right;
 			toolTip.Closed += toolTip_Closed;
 			
-			completionList.InsertionRequested += completionList_InsertionRequested;
-			completionList.SelectionChanged += completionList_SelectionChanged;
 			AttachEvents();
 		}
 		
@@ -74,7 +68,15 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 				return;
 			object description = item.Description;
 			if (description != null) {
-				toolTip.Content = description;
+				string descriptionText = description as string;
+				if (descriptionText != null) {
+					toolTip.Content = new TextBlock  {
+						Text = descriptionText,
+						TextWrapping = TextWrapping.Wrap
+					};
+				} else {
+					toolTip.Content = description;
+				}
 				toolTip.IsOpen = true;
 			} else {
 				toolTip.IsOpen = false;
@@ -94,6 +96,8 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		
 		void AttachEvents()
 		{
+			this.completionList.InsertionRequested += completionList_InsertionRequested;
+			this.completionList.SelectionChanged += completionList_SelectionChanged;
 			this.TextArea.Caret.PositionChanged += CaretPositionChanged;
 			this.TextArea.MouseWheel += textArea_MouseWheel;
 			this.TextArea.PreviewTextInput += textArea_PreviewTextInput;
@@ -102,6 +106,8 @@ namespace ICSharpCode.AvalonEdit.CodeCompletion
 		/// <inheritdoc/>
 		protected override void DetachEvents()
 		{
+			this.completionList.InsertionRequested -= completionList_InsertionRequested;
+			this.completionList.SelectionChanged -= completionList_SelectionChanged;
 			this.TextArea.Caret.PositionChanged -= CaretPositionChanged;
 			this.TextArea.MouseWheel -= textArea_MouseWheel;
 			this.TextArea.PreviewTextInput -= textArea_PreviewTextInput;

@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5421 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Collections.Generic;
@@ -60,16 +56,16 @@ namespace ICSharpCode.AvalonEdit.Rendering
 			foreach (Rect r in GetRectsForSegment(textView, segment)) {
 				if (AlignToWholePixels) {
 					AddRectangle(PixelSnapHelpers.Round(r.Left, pixelSize.Width),
-					             PixelSnapHelpers.Round(r.Top, pixelSize.Height),
+					             PixelSnapHelpers.Round(r.Top + 1, pixelSize.Height),
 					             PixelSnapHelpers.Round(r.Right, pixelSize.Width),
-					             PixelSnapHelpers.Round(r.Bottom, pixelSize.Height));
+					             PixelSnapHelpers.Round(r.Bottom + 1, pixelSize.Height));
 				} else if (AlignToMiddleOfPixels) {
 					AddRectangle(PixelSnapHelpers.PixelAlign(r.Left, pixelSize.Width),
-					             PixelSnapHelpers.PixelAlign(r.Top, pixelSize.Height),
+					             PixelSnapHelpers.PixelAlign(r.Top + 1, pixelSize.Height),
 					             PixelSnapHelpers.PixelAlign(r.Right, pixelSize.Width),
-					             PixelSnapHelpers.PixelAlign(r.Bottom, pixelSize.Height));
+					             PixelSnapHelpers.PixelAlign(r.Bottom + 1, pixelSize.Height));
 				} else {
-					AddRectangle(r.Left, r.Top, r.Right, r.Bottom);
+					AddRectangle(r.Left, r.Top + 1, r.Right, r.Bottom + 1);
 				}
 			}
 		}

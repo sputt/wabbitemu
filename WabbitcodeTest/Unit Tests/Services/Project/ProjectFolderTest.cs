@@ -1,13 +1,9 @@
-﻿using Revsoft.Wabbitcode.Services.Project;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using Revsoft.Wabbitcode.Interface;
-using System.Collections.Generic;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 
 namespace WabbitcodeTest
 {
-	
-	
 	/// <summary>
 	///This is a test class for ProjectFolderTest and is intended
 	///to contain all ProjectFolderTest Unit Tests
@@ -15,9 +11,7 @@ namespace WabbitcodeTest
 	[TestClass()]
 	public class ProjectFolderTest
 	{
-
-
-		private TestContext testContextInstance;
+        private TestContext testContextInstance;
 
 		/// <summary>
 		///Gets or sets the test context which provides

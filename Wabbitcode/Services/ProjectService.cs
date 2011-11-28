@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 using Revsoft.Wabbitcode.Interface.Services;
 
 namespace Revsoft.Wabbitcode.Services
@@ -21,28 +21,24 @@ namespace Revsoft.Wabbitcode.Services
 			set
 			{
 				curProj = value;
-				if (CurrentProjectChanged != null)
-					CurrentProjectChanged(value, EventArgs.Empty);
+                if (CurrentProjectChanged != null)
+                {
+                    CurrentProjectChanged(value, EventArgs.Empty);
+                }
 			}
 		}
 
 		public void InitService(params Object[] objects)
 		{
 			OpenProjects = new List<IProject>();
-			CurrentProject = new Project.Project(true);
-			if (!File.Exists(pathsService.TemplatesConfig))
-			{
-				//TODO: check we don't need to write this to disk
-				string templateXML = ResourceService.GetResource("Templates.xml");
-				using (var sw = new StreamWriter(pathsService.TemplatesConfig))
-				{
-					sw.Write(templateXML);
-					sw.Flush();
-				}
-			}
+			CurrentProject = new Project.InternalProject();
 		}
 
-		public void DestroyService() { }
+        public void DestroyService()
+        {
+            OpenProjects = null;
+            CurrentProject = null;
+        }
 
 		public delegate void ChangingHandler(object sender, EventArgs e);
 		public event ChangingHandler CurrentProjectChanged;
@@ -50,13 +46,9 @@ namespace Revsoft.Wabbitcode.Services
 		public delegate void OpenedHandler(object sender, EventArgs e);
 		public event OpenedHandler ProjectOpened;
 
-		public void OpenProject(string fileName)
+		public void OpenProject(Stream stream, string fileName)
 		{
-			IProject project;
-			using (FileStream stream = new FileStream(fileName, FileMode.Open))
-			{
-				project = new Project.Project(stream, fileName);
-			}
+			IProject project = new Project.Project(stream, fileName);
 			CurrentProject = project;
 			OpenProjects.Add(project);
 			ProjectOpened(project, EventArgs.Empty);

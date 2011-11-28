@@ -61,7 +61,9 @@ namespace Revsoft.Wabbitcode.Services
 		public void OpenDocument(Editor doc, string filename)
 		{
 			doc.OpenFile(filename);
-			projectService.CurrentProject.ParserService.ParseFile(filename);
+            //TODO: do this on different threads
+			projectService.CurrentProject.ParserService.ParseFile(filename, doc.editor.Text);
+            //handle recent file stuff
 			recentFileService.AddRecentFile(filename);
 			recentFileService.SaveRecentFileList();
 			recentFileService.GetRecentFiles();

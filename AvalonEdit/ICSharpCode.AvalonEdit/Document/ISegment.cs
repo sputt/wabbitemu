@@ -1,9 +1,5 @@
-﻿// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5529 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Diagnostics;
@@ -212,7 +208,7 @@ namespace ICSharpCode.AvalonEdit.Document
 			this.start.MovementType = AnchorMovementType.AfterInsertion;
 			this.end = document.CreateAnchor(offset + length);
 			this.end.SurviveDeletion = true;
-			this.start.MovementType = AnchorMovementType.BeforeInsertion;
+			this.end.MovementType = AnchorMovementType.BeforeInsertion;
 		}
 		
 		/// <inheritdoc/>

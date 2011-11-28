@@ -1,14 +1,17 @@
 ﻿using System.IO;
 using Revsoft.Wabbitcode.Interface;
 using Revsoft.Wabbitcode.Utilities;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
-	public class InternalBuildStep : IBuildStep
+	public class InternalBuildStep : IInternalBuildStep
 	{
 		public IProject Project { get; private set; }
 
 		public int StepNumber { get; set; }
+
+        public bool IsMainOutput { get; set; }
 
 		public FilePath InputFile  { get; set; }
 
@@ -122,7 +125,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			return new InternalBuildStep(Project, StepNumber, StepType, InputFile, OutputFile);
 		}
-	}
+    }
 
 	public enum StepType
 	{

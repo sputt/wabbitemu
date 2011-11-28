@@ -94,11 +94,16 @@ namespace Revsoft.Wabbitcode.Dialogs
 				return;
 			}
 			string projectFile = projFromExistingCodeBox.IsChecked == true ? projectDir : System.IO.Path.Combine(projectDir, projectName);
-			if (!Directory.Exists(projectDir))
-				Directory.CreateDirectory(projectDir);
+            if (!Directory.Exists(projectDir))
+            {
+                Directory.CreateDirectory(projectDir);
+            }
 
 			var project = new Project(projectFile, projectName);
-			projectService.OpenProject(projectFile);
+            using (FileStream stream = new FileStream(projectFile, FileMode.Open))
+            {
+                projectService.OpenProject(stream, projectFile);
+            }
 			
 			this.Close();
 		}

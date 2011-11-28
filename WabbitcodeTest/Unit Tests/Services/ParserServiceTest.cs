@@ -3,7 +3,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using Revsoft.Wabbitcode.Services.Parser;
-using Revsoft.Wabbitcode.Interface;
+using Revsoft.Wabbitcode.Services.Project.Interface;
+using Moq;
+using System.Linq;
 
 namespace WabbitcodeTest
 {
@@ -16,8 +18,6 @@ namespace WabbitcodeTest
 	[TestClass()]
 	public class ParserServiceTest
 	{
-
-
 		private TestContext testContextInstance;
 
 		/// <summary>
@@ -66,26 +66,17 @@ namespace WabbitcodeTest
 		//
 		#endregion
 
-
-		/// <summary>
-		///A test for ParserService Constructor
-		///</summary>
-		[TestMethod()]
-		public void ParserServiceConstructorTest()
-		{
-			ParserService target = new ParserService();
-			Assert.Inconclusive("TODO: Implement code to verify target");
-		}
-
 		/// <summary>
 		///A test for DestroyService
 		///</summary>
 		[TestMethod()]
 		public void DestroyServiceTest()
 		{
-			ParserService target = new ParserService(); // TODO: Initialize to an appropriate value
+            Mock<IProject> projectMock = new Mock<IProject>(MockBehavior.Strict);
+			ParserService target = new ParserService();
+            target.InitService(projectMock.Object);
 			target.DestroyService();
-			Assert.Inconclusive("A method that does not return a value cannot be verified.");
+            Assert.IsNull(target.Project);
 		}
 
 		/// <summary>
@@ -94,59 +85,457 @@ namespace WabbitcodeTest
 		[TestMethod()]
 		public void InitServiceTest()
 		{
-			ParserService target = new ParserService(); // TODO: Initialize to an appropriate value
-			object[] objects = null; // TODO: Initialize to an appropriate value
-			target.InitService(objects);
-			Assert.Inconclusive("A method that does not return a value cannot be verified.");
+            Mock<IProject> projectMock = new Mock<IProject>(MockBehavior.Strict);
+            ParserService target = new ParserService();
+            target.InitService(projectMock.Object);
+            Assert.AreEqual(projectMock.Object, target.Project);
 		}
 
-		/// <summary>
-		///A test for ParseFile
-		///</summary>
-		[TestMethod()]
-		public void ParseFileTest()
+        /// <summary>
+        ///A test for InitService
+        ///</summary>
+        [TestMethod()]
+        public void InitServiceTest_ArgumentNull()
+        {
+            IProject project = null;
+            ParserService target = new ParserService();
+            try
+            {
+                target.InitService(project);
+            }
+            catch (ArgumentException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("IProject"));
+                return;
+            }
+            Assert.Fail("Exception not thrown");
+        }
+
+        /// <summary>
+        ///A test for InitService
+        ///</summary>
+        [TestMethod()]
+        public void InitServiceTest_ArgumentMissing()
+        {
+            ParserService target = new ParserService();
+            try
+            {
+                target.InitService(new object[0]);
+            }
+            catch (ArgumentException ex)
+            {
+                Assert.IsTrue(ex.Message.Contains("arguments"));
+                return;
+            }
+            Assert.Fail("Exception not thrown");
+        }
+
+        //Because we can parse at any point we need to have extensive tests for
+        //files that are incomplete or missing values
+        #region Label and Equate Tests
+
+        #region Label Tests
+
+        [TestMethod()]
+        public void ParseFileTest_LabelTest_Slash()
 		{
-			ParserService target = new ParserService(); // TODO: Initialize to an appropriate value
-			string file = string.Empty; // TODO: Initialize to an appropriate value
-			string lines = string.Empty; // TODO: Initialize to an appropriate value
-			float increment = 0F; // TODO: Initialize to an appropriate value
-			Action<double> callback = null; // TODO: Initialize to an appropriate value
-			ParserInformation expected = null; // TODO: Initialize to an appropriate value
+			ParserService target = new ParserService();
+            string file = "test.asm";
+			string lines = "Label1: \\Label2:";
 			ParserInformation actual;
-			actual = target.ParseFile(file, lines, increment, callback);
-			Assert.AreEqual(expected, actual);
-			Assert.Inconclusive("Verify the correctness of this test method.");
+			actual = target.ParseFile(file, lines);
+			Assert.AreEqual(2, actual.LabelsList.Count);
 		}
 
-		/// <summary>
-		///A test for ParseFile
-		///</summary>
-		[TestMethod()]
-		public void ParseFileTest1()
-		{
-			ParserService target = new ParserService(); // TODO: Initialize to an appropriate value
-			string file = string.Empty; // TODO: Initialize to an appropriate value
-			ParserInformation expected = null; // TODO: Initialize to an appropriate value
-			ParserInformation actual;
-			actual = target.ParseFile(file);
-			Assert.AreEqual(expected, actual);
-			Assert.Inconclusive("Verify the correctness of this test method.");
-		}
+        [TestMethod()]
+        public void ParseFileTest_LabelNoColonTest_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1 \\Label2";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.LabelsList.Count);
+        }
 
-		/// <summary>
-		///A test for Project
-		///</summary>
-		[TestMethod()]
-		[DeploymentItem("Wabbitcode.exe")]
-		public void ProjectTest()
-		{
-			ParserService_Accessor target = new ParserService_Accessor(); // TODO: Initialize to an appropriate value
-			IProject expected = null; // TODO: Initialize to an appropriate value
-			IProject actual;
-			target.Project = expected;
-			actual = target.Project;
-			Assert.AreEqual(expected, actual);
-			Assert.Inconclusive("Verify the correctness of this test method.");
-		}
-	}
+        [TestMethod()]
+        public void ParseFileTest_LabelTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1: \r\nLabel2:";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.LabelsList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_LabelNoColonTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1 \r\nLabel2";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.LabelsList.Count);
+        }
+
+        #endregion
+
+        #region Equate Tests
+
+        [TestMethod()]
+        public void ParseFileTest_EqualsTest_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1 = 10\\Label2 = 6";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+            Assert.AreEqual("10", actual.DefinesList.ElementAt(0).Contents);
+            Assert.AreEqual("6", actual.DefinesList.ElementAt(1).Contents);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_EqualsTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1 = 10\r\nLabel2 = 6";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+            Assert.AreEqual("10", actual.DefinesList.ElementAt(0).Contents);
+            Assert.AreEqual("6", actual.DefinesList.ElementAt(1).Contents);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_EquateTest_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1 .equ 10\\Label2 .equ 6";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+            Assert.AreEqual("10", actual.DefinesList.ElementAt(0).Contents);
+            Assert.AreEqual("6", actual.DefinesList.ElementAt(1).Contents);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_EquateTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1 .equ 10\r\nLabel2 .equ 6";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+            Assert.AreEqual("10", actual.DefinesList.ElementAt(0).Contents);
+            Assert.AreEqual("6", actual.DefinesList.ElementAt(1).Contents);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_EqualsTest_MissingValue_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1 = \\Label2 = ";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+            Assert.AreEqual(String.Empty, actual.DefinesList.ElementAt(0).Contents);
+            Assert.AreEqual(String.Empty, actual.DefinesList.ElementAt(1).Contents);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_EqualsTest_MissingValue_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1 = \r\nLabel2 = ";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+            Assert.AreEqual(String.Empty, actual.DefinesList.ElementAt(0).Contents);
+            Assert.AreEqual(String.Empty, actual.DefinesList.ElementAt(1).Contents);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_EquateTest_MissingValue_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1 .equ \\Label2 .equ ";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+            Assert.IsTrue(string.IsNullOrEmpty(actual.DefinesList.ElementAt(0).Contents));
+            Assert.IsTrue(string.IsNullOrEmpty(actual.DefinesList.ElementAt(1).Contents));
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_EquateTest_MissingValue_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1 .equ \r\nLabel2 .equ ";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+            Assert.IsTrue(string.IsNullOrEmpty(actual.DefinesList.ElementAt(0).Contents));
+            Assert.IsTrue(string.IsNullOrEmpty(actual.DefinesList.ElementAt(1).Contents));
+        }
+
+        #endregion
+
+        #region Define Tests
+        [TestMethod()]
+        public void ParseFileTest_DefineTest_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#define Label1 \\ #define Label2 20";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_DefineTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#define Label1 \r\n #define Label2 ";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_DefineWithValueTest_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#define Label1 10\\ #define Label2 20";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+            Assert.AreEqual("10", actual.DefinesList.ElementAt(0).Contents);
+            Assert.AreEqual("20", actual.DefinesList.ElementAt(1).Contents);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_DefineNoNameTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#define \\ #define";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(0, actual.DefinesList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_DefineNoNameTest_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#define \\ #define ";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(0, actual.DefinesList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_DefineWithValueTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#define Label1 10\r\n #define Label2 20";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.DefinesList.Count);
+            Assert.AreEqual("10", actual.DefinesList.ElementAt(0).Contents);
+            Assert.AreEqual("20", actual.DefinesList.ElementAt(1).Contents);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Macro Tests
+
+        [TestMethod()]
+        public void ParseFileTest_MacroTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#macro TestMacro()\r\n\tld hl,1\r\n#endmacro";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(1, actual.MacrosList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_MacroTest_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#macro TestMacro()\\\tld hl,1\\#endmacro";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(0, actual.MacrosList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_MacroWithArgsTest()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#macro TestMacro(arg1, arg2)\r\n\tld hl,1\r\n#endmacro";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(1, actual.MacrosList.Count);
+            Assert.AreEqual(2, actual.MacrosList.ElementAt(0).Arguments.Count);
+            Assert.AreEqual("arg1", actual.MacrosList.ElementAt(0).Arguments[0]);
+            Assert.AreEqual("arg2", actual.MacrosList.ElementAt(0).Arguments[1]);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_MacroWithArgsTest_ExtraComma()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#macro TestMacro(arg1, arg2, )\r\n\tld hl,1\r\n#endmacro";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(1, actual.MacrosList.Count);
+            Assert.AreEqual(2, actual.MacrosList.ElementAt(0).Arguments.Count);
+            Assert.AreEqual("arg1", actual.MacrosList.ElementAt(0).Arguments[0]);
+            Assert.AreEqual("arg2", actual.MacrosList.ElementAt(0).Arguments[1]);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_MacroTest_NoEndMacro()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#macro TestMacro(arg1, arg2)\r\n\tld hl,1\r\n";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(1, actual.MacrosList.Count);
+        }
+
+        #endregion
+
+        #region Comment Tests
+
+        [TestMethod()]
+        public void ParseFileTest_BlockCommentTest()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#comment\r\nLabel1:\r\n#endcomment\r\nLabel2:";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(1, actual.LabelsList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_BlockCommentTest_NoEndComment()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#comment\r\nLabel1:\r\nLabel2:";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(0, actual.LabelsList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_SingleLineCommentTest()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "Label1:\r\n;Label2:";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(1, actual.LabelsList.Count);
+        }
+
+        #endregion
+
+        #region Include Tests
+
+        [TestMethod()]
+        public void ParseFileTest_IncludeTest_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#include \"Test2.asm\"\\#include \"Test3.asm\"";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.IncludeFilesList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_IncludeTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#include \"Test2.asm\"\r\n#include \"Test3.asm\"";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(2, actual.IncludeFilesList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_IncludeDuplicateFileTest_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#include \"Test2.asm\"\\#include \"Test2.asm\"";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(1, actual.IncludeFilesList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_IncludeDuplicateFileTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#include \"Test2.asm\"\r\n#include \"Test2.asm\"";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(1, actual.IncludeFilesList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_IncludeNoFileTest_Slash()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#include \\#include ";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(1, actual.IncludeFilesList.Count);
+        }
+
+        [TestMethod()]
+        public void ParseFileTest_IncludeNoFileTest_Newline()
+        {
+            ParserService target = new ParserService();
+            string file = "test.asm";
+            string lines = "#include \r\n#include ";
+            ParserInformation actual;
+            actual = target.ParseFile(file, lines);
+            Assert.AreEqual(1, actual.IncludeFilesList.Count);
+        }
+
+        #endregion
+    }
 }
+

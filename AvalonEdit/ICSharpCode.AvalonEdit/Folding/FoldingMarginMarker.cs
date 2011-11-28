@@ -1,9 +1,5 @@
-// <file>
-//     <copyright see="prj:///doc/copyright.txt"/>
-//     <license see="prj:///doc/license.txt"/>
-//     <author name="Daniel Grunwald"/>
-//     <version>$Revision: 5234 $</version>
-// </file>
+﻿// Copyright (c) AlphaSierraPapa for the SharpDevelop Team (for details please see \doc\copyright.txt)
+// This code is distributed under the GNU LGPL (for details please see \doc\license.txt)
 
 using System;
 using System.Windows;
@@ -57,25 +53,27 @@ namespace ICSharpCode.AvalonEdit.Folding
 		
 		protected override void OnRender(DrawingContext drawingContext)
 		{
-			Pen blackPen = new Pen(Brushes.Black, 1);
-			blackPen.StartLineCap = PenLineCap.Square;
-			blackPen.EndLineCap = PenLineCap.Square;
+			FoldingMargin margin = VisualParent as FoldingMargin;
+			Pen activePen = new Pen(margin.SelectedFoldingMarkerBrush, 1);
+			Pen inactivePen = new Pen(margin.FoldingMarkerBrush, 1);
+			activePen.StartLineCap = inactivePen.StartLineCap = PenLineCap.Square;
+			activePen.EndLineCap = inactivePen.EndLineCap = PenLineCap.Square;
 			Size pixelSize = PixelSnapHelpers.GetPixelSize(this);
 			Rect rect = new Rect(pixelSize.Width / 2,
 			                     pixelSize.Height / 2,
 			                     this.RenderSize.Width - pixelSize.Width,
 			                     this.RenderSize.Height - pixelSize.Height);
-			drawingContext.DrawRectangle(Brushes.White,
-			                             IsMouseDirectlyOver ? blackPen : new Pen(Brushes.Gray, 1),
-			                             rect);
+			drawingContext.DrawRectangle(
+				IsMouseDirectlyOver ? margin.SelectedFoldingMarkerBackgroundBrush : margin.FoldingMarkerBackgroundBrush,
+				IsMouseDirectlyOver ? activePen : inactivePen, rect);
 			double middleX = rect.Left + rect.Width / 2;
 			double middleY = rect.Top + rect.Height / 2;
 			double space = PixelSnapHelpers.Round(rect.Width / 8, pixelSize.Width) + pixelSize.Width;
-			drawingContext.DrawLine(blackPen,
+			drawingContext.DrawLine(activePen,
 			                        new Point(rect.Left + space, middleY),
 			                        new Point(rect.Right - space, middleY));
 			if (!isExpanded) {
-				drawingContext.DrawLine(blackPen,
+				drawingContext.DrawLine(activePen,
 				                        new Point(middleX, rect.Top + space),
 				                        new Point(middleX, rect.Bottom - space));
 			}

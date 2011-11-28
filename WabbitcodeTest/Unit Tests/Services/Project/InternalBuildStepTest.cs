@@ -1,16 +1,13 @@
-﻿using Revsoft.Wabbitcode.Services.Project;
+﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
-using Revsoft.Wabbitcode.Interface;
-using Revsoft.Wabbitcode.Utilities;
 using Moq;
 using Revsoft.Wabbitcode.Services;
-using System.IO;
+using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Services.Project.Interface;
+using Revsoft.Wabbitcode.Utilities;
 
 namespace WabbitcodeTest
 {
-	
-	
 	/// <summary>
 	///This is a test class for InternalBuildStepTest and is intended
 	///to contain all InternalBuildStepTest Unit Tests

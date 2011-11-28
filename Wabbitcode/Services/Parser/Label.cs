@@ -64,37 +64,79 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			return LabelName;
 		}
 
+        #region Overrides
+
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return Offset.GetHashCode() * LabelName.GetHashCode();
         }
 
 		public override bool Equals(object obj)
 		{
-			if (obj.GetType() != typeof(Label))
-				return false;
-			Label label2 = obj as Label;
+            if (!(obj is Label))
+            {
+                return false;
+            }
+			Label label2 = (Label)obj;
 			return Offset == label2.Offset && LabelName == label2.LabelName;
 		}
 
 		public static bool operator ==(Label label1, Label label2)
 		{
-			if ((object)label1 == null || (object)label2 == null)
-				if ((object)label1 == null && (object)label2 == null)
-					return true;
-				else 
-					return false;
+            if (label1 == null || label2 == null)
+            {
+                if (label1 == null && label2 == null)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
 			return label1.Offset == label2.Offset && label1.LabelName == label2.LabelName;
 		}
 
 		public static bool operator !=(Label label1, Label label2)
 		{
-			if ((object)label1 == null || (object)label2 == null)
-				if ((object)label1 != null && (object)label2 != null)
-					return false;
-				else 
-					return true;
+            if (label1 == null || label2 == null)
+            {
+                if (label1 != null && label2 != null)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
 			return label1.Offset != label2.Offset || label1.LabelName != label2.LabelName;
-		}
+        }
+
+        #endregion
+
+        #region IComparable
+
+        public int CompareTo(IParserData other)
+        {
+            if (other == null)
+            {
+                return 1;
+            }
+            if (Offset == other.Offset)
+            {
+                return 0;
+            }
+            if (Offset > other.Offset)
+            {
+                return 1;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        #endregion
     }
 }

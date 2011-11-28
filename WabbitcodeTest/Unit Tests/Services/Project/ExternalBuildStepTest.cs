@@ -1,13 +1,11 @@
-﻿using Revsoft.Wabbitcode.Services.Project;
+﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Services.Project.Interface;
 using Revsoft.Wabbitcode.Utilities;
-using Revsoft.Wabbitcode.Interface;
 
 namespace WabbitcodeTest
 {
-	
-	
 	/// <summary>
 	///This is a test class for ExternalBuildStepTest and is intended
 	///to contain all ExternalBuildStepTest Unit Tests
