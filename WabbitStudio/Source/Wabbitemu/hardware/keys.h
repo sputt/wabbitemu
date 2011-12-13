@@ -5,6 +5,7 @@
 typedef struct keypad {
 	unsigned char group;
 	unsigned char keys[8][8], on_pressed;
+	unsigned long long last_pressed[8][8], on_last_pressed;
 } keypad_t;
 
 typedef struct KEYPROG {

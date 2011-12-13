@@ -416,6 +416,8 @@ int gui_frame_update(LPCALC lpCalc) {
 	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
 		if (EnableCutout(lpCalc) != 0)
 			MessageBox(NULL, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
+		//TODO: figure out why this needs to be called again
+		EnableCutout(lpCalc);
 	} else {
 		DisableCutout(lpCalc->hwndFrame);
 	}
@@ -1337,57 +1339,89 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		//case WM_MOUSEMOVE:
 		case WM_LBUTTONUP:
+		{
+			int group, bit;
+			static POINT pt;
+			BOOL repostMessage = FALSE;
+			keypad_t *kp = lpCalc->cpu.pio.keypad;
+
+			ReleaseCapture();
+#define KEY_TIMER 1
+			KillTimer(hwnd, KEY_TIMER);
+
+			for (group = 0; group < 7; group++) {
+				for (bit = 0; bit < 8; bit++) {
+#define MIN_KEY_DELAY 400
+					if (kp->last_pressed[group][bit] - lpCalc->cpu.timer_c->tstates >= MIN_KEY_DELAY) {
+						kp->keys[group][bit] &= (~KEY_MOUSEPRESS);
+					} else {
+						repostMessage = TRUE;
+					}
+				}
+			}
+
+			if (kp->on_last_pressed - lpCalc->cpu.timer_c->tstates >= MIN_KEY_DELAY) {
+				lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_MOUSEPRESS;
+			} else {
+				repostMessage = TRUE;
+			}
+
+			if (repostMessage) {
+				SetTimer(hwnd, KEY_TIMER, 50, NULL);
+			}
+
+			FinalizeButtons(lpCalc);
+			return 0;
+		}
 		case WM_LBUTTONDOWN:
 		{
 			int group, bit;
 			static POINT pt;
 			keypad_t *kp = lpCalc->cpu.pio.keypad;
 
-			if (Message == WM_LBUTTONDOWN) { 
-				SetCapture(hwnd);
-				pt.x	= GET_X_LPARAM(lParam);
-				pt.y	= GET_Y_LPARAM(lParam);
-				printf("WM_LBUTTONDOWN x: %d, y: %d, \n", pt.x, pt.y);
-				if (lpCalc->bCutout) {
-					pt.y += GetSystemMetrics(SM_CYCAPTION);	
-					pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
-				}
-			} else {
-				ReleaseCapture();
-				printf("WM_LBUTTONUP\n");
+			SetCapture(hwnd);
+			pt.x	= GET_X_LPARAM(lParam);
+			pt.y	= GET_Y_LPARAM(lParam);
+			if (lpCalc->bCutout) {
+				pt.y += GetSystemMetrics(SM_CYCAPTION);	
+				pt.x += GetSystemMetrics(SM_CXSIZEFRAME);
 			}
 
-			for(group = 0; group < 7; group++) {
-				for(bit = 0; bit < 8; bit++) {
+			for (group = 0; group < 7; group++) {
+				for (bit = 0; bit < 8; bit++) {
 					kp->keys[group][bit] &= (~KEY_MOUSEPRESS);
 				}
 			}
 
-			lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_MOUSEPRESS;
+			kp->on_pressed &= ~KEY_MOUSEPRESS;
 
-			if (wParam == MK_LBUTTON) {
-				COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
-				if (GetRValue(c) == 0xFF) {
-					printf("Color was 0xFF exiting\n");
-					FinalizeButtons(lpCalc);
-					return 0;
-				}
+			COLORREF c = GetPixel(lpCalc->hdcKeymap, pt.x, pt.y);
+			if (GetRValue(c) == 0xFF) {
+				FinalizeButtons(lpCalc);
+				return 0;
+			}
 
-				printf("Color value: %X2\n", c);
-				group = GetGValue(c) >> 4;
-				bit	= GetBValue(c) >> 4;
-				LogKeypress(lpCalc, group, bit);
-				if (group == 0x05 && bit == 0x00){
-					lpCalc->cpu.pio.keypad->on_pressed |= KEY_MOUSEPRESS;
-				} else {
-					kp->keys[group][bit] |= KEY_MOUSEPRESS;
-					if ((kp->keys[group][bit] & KEY_STATEDOWN) == 0) {
-						kp->keys[group][bit] |= KEY_STATEDOWN;
-					}
+			group = GetGValue(c) >> 4;
+			bit	= GetBValue(c) >> 4;
+			LogKeypress(lpCalc, group, bit);
+			if (group == 0x05 && bit == 0x00){
+				kp->on_pressed |= KEY_MOUSEPRESS;
+				kp->on_last_pressed = lpCalc->cpu.timer_c->tstates;
+			} else {
+				kp->keys[group][bit] |= KEY_MOUSEPRESS;
+				if ((kp->keys[group][bit] & KEY_STATEDOWN) == 0) {
+					kp->keys[group][bit] |= KEY_STATEDOWN;
+					kp->last_pressed[group][bit] = lpCalc->cpu.timer_c->tstates;
 				}
 			}
 			FinalizeButtons(lpCalc);
 			return 0;
+		}
+		case WM_TIMER: {
+			if (wParam == KEY_TIMER) {
+				PostMessage(hwnd, WM_LBUTTONUP, 0, 0);
+			}
+			break;
 		}
 		case WM_MBUTTONDOWN: {
 			int group,bit;

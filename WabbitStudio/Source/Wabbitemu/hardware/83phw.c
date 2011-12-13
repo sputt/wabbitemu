@@ -295,14 +295,25 @@ void flashwrite83p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 	switch(cpu->mem_c->step) {
 		case 0:
 			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0xAA) cpu->mem_c->step++;
+				if (data == 0xAA) {
+					cpu->mem_c->step++;
+				} else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash_break(cpu);
 			}
 			break;
 		case 1:
 			if ((addr & 0x0FFF) == 0x0555) {
-				if (data == 0x55) cpu->mem_c->step++;
-				else endflash(cpu);
-			} else endflash(cpu);
+				if (data == 0x55) {
+					cpu->mem_c->step++;
+				} else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash_break(cpu);
+			}
 			break;
 		case 2:
 			if ((addr & 0x0FFF) == 0x0AAA) {
@@ -315,8 +326,12 @@ void flashwrite83p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				} else if (data == 0x90) {		//Auto select
 					cpu->mem_c->cmd = 0x90;
 					cpu->mem_c->step++;
-				} else endflash(cpu);
-			} else endflash(cpu);
+				} else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash_break(cpu);
+			}
 			break;
 		case 3:
 			if (cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
@@ -329,15 +344,23 @@ void flashwrite83p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				endflash(cpu);
 			}
 			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data==0xAA) cpu->mem_c->step++;
+				if (data == 0xAA) {
+					cpu->mem_c->step++;
+				}
 			}
-			if (data == 0xF0) endflash(cpu);
+			if (data == 0xF0) {
+				endflash(cpu);
+			}
 			break;
 		case 4:
 			if ((addr & 0x0FFF) == 0x0555) {
-				if (data == 0x55) cpu->mem_c->step++;
+				if (data == 0x55) {
+					cpu->mem_c->step++;
+				}
 			}
-			if (data == 0xF0) endflash(cpu);
+			if (data == 0xF0) {
+				endflash(cpu);
+			}
 			break;
 		case 5:
 			if ((addr & 0x0FFF) == 0x0AAA) {
@@ -348,37 +371,40 @@ void flashwrite83p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 					}
 				} 
 			}
-			if (data == 0xF0) endflash(cpu);
+			if (data == 0xF0) {
+				endflash(cpu);
+			}
 			if (data == 0x30) {		//erase sectors
-				int i;
 				int spage = (cpu->mem_c->banks[bank].page << 1) + ((addr >> 13) & 0x01);
 				if (spage < 56) {
 					int startaddr = (spage & 0x00F8 ) * 0x2000;
 					int endaddr   = startaddr + 0x10000;
-					for(i = startaddr; i < endaddr; i++) {
+					for (int i = startaddr; i < endaddr; i++) {
 						cpu->mem_c->flash[i] = 0xFF;
 					}
 				} else if (spage < 60) {
-					for(i = 0x70000; i < 0x78000; i++) {
+					for (int i = 0x70000; i < 0x78000; i++) {
 						cpu->mem_c->flash[i] = 0xFF;
 					}
 				} else if (spage < 61) {
 //					printf("\nAddress: 1E:0000 -- ERASED\n");
-					for(i = 0x78000; i < 0x7A000; i++) {
+					for (int i = 0x78000; i < 0x7A000; i++) {
 						cpu->mem_c->flash[i] = 0xFF;
 
 					}
 				} else if (spage < 62) {
 //											printf("\nAddress: 1E:2000 -- ERASED\n");
-					for(i = 0x7A000; i < 0x7C000; i++) {
+					for (int i = 0x7A000; i < 0x7C000; i++) {
 						cpu->mem_c->flash[i] = 0xFF;
 					}
 				} else if (spage < 64) {
 /*
 // I comment this off because this is the boot page
 // it suppose to be write protected...
-					for(i=0x7C000;i<0x80000;i++) {
-						cpu->mem_c->flash[i]=0xFF;
+//BuckeyeDude: So far there is no indication that the boot code on the 83p can be changed
+//since no one seems to be trying to figure it out, I will leave this as is
+					for(int i = 0x7C000; i < 0x80000; i++) {
+						cpu->mem_c->flash[i] = 0xFF;
 					}
 */
 				}
@@ -386,7 +412,7 @@ void flashwrite83p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			endflash(cpu);
 			break;
 		default:
-			endflash(cpu);
+			endflash_break(cpu);
 			break;
 	}
 }
@@ -513,11 +539,7 @@ int device_init_83p(CPU_t *cpu) {
 int memory_init_83p(memc *mc) {
 	memset(mc, 0, sizeof(memory_context_t));
 
-	mc->mem_read_break_callback = mem_debug_callback;
-	mc->mem_write_break_callback = mem_debug_callback;
-#ifdef WINVER
-	mc->breakpoint_manager_callback = check_break_callback;
-#endif
+	
 
 	// page protection for the 83p
 	mc->protected_page_set = 0;

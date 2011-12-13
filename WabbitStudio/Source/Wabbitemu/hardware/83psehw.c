@@ -982,6 +982,7 @@ void port54_83pse(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		cpu->output = FALSE;
 		usb->Port54 = cpu->bus & (BIT(0) | BIT(1) | BIT(2) | BIT(6) | BIT(7));
+		usb->USBPowered = !(cpu->bus & (BIT(1)));
 	}
 }
 
@@ -1099,14 +1100,24 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 	switch(cpu->mem_c->step) {
 		case 0:
 			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0xAA) cpu->mem_c->step++;
+				if (data == 0xAA) {
+					cpu->mem_c->step++;
+				} else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash_break(cpu);
 			}
 			break;
 		case 1:
 			if ((addr & 0x0FFF) == 0x0555) {
 				if (data == 0x55) cpu->mem_c->step++;
-				else endflash(cpu);
-			} else endflash(cpu);
+				else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash(cpu);
+			}
 			break;
 		case 2:
 			if ((addr & 0x0FFF) == 0x0AAA) {
@@ -1124,33 +1135,45 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				} else if (data == 0x90) {
 					cpu->mem_c->cmd = 0x90;		//Auto select
 					cpu->mem_c->step++;
-				} else endflash(cpu);
-			} else endflash(cpu);
+				} else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash_break(cpu);
+			}
 			break;
 		case 3: {
 			int value = 0;
 			if (cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
 				value = *(cpu->mem_c->banks[bank].addr + (addr & 0x3fff));
 				(*(cpu->mem_c->banks[bank].addr + (addr & 0x3fff))) &= data;  //AND LOGIC!!
-				if ((~((~value) | (~data))) != value)
+				if ((~((~value) | (~data))) != value) {
 					value = (~value) & 0x80 | 0x20;
+				}
 				endflash(cpu);
 			}
 			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data==0xAA) cpu->mem_c->step++;
+				if (data == 0xAA) {
+					cpu->mem_c->step++;
+				}
 			}
 			if (data == 0xF0) { 
-				if (value)
+				if (value) {
 					cpu->bus = value;
+				}
 				endflash(cpu);
 			}
 			break;
 		}
 		case 4:
-			if ((addr & 0x0FFF) == 0x0555 ) {
-				if (data == 0x55) cpu->mem_c->step++;
+			if ((addr & 0x0FFF) == 0x0555) {
+				if (data == 0x55) {
+					cpu->mem_c->step++;
+				}
 			}
-			if (data == 0xF0) endflash(cpu);
+			if (data == 0xF0) {
+				endflash(cpu);
+			}
 			break;
 		case 5:
 			if ((addr & 0x0FFF) == 0x0AAA) {
@@ -1161,7 +1184,9 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 					}
 				} 
 			}
-			if (data == 0xF0) endflash(cpu);
+			if (data == 0xF0) {
+				endflash(cpu);
+			}
 			if (data == 0x30) {		//erase sectors
 				int i;
 				int spage = (cpu->mem_c->banks[bank].page<<1) + ((addr >> 13) & 0x01);
@@ -1185,7 +1210,7 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 					}
 				} else if (spage < 254) {
 //											printf("\nAddress: 1E:2000 -- ERASED\n");
-					for(i = 0x1FA000; i< 0x1FC000; i++) {
+					for(i = 0x1FA000; i < 0x1FC000; i++) {
 						cpu->mem_c->flash[i] = 0xFF;
 					}
 				} else if (spage < 256) {
@@ -1209,18 +1234,21 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 		case 7:
 			if (data == 0xF0) {
 				endflash(cpu);
-			} else cpu->mem_c->step = 6;
+			} else {
+				cpu->mem_c->step = 6;
+			}
 			break;
 		case 8: {
 			int value = *(cpu->mem_c->banks[bank].addr + (addr & 0x3fff));
 			(*(cpu->mem_c->banks[bank].addr + (addr & 0x3fff))) &= data;  //AND LOGIC!!
-			if ((~((~value) | (~data))) != value)
+			if ((~((~value) | (~data))) != value) {
 				cpu->bus = (~value) & 0x80 | 0x20;
+			}
 			cpu->mem_c->step = 6;
 			break;
 		}
 		default:
-			endflash(cpu);
+			endflash_break(cpu);
 			break;
 	}
 }
@@ -1230,14 +1258,24 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 	switch(cpu->mem_c->step) {
 		case 0:
 			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0xAA) cpu->mem_c->step++;
+				if (data == 0xAA) {
+					cpu->mem_c->step++;
+				} else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash_break(cpu);
 			}
 			break;
 		case 1:
 			if ((addr & 0x0FFF) == 0x0555) {
 				if (data == 0x55) cpu->mem_c->step++;
-				else endflash(cpu);
-			} else endflash(cpu);
+				else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash_break(cpu);
+			}
 			break;
 		case 2:
 			if ((addr & 0x0FFF) == 0x0AAA) {
@@ -1254,8 +1292,12 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				} else if (data == 0x90) {		//Auto select
 					cpu->mem_c->cmd = 0x90;
 					cpu->mem_c->step++;
-				} else endflash(cpu);
-			} else endflash(cpu);
+				} else { 
+					endflash_break(cpu);
+				}
+			} else {
+				endflash_break(cpu);
+			}
 			break;
 		case 3:
 			if (cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
@@ -1270,13 +1312,17 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			if ((addr & 0x0FFF) == 0x0AAA) {
 				if (data == 0xAA) cpu->mem_c->step++;
 			}
-			if (data == 0xF0) endflash(cpu);
+			if (data == 0xF0) {
+				endflash(cpu);
+			}
 			break;
 		case 4:
 			if ((addr & 0x0FFF) == 0x0555) {
-				if (data == 0x55) cpu->mem_c->step++;
+				if (data == 0x55)  cpu->mem_c->step++;
 			}
-			if (data == 0xF0) endflash(cpu);
+			if (data == 0xF0) {
+				endflash(cpu);
+			}
 			break;
 		case 5:
 			if ((addr & 0x0FFF) == 0x0AAA) {
@@ -1287,7 +1333,9 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 					}
 				}
 			}
-			if (data == 0xF0) endflash(cpu);
+			if (data == 0xF0) {
+				endflash(cpu);
+			}
 			if (data == 0x30) {		//erase sectors
 				int i;
 				int spage = (cpu->mem_c->banks[bank].page << 1) + ((addr >> 13) & 0x01);
@@ -1335,7 +1383,9 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 		case 7:
 			if (data == 0xF0) {
 				endflash(cpu);
-			} else cpu->mem_c->step = 6;
+			} else {
+				cpu->mem_c->step = 6;
+			}
 			break;
 		case 8:
 			(*(cpu->mem_c->banks[bank].addr + (addr & 0x3fff))) &= data;  //AND LOGIC!!
@@ -1343,7 +1393,7 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			break;
 
 		default:
-			endflash(cpu);
+			endflash_break(cpu);
 			break;
 	}
 }
@@ -1492,7 +1542,8 @@ int device_init_83pse(CPU_t *cpu) {
 	//I know this seems silly but the way we check for protected ports is done by flash
 	//is unlocked and this is how you unlock flash so...
 	//cpu->pio.devices[0x14].protected_port = TRUE;
-	
+	cpu->pio.devices[0x15].active = TRUE;
+	cpu->pio.devices[0x15].code = (devp) port15_83pse;
 
 // MD5
 	for (int i = 0x18; i <= 0x1F; i++) {

@@ -125,7 +125,9 @@ void GetExpandPaneState(ep_state *state) {
 	for (i = 0; i < TotalPanes; i++)
 	{
 		ep_settings *eps = (ep_settings*) GetWindowLongPtr(ExpandPanes[i], GWLP_USERDATA);
-		state->state[i] = (eps->ExpandState == EP_OPEN);
+		if (eps) {
+			state->state[i] = (eps->ExpandState == EP_OPEN);
+		}
 	}
 
 	ArrangeExpandPanes();
@@ -135,7 +137,9 @@ void SetExpandPaneState(const ep_state *state) {
 	int i;
 	for (i = 0; i < TotalPanes; i++) {
 		ep_settings *eps = (ep_settings*) GetWindowLongPtr(ExpandPanes[i], GWLP_USERDATA);
-		eps->bExpanded = state->state[i];
+		if (eps) {
+			eps->bExpanded = state->state[i];
+		}
 	}
 
 }

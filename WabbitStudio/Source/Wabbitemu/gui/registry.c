@@ -8,7 +8,7 @@
 #include "expandpane.h"
 
 extern keyprog_t keygrps[256];
-TCHAR *verString = _T("1.5.10.9");
+TCHAR *verString = _T("1.5.12.13");
 
 static HKEY hkeyTarget;
 
@@ -43,6 +43,7 @@ static struct {
 	{_T("startX"),					REG_DWORD,  CW_USEDEFAULT},
 	{_T("startY"),					REG_DWORD,  CW_USEDEFAULT},
 	{_T("break_on_exe_violation"),	REG_DWORD,  TRUE},
+	{_T("break_on_invalid_flash"),	REG_DWORD,  TRUE},
 	{_T("num_backup_per_sec"),		REG_DWORD,  2},
 	{_T("ram_version"),				REG_DWORD,  0},
 	{_T("lcd_delay"),				REG_DWORD,	60},
@@ -230,6 +231,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	gif_autosave = (BOOL) QueryWabbitKey(_T("gif_autosave"));
 	gif_use_increasing = (BOOL) QueryWabbitKey(_T("gif_useinc"));
 	break_on_exe_violation = (BOOL) QueryWabbitKey(_T("break_on_exe_violation"));
+	break_on_invalid_flash = (BOOL) QueryWabbitKey(_T("break_on_invalid_flash"));
 
 	dispType = (DISPLAY_BASE) QueryDebugKey((TCHAR *) DisplayTypeString);
 	
@@ -299,20 +301,17 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("show_wizard"), REG_DWORD, &show_wizard);
 		SaveWabbitKey(_T("sync_cores"), REG_DWORD, &sync_cores);
 		SaveWabbitKey(_T("break_on_exe_violation"), REG_DWORD, &break_on_exe_violation);
+		SaveWabbitKey(_T("break_on_invalid_flash"), REG_DWORD, &break_on_invalid_flash);
 
 		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpCalc->FaceplateColor);
 		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);		
 		SaveWabbitKey(_T("skin_path"), REG_SZ, &lpCalc->skin_path);
 		SaveWabbitKey(_T("keymap_path"), REG_SZ, &lpCalc->keymap_path);
-		if (startX != CW_USEDEFAULT) {
-			RECT rc;
-			GetWindowRect(lpCalc->hwndFrame, &rc);
-			SaveWabbitKey(_T("startX"), REG_DWORD, &rc.left);
-			SaveWabbitKey(_T("startY"), REG_DWORD, &rc.top);
-		} else {
-			SaveWabbitKey(_T("startX"), REG_DWORD, &startX);
-			SaveWabbitKey(_T("startY"), REG_DWORD, &startY);
-		}
+		RECT rc;
+		GetWindowRect(lpCalc->hwndFrame, &rc);
+		SaveWabbitKey(_T("startX"), REG_DWORD, &rc.left);
+		SaveWabbitKey(_T("startY"), REG_DWORD, &rc.top);
+
 		SaveWabbitKey(_T("ram_version"), REG_DWORD, &lpCalc->mem_c.ram_version);
 		ACCEL buf[256];
 		int numEntries = CopyAcceleratorTable(haccelmain, NULL, 0);

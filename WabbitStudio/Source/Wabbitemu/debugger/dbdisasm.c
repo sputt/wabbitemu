@@ -773,7 +773,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			int iItem;
 			RECT tr;
 			TRIVERTEX vert[2];
-			u_int end_i;
+			int end_i;
 			GRADIENT_RECT gRect;
 			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 

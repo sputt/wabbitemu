@@ -581,6 +581,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);
 			Button_SetCheck(saveWindow_check, startX != CW_USEDEFAULT);
 			Button_SetCheck(exeViolation_check, break_on_exe_violation);
+			Button_SetCheck(invalidFlash_check, break_on_invalid_flash);
 			return TRUE;
 		}
 	}

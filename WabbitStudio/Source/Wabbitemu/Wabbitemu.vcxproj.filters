@@ -183,9 +183,6 @@
     <ClCompile Include="interface\calc.c">
       <Filter>Source Files\Interface</Filter>
     </ClCompile>
-    <ClCompile Include="interface\state.c">
-      <Filter>Source Files\Interface</Filter>
-    </ClCompile>
     <ClCompile Include="hardware\86hw.c">
       <Filter>Source Files\Hardware</Filter>
     </ClCompile>
@@ -314,6 +311,9 @@
     </ClCompile>
     <ClCompile Include="reverse_info.c">
       <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\state.c">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

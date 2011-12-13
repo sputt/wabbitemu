@@ -227,6 +227,7 @@ typedef struct pio_context {
 
 	device_t devices[256];
 	int interrupt[256];
+	int num_interrupt;
 	unsigned int skip_factor[256];
 	unsigned int skip_count[256];
 	devp breakpoint_callback;
@@ -277,12 +278,12 @@ typedef struct CPU {
 typedef void (*opcodep)(CPU_t*);
 typedef void (*index_opcodep)(CPU_t*, char);
 
-unsigned char mem_read(memc*, unsigned short);
+inline unsigned char mem_read(memc*, unsigned short);
 uint8_t wmem_read(memc*, waddr_t);
 uint16_t wmem_read16(memc *mem, waddr_t waddr);
 unsigned short mem_read16(memc*, unsigned short);
-unsigned char mem_write(memc*, unsigned short, char);
-waddr_t addr_to_waddr(memc*, uint16_t);
+inline unsigned char mem_write(memc*, unsigned short, char);
+inline waddr_t addr_to_waddr(memc*, uint16_t);
 
 void set_break(memc *, waddr_t waddr);
 void set_mem_write_break(memc *, waddr_t waddr);
@@ -307,8 +308,8 @@ void update_bootmap_pages(memc *mem_c);
 int tc_init(timerc*, int);
 int CPU_init(CPU_t*, memc*, timerc*);
 int CPU_step(CPU_t*);
-unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr);
-unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data);
+inline unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr);
+inline unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data);
 CPU_t* CPU_clone(CPU_t *cpu);
 #define HALT_SCALE	3
 
@@ -348,7 +349,12 @@ void displayreg(CPU_t *);
 	}
 
 
-#define endflash(cpu_v) cpu_v->mem_c->step=0;
+#define endflash_break(cpu_v) cpu_v->mem_c->step = 0;\
+		if (break_on_invalid_flash) {\
+			cpu->mem_c->mem_write_break_callback(cpu);\
+		}
+
+#define endflash(cpu_v) cpu_v->mem_c->step = 0;
 
 #define addschar(address_m, offset_m) ( ( (unsigned short) address_m ) + ( (char) offset_m ) )
 

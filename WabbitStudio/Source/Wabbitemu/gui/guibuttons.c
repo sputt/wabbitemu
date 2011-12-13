@@ -335,7 +335,8 @@ void FinalizeButtons(LPCALC lpCalc) {
 	}
 	if (lpCalc->SkinEnabled) {
 		if (lpCalc->bCutout) {
-			EnableCutout(lpCalc);
+			//Temporarily disable till this is rewritten to be more resource friendly
+			//EnableCutout(lpCalc);
 		} else {
 			DrawButtonStatesAll(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap);
 			InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);

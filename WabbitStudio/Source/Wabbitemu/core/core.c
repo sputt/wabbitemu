@@ -187,12 +187,13 @@ int CPU_init(CPU_t *cpu, memc *mem_c, timerc *timer_c) {
 
 static void handle_pio(CPU_t *cpu) {
 	int i;
-	for (i = 0; cpu->pio.interrupt[i] != -1; i++) {
-		int skip_factor = cpu->pio.skip_factor[i];
-		int skip_count = cpu->pio.skip_count[i];
+	for (i = 0; i < cpu->pio.num_interrupt; i++) {
+		unsigned int skip_factor = cpu->pio.skip_factor[i];
 		if (skip_factor) {
-			if (!cpu->pio.skip_count[i]) {
-				device_control(cpu, cpu->pio.interrupt[i]);
+			unsigned int skip_count = cpu->pio.skip_count[i];
+			if (!skip_count) {
+				unsigned int interrupt = cpu->pio.interrupt[i];
+				device_control(cpu, interrupt);
 			}
 			//cpu->pio.skip_count[i] = (skip_count + 1) % skip_factor;
 			cpu->pio.skip_count[i]++;
@@ -215,34 +216,34 @@ BOOL is_priveleged_page(CPU_t *cpu) {
 }
 
 static BOOL is_allowed_exec(CPU_t *cpu) {
-	bank_state_t  bank = cpu->mem_c->banks[mc_bank(cpu->pc)];
+	bank_state_t  *bank = &cpu->mem_c->banks[mc_bank(cpu->pc)];
 	if (cpu->pio.model <= TI_83P) {
 		int protected_val, group_offset;
-		if (bank.ram) {
+		if (bank->ram) {
 			protected_val = cpu->mem_c->protected_page[3];
-			if ((protected_val & 0x01) && bank.page == 0)
+			if ((protected_val & 0x01) && bank->page == 0)
 				return FALSE;
-			if ((protected_val & 0x20) && bank.page == 1)
+			if ((protected_val & 0x20) && bank->page == 1)
 				return FALSE;
 			return TRUE;
-		} else if (bank.page < 0x08)
+		} else if (bank->page < 0x08)
 			return TRUE;
-		else if (bank.page >= 0x1C)
+		else if (bank->page >= 0x1C)
 			return TRUE;
-		protected_val = cpu->mem_c->protected_page[(bank.page - 8) / 8];
+		protected_val = cpu->mem_c->protected_page[(bank->page - 8) / 8];
 		//yay for awesome looking code :D
 		//basically this checks whether the bit corresponding to the page
 		//is set indicating no exec is allowed
-		return !(protected_val & (0x01 << ((bank.page - 8) % 8)));
+		return !(protected_val & (0x01 << ((bank->page - 8) % 8)));
 	} else {
-		if (!bank.ram)			//if its flash and between page limits
-		return bank.page > cpu->mem_c->flash_upper || bank.page <= cpu->mem_c->flash_lower;
-		if (bank.page & (2 >> (cpu->mem_c->prot_mode + 1)))
+		if (!bank->ram)			//if its flash and between page limits
+		return bank->page > cpu->mem_c->flash_upper || bank->page <= cpu->mem_c->flash_lower;
+		if (bank->page & (2 >> (cpu->mem_c->prot_mode + 1)))
 			return TRUE;		//we know were in ram so lets check if the page is allowed in the mem protected mode
 								//execution is allowed on 2^(mode+1)
 		memc *mem = cpu->mem_c;
 		//finally we check ports 25/26 to see if its ok to execute on this page
-		int global_addr = bank.page * PAGE_SIZE + (cpu->pc & 0x3FFF);
+		int global_addr = bank->page * PAGE_SIZE + (cpu->pc & 0x3FFF);
 		if ((mem->port27_remap_count > 0) && !mem->boot_mapped && (mc_bank(cpu->pc) == 3) && (cpu->pc >= (0x10000 - 64*mem->port27_remap_count)) && cpu->pc >= 0xFB64)
 			global_addr = 0*PAGE_SIZE + mc_base(cpu->pc);
 		else if ((mem->port28_remap_count > 0) && !mem->boot_mapped && (mc_bank(cpu->pc) == 2) && (mc_base(cpu->pc) < 64*mem->port28_remap_count))
@@ -293,21 +294,24 @@ void update_bootmap_pages(memc *mem_c) {
 
 static int CPU_opcode_fetch(CPU_t *cpu) {
 	int bank_num = mc_bank(cpu->pc);
-	bank_state_t  bank = cpu->mem_c->banks[bank_num];
+	bank_state_t *bank = &cpu->mem_c->banks[bank_num];
 	//the boot page is mapped to bank 0 to start
 	//if code is run from an address of whatever page is mapped to port 6
 	//then the page is changed to page 0. why? who the fuck knows
-	if (cpu->mem_c->banks[0].page != 0 && (cpu->mem_c->boot_mapped && (bank_num == 1 || bank_num == 2) && !bank.ram) || ((!cpu->mem_c->boot_mapped && bank_num == 1) && !bank.ram))
+	if (!cpu->mem_c->hasChangedPage0 && !bank->ram && (bank_num == 1 || (cpu->mem_c->boot_mapped && bank_num == 2)))
+	{
 		change_page(cpu, 0, 0, FALSE);
+		cpu->mem_c->hasChangedPage0 = TRUE;
+	}
 	if (!is_allowed_exec(cpu)) {
 		if (break_on_exe_violation)
 			cpu->exe_violation_callback(cpu);
 		CPU_reset(cpu);
 	}
-	if (!bank.ram) endflash(cpu);						//I DON'T THINK THIS IS CORRECT
+	if (!bank->ram) endflash(cpu);						//I DON'T THINK THIS IS CORRECT
 	cpu->bus = mem_read(cpu->mem_c, cpu->pc);			//However it shouldn't be a problem
 															//assuming you know how to write to flash
-	if (bank.ram) {
+	if (bank->ram) {
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_OP_ram_tstates);
 	} else {
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_OP_flash_tstates);
@@ -371,6 +375,7 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
+		int page = cpu->mem_c->banks[bank].page;
 		if (!cpu->mem_c->flash_locked &&  1) {
 			switch(cpu->mem_c->flash_version) {
 				case 00:
@@ -385,6 +390,8 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 					flashwrite84p(cpu, addr, data);
 					break;
 			}
+		} else if (break_on_invalid_flash) {
+			cpu->mem_c->mem_write_break_callback(cpu);
 		}
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_flash_tstates);

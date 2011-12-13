@@ -413,6 +413,7 @@ int CPU_reset(CPU_t *lpCPU) {
 	lpCPU->mem_c->ram_upper = 0x00 * 0x400 + 0x3FF;
 	lpCPU->mem_c->banks = lpCPU->mem_c->normal_banks;
 	lpCPU->mem_c->boot_mapped = FALSE;
+	lpCPU->mem_c->hasChangedPage0 = FALSE;
 	if (lpCPU->pio.model >= TI_73) {
 		switch (lpCPU->pio.model) {
 			case TI_73:

@@ -92,6 +92,7 @@ typedef struct USB {
 	BOOL ProtocolInterruptEnabled;
 	unsigned int DevAddress;		//Current USB device address
 	int version;
+	BOOL USBPowered;
 
 
 	unsigned char Port4A;
