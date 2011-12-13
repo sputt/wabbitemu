@@ -107,9 +107,9 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, ViewType typ
 					int val	= (int) va_arg(argp, INT_PTR);
 					TCHAR szOffset[8];
 					if (val & 0x80) {
-						_stprintf_s(szOffset, _T("%-d"), 256 - val);
+						_stprintf_s(szOffset, _T("%d"), val - 256);
 					} else {
-						_stprintf_s(szOffset, _T("%+d"), val);
+						_stprintf_s(szOffset, _T("+%d"), val);
 					}
 
 					press_text(szOffset, RGB(0, 0, 0));

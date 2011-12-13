@@ -142,7 +142,7 @@ typedef struct DEBUG_STATE {
 #ifdef QUICKLOOK
 #define MAX_CALCS	1
 #else
-#define MAX_CALCS	8
+#define MAX_CALCS	32
 #endif
 #define MAX_SPEED 100*50
 
@@ -214,6 +214,7 @@ GLOBAL BOOL new_calc_on_load_files;
 GLOBAL BOOL do_backups;
 GLOBAL BOOL show_wizard;
 GLOBAL BOOL break_on_exe_violation;
+GLOBAL BOOL break_on_invalid_flash;
 GLOBAL BOOL sync_cores;
 GLOBAL link_t *link_hub[MAX_CALCS + 1];
 

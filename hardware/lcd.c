@@ -275,7 +275,7 @@ void LCD_data(CPU_t *cpu, device_t *dev) {
 
 	if (cpu->output) {
 		// Run some sanity checks on the write vars
-		if (lcd->write_last > tc_elapsed(cpu->timer_c))
+ 		if (lcd->write_last > tc_elapsed(cpu->timer_c))
 			lcd->write_last = tc_elapsed(cpu->timer_c);
 
 		double write_delay = tc_elapsed(cpu->timer_c) - lcd->write_last;

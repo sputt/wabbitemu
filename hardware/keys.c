@@ -422,7 +422,7 @@ keyprog_t keygrps[256] = {
 	{ VK_NUMPAD9 , 2 , 3 },
 	{ VK_DECIMAL , 3 , 0 },
 	{ VK_OEM_2, 2, 0 },
-//so much better than harcoding the changes :P
+//so much better than hardcoding the changes :P
 #ifdef _DEBUG
 	{ VK_NUMPAD0, KEYGROUP_ON, KEYBIT_ON},
 #else
