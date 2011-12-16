@@ -72,6 +72,7 @@ POINT drop_pt;
 BOOL gif_anim_advance;
 BOOL silent_mode = FALSE;
 BOOL is_exiting = FALSE;
+HIMAGELIST hImageList = NULL;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
@@ -341,8 +342,9 @@ int gui_frame_update(LPCALC lpCalc) {
 		MessageBox(NULL, _T("Unable to find the screen box"), _T("Error"), MB_OK);
 		lpCalc->SkinEnabled = false;
 	}
-	if (!lpCalc->hwndFrame)
+	if (!lpCalc->hwndFrame) {
 		return 0;
+	}
 
 	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	SelectObject(lpCalc->hdcButtons, hbmTemp);
@@ -436,6 +438,48 @@ int gui_frame_update(LPCALC lpCalc) {
 		}
 	}
 	RedrawWindow(lpCalc->hwndFrame, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
+
+	if (hImageList) {
+		ImageList_Destroy(hImageList);
+	}
+	POINT pt;
+	hImageList = ImageList_Create(60, 60, ILC_COLOR32 | ILC_MASK, 8*7, 0);
+
+	HDC hdcMask = CreateCompatibleDC(lpCalc->hdcButtons);
+	HBITMAP hbmMask = CreateCompatibleBitmap(lpCalc->hdcButtons, 60, 60);
+	SelectObject(hdcMask, hbmMask);
+
+	HDC hdcButton = CreateCompatibleDC(lpCalc->hdcButtons);
+	HBITMAP hbmButton  = CreateCompatibleBitmap(lpCalc->hdcButtons, 60, 60);
+	SelectObject(hdcButton, hbmButton);
+
+	for (int group = 0; group < 7; group++) {
+		for (int bit = 0; bit < 8; bit++) {
+			extern POINT *ButtonCenter[64];
+			if ((*ButtonCenter)[bit + (group << 3)].x != 0xFFF) {
+				pt.x	= (*ButtonCenter)[bit + (group << 3)].x;
+				pt.y	= (*ButtonCenter)[bit + (group << 3)].y;
+
+
+				HDC hdc = CreateCompatibleDC(lpCalc->hdcButtons);
+				HBITMAP hbm = CreateCompatibleBitmap(lpCalc->hdcButtons, 64, 64);
+				HGDIOBJ hbmOld = SelectObject(hdc, hbm);
+
+				RECT r = {0, 0, 60, 60};
+				SetDCBrushColor(hdc, RGB(0, 255, 0));
+				FillRect(hdc, &r, GetStockBrush(DC_BRUSH));
+						
+				DrawButtonStateNoSkin(hdc, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_COPY);
+				DrawButtonShadow(hdc, lpCalc->hdcKeymap, &pt);
+
+				SelectObject(hdc, hbmOld);
+				DeleteDC(hdc);
+
+				ImageList_AddMasked(hImageList, hbm, RGB(0, 255, 0));
+				DeleteObject(hbmButton);
+			}
+		}
+	}
 
 	if (lpCalc->bCustomSkin) {
 		delete m_pBitmapKeymap;
@@ -1121,7 +1165,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case IDM_FILE_CLOSE:
-					return CloseWindow(hwnd);
+					return SendMessage(hwnd, WM_CLOSE, 0, 0);
 				case IDM_FILE_EXIT:
 					if (calc_count() > 1) {
 						TCHAR buf[256];
@@ -1157,7 +1201,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						break;
 					}
 					RECT r;
-					SetRect(&r, 0, 0, lpCalc->cpu.pio.lcd->width * lpCalc->scale, 64 * lpCalc->scale);
+					SetRect(&r, 0, 0, (lpCalc->rectLCD.right - lpCalc->rectLCD.left) / 2 * lpCalc->scale, 64 * lpCalc->scale);
 					AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 
 					lpCalc->hwndDetachedFrame  = CreateWindowEx(
@@ -1170,7 +1214,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 					SetWindowText(lpCalc->hwndDetachedFrame, _T("LCD"));
 
-					if (lpCalc->hwndDetachedFrame == NULL) return -1;
+					if (lpCalc->hwndDetachedFrame == NULL) {
+						return -1;
+					}
 
 					break;
 				}

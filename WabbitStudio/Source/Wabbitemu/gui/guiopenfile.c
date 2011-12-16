@@ -47,7 +47,7 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 	
 	switch (Message) {
 		case WM_INITDIALOG: {
-			HookOptions = (OFNHookOptions*) ((OPENFILENAME*) lParam)->lCustData;
+			HookOptions = (OFNHookOptions *) ((OPENFILENAME*) lParam)->lCustData;
 			
 			// Subclass it to intercept WM_SIZE messages
 			wndProcOFN = (WNDPROC) SetWindowLongPtr(GetParent(hwndDlg), GWLP_WNDPROC, (LONG_PTR) OFNSubclassProc);	
@@ -117,7 +117,7 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 void GetOpenSendFileName(HWND hwnd) {
 	OPENFILENAME ofn;
 	int result;
-	const TCHAR lpstrFilter[] 	= _T("Known File Types\0*.73p;*.82*;*.83p*;*.8xp*;*.8xk;*.8xv;*.73k;*.sav;*.rom;*.lab;*.8xu\0\
+	const TCHAR lpstrFilter[] 	= _T("Known File Types\0*.73?;*.82?;*.83?;*.8x?;*.85?;*.86?;*.sav;*.rom;*.lab\0\
 										Calculator Program Files  (*.73p;*.82*;*.83p*;*.8xp*)\0*.73p;*.82*;*.83p*;*.8xp*\0\
 										Calculator Applications  (*.8xk, *.73k)\0*.8xk;*.73k\0\
 										Calculator OSes (*.8xu)\0*.8xu\0\
@@ -134,6 +134,9 @@ void GetOpenSendFileName(HWND hwnd) {
 	
 	static OFNHookOptions HookOptions;
 	
+	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	HookOptions.model = lpCalc->cpu.pio.model;
+
 	ZeroMemory(filepath, sizeof(filepath));
 	ZeroMemory(filestr, sizeof(filepath));
 
@@ -165,7 +168,9 @@ void GetOpenSendFileName(HWND hwnd) {
 
 	result = GetOpenFileName(&ofn);
 	
-	if (!result) return;
+	if (!result) {
+		return;
+	}
 	
 	memcpy(filestr, filepath, ofn.nFileOffset * sizeof(TCHAR));
 	
@@ -177,20 +182,17 @@ void GetOpenSendFileName(HWND hwnd) {
 	SEND_FLAG send_mode = SEND_CUR;
 	if (!HookOptions.bFileSettings) {
 		send_mode = SEND_RAM;
-		if (HookOptions.bArchive) send_mode = SEND_ARC;
+		if (HookOptions.bArchive) {
+			send_mode = SEND_ARC;
+		}
 	}
 
-	while(filename[0] != 0) {
+	while(*filename != 0) {
 		size_t len;
-#ifdef WINVER
 		StringCchCopy(filestroffset, _tcslen(filename) + 1, filename);
-#else
-		strcpy(filestroffset, filename);
-#endif
 		len = _tcslen(filestroffset);
 		filestroffset[len] = 0;
 		filename += len + 1;
-		LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		SendFileToCalc(lpCalc, filestr, TRUE, send_mode);
 	}
 }

@@ -66,7 +66,8 @@ typedef struct TIBACKUP {
 typedef struct TIVAR {
 	unsigned short headersize;		// size of the header up to name, sometimes ignored
 	unsigned short length;			// data size
-	unsigned char vartype;			// what type of varible
+	unsigned char vartype;			// what type of variable
+	unsigned char name_length;		// 85/86 only name length is variable
 	unsigned char name[8];			// null padded name
 	unsigned char version;			// 0 83+only
 	unsigned char flag;				// bit 7 is if flash 83+only

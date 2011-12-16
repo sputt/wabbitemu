@@ -67,36 +67,38 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 			if (calc != TI_82) break;
 
 		case TI_83:
-			if (calc == TI_83) {
-				for(i = 0; i < (size - strlen(txt86) - 10); i++) {
-					if (!CmpStringCase(txt86, rom + i)) {
-						calc = TI_86;
-							for(i = 0; i < size - strlen(self_test) - 10; i++) {
-								if (CmpStringCase(self_test, rom + i) == 0) break;
+		case TI_86:
+			for(i = 0; i < (size - strlen(txt86) - 10); i++) {
+				if (!CmpStringCase(txt86, rom + i)) {
+					calc = TI_86;
+						for(i = 0; i < size - strlen(self_test) - 10; i++) {
+							if (CmpStringCase(self_test, rom + i) == 0) break;
+						}
+						for(; i < size - 40; i++) {
+							if (isdigit(rom[i])) break;
+						}
+						if (i < size - 40) {
+							for(b = 0; (b + i) < (size - 4) && b < 32; b++) {
+								if (rom[b + i] != ' ')
+									string[b] = rom[b + i];
+								else string[b] = 0;
 							}
-							for(; i < size - 40; i++) {
-								if (isdigit(rom[i])) break;
-							}
-							if (i < size - 40) {
-								for(b = 0; (b + i) < (size - 4) && b < 32; b++) {
-									if (rom[b + i] != ' ')
-										string[b] = rom[b + i];
-									else string[b] = 0;
-								}
-								string[31] = 0;
-							} else {
-								string[0] = '?';
-								string[1] = '?';
-								string[2] = '?';
-								string[3] = 0;
-							}
-						break;
-					}
+							string[31] = 0;
+						} else {
+							string[0] = '?';
+							string[1] = '?';
+							string[2] = '?';
+							string[3] = 0;
+						}
+					break;
 				}
 			}
-			if (calc == TI_86) break;
 
-			for(i = 0; i < (size - strlen(self_test) - 10); i++) {
+			if (calc == TI_86) {
+				break;
+			}
+
+			for (i = 0; i < (size - strlen(self_test) - 10); i++) {
 				if (CmpStringCase(self_test, rom + i)==0) break;
 			}
 			if ((i + 64) < size) {
@@ -540,11 +542,20 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	if (tifile->var == NULL)
 		return FreeTiFile(tifile);
 
+	char name_length = 8;
+	if (tifile->model == TI_86 || tifile->model == TI_85) {
+		//skip name length
+		name_length = tifile->var->name_length = tmpread(infile);
+		if (tifile->model == TI_86) {
+			name_length = 8;
+		}
+	}
+
 	tifile->var->headersize		= headersize;
 	tifile->var->length			= length;
 	tifile->var->vartype		= vartype;
 	ptr = tifile->var->name;
-	for(i = 0; i < 8 && !feof(infile); i++) {
+	for(i = 0; i < name_length && !feof(infile); i++) {
 		tmpread(infile);
 		ptr[i] = tmp;
 	}
@@ -560,7 +571,7 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 		tmp = fgetc(infile);
 		if (tmp == EOF)
 			return FreeTiFile(tifile);
-		ptr[i++] =tmp;
+		ptr[i++] = tmp;
 	} else {
 		ptr[i++] = 0;
 		ptr[i++] = 0;
@@ -579,8 +590,6 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 		return FreeTiFile(tifile);
 
 	i = 0;
-	if (tifile->model == TI_86)
-		fgetc(infile);
 
 	for(i = 0; i < tifile->var->length && !feof(infile); i++) {
 		tmp = fgetc(infile);

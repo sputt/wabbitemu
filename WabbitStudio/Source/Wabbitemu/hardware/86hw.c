@@ -5,6 +5,7 @@
 #include "86hw.h"
 #include "link.h"
 #include "device.h"
+#include "calc.h"
 #include <math.h>
 
 static double timer_freq[4] = {1.0/200.0};
@@ -275,6 +276,9 @@ int device_init_86(CPU_t *cpu) {
 int memory_init_86(memc *mc) {
 	memset(mc, 0, sizeof(memory_context_t));
 	
+	mc->mem_read_break_callback = mem_debug_callback;
+	mc->mem_write_break_callback = mem_debug_callback;
+
 	/* Set Number of Pages here */
 	mc->flash_pages = 16;
 	mc->ram_pages = 8;

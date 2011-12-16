@@ -304,8 +304,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 	if (lcd->active == FALSE) {
 		BYTE lcd_data[128*64];
 		memset(lcd_data, 0, sizeof(lcd_data));
-		//for (i = 0; i < 128*64; i++) lcd_data[i]=0x00; //whitest pixel
-
+		//for (i = 0; i < 128*64; i++) lcd_data[i]=0x00; //whitest pixel		
 
 		if (StretchDIBits(
 			hdc,
@@ -340,16 +339,20 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("BitBlt failed\n"));
 
 	} else {
-
-
-		screen = LCD_image(lcd) ;
-		//screen = GIFGREYLCD();
-
-		if (lcd->width * lpCalc->scale != (rc.right - rc.left))
-			SetStretchBltMode(hdc, HALFTONE);
-		else
+		screen = LCD_image(lcd);
+		int scale = lpCalc->SkinEnabled ? 2 : lpCalc->scale;
+		if (lcd->width * scale != (rc.right - rc.left)) {
+			Bitmap lcdBitmap(bi, screen);
+			Graphics g(hdc);
+			g.SetInterpolationMode(InterpolationMode::InterpolationModeLowQuality);
+			Rect rect(rc.left, rc.top, rc.right - rc.left + 1,  rc.bottom - rc.top + 1);
+			g.DrawImage(&lcdBitmap, rect, 0, 0, lcd->width, 64, Unit::UnitPixel);
+			rect.Width--;
+			rect.Height--;
+			g.SetClip(rect);
+		} else {
 			SetStretchBltMode(hdc, BLACKONWHITE);
-		if (StretchDIBits(	hdc,
+			if (StretchDIBits(hdc,
 							rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
 							0, 0, lcd->width, 64,
 							screen,
@@ -358,7 +361,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 							SRCCOPY) == 0) {
 							_tprintf_s(_T("error in SetDIBitsToDevice\n"));
 						}
-
+		}
 
 		BLENDFUNCTION bf;
 		bf.BlendOp = AC_SRC_OVER;
@@ -367,15 +370,15 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		bf.AlphaFormat = 0;
 
 		if (lpCalc->do_drag == TRUE) {
-
 			hdcOverlay = DrawDragPanes(hwnd, hdcDest);
 
 			if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,
 						hdcOverlay, 0, 0, rc.right, rc.bottom,
-						bf ) == FALSE) _tprintf_s(_T("alpha blend 1 failed\n"));
+						bf ) == FALSE) {
+				_tprintf_s(_T("alpha blend 1 failed\n"));
+			}
 
 			DeleteDC(hdcOverlay);
-
 		}
 
 		bf.SourceConstantAlpha = 108;

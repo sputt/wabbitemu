@@ -16,7 +16,7 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			g_szLCDName,
 			_T("LCD"),
 			WS_VISIBLE | WS_CHILD,
-			0, 0, lpCalc->cpu.pio.lcd->width * lpCalc->scale, 64 * lpCalc->scale,
+			0, 0, (lpCalc->rectLCD.right - lpCalc->rectLCD.left) * lpCalc->scale, 64 * lpCalc->scale,
 			hwnd, NULL, g_hInst,  (LPVOID *) lpCalc);
 			return FALSE;
 		case WM_DESTROY:
@@ -29,7 +29,7 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 			RECT *prc = (RECT *) lParam;
 			LONG ClientAdjustWidth, ClientAdjustHeight;
 			LONG AdjustWidth, AdjustHeight;
-			int width = lpCalc->cpu.pio.lcd->width;
+			int width = (lpCalc->rectLCD.right - lpCalc->rectLCD.left) / 2;
 
 			// Adjust for border and menu
 			RECT rc = {0, 0, 0, 0};
@@ -40,25 +40,25 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 
 			switch (wParam) {
-			case WMSZ_BOTTOMLEFT:
-			case WMSZ_LEFT:
-			case WMSZ_TOPLEFT:
-				prc->left -= width / 4;
-				break;
-			default:
-				prc->right += width / 4;
-				break;
+				case WMSZ_BOTTOMLEFT:
+				case WMSZ_LEFT:
+				case WMSZ_TOPLEFT:
+					prc->left -= width / 4;
+					break;
+				default:
+					prc->right += width / 4;
+					break;
 			}
 
 			switch (wParam) {
-			case WMSZ_TOPLEFT:
-			case WMSZ_TOP:
-			case WMSZ_TOPRIGHT:
-				prc->top -= 64 / 4;
-				break;
-			default:
-				prc->bottom += 64 / 4;
-				break;
+				case WMSZ_TOPLEFT:
+				case WMSZ_TOP:
+				case WMSZ_TOPRIGHT:
+					prc->top -= 64 / 4;
+					break;
+				default:
+					prc->bottom += 64 / 4;
+					break;
 			}
 
 

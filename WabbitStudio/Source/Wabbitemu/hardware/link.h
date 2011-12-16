@@ -89,8 +89,16 @@ typedef struct {
 typedef struct _TI_VARHDR {
 	uint16_t length;			// datalength not including the header
 	uint8_t type_ID;			// specifies type of variable
-	char name[8];
-	uint8_t version;
+	union {
+		struct {
+			char name[8];
+			uint8_t version;
+		};
+		struct {
+			uint8_t name_length;
+			char name86[8];
+		};
+	};
 	uint8_t type_ID2;
 } TI_VARHDR;
 
@@ -120,32 +128,64 @@ typedef struct _TI_DATA {
 	void *data;
 } TI_DATA;
 
-#define RealObj         0x00
-#define ListObj         0x01
-#define MatObj          0x02
-#define EquObj          0x03
-#define StrngObj        0x04
-#define ProgObj         0x05
-#define ProtProgObj     0x06
-#define PictObj         0x07
-#define GDBObj          0x08
-#define UnknownObj      0x09
-#define UnknownEquObj   0x0A
-#define NewEquObj       0x0B
-#define CplxObj         0x0C
-#define CListObj        0x0D
-#define UndefObj        0x0E
-#define WindowObj       0x0F
-#define BackupObj_82	0x0F
-#define ZStoObj         0x10
-#define TblRngObj       0x11
-#define LCDObj          0x12
-#define BackupObj       0x13
-#define AppObj			0x14
-#define AppVarObj		0x15
-#define TempProgObj     0x16
-#define GroupObj        0x17
-#define EquObj_2        0x23
+enum TI83POBJ {
+	RealObj = 0x00,
+	ListObj = 0x01,
+	MatObj = 0x02,
+	EquObj = 0x03,
+	StrngObj = 0x04,
+	ProgObj = 0x05,
+	ProtProgObj = 0x06,
+	PictObj = 0x07,
+	GDBObj = 0x08,
+	UnknownObj = 0x09,
+	UnknownEquObj = 0x0A,
+	NewEquObj = 0x0B,
+	CplxObj = 0x0C,
+	CListObj = 0x0D,
+	UndefObj = 0x0E,
+	WindowObj = 0x0F,
+	BackupObj_82 = 0x0F,
+	ZStoObj = 0x10,
+	TblRngObj = 0x11,
+	LCDObj = 0x12,
+	BackupObj = 0x13,
+	AppObj = 0x14,
+	AppVarObj = 0x15,
+	TempProgObj = 0x16,
+	GroupObj = 0x17,
+	EquObj_2 = 0x23,
+};
+
+enum TI86OBJ {
+	RealObj86 = 0x00,
+	CplxObj86 = 0x01,
+	VectObj86 = 0x02,
+	CVectObj86 = 0x03,
+	ListObj86 = 0x04,
+	CListObj86 = 0x05,
+	MatObj86 = 0x06,
+	CMatObj86 = 0x07,
+	ConstObj86 = 0x08,
+	CConst86 = 0x09,
+	EquObj86 = 0x0A,
+	StrngObj86 = 0x0C,
+	FuncGDBObj86 = 0x0D,
+	PolarGDBObj86 = 0x0E,
+	ParamGDBObj86 = 0x0F,
+	DiffEquGDBObj86 = 0x10,
+	PictObj86 = 0x11,
+	ProgObj86 = 0x12,
+	DirObj86 = 0x15,
+	FuncWSObj86 = 0x17,
+	PolWSObj86 = 0x18,
+	ParamWSObj86 = 0x19,
+	DifEquWSObj86 = 0x1A,
+	ZRCLObj86 = 0x1B,
+	BackupObj86 = 0x1D,
+	EquObj_286 = 0x2A,
+};
+
 // used with linking
 #define FlashObj		0x24
 #define IDListObj		0x26

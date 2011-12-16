@@ -215,6 +215,7 @@ GLOBAL BOOL do_backups;
 GLOBAL BOOL show_wizard;
 GLOBAL BOOL break_on_exe_violation;
 GLOBAL BOOL break_on_invalid_flash;
+GLOBAL BOOL auto_turn_on;
 GLOBAL BOOL sync_cores;
 GLOBAL link_t *link_hub[MAX_CALCS + 1];
 

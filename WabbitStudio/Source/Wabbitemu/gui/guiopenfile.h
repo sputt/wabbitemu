@@ -4,6 +4,7 @@
 typedef struct tag_OFNHookOptions {
 	BOOL bArchive;
 	BOOL bFileSettings;
+	int model;
 } OFNHookOptions;
 
 void GetOpenSendFileName(HWND);

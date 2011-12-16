@@ -441,7 +441,7 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			r.left += tm.tmAveCharWidth;
 			SetTextColor(hdc, RGB(90, 90, 90));
 
-			if (lpsi->iCurrentFile != -1)
+			if (lpsi->iCurrentFile != -1 && lpsi->FileList->size() > lpsi->iCurrentFile)
 			{
 				DrawText(hdc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), -1, &r, DT_SINGLELINE | DT_PATH_ELLIPSIS);
 			}
