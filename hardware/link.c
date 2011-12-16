@@ -220,8 +220,14 @@ static void link_send_pkt(CPU_t *cpu, u_char command_ID, void *data) {
 			data_len = sizeof(TI_VARHDR);
 			// Non flash calculators do not pass
 			// version or 2nd flags
-			if (cpu->pio.model < TI_83P)
-				data_len -= 2;
+			if (cpu->pio.model < TI_83P) {
+				//85/86 does have name length 
+				if (cpu->pio.model == TI_85 || cpu->pio.model == TI_86) {
+					data_len--;
+				} else {
+					data_len -= 2;
+				}
+			}
 		}
 		cpu->pio.link->vlink_send -= (sizeof(TI_PKTHDR) + data_len);
 		break;
@@ -329,22 +335,27 @@ static void link_recv_pkt(CPU_t *cpu, TI_PKTHDR *hdr, u_char *data) {
 static void link_RTS(CPU_t *cpu, TIVAR_t *var, int dest) {
 	TI_VARHDR var_hdr;
 
+	if (cpu->pio.model == TI_85 || cpu->pio.model == TI_86) {
+		memset(&var_hdr, ' ', sizeof(TI_VARHDR));
+		memset(var_hdr.name86, 0, sizeof(var_hdr.name86));
+		strncpy(var_hdr.name86, (char *) var->name, 8);
+		var_hdr.name_length = var->name_length;
+	} else {
+		memset(var_hdr.name, 0, sizeof(var_hdr.name));
+		strncpy(var_hdr.name, (char *) var->name, 8);
+		var_hdr.version = var->version;
+
+		if (dest == SEND_RAM) {
+			var_hdr.type_ID2 = 0x00;
+		} else if (dest == SEND_ARC) {
+			var_hdr.type_ID2 = 0x80;
+		} else {
+			var_hdr.type_ID2 = var->flag;
+		}
+	}
+
 	var_hdr.length = link_endian(var->length);
 	var_hdr.type_ID = var->vartype;
-	memset(var_hdr.name, 0, sizeof(var_hdr.name));
-#ifdef WINVER
-	strncpy(var_hdr.name, (char *) var->name, 8);
-#else
-	strncpy(var_hdr.name, (char *) var->name, 8);
-#endif
-	var_hdr.version = var->version;
-	if (dest == SEND_RAM) {
-		var_hdr.type_ID2 = 0x00;
-	} else if (dest == SEND_ARC) {
-		var_hdr.type_ID2 = 0x80;
-	} else {
-		var_hdr.type_ID2 = var->flag;
-	}
 
 	//printf("Model: %d, length: %d\n", cpu->pio.model, link_endian(tifile->var->length));
 	if (cpu->pio.model == TI_82 || cpu->pio.model == TI_85)

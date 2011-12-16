@@ -13,6 +13,7 @@
 #include "gif.h"
 #include "gifhandle.h"
 #include "link.h"
+#include "keys.h"
 
 #ifdef _WINDOWS
 #include "disassemble.h"
@@ -195,15 +196,18 @@ void calc_erase_certificate(unsigned char *mem, int size) {
 }
 
 BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
-	if (lpCalc == NULL)
+	if (lpCalc == NULL) {
 		return FALSE;
+	}
 	TIFILE_t* tifile = newimportvar(FileName);
-	if (tifile == NULL)
+	if (tifile == NULL) {
 		return FALSE;
+	}
 
 	lpCalc->speed = 100;
-	if (lpCalc->active)
+	if (lpCalc->active) {
 		calc_slot_free(lpCalc);
+	}
 	lpCalc->model = tifile->model;
 
 	if (tifile->type == SAV_TYPE) {
@@ -271,7 +275,6 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 				break;
 			case TI_73:
 			case TI_83P:
-				printf("initializing 83p\n");
 				calc_init_83p(lpCalc);
 				memcpy(	lpCalc->cpu.mem_c->flash,
 						tifile->rom->data,
@@ -312,8 +315,20 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	}
 	if (lpCalc != NULL) {
 		lpCalc->cpu.pio.model = lpCalc->model;
-		if (tifile->save == NULL)
+extern keyprog_t keygrps[256];
+extern keyprog_t defaultkeys[256];
+extern keyprog_t keysti86[256];
+		if (lpCalc->model == TI_86 || lpCalc->model == TI_85) {
+			memcpy(keygrps, keysti86, sizeof(keyprog_t) * 256);
+		} else {
+			memcpy(keygrps, defaultkeys, sizeof(keyprog_t) * 256);
+		}
+		if (tifile->save == NULL) {
 			calc_reset(lpCalc);
+		}
+		if (auto_turn_on) {
+			calc_turn_on(lpCalc);
+		}
 	}
 
 	FreeTiFile(tifile);
@@ -414,60 +429,68 @@ int CPU_reset(CPU_t *lpCPU) {
 	lpCPU->mem_c->banks = lpCPU->mem_c->normal_banks;
 	lpCPU->mem_c->boot_mapped = FALSE;
 	lpCPU->mem_c->hasChangedPage0 = FALSE;
-	if (lpCPU->pio.model >= TI_73) {
-		switch (lpCPU->pio.model) {
-			case TI_73:
-			case TI_83P: {
-				/*bank_state_t banks[5] = {
-					{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-					{NULL,										0,		FALSE,	FALSE,	FALSE}
-				};
-				lpCPU->pc = 0x4000;*/
-				memset(lpCPU->mem_c->protected_page, 0, sizeof(lpCPU->mem_c->protected_page));
-				lpCPU->mem_c->protected_page_set = 0;
-				/*	Address										page	write?	ram?	no exec?	*/
-				bank_state_t banks[5] = {
-					{lpCPU->mem_c->flash +  0x01f * PAGE_SIZE, 	0x1f, 	FALSE,	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-					{NULL,										0,		FALSE,	FALSE,	FALSE}
-				};
-				memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
-				break;
-			}
-			case TI_83PSE:
-			case TI_84PSE: {
-				/*	Address										page	write?	ram?	no exec?	*/
-				bank_state_t banks[5] = {
-					{lpCPU->mem_c->flash +  0x07f * PAGE_SIZE, 	0x7f, 	FALSE,	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-					{NULL,										0,		FALSE,	FALSE,	FALSE}
-				};
+	switch (lpCPU->pio.model) {
+		case TI_86: {
+			bank_state_t banks[5] = {
+				{lpCPU->mem_c->flash, 					0, 		FALSE,	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash+0x0F*PAGE_SIZE,	0x0F, 	FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash,					0, 		FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->ram,						0,		FALSE,	TRUE,	FALSE},
+				{NULL,									0,		FALSE,	FALSE,	FALSE}
+			};
 
-				memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
-				break;
-			}
-			case TI_84P: {
-				/*	Address										page	write?	ram?	no exec?	*/
-				bank_state_t banks[5] = {
-					{lpCPU->mem_c->flash + 0x3f * PAGE_SIZE,	0x3f,	FALSE,	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->flash,						0, 		FALSE, 	FALSE, 	FALSE},
-					{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
-					{NULL,										0,		FALSE,	FALSE,	FALSE}
-				};
-				memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
-				break;
-			}
+			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
+			break;
 		}
-	} else {
-		//memset(lpCalc->mem_c.ram, 0, lpCalc->mem_c.ram_size);
+		case TI_73:
+		case TI_83P: {
+			/*bank_state_t banks[5] = {
+				{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash + 0x1f * PAGE_SIZE,	0x1f, 	FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
+				{NULL,										0,		FALSE,	FALSE,	FALSE}
+			};
+			lpCPU->pc = 0x4000;*/
+			memset(lpCPU->mem_c->protected_page, 0, sizeof(lpCPU->mem_c->protected_page));
+			lpCPU->mem_c->protected_page_set = 0;
+			/*	Address										page	write?	ram?	no exec?	*/
+			bank_state_t banks[5] = {
+				{lpCPU->mem_c->flash +  0x01f * PAGE_SIZE, 	0x1f, 	FALSE,	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
+				{NULL,										0,		FALSE,	FALSE,	FALSE}
+			};
+			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
+			break;
+		}
+		case TI_83PSE:
+		case TI_84PSE: {
+			/*	Address										page	write?	ram?	no exec?	*/
+			bank_state_t banks[5] = {
+				{lpCPU->mem_c->flash +  0x07f * PAGE_SIZE, 	0x7f, 	FALSE,	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
+				{NULL,										0,		FALSE,	FALSE,	FALSE}
+			};
+
+			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
+			break;
+		}
+		case TI_84P: {
+			/*	Address										page	write?	ram?	no exec?	*/
+			bank_state_t banks[5] = {
+				{lpCPU->mem_c->flash + 0x3f * PAGE_SIZE,	0x3f,	FALSE,	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash,						0, 		FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
+				{NULL,										0,		FALSE,	FALSE,	FALSE}
+			};
+			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
+			break;
+		}
 	}
 	return 0;
 }

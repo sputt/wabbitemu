@@ -291,7 +291,7 @@ STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 				StringCbCopy(wszSymName, sizeof(wszSymName), _T(""));
 #else
 			TCHAR buffer[256];
-			if (Symbol_Name_to_String(&symlist.symbols[i], buffer) == NULL)
+			if (Symbol_Name_to_String(m_lpCalc->cpu.pio.model, &symlist.symbols[i], buffer) == NULL)
 				StringCbCopy(buffer, sizeof(wszSymName), _T(""));
 			MultiByteToWideChar(CP_ACP, 0, buffer, -1, wszSymName, ARRAYSIZE(wszSymName));
 #endif

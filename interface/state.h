@@ -31,9 +31,12 @@ typedef struct symlist {
 	symbol83P_t symbols[512];
 } symlist_t;
 
+//83p
 #define pTemp			0x982E
 #define progPtr			0x9830
 #define symTable		0xFE66
+//86
+#define VAT_END			0xD298
 
 typedef struct upages {
 	u_int start, end;
@@ -44,9 +47,10 @@ typedef struct upages {
 
 void state_build_applist(CPU_t *, applist_t *);
 void state_userpages(CPU_t *, upages_t *);
-symlist_t* state_build_symlist_83P(CPU_t *, symlist_t *);
+symlist_t *state_build_symlist_86(CPU_t *, symlist_t *);
+symlist_t *state_build_symlist_83P(CPU_t *, symlist_t *);
 TCHAR *GetRealAns(CPU_t*);
-TCHAR *Symbol_Name_to_String(symbol83P_t *, TCHAR *);
+TCHAR *Symbol_Name_to_String(int model, symbol83P_t *, TCHAR *);
 TCHAR *App_Name_to_String(apphdr_t *, TCHAR *);
 
 #endif /*STATE_H_*/

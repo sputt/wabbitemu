@@ -24,7 +24,15 @@ static LRESULT CALLBACK TargetMemProc(HWND hwnd, UINT Message, WPARAM wParam, LP
 			rbnArchive = GetDlgItem(hwnd, IDC_RBNFILEARCHIVE);
 			rbnFileSettings = GetDlgItem(hwnd, IDC_RBNFILESETTINGS);
 			
-			CheckRadioButton(hwnd, IDC_RBNFILESETTINGS, IDC_RBNFILERAM, nIDDefault);
+			if (HookOptions->model < TI_73) {
+				EnableWindow(rbnArchive, FALSE);
+				EnableWindow(rbnFileSettings, FALSE);
+				CheckRadioButton(hwnd, IDC_RBNFILESETTINGS, IDC_RBNFILERAM, IDC_RBNFILERAM);
+			} else {
+				EnableWindow(rbnArchive, TRUE);
+				EnableWindow(rbnFileSettings, TRUE);
+				CheckRadioButton(hwnd, IDC_RBNFILESETTINGS, IDC_RBNFILERAM, nIDDefault);
+			}
 			
 			SendMessage(hwnd, WM_SIZE, 0 ,0);
 			return TRUE;

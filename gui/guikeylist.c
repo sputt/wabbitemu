@@ -6,54 +6,18 @@
 #include "gui.h"
 #include "resource.h"
 
+extern HIMAGELIST hImageList;
+
 LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	static HWND hListKeys;
-	static HIMAGELIST hImageList;
 	static LPCALC lpCalc;
-	extern POINT *ButtonCenter[64];
 	switch (uMsg) {
 		case WM_INITDIALOG: {
-			POINT pt;
 			hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
-			hImageList = ImageList_Create(48, 32, ILC_COLOR32 | ILC_MASK, 8*7, 0);
 			lpCalc = (LPCALC) GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 
-			HDC hdcMask = CreateCompatibleDC(lpCalc->hdcButtons);
-			HBITMAP hbmMask = CreateCompatibleBitmap(lpCalc->hdcButtons, 48, 32);
-			SelectObject(hdcMask, hbmMask);
-
-			HDC hdcButton = CreateCompatibleDC(lpCalc->hdcButtons);
-			HBITMAP hbmButton  = CreateCompatibleBitmap(lpCalc->hdcButtons, 48, 32);
-			SelectObject(hdcButton, hbmButton);
-
-			for(int group = 0; group < 7; group++) {
-				for(int bit = 0; bit < 8; bit++) {
-					if ((*ButtonCenter)[bit + (group << 3)].x != 0xFFF) {
-						pt.x	= (*ButtonCenter)[bit + (group << 3)].x;
-						pt.y	= (*ButtonCenter)[bit + (group << 3)].y;
-
-
-						HDC hdc = CreateCompatibleDC(lpCalc->hdcButtons);
-						HBITMAP hbm = CreateCompatibleBitmap(lpCalc->hdcButtons, 48, 32);
-						HGDIOBJ hbmOld = SelectObject(hdc, hbm);
-
-						RECT r = {0, 0, 48, 32};
-						SetDCBrushColor(hdc, RGB(0, 255, 0));
-						FillRect(hdc, &r, GetStockBrush(DC_BRUSH));
-						
-						DrawButtonStateNoSkin(hdc, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_COPY);
-						DrawButtonShadow(hdc, lpCalc->hdcKeymap, &pt);
-
-						SelectObject(hdc, hbmOld);
-						DeleteDC(hdc);
-
-						ImageList_AddMasked(hImageList, hbm, RGB(0, 255, 0));
-						DeleteObject(hbmButton);
-					}
-				}
-			}
 			ListView_SetView(hListKeys, LV_VIEW_TILE);
-			SIZE size = { 56, 64 };
+			SIZE size = { 70, 70 };
 			LVTILEVIEWINFO ltvi = {0};
 			ltvi.cbSize   = sizeof(ltvi);
 			ltvi.dwFlags  = LVTVIF_FIXEDSIZE;
@@ -61,7 +25,9 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			ltvi.sizeTile = size;
 
 			ListView_SetTileViewInfo(hListKeys, &ltvi);
-			ListView_SetImageList(hListKeys, hImageList, LVSIL_NORMAL);
+			if (hImageList != ListView_GetImageList(hListKeys, LVSIL_NORMAL)) {
+				ListView_SetImageList(hListKeys, hImageList, LVSIL_NORMAL);
+			}
 			SetWindowTheme(hListKeys, L"explorer", NULL);
 
 			SendMessage(hwnd, WM_USER, REFRESH_LISTVIEW, 0);
@@ -87,20 +53,22 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 							TCHAR lpStrFile[MAX_PATH];
 							const TCHAR lpstrFilter[] = _T("Recorded key files ( *.key) \0*.key\0\
 														All Files (*.*)\0*.*\0\0");
-							if (SaveFile(lpStrFile, lpstrFilter, _T("Save key file"), _T(".key"))) {
+							if (!SaveFile(lpStrFile, lpstrFilter, _T("Save key file"), _T(".key"))) {
 								FILE *file;
 								fopen_s(&file, lpStrFile, _T("wb"));
 								key_string *current = lpCalc->last_keypress_head;
 								while (current) {
-									fprintf_s(file, _T("Bit: %d Group %d\n"), current->bit, current->group);
+									fprintf_s(file, _T("Bit: %d Group: %d\r\n"), current->bit, current->group);
 									current = current->next;
 								}
+								fclose(file);
 							}
 							break;
 						}
 					}
 					break;
 			}
+			return 0;
 		}
 		case WM_NOTIFY: {
 			switch (((LPNMHDR)lParam)->code)
@@ -136,7 +104,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 					break;
 				}
 			}
-			break;
+			return 0;
 		}
 		case WM_USER:
 			//TODO: allow exporting by writing group/bit data and outputting to a text file
@@ -149,7 +117,10 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 					lItem.iSubItem = 0;
 					lItem.iImage = current->group * 8 + current->bit;
 					lItem.iItem = 0;
-					ListView_InsertItem(hListKeys, &lItem);
+					int error = ListView_InsertItem(hListKeys, &lItem);
+					if (error == -1) {
+						error = GetLastError();
+					}
 
 					current = current->next;
 				}

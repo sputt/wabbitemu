@@ -41,59 +41,59 @@ extern HINSTANCE g_hInst;
 //Buttons are assumed to be mostly convex
 //creates a rect around the button
 static RECT FindButtonRect(HDC hdcKeymap, POINT *pt) {
-	RECT brect = {0,0,0,0};
+	RECT brect = {0, 0, 0, 0};
 	int x, y;
 	int bit, group;
 	COLORREF colormatch, colortest;
 
 	colormatch = GetPixel(hdcKeymap, pt->x, pt->y);
 	
-	if (GetRValue(colormatch) != 0 ) {
-	return brect;
-  }
+	if (GetRValue(colormatch) != 0) {
+		return brect;
+	}
 		
 	bit		= GetBValue(colormatch) >> 4;
 	group	= GetGValue(colormatch) >> 4;
 	
-	brect.right		= (*ButtonCenter)[bit+(group<<3)].x;
-	brect.left		= (*ButtonCenter)[bit+(group<<3)].x;
-	brect.top		= (*ButtonCenter)[bit+(group<<3)].y;
-	brect.bottom	= (*ButtonCenter)[bit+(group<<3)].y;
+	brect.right		= (*ButtonCenter)[bit + (group << 3)].x;
+	brect.left		= (*ButtonCenter)[bit + (group << 3)].x;
+	brect.top		= (*ButtonCenter)[bit + (group << 3)].y;
+	brect.bottom	= (*ButtonCenter)[bit + (group << 3)].y;
 	
 	//Find the vertical center
-	y = ( brect.top + brect.bottom )/2;
+	y = (brect.top + brect.bottom) / 2;
 	
 	//Search for left edge
 	colortest = colormatch;
-	for(x = brect.left; (colortest == colormatch) && ( x >= 0 ) ; x--) {
+	for (x = brect.left; (colortest == colormatch) && (x >= 0); x--) {
 		colortest = GetPixel(hdcKeymap, x, y);
 	}
-	brect.left = x+1;
+	brect.left = x - 5;
 	
 	//Search for right edge
 	colortest = colormatch;
-	for(x = brect.right; (colortest == colormatch) && ( x < SKIN_WIDTH ) ; x++) {
+	for (x = brect.right; (colortest == colormatch) && (x < SKIN_WIDTH) ; x++) {
 		colortest = GetPixel(hdcKeymap, x, y);
 	}
-	brect.right = x-1;
+	brect.right = x + 5;
 	
 	
 	//Find the Horizontal center
-	x = ( brect.right + brect.left )/2;
+	x = (brect.right + brect.left) / 2;
 	
 	//Search for top edge
 	colortest = colormatch;
-	for(y = brect.top; (colortest == colormatch) && ( y >= 0 ) ; y--) {
+	for (y = brect.top; (colortest == colormatch) && (y >= 0) ; y--) {
 		colortest = GetPixel(hdcKeymap, x, y);
 	}
-	brect.top = y+1;
+	brect.top = y - 5;
 	
 	//Search for bottom edge
 	colortest = colormatch;
-	for(y = brect.bottom; (colortest == colormatch) && ( y < SKIN_HEIGHT ) ; y++) {
+	for (y = brect.bottom; (colortest == colormatch) && (y < SKIN_HEIGHT) ; y++) {
 		colortest = GetPixel(hdcKeymap, x, y);
 	}
-	brect.bottom = y-1;
+	brect.bottom = y + 5;
 	return brect;
 }
 
@@ -148,40 +148,41 @@ void DrawButtonShadow(HDC hdc, HDC hdcKeymap, POINT *pt)
 		return;
 	}
 
-	for(int y = 0; y < height; y++) {
-		for(int x = 0; x < width; x++) {
-			
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
 			COLORREF colortest = GetPixel(hdcKeymap, x + brect.left, y + brect.top);
-			if (colormatch == colortest) {
-				COLORREF colortestup = GetPixel(hdcKeymap, x + brect.left, y + brect.top + 1);
-				COLORREF colortestdown = GetPixel(hdcKeymap, x + brect.left, y + brect.top - 1);
-				COLORREF colortestleft = GetPixel(hdcKeymap, x + brect.left + 1, y + brect.top);
-				COLORREF colortestright = GetPixel(hdcKeymap, x + brect.left - 1, y + brect.top);
+			if (colortest == colormatch) {
+				COLORREF colortestdown = GetPixel(hdcKeymap, x + brect.left, y + brect.top + 1);
+				COLORREF colortestup = GetPixel(hdcKeymap, x + brect.left, y + brect.top - 1);
+				COLORREF colortestright = GetPixel(hdcKeymap, x + brect.left + 1, y + brect.top);
+				COLORREF colortestleft = GetPixel(hdcKeymap, x + brect.left - 1, y + brect.top);
 #define SHADOW_OFFSET 100
-#define SHADOW_SIZE 5
+#define SHADOW_CONSTANT 40
+#define SHADOW_SIZE 3
 				if (GetRValue(colortestdown) == 0xFF) {
 					for (int i = 1; i < SHADOW_SIZE; i++) {
-						SetPixel(hdc, x, y - i,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+						SetPixel(hdc, x, y + i,  RGB(SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET));
 					}
-				} else if (GetRValue(colortestup) == 0xFF) {
+				}
+				if (GetRValue(colortestup) == 0xFF) {
 					for (int i = 1; i < SHADOW_SIZE; i++) {
-						SetPixel(hdc, x, y + i,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+						SetPixel(hdc, x, y - i,  RGB(SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET));
 					}
 				}
 				if (GetRValue(colortestright) == 0xFF) {
 					for (int i = 1; i < SHADOW_SIZE; i++) {
-						SetPixel(hdc, x - i, y,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+						SetPixel(hdc, x + i, y,  RGB(SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET));
 					}
-				} else if (GetRValue(colortestleft) == 0xFF) {
+				}
+				if (GetRValue(colortestleft) == 0xFF) {
 					for (int i = 1; i < SHADOW_SIZE; i++) {
-						SetPixel(hdc, x + i, y,  RGB(55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET, 55*i+SHADOW_OFFSET));
+						SetPixel(hdc, x - i, y,  RGB(SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET, SHADOW_CONSTANT*i+SHADOW_OFFSET));
 					}
 				}
 			}
 		}
 	}
 }
-
 
 void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state)
 {

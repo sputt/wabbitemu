@@ -44,6 +44,7 @@ static struct {
 	{_T("startY"),					REG_DWORD,  CW_USEDEFAULT},
 	{_T("break_on_exe_violation"),	REG_DWORD,  TRUE},
 	{_T("break_on_invalid_flash"),	REG_DWORD,  TRUE},
+	{_T("auto_turn_on"),			REG_DWORD,	FALSE},
 	{_T("num_backup_per_sec"),		REG_DWORD,  2},
 	{_T("ram_version"),				REG_DWORD,  0},
 	{_T("lcd_delay"),				REG_DWORD,	60},
@@ -232,6 +233,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	gif_use_increasing = (BOOL) QueryWabbitKey(_T("gif_useinc"));
 	break_on_exe_violation = (BOOL) QueryWabbitKey(_T("break_on_exe_violation"));
 	break_on_invalid_flash = (BOOL) QueryWabbitKey(_T("break_on_invalid_flash"));
+	auto_turn_on = (BOOL) QueryWabbitKey(_T("auto_turn_on"));
 
 	dispType = (DISPLAY_BASE) QueryDebugKey((TCHAR *) DisplayTypeString);
 	
@@ -302,6 +304,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("sync_cores"), REG_DWORD, &sync_cores);
 		SaveWabbitKey(_T("break_on_exe_violation"), REG_DWORD, &break_on_exe_violation);
 		SaveWabbitKey(_T("break_on_invalid_flash"), REG_DWORD, &break_on_invalid_flash);
+		SaveWabbitKey(_T("auto_turn_on"), REG_DWORD, &auto_turn_on);
 
 		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpCalc->FaceplateColor);
 		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);		

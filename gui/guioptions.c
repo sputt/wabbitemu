@@ -497,7 +497,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check, saveWindow_check,
-		exeViolation_check, backupTime_edit, invalidFlash_check;
+		exeViolation_check, backupTime_edit, invalidFlash_check, turnOn_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			saveState_check = GetDlgItem(hwnd, IDC_CHK_SAVE);
@@ -509,6 +509,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			exeViolation_check = GetDlgItem(hwnd, IDC_CHK_BRK_EXE_VIOLATION);
 			backupTime_edit = GetDlgItem(hwnd, IDC_EDT_BACKUPTIME);
 			invalidFlash_check = GetDlgItem(hwnd, IDC_CHK_BRK_INVALID_FLASH);
+			turnOn_check = GetDlgItem(hwnd, IDC_CHK_AUTOON);
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
 		case WM_COMMAND: {
@@ -525,6 +526,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 						case IDC_CHK_SHOWWIZARD:
 						case IDC_CHK_BRK_EXE_VIOLATION:
 						case IDC_CHK_BRK_INVALID_FLASH:
+						case IDC_CHK_AUTOON:
 							break;
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
@@ -543,6 +545,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					show_wizard = Button_GetCheck(wizard_check);
 					break_on_exe_violation = Button_GetCheck(exeViolation_check);
 					break_on_invalid_flash = Button_GetCheck(invalidFlash_check);
+					auto_turn_on = Button_GetCheck(turnOn_check);
 					TCHAR buf[256];
 					Edit_GetText(backupTime_edit, buf, ARRAYSIZE(buf));
 					double persec = _ttof(buf);
@@ -582,6 +585,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(saveWindow_check, startX != CW_USEDEFAULT);
 			Button_SetCheck(exeViolation_check, break_on_exe_violation);
 			Button_SetCheck(invalidFlash_check, break_on_invalid_flash);
+			Button_SetCheck(turnOn_check, auto_turn_on);
 			return TRUE;
 		}
 	}
@@ -765,8 +769,9 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					lpCalc->cpu.cpu_version = Button_GetCheck(old83p_check) ? 1 : 0;
 					Edit_GetText(edtLCD_delay,buf, ARRAYSIZE(buf));
 					delay = _ttoi(buf);
-					if (delay != 0)
+					if (delay != 0) {
 						lpCalc->cpu.pio.lcd->lcd_delay = delay;
+					}
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
