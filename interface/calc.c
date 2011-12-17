@@ -325,9 +325,9 @@ extern keyprog_t keysti86[256];
 		}
 		if (tifile->save == NULL) {
 			calc_reset(lpCalc);
-		}
-		if (auto_turn_on) {
-			calc_turn_on(lpCalc);
+			if (auto_turn_on) {
+				calc_turn_on(lpCalc);
+			}
 		}
 	}
 
@@ -495,10 +495,6 @@ int CPU_reset(CPU_t *lpCPU) {
 	return 0;
 }
 
-void ConnectedCPU_step(CPU_t *cpu) {
-
-}
-
 int calc_run_frame(LPCALC lpCalc) {
 	double cpu_sync = tc_elapsed((&lpCalc->timer_c));
 
@@ -554,7 +550,16 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 			oldTStates = tc_tstates(&lpCalc->timer_c);
 			oldPC = lpCalc->cpu.pc % PAGE_SIZE;
 		}
-		CPU_step(&lpCalc->cpu);
+		if (link_hub_count > 1) {
+			CPU_connected_step(&lpCalc->cpu);
+			if (lpCalc->cpu.is_link_instruction) {
+				calc_waiting_link++;
+				lpCalc->time_error = (time_t)(tc_tstates((&lpCalc->timer_c)) - time_end);
+				break;
+			}
+		} else {
+			CPU_step(&lpCalc->cpu);
+		}
 		if (lpCalc->profiler.running) {
 			uint64_t time = tc_tstates(&lpCalc->timer_c) - oldTStates;
 			lpCalc->profiler.totalTime += time;
@@ -610,16 +615,20 @@ int calc_run_all(void) {
 	int i, j, active_calc = -1;
 
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
-		/*link_hub[MAX_CALCS]->host = 0;*/
+		link_hub[MAX_CALCS]->host = 0;
 		for (j = 0; j < MAX_CALCS; j++) {
-			if (calcs[j].active == TRUE) {
-				/*if (link_hub[j] != NULL)
-					link_hub[MAX_CALCS]->host |= link_hub[j]->host;*/
+			if (calcs[j].active == TRUE && !calcs[j].cpu.is_link_instruction) {
+				if (link_hub[j] != NULL && link_hub[j]->host != 0)
+					link_hub[MAX_CALCS]->host |= link_hub[j]->host;
 
 				active_calc = j;
 				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
 				calc_run_tstates(&calcs[j], time);
 			}
+		}
+
+		if (link_hub_count > 1 && link_hub_count == calc_waiting_link) {
+
 		}
 
 		//this code handles screenshoting if were actually taking screenshots right now

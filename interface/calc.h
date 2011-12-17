@@ -218,6 +218,8 @@ GLOBAL BOOL break_on_invalid_flash;
 GLOBAL BOOL auto_turn_on;
 GLOBAL BOOL sync_cores;
 GLOBAL link_t *link_hub[MAX_CALCS + 1];
+GLOBAL int link_hub_count;
+GLOBAL int calc_waiting_link;
 
 
 GLOBAL const TCHAR *CalcModelTxt[]

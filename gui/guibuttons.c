@@ -194,37 +194,39 @@ void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT 
 		return;
 	}
 
-	for(int y = 0; y < height; y++) {
-		for(int x = 0; x < width; x++) {
+	for (int y = 0; y < height; y++) {
+		for (int x = 0; x < width; x++) {
 			
 			COLORREF colortest = GetPixel(hdcKeymap, x + brect.left, y + brect.top);
 			if (colormatch == colortest) {
-				COLORREF skincolor = GetPixel(hdcSkin,x + brect.left, y + brect.top);
-				unsigned char red, blue, green;
-				red = GetRValue(skincolor);
-				blue = GetBValue(skincolor);
-				green = GetGValue(skincolor);
-				
+				COLORREF skincolor = GetPixel(hdcSkin, x + brect.left, y + brect.top);
+
 				if (state & DBS_COPY) {
 					SetPixel(hdc, x, y, skincolor);
 				} else if (state & DBS_DOWN) {
+					unsigned char red, blue, green;
+					red = GetRValue(skincolor);
+					blue = GetBValue(skincolor);
+					green = GetGValue(skincolor);
 					// button is down
 					if (state & DBS_LOCK)
 						SetPixel(hdc, x, y, RGB((red / 2) + 128 , blue / 2, green / 2));
 					else if (state & DBS_PRESS)
 						SetPixel(hdc, x, y, RGB(red / 2, blue / 2, green / 2));
 				} else {
+					unsigned char red, blue, green;
+					red = GetRValue(skincolor);
+					blue = GetBValue(skincolor);
+					green = GetGValue(skincolor);
 					if (state & DBS_LOCK)
 						SetPixel(hdc, x, y, RGB((red - 128) * 2 , blue * 2, green * 2));
 					else if (state & DBS_PRESS)
 						SetPixel(hdc, x, y, RGB(red * 2 , blue * 2, green * 2));
 				}
 				
-			} else {
-				if (hdcSkin != NULL && state != DBS_COPY) {
-					COLORREF skincolor = GetPixel(hdcSkin,x + brect.left, y + brect.top);
-					SetPixel(hdc, x, y, skincolor);
-				}
+			} else if (state != DBS_COPY) {
+				COLORREF skincolor = GetPixel(hdcSkin, x + brect.left, y + brect.top);
+				SetPixel(hdc, x, y, skincolor);
 			}
 		}
 	}

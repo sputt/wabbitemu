@@ -405,9 +405,9 @@ keyprog_t keysti86[256] = {
 	{ VK_PRIOR , 4 , 6 },
 	{ VK_NEXT , 3 , 6 },
 	{ VK_INSERT , 2 , 6 },
-	{ VK_DELETE , 6 , 7 },
+	{ VK_DELETE , 3 , 7 },
 	{ VK_HOME , 5 , 6 },
-	{ VK_END , 3 , 7 },
+	{ VK_END , 6 , 7 },
 #ifndef _DEBUG
 	{ VK_NUMPAD0 , 4 , 0 },
 #endif

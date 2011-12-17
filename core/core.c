@@ -554,6 +554,50 @@ static void handle_interrupt(CPU_t *cpu) {
 	}
 }
 
+BOOL is_link_instruction(CPU_t *cpu) {
+	BYTE b1 = mem_read(cpu->mem_c, cpu->pc);
+	BYTE b2 = mem_read(cpu->mem_c, cpu->pc + 1);
+	return
+		// out (n),a; in a,(n)
+		(((b2 & 0x17) == 0x00) && ((b1 & 0xf7) == 0xd3)) ||
+		// out (c),r; in r,(c)
+		((b1 == 0xed) && ((cpu->c & 0x17) == 0x00) && ((b2 & 0xc6) == 0x40));
+}
+
+
+int CPU_connected_step(CPU_t *cpu) {
+	cpu->interrupt = 0;
+	cpu->ei_block = FALSE;
+
+	if (cpu->halt == FALSE) {
+		if (is_link_instruction(cpu)) {
+			cpu->is_link_instruction = TRUE;
+			return 2;
+		}
+		CPU_opcode_fetch(cpu);
+		if (cpu->bus == 0xDD || cpu->bus == 0xFD) {
+			cpu->prefix = cpu->bus;
+			CPU_opcode_fetch(cpu);
+			CPU_opcode_run(cpu);
+			cpu->prefix = 0;
+		} else {
+#ifdef WITH_REVERSE
+			CPU_add_prev_instr(cpu);
+#endif
+			CPU_opcode_run(cpu);
+		}
+	} else {
+		/* If the CPU is in halt */
+		tc_add(cpu->timer_c, 4 * HALT_SCALE);
+		cpu->r = (cpu->r & 0x80) + ((cpu->r + 1 * HALT_SCALE) & 0x7F);
+	}
+
+	handle_pio(cpu);
+
+	if (cpu->interrupt && !cpu->ei_block) handle_interrupt(cpu);
+	return 0;
+}
+
 int CPU_step(CPU_t* cpu) {
 	cpu->interrupt = 0;
 	cpu->ei_block = FALSE;
@@ -574,7 +618,7 @@ int CPU_step(CPU_t* cpu) {
 	} else {
 		/* If the CPU is in halt */
 		tc_add(cpu->timer_c, 4 * HALT_SCALE);
-		cpu->r = (cpu->r & 0x80) + ((cpu->r+1 * HALT_SCALE) & 0x7F);
+		cpu->r = (cpu->r & 0x80) + ((cpu->r + 1 * HALT_SCALE) & 0x7F);
 	}
 
 	handle_pio(cpu);

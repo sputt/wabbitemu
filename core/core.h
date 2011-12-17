@@ -273,6 +273,7 @@ typedef struct CPU {
 	reverse_time_t *prev_instruction;
 	reverse_time_t *first_intruction;
 	BOOL do_opcode_callback;
+	BOOL is_link_instruction;
 } CPU_t;
 
 typedef void (*opcodep)(CPU_t*);
@@ -308,6 +309,7 @@ void update_bootmap_pages(memc *mem_c);
 int tc_init(timerc*, int);
 int CPU_init(CPU_t*, memc*, timerc*);
 int CPU_step(CPU_t*);
+int CPU_connected_step(CPU_t *cpu);
 inline unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr);
 inline unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data);
 CPU_t* CPU_clone(CPU_t *cpu);

@@ -50,6 +50,7 @@ int link_init(CPU_t *cpu) {
 int link_connect_hub(int slot, CPU_t *cpu) {
 	link_hub[slot] = cpu->pio.link;
 	cpu->pio.link->client = &link_hub[MAX_CALCS]->host;
+	link_hub_count++;
 	return 0;
 }
 

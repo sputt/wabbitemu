@@ -227,7 +227,7 @@ int gui_frame(LPCALC lpCalc) {
 	lpCalc->running = TRUE;
 	lpCalc->speed = 100;
 	HMENU hmenu = GetMenu(lpCalc->hwndFrame);
-	CheckMenuRadioItem(GetSubMenu(GetSubMenu(hmenu, 2),4), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
+	CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
 	gui_frame_update(lpCalc);
 	ReleaseDC(lpCalc->hwndFrame, hdc);
 	return 0;
@@ -437,49 +437,8 @@ int gui_frame_update(LPCALC lpCalc) {
 			SetWindowPos(lpCalc->hwndFrame, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 		}
 	}
-	RedrawWindow(lpCalc->hwndFrame, NULL, NULL, RDW_FRAME | RDW_INVALIDATE);
-
-	if (hImageList) {
-		ImageList_Destroy(hImageList);
-	}
-	POINT pt;
-	hImageList = ImageList_Create(60, 60, ILC_COLOR32 | ILC_MASK, 8*7, 0);
-
-	HDC hdcMask = CreateCompatibleDC(lpCalc->hdcButtons);
-	HBITMAP hbmMask = CreateCompatibleBitmap(lpCalc->hdcButtons, 60, 60);
-	SelectObject(hdcMask, hbmMask);
-
-	HDC hdcButton = CreateCompatibleDC(lpCalc->hdcButtons);
-	HBITMAP hbmButton  = CreateCompatibleBitmap(lpCalc->hdcButtons, 60, 60);
-	SelectObject(hdcButton, hbmButton);
-
-	for (int group = 0; group < 7; group++) {
-		for (int bit = 0; bit < 8; bit++) {
-			extern POINT *ButtonCenter[64];
-			if ((*ButtonCenter)[bit + (group << 3)].x != 0xFFF) {
-				pt.x	= (*ButtonCenter)[bit + (group << 3)].x;
-				pt.y	= (*ButtonCenter)[bit + (group << 3)].y;
-
-
-				HDC hdc = CreateCompatibleDC(lpCalc->hdcButtons);
-				HBITMAP hbm = CreateCompatibleBitmap(lpCalc->hdcButtons, 64, 64);
-				HGDIOBJ hbmOld = SelectObject(hdc, hbm);
-
-				RECT r = {0, 0, 60, 60};
-				SetDCBrushColor(hdc, RGB(0, 255, 0));
-				FillRect(hdc, &r, GetStockBrush(DC_BRUSH));
-						
-				DrawButtonStateNoSkin(hdc, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_COPY);
-				DrawButtonShadow(hdc, lpCalc->hdcKeymap, &pt);
-
-				SelectObject(hdc, hbmOld);
-				DeleteDC(hdc);
-
-				ImageList_AddMasked(hImageList, hbm, RGB(0, 255, 0));
-				DeleteObject(hbmButton);
-			}
-		}
-	}
+	//HACK: figure out why this is needed
+	InvalidateRect(NULL, NULL, TRUE);
 
 	if (lpCalc->bCustomSkin) {
 		delete m_pBitmapKeymap;
@@ -811,6 +770,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				if (wizardError)
 					return EXIT_FAILURE;
 				LoadRegistrySettings(lpCalc);
+				gui_frame(lpCalc);
 			} else {
 				const TCHAR lpstrFilter[] 	= _T("Known types ( *.sav; *.rom) \0*.sav;*.rom\0\
 													Save States  (*.sav)\0*.sav\0\
@@ -1011,29 +971,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			HDC hdc;
 			hdc = BeginPaint(hwnd, &ps);
 			if (lpCalc->SkinEnabled) {
-				/*HBITMAP blankBitmap = CreateCompatibleBitmap(lpCalc->hdcKeymap, 48, 48);
-				HBITMAP hButton = CreateCompatibleBitmap(lpCalc->hdcKeymap, 48, 48);
-				SelectObject(hdc, blankBitmap);
-				HDC hdcMask = CreateCompatibleDC(lpCalc->hdcKeymap);
-				HBITMAP hbmMask = CreateCompatibleBitmap(hdc, 48, 48);
-				BITMAPINFO bi;
-				bi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
-				bi.bmiHeader.biWidth = 48;
-				bi.bmiHeader.biHeight = 48;
-				bi.bmiHeader.biPlanes = 1;
-				bi.bmiHeader.biBitCount = 24;
-				bi.bmiHeader.biCompression = BI_RGB;
-				bi.bmiHeader.biSizeImage = 0;
-				bi.bmiHeader.biXPelsPerMeter = 0;
-				bi.bmiHeader.biYPelsPerMeter = 0;
-				bi.bmiHeader.biClrUsed = 0;
-				bi.bmiHeader.biClrImportant = 0;
-				int error = GetDIBits(hdc, hbmMask, 0, 48, NULL, &bi, DIB_RGB_COLORS);
-				error = BitBlt(hdcMask, (48 - 33) / 2, (48 - 31) / 2, 33, 31, lpCalc->hdcKeymap, 236, 331, SRCCOPY);
-				error = MaskBlt(hdc, (48 - 33) / 2, (48 - 31) / 2, 48, 48,
-					lpCalc->hdcButtons, 236, 331,
-					hbmMask, (48 - 33) / 2, (48 - 31) / 2, SRCCOPY);
-				error = GetLastError();*/
 				BitBlt(hdc, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcButtons, 0, 0, SRCCOPY);
 				BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
 			} else {
@@ -1270,7 +1207,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				case IDM_DEBUG_RESET: {
 					calc_reset(lpCalc);
-					//calc_turn_on(lpCalc);
 					break;
 				}
 				case IDM_DEBUG_OPEN:
@@ -1342,9 +1278,31 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case IDM_SPEED_SET: {
-					HMENU hmenu = GetMenu(hwnd);
-					CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_SET, MF_BYCOMMAND | MF_CHECKED);
-					DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC) SetSpeedProc, (LPARAM) lpCalc);
+					int dialog = DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGSPEED), hwnd, (DLGPROC) SetSpeedProc, (LPARAM) lpCalc);
+					if (dialog == IDOK) {
+						HMENU hMenu = GetMenu(hwnd);
+						switch(lpCalc->speed)
+						{
+							case 25:
+								CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUARTER, MF_BYCOMMAND| MF_CHECKED);
+								break;
+							case 50:
+								CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_HALF, MF_BYCOMMAND| MF_CHECKED);
+								break;
+							case 100:
+								CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_NORMAL, MF_BYCOMMAND| MF_CHECKED);
+								break;
+							case 200:
+								CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_DOUBLE, MF_BYCOMMAND| MF_CHECKED);
+								break;
+							case 400:
+								CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_QUADRUPLE, MF_BYCOMMAND| MF_CHECKED);
+								break;
+							default:
+								CheckMenuRadioItem(hMenu, IDM_SPEED_QUARTER, IDM_SPEED_SET, IDM_SPEED_SET, MF_BYCOMMAND| MF_CHECKED);
+								break;
+						}
+					}
 					SetFocus(hwnd);
 					break;
 				}
@@ -1398,7 +1356,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			for (group = 0; group < 7; group++) {
 				for (bit = 0; bit < 8; bit++) {
 #define MIN_KEY_DELAY 400
-					if (kp->last_pressed[group][bit] - lpCalc->cpu.timer_c->tstates >= MIN_KEY_DELAY) {
+					if (kp->last_pressed[group][bit] - lpCalc->cpu.timer_c->tstates >= MIN_KEY_DELAY || !lpCalc->running) {
 						kp->keys[group][bit] &= (~KEY_MOUSEPRESS);
 					} else {
 						repostMessage = TRUE;
@@ -1406,7 +1364,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 			}
 
-			if (kp->on_last_pressed - lpCalc->cpu.timer_c->tstates >= MIN_KEY_DELAY) {
+			if (kp->on_last_pressed - lpCalc->cpu.timer_c->tstates >= MIN_KEY_DELAY || !lpCalc->running) {
 				lpCalc->cpu.pio.keypad->on_pressed &= ~KEY_MOUSEPRESS;
 			} else {
 				repostMessage = TRUE;
@@ -1505,8 +1463,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 			return 0;
 		case WM_SIZING: {
-			if (lpCalc->SkinEnabled)
+			if (lpCalc->SkinEnabled) {
 				return TRUE;
+			}
 			RECT *prc = (RECT *) lParam;
 			LONG ClientAdjustWidth, ClientAdjustHeight;
 			LONG AdjustWidth, AdjustHeight;
@@ -1523,6 +1482,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			if (lpCalc->hwndStatusBar != NULL) {
 				GetWindowRect(lpCalc->hwndStatusBar, &src);
 				rc.bottom += src.bottom - src.top;
+			}
+			//don't allow resizing from the sides
+			if (wParam == WMSZ_LEFT || wParam == WMSZ_RIGHT 
+				|| wParam == WMSZ_TOP || wParam == WMSZ_BOTTOM) {
+					memcpy(prc, &rc, sizeof(RECT));
+					return TRUE;
 			}
 
 			ClientAdjustWidth = rc.right - rc.left;
@@ -1564,10 +1529,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (cy_mult < 2) {cy_mult++; AdjustHeight -= 64;}
 			}
 
-			if (cx_mult > cy_mult)
+			if (cx_mult > cy_mult) {
 				AdjustWidth += (cx_mult - cy_mult) * 128;
-			else if (cy_mult > cx_mult)
+			} else if (cy_mult > cx_mult) {
 				AdjustHeight += (cy_mult - cx_mult) * 64;
+			}
+
 
 			lpCalc->scale = min(cx_mult, cy_mult);
 

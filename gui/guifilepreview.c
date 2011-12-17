@@ -104,12 +104,8 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 		{
 			if (lParam == 0) goto NoFilePreview;
 			
-#ifdef WINVER
 			FILE *prgFile;
 			fopen_s(&prgFile, (char*) lParam, _T("rb"));
-#else
-			FILE *prgFile = fopen((char*) lParam, _T("rb"));
-#endif
 			if (!prgFile) goto NoFilePreview;
 	
 			SAVESTATE_t *save = ReadSave(prgFile);
@@ -124,8 +120,19 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			HDC hdc = CreateCompatibleDC(NULL);
 			HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmPreview);
 			
-			StretchDIBits(hdc, 0, 0, 192, 128,
-				0, 0, 96, 64,
+			int width = 96;
+			if (save->model == TI_86 || save->model == TI_85) {
+				RECT rc;
+				GetWindowRect(hwnd, &rc);
+				width = 128;
+				BOOL test = SetWindowPos(hwnd, NULL, 0, 0, rc.left - rc.right + (256 - 192), rc.bottom - rc.bottom, SWP_NOMOVE);
+				if (test) {
+					test = GetLastError();
+				}
+			}
+
+			StretchDIBits(hdc, 0, 0, width * 2, 128,
+				0, 0, width, 64,
 				LCD_image(&lcd),
 				bi,
 				DIB_RGB_COLORS,

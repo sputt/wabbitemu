@@ -755,12 +755,12 @@ void port31_83pse(CPU_t *cpu, device_t *dev) {
 	XTAL_t* xtal = (XTAL_t *) dev->aux;
 	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev) - 0x30) / 3];
 	if (cpu->input) {
-		cpu->bus  = timer->loop;
+		cpu->bus  = timer->loop ? 1 : 0;
 		cpu->bus += timer->interrupt ? 2 : 0;
 		cpu->bus += timer->underflow ? 4 : 0;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		timer->loop			= cpu->bus & 0x01;
+		timer->loop			= cpu->bus & 0x01 ? 1 : 0;
 		timer->interrupt	= cpu->bus & 0x02 ? 1 : 0;
 		timer->underflow	= FALSE;
 		timer->generate		= FALSE;
@@ -769,15 +769,15 @@ void port31_83pse(CPU_t *cpu, device_t *dev) {
 }
 
 
-void port32_83pse(CPU_t *cpu, device_t *dev) {
-	XTAL_t* xtal = (XTAL_t *) dev->aux;
-	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev)-0x30)/3];
+
+void handlextal(CPU_t *cpu,XTAL_t* xtal) {
+	TIMER_t* timer = &xtal->timers[0];
 	
 	// overall xtal timer ticking
 	xtal->ticks = (unsigned long long)(tc_elapsed(cpu->timer_c) * 32768.0);
-	xtal->lastTime = tc_elapsed(cpu->timer_c);
+	xtal->lastTime = ((double) xtal->ticks / 32768.0);
 	
-	for(int i = 0; i < NumElm(xtal->timers); i++)
+	for (int i = 0; i < NumElm(xtal->timers); i++)
 	{
 		timer = &xtal->timers[i];
 		if (timer->active)
@@ -824,6 +824,13 @@ void port32_83pse(CPU_t *cpu, device_t *dev) {
 		if (timer->generate && !cpu->halt)
 			cpu->interrupt = TRUE;
 	}
+}
+		
+void port32_83pse(CPU_t *cpu, device_t *dev) {
+	XTAL_t* xtal = (XTAL_t *) dev->aux;
+	TIMER_t* timer = &xtal->timers[(DEV_INDEX(dev)-0x30)/3];
+	
+	handlextal(cpu, xtal);	
 		
 	if (cpu->input) {
 		cpu->bus = timer->count;

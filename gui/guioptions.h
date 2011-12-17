@@ -14,7 +14,7 @@ TCHAR* GetFriendlyMenuText(HMENU, int, UINT);
 void RecurseAddItems(HMENU, TCHAR *);
 BOOL IsValidCmdRange(WORD);
 void DoPropertySheet(HWND);
-void ChangeCommand(HWND);
+void ChangeCommand();
 TCHAR* NameFromAccel(ACCEL);
 int GetNumKeyEntries();
 void AssignAccel(HWND);
