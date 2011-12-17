@@ -22,8 +22,6 @@ static RECT VTrc = {-1, -1, -1, -1};
 static VARTREEVIEW_t Tree[MAX_CALCS];
 static BOOL Tree_init = FALSE;
 
-void test_function(int num);
-
 BOOL VarTreeOpen() {
 	HWND vardialog = FindWindow(NULL, _T("Calculator Variables"));
 	if (vardialog) {
@@ -41,8 +39,7 @@ HWND CreateVarTreeList(HWND hwndParent, LPCALC lpCalc) {
 		if (!InitCommonControlsEx(&icc)) {
 			return NULL;
 		}
-		HWND hwndDialog = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_VARLIST), NULL, DlgVarlist);
-		SetWindowLongPtr(hwndDialog, GWLP_USERDATA, (LONG_PTR) lpCalc);
+		HWND hwndDialog = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_VARLIST), hwndParent, DlgVarlist, (LPARAM) lpCalc);
 		return hwndDialog;
 	}
 	return NULL;
@@ -80,13 +77,18 @@ symbol83P_t *GetSymbolVariable(HTREEITEM hTreeItem, int *slot) {
 }
 
 INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+	static LPCALC lpCalc;
 	switch (Message) {
 		case WM_INITDIALOG:
 		{
+			lpCalc = (LPCALC) lParam;
 			g_hwndVarTree = GetDlgItem(hwnd, IDC_TRV1);
 			HIMAGELIST hIL = ImageList_LoadImage(g_hInst, _T("TIvarIcons"), 
 													16, 0, RGB(0,255,0),
 													IMAGE_BITMAP, LR_CREATEDIBSECTION);
+			HICON hIcon = LoadIcon(g_hInst, _T("w"));
+			SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)	hIcon);
+			DeleteObject(hIcon);
 			if (!hIL) {
 				_tprintf_s(_T("Image list not loaded"));
 			} else {
@@ -99,14 +101,22 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				MoveWindow(hwnd, VTrc.left, VTrc.top, VTrc.right - VTrc.left, VTrc.bottom - VTrc.top, TRUE);
 			}
 			RefreshTreeView(TRUE);
+			SendMessage(hwnd, WM_SIZE, 0, 0);
 			return TRUE;
 		}
 		case WM_SIZE: {
 			GetWindowRect(hwnd, &VTrc);
 			int width = VTrc.right - VTrc.left - 14 - 6 - 8;
-			int height = VTrc.bottom-VTrc.top - 38 - 30 - 73;
+			int height = VTrc.bottom - VTrc.top - 38 - 30 - 73;
 			MoveWindow(g_hwndVarTree, 6, 30, width, height, TRUE);
-			break;
+			SetWindowPos(GetDlgItem(hwnd, IDC_TXT_NAME), NULL, 15, height + 2 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_LAB_ADDRESS), NULL, 6, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_TXT_ADDRESS), NULL, 65, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_LAB_PAGE), NULL, 6, height + 40 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_TXT_PAGE), NULL, 65, height + 40 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_LAB_RAM), NULL, 150, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_TXT_RAM), NULL, 205, height + 20 + 35, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			return 0;
 		}
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
@@ -114,7 +124,6 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					RefreshTreeView(FALSE);
 					break;
 				case IDM_VARGOTODEBUGGER: {
-					LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					HTREEITEM hTreeItem = TreeView_GetSelection(g_hwndVarTree);
 					waddr_t waddr;
 					symbol83P_t *symbol = NULL;
@@ -515,6 +524,7 @@ void RefreshTreeView(BOOL New) {
 								case StrngObj86:
 									Tree[slot].hVars[i] = InsertVar(Tree[slot].hString, tmpstring, icon);
 									break;
+								case ConstObj86:
 								case RealObj86:
 								case CplxObj86:
 									Tree[slot].hVars[i] = InsertVar(Tree[slot].hNumber, tmpstring, icon);
@@ -525,6 +535,7 @@ void RefreshTreeView(BOOL New) {
 									break;
 								case MatObj86:
 								case CMatObj86:
+								case VectObj86:
 									Tree[slot].hVars[i] = InsertVar(Tree[slot].hMatrix, tmpstring, icon);
 									break;
 								case EquObj86:

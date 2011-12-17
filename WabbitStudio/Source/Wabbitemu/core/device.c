@@ -34,11 +34,7 @@ int device_output(CPU_t *cpu, unsigned char dev) {
 			cpu->output = FALSE;
 			return 1;
 		}
-	}/* else if (dev == 0xFF) {
-//		if (isprint(cpu->bus) || cpu->bus=='\r' || cpu->bus=='\n' ) {
-			fputc(cpu->bus,stdout);
-//		}
-	}*/
+	}
 	return 0;
 }
 
@@ -56,7 +52,6 @@ int device_input(CPU_t *cpu, unsigned char dev) {
 		}
 	} else  {
 		cpu->bus = 0xFF;
-	//	printf("in port %02X not active\n",dev);
 		return 1;
 	}
 	return 0;
@@ -73,8 +68,6 @@ void Modify_interrupt_device(CPU_t *cpu, int port, int skip) {
 	for(i = 0; i < cpu->pio.num_interrupt; i++) {
 		if (cpu->pio.interrupt[i] == port) {
 			cpu->pio.skip_factor[i] = skip;
-			break;
-		} else if (i >= cpu->pio.num_interrupt) {
 			break;
 		}
 	}

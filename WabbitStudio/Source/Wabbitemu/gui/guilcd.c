@@ -340,13 +340,12 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 
 	} else {
 		screen = LCD_image(lcd);
-		int scale = lpCalc->SkinEnabled ? 2 : lpCalc->scale;
-		if (lcd->width * scale != (rc.right - rc.left)) {
+		if ((rc.right - rc.left) % lcd->width) {
 			Bitmap lcdBitmap(bi, screen);
 			Graphics g(hdc);
-			g.SetInterpolationMode(InterpolationMode::InterpolationModeLowQuality);
+			g.SetInterpolationMode(InterpolationModeLowQuality);
 			Rect rect(rc.left, rc.top, rc.right - rc.left + 1,  rc.bottom - rc.top + 1);
-			g.DrawImage(&lcdBitmap, rect, 0, 0, lcd->width, 64, Unit::UnitPixel);
+			g.DrawImage(&lcdBitmap, rect, 0, 0, lcd->width, 64, UnitPixel);
 			rect.Width--;
 			rect.Height--;
 			g.SetClip(rect);

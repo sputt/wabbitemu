@@ -67,9 +67,9 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 			POINT p = {r.left, r.top};
 			ScreenToClient(hwndContainer, &p);
 			
-			// Get distance of listbox to right edge
+			// Get distance of list box to right edge
 			// this will be the same as distance between
-			// right edge of listbox and preview pane
+			// right edge of list box and preview pane
 			int controlGap = rc.right - r.right;
 			
 			// New list width
@@ -85,14 +85,16 @@ static UINT_PTR CALLBACK OFNHookProc(HWND hwndDlg, UINT Message, WPARAM wParam, 
 					lstHeight,
 					HookOptions
 				);
-			if (hwndPreview == NULL) return FALSE;
+			if (hwndPreview == NULL) {
+				return FALSE;
+			}
 			
 			// Resize list to make room for new controls
 			SetWindowPos(hwndLst, NULL, 0, 0, lstWidth, lstHeight, SWP_NOZORDER | SWP_NOMOVE);
 			
 			// Resize main window to 25% larger
-			//GetWindowRect(hwndContainer, &r);
-			//SendMessage(hwndContainer, WM_SIZE, SIZE_RESTORED, MAKELPARAM((r.right-r.left)*5/4, r.bottom-r.top));
+			GetWindowRect(hwndContainer, &r);
+			SendMessage(hwndContainer, WM_SIZE, SIZE_RESTORED, MAKELPARAM((r.right-r.left)*5/4, r.bottom-r.top));
 			return TRUE;
 		}
 		case WM_NOTIFY: {

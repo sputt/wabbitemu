@@ -2,6 +2,7 @@
 
 #include "gui.h"
 #include "calc.h"
+#include "guibuttons.h"
 #include "guidetached.h"
 
 extern HINSTANCE g_hInst;
@@ -22,6 +23,14 @@ LRESULT CALLBACK DetachedProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 		case WM_DESTROY:
 			lpCalc->hwndDetachedLCD = NULL;
 			lpCalc->hwndDetachedFrame = NULL;
+			return FALSE;
+		case WM_KEYDOWN:
+			HandleKeyDown(lpCalc, wParam);
+			return FALSE;
+		case WM_KEYUP:
+			if (wParam) {
+				HandleKeyUp(lpCalc, wParam);
+			}
 			return FALSE;
 		case WM_COMMAND:
 			return FALSE;

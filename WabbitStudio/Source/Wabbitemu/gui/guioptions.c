@@ -869,7 +869,7 @@ key_string ti83pkeystrings[KEY_STRING_SIZE] = {
 extern keyprog_t keygrps[256];
 extern keyprog_t defaultkeys[256];
 ACCEL hNewAccels[256];		// working copy
-HWND hListMenu, hHotKey, hEmuKey, hListKeys, hAssignButton, hRemoveButton, hResetButton;
+HWND hListMenu, hHotKey, hEmuKey, hListKeys, hAssignButton, hRemoveButton, hResetButton, hComboBox;
 HMENU hMenu;
 int m_nCommands; 			// total commands listed (all categories)
 int nAccelStore, nAccelUsed;		// how many ACCELs allocated and how many used already
@@ -887,7 +887,7 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		case WM_INITDIALOG: {
 			memcpy(backupkeys, keygrps, 256 *sizeof(keyprog_t));
 			int i;
-			HWND hComboBox = GetDlgItem(hwnd, IDC_COMBO_MENU);
+			hComboBox = GetDlgItem(hwnd, IDC_COMBO_MENU);
 			hMenu = LoadMenu(g_hInst, (LPCTSTR) IDR_MAIN_MENU);
 			hListMenu = GetDlgItem(hwnd, IDC_LIST_MENU);
 			hListKeys = GetDlgItem(hwnd, IDC_LIST_KEYS);
@@ -919,7 +919,9 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					if (hEmuKey == ((HWND) lParam)) {
 						enable = _tcslen(keyPressBuf) > 0;
 						Edit_SetText(hEmuKey, keyPressBuf);
-					} else enable = (BOOL) SendMessage(hHotKey, HKM_GETHOTKEY, 0 , 0);
+					} else {
+						enable = (BOOL) SendMessage(hHotKey, HKM_GETHOTKEY, 0 , 0);
+					}
 					EnableWindow(hAssignButton, enable);
 					break;
 				}
@@ -936,15 +938,17 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 				case BN_CLICKED: {
 					HWND hSender = (HWND) lParam;
 					if (hSender == hAssignButton) {
-						if (accelerators)
+						if (accelerators) {
 							AssignAccel(hwnd);
-						else
+						} else {
 							AssignEmuKey(hwnd);
+						}
 					} else if (hSender == hRemoveButton) {
-						if (accelerators)
+						if (accelerators) {
 							RemoveAccel();
-						else
+						} else {
 							RemoveEmuKey();
+						}
 					} else if (hSender == hResetButton) {
 						//reload whatever is packed in with us
 						HACCEL hAccelNew = LoadAccelerators(g_hInst, _T("Z80Accel"));
@@ -953,7 +957,7 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 						DestroyAcceleratorTable(hAccelNew);
 						//reload normal emu keys
 						memcpy(keygrps, defaultkeys, sizeof(keyprog_t) * 256);
-						ChangeCommand(hwnd);
+						ChangeCommand();
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
 					break;
@@ -967,7 +971,7 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					memcpy(keygrps, backupkeys, sizeof(keyprog_t) * 256);
 					break;
 				case LVN_ITEMCHANGED: {
-					ChangeCommand(hwnd);
+					ChangeCommand();
 					break;
 				}
 				case PSN_APPLY: {
@@ -1015,14 +1019,14 @@ void AssignEmuKey(HWND hwnd) {
 				return;
 			keygrps[i].bit = LOWORD(newCmd);
 			keygrps[i].group = HIWORD(newCmd);
-		} else if(nEmuUsed < nEmuStore) { // i'm sure capacity will never be reached
+		} else if(nEmuUsed < nEmuStore) { // I'm sure capacity will never be reached
 			keygrps[nEmuUsed].vk = key;
 			keygrps[nEmuUsed].bit = LOWORD(newCmd);
 			keygrps[nEmuUsed].group = HIWORD(newCmd);
 			nEmuUsed++;
 			keygrps[nEmuUsed].vk = -1;
 		}
-		ChangeCommand(hwnd); // reflect changes
+		ChangeCommand(); // reflect changes
 		// this key can only be clicked, and if it is default & disabled, the key navigation gets screwy
 		// so make something else default item
 		SetFocus(hHotKey);
@@ -1064,7 +1068,7 @@ void AssignAccel(HWND hwnd) {
 	wModifiers = HIBYTE(LOWORD(key));
 	int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED);
 	if(wVirtualKeyCode && active >= 0) {
-		// i don't really understand that: is this ALWAYS a virt key? Looks like it!
+		//I don't really understand that: is this ALWAYS a virtual key? Looks like it!
 		BYTE fVirt = (wModifiers & (HOTKEYF_SHIFT | HOTKEYF_CONTROL | HOTKEYF_ALT)) << 2;
 		fVirt |= FVIRTKEY | FNOINVERT;							// various checks: valid range, not already assigned et cetera
 		LVITEM lvi;
@@ -1072,24 +1076,40 @@ void AssignAccel(HWND hwnd) {
 		lvi.mask = LVIF_PARAM;
 		ListView_GetItem(hListMenu, &lvi);
 		int newCmd = (int) lvi.lParam;
-		for (i = 0; i < nAccelUsed; i++)
-			if(hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == wVirtualKeyCode)
+		for (i = 0; i < nAccelUsed; i++) {
+			if (hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == wVirtualKeyCode) {
 				break;
+			}
+		}
 		if (i < nAccelUsed) {								// cheeky: could this be the same item being assigned a double key?
-			if (newCmd == hNewAccels[i].cmd)
+			if (newCmd == hNewAccels[i].cmd) {
 				return; // no actions required
+			}
 			// ask for shortcut overwrite confirmation
 			if(MessageBox(hwnd, _T("This key combination is already in use.\nErase the old command assignment?"),
-				_T("Overwrite?"), MB_ICONQUESTION | MB_YESNO) == IDNO)
+				_T("Overwrite?"), MB_ICONQUESTION | MB_YESNO) == IDNO) {
 				return;
+			}
 			hNewAccels[i].cmd = newCmd;
-		} else if(nAccelUsed < nAccelStore) { // i'm sure capacity will never be reached
+		} else if (nAccelUsed < nAccelStore) { // I'm sure capacity will never be reached
 			hNewAccels[nAccelUsed].fVirt = fVirt;
 			hNewAccels[nAccelUsed].key = wVirtualKeyCode;
 			hNewAccels[nAccelUsed].cmd = newCmd;
 			nAccelUsed++;
 		}
-		ChangeCommand(hwnd); // reflect changes
+		HMENU hMenu = GetMenu(lpCalc->hwndFrame);
+		int menuItem = ComboBox_GetCurSel(hComboBox);
+		HMENU hSubMenu = GetSubMenu(hMenu, menuItem);
+		TCHAR text[256];
+		StringCbCopy(text, sizeof(text), GetFriendlyMenuText(hSubMenu, active, 0));
+		StringCbCat(text, sizeof(text), _T("\t"));
+		StringCbCat(text, sizeof(text), NameFromAccel(hNewAccels[i]));
+		MENUITEMINFO mii;
+		mii.cbSize = sizeof(MENUITEMINFO);
+		mii.fMask = MIIM_STRING;
+		mii.dwTypeData = text;
+		SetMenuItemInfo(hSubMenu, active, TRUE, &mii);
+		ChangeCommand(); // reflect changes
 		// this key can only be clicked, and if it is default & disabled, the key navigation gets screwy
 		// so make something else default item
 		SetFocus(hHotKey);
@@ -1099,11 +1119,12 @@ void AssignAccel(HWND hwnd) {
 void RemoveAccel() {
 	int idx = ListBox_GetCurSel(hListKeys);
 	LRESULT lr = ListBox_GetItemData(hListKeys, idx);
+	int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED);
 	if (lr != LB_ERR) {
 		int i;
 		BYTE fVirt = (BYTE) LOWORD(lr);
 		WORD key = HIWORD(lr);
-		for(i = 0; i < nAccelUsed; i++)
+		for(i = 0; i < nAccelUsed; i++) {
 			if (hNewAccels[i].fVirt == fVirt && hNewAccels[i].key == key) {
 				ListBox_DeleteString(hListKeys, idx);
 				// pack working accelerator table too
@@ -1114,7 +1135,18 @@ void RemoveAccel() {
 				EnableWindow(hRemoveButton, FALSE);
 				break;
 			}
+		}
 	}
+	HMENU hMenu = GetMenu(lpCalc->hwndFrame);
+	int menuItem = ComboBox_GetCurSel(hComboBox);
+	HMENU hSubMenu = GetSubMenu(hMenu, menuItem);
+	TCHAR text[256];
+	StringCbCopy(text, sizeof(text), GetFriendlyMenuText(hSubMenu, active, 0));
+	MENUITEMINFO mii;
+	mii.cbSize = sizeof(MENUITEMINFO);
+	mii.fMask = MIIM_STRING;
+	mii.dwTypeData = text;
+	SetMenuItemInfo(hSubMenu, active, TRUE, &mii);
 }
 
 void ChangeMenuCommands(HWND hSender) {
@@ -1169,7 +1201,7 @@ TCHAR* NameFromVKey(UINT nVK) {
 	return str; // internationalization ready, sweet!
 }
 
-void ChangeCommand(HWND hwnd) {		// new command selected
+void ChangeCommand() {		// new command selected
 	int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED), idx;
 	TCHAR *name;
 	ListBox_ResetContent(hListKeys);
@@ -1297,20 +1329,23 @@ TCHAR* GetFriendlyMenuText(HMENU hMenu, int nItem, UINT uFlag) {
 	TCHAR *str = menu_text_buf;
 	TCHAR *start = str;
 	int i = 0;
-	while(1) {
+	while (1) {
 		TCHAR ch = buf[i++];
-		if (ch == '&')
+		if (ch == '&') {
 			continue;
-		else if (ch == '\t') {
+		} else if (ch == '\t') {
 			*str++ = 0;
 			break;
-		} else
-			*str++ = ch; // multibytes not an issue
-		if(!ch)
+		} else {
+			*str++ = ch; // multi-bytes not an issue
+		}
+		if (!ch) {
 			break;
+		}
 	}	// finally remove any trailing dots (usually "...")
 	str -= 2;
-	while(*str == '.')
+	while (*str == '.') {
 		*str-- = 0;
+		}
 	return start;
 }

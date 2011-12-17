@@ -7,14 +7,62 @@
 #include "resource.h"
 
 extern HIMAGELIST hImageList;
+extern HINSTANCE g_hInst;
 
 LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	static HWND hListKeys;
 	static LPCALC lpCalc;
 	switch (uMsg) {
 		case WM_INITDIALOG: {
+			HICON hIcon = LoadIcon(g_hInst, _T("w"));
+			SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)	hIcon);
+			DeleteObject(hIcon);
+
 			hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
 			lpCalc = (LPCALC) GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
+
+			if (hImageList) {
+				ImageList_Destroy(hImageList);
+			}
+			POINT pt;
+			hImageList = ImageList_Create(60, 60, ILC_COLOR32 | ILC_MASK, 8*7, 0);
+
+			HDC hdcMask = CreateCompatibleDC(lpCalc->hdcButtons);
+			HBITMAP hbmMask = CreateCompatibleBitmap(lpCalc->hdcButtons, 60, 60);
+			SelectObject(hdcMask, hbmMask);
+
+			HDC hdcButton = CreateCompatibleDC(lpCalc->hdcButtons);
+			HBITMAP hbmButton  = CreateCompatibleBitmap(lpCalc->hdcButtons, 60, 60);
+			SelectObject(hdcButton, hbmButton);
+
+			RECT r = {0, 0, 60, 60};
+			HBRUSH br = CreateSolidBrush(RGB(0, 255, 0));
+
+			for (int group = 0; group < 7; group++) {
+				for (int bit = 0; bit < 8; bit++) {
+					extern POINT *ButtonCenter[64];
+					if ((*ButtonCenter)[bit + (group << 3)].x != 0xFFF) {
+						pt.x	= (*ButtonCenter)[bit + (group << 3)].x;
+						pt.y	= (*ButtonCenter)[bit + (group << 3)].y;
+
+
+						HDC hdcButtons = CreateCompatibleDC(lpCalc->hdcButtons);
+						HBITMAP hbm = CreateCompatibleBitmap(lpCalc->hdcButtons, 64, 64);
+						HGDIOBJ hbmOld = SelectObject(hdcButtons, hbm);
+
+						FillRect(hdcButtons, &r, br);
+						
+						DrawButtonStateNoSkin(hdcButtons, lpCalc->hdcSkin, lpCalc->hdcKeymap, &pt, DBS_COPY);
+						DrawButtonShadow(hdcButtons, lpCalc->hdcKeymap, &pt);
+
+						SelectObject(hdcButtons, hbmOld);
+						DeleteDC(hdcButtons);
+
+						ImageList_AddMasked(hImageList, hbm, RGB(0, 255, 0));
+						DeleteObject(hbmButton);
+					}
+				}
+			}
 
 			ListView_SetView(hListKeys, LV_VIEW_TILE);
 			SIZE size = { 70, 70 };
