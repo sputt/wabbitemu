@@ -8,11 +8,11 @@
 
 #define WABBITVER		_T("1.5")
 
-#define g_szWebPage		_T("http://wabbit.codeplex.com")//"http://www.revsoft.org/emu"
+#define g_szWebPage		_T("http://wabbit.codeplex.com")
 #ifdef _WIN64
-#define g_szDownload	_T("http://group.revsoft.org/wabbitemu64.exe")//"http://wabbit.codeplex.com/releases/view/44625#DownloadId=122222"
+#define g_szDownload	_T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/x64/Wabbitemu.exe")
 #else
-#define g_szDownload	_T("http://group.revsoft.org/wabbitemu.exe")//"http://wabbit.codeplex.com/releases/view/44625#DownloadId=122222"
+#define g_szDownload	_T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Wabbitemu.exe")
 #endif
 
 #define g_szAppName 	_T("z80")
@@ -27,7 +27,7 @@
 #define g_szToolbar		_T("wabtool")
 #define g_szSubbar		_T("wabsub")
 #define g_szDetachedName 	_T("wabbitdetached")
-#define g_szDetachedLCDName 	_T("wabbitdetachedlcd")
+#define g_szDetachedLCDName _T("wabbitdetachedlcd")
 #define g_szSmallButtonsName _T("WABBITSMALLBUTTON")
 
 #define ID_STATUSBAR	50

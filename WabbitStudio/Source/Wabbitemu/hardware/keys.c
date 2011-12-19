@@ -600,10 +600,10 @@ void keypad_press(CPU_t *cpu, int group, int bit)
 	}
 }
 
-keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk)
+keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk, BOOL *changed)
 {
 	int i;
-	keypad_t * keypad = cpu->pio.keypad;
+	keypad_t *keypad = cpu->pio.keypad;
 
 	if (keypad == NULL) {
 		return NULL;
@@ -612,7 +612,20 @@ keyprog_t *keypad_key_press(CPU_t *cpu, unsigned int vk)
 	{
 		if (keygrps[i].vk == vk)
 		{
-			keypad_press(cpu, keygrps[i].group, keygrps[i].bit);
+			int orig, group = keygrps[i].group, bit = keygrps[i].bit;
+			if (group == KEYGROUP_ON && bit == KEYBIT_ON) {
+				orig = keypad->on_pressed;
+			} else {
+				orig = keypad->keys[group][bit];
+			}
+			keypad_press(cpu, group, bit);
+			if (changed) {
+				if (group == KEYGROUP_ON && bit == KEYBIT_ON) {
+					*changed = orig != keypad->on_pressed;
+				} else {
+					*changed = orig != keypad->keys[group][bit];
+				}
+			}
 			return &keygrps[i];
 		}
 	}	

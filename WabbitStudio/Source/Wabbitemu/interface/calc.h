@@ -124,6 +124,7 @@ typedef struct tagCALC {
 	BOOL bCustomSkin;
 	BOOL bAlwaysOnTop;
 	BOOL bAlphaBlendLCD;
+	BOOL bTIOSDebug;
 	TCHAR skin_path[256];
 	TCHAR keymap_path[256];
 	IWabbitemu *pWabbitemu;

@@ -278,6 +278,9 @@ int memory_init_86(memc *mc) {
 	
 	mc->mem_read_break_callback = mem_debug_callback;
 	mc->mem_write_break_callback = mem_debug_callback;
+#ifdef WINVER
+	mc->breakpoint_manager_callback = check_break_callback;
+#endif
 
 	/* Set Number of Pages here */
 	mc->flash_pages = 16;

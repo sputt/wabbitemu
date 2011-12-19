@@ -26,7 +26,7 @@ typedef struct KEYPROG {
 keypad_t *keypad_init(CPU_t*);
 void keypad(CPU_t *, device_t *);
 
-keyprog_t *keypad_key_press(CPU_t*, unsigned int vk);
+keyprog_t *keypad_key_press(CPU_t*, unsigned int vk, BOOL *changed = NULL);
 keyprog_t *keypad_key_release(CPU_t*, unsigned int vk);
 void keypad_press(CPU_t *cpu, int group, int bit);
 void keypad_release(CPU_t *cpu, int group, int bit);

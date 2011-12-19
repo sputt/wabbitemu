@@ -363,11 +363,20 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					else
 						StringCbPrintf(szVal, sizeof(szVal), _T("%04X"), addr);
 				} else {
-					if (addr < 0)
+					if (addr < 0) {
 						StringCbPrintf(szVal, sizeof(szVal), _T("%02X 0000"), addr / PAGE_SIZE);
-					else
+					} else {
+						int ramVal;
+						if (lpDebuggerCalc->cpu.pio.model < TI_73) {
+							ramVal = 0x00;
+						} else if (lpDebuggerCalc->cpu.pio.model < TI_83PSE) {
+							ramVal = 0x40;
+						} else {
+							ramVal = 0x80;
+						}
 						StringCbPrintf(szVal, sizeof(szVal), _T("%02X %04X"), addr / PAGE_SIZE + 
-										(mps->type == RAM ? (lpDebuggerCalc->cpu.pio.model <= TI_83P ? 0x40 : 0x80) : 0), addr % PAGE_SIZE);
+										(mps->type == RAM ? ramVal : 0), addr % PAGE_SIZE);
+					}
 				}
 
 				max_addr = GetMaxAddr(mps);

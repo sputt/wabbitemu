@@ -422,13 +422,21 @@ void cycle_pcs(dp_settings *dps) {
 	dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
 }
 
+void reverse_cycle_pcs(dp_settings *dps) {
+	for (int i = 0; i < PC_TRAILS - 1; i++) {
+		dps->nPCs[i] = dps->nPCs[i + 1];
+	}
+	dps->nPCs[PC_TRAILS - 1] = -1;
+	dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
+}
+
 void invalidate_pcs(HWND hwnd, dp_settings *dps) {
 	for (int i = 0; i < PC_TRAILS; i++) {
 		InvalidateSel(hwnd, addr_to_index(dps, dps->nPCs[i]));
 	}
 }
 
-void db_step_finish(HWND hwnd, dp_settings *dps) {
+void db_step_finish(HWND hwnd, dp_settings *dps, BOOL step_back = FALSE) {
 	short past_last = lpDebuggerCalc->cpu.pc - dps->zinf[dps->nRows-1].waddr.addr + dps->zinf[dps->nRows-1].size;
 	short before_first = dps->zinf[0].waddr.addr - lpDebuggerCalc->cpu.pc;
 	InvalidateSel(hwnd, dps->iSel);
@@ -470,7 +478,9 @@ void db_step_finish(HWND hwnd, dp_settings *dps) {
 	}
 
 	invalidate_pcs(hwnd, dps);
-	cycle_pcs(dps);
+	if (!step_back) {
+		cycle_pcs(dps);
+	}
 	InvalidateSel(hwnd, addr_to_index(dps, dps->nPCs[0]));
 	Debug_UpdateWindow(GetParent(GetParent(hwnd)));
 }
@@ -590,9 +600,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			SetWindowPos(dps->hwndHeader, wp.hwndInsertAfter, wp.x, wp.y,
 				wp.cx, wp.cy, wp.flags);
 
-			if (rc.bottom < dps->cyHeader) rc.bottom = dps->cyHeader;
-			if (dps->cyRow == 0) return 0;
-			dps->nRows = (rc.bottom - dps->cyHeader)/dps->cyRow + 1;
+			if (rc.bottom < dps->cyHeader) {
+				rc.bottom = dps->cyHeader;
+			}
+			if (dps->cyRow == 0) {
+				return 0;
+			}
+			dps->nRows = (rc.bottom - dps->cyHeader) / dps->cyRow + 1;
 
 			SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 			// Assign page length to include length sum of all commands on screen
@@ -811,13 +825,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			SetDCPenColor(hdc, GetSysColor(COLOR_BTNFACE));
 
 			if (dps->iSel + dps->NumSel > 0) {
-				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iSel, dps->max_right, dps->cyRow * dps->iSel + dps->cyRow*dps->NumSel};
+				RECT sr = {COLUMN_X_OFFSET / 2, dps->cyRow * dps->iSel, dps->max_right, dps->cyRow * dps->iSel + dps->cyRow*dps->NumSel};
 				OffsetRect(&sr, 0, dps->cyHeader);
 				DrawItemSelection(hdc, &sr, hwnd == GetFocus(), FALSE, 220);
 			}
 
 			if (dps->iHot != -1) {
-				RECT sr = {COLUMN_X_OFFSET/2, dps->cyRow * dps->iHot, dps->max_right, dps->cyRow * dps->iHot + dps->cyRow};
+				RECT sr = {COLUMN_X_OFFSET / 2, dps->cyRow * dps->iHot, dps->max_right, dps->cyRow * dps->iHot + dps->cyRow};
 				OffsetRect(&sr, 0, dps->cyHeader);
 				DrawItemSelection(hdc, &sr, TRUE, FALSE, 130);
 			}
@@ -838,7 +852,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			i = max((ur.top - dps->cyHeader) / (int) dps->cyRow, 0);
 			OffsetRect(&tr, 0, dps->cyHeader + (i * dps->cyRow));
 
-			end_i = (ur.bottom - dps->cyHeader + dps->cyRow - 1 - 1) / dps->cyRow;
+			end_i = ((int) (ur.bottom - dps->cyHeader + dps->cyRow - 1 - 1)) / (int) dps->cyRow;
 
 			for (; i < end_i; i++, OffsetRect(&tr, 0, dps->cyRow)) {
 				BOOL do_gradient = FALSE;
@@ -1040,25 +1054,57 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case IDM_RUN_RUN:
 				case DB_RUN: {
+					if (lpDebuggerCalc->running) {
+						SendMessage(hwnd, WM_COMMAND, DB_STOP, 0);
+						break;
+					}
+					HMENU hMenu = GetMenu(lpDebuggerCalc->hwndDebug);
+					MENUITEMINFO mii;
+					mii.cbSize = sizeof(MENUITEMINFO);
+					mii.fMask = MIIM_STRING;
+					mii.dwTypeData = _T("Stop\tF5");
+					SetMenuItemInfo(hMenu, IDM_RUN_RUN, FALSE, &mii);
 					int i;
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					//run the calculator
+					CPU_step(&lpDebuggerCalc->cpu);
+					calc_unpause_linked();
+					SendMessage(lpDebuggerCalc->hwndFrame, WM_COMMAND, IDM_CALC_PAUSE, 0);
+					//disable interactions
 					EnableWindow(hwnd, FALSE);
+					//this will change so the run/stop button says Stop
+					extern HWND htoolbar;
+					HWND hButton = FindWindowEx(htoolbar, NULL, _T("BUTTON"), _T("Run"));
+					if (hButton) {
+						TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
+						ChangeRunButtonIconAndText(tbb);
+					}
 					Debug_UpdateWindow(hwnd);
 					for (i = 0; i < PC_TRAILS; i++) {
 						dps->nPCs[i] = -1;
 					}
-					CPU_step(&lpDebuggerCalc->cpu);
-					calc_unpause_linked();
-					SendMessage(lpDebuggerCalc->hwndFrame, WM_COMMAND, IDM_CALC_PAUSE, 0);
 					break;
 				}
 				case DB_STOP: {
+					HMENU hMenu = GetMenu(lpDebuggerCalc->hwndDebug);
+					MENUITEMINFO mii;
+					mii.cbSize = sizeof(MENUITEMINFO);
+					mii.fMask = MIIM_STRING;
+					mii.dwTypeData = _T("Run\tF5");
+					SetMenuItemInfo(hMenu, IDM_RUN_RUN, FALSE, &mii);
 					int i;
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					EnableWindow(hwnd, TRUE);
 					SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 					db_step_finish(hwnd, dps);
 					lpDebuggerCalc->running = FALSE;
+					//this will change so the run/stop button says Run
+					extern HWND htoolbar;
+					HWND hButton = FindWindowEx(htoolbar, NULL, _T("BUTTON"), _T("Stop"));
+					if (hButton) {
+						TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
+						ChangeRunButtonIconAndText(tbb);
+					}
 					Debug_UpdateWindow(hwnd);
 					break;
 				}
@@ -1084,7 +1130,10 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 #ifdef WITH_REVERSE
 				case DB_STEPBACK: {
+					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					CPU_step_reverse(&lpDebuggerCalc->cpu);
+					reverse_cycle_pcs(dps);
+					db_step_finish(hwnd, dps, TRUE);
 					break;
 				}
 #endif

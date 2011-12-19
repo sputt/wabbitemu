@@ -163,10 +163,11 @@ BOOL DelChunk(SAVESTATE_t *save, char *tag) {
 }
 
 
-void CheckPNT(CHUNK_t* chunk) {
+BOOL CheckPNT(CHUNK_t* chunk) {
 	if (chunk->size < chunk->pnt) {
-		_tprintf_s(_T("Chunk size is %d while pnt is %d \n"), chunk->size, chunk->pnt);
+		return FALSE;
 	}
+	return TRUE;
 }
 
 BOOL WriteChar(CHUNK_t* chunk, char value) {
@@ -304,15 +305,17 @@ BOOL WriteBlock(CHUNK_t* chunk, unsigned char *pnt, int length) {
 	
 
 	
-unsigned char ReadChar(CHUNK_t* chunk) {
+unsigned char ReadChar(CHUNK_t* chunk, BOOL *valOK = NULL) {
 	unsigned char value;
 	value = chunk->data[chunk->pnt];
 	chunk->pnt += sizeof(unsigned char);
-	CheckPNT(chunk);
+	if (valOK) {
+		*valOK = CheckPNT(chunk);
+	}
 	return value;
 }
 
-unsigned short ReadShort(CHUNK_t* chunk) {
+unsigned short ReadShort(CHUNK_t* chunk, BOOL *valOK = NULL) {
 	int i;
 	uint16_t value;
 	unsigned char *pnt = (unsigned char *)(&value);
@@ -324,11 +327,13 @@ unsigned short ReadShort(CHUNK_t* chunk) {
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
 	chunk->pnt += sizeof(value);
-	CheckPNT(chunk);
+	if (valOK) {
+		*valOK = CheckPNT(chunk);
+	}
 	return value;
 }
 
-unsigned int ReadInt(CHUNK_t* chunk) {
+unsigned int ReadInt(CHUNK_t* chunk, BOOL *valOK = NULL) {
 	int i;
 	uint32_t value;
 	unsigned char *pnt = (unsigned char *)(&value);
@@ -340,7 +345,9 @@ unsigned int ReadInt(CHUNK_t* chunk) {
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
 	chunk->pnt += sizeof(value);
-	CheckPNT(chunk);
+	if (valOK) {
+		*valOK = CheckPNT(chunk);
+	}
 	return value;
 }
 
@@ -454,11 +461,12 @@ void SaveCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	WriteInt(chunk, cpu->prefix);
 
 	
-	/*pio*/
+	/* pio */
 	for(i = 0; i < 256; i++) {
-		WriteInt(chunk, cpu->pio.interrupt[i]);
-		WriteInt(chunk, cpu->pio.skip_factor[i]);
-		WriteInt(chunk, cpu->pio.skip_count[i]);
+		interrupt *val = &cpu->pio.interrupt[i];
+		WriteInt(chunk, val->interrupt_val);
+		WriteInt(chunk, val->skip_factor);
+		WriteInt(chunk, val->skip_count);
 	}
 }
 	
@@ -737,9 +745,10 @@ void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	cpu->prefix = ReadInt(chunk);
 	int i;
 	for(i = 0; i < 256; i++) {
-		cpu->pio.interrupt[i] = ReadInt(chunk);
-		cpu->pio.skip_factor[i] = ReadInt(chunk);
-		cpu->pio.skip_count[i] = ReadInt(chunk);
+		interrupt *val = &cpu->pio.interrupt[i];
+		val->interrupt_val = ReadInt(chunk);
+		val->skip_factor = ReadInt(chunk);
+		val->skip_count = ReadInt(chunk);
 	}
 	
 }
@@ -844,28 +853,30 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 		if (chunk) {
 			for (int i = 0; i < num_ram_breaks; i++)
 			{
-				int addr = ReadInt(chunk);
-				waddr_t waddr;
-				waddr.addr = addr % PAGE_SIZE;
-				waddr.page = addr / PAGE_SIZE;
-				waddr.is_ram = TRUE;
-				BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
-				switch (type) {
-				case MEM_READ_BREAK:
-					set_mem_read_break(mem, waddr);
-					break;
-				case MEM_WRITE_BREAK:
-					set_mem_read_break(mem, waddr);
-					break;
-				default:
-					set_break(mem, waddr);
-					break;
+				BOOL valOk;
+				int addr = ReadInt(chunk, &valOk);
+				if (valOk) {
+					waddr_t waddr;
+					waddr.addr = addr % PAGE_SIZE;
+					waddr.page = addr / PAGE_SIZE;
+					waddr.is_ram = TRUE;
+					BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
+					switch (type) {
+					case MEM_READ_BREAK:
+						set_mem_read_break(mem, waddr);
+						break;
+					case MEM_WRITE_BREAK:
+						set_mem_read_break(mem, waddr);
+						break;
+					default:
+						set_break(mem, waddr);
+						break;
+					}
 				}
 			}
 		}
 	}
 }
-
 
 void LoadTIMER(SAVESTATE_t* save, timerc* time) {
 	CHUNK_t* chunk = FindChunk(save,TIMER_tag);
@@ -875,8 +886,6 @@ void LoadTIMER(SAVESTATE_t* save, timerc* time) {
 	time->elapsed	= ReadDouble(chunk);
 	time->lasttime	= ReadDouble(chunk);	// this isn't used.
 }
-
-
 
 void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	CHUNK_t* chunk = FindChunk(save,LCD_tag);
