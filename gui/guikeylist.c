@@ -71,15 +71,27 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			ltvi.dwFlags  = LVTVIF_FIXEDSIZE;
 			ltvi.dwMask   = LVTVIM_TILESIZE;
 			ltvi.sizeTile = size;
-
 			ListView_SetTileViewInfo(hListKeys, &ltvi);
+
+			ListView_SetColumnWidth(hwnd, 0, LVSCW_AUTOSIZE);
+
 			if (hImageList != ListView_GetImageList(hListKeys, LVSIL_NORMAL)) {
 				ListView_SetImageList(hListKeys, hImageList, LVSIL_NORMAL);
 			}
 			SetWindowTheme(hListKeys, L"explorer", NULL);
 
 			SendMessage(hwnd, WM_USER, REFRESH_LISTVIEW, 0);
+			SendMessage(hwnd, WM_SIZE, 0, 0);
 			return TRUE;
+		}
+		case WM_SIZE: {
+			RECT rc;
+			GetClientRect(hwnd, &rc);
+			SetWindowPos(hListKeys, NULL, 0, 0, rc.right - 10 - 10, rc.bottom - 10 - 40, SWP_NOMOVE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_BTN_CLEARKEYS), NULL, 10, rc.bottom - 40 + 5, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SetWindowPos(GetDlgItem(hwnd, IDC_BTN_SAVEKEYS), NULL, 130, rc.bottom - 40 + 5, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+			SendMessage(hwnd, WM_USER, REFRESH_LISTVIEW, 0);
+			break;
 		}
 		case WM_COMMAND: {
 			switch (HIWORD(wParam)) {

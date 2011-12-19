@@ -182,23 +182,23 @@ int CPU_init(CPU_t *cpu, memc *mem_c, timerc *timer_c) {
 	mem_c->port27_remap_count = 0;
 	mem_c->port28_remap_count = 0;
 	cpu->exe_violation_callback = mem_debug_callback;
+#ifdef WITH_REVERSE
+	cpu->prev_instruction = cpu->prev_instruction_list;
+#endif
 	return 0;
 }
 
 static void handle_pio(CPU_t *cpu) {
-	int i;
-	for (i = 0; i < cpu->pio.num_interrupt; i++) {
-		unsigned int skip_factor = cpu->pio.skip_factor[i];
-		if (skip_factor) {
-			unsigned int skip_count = cpu->pio.skip_count[i];
-			if (!skip_count) {
-				unsigned int interrupt = cpu->pio.interrupt[i];
-				device_control(cpu, interrupt);
+	for (int i = cpu->pio.num_interrupt; i >= 0 ; i--) {
+		interrupt_t *intVal = &cpu->pio.interrupt[i];
+		if (intVal->skip_factor) {
+			if (!intVal->skip_count) {
+				device_control(cpu, intVal->interrupt_val);
 			}
 			//cpu->pio.skip_count[i] = (skip_count + 1) % skip_factor;
-			cpu->pio.skip_count[i]++;
-			if (skip_count + 1 == skip_factor) {
-				cpu->pio.skip_count[i] = 0;
+			intVal->skip_count++;
+			if (intVal->skip_count == intVal->skip_factor) {
+				intVal->skip_count = 0;
 			}
 		}
 	}
@@ -304,9 +304,11 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 		cpu->mem_c->hasChangedPage0 = TRUE;
 	}
 	if (!is_allowed_exec(cpu)) {
-		if (break_on_exe_violation)
+		if (break_on_exe_violation) {
 			cpu->exe_violation_callback(cpu);
-		CPU_reset(cpu);
+		} else {
+			CPU_reset(cpu);
+		}
 	}
 	if (!bank->ram) endflash(cpu);						//I DON'T THINK THIS IS CORRECT
 	cpu->bus = mem_read(cpu->mem_c, cpu->pc);			//However it shouldn't be a problem
@@ -376,7 +378,7 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
 		int page = cpu->mem_c->banks[bank].page;
-		if (!cpu->mem_c->flash_locked &&  1) {
+		if (!cpu->mem_c->flash_locked && 1) {
 			switch(cpu->mem_c->flash_version) {
 				case 00:
 					break;
@@ -441,15 +443,16 @@ static void CPU_ED_opcode_run_reverse(CPU_t *cpu) {
 	EDtab_reverse[cpu->bus](cpu);
 }
 
+
 int CPU_step_reverse(CPU_t* cpu) {
 	//if (cpu->interrupt && !cpu->ei_block) handle_interrupt(cpu);
 
 	//handle_pio(cpu);
-
+	if (--cpu->reverse_instr < 0 && cpu->reverse_wrap) {
+		cpu->reverse_instr = ARRAYSIZE(cpu->prev_instruction_list) - 1;
+	}
+	cpu->prev_instruction = &cpu->prev_instruction_list[cpu->reverse_instr];
 	if (cpu->halt == FALSE) {
-		reverse_time_t *old_instruction = cpu->prev_instruction;
-		cpu->prev_instruction = cpu->prev_instruction->prev;
-		free(old_instruction);
 		if (cpu->bus == 0xDD || cpu->bus == 0xFD) {
 			cpu->prefix = cpu->bus;
 			CPU_opcode_fetch_reverse(cpu);
@@ -457,14 +460,17 @@ int CPU_step_reverse(CPU_t* cpu) {
 			cpu->prefix = 0;
 		} else {
 			CPU_opcode_run_reverse(cpu);
+			cpu->f = cpu->prev_instruction->flag;
+			CPU_opcode_fetch_reverse(cpu);
 		}
 	} else {
 		/* If the CPU is in halt */
 		tc_sub(cpu->timer_c, 4 * HALT_SCALE);
 		cpu->r = cpu->prev_instruction->r;
-		reverse_time_t *old_instruction = cpu->prev_instruction;
-		cpu->prev_instruction = cpu->prev_instruction->prev;
-		free(old_instruction);
+		cpu->reverse_instr--;
+		if (cpu->reverse_instr < 0) {
+			cpu->reverse_instr = ARRAYSIZE(cpu->prev_instruction_list) - 1;
+		}
 	}
 
 	//cpu->interrupt = 0;
@@ -473,36 +479,43 @@ int CPU_step_reverse(CPU_t* cpu) {
 }
 
 static void CPU_CB_opcode_run_reverse_info(CPU_t *cpu) {
-	//if (cpu->prefix) {
-	//	CPU_mem_read(cpu, cpu->pc++);				//read the offset, NOT INST
-	//	char offset = cpu->bus;
-	//	CPU_opcode_fetch(cpu);						//cb opcode, this is an INST
-	//	cpu->r = ((cpu->r - 1) & 0x7f) + (cpu->r & 0x80);
-	//	ICB_opcode[cpu->bus](cpu,offset);
-	//} else {
-	//	CPU_opcode_fetch(cpu);
-	//	CBtab[cpu->bus](cpu);
-	//}
+	if (cpu->prefix) {
+		char offset = mem_read(cpu->mem_c, cpu->pc);
+		char temp = mem_read(cpu->mem_c, cpu->pc + 1);
+		if (ICB_opcode_reverse_info[temp]) {
+			ICB_opcode_reverse_info[temp](cpu, offset);
+		}
+	} else {
+		char temp = mem_read(cpu->mem_c, cpu->pc);
+		if (CBtab_reverse_info[temp]) {
+			CBtab_reverse_info[temp](cpu);
+		}
+	}
 }
 
 static void CPU_ED_opcode_run_reverse_info(CPU_t *cpu) {
-	//CPU_opcode_fetch(cpu);
-	//EDtab[cpu->bus](cpu);
+	if (EDtab_reverse_info[cpu->bus]) {
+		EDtab_reverse_info[cpu->bus](cpu);
+	}
 }
 
 void CPU_add_prev_instr(CPU_t *cpu) {
-	reverse_time_t *old = cpu->prev_instruction;
-	cpu->prev_instruction = (reverse_time_t *) malloc(sizeof(reverse_time_t));
-	cpu->prev_instruction->prev = old;
 	cpu->prev_instruction->flag = cpu->f;
 	cpu->prev_instruction->bus = cpu->bus;
 	cpu->prev_instruction->r = cpu->r;
+	if (++cpu->reverse_instr >= ARRAYSIZE(cpu->prev_instruction_list)) {
+		cpu->reverse_instr = 0;
+		cpu->reverse_wrap = TRUE;
+	}
+	cpu->prev_instruction = &cpu->prev_instruction_list[cpu->reverse_instr];
 }
 #endif
 
 static void CPU_opcode_run(CPU_t *cpu) {
 #ifdef WITH_REVERSE
-	opcode_reverse_info[cpu->bus](cpu);
+	if (opcode_reverse_info[cpu->bus]) {
+		opcode_reverse_info[cpu->bus](cpu);
+	}
 #endif
 	opcode[cpu->bus](cpu);
 }
@@ -602,6 +615,9 @@ int CPU_step(CPU_t* cpu) {
 	cpu->interrupt = 0;
 	cpu->ei_block = FALSE;
 
+#ifdef WITH_REVERSE
+	CPU_add_prev_instr(cpu);
+#endif
 	if (cpu->halt == FALSE) {
 		CPU_opcode_fetch(cpu);
 		if (cpu->bus == 0xDD || cpu->bus == 0xFD) {
@@ -610,9 +626,6 @@ int CPU_step(CPU_t* cpu) {
 			CPU_opcode_run(cpu);
 			cpu->prefix = 0;
 		} else {
-#ifdef WITH_REVERSE
-			CPU_add_prev_instr(cpu);
-#endif
 			CPU_opcode_run(cpu);
 		}
 	} else {

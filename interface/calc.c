@@ -62,7 +62,10 @@ int calc_init_81(LPCALC lpCalc) {
 	ClearDevices(&lpCalc->cpu);
 	device_init_81(&lpCalc->cpu);
 	/* END INTIALIZE 81 */
-
+#ifdef WINVER
+	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
+	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
+#endif
 	return 0;
 }
 
@@ -85,8 +88,8 @@ static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	/* END INTIALIZE 83 */
 
 #ifdef WINVER // FIXME: dirty cheater!
-	lpCalc->flash_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.flash_pages, PAGE_SIZE);
-	lpCalc->ram_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.ram_pages, PAGE_SIZE);
+	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
+	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
@@ -99,7 +102,6 @@ static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 static int calc_init_86(LPCALC lpCalc) {
 
 	/* INTIALIZE 86 */
-	printf("initializing 86!\n");
 	memory_init_86(&lpCalc->mem_c);
 	tc_init(&lpCalc->timer_c, MHZ_4_8);
 	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
@@ -108,8 +110,8 @@ static int calc_init_86(LPCALC lpCalc) {
 	/* END INTIALIZE 86 */
 
 #ifdef WINVER // FIXME: dirty cheater!
-	lpCalc->flash_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.flash_pages, PAGE_SIZE);
-	lpCalc->ram_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.ram_pages, PAGE_SIZE);
+	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
+	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
@@ -129,8 +131,8 @@ int calc_init_83p(LPCALC lpCalc) {
 	/* END INTIALIZE 83+ */
 
 #ifdef WINVER // FIXME: dirty cheater!
-	lpCalc->flash_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.flash_pages, PAGE_SIZE);
-	lpCalc->ram_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.ram_pages, PAGE_SIZE);
+	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
+	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
 	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
 	lpCalc->audio->enabled	= FALSE;
 	lpCalc->audio->init		= FALSE;
@@ -429,6 +431,11 @@ int CPU_reset(CPU_t *lpCPU) {
 	lpCPU->mem_c->banks = lpCPU->mem_c->normal_banks;
 	lpCPU->mem_c->boot_mapped = FALSE;
 	lpCPU->mem_c->hasChangedPage0 = FALSE;
+#ifdef WITH_REVERSE
+	lpCPU->prev_instruction = lpCPU->prev_instruction_list;
+	memset(lpCPU->prev_instruction_list, 0, sizeof(lpCPU->prev_instruction_list));
+	lpCPU->reverse_instr = 0;
+#endif
 	switch (lpCPU->pio.model) {
 		case TI_86: {
 			bank_state_t banks[5] = {

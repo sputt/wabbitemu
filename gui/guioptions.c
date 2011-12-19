@@ -112,11 +112,9 @@ void DoPropertySheet(HWND hwndOwner) {
 	hwndProp = (HWND) PropertySheet(&psh);
 
 	if (IsRectEmpty(&PropRect) == FALSE) {
-		SetWindowPos(hwndProp, NULL,
-				PropRect.left, PropRect.top, 0, 0, SWP_NOSIZE|SWP_NOZORDER);
+		SetWindowPos(hwndProp, NULL, PropRect.left, PropRect.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 	}
 
-	_tprintf_s(_T("PropPageLast: %d\n"), PropPageLast);
 	if (PropPageLast != -1) {
 		PropSheet_SetCurSel(hwndProp, NULL, PropPageLast);
 	}
@@ -335,7 +333,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 		case WM_DESTROY: {
 			TerminateThread(hdlThread, 0);
 			CloseHandle(hdlThread);
-			GetWindowRect(hwndDlg, &PropRect);
+			GetWindowRect(GetParent(hwndDlg), &PropRect);
 			break;
 		}
 		case WM_HSCROLL:
@@ -460,7 +458,6 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 					PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 					break;
 			}
-			//PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 			return TRUE;
 		}
 		case WM_NOTIFY: {
@@ -468,6 +465,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 				case PSN_RESET: {
 					lpCalc->FaceplateColor = backupFaceplate;
 					gui_frame_update(lpCalc);
+					return TRUE;
 				}
 				case PSN_APPLY: {
 					lpCalc->bCutout = Button_GetCheck(chkCutout);
@@ -497,7 +495,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check, saveWindow_check,
-		exeViolation_check, backupTime_edit, invalidFlash_check, turnOn_check;
+		exeViolation_check, backupTime_edit, invalidFlash_check, turnOn_check, tiosDebug_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			saveState_check = GetDlgItem(hwnd, IDC_CHK_SAVE);
@@ -510,6 +508,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			backupTime_edit = GetDlgItem(hwnd, IDC_EDT_BACKUPTIME);
 			invalidFlash_check = GetDlgItem(hwnd, IDC_CHK_BRK_INVALID_FLASH);
 			turnOn_check = GetDlgItem(hwnd, IDC_CHK_AUTOON);
+			tiosDebug_check = GetDlgItem(hwnd, IDC_CHK_TIOS_DEBUG);
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
 		case WM_COMMAND: {
@@ -527,6 +526,8 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 						case IDC_CHK_BRK_EXE_VIOLATION:
 						case IDC_CHK_BRK_INVALID_FLASH:
 						case IDC_CHK_AUTOON:
+						case IDC_CHK_TIOS_DEBUG:
+
 							break;
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
@@ -562,6 +563,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					}
 #endif
 					lpCalc->bAlwaysOnTop = Button_GetCheck(alwaysTop_check);
+					lpCalc->bTIOSDebug = !Button_GetCheck(tiosDebug_check);
 					gui_frame_update(lpCalc);
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
@@ -586,8 +588,12 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(exeViolation_check, break_on_exe_violation);
 			Button_SetCheck(invalidFlash_check, break_on_invalid_flash);
 			Button_SetCheck(turnOn_check, auto_turn_on);
+			Button_SetCheck(tiosDebug_check, !lpCalc->bTIOSDebug);
 			return TRUE;
 		}
+		case WM_DESTROY:
+			GetWindowRect(GetParent(hwnd), &PropRect);
+			break;
 	}
 	return FALSE;
 }
@@ -701,6 +707,9 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 		case WM_VSCROLL:
 			PropSheet_Changed(GetParent(hwndDlg), hwndDlg);
 			return TRUE;
+		case WM_DESTROY:
+			GetWindowRect(GetParent(hwndDlg), &PropRect);
+			break;
 	}
 
 	return FALSE;
@@ -743,7 +752,7 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						}
 						case IDC_BTN1: {
 							TCHAR lpszFile[MAX_PATH];
-							if (!SaveFile(lpszFile, _T("Roms  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
+							if (!SaveFile(lpszFile, _T("ROMs  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 											_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST)) {
 								MFILE *file = ExportRom(lpszFile, lpCalc);
 								mclose(file);
@@ -801,8 +810,9 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			TCHAR szRomSize[16];
 			StringCbPrintf(szRomSize, sizeof(szRomSize), _T("%0.1f KB"), (float) lpCalc->cpu.mem_c->flash_size / 1024.0f);
 			Edit_SetText(edtRom_size, szRomSize);
-			if (hbmTI83P)
+			if (hbmTI83P) {
 				DeleteObject(hbmTI83P);
+				}
 			switch (lpCalc->model) {
 				case TI_83PSE:
 					hbmTI83P = LoadBitmap(g_hInst, _T("CalcTI83PSE"));
@@ -814,6 +824,9 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			SendMessage(stcRom_image, STM_SETIMAGE, IMAGE_BITMAP, (LPARAM) hbmTI83P);
 			return TRUE;
 		}
+		case WM_DESTROY:
+			GetWindowRect(GetParent(hwnd), &PropRect);
+			break;
 	}
 	return FALSE;
 }
@@ -984,6 +997,9 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					return TRUE;
 			}
 		}
+		case WM_DESTROY:
+			GetWindowRect(GetParent(hwnd), &PropRect);
+			break;
 	}
 	return FALSE;
 }
@@ -991,8 +1007,9 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 int GetNumKeyEntries() {
 	int num_entries = 0;
 	for (int i = 0; i < 256 && keygrps[i].vk != -1; i++) {
-		if (keygrps[i].vk != 0)
+		if (keygrps[i].vk != 0) {
 			num_entries++;
+		}
 	}
 	return num_entries;
 }
@@ -1047,8 +1064,9 @@ void RemoveEmuKey() {
 				TCHAR *name = NameFromVKey(keygrps[i].vk);
 				BOOL sameKey = _tcscmp(buf, name);
 				free(name);
-				if (sameKey)
+				if (sameKey) {
 					continue;
+				}
 				ListBox_DeleteString(hListKeys, idx);
 				int last = --nEmuUsed;
 				if (i < last)
@@ -1129,8 +1147,9 @@ void RemoveAccel() {
 				ListBox_DeleteString(hListKeys, idx);
 				// pack working accelerator table too
 				int last = nAccelUsed-1;
-				if (i < last)
+				if (i < last) {
 					hNewAccels[i] = hNewAccels[last];
+				}
 				nAccelUsed--;
 				EnableWindow(hRemoveButton, FALSE);
 				break;

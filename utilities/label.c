@@ -28,9 +28,8 @@ void VoidLabels(LPCALC lpCalc) {
 }
 
 TCHAR* FindAddressLabel(LPCALC lpCalc, waddr_t waddr) {
-	int i;
 	
-	for (i = 0; lpCalc->labels[i].name != NULL; i++) {
+	for (int i = 0; lpCalc->labels[i].name != NULL; i++) {
 		label_struct *label = &lpCalc->labels[i];
 		if (label->IsRAM == waddr.is_ram && label->page == waddr.page && label->addr == waddr.addr)
 			return label->name;

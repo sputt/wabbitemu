@@ -257,6 +257,7 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 					(x != 0) &&
 					(lpDebuggerCalc->cpu.iy == 0x89F0) &&
 					(lpDebuggerCalc->model >= TI_83P) &&
+					lpDebuggerCalc->bTIOSDebug &&
 					flagname && bitname) {
 					if (z == 6) {
 						result->index += (DA_BIT_IF - DA_BIT);
@@ -294,73 +295,70 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 			
 			if (x == 1) {
 			/* FOR X  = 1 */
-			if (z == 0) {
-				if (y == 6) y = 8;
-				result->index = DA_IN_R__C_;
-				result->a1 = (INT_PTR) r[y];
-				result->a2 = (INT_PTR) r[R_C];
-			} else
-			if (z == 1) {
-				if (y == 6) y = 8;
-				result->index = DA_OUT__C__R;
-				result->a1 = (INT_PTR) r[R_C];
-				result->a2 = (INT_PTR) r[y];
-			} else
-			if (z == 2) {
-				if (q == 0) result->index = DA_SBC_HL_RP;
-				else result->index = DA_ADC_HL_RP;
-				result->a1 = (INT_PTR) rp[R_HL];
-				result->a2 = (INT_PTR) rp[p];
-			} else
-			if (z == 3) {
-				if (q == 0) {
-					result->index = DA_LD__X__RP;
-					result->a1 = wmem_read16(memc, waddr);
-					waddr = GetNextAddr(memc, type, waddr);
-					waddr = GetNextAddr(memc, type, waddr);
+				if (z == 0) {
+					if (y == 6) y = 8;
+					result->index = DA_IN_R__C_;
+					result->a1 = (INT_PTR) r[y];
+					result->a2 = (INT_PTR) r[R_C];
+				} else if (z == 1) {
+					if (y == 6) y = 8;
+					result->index = DA_OUT__C__R;
+					result->a1 = (INT_PTR) r[R_C];
+					result->a2 = (INT_PTR) r[y];
+				} else if (z == 2) {
+					if (q == 0) result->index = DA_SBC_HL_RP;
+					else result->index = DA_ADC_HL_RP;
+					result->a1 = (INT_PTR) rp[R_HL];
 					result->a2 = (INT_PTR) rp[p];
-				} else {
-					result->index = DA_LD_RP__X_;
-					result->a1 = (INT_PTR) rp[p];
-					result->a2 = wmem_read16(memc, waddr);
-					waddr = GetNextAddr(memc, type, waddr);
-					waddr = GetNextAddr(memc, type, waddr);
+				} else if (z == 3) {
+					if (q == 0) {
+						result->index = DA_LD__X__RP;
+						result->a1 = wmem_read16(memc, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
+						result->a2 = (INT_PTR) rp[p];
+					} else {
+						result->index = DA_LD_RP__X_;
+						result->a1 = (INT_PTR) rp[p];
+						result->a2 = wmem_read16(memc, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
+						waddr = GetNextAddr(memc, type, waddr);
+					}
+				} else if (z == 4) {
+					result->index = DA_NEG;
+				} else if (z == 5) {
+					if (y == 1) {
+						result->index = DA_RETI;
+					} else {
+						result->index = DA_RETN;
+					}
+				} else if (z == 6) {
+					result->index = DA_IM_X;
+					result->a1 = (INT_PTR) im[y];
+				} else if (z == 7) {
+					switch (y) {
+						case 0:	result->index = DA_LD_I_A; break;
+						case 1: result->index = DA_LD_R_A; break;
+						case 2: result->index = DA_LD_A_I; break;
+						case 3: result->index = DA_LD_A_R; break;
+						case 4: result->index = DA_RRD; break;
+						case 5: result->index = DA_RLD; break;
+						default:
+							result->index = DA_NOP_ED; break;
+					}
 				}
-			} else
-			if (z == 4) {
-				result->index = DA_NEG;
-			} else
-			if (z == 5) {
-				if (y == 1) {
-					result->index = DA_RETI;
-				} else {
-					result->index = DA_RETN;
-				}
-			} else
-			if (z == 6) {
-				result->index = DA_IM_X;
-				result->a1 = (INT_PTR) im[y];
-			} else
-			if (z == 7) {
-				switch (y) {
-					case 0:	result->index = DA_LD_I_A; break;
-					case 1: result->index = DA_LD_R_A; break;
-					case 2: result->index = DA_LD_A_I; break;
-					case 3: result->index = DA_LD_A_R; break;
-					case 4: result->index = DA_RRD; break;
-					case 5: result->index = DA_RLD; break;
-					default:
-						result->index = DA_NOP_ED; break;
-				}
-			}
 			} else
 			/* FOR X  = 2 */
 			if (x == 2) {
 				if (y >= 4) {
 					result->index = DA_BLI;
 					result->a1 = (INT_PTR) bli[y-4][z];
-				} else {}
-			} else {}
+				} else {
+					result->index = DA_NOP_ED;
+				}
+			} else {
+				result->index = DA_NOP_ED;
+			}
 		} else {
 			int x = (data & 0xC0) >> 6;
 			int y = (data & 0x38) >> 3;
@@ -552,10 +550,11 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 							waddr = GetNextAddr(memc, type, waddr);
 							result->index = DA_LD_RI_R;
 							result->a1 = (INT_PTR) ri[pi];
-							result->a3 = result->a2;
+							result->a3 = (INT_PTR) r[z];
 							result->a2 = offset;
 						} else if (z == 6) {
 							waddr = GetNextAddr(memc, type, waddr);
+							result->a1 = (INT_PTR) r[y];
 							result->a2 = (INT_PTR) ri[pi];
 							result->index = DA_LD_R_RI;
 							result->a3 = offset;
@@ -666,7 +665,7 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 						waddr = GetNextAddr(memc, type, waddr);
 						waddr = GetNextAddr(memc, type, waddr);
 
-						if ((result->a1 == 0x0050) && lpDebuggerCalc->model >= TI_83P) {
+						if ((result->a1 == 0x0050) && lpDebuggerCalc->model >= TI_83P && lpDebuggerCalc->bTIOSDebug) {
 							result->index = DA_BJUMP;
 							result->a1 = wmem_read16(memc, waddr);
 							waddr = GetNextAddr(memc, type, waddr);
@@ -707,7 +706,7 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 				waddr = GetNextAddr(memc, type, waddr);
 			} else
 			if (z == 7) {
-				if ((y == 5) && (lpDebuggerCalc->model >= TI_83P)) {
+				if ((y == 5) && (lpDebuggerCalc->model >= TI_83P) && lpDebuggerCalc->bTIOSDebug) {
 					result->index = DA_BCALL;
 					int tmp = wmem_read16(memc, waddr);
 						waddr = GetNextAddr(memc, type, waddr);

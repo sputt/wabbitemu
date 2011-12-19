@@ -6,13 +6,6 @@
 
 //ALU.c
 
-//---------------------------------------------
-// ED OPCODES
-
-void no_reverse_info(CPU_t *cpu) {
-	
-}
-
 void adc_hl_reg16_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->data1 = cpu->hl;
 }
@@ -23,12 +16,12 @@ void sbc_hl_reg16_reverse_info(CPU_t *cpu) {
 
 void rld_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->lower_data1 = cpu->a;
-	cpu->prev_instruction->data2 = CPU_mem_read(cpu, cpu->hl);
+	cpu->prev_instruction->data2 = mem_read(cpu->mem_c, cpu->hl);
 }
 
 void rrd_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->lower_data1 = cpu->a;
-	cpu->prev_instruction->data2 = CPU_mem_read(cpu, cpu->hl);
+	cpu->prev_instruction->data2 = mem_read(cpu->mem_c, cpu->hl);
 }
 
 void res_reverse_info(CPU_t *cpu) {
@@ -52,7 +45,7 @@ void res_reverse_info(CPU_t *cpu) {
 			cpu->prev_instruction->lower_data1 = cpu->l;
 			break;
 		case 0x06:
-			cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+			cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			break;
 		case 0x07:
 			cpu->prev_instruction->lower_data1 = cpu->a;
@@ -82,7 +75,7 @@ void set_reverse_info(CPU_t *cpu) {
 			cpu->prev_instruction->lower_data1 = cpu->l;
 			break;
 		case 0x06:
-			cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+			cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			break;
 		case 0x07:
 			cpu->prev_instruction->lower_data1 = cpu->a;
@@ -112,7 +105,7 @@ void rl_reg_reverse_info(CPU_t *cpu) {
 			cpu->prev_instruction->lower_data1 = cpu->l;
 			break;
 		case 0x06:
-			cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+			cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			break;
 		case 0x07:
 			cpu->prev_instruction->lower_data1 = cpu->a;
@@ -141,7 +134,7 @@ void rlc_reg_reverse_info(CPU_t *cpu) {
 			cpu->prev_instruction->lower_data1 = cpu->l;
 			break;
 		case 0x06:
-			cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+			cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			break;
 		case 0x07:
 			cpu->prev_instruction->lower_data1 = cpu->a;
@@ -170,7 +163,7 @@ void rr_reg_reverse_info(CPU_t *cpu) {
 			cpu->prev_instruction->lower_data1 = cpu->l;
 			break;
 		case 0x06:
-			cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+			cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			break;
 		case 0x07:
 			cpu->prev_instruction->lower_data1 = cpu->a;
@@ -198,7 +191,7 @@ void rrc_reg_reverse_info(CPU_t *cpu) {
 			cpu->prev_instruction->lower_data1 = cpu->l;
 			break;
 		case 0x06:
-			cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+			cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			break;
 		case 0x07:
 			cpu->prev_instruction->lower_data1 = cpu->a;
@@ -227,7 +220,7 @@ void sll_reg_reverse_info(CPU_t *cpu) {
 			cpu->prev_instruction->lower_data1 = cpu->l;
 			break;
 		case 0x06:
-			cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+			cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			break;
 		case 0x07:
 			cpu->prev_instruction->lower_data1 = cpu->a;
@@ -255,7 +248,7 @@ void sla_reg_reverse_info(CPU_t *cpu) {
 			cpu->prev_instruction->lower_data1 = cpu->l;
 			break;
 		case 0x06:
-			cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+			cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			break;
 		case 0x07:
 			cpu->prev_instruction->lower_data1 = cpu->a;
@@ -284,7 +277,7 @@ void sra_reg_reverse_info(CPU_t *cpu) {
 			cpu->prev_instruction->lower_data1 = cpu->l;
 			break;
 		case 0x06:
-			cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+			cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			break;
 		case 0x07:
 			cpu->prev_instruction->lower_data1 = cpu->a;
@@ -312,7 +305,7 @@ void srl_reg_reverse_info(CPU_t *cpu) {
 			cpu->prev_instruction->lower_data1 = cpu->l;
 			break;
 		case 0x06:
-			cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+			cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			break;
 		case 0x07:
 			cpu->prev_instruction->lower_data1 = cpu->a;
@@ -330,8 +323,6 @@ void and_num8_reverse_info(CPU_t *cpu) {
 
 
 
-//-----------------
-// or reg8
 void or_reg8_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->lower_data1 = cpu->a;
 }
@@ -412,24 +403,24 @@ void rrca_reverse_info(CPU_t *cpu) {
 
 //Control.c
 void ldd_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->data1 = CPU_mem_read(cpu, cpu->de);
+	cpu->prev_instruction->data1 = mem_read(cpu->mem_c, cpu->de);
 }
 
 void lddr_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->data1 = CPU_mem_read(cpu, cpu->de);
+	cpu->prev_instruction->data1 = mem_read(cpu->mem_c, cpu->de);
 }
 
 void ldi_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->data1 = CPU_mem_read(cpu, cpu->de);
+	cpu->prev_instruction->data1 = mem_read(cpu->mem_c, cpu->de);
 }
 
 void ldir_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->data1 = CPU_mem_read(cpu, cpu->de);
+	cpu->prev_instruction->data1 = mem_read(cpu->mem_c, cpu->de);
 }
 
 void ld_mem16_reg16_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->data1 = CPU_mem_read(cpu, cpu->pc);
-	cpu->prev_instruction->data1 |= CPU_mem_read(cpu, cpu->pc + 1) << 8;
+	cpu->prev_instruction->data1 = mem_read(cpu->mem_c, cpu->pc);
+	cpu->prev_instruction->data1 |= mem_read(cpu->mem_c, cpu->pc + 1) << 8;
 }
 
 void ld_reg16_mem16_reverse_info(CPU_t *cpu) {
@@ -462,18 +453,18 @@ void IM2_reverse_info(CPU_t *cpu) {
 }
 
 void ind_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+	cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 }
 
 void indr_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+	cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 }
 void ini_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+	cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 }
 
 void inir_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);	
+	cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);	
 }
 
 void ld_i_a_reverse_info(CPU_t *cpu) {
@@ -500,8 +491,8 @@ void retn_reverse_info(CPU_t *cpu) {
 
 void rst_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->data1 = cpu->pc;
-	cpu->prev_instruction->lower_data2 = CPU_mem_read(cpu, cpu->sp);
-	cpu->prev_instruction->upper_data2 = CPU_mem_read(cpu, cpu->sp + 1);
+	cpu->prev_instruction->lower_data2 = mem_read(cpu->mem_c, cpu->sp);
+	cpu->prev_instruction->upper_data2 = mem_read(cpu->mem_c, cpu->sp + 1);
 }
 
 void in_reverse_info(CPU_t *cpu) {
@@ -516,19 +507,19 @@ void ret_condition_reverse_info(CPU_t *cpu) {
 }
 void call_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->data1 = cpu->pc;
-	cpu->prev_instruction->lower_data2 = CPU_mem_read(cpu, cpu->sp);
-	cpu->prev_instruction->upper_data2 = CPU_mem_read(cpu, cpu->sp + 1);
+	cpu->prev_instruction->lower_data2 = mem_read(cpu->mem_c, cpu->sp);
+	cpu->prev_instruction->upper_data2 = mem_read(cpu->mem_c, cpu->sp + 1);
 }
 
 void call_condition_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->data2 = cpu->pc;
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->sp);
-	cpu->prev_instruction->upper_data1 = CPU_mem_read(cpu, cpu->sp + 1);
+	cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->sp);
+	cpu->prev_instruction->upper_data1 = mem_read(cpu->mem_c, cpu->sp + 1);
 }
 
 void push_reg16_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->sp);
-	cpu->prev_instruction->upper_data1 = CPU_mem_read(cpu, cpu->sp + 1);
+	cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->sp);
+	cpu->prev_instruction->upper_data1 = mem_read(cpu->mem_c, cpu->sp + 1);
 }
 
 void pop_reg16_reverse_info(CPU_t *cpu) {
@@ -559,11 +550,11 @@ void ld_sp_hl_reverse_info(CPU_t *cpu) {
 }
 
 void ld_mem16_hlf_reverse_info(CPU_t *cpu) {
-	unsigned short reg = CPU_mem_read(cpu, cpu->pc - 1);
-	reg |= CPU_mem_read(cpu, cpu->pc - 2) << 8;
+	unsigned short reg = mem_read(cpu->mem_c, cpu->pc - 1);
+	reg |= mem_read(cpu->mem_c, cpu->pc - 2) << 8;
 
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, reg);
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, --reg);
+	cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, reg);
+	cpu->prev_instruction->lower_data2 = mem_read(cpu->mem_c, --reg);
 }
 
 void ld_hlf_mem16_reverse_info(CPU_t *cpu) {
@@ -604,15 +595,15 @@ void ld_a_de_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->lower_data1 = cpu->a;
 }
 void ld_mem16_a_reverse_info(CPU_t *cpu) {
-	unsigned short address = CPU_mem_read(cpu, cpu->pc) << 8;
-	address |= CPU_mem_read(cpu, cpu->pc + 1);
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, address);
+	unsigned short address = mem_read(cpu->mem_c, cpu->pc) << 8;
+	address |= mem_read(cpu->mem_c, cpu->pc + 1);
+	cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, address);
 }
 void ld_bc_a_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->bc);
+	cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->bc);
 }
 void ld_de_a_reverse_info(CPU_t *cpu) {
-	cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->de);
+	cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->de);
 }
 
 void ld_r_num8_reverse_info(CPU_t *cpu) {
@@ -646,13 +637,13 @@ void ld_r_num8_reverse_info(CPU_t *cpu) {
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
-				cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+				cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			} else {
-				char offset = CPU_mem_read(cpu, cpu->pc);
+				char offset = mem_read(cpu->mem_c, cpu->pc);
 				if (cpu->prefix == 0xDD) {
-					cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->ix + offset);
+					cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->ix + offset);
 				} else {
-					cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->iy + offset);
+					cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->iy + offset);
 				}
 			}
 			break;
@@ -694,13 +685,13 @@ void ld_r_r_reverse_info(CPU_t *cpu) {
 			break;
 		case 0x06:
 			if (!cpu->prefix) {
-				cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->hl);
+				cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->hl);
 			} else {
-				char offset = CPU_mem_read(cpu, cpu->pc);
+				char offset = mem_read(cpu->mem_c, cpu->pc);
 				if (cpu->prefix == 0xDD) {
-					cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->ix + offset);
+					cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->ix + offset);
 				} else {
-					cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->iy + offset);
+					cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->iy + offset);
 				}
 			}
 			break;
@@ -712,7 +703,6 @@ void ld_r_r_reverse_info(CPU_t *cpu) {
 
 void halt_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->lower_data1 = cpu->halt;
-//	cpu->pc--;			//I'll tell you later...just to sync up.
 }
 
 void jp_hl_reverse_info(CPU_t *cpu) {
@@ -753,17 +743,13 @@ void di_reverse_info(CPU_t *cpu) {
 
 //indexcb.c
 
-void no_reverse_cb_info(CPU_t *cpu, char offset) {
-	
-}
-
 void res_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	
 	if (cpu->prefix == IX_PREFIX) {
-		cpu->prev_instruction->lower_data2 = CPU_mem_read(cpu, cpu->ix + offset);
+		cpu->prev_instruction->lower_data2 = mem_read(cpu->mem_c, cpu->ix + offset);
 	} else {
-		cpu->prev_instruction->lower_data2 = CPU_mem_read(cpu, cpu->iy + offset);
+		cpu->prev_instruction->lower_data2 = mem_read(cpu->mem_c, cpu->iy + offset);
 	}
 	
 	switch(save) {
@@ -795,9 +781,9 @@ void set_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	
 	if (cpu->prefix == IX_PREFIX) {
-		cpu->prev_instruction->lower_data2 = CPU_mem_read(cpu, cpu->ix + offset);
+		cpu->prev_instruction->lower_data2 = mem_read(cpu->mem_c, cpu->ix + offset);
 	} else {
-		cpu->prev_instruction->lower_data2 = CPU_mem_read(cpu, cpu->iy + offset);
+		cpu->prev_instruction->lower_data2 = mem_read(cpu->mem_c, cpu->iy + offset);
 	}
 	
 	switch(save) {
@@ -830,9 +816,9 @@ void rl_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	
 	if (cpu->prefix == IX_PREFIX) {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->ix + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->ix + offset);
 	} else {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->iy + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->iy + offset);
 	}
 	
 	switch(save) {
@@ -864,9 +850,9 @@ void rlc_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	
 	if (cpu->prefix == IX_PREFIX) {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->ix + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->ix + offset);
 	} else {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->iy + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->iy + offset);
 	}
 	
 	switch(save) {
@@ -898,9 +884,9 @@ void rr_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	
 	if (cpu->prefix == IX_PREFIX) {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->ix + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->ix + offset);
 	} else {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->iy + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->iy + offset);
 	}
 	
 	switch(save) {
@@ -932,9 +918,9 @@ void rrc_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	
 	if (cpu->prefix == IX_PREFIX) {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->ix + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->ix + offset);
 	} else {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->iy + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->iy + offset);
 	}
 	
 	switch(save) {
@@ -966,9 +952,9 @@ void sll_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	
 	if (cpu->prefix == IX_PREFIX) {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->ix + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->ix + offset);
 	} else {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->iy + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->iy + offset);
 	}
 	
 	switch(save) {
@@ -1000,9 +986,9 @@ void srl_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	
 	if (cpu->prefix == IX_PREFIX) {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->ix + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->ix + offset);
 	} else {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->iy + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->iy + offset);
 	}
 	
 	switch(save) {
@@ -1034,9 +1020,9 @@ void sla_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	
 	if (cpu->prefix == IX_PREFIX) {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->ix + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->ix + offset);
 	} else {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->iy + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->iy + offset);
 	}
 	
 	switch(save) {
@@ -1068,9 +1054,9 @@ void sra_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	
 	if (cpu->prefix == IX_PREFIX) {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->ix + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->ix + offset);
 	} else {
-		cpu->prev_instruction->lower_data1 = CPU_mem_read(cpu, cpu->iy + offset);
+		cpu->prev_instruction->lower_data1 = mem_read(cpu->mem_c, cpu->iy + offset);
 	}
 	
 	switch(save) {

@@ -132,8 +132,9 @@ void UpdateItemsListView(HWND hwndListView) {
 	int i;
 
 	for (i = 0; i < lpDebuggerCalc->cpu.mem_c->flash_size; i++) {
-		if (lpDebuggerCalc->flash_cond_break[i] == NULL)
+		if (lpDebuggerCalc->flash_cond_break[i] == NULL) {
 			continue;
+		}
 		LPBREAKPOINT lpBreak = lpDebuggerCalc->flash_cond_break[i];
 		LVITEM lvI;
 		// Initialize LVITEM members that are common to all items.
@@ -234,7 +235,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 							clear_mem_write_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
 							break;
 					}
-					UpdateItemsListView(hwndListView);
+					//UpdateItemsListView(hwndListView);
 					Debug_UpdateWindow(GetParent(hwnd));
 					break;
 				}
@@ -251,7 +252,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 						set_mem_read_break(lpDebuggerCalc->cpu.mem_c, waddr);
 					}
 					
-					UpdateItemsListView(hwndListView);
+					//UpdateItemsListView(hwndListView);
 					Debug_UpdateWindow(GetParent(hwnd));
 					break;
 				}
@@ -292,7 +293,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					}
 					lpBreak->waddr = waddr;
 
-					UpdateItemsListView(hwndListView);
+					//UpdateItemsListView(hwndListView);
 					Debug_UpdateWindow(GetParent(hwnd));
 					break;
 				}
@@ -336,12 +337,13 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					
 					if (pnmv->uChanged & LVIF_STATE && !is_updating &&
 						(pnmv->uNewState & LVIS_STATEIMAGEMASK) != (pnmv->uOldState & LVIS_STATEIMAGEMASK)) {
-						if ((pnmv->uNewState & LVIS_STATEIMAGEMASK) >> 12 == 1)
+						if ((pnmv->uNewState & LVIS_STATEIMAGEMASK) >> 12 == 1) {
 							lpBreak->active = FALSE;
-						else
+						} else {
 							lpBreak->active = TRUE;
+						}
 						ListView_SetCheckState(hwndListView, pnmv->iItem, lpBreak->active);
-						Debug_UpdateWindow(GetParent(hwnd));
+						ListView_Update(hwndListView, pnmv->iItem);
 					}
 					break;
 				}
@@ -384,10 +386,11 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 
 					switch (plvdi->item.iSubItem)
 					{
-						case 0:
+						case 0: {
 							StringCbPrintf(plvdi->item.pszText, MAX_COUNT, _T("%s"), lpBreak->label);
 							break;
-						case 1:
+						}
+						case 1: {
 							switch (lpBreak->type) {
 								case NORMAL_BREAK:
 									StringCchPrintf(plvdi->item.pszText, MAX_COUNT, _T("%s"), _T("Execution"));
@@ -400,18 +403,23 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 									break;
 							}
 							break;
-						case 2:
+						}
+						case 2: {
 							StringCbPrintf(plvdi->item.pszText, MAX_COUNT, _T("$%04X"), lpBreak->waddr.addr);
-							break;	
-						case 3:
+							break;
+						}
+						case 3: {
 							StringCbPrintf(plvdi->item.pszText, MAX_COUNT, _T("$%02X"), lpBreak->waddr.page);
 							break;
-						case 4:
-							if (lpBreak->waddr.is_ram)
+						}
+						case 4: {
+							if (lpBreak->waddr.is_ram) {
 								StringCbPrintf(plvdi->item.pszText, MAX_COUNT, _T("%s"), _T("True")); 
-							else
+							} else {
 								StringCbPrintf(plvdi->item.pszText, MAX_COUNT, _T("%s"), _T("False")); 
+							}
 							break;
+						}
 					}
 					ListView_SetCheckState(hwndListView, plvdi->item.iItem, lpBreak->active);
 					break;

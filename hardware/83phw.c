@@ -98,21 +98,19 @@ static void port3(CPU_t *cpu, device_t *dev) {
 		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)
 			cpu->interrupt = TRUE;
 	} else if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
-//		stdint->lastchk1 = ceil((tc_elapsed(cpu->timer_c) - stdint->lastchk1)/stdint->timermax1)*stdint->timermax1;
 		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)
 			stdint->lastchk1 += stdint->timermax1;
 	}
 
 /*
 	Double speed standard interrupt
-	ocurrs (1/(4*frequency)) second after standard timer.
+	occurs (1/(4*frequency)) second after standard timer.
 	when mask timer continues to tick but 
 	does not generate an interrupt. */
 	if (stdint->intactive & 0x04) {
 		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2)
 			cpu->interrupt = TRUE;
 	} else if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
-//		stdint->lastchk2 = ceil((tc_elapsed(cpu->timer_c) - stdint->lastchk2) / stdint->timermax2) * stdint->timermax2;
 		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2)
 			stdint->lastchk2 += stdint->timermax2;
 	}
@@ -419,7 +417,7 @@ void flashwrite83p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 
 /*----------------------------------------------*/
 /*												*/
-/*				Intialize						*/
+/*				Initialize						*/
 /*												*/
 /*----------------------------------------------*/
 
@@ -539,7 +537,11 @@ int device_init_83p(CPU_t *cpu) {
 int memory_init_83p(memc *mc) {
 	memset(mc, 0, sizeof(memory_context_t));
 
-	
+	mc->mem_read_break_callback = mem_debug_callback;
+	mc->mem_write_break_callback = mem_debug_callback;
+#ifdef WINVER
+	mc->breakpoint_manager_callback = check_break_callback;
+#endif
 
 	// page protection for the 83p
 	mc->protected_page_set = 0;

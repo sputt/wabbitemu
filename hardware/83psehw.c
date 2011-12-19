@@ -775,7 +775,7 @@ void handlextal(CPU_t *cpu,XTAL_t* xtal) {
 	
 	// overall xtal timer ticking
 	xtal->ticks = (unsigned long long)(tc_elapsed(cpu->timer_c) * 32768.0);
-	xtal->lastTime = ((double) xtal->ticks / 32768.0);
+	xtal->lastTime = tc_elapsed(cpu->timer_c);
 	
 	for (int i = 0; i < NumElm(xtal->timers); i++)
 	{
@@ -1103,10 +1103,12 @@ void fake_usb(CPU_t *cpu, device_t *dev) {
 
 
 void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
-	int bank = addr >> 14;
+	int bank = mc_bank(addr);
 	switch(cpu->mem_c->step) {
 		case 0:
-			if ((addr & 0x0FFF) == 0x0AAA) {
+			if (data == 0xF0) {
+				endflash(cpu);
+			} else if ((addr & 0x0FFF) == 0x0AAA) {
 				if (data == 0xAA) {
 					cpu->mem_c->step++;
 				} else {
@@ -1118,8 +1120,9 @@ void flashwrite83pse(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			break;
 		case 1:
 			if ((addr & 0x0FFF) == 0x0555) {
-				if (data == 0x55) cpu->mem_c->step++;
-				else {
+				if (data == 0x55) {
+					cpu->mem_c->step++;
+				} else {
 					endflash_break(cpu);
 				}
 			} else {
@@ -1267,7 +1270,7 @@ void flashwrite84p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			if ((addr & 0x0FFF) == 0x0AAA) {
 				if (data == 0xAA) {
 					cpu->mem_c->step++;
-				} else {
+				} else if (data != 0xF0) {
 					endflash_break(cpu);
 				}
 			} else {

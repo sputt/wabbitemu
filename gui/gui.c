@@ -233,15 +233,158 @@ int gui_frame(LPCALC lpCalc) {
 	return 0;
 }
 
+BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, int skinWidth, int skinHeight, RECT *rectLCD) {
+	BOOL foundScreen = FALSE;
+	u_int foundX, foundY;
+	Color pixel;
+	//find the top left corner
+	for (u_int y = 0; y < skinHeight && foundScreen == false; y++) {
+		for (u_int x = 0; x < skinWidth && foundScreen == false; x++) {
+			m_pBitmapKeymap->GetPixel(x, y, &pixel);
+			if (pixel.GetValue() == 0xFFFF0000)	{
+				//81 92
+				foundX = x;
+				foundY = y;
+				foundScreen = true;
+			}
+		}
+	}
+	if (!foundScreen) {
+		return foundScreen;
+	}
+	rectLCD->left = foundX;
+	rectLCD->top = foundY;
+	//find right edge
+	do {
+		foundX++;
+		m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
+	} while (pixel.GetValue() == 0xFFFF0000);
+	rectLCD->right = foundX--;
+	//find left edge
+	do { 
+		foundY++;
+		m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
+	} while (pixel.GetValue() == 0xFFFF0000);
+	rectLCD->bottom = foundY;
+	return foundScreen;
+}
+
+void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
+	HMENU hMenu = GetMenu(lpCalc->hwndFrame);
+	if (lpCalc->SkinEnabled) {
+		if (hMenu) {
+			CheckMenuItem(hMenu, IDM_VIEW_SKIN, MF_BYCOMMAND | MF_CHECKED);
+		}
+		DestroyWindow(lpCalc->hwndStatusBar);
+		CloseWindow(lpCalc->hwndStatusBar);
+		lpCalc->hwndStatusBar = NULL;
+		RECT rc;
+		CopyRect(&rc, &lpCalc->rectSkin);
+		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
+		rc.bottom += GetSystemMetrics(SM_CYMENU);
+		SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOZORDER | SWP_NOMOVE);
+	} else {
+		RECT rc;
+		if (hMenu) {
+			CheckMenuItem(hMenu, IDM_VIEW_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
+		}
+		// Create status bar
+		if (lpCalc->hwndStatusBar != NULL) {
+			DestroyWindow(lpCalc->hwndStatusBar);
+			CloseWindow(lpCalc->hwndStatusBar);
+		}
+		SetRect(&rc, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
+		int iStatusWidths[] = { 100, -1 };
+		lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, lpCalc->hwndFrame, (HMENU) 99, g_hInst, NULL);
+		SendMessage(lpCalc->hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
+		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
+		RECT src;
+		GetWindowRect(lpCalc->hwndStatusBar, &src);
+		AdjustWindowRect(&rc, (WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~WS_MAXIMIZEBOX, hMenu != NULL);
+		rc.bottom += src.bottom - src.top;
+		SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+		GetClientRect(lpCalc->hwndFrame, &rc);
+		SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
+		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
+	}
+
+	if (lpCalc->bAlwaysOnTop) {
+		if (!(GetWindowLong(lpCalc->hwndFrame, GWL_EXSTYLE) & WS_EX_TOPMOST)) {
+			SetWindowPos(lpCalc->hwndFrame, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		}
+	} else {
+		if (GetWindowLong(lpCalc->hwndFrame, GWL_EXSTYLE) & WS_EX_TOPMOST) {
+			SetWindowPos(lpCalc->hwndFrame, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+		}
+	}
+}
+
+enum DRAWSKINERROR {
+	ERROR_FACEPLATE = 1,
+	ERROR_CUTOUT
+};
+
+DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_pBitmapKeymap) {
+	HBITMAP hbmSkinOld, hbmKeymapOld;
+	//translate to regular gdi compatibility to simplify coding :/
+	m_pBitmapKeymap->GetHBITMAP(Color::White, &hbmKeymapOld);
+	SelectObject(lpCalc->hdcKeymap, hbmKeymapOld);
+	//get the HBITMAP for the skin DONT change the first value, it is necessary for transparency to work
+	m_pBitmapSkin->GetHBITMAP(Color::AlphaMask, &hbmSkinOld);
+	//84+SE has custom faceplates :D, draw it to the background
+	//thanks MSDN your documentation rules :))))
+	HDC hdcOverlay = CreateCompatibleDC(lpCalc->hdcSkin);
+	HBITMAP blankBitmap = CreateCompatibleBitmap(hdc, m_pBitmapSkin->GetWidth(), m_pBitmapSkin->GetHeight());
+	SelectObject(lpCalc->hdcSkin, blankBitmap);
+	if (!lpCalc->bCutout || !lpCalc->SkinEnabled)
+		FillRect(lpCalc->hdcSkin, &lpCalc->rectSkin, GetStockBrush(GRAY_BRUSH));
+	if (lpCalc->model == TI_84PSE) {
+		if (DrawFaceplateRegion(lpCalc->hdcSkin, lpCalc->FaceplateColor)) {
+			return ERROR_FACEPLATE;
+		}
+	}
+
+	//this needs to be done so we can alpha blend the screen
+	HBITMAP oldSkin = (HBITMAP) SelectObject(hdcOverlay, hbmSkinOld);
+	BLENDFUNCTION bf;
+	bf.BlendOp = AC_SRC_OVER;
+	bf.BlendFlags = 0;
+	bf.SourceConstantAlpha = 255;
+	bf.AlphaFormat = AC_SRC_ALPHA;
+	AlphaBlend(lpCalc->hdcSkin, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, hdcOverlay,
+		lpCalc->rectSkin.left, lpCalc->rectSkin.top, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, bf);
+	BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
+	FinalizeButtons(lpCalc);
+	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
+		if (EnableCutout(lpCalc) != 0) {
+			return ERROR_CUTOUT;
+		}
+		//TODO: figure out why this needs to be called again
+		EnableCutout(lpCalc);
+	} else {
+		DisableCutout(lpCalc->hwndFrame);
+	}
+
+	DeleteObject(hbmKeymapOld);
+	DeleteObject(hbmSkinOld);
+	DeleteObject(blankBitmap);
+	DeleteDC(hdcOverlay);
+
+	return (DRAWSKINERROR) ERROR_SUCCESS;
+}
+
 int gui_frame_update(LPCALC lpCalc) {
 	int skinWidth = 0, skinHeight = 0, keymapWidth = -1, keymapHeight = -1;
 	HDC hdc = GetDC(lpCalc->hwndFrame);
-	if (lpCalc->hdcKeymap)
+	if (lpCalc->hdcKeymap) {
 		DeleteDC(lpCalc->hdcKeymap);
-	if (lpCalc->hdcSkin)
+	}
+	if (lpCalc->hdcSkin) {
 		DeleteDC(lpCalc->hdcSkin);
-	if (lpCalc->hdcButtons)
+	}
+	if (lpCalc->hdcButtons) {
 		DeleteDC(lpCalc->hdcButtons);
+	}
 	lpCalc->hdcKeymap = CreateCompatibleDC(hdc);
 	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
 	lpCalc->hdcButtons = CreateCompatibleDC(hdc);
@@ -263,9 +406,13 @@ int gui_frame_update(LPCALC lpCalc) {
 	}
 	if (!m_pBitmapSkin || m_pBitmapSkin->GetWidth() == 0 || m_pBitmapKeymap->GetWidth() == 0) {
 		if (lpCalc->bCustomSkin) {
-			MessageBox(NULL, _T("Custom skin failed to load."), _T("Error"),  MB_OK);
+			MessageBox(lpCalc->hwndFrame, _T("Custom skin failed to load."), _T("Error"),  MB_OK);
 			delete m_pBitmapKeymap;
 			delete m_pBitmapSkin;
+			m_pBitmapKeymap = NULL;
+			m_pBitmapSkin = NULL;
+			//your skin failed to load, lets disable it and load the normal skin
+			lpCalc->bCustomSkin = FALSE;
 		}
 		hbmSkin.Load(CalcModelTxt[lpCalc->model], _T("PNG"), g_hInst);
 		switch(lpCalc->model) {
@@ -307,148 +454,52 @@ int gui_frame_update(LPCALC lpCalc) {
 	}
 	int x, y, foundX = 0, foundY = 0;
 	bool foundScreen = FALSE;
-	if (((skinWidth != keymapWidth) || (skinHeight != keymapHeight)) && skinHeight > 0 && skinWidth > 0) {
+	if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight) || skinHeight <= 0 || skinWidth <= 0) {
 		lpCalc->SkinEnabled = false;
-		MessageBox(NULL, _T("Skin and Keymap are not the same size"), _T("Error"),  MB_OK);
+		MessageBox(lpCalc->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"),  MB_OK);
 	} else {
 		lpCalc->rectSkin.right = skinWidth;
-		lpCalc->rectSkin.bottom = skinHeight;		//find the screen size
-		Color pixel;
-		for(y = 0; y < skinHeight && foundScreen == false; y++) {
-			for (x = 0; x < skinWidth && foundScreen == false; x++) {
-				m_pBitmapKeymap->GetPixel(x, y, &pixel);
-				if (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0)	{
-					//81 92
-					foundX = x;
-					foundY = y;
-					foundScreen = true;
-				}
-			}
-		}
-		lpCalc->rectLCD.left = foundX;
-		lpCalc->rectLCD.top = foundY;
-		do {
-			foundX++;
-			m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
-		} while (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0);
-		lpCalc->rectLCD.right = foundX--;
-		do { 
-			foundY++;
-			m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
-		} while (pixel.GetBlue() == 0 && pixel.GetRed() == 255 && pixel.GetGreen() == 0);
-		lpCalc->rectLCD.bottom = foundY;
+		lpCalc->rectSkin.bottom = skinHeight;
+		foundScreen = FindLCDRect(m_pBitmapKeymap, skinWidth, skinHeight, &lpCalc->rectLCD);
 	}
 	if (!foundScreen) {
-		MessageBox(NULL, _T("Unable to find the screen box"), _T("Error"), MB_OK);
+		MessageBox(lpCalc->hwndFrame, _T("Unable to find the screen box"), _T("Error"), MB_OK);
 		lpCalc->SkinEnabled = false;
 	}
 	if (!lpCalc->hwndFrame) {
 		return 0;
 	}
 
+	//set the size of the HDC
 	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	SelectObject(lpCalc->hdcButtons, hbmTemp);
 	DeleteObject(hbmTemp);
 
-	HMENU hmenu = GetMenu(lpCalc->hwndFrame);	
-	if (hmenu != NULL) {
-		if (!lpCalc->SkinEnabled) {
-			RECT rc;
-			CheckMenuItem(GetSubMenu(hmenu, 1), IDM_VIEW_SKIN, MF_BYCOMMAND | MF_UNCHECKED);
-			// Create status bar
-			if (lpCalc->hwndStatusBar != NULL) {
-				DestroyWindow(lpCalc->hwndStatusBar);
-				CloseWindow(lpCalc->hwndStatusBar);
-			}
-			SetRect(&rc, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
-			int iStatusWidths[] = { 100, -1 };
-			lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, lpCalc->hwndFrame, (HMENU) 99, g_hInst, NULL);
-			SendMessage(lpCalc->hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
-			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
-			RECT src;
-			GetWindowRect(lpCalc->hwndStatusBar, &src);
-			AdjustWindowRect(&rc, (WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~WS_MAXIMIZEBOX, hmenu != NULL);
-			rc.bottom += src.bottom - src.top;
-			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOREDRAW | SWP_NOMOVE | SWP_NOZORDER);
-			GetClientRect(lpCalc->hwndFrame, &rc);
-			SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
-			SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
-		} else {
-			CheckMenuItem(GetSubMenu(hmenu, 1), IDM_VIEW_SKIN, MF_BYCOMMAND | MF_CHECKED);
-			DestroyWindow(lpCalc->hwndStatusBar);
-			CloseWindow(lpCalc->hwndStatusBar);
-			lpCalc->hwndStatusBar = NULL;
-			RECT rc;
-			CopyRect(&rc, &lpCalc->rectSkin);
-			AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
-			rc.bottom += GetSystemMetrics(SM_CYMENU);
-			SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOREDRAW | SWP_NOZORDER | SWP_NOMOVE);
+	UpdateWabbitemuMainWindow(lpCalc);
+	
+	switch (DrawSkin(hdc, lpCalc, m_pBitmapSkin, m_pBitmapKeymap)) {
+		case ERROR_FACEPLATE:
+			MessageBox(lpCalc->hwndFrame, _T("Unable to draw faceplate"), _T("Error"), MB_OK);
+			break;
+		case ERROR_CUTOUT:
+			MessageBox(lpCalc->hwndFrame, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
+			break;
+	}
+	if (lpCalc->bCustomSkin) {
+		if (m_pBitmapKeymap) {
+			delete m_pBitmapKeymap;
+		}
+		if (m_pBitmapSkin) {
+			delete m_pBitmapSkin;
 		}
 	}
-	
-	HBITMAP hbmSkinOld, hbmKeymapOld;
-	//translate to regular gdi compatibility to simplify coding :/
-	m_pBitmapKeymap->GetHBITMAP(Color::White, &hbmKeymapOld);
-	SelectObject(lpCalc->hdcKeymap, hbmKeymapOld);
-	//get the HBITMAP for the skin DONT change the first value, it is necessary for transparency to work
-	m_pBitmapSkin->GetHBITMAP(Color::AlphaMask, &hbmSkinOld);
-	//84+SE has custom faceplates :D, draw it to the background
-	//thanks MSDN your documentation rules :))))
-	HDC hdcOverlay = CreateCompatibleDC(lpCalc->hdcSkin);
-	HBITMAP blankBitmap = CreateCompatibleBitmap(hdc, skinWidth, skinHeight);
-	SelectObject(lpCalc->hdcSkin, blankBitmap);
-	if (!lpCalc->bCutout || !lpCalc->SkinEnabled)
-		FillRect(lpCalc->hdcSkin, &lpCalc->rectSkin, GetStockBrush(GRAY_BRUSH));
-	if (lpCalc->model == TI_84PSE) {
-		if (DrawFaceplateRegion(lpCalc->hdcSkin, lpCalc->FaceplateColor))
-			MessageBox(NULL, _T("Unable to draw faceplate"), _T("Error"), MB_OK);
-	}
+	ReleaseDC(lpCalc->hwndFrame, hdc);
 
-	//this needs to be done so we can alpha blend the screen
-	HBITMAP oldSkin = (HBITMAP) SelectObject(hdcOverlay, hbmSkinOld);
-	BLENDFUNCTION bf;
-	bf.BlendOp = AC_SRC_OVER;
-	bf.BlendFlags = 0;
-	bf.SourceConstantAlpha = 255;
-	bf.AlphaFormat = AC_SRC_ALPHA;
-	AlphaBlend(lpCalc->hdcSkin, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, hdcOverlay,
-		lpCalc->rectSkin.left, lpCalc->rectSkin.top, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, bf);
-	BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
-	FinalizeButtons(lpCalc);
-	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
-		if (EnableCutout(lpCalc) != 0)
-			MessageBox(NULL, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
-		//TODO: figure out why this needs to be called again
-		EnableCutout(lpCalc);
-	} else {
-		DisableCutout(lpCalc->hwndFrame);
-	}
 	if (lpCalc->hwndStatusBar != NULL) {
 		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 	}
 	SendMessage(lpCalc->hwndFrame, WM_SIZE, 0, 0);
 
-	if (lpCalc->bAlwaysOnTop) {
-		if (!(GetWindowLong(lpCalc->hwndFrame, GWL_EXSTYLE) & WS_EX_TOPMOST)) {
-			SetWindowPos(lpCalc->hwndFrame, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-		}
-	} else {
-		if (GetWindowLong(lpCalc->hwndFrame, GWL_EXSTYLE) & WS_EX_TOPMOST) {
-			SetWindowPos(lpCalc->hwndFrame, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
-		}
-	}
-	//HACK: figure out why this is needed
-	InvalidateRect(NULL, NULL, TRUE);
-
-	if (lpCalc->bCustomSkin) {
-		delete m_pBitmapKeymap;
-		delete m_pBitmapSkin;
-	}
-	DeleteObject(hbmKeymapOld);
-	DeleteObject(hbmSkinOld);
-	DeleteObject(blankBitmap);
-	DeleteDC(hdcOverlay);
-	ReleaseDC(lpCalc->hwndFrame, hdc);
 	return 0;
 }
 
@@ -1314,7 +1365,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					StringCbCopy(buffer, sizeof(buffer), env);
 					free(env);
 					StringCbCat(buffer, sizeof(buffer), _T("\\Revsoft.Autoupdater.exe"));
-					HRSRC hrDumpProg = FindResource(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_UPDATER), _T("UPDATER"));
+					HRSRC hrDumpProg = FindResource(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_UPDATER), _T("EXE"));
 					ExtractResource(buffer, hrDumpProg);
 
 					TCHAR argBuf[MAX_PATH * 3];
@@ -1486,6 +1537,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			//don't allow resizing from the sides
 			if (wParam == WMSZ_LEFT || wParam == WMSZ_RIGHT 
 				|| wParam == WMSZ_TOP || wParam == WMSZ_BOTTOM) {
+					GetWindowRect(hwnd, &rc);
 					memcpy(prc, &rc, sizeof(RECT));
 					return TRUE;
 			}
@@ -1608,15 +1660,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			RECT client;
 			client.top = 0;
 			client.left = 0;
-			if (lpCalc->SkinEnabled && lpCalc->bCutout)
-				GetWindowRect(hwnd, &client);
 			if (lpCalc->SkinEnabled) {
+				if (lpCalc->bCutout) {
+					GetWindowRect(hwnd, &client);
+				}
 				RECT correctSize = lpCalc->rectSkin;
 				AdjustWindowRect(&correctSize, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX), cyMenu);
-				if (correctSize.left < 0)
+				if (correctSize.left < 0) {
 					correctSize.right -= correctSize.left;
-				if (correctSize.top < 0)	
+				}
+				if (correctSize.top < 0) {
 					correctSize.bottom -= correctSize.top;
+				}
 				SetWindowPos(hwnd, NULL, 0, 0, correctSize.right, correctSize.bottom , SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
 			}
 			RECT windowRect;

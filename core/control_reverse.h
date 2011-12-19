@@ -40,6 +40,8 @@ void djnz_reverse(CPU_t *);
 void ret_condition_reverse(CPU_t *);
 void ccf_reverse(CPU_t *);
 void scf_reverse(CPU_t *);
+void out_reverse(CPU_t *cpu);
+void in_reverse(CPU_t *cpu);
 
 
 void IM0_reverse(CPU_t *);

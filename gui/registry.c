@@ -8,7 +8,7 @@
 #include "expandpane.h"
 
 extern keyprog_t keygrps[256];
-TCHAR *verString = _T("1.5.12.13");
+TCHAR *verString = _T("1.5.12.19");
 
 static HKEY hkeyTarget;
 
@@ -37,6 +37,7 @@ static struct {
 	{_T("sync_cores"),				REG_DWORD,  FALSE},
 	{_T("num_accel"),				REG_DWORD,  6},
 	{_T("always_on_top"),			REG_DWORD,  FALSE},
+	{_T("tios_debug"),				REG_DWORD,  TRUE},
 	{_T("custom_skin"),				REG_DWORD,  FALSE},
 	{_T("skin_path"), 				REG_SZ, 	(LONG_PTR) _T("TI-83P.png")},
 	{_T("keymap_path"), 			REG_SZ, 	(LONG_PTR) _T("TI-83PKeymap.png")},
@@ -226,6 +227,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	lpCalc->bAlwaysOnTop = (BOOL) QueryWabbitKey(_T("always_on_top"));
 	lpCalc->bCustomSkin = (BOOL) QueryWabbitKey(_T("custom_skin"));
 	lpCalc->mem_c.ram_version = (int) QueryWabbitKey(_T("ram_version"));
+	lpCalc->bTIOSDebug = (BOOL) QueryWabbitKey(_T("tios_debug"));
 	QueryKeyMappings();
 
 	StringCbCopy(gif_file_name, sizeof(gif_file_name), (TCHAR *) QueryWabbitKey(_T("gif_path")));
@@ -243,30 +245,6 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	
 	return S_OK;
 }
-
-
-//void SaveWabbitKeyA(char *name, int type, void *value) {
-//	size_t len;
-//
-//	if (type == REG_DWORD)
-//		len = sizeof(DWORD);
-//	else if (type == REG_SZ)
-//		StringCbLengthA((char *) value, MAX_PATH, &len);
-//	
-//	RegSetValueExA(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
-//}
-//
-//void SaveWabbitKeyW(WCHAR *name, int type, void *value) {
-//	size_t len;
-//
-//	if (type == REG_DWORD) {
-//		len = sizeof(DWORD);
-//	} else if (type == REG_SZ) {
-//		StringCbLengthW((WCHAR *) value, MAX_PATH, &len);
-//	}
-//	
-//	RegSetValueExW(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
-//}
 
 void SaveWabbitKey(TCHAR *name, int type, void *value) {
 	size_t len;
@@ -314,8 +292,10 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		GetWindowRect(lpCalc->hwndFrame, &rc);
 		SaveWabbitKey(_T("startX"), REG_DWORD, &rc.left);
 		SaveWabbitKey(_T("startY"), REG_DWORD, &rc.top);
+		SaveWabbitKey(_T("always_on_top"), REG_DWORD, &lpCalc->bAlwaysOnTop);
 
 		SaveWabbitKey(_T("ram_version"), REG_DWORD, &lpCalc->mem_c.ram_version);
+		SaveWabbitKey(_T("tios_debug"), REG_DWORD, &lpCalc->bTIOSDebug);
 		ACCEL buf[256];
 		int numEntries = CopyAcceleratorTable(haccelmain, NULL, 0);
 		int nUsed = CopyAcceleratorTable(haccelmain, buf, numEntries);

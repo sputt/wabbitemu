@@ -215,6 +215,11 @@ typedef struct device {
 	BOOL protected_port;
 } device_t;
 
+typedef struct interrupt {
+	int interrupt_val;
+	unsigned int skip_factor;
+	unsigned int skip_count;
+} interrupt_t;
 
 typedef struct pio_context {
 	int model;
@@ -226,10 +231,8 @@ typedef struct pio_context {
 	/* list other cross model devices here */
 
 	device_t devices[256];
-	int interrupt[256];
+	interrupt_t interrupt[256];
 	int num_interrupt;
-	unsigned int skip_factor[256];
-	unsigned int skip_count[256];
 	devp breakpoint_callback;
 } pio_context_t, pioc;
 
@@ -239,7 +242,6 @@ typedef struct reverse_time {
 	regpair(upper_data2, lower_data2, data2);
 	BYTE bus;
 	BYTE r;
-	reverse_time *prev;
 } reverse_time_t;
 
 typedef struct CPU {
@@ -270,8 +272,10 @@ typedef struct CPU {
 	timerc *timer_c;
 	void (*exe_violation_callback)(void *);
 	int cpu_version;
+	reverse_time_t prev_instruction_list[512];
 	reverse_time_t *prev_instruction;
-	reverse_time_t *first_intruction;
+	int reverse_instr;
+	BOOL reverse_wrap;
 	BOOL do_opcode_callback;
 	BOOL is_link_instruction;
 } CPU_t;

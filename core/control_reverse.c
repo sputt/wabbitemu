@@ -555,7 +555,7 @@ void ld_r_r_reverse(CPU_t *cpu) {
 	int test2 = cpu->bus & 7;
 	tc_sub(cpu->timer_c, 4);
 
-	int reg = cpu->prev_instruction->data1;
+	char reg = cpu->prev_instruction->lower_data1;
 	switch(test2) {
 		case 0x04:
 		case 0x05:
@@ -620,12 +620,12 @@ void ld_r_r_reverse(CPU_t *cpu) {
 			cpu->a = reg;
 			break;
 	}
+	cpu->pc--;
 }
 
 void halt_reverse(CPU_t *cpu) {
 	tc_sub(cpu->timer_c, 4);
-	cpu->halt = FALSE;
-//	cpu->pc--;			//I'll tell you later...just to sync up.
+	cpu->halt = cpu->prev_instruction->lower_data1;
 }
 
 void nop_reverse(CPU_t *cpu) {

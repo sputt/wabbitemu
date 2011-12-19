@@ -900,18 +900,20 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			next = CreateToolbarButton(hwnd, _T("Toggle Watchpoint"), _T("Toggle a memory breakpoint at the current selection."), _T("DBMemBreak"), next, 4, 1001, TRUE, hmenu);
 			next = CreateToolbarButton(hwnd, _T("Step"), _T("Run a single command."), _T("DBStep"), next, 4, 1002, FALSE);
 			next = CreateToolbarButton(hwnd, _T("Step Over"), _T("Run a single line."), _T("DBStepOver"), next, 4, 1003, FALSE);
+#ifdef WITH_REVERSE
 			next = CreateToolbarButton(hwnd, _T("Step Back"), _T("Reverses a single command."), _T("DBStepBack"), next, 4, 1005, FALSE);
+#endif
 			next = CreateToolbarButton(hwnd, _T("Goto"), _T("Goto an address in RAM or Flash."), _T("DBGoto"), next, 4, 1004, FALSE);
 			/*hmenu = CreateRewindMenu();
 			next = CreateToolbarButton(hwnd, _T("Rewind"), _T("Restores to a previous state."), NULL, next, 4, 1005, TRUE, hmenu);*/
-			//next = CreateToolbarButton(hwnd, "Track", "Create a variable track window.", "DBGoto", next, 4, 1005);
 			TCHAR *szChevronBMP;
 			DWORD dwVersion = GetVersion();
 			DWORD dwMajorVersion = (DWORD)(LOBYTE(LOWORD(dwVersion)));
-			if (dwMajorVersion < 0x06)
+			if (dwMajorVersion < 0x06) {
 				szChevronBMP = _T("CHEVRON");
-			else
+			} else {
 				szChevronBMP = _T("CHEVRON7");
+			}
 			next = CreateToolbarButton(hwnd, _T(""), _T("Display additional commands."), szChevronBMP, next, 4, 1006, FALSE);
 
 			return 0;

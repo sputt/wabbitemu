@@ -629,9 +629,6 @@
     <None Include="interface\Wabbitemu.def">
       <Filter>Source Files\Interface\COM</Filter>
     </None>
-    <None Include="..\..\Release\Revsoft.AutoUpdater.exe">
-      <Filter>Resource Files</Filter>
-    </None>
     <None Include="gui\ROM\bf73.hex">
       <Filter>Resource Files\Wizard</Filter>
     </None>
@@ -772,6 +769,21 @@
     </None>
     <None Include="gui\stop.bmp">
       <Filter>Resource Files\Debugger</Filter>
+    </None>
+    <None Include="gui\Revsoft.AutoUpdater.exe">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="gui\ROM\Rom86.86p">
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\ROM\Rom82.82p">
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\ROM\Rom83.83p">
+      <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\ROM\Rom85.85s">
+      <Filter>Resource Files\Wizard</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

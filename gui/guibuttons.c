@@ -103,11 +103,13 @@ void LogKeypress(LPCALC lpCalc, int group, int bit) {
 	int i;
 	key_string *keystrings = lpCalc->model == TI_85 || lpCalc->model == TI_86 ? ti86keystrings : ti83pkeystrings;
 	for (i = 0; i < KEY_STRING_SIZE; i++) {
-		if (keystrings[i].group == group && keystrings[i].bit == bit)
+		if (keystrings[i].group == group && keystrings[i].bit == bit) {
 			break;
+		}
 	}
-	if (i == KEY_STRING_SIZE)
+	if (i == KEY_STRING_SIZE) {
 		return;
+	}
 	key_string *current = (key_string *) malloc(sizeof(key_string));
 	current->bit = bit;
 	current->group = group;
@@ -306,16 +308,21 @@ void HandleKeyDown(LPCALC lpCalc, unsigned int key) {
 		}
 		last_shift = key;
 	}
-	keyprog_t *kp = keypad_key_press(&lpCalc->cpu, key);
-	if (!kp)
+	BOOL changed;
+	keyprog_t *kp = keypad_key_press(&lpCalc->cpu, key, &changed);
+	if (!kp) {
 		return;
+	}
 	LogKeypress(lpCalc, kp->group, kp->bit);
-	FinalizeButtons(lpCalc);
+	if (changed) {
+		FinalizeButtons(lpCalc);
+	}
 }
 
 void HandleKeyUp(LPCALC lpCalc, unsigned int key) {
-	if (key == VK_SHIFT)
+	if (key == VK_SHIFT) {
 		key = last_shift;
+	}
 	keyprog_t *kp = keypad_key_release(&lpCalc->cpu, key);
 	FinalizeButtons(lpCalc);
 }
@@ -323,15 +330,16 @@ void HandleKeyUp(LPCALC lpCalc, unsigned int key) {
 void FinalizeButtons(LPCALC lpCalc) {
 	int group, bit;
 	keypad_t *kp = lpCalc->cpu.pio.keypad;
-	if (lpCalc->model >= TI_84P)
+	if (lpCalc->model >= TI_84P) {
 		*ButtonCenter = ButtonCenter84;
-	else
+	} else {
 		*ButtonCenter = ButtonCenter83;
+	}
 
-	for(group = 0; group < 7; group++) {
-		for(bit = 0; bit < 8; bit++) {
+	for (group = 0; group < 7; group++) {
+		for (bit = 0; bit < 8; bit++) {
 			int val = kp->keys[group][bit];
-			if (((val & KEY_STATEDOWN) && (val & KEY_MOUSEPRESS) == 0 || (val & KEY_KEYBOARDPRESS) == 0)) {
+			if (((val & KEY_STATEDOWN) && (val & KEY_MOUSEPRESS) == 0 && (val & KEY_KEYBOARDPRESS) == 0)) {
 				kp->keys[group][bit] &= ~KEY_STATEDOWN;
 			}
 		}

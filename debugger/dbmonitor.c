@@ -159,8 +159,7 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 			if (wParam == VK_RETURN) {
 				CloseSaveEdit(hwnd);
 				hwndEditControl = NULL;
-			}
-			else if (wParam == VK_ESCAPE) {
+			} else if (wParam == VK_ESCAPE) {
 				hwndEditControl = NULL;
 				DestroyWindow(hwnd);
 			} else {
@@ -177,6 +176,10 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 	switch(Message) {
 		case WM_INITDIALOG: {
 			RECT rc, hdrRect;
+			HICON hIcon = LoadIcon(g_hInst, _T("w"));
+			SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)	hIcon);
+			DeleteObject(hIcon);
+
 			hwndListView = CreateListView(hwnd);
 			int count = 0;
 			for (int i = 0; i < 0xFF; i++) {
@@ -215,7 +218,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					break;
 				}
 				case IDM_PORT_EXIT:
-					EndDialog(hwnd, IDCANCEL);
+					SendMessage(hwnd, WM_CLOSE, 0, 0);
 					break;
 			}
 			return FALSE;
@@ -323,8 +326,9 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 		case WM_USER: {
 			switch (wParam) {
 				case DB_CREATE:
-					if (port_cpu != NULL)
+					if (port_cpu != NULL) {
 						free(port_cpu);
+					}
 					port_cpu = CPU_clone(&lpDebuggerCalc->cpu);
 					break;
 				case DB_UPDATE: {
@@ -337,7 +341,9 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			return TRUE;
 		}
 		case WM_CLOSE:
-			DestroyWindow(hwnd);
+extern HWND hPortMon;
+			hPortMon = NULL;
+			EndDialog(hwnd, IDOK);
 			return FALSE;
 	}
 	return FALSE;

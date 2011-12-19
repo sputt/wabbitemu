@@ -482,8 +482,7 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		SetWindowFont(chkIff1, hfontSegoe, TRUE);
 
 		chkIff2 =
-		CreateWindowEx(
-			WS_EX_TRANSPARENT,
+		CreateWindow(
 			_T("BUTTON"),
 			_T("iff2"),
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
@@ -562,37 +561,44 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		OffsetRect(&rc, kRegAddr*3, 0);
 		DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
+		if (lpDebuggerCalc->cpu.pio.model != TI_85 && lpDebuggerCalc->cpu.pio.model != TI_86) {
+			SelectObject(hdc, hfontSegoe);
+			OffsetRect(&rc, -kRegAddr*3, kRegRow*3/2);
+			DrawText(hdc, _T("Next Timer2"), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-		SelectObject(hdc, hfontSegoe);
-		OffsetRect(&rc, -kRegAddr*3, kRegRow*3/2);
-		DrawText(hdc, _T("Next Timer2"), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+			ntimer = tc_elapsed(&lpDebuggerCalc->timer_c) - lpDebuggerCalc->cpu.pio.stdint->lastchk2;
+			ntimer *= 1000;
+			StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 
-		ntimer = tc_elapsed(&lpDebuggerCalc->timer_c) - lpDebuggerCalc->cpu.pio.stdint->lastchk2;
-		ntimer *= 1000;
-		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
+			SelectObject(hdc, hfontLucida);
+			OffsetRect(&rc, kRegAddr*3, 0);
+			DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-		SelectObject(hdc, hfontLucida);
-		OffsetRect(&rc, kRegAddr*3, 0);
-		DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+			SelectObject(hdc, hfontSegoe);
+			OffsetRect(&rc, -kRegAddr*3, kRegRow);
+			DrawText(hdc, _T("Timer2 dur."), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-		SelectObject(hdc, hfontSegoe);
-		OffsetRect(&rc, -kRegAddr*3, kRegRow);
-		DrawText(hdc, _T("Timer2 dur."), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+			ntimer = lpDebuggerCalc->cpu.pio.stdint->timermax2;
+			ntimer *= 1000;
+			StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 
-		ntimer = lpDebuggerCalc->cpu.pio.stdint->timermax2;
-		ntimer *= 1000;
-		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
-
-		SelectObject(hdc, hfontLucida);
-		OffsetRect(&rc, kRegAddr*3, 0);
-		DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+			SelectObject(hdc, hfontLucida);
+			OffsetRect(&rc, kRegAddr*3, 0);
+			DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
+		}
 
 		EndPaint(hwnd, &ps);
 		return 0;
 	}
 	case WM_SIZE:
 	{
-		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr*6, kRegRow*2 + kRegRow*6 + kRegRow/2 + kRegRow, SWP_NOMOVE | SWP_NOZORDER);
+		int height;
+		if (lpDebuggerCalc->cpu.pio.model == TI_85 || lpDebuggerCalc->cpu.pio.model == TI_86) {
+			height = kRegRow*6 + kRegRow/2 + kRegRow;
+		} else {
+			height = kRegRow*2 + kRegRow*6 + kRegRow/2 + kRegRow;
+		}
+		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr*6, height, SWP_NOMOVE | SWP_NOZORDER);
 		return 0;
 	}
 	case WM_CTLCOLORSTATIC:
