@@ -531,18 +531,14 @@ keypad_t *keypad_init(CPU_t *cpu) {
 	
 	keypad = (keypad_t *) malloc(sizeof(keypad_t));
 	if (!keypad) {
-		printf("Couldn't allocate mem for keypad\n");
 		return NULL;
 	}
 
-	//keygrps = customkeys;
-	for(b = 0; b < 8; b++) {
-		for(i = 0; i < 8; i++) {
-			keypad->keys[b][i]=0;
-		}
-	}
+	memset(keypad->keys, 0, sizeof(keypad->keys));
 	keypad->on_pressed = 0;
 	keypad->group = 0;
+	memset(keypad->last_pressed, 0, sizeof(keypad->last_pressed));
+	keypad->on_last_pressed = 0;
 	return keypad;
 }
 
@@ -645,7 +641,6 @@ void keypad_release(CPU_t *cpu, int group, int bit)
 }
 
 keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
-	int i;
 	keypad_t *keypad = cpu->pio.keypad;
 	
 	if (keypad == NULL)
@@ -653,7 +648,7 @@ keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
 		return NULL;
 	}
 
-	for(i = 0; i < NumElm(keygrps); i++)
+	for (int i = 0; i < NumElm(keygrps); i++)
 	{
 		if (keygrps[i].vk == vk)
 		{	
@@ -666,7 +661,7 @@ keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
 
 #ifdef WINVER
 void keypad_vk_release(HWND hwnd, int group, int bit) {
-	for(int i = 0; i < ARRAYSIZE(defaultkeys); i++) {
+	for (int i = 0; i < ARRAYSIZE(defaultkeys); i++) {
 		if (keygrps[i].group == group && keygrps[i].bit == bit) {	
 			//TODO: fix lparam
 			//this is sent as a message and not HandleKeyUp because

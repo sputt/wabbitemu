@@ -130,6 +130,18 @@ int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value) {
 			if (*((int *) value) > max_value)
 				*((int *) value) = max_value;
 			break;
+		case BIN16:
+		case BIN8: {
+			*((int *) value) = 0;
+			for (int i = strlen(result) - 1, j = 1; i >= 0; i--, j <<= 1) {
+				if (result[i] == '1') {
+					*((int *) value) += j;
+				}
+			}
+			if (*((int *) value) > max_value)
+				*((int *) value) = max_value;
+			break;
+		}
 		case CHAR1:
 			_stscanf_s(result, _T("%c"), (char*) value);
 			if (*((char *) value) > max_value)

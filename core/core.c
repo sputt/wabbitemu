@@ -378,10 +378,10 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
 		int page = cpu->mem_c->banks[bank].page;
-		if (!cpu->mem_c->flash_locked && 1) {
+		if (!cpu->mem_c->flash_locked && cpu->pio.model >= TI_73 && //1) {
+			(((page != 0x3F && page != 0x2F) || cpu->pio.se_aux->model_bits & 0x3) &&
+			((page != 0x7F && page != 0x6F) || cpu->pio.se_aux->model_bits & 0x2 || !(cpu->pio.se_aux->model_bits & 0x1)))) {
 			switch(cpu->mem_c->flash_version) {
-				case 00:
-					break;
 				case 01:	//TI83+
 					flashwrite83p(cpu, addr, data);		// in a separate function for now, flash writes aren't the same across calcs
 					break;
@@ -583,8 +583,9 @@ int CPU_connected_step(CPU_t *cpu) {
 	cpu->ei_block = FALSE;
 
 	if (cpu->halt == FALSE) {
-		if (is_link_instruction(cpu)) {
+		if (is_link_instruction(cpu)) {// && cpu->linking_time + cpu->timer_c->freq / 25 < cpu->timer_c->tstates) {
 			cpu->is_link_instruction = TRUE;
+			cpu->linking_time = cpu->timer_c->tstates;
 			return 2;
 		}
 		CPU_opcode_fetch(cpu);

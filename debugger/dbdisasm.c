@@ -1481,10 +1481,10 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case VK_NEXT:
 					SendMessage(hwnd, WM_VSCROLL, SB_PAGEDOWN, 0);
-					break;
+					return 0;
 				case VK_PRIOR:
 					SendMessage(hwnd, WM_VSCROLL, SB_PAGEUP, 0);
-					break;
+					return 0;
 				case VK_F3:
 					SendMessage(hwnd, WM_COMMAND, DB_MEMPOINT_WRITE, 0);
 					break;
@@ -1518,11 +1518,14 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			int i;
 
 			WPARAM sbtype;
-			if (zDelta > 0) sbtype = SB_LINEUP;
-			else sbtype = SB_LINEDOWN;
+			if (zDelta > 0) {
+				sbtype = SB_LINEUP;
+			} else {
+				sbtype = SB_LINEDOWN;
+				}
 
 
-			for (i = 0; i < abs(zDelta); i += WHEEL_DELTA)
+			for (i = 0; i < abs(zDelta * 2); i += WHEEL_DELTA)
 				SendMessage(hwnd, WM_VSCROLL, sbtype, 0);
 
 			return 0;
@@ -1588,11 +1591,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case SB_LINEDOWN: {
 					int addr;
 					if (dps->type == REGULAR) {
-						addr = dps->zinf[0].waddr.addr;
+						addr = dps->zinf[dps->nRows - 2].waddr.addr;
 					} else {
-						addr = dps->zinf[0].waddr.page * PAGE_SIZE + dps->zinf[0].waddr.addr % PAGE_SIZE;
+						addr = dps->zinf[dps->nRows - 2].waddr.page * PAGE_SIZE + dps->zinf[dps->nRows - 2].waddr.addr % PAGE_SIZE;
 					}
-					if (addr + dps->nPage == GetMaxAddr(dps)) return 0;
+					if (addr >= GetMaxAddr(dps)) {
+						return 0;
+					}
 
 					if (dps->zinf[0].size) {
 						dps->nPane += dps->zinf[0].size;
@@ -1609,14 +1614,31 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					//I think its better to grab it always then make a separate call here
 					dps->nPane = si.nTrackPos;
 					break;
-				case SB_PAGEDOWN:
-					dps->iSel +=dps->last_pagedown;
-					dps->last_pagedown = dps->zinf[dps->nRows - 2].waddr.addr - dps->nPane;
-					dps->nPane += dps->last_pagedown;
+				case SB_PAGEDOWN: {
+					int addr;
+					if (dps->type == REGULAR) {
+						addr = dps->zinf[dps->nRows - 2].waddr.addr;
+					} else {
+						addr = dps->zinf[dps->nRows - 2].waddr.page * PAGE_SIZE + dps->zinf[dps->nRows - 2].waddr.addr % PAGE_SIZE;
+					}
+					dps->iSel -= dps->last_pagedown;
+					int newPageDown = dps->zinf[dps->nRows - 2].waddr.addr - dps->nPane; 
+					if (addr + newPageDown >= GetMaxAddr(dps)) {
+						newPageDown -= addr + newPageDown - GetMaxAddr(dps);
+					} else {
+						dps->last_pagedown = newPageDown;
+					}
+					dps->nPane += newPageDown;
 					break;
+				}
 				case SB_PAGEUP:
-					dps->iSel -=dps->last_pagedown;
-					dps->nPane -= dps->last_pagedown;
+					if ((int) dps->nPane - dps->last_pagedown >= 0) {
+						dps->iSel +=dps->last_pagedown;
+						dps->nPane -= dps->last_pagedown;
+					} else {
+						dps->iSel += dps->nPane;
+						dps->nPane = 0;
+					}
 					break;
 			}
 

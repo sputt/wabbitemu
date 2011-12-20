@@ -56,6 +56,7 @@ static struct {
 	{_T("Flags"),					REG_DWORD,	0},
 	{_T("Interrupts"),				REG_DWORD,	0},
 	{_T("Memory Map"),				REG_DWORD,	0},
+	{_T("Keyboard"),				REG_DWORD,	0},
 	{_T("Mem0"),					REG_DWORD,	0},
 	{_T("Mem1"),					REG_DWORD,	0},
 	{_T("Mem2"),					REG_DWORD,	0},

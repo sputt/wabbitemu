@@ -292,7 +292,9 @@ void flashwrite83p(CPU_t *cpu, unsigned short addr, unsigned char data) {
 	int bank = addr >> 14;
 	switch(cpu->mem_c->step) {
 		case 0:
-			if ((addr & 0x0FFF) == 0x0AAA) {
+			if (data == 0xF0) {
+				endflash(cpu);
+			} else if ((addr & 0x0FFF) == 0x0AAA) {
 				if (data == 0xAA) {
 					cpu->mem_c->step++;
 				} else {

@@ -350,6 +350,12 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			case CHAR1:
 				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%c"), *((_TUCHAR *) vfs->data));
 				break;
+			case BIN8:
+				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), byte_to_binary(*((unsigned int *) vfs->data)));
+				break;
+			case BIN16:
+				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), byte_to_binary(*((unsigned int *) vfs->data), TRUE));
+				break;
 			default:
 				StringCbPrintf(vfs->szValue, sizeof(vfs->szValue), _T("%d"), *((unsigned int *) vfs->data));
 				break;
