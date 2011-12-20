@@ -51,7 +51,7 @@ using namespace ATL;
 
 #include <comdef.h>
 
-#include <gmp\gmp.h>
+#include "gmp.h"
 #else
 #include <stdio.h>
 #include <stdlib.h>

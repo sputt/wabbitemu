@@ -165,6 +165,9 @@
     <ClInclude Include="SPASM_h.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="gmp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Z80Assembler.rgs">

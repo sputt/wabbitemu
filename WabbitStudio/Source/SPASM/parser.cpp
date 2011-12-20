@@ -653,7 +653,7 @@ bool conv_hex (const char* str, const char *end, int *output_num) {
 			number[end - start] = '\0';
 
 			SetLastSPASMError(SPASM_ERR_INVALID_HEX_DIGIT, *str, number);
-			return FALSE;
+			return false;
 		}
 		
 		acc <<= 4;
@@ -665,7 +665,7 @@ bool conv_hex (const char* str, const char *end, int *output_num) {
 		str++;
 	}
 	*output_num = acc;
-	return TRUE;
+	return true;
 }
 
 
@@ -688,14 +688,14 @@ static bool conv_dec (const char* str, const char *end, int *output_num) {
 			number[end - start] = '\0';
 
 			SetLastSPASMError(SPASM_ERR_INVALID_DECIMAL_DIGIT, *str, number);
-			return FALSE;
+			return false;
 		}
 		
 		acc += *str-'0';
 		str++;
 	}
 	*output_num = acc;
-	return TRUE;
+	return true;
 }
 
 
@@ -718,13 +718,13 @@ static bool conv_bin (const char* str, const char *end, int *output_num) {
 			number[end - start] = '\0';
 
 			SetLastSPASMError(SPASM_ERR_INVALID_BINARY_DIGIT, *str, number);
-			return FALSE;
+			return false;
 		}
 		
 		if (*str == '1') acc++;
 		str++;
 	}
 	*output_num = acc;
-	return TRUE;
+	return true;
 }
 
