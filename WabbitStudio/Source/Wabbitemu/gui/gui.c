@@ -1769,7 +1769,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 				DestroyCutoutResources();
 
-				_tprintf_s(_T("Saving registry settings\n"));
 				SaveRegistrySettings(lpCalc);
 
 			}
@@ -1779,7 +1778,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				PostQuitMessage(0);
 			return 0;
 		case WM_DESTROY: {
-				_tprintf_s(_T("Releasing skin and keymap\n"));
 				DeleteDC(lpCalc->hdcKeymap);
 				DeleteDC(lpCalc->hdcSkin);
 				lpCalc->hdcKeymap = NULL;

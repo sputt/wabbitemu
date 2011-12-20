@@ -143,7 +143,7 @@ typedef struct DEBUG_STATE {
 #ifdef QUICKLOOK
 #define MAX_CALCS	1
 #else
-#define MAX_CALCS	32
+#define MAX_CALCS	8
 #endif
 #define MAX_SPEED 100*50
 

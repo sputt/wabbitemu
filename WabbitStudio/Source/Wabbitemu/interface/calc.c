@@ -363,6 +363,9 @@ void calc_slot_free(LPCALC lpCalc) {
 		free(lpCalc->mem_c.ram_break);
 		lpCalc->mem_c.ram_break = NULL;
 
+		if (link_connected_hub(lpCalc->slot)) {
+			link_hub[lpCalc->slot] = NULL;
+		}
 		free(lpCalc->cpu.pio.link);
 		lpCalc->cpu.pio.link = NULL;
 
@@ -560,8 +563,8 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 		if (link_hub_count > 1) {
 			CPU_connected_step(&lpCalc->cpu);
 			if (lpCalc->cpu.is_link_instruction) {
-				calc_waiting_link++;
 				lpCalc->time_error = (time_t)(tc_tstates((&lpCalc->timer_c)) - time_end);
+				calc_waiting_link++;
 				break;
 			}
 		} else {
@@ -624,22 +627,32 @@ int calc_run_all(void) {
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
 		link_hub[MAX_CALCS]->host = 0;
 		for (j = 0; j < MAX_CALCS; j++) {
+			for (int k = 0; k < MAX_CALCS; k++) {
+				if (link_hub[k] != NULL && link_hub[k]->host != 0)
+					link_hub[MAX_CALCS]->host |= link_hub[k]->host;
+			}
 			if (calcs[j].active == TRUE && !calcs[j].cpu.is_link_instruction) {
-				if (link_hub[j] != NULL && link_hub[j]->host != 0)
-					link_hub[MAX_CALCS]->host |= link_hub[j]->host;
-
 				active_calc = j;
 				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
 				calc_run_tstates(&calcs[j], time);
-			}
+			} /*else {
+				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
+				calcs[j].time_error += time;
+			}*/
 		}
 
-		if (link_hub_count > 1 && link_hub_count == calc_waiting_link) {
-
+		if (link_hub_count > 1 && calc_waiting_link >= link_hub_count) {
+			for (int k = 0; k < MAX_CALCS; k++) {
+				if (calcs[k].cpu.is_link_instruction) {
+					calcs[k].cpu.is_link_instruction = FALSE;
+					CPU_step(&calcs[k].cpu);
+				}
+			}
+			calc_waiting_link = 0;
 		}
 
 		//this code handles screenshoting if were actually taking screenshots right now
-		if (active_calc >= 0 && calcs[active_calc].cpu.timer_c != NULL &&
+		if (active_calc >= 0 && !calc_waiting_link && calcs[active_calc].cpu.timer_c != NULL && calcs[active_calc].cpu.pio.lcd != NULL &&
 				((tc_elapsed(calcs[active_calc].cpu.timer_c) - calcs[active_calc].cpu.pio.lcd->lastgifframe) >= 0.01)) {
 			handle_screenshot();
 			calcs[active_calc].cpu.pio.lcd->lastgifframe += 0.01;

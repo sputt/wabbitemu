@@ -151,11 +151,12 @@ void handle_screenshot() {
 	for (i = 0; i < MAX_CALCS; i++) {
 		running_backup[i] = calcs[i].running;
 		calcs[i].running = FALSE;
+		lcd = calcs[i].cpu.pio.lcd;
 		//find the calc with the highest number of shades and use that as our number for the gif
-		//since i'm to lazy to implement them individually :P
-		if (calcs[i].active && shades < calcs[i].cpu.pio.lcd->shades)
-			shades = calcs[i].cpu.pio.lcd->shades;
-		//we also need to find the size of all the lcds
+		//since I'm to lazy to implement them individually :P
+		if (calcs[i].active && lcd && shades < lcd->shades)
+			shades = lcd->shades;
+		//we also need to find the size of all the LCDs
 	}
 
 	/*if ((gif_write_state != GIF_IDLE) && (!lpCalc->running))

@@ -465,6 +465,117 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	}
 }
 
+LRESULT CALLBACK DBKeyboardProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+	static HWND chkOn;
+	static char value[8];
+
+	switch (Message) {
+	case WM_CREATE:
+	{
+		TCHAR buf[32];
+		HWND hwndValue;
+		keypad_t *kp = lpDebuggerCalc->cpu.pio.keypad;
+		for (int i = 0; i < 7; i++) {
+			value[i] = 0;
+			for (int j = 0; j < 8; j++) {
+				if (kp->keys[i][j]) {
+					value[i] += 1 << j;
+				}
+			}
+			StringCbPrintf(buf, sizeof(buf), _T("Group %02X"), 0xFF & ~(1 << i));
+			hwndValue = CreateValueField(hwnd, buf, kRegAddr * 3, &value[i], sizeof(char), 8, BIN8);
+			SetWindowPos(hwndValue, NULL, 0, kRegRow * i, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+			SendMessage(hwndValue, WM_SIZE, 0, 0);
+		}
+
+		chkOn =
+		CreateWindow(
+			_T("BUTTON"),
+			_T("On Key Pressed"),
+			WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+			0, kRegRow * 7 + 3, kRegAddr * 3, kRegRow,
+			hwnd, (HMENU) 1, g_hInst, NULL);
+		SetWindowFont(chkOn, hfontSegoe, TRUE);
+		SendMessage(hwnd, WM_SIZE, 0, 0);
+
+		return 0;
+	}
+	case WM_COMMAND:
+	{
+		switch (HIWORD(wParam)) {
+			case BN_CLICKED:
+				switch (LOWORD(wParam)) {
+					case 1:
+						lpDebuggerCalc->cpu.pio.keypad->on_pressed = !lpDebuggerCalc->cpu.pio.keypad->on_pressed;
+						break;
+				}
+				Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
+				break;
+			case EN_CHANGE: {
+				keypad_t *kp = lpDebuggerCalc->cpu.pio.keypad;
+				for (int i = 0; i < 7; i++) {
+					char val = value[i];
+					for (int j = 0; j < 8; j++, val >>= 1) {
+						kp->keys[i][j] = val & 0x01;
+					}
+				}
+				break;
+			}
+		}
+		return 0;
+	}
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc;
+
+		hdc = BeginPaint(hwnd, &ps);
+
+		RECT rc;
+		GetClientRect(hwnd, &rc);
+
+		FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
+
+		EndPaint(hwnd, &ps);
+		return 0;
+	}
+	case WM_SIZE:
+	{
+		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr * 6, kRegRow * 9 + 10, SWP_NOMOVE | SWP_NOZORDER);
+		return 0;
+	}
+	case WM_CTLCOLORSTATIC:
+	case WM_CTLCOLORBTN:
+	{
+		return (LRESULT) GetStockObject(WHITE_BRUSH);
+	}
+	case WM_USER:
+		switch (wParam) {
+			case DB_UPDATE: {
+				keypad_t *kp = lpDebuggerCalc->cpu.pio.keypad;
+				Button_SetCheck(chkOn, kp->on_pressed);
+				for (int i = 0; i < 7; i++) {
+					value[i] = 0;
+					for (int j = 0; j < 8; j++) {
+						if (kp->keys[i][j]) {
+							value[i] += 1 << j;
+						}
+					}
+				}
+				break;
+			}
+			case VF_DESELECT_CHILDREN:
+				EnumChildWindows(hwnd, EnumDeselectChildren, (LPARAM) hwnd);
+				break;
+			default:
+				break;
+		}
+		return 0;
+	default:
+		return DefWindowProc(hwnd, Message, wParam, lParam);
+	}
+}
+
 
 LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND chkIff1, chkIff2;
@@ -1005,6 +1116,10 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				wcx.lpfnWndProc = DBInterruptProc;
 				RegisterClassEx(&wcx);
 
+				wcx.lpszClassName = _T("WabbitKeyDisp");
+				wcx.lpfnWndProc = DBKeyboardProc;
+				RegisterClassEx(&wcx);
+
 				FirstRun = FALSE;
 			}
 
@@ -1053,6 +1168,16 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						hwnd,
 						(HMENU) 1, g_hInst, NULL);
 			CreateExpandPane(hwnd, _T("Memory Map"), hwndContent);
+
+			hwndContent =
+				CreateWindow(
+						_T("WabbitKeyDisp"),
+						_T("Keyboard"),
+						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
+						0, 0, 1, 1,
+						hwnd,
+						(HMENU) 1, g_hInst, NULL);
+			CreateExpandPane(hwnd, _T("Keyboard"), hwndContent);
 
 			hwndContent =
 				CreateWindow(

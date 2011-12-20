@@ -278,6 +278,7 @@ typedef struct CPU {
 	BOOL reverse_wrap;
 	BOOL do_opcode_callback;
 	BOOL is_link_instruction;
+	unsigned long long linking_time;
 } CPU_t;
 
 typedef void (*opcodep)(CPU_t*);

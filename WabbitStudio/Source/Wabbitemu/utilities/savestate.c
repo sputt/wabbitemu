@@ -696,7 +696,6 @@ SAVESTATE_t* SaveSlot(void *lpInput) {
 
 void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	CHUNK_t* chunk = FindChunk(save, CPU_tag);
-	
 	chunk->pnt = 0;
 	
 	cpu->a = ReadChar(chunk);
@@ -757,8 +756,9 @@ void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 
 void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	int i;
-	CHUNK_t* chunk = FindChunk(save,MEM_tag);
+	CHUNK_t* chunk = FindChunk(save, MEM_tag);
 	chunk->pnt = 0;
+
 	mem->flash_size	= ReadInt(chunk);
 	mem->flash_pages= ReadInt(chunk);
 	mem->ram_size	= ReadInt(chunk);
@@ -881,6 +881,7 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 void LoadTIMER(SAVESTATE_t* save, timerc* time) {
 	CHUNK_t* chunk = FindChunk(save,TIMER_tag);
 	chunk->pnt = 0;
+
 	time->tstates	= ReadLong(chunk);
 	time->freq		= (uint32_t) ReadLong(chunk);
 	time->elapsed	= ReadDouble(chunk);
@@ -890,6 +891,7 @@ void LoadTIMER(SAVESTATE_t* save, timerc* time) {
 void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	CHUNK_t* chunk = FindChunk(save,LCD_tag);
 	chunk->pnt = 0;
+
 	lcd->active		= ReadInt(chunk);
 	lcd->word_len	= ReadInt(chunk);
 	lcd->x			= ReadInt(chunk);
@@ -917,6 +919,7 @@ void LoadLCD(SAVESTATE_t* save, LCD_t* lcd) {
 void LoadLINK(SAVESTATE_t* save, link_t* link) {
 	CHUNK_t* chunk	= FindChunk(save,LINK_tag);
 	chunk->pnt = 0;
+
 	link->host		= ReadChar(chunk);
 }
 
@@ -924,6 +927,7 @@ void LoadSTDINT(SAVESTATE_t* save, STDINT_t* stdint) {
 	int i;
 	CHUNK_t* chunk		= FindChunk(save,STDINT_tag);
 	chunk->pnt = 0;
+
 	stdint->intactive	= ReadChar(chunk);
 	stdint->lastchk1	= ReadDouble(chunk);
 	stdint->timermax1	= ReadDouble(chunk);
@@ -938,29 +942,46 @@ void LoadSTDINT(SAVESTATE_t* save, STDINT_t* stdint) {
 
 void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	int i;
-	if (!se_aux) return;
-	CHUNK_t* chunk = FindChunk(save,SE_AUX_tag);
-	if (!chunk) return;
-	
-	BOOL is_83p = save->model < TI_83PSE && save->version_minor == 1;
-	if (!is_83p) {
-		se_aux->clock.enable		= ReadChar(chunk);
-		se_aux->clock.set			= ReadInt(chunk);
-		se_aux->clock.base			= ReadInt(chunk);
-		se_aux->clock.lasttime		= ReadDouble(chunk);
-	
-		for(i = 0; i < 7; i++) {
-			se_aux->delay.reg[i]	= ReadChar(chunk);
-		}
-	
-		for(i = 0; i < NumElm(se_aux->md5.reg); i++)
-		{
-			se_aux->md5.reg[i]		= ReadInt(chunk);
-		}
-		se_aux->md5.s				= ReadChar(chunk);
-		se_aux->md5.mode			= ReadChar(chunk);
+	if (!se_aux) {
+		return;
+	}
+	CHUNK_t* chunk = FindChunk(save, SE_AUX_tag);
+	if (!chunk) {
+		return;
 	}
 	
+	BOOL is_83p = save->model < TI_83PSE && save->version_minor == 1;
+	if (is_83p) {
+		LINKASSIST_t *linka = (LINKASSIST_t *) se_aux;
+		linka->link_enable	= ReadChar(chunk);
+		linka->in			= ReadChar(chunk);
+		linka->out			= ReadChar(chunk);
+		linka->working		= ReadChar(chunk);
+		linka->receiving	= ReadInt(chunk);
+		linka->read			= ReadInt(chunk);
+		linka->ready		= ReadInt(chunk);
+		linka->error		= ReadInt(chunk);
+		linka->sending		= ReadInt(chunk);
+		linka->last_access	= ReadDouble(chunk);
+		linka->bit			= ReadInt(chunk);
+		return;
+	}
+	
+	se_aux->clock.enable		= ReadChar(chunk);
+	se_aux->clock.set			= ReadInt(chunk);
+	se_aux->clock.base			= ReadInt(chunk);
+	se_aux->clock.lasttime		= ReadDouble(chunk);
+	
+	for(i = 0; i < 7; i++) {
+		se_aux->delay.reg[i]	= ReadChar(chunk);
+	}
+	
+	for(i = 0; i < NumElm(se_aux->md5.reg); i++)
+	{
+		se_aux->md5.reg[i]		= ReadInt(chunk);
+	}
+	se_aux->md5.s				= ReadChar(chunk);
+	se_aux->md5.mode			= ReadChar(chunk);
 	
 	se_aux->linka.link_enable	= ReadChar(chunk);
 	se_aux->linka.in			= ReadChar(chunk);
@@ -973,12 +994,9 @@ void LoadSE_AUX(SAVESTATE_t* save, SE_AUX_t *se_aux) {
 	se_aux->linka.sending		= ReadInt(chunk);
 	se_aux->linka.last_access	= ReadDouble(chunk);
 	se_aux->linka.bit			= ReadInt(chunk);
-		
+
 	se_aux->xtal.lastTime		= ReadDouble(chunk);
 	se_aux->xtal.ticks			= ReadLong(chunk);
-
-	if (is_83p)
-		return;
 
 	for(i = 0; i < 3; i++) {
 		se_aux->xtal.timers[i].lastTstates	= ReadLong(chunk);
