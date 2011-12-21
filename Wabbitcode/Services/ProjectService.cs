@@ -21,10 +21,10 @@ namespace Revsoft.Wabbitcode.Services
 			set
 			{
 				curProj = value;
-                if (CurrentProjectChanged != null)
-                {
-                    CurrentProjectChanged(value, EventArgs.Empty);
-                }
+				if (CurrentProjectChanged != null)
+				{
+					CurrentProjectChanged(value, EventArgs.Empty);
+				}
 			}
 		}
 
@@ -34,11 +34,11 @@ namespace Revsoft.Wabbitcode.Services
 			CurrentProject = new Project.InternalProject();
 		}
 
-        public void DestroyService()
-        {
-            OpenProjects = null;
-            CurrentProject = null;
-        }
+		public void DestroyService()
+		{
+			OpenProjects = null;
+			CurrentProject = null;
+		}
 
 		public delegate void ChangingHandler(object sender, EventArgs e);
 		public event ChangingHandler CurrentProjectChanged;

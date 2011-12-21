@@ -142,46 +142,46 @@ namespace Revsoft.Wabbitcode
 		#region Startup
 		public void HandleArgs(string[] args)
 		{
-            if (args.Length == 0)
-            {
-                return;
-            }
-            foreach (string file in args)
-            {
-                if (File.Exists(file))
-                {
-                    if (Path.GetExtension(file) == ".wcodeproj")
-                    {
-                        using (FileStream stream = new FileStream(file, FileMode.Open))
-                        {
-                            ProjectService.OpenProject(stream, file);
-                        }
-                        return;
-                    }
-                    else
-                    {
-                        foreach (string arg in args)
-                        {
-                            try
-                            {
-                                if (string.IsNullOrEmpty(arg))
-                                {
-                                    break;
-                                }
-                                DocumentService.OpenDocument(arg);
-                            }
-                            catch (FileNotFoundException)
-                            {
-                                Services.DockingService.ShowError("Error: File not found!\n" + arg);
-                            }
-                            catch (Exception ex)
-                            {
-                                Services.DockingService.ShowError("Error in loading startup args", ex);
-                            }
-                        }
-                    }
-                }
-            }
+			if (args.Length == 0)
+			{
+				return;
+			}
+			foreach (string file in args)
+			{
+				if (File.Exists(file))
+				{
+					if (Path.GetExtension(file) == ".wcodeproj")
+					{
+						using (FileStream stream = new FileStream(file, FileMode.Open))
+						{
+							ProjectService.OpenProject(stream, file);
+						}
+						return;
+					}
+					else
+					{
+						foreach (string arg in args)
+						{
+							try
+							{
+								if (string.IsNullOrEmpty(arg))
+								{
+									break;
+								}
+								DocumentService.OpenDocument(arg);
+							}
+							catch (FileNotFoundException)
+							{
+								Services.DockingService.ShowError("Error: File not found!\n" + arg);
+							}
+							catch (Exception ex)
+							{
+								Services.DockingService.ShowError("Error in loading startup args", ex);
+							}
+						}
+					}
+				}
+			}
 		}
 		#endregion
 
@@ -206,15 +206,15 @@ namespace Revsoft.Wabbitcode
 			DocumentService = ServiceFactory.Instance.GetServiceInstance<DocumentService>();
 			AssemblerService = ServiceFactory.Instance.GetServiceInstance<AssemblerService>();
 
-            if (!File.Exists(PathsService.TemplatesConfig))
-            {
-                string templateXML = ResourceService.GetResource("Templates.xml");
-                using (var sw = new StreamWriter(PathsService.TemplatesConfig))
-                {
-                    sw.Write(templateXML);
-                    sw.Flush();
-                }
-            }
+			if (!File.Exists(PathsService.TemplatesConfig))
+			{
+				string templateXML = ResourceService.GetResource("Templates.xml");
+				using (var sw = new StreamWriter(PathsService.TemplatesConfig))
+				{
+					sw.Write(templateXML);
+					sw.Flush();
+				}
+			}
 		}
 
 		private void dockManager_Loaded(object sender, RoutedEventArgs e)
@@ -255,23 +255,23 @@ namespace Revsoft.Wabbitcode
 				Title = "Open File",
 			};
 			var result = openFileDialog.ShowDialog();
-            if (result != true)
-            {
-                return;
-            }
+			if (result != true)
+			{
+				return;
+			}
 			foreach (string fileName in openFileDialog.FileNames)
 			{
-                if (string.Equals(Path.GetExtension(fileName), ".wcodeproj"))
-                {
-                    using (FileStream stream = new FileStream(fileName, FileMode.Open))
-                    {
-                        ProjectService.OpenProject(stream, fileName);
-                    }
-                }
-                else
-                {
-                    DocumentService.OpenDocument(fileName);
-                }
+				if (string.Equals(Path.GetExtension(fileName), ".wcodeproj"))
+				{
+					using (FileStream stream = new FileStream(fileName, FileMode.Open))
+					{
+						ProjectService.OpenProject(stream, fileName);
+					}
+				}
+				else
+				{
+					DocumentService.OpenDocument(fileName);
+				}
 			}
 		}
 
@@ -291,35 +291,35 @@ namespace Revsoft.Wabbitcode
 			};
 			if (ofn.ShowDialog() == true)
 			{
-                using (FileStream stream = new FileStream(ofn.FileName, FileMode.Open))
-                {
-                    ProjectService.OpenProject(stream, ofn.FileName);
-                }
+				using (FileStream stream = new FileStream(ofn.FileName, FileMode.Open))
+				{
+					ProjectService.OpenProject(stream, ofn.FileName);
+				}
 			}
 		}
 
 		private void SaveFile_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-            if (DockingService.ActiveDocument != null)
-            {
-                DockingService.ActiveDocument.SaveFile();
-            }
+			if (DockingService.ActiveDocument != null)
+			{
+				DockingService.ActiveDocument.SaveFile();
+			}
 		}
 
 		private void SaveAll_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-            foreach (Editor doc in DockingService.Documents)
-            {
-                doc.SaveFile();
-            }
+			foreach (Editor doc in DockingService.Documents)
+			{
+				doc.SaveFile();
+			}
 		}
 
 		private void Close_Executed(object sender, ExecutedRoutedEventArgs e)
 		{
-            if (DockingService.ActiveDocument != null)
-            {
-                DockingService.ActiveDocument.Close();
-            }
+			if (DockingService.ActiveDocument != null)
+			{
+				DockingService.ActiveDocument.Close();
+			}
 		}
 		#endregion
 
