@@ -397,18 +397,22 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 						if (pnkd->wVKey == VK_ESCAPE) {
 							DestroyWindow(hwndEditControl);
 							hwndEditControl = NULL;
-						} else{
+						} else {
 							SendMessage(hwndEditControl, WM_KEYDOWN, pnkd->wVKey, 0);
 						}
 					} else {
 						if (pnkd->wVKey == VK_DELETE) {
+							if (num_watch == 1) {
+								break;
+							}
 							int index = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED);
 							free(watchpoints[index]);
 							memmove(&watchpoints[index], &watchpoints[index+1], sizeof(watchpoint_t *) * (--num_watch - index));
 							watchpoints[num_watch] = NULL;
 							ListView_DeleteItem(hwndListView, index);
-							if (num_watch == 0)
+							if (num_watch == 0) {
 								InsertListViewItems(hwndListView, 1);
+							}
 							Debug_UpdateWindow(hwnd);
 						}
 					}
@@ -428,10 +432,14 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				{
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
 					watchpoint_t *watch = plvdi->item.iItem > num_watch ? NULL : watchpoints[plvdi->item.iItem];
+					if (!watch) {
+						break;
+					}
 					//if the last item is all valid add another one
 					if (plvdi->item.iItem + 1 == num_watch && watch->waddr_is_valid.addr == TRUE && watch->waddr_is_valid.page == TRUE &&
-							watch->waddr_is_valid.is_ram == TRUE && watch->size_is_valid == TRUE)
+							watch->waddr_is_valid.is_ram == TRUE && watch->size_is_valid == TRUE) {
 						InsertListViewItems(hwndListView, 1);
+					}
 					switch (plvdi->item.iSubItem)
 					{
 						case 0:
