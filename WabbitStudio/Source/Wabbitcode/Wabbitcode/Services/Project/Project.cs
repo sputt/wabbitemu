@@ -87,8 +87,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		public Project(string projectFile, string projectName)
 		{
-			IProjectFolder folder = new ProjectFolder(this, projectName);
-			MainFolder = folder;
+			MainFolder = new ProjectFolder(this, projectName);
 			ProjectName = projectName;
 			ProjectFile = projectFile;
 			ProjectDirectory = Path.GetDirectoryName(projectFile);
@@ -105,29 +104,29 @@ namespace Revsoft.Wabbitcode.Services.Project
 				reader.MoveToContent();
 				while (!reader.Name.Equals("WabbitcodeProject"))
 				{
-                    if (!reader.MoveToNextElement())
-                    {
-                        throw new InvalidDataException("Invalid XML Format");
-                    }
+					if (!reader.MoveToNextElement())
+					{
+						throw new InvalidDataException("Invalid XML Format");
+					}
 				}
 
 				string formatVersion = reader.GetAttribute("Version");
-                if (formatVersion != ProjectFileVersion)
-                {
-                    throw new Exception("Invalid Version");
-                }
+				if (formatVersion != ProjectFileVersion)
+				{
+					throw new Exception("Invalid Version");
+				}
 				ProjectFile = projectFile;
 				ProjectDirectory = reader.GetAttribute("Directory");
-                if (ProjectDirectory == null)
-                {
-                    ProjectDirectory = Path.GetDirectoryName(projectFile);
-                }
+				if (ProjectDirectory == null)
+				{
+					ProjectDirectory = Path.GetDirectoryName(projectFile);
+				}
 				ProjectName = reader.GetAttribute("Name");
 				reader.MoveToNextElement();
-                if (reader.Name != "Folder")
-                {
-                    throw new ArgumentException("Invalid XML Format");
-                }
+				if (reader.Name != "Folder")
+				{
+					throw new ArgumentException("Invalid XML Format");
+				}
 				IProjectFolder mainFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
 				RecurseReadFolders(reader, ref mainFolder);
 				MainFolder = mainFolder;

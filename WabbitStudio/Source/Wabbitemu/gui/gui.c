@@ -146,7 +146,7 @@ HWND gui_debug(LPCALC lpCalc) {
 	HWND hdebug;
 	BOOL set_place = TRUE;
 	int flags = 0;
-	RECT pos = {CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT+800, CW_USEDEFAULT+600};
+	RECT pos = {0, 0, 800, 600};
 	if (!db_placement.length) {
 		db_placement.flags = SW_SHOWNORMAL;
 		db_placement.length = sizeof(WINDOWPLACEMENT);
@@ -154,9 +154,6 @@ HWND gui_debug(LPCALC lpCalc) {
 		set_place = FALSE;
 		flags = WS_VISIBLE;
 	}
-
-	pos.right -= pos.left;
-	pos.bottom -= pos.top;
 	
 
 	lpCalc->running = FALSE;
@@ -176,7 +173,8 @@ HWND gui_debug(LPCALC lpCalc) {
 		g_szDebugName,
 		buf,
 		flags | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
-		pos.left, pos.top, pos.right, pos.bottom,
+		db_placement.rcNormalPosition.left, db_placement.rcNormalPosition.top,
+		db_placement.rcNormalPosition.right - db_placement.rcNormalPosition.left, db_placement.rcNormalPosition.bottom - db_placement.rcNormalPosition.top,
 		0, 0, g_hInst, (LPVOID) lpCalc);
 	if (set_place)
 		SetWindowPlacement(hdebug, &db_placement);

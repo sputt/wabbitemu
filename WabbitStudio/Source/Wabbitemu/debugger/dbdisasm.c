@@ -640,6 +640,19 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				total_size += zup[i].size;
 			}
 
+			int addr;
+			if (dps->type == REGULAR) {
+				addr = zlast->waddr.addr;
+			} else {
+				addr = zlast->waddr.page * PAGE_SIZE + zlast->waddr.addr % PAGE_SIZE;
+			}
+
+			//check if the first page is visible
+			if (addr < PAGE_SIZE) {
+				dps->nPane--;
+				SendMessage(hwnd, WM_SIZE, 0, 0);
+			}
+
 			last_top_page_addr = GetMaxAddr(dps) - total_size + dps->last_pagedown;
 
 			SCROLLINFO si;
@@ -1623,7 +1636,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					}
 					dps->iSel -= dps->last_pagedown;
 					int newPageDown = dps->zinf[dps->nRows - 2].waddr.addr - dps->nPane; 
-					if (addr + newPageDown >= GetMaxAddr(dps)) {
+					if (newPageDown < 0 || addr + newPageDown >= GetMaxAddr(dps)) {
 						newPageDown -= addr + newPageDown - GetMaxAddr(dps);
 					} else {
 						dps->last_pagedown = newPageDown;

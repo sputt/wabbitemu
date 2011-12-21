@@ -631,7 +631,7 @@ int calc_run_all(void) {
 				if (link_hub[k] != NULL && link_hub[k]->host != 0)
 					link_hub[MAX_CALCS]->host |= link_hub[k]->host;
 			}
-			if (calcs[j].active == TRUE && !calcs[j].cpu.is_link_instruction) {
+			if (calcs[j].active && !calcs[j].cpu.is_link_instruction) {
 				active_calc = j;
 				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
 				calc_run_tstates(&calcs[j], time);

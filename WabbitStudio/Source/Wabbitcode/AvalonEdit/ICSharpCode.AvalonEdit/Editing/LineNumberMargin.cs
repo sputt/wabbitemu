@@ -45,7 +45,7 @@ namespace ICSharpCode.AvalonEdit.Editing
 				emSize,
 				(Brush)GetValue(Control.ForegroundProperty)
 			);
-			return new Size(text.Width, 0);
+			return new Size(text.Width + 5, 0);
 		}
 		
 		/// <inheritdoc/>

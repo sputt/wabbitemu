@@ -270,6 +270,9 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					item.iItem = selIndex;
 					item.iSubItem = 0;
 					ListView_GetItem(hwndListView, &item);
+					if (item.iItem == -1) {
+						break;
+					}
 					LPBREAKPOINT lpBreak = (LPBREAKPOINT) item.lParam;
 
 					switch (lpBreak->type) {

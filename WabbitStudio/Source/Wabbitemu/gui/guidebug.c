@@ -925,10 +925,12 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			case DB_BREAKPOINT:
 			case DB_MEMPOINT_READ:
 			case DB_MEMPOINT_WRITE: {
-				if (hmemlist[TabCtrl_GetCurSel(hmem)] == hwndLastFocus)
+				if (hmemlist[TabCtrl_GetCurSel(hmem)] == hwndLastFocus) {
 					SendMessage(hmemlist[TabCtrl_GetCurSel(hmem)], Message, wParam, lParam);
-				else if (hdisasmlist[TabCtrl_GetCurSel(hdisasm)] == hwndLastFocus)
+				} else if (hdisasmlist[TabCtrl_GetCurSel(hdisasm)] == hwndLastFocus) {
 					SendMessage(hdisasmlist[TabCtrl_GetCurSel(hdisasm)], Message, wParam, lParam);
+				}
+				Debug_UpdateWindow(hwnd);
 				break;
 			}
 
