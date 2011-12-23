@@ -640,15 +640,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				total_size += zup[i].size;
 			}
 
-			int addr;
-			if (dps->type == REGULAR) {
-				addr = zlast->waddr.addr;
-			} else {
-				addr = zlast->waddr.page * PAGE_SIZE + zlast->waddr.addr % PAGE_SIZE;
-			}
-
-			//check if the first page is visible
-			if (addr < PAGE_SIZE) {
+			//check if the first page is visible from the last page
+			if (zfirst->waddr.addr > zlast->waddr.addr) {
 				dps->nPane--;
 				SendMessage(hwnd, WM_SIZE, 0, 0);
 			}
@@ -867,12 +860,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			end_i = ((int) (ur.bottom - dps->cyHeader + dps->cyRow - 1 - 1)) / (int) dps->cyRow;
 
+			memory_context_t *calc_mem = &lpDebuggerCalc->mem_c;
 			for (; i < end_i; i++, OffsetRect(&tr, 0, dps->cyRow)) {
 				BOOL do_gradient = FALSE;
 
 				int pc_i;
 				for (pc_i = 0; pc_i < PC_TRAILS && !do_gradient; pc_i++) {
-					waddr_t pc_waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, dps->nPCs[pc_i]);
+					waddr_t pc_waddr = addr_to_waddr(calc_mem, dps->nPCs[pc_i]);
 					if ((pc_waddr.addr % PAGE_SIZE == dps->zinf[i].waddr.addr % PAGE_SIZE) && pc_waddr.page == dps->zinf[i].waddr.page
 						&& pc_waddr.is_ram == dps->zinf[i].waddr.is_ram && (dps->zinf[i].index != DA_LABEL)) {
 						///dps->iPC = i;
@@ -897,7 +891,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					}
 				}
 				BOOL breakpoint = FALSE;
-				memory_context_t *calc_mem = &lpDebuggerCalc->mem_c;
 				if (check_break(calc_mem, dps->zinf[i].waddr)) {
 					vert [0] .Red    = GetRValue(COLOR_BREAKPOINT) << 8;
 					vert [0] .Green  = GetGValue(COLOR_BREAKPOINT) << 8;
@@ -1602,13 +1595,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case SB_LINEDOWN: {
-					int addr;
-					if (dps->type == REGULAR) {
-						addr = dps->zinf[dps->nRows - 2].waddr.addr;
-					} else {
-						addr = dps->zinf[dps->nRows - 2].waddr.page * PAGE_SIZE + dps->zinf[dps->nRows - 2].waddr.addr % PAGE_SIZE;
-					}
-					if (addr >= GetMaxAddr(dps)) {
+					if (dps->zinf[dps->nRows - 1].waddr.addr < dps->zinf[0].waddr.addr) {
 						return 0;
 					}
 
@@ -1628,16 +1615,10 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					dps->nPane = si.nTrackPos;
 					break;
 				case SB_PAGEDOWN: {
-					int addr;
-					if (dps->type == REGULAR) {
-						addr = dps->zinf[dps->nRows - 2].waddr.addr;
-					} else {
-						addr = dps->zinf[dps->nRows - 2].waddr.page * PAGE_SIZE + dps->zinf[dps->nRows - 2].waddr.addr % PAGE_SIZE;
-					}
 					dps->iSel -= dps->last_pagedown;
 					int newPageDown = dps->zinf[dps->nRows - 2].waddr.addr - dps->nPane; 
-					if (newPageDown < 0 || addr + newPageDown >= GetMaxAddr(dps)) {
-						newPageDown -= addr + newPageDown - GetMaxAddr(dps);
+					if (newPageDown < 0 || dps->zinf[dps->nRows - 1].waddr.addr + newPageDown >= GetMaxAddr(dps)) {
+						newPageDown -= dps->zinf[dps->nRows - 1].waddr.addr + newPageDown;
 					} else {
 						dps->last_pagedown = newPageDown;
 					}

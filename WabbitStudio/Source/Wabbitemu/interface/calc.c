@@ -603,42 +603,73 @@ BOOL calc_start_screenshot(calc_t *calc, const TCHAR *filename)
 	}
 }
 
-void calc_stop_screenshot(calc_t *calc)
+void calc_stop_screenshot(LPCALC calc)
 {
 	gif_write_state = GIF_END;
 }
 
 void calc_pause_linked() {
-	for (int i = 0; i < MAX_CALCS; i++)
-		if (calcs[i].active && link_connected_hub(i))
+	for (int i = 0; i < MAX_CALCS; i++) {
+		if (calcs[i].active && link_connected_hub(i)) {
 			calcs[i].running = FALSE;
+		}
+	}
 }
 
 void calc_unpause_linked() {
-	for (int i = 0; i < MAX_CALCS; i++)
-		if (calcs[i].active && link_connected_hub(i))
+	for (int i = 0; i < MAX_CALCS; i++) {
+		if (calcs[i].active && link_connected_hub(i)) {
 			calcs[i].running = TRUE;
+		}
+	}
 }
 
 #define FRAME_SUBDIVISIONS	(1024)
 int calc_run_all(void) {
 	int i, j, active_calc = -1;
+	BOOL calc_waiting = FALSE;
 
 	for (i = 0; i < FRAME_SUBDIVISIONS; i++) {
 		link_hub[MAX_CALCS]->host = 0;
 		for (j = 0; j < MAX_CALCS; j++) {
+			char hostVal = 0;
 			for (int k = 0; k < MAX_CALCS; k++) {
-				if (link_hub[k] != NULL && link_hub[k]->host != 0)
-					link_hub[MAX_CALCS]->host |= link_hub[k]->host;
+				if (link_hub[k] != NULL && link_hub[k]->host) {
+					hostVal |= link_hub[k]->host;
+					calc_waiting |= link_hub[k]->hasChanged;
+				}
 			}
-			if (calcs[j].active && !calcs[j].cpu.is_link_instruction) {
+			if (hostVal != link_hub[MAX_CALCS]->host) {
+				link_hub[MAX_CALCS]->host = hostVal;
+				calc_waiting = TRUE;
+				for (int k = 0; k < MAX_CALCS; k++) {
+					if (link_hub[k]) {
+						link_hub[k]->hasChanged = TRUE;
+						link_hub[k]->changedTime = calcs[k].timer_c.tstates;
+					}
+				}
+			}
+			if (calcs[j].active) {
+				/*if (link_hub[j] != NULL && (!link_hub[MAX_CALCS]->host || link_hub[MAX_CALCS]->host != link_hub[j]->host)
+					&& calcs[j].cpu.is_link_instruction || ((int) (calcs[j].cpu.linking_time - calcs[j].cpu.timer_c->tstates) >= 100000)) {
+					calcs[j].cpu.is_link_instruction = FALSE;
+					calcs[j].cpu.linking_time = 0;
+					CPU_step(&calcs[j].cpu);
+				}*/
+				if (calcs[j].cpu.is_link_instruction && calcs[j].cpu.pio.link->changedTime - calcs[j].timer_c.tstates >= 100000) {
+					calcs[j].cpu.is_link_instruction = FALSE;
+					calcs[j].cpu.pio.link->changedTime = 0;
+					calcs[j].cpu.pio.link->hasChanged = FALSE;
+					CPU_step(&calcs[j].cpu);
+				}
 				active_calc = j;
 				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
-				calc_run_tstates(&calcs[j], time);
-			} /*else {
-				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
-				calcs[j].time_error += time;
-			}*/
+				if (!calcs[j].cpu.is_link_instruction || !calc_waiting || calcs[j].cpu.pio.link->hasChanged == TRUE) {
+					calc_run_tstates(&calcs[j], time);
+				} /*else {
+					calcs[j].cpu.linking_time += time;
+				}*/
+			}
 		}
 
 		if (link_hub_count > 1 && calc_waiting_link >= link_hub_count) {

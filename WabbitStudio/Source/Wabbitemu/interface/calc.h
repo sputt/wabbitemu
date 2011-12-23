@@ -81,7 +81,6 @@ typedef struct tagCALC {
 
 	BOOL SkinEnabled;
 	DWORD scale;
-	DWORD detached_scale;
 	BOOL bCutout;
 	HANDLE hdlThread;
 	

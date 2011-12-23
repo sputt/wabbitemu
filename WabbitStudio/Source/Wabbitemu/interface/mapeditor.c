@@ -40,16 +40,16 @@ __declspec (dllexport) BOOL WINAPI DllMain(HINSTANCE hModule, DWORD  ul_reason_f
 
 HRESULT CALLBACK DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID * ppvObj)
 { 
-    HRESULT hr = E_OUTOFMEMORY;
-    *ppvObj = NULL;
+	HRESULT hr = E_OUTOFMEMORY;
+	*ppvObj = NULL;
 
-    CWabbitemuClassFactory *pClassFactory = new CWabbitemuClassFactory();
-    if (pClassFactory != NULL)
+	CWabbitemuClassFactory *pClassFactory = new CWabbitemuClassFactory();
+	if (pClassFactory != NULL)
 	{
-        hr = pClassFactory->QueryInterface(riid, ppvObj);
-        pClassFactory->Release();
-    }
-    return hr;
+		hr = pClassFactory->QueryInterface(riid, ppvObj);
+		pClassFactory->Release();
+	}
+	return hr;
 }
 
 HRESULT CALLBACK DllCanUnloadNow(void)
@@ -99,7 +99,7 @@ HRESULT CALLBACK DllRegisterServer(void)
 	RegSetValueW(hkey, NULL, REG_SZ, L"Wabbit.Wabbitemu", 0);
 	RegCloseKey(hkey);
 	 
-    return S_OK;
+	return S_OK;
 }
 
 HRESULT CALLBACK DllUnregisterServer(void)
@@ -146,7 +146,7 @@ HRESULT CALLBACK DllUnregisterServer(void)
 	hr = RegDeleteKeyW(hkey, clsidString);
 	if (hr != ERROR_SUCCESS)
 		return SELFREG_E_CLASS;	 
-    return S_OK;
+	return S_OK;
 }
 
 #endif
