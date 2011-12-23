@@ -65,6 +65,8 @@ typedef struct link {
 	#endif
 	BYTE vout;
 	LPBYTE vin;						// Virtual Link data
+	BOOL hasChanged;				// if were connected to a hub, has the hub value changed
+	unsigned long long changedTime;	// when the data changed
 } link_t;
 
 #pragma pack(push, 1)

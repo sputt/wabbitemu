@@ -174,6 +174,8 @@ waddr_t GetNextAddr(memory_context_t *memc, ViewType type, waddr_t waddr) {
 			waddr.addr = (waddr.addr + 1) % PAGE_SIZE;
 			if (!(waddr.addr % PAGE_SIZE))
 				waddr.page++;
+			int pages = type == FLASH ? memc->flash_pages : memc->ram_pages;
+			waddr.page %= pages;
 			break;
 	}
 	return waddr;
@@ -191,6 +193,8 @@ waddr_t OffsetWaddr(memory_context_t *memc, ViewType type, waddr_t waddr, int of
 			int new_abs_addr = waddr.addr;
 			if (old_abs_addr > new_abs_addr)
 				waddr.page++;
+			int pages = type == FLASH ? memc->flash_pages : memc->ram_pages;
+			waddr.page %= pages;
 			break;
 		}
 	}

@@ -8,7 +8,7 @@
 #include "calc.h"
 #include <math.h>
 
-static double timer_freq[4] = {1.0/200.0};
+static double timer_freq[4] = { 1.0 / 800.0, 1.0 / 400.0, 3.0 / 800.0, 1.0 / 200.0 };
 
 //this would make it impossible to open multiple 86s...
 //static int screen_addr = 0xFC00;
@@ -94,10 +94,21 @@ static void port3(CPU_t *cpu, device_t *dev) {
 
 static void port4(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
-		dev->aux = (void *) cpu->bus;
+		cpu->bus = 1;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		cpu->bus = (uint8_t) (int) dev->aux;
+		dev->aux = (void *) cpu->bus;
+		int freq = (cpu->bus >> 1) & 0x3;
+		cpu->pio.stdint->timermax1 = cpu->pio.stdint->freq[freq];
+		cpu->pio.stdint->lastchk1 = tc_elapsed(cpu->timer_c);
+		int lcd_mode = (cpu->bus >> 3) & 0x3;
+		if (lcd_mode == 0) {
+			cpu->pio.lcd->width = 80;
+		} else {
+			cpu->pio.lcd->width = 32 * lcd_mode + 64;
+		}
+
+		
 		cpu->output = FALSE;
 	}
 }
@@ -133,16 +144,18 @@ static void port6(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		cpu->mem_c->banks[2].ram = (cpu->bus >> 6) & 1;
 		if (cpu->mem_c->banks[2].ram) {
-			cpu->mem_c->banks[2].page		= (cpu->bus & 0x1f) % cpu->mem_c->ram_pages;
-			cpu->mem_c->banks[2].addr		= cpu->mem_c->ram+(cpu->mem_c->banks[2].page * PAGE_SIZE);
+			cpu->mem_c->banks[2].page		= cpu->bus & 0x07;
+			cpu->mem_c->banks[2].addr		= cpu->mem_c->ram + (cpu->mem_c->banks[2].page * PAGE_SIZE);
 			cpu->mem_c->banks[2].read_only	= FALSE;
 			cpu->mem_c->banks[2].no_exec	= FALSE;
 		} else {
-			cpu->mem_c->banks[2].page		= (cpu->bus & 0x1f) % cpu->mem_c->flash_pages;
+			cpu->mem_c->banks[2].page		= cpu->bus & 0x0f;
 			cpu->mem_c->banks[2].addr		= cpu->mem_c->flash + (cpu->mem_c->banks[2].page * PAGE_SIZE);
 			cpu->mem_c->banks[2].read_only	= TRUE;
 			cpu->mem_c->banks[2].no_exec	= FALSE;
-			if (cpu->mem_c->banks[2].page == 0x1f) cpu->mem_c->banks[2].read_only = TRUE;
+			if (cpu->mem_c->banks[2].page == 0x1f) {
+				cpu->mem_c->banks[2].read_only = TRUE;
+			}
 		}
 		cpu->output = FALSE;
 	}
@@ -183,9 +196,9 @@ static STDINT_t* INT86_init(CPU_t* cpu) {
 		return NULL;
 	}
 	
-	memcpy(stdint->freq, timer_freq, 4 * sizeof(stdint->freq[0]));
+	memcpy(stdint->freq, timer_freq, sizeof(timer_freq));
 	stdint->intactive = 0;
-	stdint->timermax1 = stdint->freq[0];
+	stdint->timermax1 = stdint->freq[4];
 	stdint->lastchk1 = tc_elapsed(cpu->timer_c);
 	stdint->on_backup = 0;
 	stdint->on_latch = FALSE;

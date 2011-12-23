@@ -27,6 +27,9 @@ static void port0(CPU_t *cpu, device_t *dev) {
 	LINKASSIST_t *assist = (LINKASSIST_t *) dev->aux;
 	link_t *link = cpu->pio.link;
 	if (cpu->input) {
+		link->hasChanged = FALSE;
+		link->changedTime = 0;
+
 		cpu->bus = (((link->host & 0x03) | (link->client[0] & 0x03)) ^ 0x03) | (assist->link_enable & 0x04);
 		if (assist->read)
 			cpu->bus += 8;

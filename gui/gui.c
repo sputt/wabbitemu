@@ -819,7 +819,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				if (wizardError)
 					return EXIT_FAILURE;
 				LoadRegistrySettings(lpCalc);
-				gui_frame(lpCalc);
 			} else {
 				const TCHAR lpstrFilter[] 	= _T("Known types ( *.sav; *.rom) \0*.sav;*.rom\0\
 													Save States  (*.sav)\0*.sav\0\
@@ -1042,9 +1041,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							lpCalcNew->scale = lpCalc->scale;
 							lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
 							lpCalcNew->bAlphaBlendLCD = lpCalc->bAlphaBlendLCD;
+							lpCalcNew->cpu.pio.lcd->shades = lpCalc->cpu.pio.lcd->shades;
 
-							calc_turn_on(lpCalcNew);
+							if (!lpCalcNew->cpu.pio.lcd->active) {
+								calc_turn_on(lpCalcNew);
+							}
 							gui_frame(lpCalcNew);
+
+							RECT rc;
+							GetWindowRect(hwnd, &rc);
+							RECT newrc;
+							GetWindowRect(lpCalc->hwndFrame, &newrc);
+							SetWindowPos(lpCalcNew->hwndFrame, NULL, newrc.left + rc.right - rc.left, newrc.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 						} else {
 							calc_slot_free(lpCalcNew);
 							SendMessage(hwnd, WM_COMMAND, IDM_HELP_WIZARD, 0);
