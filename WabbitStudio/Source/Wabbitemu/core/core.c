@@ -73,7 +73,7 @@ waddr_t addr_to_waddr(memc *mem_c, uint16_t addr) {
 	return waddr;
 }
 
-BOOL check_break(memc *mem, waddr waddr) {
+BOOL check_break(memc *mem, waddr_t waddr) {
 	if (!(mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & NORMAL_BREAK))
 		return FALSE;
 #ifdef WINVER
@@ -210,9 +210,14 @@ BOOL is_priveleged_page(CPU_t *cpu) {
 	// TI 83+SE		= 7C, 7D, 7F
 	// TI-84+		= 2F, 3C, 3D, 3F
 	// TI 84+SE		= 6F, 7C, 7D, 7F
-	bank_state_t bank = cpu->mem_c->banks[mc_bank(cpu->pc)];
+	bank_state_t *bank = &cpu->mem_c->banks[mc_bank(cpu->pc)];
+	if (bank->ram) {
+		return FALSE;
+	}
+	int maxPages = cpu->mem_c->flash_pages;
+	int page = bank->page;
 	//this includes page XE (which should be ok because its the cert). If its a problem i can fix later
-	return ((bank.page >= cpu->mem_c->flash_pages - 4 && bank.page != cpu->mem_c->flash_pages - 2) || (((cpu->pio.model >= TI_84P) && bank.page == cpu->mem_c->flash_pages - 0x11)));
+	return ((page >= maxPages - 4 && page != maxPages - 2) || (((cpu->pio.model >= TI_84P) && page == maxPages - 0x11)));
 }
 
 static BOOL is_allowed_exec(CPU_t *cpu) {
@@ -236,12 +241,15 @@ static BOOL is_allowed_exec(CPU_t *cpu) {
 		//is set indicating no exec is allowed
 		return !(protected_val & (0x01 << ((bank->page - 8) % 8)));
 	} else {
-		if (!bank->ram)			//if its flash and between page limits
-		return bank->page > cpu->mem_c->flash_upper || bank->page <= cpu->mem_c->flash_lower;
+		memc *mem = cpu->mem_c;
+		if (!bank->ram)	{		//if its flash and between page limits
+			return bank->page <= mem->flash_lower || mem->flash_enabled ||
+				(!mem->flash_disabled && bank->page > mem->flash_upper) ||
+				is_priveleged_page(cpu);
+		}
 		if (bank->page & (2 >> (cpu->mem_c->prot_mode + 1)))
 			return TRUE;		//we know were in ram so lets check if the page is allowed in the mem protected mode
 								//execution is allowed on 2^(mode+1)
-		memc *mem = cpu->mem_c;
 		//finally we check ports 25/26 to see if its ok to execute on this page
 		int global_addr = bank->page * PAGE_SIZE + (cpu->pc & 0x3FFF);
 		if ((mem->port27_remap_count > 0) && !mem->boot_mapped && (mc_bank(cpu->pc) == 3) && (cpu->pc >= (0x10000 - 64*mem->port27_remap_count)) && cpu->pc >= 0xFB64)
@@ -310,9 +318,10 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 			CPU_reset(cpu);
 		}
 	}
-	if (!bank->ram) endflash(cpu);						//I DON'T THINK THIS IS CORRECT
-	cpu->bus = mem_read(cpu->mem_c, cpu->pc);			//However it shouldn't be a problem
-															//assuming you know how to write to flash
+	if (!bank->ram) {									//I DON'T THINK THIS IS CORRECT
+		endflash(cpu);									//However it shouldn't be a problem
+	}													//assuming you know how to write to flash
+	cpu->bus = mem_read(cpu->mem_c, cpu->pc);
 	if (bank->ram) {
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_OP_ram_tstates);
 	} else {
@@ -337,6 +346,7 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 		if (cpu->mem_c->cmd == 0x90 && cpu->mem_c->step == 3) {
 			if ((addr & 0x3FFF) == 0) {
 				//1 indicates an AMD chip
+				//manufacturer id
 				cpu->bus = 1;
 			} else if ((addr & 0x3FFF) == 2) {
 			//B9 for new 512 K chips, 23 for old 512 K chips, C4 for 2 MB chips, and DA for 1 MB chips.
@@ -349,15 +359,18 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 						cpu->bus = 0xC4;
 						break;
 					default:
-						if (cpu->cpu_version == 1)
+						if (cpu->cpu_version == 1) {
 							cpu->bus = 0x23;
-						else
+						} else {
 							cpu->bus = 0xB9;
+						}
 						break;
 				}
 			} else if ((addr & 0x3FFF) == 4) {
 				cpu->bus = 0;
 			}
+			cpu->mem_c->cmd = 0;
+			cpu->mem_c->step = 0;
 		}
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_NOP_flash_tstates);
@@ -366,32 +379,184 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 	return cpu->bus;
 }
 
+static void flashwrite(CPU_t *cpu, unsigned short addr, unsigned char data) {
+	int bank = mc_bank(addr);
+	switch(cpu->mem_c->step) {
+		case 0:
+			if (data == 0xF0) {
+				endflash(cpu);
+			} else if ((addr & 0x0FFF) == 0x0AAA) {
+				if (data == 0xAA) {
+					cpu->mem_c->step++;
+				} else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash_break(cpu);
+			}
+			break;
+		case 1:
+			if ((addr & 0x0FFF) == 0x0555) {
+				if (data == 0x55) {
+					cpu->mem_c->step++;
+				} else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash(cpu);
+			}
+			break;
+		case 2:
+			if ((addr & 0x0FFF) == 0x0AAA) {
+				if (data == 0xA0) {
+					cpu->mem_c->cmd = 0xA0;		//Program
+					cpu->mem_c->step++;
+				} else if (data == 0x80) {
+					cpu->mem_c->cmd = 0x80;		//Erase
+					cpu->mem_c->step++;
+				} else if (data == 0x20 && cpu->mem_c->flash_version != 1) {
+					cpu->mem_c->cmd = 0x20;		//Fast mode
+					cpu->mem_c->step = 6;
+				} else if (data == 0x90) {
+					cpu->mem_c->cmd = 0x90;		//Auto select
+					cpu->mem_c->step++;
+				} else {
+					endflash_break(cpu);
+				}
+			} else {
+				endflash_break(cpu);
+			}
+			break;
+		case 3: {
+			int value = 0;
+			if (cpu->mem_c->cmd == 0xA0) {
+				value = *(cpu->mem_c->banks[bank].addr + mc_base(addr));
+				(*(cpu->mem_c->banks[bank].addr + mc_base(addr))) &= data;  //AND LOGIC!!
+				if ((~((~value) | (~data))) != value) {
+					value = (~value) & 0x80 | 0x20;
+				}
+				endflash(cpu);
+			}
+			if ((addr & 0x0FFF) == 0x0AAA) {
+				if (data == 0xAA) {
+					cpu->mem_c->step++;
+				}
+			}
+			if (data == 0xF0) { 
+				if (value) {
+					cpu->bus = value;
+				}
+				endflash(cpu);
+			}
+			break;
+		}
+		case 4:
+			if ((addr & 0x0FFF) == 0x0555) {
+				if (data == 0x55) {
+					cpu->mem_c->step++;
+				}
+			}
+			if (data == 0xF0) {
+				endflash(cpu);
+			}
+			break;
+		case 5:
+			if ((addr & 0x0FFF) == 0x0AAA) {
+				if (data == 0x10) {			//Erase entire chip...Im not sure if 
+					int i;					//boot page is included, so I'll leave it off.
+					//DrDnar 7/8/11: boot sector is included
+					for(i = 0; i < cpu->mem_c->flash_size; i++) {
+						cpu->mem_c->flash[i] = 0xFF;
+					}
+				} 
+			}
+			if (data == 0xF0) {
+				endflash(cpu);
+			}
+			if (data == 0x30) {		//erase sectors
+				int i;
+				int spage = (cpu->mem_c->banks[bank].page << 1) + ((addr >> 13) & 0x01);
+				int pages = cpu->mem_c->flash_pages;
+				int totalPages = pages * 2;
+
+				if (spage < totalPages - 8) {
+					int startaddr = (spage & 0x00F8) * 0x2000;
+					int endaddr   = startaddr + 0x10000;
+					for (i = startaddr; i < endaddr; i++) {
+						cpu->mem_c->flash[i] = 0xFF;
+					}
+				} else if (spage < totalPages - 4) {
+					for (i = (pages - 4) * PAGE_SIZE; i < (pages - 2) * PAGE_SIZE; i++ ) {
+						cpu->mem_c->flash[i] = 0xFF;
+					}
+				} else if (spage < totalPages - 3) {
+					for (i = (pages - 2) * PAGE_SIZE; i < (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2; i++) {
+						cpu->mem_c->flash[i] = 0xFF;
+
+					}
+				} else if (spage < totalPages - 2) {
+					for (i = (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2; i < (pages - 1) * PAGE_SIZE; i++) {
+						cpu->mem_c->flash[i] = 0xFF;
+					}
+				} else if (spage < totalPages) {
+// I comment this off because this is the boot page
+// it suppose to be write protected...
+//BuckeyeDude 6/27/11: new info has been discovered boot code is writeable under certain conditions
+					for (i = (pages - 1) * PAGE_SIZE; i < pages * PAGE_SIZE; i++) {
+						cpu->mem_c->flash[i] = 0xFF;
+					}
+				}
+			}
+			endflash(cpu);
+			break;
+		case 6:
+			if (data == 0x90) {
+				cpu->mem_c->step = 7;	//check if exit fast mode
+			} else if (data == 0xA0) {
+				cpu->mem_c->step = 8;	//write byte in fast mode
+			} else if (data == 0xF0) {
+				endflash(cpu);
+			}
+			break;
+		case 7:
+			if (data == 0xF0) {
+				endflash(cpu);
+			} else {
+				cpu->mem_c->step = 6;
+			}
+			break;
+		case 8: {
+			int value = *(cpu->mem_c->banks[bank].addr + mc_base(addr));
+			(*(cpu->mem_c->banks[bank].addr + mc_base(addr))) &= data;  //AND LOGIC!!
+			if ((~((~value) | (~data))) != value) {
+				cpu->bus = (~value) & 0x80 | 0x20;
+			}
+			cpu->mem_c->step = 6;
+			break;
+		}
+		default:
+			endflash_break(cpu);
+			break;
+	}
+}
+
 unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 	if (check_mem_write_break(cpu->mem_c, addr_to_waddr(cpu->mem_c, addr))) {
 		cpu->mem_c->mem_write_break_callback(cpu);
 	}
-	int bank = mc_bank(addr);
+	bank_state_t *bank = &cpu->mem_c->banks[mc_bank(addr)];
 
-	if (cpu->mem_c->banks[bank].ram) {
-		if (!cpu->mem_c->banks[bank].read_only) mem_write(cpu->mem_c, addr, data);
-
+	if (bank->ram) {
+		if (!bank->read_only) {
+			mem_write(cpu->mem_c, addr, data);
+		}
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
-		int page = cpu->mem_c->banks[bank].page;
+		int page = bank->page;
 		if (!cpu->mem_c->flash_locked && cpu->pio.model >= TI_73 && //1) {
-			(((page != 0x3F && page != 0x2F) || cpu->pio.se_aux->model_bits & 0x3) &&
-			((page != 0x7F && page != 0x6F) || cpu->pio.se_aux->model_bits & 0x2 || !(cpu->pio.se_aux->model_bits & 0x1)))) {
-			switch(cpu->mem_c->flash_version) {
-				case 01:	//TI83+
-					flashwrite83p(cpu, addr, data);		// in a separate function for now, flash writes aren't the same across calcs
-					break;
-				case 02:	//TI83+SE, TI84+SE
-					flashwrite83pse(cpu, addr, data);	// in a separate function for now, flash writes aren't the same across calcs
-					break;
-				case 03:	//TI84+
-					flashwrite84p(cpu, addr, data);
-					break;
-			}
+			(((page != 0x3F && page != 0x2F) || (cpu->pio.se_aux->model_bits & 0x3)) &&
+			((page != 0x7F && page != 0x6F) || (cpu->pio.se_aux->model_bits & 0x2) || !(cpu->pio.se_aux->model_bits & 0x1)))) {
+			flashwrite(cpu, addr, data);
 		} else if (break_on_invalid_flash) {
 			cpu->mem_c->mem_write_break_callback(cpu);
 		}
@@ -524,7 +689,7 @@ static void CPU_CB_opcode_run(CPU_t *cpu) {
 	if (cpu->prefix) {
 		CPU_mem_read(cpu, cpu->pc++);				//read the offset, NOT INST
 		char offset = cpu->bus;
-		CPU_opcode_fetch(cpu);						//cb opcode, this is an INST
+		CPU_opcode_fetch(cpu);						//CB opcode, this is an INST
 		cpu->r = ((cpu->r - 1) & 0x7f) + (cpu->r & 0x80);
 		ICB_opcode[cpu->bus](cpu,offset);
 	} else {

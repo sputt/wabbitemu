@@ -126,21 +126,20 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						case IDC_BUTTON_BROWSE:
 							TCHAR buffer[MAX_PATH];
 							if (!BrowseFile(buffer, _T("Known types ( *.sav; *.rom) \0*.sav;*.rom\0Save States  (*.sav)\0*.sav\0\
-										ROMs  (*.rom)\0*.rom\0All Files (*.*)\0*.*\0\0"), _T("Please select a ROM or save state"), _T("rom")))
-										Edit_SetText(hEditRom, buffer);
-							break;
-						case IDC_CHECK_NOSHOW:
-							show_wizard = !Button_GetCheck(GetDlgItem(hwnd, IDC_CHECK_NOSHOW));
+										ROMs  (*.rom)\0*.rom\0All Files (*.*)\0*.*\0\0"), _T("Please select a ROM or save state"), _T("rom"))) {
+								Edit_SetText(hEditRom, buffer);
+							}
 							break;
 						case IDC_RADIO_OWN_ROM: {
 							Button_Enable(GetDlgItem(hwnd, IDC_BUTTON_BROWSE), TRUE);
 							Edit_Enable(hEditRom, TRUE);
 							TCHAR buffer[MAX_PATH];
 							Edit_GetText(hEditRom, buffer, MAX_PATH);
-							if (ValidPath(buffer))
+							if (ValidPath(buffer)) {
 								PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_FINISH);
-							else
+							} else {
 								PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_DISABLEDFINISH);
+							}
 							break;
 						}
 						case IDC_RADIO_BOOTFREE:
@@ -498,11 +497,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					TCHAR hexFile[MAX_PATH];
-					TCHAR *env;
-					size_t envLen;
-					_tdupenv_s(&env, &envLen, _T("appdata"));
-					StringCbCopy(hexFile, sizeof(hexFile), env);
-					free(env);
+					GetAppDataString(hexFile, sizeof(hexFile));
 					//extract and write the open source boot page
 					StringCbCat(hexFile, sizeof(hexFile), _T("\\boot.hex"));
 					ExtractResource(hexFile, resource);
@@ -549,11 +544,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version)
 {
 	TCHAR downloaded_file[MAX_PATH];
-	TCHAR *env;
-	size_t envLen;
-	_tdupenv_s(&env, &envLen, _T("appdata"));
-	StringCbCopy(downloaded_file, sizeof(downloaded_file), env);
-	free(env);
+	GetAppDataString(downloaded_file, sizeof(downloaded_file));
 	StringCbCat(downloaded_file, sizeof(downloaded_file), _T("\\OS.8xu"));
 	StringCbCopy(osPath, sizeof(osPath), downloaded_file);
 	TCHAR *url;
@@ -986,11 +977,7 @@ INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 }
 
 void ExtractDumperProg() {
-	TCHAR *env;
-	size_t envLen;
-	_tdupenv_s(&env, &envLen, _T("appdata"));
-	StringCbCopy(dumperPath, sizeof(dumperPath), env);
-	free(env);
+	GetAppDataString(dumperPath, sizeof(dumperPath));
 	StringCbCat(dumperPath, sizeof(dumperPath), _T("\\dumper"));
 	HMODULE hModule = GetModuleHandle(NULL);
 	HRSRC hrDumpProg;
@@ -1167,11 +1154,7 @@ int calc_rom_dump(CalcHandle *calc_handle)
 		return err;
 
 	// Get data from dumper
-	TCHAR *env;
-	size_t envLen;
-	_tdupenv_s(&env, &envLen, _T("appdata"));
-	StringCbCopy(tmp_filename, sizeof(dumperPath), env);
-	free(env);
+	GetAppDataString(tmp_filename, sizeof(tmp_filename));
 	StringCbCat(tmp_filename, sizeof(tmp_filename), _T("\\temp.rom"));
 
 	err = ticalcs_calc_dump_rom_2(calc_handle, ROMSIZE_AUTO, tmp_filename);

@@ -136,9 +136,9 @@ enum BREAK_TYPE {
 	NORMAL_BREAK = 0x1,
 	MEM_WRITE_BREAK = 0x2,
 	MEM_READ_BREAK = 0x4,
-	CLEAR_NORMAL_BREAK = MEM_READ_BREAK | MEM_WRITE_BREAK,
-	CLEAR_MEM_WRITE_BREAK = MEM_READ_BREAK | NORMAL_BREAK,
-	CLEAR_MEM_READ_BREAK = MEM_WRITE_BREAK | NORMAL_BREAK,
+	CLEAR_NORMAL_BREAK = ~NORMAL_BREAK,
+	CLEAR_MEM_WRITE_BREAK = ~MEM_WRITE_BREAK,
+	CLEAR_MEM_READ_BREAK = ~MEM_READ_BREAK,
 };
 
 typedef struct memory_context {
@@ -165,6 +165,7 @@ typedef struct memory_context {
 	int ram_pages;
 	int step;					// These 3 are for flash programming
 	unsigned char cmd;			// step tells what cycle of the command you are on,
+	BOOL flash_sector_erase;	// whether flash is in the middle of erasing
 
 	bank_state_t *banks;		//pointer to the correct bank state currently
 	bank_state_t normal_banks[5];		//Current state of each bank
@@ -195,7 +196,13 @@ typedef struct memory_context {
 
 	int port0E;
 	int port0F;
-	int port24;
+	union {
+		struct {
+			BOOL flash_enabled : 1;
+			BOOL flash_disabled : 1;
+		};
+		uint16_t port24;
+	};
 
 	int port27_remap_count;		// amount of 64 byte chunks remapped from RAM page 0 to bank 3
 	int port28_remap_count;		// amount of 64 byte chunks remapped from RAM page 1 to bank 1

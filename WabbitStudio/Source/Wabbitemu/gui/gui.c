@@ -42,6 +42,7 @@
 #include "guispeed.h"
 #include "guivartree.h"
 #include "guiwizard.h"
+#include "guidialog.h"
 
 #include "DropTarget.h"
 #include "expandpane.h"
@@ -50,7 +51,9 @@
 #include "state.h"
 #include "avi_utils.h"
 #include "CGdiPlusBitmap.h"
-
+#include "dbghelp.h"
+#include <mapi.h>
+#include "ftp.h"
 
 #ifdef _M_IX86
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -76,9 +79,6 @@ HIMAGELIST hImageList = NULL;
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-
-INT_PTR CALLBACK AboutDialogProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK ExportOSDialogProc(HWND, UINT, WPARAM, LPARAM);
 
 
 void gui_draw(calc_t *lpCalc) {
@@ -464,7 +464,7 @@ int gui_frame_update(LPCALC lpCalc) {
 		MessageBox(lpCalc->hwndFrame, _T("Unable to find the screen box"), _T("Error"), MB_OK);
 		lpCalc->SkinEnabled = false;
 	}
-	if (!lpCalc->hwndFrame) {
+	if (lpCalc->hwndFrame == NULL) {
 		return 0;
 	}
 
@@ -740,6 +740,167 @@ void LoadCommandlineFiles(ParsedCmdArgs *parsedArgs, LPARAM lParam,  void (*load
 	}
 }
 
+typedef BOOL (WINAPI *MINIDUMPWRITEDUMP)(HANDLE hProcess, DWORD dwPid, HANDLE hFile, MINIDUMP_TYPE DumpType,
+	const PMINIDUMP_EXCEPTION_INFORMATION ExceptionParam,
+	const PMINIDUMP_USER_STREAM_INFORMATION UserStreamParam,
+	const PMINIDUMP_CALLBACK_INFORMATION CallbackParam
+	);
+
+static BOOL hasCrashed = FALSE;
+
+LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
+	SetErrorMode(SEM_NOGPFAULTERRORBOX);
+	if (hasCrashed) {
+		return EXCEPTION_EXECUTE_HANDLER;
+	}
+	hasCrashed = TRUE;
+	HMODULE hDebugHelp = LoadLibrary("dbghelp.dll");
+	if (hDebugHelp) {
+		MINIDUMPWRITEDUMP pDumpFunc = (MINIDUMPWRITEDUMP) GetProcAddress(hDebugHelp, _T("MiniDumpWriteDump"));
+		if (pDumpFunc) {
+			TCHAR szDumpPath[MAX_PATH];
+			GetAppDataString(szDumpPath, sizeof(szDumpPath));
+			StringCbCat(szDumpPath, sizeof(szDumpPath), _T("\\Wabbitemu.dmp"));
+			HANDLE hFile = CreateFile(szDumpPath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS,
+											FILE_ATTRIBUTE_NORMAL, NULL );
+
+			if (hFile != INVALID_HANDLE_VALUE)
+			{
+				_MINIDUMP_EXCEPTION_INFORMATION ExInfo;
+
+				ExInfo.ThreadId = GetCurrentThreadId();
+				ExInfo.ExceptionPointers = pExceptionInfo;
+				ExInfo.ClientPointers = NULL;
+
+				// write the dump
+				pDumpFunc(GetCurrentProcess(), GetCurrentProcessId(), hFile, MiniDumpWithFullMemoryInfo, &ExInfo, NULL, NULL );
+				CloseHandle(hFile);
+
+				if (MessageBox(NULL, _T("Unfortunately Wabbitemu has appeared to have crashed. Would you like to send a crash report to the developers so they can fix it?")
+					, _T("Crash"), MB_YESNO) == IDYES) {
+
+						DialogBox(g_hInst, MAKEINTRESOURCE(IDD_REPORT_BUG), NULL, (DLGPROC) BugReportDialogProc);
+
+						HINTERNET hInternet = OpenFtpConnection();
+						//Get the file friendly time string
+						TCHAR timeStringText[MAX_PATH];
+						time_t timeUploaded;
+						time(&timeUploaded);
+						TCHAR *timeString = _tctime(&timeUploaded);
+						for (int i = strlen(timeString); i >= 0; i--) {
+							if (timeString[i] == ':') {
+								timeString[i] = '_';
+							}
+						}
+						//get rid of newline
+						timeString[strlen((timeString)) - 1] = '\0';
+						StringCbCopy(timeStringText, sizeof(timeStringText), timeString);
+						StringCbCat(timeStringText, sizeof(timeStringText), _T(".dmp"));
+
+						FtpPutFile(hInternet, szDumpPath, timeStringText, FTP_TRANSFER_TYPE_BINARY, NULL);
+				}
+			}
+		}
+	}
+	return EXCEPTION_EXECUTE_HANDLER;
+}
+
+void UpdateWabbitemu() {
+	TCHAR buffer[MAX_PATH];
+	GetAppDataString(buffer, sizeof(buffer));
+	StringCbCat(buffer, sizeof(buffer), _T("\\Revsoft.Autoupdater.exe"));
+	HRSRC hrDumpProg = FindResource(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_UPDATER), _T("EXE"));
+	ExtractResource(buffer, hrDumpProg);
+
+	TCHAR argBuf[MAX_PATH * 3];
+	TCHAR filePath[MAX_PATH];
+	GetModuleFileName(NULL, filePath, MAX_PATH);
+	StringCbPrintf(argBuf, sizeof(argBuf), _T("\"%s\" -R \"%s\" \"%s\" \"%s\""), buffer, filePath, filePath, g_szDownload);
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+	memset(&si, 0, sizeof(si));
+	memset(&pi, 0, sizeof(pi));
+	si.cb = sizeof(si);
+	if (!CreateProcess(NULL, argBuf,
+		NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, 
+		NULL, NULL, &si, &pi)) {
+			MessageBox(NULL, _T("Unable to start the process. Try manually downloading the update from the website."), _T("Error"), MB_OK);
+			ShellExecute(NULL, _T("open"), g_szWebPage, NULL, NULL, SW_SHOWNORMAL);
+			return;
+	}
+	exit(0);
+}
+
+/*
+ * Gets the version of the current file.
+ * 
+ * returns: FileInfo struct filled
+ *			Pointer to versionData that needs to be freed when struct
+ *			has been used.
+ */
+VS_FIXEDFILEINFO *GetFileCurrentVersion(LPBYTE *versionData) {
+	VS_FIXEDFILEINFO *thisFileInfo;
+	TCHAR fileName[MAX_PATH];
+	DWORD dwHandle;
+	UINT dwBytes;
+	GetModuleFileName(NULL, fileName, ARRAYSIZE(fileName));
+	DWORD cchVer = GetFileVersionInfoSize(fileName, &dwHandle);
+	*versionData = (LPBYTE) malloc(cchVer);
+	GetFileVersionInfo(fileName, 0, cchVer, *versionData);
+	VerQueryValue(*versionData, _T("\\"), (LPVOID *) &thisFileInfo, &dwBytes);
+	return thisFileInfo;
+}
+
+void GetFileCurrentVersionString(TCHAR *buf, size_t len) {
+	LPBYTE versionData = NULL;
+	VS_FIXEDFILEINFO *fileInfo = GetFileCurrentVersion(&versionData);
+	StringCbPrintf(buf, len, _T("%d.%d.%d.%d"), HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS),
+							HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
+	if (versionData != NULL) {
+		free(versionData);
+	}
+}
+
+DWORD WINAPI CheckForUpdates(LPVOID lpParam) {
+	TCHAR fileBuffer[MAX_PATH];
+	GetAppDataString(fileBuffer, sizeof(fileBuffer));
+	StringCbCat(fileBuffer, sizeof(fileBuffer), _T("Version.txt"));
+	_tremove(fileBuffer);
+	HRESULT hr = URLDownloadToFile(NULL, _T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt"), fileBuffer, NULL, NULL);
+	if (!SUCCEEDED(hr)) {
+		MessageBox(NULL, "Error", "Error", MB_OK);
+		return hr;
+	}
+
+	FILE *file;
+	VS_FIXEDFILEINFO newFileInfo, *thisFileInfo;
+	ZeroMemory(&newFileInfo, sizeof(newFileInfo));
+
+	fopen_s(&file, fileBuffer, _T("rb"));
+	char buffer[300];
+	fscanf(file, _T("%u.%u.%u.%u"), &newFileInfo.dwFileVersionMS, &newFileInfo.dwFileVersionLS,
+					&newFileInfo.dwProductVersionMS, &newFileInfo.dwProductVersionLS);
+	fclose(file);
+
+	BOOL hasNewUpdate = TRUE;
+	LPBYTE versionData = NULL;
+	thisFileInfo = GetFileCurrentVersion(&versionData);
+	if (!(newFileInfo.dwFileVersionMS > HIWORD(thisFileInfo->dwFileVersionMS)) &&
+		!(newFileInfo.dwFileVersionLS > LOWORD(thisFileInfo->dwFileVersionMS)) &&
+		!(newFileInfo.dwProductVersionMS > HIWORD(thisFileInfo->dwFileVersionLS)) &&
+		!(newFileInfo.dwProductVersionLS > LOWORD(thisFileInfo->dwFileVersionLS))) {
+		hasNewUpdate = FALSE;
+	}
+	free(versionData);
+	
+	if (hasNewUpdate) {
+		if (MessageBox((HWND) lpParam, _T("There is a an update for Wabbitemu would you like update?"),
+						_T("Update"), MB_YESNO) == IDYES) {
+			UpdateWabbitemu();
+		}
+	}
+	return hasNewUpdate;
+}
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
    LPSTR lpszCmdParam, int nCmdShow)
@@ -747,6 +908,16 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	MSG Msg;
 	bool alreadyRunningWabbit = false;
 	int i;
+
+	//Create our appdata folder
+	TCHAR appData[MAX_PATH];
+	GetAppDataString(appData, sizeof(appData));
+	int error = CreateDirectory(appData, NULL);
+	if (error != ERROR_ALREADY_EXISTS && error != ERROR_SUCCESS) {
+		MessageBox(NULL , _T("Unable to create appdata folder"), _T("Error"), MB_OK);
+	}
+
+	SetUnhandledExceptionFilter(ExceptionFilter);
 
 	//this is here so we get our load_files_first setting
 	new_calc_on_load_files = QueryWabbitKey(_T("load_files_first"));
@@ -811,32 +982,18 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		if (!loadedRom) {
 			calc_slot_free(lpCalc);
 
-			if (show_wizard) {
-				BOOL wizardError = DoWizardSheet(NULL);
-				//save wizard show
-				SaveWabbitKey(_T("show_wizard"), REG_DWORD, &show_wizard);
-				SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
-				if (wizardError)
-					return EXIT_FAILURE;
-				LoadRegistrySettings(lpCalc);
-			} else {
-				const TCHAR lpstrFilter[] 	= _T("Known types ( *.sav; *.rom) \0*.sav;*.rom\0\
-													Save States  (*.sav)\0*.sav\0\
-													ROMs  (*.rom)\0*.rom\0\
-													All Files (*.*)\0*.*\0\0");
-				const TCHAR lpstrTitle[] = _T("Wabbitemu: Please select a ROM or save state");
-				const TCHAR lpstrDefExt[] = _T("rom");
-				TCHAR* FileName = (TCHAR *) malloc(MAX_PATH);
-				ZeroMemory(FileName, MAX_PATH);
-				if (!BrowseFile(FileName, lpstrFilter, lpstrTitle, lpstrDefExt, OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST)) {
-					lpCalc = calc_slot_new();
-					if (rom_load(lpCalc, FileName) == TRUE)
-						gui_frame(lpCalc);
-					else return EXIT_FAILURE;
-				} else return EXIT_FAILURE;
+			BOOL wizardError = DoWizardSheet(NULL);
+			//save wizard show
+			SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
+			if (wizardError) {
+				return EXIT_FAILURE;
 			}
+			LoadRegistrySettings(lpCalc);
 		}
 	}
+
+	//Check for any updates
+	HANDLE updateThread = CreateThread(NULL, 0, CheckForUpdates, lpCalc->hwndFrame, NULL, NULL);
 
 	StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), _T("labels.lab"));
 
@@ -1364,41 +1521,19 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				}
 				case IDM_HELP_UPDATE: {
-					TCHAR buffer[MAX_PATH];
-					TCHAR *env;
-					size_t envLen;
-					_tdupenv_s(&env, &envLen, _T("appdata"));
-					StringCbCopy(buffer, sizeof(buffer), env);
-					free(env);
-					StringCbCat(buffer, sizeof(buffer), _T("\\Revsoft.Autoupdater.exe"));
-					HRSRC hrDumpProg = FindResource(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_UPDATER), _T("EXE"));
-					ExtractResource(buffer, hrDumpProg);
-
-					TCHAR argBuf[MAX_PATH * 3];
-					TCHAR filePath[MAX_PATH];
-					GetModuleFileName(NULL, filePath, MAX_PATH);
-					StringCbPrintf(argBuf, sizeof(argBuf), _T("\"%s\" -R \"%s\" \"%s\" \"%s\""), buffer, filePath, filePath, g_szDownload);
-					STARTUPINFO si;
-					PROCESS_INFORMATION pi;
-					memset(&si, 0, sizeof(si)); 
-					memset(&pi, 0, sizeof(pi)); 
-					si.cb = sizeof(si);
-					MessageBox(NULL, argBuf, _T("TEST"), MB_OK);
-					if (!CreateProcess(NULL, argBuf,
-						NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, 
-						NULL, NULL, &si, &pi)) {
-						MessageBox(NULL, _T("Unable to start the process. Try manually downloading the update."), _T("Error"), MB_OK);
-						return FALSE;
+					BOOL hasUpdates = CheckForUpdates(hwnd);
+					if (!hasUpdates) {
+						MessageBox(hwnd, _T("No update is available"), _T("Wabbitemu"), MB_OK);
 					}
-					exit(0);
+					break;
+				}
+				case IDM_HELP_BUG: {
+					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_REPORT_BUG), hwnd, (DLGPROC) BugReportDialogProc);
 					break;
 				}
 			}
-			/*switch (HIWORD(wParam)) {
-			}*/
 			return 0;
 		}
-		//case WM_MOUSEMOVE:
 		case WM_LBUTTONUP:
 		{
 			int group, bit;
@@ -1761,11 +1896,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (exit_save_state)
 				{
 					TCHAR temp_save[MAX_PATH];
-					size_t len;
-					TCHAR *path;
-					_tdupenv_s(&path, &len, _T("appdata"));
-					StringCbCopy(temp_save, sizeof(temp_save), path);
-					free(path);
+					GetAppDataString(temp_save, sizeof(temp_save));
 					StringCbCat(temp_save, sizeof(temp_save), _T("\\wabbitemu.sav"));
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), temp_save);
 					SAVESTATE_t *save = SaveSlot(lpCalc);
@@ -1832,86 +1963,4 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
 	return 0;
-}
-
-INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
-	switch (Message) {
-		case WM_INITDIALOG:
-			return FALSE;
-		case WM_COMMAND:
-			switch (LOWORD(wParam)) {
-				case IDOK:
-					EndDialog(hwndDlg, IDOK);
-					break;
-				case IDCANCEL:
-					EndDialog(hwndDlg, IDCANCEL);
-					break;
-			}
-	}
-	return FALSE;
-}
-
-INT_PTR CALLBACK ExportOSDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND hListPagesToExport;
-	static LPCALC lpCalc;
-	static TCHAR lpFileName[MAX_PATH];
-	switch (Message) {
-		case WM_INITDIALOG: {
-			lpCalc = (LPCALC) GetWindowLongPtr(GetParent(hwndDlg), GWLP_USERDATA);
-			StringCbCopy(lpFileName, sizeof(lpFileName), (TCHAR *) lParam);			
-			hListPagesToExport = GetDlgItem(hwndDlg, IDC_LIST_EXPORTPAGES);
-			SetWindowTheme(hListPagesToExport, L"Explorer", NULL);
-			ListView_SetExtendedListViewStyle(hListPagesToExport, LVS_EX_CHECKBOXES);
-			TCHAR temp[64];
-			int totalPages = lpCalc->cpu.mem_c->flash_pages;
-			for (int i = 0; i < totalPages; i++) {
-				LVITEM item;
-				item.mask = LVIF_TEXT;		
-				StringCbPrintf(temp, sizeof(temp), _T("%02X"), i);
-				item.pszText = temp;
-				item.iItem = i;
-				item.iSubItem = 0;
-				ListView_InsertItem(hListPagesToExport, &item);
-				upages_t pages;
-				state_userpages(&lpCalc->cpu, &pages);
-				if (i < pages.end - 1|| (i > pages.start && (i & 0xF) != 0xE && (i & 0xF) != 0xF))
-				{
-					ListView_SetCheckState(hListPagesToExport, i, TRUE);
-				}
-			}
-			return FALSE;
-		}
-		case WM_COMMAND:
-			switch (LOWORD(wParam)) {
-				case IDOK: {
-					int bufferSize = 0;
-					u_char (*flash)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) lpCalc->cpu.mem_c->flash;
-					unsigned char *buffer = NULL;
-					unsigned char *bufferPtr = buffer;
-					int currentPage = -1;
-					for (int i = 0; i < lpCalc->cpu.mem_c->flash_pages; i++) {
-						if (ListView_GetCheckState(hListPagesToExport, i)) {
-							bufferSize += PAGE_SIZE;
-							unsigned char *new_buffer = (unsigned char *) malloc(bufferSize);
-							if (buffer) {
-								memcpy(new_buffer, buffer, bufferSize - PAGE_SIZE);
-								free(buffer);
-							}
-							buffer = new_buffer;
-							bufferPtr = buffer + bufferSize - PAGE_SIZE;
-							memcpy(bufferPtr, flash[i], PAGE_SIZE);
-						}
-					}
-					MFILE *file = ExportOS(lpFileName, buffer, bufferSize);
-					mclose(file);
-					free(buffer);
-					EndDialog(hwndDlg, IDOK);
-					return TRUE;
-				}
-				case IDCANCEL:
-					EndDialog(hwndDlg, IDCANCEL);
-					break;
-			}
-	}
-	return FALSE;
 }

@@ -8,7 +8,7 @@
 #include "expandpane.h"
 
 extern keyprog_t keygrps[256];
-TCHAR *verString = _T("1.5.12.19");
+TCHAR *verString = _T("1.5.1.9");
 
 static HKEY hkeyTarget;
 
@@ -218,7 +218,6 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	exit_save_state = (BOOL) QueryWabbitKey(_T("exit_save_state"));
 	new_calc_on_load_files = (BOOL) QueryWabbitKey(_T("load_files_first"));
 	do_backups = (BOOL) QueryWabbitKey(_T("do_backups"));
-	show_wizard = (BOOL) QueryWabbitKey(_T("show_wizard"));
 	sync_cores = (BOOL) QueryWabbitKey(_T("sync_cores"));
 	startX = (int) QueryWabbitKey(_T("startX"));
 	startY = (int) QueryWabbitKey(_T("startY"));
@@ -279,7 +278,6 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("exit_save_state"), REG_DWORD, &exit_save_state);
 		SaveWabbitKey(_T("load_files_first"), REG_DWORD, &new_calc_on_load_files);
 		SaveWabbitKey(_T("do_backups"), REG_DWORD, &do_backups);
-		SaveWabbitKey(_T("show_wizard"), REG_DWORD, &show_wizard);
 		SaveWabbitKey(_T("sync_cores"), REG_DWORD, &sync_cores);
 		SaveWabbitKey(_T("break_on_exe_violation"), REG_DWORD, &break_on_exe_violation);
 		SaveWabbitKey(_T("break_on_invalid_flash"), REG_DWORD, &break_on_invalid_flash);
@@ -317,6 +315,10 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("num_backup_per_sec"), REG_DWORD, &num_backup_per_sec);
 #endif
 		SaveWabbitKey(_T("screen_scale"), REG_DWORD, &lpCalc->scale);
+
+		TCHAR versionBuffer[32];
+		GetFileCurrentVersionString(versionBuffer, sizeof(versionBuffer));
+		SaveWabbitKey(_T("version"), REG_SZ, versionBuffer);
 
 		SaveDebugKey((TCHAR *) DisplayTypeString, REG_DWORD, &dispType);
 
