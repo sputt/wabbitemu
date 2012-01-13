@@ -15,6 +15,7 @@
 #include "guifilepreview.h"
 #include "guicontext.h"
 #include "guiopenfile.h"
+#include "fileutilities.h"
 
 #include "DropSource.h"
 #include "DropTarget.h"
@@ -242,7 +243,7 @@ HANDLE DDBToDIB(HBITMAP bitmap, DWORD dwCompression)
 		bi.biSizeImage = ((((bi.biWidth * bi.biBitCount) + 31) & ~31) / 8) 
 						* bi.biHeight;
 
-		// If a compression scheme is used the result may infact be larger
+		// If a compression scheme is used the result may in fact be larger
 		// Increase the size to account for this.
 		if (dwCompression != BI_RGB)
 			bi.biSizeImage = (bi.biSizeImage * 3) / 2;
@@ -430,7 +431,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		}
 #endif
 		if (BitBlt(	hdcDest, rc.left, rc.top, rc.right - rc.left,  rc.bottom - rc.top,
-			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("Bit blt failed\n"));
+			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("Bit blit failed\n"));
 
 	}
 	DeleteObject(bmpBuf);
@@ -569,11 +570,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					// Create the GIF that is going to be produced by the drag
 					TCHAR temp_fn[L_tmpnam];
 					TCHAR fn[MAX_PATH];
-					TCHAR *env;
-					size_t envLen;
-					_tdupenv_s(&env, &envLen, _T("appdata"));
-					StringCchCopy(fn, envLen, env);
-					free(env);
+					GetAppDataString(fn, sizeof(fn));
 					StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.gif"));
 					StringCbCopy(gif_file_name, sizeof(gif_file_name), fn);
 

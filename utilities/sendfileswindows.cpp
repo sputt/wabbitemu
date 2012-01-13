@@ -11,6 +11,7 @@
 #include "link.h"
 #include "SendFile.h"
 #include "sendfileswindows.h"
+#include "fileutilities.h"
 
 typedef struct tagSENDINFO
 {
@@ -236,8 +237,8 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 			HANDLE hFind;
 			TCHAR path[MAX_PATH];
 			TCHAR search[MAX_PATH];
-			StringCbCopy(path, sizeof(path), _tgetenv(_T("appdata")));
-			StringCbCat(path, sizeof(path), _T("\\Wabbitemu\\"));
+			GetAppDataString(path, sizeof(path));
+			StringCbCat(path, sizeof(path), _T("Zip\\"));
 			StringCbCopy(search, sizeof(search), path);
 			StringCbCat(search, sizeof(search), _T("*"));
 			hFind = FindFirstFile(search, &FindFileData);

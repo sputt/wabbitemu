@@ -11,6 +11,8 @@
 #include "dbbreakpoints.h"
 #endif
 
+#define BIT(bit) (1 << bit)
+
 static double timer_freq83p[4] = { 1.0f / 560.0f, 1.0f / 248.0f, 1.0f / 170.0f, 1.0f / 118.0f };
 
 //------------------------
@@ -271,8 +273,9 @@ static void port14(CPU_t *cpu, device_t *dev) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		int bank = cpu->pc >> 14;
-		if (is_priveleged_page(cpu)) 
-			cpu->mem_c->flash_locked = !(cpu->bus & 0x01);
+		if (is_priveleged_page(cpu)) {
+			cpu->mem_c->flash_locked = !(cpu->bus & BIT(0));
+		}
 		cpu->output = FALSE;
 	}
 }
@@ -287,136 +290,6 @@ static void port16(CPU_t *cpu, device_t *dev) {
 			offset = 3;
 		cpu->mem_c->protected_page[offset] = cpu->bus;
 		cpu->output = FALSE;
-	}
-}
-
-
-void flashwrite83p(CPU_t *cpu, unsigned short addr, unsigned char data) {
-	int bank = addr >> 14;
-	switch(cpu->mem_c->step) {
-		case 0:
-			if (data == 0xF0) {
-				endflash(cpu);
-			} else if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0xAA) {
-					cpu->mem_c->step++;
-				} else {
-					endflash_break(cpu);
-				}
-			} else {
-				endflash_break(cpu);
-			}
-			break;
-		case 1:
-			if ((addr & 0x0FFF) == 0x0555) {
-				if (data == 0x55) {
-					cpu->mem_c->step++;
-				} else {
-					endflash_break(cpu);
-				}
-			} else {
-				endflash_break(cpu);
-			}
-			break;
-		case 2:
-			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0xA0) {
-					cpu->mem_c->cmd = 0xA0;		//Program
-					cpu->mem_c->step++;
-				} else if (data == 0x80) {
-					cpu->mem_c->cmd = 0x80;		//Erase
-					cpu->mem_c->step++;
-				} else if (data == 0x90) {		//Auto select
-					cpu->mem_c->cmd = 0x90;
-					cpu->mem_c->step++;
-				} else {
-					endflash_break(cpu);
-				}
-			} else {
-				endflash_break(cpu);
-			}
-			break;
-		case 3:
-			if (cpu->mem_c->cmd == 0xA0 && cpu->mem_c->step == 3) {
-				(*(cpu->mem_c->banks[bank].addr + (addr & 0x3fff))) &= data;  //AND LOGIC!!
-//				if (cpu->mem_c->banks[bank].page == 0x1E) printf("\n");
-//				if (cpu->mem_c->banks[bank].page == 0x1E || cpu->mem_c->banks[bank].page == 0x08 ) {
-//					printf("Address: %02X:%04X  <- %02X  \n",cpu->mem_c->banks[bank].page ,addr&0x3fff,data);
-//				}
-//				if (cpu->mem_c->banks[bank].page == 0x1E) printf("\n");
-				endflash(cpu);
-			}
-			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0xAA) {
-					cpu->mem_c->step++;
-				}
-			}
-			if (data == 0xF0) {
-				endflash(cpu);
-			}
-			break;
-		case 4:
-			if ((addr & 0x0FFF) == 0x0555) {
-				if (data == 0x55) {
-					cpu->mem_c->step++;
-				}
-			}
-			if (data == 0xF0) {
-				endflash(cpu);
-			}
-			break;
-		case 5:
-			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0x10) {			//Erase entire chip...Im not sure if 
-					int i;					//boot page is included, so I'll leave it off
-					for(i = 0; i < (cpu->mem_c->flash_size - PAGE_SIZE); i++) {
-						cpu->mem_c->flash[i] = 0xFF;
-					}
-				} 
-			}
-			if (data == 0xF0) {
-				endflash(cpu);
-			}
-			if (data == 0x30) {		//erase sectors
-				int spage = (cpu->mem_c->banks[bank].page << 1) + ((addr >> 13) & 0x01);
-				if (spage < 56) {
-					int startaddr = (spage & 0x00F8 ) * 0x2000;
-					int endaddr   = startaddr + 0x10000;
-					for (int i = startaddr; i < endaddr; i++) {
-						cpu->mem_c->flash[i] = 0xFF;
-					}
-				} else if (spage < 60) {
-					for (int i = 0x70000; i < 0x78000; i++) {
-						cpu->mem_c->flash[i] = 0xFF;
-					}
-				} else if (spage < 61) {
-//					printf("\nAddress: 1E:0000 -- ERASED\n");
-					for (int i = 0x78000; i < 0x7A000; i++) {
-						cpu->mem_c->flash[i] = 0xFF;
-
-					}
-				} else if (spage < 62) {
-//											printf("\nAddress: 1E:2000 -- ERASED\n");
-					for (int i = 0x7A000; i < 0x7C000; i++) {
-						cpu->mem_c->flash[i] = 0xFF;
-					}
-				} else if (spage < 64) {
-/*
-// I comment this off because this is the boot page
-// it suppose to be write protected...
-//BuckeyeDude: So far there is no indication that the boot code on the 83p can be changed
-//since no one seems to be trying to figure it out, I will leave this as is
-					for(int i = 0x7C000; i < 0x80000; i++) {
-						cpu->mem_c->flash[i] = 0xFF;
-					}
-*/
-				}
-			}
-			endflash(cpu);
-			break;
-		default:
-			endflash_break(cpu);
-			break;
 	}
 }
 

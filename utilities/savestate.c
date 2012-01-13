@@ -7,6 +7,7 @@
 #include "calc.h"
 //#include "stdint.h"
 #include "83psehw.h"
+#include "fileutilities.h"
 
 extern int def(FILE *, FILE *, int);
 extern int inf(FILE *, FILE *);
@@ -86,12 +87,6 @@ void ClearSave(SAVESTATE_t* save) {
 				free(save->chunks[i]->data);
 				save->chunks[i]->data = NULL;
 			}
-/*
-				if (save->chunks[i]->cpdata) {
-					free(save->chunks[i]->cpdata);
-					save->chunks[i]->cpdata = NULL;
-				}
-*/
 			free(save->chunks[i]);
 
 			save->chunks[i] = NULL;
@@ -137,7 +132,6 @@ CHUNK_t* NewChunk(SAVESTATE_t* save, char* tag) {
 	save->chunks[chunk]->tag[1]	= tag[1];
 	save->chunks[chunk]->tag[2]	= tag[2];
 	save->chunks[chunk]->tag[3]	= tag[3];
-	//memcpy(save->chunks[chunk]->tag, tag, sizeof()
 	save->chunks[chunk]->size	= 0;
 	save->chunks[chunk]->data	= NULL;
 	save->chunks[chunk]->pnt	= 0;
@@ -1086,12 +1080,7 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 #endif
 	} else {
 #ifdef WINVER
-		TCHAR *env;
-		size_t envLen;
-		_ttmpnam_s(tmpfn);
-		_tdupenv_s(&env, &envLen, _T("appdata"));
-		StringCbCopy(temp_save, sizeof(temp_save), env);
-		free(env);
+		GetAppDataString(temp_save, sizeof(temp_save));
 		StringCbCat(temp_save, sizeof(temp_save), tmpfn);
 		_tfopen_s(&ofile, temp_save, _T("wb"));
 #else
@@ -1145,7 +1134,7 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 		ofile = fopen(temp_save,"rb");
 #endif
 		if (!ofile) {
-			_putts(_T("Could not open tmp file for read"));
+			_putts(_T("Could not open temp file for read"));
 			return;
 		}
 		//int error;
@@ -1191,11 +1180,7 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 		i = fgetc(ifile);
 #ifdef WINVER
 		_ttmpnam_s(tmpfn);
-		TCHAR *env;
-		size_t envLen;
-		_tdupenv_s(&env, &envLen, _T("appdata"));
-		StringCbCopy(temp_save, sizeof(temp_save), env);
-		free(env);
+		GetAppDataString(temp_save, sizeof(temp_save));
 		StringCbCat(temp_save, sizeof(temp_save), tmpfn);
 		_tfopen_s(&tmpfile, temp_save, _T("wb"));
 #else
@@ -1228,14 +1213,14 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 		
 		fclose(tmpfile);
 #ifdef WINVER
-		_tfopen_s(&ifile, temp_save, _T("rb"));	//this is not a leak, ifile gets closed
+		_tfopen_s(&ifile, temp_save, _T("rb"));	//this is not a leak, file gets closed
 											// outside of this routine.
 #else
-		ifile = fopen(temp_save,"rb");	//this is not a leak, ifile gets closed
+		ifile = fopen(temp_save,"rb");	//this is not a leak, file gets closed
 										// outside of this routine.
 #endif
 		if (!ifile) {
-			_putts(_T("Could not open tmp file for read"));
+			_putts(_T("Could not open temp file for read"));
 			return NULL;
 		}
 		compressed = TRUE;

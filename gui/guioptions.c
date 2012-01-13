@@ -133,6 +133,11 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 	clock_t last_time = (clock_t) (clock() - (1000 / displayFPS));
 	clock_t difference = 0;
 	for (;;) {
+		HDC hdc = GetDC(imgDisplayPreview);
+		if (hdc == NULL) {
+			continue;
+		}
+		uint8_t *screenImage;
 		if (cpu->pio.lcd != lpCalc->cpu.pio.lcd) {
 			u_char *buffer = NULL;
 			switch (cpu->imode) {
@@ -141,16 +146,21 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 			case 2: buffer = displayoptionstest_draw_gradient((int) (displayFPS / 10.0f), displayFPS, Time);
 			}
 			fastcopy(buffer, cpu);
-			if (cpu->imode == 2) Time += 1/70.0f;
-			else Time += 1/displayFPS;
+			if (cpu->imode == 2) {
+				Time += 1 / 70.0f;
+			} else {
+				Time += 1 / displayFPS;
+			}
+			screenImage = LCD_image(cpu->pio.lcd);
+		} else {
+			uint8_t tempBuffer[64][128];
+			memcpy(tempBuffer, lpCalc->cpu.pio.lcd->screen, sizeof(lpCalc->cpu.pio.lcd->screen));
+			screenImage = (uint8_t *) tempBuffer;
 		}
-
-		HDC hdc = GetDC(imgDisplayPreview);
-		if (hdc == NULL) continue;
 
 		StretchDIBits(hdc, 0, 0, 192, 128,
 			0, 0, 96, 64,
-			LCD_image(cpu->pio.lcd),
+			screenImage,
 			bi,
 			DIB_RGB_COLORS,
 			SRCCOPY);
@@ -159,18 +169,22 @@ DWORD WINAPI ThreadDisplayPreview(LPVOID lpParam) {
 
 		for(i = 0; i < 16; i++) {
 			if (cpu->imode == 2) {
-				tc_add(cpu->timer_c, ((MHZ_6 / 70.0f)-(67 * 768)) / 16);
+				tc_add(cpu->timer_c, ((cpu->timer_c->freq / 70.0f)-(67 * 768)) / 16);
 			} else {
-				tc_add(cpu->timer_c, ((MHZ_6 / displayFPS)-(67 * 768)) / 16);
+				tc_add(cpu->timer_c, ((cpu->timer_c->freq / displayFPS)-(67 * 768)) / 16);
 			}
 
 			cpu->output = FALSE;
-			LCD_data(cpu,&(cpu->pio.devices[0x11]));
+			if (cpu->pio.lcd != lpCalc->cpu.pio.lcd) {
+				LCD_data(cpu, &(cpu->pio.devices[0x11]));
+			}
 		}
 
 		clock_t this_time = clock();
-		clock_t displayTPF = (clock_t) (1000 / displayFPS);
-		if (cpu->imode == 2) displayTPF = (clock_t) (1000 / 70.0f);
+		clock_t displayTPF = (clock_t) (CLOCKS_PER_SEC / displayFPS);
+		if (cpu->imode == 2) {
+			displayTPF = (clock_t) (CLOCKS_PER_SEC / 70.0f);
+		}
 		// where we should be minus where we are
 		difference += ((last_time + displayTPF) - this_time);
 		last_time = this_time;
@@ -209,10 +223,9 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 	static HANDLE hdlThread = NULL;
 	switch (Message) {
 		case WM_INITDIALOG: {
-
 			static timer_context_t timer_c;
 
-			tc_init(&timer_c, MHZ_6);
+			tc_init(&timer_c, lpCalc->cpu.timer_c->freq);
 			cpu.timer_c = &timer_c;
 			cpu.imode = 0;
 
@@ -269,7 +282,10 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 			SendMessage(trbFPS, TBM_SETPOS, TRUE, MAKELPARAM(displayFPS, 0));
 
 			SetWindowPos(imgDisplayPreview, NULL, 0, 0, 196, 132, SWP_NOMOVE | SWP_NOZORDER);
-			if (hdlThread != NULL) TerminateThread(hdlThread, 0);
+			if (hdlThread != NULL) {
+				TerminateThread(hdlThread, 0);
+				hdlThread = NULL;
+			}
 			hdlThread = CreateThread(NULL,0,ThreadDisplayPreview, &cpu, 0, NULL);
 			return FALSE;
 		}
@@ -333,6 +349,7 @@ INT_PTR CALLBACK DisplayOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 		case WM_DESTROY: {
 			TerminateThread(hdlThread, 0);
 			CloseHandle(hdlThread);
+			hdlThread = NULL;
 			GetWindowRect(GetParent(hwndDlg), &PropRect);
 			break;
 		}
@@ -494,14 +511,13 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 }
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND saveState_check, loadFiles_check, doBackups_check, wizard_check, alwaysTop_check, saveWindow_check,
+	static HWND saveState_check, loadFiles_check, doBackups_check, alwaysTop_check, saveWindow_check,
 		exeViolation_check, backupTime_edit, invalidFlash_check, turnOn_check, tiosDebug_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			saveState_check = GetDlgItem(hwnd, IDC_CHK_SAVE);
 			loadFiles_check = GetDlgItem(hwnd, IDC_CHK_LOADFILES);
 			doBackups_check = GetDlgItem(hwnd, IDC_CHK_REWINDING);
-			wizard_check = GetDlgItem(hwnd, IDC_CHK_SHOWWIZARD);
 			alwaysTop_check = GetDlgItem(hwnd, IDC_CHK_ONTOP);
 			saveWindow_check = GetDlgItem(hwnd, IDC_CHK_SAVEWINDOW);
 			exeViolation_check = GetDlgItem(hwnd, IDC_CHK_BRK_EXE_VIOLATION);
@@ -522,7 +538,6 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 						case IDC_CHK_SAVE:
 						case IDC_CHK_LOADFILES:
 						case IDC_CHK_REWINDING:
-						case IDC_CHK_SHOWWIZARD:
 						case IDC_CHK_BRK_EXE_VIOLATION:
 						case IDC_CHK_BRK_INVALID_FLASH:
 						case IDC_CHK_AUTOON:
@@ -543,7 +558,6 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					startX = startY = Button_GetCheck(saveWindow_check) ? 0 : CW_USEDEFAULT;
 					exit_save_state = Button_GetCheck(saveState_check);
 					new_calc_on_load_files = Button_GetCheck(loadFiles_check);
-					show_wizard = Button_GetCheck(wizard_check);
 					break_on_exe_violation = Button_GetCheck(exeViolation_check);
 					break_on_invalid_flash = Button_GetCheck(invalidFlash_check);
 					auto_turn_on = Button_GetCheck(turnOn_check);
@@ -582,7 +596,6 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			StringCbPrintf(buf, sizeof(buf), _T("%.2f"), 100 / ((float) num_backup_per_sec));
 			Edit_SetText(backupTime_edit, buf);
 #endif
-			Button_SetCheck(wizard_check, show_wizard);
 			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);
 			Button_SetCheck(saveWindow_check, startX != CW_USEDEFAULT);
 			Button_SetCheck(exeViolation_check, break_on_exe_violation);
@@ -647,13 +660,10 @@ INT_PTR CALLBACK GIFOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 				case PSN_APPLY: {
 
 					int speedPos = (int) SendMessage(hwndSpeed, TBM_GETPOS, 0, 0);
-					//printf("spedpos: %d\n",speedPos);
 
 					if (gif_write_state == GIF_IDLE) {
-						gif_base_delay_start = 	//GIF_MINIMUM + (GIF_MAXIMUM=GIF_MINIMUM)/6
-												(100 / (9 + (speedPos * TBRSTEP)));
+						gif_base_delay_start = 	(100 / (9 + (speedPos * TBRSTEP)));
 					}
-					//printf("gifbasedelay: %d\n",gif_base_delay_start);
 
 					gif_autosave = Button_GetState(chkAutosave) & 0x0003 ? TRUE : FALSE;
 					gif_use_increasing = Button_GetState(chkUseIncreasing) & 0x0003 ? TRUE : FALSE;
@@ -891,7 +901,7 @@ TCHAR *m_sCtrl, *m_sAlt, *m_sShift;
 int m_nInitialLen;
 DWORD m_dwCheckSum; 		// trivia for initial table
 static int cur_sel;
-BOOL accelerators = TRUE;	//true if were editing the accels
+BOOL accelerators = TRUE;	//true if were editing the accelerators
 TCHAR menu_text_buf[256];
 key_string **emu_strings;
 INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
@@ -1331,7 +1341,7 @@ void RecurseAddItems(HMENU hMenu, TCHAR *base) {
 				continue;
 			li.pszText = (LPTSTR)(LPCTSTR)temp;
 			li.iItem = ListView_GetItemCount(hListMenu);
-			li.lParam = mi.wID;			// is this mixed icon/nie mode going to make listview funny?
+			li.lParam = mi.wID;			// is this mixed icon/nie mode going to make list view funny?
 			ListView_InsertItem(hListMenu, &li);
 		}
 	}

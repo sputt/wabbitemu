@@ -5,6 +5,7 @@ using namespace std;
 #include "calc.h"
 #include "DropTarget.h"
 #include "SendFilesWindows.h"
+#include "fileutilities.h"
 
 extern POINT drop_pt;
 
@@ -224,7 +225,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 						//check if we can go in either ram or archive
 						if (tifile && tifile->flash == NULL)
 							is_archive_only = FALSE;
-						//check if were a file that doesnt go in ram or archive
+						//check if were a file that doesn't go in ram or archive
 						if (tifile && (tifile->type == ROM_TYPE || tifile->type == SAV_TYPE || tifile->type == LABEL_TYPE || tifile->type == BREAKPOINT_TYPE))
 							is_calc_file = FALSE;
 						calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
@@ -244,7 +245,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 							TCHAR szTemp[L_tmpnam_s];
 							_ttmpnam_s(szTemp);
 
-							StringCbCopy(path, sizeof(path), _tgetenv(_T("appdata")));
+							GetAppDataString(path, sizeof(path));
 							StringCbCat(path, sizeof(path), szTemp);
 
 							FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};
@@ -324,7 +325,7 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 									TCHAR szTemp[L_tmpnam_s];
 									_ttmpnam_s(szTemp);
 
-									StringCbCopy(szFileName, sizeof(szFileName), _tgetenv(_T("appdata")));
+									GetAppDataString(szFileName, sizeof(szFileName));
 									StringCbCat(szFileName, sizeof(szFileName), szTemp);
 
 									FORMATETC fmtstm = {RegisterClipboardFormat(CFSTR_FILECONTENTS), 0, DVASPECT_CONTENT, i, TYMED_ISTREAM};

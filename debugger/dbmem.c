@@ -602,31 +602,52 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			switch (LOWORD(wParam)) {
 				case SB_TOP:			//Home key
 					mps->addr = si.nMin;
+					if (hwndVal) {
+						SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) hwndVal);
+					}
 					break;
 				case SB_BOTTOM:
 					mps->addr = GetMaxAddr(mps) - data_length;
+					if (hwndVal) {
+						SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) hwndVal);
+					}
 					break;
 				case SB_LINEUP:
 					mps->addr -= mps->nCols * mps->mode;
 					if (mps->addr < si.nMin)
 						mps->addr = si.nMin;
+					if (hwndVal) {
+						SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) hwndVal);
+					}
 					break;
 				case SB_LINEDOWN:
 					if (mps->addr + data_length < GetMaxAddr(mps))
 						mps->addr += mps->nCols * mps->mode;
+					if (hwndVal) {
+						SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) hwndVal);
+					}
 					break;
 				case SB_THUMBTRACK: {
 					int val = si.nTrackPos > mps->addr ? mps->nCols * mps->mode : 0;
 					mps->addr = si.nTrackPos - ((si.nTrackPos - si.nMin) % (mps->nCols * mps->mode)) + val;
+					if (hwndVal) {
+						SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) hwndVal);
+					}
 					break;
 				}
 				case SB_PAGEDOWN:
 					if (mps->addr + data_length < GetMaxAddr(mps))
 						mps->addr += mps->nCols * mps->mode * 4;
+					if (hwndVal) {
+						SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) hwndVal);
+					}
 					break;
 				case SB_PAGEUP:
 					if (mps->addr - mps->nCols * mps->mode * 4 >= 0)
 						mps->addr -= mps->nCols * mps->mode * 4;
+					if (hwndVal) {
+						SendMessage(hwnd, WM_COMMAND, MAKEWPARAM(0, EN_SUBMIT), (LPARAM) hwndVal);
+					}
 					break;
 			}
 
@@ -644,7 +665,11 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			switch (HIWORD(wParam)) {
 				case EN_KILLFOCUS:
-					if (GetFocus() == hwnd) break;
+				{
+					if (GetFocus() == hwnd) {
+						break;
+					}
+				}
 				case EN_SUBMIT:
 				{
 					_TUCHAR data[8];

@@ -64,6 +64,12 @@
     <Filter Include="Header Files\Utilities\Compression">
       <UniqueIdentifier>{c2752ed9-7077-4179-8cc7-e8f71f20a10a}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Core89">
+      <UniqueIdentifier>{ce12f3b7-1176-4204-9455-a1677bfd39c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Core89">
+      <UniqueIdentifier>{abf7709d-e32f-4c28-84ae-d8ad62a95898}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\alu.c">
@@ -313,6 +319,15 @@
       <Filter>Source Files\Core</Filter>
     </ClCompile>
     <ClCompile Include="interface\state.c">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="core89\core89.c">
+      <Filter>Source Files\Core89</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\guidialog.c">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\ftp.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
@@ -601,6 +616,15 @@
     </ClInclude>
     <ClInclude Include="reverse_info.h">
       <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="core89\core89.h">
+      <Filter>Header Files\Core89</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\guidialog.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\ftp.h">
+      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

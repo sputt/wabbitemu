@@ -16,7 +16,7 @@
 #define BankSize		(PreferedSamples*Channels*SampleSize)
 
 #define BufferSamples	(SampleRate)
-#define BufferSize		(BufferSamples*Channels*SampleSize)
+#define AudioBufferSize		(BufferSamples*Channels*SampleSize)
 
 
 typedef struct SAMPLE SAMPLE_t;

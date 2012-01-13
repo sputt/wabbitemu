@@ -2,6 +2,7 @@
 
 #include "var.h"
 #include "calc.h"
+#include "fileutilities.h"
 #ifdef _WINDOWS
 #include "miniunz.h"
 #endif
@@ -180,8 +181,8 @@ TIFILE_t* ImportZipFile(LPCTSTR filePath, TIFILE_t *tifile) {
 	unzFile uf;
 	TCHAR path[MAX_PATH];
 	uf = unzOpen(filePath);
-	StringCbCopy(path, sizeof(path), _tgetenv(_T("appdata")));
-	StringCbCat(path, sizeof(path), _T("\\Wabbitemu"));
+	GetAppDataString(path, sizeof(path));
+	StringCbCat(path, sizeof(path), _T("\\Zip"));
 	int err = extract_zip(uf, path);
 	unzClose(uf);
 	return err ? NULL: tifile;

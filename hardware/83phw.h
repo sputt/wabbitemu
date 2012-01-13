@@ -12,6 +12,4 @@
 int device_init_83p(CPU_t*);
 int memory_init_83p(memc *);
 
-void flashwrite83p(CPU_t *, unsigned short , unsigned char );
-
 #endif 

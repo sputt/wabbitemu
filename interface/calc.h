@@ -212,7 +212,6 @@ GLOBAL int startY;
 GLOBAL BOOL exit_save_state;
 GLOBAL BOOL new_calc_on_load_files;
 GLOBAL BOOL do_backups;
-GLOBAL BOOL show_wizard;
 GLOBAL BOOL break_on_exe_violation;
 GLOBAL BOOL break_on_invalid_flash;
 GLOBAL BOOL auto_turn_on;

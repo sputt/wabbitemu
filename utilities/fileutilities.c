@@ -76,3 +76,17 @@ BOOL ValidPath(TCHAR *lpstrFile) {
 	return error;
 #endif
 }
+
+void GetAppDataString(TCHAR *buffer, int len) {
+#ifdef WINVER
+	TCHAR *env;
+	size_t envLen;
+	_tdupenv_s(&env, &envLen, _T("appdata"));
+	StringCbCopy(buffer, len, env);
+	StringCbCat(buffer, len, _T("\\Wabbitemu\\"));
+	free(env);
+#else
+	strcpy(temp_save, getenv("appdata"));
+	strcat(temp_save, tmpfn);
+#endif
+}
