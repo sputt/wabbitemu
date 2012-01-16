@@ -27,6 +27,7 @@ extern HINSTANCE g_hInst;
 extern unsigned int goto_addr;
 extern int find_value;
 extern BOOL search_backwards;
+extern BOOL big_endian;
 
 void sprint_addr(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
@@ -128,53 +129,110 @@ static int GetMaxAddr(dp_settings *dps) {
 	return -1;
 }
 
-int DisasmFindValue(dp_settings *dps, int value, BOOL search_backwards = FALSE) {
+static void GetNextWaddr(dp_settings *dps, int *bank_num, waddr_t *waddr) {
+	waddr->addr++;
+	if (waddr->addr % PAGE_SIZE == 0) {
+		waddr->addr = 0;
+		if (dps->type == REGULAR) {
+			(*bank_num)++;
+			if (*bank_num < 4) {
+				waddr->page = lpDebuggerCalc->mem_c.banks[*bank_num].page;
+				waddr->is_ram = lpDebuggerCalc->mem_c.banks[*bank_num].ram;
+			} else {
+				return;
+			}
+		} else {
+			int pages = waddr->is_ram ? lpDebuggerCalc->mem_c.ram_pages : lpDebuggerCalc->mem_c.flash_pages;
+			if (waddr->page < pages) {
+				waddr->page++;
+			} else {
+				return;
+			}
+		}
+	}
+}
+
+waddr_t * DisasmFindValue(dp_settings *dps, int valueToFind, BOOL search_backwards = FALSE, BOOL big_endian = FALSE) {
 	waddr_t waddr;
-	waddr.addr = search_backwards ? dps->nSel - 1 : dps->nSel + 1;
+	if (search_backwards) {
+		if (dps->type == REGULAR) {
+			waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel - 1);
+		} else {
+			waddr.addr = (dps->nSel - 1) % PAGE_SIZE;
+			waddr.page = (dps->nSel - 1) / PAGE_SIZE;
+			waddr.is_ram = dps->type == RAM;
+		}
+	} else {
+		if (dps->type == REGULAR) {
+			waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel + 1);
+		} else {
+			waddr.addr = (dps->nSel + 1) % PAGE_SIZE;
+			waddr.page = (dps->nSel + 1) / PAGE_SIZE;
+			waddr.is_ram = dps->type == RAM;
+		}
+	}
+	
 	int bank_num = mc_bank(waddr.addr);
+	int valSize = 1;
+	int value = 0;
+	int tempVal = valueToFind;
+	while (tempVal > 0) {
+		tempVal /= 0xFF;
+		valSize++;
+	}
+	valSize--;
 	do {
 		if (search_backwards) {
 			waddr.addr--;
-			if (waddr.addr < 0) {
+			if ((waddr.addr + 1) % PAGE_SIZE == 0) {
 				if (dps->type == REGULAR) {
 					bank_num--;
-					if (bank_num > -1) {
+					if (bank_num >= 0) {
 						waddr.addr = (bank_num + 1) * PAGE_SIZE - 1;
 						waddr.page = lpDebuggerCalc->mem_c.banks[bank_num].page;
+						waddr.is_ram = lpDebuggerCalc->mem_c.banks[bank_num].ram;
+					} else {
+						break;
 					}
 				} else {
 					waddr.addr = PAGE_SIZE - 1;
 					waddr.page--;
-				}
-			}
-		} else {
-			if (waddr.addr == PAGE_SIZE) {
-				if (dps->type == REGULAR) {
-					bank_num++;
-					if (bank_num < 4) {
-						waddr.addr = (bank_num + 1) * PAGE_SIZE - 1;
-						waddr.page = lpDebuggerCalc->mem_c.banks[bank_num].page;
-					} else {
-						break;
-					}
-				} else {
-					int pages = waddr.is_ram ? lpDebuggerCalc->mem_c.ram_pages : lpDebuggerCalc->mem_c.flash_pages;
-					if (waddr.page < pages) {
-						waddr.addr = 0;
-						waddr.page++;
-					} else {
+					if ((int8_t) waddr.page < 0) {
 						break;
 					}
 				}
 			}
-		}
-		if (find_value > 0xFF) {
-			value = wmem_read16(&lpDebuggerCalc->mem_c, waddr);
 		} else {
-			value = wmem_read(&lpDebuggerCalc->mem_c, waddr);
+			GetNextWaddr(dps, &bank_num, &waddr);
 		}
-	} while (waddr.addr <= GetMaxAddr(dps) && waddr.page >= 0 && value != find_value);
-	return -1;
+		if (dps->type == REGULAR) {
+			if (bank_num == 4) {
+				break;
+			}
+		} else {
+			if (waddr.page == (waddr.is_ram ? lpDebuggerCalc->mem_c.ram_pages : lpDebuggerCalc->mem_c.flash_pages)) {
+				break;
+			}
+		}
+		value = 0;
+		waddr_t tempWaddr;
+		memcpy(&tempWaddr, &waddr, sizeof(waddr_t));
+		for (int b = 0;;) {
+			int shift = big_endian ? (valSize - 1 - b) * 8  : b * 8;
+			value += wmem_read(&lpDebuggerCalc->mem_c, tempWaddr) << shift;
+			b++;
+			if (b >= valSize) {
+				break;
+			}
+			GetNextWaddr(dps, &bank_num, &tempWaddr);
+		}
+	} while (value != valueToFind);
+	if (value != valueToFind) {
+		return NULL;
+	}
+	waddr_t *returnWaddr = (waddr_t *) malloc(sizeof(waddr_t));
+	memcpy(returnWaddr, &waddr, sizeof(waddr_t));
+	return returnWaddr;
 }
 
 void InvalidateSel(HWND hwnd, int sel) {
@@ -338,7 +396,7 @@ void CPU_stepout(CPU_t *cpu) {
 				zinflocal.index == DA_RET_CC 	||
 				zinflocal.index == DA_RETI		||
 				zinflocal.index == DA_RETN) {
-
+				
 				return;
 			}
 
@@ -367,9 +425,30 @@ void CPU_stepover(CPU_t *cpu) {
 		}
 	} else if (zinflocal.index == DA_CALL_X || zinflocal.index == DA_CALL_CC_X) {
 		uint16_t old_stack = cpu->sp;
+		uint16_t return_pc = cpu->pc + 3;
 		CPU_step(cpu);
-		if (cpu->sp != old_stack)
-			CPU_stepout(cpu);
+		if (cpu->sp != old_stack) {
+			double time = tc_elapsed(cpu->timer_c);
+			uint16_t old_sp = cpu->sp;
+			while ((tc_elapsed(cpu->timer_c) - time) < 15.0) {
+				uint16_t old_pc = cpu->pc;
+				CPU_step(cpu);
+
+				if (cpu->sp >= old_sp && (cpu->pc >= return_pc && (cpu->pc <= return_pc + 2))) {
+					Z80_info_t zinflocal;
+					disassemble(cpu->mem_c, REGULAR, addr_to_waddr(cpu->mem_c, old_pc), 1, &zinflocal);
+
+					if (zinflocal.index == DA_RET 		||
+						zinflocal.index == DA_RET_CC 	||
+						zinflocal.index == DA_RETI		||
+						zinflocal.index == DA_RETN) {
+				
+						return;
+					}
+
+				}
+			}
+		}
 	} else {
 		for (i = 0; i < ARRAYSIZE(usable_commands); i++) {
 			if (zinflocal.index == usable_commands[i]) {
@@ -1042,6 +1121,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_COMMAND: {
+			static HWND hwndFind = NULL;
 			switch (LOWORD(wParam)) {
 				case DB_COPYLINE: {
 					int i, j;
@@ -1226,12 +1306,24 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 				case DB_FIND_NEXT: {
 					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					int global_addr = DisasmFindValue(dps, find_value, search_backwards);
-					if (global_addr == -1) {
-						MessageBox(hwnd, _T("Unable to find value"), _T("Find"), MB_OK);
+					waddr_t *waddr = DisasmFindValue(dps, find_value, search_backwards, big_endian);
+					if (waddr == NULL) {
+						MessageBox(hwndFind, _T("Unable to find value"), _T("Find"), MB_OK);
 					} else {
-						dps->nPane = global_addr % PAGE_SIZE;
-						dps->nSel = global_addr % PAGE_SIZE;
+						int global_addr;
+						if (dps->type == REGULAR) {
+							int i;
+							for (i = 0; i < 4; i++) {
+								if (lpDebuggerCalc->mem_c.banks[i].page == waddr->page) {
+									break;
+								}
+							}
+							global_addr = i * PAGE_SIZE + mc_base(waddr->addr);
+						} else {
+							global_addr = waddr->addr + waddr->page * PAGE_SIZE;
+						}
+						dps->nPane = global_addr;
+						dps->nSel = global_addr;
 						SetFocus(hwnd);
 						SendMessage(hwnd, WM_COMMAND, DB_DISASM, global_addr);
 						InvalidateRect(hwnd, NULL, FALSE);
@@ -1240,8 +1332,11 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					return 0;
 				}
 				case DB_OPEN_FIND: {
-					HWND hwndDialog = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC)FindDialogProc);
-					ShowWindow(hwndDialog, SW_SHOW);
+					if (hwndFind) {
+						DestroyWindow(hwndFind);
+					}
+					hwndFind = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_DLGFIND), hwnd, (DLGPROC)FindDialogProc);
+					ShowWindow(hwndFind, SW_SHOW);
 					break;
 				}
 				case DB_BREAKPOINT: {

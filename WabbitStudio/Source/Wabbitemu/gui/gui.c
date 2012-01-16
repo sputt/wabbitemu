@@ -163,6 +163,8 @@ HWND gui_debug(LPCALC lpCalc) {
 			DestroyWindow(hdebug);
 		} else {
 			SwitchToThisWindow(hdebug, TRUE);
+			waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, lpDebuggerCalc->cpu.pc);
+			SendMessage(hdebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);
 			SendMessage(hdebug, WM_USER, DB_RESUME, 0);
 			return hdebug;
 		}
@@ -174,7 +176,8 @@ HWND gui_debug(LPCALC lpCalc) {
 		buf,
 		flags | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
 		db_placement.rcNormalPosition.left, db_placement.rcNormalPosition.top,
-		db_placement.rcNormalPosition.right - db_placement.rcNormalPosition.left, db_placement.rcNormalPosition.bottom - db_placement.rcNormalPosition.top,
+		db_placement.rcNormalPosition.right - db_placement.rcNormalPosition.left,
+		db_placement.rcNormalPosition.bottom - db_placement.rcNormalPosition.top,
 		0, 0, g_hInst, (LPVOID) lpCalc);
 	if (set_place)
 		SetWindowPlacement(hdebug, &db_placement);
@@ -760,7 +763,7 @@ LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 		if (pDumpFunc) {
 			TCHAR szDumpPath[MAX_PATH];
 			GetAppDataString(szDumpPath, sizeof(szDumpPath));
-			StringCbCat(szDumpPath, sizeof(szDumpPath), _T("\\Wabbitemu.dmp"));
+			StringCbCat(szDumpPath, sizeof(szDumpPath), _T("Wabbitemu.dmp"));
 			HANDLE hFile = CreateFile(szDumpPath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS,
 											FILE_ATTRIBUTE_NORMAL, NULL );
 
@@ -773,7 +776,7 @@ LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 				ExInfo.ClientPointers = NULL;
 
 				// write the dump
-				pDumpFunc(GetCurrentProcess(), GetCurrentProcessId(), hFile, MiniDumpWithFullMemoryInfo, &ExInfo, NULL, NULL );
+				pDumpFunc(GetCurrentProcess(), GetCurrentProcessId(), hFile, MiniDumpWithFullMemoryInfo, &ExInfo, NULL, NULL);
 				CloseHandle(hFile);
 
 				if (MessageBox(NULL, _T("Unfortunately Wabbitemu has appeared to have crashed. Would you like to send a crash report to the developers so they can fix it?")
@@ -808,7 +811,7 @@ LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 void UpdateWabbitemu() {
 	TCHAR buffer[MAX_PATH];
 	GetAppDataString(buffer, sizeof(buffer));
-	StringCbCat(buffer, sizeof(buffer), _T("\\Revsoft.Autoupdater.exe"));
+	StringCbCat(buffer, sizeof(buffer), _T("Revsoft.Autoupdater.exe"));
 	HRSRC hrDumpProg = FindResource(GetModuleHandle(NULL), MAKEINTRESOURCE(IDR_UPDATER), _T("EXE"));
 	ExtractResource(buffer, hrDumpProg);
 
@@ -821,12 +824,10 @@ void UpdateWabbitemu() {
 	memset(&si, 0, sizeof(si));
 	memset(&pi, 0, sizeof(pi));
 	si.cb = sizeof(si);
-	if (!CreateProcess(NULL, argBuf,
-		NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, 
-		NULL, NULL, &si, &pi)) {
-			MessageBox(NULL, _T("Unable to start the process. Try manually downloading the update from the website."), _T("Error"), MB_OK);
-			ShellExecute(NULL, _T("open"), g_szWebPage, NULL, NULL, SW_SHOWNORMAL);
-			return;
+	if (!CreateProcess(NULL, argBuf, NULL, NULL, FALSE, CREATE_DEFAULT_ERROR_MODE, NULL, NULL, &si, &pi)) {
+		MessageBox(NULL, _T("Unable to start the process. Try manually downloading the update from the website."), _T("Error"), MB_OK);
+		ShellExecute(NULL, _T("open"), g_szWebPage, NULL, NULL, SW_SHOWNORMAL);
+		return;
 	}
 	exit(0);
 }
@@ -868,7 +869,6 @@ DWORD WINAPI CheckForUpdates(LPVOID lpParam) {
 	_tremove(fileBuffer);
 	HRESULT hr = URLDownloadToFile(NULL, _T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt"), fileBuffer, NULL, NULL);
 	if (!SUCCEEDED(hr)) {
-		MessageBox(NULL, "Error", "Error", MB_OK);
 		return hr;
 	}
 
@@ -913,8 +913,11 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	TCHAR appData[MAX_PATH];
 	GetAppDataString(appData, sizeof(appData));
 	int error = CreateDirectory(appData, NULL);
-	if (error != ERROR_ALREADY_EXISTS && error != ERROR_SUCCESS) {
-		MessageBox(NULL , _T("Unable to create appdata folder"), _T("Error"), MB_OK);
+	if (!error) {
+		error = GetLastError();
+		if (error != ERROR_ALREADY_EXISTS) {
+			MessageBox(NULL , _T("Unable to create appdata folder"), _T("Error"), MB_OK);
+		}
 	}
 
 	SetUnhandledExceptionFilter(ExceptionFilter);
@@ -1524,6 +1527,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					BOOL hasUpdates = CheckForUpdates(hwnd);
 					if (!hasUpdates) {
 						MessageBox(hwnd, _T("No update is available"), _T("Wabbitemu"), MB_OK);
+					}
+					if (!SUCCEEDED(hasUpdates)) {
+						MessageBox(hwnd, _T("Error checking for updates"), _T("Error"), MB_OK);
 					}
 					break;
 				}

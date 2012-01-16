@@ -240,7 +240,6 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 				calc_init_86(lpCalc);
 				break;
 			default:
-				puts("Unknown model");
 				FreeTiFile(tifile);
 				return FALSE;
 		}
@@ -314,6 +313,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 
 	} else {
 		lpCalc = NULL;
+		return FALSE;
 	}
 	if (lpCalc != NULL) {
 		lpCalc->cpu.pio.model = lpCalc->model;
