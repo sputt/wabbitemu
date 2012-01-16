@@ -80,8 +80,9 @@ int link_disconnect(CPU_t *cpu) {
 static void link_wait(CPU_t *cpu, time_t tstates) {
 	long long time_end = tc_tstates(cpu->timer_c) + tstates;
 
-	while (tc_tstates(cpu->timer_c) < time_end)
+	while (tc_tstates(cpu->timer_c) < time_end) {
 		CPU_step(cpu);
+	}
 }
 
 /* Send a byte through the virtual link
@@ -736,16 +737,26 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	//BOOL bClearSector = FALSE;
 	for (i = 0; i < ARRAYSIZE(tifile->flash->data); i++) {
 		if (tifile->flash->data[i] == NULL) {
-			//if (!bClearSector) {
 				continue;
-			//}
 		}
-		/*if (!bClearSector) {
-			for (int j = i - 1; j >= (i / 4) * 4 && i > 0; j--) {
-				memset(dest[j], 0xFF, PAGE_SIZE);
-			}
+		if (i > 0x10) {
+			page = i + cpu->mem_c->flash_pages - 0x20;
+		} else {
+			page = i;
 		}
-		bClearSector = TRUE;*/
+		int sector = (page / 4) * 4;
+		int size;
+		if (sector >= cpu->mem_c->flash_pages - 2) {
+			size = PAGE_SIZE;
+		} else {
+			size = PAGE_SIZE * 4;
+		}
+		memset(dest[sector], 0xFF, size);
+	}
+	for (i = 0; i < ARRAYSIZE(tifile->flash->data); i++) {
+		if (tifile->flash->data[i] == NULL) {
+				continue;
+		}
 		if (i > 0x10) {
 			page = i + cpu->mem_c->flash_pages - 0x20;
 		} else {
@@ -753,21 +764,12 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 		}
 
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
-
-		/*if (page % 4) {
-			bClearSector = FALSE;
-		}*/
 	}
-
+	
 	//valid OS
 	dest[0][0x56] = 0x5A;
 	dest[0][0x57] = 0xA5;
 
-	// Delay for a few seconds so the calc will be responsive
-	cpu->pio.link->vlink_size = 100;
-	for (cpu->pio.link->vlink_send = 0; cpu->pio.link->vlink_send < 100; cpu->pio.link->vlink_send += 20) {
-		link_wait(cpu, MHZ_6*1);
-	}
 	return LERR_SUCCESS;
 }
 

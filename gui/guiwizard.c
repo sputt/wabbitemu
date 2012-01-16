@@ -182,9 +182,12 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						TCHAR szROMPath[MAX_PATH];
 						Edit_GetText(hEditRom, szROMPath, ARRAYSIZE(szROMPath));
 						LPCALC lpCalc = calc_slot_new();
-						if (rom_load(lpCalc, szROMPath) == TRUE)
-						{
+						if (rom_load(lpCalc, szROMPath) == TRUE) {
 							gui_frame(lpCalc);
+						} else {
+							MessageBox(hwnd, _T("Invalid ROM file"), _T("Error"), MB_OK);
+							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, TRUE);
+							return TRUE;
 						}
 						break;
 					}
@@ -440,30 +443,26 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
 						Static_SetText(hStaticProgress, _T("Downloading OS..."));
 						BOOL succeeded = DownloadOS(_T(""), ComboBox_GetCurSel(hComboOS) == 0);
-						if (!succeeded)
-							MessageBox(NULL, _T("Unable to download file"), _T("Download failed"), MB_OK);
+						if (!succeeded) {
+							MessageBox(hwnd, _T("Unable to download file"), _T("Download failed"), MB_OK);
+						}
 					} else {
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
 					break;
 				}
 				case PSN_WIZFINISH: {
-					Static_SetText(hStaticProgress, _T("Creating ROM file..."));
-					ShowWindow(hProgressBar, SW_SHOW);
 					TCHAR buffer[MAX_PATH];
 					SaveFile(buffer, _T("ROMs  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST);
-					SendMessage(hProgressBar, PBM_SETSTEP, (WPARAM) 25, 0);
-					SendMessage(hProgressBar, PBM_SETRANGE, 0, MAKELPARAM(0, 100));
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
-						Static_SetText(hStaticProgress, _T("Downloading OS..."));
 						BOOL succeeded = DownloadOS(_T(""), ComboBox_GetCurSel(hComboOS) == 0);
-						if (!succeeded)
-							MessageBox(NULL, _T("Unable to download file"), _T("Download failed"), MB_OK);
+						if (!succeeded) {
+							MessageBox(hwnd, _T("Unable to download file"), _T("Download failed"), MB_OK);
+						}
 					} else {
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
-					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					LPCALC lpCalc = calc_slot_new();
 					//ok yes i know this is retarded...but this way we can use Load_8xu
 					//outside this function...
@@ -487,19 +486,16 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 							break;
 					}
 					ModelInit(lpCalc);
-
 					//slot stuff
 					LoadRegistrySettings(lpCalc);
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), buffer);
 					lpCalc->active = TRUE;
 					lpCalc->model = model;
 					lpCalc->cpu.pio.model = model;
-
-					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					TCHAR hexFile[MAX_PATH];
 					GetAppDataString(hexFile, sizeof(hexFile));
 					//extract and write the open source boot page
-					StringCbCat(hexFile, sizeof(hexFile), _T("\\boot.hex"));
+					StringCbCat(hexFile, sizeof(hexFile), _T("boot.hex"));
 					ExtractResource(hexFile, resource);
 					FILE *file;
 					_tfopen_s(&file, hexFile, _T("rb"));
@@ -509,8 +505,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					//if you don't want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
 						TIFILE_t *tifile = newimportvar(osPath);
-						if (tifile == NULL) {
-							MessageBox(NULL, _T("Error: OS file is corrupt"), _T("Error"), MB_OK);
+						if (tifile == NULL || tifile->type != FLASH_TYPE) {
+							MessageBox(hwnd, _T("Error: OS file is corrupt"), _T("Error"), MB_OK);
 						} else {
 							forceload_os(&lpCalc->cpu, tifile);
 							if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
@@ -521,12 +517,10 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					calc_erase_certificate(lpCalc->mem_c.flash,lpCalc->mem_c.flash_size);
 					calc_reset(lpCalc);
 					//calc_turn_on(lpCalc);
-					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					gui_frame(lpCalc);
 					//write the output from file
 					MFILE *romfile = ExportRom(buffer, lpCalc);
 					mclose(romfile);
-					SendMessage(hProgressBar, PBM_STEPIT, 0, 0);
 					break;
 				}
 				case PSN_QUERYCANCEL:
@@ -545,7 +539,7 @@ static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version)
 {
 	TCHAR downloaded_file[MAX_PATH];
 	GetAppDataString(downloaded_file, sizeof(downloaded_file));
-	StringCbCat(downloaded_file, sizeof(downloaded_file), _T("\\OS.8xu"));
+	StringCbCat(downloaded_file, sizeof(downloaded_file), _T("OS.8xu"));
 	StringCbCopy(osPath, sizeof(osPath), downloaded_file);
 	TCHAR *url;
 	switch (model) {
@@ -927,7 +921,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					//calc_turn_on(lpCalc);
 					gui_frame(lpCalc);
 					//write the output from file
-					MFILE *mfile = ExportRom(buffer, lpCalc);					
+					MFILE *mfile = ExportRom(buffer, lpCalc);
 					mclose(mfile);
 					break;
 				}

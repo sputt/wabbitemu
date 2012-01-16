@@ -9,6 +9,7 @@ extern HINSTANCE g_hInst;
 
 unsigned int goto_addr;
 int find_value;
+BOOL big_endian;
 BOOL search_backwards;
 
 extern HFONT hfontLucida;
@@ -27,8 +28,10 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 				case IDOK: {
 					TCHAR result[64];
 					GetDlgItemText(hwndDlg, IDC_EDTGOTOADDR, result, 64);
-					
-					if (result[0] != '$') {
+
+					if (*result == '\0') {
+						goto_addr = lpDebuggerCalc->cpu.pc;
+					} else if (result[0] != '$') {
 						label_struct *label;
 						label = lookup_label(lpDebuggerCalc, result);
 						if (label == NULL) _stscanf_s(result, _T("%x"), &goto_addr);
@@ -49,15 +52,22 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 }
 
 INT_PTR CALLBACK FindDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND edtAddr, forwardsCheck, backwardsCheck;
+	static HWND edtAddr, forwardsCheck, backwardsCheck, littleEndianCheck, bigEndianCheck;
 	switch (Message) {
 		case WM_INITDIALOG:
 			edtAddr = GetDlgItem(hwndDlg, IDC_EDT_FIND);
 			forwardsCheck = GetDlgItem(hwndDlg, IDC_RADIO_FORWARDS);
 			backwardsCheck = GetDlgItem(hwndDlg, IDC_RADIO_BACKWARDS);
+
+			littleEndianCheck = GetDlgItem(hwndDlg, IDC_RADIO_LITTLEENDIAN);
+			bigEndianCheck = GetDlgItem(hwndDlg, IDC_RADIO_BIGENDIAN);
+
 			SetFocus(GetDlgItem(hwndDlg, IDC_EDT_FIND));
 			hwndPrev = GetParent(hwndDlg);
 			Button_SetCheck(forwardsCheck, TRUE);
+			Button_SetCheck(bigEndianCheck, TRUE);
+			big_endian = TRUE;
+			search_backwards = FALSE;
 			return FALSE;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
@@ -73,9 +83,23 @@ INT_PTR CALLBACK FindDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 					break;
 			}
 			switch(HIWORD(wParam)) {
-				case BN_CLICKED:
-					search_backwards = LOWORD(wParam) == IDC_RADIO_BACKWARDS;
+				case BN_CLICKED: {
+					switch (LOWORD(wParam)) {
+						case IDC_RADIO_BACKWARDS:
+							search_backwards = TRUE;
+							break;
+						case IDC_RADIO_FORWARDS:
+							search_backwards = FALSE;
+							break;
+						case IDC_RADIO_LITTLEENDIAN:
+							big_endian = FALSE;
+							break;
+						case IDC_RADIO_BIGENDIAN:
+							big_endian = TRUE;
+							break;
+					}
 					break;
+				}
 			}
 			break;
 	}

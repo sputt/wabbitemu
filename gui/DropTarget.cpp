@@ -209,6 +209,7 @@ extern BOOL is_calc_file;
 BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 	STGMEDIUM stgmed;
 	TCHAR path[MAX_PATH];
+	ZeroMemory(path, sizeof(path));
 	BOOL valid = TRUE;
 	is_archive_only = TRUE;
 	is_calc_file = TRUE;
@@ -321,8 +322,10 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 
 								for (int i = 0; i < lpfgd->cItems; i++) {
 									TCHAR szFileName[MAX_PATH];
+									ZeroMemory(szFileName, sizeof(szFileName));
 
 									TCHAR szTemp[L_tmpnam_s];
+									ZeroMemory(szTemp, sizeof(szTemp));	
 									_ttmpnam_s(szTemp);
 
 									GetAppDataString(szFileName, sizeof(szFileName));
