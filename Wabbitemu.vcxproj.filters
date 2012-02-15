@@ -330,6 +330,15 @@
     <ClCompile Include="utilities\ftp.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="utilities\minizip.c">
+      <Filter>Source Files\Utilities\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\zip.c">
+      <Filter>Source Files\Utilities\Compression</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\avifile.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -626,6 +635,12 @@
     <ClInclude Include="utilities\ftp.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="utilities\zip.h">
+      <Filter>Header Files\Utilities\Compression</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\avifile.h">
+      <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\small_close.bmp">
@@ -808,6 +823,9 @@
     </None>
     <None Include="gui\ROM\Rom85.85s">
       <Filter>Resource Files\Wizard</Filter>
+    </None>
+    <None Include="gui\ti-81keymap.png">
+      <Filter>Resource Files\Skins</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -47,6 +47,7 @@ HRESULT SetAviVideoCompression(HAVI avi, HBITMAP hbm, AVICOMPRESSOPTIONS *opts, 
 HRESULT CloseAvi(HAVI avi);
 // CloseAvi - the avi must be closed with this message.
 
+AVICOMPRESSOPTIONS *GetCompression();
 
 
 unsigned int FormatAviMessage(HRESULT code, TCHAR *buf,unsigned int len);

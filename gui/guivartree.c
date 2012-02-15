@@ -49,11 +49,12 @@ HWND CreateVarTreeList(HWND hwndParent, LPCALC lpCalc) {
 //mapped to the to either the symlist_t or applist_t item. Ideally this would be the LPARAM 
 //of the LPTREEVIEW, but a dictionary mapping would be fine as well
 apphdr_t *GetAppVariable(HTREEITEM hTreeItem, int *slot) {
-	for (*slot = 0; *slot < MAX_CALCS; (*slot)++) {
-		if (Tree[*slot].model) {
-			for(u_int i = 0; i < Tree[*slot].applist.count; i++) {
-				if (Tree[*slot].hApps[i] == hTreeItem) {
-					return &Tree[*slot].applist.apps[i];
+	for (int temp = 0; temp < MAX_CALCS; temp++) {
+		if (Tree[temp].model) {
+			for(u_int i = 0; i < Tree[temp].applist.count; i++) {
+				if (Tree[temp].hApps[i] == hTreeItem) {
+					*slot = temp;
+					return &Tree[temp].applist.apps[i];
 				}
 			}
 		}
@@ -62,13 +63,19 @@ apphdr_t *GetAppVariable(HTREEITEM hTreeItem, int *slot) {
 }
 
 symbol83P_t *GetSymbolVariable(HTREEITEM hTreeItem, int *slot) {
-	for (*slot = 0; *slot < MAX_CALCS; (*slot)++) {
-		if (Tree[*slot].model) {
-			if (Tree[*slot].sym.last == NULL || Tree[*slot].sym.symbols == NULL)
-				return NULL;
-			for(u_int i = 0; i < (u_int) (Tree[*slot].sym.last - Tree[*slot].sym.symbols + 1); i++) {
-				if (Tree[*slot].hVars[i] == hTreeItem) {
-					return &Tree[*slot].sym.symbols[i];
+	for (int temp = 0; temp < MAX_CALCS; temp++) {
+		if (Tree[temp].model) {
+			if (Tree[temp].sym.last == NULL || Tree[temp].sym.symbols == NULL) {
+				continue;
+			}
+			int numSymbols = (Tree[temp].sym.last - Tree[temp].sym.symbols + 1);
+			if (numSymbols < 0) {
+				continue;
+			}
+			for(u_int i = 0; i < numSymbols; i++) {
+				if (Tree[temp].hVars[i] == hTreeItem) {
+					*slot = temp;
+					return &Tree[temp].sym.symbols[i];
 				}
 			}
 		}
@@ -622,6 +629,9 @@ FILEDESCRIPTOR *FillDesc(HTREEITEM hSelect,  FILEDESCRIPTOR *fd) {
 					_tprintf_s(_T("%s\n"), Tree[slot].applist.apps[i].name);
 					return NULL;
 				}
+			}
+			if (Tree[slot].sym.last == NULL) {
+				continue;
 			}
 			for(i = 0; i < (u_int) (Tree[slot].sym.last - Tree[slot].sym.symbols + 1); i++) {
 				if (Tree[slot].hVars[i] == hSelect) {

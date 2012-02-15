@@ -734,7 +734,6 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	if (tifile->flash == NULL)
 		return LERR_FILE;
 
-	//BOOL bClearSector = FALSE;
 	for (i = 0; i < ARRAYSIZE(tifile->flash->data); i++) {
 		if (tifile->flash->data[i] == NULL) {
 				continue;
@@ -746,8 +745,8 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 		}
 		int sector = (page / 4) * 4;
 		int size;
-		if (sector >= cpu->mem_c->flash_pages - 2) {
-			size = PAGE_SIZE;
+		if (sector >= cpu->mem_c->flash_pages - 4) {
+			size = PAGE_SIZE * 2;
 		} else {
 			size = PAGE_SIZE * 4;
 		}

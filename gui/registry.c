@@ -33,7 +33,6 @@ static struct {
 	{_T("exit_save_state"),			REG_DWORD,  FALSE},
 	{_T("load_files_first"),		REG_DWORD,  FALSE},
 	{_T("do_backups"),				REG_DWORD,  FALSE},
-	{_T("show_wizard"),				REG_DWORD,  TRUE},
 	{_T("sync_cores"),				REG_DWORD,  FALSE},
 	{_T("num_accel"),				REG_DWORD,  6},
 	{_T("always_on_top"),			REG_DWORD,  FALSE},

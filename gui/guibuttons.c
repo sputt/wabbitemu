@@ -336,11 +336,13 @@ void FinalizeButtons(LPCALC lpCalc) {
 		*ButtonCenter = ButtonCenter83;
 	}
 
-	for (group = 0; group < 7; group++) {
-		for (bit = 0; bit < 8; bit++) {
-			int val = kp->keys[group][bit];
-			if (((val & KEY_STATEDOWN) && (val & KEY_MOUSEPRESS) == 0 && (val & KEY_KEYBOARDPRESS) == 0)) {
-				kp->keys[group][bit] &= ~KEY_STATEDOWN;
+	if (kp) {
+		for (group = 0; group < 7; group++) {
+			for (bit = 0; bit < 8; bit++) {
+				int val = kp->keys[group][bit];
+				if (((val & KEY_STATEDOWN) && !(val & KEY_MOUSEPRESS) && !(val & KEY_KEYBOARDPRESS))) {
+					kp->keys[group][bit] &= ~KEY_STATEDOWN;
+				}
 			}
 		}
 	}

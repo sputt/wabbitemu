@@ -82,6 +82,9 @@ void GetAppDataString(TCHAR *buffer, int len) {
 	TCHAR *env;
 	size_t envLen;
 	_tdupenv_s(&env, &envLen, _T("appdata"));
+	if (!env) {
+		return;
+	}
 	StringCbCopy(buffer, len, env);
 	StringCbCat(buffer, len, _T("\\Wabbitemu\\"));
 	free(env);

@@ -6,7 +6,7 @@
 #include "device.h"
 #include "calc.h"
 
-static double timer_freq81[4] = { 1.0f / 560.0f, 1.0f / 248.0f, 1.0f / 170.0f, 1.0f / 118.0f };
+static double timer_freq81[4] = { 1.0 / 800.0, 1.0 / 400.0, 3.0 / 800.0, 1.0 / 200.0 };
 
 // 81 screen offset
 static void port0(CPU_t *cpu, device_t *dev) {
@@ -14,8 +14,8 @@ static void port0(CPU_t *cpu, device_t *dev) {
 		cpu->bus = 0;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		int temp = ((cpu->bus & 0x1f) << 8);
-		dev->aux = &temp;
+		dev->aux = (LPVOID) (0x100 * ((cpu->bus % 0x20) + 0xE0));
+		cpu->pio.devices[0x10].aux = dev->aux;
 		port10(cpu, dev);
 		cpu->output = FALSE;
 		device_t devt;
@@ -25,15 +25,14 @@ static void port0(CPU_t *cpu, device_t *dev) {
 	return;
 }
 
-// Contrast
+// Contrast v1.x
 static void port2(CPU_t *cpu, device_t *dev) {
 	LCD_t *lcd = (LCD_t *) dev->aux;
 	if (cpu->input) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		//lcd->contrast ranges from 24 - 64
 		//HACK: still not sure exactly how this works :P
-		lcd->contrast = lcd->base_level - 15 + cpu->bus;
+		lcd->contrast = lcd->base_level - 19 + cpu->bus;
 		if (lcd->contrast > 64)
 			lcd->contrast = 64;
 		cpu->output = FALSE;
@@ -67,16 +66,6 @@ static void port3(CPU_t *cpu, device_t *dev) {
 		cpu->output = FALSE;
 	}
 	
-
-	if (stdint->intactive & 0x02) {
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)
-			cpu->interrupt = TRUE;
-	} else if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
-//		stdint->lastchk1 = ceil((tc_elapsed(cpu->timer_c) - stdint->lastchk1)/stdint->timermax1)*stdint->timermax1;
-		while ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1)
-			stdint->lastchk1 += stdint->timermax1;
-	}
-
 	if (!(stdint->intactive & 0x04) && cpu->pio.lcd->active == TRUE) {
 		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
 			cpu->interrupt = TRUE;
@@ -99,7 +88,19 @@ static void port4(CPU_t *cpu, device_t *dev) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		cpu->output = FALSE;
-		//LCD_t *lcd = (LCD_t *) dev->aux;
+		dev->aux = (void *) cpu->bus;
+		int freq = (cpu->bus >> 1) & 0x3;
+		cpu->pio.stdint->timermax1 = cpu->pio.stdint->freq[freq];
+		cpu->pio.stdint->lastchk1 = tc_elapsed(cpu->timer_c);
+		int lcd_mode = (cpu->bus >> 3) & 0x3;
+		if (lcd_mode == 0) {
+			cpu->pio.lcd->width = 80;
+		} else {
+			cpu->pio.lcd->width = 32 * lcd_mode + 64;
+		}
+
+		
+		cpu->output = FALSE;
 	}
 }
 
@@ -131,11 +132,17 @@ static void port7(CPU_t *cpu, device_t *dev) {
 }
 
 static void port10(CPU_t *cpu, device_t *dev) {
-	int screen_addr = *((int *)dev->aux);
+	int screen_addr = (int) dev->aux;
 	// Output the entire LCD
 	LCD_t *lcd = cpu->pio.lcd;
-	memcpy(lcd->display, cpu->mem_c->banks[mc_bank(screen_addr)].addr + mc_base(screen_addr), DISPLAY_SIZE);
-
+	unsigned char *base_addr = cpu->mem_c->banks[mc_bank(screen_addr)].addr + mc_base(screen_addr);
+	int k = 0, l = 0;
+	for (int j = 0; j < 64; j++) {	
+		for (int i = 0; i < 12; i++, k++, l++) {
+			lcd->display[k] = *(base_addr + l);
+		}
+		k += 4;
+	}
 }
 
 static STDINT_t* INT81_init(CPU_t* cpu) {
@@ -150,8 +157,6 @@ static STDINT_t* INT81_init(CPU_t* cpu) {
 	stdint->intactive = 0;
 	stdint->timermax1 = stdint->freq[3];
 	stdint->lastchk1 = tc_elapsed(cpu->timer_c);
-	stdint->timermax2 = stdint->freq[3] / 2.0f;
-	stdint->lastchk2 = tc_elapsed(cpu->timer_c)+stdint->freq[3] / 4.0f;
 	stdint->on_backup = 0;
 	stdint->on_latch = FALSE;
 	return stdint;
@@ -238,11 +243,11 @@ int device_init_81(CPU_t *cpu) {
 
 	cpu->pio.devices[0x10].active = TRUE;
 	cpu->pio.devices[0x10].aux = NULL;
-	cpu->pio.devices[0x10].code = (devp) &port0;
+	cpu->pio.devices[0x10].code = (devp) &port10;
 
 	cpu->pio.devices[0x11].active = TRUE;
 	cpu->pio.devices[0x11].aux = lcd;
-	cpu->pio.devices[0x11].code = (devp) &keypad;
+	cpu->pio.devices[0x11].code = (devp) &LCD_data;
 	
 	cpu->pio.lcd		= lcd;
 	cpu->pio.keypad		= keyp;
@@ -252,7 +257,9 @@ int device_init_81(CPU_t *cpu) {
 	cpu->pio.model		= TI_81;
 	
 	//Append_interrupt_device(cpu, 0x00, 1);
-	Append_interrupt_device(cpu, 0x03, 8);
+	Append_interrupt_device(cpu, 0x03, 1);
+	Append_interrupt_device(cpu, 0x10, 16000);
+	Append_interrupt_device(cpu, 0x11, 16000);
 	//Append_interrupt_device(cpu, 0x11, 128);
 	return 0;
 }

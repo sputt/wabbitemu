@@ -2,7 +2,7 @@
 
 #include <io.h>
 #include <fcntl.h>
-
+#include <direct.h>
 
 #include "gui.h"
 #include "resource.h"
@@ -54,6 +54,7 @@
 #include "dbghelp.h"
 #include <mapi.h>
 #include "ftp.h"
+#include <DbgHelp.h>ex
 
 #ifdef _M_IX86
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -235,24 +236,22 @@ int gui_frame(LPCALC lpCalc) {
 }
 
 BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, int skinWidth, int skinHeight, RECT *rectLCD) {
-	BOOL foundScreen = FALSE;
 	u_int foundX, foundY;
 	Color pixel;
 	//find the top left corner
-	for (u_int y = 0; y < skinHeight && foundScreen == false; y++) {
-		for (u_int x = 0; x < skinWidth && foundScreen == false; x++) {
+	for (u_int y = 0; y < skinHeight; y++) {
+		for (u_int x = 0; x < skinWidth; x++) {
 			m_pBitmapKeymap->GetPixel(x, y, &pixel);
 			if (pixel.GetValue() == 0xFFFF0000)	{
 				//81 92
 				foundX = x;
 				foundY = y;
-				foundScreen = true;
+				goto foundScreen;
 			}
 		}
 	}
-	if (!foundScreen) {
-		return foundScreen;
-	}
+	return FALSE;
+foundScreen:
 	rectLCD->left = foundX;
 	rectLCD->top = foundY;
 	//find right edge
@@ -267,7 +266,7 @@ BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, int skinWidth, int skinHeight, RECT *r
 		m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
 	} while (pixel.GetValue() == 0xFFFF0000);
 	rectLCD->bottom = foundY;
-	return foundScreen;
+	return TRUE;
 }
 
 void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
@@ -283,7 +282,8 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 		CopyRect(&rc, &lpCalc->rectSkin);
 		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
 		rc.bottom += GetSystemMetrics(SM_CYMENU);
-		SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOZORDER | SWP_NOMOVE);
+		SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top,
+			SWP_NOZORDER | SWP_NOMOVE | (silent_mode ? SWP_HIDEWINDOW : 0));
 	} else {
 		RECT rc;
 		if (hMenu) {
@@ -296,14 +296,16 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 		}
 		SetRect(&rc, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
 		int iStatusWidths[] = { 100, -1 };
-		lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE, 0, 0, 0, 0, lpCalc->hwndFrame, (HMENU) 99, g_hInst, NULL);
+		lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE,
+			0, 0, 0, 0, lpCalc->hwndFrame, (HMENU) 99, g_hInst, NULL);
 		SendMessage(lpCalc->hwndStatusBar, SB_SETPARTS, 2, (LPARAM) &iStatusWidths);
 		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
 		RECT src;
 		GetWindowRect(lpCalc->hwndStatusBar, &src);
 		AdjustWindowRect(&rc, (WS_TILEDWINDOW | WS_CLIPCHILDREN) & ~WS_MAXIMIZEBOX, hMenu != NULL);
 		rc.bottom += src.bottom - src.top;
-		SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
+		SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top,
+			SWP_NOMOVE | SWP_NOZORDER | (silent_mode ? SWP_HIDEWINDOW : 0));
 		GetClientRect(lpCalc->hwndFrame, &rc);
 		SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
 		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
@@ -311,11 +313,12 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 
 	if (lpCalc->bAlwaysOnTop) {
 		if (!(GetWindowLong(lpCalc->hwndFrame, GWL_EXSTYLE) & WS_EX_TOPMOST)) {
-			SetWindowPos(lpCalc->hwndFrame, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+			SetWindowPos(lpCalc->hwndFrame, HWND_TOPMOST, 0, 0, 0, 0,
+				SWP_NOMOVE | SWP_NOSIZE | (silent_mode ? SWP_HIDEWINDOW : 0));
 		}
 	} else {
 		if (GetWindowLong(lpCalc->hwndFrame, GWL_EXSTYLE) & WS_EX_TOPMOST) {
-			SetWindowPos(lpCalc->hwndFrame, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+			SetWindowPos(lpCalc->hwndFrame, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | (silent_mode ? SWP_HIDEWINDOW : 0));
 		}
 	}
 }
@@ -418,6 +421,8 @@ int gui_frame_update(LPCALC lpCalc) {
 		hbmSkin.Load(CalcModelTxt[lpCalc->model], _T("PNG"), g_hInst);
 		switch(lpCalc->model) {
 			case TI_81:
+				hbmKeymap.Load(_T("TI-81Keymap"), _T("PNG"), g_hInst);
+				break;
 			case TI_82:
 				hbmKeymap.Load(_T("TI-82Keymap"), _T("PNG"), g_hInst);
 				break;
@@ -657,7 +662,7 @@ ParsedCmdArgs* ParseCommandLineArgs()
 #endif
 		TCHAR* FileNames = NULL;
 		for(int i = 1; i < argc; i++) {
-			memset(tmpstring, 0, 512);
+			ZeroMemory(tmpstring, 512);
 #ifdef _UNICODE
 			_tcscpy(tmpstring, argv[i]);
 #else
@@ -705,16 +710,20 @@ ParsedCmdArgs* ParseCommandLineArgs()
 void LoadAlreadyExistingWabbit(LPARAM lParam, LPTSTR filePath, SEND_FLAG sendLoc)
 {
 	HWND hwnd = (HWND) lParam;
-	COPYDATASTRUCT cds;
-	cds.dwData = sendLoc;
+	COPYDATASTRUCT *cds = (COPYDATASTRUCT *) malloc(sizeof(COPYDATASTRUCT));
+	cds->dwData = sendLoc;
 	size_t strLen;
-	cds.lpData = filePath;
+	cds->lpData = filePath;
+	if (PathIsRelative(filePath)) {
+		TCHAR tempPath[MAX_PATH];
+		TCHAR *tempPath2 = (TCHAR *) malloc(MAX_PATH);
+		_tgetcwd(tempPath, MAX_PATH);
+		PathCombine(tempPath2, tempPath, filePath);
+		cds->lpData = tempPath2;
+	}
 	StringCbLength(filePath, 512, &strLen);
-	cds.cbData = strLen;
-	//now technically we are finding the HWND each time we do a load
-	//but since this is not speed critical I'm not worried.
-	//if it is an issue we can pull this out into a static var
-	SendMessage(hwnd, WM_COPYDATA, (WPARAM) NULL, (LPARAM) &cds);
+	cds->cbData = strLen;
+	SendMessage(hwnd, WM_COPYDATA, (WPARAM) NULL, (LPARAM) cds);
 }
 
 void LoadToLPCALC(LPARAM lParam, LPTSTR filePath, SEND_FLAG sendLoc)
@@ -750,6 +759,7 @@ typedef BOOL (WINAPI *MINIDUMPWRITEDUMP)(HANDLE hProcess, DWORD dwPid, HANDLE hF
 	);
 
 static BOOL hasCrashed = FALSE;
+extern int def(FILE *, FILE *, int);
 
 LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 	SetErrorMode(SEM_NOGPFAULTERRORBOX);
@@ -757,52 +767,72 @@ LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 		return EXCEPTION_EXECUTE_HANDLER;
 	}
 	hasCrashed = TRUE;
-	HMODULE hDebugHelp = LoadLibrary("dbghelp.dll");
-	if (hDebugHelp) {
-		MINIDUMPWRITEDUMP pDumpFunc = (MINIDUMPWRITEDUMP) GetProcAddress(hDebugHelp, _T("MiniDumpWriteDump"));
-		if (pDumpFunc) {
-			TCHAR szDumpPath[MAX_PATH];
-			GetAppDataString(szDumpPath, sizeof(szDumpPath));
-			StringCbCat(szDumpPath, sizeof(szDumpPath), _T("Wabbitemu.dmp"));
-			HANDLE hFile = CreateFile(szDumpPath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS,
-											FILE_ATTRIBUTE_NORMAL, NULL );
+	TCHAR szDumpPath[MAX_PATH], szTempDumpPath[MAX_PATH];
+	GetAppDataString(szDumpPath, sizeof(szDumpPath));
+	StringCbCopy(szTempDumpPath, sizeof(szTempDumpPath), szDumpPath);
+	StringCbCat(szTempDumpPath, sizeof(szDumpPath), _T("Wabbitemu.dmp"));
+	StringCbCat(szDumpPath, sizeof(szDumpPath), _T("Wabbitemu.dmp.zip"));
+	HANDLE hFile = CreateFile(szTempDumpPath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS,
+									FILE_ATTRIBUTE_NORMAL, NULL );
 
-			if (hFile != INVALID_HANDLE_VALUE)
-			{
-				_MINIDUMP_EXCEPTION_INFORMATION ExInfo;
+	if (hFile != INVALID_HANDLE_VALUE)
+	{
+		_MINIDUMP_EXCEPTION_INFORMATION ExInfo;
 
-				ExInfo.ThreadId = GetCurrentThreadId();
-				ExInfo.ExceptionPointers = pExceptionInfo;
-				ExInfo.ClientPointers = NULL;
+		ExInfo.ThreadId = GetCurrentThreadId();
+		ExInfo.ExceptionPointers = pExceptionInfo;
+		ExInfo.ClientPointers = NULL;
 
-				// write the dump
-				pDumpFunc(GetCurrentProcess(), GetCurrentProcessId(), hFile, MiniDumpWithFullMemoryInfo, &ExInfo, NULL, NULL);
-				CloseHandle(hFile);
-
-				if (MessageBox(NULL, _T("Unfortunately Wabbitemu has appeared to have crashed. Would you like to send a crash report to the developers so they can fix it?")
-					, _T("Crash"), MB_YESNO) == IDYES) {
-
-						DialogBox(g_hInst, MAKEINTRESOURCE(IDD_REPORT_BUG), NULL, (DLGPROC) BugReportDialogProc);
-
-						HINTERNET hInternet = OpenFtpConnection();
-						//Get the file friendly time string
-						TCHAR timeStringText[MAX_PATH];
-						time_t timeUploaded;
-						time(&timeUploaded);
-						TCHAR *timeString = _tctime(&timeUploaded);
-						for (int i = strlen(timeString); i >= 0; i--) {
-							if (timeString[i] == ':') {
-								timeString[i] = '_';
-							}
-						}
-						//get rid of newline
-						timeString[strlen((timeString)) - 1] = '\0';
-						StringCbCopy(timeStringText, sizeof(timeStringText), timeString);
-						StringCbCat(timeStringText, sizeof(timeStringText), _T(".dmp"));
-
-						FtpPutFile(hInternet, szDumpPath, timeStringText, FTP_TRANSFER_TYPE_BINARY, NULL);
-				}
+		_MINIDUMP_TYPE dumpType;
+		
+		VS_FIXEDFILEINFO thisFileInfo;
+		UINT dwBytes;
+		DWORD dwLen = GetFileVersionInfoSize(_T("DbgHelp.dll"), NULL);
+		LPBYTE versionData = (LPBYTE) malloc(dwLen);
+		GetFileVersionInfo(_T("DbgHelp.dll"), 0, dwLen, versionData);
+		VerQueryValue(versionData, _T("\\"), (LPVOID *) &thisFileInfo, &dwBytes);
+		if (HIWORD(thisFileInfo.dwFileVersionMS) == 6) {
+			if (LOWORD(thisFileInfo.dwFileVersionMS) <= 1) {
+				dumpType = (_MINIDUMP_TYPE) (MiniDumpWithIndirectlyReferencedMemory | MiniDumpWithHandleData | MiniDumpWithDataSegs);
+			} else {
+				dumpType = (_MINIDUMP_TYPE) (MiniDumpWithFullMemoryInfo | MiniDumpWithDataSegs);
 			}
+		} else {
+			dumpType = (_MINIDUMP_TYPE) (MiniDumpWithHandleData | MiniDumpScanMemory | MiniDumpWithDataSegs);
+		}
+
+		// write the dump
+		MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hFile, dumpType, &ExInfo, NULL, NULL);
+		CloseHandle(hFile);
+		FILE *dumpFile, *zipFile;
+		_tfopen_s(&dumpFile, szTempDumpPath, _T("rb"));
+		_tfopen_s(&zipFile, szDumpPath, _T("wb"));
+		def(dumpFile, zipFile, 1);
+		fclose(dumpFile);
+		fclose(zipFile);
+
+		if (MessageBox(NULL, _T("Unfortunately Wabbitemu has appeared to have crashed. Would you like to send a crash report to the developers so they can fix it?"),
+			_T("Crash"), MB_YESNO) == IDYES) {
+
+				DialogBox(g_hInst, MAKEINTRESOURCE(IDD_REPORT_BUG), NULL, (DLGPROC) BugReportDialogProc);
+
+				HINTERNET hInternet = OpenFtpConnection();
+				//Get the file friendly time string
+				TCHAR timeStringText[MAX_PATH];
+				time_t timeUploaded;
+				time(&timeUploaded);
+				TCHAR *timeString = _tctime(&timeUploaded);
+				for (int i = strlen(timeString); i >= 0; i--) {
+					if (timeString[i] == ':') {
+						timeString[i] = '_';
+					}
+				}
+				//get rid of newline
+				timeString[strlen((timeString)) - 1] = '\0';
+				StringCbCopy(timeStringText, sizeof(timeStringText), timeString);
+				StringCbCat(timeStringText, sizeof(timeStringText), _T(".dmp.gz"));
+
+				FtpPutFile(hInternet, szDumpPath, timeStringText, FTP_TRANSFER_TYPE_BINARY, NULL);
 		}
 	}
 	return EXCEPTION_EXECUTE_HANDLER;
@@ -844,8 +874,17 @@ VS_FIXEDFILEINFO *GetFileCurrentVersion(LPBYTE *versionData) {
 	TCHAR fileName[MAX_PATH];
 	DWORD dwHandle;
 	UINT dwBytes;
-	GetModuleFileName(NULL, fileName, ARRAYSIZE(fileName));
+	HRESULT error = GetModuleFileName(NULL, fileName, ARRAYSIZE(fileName));
+	if (error == 0) {
+		*versionData = NULL;
+		return NULL;
+	}
 	DWORD cchVer = GetFileVersionInfoSize(fileName, &dwHandle);
+	if (cchVer == 0) {
+		//couldn't find the file, maybe move, deleted, or renamed
+		*versionData = NULL;
+		return NULL;
+	}
 	*versionData = (LPBYTE) malloc(cchVer);
 	GetFileVersionInfo(fileName, 0, cchVer, *versionData);
 	VerQueryValue(*versionData, _T("\\"), (LPVOID *) &thisFileInfo, &dwBytes);
@@ -855,9 +894,11 @@ VS_FIXEDFILEINFO *GetFileCurrentVersion(LPBYTE *versionData) {
 void GetFileCurrentVersionString(TCHAR *buf, size_t len) {
 	LPBYTE versionData = NULL;
 	VS_FIXEDFILEINFO *fileInfo = GetFileCurrentVersion(&versionData);
-	StringCbPrintf(buf, len, _T("%d.%d.%d.%d"), HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS),
-							HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
 	if (versionData != NULL) {
+		if (fileInfo != NULL) {
+			StringCbPrintf(buf, len, _T("%d.%d.%d.%d"), HIWORD(fileInfo->dwFileVersionMS), LOWORD(fileInfo->dwFileVersionMS),
+							HIWORD(fileInfo->dwFileVersionLS), LOWORD(fileInfo->dwFileVersionLS));
+		}
 		free(versionData);
 	}
 }
@@ -922,10 +963,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	SetUnhandledExceptionFilter(ExceptionFilter);
 
-	//this is here so we get our load_files_first setting
-	new_calc_on_load_files = QueryWabbitKey(_T("load_files_first"));
-
 	ParsedCmdArgs *parsedArgs = ParseCommandLineArgs();
+	//this is here so we get our load_files_first setting
+	new_calc_on_load_files = QueryWabbitKey(_T("load_files_first")) || parsedArgs->force_new_instance;
 
 	HWND alreadyRunningHwnd = NULL;
 	alreadyRunningHwnd = FindWindow(g_szAppName, NULL);
@@ -937,8 +977,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		SendMessage(alreadyRunningHwnd, WM_COMMAND, IDM_FILE_NEW, 0);
 		for (int i = 9001; i > 0; i--) {
 			tempHwnd = FindWindow(g_szAppName, NULL);
-			if (tempHwnd != alreadyRunningHwnd)
+			if (tempHwnd != alreadyRunningHwnd) {
 				break;
+			}
 		}
 		alreadyRunningHwnd = tempHwnd;
 	}
@@ -948,7 +989,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		if (parsedArgs->force_focus) {
 			SwitchToThisWindow(alreadyRunningHwnd, TRUE);
 		}
-		exit(0);
+		return 0;
 	}
 
 	g_hInst = hInstance;
@@ -1212,7 +1253,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							GetWindowRect(hwnd, &rc);
 							RECT newrc;
 							GetWindowRect(lpCalc->hwndFrame, &newrc);
-							SetWindowPos(lpCalcNew->hwndFrame, NULL, newrc.left + rc.right - rc.left, newrc.top, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+							SetWindowPos(lpCalcNew->hwndFrame, NULL, newrc.left + rc.right - rc.left, newrc.top, 0, 0,
+								SWP_NOSIZE | SWP_NOZORDER | (silent_mode ? SWP_HIDEWINDOW : 0));
 						} else {
 							calc_slot_free(lpCalcNew);
 							SendMessage(hwnd, WM_COMMAND, IDM_HELP_WIZARD, 0);
@@ -1298,20 +1340,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					HMENU hmenu = GetMenu(hwnd);
 #ifdef WITH_AVI
 					if (is_recording) {
-						CloseAvi(recording_avi);
+						delete currentAvi;
+						currentAvi = NULL;
+						//CloseAvi(recording_avi);
 						is_recording = FALSE;
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_AVI, MF_BYCOMMAND | MF_UNCHECKED);
 					} else {
 						TCHAR lpszFile[MAX_PATH];
 						if (!SaveFile(lpszFile, _T("AVIs (*.avi)\0*.avi\0All Files (*.*)\0*.*\0\0"),
 											_T("Wabbitemu Export AVI"), _T("avi"), OFN_PATHMUSTEXIST)) {
-							recording_avi = CreateAvi(lpszFile, FPS, NULL);
+
+							GetCompression();
+							currentAvi = new CAviFile(lpszFile, /*mmioFOURCC('U', 'Y', 'V', 'Y')*/0x63646976, FPS);
+							//recording_avi = CreateAvi(lpszFile, FPS, NULL);
 							//create an initial first frame so we can set compression
 							is_recording = TRUE;
-							/*AVICOMPRESSOPTIONS opts;
-							ZeroMemory(&opts,sizeof(opts));
-							opts.fccHandler = mmioFOURCC('d','i','v','x');
-							SetAviVideoCompression(recording_avi, hbm, &opts, true, hwnd);*/
 							CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_AVI, MF_BYCOMMAND | MF_CHECKED);
 						}
 					}
@@ -1434,9 +1477,21 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGABOUT), hwnd, (DLGPROC) AboutDialogProc);					
 					lpCalc->running = TRUE;
 					break;
-				case IDM_HELP_WIZARD:
+				case IDM_HELP_WIZARD: {
+					int count = calc_count();
 					DoWizardSheet(hwnd);
+					int newCount = calc_count();
+					if (count < newCount) {
+						SetFocus(calcs[newCount - 1].hwndFrame);
+						RECT rc;
+						GetWindowRect(hwnd, &rc);
+						RECT newrc;
+						GetWindowRect(lpCalc->hwndFrame, &newrc);
+						SetWindowPos(calcs[newCount - 1].hwndFrame, NULL, newrc.left + rc.right - rc.left, newrc.top, 0, 0,
+							SWP_NOSIZE | SWP_NOZORDER | (silent_mode ? SWP_HIDEWINDOW : 0));
+					}
 					break;
+				}
 				case IDM_HELP_WEBSITE:					
 					ShellExecute(NULL, _T("open"), g_szWebPage, NULL, NULL, SW_SHOWNORMAL);
 					break;
@@ -1606,7 +1661,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			group = GetGValue(c) >> 4;
 			bit	= GetBValue(c) >> 4;
 			LogKeypress(lpCalc, group, bit);
-			if (group == 0x05 && bit == 0x00){
+			if (group == KEYGROUP_ON && bit == KEYBIT_ON){
 				kp->on_pressed |= KEY_MOUSEPRESS;
 				kp->on_last_pressed = lpCalc->cpu.timer_c->tstates;
 			} else {
@@ -1642,7 +1697,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			group	= GetGValue(c) >> 4;
 			bit		= GetBValue(c) >> 4;
 
-			if (group== 0x05 && bit == 0x00) {
+			if (group == KEYGROUP_ON && bit == KEYBIT_ON) {
 				lpCalc->cpu.pio.keypad->on_pressed ^= KEY_LOCKPRESS;
 			} else {
 				kp->keys[group][bit] ^= KEY_LOCKPRESS;
@@ -1819,7 +1874,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				if (correctSize.top < 0) {
 					correctSize.bottom -= correctSize.top;
 				}
-				SetWindowPos(hwnd, NULL, 0, 0, correctSize.right, correctSize.bottom , SWP_NOACTIVATE | SWP_NOOWNERZORDER | SWP_NOMOVE | SWP_DRAWFRAME);
+				SetWindowPos(hwnd, NULL, 0, 0, correctSize.right, correctSize.bottom, SWP_NOACTIVATE | SWP_NOOWNERZORDER |
+					SWP_NOMOVE | SWP_DRAWFRAME | (silent_mode ? SWP_HIDEWINDOW : 0));
 			}
 			RECT windowRect;
 			GetWindowRect(hwnd, &windowRect);
