@@ -309,7 +309,7 @@ static STDINT_t* INT83P_init(CPU_t* cpu) {
 	memcpy(stdint->freq, timer_freq83p, 4 * sizeof(stdint->freq[0]));
 	
 	stdint->intactive = 0;
-	stdint->timermax1 = stdint->freq[3];
+	stdint->timermax1 = stdint->freq[3] ;
 	stdint->lastchk1 = tc_elapsed(cpu->timer_c);
 	stdint->timermax2 = stdint->freq[3] / 2.0f;
 	stdint->lastchk2 = tc_elapsed(cpu->timer_c) + stdint->freq[3] / 4.0f;

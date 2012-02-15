@@ -457,7 +457,7 @@ void SaveCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	
 	/* pio */
 	for(i = 0; i < 256; i++) {
-		interrupt *val = &cpu->pio.interrupt[i];
+		interrupt_t *val = &cpu->pio.interrupt[i];
 		WriteInt(chunk, val->interrupt_val);
 		WriteInt(chunk, val->skip_factor);
 		WriteInt(chunk, val->skip_count);
@@ -738,7 +738,7 @@ void LoadCPU(SAVESTATE_t* save, CPU_t* cpu) {
 	cpu->prefix = ReadInt(chunk);
 	int i;
 	for(i = 0; i < 256; i++) {
-		interrupt *val = &cpu->pio.interrupt[i];
+		interrupt_t *val = &cpu->pio.interrupt[i];
 		val->interrupt_val = ReadInt(chunk);
 		val->skip_factor = ReadInt(chunk);
 		val->skip_count = ReadInt(chunk);

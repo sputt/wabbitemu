@@ -54,19 +54,36 @@ u_int calc_count(void) {
 }
 
 /* 81 */
-int calc_init_81(LPCALC lpCalc) {
+int calc_init_81(LPCALC lpCalc, char *version) {
 	/* INTIALIZE 81 */
-	memory_init_81(&lpCalc->mem_c);
-	tc_init(&lpCalc->timer_c, MHZ_2);
-	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
-	ClearDevices(&lpCalc->cpu);
-	device_init_81(&lpCalc->cpu);
+	//v2 is basically an 82
+	if (version[0] == '2') {
+		memory_init_81(&lpCalc->mem_c);
+		tc_init(&lpCalc->timer_c, MHZ_2);
+		CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+		ClearDevices(&lpCalc->cpu);
+		device_init_83(&lpCalc->cpu, 1);
+	} else {
+		memory_init_81(&lpCalc->mem_c);
+		tc_init(&lpCalc->timer_c, MHZ_2);
+		CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+		ClearDevices(&lpCalc->cpu);
+		device_init_81(&lpCalc->cpu);
+	
+	}
 	/* END INTIALIZE 81 */
-#ifdef WINVER
+
+#ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
+	if (version[0] == '2') {
+		lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
+		lpCalc->audio->enabled	= FALSE;
+		lpCalc->audio->init		= FALSE;
+		lpCalc->audio->timer_c	= &lpCalc->timer_c;
+	}
 #endif
-	return 0;
+	return TRUE;
 }
 
 /*  82 83 */
@@ -191,9 +208,9 @@ void calc_erase_certificate(unsigned char *mem, int size) {
 
 	memset(mem + size - 32768, 0xFF, PAGE_SIZE);
 
-	mem[(size - 32768)]				= 0x00;
-	mem[(size - 32768) + 0x1FE0]	= 0x00;
-	mem[(size - 32768) + 0x1FE1]	= 0x00;
+	mem[size - 32768]				= 0x00;
+	mem[size - 32768 + 0x1FE0]		= 0x00;
+	mem[size - 32768 + 0x1FE1]		= 0x00;
 	return;
 }
 
@@ -255,7 +272,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 
 		switch (tifile->model) {
 			case TI_81:
-				calc_init_81(lpCalc);
+				calc_init_81(lpCalc, tifile->rom->version);
 				memcpy(	lpCalc->cpu.mem_c->flash,
 						tifile->rom->data,
 						(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
@@ -440,13 +457,24 @@ int CPU_reset(CPU_t *lpCPU) {
 	lpCPU->reverse_instr = 0;
 #endif
 	switch (lpCPU->pio.model) {
+		case TI_81: {
+			bank_state_t banks[5] = {
+				{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash+0x1*PAGE_SIZE,			0x1, 	FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash+0x1*PAGE_SIZE,			0x1, 	FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
+				{NULL,								0,		FALSE,	FALSE,	FALSE}
+			};
+			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
+			break;
+		}
 		case TI_86: {
 			bank_state_t banks[5] = {
-				{lpCPU->mem_c->flash, 					0, 		FALSE,	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash+0x0F*PAGE_SIZE,	0x0F, 	FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->flash,					0, 		FALSE, 	FALSE, 	FALSE},
-				{lpCPU->mem_c->ram,						0,		FALSE,	TRUE,	FALSE},
-				{NULL,									0,		FALSE,	FALSE,	FALSE}
+				{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash + 0x0F * PAGE_SIZE,	0x0F, 	FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash,						0, 		FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
+				{NULL,										0,		FALSE,	FALSE,	FALSE}
 			};
 
 			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
@@ -466,7 +494,7 @@ int CPU_reset(CPU_t *lpCPU) {
 			lpCPU->mem_c->protected_page_set = 0;
 			/*	Address										page	write?	ram?	no exec?	*/
 			bank_state_t banks[5] = {
-				{lpCPU->mem_c->flash +  0x01f * PAGE_SIZE, 	0x1f, 	FALSE,	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash +  0x1f * PAGE_SIZE, 	0x1f, 	FALSE,	FALSE, 	FALSE},
 				{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},
 				{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
 				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
@@ -479,7 +507,7 @@ int CPU_reset(CPU_t *lpCPU) {
 		case TI_84PSE: {
 			/*	Address										page	write?	ram?	no exec?	*/
 			bank_state_t banks[5] = {
-				{lpCPU->mem_c->flash +  0x07f * PAGE_SIZE, 	0x7f, 	FALSE,	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash +  0x7f * PAGE_SIZE, 	0x7f, 	FALSE,	FALSE, 	FALSE},
 				{lpCPU->mem_c->flash,						0,		FALSE, 	FALSE, 	FALSE},
 				{lpCPU->mem_c->flash,						0,	 	FALSE, 	FALSE, 	FALSE},
 				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},

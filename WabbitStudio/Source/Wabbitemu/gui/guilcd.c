@@ -287,6 +287,10 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 	unsigned char * screen;
 	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	LCD_t *lcd = lpCalc->cpu.pio.lcd;
+	if (lcd == NULL) {
+		_tprintf_s(_T("Invalid LCD pointer"));
+		return;
+	}
 	RECT rc;
 	GetClientRect(hwnd, &rc);
 
@@ -424,7 +428,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			DWORD dwBmpSize = ((nbi->bmiHeader.biWidth * nbi->bmiHeader.biBitCount + 31) / 32) * 4 * nbi->bmiHeader.biHeight;
 			HBITMAP newhbm = CreateDIBSection(newhdc, nbi, DIB_RGB_COLORS, (void **) &pBitsDest, NULL, NULL);
 			memcpy(pBitsDest, ptr, dwBmpSize);
-			AddAviFrame(recording_avi, newhbm);
+			currentAvi->AppendNewFrame(newhbm);
 			DeleteObject(hbm);
 			DeleteObject(newhbm);
 			free(nbi);
@@ -502,7 +506,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			
 			if (lpCalc->hwndStatusBar) {
 				if (clock() > lpCalc->sb_refresh + CLOCKS_PER_SEC / 2) {
-					if (lcd->active)
+					if (lcd && lcd->active)
 						StringCbPrintf(sz_status, sizeof(sz_status), _T("FPS: %0.2lf"), lcd->ufps);
 					else
 						StringCbPrintf(sz_status, sizeof(sz_status),  _T("FPS: -"));
@@ -678,13 +682,15 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			PCOPYDATASTRUCT copyDataStruct = (PCOPYDATASTRUCT) lParam;
 			int size = (int) copyDataStruct->cbData;
-			TCHAR *string = (TCHAR *) copyDataStruct->lpData;
+			TCHAR filePath[MAX_PATH];
+			StringCbCopy(filePath, sizeof(filePath), (TCHAR *) copyDataStruct->lpData);
 			int ram = (int) copyDataStruct->dwData;
+			filePath[size] = '\0';
 
-			if (size && string)	{
+			if (size && filePath)	{
 				TCHAR *FileNames = (TCHAR *) malloc(size);
-				memset(FileNames, 0, size + 1);
-				memcpy(FileNames, string, size);
+				ZeroMemory(FileNames, size + 1);
+				StringCbCopy(FileNames, size + 1, filePath);
 				SendFileToCalc(lpCalc, FileNames, ram);
 			}
 			break;

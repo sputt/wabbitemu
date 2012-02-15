@@ -202,6 +202,8 @@ GLOBAL int num_backup_per_sec;
 
 #ifdef WITH_AVI
 #include "avi_utils.h"
+#include "avifile.h"
+GLOBAL CAviFile *currentAvi;
 GLOBAL HAVI recording_avi;
 GLOBAL BOOL is_recording;
 #endif

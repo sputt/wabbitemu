@@ -91,11 +91,12 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	LCD_reset(lcd);
 	
 	switch (model) {
-		case TI_81:
 		case TI_82:
 		case TI_83:
 			lcd->base_level = BASE_LEVEL_83;
 			break;
+		//v2 of the 81 will come in as an 82/83
+		case TI_81:
 		case TI_85:
 		case TI_86:
 			lcd->base_level = BASE_LEVEL_83P;
@@ -204,6 +205,11 @@ void LCD_command(CPU_t *cpu, device_t *dev) {
 			cpu->bus = 0x80;
 		}
 	}
+	/*char buffer[1010];
+	sprintf(buffer, "%d\n", cpu->timer_c->tstates);
+	OutputDebugString(buffer);
+	sprintf(buffer, "%d\n", cpu->pc);
+	OutputDebugString(buffer);*/
 
 	if (cpu->output) {
 		lcd->last_tstate = tc_tstates(cpu->timer_c);
@@ -423,10 +429,15 @@ void LCD_clear(LCD_t *lcd) {
 u_char *LCD_update_image(LCD_t *lcd) {
 	int level = abs((int) lcd->contrast - (int) lcd->base_level);
 	int base = (lcd->contrast - 54) * 24;
-	if (base < 0) base = 0;
+	if (base < 0) {
+		base = 0;
+	}
 
-	if (level > 12) level = 0;
-	else level = (12 - level) * (255 - base) / lcd->shades / 12;
+	if (level > 12) {
+		level = 0;
+	} else {
+		level = (12 - level) * (255 - base) / lcd->shades / 12;
+	}
 
 	u_int row, col;
 	for (row = 0; row < LCD_HEIGHT; row++) {

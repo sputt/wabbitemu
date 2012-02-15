@@ -7,10 +7,10 @@
 #include "miniunz.h"
 #endif
 
-char self_test[] = "Self Test?";
-char catalog[] = "CATALOG";
-char txt73[] = "GRAPH  EXPLORER  SOFTWARE";
-char txt86[] = "Already Installed";
+const char self_test[] = "Self Test?";
+const char catalog[] = "CATALOG";
+const char txt73[] = "GRAPH  EXPLORER  SOFTWARE";
+const char txt86[] = "Already Installed";
 
 
 #define tmpread( fp ) \
@@ -22,7 +22,7 @@ char txt86[] = "Already Installed";
 	}
 
 
-int CmpStringCase(char *str1, unsigned char *str2) {
+int CmpStringCase(const char *str1, unsigned char *str2) {
 	return _strnicmp(str1, (char *) str2, strlen(str1));
 }
 
@@ -40,6 +40,37 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 		}
 	}
 	switch (calc) {
+		case TI_81:
+			//1.1k doesnt ld a,* first
+			if (rom[0] == 0xC3) {
+				string[0] = '1';
+				string[1] = '.';
+				string[2] = '1';
+				string[3] = 'K';
+				string[4] = '\0';
+			} else if (rom[1] == 0x17) {
+				//2.0V has different val to load
+				string[0] = '2';
+				string[1] = '.';
+				string[2] = '0';
+				string[3] = 'V';
+				string[4] = '\0';
+			} else if (rom[5] == 0x09) {
+				//1.6K outs a 0x09
+				string[0] = '1';
+				string[1] = '.';
+				string[2] = '6';
+				string[3] = 'K';
+				string[4] = '\0';
+			} else {
+				//assume its a 1.8K for now
+				string[0] = '1';
+				string[1] = '.';
+				string[2] = '8';
+				string[3] = 'K';
+				string[4] = '\0';
+			}
+			break;
 		case TI_82:
 			for(i = 0; i < (size - strlen(catalog) - 10); i++) {
 				if (!CmpStringCase(catalog, rom + i)) {
@@ -646,8 +677,9 @@ TIFILE_t* newimportvar(LPCTSTR filePath, BOOL only_check_header) {
 #ifdef _WINDOWS
 	if (!_tcsicmp(extension, _T(".tig")) || !_tcsicmp(extension, _T(".zip")) ) {
 		tifile->type = ZIP_TYPE;
-		if (!only_check_header)
+		if (!only_check_header) {
 			ImportZipFile(filePath, tifile);
+		}
 		return tifile;
 	}
 #endif

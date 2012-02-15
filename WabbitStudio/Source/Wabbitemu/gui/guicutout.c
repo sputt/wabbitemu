@@ -372,13 +372,14 @@ int EnableCutout(LPCALC lpCalc) {
 	UpdateWindow(lpCalc->hwndSmallMinimize);
 
 	if (!lpCalc->SkinEnabled) {
+		extern BOOL silent_mode;
 		RECT wr;
 		GetWindowRect(lpCalc->hwndFrame, &wr);
 		SetWindowPos(lpCalc->hwndFrame, NULL,
 				wr.left - GetSystemMetrics(SM_CXFIXEDFRAME) - 8,
 				wr.top - (cyMenu + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME)),
 				0, 0,
-				SWP_NOZORDER|SWP_NOSIZE);
+				SWP_NOZORDER|SWP_NOSIZE | (silent_mode ? SWP_HIDEWINDOW : 0));
 	}
 
 	if (hasDWM) {

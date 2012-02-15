@@ -13,8 +13,9 @@
 #include "sendfileswindows.h"
 #include "fileutilities.h"
 
-typedef struct tagSENDINFO
+typedef class SENDINFO
 {
+public:
 	HANDLE hFileListMutex;
 	HANDLE hThread;
 	HWND hwndDlg;
@@ -28,7 +29,19 @@ typedef struct tagSENDINFO
 	
 	// Overall progress
 	LINK_ERR Error;
-} SENDINFO, *LPSENDINFO;
+	~SENDINFO();
+} *LPSENDINFO;
+
+SENDINFO::~SENDINFO() {
+	if (this->FileList) {
+		delete this->FileList;
+		this->FileList = NULL;
+	}
+	if (this->DestinationList) {
+		delete this->DestinationList;
+		this->DestinationList = NULL;
+	}
+}
 
 LPCTSTR g_szLinkErrorDescriptions[] =
 {

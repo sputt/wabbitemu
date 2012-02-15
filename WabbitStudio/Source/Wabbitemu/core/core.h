@@ -125,21 +125,21 @@ typedef struct waddr {
 	uint16_t addr;
 } waddr_t;
 
-enum RAM_PROT_MODE {
+typedef enum {
 	MODE0 = 0,			//Execution is allowed on pages 81h, 83h, 85h, 87h, 89h, 8Bh, 8Dh, and 8Fh. 
 	MODE1 = 1,			//Execution is allowed on pages 81h, 85h, 89h, and 8Dh. 
 	MODE2 = 2,			//Execution is allowed on pages 81h and 89h. 
 	MODE3 = 3,			//Execution is allowed on pages 81h only. 
-};
+} RAM_PROT_MODE;
 
-enum BREAK_TYPE {
+typedef enum {
 	NORMAL_BREAK = 0x1,
 	MEM_WRITE_BREAK = 0x2,
 	MEM_READ_BREAK = 0x4,
 	CLEAR_NORMAL_BREAK = ~NORMAL_BREAK,
 	CLEAR_MEM_WRITE_BREAK = ~MEM_WRITE_BREAK,
 	CLEAR_MEM_READ_BREAK = ~MEM_READ_BREAK,
-};
+} BREAK_TYPE;
 
 typedef struct memory_context {
 	/* to be defined */
@@ -223,9 +223,9 @@ typedef struct device {
 } device_t;
 
 typedef struct interrupt {
-	int interrupt_val;
-	unsigned int skip_factor;
-	unsigned int skip_count;
+	unsigned char interrupt_val;
+	unsigned char skip_factor;
+	unsigned char skip_count;
 } interrupt_t;
 
 typedef struct pio_context {
@@ -286,6 +286,7 @@ typedef struct CPU {
 	BOOL do_opcode_callback;
 	BOOL is_link_instruction;
 	unsigned long long linking_time;
+	unsigned long long hasHitEnter;
 } CPU_t;
 
 typedef void (*opcodep)(CPU_t*);
@@ -336,7 +337,23 @@ void displayreg(CPU_t *);
 #endif
 
 
+#ifdef NO_TIMER_ELAPSED
+#define tc_add( timer_z , num ) \
+	(timer_z)->tstates += (uint64_t) num;
 
+#define tc_sub( timer_z , num ) \
+	(timer_z)->tstates -= (uint64_t) num;
+
+#define SEtc_add( timer_z , num ) \
+	if (cpu->pio.model >= TI_83PSE) {\
+		timer_z->tstates += num; \
+	}
+#define SEtc_sub( timer_z , num ) \
+	if (cpu->pio.model >= TI_83PSE) {\
+		timer_z->tstates -= num; \
+	}
+
+#else
 #define tc_add( timer_z , num ) \
 	(timer_z)->tstates += (uint64_t) num; \
 	(timer_z)->elapsed += ((double)(num))/((double)(timer_z)->freq);
@@ -344,12 +361,6 @@ void displayreg(CPU_t *);
 #define tc_sub( timer_z , num ) \
 	(timer_z)->tstates -= (uint64_t) num; \
 	(timer_z)->elapsed -= ((double)(num))/((double)(timer_z)->freq);
-
-#define tc_elapsed( timer_z ) \
-	((timer_z)->elapsed)
-
-#define tc_tstates( timer_z ) \
-	((timer_z)->tstates)
 
 #define SEtc_add( timer_z , num ) \
 	if (cpu->pio.model >= TI_83PSE) {\
@@ -362,6 +373,13 @@ void displayreg(CPU_t *);
 		timer_z->elapsed -= ((double)(num))/((double)(timer_z)->freq);\
 	}
 
+
+#define tc_elapsed( timer_z ) \
+	((timer_z)->elapsed)
+#endif
+
+#define tc_tstates( timer_z ) \
+	((timer_z)->tstates)
 
 #define endflash_break(cpu_v) cpu_v->mem_c->step = 0;\
 		if (break_on_invalid_flash) {\

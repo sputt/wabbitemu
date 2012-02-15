@@ -22,6 +22,7 @@ static void port0(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		dev->aux = (LPVOID) (0x100 * ((cpu->bus % 0x40) + 0xC0));
 		port10(cpu, dev);
+		cpu->pio.devices[0x10].aux = dev->aux;
 		cpu->output = FALSE;
 		device_t lcd_dev;
 		lcd_dev.aux = cpu->pio.lcd;

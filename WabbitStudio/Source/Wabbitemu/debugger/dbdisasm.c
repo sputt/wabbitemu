@@ -381,10 +381,11 @@ void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int o
 }
 
 void CPU_stepout(CPU_t *cpu) {
-	double time = tc_elapsed(cpu->timer_c);
+	double time = tc_tstates(cpu->timer_c);
 	uint16_t old_sp = cpu->sp;
 
-	while ((tc_elapsed(cpu->timer_c) - time) < 15.0) {
+	uint64_t tstates15seconds = 15.0 * cpu->timer_c->freq;
+	while ((tc_tstates(cpu->timer_c) - time) < tstates15seconds) {
 		waddr_t old_pc = addr_to_waddr(cpu->mem_c, cpu->pc);
 		CPU_step(cpu);
 

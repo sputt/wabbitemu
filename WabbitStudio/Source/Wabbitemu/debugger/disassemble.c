@@ -747,7 +747,7 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 				{
 				case _T('g'):
 					{
-						unsigned short addr = result->addr + 2;
+						unsigned short addr = result->waddr.addr + 2;
 						if (result->index == DA_JR_CC_X)
 							mod_a2 = (addr + ((char) result->a2)) & 0xFFFF;
 						else
