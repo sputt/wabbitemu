@@ -39,20 +39,19 @@ unsigned char banks83[16][4] = {
 
 
 void setpage83(CPU_t *cpu) {
-	STDINT_t* stdint = (STDINT_t *) cpu->pio.devices[0x02].aux;
-	int xy		= ( ( stdint->xy & 0x10 ) >> 4 );
-	int ram		= ( ( stdint->mem & 0x40 ) >> 6 );
-	int page	= ( ( stdint->mem & 0x07 ) + ( ( stdint->xy & 0x10 ) >> 0x01 ) );
+	STDINT_t *stdint = cpu->pio.stdint;
+	int xy		= (stdint->xy & 0x10) >> 4;
+	int ram		= (stdint->mem & 0x40) >> 6;
+	int page	= (stdint->mem & 0x07) + ((stdint->xy & 0x10) >> 0x01) ;
 	int rpage	= page % cpu->mem_c->ram_pages;
 	int fpage	= page % cpu->mem_c->flash_pages;
-	int mem		= ( (stdint->mem & 0x08) >> 3 ) + ( (stdint->mem & 0x80) >> 6 ) + (ram<<2) + ((cpu->mem_c->boot_mapped==TRUE)?8:0);
+	int mem		= ((stdint->mem & 0x08) >> 3) + ((stdint->mem & 0x80) >> 6) + (ram << 2) + ((cpu->mem_c->boot_mapped == TRUE) ? 8 : 0);
 	int i;
 	
 	for(i = 0; i < 4; i++) {
-		
 		switch(banks83[mem][i]) {
 			case ROM0: {
-				cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x00*PAGE_SIZE;
+				cpu->mem_c->banks[i].addr			= cpu->mem_c->flash;
 				cpu->mem_c->banks[i].page			= 0x00;
 				cpu->mem_c->banks[i].read_only		= FALSE;
 				cpu->mem_c->banks[i].ram			= FALSE;
@@ -60,7 +59,7 @@ void setpage83(CPU_t *cpu) {
 				break;
 			}
 			case RAM0: {
-				cpu->mem_c->banks[i].addr			= cpu->mem_c->ram+0x00*PAGE_SIZE;
+				cpu->mem_c->banks[i].addr			= cpu->mem_c->ram;
 				cpu->mem_c->banks[i].page			= 0x00;
 				cpu->mem_c->banks[i].read_only		= FALSE;
 				cpu->mem_c->banks[i].ram			= TRUE;
@@ -68,7 +67,7 @@ void setpage83(CPU_t *cpu) {
 				break;
 			}
 			case RAM1: {
-				cpu->mem_c->banks[i].addr			= cpu->mem_c->ram+0x01*PAGE_SIZE;
+				cpu->mem_c->banks[i].addr			= cpu->mem_c->ram + PAGE_SIZE;
 				cpu->mem_c->banks[i].page			= 0x01;
 				cpu->mem_c->banks[i].read_only		= FALSE;
 				cpu->mem_c->banks[i].ram			= TRUE;
@@ -77,13 +76,13 @@ void setpage83(CPU_t *cpu) {
 			}
 			case ROM0_8: {
 				if (xy) {
-					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x08*PAGE_SIZE;
+					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash + 0x08 * PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= 0x08;
 					cpu->mem_c->banks[i].read_only		= FALSE;
 					cpu->mem_c->banks[i].ram			= FALSE;
 					cpu->mem_c->banks[i].no_exec		= FALSE;
 				} else {
-					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x00*PAGE_SIZE;
+					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash;
 					cpu->mem_c->banks[i].page			= 0x00;
 					cpu->mem_c->banks[i].read_only		= FALSE;
 					cpu->mem_c->banks[i].ram			= FALSE;
@@ -93,13 +92,13 @@ void setpage83(CPU_t *cpu) {
 			}
 			case ROM1_8: {
 				if (xy) {
-					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x08*PAGE_SIZE;
+					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash + 0x08 * PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= 0x08;
 					cpu->mem_c->banks[i].read_only		= FALSE;
 					cpu->mem_c->banks[i].ram			= FALSE;
 					cpu->mem_c->banks[i].no_exec		= FALSE;
 				} else {
-					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x01*PAGE_SIZE;
+					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash + PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= 0x01;
 					cpu->mem_c->banks[i].read_only		= FALSE;
 					cpu->mem_c->banks[i].ram			= FALSE;
@@ -109,13 +108,13 @@ void setpage83(CPU_t *cpu) {
 			}
 			case ROM1_9: {
 				if (xy) {
-					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x09*PAGE_SIZE;
+					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash + 0x09 * PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= 0x09;
 					cpu->mem_c->banks[i].read_only		= FALSE;
 					cpu->mem_c->banks[i].ram			= FALSE;
 					cpu->mem_c->banks[i].no_exec		= FALSE;
 				} else {
-					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+0x01*PAGE_SIZE;
+					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash + PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= 0x01;
 					cpu->mem_c->banks[i].read_only		= FALSE;
 					cpu->mem_c->banks[i].ram			= FALSE;
@@ -125,13 +124,13 @@ void setpage83(CPU_t *cpu) {
 			}
 			case SWAP_BANK: {
 				if (ram) {
-					cpu->mem_c->banks[i].addr			= cpu->mem_c->ram+rpage*PAGE_SIZE;
+					cpu->mem_c->banks[i].addr			= cpu->mem_c->ram + rpage * PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= rpage;
 					cpu->mem_c->banks[i].read_only		= FALSE;
 					cpu->mem_c->banks[i].ram			= TRUE;
 					cpu->mem_c->banks[i].no_exec		= FALSE;
 				} else {
-					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash+fpage*PAGE_SIZE;
+					cpu->mem_c->banks[i].addr			= cpu->mem_c->flash + fpage * PAGE_SIZE;
 					cpu->mem_c->banks[i].page			= fpage;
 					cpu->mem_c->banks[i].read_only		= FALSE;
 					cpu->mem_c->banks[i].ram			= FALSE;
@@ -153,21 +152,21 @@ void port00_82(CPU_t *cpu, device_t *dev) {
 		cpu->bus += (((link->host & 0x03) | (link->client[0] & 0x03)) ^ 0x03);
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		#ifdef WINVER
+#ifdef WINVER
 		if ((link->host & 0x01) != ((cpu->bus & 0x04) >> 2)) {
 			FlippedLeft(cpu, (cpu->bus & 0x04) >> 2);
 		}
 		if ((link->host&0x02) != ((cpu->bus & 0x08) >> 2)) {
 			FlippedRight(cpu, (cpu->bus & 0x08) >> 3);
 		}
-		#endif
+#endif
 		link->host = (cpu->bus & 0x0C) >> 2;
 //		setpage83(cpu);
 		cpu->output = FALSE;
 	}
-	#ifdef WINVER
+#ifdef WINVER
 	if (link->audio.init && link->audio.enabled) nextsample(cpu);
-	#endif
+#endif
 }
 
 void port00_83(CPU_t *cpu, device_t *dev) {
@@ -180,22 +179,22 @@ void port00_83(CPU_t *cpu, device_t *dev) {
 		cpu->bus += stdint->xy;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		#ifdef WINVER
+#ifdef WINVER
 		if ((link->host & 0x01) != (cpu->bus & 0x01)) {
 			FlippedLeft(cpu, cpu->bus & 0x01);
 		}
 		if ((link->host & 0x02) != (cpu->bus & 0x02)) {
 			FlippedRight(cpu, (cpu->bus & 0x02) >> 1);
 		}
-		#endif
+#endif
 		link->host = cpu->bus & 0x03;
 		stdint->xy = cpu->bus & 0x10;
 		setpage83(cpu);
 		cpu->output = FALSE;
 	}
-	#ifdef WINVER
+#ifdef WINVER
 	nextsample(cpu);
-	#endif
+#endif
 }
 
 void port02_83(CPU_t *cpu, device_t *dev) {
@@ -215,10 +214,17 @@ void port03_83(CPU_t *cpu, device_t *dev) {
 	
 	if (cpu->input) {
 		unsigned char result = 0;
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) result += 2;
-		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) result += 4;
-		if (cpu->pio.keypad->on_pressed) result += 1;
-		else result += 8;
+		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk1) > stdint->timermax1) {
+			result += 2;
+		}
+		if ((tc_elapsed(cpu->timer_c) - stdint->lastchk2) > stdint->timermax2) {
+			result += 4;
+		}
+		if (cpu->pio.keypad->on_pressed) {
+			result += 1;
+		} else {
+			result += 8;
+		}
 		cpu->bus = result;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
@@ -232,8 +238,9 @@ void port03_83(CPU_t *cpu, device_t *dev) {
 			disconnected lcd.
 			*/
 		}
-		if ((cpu->bus & 0x01) == 0)
+		if ((cpu->bus & 0x01) == 0) {
 			stdint->on_latch = FALSE;
+		}
 		
 		stdint->intactive = cpu->bus;
 		cpu->output = FALSE;
@@ -278,9 +285,6 @@ void port03_83(CPU_t *cpu, device_t *dev) {
 		cpu->interrupt = TRUE;
 }
 
-
-
-
 void port04_83(CPU_t *cpu, device_t *dev) {
 	link_t * link = (link_t *) cpu->pio.devices[0x00].aux;
 	STDINT_t * stdint = (STDINT_t *) dev->aux;
@@ -295,11 +299,14 @@ void port04_83(CPU_t *cpu, device_t *dev) {
 		/* but for practicallity its close enough for now. */
 		int freq = ((cpu->bus & 6) >> 1);
 		stdint->timermax1 = stdint->freq[freq];
-		stdint->timermax2 = ( stdint->freq[freq] / 2.0f );
-		stdint->lastchk2  = stdint->lastchk1 + ( stdint->freq[freq] / 4.0f );
+		stdint->timermax2 = stdint->freq[freq] / 2.0f;
+		stdint->lastchk2  = stdint->lastchk1 + (stdint->freq[freq] / 4.0f);
 
-		if ((cpu->bus&1)==1) cpu->mem_c->boot_mapped = TRUE;
-		else cpu->mem_c->boot_mapped = FALSE;
+		if ((cpu->bus & 1) == 1) {
+			cpu->mem_c->boot_mapped = TRUE;
+		} else {
+			cpu->mem_c->boot_mapped = FALSE;
+		}
 		setpage83(cpu);
 		cpu->output = FALSE;
 	}	
@@ -314,12 +321,6 @@ void port14_83(CPU_t *cpu, device_t *dev) {
 		cpu->output = FALSE;
 	}
 }
-
-
-
-
-
-
 
 /*----------------------------------------------*/
 /*												*/

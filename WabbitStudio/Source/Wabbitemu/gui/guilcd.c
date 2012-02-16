@@ -653,24 +653,45 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					GlobalUnlock(stgmed[3].hGlobal);
 
 					// Create IDataObject and IDropSource COM objects
+					HRESULT hres;
 					pDropSource = new CDropSource();
-					CreateDataObject(fmtetc, stgmed, NumElm(fmtetc), (IDataObject **) &pDataObject);
+					hres = CreateDataObject(fmtetc, stgmed, NumElm(fmtetc), (IDataObject **) &pDataObject);
+					if (hres != S_OK) {
+						MessageBox(hwnd, _T("Error in CreateDataObject"), _T("Error"), MB_OK);
+						pDropSource->Release();
+						return 0;
+					}
 
 					IID IID_IDragSourceHelper2;
 					CLSIDFromString((LPOLESTR) L"{83E07D0D-0C5F-4163-BF1A-60B274051E40}", &IID_IDragSourceHelper2);
 
-					HRESULT result, hres;
-					result = CoCreateInstance(
+					hres = CoCreateInstance(
 						CLSID_DragDropHelper,
 						NULL,
 						CLSCTX_INPROC_SERVER,
 						IID_IDragSourceHelper,
 						(LPVOID *) &pDragSourceHelper);
+					if (hres != S_OK) {
+						TCHAR buf[64];
+						StringCbPrintf(buf, sizeof(buf), _T("Error in CoCreateInstance\r\nError code: %X"), hres);
+						MessageBox(hwnd, buf, _T("Error"), MB_OK);
+						pDropSource->Release();
+						return 0;
+					}
 
-					pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource->m_pDataobject);
+					hres = pDataObject->QueryInterface(IID_IDataObject, (LPVOID *) &pDropSource->m_pDataobject);
+					if (hres != S_OK) {
+						MessageBox(hwnd, _T("Error in pDataObject->QueryInterface"), _T("Error"), MB_OK);
+						pDragSourceHelper->Release();
+						pDataObject->Release();
+						pDropSource->Release();
+						return 0;
+					}
 					DWORD dwEffect = DROPEFFECT_NONE;
-					//if (SUCCEEDED(hres))
-						DoDragDrop((IDataObject*) pDataObject, (IDropSource*) pDropSource,  DROPEFFECT_COPY, &dwEffect);
+					hres = DoDragDrop((IDataObject*) pDataObject, (IDropSource*) pDropSource,  DROPEFFECT_COPY, &dwEffect);
+					if (hres != S_OK && hres != DRAGDROP_S_CANCEL && hres != DRAGDROP_S_DROP) {
+						MessageBox(hwnd, _T("Error in DoDragDrop"), _T("Error"), MB_OK);
+					}
 					pDragSourceHelper->Release();
 					pDataObject->Release();
 					pDropSource->Release();

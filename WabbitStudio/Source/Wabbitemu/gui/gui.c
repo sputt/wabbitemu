@@ -189,7 +189,7 @@ HWND gui_debug(LPCALC lpCalc) {
 }
 
 int gui_frame(LPCALC lpCalc) {
-	RECT r;
+	RECT r, desktop = {0};
 
 	if (!lpCalc->scale)
 		lpCalc->scale = 2;
@@ -200,6 +200,17 @@ int gui_frame(LPCALC lpCalc) {
 	}
 	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 	r.bottom += GetSystemMetrics(SM_CYMENU);
+
+	//this is to do some checks on some bad registry settings we may have saved
+	//its also good for multiple monitors, in case one becomeges lost
+	POINT pt = { startX, startY };
+	desktop.right = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+	desktop.bottom = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+	if (!PtInRect(&desktop, pt)) {
+		//pt is not on the desktop
+		startX = CW_USEDEFAULT;
+		startY = CW_USEDEFAULT;
+	}
 
 	lpCalc->hwndFrame = CreateWindowEx(
 		0, //WS_EX_APPWINDOW,
@@ -908,6 +919,8 @@ DWORD WINAPI CheckForUpdates(LPVOID lpParam) {
 	GetAppDataString(fileBuffer, sizeof(fileBuffer));
 	StringCbCat(fileBuffer, sizeof(fileBuffer), _T("Version.txt"));
 	_tremove(fileBuffer);
+	//Dont really care about this return value
+	DeleteUrlCacheEntry(_T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt"));
 	HRESULT hr = URLDownloadToFile(NULL, _T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt"), fileBuffer, NULL, NULL);
 	if (!SUCCEEDED(hr)) {
 		return hr;
@@ -1369,9 +1382,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						StringCbPrintf(buf, sizeof(buf), _T("If you exit now, %d other running calculator(s) will be closed. \
 															Are you sure you want to exit?"), calc_count() - 1);
 						int res = MessageBox(NULL, buf, _T("Wabbitemu"), MB_YESNO);
-						if (res == IDCANCEL || res == IDNO)
+						if (res == IDCANCEL || res == IDNO) {
 							break;
+						}
+						for (int i = 0; i < MAX_CALCS; i++) {
+							if (calcs[i].active) {
+								SendMessage(calcs[i].hwndFrame, WM_CLOSE, 0, 0);
+							}
+						}
 						is_exiting = TRUE;
+					} else {
+						SendMessage(hwnd, WM_CLOSE, 0, 0);
 					}
 					PostQuitMessage(0);
 					break;
@@ -1959,7 +1980,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				{
 					TCHAR temp_save[MAX_PATH];
 					GetAppDataString(temp_save, sizeof(temp_save));
-					StringCbCat(temp_save, sizeof(temp_save), _T("\\wabbitemu.sav"));
+					StringCbCat(temp_save, sizeof(temp_save), _T("wabbitemu.sav"));
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), temp_save);
 					SAVESTATE_t *save = SaveSlot(lpCalc);
 					WriteSave(temp_save, save, true);
@@ -1973,8 +1994,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 			DestroyWindow(hwnd);
 			calc_slot_free(lpCalc);
-			if (calc_count() == 0)
+			if (calc_count() == 0) {
 				PostQuitMessage(0);
+			}
 			return 0;
 		case WM_DESTROY: {
 				DeleteDC(lpCalc->hdcKeymap);

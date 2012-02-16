@@ -216,6 +216,11 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 		case VAR_TYPE:
 		case FLASH_TYPE:
 			{
+				if (lpCalc->cpu.pio.link == NULL) {
+					result = LERR_MODEL;
+					//81 for now
+					break;
+				}
 				lpCalc->cpu.pio.link->vlink_size = var->length;
 				lpCalc->cpu.pio.link->vlink_send = 0;
 

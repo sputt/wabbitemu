@@ -286,10 +286,10 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);		
 		SaveWabbitKey(_T("skin_path"), REG_SZ, &lpCalc->skin_path);
 		SaveWabbitKey(_T("keymap_path"), REG_SZ, &lpCalc->keymap_path);
-		RECT rc;
-		GetWindowRect(lpCalc->hwndFrame, &rc);
-		SaveWabbitKey(_T("startX"), REG_DWORD, &rc.left);
-		SaveWabbitKey(_T("startY"), REG_DWORD, &rc.top);
+		WINDOWPLACEMENT wp;
+		GetWindowPlacement(lpCalc->hwndFrame, &wp);
+		SaveWabbitKey(_T("startX"), REG_DWORD, &wp.rcNormalPosition.left);
+		SaveWabbitKey(_T("startY"), REG_DWORD, &wp.rcNormalPosition.top);
 		SaveWabbitKey(_T("always_on_top"), REG_DWORD, &lpCalc->bAlwaysOnTop);
 
 		SaveWabbitKey(_T("ram_version"), REG_DWORD, &lpCalc->mem_c.ram_version);
