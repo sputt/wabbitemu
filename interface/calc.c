@@ -468,6 +468,19 @@ int CPU_reset(CPU_t *lpCPU) {
 			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
 			break;
 		}
+		case TI_82:
+		case TI_83: {
+			bank_state_t banks[5] = {
+				{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},
+				{lpCPU->mem_c->flash+0x00*PAGE_SIZE, 		0x00, 	FALSE, 	FALSE, 	FALSE},
+				{lpCPU->mem_c->ram+0x01*PAGE_SIZE,		 	0x01, 	FALSE, 	TRUE, 	FALSE},
+				{lpCPU->mem_c->ram,							0,		FALSE,	TRUE,	FALSE},
+				{NULL,										0,		FALSE,	FALSE,	FALSE}
+			};
+			memcpy(lpCPU->mem_c->normal_banks, banks, sizeof(banks));
+			break;
+		}
+		case TI_85:
 		case TI_86: {
 			bank_state_t banks[5] = {
 				{lpCPU->mem_c->flash, 						0, 		FALSE,	FALSE, 	FALSE},

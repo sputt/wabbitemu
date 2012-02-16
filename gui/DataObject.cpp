@@ -198,7 +198,7 @@ static IUnknown *GetCanonicalIUnknown(IUnknown *punk) {
 
 
 HRESULT __stdcall CDataObject::SetData(FORMATETC *pFormatEtc, STGMEDIUM *pStgMedium, BOOL fRelease) {
-    LPDATAENTRY lpde;
+	LPDATAENTRY lpde;
 	HRESULT hr = LookupFormatEtc(pFormatEtc, &lpde, TRUE);
 	if (SUCCEEDED(hr)) {
 		if (lpde->stgmed.tymed != TYMED_NULL) {
@@ -252,12 +252,12 @@ HRESULT __stdcall CDataObject::EnumDAdvise(IEnumSTATDATA **ppEnumAdvise) {
 
 
 HRESULT __stdcall CDataObject::GetDataHere (FORMATETC *pFormatEtc, STGMEDIUM *pStgMedium) {
-    return DATA_E_FORMATETC;
+	return DATA_E_FORMATETC;
 }
 
 
 HRESULT CDataObject::GetCanonicalFormatEtc (FORMATETC *pFormatEct, FORMATETC *pFormatEtcOut) {
-    pFormatEtcOut->ptd = NULL;
+	pFormatEtcOut->ptd = NULL;
 
-    return E_NOTIMPL;
+	return E_NOTIMPL;
 }
