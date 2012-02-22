@@ -11,17 +11,17 @@ unsigned int goto_addr;
 int find_value;
 BOOL big_endian;
 BOOL search_backwards;
-
-extern HFONT hfontLucida;
 HWND hwndPrev;
 
 INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
+	static LPCALC lpCalc;
 	static HWND edtAddr;
 	switch (Message) {
 		case WM_INITDIALOG:
 			edtAddr = GetDlgItem(hwndDlg, IDC_EDTGOTOADDR);
 			SetFocus(edtAddr);
 			hwndPrev = GetParent(hwndDlg);
+			lpCalc = (LPCALC) lParam;
 			return FALSE;
 		case WM_COMMAND:
 			switch (LOWORD(wParam)) {
@@ -30,10 +30,10 @@ INT_PTR CALLBACK GotoDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARA
 					GetDlgItemText(hwndDlg, IDC_EDTGOTOADDR, result, 64);
 
 					if (*result == '\0') {
-						goto_addr = lpDebuggerCalc->cpu.pc;
+						goto_addr = lpCalc->cpu.pc;
 					} else if (result[0] != '$') {
 						label_struct *label;
-						label = lookup_label(lpDebuggerCalc, result);
+						label = lookup_label(lpCalc, result);
 						if (label == NULL) _stscanf_s(result, _T("%x"), &goto_addr);
 						else goto_addr = label->addr;
 					} else {
@@ -185,11 +185,6 @@ static WNDPROC wndProcEdit;
 LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 
 	switch (Message) {
-		case WM_PAINT:
-		{	
-			SetWindowFont(hwnd, hfontLucida, FALSE);
-			break;
-		}
 		case WM_KEYDOWN:
 			switch (wParam) {
 				case VK_RETURN:
@@ -206,10 +201,11 @@ LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	return CallWindowProc(wndProcEdit, hwnd, Message, wParam, lParam);
 }
 
-void SubclassEdit(HWND hwndEdt, int edit_width, VALUE_FORMAT format) {
+void SubclassEdit(HWND hwndEdt, HFONT hfontLucida, int edit_width, VALUE_FORMAT format) {
 	if (hwndEdt) {
-		wndProcEdit = (WNDPROC) SetWindowLongPtr(hwndEdt, GWLP_WNDPROC, (LONG_PTR) ValueProc);	
+		wndProcEdit = (WNDPROC) SetWindowLongPtr(hwndEdt, GWLP_WNDPROC, (LONG_PTR) ValueProc);
 		SetWindowLongPtr(hwndEdt, GWLP_USERDATA, (DWORD) format);
+		SetWindowFont(hwndEdt, hfontLucida, FALSE);
 		Edit_LimitText(hwndEdt, edit_width);
 		Edit_SetSel(hwndEdt, 0, edit_width);
 		SetFocus(hwndEdt);
@@ -217,7 +213,7 @@ void SubclassEdit(HWND hwndEdt, int edit_width, VALUE_FORMAT format) {
 }
 
 // Converts a hexadecimal string to integer
-int xtoi(const TCHAR* xs) {
+int xtoi(const TCHAR *xs) {
 	int val;
 	int error = sscanf(xs, _T("%X"), &val);
 	if (error == EOF)

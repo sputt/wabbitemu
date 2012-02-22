@@ -323,6 +323,32 @@ INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 	return FALSE;
 }
 
+void ExtractBootFree(int model, TCHAR *hexFile) {
+	HMODULE hModule = GetModuleHandle(NULL);
+	HRSRC resource;
+	switch(model) {
+		case TI_73:
+			resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT73), _T("HEX"));
+			break;
+		case TI_83P:
+			resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT83P), _T("HEX"));
+			break;
+		case TI_83PSE:
+			resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT83PSE), _T("HEX"));
+			break;
+		case TI_84P:
+			resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84P), _T("HEX"));
+			break;
+		case TI_84PSE:
+			resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84PSE), _T("HEX"));
+			break;
+	}
+	GetAppDataString(hexFile, MAX_PATH);
+	//extract and write the open source boot page
+	StringCbCat(hexFile, MAX_PATH, _T("boot.hex"));
+	ExtractResource(hexFile, resource);
+}
+
 INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hComboOS, hBrowseOS, hEditOSPath, hStaticProgress, hProgressBar, hRadioBrowse, hRadioDownload;
 	switch (Message) {
@@ -466,25 +492,8 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					LPCALC lpCalc = calc_slot_new();
 					//ok yes i know this is retarded...but this way we can use Load_8xu
 					//outside this function...
-					HMODULE hModule = GetModuleHandle(NULL);
-					HRSRC resource;
-					switch(model) {
-						case TI_73:
-							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT73), _T("HEX"));
-							break;
-						case TI_83P:
-							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT83P), _T("HEX"));
-							break;
-						case TI_83PSE:
-							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT83PSE), _T("HEX"));
-							break;
-						case TI_84P:
-							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84P), _T("HEX"));
-							break;
-						case TI_84PSE:
-							resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT84PSE), _T("HEX"));
-							break;
-					}
+					TCHAR hexFile[MAX_PATH];
+					ExtractBootFree(model, hexFile);
 					ModelInit(lpCalc);
 					//slot stuff
 					LoadRegistrySettings(lpCalc);
@@ -492,11 +501,6 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					lpCalc->active = TRUE;
 					lpCalc->model = model;
 					lpCalc->cpu.pio.model = model;
-					TCHAR hexFile[MAX_PATH];
-					GetAppDataString(hexFile, sizeof(hexFile));
-					//extract and write the open source boot page
-					StringCbCat(hexFile, sizeof(hexFile), _T("boot.hex"));
-					ExtractResource(hexFile, resource);
 					FILE *file;
 					_tfopen_s(&file, hexFile, _T("rb"));
 					writeboot(file, &lpCalc->mem_c, -1);

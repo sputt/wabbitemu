@@ -143,7 +143,7 @@ typedef struct Z80_command {
 #endif
 } Z80_com_t;
 
-int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count, Z80_info_t *result);
+int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, Z80_info_t *result);
 waddr_t GetNextAddr(memory_context_t *memc, ViewType type, waddr_t waddr);
 waddr_t OffsetWaddr(memory_context_t *memc, ViewType type, waddr_t waddr, int offset);
 

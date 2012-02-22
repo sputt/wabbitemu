@@ -6,6 +6,7 @@
 #include "dbcommon.h"
 
 typedef struct mempane_settings {
+	LPCALC lpCalc;
 	int memNum;						// mempane number
 	int addr;						// Top left address
 	int mode;						// current display mode

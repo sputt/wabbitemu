@@ -11,7 +11,6 @@
 #define PORT_ROW_SIZE 15
 
 extern HINSTANCE g_hInst;
-extern HFONT hfontSegoe;
 static CPU_t *port_cpu = NULL;
 static int port_map[0xFF];
 static HWND hwndEditControl;
@@ -126,7 +125,7 @@ static int GetValue(TCHAR *str)
 	return value;
 }
 
-static void CloseSaveEdit(HWND hwndEditControl) {
+static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 	if (hwndEditControl) {
 		TCHAR buf[10];
 		Edit_GetText(hwndEditControl, buf, ARRAYSIZE(buf));
@@ -137,17 +136,17 @@ static void CloseSaveEdit(HWND hwndEditControl) {
 		//can convert bin, hex, and dec
 		value = GetValue(buf) & 0xFF;
 		int port_num = port_map[row_num];
-		BOOL output_backup = lpDebuggerCalc->cpu.output;
-		int bus_backup = lpDebuggerCalc->cpu.bus;
-		lpDebuggerCalc->cpu.bus = value;
-		lpDebuggerCalc->cpu.output = TRUE;
-		lpDebuggerCalc->cpu.pio.devices[port_num].code(&lpDebuggerCalc->cpu, &(lpDebuggerCalc->cpu.pio.devices[port_num]));
-		lpDebuggerCalc->cpu.output = output_backup;
-		lpDebuggerCalc->cpu.bus = bus_backup;
+		BOOL output_backup = lpCalc->cpu.output;
+		int bus_backup = lpCalc->cpu.bus;
+		lpCalc->cpu.bus = value;
+		lpCalc->cpu.output = TRUE;
+		lpCalc->cpu.pio.devices[port_num].code(&lpCalc->cpu, &(lpCalc->cpu.pio.devices[port_num]));
+		lpCalc->cpu.output = output_backup;
+		lpCalc->cpu.bus = bus_backup;
 
 		if (port_cpu != NULL)
 			free(port_cpu);
-		port_cpu = CPU_clone(&lpDebuggerCalc->cpu);
+		port_cpu = CPU_clone(&lpCalc->cpu);
 
 		DestroyWindow(hwndEditControl);
 	}
@@ -157,7 +156,8 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	switch (uMsg) {
 		case WM_KEYDOWN:
 			if (wParam == VK_RETURN) {
-				CloseSaveEdit(hwnd);
+				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				CloseSaveEdit(lpCalc, hwnd);
 				hwndEditControl = NULL;
 			} else if (wParam == VK_ESCAPE) {
 				hwndEditControl = NULL;
@@ -173,6 +173,8 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 
 LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND hwndListView;
+	static LPCALC lpCalc;
+	static LPDEBUGWINDOWINFO lpDebugInfo;
 	switch(Message) {
 		case WM_INITDIALOG: {
 			RECT rc, hdrRect;
@@ -180,10 +182,14 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)	hIcon);
 			DeleteObject(hIcon);
 
+			lpCalc = (LPCALC) lParam;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, lParam);
+			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+
 			hwndListView = CreateListView(hwnd);
 			int count = 0;
 			for (int i = 0; i < 0xFF; i++) {
-				if (lpDebuggerCalc->cpu.pio.devices[i].active) {
+				if (lpCalc->cpu.pio.devices[i].active) {
 					port_map[count] = i;
 					count++;
 				}
@@ -203,7 +209,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			listCol.cx = 110;
 			listCol.pszText = _T("Binary");
 			ListView_InsertColumn(hwndListView, 3, &listCol);
-			SetWindowFont(hwndListView, hfontSegoe, TRUE);
+			SetWindowFont(hwndListView, lpDebugInfo->hfontSegoe, TRUE);
 
 			InsertListViewItems(hwndListView, count);
 
@@ -214,7 +220,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			switch (LOWORD(wParam)) {
 				case IDM_PORT_SETBREAKPOINT: {
 					int port = port_map[ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED)];
-					lpDebuggerCalc->cpu.pio.devices[port].breakpoint = !lpDebuggerCalc->cpu.pio.devices[port].breakpoint;
+					lpCalc->cpu.pio.devices[port].breakpoint = !lpCalc->cpu.pio.devices[port].breakpoint;
 					break;
 				}
 				case IDM_PORT_EXIT:
@@ -227,7 +233,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			switch (((LPNMHDR) lParam)->code) 
 			{
 				case LVN_ITEMCHANGING:
-					CloseSaveEdit(hwndEditControl);
+					CloseSaveEdit(lpCalc, hwndEditControl);
 					hwndEditControl = NULL;
 					break;
 				case LVN_KEYDOWN: {
@@ -265,8 +271,9 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 						rc.right - rc.left,
 						rc.bottom - rc.top,
 						hwndListView, 0, g_hInst, NULL);
-					SetWindowFont(hwndEditControl, hfontSegoe, TRUE);
+					SetWindowFont(hwndEditControl, lpDebugInfo->hfontSegoe, TRUE);
 					wpOrigEditProc = (WNDPROC) SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG_PTR) EditSubclassProc); 
+					SetWindowLongPtr(hwndEditControl, GWLP_USERDATA, (LPARAM) lpCalc);
 					Edit_LimitText(hwndEditControl, 9);
 					Edit_SetSel(hwndEditControl, 0, _tcslen(buf));
 					SetWindowLongPtr(hwndEditControl, GWLP_USERDATA, MAKELPARAM(row_num, col_num));
@@ -309,7 +316,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					case CDDS_ITEMPREPAINT: 
 					case CDDS_ITEMPREPAINT | CDDS_SUBITEM: 
 						iRow = (int)pListDraw->nmcd.dwItemSpec; 
-						if (lpDebuggerCalc->cpu.pio.devices[port_map[iRow]].breakpoint) { 
+						if (lpCalc->cpu.pio.devices[port_map[iRow]].breakpoint) { 
 							// pListDraw->clrText   = RGB(252, 177, 0); 
 							pListDraw->clrTextBk = COLOR_BREAKPOINT; 
 							SetWindowLongPtr(hwnd, DWLP_MSGRESULT, CDRF_NEWFONT); 
@@ -329,7 +336,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					if (port_cpu != NULL) {
 						free(port_cpu);
 					}
-					port_cpu = CPU_clone(&lpDebuggerCalc->cpu);
+					port_cpu = CPU_clone(&lpCalc->cpu);
 					break;
 				case DB_UPDATE: {
 					RECT rc;
@@ -341,8 +348,7 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			return TRUE;
 		}
 		case WM_CLOSE:
-extern HWND hPortMon;
-			hPortMon = NULL;
+			lpDebugInfo->hPortMon = NULL;
 			EndDialog(hwnd, IDOK);
 			return FALSE;
 	}

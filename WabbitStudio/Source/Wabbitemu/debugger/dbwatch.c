@@ -2,38 +2,18 @@
 
 #include "dbwatch.h"
 #include "guidebug.h"
-#include "calc.h"
 #include "resource.h"
-#include "dbcommon.h"
 #include "device.h"
 #include "label.h"
 #include "registry.h"
+#include "dbspriteviewer.h"
 
 extern HINSTANCE g_hInst;
-extern HFONT hfontSegoe;
-static HWND hwndEditControl;
-static int edit_row, edit_col;
 static WNDPROC wpOrigEditProc;
 static const TCHAR *watchKey = _T("WatchLocsKey");
 static const TCHAR *numWatchKey = _T("NumWatchKey");
 
 static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-
-#define MAX_WATCHPOINTS 20
-typedef struct watchpoint {
-	TCHAR label[64];
-	waddr_t waddr;
-	waddr_t waddr_is_valid;		//when we start the boxes are blank. This is tells us whether we should display the data
-	//HWND hComboBox;				//we have to handle the combo box ourselves, this is its handle
-	char size;					//number of elements to display
-	BOOL size_is_valid;			//same as other is_valid
-	VALUE_FORMAT val;			//how do we display these elements
-} watchpoint_t;
-
-static int num_watch;
-static HWND hwndListView;
-
-static watchpoint_t * watchpoints[MAX_WATCHPOINTS];
 
 // CreateListView: Creates a list-view control in report view.
 // Returns the handle to the new control
@@ -69,9 +49,10 @@ static HWND CreateListView (HWND hwndParent)
 // hWndListView:        Handle to the list-view control.
 // cItems:              Number of items to insert.
 // Returns TRUE if successful, and FALSE otherwise.
-static BOOL InsertListViewItems(HWND hWndListView, int cItems)
+static BOOL InsertListViewItems(HWND hWndListView, LPDEBUGWINDOWINFO lpDebugInfo, int cItems)
 {
 	LVITEM lvI;
+	watchpoint_t **watchpoints = lpDebugInfo->watchpoints;
 
 	// Initialize LVITEM members that are common to all items.
 	lvI.pszText   = LPSTR_TEXTCALLBACK; // Sends an LVN_GETDISPINFO message.
@@ -84,8 +65,8 @@ static BOOL InsertListViewItems(HWND hWndListView, int cItems)
 	for (int index = 0; index < cItems; index++)
 	{
 		lvI.iItem = index;
-		watchpoints[num_watch] = (watchpoint_t *) malloc(sizeof(watchpoint_t));
-		watchpoint_t *watch = watchpoints[num_watch];
+		watchpoints[lpDebugInfo->num_watch] = (watchpoint_t *) malloc(sizeof(watchpoint_t));
+		watchpoint_t *watch = watchpoints[lpDebugInfo->num_watch];
 		ZeroMemory(watch, sizeof(watchpoint_t));
 		StringCbCopy(watch->label, sizeof(watch->label), _T("New Label"));
 		/*watch->hComboBox = CreateWindow(_T("COMBOBOX"), _T("Byte"), WS_VISIBLE | WS_CHILD | CBS_DROPDOWNLIST,
@@ -104,10 +85,11 @@ static BOOL InsertListViewItems(HWND hWndListView, int cItems)
 		lvii.iGroup = 0;
 		ListView_GetItemIndexRect(hWndListView, &lvii, 1, LVIR_BOUNDS, &rc);
 		//SetWindowPos(watch->hComboBox, HWND_TOP, rc.left, rc.top, rc.right - rc.left, rc.bottom -  rc.top, SWP_SHOWWINDOW);
-		num_watch++;
+		lpDebugInfo->num_watch++;
 		// Insert items into the list.
-		if (ListView_InsertItem(hWndListView, &lvI) == -1)
+		if (ListView_InsertItem(hWndListView, &lvI) == -1) {
 			return FALSE;
+		}
 	}
 
 	return TRUE;
@@ -159,17 +141,17 @@ static int GetValue(TCHAR *str)
 	return value;
 }
 
-static void CloseSaveEdit(HWND hwndEditControl) {
+static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 	if (hwndEditControl) {
 		TCHAR buf[256];
 		Edit_GetText(hwndEditControl, buf, ARRAYSIZE(buf));
-		int value = GetWindowLongPtr(hwndEditControl, GWLP_USERDATA);
-		int row_num = LOWORD(value);
-		int col_num = HIWORD(value);
+		LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwndEditControl, GWLP_USERDATA);
+		int row_num = lpDebugInfo->edit_row;
+		int col_num = lpDebugInfo->edit_col;
 		if (col_num != 0 && _tcsicmp(buf, _T(""))) {
-			watchpoint_t *watch = watchpoints[row_num];
+			watchpoint_t *watch = lpDebugInfo->watchpoints[row_num];
 			//automagically fill in label info where ever you enter it
-			label_struct *label = lookup_label(lpDebuggerCalc, buf);
+			label_struct *label = lookup_label(lpCalc, buf);
 			if (!isdigit(*buf) && *buf != '$' && *buf != '%' && label != NULL) {
 				StringCbCopy(watch->label, sizeof(watch->label), buf);
 				watch->waddr.addr = label->addr & 0xFFFF;
@@ -180,12 +162,19 @@ static void CloseSaveEdit(HWND hwndEditControl) {
 				watch->waddr_is_valid.is_ram = TRUE;
 				watch->waddr_is_valid.addr = TRUE;
 			} else {
-				value = GetValue(buf);
+				int value = GetValue(buf);
 				switch (col_num) {
-					case 1:
-						watch->size = value & 0xFF;
+					case 1: {
+						int error = sscanf_s(buf, _T("%dx%d"), &watch->width, &watch->height);
+						if (error != EOF && error == 2) {
+							watch->is_bitmap = TRUE;
+						} else {
+							watch->is_bitmap = FALSE;
+							watch->size = value;
+						}
 						watch->size_is_valid = TRUE;
-						break;	
+						break;
+					}
 					case 2:
 						watch->waddr.addr = value & 0xFFFF;
 						watch->waddr_is_valid.addr = TRUE;
@@ -207,101 +196,116 @@ static void CloseSaveEdit(HWND hwndEditControl) {
 	}
 }
 
-static void CreateEditControl(int row_num, int col_num) {
+static void CreateEditControl(LPDEBUGWINDOWINFO lpDebugInfo) {
 	TCHAR buf[32];
-	ListView_GetItemText(hwndListView, row_num, col_num, buf, ARRAYSIZE(buf));
+	ListView_GetItemText(lpDebugInfo->hwndListView, lpDebugInfo->edit_row, lpDebugInfo->edit_col, buf, ARRAYSIZE(buf));
 	RECT rc;
 	LVITEMINDEX lvii;
-	lvii.iItem = row_num;
+	lvii.iItem = lpDebugInfo->edit_row;
 	lvii.iGroup = 0;
-	ListView_GetItemIndexRect(hwndListView, &lvii, col_num, LVIR_BOUNDS, &rc);
+	ListView_GetItemIndexRect(lpDebugInfo->hwndListView, &lvii, lpDebugInfo->edit_col, LVIR_BOUNDS, &rc);
 	//rc is now the rect we want to use for the edit control
-	hwndEditControl = CreateWindow(_T("EDIT"), buf,
+	lpDebugInfo->hwndEditControl = CreateWindow(_T("EDIT"), buf,
 		WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT | ES_AUTOHSCROLL,
 		rc.left,
 		rc.top,
 		rc.right - rc.left,
 		rc.bottom - rc.top,
-		hwndListView, 0, g_hInst, NULL);
-	SetWindowFont(hwndEditControl, hfontSegoe, TRUE);
-	wpOrigEditProc = (WNDPROC) SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG_PTR) EditSubclassProc); 
-	Edit_SetSel(hwndEditControl, 0, _tcslen(buf));
-	Edit_LimitText(hwndEditControl, 255);
-	SetWindowLongPtr(hwndEditControl, GWLP_USERDATA, MAKELPARAM(row_num, col_num));
-	SetFocus(hwndEditControl);
+		lpDebugInfo->hwndListView, 0, g_hInst, NULL);
+	SetWindowFont(lpDebugInfo->hwndEditControl, lpDebugInfo->hfontSegoe, TRUE);
+	wpOrigEditProc = (WNDPROC) SetWindowLongPtr(lpDebugInfo->hwndEditControl, GWLP_WNDPROC, (LONG_PTR) EditSubclassProc);
+	Edit_SetSel(lpDebugInfo->hwndEditControl, 0, _tcslen(buf));
+	Edit_LimitText(lpDebugInfo->hwndEditControl, 255);
+	SetWindowLongPtr(lpDebugInfo->hwndEditControl, GWLP_USERDATA, (LONG_PTR) lpDebugInfo);
+	SetFocus(lpDebugInfo->hwndEditControl);
 }
 
 static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) { 
 	switch (uMsg) {
-		case WM_KEYDOWN:
+		case WM_KEYDOWN: {
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			if (wParam == VK_RETURN) {
-				CloseSaveEdit(hwnd);
-				hwndEditControl = NULL;
+				CloseSaveEdit(lpDebugInfo->lpCalc, hwnd);
+				lpDebugInfo->hwndEditControl = NULL;
 			} else if (wParam == VK_ESCAPE) {
-				hwndEditControl = NULL;
+				lpDebugInfo->hwndEditControl = NULL;
 				DestroyWindow(hwnd);
 			} else if (wParam == VK_TAB) {
-				CloseSaveEdit(hwnd);
-				hwndEditControl = NULL;
+				CloseSaveEdit(lpDebugInfo->lpCalc, hwnd);
+				lpDebugInfo->hwndEditControl = NULL;
 				if (GetKeyState(VK_SHIFT) & 0x80000000) {
-					if (--edit_col == 0)
-						edit_col = 4;
-					CreateEditControl(edit_row, edit_col);
+					if (--lpDebugInfo->edit_col == 0) {
+						lpDebugInfo->edit_col = 4;
+					}
+					CreateEditControl(lpDebugInfo);
 				} else {
-					if (++edit_col == 5)
-						edit_col = 1;
-					CreateEditControl(edit_row, edit_col);
+					if (++lpDebugInfo->edit_col == 5) {
+						lpDebugInfo->edit_col = 1;
+					}
+					CreateEditControl(lpDebugInfo);
 				}
 			} else {
 				return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam);
 			}
 			return TRUE;
-		case WM_KILLFOCUS:
+		}
+		case WM_KILLFOCUS: {
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			//we use hwndEditControl not hwnd so that we can't
 			//call this after we have destroyed the window
-			CloseSaveEdit(hwndEditControl);
-			hwndEditControl = NULL;
+			CloseSaveEdit(lpDebugInfo->lpCalc, lpDebugInfo->hwndEditControl);
+			lpDebugInfo->hwndEditControl = NULL;
 			return TRUE;
+		}
+		case WM_USER: {
+
+		}
 		default:
 			return CallWindowProc(wpOrigEditProc, hwnd, uMsg, wParam, lParam); 
 	}
 } 
 
 LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+	static LPCALC lpCalc;
+
 	switch(Message) {
 		case WM_CREATE: {
 			RECT rc, hdrRect;
+			lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+
 			int i = 0;
-			hwndListView = CreateListView(hwnd);
+			lpDebugInfo->hwndListView = CreateListView(hwnd);
 			LVCOLUMN listCol;
 			memset(&listCol, 0, sizeof(LVCOLUMN));
 			listCol.mask = LVCF_TEXT | LVCF_WIDTH | LVCF_SUBITEM;
 			listCol.pszText = _T("Label");
 			listCol.cx = 100;
-			ListView_InsertColumn(hwndListView, i++, &listCol);
+			ListView_InsertColumn(lpDebugInfo->hwndListView, i++, &listCol);
 			listCol.cx = 60;
 			listCol.pszText = _T("Size");
-			ListView_InsertColumn(hwndListView, i++, &listCol);
+			ListView_InsertColumn(lpDebugInfo->hwndListView, i++, &listCol);
 			listCol.cx = 60;
 			listCol.pszText = _T("Address");
-			ListView_InsertColumn(hwndListView, i++, &listCol);
+			ListView_InsertColumn(lpDebugInfo->hwndListView, i++, &listCol);
 			listCol.cx = 40;
 			listCol.pszText = _T("Page");
-			ListView_InsertColumn(hwndListView, i++, &listCol);
+			ListView_InsertColumn(lpDebugInfo->hwndListView, i++, &listCol);
 			listCol.cx = 60;
 			listCol.pszText = _T("Is Ram");
-			ListView_InsertColumn(hwndListView, i++, &listCol);
+			ListView_InsertColumn(lpDebugInfo->hwndListView, i++, &listCol);
 			listCol.cx = 145;
 			listCol.pszText = _T("Value");
-			ListView_InsertColumn(hwndListView, i++, &listCol);
-			SetWindowFont(hwndListView, hfontSegoe, TRUE);
+			ListView_InsertColumn(lpDebugInfo->hwndListView, i++, &listCol);
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpDebugInfo);
+			SetWindowFont(lpDebugInfo->hwndListView, lpDebugInfo->hfontSegoe, TRUE);
 
 			TCHAR *temp = (TCHAR *) QueryDebugKey((TCHAR *) watchKey);
 			TCHAR buf[256];
 			memcpy(buf, temp, 256);
 			//this way we dont have to worry about freeing later
 			i = QueryDebugKey((TCHAR *) numWatchKey);
-			num_watch = 0;
+			lpDebugInfo->num_watch = 0;
 			//its possible the registy gets screwed somehow
 			//so dont assume we can read the data
 			if (strlen(buf)) {
@@ -312,12 +316,12 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				lvI.stateMask = 0;
 				lvI.iSubItem  = 0;
 				lvI.state     = 0;
-				for (; num_watch < i; num_watch++) {
-					watchpoint_t *watch = watchpoints[num_watch];
+				for (; lpDebugInfo->num_watch < i; lpDebugInfo->num_watch++) {
+					watchpoint_t *watch = lpDebugInfo->watchpoints[lpDebugInfo->num_watch];
 					if (watch)
 						free(watch);
-					watchpoints[num_watch] = (watchpoint_t *) malloc(sizeof(watchpoint_t));
-					watch = watchpoints[num_watch];
+					lpDebugInfo->watchpoints[lpDebugInfo->num_watch] = (watchpoint_t *) malloc(sizeof(watchpoint_t));
+					watch = lpDebugInfo->watchpoints[lpDebugInfo->num_watch];
 					TCHAR *namePtr = watch->label;
 					while (*ptr != ',') {
 						*namePtr++ = *ptr++;
@@ -326,52 +330,50 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					ptr++;
 
 					//i dont know why i need this temp
-					int addr;
-					sscanf(ptr, _T("%x,%x,%d,%d,%d|"), &addr, &watch->waddr.page, &watch->waddr.is_ram, &watch->size, &watch->val);
+					int addr, size;
+					sscanf(ptr, _T("%x,%x,%d,%d,%d|"), &addr, &watch->waddr.page, &watch->waddr.is_ram, &size, &watch->val);
 					watch->waddr.addr = addr;
 					watch->waddr_is_valid.addr = TRUE;
 					watch->waddr_is_valid.page = TRUE;
 					watch->waddr_is_valid.is_ram = TRUE;
 					watch->size_is_valid = TRUE;
+					if (size > 0xFF) {
+						watch->is_bitmap = TRUE;
+						watch->width = HIBYTE(size);
+						watch->height = LOBYTE(size);
+					} else {
+						watch->is_bitmap = FALSE;
+						watch->size = size;
+					}
 					while(*ptr++ != '|');
 
-					lvI.iItem = num_watch;
-					ListView_InsertItem(hwndListView, &lvI);
+					lvI.iItem = lpDebugInfo->num_watch;
+					ListView_InsertItem(lpDebugInfo->hwndListView, &lvI);
 				}
 			}
 
-			InsertListViewItems(hwndListView, 1);
+			InsertListViewItems(lpDebugInfo->hwndListView, lpDebugInfo, 1);
 			return FALSE;
 		}
-		case WM_SIZE:
-			MoveWindow(hwndListView, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
+		case WM_SIZE: {
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			MoveWindow(lpDebugInfo->hwndListView, 0, 0, LOWORD(lParam), HIWORD(lParam), TRUE);
 			return FALSE;
+		}
 		case WM_COMMAND: {
 			switch (LOWORD(wParam)) {
 			}
 			return FALSE;
 		}
 		case WM_NOTIFY: {
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			switch (((LPNMHDR) lParam)->code) 
 			{
-				//case HDN_ENDTRACK: {
-				//	int count = ListView_GetItemCount(hwndListView);
-				//	for (int i = 0; i < count; i++) {
-				//		RECT rc;
-				//		//row doesnt matter, so just use first one.
-				//		LVITEMINDEX lvii;
-				//		lvii.iItem = 0;
-				//		lvii.iGroup = 0;
-				//		ListView_GetItemIndexRect(hwndListView, &lvii, 1, LVIR_BOUNDS, &rc);
-				//		SetWindowPos(watchpoints[i]->hComboBox, HWND_TOP, rc.left, rc.top, rc.right - rc.left, rc.bottom -  rc.top, SWP_SHOWWINDOW);
-				//	}
-				//	break;
-				//}
 				case LVN_ENDLABELEDIT: {
 					NMLVDISPINFO *pdi = (NMLVDISPINFO *) lParam; 
 					if (pdi->item.pszText != NULL) {
-						label_struct *label = lookup_label(lpDebuggerCalc, pdi->item.pszText);
-						watchpoint_t *watch = watchpoints[pdi->item.iItem];
+						label_struct *label = lookup_label(lpCalc, pdi->item.pszText);
+						watchpoint_t *watch = lpDebugInfo->watchpoints[pdi->item.iItem];
 						char firstChar = *pdi->item.pszText;
 						if (!isdigit(firstChar) && firstChar != '$' && firstChar != '%' && label != NULL) {
 							StringCbCopy(watch->label, sizeof(watch->label), pdi->item.pszText);
@@ -383,35 +385,35 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 							watch->waddr_is_valid.is_ram = TRUE;
 							watch->waddr_is_valid.addr = TRUE;
 						}
-						StringCbCopy(watchpoints[pdi->item.iItem]->label, sizeof(watchpoints[pdi->item.iItem]->label), pdi->item.pszText);
+						StringCbCopy(lpDebugInfo->watchpoints[pdi->item.iItem]->label, sizeof(lpDebugInfo->watchpoints[pdi->item.iItem]->label), pdi->item.pszText);
 					}
 					break;
 				}
 				case LVN_ITEMCHANGING:
-					CloseSaveEdit(hwndEditControl);
-					hwndEditControl = NULL;
+					CloseSaveEdit(lpCalc, lpDebugInfo->hwndEditControl);
+					lpDebugInfo->hwndEditControl = NULL;
 					break;
 				case LVN_KEYDOWN: {
 					LPNMLVKEYDOWN pnkd = (LPNMLVKEYDOWN) lParam;
-					if (hwndEditControl) {
+					if (lpDebugInfo->hwndEditControl) {
 						if (pnkd->wVKey == VK_ESCAPE) {
-							DestroyWindow(hwndEditControl);
-							hwndEditControl = NULL;
+							DestroyWindow(lpDebugInfo->hwndEditControl);
+							lpDebugInfo->hwndEditControl = NULL;
 						} else {
-							SendMessage(hwndEditControl, WM_KEYDOWN, pnkd->wVKey, 0);
+							SendMessage(lpDebugInfo->hwndEditControl, WM_KEYDOWN, pnkd->wVKey, 0);
 						}
 					} else {
 						if (pnkd->wVKey == VK_DELETE) {
-							if (num_watch == 1) {
+							if (lpDebugInfo->num_watch == 1) {
 								break;
 							}
-							int index = ListView_GetNextItem(hwndListView, -1, LVNI_SELECTED);
-							free(watchpoints[index]);
-							memmove(&watchpoints[index], &watchpoints[index+1], sizeof(watchpoint_t *) * (--num_watch - index));
-							watchpoints[num_watch] = NULL;
-							ListView_DeleteItem(hwndListView, index);
-							if (num_watch == 0) {
-								InsertListViewItems(hwndListView, 1);
+							int index = ListView_GetNextItem(lpDebugInfo->hwndListView, -1, LVNI_SELECTED);
+							free(lpDebugInfo->watchpoints[index]);
+							memmove(&lpDebugInfo->watchpoints[index], &lpDebugInfo->watchpoints[index+1], sizeof(watchpoint_t *) * (--lpDebugInfo->num_watch - index));
+							lpDebugInfo->watchpoints[lpDebugInfo->num_watch] = NULL;
+							ListView_DeleteItem(lpDebugInfo->hwndListView, index);
+							if (lpDebugInfo->num_watch == 0) {
+								InsertListViewItems(lpDebugInfo->hwndListView, lpDebugInfo, 1);
 							}
 							Debug_UpdateWindow(hwnd);
 						}
@@ -420,25 +422,41 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				}
 				case NM_DBLCLK: {
 					NMITEMACTIVATE *lpnmitem = (NMITEMACTIVATE *)lParam;
-					edit_row = lpnmitem->iItem;
-					edit_col = lpnmitem->iSubItem;
-					if (edit_col == 0 || edit_col == 5)
+					lpDebugInfo->edit_row = lpnmitem->iItem;
+					lpDebugInfo->edit_col = lpnmitem->iSubItem;
+					if (lpDebugInfo->edit_col == 0 || lpDebugInfo->edit_col == 5) {
+						watchpoint_t *watch = lpnmitem->iItem > lpDebugInfo->num_watch ? NULL : lpDebugInfo->watchpoints[lpnmitem->iItem];
+						if (!watch->is_bitmap) {
+							break;
+						}
+						LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) malloc(sizeof(TABWINDOWINFO));
+						lpTabInfo->lpDebugInfo = lpDebugInfo;
+						lpTabInfo->tabInfo = watch;
+						HWND hwndSprite = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_SPRITEVIEWER), hwnd, SpriteViewerDialogProc, (LPARAM) lpTabInfo);
+						ShowWindow(hwndSprite, SW_SHOW);
+						SendMessage(hwndSprite, WM_USER, DB_UPDATE, 0);
+						SetWindowPos(hwndSprite, NULL, 0, 0, watch->width * lpCalc->scale + 30, watch->height * lpCalc->scale + 50, SWP_NOMOVE | SWP_NOOWNERZORDER | SWP_NOZORDER);
+						lpDebugInfo->hwndSpriteViewer[lpnmitem->iItem] = hwndSprite;
+						lpnmitem->lParam = (LPARAM) hwndSprite;
 						break;
+					}
 
-					CreateEditControl(edit_row, edit_col);
+					CreateEditControl(lpDebugInfo);
 					break;
 				}
 				case LVN_GETDISPINFO: 
 				{
+					LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					lpCalc = lpDebugInfo->lpCalc;
 					NMLVDISPINFO *plvdi = (NMLVDISPINFO *)lParam;
-					watchpoint_t *watch = plvdi->item.iItem > num_watch ? NULL : watchpoints[plvdi->item.iItem];
+					watchpoint_t *watch = plvdi->item.iItem > lpDebugInfo->num_watch ? NULL : lpDebugInfo->watchpoints[plvdi->item.iItem];
 					if (!watch) {
 						break;
 					}
 					//if the last item is all valid add another one
-					if (plvdi->item.iItem + 1 == num_watch && watch->waddr_is_valid.addr == TRUE && watch->waddr_is_valid.page == TRUE &&
+					if (plvdi->item.iItem + 1 == lpDebugInfo->num_watch && watch->waddr_is_valid.addr == TRUE && watch->waddr_is_valid.page == TRUE &&
 							watch->waddr_is_valid.is_ram == TRUE && watch->size_is_valid == TRUE) {
-						InsertListViewItems(hwndListView, 1);
+						InsertListViewItems(lpDebugInfo->hwndListView, lpDebugInfo, 1);
 					}
 					switch (plvdi->item.iSubItem)
 					{
@@ -446,35 +464,52 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 							StringCbCopy(plvdi->item.pszText, 65, watch->label);
 							break;
 						case 1:
-							if (watch->size_is_valid)
-								StringCbPrintf(plvdi->item.pszText, 4, _T("%d"), watch->size);
-							else
+							if (watch->size_is_valid) {
+								if (watch->is_bitmap) {
+									StringCbPrintf(plvdi->item.pszText, 20, _T("%dx%d"), watch->width, watch->height);
+								} else {
+									StringCbPrintf(plvdi->item.pszText, 4, _T("%d"), watch->size);
+								}
+							} else {
 								plvdi->item.pszText = _T("");
+							}
 							break;
 						case 2:
-							if (watch->waddr_is_valid.addr)
+							if (watch->waddr_is_valid.addr) {
 								StringCbPrintf(plvdi->item.pszText, 6, _T("$%04X"), watch->waddr.addr);
-							else
+							} else {
 								plvdi->item.pszText = _T("");
+							}
 							break;	
 						case 3:
-							if (watch->waddr_is_valid.page)
+							if (watch->waddr_is_valid.page) {
 								StringCbPrintf(plvdi->item.pszText, 4, _T("$%02X"), watch->waddr.page);
-							else
+							} else {
 								plvdi->item.pszText = _T("");
+							}
 							break;
 						case 4:
-							if (watch->waddr_is_valid.is_ram)
-								if (watch->waddr.is_ram)
+							if (watch->waddr_is_valid.is_ram) {
+								if (watch->waddr.is_ram) {
 									StringCbCopy(plvdi->item.pszText, 5, _T("True")); 
-								else
+								} else {
 									StringCbCopy(plvdi->item.pszText, 6, _T("False"));
-							else
+								}
+							} else {
 								plvdi->item.pszText = _T("");
+							}
 							break;
 						case 5:
 							if (watch->waddr_is_valid.addr == TRUE && watch->waddr_is_valid.page == TRUE &&
 								watch->waddr_is_valid.is_ram == TRUE && watch->size_is_valid == TRUE) {
+								if (watch->is_bitmap) {
+									plvdi->item.pszText = _T("Double click for image");
+									HWND hwndSprite = (HWND) plvdi->item.lParam;
+									if (hwndSprite) {
+										InvalidateRect(hwndSprite, NULL, FALSE);
+									}
+									return 0;
+								}
 								TCHAR format[10];
 								TCHAR output[513] = _T("");
 								TCHAR temp[5];
@@ -495,17 +530,19 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 											break;
 									}
 								for (int i = 0; i < watch->size; i++) {
-									uint16_t value = wmem_read(lpDebuggerCalc->cpu.mem_c, next);
+									uint16_t value = wmem_read(lpCalc->cpu.mem_c, next);
 									next.addr++;
 									//handle the possiblity we pass page boundaries
-									if (!(next.addr & 0x3FFF))
+									if (!(next.addr & 0x3FFF)) {
 										next.page++;
+									}
 									if (watch->val == HEX4 || watch->val == DEC5) {
-										value |= wmem_read(lpDebuggerCalc->cpu.mem_c, next) << 8;
+										value |= wmem_read(lpCalc->cpu.mem_c, next) << 8;
 										next.addr++;
 										//handle the possiblity we pass page boundaries
-										if (!(next.page & 0x3FFF))
+										if (!(next.page & 0x3FFF)) {
 											next.page++;
+										}
 									}
 									StringCbPrintf(temp, 513, format, value);
 									StringCbCat(output, sizeof(output), temp);
@@ -521,32 +558,48 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			return FALSE;
 		}
 		case WM_USER: {
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			switch (wParam) {
 				case DB_UPDATE: {
 					RECT rc;
 					GetClientRect(hwnd, &rc);
 					InvalidateRect(hwnd, &rc, FALSE);
+
+					for (int i = 0; i < MAX_WATCHPOINTS; i++) {
+						HWND hwndSpriteViewer = lpDebugInfo->hwndSpriteViewer[i];
+						if (hwndSpriteViewer) {
+							InvalidateRect(hwndSpriteViewer, NULL, FALSE);
+							UpdateWindow(hwndSpriteViewer);
+						}
+					}
 					break;
 				}
 			}
 			return TRUE;
 		}
 		case WM_DESTROY: {
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			TCHAR buf[512] = _T("");
 			TCHAR watchString[256];
-			for (int i = 0; i < num_watch; i++)
+			for (int i = 0; i < lpDebugInfo->num_watch; i++)
 			{
-				watchpoint_t *watch = watchpoints[i];
+				watchpoint_t *watch = lpDebugInfo->watchpoints[i];
 				if (watch->size_is_valid && watch->waddr_is_valid.addr && watch->waddr_is_valid.is_ram && watch->waddr_is_valid.page) {
+					int size;
+					if (watch->is_bitmap) {
+						size = MAKEWORD(watch->width, watch->height);
+					} else {
+						size = watch->size;
+					}
 					StringCbPrintf(watchString, sizeof(watchString), _T("%s,%x,%x,%d,%d,%d|"), watch->label,
-										watch->waddr.addr, watch->waddr.page, watch->waddr.is_ram, watch->size, watch->val);
+										watch->waddr.addr, watch->waddr.page, watch->waddr.is_ram, size, watch->val);
 					StringCbCat(buf, sizeof(buf), watchString);
 				} else {
-					num_watch--;
+					lpDebugInfo->num_watch--;
 				}
 			}
 			SaveDebugKey((TCHAR *) watchKey, REG_SZ, buf);
-			SaveDebugKey((TCHAR *) numWatchKey, REG_DWORD, &num_watch);
+			SaveDebugKey((TCHAR *) numWatchKey, REG_DWORD, &lpDebugInfo->num_watch);
 			return FALSE;
 		}
 		default:

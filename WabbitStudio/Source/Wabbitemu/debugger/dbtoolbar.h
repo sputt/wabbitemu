@@ -4,6 +4,7 @@
 #include "gui.h"
 #include "core.h"
 #include "disassemble.h"
+#include "guidebug.h"
 
 typedef enum {
 	MOUSE_UP,
@@ -22,9 +23,10 @@ typedef struct TBBTN_tag{
 	UINT_PTR uIDTimer;
 	HBITMAP hbmIcon;
 	HMENU hMenu;
+	LPDEBUGWINDOWINFO lpDebugInfo;
 } TBBTN;
 
-void ChangeRunButtonIconAndText(TBBTN *tbb);
+void ChangeRunButtonIconAndText(LPCALC lpCalc, TBBTN *tbb);
 
 LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 

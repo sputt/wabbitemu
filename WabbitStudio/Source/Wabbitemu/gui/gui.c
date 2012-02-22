@@ -44,6 +44,7 @@
 #include "guiwizard.h"
 #include "guidialog.h"
 
+#include "guidebug.h"
 #include "DropTarget.h"
 #include "expandpane.h"
 #include "registry.h"
@@ -54,7 +55,7 @@
 #include "dbghelp.h"
 #include <mapi.h>
 #include "ftp.h"
-#include <DbgHelp.h>ex
+#include <DbgHelp.h>
 
 #ifdef _M_IX86
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")
@@ -134,45 +135,43 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 	} else difference += TPF;
 }
 
-extern WINDOWPLACEMENT db_placement;
-
 HWND gui_debug(LPCALC lpCalc) {
 	TCHAR buf[256];
-	if (link_connected_hub(lpCalc->slot))
+	if (link_connected_hub(lpCalc->slot)) {
 		StringCbPrintf(buf, sizeof(buf), _T("Debugger (%d)"), lpCalc->slot + 1);
-	else
+	} else {
 		StringCbCopy(buf, sizeof(buf), _T("Debugger"));
-	if (lpCalc->audio != NULL)
+	}
+	if (lpCalc->audio != NULL) {
 		pausesound(lpCalc->audio);
-	HWND hdebug;
+	}
 	BOOL set_place = TRUE;
 	int flags = 0;
 	RECT pos = {0, 0, 800, 600};
-	if (!db_placement.length) {
+	WINDOWPLACEMENT db_placement = {0};
+	LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+	if (!lpDebugInfo) {
 		db_placement.flags = SW_SHOWNORMAL;
 		db_placement.length = sizeof(WINDOWPLACEMENT);
 		CopyRect(&db_placement.rcNormalPosition, &pos);
 		set_place = FALSE;
 		flags = WS_VISIBLE;
+	} else {
+		db_placement = lpDebugInfo->db_placement;
 	}
-	
 
 	lpCalc->running = FALSE;
 	calc_pause_linked();
-	if (hdebug = FindWindow(g_szDebugName, buf)) {
-		if (lpCalc != lpDebuggerCalc) {
-			DestroyWindow(hdebug);
-		} else {
-			SwitchToThisWindow(hdebug, TRUE);
-			waddr_t waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, lpDebuggerCalc->cpu.pc);
-			SendMessage(hdebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);
-			SendMessage(hdebug, WM_USER, DB_RESUME, 0);
-			return hdebug;
-		}
+	if (lpCalc->hwndDebug && IsWindow(lpCalc->hwndDebug)) {
+		SwitchToThisWindow(lpCalc->hwndDebug, TRUE);
+		waddr_t waddr = addr_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc);
+		SendMessage(lpCalc->hwndDebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);
+		SendMessage(lpCalc->hwndDebug, WM_USER, DB_RESUME, 0);
+		return lpCalc->hwndDebug;
 	}
 	
-	hdebug = CreateWindowEx(
-		WS_EX_APPWINDOW,
+	lpCalc->hwndDebug = CreateWindowEx(
+		0,
 		g_szDebugName,
 		buf,
 		flags | WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN,
@@ -180,12 +179,12 @@ HWND gui_debug(LPCALC lpCalc) {
 		db_placement.rcNormalPosition.right - db_placement.rcNormalPosition.left,
 		db_placement.rcNormalPosition.bottom - db_placement.rcNormalPosition.top,
 		0, 0, g_hInst, (LPVOID) lpCalc);
-	if (set_place)
-		SetWindowPlacement(hdebug, &db_placement);
+	if (set_place) {
+		SetWindowPlacement(lpCalc->hwndDebug, &db_placement);
+	}
 
-	lpCalc->hwndDebug = hdebug;
-	SendMessage(hdebug, WM_SIZE, 0, 0);
-	return hdebug;
+	SendMessage(lpCalc->hwndDebug, WM_SIZE, 0, 0);
+	return lpCalc->hwndDebug;
 }
 
 int gui_frame(LPCALC lpCalc) {
@@ -921,7 +920,9 @@ DWORD WINAPI CheckForUpdates(LPVOID lpParam) {
 	_tremove(fileBuffer);
 	//Dont really care about this return value
 	DeleteUrlCacheEntry(_T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt"));
-	HRESULT hr = URLDownloadToFile(NULL, _T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt"), fileBuffer, NULL, NULL);
+	DeleteFile(fileBuffer);
+	//the parameter is there because despite the above call, Windows still retreives the cached file
+	HRESULT hr = URLDownloadToFile(NULL, _T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt?cache=0"), fileBuffer, NULL, NULL);
 	if (!SUCCEEDED(hr)) {
 		return hr;
 	}
@@ -1050,23 +1051,15 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	//Check for any updates
-	HANDLE updateThread = CreateThread(NULL, 0, CheckForUpdates, lpCalc->hwndFrame, NULL, NULL);
+	if (check_updates) {
+		CreateThread(NULL, 0, CheckForUpdates, lpCalc->hwndFrame, NULL, NULL);
+	}
 
 	StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), _T("labels.lab"));
 
 	state_build_applist(&lpCalc->cpu, &lpCalc->applist);
 	VoidLabels(lpCalc);
 	LoadCommandlineFiles(parsedArgs, (LPARAM) lpCalc, LoadToLPCALC);
-
-	//initialize linking hub
-	memset(link_hub, 0, sizeof(link_hub));
-	link_t *hub_link = (link_t *) malloc(sizeof(link_t)); 
-	if (!hub_link) {
-		printf("Couldn't allocate memory for link hub\n");
-	}
-	hub_link->host		= 0;			//neither lines set
-	hub_link->client	= &hub_link->host;	//nothing plugged in.
-	link_hub[MAX_CALCS] = hub_link;
 
 #ifdef WITH_AVI
 	is_recording = FALSE;
@@ -1133,9 +1126,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		gif_write_state = GIF_END;
 		handle_screenshot();
 	}
-
-	//free the link we setup to act as our hub
-	free(hub_link);
 	
 	// Shutdown GDI+
 	GdiplusShutdown(gdiplusToken);

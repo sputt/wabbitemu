@@ -312,12 +312,6 @@
     <ClCompile Include="DBPaneContainer.cpp">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
-    <ClCompile Include="guidetached.c">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="reverse_info.c">
-      <Filter>Source Files\Core</Filter>
-    </ClCompile>
     <ClCompile Include="interface\state.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
@@ -338,6 +332,15 @@
     </ClCompile>
     <ClCompile Include="utilities\avifile.cpp">
       <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\guidetached.c">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="core\reverse_info.c">
+      <Filter>Source Files\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Debugger\dbspriteviewer.c">
+      <Filter>Source Files\Debugger</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -640,6 +643,9 @@
     </ClInclude>
     <ClInclude Include="utilities\avifile.h">
       <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="Debugger\dbspriteviewer.h">
+      <Filter>Header Files\Debugger</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

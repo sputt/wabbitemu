@@ -29,13 +29,13 @@ extern int find_value;
 extern BOOL search_backwards;
 extern BOOL big_endian;
 
-void sprint_addr(HDC hdc, Z80_info_t *zinf, RECT *r) {
+void sprint_addr(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
 
 	SetTextColor(hdc, RGB(0, 0, 0));
 	int page = zinf->waddr.page;
 	if (zinf->waddr.is_ram) {
-		switch (lpDebuggerCalc->cpu.pio.model) {
+		switch (lpCalc->cpu.pio.model) {
 			case TI_83P:
 			case TI_73:
 				page += 0x40;
@@ -53,7 +53,7 @@ void sprint_addr(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 }
 
-void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
+void sprint_data(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
 	int j;
 	SetTextColor(hdc, RGB(0, 0, 0));
@@ -68,17 +68,17 @@ void sprint_data(HDC hdc, Z80_info_t *zinf, RECT *r) {
 			//we don't handle ram changes here because things should never cross pages
 			//therefore i don't really care
 		}
-		StringCbPrintf(s + (j*2), sizeof(s), _T("%02x"), wmem_read(lpDebuggerCalc->cpu.mem_c, waddr));
+		StringCbPrintf(s + (j*2), sizeof(s), _T("%02x"), wmem_read(lpCalc->cpu.mem_c, waddr));
 	}
 	r->left += COLUMN_X_OFFSET;
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 }
 
-void sprint_command(HDC hdc, Z80_info_t *zinf, RECT *r) {
-	MyDrawText(lpDebuggerCalc, hdc, r, zinf, REGULAR, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
+void sprint_command(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
+	MyDrawText(lpCalc, hdc, r, zinf, REGULAR, da_opcode[zinf->index].format, zinf->a1, zinf->a2, zinf->a3, zinf->a4);
 }
 
-void sprint_size(HDC hdc, Z80_info_t *zinf, RECT *r) {
+void sprint_size(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (zinf->size == 0) return;
@@ -88,7 +88,7 @@ void sprint_size(HDC hdc, Z80_info_t *zinf, RECT *r) {
 	DrawText(hdc, s, -1, r, DT_LEFT | DT_SINGLELINE | DT_VCENTER | DT_END_ELLIPSIS);
 }
 
-void sprint_clocks(HDC hdc, Z80_info_t *zinf, RECT *r) {
+void sprint_clocks(LPCALC lpCalc, HDC hdc, Z80_info_t *zinf, RECT *r) {
 	TCHAR s[64];
 	SetTextColor(hdc, RGB(0, 0, 0));
 	if (da_opcode[zinf->index].clocks != -1) {
@@ -105,7 +105,8 @@ void sprint_clocks(HDC hdc, Z80_info_t *zinf, RECT *r) {
 }
 
 void DisasmGotoAddress(HWND hwnd, int addr) {
-	dp_settings *dps = (dp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 	SCROLLINFO si;
 	si.cbSize = sizeof(SCROLLINFO);
 	si.fMask = SIF_POS;
@@ -122,9 +123,9 @@ static int GetMaxAddr(dp_settings *dps) {
 		case REGULAR:
 			return 0xFFFF;
 		case FLASH:
-			return lpDebuggerCalc->cpu.mem_c->flash_size;
+			return dps->lpCalc->cpu.mem_c->flash_size;
 		case RAM:
-			return lpDebuggerCalc->cpu.mem_c->ram_size;
+			return dps->lpCalc->cpu.mem_c->ram_size;
 	}
 	return -1;
 }
@@ -136,13 +137,13 @@ static void GetNextWaddr(dp_settings *dps, int *bank_num, waddr_t *waddr) {
 		if (dps->type == REGULAR) {
 			(*bank_num)++;
 			if (*bank_num < 4) {
-				waddr->page = lpDebuggerCalc->mem_c.banks[*bank_num].page;
-				waddr->is_ram = lpDebuggerCalc->mem_c.banks[*bank_num].ram;
+				waddr->page = dps->lpCalc->mem_c.banks[*bank_num].page;
+				waddr->is_ram = dps->lpCalc->mem_c.banks[*bank_num].ram;
 			} else {
 				return;
 			}
 		} else {
-			int pages = waddr->is_ram ? lpDebuggerCalc->mem_c.ram_pages : lpDebuggerCalc->mem_c.flash_pages;
+			int pages = waddr->is_ram ? dps->lpCalc->mem_c.ram_pages : dps->lpCalc->mem_c.flash_pages;
 			if (waddr->page < pages) {
 				waddr->page++;
 			} else {
@@ -156,7 +157,7 @@ waddr_t * DisasmFindValue(dp_settings *dps, int valueToFind, BOOL search_backwar
 	waddr_t waddr;
 	if (search_backwards) {
 		if (dps->type == REGULAR) {
-			waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel - 1);
+			waddr = addr_to_waddr(&dps->lpCalc->mem_c, dps->nSel - 1);
 		} else {
 			waddr.addr = (dps->nSel - 1) % PAGE_SIZE;
 			waddr.page = (dps->nSel - 1) / PAGE_SIZE;
@@ -164,7 +165,7 @@ waddr_t * DisasmFindValue(dp_settings *dps, int valueToFind, BOOL search_backwar
 		}
 	} else {
 		if (dps->type == REGULAR) {
-			waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel + 1);
+			waddr = addr_to_waddr(&dps->lpCalc->mem_c, dps->nSel + 1);
 		} else {
 			waddr.addr = (dps->nSel + 1) % PAGE_SIZE;
 			waddr.page = (dps->nSel + 1) / PAGE_SIZE;
@@ -189,8 +190,8 @@ waddr_t * DisasmFindValue(dp_settings *dps, int valueToFind, BOOL search_backwar
 					bank_num--;
 					if (bank_num >= 0) {
 						waddr.addr = (bank_num + 1) * PAGE_SIZE - 1;
-						waddr.page = lpDebuggerCalc->mem_c.banks[bank_num].page;
-						waddr.is_ram = lpDebuggerCalc->mem_c.banks[bank_num].ram;
+						waddr.page = dps->lpCalc->mem_c.banks[bank_num].page;
+						waddr.is_ram = dps->lpCalc->mem_c.banks[bank_num].ram;
 					} else {
 						break;
 					}
@@ -210,7 +211,7 @@ waddr_t * DisasmFindValue(dp_settings *dps, int valueToFind, BOOL search_backwar
 				break;
 			}
 		} else {
-			if (waddr.page == (waddr.is_ram ? lpDebuggerCalc->mem_c.ram_pages : lpDebuggerCalc->mem_c.flash_pages)) {
+			if (waddr.page == (waddr.is_ram ? dps->lpCalc->mem_c.ram_pages : dps->lpCalc->mem_c.flash_pages)) {
 				break;
 			}
 		}
@@ -219,7 +220,7 @@ waddr_t * DisasmFindValue(dp_settings *dps, int valueToFind, BOOL search_backwar
 		memcpy(&tempWaddr, &waddr, sizeof(waddr_t));
 		for (int b = 0;;) {
 			int shift = big_endian ? (valSize - 1 - b) * 8  : b * 8;
-			value += wmem_read(&lpDebuggerCalc->mem_c, tempWaddr) << shift;
+			value += wmem_read(&dps->lpCalc->mem_c, tempWaddr) << shift;
 			b++;
 			if (b >= valSize) {
 				break;
@@ -236,7 +237,8 @@ waddr_t * DisasmFindValue(dp_settings *dps, int valueToFind, BOOL search_backwar
 }
 
 void InvalidateSel(HWND hwnd, int sel) {
-	dp_settings *dps = (dp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 	HDC hdc = GetDC(hwnd);
 
 	RECT r, hdrRect;
@@ -380,7 +382,8 @@ void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int o
 
 }
 
-void CPU_stepout(CPU_t *cpu) {
+void CPU_stepout(LPCALC lpCalc) {
+	CPU_t *cpu = &lpCalc->cpu;
 	double time = tc_tstates(cpu->timer_c);
 	uint16_t old_sp = cpu->sp;
 
@@ -391,7 +394,7 @@ void CPU_stepout(CPU_t *cpu) {
 
 		if (cpu->sp > old_sp) {
 			Z80_info_t zinflocal;
-			disassemble(cpu->mem_c, REGULAR, addr_to_waddr(cpu->mem_c, old_pc.addr), 1, &zinflocal);
+			disassemble(lpCalc, REGULAR, addr_to_waddr(cpu->mem_c, old_pc.addr), 1, &zinflocal);
 
 			if (zinflocal.index == DA_RET 		||
 				zinflocal.index == DA_RET_CC 	||
@@ -408,14 +411,15 @@ void CPU_stepout(CPU_t *cpu) {
 /*
  * Repeatedly step until you get to the next command
  */
-void CPU_stepover(CPU_t *cpu) {
+void CPU_stepover(LPCALC lpCalc) {
 	const int usable_commands[] = { DA_BJUMP, DA_BJUMP_N, DA_BCALL_N, DA_BCALL,
 									DA_BLI, DA_CALL_X, DA_CALL_CC_X, DA_HALT, DA_RST_X};
 	int i;
+	CPU_t *cpu = &lpCalc->cpu;
 	double time = tc_elapsed(cpu->timer_c);
 	Z80_info_t zinflocal;
 
-	disassemble(cpu->mem_c, REGULAR, addr_to_waddr(cpu->mem_c, cpu->pc), 1, &zinflocal);
+	disassemble(lpCalc, REGULAR, addr_to_waddr(cpu->mem_c, cpu->pc), 1, &zinflocal);
 
 	if (cpu->halt) {
 		if (cpu->iff1) {
@@ -437,7 +441,7 @@ void CPU_stepover(CPU_t *cpu) {
 
 				if (cpu->sp >= old_sp && (cpu->pc >= return_pc && (cpu->pc <= return_pc + 2))) {
 					Z80_info_t zinflocal;
-					disassemble(cpu->mem_c, REGULAR, addr_to_waddr(cpu->mem_c, old_pc), 1, &zinflocal);
+					disassemble(lpCalc, REGULAR, addr_to_waddr(cpu->mem_c, old_pc), 1, &zinflocal);
 
 					if (zinflocal.index == DA_RET 		||
 						zinflocal.index == DA_RET_CC 	||
@@ -514,8 +518,6 @@ int disasmhdr_toggle(HWND hwndHeader, disasmhdr_t* dhdr) {
 	}
 }
 
-extern HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
-
 static int addr_to_index(dp_settings *dps, int addr) {
 	for (u_int i = 0; i < dps->nRows; i++) {
 		if (dps->type == REGULAR) {
@@ -548,7 +550,7 @@ void cycle_pcs(dp_settings *dps) {
 		dps->nPCs[i] = dps->nPCs[i - 1];
 	}
 
-	dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
+	dps->nPCs[0] = dps->lpCalc->cpu.pc;
 }
 
 void reverse_cycle_pcs(dp_settings *dps) {
@@ -556,7 +558,7 @@ void reverse_cycle_pcs(dp_settings *dps) {
 		dps->nPCs[i] = dps->nPCs[i + 1];
 	}
 	dps->nPCs[PC_TRAILS - 1] = -1;
-	dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
+	dps->nPCs[0] = dps->lpCalc->cpu.pc;
 }
 
 void invalidate_pcs(HWND hwnd, dp_settings *dps) {
@@ -566,15 +568,15 @@ void invalidate_pcs(HWND hwnd, dp_settings *dps) {
 }
 
 void db_step_finish(HWND hwnd, dp_settings *dps, BOOL step_back = FALSE) {
-	short past_last = lpDebuggerCalc->cpu.pc - dps->zinf[dps->nRows-1].waddr.addr + dps->zinf[dps->nRows-1].size;
-	short before_first = dps->zinf[0].waddr.addr - lpDebuggerCalc->cpu.pc;
+	short past_last = dps->lpCalc->cpu.pc - dps->zinf[dps->nRows-1].waddr.addr + dps->zinf[dps->nRows-1].size;
+	short before_first = dps->zinf[0].waddr.addr - dps->lpCalc->cpu.pc;
 	InvalidateSel(hwnd, dps->iSel);
 	BOOL changeScrollbar = TRUE;
 	if (dps->type == REGULAR) {
-		dps->nKey = dps->nSel = lpDebuggerCalc->cpu.pc;
+		dps->nKey = dps->nSel = dps->lpCalc->cpu.pc;
 		dps->iSel = 0;
 	} else {
-		waddr_t waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, lpDebuggerCalc->cpu.pc);
+		waddr_t waddr = addr_to_waddr(dps->lpCalc->cpu.mem_c, dps->lpCalc->cpu.pc);
 		if ((waddr.is_ram && dps->type == RAM) || (!waddr.is_ram && dps->type == FLASH)) {
 			dps->nKey = dps->nSel = waddr.page * PAGE_SIZE + (waddr.addr % PAGE_SIZE);
 			dps->iSel = 0;
@@ -591,7 +593,7 @@ void db_step_finish(HWND hwnd, dp_settings *dps, BOOL step_back = FALSE) {
 	
 		if (past_last >= 0 || before_first > 0) {
 			int iQ1;
-			SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, lpDebuggerCalc->cpu.pc), 0);
+			SendMessage(hwnd, WM_VSCROLL, MAKEWPARAM(SB_THUMBTRACK, dps->lpCalc->cpu.pc), 0);
 			iQ1 = dps->nRows/4;
 			if (iQ1 == 0) 
 				return;
@@ -615,19 +617,26 @@ void db_step_finish(HWND hwnd, dp_settings *dps, BOOL step_back = FALSE) {
 }
 
 LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-
+	
 	switch (Message) {
 		case WM_SETFOCUS: {
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			hwndLastFocus = hwnd;
 			InvalidateSel(hwnd, dps->iSel);
 			UpdateWindow(hwnd);
 			return 0;
 		}
 		case WM_KILLFOCUS: {
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			InvalidateSel(hwnd, dps->iSel);
 			UpdateWindow(hwnd);
+			return 0;
+		}
+		case WM_DESTROY: {
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			free(lpTabInfo);
 			return 0;
 		}
 		case WM_CREATE: {
@@ -641,12 +650,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			GetClientRect(hwnd, &rc);
 
-			dp_settings *dps = (dp_settings *) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) dps);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpTabInfo);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
-			dps->hfontDisasm = hfontLucida;
-			dps->hfontData = hfontLucida;
-			dps->hfontAddr = hfontLucidaBold;
+			dps->hfontDisasm = lpTabInfo->lpDebugInfo->hfontLucida;
+			dps->hfontData = lpTabInfo->lpDebugInfo->hfontLucida;
+			dps->hfontAddr = lpTabInfo->lpDebugInfo->hfontLucidaBold;
 
 			SelectObject(hdc, dps->hfontDisasm);
 			GetTextMetrics(hdc, &tm);
@@ -667,7 +677,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				0, 0, 1, 1, hwnd, (HMENU) ID_DISASMSIZE, g_hInst,
 				(LPVOID) NULL);
 
-			SetWindowFont(dps->hwndHeader, hfontSegoe, TRUE);
+			SetWindowFont(dps->hwndHeader, lpTabInfo->lpDebugInfo->hfontSegoe, TRUE);
 
 			hdl.prc = &rc;
 			hdl.pwpos = &wp;
@@ -709,7 +719,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			si.nMax = GetMaxAddr(dps);
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
-			dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
+			dps->nPCs[0] = dps->lpCalc->cpu.pc;
 			for (i = 1; i < PC_TRAILS; i++) {
 				dps->nPCs[i] = -1;
 			}
@@ -720,7 +730,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			RECT rc;
 			WINDOWPOS wp;
 			HDLAYOUT hdl;
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 			GetClientRect(hwnd, &rc);
 			hdl.prc = &rc;
@@ -751,15 +762,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			waddr_t waddr;
 			if (dps->type == REGULAR) {
 				do {
-					waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, ++last_top_page_addr);
-					disassemble(lpDebuggerCalc->cpu.mem_c, dps->type, waddr, dps->nRows, zup);
+					waddr = addr_to_waddr(dps->lpCalc->cpu.mem_c, ++last_top_page_addr);
+					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, zup);
 				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= 0xFFFF);
 			} else {
 				do {
 					waddr.page = ++last_top_page_addr / PAGE_SIZE;
 					waddr.addr = last_top_page_addr % PAGE_SIZE;
 					waddr.is_ram = dps->type == RAM;
-					disassemble(lpDebuggerCalc->cpu.mem_c, dps->type, waddr, dps->nRows, zup);
+					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, zup);
 				} while (zup[dps->nRows - 1].waddr.addr + zup[dps->nRows - 1].size <= 4);
 					
 				}
@@ -818,7 +829,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case HDN_ITEMCHANGING:
 				case HDN_ENDTRACK:
 				{
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					HDITEM *lphdi = ((NMHEADER*) lParam)->pitem;
 					static BOOL in_changing = FALSE;
 					HDITEM hdi;
@@ -859,7 +871,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					HMENU hmenu;
 					POINT p;
 					int i;
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 					hmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_DISASM_HEADER_MENU));
 					if (!hmenu) break;
@@ -924,19 +937,19 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			TRIVERTEX vert[2];
 			int end_i;
 			GRADIENT_RECT gRect;
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 			GetClientRect(hwnd, &rc);
 
 			RECT ur;
 			GetUpdateRect(hwnd, &ur, FALSE);
-			if (ur.bottom - ur.top == 0 || ur.left - ur.right == 0) {
+			if ((ur.bottom - ur.top) == 0 || (ur.left - ur.right) == 0) {
 				return 0;
 			}
 
 			int nCols = Header_GetItemCount(dps->hwndHeader);
-			if (nCols == 0)
-			{
+			if (nCols == 0) {
 				return 0;
 			}
 
@@ -949,11 +962,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 			FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
 
-
 			int lpiArray[8];
 			Header_GetOrderArray(dps->hwndHeader, nCols, lpiArray);
-
-
 			hdi.mask = HDI_LPARAM;
 
 			SelectObject(hdc, GetStockObject(DC_PEN));
@@ -979,17 +989,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			CopyRect(&tr, &rc);
 			tr.bottom = dps->cyRow;
 			
-
 			gRect.UpperLeft  = 0;
 			gRect.LowerRight = 1;
-
 
 			i = max((ur.top - dps->cyHeader) / (int) dps->cyRow, 0);
 			OffsetRect(&tr, 0, dps->cyHeader + (i * dps->cyRow));
 
 			end_i = ((int) (ur.bottom - dps->cyHeader + dps->cyRow - 1 - 1)) / (int) dps->cyRow;
 
-			memory_context_t *calc_mem = &lpDebuggerCalc->mem_c;
+			memory_context_t *calc_mem = &dps->lpCalc->mem_c;
 			for (; i < end_i; i++, OffsetRect(&tr, 0, dps->cyRow)) {
 				BOOL do_gradient = FALSE;
 
@@ -1003,7 +1011,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						vert[0].Green = 0xFF00;
 						vert[0].Blue = 0xFF00;
 
-						if (lpDebuggerCalc->cpu.halt && pc_i == 0) {
+						if (dps->lpCalc->cpu.halt && pc_i == 0) {
 							vert [1] .Red    = GetRValue(COLOR_HALT) << 8;
 							vert [1] .Green  = GetGValue(COLOR_HALT) << 8;
 							vert [1] .Blue   = GetBValue(COLOR_HALT) << 8;
@@ -1071,7 +1079,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					if (iCol != -1) {
 						tr.right = tr.left + dps->hdrs[iCol].cx;
 						SelectObject(hdc, dps->hdrs[iCol].hfont);
-						dps->hdrs[iCol].lpfnCallback(hdc, &dps->zinf[i], &tr);
+						dps->hdrs[iCol].lpfnCallback(dps->lpCalc, hdc, &dps->zinf[i], &tr);
 					}
 				}
 
@@ -1099,9 +1107,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			}
 
 			GetClientRect(hwnd, &rc);
-			if (IsWindowEnabled(hwnd))
+			if (IsWindowEnabled(hwnd)) {
 				BitBlt(hdcDest, 0, dps->cyHeader, rc.right, rc.bottom, hdc, 0, dps->cyHeader, SRCCOPY);
-			else {
+			} else {
 				HBITMAP hbmSizer = CreateCompatibleBitmap(NULL, rc.right - rc.left, rc.bottom - rc.top);
 				SelectObject(hdcDest, hbmSizer);
 				FillRect(hdcDest, &rc, (HBRUSH) GetStockObject(GRAY_BRUSH));
@@ -1127,7 +1135,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case DB_COPYLINE: {
 					int i, j;
 					Z80_info *zinf_line;
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					TCHAR *disassembly = (TCHAR *) LocalAlloc(LMEM_FIXED, 1024);
 					memset(disassembly, 0, 1024);
 					TCHAR copy_line[512];
@@ -1140,12 +1149,12 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						//print the data
 						for (j = 0; j < zinf_line->size; j++) {
 							StringCbPrintf(buf + (j*2), sizeof(buf), _T("%02x"), 
-								mem_read(lpDebuggerCalc->cpu.mem_c, zinf_line->waddr.addr+j));
+								mem_read(dps->lpCalc->cpu.mem_c, zinf_line->waddr.addr+j));
 						}
 						StringCbCat(copy_line, sizeof(copy_line), buf);
 						StringCbCat(copy_line, sizeof(copy_line), _T(": "));
 						//print the command
-						TCHAR *test_string = mysprintf(lpDebuggerCalc, zinf_line, REGULAR, da_opcode[zinf_line->index].format,
+						TCHAR *test_string = mysprintf(dps->lpCalc, zinf_line, REGULAR, da_opcode[zinf_line->index].format,
 														zinf_line->a1, zinf_line->a2, zinf_line->a3, zinf_line->a4);
 						StringCbCat(copy_line, sizeof(copy_line), test_string);
 						StringCbCat(copy_line, sizeof(copy_line), _T("\t;"));
@@ -1175,45 +1184,46 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_DISASM: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					u_int addr = (u_int) lParam;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
-						waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, addr);
+						waddr = addr_to_waddr(dps->lpCalc->cpu.mem_c, addr);
 					} else {
 						waddr.page = addr / PAGE_SIZE;
 						waddr.addr = addr % PAGE_SIZE;
 						waddr.is_ram = dps->type == RAM;
 					}
-					disassemble(&lpDebuggerCalc->mem_c, dps->type, waddr, dps->nRows, dps->zinf);
+					disassemble(dps->lpCalc, dps->type, waddr, dps->nRows, dps->zinf);
 					break;
 				}
 				case IDM_RUN_RUN:
 				case DB_RUN: {
-					if (lpDebuggerCalc->running) {
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
+					if (dps->lpCalc->running) {
 						SendMessage(hwnd, WM_COMMAND, DB_STOP, 0);
 						break;
 					}
-					HMENU hMenu = GetMenu(lpDebuggerCalc->hwndDebug);
+					HMENU hMenu = GetMenu(dps->lpCalc->hwndDebug);
 					MENUITEMINFO mii;
 					mii.cbSize = sizeof(MENUITEMINFO);
 					mii.fMask = MIIM_STRING;
 					mii.dwTypeData = _T("Stop\tF5");
 					SetMenuItemInfo(hMenu, IDM_RUN_RUN, FALSE, &mii);
 					int i;
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					//run the calculator
-					CPU_step(&lpDebuggerCalc->cpu);
+					CPU_step(&dps->lpCalc->cpu);
 					calc_unpause_linked();
-					SendMessage(lpDebuggerCalc->hwndFrame, WM_COMMAND, IDM_CALC_PAUSE, 0);
+					SendMessage(dps->lpCalc->hwndFrame, WM_COMMAND, IDM_CALC_PAUSE, 0);
 					//disable interactions
 					EnableWindow(hwnd, FALSE);
 					//this will change so the run/stop button says Stop
-					extern HWND htoolbar;
-					HWND hButton = FindWindowEx(htoolbar, NULL, _T("BUTTON"), _T("Run"));
+					HWND hButton = FindWindowEx(lpTabInfo->lpDebugInfo->htoolbar, NULL, _T("BUTTON"), _T("Run"));
 					if (hButton) {
 						TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
-						ChangeRunButtonIconAndText(tbb);
+						ChangeRunButtonIconAndText(dps->lpCalc, tbb);
 					}
 					Debug_UpdateWindow(hwnd);
 					for (i = 0; i < PC_TRAILS; i++) {
@@ -1222,67 +1232,74 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_STOP: {
-					HMENU hMenu = GetMenu(lpDebuggerCalc->hwndDebug);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
+					HMENU hMenu = GetMenu(dps->lpCalc->hwndDebug);
 					MENUITEMINFO mii;
 					mii.cbSize = sizeof(MENUITEMINFO);
 					mii.fMask = MIIM_STRING;
 					mii.dwTypeData = _T("Run\tF5");
 					SetMenuItemInfo(hMenu, IDM_RUN_RUN, FALSE, &mii);
 					int i;
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					EnableWindow(hwnd, TRUE);
 					SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 					db_step_finish(hwnd, dps);
-					lpDebuggerCalc->running = FALSE;
+					dps->lpCalc->running = FALSE;
 					//this will change so the run/stop button says Run
-					extern HWND htoolbar;
-					HWND hButton = FindWindowEx(htoolbar, NULL, _T("BUTTON"), _T("Stop"));
+					HWND hButton = FindWindowEx(lpTabInfo->lpDebugInfo->htoolbar, NULL, _T("BUTTON"), _T("Stop"));
 					if (hButton) {
 						TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
-						ChangeRunButtonIconAndText(tbb);
+						ChangeRunButtonIconAndText(dps->lpCalc, tbb);
 					}
 					Debug_UpdateWindow(hwnd);
 					break;
 				}
 				case IDM_RUN_STEP:
 				case DB_STEP: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					CPU_step(&lpDebuggerCalc->cpu);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
+					CPU_step(&dps->lpCalc->cpu);
 					db_step_finish(hwnd, dps);
 					break;
 				}
 				case IDM_RUN_STEPOVER:
 				case DB_STEPOVER: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					CPU_stepover(&lpDebuggerCalc->cpu);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
+					CPU_stepover(dps->lpCalc);
 					db_step_finish(hwnd, dps);
 					break;
 				}
 				case IDM_RUN_STEPOUT: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					CPU_stepout(&lpDebuggerCalc->cpu);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
+					CPU_stepout(dps->lpCalc);
 					db_step_finish(hwnd, dps);
 					break;
 				}
 #ifdef WITH_REVERSE
 				case DB_STEPBACK: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-					CPU_step_reverse(&lpDebuggerCalc->cpu);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+dp_settings *dps = (dp_settings *) lpDebugInfo->tabInfo;
+					CPU_step_reverse(&dps->lpCalc->cpu);
 					reverse_cycle_pcs(dps);
 					db_step_finish(hwnd, dps, TRUE);
 					break;
 				}
 #endif
 				case DB_CYCLEPCS: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					cycle_pcs(dps);
 					break;
 				}
 				case DB_DISASM_GOTO:
 				case DB_GOTO: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					int result;
-					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC) GotoDialogProc);
+					result = (int) DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd,
+						(DLGPROC) GotoDialogProc, (LPARAM) dps->lpCalc);
 					if (result == IDOK) {
 						switch (dps->type) {
 							case REGULAR:
@@ -1306,7 +1323,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					return 0;
 				}
 				case DB_FIND_NEXT: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					waddr_t *waddr = DisasmFindValue(dps, find_value, search_backwards, big_endian);
 					if (waddr == NULL) {
 						MessageBox(hwndFind, _T("Unable to find value"), _T("Find"), MB_OK);
@@ -1315,7 +1333,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 						if (dps->type == REGULAR) {
 							int i;
 							for (i = 0; i < 4; i++) {
-								if (lpDebuggerCalc->mem_c.banks[i].page == waddr->page) {
+								if (dps->lpCalc->mem_c.banks[i].page == waddr->page) {
 									break;
 								}
 							}
@@ -1341,60 +1359,63 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					break;
 				}
 				case DB_BREAKPOINT: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
-						waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
+						waddr = addr_to_waddr(&dps->lpCalc->mem_c, dps->nSel);
 					} else {
 						waddr.page = dps->nSel / PAGE_SIZE;
 						waddr.addr = dps->nSel % PAGE_SIZE;
 						waddr.is_ram = dps->type == RAM;
 					}
 
-					if (check_break(&lpDebuggerCalc->mem_c, waddr)) {
-						clear_break(&lpDebuggerCalc->mem_c, waddr);
+					if (check_break(&dps->lpCalc->mem_c, waddr)) {
+						clear_break(&dps->lpCalc->mem_c, waddr);
 					} else {
-						set_break(&lpDebuggerCalc->mem_c, waddr);
+						set_break(&dps->lpCalc->mem_c, waddr);
 					}
 					InvalidateSel(hwnd, dps->iSel);
 					Debug_UpdateWindow(GetParent(hwnd));
 					break;
 				}
 				case DB_MEMPOINT_WRITE: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
-						waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
+						waddr = addr_to_waddr(&dps->lpCalc->mem_c, dps->nSel);
 					} else {
 						waddr.page = dps->nSel / PAGE_SIZE;
 						waddr.addr = dps->nSel % PAGE_SIZE;
 						waddr.is_ram = dps->type == RAM;
 					}
 
-					if (check_mem_write_break(&lpDebuggerCalc->mem_c, waddr)) {
-						clear_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
+					if (check_mem_write_break(&dps->lpCalc->mem_c, waddr)) {
+						clear_mem_write_break(&dps->lpCalc->mem_c, waddr);
 					} else {
-						set_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
+						set_mem_write_break(&dps->lpCalc->mem_c, waddr);
 					}
 					InvalidateSel(hwnd, dps->iSel);
 					Debug_UpdateWindow(GetParent(hwnd));
 					break;
 				}
 				case DB_MEMPOINT_READ: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					waddr_t waddr;
 					if (dps->type == REGULAR) {
-						waddr = addr_to_waddr(&lpDebuggerCalc->mem_c, dps->nSel);
+						waddr = addr_to_waddr(&dps->lpCalc->mem_c, dps->nSel);
 					} else {
 						waddr.page = dps->nSel / PAGE_SIZE;
 						waddr.addr = dps->nSel % PAGE_SIZE;
 						waddr.is_ram = dps->type == RAM;
 					}
 
-					if (check_mem_read_break(&lpDebuggerCalc->mem_c, waddr)) {
-						clear_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
+					if (check_mem_read_break(&dps->lpCalc->mem_c, waddr)) {
+						clear_mem_read_break(&dps->lpCalc->mem_c, waddr);
 					} else {
-						set_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
+						set_mem_read_break(&dps->lpCalc->mem_c, waddr);
 					}
 					InvalidateSel(hwnd, dps->iSel);
 					Debug_UpdateWindow(GetParent(hwnd));
@@ -1404,16 +1425,18 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				case IDM_DISASMDISASM:
 				case IDM_DISASMSIZE:
 				case IDM_DISASMCLOCKS: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					disasmhdr_toggle(dps->hwndHeader, &dps->hdrs[LOWORD(wParam) - IDM_DISASMADDR]);
 
 					Debug_UpdateWindow(hwnd);
 					break;
 				}
 				case DB_SET_PC: {
-					dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					if (dps->type == REGULAR) {
-						lpDebuggerCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
+						dps->lpCalc->cpu.pc = dps->zinf[dps->iSel].waddr.addr;
 					} else {
 						
 					}
@@ -1429,7 +1452,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			RECT hdrRect;
 			RECT r;
 			int y;
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 			GetWindowRect(dps->hwndHeader, &hdrRect);
 
@@ -1460,7 +1484,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 		case WM_LBUTTONUP: {
 			RECT hdrRect;
 			int y;
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 			GetWindowRect(dps->hwndHeader, &hdrRect);
 			y = GET_Y_LPARAM(lParam) - dps->cyHeader;
@@ -1473,13 +1498,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_MOUSELEAVE: {
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			InvalidateSel(hwnd, dps->iHot);
 			dps->iHot = -1;
 			return 0;
 		}
 		case WM_MOUSEMOVE: {
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			dps->MousePoint.x = GET_X_LPARAM(lParam);
 			dps->MousePoint.y = GET_Y_LPARAM(lParam);
 
@@ -1550,7 +1577,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				//update tooltip text
 				int total_bytes = 0, total = 0, total_cond = 0;
 				TCHAR szTip[64], szOldTip[64];
-				dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 
 				for (int j = dps->iSel; j != dps->iSel + dps->NumSel; j++) {
 					total_bytes += dps->zinf[j].size;
@@ -1585,7 +1613,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_KEYDOWN: {
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			int Q1 = dps->nRows/4, Q3 = dps->nRows - dps->nRows/4 - 1;
 
 			BOOL bCenter = FALSE;
@@ -1672,7 +1701,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return 0;
 		}
 		case WM_VSCROLL: {
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			SCROLLINFO si;
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask = SIF_RANGE | SIF_TRACKPOS;
@@ -1697,13 +1727,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					// visible command
 					do {
 						if (dps->type == REGULAR) {
-							waddr = addr_to_waddr(lpDebuggerCalc->cpu.mem_c, --dps->nPane);
+							waddr = addr_to_waddr(dps->lpCalc->cpu.mem_c, --dps->nPane);
 						} else {
 							waddr.page = --dps->nPane / PAGE_SIZE;
 							waddr.addr = dps->nPane % PAGE_SIZE;
 							waddr.is_ram = dps->type == RAM;
 						}
-						disassemble(lpDebuggerCalc->cpu.mem_c, dps->type, waddr, LINEUP_DEPTH, zup);
+						disassemble(dps->lpCalc, dps->type, waddr, LINEUP_DEPTH, zup);
 					} while (zup[LINEUP_DEPTH - 2].waddr.addr > dps->zinf[0].waddr.addr && dps->nPane);
 
 
@@ -1735,7 +1765,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 							return 0;
 						}
 					} else {
-						int page = dps->type == FLASH ? lpDebuggerCalc->mem_c.flash_pages : lpDebuggerCalc->mem_c.ram_pages;
+						int page = dps->type == FLASH ? dps->lpCalc->mem_c.flash_pages : dps->lpCalc->mem_c.ram_pages;
 						if (dps->zinf[dps->nRows - 1].waddr.page >= page) {
 							return 0;
 						}
@@ -1806,7 +1836,8 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			return dps->nPane;
 		}
 		case WM_USER: {
-			dp_settings *dps = (dp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 			switch (wParam) {
 				case DB_UPDATE:
 					SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
@@ -1814,14 +1845,13 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					UpdateWindow(hwnd);
 					break;
 				case DB_RESUME:
-					dps->nPCs[0] = lpDebuggerCalc->cpu.pc;
+					dps->nPCs[0] = dps->lpCalc->cpu.pc;
 					EnableWindow(hwnd, TRUE);
 					//this will change so the run/stop button says Run
-					extern HWND htoolbar;
-					HWND hButton = FindWindowEx(htoolbar, NULL, _T("BUTTON"), _T("Stop"));
+					HWND hButton = FindWindowEx(lpTabInfo->lpDebugInfo->htoolbar, NULL, _T("BUTTON"), _T("Stop"));
 					if (hButton) {
 						TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hButton, GWLP_USERDATA);
-						ChangeRunButtonIconAndText(tbb);
+						ChangeRunButtonIconAndText(dps->lpCalc, tbb);
 					}
 					
 					Debug_UpdateWindow(hwnd);

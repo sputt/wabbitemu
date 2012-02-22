@@ -42,10 +42,14 @@ typedef enum {
 	RAM,				//view all ram pages
 } ViewType;
 
+typedef struct {
+	int total;
+	BOOL state[32];
+} ep_state;
 
 static const TCHAR* DisplayTypeString = _T("Disp_Type");
 
-void SubclassEdit(HWND hwndEdt, int edit_width, VALUE_FORMAT format);
+void SubclassEdit(HWND hwndEdt, HFONT hfontLucida, int edit_width, VALUE_FORMAT format);
 
 #define EN_CANCEL 0x9999
 

@@ -6,7 +6,7 @@
 
 
  /* File created by MIDL compiler version 7.00.0555 */
-/* at Tue Aug 02 01:10:47 2011
+/* at Fri Feb 17 15:19:55 2012
  */
 /* Compiler settings for interface\Wabbitemu.idl:
     Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
