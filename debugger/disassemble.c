@@ -202,12 +202,13 @@ waddr_t OffsetWaddr(memory_context_t *memc, ViewType type, waddr_t waddr, int of
 }
 
 /* returns number of bytes read */
-int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count, Z80_info_t *result) {
+int disassemble(LPCALC lpCalc, ViewType type, waddr_t waddr, int count, Z80_info_t *result) {
 	int i, prefix = 0, pi = 0;
+	memory_context_t *memc = &lpCalc->mem_c;
 	for (i = 0; i < count; i++, result++, prefix = 0) {
 		waddr_t start_addr = result->waddr = waddr;
 
-		TCHAR *labelname = FindAddressLabel(lpDebuggerCalc, waddr);
+		TCHAR *labelname = FindAddressLabel(lpCalc, waddr);
 
 		if (labelname) {
 			result->index = DA_LABEL;
@@ -259,9 +260,9 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 				/* Special IY flags*/
 				if ((prefix == 0xFD) &&
 					(x != 0) &&
-					(lpDebuggerCalc->cpu.iy == 0x89F0) &&
-					(lpDebuggerCalc->model >= TI_83P) &&
-					lpDebuggerCalc->bTIOSDebug &&
+					(lpCalc->cpu.iy == 0x89F0) &&
+					(lpCalc->model >= TI_83P) &&
+					lpCalc->bTIOSDebug &&
 					flagname && bitname) {
 					if (z == 6) {
 						result->index += (DA_BIT_IF - DA_BIT);
@@ -669,7 +670,7 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 						waddr = GetNextAddr(memc, type, waddr);
 						waddr = GetNextAddr(memc, type, waddr);
 
-						if ((result->a1 == 0x0050) && lpDebuggerCalc->model >= TI_83P && lpDebuggerCalc->bTIOSDebug) {
+						if ((result->a1 == 0x0050) && lpCalc->model >= TI_83P && lpCalc->bTIOSDebug) {
 							result->index = DA_BJUMP;
 							result->a1 = wmem_read16(memc, waddr);
 							waddr = GetNextAddr(memc, type, waddr);
@@ -710,7 +711,7 @@ int disassemble(memory_context_t *memc, ViewType type, waddr_t waddr, int count,
 				waddr = GetNextAddr(memc, type, waddr);
 			} else
 			if (z == 7) {
-				if ((y == 5) && (lpDebuggerCalc->model >= TI_83P) && lpDebuggerCalc->bTIOSDebug) {
+				if ((y == 5) && (lpCalc->model >= TI_83P) && lpCalc->bTIOSDebug) {
 					result->index = DA_BCALL;
 					int tmp = wmem_read16(memc, waddr);
 						waddr = GetNextAddr(memc, type, waddr);

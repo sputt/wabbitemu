@@ -6,11 +6,6 @@
 #include "registry.h"
 
 extern HINSTANCE g_hInst;
-extern HFONT hfontSegoe;
-
-static HWND ExpandPanes[16];
-static int TotalPanes = 0;
-int PanesHeight;
 
 #define EXPAND_PANE_BASE_ID	1137
 static int ID = EXPAND_PANE_BASE_ID;
@@ -47,9 +42,10 @@ typedef struct {
 
 	EXPAND_STATE ExpandState;
 	double VisibleHeight;
+	LPDEBUGWINDOWINFO lpDebugInfo;
 } expand_pane_settings, ep_settings;
 
-HWND CreateExpandPane(HWND hwndParent, TCHAR *name, HWND contents) {
+HWND CreateExpandPane(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *name, HWND contents) {
 
 	expand_pane_settings *eps = (expand_pane_settings *) malloc(sizeof(expand_pane_settings));
 	ZeroMemory(eps, sizeof(expand_pane_settings));
@@ -57,10 +53,11 @@ HWND CreateExpandPane(HWND hwndParent, TCHAR *name, HWND contents) {
 	DWORD status = (DWORD) QueryDebugKey(name);
 	eps->contents = contents;
 	eps->ExpandState = (EXPAND_STATE)status;
+	eps->lpDebugInfo = lpDebugInfo;
 	//eps->bFading = TRUE;
 
 	if (ID == EXPAND_PANE_BASE_ID) {
-		TotalPanes = 0;
+		lpDebugInfo->TotalPanes = 0;
 	}
 
 	HWND hwndExp = CreateWindow(
@@ -69,8 +66,7 @@ HWND CreateExpandPane(HWND hwndParent, TCHAR *name, HWND contents) {
 			WS_VISIBLE | WS_CHILD,
 			0, 0, 1, 1,
 			hwndParent, (HMENU) ID++, g_hInst,
-			eps
-			);
+			eps);
 	if (hwndExp == NULL)
 		return NULL;
 
@@ -90,53 +86,53 @@ HWND CreateExpandPane(HWND hwndParent, TCHAR *name, HWND contents) {
 	}
 
 
-	ExpandPanes[TotalPanes++] = hwndExp;
+	lpDebugInfo->ExpandPanes[lpDebugInfo->TotalPanes++] = hwndExp;
 	return hwndExp;
 }
 
-void ArrangeExpandPanes(void) {
+void ArrangeExpandPanes(LPDEBUGWINDOWINFO lpDebugInfo) {
 	int i;
-	for (i = 0; i < TotalPanes; i++) {
-		SendMessage(ExpandPanes[i], WM_SIZE, 0, 0);
+	for (i = 0; i < lpDebugInfo->TotalPanes; i++) {
+		SendMessage(lpDebugInfo->ExpandPanes[i], WM_SIZE, 0, 0);
 	}
 }
 
-void DrawExpandPanes(void) {
+void DrawExpandPanes(LPDEBUGWINDOWINFO lpDebugInfo) {
 	int i;
-	for (i = 0; i < TotalPanes; i++) {
-		InvalidateRect(ExpandPanes[i], NULL, FALSE);
-		SendMessage(ExpandPanes[i], WM_PAINT, 0, 0);
+	for (i = 0; i < lpDebugInfo->TotalPanes; i++) {
+		InvalidateRect(lpDebugInfo->ExpandPanes[i], NULL, FALSE);
+		SendMessage(lpDebugInfo->ExpandPanes[i], WM_PAINT, 0, 0);
 	}
 }
 
-int GetExpandPanesHeight(void) {
+int GetExpandPanesHeight(LPDEBUGWINDOWINFO lpDebugInfo) {
 	int i;
-	PanesHeight = 0;
-	for (i = 0; i < TotalPanes; i++) {
-		SendMessage(ExpandPanes[i], WM_SIZE, 0, 0);
+	lpDebugInfo->PanesHeight = 0;
+	for (i = 0; i < lpDebugInfo->TotalPanes; i++) {
+		SendMessage(lpDebugInfo->ExpandPanes[i], WM_SIZE, 0, 0);
 	}
-	return PanesHeight;
+	return lpDebugInfo->PanesHeight;
 }
 
-void GetExpandPaneState(ep_state *state) {
-	state->total = TotalPanes;
+void GetExpandPaneState(LPDEBUGWINDOWINFO lpDebugInfo, ep_state *state) {
+	state->total = lpDebugInfo->TotalPanes;
 
 	int i;
-	for (i = 0; i < TotalPanes; i++)
+	for (i = 0; i < lpDebugInfo->TotalPanes; i++)
 	{
-		ep_settings *eps = (ep_settings*) GetWindowLongPtr(ExpandPanes[i], GWLP_USERDATA);
+		ep_settings *eps = (ep_settings*) GetWindowLongPtr(lpDebugInfo->ExpandPanes[i], GWLP_USERDATA);
 		if (eps) {
 			state->state[i] = (eps->ExpandState == EP_OPEN);
 		}
 	}
 
-	ArrangeExpandPanes();
+	ArrangeExpandPanes(lpDebugInfo);
 }
 
-void SetExpandPaneState(const ep_state *state) {
+void SetExpandPaneState(LPDEBUGWINDOWINFO lpDebugInfo, const ep_state *state) {
 	int i;
-	for (i = 0; i < TotalPanes; i++) {
-		ep_settings *eps = (ep_settings*) GetWindowLongPtr(ExpandPanes[i], GWLP_USERDATA);
+	for (i = 0; i < lpDebugInfo->TotalPanes; i++) {
+		ep_settings *eps = (ep_settings*) GetWindowLongPtr(lpDebugInfo->ExpandPanes[i], GWLP_USERDATA);
 		if (eps) {
 			eps->bExpanded = state->state[i];
 		}
@@ -144,7 +140,7 @@ void SetExpandPaneState(const ep_state *state) {
 
 }
 
-void DrawHeader(HDC hdc, TCHAR *s, int y, int width) {
+void DrawHeader(HDC hdc, HFONT hfontSegoe, TCHAR *s, int y, int width) {
 
 	SelectObject(hdc, hfontSegoe);
 
@@ -189,7 +185,7 @@ static LRESULT CALLBACK HeaderProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 		if (eps->bHot) {
 			DrawItemSelection(hdc, &rc, TRUE, FALSE, 130);
 		}
-		DrawHeader(hdc, pszText, 0, rc.right - rc.left);
+		DrawHeader(hdc, eps->lpDebugInfo->hfontSegoe, pszText, 0, rc.right - rc.left);
 		EndPaint(hwnd, &ps);
 		return 0;
 	}
@@ -410,52 +406,6 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		case WM_VSCROLL:
 			SendMessage(GetParent(hwnd), Message, wParam, lParam);
 			break;
-
-		/*
-		case WM_MOUSEMOVE: {
-			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-
-			if (GET_Y_LPARAM(lParam) < tm.tmHeight*3/2) {
-				if (wParam != MK_LBUTTON) {
-					eps->DragCount = 0;
-
-					if (eps->bHot == FALSE) {
-						eps->bHot = TRUE;
-
-						InvalidateRect(hwnd, NULL, TRUE);
-						UpdateWindow(hwnd);
-
-						TRACKMOUSEEVENT tme;
-						tme.cbSize = sizeof(tme);
-						tme.dwFlags = TME_LEAVE;
-						tme.hwndTrack = hwnd;
-						tme.dwHoverTime = 1;
-						TrackMouseEvent(&tme);
-					}
-					return 0;
-				} else {
-					if (++eps->DragCount < GetSystemMetrics(SM_CXDRAG))
-						return 0;
-				}
-			}
-			// Fall through to mouse leave
-		}
-		case WM_MOUSELEAVE: {
-			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-
-			if (eps->bHot != FALSE) {
-				eps->bHot = FALSE;
-
-				RECT rc;
-				GetClientRect(hwnd, &rc);
-				rc.bottom = rc.top + tm.tmHeight*3/2;
-				InvalidateRect(hwnd, &rc, TRUE);
-				UpdateWindow(hwnd);
-			}
-			return 0;
-		}
-		*/
-
 		case WM_TIMER:
 		{
 			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
@@ -488,7 +438,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						eps->SlideSpeed = MAX_SLIDE_SPEED;
 				}
 				eps->VisibleHeight+=eps->SlideSpeed;
-				ArrangeExpandPanes();
+				ArrangeExpandPanes(eps->lpDebugInfo);
 				break;
 			case EP_CLOSING:
 				for (i = 0; i < FramesLeft; i++) {
@@ -505,7 +455,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 						eps->SlideSpeed = MAX_SLIDE_SPEED;
 				}
 				eps->VisibleHeight-=eps->SlideSpeed;
-				ArrangeExpandPanes();
+				ArrangeExpandPanes(eps->lpDebugInfo);
 				break;
 			default:
 				break;
@@ -517,7 +467,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			ep_settings *eps = (ep_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 			HDC hdc = GetDC(hwnd);
-			SelectObject(hdc, hfontSegoe);
+			SelectObject(hdc, eps->lpDebugInfo->hfontSegoe);
 
 			ReleaseDC(hwnd, hdc);
 
@@ -529,12 +479,11 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			int index = GetWindowLongPtr(hwnd, GWLP_ID) - EXPAND_PANE_BASE_ID;
 
 			// Add in all the previous windows
-			extern int regPanesYScroll;
-			int cy = regPanesYScroll;
+			int cy = eps->lpDebugInfo->regPanesYScroll;
 			int i;
 			for (i = 0; i < index; i++) {
 				RECT rc;
-				GetWindowRect(ExpandPanes[i], &rc);
+				GetWindowRect(eps->lpDebugInfo->ExpandPanes[i], &rc);
 				//printf("windowrect: %ld %ld %ld %ld\n", rc.left, rc.top ,rc.right, rc.bottom);
 				cy += rc.bottom - rc.top;
 				cy += tm.tmHeight/4;
@@ -573,7 +522,7 @@ LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			if (eps->ExpandState != EP_CLOSED)
 				dwHeight = tm.tmHeight*3/2 + (DWORD) eps->VisibleHeight;
 			//accounts for a gap the MoveWindow y = 2 below
-			PanesHeight += dwHeight + 2;
+			eps->lpDebugInfo->PanesHeight += dwHeight + 2;
 
 			RECT rc;
 			MoveWindow(hwnd, 2, cy, dwWidth - 4, dwHeight, TRUE);

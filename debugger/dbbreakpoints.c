@@ -7,7 +7,6 @@
 #include "dbcommon.h"
 
 extern HINSTANCE g_hInst;
-extern HFONT hfontSegoe;
 
 INT_PTR CALLBACK ConditionsDialogProc(HWND, UINT, WPARAM, LPARAM);
 
@@ -87,8 +86,8 @@ BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
 			}
 			case CONDITION_MEMORY: {
 				condition_memory_t *cond = (condition_memory_t *) lpBreak->conditions[i].data;
-				int value = cond->is_word ? wmem_read16(lpDebuggerCalc->cpu.mem_c, cond->waddr) : 
-											wmem_read(lpDebuggerCalc->cpu.mem_c, cond->waddr);
+				int value = cond->is_word ? wmem_read16(lpCalc->cpu.mem_c, cond->waddr) : 
+											wmem_read(lpCalc->cpu.mem_c, cond->waddr);
 				switch (cond->condition) {
 					case TRIGGER_EQUAL:
 						result = value == cond->trigger_value;
@@ -124,18 +123,19 @@ int GetWaddrData(HWND hwnd, waddr_t *waddr) {
 }
 
 static BOOL is_updating = FALSE;
-void UpdateItemsListView(HWND hwndListView) {
-	if (is_updating)
+void UpdateItemsListView(LPCALC lpCalc, HWND hwndListView) {
+	if (is_updating) {
 		return;
+	}
 	is_updating = TRUE;
 	ListView_DeleteAllItems(hwndListView);
 	int i;
 
-	for (i = 0; i < lpDebuggerCalc->cpu.mem_c->flash_size; i++) {
-		if (lpDebuggerCalc->flash_cond_break[i] == NULL) {
+	for (i = 0; i < lpCalc->cpu.mem_c->flash_size; i++) {
+		if (lpCalc->flash_cond_break[i] == NULL) {
 			continue;
 		}
-		LPBREAKPOINT lpBreak = lpDebuggerCalc->flash_cond_break[i];
+		LPBREAKPOINT lpBreak = lpCalc->flash_cond_break[i];
 		LVITEM lvI;
 		// Initialize LVITEM members that are common to all items.
 		lvI.pszText		= LPSTR_TEXTCALLBACK; // Sends an LVN_GETDISPINFO message.
@@ -153,10 +153,10 @@ void UpdateItemsListView(HWND hwndListView) {
 		lpBreak->active = active;
 		ListView_SetCheckState(hwndListView, i, lpBreak->active);
 	}
-	for (int j = 0; j < lpDebuggerCalc->cpu.mem_c->ram_size; j++) {
-		if (lpDebuggerCalc->ram_cond_break[j] == NULL)
+	for (int j = 0; j < lpCalc->cpu.mem_c->ram_size; j++) {
+		if (lpCalc->ram_cond_break[j] == NULL)
 			continue;
-		LPBREAKPOINT lpBreak = lpDebuggerCalc->ram_cond_break[j];
+		LPBREAKPOINT lpBreak = lpCalc->ram_cond_break[j];
 		LVITEM lvI;
 		// Initialize LVITEM members that are common to all items.
 		lvI.pszText		= LPSTR_TEXTCALLBACK; // Sends an LVN_GETDISPINFO message.
@@ -183,8 +183,11 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 	static HWND hwndListView;
 	static int port_map[0xFF];
 	static int start_row, last_port, cyHeader;
+	static LPCALC lpCalc;
 	switch(Message) {
 		case WM_INITDIALOG: {
+			lpCalc = (LPCALC) lParam;
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 			hwndListView = GetDlgItem(hwnd, IDC_LIST_BREAKS);
 			LVCOLUMN listCol;
 			memset(&listCol, 0, sizeof(LVCOLUMN));
@@ -204,12 +207,12 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 			listCol.cx = 60;
 			listCol.pszText = _T("In Ram");
 			ListView_InsertColumn(hwndListView, 4, &listCol);
-			SetWindowFont(hwndListView, hfontSegoe, TRUE);
+			SetWindowFont(hwndListView, lpDebugInfo->hfontSegoe, TRUE);
 
 			ListView_SetExtendedListViewStyle(hwndListView, LVS_EX_HEADERDRAGDROP | LVS_EX_FULLROWSELECT | LVS_EX_CHECKBOXES);
 			SetWindowTheme(hwndListView, L"explorer", NULL);
 
-			UpdateItemsListView(hwndListView);
+			UpdateItemsListView(lpCalc, hwndListView);
 
 			Debug_CreateWindow(hwnd);
 			return TRUE;
@@ -229,13 +232,13 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					LPBREAKPOINT lpBreak = (LPBREAKPOINT) item.lParam;
 					switch (lpBreak->type) {
 						case NORMAL_BREAK:
-							clear_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
+							clear_break(lpCalc->cpu.mem_c, lpBreak->waddr);
 							break;
 						case MEM_READ_BREAK:
-							clear_mem_read_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
+							clear_mem_read_break(lpCalc->cpu.mem_c, lpBreak->waddr);
 							break;
 						case MEM_WRITE_BREAK:
-							clear_mem_write_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
+							clear_mem_write_break(lpCalc->cpu.mem_c, lpBreak->waddr);
 							break;
 					}
 					//UpdateItemsListView(hwndListView);
@@ -248,11 +251,11 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 						break;
 
 					if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_NORMAL))) {
-						set_break(lpDebuggerCalc->cpu.mem_c, waddr);
+						set_break(lpCalc->cpu.mem_c, waddr);
 					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_WRITE))) {
-						set_mem_write_break(lpDebuggerCalc->cpu.mem_c, waddr);
+						set_mem_write_break(lpCalc->cpu.mem_c, waddr);
 					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_READ))) {
-						set_mem_read_break(lpDebuggerCalc->cpu.mem_c, waddr);
+						set_mem_read_break(lpCalc->cpu.mem_c, waddr);
 					}
 					
 					//UpdateItemsListView(hwndListView);
@@ -277,24 +280,24 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 
 					switch (lpBreak->type) {
 						case NORMAL_BREAK:
-							clear_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
+							clear_break(lpCalc->cpu.mem_c, lpBreak->waddr);
 							break;
 						case MEM_READ_BREAK:
-							clear_mem_read_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
+							clear_mem_read_break(lpCalc->cpu.mem_c, lpBreak->waddr);
 							break;
 						case MEM_WRITE_BREAK:
-							clear_mem_write_break(lpDebuggerCalc->cpu.mem_c, lpBreak->waddr);
+							clear_mem_write_break(lpCalc->cpu.mem_c, lpBreak->waddr);
 							break;
 					}
 
 					if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_NORMAL))) {
-						set_break(lpDebuggerCalc->cpu.mem_c, waddr);
+						set_break(lpCalc->cpu.mem_c, waddr);
 						lpBreak->type = NORMAL_BREAK;
 					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_WRITE))) {
-						set_mem_write_break(lpDebuggerCalc->cpu.mem_c, waddr);
+						set_mem_write_break(lpCalc->cpu.mem_c, waddr);
 						lpBreak->type = MEM_WRITE_BREAK;
 					} else if (Button_GetCheck(GetDlgItem(hwnd, IDC_BREAK_READ))) {
-						set_mem_read_break(lpDebuggerCalc->cpu.mem_c, waddr);
+						set_mem_read_break(lpCalc->cpu.mem_c, waddr);
 						lpBreak->type = MEM_READ_BREAK;
 					}
 					lpBreak->waddr = waddr;
@@ -442,7 +445,7 @@ LRESULT CALLBACK BreakpointsDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 					GetClientRect(hwnd, &rc);
 					InvalidateRect(hwnd, &rc, FALSE);
 
-					UpdateItemsListView(hwndListView);
+					UpdateItemsListView(lpCalc, hwndListView);
 					break;
 				}
 			}

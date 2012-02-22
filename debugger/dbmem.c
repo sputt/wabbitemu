@@ -12,10 +12,10 @@ extern HWND hwndLastFocus;
 extern HINSTANCE g_hInst;
 extern unsigned int goto_addr;
 extern int find_value;
-extern HFONT hfontLucida, hfontLucidaBold, hfontSegoe;
 
 static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
-	mp_settings *mps = (mp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	mp_settings *mps = (mp_settings *) lpTabInfo->tabInfo;
 	RECT hr;
 	GetWindowRect(mps->hwndHeader, &hr);
 
@@ -23,7 +23,7 @@ static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
 
 	TEXTMETRIC tm;
 	HDC hdc = GetDC(hwnd);
-	SelectObject(hdc, hfontLucida);
+	SelectObject(hdc, lpTabInfo->lpDebugInfo->hfontLucida);
 	GetTextMetrics(hdc, &tm);
 	ReleaseDC(hwnd, hdc);
 
@@ -51,23 +51,25 @@ static int GetMaxAddr(mempane_settings *mps) {
 		case REGULAR:
 			return 0x10000;
 		case FLASH:
-			return lpDebuggerCalc->cpu.mem_c->flash_size;
+			return mps->lpCalc->cpu.mem_c->flash_size;
 		case RAM:
-			return lpDebuggerCalc->cpu.mem_c->ram_size;
+			return mps->lpCalc->cpu.mem_c->ram_size;
 	}
 	return NULL;
 }
 
 
 static void ScrollUp(HWND hwnd) {
-	mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 
 	if (mps->addr > 0) {
 		int temp = mps->addr - mps->nCols * mps->mode;
-		if (temp > 0)
+		if (temp > 0) {
 			mps->addr = temp;
-		else
+		} else {
 			mps->addr = 0;
+		}
 	}
 
 	InvalidateRect(hwnd, NULL, FALSE);
@@ -75,7 +77,8 @@ static void ScrollUp(HWND hwnd) {
 }
 
 static void ScrollDown(HWND hwnd) {
-	mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 
 	int data_length = mps->cyRow * mps->nRows * mps->mode;
 	if (mps->addr + data_length - mps->cyRow * mps->mode <= GetMaxAddr(mps))
@@ -121,7 +124,8 @@ static VALUE_FORMAT GetValueFormat(mp_settings *mps) {
 }
 
 void MemGotoAddress(HWND hwnd, int addr) {
-	mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 
 	SCROLLINFO si;
 	si.cbSize = sizeof(SCROLLINFO);
@@ -139,7 +143,7 @@ static waddr_t GetWaddr(mempane_settings *mps, int addr) {
 	waddr_t waddr;
 	switch (mps->type) {
 		case REGULAR:
-			return addr_to_waddr(lpDebuggerCalc->cpu.mem_c, addr);
+			return addr_to_waddr(mps->lpCalc->cpu.mem_c, addr);
 		case FLASH:
 			waddr.addr = addr % PAGE_SIZE;
 			waddr.is_ram = FALSE;
@@ -170,14 +174,16 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) ((CREATESTRUCT*)lParam)->lpCreateParams;
+			mps = (mp_settings *) lpTabInfo->tabInfo;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpTabInfo);
+
 			HDC hdc = GetDC(hwnd);
-			SelectObject(hdc, hfontLucida);
+			SelectObject(hdc, lpTabInfo->lpDebugInfo->hfontLucida);
 			GetTextMetrics(hdc, &tm);
 
-			mps = (mp_settings *) ((CREATESTRUCT*)lParam)->lpCreateParams;
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) mps);
 
-			SelectObject(hdc, hfontSegoe);
+			SelectObject(hdc, lpTabInfo->lpDebugInfo->hfontSegoe);
 
 			InitCommonControls();
 
@@ -186,7 +192,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				0, 0, 1, 1, hwnd, (HMENU) ID_SIZE, g_hInst,
 				(LPVOID) NULL);
 
-			SetWindowFont(mps->hwndHeader, hfontSegoe, TRUE);
+			SetWindowFont(mps->hwndHeader, lpTabInfo->lpDebugInfo->hfontSegoe, TRUE);
 
 			WINDOWPOS wp;
 			HDLAYOUT hdl;
@@ -238,8 +244,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			GetWindowRect(mps->hwndHeader, &r);
 			cyHeader = r.bottom - r.top;
 
-			mps->hfontData = hfontLucida;
-			mps->hfontAddr = hfontLucidaBold;
+			mps->hfontData = lpTabInfo->lpDebugInfo->hfontLucida;
+			mps->hfontAddr = lpTabInfo->lpDebugInfo->hfontLucidaBold;
 
 			mps->cyRow = 4 * tm.tmHeight / 3;
 			SendMessage(hwnd, WM_SIZE, 0, 0);
@@ -254,7 +260,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_SIZE:
 		{
 			RECT rc;
-			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 			GetClientRect(hwnd, &rc);
 
 			WINDOWPOS wp;
@@ -289,7 +296,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			hdcDest = BeginPaint(hwnd, &ps);
 
-			mp_settings *mps = (mp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			mp_settings *mps = (mp_settings *) lpTabInfo->tabInfo;
 
 			hdc = CreateCompatibleDC(hdcDest);
 			HBITMAP hbm = CreateCompatibleBitmap(hdcDest, r.right, r.bottom);
@@ -367,9 +375,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						StringCbPrintf(szVal, sizeof(szVal), _T("%02X 0000"), addr / PAGE_SIZE);
 					} else {
 						int ramVal;
-						if (lpDebuggerCalc->cpu.pio.model < TI_73) {
+						if (mps->lpCalc->cpu.pio.model < TI_73) {
 							ramVal = 0x00;
-						} else if (lpDebuggerCalc->cpu.pio.model < TI_83PSE) {
+						} else if (mps->lpCalc->cpu.pio.model < TI_83PSE) {
 							ramVal = 0x40;
 						} else {
 							ramVal = 0x80;
@@ -433,7 +441,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						waddr_t waddr;
 						for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
 							waddr = GetWaddr(mps, addr + b);
-							value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
+							value += wmem_read(mps->lpCalc->cpu.mem_c, waddr) << shift;
 						}
 						waddr = GetWaddr(mps, addr);
 						if (isBinary) {
@@ -445,21 +453,21 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 #define COLOR_BREAKPOINT		(RGB(230, 160, 180))
 #define COLOR_MEMPOINT_WRITE	(RGB(255, 177, 100))
 #define COLOR_MEMPOINT_READ		(RGB(255, 250, 145))
-						if (check_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
+						if (check_break(mps->lpCalc->cpu.mem_c, waddr)) {
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_BREAKPOINT, 255);
 							if (isSel)
 								DrawFocusRect(hdc, &dr);
 							InflateRect(&dr, -2, 0);
 						}
-						if (check_mem_write_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
+						if (check_mem_write_break(mps->lpCalc->cpu.mem_c, waddr)) {
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_WRITE, 255);
 							if (isSel)
 								DrawFocusRect(hdc, &dr);
 							InflateRect(&dr, -2, 0);
 						}
-						if (check_mem_read_break(lpDebuggerCalc->cpu.mem_c, waddr)) {
+						if (check_mem_read_break(mps->lpCalc->cpu.mem_c, waddr)) {
 							InflateRect(&dr, 2, 0);
 							DrawItemSelection(hdc, &dr, hwnd == GetFocus(), COLOR_MEMPOINT_READ , 255);
 							if (isSel)
@@ -496,7 +504,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case TTN_GETDISPINFO:
 				{
 					NMTTDISPINFO *nmtdi = (NMTTDISPINFO *) lParam;
-					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 
 					if (mps->type == REGULAR) {
 						StringCbPrintf(nmtdi->szText, sizeof(nmtdi->szText), _T("%04X"), mps->addrTrack);
@@ -528,7 +537,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		{
 			RECT r;
 			GetClientRect(hwnd, &r);
-			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 			int data_length = mps->nCols * mps->nRows * mps->mode;
 			switch (wParam) {
 				case VK_NEXT:
@@ -584,7 +594,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_VSCROLL: {
-			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			mp_settings *mps = (mp_settings *) lpTabInfo->tabInfo;
 			int data_length = mps->nCols * mps->nRows * mps->mode;
 
 			SCROLLINFO si;
@@ -593,7 +604,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			si.nPage = data_length;
 			si.nMax = GetMaxAddr(mps) + 1;
 			//if == -1 then were displaying the stack
-			si.nMin = mps->memNum == -1 ? lpDebuggerCalc->cpu.sp : 0x0000;
+			si.nMin = mps->memNum == -1 ? mps->lpCalc->cpu.sp : 0x0000;
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
 
 			si.fMask = SIF_TRACKPOS | SIF_RANGE;
@@ -662,7 +673,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_COMMAND:
 		{
-			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 			switch (HIWORD(wParam)) {
 				case EN_KILLFOCUS:
 				{
@@ -676,7 +688,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					ValueSubmit(hwndVal, (TCHAR *) data, mps->mode + (2 * mps->bText));
 					int i;
 					for (i = 0; i < mps->mode; i++) {
-						mem_write(&lpDebuggerCalc->mem_c, mps->sel + i, data[i]);
+						mem_write(&mps->lpCalc->mem_c, mps->sel + i, data[i]);
 					}
 					Debug_UpdateWindow(GetParent(hwnd));
 					hwndVal = NULL;
@@ -696,7 +708,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					break;
 				case DB_FIND_NEXT: {
 					int addr = mps->addr;
-					while (addr < 0xFFFF && mem_read(&lpDebuggerCalc->mem_c, addr) != find_value)
+					while (addr < 0xFFFF && mem_read(&mps->lpCalc->mem_c, addr) != find_value)
 						addr++;
 					if (addr > 0xFFFF) {
 						MessageBox(NULL, _T("Value not found"), _T("Find results"), MB_OK);
@@ -736,10 +748,10 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case DB_BREAKPOINT: {
 					waddr_t waddr = GetWaddr(mps, mps->sel);
-					if (check_break(&lpDebuggerCalc->mem_c, waddr))
-						clear_break(&lpDebuggerCalc->mem_c, waddr);
+					if (check_break(&mps->lpCalc->mem_c, waddr))
+						clear_break(&mps->lpCalc->mem_c, waddr);
 					else
-						set_break(&lpDebuggerCalc->mem_c, waddr);
+						set_break(&mps->lpCalc->mem_c, waddr);
 
 					RECT rc;
 					GetClientRect(hwnd, &rc);
@@ -748,10 +760,10 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case DB_MEMPOINT_WRITE: {
 					waddr_t waddr = GetWaddr(mps, mps->sel);
-					if (check_mem_write_break(&lpDebuggerCalc->mem_c, waddr))
-						clear_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
+					if (check_mem_write_break(&mps->lpCalc->mem_c, waddr))
+						clear_mem_write_break(&mps->lpCalc->mem_c, waddr);
 					else
-						set_mem_write_break(&lpDebuggerCalc->mem_c, waddr);
+						set_mem_write_break(&mps->lpCalc->mem_c, waddr);
 
 					RECT rc;
 					GetClientRect(hwnd, &rc);
@@ -760,10 +772,10 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case DB_MEMPOINT_READ: {
 					waddr_t waddr = GetWaddr(mps, mps->sel);
-					if (check_mem_read_break(&lpDebuggerCalc->mem_c, waddr))
-						clear_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
+					if (check_mem_read_break(&mps->lpCalc->mem_c, waddr))
+						clear_mem_read_break(&mps->lpCalc->mem_c, waddr);
 					else
-						set_mem_read_break(&lpDebuggerCalc->mem_c, waddr);
+						set_mem_read_break(&mps->lpCalc->mem_c, waddr);
 
 					RECT rc;
 					GetClientRect(hwnd, &rc);
@@ -773,8 +785,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case DB_STEP:
 				case DB_STEPOVER:
 				case DB_STEPBACK:
-					extern HWND hdisasm;
-					SendMessage(hdisasm, WM_COMMAND, wParam, 0);
+					SendMessage(lpTabInfo->lpDebugInfo->hdisasm, WM_COMMAND, wParam, 0);
 					break;
 			}
 			return 0;
@@ -782,7 +793,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_LBUTTONDBLCLK:
 		case WM_LBUTTONDOWN:
 		{
-			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 
@@ -811,7 +823,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					for (b = 0, shift = 0; b < mps->mode; b++, shift += 8) {
 						waddr.addr = (addr + b) % PAGE_SIZE;
 							waddr.page = !waddr.is_ram ? (addr + b) / PAGE_SIZE: (waddr.addr ? waddr.page : waddr.page + 1);
-							value += wmem_read(lpDebuggerCalc->cpu.mem_c, waddr) << shift;
+							value += wmem_read(mps->lpCalc->cpu.mem_c, waddr) << shift;
 					}
 
 					TCHAR szFmt[8];
@@ -831,7 +843,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						hwnd, 0, g_hInst, NULL);
 
 					VALUE_FORMAT format = GetValueFormat(mps);
-					SubclassEdit(hwndVal, (mps->mode == 3) ? 1 : mps->mode * 2, format);
+					SubclassEdit(hwndVal, lpTabInfo->lpDebugInfo->hfontLucida, (mps->mode == 3) ? 1 : mps->mode * 2, format);
 				}
 			}
 			Debug_UpdateWindow(hwnd);
@@ -839,7 +851,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 		case WM_MOUSEMOVE:
 		{
-			mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
+
 			static int addrTrackPrev = -1;
 
 			POINT pt = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
@@ -863,9 +877,10 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			switch (wParam) {
 				case DB_UPDATE:
 				{
-					mp_settings *mps = (mp_settings*) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					mp_settings *mps = (mp_settings*) lpTabInfo->tabInfo;
 					if (mps->track != -1 && lParam == 0) {
-						mps->addr = ((unsigned short*) &lpDebuggerCalc->cpu)[mps->track/2];
+						mps->addr = ((unsigned short*) &mps->lpCalc->cpu)[mps->track/2];
 					}
 					
 					//setup the scroll bar 8 isn't used
@@ -880,7 +895,9 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 			return 0;
 		case WM_DESTROY: {
-			mp_settings *mps = (mp_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			mp_settings *mps = (mp_settings *) lpTabInfo->tabInfo;
+			free(lpTabInfo);
 			if (mps->memNum != -1) {
 				TCHAR buffer[64];
 				StringCbPrintf(buffer, sizeof(buffer), _T("Mem%i"), mps->memNum);

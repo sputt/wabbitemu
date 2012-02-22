@@ -11,13 +11,9 @@
 #include "resource.h"
 
 extern HINSTANCE g_hInst;
-extern HFONT hfontSegoe, hfontLucida, hfontLucidaBold;
-extern HWND hdisasm;
 
 #define DBREG_ORGX	12
 #define DBREG_ORGY	0
-static SCROLLINFO si;
-int regPanesYScroll;
 
 struct db_reg {
 	unsigned int offset;
@@ -33,22 +29,19 @@ static const struct db_reg reg_offset[] = {
 	coff(iy, "iy"), coff(pc, "pc"),
 	coff(i, "i"), coff(imode, "im"), coff(r, "r")};
 
-static RECT val_locs[NumElm(reg_offset)];
-static int kRegRow, kRegAddr;
-
-void ValueDraw(HDC hdc, RECT *dr, int i) {
+void ValueDraw(LPCALC lpCalc, LPDEBUGWINDOWINFO lpDebugInfo, HDC hdc, RECT *dr, int i) {
 	TCHAR szRegVal[16];
 
-	dr->right = dr->left + kRegAddr;
+	dr->right = dr->left + lpDebugInfo->kRegAddr;
 	StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%s"), reg_offset[i].name);
-	SelectObject(hdc, hfontLucida);
+	SelectObject(hdc, lpDebugInfo->hfontLucida);
 	SetTextColor(hdc, DBCOLOR_HILIGHT);
 	DrawText(hdc, szRegVal, -1, dr, DT_LEFT | DT_VCENTER | DT_SINGLELINE);
 
 	SetTextColor(hdc, RGB(0,0,0));
 	dr->left = dr->right;
-	dr->right += kRegAddr;
-	SelectObject(hdc, hfontLucida);
+	dr->right += lpDebugInfo->kRegAddr;
+	SelectObject(hdc, lpDebugInfo->hfontLucida);
 
 	if (i < REG16_ROWS * REG16_COLS) {
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%04X"), reg16(reg_offset[i].offset));
@@ -56,7 +49,7 @@ void ValueDraw(HDC hdc, RECT *dr, int i) {
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%02X"), reg8(reg_offset[i].offset));
 		DrawText(hdc, szRegVal, -1, dr, DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 	}
-	val_locs[i] = *dr;
+	lpDebugInfo->val_locs[i] = *dr;
 
 }
 
@@ -64,33 +57,33 @@ static TEXTMETRIC tm;
 static HWND hwndVal = NULL;
 static int vi;
 
-void HandleEditMessages(HWND hwnd, WPARAM wParam, LPARAM lParam) {
-	switch (HIWORD(wParam)) {
-		case EN_CHANGE:
-		case 256:
-		case EN_UPDATE:
-		case EN_MAXTEXT:
-			break;
-
-		case EN_KILLFOCUS:
-			if (GetFocus() == hwnd) break;
-		case EN_SUBMIT:
-
-		default:
-		if (vi != -1) {
-			if (vi < REG16_ROWS*REG16_COLS) {
-				ValueSubmit(hwndVal, ((TCHAR *) (&lpDebuggerCalc->cpu)) + reg_offset[vi].offset, 2);
-			} else {
-				ValueSubmit(hwndVal, ((TCHAR *) (&lpDebuggerCalc->cpu)) + reg_offset[vi].offset, 1);
-
-			}
-			Debug_UpdateWindow(GetParent(hwnd));
-		}
-		hwndVal = NULL;
-		return;
-	}
-	return;
-}
+//void HandleEditMessages(HWND hwnd, WPARAM wParam, LPARAM lParam) {
+//	switch (HIWORD(wParam)) {
+//		case EN_CHANGE:
+//		case 256:
+//		case EN_UPDATE:
+//		case EN_MAXTEXT:
+//			break;
+//
+//		case EN_KILLFOCUS:
+//			if (GetFocus() == hwnd) break;
+//		case EN_SUBMIT:
+//
+//		default:
+//		if (vi != -1) {
+//			if (vi < REG16_ROWS*REG16_COLS) {
+//				ValueSubmit(hwndVal, ((TCHAR *) (&lpCalc->cpu)) + reg_offset[vi].offset, 2);
+//			} else {
+//				ValueSubmit(hwndVal, ((TCHAR *) (&lpCalc->cpu)) + reg_offset[vi].offset, 1);
+//
+//			}
+//			Debug_UpdateWindow(GetParent(hwnd));
+//		}
+//		hwndVal = NULL;
+//		return;
+//	}
+//	return;
+//}
 
 void ClearEditField(HWND hwnd) {
 
@@ -100,7 +93,7 @@ void ClearEditField(HWND hwnd) {
 
 }
 
-void CreateEditField(HWND hwnd, POINT p) {
+void CreateEditField(LPCALC lpCalc, HWND hwnd, LPDEBUGWINDOWINFO lpDebugInfo, POINT p) {
 
 	if (hwndVal) {
 		SendMessage(hwnd, WM_COMMAND, EN_SUBMIT<<16, (LPARAM) hwndVal);
@@ -108,7 +101,7 @@ void CreateEditField(HWND hwnd, POINT p) {
 
 	unsigned int i;
 	for (i = 0; i < NumElm(reg_offset); i++) {
-		if (PtInRect(&val_locs[i], p)) {
+		if (PtInRect(&lpDebugInfo->val_locs[i], p)) {
 			vi = i;
 			break;
 		}
@@ -139,14 +132,14 @@ void CreateEditField(HWND hwnd, POINT p) {
 	hwndVal =
 	CreateWindow(_T("EDIT"), rval,
 		WS_CHILD | WS_VISIBLE | WS_BORDER | ES_LEFT | ES_MULTILINE,
-		val_locs[vi].left-2,
-		val_locs[vi].top,
-		(edit_width*kRegAddr/4)+4,
-		kRegRow,
+		lpDebugInfo->val_locs[vi].left - 2,
+		lpDebugInfo->val_locs[vi].top,
+		(edit_width * lpDebugInfo->kRegAddr / 4) + 4,
+		lpDebugInfo->kRegRow,
 		hwnd,
 		0, g_hInst, NULL);
 
-	SubclassEdit(hwndVal, edit_width, HEX4);
+	SubclassEdit(hwndVal, lpDebugInfo->hfontLucida, edit_width, HEX4);
 }
 
 static BOOL CALLBACK EnumDeselectChildren(HWND hwndChild, LPARAM lParam) {
@@ -155,25 +148,28 @@ static BOOL CALLBACK EnumDeselectChildren(HWND hwndChild, LPARAM lParam) {
 }
 
 LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-
+	static LPCALC lpCalc;
+	static LPDEBUGWINDOWINFO lpDebugInfo;
 	switch (Message) {
 	case WM_CREATE:
 	{
+		lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 		struct {TCHAR *name; void *data; size_t size;} reg[] =
 		{
-				{_T("af"), &lpDebuggerCalc->cpu.af, 2}, {_T("af'"), &lpDebuggerCalc->cpu.afp, 2},
-				{_T("bc"), &lpDebuggerCalc->cpu.bc, 2}, {_T("bc'"), &lpDebuggerCalc->cpu.bcp, 2},
-				{_T("de"), &lpDebuggerCalc->cpu.de, 2}, {_T("de'"), &lpDebuggerCalc->cpu.dep, 2},
-				{_T("hl"), &lpDebuggerCalc->cpu.hl, 2}, {_T("hl'"), &lpDebuggerCalc->cpu.hlp, 2},
-				{_T("ix"), &lpDebuggerCalc->cpu.ix, 2}, {_T("sp"),  &lpDebuggerCalc->cpu.sp, 2},
-				{_T("iy"), &lpDebuggerCalc->cpu.iy, 2}, {_T("pc"),  &lpDebuggerCalc->cpu.pc, 2},
+				{_T("af"), &lpCalc->cpu.af, 2}, {_T("af'"), &lpCalc->cpu.afp, 2},
+				{_T("bc"), &lpCalc->cpu.bc, 2}, {_T("bc'"), &lpCalc->cpu.bcp, 2},
+				{_T("de"), &lpCalc->cpu.de, 2}, {_T("de'"), &lpCalc->cpu.dep, 2},
+				{_T("hl"), &lpCalc->cpu.hl, 2}, {_T("hl'"), &lpCalc->cpu.hlp, 2},
+				{_T("ix"), &lpCalc->cpu.ix, 2}, {_T("sp"),  &lpCalc->cpu.sp, 2},
+				{_T("iy"), &lpCalc->cpu.iy, 2}, {_T("pc"),  &lpCalc->cpu.pc, 2},
 		};
 
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 		// Create all of the value fields
 		int i;
 		for (i = 0; i < NumElm(reg); i++) {
-			HWND hwndValue = CreateValueField(hwnd, reg[i].name, kRegAddr, reg[i].data, reg[i].size, 4, HEX4);
-			SetWindowPos(hwndValue, NULL, (i % 2) * kRegAddr*3, kRegRow * (i / 2), 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+			HWND hwndValue = CreateValueField(hwnd, lpDebugInfo, reg[i].name, lpDebugInfo->kRegAddr, reg[i].data, reg[i].size, 4, HEX4);
+			SetWindowPos(hwndValue, NULL, (i % 2) * lpDebugInfo->kRegAddr*3, lpDebugInfo->kRegRow * (i / 2), 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 		}
 		return 0;
@@ -182,8 +178,8 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	{
 		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr((HWND) lParam, GWLP_USERDATA);
 		if (!_tcscmp(vfs->szName, _T("pc")))
-			SendMessage(GetParent(hdisasm), WM_COMMAND, DB_CYCLEPCS, 0);
-		Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
+			SendMessage(GetParent(lpDebugInfo->hdisasm), WM_COMMAND, DB_CYCLEPCS, 0);
+		Debug_UpdateWindow(lpCalc->hwndDebug);
 		return 0;
 	}
 	case WM_PAINT:
@@ -203,7 +199,7 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	}
 	case WM_SIZE:
 	{
-		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr * 6, kRegRow * 8, SWP_NOMOVE | SWP_NOZORDER);
+		SetWindowPos(hwnd, NULL, 0, 0, lpDebugInfo->kRegAddr * 6, lpDebugInfo->kRegRow * 8, SWP_NOMOVE | SWP_NOZORDER);
 		return 0;
 	}
 	case WM_USER:
@@ -223,18 +219,23 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND chkRO[4];
 	static HWND rdoType[8];
+	static LPCALC lpCalc;
+	static LPDEBUGWINDOWINFO lpDebugInfo;
 
 	switch (Message) {
 	case WM_CREATE:
 	{
-
+		lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 		HWND hwndValue;
 		int i;
 		for (i = 0; i < 4; i++) {
-			int row_y = kRegRow / 4 + kRegRow * (i + 1);
+			int row_y = lpDebugInfo->kRegRow / 4 + lpDebugInfo->kRegRow * (i + 1);
+			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 
-			hwndValue = CreateValueField(hwnd, _T(""), 0, &lpDebuggerCalc->cpu.mem_c->banks[i].page, 1, 3, HEX2, lpDebuggerCalc->mem_c.flash_pages - 1);
-			SetWindowPos(hwndValue, NULL, kRegAddr * 4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+			hwndValue = CreateValueField(hwnd, lpDebugInfo, _T(""), 0, &lpCalc->cpu.mem_c->banks[i].page, 1, 3, HEX2, lpCalc->mem_c.flash_pages - 1);
+			SetWindowPos(hwndValue, NULL, lpDebugInfo->kRegAddr * 4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 
 			rdoType[2 * i] =
@@ -242,14 +243,14 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 					_T("BUTTON"),
 					_T(""),
 					WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON | WS_GROUP,
-					kRegAddr*3/2+kRegAddr/8, row_y, kRegAddr/2, kRegRow,
+					lpDebugInfo->kRegAddr*3/2+lpDebugInfo->kRegAddr/8, row_y, lpDebugInfo->kRegAddr/2, lpDebugInfo->kRegRow,
 					hwnd, (HMENU) (20+2*i), g_hInst, NULL);
 			rdoType[2*i+1] =
 				CreateWindow(
 					_T("BUTTON"),
 					_T(""),
 					WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON,
-					kRegAddr * 5 / 2 - kRegAddr / 8, row_y, kRegAddr / 2, kRegRow,
+					lpDebugInfo->kRegAddr * 5 / 2 - lpDebugInfo->kRegAddr / 8, row_y, lpDebugInfo->kRegAddr / 2, lpDebugInfo->kRegRow,
 					hwnd, (HMENU) (20 + 2 * i + 1), g_hInst, NULL);
 			// not quite the right thing, but close enough
 			DWORD check_width = GetSystemMetrics(SM_CYMENUCHECK);
@@ -258,9 +259,9 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 				_T("BUTTON"),
 				_T(""),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-				kRegAddr * 3 + ((kRegAddr - check_width) / 2), row_y, kRegAddr / 2, kRegRow,
+				lpDebugInfo->kRegAddr * 3 + ((lpDebugInfo->kRegAddr - check_width) / 2), row_y, lpDebugInfo->kRegAddr / 2, lpDebugInfo->kRegRow,
 				hwnd, (HMENU) (30 + i), g_hInst, NULL);
-			SetWindowFont(chkRO[i], hfontSegoe, TRUE);
+			SetWindowFont(chkRO[i], lpDebugInfo->hfontSegoe, TRUE);
 		}
 
 		return 0;
@@ -272,15 +273,15 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 			if ((LOWORD(wParam) >= 20) && (LOWORD(wParam) < 28)) {
 				Button_SetCheck(rdoType[((LOWORD(wParam) - 20) / 2) * 2 + 0], BST_UNCHECKED);
 				Button_SetCheck(rdoType[((LOWORD(wParam) - 20) / 2) * 2 + 1], BST_UNCHECKED);
-				bank_state_t *bank = &lpDebuggerCalc->mem_c.banks[(LOWORD(wParam) - 20) / 2];
+				bank_state_t *bank = &lpCalc->mem_c.banks[(LOWORD(wParam) - 20) / 2];
 				bank->ram = !(LOWORD(wParam) % 2);
 			} else if (LOWORD(wParam) >= 30 && LOWORD(wParam) < 34) {
-				lpDebuggerCalc->mem_c.banks[LOWORD(wParam) - 30].read_only = !lpDebuggerCalc->mem_c.banks[LOWORD(wParam) - 30].read_only;
+				lpCalc->mem_c.banks[LOWORD(wParam) - 30].read_only = !lpCalc->mem_c.banks[LOWORD(wParam) - 30].read_only;
 			}
 			break;
 		}
 		Debug_UpdateWindow(hwnd);
-		Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
+		Debug_UpdateWindow(lpCalc->hwndDebug);
 		return 0;
 	}
 	case WM_PAINT:
@@ -295,53 +296,53 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 
 		FillRect(hdc, &rc, GetStockBrush(WHITE_BRUSH));
 
-		rc.bottom = rc.top + kRegRow;
-		rc.left = kRegAddr * 2;
-		rc.right = kRegAddr * 3;
-		SelectObject(hdc, hfontSegoe);
-		SetRect(&rc, kRegAddr * 3 / 2 + kRegAddr / 8, 0, kRegAddr * 3 / 2 + kRegAddr / 8 + kRegAddr / 2, kRegRow);
+		rc.bottom = rc.top + lpDebugInfo->kRegRow;
+		rc.left = lpDebugInfo->kRegAddr * 2;
+		rc.right = lpDebugInfo->kRegAddr * 3;
+		SelectObject(hdc, lpDebugInfo->hfontSegoe);
+		SetRect(&rc, lpDebugInfo->kRegAddr * 3 / 2 + lpDebugInfo->kRegAddr / 8, 0, lpDebugInfo->kRegAddr * 3 / 2 + lpDebugInfo->kRegAddr / 8 + lpDebugInfo->kRegAddr / 2, lpDebugInfo->kRegRow);
 		DrawTextA(hdc, "R", -1, &rc, DT_CENTER);
 
-		SetRect(&rc, kRegAddr * 3 / 2 + kRegAddr / 8, 0, kRegAddr * 5 / 2 - kRegAddr / 8 + kRegAddr / 2, kRegRow);
+		SetRect(&rc, lpDebugInfo->kRegAddr * 3 / 2 + lpDebugInfo->kRegAddr / 8, 0, lpDebugInfo->kRegAddr * 5 / 2 - lpDebugInfo->kRegAddr / 8 + lpDebugInfo->kRegAddr / 2, lpDebugInfo->kRegRow);
 		DrawTextA(hdc, "-", -1, &rc, DT_CENTER);
 
-		SetRect(&rc, kRegAddr * 5 / 2 - kRegAddr / 8, 0, kRegAddr * 5 / 2 - kRegAddr / 8 + kRegAddr / 2, kRegRow);
+		SetRect(&rc, lpDebugInfo->kRegAddr * 5 / 2 - lpDebugInfo->kRegAddr / 8, 0, lpDebugInfo->kRegAddr * 5 / 2 - lpDebugInfo->kRegAddr / 8 + lpDebugInfo->kRegAddr / 2, lpDebugInfo->kRegRow);
 		DrawTextA(hdc, "F", -1, &rc, DT_CENTER);
 
-		SetRect(&rc, kRegAddr * 3, 0, kRegAddr * 4, kRegRow);
+		SetRect(&rc, lpDebugInfo->kRegAddr * 3, 0, lpDebugInfo->kRegAddr * 4, lpDebugInfo->kRegRow);
 		DrawTextA(hdc, "RO", -1, &rc, DT_CENTER);
 
-		OffsetRect(&rc, kRegAddr, 0);
+		OffsetRect(&rc, lpDebugInfo->kRegAddr, 0);
 		DrawTextA(hdc, "Page", -1, &rc, DT_CENTER);
 
-		SetRect(&rc, 0, kRegRow / 4 + kRegRow, kRegAddr * 3 / 2, kRegRow / 4 + kRegRow * 2);
+		SetRect(&rc, 0, lpDebugInfo->kRegRow / 4 + lpDebugInfo->kRegRow, lpDebugInfo->kRegAddr * 3 / 2, lpDebugInfo->kRegRow / 4 + lpDebugInfo->kRegRow * 2);
 		int i;
 		for (i = 0; i < 4; i++)
 		{
 			char bank[16];
 			sprintf_s(bank, "Bank %d", i);
 			DrawTextA(hdc, bank, -1, &rc, DT_LEFT);
-			OffsetRect(&rc, 0, kRegRow);
+			OffsetRect(&rc, 0, lpDebugInfo->kRegRow);
 		}
 
 		SelectObject(hdc, GetStockObject(DC_PEN));
 		SetDCPenColor(hdc, GetSysColor(COLOR_BTNFACE));
 
 		GetClientRect(hwnd, &rc);
-		MoveToEx(hdc, kRegAddr * 3 / 2, 0, NULL);
-		LineTo(hdc,  kRegAddr * 3 / 2, rc.bottom - kRegRow * 2);
-		MoveToEx(hdc, 3 * kRegAddr, 0, NULL);
-		LineTo(hdc,  3 * kRegAddr, rc.bottom - kRegRow*2);
-		MoveToEx(hdc, 4 * kRegAddr - kRegRow / 8, 0, NULL);
-		LineTo(hdc,  4 * kRegAddr - kRegRow / 8, rc.bottom - kRegRow * 2);
-		MoveToEx(hdc, 5 * kRegAddr, 0, NULL);
-		LineTo(hdc,  5 * kRegAddr, rc.bottom - kRegRow * 2);
+		MoveToEx(hdc, lpDebugInfo->kRegAddr * 3 / 2, 0, NULL);
+		LineTo(hdc,  lpDebugInfo->kRegAddr * 3 / 2, rc.bottom - lpDebugInfo->kRegRow * 2);
+		MoveToEx(hdc, 3 * lpDebugInfo->kRegAddr, 0, NULL);
+		LineTo(hdc,  3 * lpDebugInfo->kRegAddr, rc.bottom - lpDebugInfo->kRegRow*2);
+		MoveToEx(hdc, 4 * lpDebugInfo->kRegAddr - lpDebugInfo->kRegRow / 8, 0, NULL);
+		LineTo(hdc,  4 * lpDebugInfo->kRegAddr - lpDebugInfo->kRegRow / 8, rc.bottom - lpDebugInfo->kRegRow * 2);
+		MoveToEx(hdc, 5 * lpDebugInfo->kRegAddr, 0, NULL);
+		LineTo(hdc,  5 * lpDebugInfo->kRegAddr, rc.bottom - lpDebugInfo->kRegRow * 2);
 		EndPaint(hwnd, &ps);
 		return 0;
 	}
 	case WM_SIZE:
 	{
-		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr * 6, kRegRow / 4 + kRegRow * 2 + kRegRow * 5, SWP_NOMOVE | SWP_NOZORDER);
+		SetWindowPos(hwnd, NULL, 0, 0, lpDebugInfo->kRegAddr * 6, lpDebugInfo->kRegRow / 4 + lpDebugInfo->kRegRow * 2 + lpDebugInfo->kRegRow * 5, SWP_NOMOVE | SWP_NOZORDER);
 		return 0;
 	}
 	case WM_CTLCOLORSTATIC:
@@ -356,10 +357,10 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 			int i;
 			for (i = 0; i < 4; i++)
 			{
-				bank_state_t *bank = &lpDebuggerCalc->mem_c.banks[i];
+				bank_state_t *bank = &lpCalc->mem_c.banks[i];
 				Button_SetCheck(rdoType[2 * i + (bank->ram ? 0 : 1)], BST_CHECKED);
 				Button_SetCheck(chkRO[i], bank->read_only ? BST_CHECKED : BST_UNCHECKED);
-				bank->addr = bank->ram ? lpDebuggerCalc->mem_c.ram : lpDebuggerCalc->mem_c.flash;
+				bank->addr = bank->ram ? lpCalc->mem_c.ram : lpCalc->mem_c.flash;
 				bank->addr += bank->page * PAGE_SIZE;
 			}
 			break;
@@ -379,19 +380,24 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND chkHalt, editFreq;
 	static double freq;
+	static LPCALC lpCalc;
+	static LPDEBUGWINDOWINFO lpDebugInfo;
 
 	switch (Message) {
 	case WM_CREATE:
 	{
+		lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 
 		HWND hwndValue;
-		freq = ((double) lpDebuggerCalc->cpu.timer_c->freq) / 1000000.0;
-		hwndValue = CreateValueField(hwnd, _T("Freq."), kRegAddr*3/2, &freq, sizeof(double), 5, FLOAT2);
-		SetWindowPos(hwndValue, NULL, 0, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		freq = ((double) lpCalc->cpu.timer_c->freq) / 1000000.0;
+		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("Freq."), lpDebugInfo->kRegAddr*3/2, &freq, sizeof(double), 5, FLOAT2);
+		SetWindowPos(hwndValue, NULL, 0, lpDebugInfo->kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, _T("Bus"), kRegAddr*2 + kRegAddr/4, &lpDebuggerCalc->cpu.bus, 1, 2, HEX2);
-		SetWindowPos(hwndValue, NULL, 0, kRegRow*2, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("Bus"), lpDebugInfo->kRegAddr*2 + lpDebugInfo->kRegAddr/4, &lpCalc->cpu.bus, 1, 2, HEX2);
+		SetWindowPos(hwndValue, NULL, 0, lpDebugInfo->kRegRow*2, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
 		chkHalt =
@@ -399,25 +405,26 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			_T("BUTTON"),
 			_T("Halt"),
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-			0, 0, 3*kRegAddr, kRegRow,
+			0, 0, 3*lpDebugInfo->kRegAddr, lpDebugInfo->kRegRow,
 			hwnd, (HMENU) 1, g_hInst, NULL);
-		SetWindowFont(chkHalt, hfontSegoe, TRUE);
+		SetWindowFont(chkHalt, lpDebugInfo->hfontSegoe, TRUE);
 
 		return 0;
 	}
 	case WM_COMMAND:
 	{
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (HIWORD(wParam)) {
 			case BN_CLICKED:
 				switch (LOWORD(wParam)) {
 					case 1:
-						lpDebuggerCalc->cpu.halt = !lpDebuggerCalc->cpu.halt;
+						lpCalc->cpu.halt = !lpCalc->cpu.halt;
 						break;
 				}
-				Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
+				Debug_UpdateWindow(lpCalc->hwndDebug);
 				break;
 			case EN_CHANGE: {
-				lpDebuggerCalc->cpu.timer_c->freq = (uint32_t)(freq * 1000000.0);
+				lpCalc->cpu.timer_c->freq = (uint32_t)(freq * 1000000.0);
 				break;
 			}
 		}
@@ -440,7 +447,9 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	}
 	case WM_SIZE:
 	{
-		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr*6, kRegRow * 2 + kRegRow*3, SWP_NOMOVE | SWP_NOZORDER);
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+		SetWindowPos(hwnd, NULL, 0, 0, lpDebugInfo->kRegAddr*6, lpDebugInfo->kRegRow * 2 + lpDebugInfo->kRegRow*3, SWP_NOMOVE | SWP_NOZORDER);
 		return 0;
 	}
 	case WM_CTLCOLORSTATIC:
@@ -448,10 +457,11 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	{
 		return (LRESULT) GetStockObject(WHITE_BRUSH);
 	}
-	case WM_USER:
+	case WM_USER: {
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (wParam) {
 		case DB_UPDATE:
-			Button_SetCheck(chkHalt, lpDebuggerCalc->cpu.halt ? BST_CHECKED : BST_UNCHECKED);
+			Button_SetCheck(chkHalt, lpCalc->cpu.halt ? BST_CHECKED : BST_UNCHECKED);
 			break;
 		case VF_DESELECT_CHILDREN:
 			EnumChildWindows(hwnd, EnumDeselectChildren, (LPARAM) hwnd);
@@ -460,6 +470,7 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			break;
 		}
 		return 0;
+	}
 	default:
 		return DefWindowProc(hwnd, Message, wParam, lParam);
 	}
@@ -468,13 +479,19 @@ LRESULT CALLBACK DBCPUProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 LRESULT CALLBACK DBKeyboardProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND chkOn;
 	static char value[8];
+	static LPCALC lpCalc;
+	static LPDEBUGWINDOWINFO lpDebugInfo;
 
 	switch (Message) {
 	case WM_CREATE:
 	{
 		TCHAR buf[32];
 		HWND hwndValue;
-		keypad_t *kp = lpDebuggerCalc->cpu.pio.keypad;
+		lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+
+		keypad_t *kp = lpCalc->cpu.pio.keypad;
 		for (int i = 0; i < 7; i++) {
 			value[i] = 0;
 			for (int j = 0; j < 8; j++) {
@@ -483,8 +500,8 @@ LRESULT CALLBACK DBKeyboardProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 				}
 			}
 			StringCbPrintf(buf, sizeof(buf), _T("Group %02X"), 0xFF & ~(1 << i));
-			hwndValue = CreateValueField(hwnd, buf, kRegAddr * 3, &value[i], sizeof(char), 8, BIN8);
-			SetWindowPos(hwndValue, NULL, 0, kRegRow * i, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+			hwndValue = CreateValueField(hwnd, lpDebugInfo, buf, lpDebugInfo->kRegAddr * 3, &value[i], sizeof(char), 8, BIN8);
+			SetWindowPos(hwndValue, NULL, 0, lpDebugInfo->kRegRow * i, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 		}
 
@@ -493,26 +510,27 @@ LRESULT CALLBACK DBKeyboardProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			_T("BUTTON"),
 			_T("On Key Pressed"),
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-			0, kRegRow * 7 + 3, kRegAddr * 3, kRegRow,
+			0, lpDebugInfo->kRegRow * 7 + 3, lpDebugInfo->kRegAddr * 3, lpDebugInfo->kRegRow,
 			hwnd, (HMENU) 1, g_hInst, NULL);
-		SetWindowFont(chkOn, hfontSegoe, TRUE);
+		SetWindowFont(chkOn, lpDebugInfo->hfontSegoe, TRUE);
 		SendMessage(hwnd, WM_SIZE, 0, 0);
 
 		return 0;
 	}
 	case WM_COMMAND:
 	{
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (HIWORD(wParam)) {
 			case BN_CLICKED:
 				switch (LOWORD(wParam)) {
 					case 1:
-						lpDebuggerCalc->cpu.pio.keypad->on_pressed = !lpDebuggerCalc->cpu.pio.keypad->on_pressed;
+						lpCalc->cpu.pio.keypad->on_pressed = !lpCalc->cpu.pio.keypad->on_pressed;
 						break;
 				}
-				Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
+				Debug_UpdateWindow(lpCalc->hwndDebug);
 				break;
 			case EN_CHANGE: {
-				keypad_t *kp = lpDebuggerCalc->cpu.pio.keypad;
+				keypad_t *kp = lpCalc->cpu.pio.keypad;
 				for (int i = 0; i < 7; i++) {
 					char val = value[i];
 					for (int j = 0; j < 8; j++, val >>= 1) {
@@ -541,7 +559,9 @@ LRESULT CALLBACK DBKeyboardProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 	}
 	case WM_SIZE:
 	{
-		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr * 6, kRegRow * 9 + 10, SWP_NOMOVE | SWP_NOZORDER);
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+		SetWindowPos(hwnd, NULL, 0, 0, lpDebugInfo->kRegAddr * 6, lpDebugInfo->kRegRow * 9 + 10, SWP_NOMOVE | SWP_NOZORDER);
 		return 0;
 	}
 	case WM_CTLCOLORSTATIC:
@@ -550,9 +570,10 @@ LRESULT CALLBACK DBKeyboardProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 		return (LRESULT) GetStockObject(WHITE_BRUSH);
 	}
 	case WM_USER:
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (wParam) {
 			case DB_UPDATE: {
-				keypad_t *kp = lpDebuggerCalc->cpu.pio.keypad;
+				keypad_t *kp = lpCalc->cpu.pio.keypad;
 				Button_SetCheck(chkOn, kp->on_pressed);
 				for (int i = 0; i < 7; i++) {
 					value[i] = 0;
@@ -579,58 +600,65 @@ LRESULT CALLBACK DBKeyboardProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 
 LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND chkIff1, chkIff2;
+	static LPCALC lpCalc;
+	static LPDEBUGWINDOWINFO lpDebugInfo;
 
 	switch (Message) {
 	case WM_CREATE:
 	{
+		lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+
 		chkIff1 =
 		CreateWindow(
 			_T("BUTTON"),
 			_T("iff1"),
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-			0, 0, 2*kRegAddr, kRegRow,
+			0, 0, 2*lpDebugInfo->kRegAddr, lpDebugInfo->kRegRow,
 			hwnd, (HMENU) 1, g_hInst, NULL);
-		SetWindowFont(chkIff1, hfontSegoe, TRUE);
+		SetWindowFont(chkIff1, lpDebugInfo->hfontSegoe, TRUE);
 
 		chkIff2 =
 		CreateWindow(
 			_T("BUTTON"),
 			_T("iff2"),
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-			2*kRegAddr, 0, 2*kRegAddr, kRegRow,
+			2*lpDebugInfo->kRegAddr, 0, 2*lpDebugInfo->kRegAddr, lpDebugInfo->kRegRow,
 			hwnd, (HMENU) 2, g_hInst, NULL);
-		SetWindowFont(chkIff2, hfontSegoe, TRUE);
+		SetWindowFont(chkIff2, lpDebugInfo->hfontSegoe, TRUE);
 
-		HWND hwndValue = CreateValueField(hwnd, _T("IM"), kRegAddr, &lpDebuggerCalc->cpu.imode, 1, 2, HEX2);
-		SetWindowPos(hwndValue, NULL, 0, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		HWND hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("IM"), lpDebugInfo->kRegAddr, &lpCalc->cpu.imode, 1, 2, HEX2);
+		SetWindowPos(hwndValue, NULL, 0, lpDebugInfo->kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, _T("i"), kRegAddr, &lpDebuggerCalc->cpu.i, 1, 2, HEX2);
-		SetWindowPos(hwndValue, NULL, 2*kRegAddr, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("i"), lpDebugInfo->kRegAddr, &lpCalc->cpu.i, 1, 2, HEX2);
+		SetWindowPos(hwndValue, NULL, 2*lpDebugInfo->kRegAddr, lpDebugInfo->kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, _T("Mask"), kRegAddr, &lpDebuggerCalc->cpu.pio.stdint->intactive, 1, 2, HEX2);
-		SetWindowPos(hwndValue, NULL, 0, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("Mask"), lpDebugInfo->kRegAddr, &lpCalc->cpu.pio.stdint->intactive, 1, 2, HEX2);
+		SetWindowPos(hwndValue, NULL, 0, 2*lpDebugInfo->kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, _T("r"), kRegAddr, &lpDebuggerCalc->cpu.r, 1, 2, HEX2);
-		SetWindowPos(hwndValue, NULL, 2*kRegAddr, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("r"), lpDebugInfo->kRegAddr, &lpCalc->cpu.r, 1, 2, HEX2);
+		SetWindowPos(hwndValue, NULL, 2*lpDebugInfo->kRegAddr, 2*lpDebugInfo->kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 		return 0;
 	}
 	case WM_COMMAND:
 	{
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (HIWORD(wParam)) {
 			case BN_CLICKED:
 				switch (LOWORD(wParam)) {
 					case 1:
-						lpDebuggerCalc->cpu.iff1 = !lpDebuggerCalc->cpu.iff1;
+						lpCalc->cpu.iff1 = !lpCalc->cpu.iff1;
 						break;
 					case 2:
-						lpDebuggerCalc->cpu.iff2 = !lpDebuggerCalc->cpu.iff2;
+						lpCalc->cpu.iff2 = !lpCalc->cpu.iff2;
 						break;
 				}
-				Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
+				Debug_UpdateWindow(lpCalc->hwndDebug);
 		}
 		return 0;
 	}
@@ -641,6 +669,9 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 		hdc = BeginPaint(hwnd, &ps);
 
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+
 		RECT rc;
 		GetClientRect(hwnd, &rc);
 
@@ -648,53 +679,53 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 		TCHAR szRegVal[16];
 		double ntimer;
-		SetRect(&rc, 0, kRegRow*3, kRegAddr*3, kRegRow*4);
+		SetRect(&rc, 0, lpDebugInfo->kRegRow*3, lpDebugInfo->kRegAddr*3, lpDebugInfo->kRegRow*4);
 
-		ntimer = tc_elapsed(&lpDebuggerCalc->timer_c) - lpDebuggerCalc->cpu.pio.stdint->lastchk1;
+		ntimer = tc_elapsed(&lpCalc->timer_c) - lpCalc->cpu.pio.stdint->lastchk1;
 		ntimer *= 1000;
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
-		SelectObject(hdc, hfontSegoe);
+		SelectObject(hdc, lpDebugInfo->hfontSegoe);
 		DrawText(hdc, _T("Next Timer1"), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-		SelectObject(hdc, hfontLucida);
-		OffsetRect(&rc, kRegAddr*3, 0);
+		SelectObject(hdc, lpDebugInfo->hfontLucida);
+		OffsetRect(&rc, lpDebugInfo->kRegAddr*3, 0);
 		DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-		SelectObject(hdc, hfontSegoe);
-		OffsetRect(&rc, -kRegAddr*3, kRegRow);
+		SelectObject(hdc, lpDebugInfo->hfontSegoe);
+		OffsetRect(&rc, -lpDebugInfo->kRegAddr*3, lpDebugInfo->kRegRow);
 		DrawText(hdc, _T("Timer1 dur."), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-		ntimer = lpDebuggerCalc->cpu.pio.stdint->timermax1;
+		ntimer = lpCalc->cpu.pio.stdint->timermax1;
 		ntimer *= 1000;
 		StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 
-		SelectObject(hdc, hfontLucida);
-		OffsetRect(&rc, kRegAddr*3, 0);
+		SelectObject(hdc, lpDebugInfo->hfontLucida);
+		OffsetRect(&rc, lpDebugInfo->kRegAddr*3, 0);
 		DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-		if (lpDebuggerCalc->cpu.pio.model != TI_85 && lpDebuggerCalc->cpu.pio.model != TI_86) {
-			SelectObject(hdc, hfontSegoe);
-			OffsetRect(&rc, -kRegAddr*3, kRegRow*3/2);
+		if (lpCalc->cpu.pio.model != TI_85 && lpCalc->cpu.pio.model != TI_86) {
+			SelectObject(hdc, lpDebugInfo->hfontSegoe);
+			OffsetRect(&rc, -lpDebugInfo->kRegAddr*3, lpDebugInfo->kRegRow*3/2);
 			DrawText(hdc, _T("Next Timer2"), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-			ntimer = tc_elapsed(&lpDebuggerCalc->timer_c) - lpDebuggerCalc->cpu.pio.stdint->lastchk2;
+			ntimer = tc_elapsed(&lpCalc->timer_c) - lpCalc->cpu.pio.stdint->lastchk2;
 			ntimer *= 1000;
 			StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 
-			SelectObject(hdc, hfontLucida);
-			OffsetRect(&rc, kRegAddr*3, 0);
+			SelectObject(hdc, lpDebugInfo->hfontLucida);
+			OffsetRect(&rc, lpDebugInfo->kRegAddr*3, 0);
 			DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-			SelectObject(hdc, hfontSegoe);
-			OffsetRect(&rc, -kRegAddr*3, kRegRow);
+			SelectObject(hdc, lpDebugInfo->hfontSegoe);
+			OffsetRect(&rc, -lpDebugInfo->kRegAddr*3, lpDebugInfo->kRegRow);
 			DrawText(hdc, _T("Timer2 dur."), -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 
-			ntimer = lpDebuggerCalc->cpu.pio.stdint->timermax2;
+			ntimer = lpCalc->cpu.pio.stdint->timermax2;
 			ntimer *= 1000;
 			StringCbPrintf(szRegVal, sizeof(szRegVal), _T("%0.4lf ms"), ntimer);
 
-			SelectObject(hdc, hfontLucida);
-			OffsetRect(&rc, kRegAddr*3, 0);
+			SelectObject(hdc, lpDebugInfo->hfontLucida);
+			OffsetRect(&rc, lpDebugInfo->kRegAddr*3, 0);
 			DrawText(hdc, szRegVal, -1, &rc, DT_LEFT | DT_BOTTOM | DT_SINGLELINE);
 		}
 
@@ -703,13 +734,15 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	}
 	case WM_SIZE:
 	{
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 		int height;
-		if (lpDebuggerCalc->cpu.pio.model == TI_85 || lpDebuggerCalc->cpu.pio.model == TI_86) {
-			height = kRegRow*6 + kRegRow/2 + kRegRow;
+		if (lpCalc->cpu.pio.model == TI_85 || lpCalc->cpu.pio.model == TI_86) {
+			height = lpDebugInfo->kRegRow*6 + lpDebugInfo->kRegRow/2 + lpDebugInfo->kRegRow;
 		} else {
-			height = kRegRow*2 + kRegRow*6 + kRegRow/2 + kRegRow;
+			height = lpDebugInfo->kRegRow*2 + lpDebugInfo->kRegRow*6 + lpDebugInfo->kRegRow/2 + lpDebugInfo->kRegRow;
 		}
-		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr*6, height, SWP_NOMOVE | SWP_NOZORDER);
+		SetWindowPos(hwnd, NULL, 0, 0, lpDebugInfo->kRegAddr*6, height, SWP_NOMOVE | SWP_NOZORDER);
 		return 0;
 	}
 	case WM_CTLCOLORSTATIC:
@@ -718,10 +751,11 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		return (LRESULT) GetStockObject(WHITE_BRUSH);
 	}
 	case WM_USER:
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (wParam) {
 		case DB_UPDATE:
-			Button_SetCheck(chkIff1, lpDebuggerCalc->cpu.iff1 ? BST_CHECKED : BST_UNCHECKED);
-			Button_SetCheck(chkIff2, lpDebuggerCalc->cpu.iff2 ? BST_CHECKED : BST_UNCHECKED);
+			Button_SetCheck(chkIff1, lpCalc->cpu.iff1 ? BST_CHECKED : BST_UNCHECKED);
+			Button_SetCheck(chkIff2, lpCalc->cpu.iff2 ? BST_CHECKED : BST_UNCHECKED);
 
 			InvalidateRect(hwnd, NULL, FALSE);
 			break;
@@ -741,45 +775,32 @@ LRESULT CALLBACK DBInterruptProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 
 LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND chkOn, grpMode, rdoXinc, rdoYinc, rdoXdec, rdoYdec;
+	static LPCALC lpCalc;
+	static LPDEBUGWINDOWINFO lpDebugInfo;
 
 	switch (Message) {
 	case WM_CREATE:
 	{
-		/*struct {char *name; void *data; size_t size;} reg[] =
-		{
-				{"X", &lpDebuggerCalc->cpu.pio.lcd->x, 1},
-				{"Y", &lpDebuggerCalc->cpu.pio.lcd->y, 1},
-				{"Z", &lpDebuggerCalc->cpu.pio.lcd->z, 1},
-				{"Contrast", &lpDebuggerCalc->cpu.pio.lcd->contrast, 1},
-				{"Mode", &lpDebuggerCalc->cpu.pio.lcd->mode, 1},
-		};*/
-
-		/*
-		// Create all of the value fields
-		int i;
-		for (i = 0; i < NumElm(reg); i++) {
-			HWND hwndValue = CreateValueField(hwnd, reg[i].name, reg[i].data, reg[i].size);
-			SetWindowPos(hwndValue, NULL, 0, kRegRow * i, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-			SendMessage(hwndValue, WM_SIZE, 0, 0);
-		}
-		*/
+		lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 
 		HWND hwndValue;
 
-		hwndValue = CreateValueField(hwnd, _T("X"), kRegAddr, &lpDebuggerCalc->cpu.pio.lcd->x, 4, 2, DEC3);
-		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, 0, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("X"), lpDebugInfo->kRegAddr, &lpCalc->cpu.pio.lcd->x, 4, 2, DEC3);
+		SetWindowPos(hwndValue, NULL, 7*lpDebugInfo->kRegAddr/2, 0, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, _T("Y"), kRegAddr, &lpDebuggerCalc->cpu.pio.lcd->y, 4, 2, DEC3);
-		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("Y"), lpDebugInfo->kRegAddr, &lpCalc->cpu.pio.lcd->y, 4, 2, DEC3);
+		SetWindowPos(hwndValue, NULL, 7*lpDebugInfo->kRegAddr/2, lpDebugInfo->kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, _T("Z"), kRegAddr, &lpDebuggerCalc->cpu.pio.lcd->z, 4, 2, DEC3);
-		SetWindowPos(hwndValue, NULL, 7*kRegAddr/2, 2*kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("Z"), lpDebugInfo->kRegAddr, &lpCalc->cpu.pio.lcd->z, 4, 2, DEC3);
+		SetWindowPos(hwndValue, NULL, 7*lpDebugInfo->kRegAddr/2, 2*lpDebugInfo->kRegRow, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
-		hwndValue = CreateValueField(hwnd, _T("Contrast"), kRegAddr*2, &lpDebuggerCalc->cpu.pio.lcd->contrast, 4, 2, DEC3);
-		SetWindowPos(hwndValue, NULL, 0, 5*kRegRow/4, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+		hwndValue = CreateValueField(hwnd, lpDebugInfo, _T("Contrast"), lpDebugInfo->kRegAddr*2, &lpCalc->cpu.pio.lcd->contrast, 4, 2, DEC3);
+		SetWindowPos(hwndValue, NULL, 0, 5*lpDebugInfo->kRegRow/4, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 		SendMessage(hwndValue, WM_SIZE, 0, 0);
 
 		chkOn =
@@ -787,72 +808,73 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			_T("BUTTON"),
 			_T("Powered"),
 			WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-			0, 0, 3*kRegAddr, kRegRow,
+			0, 0, 3*lpDebugInfo->kRegAddr, lpDebugInfo->kRegRow,
 			hwnd, (HMENU) IDC_LCD_ON, g_hInst, NULL);
-		SetWindowFont(chkOn, hfontSegoe, TRUE);
+		SetWindowFont(chkOn, lpDebugInfo->hfontSegoe, TRUE);
 
 		grpMode =
 		CreateWindow(
 			_T("BUTTON"),
 			_T("Cursor Mode"),
 			WS_VISIBLE | WS_CHILD | BS_GROUPBOX,
-			0, 3*kRegRow, 5*kRegAddr, 7*kRegRow/2,
+			0, 3*lpDebugInfo->kRegRow, 5*lpDebugInfo->kRegAddr, 7*lpDebugInfo->kRegRow/2,
 			hwnd, (HMENU) 34234, g_hInst, NULL);
-		SetWindowFont(grpMode, hfontSegoe, TRUE);
+		SetWindowFont(grpMode, lpDebugInfo->hfontSegoe, TRUE);
 
 		rdoXinc =
 		CreateWindow(
 			_T("BUTTON"),
 			_T("X-Inc."),
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON | WS_GROUP,
-			kRegAddr/2, 4*kRegRow, 2*kRegAddr, kRegRow,
+			lpDebugInfo->kRegAddr/2, 4*lpDebugInfo->kRegRow, 2*lpDebugInfo->kRegAddr, lpDebugInfo->kRegRow,
 			hwnd, (HMENU) 84354, g_hInst, NULL);
-		SetWindowFont(rdoXinc, hfontSegoe, TRUE);
+		SetWindowFont(rdoXinc, lpDebugInfo->hfontSegoe, TRUE);
 
 		rdoYinc =
 		CreateWindow(
 			_T("BUTTON"),
 			_T("Y-Inc."),
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON ,
-			2*kRegAddr + kRegAddr*2/3, 4*kRegRow, 2*kRegAddr, kRegRow,
+			2*lpDebugInfo->kRegAddr + lpDebugInfo->kRegAddr*2/3, 4*lpDebugInfo->kRegRow, 2*lpDebugInfo->kRegAddr, lpDebugInfo->kRegRow,
 			hwnd, (HMENU) 84355, g_hInst, NULL);
-		SetWindowFont(rdoYinc, hfontSegoe, TRUE);
+		SetWindowFont(rdoYinc, lpDebugInfo->hfontSegoe, TRUE);
 
 		rdoXdec =
 		CreateWindow(
 			_T("BUTTON"),
 			_T("X-Dec."),
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON ,
-			kRegAddr/2, 5*kRegRow, 2*kRegAddr, kRegRow,
+			lpDebugInfo->kRegAddr/2, 5*lpDebugInfo->kRegRow, 2*lpDebugInfo->kRegAddr, lpDebugInfo->kRegRow,
 			hwnd, (HMENU) 84356, g_hInst, NULL);
-		SetWindowFont(rdoXdec, hfontSegoe, TRUE);
+		SetWindowFont(rdoXdec, lpDebugInfo->hfontSegoe, TRUE);
 
 		rdoYdec =
 		CreateWindow(
 			_T("BUTTON"),
 			_T("Y-Dec."),
 			WS_VISIBLE | WS_CHILD | BS_AUTORADIOBUTTON ,
-			2*kRegAddr + kRegAddr*2/3, 5*kRegRow, 2*kRegAddr, kRegRow,
+			2*lpDebugInfo->kRegAddr + lpDebugInfo->kRegAddr*2/3, 5*lpDebugInfo->kRegRow, 2*lpDebugInfo->kRegAddr, lpDebugInfo->kRegRow,
 			hwnd, (HMENU) 84357, g_hInst, NULL);
-		SetWindowFont(rdoYdec, hfontSegoe, TRUE);
+		SetWindowFont(rdoYdec, lpDebugInfo->hfontSegoe, TRUE);
 
 		return 0;
 	}
 	case WM_COMMAND:
 	{
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (HIWORD(wParam)) {
 			case BN_CLICKED:
 				if ((HWND) lParam == chkOn)
-					lpDebuggerCalc->cpu.pio.lcd->active = !lpDebuggerCalc->cpu.pio.lcd->active;
+					lpCalc->cpu.pio.lcd->active = !lpCalc->cpu.pio.lcd->active;
 				else if ((HWND) lParam == rdoXinc)
-					lpDebuggerCalc->cpu.pio.lcd->cursor_mode = X_DOWN;
+					lpCalc->cpu.pio.lcd->cursor_mode = X_DOWN;
 				else if ((HWND) lParam == rdoXdec)
-					lpDebuggerCalc->cpu.pio.lcd->cursor_mode = X_UP;
+					lpCalc->cpu.pio.lcd->cursor_mode = X_UP;
 				else if ((HWND) lParam == rdoYdec)
-					lpDebuggerCalc->cpu.pio.lcd->cursor_mode = Y_DOWN;
+					lpCalc->cpu.pio.lcd->cursor_mode = Y_DOWN;
 				else if ((HWND) lParam == rdoYinc)
-					lpDebuggerCalc->cpu.pio.lcd->cursor_mode = Y_UP;
-				Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
+					lpCalc->cpu.pio.lcd->cursor_mode = Y_UP;
+				Debug_UpdateWindow(lpCalc->hwndDebug);
 		}
 		return 0;
 	}
@@ -873,7 +895,9 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	}
 	case WM_SIZE:
 	{
-		SetWindowPos(hwnd, NULL, 0, 0, kRegAddr*6, kRegRow * 9, SWP_NOMOVE | SWP_NOZORDER);
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+		SetWindowPos(hwnd, NULL, 0, 0, lpDebugInfo->kRegAddr*6, lpDebugInfo->kRegRow * 9, SWP_NOMOVE | SWP_NOZORDER);
 		return 0;
 	}
 	case WM_CTLCOLORSTATIC:
@@ -882,16 +906,17 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		return (LRESULT) GetStockObject(WHITE_BRUSH);
 	}
 	case WM_USER:
+		lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (wParam) {
 		case DB_UPDATE:
-			Button_SetCheck(chkOn, lpDebuggerCalc->cpu.pio.lcd->active ? BST_CHECKED : BST_UNCHECKED);
+			Button_SetCheck(chkOn, lpCalc->cpu.pio.lcd->active ? BST_CHECKED : BST_UNCHECKED);
 
 			Button_SetCheck(rdoXdec, BST_UNCHECKED);
 			Button_SetCheck(rdoXinc, BST_UNCHECKED);
 			Button_SetCheck(rdoYinc, BST_UNCHECKED);
 			Button_SetCheck(rdoYdec, BST_UNCHECKED);
 
-			switch (lpDebuggerCalc->cpu.pio.lcd->cursor_mode)
+			switch (lpCalc->cpu.pio.lcd->cursor_mode)
 			{
 			case X_UP:		Button_SetCheck(rdoXdec, BST_CHECKED); break;
 			case X_DOWN:	Button_SetCheck(rdoXinc, BST_CHECKED); break;
@@ -901,7 +926,7 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				break;
 			}
 
-			InvalidateRect(lpDebuggerCalc->hwndLCD, NULL, FALSE);
+			InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
 			break;
 		case VF_DESELECT_CHILDREN:
 			EnumChildWindows(hwnd, EnumDeselectChildren, (LPARAM) hwnd);
@@ -918,18 +943,22 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND chk_z, chk_c, chk_s, chk_pv, chk_hc, chk_n; /*,chk_iff1, chk_iff2, chk_halt;*/
 	#define FLAGS_TOP 0
+	static LPCALC lpCalc;
+	static LPDEBUGWINDOWINFO lpDebugInfo;
 
 	switch (Message) {
 		case WM_CREATE: {
-
-			HFONT hfontFlags = hfontSegoe;
+			lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
+			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+			HFONT hfontFlags = lpDebugInfo->hfontSegoe;
 
 			chk_z =
 			CreateWindow(
 				_T("BUTTON"),
 				_T("z"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-				0, FLAGS_TOP, 3*kRegAddr/2, kRegRow,
+				0, FLAGS_TOP, 3*lpDebugInfo->kRegAddr/2, lpDebugInfo->kRegRow,
 				hwnd, (HMENU) REG_CHK_Z, g_hInst, NULL);
 			SetWindowFont(chk_z, hfontFlags, TRUE);
 
@@ -938,7 +967,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				_T("BUTTON"),
 				_T("c"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-				2*kRegAddr, FLAGS_TOP, 3*kRegAddr/2, kRegRow,
+				2*lpDebugInfo->kRegAddr, FLAGS_TOP, 3*lpDebugInfo->kRegAddr/2, lpDebugInfo->kRegRow,
 				hwnd, (HMENU) REG_CHK_C, g_hInst, NULL);
 			SetWindowFont(chk_c, hfontFlags, TRUE);
 
@@ -947,7 +976,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				_T("BUTTON"),
 				_T("s"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-				4*kRegAddr, FLAGS_TOP, 3*kRegAddr/2, kRegRow,
+				4*lpDebugInfo->kRegAddr, FLAGS_TOP, 3*lpDebugInfo->kRegAddr/2, lpDebugInfo->kRegRow,
 				hwnd, (HMENU) REG_CHK_S, g_hInst, NULL);
 			SetWindowFont(chk_s, hfontFlags, TRUE);
 
@@ -956,7 +985,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				_T("BUTTON"),
 				_T("p/v"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-				0, FLAGS_TOP + kRegRow, 3*kRegAddr/2, kRegRow,
+				0, FLAGS_TOP + lpDebugInfo->kRegRow, 3*lpDebugInfo->kRegAddr/2, lpDebugInfo->kRegRow,
 				hwnd, (HMENU) REG_CHK_PV, g_hInst, NULL);
 			SetWindowFont(chk_pv, hfontFlags, TRUE);
 
@@ -965,7 +994,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				_T("BUTTON"),
 				_T("hc"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-				2*kRegAddr, FLAGS_TOP + kRegRow, 3*kRegAddr/2, kRegRow,
+				2*lpDebugInfo->kRegAddr, FLAGS_TOP + lpDebugInfo->kRegRow, 3*lpDebugInfo->kRegAddr/2, lpDebugInfo->kRegRow,
 				hwnd, (HMENU) REG_CHK_HC, g_hInst, NULL);
 			SetWindowFont(chk_hc, hfontFlags, TRUE);
 
@@ -974,7 +1003,7 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				_T("BUTTON"),
 				_T("n"),
 				WS_VISIBLE | WS_CHILD | BS_CHECKBOX, // | BS_LEFTTEXT,
-				4*kRegAddr, FLAGS_TOP + kRegRow, 3*kRegAddr/2, kRegRow,
+				4*lpDebugInfo->kRegAddr, FLAGS_TOP + lpDebugInfo->kRegRow, 3*lpDebugInfo->kRegAddr/2, lpDebugInfo->kRegRow,
 				hwnd, (HMENU) REG_CHK_N, g_hInst, NULL);
 			SetWindowFont(chk_n, hfontFlags, TRUE);
 
@@ -992,29 +1021,30 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 		case WM_COMMAND:
 		{
+			lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			switch (HIWORD(wParam)) {
 				case BN_CLICKED:
 					switch (LOWORD(wParam)) {
 						case REG_CHK_Z:
-							lpDebuggerCalc->cpu.f ^= ZERO_MASK;
+							lpCalc->cpu.f ^= ZERO_MASK;
 							break;
 						case REG_CHK_C:
-							lpDebuggerCalc->cpu.f ^= CARRY_MASK;
+							lpCalc->cpu.f ^= CARRY_MASK;
 							break;
 						case REG_CHK_S:
-							lpDebuggerCalc->cpu.f ^= SIGN_MASK;
+							lpCalc->cpu.f ^= SIGN_MASK;
 							break;
 						case REG_CHK_PV:
-							lpDebuggerCalc->cpu.f ^= PV_MASK;
+							lpCalc->cpu.f ^= PV_MASK;
 							break;
 						case REG_CHK_HC:
-							lpDebuggerCalc->cpu.f ^= HC_MASK;
+							lpCalc->cpu.f ^= HC_MASK;
 							break;
 						case REG_CHK_N:
-							lpDebuggerCalc->cpu.f ^= N_MASK;
+							lpCalc->cpu.f ^= N_MASK;
 							break;
 					}
-					Debug_UpdateWindow(lpDebuggerCalc->hwndDebug);
+					Debug_UpdateWindow(lpCalc->hwndDebug);
 					return 0;
 			}
 
@@ -1033,19 +1063,23 @@ LRESULT CALLBACK DBFlagProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			EndPaint(hwnd, &ps);
 			return 0;
 		}
-		case WM_SIZE: {
-			SetWindowPos(hwnd, NULL, 0, 0, kRegAddr*6, kRegRow*4, SWP_NOMOVE | SWP_NOZORDER);
+		case WM_SIZE:
+		{
+			lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+			SetWindowPos(hwnd, NULL, 0, 0, lpDebugInfo->kRegAddr*6, lpDebugInfo->kRegRow*4, SWP_NOMOVE | SWP_NOZORDER);
 			return 0;
 		}
 		case WM_USER: {
+			lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			switch (wParam) {
 			case DB_UPDATE: {
-				Button_SetCheck(chk_z, (lpDebuggerCalc->cpu.f & ZERO_MASK) ? BST_CHECKED : BST_UNCHECKED);
-				Button_SetCheck(chk_c, (lpDebuggerCalc->cpu.f & CARRY_MASK) ? BST_CHECKED : BST_UNCHECKED);
-				Button_SetCheck(chk_s, (lpDebuggerCalc->cpu.f & SIGN_MASK) ? BST_CHECKED : BST_UNCHECKED);
-				Button_SetCheck(chk_pv, (lpDebuggerCalc->cpu.f & PV_MASK) ? BST_CHECKED : BST_UNCHECKED);
-				Button_SetCheck(chk_hc, (lpDebuggerCalc->cpu.f & HC_MASK) ? BST_CHECKED : BST_UNCHECKED);
-				Button_SetCheck(chk_n, (lpDebuggerCalc->cpu.f & N_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_z, (lpCalc->cpu.f & ZERO_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_c, (lpCalc->cpu.f & CARRY_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_s, (lpCalc->cpu.f & SIGN_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_pv, (lpCalc->cpu.f & PV_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_hc, (lpCalc->cpu.f & HC_MASK) ? BST_CHECKED : BST_UNCHECKED);
+				Button_SetCheck(chk_n, (lpCalc->cpu.f & N_MASK) ? BST_CHECKED : BST_UNCHECKED);
 				break;
 			}
 			}
@@ -1062,19 +1096,25 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 								chk_iff1, chk_iff2, chk_halt;
 	static HWND hwndExp;*/
 	static BOOL FirstRun = TRUE;
+	static LPCALC lpCalc;
+	static SCROLLINFO si;
+	static LPDEBUGWINDOWINFO lpDebugInfo;
 
 	//static WB_IDropTarget *pDropTarget;
 
 	switch (Message) {
 		case WM_CREATE:
 		{
+			lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 			HDC hdc = GetDC(hwnd);
 			HWND hwndExp;
+			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 
-			SelectObject(hdc, hfontLucida);
+			SelectObject(hdc, lpDebugInfo->hfontLucida);
 			GetTextMetrics(hdc, &tm);
-			kRegRow = tm.tmHeight + tm.tmHeight/3;
-			kRegAddr = tm.tmAveCharWidth*4;
+			lpDebugInfo->kRegRow = tm.tmHeight + tm.tmHeight/3;
+			lpDebugInfo->kRegAddr = tm.tmAveCharWidth*4;
 
 
 			//RegisterExpandPaneDropWindow(hwnd, &pDropTarget);
@@ -1082,8 +1122,8 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			RECT r;
 			GetClientRect(hwnd, &r);
 
-#define REGISTERS_TOP 2*kRegRow
-#define VECTORS_TOP (12*kRegRow+kRegRow/2)
+#define REGISTERS_TOP 2*lpDebugInfo->kRegRow
+#define VECTORS_TOP (12*lpDebugInfo->kRegRow+lpDebugInfo->kRegRow/2)
 
 			if (FirstRun == TRUE) {
 				WNDCLASSEX wcx;
@@ -1133,9 +1173,9 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
-						(HMENU) 1, g_hInst, NULL);
+						(HMENU) 1, g_hInst, lpCalc);
 
-			hwndExp = CreateExpandPane(hwnd, _T("Registers"), hwndContent);
+			hwndExp = CreateExpandPane(hwnd, lpDebugInfo, _T("Registers"), hwndContent);
 
 
 			hwndContent =
@@ -1145,9 +1185,9 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
-						(HMENU) 1, g_hInst, NULL);
+						(HMENU) 1, g_hInst, lpCalc);
 
-			CreateExpandPane(hwnd, _T("Flags"), hwndContent);
+			CreateExpandPane(hwnd, lpDebugInfo, _T("Flags"), hwndContent);
 
 			hwndContent =
 				CreateWindow(
@@ -1156,8 +1196,8 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
-						(HMENU) 1, g_hInst, NULL);
-			CreateExpandPane(hwnd, _T("CPU Status"), hwndContent);
+						(HMENU) 1, g_hInst, lpCalc);
+			CreateExpandPane(hwnd, lpDebugInfo, _T("CPU Status"), hwndContent);
 
 			hwndContent =
 				CreateWindow(
@@ -1166,8 +1206,8 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
-						(HMENU) 1, g_hInst, NULL);
-			CreateExpandPane(hwnd, _T("Memory Map"), hwndContent);
+						(HMENU) 1, g_hInst, lpCalc);
+			CreateExpandPane(hwnd, lpDebugInfo, _T("Memory Map"), hwndContent);
 
 			hwndContent =
 				CreateWindow(
@@ -1176,8 +1216,8 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
-						(HMENU) 1, g_hInst, NULL);
-			CreateExpandPane(hwnd, _T("Keyboard"), hwndContent);
+						(HMENU) 1, g_hInst, lpCalc);
+			CreateExpandPane(hwnd, lpDebugInfo, _T("Keyboard"), hwndContent);
 
 			hwndContent =
 				CreateWindow(
@@ -1186,8 +1226,8 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						WS_CHILD | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,
 						0, 0, 1, 1,
 						hwnd,
-						(HMENU) 1, g_hInst, NULL);
-			CreateExpandPane(hwnd, _T("Interrupts"), hwndContent);
+						(HMENU) 1, g_hInst, lpCalc);
+			CreateExpandPane(hwnd, lpDebugInfo, _T("Interrupts"), hwndContent);
 
 			hwndContent =
 				CreateWindow(
@@ -1196,8 +1236,8 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					WS_CHILD  | WS_CLIPSIBLINGS,
 					0, 0, 1, 1,
 					hwnd,
-					(HMENU) 1, g_hInst, NULL);
-			CreateExpandPane(hwnd, _T("Display"), hwndContent);
+					(HMENU) 1, g_hInst, lpCalc);
+			CreateExpandPane(hwnd, lpDebugInfo, _T("Display"), hwndContent);
 
 			RECT rc;
 			GetClientRect(hwnd, &rc);
@@ -1212,8 +1252,12 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			si.cbSize = sizeof(SCROLLINFO);
 			si.fMask  = SIF_ALL;
 			GetScrollInfo (hwnd, SB_VERT, &si);
-			ArrangeExpandPanes();
-			int height = GetExpandPanesHeight() + 7;
+
+			lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+
+			ArrangeExpandPanes(lpDebugInfo);
+			int height = GetExpandPanesHeight(lpDebugInfo) + 7;
 			//positive diff we opened a pane, negative diff we closed
 			int diff = height - si.nMax;
 
@@ -1221,7 +1265,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			si.nMin = 0;
 			si.nMax = height;
 			si.nPage = rc.bottom;
-			regPanesYScroll = min(0, max(0, si.nPos + diff));
+			lpDebugInfo->regPanesYScroll = min(0, max(0, si.nPos + diff));
 			if (diff < 0)
 				si.nPos = max(0, si.nPos + diff);
 			SetScrollInfo(hwnd, SB_VERT, &si, TRUE);
@@ -1229,7 +1273,7 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			/*if (si.nPos != 0)
 				ScrollWindow(hwnd, 0, -si.nPos, NULL, NULL);*/
 
-			DrawExpandPanes();
+			DrawExpandPanes(lpDebugInfo);
 			UpdateWindow(hwnd);
 			return 0;
 		}
@@ -1248,56 +1292,59 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_VSCROLL: {
+			lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 			// Get all the vertical scroll bar information
-			 si.cbSize = sizeof (si);
-			 si.fMask  = SIF_ALL;
-			 GetScrollInfo (hwnd, SB_VERT, &si);
-			 // Save the position for comparison later on
-			 int yPos = si.nPos;
-			 switch (LOWORD (wParam))
-			 {
-				 // user clicked the HOME keyboard key
-				 case SB_TOP:
-					  si.nPos = si.nMin;
-					  break;
-				 // user clicked the END keyboard key
-				 case SB_BOTTOM:
-					  si.nPos = si.nMax;
-					  break;
-				 // user clicked the top arrow
-				 case SB_LINEUP:
-					  si.nPos -= 10;
-					  break;
-				 // user clicked the bottom arrow
-				 case SB_LINEDOWN:
-					  si.nPos += 10;
-					  break;
-				 // user clicked the scroll bar shaft above the scroll box
-				 case SB_PAGEUP:
-					  si.nPos -= si.nPage;
-					  break;
-				 // user clicked the scroll bar shaft below the scroll box
-				 case SB_PAGEDOWN:
-					  si.nPos += si.nPage;
-					  break;
-				 // user dragged the scroll box
-				 case SB_THUMBTRACK:
-					  si.nPos = si.nTrackPos;
-					  break;
-				 default:
-					  break;
-			 }
-			 // Set the position and then retrieve it.  Due to adjustments
-			 //   by Windows it may not be the same as the value set.
-			 si.fMask = SIF_POS;
-			 SetScrollInfo (hwnd, SB_VERT, &si, TRUE);
-			 GetScrollInfo (hwnd, SB_VERT, &si);
-			 // If the position has changed, scroll window and update it
-			 regPanesYScroll = -si.nPos;
-			 if (si.nPos != yPos)
-				  ScrollWindow(hwnd, 0, yPos - si.nPos, NULL, NULL);
-			 DrawExpandPanes();
-			 UpdateWindow(hwnd);
+			si.cbSize = sizeof (si);
+			si.fMask  = SIF_ALL;
+			GetScrollInfo (hwnd, SB_VERT, &si);
+			// Save the position for comparison later on
+			int yPos = si.nPos;
+			switch (LOWORD (wParam))
+			{
+				// user clicked the HOME keyboard key
+				case SB_TOP:
+					si.nPos = si.nMin;
+					break;
+				// user clicked the END keyboard key
+				case SB_BOTTOM:
+					si.nPos = si.nMax;
+					break;
+				// user clicked the top arrow
+				case SB_LINEUP:
+					si.nPos -= 10;
+					break;
+				// user clicked the bottom arrow
+				case SB_LINEDOWN:
+					si.nPos += 10;
+					break;
+				// user clicked the scroll bar shaft above the scroll box
+				case SB_PAGEUP:
+					si.nPos -= si.nPage;
+					break;
+				// user clicked the scroll bar shaft below the scroll box
+				case SB_PAGEDOWN:
+					si.nPos += si.nPage;
+					break;
+				// user dragged the scroll box
+				case SB_THUMBTRACK:
+					si.nPos = si.nTrackPos;
+					break;
+				default:
+					break;
+			}
+			// Set the position and then retrieve it.  Due to adjustments
+			//   by Windows it may not be the same as the value set.
+			si.fMask = SIF_POS;
+			SetScrollInfo (hwnd, SB_VERT, &si, TRUE);
+			GetScrollInfo (hwnd, SB_VERT, &si);
+			// If the position has changed, scroll window and update it
+			lpDebugInfo->regPanesYScroll = -si.nPos;
+			if (si.nPos != yPos) {
+				ScrollWindow(hwnd, 0, yPos - si.nPos, NULL, NULL);
+			}
+			DrawExpandPanes(lpDebugInfo);
+			UpdateWindow(hwnd);
 			break;
 		}
 		case WM_COMMAND:
@@ -1313,18 +1360,19 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case EN_SUBMIT:
 
 				default:
-				if (vi != -1) {
-					if (vi < REG16_ROWS*REG16_COLS) {
-						ValueSubmit(hwndVal,
-							((TCHAR *) (&lpDebuggerCalc->cpu)) + reg_offset[vi].offset, 2);
-					} else {
-						ValueSubmit(hwndVal,
-							((TCHAR *) (&lpDebuggerCalc->cpu)) + reg_offset[vi].offset, 1);
+					lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					if (vi != -1) {
+						if (vi < REG16_ROWS*REG16_COLS) {
+							ValueSubmit(hwndVal,
+								((TCHAR *) (&lpCalc->cpu)) + reg_offset[vi].offset, 2);
+						} else {
+							ValueSubmit(hwndVal,
+								((TCHAR *) (&lpCalc->cpu)) + reg_offset[vi].offset, 1);
 
+						}
+						Debug_UpdateWindow(GetParent(hwnd));
 					}
-					Debug_UpdateWindow(GetParent(hwnd));
-				}
-				hwndVal = NULL;
+					hwndVal = NULL;
 			}
 			return 0;
 		case WM_PAINT:

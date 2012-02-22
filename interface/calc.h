@@ -42,7 +42,7 @@ struct key_string {
 	TCHAR *text;
 	int group;
 	int bit;
-	key_string *next;
+	struct key_string *next;
 };
 
 typedef struct tagCALC {
@@ -51,6 +51,8 @@ typedef struct tagCALC {
 #elif MACVER
 	void (*breakpoint_callback)(struct tagCALC *, void *);
 	void *breakpoint_owner;
+#else
+	void (*breakpoint_callback)(struct tagCALC *);
 #endif
 	int slot;
 	TCHAR rom_path[MAX_PATH];
@@ -190,7 +192,7 @@ void mem_debug_callback(void *);
 #endif
 
 GLOBAL calc_t calcs[MAX_CALCS];
-GLOBAL LPCALC lpDebuggerCalc;
+//GLOBAL LPCALC lpDebuggerCalc;
 
 #ifdef WITH_BACKUPS
 #define MAX_BACKUPS 10
@@ -212,6 +214,7 @@ GLOBAL u_int frame_counter;
 GLOBAL int startX;
 GLOBAL int startY;
 GLOBAL BOOL exit_save_state;
+GLOBAL BOOL check_updates;
 GLOBAL BOOL new_calc_on_load_files;
 GLOBAL BOOL do_backups;
 GLOBAL BOOL break_on_exe_violation;

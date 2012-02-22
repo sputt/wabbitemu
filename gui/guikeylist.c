@@ -10,7 +10,6 @@ extern HIMAGELIST hImageList;
 extern HINSTANCE g_hInst;
 
 LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	static HWND hListKeys;
 	static LPCALC lpCalc;
 	switch (uMsg) {
 		case WM_INITDIALOG: {
@@ -18,7 +17,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)	hIcon);
 			DeleteObject(hIcon);
 
-			hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
+			HWND hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
 			lpCalc = (LPCALC) GetWindowLongPtr(GetParent(hwnd), GWLP_USERDATA);
 
 			if (hImageList) {
@@ -87,6 +86,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		case WM_SIZE: {
 			RECT rc;
 			GetClientRect(hwnd, &rc);
+			HWND hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
 			SetWindowPos(hListKeys, NULL, 0, 0, rc.right - 10 - 10, rc.bottom - 10 - 40, SWP_NOMOVE | SWP_NOZORDER);
 			SetWindowPos(GetDlgItem(hwnd, IDC_BTN_CLEARKEYS), NULL, 10, rc.bottom - 40 + 5, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
 			SetWindowPos(GetDlgItem(hwnd, IDC_BTN_SAVEKEYS), NULL, 130, rc.bottom - 40 + 5, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
@@ -94,6 +94,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			break;
 		}
 		case WM_COMMAND: {
+			HWND hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
 			switch (HIWORD(wParam)) {
 				case BN_CLICKED: {
 					switch (LOWORD(wParam)) {
@@ -131,6 +132,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			return 0;
 		}
 		case WM_NOTIFY: {
+			HWND hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
 			switch (((LPNMHDR)lParam)->code)
 			{
 				case LVN_KEYDOWN: {
@@ -166,7 +168,8 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 			}
 			return 0;
 		}
-		case WM_USER:
+		case WM_USER: {
+			HWND hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
 			//TODO: allow exporting by writing group/bit data and outputting to a text file
 			if (wParam == REFRESH_LISTVIEW) {
 				ListView_DeleteAllItems(hListKeys);
@@ -186,6 +189,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 				}
 			}
 			return TRUE;
+		}
 		case WM_CLOSE:
 			DestroyWindow(hwnd);
 			return TRUE;

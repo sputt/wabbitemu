@@ -8,7 +8,6 @@
 #include "calc.h"
 
 extern HINSTANCE g_hInst;
-extern HFONT hfontSegoe;
 
 static WNDPROC OldButtonProc;
 
@@ -250,7 +249,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				case IDM_45SECOND:
 				case IDM_50SECOND:
 				{
-					restore_backup(((int) wParam) - IDM_05SECOND, lpDebuggerCalc);
+					restore_backup(((int) wParam) - IDM_05SECOND, lpCalc);
 					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;
 				}
@@ -695,10 +694,11 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 			{
 				HDC hdcDownBtn = CreateCompatibleDC(hdc);
 				HBITMAP hbmDownArrow;
-				if (fIsWindows7 == TRUE)
+				if (fIsWindows7 == TRUE) {
 					hbmDownArrow = LoadBitmap(g_hInst, _T("TBDownArrow7"));
-				else
+				} else {
 					hbmDownArrow = LoadBitmap(g_hInst, _T("TBDownArrow"));
+				}
 				SelectObject(hdcDownBtn, hbmDownArrow);
 				AlphaBlend(	hdcBuf, rc.right - 20 + ox, 3 + oy, 16, 16,
 							hdcDownBtn, 0, 0, 16, 16,
@@ -718,7 +718,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 
 			SetBkMode(hdcBuf, TRANSPARENT);
 
-			SelectObject(hdcBuf, hfontSegoe);
+			SelectObject(hdcBuf, tbb->lpDebugInfo->hfontSegoe);
 
 			TCHAR szTitle[32];
 			GetWindowText(hwnd, szTitle, 32);
@@ -763,7 +763,7 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 }
 
 static TBBTN *prevBtn = NULL;
-int CreateToolbarButton(HWND hwndParent, TCHAR *szCaption, TCHAR *szTooltip, TCHAR *szIcon, int x, int y, int ID, BOOL splitButton, HMENU hMenu = NULL) {
+int CreateToolbarButton(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *szCaption, TCHAR *szTooltip, TCHAR *szIcon, int x, int y, int ID, BOOL splitButton, HMENU hMenu = NULL) {
 	static HWND hwndTip = NULL;
 
 	TBBTN *tbb = (TBBTN *) malloc(sizeof(TBBTN));
@@ -774,6 +774,7 @@ int CreateToolbarButton(HWND hwndParent, TCHAR *szCaption, TCHAR *szTooltip, TCH
 	tbb->MouseState = MOUSE_UP;
 	tbb->bSplitButton = splitButton;
 	tbb->prev = prevBtn;
+	tbb->lpDebugInfo = lpDebugInfo;
 	if (prevBtn)
 		prevBtn->next = tbb;
 	tbb->next = NULL;
@@ -784,7 +785,7 @@ int CreateToolbarButton(HWND hwndParent, TCHAR *szCaption, TCHAR *szTooltip, TCH
 		WS_CHILD | BS_PUSHBUTTON,
 		x, y, 60, 24,
 		hwndParent, (HMENU) ID, g_hInst, NULL);
-	SetWindowFont(hwndBtn, hfontSegoe, FALSE);
+	SetWindowFont(hwndBtn, lpDebugInfo->hfontSegoe, FALSE);
 
 	tbb->hwnd = hwndBtn;
 	prevBtn = tbb;
@@ -792,7 +793,7 @@ int CreateToolbarButton(HWND hwndParent, TCHAR *szCaption, TCHAR *szTooltip, TCH
 	HDC hdc = GetDC(hwndBtn);
 	RECT r = {0, 0, 0, 0};
 
-	SelectObject(hdc, hfontSegoe);
+	SelectObject(hdc, lpDebugInfo->hfontSegoe);
 	DrawText(hdc, szCaption, (int) _tcslen(szCaption), &r, DT_CALCRECT);
 
 	ReleaseDC(hwndBtn, hdc);
@@ -845,16 +846,6 @@ BOOL CALLBACK EnumToolbarRedraw(HWND hwndChild, LPARAM lParam) {
 	return TRUE;
 }
 
-waddr_t z80_to_waddr(uint16_t addr) {
-	bank_t *pb = &lpDebuggerCalc->mem_c.banks[mc_bank(addr)];
-
-	waddr_t waddr;
-	waddr.is_ram = pb->ram;
-	waddr.page = pb->page;
-	waddr.addr = mc_base(addr);
-	return waddr;
-}
-
 static HMENU rewindmenu;
 HMENU CreateRewindMenu() {
 	TCHAR buf[256];
@@ -871,10 +862,10 @@ HMENU CreateRewindMenu() {
 	return rewindmenu;
 }
 
-void ChangeRunButtonIconAndText(TBBTN *tbb) {
+void ChangeRunButtonIconAndText(LPCALC lpCalc, TBBTN *tbb) {
 	if (tbb->hbmIcon)
 		DeleteObject(tbb->hbmIcon);
-	if (lpDebuggerCalc->running) {
+	if (lpCalc->running) {
 		tbb->hbmIcon = LoadBitmap(g_hInst, _T("DBStop"));
 		Edit_SetText(tbb->hwnd, _T("Stop"));
 	} else {
@@ -887,23 +878,26 @@ void ChangeRunButtonIconAndText(TBBTN *tbb) {
 }
 
 LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
+	static LPCALC lpCalc;
 
 	switch (Message) {
 		case WM_CREATE: {
+			lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 
 			prevBtn = NULL;
-			SelectObject(GetDC(hwnd), hfontSegoe);
+			SelectObject(GetDC(hwnd), lpDebugInfo->hfontSegoe);
 			int next = 4;
-			next = CreateToolbarButton(hwnd, _T("Run"), _T("Run the calculator."), _T("DBRun"), next, 4, 999, FALSE);
-			next = CreateToolbarButton(hwnd, _T("Toggle Breakpoint"), _T("Toggle the breakpoint on the current selection."), _T("DBBreak"), next, 4, 1000, FALSE);
+			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Run"), _T("Run the calculator."), _T("DBRun"), next, 4, 999, FALSE);
+			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Toggle Breakpoint"), _T("Toggle the breakpoint on the current selection."), _T("DBBreak"), next, 4, 1000, FALSE);
 			HMENU hmenu = LoadMenu(g_hInst, (LPCTSTR) IDR_DISASM_WATCH_MENU);
-			next = CreateToolbarButton(hwnd, _T("Toggle Watchpoint"), _T("Toggle a memory breakpoint at the current selection."), _T("DBMemBreak"), next, 4, 1001, TRUE, hmenu);
-			next = CreateToolbarButton(hwnd, _T("Step"), _T("Run a single command."), _T("DBStep"), next, 4, 1002, FALSE);
-			next = CreateToolbarButton(hwnd, _T("Step Over"), _T("Run a single line."), _T("DBStepOver"), next, 4, 1003, FALSE);
+			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Toggle Watchpoint"), _T("Toggle a memory breakpoint at the current selection."), _T("DBMemBreak"), next, 4, 1001, TRUE, hmenu);
+			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Step"), _T("Run a single command."), _T("DBStep"), next, 4, 1002, FALSE);
+			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Step Over"), _T("Run a single line."), _T("DBStepOver"), next, 4, 1003, FALSE);
 #ifdef WITH_REVERSE
-			next = CreateToolbarButton(hwnd, _T("Step Back"), _T("Reverses a single command."), _T("DBStepBack"), next, 4, 1005, FALSE);
+			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Step Back"), _T("Reverses a single command."), _T("DBStepBack"), next, 4, 1005, FALSE);
 #endif
-			next = CreateToolbarButton(hwnd, _T("Goto"), _T("Goto an address in RAM or Flash."), _T("DBGoto"), next, 4, 1004, FALSE);
+			next = CreateToolbarButton(hwnd, lpDebugInfo, _T("Goto"), _T("Goto an address in RAM or Flash."), _T("DBGoto"), next, 4, 1004, FALSE);
 			/*hmenu = CreateRewindMenu();
 			next = CreateToolbarButton(hwnd, _T("Rewind"), _T("Restores to a previous state."), NULL, next, 4, 1005, TRUE, hmenu);*/
 			TCHAR *szChevronBMP;
@@ -914,7 +908,7 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 			} else {
 				szChevronBMP = _T("CHEVRON7");
 			}
-			next = CreateToolbarButton(hwnd, _T(""), _T("Display additional commands."), szChevronBMP, next, 4, 1006, FALSE);
+			next = CreateToolbarButton(hwnd, lpDebugInfo, _T(""), _T("Display additional commands."), szChevronBMP, next, 4, 1006, FALSE);
 
 			return 0;
 		}
@@ -937,18 +931,19 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 				case IDM_45SECOND:
 				case IDM_50SECOND:
 				{
-					restore_backup(((int) wParam) - IDM_05SECOND, lpDebuggerCalc);
+					restore_backup(((int) wParam) - IDM_05SECOND, lpCalc);
 					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;
 				}
 #endif
 				case 999: {
 					TBBTN *tbb = (TBBTN *) GetWindowLongPtr((HWND) lParam, GWLP_USERDATA);
-					if (lpDebuggerCalc->running)
+					if (lpCalc->running) {
 						SendMessage(GetParent(hwnd), WM_COMMAND, DB_STOP, 0);
-					else
+					} else {
 						SendMessage(GetParent(hwnd), WM_COMMAND, DB_RUN, 0);
-					ChangeRunButtonIconAndText(tbb);
+					}
+					ChangeRunButtonIconAndText(lpCalc, tbb);
 					break;
 				}
 				case 1000:

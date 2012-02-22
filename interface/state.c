@@ -266,80 +266,94 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 	}
 }
 #else
-TCHAR *Symbol_Name_to_String(symbol83P_t *sym, TCHAR *buffer) {
+TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 	const TCHAR ans_name[] = {tAns, 0x00, 0x00};
 	if (memcmp(sym->name, ans_name, 3) == 0) {
-		return strcpy(buffer, "Ans");
+		strcpy(buffer, _T("Ans"));
+		return buffer;
 	}
 	
-	switch(sym->type_ID) {
-	
-	case ProgObj:
-	case ProtProgObj:
-	case AppVarObj:
-	case GroupObj: {
-		return strcpy(buffer, sym->name);
-	}
-	case PictObj:
-	
-		sprintf(buffer, "Pic%d", circ10(sym->name[1]));
+	if (model == TI_86) {
+		strcpy(buffer, sym->name);
 		return buffer;
-	case GDBObj:
-		sprintf(buffer, "GDB%d", circ10(sym->name[1]));
-		return buffer;
-	case StrngObj:
-		sprintf(buffer, "Str%d", circ10(sym->name[1]));
-		return buffer;		
-	case RealObj:
-	case CplxObj:
-		sprintf(buffer, "%c", sym->name[0]);
-		return buffer;
-	case ListObj:
-	case CListObj:
-		if ((u_char) sym->name[1] < 6) {
-			sprintf(buffer, "L%d", sym->name[1] + 1); //L1...L6
-		} else {
-			sprintf(buffer, "%s", sym->name + 1); // No Little L
-		}
-		return buffer;
-	case MatObj:
-		if (sym->name[0] == 0x5C) {
-			sprintf(buffer, "[%c]", 'A' + sym->name[1]);
-			return buffer;
-		}
-		return NULL;
-//	case EquObj:
-//	case NewEquObj:
-//	case UnknownEquObj:
-	case EquObj_2:
-		{
-			if (sym->name[0] != 0x5E) return NULL;
-			
-			u_char b = sym->name[1] & 0x0F;
-			switch(sym->name[1] & 0xF0) {
-			
-			case 0x10: //Y1
-				sprintf(buffer,"Y%d",circ10(b));
+	} else {
+		switch(sym->type_ID) {
+			case ProgObj:
+			case ProtProgObj:
+			case AppVarObj:
+			case GroupObj: {
+				errno_t error = strcpy(buffer, sym->name);
 				return buffer;
-			case 0x20: //X1t Y1t
-				sprintf(buffer,"X%dT",((b/2)+1)%6);
-				if (b%2) buffer[0] = 'Y';
-				return buffer;
-			case 0x40: //r1
-				sprintf(buffer, "R%d", (b+1)%6);
-				return buffer;
-			case 0x80: //Y1
-				switch (b) {
-					case 0: return strcpy(buffer, "Un");
-					case 1: return strcpy(buffer, "Vn");												
-					case 2: return strcpy(buffer, "Wn");
-				}
-			default: 
-				return NULL;
 			}
+			case PictObj:
+				StringCbPrintf(buffer, 10, _T("Pic%d"), circ10(sym->name[1]));
+				return buffer;
+			case GDBObj:
+				StringCbPrintf(buffer, 10, _T("GDB%d"), circ10(sym->name[1]));
+				return buffer;
+			case StrngObj:
+				StringCbPrintf(buffer, 10, _T("Str%d"), circ10(sym->name[1]));
+				return buffer;		
+			case RealObj:
+			case CplxObj:
+				StringCbPrintf(buffer, 10, _T("%c"), sym->name[0]);
+				return buffer;
+			case ListObj:
+			case CListObj:
+				if ((u_char) sym->name[1] < 6) {
+					StringCbPrintf(buffer, 10, _T("L%d"), sym->name[1] + 1); //L1...L6
+				} else {
+					StringCbPrintf(buffer, 10, _T("%s"), sym->name + 1); // No Little L
+				}
+				return buffer;
+			case MatObj:
+				if (sym->name[0] == 0x5C) {
+					StringCbPrintf(buffer, 10, _T("[%c]"), 'A' + sym->name[1]);
+					return buffer;
+				}
+				return NULL;
+		//	case EquObj:
+		//	case NewEquObj:
+		//	case UnknownEquObj:
+			case EquObj_2:
+				{
+					if (sym->name[0] != 0x5E) {
+						return NULL;
+					}
+			
+					u_char b = sym->name[1] & 0x0F;
+					switch(sym->name[1] & 0xF0) {
+						case 0x10: //Y1
+							StringCbPrintf(buffer, 10, _T("Y%d"),circ10(b));
+							return buffer;
+						case 0x20: //X1t Y1t
+							StringCbPrintf(buffer, 10, _T("X%dT"), ((b/2)+1)%6);
+							if (b % 2) {
+								buffer[0] = 'Y';
+							}
+							return buffer;
+						case 0x40: //r1
+							StringCbPrintf(buffer, 10, _T("R%d"),(b+1)%6);
+							return buffer;
+						case 0x80: //Y1
+							switch (b) {
+								case 0: 
+									strcpy(buffer, _T("Un"));
+									return buffer;
+								case 1: 
+									strcpy(buffer, _T("Vn"));
+									return buffer;
+								case 2: 
+									strcpy(buffer, _T("Wn"));
+									return buffer;
+							}
+						default: 
+							return NULL;
+					}
+				}
+			default:
+				return NULL;
 		}
-	default:
-		return NULL;
 	}
 }
 #endif

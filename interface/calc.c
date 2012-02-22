@@ -19,6 +19,8 @@
 #include "disassemble.h"
 #include "CCalcAddress.h"
 #include "CPage.h"
+#include "exportvar.h"
+#include "guiwizard.h"
 #endif
 
 /*
@@ -28,6 +30,16 @@ calc_t *calc_slot_new(void) {
 #ifdef WITH_BACKUPS
 	current_backup_index = 10;
 #endif
+	if (link_hub[MAX_CALCS] == NULL) {
+		memset(link_hub, 0, sizeof(link_hub));
+		link_t *hub_link = (link_t *) malloc(sizeof(link_t)); 
+		if (!hub_link) {
+			printf("Couldn't allocate memory for link hub\n");
+		}
+		hub_link->host		= 0;				//neither lines set
+		hub_link->client	= &hub_link->host;	//nothing plugged in.
+		link_hub[MAX_CALCS] = hub_link;
+	}
 	int i;
 	for (i = 0; i < MAX_CALCS; i++) {
 		if (calcs[i].active == FALSE) {
@@ -214,6 +226,36 @@ void calc_erase_certificate(unsigned char *mem, int size) {
 	return;
 }
 
+#define BOOTFREE_VER "11.246"
+void check_bootfree_and_update(LPCALC lpCalc) {
+	u_char *bootFreeString = lpCalc->mem_c.flash + (lpCalc->mem_c.flash_pages - 1) * PAGE_SIZE + 0x0F;
+	if (*bootFreeString != '1') {
+		//not using bootfree
+		return;
+	}
+	if (bootFreeString[1] == '.') {
+		//using normal bootpage
+		return;
+	}
+	if (!strcmp((const char *) bootFreeString, BOOTFREE_VER)) {
+		return;
+	}
+#ifdef WINVER
+	TCHAR hexFile[MAX_PATH];
+	ExtractBootFree(lpCalc->model, hexFile);
+	FILE *file;
+	_tfopen_s(&file, hexFile, _T("rb"));
+	writeboot(file, &lpCalc->mem_c, -1);
+	fclose(file);
+	_tfopen_s(&file, lpCalc->rom_path, _T("wb"));
+	if (file) {
+		fclose(file);
+		MFILE *mfile = ExportRom(lpCalc->rom_path, lpCalc);
+		mclose(mfile);
+	}
+#endif
+}
+
 BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	if (lpCalc == NULL) {
 		return FALSE;
@@ -334,6 +376,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	}
 	if (lpCalc != NULL) {
 		lpCalc->cpu.pio.model = lpCalc->model;
+#ifdef WINVER
 extern keyprog_t keygrps[256];
 extern keyprog_t defaultkeys[256];
 extern keyprog_t keysti86[256];
@@ -341,6 +384,10 @@ extern keyprog_t keysti86[256];
 			memcpy(keygrps, keysti86, sizeof(keyprog_t) * 256);
 		} else {
 			memcpy(keygrps, defaultkeys, sizeof(keyprog_t) * 256);
+		}
+#endif
+		if (lpCalc->model >= TI_73) {
+			check_bootfree_and_update(lpCalc);
 		}
 		if (tifile->save == NULL) {
 			calc_reset(lpCalc);
@@ -572,7 +619,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 			bank_t *bank = &lpCalc->mem_c.banks[mc_bank(lpCalc->cpu.pc)];
 
 			Z80_info_t z[2];
-			disassemble(&lpCalc->mem_c, REGULAR, addr_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc), 1, z);
+			disassemble(lpCalc, REGULAR, addr_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc), 1, z);
 
 			if (lpCalc->pCalcNotify != NULL) {
 				
@@ -635,7 +682,11 @@ BOOL calc_start_screenshot(calc_t *calc, const TCHAR *filename)
 	if (gif_write_state == GIF_IDLE)
 	{
 		gif_write_state = GIF_START;
-		_tcscpy(gif_file_name, filename);
+#ifdef _WINDOWS
+		StringCbCopy(gif_file_name, MAX_PATH, filename);
+#else
+		strcpy(gif_file_name, filename);
+#endif
 		return TRUE;
 	}
 	else
@@ -742,13 +793,21 @@ void port_debug_callback(void *arg1, void *arg2) {
 	CPU_t *cpu = (CPU_t *) arg1;
 	//device_t *dev = (device_t *) arg2;
 	LPCALC lpCalc = calc_from_cpu(cpu);
-	gui_debug(lpCalc);
+#ifdef MACVER
+	lpCalc->breakpoint_callback(lpCalc, lpCalc->breakpoint_owner);
+#else
+	lpCalc->breakpoint_callback(lpCalc);
+#endif
 }
 
 void mem_debug_callback(void *arg1) {
 	CPU_t *cpu = (CPU_t *) arg1;
 	LPCALC lpCalc = calc_from_cpu(cpu);
-	gui_debug(lpCalc);
+#ifdef MACVER
+	lpCalc->breakpoint_callback(lpCalc, lpCalc->breakpoint_owner);
+#else
+	lpCalc->breakpoint_callback(lpCalc);
+#endif
 }
 
 #ifdef WITH_BACKUPS

@@ -3,9 +3,11 @@
 
 #define VALUE_CLASS_NAME _T("WabbitValueClass")
 #include "dbcommon.h"
+#include "guidebug.h"
 
 HWND CreateValueField(
-		HWND hwndParent, 
+		HWND hwndParent,
+		LPDEBUGWINDOWINFO lpDebugInfo,
 		TCHAR *name, 
 		int label_width, 
 		void *data, 
@@ -34,6 +36,7 @@ typedef struct tag_value_field_settings {
 	HWND hwndTip;
 	TOOLINFO toolInfo;
 	HWND hwndVal;
+	LPDEBUGWINDOWINFO lpDebugInfo;
 } value_field_settings;
 
 #define VF_DESELECT	130

@@ -68,6 +68,7 @@
     <ClCompile Include="core\device.c" />
     <ClCompile Include="core\indexcb.c" />
     <ClCompile Include="core\indexcb_reverse.c" />
+    <ClCompile Include="core\reverse_info.c" />
     <ClCompile Include="DBPaneContainer.cpp" />
     <ClCompile Include="debugger\dbbreakpoints.c" />
     <ClCompile Include="debugger\dbcommon.c" />
@@ -76,11 +77,11 @@
     <ClCompile Include="Debugger\dbmonitor.c" />
     <ClCompile Include="Debugger\dbprofile.c" />
     <ClCompile Include="debugger\dbreg.c" />
+    <ClCompile Include="Debugger\dbspriteviewer.c" />
     <ClCompile Include="debugger\dbtoolbar.c" />
     <ClCompile Include="debugger\dbvalue.c" />
     <ClCompile Include="debugger\dbwatch.c" />
     <ClCompile Include="debugger\disassemble.c" />
-    <ClCompile Include="guidetached.c" />
     <ClCompile Include="gui\DataObject.cpp" />
     <ClCompile Include="gui\displayoptionstest.c" />
     <ClCompile Include="gui\DropSource.cpp" />
@@ -93,6 +94,7 @@
     <ClCompile Include="gui\guicontext.c" />
     <ClCompile Include="gui\guicutout.c" />
     <ClCompile Include="gui\guidebug.c" />
+    <ClCompile Include="gui\guidetached.c" />
     <ClCompile Include="gui\guidialog.c" />
     <ClCompile Include="gui\guifaceplate.c" />
     <ClCompile Include="gui\guifilepreview.c" />
@@ -126,7 +128,6 @@
     <ClCompile Include="interface\mapeditor.c" />
     <ClCompile Include="interface\state.c" />
     <ClCompile Include="interface\WabbitemuClassFactory.cpp" />
-    <ClCompile Include="reverse_info.c" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug DLL|Win32'">Create</PrecompiledHeader>
@@ -284,6 +285,7 @@
     <ClInclude Include="Debugger\dbmonitor.h" />
     <ClInclude Include="Debugger\dbprofile.h" />
     <ClInclude Include="debugger\dbreg.h" />
+    <ClInclude Include="Debugger\dbspriteviewer.h" />
     <ClInclude Include="debugger\dbtoolbar.h" />
     <ClInclude Include="debugger\dbvalue.h" />
     <ClInclude Include="debugger\dbwatch.h" />

@@ -512,7 +512,7 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND saveState_check, loadFiles_check, doBackups_check, alwaysTop_check, saveWindow_check,
-		exeViolation_check, backupTime_edit, invalidFlash_check, turnOn_check, tiosDebug_check;
+		exeViolation_check, backupTime_edit, invalidFlash_check, turnOn_check, tiosDebug_check, checkUpdates_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			saveState_check = GetDlgItem(hwnd, IDC_CHK_SAVE);
@@ -525,6 +525,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			invalidFlash_check = GetDlgItem(hwnd, IDC_CHK_BRK_INVALID_FLASH);
 			turnOn_check = GetDlgItem(hwnd, IDC_CHK_AUTOON);
 			tiosDebug_check = GetDlgItem(hwnd, IDC_CHK_TIOS_DEBUG);
+			checkUpdates_check = GetDlgItem(hwnd, IDC_CHK_UPDATES);
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
 		case WM_COMMAND: {
@@ -542,7 +543,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 						case IDC_CHK_BRK_INVALID_FLASH:
 						case IDC_CHK_AUTOON:
 						case IDC_CHK_TIOS_DEBUG:
-
+						case IDC_CHK_UPDATES:
 							break;
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
@@ -578,6 +579,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 #endif
 					lpCalc->bAlwaysOnTop = Button_GetCheck(alwaysTop_check);
 					lpCalc->bTIOSDebug = !Button_GetCheck(tiosDebug_check);
+					check_updates = Button_GetCheck(checkUpdates_check);
 					gui_frame_update(lpCalc);
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
@@ -602,6 +604,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			Button_SetCheck(invalidFlash_check, break_on_invalid_flash);
 			Button_SetCheck(turnOn_check, auto_turn_on);
 			Button_SetCheck(tiosDebug_check, !lpCalc->bTIOSDebug);
+			Button_SetCheck(checkUpdates_check, check_updates);
 			return TRUE;
 		}
 		case WM_DESTROY:

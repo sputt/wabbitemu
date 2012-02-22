@@ -7,20 +7,18 @@
 #include "dbcommon.h"
 #include "resource.h"
 #include "guicontext.h"
+#include "guidebug.h"
 
 extern HINSTANCE g_hInst;
-extern HFONT hfontLucida;
-
-extern HWND hdisasm, hmem;
 
 static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-
 
 /*
  * Create a value field with a label
  */
 HWND CreateValueField(
 		HWND hwndParent,
+		LPDEBUGWINDOWINFO lpDebugInfo,
 		TCHAR *name,
 		int label_width,
 		void *data,
@@ -65,8 +63,9 @@ HWND CreateValueField(
 	}
 
 	value_field_settings *vfs = (value_field_settings *) malloc(sizeof(*vfs));
-	if (vfs == NULL)
+	if (vfs == NULL) {
 		return NULL;
+	}
 
 	ZeroMemory(vfs, sizeof(*vfs));
 
@@ -82,6 +81,7 @@ HWND CreateValueField(
 #else
 	strcpy(vfs->szName, name);
 #endif
+	vfs->lpDebugInfo = lpDebugInfo;
 
 	// Create the container window
 	HWND hwndValue =
@@ -97,30 +97,27 @@ HWND CreateValueField(
 				vfs
 		);
 
-	if (hwndValue == NULL)
+	if (hwndValue == NULL) {
 		return NULL;
+	}
 
 	return hwndValue;
 }
 
-
-
-
-
 static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static TEXTMETRIC tm;
 
-	value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	static value_field_settings *vfs = NULL;
 
 	switch (Message) {
 	case WM_CREATE:
 	{
-		vfs = (value_field_settings *) ((CREATESTRUCT*)lParam)->lpCreateParams;
+		vfs = (value_field_settings *) ((CREATESTRUCT *)lParam)->lpCreateParams;
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) vfs);
 
 		HDC hdc = GetDC(hwnd);
 
-		SelectObject(hdc, hfontLucida);
+		SelectObject(hdc, vfs->lpDebugInfo->hfontLucida);
 		GetTextMetrics(hdc, &tm);
 
 		ReleaseDC(hwnd, hdc);
@@ -136,15 +133,17 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 		vfs->toolInfo.lpszText = vfs->szTip;
 	    //SendMessage(vfs->hwndTip, TTM_ADDTOOL, 0, (LPARAM)&vfs->toolInfo);
 
-		SendMessage(hwnd, WM_USER, 0, 0);
+		SendMessage(hwnd, WM_USER, DB_UPDATE, 0);
 		return 0;
 	}
 	case WM_DESTROY: {
+		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		free(vfs);
 		return 0;
 	}
 	case WM_MOUSEMOVE:
 	{
+		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		POINT p = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 
 		if (PtInRect(&vfs->hot, p)) {
@@ -166,6 +165,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	}
 	case WM_MOUSELEAVE:
 	{
+		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		if (vfs->hot_lit) {
 			vfs->hot_lit = FALSE;
 
@@ -187,8 +187,9 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 		HDC hdc;
 
 		hdc = BeginPaint(hwnd, &ps);
+		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
-		SelectObject(hdc, hfontLucida);
+		SelectObject(hdc, vfs->lpDebugInfo->hfontLucida);
 		SetBkMode(hdc, TRANSPARENT);
 
 		RECT rc;
@@ -231,6 +232,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	}
 	case WM_SIZE:
 	{
+		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		DWORD dwWidth = tm.tmAveCharWidth * 10;
 		if (_tcslen(vfs->szName) == 0)
 			dwWidth = tm.tmAveCharWidth * 3;
@@ -245,6 +247,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	case WM_LBUTTONDOWN:
 	{
 		SendMessage(GetParent(hwnd), WM_USER, VF_DESELECT_CHILDREN, 0);
+		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 		vfs->selected = TRUE;
 		SetFocus(hwnd);
@@ -252,6 +255,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	}
 	case WM_LBUTTONDBLCLK:
 	{
+		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		// Create the edit window (modify the hot RECT slightly to make text line up perfectly (at 90 dpi)
 		vfs->hwndVal =
 		CreateWindow(_T("EDIT"), vfs->szValue,
@@ -262,7 +266,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			vfs->hot.bottom - vfs->hot.top,
 			hwnd, 0, g_hInst, NULL);
 
-		SubclassEdit(vfs->hwndVal, vfs->max_digits, vfs->format);
+		SubclassEdit(vfs->hwndVal, vfs->lpDebugInfo->hfontLucida, vfs->max_digits, vfs->format);
 		vfs->editing = TRUE;
 		InvalidateRect(hwnd, NULL, FALSE);
 		UpdateWindow(hwnd);
@@ -292,6 +296,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	}
 	case WM_COMMAND:
 	{
+		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (HIWORD(wParam)) {
 			case EN_KILLFOCUS:
 				if (GetFocus() == hwnd) break;
@@ -310,10 +315,10 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					SendMessage(hwnd, WM_LBUTTONDBLCLK, 0, 0);
 					return 0;
 				case IDM_REGPANE_VIEW_MEM:
-					SendMessage(GetParent(hmem), WM_COMMAND, MAKEWPARAM(DB_REGULAR_MEM_GOTO_ADDR, 0), (LPARAM) xtoi(vfs->szValue));
+					SendMessage(GetParent(vfs->lpDebugInfo->hmem), WM_COMMAND, MAKEWPARAM(DB_REGULAR_MEM_GOTO_ADDR, 0), (LPARAM) xtoi(vfs->szValue));
 					return 0;
 				case IDM_REGPANE_VIEW_DISASM:
-					SendMessage(GetParent(hdisasm), WM_COMMAND, MAKEWPARAM(DB_REGULAR_DISASM_GOTO_ADDR, 0), (LPARAM) xtoi(vfs->szValue));
+					SendMessage(GetParent(vfs->lpDebugInfo->hdisasm), WM_COMMAND, MAKEWPARAM(DB_REGULAR_DISASM_GOTO_ADDR, 0), (LPARAM) xtoi(vfs->szValue));
 					return 0;
 			}
 			
@@ -322,7 +327,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	}
 	case WM_USER:
 	{
-
+		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (wParam) {
 		case DB_UPDATE:
 			switch (vfs->format) {
@@ -365,7 +370,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			vfs->hot.left = vfs->cxName;
 
 			SendMessage(vfs->hwndTip, TTM_SETMAXTIPWIDTH, 0, 150);
-			SetWindowFont(vfs->hwndTip, hfontLucida, TRUE);
+			SetWindowFont(vfs->hwndTip, vfs->lpDebugInfo->hfontLucida, TRUE);
 			SendMessage(vfs->hwndTip, TTM_SETDELAYTIME, TTDT_AUTOMATIC, MAKELONG(GetDoubleClickTime() * 5, 0));
 
 			StringCbPrintf(vfs->szTip, sizeof(vfs->szTip), _T("%c: %3d (%s)\n%c: %3d (%s)"),

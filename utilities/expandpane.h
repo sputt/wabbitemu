@@ -1,22 +1,19 @@
 #ifndef EXPANDPANE_H
 #define EXPANDPANE_H
 
-LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
-HWND CreateExpandPane(HWND hwndParent, TCHAR *name, HWND contents);
-//int GetExpandedPanesHeight(void);
+#include "guidebug.h"
 
-typedef struct {
-	int total;
-	BOOL state[32];
-} ep_state;
+LRESULT CALLBACK ExpandPaneProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
+HWND CreateExpandPane(HWND hwndParent, LPDEBUGWINDOWINFO lpDebugInfo, TCHAR *name, HWND contents);
+//int GetExpandedPanesHeight(void);
 
 #define g_szExpandPane	_T("wabexppane")
 
-void GetExpandPaneState(ep_state *);
-void SetExpandPaneState(const ep_state *);
-void ArrangeExpandPanes(void);
-int GetExpandPanesHeight(void);
-void DrawExpandPanes(void);
+void GetExpandPaneState(LPDEBUGWINDOWINFO lpDebugInfo, ep_state *);
+void SetExpandPaneState(LPDEBUGWINDOWINFO lpDebugInfo, const ep_state *);
+void ArrangeExpandPanes(LPDEBUGWINDOWINFO lpDebugInfo);
+int GetExpandPanesHeight(LPDEBUGWINDOWINFO lpDebugInfo);
+void DrawExpandPanes(LPDEBUGWINDOWINFO lpDebugInfo);
 
 #define WM_SHIFT (WM_USER) //wParam = position to move to
 

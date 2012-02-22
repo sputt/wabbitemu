@@ -6,8 +6,8 @@
 #include "calc.h"
 
 #define coff(rreg,rname) {(unsigned int) (offsetof(struct CPU, rreg)), rname}
-#define reg16(offs) (*((unsigned short*) (&lpDebuggerCalc->cpu) + (offs/sizeof(short))))
-#define reg8(offs) (*((unsigned char*) (&lpDebuggerCalc->cpu) + (offs/sizeof(char))))
+#define reg16(offs) (*((unsigned short*) (&lpCalc->cpu) + (offs/sizeof(short))))
+#define reg8(offs) (*((unsigned char*) (&lpCalc->cpu) + (offs/sizeof(char))))
 #define REG16_COLS 	2
 #define REG8_COLS	3
 #define REG16_ROWS	6
