@@ -56,6 +56,22 @@
 			<Word>#endmacro</Word>
 			<Word>#region</Word>
 			<Word>#endregion</Word>
+
+			<Word>#IF</Word>
+			<Word>#ELSE</Word>
+			<Word>#INCLUDE</Word>
+			<Word>#DEFINE</Word>
+			<Word>#IFDEF</Word>
+			<Word>#IFNDEF</Word>
+			<Word>#IF</Word>
+			<Word>#ELSE</Word>
+			<Word>#ENDIF</Word>
+			<Word>#DEFCONT</Word>
+			<Word>#UNDEFINE</Word>
+			<Word>#MACRO</Word>
+			<Word>#ENDMACRO</Word>
+			<Word>#REGION</Word>
+			<Word>#ENDREGION</Word>
 		</Keywords>
 
 		<!-- Directives -->
@@ -70,11 +86,27 @@
 			<Word>.fill</Word>
 			<Word>.block</Word>
 			<Word>.addinstr</Word>
-			<Word>.word</Word>
+			<Word>.Word</Word>
 			<Word>.byte</Word>
 			<Word>.show</Word>
 			<Word>.error</Word>
 			<Word>.seek</Word>
+
+			<Word>.ORG</Word>
+			<Word>.DB</Word>
+			<Word>.DW</Word>
+			<Word>.ECHO</Word>
+			<Word>.LIST</Word>
+			<Word>.NOLIST</Word>
+			<Word>.END</Word>
+			<Word>.FILL</Word>
+			<Word>.BLOCK</Word>
+			<Word>.ADDINSTR</Word>
+			<Word>.Word</Word>
+			<Word>.BYTE</Word>
+			<Word>.SHOW</Word>
+			<Word>.ERROR</Word>
+			<Word>.SEEK</Word>
 		</Keywords>
 
 		<!-- Instructions -->
@@ -147,6 +179,75 @@
 			<Word>srl</Word>
 			<Word>sub</Word>
 			<Word>xor</Word>
+
+			<Word>ADC</Word>
+			<Word>ADD</Word>
+			<Word>AND</Word>
+			<Word>BIT</Word>
+			<Word>CALL</Word>
+			<Word>CCF</Word>
+			<Word>CPDR</Word>
+			<Word>CPD</Word>
+			<Word>CPIR</Word>
+			<Word>CPI</Word>
+			<Word>CPL</Word>
+			<Word>CP</Word>
+			<Word>DAA</Word>
+			<Word>DEC</Word>
+			<Word>DI</Word>
+			<Word>DJNZ</Word>
+			<Word>EI</Word>
+			<Word>EXX</Word>
+			<Word>EX</Word>
+			<Word>HALT</Word>
+			<Word>IM</Word>
+			<Word>INC</Word>
+			<Word>INDR</Word>
+			<Word>IND</Word>
+			<Word>INIR</Word>
+			<Word>INI</Word>
+			<Word>IN</Word>
+			<Word>JP</Word>
+			<Word>JR</Word>
+			<Word>LDDR</Word>
+			<Word>LDD</Word>
+			<Word>LDIR</Word>
+			<Word>LDI</Word>
+			<Word>LD</Word>
+			<Word>NEG</Word>
+			<Word>NOP</Word>
+			<Word>OR</Word>
+			<Word>OTDR</Word>
+			<Word>OTIR</Word>
+			<Word>OUTD</Word>
+			<Word>OUTI</Word>
+			<Word>OUT</Word>
+			<Word>POP</Word>
+			<Word>PUSH</Word>
+			<Word>RES</Word>
+			<Word>RETI</Word>
+			<Word>RETN</Word>
+			<Word>RET</Word>
+			<Word>RLA</Word>
+			<Word>RLCA</Word>
+			<Word>RLC</Word>
+			<Word>RLD</Word>
+			<Word>RL</Word>
+			<Word>RRA</Word>
+			<Word>RRCA</Word>
+			<Word>RRC</Word>
+			<Word>RRD</Word>
+			<Word>RR</Word>
+			<Word>RST</Word>
+			<Word>SBC</Word>
+			<Word>SCF</Word>
+			<Word>SET</Word>
+			<Word>SLA</Word>
+			<Word>SLL</Word>
+			<Word>SRA</Word>
+			<Word>SRL</Word>
+			<Word>SUB</Word>
+			<Word>XOR</Word>
 		</Keywords>
 
 		<!-- Registers -->
@@ -171,6 +272,27 @@
 			<Word>bc'</Word>
 			<Word>de'</Word>
 			<Word>hl'</Word>
+
+			<Word>AF</Word>
+			<Word>BC</Word>
+			<Word>DE</Word>
+			<Word>HL</Word>
+			<Word>IX</Word>
+			<Word>IY</Word>
+			<Word>SP</Word>
+			<Word>A</Word>
+			<Word>B</Word>
+			<Word>C</Word>
+			<Word>D</Word>
+			<Word>E</Word>
+			<Word>F</Word>
+			<Word>H</Word>
+			<Word>L</Word>
+			<Word>(HL)</Word>
+			<Word>AF'</Word>
+			<Word>BC'</Word>
+			<Word>DE'</Word>
+			<Word>HL'</Word>
 		</Keywords>
 	</RuleSet>
 </SyntaxDefinition>

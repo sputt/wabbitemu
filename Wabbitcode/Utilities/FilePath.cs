@@ -36,6 +36,10 @@ namespace Revsoft.Wabbitcode.Utilities
 
 		public static implicit operator string(FilePath path)
 		{
+			if (path == null)
+			{
+				return null;
+			}
 			return path.Path;
 		}
 

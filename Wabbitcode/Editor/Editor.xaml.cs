@@ -140,7 +140,11 @@ namespace Revsoft.Wabbitcode.Panels
 			switch (e.PropertyName)
 			{
 				case "IsOriginalFile":
-					this.Title = Path.GetFileName(FilePath);
+					string title = Path.GetFileName(FilePath);
+					if (!string.IsNullOrEmpty(title))
+					{
+						Title = title;
+					}
 					if (!editor.Document.UndoStack.IsOriginalFile)
 					{
 						this.Title += "*";
