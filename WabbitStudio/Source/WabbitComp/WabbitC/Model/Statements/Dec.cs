@@ -7,7 +7,7 @@ namespace WabbitC.Model.Statements
 {
 	class Dec : Statement
 	{
-		public Declaration Decl;
+        public Declaration Decl { get; set; }
 		public Dec(Declaration decl)
 		{
 			Decl = decl;

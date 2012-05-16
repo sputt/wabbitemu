@@ -14,8 +14,10 @@ namespace WabbitC.Optimizer.Loop
 		static bool LoopInvarianceReduction = true;
 		public static void RunOptimizer(ref Module module, Compiler.OptimizeLevel opLevel)
 		{
-			if (WabbitC.Optimizer.Optimizer.ConstantTracking)
-				Loop.ConstantsOptimizer.Optimize(ref module);
+            if (WabbitC.Optimizer.Optimizer.ConstantTracking)
+            {
+                Loop.ConstantsOptimizer.Optimize(ref module);
+            }
 			if (LoopInvarianceReduction)
 			{
 				Loop.LoopInvarianceReduction.Optimize(ref module);

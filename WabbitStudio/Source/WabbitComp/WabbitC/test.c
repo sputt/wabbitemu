@@ -8,13 +8,16 @@ int loop(int arg)
 	total = 0;
 	for (i = 0; i < arg; i+= 1)
 	{
-		j = 5+k;
+		j = 5 + k;
 		total += i + j;
 	}
 
 	return total;
 }
 
+void temp() {
+	temp(5);
+}
 
 /*int factorial(int n) {
 	if (n == 0) {

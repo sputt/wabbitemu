@@ -53,6 +53,8 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Optimizer Tests\VariableReducerTest.cs" />
+    <Compile Include="StatementPass Tests\ReplaceLocalsWithGlobalsTest.cs" />
     <Compile Include="TokenPass Tests\BracerTest.cs" />
     <Compile Include="CastHelperTest.cs" />
     <Compile Include="TokenPass Tests\CompoundAssignmentRemoverTest.cs" />
@@ -92,6 +94,7 @@
     <None Include="build-intermediates.bat" />
     <None Include="IntermediateCompileTestArgs.csv" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

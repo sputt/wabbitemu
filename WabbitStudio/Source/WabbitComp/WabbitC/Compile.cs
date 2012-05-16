@@ -91,8 +91,10 @@ namespace WabbitC
 
 			var currentModule = Module.ParseModule(ref tokens);
 
-			//if (optimizeLevel != OptimizeLevel.OptimizeNone)
-			//    Optimizer.Loop.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
+            if (optimizeLevel != OptimizeLevel.OptimizeNone)
+            {
+                Optimizer.Loop.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
+            }
 
 			WriteModule(currentModule, 1);
 

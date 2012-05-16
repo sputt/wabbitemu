@@ -7,12 +7,12 @@ using WabbitC.Model.Types;
 
 namespace WabbitC.Model.Statements
 {
-    class DoWhile : ControlStatement
+    class DoWhile : ControlStatement, ILoop
     {
-        public Block Condition;
-        public Block Body;
-        public Label Label;
-        public Declaration CondDecl;
+        public Block Condition { get; set; }
+        public Block Body { get; set; }
+        public Label Label { get; set; }
+        public Declaration CondDecl { get; set; }
 
         public static DoWhile Parse(Block parent, ref List<Token>.Enumerator tokens)
         {

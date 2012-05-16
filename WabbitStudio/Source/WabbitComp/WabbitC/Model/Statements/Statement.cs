@@ -92,6 +92,7 @@ namespace WabbitC.Model.Statements
         public void ReplaceDeclaration(Declaration declToReplace, Declaration newDecl)
         {
             System.Type type = this.GetType();
+            //TOOD: remove this. we should not have public fields
             var fields = from f in type.GetFields() 
                          where f.FieldType == typeof(Declaration) || f.FieldType == typeof(Datum) || f.FieldType == typeof(List<Declaration>)
                          select f;
@@ -114,6 +115,31 @@ namespace WabbitC.Model.Statements
 					if (field.GetValue(this) == declToReplace)
                     {
 						field.SetValue(this, newDecl);
+                    }
+                }
+            }
+            var properties = from p in type.GetProperties()
+                             where p.PropertyType == typeof(Declaration) || p.PropertyType == typeof(Datum) || p.PropertyType == typeof(List<Declaration>)
+                             select p;
+            foreach (var property in properties)
+            {
+                if (property.PropertyType == typeof(List<Declaration>))
+                {
+                    var decls = property.GetValue(this, null) as List<Declaration>;
+                    for (int i = 0; i < decls.Count; i++)
+                    {
+                        if (decls[i] == declToReplace)
+                        {
+                            decls[i] = newDecl;
+                            break;
+                        }
+                    }
+                }
+                else
+                {
+                    if (property.GetValue(this, null) == declToReplace)
+                    {
+                        property.SetValue(this, newDecl, null);
                     }
                 }
             }

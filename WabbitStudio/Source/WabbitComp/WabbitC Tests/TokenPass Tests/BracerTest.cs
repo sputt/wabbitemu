@@ -17,62 +17,11 @@ namespace WabbitC_Tests
 	[TestClass()]
 	public class BracerTest
 	{
-
-
-		private TestContext testContextInstance;
-
-		/// <summary>
-		///Gets or sets the test context which provides
-		///information about and functionality for the current test run.
-		///</summary>
-		public TestContext TestContext
-		{
-			get
-			{
-				return testContextInstance;
-			}
-			set
-			{
-				testContextInstance = value;
-			}
-		}
-
-		#region Additional test attributes
-		// 
-		//You can use the following additional attributes as you write your tests:
-		//
-		//Use ClassInitialize to run code before running the first test in the class
-		//[ClassInitialize()]
-		//public static void MyClassInitialize(TestContext testContext)
-		//{
-		//}
-		//
-		//Use ClassCleanup to run code after all tests in a class have run
-		//[ClassCleanup()]
-		//public static void MyClassCleanup()
-		//{
-		//}
-		//
-		//Use TestInitialize to run code before running each test
-		//[TestInitialize()]
-		//public void MyTestInitialize()
-		//{
-		//}
-		//
-		//Use TestCleanup to run code after each test has run
-		//[TestCleanup()]
-		//public void MyTestCleanup()
-		//{
-		//}
-		//
-		#endregion
-
-
 		/// <summary>
 		///A test for Run
 		///</summary>
 		[TestMethod()]
-		public void RunTest1()
+		public void Bracer_Test1()
 		{
 			string fileContents = Compiler.TryOpenFile(@"..\..\..\WabbitC Tests\TokenPass Tests\bracer_test.c");
 			Assert.IsTrue(!string.IsNullOrEmpty(fileContents));
@@ -89,7 +38,7 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest2()
+        public void Bracer_Test2()
 		{
 			Bracer target = new Bracer();
 
@@ -105,7 +54,7 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest3()
+        public void Bracer_Test3()
 		{
 			Bracer target = new Bracer();
 
@@ -121,7 +70,7 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest4()
+        public void Bracer_Test4()
 		{
 			Bracer target = new Bracer();
 
@@ -137,7 +86,7 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest5()
+        public void Bracer_Test5()
 		{
 			Bracer target = new Bracer();
 

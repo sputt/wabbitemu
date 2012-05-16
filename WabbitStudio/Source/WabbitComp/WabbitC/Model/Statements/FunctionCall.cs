@@ -39,6 +39,10 @@ namespace WabbitC.Model.Statements
 
 		public static List<Declaration> BuildParams(Block block, FunctionType funcType, List<Expression> args)
 		{
+            if (funcType.Params.Count == 0)
+            {
+                return new List<Declaration>();
+            }
 			var tokenList = new List<Declaration>();
 			int nCount = 0;
 			foreach(Expression arg in args)
@@ -62,7 +66,11 @@ namespace WabbitC.Model.Statements
 
 		public override ISet<Declaration> GetModifiedDeclarations()
         {
-            return new HashSet<Declaration>() { LValue };
+            if (LValue != null)
+            {
+                return new HashSet<Declaration>() { LValue };
+            }
+            return new HashSet<Declaration>() { };
         }
 
         public override ISet<Declaration> GetReferencedDeclarations()

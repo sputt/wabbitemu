@@ -82,6 +82,7 @@
     <Compile Include="Model\Immediate.cs" />
     <Compile Include="Model\Statements\BlockCopyReverse.cs" />
     <Compile Include="Model\Statements\Dec.cs" />
+    <Compile Include="Model\Statements\ILoop.cs" />
     <Compile Include="Model\Statements\Inc.cs" />
     <Compile Include="Model\Statements\ReturnAddress.cs" />
     <Compile Include="Model\Statements\Exchange.cs" />

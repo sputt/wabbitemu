@@ -17,58 +17,8 @@ namespace WabbitC_Tests
 	[TestClass()]
 	public class CharRemoverTest
 	{
-
-
-		private TestContext testContextInstance;
-
-		/// <summary>
-		///Gets or sets the test context which provides
-		///information about and functionality for the current test run.
-		///</summary>
-		public TestContext TestContext
-		{
-			get
-			{
-				return testContextInstance;
-			}
-			set
-			{
-				testContextInstance = value;
-			}
-		}
-
-		#region Additional test attributes
-		// 
-		//You can use the following additional attributes as you write your tests:
-		//
-		//Use ClassInitialize to run code before running the first test in the class
-		//[ClassInitialize()]
-		//public static void MyClassInitialize(TestContext testContext)
-		//{
-		//}
-		//
-		//Use ClassCleanup to run code after all tests in a class have run
-		//[ClassCleanup()]
-		//public static void MyClassCleanup()
-		//{
-		//}
-		//
-		//Use TestInitialize to run code before running each test
-		//[TestInitialize()]
-		//public void MyTestInitialize()
-		//{
-		//}
-		//
-		//Use TestCleanup to run code after each test has run
-		//[TestCleanup()]
-		//public void MyTestCleanup()
-		//{
-		//}
-		//
-		#endregion
-
 		[TestMethod()]
-		public void RunTest1()
+		public void CharRemoverTest_Test1()
 		{
 			CharacterRemover target = new CharacterRemover();
 
@@ -84,7 +34,7 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest2()
+        public void CharRemoverTest_Test2()
 		{
 			CharacterRemover target = new CharacterRemover();
 
@@ -104,7 +54,7 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest3()
+        public void CharRemoverTest_Test3()
 		{
 			CharacterRemover target = new CharacterRemover();
 
@@ -124,7 +74,7 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest4()
+        public void CharRemoverTest_Test4()
 		{
 			CharacterRemover target = new CharacterRemover();
 

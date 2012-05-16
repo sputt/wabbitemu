@@ -22,21 +22,17 @@ namespace WabbitC.Optimizer.Loop
 
 		public static void OptimizeBlock(ref Block block)
 		{
-			var statements = from Statement st in block where st is While select st;
-			foreach (While statement in statements)
+			var statements = from Statement st in block where st is ILoop select st;
+			foreach (ILoop statement in statements)
 			{
-				//OptimizeLoopBlock(ref statement.Body);
+                var body = statement.Body;
+				OptimizeLoopBlock(ref body);
 			}
 		}
 
 		public static void OptimizeLoopBlock(ref Block block)
 		{
 			var blocks = BasicBlock.GetBasicBlocks(block);
-			for (int i = 0; i < blocks.Count; i++)
-			{
-				var basicBlock = blocks[i];
-				//Loop.ConstantsOptimizer.OptimizeBlock(ref basicBlock);
-			}
 			Dictionary<Declaration, bool> variantDecls = new Dictionary<Declaration, bool>();
 			foreach (var decl in block.Declarations)
 			{

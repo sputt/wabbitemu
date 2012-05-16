@@ -71,6 +71,10 @@ namespace WabbitC.Model.Statements
                 if (exprList[i].Args != null)
                 {
                     Declaration funcDecl = block.FindDeclaration(token);
+                    if (funcDecl == null)
+                    {
+                        throw new Exception("Function reference before declaration");
+                    }
                     List<Declaration> paramList = FunctionCall.BuildParams(block, 
                         (FunctionType)funcDecl.Type, exprList[i].Args);
 
@@ -78,7 +82,7 @@ namespace WabbitC.Model.Statements
                     Type returnType = (funcDecl.Type as FunctionType).ReturnType;
                     if (returnType.Equals(new BuiltInType("void")))
                     {
-                        throw new Exception("Invalid type");
+                        returnDecl = null;
                     }
                     else
                     {
@@ -86,7 +90,14 @@ namespace WabbitC.Model.Statements
                     }
                     var funcCall = new FunctionCall(returnDecl, funcDecl, paramList);
                     block.Statements.Add(funcCall);
-                    stack.Push(Tokenizer.ToToken(returnDecl.Name));
+                    if (returnDecl != null)
+                    {
+                        stack.Push(Tokenizer.ToToken(returnDecl.Name));
+                    }
+                    else
+                    {
+                        stack.Push(Tokenizer.ToToken("void"));
+                    }
                 }
                 else if (token != null && token.Type == TokenType.OperatorType)
                 {

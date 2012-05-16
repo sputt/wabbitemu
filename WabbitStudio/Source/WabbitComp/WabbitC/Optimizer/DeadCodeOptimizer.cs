@@ -86,13 +86,16 @@ namespace WabbitC.Optimizer
 					else if(statement is FunctionCall)
 					{
 						var func = statement as FunctionCall;
-						var decl = block.FindDeclaration(func.LValue.Name);
-						var isReferenced = IsReferenced(block, instructions, func.LValue, i + 1);
-						if (decl != null && !isReferenced)
-						{
-							instructions[i] = false;
-							changedInstructions = true;
-						}
+                        if (func.LValue != null)
+                        {
+                            var decl = block.FindDeclaration(func.LValue.Name);
+                            var isReferenced = IsReferenced(block, instructions, func.LValue, i + 1);
+                            if (decl != null && !isReferenced)
+                            {
+                                instructions[i] = false;
+                                changedInstructions = true;
+                            }
+                        }
 					}
 					else
 					{

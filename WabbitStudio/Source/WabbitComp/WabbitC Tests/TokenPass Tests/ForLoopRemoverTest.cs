@@ -70,12 +70,12 @@ namespace WabbitC_Tests
 		///A test for Run
 		///</summary>
 		[TestMethod()]
-		public void RunTest1()
+		public void ForLoopRemover_Test1()
 		{
 			ForLoopRemover target = new ForLoopRemover();
 
 			List<Token> tokenList = Tokenizer.Tokenize("int j = 5; for (i = 0; i < 20 ; i++) {int var; if (1) { var = 10; }}");
-			List<Token> expected = Tokenizer.Tokenize("int j = 5; i = 0; while (i < 20) {int var; if (1) { var = 10; } i++;}");
+            List<Token> expected = Tokenizer.Tokenize("int j = 5; i = 0; if (i < 20) { do {int var; if (1) { var = 10; } i++;} while (i < 20); }");
 
 			List<Token> actual;
 			actual = target.Run(tokenList);
@@ -86,12 +86,12 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest2()
+        public void ForLoopRemover_Test2()
 		{
 			ForLoopRemover target = new ForLoopRemover();
 
 			List<Token> tokenList = Tokenizer.Tokenize("for (i = 0; i < 20 + (4 * 4); i++);");
-			List<Token> expected = Tokenizer.Tokenize("i = 0; while (i < 20 + (4 * 4)) {i++;}");
+            List<Token> expected = Tokenizer.Tokenize("i = 0; if (i < 20 + (4 * 4)) { do { i++; } while (i < 20 + (4 * 4)); }");
 
 			List<Token> actual;
 			actual = target.Run(tokenList);
@@ -102,12 +102,12 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest3()
+        public void ForLoopRemover_Test3()
 		{
 			ForLoopRemover target = new ForLoopRemover();
 
 			List<Token> tokenList = Tokenizer.Tokenize("for (;;);");
-			List<Token> expected = Tokenizer.Tokenize("; while (1) {;}");
+			List<Token> expected = Tokenizer.Tokenize("; if (1) { do { ; } while (1); }");
 
 			List<Token> actual;
 			actual = target.Run(tokenList);
@@ -118,12 +118,12 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest4()
+        public void ForLoopRemover_Test4()
 		{
 			ForLoopRemover target = new ForLoopRemover();
 
 			List<Token> tokenList = Tokenizer.Tokenize("for (j = 2, i = 0; i < 20 && j < 20; j += 10, i++) {int var; var = 10;}");
-			List<Token> expected = Tokenizer.Tokenize("j = 2, i = 0; while (i < 20 && j < 20) {int var; var = 10; j += 10, i++;}");
+            List<Token> expected = Tokenizer.Tokenize("j = 2, i = 0; if (i < 20 && j < 20) { do {int var; var = 10; j += 10, i++;} while (i < 20 && j < 20); }");
 
 			List<Token> actual;
 			actual = target.Run(tokenList);
@@ -134,12 +134,12 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest5()
+        public void ForLoopRemover_Test5()
 		{
 			ForLoopRemover target = new ForLoopRemover();
 
 			List<Token> tokenList = Tokenizer.Tokenize("for (;i < 20;);");
-			List<Token> expected = Tokenizer.Tokenize("; while (i < 20) {;}");
+			List<Token> expected = Tokenizer.Tokenize("; if (i < 20) { do { ; } while (i < 20); }");
 
 			List<Token> actual;
 			actual = target.Run(tokenList);
@@ -150,12 +150,12 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest6()
+        public void ForLoopRemover_Test6()
 		{
 			ForLoopRemover target = new ForLoopRemover();
 
 			List<Token> tokenList = Tokenizer.Tokenize("for (i = 0; i < 20; i++) i = 5;");
-			List<Token> expected = Tokenizer.Tokenize("i = 0; while (i < 20) { i = 5; i++;}");
+			List<Token> expected = Tokenizer.Tokenize("i = 0; if (i < 20) { do { i = 5; i++ } while (i < 20); }");
 
 			List<Token> actual;
 			try

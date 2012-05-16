@@ -69,7 +69,7 @@ namespace WabbitC_Tests
 		///A test for Run
 		///</summary>
 		[TestMethod()]
-		public void RunTest1()
+		public void CompoundAssigmentRemover_Test1()
 		{
 
 			CompoundAssignmentRemover target = new CompoundAssignmentRemover();
@@ -87,7 +87,7 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest2()
+        public void CompoundAssigmentRemover_Test2()
 		{
 			CompoundAssignmentRemover target = new CompoundAssignmentRemover();
 
@@ -103,7 +103,7 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest3()
+        public void CompoundAssigmentRemover_Test3()
 		{
 			CompoundAssignmentRemover target = new CompoundAssignmentRemover();
 
@@ -119,7 +119,7 @@ namespace WabbitC_Tests
 		}
 
 		[TestMethod()]
-		public void RunTest4()
+        public void CompoundAssigmentRemover_Test4()
 		{
 			CompoundAssignmentRemover target = new CompoundAssignmentRemover();
 
@@ -136,7 +136,7 @@ namespace WabbitC_Tests
 
 
 		[TestMethod()]
-		public void RunTest5()
+        public void CompoundAssigmentRemover_Test5()
 		{
 			CompoundAssignmentRemover target = new CompoundAssignmentRemover();
 

@@ -367,7 +367,7 @@ namespace WabbitC_Tests
 		[TestMethod()]
 		public void OptimizeTest1()
 		{
-			List<Token> tokens = Tokenizer.Tokenize("test = (10 *arg * (arg3 * 20)) + (arg2 + 40)"); ;
+			List<Token> tokens = Tokenizer.Tokenize("test = (10 * arg * (arg3 * 20)) + (arg2 + 40)"); ;
 			Expression target = new Expression(tokens);
 
 			List<Expression> expected = new List<Expression>();
