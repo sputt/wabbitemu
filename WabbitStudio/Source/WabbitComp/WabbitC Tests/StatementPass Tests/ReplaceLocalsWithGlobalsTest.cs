@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using WabbitC.StatementPasses;
 using WabbitC.Model;
 using WabbitC;
+using WabbitC.Model.Types;
 
 namespace WabbitC_Tests.StatementPass_Tests
 {
@@ -20,7 +21,7 @@ namespace WabbitC_Tests.StatementPass_Tests
             tokensList.MoveNext();
             Module module = Module.ParseModule(ref tokensList);
             ReplaceLocalsWithGlobals.Run(module);
-            Assert.IsTrue(module.GlobalVariables.Count == 2);
+            Assert.IsTrue(module.GlobalVariables[new BuiltInType("int")].Count == 2);
         }
 
         [TestMethod]
@@ -31,7 +32,7 @@ namespace WabbitC_Tests.StatementPass_Tests
             tokensList.MoveNext();
             Module module = Module.ParseModule(ref tokensList);
             ReplaceLocalsWithGlobals.Run(module);
-            Assert.IsTrue(module.GlobalVariables.Count == 4);
+            Assert.IsTrue(module.GlobalVariables[new BuiltInType("int")].Count == 4);
         }
     }
 }

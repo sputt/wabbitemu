@@ -117,5 +117,10 @@ namespace WabbitC.Model.Types
 			}
 			return true;
 		}
+
+        public override int GetHashCode()
+        {
+            return this.BuildInTypeType.GetHashCode() + this.isUnsigned.GetHashCode() + this.IndirectionLevels.GetHashCode();
+        }
 	}
 }

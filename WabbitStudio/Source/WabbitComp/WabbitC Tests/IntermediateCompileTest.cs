@@ -99,7 +99,6 @@ namespace WabbitC_Tests
 			DataAccessMethod.Sequential),
 		DeploymentItem("WabbitC Tests\\IntermediateCompileTestArgs.csv"),
 		TestMethod]
-		//[TestMethod]
 		public void Return()
 		{
 			RunIntermediateTest("returntest");

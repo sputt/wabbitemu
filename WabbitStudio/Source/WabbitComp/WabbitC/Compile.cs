@@ -109,14 +109,14 @@ namespace WabbitC
 			}
 			WriteModule(currentModule, 2);
 
-			if (optimizeLevel != OptimizeLevel.OptimizeNone)
-				Optimizer.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
+			//if (optimizeLevel != OptimizeLevel.OptimizeNone)
+			//	Optimizer.Optimizer.RunOptimizer(ref currentModule, optimizeLevel);
 
 			WriteModule(currentModule, 3);
 
 			if (passCount >= PassCount.Pass3)
 			{
-				StatementPasses.ReplaceLocalsWithGlobals.Run(currentModule);
+				//StatementPasses.ReplaceLocalsWithGlobals.Run(currentModule);
 				StatementPasses.ApplyCallingConvention.Run(currentModule);
 				StatementPasses.LabelMerger.Run(currentModule);
 				StatementPasses.RemovePointlessGotos.Run(currentModule);
@@ -125,7 +125,7 @@ namespace WabbitC
 				StatementPasses.ConvertAddSubToIncDec.Run(currentModule);
 				StatementPasses.RemoveMathImmediates.Run(currentModule);
 
-				StatementPasses.RegisterAllocator.SmarterRegisterAllocator.Run(currentModule);
+				StatementPasses.RegisterAllocator.DumbRegisterAllocator.Run(currentModule);
 			}
 
 			currentModule.IntermediateStrings.Add("#include <string.h>");

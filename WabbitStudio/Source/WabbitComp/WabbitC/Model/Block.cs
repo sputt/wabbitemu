@@ -68,8 +68,9 @@ namespace WabbitC.Model
 		public List<Declaration> Declarations;
 		public BlockStatements Statements;
 		public StackAllocator stack;
-		public HashSet<String> Properties;
+		public Dictionary<String, Object> Properties;
 		public int TempDeclarationNumber = 0;
+        public List<Declaration> GlobalVars;
 
 		public Module Module
 		{
@@ -370,7 +371,8 @@ namespace WabbitC.Model
 			Declarations = new List<Declaration>();
 			Types = new HashSet<Type>();
 			Statements = new BlockStatements(this);
-			Properties = new HashSet<string>();
+			Properties = new Dictionary<string, Object>();
+            GlobalVars = new List<Declaration>();
 		}
 
 		public Block(Block parent) : this()

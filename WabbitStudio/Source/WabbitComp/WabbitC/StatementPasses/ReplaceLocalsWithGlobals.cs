@@ -22,13 +22,15 @@ namespace WabbitC.StatementPasses
 							select d;
 			foreach (var function in functions)
 			{
-				if (!function.Code.Function.UseStack)
-					RecurseCalls(module, functions, function);
+                if (!function.Code.Function.UseStack)
+                {
+                    RecurseCalls(module, functions, function);
+                }
 				level++;
 			}
 		}
 
-		static void RecurseCalls(Module module, IEnumerable functions, Declaration function)
+		static List<Declaration> RecurseCalls(Module module, IEnumerable functions, Declaration function)
 		{
 			Block block = function.Code;
 			var calledFunc = from s in block.Statements
@@ -37,22 +39,26 @@ namespace WabbitC.StatementPasses
 			foreach (FunctionCall func in calledFunc)
 			{
 				RecurseCalls(module, functions, func.Function);
+                block.GlobalVars.AddRange(func.Function.Code.GlobalVars);
 			}
 
-			ReplaceLocals(module, block);
+			return ReplaceLocals(module, block);
 		}
 
-		static void ReplaceLocals(Module module, Block block)
+		static List<Declaration> ReplaceLocals(Module module, Block block)
 		{
+            var globalsAdded = new List<Declaration>();
 			foreach (var decl in block.Declarations)
 			{
-				var newDecl = module.AllocateGlobalVariable(decl, level);
+				var newDecl = module.AllocateGlobalVariable(decl, block);
+                globalsAdded.Add(decl);
 				foreach (var statement in block.Statements)
 				{
 					statement.ReplaceDeclaration(decl, newDecl);
 				}
 			}
 			block.Declarations.Clear();
+            return globalsAdded;
 		}
 	}
 }

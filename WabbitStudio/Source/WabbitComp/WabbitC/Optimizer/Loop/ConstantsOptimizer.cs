@@ -116,7 +116,7 @@ namespace WabbitC.Optimizer.Loop
 			}
 			//mark that were all done with this one
 			block.Properties.Remove(constOptInProgressString);
-			block.Properties.Add(constOptString);
+			block.Properties.Add(constOptString, 1);
 			/*for (int i = 0; i < block.Declarations.Count; i++)
 			{
 				block.Declarations[i].ConstValue = null;

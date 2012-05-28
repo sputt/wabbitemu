@@ -14,7 +14,7 @@ namespace WabbitC.Model
 		public List<string> IntermediateStrings;
 		public ISet<Declaration> GeneralPurposeRegisters;
 		public ISet<Declaration> Registers;
-        public List<KeyValuePair<Declaration, List<int>>> GlobalVariables = new List<KeyValuePair<Declaration, List<int>>>();
+        public Dictionary<Type, List<Declaration>> GlobalVariables;
 
 		public Module() { }
 
@@ -48,6 +48,7 @@ namespace WabbitC.Model
 
 			GeneralPurposeRegisters = gprs;
 			Registers = regs;
+            GlobalVariables = new Dictionary<Type, List<Declaration>>();
 
 			Declarations.Insert(0, new Declaration(new Types.Array(new BuiltInType("unsigned char"), "[2048]"), "__stack"));
 			Declarations.InsertRange(0, Registers);
@@ -57,23 +58,29 @@ namespace WabbitC.Model
             this.Parent = null;
         }
 
-        int tempGlobals = 0;
-        private string NewTempGlobal()
-        {
-            return "__global" + tempGlobals++;
-        }
-
-		public Declaration AllocateGlobalVariable(Declaration decl, int level)
+		public Declaration AllocateGlobalVariable(Declaration decl, Block block)
 		{
-            foreach (var possibleOverlap in GlobalVariables) {
-                if (possibleOverlap.Key.Type.Equals(decl.Type) && !possibleOverlap.Value.Contains(level)) {
-                    possibleOverlap.Value.Add(level);
-                    return possibleOverlap.Key;
+            Declaration globalVar = null;
+            var varType = decl.Type;
+            if (!GlobalVariables.ContainsKey(varType))
+            {
+                GlobalVariables.Add(varType, new List<Declaration>());
+            }
+            for (int i = 0; i < GlobalVariables[varType].Count; i++)
+            {
+                if (!block.GlobalVars.Contains(GlobalVariables[varType][i]))
+                {
+                    globalVar = GlobalVariables[varType][i];
+                    break;
                 }
             }
-            var newDecl = new Declaration(decl.Type, NewTempGlobal());
-            GlobalVariables.Add(new KeyValuePair<Declaration, List<int>>(newDecl, new List<int>() { level }));
-            return newDecl;
+            if (globalVar == null)
+            {
+                globalVar = new Declaration(varType, "__global" + varType + (GlobalVariables[varType].Count + 1).ToString());
+                GlobalVariables[varType].Add(globalVar);
+            }
+            block.GlobalVars.Add(globalVar);
+            return globalVar;
 		}
 
         public IEnumerator<Declaration> GetFunctionEnumerator()
@@ -100,9 +107,12 @@ namespace WabbitC.Model
 			{
 				result += s + Environment.NewLine;
 			}
-            foreach (var variable in GlobalVariables)
+            foreach (Type type in GlobalVariables.Keys)
             {
-                result += variable.Key.ToDeclarationString() + Environment.NewLine;
+                foreach (var variable in GlobalVariables[type])
+                {
+                    result += variable.ToDeclarationString() + Environment.NewLine;
+                }
             }
 			result += base.ToString();
 			return result;

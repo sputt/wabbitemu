@@ -139,7 +139,10 @@ namespace WabbitC.Model.Statements
                 {
                     if (property.GetValue(this, null) == declToReplace)
                     {
-                        property.SetValue(this, newDecl, null);
+                        if (property.CanWrite)
+                        {
+                            property.SetValue(this, newDecl, null);
+                        }
                     }
                 }
             }
