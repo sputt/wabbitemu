@@ -25,11 +25,15 @@ namespace WabbitC.StatementPasses.RegisterAllocator
 				{
 					if (block.Function.UseStack || true)
 					{
-						block.stack.ReserveSpace(decl);
+                        if (block.stack == null)
+                        {
+                            block.stack = new StackAllocator(block);
+                        }
+                        block.stack.ReserveSpace(decl);
 					}
 					else
 					{
-						module.AllocateGlobalVariable(decl, int.MaxValue);
+						module.AllocateGlobalVariable(decl, block);
 					}
 				}
 

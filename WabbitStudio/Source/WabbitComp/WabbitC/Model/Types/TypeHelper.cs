@@ -14,7 +14,7 @@ namespace WabbitC.Model.Types
                 BuiltInType builtIn = new BuiltInType(ref tokens);
                 return builtIn;
             }
-            catch (System.Exception e)
+            catch (System.Exception)
             {
                 // Then try User defined types (this method will have to take a Block)
             }
