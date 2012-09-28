@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 11
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASMTests", "..\..\Tests\SPASMTests\SPASMTests.vcxproj", "{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SPASM", "SPASM.vcxproj", "{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}"
@@ -9,15 +9,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Global
 	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 3
 		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 		SccLocalPath0 = .
-		SccProjectUniqueName1 = ..\\..\\Tests\\SPASMTests\\SPASMTests.vcxproj
-		SccProjectName1 = ../../Tests/SPASMTests
 		SccLocalPath1 = ..\\..\\Tests\\SPASMTests
-		SccProjectUniqueName2 = SPASM.vcxproj
 		SccLocalPath2 = .
+		SccNumberOfProjects = 3
+		SccProjectName1 = ../../Tests/SPASMTests
+		SccProjectUniqueName1 = ..\\..\\Tests\\SPASMTests\\SPASMTests.vcxproj
+		SccProjectUniqueName2 = SPASM.vcxproj
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -28,14 +28,6 @@ Global
 		Static Library Debug|x64 = Static Library Debug|x64
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Debug|Win32.ActiveCfg = Debug|Win32
-		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Debug|x64.ActiveCfg = Debug|x64
-		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Release|Win32.ActiveCfg = Release|Win32
-		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Release|x64.ActiveCfg = Release|x64
-		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Static Library Debug|Win32.ActiveCfg = Debug|Win32
-		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Static Library Debug|Win32.Build.0 = Debug|Win32
-		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Static Library Debug|x64.ActiveCfg = Debug|x64
-		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Static Library Debug|x64.Build.0 = Debug|x64
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Debug|Win32.Build.0 = Debug|Win32
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Debug|x64.ActiveCfg = Debug|x64
@@ -48,8 +40,19 @@ Global
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|Win32.Build.0 = Static Library Debug|Win32
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|x64.ActiveCfg = Static Library Debug|x64
 		{106FF797-6997-43F1-88E3-7D6C0D8A6F3F}.Static Library Debug|x64.Build.0 = Static Library Debug|x64
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Debug|Win32.ActiveCfg = Debug|Win32
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Debug|x64.ActiveCfg = Debug|x64
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Release|Win32.ActiveCfg = Release|Win32
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Release|x64.ActiveCfg = Release|x64
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Static Library Debug|Win32.ActiveCfg = Debug|Win32
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Static Library Debug|Win32.Build.0 = Debug|Win32
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Static Library Debug|x64.ActiveCfg = Debug|x64
+		{85D2CCCD-B12D-4A80-BB4E-9233E078D9EA}.Static Library Debug|x64.Build.0 = Debug|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

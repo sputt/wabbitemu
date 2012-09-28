@@ -134,9 +134,23 @@ void write_file (const unsigned char *output_contents, int output_len, const cha
 	//then decide how to write the contents
 	switch (calc)
 	{
+	//73p
+	case 0:
+	//82p
+	case 1:
+	//83p
+	case 2:
 	//8xp
 	case 3:
-		makeprgm (output_contents, output_len, outfile, prgmname, calc);
+	//85p
+	case 4:
+	//85s
+	case 5:
+	//86p
+	case 6:
+	//86s
+	case 7:
+		makeprgm (output_contents, (DWORD) output_len, outfile, prgmname, calc);
 		break;
 	//8xk
 	case 8:

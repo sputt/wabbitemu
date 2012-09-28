@@ -482,7 +482,7 @@
       <InterfaceIdentifierFileName>SPASMNew_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>SPASMNew_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
-      <TypeLibraryName>$(IntDir)SPASMNew.tlb</TypeLibraryName>
+      <TypeLibraryName>$(IntDir)SPASM.tlb</TypeLibraryName>
       <DllDataFileName>
       </DllDataFileName>
       <ValidateAllParameters>true</ValidateAllParameters>
@@ -575,7 +575,7 @@
       <InterfaceIdentifierFileName>SPASMNew_i.c</InterfaceIdentifierFileName>
       <ProxyFileName>SPASMNew_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
-      <TypeLibraryName>$(IntDir)SPASMNew.tlb</TypeLibraryName>
+      <TypeLibraryName>$(IntDir)SPASM.tlb</TypeLibraryName>
       <DllDataFileName>
       </DllDataFileName>
       <TargetEnvironment>X64</TargetEnvironment>
@@ -588,7 +588,7 @@
     </ResourceCompile>
     <Link>
       <SubSystem>Console</SubSystem>
-      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <AdditionalDependencies>mpir.lib;%(AdditionalDependencies)</AdditionalDependencies>
