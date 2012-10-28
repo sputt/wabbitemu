@@ -848,10 +848,10 @@ BOOL CALLBACK EnumToolbarRedraw(HWND hwndChild, LPARAM lParam) {
 
 static HMENU rewindmenu;
 HMENU CreateRewindMenu() {
-	TCHAR buf[256];
-	int i;
 	rewindmenu = LoadMenu(g_hInst, MAKEINTRESOURCE(IDR_DISASM_REWIND_MENU));
 #if WITH_BACKUPS
+	TCHAR buf[256];
+	int i;
 	float j = 1 / ((float) num_backup_per_sec);
 	for (i = 0; i < MAX_BACKUPS; i++) {
 		StringCbPrintf(buf, sizeof(buf), _T("%.2f"), j * (i + 1));

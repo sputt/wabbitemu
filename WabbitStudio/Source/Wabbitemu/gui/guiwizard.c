@@ -508,7 +508,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					_tremove(hexFile);
 					//if you don't want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
-						TIFILE_t *tifile = newimportvar(osPath);
+						TIFILE_t *tifile = importvar(osPath, FALSE);
 						if (tifile == NULL || tifile->type != FLASH_TYPE) {
 							MessageBox(hwnd, _T("Error: OS file is corrupt"), _T("Error"), MB_OK);
 						} else {
@@ -915,7 +915,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 
 					//if you don't want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
-						TIFILE_t *tifile = newimportvar(osPath);
+						TIFILE_t *tifile = importvar(osPath, FALSE);
 						forceload_os(&lpCalc->cpu, tifile);						
 						//if (Button_GetCheck(hRadioDownload) == BST_CHECKED)
 						//	remove(osPath);

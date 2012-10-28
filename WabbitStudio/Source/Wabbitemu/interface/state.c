@@ -183,7 +183,7 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 	}
 	
 	if (model == TI_86) {
-		StringCbCopy(buffer, 10, sym->name);
+		StringCbCopy(buffer, 10, (TCHAR *) sym->name);
 		return buffer;
 	} else {
 		switch(sym->type_ID) {
@@ -191,7 +191,7 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 			case ProtProgObj:
 			case AppVarObj:
 			case GroupObj: {
-				errno_t error = StringCbCopy(buffer, 10, sym->name);
+				errno_t error = StringCbCopy(buffer, 10, (TCHAR *) sym->name);
 				return buffer;
 			}
 			case PictObj:

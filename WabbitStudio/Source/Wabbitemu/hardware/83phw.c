@@ -11,7 +11,7 @@
 #include "dbbreakpoints.h"
 #endif
 
-#define BIT(bit) (1 << bit)
+#define BIT(bit) (1 << (bit))
 
 static double timer_freq83p[4] = { 1.0f / 560.0f, 1.0f / 248.0f, 1.0f / 170.0f, 1.0f / 118.0f };
 
@@ -272,7 +272,6 @@ static void port14(CPU_t *cpu, device_t *dev) {
 	if (cpu->input) {
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		int bank = cpu->pc >> 14;
 		if (is_priveleged_page(cpu)) {
 			cpu->mem_c->flash_locked = !(cpu->bus & BIT(0));
 		}

@@ -7,7 +7,7 @@
 
 extern HINSTANCE g_hInst;
 
-unsigned int goto_addr;
+int goto_addr;
 int find_value;
 BOOL big_endian;
 BOOL search_backwards;
@@ -215,7 +215,7 @@ void SubclassEdit(HWND hwndEdt, HFONT hfontLucida, int edit_width, VALUE_FORMAT 
 // Converts a hexadecimal string to integer
 int xtoi(const TCHAR *xs) {
 	int val;
-	int error = sscanf(xs, _T("%X"), &val);
+	int error = sscanf_s(xs, _T("%X"), &val);
 	if (error == EOF)
 		return INT_MAX;
 	return val;

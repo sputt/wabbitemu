@@ -223,7 +223,7 @@ BOOL is_priveleged_page(CPU_t *cpu) {
 static BOOL is_allowed_exec(CPU_t *cpu) {
 	bank_state_t  *bank = &cpu->mem_c->banks[mc_bank(cpu->pc)];
 	if (cpu->pio.model <= TI_83P) {
-		int protected_val, group_offset;
+		int protected_val;
 		if (bank->ram) {
 			protected_val = cpu->mem_c->protected_page[3];
 			if ((protected_val & 0x01) && bank->page == 0)
@@ -287,7 +287,7 @@ void update_bootmap_pages(memc *mem_c) {
 	mem_c->bootmap_banks[1].no_exec		= FALSE;
 	mem_c->bootmap_banks[1].ram			= mem_c->normal_banks[1].ram;
 		
-	mem_c->bootmap_banks[2].page		= mem_c->normal_banks[1].page | !mem_c->flash_version == 1;
+	mem_c->bootmap_banks[2].page		= mem_c->normal_banks[1].page | (!mem_c->flash_version == 1);
 	mem_c->bootmap_banks[2].addr		= (mem_c->normal_banks[1].ram ? mem_c->ram : mem_c->flash) + (mem_c->bootmap_banks[2].page * PAGE_SIZE);
 	mem_c->bootmap_banks[2].read_only	= FALSE;
 	mem_c->bootmap_banks[2].no_exec		= FALSE;

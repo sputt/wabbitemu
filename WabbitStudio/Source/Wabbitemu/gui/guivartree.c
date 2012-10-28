@@ -312,7 +312,6 @@ INT_PTR CALLBACK DlgVarlist(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 }
 
 int SetVarName(FILEDESCRIPTOR *fd) {
-	OPENFILENAME ofn;
 	TCHAR *defExt;
 	int filterIndex;
 	const TCHAR lpstrFilter[] = _T("Programs  (*.8xp)\0*.8xp\0\

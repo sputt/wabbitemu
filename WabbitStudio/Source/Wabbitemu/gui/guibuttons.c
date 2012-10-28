@@ -237,7 +237,7 @@ void DrawButtonStateNoSkin(HDC hdc, HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT 
 
 void DrawButtonState(HDC hdcSkin, HDC hdcKeymap, POINT *pt, UINT state) {
 	RECT brect;
-	int x, y, width, height;
+	int width, height;
 	
 	brect = FindButtonRect(hdcKeymap, pt);
 	if (IsRectEmpty(&brect)) return;

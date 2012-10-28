@@ -17,7 +17,6 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					TCHAR string[9];
 					int output;
-					HWND hWndEdit;
 					GetDlgItemText(hwnd, IDC_BLOCK_EDT, string, 8);
 					output = _tstoi(string);
 					lpCalc->profiler.blockSize = output;

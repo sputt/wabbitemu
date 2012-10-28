@@ -26,8 +26,9 @@ int CmpStringCase(const char *str1, unsigned char *str2) {
 	return _strnicmp(str1, (char *) str2, strlen(str1));
 }
 
-int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
-	int i,b;
+int FindRomVersion(int calc, char *string, unsigned char *rom, u_int size) {
+	u_int i;
+	int b;
 	if (calc == -1) {
 		if (size == (128 * 1024)) calc = TI_82;
 		else if (size == (256 * 1024)) calc = TI_83;
@@ -172,8 +173,8 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, int size) {
 }
 
 int ReadIntelHex(FILE *ifile, INTELHEX_t *ihex) {
-	BYTE str[600];
-	DWORD i, size, addr, type, byte;
+	BYTE str[600], byte;
+	DWORD i, size, addr, type;
 	memset(str, 0x00, ARRAYSIZE(str));
 	if (!fgets((char*) str, 580, ifile))
 		return 0;
@@ -315,7 +316,8 @@ TIFILE_t* ImportFlashFile(FILE *infile, TIFILE_t *tifile) {
 
 TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 	size_t size;
-	int calc, i, tmp;
+	int calc, tmp;
+	u_int i;
 
 	fseek(infile, 0, SEEK_END);
 	size = ftell(infile);
@@ -564,7 +566,6 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 
 	if (length2 > length + 17 || tifile->type == GROUP_TYPE) {
 		tifile->type = GROUP_TYPE;
-		length2 -= 0x39;
 	} else {
 		tifile->type = VAR_TYPE;
 	}
@@ -634,8 +635,8 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 		if (varNumber != 0)
 			return tifile;
 		while (tifile != NULL) {
-			length2 -= tifile->var->length + tifile->var->headersize;
-			if (length2 < 0)
+			length2 -= tifile->var->length + 17;
+			if (length2 <= 0)
 				break;
 			tifile = ImportVarData(infile, tifile, ++varNumber);
 		}
@@ -645,7 +646,7 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	return tifile;
 }
 
-TIFILE_t* newimportvar(LPCTSTR filePath, BOOL only_check_header) {
+TIFILE_t* importvar(LPCTSTR filePath, BOOL only_check_header) {
 	FILE *infile = NULL;
 	TIFILE_t *tifile;
 	

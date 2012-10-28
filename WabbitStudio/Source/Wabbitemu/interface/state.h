@@ -21,8 +21,8 @@ typedef struct {
 	uint16_t address;
 	uint8_t page;
 	uint8_t name_len;
-	uint8_t length;
-	TCHAR name[9];
+	uint16_t length;
+	_TUCHAR name[9];
 } symbol83P_t;
 
 typedef struct symlist {

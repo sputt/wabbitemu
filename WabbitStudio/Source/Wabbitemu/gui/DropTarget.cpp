@@ -221,7 +221,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 					int count = DragQueryFile((HDROP) pData, ~0, path, 256);
 					while (count--) {
 						DragQueryFile((HDROP) pData, count, path, ARRAYSIZE(path));
-						TIFILE_t *tifile = newimportvar(path, TRUE);
+						TIFILE_t *tifile = importvar(path, TRUE);
 						valid = tifile != NULL;
 						//check if we can go in either ram or archive
 						if (tifile && tifile->flash == NULL)
@@ -261,7 +261,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 										fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
 										fclose(file);
 
-										TIFILE_t *tifile = newimportvar(path, TRUE);
+										TIFILE_t *tifile = importvar(path, TRUE);
 										valid = tifile != NULL;
 										if (tifile->flash == NULL)
 											is_archive_only = FALSE;

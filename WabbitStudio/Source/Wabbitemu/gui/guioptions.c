@@ -555,7 +555,6 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 		case WM_NOTIFY:
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
-					int i;
 					startX = startY = Button_GetCheck(saveWindow_check) ? 0 : CW_USEDEFAULT;
 					exit_save_state = Button_GetCheck(saveState_check);
 					new_calc_on_load_files = Button_GetCheck(loadFiles_check);
@@ -570,6 +569,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					//we need to persist this immediately
 					SaveWabbitKey(_T("load_files_first"), REG_DWORD, &new_calc_on_load_files);
 #ifdef WITH_BACKUPS
+					int i;
 					num_backup_per_sec = (int) (100 / persec);
 					do_backups = Button_GetCheck(doBackups_check);
 					if (!do_backups) {

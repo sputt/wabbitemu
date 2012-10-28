@@ -74,7 +74,8 @@ void SendBugReport(TCHAR *nameBuffer, TCHAR *emailBuffer, TCHAR *titleBuffer, TC
 	GetAppDataString(tempFile, sizeof(tempFile));
 	time_t timeUploaded;
 	time(&timeUploaded);
-	TCHAR *timeString = _tctime(&timeUploaded);
+	TCHAR timeString[256];
+	_tctime_s(timeString, sizeof(timeString), &timeUploaded);
 	for (int i = strlen(timeString); i >= 0; i--) {
 		if (timeString[i] == ':') {
 			timeString[i] = '_';
@@ -171,8 +172,8 @@ INT_PTR CALLBACK ExportOSDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 		SetWindowTheme(hListPagesToExport, L"Explorer", NULL);
 		ListView_SetExtendedListViewStyle(hListPagesToExport, LVS_EX_CHECKBOXES);
 		TCHAR temp[64];
-		int totalPages = lpCalc->cpu.mem_c->flash_pages;
-		for (int i = 0; i < totalPages; i++) {
+		u_int totalPages = lpCalc->cpu.mem_c->flash_pages;
+		for (u_int i = 0; i < totalPages; i++) {
 			LVITEM item;
 			item.mask = LVIF_TEXT;		
 			StringCbPrintf(temp, sizeof(temp), _T("%02X"), i);

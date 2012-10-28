@@ -199,7 +199,7 @@ static STDINT_t* INT86_init(CPU_t* cpu) {
 	
 	memcpy(stdint->freq, timer_freq, sizeof(timer_freq));
 	stdint->intactive = 0;
-	stdint->timermax1 = stdint->freq[4];
+	stdint->timermax1 = stdint->freq[3];
 	stdint->lastchk1 = tc_elapsed(cpu->timer_c);
 	stdint->on_backup = 0;
 	stdint->on_latch = FALSE;

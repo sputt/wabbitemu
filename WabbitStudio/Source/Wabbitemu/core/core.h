@@ -201,7 +201,7 @@ typedef struct memory_context {
 			BOOL flash_enabled : 1;
 			BOOL flash_disabled : 1;
 		};
-		uint16_t port24;
+		uint8_t port24;
 	};
 
 	int port27_remap_count;		// amount of 64 byte chunks remapped from RAM page 0 to bank 3

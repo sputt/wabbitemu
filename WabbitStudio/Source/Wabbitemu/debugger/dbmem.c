@@ -10,7 +10,7 @@
 
 extern HWND hwndLastFocus;
 extern HINSTANCE g_hInst;
-extern unsigned int goto_addr;
+extern int goto_addr;
 extern int find_value;
 
 static int AddrFromPoint(HWND hwnd, POINT pt, RECT *r) {
@@ -358,9 +358,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			mps->diff = diff;
 			int addr = mps->addr;
 
-			unsigned int value, max_addr;
+			int value, max_addr;
 			r.left = COLUMN_X_OFFSET;
-			char page;
 			for (	i = 0, r.bottom = r.top + mps->cyRow;
 					i < rows;
 					i++, OffsetRect(&r, 0, mps->cyRow)) {
@@ -721,7 +720,7 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case DB_GOTO: {
 					int result;
-					result = (int) DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC) GotoDialogProc);
+					result = (int) DialogBoxParam(g_hInst, MAKEINTRESOURCE(IDD_DLGGOTO), hwnd, (DLGPROC) GotoDialogProc, (LPARAM) lpTabInfo->lpDebugInfo->lpCalc);
 					if (result == IDOK) {
 						switch (mps->type) {
 							case REGULAR:

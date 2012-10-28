@@ -23,7 +23,7 @@ public:
 	std::vector<SEND_FLAG> *DestinationList;
 	
 	// Download progress
-	int iCurrentFile;
+	u_int iCurrentFile;
 	ULONG ulBytesSent;
 	ULONG ulFileSize;
 	
@@ -203,7 +203,7 @@ BOOL SendFileToCalc(const LPCALC lpCalc, LPCTSTR lpszFileName, BOOL fAsync, SEND
 
 static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileName, SEND_FLAG Destination)
 {
-	TIFILE_t *var = newimportvar(lpszFileName);
+	TIFILE_t *var = importvar(lpszFileName, FALSE);
 
 	BOOL exec_vio_backup = break_on_exe_violation;
 	break_on_exe_violation = false;

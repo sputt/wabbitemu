@@ -572,7 +572,6 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					ptOffset.y = GET_Y_LPARAM(lParam);
 
 					// Create the GIF that is going to be produced by the drag
-					TCHAR temp_fn[L_tmpnam];
 					TCHAR fn[MAX_PATH];
 					GetAppDataString(fn, sizeof(fn));
 					StringCbCat(fn, sizeof(fn), _T("\\wabbitemu.gif"));
