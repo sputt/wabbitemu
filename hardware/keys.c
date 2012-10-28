@@ -527,7 +527,6 @@ keyprog_t keygrps[256] = {
 	
 keypad_t *keypad_init(CPU_t *cpu) {
 	keypad_t *keypad;
-	int b,i;
 	
 	keypad = (keypad_t *) malloc(sizeof(keypad_t));
 	if (!keypad) {

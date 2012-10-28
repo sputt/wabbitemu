@@ -24,7 +24,7 @@ extern HWND hwndLastFocus;
 extern Z80_com_t da_opcode[256];
 
 extern HINSTANCE g_hInst;
-extern unsigned int goto_addr;
+extern int goto_addr;
 extern int find_value;
 extern BOOL search_backwards;
 extern BOOL big_endian;
@@ -384,10 +384,10 @@ void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int o
 
 void CPU_stepout(LPCALC lpCalc) {
 	CPU_t *cpu = &lpCalc->cpu;
-	double time = tc_tstates(cpu->timer_c);
+	uint64_t time = tc_tstates(cpu->timer_c);
 	uint16_t old_sp = cpu->sp;
 
-	uint64_t tstates15seconds = 15.0 * cpu->timer_c->freq;
+	uint64_t tstates15seconds = 15 * cpu->timer_c->freq;
 	while ((tc_tstates(cpu->timer_c) - time) < tstates15seconds) {
 		waddr_t old_pc = addr_to_waddr(cpu->mem_c, cpu->pc);
 		CPU_step(cpu);
@@ -439,7 +439,7 @@ void CPU_stepover(LPCALC lpCalc) {
 				uint16_t old_pc = cpu->pc;
 				CPU_step(cpu);
 
-				if (cpu->sp >= old_sp && (cpu->pc >= return_pc && (cpu->pc <= return_pc + 2))) {
+				if ((cpu->sp >= old_sp || (old_sp - cpu->sp) >= 0xFF00) && (cpu->pc >= return_pc && (cpu->pc <= return_pc + 2))) {
 					Z80_info_t zinflocal;
 					disassemble(lpCalc, REGULAR, addr_to_waddr(cpu->mem_c, old_pc), 1, &zinflocal);
 
@@ -776,7 +776,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 				}
 
 			int total_size = 0;
-			for (int i = 0; i < dps->nRows; i++) {
+			for (u_int i = 0; i < dps->nRows; i++) {
 				total_size += zup[i].size;
 			}
 
@@ -935,7 +935,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			int iItem;
 			RECT tr;
 			TRIVERTEX vert[2];
-			int end_i;
+			u_int end_i;
 			GRADIENT_RECT gRect;
 			LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
@@ -1063,7 +1063,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 
 
 				if (do_gradient) {
-					int i, width = dps->max_right;
+					int width = dps->max_right;
 					vert[0].x      = tr.left;
 					vert[0].y      = tr.top;
 					vert[1].x      = width;
@@ -1240,7 +1240,6 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					mii.fMask = MIIM_STRING;
 					mii.dwTypeData = _T("Run\tF5");
 					SetMenuItemInfo(hMenu, IDM_RUN_RUN, FALSE, &mii);
-					int i;
 					EnableWindow(hwnd, TRUE);
 					SendMessage(hwnd, WM_COMMAND, DB_DISASM, dps->nPane);
 					db_step_finish(hwnd, dps);

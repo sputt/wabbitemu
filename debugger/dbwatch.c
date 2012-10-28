@@ -270,7 +270,6 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 	switch(Message) {
 		case WM_CREATE: {
-			RECT rc, hdrRect;
 			lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 
@@ -331,7 +330,7 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 					//i dont know why i need this temp
 					int addr, size;
-					sscanf(ptr, _T("%x,%x,%d,%d,%d|"), &addr, &watch->waddr.page, &watch->waddr.is_ram, &size, &watch->val);
+					sscanf_s(ptr, _T("%x,%x,%d,%d,%d|"), &addr, &watch->waddr.page, &watch->waddr.is_ram, &size, &watch->val);
 					watch->waddr.addr = addr;
 					watch->waddr_is_valid.addr = TRUE;
 					watch->waddr_is_valid.page = TRUE;
@@ -361,8 +360,8 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			return FALSE;
 		}
 		case WM_COMMAND: {
-			switch (LOWORD(wParam)) {
-			}
+			//switch (LOWORD(wParam)) {
+			//}
 			return FALSE;
 		}
 		case WM_NOTIFY: {

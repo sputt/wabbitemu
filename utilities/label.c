@@ -117,7 +117,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 		i = 0;
 		if (buffer[0] != ';')
 #ifdef _WINDOWS
-			i = _stscanf(buffer, _T("%s = $%X"), name, &equate);
+			i = _stscanf_s(buffer, _T("%s = $%X"), name, &equate);
 #else
 			i = sscanf(buffer, "%s = $%X", name, &equate);
 #endif
@@ -145,7 +145,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 					} else {
 						applist_t applist;
 						state_build_applist(&lpCalc->cpu, &applist);
-						for (int i = 0; i < applist.count; i++) {
+						for (u_int i = 0; i < applist.count; i++) {
 							int len = 8;
 							TCHAR *ptr = applist.apps[i].name + len - 1;
 							while (isspace(*ptr--))

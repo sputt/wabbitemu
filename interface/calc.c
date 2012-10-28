@@ -260,7 +260,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	if (lpCalc == NULL) {
 		return FALSE;
 	}
-	TIFILE_t* tifile = newimportvar(FileName);
+	TIFILE_t* tifile = importvar(FileName, FALSE);
 	if (tifile == NULL) {
 		return FALSE;
 	}

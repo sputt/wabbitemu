@@ -177,7 +177,6 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 	static LPDEBUGWINDOWINFO lpDebugInfo;
 	switch(Message) {
 		case WM_INITDIALOG: {
-			RECT rc, hdrRect;
 			HICON hIcon = LoadIcon(g_hInst, _T("w"));
 			SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)	hIcon);
 			DeleteObject(hIcon);

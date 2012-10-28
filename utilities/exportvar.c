@@ -5,7 +5,7 @@
 #include "link.h"
 #include "exportvar.h"
 
-void intelhex (MFILE*, const unsigned char*, int size, int page = 0, int start_address = 0x4000);
+void intelhex (MFILE*, const unsigned char*, int size, int page, int start_address);
 
 const char fileheader[]= {
 	'*','*','T','I','8','3','F','*',0x1A,0x0A,0x00};
@@ -247,7 +247,7 @@ MFILE *ExportApp(LPCALC lpCalc, TCHAR *fn, apphdr_t *app) {
 	mputc((tempnum >> 16) & 0xFF, outfile);
 	mputc(tempnum >> 24, outfile);
 	//data
-	intelhex(outfile, buffer, data_size);
+	intelhex(outfile, buffer, data_size, 0, 0x4000);
 	mprintf(outfile,":00000001FF");
 	//checksum
 	//TODO: this is the best checksum code I've ever seen...
@@ -293,7 +293,7 @@ MFILE * ExportOS(TCHAR *lpszFile, unsigned char *buffer, int size) {
 	for (i = 0; i < 24; i++) mputc(0x00, file);
 	//size of Intel hex
 	int tempnum =  77 * (size >> 5) + (size / PAGE_SIZE) * 17 + 11;
-	int size = size & 0x1F;
+	size = size & 0x1F;
 	if (size) tempnum += (size << 1) + 13;
 	mputc(tempnum & 0xFF, file);	//little endian
 	mputc((tempnum >> 8) & 0xFF, file);
@@ -314,7 +314,7 @@ MFILE * ExportOS(TCHAR *lpszFile, unsigned char *buffer, int size) {
 MFILE * ExportRom(TCHAR *lpszFile, LPCALC lpCalc) {
 	MFILE *file = mopen(lpszFile, _T("wb"));
 	char* rom = (char *) lpCalc->mem_c.flash;
-	int size = lpCalc->mem_c.flash_size;
+	u_int size = lpCalc->mem_c.flash_size;
 	if (size != 0 && rom != NULL && file !=NULL) {
 		u_int i;
 		for(i = 0; i < size; i++) {
@@ -358,14 +358,205 @@ void intelhex (MFILE* outfile, const unsigned char* buffer, int size, int page, 
 	}
 }
 
-//Prog’s, List AppVar and Group
-MFILE *ExportVar(LPCALC lpCalc, TCHAR* fn, symbol83P_t* sym) {
+void IncWaddr(waddr_t *waddr) {
+	waddr->addr++;
+	if (waddr->addr == 0) {
+		waddr->page++;
+	}
+}
+
+symbol83P_t ReadVATEntry(memc *mem, waddr_t *waddr) {
+	symbol83P_t sym;
+	memset(&sym, 0, sizeof(sym));
+	sym.type_ID	= wmem_read(mem, *waddr) & 0x1F;
+	IncWaddr(waddr);
+	sym.type_ID2 = wmem_read(mem, *waddr);
+	IncWaddr(waddr);
+	sym.version	= wmem_read(mem, *waddr);
+	IncWaddr(waddr);
+	sym.address	= wmem_read(mem, *waddr);
+	IncWaddr(waddr);
+	sym.address += (wmem_read(mem, *waddr) << 8);
+	IncWaddr(waddr);
+	sym.page = wmem_read(mem, *waddr);
+	IncWaddr(waddr);
+		
+	u_int i;
+	// Programs
+	if (sym.type_ID == 0x05 || sym.type_ID == 0x06 || sym.type_ID == 0x15 
+		|| sym.type_ID == 0x01 || sym.type_ID == 0x0C) {
+		sym.name_len = wmem_read(mem, *waddr);
+		IncWaddr(waddr);
+		for (i = 0; i < sym.name_len; i++) {
+			sym.name[i] = wmem_read(mem, *waddr);
+			IncWaddr(waddr);
+		}
+		sym.name[i] = '\0';
+	// Group
+	} else if (sym.type_ID == 0x17) {
+		return sym;
+	// Variables, pics, etc
+	} else {
+		for (i = 0; i < 3; i++) {
+			sym.name[i] = wmem_read(mem, *waddr);
+			IncWaddr(waddr);
+		}
+	}
+	sym.length = wmem_read16(mem, *waddr);
+
+	return sym;
+}
+
+MFILE *ExportGroup(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
+	MFILE *outfile;
+	unsigned char exportData[0x10020];
+	int index = 0, total_size;
+	uint16_t chksum = 0;
+
+	memc *mem = &lpCalc->mem_c;
+	waddr_t waddr;
+	waddr.addr = sym->address;
+	waddr.is_ram = sym->page == 0;
+	if (waddr.is_ram) {
+		waddr.page = lpCalc->mem_c.banks[mc_bank(sym->address)].page;
+	} else {
+		waddr.page = sym->page;
+	}
+	int validFile = wmem_read(mem, waddr);	//will read 0xFC
+	if (validFile != 0xFC) {
+		//0xFC indicates the file is valid
+		return NULL;
+	}
+	IncWaddr(&waddr);
+	int groupSize = wmem_read(mem, waddr);
+	IncWaddr(&waddr);
+	groupSize += wmem_read(mem, waddr) << 8;
+	IncWaddr(&waddr);
+	int i;
+	for (i = 0; i < 6; i++) {
+		IncWaddr(&waddr);
+	}
+	int name_len = wmem_read(mem, waddr);
+	for (i = 0; i < name_len + 1; i++) {
+		IncWaddr(&waddr);
+	}
+	IncWaddr(&waddr);
+	IncWaddr(&waddr);
+	groupSize -= 10 + name_len;
+	while (groupSize > 0) {
+		symbol83P_t groupEntry = ReadVATEntry(mem, &waddr);
+		
+		exportData[index++] = 0x0D;
+		exportData[index++] = 0x00;
+
+		int size = groupEntry.length;
+		//if (groupEntry.page) {
+		//	if (sym->type_ID == ListObj		|| 
+		//		sym->type_ID == ProgObj 	||
+		//		sym->type_ID == ProtProgObj ||
+		//		sym->type_ID == AppVarObj) {
+		//		size += 3 + 6 + groupEntry.name_len + 1;
+		//	} else {
+		//		size += 9 + 3;
+		//	}
+		//}
+		switch(groupEntry.type_ID) {
+			case RealObj:
+				size = 9;
+				break;
+			case CplxObj:
+				size = 18;
+				break;
+			case ListObj:
+				size = (size * 9) + 2;
+				break;
+			case CListObj:
+				size = (size * 18) + 2;
+				break;
+			case MatObj:
+				size = (size & 0xFF) + (size >> 8);
+				size = (size * 9) + 2;
+				break;
+			case ProgObj:
+			case ProtProgObj:
+			case PictObj:
+			case EquObj:
+			case NewEquObj:
+			case StrngObj:
+			case GDBObj:
+			case AppVarObj:
+			case GroupObj:
+				size = size + 2;
+				break;
+			default:
+				size = size + 2;
+				printf("Unknown obj: %02X\n", groupEntry.type_ID);
+				break;
+		}
+
+		exportData[index++] = size & 0xFF;
+		exportData[index++] = size >> 8;
+		exportData[index++] = groupEntry.type_ID;
+	
+		for(i = 0; i < 8 && groupEntry.name[i]; i++) {
+			exportData[index++] = groupEntry.name[i];
+		}
+		for(;i < 8; i++) {
+			exportData[index++] = 0;
+		}
+
+
+		exportData[index++] = 0; // sym->Resevered[1]
+
+		if (groupEntry.page) {
+			exportData[index++] = 0x80; // archived
+		} else {
+			exportData[index++] = 0;
+		}
+
+		exportData[index++] = size & 0xFF;
+		exportData[index++] = size >> 8;
+
+		for (i = 0; i < size; i++) {
+			exportData[index++] = wmem_read(mem, waddr);
+			IncWaddr(&waddr);
+		}
+
+		groupSize -= size + 0x0A;
+	}
+
+	outfile = mopen(fn, _T("wb"));
+
+	// Lots of pointless header crap 
+	for(i = 0; i < 11; i++) mputc(fileheader[i],outfile);
+	for(i = 0; i < 42; i++) mputc(comment[i],outfile);
+	total_size = index;
+	mputc(total_size & 0xFF, outfile);
+	mputc(total_size >> 0x08, outfile);
+
+	// Actual program data!
+	for(i = 0; i < index; i++) {
+		chksum += mputc(exportData[i], outfile);
+	}
+
+	mputc(chksum & 0xFF, outfile);
+	mputc((chksum >> 8) & 0xFF, outfile);
+	return outfile;
+}
+
+
+//Prog’s, List AppVar
+MFILE *ExportVar(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 	MFILE *outfile;
 	unsigned char mem[0x10020];
 	int i, b, size;
 	int page = sym->page;
 	unsigned int a = sym->address;
 	unsigned short chksum = 0;
+
+	if (sym->type_ID == GroupObj) {
+		return ExportGroup(lpCalc, fn, sym);
+	}
 	
 	//Technically no variable can be larger than 65536 bytes,
 	//to make reading easier I'm gonna copy all the max file size 
@@ -380,8 +571,7 @@ MFILE *ExportVar(LPCALC lpCalc, TCHAR* fn, symbol83P_t* sym) {
 		if (sym->type_ID == ListObj		|| 
 			sym->type_ID == ProgObj 	||
 			sym->type_ID == ProtProgObj ||
-			sym->type_ID == AppVarObj	||
-			sym->type_ID == GroupObj ) {
+			sym->type_ID == AppVarObj) {
 			a += 3 + 6;
 			b = mem[a];
 			a += b + 1;

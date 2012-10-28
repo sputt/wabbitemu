@@ -245,7 +245,7 @@ int gui_frame(LPCALC lpCalc) {
 	return 0;
 }
 
-BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, int skinWidth, int skinHeight, RECT *rectLCD) {
+BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, u_int skinWidth, u_int skinHeight, RECT *rectLCD) {
 	u_int foundX, foundY;
 	Color pixel;
 	//find the top left corner
@@ -468,8 +468,7 @@ int gui_frame_update(LPCALC lpCalc) {
 		keymapWidth = m_pBitmapKeymap->GetWidth();
 		keymapHeight = m_pBitmapKeymap->GetHeight();
 	}
-	int x, y, foundX = 0, foundY = 0;
-	bool foundScreen = FALSE;
+	BOOL foundScreen = FALSE;
 	if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight) || skinHeight <= 0 || skinWidth <= 0) {
 		lpCalc->SkinEnabled = false;
 		MessageBox(lpCalc->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"),  MB_OK);
@@ -831,7 +830,8 @@ LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 				TCHAR timeStringText[MAX_PATH];
 				time_t timeUploaded;
 				time(&timeUploaded);
-				TCHAR *timeString = _tctime(&timeUploaded);
+				TCHAR timeString[256];
+				_tctime_s(timeString, sizeof(timeString), &timeUploaded);
 				for (int i = strlen(timeString); i >= 0; i--) {
 					if (timeString[i] == ':') {
 						timeString[i] = '_';
@@ -932,8 +932,7 @@ DWORD WINAPI CheckForUpdates(LPVOID lpParam) {
 	ZeroMemory(&newFileInfo, sizeof(newFileInfo));
 
 	fopen_s(&file, fileBuffer, _T("rb"));
-	char buffer[300];
-	fscanf(file, _T("%u.%u.%u.%u"), &newFileInfo.dwFileVersionMS, &newFileInfo.dwFileVersionLS,
+	fscanf_s(file, _T("%u.%u.%u.%u"), &newFileInfo.dwFileVersionMS, &newFileInfo.dwFileVersionLS,
 					&newFileInfo.dwProductVersionMS, &newFileInfo.dwProductVersionLS);
 	fclose(file);
 
@@ -962,7 +961,6 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 {
 	MSG Msg;
 	bool alreadyRunningWabbit = false;
-	int i;
 
 	//Create our appdata folder
 	TCHAR appData[MAX_PATH];
@@ -1853,8 +1851,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 			float xc = 1, yc = 1;
 			if (!lpCalc->SkinEnabled) {
-				xc = ((float) rc.right) / 256.0;
-				yc = ((float) rc.bottom) / 128.0;
+				xc = ((float) rc.right) / 256.0f;
+				yc = ((float) rc.bottom) / 128.0f;
 			}
 			int width = lpCalc->rectLCD.right - lpCalc->rectLCD.left;
 			SetRect(&screen,

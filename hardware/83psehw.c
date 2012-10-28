@@ -11,7 +11,7 @@
 #include "dbbreakpoints.h"
 #endif
 
-#define BIT(bit) (1 << bit)
+#define BIT(bit) (1 << (bit))
 
 /*
 	NOTE ABOUT 83+SE AND 84+SE:
