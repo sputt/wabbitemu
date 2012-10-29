@@ -249,6 +249,9 @@ LRESULT CALLBACK ToolbarButtonProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 				case IDM_45SECOND:
 				case IDM_50SECOND:
 				{
+					TBBTN *tbb = (TBBTN *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+					LPCALC lpCalc = tbb->lpDebugInfo->lpCalc;
+
 					restore_backup(((int) wParam) - IDM_05SECOND, lpCalc);
 					SendMessage(GetParent(hwnd), WM_COMMAND, wParam, 0);
 					break;

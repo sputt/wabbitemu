@@ -173,8 +173,8 @@ int FindRomVersion(int calc, char *string, unsigned char *rom, u_int size) {
 }
 
 int ReadIntelHex(FILE *ifile, INTELHEX_t *ihex) {
-	BYTE str[600], byte;
-	DWORD i, size, addr, type;
+	BYTE str[600];
+	DWORD i, size, addr, type, byte;
 	memset(str, 0x00, ARRAYSIZE(str));
 	if (!fgets((char*) str, 580, ifile))
 		return 0;
@@ -196,7 +196,7 @@ int ReadIntelHex(FILE *ifile, INTELHEX_t *ihex) {
 		if (sscanf((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)
 #endif
 			return 0;
-		ihex->Data[i] = byte;
+		ihex->Data[i] = (BYTE) byte;
 	}
 #ifdef WINVER
 	if (sscanf_s((const char*)str + 9 + (i * 2), "%02X", &byte) != 1)

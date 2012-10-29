@@ -1279,7 +1279,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 #ifdef WITH_REVERSE
 				case DB_STEPBACK: {
 					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-dp_settings *dps = (dp_settings *) lpDebugInfo->tabInfo;
+					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
 					CPU_step_reverse(&dps->lpCalc->cpu);
 					reverse_cycle_pcs(dps);
 					db_step_finish(hwnd, dps, TRUE);

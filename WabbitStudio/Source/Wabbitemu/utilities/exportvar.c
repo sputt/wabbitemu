@@ -450,16 +450,6 @@ MFILE *ExportGroup(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 		exportData[index++] = 0x00;
 
 		int size = groupEntry.length;
-		//if (groupEntry.page) {
-		//	if (sym->type_ID == ListObj		|| 
-		//		sym->type_ID == ProgObj 	||
-		//		sym->type_ID == ProtProgObj ||
-		//		sym->type_ID == AppVarObj) {
-		//		size += 3 + 6 + groupEntry.name_len + 1;
-		//	} else {
-		//		size += 9 + 3;
-		//	}
-		//}
 		switch(groupEntry.type_ID) {
 			case RealObj:
 				size = 9;
