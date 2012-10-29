@@ -104,10 +104,10 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, ViewType typ
 					break;
 				}
 				case 'h': {		//offset
-					int val	= (int) va_arg(argp, INT_PTR);
+					char val	= (char) va_arg(argp, INT_PTR);
 					TCHAR szOffset[8];
 					if (val & 0x80) {
-						_stprintf_s(szOffset, _T("%d"), val - 256);
+						_stprintf_s(szOffset, _T("%d"), val);
 					} else {
 						_stprintf_s(szOffset, _T("+%d"), val);
 					}
