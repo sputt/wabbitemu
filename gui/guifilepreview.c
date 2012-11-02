@@ -105,7 +105,7 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			if (lParam == 0) goto NoFilePreview;
 			
 			FILE *prgFile;
-			fopen_s(&prgFile, (char*) lParam, _T("rb"));
+			_tfopen_s(&prgFile, (TCHAR *) lParam, _T("rb"));
 			if (!prgFile) goto NoFilePreview;
 	
 			SAVESTATE_t *save = ReadSave(prgFile);
@@ -114,22 +114,27 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			LCD_t lcd;
 			LoadLCD(save, &lcd);
 			
+#ifdef _UNICODE
+			wchar_t buffer[256];
+			mbstowcs(buffer, save->author, ARRAYSIZE(buffer));
+			Edit_SetText(edtAuthor, buffer);
+			mbstowcs(buffer, save->comment, ARRAYSIZE(buffer));
+			Edit_SetText(edtComment, buffer);
+#else
 			Edit_SetText(edtAuthor, save->author);
 			Edit_SetText(edtComment, save->comment);
+#endif
 			
 			HDC hdc = CreateCompatibleDC(NULL);
 			HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmPreview);
 			
 			int width = 96;
-			if (save->model == TI_86 || save->model == TI_85) {
-				RECT rc;
-				GetWindowRect(hwnd, &rc);
-				width = 128;
-				BOOL test = SetWindowPos(hwnd, NULL, 0, 0, rc.left - rc.right + (256 - 192), rc.bottom - rc.bottom, SWP_NOMOVE);
-				if (test) {
-					test = GetLastError();
-				}
-			}
+			//if (save->model == TI_86 || save->model == TI_85) {
+			//	RECT rc;
+			//	GetWindowRect(hwnd, &rc);
+			//	width = 128;
+			//	SetWindowPos(hwnd, NULL, 0, 0, rc.right - rc.left + (256 - 192), rc.bottom - rc.top, SWP_NOMOVE);
+			//}
 
 			StretchDIBits(hdc, 0, 0, width * 2, 128,
 				0, 0, width, 64,

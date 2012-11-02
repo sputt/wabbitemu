@@ -9,7 +9,7 @@
 
 static BOOL calc_size = FALSE;
 static size_t mspf_size = 0;
-static int mspf_break = 9999;
+static u_int mspf_break = 9999;
 
 void press_textA(TCHAR *szText, COLORREF zcolor, RECT *r, HDC hdc) {
 	RECT tr;

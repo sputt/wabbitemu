@@ -14,14 +14,6 @@ TCHAR* GetFriendlyMenuText(HMENU, int, UINT);
 void RecurseAddItems(HMENU, TCHAR *);
 BOOL IsValidCmdRange(WORD);
 void DoPropertySheet(HWND);
-void ChangeCommand();
-TCHAR* NameFromAccel(ACCEL);
-int GetNumKeyEntries();
-void AssignAccel(HWND);
-void RemoveAccel();
-void AssignEmuKey(HWND);
-void RemoveEmuKey();
-TCHAR* NameFromVKey(UINT nVK);
 
 void AddNormalKeys(TCHAR *, key_string keystrings[KEY_STRING_SIZE]);
 

@@ -22,7 +22,7 @@ typedef struct {
 	uint8_t page;
 	uint8_t name_len;
 	uint16_t length;
-	_TUCHAR name[9];
+	TCHAR name[9];
 } symbol83P_t;
 
 typedef struct symlist {

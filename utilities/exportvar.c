@@ -61,7 +61,7 @@ MFILE *mopen(const TCHAR *filename, const TCHAR * mode) {
 	memset(mf, 0, sizeof(MFILE));
 	if (filename) {
 #ifdef WINVER
-		fopen_s(&mf->stream, filename, mode);
+		_tfopen_s(&mf->stream, filename, mode);
 #else
 		mf->stream = fopen(filename, mode);
 #endif
@@ -211,7 +211,7 @@ MFILE *ExportApp(LPCALC lpCalc, TCHAR *fn, apphdr_t *app) {
 		memcpy(temp_point, &dest[tempnum], PAGE_SIZE);
 		temp_point += PAGE_SIZE;
 	}
-	outfile = mopen(fn, "wb");
+	outfile = mopen(fn, _T("wb"));
 	// Lots of pointless header crap 
 	for(i = 0; i < 8; i++) mputc(flashheader[i], outfile);
 	//version, major.minor
@@ -300,13 +300,13 @@ MFILE * ExportOS(TCHAR *lpszFile, unsigned char *buffer, int size) {
 	mputc((tempnum >> 16) & 0xFF, file);
 	mputc(tempnum >> 24, file);
 	*(buffer + 0x56) = 0xFF;
-	mprintf(file, _T("\r\n"));
+	mprintf(file, "\r\n");
 	//page 0 needs to start at 0x0000
 	intelhex(file, (const unsigned char *) buffer, PAGE_SIZE, 0, 0x0000);
 	if (size - PAGE_SIZE > 0) {
 		intelhex(file, (const unsigned char *) buffer + PAGE_SIZE, size - PAGE_SIZE, 1,  0x4000);
 	}
-	mprintf(file, _T(":00000001FF"));
+	mprintf(file, ":00000001FF");
 	//TODO: checksum
 	return file;
 }
@@ -606,7 +606,7 @@ MFILE *ExportVar(LPCALC lpCalc, TCHAR *fn, symbol83P_t *sym) {
 			break;
 	}
 		
-	outfile = mopen(fn,"wb");
+	outfile = mopen(fn, _T("wb"));
 
 	// Lots of pointless header crap 
 	for(i = 0; i < 11; i++) mputc(fileheader[i],outfile);

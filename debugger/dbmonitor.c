@@ -156,7 +156,7 @@ static LRESULT APIENTRY EditSubclassProc(HWND hwnd, UINT uMsg, WPARAM wParam, LP
 	switch (uMsg) {
 		case WM_KEYDOWN:
 			if (wParam == VK_RETURN) {
-				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(GetParent(GetParent(hwnd)), GWLP_USERDATA);
 				CloseSaveEdit(lpCalc, hwnd);
 				hwndEditControl = NULL;
 			} else if (wParam == VK_ESCAPE) {
@@ -272,7 +272,6 @@ LRESULT CALLBACK PortMonitorDialogProc(HWND hwnd, UINT Message, WPARAM wParam, L
 						hwndListView, 0, g_hInst, NULL);
 					SetWindowFont(hwndEditControl, lpDebugInfo->hfontSegoe, TRUE);
 					wpOrigEditProc = (WNDPROC) SetWindowLongPtr(hwndEditControl, GWLP_WNDPROC, (LONG_PTR) EditSubclassProc); 
-					SetWindowLongPtr(hwndEditControl, GWLP_USERDATA, (LPARAM) lpCalc);
 					Edit_LimitText(hwndEditControl, 9);
 					Edit_SetSel(hwndEditControl, 0, _tcslen(buf));
 					SetWindowLongPtr(hwndEditControl, GWLP_USERDATA, MAKELPARAM(row_num, col_num));

@@ -165,7 +165,7 @@ static void CloseSaveEdit(LPCALC lpCalc, HWND hwndEditControl) {
 				int value = GetValue(buf);
 				switch (col_num) {
 					case 1: {
-						int error = sscanf_s(buf, _T("%dx%d"), &watch->width, &watch->height);
+						int error = _stscanf_s(buf, _T("%dx%d"), &watch->width, &watch->height);
 						if (error != EOF && error == 2) {
 							watch->is_bitmap = TRUE;
 						} else {
@@ -307,7 +307,7 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			lpDebugInfo->num_watch = 0;
 			//its possible the registy gets screwed somehow
 			//so dont assume we can read the data
-			if (strlen(buf)) {
+			if (_tcslen(buf)) {
 				TCHAR *ptr = buf;
 				LVITEM lvI;
 				lvI.pszText   = LPSTR_TEXTCALLBACK; // Sends an LVN_GETDISPINFO message.
@@ -330,7 +330,7 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 					//i dont know why i need this temp
 					int addr, size;
-					sscanf_s(ptr, _T("%x,%x,%d,%d,%d|"), &addr, &watch->waddr.page, &watch->waddr.is_ram, &size, &watch->val);
+					_stscanf_s(ptr, _T("%x,%x,%d,%d,%d|"), &addr, &watch->waddr.page, &watch->waddr.is_ram, &size, &watch->val);
 					watch->waddr.addr = addr;
 					watch->waddr_is_valid.addr = TRUE;
 					watch->waddr_is_valid.page = TRUE;

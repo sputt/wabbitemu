@@ -73,8 +73,10 @@ typedef std::string tstring;
 #include <ctype.h>
 
 typedef char TCHAR;
+typedef char _TUCHAR;
 typedef void *LPVOID;
 typedef const char *LPCTSTR;
+typedef int errno_t;
 #define MAX_PATH 256
 #define _T(z) z
 #define _tprintf_s printf
@@ -101,6 +103,7 @@ typedef const char *LPCTSTR;
 #include <time.h>
 #include <ctype.h>
 
+typedef int errno_t;
 /*
 typedef char TCHAR;
 typedef void *LPVOID;

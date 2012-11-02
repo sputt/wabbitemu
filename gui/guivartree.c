@@ -72,7 +72,7 @@ symbol83P_t *GetSymbolVariable(HTREEITEM hTreeItem, int *slot) {
 			if (numSymbols < 0) {
 				continue;
 			}
-			for(u_int i = 0; i < numSymbols; i++) {
+			for(int i = 0; i < numSymbols; i++) {
 				if (Tree[temp].hVars[i] == hTreeItem) {
 					*slot = temp;
 					return &Tree[temp].sym.symbols[i];

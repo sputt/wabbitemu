@@ -287,7 +287,7 @@ STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 		{
 			WCHAR wszSymName[256];
 #ifdef _UNICODE
-			if (Symbol_Name_to_String(&symlist.symbols[i], wszSymName) == NULL)
+			if (Symbol_Name_to_String(m_lpCalc->cpu.pio.model, &symlist.symbols[i], wszSymName) == NULL)
 				StringCbCopy(wszSymName, sizeof(wszSymName), _T(""));
 #else
 			TCHAR buffer[256];

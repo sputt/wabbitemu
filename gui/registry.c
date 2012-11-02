@@ -7,8 +7,11 @@
 #include "dbcommon.h"
 #include "expandpane.h"
 
-extern keyprog_t keygrps[256];
-TCHAR *verString = _T("1.5.1.9");
+extern keyprog_t keysti86[256];
+extern keyprog_t keysti83[256];
+extern keyprog_t defaultkeysti86[256];
+extern keyprog_t defaultkeysti83[256];
+TCHAR *verString = _T("1.6.11.1");
 
 static HKEY hkeyTarget;
 
@@ -26,6 +29,7 @@ static struct {
 	{_T("gif_path"), 				REG_SZ,		(LONG_PTR) _T("wabbitemu.gif")},
 	{_T("gif_autosave"),			REG_DWORD,	FALSE},
 	{_T("gif_useinc"),				REG_DWORD,	FALSE},
+	{_T("gif_framerate"),			REG_DWORD,	4},
 	{_T("lcd_mode"),				REG_DWORD,	0},		// perfect gray
 	{_T("lcd_freq"),				REG_DWORD,	FPS},	// steady freq
 	{_T("screen_scale"),			REG_DWORD,  2},
@@ -49,6 +53,7 @@ static struct {
 	{_T("ram_version"),				REG_DWORD,  0},
 	{_T("lcd_delay"),				REG_DWORD,	60},
 	{_T("check_updates"),			REG_DWORD,	TRUE},
+	{_T("show_whats_new"),			REG_DWORD,	TRUE},
 	//Debugger stuff
 	{_T("CPU Status"),				REG_DWORD,	0},
 	{_T("Disp Type"),				REG_DWORD,	0},
@@ -180,10 +185,19 @@ void QueryKeyMappings() {
 	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
 	RegOpenKeyEx(hkeySoftware, _T("Wabbitemu"), 0, KEY_ALL_ACCESS, &hkeyWabbit);
 	keyprog_t keys[256];
-	dwCount = sizeof(keygrps);
+	dwCount = sizeof(keys);
 	res = RegQueryValueEx(hkeyWabbit, _T("emu_keys"), NULL, NULL, (LPBYTE) keys, &dwCount);
 	if (res == ERROR_SUCCESS) {
-		memcpy(keygrps, keys, sizeof(keyprog_t) * 256);
+		memcpy(keysti83, keys, sizeof(keyprog_t) * 256);
+	} else {
+		memcpy(keysti83, defaultkeysti83, sizeof(keyprog_t) * 256);
+	}
+	dwCount = sizeof(keys);
+	res = RegQueryValueEx(hkeyWabbit, _T("emu_keys86"), NULL, NULL, (LPBYTE) keys, &dwCount);
+	if (res == ERROR_SUCCESS) {
+		memcpy(keysti86, keys, sizeof(keyprog_t) * 256);
+	}else {
+		memcpy(keysti86, defaultkeysti86, sizeof(keyprog_t) * 256);
 	}
 	
 	RegCloseKey(hkeyWabbit);
@@ -193,6 +207,13 @@ void QueryKeyMappings() {
 }
 
 HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
+	//TCHAR fileBuffer[MAX_PATH];
+	//GetCurrentDirectory(MAX_PATH, fileBuffer);
+	//StringCbCat(fileBuffer, sizeof(fileBuffer), _T("\\regSettings.dat"));
+	//if (PathFileExists(fileBuffer)) {
+	//	LoadRegistrySettingsFile(fileBuffer);
+	//}
+
 	HKEY hkeySoftware;
 	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
 	
@@ -231,10 +252,12 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	StringCbCopy(gif_file_name, sizeof(gif_file_name), (TCHAR *) QueryWabbitKey(_T("gif_path")));
 	gif_autosave = (BOOL) QueryWabbitKey(_T("gif_autosave"));
 	gif_use_increasing = (BOOL) QueryWabbitKey(_T("gif_useinc"));
+	gif_base_delay_start = (BOOL) QueryWabbitKey(_T("gif_framerate"));
 	break_on_exe_violation = (BOOL) QueryWabbitKey(_T("break_on_exe_violation"));
 	break_on_invalid_flash = (BOOL) QueryWabbitKey(_T("break_on_invalid_flash"));
 	auto_turn_on = (BOOL) QueryWabbitKey(_T("auto_turn_on"));
 	check_updates = (BOOL) QueryWabbitKey(_T("check_updates"));
+	show_whats_new = (BOOL) QueryWabbitKey(_T("show_whats_new"));
 	
 	//RegCloseKey(hkeyWabbit);
 	hkeyTarget = hkeyWabbit;
@@ -272,6 +295,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("gif_path"), REG_SZ, &gif_file_name);
 		SaveWabbitKey(_T("gif_autosave"), REG_DWORD, &gif_autosave);
 		SaveWabbitKey(_T("gif_useinc"), REG_DWORD, &gif_use_increasing);
+		SaveWabbitKey(_T("gif_framerate"), REG_DWORD, &gif_base_delay_start);
 		SaveWabbitKey(_T("exit_save_state"), REG_DWORD, &exit_save_state);
 		SaveWabbitKey(_T("load_files_first"), REG_DWORD, &new_calc_on_load_files);
 		SaveWabbitKey(_T("do_backups"), REG_DWORD, &do_backups);
@@ -280,6 +304,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("break_on_invalid_flash"), REG_DWORD, &break_on_invalid_flash);
 		SaveWabbitKey(_T("auto_turn_on"), REG_DWORD, &auto_turn_on);
 		SaveWabbitKey(_T("check_updates"), REG_DWORD, &check_updates);
+		SaveWabbitKey(_T("show_whats_new"), REG_DWORD, &show_whats_new);
 
 		SaveWabbitKey(_T("faceplate_color"), REG_DWORD, &lpCalc->FaceplateColor);
 		SaveWabbitKey(_T("custom_skin"), REG_DWORD, &lpCalc->bCustomSkin);		
@@ -302,7 +327,8 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		SaveWabbitKey(_T("num_accel"), REG_DWORD, &nUsed);
 
 		dwCount = 256 * sizeof(keyprog_t);
-		res = RegSetValueEx(hkeyWabbit, _T("emu_keys"), NULL, dwType, (LPBYTE) keygrps, dwCount);
+		res = RegSetValueEx(hkeyWabbit, _T("emu_keys"), NULL, dwType, (LPBYTE) keysti83, dwCount);
+		res = RegSetValueEx(hkeyWabbit, _T("emu_keys86"), NULL, dwType, (LPBYTE) keysti86, dwCount);
 		
 		SaveWabbitKey(_T("shades"), REG_DWORD, &lpCalc->cpu.pio.lcd->shades);
 		SaveWabbitKey(_T("lcd_mode"), REG_DWORD, &lpCalc->cpu.pio.lcd->mode);
@@ -350,19 +376,100 @@ void SaveDebugKey(TCHAR *name, int type, void *value) {
 	HKEY hkeyDebugger;
 	HRESULT res;
 	res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu\\Debugger"), 0, KEY_ALL_ACCESS, &hkeyDebugger);
-	if (FAILED(res))
-	{
+	if (FAILED(res)) {
 		_tprintf_s(_T("Failed opening Debug registry"));
 		return;
 	}
 
 	size_t len;
-	if (type == REG_DWORD)
+	if (type == REG_DWORD) {
 		len = sizeof(DWORD);
-	else if (type == REG_SZ)
+	} else if (type == REG_SZ) {
 		StringCbLength((TCHAR *) value, 4096, &len);
+	}
 
 	int error = RegSetValueEx(hkeyDebugger, name, 0, type, (LPBYTE) value, len);
-	if (error != ERROR_SUCCESS)
+	if (error != ERROR_SUCCESS) {
 		error +=1;
+	}
 }
+
+
+//BOOL SetPrivilege(
+//    HANDLE hToken,          // access token handle
+//    LPCTSTR lpszPrivilege,  // name of privilege to enable/disable
+//    BOOL bEnablePrivilege   // to enable or disable privilege
+//    )  
+//{
+//TOKEN_PRIVILEGES tp;
+//LUID luid;
+//
+//if ( !LookupPrivilegeValue( 
+//        NULL,            // lookup privilege on local system
+//        lpszPrivilege,   // privilege to lookup 
+//        &luid ) )        // receives LUID of privilege
+//{
+//    printf("LookupPrivilegeValue error: %u\n", GetLastError() ); 
+//    return FALSE; 
+//}
+//
+//tp.PrivilegeCount = 1;
+//tp.Privileges[0].Luid = luid;
+//if (bEnablePrivilege)
+//    tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+//else
+//    tp.Privileges[0].Attributes = 0;
+//
+//// Enable the privilege or disable all privileges.
+//
+//if ( !AdjustTokenPrivileges(
+//       hToken, 
+//       FALSE, 
+//       &tp, 
+//       sizeof(TOKEN_PRIVILEGES), 
+//       (PTOKEN_PRIVILEGES) NULL, 
+//       (PDWORD) NULL) )
+//{ 
+//      printf("AdjustTokenPrivileges error: %u\n", GetLastError() ); 
+//      return FALSE; 
+//} 
+//
+//if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
+//
+//{
+//      printf("The token does not have the specified privilege. \n");
+//      return FALSE;
+//} 
+//
+//return TRUE;
+//}
+//
+//
+//HRESULT ExportRegistrySettingsFile(LPCTSTR lpszFileName) {
+//	HANDLE ProcessToken;
+//
+//if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &ProcessToken)) {
+//
+//    SetPrivilege(ProcessToken, SE_BACKUP_NAME, TRUE);
+//
+// 
+//	HKEY hkey;
+//	HRESULT res;
+//	res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu"), 0, KEY_ALL_ACCESS, &hkey);
+//	if (FAILED(res)) {
+//		return res;
+//	}
+//	return RegSaveKeyEx(hkey, lpszFileName, NULL, REG_LATEST_FORMAT);
+//}
+//}
+//
+//HRESULT LoadRegistrySettingsFile(LPCTSTR lpszFileName) {
+//	HKEY hkey;
+//	HRESULT res;
+//	res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu"), 0, KEY_ALL_ACCESS, &hkey);
+//	if (FAILED(res)) {
+//		return res;
+//	}
+//	res = RegLoadKey(hkey, NULL, lpszFileName);
+//	return res;
+//}

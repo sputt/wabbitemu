@@ -157,7 +157,7 @@ int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value) {
 		case BIN16:
 		case BIN8: {
 			*((int *) value) = 0;
-			for (int i = strlen(result) - 1, j = 1; i >= 0; i--, j <<= 1) {
+			for (int i = _tcslen(result) - 1, j = 1; i >= 0; i--, j <<= 1) {
 				if (result[i] == '1') {
 					*((int *) value) += j;
 				}
@@ -215,7 +215,7 @@ void SubclassEdit(HWND hwndEdt, HFONT hfontLucida, int edit_width, VALUE_FORMAT 
 // Converts a hexadecimal string to integer
 int xtoi(const TCHAR *xs) {
 	int val;
-	int error = sscanf_s(xs, _T("%X"), &val);
+	int error = _stscanf_s(xs, _T("%X"), &val);
 	if (error == EOF)
 		return INT_MAX;
 	return val;

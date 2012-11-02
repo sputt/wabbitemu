@@ -116,10 +116,10 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 														All Files (*.*)\0*.*\0\0");
 							if (!SaveFile(lpStrFile, lpstrFilter, _T("Save key file"), _T(".key"))) {
 								FILE *file;
-								fopen_s(&file, lpStrFile, _T("wb"));
+								_tfopen_s(&file, lpStrFile, _T("wb"));
 								key_string *current = lpCalc->last_keypress_head;
 								while (current) {
-									fprintf_s(file, _T("Bit: %d Group: %d\r\n"), current->bit, current->group);
+									_ftprintf_s(file, _T("Bit: %d Group: %d\r\n"), current->bit, current->group);
 									current = current->next;
 								}
 								fclose(file);

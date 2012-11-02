@@ -31,6 +31,7 @@ void port0_83pse(CPU_t *cpu, device_t *dev) {
 
 	if (cpu->input) {
 		cpu->bus = ((link->host & 0x03) | (link->client[0] & 0x03)) ^ 0x03;
+		cpu->bus += cpu->link_write << 4;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 		if ((link->host & 0x01) != (cpu->bus & 0x01)) {
@@ -46,7 +47,7 @@ void port0_83pse(CPU_t *cpu, device_t *dev) {
 			#endif
 		}		
 
-		link->host = cpu->bus & 0x03;
+		cpu->link_write = link->host = cpu->bus & 0x03;
 		cpu->output = FALSE;
 	}
 	#ifdef WINVER
@@ -1486,7 +1487,6 @@ int memory_init_83pse(memc *mc) {
 	mc->flash_size = mc->flash_pages * PAGE_SIZE;
 	mc->flash = (unsigned char *) calloc(mc->flash_pages, PAGE_SIZE);
 	mc->flash_break = (unsigned char *) calloc(mc->flash_pages, PAGE_SIZE);
-	memset(mc->flash, 0xFF, mc->flash_size);
 	
 	mc->ram_size = mc->ram_pages * PAGE_SIZE;
 	mc->ram = (unsigned char *) calloc(mc->ram_pages, PAGE_SIZE);
@@ -1498,6 +1498,7 @@ int memory_init_83pse(memc *mc) {
 		_tprintf_s(_T("Couldn't allocate memory in memory_init_83pse\n"));
 		return 1;
 	}
+	memset(mc->flash, 0xFF, mc->flash_size);
 
 	mc->boot_mapped				= FALSE;
 	mc->flash_locked			= TRUE;

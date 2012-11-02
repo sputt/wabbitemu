@@ -156,7 +156,8 @@ unsigned char* GIFGREYLCD(LCD_t *lpLCD) {
 
 void handle_screenshot() {
 	LCD_t* lcd;
-	int i, j, shades = 0;
+	int i, j;
+	u_int shades = 0;
 	BOOL running_backup[MAX_CALCS];
 	for (i = 0; i < MAX_CALCS; i++) {
 		running_backup[i] = calcs[i].running;
@@ -164,8 +165,9 @@ void handle_screenshot() {
 		lcd = calcs[i].cpu.pio.lcd;
 		//find the calc with the highest number of shades and use that as our number for the gif
 		//since I'm to lazy to implement them individually :P
-		if (calcs[i].active && lcd && shades < lcd->shades)
+		if (calcs[i].active && lcd && shades < lcd->shades) {
 			shades = lcd->shades;
+		}
 		//we also need to find the size of all the LCDs
 	}
 

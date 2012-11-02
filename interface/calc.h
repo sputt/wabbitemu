@@ -215,6 +215,7 @@ GLOBAL int startX;
 GLOBAL int startY;
 GLOBAL BOOL exit_save_state;
 GLOBAL BOOL check_updates;
+GLOBAL BOOL show_whats_new;
 GLOBAL BOOL new_calc_on_load_files;
 GLOBAL BOOL do_backups;
 GLOBAL BOOL break_on_exe_violation;

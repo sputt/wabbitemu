@@ -7,6 +7,7 @@
 
 #ifndef _WINDOWS
 typedef char TCHAR;
+typedef unsigned char _TUCHAR;
 typedef void *LPVOID;
 typedef const char *LPCTSTR;
 typedef intptr_t INT_PTR;
