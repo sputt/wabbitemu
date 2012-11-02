@@ -14,6 +14,8 @@
 #else
 #define g_szDownload	_T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Wabbitemu.exe")
 #endif
+#define g_szVersionFile _T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt")
+#define g_szWhatsNewFile _T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/WhatsNew.txt")
 
 #define g_szAppName 	_T("z80")
 #define g_szDebugName 	_T("debug")
@@ -61,6 +63,7 @@ void GetFileCurrentVersionString(TCHAR *buf, size_t len);
 extern HACCEL haccelmain;
 
 void RegisterWindowClasses(void);
+TCHAR *GetWhatsNewText();
 VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer);
 
 #endif

@@ -578,12 +578,13 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	char name_length = 8;
 	if (tifile->model == TI_86 || tifile->model == TI_85) {
 		//skip name length
-		name_length = tifile->var->name_length = tmpread(infile);
+		name_length = tmpread(infile);
 		if (tifile->model == TI_86) {
 			name_length = 8;
 		}
 	}
 
+	tifile->var->name_length	= name_length;
 	tifile->var->headersize		= headersize;
 	tifile->var->length			= length;
 	tifile->var->vartype		= vartype;
@@ -599,6 +600,10 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 			fclose(infile);
 			FreeTiFile(tifile);
 			return NULL;
+		}
+		if (tmp > 5) {
+			_putts(_T("Warning version is greater than 5, setting to 0"));
+			tmp = 0;
 		}
 		ptr[i++] = tmp;
 		tmp = fgetc(infile);
@@ -619,25 +624,27 @@ TIFILE_t* ImportVarData(FILE *infile, TIFILE_t *tifile, int varNumber) {
 	ptr[i++] = tmp;
 
 	tifile->var->data = (unsigned char *) malloc(tifile->var->length);
-	if (tifile->var->data == NULL)
+	if (tifile->var->data == NULL) {
 		return FreeTiFile(tifile);
-
-	i = 0;
+	}
 
 	for(i = 0; i < tifile->var->length && !feof(infile); i++) {
 		tmp = fgetc(infile);
-		if (tmp == EOF)
+		if (tmp == EOF) {
 			return FreeTiFile(tifile);
+		}
 		tifile->var->data[i] = tmp;
 	}
 
 	if (tifile->type == GROUP_TYPE) {
-		if (varNumber != 0)
+		if (varNumber != 0) {
 			return tifile;
+		}
 		while (tifile != NULL) {
 			length2 -= tifile->var->length + 17;
-			if (length2 <= 0)
+			if (length2 <= 0) {
 				break;
+			}
 			tifile = ImportVarData(infile, tifile, ++varNumber);
 		}
 	}
@@ -662,8 +669,9 @@ TIFILE_t* importvar(LPCTSTR filePath, BOOL only_check_header) {
 	}
 
 	tifile = InitTiFile();
-	if (tifile == NULL)
+	if (tifile == NULL) {
 		return NULL;
+	}
 
 	if (!_tcsicmp(extension, _T(".lab"))) {
 		tifile->type = LABEL_TYPE;
@@ -689,8 +697,9 @@ TIFILE_t* importvar(LPCTSTR filePath, BOOL only_check_header) {
 #else
 	infile = fopen(filePath, "rb");
 #endif
-	if (infile == NULL) 
+	if (infile == NULL) {
 		return FreeTiFile(tifile);
+	}
 
 	ReadTiFileHeader(infile, tifile);
 	//the last part is to make sure we don't allow files that cant be imported but

@@ -150,7 +150,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 							TCHAR *ptr = applist.apps[i].name + len - 1;
 							while (isspace(*ptr--))
 								len--;
-							if (!_strnicmp(fileName, applist.apps[i].name, len)) {
+							if (!_tcsnicmp(fileName, applist.apps[i].name, len)) {
 								label->page = applist.apps[i].page;
 								break;
 							}

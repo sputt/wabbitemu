@@ -400,7 +400,7 @@ int DisableCutout(HWND hwndFrame) {
 	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwndFrame, GWLP_USERDATA);
 	if (hasDWM) {
 		BOOL disableTransition = TRUE;
-		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, _T("DwmSetWindowAttribute"));
+		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, "DwmSetWindowAttribute");
 		if (SetAttrib != NULL) {
 			SetAttrib(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 		}

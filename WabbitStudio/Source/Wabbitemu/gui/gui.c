@@ -3,6 +3,7 @@
 #include <io.h>
 #include <fcntl.h>
 #include <direct.h>
+#include <WinInet.h>
 
 #include "gui.h"
 #include "resource.h"
@@ -680,9 +681,9 @@ ParsedCmdArgs* ParseCommandLineArgs()
 #endif
 			char secondChar = toupper(tmpstring[1]);
 			if (*tmpstring != '-' && *tmpstring != '/') {
-				TCHAR *temp = (TCHAR *) malloc(strlen(tmpstring) + 1);
-				StringCbCopy(temp, strlen(tmpstring) + 1, tmpstring);
-				temp[strlen(tmpstring) + 1] = '\0';
+				TCHAR *temp = (TCHAR *) malloc(_tcslen(tmpstring) + 1);
+				StringCbCopy(temp, _tcslen(tmpstring) + 1, tmpstring);
+				temp[_tcslen(tmpstring) + 1] = '\0';
 				TCHAR extension[5] = _T("");
 				const TCHAR *pext = _tcsrchr(tmpstring, _T('.'));
 				if (pext != NULL) {
@@ -832,13 +833,13 @@ LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 				time(&timeUploaded);
 				TCHAR timeString[256];
 				_tctime_s(timeString, sizeof(timeString), &timeUploaded);
-				for (int i = strlen(timeString); i >= 0; i--) {
+				for (int i = _tcslen(timeString); i >= 0; i--) {
 					if (timeString[i] == ':') {
 						timeString[i] = '_';
 					}
 				}
 				//get rid of newline
-				timeString[strlen((timeString)) - 1] = '\0';
+				timeString[_tcslen((timeString)) - 1] = '\0';
 				StringCbCopy(timeStringText, sizeof(timeStringText), timeString);
 				StringCbCat(timeStringText, sizeof(timeStringText), _T(".dmp.gz"));
 
@@ -913,36 +914,39 @@ void GetFileCurrentVersionString(TCHAR *buf, size_t len) {
 	}
 }
 
-DWORD WINAPI CheckForUpdates(LPVOID lpParam) {
-	TCHAR fileBuffer[MAX_PATH];
-	GetAppDataString(fileBuffer, sizeof(fileBuffer));
-	StringCbCat(fileBuffer, sizeof(fileBuffer), _T("Version.txt"));
-	_tremove(fileBuffer);
-	//Dont really care about this return value
-	DeleteUrlCacheEntry(_T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt"));
-	DeleteFile(fileBuffer);
-	//the parameter is there because despite the above call, Windows still retreives the cached file
-	HRESULT hr = URLDownloadToFile(NULL, _T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt?cache=0"), fileBuffer, NULL, NULL);
-	if (!SUCCEEDED(hr)) {
-		return hr;
+DWORD WINAPI CheckForUpdates(LPVOID lpParam) {	
+	TCHAR fileBuffer[256];
+	ZeroMemory(fileBuffer, sizeof(fileBuffer));
+	HINTERNET hInternet = InternetOpen(_T("Wabbitemu"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+	if (hInternet == NULL) {
+		return FALSE;
 	}
-
-	FILE *file;
+	HINTERNET hOpenUrl = InternetOpenUrl(hInternet, g_szVersionFile, NULL, 0, INTERNET_FLAG_RELOAD, NULL);
+	if (hOpenUrl == NULL) {
+		return FALSE;
+	}
+	DWORD bytesRead;
+	BOOL succeeded = InternetReadFile(hOpenUrl, fileBuffer, 256, &bytesRead);
+	if (!succeeded) {
+		return FALSE;
+	}
+	InternetCloseHandle(hInternet);
 	VS_FIXEDFILEINFO newFileInfo, *thisFileInfo;
 	ZeroMemory(&newFileInfo, sizeof(newFileInfo));
 
-	fopen_s(&file, fileBuffer, _T("rb"));
-	fscanf_s(file, _T("%u.%u.%u.%u"), &newFileInfo.dwFileVersionMS, &newFileInfo.dwFileVersionLS,
+	_stscanf_s(fileBuffer, _T("%u.%u.%u.%u"), &newFileInfo.dwFileVersionMS, &newFileInfo.dwFileVersionLS,
 					&newFileInfo.dwProductVersionMS, &newFileInfo.dwProductVersionLS);
-	fclose(file);
+	newFileInfo.dwFileVersionMS = MAKELONG(newFileInfo.dwFileVersionLS, newFileInfo.dwFileVersionMS);
+	newFileInfo.dwFileVersionLS = MAKELONG(newFileInfo.dwProductVersionLS, newFileInfo.dwProductVersionMS);
 
 	BOOL hasNewUpdate = TRUE;
 	LPBYTE versionData = NULL;
 	thisFileInfo = GetFileCurrentVersion(&versionData);
-	if (!(newFileInfo.dwFileVersionMS > HIWORD(thisFileInfo->dwFileVersionMS)) &&
-		!(newFileInfo.dwFileVersionLS > LOWORD(thisFileInfo->dwFileVersionMS)) &&
-		!(newFileInfo.dwProductVersionMS > HIWORD(thisFileInfo->dwFileVersionLS)) &&
-		!(newFileInfo.dwProductVersionLS > LOWORD(thisFileInfo->dwFileVersionLS))) {
+	if (!thisFileInfo) {
+		return FALSE;
+	}
+	if ((newFileInfo.dwFileVersionMS <= thisFileInfo->dwFileVersionMS) &&
+		(newFileInfo.dwFileVersionLS <= thisFileInfo->dwFileVersionLS)) {
 		hasNewUpdate = FALSE;
 	}
 	free(versionData);
@@ -954,6 +958,57 @@ DWORD WINAPI CheckForUpdates(LPVOID lpParam) {
 		}
 	}
 	return hasNewUpdate;
+}
+
+BOOL IsJustUpgraded() {
+	BOOL isUpgrade = TRUE;
+	LPBYTE versionData = NULL;
+	VS_FIXEDFILEINFO *thisFileInfo = GetFileCurrentVersion(&versionData);
+	if (versionData != NULL) {
+		if (thisFileInfo != NULL) {
+			TCHAR *oldVersion = (TCHAR *) QueryWabbitKey("version");
+			VS_FIXEDFILEINFO oldFileInfo ;
+			_stscanf_s(oldVersion, _T("%u.%u.%u.%u"), &oldFileInfo.dwFileVersionMS, &oldFileInfo.dwFileVersionLS,
+					&oldFileInfo.dwProductVersionMS, &oldFileInfo.dwProductVersionLS);
+			oldFileInfo.dwFileVersionMS = MAKELONG(oldFileInfo.dwFileVersionLS, oldFileInfo.dwFileVersionMS);
+			oldFileInfo.dwFileVersionLS = MAKELONG(oldFileInfo.dwProductVersionLS, oldFileInfo.dwProductVersionMS);
+			if ((oldFileInfo.dwFileVersionMS >= thisFileInfo->dwFileVersionMS) &&
+				(oldFileInfo.dwFileVersionLS >= thisFileInfo->dwFileVersionLS)) {
+				isUpgrade = FALSE;
+			}
+		}
+		free(versionData);
+	}
+	return isUpgrade;
+}
+
+TCHAR *GetWhatsNewText() {
+#define WHATSNEWBUFFERSIZE 32768
+	TCHAR *whatsNewText = (TCHAR *) malloc(sizeof(TCHAR) * WHATSNEWBUFFERSIZE);
+	ZeroMemory(whatsNewText, WHATSNEWBUFFERSIZE * sizeof(TCHAR));
+	HINTERNET hInternet = InternetOpen(_T("Wabbitemu"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+	if (hInternet == NULL) {
+		return FALSE;
+	}
+	HINTERNET hOpenUrl = InternetOpenUrl(hInternet, g_szWhatsNewFile, NULL, 0, INTERNET_FLAG_RELOAD, NULL);
+	if (hOpenUrl == NULL) {
+		return FALSE;
+	}
+	DWORD bytesRead;
+	BOOL succeeded = InternetReadFile(hOpenUrl, whatsNewText, WHATSNEWBUFFERSIZE, &bytesRead);
+	if (!succeeded) {
+		return FALSE;
+	}
+	InternetCloseHandle(hInternet);
+	return whatsNewText;
+}
+
+void ShowWhatsNew(BOOL forceShow) {
+	if (!IsJustUpgraded() && !forceShow) {
+		return;
+	}
+	HWND hwndDlg = CreateDialog(g_hInst, MAKEINTRESOURCE(IDD_WHATSNEW), NULL, (DLGPROC) WhatsNewDialogProc);
+	ShowWindow(hwndDlg, SW_SHOW);
 }
 
 int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
@@ -973,7 +1028,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 	}
 
+#ifndef _DEBUG
 	SetUnhandledExceptionFilter(ExceptionFilter);
+#endif
 
 	ParsedCmdArgs *parsedArgs = ParseCommandLineArgs();
 	//this is here so we get our load_files_first setting
@@ -1051,6 +1108,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//Check for any updates
 	if (check_updates) {
 		CreateThread(NULL, 0, CheckForUpdates, lpCalc->hwndFrame, NULL, NULL);
+	}
+	if (show_whats_new) {
+		ShowWhatsNew(FALSE);
 	}
 
 	StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), _T("labels.lab"));
@@ -1299,19 +1359,27 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case IDM_FILE_GIF: {
 					HMENU hmenu = GetMenu(hwnd);
 					if (gif_write_state == GIF_IDLE) {
+						lpCalc->running = FALSE;
 						BOOL start_screenshot = get_gif_filename();
-						if (!start_screenshot)
+						if (!start_screenshot) {
+							lpCalc->running = TRUE;
 							break;
+						}
 						gif_write_state = GIF_START;
-						for (int i = 0; i < MAX_CALCS; i++)
-							if (calcs[i].active)
+						for (int i = 0; i < MAX_CALCS; i++) {
+							if (calcs[i].active) {
 								calcs[i].gif_disp_state = GDS_STARTING;
+							}
+						}
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_CHECKED);
+						lpCalc->running = TRUE;
 					} else {
 						gif_write_state = GIF_END;
-						for (int i = 0; i < MAX_CALCS; i++)
-							if (calcs[i].active)
+						for (int i = 0; i < MAX_CALCS; i++) {
+							if (calcs[i].active) {
 								calcs[i].gif_disp_state = GDS_ENDING;
+							}
+						}
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
 					}
 					break;
@@ -1325,10 +1393,11 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						GIFGREYLCD(lcd);
 
 						unsigned int i, j;
-						for (i = 0; i < SCRYSIZE * gif_size; i++)
-							for (j = 0; j < lcd->width * gif_size; j++)
+						for (i = 0; i < SCRYSIZE * gif_size; i++) {
+							for (j = 0; j < lcd->width * gif_size; j++) {
 								gif_frame[i * gif_xs + j] = lpCalc->cpu.pio.lcd->gif[i][j];
-
+							}
+						}
 						gif_write_state = GIF_START;
 						gif_writer(lcd->shades);
 
@@ -1485,6 +1554,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					lpCalc->running = FALSE;
 					DialogBox(g_hInst, MAKEINTRESOURCE(IDD_DLGABOUT), hwnd, (DLGPROC) AboutDialogProc);					
 					lpCalc->running = TRUE;
+					break;
+				case IDM_HELP_WHATSNEW:
+					ShowWhatsNew(TRUE);
 					break;
 				case IDM_HELP_WIZARD: {
 					int count = calc_count();

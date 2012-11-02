@@ -965,7 +965,7 @@ void daa(CPU_t *cpu) {
 	cpu->f = signchk(result) + zerochk(result) +
 		 x5chk(result) + (cpu->a&0x10 ^ result&0x10) + 
 		 x3chk(result)+ parity(result) + 
-		 unaffect( N_MASK ) + (cpu->f&CARRY_MASK | ((cpu->a>0x99)?CARRY_MASK:0));
+		 unaffect( N_MASK ) + ((cpu->f & CARRY_MASK) | ((cpu->a>0x99)?CARRY_MASK:0));
 	cpu->a = result;
 }
 

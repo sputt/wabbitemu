@@ -512,7 +512,8 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND saveState_check, loadFiles_check, doBackups_check, alwaysTop_check, saveWindow_check,
-		exeViolation_check, backupTime_edit, invalidFlash_check, turnOn_check, tiosDebug_check, checkUpdates_check;
+		exeViolation_check, backupTime_edit, invalidFlash_check, turnOn_check, tiosDebug_check, checkUpdates_check,
+		showWhatsNew_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			saveState_check = GetDlgItem(hwnd, IDC_CHK_SAVE);
@@ -526,6 +527,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			turnOn_check = GetDlgItem(hwnd, IDC_CHK_AUTOON);
 			tiosDebug_check = GetDlgItem(hwnd, IDC_CHK_TIOS_DEBUG);
 			checkUpdates_check = GetDlgItem(hwnd, IDC_CHK_UPDATES);
+			showWhatsNew_check = GetDlgItem(hwnd, IDC_CHK_SHOWWHATSNEW);
 			return SendMessage(hwnd, WM_USER, 0, 0);
 		}
 		case WM_COMMAND: {
@@ -545,6 +547,18 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 						case IDC_CHK_TIOS_DEBUG:
 						case IDC_CHK_UPDATES:
 							break;
+						//case IDC_BTN_SAVEREG: {
+						//	TCHAR fileBuffer[MAX_PATH];
+						//	GetCurrentDirectory(MAX_PATH, fileBuffer);
+						//	StringCbCat(fileBuffer, sizeof(fileBuffer), _T("\\regSettings.txt"));
+						//	HRESULT res = ExportRegistrySettingsFile(fileBuffer);
+						//	if (SUCCEEDED(res)) {
+						//		MessageBox(hwnd, _T("Settings exported successfully."), _T("Export"), MB_OK);
+						//	} else {
+						//		MessageBox(hwnd, _T("Error exporting settings."), _T("Export"), MB_OK);
+						//	}
+						//	return FALSE;
+						//}
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
 					return FALSE;
@@ -844,6 +858,8 @@ INT_PTR CALLBACK ROMOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 	return FALSE;
 }
 
+TCHAR* NameFromVKey(UINT nVK);
+
 static TCHAR keyPressBuf[64];
 static UINT editKeyPressed;
 LRESULT CALLBACK EmuKeyHandleProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
@@ -892,8 +908,21 @@ key_string ti83pkeystrings[KEY_STRING_SIZE] = {
 	{_T("ENTER"),1,0},	{_T("+"),1,1},		{_T("-"),1,2},		{_T("x"),1,3},		{_T("/"),1,4},	{_T("^"),1,5},		{_T("CLEAR"),1,6},	{_T(""),1,7},
 	{_T("DOWN"),0,0},	{_T("LEFT"),0,1},	{_T("RIGHT"),0,2},	{_T("UP"),0,3},		{_T(""),0,4},	{_T(""),0,5},		{_T(""),0,6},		{_T(""),0,7},
 };
+
+void ChangeCommand(keyprog_t *, int);
+TCHAR* NameFromAccel(ACCEL);
+int GetNumKeyEntries(keyprog_t *);
+void AssignAccel(HWND);
+void RemoveAccel();
+void AssignEmuKey(HWND, keyprog_t *);
+void RemoveEmuKey(keyprog_t *);
+
 extern keyprog_t keygrps[256];
-extern keyprog_t defaultkeys[256];
+extern keyprog_t keysti83[256];
+extern keyprog_t keysti86[256];
+extern keyprog_t defaultkeysti83[256];
+extern keyprog_t defaultkeysti86[256];
+keyprog_t *defaultkeys, *userkeys;
 ACCEL hNewAccels[256];		// working copy
 HWND hListMenu, hHotKey, hEmuKey, hListKeys, hAssignButton, hRemoveButton, hResetButton, hComboBox;
 HMENU hMenu;
@@ -908,10 +937,18 @@ BOOL accelerators = TRUE;	//true if were editing the accelerators
 TCHAR menu_text_buf[256];
 key_string **emu_strings;
 INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static keyprog_t backupkeys[256];
+	static keyprog_t newkeys[256];
 	switch(Message) {
 		case WM_INITDIALOG: {
-			memcpy(backupkeys, keygrps, 256 *sizeof(keyprog_t));
+			if (lpCalc->model == TI_85 || lpCalc->model == TI_86) {
+				userkeys = keysti86;
+				defaultkeys = defaultkeysti86;
+			} else {
+				userkeys = keysti83;
+				defaultkeys = defaultkeysti83;
+			}
+
+			memcpy(newkeys, userkeys, 256 *sizeof(keyprog_t));
 			int i;
 			hComboBox = GetDlgItem(hwnd, IDC_COMBO_MENU);
 			hMenu = LoadMenu(g_hInst, (LPCTSTR) IDR_MAIN_MENU);
@@ -924,7 +961,7 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			hResetButton = GetDlgItem(hwnd, IDC_RESET_ACCEL);
 			int numEntries = CopyAcceleratorTable(haccelmain, NULL, 0);
 			nAccelUsed = CopyAcceleratorTable(haccelmain, hNewAccels, numEntries);
-			nEmuUsed = GetNumKeyEntries();
+			nEmuUsed = GetNumKeyEntries(newkeys);
 			nAccelStore = 256;
 			nEmuStore = 256;
 			int count = GetMenuItemCount(hMenu);
@@ -941,10 +978,15 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		case WM_COMMAND: {
 			switch(HIWORD(wParam)) {
 				case EN_CHANGE: {
+					static BOOL changingKey = FALSE;
 					BOOL enable;
 					if (hEmuKey == ((HWND) lParam)) {
 						enable = _tcslen(keyPressBuf) > 0;
-						Edit_SetText(hEmuKey, keyPressBuf);
+						if (!changingKey) {
+							changingKey = TRUE;
+							Edit_SetText(hEmuKey, keyPressBuf);
+							changingKey = FALSE;
+						}
 					} else {
 						enable = (BOOL) SendMessage(hHotKey, HKM_GETHOTKEY, 0 , 0);
 					}
@@ -967,13 +1009,13 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 						if (accelerators) {
 							AssignAccel(hwnd);
 						} else {
-							AssignEmuKey(hwnd);
+							AssignEmuKey(hwnd, newkeys);
 						}
 					} else if (hSender == hRemoveButton) {
 						if (accelerators) {
 							RemoveAccel();
 						} else {
-							RemoveEmuKey();
+							RemoveEmuKey(newkeys);
 						}
 					} else if (hSender == hResetButton) {
 						//reload whatever is packed in with us
@@ -982,8 +1024,8 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 						nAccelUsed = CopyAcceleratorTable(hAccelNew, hNewAccels, numEntries);
 						DestroyAcceleratorTable(hAccelNew);
 						//reload normal emu keys
-						memcpy(keygrps, defaultkeys, sizeof(keyprog_t) * 256);
-						ChangeCommand();
+						memcpy(newkeys, defaultkeys, sizeof(keyprog_t) * 256);
+						ChangeCommand(newkeys, 256);
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
 					break;
@@ -994,15 +1036,16 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		case WM_NOTIFY: {
 			switch(((LPNMHDR)lParam)->code) {
 				case PSN_RESET:
-					memcpy(keygrps, backupkeys, sizeof(keyprog_t) * 256);
 					break;
 				case LVN_ITEMCHANGED: {
-					ChangeCommand();
+					ChangeCommand(newkeys, 256);
 					break;
 				}
 				case PSN_APPLY: {
 					DestroyAcceleratorTable(haccelmain);
 					haccelmain = CreateAcceleratorTable(hNewAccels, nAccelUsed);
+					memcpy(userkeys, newkeys, sizeof(keyprog_t) * 256);
+					memcpy(keygrps, newkeys, sizeof(keyprog_t) * 256);
 					return TRUE;
 				}
 				case PSN_KILLACTIVE:
@@ -1017,17 +1060,17 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	return FALSE;
 }
 
-int GetNumKeyEntries() {
+int GetNumKeyEntries(keyprog_t *keys) {
 	int num_entries = 0;
-	for (int i = 0; i < 256 && keygrps[i].vk != -1; i++) {
-		if (keygrps[i].vk != 0) {
+	for (int i = 0; i < 256 && keys[i].vk != -1; i++) {
+		if (keys[i].vk != 0) {
 			num_entries++;
 		}
 	}
 	return num_entries;
 }
 
-void AssignEmuKey(HWND hwnd) {
+void AssignEmuKey(HWND hwnd, keyprog_t *keys) {
 	int i;
 	DWORD key = editKeyPressed;
 	int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED);
@@ -1037,33 +1080,35 @@ void AssignEmuKey(HWND hwnd) {
 		lvi.mask = LVIF_PARAM;
 		ListView_GetItem(hListMenu, &lvi);
 		int newCmd = (int) lvi.lParam;
-		for (i = 0; i < nEmuUsed; i++)
-			if(keygrps[i].vk == key)
+		for (i = 0; i < nEmuUsed; i++) {
+			if(keys[i].vk == key) {
 				break;
+			}
+		}
 		if (i < nEmuUsed) {								// cheeky: could this be the same item being assigned a double key?
-			if (LOWORD(newCmd) == keygrps[i].bit && HIWORD(newCmd) == keygrps[i].group && keygrps[i].vk == key)
+			if (LOWORD(newCmd) == keys[i].bit && HIWORD(newCmd) == keys[i].group && keys[i].vk == key)
 				return; // no actions required
 			// ask for shortcut overwrite confirmation
 			if(MessageBox(hwnd, _T("This key is already in use.\nErase the old command assignment?"),
 				_T("Overwrite?"), MB_ICONQUESTION | MB_YESNO) == IDNO)
 				return;
-			keygrps[i].bit = LOWORD(newCmd);
-			keygrps[i].group = HIWORD(newCmd);
+			keys[i].bit = LOWORD(newCmd);
+			keys[i].group = HIWORD(newCmd);
 		} else if(nEmuUsed < nEmuStore) { // I'm sure capacity will never be reached
-			keygrps[nEmuUsed].vk = key;
-			keygrps[nEmuUsed].bit = LOWORD(newCmd);
-			keygrps[nEmuUsed].group = HIWORD(newCmd);
+			keys[nEmuUsed].vk = key;
+			keys[nEmuUsed].bit = LOWORD(newCmd);
+			keys[nEmuUsed].group = HIWORD(newCmd);
 			nEmuUsed++;
-			keygrps[nEmuUsed].vk = -1;
+			keys[nEmuUsed].vk = -1;
 		}
-		ChangeCommand(); // reflect changes
+		ChangeCommand(keys, 256); // reflect changes
 		// this key can only be clicked, and if it is default & disabled, the key navigation gets screwy
 		// so make something else default item
 		SetFocus(hHotKey);
 	}
 }
 
-void RemoveEmuKey() {
+void RemoveEmuKey(keyprog_t *keys) {
 	int idx = ListBox_GetCurSel(hListKeys);
 	LRESULT lr = ListBox_GetItemData(hListKeys, idx);
 	if (lr != LB_ERR) {
@@ -1073,8 +1118,8 @@ void RemoveEmuKey() {
 		TCHAR buf[64];
 		ListBox_GetText(hListKeys, idx, buf);
 		for(i = 0; i < nEmuUsed; i++)
-			if (keygrps[i].bit == bit && keygrps[i].group == group) {
-				TCHAR *name = NameFromVKey(keygrps[i].vk);
+			if (keys[i].bit == bit && keys[i].group == group) {
+				TCHAR *name = NameFromVKey(keys[i].vk);
 				BOOL sameKey = _tcscmp(buf, name);
 				free(name);
 				if (sameKey) {
@@ -1083,8 +1128,8 @@ void RemoveEmuKey() {
 				ListBox_DeleteString(hListKeys, idx);
 				int last = --nEmuUsed;
 				if (i < last)
-					keygrps[i] = keygrps[last];
-				keygrps[last].vk = -1;
+					keys[i] = keys[last];
+				keys[last].vk = -1;
 				EnableWindow(hRemoveButton, FALSE);
 				break;
 			}
@@ -1140,7 +1185,7 @@ void AssignAccel(HWND hwnd) {
 		mii.fMask = MIIM_STRING;
 		mii.dwTypeData = text;
 		SetMenuItemInfo(hSubMenu, active, TRUE, &mii);
-		ChangeCommand(); // reflect changes
+		ChangeCommand(NULL, 0); // reflect changes
 		// this key can only be clicked, and if it is default & disabled, the key navigation gets screwy
 		// so make something else default item
 		SetFocus(hHotKey);
@@ -1233,7 +1278,7 @@ TCHAR* NameFromVKey(UINT nVK) {
 	return str; // internationalization ready, sweet!
 }
 
-void ChangeCommand() {		// new command selected
+void ChangeCommand(keyprog_t *keys, int keysSize) {		// new command selected
 	int active = ListView_GetNextItem(hListMenu, -1, LVNI_SELECTED), idx;
 	TCHAR *name;
 	ListBox_ResetContent(hListKeys);
@@ -1245,9 +1290,9 @@ void ChangeCommand() {		// new command selected
 		ListView_GetItem(hListMenu, &lvi);
 		u_int cmd = (u_int) lvi.lParam;		// add all accelerators registered for this command
 		if (!accelerators) {
-			for(i = 0; i < ARRAYSIZE(keygrps); i++) {
-				if (keygrps[i].bit == LOWORD(cmd) && keygrps[i].group == HIWORD(cmd)) {
-					TCHAR *name = NameFromVKey(keygrps[i].vk);
+			for(i = 0; i < keysSize; i++) {
+				if (keys[i].bit == LOWORD(cmd) && keys[i].group == HIWORD(cmd)) {
+					TCHAR *name = NameFromVKey(keys[i].vk);
 					idx = ListBox_AddString(hListKeys, name);
 					free(name);
 					lvi.lParam = cmd;

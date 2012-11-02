@@ -114,8 +114,8 @@ void LogKeypress(LPCALC lpCalc, int group, int bit) {
 	current->bit = bit;
 	current->group = group;
 	current->next = lpCalc->last_keypress_head;
-	current->text = (TCHAR *) malloc(strlen(keystrings[i].text) + 1);
-	StringCbCopy(current->text, strlen(keystrings[i].text) + 1, keystrings[i].text);
+	current->text = (TCHAR *) malloc(_tcslen(keystrings[i].text) + 1);
+	StringCbCopy(current->text, _tcslen(keystrings[i].text) + 1, keystrings[i].text);
 	lpCalc->last_keypress_head = current;
 	lpCalc->num_keypresses++;
 

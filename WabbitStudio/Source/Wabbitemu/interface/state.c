@@ -191,7 +191,7 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 			case ProtProgObj:
 			case AppVarObj:
 			case GroupObj: {
-				errno_t error = StringCbCopy(buffer, 10, (TCHAR *) sym->name);
+				StringCbCopy(buffer, 10, (TCHAR *) sym->name);
 				return buffer;
 			}
 			case PictObj:
@@ -282,33 +282,33 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 			case ProtProgObj:
 			case AppVarObj:
 			case GroupObj: {
-				errno_t error = strcpy(buffer, sym->name);
+				strcpy(buffer, sym->name);
 				return buffer;
 			}
 			case PictObj:
-				StringCbPrintf(buffer, 10, _T("Pic%d"), circ10(sym->name[1]));
+				sprintf(buffer, _T("Pic%d"), circ10(sym->name[1]));
 				return buffer;
 			case GDBObj:
-				StringCbPrintf(buffer, 10, _T("GDB%d"), circ10(sym->name[1]));
+				sprintf(buffer, _T("GDB%d"), circ10(sym->name[1]));
 				return buffer;
 			case StrngObj:
-				StringCbPrintf(buffer, 10, _T("Str%d"), circ10(sym->name[1]));
+				sprintf(buffer, _T("Str%d"), circ10(sym->name[1]));
 				return buffer;		
 			case RealObj:
 			case CplxObj:
-				StringCbPrintf(buffer, 10, _T("%c"), sym->name[0]);
+				sprintf(buffer, _T("%c"), sym->name[0]);
 				return buffer;
 			case ListObj:
 			case CListObj:
 				if ((u_char) sym->name[1] < 6) {
-					StringCbPrintf(buffer, 10, _T("L%d"), sym->name[1] + 1); //L1...L6
+					sprintf(buffer, _T("L%d"), sym->name[1] + 1); //L1...L6
 				} else {
-					StringCbPrintf(buffer, 10, _T("%s"), sym->name + 1); // No Little L
+					sprintf(buffer, _T("%s"), sym->name + 1); // No Little L
 				}
 				return buffer;
 			case MatObj:
 				if (sym->name[0] == 0x5C) {
-					StringCbPrintf(buffer, 10, _T("[%c]"), 'A' + sym->name[1]);
+					sprintf(buffer, _T("[%c]"), 'A' + sym->name[1]);
 					return buffer;
 				}
 				return NULL;
@@ -324,16 +324,16 @@ TCHAR *Symbol_Name_to_String(int model, symbol83P_t *sym, TCHAR *buffer) {
 					u_char b = sym->name[1] & 0x0F;
 					switch(sym->name[1] & 0xF0) {
 						case 0x10: //Y1
-							StringCbPrintf(buffer, 10, _T("Y%d"),circ10(b));
+							sprintf(buffer, _T("Y%d"),circ10(b));
 							return buffer;
 						case 0x20: //X1t Y1t
-							StringCbPrintf(buffer, 10, _T("X%dT"), ((b/2)+1)%6);
+							sprintf(buffer, _T("X%dT"), ((b/2)+1)%6);
 							if (b % 2) {
 								buffer[0] = 'Y';
 							}
 							return buffer;
 						case 0x40: //r1
-							StringCbPrintf(buffer, 10, _T("R%d"),(b+1)%6);
+							sprintf(buffer, _T("R%d"),(b+1)%6);
 							return buffer;
 						case 0x80: //Y1
 							switch (b) {
@@ -370,12 +370,18 @@ void SetRealAns(CPU_t *cpu, TCHAR *text) {
 }
 
 TCHAR *GetRealAns(CPU_t *cpu) {
-	symlist_t symlist;
-	state_build_symlist_83P(cpu, &symlist);
+	symlist_t *symlist = (symlist_t *) malloc(sizeof(symlist_t));
+	memset(&symlist, 0, sizeof(symlist));
+	symlist = state_build_symlist_83P(cpu, symlist);
+	if (symlist == NULL) {
+		return NULL;
+	}
 	
 	const TCHAR ans_name[] = {tAns, 0x00, 0x00};
-	symbol83P_t *sym = search_symlist(&symlist, ans_name, 3);
-	if (sym == NULL) return NULL;
+	symbol83P_t *sym = search_symlist(symlist, ans_name, 3);
+	if (sym == NULL) {
+		return NULL;
+	}
 
 #ifdef WINVER
 	TCHAR *buffer = (TCHAR *) LocalAlloc(LMEM_FIXED, 2048);
@@ -384,6 +390,7 @@ TCHAR *GetRealAns(CPU_t *cpu) {
 #endif
 	
 	symbol_to_string(cpu, sym, buffer);
+	free(symlist);
 	
 	return buffer;
 }

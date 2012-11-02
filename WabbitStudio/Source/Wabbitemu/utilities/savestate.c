@@ -1080,7 +1080,7 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 #endif
 	} else {
 #ifdef WINVER
-		tmpnam_s(tmpfn, sizeof(tmpfn));
+		_ttmpnam_s(tmpfn, sizeof(tmpfn));
 		GetAppDataString(temp_save, sizeof(temp_save));
 		StringCbCat(temp_save, sizeof(temp_save), tmpfn);
 		_tfopen_s(&ofile, temp_save, _T("wb"));

@@ -434,7 +434,7 @@ HRESULT AddAviWav(HAVI avi, const TCHAR * src, DWORD flags)
 
 
 
-unsigned int FormatAviMessage(HRESULT code, char *buf, unsigned int len)
+unsigned int FormatAviMessage(HRESULT code, char *buf, int buf_size, unsigned int len)
 {
 	const char *msg = "unknown avi result code";
 	switch (code) {
@@ -510,7 +510,7 @@ unsigned int FormatAviMessage(HRESULT code, char *buf, unsigned int len)
 	if (n + 1 > len) {
 		n = len - 1;
 	}
-	strncpy(buf, msg, n);
+	strncpy_s(buf, buf_size, msg, n);
 	buf[n] = 0;
 	return mlen;
 }

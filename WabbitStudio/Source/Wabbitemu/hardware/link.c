@@ -78,7 +78,7 @@ int link_disconnect(CPU_t *cpu) {
 
 /* Run a number of tstates */
 static void link_wait(CPU_t *cpu, time_t tstates) {
-	long long time_end = tc_tstates(cpu->timer_c) + tstates;
+	uint64_t time_end = tc_tstates(cpu->timer_c) + tstates;
 
 	while (tc_tstates(cpu->timer_c) < time_end) {
 		CPU_step(cpu);
@@ -798,7 +798,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	if (upages.start == -1)
 		return LERR_MODEL;
 	
-	int page;
+	u_int page;
 	for (page = upages.start; page >= upages.end + tifile->flash->pages
 			&& dest[page][0x00] == 0x80 && dest[page][0x01] == 0x0F; ) {
 		int page_size;
@@ -809,7 +809,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 				//or we can force load it still ;D
 				//there's probably some good reason Jim didn't write this code :|
 				int pageDiff = tifile->flash->pages - get_page_size(dest, page);
-				int currentPage = page - tifile->flash->pages;
+				u_int currentPage = page - tifile->flash->pages;
 				u_int end_page = pageDiff > 0 ? currentPage : currentPage + pageDiff;
 				while (!check_flashpage_empty(dest, end_page, 1) && end_page >= upages.end)
 					end_page -= get_page_size(dest, end_page);
@@ -820,7 +820,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 						memmove(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE * (end_page - currentPage));
 						if (cpu->pio.model == TI_83P) {
 							//mark pages unprotected
-							for (int i = end_page - 7; i <= end_page + pageDiff - 8; i++) {
+							for (u_int i = end_page - 7; i <= end_page + pageDiff - 8; i++) {
 								cpu->mem_c->protected_page[i / 8] &= ~(1 << (i % 8));
 							}
 						}
@@ -828,12 +828,13 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 						//we don't need to copy any new data, we just want to mark
 						//the old pages as free for the OS to use
 						//-pageDiff is used because its still negative
-						if (end_page > currentPage)
+						if (end_page > currentPage) {
 							memmove(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE * (end_page - currentPage));
+						}
 						memset(dest[end_page-pageDiff], 0xFF, (-pageDiff) * PAGE_SIZE);
 						if (cpu->pio.model == TI_83P) {
 							//mark pages as protected
-							for (int i = end_page - 7; i <= end_page - pageDiff - 8; i++) {
+							for (u_int i = end_page - 7; i <= end_page - pageDiff - 8; i++) {
 								cpu->mem_c->protected_page[i / 8] |= 1 << (i % 8);
 							}
 						}

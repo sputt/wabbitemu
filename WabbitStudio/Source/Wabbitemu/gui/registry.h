@@ -19,5 +19,7 @@ void SaveWabbitKey(TCHAR *name, int type, void *value);
 
 LONG_PTR QueryDebugKey(TCHAR *);
 void SaveDebugKey(TCHAR *, int type, void *value);
+//HRESULT ExportRegistrySettingsFile(LPCTSTR lpszFileName);
+//HRESULT LoadRegistrySettingsFile(LPCTSTR lpszFileName);
 
 #endif /*REGISTRY_H_*/

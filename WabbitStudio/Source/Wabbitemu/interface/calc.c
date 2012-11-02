@@ -67,20 +67,21 @@ u_int calc_count(void) {
 
 /* 81 */
 int calc_init_81(LPCALC lpCalc, char *version) {
+	int error = 0;
 	/* INTIALIZE 81 */
 	//v2 is basically an 82
 	if (version[0] == '2') {
-		memory_init_81(&lpCalc->mem_c);
-		tc_init(&lpCalc->timer_c, MHZ_2);
-		CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+		error |= memory_init_81(&lpCalc->mem_c);
+		error |= tc_init(&lpCalc->timer_c, MHZ_2);
+		error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 		ClearDevices(&lpCalc->cpu);
-		device_init_83(&lpCalc->cpu, 1);
+		error |= device_init_83(&lpCalc->cpu, 1);
 	} else {
-		memory_init_81(&lpCalc->mem_c);
-		tc_init(&lpCalc->timer_c, MHZ_2);
-		CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+		error |= memory_init_81(&lpCalc->mem_c);
+		error |= tc_init(&lpCalc->timer_c, MHZ_2);
+		error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 		ClearDevices(&lpCalc->cpu);
-		device_init_81(&lpCalc->cpu);
+		error |= device_init_81(&lpCalc->cpu);
 	
 	}
 	/* END INTIALIZE 81 */
@@ -95,24 +96,24 @@ int calc_init_81(LPCALC lpCalc, char *version) {
 		lpCalc->audio->timer_c	= &lpCalc->timer_c;
 	}
 #endif
-	return TRUE;
+	return error;
 }
 
 /*  82 83 */
 static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	/* INTIALIZE 83 */
-	memory_init_83(&lpCalc->mem_c);
-	tc_init(&lpCalc->timer_c, MHZ_6);
-	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	int error = memory_init_83(&lpCalc->mem_c);
+	error |= tc_init(&lpCalc->timer_c, MHZ_6);
+	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
 	if (lpCalc->model == TI_82) {
 		if (memcmp(os, "19.006", 6)==0) {
-			device_init_83(&lpCalc->cpu, 0);
+			error |= device_init_83(&lpCalc->cpu, 0);
 		} else {
-			device_init_83(&lpCalc->cpu, 1);
+			error |= device_init_83(&lpCalc->cpu, 1);
 		}
 	} else {
-		device_init_83(&lpCalc->cpu, 0);
+		error |= device_init_83(&lpCalc->cpu, 0);
 	}
 	/* END INTIALIZE 83 */
 
@@ -124,18 +125,18 @@ static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	lpCalc->audio->init		= FALSE;
 	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 #endif
-	return TRUE;
+	return error;
 }
 
 /* 85 86 */
 static int calc_init_86(LPCALC lpCalc) {
 
 	/* INTIALIZE 86 */
-	memory_init_86(&lpCalc->mem_c);
-	tc_init(&lpCalc->timer_c, MHZ_4_8);
-	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	int error = memory_init_86(&lpCalc->mem_c);
+	error |= tc_init(&lpCalc->timer_c, MHZ_4_8);
+	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
-	device_init_86(&lpCalc->cpu);
+	error |= device_init_86(&lpCalc->cpu);
 	/* END INTIALIZE 86 */
 
 #ifdef WINVER // FIXME: dirty cheater!
@@ -146,17 +147,17 @@ static int calc_init_86(LPCALC lpCalc) {
 	lpCalc->audio->init		= FALSE;
 	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 #endif
-	return 0;
+	return error;
 }
 
 /* 73 83+ */
 int calc_init_83p(LPCALC lpCalc) {
 	/* INTIALIZE 83+ */
-	memory_init_83p(&lpCalc->mem_c);
-	tc_init(&lpCalc->timer_c, MHZ_6);
-	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	int error = memory_init_83p(&lpCalc->mem_c);
+	error |= tc_init(&lpCalc->timer_c, MHZ_6);
+	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
-	device_init_83p(&lpCalc->cpu);
+	error |= device_init_83p(&lpCalc->cpu);
 	/* END INTIALIZE 83+ */
 
 #ifdef WINVER // FIXME: dirty cheater!
@@ -167,17 +168,17 @@ int calc_init_83p(LPCALC lpCalc) {
 	lpCalc->audio->init		= FALSE;
 	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 #endif
-	return 0;
+	return error;
 }
 
 /* 83+se 84+se */
 int calc_init_83pse(LPCALC lpCalc) {
 	/* INTIALIZE 83+se */
-	memory_init_83pse(&lpCalc->mem_c);
-	tc_init(&lpCalc->timer_c, MHZ_6);
-	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	int error = memory_init_83pse(&lpCalc->mem_c);
+	error |= tc_init(&lpCalc->timer_c, MHZ_6);
+	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
-	device_init_83pse(&lpCalc->cpu);
+	error |= device_init_83pse(&lpCalc->cpu);
 	/* END INTIALIZE 83+se */
 #ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
@@ -187,17 +188,17 @@ int calc_init_83pse(LPCALC lpCalc) {
 	lpCalc->audio->init		= FALSE;
 	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 #endif
-	return 0;
+	return error;
 }
 
 /* 84+ */
 int calc_init_84p(LPCALC lpCalc) {
 	/* INTIALIZE 84+ */
-	memory_init_84p(&lpCalc->mem_c);
-	tc_init(&lpCalc->timer_c, MHZ_6);
-	CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	int error = memory_init_84p(&lpCalc->mem_c);
+	error |= tc_init(&lpCalc->timer_c, MHZ_6);
+	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
-	device_init_83pse(&lpCalc->cpu);
+	error |= device_init_83pse(&lpCalc->cpu);
 #ifdef WITH_BACKUPS
 	init_backups();
 #endif
@@ -211,7 +212,7 @@ int calc_init_84p(LPCALC lpCalc) {
 	lpCalc->audio->init		= FALSE;
 	lpCalc->audio->timer_c	= &lpCalc->timer_c;
 #endif
-	return 0;
+	return error;
 }
 
 
@@ -226,7 +227,8 @@ void calc_erase_certificate(unsigned char *mem, int size) {
 	return;
 }
 
-#define BOOTFREE_VER "11.246"
+#define BOOTFREE_VER_MAJOR 11
+#define BOOTFREE_VER_MINOR 246
 void check_bootfree_and_update(LPCALC lpCalc) {
 	u_char *bootFreeString = lpCalc->mem_c.flash + (lpCalc->mem_c.flash_pages - 1) * PAGE_SIZE + 0x0F;
 	if (*bootFreeString != '1') {
@@ -237,21 +239,22 @@ void check_bootfree_and_update(LPCALC lpCalc) {
 		//using normal bootpage
 		return;
 	}
-	if (!strcmp((const char *) bootFreeString, BOOTFREE_VER)) {
-		return;
-	}
+	int majorVer, minorVer;
 #ifdef WINVER
-	TCHAR hexFile[MAX_PATH];
-	ExtractBootFree(lpCalc->model, hexFile);
-	FILE *file;
-	_tfopen_s(&file, hexFile, _T("rb"));
-	writeboot(file, &lpCalc->mem_c, -1);
-	fclose(file);
-	_tfopen_s(&file, lpCalc->rom_path, _T("wb"));
-	if (file) {
+	_stscanf_s((char *) bootFreeString, _T("%d.%d"), &majorVer, &minorVer);
+	if (MAKELONG(BOOTFREE_VER_MINOR, BOOTFREE_VER_MAJOR) > MAKELONG(minorVer, majorVer)) {
+		TCHAR hexFile[MAX_PATH];
+		ExtractBootFree(lpCalc->model, hexFile);
+		FILE *file;
+		_tfopen_s(&file, hexFile, _T("rb"));
+		writeboot(file, &lpCalc->mem_c, -1);
 		fclose(file);
-		MFILE *mfile = ExportRom(lpCalc->rom_path, lpCalc);
-		mclose(mfile);
+		_tfopen_s(&file, lpCalc->rom_path, _T("wb"));
+		if (file) {
+			fclose(file);
+			MFILE *mfile = ExportRom(lpCalc->rom_path, lpCalc);
+			mclose(mfile);
+		}
 	}
 #endif
 }
@@ -271,6 +274,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	}
 	lpCalc->model = tifile->model;
 
+	int error = 0;
 	if (tifile->type == SAV_TYPE) {
 		lpCalc->active 	= TRUE;
 		switch (tifile->model) {
@@ -280,27 +284,31 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 				char *rom = GetRomOnly(tifile->save, &size);
 				char VerString[64];
 				FindRomVersion(	tifile->model, VerString, (unsigned char *) rom, size);
-				calc_init_83(lpCalc, VerString);
+				error = calc_init_83(lpCalc, VerString);
 				break;
 			}
 			case TI_73:
 			case TI_83P:
-				calc_init_83p(lpCalc);
+				error = calc_init_83p(lpCalc);
 				break;
 			case TI_84PSE:
 			case TI_83PSE:
-				calc_init_83pse(lpCalc);
+				error = calc_init_83pse(lpCalc);
 				break;
 			case TI_84P:
-				calc_init_84p(lpCalc);
+				error = calc_init_84p(lpCalc);
 				break;
 			case TI_85:
 			case TI_86:
-				calc_init_86(lpCalc);
+				error = calc_init_86(lpCalc);
 				break;
 			default:
 				FreeTiFile(tifile);
 				return FALSE;
+		}
+		if (error) {
+			FreeTiFile(tifile);
+			return FALSE;
 		}
 
 		LoadSlot(tifile->save, lpCalc);
@@ -360,7 +368,10 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 				FreeTiFile(tifile);
 				return FALSE;
 		}
-
+		if (error) {
+			FreeTiFile(tifile);
+			return FALSE;
+		}
 		lpCalc->active = TRUE;
 		memcpy(lpCalc->rom_version, tifile->rom->version, sizeof(lpCalc->rom_version));
 #ifdef WINVER
@@ -378,12 +389,12 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 		lpCalc->cpu.pio.model = lpCalc->model;
 #ifdef WINVER
 extern keyprog_t keygrps[256];
-extern keyprog_t defaultkeys[256];
+extern keyprog_t keysti83[256];
 extern keyprog_t keysti86[256];
 		if (lpCalc->model == TI_86 || lpCalc->model == TI_85) {
 			memcpy(keygrps, keysti86, sizeof(keyprog_t) * 256);
 		} else {
-			memcpy(keygrps, defaultkeys, sizeof(keyprog_t) * 256);
+			memcpy(keygrps, keysti83, sizeof(keyprog_t) * 256);
 		}
 #endif
 		if (lpCalc->model >= TI_73) {

@@ -288,7 +288,7 @@ void HookZelda(void (*fnCallback)(void) ) {
 	if (lab == NULL) {
 		return;
 	}
-	int i;
+	u_int i;
 	for (i = 0; i < calcs[0].applist.count; i++) {
 		if (_tcsnicmp(calcs[0].applist.apps[i].name, _T("ZELDA"), 5) == 0) {
 			BasePage = calcs[0].applist.apps[i].page;

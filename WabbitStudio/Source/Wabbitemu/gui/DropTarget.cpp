@@ -242,7 +242,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 						LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
 						LPTSTR lpszFileGroup = NULL;
 
-						for (int i = 0; i < lpfgd->cItems; i++) {
+						for (u_int i = 0; i < lpfgd->cItems; i++) {
 							TCHAR szTemp[L_tmpnam_s];
 							_ttmpnam_s(szTemp);
 
@@ -256,7 +256,8 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 
 								ULONG cbRead = 0;
 								if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead))) {
-									FILE *file = _tfopen(path, _T("wb"));
+									FILE *file;
+									_tfopen_s(&file, path, _T("wb"));
 									if (file != NULL) {
 										fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
 										fclose(file);
@@ -320,7 +321,7 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 								LPTSTR lpszFileGroup = NULL;
 								list<TCHAR *> files(lpfgd->cItems, NULL);
 
-								for (int i = 0; i < lpfgd->cItems; i++) {
+								for (u_int i = 0; i < lpfgd->cItems; i++) {
 									TCHAR szFileName[MAX_PATH];
 									ZeroMemory(szFileName, sizeof(szFileName));
 
@@ -338,7 +339,8 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 
 										ULONG cbRead = 0;
 										if (SUCCEEDED(stgmedData.pstm->Read(lpBuffer, lpfgd->fgd[i].nFileSizeLow, &cbRead))) {
-											FILE *file = _tfopen(szFileName, _T("wb"));
+											FILE *file;
+											_tfopen_s(&file, szFileName, _T("wb"));
 											if (file != NULL) {
 												fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
 												fclose(file);

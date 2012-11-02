@@ -246,8 +246,7 @@ static keyprog_t keygrps[256] = {
 	{RIGHT, 0, 2} // Right Arrow
 };
 #else
-
-keyprog_t defaultkeys[256] = {
+keyprog_t defaultkeysti83[256] = {
 #ifdef _WINDOWS
 	{ 'A' , 5 , 6 },
 	{ 'B' , 4 , 6 },
@@ -339,7 +338,7 @@ keyprog_t defaultkeys[256] = {
 #endif
 	{ -1, -1, -1},
 };
-keyprog_t keysti86[256] = {
+keyprog_t defaultkeysti86[256] = {
 #ifdef _WINDOWS
 	{ 'A' , 5 , 5 },
 	{ 'B' , 4 , 5 },
@@ -431,98 +430,9 @@ keyprog_t keysti86[256] = {
 #endif
 	{ -1, -1, -1},
 };
-keyprog_t keygrps[256] = {
-#ifdef _WINDOWS
-	{ 'A' , 5 , 6 },
-	{ 'B' , 4 , 6 },
-	{ 'C' , 3 , 6 },
-	{ 'D' , 5 , 5 },
-	{ 'E' , 4 , 5 },
-	{ 'F' , 3 , 5 },
-	{ 'G' , 2 , 5 },
-	{ 'H' , 1 , 5 },
-	{ 'I' , 5 , 4 },
-	{ 'J' , 4 , 4 },
-	{ 'K' , 3 , 4 },
-	{ 'L' , 2 , 4 },
-	{ 'M' , 1 , 4 },
-	{ 'N' , 5 , 3 },
-	{ 'O' , 4 , 3 },
-	{ 'P' , 3 , 3 },
-	{ 'Q' , 2 , 3 },
-	{ 'R' , 1 , 3 },
-	{ 'S' , 5 , 2 },
-	{ 'T' , 4 , 2 },
-	{ 'U' , 3 , 2 },
-	{ 'V' , 2 , 2 },
-	{ 'W' , 1 , 2 },
-	{ 'X' , 5 , 1 },
-	{ 'Y' , 4 , 1 },
-	{ 'Z' , 3 , 1 },
-	{ ' ' , 4 , 0 },
-	{ VK_DOWN , 0 , 0 },
-	{ VK_LEFT , 0 , 1 },
-	{ VK_RIGHT , 0 , 2 },
-	{ VK_UP , 0 , 3 },
-	{ '0' , 4 , 0 },
-	{ '1' , 4 , 1 },
-	{ '2' , 3 , 1 },
-	{ '3' , 2 , 1 },
-	{ '4' , 4 , 2 },
-	{ '5' , 3 , 2 },
-	{ '6' , 2 , 2 },
-	{ '7' , 4 , 3 },
-	{ '8' , 3 , 3 },
-	{ '9' , 2 , 3 },
-	{ VK_RETURN , 1 , 0 },
-	{ VKF_PERIOD , 3 , 0 },
-	{ VKF_COMMA , 4 , 4 },
-	{ VK_ADD , 1 , 1 },
-	{ VK_SUBTRACT , 1 , 2 },
-	{ VK_MULTIPLY , 1 , 3 },
-	{ VK_DIVIDE , 1 , 4 },
-	{ VKF_LBRACKET , 3 , 4 },
-	{ VKF_RBRACKET , 2 , 4 },
-	{ VK_F1 , 6 , 4 },
-	{ VK_F2 , 6 , 3 },
-	{ VK_F3 , 6 , 2 },
-	{ VK_F4 , 6 , 1 },
-	{ VK_F5 , 6 , 0 },
-	{ VK_ESCAPE , 6 , 6 },
-	{ VK_LSHIFT , 6 , 5 },			// l shift
-	{ VK_CONTROL, 5 , 7 },			// l control
-	{ VK_RSHIFT , 1 , 6 },
-	{ VKF_MINUS , 2 , 0 },
-	{ VKF_EQUAL , 4 , 7 },
-	{ VK_PRIOR , 4 , 6 },
-	{ VK_NEXT , 3 , 6 },
-	{ VK_INSERT , 2 , 6 },
-	{ VK_DELETE , 6 , 7 },
-	{ VK_HOME , 5 , 6 },
-	{ VK_END , 3 , 7 },
-#ifndef _DEBUG
-	{ VK_NUMPAD0 , 4 , 0 },
-#endif
-	{ VK_NUMPAD1 , 4 , 1 },
-	{ VK_NUMPAD2 , 3 , 1 },
-	{ VK_NUMPAD3 , 2 , 1 },
-	{ VK_NUMPAD4 , 4 , 2 },
-	{ VK_NUMPAD5 , 3 , 2 },
-	{ VK_NUMPAD6 , 2 , 2 },
-	{ VK_NUMPAD7 , 4 , 3 },
-	{ VK_NUMPAD8 , 3 , 3 },
-	{ VK_NUMPAD9 , 2 , 3 },
-	{ VK_DECIMAL , 3 , 0 },
-	{ VK_OEM_2, 2, 0 },
-//so much better than hardcoding the changes :P
-#ifdef _DEBUG
-	{ VK_NUMPAD0, KEYGROUP_ON, KEYBIT_ON},
-#else
-	{ VK_F12, KEYGROUP_ON, KEYBIT_ON},
-#endif
-#endif
-	{ -1, -1, -1},
-};
+keyprog_t keysti83[256];
+keyprog_t keysti86[256];
+keyprog_t keygrps[256];
 #endif
 	
 keypad_t *keypad_init(CPU_t *cpu) {
@@ -660,7 +570,7 @@ keyprog_t *keypad_key_release(CPU_t *cpu, unsigned int vk) {
 
 #ifdef WINVER
 void keypad_vk_release(HWND hwnd, int group, int bit) {
-	for (int i = 0; i < ARRAYSIZE(defaultkeys); i++) {
+	for (int i = 0; i < ARRAYSIZE(keygrps); i++) {
 		if (keygrps[i].group == group && keygrps[i].bit == bit) {	
 			//TODO: fix lparam
 			//this is sent as a message and not HandleKeyUp because

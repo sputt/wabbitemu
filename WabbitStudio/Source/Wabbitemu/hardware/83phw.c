@@ -32,11 +32,13 @@ static void port0(CPU_t *cpu, device_t *dev) {
 		link->hasChanged = FALSE;
 		link->changedTime = 0;
 
-		cpu->bus = (((link->host & 0x03) | (link->client[0] & 0x03)) ^ 0x03) | (assist->link_enable & 0x04);
+		cpu->bus = (((link->host & 0x03) | (link->client[0] & 0x03)) ^ 0x03);
+		cpu->bus += assist->link_enable & BIT(2);
 		if (assist->read)
-			cpu->bus += 8;
+			cpu->bus += BIT(3);
 		if (assist->receiving)
-			cpu->bus += 64;
+			cpu->bus += BIT(6);
+		cpu->bus += cpu->link_write << 4;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
 #ifdef WINVER // lazy me
@@ -47,8 +49,8 @@ static void port0(CPU_t *cpu, device_t *dev) {
 			FlippedRight(cpu, (cpu->bus & 0x02) >> 1);	//sound, not portable
 		}
 #endif		
-		assist->link_enable = cpu->bus & 0x04;
-		link->host = cpu->bus & 0x03;
+		assist->link_enable = cpu->bus & BIT(2);
+		cpu->link_write = link->host = cpu->bus & 0x03;
 		cpu->output = FALSE;
 	}
 #ifdef WINVER // :P

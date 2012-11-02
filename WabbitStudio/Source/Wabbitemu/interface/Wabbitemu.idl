@@ -164,7 +164,7 @@ interface IPage : IDispatch
 	HRESULT IsFlash([out, retval] VARIANT_BOOL *IsFlash);
 
 	[id(2), helpstring("Read from this page within addresses 0 - 16383")]
-	HRESULT Read([in] WORD Address, [in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
+	HRESULT Read([in] WORD Address, [in] VARIANT ByteCount, [out, retval] VARIANT *Value);
 
 	[id(3), helpstring("Write to this page within addresses 0 - 16383")]
 	HRESULT Write([in] WORD Address, [in] VARIANT Value);
@@ -246,7 +246,7 @@ interface ICalcAddress : IDispatch
 
 	// Methods
 	[helpstring("Read from this address")]
-	HRESULT Read([in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
+	HRESULT Read([in] VARIANT ByteCount, [out, retval] VARIANT *Value);
 	[helpstring("Write to this address")]
 	HRESULT Write([in] VARIANT Value);
 }
@@ -331,9 +331,9 @@ interface IWabbitemu : IDispatch
 	HRESULT StepOver();
 
 	[helpstring("Sets an execution breakpoint on a certain address.")]
-	HRESULT SetBreakpoint([in] IPage *Page, [in] WORD Address, [in, optional] VARIANT CalcNotify);
+	HRESULT SetBreakpoint([in] IPage *Page, [in] WORD Address, [in] VARIANT CalcNotify);
 
-	HRESULT Read([in] WORD Address, [in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
+	HRESULT Read([in] WORD Address, [in] VARIANT ByteCount, [out, retval] VARIANT *Value);
 	HRESULT Write([in] WORD Address, [in] VARIANT Value);
 
 	HRESULT LoadFile([in] BSTR FileName);

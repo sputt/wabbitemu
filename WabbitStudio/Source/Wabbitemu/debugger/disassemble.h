@@ -2,6 +2,7 @@
 #define DISASSEMBLE_H
 
 #include "core.h"
+#include "calc.h"
 #include "dbcommon.h"
 
 #define DA_NOP	0
