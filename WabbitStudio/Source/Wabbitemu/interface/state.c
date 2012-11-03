@@ -371,7 +371,7 @@ void SetRealAns(CPU_t *cpu, TCHAR *text) {
 
 TCHAR *GetRealAns(CPU_t *cpu) {
 	symlist_t *symlist = (symlist_t *) malloc(sizeof(symlist_t));
-	memset(&symlist, 0, sizeof(symlist));
+	memset(symlist, 0, sizeof(symlist));
 	symlist = state_build_symlist_83P(cpu, symlist);
 	if (symlist == NULL) {
 		return NULL;

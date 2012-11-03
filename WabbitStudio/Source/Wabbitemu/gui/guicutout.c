@@ -2,7 +2,7 @@
 
 #include "gui.h"
 #include "guilcd.h"
-#include "guifaceplate.h"
+#include "guiskin.h"
 #include "guibuttons.h"
 #include "guicutout.h"
 #include "resource.h"

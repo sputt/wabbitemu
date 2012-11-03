@@ -4,6 +4,7 @@
 
 #include <commdlg.h>
 #include "gui.h"
+#include "guiskin.h"
 #include "gif.h"
 #include "resource.h"
 #include "calc.h"
