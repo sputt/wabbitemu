@@ -91,12 +91,12 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="gui\guibuttons.c" />
+    <ClCompile Include="gui\guicommandline.c" />
     <ClCompile Include="gui\guicontext.c" />
     <ClCompile Include="gui\guicutout.c" />
     <ClCompile Include="gui\guidebug.c" />
     <ClCompile Include="gui\guidetached.c" />
     <ClCompile Include="gui\guidialog.c" />
-    <ClCompile Include="gui\guifaceplate.c" />
     <ClCompile Include="gui\guifilepreview.c" />
     <ClCompile Include="gui\guiglow.c" />
     <ClCompile Include="gui\guikeylist.c" />
@@ -104,7 +104,9 @@
     <ClCompile Include="gui\guiopenfile.c" />
     <ClCompile Include="gui\guioptions.c" />
     <ClCompile Include="gui\guisavestate.c" />
+    <ClCompile Include="GUI\guiskin.c" />
     <ClCompile Include="gui\guispeed.c" />
+    <ClCompile Include="GUI\guiupdate.c" />
     <ClCompile Include="gui\guivartree.c" />
     <ClCompile Include="gui\guiwizard.c" />
     <ClCompile Include="gui\registry.c" />
@@ -298,11 +300,11 @@
     <ClInclude Include="gui\DropTarget.h" />
     <ClInclude Include="gui\gui.h" />
     <ClInclude Include="gui\guibuttons.h" />
+    <ClInclude Include="gui\guicommandline.h" />
     <ClInclude Include="gui\guicontext.h" />
     <ClInclude Include="gui\guicutout.h" />
     <ClInclude Include="gui\guidebug.h" />
     <ClInclude Include="gui\guidialog.h" />
-    <ClInclude Include="gui\guifaceplate.h" />
     <ClInclude Include="gui\guifilepreview.h" />
     <ClInclude Include="gui\guiglow.h" />
     <ClInclude Include="gui\guikeylist.h" />
@@ -310,7 +312,9 @@
     <ClInclude Include="gui\guiopenfile.h" />
     <ClInclude Include="gui\guioptions.h" />
     <ClInclude Include="gui\guisavestate.h" />
+    <ClInclude Include="GUI\guiskin.h" />
     <ClInclude Include="gui\guispeed.h" />
+    <ClInclude Include="GUI\guiupdate.h" />
     <ClInclude Include="gui\guivartree.h" />
     <ClInclude Include="gui\guiwizard.h" />
     <ClInclude Include="gui\linksprites.h" />

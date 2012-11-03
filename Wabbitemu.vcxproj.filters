@@ -70,6 +70,9 @@
     <Filter Include="Header Files\Core89">
       <UniqueIdentifier>{abf7709d-e32f-4c28-84ae-d8ad62a95898}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\GUI\Drag and Drop">
+      <UniqueIdentifier>{975a3caf-a5f8-4c8e-adc6-52ff3bb9fb58}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\alu.c">
@@ -143,18 +146,6 @@
     </ClCompile>
     <ClCompile Include="hardware\link.c">
       <Filter>Source Files\Hardware</Filter>
-    </ClCompile>
-    <ClCompile Include="gui\DataObject.cpp">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="gui\DropSource.cpp">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="gui\DropTarget.cpp">
-      <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="gui\guifaceplate.c">
-      <Filter>Source Files\GUI</Filter>
     </ClCompile>
     <ClCompile Include="gui\guiglow.c">
       <Filter>Source Files\GUI</Filter>
@@ -342,6 +333,24 @@
     <ClCompile Include="Debugger\dbspriteviewer.c">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
+    <ClCompile Include="gui\DataObject.cpp">
+      <Filter>Source Files\GUI\Drag and Drop</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\DropSource.cpp">
+      <Filter>Source Files\GUI\Drag and Drop</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\DropTarget.cpp">
+      <Filter>Source Files\GUI\Drag and Drop</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\guiskin.c">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\guicommandline.c">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\guiupdate.c">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -393,9 +402,6 @@
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="gui\guidebug.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\guifaceplate.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="gui\guifilepreview.h">
@@ -646,6 +652,15 @@
     </ClInclude>
     <ClInclude Include="Debugger\dbspriteviewer.h">
       <Filter>Header Files\Debugger</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\guiskin.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\guicommandline.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\guiupdate.h">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
