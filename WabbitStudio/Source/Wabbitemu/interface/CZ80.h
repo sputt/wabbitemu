@@ -1,31 +1,16 @@
 #pragma once
 
-#include <windows.h>
-#include <tchar.h>
-#include "Wabbitemu_h.h"
 #include "core.h"
 
-class CZ80 : IZ80
+class CZ80 :
+	public CComObjectRootEx<CComObjectThreadModel>,
+	public IDispatchImpl<IZ80, &IID_IZ80>
 {
 public:
-	// IUnknown methods
-	STDMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject);
-	STDMETHODIMP_(ULONG) AddRef()
-	{
-		return InterlockedIncrement(&m_lRefCount);
-	};
-	STDMETHODIMP_(ULONG) Release()
-	{
-		if (InterlockedDecrement(&m_lRefCount) == 0)
-		{
-			delete this;
-			return 0;
-		}
-		else
-		{
-			return m_lRefCount;
-		}
-	};
+	BEGIN_COM_MAP(CZ80)
+		COM_INTERFACE_ENTRY(IZ80)
+		COM_INTERFACE_ENTRY(IDispatch)
+	END_COM_MAP()
 
 	// IZ80 methods
 #define INTF_REGPAIR(zh, zl, zhl, zH, zL, zHL) \
@@ -55,13 +40,12 @@ public:
 	STDMETHODIMP get_SP(LPWORD lpSP) {*lpSP = m_cpu->sp; return S_OK;};
 	STDMETHODIMP put_SP(WORD SP) {m_cpu->sp = SP; return S_OK;};
 
-	CZ80(CPU_t *cpu)
+	HRESULT Initialize(CPU_t *cpu)
 	{
-		m_lRefCount = 1;
 		m_cpu = cpu;
+		return S_OK;
 	};
 
 private:
-	LONG m_lRefCount;
 	CPU_t *m_cpu;
 };

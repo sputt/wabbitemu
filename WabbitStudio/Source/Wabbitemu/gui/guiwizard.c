@@ -5,7 +5,6 @@
 #include "gui.h"
 #include "fileutilities.h"
 #include "registry.h"
-#include <commdlg.h>
 #include "resource.h"
 #include "exportvar.h"
 

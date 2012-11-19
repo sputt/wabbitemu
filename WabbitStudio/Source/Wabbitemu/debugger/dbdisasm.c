@@ -7,7 +7,6 @@
 #include "guicontext.h"
 #include "calc.h"
 #include "disassemble.h"
-#include <commctrl.h>
 #include "dbcommon.h"
 #include "resource.h"
 #include "print.h"

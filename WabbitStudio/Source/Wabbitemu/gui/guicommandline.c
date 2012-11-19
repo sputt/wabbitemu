@@ -1,5 +1,8 @@
+#include "stdafx.h"
+
+#include "gui.h"
+
 #include "guicommandline.h"
-#include <direct.h>
 #include "calc.h"
 #include "sendfileswindows.h"
 
@@ -51,16 +54,25 @@ ParsedCmdArgs* ParseCommandLineArgs()
 				} else {
 					parsedArgs->archive_files[parsedArgs->num_archive_files++] = temp;
 				}
-			} else if (secondChar == 'R') {
-				ram = SEND_RAM;
-			} else if (secondChar == 'A') {
-				ram = SEND_ARC;
-			} else if (secondChar == 'S') {
-				parsedArgs->silent_mode = TRUE;
-			} else if (secondChar == 'F') {
-				parsedArgs->force_focus = TRUE;
-			} else if (secondChar == 'N') {
-				parsedArgs->force_new_instance = TRUE;
+			} else if (_tcslen(tmpstring) == 2) {
+				if (secondChar == 'R') {
+					ram = SEND_RAM;
+				} else if (secondChar == 'A') {
+					ram = SEND_ARC;
+				} else if (secondChar == 'S') {
+					parsedArgs->silent_mode = TRUE;
+				} else if (secondChar == 'F') {
+					parsedArgs->force_focus = TRUE;
+				} else if (secondChar == 'N') {
+					parsedArgs->force_new_instance = TRUE;
+				}
+			} else {
+				HRESULT hr = E_FAIL;
+				bool fResult = _Module.ParseCommandLine(tmpstring, &hr);
+				if (FAILED(hr))
+				{
+					OutputDebugString(_T("Failed to register\n"));
+				}
 			}
 		}
 	}

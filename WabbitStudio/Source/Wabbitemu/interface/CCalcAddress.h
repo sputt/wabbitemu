@@ -1,17 +1,12 @@
 #pragma once
 
-#include <atlbase.h>
-#include <atlcom.h>
-
-#include <map>
-#include <string>
-
-#include "Wabbitemu_h.h"
 #include "core.h"
 
+typedef ICalcAddress *LPCALCADDRESS;
+
 class CCalcAddress :
-	public IDispatchImpl<ICalcAddress, &IID_ICalcAddress, &LIBID_WabbitemuLib>,
-	public CComObjectRootEx<CComMultiThreadModel>
+	public CComObjectRootEx<CComMultiThreadModel>,
+	public IDispatchImpl<ICalcAddress, &IID_ICalcAddress, &LIBID_WabbitemuLib>
 {
 public:
 	CCalcAddress()

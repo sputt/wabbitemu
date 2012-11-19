@@ -10,7 +10,6 @@
 #include "link.h"
 
 #ifdef _WINDOWS
-#include "Wabbitemu_h.h"
 #include "sound.h"
 #include "DropTarget.h"
 #include "dbbreakpoints.h"

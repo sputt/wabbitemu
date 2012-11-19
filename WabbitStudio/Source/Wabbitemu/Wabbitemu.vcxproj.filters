@@ -234,9 +234,6 @@
     <ClCompile Include="interface\CWabbitemu.cpp">
       <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
-    <ClCompile Include="interface\WabbitemuClassFactory.cpp">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClCompile>
     <ClCompile Include="Debugger\dbmonitor.c">
       <Filter>Source Files\Debugger</Filter>
     </ClCompile>
@@ -300,9 +297,6 @@
     <ClCompile Include="interface\state.c">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
-    <ClCompile Include="core89\core89.c">
-      <Filter>Source Files\Core89</Filter>
-    </ClCompile>
     <ClCompile Include="gui\guidialog.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
@@ -344,6 +338,9 @@
     </ClCompile>
     <ClCompile Include="GUI\guiupdate.c">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="Wabbitemu_i.c">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -837,6 +834,9 @@
     </None>
     <None Include="gui\ti-81keymap.png">
       <Filter>Resource Files\Skins</Filter>
+    </None>
+    <None Include="Wabbitemu.rgs">
+      <Filter>Source Files\Interface\COM</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

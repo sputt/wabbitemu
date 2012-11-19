@@ -1,10 +1,5 @@
 #pragma once
 
-#include <windows.h>
-#include <tchar.h>
-#include <atlbase.h>
-#include <atlcom.h>
-
 #include "Wabbitemu_h.h"
 #include "core.h"
 

@@ -1,12 +1,5 @@
 #pragma once
 
-#include <atlbase.h>
-#include <atlcom.h>
-
-#include <map>
-#include <string>
-
-#include "Wabbitemu_h.h"
 #include "CCalcAddress.h"
 #include "core.h"
 

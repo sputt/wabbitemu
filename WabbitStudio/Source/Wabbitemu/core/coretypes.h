@@ -3,8 +3,6 @@
 
 #define NumElm(array) (sizeof (array) / sizeof ((array)[0]))
 
-#include <stdint.h>
-
 #ifndef _WINDOWS
 typedef char TCHAR;
 typedef unsigned char _TUCHAR;

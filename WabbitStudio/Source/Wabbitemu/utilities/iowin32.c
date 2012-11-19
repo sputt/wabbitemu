@@ -11,8 +11,6 @@
 
 */
 
-#include <stdlib.h>
-
 #include "zlib.h"
 #include "ioapi.h"
 #include "iowin32.h"
