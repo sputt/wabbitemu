@@ -1,8 +1,5 @@
 #pragma once
 
-#include <windows.h>
-#include <ole2.h>
-
 class CWabbitemuClassFactory : IClassFactory
 {
 public:

@@ -6,7 +6,6 @@
 #include "link.h"
 #include "device.h"
 #include "calc.h"
-#include <math.h>
 #ifdef WINVER
 #include "dbbreakpoints.h"
 #endif

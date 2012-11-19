@@ -28,7 +28,6 @@
 #include <ShObjIdl.h>
 #include <assert.h>
 #include <setjmp.h>
-#define _CRTDBG_MAP_ALLOC
 #include <stdlib.h>
 #include <crtdbg.h>
 
@@ -38,18 +37,30 @@
 #include <stddef.h>
 #include <time.h>
 
+#include <stdint.h>
+
+#include <io.h>
+#include <fcntl.h>
+#include <direct.h>
+#include <WinInet.h>
 
 #ifdef __cplusplus
 #include <gdiplus.h>
 using namespace Gdiplus;
+#define _ATL_FREE_THREADED
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
+#include <atlcore.h>
 using namespace ATL;
+
 #include <map>
 #include <list>
 #include <vector>
 #include <string>
+
+
+#include "Wabbitemu_h.h"
 
 namespace std
 {

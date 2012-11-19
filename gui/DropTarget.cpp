@@ -1,5 +1,4 @@
 #include "stdafx.h"
-#include <list>
 using namespace std;
 
 #include "calc.h"

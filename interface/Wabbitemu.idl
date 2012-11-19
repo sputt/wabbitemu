@@ -69,7 +69,7 @@ interface ILCD : IUnknown
 	uuid(41C7B7BF-D390-4ba0-8075-462FD3565225),
 	object,
 ]
-interface IZ80 : IUnknown
+interface IZ80 : IDispatch
 {
 	[propget, bindable] HRESULT AF([out, retval] WORD *AF);
 	[propget, bindable] HRESULT A([out, retval] BYTE *A);

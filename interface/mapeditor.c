@@ -1,6 +1,5 @@
 #include "stdafx.h"
 
-#include <atlbase.h>
 #include "Wabbitemu_h.h"
 #include "WabbitemuClassFactory.h"
 #include "calc.h"
@@ -14,14 +13,6 @@ extern HINSTANCE g_hInst;
 
 static void (*fnFrameCallback)(void) = NULL;
 static int BasePage = 0;
-
-class CWabbitemuModule : public CAtlDllModuleT< CWabbitemuModule >
-{
-public :
-	DECLARE_LIBID(LIBID_WabbitemuLib)
-};
-
-CWabbitemuModule _AtlModule;
 
 #ifdef _WINDLL
 __declspec (dllexport) BOOL WINAPI DllMain(HINSTANCE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)

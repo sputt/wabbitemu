@@ -8,29 +8,6 @@
 #define WM_ADDFRAME	(WM_USER+5)
 #define WM_REMOVEFRAME (WM_USER+6)
 
-DWORD CWabbitemu::m_dwThreadId = 0;
-
-STDMETHODIMP CWabbitemu::QueryInterface(REFIID riid, LPVOID *ppvObject)
-{
-	if (riid == IID_IUnknown)
-	{
-		this->AddRef();
-		*ppvObject = this;
-		return S_OK;
-	}
-	else if (riid == IID_IWabbitemu)
-	{
-		this->AddRef();
-		*ppvObject = this;
-		return S_OK;
-	}
-	else
-	{
-		*ppvObject = NULL;
-		return E_NOINTERFACE;
-	}
-}
-
 STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 {
 	if (fVisible == VARIANT_TRUE)

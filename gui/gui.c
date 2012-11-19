@@ -1,10 +1,5 @@
 #include "stdafx.h"
 
-#include <io.h>
-#include <fcntl.h>
-#include <direct.h>
-#include <WinInet.h>
-
 #include "gui.h"
 #include "resource.h"
 #include "uxtheme.h"
@@ -55,9 +50,9 @@
 #include "state.h"
 #include "avi_utils.h"
 #include "dbghelp.h"
-#include <mapi.h>
 #include "ftp.h"
-#include <DbgHelp.h>
+
+CWabbitemuModule _Module;
 
 #ifdef _M_IX86
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='x86' publicKeyToken='6595b64144ccf1df' language='*'\"")

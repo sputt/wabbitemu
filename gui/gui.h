@@ -65,4 +65,12 @@ void RegisterWindowClasses(void);
 TCHAR *GetWhatsNewText();
 VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer);
 
+class CWabbitemuModule : public CAtlExeModuleT< CWabbitemuModule >
+{
+public :
+	DECLARE_LIBID(LIBID_WabbitemuLib)
+};
+
+extern CWabbitemuModule _Module;
+
 #endif

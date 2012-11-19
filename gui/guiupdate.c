@@ -6,7 +6,6 @@
 #include "fileutilities.h"
 #include "registry.h"
 #include "resource.h"
-#include <WinInet.h>
 
 extern HINSTANCE g_hInst;
 

@@ -2,7 +2,6 @@
 
 #include "guioptions.h"
 
-#include <commdlg.h>
 #include "gui.h"
 #include "guiskin.h"
 #include "gif.h"

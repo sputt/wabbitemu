@@ -1,22 +1,21 @@
 #pragma once
 
-#include <windows.h>
-#include <tchar.h>
-#include <atlbase.h>
-#include <atlcom.h>
-
-#include "Wabbitemu_h.h"
 #include "CZ80.h"
 #include "CLCD.h"
 #include "CKeypad.h"
 #include "calc.h"
 #include "CLabelServer.h"
 
+#include "resource.h"
+
 class CWabbitemu :
 	public IDispatchImpl<IWabbitemu, &IID_IWabbitemu, &LIBID_WabbitemuLib>,
-	public CComObjectRootEx<CComMultiThreadModel>
+	public CComCoClass<CWabbitemu, &CLSID_Wabbitemu>,
+	public CComObjectRootEx<CComObjectThreadModel>
 {
 public:
+	DECLARE_REGISTRY_RESOURCEID(IDR_WABBITEMU)
+
 	BEGIN_COM_MAP(CWabbitemu)
 		COM_INTERFACE_ENTRY(IDispatch)
 		COM_INTERFACE_ENTRY(IWabbitemu)
@@ -58,11 +57,18 @@ public:
 	STDMETHOD(get_Keypad)(IKeypad **ppKeypad);
 	STDMETHODIMP get_Labels(ILabelServer **ppLabelServer);
 
-	CWabbitemu()
+	HRESULT FinalConstruct()
 	{
 		m_lpCalc = calc_slot_new();
 		m_iSlot = m_lpCalc->slot;
-		m_pZ80 = new CZ80(&calcs[m_iSlot].cpu);
+
+		CComObject<CZ80> *m_pZ80Obj = NULL;
+		CComObject<CZ80>::CreateInstance(&m_pZ80Obj);
+		m_pZ80Obj->AddRef();
+		m_pZ80Obj->Initialize(&m_lpCalc->cpu);
+		m_pZ80 = m_pZ80Obj;
+		m_pZ80Obj->Release();
+
 		m_pLCD = new CLCD(&calcs[m_iSlot].cpu);
 		m_pKeypad = new CKeypad(&calcs[m_iSlot].cpu);
 		m_fVisible = VARIANT_FALSE;
@@ -76,12 +82,12 @@ public:
 		{
 			CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, &m_dwThreadId);
 		}
+
+		return S_OK;
 	};
 
-	
-
 private:
-	static DWORD m_dwThreadId;
+	DWORD m_dwThreadId;
 	static DWORD CALLBACK WabbitemuThread(LPVOID lpParam);
 
 	LONG m_lRefCount;
@@ -95,3 +101,5 @@ private:
 	HWND m_hwnd;
 	CComObject<CLabelServer> m_LabelServer;
 };
+
+OBJECT_ENTRY_AUTO(CLSID_Wabbitemu, CWabbitemu)
