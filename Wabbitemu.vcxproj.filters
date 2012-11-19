@@ -237,9 +237,6 @@
     <ClCompile Include="interface\CWabbitemu.cpp">
       <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
-    <ClCompile Include="Wabbitemu_i.c">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClCompile>
     <ClCompile Include="interface\WabbitemuClassFactory.cpp">
       <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
@@ -626,9 +623,6 @@
     <ClInclude Include="DBPaneContainer.h">
       <Filter>Source Files\Debugger</Filter>
     </ClInclude>
-    <ClInclude Include="guidetached.h">
-      <Filter>Header Files\GUI</Filter>
-    </ClInclude>
     <ClInclude Include="reverse_info_table.h">
       <Filter>Header Files\Core</Filter>
     </ClInclude>
@@ -662,6 +656,9 @@
     <ClInclude Include="GUI\guiupdate.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="gui\guidetached.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\small_close.bmp">
@@ -685,7 +682,6 @@
     <None Include="gui\tsmall.ico">
       <Filter>Resource Files</Filter>
     </None>
-    <None Include="Wabbitemu.tlb" />
     <None Include="interface\Wabbitemu.def">
       <Filter>Source Files\Interface\COM</Filter>
     </None>

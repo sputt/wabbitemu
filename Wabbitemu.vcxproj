@@ -243,28 +243,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="utilities\zpipe.c" />
-    <ClCompile Include="Wabbitemu_i.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug DLL|Win32'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|Win32'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release DLL|Win32'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release DLL|x64'">CompileAsC</CompileAs>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug DLL|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release DLL|Win32'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release DLL|x64'">Create</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
-      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core89\core89.h" />
@@ -292,7 +270,6 @@
     <ClInclude Include="debugger\dbvalue.h" />
     <ClInclude Include="debugger\dbwatch.h" />
     <ClInclude Include="debugger\disassemble.h" />
-    <ClInclude Include="guidetached.h" />
     <ClInclude Include="gui\CGdiPlusBitmap.h" />
     <ClInclude Include="gui\DataObject.h" />
     <ClInclude Include="gui\displayoptionstest.h" />
@@ -304,6 +281,7 @@
     <ClInclude Include="gui\guicontext.h" />
     <ClInclude Include="gui\guicutout.h" />
     <ClInclude Include="gui\guidebug.h" />
+    <ClInclude Include="gui\guidetached.h" />
     <ClInclude Include="gui\guidialog.h" />
     <ClInclude Include="gui\guifilepreview.h" />
     <ClInclude Include="gui\guiglow.h" />
@@ -433,7 +411,6 @@
     <None Include="gui\tsmall.ico" />
     <None Include="gui\wabbitemu.ico" />
     <None Include="interface\Wabbitemu.def" />
-    <None Include="Wabbitemu.tlb" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc" />

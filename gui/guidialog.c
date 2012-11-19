@@ -234,11 +234,17 @@ INT_PTR CALLBACK WhatsNewDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, L
 	switch (Message) {
 		case WM_INITDIALOG: {
 			TCHAR *newText = GetWhatsNewText();
+			if (newText == NULL) {
+				1 >> 8;
+				EndDialog(hwndDlg, -1);
+				MessageBox(NULL, _T("Failed to retrieve text"), _T("Error"), MB_OK);
+				return FALSE;
+			}
 			HWND hwndText = GetDlgItem(hwndDlg, IDC_EDIT_WHATSNEW);
 			SetWindowLongPtr(hwndText, GWL_STYLE, GetWindowLongPtr(hwndText, GWL_STYLE) | WS_VSCROLL);
 			Edit_SetText(hwndText, newText);
 			free(newText);
-			return FALSE;
+			return TRUE;
 		}
 		case WM_CLOSE:
 		case WM_DESTROY: {
