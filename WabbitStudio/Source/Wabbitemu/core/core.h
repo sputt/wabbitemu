@@ -163,9 +163,11 @@ typedef struct memory_context {
 	int flash_pages;
 	int ram_size;
 	int ram_pages;
-	int step;					// These 3 are for flash programming
+	int step;					// These 4 are for flash programming
 	unsigned char cmd;			// step tells what cycle of the command you are on,
-	BOOL flash_sector_erase;	// whether flash is in the middle of erasing
+	uint64_t flash_last_write;	// last time flash was written to
+	uint64_t flash_write_delay;	// number of tstates to delay before allowing flash read/write
+	BOOL flash_locked;			//Whether flash is writeable or not.
 
 	bank_state_t *banks;		//pointer to the correct bank state currently
 	bank_state_t normal_banks[5];		//Current state of each bank
@@ -173,7 +175,6 @@ typedef struct memory_context {
 	bank_state_t bootmap_banks[5];			//used to hold a backup of the banks when this is boot mapped
 	BOOL boot_mapped;			//Special mapping used in boot that changes how paging works
 	BOOL hasChangedPage0;		//Check if bootcode is still mapped to page 0 or not
-	BOOL flash_locked;			//Whether flash is writeable or not.
 	int protected_page_set;		//Special for the 83p, used to determine which group of pages you are referring to
 	int protected_page[4];		//Special for the 83p, used to determine which page of a set to protect
 	RAM_PROT_MODE prot_mode;
@@ -266,7 +267,7 @@ typedef struct CPU {
 	regpair(ixh, ixl, ix);
 	regpair(iyh, iyl, iy);
 	unsigned short pc, sp;
-	unsigned char i, r, bus;
+	unsigned char i, r, bus, link_write;
 	int imode;
 	BOOL interrupt;
 	BOOL ei_block;

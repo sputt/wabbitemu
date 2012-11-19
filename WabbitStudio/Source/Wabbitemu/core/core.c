@@ -181,6 +181,7 @@ int CPU_init(CPU_t *cpu, memc *mem_c, timerc *timer_c) {
 	cpu->timer_c = timer_c;
 	mem_c->port27_remap_count = 0;
 	mem_c->port28_remap_count = 0;
+	mem_c->flash_write_delay = 200;
 	cpu->exe_violation_callback = mem_debug_callback;
 #ifdef WITH_REVERSE
 	cpu->prev_instruction = cpu->prev_instruction_list;
@@ -341,8 +342,6 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 	if (cpu->mem_c->banks[mc_bank(addr)].ram) {
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_NOP_ram_tstates);
 	} else {
-		/*if (cpu->mem_c->step > 4) cpu->bus = 0xFF; // Flash status read, apparently
-		else cpu->mem_c->step = 0;*/				// calc84: says this is better
 		if (cpu->mem_c->cmd == 0x90 && cpu->mem_c->step == 3) {
 			if ((addr & 0x3FFF) == 0) {
 				//1 indicates an AMD chip
@@ -371,7 +370,9 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 			}
 			cpu->mem_c->cmd = 0;
 			cpu->mem_c->step = 0;
-		}
+		} /*else if (cpu->mem_c->flash_last_write + cpu->mem_c->flash_write_delay > cpu->timer_c->tstates) {
+			cpu->bus = 0;
+		}*/
 
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_NOP_flash_tstates);
 	}
@@ -381,6 +382,10 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 
 static void flashwrite(CPU_t *cpu, unsigned short addr, unsigned char data) {
 	int bank = mc_bank(addr);
+	/*if (cpu->mem_c->flash_last_write + cpu->mem_c->flash_write_delay > cpu->timer_c->tstates) {
+		return;
+	}*/
+
 	switch(cpu->mem_c->step) {
 		case 0:
 			if (data == 0xF0) {
@@ -427,13 +432,15 @@ static void flashwrite(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				endflash_break(cpu);
 			}
 			break;
+		//PROGRAM
 		case 3: {
 			int value = 0;
 			if (cpu->mem_c->cmd == 0xA0) {
 				value = *(cpu->mem_c->banks[bank].addr + mc_base(addr));
 				(*(cpu->mem_c->banks[bank].addr + mc_base(addr))) &= data;  //AND LOGIC!!
+				cpu->mem_c->flash_last_write = cpu->timer_c->tstates;
 				if ((~((~value) | (~data))) != value) {
-					value = (~value) & 0x80 | 0x20;
+					value = ((~value) & 0x80) | 0x20;
 				}
 				endflash(cpu);
 			}
@@ -460,6 +467,7 @@ static void flashwrite(CPU_t *cpu, unsigned short addr, unsigned char data) {
 				endflash(cpu);
 			}
 			break;
+		//ERASE
 		case 5:
 			if ((addr & 0x0FFF) == 0x0AAA) {
 				if (data == 0x10) {			//Erase entire chip...Im not sure if 
@@ -509,6 +517,7 @@ static void flashwrite(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			}
 			endflash(cpu);
 			break;
+		//FASTMODE
 		case 6:
 			if (data == 0x90) {
 				cpu->mem_c->step = 7;	//check if exit fast mode
@@ -529,7 +538,7 @@ static void flashwrite(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			int value = *(cpu->mem_c->banks[bank].addr + mc_base(addr));
 			(*(cpu->mem_c->banks[bank].addr + mc_base(addr))) &= data;  //AND LOGIC!!
 			if ((~((~value) | (~data))) != value) {
-				cpu->bus = (~value) & 0x80 | 0x20;
+				cpu->bus = ((~value) & 0x80) | 0x20;
 			}
 			cpu->mem_c->step = 6;
 			break;
@@ -802,7 +811,16 @@ int CPU_step(CPU_t* cpu) {
 
 	handle_pio(cpu);
 
-	if (cpu->interrupt && !cpu->ei_block) handle_interrupt(cpu);
+	if (cpu->interrupt && !cpu->ei_block) {
+		//if an interrupt is generated during a ld a, r or ld a, i
+		//then the PV flag should be reset
+		u_char edprefix = mem_read(cpu->mem_c, cpu->pc - 2);
+		u_char instruction = mem_read(cpu->mem_c, cpu->pc - 1);
+		if (edprefix == 0xED && (instruction == 0x57 || instruction == 0x5F)) {
+			cpu->f &= ~PV_MASK;
+		}
+		handle_interrupt(cpu);
+	}
 	return 0;
 }
 
@@ -811,31 +829,3 @@ CPU_t* CPU_clone(CPU_t *cpu) {
 	memcpy(new_cpu, cpu, sizeof(CPU_t));
 	return new_cpu;
 }
-
-#ifndef MACVER
-#ifdef DEBUG
-void displayreg(CPU_t *cpu) {
-	puts("");
-	printf("AF %0.4X\tAF' %0.4X\n", cpu->af, cpu->afp);
-	printf("BC %0.4X\tBC' %0.4X\n", cpu->bc, cpu->bcp);
-	printf("DE %0.4X\tDE' %0.4X\n", cpu->de, cpu->dep);
-	printf("HL %0.4X\tHL' %0.4X\n", cpu->hl, cpu->hlp);
-	printf("IX %0.4X\tIY  %0.4X\n", cpu->ix, cpu->iy);
-	printf("PC %0.4X\tSP  %0.4X\n", cpu->pc, cpu->sp);
-
-	printf("(BC) %0.4X\t(BC') %0.4X\n", read2bytes(cpu->mem_c,cpu->bc), read2bytes(cpu->mem_c,cpu->bcp));
-	printf("(DE) %0.4X\t(DE') %0.4X\n", read2bytes(cpu->mem_c,cpu->de), read2bytes(cpu->mem_c,cpu->dep));
-	printf("(HL) %0.4X\t(HL') %0.4X\n", read2bytes(cpu->mem_c,cpu->hl), read2bytes(cpu->mem_c,cpu->hlp));
-	printf("(IX) %0.4X\t(IY)  %0.4X\n", read2bytes(cpu->mem_c,cpu->ix), read2bytes(cpu->mem_c,cpu->iy));
-	printf("(PC) %0.4X\t(SP)  %0.4X\n", read2bytes(cpu->mem_c,cpu->pc), read2bytes(cpu->mem_c,cpu->sp));
-
-	printf("I  %0.2X\tR  %0.2X\n", cpu->i, cpu->r);
-	printf("Bus %0.2X\tim %d\n", cpu->bus,cpu->imode);
-	printf("iff1: %d\tiff2: %d\n",cpu->iff1,cpu->iff2);
-	printf("halt: %d\tinter: %d\n",cpu->halt,cpu->interrupt);
-	printf("Tstates = %ld\n",tc_tstates(cpu->timer_c));
-	printf("Seconds = %Lf\n",tc_elapsed(cpu->timer_c));
-	puts("");
-}
-#endif
-#endif

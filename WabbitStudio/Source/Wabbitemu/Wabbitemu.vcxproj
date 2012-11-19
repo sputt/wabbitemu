@@ -245,7 +245,6 @@
     <ClCompile Include="utilities\zpipe.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="core89\core89.h" />
     <ClInclude Include="core\alu.h" />
     <ClInclude Include="core\alu_reverse.h" />
     <ClInclude Include="core\control.h" />
