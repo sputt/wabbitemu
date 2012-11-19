@@ -146,19 +146,22 @@ BOOL IsJustUpgraded() {
 TCHAR *GetWhatsNewText() {
 #define WHATSNEWBUFFERSIZE 32768
 	TCHAR *whatsNewText = (TCHAR *) malloc(sizeof(TCHAR) * WHATSNEWBUFFERSIZE);
+	if (!whatsNewText) {
+		return NULL;
+	}
 	ZeroMemory(whatsNewText, WHATSNEWBUFFERSIZE * sizeof(TCHAR));
 	HINTERNET hInternet = InternetOpen(_T("Wabbitemu"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 	if (hInternet == NULL) {
-		return FALSE;
+		return NULL;
 	}
 	HINTERNET hOpenUrl = InternetOpenUrl(hInternet, g_szWhatsNewFile, NULL, 0, INTERNET_FLAG_RELOAD, NULL);
 	if (hOpenUrl == NULL) {
-		return FALSE;
+		return NULL;
 	}
 	DWORD bytesRead;
 	BOOL succeeded = InternetReadFile(hOpenUrl, whatsNewText, WHATSNEWBUFFERSIZE, &bytesRead);
 	if (!succeeded) {
-		return FALSE;
+		return NULL;
 	}
 	InternetCloseHandle(hInternet);
 	return whatsNewText;

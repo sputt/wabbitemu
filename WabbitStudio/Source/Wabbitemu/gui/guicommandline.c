@@ -1,5 +1,5 @@
 #include "guicommandline.h"
-
+#include <direct.h>
 #include "calc.h"
 #include "sendfileswindows.h"
 
