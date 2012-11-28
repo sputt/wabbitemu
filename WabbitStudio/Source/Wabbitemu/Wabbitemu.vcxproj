@@ -101,6 +101,7 @@
     <ClCompile Include="gui\guilcd.c" />
     <ClCompile Include="gui\guiopenfile.c" />
     <ClCompile Include="gui\guioptions.c" />
+    <ClCompile Include="GUI\guiresource.c" />
     <ClCompile Include="gui\guisavestate.c" />
     <ClCompile Include="GUI\guiskin.c" />
     <ClCompile Include="gui\guispeed.c" />
@@ -243,8 +244,24 @@
     </ClCompile>
     <ClCompile Include="utilities\zpipe.c" />
     <ClCompile Include="Wabbitemu_i.c">
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release DLL|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='WabbitComp Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug DLL|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='WabbitComp Debug|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|Win32'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release DLL|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='WabbitComp Release|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='WabbitComp Debug|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsC</CompileAs>
+      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">CompileAsC</CompileAs>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -291,6 +308,7 @@
     <ClInclude Include="gui\guilcd.h" />
     <ClInclude Include="gui\guiopenfile.h" />
     <ClInclude Include="gui\guioptions.h" />
+    <ClInclude Include="GUI\guiresource.h" />
     <ClInclude Include="gui\guisavestate.h" />
     <ClInclude Include="GUI\guiskin.h" />
     <ClInclude Include="gui\guispeed.h" />
@@ -299,6 +317,7 @@
     <ClInclude Include="gui\guiwizard.h" />
     <ClInclude Include="gui\linksprites.h" />
     <ClInclude Include="gui\map.h" />
+    <ClInclude Include="GUI\osdownloadcallback.h" />
     <ClInclude Include="gui\registry.h" />
     <ClInclude Include="gui\resource.h" />
     <ClInclude Include="Hardware\81hw.h" />
@@ -414,6 +433,7 @@
     <None Include="gui\wabbitemu.ico" />
     <None Include="interface\Wabbitemu.def" />
     <None Include="Wabbitemu.rgs" />
+    <None Include="Wabbitemu.tlb" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">
@@ -448,7 +468,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
     <UseOfAtl>Static</UseOfAtl>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -462,7 +482,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
     <UseOfAtl>Static</UseOfAtl>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v100</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug DLL|x64'" Label="Configuration">

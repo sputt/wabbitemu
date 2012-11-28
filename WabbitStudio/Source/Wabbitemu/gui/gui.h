@@ -62,7 +62,6 @@ void GetFileCurrentVersionString(TCHAR *buf, size_t len);
 extern HACCEL haccelmain;
 
 void RegisterWindowClasses(void);
-TCHAR *GetWhatsNewText();
 VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer);
 
 class CWabbitemuModule : public CAtlExeModuleT< CWabbitemuModule >

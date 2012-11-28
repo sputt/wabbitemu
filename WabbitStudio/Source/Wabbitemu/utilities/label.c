@@ -75,9 +75,9 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 	FILE *labelFile = NULL;
 	int i, length;
 #ifdef _UNICODE
-	char readBuf[256];
+	char readBuf[1024];
 #endif
-	TCHAR buffer[256];
+	TCHAR buffer[1024];
 	TCHAR name[256];
 #ifdef _WINDOWS
 	TCHAR *fileName = ((TCHAR *) lpszFileName) + _tcslen(lpszFileName);
@@ -117,7 +117,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 		i = 0;
 		if (buffer[0] != ';')
 #ifdef _WINDOWS
-			i = _stscanf_s(buffer, _T("%s = $%X"), name, &equate);
+			i = _stscanf(buffer, _T("%s = $%X"), name, &equate);
 #else
 			i = sscanf(buffer, "%s = $%X", name, &equate);
 #endif

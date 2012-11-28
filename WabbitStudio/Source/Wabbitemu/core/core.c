@@ -313,7 +313,7 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 		cpu->mem_c->hasChangedPage0 = TRUE;
 	}
 	if (!is_allowed_exec(cpu)) {
-		if (break_on_exe_violation) {
+		if (break_on_exe_violation && cpu->exe_violation_callback) {
 			cpu->exe_violation_callback(cpu);
 		} else {
 			CPU_reset(cpu);

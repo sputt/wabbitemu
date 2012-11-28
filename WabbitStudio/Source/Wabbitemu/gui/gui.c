@@ -41,6 +41,7 @@
 #include "guiwizard.h"
 #include "guidialog.h"
 #include "guicommandline.h"
+#include "guiupdate.h"
 
 #include "guidebug.h"
 #include "DropTarget.h"
@@ -220,6 +221,15 @@ int gui_frame(LPCALC lpCalc) {
 	HDC hdc = GetDC(lpCalc->hwndFrame);
 	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
 	lpCalc->breakpoint_callback = gui_debug;
+
+extern keyprog_t keygrps[256];
+extern keyprog_t keysti83[256];
+extern keyprog_t keysti86[256];
+	if (lpCalc->model == TI_86 || lpCalc->model == TI_85) {
+		memcpy(keygrps, keysti86, sizeof(keyprog_t) * 256);
+	} else {
+		memcpy(keygrps, keysti83, sizeof(keyprog_t) * 256);
+	}
 
 	//this is now (intuitively) created in guicutout.c (Enable/Disable cutout function)
 	/*lpCalc->hwndLCD = CreateWindowEx(

@@ -117,7 +117,7 @@ typedef struct tagCALC {
 
 	gif_disp_states gif_disp_state;
 
-#ifdef WINVER
+#ifdef _WINDOWS
 	RECT rectSkin;
 	RECT rectLCD;
 	COLORREF FaceplateColor;

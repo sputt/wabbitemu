@@ -11,7 +11,7 @@ extern keyprog_t keysti86[256];
 extern keyprog_t keysti83[256];
 extern keyprog_t defaultkeysti86[256];
 extern keyprog_t defaultkeysti83[256];
-TCHAR *verString = _T("1.6.11.1");
+TCHAR *verString = _T("1.6.11.28");
 
 static HKEY hkeyTarget;
 
@@ -53,7 +53,7 @@ static struct {
 	{_T("ram_version"),				REG_DWORD,  0},
 	{_T("lcd_delay"),				REG_DWORD,	60},
 	{_T("check_updates"),			REG_DWORD,	TRUE},
-	{_T("show_whats_new"),			REG_DWORD,	TRUE},
+	{_T("show_whats_new"),			REG_DWORD,	FALSE},
 	//Debugger stuff
 	{_T("CPU Status"),				REG_DWORD,	0},
 	{_T("Disp Type"),				REG_DWORD,	0},

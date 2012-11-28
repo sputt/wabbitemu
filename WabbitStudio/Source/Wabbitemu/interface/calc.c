@@ -387,16 +387,6 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 	}
 	if (lpCalc != NULL) {
 		lpCalc->cpu.pio.model = lpCalc->model;
-#ifdef WINVER
-extern keyprog_t keygrps[256];
-extern keyprog_t keysti83[256];
-extern keyprog_t keysti86[256];
-		if (lpCalc->model == TI_86 || lpCalc->model == TI_85) {
-			memcpy(keygrps, keysti86, sizeof(keyprog_t) * 256);
-		} else {
-			memcpy(keygrps, keysti83, sizeof(keyprog_t) * 256);
-		}
-#endif
 		if (lpCalc->model >= TI_73) {
 			check_bootfree_and_update(lpCalc);
 		}

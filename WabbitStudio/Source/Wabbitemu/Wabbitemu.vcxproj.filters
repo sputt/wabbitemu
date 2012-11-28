@@ -64,9 +64,6 @@
     <Filter Include="Header Files\Utilities\Compression">
       <UniqueIdentifier>{c2752ed9-7077-4179-8cc7-e8f71f20a10a}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Core89">
-      <UniqueIdentifier>{ce12f3b7-1176-4204-9455-a1677bfd39c2}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\GUI\Drag and Drop">
       <UniqueIdentifier>{975a3caf-a5f8-4c8e-adc6-52ff3bb9fb58}</UniqueIdentifier>
     </Filter>
@@ -341,6 +338,9 @@
     </ClCompile>
     <ClCompile Include="Wabbitemu_i.c">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="GUI\guiresource.c">
+      <Filter>Source Files\GUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -650,6 +650,12 @@
     <ClInclude Include="gui\guidetached.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
+    <ClInclude Include="GUI\guiresource.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\osdownloadcallback.h">
+      <Filter>Header Files\GUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\small_close.bmp">
@@ -838,6 +844,7 @@
     <None Include="Wabbitemu.rgs">
       <Filter>Source Files\Interface\COM</Filter>
     </None>
+    <None Include="Wabbitemu.tlb" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">
