@@ -599,7 +599,14 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		case WM_COMMAND: {
 			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			switch (LOWORD(wParam)) {
-			case IDM_DEBUG_EXIT:
+			case IDM_FILE_RESET: {
+				LPCALC lpCalc = lpDebugInfo->lpCalc;
+				calc_reset(lpCalc);
+				DisasmGotoAddress(lpDebugInfo->hdisasmlist[TabCtrl_GetCurSel(lpDebugInfo->hdisasm)], 0);
+				Debug_UpdateWindow(hwnd);
+				break;
+			}
+			case IDM_FILE_EXIT:
 				DestroyWindow(hwnd);
 				break;
 			case IDM_TOOLS_COUNT: {

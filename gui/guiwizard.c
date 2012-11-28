@@ -1,12 +1,14 @@
 #include "stdafx.h"
 
 #include "guiwizard.h"
+#include "guiresource.h"
 #include "guioptions.h"
 #include "gui.h"
 #include "fileutilities.h"
 #include "registry.h"
 #include "resource.h"
 #include "exportvar.h"
+#include "osdownloadcallback.h"
 
 #ifdef WITH_TILP
 #include <libti\ticables.h>
@@ -16,7 +18,7 @@
 
 INT_PTR CALLBACK HelpProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
-static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version);
+static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version);
 
 extern HINSTANCE g_hInst;
 static HWND hwndWiz = NULL;
@@ -106,7 +108,7 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 }
 
 INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static BOOL inited = FALSE;
+	static BOOL inited;
 	static HWND hBootFree, hDumpRom, hOwnRom, hInfoText, hEditRom;
 	switch (Message) {
 		case WM_INITDIALOG: {
@@ -116,6 +118,7 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 			hInfoText = GetDlgItem(hwnd, IDC_INFO_TEXT);
 			hEditRom = GetDlgItem(hwnd, IDC_EDT_ROM);
 			Button_SetCheck(hOwnRom, BST_CHECKED);
+			inited = FALSE;
 			return FALSE;
 		}
 		case WM_COMMAND: {
@@ -169,7 +172,7 @@ INT_PTR CALLBACK SetupStartProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM l
 					if (inited)
 						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_NEXT);
 					else {
-						PropSheet_SetWizButtons(GetParent(hwnd), 0);
+						PropSheet_SetWizButtons(GetParent(hwnd), PSWIZB_DISABLEDFINISH);
 						inited = TRUE;
 					}
 					break;
@@ -348,15 +351,28 @@ void ExtractBootFree(int model, TCHAR *hexFile) {
 	ExtractResource(hexFile, resource);
 }
 
+static HWND hOSStaticProgress, hOSProgressBar;
+HRESULT OSDownloadCallback::OnProgress(ULONG ulProgress, ULONG ulProgressMax, ULONG ulStatusCode, LPCWSTR wszStatusText) {
+	if (ulProgressMax != 0) {
+		SendMessage(hOSProgressBar, PBM_SETRANGE32, 0, ulProgressMax);
+		SendMessage(hOSProgressBar, PBM_SETPOS, ulProgress, 0);
+		InvalidateRect(GetParent(hOSProgressBar), NULL, FALSE);
+		UpdateWindow(GetParent(hOSProgressBar));
+	}
+	return S_OK;
+}
+
 INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND hComboOS, hBrowseOS, hEditOSPath, hStaticProgress, hProgressBar, hRadioBrowse, hRadioDownload;
+	static HWND hComboOS, hBrowseOS, hEditOSPath, hRadioBrowse, hRadioDownload;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			hComboOS = GetDlgItem(hwnd, IDC_COMBO_OS);
 			hBrowseOS = GetDlgItem(hwnd, IDC_BROWSE_OS);
 			hEditOSPath = GetDlgItem(hwnd, IDC_EDIT_OS_PATH);
-			hStaticProgress = GetDlgItem(hwnd, IDC_STATIC_PROGRESS);
-			hProgressBar = GetDlgItem(hwnd, IDC_PROGRESS);
+			hOSStaticProgress = GetDlgItem(hwnd, IDC_STATIC_OSPROGRESS);
+			ShowWindow(hOSStaticProgress, SW_HIDE);
+			hOSProgressBar = GetDlgItem(hwnd, IDC_OSPROGRESS);
+			ShowWindow(hOSProgressBar, SW_HIDE);
 			hRadioBrowse = GetDlgItem(hwnd, IDC_RADIO_BROWSE_OS);
 			hRadioDownload = GetDlgItem(hwnd, IDC_RADIO_DOWNLOAD_OS);
 			ComboBox_ResetContent(hComboOS);
@@ -464,24 +480,40 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					}
 					break;
 				}
+				case PSN_WIZBACK: {
+					SendMessage(hOSProgressBar, PBM_SETPOS, 0, 0);
+					ShowWindow(hOSStaticProgress, SW_HIDE);
+					ShowWindow(hOSProgressBar, SW_HIDE);
+					break;
+				}
 				case PSN_WIZNEXT: {
+					OSDownloadCallback callback;
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
-						Static_SetText(hStaticProgress, _T("Downloading OS..."));
-						BOOL succeeded = DownloadOS(_T(""), ComboBox_GetCurSel(hComboOS) == 0);
+						ShowWindow(hOSStaticProgress, SW_SHOW);
+						ShowWindow(hOSProgressBar, SW_SHOW);
+						Static_SetText(hOSStaticProgress, _T("Downloading OS..."));
+						BOOL succeeded = DownloadOS(&callback, ComboBox_GetCurSel(hComboOS) == 0);
 						if (!succeeded) {
 							MessageBox(hwnd, _T("Unable to download file"), _T("Download failed"), MB_OK);
 						}
 					} else {
 						Edit_GetText(hEditOSPath, osPath, MAX_PATH);
 					}
+					SendMessage(hOSProgressBar, PBM_SETPOS, 0, 0);
+					ShowWindow(hOSStaticProgress, SW_HIDE);
+					ShowWindow(hOSProgressBar, SW_HIDE);
 					break;
 				}
 				case PSN_WIZFINISH: {
+					OSDownloadCallback callback;
 					TCHAR buffer[MAX_PATH];
 					SaveFile(buffer, _T("ROMs  (*.rom)\0*.rom\0Bins  (*.bin)\0*.bin\0All Files (*.*)\0*.*\0\0"),
 								_T("Wabbitemu Export Rom"), _T("rom"), OFN_PATHMUSTEXIST);
 					if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
-						BOOL succeeded = DownloadOS(_T(""), ComboBox_GetCurSel(hComboOS) == 0);
+						ShowWindow(hOSStaticProgress, SW_SHOW);
+						ShowWindow(hOSProgressBar, SW_SHOW);
+						Static_SetText(hOSStaticProgress, _T("Downloading OS..."));
+						BOOL succeeded = DownloadOS(&callback, ComboBox_GetCurSel(hComboOS) == 0);
 						if (!succeeded) {
 							MessageBox(hwnd, _T("Unable to download file"), _T("Download failed"), MB_OK);
 						}
@@ -500,11 +532,13 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					lpCalc->active = TRUE;
 					lpCalc->model = model;
 					lpCalc->cpu.pio.model = model;
+					Static_SetText(hOSStaticProgress, _T("Writing Bootcode"));
 					FILE *file;
 					_tfopen_s(&file, hexFile, _T("rb"));
 					writeboot(file, &lpCalc->mem_c, -1);
 					fclose(file);
 					_tremove(hexFile);
+					Static_SetText(hOSStaticProgress, _T("Loading OS"));
 					//if you don't want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
 						TIFILE_t *tifile = importvar(osPath, FALSE);
@@ -522,8 +556,10 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					//calc_turn_on(lpCalc);
 					gui_frame(lpCalc);
 					//write the output from file
+					Static_SetText(hOSStaticProgress, _T("Saving File"));
 					MFILE *romfile = ExportRom(buffer, lpCalc);
 					mclose(romfile);
+					Static_SetText(hOSStaticProgress, _T("Done"));
 					break;
 				}
 				case PSN_QUERYCANCEL:
@@ -538,7 +574,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 	return FALSE;
 }
 
-static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version)
+static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version)
 {
 	TCHAR downloaded_file[MAX_PATH];
 	GetAppDataString(downloaded_file, sizeof(downloaded_file));
@@ -561,7 +597,7 @@ static BOOL DownloadOS(LPCTSTR lpszPath, BOOL version)
 				url = _T("http://education.ti.com/downloads/files/83plus/TI84Plus_OS.8Xu");
 			break;
 	}
-	HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, NULL);
+	HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, callback);
 	return SUCCEEDED(hr);
 }
 
@@ -1004,17 +1040,6 @@ void ExtractDumperProg() {
 			break;
 	}
 	ExtractResource(dumperPath, hrDumpProg);
-}
-
-void ExtractResource(TCHAR *path, HRSRC resource) {
-	HMODULE hModule = GetModuleHandle(NULL);
-	HGLOBAL hGlobal = LoadResource(hModule, resource);
-	DWORD size = SizeofResource(hModule, resource);
-	void *data = LockResource(hGlobal);
-	HANDLE hFile = CreateFile(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-	DWORD writtenBytes;
-	WriteFile(hFile, data, size, &writtenBytes, NULL);
-	CloseHandle(hFile);
 }
 
 /*

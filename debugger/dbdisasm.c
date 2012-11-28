@@ -381,13 +381,24 @@ void DrawItemSelection(HDC hdc, RECT *r, BOOL active, COLORREF breakpoint, int o
 
 }
 
+static BOOL had_exe_violation = FALSE;
+void stepoverout_exe_callback(void *arg1) {
+	had_exe_violation = TRUE;
+}
+
 void CPU_stepout(LPCALC lpCalc) {
 	CPU_t *cpu = &lpCalc->cpu;
 	uint64_t time = tc_tstates(cpu->timer_c);
 	uint16_t old_sp = cpu->sp;
 
+	had_exe_violation = FALSE;
+	BOOL backup_exe_violation = break_on_exe_violation;
+	break_on_exe_violation = TRUE;
+	void (*backupFunction)(void *) = cpu->exe_violation_callback;
+	cpu->exe_violation_callback = stepoverout_exe_callback;
+
 	uint64_t tstates15seconds = 15 * cpu->timer_c->freq;
-	while ((tc_tstates(cpu->timer_c) - time) < tstates15seconds) {
+	while ((tc_tstates(cpu->timer_c) - time) < tstates15seconds && !had_exe_violation) {
 		waddr_t old_pc = addr_to_waddr(cpu->mem_c, cpu->pc);
 		CPU_step(cpu);
 
@@ -405,6 +416,8 @@ void CPU_stepout(LPCALC lpCalc) {
 
 		}
 	}
+	cpu->exe_violation_callback = backupFunction;
+	break_on_exe_violation = backup_exe_violation;
 }
 
 /*
@@ -417,6 +430,12 @@ void CPU_stepover(LPCALC lpCalc) {
 	CPU_t *cpu = &lpCalc->cpu;
 	double time = tc_elapsed(cpu->timer_c);
 	Z80_info_t zinflocal;
+
+	had_exe_violation = FALSE;
+	BOOL backup_exe_violation = break_on_exe_violation;
+	break_on_exe_violation = TRUE;
+	void (*backupFunction)(void *) = cpu->exe_violation_callback;
+	cpu->exe_violation_callback = stepoverout_exe_callback;
 
 	disassemble(lpCalc, REGULAR, addr_to_waddr(cpu->mem_c, cpu->pc), 1, &zinflocal);
 
@@ -434,7 +453,7 @@ void CPU_stepover(LPCALC lpCalc) {
 		if (cpu->sp != old_stack) {
 			double time = tc_elapsed(cpu->timer_c);
 			uint16_t old_sp = cpu->sp;
-			while ((tc_elapsed(cpu->timer_c) - time) < 15.0) {
+			while ((tc_elapsed(cpu->timer_c) - time) < 15.0 && !had_exe_violation) {
 				uint16_t old_pc = cpu->pc;
 				CPU_step(cpu);
 
@@ -464,6 +483,9 @@ void CPU_stepover(LPCALC lpCalc) {
 
 		CPU_step(cpu);
 	}
+
+	cpu->exe_violation_callback = backupFunction;
+	break_on_exe_violation = backup_exe_violation;
 }
 
 

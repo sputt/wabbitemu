@@ -1,8 +1,7 @@
-#ifndef _STDAFX_H
-#define _STDAFX_H
+#pragma once
 
 #if defined(_WINDOWS)
-#pragma once
+
 
 #define _WIN32_LEAN_AND_MEAN
 
@@ -148,7 +147,5 @@ typedef signed char BOOL;
 #define _tcscpy_s strcpy
 #define _tcslen strlen
 #define _tcscmp strcmp
-
-#endif
 
 #endif

@@ -6,6 +6,7 @@
 #include "resource.h"
 #include "exportvar.h"
 #include "ftp.h"
+#include "guiupdate.h"
 
 INT_PTR CALLBACK AboutDialogProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPARAM lParam) {
 	switch (Message) {

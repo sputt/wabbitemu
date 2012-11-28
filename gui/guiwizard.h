@@ -12,7 +12,6 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND, UINT, WPARAM, LPARAM);
 BOOL DoWizardSheet(HWND);
 int BrowseOSFile(TCHAR *);
 void ExtractDumperProg();
-void ExtractResource(TCHAR *, HRSRC);
 void ExtractBootFree(int, TCHAR *);
 
 #endif

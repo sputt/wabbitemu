@@ -126,7 +126,7 @@ symlist_t* state_build_symlist_83P(CPU_t *cpu, symlist_t *symlist) {
 
 	symbol83P_t *sym;
 	// Loop through while stp is still in the symbol table
-	for (sym = symlist->symbols; stp > end; sym++) {
+	for (sym = symlist->symbols; stp > end && stp > 0xC000; sym++) {
 		
 		sym->type_ID		= mem_read(mem, stp--) & 0x1F;
 		sym->type_ID2		= mem_read(mem, stp--);
