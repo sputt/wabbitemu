@@ -19,6 +19,10 @@ LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARA
 					int output;
 					GetDlgItemText(hwnd, IDC_BLOCK_EDT, string, 8);
 					output = _tstoi(string);
+					if (output < MIN_BLOCK_SIZE) {
+						MessageBox(hwnd, _T("Block size must be at least 16 bytes"), _T("Error"), MB_OK);
+						break;
+					}
 					lpCalc->profiler.blockSize = output;
 					EndDialog(hwnd, IDOK);
 					break;
