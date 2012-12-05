@@ -224,6 +224,8 @@ GLOBAL BOOL sync_cores;
 GLOBAL link_t *link_hub[MAX_CALCS + 1];
 GLOBAL int link_hub_count;
 GLOBAL int calc_waiting_link;
+GLOBAL BOOL portable_mode;
+GLOBAL TCHAR portSettingsPath[MAX_PATH];
 
 
 GLOBAL const TCHAR *CalcModelTxt[]

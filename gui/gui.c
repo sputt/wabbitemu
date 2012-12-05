@@ -479,6 +479,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	SetUnhandledExceptionFilter(ExceptionFilter);
 #endif
 
+	CheckSetIsPortableMode();
 	ParsedCmdArgs *parsedArgs = ParseCommandLineArgs();
 	//this is here so we get our load_files_first setting
 	new_calc_on_load_files = QueryWabbitKey(_T("load_files_first")) || parsedArgs->force_new_instance;
@@ -805,8 +806,14 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case IDM_FILE_GIF: {
 					HMENU hmenu = GetMenu(hwnd);
+					static BOOL calcBackupRunning[MAX_CALCS];
 					if (gif_write_state == GIF_IDLE) {
-						lpCalc->running = FALSE;
+						int i;
+						for (i = 0; i < MAX_CALCS; i++) {
+							if (calcs[i].active == TRUE) {
+								calcBackupRunning[i] = calcs[i].running;
+							}
+						}
 						BOOL start_screenshot = get_gif_filename();
 						if (!start_screenshot) {
 							lpCalc->running = TRUE;
@@ -828,10 +835,18 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							}
 						}
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_GIF, MF_BYCOMMAND | MF_UNCHECKED);
+
+						int i;
+						for (i = 0; i < MAX_CALCS; i++) {
+							if (calcs[i].active == TRUE) {
+								calcs[i].running = calcBackupRunning[i];
+							}
+						}
 					}
 					break;
 				}
 				case IDM_FILE_STILLGIF: {
+					lpCalc->running = FALSE;
 					BOOL start_screenshot = get_gif_filename();
 					if (start_screenshot) {
 						LCD_t *lcd = lpCalc->cpu.pio.lcd;
@@ -851,6 +866,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						gif_write_state = GIF_END;
 						gif_writer(lcd->shades);
 					}
+					lpCalc->running = TRUE;
 					break;
 				}
 				case IDM_FILE_AVI: {
@@ -863,6 +879,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						is_recording = FALSE;
 						CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_AVI, MF_BYCOMMAND | MF_UNCHECKED);
 					} else {
+						lpCalc->running = FALSE;
 						TCHAR lpszFile[MAX_PATH];
 						if (!SaveFile(lpszFile, _T("AVIs (*.avi)\0*.avi\0All Files (*.*)\0*.*\0\0"),
 											_T("Wabbitemu Export AVI"), _T("avi"), OFN_PATHMUSTEXIST)) {
@@ -874,6 +891,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 							is_recording = TRUE;
 							CheckMenuItem(GetSubMenu(hmenu, MENU_FILE), IDM_FILE_AVI, MF_BYCOMMAND | MF_CHECKED);
 						}
+						lpCalc->running = TRUE;
 					}
 #endif
 					break;
@@ -1485,12 +1503,23 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			if (calc_count() == 1) {
 				if (exit_save_state)
 				{
-					TCHAR temp_save[MAX_PATH];
-					GetAppDataString(temp_save, sizeof(temp_save));
-					StringCbCat(temp_save, sizeof(temp_save), _T("wabbitemu.sav"));
-					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), temp_save);
+					TCHAR tempSave[MAX_PATH] = {0};
+					if (portable_mode) {
+						StringCbCopy(tempSave, sizeof(tempSave), portSettingsPath);
+						for (u_int i = strlen(portSettingsPath) - 1; i >= 0; i--) {
+							if (tempSave[i] == '\\') {
+								tempSave[i] = '\0';
+								break;
+							}
+							tempSave[i] = '\0';
+						}
+					} else {
+						GetAppDataString(tempSave, sizeof(tempSave));
+					}
+					StringCbCat(tempSave, sizeof(tempSave), _T("\\wabbitemu.sav"));
+					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), tempSave);
 					SAVESTATE_t *save = SaveSlot(lpCalc);
-					WriteSave(temp_save, save, true);
+					WriteSave(tempSave, save, true);
 					FreeSave(save);
 				}
 

@@ -67,12 +67,14 @@ ParsedCmdArgs* ParseCommandLineArgs()
 					parsedArgs->force_new_instance = TRUE;
 				}
 			} else {
+#ifndef _WINDLL
 				HRESULT hr = E_FAIL;
 				bool fResult = _Module.ParseCommandLine(tmpstring, &hr);
 				if (FAILED(hr))
 				{
 					OutputDebugString(_T("Failed to register\n"));
 				}
+#endif
 			}
 		}
 	}

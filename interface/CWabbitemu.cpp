@@ -4,6 +4,7 @@
 #include "SendFileswindows.h"
 #include "CWabbitemu.h"
 #include "CPage.h"
+#include "dbdisasm.h"
 
 #define WM_ADDFRAME	(WM_USER+5)
 #define WM_REMOVEFRAME (WM_USER+6)
@@ -45,7 +46,7 @@ STDMETHODIMP CWabbitemu::Step()
 
 STDMETHODIMP CWabbitemu::StepOver()
 {
-	//CPU_stepover(&m_lpCalc->cpu);
+	CPU_stepover(m_lpCalc);
 	return E_NOTIMPL;
 }
 

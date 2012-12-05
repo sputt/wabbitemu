@@ -513,13 +513,14 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static HWND saveState_check, loadFiles_check, doBackups_check, alwaysTop_check, saveWindow_check,
 		exeViolation_check, backupTime_edit, invalidFlash_check, turnOn_check, tiosDebug_check, checkUpdates_check,
-		showWhatsNew_check;
+		showWhatsNew_check, portableMode_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
 			saveState_check = GetDlgItem(hwnd, IDC_CHK_SAVE);
 			loadFiles_check = GetDlgItem(hwnd, IDC_CHK_LOADFILES);
 			doBackups_check = GetDlgItem(hwnd, IDC_CHK_REWINDING);
 			alwaysTop_check = GetDlgItem(hwnd, IDC_CHK_ONTOP);
+			portableMode_check = GetDlgItem(hwnd, IDC_CHK_PORTABLE);
 			saveWindow_check = GetDlgItem(hwnd, IDC_CHK_SAVEWINDOW);
 			exeViolation_check = GetDlgItem(hwnd, IDC_CHK_BRK_EXE_VIOLATION);
 			backupTime_edit = GetDlgItem(hwnd, IDC_EDT_BACKUPTIME);
@@ -546,19 +547,9 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 						case IDC_CHK_AUTOON:
 						case IDC_CHK_TIOS_DEBUG:
 						case IDC_CHK_UPDATES:
+						case IDC_CHK_SHOWWHATSNEW:
+						case IDC_CHK_PORTABLE:
 							break;
-						//case IDC_BTN_SAVEREG: {
-						//	TCHAR fileBuffer[MAX_PATH];
-						//	GetCurrentDirectory(MAX_PATH, fileBuffer);
-						//	StringCbCat(fileBuffer, sizeof(fileBuffer), _T("\\regSettings.txt"));
-						//	HRESULT res = ExportRegistrySettingsFile(fileBuffer);
-						//	if (SUCCEEDED(res)) {
-						//		MessageBox(hwnd, _T("Settings exported successfully."), _T("Export"), MB_OK);
-						//	} else {
-						//		MessageBox(hwnd, _T("Error exporting settings."), _T("Export"), MB_OK);
-						//	}
-						//	return FALSE;
-						//}
 					}
 					PropSheet_Changed(GetParent(hwnd), hwnd);
 					return FALSE;
@@ -575,13 +566,12 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					break_on_exe_violation = Button_GetCheck(exeViolation_check);
 					break_on_invalid_flash = Button_GetCheck(invalidFlash_check);
 					auto_turn_on = Button_GetCheck(turnOn_check);
+					portable_mode = Button_GetCheck(portableMode_check);
 					TCHAR buf[256];
 					Edit_GetText(backupTime_edit, buf, ARRAYSIZE(buf));
 					double persec = _ttof(buf);
 					if (persec == 0.0)
 						persec = 50.0;
-					//we need to persist this immediately
-					SaveWabbitKey(_T("load_files_first"), REG_DWORD, &new_calc_on_load_files);
 #ifdef WITH_BACKUPS
 					int i;
 					num_backup_per_sec = (int) (100 / persec);
@@ -595,6 +585,13 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					lpCalc->bTIOSDebug = !Button_GetCheck(tiosDebug_check);
 					check_updates = Button_GetCheck(checkUpdates_check);
 					gui_frame_update(lpCalc);
+
+					//we need to persist this immediately
+					if (portable_mode) {
+						SaveRegistrySettings(lpCalc);
+					} else {
+						SaveWabbitKey(_T("load_files_first"), REG_DWORD, &new_calc_on_load_files);
+					}
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, PSNRET_NOERROR);
 					return TRUE;
 				}
@@ -613,6 +610,7 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			Edit_SetText(backupTime_edit, buf);
 #endif
 			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);
+			Button_SetCheck(portableMode_check, portable_mode);
 			Button_SetCheck(saveWindow_check, startX != CW_USEDEFAULT);
 			Button_SetCheck(exeViolation_check, break_on_exe_violation);
 			Button_SetCheck(invalidFlash_check, break_on_invalid_flash);

@@ -13,7 +13,7 @@ extern keyprog_t defaultkeysti86[256];
 extern keyprog_t defaultkeysti83[256];
 TCHAR *verString = _T("1.6.11.28");
 
-static HKEY hkeyTarget;
+static HKEY hkeyTarget = NULL;
 
 static struct {
 	LPCTSTR lpValueName;
@@ -77,7 +77,9 @@ static struct {
 };
 
 HRESULT LoadRegistryDefaults(HKEY hkey) {
-
+	if (portable_mode) {
+		return S_OK;
+	}
 	u_int i;
 	for (i = 0; regDefaults[i].lpValueName != NULL; i++) {
 		DWORD cbData;
@@ -146,85 +148,206 @@ LONG_PTR GetKeyData(HKEY hkeyWabbit, LPCTSTR lpszName, BOOL skip_defaults = FALS
 	return (type == REG_SZ) ? (LONG_PTR) result.szResult : result.dwResult;
 }
 
+static size_t FindSettingsKey(FILE *settingsFile, LPCTSTR lpszName) {
+	while (!feof(settingsFile)) {
+		u_int i;
+		TCHAR nameBuffer[256];
+		size_t size = 0;
+		_ftscanf(settingsFile, _T("%s | %d | "), nameBuffer, &size);
+		if (!_tcscmp(nameBuffer, lpszName)) {
+			return size;
+		}
+		if (size) {
+			for (i = 0; i < size - 1; i++) {
+				fgetc(settingsFile);
+			}
+		}
+	}
+	return 0;
+}
+
 INT_PTR QueryWabbitKey(LPCTSTR lpszName) {
-	HKEY hkeySoftware;
-	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
+	if (portable_mode) {
+		u_int i;
+		FILE *file;
+		_tfopen_s(&file, portSettingsPath, _T("rb"));
+		for (i = 0; regDefaults[i].lpValueName != NULL; i++) {
+			if (!_tcsicmp(regDefaults[i].lpValueName, lpszName))
+				break;
+		}
+		size_t size = FindSettingsKey(file, lpszName);
+		if (size || regDefaults[i].lpValueName != NULL) {
+			DWORD type;
+			DWORD len;
+			type = regDefaults[i].dwType;
 	
-	HKEY hkeyWabbit;
-	DWORD dwDisposition;
-	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0, 
-			NULL, REG_OPTION_NON_VOLATILE, 
-			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
+			static union {
+				DWORD dwResult;
+				TCHAR szResult[256];
+			} result;
+			len = (type == REG_SZ) ? 256 * sizeof(TCHAR) : sizeof(DWORD);
+
+			if (regDefaults[i].lpValueName != NULL) {
+				if (size) {
+					if (type == REG_DWORD) {
+						_ftscanf(file, _T("%d\r\n"), &result.dwResult);
+					} else {
+						fread_s(&result.szResult, 256 * sizeof(TCHAR), sizeof(TCHAR), size, file);
+						result.szResult[size] = '\0';
+					}
+				} else {
+					if (type == REG_DWORD){
+						result.dwResult = regDefaults[i].Value;
+					} else {
+						StringCchCopy(result.szResult, 256, (LPCTSTR) regDefaults[i].Value);
+					}
+				}
+			} else {
+				return NULL;
+			}
+
+				if (file) {
+					fclose(file);
+				}
+
+			return (type == REG_SZ) ? (LONG_PTR) result.szResult : result.dwResult;
+		} else {
+			return NULL;
+		}
+	} else {
+		HKEY hkeySoftware;
+		RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
 	
-	LONG_PTR result = GetKeyData(hkeyWabbit, lpszName);
+		HKEY hkeyWabbit;
+		DWORD dwDisposition;
+		RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0, 
+				NULL, REG_OPTION_NON_VOLATILE, 
+				KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
 	
-	RegCloseKey(hkeyWabbit);
-	RegCloseKey(hkeySoftware);
+		LONG_PTR result = GetKeyData(hkeyWabbit, lpszName);
 	
-	return result;
+		RegCloseKey(hkeyWabbit);
+		RegCloseKey(hkeySoftware);	
+		return result;
+	}
 }
 
 void QueryKeyMappings() {
-	HKEY hkeySoftware;
-	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
-	
-	HKEY hkeyWabbit;
-	DWORD dwDisposition;
-	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0, 
-			NULL, REG_OPTION_NON_VOLATILE, 
-			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
-	
-	int num_entries = (int) QueryWabbitKey(_T("num_accel"));
-	ACCEL buf[256];
-	DWORD dwCount = sizeof(buf);
-	LONG res = RegQueryValueEx(hkeyWabbit, _T("accelerators"), NULL, NULL, (LPBYTE) buf, &dwCount);
-	if (res == ERROR_SUCCESS) {
-		DestroyAcceleratorTable(haccelmain);
-		haccelmain = CreateAcceleratorTable(buf, num_entries);
-	}
-	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
-	RegOpenKeyEx(hkeySoftware, _T("Wabbitemu"), 0, KEY_ALL_ACCESS, &hkeyWabbit);
-	keyprog_t keys[256];
-	dwCount = sizeof(keys);
-	res = RegQueryValueEx(hkeyWabbit, _T("emu_keys"), NULL, NULL, (LPBYTE) keys, &dwCount);
-	if (res == ERROR_SUCCESS) {
-		memcpy(keysti83, keys, sizeof(keyprog_t) * 256);
+	if (portable_mode) {
+		FILE *file;
+		_tfopen_s(&file, portSettingsPath, _T("rb"));
+		if (!file) {
+			return;
+		}
+
+		size_t size = FindSettingsKey(file, _T("accelerators"));
+		int num_entries = (int) QueryWabbitKey(_T("num_accel"));
+		ACCEL buf[256];
+		if (size) {
+			char *buf_ptr = (char *) &buf;
+			for (u_int i = 0; i < size - 1; i++) {
+				*buf_ptr++ = fgetc(file);
+			}
+			DestroyAcceleratorTable(haccelmain);
+			haccelmain = CreateAcceleratorTable(buf, num_entries);
+		}
+
+		keyprog_t keys[256];
+		size = FindSettingsKey(file, _T("emu_keys"));
+		if (size) {
+			char *buf_ptr = (char *) &keys;
+			for (u_int i = 0; i < size - 1; i++) {
+				*buf_ptr++ = fgetc(file);
+			}
+			memcpy(keysti83, keys, sizeof(keyprog_t) * 256);
+		} else {
+			memcpy(keysti83, defaultkeysti83, sizeof(keyprog_t) * 256);
+		}
+
+		size = FindSettingsKey(file, _T("emu_keys"));
+		if (size) {
+			char *buf_ptr = (char *) &keys;
+			for (u_int i = 0; i < size - 1; i++) {
+				*buf_ptr++ = fgetc(file);
+			}
+			memcpy(keysti86, keys, sizeof(keyprog_t) * 256);
+		} else {
+			memcpy(keysti86, defaultkeysti86, sizeof(keyprog_t) * 256);
+		}
+
+		fclose(file);
 	} else {
-		memcpy(keysti83, defaultkeysti83, sizeof(keyprog_t) * 256);
-	}
-	dwCount = sizeof(keys);
-	res = RegQueryValueEx(hkeyWabbit, _T("emu_keys86"), NULL, NULL, (LPBYTE) keys, &dwCount);
-	if (res == ERROR_SUCCESS) {
-		memcpy(keysti86, keys, sizeof(keyprog_t) * 256);
-	}else {
-		memcpy(keysti86, defaultkeysti86, sizeof(keyprog_t) * 256);
-	}
+		HKEY hkeySoftware = NULL;
+		HKEY hkeyWabbit = NULL;
+		LONG res;
+		RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
 	
-	RegCloseKey(hkeyWabbit);
-	RegCloseKey(hkeySoftware);
+		DWORD dwDisposition;
+		RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0, 
+				NULL, REG_OPTION_NON_VOLATILE, 
+				KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
+		int num_entries = (int) QueryWabbitKey(_T("num_accel"));
+		ACCEL buf[256];
+		DWORD dwCount = sizeof(buf);
+		res = RegQueryValueEx(hkeyWabbit, _T("accelerators"), NULL, NULL, (LPBYTE) buf, &dwCount);
+		if (res == ERROR_SUCCESS) {
+			DestroyAcceleratorTable(haccelmain);
+			haccelmain = CreateAcceleratorTable(buf, num_entries);
+		}
+		RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
+		RegOpenKeyEx(hkeySoftware, _T("Wabbitemu"), 0, KEY_ALL_ACCESS, &hkeyWabbit);
+		keyprog_t keys[256];
+		dwCount = sizeof(keys);
+		res = RegQueryValueEx(hkeyWabbit, _T("emu_keys"), NULL, NULL, (LPBYTE) keys, &dwCount);
+		if (res == ERROR_SUCCESS) {
+			memcpy(keysti83, keys, sizeof(keyprog_t) * 256);
+		} else {
+			memcpy(keysti83, defaultkeysti83, sizeof(keyprog_t) * 256);
+		}
+		dwCount = sizeof(keys);
+		res = RegQueryValueEx(hkeyWabbit, _T("emu_keys86"), NULL, NULL, (LPBYTE) keys, &dwCount);
+		if (res == ERROR_SUCCESS) {
+			memcpy(keysti86, keys, sizeof(keyprog_t) * 256);
+		}else {
+			memcpy(keysti86, defaultkeysti86, sizeof(keyprog_t) * 256);
+		}
 	
+		RegCloseKey(hkeyWabbit);
+		RegCloseKey(hkeySoftware);
+	}	
 	return;
 }
 
-HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
-	//TCHAR fileBuffer[MAX_PATH];
-	//GetCurrentDirectory(MAX_PATH, fileBuffer);
-	//StringCbCat(fileBuffer, sizeof(fileBuffer), _T("\\regSettings.dat"));
-	//if (PathFileExists(fileBuffer)) {
-	//	LoadRegistrySettingsFile(fileBuffer);
-	//}
+BOOL CheckSetIsPortableMode() {
+	GetCurrentDirectory(MAX_PATH, portSettingsPath);
+	StringCchCat(portSettingsPath, MAX_PATH, _T("\\Wabbitemu.dat"));
+	FILE *file;
+	_tfopen_s(&file, portSettingsPath, _T("r"));
+	if (file) {
+		portable_mode = TRUE;
+		fclose(file);
+		return TRUE;
+	}
+	return FALSE;
+}
 
-	HKEY hkeySoftware;
-	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
+HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
+	HKEY hkeySoftware = NULL;
+	if (!portable_mode) {
+		RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
+	}
 	
-	HKEY hkeyWabbit;
-	DWORD dwDisposition;
-	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0, 
-			NULL, REG_OPTION_NON_VOLATILE, 
-			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
+	HKEY hkeyWabbit = NULL;
+	DWORD dwDisposition = 0;
+	if (!portable_mode) {
+		RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0, 
+				NULL, REG_OPTION_NON_VOLATILE, 
+				KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
+	}
 	
-	if (dwDisposition == REG_CREATED_NEW_KEY)
+	if (dwDisposition == REG_CREATED_NEW_KEY) {
 		LoadRegistryDefaults(hkeyWabbit);
+	}
 	
 	StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), (TCHAR *) QueryWabbitKey(_T("rom_path")));
 	StringCbCopy(lpCalc->skin_path, sizeof(lpCalc->skin_path), (TCHAR *) QueryWabbitKey(_T("skin_path")));
@@ -259,9 +382,10 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	check_updates = (BOOL) QueryWabbitKey(_T("check_updates"));
 	show_whats_new = (BOOL) QueryWabbitKey(_T("show_whats_new"));
 	
-	//RegCloseKey(hkeyWabbit);
-	hkeyTarget = hkeyWabbit;
-	RegCloseKey(hkeySoftware);
+	if (!portable_mode) {
+		hkeyTarget = hkeyWabbit;
+		RegCloseKey(hkeySoftware);
+	}
 	
 	return S_OK;
 }
@@ -274,18 +398,42 @@ void SaveWabbitKey(TCHAR *name, int type, void *value) {
 	} else if (type == REG_SZ) {
 		StringCbLength((TCHAR *) value, MAX_PATH, &len);
 	}
-	
-	RegSetValueEx(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
+	if (portable_mode) {
+		FILE *file;
+		_tfopen_s(&file, portSettingsPath, _T("ab"));
+		if (!file) {
+			return;
+		}
+		if (type == REG_DWORD) {
+			_ftprintf(file, _T("%s | %d | %d\r\n"), name, len, *(LPDWORD) value);
+		} else {
+			_ftprintf(file, _T("%s | %d | %s\r\n"), name, len, value);
+		}
+		fclose(file);
+	} else {	
+		RegSetValueEx(hkeyTarget, name, 0, type, (LPBYTE) value, len);	
+	}
 }
 
 
 HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
-	if (hkeyTarget)
+	if (hkeyTarget && !portable_mode) {
 		RegCloseKey(hkeyTarget);
-	HKEY hkeyWabbit;
-	HRESULT res;
-	res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu"), 0, KEY_ALL_ACCESS, &hkeyWabbit);
-	if (SUCCEEDED(res)) {
+		hkeyTarget = NULL;
+	}
+
+	if (portable_mode) {
+		FILE *file;
+		_tfopen_s(&file, portSettingsPath, _T("w"));
+		fclose(file);
+	}
+	
+	HKEY hkeyWabbit = NULL;
+	HRESULT res = 0;
+	if (!portable_mode) {
+		res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu"), 0, KEY_ALL_ACCESS, &hkeyWabbit);
+	}
+	if (portable_mode || SUCCEEDED(res)) {
 		hkeyTarget = hkeyWabbit;
 		
 		SaveWabbitKey(_T("cutout"), REG_DWORD, &lpCalc->bCutout);
@@ -350,126 +498,108 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 
 //If you query a REG_SZ you MUST free the buffer it returns
 LONG_PTR QueryDebugKey(TCHAR *name) {
-	HKEY hkeySoftware;
-	RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
+	if (portable_mode) {
+		u_int i;
+		FILE *file;
+		_tfopen_s(&file, portSettingsPath, _T("rb"));
+		for (i = 0; regDefaults[i].lpValueName != NULL; i++) {
+			if (!_tcsicmp(regDefaults[i].lpValueName, name))
+				break;
+		}
+		size_t size = FindSettingsKey(file, name);
+		if (size || regDefaults[i].lpValueName != NULL) {
+			DWORD type;
+			DWORD len;
+			type = regDefaults[i].dwType;
+	
+			static union {
+				DWORD dwResult;
+				TCHAR szResult[256];
+			} result;
+			len = (type == REG_SZ) ? 256 * sizeof(TCHAR) : sizeof(DWORD);
 
-	HKEY hkeyWabbit, hkeyDebugger;
-	DWORD dwDisposition;
-	RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0,
-			NULL, REG_OPTION_NON_VOLATILE,
-			KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
+			if (regDefaults[i].lpValueName != NULL) {
+				if (size) {
+					if (type == REG_DWORD) {
+						_ftscanf(file, _T("%d\r\n"), &result.dwResult);
+					} else {
+						_ftscanf(file, _T("%s\r\n"), &result.szResult);
+					}
+				} else {
+					if (type == REG_DWORD){
+						result.dwResult = regDefaults[i].Value;
+					} else {
+						StringCchCopy(result.szResult, 256, (LPCTSTR) regDefaults[i].Value);
+					}
+				}
+			} else {
+				return NULL;
+			}
 
-	RegCreateKeyEx(hkeyWabbit, _T("Debugger"), 0,
+				if (file) {
+					fclose(file);
+				}
+
+			return (type == REG_SZ) ? (LONG_PTR) result.szResult : result.dwResult;
+		} else {
+			return NULL;
+		}
+	} else {
+		HKEY hkeySoftware;
+		RegOpenKeyEx(HKEY_CURRENT_USER, _T("software"), 0, KEY_ALL_ACCESS, &hkeySoftware);
+
+		HKEY hkeyWabbit, hkeyDebugger;
+		DWORD dwDisposition;
+		RegCreateKeyEx(hkeySoftware, _T("Wabbitemu"), 0,
 				NULL, REG_OPTION_NON_VOLATILE,
-				KEY_ALL_ACCESS, NULL, &hkeyDebugger, &dwDisposition);
+				KEY_ALL_ACCESS, NULL, &hkeyWabbit, &dwDisposition);
 
-	LONG_PTR result = GetKeyData(hkeyDebugger, name);
+		RegCreateKeyEx(hkeyWabbit, _T("Debugger"), 0,
+					NULL, REG_OPTION_NON_VOLATILE,
+					KEY_ALL_ACCESS, NULL, &hkeyDebugger, &dwDisposition);
 
-	RegCloseKey(hkeyDebugger);
-	RegCloseKey(hkeyWabbit);
-	RegCloseKey(hkeySoftware);
+		LONG_PTR result = GetKeyData(hkeyDebugger, name);
 
-	return result;
+		RegCloseKey(hkeyDebugger);
+		RegCloseKey(hkeyWabbit);
+		RegCloseKey(hkeySoftware);
+		return result;
+	}
 }
 
 void SaveDebugKey(TCHAR *name, int type, void *value) {
-	HKEY hkeyDebugger;
-	HRESULT res;
-	res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu\\Debugger"), 0, KEY_ALL_ACCESS, &hkeyDebugger);
-	if (FAILED(res)) {
-		_tprintf_s(_T("Failed opening Debug registry"));
-		return;
-	}
-
 	size_t len;
 	if (type == REG_DWORD) {
 		len = sizeof(DWORD);
 	} else if (type == REG_SZ) {
 		StringCbLength((TCHAR *) value, 4096, &len);
 	}
+	if (portable_mode) {
+		/*FILE *file;
+		TCHAR buffer[MAX_PATH];
+		GetPortableSetingsFilePath(buffer);
+		_tfopen_s(&file, buffer, _T("ab"));
+		if (!file) {
+			return;
+		}
+		if (type == REG_DWORD) {
+			_ftprintf(file, _T("%s | %d | %d\r\n"), name, len, *(LPDWORD) value);
+		} else {
+			_ftprintf(file, _T("%s | %d | %s\r\n"), name, len, value);
+		}
+		fclose(file);*/
+	} else {
+		HKEY hkeyDebugger;
+		HRESULT res;
+		res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu\\Debugger"), 0, KEY_ALL_ACCESS, &hkeyDebugger);
+		if (FAILED(res)) {
+			_tprintf_s(_T("Failed opening Debug registry"));
+			return;
+		}
 
-	int error = RegSetValueEx(hkeyDebugger, name, 0, type, (LPBYTE) value, len);
-	if (error != ERROR_SUCCESS) {
-		error +=1;
+		int error = RegSetValueEx(hkeyDebugger, name, 0, type, (LPBYTE) value, len);
+		if (error != ERROR_SUCCESS) {
+			error +=1;
+		}
 	}
 }
-
-
-//BOOL SetPrivilege(
-//    HANDLE hToken,          // access token handle
-//    LPCTSTR lpszPrivilege,  // name of privilege to enable/disable
-//    BOOL bEnablePrivilege   // to enable or disable privilege
-//    )  
-//{
-//TOKEN_PRIVILEGES tp;
-//LUID luid;
-//
-//if ( !LookupPrivilegeValue( 
-//        NULL,            // lookup privilege on local system
-//        lpszPrivilege,   // privilege to lookup 
-//        &luid ) )        // receives LUID of privilege
-//{
-//    printf("LookupPrivilegeValue error: %u\n", GetLastError() ); 
-//    return FALSE; 
-//}
-//
-//tp.PrivilegeCount = 1;
-//tp.Privileges[0].Luid = luid;
-//if (bEnablePrivilege)
-//    tp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-//else
-//    tp.Privileges[0].Attributes = 0;
-//
-//// Enable the privilege or disable all privileges.
-//
-//if ( !AdjustTokenPrivileges(
-//       hToken, 
-//       FALSE, 
-//       &tp, 
-//       sizeof(TOKEN_PRIVILEGES), 
-//       (PTOKEN_PRIVILEGES) NULL, 
-//       (PDWORD) NULL) )
-//{ 
-//      printf("AdjustTokenPrivileges error: %u\n", GetLastError() ); 
-//      return FALSE; 
-//} 
-//
-//if (GetLastError() == ERROR_NOT_ALL_ASSIGNED)
-//
-//{
-//      printf("The token does not have the specified privilege. \n");
-//      return FALSE;
-//} 
-//
-//return TRUE;
-//}
-//
-//
-//HRESULT ExportRegistrySettingsFile(LPCTSTR lpszFileName) {
-//	HANDLE ProcessToken;
-//
-//if (OpenProcessToken(GetCurrentProcess(), TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &ProcessToken)) {
-//
-//    SetPrivilege(ProcessToken, SE_BACKUP_NAME, TRUE);
-//
-// 
-//	HKEY hkey;
-//	HRESULT res;
-//	res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu"), 0, KEY_ALL_ACCESS, &hkey);
-//	if (FAILED(res)) {
-//		return res;
-//	}
-//	return RegSaveKeyEx(hkey, lpszFileName, NULL, REG_LATEST_FORMAT);
-//}
-//}
-//
-//HRESULT LoadRegistrySettingsFile(LPCTSTR lpszFileName) {
-//	HKEY hkey;
-//	HRESULT res;
-//	res = RegOpenKeyEx(HKEY_CURRENT_USER, _T("software\\Wabbitemu"), 0, KEY_ALL_ACCESS, &hkey);
-//	if (FAILED(res)) {
-//		return res;
-//	}
-//	res = RegLoadKey(hkey, NULL, lpszFileName);
-//	return res;
-//}
