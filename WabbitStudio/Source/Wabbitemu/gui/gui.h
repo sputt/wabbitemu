@@ -64,7 +64,11 @@ extern HACCEL haccelmain;
 void RegisterWindowClasses(void);
 VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer);
 
+#ifdef _WINDLL
+class CWabbitemuModule : public CAtlDllModuleT < CWabbitemuModule >
+#else
 class CWabbitemuModule : public CAtlExeModuleT< CWabbitemuModule >
+#endif
 {
 public :
 	DECLARE_LIBID(LIBID_WabbitemuLib)
