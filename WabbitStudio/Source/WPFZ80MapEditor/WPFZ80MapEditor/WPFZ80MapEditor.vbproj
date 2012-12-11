@@ -228,6 +228,7 @@
       <LastGenOutput>Settings.Designer.vb</LastGenOutput>
     </None>
     <AppDesigner Include="My Project\" />
+    <None Include="Scenario\maptest.bin" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="MapView.vb" />
@@ -246,6 +247,109 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scenario\animatedef.inc" />
+    <Resource Include="Scenario\bat.bmp" />
+    <Resource Include="Scenario\block.bmp" />
+    <Resource Include="Scenario\bomb.bmp" />
+    <Resource Include="Scenario\boss bird fly.bmp" />
+    <Resource Include="Scenario\boss bird land.bmp" />
+    <Resource Include="Scenario\boss key.bmp" />
+    <Resource Include="Scenario\bow.bmp" />
+    <Resource Include="Scenario\butterfly.bmp" />
+    <Resource Include="Scenario\button.bmp" />
+    <Resource Include="Scenario\cave.bmp" />
+    <Resource Include="Scenario\chest.bmp" />
+    <Resource Include="Scenario\chests alternate.bmp" />
+    <Resource Include="Scenario\chu small.bmp" />
+    <Resource Include="Scenario\chu.bmp" />
+    <Resource Include="Scenario\clock.bmp" />
+    <Resource Include="Scenario\crack.bmp" />
+    <Resource Include="Scenario\crystal switch.bmp" />
+    <Resource Include="Scenario\dizzy.bmp" />
+    <Resource Include="Scenario\doortoph.bmp" />
+    <Resource Include="Scenario\doortopv.bmp" />
+    <Resource Include="Scenario\drawcube.bmp" />
+    <Resource Include="Scenario\dungeon bw.bmp" />
+    <Resource Include="Scenario\dungeon.bmp" />
+    <Content Include="Scenario\edef.inc" />
+    <Content Include="Scenario\enemydef.inc" />
+    <Resource Include="Scenario\explode.bmp" />
+    <Resource Include="Scenario\eye down.bmp" />
+    <Resource Include="Scenario\eye left.bmp" />
+    <Resource Include="Scenario\eye right.bmp" />
+    <Resource Include="Scenario\fairy.bmp" />
+    <Resource Include="Scenario\ganon.bmp" />
+    <Resource Include="Scenario\gardener.bmp" />
+    <Resource Include="Scenario\generic.bmp" />
+    <Content Include="Scenario\graphics.asm" />
+    <Resource Include="Scenario\graveyard.bmp" />
+    <Resource Include="Scenario\greatfairy.bmp" />
+    <Resource Include="Scenario\heart container.bmp" />
+    <Resource Include="Scenario\heart.bmp" />
+    <Resource Include="Scenario\kaepora fly.bmp" />
+    <Resource Include="Scenario\kaepora.bmp" />
+    <Resource Include="Scenario\key.bmp" />
+    <Resource Include="Scenario\kid.bmp" />
+    <Resource Include="Scenario\layers.bmp" />
+    <Resource Include="Scenario\link attack.bmp" />
+    <Resource Include="Scenario\link dead.bmp" />
+    <Resource Include="Scenario\link present.bmp" />
+    <Resource Include="Scenario\link push.bmp" />
+    <Resource Include="Scenario\link walk mapeditor.bmp" />
+    <Resource Include="Scenario\link walk.bmp" />
+    <Resource Include="Scenario\lock.bmp" />
+    <Resource Include="Scenario\map.bmp" />
+    <Content Include="Scenario\mapdef.inc" />
+    <Content Include="Scenario\maptest.asm" />
+    <Content Include="Scenario\maptest.lst" />
+    <Resource Include="Scenario\marin.bmp" />
+    <Resource Include="Scenario\menu_items.bmp" />
+    <Resource Include="Scenario\menu_selector.bmp" />
+    <Resource Include="Scenario\Merlin.bmp" />
+    <Resource Include="Scenario\mirrorman.bmp" />
+    <Content Include="Scenario\miscdef.inc" />
+    <Resource Include="Scenario\numbers.bmp" />
+    <Content Include="Scenario\objectdef.inc" />
+    <Content Include="Scenario\objects.asm" />
+    <Resource Include="Scenario\octorok.bmp" />
+    <Resource Include="Scenario\output.txt" />
+    <Resource Include="Scenario\peahat.bmp" />
+    <Content Include="Scenario\pete - Copy.asm" />
+    <Content Include="Scenario\pete.asm" />
+    <Content Include="Scenario\pete0_compressed.asm" />
+    <Content Include="Scenario\pete1_compressed.asm" />
+    <Content Include="Scenario\pete2_compressed.asm" />
+    <Resource Include="Scenario\pillar.bmp" />
+    <Resource Include="Scenario\plant.bmp" />
+    <Resource Include="Scenario\planttest.bmp" />
+    <Resource Include="Scenario\platform.bmp" />
+    <Resource Include="Scenario\pot.bmp" />
+    <Resource Include="Scenario\pottest.bmp" />
+    <Resource Include="Scenario\rupee.bmp" />
+    <Resource Include="Scenario\shadows.bmp" />
+    <Resource Include="Scenario\shield.bmp" />
+    <Resource Include="Scenario\shooter.bmp" />
+    <Resource Include="Scenario\shot.bmp" />
+    <Resource Include="Scenario\sign.bmp" />
+    <Resource Include="Scenario\smallbird.bmp" />
+    <Resource Include="Scenario\spark.bmp" />
+    <Content Include="Scenario\SPASM.exe" />
+    <Resource Include="Scenario\spider.bmp" />
+    <Content Include="Scenario\structures.inc" />
+    <Resource Include="Scenario\sword pedestal.bmp" />
+    <Content Include="Scenario\swordless.asm" />
+    <Resource Include="Scenario\symbols.bmp" />
+    <Resource Include="Scenario\title sword.bmp" />
+    <Resource Include="Scenario\title zcross.bmp" />
+    <Resource Include="Scenario\title.bmp" />
+    <Resource Include="Scenario\town.bmp" />
+    <Resource Include="Scenario\trap.bmp" />
+    <Resource Include="Scenario\tree.bmp" />
+    <Resource Include="Scenario\triforce.bmp" />
+    <Resource Include="Scenario\walltop.bmp" />
+    <Resource Include="Scenario\witch.bmp" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
 </Project>
