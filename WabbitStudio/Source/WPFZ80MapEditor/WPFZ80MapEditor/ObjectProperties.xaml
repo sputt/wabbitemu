@@ -1,0 +1,158 @@
+﻿<Window x:Class="ObjectProperties"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:WPFZ80MapEditor"
+             xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
+             mc:Ignorable="d" 
+        Background="{DynamicResource {x:Static SystemColors.ControlBrushKey}}"
+        Title="{Binding Path=Definition.Name}"
+             d:DesignHeight="382" d:DesignWidth="300" WindowStyle="ToolWindow" SizeToContent="WidthAndHeight" ResizeMode="NoResize">
+    <Window.Resources>
+        <localconverters:BitValueConverter x:Key="BitConverter"/>
+        <localconverters:GraphicsConverter x:Key="GraphicsConverter"/>
+        <localconverters:DirectionConverter x:Key="DirectionConverter"/>
+
+        <DataTemplate DataType="{x:Type local:ZDefArgGenState}">
+            <StackPanel Orientation="Horizontal" Height="31">
+                <StackPanel Orientation="Horizontal" Width="125">
+                    <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
+                    <Label Content=":" Height="28" Padding="0,5,5,5" />
+                </StackPanel>
+                <ComboBox Margin="10,0,0,0" Height="23" Width="100" SelectedIndex="{Binding Path=Value,Converter={StaticResource DirectionConverter}}">
+                    <ComboBoxItem Content="Down"/>
+                    <ComboBoxItem Content="Left"/>
+                    <ComboBoxItem Content="Right"/>
+                    <ComboBoxItem Content="Up"/>
+                    <ComboBoxItem Content="None"/>
+                </ComboBox>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate x:Key="GraphicTemplate">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Image Width="16" Height="16" Source="{Binding Path=Image}"/>
+                <TextBlock Height="20" Text="{Binding Path=Label}" Padding="5,0,0,5"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type local:ZDefArgGraphic}">
+            <StackPanel Orientation="Horizontal" Height="31">
+                <StackPanel Orientation="Horizontal" Width="125">
+                    <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
+                    <Label Content=":" Height="28" Padding="0,5,5,5" />
+                </StackPanel>
+                <ComboBox SelectedItem="{Binding Path=Value,Converter={StaticResource GraphicsConverter}}" ItemsSource="{Binding Path=Graphics}" Margin="10,0,0,0" Height="23"
+                          Width="160" ItemTemplate="{StaticResource GraphicTemplate}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type local:ZDefArgObjectID}">
+            <StackPanel Orientation="Horizontal" Height="31">
+                <StackPanel Orientation="Horizontal" Width="125">
+                    <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
+                    <Label Content=":" Height="28" Padding="0,5,5,5" />
+                </StackPanel>
+                <ComboBox SelectedItem="{Binding Path=Value}" ItemsSource="{Binding Path=ObjectIDs}" Margin="10,0,0,0" Height="23" Width="140" Tag="ObjProp" />
+            </StackPanel>
+        </DataTemplate>
+        
+        <DataTemplate DataType="{x:Type local:ZDefArg8Bit}">
+            <StackPanel Orientation="Horizontal" Height="31">
+                <StackPanel Orientation="Horizontal" Width="125">
+                    <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
+                    <Label Content=":" Height="28" Padding="0,5,5,5" />
+                </StackPanel>
+                <TextBox Text="{Binding Path=Value}" Margin="10,0,0,0" Height="23" Tag="ObjProp" MaxLength="3" Width="40" TextAlignment="Right" />
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:ZDefArgObjectFlags}">
+            <StackPanel Orientation="Horizontal" Height="60">
+                <StackPanel Orientation="Horizontal" Width="125">
+                    <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
+                    <Label Content=":" Height="28" Padding="0,5,5,5" />
+                </StackPanel>
+                <Grid Width="200" Margin="10,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <CheckBox Content="Touchable" Grid.Row="0" Grid.Column="0">
+                        <CheckBox.IsChecked>
+                            <Binding Path="Value"
+                                     Converter="{StaticResource BitConverter}"
+                                     ConverterParameter="128">
+                            </Binding>
+                        </CheckBox.IsChecked>
+                    </CheckBox>
+                    <CheckBox Content="Active" Grid.Row="0" Grid.Column="1">
+                        <CheckBox.IsChecked>
+                            <Binding Path="Value"
+                                     Converter="{StaticResource BitConverter}"
+                                     ConverterParameter="64">
+                            </Binding>
+                        </CheckBox.IsChecked>
+                    </CheckBox>
+                    <CheckBox Content="No access" Grid.Row="1" Grid.Column="0">
+                        <CheckBox.IsChecked>
+                            <Binding Path="Value"
+                                     Converter="{StaticResource BitConverter}"
+                                     ConverterParameter="32">
+                            </Binding>
+                        </CheckBox.IsChecked>
+                    </CheckBox>
+                    <CheckBox Content="Destroyable" Grid.Row="1" Grid.Column="1">
+                        <CheckBox.IsChecked>
+                            <Binding Path="Value"
+                                     Converter="{StaticResource BitConverter}"
+                                     ConverterParameter="16">
+                            </Binding>
+                        </CheckBox.IsChecked>
+                    </CheckBox>
+                    <CheckBox Content="Sparkle"  Grid.Row="2" Grid.Column="0">
+                        <CheckBox.IsChecked>
+                            <Binding Path="Value"
+                                     Converter="{StaticResource BitConverter}"
+                                     ConverterParameter="8">
+                            </Binding>
+                        </CheckBox.IsChecked>
+                    </CheckBox>
+                </Grid>
+            </StackPanel>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:ZDefArg}">
+            <StackPanel Orientation="Horizontal" Height="31">
+                <StackPanel Orientation="Horizontal" Width="125">
+                    <Label Content="{Binding Path=Description, Mode=OneTime}"  Height="28" Padding="5,5,0,5"/>
+                    <Label Content=":" Height="28" Padding="0,5,5,5" />
+                </StackPanel>
+                <TextBox Text="{Binding Path=Value}" Margin="10,0,0,0" Height="23" Tag="ObjProp"/>
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="23"/>
+        </Grid.RowDefinitions>
+        <Border Margin="0,0,0,10">
+            <ItemsControl Grid.Row="0" ItemsSource="{Binding Path=Args}" Name="ObjProperties" IsTabStop="False">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Vertical" Margin="0"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+            </ItemsControl>
+        </Border>
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Height="23">
+            <Button Content="OK" IsDefault="true" Width="75" Name="OKButton" />
+            <Button Content="Cancel" IsCancel="True" Width="75" Margin="10,0,0,0" Name="CancelButton" />
+        </StackPanel>
+    </Grid>
+</Window>

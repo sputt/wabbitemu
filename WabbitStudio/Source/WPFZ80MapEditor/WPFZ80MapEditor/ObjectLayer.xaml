@@ -1,0 +1,113 @@
+﻿<UserControl x:Class="ObjectLayer"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:WPFZ80MapEditor"
+             xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
+             mc:Ignorable="d" 
+             d:DesignHeight="256" d:DesignWidth="256"
+             MouseLeftButtonDown="ObjectCanvas_MouseLeftButtonDown"
+             MouseLeftButtonUp="ObjectCanvas_MouseLeftButtonUp"
+             MouseMove="ObjectCanvas_MouseMove"
+             Background="#01FFFFFF"
+             DragEnter="ObjectLayer_DragEnter"
+             DragOver="ObjectLayer_DragOver"
+             Drop="ObjectLayer_Drop"
+             AllowDrop="True">
+    <UserControl.Resources>
+        <ControlTemplate x:Key="NoScroll">
+            <ItemsPresenter></ItemsPresenter>
+        </ControlTemplate>
+        
+        <localconverters:ImageIndexConverter x:Key="convertImageIndex"/>
+        <localconverters:YConverter x:Key="YConverter"/>
+        <localconverters:XConverter x:Key="XConverter"/>
+        <localconverters:ZConverter x:Key="ZConverter"/>
+        
+        <DataTemplate DataType="{x:Type local:ZObject}">
+            <Image Name="TemplatedZObject" 
+                   MouseLeftButtonDown="Object_MouseLeftButtonDown" 
+                   MouseLeftButtonUp="Object_MouseLeftButtonUp"
+                   MouseMove="Object_MouseMove">
+                <Image.Source>
+                    <MultiBinding Converter="{StaticResource convertImageIndex}">
+                        <Binding Path="Image"/>
+                        <Binding RelativeSource="{RelativeSource AncestorType=local:ObjectLayer}"/>
+                    </MultiBinding>
+                </Image.Source>
+                <Image.ContextMenu>
+                    <ContextMenu HasDropShadow="True">
+                        <MenuItem Command="ApplicationCommands.Properties"/>
+                    </ContextMenu>
+                </Image.ContextMenu>
+            </Image>
+        </DataTemplate>
+    </UserControl.Resources>
+    <Grid Name="ObjectCanvas">
+        <ListBox x:Name="ObjectItemsControl" Template="{StaticResource NoScroll}" ItemsSource="{Binding Path=ZObjects}" 
+                 SelectionMode="Extended" Background="Transparent" BorderThickness="0" 
+                 SnapsToDevicePixels="True" UseLayoutRounding="True">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <Canvas/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ItemsControl.ItemContainerStyle>
+                <Style TargetType="ListBoxItem">
+                    <Setter Property="Canvas.Left">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource XConverter}">
+                                <Binding Path="Image"/>
+                                <Binding Path="X"/>
+                                <Binding Path="W"/>
+                                <Binding RelativeSource="{RelativeSource AncestorType=local:ObjectLayer}"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Canvas.Top">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource YConverter}">
+                                <Binding Path="Image"/>
+                                <Binding Path="Y"/>
+                                <Binding Path="H"/>
+                                <Binding Path="Z"/>
+                                <Binding RelativeSource="{RelativeSource AncestorType=local:ObjectLayer}"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Panel.ZIndex">
+                        <Setter.Value>
+                            <MultiBinding Converter="{StaticResource ZConverter}">
+                                <Binding Path="Y"/>
+                                <Binding Path="H"/>
+                            </MultiBinding>
+                        </Setter.Value>
+                    </Setter>
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ListBoxItem">
+                                <!--
+                                This border is used for indicating selection.
+                                Normally it is transparent, when the item is selected the border is set to blue.
+                                -->
+                                <Border Name="Border" BorderThickness="2">
+                                    <ContentPresenter/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <!--When the ListBoxItem is selected draw a simple blue border around it.-->
+                                    <Trigger Property="IsSelected" Value="true">
+                                        <Setter TargetName="Border" Property="BorderBrush" Value="#A04040FF"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </ItemsControl.ItemContainerStyle>
+        </ListBox>
+        <Canvas>
+            <Border Name="SelectionRect" BorderBrush="Blue" BorderThickness="1" Background="CadetBlue" Opacity="0.5" Height="150" Width="150" Canvas.Left="10" Canvas.Top="50" Visibility="Hidden"/>
+        </Canvas>
+    </Grid>
+</UserControl>

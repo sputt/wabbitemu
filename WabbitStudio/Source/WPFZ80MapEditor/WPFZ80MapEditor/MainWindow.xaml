@@ -1,0 +1,132 @@
+﻿<Window x:Class="MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:WPFZ80MapEditor"
+    xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
+    Title="Z80 Scenario Editor" Height="473" Width="708" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200">
+    <Window.Resources>
+        <localconverters:ZoomLevelToDoubleConverter x:Key="convertZoomLevel"/>
+        <localconverters:DoubleToZoomLevelConverter x:Key="convertZoomLevel2"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter1" />
+    </Window.Resources>
+    
+    <DockPanel>
+        <Menu DockPanel.Dock="Top" Name="MainMenu" Height="20" Panel.ZIndex="1">
+            <MenuItem Header="_File" Name="MenuItem1">
+                <MenuItem Header="_Open" Command="Open"/>
+                <MenuItem Header="_Save" Command="Save"/>
+                <MenuItem Header="E_xit" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" Command="Undo"/>
+                <MenuItem Header="_Redo" Command="Redo"/>
+            </MenuItem>
+            <MenuItem Header="_Mapset" Visibility="{Binding ElementName=RadioMapSet, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter1}}" Name="MenuItem2">
+                <MenuItem Name="MapsetNew" Header="_New map"/>
+                <MenuItem Name="MapsetNewFromFile" Header="New map from _file..."/>
+                <MenuItem Name="MapsetDelete" Header="_Delete map"/>
+                <MenuItem Header="Add _column">
+                    <MenuItem Header="_Left" Name="AddColumnLeft"/>
+                    <MenuItem Header="_Right" Name="AddColumnRight"/>
+                </MenuItem>
+                <MenuItem Header="Add _row">
+                    <MenuItem Header="_Top" Name="AddRowTop"/>
+                    <MenuItem Header="_Bottom" Name="AddRowBottom"/>
+                </MenuItem>
+                <MenuItem Header="Delete c_olumn" Name="DeleteMapColumn"/>
+                <MenuItem Header="Delete ro_w" Name="DeleteMapRow"/>
+            </MenuItem>
+            <MenuItem Header="_Map" Visibility="{Binding ElementName=RadioMapView, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter1}}">
+
+            </MenuItem>
+            <MenuItem Header="_View">
+                <MenuItem Name="TilesMenuItem" Header="Show _tiles panel" IsCheckable="True" IsChecked="True"/>
+                <MenuItem Name="PaddingMenuItem" Header="Show map _padding" IsCheckable="True" IsChecked="True"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About"/>
+            </MenuItem>
+        </Menu>
+        
+        <WrapPanel DockPanel.Dock="Top" Height="26" Panel.ZIndex="1" Background="White">
+            <WrapPanel.Effect>
+                <DropShadowEffect Direction="270" Opacity="0.25" ShadowDepth="5" />
+            </WrapPanel.Effect>
+            <ToolBar DockPanel.Dock="top" ToolBarTray.IsLocked="True" Name="MainToolBar" Height="26">
+                <!--Background="#00000000"-->
+                <Button>
+                    <Image Source="Toolbar/open.bmp"/>
+                </Button>
+                <Button Name="Button1">
+                    <Image Source="Toolbar/save.bmp"/>
+                </Button>
+                <Separator></Separator>
+                <RadioButton IsChecked="True" Name="RadioMapSet">Mapset</RadioButton>
+                <RadioButton IsChecked="False" Name="RadioMapView">Map</RadioButton>
+                <RadioButton IsChecked="False" Name="RadioObjectLayer">Objects</RadioButton>
+            </ToolBar>
+        </WrapPanel>
+
+        <StatusBar DockPanel.Dock="Bottom" Name="StatusBar" Margin="0" Padding="0" Panel.ZIndex="1">
+            <StatusBar.Effect>
+                <DropShadowEffect Direction="90" Opacity="0.25" ShadowDepth="2" />
+            </StatusBar.Effect>
+            <StatusBarItem HorizontalAlignment="Left" >
+                <WrapPanel Height="19" VerticalAlignment="Center">
+                    <Label Padding="0" VerticalContentAlignment="Bottom" VerticalAlignment="Bottom">Tile:</Label>
+                    <Rectangle Width="6"/>
+                    <Label Padding="0" Content="{Binding Path=Index, ElementName=TileSelectorPanel}"></Label>
+                </WrapPanel>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right" Width="75">
+                <ComboBox Name="ZoomLevelCombo" FontSize="10" SelectedIndex="0" Padding="8,2,0,3" Width="50" HorizontalAlignment="Right" IsEditable="False" IsTabStop="False">
+                    <ComboBoxItem Content="100%" Name="CurrentZoomLevelItem"/>
+                    <ComboBoxItem Content="50%" />
+                    <ComboBoxItem Content="75%" />
+                    <ComboBoxItem Content="100%" />
+                    <ComboBoxItem Content="150%" />
+                    <ComboBoxItem Content="200%" />
+                    <ComboBoxItem Content="400%" />
+                </ComboBox>
+            </StatusBarItem>
+        </StatusBar>
+
+        <Grid DockPanel.Dock="Left" Panel.ZIndex="2" Background="White" Visibility="{Binding ElementName=TilesMenuItem, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter1}}" Width="170">
+            <Grid.Effect>
+                <DropShadowEffect Direction="0" Opacity="0.25" ShadowDepth="2" />
+                </Grid.Effect>
+            <local:TilesPanel x:Name="TileSelectorPanel" x:FieldModifier="public">
+            </local:TilesPanel>
+        </Grid>
+
+        <Grid DockPanel.Dock="Right" Panel.ZIndex="2" Background="White" Visibility="{Binding ElementName=TilesMenuItem, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter1}}" Width="170">
+            <Grid.Effect>
+                <DropShadowEffect Direction="180" Opacity="0.25" ShadowDepth="2" />
+            </Grid.Effect>
+            <local:ObjectsPanel x:Name="ObjectsPanel"/>
+        </Grid>
+
+        <Canvas Grid.Column="1" Name="Background" Background="Gray" Panel.ZIndex="0">
+            <local:LayerContainer Panel.ZIndex="0" Canvas.Left="0" Canvas.Top="0" SnapsToDevicePixels="True" 
+                                  x:Name="LayerContainer" 
+                                  ShowGridPadding="{Binding ElementName=PaddingMenuItem, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter1}, UpdateSourceTrigger=PropertyChanged}">
+                <local:LayerContainer.RenderTransform>
+                    <TransformGroup>
+                        <ScaleTransform x:Name="MapZoomTransform"/>
+                        <TranslateTransform/>
+                    </TransformGroup>
+                </local:LayerContainer.RenderTransform>
+            </local:LayerContainer>
+        </Canvas>
+    </DockPanel>
+
+
+    <!--
+        <Rectangle Grid.Row="1" Panel.ZIndex="1" Fill="Gray"/>
+        <Menu Grid.Row="1" Panel.ZIndex="2" Opacity="0.9">
+            <Menu.Effect>
+                <DropShadowEffect Direction="270" Opacity="0.25"/>
+            </Menu.Effect>
+        </Menu>
+    -->
+</Window>
