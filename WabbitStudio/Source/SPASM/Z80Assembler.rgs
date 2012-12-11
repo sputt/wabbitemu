@@ -20,7 +20,7 @@ HKCR
 				val ServerExecutable = s '%MODULE_RAW%'
 			}
 			TypeLib = s '{16387CF3-1B28-46C0-ABA9-5DEC7A8FA7AA}'
-			Version = s '1.0'
+			Version = s '1.2'
 		}
 	}
 }
