@@ -4,8 +4,8 @@ Public Class Tile
     Inherits Grid
 
     Private Sub SetImageSource(NewIndex As Integer)
-        If Not Tileset Is Nothing And NewIndex <> -1 Then
-            _Image.Source = Tileset(NewIndex Mod 128)
+        If NewIndex <> -1 Then
+            _Image.Source = Scenario.Instance.Tilesets.Values(Tileset)(NewIndex Mod 128)
         End If
     End Sub
 
@@ -33,17 +33,17 @@ Public Class Tile
                                     New FrameworkPropertyMetadata(-1, FrameworkPropertyMetadataOptions.AffectsRender))
 
     Public Shared ReadOnly TilesetProperty As DependencyProperty =
-        DependencyProperty.Register("Tileset", GetType(Tileset), GetType(Tile))
+        DependencyProperty.Register("Tileset", GetType(Integer), GetType(Tile))
 
     Public IsCollidable As Boolean
 
     Public ShowCollidable As Boolean = True
 
-    Public Property Tileset As Tileset
+    Public Property Tileset As Integer
         Get
             Return GetValue(TilesetProperty)
         End Get
-        Set(value As Tileset)
+        Set(value As Integer)
             SetValue(TilesetProperty, value)
         End Set
     End Property

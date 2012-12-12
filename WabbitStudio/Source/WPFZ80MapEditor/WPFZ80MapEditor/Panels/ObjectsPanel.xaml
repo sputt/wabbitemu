@@ -9,7 +9,7 @@
     xmlns:local="clr-namespace:WPFZ80MapEditor"
     xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
     mc:Ignorable="d" 
-    DataContext="{Binding Source={x:Static local:MainWindow.Instance}, Path=Scenario}"
+    DataContext="{Binding Source={x:Static local:Scenario.Instance}}"
     d:DesignHeight="232" d:DesignWidth="166" xmlns:my="clr-namespace:WPFZ80MapEditor">
 
     <UserControl.Resources>
@@ -43,7 +43,6 @@
                         <Image.Source>
                             <MultiBinding Converter="{StaticResource convertImageIndex}">
                                 <Binding Path="DefaultImage"/>
-                                <Binding RelativeSource="{RelativeSource AncestorType=local:ObjectsPanel}"/>
                             </MultiBinding>
                         </Image.Source>
                     </Image>

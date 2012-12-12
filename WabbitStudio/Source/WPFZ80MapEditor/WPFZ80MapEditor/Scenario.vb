@@ -14,8 +14,8 @@ Public Class Scenario
     Private _MapCount As Integer
 
     Public Shared ReadOnly ImagesProperty As DependencyProperty =
-        DependencyProperty.Register("Images", GetType(ObservableCollection(Of ImageSource)), GetType(Scenario),
-        New PropertyMetadata(New ObservableCollection(Of ImageSource)))
+        DependencyProperty.Register("Images", GetType(ObservableCollection(Of ZeldaImage)), GetType(Scenario),
+        New PropertyMetadata(New ObservableCollection(Of ZeldaImage)))
 
     Public Shared ReadOnly ObjectDefsProperty As DependencyProperty =
         DependencyProperty.Register("ObjectDefs", GetType(ObservableDictionary(Of String, ZDef)), GetType(Scenario),
@@ -24,11 +24,11 @@ Public Class Scenario
     Public Shared ReadOnly TilesetsProperty As DependencyProperty =
         DependencyProperty.Register("Tilesets", GetType(ObservableCollection(Of Tileset)), GetType(Scenario))
 
-    Public Property Images As ObservableCollection(Of ImageSource)
+    Public Property Images As ObservableCollection(Of ZeldaImage)
         Get
             Return GetValue(ImagesProperty)
         End Get
-        Set(value As ObservableCollection(Of ImageSource))
+        Set(value As ObservableCollection(Of ZeldaImage))
             SetValue(ImagesProperty, value)
         End Set
     End Property
@@ -43,9 +43,6 @@ Public Class Scenario
     End Property
 
     Public Sub AddMap(x As Integer, y As Integer, Map As MapData)
-        If Not Map Is Nothing Then
-            Map.SetValue(MapData.ScenarioProperty, Me)
-        End If
 
         Dim Container = MainWindow.Instance.LayerContainer.AddMap(x, y, Map)
 
@@ -86,21 +83,17 @@ Public Class Scenario
     End Property
 
 
-    Private Shared _FileName As String
+    Private _FileName As String
 
     Public Sub LoadScenario(FileName As String)
 
         ClearMaps()
 
-
-
-        'Images = New ObservableCollection(Of ImageSource)
-        ZeldaImages.Load(Directory.GetCurrentDirectory() & "\Scenario\graphics.asm", Me)
+        LoadImages(Directory.GetCurrentDirectory() & "\Scenario\graphics.asm")
 
         _FileName = FileName
         Dim Data = SPASMHelper.AssembleFile(FileName)
 
-        'ObjectDefs = New ObservableDictionary(Of String, ZDef)
         LoadObjectDefs(Directory.GetCurrentDirectory() & "\Scenario\objectdef.inc")
 
         Dim Reader As New StreamReader(FileName)
@@ -116,9 +109,9 @@ Public Class Scenario
                 MaxX = Math.Max(x, MaxX)
                 Dim y = SPASMHelper.Labels(Label & "_Y")
                 MaxY = Math.Max(y, MaxY)
-                Dim tilemap = SPASMHelper.Labels(Label & "_TILESET")
+                Dim Tileset = SPASMHelper.Labels(Label & "_TILESET")
 
-                Dim MapData = New MapData(Data.Skip(SPASMHelper.Labels(Label)), Tilesets.Values(tilemap))
+                Dim MapData = New MapData(Data.Skip(SPASMHelper.Labels(Label)), Tileset)
 
                 Dim Rx As New Regex(
                     "^" & Label & "_DEFAULTS:\s*" & _
@@ -187,7 +180,7 @@ Public Class Scenario
     End Sub
 
 
-    Public Shared Sub SaveScenario()
+    Public Sub SaveScenario()
         Dim Stream = New StreamWriter(_FileName)
 
         'For Each MapIndex In Maps.Keys
@@ -219,4 +212,17 @@ Public Class Scenario
     Protected Overrides Function CreateInstanceCore() As Freezable
         Return New Scenario
     End Function
+
+    Private Shared _Instance As Scenario
+    Public Shared ReadOnly Property Instance As Scenario
+        Get
+            SyncLock GetType(Scenario)
+                If _Instance Is Nothing Then
+                    _Instance = New Scenario
+                End If
+            End SyncLock
+            Return _Instance
+        End Get
+    End Property
+
 End Class

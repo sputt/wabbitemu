@@ -1,41 +1,20 @@
 ﻿Imports System.IO
 Imports System.Text.RegularExpressions
 
-Public Class ZeldaImage
-    Inherits DependencyObject
-    Implements IComparable
-
-    Public Shared ReadOnly LabelProperty = DependencyProperty.Register("Label", GetType(String), GetType(ZeldaImage))
-    Public Shared ReadOnly ImageProperty = DependencyProperty.Register("Image", GetType(ImageSource), GetType(ZeldaImage))
-
-    Public Sub New(Label As String, Image As ImageSource)
-        SetValue(LabelProperty, Label.ToUpper())
-        SetValue(ImageProperty, Image)
-    End Sub
-
-    Public Function CompareTo1(obj As Object) As Integer Implements System.IComparable.CompareTo
-        Dim this = GetValue(LabelProperty)
-        Dim other = CType(obj, DependencyObject).GetValue(LabelProperty)
-        Return this < other
-    End Function
-End Class
-
-Public Class ZeldaImages
-    ' This is somewhat related to scenario so perhaps should be reconsidered 
-    Public Shared Images As List(Of ZeldaImage) = New List(Of ZeldaImage)
-
-    Shared Sub Load(FileName As String, Scenario As Scenario)
+Partial Public Class Scenario
+    Private Sub LoadImages(FileName As String)
         Dim Rx As New Regex(
-            "^(?<Name>[a-z_]+_gfx)(\s*|\s+with\s+bm_map\s*=\s*(?<X>\d+)x(?<Y>\d+)\s*)" & _
-            "^#include\s+""(?<FileName>.+)""\s*" & _
-            "(^\s*|(?<ExtraDefines>(^[a-z0-9_]+\s*=\s*[a-z0-9_]+\s*)+))$", RegexOptions.Multiline Or RegexOptions.Compiled)
+    "^(?<Name>[a-z_]+_gfx)(\s*|\s+with\s+bm_map\s*=\s*(?<X>\d+)x(?<Y>\d+)\s*)" & _
+    "^#include\s+""(?<FileName>.+)""\s*" & _
+    "(^\s*|(?<ExtraDefines>(^[a-z0-9_]+\s*=\s*[a-z0-9_]+\s*)+))$", RegexOptions.Multiline Or RegexOptions.Compiled)
 
         Dim Stream = New StreamReader(FileName)
         Dim Matches = Rx.Matches(Stream.ReadToEnd())
         Stream.Close()
 
         ' Empty first image
-        Scenario.Images.Add(Nothing)
+        Dim Uri As New Uri(Directory.GetCurrentDirectory() & "\Scenario\question.bmp", UriKind.Absolute)
+        Images.Add(New ZeldaImage("", New BitmapImage(Uri)))
 
         Dim Index As Integer = 1
         For Each Match As Match In Matches
@@ -45,7 +24,7 @@ Public Class ZeldaImages
             SPASMHelper.Assembler.AddDefine(Replace(LabelName, "_gfx", "_anim"), Index)
 
             Dim Image As BitmapImage = Nothing
-            Dim Uri As New Uri(Directory.GetCurrentDirectory() & "\Scenario\" & Groups("FileName").Value, UriKind.Absolute)
+            Uri = New Uri(Directory.GetCurrentDirectory() & "\Scenario\" & Groups("FileName").Value, UriKind.Absolute)
             If File.Exists(Uri.LocalPath) Then
                 Image = New BitmapImage(Uri)
 
@@ -61,28 +40,22 @@ Public Class ZeldaImages
                     For X = 0 To TotalX - 1
                         For Y = 0 To TotalY - 1
                             Dim CroppedImage As New CroppedBitmap(Image, New Int32Rect((EachWidth + 2) * X + 1, (EachHeight + 2) * Y + 1, EachWidth, EachHeight))
-                            If ImagePreview Is Nothing Then
-                                ImagePreview = CroppedImage
-                            End If
-                            Scenario.Images.Add(CroppedImage)
-                            SPASMHelper.Assembler.AddDefine(LabelName & (X * TotalY) + Y + 1, Index)
+                            Dim ItemLabel = LabelName & (X * TotalY) + Y + 1
+                            Images.Add(New ZeldaImage(ItemLabel, CroppedImage))
+                            SPASMHelper.Assembler.AddDefine(ItemLabel, Index)
                             Index += 1
                         Next
                     Next
-                    Images.Add(New ZeldaImage(LabelName, ImagePreview))
+
                 Else
                     SPASMHelper.Assembler.AddDefine(LabelName & "_width", Image.PixelWidth)
                     SPASMHelper.Assembler.AddDefine(LabelName & "_height", Image.PixelHeight)
 
-                    'Debug.WriteLine("Adding " & LabelName & "_width = " & Image.PixelWidth)
-                    'Debug.WriteLine("Adding " & LabelName & "_height = " & Image.PixelHeight)
-
                     Images.Add(New ZeldaImage(LabelName, Image))
-                    Scenario.Images.Add(Image)
                     Index += 1
                 End If
             Else
-                Scenario.Images.Add(Nothing)
+                Images.Add(Nothing)
                 Index += 1
             End If
 
@@ -91,7 +64,6 @@ Public Class ZeldaImages
             End If
         Next
 
-        ZeldaImages.Images.Sort()
+        'Images.Sort()
     End Sub
-
 End Class

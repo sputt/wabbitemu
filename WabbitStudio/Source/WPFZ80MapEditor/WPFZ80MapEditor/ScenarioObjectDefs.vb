@@ -2,7 +2,7 @@
 Imports System.Text.RegularExpressions
 
 Partial Class Scenario
-    Public Sub LoadObjectDefs(FileName As String)
+    Private Sub LoadObjectDefs(FileName As String)
         Dim Rx As New Regex(
             "^;(?<Name>[a-zA-Z][a-zA-Z ]+) - (?<Description>.+)\s*" & _
             "(^; (?<ArgName>\w+) - (?<ArgDesc>.+)\s*)*" & _

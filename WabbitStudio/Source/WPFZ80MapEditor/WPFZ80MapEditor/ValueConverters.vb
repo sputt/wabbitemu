@@ -2,24 +2,6 @@
 
 Namespace ValueConverters
 
-    Public Class ZoomLevelToDoubleConverter
-        Implements IValueConverter
-
-        Public Function Convert(value As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.Convert
-            'Dim NumStr As String = CStr(value).Replace("%", "")
-            'Return Double.Parse(NumStr) / 100
-            Return 0.0
-        End Function
-
-        Public Function ConvertBack(value As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.ConvertBack
-            'If value Is Nothing OrElse CStr(value) = "" Then
-            '    Return 1.0
-            'End If
-            'Return New String((CDbl("0" & CStr(value)) * 100.0).ToString() & "%")
-            Return "100%"
-        End Function
-    End Class
-
     Public Class DoubleToZoomLevelConverter
         Implements IValueConverter
 
@@ -43,10 +25,12 @@ Namespace ValueConverters
             On Error Resume Next
 
             Dim Index = values(0)
-            Dim Panel As Object = values(1)
-            Dim Images = CType(Panel.DataContext, Scenario).Images
+            Dim Images = Scenario.Instance.Images
 
-            Return CType(Images(Index), ImageSource)
+            If Images(Index) Is Nothing Then
+                Return Nothing
+            End If
+            Return Images(Index).GetValue(ZeldaImage.ImageProperty)
         End Function
 
         Public Function ConvertBack(value As Object, targetTypes() As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object() Implements System.Windows.Data.IMultiValueConverter.ConvertBack
@@ -61,10 +45,8 @@ Namespace ValueConverters
             On Error Resume Next
 
             Dim Index = values(0)
-            Dim Layer As ObjectLayer = values(1)
-            Dim Images = CType(Layer.Parent, MapContainer).DataContext.Scenario.Images
 
-            Return CType(Images(Index), ImageSource)
+            Return Scenario.Instance.Images(Index).Image
         End Function
 
         Public Function ConvertBack(value As Object, targetTypes() As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object() Implements System.Windows.Data.IMultiValueConverter.ConvertBack
@@ -83,10 +65,15 @@ Namespace ValueConverters
             Dim ObjY As Double = values(1)
             Dim ObjHeight As Double = values(2)
             Dim ObjZ As Double = values(3)
-            Dim Layer As ObjectLayer = values(4)
-            Dim Images = CType(Layer.Parent, MapContainer).DataContext.Scenario.Images
 
-            Dim ImgSource As ImageSource = Images(Index)
+            Dim Images = Scenario.Instance.Images
+
+            Dim ImgSource As ImageSource = Nothing
+            Dim ZImg = Images(Index)
+            If ZImg Is Nothing Then
+                ImgSource = ZImg.Image
+            End If
+
             Dim ImgHeight As Double
             If ImgSource Is Nothing Then
                 ImgHeight = ObjHeight
@@ -111,10 +98,14 @@ Namespace ValueConverters
             Dim Index = values(0)
             Dim ObjX As Double = values(1)
             Dim ObjWidth As Double = values(2)
-            Dim Layer As ObjectLayer = values(3)
-            Dim Images = CType(Layer.Parent, MapContainer).DataContext.Scenario.Images
+            Dim Images = Scenario.Instance.Images
 
-            Dim ImgSource As ImageSource = Images(Index)
+            Dim ImgSource As ImageSource = Nothing
+            Dim ZImg = Images(Index)
+            If ZImg Is Nothing Then
+                ImgSource = ZImg.Image
+            End If
+
             Dim ImgWidth As Double
             If ImgSource Is Nothing Then
                 ImgWidth = ObjWidth
@@ -170,7 +161,7 @@ Namespace ValueConverters
         Implements IValueConverter
 
         Public Function Convert(value As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.Convert
-            Dim Result = From i As ZeldaImage In ZeldaImages.Images Where i.GetValue(ZeldaImage.LabelProperty) = CStr(value) Select i
+            Dim Result = From i As ZeldaImage In Scenario.Instance.Images Where i.GetValue(ZeldaImage.LabelProperty) = CStr(value) Select i
             Return Result(0)
         End Function
 

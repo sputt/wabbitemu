@@ -14,12 +14,16 @@
              DragEnter="ObjectLayer_DragEnter"
              DragOver="ObjectLayer_DragOver"
              Drop="ObjectLayer_Drop"
-             AllowDrop="True">
+             AllowDrop="True"
+             >
     <UserControl.Resources>
         <ControlTemplate x:Key="NoScroll">
             <ItemsPresenter></ItemsPresenter>
         </ControlTemplate>
-        
+
+        <local:Scenario x:Key="Scenario">
+        </local:Scenario>
+
         <localconverters:ImageIndexConverter x:Key="convertImageIndex"/>
         <localconverters:YConverter x:Key="YConverter"/>
         <localconverters:XConverter x:Key="XConverter"/>
@@ -31,13 +35,12 @@
                    MouseLeftButtonDown="Object_MouseLeftButtonDown" 
                    MouseLeftButtonUp="Object_MouseLeftButtonUp"
                    MouseMove="Object_MouseMove">
-                <Image.Source>
-                    <MultiBinding Converter="{StaticResource convertImageIndex}">
-                        <Binding Path="Image"/>
-                        <Binding RelativeSource="{RelativeSource AncestorType=local:ObjectLayer}"/>
-                    </MultiBinding>
-                </Image.Source>
-                <Image.ContextMenu>
+                    <Image.Source>
+                        <MultiBinding Converter="{StaticResource convertImageIndex}">
+                            <Binding Path="Image"/>
+                        </MultiBinding>
+                    </Image.Source>
+                    <Image.ContextMenu>
                     <ContextMenu HasDropShadow="True">
                         <MenuItem Command="ApplicationCommands.Properties"/>
                     </ContextMenu>
@@ -71,7 +74,6 @@
                                 <Binding Path="Image"/>
                                 <Binding Path="X"/>
                                 <Binding Path="W"/>
-                                <Binding RelativeSource="{RelativeSource AncestorType=local:ObjectLayer}"/>
                             </MultiBinding>
                         </Setter.Value>
                     </Setter>
@@ -82,7 +84,6 @@
                                 <Binding Path="Y"/>
                                 <Binding Path="H"/>
                                 <Binding Path="Z"/>
-                                <Binding RelativeSource="{RelativeSource AncestorType=local:ObjectLayer}"/>
                             </MultiBinding>
                         </Setter.Value>
                     </Setter>

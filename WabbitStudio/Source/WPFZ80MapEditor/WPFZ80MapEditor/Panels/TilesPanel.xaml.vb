@@ -167,11 +167,12 @@ Public Class TilesPanel
     End Property
 
 
-    Public Sub Initialize(Tileset As Tileset)
+    Public Sub Initialize(TilesetIndex As Integer)
 
+        Dim Tileset = Scenario.Instance.Tilesets.Values(TilesetIndex)
         For Index As Integer = 0 To Tileset.Count - 1
             Dim tile = New PanelTile()
-            tile.Tileset = Tileset
+            tile.Tileset = TilesetIndex
             tile.Index = Index
 
             AddHandler tile.TileSelected, AddressOf OnTileSelect

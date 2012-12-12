@@ -132,6 +132,7 @@
     <Compile Include="MapSet.vb" />
     <Compile Include="LayerContainer.vb" />
     <Compile Include="ObservableDictionary.vb" />
+    <Compile Include="ScenarioImages.vb" />
     <Compile Include="ScenarioObjectDefs.vb" />
     <Compile Include="ObjectLayer.xaml.vb">
       <DependentUpon>ObjectLayer.xaml</DependentUpon>
@@ -149,7 +150,7 @@
     <Compile Include="SPASMHelper.vb" />
     <Compile Include="Tile.vb" />
     <Compile Include="Tileset.vb" />
-    <Compile Include="ZeldaImages.vb" />
+    <Compile Include="ZeldaImage.vb" />
     <Compile Include="ZeldaObjects.vb" />
     <Compile Include="ValueConverters.vb" />
     <Page Include="MainWindow.xaml">
@@ -273,6 +274,7 @@
     <Resource Include="Scenario\drawcube.bmp" />
     <Resource Include="Scenario\dungeon bw.bmp" />
     <Resource Include="Scenario\dungeon.bmp" />
+    <Resource Include="Scenario\question.bmp" />
     <Content Include="Scenario\edef.inc" />
     <Content Include="Scenario\enemydef.inc" />
     <Resource Include="Scenario\explode.bmp" />

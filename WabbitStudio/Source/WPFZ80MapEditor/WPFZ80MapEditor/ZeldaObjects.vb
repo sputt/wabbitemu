@@ -155,7 +155,7 @@ Public Class ZDefArgGraphic
         SetValue(ZDefArg.DescriptionProperty, Description)
 
 
-        SetValue(GraphicsProperty, ZeldaImages.Images)
+        SetValue(GraphicsProperty, Scenario.Instance.Images)
     End Sub
 
     Public Overloads Function Clone() As Object

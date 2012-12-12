@@ -5,7 +5,6 @@
     xmlns:localconverters="clr-namespace:WPFZ80MapEditor.ValueConverters"
     Title="Z80 Scenario Editor" Height="473" Width="708" ResizeMode="CanResizeWithGrip" MinHeight="150" MinWidth="200">
     <Window.Resources>
-        <localconverters:ZoomLevelToDoubleConverter x:Key="convertZoomLevel"/>
         <localconverters:DoubleToZoomLevelConverter x:Key="convertZoomLevel2"/>
         <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter1" />
     </Window.Resources>

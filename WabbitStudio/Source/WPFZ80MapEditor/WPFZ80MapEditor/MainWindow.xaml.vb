@@ -5,19 +5,6 @@ Imports System.Collections.ObjectModel
 
 Public Class MainWindow
 
-    Public Shared ReadOnly ScenarioProperty As DependencyProperty =
-        DependencyProperty.Register("Scenario", GetType(Scenario), GetType(MainWindow),
-                                    New PropertyMetadata(New Scenario))
-
-    Public Property Scenario As Scenario
-        Get
-            Return GetValue(ScenarioProperty)
-        End Get
-        Set(value As Scenario)
-            SetValue(ScenarioProperty, value)
-        End Set
-    End Property
-
     'Public Shared Scenario As New Scenario
     Public Shared Instance As MainWindow
 
@@ -27,10 +14,10 @@ Public Class MainWindow
     End Sub
 
     Private Sub Window_Loaded(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles MyBase.Loaded
-        Scenario.Tilesets.Add("dungeon", New Tileset("Scenario\dungeon.bmp"))
-        TileSelectorPanel.Initialize(Scenario.Tilesets("dungeon"))
+        Scenario.Instance.Tilesets.Add("dungeon", New Tileset("Scenario\dungeon.bmp"))
+        TileSelectorPanel.Initialize(0)
 
-        Scenario.LoadScenario("Scenario\pete.asm")
+        Scenario.Instance.LoadScenario("Scenario\pete.asm")
 
 
         'Dim MapData As New MapData(New Tileset("dungeon.bmp"))
@@ -99,7 +86,7 @@ Public Class MainWindow
     End Sub
 
     Private Sub Background_Click(sender As System.Object, e As System.Windows.Input.MouseButtonEventArgs) Handles Background.MouseLeftButtonUp
-        Scenario.ActiveLayer.DeselectAll()
+        Scenario.Instance.ActiveLayer.DeselectAll()
     End Sub
 
     Private Sub ZoomAnimationEnd(sender As Object, e As EventArgs)
@@ -194,11 +181,11 @@ Public Class MainWindow
             ActivateLayer(GetType(ObjectLayer), RadioObjectLayer)
 
             If RadioMapSet.IsChecked Then
-                Scenario.ActiveLayerType = GetType(MapSet)
+                Scenario.Instance.ActiveLayerType = GetType(MapSet)
             ElseIf RadioMapView.IsChecked Then
-                Scenario.ActiveLayerType = GetType(MapView)
+                Scenario.Instance.ActiveLayerType = GetType(MapView)
             ElseIf RadioObjectLayer.IsChecked Then
-                Scenario.ActiveLayerType = GetType(ObjectLayer)
+                Scenario.Instance.ActiveLayerType = GetType(ObjectLayer)
             End If
         End If
     End Sub
@@ -207,18 +194,18 @@ Public Class MainWindow
         Dim x = Grid.GetColumn(MapSet.CurrentlySelected)
         Dim y = Grid.GetRow(MapSet.CurrentlySelected)
 
-        Dim MapData As New MapData(Scenario.Tilesets("dungeon"))
+        Dim MapData As New MapData(0)
 
-        Scenario.AddMap(x, y, MapData)
+        Scenario.Instance.AddMap(x, y, MapData)
 
     End Sub
 
     Private Sub MenuItem1_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles MenuItem1.Click
-        Scenario.SaveScenario()
+        Scenario.Instance.SaveScenario()
     End Sub
 
     Private Sub Button1_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles Button1.Click
-        Scenario.SaveScenario()
+        Scenario.Instance.SaveScenario()
     End Sub
 
     Private Sub AddColumnLeft_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles AddColumnLeft.Click
@@ -227,7 +214,7 @@ Public Class MainWindow
             Grid.SetColumn(Child, Grid.GetColumn(Child) + 1)
         Next
         For i = 0 To LayerContainer.RowDefinitions.Count - 1
-            Scenario.AddMap(0, i, Nothing)
+            Scenario.Instance.AddMap(0, i, Nothing)
         Next
     End Sub
 
@@ -246,7 +233,7 @@ Public Class MainWindow
     Private Sub AddColumnRight_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles AddColumnRight.Click
         LayerContainer.AddRightColumn()
         For i = 0 To LayerContainer.RowDefinitions.Count - 1
-            Scenario.AddMap(LayerContainer.ColumnDefinitions.Count - 1, i, Nothing)
+            Scenario.Instance.AddMap(LayerContainer.ColumnDefinitions.Count - 1, i, Nothing)
         Next
     End Sub
 
@@ -256,14 +243,14 @@ Public Class MainWindow
             Grid.SetRow(Child, Grid.GetRow(Child) + 1)
         Next
         For i = 0 To LayerContainer.ColumnDefinitions.Count - 1
-            Scenario.AddMap(i, 0, Nothing)
+            Scenario.Instance.AddMap(i, 0, Nothing)
         Next
     End Sub
 
     Private Sub AddRowBottom_Click(sender As System.Object, e As System.Windows.RoutedEventArgs) Handles AddRowBottom.Click
         LayerContainer.AddBottomRow()
         For i = 0 To LayerContainer.ColumnDefinitions.Count - 1
-            Scenario.AddMap(i, LayerContainer.RowDefinitions.Count - 1, Nothing)
+            Scenario.Instance.AddMap(i, LayerContainer.RowDefinitions.Count - 1, Nothing)
         Next
     End Sub
 
