@@ -16,6 +16,9 @@ LONG CZ80Assembler::m_lIndex;
 
 HRESULT CZ80Assembler::FinalConstruct()
 {
+	curr_input_file = strdup("COM Interface");
+	output_filename = strdup("COM Interface");
+
 	init_storage();
 	m_pStmOutput = NULL;
 	return S_OK;
@@ -24,6 +27,15 @@ HRESULT CZ80Assembler::FinalConstruct()
 void CZ80Assembler::FinalRelease()
 {
 	free_storage();
+
+	if (curr_input_file) {
+		free(curr_input_file);
+	}
+	curr_input_file = NULL;
+	if (output_filename) {
+		free(output_filename);
+	}
+	output_filename = NULL;
 }
 
 STDMETHODIMP CZ80Assembler::get_Output(IStream **ppOutput)
@@ -74,8 +86,6 @@ STDMETHODIMP CZ80Assembler::ClearDefines()
 
 STDMETHODIMP CZ80Assembler::AddDefine(BSTR bstrName, VARIANT varValue)
 {
-	curr_input_file = strdup("COM Interface");
-
 	if (V_VT(&varValue) == VT_EMPTY || V_VT(&varValue) == VT_ERROR)
 	{
 		V_VT(&varValue) = VT_UI4;
@@ -96,7 +106,6 @@ STDMETHODIMP CZ80Assembler::AddDefine(BSTR bstrName, VARIANT varValue)
 
 	bool fRedefined = false;
 	define_t *define = add_define(strdup(szName), &fRedefined);
-	free(curr_input_file);
 
 	if (define != NULL)
 	{
@@ -132,28 +141,27 @@ STDMETHODIMP CZ80Assembler::Assemble(VARIANT varInput, int *lpInt)
 	if (V_VT(&varInput) == VT_BSTR)
 	{
 		mode = MODE_NORMAL | MODE_COMMANDLINE;
-		
-		curr_input_file = strdup("COM Interface");
 
 		CW2CT szInput(V_BSTR(&varInput));
 		input_contents = strdup(szInput);
-
-		output_filename = strdup(m_bstrOutputFile);
 	}
 	else
 	{
 		mode = MODE_NORMAL;
 
+		if (curr_input_file) {
+			free(curr_input_file);
+		}
 		curr_input_file = strdup(m_bstrInputFile);
+		if (output_filename) {
+			free(output_filename);
+		}
 		output_filename = strdup(m_bstrOutputFile);
 	}
 
 	*lpInt = run_assembly();
 
 	GlobalUnlock(hGlobal);
-
-	free(curr_input_file);
-	free(output_filename);
 
 	if (m_pStmOutput != NULL)
 	{

@@ -418,12 +418,17 @@ int main (int argc, char **argv)
 	EndSPASMErrorSession(session);
 
 	free(output_filename);
-	if (curr_input_file)
+	output_filename = NULL;
+	if (curr_input_file) {
 		free(curr_input_file);
-	if (include_dirs)
+		curr_input_file = NULL;
+	}
+	if (include_dirs) {
 		list_free(include_dirs, true, NULL);
+	}
 
 	free(output_contents);
+	output_contents = NULL;
 	ClearSPASMErrorSessions();
 	free_storage();
 
