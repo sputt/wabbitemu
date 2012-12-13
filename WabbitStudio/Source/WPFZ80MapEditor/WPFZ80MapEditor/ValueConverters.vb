@@ -39,17 +39,15 @@ Namespace ValueConverters
     End Class
 
     Public Class ImageIndexConverter
-        Implements IMultiValueConverter
+        Implements IValueConverter
 
-        Public Function Convert(values() As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IMultiValueConverter.Convert
-            On Error Resume Next
-
-            Dim Index = values(0)
+        Public Function Convert(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.Convert
+            Dim Index = value
 
             Return Scenario.Instance.Images(Index).Image
         End Function
 
-        Public Function ConvertBack(value As Object, targetTypes() As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object() Implements System.Windows.Data.IMultiValueConverter.ConvertBack
+        Public Function ConvertBack(value As Object, targetType As Type, parameter As Object, culture As Globalization.CultureInfo) As Object Implements IValueConverter.ConvertBack
             Return Nothing
         End Function
     End Class
@@ -102,7 +100,7 @@ Namespace ValueConverters
 
             Dim ImgSource As ImageSource = Nothing
             Dim ZImg = Images(Index)
-            If ZImg Is Nothing Then
+            If ZImg IsNot Nothing Then
                 ImgSource = ZImg.Image
             End If
 
@@ -156,7 +154,10 @@ Namespace ValueConverters
         End Function
     End Class
 
-
+    ''' <summary>
+    ''' Convert a label into a ZeldaImage and back
+    ''' </summary>
+    ''' <remarks></remarks>
     Public Class GraphicsConverter
         Implements IValueConverter
 

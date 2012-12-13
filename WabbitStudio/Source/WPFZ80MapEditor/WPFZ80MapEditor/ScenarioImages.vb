@@ -14,7 +14,8 @@ Partial Public Class Scenario
 
         ' Empty first image
         Dim Uri As New Uri(Directory.GetCurrentDirectory() & "\Scenario\question.bmp", UriKind.Absolute)
-        Images.Add(New ZeldaImage("", New BitmapImage(Uri)))
+        Dim QuestionBitmap As New BitmapImage(Uri)
+        Images.Add(New ZeldaImage("", QuestionBitmap))
 
         Dim Index As Integer = 1
         For Each Match As Match In Matches
@@ -23,16 +24,17 @@ Partial Public Class Scenario
             SPASMHelper.Assembler.AddDefine(LabelName, Index)
             SPASMHelper.Assembler.AddDefine(Replace(LabelName, "_gfx", "_anim"), Index)
 
-            Dim Image As BitmapImage = Nothing
+            Dim Image As ImageSource = Nothing
             Uri = New Uri(Directory.GetCurrentDirectory() & "\Scenario\" & Groups("FileName").Value, UriKind.Absolute)
             If File.Exists(Uri.LocalPath) Then
                 Image = New BitmapImage(Uri)
+                Image = BitmapUtils.Mask(Image, Color.FromArgb(255, 168, 230, 29))
 
                 If Groups("X").Success And Groups("Y").Success Then
                     Dim TotalX = CInt(Groups("X").Value)
                     Dim TotalY = CInt(Groups("Y").Value)
-                    Dim EachWidth = (Image.PixelWidth - (2 * TotalX)) / TotalX
-                    Dim EachHeight = (Image.PixelHeight - (2 * TotalY)) / TotalY
+                    Dim EachWidth As Integer = (CInt(Image.Width) - (2 * TotalX)) / TotalX
+                    Dim EachHeight As Integer = (CInt(Image.Height) - (2 * TotalY)) / TotalY
                     SPASMHelper.Assembler.AddDefine(LabelName & "_width", EachWidth)
                     SPASMHelper.Assembler.AddDefine(LabelName & "_height", EachHeight)
 
@@ -48,14 +50,14 @@ Partial Public Class Scenario
                     Next
 
                 Else
-                    SPASMHelper.Assembler.AddDefine(LabelName & "_width", Image.PixelWidth)
-                    SPASMHelper.Assembler.AddDefine(LabelName & "_height", Image.PixelHeight)
+                    SPASMHelper.Assembler.AddDefine(LabelName & "_width", CInt(Image.Width))
+                    SPASMHelper.Assembler.AddDefine(LabelName & "_height", CInt(Image.Height))
 
                     Images.Add(New ZeldaImage(LabelName, Image))
                     Index += 1
                 End If
             Else
-                Images.Add(Nothing)
+                Images.Add(New ZeldaImage(LabelName, QuestionBitmap))
                 Index += 1
             End If
 

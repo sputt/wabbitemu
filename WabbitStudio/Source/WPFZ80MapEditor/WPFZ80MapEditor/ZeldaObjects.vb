@@ -468,6 +468,6 @@ Public Class ZObject
             .Y = Y : .H = H
             .Z = Z : .D = D
         End With
-        Return (Copy)
+        Return Copy
     End Function
 End Class

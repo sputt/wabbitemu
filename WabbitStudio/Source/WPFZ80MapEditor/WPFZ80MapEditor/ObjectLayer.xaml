@@ -28,33 +28,21 @@
         <localconverters:YConverter x:Key="YConverter"/>
         <localconverters:XConverter x:Key="XConverter"/>
         <localconverters:ZConverter x:Key="ZConverter"/>
-        
+
         <DataTemplate DataType="{x:Type local:ZObject}">
-            <StackPanel Orientation="Horizontal">
             <Image Name="TemplatedZObject" 
                    MouseLeftButtonDown="Object_MouseLeftButtonDown" 
                    MouseLeftButtonUp="Object_MouseLeftButtonUp"
                    MouseMove="Object_MouseMove">
-                    <Image.Source>
-                        <MultiBinding Converter="{StaticResource convertImageIndex}">
-                            <Binding Path="Image"/>
-                        </MultiBinding>
-                    </Image.Source>
-                    <Image.ContextMenu>
+                <Image.Source>
+                    <Binding Path="Image" Converter="{StaticResource convertImageIndex}"/>
+                </Image.Source>
+                <Image.ContextMenu>
                     <ContextMenu HasDropShadow="True">
                         <MenuItem Command="ApplicationCommands.Properties"/>
                     </ContextMenu>
                 </Image.ContextMenu>
             </Image>
-                <Label>
-                    <Label.Content>
-                        <MultiBinding Converter="{StaticResource ZConverter}">
-                            <Binding Path="Y"/>
-                            <Binding Path="H"/>
-                        </MultiBinding>
-                    </Label.Content>
-                </Label>
-            </StackPanel>
         </DataTemplate>
     </UserControl.Resources>
     <Grid Name="ObjectCanvas">

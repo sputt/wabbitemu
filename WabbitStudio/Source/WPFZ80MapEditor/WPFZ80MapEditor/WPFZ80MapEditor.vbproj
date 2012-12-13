@@ -131,6 +131,7 @@
     <Compile Include="IMapLayer.vb" />
     <Compile Include="MapSet.vb" />
     <Compile Include="LayerContainer.vb" />
+    <Compile Include="BitmapUtils.vb" />
     <Compile Include="ObservableDictionary.vb" />
     <Compile Include="ScenarioImages.vb" />
     <Compile Include="ScenarioObjectDefs.vb" />
