@@ -6,10 +6,8 @@
 #include "calc.h"
 #include "sendfileswindows.h"
 
-ParsedCmdArgs* ParseCommandLineArgs()
+void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs)
 {
-	ParsedCmdArgs *parsedArgs = (ParsedCmdArgs *) malloc(sizeof(ParsedCmdArgs));
-	ZeroMemory(parsedArgs, sizeof(ParsedCmdArgs));
 	TCHAR tmpstring[512];
 	SEND_FLAG ram = SEND_CUR;
 	int argc;
@@ -49,7 +47,9 @@ ParsedCmdArgs* ParseCommandLineArgs()
 					|| !_tcsicmp(extension, _T(".zip")) || !_tcsicmp(extension, _T(".tig"))) {
 						parsedArgs->utility_files[parsedArgs->num_utility_files++] = temp;
 				}
-				else if (ram) {
+				else if (ram == SEND_CUR) {
+					parsedArgs->cur_files[parsedArgs->num_cur_files++] = temp;
+				} else if (ram == SEND_RAM) {
 					parsedArgs->ram_files[parsedArgs->num_ram_files++] = temp;
 				} else {
 					parsedArgs->archive_files[parsedArgs->num_archive_files++] = temp;
@@ -78,7 +78,6 @@ ParsedCmdArgs* ParseCommandLineArgs()
 			}
 		}
 	}
-	return parsedArgs;
 }
 
 void LoadAlreadyExistingWabbit(LPARAM lParam, LPTSTR filePath, SEND_FLAG sendLoc)
@@ -111,6 +110,10 @@ void LoadCommandlineFiles(ParsedCmdArgs *parsedArgs, LPARAM lParam,  void (*load
 	//load ROMs first
 	for (int i = 0; i < parsedArgs->num_rom_files; i++) {
 		load_callback(lParam, parsedArgs->rom_files[i], SEND_ARC);
+	}
+	//then we dont care files
+	for (int i = 0; i < parsedArgs->num_cur_files; i++) {
+		load_callback(lParam, parsedArgs->cur_files[i], SEND_CUR);
 	}
 	//then archived files
 	for (int i = 0; i < parsedArgs->num_archive_files; i++) {
