@@ -1478,6 +1478,9 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 			GetWindowRect(dps->hwndHeader, &hdrRect);
 
 			y = GET_Y_LPARAM(lParam) - (hdrRect.bottom - hdrRect.top);
+			if (y < 0) {
+				return 0;
+			}
 
 
 			GetClientRect(hwnd, &r);

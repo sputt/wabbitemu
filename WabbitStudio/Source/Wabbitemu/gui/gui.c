@@ -453,6 +453,7 @@ LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 				StringCbCat(timeStringText, sizeof(timeStringText), _T(".dmp.gz"));
 
 				FtpPutFile(hInternet, szDumpPath, timeStringText, FTP_TRANSFER_TYPE_BINARY, NULL);
+				InternetCloseHandle(hInternet);
 		}
 	}
 	return EXCEPTION_EXECUTE_HANDLER;
@@ -480,9 +481,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 
 	CheckSetIsPortableMode();
-	ParsedCmdArgs *parsedArgs = ParseCommandLineArgs();
+	ParsedCmdArgs parsedArgs = {0};
+	ParseCommandLineArgs(&parsedArgs);
 	//this is here so we get our load_files_first setting
-	new_calc_on_load_files = QueryWabbitKey(_T("load_files_first")) || parsedArgs->force_new_instance;
+	new_calc_on_load_files = QueryWabbitKey(_T("load_files_first")) || parsedArgs.force_new_instance;
 
 	HWND alreadyRunningHwnd = NULL;
 	alreadyRunningHwnd = FindWindow(g_szAppName, NULL);
@@ -502,8 +504,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 	
 	if (alreadyRunningWabbit) {
-		LoadCommandlineFiles(parsedArgs, (LPARAM) find_existing_lcd(alreadyRunningHwnd), LoadAlreadyExistingWabbit);
-		if (parsedArgs->force_focus) {
+		LoadCommandlineFiles(&parsedArgs, (LPARAM) find_existing_lcd(alreadyRunningHwnd), LoadAlreadyExistingWabbit);
+		if (parsedArgs.force_focus) {
 			SwitchToThisWindow(alreadyRunningHwnd, TRUE);
 		}
 		return 0;
@@ -521,7 +523,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ULONG_PTR gdiplusToken;
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-	silent_mode = parsedArgs->silent_mode;
+	silent_mode = parsedArgs.silent_mode;
 
 	LPCALC lpCalc = calc_slot_new();
 	LoadRegistrySettings(lpCalc);
@@ -531,9 +533,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	} else {
 
 		BOOL loadedRom = FALSE;
-		if (parsedArgs->num_rom_files > 0) {
-			for (int i = 0; i < parsedArgs->num_rom_files; i++) {
-				if (rom_load(lpCalc, parsedArgs->rom_files[i])) {
+		if (parsedArgs.num_rom_files > 0) {
+			for (int i = 0; i < parsedArgs.num_rom_files; i++) {
+				if (rom_load(lpCalc, parsedArgs.rom_files[i])) {
 					gui_frame(lpCalc);
 					loadedRom = TRUE;
 					break;
@@ -565,7 +567,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	state_build_applist(&lpCalc->cpu, &lpCalc->applist);
 	VoidLabels(lpCalc);
-	LoadCommandlineFiles(parsedArgs, (LPARAM) lpCalc, LoadToLPCALC);
+	LoadCommandlineFiles(&parsedArgs, (LPARAM) lpCalc, LoadToLPCALC);
 
 #ifdef WITH_AVI
 	is_recording = FALSE;

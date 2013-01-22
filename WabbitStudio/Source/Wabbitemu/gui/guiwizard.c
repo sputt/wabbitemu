@@ -327,7 +327,7 @@ INT_PTR CALLBACK SetupTypeProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lP
 
 void ExtractBootFree(int model, TCHAR *hexFile) {
 	HMODULE hModule = GetModuleHandle(NULL);
-	HRSRC resource;
+	HRSRC resource = NULL;
 	switch(model) {
 		case TI_73:
 			resource = FindResource(hModule, MAKEINTRESOURCE(HEX_BOOT73), _T("HEX"));
@@ -543,7 +543,7 @@ INT_PTR CALLBACK SetupOSProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 					if (_tcslen(osPath) > 0) {
 						TIFILE_t *tifile = importvar(osPath, FALSE);
 						if (tifile == NULL || tifile->type != FLASH_TYPE) {
-							MessageBox(hwnd, _T("Error: OS file is corrupt"), _T("Error"), MB_OK);
+							MessageBox(hwnd, _T("Error: OS file is corrupt or invalid"), _T("Error"), MB_OK);
 						} else {
 							forceload_os(&lpCalc->cpu, tifile);
 							if (Button_GetCheck(hRadioDownload) == BST_CHECKED) {
@@ -951,9 +951,11 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					//if you don't want to load an OS, fine...
 					if (_tcslen(osPath) > 0) {
 						TIFILE_t *tifile = importvar(osPath, FALSE);
-						forceload_os(&lpCalc->cpu, tifile);						
-						//if (Button_GetCheck(hRadioDownload) == BST_CHECKED)
-						//	remove(osPath);
+						if (tifile == NULL || tifile->type != FLASH_TYPE) {
+							MessageBox(hwnd, _T("Error: OS file is corrupt or invalid"), _T("Error"), MB_OK);
+						} else {
+							forceload_os(&lpCalc->cpu, tifile);
+						}
 					}
 					calc_erase_certificate(lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
 					calc_reset(lpCalc);

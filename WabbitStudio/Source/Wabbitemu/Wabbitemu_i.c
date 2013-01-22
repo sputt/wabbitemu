@@ -5,11 +5,11 @@
 /* link this file in with the server and any clients */
 
 
- /* File created by MIDL compiler version 8.00.0595 */
-/* at Tue Dec 04 18:26:32 2012
+ /* File created by MIDL compiler version 7.00.0555 */
+/* at Mon Dec 10 16:59:59 2012
  */
 /* Compiler settings for interface\Wabbitemu.idl:
-    Oicf, W1, Zp8, env=Win64 (32b run), target_arch=AMD64 8.00.0595 
+    Oicf, W2, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 

@@ -64,7 +64,7 @@ typedef struct LCD {
 	void (*free)(struct LCD*);		// Function to free this aux
 	BOOL active;					// TRUE = on, FALSE = off
 	u_int word_len;
-	int x, y, z;					/* LCD cursors */
+	u_int x, y, z;					/* LCD cursors */
 	int width;
 	u_int lcd_delay;				//delay in tstate required to write
 	
