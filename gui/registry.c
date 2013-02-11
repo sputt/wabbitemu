@@ -11,7 +11,7 @@ extern keyprog_t keysti86[256];
 extern keyprog_t keysti83[256];
 extern keyprog_t defaultkeysti86[256];
 extern keyprog_t defaultkeysti83[256];
-TCHAR *verString = _T("1.6.11.28");
+TCHAR *verString = _T("1.7.2.11");
 
 static HKEY hkeyTarget = NULL;
 
