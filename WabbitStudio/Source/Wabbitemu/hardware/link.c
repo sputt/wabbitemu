@@ -825,13 +825,10 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 							}
 						}
 					} else {
-						//we don't need to copy any new data, we just want to mark
-						//the old pages as free for the OS to use
-						//-pageDiff is used because its still negative
-						if (end_page > currentPage) {
-							memmove(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE * (end_page - currentPage));
+						//0xFF all extra pages
+						for (u_int i = tifile->flash->pages; i < tifile->flash->pages - pageDiff; i++, currentPage--) {
+							memset(dest[currentPage], 0xFF, PAGE_SIZE);
 						}
-						memset(dest[end_page-pageDiff], 0xFF, (-pageDiff) * PAGE_SIZE);
 						if (cpu->pio.model == TI_83P) {
 							//mark pages as protected
 							for (u_int i = end_page - 7; i <= end_page - pageDiff - 8; i++) {
