@@ -99,10 +99,18 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 
 enum DRAWSKINERROR {
 	ERROR_FACEPLATE = 1,
-	ERROR_CUTOUT
+	ERROR_CUTOUT,
+	ERROR_SKIN,
+	ERROR_KEYMAP,
 };
 
 DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_pBitmapKeymap) {
+	if (!m_pBitmapSkin) {
+		return ERROR_SKIN;
+	}
+	if (!m_pBitmapKeymap) {
+		return ERROR_KEYMAP;
+	}
 	HBITMAP hbmSkinOld, hbmKeymapOld;
 	//translate to regular gdi compatibility to simplify coding :/
 	m_pBitmapKeymap->GetHBITMAP(Color::White, &hbmKeymapOld);
@@ -262,6 +270,12 @@ int gui_frame_update(LPCALC lpCalc) {
 			break;
 		case ERROR_CUTOUT:
 			MessageBox(lpCalc->hwndFrame, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
+			break;
+		case ERROR_SKIN:
+			MessageBox(lpCalc->hwndFrame, _T("Unable to load skin resource"), _T("Error"), MB_OK);
+			break;
+		case ERROR_KEYMAP:
+			MessageBox(lpCalc->hwndFrame, _T("Unable to load keymap resource"), _T("Error"), MB_OK);
 			break;
 	}
 	if (lpCalc->bCustomSkin) {

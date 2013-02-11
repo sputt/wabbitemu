@@ -592,9 +592,9 @@ static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version)
 		case TI_84P:
 		case TI_84PSE:
 			if (version)
-				url = _T("http://education.ti.com/downloads/files/83plus/TI84Plus_OS243.8Xu");
+				url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS243.8Xu");
 			else
-				url = _T("http://education.ti.com/downloads/files/83plus/TI84Plus_OS.8Xu");
+				url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI84Plus_OS.8Xu");
 			break;
 	}
 	HRESULT hr = URLDownloadToFile(NULL, url, downloaded_file, 0, callback);

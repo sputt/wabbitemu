@@ -133,6 +133,10 @@ void LogKeypress(LPCALC lpCalc, int group, int bit) {
 		free(current->text);
 		free(current);
 		last->next = NULL;
+		if (last == lpCalc->last_keypress_head) {
+			lpCalc->last_keypress_head = NULL;
+		}
+		lpCalc->num_keypresses--;
 	}
 
 	if (lpCalc->hwndKeyListDialog) {

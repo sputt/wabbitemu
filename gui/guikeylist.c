@@ -107,6 +107,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 								current = next;
 							}
 							lpCalc->last_keypress_head = NULL;
+							lpCalc->num_keypresses = 0;
 							ListView_DeleteAllItems(hListKeys);
 							break;
 						}
@@ -171,7 +172,7 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 		case WM_USER: {
 			HWND hListKeys = GetDlgItem(hwnd, IDC_LISTVIEW_KEYS);
 			//TODO: allow exporting by writing group/bit data and outputting to a text file
-			if (wParam == REFRESH_LISTVIEW) {
+			/*if (wParam == REFRESH_LISTVIEW) {
 				ListView_DeleteAllItems(hListKeys);
 				key_string *current = lpCalc->last_keypress_head;
 				while (current) {
@@ -187,6 +188,18 @@ LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam
 
 					current = current->next;
 				}
+			}*/
+			if (lpCalc->num_keypresses >= MAX_KEYPRESS_HISTORY) {
+				ListView_DeleteItem(hListKeys, 0);
+			}
+			key_string *current = lpCalc->last_keypress_head;
+			if (current) {
+				LVITEM lItem;
+				lItem.mask = LVIF_IMAGE;
+				lItem.iSubItem = 0;
+				lItem.iImage = current->group * 8 + current->bit;
+				lItem.iItem = MAX_KEYPRESS_HISTORY;
+				int error = ListView_InsertItem(hListKeys, &lItem);
 			}
 			return TRUE;
 		}

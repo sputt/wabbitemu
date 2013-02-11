@@ -227,19 +227,20 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 				result = link_send_var(&lpCalc->cpu, var, (SEND_FLAG) Destination);
 				if (var->type == FLASH_TYPE)
 				{
-					// Rebuild the app list
-					state_build_applist(&lpCalc->cpu, &lpCalc->applist);
-
-					u_int i;
-					for (i = 0; i < lpCalc->applist.count; i++) {
-						if (_tcsncmp((TCHAR *) var->flash->name, lpCalc->applist.apps[i].name, 8) == 0) {
-							lpCalc->last_transferred_app = &lpCalc->applist.apps[i];
-							break;
-						}
-					}
 					if (var->flash->type == FLASH_TYPE_OS) {
 						calc_reset(lpCalc);
 						//calc_turn_on(lpCalc);
+					} else {
+						// Rebuild the app list
+						state_build_applist(&lpCalc->cpu, &lpCalc->applist);
+
+						u_int i;
+						for (i = 0; i < lpCalc->applist.count; i++) {
+							if (_tcsncmp((TCHAR *) var->flash->name, lpCalc->applist.apps[i].name, 8) == 0) {
+								lpCalc->last_transferred_app = &lpCalc->applist.apps[i];
+								break;
+							}
+						}
 					}
 				}
 				break;
