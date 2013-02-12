@@ -10,9 +10,9 @@
 
 static void CALLBACK FillSoundBuffer(HWAVEOUT hWaveOut,
 									 UINT uMsg,
-									 DWORD dwInstance,
-									 DWORD dwParam1,
-									 DWORD dwParam2 ) {
+									 DWORD_PTR dwInstance,
+									 DWORD_PTR dwParam1,
+									 DWORD_PTR dwParam2 ) {
 
 	WAVEHDR* waveheader = (WAVEHDR*) dwParam1;
 	//LPCALC lpCalc = (LPCALC) dwInstance;
@@ -141,7 +141,7 @@ int soundinit(AUDIO_t *audio) {
 						WAVE_MAPPER, 
 						&audio->wfx, 
 						(DWORD_PTR)FillSoundBuffer, 
-						(DWORD) audio, 
+						(DWORD_PTR) audio, 
 						CALLBACK_FUNCTION
 					) != MMSYSERR_NOERROR ) {
 

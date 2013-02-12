@@ -291,7 +291,7 @@ void RegisterWindowClasses(void) {
 	wc.cbClsExtra = 0;
 	wc.cbWndExtra = 0;
 	wc.hInstance = g_hInst;
-	wc.hIcon = LoadIcon(g_hInst, _T("W"));
+	wc.hIcon = LoadIcon(g_hInst, _T("A"));
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = NULL;
 	wc.lpszMenuName = MAKEINTRESOURCE(IDR_MAIN_MENU);
