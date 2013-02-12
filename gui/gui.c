@@ -703,20 +703,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			}
 
 			if (lpCalc->gif_disp_state != GDS_IDLE) {
-				RECT screen, rc;
+				RECT screen;
 				GetWindowRect(lpCalc->hwndLCD, &screen);
-				GetWindowRect(lpCalc->hwndFrame, &rc);
-				int orig_w = screen.right - screen.left;
-				int orig_h = screen.bottom - screen.top;
-
-				AdjustWindowRect(&screen, WS_CAPTION, FALSE);
-				screen.top -= GetSystemMetrics(SM_CYMENU);
-
-				//printf("screen: %d\n", screen.left - rc.left);
-
-				SetRect(&screen, screen.left - rc.left -5, screen.top - rc.top - 5,
-						screen.left - rc.left + orig_w - 5,
-						screen.top - rc.top + orig_h - 5);
+				MapWindowRect(NULL, lpCalc->hwndFrame, &screen);
 
 				int grayred = (int) (((double) GIFGRADWIDTH / GIFGRAD_PEAK) * 50);
 				HDC hWindow = GetDC(hwnd);
