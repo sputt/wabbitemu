@@ -306,9 +306,6 @@
     <ClCompile Include="utilities\zip.c">
       <Filter>Source Files\Utilities\Compression</Filter>
     </ClCompile>
-    <ClCompile Include="utilities\avifile.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="gui\guidetached.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
@@ -336,11 +333,11 @@
     <ClCompile Include="GUI\guiupdate.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="Wabbitemu_i.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="GUI\guiresource.c">
       <Filter>Source Files\GUI</Filter>
+    </ClCompile>
+    <ClCompile Include="utilities\avifile.cpp">
+      <Filter>Source Files\Utilities</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -632,9 +629,6 @@
     <ClInclude Include="utilities\zip.h">
       <Filter>Header Files\Utilities\Compression</Filter>
     </ClInclude>
-    <ClInclude Include="utilities\avifile.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="Debugger\dbspriteviewer.h">
       <Filter>Header Files\Debugger</Filter>
     </ClInclude>
@@ -655,6 +649,9 @@
     </ClInclude>
     <ClInclude Include="GUI\osdownloadcallback.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\avifile.h">
+      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
