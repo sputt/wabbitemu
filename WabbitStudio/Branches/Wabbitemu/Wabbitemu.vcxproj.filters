@@ -339,6 +339,7 @@
     <ClCompile Include="utilities\avifile.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="Wabbitemu_i.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

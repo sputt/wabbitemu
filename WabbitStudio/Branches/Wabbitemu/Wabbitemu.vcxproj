@@ -241,6 +241,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="utilities\zpipe.c" />
+    <ClCompile Include="Wabbitemu_i.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="core\alu.h" />
