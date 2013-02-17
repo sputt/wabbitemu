@@ -6,10 +6,10 @@
 
 
  /* File created by MIDL compiler version 7.00.0555 */
-/* at Mon Dec 10 16:59:59 2012
+/* at Sat Feb 16 17:40:11 2013
  */
 /* Compiler settings for interface\Wabbitemu.idl:
-    Oicf, W2, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
+    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 7.00.0555 
     protocol : dce , ms_ext, c_ext, robust
     error checks: allocation ref bounds_check enum stub_data 
     VC __declspec() decoration level: 
