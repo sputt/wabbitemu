@@ -1158,10 +1158,10 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					Z80_info *zinf_line;
 					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
-					TCHAR *disassembly = (TCHAR *) LocalAlloc(LMEM_FIXED, 1024);
-					memset(disassembly, 0, 1024);
-					TCHAR copy_line[512];
-					TCHAR buf[512];
+					TCHAR *disassembly = (TCHAR *) LocalAlloc(LMEM_FIXED, 2048);
+					ZeroMemory(disassembly, 2048);
+					TCHAR copy_line[1024] = {0};
+					TCHAR buf[1024] = {0};
 					for (i = 0; i < dps->NumSel; i++) {
 						zinf_line = &dps->zinf[dps->iSel + i];
 						//print the address
@@ -1173,12 +1173,22 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 								mem_read(dps->lpCalc->cpu.mem_c, zinf_line->waddr.addr+j));
 						}
 						StringCbCat(copy_line, sizeof(copy_line), buf);
-						StringCbCat(copy_line, sizeof(copy_line), _T(": "));
+						StringCbCat(copy_line, sizeof(copy_line), _T(":\t"));
+						if (zinf_line->size <= 2) {
+							StringCbCat(copy_line, sizeof(copy_line), _T("\t"));
+						}
 						//print the command
 						TCHAR *test_string = mysprintf(dps->lpCalc, zinf_line, REGULAR, da_opcode[zinf_line->index].format,
 														zinf_line->a1, zinf_line->a2, zinf_line->a3, zinf_line->a4);
 						StringCbCat(copy_line, sizeof(copy_line), test_string);
-						StringCbCat(copy_line, sizeof(copy_line), _T("\t;"));
+						StringCbCat(copy_line, sizeof(copy_line), _T("\t\t"));
+						if (strlen(test_string) <= 11) {
+							StringCbCat(copy_line, sizeof(copy_line), _T("\t"));
+						}
+						if (strlen(test_string) <= 7) {
+							StringCbCat(copy_line, sizeof(copy_line), _T("\t"));
+						}
+						StringCbCat(copy_line, sizeof(copy_line), _T(";"));
 						//print the size
 						if (zinf_line->size > 0) {
 							StringCbPrintf(buf, sizeof(buf), _T("%d"), zinf_line->size);
@@ -1196,7 +1206,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 							StringCbCat(copy_line, sizeof(copy_line), _T(" clocks"));
 						}
 						StringCbCat(copy_line, sizeof(copy_line), _T("\r\n"));
-						StringCbCat(disassembly, 1024, copy_line);
+						StringCbCat(disassembly, 2048, copy_line);
 					}
 					OpenClipboard(hwnd);
 					EmptyClipboard();
