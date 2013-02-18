@@ -221,6 +221,7 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 	static HWND rdoType[8];
 	static LPCALC lpCalc;
 	static LPDEBUGWINDOWINFO lpDebugInfo;
+	static HWND hwndPageMode0[4], hwndPageMode1[4];
 
 	switch (Message) {
 	case WM_CREATE:
@@ -228,15 +229,24 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 		lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 		lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
-		HWND hwndValue;
 		int i;
 		for (i = 0; i < 4; i++) {
 			int row_y = lpDebugInfo->kRegRow / 4 + lpDebugInfo->kRegRow * (i + 1);
 			lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
 
-			hwndValue = CreateValueField(hwnd, lpDebugInfo, _T(""), 0, &lpCalc->cpu.mem_c->banks[i].page, 1, 3, HEX2, lpCalc->mem_c.flash_pages - 1);
-			SetWindowPos(hwndValue, NULL, lpDebugInfo->kRegAddr * 4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
-			SendMessage(hwndValue, WM_SIZE, 0, 0);
+			hwndPageMode0[i] = CreateValueField(hwnd, lpDebugInfo, _T(""), 0, &lpCalc->cpu.mem_c->normal_banks[i].page, 1, 3, HEX2, lpCalc->mem_c.flash_pages - 1);
+			hwndPageMode1[i] = CreateValueField(hwnd, lpDebugInfo, _T(""), 0, &lpCalc->cpu.mem_c->bootmap_banks[i].page, 1, 3, HEX2, lpCalc->mem_c.flash_pages - 1);
+			SetWindowPos(hwndPageMode0[i], NULL, lpDebugInfo->kRegAddr * 4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+			SetWindowPos(hwndPageMode1[i], NULL, lpDebugInfo->kRegAddr * 4, row_y, 0, 0, SWP_NOZORDER | SWP_NOSIZE);
+			SendMessage(hwndPageMode0[i], WM_SIZE, 0, 0);
+			SendMessage(hwndPageMode1[i], WM_SIZE, 0, 0);
+			if (lpCalc->mem_c.boot_mapped) {
+				ShowWindow(hwndPageMode0[i], FALSE);
+				ShowWindow(hwndPageMode1[i], TRUE);
+			} else {
+				ShowWindow(hwndPageMode0[i], FALSE);
+				ShowWindow(hwndPageMode1[i], TRUE);
+			}
 
 			rdoType[2 * i] =
 				CreateWindow(
@@ -359,9 +369,18 @@ LRESULT CALLBACK DBMemMapProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPa
 			{
 				bank_state_t *bank = &lpCalc->mem_c.banks[i];
 				Button_SetCheck(rdoType[2 * i + (bank->ram ? 0 : 1)], BST_CHECKED);
+				Button_SetCheck(rdoType[2 * i + (bank->ram ? 1 : 0)], BST_UNCHECKED);
 				Button_SetCheck(chkRO[i], bank->read_only ? BST_CHECKED : BST_UNCHECKED);
 				bank->addr = bank->ram ? lpCalc->mem_c.ram : lpCalc->mem_c.flash;
 				bank->addr += bank->page * PAGE_SIZE;
+
+				if (lpCalc->mem_c.boot_mapped) {
+					ShowWindow(hwndPageMode0[i], FALSE);
+					ShowWindow(hwndPageMode1[i], TRUE);
+				} else {
+					ShowWindow(hwndPageMode0[i], TRUE);
+					ShowWindow(hwndPageMode1[i], FALSE);
+				}
 			}
 			break;
 		}
@@ -916,14 +935,16 @@ LRESULT CALLBACK DBLCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			Button_SetCheck(rdoYinc, BST_UNCHECKED);
 			Button_SetCheck(rdoYdec, BST_UNCHECKED);
 
-			switch (lpCalc->cpu.pio.lcd->cursor_mode)
-			{
-			case X_UP:		Button_SetCheck(rdoXdec, BST_CHECKED); break;
-			case X_DOWN:	Button_SetCheck(rdoXinc, BST_CHECKED); break;
-			case Y_UP:		Button_SetCheck(rdoYinc, BST_CHECKED); break;
-			case Y_DOWN:	Button_SetCheck(rdoYdec, BST_CHECKED); break;
-			default:
-				break;
+			if (lpCalc->model != TI_84PCSE) {
+				switch (lpCalc->cpu.pio.lcd->cursor_mode)
+				{
+				case X_UP:		Button_SetCheck(rdoXdec, BST_CHECKED); break;
+				case X_DOWN:	Button_SetCheck(rdoXinc, BST_CHECKED); break;
+				case Y_UP:		Button_SetCheck(rdoYinc, BST_CHECKED); break;
+				case Y_DOWN:	Button_SetCheck(rdoYdec, BST_CHECKED); break;
+				default:
+					break;
+				}
 			}
 
 			InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);

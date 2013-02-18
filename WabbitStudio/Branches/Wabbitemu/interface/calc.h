@@ -26,7 +26,7 @@ typedef enum {
 } gif_disp_states;
 
 #define MIN_BLOCK_SIZE 16
-#define MAX_FLASH_PAGE_SIZE 0x80
+#define MAX_FLASH_PAGE_SIZE 0x100
 #define MAX_RAM_PAGE_SIZE 0x08
 typedef struct profiler {
 	BOOL running;
@@ -241,6 +241,7 @@ GLOBAL const TCHAR *CalcModelTxt[]
 	_T("TI-83+SE"),
 	_T("TI-84+"),
 	_T("TI-84+SE"),
+	_T("TI-84+CSE"),
 	_T("???")}
 #endif
 ;

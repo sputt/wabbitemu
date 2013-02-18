@@ -68,7 +68,11 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 			DestroyWindow(lpCalc->hwndStatusBar);
 			CloseWindow(lpCalc->hwndStatusBar);
 		}
-		SetRect(&rc, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
+		if (lpCalc->model == TI_84PCSE) {
+			SetRect(&rc, 0, 0, 320, 240);
+		} else {
+			SetRect(&rc, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
+		}
 		int iStatusWidths[] = { 100, -1 };
 		lpCalc->hwndStatusBar = CreateWindowEx(0, STATUSCLASSNAME, NULL, WS_CHILD | WS_VISIBLE,
 			0, 0, 0, 0, lpCalc->hwndFrame, (HMENU) 99, g_hInst, NULL);
@@ -213,6 +217,7 @@ int gui_frame_update(LPCALC lpCalc) {
 				break;
 			case TI_84P:
 			case TI_84PSE:
+			case TI_84PCSE:
 				hbmKeymap.Load(_T("TI-84+SEKeymap"), _T("PNG"), g_hInst);
 				break;
 			case TI_85:

@@ -113,7 +113,9 @@
     <ClCompile Include="hardware\83hw.c" />
     <ClCompile Include="hardware\83phw.c" />
     <ClCompile Include="hardware\83psehw.c" />
+    <ClCompile Include="hardware\84pcsehw.c" />
     <ClCompile Include="hardware\86hw.c" />
+    <ClCompile Include="hardware\c_lcd.c" />
     <ClCompile Include="hardware\keys.c" />
     <ClCompile Include="hardware\lcd.c" />
     <ClCompile Include="hardware\link.c" />
@@ -303,7 +305,9 @@
     <ClInclude Include="hardware\83hw.h" />
     <ClInclude Include="hardware\83phw.h" />
     <ClInclude Include="hardware\83psehw.h" />
+    <ClInclude Include="hardware\84pcsehw.h" />
     <ClInclude Include="hardware\86hw.h" />
+    <ClInclude Include="hardware\c_lcd.h" />
     <ClInclude Include="hardware\keys.h" />
     <ClInclude Include="hardware\lcd.h" />
     <ClInclude Include="hardware\link.h" />
@@ -342,7 +346,6 @@
     <ClInclude Include="utilities\SendFile.h" />
     <ClInclude Include="utilities\sendfileswindows.h" />
     <ClInclude Include="utilities\sound.h" />
-    <ClInclude Include="utilities\types.h" />
     <ClInclude Include="utilities\unzip.h" />
     <ClInclude Include="utilities\var.h" />
     <ClInclude Include="utilities\zconf.h" />

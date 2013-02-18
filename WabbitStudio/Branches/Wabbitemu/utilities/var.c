@@ -329,6 +329,7 @@ TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 	else if ((size >= 510 * 1024) && (size <= (590 * 1024))) calc = TI_83P;
 	else if ((size >= 1016 * 1024) && (size <= (1030 * 1024))) calc = TI_84P;
 	else if ((size >= 2044 * 1024) && (size <= (2260 * 1024))) calc = TI_83PSE;
+	else if ((size >= (4088 * 1024)) && (size<= (4104 * 10234))) calc = TI_84PCSE;
 	else {
 		puts("not a known rom");
 		return FreeTiFile(tifile);

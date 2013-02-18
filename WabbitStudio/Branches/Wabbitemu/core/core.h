@@ -14,6 +14,7 @@
 #define TI_83PSE	7
 #define TI_84P		8
 #define TI_84PSE	9
+#define TI_84PCSE	10
 
 /*defines the start of the app page*/
 /*this page starts in HIGH mem and grows to LOW */
@@ -231,7 +232,10 @@ typedef struct interrupt {
 
 typedef struct pio_context {
 	int model;
-	struct LCD *lcd;
+	union {
+		struct LCD *lcd;
+		struct C_LCD *clcd;
+	};
 	struct keypad *keypad;
 	struct link *link;
 	struct STDINT *stdint;
@@ -288,6 +292,7 @@ typedef struct CPU {
 	BOOL is_link_instruction;
 	unsigned long long linking_time;
 	unsigned long long hasHitEnter;
+	BYTE port0E, port0F;
 } CPU_t;
 
 typedef void (*opcodep)(CPU_t*);
@@ -317,7 +322,7 @@ BOOL check_mem_read_break(memc *mem, waddr_t waddr);
 BOOL check_mem_write_break(memc *mem, waddr_t waddr);
 
 BOOL is_priveleged_page(CPU_t *cpu);
-void change_page(CPU_t *cpu, int bank, char page, BOOL ram);
+void change_page(CPU_t *cpu, int bank, u_char page, BOOL ram);
 void update_bootmap_pages(memc *mem_c);
 
 int tc_init(timerc*, int);

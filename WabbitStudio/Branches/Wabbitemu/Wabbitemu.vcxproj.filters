@@ -340,6 +340,12 @@
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
     <ClCompile Include="Wabbitemu_i.c" />
+    <ClCompile Include="hardware\84pcsehw.c">
+      <Filter>Source Files\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="hardware\c_lcd.c">
+      <Filter>Source Files\Hardware</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -510,9 +516,6 @@
     <ClInclude Include="utilities\sound.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="utilities\types.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="gui\guiwizard.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -653,6 +656,12 @@
     </ClInclude>
     <ClInclude Include="utilities\avifile.h">
       <Filter>Header Files\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\84pcsehw.h">
+      <Filter>Header Files\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="hardware\c_lcd.h">
+      <Filter>Header Files\Hardware</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

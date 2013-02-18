@@ -88,6 +88,8 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	}
 
 	lcd->free = &LCD_free;
+	lcd->timer_refresh = &LCD_timer_refresh;
+	lcd->image = &LCD_image;
 	LCD_reset(lcd);
 	
 	switch (model) {

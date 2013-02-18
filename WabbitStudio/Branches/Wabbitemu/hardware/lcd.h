@@ -61,16 +61,25 @@ typedef enum _LCD_MODE {
  * here to prevent thread related issues with a static buffer
  */
 typedef struct LCD {
+	//Elements common with CLCD
 	void (*free)(struct LCD*);		// Function to free this aux
+	void (*timer_refresh)(struct CPU*);		// Function to refresh the timer
+	u_char* (*image)(struct LCD*);	// Function to get an lcd_image
 	BOOL active;					// TRUE = on, FALSE = off
-	u_int word_len;
-	u_int x, y, z;					/* LCD cursors */
 	int width;
+	u_int x, y, z;					/* LCD cursors */
+	u_int contrast;					/* 0 to 63 */
+	double ufps, ufps_last;			/* User frames per second*/
+	double time;					/* Last lcd update in seconds*/
+	double lastgifframe;
+	double write_avg, write_last;	/* Used to determine freq. of writes to the LCD */
+	long long last_tstate;			// timer_c->tstate of the last write
+	//elements only in LCD
+	u_int word_len;
 	u_int lcd_delay;				//delay in tstate required to write
 	
 	LCD_CURSOR_MODE cursor_mode;	/* Y_UP, Y_DOWN, X_UP, X_DOWN */
 	u_int last_read;				/* Buffer previous read */
-	u_int contrast;					/* 0 to 63 */
 	u_int base_level;				/* used in lcd level to handle contrast */
 	uint8_t display[DISPLAY_SIZE];	/* LCD display memory */
 	uint8_t screen[LCD_HEIGHT][LCD_WIDTH];
@@ -80,11 +89,6 @@ typedef struct LCD {
 	u_int shades;					/* number of shades of grey*/
 	LCD_MODE mode;					/* Mode of LCD rendering */
 	double steady_frame;			/* Length of a steady frame in seconds */
-	double time;					/* Last lcd update in seconds*/
-	double ufps, ufps_last;			/* User frames per second*/
-	double lastgifframe;
-	double write_avg, write_last;	/* Used to determine freq. of writes to the LCD */
-	long long last_tstate;			// timer_c->tstate of the last write
 } LCD_t;
 
 /* Device functions */

@@ -263,15 +263,20 @@ static BOOL is_allowed_exec(CPU_t *cpu) {
 	}
 }
 
-void change_page(CPU_t *cpu, int bank, char page, BOOL ram) {
+void change_page(CPU_t *cpu, int bank, u_char page, BOOL ram) {
 	cpu->mem_c->normal_banks[bank].ram			= ram;
 	if (ram) {
-		cpu->mem_c->normal_banks[bank].page		= page;
+		cpu->mem_c->normal_banks[bank].page		= page & 0xFF;
 		cpu->mem_c->normal_banks[bank].addr		= cpu->mem_c->ram + (page * PAGE_SIZE);
 		cpu->mem_c->normal_banks[bank].read_only	= FALSE;
 		cpu->mem_c->normal_banks[bank].no_exec		= FALSE;
 	} else {
-		cpu->mem_c->normal_banks[bank].page		= page;
+		if (page <= 0x7F && ((bank == 1 && (cpu->port0E & 1)) || (bank == 2 && (cpu->port0F & 1)))) {
+			page += 0x80;
+		} else if (page > 0x7F && ((bank == 1 && !(cpu->port0E & 1)) || (bank == 2 && !(cpu->port0F & 1)))) {
+			page -= 0x80;
+		}
+		cpu->mem_c->normal_banks[bank].page		= page & 0xFF;
 		cpu->mem_c->normal_banks[bank].addr		= cpu->mem_c->flash + (page * PAGE_SIZE);
 		cpu->mem_c->normal_banks[bank].read_only	= page == cpu->mem_c->flash_pages - 1;
 		cpu->mem_c->normal_banks[bank].no_exec		= FALSE;

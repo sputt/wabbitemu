@@ -344,7 +344,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			hdc, 0, 0, SRCCOPY ) == FALSE) _tprintf_s(_T("BitBlt failed\n"));
 
 	} else {
-		screen = LCD_image(lcd);
+		screen = lcd->image(lcd);
 		if ((rc.right - rc.left) % lcd->width) {
 			Bitmap lcdBitmap(bi, screen);
 			Graphics g(hdc);
@@ -393,7 +393,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		ClientToScreen(hwnd, &pt);
 		ScreenToClient(GetParent(hwnd), &pt);
 
-		if (alphablendfail < 100 && lpCalc->bAlphaBlendLCD) {
+		if (alphablendfail < 100 && lpCalc->bAlphaBlendLCD && lpCalc->model != TI_84PCSE) {
 			if (AlphaBlend(	hdc, rc.left, rc.top, rc.right,  rc.bottom,
 				lpCalc->hdcSkin, lpCalc->rectLCD.left, lpCalc->rectLCD.top,
 				lpCalc->rectLCD.right - lpCalc->rectLCD.left,
@@ -506,10 +506,11 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			
 			if (lpCalc->hwndStatusBar) {
 				if (clock() > lpCalc->sb_refresh + CLOCKS_PER_SEC / 2) {
-					if (lcd && lcd->active)
+					if (lcd && lcd->active) {
 						StringCbPrintf(sz_status, sizeof(sz_status), _T("FPS: %0.2lf"), lcd->ufps);
-					else
+					} else {
 						StringCbPrintf(sz_status, sizeof(sz_status),  _T("FPS: -"));
+					}
 					SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 0, (LPARAM) sz_status);
 					lpCalc->sb_refresh = clock();
 				}

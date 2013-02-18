@@ -135,4 +135,18 @@ void port7_83pse(CPU_t *, device_t *);
 void port14_83pse(CPU_t *, device_t *);
 int GetCPUSpeed(CPU_t *);
 
+void GenerateUSBEvent(CPU_t *cpu, USB_t *usb, int bit, BOOL lowToHigh);
+SE_AUX_t* SE_AUX_init(CPU_t* cpu);
+void UpdateDelays(CPU_t *cpu, DELAY_t *delay);
+unsigned long calc_md5(MD5_t* md5);
+
+void clock_enable(CPU_t *cpu, device_t *dev);
+void clock_set(CPU_t *cpu, device_t *dev);
+void clock_read(CPU_t *cpu, device_t *dev);
+void delay_ports(CPU_t *cpu, device_t *dev);
+void fake_usb(CPU_t *cpu, device_t *dev);
+void handlextal(CPU_t *cpu,XTAL_t* xtal);
+void md5ports(CPU_t *cpu, device_t *dev);
+void mod_timer(CPU_t *cpu, XTAL_t* xtal);
+
 #endif 

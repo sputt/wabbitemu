@@ -195,13 +195,23 @@ int EnableCutout(LPCALC lpCalc) {
 	HMODULE hasDWM = LoadLibrary(_T("dwmapi.dll"));
 	if (!lpCalc->hwndLCD || GetParent(lpCalc->hwndLCD)) {
 		DestroyWindow(lpCalc->hwndLCD);
-		lpCalc->hwndLCD = CreateWindowEx(
-				0,
-				g_szLCDName,
-				_T("Wabbitemu"),
-				0,
-				0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
-				lpCalc->hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
+		if (lpCalc->model == TI_84PCSE) {
+			lpCalc->hwndLCD = CreateWindowEx(
+					0,
+					g_szLCDName,
+					_T("Wabbitemu"),
+					0,
+					0, 0, lpCalc->cpu.pio.lcd->width, 240,
+					lpCalc->hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
+		} else {
+			lpCalc->hwndLCD = CreateWindowEx(
+					0,
+					g_szLCDName,
+					_T("Wabbitemu"),
+					0,
+					0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
+					lpCalc->hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
+		}
 	}
 	
 	if (hasDWM) {
@@ -212,7 +222,7 @@ int EnableCutout(LPCALC lpCalc) {
 	}
 	ShowWindow(lpCalc->hwndLCD, TRUE);
 
-	SetWindowTheme(lpCalc->hwndLCD, (LPCWSTR) _T(" "), (LPCWSTR) _T(" "));
+	SetWindowTheme(lpCalc->hwndLCD, L" ", L" ");
 	
 	if (lpCalc->model == TI_84PSE) {
 		if (!bi) {
@@ -409,16 +419,27 @@ int DisableCutout(HWND hwndFrame) {
 
 	int scale = lpCalc->scale;
 	if (lpCalc->SkinEnabled)
-		scale = 2;
-	if (lpCalc->hwndLCD)
+		scale = lpCalc->model == TI_84PCSE ? 1 : 2;
+	if (lpCalc->hwndLCD) {
 		DestroyWindow(lpCalc->hwndLCD);
+	}
+	if (lpCalc->model == TI_84PCSE) {
 		lpCalc->hwndLCD = CreateWindowEx(
-			0,
-			g_szLCDName,
-			_T("LCD"),
-			WS_VISIBLE |  WS_CHILD,
-			0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
-			hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID) GetWindowLongPtr(hwndFrame, GWLP_USERDATA));
+		0,
+		g_szLCDName,
+		_T("LCD"),
+		WS_VISIBLE |  WS_CHILD,
+		0, 0, lpCalc->cpu.pio.lcd->width * scale, 240 * scale,
+		hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID) GetWindowLongPtr(hwndFrame, GWLP_USERDATA));
+	} else {
+		lpCalc->hwndLCD = CreateWindowEx(
+		0,
+		g_szLCDName,
+		_T("LCD"),
+		WS_VISIBLE |  WS_CHILD,
+		0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
+		hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID) GetWindowLongPtr(hwndFrame, GWLP_USERDATA));
+	}
 
 	SetWindowLongPtr(hwndFrame, GWL_EXSTYLE, 0);
 	SetWindowLongPtr(hwndFrame, GWL_STYLE, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));

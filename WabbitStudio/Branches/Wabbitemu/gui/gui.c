@@ -189,11 +189,15 @@ int gui_frame(LPCALC lpCalc) {
 	RECT r, desktop = {0};
 
 	if (!lpCalc->scale)
-		lpCalc->scale = 2;
+		lpCalc->scale = lpCalc->model == TI_84PCSE ? 1 : 2;
 	if (lpCalc->SkinEnabled) {
 		SetRect(&r, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	} else {
-		SetRect(&r, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
+		if (lpCalc->model == TI_84PCSE) {
+			SetRect(&r, 0, 0, 320 * lpCalc->scale, 240 * lpCalc->scale);
+		} else {
+			SetRect(&r, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
+		}
 	}
 	AdjustWindowRect(&r, WS_CAPTION | WS_TILEDWINDOW, FALSE);
 	r.bottom += GetSystemMetrics(SM_CYMENU);
@@ -243,7 +247,7 @@ extern keyprog_t keysti86[256];
 	if (lpCalc->hwndFrame == NULL /*|| lpCalc->hwndLCD == NULL*/) return -1;
 
 	GetClientRect(lpCalc->hwndFrame, &r);
-	lpCalc->running = TRUE;
+	lpCalc->running = FALSE;
 	lpCalc->speed = 100;
 	HMENU hmenu = GetMenu(lpCalc->hwndFrame);
 	CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
@@ -1356,83 +1360,160 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return TRUE;
 		}
 		case WM_SIZE: {
-			RECT rc, screen;
-			GetClientRect(hwnd, &rc);
-			HMENU hmenu = GetMenu(hwnd);
-			int cyMenu = hmenu == NULL ? 0 : GetSystemMetrics(SM_CYMENU);
-			if ((lpCalc->bCutout && lpCalc->SkinEnabled))	
-				rc.bottom += cyMenu;
-			int desired_height = lpCalc->SkinEnabled ?  lpCalc->rectSkin.bottom : 128;
+			if (lpCalc->model != TI_84PCSE) {
+				RECT rc, screen;
+				GetClientRect(hwnd, &rc);
+				HMENU hmenu = GetMenu(hwnd);
+				int cyMenu = hmenu == NULL ? 0 : GetSystemMetrics(SM_CYMENU);
+				if ((lpCalc->bCutout && lpCalc->SkinEnabled))	
+					rc.bottom += cyMenu;
+				int desired_height = lpCalc->SkinEnabled ?  lpCalc->rectSkin.bottom : 128;
 
-			int status_height;
-			if (lpCalc->hwndStatusBar == NULL) {
-				status_height = 0;
+				int status_height;
+				if (lpCalc->hwndStatusBar == NULL) {
+					status_height = 0;
+				} else {
+					RECT src;
+					GetWindowRect(lpCalc->hwndStatusBar, &src);
+
+					status_height = src.bottom - src.top;
+					desired_height += status_height;
+				}
+
+				rc.bottom -= status_height;
+
+				float xc = 1, yc = 1;
+				if (!lpCalc->SkinEnabled) {
+					xc = ((float) rc.right) / 256.0f;
+					yc = ((float) rc.bottom) / 128.0f;
+				}
+				int width = lpCalc->rectLCD.right - lpCalc->rectLCD.left;
+				SetRect(&screen,
+					0, 0,
+					(int) (width * xc),
+					(int) (64 * 2 * yc));
+
+				if (lpCalc->SkinEnabled)
+					OffsetRect(&screen, lpCalc->rectLCD.left, lpCalc->rectLCD.top);
+				else
+					OffsetRect(&screen, (int) ((rc.right - width * xc) / 2), 0);
+
+				if ((rc.right - rc.left) & 1) rc.right++;
+				if ((rc.bottom - rc.top) & 1) rc.bottom++;
+
+				RECT client;
+				client.top = 0;
+				client.left = 0;
+				if (lpCalc->SkinEnabled) {
+					if (lpCalc->bCutout) {
+						GetWindowRect(hwnd, &client);
+					}
+					RECT correctSize = lpCalc->rectSkin;
+					AdjustWindowRect(&correctSize, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX), cyMenu);
+					if (correctSize.left < 0) {
+						correctSize.right -= correctSize.left;
+					}
+					if (correctSize.top < 0) {
+						correctSize.bottom -= correctSize.top;
+					}
+					SetWindowPos(hwnd, NULL, 0, 0, correctSize.right, correctSize.bottom, SWP_NOACTIVATE | SWP_NOOWNERZORDER |
+						SWP_NOMOVE | SWP_DRAWFRAME | (silent_mode ? SWP_HIDEWINDOW : 0));
+				}
+				RECT windowRect;
+				GetWindowRect(hwnd, &windowRect);
+
+				if (windowRect.bottom - windowRect.top != screen.bottom - screen.top ||
+					windowRect.right - windowRect.left != screen.right - screen.left)
+				{
+					MoveWindow(lpCalc->hwndLCD, screen.left + client.left, screen.top + client.top,
+						screen.right-screen.left, screen.bottom-screen.top, FALSE);
+				}
+				ValidateRect(hwnd, &screen);
+				if (lpCalc->hwndStatusBar != NULL)
+					SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
+
+				//force little buttons to be correct
+				PositionLittleButtons(hwnd);
+				UpdateWindow(lpCalc->hwndLCD);
+				return 0;
 			} else {
-				RECT src;
-				GetWindowRect(lpCalc->hwndStatusBar, &src);
+				RECT rc, screen;
+				GetClientRect(hwnd, &rc);
+				HMENU hmenu = GetMenu(hwnd);
+				int cyMenu = hmenu == NULL ? 0 : GetSystemMetrics(SM_CYMENU);
+				if ((lpCalc->bCutout && lpCalc->SkinEnabled))	
+					rc.bottom += cyMenu;
+				int desired_height = lpCalc->SkinEnabled ?  lpCalc->rectSkin.bottom : 240;
 
-				status_height = src.bottom - src.top;
-				desired_height += status_height;
-			}
+				int status_height;
+				if (lpCalc->hwndStatusBar == NULL) {
+					status_height = 0;
+				} else {
+					RECT src;
+					GetWindowRect(lpCalc->hwndStatusBar, &src);
 
-			rc.bottom -= status_height;
-
-			float xc = 1, yc = 1;
-			if (!lpCalc->SkinEnabled) {
-				xc = ((float) rc.right) / 256.0f;
-				yc = ((float) rc.bottom) / 128.0f;
-			}
-			int width = lpCalc->rectLCD.right - lpCalc->rectLCD.left;
-			SetRect(&screen,
-				0, 0,
-				(int) (width * xc),
-				(int) (64 * 2 * yc));
-
-			if (lpCalc->SkinEnabled)
-				OffsetRect(&screen, lpCalc->rectLCD.left, lpCalc->rectLCD.top);
-			else
-				OffsetRect(&screen, (int) ((rc.right - width * xc) / 2), 0);
-
-			if ((rc.right - rc.left) & 1) rc.right++;
-			if ((rc.bottom - rc.top) & 1) rc.bottom++;
-
-			RECT client;
-			client.top = 0;
-			client.left = 0;
-			if (lpCalc->SkinEnabled) {
-				if (lpCalc->bCutout) {
-					GetWindowRect(hwnd, &client);
+					status_height = src.bottom - src.top;
+					desired_height += status_height;
 				}
-				RECT correctSize = lpCalc->rectSkin;
-				AdjustWindowRect(&correctSize, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX), cyMenu);
-				if (correctSize.left < 0) {
-					correctSize.right -= correctSize.left;
-				}
-				if (correctSize.top < 0) {
-					correctSize.bottom -= correctSize.top;
-				}
-				SetWindowPos(hwnd, NULL, 0, 0, correctSize.right, correctSize.bottom, SWP_NOACTIVATE | SWP_NOOWNERZORDER |
-					SWP_NOMOVE | SWP_DRAWFRAME | (silent_mode ? SWP_HIDEWINDOW : 0));
-			}
-			RECT windowRect;
-			GetWindowRect(hwnd, &windowRect);
 
-			if (windowRect.bottom - windowRect.top != screen.bottom - screen.top ||
-				windowRect.right - windowRect.left != screen.right - screen.left)
-			{
-				MoveWindow(lpCalc->hwndLCD, screen.left + client.left, screen.top + client.top,
-					screen.right-screen.left, screen.bottom-screen.top, FALSE);
-			}
-			ValidateRect(hwnd, &screen);
-			//printf("screen: %d\n", screen.right - screen.left);
-			if (lpCalc->hwndStatusBar != NULL)
-				SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
+				rc.bottom -= status_height;
 
-			//force little buttons to be correct
-			PositionLittleButtons(hwnd);
-			UpdateWindow(lpCalc->hwndLCD);
-			//InvalidateRect(hwnd, NULL, FALSE);
-			return 0;
+				float xc = 1, yc = 1;
+				if (!lpCalc->SkinEnabled) {
+					xc = ((float) rc.right) / 320.0f;
+					yc = ((float) rc.bottom) / 240.0f;
+				}
+				int width = 320;
+				SetRect(&screen,
+					0, 0,
+					(int) (width * xc),
+					(int) (240 * yc));
+
+				if (lpCalc->SkinEnabled) {
+					OffsetRect(&screen, lpCalc->rectLCD.left, lpCalc->rectLCD.top);
+				} else {
+					OffsetRect(&screen, (int) ((rc.right - width * xc) / 2), 0);
+				}
+
+				if ((rc.right - rc.left) & 1) rc.right++;
+				if ((rc.bottom - rc.top) & 1) rc.bottom++;
+
+				RECT client;
+				client.top = 0;
+				client.left = 0;
+				if (lpCalc->SkinEnabled) {
+					if (lpCalc->bCutout) {
+						GetWindowRect(hwnd, &client);
+					}
+					RECT correctSize = lpCalc->rectSkin;
+					AdjustWindowRect(&correctSize, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX), cyMenu);
+					if (correctSize.left < 0) {
+						correctSize.right -= correctSize.left;
+					}
+					if (correctSize.top < 0) {
+						correctSize.bottom -= correctSize.top;
+					}
+					SetWindowPos(hwnd, NULL, 0, 0, correctSize.right, correctSize.bottom, SWP_NOACTIVATE | SWP_NOOWNERZORDER |
+						SWP_NOMOVE | SWP_DRAWFRAME | (silent_mode ? SWP_HIDEWINDOW : 0));
+				}
+				RECT windowRect;
+				GetWindowRect(hwnd, &windowRect);
+
+				if (windowRect.bottom - windowRect.top != screen.bottom - screen.top ||
+					windowRect.right - windowRect.left != screen.right - screen.left)
+				{
+					MoveWindow(lpCalc->hwndLCD, screen.left + client.left, screen.top + client.top,
+						screen.right-screen.left, screen.bottom-screen.top, FALSE);
+				}
+				ValidateRect(hwnd, &screen);
+				if (lpCalc->hwndStatusBar != NULL)
+					SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
+
+				//force little buttons to be correct
+				PositionLittleButtons(hwnd);
+				UpdateWindow(lpCalc->hwndLCD);
+				return 0;
+			}
 		}
 		//case WM_MOVING:
 		case WM_MOVE: {
