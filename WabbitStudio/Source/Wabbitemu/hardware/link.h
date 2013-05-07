@@ -26,7 +26,8 @@ typedef enum {
 	LERR_MEM,					/* Not enough memory on calc */
 	LERR_MODEL,					/* Not the correct model for file */
 	LERR_FILE,					/* Invalid TIFILE in argument */
-	LERR_SYSTEM					/* Something wrong in wabbitemu */
+	LERR_SYSTEM,				/* Something wrong in wabbitemu */
+	LERR_TURN_ON,				/* We need to turn on because a ROM image was sent */
 } LINK_ERR;
 
 // Destination flags

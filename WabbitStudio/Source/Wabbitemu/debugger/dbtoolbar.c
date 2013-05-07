@@ -885,8 +885,8 @@ LRESULT CALLBACK ToolBarProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPar
 
 	switch (Message) {
 		case WM_CREATE: {
-			lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			lpCalc = lpDebugInfo->lpCalc;
 
 			prevBtn = NULL;
 			SelectObject(GetDC(hwnd), lpDebugInfo->hfontSegoe);

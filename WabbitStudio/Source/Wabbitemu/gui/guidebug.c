@@ -108,11 +108,12 @@ int CALLBACK EnumFontFamExProc(
 	return 0;
 }
 
-void AddDisasmTab(LPCALC lpCalc, dp_settings *dps, ViewType type, LPDEBUGWINDOWINFO lpDebugInfo) {
+void AddDisasmTab(LPDEBUGWINDOWINFO lpDebugInfo, ViewType type) {
 	int total_disasm_pane = lpDebugInfo->total_disasm_pane;
 	if (total_disasm_pane >= MAX_DISASM_TABS) {
 		return;
 	}
+	dp_settings *dps = lpDebugInfo->dps;
 	int index = total_disasm_pane + 1;
 	ZeroMemory(&dps[index], sizeof(dp_settings));
 	dps[index].hdrs[0].nCharsWidth = 10;
@@ -143,10 +144,10 @@ void AddDisasmTab(LPCALC lpCalc, dp_settings *dps, ViewType type, LPDEBUGWINDOWI
 	dps[index].hdrs[7].index = -1;
 	dps[index].hdrs[7].lpfnCallback = &sprint_addr;
 	dps[index].type = type;
-	dps[index].lpCalc = lpCalc;
+	dps[index].lpCalc = lpDebugInfo->lpCalc;
 
 	if (type == REGULAR) {
-		dps[index].nSel = lpCalc->cpu.pc;
+		dps[index].nSel = lpDebugInfo->lpCalc->cpu.pc;
 	}
 
 	LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) malloc(sizeof(TABWINDOWINFO));
@@ -167,7 +168,7 @@ void AddDisasmTab(LPCALC lpCalc, dp_settings *dps, ViewType type, LPDEBUGWINDOWI
 			StringCbPrintf(buffer, sizeof(buffer), _T("Disasm %i"), (total_disasm_pane + 3) / 3);
 			break;
 		case FLASH:
-			if (lpCalc->cpu.pio.model >= TI_73) {
+			if (lpDebugInfo->lpCalc->cpu.pio.model >= TI_73) {
 				StringCbPrintf(buffer, sizeof(buffer), _T("Flash %i"), (total_disasm_pane + 3) / 3);
 			} else {
 				StringCbPrintf(buffer, sizeof(buffer), _T("ROM %i"), (total_disasm_pane + 3) / 3);
@@ -253,7 +254,7 @@ void AddWatchTab(LPCALC lpCalc, LPDEBUGWINDOWINFO debugInfo) {
 		3, 20, 400, 200,
 		debugInfo->hmem,
 		(HMENU) ID_WATCH,
-		g_hInst, (LPVOID) lpCalc);
+		g_hInst, (LPVOID) debugInfo);
 	TCITEM tie;
 	tie.mask = TCIF_TEXT | TCIF_IMAGE;
 	tie.iImage = -1;
@@ -279,7 +280,6 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			ZeroMemory(lpDebugInfo, sizeof(DEBUGWINDOWINFO));
 			LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 			lpDebugInfo->lpCalc = lpCalc;
-			lpCalc->hwndDebug = hwnd;
 			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LPARAM) lpDebugInfo);
 
 			lpDebugInfo->cyGripper = 10;
@@ -367,7 +367,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				0, 0, 1, 1,
 				hwnd,
 				(HMENU) ID_TOOLBAR,
-				g_hInst, lpCalc);
+				g_hInst, lpDebugInfo);
 
 			lpDebugInfo->hmem =
 			CreateWindow(
@@ -403,7 +403,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				0, 0, 100, 300,
 				hwnd,
 				(HMENU) ID_REG,
-				g_hInst, lpCalc);
+				g_hInst, lpDebugInfo);
 
 			//CreatePaneContainer(hwnd);
 
@@ -444,6 +444,7 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 			SetFocus(lpDebugInfo->hdisasm);
 			SendMessage(hwnd, WM_SIZE, 0, 0);
 			Debug_UpdateWindow(hwnd);
+			lpDebugInfo->is_ready = TRUE;
 			return 0;
 		}
 		case WM_SIZING:
@@ -812,9 +813,9 @@ LRESULT CALLBACK DebugProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 				if (lpDebugInfo->total_disasm_pane + 1 > MAX_DISASM_TABS) {
 					break;
 				}
-				AddDisasmTab(lpDebugInfo->lpCalc, lpDebugInfo->dps, REGULAR, lpDebugInfo);
-				AddDisasmTab(lpDebugInfo->lpCalc, lpDebugInfo->dps, FLASH, lpDebugInfo);
-				AddDisasmTab(lpDebugInfo->lpCalc, lpDebugInfo->dps, RAM, lpDebugInfo);
+				AddDisasmTab(lpDebugInfo, REGULAR);
+				AddDisasmTab(lpDebugInfo, FLASH);
+				AddDisasmTab(lpDebugInfo, RAM);
 				if (lpDebugInfo->total_disasm_pane == MAX_DISASM_TABS) {
 					EnableMenuItem(hMenu, IDM_VIEW_ADDDISASM, MF_BYCOMMAND | MF_DISABLED);
 				}

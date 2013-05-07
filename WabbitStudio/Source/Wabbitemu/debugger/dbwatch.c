@@ -270,8 +270,7 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 
 	switch(Message) {
 		case WM_CREATE: {
-			lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) GetWindowLongPtr(lpCalc->hwndDebug, GWLP_USERDATA);
+			LPDEBUGWINDOWINFO lpDebugInfo = (LPDEBUGWINDOWINFO) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 
 			int i = 0;
 			lpDebugInfo->hwndListView = CreateListView(hwnd);

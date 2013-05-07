@@ -21,6 +21,7 @@
 #include "CPage.h"
 #include "exportvar.h"
 #include "guiwizard.h"
+#include "resource.h"
 #endif
 
 /*
@@ -393,7 +394,12 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 		if (tifile->save == NULL) {
 			calc_reset(lpCalc);
 			if (auto_turn_on) {
+#ifdef WINVER
+				//windows uses threading so we need to send message
+				SendMessage(lpCalc->hwndFrame, WM_COMMAND, ID_DEBUG_TURNONCALC, 0);
+#else
 				calc_turn_on(lpCalc);
+#endif
 			}
 		}
 	}

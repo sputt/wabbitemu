@@ -739,6 +739,16 @@ INT_PTR CALLBACK SetupROMDumperProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 							FILE *start, *end;
 							_tfopen_s(&start, dumperPath, _T("rb"));
 							_tfopen_s(&end, buf, _T("wb"));
+							if (end == NULL || start == NULL) {
+								if (end != NULL) {
+									fclose(end);
+								}
+								if (start != NULL) {
+									fclose(start);
+								}
+								MessageBox(hwnd, _T("Error saving file, please try again."), _T("Error"), MB_OK);
+								break;
+							}
 							while(!feof(start)) {
 								ch = fgetc(start);
 								fputc(ch, end);
@@ -905,6 +915,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					_tfopen_s(&file, browse, _T("rb"));
 					if (file == NULL) {
 						MessageBox(NULL, _T("Error opening first boot page file"), _T("Error"), MB_OK);
+						break;
 					}
 					//goto the name to see which one we have (in TI var header)
 					fseek(file, 66, SEEK_SET);
@@ -915,13 +926,11 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					BYTE (*flash)[PAGE_SIZE] = (BYTE(*)[PAGE_SIZE]) lpCalc->mem_c.flash;
 					if (ch == '1') {
 						page = lpCalc->mem_c.flash_pages - 1;
-						for (int i = 0; i < PAGE_SIZE; i++)
-							flash[page][i] = fgetc(file);
-					}
-					else {
+					} else {
 						page = lpCalc->mem_c.flash_pages - 0x11;
-						for (int i = 0; i < PAGE_SIZE; i++)
-							flash[page][i] = fgetc(file);
+					}
+					for (int i = 0; i < PAGE_SIZE; i++) {
+						flash[page][i] = fgetc(file);
 					}
 					fclose(file);
 					//second boot page
@@ -930,6 +939,7 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						_tfopen_s(&file, browse, _T("rb"));
 						if (file == NULL) {
 							MessageBox(hwnd, _T("Error opening second boot page file"), _T("Error"), MB_OK);
+							break;
 						}
 						//goto the name to see which one we have
 						fseek(file, 66, SEEK_SET);
@@ -938,13 +948,11 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 						fseek(file, 74, SEEK_SET);
 						if (ch == '1') {
 							page = lpCalc->mem_c.flash_pages - 1;
-							for (int i = 0; i < PAGE_SIZE; i++)
-								flash[page][i] = fgetc(file);
+						} else {
+							page = lpCalc->mem_c.flash_pages - 0x11;
 						}
-						else {
-							page = lpCalc->mem_c.flash_pages - 0x11;;
-							for (int i = 0; i < PAGE_SIZE; i++)
-								flash[page][i] = fgetc(file);
+						for (int i = 0; i < PAGE_SIZE; i++) {
+							flash[page][i] = fgetc(file);
 						}
 					}
 
@@ -1040,6 +1048,8 @@ void ExtractDumperProg() {
 			hrDumpProg = FindResource(hModule, MAKEINTRESOURCE(IDR_ROM86), _T("CALCPROG"));
 			StringCbCat(dumperPath, sizeof(dumperPath), _T(".86p"));
 			break;
+		default:
+			return;
 	}
 	ExtractResource(dumperPath, hrDumpProg);
 }
