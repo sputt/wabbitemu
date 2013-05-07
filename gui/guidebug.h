@@ -70,6 +70,7 @@ typedef struct tagDEBUGWINDOWINFO
 	ep_state expand_pane_state;	
 	
 	long long code_count_tstates;
+	BOOL is_ready;
 } DEBUGWINDOWINFO, *LPDEBUGWINDOWINFO;
 
 typedef struct tagTABWINDOWINFO {

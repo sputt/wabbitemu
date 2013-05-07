@@ -125,6 +125,17 @@ STDINT_t *INT83PSE_init(CPU_t*);
 int device_init_83pse(CPU_t*);
 int memory_init_83pse(memc *);
 int memory_init_84p(memc *);
+void UpdateDelays(CPU_t *cpu, DELAY_t *delay);
+void handlextal(CPU_t *cpu,XTAL_t* xtal);
+void mod_timer(CPU_t *cpu, XTAL_t* xtal);
+void GenerateUSBEvent(CPU_t *cpu, USB_t *usb, int bit, BOOL lowToHigh);
+void md5ports(CPU_t *cpu, device_t *dev);
+void delay_ports(CPU_t *cpu, device_t *dev);
+SE_AUX_t* SE_AUX_init(CPU_t* cpu);
+//CLOCK
+void clock_enable(CPU_t *cpu, device_t *dev);
+void clock_set(CPU_t *cpu, device_t *dev);
+void clock_read(CPU_t *cpu, device_t *dev);
 
 void port0_83pse(CPU_t *, device_t *);
 void port2_83pse(CPU_t *, device_t *);

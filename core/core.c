@@ -566,7 +566,7 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 			(((page != 0x3F && page != 0x2F) || (cpu->pio.se_aux->model_bits & 0x3)) &&
 			((page != 0x7F && page != 0x6F) || (cpu->pio.se_aux->model_bits & 0x2) || !(cpu->pio.se_aux->model_bits & 0x1)))) {
 			flashwrite(cpu, addr, data);
-		} else if (break_on_invalid_flash) {
+		} else if (break_on_invalid_flash && cpu->mem_c->mem_write_break_callback) {
 			cpu->mem_c->mem_write_break_callback(cpu);
 		}
 

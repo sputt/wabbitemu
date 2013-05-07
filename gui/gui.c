@@ -163,6 +163,9 @@ HWND gui_debug(LPCALC lpCalc) {
 	if (lpCalc->hwndDebug && IsWindow(lpCalc->hwndDebug)) {
 		SwitchToThisWindow(lpCalc->hwndDebug, TRUE);
 		waddr_t waddr = addr_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc);
+		while (!lpDebugInfo->is_ready) {
+			Sleep(100);
+		}
 		SendMessage(lpCalc->hwndDebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);
 		SendMessage(lpCalc->hwndDebug, WM_USER, DB_RESUME, 0);
 		return lpCalc->hwndDebug;
@@ -248,6 +251,11 @@ extern keyprog_t keysti86[256];
 	HMENU hmenu = GetMenu(lpCalc->hwndFrame);
 	CheckMenuRadioItem(GetSubMenu(hmenu, 2), IDM_SPEED_QUARTER, IDM_SPEED_MAX, IDM_SPEED_NORMAL, MF_BYCOMMAND);
 	gui_frame_update(lpCalc);
+
+	if (auto_turn_on) {
+		calc_turn_on(lpCalc);
+	}
+
 	ReleaseDC(lpCalc->hwndFrame, hdc);
 	return 0;
 }
@@ -610,7 +618,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 
 		if (hwndProp != NULL) {
-			if (PropSheet_GetCurrentPageHwnd(hwndProp) == NULL) {
+			HWND propPage = PropSheet_GetCurrentPageHwnd(hwndProp);
+			if (propPage == NULL) {
 				GetWindowRect(hwndProp, &PropRect);
 				DestroyWindow(hwndProp);
 				hwndProp = NULL;
