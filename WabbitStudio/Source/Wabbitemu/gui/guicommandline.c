@@ -13,6 +13,7 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs)
 	int argc;
 	LPWSTR *argv = CommandLineToArgvW(GetCommandLineW(), &argc);
 
+	ZeroMemory(parsedArgs, sizeof(ParsedCmdArgs));
 
 	if (argv && argc > 1) {
 #ifdef _UNICODE
@@ -66,15 +67,9 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs)
 				} else if (secondChar == 'N') {
 					parsedArgs->force_new_instance = TRUE;
 				}
-			} else {
-#ifndef _WINDLL
-				HRESULT hr = E_FAIL;
-				bool fResult = _Module.ParseCommandLine(tmpstring, &hr);
-				if (FAILED(hr))
-				{
-					OutputDebugString(_T("Failed to register\n"));
-				}
-#endif
+			} else if (_tcsicmp(tmpstring + 1, _T("embedding")) == 0)
+			{
+				parsedArgs->no_create_calc = TRUE;
 			}
 		}
 	}

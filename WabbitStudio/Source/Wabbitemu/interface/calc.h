@@ -13,6 +13,7 @@
 #include "sound.h"
 #include "DropTarget.h"
 #include "dbbreakpoints.h"
+#include "CWabbitemu.h"
 #endif
 
 #include "label.h"
@@ -127,7 +128,7 @@ typedef struct tagCALC {
 	BOOL bTIOSDebug;
 	TCHAR skin_path[256];
 	TCHAR keymap_path[256];
-	IWabbitemu *pWabbitemu;
+	CWabbitemu *pWabbitemu;
 	ICalcNotify *pCalcNotify;
 #endif
 

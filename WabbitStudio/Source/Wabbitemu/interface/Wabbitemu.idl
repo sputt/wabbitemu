@@ -44,6 +44,7 @@ enum SYMBOLTYPE
 	SYM_NONE = -1,
 };
 
+/*
 [
 	uuid(010A714D-CADA-400f-90F9-FC34B2A20752)
 ]
@@ -54,13 +55,13 @@ struct TISymbol {
 	BYTE Page;
 	BSTR Name;
 };
-
+*/
 
 [
 	uuid(023D1C58-C323-43a7-860B-95FB9C204F91),
 	object,
 ]
-interface ILCD : IUnknown
+interface ILCD : IDispatch
 {
 	[propget] HRESULT Display([out, retval] SAFEARRAY(BYTE) *Display);
 }
@@ -71,81 +72,81 @@ interface ILCD : IUnknown
 ]
 interface IZ80 : IDispatch
 {
-	[propget, bindable] HRESULT AF([out, retval] WORD *AF);
-	[propget, bindable] HRESULT A([out, retval] BYTE *A);
-	[propget, bindable] HRESULT F([out, retval] BYTE *F);
-	[propput, bindable] HRESULT AF([in] WORD AF);
-	[propput, bindable] HRESULT A([in] BYTE A);
-	[propput, bindable] HRESULT F([in] BYTE F);
+	[propget] HRESULT AF([out, retval] WORD *AF);
+	[propget] HRESULT A([out, retval] BYTE *A);
+	[propget] HRESULT F([out, retval] BYTE *F);
+	[propput] HRESULT AF([in] WORD AF);
+	[propput] HRESULT A([in] BYTE A);
+	[propput] HRESULT F([in] BYTE F);
 
-	[propget, bindable] HRESULT BC([out, retval] WORD *BC);
-	[propget, bindable] HRESULT B([out, retval] BYTE *B);
-	[propget, bindable] HRESULT C([out, retval] BYTE *C);
-	[propput, bindable] HRESULT BC([in] WORD BC);
-	[propput, bindable] HRESULT B([in] BYTE B);
-	[propput, bindable] HRESULT C([in] BYTE C);
+	[propget] HRESULT BC([out, retval] WORD *BC);
+	[propget] HRESULT B([out, retval] BYTE *B);
+	[propget] HRESULT C([out, retval] BYTE *C);
+	[propput] HRESULT BC([in] WORD BC);
+	[propput] HRESULT B([in] BYTE B);
+	[propput] HRESULT C([in] BYTE C);
 
-	[propget, bindable] HRESULT DE([out, retval] WORD *DE);
-	[propget, bindable] HRESULT D([out, retval] BYTE *D);
-	[propget, bindable] HRESULT E([out, retval] BYTE *E);
-	[propput, bindable] HRESULT DE([in] WORD DE);
-	[propput, bindable] HRESULT D([in] BYTE D);
-	[propput, bindable] HRESULT E([in] BYTE E);
+	[propget] HRESULT DE([out, retval] WORD *DE);
+	[propget] HRESULT D([out, retval] BYTE *D);
+	[propget] HRESULT E([out, retval] BYTE *E);
+	[propput] HRESULT DE([in] WORD DE);
+	[propput] HRESULT D([in] BYTE D);
+	[propput] HRESULT E([in] BYTE E);
 
-	[propget, bindable] HRESULT HL([out, retval] WORD *HL);
-	[propget, bindable] HRESULT H([out, retval] BYTE *H);
-	[propget, bindable] HRESULT L([out, retval] BYTE *L);
-	[propput, bindable] HRESULT HL([in] WORD HL);
-	[propput, bindable] HRESULT H([in] BYTE H);
-	[propput, bindable] HRESULT L([in] BYTE L);
+	[propget] HRESULT HL([out, retval] WORD *HL);
+	[propget] HRESULT H([out, retval] BYTE *H);
+	[propget] HRESULT L([out, retval] BYTE *L);
+	[propput] HRESULT HL([in] WORD HL);
+	[propput] HRESULT H([in] BYTE H);
+	[propput] HRESULT L([in] BYTE L);
 
-	[propget, bindable] HRESULT AFP([out, retval] WORD *AFP);
-	[propget, bindable] HRESULT AP([out, retval] BYTE *AP);
-	[propget, bindable] HRESULT FP([out, retval] BYTE *FP);
-	[propput, bindable] HRESULT AFP([in] WORD AFP);
-	[propput, bindable] HRESULT AP([in] BYTE AP);
-	[propput, bindable] HRESULT FP([in] BYTE FP);
+	[propget] HRESULT AFP([out, retval] WORD *AFP);
+	[propget] HRESULT AP([out, retval] BYTE *AP);
+	[propget] HRESULT FP([out, retval] BYTE *FP);
+	[propput] HRESULT AFP([in] WORD AFP);
+	[propput] HRESULT AP([in] BYTE AP);
+	[propput] HRESULT FP([in] BYTE FP);
 
-	[propget, bindable] HRESULT BCP([out, retval] WORD *BCP);
-	[propget, bindable] HRESULT BP([out, retval] BYTE *BP);
-	[propget, bindable] HRESULT CP([out, retval] BYTE *CP);
-	[propput, bindable] HRESULT BCP([in] WORD BCP);
-	[propput, bindable] HRESULT BP([in] BYTE BP);
-	[propput, bindable] HRESULT CP([in] BYTE CP);
+	[propget] HRESULT BCP([out, retval] WORD *BCP);
+	[propget] HRESULT BP([out, retval] BYTE *BP);
+	[propget] HRESULT CP([out, retval] BYTE *CP);
+	[propput] HRESULT BCP([in] WORD BCP);
+	[propput] HRESULT BP([in] BYTE BP);
+	[propput] HRESULT CP([in] BYTE CP);
 
-	[propget, bindable] HRESULT DEP([out, retval] WORD *DEP);
-	[propget, bindable] HRESULT DP([out, retval] BYTE *DP);
-	[propget, bindable] HRESULT EP([out, retval] BYTE *EP);
-	[propput, bindable] HRESULT DEP([in] WORD DEP);
-	[propput, bindable] HRESULT DP([in] BYTE DP);
-	[propput, bindable] HRESULT EP([in] BYTE EP);
+	[propget] HRESULT DEP([out, retval] WORD *DEP);
+	[propget] HRESULT DP([out, retval] BYTE *DP);
+	[propget] HRESULT EP([out, retval] BYTE *EP);
+	[propput] HRESULT DEP([in] WORD DEP);
+	[propput] HRESULT DP([in] BYTE DP);
+	[propput] HRESULT EP([in] BYTE EP);
 
-	[propget, bindable] HRESULT HLP([out, retval] WORD *HLP);
-	[propget, bindable] HRESULT HP([out, retval] BYTE *HP);
-	[propget, bindable] HRESULT LP([out, retval] BYTE *LP);
-	[propput, bindable] HRESULT HLP([in] WORD HLP);
-	[propput, bindable] HRESULT HP([in] BYTE HP);
-	[propput, bindable] HRESULT LP([in] BYTE LP);
+	[propget] HRESULT HLP([out, retval] WORD *HLP);
+	[propget] HRESULT HP([out, retval] BYTE *HP);
+	[propget] HRESULT LP([out, retval] BYTE *LP);
+	[propput] HRESULT HLP([in] WORD HLP);
+	[propput] HRESULT HP([in] BYTE HP);
+	[propput] HRESULT LP([in] BYTE LP);
 
-	[propget, bindable] HRESULT IX([out, retval] WORD *IX);
-	[propget, bindable] HRESULT IXH([out, retval] BYTE *IXH);
-	[propget, bindable] HRESULT IXL([out, retval] BYTE *IXL);
-	[propput, bindable] HRESULT IX([in] WORD IX);
-	[propput, bindable] HRESULT IXH([in] BYTE IXH);
-	[propput, bindable] HRESULT IXL([in] BYTE IXL);
+	[propget] HRESULT IX([out, retval] WORD *IX);
+	[propget] HRESULT IXH([out, retval] BYTE *IXH);
+	[propget] HRESULT IXL([out, retval] BYTE *IXL);
+	[propput] HRESULT IX([in] WORD IX);
+	[propput] HRESULT IXH([in] BYTE IXH);
+	[propput] HRESULT IXL([in] BYTE IXL);
 
-	[propget, bindable] HRESULT IY([out, retval] WORD *IY);
-	[propget, bindable] HRESULT IYH([out, retval] BYTE *IYH);
-	[propget, bindable] HRESULT IYL([out, retval] BYTE *IYL);
-	[propput, bindable] HRESULT IY([in] WORD IY);
-	[propput, bindable] HRESULT IYH([in] BYTE IYH);
-	[propput, bindable] HRESULT IYL([in] BYTE IYL);
+	[propget] HRESULT IY([out, retval] WORD *IY);
+	[propget] HRESULT IYH([out, retval] BYTE *IYH);
+	[propget] HRESULT IYL([out, retval] BYTE *IYL);
+	[propput] HRESULT IY([in] WORD IY);
+	[propput] HRESULT IYH([in] BYTE IYH);
+	[propput] HRESULT IYL([in] BYTE IYL);
 
-	[propget, bindable] HRESULT PC([out, retval] WORD *PC);
-	[propput, bindable] HRESULT PC([in] WORD PC);
+	[propget] HRESULT PC([out, retval] WORD *PC);
+	[propput] HRESULT PC([in] WORD PC);
 
-	[propget, bindable] HRESULT SP([out, retval] WORD *SP);
-	[propput, bindable] HRESULT SP([in] WORD SP);
+	[propget] HRESULT SP([out, retval] WORD *SP);
+	[propput] HRESULT SP([in] WORD SP);
 
 };
 
@@ -226,11 +227,10 @@ interface IPio : IUnknown
 interface IWabbitemu;
 
 [
-	object,
 	uuid(A24DA6E6-BD47-444d-891F-BB368872C34F),
 	pointer_default(unique),
-	dual,
-	version(2.5)
+	object,
+	version(1.0)
 ]
 interface ICalcAddress : IDispatch
 {
@@ -256,7 +256,7 @@ interface ICalcAddress : IDispatch
 	uuid(8E5D1F9E-C487-48c9-A1AD-C9ACE44C1E3A),
 	pointer_default(unique),
 	dual,
-	version(2.5)
+	version(1.0)
 ]
 interface ILabel : ICalcAddress
 {
@@ -300,7 +300,8 @@ interface ICalcNotify : IUnknown
 [
 	uuid(020FB9D5-7F45-449b-B9DF-66CFC2482BD0),
 	object,
-	version(2.0),
+	version(1.0),
+	oleautomation
 ]
 interface IWabbitemu : IDispatch
 {
@@ -341,8 +342,8 @@ interface IWabbitemu : IDispatch
 	[propget, helpstring("List of applications on the calculator.")]
 	HRESULT Apps([out, retval] SAFEARRAY(struct TIApplication) *AppList);
 
-	[propget, helpstring("List of symbols (programs, lists, etc) on the calculator.")]
-	HRESULT Symbols([out, retval] SAFEARRAY(struct TISymbol) *SymList);
+	//[propget, helpstring("List of symbols (programs, lists, etc) on the calculator.")]
+	//HRESULT Symbols([out, retval] SAFEARRAY(struct TISymbol) *SymList);
 
 	[propget, helpstring("Gets the keypad device on the calculator.")]
 	HRESULT Keypad([out, retval] IKeypad **Keypad);
@@ -353,7 +354,8 @@ interface IWabbitemu : IDispatch
 
 [
 	uuid(EDA903F6-7BB8-437f-978F-8F1A2B8B65DB),
-	version(3.0),
+	helpstring("Wabbitemu Type Library 1.0"),
+	version(1.0),
 ]
 library WabbitemuLib
 {
@@ -361,11 +363,10 @@ library WabbitemuLib
 
 	interface IBank;
 	interface ICalcNotify;
-	struct TIApplication;
+	interface ILCD;
 
 	[
 		uuid(1A03AFA2-C9C7-4d5b-9732-D78011D5009B),
-		version(3.0),
 	]
 	coclass Wabbitemu
 	{

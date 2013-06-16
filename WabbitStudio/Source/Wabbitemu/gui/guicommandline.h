@@ -19,6 +19,7 @@ struct ParsedCmdArgs
 	BOOL silent_mode;
 	BOOL force_new_instance;
 	BOOL force_focus;
+	BOOL no_create_calc;
 };
 
 void ParseCommandLineArgs(ParsedCmdArgs *);

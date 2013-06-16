@@ -1,23 +1,47 @@
 #include "stdafx.h"
 
 #include "gui.h"
+#include "CLCD.h"
 #include "SendFileswindows.h"
 #include "CWabbitemu.h"
 #include "CPage.h"
 #include "dbdisasm.h"
+#include "calc.h"
 
 #define WM_ADDFRAME	(WM_USER+5)
 #define WM_REMOVEFRAME (WM_USER+6)
+
+HRESULT CWabbitemu::FinalConstruct()
+{
+	m_lpCalc = calc_slot_new();
+	m_iSlot = m_lpCalc->slot;
+
+	m_pKeypad = new CKeypad(&calcs[m_iSlot].cpu);
+	m_fVisible = VARIANT_FALSE;
+
+	m_lpCalc->pWabbitemu = this;
+
+	m_idTimer = SetTimer(NULL, 0, TPF, TimerProc);
+	//CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, &m_dwThreadId);
+	return S_OK;
+};
 
 STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 {
 	if (fVisible == VARIANT_TRUE)
 	{
-		PostThreadMessage(m_dwThreadId, WM_ADDFRAME, m_iSlot, (LPARAM) m_lpCalc);
+		gui_frame(m_lpCalc);
+		HMENU hMenu = GetSystemMenu(m_lpCalc->hwndFrame, FALSE);
+		EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+		SetMenu(m_lpCalc->hwndFrame, NULL);
+		RECT wr;
+		GetWindowRect(m_lpCalc->hwndFrame, &wr);
+		SendMessage(m_lpCalc->hwndFrame, WM_SIZING, WMSZ_BOTTOMRIGHT, (LPARAM) &wr);
+		SetWindowPos(m_lpCalc->hwndFrame, NULL, wr.left, wr.top, wr.right - wr.left, wr.bottom - wr.top, SWP_NOZORDER);
 	}
 	else
 	{
-		PostThreadMessage(m_dwThreadId, WM_REMOVEFRAME, m_iSlot, (LPARAM) m_lpCalc);
+		DestroyWindow(m_lpCalc->hwndFrame);
 	}
 	return S_OK;
 }
@@ -158,14 +182,21 @@ STDMETHODIMP CWabbitemu::Write(WORD Address, VARIANT varValue)
 
 STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 {
-#ifdef _UNICODE
-	SendFileToCalc(m_lpCalc, bstrFileName, FALSE);
-#else
-	char szFileName[MAX_PATH];
-	WideCharToMultiByte(CP_ACP, 0, bstrFileName, -1, szFileName, sizeof(szFileName), NULL, NULL);
-	SendFileToCalc(m_lpCalc, szFileName, FALSE);
-#endif
+	TIFILE *file = importvar(_bstr_t(bstrFileName), TRUE);
 	
+	SendFileToCalc(m_lpCalc, _bstr_t(bstrFileName), FALSE);
+	if (file->type == ROM_TYPE || file->type == SAV_TYPE)
+	{
+		CComObject<CLCD> *pLCD = NULL;
+		CComObject<CLCD>::CreateInstance(&pLCD);
+		pLCD->Initialize(m_lpCalc->cpu.pio.lcd);
+		m_pLCD = pLCD;
+
+		CComObject<CZ80> *m_pZ80Obj = NULL;
+		CComObject<CZ80>::CreateInstance(&m_pZ80Obj);
+		m_pZ80Obj->Initialize(&m_lpCalc->cpu);
+		m_pZ80 = m_pZ80Obj;
+	}
 	return S_OK;
 }
 
@@ -227,63 +258,63 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 
 STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 {
-	ITypeLib *pTypeLib = NULL;
-	HRESULT hr = LoadRegTypeLib(LIBID_WabbitemuLib, 1, 0, GetUserDefaultLCID(), &pTypeLib);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-	ITypeInfo *pTypeInfo = NULL;
-	hr = pTypeLib->GetTypeInfoOfGuid(__uuidof(TISymbol), &pTypeInfo);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	IRecordInfo *pRecordInfo;
-	hr = GetRecordInfoFromTypeInfo(pTypeInfo, &pRecordInfo);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-	pTypeInfo->Release();
-	pTypeLib->Release();
-
-	symlist_t symlist;
-	state_build_symlist_83P(&m_lpCalc->cpu, &symlist);
-
-	SAFEARRAYBOUND sab = {0};
-	sab.lLbound = 0;
-	sab.cElements = (u_int) (symlist.last - symlist.symbols + 1);
-	LPSAFEARRAY lpsa = SafeArrayCreateEx(VT_RECORD, 1, &sab, pRecordInfo);
-	pRecordInfo->Release();
-
-	TISymbol *pvData = NULL;
-	if (SUCCEEDED(SafeArrayAccessData(lpsa, (LPVOID *) &pvData)))
-	{
-		for (u_int i = 0; i < sab.cElements; i++)
-		{
-			WCHAR wszSymName[256];
-#ifdef _UNICODE
-			if (Symbol_Name_to_String(m_lpCalc->cpu.pio.model, &symlist.symbols[i], wszSymName) == NULL)
-				StringCbCopy(wszSymName, sizeof(wszSymName), _T(""));
-#else
-			TCHAR buffer[256];
-			if (Symbol_Name_to_String(m_lpCalc->cpu.pio.model, &symlist.symbols[i], buffer) == NULL)
-				StringCbCopy(buffer, sizeof(wszSymName), _T(""));
-			MultiByteToWideChar(CP_ACP, 0, buffer, -1, wszSymName, ARRAYSIZE(wszSymName));
-#endif
-			pvData[i].Name = SysAllocString(wszSymName);
-			pvData[i].Page = symlist.symbols[i].page;
-			pvData[i].Version = symlist.symbols[i].version;
-			pvData[i].Type = (SYMBOLTYPE) symlist.symbols[i].type_ID;
-			pvData[i].Address = symlist.symbols[i].address;
-		}
-
-		SafeArrayUnaccessData(lpsa);
-	}
-
-	*ppAppList = lpsa;
+//	ITypeLib *pTypeLib = NULL;
+//	HRESULT hr = LoadRegTypeLib(LIBID_WabbitemuLib, 1, 0, GetUserDefaultLCID(), &pTypeLib);
+//	if (FAILED(hr))
+//	{
+//		return hr;
+//	}
+//	ITypeInfo *pTypeInfo = NULL;
+//	hr = pTypeLib->GetTypeInfoOfGuid(__uuidof(TISymbol), &pTypeInfo);
+//	if (FAILED(hr))
+//	{
+//		return hr;
+//	}
+//
+//	IRecordInfo *pRecordInfo;
+//	hr = GetRecordInfoFromTypeInfo(pTypeInfo, &pRecordInfo);
+//	if (FAILED(hr))
+//	{
+//		return hr;
+//	}
+//	pTypeInfo->Release();
+//	pTypeLib->Release();
+//
+//	symlist_t symlist;
+//	state_build_symlist_83P(&m_lpCalc->cpu, &symlist);
+//
+//	SAFEARRAYBOUND sab = {0};
+//	sab.lLbound = 0;
+//	sab.cElements = (u_int) (symlist.last - symlist.symbols + 1);
+//	LPSAFEARRAY lpsa = SafeArrayCreateEx(VT_RECORD, 1, &sab, pRecordInfo);
+//	pRecordInfo->Release();
+//
+//	TISymbol *pvData = NULL;
+//	if (SUCCEEDED(SafeArrayAccessData(lpsa, (LPVOID *) &pvData)))
+//	{
+//		for (u_int i = 0; i < sab.cElements; i++)
+//		{
+//			WCHAR wszSymName[256];
+//#ifdef _UNICODE
+//			if (Symbol_Name_to_String(m_lpCalc->cpu.pio.model, &symlist.symbols[i], wszSymName) == NULL)
+//				StringCbCopy(wszSymName, sizeof(wszSymName), _T(""));
+//#else
+//			TCHAR buffer[256];
+//			if (Symbol_Name_to_String(m_lpCalc->cpu.pio.model, &symlist.symbols[i], buffer) == NULL)
+//				StringCbCopy(buffer, sizeof(wszSymName), _T(""));
+//			MultiByteToWideChar(CP_ACP, 0, buffer, -1, wszSymName, ARRAYSIZE(wszSymName));
+//#endif
+//			pvData[i].Name = SysAllocString(wszSymName);
+//			pvData[i].Page = symlist.symbols[i].page;
+//			pvData[i].Version = symlist.symbols[i].version;
+//			pvData[i].Type = (SYMBOLTYPE) symlist.symbols[i].type_ID;
+//			pvData[i].Address = symlist.symbols[i].address;
+//		}
+//
+//		SafeArrayUnaccessData(lpsa);
+//	}
+//
+//	*ppAppList = lpsa;
 	return S_OK;
 }
 
@@ -363,7 +394,7 @@ DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
 #endif
 
 	CoInitializeEx(NULL, COINIT_MULTITHREADED);
-	//SetTimer(NULL, 0, TPF, TimerProc);
+	SetTimer(NULL, 0, TPF, TimerProc);
 
 	MSG Msg;
 	while (GetMessage(&Msg, NULL, 0, 0))
@@ -391,6 +422,9 @@ DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
 		}
 	}
 
+	CoUninitialize();
+	GdiplusShutdown(gdiplusToken);
+
 	return 0;
 }
 
@@ -401,5 +435,19 @@ STDMETHODIMP CWabbitemu::get_Keypad(IKeypad **ppKeypad)
 
 STDMETHODIMP CWabbitemu::get_Labels(ILabelServer **ppLabelServer)
 {
-	return m_LabelServer.QueryInterface(IID_ILabelServer, (LPVOID *) ppLabelServer);
+	return E_NOTIMPL;
+	//return m_LabelServer.QueryInterface(IID_ILabelServer, (LPVOID *) ppLabelServer);
+}
+
+STDMETHODIMP CWabbitemu::get_Running(VARIANT_BOOL *lpfRunning)
+{
+	*lpfRunning = (m_lpCalc->running == TRUE) ? VARIANT_TRUE : VARIANT_FALSE;
+	return S_OK;
+}
+STDMETHODIMP CWabbitemu::put_Running(VARIANT_BOOL fRunning)
+{
+	m_lpCalc->running = (fRunning == VARIANT_TRUE) ? TRUE : FALSE;
+
+
+	return S_OK;
 }

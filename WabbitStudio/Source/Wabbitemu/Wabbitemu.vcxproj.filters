@@ -71,6 +71,9 @@
       <UniqueIdentifier>{de6609da-8a56-4483-80e1-3351f2a74ffc}</UniqueIdentifier>
       <SourceControlFiles>False</SourceControlFiles>
     </Filter>
+    <Filter Include="Script Files">
+      <UniqueIdentifier>{002c719e-b7d6-43bd-9845-e814396d2733}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\alu.c">
@@ -850,6 +853,9 @@
     </None>
     <None Include="Wabbitemu.rgs">
       <Filter>Source Files\Interface\COM</Filter>
+    </None>
+    <None Include="test.vbs">
+      <Filter>Script Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

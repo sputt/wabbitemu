@@ -467,10 +467,32 @@ LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 	return EXCEPTION_EXECUTE_HANDLER;
 }
 
-int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-   LPSTR lpszCmdParam, int nCmdShow)
+
+bool CWabbitemuModule::ParseCommandLine(LPCTSTR lpszCommandLine, HRESULT *phres)
 {
-	MSG Msg;
+	ParseCommandLineArgs(&m_parsedArgs);
+	return __super::ParseCommandLine(lpszCommandLine, phres);
+}
+
+
+HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
+{
+	HRESULT hr =  __super::PreMessageLoop(nShowCmd);
+
+	g_hInst = _AtlBaseModule.GetModuleInstance();
+	RegisterWindowClasses();
+	InitCommonControls();
+
+	// Initialize GDI+.
+	GdiplusStartupInput gdiplusStartupInput;
+	
+	GdiplusStartup(&m_gdiplusToken, &gdiplusStartupInput, NULL);
+
+	if (m_parsedArgs.no_create_calc)
+	{
+		return hr; 
+	}
+
 	bool alreadyRunningWabbit = false;
 
 	//Create our appdata folder
@@ -489,10 +511,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 #endif
 
 	CheckSetIsPortableMode();
-	ParsedCmdArgs parsedArgs = {0};
-	ParseCommandLineArgs(&parsedArgs);
+
 	//this is here so we get our load_files_first setting
-	new_calc_on_load_files = QueryWabbitKey(_T("load_files_first")) || parsedArgs.force_new_instance;
+	new_calc_on_load_files = QueryWabbitKey(_T("load_files_first")) || m_parsedArgs.force_new_instance;
 
 	HWND alreadyRunningHwnd = NULL;
 	alreadyRunningHwnd = FindWindow(g_szAppName, NULL);
@@ -512,26 +533,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 	
 	if (alreadyRunningWabbit) {
-		LoadCommandlineFiles(&parsedArgs, (LPARAM) find_existing_lcd(alreadyRunningHwnd), LoadAlreadyExistingWabbit);
-		if (parsedArgs.force_focus) {
+		LoadCommandlineFiles(&m_parsedArgs, (LPARAM) find_existing_lcd(alreadyRunningHwnd), LoadAlreadyExistingWabbit);
+		if (m_parsedArgs.force_focus) {
 			SwitchToThisWindow(alreadyRunningHwnd, TRUE);
 		}
 		return 0;
 	}
 
-	g_hInst = hInstance;
-
-	RegisterWindowClasses();
-
-	// initialize com events
-	OleInitialize(NULL);
-
-	// Initialize GDI+.
-	GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR gdiplusToken;
-	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-	silent_mode = parsedArgs.silent_mode;
+	silent_mode = m_parsedArgs.silent_mode;
 
 	LPCALC lpCalc = calc_slot_new();
 	LoadRegistrySettings(lpCalc);
@@ -541,9 +550,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	} else {
 
 		BOOL loadedRom = FALSE;
-		if (parsedArgs.num_rom_files > 0) {
-			for (int i = 0; i < parsedArgs.num_rom_files; i++) {
-				if (rom_load(lpCalc, parsedArgs.rom_files[i])) {
+		if (m_parsedArgs.num_rom_files > 0) {
+			for (int i = 0; i < m_parsedArgs.num_rom_files; i++) {
+				if (rom_load(lpCalc, m_parsedArgs.rom_files[i])) {
 					gui_frame(lpCalc);
 					loadedRom = TRUE;
 					break;
@@ -575,13 +584,12 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	state_build_applist(&lpCalc->cpu, &lpCalc->applist);
 	VoidLabels(lpCalc);
-	LoadCommandlineFiles(&parsedArgs, (LPARAM) lpCalc, LoadToLPCALC);
+	LoadCommandlineFiles(&m_parsedArgs, (LPARAM) lpCalc, LoadToLPCALC);
 
 #ifdef WITH_AVI
 	is_recording = FALSE;
 #endif
 
-	InitCommonControls();
 	// Set the one global timer for all calcs
 	SetTimer(NULL, 0, TPF, TimerProc);
 
@@ -589,6 +597,17 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	if (!haccelmain)
 		haccelmain = LoadAccelerators(g_hInst, _T("Z80Accel"));
 
+	m_lpCalc = lpCalc;
+	return hr;
+}
+
+void CWabbitemuModule::RunMessageLoop()
+{
+	if (m_parsedArgs.no_create_calc) {
+		return __super::RunMessageLoop();
+	}
+
+	MSG Msg;
 	extern HWND hPortMon, hBreakpoints;
 	while (GetMessage(&Msg, NULL, 0, 0)) {
 		HACCEL haccel = haccelmain;
@@ -598,13 +617,13 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				haccel = hacceldebug;
 			} else if (hwndtop == FindWindow(g_szAppName, NULL) ) {
 				haccel = haccelmain;
-				if (lpCalc->bCutout && lpCalc->SkinEnabled) {
+				if (m_lpCalc->bCutout && m_lpCalc->SkinEnabled) {
 					hwndtop = FindWindow(g_szLCDName, NULL);
 				} else {
 					hwndtop = FindWindowEx(hwndtop, NULL, g_szLCDName, NULL);
 				}
 				SetForegroundWindow(hwndtop);
-			} else if (lpCalc->bCutout && lpCalc->SkinEnabled) {
+			} else if (m_lpCalc->bCutout && m_lpCalc->SkinEnabled) {
 				if (hwndtop == FindWindow(g_szLCDName, NULL) || hwndtop == FindWindow(g_szAppName, NULL) ||
 					hwndtop == FindWindow(g_szSmallButtonsName, g_szSmallClose) ||
 					hwndtop == FindWindow(g_szSmallButtonsName, g_szSmallMinimize)) {
@@ -626,18 +645,33 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			}
 		}
 
-		if (hwndProp == NULL || PropSheet_IsDialogMessage(hwndProp, &Msg) == FALSE) {
-			if (!TranslateAccelerator(hwndtop, haccel, &Msg)) {
-				TranslateMessage(&Msg);
-				DispatchMessage(&Msg);
-			}
-		} else {
+		if (Msg.hwnd != NULL && Msg.hwnd == hwndProp)
+		{
 			// Get the current tab
 			HWND hwndPropTabCtrl = PropSheet_GetTabControl(hwndProp);
 			PropPageLast = TabCtrl_GetCurSel(hwndPropTabCtrl);
+
+			if (Msg.message == WM_KEYDOWN)
+			{
+				OutputDebugString(_T("Hard key down man"));
+			}
+
+			if (PropSheet_IsDialogMessage(hwndProp, &Msg) == TRUE)
+			{
+				continue;
+			}
+		}
+
+		if (!TranslateAccelerator(hwndtop, haccel, &Msg)) {
+			TranslateMessage(&Msg);
+			DispatchMessage(&Msg);
 		}
 	}
 
+}
+
+HRESULT CWabbitemuModule::PostMessageLoop()
+{
 	// Make sure the GIF has terminated
 	if (gif_write_state == GIF_FRAME) {
 		gif_write_state = GIF_END;
@@ -645,15 +679,14 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 	
 	// Shutdown GDI+
-	GdiplusShutdown(gdiplusToken);
+	GdiplusShutdown(m_gdiplusToken);
+	return __super::PostMessageLoop();
+}
 
-	// Shutdown COM
-	OleUninitialize();
-#if _DEBUG
-	_CrtDumpMemoryLeaks();
-#endif
-
-	return (int) Msg.wParam;
+int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+   LPSTR lpszCmdParam, int nCmdShow)
+{
+	return _Module.WinMain(nCmdShow);
 }
 
 LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
