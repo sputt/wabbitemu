@@ -2,6 +2,7 @@
 #define GUI_H
 
 #include "calc.h"
+#include "guicommandline.h"
 
 #define SKIN_WIDTH	350
 #define SKIN_HEIGHT	725
@@ -72,6 +73,16 @@ class CWabbitemuModule : public CAtlExeModuleT< CWabbitemuModule >
 {
 public :
 	DECLARE_LIBID(LIBID_WabbitemuLib)
+
+	bool ParseCommandLine(LPCTSTR lpCmdLine, HRESULT* pnRetCode);
+	HRESULT PreMessageLoop(int nShowCmd);
+	void RunMessageLoop();
+	HRESULT PostMessageLoop();
+
+private:
+	LPCALC m_lpCalc;
+	ULONG_PTR m_gdiplusToken;
+	ParsedCmdArgs m_parsedArgs;
 };
 
 extern CWabbitemuModule _Module;

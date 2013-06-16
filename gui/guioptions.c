@@ -122,6 +122,21 @@ void DoPropertySheet(HWND hwndOwner) {
 	return;
 }
 
+LRESULT CALLBACK HotKeyHandleProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
+	switch (uMsg)
+	{
+	case WM_KEYDOWN:
+		{
+			break;
+		}
+	case WM_SYSKEYDOWN:
+		{
+			return FALSE;
+		}
+	}
+	return DefSubclassProc(hwnd, uMsg, wParam, lParam);
+}
+
 
 static HWND imgDisplayPreview;
 static double displayFPS = 48.0f;
@@ -938,6 +953,10 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	static keyprog_t newkeys[256];
 	switch(Message) {
 		case WM_INITDIALOG: {
+
+			
+
+
 			if (lpCalc->model == TI_85 || lpCalc->model == TI_86) {
 				userkeys = keysti86;
 				defaultkeys = defaultkeysti86;
@@ -962,6 +981,9 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			nEmuUsed = GetNumKeyEntries(newkeys);
 			nAccelStore = 256;
 			nEmuStore = 256;
+
+			SetWindowSubclass(hHotKey, HotKeyHandleProc, 0, 0);
+
 			int count = GetMenuItemCount(hMenu);
 			for (i = 0; i < count; i++) {
 				TCHAR *string = (TCHAR *) GetFriendlyMenuText(hMenu, i, 0);

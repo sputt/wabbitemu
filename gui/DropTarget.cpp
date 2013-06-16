@@ -19,7 +19,7 @@ CDropTarget::CDropTarget(HWND hwnd) {
 	m_nAccepted = 0;
 	m_pAccepted = NULL;
 
-	CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_INPROC_SERVER, IID_IDropTargetHelper, (LPVOID *) &m_pDropTargetHelper);
+	HRESULT hr = CoCreateInstance(CLSID_DragDropHelper, NULL, CLSCTX_SERVER, IID_IDropTargetHelper, (LPVOID *) &m_pDropTargetHelper);
 }
 
 CDropTarget::~CDropTarget() {
@@ -82,7 +82,10 @@ ULONG __stdcall CDropTarget::Release(void) {
 	OutputDebugString(_T("CDropTarget Release\n"));
 	LONG lRefCount = InterlockedDecrement(&m_lRefCount);
 	if (lRefCount == 0) {
-		m_pDropTargetHelper->Release();
+		if (m_pDropTargetHelper != NULL)
+		{
+			m_pDropTargetHelper->Release();
+		}
 		delete this;
 	}
 	return lRefCount;

@@ -24,6 +24,8 @@
 #include "resource.h"
 #endif
 
+static HWND calc_debug_callback(LPCALC lpCalc);
+
 /*
  * Determine the slot for a new calculator.  Return a pointer to the calc
  */
@@ -49,9 +51,11 @@ calc_t *calc_slot_new(void) {
 			calcs[i].gif_disp_state = GDS_IDLE;
 			calcs[i].speed = 100;
 			calcs[i].slot = i;
+			calcs[i].breakpoint_callback = calc_debug_callback;
 			return &calcs[i];
 		}
 	}
+
 	return NULL;
 }
 
@@ -479,6 +483,16 @@ int calc_reset(LPCALC lpCalc) {
 	//calc_turn_on(lpCalc);
 	return 0;
 }
+
+static HWND calc_debug_callback(LPCALC lpCalc)
+{
+	if (lpCalc->pWabbitemu != NULL)
+	{
+		lpCalc->pWabbitemu->Fire_OnBreakpoint();
+	}
+	return NULL;
+}
+
 
 /* Clear RAM and start calculator at $0000 
  * 10/20/10 Calc84 says that starting at $0000 is wrong we need to start on the boot page,

@@ -1,30 +1,22 @@
 #pragma once
 
-#include "core.h"
 #include "lcd.h"
 #include "Wabbitemu_h.h"
 
-class CLCD : ILCD
+class CLCD :
+	public CComObjectRootEx<CComObjectThreadModel>,
+	public IDispatchImpl<ILCD, &__uuidof(ILCD)>
 {
 public:
-	// IUnknown methods
-	STDMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject);
-	STDMETHODIMP_(ULONG) AddRef()
+	BEGIN_COM_MAP(CLCD)
+		COM_INTERFACE_ENTRY(ILCD)
+		COM_INTERFACE_ENTRY(IDispatch)
+	END_COM_MAP()
+
+	void Initialize(LCD_t *lcd)
 	{
-		return InterlockedIncrement(&m_lRefCount);
-	};
-	STDMETHODIMP_(ULONG) Release()
-	{
-		if (InterlockedDecrement(&m_lRefCount) == 0)
-		{
-			delete this;
-			return 0;
-		}
-		else
-		{
-			return m_lRefCount;
-		}
-	};
+		m_lcd = lcd;
+	}
 
 	// ILCD methods
 	STDMETHOD (get_Display)(LPSAFEARRAY *ppsa)
@@ -36,7 +28,7 @@ public:
 
 		LPBYTE lpData = NULL;
 		SafeArrayAccessData(psa, (LPVOID *) &lpData);
-		memcpy(lpData, LCD_image(m_cpu->pio.lcd), 128 * 64);
+		memcpy(lpData, LCD_image(m_lcd), 128 * 64);
 		SafeArrayUnaccessData(psa);
 
 		*ppsa = psa;
@@ -45,23 +37,16 @@ public:
 
 	STDMETHOD(Draw)(BYTE Display[8192])
 	{
-		memcpy(Display, LCD_image(m_cpu->pio.lcd), 128 * 64);
+		memcpy(Display, LCD_image(m_lcd), 128 * 64);
 		return S_OK;
 	}
 
 	STDMETHOD(GetByteArray)(BYTE Display[8192])
 	{
-		memcpy(Display, LCD_image(m_cpu->pio.lcd), 128 * 64);
+		memcpy(Display, LCD_image(m_lcd), 128 * 64);
 		return S_OK;
 	}
 
-	CLCD(CPU_t *cpu)
-	{
-		m_cpu = cpu;
-	}
-
-
 private:
-	LONG m_lRefCount;
-	CPU_t *m_cpu;
+	LCD_t *m_lcd;
 };

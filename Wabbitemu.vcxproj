@@ -146,6 +146,7 @@
     </ClCompile>
     <ClCompile Include="utilities\avifile.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="utilities\avi_utils.c" />
     <ClCompile Include="utilities\expandpane.c" />
@@ -414,16 +415,20 @@
     <None Include="gui\tsmall.ico" />
     <None Include="gui\wabbitemu.ico" />
     <None Include="interface\Wabbitemu.def" />
+    <None Include="test.vbs" />
     <None Include="Wabbitemu.rgs" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="gui\Wabbitemu.rc">
-      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">D:\Program Files %28x86%29\Microsoft Visual Studio 10.0\VC\atlmfc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <Midl Include="interface\Wabbitemu.idl">
       <TargetEnvironment Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">X64</TargetEnvironment>
+      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)$(ProjectName).tlb</TypeLibraryName>
+      <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(ProjectName).tlb</TypeLibraryName>
     </Midl>
   </ItemGroup>
   <PropertyGroup Label="Globals">
@@ -448,7 +453,7 @@
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
-    <UseOfAtl>Static</UseOfAtl>
+    <UseOfAtl>Dynamic</UseOfAtl>
     <PlatformToolset>v110_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|Win32'" Label="Configuration">
@@ -653,8 +658,8 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;HIGH_SHADE_GIF;ZLIB_WINAPI;WITH_AVI;WITH_REVERSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;HIGH_SHADE_GIF;USE_GDIPLUS;ZLIB_WINAPI;STRSAFE_NO_DEPRECATE;STRFILEVER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir);D:\Program Files %28x86%29\Microsoft Visual Studio 10.0\VC\atlmfc\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>

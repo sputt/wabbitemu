@@ -46,7 +46,9 @@
 #ifdef __cplusplus
 #include <gdiplus.h>
 using namespace Gdiplus;
-#define _ATL_FREE_THREADED
+
+#define _ATL_DEBUG_INTERFACES
+#define _ATL_APARTMENT_THREADED
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
@@ -57,7 +59,7 @@ using namespace ATL;
 #include <list>
 #include <vector>
 #include <string>
-
+#include <comdef.h>
 
 #include "Wabbitemu_h.h"
 
