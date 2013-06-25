@@ -936,7 +936,7 @@ namespace Revsoft.Wabbitcode
 		#region OnMouseUp, OnMouseDown, OnKeyPress
 
 
-		string word = "";
+        string word = String.Empty;
 		long lastKeyPress = 0;
 		/// <summary>
 		/// Max time between keypresses to allow when typing to find something on the tree. Measured in ticks (ms * 10k)
@@ -945,13 +945,17 @@ namespace Revsoft.Wabbitcode
 		protected override void OnKeyPress(KeyPressEventArgs e)
 		{
 			long time = DateTime.Now.Ticks;
-			if (time - lastKeyPress > MAX_TIME_BETWEEN_KEYPRESS)
-				word = "";
+            if (time - lastKeyPress > MAX_TIME_BETWEEN_KEYPRESS)
+            {
+                word = String.Empty;
+            }
 			lastKeyPress = time;
 			word += e.KeyChar;
 			var node = SelectedNode;
-			if (node == null)
-				node = Nodes[0];
+            if (node == null)
+            {
+                node = Nodes[0];
+            }
 
 			var foundNode = FindVisibleNodeStartsWith(node, word);
 			if (foundNode != null)

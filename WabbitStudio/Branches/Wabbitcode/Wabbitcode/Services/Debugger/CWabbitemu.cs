@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 using Microsoft.Win32;
-using WabbitemuLib;
+//using WabbitemuLib;
 using Revsoft.Wabbitcode.Services;
 #if NEW_DEBUGGING
 using Revsoft.Wabbitcode.Services.Debugger;

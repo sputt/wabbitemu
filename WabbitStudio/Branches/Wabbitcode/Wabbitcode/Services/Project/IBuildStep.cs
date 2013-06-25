@@ -12,6 +12,6 @@ namespace Revsoft.Wabbitcode.Services.Project
 		int StepNumber { get; set; }
         string InputFile { get; set; }
         string Description { get; }
-		bool Build();
+		bool Build(bool silent);
 	}
 }

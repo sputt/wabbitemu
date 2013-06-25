@@ -27,8 +27,10 @@ namespace Revsoft.Wabbitcode.Services
 		static bool updating;
 		public static bool CheckForUpdate()
 		{
-			if (updating)
-				throw new Exception("Already updating");
+            if (updating)
+            {
+                throw new Exception("Already updating");
+            }
 			updating = true;
 			var state = new UpdateState();
 			ThreadPool.QueueUserWorkItem(CheckForNewerVersion, state);
@@ -37,15 +39,19 @@ namespace Revsoft.Wabbitcode.Services
 			return state.IsNewerVersion;
 		}
 
+        const string hostname = "http://buckeyedude.zapto.org/Revsoft/Wabbitcode/";
 		public static void StartUpdater()
 		{
-			Process updater = new Process
-								  {
-									  StartInfo = {
-										  WorkingDirectory = Directory.GetCurrentDirectory(),
-										  Arguments = "-R Revsoft.Wabbitcode.exe Revsoft.Wabbitcode.exe http://group.revsoft.org/Wabbitcode/Revsoft.Wabbitcode.exe Revsoft.TextEditor.dll http://group.revsoft.org/Wabbitcode/Revsoft.TextEditor.dll Revsoft.Docking.dll http://group.revsoft.org/Wabbitcode/Revsoft.Docking.dll IWabbitemu.dll http://group.revsoft.org/Wabbitcode/IWabbitemu.dll",
-										  FileName = "Revsoft.Autoupdater.exe" }
-								  };
+            Process updater = new Process
+                                  {
+                                      StartInfo =
+                                      {
+                                          WorkingDirectory = Directory.GetCurrentDirectory(),
+                                          Arguments = string.Format("-R Revsoft.Wabbitcode.exe Revsoft.Wabbitcode.exe {0}Revsoft.Wabbitcode.exe " +
+                                          "Revsoft.TextEditor.dll {0}Revsoft.TextEditor.dll Revsoft.Docking.dll {0}Revsoft.Docking.dll IWabbitemu.dll {0}IWabbitemu.dll", hostname),
+                                          FileName = "Revsoft.Autoupdater.exe"
+                                      }
+                                  };
 			updater.Start();
 			Application.Exit();
 		}
@@ -56,25 +62,33 @@ namespace Revsoft.Wabbitcode.Services
 			Version curVersion =  Assembly.GetExecutingAssembly().GetName().Version;
 			WebClient Client = null;
 			StreamReader sr = null;
-			try
-			{
-				Client = new WebClient();
-				Version newVer = new Version(Client.DownloadString("http://group.revsoft.org/Wabbitcode/WabbitcodeVersion.txt"));
-				updateState.IsNewerVersion = curVersion.CompareTo(newVer) < 0;
-				updateState.NewerVersion = newVer;
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show(ex.ToString());
-			}
+            try
+            {
+                Client = new WebClient();
+                Version newVer = new Version(Client.DownloadString(String.Format("{0}WabbitcodeVersion.txt", hostname)));
+                updateState.IsNewerVersion = curVersion.CompareTo(newVer) < 0;
+                updateState.NewerVersion = newVer;
+            }
+            catch (WebException)
+            {
+                return;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString());
+            }
 			finally
 			{
-				if (Client != null)
-					Client.Dispose();
-				if (sr != null)
-					sr.Close();
+                if (Client != null)
+                {
+                    Client.Dispose();
+                }
+                if (sr != null)
+                {
+                    sr.Close();
+                }
+                updateState.eventWaitHandle.Set(); // signal we're done
 			}
-			updateState.eventWaitHandle.Set(); // signal we're done
 		}
 	}
 }

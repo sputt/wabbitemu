@@ -15,7 +15,7 @@ namespace Revsoft.Wabbitcode.Services
 {
 	public static class AssemblerService
 	{
-		public static readonly List<Error> ErrorsInFiles = new List<Error>();
+		public static readonly List<Errors> ErrorsInFiles = new List<Errors>();
 		const string quote = "\"";
 		public static bool AssembleFile(string filePath, string assembledName, bool silent)
 		{
@@ -132,7 +132,7 @@ namespace Revsoft.Wabbitcode.Services
 						if (!int.TryParse(lineNum, out lineNumber))
 							lineNumber = -1;
 						description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-						ErrorsInFiles.Add(new Error(file, lineNumber, description, false));
+						ErrorsInFiles.Add(new Errors(file, lineNumber, description, false));
 					}
 				}
 				if (!line.Contains("warning"))
@@ -149,7 +149,7 @@ namespace Revsoft.Wabbitcode.Services
 					file = Path.Combine(startDir, line.Substring(0, firstColon));
 					lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
 					description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-					ErrorsInFiles.Add(new Error(file, Convert.ToInt32(lineNum), description, true));
+					ErrorsInFiles.Add(new Errors(file, Convert.ToInt32(lineNum), description, true));
 				}
 			}
 		}
@@ -159,10 +159,10 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			try
 			{
-                DockingService.OutputWindow.SetText(outputText);
+                DockingService.OutputWindow.AddText(outputText);
 				DockingService.OutputWindow.HighlightOutput();
 				//its more fun with colors
-				DockingService.ErrorList.ParseOutput();
+				DockingService.ErrorList.ParseOutput(outputText, originalDir);
 				DockingService.ShowDockPanel(DockingService.ErrorList);
 				DockingService.ShowDockPanel(DockingService.OutputWindow);
                 if (DockingService.ActiveDocument != null)

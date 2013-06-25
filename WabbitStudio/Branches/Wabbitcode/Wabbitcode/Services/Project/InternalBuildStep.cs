@@ -69,13 +69,13 @@ namespace Revsoft.Wabbitcode.Services.Project
 			output = outputFile;
 		}
 
-		public bool Build()
+		public bool Build(bool silent)
 		{
 			bool errors = false;
 			switch (stepType)
 			{
 				case Project.StepType.All:
-					errors |= AssemblerService.AssembleFile(input, output, true);
+					errors |= AssemblerService.AssembleFile(input, output, silent);
 					ProjectService.Project.ProjectOutputs.Add(output);
                     ProjectService.Project.ListOutputs.Add(Path.ChangeExtension(output, "lst"));
                     ProjectService.Project.LabelOutputs.Add(Path.ChangeExtension(output, "lab"));

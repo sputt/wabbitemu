@@ -8,6 +8,26 @@ namespace Revsoft.Wabbitcode
 {
 	public static class FileOperations
 	{
+        public static string GetMimeType(string fileName)
+        {
+            try
+            {
+                string mimeType = "application/unknown";
+                string ext = System.IO.Path.GetExtension(fileName).ToLower();
+                Microsoft.Win32.RegistryKey regKey = Microsoft.Win32.Registry.ClassesRoot.OpenSubKey(ext);
+                if (regKey != null && regKey.GetValue("Content Type") != null)
+                {
+                    mimeType = regKey.GetValue("Content Type").ToString();
+                }
+                return mimeType;
+            }
+            catch (Exception)
+            {
+                return "application/unknown";
+            }
+        }
+
+
 		/// <summary>
 		/// Combines baseDirectoryPath with relPath and normalizes the resulting path.
 		/// </summary>

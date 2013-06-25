@@ -91,28 +91,36 @@ namespace Revsoft.Wabbitcode
 
 		private void LoadStartupProject()
 		{
-			if (string.IsNullOrEmpty(Settings.Default.startupProject))
-				return;
+            if (string.IsNullOrEmpty(Settings.Default.startupProject))
+            {
+                return;
+            }
 			try
 			{
 				bool valid = false;
-				if (File.Exists(Settings.Default.startupProject))
-					valid = ProjectService.OpenProject(Settings.Default.startupProject);
-				else
-				{
-					Settings.Default.startupProject = "";
-					DockingService.ShowError("Error: Project file not found");
-				}
-				if (ProjectService.IsInternal || !valid)
-					ProjectService.CreateInternalProject();
+                if (File.Exists(Settings.Default.startupProject))
+                {
+                    valid = ProjectService.OpenProject(Settings.Default.startupProject);
+                }
+                else
+                {
+                    Settings.Default.startupProject = String.Empty;
+                    DockingService.ShowError("Error: Project file not found");
+                }
+                if (ProjectService.IsInternal || !valid)
+                {
+                    ProjectService.CreateInternalProject();
+                }
 			}
 			catch (Exception ex)
 			{
 				ProjectService.CreateInternalProject();
 				var result = MessageBox.Show("There was an error loading the startup project, would you like to remove it?\n" + ex.ToString(),
 									"Error", MessageBoxButtons.YesNo, MessageBoxIcon.Error);
-				if (result == DialogResult.Yes)
-					Settings.Default.startupProject = "";
+                if (result == DialogResult.Yes)
+                {
+                    Settings.Default.startupProject = String.Empty;
+                }
 			}
 		}
 
@@ -199,6 +207,10 @@ namespace Revsoft.Wabbitcode
 			//View Menu
 			lineNumMenuItem.Enabled = enabled;
 			iconBarMenuItem.Enabled = enabled;
+
+            //Refactor Menu
+            renameMenuItem.Enabled = enabled;
+            extractMethodMenuItem.Enabled = enabled;
 
 			//Assemble Menu
 			if (ProjectService.IsInternal)
@@ -409,20 +421,45 @@ namespace Revsoft.Wabbitcode
 				RestoreDirectory = true,
 				Title = "Open Project File",
 			};
-			if (openFileDialog.ShowDialog() == DialogResult.OK)
-				if (!ProjectService.OpenProject(openFileDialog.FileName))
-					ProjectService.CreateInternalProject();
+            try
+            {
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    if (!ProjectService.OpenProject(openFileDialog.FileName))
+                    {
+                        ProjectService.CreateInternalProject();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error opening file.", ex);
+            }
 			UpdateMenus(DockingService.Documents.Count() > 0);
 		}
 
 		private void saveMenuItem_Click(object sender, EventArgs e)
 		{
-			DocumentService.SaveDocument();
+            try
+            {
+                DocumentService.SaveDocument();
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error saving file.", ex);
+            }
 		}
 
 		private void saveAsMenuItem_Click(object sender, EventArgs e)
 		{
-			DocumentService.SaveDocumentAs();
+            try
+            {
+                DocumentService.SaveDocumentAs();
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error saving file.", ex);
+            }
 		}
 
 		private void closeMenuItem_Click(object sender, EventArgs e)
@@ -507,7 +544,7 @@ namespace Revsoft.Wabbitcode
 
 		private void Cut()
 		{
-			if (DockingService.ActiveContent.GetType() == typeof(ToolWindow))
+			if (DockingService.ActiveContent is ToolWindow)
 				((ToolWindow)DockingService.ActiveContent).Cut();
 			else if (DockingService.ActiveDocument != null)
 				DockingService.ActiveDocument.Cut();
@@ -515,7 +552,7 @@ namespace Revsoft.Wabbitcode
 
 		private void Copy()
 		{
-			if (DockingService.ActiveContent.GetType() == typeof(ToolWindow))
+			if (DockingService.ActiveContent is ToolWindow)
 				((ToolWindow)DockingService.ActiveContent).Copy();
 			else if (DockingService.ActiveDocument != null)
 				DockingService.ActiveDocument.Copy();
@@ -523,7 +560,7 @@ namespace Revsoft.Wabbitcode
 
 		private void Paste()
 		{
-			if (DockingService.ActiveContent.GetType().BaseType == typeof(ToolWindow))
+			if (DockingService.ActiveContent is ToolWindow)
 				((ToolWindow)DockingService.ActiveContent).Paste();
 			else if (DockingService.ActiveDocument != null)
 				DockingService.ActiveDocument.Paste();
@@ -780,6 +817,10 @@ namespace Revsoft.Wabbitcode
 
 		public void UpdateChecks()
 		{
+            if (this.IsDisposed || this.Disposing)
+            {
+                return;
+            }
 			mainToolMenuItem.Checked = toolBarManager.ContainsControl(mainToolBar);
 			debugToolMenuItem.Checked = toolBarManager.ContainsControl(debugToolStrip);
 			labelListMenuItem.Checked = DockingService.LabelList.Visible;
@@ -807,8 +848,12 @@ namespace Revsoft.Wabbitcode
 
 		private void renameMenuItem_Click(object sender, EventArgs e)
 		{
-			RefactorForm form = new RefactorForm();
-			form.ShowDialog();
+            if (DockingService.ActiveDocument == null)
+            {
+                return;
+            }
+            RefactorForm form = new RefactorForm();
+            form.ShowDialog();
 		}
 
 		private void extractMethodMenuItem_Click(object sender, EventArgs e)
@@ -1009,7 +1054,7 @@ namespace Revsoft.Wabbitcode
 			if (errors)
 				DockingService.ShowDockPanel(DockingService.OutputWindow); 
 			//its more fun with colors
-			DockingService.ErrorList.ParseOutput();
+			DockingService.ErrorList.ParseOutput(outputText, originaldir);
 			if (errors)
 				DockingService.ShowDockPanel(DockingService.ErrorList); 
 			//tell if the assembly was successful
@@ -1388,7 +1433,14 @@ namespace Revsoft.Wabbitcode
 
 		private void openToolButton_Click(object sender, EventArgs e)
 		{
-			DocumentService.OpenDocument();
+            try
+            {
+                DocumentService.OpenDocument();
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error opening file", ex);
+            }
 		}
 
 		private void saveToolButton_Click(object sender, EventArgs e)
@@ -1460,13 +1512,15 @@ namespace Revsoft.Wabbitcode
 			//some strings we'll need to build 
 			originaldir = Path.GetDirectoryName(filePath);
 			string includedir = "-I \"" + Application.StartupPath + "\"";
-			if (Settings.Default.includeDir != "")
+			if (!string.IsNullOrEmpty(Settings.Default.includeDir))
 			{
 				string[] dirs = Settings.Default.includeDir.Split('\n');
 				foreach (string dir in dirs)
 				{
-					if (dir != "")
-						includedir += ";\"" + dir + "\"";
+                    if (!string.IsNullOrEmpty(dir))
+                    {
+                        includedir += ";\"" + dir + "\"";
+                    }
 				}
 			}
 			wabbitspasm.StartInfo.Arguments = "-V " + includedir + " " + text;
@@ -1476,8 +1530,10 @@ namespace Revsoft.Wabbitcode
 			errorsToAdd.Clear();
 			foreach (string line in output.Split('\n'))
 			{
-				if (!line.Contains("error")) 
-					continue;
+                if (!line.Contains("error"))
+                {
+                    continue;
+                }
 				int firstColon = line.IndexOf(':');
 				int secondColon = line.IndexOf(':', firstColon + 1);
 				int thirdColon = line.IndexOf(':', secondColon + 1);
@@ -1491,17 +1547,23 @@ namespace Revsoft.Wabbitcode
 		private readonly ArrayList errorsToAdd = new ArrayList();
 		private void AddSquiggleLine(int newLineNumber, Color underlineColor, string description)
 		{
-			if (DocumentService.ActiveDocument == null) 
-				return;
+            if (DocumentService.ActiveDocument == null)
+            {
+                return;
+            }
 			DocumentService.ActiveDocument.AddSquiggleLine(newLineNumber, underlineColor, description);
 		}
 
 		private void documentParser_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
 		{
-			foreach (ArrayList attributes in errorsToAdd)
-				AddSquiggleLine((int)attributes[0], Color.Red, attributes[1].ToString());
-			if (DocumentService.ActiveDocument != null)
-				DocumentService.ActiveDocument.Refresh();
+            foreach (ArrayList attributes in errorsToAdd)
+            {
+                AddSquiggleLine((int)attributes[0], Color.Red, attributes[1].ToString());
+            }
+            if (DocumentService.ActiveDocument != null)
+            {
+                DocumentService.ActiveDocument.Refresh();
+            }
 		}
 
 		private void refreshViewMenuItem_Click(object sender, EventArgs e)
@@ -1517,8 +1579,10 @@ namespace Revsoft.Wabbitcode
 
 		private void saveAllToolButton_Click(object sender, EventArgs e)
 		{
-			foreach(NewEditor child in MdiChildren)
-				DocumentService.SaveDocument(child);
+            foreach (NewEditor child in MdiChildren)
+            {
+                DocumentService.SaveDocument(child);
+            }
 		}
 
 		private void updateMenuItem_Click(object sender, EventArgs e)
@@ -1558,8 +1622,10 @@ namespace Revsoft.Wabbitcode
 
 		private void toggleBreakpointMenuItem_Click(object sender, EventArgs e)
 		{
-			if (DockingService.ActiveDocument == null)
-				return;
+            if (DockingService.ActiveDocument == null)
+            {
+                return;
+            }
 			DockingService.ActiveDocument.ToggleBreakpoint();
 			DockingService.ActiveDocument.Refresh();
 
@@ -1567,15 +1633,19 @@ namespace Revsoft.Wabbitcode
 
 		private void convertSpacesToTabsMenuItem_Click(object sender, EventArgs e)
 		{
-			if (DockingService.ActiveDocument == null)
-				return;
+            if (DockingService.ActiveDocument == null)
+            {
+                return;
+            }
 			DockingService.ActiveDocument.ConvertSpacesToTabs();
 		}
 
 		private void formatDocMenuItem_Click(object sender, EventArgs e)
 		{
-			if (DockingService.ActiveDocument == null)
-				return;
+            if (DockingService.ActiveDocument == null)
+            {
+                return;
+            }
 			DockingService.ActiveDocument.FormatLines();
 		}
 
@@ -1584,9 +1654,11 @@ namespace Revsoft.Wabbitcode
 			
 			showToolbar = Settings.Default.debugToolbar;
 			Settings.Default.debugToolbar = true;
-			if (!showToolbar)
-				toolBarManager.AddControl(debugToolStrip, DockStyle.Top, mainToolBar, DockStyle.Right);
-			UpdateDebugStuff();
+            if (!showToolbar)
+            {
+                toolBarManager.AddControl(debugToolStrip, DockStyle.Top, mainToolBar, DockStyle.Right);
+            }
+            UpdateDebugStuff();
 			debugToolStrip.Height = mainToolBar.Height;
 			UpdateChecks();
 			DockingService.ShowDockPanel(DockingService.DebugPanel);
@@ -1608,10 +1680,14 @@ namespace Revsoft.Wabbitcode
 					{
 						newBreakpoint.Address = value.Address;
 						newBreakpoint.IsRam = newBreakpoint.Address > 0x8000;
-						if (DebuggerService.IsAnApp && !newBreakpoint.IsRam)
-							newBreakpoint.Page = (byte)(DebuggerService.AppPage - value.Page);
-						else
-							newBreakpoint.Page = value.Page;
+                        if (DebuggerService.IsAnApp && !newBreakpoint.IsRam)
+                        {
+                            newBreakpoint.Page = (byte)(DebuggerService.AppPage - value.Page);
+                        }
+                        else
+                        {
+                            newBreakpoint.Page = value.Page;
+                        }
 						newBreakpoint.file = child.FileName;
 						newBreakpoint.lineNumber = breakpoint.LineNumber;
 #if NEW_DEBUGGING

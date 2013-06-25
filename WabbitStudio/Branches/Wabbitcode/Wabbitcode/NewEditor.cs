@@ -307,15 +307,21 @@ namespace Revsoft.Wabbitcode
 		public void UpdateIcons()
 		{
 			editorBox.ActiveTextAreaControl.TextArea.Document.IconManager.ClearIcons();
-			foreach (Error errorWarning in AssemblerService.ErrorsInFiles)
+			foreach (Errors errorWarning in AssemblerService.ErrorsInFiles)
 			{
-				if (!string.Equals(errorWarning.file, editorBox.FileName, StringComparison.OrdinalIgnoreCase))
-					continue;
+                if (!string.Equals(errorWarning.file, editorBox.FileName, StringComparison.OrdinalIgnoreCase))
+                {
+                    continue;
+                }
 				Bitmap newIcon;
-				if (errorWarning.isWarning)
-					newIcon = warningBitmap;
-				else
-					newIcon = errorBitmap;
+                if (errorWarning.isWarning)
+                {
+                    newIcon = warningBitmap;
+                }
+                else
+                {
+                    newIcon = errorBitmap;
+                }
 				MarginIcon marginIcon = new MarginIcon(newIcon, errorWarning.lineNum - 1, errorWarning.toolTip);
 				editorBox.Document.IconManager.AddIcon(marginIcon);
 			}
@@ -327,19 +333,24 @@ namespace Revsoft.Wabbitcode
 			FileName = filename;
 			editorBox.LoadFile(filename, true, true);
 			editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
-			/*if (!GlobalClass.mainForm.staticLabelsParser.IsBusy && GlobalClass.mainForm.debugging && !GlobalClass.mainForm.IsDisposed && !GlobalClass.mainForm.Disposing)
-				GlobalClass.mainForm.staticLabelsParser.RunWorkerAsync(editorBox);*/
 			docChanged = false;
 			UpdateTabText();
 			UpdateIcons();
 			//try out projects cache of parse info
 			parseInfo = ProjectService.GetParseInfo(filename);
-			if (parseInfo == null)
-				UpdateAll();
-			else
-				UpdateLabelBox();
-			if (!ProjectService.IsInternal && ProjectService.ContainsFile(filename))
-				editorBox.Document.FoldingManager.DeserializeFromString(ProjectService.Project.FindFile(filename).FileFoldings);
+            if (parseInfo == null)
+            {
+                UpdateAll();
+            }
+            else
+            {
+                UpdateLabelBox();
+            }
+            if (!ProjectService.IsInternal && ProjectService.ContainsFile(filename))
+            {
+                string foldings = ProjectService.Project.FindFile(filename).FileFoldings;
+                editorBox.Document.FoldingManager.DeserializeFromString(foldings);
+            }
 		}
 
 		public bool SaveFile()
@@ -419,10 +430,14 @@ namespace Revsoft.Wabbitcode
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 		{
-			if (keyData == Keys.F3)
-				DockingService.FindForm.FindNext(true, false, "Text not found");
-			if (MacroService.IsRecording)
-				MacroService.RecordKeyData(keyData);
+            if (keyData == Keys.F3)
+            {
+                DockingService.FindForm.FindNext(true, false, "Text not found");
+            }
+            if (MacroService.IsRecording)
+            {
+                MacroService.RecordKeyData(keyData);
+            }
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
 
@@ -515,7 +530,7 @@ namespace Revsoft.Wabbitcode
 			infoLinesQueued++;
 			Action<Object> ParseFile = (o) =>
 			{
-				parseInfo = ParserService.ParseFile(FileName, EditorText);
+				parseInfo = ParserService.ParseFile(EditorText.GetHashCode() , FileName, EditorText);
 				if (DockingService.HasBeenInited && string.Compare(FileName, DocumentService.ActiveFileName, true) == 0)
 				{
 					Action updateLabelBox = () => UpdateLabelBox();
@@ -524,8 +539,10 @@ namespace Revsoft.Wabbitcode
 			};
 			var item = AbortableThreadPool.QueueUserWorkItem(new WaitCallback(ParseFile));
 			queuedFiles.Add(item);
-			if (!codeChecker.IsBusy)
-				codeChecker.RunWorkerAsync();
+            if (!codeChecker.IsBusy)
+            {
+                codeChecker.RunWorkerAsync();
+            }
 		}
 
 		private void UpdateTabText()
@@ -537,12 +554,16 @@ namespace Revsoft.Wabbitcode
 				TabText = "New Document" + changedString;
 		}
 
-		private string fixIncludeFiles(string fileName)
+		private string FixIncludeFiles(string fileName)
 		{
-			if (!Path.IsPathRooted(fileName))
-				fileName = Path.Combine(Path.GetDirectoryName(editorBox.FileName), fileName);
-			if (!File.Exists(fileName))
-				return null;
+            if (!Path.IsPathRooted(fileName))
+            {
+                fileName = Path.Combine(Path.GetDirectoryName(editorBox.FileName), fileName);
+            }
+            if (!File.Exists(fileName))
+            {
+                return null;
+            }
 			StreamReader reader = new StreamReader(fileName);
 			string fileContents = reader.ReadToEnd();
 			int location = 0;
@@ -550,15 +571,17 @@ namespace Revsoft.Wabbitcode
 			{
 				int start = fileContents.IndexOf("#include", location);
 				int end = fileContents.IndexOf("\n", start);
-				if (end == -1)
-					end = fileContents.Length;
+                if (end == -1)
+                {
+                    end = fileContents.Length;
+                }
 				string line = fileContents.Substring(start, end - start);
 				int firstQuote = line.IndexOf("\"");
 				int secondQuote = line.IndexOf("\"", firstQuote + 1);
 				//if (firstQuote == -1 || secondQuote == -1)
 
 				string newFile = line.Substring(firstQuote + 1, secondQuote - firstQuote - 1);
-				fileContents = fileContents.Replace(line, fixIncludeFiles(newFile));
+				fileContents = fileContents.Replace(line, FixIncludeFiles(newFile));
 				location = end;
 			}
 			return fileContents;
@@ -605,19 +628,31 @@ namespace Revsoft.Wabbitcode
 						text = text.Remove(0, 1);
 						steps++;
 					}
-					if (negate)
-						steps *= -1;
+                    if (negate)
+                    {
+                        steps *= -1;
+                    }
 					int i;
-					for (i = 0; i < parseInfo.LabelsList.Count; i++)
-						if (parseInfo.LabelsList[i].Name == "_")
-							parserData.Add(parseInfo.LabelsList[i]);
+                    for (i = 0; i < parseInfo.LabelsList.Count; i++)
+                    {
+                        if (parseInfo.LabelsList[i].Name == "_")
+                        {
+                            parserData.Add(parseInfo.LabelsList[i]);
+                        }
+                    }
 					i = 0;
-					while (i < parserData.Count && parserData[i].Location.Offset < editorBox.ActiveTextAreaControl.Caret.Offset)
-						i++;
-					if (negate)
-						i += steps;
-					else
-						i += steps - 1;
+                    while (i < parserData.Count && parserData[i].Location.Offset < editorBox.ActiveTextAreaControl.Caret.Offset)
+                    {
+                        i++;
+                    }
+                    if (negate)
+                    {
+                        i += steps;
+                    }
+                    else
+                    {
+                        i += steps - 1;
+                    }
 					IParserData data = parserData[i];
 					parserData.Clear();
 					parserData.Add(data);                        
@@ -625,38 +660,68 @@ namespace Revsoft.Wabbitcode
 				else
 				{
 					var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-					foreach (ParserInformation info in ProjectService.ParseInfo)
-						foreach (IParserData data in info.GeneratedList)
-							if (string.Equals(data.Name, text, options))
-							{
-								parserData.Add(data);
-								break;
-							}
+                    foreach (ParserInformation info in ProjectService.ParseInfo)
+                    {
+                        foreach (IParserData data in info.GeneratedList)
+                        {
+                            if (string.Equals(data.Name, text, options))
+                            {
+                                parserData.Add(data);
+                                break;
+                            }
+                        }
+                    }
 				}
 				if (parserData.Count == 0)
 				{
 					MessageBox.Show("Unable to locate " + text);
 					return;
-				} else if (parserData.Count == 1)
-				{
-					DocumentService.GotoLabel(parserData[0]);
-					if (!labelsCache.Contains(parserData[0]))
-						labelsCache.Add(parserData[0]);
-				}
-				else
-				{
-					DockingService.FindResults.NewFindResults(text, ProjectService.ProjectName);
-					foreach (IParserData data in parserData)
-						DockingService.FindResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, "0");
-					DockingService.ShowDockPanel(DockingService.FindResults);
-				}
+                }
+                else if (parserData.Count == 1)
+                {
+                    DocumentService.GotoLabel(parserData[0]);
+                    if (!labelsCache.Contains(parserData[0]))
+                    {
+                        labelsCache.Add(parserData[0]);
+                    }
+                }
+                else
+                {
+                    DockingService.FindResults.NewFindResults(text, ProjectService.ProjectName);
+                    foreach (IParserData data in parserData)
+                    {
+                        string line = String.Empty;
+                        StreamReader reader = null;
+                        try
+                        {
+                            reader = new StreamReader(data.Parent.SourceFile.ToString());
+                            line = reader.ReadToEnd().Split('\n')[data.Location.Line];
+                        }
+                        catch (Exception)
+                        {
+                        }
+                        finally
+                        {
+                            if (reader != null)
+                            {
+                                reader.Close();
+                            }
+                        }
+                        DockingService.FindResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, line);
+                    }
+                    DockingService.ShowDockPanel(DockingService.FindResults);
+                }
 			}
 			else
 			{
-				if (Path.IsPathRooted(text))
-					DocumentService.GotoFile(text);
-				else
-					DocumentService.GotoFile(FileOperations.NormalizePath(FindFilePathIncludes(text)));
+                if (Path.IsPathRooted(text))
+                {
+                    DocumentService.GotoFile(text);
+                }
+                else
+                {
+                    DocumentService.GotoFile(FileOperations.NormalizePath(FindFilePathIncludes(text)));
+                }
 			}
 		}
 
@@ -664,10 +729,14 @@ namespace Revsoft.Wabbitcode
 		{
 			MenuItem item = sender as MenuItem;
 			int offset = editorBox.ActiveTextAreaControl.Caret.Offset;
-			if (delimeters.Contains(editorBox.Document.GetCharAt(offset)))
-				offset--;
-			while (!delimeters.Contains(editorBox.Document.GetCharAt(offset)))
-				offset--;
+            if (delimeters.Contains(editorBox.Document.GetCharAt(offset)))
+            {
+                offset--;
+            }
+            while (!delimeters.Contains(editorBox.Document.GetCharAt(offset)))
+            {
+                offset--;
+            }
 			offset++;
 			editorBox.Document.Replace(offset, item.Text.Length, item.Text);
 		}
@@ -677,9 +746,13 @@ namespace Revsoft.Wabbitcode
 			string word = GetWord();
 			DockingService.FindResults.NewFindResults(word, ProjectService.ProjectName);
 			var refs = ParserService.FindAllReferences(word);
-			foreach (var reference in refs)
-				foreach (var fileRef in reference)
-					DockingService.FindResults.AddFindResult(fileRef);
+            foreach (var reference in refs)
+            {
+                foreach (var fileRef in reference)
+                {
+                    DockingService.FindResults.AddFindResult(fileRef);
+                }
+            }
 			DockingService.FindResults.DoneSearching();
 			DockingService.ShowDockPanel(DockingService.FindResults);
 		}
@@ -697,8 +770,10 @@ namespace Revsoft.Wabbitcode
 
 		private void editorBox_MouseClick(object sender, MouseEventArgs e)
 		{
-			if (e.Button != MouseButtons.Right)
-				return;
+            if (e.Button != MouseButtons.Right)
+            {
+                return;
+            }
 			if (editorBox.ActiveTextAreaControl.SelectionManager.HasSomethingSelected)
 			{
 				cutContext.Enabled = true;
@@ -709,7 +784,7 @@ namespace Revsoft.Wabbitcode
 				cutContext.Enabled = false;
 				copyContext.Enabled = false;
 			}
-			if (editorBox.Text != "")
+			if (!string.IsNullOrEmpty(editorBox.Text))
 			{
 				var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 				int offset = editorBox.ActiveTextAreaControl.Caret.Offset;
@@ -718,35 +793,47 @@ namespace Revsoft.Wabbitcode
 				if (!string.IsNullOrEmpty(text))
 				{
 					List<IParserData> parserData = new List<IParserData>();
-					foreach (ParserInformation info in ProjectService.ParseInfo)
-						foreach (IParserData data in info.GeneratedList)
-							if (string.Equals(data.Name, text, options))
-							{
-								parserData.Add(data);
-								break;
-							}
-					if (parserData.Count > 0)
-					{
-						fixCaseContext.MenuItems.Clear();
-						foreach (IParserData data in parserData)
-						{
-							if (data.Name == text)
-								continue;
-							fixCaseContext.Visible = true;
-							MenuItem item = new MenuItem(data.Name, new EventHandler(fixCaseContext_Click));
-							fixCaseContext.MenuItems.Add(item);
-						}
-						bgotoButton.Enabled = true;
-					}
-					else
-						bgotoButton.Enabled = false;
+                    foreach (ParserInformation info in ProjectService.ParseInfo)
+                    {
+                        foreach (IParserData data in info.GeneratedList)
+                        {
+                            if (string.Equals(data.Name, text, options))
+                            {
+                                parserData.Add(data);
+                                break;
+                            }
+                        }
+                    }
+                    if (parserData.Count > 0)
+                    {
+                        fixCaseContext.MenuItems.Clear();
+                        foreach (IParserData data in parserData)
+                        {
+                            if (data.Name == text)
+                            {
+                                continue;
+                            }
+                            fixCaseContext.Visible = true;
+                            MenuItem item = new MenuItem(data.Name, new EventHandler(fixCaseContext_Click));
+                            fixCaseContext.MenuItems.Add(item);
+                        }
+                        bgotoButton.Enabled = true;
+                    }
+                    else
+                    {
+                        bgotoButton.Enabled = false;
+                    }
 				}
 				//if the user clicked after the last char we need to catch this
-				if (offset == editorBox.Text.Length)
-					offset--;
+                if (offset == editorBox.Text.Length)
+                {
+                    offset--;
+                }
 				int startLine = offset;
-				while (startLine >= 0 && editorBox.Text[startLine] != '\n')
-					startLine--;
+                while (startLine >= 0 && editorBox.Text[startLine] != '\n')
+                {
+                    startLine--;
+                }
 				startLine++;
 				bool isInclude = false;
 				if (string.Compare(editorBox.Text, startLine, "#include", 0, "#include".Length, options) == 0)
@@ -756,24 +843,34 @@ namespace Revsoft.Wabbitcode
 				}
 				else
 				{
-					while (offset >= 0 && (char.IsLetterOrDigit(editorBox.Text[offset]) || editorBox.Text[offset] == '_'))
-						offset--;
+                    while (offset >= 0 && (char.IsLetterOrDigit(editorBox.Text[offset]) || editorBox.Text[offset] == '_'))
+                    {
+                        offset--;
+                    }
 					offset++;
 				}
 				int length = 1;
 				if (isInclude)
 				{
-					while (char.IsWhiteSpace(editorBox.Text[offset]))
-						offset++;
-					while (offset + length < editorBox.Text.Length && (editorBox.Text[offset + length] != ';' && editorBox.Text[offset + length] != '\"' && editorBox.Text[offset + length] != '\r' && editorBox.Text[offset + length] != '\n'))
-						length++;
-					if (offset + length < editorBox.Text.Length && editorBox.Text[offset + length] == '\"')
-						length++;
+                    while (char.IsWhiteSpace(editorBox.Text[offset]))
+                    {
+                        offset++;
+                    }
+                    while (offset + length < editorBox.Text.Length && (editorBox.Text[offset + length] != ';' && editorBox.Text[offset + length] != '\"' && editorBox.Text[offset + length] != '\r' && editorBox.Text[offset + length] != '\n'))
+                    {
+                        length++;
+                    }
+                    if (offset + length < editorBox.Text.Length && editorBox.Text[offset + length] == '\"')
+                    {
+                        length++;
+                    }
 				}
 				else
 				{
-					while (offset + length < editorBox.Text.Length && (char.IsLetterOrDigit(editorBox.Text[offset + length]) || editorBox.Text[offset + length] == '_'))
-						length++;
+                    while (offset + length < editorBox.Text.Length && (char.IsLetterOrDigit(editorBox.Text[offset + length]) || editorBox.Text[offset + length] == '_'))
+                    {
+                        length++;
+                    }
 				}
 				string gotoLabel = "";
 				try
@@ -1195,37 +1292,45 @@ namespace Revsoft.Wabbitcode
 			codeCheckMarkers.Clear();
 			try
 			{
-				if (ProjectService.IsInternal)
-				{
-				}
-				else
-					ThreadPool.QueueUserWorkItem(AssemblerService.AssembleProject, true);
-				while (!AssemblerService.IsBuildingProject)
-					Thread.Sleep(50);
-				while (AssemblerService.IsBuildingProject)
-					Thread.Sleep(50);
+                if (ProjectService.IsInternal)
+                {
+                }
+                else
+                {
+                    ThreadPool.QueueUserWorkItem(AssemblerService.AssembleProject, true);
+                }
+                while (!AssemblerService.IsBuildingProject)
+                {
+                    Thread.Sleep(50);
+                }
+                while (AssemblerService.IsBuildingProject)
+                {
+                    Thread.Sleep(50);
+                }
 				RemoveCodeMarkersDelegate removeMarkers = RemoveCodeMarkers;
 				removeMarkers();
 				AddSquiggleDelegate AddSquiggleLineDelegate = NewEditor.addSquiggleLine;
-				foreach (var item in AssemblerService.ErrorsInFiles)
-					if (string.Equals(item.file, fileName, StringComparison.OrdinalIgnoreCase))
-					{
-						DockingService.MainForm.Invoke(AddSquiggleLineDelegate, this, item.lineNum, item.isWarning ? Color.Yellow : Color.Red, item.description);
-						UpdateDocumentDelegate updateDelegate = UpdateDocument;
-						DockingService.MainForm.Invoke(updateDelegate, item.lineNum);
-					}
-					else
-					{
-						foreach (NewEditor doc in DockingService.Documents)
-						{
-							if (string.Compare(item.file, doc.FileName, true) == 0)
-							{
-								DockingService.MainForm.Invoke(AddSquiggleLineDelegate, doc, item.lineNum, item.isWarning ? Color.Yellow : Color.Red, item.description);
-								UpdateDocumentDelegate updateDelegate = doc.UpdateDocument;
-								DockingService.MainForm.Invoke(updateDelegate, item.lineNum);
-							}						
-						}
-					}
+                foreach (var item in AssemblerService.ErrorsInFiles)
+                {
+                    if (string.Equals(item.file, fileName, StringComparison.OrdinalIgnoreCase))
+                    {
+                        DockingService.MainForm.Invoke(AddSquiggleLineDelegate, this, item.lineNum, item.isWarning ? Color.Yellow : Color.Red, item.description);
+                        UpdateDocumentDelegate updateDelegate = UpdateDocument;
+                        DockingService.MainForm.Invoke(updateDelegate, item.lineNum);
+                    }
+                    else
+                    {
+                        foreach (NewEditor doc in DockingService.Documents)
+                        {
+                            if (string.Compare(item.file, doc.FileName, true) == 0)
+                            {
+                                DockingService.MainForm.Invoke(AddSquiggleLineDelegate, doc, item.lineNum, item.isWarning ? Color.Yellow : Color.Red, item.description);
+                                UpdateDocumentDelegate updateDelegate = doc.UpdateDocument;
+                                DockingService.MainForm.Invoke(updateDelegate, item.lineNum);
+                            }
+                        }
+                    }
+                }
 			}
 			catch (Exception) { }
 		}
@@ -1239,8 +1344,10 @@ namespace Revsoft.Wabbitcode
 		delegate void RemoveCodeMarkersDelegate();
 		private void RemoveCodeMarkers()
 		{
-			foreach (NewEditor doc in DockingService.Documents)
-				doc.EditorBox.Document.MarkerStrategy.RemoveAll(marker => marker.Tag == "Code Check");
+            foreach (NewEditor doc in DockingService.Documents)
+            {
+                doc.EditorBox.Document.MarkerStrategy.RemoveAll(marker => marker.Tag == "Code Check");
+            }
 		}
 
 		private delegate void AddSquiggleDelegate(NewEditor doc, int newLineNumber, Color underlineColor, string description);
@@ -1398,8 +1505,10 @@ namespace Revsoft.Wabbitcode
 
 		internal void AddMarkers(List<TextMarker> markers)
 		{
-			foreach (TextMarker marker in markers)
-				editorBox.Document.MarkerStrategy.AddMarker(marker);
+            foreach (TextMarker marker in markers)
+            {
+                editorBox.Document.MarkerStrategy.AddMarker(marker);
+            }
 			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
 			this.Refresh();
 		}

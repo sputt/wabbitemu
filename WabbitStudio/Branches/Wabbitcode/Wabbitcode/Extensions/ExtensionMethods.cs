@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Xml;
 using Revsoft.Wabbitcode.Services;
 using System;
+using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Classes
 {
@@ -57,5 +58,10 @@ namespace Revsoft.Wabbitcode.Classes
 		{
 			return source.IndexOf(toCheck, comp) >= 0;
 		}
+
+        public static void Invoke(this Control control, Action action)
+        {
+            control.Invoke((Delegate)action);
+        }
 	}
 }

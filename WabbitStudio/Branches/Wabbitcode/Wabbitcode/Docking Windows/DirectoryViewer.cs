@@ -221,25 +221,35 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private void dirViewer_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
             if (e.Label == null)
+            {
                 return;
-            if (e.Label == "")
+            }
+            if (e.Label == String.Empty)
             {
                 MessageBox.Show("You must enter a name!");
                 e.CancelEdit = true;
                 return;
             }
             string projectLoc = ProjectService.ProjectDirectory;
-            string oldFileName = projectLoc.Substring(0, projectLoc.LastIndexOf('\\') + 1) + e.Node.FullPath;
-            string newFileName = projectLoc.Substring(0, projectLoc.LastIndexOf('\\') + 1) + e.Node.FullPath.Substring(0, e.Node.FullPath.LastIndexOf('\\') + 1) + e.Label;
+            string oldFileName = projectLoc.Substring(0, projectLoc.LastIndexOf(Path.DirectorySeparatorChar) + 1) + 
+                                                         e.Node.FullPath;
+            string newFileName = projectLoc.Substring(0, projectLoc.LastIndexOf(Path.DirectorySeparatorChar) + 1) +
+                                                         e.Node.FullPath.Substring(0, e.Node.FullPath.LastIndexOf(Path.DirectorySeparatorChar) + 1) + e.Label;
             if (e.Node.Tag.ToString() == "Folder")
+            {
                 Directory.Move(oldFileName, newFileName);
+            }
             else
+            {
                 File.Move(oldFileName, newFileName);
+            }
         }
 
         private void openIEMenuItem_Click(object sender, EventArgs e)
         {
-            string folderName = ProjectService.ProjectDirectory.Substring(0, ProjectService.ProjectDirectory.LastIndexOf('\\') + 1) + dirViewer.SelectedNode.FullPath;
+            string folderName = ProjectService.ProjectDirectory.Substring(0, 
+                    ProjectService.ProjectDirectory.LastIndexOf(Path.DirectorySeparatorChar) + 1) +
+                    dirViewer.SelectedNode.FullPath;
             System.Diagnostics.Process.Start(folderName);
         }
 
@@ -251,9 +261,12 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private void delFMenuItem_Click(object sender, EventArgs e)
         {
             string projectLoc = ProjectService.ProjectDirectory;
-            string folderName = projectLoc.Substring(0, projectLoc.LastIndexOf('\\') + 1) + dirViewer.SelectedNode.FullPath;
+            string folderName = projectLoc.Substring(0, projectLoc.LastIndexOf(Path.DirectorySeparatorChar) + 1) + dirViewer.SelectedNode.FullPath;
             if (MessageBox.Show("Would you like to delete " + dirViewer.SelectedNode.Text + "?", "Delete Folder?",
-                                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes) return;
+                                MessageBoxButtons.YesNo, MessageBoxIcon.Question) != DialogResult.Yes)
+            {
+                return;
+            }
             Directory.Delete(folderName, true);
             buildDirectoryTree(Directory.GetDirectories(projectLoc));
         }

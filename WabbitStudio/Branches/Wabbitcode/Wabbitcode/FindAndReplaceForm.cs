@@ -191,16 +191,20 @@ namespace Revsoft.Wabbitcode
 						results.NewFindResults(txtLookFor.Text, ProjectService.ProjectName);
 						foreach (ProjectFile file in files)
 						{
-							if (!File.Exists(file.FileFullPath))
-								continue;
+                            if (!File.Exists(file.FileFullPath))
+                            {
+                                continue;
+                            }
 							reader = new StreamReader(Path.Combine(ProjectService.ProjectDirectory, file.FileFullPath));
 							lines = reader.ReadToEnd().Split('\n');
                             reader.Close();
 							for (int i = 0; i < lines.Length; i++)
 							{
 								text = lines[i];
-								if (!text.Contains(txtLookFor.Text))
-									continue;
+                                if (!text.Contains(txtLookFor.Text))
+                                {
+                                    continue;
+                                }
 								loc = 0;
 								indexOfString = text.IndexOf(txtLookFor.Text, loc);
 								while (text.IndexOf(txtLookFor.Text, loc) != -1)
@@ -208,11 +212,15 @@ namespace Revsoft.Wabbitcode
 									indexOfString = text.IndexOf(txtLookFor.Text, loc);
 									loc = indexOfString + 1;
 									string phrase = text.Substring(indexOfString, txtLookFor.Text.Length);
-									if (chkMatchCase.Checked && string.Compare(txtLookFor.Text, phrase, false) != 0)
-										continue;
-									if (chkMatchWholeWord.Checked &&  ((loc + 1 < text.Length && !char.IsWhiteSpace(text[loc+1]))
+                                    if (chkMatchCase.Checked && string.Compare(txtLookFor.Text, phrase, false) != 0)
+                                    {
+                                        continue;
+                                    }
+                                    if (chkMatchWholeWord.Checked && ((loc + 1 < text.Length && !char.IsWhiteSpace(text[loc + 1]))
                                         || (indexOfString - 1 > 0 && !char.IsWhiteSpace(text[indexOfString - 1]))))
-										continue;
+                                    {
+                                        continue;
+                                    }
 									results.AddFindResult(file.FileFullPath, i, lines[i]);
 								}
 							}

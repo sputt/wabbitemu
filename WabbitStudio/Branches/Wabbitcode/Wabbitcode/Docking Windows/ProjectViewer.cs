@@ -111,17 +111,28 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		private void OpenNode(TreeNode dropNode)
 		{
-			if (dropNode == null || dropNode.Tag.GetType() == typeof(ProjectFolder) || !projViewer.SelectedNodes.Contains(dropNode))
-				return;
+            if (dropNode == null || dropNode.Tag.GetType() == typeof(ProjectFolder) || !projViewer.SelectedNodes.Contains(dropNode))
+            {
+                return;
+            }
 			ProjectFile file = GetFileFromPath(dropNode.FullPath);
             if (file == null)
+            {
                 return;
+            }
 			string filePath = file.FileFullPath;
-			if (File.Exists(filePath))
-				DocumentService.GotoFile(filePath);
-			else
-				if (MessageBox.Show("File no longer exists, would you like to remove from project?", "File Not Found", MessageBoxButtons.YesNo) == DialogResult.Yes)
-				dropNode.Remove();
+            if (File.Exists(filePath))
+            {
+                DocumentService.GotoFile(filePath);
+            }
+            else
+            {
+                if (MessageBox.Show("File no longer exists, would you like to remove from project?", "File Not Found", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    dropNode.Remove();
+                    projViewer.SelectedNodes.Remove(dropNode);
+                }
+            }
 		}
 
 		private ProjectFile GetFileFromPath(string path)
@@ -191,10 +202,14 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			renameForm.Text = "Rename Folder";
             DialogResult result = renameForm.ShowDialog();
             if (result != DialogResult.OK)
+            {
                 return;
+            }
             string newName = renameForm.NewText;
             if (oldName == newName)
+            {
                 return;
+            }
             ProjectFolder folder = (ProjectFolder)node.Tag;
             folder.Name = newName;
             node.Text = newName;
@@ -203,9 +218,9 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void projViewer_AfterLabelEdit(object sender, NodeLabelEditEventArgs e)
         {
-            if (e.Label != "")
+            if (!string.IsNullOrEmpty(e.Label))
             {
-                if (e.Node.Tag.GetType() == typeof(ProjectFolder))
+                if (e.Node.Tag is ProjectFolder)
                 {
                     ProjectFolder folder = e.Node.Tag as ProjectFolder;
                     folder.Name = e.Label;
@@ -249,7 +264,9 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             RenameForm newNameForm = new RenameForm();
             newNameForm.Text = "New File";
             if (newNameForm.ShowDialog() != DialogResult.OK)
+            {
                 return;
+            }
             string name = newNameForm.NewText;
             AddNewFile(name);
         }
@@ -258,7 +275,9 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
             OpenNode(projViewer.SelectedNode);
             foreach (TreeNode node in projViewer.SelectedNodes)
-				OpenNode(node);
+            {
+                OpenNode(node);
+            }
         }
 
         private void openWithMenuItem_Click(object sender, EventArgs e)
@@ -277,10 +296,14 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 			results = MessageBox.Show(message, "Delete Contents", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
 
-			if (results != DialogResult.Yes)
-				return;
-			foreach (TreeNode node in nodes)
-				DeleteNode(node);
+            if (results != DialogResult.Yes)
+            {
+                return;
+            }
+            foreach (TreeNode node in nodes)
+            {
+                DeleteNode(node);
+            }
 
 			projViewer.SelectedNodes.Clear();
 			projViewer.Sort();
@@ -311,13 +334,19 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         {
             TreeNode parent = projViewer.SelectedNode;
             if (parent == null)
+            {
                 parent = projViewer.Nodes[0];
-            if (parent.Tag.GetType() == typeof(ProjectFile))
+            }
+            if (parent.Tag is ProjectFile)
+            {
                 parent = parent.Parent;
+            }
 			RenameForm newNameForm = new RenameForm();
 			newNameForm.Text = "New Folder";
-			if (newNameForm.ShowDialog() != DialogResult.OK)
-				return;
+            if (newNameForm.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
 			string name = newNameForm.NewText;
             ProjectFolder folder = new ProjectFolder(ProjectService.Project, name);
             AddFolder(folder, parent);
@@ -351,18 +380,24 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             TreeNode newNode = projViewer.GetNodeAt(cursor);
 			if (newNode == null)
 				return;
-            while (newNode.Tag.GetType() != typeof(ProjectFolder))
+            while (!(newNode.Tag is ProjectFolder))
+            {
                 newNode = newNode.Parent;
+            }
            foreach (TreeNode original in projViewer.SelectedNodes)
            {
                 if (newNode == original)
+                {
                     break;
-                if (original.Tag.GetType() == typeof(ProjectFolder))
+                }
+                if (original.Tag is ProjectFolder)
                 {
                     ProjectFolder folder = original.Tag as ProjectFolder;
                     ProjectFolder newParent = newNode.Tag as ProjectFolder;
                     if (folder == newParent)
+                    {
                         continue;
+                    }
                     folder.Remove();
                     newParent.AddFolder(folder);
                     original.Remove();
@@ -373,7 +408,9 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                     ProjectFile file = (ProjectFile)original.Tag;
                     ProjectFolder newParent = (ProjectFolder)newNode.Tag;
                     if (file.Folder == newParent)
+                    {
                         continue;
+                    }
                     file.Remove();
                     newParent.AddFile(file);
                     original.Remove();

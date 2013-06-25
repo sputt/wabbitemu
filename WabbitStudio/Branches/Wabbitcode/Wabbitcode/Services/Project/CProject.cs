@@ -103,32 +103,42 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		internal void OpenProject(string projectFile)
 		{
-			using (FileStream stream = new FileStream(projectFile, FileMode.Open))
-			{
-				using (XmlTextReader reader = new XmlTextReader(stream) { WhitespaceHandling = WhitespaceHandling.None })
-				{
-					reader.MoveToContent();
-					while (!reader.Name.Equals("WabbitcodeProject"))
-					{
-						if (!reader.MoveToNextElement())
-							throw new ArgumentException("Invalid XML Format");
-					}
+            FileStream stream = null;
+            try
+            {
+                stream = new FileStream(projectFile, FileMode.Open);
+                using (XmlTextReader reader = new XmlTextReader(stream) { WhitespaceHandling = WhitespaceHandling.None })
+                {
+                    stream = null;
+                    reader.MoveToContent();
+                    while (!reader.Name.Equals("WabbitcodeProject"))
+                    {
+                        if (!reader.MoveToNextElement())
+                            throw new ArgumentException("Invalid XML Format");
+                    }
 
-					string formatVersion = reader.GetAttribute("Version");
-					DialogResult result = DialogResult.Yes;
-					if (formatVersion != ProjectFileVersion)
-						result = MessageBox.Show("Project Version is not up to date.\nTry to load anyway?", "Invalid Version", MessageBoxButtons.YesNo);
-					if (result != DialogResult.Yes)
-						return;
-					projectName = reader.GetAttribute("Name");
-					reader.MoveToNextElement();
-					if (reader.Name != "Folder")
-						throw new ArgumentException("Invalid XML Format");
-					mainFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
-					RecurseReadFolders(reader, ref mainFolder);
-					buildSystem.ReadXML(reader);
-				}
-			}
+                    string formatVersion = reader.GetAttribute("Version");
+                    DialogResult result = DialogResult.Yes;
+                    if (formatVersion != ProjectFileVersion)
+                        result = MessageBox.Show("Project Version is not up to date.\nTry to load anyway?", "Invalid Version", MessageBoxButtons.YesNo);
+                    if (result != DialogResult.Yes)
+                        return;
+                    projectName = reader.GetAttribute("Name");
+                    reader.MoveToNextElement();
+                    if (reader.Name != "Folder")
+                        throw new ArgumentException("Invalid XML Format");
+                    mainFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
+                    RecurseReadFolders(reader, ref mainFolder);
+                    buildSystem.ReadXML(reader);
+                }
+            }
+            finally
+            {
+                if (stream != null)
+                {
+                    stream.Dispose();
+                }
+            }
 		}
 
 		#region XML

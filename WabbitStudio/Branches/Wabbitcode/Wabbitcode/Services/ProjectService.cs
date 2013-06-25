@@ -89,15 +89,21 @@ namespace Revsoft.Wabbitcode.Services
 
 		public static bool OpenProject(string fileName, bool closeFiles)
 		{
-			if (closeFiles)
-				foreach (Form mdiChild in DockingService.Documents)
-					mdiChild.Close();
+            if (closeFiles)
+            {
+                foreach (Form mdiChild in DockingService.Documents)
+                {
+                    mdiChild.Close();
+                }
+            }
             project = new ProjectClass(fileName);
             project.OpenProject(fileName);
-            
+
 
             if (!InitWatcher(project.ProjectDirectory))
+            {
                 return false;
+            }
             if (closeFiles)
             {
                 DockingService.ShowDockPanel(DockingService.ProjectViewer);
@@ -109,10 +115,14 @@ namespace Revsoft.Wabbitcode.Services
 			//ThreadStart threadStart = new ThreadStart(GetIncludeDirectories);
             ThreadPool.QueueUserWorkItem(ParseFiles);
 
-			if (Settings.Default.startupProject != fileName)
-				if (MessageBox.Show("Would you like to make this your default project?", "Startup Project",
-									MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-					Settings.Default.startupProject = fileName;
+            if (Settings.Default.startupProject != fileName)
+            {
+                if (MessageBox.Show("Would you like to make this your default project?", "Startup Project",
+                                    MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                {
+                    Settings.Default.startupProject = fileName;
+                }
+            }
             return true;
 		}
 
@@ -124,12 +134,16 @@ namespace Revsoft.Wabbitcode.Services
 
 		private static void ParseFiles(ProjectFolder folder)
 		{
-			foreach (ProjectFolder subFolder in folder.Folders)
-				ParseFiles(subFolder);
+            foreach (ProjectFolder subFolder in folder.Folders)
+            {
+                ParseFiles(subFolder);
+            }
             ProjectFile[] filesToParse = new ProjectFile[folder.Files.Count];
             folder.Files.CopyTo(filesToParse, 0);
-			foreach (ProjectFile file in filesToParse)
-				ParserService.ParseFile(file.FileFullPath);
+            foreach (ProjectFile file in filesToParse)
+            {
+                ParserService.ParseFile(0, file.FileFullPath);
+            }
 		}
 
 		private static string GetProjectIncludeDirectories(IEnumerable<string> directories)
@@ -189,7 +203,6 @@ namespace Revsoft.Wabbitcode.Services
 			//throw new NotImplementedException();
 		}
 
-		delegate void FileChangedDelegate(NewEditor doc, string fileName);
 		static void projectWatcher_Changed(object sender, FileSystemEventArgs e)
 		{
 			switch (e.ChangeType)
@@ -201,8 +214,7 @@ namespace Revsoft.Wabbitcode.Services
 						{
 							if (string.Equals(doc.FileName, e.FullPath, StringComparison.OrdinalIgnoreCase))
 							{
-								FileChangedDelegate fileChanged = UpdateFileChanged;
-								DockingService.MainForm.Invoke(fileChanged, new object[] { doc, e.FullPath });
+								DockingService.MainForm.Invoke(() => UpdateFileChanged(doc, e.FullPath));
 								break;
 							}
 						}
@@ -215,8 +227,10 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			projectWatcher.EnableRaisingEvents = false;
 			DialogResult result = MessageBox.Show(fileName + " modified outside the editor.\nLoad changes?", "File modified", MessageBoxButtons.YesNo);
-			if (result == System.Windows.Forms.DialogResult.Yes)
-				DocumentService.OpenDocument(doc, fileName);
+            if (result == System.Windows.Forms.DialogResult.Yes)
+            {
+                DocumentService.OpenDocument(doc, fileName);
+            }
 			projectWatcher.EnableRaisingEvents = true;
 		}
 

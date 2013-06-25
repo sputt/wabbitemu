@@ -47,7 +47,7 @@ namespace Revsoft.Wabbitcode.Classes
 		[DllImport("user32.dll")]
 		internal static extern bool SetForegroundWindow(IntPtr hWnd);
 
-		[DllImport("user32.dll", CharSet = CharSet.Auto)]
+		[DllImport("user32.dll", CharSet = CharSet.Unicode)]
 		internal static extern IntPtr FindWindow(string strClassName, string nptWindowName);
 
 		internal const int WM_KEYDOWN = 0x0100;
@@ -135,7 +135,7 @@ namespace Revsoft.Wabbitcode.Classes
 		[DllImport("SPASM.dll")]
 		internal static extern int ShowMessage();
 
-		[DllImport("SPASM.dll", BestFitMapping = true, ThrowOnUnmappableChar=true)]
+		[DllImport("SPASM.dll", BestFitMapping = true, ThrowOnUnmappableChar = true)]
 		internal static extern int SetInputFile([In, MarshalAs(UnmanagedType.LPStr)] string name);
 
 		[DllImport("SPASM.dll", BestFitMapping = true, ThrowOnUnmappableChar = true)]
