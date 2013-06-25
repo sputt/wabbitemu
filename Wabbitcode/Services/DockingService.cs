@@ -274,8 +274,8 @@ namespace Revsoft.Wabbitcode.Services
 		public static void ShowError(string error, Exception ex)
 		{
 			StringBuilder sb = new StringBuilder(error);
-			sb.Append("\n");
-			sb.Append(ex.ToString());
+			sb.Append("\nReason: ");
+			sb.Append(ex.Message.ToString());
 			MessageBox.Show(sb.ToString(), "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
 		}
 	}

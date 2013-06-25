@@ -7,6 +7,7 @@ using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Classes;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -21,8 +22,10 @@ namespace Revsoft.Wabbitcode.Services
 				foreach (var file in files)
 				{
 					var refs = FindAllReferencesInFile(((NewEditor)file).ToolTipText, refString);
-					if (refs.Count > 0)
-						refsList.Add(refs);
+                    if (refs.Count > 0)
+                    {
+                        refsList.Add(refs);
+                    }
 				}
 			}
 			else
@@ -31,8 +34,10 @@ namespace Revsoft.Wabbitcode.Services
 				foreach (var file in files)
 				{
 					var refs = FindAllReferencesInFile(Path.Combine(ProjectService.ProjectDirectory, file.FileFullPath), refString);
-					if (refs.Count > 0)
-						refsList.Add(refs);
+                    if (refs.Count > 0)
+                    {
+                        refsList.Add(refs);
+                    }
 				}
 			}
 			return refsList;
@@ -72,12 +77,16 @@ namespace Revsoft.Wabbitcode.Services
 				string line = lines[i];
 				string originalLine = line;
 				int commentIndex = line.IndexOf(commentChar);
-				if (commentIndex != -1)
-					line = line.Remove(commentIndex);
+                if (commentIndex != -1)
+                {
+                    line = line.Remove(commentIndex);
+                }
 				if (line.Trim().StartsWith("#comment", options))
 				{
-					while (!line.Trim().StartsWith("#endcomment", options))
-						line = lines[++i];
+                    while (!line.Trim().StartsWith("#endcomment", options))
+                    {
+                        line = lines[++i];
+                    }
 					continue;
 				}
 				int refactorIndex = line.IndexOf(refString, options);
@@ -95,14 +104,20 @@ namespace Revsoft.Wabbitcode.Services
 				for (int j = 0; j < quotes.Count; j++)
 					if (refactorIndex > quotes[j])
 					{
-						if (j + 1 < quotes.Count && refactorIndex >= quotes[j + 1])
-							continue;
-						if (j % 2 == 0)
-							inQuote = true;
+                        if (j + 1 < quotes.Count && refactorIndex >= quotes[j + 1])
+                        {
+                            continue;
+                        }
+                        if (j % 2 == 0)
+                        {
+                            inQuote = true;
+                        }
 						break;
 					}
-				if (inQuote)
-					continue;
+                if (inQuote)
+                {
+                    continue;
+                }
 				refs.Add(new Reference(file, i, refactorIndex, refString, originalLine));
 			}
 			return refs;
@@ -118,8 +133,10 @@ namespace Revsoft.Wabbitcode.Services
 			ParsedLineSec section;
 			do
 			{
-				if (currentLine[index] == '\\')
-					index++;
+                if (currentLine[index] == '\\')
+                {
+                    index++;
+                }
 				section = ParseLineSec();
 				lineSections.Add(section);
 				index = SkipWhitespace(currentLine, index);
@@ -130,8 +147,10 @@ namespace Revsoft.Wabbitcode.Services
 		private static ParsedLineSec ParseLineSec()
 		{
 			ParsedLineSec sec = new ParsedLineSec(currentLine);
-			if (IsEndOfCodeLine(currentIndex))
-				return sec;
+            if (IsEndOfCodeLine(currentIndex))
+            {
+                return sec;
+            }
 			char firstChar = currentLine[currentIndex];
 			if (char.IsLetter(firstChar) || firstChar == '_')
 			{
@@ -184,11 +203,14 @@ namespace Revsoft.Wabbitcode.Services
 				return;
 			fileInfo.IsIncluded = true;
 			fileInfo.ParsingIncludes = true;
-			foreach (IIncludeFile include in fileInfo.IncludeFilesList)
-				FindIncludedFiles(include.IncludedFile);
+            foreach (IIncludeFile include in fileInfo.IncludeFilesList)
+            {
+                FindIncludedFiles(include.IncludedFile);
+            }
 			fileInfo.ParsingIncludes = false;
 		}
 
+        const char endOfLineChar = '\\';
 		const char commentChar = ';';
 		const string defineString = "#define";
 		const string macroString = "#macro";
@@ -196,28 +218,33 @@ namespace Revsoft.Wabbitcode.Services
 		const string includeString = "#include";
 		const string commentString = "#comment";
 		const string endCommentString = "#endcomment";
-		public static ParserInformation ParseFile(string file)
+		public static ParserInformation ParseFile(int hashCode, string filename)
 		{
 			string lines = null;
 			StreamReader reader = null;
 			try
 			{
-				reader = new StreamReader(file);
+                string mimeType = FileOperations.GetMimeType(filename);
+                if (mimeType != "text/plain")
+                {
+                    System.Diagnostics.Debug.Print("Invalid MIME type {0}", mimeType);
+                    return null;
+                }
+				reader = new StreamReader(filename);
 				lines = reader.ReadToEnd();
-				//NewParser.NewParser.ParseFile(file);
-				return ParseFile(file, lines);
+				return ParseFile(hashCode, filename, lines);
 			}
 			catch (FileNotFoundException ex)
 			{
 				System.Windows.Forms.DialogResult result = System.Windows.Forms.MessageBox.Show(ex.FileName + " not found, would you like to remove it from the project?",
 					"File not found", System.Windows.Forms.MessageBoxButtons.YesNo, System.Windows.Forms.MessageBoxIcon.None);
 				if (result == System.Windows.Forms.DialogResult.Yes)
-					ProjectService.DeleteFile(file);
+					ProjectService.DeleteFile(filename);
 				return null;
 			}
 			catch (Exception ex)
 			{
-				DockingService.ShowError("Error parsing file: " + file, ex);
+				DockingService.ShowError("Error parsing file: " + filename, ex);
 				return null;
 			}
 			finally
@@ -227,12 +254,25 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		delegate void HideProgressDelegate();
-		delegate void ProgressDelegate(int percent);
-		internal static ParserInformation ParseFile(string file, string lines)
+        static List<KeyValuePair<string, int>> lineLengthGroup;
+        static int GetLine(int counter)
+        {
+            int i;
+            for (i = 1; i < lineLengthGroup.Count; i++)
+            {
+                if (lineLengthGroup[i - 1].Value > counter && counter <= lineLengthGroup[i].Value)
+                {
+                    return i - 1;
+                }
+            }
+            return i;
+        }
+
+        internal static ParserInformation ParseFile(int hashCode, string file, string lines)
 		{
-			int line = 0;
-			if (string.IsNullOrEmpty(file))
+            int total = 0;
+            lineLengthGroup = lines.Split('\n').Select(l => new KeyValuePair<string, int>(l, total += l.Length + 1)).ToList();
+			if (string.IsNullOrEmpty(file) && hashCode == 0)
 			{
 				System.Diagnostics.Debug.WriteLine("No file name specified");
 				return null;
@@ -242,182 +282,258 @@ namespace Revsoft.Wabbitcode.Services
 				System.Diagnostics.Debug.WriteLine("Lines were null or empty");
 				return null;
 			}
-			ParserInformation info = new ParserInformation(file);
+			ParserInformation info = new ParserInformation(hashCode, file);
 			var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
 			int counter = 0, percent = 0, newPercent;
-			ProgressDelegate progressDelegate = new ProgressDelegate(DockingService.MainForm.SetProgress);
-			while (counter < lines.Length && counter >= 0)
-			{
-				newPercent = counter * 100 / lines.Length;
-				if (newPercent < percent)
-					throw new Exception("Repeat!");
-				if (percent + 5 <= newPercent){
-					percent = newPercent;
-					try
-					{
-						DockingService.MainForm.Invoke(progressDelegate, percent);
-					}
-					//we've quit for some reason lets get out
-					catch (ObjectDisposedException) { return null; }
-				}
-				//handle label other xx = 22 type define
-				if (IsValidLabelChar(lines[counter]))
-				{
-					string description = GetDescription(lines, counter);
-					int newCounter = GetLabel(lines, counter);
-					string labelName = lines.Substring(counter, newCounter - counter);
-					if (newCounter < lines.Length && lines[newCounter] == ':')
-					{
-						//its definitely a label
-						Label labelToAdd = new Label(new DocLocation(line, counter), labelName, description, info);
-						info.LabelsList.Add(labelToAdd);
-					}
-					else
-					{
-						int tempCounter = SkipWhitespace(lines, newCounter);
-						if (tempCounter == -1)
-							break;
-						if (lines[tempCounter] == '=')
-						{
-							tempCounter++;
-							int temp = SkipWhitespace(lines, tempCounter);
-							if (temp == -1)
-							{
-								counter = newCounter;
-								continue;
-							}
-							else
-								counter = temp;
-							newCounter = SkipToEOCL(lines, counter);
-							string contents = lines.Substring(counter, newCounter - counter).Trim();
-							//its a define
-							var defineToAdd = new Equate(new DocLocation(line, counter), labelName, contents, description, info);
-							info.LabelsList.Add(defineToAdd);
-						}
-						else if (lines[tempCounter] == '(')
-						{
-							//must be a macro
-							counter = SkipToEOL(lines, counter);
-							continue;
-						} 
-						else 
-						{
-							string nextWord = null;
-							int secondWordStart = GetWord(lines, tempCounter);
-							if (secondWordStart > -1)
-								nextWord = lines.Substring(tempCounter, secondWordStart - tempCounter);
-							if (secondWordStart > -1 && (string.Equals(nextWord, ".equ", options) || string.Equals(nextWord, "equ", options)))
-							{
-								//its an equate
-								secondWordStart = SkipWhitespace(lines, secondWordStart);
-								int secondWordEnd = SkipToEOCL(lines, secondWordStart);
-								string contents = lines.Substring(secondWordStart, secondWordEnd - secondWordStart);
-								Define defineToAdd = new Define(new DocLocation(line, counter), labelName, contents, description, info, 0x4000);//EvaluateContents(contents));
-								info.DefinesList.Add(defineToAdd);
-							}
-							else
-							{
-								//it must be a label with no colon
-								Label labelToAdd = new Label(new DocLocation(line, counter), labelName, description, info);
-								info.LabelsList.Add(labelToAdd);
-							}
-						}
-					}
-					counter = SkipToEOL(lines, counter);
-					line++;
-					continue;
-				}
-				counter = SkipWhitespace(lines, counter);
-				if (counter < 0)
-					break;
-				//string substring = lines.Substring(counter).ToLower();
-				if (string.Compare(lines, counter, commentString, 0, commentString.Length, StringComparison.OrdinalIgnoreCase) == 0)
-				{
-					counter = FindString(lines, counter, endCommentString) + endCommentString.Length;
-				}
-				//handle macros, defines, and includes
-				else if (string.Compare(lines, counter, defineString, 0, defineString.Length, StringComparison.OrdinalIgnoreCase) == 0)
-				{
-					string description = GetDescription(lines, counter);
-					counter += defineString.Length;
-					counter = SkipWhitespace(lines, counter);
-					int newCounter = GetLabel(lines, counter);
-					string defineName = lines.Substring(counter, newCounter - counter);
-					counter = SkipWhitespace(lines, newCounter);
-					newCounter = SkipToEOCL(lines, counter);
-					string contents = lines.Substring(counter, newCounter - counter);
-					Define defineToAdd = new Define(new DocLocation(line, counter), defineName, contents, description, info, 0x4000);//EvaluateContents(contents));
-					info.DefinesList.Add(defineToAdd);
-					counter = SkipWhitespace(lines, newCounter);
-					counter = SkipToEOL(lines, counter);
-				}
-				else if (string.Compare(lines, counter, macroString, 0, macroString.Length, StringComparison.OrdinalIgnoreCase) == 0)
-				{
-					string description = GetDescription(lines, counter);
-					counter += macroString.Length;
-					//skip any whitespace
-					counter = SkipWhitespace(lines, counter);
-					int newCounter = GetLabel(lines, counter);
-					if (newCounter != -1)
-					{
-						string macroName = lines.Substring(counter, newCounter - counter);
-						newCounter = FindChar(lines, newCounter, '(') + 1;
-						List<string> args;
-						if (counter == 0)
-							args = new List<string>();
-						else
-							args = GetMacroArgs(lines, newCounter);
-						counter = SkipToEOL(lines, counter);
-						newCounter = FindString(lines, counter, endMacroString);
-						if (newCounter != -1)
-						{
-							string contents = lines.Substring(counter, newCounter - counter);
-							Macro macroToAdd = new Macro(new DocLocation(line, counter), macroName, args, contents, description, info);
-							info.MacrosList.Add(macroToAdd);
-							counter = newCounter + endMacroString.Length;
-						}
-					}
-				}
-				else if (string.Compare(lines, counter, includeString, 0, includeString.Length, StringComparison.OrdinalIgnoreCase) == 0)
-				{
-					string description = GetDescription(lines, counter);
-					counter += includeString.Length;
-					//we need to find the quotes
-					counter = FindChar(lines, counter, ' ') + 1;
-					counter = SkipWhitespace(lines, counter);
-					int newCounter;
-					if (lines[counter] == '"')
-						newCounter = FindChar(lines, ++counter, '"');
+            while (counter < lines.Length && counter >= 0)
+            {
+                newPercent = counter * 100 / lines.Length;
+                if (newPercent < percent)
+                {
+                    //should never get here
+                    throw new Exception("Repeat!");
+                }
+                if (percent + 5 <= newPercent)
+                {
+                    percent = newPercent;
+                    try
+                    {
+                        DockingService.MainForm.Invoke(() => DockingService.MainForm.SetProgress(percent));
+                    }
+                    //we've quit for some reason lets get out
+                    catch (ObjectDisposedException) { return null; }
+                }
+                //handle label other xx = 22 type define
+                if (IsValidLabelChar(lines[counter]))
+                {
+                    string description = GetDescription(lines, counter);
+                    int newCounter = GetLabel(lines, counter);
+                    string labelName = lines.Substring(counter, newCounter - counter);
+                    if (newCounter < lines.Length && lines[newCounter] == ':')
+                    {
+                        //its definitely a label
+                        Label labelToAdd = new Label(new DocLocation(GetLine(counter), counter), labelName, description, info);
+                        info.LabelsList.Add(labelToAdd);
+                    }
+                    else
+                    {
+                        int tempCounter = SkipWhitespace(lines, newCounter);
+                        if (tempCounter == -1)
+                        {
+                            //it must be a label with no colon at the very end of a file
+                            Label labelToAdd = new Label(new DocLocation(GetLine(counter), counter), labelName, description, info);
+                            info.LabelsList.Add(labelToAdd);
+                            break;
+                        }
+                        if (lines[tempCounter] == '=')
+                        {
+                            Define defineToAdd;
+                            tempCounter++;
+                            int temp = SkipWhitespace(lines, tempCounter);
+                            if (temp == -1)
+                            {
+                                //we hit the end of the file and didn't find a value after the =
+                                defineToAdd = new Define(new DocLocation(GetLine(counter), counter), labelName, String.Empty, description, info, 0);
+                                info.DefinesList.Add(defineToAdd);
+                                break;
+                            }
+                            counter = temp;
+                            newCounter = SkipToEOCL(lines, tempCounter);
+                            if (newCounter == -1)
+                            {
+                                newCounter = lines.Length + 1;
+                            }
+                            string contents = lines.Substring(counter, newCounter - counter - 1).Trim();
+                            //its a define
+                            defineToAdd = new Define(new DocLocation(GetLine(counter), counter), labelName, contents, description, info, 0);
+                            info.DefinesList.Add(defineToAdd);
+                        }
+                        else if (lines[tempCounter] == '(')
+                        {
+                            //must be a macro
+                            counter = SkipToEOL(lines, counter);
+                            continue;
+                        }
+                        else
+                        {
+                            string nextWord = null;
+                            int secondWordStart = GetWord(lines, tempCounter);
+                            if (secondWordStart != -1)
+                            {
+                                nextWord = lines.Substring(tempCounter, secondWordStart - tempCounter).ToLower();
+                            }
+                            if (secondWordStart != -1 && (nextWord == ".equ" || nextWord == "equ"))
+                            {
+                                Define defineToAdd;
+                                //its an equate
+                                secondWordStart = SkipWhitespace(lines, secondWordStart);
+                                if (secondWordStart == -1)
+                                {
+                                    //we couldn't find second word start
+                                    defineToAdd = new Define(new DocLocation(GetLine(counter), counter), labelName, String.Empty, description, info, 0);
+                                    info.DefinesList.Add(defineToAdd);
+                                    break;
+                                }
+                                int secondWordEnd = SkipToEOCL(lines, secondWordStart);
+                                if (secondWordEnd == -1)
+                                {
+                                    secondWordEnd = lines.Length + 1;
+                                }
+                                string contents = lines.Substring(secondWordStart, secondWordEnd - secondWordStart - 1);
+                                defineToAdd = new Define(new DocLocation(GetLine(counter), counter), labelName, contents, description, info, 0);
+                                info.DefinesList.Add(defineToAdd);
+                            }
+                            else
+                            {
+                                //it must be a label with no colon
+                                Label labelToAdd = new Label(new DocLocation(GetLine(counter), counter), labelName, description, info);
+                                info.LabelsList.Add(labelToAdd);
+                            }
+                        }
+                    }
+                    counter = SkipToEOCL(lines, counter);
+                    continue;
+                }
+                int tempVar = SkipWhitespace(lines, counter);
+                if (tempVar == -1)
+                {
+                    counter = SkipToEOCL(lines, counter);
+                    continue;
+                }
+                counter = tempVar;
+                //string substring = lines.Substring(counter).ToLower();
+                if (string.Compare(lines, counter, commentString, 0, commentString.Length, true) == 0)
+                {
+                    counter = FindString(lines, counter, endCommentString) + endCommentString.Length;
+                }
+                //handle macros, defines, and includes
+                else if (string.Compare(lines, counter, defineString, 0, defineString.Length, true) == 0)
+                {
+                    Define defineToAdd;
+                    string description = GetDescription(lines, counter);
+                    counter += defineString.Length;
+                    counter = SkipWhitespace(lines, counter);
+                    int newCounter = GetLabel(lines, counter);
+                    if (newCounter == -1)
+                    {
+                        break;
+                    }
+                    string defineName = lines.Substring(counter, newCounter - counter);
+                    if (string.IsNullOrEmpty(defineName))
+                    {
+                        continue;
+                    }
+                    counter = SkipWhitespace(lines, newCounter);
+                    newCounter = SkipToEOCL(lines, counter);
+                    if (counter == -1 || counter + 1 == newCounter)
+                    {
+                        //end of the road
+                        defineToAdd = new Define(new DocLocation(GetLine(counter), counter), defineName, String.Empty, description, info, 0);
+                        info.DefinesList.Add(defineToAdd);
+                        continue;
+                    }
+                    if (newCounter == -1)
+                    {
+                        newCounter = lines.Length + 1;
+                    }
 
-					else
-						newCounter = SkipToEOCL(lines, counter);
-					if (counter == -1 || newCounter == -1)
-						counter = SkipToEOL(lines, counter);
-					else
-					{
-						string includeFile = lines.Substring(counter, newCounter - counter);
-						IncludeFile includeToAdd = new IncludeFile(new DocLocation(line, counter), includeFile, description, info);
-						info.IncludeFilesList.Add(includeToAdd);
-						counter = SkipToEOL(lines, newCounter);
-					}
-				}
-				else
-				{
-					counter = SkipToEOL(lines, counter);
-				}
-				line++;
-			}
+                    string contents = lines.Substring(counter, newCounter - counter - 1).Trim();
+                    defineToAdd = new Define(new DocLocation(GetLine(counter), counter), defineName, contents, description, info, 0);
+                    info.DefinesList.Add(defineToAdd);
+                    counter = newCounter;
+                }
+                else if (string.Compare(lines, counter, macroString, 0, macroString.Length, true) == 0)
+                {
+                    string description = GetDescription(lines, counter);
+                    counter += macroString.Length;
+                    //skip any whitespace
+                    counter = SkipWhitespace(lines, counter);
+                    int newCounter = GetLabel(lines, counter);
+                    string macroName = lines.Substring(counter, newCounter - counter);
+                    newCounter = FindChar(lines, newCounter, '(') + 1;
+                    List<string> args;
+                    if (counter == 0)
+                    {
+                        args = new List<string>();
+                    }
+                    else
+                    {
+                        args = GetMacroArgs(lines, newCounter);
+                    }
+                    counter = SkipToEOL(lines, counter);
+                    newCounter = FindString(lines, counter, endMacroString);
+                    if (newCounter != -1)
+                    {
+                        string contents = lines.Substring(counter, newCounter - counter);
+                        Macro macroToAdd = new Macro(new DocLocation(GetLine(counter), counter), macroName, args, contents, description, info);
+                        info.MacrosList.Add(macroToAdd);
+                        counter = newCounter + endMacroString.Length;
+                    }
+
+                }
+                else if (string.Compare(lines, counter, includeString, 0, includeString.Length, true) == 0)
+                {
+                    string description = GetDescription(lines, counter);
+                    counter += includeString.Length;
+                    //we need to find the quotes
+                    counter = SkipWhitespace(lines, counter);
+                    if (counter == -1)
+                    {
+                        continue;
+                    }
+                    int newCounter;
+                    if (lines[counter] == '\"')
+                    {
+                        newCounter = FindChar(lines, ++counter, '\"');
+                    }
+                    else
+                    {
+                        newCounter = SkipToEOCL(lines, counter);
+                    }
+                    //if the end of line char is next, then newCounter will be counter + 1
+                    if (counter == -1 || newCounter == -1 || counter + 1 == newCounter)
+                    {
+                        counter = SkipToEOL(lines, counter);
+                    }
+                    else
+                    {
+                        string includeFile = lines.Substring(counter, newCounter - counter).Trim();
+                        if (!string.IsNullOrEmpty(includeFile))
+                        {
+                            IncludeFile includeToAdd = new IncludeFile(new DocLocation(GetLine(counter), counter), includeFile, description, info);
+                            if (!info.IncludeFilesList.Contains(includeToAdd))
+                            {
+                                info.IncludeFilesList.Add(includeToAdd);
+                            }
+                        }
+                        counter = SkipToEOCL(lines, newCounter);
+                    }
+                }
+                else if (lines[counter] == commentChar)
+                {
+                    counter = SkipToEOL(lines, counter);
+                }
+                else
+                {
+                    counter = SkipToEOCL(lines, counter);
+                }
+            }
 			RemoveParseData(file);
 			lock (ProjectService.ParseInfo)
 			{
 				ProjectService.ParseInfo.Add(info);
-				foreach (var item in ProjectService.ParseInfo)
-					item.IsIncluded = false;
+                foreach (var item in ProjectService.ParseInfo)
+                {
+                    item.IsIncluded = false;
+                }
 			}
 			if (ProjectService.IsInternal)
 			{
-				baseDir = Path.GetDirectoryName(file);
-				FindIncludedFiles(file);
+                if (!string.IsNullOrEmpty(file))
+                {
+                    baseDir = Path.GetDirectoryName(file);
+                    FindIncludedFiles(file);
+                }
 			}
 			else
 			{
@@ -427,8 +543,7 @@ namespace Revsoft.Wabbitcode.Services
 			}
 			try
 			{
-				HideProgressDelegate hideProgress = DockingService.MainForm.HideProgressBar;
-				DockingService.MainForm.Invoke(hideProgress);
+                DockingService.MainForm.Invoke(() => DockingService.MainForm.HideProgressBar());
 			}
 			//we've quit for some reason lets get out
 			catch (ObjectDisposedException) { return null; }
@@ -470,23 +585,33 @@ namespace Revsoft.Wabbitcode.Services
 				return 0;
 		}*/
 
-		private static int SkipToEOL(string substring, int counter)
-		{
-			while (IsValidIndex(substring, counter + Environment.NewLine.Length) &&
-				(substring[counter] != '\n' || substring[counter] == commentChar))
-				counter++;
-			counter++;			//skip newline
-			return !IsValidIndex(substring, counter) ? -1 : counter;
-		}
+        private static int SkipToEOL(string substring, int counter)
+        {
+            while (IsValidIndex(substring, counter) && substring[counter] != '\n' && substring[counter] != '\r')
+            {
+                counter++;
+            }
+            if (IsValidIndex(substring, counter) && (substring[counter] == '\n' || substring[counter] == '\r'))
+            {
+                counter++;
+            }
+            return !IsValidIndex(substring, counter) ? -1 : counter;
+        }
 
-		private static int SkipToEOCL(string substring, int counter)
-		{
-			while (IsValidIndex(substring, counter) && IsValidIndex(substring, counter + Environment.NewLine.Length) &&
-				substring.Substring(counter, Environment.NewLine.Length) != Environment.NewLine && substring[counter] != commentChar)
-				counter++;
-			return !IsValidIndex(substring, counter) ? -1 : counter;
-		}
-
+        private static int SkipToEOCL(string substring, int counter)
+        {
+            while (IsValidIndex(substring, counter) && substring[counter] != '\n' && substring[counter] != '\r' &&
+                substring[counter] != commentChar && substring[counter] != endOfLineChar)
+            {
+                counter++;
+            }
+            if (IsValidIndex(substring, counter) && (substring[counter] == endOfLineChar ||
+                substring[counter] == '\n' || substring[counter] == '\r'))
+            {
+                counter++;
+            }
+            return !IsValidIndex(substring, counter) ? -1 : counter;
+        }
 		private static List<string> GetMacroArgs(string substring, int counter)
 		{
 			List<string> args = new List<string>();
@@ -495,14 +620,20 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				counter = SkipWhitespace(substring, counter);
 				newCounter = GetLabel(substring, counter);
-				if (newCounter == -1)
-					return args;
+                if (newCounter == -1)
+                {
+                    return args;
+                }
 				args.Add(substring.Substring(counter, newCounter - counter));
 				counter = FindChar(substring, newCounter, ',');
-				if (counter == -1)
-					return args;
-				else
-					counter++;
+                if (counter == -1)
+                {
+                    return args;
+                }
+                else
+                {
+                    counter++;
+                }
 			}
 			return args;
 		}
@@ -512,27 +643,37 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			int newOffset = offset;
 			char test = text[offset];
-			while (offset > 0 && delimeters.IndexOf(test) == -1)
-				test = text[--offset];
-			if (offset > 0)
-				offset++;
+            while (offset > 0 && delimeters.IndexOf(test) == -1)
+            {
+                test = text[--offset];
+            }
+            if (offset > 0)
+            {
+                offset++;
+            }
 			test = text[newOffset];
 			while (newOffset + 1 < text.Length && delimeters.IndexOf(test) == -1)
 				test = text[++newOffset];
-			if (newOffset < offset)
-				return -1;
+            if (newOffset < offset)
+            {
+                return -1;
+            }
 			return newOffset;
 		}
 
 		private static int GetLabel(string substring, int counter)
 		{
-			if (!IsValidIndex(substring, counter))
-				return -1;
+            if (!IsValidIndex(substring, counter))
+            {
+                return -1;
+            }
 
 			while (counter < substring.Length && IsValidLabelChar(substring[counter]))
 			{
-				if (!IsValidIndex(substring, counter))
-					return -1;
+                if (!IsValidIndex(substring, counter))
+                {
+                    return -1;
+                }
 				counter++;
 			}
 			return counter;
@@ -544,10 +685,12 @@ namespace Revsoft.Wabbitcode.Services
 				return -1;
 			while (IsValidIndex(substring, counter) && substring[counter] != charToFind)
 			{
-				if (!IsValidIndex(substring, counter) || /*!IsValidIndex(substring, counter + Environment.NewLine.Length) ||
+                if (!IsValidIndex(substring, counter) || /*!IsValidIndex(substring, counter + Environment.NewLine.Length) ||
 					substring.Substring(counter, Environment.NewLine.Length) == Environment.NewLine ||*/
-					substring[counter] == commentChar)
-					return -1;
+                    substring[counter] == commentChar)
+                {
+                    return -1;
+                }
 				counter++;
 			}
 			return counter;
@@ -559,10 +702,14 @@ namespace Revsoft.Wabbitcode.Services
 				return -1;
 			while (counter+searchString.Length < substring.Length && substring.Substring(counter, searchString.Length) != searchString)
 			{
-				if (!IsValidIndex(substring, counter))
-					return -1;
-				if (substring[counter] == commentChar)
-					SkipToEOL(substring, counter);
+                if (!IsValidIndex(substring, counter))
+                {
+                    return -1;
+                }
+                if (substring[counter] == commentChar)
+                {
+                    SkipToEOL(substring, counter);
+                }
 				counter++;
 			}
 			if (counter + searchString.Length > substring.Length)

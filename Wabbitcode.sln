@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2010
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Revsoft.Wabbitcode", "Wabbitcode\Revsoft.Wabbitcode.csproj", "{C45C62A4-98E1-4768-9690-EFD2EB2C3272}"
 	ProjectSection(ProjectDependencies) = postProject
 		{1BF86B19-DD98-43B0-BD97-6164D56EDE8C} = {1BF86B19-DD98-43B0-BD97-6164D56EDE8C}
@@ -17,6 +17,36 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Revsoft.Docking", "WinFormsUI\Revsoft.Docking.csproj", "{C75532C4-765B-418E-B09B-46D36B2ABDB1}"
 EndProject
 Global
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 5
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs07
+		SccProjectUniqueName0 = Wabbitcode\\Revsoft.Wabbitcode.csproj
+		SccProjectName0 = Wabbitcode
+		SccAuxPath0 = https://tfs.codeplex.com/tfs/tfs07
+		SccLocalPath0 = Wabbitcode
+		SccProvider0 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName1 = ICSharpCode.TextEditor\\Project\\Revsoft.TextEditor.csproj
+		SccProjectName1 = ICSharpCode.TextEditor/Project
+		SccAuxPath1 = https://tfs.codeplex.com/tfs/tfs07
+		SccLocalPath1 = ICSharpCode.TextEditor\\Project
+		SccProvider1 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName2 = AutoUpdater\\AutoUpdater.csproj
+		SccProjectName2 = AutoUpdater
+		SccAuxPath2 = https://tfs.codeplex.com/tfs/tfs07
+		SccLocalPath2 = AutoUpdater
+		SccProvider2 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName3 = MapEditor\\MapEditor.csproj
+		SccProjectName3 = MapEditor
+		SccAuxPath3 = https://tfs.codeplex.com/tfs/tfs07
+		SccLocalPath3 = MapEditor
+		SccProvider3 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccProjectUniqueName4 = WinFormsUI\\Revsoft.Docking.csproj
+		SccProjectName4 = WinFormsUI
+		SccAuxPath4 = https://tfs.codeplex.com/tfs/tfs07
+		SccLocalPath4 = WinFormsUI
+		SccProvider4 = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|X64 = Debug|X64
@@ -89,5 +119,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

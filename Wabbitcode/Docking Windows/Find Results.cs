@@ -27,7 +27,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         public void AddFindResult(string file, int lineNum, string line)
         {
-            findResultsBox.Text += file + "(" + lineNum + "):" + line + "\n";
+            findResultsBox.Text += file + "(" + (lineNum + 1) + "): " + line + "\n";
         }
 
         private void findResultsBox_DoubleClick(object sender, EventArgs e)
@@ -39,10 +39,14 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 int line = findResultsBox.GetLineFromCharIndex(findResultsBox.SelectionStart);
                 string lineContents = findResultsBox.Lines[line];
                 int firstParen = lineContents.IndexOf('(');
+                if (firstParen == -1)
+                {
+                    return;
+                }
                 int secondParen = lineContents.IndexOf(')');
                 string file = lineContents.Substring(0, firstParen);
                 int lineNum = Convert.ToInt32(lineContents.Substring(firstParen + 1, secondParen - firstParen - 1));
-                DocumentService.GotoLine(file, lineNum + 1);
+                DocumentService.GotoLine(file, lineNum);
 #if !DEBUG
             }
             catch (Exception ex)

@@ -20,10 +20,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			get 
 			{
-				if (Path.IsPathRooted(filePath))
-					return filePath;
-				else
-					return FileOperations.GetAbsolutePath(parent.ProjectDirectory, filePath);
+                if (Path.IsPathRooted(filePath))
+                {
+                    return filePath;
+                }
+                else
+                {
+                    return FileOperations.GetAbsolutePath(parent.ProjectDirectory, filePath);
+                }
 			}
 			set { filePath = value; }
 		}
@@ -32,10 +36,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			get
 			{
-				if (Path.IsPathRooted(filePath))
-					return FileOperations.GetRelativePath(parent.ProjectDirectory, filePath);
-				else
-					return filePath;
+                if (Path.IsPathRooted(filePath))
+                {
+                    return FileOperations.GetRelativePath(parent.ProjectDirectory, filePath);
+                }
+                else
+                {
+                    return filePath;
+                }
 			}
 			set { filePath = value; }
 		}
@@ -72,5 +80,5 @@ namespace Revsoft.Wabbitcode.Services.Project
 			folder.Files.Remove(this);
 			folder = null;
 		}
-	}
+    }
 }

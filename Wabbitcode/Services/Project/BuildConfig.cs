@@ -29,14 +29,16 @@ namespace Revsoft.Wabbitcode.Services.Project
 			steps.Sort(SortSteps);
 		}
 
-		public void Build()
+		public void Build(bool silent)
 		{
 			SortSteps();
 			ProjectService.Project.ProjectOutputs.Clear();
 			ProjectService.Project.ListOutputs.Clear();
 			ProjectService.Project.LabelOutputs.Clear();
-			foreach (IBuildStep step in steps)
-				step.Build();
+            foreach (IBuildStep step in steps)
+            {
+                step.Build(silent);
+            }
 		}
 
 		static int SortSteps(IBuildStep step1, IBuildStep step2)

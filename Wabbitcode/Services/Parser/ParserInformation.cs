@@ -8,11 +8,17 @@ namespace Revsoft.Wabbitcode.Services.Parser
 {
 	public class ParserInformation //: IEnumerable<IParserData>
 	{
-		private string sourceFile;
-		public string SourceFile
+		private int sourceFileHash;
+		public int SourceFileHash
 		{
-			get { return sourceFile; }
+			get { return sourceFileHash; }
 		}
+
+        private string sourceFile;
+        public string SourceFile
+        {
+            get { return sourceFile; }
+        }
 
 		private bool parsingIncludes = false;
 		public bool ParsingIncludes
@@ -27,9 +33,13 @@ namespace Revsoft.Wabbitcode.Services.Parser
             get { return isIncluded; }
             set { isIncluded = value; }
         }
-		public ParserInformation(string file)
+
+        public ParserInformation(int fileHashCode) : this(fileHashCode, null) { }
+
+		public ParserInformation(int fileHashCode, string file)
 		{
-			sourceFile = file;
+			sourceFileHash = fileHashCode;
+            sourceFile = file;
 			//IncludeDirList = new List<string>();
 			GlobalDefinesList = new List<string>();
 			IncludeFilesList = new List<IIncludeFile>();

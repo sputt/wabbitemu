@@ -24,8 +24,10 @@ namespace Revsoft.Wabbitcode
 
 		private void GetBuildConfigs()
 		{
-			foreach (BuildConfig config in ProjectService.BuildConfigs)
-				configBox.Items.Add(config);
+            foreach (BuildConfig config in ProjectService.BuildConfigs)
+            {
+                configBox.Items.Add(config);
+            }
 			if (configBox.Items.Count == 0)
 			{
 				ProjectService.BuildConfigs.Add(new BuildConfig("Debug"));
@@ -39,8 +41,10 @@ namespace Revsoft.Wabbitcode
 		{
 			buildSeqList.Items.Clear();
 			currentConfig.SortSteps();
-			foreach (IBuildStep step in currentConfig.Steps)
-				buildSeqList.Items.Add(step);
+            foreach (IBuildStep step in currentConfig.Steps)
+            {
+                buildSeqList.Items.Add(step);
+            }
 			buildSeqList.SelectedIndex = currentConfig.Steps.Count - 1;
 		}
 
@@ -57,8 +61,10 @@ namespace Revsoft.Wabbitcode
 		private void deleteDirButton_Click(object sender, EventArgs e)
 		{
 			IBuildStep selectedItem = (IBuildStep) buildSeqList.SelectedItem;
-			if (selectedItem == null)
-				return;
+            if (selectedItem == null)
+            {
+                return;
+            }
 			bool found = currentConfig.Steps.Remove(selectedItem);
 			buildSeqList.Items.Remove(selectedItem);
 			needsSave = true;
@@ -80,21 +86,62 @@ namespace Revsoft.Wabbitcode
 
 		private void moveUp_Click(object sender, EventArgs e)
 		{
-			needsSave = true;
+            int index = buildSeqList.SelectedIndex;
+            if (index == 0)
+            {
+                return;
+            }
+            currentConfig.Steps[index].StepNumber--;
+            for (int i = 0; i < currentConfig.Steps.Count; i++)
+            {
+                if (i != index)
+                {
+                    currentConfig.Steps[i].StepNumber++;
+                }
+            }
+            index--;
+            needsSave = true;
+            IBuildStep selectedItem = (IBuildStep)buildSeqList.SelectedItem;
+            buildSeqList.Items.Remove(selectedItem);
+            buildSeqList.Items.Insert(index, selectedItem);
+            buildSeqList.SelectedIndex = index;
+
 		}
 
 		private void moveDown_Click(object sender, EventArgs e)
 		{
-			needsSave = true;
+            int index = buildSeqList.SelectedIndex;
+            if (index == buildSeqList.Items.Count - 1)
+            {
+                return;
+            }
+            currentConfig.Steps[index].StepNumber++;
+            for (int i = 0; i < currentConfig.Steps.Count; i++)
+            {
+                if (i != index)
+                {
+                    currentConfig.Steps[i].StepNumber--;
+                }
+            }
+            index++;
+            needsSave = true;
+            IBuildStep selectedItem = (IBuildStep)buildSeqList.SelectedItem;
+            buildSeqList.Items.Remove(selectedItem);
+            buildSeqList.Items.Insert(index, selectedItem);
+            buildSeqList.SelectedIndex = index;
 		}
 
 		int currentIndex = 0;
 		private void configBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
-			if (currentConfig != null && !currentConfig.Equals(ProjectService.BuildConfigs[currentIndex]))
-				if (MessageBox.Show("Would you like to save the current configuration?",
-										"Save?", MessageBoxButtons.YesNo, MessageBoxIcon.None) == DialogResult.Yes)
-					ProjectService.BuildConfigs[currentIndex] = currentConfig;
+            if (currentConfig != null && !currentConfig.Equals(ProjectService.BuildConfigs[currentIndex]))
+            {
+                if (MessageBox.Show("Would you like to save the current configuration?",
+                                        "Save?", MessageBoxButtons.YesNo, MessageBoxIcon.None) == DialogResult.Yes)
+                {
+                    ProjectService.BuildConfigs[currentIndex] = currentConfig;
+                }
+            }
 			currentIndex = configBox.SelectedIndex;
 			currentConfig = (BuildConfig)ProjectService.BuildConfigs[currentIndex].Clone();
 			PopulateListBox();
@@ -114,14 +161,22 @@ namespace Revsoft.Wabbitcode
 		private void stepTypeBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			IBuildStep step = null;
-			if (stepTypeBox.SelectedIndex == 0 && buildSeqList.SelectedItem.GetType() != typeof(InternalBuildStep))
-				step = new InternalBuildStep(buildSeqList.SelectedIndex, StepType.Assemble,
-										Path.ChangeExtension(ProjectService.ProjectFile, ".asm"), Path.ChangeExtension(ProjectService.ProjectFile, ".8xk"));
-			else if (stepTypeBox.SelectedIndex == 1 && buildSeqList.SelectedItem.GetType() != typeof(ExternalBuildStep))
-				step = new ExternalBuildStep(buildSeqList.SelectedIndex, "cmd.exe", "");
+            int stepNum = ((IBuildStep) buildSeqList.SelectedItem).StepNumber;
+            if (buildSeqList.SelectedItem is InternalBuildStep && stepTypeBox.SelectedIndex != 0)
+            {
+                step = new ExternalBuildStep(buildSeqList.SelectedIndex, "cmd.exe", String.Empty);
+                step.StepNumber = stepNum;
+            }
+            else if (buildSeqList.SelectedItem is ExternalBuildStep && stepTypeBox.SelectedIndex != 1)
+            {
+                step = new InternalBuildStep(buildSeqList.SelectedIndex, StepType.Assemble,
+                                        Path.ChangeExtension(ProjectService.ProjectFile, ".asm"),
+                                        Path.ChangeExtension(ProjectService.ProjectFile, ".8xk"));
+                step.StepNumber = stepNum;
+            }
 			if (step != null)
 			{
-				currentConfig.Steps[configBox.SelectedIndex] = step;
+				currentConfig.Steps[buildSeqList.SelectedIndex] = step;
 				buildSeqList.Items[buildSeqList.SelectedIndex] = step;
 				UpdateStepOptions();
 				needsSave = true;

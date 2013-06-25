@@ -336,18 +336,31 @@ namespace Revsoft.Wabbitcode
 			TempSettings.Default.createFolders = wabbitFolderCheck.Checked;
 		}
 
-		private void browseAssembler_Click(object sender, EventArgs e)
+		private void browseWabbit_Click(object sender, EventArgs e)
 		{
 			var openFile = new OpenFileDialog()
 			{
 				Filter = "Executables (*.exe)|*.exe",
-				Title = "SPASM Location"
+				Title = "Wabbitemu Location"
 			};
 			if (openFile.ShowDialog() != DialogResult.OK)
 				return;
-			assemblerLocBox.Text = openFile.FileName;
-			TempSettings.Default.assemblerLoc = openFile.FileName;
+			wabbitLocBox.Text = openFile.FileName;
+			TempSettings.Default.wabbitLoc = openFile.FileName;
 		}
+
+        private void browseAssembler_Click(object sender, EventArgs e)
+        {
+            var openFile = new OpenFileDialog()
+            {
+                Filter = "Executables (*.exe)|*.exe",
+                Title = "SPASM Location"
+            };
+            if (openFile.ShowDialog() != DialogResult.OK)
+                return;
+            assemblerLocBox.Text = openFile.FileName;
+            TempSettings.Default.assemblerLoc = openFile.FileName;
+        }
 
 		private void dockConfigBrowse_Click(object sender, EventArgs e)
 		{
@@ -362,9 +375,9 @@ namespace Revsoft.Wabbitcode
 			TempSettings.Default.configLoc = openFile.FileName;
 		}
 
-		private void checkUpdatesBox_CheckedChanged(object sender, EventArgs e)
-		{
-			TempSettings.Default.checkUpdates = checkUpdatesBox.Checked;
-		}
+        //private void checkUpdatesBox_CheckedChanged(object sender, EventArgs e)
+        //{
+        //    TempSettings.Default.checkUpdates = checkUpdatesBox.Checked;
+        //}
     }
 }

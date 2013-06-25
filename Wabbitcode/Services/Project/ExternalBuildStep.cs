@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Diagnostics;
 using System.IO;
+using Revsoft.Wabbitcode.Classes;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -53,7 +54,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			args = arguments;
 		}
 
-		public bool Build()
+		public bool Build(bool silent)
 		{
 #if !DEBUG
 			try
@@ -72,8 +73,10 @@ namespace Revsoft.Wabbitcode.Services.Project
 						Arguments = args,
 					}
 				};
-				cmd.Exited += new EventHandler(externalProgramExit);
 				cmd.Start();
+                cmd.WaitForExit(30 * 1000);
+                var output = cmd.StandardOutput.ReadToEnd();
+                DockingService.MainForm.Invoke(() => DockingService.OutputWindow.AddText(output));
 				return true;
 #if !DEBUG
 			}
@@ -82,12 +85,6 @@ namespace Revsoft.Wabbitcode.Services.Project
 				return false;
 			}
 #endif
-		}
-
-		private void externalProgramExit(object sender, EventArgs e)
-		{
-			Process cmd = (Process)sender;
-			DockingService.OutputWindow.AddText(cmd.StandardOutput.ReadToEnd());
 		}
 
 

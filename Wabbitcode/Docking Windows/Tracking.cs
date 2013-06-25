@@ -255,7 +255,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 					vartoadd.value = screen.ResizeImage(width * 2, height * 2);
 					break;
 				case "String":
-					vartoadd.value = "";
+					vartoadd.value = String.Empty;
 					if (vartoadd.numBytes == -1)
 					{
 						int i = 0;
@@ -284,7 +284,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 					break;
 				case "Word":
 					int convertMethod = 16;
-					vartoadd.value = "";
+					vartoadd.value = String.Empty;
 					if (variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value == null)
 						variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value = 0;
 					switch(variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value.ToString())
@@ -381,9 +381,11 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 					}
 					break;
 				default:
-					vartoadd.value = "";
-					if (variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value == null)
-						variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value = 0;
+					vartoadd.value = String.Empty;
+                    if (variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value == null)
+                    {
+                        variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value = 0;
+                    }
 					switch(variablesDataView.Rows[vartoadd.rowNumber].Cells[4].Value.ToString())
 					{
 						case "Decimal":

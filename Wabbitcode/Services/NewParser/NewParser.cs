@@ -24,7 +24,7 @@ namespace Revsoft.Wabbitcode.Services.NewParser
 #if DEBUG
             reader.Close();
 #endif
-            return ParseFile(file, lines.Split('\n'));
+            return ParseFile(lines.GetHashCode(), lines.Split('\n'));
 #if !DEBUG
 			}
 			catch (FileNotFoundException ex)
@@ -48,9 +48,9 @@ namespace Revsoft.Wabbitcode.Services.NewParser
 #endif
         }
 
-        private static ParserInformation ParseFile(string file, string[] lines)
+        private static ParserInformation ParseFile(int fileHashCode, string[] lines)
         {
-			ParserInformation info = new ParserInformation(file);
+			ParserInformation info = new ParserInformation(fileHashCode);
             var fileData = new List<ParserLine>();
             foreach (var line in lines)
             {

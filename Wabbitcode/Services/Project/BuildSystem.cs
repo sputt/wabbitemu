@@ -98,10 +98,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 		
 		public void Build(bool silent = false)
 		{
-			if (buildConfigs.Count < 1 || currentConfigIndex == -1)
-				System.Windows.Forms.MessageBox.Show("No config set up");
-			else
-				buildConfigs[currentConfigIndex].Build(silent);
+            if (buildConfigs.Count < 1 || currentConfigIndex == -1)
+            {
+                System.Windows.Forms.MessageBox.Show("No config set up");
+            }
+            else
+            {
+                buildConfigs[currentConfigIndex].Build(silent);
+            }
 		}
 
 		internal void CreateXML(XmlTextWriter writer)
@@ -110,36 +114,43 @@ namespace Revsoft.Wabbitcode.Services.Project
 			writer.WriteStartElement("BuildSystem");
 			string includes = "";
 			string projFile = ProjectService.ProjectFile;
-			foreach (string include in ProjectService.IncludeDirs)
-				if (!string.IsNullOrEmpty(include))
-					if (!Path.IsPathRooted(include))
-						includes += include + ";";
-					else
-						includes += FileOperations.GetRelativePath(projFile, include) + ";";
+            foreach (string include in ProjectService.IncludeDirs)
+            {
+                if (!string.IsNullOrEmpty(include))
+                {
+                    if (!Path.IsPathRooted(include))
+                    {
+                        includes += include + ";";
+                    }
+                    else
+                    {
+                        includes += FileOperations.GetRelativePath(projFile, include) + ";";
+                    }
+                }
+            }
 			writer.WriteAttributeString("IncludeDirs", includes);
-			foreach (BuildConfig config in buildConfigs)
-			{
-				writer.WriteStartElement(config.Name);
-				foreach (IBuildStep step in config.Steps)
-				{
-					Type type = step.GetType();
-					writer.WriteStartElement(type.Name);
-					writer.WriteAttributeString("Count", counter.ToString());
-					writer.WriteAttributeString("InputFile", FileOperations.GetRelativePath(projFile, step.InputFile));
-					if (type == typeof(ExternalBuildStep))
-					{
-						writer.WriteAttributeString("Arguments", ((ExternalBuildStep)step).Arguments);
-					}
-					else if (type == typeof(InternalBuildStep))
-					{
-						var intStep = (InternalBuildStep)step;
-						writer.WriteAttributeString("OutputFile", FileOperations.GetRelativePath(projFile, intStep.OutputFile));
-						writer.WriteAttributeString("StepType", Convert.ToInt16(intStep.StepType).ToString());
-					}
-					writer.WriteEndElement();
-				}
-				writer.WriteEndElement();
-			}
+            foreach (BuildConfig config in buildConfigs)
+            {
+                writer.WriteStartElement(config.Name);
+                foreach (IBuildStep step in config.Steps)
+                {
+                    writer.WriteStartElement(step.GetType().Name);
+                    writer.WriteAttributeString("Count", counter.ToString());
+                    writer.WriteAttributeString("InputFile", FileOperations.GetRelativePath(projFile, step.InputFile));
+                    if (step is ExternalBuildStep)
+                    {
+                        writer.WriteAttributeString("Arguments", ((ExternalBuildStep)step).Arguments);
+                    }
+                    else if (step is InternalBuildStep)
+                    {
+                        var intStep = (InternalBuildStep)step;
+                        writer.WriteAttributeString("OutputFile", FileOperations.GetRelativePath(projFile, intStep.OutputFile));
+                        writer.WriteAttributeString("StepType", Convert.ToInt16(intStep.StepType).ToString());
+                    }
+                    writer.WriteEndElement();
+                }
+                writer.WriteEndElement();
+            }
 			writer.WriteEndElement();
 		}
 
