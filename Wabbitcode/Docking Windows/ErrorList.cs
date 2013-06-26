@@ -100,7 +100,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			}
 			errorToolButton.Text = errors + " Errors";
 			warnToolButton.Text = warnings + " Warnings";
-			foreach (newEditor child in DockingService.Documents)
+			foreach (NewEditor child in DockingService.Documents)
 				child.UpdateIcons();
 		}
 

@@ -549,12 +549,12 @@ namespace Revsoft.Wabbitcode.Services
 			}
 			
 			stepStack = new Stack<int>();
-            StreamReader reader = null;
+            StreamReader listReader = null;
             string listFileText, symFileText = "";
 			try
 			{
-				reader = new StreamReader(listName);
-				listFileText = reader.ReadToEnd();
+				listReader = new StreamReader(listName);
+				listFileText = listReader.ReadToEnd();
 			}
 			catch (Exception ex)
 			{
@@ -564,13 +564,16 @@ namespace Revsoft.Wabbitcode.Services
 			}
 			finally
 			{
-				if (reader != null)
-					reader.Close();
+                if (listReader != null)
+                {
+                    listReader.Dispose();
+                }
 			}
+            StreamReader symReader = null;
 			try
 			{
-				reader = new StreamReader(symName);
-				symFileText = reader.ReadToEnd();
+				symReader = new StreamReader(symName);
+				symFileText = symReader.ReadToEnd();
 
 			}
 			catch (Exception ex)
@@ -579,10 +582,9 @@ namespace Revsoft.Wabbitcode.Services
 			}
 			finally
 			{
-				if (reader != null)
+				if (symReader != null)
 				{
-					reader.Dispose();
-					reader.Close();
+					symReader.Dispose();
 				}
 			}
 

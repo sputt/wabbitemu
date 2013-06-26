@@ -20,14 +20,18 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			int errorLine = outputWindowBox.GetLineFromCharIndex(outputWindowBox.SelectionStart);
 			string errorline = outputWindowBox.Lines[errorLine];
 			int line = errorline.IndexOf(':', 2);
-			if (line == -1)
-				return;
+            if (line == -1)
+            {
+                return;
+            }
 			string file = errorline.Substring(0, line);
 			//if (!file.Contains("\\"))
 			//	file = originaldir + '\\' + file;
 			int endLine = errorline.IndexOf(':', line + 1);
-			if (endLine == -1)
-				return;
+            if (endLine == -1)
+            {
+                return;
+            }
 			string realLine = errorline.Substring(line + 1, endLine - line - 1);
 			int scrollToLine = Convert.ToInt32(realLine);
 			DocumentService.GotoLine(file, scrollToLine);

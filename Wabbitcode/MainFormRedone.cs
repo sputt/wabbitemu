@@ -552,39 +552,55 @@ namespace Revsoft.Wabbitcode
 
 		private void Copy()
 		{
-			if (DockingService.ActiveContent is ToolWindow)
+			if (DockingService.ActiveContent is ToolWindow) {
 				((ToolWindow)DockingService.ActiveContent).Copy();
-			else if (DockingService.ActiveDocument != null)
-				DockingService.ActiveDocument.Copy();
+            }
+            else if (DockingService.ActiveDocument != null)
+            {
+                DockingService.ActiveDocument.Copy();
+            }
 		}
 
 		private void Paste()
 		{
-			if (DockingService.ActiveContent is ToolWindow)
-				((ToolWindow)DockingService.ActiveContent).Paste();
-			else if (DockingService.ActiveDocument != null)
-				DockingService.ActiveDocument.Paste();
+            if (DockingService.ActiveContent is ToolWindow)
+            {
+                ((ToolWindow)DockingService.ActiveContent).Paste();
+            }
+            else if (DockingService.ActiveDocument != null)
+            {
+                DockingService.ActiveDocument.Paste();
+            }
 		}
 
 		private void selectAllMenuItem_Click(object sender, EventArgs e)
 		{
-			if (DockingService.ActiveDocument == null)
-				return;
+            if (DockingService.ActiveDocument == null)
+            {
+                return;
+            }
 			DocumentService.ActiveDocument.SelectAll();
 		}
 
 		private void findMenuItem_Click(object sender, EventArgs e)
 		{
-			if (DockingService.ActiveDocument == null)
-				return;
+            if (DockingService.ActiveDocument == null)
+            {
+                return;
+            }
 			DockingService.FindForm.ShowFor(DockingService.ActiveDocument.EditorBox, false, false);
 		}
 
 		private void findInFilesMenuItem_Click(object sender, EventArgs e)
 		{
-			if (DockingService.ActiveDocument == null)
-				return;
-			DockingService.FindForm.ShowFor(DockingService.ActiveDocument.EditorBox, false, true);
+            if (DockingService.ActiveDocument == null)
+            {
+                DockingService.FindForm.ShowFor(false, true);
+            }
+            else
+            {
+                DockingService.FindForm.ShowFor(DockingService.ActiveDocument.EditorBox, false, true);
+            }
 		}
 
 		private void replaceMenuItem_Click(object sender, EventArgs e)
@@ -1147,7 +1163,6 @@ namespace Revsoft.Wabbitcode
 				appReader.ReadBlock(buffer, 0, 8);
 
 				appReader.Dispose();
-				appReader.Close();
 				string appName = new string(buffer).Trim();
 #if NEW_DEBUGGING
 				foreach (TIApplication app in DebuggerService.Debugger.Apps)

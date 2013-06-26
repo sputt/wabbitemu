@@ -110,7 +110,6 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		internal void CreateXML(XmlTextWriter writer)
 		{
-			int counter = 0;
 			writer.WriteStartElement("BuildSystem");
 			string includes = "";
 			string projFile = ProjectService.ProjectFile;
@@ -135,7 +134,7 @@ namespace Revsoft.Wabbitcode.Services.Project
                 foreach (IBuildStep step in config.Steps)
                 {
                     writer.WriteStartElement(step.GetType().Name);
-                    writer.WriteAttributeString("Count", counter.ToString());
+                    writer.WriteAttributeString("StepNum", step.StepNumber.ToString());
                     writer.WriteAttributeString("InputFile", FileOperations.GetRelativePath(projFile, step.InputFile));
                     if (step is ExternalBuildStep)
                     {
@@ -158,41 +157,59 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			string root = ProjectService.ProjectDirectory;
 			reader.MoveToNextElement();
-			if (reader.Name != "BuildSystem")
-				throw new ArgumentException("Invalid XML Format");
+            if (reader.Name != "BuildSystem")
+            {
+                throw new ArgumentException("Invalid XML Format");
+            }
 			string[] includeDirs = reader.GetAttribute("IncludeDirs").Split(';');
-			foreach (string include in includeDirs)
-				if (!string.IsNullOrEmpty(include))
-					ProjectService.IncludeDirs.Add((Uri.UnescapeDataString(new Uri(Path.Combine(root, include)).AbsolutePath)));
+            foreach (string include in includeDirs)
+            {
+                if (!string.IsNullOrEmpty(include))
+                {
+                    ProjectService.IncludeDirs.Add((Uri.UnescapeDataString(new Uri(Path.Combine(root, include)).AbsolutePath)));
+                }
+            }
+            BuildConfig configToAdd = null;
 			while (reader.MoveToNextElement())
 			{
-				string configName = reader.Name;
-				BuildConfig configToAdd = new BuildConfig(configName);
-				buildConfigs.Add(configToAdd);
-				if (reader.IsEmptyElement)
-					continue;
-				reader.MoveToNextElement();
-				int count = Convert.ToInt32(reader.GetAttribute("Count"));
-				string inputFile = reader.GetAttribute("InputFile");
-				switch (reader.Name)
-				{
-					case "ExternalBuildStep":
-						string arguments = reader.GetAttribute("Arguments");
-						ExternalBuildStep exstep = new ExternalBuildStep(count,
-										Path.Combine(root, inputFile), arguments);
-						configToAdd.Steps.Add(exstep);
-						break;
-					case "InternalBuildStep":
-						string outputFile = reader.GetAttribute("OutputFile");
-						StepType type = (StepType)Convert.ToInt16(reader.GetAttribute("StepType"));
-						InternalBuildStep instep = new InternalBuildStep(count, type,
-													Path.Combine(root, inputFile),
-													Path.Combine(root, outputFile));
-						configToAdd.Steps.Add(instep);
-						break;
-					default:
-						throw new ArgumentException("Invalid XML Format");
-				}
+                if (reader.Name.Contains("Step"))
+                {
+                    if (configToAdd == null)
+                    {
+                        throw new ArgumentException("Invalid XML Format");
+                    }
+                    int count = Convert.ToInt32(reader.GetAttribute("StepNum"));
+                    string inputFile = reader.GetAttribute("InputFile");
+                    switch (reader.Name)
+                    {
+                        case "ExternalBuildStep":
+                            string arguments = reader.GetAttribute("Arguments");
+                            ExternalBuildStep exstep = new ExternalBuildStep(count,
+                                            Path.Combine(root, inputFile), arguments);
+                            configToAdd.Steps.Add(exstep);
+                            break;
+                        case "InternalBuildStep":
+                            string outputFile = reader.GetAttribute("OutputFile");
+                            StepType type = (StepType)Convert.ToInt16(reader.GetAttribute("StepType"));
+                            InternalBuildStep instep = new InternalBuildStep(count, type,
+                                                        Path.Combine(root, inputFile),
+                                                        Path.Combine(root, outputFile));
+                            configToAdd.Steps.Add(instep);
+                            break;
+                        default:
+                            throw new ArgumentException("Invalid XML Format");
+                    }
+                }
+                else
+                {
+                    string configName = reader.Name;
+                    configToAdd = new BuildConfig(configName);
+                    buildConfigs.Add(configToAdd);
+                    if (reader.IsEmptyElement)
+                    {
+                        continue;
+                    }
+                }
 			}
 		}
 	}
