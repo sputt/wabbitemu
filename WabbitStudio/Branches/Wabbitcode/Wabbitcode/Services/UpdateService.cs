@@ -13,7 +13,7 @@ namespace Revsoft.Wabbitcode.Services
 {
 	public static class UpdateService
 	{
-		public class UpdateState : IDisposable
+		public sealed class UpdateState : IDisposable
 		{
 			public bool IsNewerVersion;
 			public Version NewerVersion;

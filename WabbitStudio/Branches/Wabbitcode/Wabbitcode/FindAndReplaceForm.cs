@@ -45,6 +45,23 @@ namespace Revsoft.Wabbitcode
             this.Text = text;
         }
 
+        public void ShowFor(bool replaceMode, bool bigSearch)
+        {
+            _editor = null;
+            _search.ClearScanRegion();
+
+            this.Owner = DockingService.MainForm;
+            this.Show();
+
+            ReplaceMode = replaceMode;
+            BigSearch = bigSearch;
+
+            btnFindNext.Focus();
+
+            txtLookFor.SelectAll();
+            txtLookFor.Focus();
+        }
+
         public void ShowFor(TextEditorControl editor, bool replaceMode, bool bigSearch)
         {
             Editor = editor;
@@ -58,9 +75,13 @@ namespace Revsoft.Wabbitcode
             {
                 var sel = sm.SelectionCollection[0];
                 if (sel.StartPosition.Line == sel.EndPosition.Line)
+                {
                     txtLookFor.Text = sm.SelectedText;
+                }
                 else
+                {
                     _search.SetScanRegion(sel);
+                }
             }
             else
             {
@@ -243,8 +264,10 @@ namespace Revsoft.Wabbitcode
                 HighlightGroup group = _highlightGroups[_editor];
 
                 if (string.IsNullOrEmpty(LookFor))
+                {
                     // Clear highlights
                     group.ClearMarkers();
+                }
                 else
                 {
                     _search.LookFor = txtLookFor.Text;
@@ -253,7 +276,7 @@ namespace Revsoft.Wabbitcode
 
                     bool looped = false;
                     int offset = 0, count = 0;
-                    for (;;)
+                    for (; ; )
                     {
                         TextRange range = _search.FindNext(offset, false, out looped);
                         if (range == null || looped)
@@ -266,9 +289,13 @@ namespace Revsoft.Wabbitcode
                         group.AddMarker(m);
                     }
                     if (count == 0)
+                    {
                         MessageBox.Show("Search text not found.");
+                    }
                     else
+                    {
                         Close();
+                    }
                 }
             }
         }
@@ -285,7 +312,10 @@ namespace Revsoft.Wabbitcode
 
                 // Discard search region
                 _search.ClearScanRegion();
-                _editor.Refresh(); // must repaint manually
+                if (_editor != null)
+                {
+                    _editor.Refresh(); // must repaint manually
+                }
             }
         }
 
@@ -378,7 +408,7 @@ namespace Revsoft.Wabbitcode
 
     /// <summary>This class finds occurrances of a search string in a text 
     /// editor's IDocument... it's like Find box without a GUI.</summary>
-    public class TextEditorSearcher : IDisposable
+    public sealed class TextEditorSearcher : IDisposable
     {
         IDocument _document;
         public IDocument Document

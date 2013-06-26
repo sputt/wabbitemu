@@ -190,24 +190,24 @@ namespace Revsoft.Wabbitcode
 
 		private void UpdateStepOptions()
 		{
-			if (buildSeqList.SelectedIndex == -1)
-			{
-				stepOptionsBox.Enabled = false;
-				return;
-			}
-			else
-				stepOptionsBox.Enabled = true;
-			Type stepType = buildSeqList.SelectedItem.GetType();
-			if (stepType == typeof(InternalBuildStep))
+            if (buildSeqList.SelectedIndex == -1)
+            {
+                stepOptionsBox.Enabled = false;
+                return;
+            }
+            else
+            {
+                stepOptionsBox.Enabled = true;
+            }
+			if (buildSeqList.SelectedItem is InternalBuildStep)
 			{
 				stepTypeBox.SelectedIndex = 0;
 			}
-			else if (stepType == typeof(ExternalBuildStep))
+			else if (buildSeqList.SelectedItem is ExternalBuildStep)
 			{
 				stepTypeBox.SelectedIndex = 1;
 			}
 			IBuildStep step = (IBuildStep)buildSeqList.SelectedItem;
-			//HACK: this just doesnt feel right :?
 			switch (stepTypeBox.SelectedIndex)
 			{
 				case 0:
@@ -237,10 +237,23 @@ namespace Revsoft.Wabbitcode
 		private void inputBox_TextChanged(object sender, EventArgs e)
 		{
 			IBuildStep step = (IBuildStep)buildSeqList.SelectedItem;
-			if (step.GetType() == typeof(InternalBuildStep))
-				step.InputFile = FileOperations.NormalizePath(Path.Combine(ProjectService.ProjectDirectory, inputBox.Text));
-			else if (step.GetType() == typeof(ExternalBuildStep))
-				step.InputFile = inputBox.Text;
+            if (step is InternalBuildStep)
+            {
+                step.InputFile = FileOperations.NormalizePath(Path.Combine(ProjectService.ProjectDirectory, inputBox.Text));
+            }
+            else if (step is ExternalBuildStep)
+            {
+                step.InputFile = inputBox.Text;
+            }
+            int index = buildSeqList.SelectedIndex;
+            int selectIndex = inputBox.SelectionStart;
+            //HACK: forces update of item text
+            buildSeqList.Items.Remove(step);
+            buildSeqList.Items.Insert(index, step);
+            buildSeqList.SelectedIndex = index;
+            inputBox.Focus();
+            inputBox.SelectionStart = selectIndex;
+
 			needsSave = !isInternal;
 		}
 
@@ -273,17 +286,22 @@ namespace Revsoft.Wabbitcode
 
 		private string DoOpenFileDialog()
 		{
+            bool isExternal = buildSeqList.SelectedItem is ExternalBuildStep;
+            string defExt = isExternal ? "*.bat" : "*.asm";
+            string filter = isExternal ? "All Know File Types | *.bat; *.exe; |Executable (*.exe)|*.exe|Batch Files (*.bat)|*.bat|All Files (*.*)|*.*" :
+                                             "All Know File Types | *.asm; *.z80; *.inc; |Assembly Files (*.asm)|*.asm|*.z80" +
+                                           " Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|All Files (*.*)|*.*";
+            string title = isExternal ? "Program to run" : "Add existing file";
 			string filePath = null;
 			using (OpenFileDialog openFileDialog = new OpenFileDialog()
 				{
 					CheckFileExists = true,
-					DefaultExt = "*.asm",
-					Filter = "All Know File Types | *.asm; *.z80; *.inc; |Assembly Files (*.asm)|*.asm|*.z80" +
-							   " Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|All Files(*.*)|*.*",
+					DefaultExt = defExt,
+					Filter = filter,
 					FilterIndex = 0,
 					Multiselect = false,
 					RestoreDirectory = true,
-					Title = "Add Existing File",
+					Title = title,
 				}) 
 			{
 				DialogResult result = openFileDialog.ShowDialog();

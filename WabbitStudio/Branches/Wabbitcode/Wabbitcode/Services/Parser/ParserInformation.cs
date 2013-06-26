@@ -146,7 +146,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 		}*/
 	}
 
-	public class IParserEnumerator : IEnumerator<IParserData>
+	public class IParserEnumerator : IEnumerator<IParserData>, IDisposable
 	{
 		private ParserInformation parserData;
 		private int position = -1;
@@ -163,7 +163,7 @@ namespace Revsoft.Wabbitcode.Services.Parser
 			}
 		}
 
-		public void Dispose()
+		public virtual void Dispose()
 		{
 			return;
 		}

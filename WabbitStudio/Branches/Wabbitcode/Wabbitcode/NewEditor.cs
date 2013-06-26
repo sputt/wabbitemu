@@ -2202,69 +2202,69 @@ namespace Revsoft.Wabbitcode
 
 		public static string XmlDocumentationToText(string xmlDoc)
 		{
+            StringReader stringReader = null;
 			Debug.WriteLine(xmlDoc);
 			StringBuilder b = new StringBuilder();
-			try
-			{
-				var stringReader = new StringReader("<root>" + xmlDoc + "</root>");
-				using (XmlTextReader reader = new XmlTextReader(stringReader))
-				{
-					reader.XmlResolver = null;
-					while (reader.Read())
-					{
-						switch (reader.NodeType)
-						{
-							case XmlNodeType.Text:
-								b.Append(reader.Value);
-								break;
-							case XmlNodeType.Element:
-								switch (reader.Name)
-								{
-									case "filterpriority":
-										reader.Skip();
-										break;
-									case "returns":
-										b.AppendLine();
-										b.Append("Returns: ");
-										break;
-									case "param":
-										b.AppendLine();
-										b.Append(reader.GetAttribute("name") + ": ");
-										break;
-									case "remarks":
-										b.AppendLine();
-										b.Append("Remarks: ");
-										break;
-									case "see":
-										if (reader.IsEmptyElement)
-										{
-											b.Append(reader.GetAttribute("cref"));
-										}
-										else
-										{
-											reader.MoveToContent();
-											if (reader.HasValue)
-											{
-												b.Append(reader.Value);
-											}
-											else
-											{
-												b.Append(reader.GetAttribute("cref"));
-											}
-										}
-										break;
-								}
-								break;
-						}
-					}
-				}
-				stringReader.Dispose();
-				return b.ToString();
-			}
-			catch (XmlException)
-			{
-				return xmlDoc;
-			}
+            try
+            {
+                stringReader = new StringReader("<root>" + xmlDoc + "</root>");
+                using (XmlTextReader reader = new XmlTextReader(stringReader))
+                {
+                    reader.XmlResolver = null;
+                    while (reader.Read())
+                    {
+                        switch (reader.NodeType)
+                        {
+                            case XmlNodeType.Text:
+                                b.Append(reader.Value);
+                                break;
+                            case XmlNodeType.Element:
+                                switch (reader.Name)
+                                {
+                                    case "filterpriority":
+                                        reader.Skip();
+                                        break;
+                                    case "returns":
+                                        b.AppendLine();
+                                        b.Append("Returns: ");
+                                        break;
+                                    case "param":
+                                        b.AppendLine();
+                                        b.Append(reader.GetAttribute("name") + ": ");
+                                        break;
+                                    case "remarks":
+                                        b.AppendLine();
+                                        b.Append("Remarks: ");
+                                        break;
+                                    case "see":
+                                        if (reader.IsEmptyElement)
+                                        {
+                                            b.Append(reader.GetAttribute("cref"));
+                                        }
+                                        else
+                                        {
+                                            reader.MoveToContent();
+                                            if (reader.HasValue)
+                                            {
+                                                b.Append(reader.Value);
+                                            }
+                                            else
+                                            {
+                                                b.Append(reader.GetAttribute("cref"));
+                                            }
+                                        }
+                                        break;
+                                }
+                                break;
+                        }
+                    }
+                }
+                return b.ToString();
+            }
+            catch (XmlException)
+            {
+                return xmlDoc;
+            }
 		}
 	}
 

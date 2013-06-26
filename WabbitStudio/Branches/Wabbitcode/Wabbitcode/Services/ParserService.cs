@@ -68,7 +68,6 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				if (reader != null)
 				{
-					reader.Close();
 					reader.Dispose();
 				}
 			}
