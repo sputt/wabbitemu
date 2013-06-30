@@ -129,7 +129,6 @@ typedef struct tagCALC {
 	TCHAR skin_path[256];
 	TCHAR keymap_path[256];
 	CWabbitemu *pWabbitemu;
-	ICalcNotify *pCalcNotify;
 #endif
 
 } calc_t;

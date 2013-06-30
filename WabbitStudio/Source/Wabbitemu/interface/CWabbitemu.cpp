@@ -7,6 +7,7 @@
 #include "CPage.h"
 #include "dbdisasm.h"
 #include "calc.h"
+#include "registry.h"
 
 #define WM_ADDFRAME	(WM_USER+5)
 #define WM_REMOVEFRAME (WM_USER+6)
@@ -14,6 +15,7 @@
 HRESULT CWabbitemu::FinalConstruct()
 {
 	m_lpCalc = calc_slot_new();
+	LoadRegistrySettings(m_lpCalc);
 	m_iSlot = m_lpCalc->slot;
 
 	m_pKeypad = new CKeypad(&calcs[m_iSlot].cpu);
@@ -28,6 +30,10 @@ HRESULT CWabbitemu::FinalConstruct()
 
 STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 {
+	if (fVisible == m_fVisible)
+	{
+		return S_FALSE;
+	}
 	if (fVisible == VARIANT_TRUE)
 	{
 		gui_frame(m_lpCalc);
@@ -43,7 +49,45 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 	{
 		DestroyWindow(m_lpCalc->hwndFrame);
 	}
+	m_fVisible = fVisible;
 	return S_OK;
+}
+void CWabbitemu::Fire_OnBreakpoint(waddr *pwaddr)
+{
+	CComObject<CCalcAddress> *pCalcAddress = NULL;
+	CComObject<CCalcAddress>::CreateInstance(&pCalcAddress);
+	pCalcAddress->AddRef();
+
+	pCalcAddress->Initialize(this, pwaddr->is_ram, pwaddr->page, pwaddr->addr);
+
+	int nConnectionIndex;
+	int nConnections = this->m_vec.GetSize();
+	for (nConnectionIndex =  0;  nConnectionIndex < nConnections; nConnectionIndex++)
+	{
+		Lock();
+		CComPtr<IUnknown> sp = this->m_vec.GetAt(nConnectionIndex);
+		Unlock();
+
+		if (sp != NULL)
+		{
+			CComDispatchDriver drv(sp);
+			VARIANT vCalcAddress;
+			VariantInit(&vCalcAddress);
+
+			V_VT(&vCalcAddress) = VT_DISPATCH;
+			pCalcAddress->QueryInterface(&V_DISPATCH(&vCalcAddress));
+
+			HRESULT hr = drv.Invoke1(DISPID_BREAKPOINT, &vCalcAddress);
+			if (FAILED(hr))
+			{
+				OutputDebugString(_T("Failed to invoke\n"));
+			}
+
+			VariantClear(&vCalcAddress);
+		}
+	}
+
+	pCalcAddress->Release();
 }
 
 STDMETHODIMP CWabbitemu::get_Visible(VARIANT_BOOL *lpVisible)
@@ -74,7 +118,7 @@ STDMETHODIMP CWabbitemu::StepOver()
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress, VARIANT varCalcNotify)
+STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress)
 {
 	VARIANT_BOOL IsFlash;
 	pPage->get_IsFlash(&IsFlash);
@@ -88,14 +132,6 @@ STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress, VARIANT varC
 	waddr.is_ram = !IsFlash;
 	set_break(&m_lpCalc->mem_c, waddr);
 
-	if (V_VT(&varCalcNotify) == VT_UNKNOWN)
-	{
-		if (m_lpCalc->pCalcNotify != NULL)
-		{
-			m_lpCalc->pCalcNotify->Release();
-		}
-		V_UNKNOWN(&varCalcNotify)->QueryInterface(IID_ICalcNotify, (LPVOID *) &m_lpCalc->pCalcNotify);
-	}
 	return S_OK;
 }
 

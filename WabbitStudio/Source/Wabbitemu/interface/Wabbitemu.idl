@@ -229,7 +229,7 @@ interface IWabbitemu;
 [
 	uuid(A24DA6E6-BD47-444d-891F-BB368872C34F),
 	pointer_default(unique),
-	object,
+	dual,
 	version(1.0)
 ]
 interface ICalcAddress : IDispatch
@@ -286,16 +286,18 @@ interface ILabelServer : IDispatch
 	HRESULT Load([in] BSTR FileName);
 }
 
+const int DISPID_BREAKPOINT = 1;
+
 [
 	version(1.0),
-	object,
-	uuid(AF1EF43E-EDA2-4de4-A09C-C90627E2DAE3),
+	uuid(C349A6C5-D650-4F8B-961B-81470999F813)
 ]
-interface ICalcNotify : IUnknown
+dispinterface DWabbitemuEvents
 {
-	[helpstring("Notifies a client when a breakpoint has been hit.")]
-	HRESULT Breakpoint(ICalcAddress *pCalcAddress);
-}
+properties:
+methods:
+	[id(DISPID_BREAKPOINT)] HRESULT Breakpoint(ICalcAddress *Address);
+};
 
 [
 	uuid(020FB9D5-7F45-449b-B9DF-66CFC2482BD0),
@@ -332,7 +334,7 @@ interface IWabbitemu : IDispatch
 	HRESULT StepOver();
 
 	[helpstring("Sets an execution breakpoint on a certain address.")]
-	HRESULT SetBreakpoint([in] IPage *Page, [in] WORD Address, [in] VARIANT CalcNotify);
+	HRESULT SetBreakpoint([in] IPage *Page, [in] WORD Address);
 
 	HRESULT Read([in] WORD Address, [in] VARIANT ByteCount, [out, retval] VARIANT *Value);
 	HRESULT Write([in] WORD Address, [in] VARIANT Value);
@@ -364,12 +366,14 @@ library WabbitemuLib
 	interface IBank;
 	interface ICalcNotify;
 	interface ILCD;
+	dispinterface DWabbitemuEvents;
 
 	[
 		uuid(1A03AFA2-C9C7-4d5b-9732-D78011D5009B),
 	]
 	coclass Wabbitemu
 	{
-		[default] interface IWabbitemu;
+		interface IWabbitemu;
+		[default, source] dispinterface DWabbitemuEvents;
 	}
 };
