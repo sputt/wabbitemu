@@ -79,6 +79,10 @@ public :
 	void RunMessageLoop();
 	HRESULT PostMessageLoop();
 
+	ParsedCmdArgs *GetParsedCmdArgs() {
+		return &m_parsedArgs;
+	}
+
 private:
 	LPCALC m_lpCalc;
 	ULONG_PTR m_gdiplusToken;

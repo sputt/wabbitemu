@@ -223,7 +223,11 @@ int gui_frame(LPCALC lpCalc) {
 	SetWindowText(lpCalc->hwndFrame, _T("Wabbitemu"));
 	HDC hdc = GetDC(lpCalc->hwndFrame);
 	lpCalc->hdcSkin = CreateCompatibleDC(hdc);
-	lpCalc->breakpoint_callback = gui_debug;
+
+	if (!_Module.GetParsedCmdArgs()->no_create_calc)
+	{
+		lpCalc->breakpoint_callback = gui_debug;
+	}
 
 extern keyprog_t keygrps[256];
 extern keyprog_t keysti83[256];
@@ -482,6 +486,10 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 	g_hInst = _AtlBaseModule.GetModuleInstance();
 	RegisterWindowClasses();
 	InitCommonControls();
+
+
+	//DWORD dwReg;
+	//::CoRegisterClassObject(CLSID_Wabbitemu, NULL, CLSCTX_LOCAL_SERVER, REGCLS_MULTIPLEUSE, &dwReg);
 
 	// Initialize GDI+.
 	GdiplusStartupInput gdiplusStartupInput;

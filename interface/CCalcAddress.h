@@ -5,7 +5,7 @@
 typedef ICalcAddress *LPCALCADDRESS;
 
 class CCalcAddress :
-	public CComObjectRootEx<CComMultiThreadModel>,
+	public CComObjectRootEx<CComObjectThreadModel>,
 	public IDispatchImpl<ICalcAddress, &IID_ICalcAddress, &LIBID_WabbitemuLib>
 {
 public:
