@@ -18,7 +18,6 @@ HRESULT CWabbitemu::FinalConstruct()
 	LoadRegistrySettings(m_lpCalc);
 	m_iSlot = m_lpCalc->slot;
 
-	m_pKeypad = new CKeypad(&calcs[m_iSlot].cpu);
 	m_fVisible = VARIANT_FALSE;
 
 	m_lpCalc->pWabbitemu = this;
@@ -232,6 +231,11 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 		CComObject<CZ80>::CreateInstance(&m_pZ80Obj);
 		m_pZ80Obj->Initialize(&m_lpCalc->cpu);
 		m_pZ80 = m_pZ80Obj;
+
+		CComObject<CKeypad> *m_pKeypadObject = NULL;
+		CComObject<CKeypad>::CreateInstance(&m_pKeypadObject);
+		m_pKeypadObject->Initialize(&m_lpCalc->cpu);
+		m_pKeypad = m_pKeypadObject;
 	}
 	return S_OK;
 }

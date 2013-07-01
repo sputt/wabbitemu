@@ -5,43 +5,27 @@
 
 typedef Calc_Key KEYS;
 
-class CKeypad : IKeypad
+class CKeypad : 
+	public CComObjectRootEx<CComObjectThreadModel>,
+	public IDispatchImpl<IKeypad, &__uuidof(IKeypad)>
 {
 public:
-	// IUnknown methods
-	STDMETHODIMP QueryInterface(REFIID riid, LPVOID *ppvObject);
-	STDMETHODIMP_(ULONG) AddRef()
-	{
-		return InterlockedIncrement(&m_lRefCount);
-	};
-	STDMETHODIMP_(ULONG) Release()
-	{
-		if (InterlockedDecrement(&m_lRefCount) == 0)
-		{
-			delete this;
-			return 0;
-		}
-		else
-		{
-			return m_lRefCount;
-		}
-	};
+	BEGIN_COM_MAP(CKeypad)
+		COM_INTERFACE_ENTRY(IKeypad)
+		COM_INTERFACE_ENTRY(IDispatch)
+	END_COM_MAP()
 
-	// IKeypad
 	STDMETHOD(PressKey)(KEYS Key);
 	STDMETHOD(ReleaseKey)(KEYS Key);
 	STDMETHOD(IsKeyPressed)(KEYS Key, VARIANT_BOOL *lpfIsPressed);
 	STDMETHOD(PressVirtKey)(int Key);
 	STDMETHOD(ReleaseVirtKey)(int Key);
 
-	CKeypad(CPU_t *cpu)
+	void Initialize(CPU_t *cpu)
 	{
-		m_lRefCount = 1;
 		m_cpu = cpu;
 	}
 
 private:
-	LONG m_lRefCount;
-
 	CPU_t *m_cpu;
 };
