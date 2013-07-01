@@ -35,28 +35,6 @@ static int LookupVirtCode(KEYS Key)
 	return -1;
 }
 
-STDMETHODIMP CKeypad::QueryInterface(REFIID riid, LPVOID *ppvObject)
-{
-	if (riid == IID_IUnknown)
-	{
-		this->AddRef();
-		*ppvObject = this;
-		return S_OK;
-	}
-	else if (riid == IID_IKeypad)
-	{
-		this->AddRef();
-		*ppvObject = this;
-		return S_OK;
-	}
-	else
-	{
-		*ppvObject = NULL;
-		return E_NOINTERFACE;
-	}
-}
-
-
 STDMETHODIMP CKeypad::PressKey(KEYS Key)
 {
 	int wVirtCode = LookupVirtCode(Key);

@@ -173,9 +173,9 @@ interface IPage : IDispatch
 
 [
 	uuid(9BD2CC22-5E1D-41c1-A134-F24410EF6301),
-	object,
+	dual,
 ]
-interface IKeypad : IUnknown
+interface IKeypad : IDispatch
 {
 	typedef enum Calc_Key
 	{
@@ -246,7 +246,7 @@ interface ICalcAddress : IDispatch
 
 	// Methods
 	[helpstring("Read from this address")]
-	HRESULT Read([in] VARIANT ByteCount, [out, retval] VARIANT *Value);
+	HRESULT Read([in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
 	[helpstring("Write to this address")]
 	HRESULT Write([in] VARIANT Value);
 }
