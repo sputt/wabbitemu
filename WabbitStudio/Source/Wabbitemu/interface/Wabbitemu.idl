@@ -364,7 +364,6 @@ library WabbitemuLib
 	importlib("stdole32.tlb");
 
 	interface IBank;
-	interface ICalcNotify;
 	interface ILCD;
 	dispinterface DWabbitemuEvents;
 
