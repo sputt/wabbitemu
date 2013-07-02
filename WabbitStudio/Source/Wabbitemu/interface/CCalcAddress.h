@@ -27,6 +27,23 @@ public:
 	STDMETHOD(Read)(VARIANT varByteCount, LPVARIANT lpvarResult);
 	STDMETHOD(Write)(VARIANT varValue);
 
+	static inline waddr_t ToWAddr(ICalcAddress *pAddress)
+	{
+		waddr_t waddr;
+		pAddress->get_Address(&waddr.addr);
+
+		CComPtr<IPage> pPage;
+		pAddress->get_Page(&pPage);
+
+		VARIANT_BOOL isFlash;
+		pPage->get_IsFlash(&isFlash);
+		waddr.is_ram = isFlash == VARIANT_TRUE ? FALSE : TRUE;
+		int nPage;
+		pPage->get_Index(&nPage);
+		waddr.page = nPage;
+		return waddr;
+	}
+
 private:
 	CComPtr<IWabbitemu> m_pWabbitemu;
 	CComPtr<IPage> m_pPage;

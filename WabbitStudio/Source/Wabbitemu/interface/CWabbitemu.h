@@ -71,7 +71,7 @@ private:
 	struct tagCALC *m_lpCalc;
 	CComPtr<IZ80> m_pZ80;
 	CComPtr<ILCD> m_pLCD;
-	CKeypad *m_pKeypad;
+	CComPtr<IKeypad> m_pKeypad;
 	HWND m_hwnd;
 	UINT_PTR m_idTimer;
 

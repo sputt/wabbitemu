@@ -5,7 +5,7 @@
 
 typedef Calc_Key KEYS;
 
-class CKeypad : 
+class ATL_NO_VTABLE CKeypad : 
 	public CComObjectRootEx<CComObjectThreadModel>,
 	public IDispatchImpl<IKeypad, &__uuidof(IKeypad)>
 {

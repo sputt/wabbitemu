@@ -84,7 +84,8 @@ public:
 		COM_INTERFACE_ENTRY(IDispatch)
 	END_COM_MAP()
 
-	STDMETHOD(Add)(ICalcAddress *pCalcAddress);
+	STDMETHOD(Add)(ICalcAddress *pCalcAddress, IBreakpoint **ppBreakpoint);
+	STDMETHOD(Remove)(IBreakpoint *ppBreakpoint);
 
 	HRESULT Initialize(tagCALC *calc)
 	{
