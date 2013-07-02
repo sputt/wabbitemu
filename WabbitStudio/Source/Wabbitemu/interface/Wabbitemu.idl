@@ -59,7 +59,7 @@ struct TISymbol {
 
 [
 	uuid(023D1C58-C323-43a7-860B-95FB9C204F91),
-	object,
+	dual,
 ]
 interface ILCD : IDispatch
 {
@@ -68,7 +68,7 @@ interface ILCD : IDispatch
 
 [
 	uuid(41C7B7BF-D390-4ba0-8075-462FD3565225),
-	object,
+	dual,
 ]
 interface IZ80 : IDispatch
 {
@@ -234,6 +234,7 @@ interface IWabbitemu;
 ]
 interface ICalcAddress : IDispatch
 {
+	HRESULT Initialize([in] IWabbitemu *Calc, [in] VARIANT_BOOL IsFlash, [in] int Page, [in] WORD Address);
 	// Properties
 	[propget, helpstring("Calculator this address is on")]
 	HRESULT Calc([out, retval] IWabbitemu **Calc);
@@ -246,7 +247,7 @@ interface ICalcAddress : IDispatch
 
 	// Methods
 	[helpstring("Read from this address")]
-	HRESULT Read([in, optional] VARIANT ByteCount, [out, retval] VARIANT *Value);
+	HRESULT Read([in, optional] VARIANT Count, [out, retval] VARIANT *Value);
 	[helpstring("Write to this address")]
 	HRESULT Write([in] VARIANT Value);
 }
@@ -286,6 +287,46 @@ interface ILabelServer : IDispatch
 	HRESULT Load([in] BSTR FileName);
 }
 
+[
+	helpstring("Code execution breakpoint that can be enabled/disabled"),
+	uuid(569FD80A-BAFB-4DA8-98EB-F83AFDBAC8B3),
+	dual,
+	pointer_default(unique)
+]
+interface IBreakpoint : IDispatch
+{
+	[propget]
+	HRESULT Address([out, retval] ICalcAddress **Address);
+	
+	[propget]
+	HRESULT Enabled([out, retval] VARIANT_BOOL *Enabled);
+	[propput]
+	HRESULT Enabled([in] VARIANT_BOOL Enabled);
+}
+
+
+[
+	helpstring("Collection for managing breakpoints"),
+	version(1.0),
+	uuid(1A6B7029-87C3-4922-860B-D1971958DE4A),
+	dual,
+	pointer_default(unique)
+]
+interface IBreakpointCollection : IDispatch
+{
+	[propget]
+	HRESULT Count([out, retval] LONG *Count);
+
+	[id(DISPID_VALUE), propget]
+	HRESULT Item([in] LONG Index, [out, retval] IBreakpoint **Item);
+
+	[id(DISPID_NEWENUM), propget]
+	HRESULT _NewEnum([out, retval] IUnknown** ppEnum);
+
+	[helpstring("Add a new breakpoint")]
+	HRESULT Add([in] ICalcAddress *Address);
+}
+
 const int DISPID_BREAKPOINT = 1;
 
 [
@@ -296,7 +337,7 @@ dispinterface DWabbitemuEvents
 {
 properties:
 methods:
-	[id(DISPID_BREAKPOINT)] HRESULT Breakpoint(ICalcAddress *Address);
+	[id(DISPID_BREAKPOINT)] HRESULT Breakpoint(IBreakpoint *Breakpoint);
 };
 
 [
@@ -329,15 +370,12 @@ interface IWabbitemu : IDispatch
 	[propput, helpstring("Whether or not the calculator is running.")]
 	HRESULT Running([in] VARIANT_BOOL fRunning);
 
-	[helpstring("Execute a single instruction.")]
+	[helpstring("Execute a single instruction")]
 	HRESULT Step();
 	HRESULT StepOver();
 
-	[helpstring("Sets an execution breakpoint on a certain address.")]
-	HRESULT SetBreakpoint([in] IPage *Page, [in] WORD Address);
-
-	HRESULT Read([in] WORD Address, [in] VARIANT ByteCount, [out, retval] VARIANT *Value);
-	HRESULT Write([in] WORD Address, [in] VARIANT Value);
+	[propget, helpstring("Collection of execution breakpoints")]
+	HRESULT Breakpoints([out, retval] IBreakpointCollection **Breakpoints);
 
 	HRESULT LoadFile([in] BSTR FileName);
 
@@ -368,11 +406,19 @@ library WabbitemuLib
 	dispinterface DWabbitemuEvents;
 
 	[
-		uuid(1A03AFA2-C9C7-4d5b-9732-D78011D5009B),
+		uuid(1A03AFA2-C9C7-4d5b-9732-D78011D5009B)
 	]
 	coclass Wabbitemu
 	{
-		interface IWabbitemu;
+		[default] interface IWabbitemu;
 		[default, source] dispinterface DWabbitemuEvents;
+	}
+
+	[
+		uuid(D46A319B-86C3-4F4C-8F7F-8189C38B62EC)
+	]
+	coclass CalcAddress
+	{
+		[default] interface ICalcAddress;
 	}
 };

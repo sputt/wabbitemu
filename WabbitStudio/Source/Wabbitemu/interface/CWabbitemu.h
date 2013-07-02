@@ -9,7 +9,9 @@ struct tagCALC;
 
 #include "resource.h"
 
-class CWabbitemu :
+#include "CBreakpointCollection.h"
+
+class ATL_NO_VTABLE CWabbitemu :
 	public CComObjectRootEx<CComObjectThreadModel>,
 	public CComCoClass<CWabbitemu, &CLSID_Wabbitemu>,
 	public IProvideClassInfo2Impl<&CLSID_Wabbitemu, &DIID_DWabbitemuEvents, &LIBID_WabbitemuLib, 1, 0>,
@@ -50,15 +52,11 @@ public:
 	STDMETHODIMP Step();
 	STDMETHODIMP StepOver();
 
-	STDMETHODIMP SetBreakpoint(IPage *pPage, WORD wAddress);
-
-	STDMETHOD(Read)(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult);
-	STDMETHOD(Write)(WORD Address, VARIANT varValue);
+	STDMETHOD(get_Breakpoints)(IBreakpointCollection **pBC);
 
 	STDMETHODIMP LoadFile(BSTR bstrFileName);
 
 	STDMETHODIMP get_Apps(SAFEARRAY **ppAppList);
-	STDMETHODIMP get_Symbols(SAFEARRAY **ppAppList);
 	STDMETHOD(get_Keypad)(IKeypad **ppKeypad);
 	STDMETHODIMP get_Labels(ILabelServer **ppLabelServer);
 
@@ -68,8 +66,6 @@ private:
 	DWORD m_dwThreadId;
 	static DWORD CALLBACK WabbitemuThread(LPVOID lpParam);
 
-	LONG m_lRefCount;
-
 	int m_iSlot;
 	VARIANT_BOOL m_fVisible;
 	struct tagCALC *m_lpCalc;
@@ -78,6 +74,9 @@ private:
 	CKeypad *m_pKeypad;
 	HWND m_hwnd;
 	UINT_PTR m_idTimer;
+
+	CComObject<CBreakpointCollection> *m_BreakpointCollection;
+
 	//CComObject<CLabelServer> m_LabelServer;
 };
 

@@ -22,6 +22,11 @@ HRESULT CWabbitemu::FinalConstruct()
 
 	m_lpCalc->pWabbitemu = this;
 
+	CComObject<CBreakpointCollection>::CreateInstance(&m_BreakpointCollection);
+	m_BreakpointCollection->AddRef();
+
+	m_BreakpointCollection->Initialize(m_lpCalc);
+
 	m_idTimer = SetTimer(NULL, 0, TPF, TimerProc);
 	//CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, &m_dwThreadId);
 	return S_OK;
@@ -53,11 +58,8 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 }
 void CWabbitemu::Fire_OnBreakpoint(waddr *pwaddr)
 {
-	CComObject<CCalcAddress> *pCalcAddress = NULL;
-	CComObject<CCalcAddress>::CreateInstance(&pCalcAddress);
-	pCalcAddress->AddRef();
-
-	pCalcAddress->Initialize(this, pwaddr->is_ram, pwaddr->page, pwaddr->addr);
+	CComPtr<IBreakpoint> pBreakpoint;
+	m_BreakpointCollection->LookupBreakpoint(*pwaddr, &pBreakpoint);
 
 	int nConnectionIndex;
 	int nConnections = this->m_vec.GetSize();
@@ -70,23 +72,21 @@ void CWabbitemu::Fire_OnBreakpoint(waddr *pwaddr)
 		if (sp != NULL)
 		{
 			CComDispatchDriver drv(sp);
-			VARIANT vCalcAddress;
-			VariantInit(&vCalcAddress);
+			VARIANT vBreakpoint;
+			VariantInit(&vBreakpoint);
 
-			V_VT(&vCalcAddress) = VT_DISPATCH;
-			pCalcAddress->QueryInterface(&V_DISPATCH(&vCalcAddress));
+			V_VT(&vBreakpoint) = VT_DISPATCH;
+			pBreakpoint->QueryInterface(&V_DISPATCH(&vBreakpoint));
 
-			HRESULT hr = drv.Invoke1(DISPID_BREAKPOINT, &vCalcAddress);
+			HRESULT hr = drv.Invoke1(DISPID_BREAKPOINT, &vBreakpoint);
 			if (FAILED(hr))
 			{
 				OutputDebugString(_T("Failed to invoke\n"));
 			}
 
-			VariantClear(&vCalcAddress);
+			VariantClear(&vBreakpoint);
 		}
 	}
-
-	pCalcAddress->Release();
 }
 
 STDMETHODIMP CWabbitemu::get_Visible(VARIANT_BOOL *lpVisible)
@@ -117,7 +117,12 @@ STDMETHODIMP CWabbitemu::StepOver()
 	return E_NOTIMPL;
 }
 
-STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress)
+STDMETHODIMP CWabbitemu::get_Breakpoints(IBreakpointCollection **ppBC)
+{
+	return m_BreakpointCollection->QueryInterface(ppBC);
+}
+	
+/*IPage *pPage, WORD wAddress)
 {
 	VARIANT_BOOL IsFlash;
 	pPage->get_IsFlash(&IsFlash);
@@ -133,7 +138,7 @@ STDMETHODIMP CWabbitemu::SetBreakpoint(IPage *pPage, WORD wAddress)
 
 	return S_OK;
 }
-
+*/
 
 STDMETHODIMP CWabbitemu::RAM(int Index, IPage **ppPage)
 {
@@ -153,6 +158,7 @@ STDMETHODIMP CWabbitemu::Flash(int Index, IPage **ppPage)
 	return S_OK;
 }
 
+/*
 STDMETHODIMP CWabbitemu::Read(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult)
 {
 	int nBytes = 1;
@@ -214,6 +220,8 @@ STDMETHODIMP CWabbitemu::Write(WORD Address, VARIANT varValue)
 	}
 	return S_OK;
 }
+*/
+
 
 STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 {
@@ -296,6 +304,7 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 	return S_OK;
 }
 
+/*
 STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 {
 //	ITypeLib *pTypeLib = NULL;
@@ -357,7 +366,7 @@ STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 //	*ppAppList = lpsa;
 	return S_OK;
 }
-
+*/
 
 static LRESULT CALLBACK  WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
