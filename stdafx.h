@@ -53,6 +53,7 @@ using namespace Gdiplus;
 #include <atlcom.h>
 #include <atlctl.h>
 #include <atlcore.h>
+#include <atlcoll.h>
 using namespace ATL;
 
 #include <map>

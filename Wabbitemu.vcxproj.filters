@@ -349,6 +349,9 @@
     <ClCompile Include="Wabbitemu_i.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="CBreakpointCollection.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -666,6 +669,12 @@
     <ClInclude Include="Wabbitemu_h.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
+    <ClInclude Include="CBreakpointCollection.h">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="CBreakpoint.h">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\small_close.bmp">
@@ -856,6 +865,9 @@
     </None>
     <None Include="test.vbs">
       <Filter>Script Files</Filter>
+    </None>
+    <None Include="CalcAddress.rgs">
+      <Filter>Source Files\Interface\COM</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

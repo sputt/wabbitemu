@@ -59,6 +59,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CBreakpointCollection.cpp" />
     <ClCompile Include="core\alu.c" />
     <ClCompile Include="core\alu_reverse.c" />
     <ClCompile Include="core\control.c" />
@@ -247,6 +248,8 @@
     <ClCompile Include="Wabbitemu_i.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CBreakpoint.h" />
+    <ClInclude Include="CBreakpointCollection.h" />
     <ClInclude Include="core\alu.h" />
     <ClInclude Include="core\alu_reverse.h" />
     <ClInclude Include="core\control.h" />
@@ -354,6 +357,7 @@
     <ClInclude Include="Wabbitemu_h.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CalcAddress.rgs" />
     <None Include="gui\back.bmp" />
     <None Include="gui\break.bmp" />
     <None Include="gui\buttondownleft.bmp" />

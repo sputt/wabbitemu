@@ -2,7 +2,7 @@
 
 #include "core.h"
 
-class CZ80 :
+class ATL_NO_VTABLE CZ80 :
 	public CComObjectRootEx<CComObjectThreadModel>,
 	public IDispatchImpl<IZ80, &IID_IZ80>
 {

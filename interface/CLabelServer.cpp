@@ -35,10 +35,10 @@ STDMETHODIMP CLabelServer::Find(VARIANT varCriteria, ILabel **ppLabel)
 			return S_FALSE;
 		}
 
-		CComObject<CLabel> *pLabel = new CComObject<CLabel>();
-		pLabel->Initialize(V_BSTR(&varCriteria), m_pWabbitemu, !lab->IsRAM, lab->page, lab->addr);
+	//	CComObject<CLabel> *pLabel = new CComObject<CLabel>();
+	//	pLabel->Initialize(V_BSTR(&varCriteria), m_pWabbitemu, !lab->IsRAM, lab->page, lab->addr);
 
-		return pLabel->QueryInterface(IID_ILabel, (LPVOID *) ppLabel);
+	//	return pLabel->QueryInterface(IID_ILabel, (LPVOID *) ppLabel);
 	}
 	else
 	{
