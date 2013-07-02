@@ -324,7 +324,10 @@ interface IBreakpointCollection : IDispatch
 	HRESULT _NewEnum([out, retval] IUnknown** ppEnum);
 
 	[helpstring("Add a new breakpoint")]
-	HRESULT Add([in] ICalcAddress *Address);
+	HRESULT Add([in] ICalcAddress *Address, [out, retval] IBreakpoint **Breakpoint);
+
+	[helpstring("Remove a breakpoint")]
+	HRESULT Remove([in] IBreakpoint *Breakpoint);
 }
 
 const int DISPID_BREAKPOINT = 1;

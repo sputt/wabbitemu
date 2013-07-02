@@ -59,7 +59,12 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 void CWabbitemu::Fire_OnBreakpoint(waddr *pwaddr)
 {
 	CComPtr<IBreakpoint> pBreakpoint;
-	m_BreakpointCollection->LookupBreakpoint(*pwaddr, &pBreakpoint);
+	// Make sure that the breakpoint came from our breakpoint collection
+	HRESULT hr = m_BreakpointCollection->LookupBreakpoint(*pwaddr, &pBreakpoint);
+	if (hr != S_OK)
+	{
+		return;
+	}
 
 	int nConnectionIndex;
 	int nConnections = this->m_vec.GetSize();
@@ -244,6 +249,15 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 		CComObject<CKeypad>::CreateInstance(&m_pKeypadObject);
 		m_pKeypadObject->Initialize(&m_lpCalc->cpu);
 		m_pKeypad = m_pKeypadObject;
+
+extern keyprog_t keygrps[256];
+extern keyprog_t keysti83[256];
+extern keyprog_t keysti86[256];
+	if (m_lpCalc->model == TI_86 || m_lpCalc->model == TI_85) {
+		memcpy(keygrps, keysti86, sizeof(keyprog_t) * 256);
+	} else {
+		memcpy(keygrps, keysti83, sizeof(keyprog_t) * 256);
+	}
 	}
 	return S_OK;
 }
@@ -367,7 +381,7 @@ STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 	return S_OK;
 }
 */
-
+/*
 static LRESULT CALLBACK  WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 	switch (uMsg)
@@ -476,6 +490,7 @@ DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
 
 	return 0;
 }
+*/
 
 STDMETHODIMP CWabbitemu::get_Keypad(IKeypad **ppKeypad)
 {
