@@ -49,17 +49,6 @@ class CLabel :
 	public IDispatchImpl<ILabel, &IID_ILabel, &LIBID_WabbitemuLib>
 {
 public:
-	CLabel()
-	{
-		m_bstrName = NULL;
-	};
-	~CLabel()
-	{
-		if (m_bstrName != NULL)
-		{
-			SysFreeString(m_bstrName);
-		}
-	};
 
 	BEGIN_COM_MAP(CLabel)
 		COM_INTERFACE_ENTRY(ILabel)
@@ -77,12 +66,6 @@ public:
 
 	// ILabel methods
 	STDMETHOD(get_Name)(BSTR *bstrName);
-
-	void Initialize(const BSTR bstrName, IWabbitemu *pCalc, BOOL IsFlash, int iPage, WORD wAddress)
-	{
-		m_bstrName = SysAllocString(bstrName);
-		m_CalcAddress.Initialize(pCalc, IsFlash, iPage, wAddress);
-	}
 
 private:
 	BSTR m_bstrName;

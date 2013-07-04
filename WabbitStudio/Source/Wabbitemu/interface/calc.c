@@ -21,6 +21,7 @@
 #include "CPage.h"
 #include "exportvar.h"
 #include "guiwizard.h"
+#include "CWabbitemu.h"
 #endif
 
 static HWND calc_debug_callback(LPCALC lpCalc);

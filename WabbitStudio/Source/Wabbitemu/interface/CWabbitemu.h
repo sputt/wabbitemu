@@ -33,6 +33,7 @@ public:
 	END_CONNECTION_POINT_MAP()
 
 	HRESULT FinalConstruct();
+	void FinalRelease();
 
 	// IWabbitemu methods
 	STDMETHODIMP put_Visible(VARIANT_BOOL fVisible);
@@ -74,7 +75,7 @@ private:
 	HWND m_hwnd;
 	UINT_PTR m_idTimer;
 
-	CComObject<CBreakpointCollection> *m_BreakpointCollection;
+	CComObject<CBreakpointCollection> *m_pBreakpointCollObj;
 
 	//CComObject<CLabelServer> m_LabelServer;
 };

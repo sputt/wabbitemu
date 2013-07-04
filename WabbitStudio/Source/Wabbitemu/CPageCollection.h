@@ -13,6 +13,12 @@ class ATL_NO_VTABLE CPageCollection :
 		COM_INTERFACE_ENTRY(IDispatch)
 	END_COM_MAP()
 
+
+	STDMETHOD(get_Item)(LONG lIndex, IPage **ppPage)
+	{
+		return ComCollImpl<IPage, IPageCollection>::get_Item(lIndex + 1, ppPage);
+	}
+
 	STDMETHOD(put_Item)(LONG lIndex, IPage *pPage)
 	{
 		return E_NOTIMPL;

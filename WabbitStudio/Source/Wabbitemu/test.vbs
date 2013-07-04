@@ -1,14 +1,10 @@
 Set Calc = CreateObject("Wabbit.Wabbitemu")
 
+WScript.Echo "Attach now"
+
 Calc.LoadFile "C:\Users\Spencer\Documents\test.sav"
 
-'WScript.Echo UBound(Calc.LCD.Display)
-'WScript.Echo Calc.CPU.A
-Calc.Running = True
-Calc.Visible = True
-WScript.Sleep 2000
-Calc.Visible = False
-Calc.Running = False
-
-'WScript.Echo Calc.CPU.A
-
+WScript.Echo Calc.Memory.Bank(1).Index
+WScript.Echo Calc.Memory.Bank(2).Index
+WScript.Echo Calc.Memory.Bank(3).Index
+WScript.Echo Calc.Memory.Bank(4).Index

@@ -71,11 +71,6 @@ STDMETHODIMP CLabelServer::Load(BSTR bstrFileName)
 }
 
 
-STDMETHODIMP CLabel::get_Calc(IWabbitemu **ppCalc)
-{
-	return m_CalcAddress.get_Calc(ppCalc);
-}
-
 STDMETHODIMP CLabel::get_Page(IPage **ppPage)
 {
 	return m_CalcAddress.get_Page(ppPage);

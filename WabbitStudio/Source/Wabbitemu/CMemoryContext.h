@@ -13,27 +13,11 @@ public:
 		COM_INTERFACE_ENTRY(IDispatch)
 	END_COM_MAP()
 
-	STDMETHOD(get_RAM)(IPageCollection **ppPageCollection)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(get_Flash)(IPageCollection **ppPageCollection)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(get_Bank)(IPageCollection **ppPageCollection)
-	{
-		return E_NOTIMPL;
-	}
-
-	STDMETHOD(Read)(WORD wAddr, VARIANT vCount, LPVARIANT lpvResult)
-	{
-		return E_NOTIMPL;
-	}
-	STDMETHOD(Write)(WORD wAddr, VARIANT vValue)
-	{
-		return E_NOTIMPL;
-	}
+	STDMETHOD(get_RAM)(IPageCollection **ppPageCollection);
+	STDMETHOD(get_Flash)(IPageCollection **ppPageCollection);
+	STDMETHOD(get_Bank)(IPageCollection **ppPageCollection);
+	STDMETHOD(Read)(WORD wAddr, VARIANT vCount, LPVARIANT lpvResult);
+	STDMETHOD(Write)(WORD wAddr, VARIANT vValue);
 
 	HRESULT Initialize(memc *memory);
 
