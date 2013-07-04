@@ -62,6 +62,8 @@ using namespace ATL;
 #include <string>
 #include <comdef.h>
 
+#include <DbgHelp.h>
+
 #include "Wabbitemu_h.h"
 #include "resource.h"
 

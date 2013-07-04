@@ -346,6 +346,9 @@
     <ClCompile Include="CBreakpointCollection.cpp">
       <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
+    <ClCompile Include="Wabbitemu_i.c">
+      <Filter>Generated Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">

@@ -1,5 +1,6 @@
-#ifdef WITH_REVERSE
 #include "stdafx.h"
+
+#ifdef WITH_REVERSE
 
 #include "core.h"
 #include "alu_reverse.h"

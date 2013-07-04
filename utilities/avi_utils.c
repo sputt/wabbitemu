@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #ifdef WITH_AVI
 #define STRICT
 #define WIN32_LEAN_AND_MEAN

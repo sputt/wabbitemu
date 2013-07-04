@@ -41,7 +41,7 @@ public:
 	STDMETHODIMP get_CPU(IZ80 **ppZ80);
 	STDMETHODIMP get_LCD(ILCD **ppLCD);
 
-	STDMETHOD(get_Memory)(IMemoryContext *ppMemC);
+	STDMETHOD(get_Memory)(IMemoryContext **ppMemC);
 
 	STDMETHOD(get_Running)(VARIANT_BOOL *lpfRunning);
 

@@ -5,19 +5,21 @@
 
 STDMETHODIMP CCalcAddress::Initialize(IWabbitemu *pCalc, VARIANT_BOOL IsFlash, int iPage, WORD wAddress)
 {
-	pCalc->QueryInterface(IID_IWabbitemu, (LPVOID *) &m_pWabbitemu);
+	return E_NOTIMPL;
 
-	if (IsFlash == VARIANT_FALSE)
-	{
-		m_pWabbitemu->RAM(iPage, &m_pPage);
-	}
-	else
-	{
-		m_pWabbitemu->Flash(iPage, &m_pPage);
-	}
+	//pCalc->QueryInterface(IID_IWabbitemu, (LPVOID *) &m_pWabbitemu);
 
-	m_wAddress = wAddress;
-	return S_OK;
+	//if (IsFlash == VARIANT_FALSE)
+	//{
+	//	m_pWabbitemu->RAM(iPage, &m_pPage);
+	//}
+	//else
+	//{
+	//	m_pWabbitemu->Flash(iPage, &m_pPage);
+	//}
+
+	//m_wAddress = wAddress;
+	//return S_OK;
 	
 }
 

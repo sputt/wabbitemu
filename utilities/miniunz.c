@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 /*
    miniunz.c
    Version 1.1, February 14h, 2010

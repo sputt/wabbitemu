@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "guiupdate.h"
 
 #include "gui.h"
