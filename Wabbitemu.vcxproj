@@ -250,6 +250,7 @@
   <ItemGroup>
     <ClInclude Include="CBreakpoint.h" />
     <ClInclude Include="CBreakpointCollection.h" />
+    <ClInclude Include="CMemoryContext.h" />
     <ClInclude Include="core\alu.h" />
     <ClInclude Include="core\alu_reverse.h" />
     <ClInclude Include="core\control.h" />

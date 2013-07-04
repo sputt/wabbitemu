@@ -675,6 +675,9 @@
     <ClInclude Include="CBreakpoint.h">
       <Filter>Source Files\Interface\COM</Filter>
     </ClInclude>
+    <ClInclude Include="CMemoryContext.h">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\small_close.bmp">

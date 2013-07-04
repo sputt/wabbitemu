@@ -250,6 +250,10 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 		m_pKeypadObject->Initialize(&m_lpCalc->cpu);
 		m_pKeypad = m_pKeypadObject;
 
+		CComObject<CMemoryContext> *m_pMemObj = NULL;
+		CComObject<CMemoryContext>::CreateInstance(&m_pMemObj);
+		m_pMem = m_pMemObj;
+
 extern keyprog_t keygrps[256];
 extern keyprog_t keysti83[256];
 extern keyprog_t keysti86[256];
