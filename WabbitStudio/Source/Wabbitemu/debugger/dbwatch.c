@@ -2,7 +2,6 @@
 
 #include "dbwatch.h"
 #include "guidebug.h"
-#include "resource.h"
 #include "device.h"
 #include "label.h"
 #include "registry.h"

@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "guifilepreview.h"
-#include "resource.h"
 #include "lcd.h"
 #include "savestate.h"
 

@@ -5,7 +5,6 @@
 #include "lcd.h"
 #include "link.h"
 #include "calc.h"
-//#include "stdint.h"
 #include "83psehw.h"
 #include "fileutilities.h"
 

@@ -313,9 +313,6 @@
     <ClCompile Include="utilities\zip.c">
       <Filter>Source Files\Utilities\Compression</Filter>
     </ClCompile>
-    <ClCompile Include="utilities\avifile.cpp">
-      <Filter>Source Files\Utilities</Filter>
-    </ClCompile>
     <ClCompile Include="gui\guidetached.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
@@ -345,9 +342,6 @@
     </ClCompile>
     <ClCompile Include="GUI\guiresource.c">
       <Filter>Source Files\GUI</Filter>
-    </ClCompile>
-    <ClCompile Include="Wabbitemu_i.c">
-      <Filter>Generated Files</Filter>
     </ClCompile>
     <ClCompile Include="CBreakpointCollection.cpp">
       <Filter>Source Files\Interface\COM</Filter>
@@ -522,9 +516,6 @@
     <ClInclude Include="utilities\sound.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="utilities\types.h">
-      <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
     <ClInclude Include="gui\guiwizard.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -541,9 +532,6 @@
       <Filter>Header Files\Interface</Filter>
     </ClInclude>
     <ClInclude Include="interface\CZ80.h">
-      <Filter>Header Files\Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="interface\WabbitemuClassFactory.h">
       <Filter>Header Files\Interface</Filter>
     </ClInclude>
     <ClInclude Include="gui\CGdiPlusBitmap.h">
@@ -627,12 +615,6 @@
     <ClInclude Include="DBPaneContainer.h">
       <Filter>Source Files\Debugger</Filter>
     </ClInclude>
-    <ClInclude Include="reverse_info_table.h">
-      <Filter>Header Files\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="reverse_info.h">
-      <Filter>Header Files\Core</Filter>
-    </ClInclude>
     <ClInclude Include="gui\guidialog.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -641,9 +623,6 @@
     </ClInclude>
     <ClInclude Include="utilities\zip.h">
       <Filter>Header Files\Utilities\Compression</Filter>
-    </ClInclude>
-    <ClInclude Include="utilities\avifile.h">
-      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
     <ClInclude Include="Debugger\dbspriteviewer.h">
       <Filter>Header Files\Debugger</Filter>

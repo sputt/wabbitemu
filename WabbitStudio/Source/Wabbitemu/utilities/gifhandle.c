@@ -1,11 +1,7 @@
 #include "stdafx.h"
 
 #include "gif.h"
-#ifdef WINVER // ...oops
-#include "resource.h"
-#else
 #include "coretypes.h"
-#endif
 #include "lcd.h"
 #include "gifhandle.h"
 #ifdef WINVER

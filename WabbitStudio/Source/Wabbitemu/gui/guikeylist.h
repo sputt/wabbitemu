@@ -1,4 +1,4 @@
-#include "stdafx.h"
+#pragma once
 
 LRESULT CALLBACK KeysListProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 #define REFRESH_LISTVIEW 1

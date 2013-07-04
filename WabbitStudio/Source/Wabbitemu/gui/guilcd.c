@@ -9,7 +9,6 @@
 #include "gifhandle.h"
 #include "guioptions.h"
 #include "link.h"
-#include "resource.h"
 #include "savestate.h"
 #include "SendFilesWindows.h"
 #include "guifilepreview.h"

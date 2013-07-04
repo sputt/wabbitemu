@@ -1,19 +1,12 @@
 #pragma once
 
-#include "Wabbitemu_h.h"
 #include "core.h"
 
 class CPage :
-	public IDispatchImpl<IPage, &IID_IPage, &LIBID_WabbitemuLib>,
-	public CComObjectRootEx<CComMultiThreadModel>
+	public CComObjectRootEx<CComMultiThreadModel>,
+	public IDispatchImpl<IPage>
 {
 public:
-	CPage()
-	{
-		BOOL m_fIsFlash = FALSE;
-		int m_iPage = -1;
-	};
-
 	BEGIN_COM_MAP(CPage)
 		COM_INTERFACE_ENTRY(IDispatch)
 		COM_INTERFACE_ENTRY(IPage)

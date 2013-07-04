@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Wabbitemu_h.h"
 #include "core.h"
 
 class CPio : IPio

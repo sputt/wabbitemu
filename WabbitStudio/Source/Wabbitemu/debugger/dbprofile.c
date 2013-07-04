@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "dbprofile.h"
 #include "calc.h"
-#include "resource.h"
 #include "dbcommon.h"
 
 LRESULT CALLBACK ProfileDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {

@@ -8,7 +8,6 @@
 #include "calc.h"
 #include "disassemble.h"
 #include "dbcommon.h"
-#include "resource.h"
 #include "print.h"
 
 #define COLUMN_X_OFFSET 7

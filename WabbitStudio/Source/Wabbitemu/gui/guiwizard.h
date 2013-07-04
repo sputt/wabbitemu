@@ -2,8 +2,6 @@
 #define GUIWIZARD_H
 #include "calc.h"
 
-#include "calc.h"
-
 INT_PTR CALLBACK SetupStartProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK SetupTypeProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK SetupOSProc(HWND, UINT, WPARAM, LPARAM);

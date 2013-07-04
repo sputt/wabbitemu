@@ -7,8 +7,6 @@
 
 struct tagCALC;
 
-#include "resource.h"
-
 #include "CBreakpointCollection.h"
 
 class ATL_NO_VTABLE CWabbitemu :

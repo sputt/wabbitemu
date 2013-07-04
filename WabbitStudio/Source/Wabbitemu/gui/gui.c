@@ -1,8 +1,6 @@
 #include "stdafx.h"
 
 #include "gui.h"
-#include "resource.h"
-#include "uxtheme.h"
 
 #include "core.h"
 #include "calc.h"
@@ -50,7 +48,6 @@
 #include "sendfileswindows.h"
 #include "state.h"
 #include "avi_utils.h"
-#include "dbghelp.h"
 #include "ftp.h"
 
 CWabbitemuModule _Module;

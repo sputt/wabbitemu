@@ -4,7 +4,6 @@
 #include "guikeylist.h"
 #include "guibuttons.h"
 #include "gui.h"
-#include "resource.h"
 
 extern HIMAGELIST hImageList;
 extern HINSTANCE g_hInst;

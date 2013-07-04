@@ -13,7 +13,6 @@
 #include "dbreg.h"
 #include "expandpane.h"
 #include "registry.h"
-#include "resource.h"
 #include "fileutilities.h"
 #include "gifhandle.h"
 

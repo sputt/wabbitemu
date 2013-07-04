@@ -8,7 +8,6 @@
 
 #include "calc.h"
 #include "guispeed.h"
-#include "resource.h"
 
 #define MIN_SPEED 1
 
