@@ -1,3 +1,5 @@
+#include "stdafx.h"
+
 #include "guiskin.h"
 
 #include "gui.h"

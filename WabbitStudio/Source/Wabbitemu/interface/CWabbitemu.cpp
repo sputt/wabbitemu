@@ -9,6 +9,8 @@
 #include "calc.h"
 #include "registry.h"
 
+#include "CMemoryContext.h"
+
 #define WM_ADDFRAME	(WM_USER+5)
 #define WM_REMOVEFRAME (WM_USER+6)
 
@@ -105,9 +107,27 @@ STDMETHODIMP CWabbitemu::get_CPU(IZ80 **ppZ80)
 	return m_pZ80->QueryInterface(IID_IZ80,(LPVOID *) ppZ80);
 }
 
+STDMETHODIMP CWabbitemu::get_Memory(IMemoryContext **ppContext)
+{
+	return E_NOTIMPL;
+}
+
+
 STDMETHODIMP CWabbitemu::get_LCD(ILCD **ppLCD)
 {
 	return m_pLCD->QueryInterface(IID_ILCD,(LPVOID *) ppLCD);
+}
+
+STDMETHODIMP CWabbitemu::Run()
+{
+	m_lpCalc->running = TRUE;
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::Break()
+{
+	m_lpCalc->running = FALSE;
+	return S_OK;
 }
 
 STDMETHODIMP CWabbitemu::Step()
@@ -144,24 +164,6 @@ STDMETHODIMP CWabbitemu::get_Breakpoints(IBreakpointCollection **ppBC)
 	return S_OK;
 }
 */
-
-STDMETHODIMP CWabbitemu::RAM(int Index, IPage **ppPage)
-{
-	CPage *pPage = new CComObject<CPage>();
-	pPage->AddRef();
-	pPage->Initialize(&m_lpCalc->mem_c, FALSE, Index);
-	*ppPage = (IPage *) pPage;
-	return S_OK;
-}
-
-STDMETHODIMP CWabbitemu::Flash(int Index, IPage **ppPage)
-{
-	CPage *pPage = new CComObject<CPage>();
-	pPage->AddRef();
-	pPage->Initialize(&m_lpCalc->mem_c, TRUE, Index);
-	*ppPage = (IPage *) pPage;
-	return S_OK;
-}
 
 /*
 STDMETHODIMP CWabbitemu::Read(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult)
@@ -311,7 +313,7 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 			MultiByteToWideChar(CP_ACP, 0, applist.apps[i].name, -1, wszAppName, ARRAYSIZE(wszAppName));
 			pvData[i].Name = SysAllocString((OLECHAR *) wszAppName);
 #endif
-			this->Flash(applist.apps[i].page, &pvData[i].Page);
+			//this->Flash(applist.apps[i].page, &pvData[i].Page);
 			pvData[i].PageCount = applist.apps[i].page_count;
 		}
 
@@ -510,12 +512,5 @@ STDMETHODIMP CWabbitemu::get_Labels(ILabelServer **ppLabelServer)
 STDMETHODIMP CWabbitemu::get_Running(VARIANT_BOOL *lpfRunning)
 {
 	*lpfRunning = (m_lpCalc->running == TRUE) ? VARIANT_TRUE : VARIANT_FALSE;
-	return S_OK;
-}
-STDMETHODIMP CWabbitemu::put_Running(VARIANT_BOOL fRunning)
-{
-	m_lpCalc->running = (fRunning == VARIANT_TRUE) ? TRUE : FALSE;
-
-
 	return S_OK;
 }

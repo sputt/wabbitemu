@@ -1,9 +1,7 @@
-#ifdef WITH_REVERSE
 #include "stdafx.h"
 
+#ifdef WITH_REVERSE
 #include "core.h"
-#include "reverse_info.h"
-
 //ALU.c
 
 void adc_hl_reg16_reverse_info(CPU_t *cpu) {
