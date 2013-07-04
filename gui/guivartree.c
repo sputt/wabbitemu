@@ -11,7 +11,6 @@
 #include "gui.h"
 
 #include "exportvar.h"
-#include "resource.h"
 
 static HWND g_hwndVarTree;
 extern HINSTANCE g_hInst;

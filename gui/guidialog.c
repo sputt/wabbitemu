@@ -3,7 +3,6 @@
 #include "gui.h"
 #include "guidialog.h"
 #include "fileutilities.h"
-#include "resource.h"
 #include "exportvar.h"
 #include "ftp.h"
 #include "guiupdate.h"

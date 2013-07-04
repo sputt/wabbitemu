@@ -6,7 +6,6 @@
 #include "gui.h"
 #include "fileutilities.h"
 #include "registry.h"
-#include "resource.h"
 #include "exportvar.h"
 #include "osdownloadcallback.h"
 

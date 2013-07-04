@@ -63,6 +63,7 @@ using namespace ATL;
 #include <comdef.h>
 
 #include "Wabbitemu_h.h"
+#include "resource.h"
 
 namespace std
 {

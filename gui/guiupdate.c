@@ -5,7 +5,6 @@
 #include "guiwizard.h"
 #include "fileutilities.h"
 #include "registry.h"
-#include "resource.h"
 #include "guiresource.h"
 
 extern HINSTANCE g_hInst;

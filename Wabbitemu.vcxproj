@@ -145,10 +145,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='WabbitComp Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="utilities\avifile.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="utilities\avi_utils.c" />
     <ClCompile Include="utilities\expandpane.c" />
     <ClCompile Include="utilities\exportvar.c" />
@@ -245,7 +241,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="utilities\zpipe.c" />
-    <ClCompile Include="Wabbitemu_i.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CBreakpoint.h" />
@@ -326,11 +321,7 @@
     <ClInclude Include="interface\CWabbitemu.h" />
     <ClInclude Include="interface\CZ80.h" />
     <ClInclude Include="interface\state.h" />
-    <ClInclude Include="interface\WabbitemuClassFactory.h" />
-    <ClInclude Include="reverse_info.h" />
-    <ClInclude Include="reverse_info_table.h" />
     <ClInclude Include="stdafx.h" />
-    <ClInclude Include="utilities\avifile.h" />
     <ClInclude Include="utilities\avi_utils.h" />
     <ClInclude Include="utilities\bcalls.h" />
     <ClInclude Include="utilities\expandpane.h" />
@@ -349,7 +340,6 @@
     <ClInclude Include="utilities\SendFile.h" />
     <ClInclude Include="utilities\sendfileswindows.h" />
     <ClInclude Include="utilities\sound.h" />
-    <ClInclude Include="utilities\types.h" />
     <ClInclude Include="utilities\unzip.h" />
     <ClInclude Include="utilities\var.h" />
     <ClInclude Include="utilities\zconf.h" />
@@ -669,7 +659,6 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <ForcedIncludeFiles>stdafx.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <StringPooling>
       </StringPooling>
       <FunctionLevelLinking>true</FunctionLevelLinking>

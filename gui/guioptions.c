@@ -5,7 +5,6 @@
 #include "gui.h"
 #include "guiskin.h"
 #include "gif.h"
-#include "resource.h"
 #include "calc.h"
 #include "displayoptionstest.h"
 #include "lcd.h"

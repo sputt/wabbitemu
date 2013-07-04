@@ -1,7 +1,5 @@
 #include "stdafx.h"
 
-#include "Wabbitemu_h.h"
-#include "WabbitemuClassFactory.h"
 #include "calc.h"
 #include "gui.h"
 #include "Registry.h"

@@ -5,7 +5,6 @@
 #include "print.h"
 #include "dbreg.h"
 #include "dbcommon.h"
-#include "resource.h"
 #include "guicontext.h"
 #include "guidebug.h"
 

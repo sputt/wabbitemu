@@ -4,7 +4,6 @@
 #include "guibuttons.h"
 #include "guicutout.h"
 #include "CGdiPlusBitmap.h"
-#include "resource.h"
 
 extern BOOL silent_mode;
 extern HINSTANCE g_hInst;

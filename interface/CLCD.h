@@ -1,11 +1,10 @@
 #pragma once
 
 #include "lcd.h"
-#include "Wabbitemu_h.h"
 
 class CLCD :
 	public CComObjectRootEx<CComObjectThreadModel>,
-	public IDispatchImpl<ILCD, &__uuidof(ILCD)>
+	public IDispatchImpl<ILCD>
 {
 public:
 	BEGIN_COM_MAP(CLCD)

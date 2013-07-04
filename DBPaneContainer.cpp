@@ -1,7 +1,6 @@
 #include "stdafx.h"
 
 #include "guidebug.h"
-#include "resource.h"
 
 static INT_PTR CALLBACK RegistersDlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {

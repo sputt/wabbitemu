@@ -5,7 +5,6 @@
 #include "guiskin.h"
 #include "guibuttons.h"
 #include "guicutout.h"
-#include "resource.h"
 
 #include "CGdiPlusBitmap.h"
 

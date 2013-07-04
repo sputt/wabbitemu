@@ -1,9 +1,9 @@
-#include "dbspriteviewer.h"
+#include "stdafx.h"
 
+#include "dbspriteviewer.h"
 #include "dbcommon.h"
 #include "guidebug.h"
 #include "dbwatch.h"
-#include "resource.h"
 
 INT_PTR CALLBACK SpriteViewerDialogProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam)
 {

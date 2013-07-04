@@ -2,8 +2,6 @@
 
 #include "calc.h"
 #include "guisavestate.h"
-#include "resource.h"
-
 
 extern HINSTANCE g_hInst;
 extern BITMAPINFO *bi;

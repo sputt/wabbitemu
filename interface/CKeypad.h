@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Wabbitemu_h.h"
 #include "keys.h"
 
 typedef Calc_Key KEYS;
