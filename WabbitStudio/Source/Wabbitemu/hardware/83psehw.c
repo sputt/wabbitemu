@@ -195,7 +195,7 @@ void port5_83pse(CPU_t *cpu, device_t *dev) {
 		cpu->bus = cpu->mem_c->banks[3].page;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		change_page(cpu, 3, (cpu->bus & 0x7f) % cpu->mem_c->ram_pages, TRUE);
+		change_page(cpu->mem_c, 3, (cpu->bus & 0x7f) % cpu->mem_c->ram_pages, TRUE);
 		cpu->output = FALSE;
 	}
 }
@@ -207,9 +207,9 @@ void port6_83pse(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		BOOL ram = (cpu->bus >> 7) & 1;
 		if (ram)
-			change_page(cpu, 1, (cpu->bus & 0x7f) % cpu->mem_c->ram_pages, ram);
+			change_page(cpu->mem_c, 1, (cpu->bus & 0x7f) % cpu->mem_c->ram_pages, ram);
 		else
-			change_page(cpu, 1, (cpu->bus & 0x7f) % cpu->mem_c->flash_pages, ram);
+			change_page(cpu->mem_c, 1, (cpu->bus & 0x7f) % cpu->mem_c->flash_pages, ram);
 		cpu->output = FALSE;
 	}
 }
@@ -221,9 +221,9 @@ void port7_83pse(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		BOOL ram = (cpu->bus >> 7) & 1;
 		if (ram)
-			change_page(cpu, 2, (cpu->bus & 0x7f) % cpu->mem_c->ram_pages, ram);
+			change_page(cpu->mem_c, 2, (cpu->bus & 0x7f) % cpu->mem_c->ram_pages, ram);
 		else
-			change_page(cpu, 2, (cpu->bus & 0x7f) % cpu->mem_c->flash_pages, ram);
+			change_page(cpu->mem_c, 2, (cpu->bus & 0x7f) % cpu->mem_c->flash_pages, ram);
 		cpu->output = FALSE;
 	}
 }

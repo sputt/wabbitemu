@@ -330,6 +330,27 @@ interface IBreakpointCollection : IDispatch
 	HRESULT Remove([in] IBreakpoint *Breakpoint);
 }
 
+
+
+[
+	uuid(E41E6D44-20C6-42FA-885B-388879187373),
+	dual
+]
+interface IPageCollection : IDispatch
+{
+	[propget]
+	HRESULT Count([out, retval] LONG *Count);
+
+	[id(DISPID_VALUE), propget]
+	HRESULT Item([in] LONG Index, [out, retval] IPage **Item);
+
+	[propput]
+	HRESULT Item([in] LONG Index, [in] IPage *Item);
+
+	[id(DISPID_NEWENUM), propget]
+	HRESULT _NewEnum([out, retval] IUnknown** ppEnum);	
+}
+
 [
 	version(1.0),
 	uuid(74950913-4DC9-4F68-AD0A-E5B5A4E0294D),
@@ -339,13 +360,13 @@ interface IBreakpointCollection : IDispatch
 interface IMemoryContext : IDispatch
 {
 	[propget]
-	HRESULT RAM([out, retval] SAFEARRAY(IPage *) *RAM);
+	HRESULT RAM([out, retval] IPageCollection **RAM);
 
 	[propget]
-	HRESULT Flash([out, retval] SAFEARRAY(IPage *) *Flash);
+	HRESULT Flash([out, retval] IPageCollection **Flash);
 
 	[propget]
-	HRESULT Bank([out, retval] SAFEARRAY(IPage *) *Flash);
+	HRESULT Bank([out, retval] IPageCollection **Bank);
 
 	[helpstring("Read from memory")]
 	HRESULT Read([in] WORD Address, [in, optional] VARIANT Count, [out, retval] VARIANT *Value);

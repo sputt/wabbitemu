@@ -349,6 +349,12 @@
     <ClCompile Include="Wabbitemu_i.c">
       <Filter>Generated Files</Filter>
     </ClCompile>
+    <ClCompile Include="CMemoryContext.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="CPageCollection.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -658,6 +664,18 @@
       <Filter>Source Files\Interface\COM</Filter>
     </ClInclude>
     <ClInclude Include="CMemoryContext.h">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="CPageCollection.h">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="VariantAdapt.h">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="Collection.h">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="CBank.h">
       <Filter>Source Files\Interface\COM</Filter>
     </ClInclude>
   </ItemGroup>

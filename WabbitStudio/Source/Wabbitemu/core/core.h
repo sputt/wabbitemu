@@ -317,7 +317,7 @@ BOOL check_mem_read_break(memc *mem, waddr_t waddr);
 BOOL check_mem_write_break(memc *mem, waddr_t waddr);
 
 BOOL is_priveleged_page(CPU_t *cpu);
-void change_page(CPU_t *cpu, int bank, char page, BOOL ram);
+void change_page(memc *mem, int bank, char page, BOOL ram);
 void update_bootmap_pages(memc *mem_c);
 
 int tc_init(timerc*, int);

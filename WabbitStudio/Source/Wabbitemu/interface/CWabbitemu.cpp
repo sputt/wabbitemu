@@ -254,16 +254,19 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 
 		CComObject<CMemoryContext> *m_pMemObj = NULL;
 		CComObject<CMemoryContext>::CreateInstance(&m_pMemObj);
+
+		m_pMemObj->Initialize(m_lpCalc->cpu.mem_c);
+
 		m_pMem = m_pMemObj;
 
-extern keyprog_t keygrps[256];
-extern keyprog_t keysti83[256];
-extern keyprog_t keysti86[256];
-	if (m_lpCalc->model == TI_86 || m_lpCalc->model == TI_85) {
-		memcpy(keygrps, keysti86, sizeof(keyprog_t) * 256);
-	} else {
-		memcpy(keygrps, keysti83, sizeof(keyprog_t) * 256);
-	}
+		extern keyprog_t keygrps[256];
+		extern keyprog_t keysti83[256];
+		extern keyprog_t keysti86[256];
+		if (m_lpCalc->model == TI_86 || m_lpCalc->model == TI_85) {
+			memcpy(keygrps, keysti86, sizeof(keyprog_t) * 256);
+		} else {
+			memcpy(keygrps, keysti83, sizeof(keyprog_t) * 256);
+		}
 	}
 	return S_OK;
 }
