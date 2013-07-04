@@ -3,30 +3,11 @@
 #include "CCalcAddress.h"
 
 
-STDMETHODIMP CCalcAddress::Initialize(IWabbitemu *pCalc, VARIANT_BOOL IsFlash, int iPage, WORD wAddress)
+STDMETHODIMP CCalcAddress::Initialize(IPage *pPage, WORD wAddress)
 {
-	return E_NOTIMPL;
-
-	//pCalc->QueryInterface(IID_IWabbitemu, (LPVOID *) &m_pWabbitemu);
-
-	//if (IsFlash == VARIANT_FALSE)
-	//{
-	//	m_pWabbitemu->RAM(iPage, &m_pPage);
-	//}
-	//else
-	//{
-	//	m_pWabbitemu->Flash(iPage, &m_pPage);
-	//}
-
-	//m_wAddress = wAddress;
-	//return S_OK;
-	
-}
-
-
-STDMETHODIMP CCalcAddress::get_Calc(IWabbitemu **ppCalc)
-{
-	return m_pWabbitemu->QueryInterface(IID_IWabbitemu, (LPVOID *) ppCalc);
+	m_pPage = pPage;
+	m_wAddress = wAddress;
+	return S_OK;
 }
 
 STDMETHODIMP CCalcAddress::get_Page(IPage **ppPage)

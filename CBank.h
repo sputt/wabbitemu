@@ -39,7 +39,7 @@ public:
 		hr = pPage->get_IsFlash(&isFlash);
 		ATLENSURE_RETURN_HR(SUCCEEDED(hr), hr);
 
-		//change_page(m_mem, lIndex, index, (isFlash == VARIANT_FALSE) : TRUE : FALSE);
+		change_page(m_mem, lIndex - 1, index, (isFlash == VARIANT_FALSE) ? TRUE : FALSE);
 		return S_OK;
 	}
 

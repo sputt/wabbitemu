@@ -13,8 +13,10 @@
 #include "sound.h"
 #include "DropTarget.h"
 #include "dbbreakpoints.h"
-#include "CWabbitemu.h"
+
+class CWabbitemu;
 #endif
+
 
 #include "label.h"
 #include "savestate.h"

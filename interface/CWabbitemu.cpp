@@ -24,15 +24,19 @@ HRESULT CWabbitemu::FinalConstruct()
 
 	m_lpCalc->pWabbitemu = this;
 
-	CComObject<CBreakpointCollection>::CreateInstance(&m_BreakpointCollection);
-	m_BreakpointCollection->AddRef();
-
-	m_BreakpointCollection->Initialize(m_lpCalc);
+	CComObject<CBreakpointCollection>::CreateInstance(&m_pBreakpointCollObj);
+	m_pBreakpointCollObj->AddRef();
+	m_pBreakpointCollObj->Initialize(m_lpCalc);
 
 	m_idTimer = SetTimer(NULL, 0, TPF, TimerProc);
 	//CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, &m_dwThreadId);
 	return S_OK;
 };
+
+void CWabbitemu::FinalRelease()
+{
+	m_pBreakpointCollObj->Release();
+}
 
 STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 {
@@ -62,7 +66,7 @@ void CWabbitemu::Fire_OnBreakpoint(waddr *pwaddr)
 {
 	CComPtr<IBreakpoint> pBreakpoint;
 	// Make sure that the breakpoint came from our breakpoint collection
-	HRESULT hr = m_BreakpointCollection->LookupBreakpoint(*pwaddr, &pBreakpoint);
+	HRESULT hr = m_pBreakpointCollObj->LookupBreakpoint(*pwaddr, &pBreakpoint);
 	if (hr != S_OK)
 	{
 		return;
@@ -109,7 +113,7 @@ STDMETHODIMP CWabbitemu::get_CPU(IZ80 **ppZ80)
 
 STDMETHODIMP CWabbitemu::get_Memory(IMemoryContext **ppContext)
 {
-	return E_NOTIMPL;
+	return m_pMem->QueryInterface(ppContext);
 }
 
 
@@ -144,7 +148,7 @@ STDMETHODIMP CWabbitemu::StepOver()
 
 STDMETHODIMP CWabbitemu::get_Breakpoints(IBreakpointCollection **ppBC)
 {
-	return m_BreakpointCollection->QueryInterface(ppBC);
+	return m_pBreakpointCollObj->QueryInterface(ppBC);
 }
 	
 /*IPage *pPage, WORD wAddress)

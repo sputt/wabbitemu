@@ -234,10 +234,7 @@ interface IWabbitemu;
 ]
 interface ICalcAddress : IDispatch
 {
-	HRESULT Initialize([in] IWabbitemu *Calc, [in] VARIANT_BOOL IsFlash, [in] int Page, [in] WORD Address);
-	// Properties
-	[propget, helpstring("Calculator this address is on")]
-	HRESULT Calc([out, retval] IWabbitemu **Calc);
+	HRESULT Initialize([in] IPage *Page, [in] WORD Address);
 
 	[propget, helpstring("Page this address is on")]
 	HRESULT Page([out, retval] IPage **Page);

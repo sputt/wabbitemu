@@ -17,9 +17,8 @@ public:
 		COM_INTERFACE_ENTRY(ICalcAddress)
 	END_COM_MAP()
 
-	STDMETHOD(Initialize)(IWabbitemu *pCalc, VARIANT_BOOL IsFlash, int iPage, WORD wAddress);
+	STDMETHOD(Initialize)(IPage *pPage, WORD wAddress);
 
-	STDMETHOD(get_Calc)(IWabbitemu **ppWabbitemu);
 	STDMETHOD(get_Page)(IPage **ppPage);
 	STDMETHOD(get_Address)(LPWORD lpwAddress);
 
@@ -44,7 +43,6 @@ public:
 	}
 
 private:
-	CComPtr<IWabbitemu> m_pWabbitemu;
 	CComPtr<IPage> m_pPage;
 	WORD m_wAddress;
 };
