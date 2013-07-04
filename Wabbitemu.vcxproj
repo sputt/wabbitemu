@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CBreakpointCollection.cpp" />
+    <ClCompile Include="CMemoryContext.cpp" />
     <ClCompile Include="core\alu.c" />
     <ClCompile Include="core\alu_reverse.c" />
     <ClCompile Include="core\control.c" />
@@ -69,6 +70,7 @@
     <ClCompile Include="core\indexcb.c" />
     <ClCompile Include="core\indexcb_reverse.c" />
     <ClCompile Include="core\reverse_info.c" />
+    <ClCompile Include="CPageCollection.cpp" />
     <ClCompile Include="DBPaneContainer.cpp" />
     <ClCompile Include="debugger\dbbreakpoints.c" />
     <ClCompile Include="debugger\dbcommon.c" />
@@ -251,9 +253,11 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CBank.h" />
     <ClInclude Include="CBreakpoint.h" />
     <ClInclude Include="CBreakpointCollection.h" />
     <ClInclude Include="CMemoryContext.h" />
+    <ClInclude Include="Collection.h" />
     <ClInclude Include="core\alu.h" />
     <ClInclude Include="core\alu_reverse.h" />
     <ClInclude Include="core\control.h" />
@@ -265,6 +269,7 @@
     <ClInclude Include="core\indexcb_reverse.h" />
     <ClInclude Include="core\optable.h" />
     <ClInclude Include="core\optable_reverse.h" />
+    <ClInclude Include="CPageCollection.h" />
     <ClInclude Include="DBPaneContainer.h" />
     <ClInclude Include="debugger\dbbreakpoints.h" />
     <ClInclude Include="debugger\dbcommon.h" />
@@ -353,6 +358,7 @@
     <ClInclude Include="utilities\zconf.h" />
     <ClInclude Include="utilities\zip.h" />
     <ClInclude Include="utilities\zlib.h" />
+    <ClInclude Include="VariantAdapt.h" />
     <ClInclude Include="Wabbitemu_h.h" />
   </ItemGroup>
   <ItemGroup>

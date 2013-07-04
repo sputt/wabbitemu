@@ -248,9 +248,9 @@ static void port6(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		BOOL ram = (cpu->bus >> 6) & 1;
 		if (ram)
-			change_page(cpu, 1, (cpu->bus & 0x1f) % cpu->mem_c->ram_pages, ram);
+			change_page(cpu->mem_c, 1, (cpu->bus & 0x1f) % cpu->mem_c->ram_pages, ram);
 		else
-			change_page(cpu, 1, (cpu->bus & 0x1f) % cpu->mem_c->flash_pages, ram);
+			change_page(cpu->mem_c, 1, (cpu->bus & 0x1f) % cpu->mem_c->flash_pages, ram);
 		cpu->output = FALSE;
 	}
 }
@@ -262,9 +262,9 @@ static void port7(CPU_t *cpu, device_t *dev) {
 	} else if (cpu->output) {
 		BOOL ram = (cpu->bus >> 6) & 1;
 		if (ram)
-			change_page(cpu, 2, (cpu->bus & 0x1f) % cpu->mem_c->ram_pages, ram);
+			change_page(cpu->mem_c, 2, (cpu->bus & 0x1f) % cpu->mem_c->ram_pages, ram);
 		else
-			change_page(cpu, 2, (cpu->bus & 0x1f) % cpu->mem_c->flash_pages, ram);
+			change_page(cpu->mem_c, 2, (cpu->bus & 0x1f) % cpu->mem_c->flash_pages, ram);
 		cpu->output = FALSE;
 	}
 }

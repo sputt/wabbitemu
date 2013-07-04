@@ -263,20 +263,20 @@ static BOOL is_allowed_exec(CPU_t *cpu) {
 	}
 }
 
-void change_page(CPU_t *cpu, int bank, char page, BOOL ram) {
-	cpu->mem_c->normal_banks[bank].ram			= ram;
+void change_page(memc *mem, int bank, char page, BOOL ram) {
+	mem->normal_banks[bank].ram			= ram;
 	if (ram) {
-		cpu->mem_c->normal_banks[bank].page		= page;
-		cpu->mem_c->normal_banks[bank].addr		= cpu->mem_c->ram + (page * PAGE_SIZE);
-		cpu->mem_c->normal_banks[bank].read_only	= FALSE;
-		cpu->mem_c->normal_banks[bank].no_exec		= FALSE;
+		mem->normal_banks[bank].page		= page;
+		mem->normal_banks[bank].addr		= mem->ram + (page * PAGE_SIZE);
+		mem->normal_banks[bank].read_only	= FALSE;
+		mem->normal_banks[bank].no_exec		= FALSE;
 	} else {
-		cpu->mem_c->normal_banks[bank].page		= page;
-		cpu->mem_c->normal_banks[bank].addr		= cpu->mem_c->flash + (page * PAGE_SIZE);
-		cpu->mem_c->normal_banks[bank].read_only	= page == cpu->mem_c->flash_pages - 1;
-		cpu->mem_c->normal_banks[bank].no_exec		= FALSE;
+		mem->normal_banks[bank].page		= page;
+		mem->normal_banks[bank].addr		= mem->flash + (page * PAGE_SIZE);
+		mem->normal_banks[bank].read_only	= page == mem->flash_pages - 1;
+		mem->normal_banks[bank].no_exec		= FALSE;
 	}
-	update_bootmap_pages(cpu->mem_c);
+	update_bootmap_pages(mem);
 }
 
 void update_bootmap_pages(memc *mem_c) {
@@ -309,7 +309,7 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 	//then the page is changed to page 0. why? who the fuck knows
 	if (!cpu->mem_c->hasChangedPage0 && !bank->ram && (bank_num == 1 || (cpu->mem_c->boot_mapped && bank_num == 2)))
 	{
-		change_page(cpu, 0, 0, FALSE);
+		change_page(cpu->mem_c, 0, 0, FALSE);
 		cpu->mem_c->hasChangedPage0 = TRUE;
 	}
 	if (!is_allowed_exec(cpu)) {
