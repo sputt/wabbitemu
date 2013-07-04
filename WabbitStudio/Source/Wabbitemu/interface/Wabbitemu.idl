@@ -330,6 +330,31 @@ interface IBreakpointCollection : IDispatch
 	HRESULT Remove([in] IBreakpoint *Breakpoint);
 }
 
+[
+	version(1.0),
+	uuid(74950913-4DC9-4F68-AD0A-E5B5A4E0294D),
+	dual,
+	pointer_default(unique)
+]
+interface IMemoryContext : IDispatch
+{
+	[propget]
+	HRESULT RAM([out, retval] SAFEARRAY(IPage *) *RAM);
+
+	[propget]
+	HRESULT Flash([out, retval] SAFEARRAY(IPage *) *Flash);
+
+	[propget]
+	HRESULT Bank([out, retval] SAFEARRAY(IPage *) *Flash);
+
+	[helpstring("Read from memory")]
+	HRESULT Read([in] WORD Address, [in, optional] VARIANT Count, [out, retval] VARIANT *Value);
+
+	[helpstring("Write to memory")]
+	HRESULT Write([in] WORD Address, [in] VARIANT Value);
+};
+
+
 const int DISPID_BREAKPOINT = 1;
 
 [
@@ -359,23 +384,20 @@ interface IWabbitemu : IDispatch
 	[propget, helpstring("The Z80 CPU of the calculator.")] 
 	HRESULT CPU([out, retval] IZ80 **ppZ80);
 
-	[helpstring("All RAM pages on the calculator.")] 
-	HRESULT RAM([in] int Index, [out, retval] IPage **ppPage);
-
-	[helpstring("All flash pages on the calculator.")] 
-	HRESULT Flash([in] int Index, [out, retval] IPage **ppPage);
+	[propget, helpstring("The memory of the calculator")]
+	HRESULT Memory([out, retval] IMemoryContext **Memory);
 
 	[propget, helpstring("The LCD device of the calculator.")]
 	HRESULT LCD([out, retval] ILCD **ppLCD);
 
 	[propget, helpstring("Whether or not the calculator is running.")]
 	HRESULT Running([out, retval] VARIANT_BOOL *lpfRunning);
-	[propput, helpstring("Whether or not the calculator is running.")]
-	HRESULT Running([in] VARIANT_BOOL fRunning);
 
 	[helpstring("Execute a single instruction")]
 	HRESULT Step();
 	HRESULT StepOver();
+	HRESULT Run();
+	HRESULT Break();
 
 	[propget, helpstring("Collection of execution breakpoints")]
 	HRESULT Breakpoints([out, retval] IBreakpointCollection **Breakpoints);

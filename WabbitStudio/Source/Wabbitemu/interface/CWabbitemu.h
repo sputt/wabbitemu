@@ -43,14 +43,14 @@ public:
 	STDMETHODIMP get_CPU(IZ80 **ppZ80);
 	STDMETHODIMP get_LCD(ILCD **ppLCD);
 
-	STDMETHODIMP RAM(int Index, IPage **ppPage);
-	STDMETHODIMP Flash(int Index, IPage **ppPage);
+	STDMETHOD(get_Memory)(IMemoryContext *ppMemC);
 
 	STDMETHOD(get_Running)(VARIANT_BOOL *lpfRunning);
-	STDMETHOD(put_Running)(VARIANT_BOOL fRunning);
 
 	STDMETHODIMP Step();
 	STDMETHODIMP StepOver();
+	STDMETHOD(Run)();
+	STDMETHOD(Break)();
 
 	STDMETHOD(get_Breakpoints)(IBreakpointCollection **pBC);
 
@@ -70,6 +70,7 @@ private:
 	VARIANT_BOOL m_fVisible;
 	struct tagCALC *m_lpCalc;
 	CComPtr<IZ80> m_pZ80;
+	CComPtr<IMemoryContext> m_pMem;
 	CComPtr<ILCD> m_pLCD;
 	CComPtr<IKeypad> m_pKeypad;
 	HWND m_hwnd;
