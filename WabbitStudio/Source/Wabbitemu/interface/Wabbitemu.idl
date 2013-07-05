@@ -330,22 +330,27 @@ interface IBreakpointCollection : IDispatch
 
 
 [
+	object,
 	uuid(E41E6D44-20C6-42FA-885B-388879187373),
-	dual
+    odl, 
+    dual,
+    oleautomation,
+    nonextensible,
+    pointer_default(unique)
 ]
 interface IPageCollection : IDispatch
 {
 	[propget]
 	HRESULT Count([out, retval] LONG *Count);
 
-	[id(DISPID_VALUE), propget]
+	[propget, id(DISPID_VALUE)]
 	HRESULT Item([in] LONG Index, [out, retval] IPage **Item);
 
 	[propput]
 	HRESULT Item([in] LONG Index, [in] IPage *Item);
 
-	[id(DISPID_NEWENUM), propget]
-	HRESULT _NewEnum([out, retval] IUnknown** ppEnum);	
+	[propget, restricted, hidden, id(DISPID_NEWENUM)]
+	HRESULT _NewEnum([out, retval] IUnknown** ppEnum);
 }
 
 [
@@ -370,6 +375,8 @@ interface IMemoryContext : IDispatch
 
 	[helpstring("Write to memory")]
 	HRESULT Write([in] WORD Address, [in] VARIANT Value);
+
+	//HRESULT CreateAddress([in] WORD Address, [in, optional] VARIANT IsFlash, [in, optional] VARIANT PageIndex);
 };
 
 
@@ -383,7 +390,7 @@ dispinterface DWabbitemuEvents
 {
 properties:
 methods:
-	[id(DISPID_BREAKPOINT)] HRESULT Breakpoint(IBreakpoint *Breakpoint);
+	[id(DISPID_BREAKPOINT)] HRESULT Breakpoint(IWabbitemu *Calc, IBreakpoint *Breakpoint);
 };
 
 [

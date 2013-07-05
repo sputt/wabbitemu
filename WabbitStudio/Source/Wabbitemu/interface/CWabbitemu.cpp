@@ -89,7 +89,9 @@ void CWabbitemu::Fire_OnBreakpoint(waddr *pwaddr)
 			V_VT(&vBreakpoint) = VT_DISPATCH;
 			pBreakpoint->QueryInterface(&V_DISPATCH(&vBreakpoint));
 
-			HRESULT hr = drv.Invoke1(DISPID_BREAKPOINT, &vBreakpoint);
+			CComVariant vWabbit((IDispatch *) this);
+
+			HRESULT hr = drv.Invoke2(DISPID_BREAKPOINT, &vWabbit, &vBreakpoint);
 			if (FAILED(hr))
 			{
 				OutputDebugString(_T("Failed to invoke\n"));
