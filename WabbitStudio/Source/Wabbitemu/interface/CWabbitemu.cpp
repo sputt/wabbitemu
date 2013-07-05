@@ -302,6 +302,7 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 	pTypeLib->Release();
 
 	applist_t applist;
+	ZeroMemory(&applist, sizeof(applist_t));
 	state_build_applist(&m_lpCalc->cpu, &applist);
 
 	SAFEARRAYBOUND sab = {0};
@@ -322,7 +323,10 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 			MultiByteToWideChar(CP_ACP, 0, applist.apps[i].name, -1, wszAppName, ARRAYSIZE(wszAppName));
 			pvData[i].Name = SysAllocString((OLECHAR *) wszAppName);
 #endif
-			//this->Flash(applist.apps[i].page, &pvData[i].Page);
+			CComObject<CPage> *pPageObj;
+			CComObject<CPage>::CreateInstance(&pPageObj);
+			pPageObj->Initialize(&m_lpCalc->mem_c, TRUE, applist.apps[i].page);
+			pvData[i].Page = pPageObj;
 			pvData[i].PageCount = applist.apps[i].page_count;
 		}
 
