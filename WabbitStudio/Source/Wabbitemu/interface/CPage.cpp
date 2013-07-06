@@ -14,39 +14,42 @@ STDMETHODIMP CPage::get_IsFlash(VARIANT_BOOL *pbIsFlash)
 	return S_OK;
 }
 
-STDMETHODIMP CPage::Read(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult)
+STDMETHODIMP CPage::get_Item(LONG lIndex, BYTE *pValue)
 {
-	int nBytes = 1;
-	if ((V_VT(&varByteCount) != VT_EMPTY) && (V_VT(&varByteCount) != VT_ERROR))
+	*pValue = m_lpData[lIndex % PAGE_SIZE];
+	return S_OK;
+}
+
+STDMETHODIMP CPage::ReadByte(WORD wAddr, LPBYTE lpbResult)
+{
+	*lpbResult = m_lpData[wAddr % PAGE_SIZE];
+	return S_OK;
+}
+
+STDMETHODIMP CPage::ReadWord(WORD wAddr, LPWORD lpwResult)
+{
+	*lpwResult = m_lpData[wAddr % PAGE_SIZE] + (m_lpData[(wAddr + 1) % PAGE_SIZE] << 8);
+	return S_OK;
+}
+
+STDMETHODIMP CPage::Read(WORD wAddr, WORD wCount, LPSAFEARRAY *ppsaResult)
+{
+	if (wCount == 0)
 	{
-		nBytes = V_I4(&varByteCount);
+		return E_INVALIDARG;
 	}
 
-	VARIANT varResult;
-	VariantInit(&varResult);
-	
-	if (nBytes == 1)
+	CComSafeArray<BYTE> sa((LONG) wCount);
+
+	LPBYTE lpData = NULL;
+	SafeArrayAccessData(sa, (LPVOID *) &lpData);
+	for (WORD i = 0; i < wCount; i++)
 	{
-		V_VT(&varResult) = VT_UI1;
-		V_UI1(&varResult) = m_lpData[Address % PAGE_SIZE];
+		lpData[i] = m_lpData[(wAddr + i) % PAGE_SIZE];
 	}
-	else
-	{
-		V_VT(&varResult) = VT_ARRAY | VT_UI1;
+	SafeArrayUnaccessData(sa);
 
-		SAFEARRAYBOUND sab = {0};
-		sab.cElements = nBytes;
-		sab.lLbound = 0;
-		LPSAFEARRAY psa = SafeArrayCreate(VT_UI1, 1, &sab);
-
-		LPBYTE lpData = NULL;
-		SafeArrayAccessData(psa, (LPVOID *) &lpData);
-		memcpy(lpData, &m_lpData[Address % PAGE_SIZE], nBytes);
-		SafeArrayUnaccessData(psa);
-
-		V_ARRAY(&varResult) = psa;
-	}
-	*lpvarResult = varResult;
+	*ppsaResult = sa.Detach();
 	return S_OK;
 }
 

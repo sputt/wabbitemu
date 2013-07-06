@@ -9,13 +9,20 @@ class CPage :
 public:
 	BEGIN_COM_MAP(CPage)
 		COM_INTERFACE_ENTRY(IDispatch)
+		COM_INTERFACE_ENTRY(IReadable)
 		COM_INTERFACE_ENTRY(IPage)
 	END_COM_MAP( )
 
 	// IPage methods
 	STDMETHODIMP get_Index(int *lpIndex);
 	STDMETHOD(get_IsFlash)(VARIANT_BOOL *pbIsFlash);
-	STDMETHOD(Read)(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult);
+	STDMETHOD(get_Item)(LONG lIndex, BYTE *pValue);
+
+	//IReadable
+	STDMETHOD(ReadByte)(WORD wAddr, LPBYTE lpbResult);
+	STDMETHOD(ReadWord)(WORD wAddr, LPWORD lpwResult);
+	STDMETHOD(Read)(WORD wAddr, WORD wCount, SAFEARRAY **ppsaResult);
+
 	STDMETHOD(Write)(WORD Address, VARIANT varValue);
 
 	void Initialize(memory_context_t *mem, BOOL fIsFlash, int iPage)
