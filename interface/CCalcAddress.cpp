@@ -23,10 +23,12 @@ STDMETHODIMP CCalcAddress::get_Address(LPWORD lpwAddress)
 
 STDMETHODIMP CCalcAddress::Read(VARIANT varByteCount, LPVARIANT lpvarResult)
 {
-	return m_pPage->Read(m_wAddress, varByteCount, lpvarResult);
+	//return m_pPage->Read(m_wAddress, varByteCount, lpvarResult);
+	return E_NOTIMPL;
 }
 
 STDMETHODIMP CCalcAddress::Write(VARIANT varValue)
 {
-	return m_pPage->Write(m_wAddress, varValue);
+	//return m_pPage->Write(m_wAddress, varValue);
+	return E_NOTIMPL;
 }

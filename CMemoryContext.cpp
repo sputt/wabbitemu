@@ -56,6 +56,8 @@ HRESULT CMemoryContext::Initialize(memc *mem)
 	ATLENSURE_RETURN_HR(SUCCEEDED(hr), hr);
 	m_pBank = pBankObj;
 
+
+	m_memc = mem;
 	return S_OK;
 }
 
@@ -74,42 +76,36 @@ STDMETHODIMP CMemoryContext::get_Bank(IPageCollection **ppPageCollection)
 	return m_pBank->QueryInterface(ppPageCollection);
 }
 
-STDMETHODIMP CMemoryContext::Read(WORD wAddr, VARIANT varByteCount, LPVARIANT lpvResult)
+STDMETHODIMP CMemoryContext::ReadByte(WORD wAddr, LPBYTE lpbResult)
 {
-	int nBytes = 1;
-	if ((V_VT(&varByteCount) != VT_EMPTY) && (V_VT(&varByteCount) != VT_ERROR))
+	*lpbResult = mem_read(m_memc, wAddr);
+	return S_OK;
+}
+
+STDMETHODIMP CMemoryContext::ReadWord(WORD wAddr, LPWORD lpwResult)
+{
+	*lpwResult = mem_read(m_memc, wAddr) + (mem_read(m_memc, wAddr + 1) << 8);
+	return S_OK;
+}
+
+STDMETHODIMP CMemoryContext::Read(WORD wAddr, WORD wCount, LPSAFEARRAY *ppsaResult)
+{
+	if (wCount == 0)
 	{
-		nBytes = V_I4(&varByteCount);
+		return E_INVALIDARG;
 	}
 
-	VARIANT varResult;
-	VariantInit(&varResult);
-	
-	if (nBytes == 1)
+	CComSafeArray<BYTE> sa((LONG) wCount);
+
+	LPBYTE lpData = NULL;
+	SafeArrayAccessData(sa, (LPVOID *) &lpData);
+	for (WORD i = 0; i < wCount; i++)
 	{
-		V_VT(&varResult) = VT_UI1;
-		V_UI1(&varResult) = mem_read(m_memc, wAddr);
+		lpData[i] = mem_read(m_memc, wAddr + i);
 	}
-	else
-	{
-		V_VT(&varResult) = VT_ARRAY | VT_UI1;
+	SafeArrayUnaccessData(sa);
 
-		SAFEARRAYBOUND sab = {0};
-		sab.cElements = nBytes;
-		sab.lLbound = 0;
-		LPSAFEARRAY psa = SafeArrayCreate(VT_UI1, 1, &sab);
-
-		LPBYTE lpData = NULL;
-		SafeArrayAccessData(psa, (LPVOID *) &lpData);
-		for (int i = 0; i < nBytes; i++)
-		{
-			lpData[i] = mem_read(m_memc, wAddr + i);
-		}
-		SafeArrayUnaccessData(psa);
-
-		V_ARRAY(&varResult) = psa;
-	}
-	*lpvResult = varResult;
+	*ppsaResult = sa.Detach();
 	return S_OK;
 }
 

@@ -54,6 +54,7 @@ using namespace Gdiplus;
 #include <atlctl.h>
 #include <atlcore.h>
 #include <atlcoll.h>
+#include <atlsafe.h>
 using namespace ATL;
 
 #include <map>
