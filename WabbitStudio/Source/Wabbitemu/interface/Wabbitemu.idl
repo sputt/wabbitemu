@@ -73,7 +73,7 @@ interface ILCD : IDispatch
 interface IZ80 : IDispatch
 {
 	[propget] HRESULT AF([out, retval] WORD *AF);
-	[bindable, propget] HRESULT A([out, retval] BYTE *A);
+	[propget] HRESULT A([out, retval] BYTE *A);
 	[propget] HRESULT F([out, retval] BYTE *F);
 	[propput] HRESULT AF([in] WORD AF);
 	[propput] HRESULT A([in] BYTE A);
@@ -99,7 +99,7 @@ interface IZ80 : IDispatch
 	[propput] HRESULT HL([in] WORD HL);
 	[propput] HRESULT H([in] BYTE H);
 	[propput] HRESULT L([in] BYTE L);
-
+	
 	[propget] HRESULT AFP([out, retval] WORD *AFP);
 	[propget] HRESULT AP([out, retval] BYTE *AP);
 	[propget] HRESULT FP([out, retval] BYTE *FP);
