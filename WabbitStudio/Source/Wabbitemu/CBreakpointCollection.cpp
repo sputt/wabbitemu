@@ -9,6 +9,11 @@
 
 STDMETHODIMP CBreakpointCollection::Add(ICalcAddress *pAddress, IBreakpoint **ppBreakpoint)
 {
+	if (pAddress == NULL || ppBreakpoint == NULL)
+	{
+		return E_INVALIDARG;
+	}
+
 	waddr_t waddr = CCalcAddress::ToWAddr(pAddress);
 
 	set_break(&m_lpCalc->mem_c, waddr);
@@ -37,6 +42,11 @@ STDMETHODIMP CBreakpointCollection::Add(ICalcAddress *pAddress, IBreakpoint **pp
 
 STDMETHODIMP CBreakpointCollection::Remove(IBreakpoint *pBreakpoint)
 {
+	if (pBreakpoint == NULL)
+	{
+		return E_INVALIDARG;
+	}
+
 	CComPtr<IUnknown> pUnkBP;
 	pBreakpoint->QueryInterface(&pUnkBP);
 
