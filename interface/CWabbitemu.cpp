@@ -110,6 +110,10 @@ STDMETHODIMP CWabbitemu::get_Visible(VARIANT_BOOL *lpVisible)
 
 STDMETHODIMP CWabbitemu::get_CPU(IZ80 **ppZ80)
 {
+	if (m_pZ80 == NULL)
+	{
+		return S_FALSE;
+	}
 	return m_pZ80->QueryInterface(IID_IZ80,(LPVOID *) ppZ80);
 }
 
@@ -145,7 +149,7 @@ STDMETHODIMP CWabbitemu::Step()
 STDMETHODIMP CWabbitemu::StepOver()
 {
 	CPU_stepover(m_lpCalc);
-	return E_NOTIMPL;
+	return S_OK;
 }
 
 STDMETHODIMP CWabbitemu::get_Breakpoints(IBreakpointCollection **ppBC)
@@ -279,27 +283,17 @@ STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 
 STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 {
-	ITypeLib *pTypeLib = NULL;
+	CComPtr<ITypeLib> pTypeLib;
 	HRESULT hr = LoadRegTypeLib(LIBID_WabbitemuLib, 1, 0, GetUserDefaultLCID(), &pTypeLib);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-	ITypeInfo *pTypeInfo = NULL;
-	hr = pTypeLib->GetTypeInfoOfGuid(__uuidof(TIApplication), &pTypeInfo);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
+	ATLENSURE_SUCCEEDED(hr);
 
-	IRecordInfo *pRecordInfo;
+	CComPtr<ITypeInfo> pTypeInfo;
+	hr = pTypeLib->GetTypeInfoOfGuid(__uuidof(TIApplication), &pTypeInfo);
+	ATLENSURE_SUCCEEDED(hr);
+
+	CComPtr<IRecordInfo> pRecordInfo;
 	hr = GetRecordInfoFromTypeInfo(pTypeInfo, &pRecordInfo);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-	pTypeInfo->Release();
-	pTypeLib->Release();
+	ATLENSURE_SUCCEEDED(hr);
 
 	applist_t applist;
 	ZeroMemory(&applist, sizeof(applist_t));
@@ -309,7 +303,6 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 	sab.lLbound = 0;
 	sab.cElements = applist.count;
 	LPSAFEARRAY lpsa = SafeArrayCreateEx(VT_RECORD, 1, &sab, pRecordInfo);
-	pRecordInfo->Release();
 
 	TIApplication *pvData = NULL;
 	if (SUCCEEDED(SafeArrayAccessData(lpsa, (LPVOID *) &pvData)))
@@ -326,6 +319,8 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 			CComObject<CPage> *pPageObj;
 			CComObject<CPage>::CreateInstance(&pPageObj);
 			pPageObj->Initialize(&m_lpCalc->mem_c, TRUE, applist.apps[i].page);
+			pPageObj->AddRef();
+
 			pvData[i].Page = pPageObj;
 			pvData[i].PageCount = applist.apps[i].page_count;
 		}
