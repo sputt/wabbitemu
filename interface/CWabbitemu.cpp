@@ -316,12 +316,11 @@ STDMETHODIMP CWabbitemu::get_Apps(SAFEARRAY **ppAppList)
 			MultiByteToWideChar(CP_ACP, 0, applist.apps[i].name, -1, wszAppName, ARRAYSIZE(wszAppName));
 			pvData[i].Name = SysAllocString((OLECHAR *) wszAppName);
 #endif
-			CComObject<CPage> *pPageObj;
-			CComObject<CPage>::CreateInstance(&pPageObj);
-			pPageObj->Initialize(&m_lpCalc->mem_c, TRUE, applist.apps[i].page);
-			pPageObj->AddRef();
+			CComPtr<IPageCollection> pPageColl;
+			m_pMem->get_Flash(&pPageColl);
 
-			pvData[i].Page = pPageObj;
+			pPageColl->get_Item(applist.apps[i].page, &pvData[i].Page);
+
 			pvData[i].PageCount = applist.apps[i].page_count;
 		}
 
