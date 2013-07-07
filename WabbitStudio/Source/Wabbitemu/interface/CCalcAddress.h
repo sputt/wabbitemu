@@ -42,6 +42,60 @@ public:
 		return waddr;
 	}
 
+	static inline HRESULT FromWAddr(IMemoryContext *pMem, waddr_t waddr, ICalcAddress **ppCalcAddress)
+	{
+		CComObject<CCalcAddress> *pObj = NULL;
+		HRESULT hr = CComObject<CCalcAddress>::CreateInstance(&pObj);
+		if (SUCCEEDED(hr))
+		{
+			pObj->AddRef();
+
+			CComPtr<IPage> pPage;
+			CComPtr<IPageCollection> pPageColl;
+			if (waddr.is_ram)
+			{
+				pMem->get_RAM(&pPageColl);
+			}
+			else
+			{
+				pMem->get_Flash(&pPageColl);
+			}
+			pPageColl->get_Item(waddr.page, &pPage);
+			hr = pObj->Initialize(pPage, waddr.addr);
+			if (SUCCEEDED(hr))
+			{
+				hr = pObj->QueryInterface(ppCalcAddress);
+			}
+			pObj->Release();
+		}
+		return hr;
+	}
+
+	static inline HRESULT Clone(ICalcAddress *pSrc, ICalcAddress **ppDst)
+	{
+		CComPtr<IPage> pPage;
+		WORD wAddr;
+
+		pSrc->get_Address(&wAddr);
+		pSrc->get_Page(&pPage);
+
+		CComObject<CCalcAddress> *pObj = NULL;
+		HRESULT hr = CComObject<CCalcAddress>::CreateInstance(&pObj);
+		if (SUCCEEDED(hr))
+		{
+			pObj->AddRef();
+
+			hr = pObj->Initialize(pPage, wAddr);
+			if (SUCCEEDED(hr))
+			{
+				hr = pObj->QueryInterface(ppDst);
+			}
+
+			pObj->Release();
+		}
+		return hr;
+	}
+
 private:
 	CComPtr<IPage> m_pPage;
 	WORD m_wAddress;

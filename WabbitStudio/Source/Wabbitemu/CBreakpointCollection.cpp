@@ -14,17 +14,25 @@ STDMETHODIMP CBreakpointCollection::Add(ICalcAddress *pAddress, IBreakpoint **pp
 	set_break(&m_lpCalc->mem_c, waddr);
 	
 	CComObject<CBreakpoint> *pObj;
-	CComObject<CBreakpoint>::CreateInstance(&pObj);
-	pObj->AddRef();
+	HRESULT hr = CComObject<CBreakpoint>::CreateInstance(&pObj);
+	if (SUCCEEDED(hr))
+	{
+		pObj->AddRef();
 
-	pObj->Initialize(m_lpCalc, pAddress);
-
-	m_coll.push_back(CAdapt< CComPtr<IBreakpoint> >(pObj));
-
-	pObj->QueryInterface(ppBreakpoint);
-
-	pObj->Release();
-	return S_OK;
+		CComPtr<ICalcAddress> pAddressCopy;
+		hr = CCalcAddress::Clone(pAddress, &pAddressCopy);
+		if (SUCCEEDED(hr))
+		{
+			hr = pObj->Initialize(m_lpCalc, pAddressCopy);
+			if (SUCCEEDED(hr))
+			{
+				m_coll.push_back(CAdapt< CComPtr<IBreakpoint> >(pObj));
+				hr = pObj->QueryInterface(ppBreakpoint);
+			}
+		}
+		pObj->Release();
+	}
+	return hr;
 }
 
 STDMETHODIMP CBreakpointCollection::Remove(IBreakpoint *pBreakpoint)
