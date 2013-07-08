@@ -33,6 +33,12 @@ namespace Revsoft.Wabbitcode
 
         private readonly ArrayList errorsToAdd = new ArrayList();
 
+        public delegate void DebuggingStarted(object sender, DebuggingEventArgs e);
+        public event DebuggingStarted OnDebuggingStarted;
+
+        public delegate void DebuggingEnded(object sender, DebuggingEventArgs e);
+        public event DebuggingEnded OnDebuggingEnded;
+
         private bool showToolbar = true;
         private WabbitcodeDebugger debugger;
 
@@ -355,7 +361,7 @@ namespace Revsoft.Wabbitcode
             Settings.Default.debugToolbar = showToolbar;
             if (!showToolbar)
             {
-                // toolBarManager.RemoveControl(debugToolStrip);
+                debugToolStrip.Visible = false;
             }
 
             this.UpdateChecks();
@@ -364,6 +370,11 @@ namespace Revsoft.Wabbitcode
             {
                 child.RemoveInvisibleMarkers();
                 child.CanSetNextStatement = false;
+            }
+
+            if (OnDebuggingEnded != null)
+            {
+                OnDebuggingEnded(this, new DebuggingEventArgs(null));
             }
         }
 
@@ -433,8 +444,13 @@ namespace Revsoft.Wabbitcode
                     }
                     debugger = new WabbitcodeDebugger();
                     string createdName = debugger.ParseOutputFiles(e.Project);
-
                     debugger.InitDebugger(createdName);
+
+                    if (OnDebuggingStarted != null)
+                    {
+                        OnDebuggingStarted(this, new DebuggingEventArgs(debugger));
+                    }
+
                     if (debugger.IsAnApp)
                     {
                         try
@@ -700,7 +716,8 @@ namespace Revsoft.Wabbitcode
                 {
                     AssemblerService.Instance.AssemblerProjectFinished += projectEventHandler;
                 }
-                Task.Factory.StartNew(() => {
+                Task.Factory.StartNew(() => 
+                {
                     AssemblerService.Instance.AssembleProject(ProjectService.Project);
                     if (projectEventHandler != null)
                     {
@@ -978,9 +995,10 @@ namespace Revsoft.Wabbitcode
                 return;
             }
 
+            ParserService parserService = new ParserService();
             string word = DockingService.ActiveDocument.GetWord();
             DockingService.FindResults.NewFindResults(word, ProjectService.ProjectName);
-            var refs = ParserService.FindAllReferences(word);
+            var refs = parserService.FindAllReferences(word);
             foreach (var reference in refs)
             {
                 foreach (var fileRef in reference)
@@ -1909,6 +1927,56 @@ namespace Revsoft.Wabbitcode
             }
 
             debugToolStrip.Height = 25;
+        }
+
+        internal string TranlateSymbolToAddress(string text)
+        {
+            if (debugger == null)
+            {
+                return string.Empty;
+            }
+            if (debugger.SymbolTable.StaticLabels.Contains(text))
+            {
+                return debugger.SymbolTable.StaticLabels[text].ToString();
+            }
+            return string.Empty;
+        }
+
+        internal void RemoveBreakpoint(int lineNumber, string fileName)
+        {
+            if (debugger != null)
+            {
+                debugger.RemoveBreakpoint(lineNumber, fileName);
+            }
+
+        }
+
+        internal void AddBreakpoint(int lineNumber, string fileName)
+        {
+            if (debugger != null)
+            {
+                debugger.AddBreakpoint(lineNumber, fileName);
+            }
+        }
+
+        internal void UpdateAssembledInfo(string fileName, int lineNumber)
+        {
+            ListFileValue label = debugger.GetListValue(fileName, lineNumber);
+            if (label != null)
+            {
+                string assembledInfo = "Page: " + label.Page.ToString() + " Address: " + label.Address.ToString("X4");
+                SetToolStripText(assembledInfo);
+            }
+        }
+
+        internal void AddStackEntry(int lineNumber)
+        {
+            debugger.StepStack.Push(lineNumber);
+        }
+
+        internal void SetPC(string fileName, int lineNumber)
+        {
+            debugger.SetPCToSelect(fileName, lineNumber);
         }
     }
 }

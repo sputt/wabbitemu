@@ -631,6 +631,7 @@
       <DependentUpon>BuildSteps.cs</DependentUpon>
     </Compile>
     <Compile Include="Classes\FileLocations.cs" />
+    <Compile Include="Services\Debugger\DebuggingEventArgs.cs" />
     <Compile Include="Exceptions\DebugggingException.cs" />
     <Compile Include="Docking Windows\StackViewer.cs">
       <SubType>Form</SubType>

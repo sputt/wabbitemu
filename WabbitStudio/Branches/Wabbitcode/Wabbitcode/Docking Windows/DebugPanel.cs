@@ -38,6 +38,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             iyBox.ContextMenu = contextMenu1;
             pcBox.ContextMenu = contextMenu1;
             spBox.ContextMenu = contextMenu1;
+
+            mainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+        }
+
+        void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
+        {
+            debugger = e.Debugger;
         }
 
         public override void Copy()

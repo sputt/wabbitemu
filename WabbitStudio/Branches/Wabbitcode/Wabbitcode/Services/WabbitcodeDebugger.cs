@@ -33,7 +33,7 @@ namespace Revsoft.Wabbitcode.Services
         private BackgroundWorker staticLabelsParser = new BackgroundWorker();
         private Thread stepThread;
         private SymbolTableClass symTable;
-        private Stack<int> stepStack;
+        private Stack<int> stepStack = new Stack<int>();
 
         #region Public Properties
 
@@ -516,36 +516,7 @@ namespace Revsoft.Wabbitcode.Services
 
         internal byte GetPageNum(ushort address)
         {
-            int page = 0xFF;
-
-            // CWabbitemu.MemMap memstate = debugger;
-            if (address < 0x4000)
-            {
-                page = this.debugger.Memory.Bank[0].Index;
-            }
-
-            if (address >= 0x4000 && address < 0x8000) // && memstate.ram1 == 0)
-            {
-                if (this.isAnApp)
-                {
-                    page = (byte)(this.appPage - this.debugger.Memory.Bank[1].Index);
-                }
-                else
-                {
-                    page = this.debugger.Memory.Bank[1].Index;
-                }
-            }
-
-            if (address >= 0x8000 && address < 0xC000) // && memstate.ram2 == 0)
-            {
-                page = this.debugger.Memory.Bank[2].Index;
-            }
-
-            if (address >= 0xC000)
-            {
-                page = this.debugger.Memory.Bank[3].Index;
-            }
-
+            int page = this.appPage - debugger.Memory.Bank[address >> 14].Index;
             return (byte)page;
         }
 
@@ -647,6 +618,7 @@ namespace Revsoft.Wabbitcode.Services
             int counter = 0, newCounter, textLength = editorText.Length;
             string possibleReference;
             List<TextMarker> markersToAdd = new List<TextMarker>();
+            ParserService parserService = new ParserService();
             while (counter < textLength)
             {
                 if (editorText[counter] == ';')
@@ -655,7 +627,7 @@ namespace Revsoft.Wabbitcode.Services
                     {
                         counter++;
                     }
-                    newCounter = ParserService.GetWord(editorText, counter);
+                    newCounter = parserService.GetWord(editorText, counter);
                     if (newCounter == -1)
                     {
                         counter++;

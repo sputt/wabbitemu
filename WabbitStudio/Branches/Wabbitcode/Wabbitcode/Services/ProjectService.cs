@@ -275,7 +275,7 @@
 
         internal static void DeleteFile(ProjectFolder parentDir, ProjectFile file)
         {
-            ParserService.RemoveParseData(file.FileFullPath);
+            RemoveParseData(file.FileFullPath);
             project.DeleteFile(parentDir, file);
             project.NeedsSave = true;
         }
@@ -289,6 +289,15 @@
         internal static ParserInformation GetParseInfo()
         {
             return GetParseInfo(DocumentService.ActiveFileName);
+        }
+
+        internal static void RemoveParseData(string fullPath)
+        {
+            ParserInformation replaceMe = GetParseInfo(fullPath);
+            if (replaceMe != null)
+            {
+                ParseInfo.Remove(replaceMe);
+            }
         }
 
         internal static ParserInformation GetParseInfo(string file)
@@ -367,9 +376,10 @@
 
             ProjectFile[] filesToParse = new ProjectFile[folder.Files.Count];
             folder.Files.CopyTo(filesToParse, 0);
+            ParserService parserService = new ParserService();
             foreach (ProjectFile file in filesToParse)
             {
-                ParserService.ParseFile(0, file.FileFullPath);
+                parserService.ParseFile(0, file.FileFullPath);
             }
         }
 
