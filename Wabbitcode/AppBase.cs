@@ -1,8 +1,12 @@
-﻿using Microsoft.VisualBasic.ApplicationServices;
-
-namespace Revsoft.Wabbitcode
+﻿namespace Revsoft.Wabbitcode
 {
-    class AppBase : WindowsFormsApplicationBase
+    using System;
+
+    using Microsoft.VisualBasic.ApplicationServices;
+
+    using Revsoft.Wabbitcode.Classes;
+
+    public class AppBase : WindowsFormsApplicationBase
     {
         public AppBase()
         {
@@ -23,15 +27,15 @@ namespace Revsoft.Wabbitcode
         /// </summary>
         protected override void OnCreateMainForm()
         {
-            // Create an instance of the main form and set it in the application; 
+            // Create an instance of the main form and set it in the application;
             // but don't try to run it.
             string[] args = new string[this.CommandLineArgs.Count];
             this.CommandLineArgs.CopyTo(args, 0);
-			this.MainForm = new MainFormRedone(args);
+            this.MainForm = new MainFormRedone(args);
         }
 
         /// <summary>
-        /// This is called for additional instances. The application model will call this 
+        /// This is called for additional instances. The application model will call this
         /// function, and terminate the additional instance when this returns.
         /// </summary>
         /// <param name="eventArgs"></param>
@@ -41,13 +45,14 @@ namespace Revsoft.Wabbitcode
             string[] args = new string[eventArgs.CommandLine.Count];
             eventArgs.CommandLine.CopyTo(args, 0);
 
-            // Create an argument array for the Invoke method
-            object[] parameters = new object[2];
-            parameters[0] = this.MainForm;
-            parameters[1] = args;
+            MainFormRedone form = MainForm as MainFormRedone;
+            if (form == null)
+            {
+                throw new InvalidCastException("Main window is not the correct type");
+            }
 
             // Need to use invoke to b/c this is being called from another thread.
-            this.MainForm.Invoke(new MainFormRedone.ProcessParametersDelegate(((MainFormRedone)this.MainForm).ProcessParameters), parameters);
+            this.MainForm.Invoke(() => form.ProcessParameters(form, args));
         }
     }
 }

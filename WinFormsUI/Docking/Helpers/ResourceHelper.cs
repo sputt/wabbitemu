@@ -4,10 +4,10 @@ using System.Reflection;
 using System.Resources;
 using System.Windows.Forms;
 
-namespace Revsoft.Docking.Resource
+namespace WeifenLuo.WinFormsUI.Docking
 {
-	internal static class ResourceHelper
-	{
+    internal static class ResourceHelper
+    {
         private static ResourceManager _resourceManager = null;
 
         private static ResourceManager ResourceManager
@@ -15,15 +15,15 @@ namespace Revsoft.Docking.Resource
             get
             {
                 if (_resourceManager == null)
-                    _resourceManager = new ResourceManager("Revsoft.Docking", typeof(ResourceHelper).Assembly);
+                    _resourceManager = new ResourceManager("WeifenLuo.WinFormsUI.Docking.Strings", typeof(ResourceHelper).Assembly);
                 return _resourceManager;
             }
 
         }
 
-		public static string GetString(string name)
-		{
-			return ResourceManager.GetString(name);
-		}
-	}
+        public static string GetString(string name)
+        {
+            return ResourceManager.GetString(name);
+        }
+    }
 }

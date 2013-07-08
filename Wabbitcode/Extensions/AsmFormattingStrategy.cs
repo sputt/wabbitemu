@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+
 using Revsoft.TextEditor.Document;
 
 namespace Revsoft.Wabbitcode.Extensions
 {
+
     public class AsmFormattingStrategy : DefaultFormattingStrategy
     {
         public override void FormatLine(TextEditor.TextArea textArea, int line, int cursorOffset, char ch)
@@ -16,10 +18,13 @@ namespace Revsoft.Wabbitcode.Extensions
                 int indent = GetIndentation(textArea.Document, line).Length;
                 string textLine = TextUtilities.GetLineAsString(textArea.Document, line);
                 if (!string.IsNullOrEmpty(textLine.Trim()))
+                {
                     return;
+                }
+
                 textLine = textLine.Remove(0, indent);
                 LineSegment oldLine = textArea.Document.GetLineSegment(line);
-                SmartReplaceLine(textArea.Document, oldLine, textLine);
+                DefaultFormattingStrategy.SmartReplaceLine(textArea.Document, oldLine, textLine);
                 textArea.Caret.Column = 1;
             }
         }

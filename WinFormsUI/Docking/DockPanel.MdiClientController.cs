@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.ComponentModel.Design;
 using System.Runtime.InteropServices;
 
-namespace Revsoft.Docking
+namespace WeifenLuo.WinFormsUI.Docking
 {
     partial class DockPanel
     {
@@ -19,10 +19,6 @@ namespace Revsoft.Docking
             private Form m_parentForm = null;
             private ISite m_site = null;
 
-            public MdiClientController()
-            {
-            }
-
             public void Dispose()
             {
                 Dispose(true);
@@ -33,14 +29,11 @@ namespace Revsoft.Docking
             {
                 if (disposing)
                 {
-                    lock (this)
-                    {
-                        if (Site != null && Site.Container != null)
-                            Site.Container.Remove(this);
+                    if (Site != null && Site.Container != null)
+                        Site.Container.Remove(this);
 
-                        if (Disposed != null)
-                            Disposed(this, EventArgs.Empty);
-                    }
+                    if (Disposed != null)
+                        Disposed(this, EventArgs.Empty);
                 }
             }
 
@@ -87,32 +80,35 @@ namespace Revsoft.Docking
                     // "Adding designable borders to user controls".
                     // http://www.codeproject.com/cs/miscctrl/CsAddingBorders.asp
 
-                    // Get styles using Win32 calls
-                    int style = NativeMethods.GetWindowLong(MdiClient.Handle, (int)Win32.GetWindowLongIndex.GWL_STYLE);
-                    int exStyle = NativeMethods.GetWindowLong(MdiClient.Handle, (int)Win32.GetWindowLongIndex.GWL_EXSTYLE);
-
-                    // Add or remove style flags as necessary.
-                    switch (m_borderStyle)
+                    if (!Win32Helper.IsRunningOnMono)
                     {
-                        case BorderStyle.Fixed3D:
-                            exStyle |= (int)Win32.WindowExStyles.WS_EX_CLIENTEDGE;
-                            style &= ~((int)Win32.WindowStyles.WS_BORDER);
-                            break;
+                        // Get styles using Win32 calls
+                        int style = NativeMethods.GetWindowLong(MdiClient.Handle, (int)Win32.GetWindowLongIndex.GWL_STYLE);
+                        int exStyle = NativeMethods.GetWindowLong(MdiClient.Handle, (int)Win32.GetWindowLongIndex.GWL_EXSTYLE);
 
-                        case BorderStyle.FixedSingle:
-                            exStyle &= ~((int)Win32.WindowExStyles.WS_EX_CLIENTEDGE);
-                            style |= (int)Win32.WindowStyles.WS_BORDER;
-                            break;
+                        // Add or remove style flags as necessary.
+                        switch (m_borderStyle)
+                        {
+                            case BorderStyle.Fixed3D:
+                                exStyle |= (int)Win32.WindowExStyles.WS_EX_CLIENTEDGE;
+                                style &= ~((int)Win32.WindowStyles.WS_BORDER);
+                                break;
 
-                        case BorderStyle.None:
-                            style &= ~((int)Win32.WindowStyles.WS_BORDER);
-                            exStyle &= ~((int)Win32.WindowExStyles.WS_EX_CLIENTEDGE);
-                            break;
+                            case BorderStyle.FixedSingle:
+                                exStyle &= ~((int)Win32.WindowExStyles.WS_EX_CLIENTEDGE);
+                                style |= (int)Win32.WindowStyles.WS_BORDER;
+                                break;
+
+                            case BorderStyle.None:
+                                style &= ~((int)Win32.WindowStyles.WS_BORDER);
+                                exStyle &= ~((int)Win32.WindowExStyles.WS_EX_CLIENTEDGE);
+                                break;
+                        }
+
+                        // Set the styles using Win32 calls
+                        NativeMethods.SetWindowLong(MdiClient.Handle, (int)Win32.GetWindowLongIndex.GWL_STYLE, style);
+                        NativeMethods.SetWindowLong(MdiClient.Handle, (int)Win32.GetWindowLongIndex.GWL_EXSTYLE, exStyle);
                     }
-
-                    // Set the styles using Win32 calls
-                    NativeMethods.SetWindowLong(MdiClient.Handle, (int)Win32.GetWindowLongIndex.GWL_STYLE, style);
-                    NativeMethods.SetWindowLong(MdiClient.Handle, (int)Win32.GetWindowLongIndex.GWL_EXSTYLE, exStyle);
 
                     // Cause an update of the non-client area.
                     UpdateStyles();
@@ -125,6 +121,7 @@ namespace Revsoft.Docking
             }
 
             [Browsable(false)]
+            [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
             public Form ParentForm
             {
                 get { return m_parentForm; }
@@ -232,7 +229,13 @@ namespace Revsoft.Docking
                         // If AutoScroll is set to false, hide the scrollbars when the control
                         // calculates its non-client area.
                         if (!AutoScroll)
-                            NativeMethods.ShowScrollBar(m.HWnd, (int)Win32.ScrollBars.SB_BOTH, 0 /*false*/);
+                        {
+                            if (!Win32Helper.IsRunningOnMono)
+                            {
+                                NativeMethods.ShowScrollBar(m.HWnd, (int)Win32.ScrollBars.SB_BOTH, 0 /*false*/);
+                            }
+                        }
+
                         break;
                 }
 
@@ -320,13 +323,14 @@ namespace Revsoft.Docking
                 // To show style changes, the non-client area must be repainted. Using the
                 // control's Invalidate method does not affect the non-client area.
                 // Instead use a Win32 call to signal the style has changed.
-                NativeMethods.SetWindowPos(MdiClient.Handle, IntPtr.Zero, 0, 0, 0, 0,
-                    Win32.FlagsSetWindowPos.SWP_NOACTIVATE |
-                    Win32.FlagsSetWindowPos.SWP_NOMOVE |
-                    Win32.FlagsSetWindowPos.SWP_NOSIZE |
-                    Win32.FlagsSetWindowPos.SWP_NOZORDER |
-                    Win32.FlagsSetWindowPos.SWP_NOOWNERZORDER |
-                    Win32.FlagsSetWindowPos.SWP_FRAMECHANGED);
+                if (!Win32Helper.IsRunningOnMono)
+                    NativeMethods.SetWindowPos(MdiClient.Handle, IntPtr.Zero, 0, 0, 0, 0,
+                        Win32.FlagsSetWindowPos.SWP_NOACTIVATE |
+                        Win32.FlagsSetWindowPos.SWP_NOMOVE |
+                        Win32.FlagsSetWindowPos.SWP_NOSIZE |
+                        Win32.FlagsSetWindowPos.SWP_NOZORDER |
+                        Win32.FlagsSetWindowPos.SWP_NOOWNERZORDER |
+                        Win32.FlagsSetWindowPos.SWP_FRAMECHANGED);
             }
         }
 

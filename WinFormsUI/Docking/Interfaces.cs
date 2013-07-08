@@ -2,23 +2,23 @@ using System;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace Revsoft.Docking
+namespace WeifenLuo.WinFormsUI.Docking
 {
-	public interface IDockContent
-	{
-		DockContentHandler DockHandler	{	get;	}
-		void OnActivated(EventArgs e);
-		void OnDeactivate(EventArgs e);
-	}
+    public interface IDockContent
+    {
+        DockContentHandler DockHandler	{	get;	}
+        void OnActivated(EventArgs e);
+        void OnDeactivate(EventArgs e);
+    }
 
-	public interface INestedPanesContainer
-	{
-		DockState DockState	{	get;	}
-		Rectangle DisplayingRectangle	{	get;	}
-		NestedPaneCollection NestedPanes	{	get;	}
-		VisibleNestedPaneCollection VisibleNestedPanes	{	get;	}
-		bool IsFloat	{	get;	}
-	}
+    public interface INestedPanesContainer
+    {
+        DockState DockState	{	get;	}
+        Rectangle DisplayingRectangle	{	get;	}
+        NestedPaneCollection NestedPanes	{	get;	}
+        VisibleNestedPaneCollection VisibleNestedPanes	{	get;	}
+        bool IsFloat	{	get;	}
+    }
 
     internal interface IDragSource
     {
@@ -28,6 +28,7 @@ namespace Revsoft.Docking
     internal interface IDockDragSource : IDragSource
     {
         Rectangle BeginDrag(Point ptMouse);
+        void EndDrag();
         bool IsDockStateValid(DockState dockState);
         bool CanDockTo(DockPane pane);
         void FloatAt(Rectangle floatWindowBounds);

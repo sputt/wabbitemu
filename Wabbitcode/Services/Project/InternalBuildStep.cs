@@ -1,135 +1,189 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.IO;
-
-namespace Revsoft.Wabbitcode.Services.Project
+﻿namespace Revsoft.Wabbitcode.Services.Project
 {
-	public class InternalBuildStep : IBuildStep
-	{
-		int stepNumber;
-		public int StepNumber
-		{
-			get { return stepNumber; }
-			set { stepNumber = value; }
-		}
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
 
-		string input;
-		public string InputFile
-		{
-			get { return input; }
-            set { input = value; }
-		}
+    using Revsoft.Wabbitcode.Services.Assembler;
+
+    public enum BuildStepType
+    {
+        All,
+        Assemble,
+        Listing,
+        SymbolTable,
+    }
+
+    public class InternalBuildStep : IBuildStep
+    {
+        private string inputFile;
+        private string outputFile;
+        private string outputText = String.Empty;
+        private int stepNumber;
+        private BuildStepType stepType;
+
+        /// <summary>
+        /// Creates a new build step using the built in spasm functions
+        /// </summary>
+        /// <param name="number">Build step number (0 indexed)</param>
+        /// <param name="type">Type of internal operation to peform</param>
+        /// <param name="inputFile">File to input to spasm</param>
+        /// <param name="outputFile">File expected to be received</param>
+        public InternalBuildStep(int number, BuildStepType type, string inputFile, string outputFile)
+        {
+            this.stepNumber = number;
+            this.stepType = type;
+            this.inputFile = inputFile;
+            this.outputFile = outputFile;
+        }
+
+        public string Description
+        {
+            get
+            {
+                string fileName = Path.GetFileName(this.inputFile);
+                switch (this.stepType)
+                {
+                case Project.BuildStepType.All:
+                    return "Assemble and list " + fileName;
+                case Project.BuildStepType.Listing:
+                    return "List " + fileName;
+                case Project.BuildStepType.SymbolTable:
+                    return "Symbolize " + fileName;
+                default:
+                    return "Assemble " + fileName;
+                }
+            }
+        }
+
+        public string InputFile
+        {
+            get
+            {
+                return this.inputFile;
+            }
+            set
+            {
+                this.inputFile = value;
+            }
+        }
 
         public string InputFileRelative
         {
             get
             {
-                return Path.Combine(FileOperations.GetRelativePath(Path.GetDirectoryName(input),
-                    ProjectService.ProjectDirectory), Path.GetFileName(input));
+                return Path.Combine(
+                           FileOperations.GetRelativePath(Path.GetDirectoryName(this.inputFile),
+                                   ProjectService.ProjectDirectory),
+                           Path.GetFileName(this.inputFile));
             }
         }
 
-		string output;
-		public string OutputFile
-		{
-			get { return output; }
-            set { output = value; }
-		}
+        public string OutputFile
+        {
+            get
+            {
+                return this.outputFile;
+            }
+            set
+            {
+                this.outputFile = value;
+            }
+        }
 
         public string OutputFileRelative
         {
             get
             {
-                return Path.Combine(FileOperations.GetRelativePath(Path.GetDirectoryName(output),
-                    ProjectService.ProjectDirectory), Path.GetFileName(output));
+                return Path.Combine(
+                           FileOperations.GetRelativePath(Path.GetDirectoryName(this.outputFile),
+                                   ProjectService.ProjectDirectory),
+                           Path.GetFileName(this.outputFile));
             }
         }
 
-		StepType stepType;
-		public StepType StepType
-		{
-			get { return stepType; }
-            set { stepType = value; }
-		}
+        public string OutputText
+        {
+            get
+            {
+                return this.outputText;
+            }
+        }
 
-		/// <summary>
-		/// Creates a new build step using the built in spasm functions
-		/// </summary>
-		/// <param name="number">Build step number (0 indexed)</param>
-		/// <param name="type">Type of internal operation to peform</param>
-		/// <param name="inputFile">File to input to spasm</param>
-		/// <param name="outputFile">File expected to be received</param>
-		public InternalBuildStep(int number, StepType type, string inputFile, string outputFile)
-		{
-			stepNumber = number;
-			stepType = type;
-			input = inputFile;
-			output = outputFile;
-		}
+        public int StepNumber
+        {
+            get
+            {
+                return this.stepNumber;
+            }
+            set
+            {
+                this.stepNumber = value;
+            }
+        }
 
-		public bool Build(bool silent)
-		{
-			bool errors = false;
-			switch (stepType)
-			{
-				case Project.StepType.All:
-					errors |= AssemblerService.AssembleFile(input, output, silent);
-					ProjectService.Project.ProjectOutputs.Add(output);
-                    ProjectService.Project.ListOutputs.Add(Path.ChangeExtension(output, "lst"));
-                    ProjectService.Project.LabelOutputs.Add(Path.ChangeExtension(output, "lab"));
-					break;
-				case Project.StepType.Listing:
+        public BuildStepType StepType
+        {
+            get
+            {
+                return this.stepType;
+            }
+            set
+            {
+                this.stepType = value;
+            }
+        }
 
-					break;
-				case Project.StepType.SymbolTable:
+        public bool Build()
+        {
+            AssemblerOutput output;
+            switch (this.stepType)
+            {
+            case Project.BuildStepType.All:
+                output = AssemblerService.Instance.AssembleFile(
+                             this.inputFile,
+                             this.outputFile,
+                             AssemblyFlags.Normal | AssemblyFlags.Symtable | AssemblyFlags.List);
+                ProjectService.Project.ProjectOutputs.Add(this.outputFile);
+                ProjectService.Project.ListOutputs.Add(Path.ChangeExtension(this.outputFile, "lst"));
+                ProjectService.Project.LabelOutputs.Add(Path.ChangeExtension(this.outputFile, "lab"));
+                break;
+            case Project.BuildStepType.Listing:
+                output = AssemblerService.Instance.AssembleFile(
+                             this.inputFile,
+                             this.outputFile,
+                             AssemblyFlags.Normal | AssemblyFlags.List);
+                ProjectService.Project.ProjectOutputs.Add(this.outputFile);
+                ProjectService.Project.ListOutputs.Add(Path.ChangeExtension(this.outputFile, "lst"));
+                break;
+            case Project.BuildStepType.SymbolTable:
+                output = AssemblerService.Instance.AssembleFile(
+                             this.inputFile,
+                             this.outputFile,
+                             AssemblyFlags.Normal | AssemblyFlags.Symtable);
+                ProjectService.Project.ProjectOutputs.Add(this.outputFile);
+                ProjectService.Project.LabelOutputs.Add(Path.ChangeExtension(this.outputFile, "lab"));
+                break;
+            default:
+                output = AssemblerService.Instance.AssembleFile(this.inputFile, this.outputFile, AssemblyFlags.Normal);
+                ProjectService.Project.ProjectOutputs.Add(this.outputFile);
+                break;
+            }
 
-					break;
-				default:
-					errors |= AssemblerService.AssembleFile(input, output, true);
-					ProjectService.Project.ProjectOutputs.Add(output);
-					break;
-			}
-			return errors;
-		}
+            this.outputText = output.OutputText;
+            return !this.outputText.Contains("error");
+        }
 
+        public object Clone()
+        {
+            return new InternalBuildStep(this.stepNumber, this.stepType, this.inputFile, this.outputFile);
+        }
 
-		public string Description
-		{
-			get
-			{
-				string fileName = Path.GetFileName(input);
-				switch (stepType)
-				{
-					case Project.StepType.All:
-						return "Assemble and list " + fileName;
-					case Project.StepType.Listing:
-						return "List " + fileName;
-					case Project.StepType.SymbolTable:
-						return "Symbolize " + fileName;
-					default:
-						return "Assemble " + fileName;
-				}
-			}
-		}
-
-		public override string ToString()
-		{
-			return Description;
-		}
-
-		public object Clone()
-		{
-			return new InternalBuildStep(this.stepNumber, this.stepType, this.input, this.output);
-		}
-	}
-
-	public enum StepType
-	{
-		All,
-		Assemble,
-		Listing,
-		SymbolTable,
-	}
+        public override string ToString()
+        {
+            return this.Description;
+        }
+    }
 }

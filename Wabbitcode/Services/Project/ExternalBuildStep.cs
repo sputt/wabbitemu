@@ -1,106 +1,130 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using System.IO;
-using Revsoft.Wabbitcode.Classes;
-
-namespace Revsoft.Wabbitcode.Services.Project
+﻿namespace Revsoft.Wabbitcode.Services.Project
 {
-	public class ExternalBuildStep : IBuildStep
-	{
-		string args;
-		public string Arguments
-		{
-			get { return args; }
-		}
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
 
-		string input;
-		public string InputFile
-		{
-			get { return input; }
-            set { input = value; }
-		}
+    using Revsoft.Wabbitcode.Classes;
 
-		int stepNumber;
-		public int StepNumber
-		{
-			get { return stepNumber; }
-			set { stepNumber = value; }
-		}
+    public class ExternalBuildStep : IBuildStep
+    {
+        private const int processTimeout = 30 * 1000;
 
-		public ExternalBuildStep(int number, string commandLine)
-		{
-			stepNumber = number;
-			int spaceIndex = commandLine.IndexOf(' ');
-			if (spaceIndex == -1)
-			{
-				input = commandLine;
-				args = "";
-			}
-			else
-			{
-				input = commandLine.Substring(0, spaceIndex);
-				args = commandLine.Substring(spaceIndex, commandLine.Length - spaceIndex);
-			}
+        private string args;
+        private string input;
+        private string outputText = String.Empty;
+        private int stepNumber;
 
-		}
+        public ExternalBuildStep(int number, string commandLine)
+        {
+            this.stepNumber = number;
+            int spaceIndex = commandLine.IndexOf(' ');
+            if (spaceIndex == -1)
+            {
+                this.input = commandLine;
+                this.args = "";
+            }
+            else
+            {
+                this.input = commandLine.Substring(0, spaceIndex);
+                this.args = commandLine.Substring(spaceIndex, commandLine.Length - spaceIndex);
+            }
+        }
 
-		public ExternalBuildStep(int number, string program, string arguments)
-		{
-			stepNumber = number;
-			input = program;
-			args = arguments;
-		}
+        public ExternalBuildStep(int number, string program, string arguments)
+        {
+            this.stepNumber = number;
+            this.input = program;
+            this.args = arguments;
+        }
 
-		public bool Build(bool silent)
-		{
-#if !DEBUG
-			try
-			{
-#endif
-				Process cmd = new Process
-				{
-					StartInfo =
-					{
-						FileName = input,
-						WorkingDirectory = ProjectService.ProjectDirectory,
-						UseShellExecute = false,
-						CreateNoWindow = true,
-						RedirectStandardOutput = true,
-						RedirectStandardError = true,
-						Arguments = args,
-					}
-				};
-				cmd.Start();
-                cmd.WaitForExit(30 * 1000);
-                var output = cmd.StandardOutput.ReadToEnd();
-                DockingService.MainForm.Invoke(() => DockingService.OutputWindow.AddText(output));
-				return true;
-#if !DEBUG
-			}
-			catch (Exception)
-			{
-				return false;
-			}
-#endif
-		}
+        public string Arguments
+        {
+            get
+            {
+                return this.args;
+            }
+        }
 
+        public string Description
+        {
+            get
+            {
+                return "Run " + Path.GetFileName(this.input);
+            }
+        }
 
-		public string Description
-		{
-			get { return "Run " + Path.GetFileName(input); }
-		}
+        public string InputFile
+        {
+            get
+            {
+                return this.input;
+            }
+            set
+            {
+                this.input = value;
+            }
+        }
 
-		public override string ToString()
-		{
-			return Description;
-		}
+        public string OutputText
+        {
+            get
+            {
+                return this.outputText;
+            }
+        }
 
-		public object Clone()
-		{
-			return new ExternalBuildStep(this.stepNumber, this.input, this.args);
-		}
-	}
+        public int StepNumber
+        {
+            get
+            {
+                return this.stepNumber;
+            }
+            set
+            {
+                this.stepNumber = value;
+            }
+        }
+
+        public bool Build()
+        {
+            try
+            {
+                Process cmd = new Process
+                {
+                    StartInfo =
+                    {
+                        FileName = this.input,
+                        WorkingDirectory = ProjectService.ProjectDirectory,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        Arguments = this.args,
+                    }
+                };
+                cmd.Start();
+                cmd.WaitForExit(processTimeout);
+                this.outputText = cmd.StandardOutput.ReadToEnd();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public object Clone()
+        {
+            return new ExternalBuildStep(this.stepNumber, this.input, this.args);
+        }
+
+        public override string ToString()
+        {
+            return this.Description;
+        }
+    }
 }

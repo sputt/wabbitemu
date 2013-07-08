@@ -1,13 +1,14 @@
 ﻿#if USE_DLL
-using System.IO;
+
 using SPASM;
+using System.IO;
 
 public class CStreamWrapper : Stream
 {
-    private IStream m_pStream;
-    private ulong m_nPos;
+private ulong m_nPos;
+private IStream m_pStream;
 
-    public CStreamWrapper(IStream pStream)
+public CStreamWrapper(IStream pStream)
     {
         m_pStream = pStream;
         m_nPos = 0;
@@ -16,33 +17,36 @@ public class CStreamWrapper : Stream
 
     public override bool CanRead
     {
-        get { return true; }
+        get
+        {
+            return true;
+        }
     }
 
     public override bool CanSeek
     {
-        get { return true; }
+        get
+        {
+            return true;
+        }
     }
 
     public override bool CanWrite
     {
-        get { return false; }
-    }
-
-    public override void Flush()
-    {
-        m_pStream.Commit(0);
+        get
+        {
+            return false;
+        }
     }
 
     public override long Length
     {
         get
-        { 
+        {
             tagSTATSTG statstg;
             m_pStream.Stat(out statstg, 0);
             return (long) statstg.cbSize.QuadPart;
         }
-        
     }
 
     public override long Position
@@ -55,6 +59,11 @@ public class CStreamWrapper : Stream
         {
             Position = (long) m_nPos;
         }
+    }
+
+    public override void Flush()
+    {
+        m_pStream.Commit(0);
     }
 
     public override int Read(byte[] buffer, int offset, int count)
@@ -77,21 +86,21 @@ public class CStreamWrapper : Stream
         uint dwOrigin;
         switch (origin)
         {
-            case SeekOrigin.Begin:
-                dwOrigin = 0;
-                m_nPos = (ulong) offset;
-                break;
-            case SeekOrigin.Current:
-                dwOrigin = 0;
-                m_nPos = (ulong) (((long) m_nPos) + offset);
-                offset = (long) m_nPos;
-                break;
-            case SeekOrigin.End:
-                dwOrigin = 2;
-                m_nPos = (ulong) (Length + offset);
-                break;
-            default:
-                throw new System.ArgumentException();
+        case SeekOrigin.Begin:
+            dwOrigin = 0;
+            m_nPos = (ulong) offset;
+            break;
+        case SeekOrigin.Current:
+            dwOrigin = 0;
+            m_nPos = (ulong) (((long) m_nPos) + offset);
+            offset = (long) m_nPos;
+            break;
+        case SeekOrigin.End:
+            dwOrigin = 2;
+            m_nPos = (ulong) (Length + offset);
+            break;
+        default:
+            throw new System.ArgumentException();
         }
         m_pStream.RemoteSeek(nSeek, dwOrigin, out curPos);
         return (long) curPos.QuadPart;

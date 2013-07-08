@@ -1,7 +1,7 @@
 using System;
 using System.Drawing;
 
-namespace Revsoft.Docking
+namespace WeifenLuo.WinFormsUI.Docking
 {
 	public sealed class NestedDockingStatus
 	{

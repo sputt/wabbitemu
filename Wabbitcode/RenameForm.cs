@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Text;
-using System.Windows.Forms;
-
-namespace Revsoft.Wabbitcode
+﻿namespace Revsoft.Wabbitcode
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Data;
+    using System.Drawing;
+    using System.Text;
+    using System.Windows.Forms;
+
     public partial class RenameForm : Form
     {
         public RenameForm()
@@ -15,6 +15,12 @@ namespace Revsoft.Wabbitcode
             InitializeComponent();
         }
 
-        public string NewText { get { return textBox.Text; } }
+        public string NewText
+        {
+            get
+            {
+                return textBox.Text;
+            }
+        }
     }
 }

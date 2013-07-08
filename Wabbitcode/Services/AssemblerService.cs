@@ -5,355 +5,206 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
+
 using Revsoft.Wabbitcode.Classes;
-#if USE_ATL
-using SPASM;
-#endif
-//using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Services.Assembler;
+using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Project;
 
 namespace Revsoft.Wabbitcode.Services
 {
-	public static class AssemblerService
-	{
-		public static readonly List<Errors> ErrorsInFiles = new List<Errors>();
-		const string quote = "\"";
-		public static bool AssembleFile(string filePath, string assembledName, bool silent)
-		{
-#if !USE_DLL
-			//create two new processes to run
-			//setup wabbitspasm to run silently
-			var wabbitspasm = new Process
-			{
-				StartInfo =
-				{
-					FileName = FileLocations.SpasmFile,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					UseShellExecute = false,
-					CreateNoWindow = true
-				}
-			};
+    public class AssemblerService : IService
+    {
+        private static AssemblerService instance;
+        private IAssembler assembler;
+        private string outputFormatting = "=================={0}==================" + Environment.NewLine +
+                                          "Assembling {1}" + Environment.NewLine + "{2}";
+        private bool projectSuppressEvents;
 
-			//some strings we'll need to build 
-			string originalDir = ProjectService.IsInternal ? Path.GetDirectoryName(filePath) : ProjectService.ProjectDirectory;
-			string includedir = "-I \"" + Application.StartupPath + "\"";
-			if (!string.IsNullOrEmpty(Properties.Settings.Default.includeDir) || !ProjectService.IsInternal)
-			{
-				List<string> dirs = ProjectService.IsInternal ? 
-							Properties.Settings.Default.includeDir.Split('\n').ToList<string>() :
-							ProjectService.Project.IncludeDir;
-				foreach (string dir in dirs)
-					if (!string.IsNullOrEmpty(dir))
-						includedir += ";\"" + dir + "\"";
-			}
-			string fileName = Path.GetFileName(filePath);
-            string caseSensitive = Properties.Settings.Default.caseSensitive ? " -A " : " ";
-			wabbitspasm.StartInfo.Arguments = includedir + caseSensitive + "-T -L " + quote + filePath + quote + " " + quote + assembledName + quote;
-			wabbitspasm.StartInfo.WorkingDirectory = originalDir;
-			wabbitspasm.Start();
-#elif USE_ATL
-            AssemblerClass Assembler = new AssemblerClass();
-            string originalDir = filePath.Substring(0, filePath.LastIndexOf('\\'));
-            //ShowMessage();
-            Assembler.ClearIncludeDirectories();
-            Assembler.ClearDefines();
-            Assembler.AddIncludeDirectory(originalDir);
-            //if the user has some include directories we need to format them
-            if (Properties.Settings.Default.includeDir != "")
-            {
-                string[] dirs = Properties.Settings.Default.includeDir.Split('\n');
-                foreach (string dir in dirs)
-                    if (dir != "")
-                        Assembler.AddIncludeDirectory(dir);
-            }
-            //now we can set the args for spasm
-            IStream pStream = Assembler.GetOutputStream();
-            CStreamWrapper TestStream = new CStreamWrapper(pStream);
-            StreamReader sr = new StreamReader(TestStream);
+        private bool isAssembling = false;
 
-            Assembler.SetInputFile(filePath);
-            Assembler.SetOutputFile(assembledName);
+        private bool projectAssembleRequests = false;
 
-            Assembler.SetFlags(SPASM.AssemblyFlags.MODE_NORMAL | AssemblyFlags.MODE_LIST);
-            //assemble that fucker
-            Assembler.Assemble();
+        public delegate void OnFinishAssemblyFile(object sender, AssemblyFinishFileEventArgs e);
 
-            StringBuilder builder = new StringBuilder();
-            string line;
-            do
-            {
-                line = sr.ReadLine();
-                builder.Append(line);
-                builder.Append("\n");
-            } while (line != null);
-                       
-#endif
-			//lets write it to the output window so the user knows whats happening
-            string outputText = "==================" + Path.GetFileName(filePath) + "==================\r\n" +
-                                "Assembling " + filePath + "\r\n" +
-#if USE_DLL
-                                builder.ToString();
-#else
-                                wabbitspasm.StandardOutput.ReadToEnd();
-#endif
-			bool errors = outputText.Contains("error");
-			ParseOutput(outputText, originalDir);
-			if (!silent)
-			{
-				showPanelDelegate showPanels = new showPanelDelegate(ShowErrorPanels);
-				DockingService.MainForm.Invoke(showPanels, outputText, originalDir);
-			}
-			//tell if the assembly was successful
-			return !errors;
-		}
+        public delegate void OnFinishAssemblyProject(object sender, AssemblyFinishProjectEventArgs e);
 
-		public static void ParseOutput(string outputText, string startDir)
-		{
-			AssemblerService.ErrorsInFiles.Clear();
-			string[] lines = outputText.Split('\n');
-			foreach (string line in lines)
-			{
-				int thirdColon, secondColon, firstColon;
-				string file, lineNum, description;
-				if (line.Contains("error"))
-				{
-					firstColon = line.IndexOf(':', 3);
-					secondColon = line.IndexOf(':', firstColon + 1);
-					thirdColon = line.IndexOf(':', secondColon + 1);
-					if (firstColon < 0 || secondColon < 0 || thirdColon < 0)
-					{
-						AssemblerService.ErrorsInFiles[AssemblerService.ErrorsInFiles.Count - 1].description += line;
-					}
-					else
-					{
-						file = Path.Combine(startDir, line.Substring(0, firstColon));
-						lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
-						int lineNumber;
-						if (!int.TryParse(lineNum, out lineNumber))
-							lineNumber = -1;
-						description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-						ErrorsInFiles.Add(new Errors(file, lineNumber, description, false));
-					}
-				}
-				if (!line.Contains("warning"))
-					continue;
-				firstColon = line.IndexOf(':', 3);
-				secondColon = line.IndexOf(':', firstColon + 1);
-				thirdColon = line.IndexOf(':', secondColon + 1);
-				if (firstColon < 0 || secondColon < 0 || thirdColon < 0)
-				{
-					ErrorsInFiles[ErrorsInFiles.Count - 1].description += line;
-				}
-				else
-				{
-					file = Path.Combine(startDir, line.Substring(0, firstColon));
-					lineNum = line.Substring(firstColon + 1, secondColon - firstColon - 1);
-					description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-					ErrorsInFiles.Add(new Errors(file, Convert.ToInt32(lineNum), description, true));
-				}
-			}
-		}
+        public event OnFinishAssemblyFile AssemblerFileFinished;
 
-		private delegate void showPanelDelegate(string outputText, string originalDir);
-		private static void ShowErrorPanels(string outputText, string originalDir)
-		{
-			try
-			{
-                DockingService.OutputWindow.AddText(outputText);
-				DockingService.OutputWindow.HighlightOutput();
-				//its more fun with colors
-				DockingService.ErrorList.ParseOutput(outputText, originalDir);
-				DockingService.ShowDockPanel(DockingService.ErrorList);
-				DockingService.ShowDockPanel(DockingService.OutputWindow);
-                if (DockingService.ActiveDocument != null)
-                    DockingService.ActiveDocument.Refresh();
-				foreach (NewEditor child in DockingService.Documents)
-					child.UpdateIcons();
-            }
-			catch (Exception ex)
-			{
-				MessageBox.Show(ex.ToString());
-			}
-		}
+        public event OnFinishAssemblyProject AssemblerProjectFinished;
 
-		//static Thread assemblerThread;
-		internal static void AssembleCurrentFile()
-		{
-            if (!ProjectService.IsInternal)
-                ThreadPool.QueueUserWorkItem(new WaitCallback(AssembleProject));
-            else if (DockingService.ActiveDocument != null)
-            {
-                bool saved = DockingService.ActiveDocument.SaveFile();
-                if (saved)
-                    ThreadPool.QueueUserWorkItem(new WaitCallback(AssembleFile));
-            }
-            else return;
-		}
-
-		private static void AssembleFile(object data)
-		{
-			string text = DockingService.ActiveDocument.FileName;
-			AssembleFile(text, Path.ChangeExtension(text, GetExtension(Properties.Settings.Default.outputFile)), false);
-		}
-
-        private static bool isBuildProj;
-        public static bool IsBuildingProject
+        public static AssemblerService Instance
         {
-            get { return isBuildProj; }
-        }
-		public static void AssembleProject(object data)
-		{
-			bool silent = false;
-			if (data != null)
-				silent = (bool)data;
-            isBuildProj = true;
-			if (!silent)
-				DockingService.OutputWindow.ClearOutput();
-			ProjectService.Project.BuildSystem.Build(silent);
-            isBuildProj = false;
-		}
-
-		public static bool CreateSymTable(string filePath, string assembledName, bool silent)
-		{
-			Resources.GetResource("spasm.exe", FileLocations.SpasmFile);
-			//Clear any other assemblings
-            DockingService.OutputWindow.ClearOutput();
-			//Get our emulator
-			Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
-#if !USE_DLL
-			//create two new processes to run
-			var wabbitspasm = new Process
-			{
-				StartInfo =
-				{
-					FileName = FileLocations.SpasmFile,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					UseShellExecute = false,
-					CreateNoWindow = true
-				}
-			};
-			//setup wabbitspasm to run silently
-
-			//some strings we'll need to build 
-			string originalDir = Path.GetDirectoryName(filePath);
-			string includedir = "-I \"" + Application.StartupPath + "\"";
-			if (!string.IsNullOrEmpty(Properties.Settings.Default.includeDir))
-			{
-				string[] dirs = Properties.Settings.Default.includeDir.Split('\n');
-				foreach (string dir in dirs)
-				{
-					if (!string.IsNullOrEmpty(dir))
-						includedir += ";\"" + dir + "\"";
-				}
-			}
-			string fileName = Path.GetFileName(filePath);
-			// filePath.Substring(filePath.LastIndexOf('\\') + 1, filePath.Length - filePath.LastIndexOf('\\') - 1);
-			//string assembledName = Path.ChangeExtension(fileName, outputFileExt);
-			wabbitspasm.StartInfo.Arguments = includedir + " -L " + fileName + " " + quote + assembledName + quote;
-			wabbitspasm.StartInfo.WorkingDirectory = originalDir;
-			wabbitspasm.Start();
-
-#else
-            string originalDir = filePath.Substring(0, filePath.LastIndexOf('\\'));
-            SpasmMethods.ClearIncludes();
-            SpasmMethods.ClearDefines();
-            SpasmMethods.AddInclude(originalDir);
-            //if the user has some include directories we need to format them
-            if (Properties.Settings.Default.includeDir != "")
+            get
             {
-                string[] dirs = Properties.Settings.Default.includeDir.Split('\n');
+                if (instance == null)
+                {
+                    instance = new AssemblerService();
+                }
+
+                return instance;
+            }
+        }
+
+        public AssemblerOutput AssembleFile(string inputFile)
+        {
+            string outputFile = Path.ChangeExtension(inputFile, this.GetExtension(Properties.Settings.Default.outputFile));
+            return this.AssembleFile(inputFile, outputFile, AssemblyFlags.Normal, false);
+        }
+
+        public AssemblerOutput AssembleFile(string inputFile, string outputFile)
+        {
+            return this.AssembleFile(inputFile, outputFile, AssemblyFlags.Normal, false);
+        }
+
+        public AssemblerOutput AssembleFile(string inputFile, string outputFile, AssemblyFlags flags)
+        {
+            return this.AssembleFile(inputFile, outputFile, AssemblyFlags.Normal, this.projectSuppressEvents);
+        }
+
+        public AssemblerOutput AssembleFile(string inputFile, string outputFile, AssemblyFlags flags, bool suppressEvents)
+        {
+            this.assembler = new SpasmExeAssembler();
+
+            string originalDir = ProjectService.IsInternal ? Path.GetDirectoryName(inputFile) : ProjectService.ProjectDirectory;
+            this.assembler.SetWorkingDirectory(originalDir);
+
+            // include dirs
+            this.assembler.AddIncludeDir(Application.StartupPath);
+            if (!string.IsNullOrEmpty(Properties.Settings.Default.includeDir) || !ProjectService.IsInternal)
+            {
+                List<string> dirs = ProjectService.IsInternal ?
+                                    Properties.Settings.Default.includeDir.Split('\n').ToList<string>() :
+                                    ProjectService.Project.IncludeDir;
                 foreach (string dir in dirs)
                 {
-                    if (dir != "")
-                        SpasmMethods.AddInclude(dir);
+                    this.assembler.AddIncludeDir(dir);
                 }
             }
-            //get the file name we'll use and use it to create the assembled name
-            string fileName = filePath.Substring(filePath.LastIndexOf('\\') + 1, filePath.Length - filePath.LastIndexOf('\\') - 1);
-            //string assembledName = Path.ChangeExtension(fileName, outputFileExt);
-            //now we can set the args for spasm
-            int error = 0;
-            error |= SpasmMethods.SetInputFile(Path.Combine(originalDir, fileName));
-            error |= SpasmMethods.SetOutputFile(Path.Combine(originalDir, assembledName));
-            //emulator setup
-            //emulator.StartInfo.FileName = emuLoc;
-            //assemble that fucker
-            uint STD_ERROR_HANDLE = 0xfffffff4;
-            uint STD_OUTPUT_HANDLE = 0xfffffff5;
-            StreamWriter test = new StreamWriter(Application.StartupPath + "\\test.txt");
-            //FileStream test = new FileStream(Application.StartupPath + "\\test.txt", FileMode.Create);
-            //SetStdHandle(STD_ERROR_HANDLE, test.Handle);
-            //SetStdHandle(STD_OUTPUT_HANDLE, test.Handle);
-            Console.SetOut(test);
-            Console.SetError(test);
-            //StreamReader reader = myprocess.StandardOutput;
-            SpasmMethods.RunAssembly();
-            Console.WriteLine("test line");
-            //string tryread = reader.ReadToEnd();
-            //string output = myprocess.StandardOutput.ReadToEnd();
-            test.Flush();
-            test.Close();
-#endif
-			DockingService.ShowDockPanel(DockingService.OutputWindow);
-			//lets write it to the output window so the user knows whats happening
-            string outputText = "==================" + fileName + "==================\r\n" +
-                                                "SymTable for " + originalDir + "\\" + fileName + "\r\n"
-#if USE_DLL
-;
-#else
-                                                + wabbitspasm.StandardOutput.ReadToEnd();
-#endif
-			bool errors = outputText.Contains("error");
-			ParseOutput(outputText, originalDir);
-			if (!silent)
-			{
-				showPanelDelegate showPanels = new showPanelDelegate(ShowErrorPanels);
-				DockingService.MainForm.Invoke(showPanels, outputText, originalDir);
-			}
-			return !errors;
-		}
 
+            // setup files
+            this.assembler.SetInputFile(inputFile);
+            this.assembler.SetOutputFile(outputFile);
 
-		internal static string GetExtension(int outputFile)
-		{
-			string outputFileExt = "bin";
-			switch (outputFile)
-			{
-				case 1:
-					outputFileExt = "73p";
-					break;
-				case 2:
-					outputFileExt = "82p";
-					break;
-				case 3:
-					outputFileExt = "83p";
-					break;
-				case 4:
-					outputFileExt = "8xp";
-					break;
-				case 5:
-					outputFileExt = "8xk";
-					break;
-				case 6:
-					outputFileExt = "85p";
-					break;
-				case 7:
-					outputFileExt = "85s";
-					break;
-				case 8:
-					outputFileExt = "86p";
-					break;
-				case 9:
-					outputFileExt = "86s";
-					break;
-			}
-			return outputFileExt;
-		}
+            // set flags
+            this.assembler.SetFlags(flags);
+            this.assembler.SetCaseSensitive(Properties.Settings.Default.caseSensitive);
 
-        internal static void InitAssembler()
+            // assemble
+            string rawOutput = this.assembler.Assemble();
+
+            // lets write it to the output window so the user knows whats happening
+            string outputText = string.Format(this.outputFormatting, Path.GetFileName(inputFile),  inputFile, rawOutput);
+            bool errors = outputText.Contains("error");
+            if (!suppressEvents)
+            {
+                this.OnAssemblerFileFinished(this, new AssemblyFinishFileEventArgs(inputFile, outputFile, outputText, !errors));
+            }
+
+            // tell if the assembly was successful
+            return new AssemblerOutput(outputText, !errors);
+        }
+
+        public void AssembleProject(IProject project, bool suppressEvents = false)
         {
-            
+            if (projectAssembleRequests)
+            {
+                return;
+            }
+            if (this.isAssembling)
+            {
+                this.projectAssembleRequests = true;
+                return;
+            }
+            this.isAssembling = true;
+            ProjectService.ProjectWatcher.EnableRaisingEvents = false;
+
+            this.projectSuppressEvents = suppressEvents;
+            bool succeeded = project.BuildSystem.Build();
+
+            ProjectService.ProjectWatcher.EnableRaisingEvents = true;
+            if (!suppressEvents)
+            {
+                this.OnAssemblerProjectFinished(this, new AssemblyFinishProjectEventArgs(project, project.BuildSystem.OutputText, succeeded));
+            }
+            this.isAssembling = false;
+            if (this.projectAssembleRequests)
+            {
+                this.projectAssembleRequests = false;
+                AssembleProject(project, suppressEvents);
+            }
+        }
+
+        public void DestroyService()
+        {
+            this.assembler = null;
+        }
+
+        public void InitService(params object[] objects)
+        {
+            if (objects.Length != 1)
+            {
+                throw new ArgumentException("Invalid number of arguments");
+            }
+
+            this.assembler = objects[0] as IAssembler;
+            if (this.assembler == null)
+            {
+                throw new ArgumentException("First is not of type of IAssembler");
+            }
+        }
+
+        internal string GetExtension(int outputFile)
+        {
+            string outputFileExt = "bin";
+            switch (outputFile)
+            {
+            case 1:
+                outputFileExt = "73p";
+                break;
+            case 2:
+                outputFileExt = "82p";
+                break;
+            case 3:
+                outputFileExt = "83p";
+                break;
+            case 4:
+                outputFileExt = "8xp";
+                break;
+            case 5:
+                outputFileExt = "8xk";
+                break;
+            case 6:
+                outputFileExt = "85p";
+                break;
+            case 7:
+                outputFileExt = "85s";
+                break;
+            case 8:
+                outputFileExt = "86p";
+                break;
+            case 9:
+                outputFileExt = "86s";
+                break;
+            }
+
+            return outputFileExt;
+        }
+
+        protected void OnAssemblerFileFinished(object sender, AssemblyFinishFileEventArgs e)
+        {
+            if (this.AssemblerFileFinished != null)
+            {
+                this.AssemblerFileFinished(sender, e);
+            }
+        }
+
+        protected void OnAssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
+        {
+            if (this.AssemblerProjectFinished != null)
+            {
+                this.AssemblerProjectFinished(sender, e);
+            }
         }
     }
 }

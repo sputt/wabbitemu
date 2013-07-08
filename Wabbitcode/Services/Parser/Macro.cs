@@ -1,72 +1,75 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Revsoft.Wabbitcode.Services.Parser
+﻿namespace Revsoft.Wabbitcode.Services.Parser
 {
-	class Macro : IMacro
-	{
-		public Macro(DocLocation loc, string macroName, List<string> args, string contents, string description, ParserInformation parent)
-		{
-			Location = loc;
-			Name = macroName;
-			Contents = contents;
-			Description = description;
-			Arguments = args;
-			Parent = parent;
-		}
-		public string Name
-		{
-			get;
-			set;
-		}
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
 
-		public DocLocation Location
-		{
-			get;
-			set;
-		}
-
-		public string Contents
-		{
-			get;
-			set;
-		}
-
-		public string Description
-		{
-			get;
-			set;
-		}
-
-		public ParserInformation Parent
-		{
-			get;
-			set;
-		}
-
-		public IList<string> Arguments
-		{
-			get;
-			set;
-		}
-
-        public override string ToString()
+    internal class Macro : IMacro
+    {
+        public Macro(DocLocation loc, string macroName, List<string> args, string contents, string description, ParserInformation parent)
         {
-            return Name;
+            this.Location = loc;
+            this.Name = macroName;
+            this.Contents = contents;
+            this.Description = description;
+            this.Arguments = args;
+            this.Parent = parent;
         }
 
+        public IList<string> Arguments
+        {
+            get;
+            set;
+        }
+
+        public string Contents
+        {
+            get;
+            set;
+        }
+
+        public string Description
+        {
+            get;
+            set;
+        }
 
         public bool IsWord
         {
-            get { return true; }                    //assume that it returns a 16 bit val
+            get
+            {
+                return true;    // assume that it returns a 16 bit val
+            }
+        }
+
+        public DocLocation Location
+        {
+            get;
+            set;
+        }
+
+        public string Name
+        {
+            get;
+            set;
+        }
+
+        public ParserInformation Parent
+        {
+            get;
+            set;
         }
 
         public int Value
         {
             get;
             set;
+        }
+
+        public override string ToString()
+        {
+            return this.Name;
         }
     }
 }

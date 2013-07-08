@@ -1,7 +1,7 @@
 using System;
 using System.Windows.Forms;
 
-namespace Revsoft.Docking
+namespace WeifenLuo.WinFormsUI.Docking
 {
 	internal class DummyControl : Control
 	{

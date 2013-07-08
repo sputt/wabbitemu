@@ -195,7 +195,7 @@
       <Value Profile="(Default)">Normal</Value>
     </Setting>
     <Setting Name="WindowSize" Type="System.Drawing.Size" Scope="User">
-      <Value Profile="(Default)">500, 300</Value>
+      <Value Profile="(Default)">800, 600</Value>
     </Setting>
     <Setting Name="recentlyUpdated" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">False</Value>
@@ -223,6 +223,9 @@
     </Setting>
     <Setting Name="configLoc" Type="System.String" Scope="User">
       <Value Profile="(Default)">%docs%\Wabbitcode\DockPanel.config</Value>
+    </Setting>
+    <Setting Name="checkUpdates" Type="System.String" Scope="User">
+      <Value Profile="(Default)">True</Value>
     </Setting>
   </Settings>
 </SettingsFile>

@@ -1,8 +1,7 @@
 using System;
 using System.ComponentModel;
-using Revsoft.Docking.Resource;
 
-namespace Revsoft.Docking
+namespace WeifenLuo.WinFormsUI.Docking
 {
 	[AttributeUsage(AttributeTargets.All)]
 	internal sealed class LocalizedDescriptionAttribute : DescriptionAttribute
