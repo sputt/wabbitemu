@@ -12,7 +12,7 @@
     using Revsoft.Wabbitcode.Services;
     using Revsoft.Wabbitcode.Services.Parser;
 
-    public static class ParserService
+    public class ParserService
     {
         private const char commentChar = ';';
         private const string commentString = "#comment";
@@ -24,10 +24,10 @@
         private const string includeString = "#include";
         private const string macroString = "#macro";
 
-        private static string baseDir;
-        private static List<KeyValuePair<string, int>> lineLengthGroup;
+        private string baseDir;
+        private List<KeyValuePair<string, int>> lineLengthGroup;
 
-        public static List<List<Reference>> FindAllReferences(string refString)
+        public List<List<Reference>> FindAllReferences(string refString)
         {
             var refsList = new List<List<Reference>>();
             if (ProjectService.IsInternal)
@@ -63,7 +63,7 @@
         /// </summary>
         /// <param name="file">Fully rooted path to the file</param>
         /// <param name="refString">String to find references to</param>
-        public static List<Reference> FindAllReferencesInFile(string file, string refString)
+        public List<Reference> FindAllReferencesInFile(string file, string refString)
         {
             var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
             int len = refString.Length;
@@ -152,7 +152,7 @@
             return refs;
         }
 
-        public static int GetWord(string text, int offset)
+        public int GetWord(string text, int offset)
         {
             int newOffset = offset;
             char test = text[offset];
@@ -179,7 +179,7 @@
             return newOffset;
         }
 
-        public static ParserInformation ParseFile(int hashCode, string filename)
+        public ParserInformation ParseFile(int hashCode, string filename)
         {
             string lines = null;
             StreamReader reader = null;
@@ -223,7 +223,7 @@
             }
         }
 
-        internal static bool IsReservedKeyword(string keyword)
+        internal bool IsReservedKeyword(string keyword)
         {
             return keyword == "ccf" || keyword == "cpdr" || keyword == "cpd" || keyword == "cpir" || keyword == "cpi" || keyword == "cpl" ||
                    keyword == "daa" || keyword == "di" || keyword == "ei" || keyword == "exx" || keyword == "halt" || keyword == "indr" ||
@@ -238,7 +238,7 @@
                    keyword == "set" || keyword == "res" || keyword == "in" || keyword == "out" || keyword == "ld";
         }
 
-        internal static ParserInformation ParseFile(int hashCode, string file, string lines)
+        internal ParserInformation ParseFile(int hashCode, string file, string lines)
         {
             int total = 0;
             lineLengthGroup = lines.Split('\n').Select(l => new KeyValuePair<string, int>(l, total += l.Length + 1)).ToList();
@@ -519,7 +519,7 @@
                 }
             }
 
-            RemoveParseData(file);
+            ProjectService.RemoveParseData(file);
             lock (ProjectService.ParseInfo)
             {
                 ProjectService.ParseInfo.Add(info);
@@ -557,16 +557,7 @@
             return info;
         }
 
-        internal static void RemoveParseData(string fullPath)
-        {
-            ParserInformation replaceMe = ProjectService.GetParseInfo(fullPath);
-            if (replaceMe != null)
-            {
-                ProjectService.ParseInfo.Remove(replaceMe);
-            }
-        }
-
-        private static int FindChar(string substring, int counter, char charToFind)
+        private int FindChar(string substring, int counter, char charToFind)
         {
             if (!IsValidIndex(substring, counter))
             {
@@ -587,7 +578,7 @@
             return counter;
         }
 
-        private static void FindIncludedFiles(string file)
+        private void FindIncludedFiles(string file)
         {
             if (file.IndexOfAny(Path.GetInvalidPathChars()) != -1)
             {
@@ -622,7 +613,7 @@
             fileInfo.ParsingIncludes = false;
         }
 
-        private static int FindString(string substring, int counter, string searchString)
+        private int FindString(string substring, int counter, string searchString)
         {
             if (!IsValidIndex(substring, counter))
             {
@@ -650,12 +641,12 @@
             return counter;
         }
 
-        private static string GetDescription(string lines, int counter)
+        private string GetDescription(string lines, int counter)
         {
             return "";
         }
 
-        private static int GetLabel(string substring, int counter)
+        private int GetLabel(string substring, int counter)
         {
             if (!IsValidIndex(substring, counter))
             {
@@ -675,7 +666,7 @@
             return counter;
         }
 
-        private static int GetLine(int counter)
+        private int GetLine(int counter)
         {
             int i;
             for (i = 1; i < lineLengthGroup.Count; i++)
@@ -689,7 +680,7 @@
             return i;
         }
 
-        private static List<string> GetMacroArgs(string substring, int counter)
+        private List<string> GetMacroArgs(string substring, int counter)
         {
             List<string> args = new List<string>();
             int newCounter;
@@ -717,17 +708,17 @@
             return args;
         }
 
-        private static bool IsValidIndex(string substring, int counter)
+        private bool IsValidIndex(string substring, int counter)
         {
             return counter > -1 && counter < substring.Length;
         }
 
-        private static bool IsValidLabelChar(char c)
+        private bool IsValidLabelChar(char c)
         {
             return char.IsLetterOrDigit(c) || c == '_';
         }
 
-        private static int SkipToEOCL(string substring, int counter)
+        private int SkipToEOCL(string substring, int counter)
         {
             while (IsValidIndex(substring, counter) && substring[counter] != '\n' && substring[counter] != '\r' &&
                    substring[counter] != commentChar && substring[counter] != endOfLineChar)
@@ -744,7 +735,7 @@
             return !IsValidIndex(substring, counter) ? -1 : counter;
         }
 
-        /*public static int EvaluateContents(string contents)
+        /*public int EvaluateContents(string contents)
         {
             List<IParserData> parserData = new List<IParserData>();
             string text = contents.ToLower();
@@ -778,7 +769,7 @@
             else
                 return 0;
         }*/
-        private static int SkipToEOL(string substring, int counter)
+        private int SkipToEOL(string substring, int counter)
         {
             while (IsValidIndex(substring, counter) && substring[counter] != '\n' && substring[counter] != '\r')
             {
@@ -793,7 +784,7 @@
             return !IsValidIndex(substring, counter) ? -1 : counter;
         }
 
-        private static int SkipWhitespace(string substring, int counter)
+        private int SkipWhitespace(string substring, int counter)
         {
             while (IsValidIndex(substring, counter) &&
                    (substring[counter] != '\r' && substring[counter]  != '\n')

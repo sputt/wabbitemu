@@ -35,8 +35,9 @@
 
         private void okButton_Click(object sender, EventArgs e)
         {
+            ParserService parserService = new ParserService();
             DocumentService.InternalSave = true;
-            var refs = ParserService.FindAllReferences(this.word);
+            var refs = parserService.FindAllReferences(this.word);
             TextEditorControl editor = null;
             foreach (var file in refs)
             {
@@ -92,9 +93,10 @@
 
         private void previewButton_Click(object sender, EventArgs e)
         {
+            ParserService parserService = new ParserService();
             this.tabControl.TabPages.Clear();
             this.Height = this.Height + 400;
-            var refs = ParserService.FindAllReferences(this.word);
+            var refs = parserService.FindAllReferences(this.word);
             foreach (var file in refs)
             {
                 string fileName = file[0].File;

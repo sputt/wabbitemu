@@ -37,7 +37,6 @@ namespace Revsoft.Wabbitcode
         private Bitmap errorBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.error.png"));
         private List<CancellationTokenSource> queuedFiles = new List<CancellationTokenSource>();
         private MainFormRedone mainForm;
-        private WabbitcodeDebugger debugger;
         #endregion
 
         #region Properties
@@ -139,6 +138,8 @@ namespace Revsoft.Wabbitcode
 			InitializeComponent();
 
             this.mainForm = mainForm;
+            this.mainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+
 			this.hasInited = true;
 			textChangedTimer.Tick += new EventHandler(textChangedTimer_Tick);
 			
@@ -174,6 +175,11 @@ namespace Revsoft.Wabbitcode
 			CodeCompletionKeyHandler.Attach(this, editorBox);
 		}
 
+        void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
+        {
+            
+        }
+
 		protected override string GetPersistString()
 		{
 			// Add extra information into the persist string for this document
@@ -186,26 +192,26 @@ namespace Revsoft.Wabbitcode
 
 		void TextArea_ToolTipRequest(object sender, TextEditor.ToolTipRequestEventArgs e)
 		{
-            if (debugger == null || debugger.SymbolTable == null || !e.InDocument)
+            if (!e.InDocument)
             {
                 return;
             }
 			TextLocation loc = e.LogicalPosition;
 			int offset = editorBox.Document.GetOffsetForLineNumber(loc.Line);
 			string text = editorBox.Document.GetWord(offset + loc.Column);
-			if (!Settings.Default.caseSensitive)
-				text = text.ToUpper();
-			if (debugger.SymbolTable.StaticLabels.Contains(text))
-			{
-				e.ShowToolTip(debugger.SymbolTable.StaticLabels[text].ToString());
-			}
+            if (!Settings.Default.caseSensitive)
+            {
+                text = text.ToUpper();
+            }
+            e.ShowToolTip(mainForm.TranlateSymbolToAddress(text));
+
 		}
 
 		void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
 		{
             if (e.Breakpoint.Anchor.IsDeleted == false)
             {
-                debugger.RemoveBreakpoint(e.Breakpoint.LineNumber, FileName);
+                mainForm.RemoveBreakpoint(e.Breakpoint.LineNumber, FileName);
             }
             if (DockingService.BreakManager != null)
             {
@@ -215,7 +221,7 @@ namespace Revsoft.Wabbitcode
 
 		void BreakpointManager_Added(object sender, BreakpointEventArgs e)
 		{
-			debugger.AddBreakpoint(e.Breakpoint.LineNumber, FileName);
+			mainForm.AddBreakpoint(e.Breakpoint.LineNumber, FileName);
             if (DockingService.BreakManager != null)
             {
                 DockingService.BreakManager.UpdateManager();
@@ -227,12 +233,7 @@ namespace Revsoft.Wabbitcode
 		{
 			if (string.IsNullOrEmpty(editorBox.Text))
 			{
-				ListFileValue label = debugger.GetListValue(FileName, editorBox.ActiveTextAreaControl.Caret.Line);
-                if (label != null)
-                {
-                    string assembledInfo = "Page: " + label.Page.ToString() + " Address: " + label.Address.ToString("X4");
-                    mainForm.SetToolStripText(assembledInfo);
-                }
+                mainForm.UpdateAssembledInfo(fileName, editorBox.ActiveTextAreaControl.Caret.Line);
 				int start;
 				int end;
 				if (editorBox.ActiveTextAreaControl.SelectionManager.SelectionCollection.Count == 1)
@@ -466,10 +467,16 @@ namespace Revsoft.Wabbitcode
                 item.Cancel();
             }
 
-			if (!DocumentChanged) 
-				return;
-			if (string.IsNullOrEmpty(FileName))
-				FileName = "New Document";
+            if (!DocumentChanged)
+            {
+                return;
+            }
+
+            if (string.IsNullOrEmpty(FileName))
+            {
+                FileName = "New Document";
+            }
+
 			DialogResult dlg = MessageBox.Show(this, "Document '" + FileName + "' has changed. Save changes?", "Wabbitcode", MessageBoxButtons.YesNoCancel);
 			switch (dlg)
 			{
@@ -603,7 +610,8 @@ namespace Revsoft.Wabbitcode
 			infoLinesQueued++;
 			Action ParseFile = () =>
 			{
-				parseInfo = ParserService.ParseFile(EditorText.GetHashCode() , FileName, EditorText);
+                ParserService parserService = new ParserService();
+				parseInfo = parserService.ParseFile(EditorText.GetHashCode() , FileName, EditorText);
 				if (DockingService.HasBeenInited && string.Compare(FileName, DocumentService.ActiveFileName, true) == 0)
 				{
 					mainForm.Invoke(() => UpdateLabelBox());
@@ -821,9 +829,10 @@ namespace Revsoft.Wabbitcode
 
 		private void findRefContext_Click(object sender, EventArgs e)
 		{
+            ParserService parserService = new ParserService();
 			string word = GetWord();
 			DockingService.FindResults.NewFindResults(word, ProjectService.ProjectName);
-			var refs = ParserService.FindAllReferences(word);
+			var refs = parserService.FindAllReferences(word);
             foreach (var reference in refs)
             {
                 foreach (var fileRef in reference)
@@ -1125,7 +1134,7 @@ namespace Revsoft.Wabbitcode
 
 		private void setNextStateMenuItem_Click(object sender, EventArgs e)
 		{
-			debugger.SetPCToSelect(FileName, editorBox.ActiveTextAreaControl.Caret.Line);
+			mainForm.SetPC(fileName, editorBox.ActiveTextAreaControl.Caret.Line);
 		}
 
 		internal void Cut()
@@ -1544,11 +1553,13 @@ namespace Revsoft.Wabbitcode
 		internal void HighlightCall(int lineNumber)
 		{
 			string line = editorBox.Document.TextContent.Split('\n')[lineNumber];
-			if (line.Contains(';'))
-				line = line.Remove(line.IndexOf(';'));
+            if (line.Contains(';'))
+            {
+                line = line.Remove(line.IndexOf(';'));
+            }
 			if (line.Contains("call") || line.Contains("bcall") || line.Contains("b_call") || line.Contains("rst"))
 			{
-				debugger.StepStack.Push(lineNumber);
+                mainForm.AddStackEntry(lineNumber);
 				//DocumentService.HighlightLine(lineNumber, Color.Green);
 			}
 			//if (line.Contains("ret"))

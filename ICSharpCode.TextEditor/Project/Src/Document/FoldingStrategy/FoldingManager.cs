@@ -294,6 +294,10 @@ namespace Revsoft.TextEditor.Document
 		
 		public void DeserializeFromString(string str)
 		{
+            if (string.IsNullOrEmpty(str))
+            {
+                return;
+            }
 			try {
 				string[] lines = str.Split('\n');
 				for (int i = 0; i < lines.Length && lines[i].Length > 0; i += 4) {

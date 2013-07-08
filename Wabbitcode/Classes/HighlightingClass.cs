@@ -84,7 +84,7 @@ namespace Revsoft.Wabbitcode.Classes
                 string[] preprocessor =
                 {
                     "#include", "#define", "#ifdef", "#ifndef", "#if", "#else", "#endif",
-                    "#defcont", "#undefine", "#macro", "#endmacro", "#region", "#endregion"
+                    "#defcont", "#undefine", "#undef", "#macro", "#endmacro", "#region", "#endregion"
                 };
                 string[] directives =
                 {

@@ -222,7 +222,7 @@
             this.statusBar.SuspendLayout();
             this.mainToolBar.SuspendLayout();
             this.mainMenu1.SuspendLayout();
-            this.toolStripContainer.TopToolStripPanel.SuspendLayout();
+            this.toolStripContainer.ContentPanel.SuspendLayout();
             this.toolStripContainer.SuspendLayout();
             this.debugToolStrip.SuspendLayout();
             this.editorToolStrip.SuspendLayout();
@@ -1488,6 +1488,7 @@
             // 
             // toolStripContainer.ContentPanel
             // 
+            this.toolStripContainer.ContentPanel.Controls.Add(this.debugToolStrip);
             this.toolStripContainer.ContentPanel.Size = new System.Drawing.Size(990, 0);
             this.toolStripContainer.Dock = System.Windows.Forms.DockStyle.Top;
             this.toolStripContainer.LeftToolStripPanelVisible = false;
@@ -1497,10 +1498,6 @@
             this.toolStripContainer.Size = new System.Drawing.Size(990, 25);
             this.toolStripContainer.TabIndex = 9;
             this.toolStripContainer.Text = "toolStripContainer1";
-            // 
-            // toolStripContainer.TopToolStripPanel
-            // 
-            this.toolStripContainer.TopToolStripPanel.Controls.Add(this.debugToolStrip);
             // 
             // debugToolStrip
             // 
@@ -1517,7 +1514,7 @@
             this.stepToolButton,
             this.stepOverToolButton,
             this.stepOutToolButton});
-            this.debugToolStrip.Location = new System.Drawing.Point(3, 0);
+            this.debugToolStrip.Location = new System.Drawing.Point(556, 0);
             this.debugToolStrip.Name = "debugToolStrip";
             this.debugToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
             this.debugToolStrip.Size = new System.Drawing.Size(170, 25);
@@ -1532,6 +1529,7 @@
             this.runDebuggerToolButton.Name = "runDebuggerToolButton";
             this.runDebuggerToolButton.Size = new System.Drawing.Size(23, 22);
             this.runDebuggerToolButton.Text = "Start Debug";
+            this.runDebuggerToolButton.Click += new System.EventHandler(this.startDebugMenuItem_Click);
             // 
             // pauseToolButton
             // 
@@ -1542,6 +1540,7 @@
             this.pauseToolButton.Name = "pauseToolButton";
             this.pauseToolButton.Size = new System.Drawing.Size(23, 22);
             this.pauseToolButton.Text = "Pause";
+            this.pauseToolButton.Click += new System.EventHandler(this.pauseToolButton_Click);
             // 
             // stopToolButton
             // 
@@ -1552,6 +1551,7 @@
             this.stopToolButton.Name = "stopToolButton";
             this.stopToolButton.Size = new System.Drawing.Size(23, 22);
             this.stopToolButton.Text = "Stop";
+            this.stopToolButton.Click += new System.EventHandler(this.cancelDebug_Click);
             // 
             // toolStripSeparator1
             // 
@@ -1568,6 +1568,7 @@
             this.gotoCurrentToolButton.Name = "gotoCurrentToolButton";
             this.gotoCurrentToolButton.Size = new System.Drawing.Size(23, 22);
             this.gotoCurrentToolButton.Text = "Goto Current Line";
+            this.gotoCurrentToolButton.Click += new System.EventHandler(this.gotoCurrentToolButton_Click);
             // 
             // stepToolButton
             // 
@@ -1578,6 +1579,7 @@
             this.stepToolButton.Name = "stepToolButton";
             this.stepToolButton.Size = new System.Drawing.Size(23, 22);
             this.stepToolButton.Text = "Step";
+            this.stepToolButton.Click += new System.EventHandler(this.stepButton_Click);
             // 
             // stepOverToolButton
             // 
@@ -1589,6 +1591,7 @@
             this.stepOverToolButton.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
             this.stepOverToolButton.Size = new System.Drawing.Size(23, 22);
             this.stepOverToolButton.Text = "Step Over";
+            this.stepOverToolButton.Click += new System.EventHandler(this.stepOverMenuItem_Click);
             // 
             // stepOutToolButton
             // 
@@ -1599,6 +1602,7 @@
             this.stepOutToolButton.Name = "stepOutToolButton";
             this.stepOutToolButton.Size = new System.Drawing.Size(23, 22);
             this.stepOutToolButton.Text = "Step Out";
+            this.stepOutToolButton.Click += new System.EventHandler(this.stepOutMenuItem_Click);
             // 
             // editorToolStrip
             // 
@@ -1786,8 +1790,8 @@
             this.mainToolBar.PerformLayout();
             this.mainMenu1.ResumeLayout(false);
             this.mainMenu1.PerformLayout();
-            this.toolStripContainer.TopToolStripPanel.ResumeLayout(false);
-            this.toolStripContainer.TopToolStripPanel.PerformLayout();
+            this.toolStripContainer.ContentPanel.ResumeLayout(false);
+            this.toolStripContainer.ContentPanel.PerformLayout();
             this.toolStripContainer.ResumeLayout(false);
             this.toolStripContainer.PerformLayout();
             this.debugToolStrip.ResumeLayout(false);

@@ -263,25 +263,9 @@
 
         internal static NewEditor OpenDocument(string filename)
         {
-#if !DEBUG
-            try
-            {
-#endif
-                NewEditor doc = new NewEditor(DockingService.MainForm);
-                OpenDocument(doc, filename);
-                return doc;
-#if !DEBUG
-            }
-            catch (Exception ex)
-            {
-                StringBuilder builder = new StringBuilder();
-                builder.Append("Error opening file ");
-                builder.AppendLine(filename);
-                builder.Append(ex);
-                DockingService.ShowError(builder.ToString());
-                return null;
-            }
-#endif
+            NewEditor doc = new NewEditor(DockingService.MainForm);
+            OpenDocument(doc, filename);
+            return doc;
         }
 
         internal static void OpenDocument(NewEditor doc, string filename)

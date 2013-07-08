@@ -18,6 +18,12 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             InitializeComponent();
 
             this.mainForm = mainForm;
+            mainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+        }
+
+        void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
+        {
+            debugger = e.Debugger;
         }
 
         public void AddStackData(int address, int data)
