@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 
-namespace Revsoft.Docking
+namespace WeifenLuo.WinFormsUI.Docking
 {
     public partial class DockWindow
     {
-        private class SplitterControl : SplitterBase
+        internal class DefaultSplitterControl : SplitterBase
         {
             protected override int SplitterSize
             {

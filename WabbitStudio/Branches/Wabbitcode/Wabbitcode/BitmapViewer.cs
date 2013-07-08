@@ -1,8 +1,8 @@
-﻿using System.Drawing;
-using System.Windows.Forms;
-
-namespace Revsoft.Wabbitcode
+﻿namespace Revsoft.Wabbitcode
 {
+    using System.Drawing;
+    using System.Windows.Forms;
+
     public partial class BitmapViewer : Form
     {
         public BitmapViewer(Image image)
@@ -17,8 +17,13 @@ namespace Revsoft.Wabbitcode
             pictureBox.Size = image.Size;
             pictureBox.BackColor = Color.White;
             pictureBox.Location = new Point(18 + vertRuler.Width, 18 + horzRuler.Height);
-            button1.Location = new Point(Width/2 - button1.Width/2, Height - (button1.Height + button1.Height/2)) ;
-            drawLines();
+            button1.Location = new Point(Width/2 - button1.Width/2, Height - (button1.Height + button1.Height/2));
+            this.drawLines();
+        }
+
+        private void button1_Click(object sender, System.EventArgs e)
+        {
+            Close();
         }
 
         private void drawLines()
@@ -26,38 +31,32 @@ namespace Revsoft.Wabbitcode
             Bitmap image = new Bitmap(horzRuler.Width, horzRuler.Height);
             horzRuler.Image = image;
             int horz = 0;
-			using (Graphics g = Graphics.FromImage(horzRuler.Image))
-			{
-				using (Pen p = new Pen(Color.Black))
-				{
-					while (horz < horzRuler.Width)
-					{
+            using (Graphics g = Graphics.FromImage(horzRuler.Image))
+            {
+                using (Pen p = new Pen(Color.Black))
+                {
+                    while (horz < horzRuler.Width)
+                    {
+                        g.DrawLine(p, horz, 0, horz, horzRuler.Height);
+                        horz += 16;
+                    }
+                }
+            }
 
-						g.DrawLine(p, horz, 0, horz, horzRuler.Height);
-						horz += 16;
-					}
-				}
-			}
             int vert = 0;
             image = new Bitmap(vertRuler.Width, vertRuler.Height);
             vertRuler.Image = image;
-			using (Graphics g = Graphics.FromImage(vertRuler.Image))
-			{
-				using (Pen p = new Pen(Color.Black))
-				{
-					while (vert < vertRuler.Height)
-					{
-						g.DrawLine(p, 0, vert, vertRuler.Width, vert);
-						vert += 16;
-					}
-				}
-			}
-
-        }
-
-        private void button1_Click(object sender, System.EventArgs e)
-        {
-            Close();
+            using (Graphics g = Graphics.FromImage(vertRuler.Image))
+            {
+                using (Pen p = new Pen(Color.Black))
+                {
+                    while (vert < vertRuler.Height)
+                    {
+                        g.DrawLine(p, 0, vert, vertRuler.Width, vert);
+                        vert += 16;
+                    }
+                }
+            }
         }
     }
 }

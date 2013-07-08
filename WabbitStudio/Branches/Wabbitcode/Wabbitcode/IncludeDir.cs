@@ -1,23 +1,25 @@
-﻿using System;
-using System.Linq;
-using System.Windows.Forms;
-using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Properties;
-using System.Collections.Generic;
-using System.IO;
-
-namespace Revsoft.Wabbitcode
+﻿namespace Revsoft.Wabbitcode
 {
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Windows.Forms;
+
+    using Revsoft.Wabbitcode.Classes;
+    using Revsoft.Wabbitcode.Properties;
+    using Revsoft.Wabbitcode.Services;
+
     public partial class IncludeDir : Form
     {
         public IncludeDir()
         {
             InitializeComponent();
-            //includeDirList.Items.Clear();
+
+            // includeDirList.Items.Clear();
             List<string> directories = ProjectService.IsInternal ?
-				Settings.Default.includeDir.Split('\n').ToList<string>() :
-				ProjectService.IncludeDirs;
+                                       Settings.Default.includeDir.Split('\n').ToList<string>() :
+                                       ProjectService.IncludeDirs;
             foreach (string dir in directories)
             {
                 if (!string.IsNullOrEmpty(dir))
@@ -40,6 +42,7 @@ namespace Revsoft.Wabbitcode
             {
                 includeDirBrowser.SelectedPath = ProjectService.ProjectDirectory;
             }
+
             DialogResult include = includeDirBrowser.ShowDialog();
             if (include == DialogResult.OK && !includeDirList.Items.Contains(includeDirBrowser.SelectedPath))
             {
@@ -60,14 +63,15 @@ namespace Revsoft.Wabbitcode
         {
             if (ProjectService.IsInternal)
             {
-                Properties.Settings.Default.includeDir = String.Empty;
+                Properties.Settings.Default.includeDir = string.Empty;
             }
             else
             {
                 ProjectService.IncludeDirs.Clear();
             }
-            string temp = String.Empty;
-			string baseDir = ProjectService.IsInternal ? String.Empty : ProjectService.ProjectFile;
+
+            string temp = string.Empty;
+            string baseDir = ProjectService.IsInternal ? string.Empty : ProjectService.ProjectFile;
             foreach (string includeDir in includeDirList.Items)
             {
                 if (ProjectService.IsInternal)
@@ -80,6 +84,7 @@ namespace Revsoft.Wabbitcode
                     ProjectService.IncludeDirs.Add(temp);
                 }
             }
+
             if (ProjectService.IsInternal)
             {
                 Properties.Settings.Default.includeDir = temp;

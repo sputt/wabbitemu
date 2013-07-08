@@ -1,8 +1,10 @@
-using System;
-using Revsoft.Docking;
-using Revsoft.Wabbitcode.Properties;
+﻿using System;
+
 using Revsoft.Wabbitcode.Classes;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
+
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
@@ -13,29 +15,40 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             InitializeComponent();
         }
 
-        private void FindResults_VisibleChanged(object sender, EventArgs e)
-        {
-            DockingService.MainForm.UpdateChecks();
-        }
-
-        public void NewFindResults(string serachString, string projectfile)
-        {
-            if (string.IsNullOrEmpty(projectfile))
-                projectfile = " all open files";
-            findResultsBox.Text = "Searching for \"" + serachString + "\" in " + projectfile + "\n";
-        }
-
         public void AddFindResult(string file, int lineNum, string line)
         {
             findResultsBox.Text += file + "(" + (lineNum + 1) + "): " + line + "\n";
         }
 
+        public override void Copy()
+        {
+            findResultsBox.Copy();
+        }
+
+        public void NewFindResults(string serachString, string projectfile)
+        {
+            if (string.IsNullOrEmpty(projectfile))
+            {
+                projectfile = " all open files";
+            }
+
+            findResultsBox.Text = "Searching for \"" + serachString + "\" in " + projectfile + "\n";
+        }
+
+        internal void AddFindResult(Reference reference)
+        {
+            this.AddFindResult(reference.File, reference.Line, reference.LineContents);
+        }
+
+        internal void DoneSearching()
+        {
+            findResultsBox.Text += "Done Searching";
+        }
+
         private void findResultsBox_DoubleClick(object sender, EventArgs e)
         {
-#if !DEBUG
             try
             {
-#endif
                 int line = findResultsBox.GetLineFromCharIndex(findResultsBox.SelectionStart);
                 string lineContents = findResultsBox.Lines[line];
                 int firstParen = lineContents.IndexOf('(');
@@ -43,32 +56,21 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 {
                     return;
                 }
+
                 int secondParen = lineContents.IndexOf(')');
                 string file = lineContents.Substring(0, firstParen);
                 int lineNum = Convert.ToInt32(lineContents.Substring(firstParen + 1, secondParen - firstParen - 1));
                 DocumentService.GotoLine(file, lineNum);
-#if !DEBUG
             }
             catch (Exception ex)
             {
                 DockingService.ShowError(ex.ToString());
             }
-#endif
         }
 
-		public override void Copy()
-		{
-			findResultsBox.Copy();
-		}
-
-		internal void DoneSearching()
-		{
-			 findResultsBox.Text += "Done Searching";
-		}
-
-		internal void AddFindResult(Reference reference)
-		{
-			AddFindResult(reference.File, reference.Line, reference.LineContents);
-		}
-	}
+        private void FindResults_VisibleChanged(object sender, EventArgs e)
+        {
+            DockingService.MainForm.UpdateChecks();
+        }
+    }
 }

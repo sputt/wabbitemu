@@ -32,7 +32,8 @@
     <SourceAnalysisOverrideSettingsFile>C:\Users\Christopher\Documents\All Programs\SharpDevelop\bin\..\Settings\Settings.SourceAnalysis</SourceAnalysisOverrideSettingsFile>
     <NoStdLib>False</NoStdLib>
     <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
@@ -630,6 +631,7 @@
       <DependentUpon>BuildSteps.cs</DependentUpon>
     </Compile>
     <Compile Include="Classes\FileLocations.cs" />
+    <Compile Include="Exceptions\DebugggingException.cs" />
     <Compile Include="Docking Windows\StackViewer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -637,8 +639,6 @@
       <DependentUpon>StackViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\AsmFormattingStrategy.cs" />
-    <Compile Include="Extensions\AbortableThreadPool.cs" />
-    <Compile Include="Extensions\Forms.cs" />
     <Compile Include="Form1.cs" />
     <Compile Include="Form1.designer.cs">
       <DependentUpon>Form1.cs</DependentUpon>
@@ -656,19 +656,34 @@
     <Compile Include="Refactor.Designer.cs">
       <DependentUpon>Refactor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Services\Debugger\CPage.cs" />
+    <Compile Include="Resources\VS2012ColorTable.cs" />
+    <Compile Include="Resources\VS2012ToolStripRenderer.cs" />
+    <Compile Include="Services\AssemblerOutput.cs" />
+    <Compile Include="Services\Assembler\AssemblyEventArgs.cs" />
+    <Compile Include="Services\Assembler\AssemblyFlags.cs" />
+    <Compile Include="Services\Assembler\SpasmExeAssembler.cs" />
+    <Compile Include="Services\Assembler\IAssembler.cs" />
+    <Compile Include="Exceptions\MissingROMException.cs" />
+    <Compile Include="Services\Debugger\IWabbitemuDebugger.cs" />
+    <Compile Include="Services\Debugger\ListFileKey.cs" />
+    <Compile Include="Services\Debugger\WabbitemuDebugger.cs" />
+    <Compile Include="Services\Interface\IService.cs" />
+    <Compile Include="Services\Interface\IServiceFactory.cs" />
+    <Compile Include="Services\Debugger\IWabbitcodeDebugger.cs" />
+    <Compile Include="Services\ListFileValue.cs" />
     <Compile Include="Services\MacroService.cs" />
     <Compile Include="Classes\Resource.cs" />
     <Compile Include="Extensions\ExtensionMethods.cs" />
     <Compile Include="Extensions\FileOperations.cs" />
     <Compile Include="Services\AssemblerService.cs" />
     <Compile Include="Services\Debugger\CSymbolTable.cs" />
-    <Compile Include="Services\Debugger\CWabbitemu.cs" />
     <Compile Include="Services\Debugger\WabbitcodeBreakpoint.cs" />
-    <Compile Include="Services\NewParser\ParserLine.cs" />
-    <Compile Include="Services\NewParser\NewParser.cs" />
     <Compile Include="Services\ParserService.cs" />
-    <Compile Include="Services\DebuggerService.cs" />
+    <Compile Include="Services\ServiceBase.cs" />
+    <Compile Include="Services\ServiceDependencyAttribute.cs" />
+    <Compile Include="Services\ServiceFactory.cs" />
+    <Compile Include="Services\SpasmDllAssembler.cs" />
+    <Compile Include="Services\WabbitcodeDebugger.cs" />
     <Compile Include="Classes\ErrorsClass.cs" />
     <Compile Include="Classes\HighlightingClass.cs" />
     <Compile Include="Services\Parser\Equate.cs" />
@@ -684,9 +699,10 @@
     <Compile Include="Services\Parser\ParsedLineSec.cs" />
     <Compile Include="Services\Parser\ParserInformation.cs" />
     <Compile Include="Services\Project\BuildConfig.cs" />
+    <Compile Include="Services\Project\IBuildSystem.cs" />
     <Compile Include="Services\Project\InternalBuildStep.cs" />
     <Compile Include="Services\Project\BuildSystem.cs" />
-    <Compile Include="Services\Project\CProject.cs" />
+    <Compile Include="Services\Project\WabbitcodeProject.cs" />
     <Compile Include="Services\DockingService.cs" />
     <Compile Include="Services\DocumentService.cs" />
     <Compile Include="Extensions\NativeMethods.cs" />
@@ -788,24 +804,10 @@
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Services\ProjectService.cs" />
-    <Compile Include="Extensions\ToolbarManager\AllowedBorders.cs" />
-    <Compile Include="Extensions\ToolbarManager\DockLocation.cs" />
-    <Compile Include="Extensions\ToolbarManager\ToolBarDockArea.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Extensions\ToolbarManager\ToolBarDockHolder.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Extensions\ToolbarManager\ToolBarManager.cs" />
-    <Compile Include="Extensions\VistaMenu\OwnerDrawnMenu.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Include="Extensions\VistaMenu\VistaMenu.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Services\Project\ExternalBuildStep.cs" />
     <Compile Include="Services\Project\IBuildStep.cs" />
     <Compile Include="Services\Project\IProject.cs" />
+    <Compile Include="Exceptions\MissingConfigException.cs" />
     <Compile Include="Services\Project\ProjectFile.cs" />
     <Compile Include="Services\Project\ProjectFolder.cs" />
     <Compile Include="Services\Parser\Reference.cs" />
@@ -998,12 +1000,6 @@
       <DependentUpon>NewProject.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="Extensions\ToolbarManager\ToolBarDockArea.resx">
-      <DependentUpon>ToolBarDockArea.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Extensions\ToolbarManager\ToolBarDockHolder.resx">
-      <DependentUpon>ToolBarDockHolder.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Extensions\TreeView.resx">
       <DependentUpon>TreeView.cs</DependentUpon>
     </EmbeddedResource>
@@ -1045,9 +1041,9 @@
       <Project>{2D18BE89-D210-49EB-A9DD-2246FBB3DF6D}</Project>
       <Name>Revsoft.TextEditor</Name>
     </ProjectReference>
-    <ProjectReference Include="..\WinFormsUI\Revsoft.Docking.csproj">
-      <Project>{C75532C4-765B-418E-B09B-46D36B2ABDB1}</Project>
-      <Name>Revsoft.Docking</Name>
+    <ProjectReference Include="..\WinFormsUI\WinFormsUI.csproj">
+      <Project>{c75532c4-765b-418e-b09b-46d36b2abdb1}</Project>
+      <Name>WinFormsUI</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -1059,7 +1055,7 @@
   <ItemGroup>
     <COMReference Include="WabbitemuLib">
       <Guid>{EDA903F6-7BB8-437F-978F-8F1A2B8B65DB}</Guid>
-      <VersionMajor>3</VersionMajor>
+      <VersionMajor>1</VersionMajor>
       <VersionMinor>0</VersionMinor>
       <Lcid>0</Lcid>
       <WrapperTool>tlbimp</WrapperTool>

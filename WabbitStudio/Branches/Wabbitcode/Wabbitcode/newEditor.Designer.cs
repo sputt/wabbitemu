@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using System.Windows.Forms;
-using Revsoft.Docking;
+using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode
 {
@@ -55,7 +55,6 @@ namespace Revsoft.Wabbitcode
 			this.menuItem6 = new System.Windows.Forms.MenuItem();
             this.copyPathMenuItem = new System.Windows.Forms.MenuItem();
             this.openFolderMenuItem = new System.Windows.Forms.MenuItem();
-            this.codeChecker = new System.ComponentModel.BackgroundWorker();
             this.SuspendLayout();
             // 
             // editorBox
@@ -255,7 +254,7 @@ namespace Revsoft.Wabbitcode
             this.BackColor = System.Drawing.SystemColors.Control;
             this.ClientSize = new System.Drawing.Size(564, 340);
             this.Controls.Add(this.editorBox);
-            this.DockAreas = Revsoft.Docking.DockAreas.Document;
+            this.DockAreas = WeifenLuo.WinFormsUI.Docking.DockAreas.Document;
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "newEditor";
@@ -296,6 +295,5 @@ namespace Revsoft.Wabbitcode
         private MenuItem openFolderMenuItem;
         private MenuItem setNextStateMenuItem;
         private MenuItem bgotoButton;
-        private BackgroundWorker codeChecker;
     }
 }

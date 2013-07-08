@@ -30,165 +30,29 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainFormRedone));
-            Revsoft.Docking.DockPanelSkin dockPanelSkin1 = new Revsoft.Docking.DockPanelSkin();
-            Revsoft.Docking.AutoHideStripSkin autoHideStripSkin1 = new Revsoft.Docking.AutoHideStripSkin();
-            Revsoft.Docking.DockPanelGradient dockPanelGradient1 = new Revsoft.Docking.DockPanelGradient();
-            Revsoft.Docking.TabGradient tabGradient1 = new Revsoft.Docking.TabGradient();
-            Revsoft.Docking.DockPaneStripSkin dockPaneStripSkin1 = new Revsoft.Docking.DockPaneStripSkin();
-            Revsoft.Docking.DockPaneStripGradient dockPaneStripGradient1 = new Revsoft.Docking.DockPaneStripGradient();
-            Revsoft.Docking.TabGradient tabGradient2 = new Revsoft.Docking.TabGradient();
-            Revsoft.Docking.DockPanelGradient dockPanelGradient2 = new Revsoft.Docking.DockPanelGradient();
-            Revsoft.Docking.TabGradient tabGradient3 = new Revsoft.Docking.TabGradient();
-            Revsoft.Docking.DockPaneStripToolWindowGradient dockPaneStripToolWindowGradient1 = new Revsoft.Docking.DockPaneStripToolWindowGradient();
-            Revsoft.Docking.TabGradient tabGradient4 = new Revsoft.Docking.TabGradient();
-            Revsoft.Docking.TabGradient tabGradient5 = new Revsoft.Docking.TabGradient();
-            Revsoft.Docking.DockPanelGradient dockPanelGradient3 = new Revsoft.Docking.DockPanelGradient();
-            Revsoft.Docking.TabGradient tabGradient6 = new Revsoft.Docking.TabGradient();
-            Revsoft.Docking.TabGradient tabGradient7 = new Revsoft.Docking.TabGradient();
-            this.mainMenu1 = new System.Windows.Forms.MainMenu(this.components);
-            this.fileMenuItem = new System.Windows.Forms.MenuItem();
-            this.newMenuItem = new System.Windows.Forms.MenuItem();
-            this.newFileMenuItem = new System.Windows.Forms.MenuItem();
-            this.newProjectMenuItem = new System.Windows.Forms.MenuItem();
-            this.openMenuItem = new System.Windows.Forms.MenuItem();
-            this.openFileMenuItem = new System.Windows.Forms.MenuItem();
-            this.openProjectMenuItem = new System.Windows.Forms.MenuItem();
-            this.saveMenuItem = new System.Windows.Forms.MenuItem();
-            this.saveAsMenuItem = new System.Windows.Forms.MenuItem();
-            this.saveAllMenuItem = new System.Windows.Forms.MenuItem();
-            this.saveProjectMenuItem = new System.Windows.Forms.MenuItem();
-            this.closeMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem17 = new System.Windows.Forms.MenuItem();
-            this.printMenuItem = new System.Windows.Forms.MenuItem();
-            this.printPrevMenuItem = new System.Windows.Forms.MenuItem();
-            this.pageSetMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem1 = new System.Windows.Forms.MenuItem();
-            this.recentFilesMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem37 = new System.Windows.Forms.MenuItem();
-            this.exitMenuItem = new System.Windows.Forms.MenuItem();
-            this.editMenuItem = new System.Windows.Forms.MenuItem();
-            this.undoMenuItem = new System.Windows.Forms.MenuItem();
-            this.redoMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem21 = new System.Windows.Forms.MenuItem();
-            this.cutMenuItem = new System.Windows.Forms.MenuItem();
-            this.copyMenuItem = new System.Windows.Forms.MenuItem();
-            this.pasteMenuItem = new System.Windows.Forms.MenuItem();
-            this.selectAllMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem22 = new System.Windows.Forms.MenuItem();
-            this.menuItem7 = new System.Windows.Forms.MenuItem();
-            this.findMenuItem = new System.Windows.Forms.MenuItem();
-            this.replaceMenuItem = new System.Windows.Forms.MenuItem();
-            this.findInFilesMenuItem = new System.Windows.Forms.MenuItem();
-			this.findAllRefsMenuItem = new System.Windows.Forms.MenuItem();
-            this.replaceInFilesMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem25 = new System.Windows.Forms.MenuItem();
-            this.insertMenuItem = new System.Windows.Forms.MenuItem();
-            this.iSpriteMenuItem = new System.Windows.Forms.MenuItem();
-            this.iMapMenuItem = new System.Windows.Forms.MenuItem();
-            this.formattingMenuItem = new System.Windows.Forms.MenuItem();
-            this.makeUpperMenuItem = new System.Windows.Forms.MenuItem();
-            this.makeLowerMenuItem = new System.Windows.Forms.MenuItem();
-            this.invertCaseMenuItem = new System.Windows.Forms.MenuItem();
-            this.sentenceCaseMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem6 = new System.Windows.Forms.MenuItem();
-            this.formatDocMenuItem = new System.Windows.Forms.MenuItem();
-            this.convertSpacesToTabsMenuItem = new System.Windows.Forms.MenuItem();
-            this.bookmarkMenuItem = new System.Windows.Forms.MenuItem();
-            this.toggleBookmarkMenuItem = new System.Windows.Forms.MenuItem();
-            this.prevBookmarkMenuItem = new System.Windows.Forms.MenuItem();
-            this.nextBookmarkMenuItem = new System.Windows.Forms.MenuItem();
-            this.gotoMenuItem = new System.Windows.Forms.MenuItem();
-            this.gLineMenuItem = new System.Windows.Forms.MenuItem();
-            this.gLabelMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem32 = new System.Windows.Forms.MenuItem();
-            this.prefsMenuItem = new System.Windows.Forms.MenuItem();
-            this.viewMenuItem = new System.Windows.Forms.MenuItem();
-            this.toolBarMenuItem = new System.Windows.Forms.MenuItem();
-            this.mainToolMenuItem = new System.Windows.Forms.MenuItem();
-            this.debugToolMenuItem = new System.Windows.Forms.MenuItem();
-            this.editorToolBarMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem45 = new System.Windows.Forms.MenuItem();
-            this.labelListMenuItem = new System.Windows.Forms.MenuItem();
-            this.projViewMenuItem = new System.Windows.Forms.MenuItem();
-            this.dirViewMenuItem = new System.Windows.Forms.MenuItem();
-			this.renameMenuItem = new System.Windows.Forms.MenuItem();
-			this.extractMethodMenuItem = new System.Windows.Forms.MenuItem();
-			this.refactorMenuItem = new System.Windows.Forms.MenuItem();
-            this.macroManagerMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem2 = new System.Windows.Forms.MenuItem();
-            this.breakManagerMenuItem = new System.Windows.Forms.MenuItem();
-            this.debugPanelsMenuItem = new System.Windows.Forms.MenuItem();
-            this.debugPanelMenuItem = new System.Windows.Forms.MenuItem();
-            this.callStackMenuItem = new System.Windows.Forms.MenuItem();
-            this.stackViewerMenuItem = new System.Windows.Forms.MenuItem();
-            this.varTrackMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem46 = new System.Windows.Forms.MenuItem();
-            this.outWinMenuItem = new System.Windows.Forms.MenuItem();
-            this.errListMenuItem = new System.Windows.Forms.MenuItem();
-            this.findResultsMenuItem = new System.Windows.Forms.MenuItem();
-            this.statusBarMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem48 = new System.Windows.Forms.MenuItem();
-            this.lineNumMenuItem = new System.Windows.Forms.MenuItem();
-            this.iconBarMenuItem = new System.Windows.Forms.MenuItem();
-            this.projMenuItem = new System.Windows.Forms.MenuItem();
-            this.addNewFileMenuItem = new System.Windows.Forms.MenuItem();
-            this.existingFileMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem3 = new System.Windows.Forms.MenuItem();
-            this.buildOrderButton = new System.Windows.Forms.MenuItem();
-            this.includeDirProjMenuItem = new System.Windows.Forms.MenuItem();
-            this.refreshMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem5 = new System.Windows.Forms.MenuItem();
-            this.closeProjMenuItem = new System.Windows.Forms.MenuItem();
-            this.macrosMenuItem = new System.Windows.Forms.MenuItem();
-            this.runMacroMenuItem = new System.Windows.Forms.MenuItem();
-            this.recMacroMenuItem = new System.Windows.Forms.MenuItem();
-            this.manMacroMenuItem = new System.Windows.Forms.MenuItem();
-            this.asmMenuItem = new System.Windows.Forms.MenuItem();
-            this.assembleMenuItem = new System.Windows.Forms.MenuItem();
-            this.includeDirButton = new System.Windows.Forms.MenuItem();
-            this.symTableMenuItem = new System.Windows.Forms.MenuItem();
-            this.countCodeMenuItem = new System.Windows.Forms.MenuItem();
-            this.projStatsMenuItem = new System.Windows.Forms.MenuItem();
-            this.listFileMenuItem = new System.Windows.Forms.MenuItem();
-            this.hexFileMenuItem = new System.Windows.Forms.MenuItem();
-            this.debugMenuItem = new System.Windows.Forms.MenuItem();
-            this.startDebugMenuItem = new System.Windows.Forms.MenuItem();
-			this.startWithoutDebugMenuItem = new System.Windows.Forms.MenuItem();
-            this.stopDebugMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem71 = new System.Windows.Forms.MenuItem();
-            this.runMenuItem = new System.Windows.Forms.MenuItem();
-            this.stepMenuItem = new System.Windows.Forms.MenuItem();
-            this.stepOverMenuItem = new System.Windows.Forms.MenuItem();
-            this.stepOutMenuItem = new System.Windows.Forms.MenuItem();
-            this.menuItem4 = new System.Windows.Forms.MenuItem();
-            this.menuItem11 = new System.Windows.Forms.MenuItem();
-            this.newBreakpointMenuItem = new System.Windows.Forms.MenuItem();
-            this.newDataBreakpointMenuItem = new System.Windows.Forms.MenuItem();
-            this.toggleBreakpointMenuItem = new System.Windows.Forms.MenuItem();
-            this.deleteAllBreakpointsMenuItem = new System.Windows.Forms.MenuItem();
-            this.disableAllBreakpointsMenuItem = new System.Windows.Forms.MenuItem();
-            this.windowMenuItem = new System.Windows.Forms.MenuItem();
-            this.helpMenuItem = new System.Windows.Forms.MenuItem();
-            this.showHelpMenuItem = new System.Windows.Forms.MenuItem();
-            this.updateMenuItem = new System.Windows.Forms.MenuItem();
-            this.aboutMenuItem = new System.Windows.Forms.MenuItem();
+            WeifenLuo.WinFormsUI.Docking.DockPanelSkin dockPanelSkin1 = new WeifenLuo.WinFormsUI.Docking.DockPanelSkin();
+            WeifenLuo.WinFormsUI.Docking.AutoHideStripSkin autoHideStripSkin1 = new WeifenLuo.WinFormsUI.Docking.AutoHideStripSkin();
+            WeifenLuo.WinFormsUI.Docking.DockPanelGradient dockPanelGradient1 = new WeifenLuo.WinFormsUI.Docking.DockPanelGradient();
+            WeifenLuo.WinFormsUI.Docking.TabGradient tabGradient1 = new WeifenLuo.WinFormsUI.Docking.TabGradient();
+            WeifenLuo.WinFormsUI.Docking.DockPaneStripSkin dockPaneStripSkin1 = new WeifenLuo.WinFormsUI.Docking.DockPaneStripSkin();
+            WeifenLuo.WinFormsUI.Docking.DockPaneStripGradient dockPaneStripGradient1 = new WeifenLuo.WinFormsUI.Docking.DockPaneStripGradient();
+            WeifenLuo.WinFormsUI.Docking.TabGradient tabGradient2 = new WeifenLuo.WinFormsUI.Docking.TabGradient();
+            WeifenLuo.WinFormsUI.Docking.DockPanelGradient dockPanelGradient2 = new WeifenLuo.WinFormsUI.Docking.DockPanelGradient();
+            WeifenLuo.WinFormsUI.Docking.TabGradient tabGradient3 = new WeifenLuo.WinFormsUI.Docking.TabGradient();
+            WeifenLuo.WinFormsUI.Docking.DockPaneStripToolWindowGradient dockPaneStripToolWindowGradient1 = new WeifenLuo.WinFormsUI.Docking.DockPaneStripToolWindowGradient();
+            WeifenLuo.WinFormsUI.Docking.TabGradient tabGradient4 = new WeifenLuo.WinFormsUI.Docking.TabGradient();
+            WeifenLuo.WinFormsUI.Docking.TabGradient tabGradient5 = new WeifenLuo.WinFormsUI.Docking.TabGradient();
+            WeifenLuo.WinFormsUI.Docking.DockPanelGradient dockPanelGradient3 = new WeifenLuo.WinFormsUI.Docking.DockPanelGradient();
+            WeifenLuo.WinFormsUI.Docking.TabGradient tabGradient6 = new WeifenLuo.WinFormsUI.Docking.TabGradient();
+            WeifenLuo.WinFormsUI.Docking.TabGradient tabGradient7 = new WeifenLuo.WinFormsUI.Docking.TabGradient();
             this.statusBar = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
+            this.progressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.lineCodeInfo = new System.Windows.Forms.ToolStripStatusLabel();
             this.lineStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
             this.colStatusLabel = new System.Windows.Forms.ToolStripStatusLabel();
-            this.progressBar = new System.Windows.Forms.ToolStripProgressBar();
             this.saveFileDialog1 = new System.Windows.Forms.SaveFileDialog();
             this.toolBarIcons = new System.Windows.Forms.ImageList(this.components);
-            this.debugToolStrip = new System.Windows.Forms.ToolStrip();
-            this.runDebuggerToolButton = new System.Windows.Forms.ToolStripButton();
-            this.pauseToolButton = new System.Windows.Forms.ToolStripButton();
-            this.stopToolButton = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-			this.gotoCurrentToolButton = new System.Windows.Forms.ToolStripButton();
-            this.stepToolButton = new System.Windows.Forms.ToolStripButton();
-            this.stepOverToolButton = new System.Windows.Forms.ToolStripButton();
-            this.stepOutToolButton = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.findBox = new System.Windows.Forms.ToolStripComboBox();
@@ -206,6 +70,144 @@
             this.runToolButton = new System.Windows.Forms.ToolStripButton();
             this.documentParser = new System.ComponentModel.BackgroundWorker();
             this.wabbitemu = new System.ComponentModel.BackgroundWorker();
+            this.mainMenu1 = new System.Windows.Forms.MenuStrip();
+            this.fileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newProjectMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openProjectMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveAllMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.saveProjectMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.closeMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator14 = new System.Windows.Forms.ToolStripSeparator();
+            this.printMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.printPrevMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pageSetMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator15 = new System.Windows.Forms.ToolStripSeparator();
+            this.recentFilesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator16 = new System.Windows.Forms.ToolStripSeparator();
+            this.exitMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.undoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.redoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
+            this.cutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.copyMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.pasteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.selectAllMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuItem7 = new System.Windows.Forms.ToolStripMenuItem();
+            this.findMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.replaceMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.findInFilesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.replaceInFilesMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.findAllRefsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator12 = new System.Windows.Forms.ToolStripSeparator();
+            this.insertMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.iSpriteMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.iMapMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.formattingMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.makeUpperMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.makeLowerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.invertCaseMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.sentenceCaseMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator21 = new System.Windows.Forms.ToolStripSeparator();
+            this.formatDocMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.convertSpacesToTabsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.bookmarkMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toggleBookmarkMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.prevBookmarkMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.nextBookmarkMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.gotoMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.gLineMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.gLabelMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator13 = new System.Windows.Forms.ToolStripSeparator();
+            this.prefsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.viewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolBarMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mainToolMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugToolMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.editorToolBarMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.labelListMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.projViewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.dirViewMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.macroManagerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.debugPanelsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugPanelMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.callStackMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stackViewerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.varTrackMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.breakManagerMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.outWinMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.errListMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.findResultsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.statusBarMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.lineNumMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.iconBarMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.refactorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.renameMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.extractMethodMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.projMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.addNewFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.existingFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator17 = new System.Windows.Forms.ToolStripSeparator();
+            this.buildOrderButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.includeDirProjMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.refreshMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator18 = new System.Windows.Forms.ToolStripSeparator();
+            this.closeProjMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.macrosMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.runMacroMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.recMacroMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.manMacroMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.asmMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.assembleMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.includeDirButton = new System.Windows.Forms.ToolStripMenuItem();
+            this.symTableMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.countCodeMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.projStatsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.listFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.hexFileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.debugMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startDebugMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startWithoutDebugMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopDebugMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator19 = new System.Windows.Forms.ToolStripSeparator();
+            this.runMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stepMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stepOverMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stepOutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator20 = new System.Windows.Forms.ToolStripSeparator();
+            this.menuItem11 = new System.Windows.Forms.ToolStripMenuItem();
+            this.newBreakpointMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.newDataBreakpointMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toggleBreakpointMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteAllBreakpointsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.disableAllBreakpointsMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.windowMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showHelpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.updateMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.aboutMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripContainer = new System.Windows.Forms.ToolStripContainer();
+            this.debugToolStrip = new System.Windows.Forms.ToolStrip();
+            this.runDebuggerToolButton = new System.Windows.Forms.ToolStripButton();
+            this.pauseToolButton = new System.Windows.Forms.ToolStripButton();
+            this.stopToolButton = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.gotoCurrentToolButton = new System.Windows.Forms.ToolStripButton();
+            this.stepToolButton = new System.Windows.Forms.ToolStripButton();
+            this.stepOverToolButton = new System.Windows.Forms.ToolStripButton();
+            this.stepOutToolButton = new System.Windows.Forms.ToolStripButton();
+            this.editorToolStrip = new System.Windows.Forms.ToolStrip();
             this.toolStripButton1 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton2 = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -216,956 +218,42 @@
             this.toolStripButton6 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton7 = new System.Windows.Forms.ToolStripButton();
             this.toolStripButton8 = new System.Windows.Forms.ToolStripButton();
-            this.editorToolStrip = new System.Windows.Forms.ToolStrip();
-            this.dockPanel = new Revsoft.Docking.DockPanel();
-            this.vistaMenu1 = new Revsoft.Wabbitcode.VistaMenu.VistaMenu(this.components);
+            this.dockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
             this.statusBar.SuspendLayout();
-            this.debugToolStrip.SuspendLayout();
             this.mainToolBar.SuspendLayout();
+            this.mainMenu1.SuspendLayout();
+            this.toolStripContainer.TopToolStripPanel.SuspendLayout();
+            this.toolStripContainer.SuspendLayout();
+            this.debugToolStrip.SuspendLayout();
             this.editorToolStrip.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.vistaMenu1)).BeginInit();
             this.SuspendLayout();
-            // 
-            // mainMenu1
-            // 
-            this.mainMenu1.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.fileMenuItem,
-            this.editMenuItem,
-            this.viewMenuItem,
-			this.refactorMenuItem,
-            this.projMenuItem,
-            this.macrosMenuItem,
-            this.asmMenuItem,
-            this.debugMenuItem,
-            this.windowMenuItem,
-            this.helpMenuItem});
-            // 
-            // fileMenuItem
-            // 
-            this.fileMenuItem.Index = 0;
-            this.fileMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.newMenuItem,
-            this.openMenuItem,
-            this.saveMenuItem,
-            this.saveAsMenuItem,
-            this.saveAllMenuItem,
-			this.saveProjectMenuItem,
-            this.closeMenuItem,
-            this.menuItem17,
-            this.printMenuItem,
-            this.printPrevMenuItem,
-            this.pageSetMenuItem,
-            this.menuItem1,
-            this.recentFilesMenuItem,
-            this.menuItem37,
-            this.exitMenuItem});
-            this.fileMenuItem.Text = "File";
-            // 
-            // newMenuItem
-            // 
-            this.newMenuItem.Index = 0;
-            this.newMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.newFileMenuItem,
-            this.newProjectMenuItem});
-            this.newMenuItem.Text = "New";
-            // 
-            // newFileMenuItem
-            // 
-            this.newFileMenuItem.Index = 0;
-            this.newFileMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlN;
-            this.newFileMenuItem.Text = "File";
-            this.newFileMenuItem.Click += new System.EventHandler(this.newFileMenuItem_Click);
-            // 
-            // newProjectMenuItem
-            // 
-            this.newProjectMenuItem.Index = 1;
-            this.newProjectMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftN;
-            this.newProjectMenuItem.Text = "Project";
-            this.newProjectMenuItem.Click += new System.EventHandler(this.newProjectMenuItem_Click);
-            // 
-            // openMenuItem
-            // 
-            this.openMenuItem.Index = 1;
-            this.openMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.openFileMenuItem,
-            this.openProjectMenuItem});
-            this.openMenuItem.Text = "Open";
-            // 
-            // openFileMenuItem
-            // 
-            this.openFileMenuItem.Index = 0;
-            this.openFileMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlO;
-            this.openFileMenuItem.Text = "File";
-            this.openFileMenuItem.Click += new System.EventHandler(this.openFileMenuItem_Click);
-            // 
-            // openProjectMenuItem
-            // 
-            this.openProjectMenuItem.Index = 1;
-            this.openProjectMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftO;
-            this.openProjectMenuItem.Text = "Project";
-            this.openProjectMenuItem.Click += new System.EventHandler(this.openProjectMenuItem_Click);
-            // 
-            // saveMenuItem
-            // 
-            this.saveMenuItem.Index = 2;
-            this.saveMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlS;
-            this.saveMenuItem.Text = "Save";
-            this.saveMenuItem.Click += new System.EventHandler(this.saveMenuItem_Click);
-            // 
-            // saveAsMenuItem
-            // 
-            this.saveAsMenuItem.Index = 3;
-            this.saveAsMenuItem.Shortcut = System.Windows.Forms.Shortcut.F12;
-            this.saveAsMenuItem.ShowShortcut = false;
-            this.saveAsMenuItem.Text = "Save As...";
-            this.saveAsMenuItem.Click += new System.EventHandler(this.saveAsMenuItem_Click);
-            // 
-            // saveAllMenuItem
-            // 
-            this.saveAllMenuItem.Index = 4;
-            this.saveAllMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftS;
-            this.saveAllMenuItem.Text = "Save All";
-            this.saveAllMenuItem.Click += new System.EventHandler(this.saveAllToolButton_Click);
-            // 
-            // saveProjectMenuItem
-            // 
-            this.saveProjectMenuItem.Index = 5;
-            this.saveProjectMenuItem.Text = "Save Project";
-            this.saveProjectMenuItem.Click += new System.EventHandler(this.saveProjectMenuItem_Click);
-            // 
-            // closeMenuItem
-            // 
-            this.closeMenuItem.Index = 6;
-            this.closeMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlW;
-            this.closeMenuItem.ShowShortcut = false;
-            this.closeMenuItem.Text = "Close";
-            this.closeMenuItem.Click += new System.EventHandler(this.closeMenuItem_Click);
-            // 
-            // menuItem17
-            // 
-            this.menuItem17.Index = 7;
-            this.menuItem17.Text = "-";
-            // 
-            // printMenuItem
-            // 
-            this.printMenuItem.Enabled = false;
-            this.printMenuItem.Index = 8;
-            this.printMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlP;
-            this.printMenuItem.Text = "Print";
-            // 
-            // printPrevMenuItem
-            // 
-            this.printPrevMenuItem.Enabled = false;
-            this.printPrevMenuItem.Index = 9;
-            this.printPrevMenuItem.Text = "Print Preview";
-            // 
-            // pageSetMenuItem
-            // 
-            this.pageSetMenuItem.Enabled = false;
-            this.pageSetMenuItem.Index = 10;
-            this.pageSetMenuItem.Text = "Page Setup";
-            // 
-            // menuItem1
-            // 
-            this.menuItem1.Index = 11;
-            this.menuItem1.Text = "-";
-            // 
-            // recentFilesMenuItem
-            // 
-            this.recentFilesMenuItem.Index = 12;
-            this.recentFilesMenuItem.Text = "Recent Files";
-            // 
-            // menuItem37
-            // 
-            this.menuItem37.Index = 13;
-            this.menuItem37.Text = "-";
-            // 
-            // exitMenuItem
-            // 
-            this.exitMenuItem.Index = 14;
-            this.exitMenuItem.Text = "Exit";
-            this.exitMenuItem.Click += new System.EventHandler(this.exitMenuItem_Click);
-            // 
-            // editMenuItem
-            // 
-            this.editMenuItem.Index = 1;
-            this.editMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.undoMenuItem,
-            this.redoMenuItem,
-            this.menuItem21,
-            this.cutMenuItem,
-            this.copyMenuItem,
-            this.pasteMenuItem,
-            this.selectAllMenuItem,
-            this.menuItem22,
-            this.menuItem7,
-            this.menuItem25,
-            this.insertMenuItem,
-            this.formattingMenuItem,
-            this.bookmarkMenuItem,
-            this.gotoMenuItem,
-            this.menuItem32,
-            this.prefsMenuItem});
-            this.editMenuItem.Text = "Edit";
-            // 
-            // undoMenuItem
-            // 
-            this.undoMenuItem.Index = 0;
-            this.undoMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlZ;
-            this.undoMenuItem.Text = "Undo";
-            this.undoMenuItem.Click += new System.EventHandler(this.undoMenuItem_Click);
-            // 
-            // redoMenuItem
-            // 
-            this.redoMenuItem.Index = 1;
-            this.redoMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlY;
-            this.redoMenuItem.Text = "Redo";
-            this.redoMenuItem.Click += new System.EventHandler(this.redoMenuItem_Click);
-            // 
-            // menuItem21
-            // 
-            this.menuItem21.Index = 2;
-            this.menuItem21.Text = "-";
-            // 
-            // cutMenuItem
-            // 
-            this.cutMenuItem.Index = 3;
-            this.cutMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlX;
-            this.cutMenuItem.Text = "Cut";
-            this.cutMenuItem.Click += new System.EventHandler(this.cutMenuItem_Click);
-            // 
-            // copyMenuItem
-            // 
-            this.copyMenuItem.Index = 4;
-            this.copyMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlC;
-            this.copyMenuItem.Text = "Copy";
-            this.copyMenuItem.Click += new System.EventHandler(this.copyMenuItem_Click);
-            // 
-            // pasteMenuItem
-            // 
-            this.pasteMenuItem.Index = 5;
-            this.pasteMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlV;
-            this.pasteMenuItem.Text = "Paste";
-            this.pasteMenuItem.Click += new System.EventHandler(this.pasteMenuItem_Click);
-            // 
-            // selectAllMenuItem
-            // 
-            this.selectAllMenuItem.Index = 6;
-            this.selectAllMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlA;
-            this.selectAllMenuItem.Text = "Select All";
-            this.selectAllMenuItem.Click += new System.EventHandler(this.selectAllMenuItem_Click);
-            // 
-            // menuItem22
-            // 
-            this.menuItem22.Index = 7;
-            this.menuItem22.Text = "-";
-            // 
-            // menuItem7
-            // 
-            this.menuItem7.Index = 8;
-            this.menuItem7.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.findMenuItem,
-            this.replaceMenuItem,
-            this.findInFilesMenuItem,
-            this.replaceInFilesMenuItem,
-			this.findAllRefsMenuItem});
-            this.menuItem7.Text = "Find and Replace";
-            // 
-            // findMenuItem
-            // 
-            this.findMenuItem.Index = 0;
-            this.findMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlF;
-            this.findMenuItem.Text = "Find";
-            this.findMenuItem.Click += new System.EventHandler(this.findMenuItem_Click);
-            // 
-            // replaceMenuItem
-            // 
-            this.replaceMenuItem.Index = 1;
-            this.replaceMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlH;
-            this.replaceMenuItem.Text = "Replace";
-            this.replaceMenuItem.Click += new System.EventHandler(this.replaceMenuItem_Click);
-            // 
-            // findInFilesMenuItem
-            // 
-            this.findInFilesMenuItem.Index = 2;
-            this.findInFilesMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftF;
-            this.findInFilesMenuItem.Text = "Find in files";
-            this.findInFilesMenuItem.Click += new System.EventHandler(this.findInFilesMenuItem_Click);
-            // 
-            // replaceInFilesMenuItem
-            // 
-            this.replaceInFilesMenuItem.Index = 3;
-            this.replaceInFilesMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftH;
-            this.replaceInFilesMenuItem.Text = "Replace in files";
-            this.replaceInFilesMenuItem.Click += new System.EventHandler(this.replaceInFilesMenuItem_Click);
-			// 
-			// findAllRefsMenuItem
-			// 
-			this.findAllRefsMenuItem.Index = 4;
-			this.findAllRefsMenuItem.Text = "Find all references";
-			this.findAllRefsMenuItem.Click += new System.EventHandler(this.findAllRefsMenuItem_Click);
-            // 
-            // menuItem25
-            // 
-            this.menuItem25.Index = 9;
-            this.menuItem25.Text = "-";
-            // 
-            // insertMenuItem
-            // 
-            this.insertMenuItem.Index = 10;
-            this.insertMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.iSpriteMenuItem,
-            this.iMapMenuItem});
-            this.insertMenuItem.Text = "Insert";
-            // 
-            // iSpriteMenuItem
-            // 
-            this.iSpriteMenuItem.Index = 0;
-            this.iSpriteMenuItem.Text = "Sprite";
-            // 
-            // iMapMenuItem
-            // 
-            this.iMapMenuItem.Index = 1;
-            this.iMapMenuItem.Text = "Map";
-            // 
-            // formattingMenuItem
-            // 
-            this.formattingMenuItem.Index = 11;
-            this.formattingMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.makeUpperMenuItem,
-            this.makeLowerMenuItem,
-            this.invertCaseMenuItem,
-            this.sentenceCaseMenuItem,
-            this.menuItem6,
-            this.formatDocMenuItem,
-            this.convertSpacesToTabsMenuItem});
-            this.formattingMenuItem.Text = "Formatting";
-            // 
-            // makeUpperMenuItem
-            // 
-            this.makeUpperMenuItem.Index = 0;
-            this.makeUpperMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftU;
-            this.makeUpperMenuItem.Text = "Make Uppercase";
-            this.makeUpperMenuItem.Click += new System.EventHandler(this.makeUpperMenuItem_Click);
-            // 
-            // makeLowerMenuItem
-            // 
-            this.makeLowerMenuItem.Index = 1;
-            this.makeLowerMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlShiftL;
-            this.makeLowerMenuItem.Text = "Make Lowercase";
-            this.makeLowerMenuItem.Click += new System.EventHandler(this.makeLowerMenuItem_Click);
-            // 
-            // invertCaseMenuItem
-            // 
-            this.invertCaseMenuItem.Index = 2;
-            this.invertCaseMenuItem.Text = "Invert Case";
-            this.invertCaseMenuItem.Click += new System.EventHandler(this.invertCaseMenuItem_Click);
-            // 
-            // sentenceCaseMenuItem
-            // 
-            this.sentenceCaseMenuItem.Index = 3;
-            this.sentenceCaseMenuItem.Text = "Sentence Case";
-            this.sentenceCaseMenuItem.Click += new System.EventHandler(this.sentenceCaseMenuItem_Click);
-            // 
-            // menuItem6
-            // 
-            this.menuItem6.Index = 4;
-            this.menuItem6.Text = "-";
-            // 
-            // formatDocMenuItem
-            // 
-            this.formatDocMenuItem.Index = 5;
-            this.formatDocMenuItem.Text = "Format Document";
-            this.formatDocMenuItem.Click += new System.EventHandler(this.formatDocMenuItem_Click);
-            // 
-            // convertSpacesToTabsMenuItem
-            // 
-            this.convertSpacesToTabsMenuItem.Index = 6;
-            this.convertSpacesToTabsMenuItem.Text = "Convert Spaces To Tabs";
-            this.convertSpacesToTabsMenuItem.Click += new System.EventHandler(this.convertSpacesToTabsMenuItem_Click);
-            // 
-            // bookmarkMenuItem
-            // 
-            this.bookmarkMenuItem.Index = 12;
-            this.bookmarkMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.toggleBookmarkMenuItem,
-            this.prevBookmarkMenuItem,
-            this.nextBookmarkMenuItem});
-            this.bookmarkMenuItem.Text = "Bookmarks";
-            // 
-            // toggleBookmarkMenuItem
-            // 
-            this.toggleBookmarkMenuItem.Index = 0;
-            this.toggleBookmarkMenuItem.Text = "Toggle Bookmark";
-            this.toggleBookmarkMenuItem.Click += new System.EventHandler(this.toggleBookmarkMenuItem_Click);
-            // 
-            // prevBookmarkMenuItem
-            // 
-            this.prevBookmarkMenuItem.Index = 1;
-            this.prevBookmarkMenuItem.Text = "Previous Bookmark";
-            this.prevBookmarkMenuItem.Click += new System.EventHandler(this.prevBookmarkMenuItem_Click);
-            // 
-            // nextBookmarkMenuItem
-            // 
-            this.nextBookmarkMenuItem.Index = 2;
-            this.nextBookmarkMenuItem.Text = "Next Bookmark";
-            this.nextBookmarkMenuItem.Click += new System.EventHandler(this.nextBookmarkMenuItem_Click);
-            // 
-            // gotoMenuItem
-            // 
-            this.gotoMenuItem.Index = 13;
-            this.gotoMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.gLineMenuItem,
-            this.gLabelMenuItem});
-            this.gotoMenuItem.Text = "Goto";
-            // 
-            // gLineMenuItem
-            // 
-            this.gLineMenuItem.Index = 0;
-            this.gLineMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlG;
-            this.gLineMenuItem.Text = "Line";
-            this.gLineMenuItem.Click += new System.EventHandler(this.gLineMenuItem_Click);
-            // 
-            // gLabelMenuItem
-            // 
-            this.gLabelMenuItem.Index = 1;
-            this.gLabelMenuItem.Text = "Label";
-            this.gLabelMenuItem.Click += new System.EventHandler(this.gLabelMenuItem_Click);
-            // 
-            // menuItem32
-            // 
-            this.menuItem32.Index = 14;
-            this.menuItem32.Text = "-";
-            // 
-            // prefsMenuItem
-            // 
-            this.prefsMenuItem.Index = 15;
-            this.prefsMenuItem.Text = "Preferences";
-            this.prefsMenuItem.Click += new System.EventHandler(this.prefsMenuItem_Click);
-            // 
-            // viewMenuItem
-            // 
-            this.viewMenuItem.Index = 2;
-            this.viewMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.toolBarMenuItem,
-            this.menuItem45,
-            this.labelListMenuItem,
-            this.projViewMenuItem,
-            this.dirViewMenuItem,
-            this.macroManagerMenuItem,
-            this.menuItem2,
-            this.debugPanelsMenuItem,
-            this.menuItem46,
-            this.outWinMenuItem,
-            this.errListMenuItem,
-            this.findResultsMenuItem,
-            this.statusBarMenuItem,
-            this.menuItem48,
-            this.lineNumMenuItem,
-            this.iconBarMenuItem});
-            this.viewMenuItem.Text = "View";
-            // 
-            // toolBarMenuItem
-            // 
-            this.toolBarMenuItem.Index = 0;
-            this.toolBarMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.mainToolMenuItem,
-            this.debugToolMenuItem,
-            this.editorToolBarMenuItem});
-            this.toolBarMenuItem.Text = "Toolbars";
-            // 
-            // mainToolMenuItem
-            // 
-            this.mainToolMenuItem.Index = 0;
-            this.mainToolMenuItem.Tag = "mainToolBar";
-            this.mainToolMenuItem.Text = "Main Toolbar";
-            this.mainToolMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // debugToolMenuItem
-            // 
-            this.debugToolMenuItem.Index = 1;
-            this.debugToolMenuItem.Tag = "debugToolBar";
-            this.debugToolMenuItem.Text = "Debug Toolbar";
-            this.debugToolMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // editorToolBarMenuItem
-            // 
-            this.editorToolBarMenuItem.Index = 2;
-            this.editorToolBarMenuItem.Tag = "editorToolbar";
-            this.editorToolBarMenuItem.Text = "Editor Toolbar";
-            this.editorToolBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // menuItem45
-            // 
-            this.menuItem45.Index = 1;
-            this.menuItem45.Text = "-";
-            // 
-            // labelListMenuItem
-            // 
-            this.labelListMenuItem.Index = 2;
-            this.labelListMenuItem.Tag = "labelsList";
-            this.labelListMenuItem.Text = "Label List";
-            this.labelListMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // projViewMenuItem
-            // 
-            this.projViewMenuItem.Index = 3;
-            this.projViewMenuItem.Tag = "projectViewer";
-            this.projViewMenuItem.Text = "Project View";
-            this.projViewMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // dirViewMenuItem
-            // 
-            this.dirViewMenuItem.Index = 4;
-            this.dirViewMenuItem.Tag = "directoryViewer";
-            this.dirViewMenuItem.Text = "Directory View";
-            this.dirViewMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // macroManagerMenuItem
-            // 
-            this.macroManagerMenuItem.Index = 5;
-            this.macroManagerMenuItem.Tag = "macroManager";
-            this.macroManagerMenuItem.Text = "Macro Manager";
-            this.macroManagerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // menuItem2
-            // 
-            this.menuItem2.Index = 6;
-            this.menuItem2.Text = "-";
-            // 
-            // debugPanelMenuItem
-            // 
-            this.debugPanelMenuItem.Index = 0;
-            this.debugPanelMenuItem.Tag = "debugPanel";
-            this.debugPanelMenuItem.Text = "Debug Panel";
-            this.debugPanelMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // callStackMenuItem
-            // 
-            this.callStackMenuItem.Index = 1;
-            this.callStackMenuItem.Tag = "callStack";
-            this.callStackMenuItem.Text = "Call Stack";
-            this.callStackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // stackViewerMenuItem
-            // 
-            this.stackViewerMenuItem.Index = 2;
-            this.stackViewerMenuItem.Tag = "stackViewer";
-            this.stackViewerMenuItem.Text = "Stack Viewer";
-            this.stackViewerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // callStackMenuItem
-            // 
-            this.varTrackMenuItem.Index = 3;
-            this.varTrackMenuItem.Tag = "varTrack";
-            this.varTrackMenuItem.Text = "Variable Tracking";
-            this.varTrackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-			// 
-			// breakManagerMenuItem
-			// 
-			this.breakManagerMenuItem.Index = 4;
-			this.breakManagerMenuItem.Tag = "breakManager";
-			this.breakManagerMenuItem.Text = "Breakpoint Manager";
-			this.breakManagerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // debugMenuItem
-            // 
-            this.debugPanelsMenuItem.Index = 7;
-            this.debugPanelsMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-				this.debugPanelMenuItem,
-				this.callStackMenuItem,
-				this.stackViewerMenuItem,
-				this.varTrackMenuItem,
-				this.breakManagerMenuItem,
-			});
-            this.debugPanelsMenuItem.Text = "Debug";
-            // 
-            // menuItem46
-            // 
-            this.menuItem46.Index = 8;
-            this.menuItem46.Text = "-";
-            // 
-            // outWinMenuItem
-            // 
-            this.outWinMenuItem.Index = 9;
-            this.outWinMenuItem.Tag = "outputWindow";
-            this.outWinMenuItem.Text = "Output Window";
-            this.outWinMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // errListMenuItem
-            // 
-            this.errListMenuItem.Index = 10;
-            this.errListMenuItem.Tag = "errorList";
-            this.errListMenuItem.Text = "Error List";
-            this.errListMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // findResultsMenuItem
-            // 
-            this.findResultsMenuItem.Index = 11;
-            this.findResultsMenuItem.Tag = "FindResults";
-            this.findResultsMenuItem.Text = "Find Results";
-            this.findResultsMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // statusBarMenuItem
-            // 
-            this.statusBarMenuItem.Index = 12;
-            this.statusBarMenuItem.Tag = "statusBar";
-            this.statusBarMenuItem.Text = "Status Bar";
-            this.statusBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // menuItem48
-            // 
-            this.menuItem48.Index = 13;
-            this.menuItem48.Text = "-";
-            // 
-            // lineNumMenuItem
-            // 
-            this.lineNumMenuItem.Index = 14;
-            this.lineNumMenuItem.Tag = "lineNumbers";
-            this.lineNumMenuItem.Text = "Line Numbers";
-            this.lineNumMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-            // 
-            // iconBarMenuItem
-            // 
-            this.iconBarMenuItem.Index = 15;
-            this.iconBarMenuItem.Tag = "iconBar";
-            this.iconBarMenuItem.Text = "Icon Bar";
-            this.iconBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
-			// 
-			// refactorMenuItem
-			// 
-			this.refactorMenuItem.Index = 3;
-			this.refactorMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.renameMenuItem,
-            this.extractMethodMenuItem});
-			this.refactorMenuItem.Text = "Refactor";
-			// 
-			// renameMenuItem
-			// 
-			this.renameMenuItem.Index = 0;
-			this.renameMenuItem.Text = "Rename";
-			this.renameMenuItem.Click += new System.EventHandler(renameMenuItem_Click);
-			// 
-			// extractMethodMenuItem
-			// 
-			this.extractMethodMenuItem.Index = 1;
-			this.extractMethodMenuItem.Text = "Extract Method";
-            // 
-            // projMenuItem
-            // 
-            this.projMenuItem.Index = 4;
-            this.projMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.addNewFileMenuItem,
-            this.existingFileMenuItem,
-            this.menuItem3,
-            this.buildOrderButton,
-            this.includeDirProjMenuItem,
-            this.refreshMenuItem,
-            this.menuItem5,
-            this.closeProjMenuItem});
-            this.projMenuItem.Text = "Project";
-            this.projMenuItem.Visible = false;
-            // 
-            // addNewFileMenuItem
-            // 
-            this.addNewFileMenuItem.Index = 0;
-            this.addNewFileMenuItem.Text = "Add File";
-            this.addNewFileMenuItem.Click += new System.EventHandler(this.addNewFileMenuItem_Click);
-            // 
-            // existingFileMenuItem
-            // 
-            this.existingFileMenuItem.Index = 1;
-            this.existingFileMenuItem.Text = "Add Existing File";
-            this.existingFileMenuItem.Click += new System.EventHandler(this.existingFileMenuItem_Click);
-            // 
-            // menuItem3
-            // 
-            this.menuItem3.Index = 2;
-            this.menuItem3.Text = "-";
-            // 
-            // buildOrderButton
-            // 
-            this.buildOrderButton.Index = 3;
-            this.buildOrderButton.Text = "Build Steps...";
-            this.buildOrderButton.Click += new System.EventHandler(this.buildOrderButton_Click);
-            // 
-            // includeDirProjMenuItem
-            // 
-            this.includeDirProjMenuItem.Index = 4;
-            this.includeDirProjMenuItem.Text = "Include Directories...";
-            this.includeDirProjMenuItem.Click += new System.EventHandler(this.includeDirButton_Click);
-            // 
-            // refreshMenuItem
-            // 
-            this.refreshMenuItem.Index = 5;
-            this.refreshMenuItem.Text = "Refresh";
-            this.refreshMenuItem.Click += new System.EventHandler(this.refreshViewMenuItem_Click);
-            // 
-            // menuItem5
-            // 
-            this.menuItem5.Index = 6;
-            this.menuItem5.Text = "-";
-            // 
-            // closeProjMenuItem
-            // 
-            this.closeProjMenuItem.Index = 7;
-            this.closeProjMenuItem.Text = "Close Project";
-            this.closeProjMenuItem.Click += new System.EventHandler(this.closeProjMenuItem_Click);
-            // 
-            // macrosMenuItem
-            // 
-            this.macrosMenuItem.Enabled = false;
-            this.macrosMenuItem.Index = 5;
-            this.macrosMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.runMacroMenuItem,
-            this.recMacroMenuItem,
-            this.manMacroMenuItem});
-            this.macrosMenuItem.Text = "Macros";
-            // 
-            // runMacroMenuItem
-            // 
-            this.runMacroMenuItem.Index = 0;
-            this.runMacroMenuItem.Text = "Run Macro";
-            // 
-            // recMacroMenuItem
-            // 
-            this.recMacroMenuItem.Index = 1;
-            this.recMacroMenuItem.Text = "Record Macro";
-            // 
-            // manMacroMenuItem
-            // 
-            this.manMacroMenuItem.Index = 2;
-            this.manMacroMenuItem.Text = "Manage Macros";
-            // 
-            // asmMenuItem
-            // 
-            this.asmMenuItem.Index = 6;
-            this.asmMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.assembleMenuItem,
-            this.includeDirButton,
-            this.symTableMenuItem,
-            this.countCodeMenuItem,
-            this.projStatsMenuItem,
-            this.listFileMenuItem,
-            this.hexFileMenuItem});
-            this.asmMenuItem.Text = "Assemble";
-            // 
-            // assembleMenuItem
-            // 
-            this.assembleMenuItem.Index = 0;
-            this.assembleMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlB;
-            this.assembleMenuItem.Text = "Assemble";
-            this.assembleMenuItem.Click += new System.EventHandler(this.assembleMenuItem_Click);
-            // 
-            // includeDirButton
-            // 
-            this.includeDirButton.Index = 1;
-            this.includeDirButton.Text = "Include Directories";
-            this.includeDirButton.Click += new System.EventHandler(this.includeDirButton_Click);
-            // 
-            // symTableMenuItem
-            // 
-            this.symTableMenuItem.Index = 2;
-            this.symTableMenuItem.Text = "Build Symbol Table";
-            this.symTableMenuItem.Click += new System.EventHandler(this.symTableMenuItem_Click);
-            // 
-            // countCodeMenuItem
-            // 
-            this.countCodeMenuItem.Enabled = false;
-            this.countCodeMenuItem.Index = 3;
-            this.countCodeMenuItem.Text = "Count Code";
-            this.countCodeMenuItem.Click += new System.EventHandler(this.countCodeMenuItem_Click);
-            // 
-            // projStatsMenuItem
-            // 
-            this.projStatsMenuItem.Index = 4;
-            this.projStatsMenuItem.Text = "Show Program Stats";
-            this.projStatsMenuItem.Click += new System.EventHandler(this.projStatsMenuItem_Click);
-            // 
-            // listFileMenuItem
-            // 
-            this.listFileMenuItem.Index = 5;
-            this.listFileMenuItem.Text = "Build List File";
-            this.listFileMenuItem.Click += new System.EventHandler(this.listFileMenuItem_Click);
-            // 
-            // hexFileMenuItem
-            // 
-            this.hexFileMenuItem.Enabled = false;
-            this.hexFileMenuItem.Index = 6;
-            this.hexFileMenuItem.Text = "Build Hex File";
-            this.hexFileMenuItem.Click += new System.EventHandler(this.hexFileMenuItem_Click);
-            // 
-            // debugMenuItem
-            // 
-            this.debugMenuItem.Index = 7;
-            this.debugMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.startDebugMenuItem,
-			this.startWithoutDebugMenuItem,
-            this.stopDebugMenuItem,
-            this.menuItem71,
-            this.runMenuItem,
-            this.stepMenuItem,
-            this.stepOverMenuItem,
-            this.stepOutMenuItem,
-            this.menuItem4,
-            this.menuItem11,
-            this.toggleBreakpointMenuItem,
-            this.deleteAllBreakpointsMenuItem,
-            this.disableAllBreakpointsMenuItem});
-            this.debugMenuItem.Text = "Debug";
-            // 
-            // startDebugMenuItem
-            // 
-            this.startDebugMenuItem.Index = 0;
-            this.startDebugMenuItem.Shortcut = System.Windows.Forms.Shortcut.F5;
-            this.startDebugMenuItem.Text = "Start Debug";
-            this.startDebugMenuItem.Click += new System.EventHandler(this.startDebugMenuItem_Click);
-			// 
-			// startWithoutDebugMenuItem
-			// 
-			this.startWithoutDebugMenuItem.Index = 1;
-			this.startWithoutDebugMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlF5;
-			this.startWithoutDebugMenuItem.Text = "Start Without Debug";
-			this.startWithoutDebugMenuItem.Click += new System.EventHandler(this.startWithoutDebugMenuItem_Click);
-            // 
-            // stopDebugMenuItem
-            // 
-            this.stopDebugMenuItem.Enabled = false;
-            this.stopDebugMenuItem.Index = 2;
-            this.stopDebugMenuItem.Text = "Stop Debug";
-            this.stopDebugMenuItem.Click += new System.EventHandler(this.cancelDebug_Click);
-            // 
-            // menuItem71
-            // 
-            this.menuItem71.Index = 3;
-            this.menuItem71.Text = "-";
-            // 
-            // runMenuItem
-            // 
-            this.runMenuItem.Enabled = false;
-            this.runMenuItem.Index = 4;
-            this.runMenuItem.Text = "Run";
-            this.runMenuItem.Click += new System.EventHandler(this.runMenuItem_Click);
-            // 
-            // stepMenuItem
-            // 
-            this.stepMenuItem.Enabled = false;
-            this.stepMenuItem.Index = 5;
-            this.stepMenuItem.Shortcut = System.Windows.Forms.Shortcut.F7;
-            this.stepMenuItem.Text = "Step";
-            this.stepMenuItem.Click += new System.EventHandler(this.stepButton_Click);
-            // 
-            // stepOverMenuItem
-            // 
-            this.stepOverMenuItem.Enabled = false;
-            this.stepOverMenuItem.Index = 6;
-            this.stepOverMenuItem.Shortcut = System.Windows.Forms.Shortcut.F8;
-            this.stepOverMenuItem.Text = "Step Over";
-            this.stepOverMenuItem.Click += new System.EventHandler(this.stepOverMenuItem_Click);
-            // 
-            // stepOutMenuItem
-            // 
-            this.stepOutMenuItem.Enabled = false;
-            this.stepOutMenuItem.Index = 7;
-            this.stepOutMenuItem.Shortcut = System.Windows.Forms.Shortcut.ShiftF8;
-            this.stepOutMenuItem.Text = "Step Out";
-            this.stepOutMenuItem.Click += new System.EventHandler(stepOutMenuItem_Click);
-            // 
-            // menuItem4
-            // 
-            this.menuItem4.Index = 8;
-            this.menuItem4.Text = "-";
-            // 
-            // menuItem11
-            // 
-            this.menuItem11.Index = 9;
-            this.menuItem11.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.newBreakpointMenuItem,
-            this.newDataBreakpointMenuItem});
-            this.menuItem11.Text = "New Breakpoint";
-            // 
-            // newBreakpointMenuItem
-            // 
-            this.newBreakpointMenuItem.Index = 0;
-            this.newBreakpointMenuItem.Shortcut = System.Windows.Forms.Shortcut.CtrlB;
-            this.newBreakpointMenuItem.Text = "New Breakpoint";
-            this.newBreakpointMenuItem.Click += new System.EventHandler(this.newBreakpointMenuItem_Click);
-            // 
-            // newDataBreakpointMenuItem
-            // 
-            this.newDataBreakpointMenuItem.Index = 1;
-            this.newDataBreakpointMenuItem.Text = "Data Breakpoint";
-            // 
-            // toggleBreakpointMenuItem
-            // 
-            this.toggleBreakpointMenuItem.Index = 9;
-            this.toggleBreakpointMenuItem.Shortcut = System.Windows.Forms.Shortcut.F9;
-            this.toggleBreakpointMenuItem.Text = "Toggle Breakpoint";
-            this.toggleBreakpointMenuItem.Click += new System.EventHandler(this.toggleBreakpointMenuItem_Click);
-            // 
-            // deleteAllBreakpointsMenuItem
-            // 
-            this.deleteAllBreakpointsMenuItem.Index = 10;
-            this.deleteAllBreakpointsMenuItem.Text = "Delete All Breakpoints";
-            // 
-            // disableAllBreakpointsMenuItem
-            // 
-            this.disableAllBreakpointsMenuItem.Index = 11;
-            this.disableAllBreakpointsMenuItem.Text = "Disable All Breakpoints";
-            // 
-            // windowMenuItem
-            // 
-            this.windowMenuItem.Index = 8;
-            this.windowMenuItem.MdiList = true;
-            this.windowMenuItem.Text = "Window";
-            // 
-            // helpMenuItem
-            // 
-            this.helpMenuItem.Index = 9;
-            this.helpMenuItem.MenuItems.AddRange(new System.Windows.Forms.MenuItem[] {
-            this.showHelpMenuItem,
-            this.updateMenuItem,
-            this.aboutMenuItem});
-            this.helpMenuItem.Text = "Help";
-            // 
-            // showHelpMenuItem
-            // 
-            this.showHelpMenuItem.Enabled = false;
-            this.showHelpMenuItem.Index = 0;
-            this.showHelpMenuItem.Text = "Help";
-            // 
-            // updateMenuItem
-            // 
-            this.updateMenuItem.Index = 1;
-            this.updateMenuItem.Text = "Check for Updates";
-            this.updateMenuItem.Click += new System.EventHandler(this.updateMenuItem_Click);
-            // 
-            // aboutMenuItem
-            // 
-            this.aboutMenuItem.Index = 2;
-            this.aboutMenuItem.Text = "About";
-            this.aboutMenuItem.Click += new System.EventHandler(this.aboutMenuItem_Click);
             // 
             // statusBar
             // 
             this.statusBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel,
-			this.progressBar,
+            this.progressBar,
             this.lineCodeInfo,
             this.lineStatusLabel,
             this.colStatusLabel});
-            this.statusBar.Location = new System.Drawing.Point(0, 330);
+            this.statusBar.Location = new System.Drawing.Point(0, 536);
             this.statusBar.Name = "statusBar";
-            this.statusBar.Size = new System.Drawing.Size(691, 22);
-            this.statusBar.TabIndex = 7;
+            this.statusBar.Size = new System.Drawing.Size(990, 22);
+            this.statusBar.TabIndex = 2;
             this.statusBar.Text = "statusStrip1";
             // 
             // toolStripStatusLabel
             // 
             this.toolStripStatusLabel.Name = "toolStripStatusLabel";
-            this.toolStripStatusLabel.Size = new System.Drawing.Size(540, 17);
+            this.toolStripStatusLabel.Size = new System.Drawing.Size(839, 17);
             this.toolStripStatusLabel.Spring = true;
             this.toolStripStatusLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
+            // 
+            // progressBar
+            // 
+            this.progressBar.Name = "progressBar";
+            this.progressBar.Size = new System.Drawing.Size(100, 16);
+            this.progressBar.Visible = false;
             // 
             // lineCodeInfo
             // 
@@ -1184,12 +272,6 @@
             this.colStatusLabel.Name = "colStatusLabel";
             this.colStatusLabel.Size = new System.Drawing.Size(28, 17);
             this.colStatusLabel.Text = "Col:";
-            // 
-            // progressBar
-            // 
-            this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(100, 16);
-            this.progressBar.Visible = false;
             // 
             // saveFileDialog1
             // 
@@ -1211,145 +293,43 @@
             this.toolBarIcons.Images.SetKeyName(7, "save_16_d.png");
             this.toolBarIcons.Images.SetKeyName(8, "save_16_h.png");
             // 
-            // debugToolStrip
-            // 
-            this.debugToolStrip.AllowMerge = false;
-            this.debugToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.debugToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.runDebuggerToolButton,
-            this.pauseToolButton,
-            this.stopToolButton,
-            this.toolStripSeparator1,
-			this.gotoCurrentToolButton,
-            this.stepToolButton,
-            this.stepOverToolButton,
-            this.stepOutToolButton});
-            this.debugToolStrip.Location = new System.Drawing.Point(0, 0);
-            this.debugToolStrip.Name = "debugToolStrip";
-            this.debugToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.debugToolStrip.Size = new System.Drawing.Size(400, 25);
-            this.debugToolStrip.TabIndex = 16;
-            this.debugToolStrip.Text = "Debug Toolbar";
-            // 
-            // runDebuggerToolButton
-            // 
-            this.runDebuggerToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.runDebuggerToolButton.Image = ((System.Drawing.Image)(resources.GetObject("runToolButton.Image")));
-            this.runDebuggerToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.runDebuggerToolButton.Name = "runDebuggerToolButton";
-            this.runDebuggerToolButton.Size = new System.Drawing.Size(23, 22);
-            this.runDebuggerToolButton.Text = "Start Debug";
-            this.runDebuggerToolButton.Click += new System.EventHandler(this.startDebugMenuItem_Click);
-            // 
-            // pauseToolButton
-            // 
-            this.pauseToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.pauseToolButton.Enabled = false;
-            this.pauseToolButton.Image = ((System.Drawing.Image)(resources.GetObject("pauseToolButton.Image")));
-            this.pauseToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.pauseToolButton.Name = "pauseToolButton";
-            this.pauseToolButton.Size = new System.Drawing.Size(23, 22);
-            this.pauseToolButton.Text = "Pause";
-            this.pauseToolButton.Click += new System.EventHandler(this.pauseToolButton_Click);
-            // 
-            // stopToolButton
-            // 
-            this.stopToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.stopToolButton.Enabled = false;
-            this.stopToolButton.Image = ((System.Drawing.Image)(resources.GetObject("stopToolButton.Image")));
-            this.stopToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.stopToolButton.Name = "stopToolButton";
-            this.stopToolButton.Size = new System.Drawing.Size(23, 22);
-            this.stopToolButton.Text = "Stop";
-            this.stopToolButton.Click += new System.EventHandler(this.cancelDebug_Click);
-            // 
-            // toolStripSeparator1
-            // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
-            this.toolStripSeparator1.TextDirection = System.Windows.Forms.ToolStripTextDirection.Vertical90;
-			// 
-			// gotoCurrentButton
-			// 
-			this.gotoCurrentToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-			this.gotoCurrentToolButton.Enabled = false;
-			this.gotoCurrentToolButton.Image = ((System.Drawing.Image)(resources.GetObject("gotoCurrentToolButton.Image")));
-			this.gotoCurrentToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.gotoCurrentToolButton.Name = "gotoCurrentLineToolButton";
-			this.gotoCurrentToolButton.Size = new System.Drawing.Size(23, 22);
-			this.gotoCurrentToolButton.Text = "Goto Current Line";
-			this.gotoCurrentToolButton.Click += new System.EventHandler(this.gotoCurrentToolButton_Click);
-            // 
-            // stepToolButton
-            // 
-            this.stepToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.stepToolButton.Enabled = false;
-            this.stepToolButton.Image = ((System.Drawing.Image)(resources.GetObject("stepToolButton.Image")));
-            this.stepToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.stepToolButton.Name = "stepToolButton";
-            this.stepToolButton.Size = new System.Drawing.Size(23, 22);
-            this.stepToolButton.Text = "Step";
-            this.stepToolButton.Click += new System.EventHandler(this.stepButton_Click);
-            // 
-            // stepOverToolButton
-            // 
-            this.stepOverToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.stepOverToolButton.Enabled = false;
-            this.stepOverToolButton.Image = ((System.Drawing.Image)(resources.GetObject("stepOverToolButton.Image")));
-            this.stepOverToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.stepOverToolButton.Name = "stepOverToolButton";
-            this.stepOverToolButton.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
-            this.stepOverToolButton.Size = new System.Drawing.Size(23, 22);
-            this.stepOverToolButton.Text = "Step Over";
-            this.stepOverToolButton.Click += new System.EventHandler(this.stepOverMenuItem_Click);
-            // 
-            // stepOutToolButton
-            // 
-            this.stepOutToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.stepOutToolButton.Enabled = false;
-            this.stepOutToolButton.Image = ((System.Drawing.Image)(resources.GetObject("stepOutToolButton.Image")));
-            this.stepOutToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.stepOutToolButton.Name = "stepOutToolButton";
-            this.stepOutToolButton.Size = new System.Drawing.Size(23, 22);
-            this.stepOutToolButton.Text = "Step Out";
-            this.stepOutToolButton.Click += new System.EventHandler(stepOutMenuItem_Click);
-            // 
             // toolStripSeparator
             // 
             this.toolStripSeparator.Name = "toolStripSeparator";
-            this.toolStripSeparator.Size = new System.Drawing.Size(6, 23);
+            this.toolStripSeparator.Size = new System.Drawing.Size(6, 25);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 23);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
             // 
             // findBox
             // 
             this.findBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
             this.findBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.findBox.Name = "findBox";
-            this.findBox.Size = new System.Drawing.Size(135, 23);
+            this.findBox.Size = new System.Drawing.Size(135, 25);
             this.findBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.findBox_KeyPress);
-            // 
-            // toolStripSeparator2
-            // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 23);
             // 
             // configBox
             // 
             this.configBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.CustomSource;
             this.configBox.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.configBox.Name = "configBox";
-            this.configBox.Size = new System.Drawing.Size(135, 23);
-			this.configBox.SelectedIndexChanged += new System.EventHandler(configBox_SelectedIndexChanged);
+            this.configBox.Size = new System.Drawing.Size(135, 25);
+            this.configBox.SelectedIndexChanged += new System.EventHandler(this.configBox_SelectedIndexChanged);
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
             // 
             // mainToolBar
             // 
             this.mainToolBar.AllowItemReorder = true;
-			this.mainToolBar.AutoSize = false;
+            this.mainToolBar.AutoSize = false;
             this.mainToolBar.BackgroundImageLayout = System.Windows.Forms.ImageLayout.None;
+            this.mainToolBar.Dock = System.Windows.Forms.DockStyle.None;
             this.mainToolBar.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
             this.mainToolBar.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.newToolStripButton,
@@ -1365,13 +345,12 @@
             this.findBox,
             this.toolStripSeparator2,
             this.runToolButton,
-			this.configBox});
-            this.mainToolBar.LayoutStyle = System.Windows.Forms.ToolStripLayoutStyle.StackWithOverflow;
-            this.mainToolBar.Location = new System.Drawing.Point(0, 0);
+            this.configBox});
+            this.mainToolBar.Location = new System.Drawing.Point(0, 24);
             this.mainToolBar.Name = "mainToolBar";
             this.mainToolBar.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.mainToolBar.Size = new System.Drawing.Size(2000, 25);
-            this.mainToolBar.TabIndex = 15;
+            this.mainToolBar.Size = new System.Drawing.Size(547, 25);
+            this.mainToolBar.TabIndex = 0;
             this.mainToolBar.Text = "Main Toolbar";
             // 
             // newToolStripButton
@@ -1380,7 +359,7 @@
             this.newToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("newToolStripButton.Image")));
             this.newToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.newToolStripButton.Name = "newToolStripButton";
-            this.newToolStripButton.Size = new System.Drawing.Size(23, 20);
+            this.newToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.newToolStripButton.Text = "&New";
             this.newToolStripButton.Click += new System.EventHandler(this.newToolButton_Click);
             // 
@@ -1390,7 +369,7 @@
             this.openToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("openToolStripButton.Image")));
             this.openToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.openToolStripButton.Name = "openToolStripButton";
-            this.openToolStripButton.Size = new System.Drawing.Size(23, 20);
+            this.openToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.openToolStripButton.Text = "&Open";
             this.openToolStripButton.Click += new System.EventHandler(this.openToolButton_Click);
             // 
@@ -1400,7 +379,7 @@
             this.saveToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("saveToolStripButton.Image")));
             this.saveToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.saveToolStripButton.Name = "saveToolStripButton";
-            this.saveToolStripButton.Size = new System.Drawing.Size(23, 20);
+            this.saveToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.saveToolStripButton.Text = "&Save";
             this.saveToolStripButton.Click += new System.EventHandler(this.saveToolButton_Click);
             // 
@@ -1410,7 +389,7 @@
             this.saveAllToolButton.Image = ((System.Drawing.Image)(resources.GetObject("saveAllToolButton.Image")));
             this.saveAllToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.saveAllToolButton.Name = "saveAllToolButton";
-            this.saveAllToolButton.Size = new System.Drawing.Size(23, 20);
+            this.saveAllToolButton.Size = new System.Drawing.Size(23, 22);
             this.saveAllToolButton.Text = "Save All";
             this.saveAllToolButton.Click += new System.EventHandler(this.saveAllToolButton_Click);
             // 
@@ -1421,7 +400,7 @@
             this.printToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("printToolStripButton.Image")));
             this.printToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.printToolStripButton.Name = "printToolStripButton";
-            this.printToolStripButton.Size = new System.Drawing.Size(23, 20);
+            this.printToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.printToolStripButton.Text = "&Print";
             // 
             // cutToolStripButton
@@ -1430,7 +409,7 @@
             this.cutToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("cutToolStripButton.Image")));
             this.cutToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.cutToolStripButton.Name = "cutToolStripButton";
-            this.cutToolStripButton.Size = new System.Drawing.Size(23, 20);
+            this.cutToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.cutToolStripButton.Text = "C&ut";
             this.cutToolStripButton.Click += new System.EventHandler(this.cutToolButton_Click);
             // 
@@ -1440,7 +419,7 @@
             this.copyToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("copyToolStripButton.Image")));
             this.copyToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.copyToolStripButton.Name = "copyToolStripButton";
-            this.copyToolStripButton.Size = new System.Drawing.Size(23, 20);
+            this.copyToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.copyToolStripButton.Text = "&Copy";
             this.copyToolStripButton.Click += new System.EventHandler(this.copyToolButton_Click);
             // 
@@ -1450,7 +429,7 @@
             this.pasteToolStripButton.Image = ((System.Drawing.Image)(resources.GetObject("pasteToolStripButton.Image")));
             this.pasteToolStripButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.pasteToolStripButton.Name = "pasteToolStripButton";
-            this.pasteToolStripButton.Size = new System.Drawing.Size(23, 20);
+            this.pasteToolStripButton.Size = new System.Drawing.Size(23, 22);
             this.pasteToolStripButton.Text = "&Paste";
             this.pasteToolStripButton.Click += new System.EventHandler(this.pasteToolButton_Click);
             // 
@@ -1460,7 +439,7 @@
             this.runToolButton.Image = ((System.Drawing.Image)(resources.GetObject("runToolButton.Image")));
             this.runToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.runToolButton.Name = "runToolButton";
-            this.runToolButton.Size = new System.Drawing.Size(23, 20);
+            this.runToolButton.Size = new System.Drawing.Size(23, 22);
             this.runToolButton.Text = "Start Debug";
             this.runToolButton.Click += new System.EventHandler(this.startDebugMenuItem_Click);
             // 
@@ -1469,10 +448,1185 @@
             this.documentParser.DoWork += new System.ComponentModel.DoWorkEventHandler(this.documentParser_DoWork);
             this.documentParser.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.documentParser_RunWorkerCompleted);
             // 
+            // mainMenu1
+            // 
+            this.mainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.fileMenuItem,
+            this.editMenuItem,
+            this.viewMenuItem,
+            this.refactorMenuItem,
+            this.projMenuItem,
+            this.macrosMenuItem,
+            this.asmMenuItem,
+            this.debugMenuItem,
+            this.windowMenuItem,
+            this.helpMenuItem});
+            this.mainMenu1.Location = new System.Drawing.Point(0, 0);
+            this.mainMenu1.MdiWindowListItem = this.windowMenuItem;
+            this.mainMenu1.Name = "mainMenu1";
+            this.mainMenu1.Size = new System.Drawing.Size(990, 24);
+            this.mainMenu1.TabIndex = 7;
+            // 
+            // fileMenuItem
+            // 
+            this.fileMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newMenuItem,
+            this.openMenuItem,
+            this.saveMenuItem,
+            this.saveAsMenuItem,
+            this.saveAllMenuItem,
+            this.saveProjectMenuItem,
+            this.closeMenuItem,
+            this.toolStripSeparator14,
+            this.printMenuItem,
+            this.printPrevMenuItem,
+            this.pageSetMenuItem,
+            this.toolStripSeparator15,
+            this.recentFilesMenuItem,
+            this.toolStripSeparator16,
+            this.exitMenuItem});
+            this.fileMenuItem.Name = "fileMenuItem";
+            this.fileMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileMenuItem.Text = "File";
+            // 
+            // newMenuItem
+            // 
+            this.newMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newFileMenuItem,
+            this.newProjectMenuItem});
+            this.newMenuItem.Name = "newMenuItem";
+            this.newMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.newMenuItem.Text = "New";
+            // 
+            // newFileMenuItem
+            // 
+            this.newFileMenuItem.Name = "newFileMenuItem";
+            this.newFileMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.N)));
+            this.newFileMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.newFileMenuItem.Text = "File";
+            this.newFileMenuItem.Click += new System.EventHandler(this.newFileMenuItem_Click);
+            // 
+            // newProjectMenuItem
+            // 
+            this.newProjectMenuItem.Name = "newProjectMenuItem";
+            this.newProjectMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.N)));
+            this.newProjectMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.newProjectMenuItem.Text = "Project";
+            this.newProjectMenuItem.Click += new System.EventHandler(this.newProjectMenuItem_Click);
+            // 
+            // openMenuItem
+            // 
+            this.openMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openFileMenuItem,
+            this.openProjectMenuItem});
+            this.openMenuItem.Name = "openMenuItem";
+            this.openMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.openMenuItem.Text = "Open";
+            // 
+            // openFileMenuItem
+            // 
+            this.openFileMenuItem.Name = "openFileMenuItem";
+            this.openFileMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.O)));
+            this.openFileMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.openFileMenuItem.Text = "File";
+            this.openFileMenuItem.Click += new System.EventHandler(this.openFileMenuItem_Click);
+            // 
+            // openProjectMenuItem
+            // 
+            this.openProjectMenuItem.Name = "openProjectMenuItem";
+            this.openProjectMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.O)));
+            this.openProjectMenuItem.Size = new System.Drawing.Size(186, 22);
+            this.openProjectMenuItem.Text = "Project";
+            this.openProjectMenuItem.Click += new System.EventHandler(this.openProjectMenuItem_Click);
+            // 
+            // saveMenuItem
+            // 
+            this.saveMenuItem.Name = "saveMenuItem";
+            this.saveMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.S)));
+            this.saveMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.saveMenuItem.Text = "Save";
+            this.saveMenuItem.Click += new System.EventHandler(this.saveMenuItem_Click);
+            // 
+            // saveAsMenuItem
+            // 
+            this.saveAsMenuItem.Name = "saveAsMenuItem";
+            this.saveAsMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F12;
+            this.saveAsMenuItem.ShowShortcutKeys = false;
+            this.saveAsMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.saveAsMenuItem.Text = "Save As...";
+            this.saveAsMenuItem.Click += new System.EventHandler(this.saveAsMenuItem_Click);
+            // 
+            // saveAllMenuItem
+            // 
+            this.saveAllMenuItem.Name = "saveAllMenuItem";
+            this.saveAllMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.S)));
+            this.saveAllMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.saveAllMenuItem.Text = "Save All";
+            this.saveAllMenuItem.Click += new System.EventHandler(this.saveProjectMenuItem_Click);
+            // 
+            // saveProjectMenuItem
+            // 
+            this.saveProjectMenuItem.Name = "saveProjectMenuItem";
+            this.saveProjectMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.saveProjectMenuItem.Text = "Save Project";
+            this.saveProjectMenuItem.Click += new System.EventHandler(this.saveProjectMenuItem_Click);
+            // 
+            // closeMenuItem
+            // 
+            this.closeMenuItem.Name = "closeMenuItem";
+            this.closeMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.W)));
+            this.closeMenuItem.ShowShortcutKeys = false;
+            this.closeMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.closeMenuItem.Text = "Close";
+            this.closeMenuItem.Click += new System.EventHandler(this.closeMenuItem_Click);
+            // 
+            // toolStripSeparator14
+            // 
+            this.toolStripSeparator14.Name = "toolStripSeparator14";
+            this.toolStripSeparator14.Size = new System.Drawing.Size(184, 6);
+            // 
+            // printMenuItem
+            // 
+            this.printMenuItem.Enabled = false;
+            this.printMenuItem.Name = "printMenuItem";
+            this.printMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.P)));
+            this.printMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.printMenuItem.Text = "Print";
+            // 
+            // printPrevMenuItem
+            // 
+            this.printPrevMenuItem.Enabled = false;
+            this.printPrevMenuItem.Name = "printPrevMenuItem";
+            this.printPrevMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.printPrevMenuItem.Text = "Print Preview";
+            // 
+            // pageSetMenuItem
+            // 
+            this.pageSetMenuItem.Enabled = false;
+            this.pageSetMenuItem.Name = "pageSetMenuItem";
+            this.pageSetMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.pageSetMenuItem.Text = "Page Setup";
+            // 
+            // toolStripSeparator15
+            // 
+            this.toolStripSeparator15.Name = "toolStripSeparator15";
+            this.toolStripSeparator15.Size = new System.Drawing.Size(184, 6);
+            // 
+            // recentFilesMenuItem
+            // 
+            this.recentFilesMenuItem.Name = "recentFilesMenuItem";
+            this.recentFilesMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.recentFilesMenuItem.Text = "Recent Files";
+            // 
+            // toolStripSeparator16
+            // 
+            this.toolStripSeparator16.Name = "toolStripSeparator16";
+            this.toolStripSeparator16.Size = new System.Drawing.Size(184, 6);
+            // 
+            // exitMenuItem
+            // 
+            this.exitMenuItem.Name = "exitMenuItem";
+            this.exitMenuItem.Size = new System.Drawing.Size(187, 22);
+            this.exitMenuItem.Text = "Exit";
+            this.exitMenuItem.Click += new System.EventHandler(this.exitMenuItem_Click);
+            // 
+            // editMenuItem
+            // 
+            this.editMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.undoMenuItem,
+            this.redoMenuItem,
+            this.toolStripSeparator10,
+            this.cutMenuItem,
+            this.copyMenuItem,
+            this.pasteMenuItem,
+            this.selectAllMenuItem,
+            this.toolStripSeparator11,
+            this.menuItem7,
+            this.toolStripSeparator12,
+            this.insertMenuItem,
+            this.formattingMenuItem,
+            this.bookmarkMenuItem,
+            this.gotoMenuItem,
+            this.toolStripSeparator13,
+            this.prefsMenuItem});
+            this.editMenuItem.Name = "editMenuItem";
+            this.editMenuItem.Size = new System.Drawing.Size(39, 20);
+            this.editMenuItem.Text = "Edit";
+            // 
+            // undoMenuItem
+            // 
+            this.undoMenuItem.Name = "undoMenuItem";
+            this.undoMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
+            this.undoMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.undoMenuItem.Text = "Undo";
+            this.undoMenuItem.Click += new System.EventHandler(this.undoMenuItem_Click);
+            // 
+            // redoMenuItem
+            // 
+            this.redoMenuItem.Name = "redoMenuItem";
+            this.redoMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
+            this.redoMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.redoMenuItem.Text = "Redo";
+            this.redoMenuItem.Click += new System.EventHandler(this.redoMenuItem_Click);
+            // 
+            // toolStripSeparator10
+            // 
+            this.toolStripSeparator10.Name = "toolStripSeparator10";
+            this.toolStripSeparator10.Size = new System.Drawing.Size(161, 6);
+            // 
+            // cutMenuItem
+            // 
+            this.cutMenuItem.Name = "cutMenuItem";
+            this.cutMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.X)));
+            this.cutMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.cutMenuItem.Text = "Cut";
+            this.cutMenuItem.Click += new System.EventHandler(this.cutMenuItem_Click);
+            // 
+            // copyMenuItem
+            // 
+            this.copyMenuItem.Name = "copyMenuItem";
+            this.copyMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.C)));
+            this.copyMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.copyMenuItem.Text = "Copy";
+            this.copyMenuItem.Click += new System.EventHandler(this.copyMenuItem_Click);
+            // 
+            // pasteMenuItem
+            // 
+            this.pasteMenuItem.Name = "pasteMenuItem";
+            this.pasteMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.V)));
+            this.pasteMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.pasteMenuItem.Text = "Paste";
+            this.pasteMenuItem.Click += new System.EventHandler(this.pasteMenuItem_Click);
+            // 
+            // selectAllMenuItem
+            // 
+            this.selectAllMenuItem.Name = "selectAllMenuItem";
+            this.selectAllMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.A)));
+            this.selectAllMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.selectAllMenuItem.Text = "Select All";
+            this.selectAllMenuItem.Click += new System.EventHandler(this.selectAllMenuItem_Click);
+            // 
+            // toolStripSeparator11
+            // 
+            this.toolStripSeparator11.Name = "toolStripSeparator11";
+            this.toolStripSeparator11.Size = new System.Drawing.Size(161, 6);
+            // 
+            // menuItem7
+            // 
+            this.menuItem7.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.findMenuItem,
+            this.replaceMenuItem,
+            this.findInFilesMenuItem,
+            this.replaceInFilesMenuItem,
+            this.findAllRefsMenuItem});
+            this.menuItem7.Name = "menuItem7";
+            this.menuItem7.Size = new System.Drawing.Size(164, 22);
+            this.menuItem7.Text = "Find and Replace";
+            // 
+            // findMenuItem
+            // 
+            this.findMenuItem.Name = "findMenuItem";
+            this.findMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F)));
+            this.findMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.findMenuItem.Text = "Find";
+            this.findMenuItem.Click += new System.EventHandler(this.findMenuItem_Click);
+            // 
+            // replaceMenuItem
+            // 
+            this.replaceMenuItem.Name = "replaceMenuItem";
+            this.replaceMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.H)));
+            this.replaceMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.replaceMenuItem.Text = "Replace";
+            this.replaceMenuItem.Click += new System.EventHandler(this.replaceMenuItem_Click);
+            // 
+            // findInFilesMenuItem
+            // 
+            this.findInFilesMenuItem.Name = "findInFilesMenuItem";
+            this.findInFilesMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.F)));
+            this.findInFilesMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.findInFilesMenuItem.Text = "Find in files";
+            this.findInFilesMenuItem.Click += new System.EventHandler(this.findInFilesMenuItem_Click);
+            // 
+            // replaceInFilesMenuItem
+            // 
+            this.replaceInFilesMenuItem.Name = "replaceInFilesMenuItem";
+            this.replaceInFilesMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.H)));
+            this.replaceInFilesMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.replaceInFilesMenuItem.Text = "Replace in files";
+            this.replaceInFilesMenuItem.Click += new System.EventHandler(this.replaceInFilesMenuItem_Click);
+            // 
+            // findAllRefsMenuItem
+            // 
+            this.findAllRefsMenuItem.Name = "findAllRefsMenuItem";
+            this.findAllRefsMenuItem.Size = new System.Drawing.Size(227, 22);
+            this.findAllRefsMenuItem.Text = "Find all references";
+            this.findAllRefsMenuItem.Click += new System.EventHandler(this.findAllRefsMenuItem_Click);
+            // 
+            // toolStripSeparator12
+            // 
+            this.toolStripSeparator12.Name = "toolStripSeparator12";
+            this.toolStripSeparator12.Size = new System.Drawing.Size(161, 6);
+            // 
+            // insertMenuItem
+            // 
+            this.insertMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.iSpriteMenuItem,
+            this.iMapMenuItem});
+            this.insertMenuItem.Name = "insertMenuItem";
+            this.insertMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.insertMenuItem.Text = "Insert";
+            // 
+            // iSpriteMenuItem
+            // 
+            this.iSpriteMenuItem.Name = "iSpriteMenuItem";
+            this.iSpriteMenuItem.Size = new System.Drawing.Size(104, 22);
+            this.iSpriteMenuItem.Text = "Sprite";
+            // 
+            // iMapMenuItem
+            // 
+            this.iMapMenuItem.Name = "iMapMenuItem";
+            this.iMapMenuItem.Size = new System.Drawing.Size(104, 22);
+            this.iMapMenuItem.Text = "Map";
+            // 
+            // formattingMenuItem
+            // 
+            this.formattingMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.makeUpperMenuItem,
+            this.makeLowerMenuItem,
+            this.invertCaseMenuItem,
+            this.sentenceCaseMenuItem,
+            this.toolStripSeparator21,
+            this.formatDocMenuItem,
+            this.convertSpacesToTabsMenuItem});
+            this.formattingMenuItem.Name = "formattingMenuItem";
+            this.formattingMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.formattingMenuItem.Text = "Formatting";
+            // 
+            // makeUpperMenuItem
+            // 
+            this.makeUpperMenuItem.Name = "makeUpperMenuItem";
+            this.makeUpperMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.U)));
+            this.makeUpperMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.makeUpperMenuItem.Text = "Make Uppercase";
+            this.makeUpperMenuItem.Click += new System.EventHandler(this.makeUpperMenuItem_Click);
+            // 
+            // makeLowerMenuItem
+            // 
+            this.makeLowerMenuItem.Name = "makeLowerMenuItem";
+            this.makeLowerMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)(((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Shift) 
+            | System.Windows.Forms.Keys.L)));
+            this.makeLowerMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.makeLowerMenuItem.Text = "Make Lowercase";
+            this.makeLowerMenuItem.Click += new System.EventHandler(this.makeLowerMenuItem_Click);
+            // 
+            // invertCaseMenuItem
+            // 
+            this.invertCaseMenuItem.Name = "invertCaseMenuItem";
+            this.invertCaseMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.invertCaseMenuItem.Text = "Invert Case";
+            this.invertCaseMenuItem.Click += new System.EventHandler(this.invertCaseMenuItem_Click);
+            // 
+            // sentenceCaseMenuItem
+            // 
+            this.sentenceCaseMenuItem.Name = "sentenceCaseMenuItem";
+            this.sentenceCaseMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.sentenceCaseMenuItem.Text = "Sentence Case";
+            this.sentenceCaseMenuItem.Click += new System.EventHandler(this.sentenceCaseMenuItem_Click);
+            // 
+            // toolStripSeparator21
+            // 
+            this.toolStripSeparator21.Name = "toolStripSeparator21";
+            this.toolStripSeparator21.Size = new System.Drawing.Size(232, 6);
+            // 
+            // formatDocMenuItem
+            // 
+            this.formatDocMenuItem.Name = "formatDocMenuItem";
+            this.formatDocMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.formatDocMenuItem.Text = "Format Document";
+            this.formatDocMenuItem.Click += new System.EventHandler(this.formatDocMenuItem_Click);
+            // 
+            // convertSpacesToTabsMenuItem
+            // 
+            this.convertSpacesToTabsMenuItem.Name = "convertSpacesToTabsMenuItem";
+            this.convertSpacesToTabsMenuItem.Size = new System.Drawing.Size(235, 22);
+            this.convertSpacesToTabsMenuItem.Text = "Convert Spaces To Tabs";
+            this.convertSpacesToTabsMenuItem.Click += new System.EventHandler(this.convertSpacesToTabsMenuItem_Click);
+            // 
+            // bookmarkMenuItem
+            // 
+            this.bookmarkMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toggleBookmarkMenuItem,
+            this.prevBookmarkMenuItem,
+            this.nextBookmarkMenuItem});
+            this.bookmarkMenuItem.Name = "bookmarkMenuItem";
+            this.bookmarkMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.bookmarkMenuItem.Text = "Bookmarks";
+            // 
+            // toggleBookmarkMenuItem
+            // 
+            this.toggleBookmarkMenuItem.Name = "toggleBookmarkMenuItem";
+            this.toggleBookmarkMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.toggleBookmarkMenuItem.Text = "Toggle Bookmark";
+            this.toggleBookmarkMenuItem.Click += new System.EventHandler(this.toggleBookmarkMenuItem_Click);
+            // 
+            // prevBookmarkMenuItem
+            // 
+            this.prevBookmarkMenuItem.Name = "prevBookmarkMenuItem";
+            this.prevBookmarkMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.prevBookmarkMenuItem.Text = "Previous Bookmark";
+            this.prevBookmarkMenuItem.Click += new System.EventHandler(this.prevBookmarkMenuItem_Click);
+            // 
+            // nextBookmarkMenuItem
+            // 
+            this.nextBookmarkMenuItem.Name = "nextBookmarkMenuItem";
+            this.nextBookmarkMenuItem.Size = new System.Drawing.Size(176, 22);
+            this.nextBookmarkMenuItem.Text = "Next Bookmark";
+            this.nextBookmarkMenuItem.Click += new System.EventHandler(this.nextBookmarkMenuItem_Click);
+            // 
+            // gotoMenuItem
+            // 
+            this.gotoMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.gLineMenuItem,
+            this.gLabelMenuItem});
+            this.gotoMenuItem.Name = "gotoMenuItem";
+            this.gotoMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.gotoMenuItem.Text = "Goto";
+            // 
+            // gLineMenuItem
+            // 
+            this.gLineMenuItem.Name = "gLineMenuItem";
+            this.gLineMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.G)));
+            this.gLineMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.gLineMenuItem.Text = "Line";
+            this.gLineMenuItem.Click += new System.EventHandler(this.gLineMenuItem_Click);
+            // 
+            // gLabelMenuItem
+            // 
+            this.gLabelMenuItem.Name = "gLabelMenuItem";
+            this.gLabelMenuItem.Size = new System.Drawing.Size(138, 22);
+            this.gLabelMenuItem.Text = "Label";
+            this.gLabelMenuItem.Click += new System.EventHandler(this.gLabelMenuItem_Click);
+            // 
+            // toolStripSeparator13
+            // 
+            this.toolStripSeparator13.Name = "toolStripSeparator13";
+            this.toolStripSeparator13.Size = new System.Drawing.Size(161, 6);
+            // 
+            // prefsMenuItem
+            // 
+            this.prefsMenuItem.Name = "prefsMenuItem";
+            this.prefsMenuItem.Size = new System.Drawing.Size(164, 22);
+            this.prefsMenuItem.Text = "Preferences";
+            // 
+            // viewMenuItem
+            // 
+            this.viewMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolBarMenuItem,
+            this.toolStripSeparator6,
+            this.labelListMenuItem,
+            this.projViewMenuItem,
+            this.dirViewMenuItem,
+            this.macroManagerMenuItem,
+            this.toolStripSeparator7,
+            this.debugPanelsMenuItem,
+            this.toolStripSeparator8,
+            this.outWinMenuItem,
+            this.errListMenuItem,
+            this.findResultsMenuItem,
+            this.statusBarMenuItem,
+            this.toolStripSeparator9,
+            this.lineNumMenuItem,
+            this.iconBarMenuItem});
+            this.viewMenuItem.Name = "viewMenuItem";
+            this.viewMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.viewMenuItem.Text = "View";
+            // 
+            // toolBarMenuItem
+            // 
+            this.toolBarMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mainToolMenuItem,
+            this.debugToolMenuItem,
+            this.editorToolBarMenuItem});
+            this.toolBarMenuItem.Name = "toolBarMenuItem";
+            this.toolBarMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.toolBarMenuItem.Text = "Toolbars";
+            // 
+            // mainToolMenuItem
+            // 
+            this.mainToolMenuItem.Name = "mainToolMenuItem";
+            this.mainToolMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.mainToolMenuItem.Tag = "mainToolBar";
+            this.mainToolMenuItem.Text = "Main Toolbar";
+            this.mainToolMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // debugToolMenuItem
+            // 
+            this.debugToolMenuItem.Name = "debugToolMenuItem";
+            this.debugToolMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.debugToolMenuItem.Tag = "debugToolBar";
+            this.debugToolMenuItem.Text = "Debug Toolbar";
+            this.debugToolMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // editorToolBarMenuItem
+            // 
+            this.editorToolBarMenuItem.Name = "editorToolBarMenuItem";
+            this.editorToolBarMenuItem.Size = new System.Drawing.Size(153, 22);
+            this.editorToolBarMenuItem.Tag = "editorToolbar";
+            this.editorToolBarMenuItem.Text = "Editor Toolbar";
+            this.editorToolBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(156, 6);
+            // 
+            // labelListMenuItem
+            // 
+            this.labelListMenuItem.Name = "labelListMenuItem";
+            this.labelListMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.labelListMenuItem.Tag = "labelsList";
+            this.labelListMenuItem.Text = "Label List";
+            this.labelListMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // projViewMenuItem
+            // 
+            this.projViewMenuItem.Name = "projViewMenuItem";
+            this.projViewMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.projViewMenuItem.Tag = "projectViewer";
+            this.projViewMenuItem.Text = "Project View";
+            this.projViewMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // dirViewMenuItem
+            // 
+            this.dirViewMenuItem.Name = "dirViewMenuItem";
+            this.dirViewMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.dirViewMenuItem.Tag = "directoryViewer";
+            this.dirViewMenuItem.Text = "Directory View";
+            this.dirViewMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // macroManagerMenuItem
+            // 
+            this.macroManagerMenuItem.Name = "macroManagerMenuItem";
+            this.macroManagerMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.macroManagerMenuItem.Tag = "macroManager";
+            this.macroManagerMenuItem.Text = "Macro Manager";
+            this.macroManagerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(156, 6);
+            // 
+            // debugPanelsMenuItem
+            // 
+            this.debugPanelsMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.debugPanelMenuItem,
+            this.callStackMenuItem,
+            this.stackViewerMenuItem,
+            this.varTrackMenuItem,
+            this.breakManagerMenuItem});
+            this.debugPanelsMenuItem.Name = "debugPanelsMenuItem";
+            this.debugPanelsMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.debugPanelsMenuItem.Text = "Debug";
+            // 
+            // debugPanelMenuItem
+            // 
+            this.debugPanelMenuItem.Name = "debugPanelMenuItem";
+            this.debugPanelMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.debugPanelMenuItem.Tag = "debugPanel";
+            this.debugPanelMenuItem.Text = "Debug Panel";
+            this.debugPanelMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // callStackMenuItem
+            // 
+            this.callStackMenuItem.Name = "callStackMenuItem";
+            this.callStackMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.callStackMenuItem.Tag = "callStack";
+            this.callStackMenuItem.Text = "Call Stack";
+            this.callStackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // stackViewerMenuItem
+            // 
+            this.stackViewerMenuItem.Name = "stackViewerMenuItem";
+            this.stackViewerMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.stackViewerMenuItem.Tag = "stackViewer";
+            this.stackViewerMenuItem.Text = "Stack Viewer";
+            this.stackViewerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // varTrackMenuItem
+            // 
+            this.varTrackMenuItem.Name = "varTrackMenuItem";
+            this.varTrackMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.varTrackMenuItem.Tag = "varTrack";
+            this.varTrackMenuItem.Text = "Variable Tracking";
+            this.varTrackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // breakManagerMenuItem
+            // 
+            this.breakManagerMenuItem.Name = "breakManagerMenuItem";
+            this.breakManagerMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.breakManagerMenuItem.Tag = "breakManager";
+            this.breakManagerMenuItem.Text = "Breakpoint Manager";
+            this.breakManagerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // toolStripSeparator8
+            // 
+            this.toolStripSeparator8.Name = "toolStripSeparator8";
+            this.toolStripSeparator8.Size = new System.Drawing.Size(156, 6);
+            // 
+            // outWinMenuItem
+            // 
+            this.outWinMenuItem.Name = "outWinMenuItem";
+            this.outWinMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.outWinMenuItem.Tag = "outputWindow";
+            this.outWinMenuItem.Text = "Output Window";
+            this.outWinMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // errListMenuItem
+            // 
+            this.errListMenuItem.Name = "errListMenuItem";
+            this.errListMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.errListMenuItem.Tag = "errorList";
+            this.errListMenuItem.Text = "Error List";
+            this.errListMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // findResultsMenuItem
+            // 
+            this.findResultsMenuItem.Name = "findResultsMenuItem";
+            this.findResultsMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.findResultsMenuItem.Tag = "FindResults";
+            this.findResultsMenuItem.Text = "Find Results";
+            this.findResultsMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // statusBarMenuItem
+            // 
+            this.statusBarMenuItem.Name = "statusBarMenuItem";
+            this.statusBarMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.statusBarMenuItem.Tag = "statusBar";
+            this.statusBarMenuItem.Text = "Status Bar";
+            this.statusBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(156, 6);
+            // 
+            // lineNumMenuItem
+            // 
+            this.lineNumMenuItem.Name = "lineNumMenuItem";
+            this.lineNumMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.lineNumMenuItem.Tag = "lineNumbers";
+            this.lineNumMenuItem.Text = "Line Numbers";
+            this.lineNumMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // iconBarMenuItem
+            // 
+            this.iconBarMenuItem.Name = "iconBarMenuItem";
+            this.iconBarMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.iconBarMenuItem.Tag = "iconBar";
+            this.iconBarMenuItem.Text = "Icon Bar";
+            this.iconBarMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
+            // 
+            // refactorMenuItem
+            // 
+            this.refactorMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.renameMenuItem,
+            this.extractMethodMenuItem});
+            this.refactorMenuItem.Name = "refactorMenuItem";
+            this.refactorMenuItem.Size = new System.Drawing.Size(63, 20);
+            this.refactorMenuItem.Text = "Refactor";
+            // 
+            // renameMenuItem
+            // 
+            this.renameMenuItem.Name = "renameMenuItem";
+            this.renameMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.renameMenuItem.Text = "Rename";
+            this.renameMenuItem.Click += new System.EventHandler(this.renameMenuItem_Click);
+            // 
+            // extractMethodMenuItem
+            // 
+            this.extractMethodMenuItem.Name = "extractMethodMenuItem";
+            this.extractMethodMenuItem.Size = new System.Drawing.Size(154, 22);
+            this.extractMethodMenuItem.Text = "Extract Method";
+            this.extractMethodMenuItem.Click += new System.EventHandler(this.extractMethodMenuItem_Click);
+            // 
+            // projMenuItem
+            // 
+            this.projMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.addNewFileMenuItem,
+            this.existingFileMenuItem,
+            this.toolStripSeparator17,
+            this.buildOrderButton,
+            this.includeDirProjMenuItem,
+            this.refreshMenuItem,
+            this.toolStripSeparator18,
+            this.closeProjMenuItem});
+            this.projMenuItem.Name = "projMenuItem";
+            this.projMenuItem.Size = new System.Drawing.Size(56, 20);
+            this.projMenuItem.Text = "Project";
+            this.projMenuItem.Visible = false;
+            // 
+            // addNewFileMenuItem
+            // 
+            this.addNewFileMenuItem.Name = "addNewFileMenuItem";
+            this.addNewFileMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.addNewFileMenuItem.Text = "Add File";
+            // 
+            // existingFileMenuItem
+            // 
+            this.existingFileMenuItem.Name = "existingFileMenuItem";
+            this.existingFileMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.existingFileMenuItem.Text = "Add Existing File";
+            // 
+            // toolStripSeparator17
+            // 
+            this.toolStripSeparator17.Name = "toolStripSeparator17";
+            this.toolStripSeparator17.Size = new System.Drawing.Size(178, 6);
+            // 
+            // buildOrderButton
+            // 
+            this.buildOrderButton.Name = "buildOrderButton";
+            this.buildOrderButton.Size = new System.Drawing.Size(181, 22);
+            this.buildOrderButton.Text = "Build Steps...";
+            this.buildOrderButton.Click += new System.EventHandler(this.buildOrderButton_Click);
+            // 
+            // includeDirProjMenuItem
+            // 
+            this.includeDirProjMenuItem.Name = "includeDirProjMenuItem";
+            this.includeDirProjMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.includeDirProjMenuItem.Text = "Include Directories...";
+            this.includeDirProjMenuItem.Click += new System.EventHandler(this.includeDirButton_Click);
+            // 
+            // refreshMenuItem
+            // 
+            this.refreshMenuItem.Name = "refreshMenuItem";
+            this.refreshMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.refreshMenuItem.Text = "Refresh";
+            // 
+            // toolStripSeparator18
+            // 
+            this.toolStripSeparator18.Name = "toolStripSeparator18";
+            this.toolStripSeparator18.Size = new System.Drawing.Size(178, 6);
+            // 
+            // closeProjMenuItem
+            // 
+            this.closeProjMenuItem.Name = "closeProjMenuItem";
+            this.closeProjMenuItem.Size = new System.Drawing.Size(181, 22);
+            this.closeProjMenuItem.Text = "Close Project";
+            this.closeProjMenuItem.Click += new System.EventHandler(this.closeProjMenuItem_Click);
+            // 
+            // macrosMenuItem
+            // 
+            this.macrosMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.runMacroMenuItem,
+            this.recMacroMenuItem,
+            this.manMacroMenuItem});
+            this.macrosMenuItem.Enabled = false;
+            this.macrosMenuItem.Name = "macrosMenuItem";
+            this.macrosMenuItem.Size = new System.Drawing.Size(58, 20);
+            this.macrosMenuItem.Text = "Macros";
+            // 
+            // runMacroMenuItem
+            // 
+            this.runMacroMenuItem.Name = "runMacroMenuItem";
+            this.runMacroMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.runMacroMenuItem.Text = "Run Macro";
+            // 
+            // recMacroMenuItem
+            // 
+            this.recMacroMenuItem.Name = "recMacroMenuItem";
+            this.recMacroMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.recMacroMenuItem.Text = "Record Macro";
+            // 
+            // manMacroMenuItem
+            // 
+            this.manMacroMenuItem.Name = "manMacroMenuItem";
+            this.manMacroMenuItem.Size = new System.Drawing.Size(159, 22);
+            this.manMacroMenuItem.Text = "Manage Macros";
+            // 
+            // asmMenuItem
+            // 
+            this.asmMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.assembleMenuItem,
+            this.includeDirButton,
+            this.symTableMenuItem,
+            this.countCodeMenuItem,
+            this.projStatsMenuItem,
+            this.listFileMenuItem,
+            this.hexFileMenuItem});
+            this.asmMenuItem.Name = "asmMenuItem";
+            this.asmMenuItem.Size = new System.Drawing.Size(70, 20);
+            this.asmMenuItem.Text = "Assemble";
+            // 
+            // assembleMenuItem
+            // 
+            this.assembleMenuItem.Name = "assembleMenuItem";
+            this.assembleMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.B)));
+            this.assembleMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.assembleMenuItem.Text = "Assemble";
+            this.assembleMenuItem.Click += new System.EventHandler(this.assembleMenuItem_Click);
+            // 
+            // includeDirButton
+            // 
+            this.includeDirButton.Name = "includeDirButton";
+            this.includeDirButton.Size = new System.Drawing.Size(180, 22);
+            this.includeDirButton.Text = "Include Directories";
+            this.includeDirButton.Click += new System.EventHandler(this.includeDirButton_Click);
+            // 
+            // symTableMenuItem
+            // 
+            this.symTableMenuItem.Name = "symTableMenuItem";
+            this.symTableMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.symTableMenuItem.Text = "Build Symbol Table";
+            this.symTableMenuItem.Click += new System.EventHandler(this.symTableMenuItem_Click);
+            // 
+            // countCodeMenuItem
+            // 
+            this.countCodeMenuItem.Enabled = false;
+            this.countCodeMenuItem.Name = "countCodeMenuItem";
+            this.countCodeMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.countCodeMenuItem.Text = "Count Code";
+            // 
+            // projStatsMenuItem
+            // 
+            this.projStatsMenuItem.Name = "projStatsMenuItem";
+            this.projStatsMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.projStatsMenuItem.Text = "Show Program Stats";
+            this.projStatsMenuItem.Click += new System.EventHandler(this.projStatsMenuItem_Click);
+            // 
+            // listFileMenuItem
+            // 
+            this.listFileMenuItem.Name = "listFileMenuItem";
+            this.listFileMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.listFileMenuItem.Text = "Build List File";
+            this.listFileMenuItem.Click += new System.EventHandler(this.listFileMenuItem_Click);
+            // 
+            // hexFileMenuItem
+            // 
+            this.hexFileMenuItem.Enabled = false;
+            this.hexFileMenuItem.Name = "hexFileMenuItem";
+            this.hexFileMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.hexFileMenuItem.Text = "Build Hex File";
+            // 
+            // debugMenuItem
+            // 
+            this.debugMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.startDebugMenuItem,
+            this.startWithoutDebugMenuItem,
+            this.stopDebugMenuItem,
+            this.toolStripSeparator19,
+            this.runMenuItem,
+            this.stepMenuItem,
+            this.stepOverMenuItem,
+            this.stepOutMenuItem,
+            this.toolStripSeparator20,
+            this.menuItem11,
+            this.toggleBreakpointMenuItem,
+            this.deleteAllBreakpointsMenuItem,
+            this.disableAllBreakpointsMenuItem});
+            this.debugMenuItem.Name = "debugMenuItem";
+            this.debugMenuItem.Size = new System.Drawing.Size(54, 20);
+            this.debugMenuItem.Text = "Debug";
+            // 
+            // startDebugMenuItem
+            // 
+            this.startDebugMenuItem.Name = "startDebugMenuItem";
+            this.startDebugMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F5;
+            this.startDebugMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.startDebugMenuItem.Text = "Start Debug";
+            this.startDebugMenuItem.Click += new System.EventHandler(this.startDebugMenuItem_Click);
+            // 
+            // startWithoutDebugMenuItem
+            // 
+            this.startWithoutDebugMenuItem.Name = "startWithoutDebugMenuItem";
+            this.startWithoutDebugMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.F5)));
+            this.startWithoutDebugMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.startWithoutDebugMenuItem.Text = "Start Without Debug";
+            this.startWithoutDebugMenuItem.Click += new System.EventHandler(this.startWithoutDebugMenuItem_Click);
+            // 
+            // stopDebugMenuItem
+            // 
+            this.stopDebugMenuItem.Enabled = false;
+            this.stopDebugMenuItem.Name = "stopDebugMenuItem";
+            this.stopDebugMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.stopDebugMenuItem.Text = "Stop Debug";
+            this.stopDebugMenuItem.Click += new System.EventHandler(this.cancelDebug_Click);
+            // 
+            // toolStripSeparator19
+            // 
+            this.toolStripSeparator19.Name = "toolStripSeparator19";
+            this.toolStripSeparator19.Size = new System.Drawing.Size(225, 6);
+            // 
+            // runMenuItem
+            // 
+            this.runMenuItem.Enabled = false;
+            this.runMenuItem.Name = "runMenuItem";
+            this.runMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.runMenuItem.Text = "Run";
+            this.runMenuItem.Click += new System.EventHandler(this.startDebugMenuItem_Click);
+            // 
+            // stepMenuItem
+            // 
+            this.stepMenuItem.Enabled = false;
+            this.stepMenuItem.Name = "stepMenuItem";
+            this.stepMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F7;
+            this.stepMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.stepMenuItem.Text = "Step";
+            this.stepMenuItem.Click += new System.EventHandler(this.stepButton_Click);
+            // 
+            // stepOverMenuItem
+            // 
+            this.stepOverMenuItem.Enabled = false;
+            this.stepOverMenuItem.Name = "stepOverMenuItem";
+            this.stepOverMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F8;
+            this.stepOverMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.stepOverMenuItem.Text = "Step Over";
+            this.stepOverMenuItem.Click += new System.EventHandler(this.stepOverMenuItem_Click);
+            // 
+            // stepOutMenuItem
+            // 
+            this.stepOutMenuItem.Enabled = false;
+            this.stepOutMenuItem.Name = "stepOutMenuItem";
+            this.stepOutMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Shift | System.Windows.Forms.Keys.F8)));
+            this.stepOutMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.stepOutMenuItem.Text = "Step Out";
+            this.stepOutMenuItem.Click += new System.EventHandler(this.stepOutMenuItem_Click);
+            // 
+            // toolStripSeparator20
+            // 
+            this.toolStripSeparator20.Name = "toolStripSeparator20";
+            this.toolStripSeparator20.Size = new System.Drawing.Size(225, 6);
+            // 
+            // menuItem11
+            // 
+            this.menuItem11.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.newBreakpointMenuItem,
+            this.newDataBreakpointMenuItem});
+            this.menuItem11.Name = "menuItem11";
+            this.menuItem11.Size = new System.Drawing.Size(228, 22);
+            this.menuItem11.Text = "New Breakpoint";
+            // 
+            // newBreakpointMenuItem
+            // 
+            this.newBreakpointMenuItem.Name = "newBreakpointMenuItem";
+            this.newBreakpointMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.newBreakpointMenuItem.Text = "New Breakpoint";
+            this.newBreakpointMenuItem.Click += new System.EventHandler(this.newBreakpointMenuItem_Click);
+            // 
+            // newDataBreakpointMenuItem
+            // 
+            this.newDataBreakpointMenuItem.Name = "newDataBreakpointMenuItem";
+            this.newDataBreakpointMenuItem.Size = new System.Drawing.Size(158, 22);
+            this.newDataBreakpointMenuItem.Text = "Data Breakpoint";
+            // 
+            // toggleBreakpointMenuItem
+            // 
+            this.toggleBreakpointMenuItem.Name = "toggleBreakpointMenuItem";
+            this.toggleBreakpointMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F9;
+            this.toggleBreakpointMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.toggleBreakpointMenuItem.Text = "Toggle Breakpoint";
+            this.toggleBreakpointMenuItem.Click += new System.EventHandler(this.toggleBreakpointMenuItem_Click);
+            // 
+            // deleteAllBreakpointsMenuItem
+            // 
+            this.deleteAllBreakpointsMenuItem.Name = "deleteAllBreakpointsMenuItem";
+            this.deleteAllBreakpointsMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.deleteAllBreakpointsMenuItem.Text = "Delete All Breakpoints";
+            // 
+            // disableAllBreakpointsMenuItem
+            // 
+            this.disableAllBreakpointsMenuItem.Name = "disableAllBreakpointsMenuItem";
+            this.disableAllBreakpointsMenuItem.Size = new System.Drawing.Size(228, 22);
+            this.disableAllBreakpointsMenuItem.Text = "Disable All Breakpoints";
+            // 
+            // windowMenuItem
+            // 
+            this.windowMenuItem.Name = "windowMenuItem";
+            this.windowMenuItem.Size = new System.Drawing.Size(63, 20);
+            this.windowMenuItem.Text = "Window";
+            // 
+            // helpMenuItem
+            // 
+            this.helpMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.showHelpMenuItem,
+            this.updateMenuItem,
+            this.aboutMenuItem});
+            this.helpMenuItem.Name = "helpMenuItem";
+            this.helpMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpMenuItem.Text = "Help";
+            // 
+            // showHelpMenuItem
+            // 
+            this.showHelpMenuItem.Enabled = false;
+            this.showHelpMenuItem.Name = "showHelpMenuItem";
+            this.showHelpMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.showHelpMenuItem.Text = "Help";
+            // 
+            // updateMenuItem
+            // 
+            this.updateMenuItem.Name = "updateMenuItem";
+            this.updateMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.updateMenuItem.Text = "Check for Updates";
+            this.updateMenuItem.Click += new System.EventHandler(this.updateMenuItem_Click);
+            // 
+            // aboutMenuItem
+            // 
+            this.aboutMenuItem.Name = "aboutMenuItem";
+            this.aboutMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.aboutMenuItem.Text = "About";
+            this.aboutMenuItem.Click += new System.EventHandler(this.aboutMenuItem_Click);
+            // 
+            // toolStripContainer
+            // 
+            this.toolStripContainer.BottomToolStripPanelVisible = false;
+            // 
+            // toolStripContainer.ContentPanel
+            // 
+            this.toolStripContainer.ContentPanel.Size = new System.Drawing.Size(990, 0);
+            this.toolStripContainer.Dock = System.Windows.Forms.DockStyle.Top;
+            this.toolStripContainer.LeftToolStripPanelVisible = false;
+            this.toolStripContainer.Location = new System.Drawing.Point(0, 24);
+            this.toolStripContainer.Name = "toolStripContainer";
+            this.toolStripContainer.RightToolStripPanelVisible = false;
+            this.toolStripContainer.Size = new System.Drawing.Size(990, 25);
+            this.toolStripContainer.TabIndex = 9;
+            this.toolStripContainer.Text = "toolStripContainer1";
+            // 
+            // toolStripContainer.TopToolStripPanel
+            // 
+            this.toolStripContainer.TopToolStripPanel.Controls.Add(this.debugToolStrip);
+            // 
+            // debugToolStrip
+            // 
+            this.debugToolStrip.AllowItemReorder = true;
+            this.debugToolStrip.AllowMerge = false;
+            this.debugToolStrip.Dock = System.Windows.Forms.DockStyle.None;
+            this.debugToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.debugToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.runDebuggerToolButton,
+            this.pauseToolButton,
+            this.stopToolButton,
+            this.toolStripSeparator1,
+            this.gotoCurrentToolButton,
+            this.stepToolButton,
+            this.stepOverToolButton,
+            this.stepOutToolButton});
+            this.debugToolStrip.Location = new System.Drawing.Point(3, 0);
+            this.debugToolStrip.Name = "debugToolStrip";
+            this.debugToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.debugToolStrip.Size = new System.Drawing.Size(170, 25);
+            this.debugToolStrip.TabIndex = 1;
+            this.debugToolStrip.Text = "Debug Toolbar";
+            // 
+            // runDebuggerToolButton
+            // 
+            this.runDebuggerToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.runDebuggerToolButton.Image = ((System.Drawing.Image)(resources.GetObject("runDebuggerToolButton.Image")));
+            this.runDebuggerToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.runDebuggerToolButton.Name = "runDebuggerToolButton";
+            this.runDebuggerToolButton.Size = new System.Drawing.Size(23, 22);
+            this.runDebuggerToolButton.Text = "Start Debug";
+            // 
+            // pauseToolButton
+            // 
+            this.pauseToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.pauseToolButton.Enabled = false;
+            this.pauseToolButton.Image = ((System.Drawing.Image)(resources.GetObject("pauseToolButton.Image")));
+            this.pauseToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.pauseToolButton.Name = "pauseToolButton";
+            this.pauseToolButton.Size = new System.Drawing.Size(23, 22);
+            this.pauseToolButton.Text = "Pause";
+            // 
+            // stopToolButton
+            // 
+            this.stopToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.stopToolButton.Enabled = false;
+            this.stopToolButton.Image = ((System.Drawing.Image)(resources.GetObject("stopToolButton.Image")));
+            this.stopToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.stopToolButton.Name = "stopToolButton";
+            this.stopToolButton.Size = new System.Drawing.Size(23, 22);
+            this.stopToolButton.Text = "Stop";
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
+            this.toolStripSeparator1.TextDirection = System.Windows.Forms.ToolStripTextDirection.Vertical90;
+            // 
+            // gotoCurrentToolButton
+            // 
+            this.gotoCurrentToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.gotoCurrentToolButton.Enabled = false;
+            this.gotoCurrentToolButton.Image = ((System.Drawing.Image)(resources.GetObject("gotoCurrentToolButton.Image")));
+            this.gotoCurrentToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.gotoCurrentToolButton.Name = "gotoCurrentToolButton";
+            this.gotoCurrentToolButton.Size = new System.Drawing.Size(23, 22);
+            this.gotoCurrentToolButton.Text = "Goto Current Line";
+            // 
+            // stepToolButton
+            // 
+            this.stepToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.stepToolButton.Enabled = false;
+            this.stepToolButton.Image = ((System.Drawing.Image)(resources.GetObject("stepToolButton.Image")));
+            this.stepToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.stepToolButton.Name = "stepToolButton";
+            this.stepToolButton.Size = new System.Drawing.Size(23, 22);
+            this.stepToolButton.Text = "Step";
+            // 
+            // stepOverToolButton
+            // 
+            this.stepOverToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.stepOverToolButton.Enabled = false;
+            this.stepOverToolButton.Image = ((System.Drawing.Image)(resources.GetObject("stepOverToolButton.Image")));
+            this.stepOverToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.stepOverToolButton.Name = "stepOverToolButton";
+            this.stepOverToolButton.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
+            this.stepOverToolButton.Size = new System.Drawing.Size(23, 22);
+            this.stepOverToolButton.Text = "Step Over";
+            // 
+            // stepOutToolButton
+            // 
+            this.stepOutToolButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+            this.stepOutToolButton.Enabled = false;
+            this.stepOutToolButton.Image = ((System.Drawing.Image)(resources.GetObject("stepOutToolButton.Image")));
+            this.stepOutToolButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.stepOutToolButton.Name = "stepOutToolButton";
+            this.stepOutToolButton.Size = new System.Drawing.Size(23, 22);
+            this.stepOutToolButton.Text = "Step Out";
+            // 
+            // editorToolStrip
+            // 
+            this.editorToolStrip.AllowMerge = false;
+            this.editorToolStrip.Dock = System.Windows.Forms.DockStyle.None;
+            this.editorToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.editorToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripButton1,
+            this.toolStripButton2,
+            this.toolStripSeparator4,
+            this.toolStripButton3,
+            this.toolStripButton4,
+            this.toolStripSeparator5,
+            this.toolStripButton5,
+            this.toolStripButton6,
+            this.toolStripButton7,
+            this.toolStripButton8});
+            this.editorToolStrip.Location = new System.Drawing.Point(648, 24);
+            this.editorToolStrip.Name = "editorToolStrip";
+            this.editorToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
+            this.editorToolStrip.Size = new System.Drawing.Size(199, 25);
+            this.editorToolStrip.TabIndex = 1;
+            this.editorToolStrip.Text = "Editor Toolbar";
+            this.editorToolStrip.Visible = false;
+            // 
             // toolStripButton1
             // 
             this.toolStripButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton1.Image")));
             this.toolStripButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton1.Name = "toolStripButton1";
             this.toolStripButton1.Size = new System.Drawing.Size(23, 22);
@@ -1481,7 +1635,6 @@
             // toolStripButton2
             // 
             this.toolStripButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton2.Image")));
             this.toolStripButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton2.Name = "toolStripButton2";
             this.toolStripButton2.Size = new System.Drawing.Size(23, 22);
@@ -1495,7 +1648,6 @@
             // toolStripButton3
             // 
             this.toolStripButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton3.Image")));
             this.toolStripButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton3.Name = "toolStripButton3";
             this.toolStripButton3.Size = new System.Drawing.Size(23, 22);
@@ -1504,7 +1656,6 @@
             // toolStripButton4
             // 
             this.toolStripButton4.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton4.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton4.Image")));
             this.toolStripButton4.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton4.Name = "toolStripButton4";
             this.toolStripButton4.Size = new System.Drawing.Size(23, 22);
@@ -1518,7 +1669,6 @@
             // toolStripButton5
             // 
             this.toolStripButton5.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton5.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton5.Image")));
             this.toolStripButton5.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton5.Name = "toolStripButton5";
             this.toolStripButton5.Size = new System.Drawing.Size(23, 22);
@@ -1527,7 +1677,6 @@
             // toolStripButton6
             // 
             this.toolStripButton6.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton6.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton6.Image")));
             this.toolStripButton6.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton6.Name = "toolStripButton6";
             this.toolStripButton6.Size = new System.Drawing.Size(23, 22);
@@ -1536,7 +1685,6 @@
             // toolStripButton7
             // 
             this.toolStripButton7.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton7.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton7.Image")));
             this.toolStripButton7.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton7.Name = "toolStripButton7";
             this.toolStripButton7.Size = new System.Drawing.Size(23, 22);
@@ -1545,48 +1693,23 @@
             // toolStripButton8
             // 
             this.toolStripButton8.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-            this.toolStripButton8.Image = ((System.Drawing.Image)(resources.GetObject("toolStripButton8.Image")));
             this.toolStripButton8.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripButton8.Name = "toolStripButton8";
             this.toolStripButton8.Size = new System.Drawing.Size(23, 22);
             this.toolStripButton8.Text = "toolStripButton8";
             // 
-            // editorToolStrip
-            // 
-            this.editorToolStrip.AllowMerge = false;
-            this.editorToolStrip.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
-            this.editorToolStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.toolStripButton1,
-            this.toolStripButton2,
-            this.toolStripSeparator4,
-            this.toolStripButton3,
-            this.toolStripButton4,
-            this.toolStripSeparator5,
-            this.toolStripButton5,
-            this.toolStripButton6,
-            this.toolStripButton7,
-            this.toolStripButton8});
-            this.editorToolStrip.Location = new System.Drawing.Point(0, 0);
-            this.editorToolStrip.Name = "editorToolStrip";
-            this.editorToolStrip.RenderMode = System.Windows.Forms.ToolStripRenderMode.System;
-            this.editorToolStrip.Size = new System.Drawing.Size(691, 25);
-            this.editorToolStrip.TabIndex = 21;
-            this.editorToolStrip.Text = "Editor Toolbar";
-            // 
             // dockPanel
             // 
-            this.dockPanel.ActiveAutoHideContent = null;
-            this.dockPanel.ActiveDocumentChanged += new System.EventHandler(dockPanel_ActiveDocumentChanged);
             this.dockPanel.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dockPanel.DockBackColor = System.Drawing.SystemColors.ControlDark;
-            this.dockPanel.DockBottomPortion = 150D;
+            this.dockPanel.DockBottomPortion = 200D;
             this.dockPanel.DockLeftPortion = 200D;
             this.dockPanel.DockRightPortion = 200D;
             this.dockPanel.DockTopPortion = 150D;
-            this.dockPanel.Location = new System.Drawing.Point(0, 0);
+            this.dockPanel.Location = new System.Drawing.Point(0, 49);
             this.dockPanel.Name = "dockPanel";
             this.dockPanel.RightToLeftLayout = true;
-            this.dockPanel.Size = new System.Drawing.Size(691, 330);
+            this.dockPanel.Size = new System.Drawing.Size(990, 487);
             dockPanelGradient1.EndColor = System.Drawing.SystemColors.ControlDarkDark;
             dockPanelGradient1.StartColor = System.Drawing.SystemColors.ControlDarkDark;
             autoHideStripSkin1.DockStripGradient = dockPanelGradient1;
@@ -1594,6 +1717,7 @@
             tabGradient1.StartColor = System.Drawing.SystemColors.Control;
             tabGradient1.TextColor = System.Drawing.SystemColors.ControlDarkDark;
             autoHideStripSkin1.TabGradient = tabGradient1;
+            autoHideStripSkin1.TextFont = new System.Drawing.Font("Segoe UI", 9F);
             dockPanelSkin1.AutoHideStripSkin = autoHideStripSkin1;
             tabGradient2.EndColor = System.Drawing.SystemColors.ControlLightLight;
             tabGradient2.StartColor = System.Drawing.SystemColors.ControlLightLight;
@@ -1607,6 +1731,7 @@
             tabGradient3.TextColor = System.Drawing.SystemColors.ControlText;
             dockPaneStripGradient1.InactiveTabGradient = tabGradient3;
             dockPaneStripSkin1.DocumentGradient = dockPaneStripGradient1;
+            dockPaneStripSkin1.TextFont = new System.Drawing.Font("Segoe UI", 9F);
             tabGradient4.EndColor = System.Drawing.SystemColors.ActiveCaption;
             tabGradient4.LinearGradientMode = System.Drawing.Drawing2D.LinearGradientMode.Vertical;
             tabGradient4.StartColor = System.Drawing.SystemColors.GradientActiveCaption;
@@ -1631,23 +1756,25 @@
             dockPaneStripSkin1.ToolWindowGradient = dockPaneStripToolWindowGradient1;
             dockPanelSkin1.DockPaneStripSkin = dockPaneStripSkin1;
             this.dockPanel.Skin = dockPanelSkin1;
-            this.dockPanel.TabIndex = 18;
-            // 
-            // vistaMenu1
-            // 
-            this.vistaMenu1.ContainerControl = this;
+            this.dockPanel.SkinStyle = WeifenLuo.WinFormsUI.Docking.Skins.Style.VisualStudio2005;
+            this.dockPanel.TabIndex = 0;
+            this.dockPanel.ActiveDocumentChanged += new System.EventHandler(this.dockPanel_ActiveDocumentChanged);
             // 
             // MainFormRedone
             // 
             this.AllowDrop = true;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(691, 352);
+            this.ClientSize = new System.Drawing.Size(990, 558);
+            this.Controls.Add(this.mainToolBar);
+            this.Controls.Add(this.editorToolStrip);
             this.Controls.Add(this.dockPanel);
             this.Controls.Add(this.statusBar);
+            this.Controls.Add(this.toolStripContainer);
+            this.Controls.Add(this.mainMenu1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.IsMdiContainer = true;
-            this.Menu = this.mainMenu1;
+            this.MainMenuStrip = this.mainMenu1;
             this.Name = "MainFormRedone";
             this.Text = "Wabbitcode";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainFormRedone_FormClosing);
@@ -1655,13 +1782,18 @@
             this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainFormRedone_DragEnter);
             this.statusBar.ResumeLayout(false);
             this.statusBar.PerformLayout();
-            this.debugToolStrip.ResumeLayout(false);
-            this.debugToolStrip.PerformLayout();
             this.mainToolBar.ResumeLayout(false);
             this.mainToolBar.PerformLayout();
+            this.mainMenu1.ResumeLayout(false);
+            this.mainMenu1.PerformLayout();
+            this.toolStripContainer.TopToolStripPanel.ResumeLayout(false);
+            this.toolStripContainer.TopToolStripPanel.PerformLayout();
+            this.toolStripContainer.ResumeLayout(false);
+            this.toolStripContainer.PerformLayout();
+            this.debugToolStrip.ResumeLayout(false);
+            this.debugToolStrip.PerformLayout();
             this.editorToolStrip.ResumeLayout(false);
             this.editorToolStrip.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.vistaMenu1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -1669,123 +1801,14 @@
 
         #endregion
 
-        private VistaMenu.VistaMenu vistaMenu1;
-        private System.Windows.Forms.MainMenu mainMenu1;
-        private System.Windows.Forms.MenuItem fileMenuItem;
-        private System.Windows.Forms.MenuItem newMenuItem;
-        private System.Windows.Forms.MenuItem openMenuItem;
-        private System.Windows.Forms.MenuItem editMenuItem;
-        private System.Windows.Forms.MenuItem cutMenuItem;
-        private System.Windows.Forms.MenuItem copyMenuItem;
-        private System.Windows.Forms.MenuItem pasteMenuItem;
-        private System.Windows.Forms.MenuItem viewMenuItem;
-        private System.Windows.Forms.MenuItem projMenuItem;
-        private System.Windows.Forms.MenuItem macrosMenuItem;
-        private System.Windows.Forms.MenuItem asmMenuItem;
-        private System.Windows.Forms.MenuItem windowMenuItem;
-        private System.Windows.Forms.MenuItem helpMenuItem;
-        private System.Windows.Forms.MenuItem saveMenuItem;
-        private System.Windows.Forms.MenuItem saveAsMenuItem;
-        private System.Windows.Forms.MenuItem saveProjectMenuItem;
-        private System.Windows.Forms.MenuItem closeMenuItem;
-        private System.Windows.Forms.MenuItem menuItem17;
-        private System.Windows.Forms.MenuItem printMenuItem;
-        private System.Windows.Forms.MenuItem printPrevMenuItem;
-        private System.Windows.Forms.MenuItem pageSetMenuItem;
-        private System.Windows.Forms.MenuItem menuItem37;
-        private System.Windows.Forms.MenuItem exitMenuItem;
-        private System.Windows.Forms.MenuItem undoMenuItem;
-        private System.Windows.Forms.MenuItem redoMenuItem;
-        private System.Windows.Forms.MenuItem menuItem21;
-        private System.Windows.Forms.MenuItem selectAllMenuItem;
-        private System.Windows.Forms.MenuItem menuItem22;
-        private System.Windows.Forms.MenuItem menuItem25;
-        private System.Windows.Forms.MenuItem insertMenuItem;
-        private System.Windows.Forms.MenuItem iSpriteMenuItem;
-        private System.Windows.Forms.MenuItem iMapMenuItem;
-        private System.Windows.Forms.MenuItem gotoMenuItem;
-        private System.Windows.Forms.MenuItem gLineMenuItem;
-        private System.Windows.Forms.MenuItem gLabelMenuItem;
-        private System.Windows.Forms.MenuItem menuItem32;
-        private System.Windows.Forms.MenuItem prefsMenuItem;
-        private System.Windows.Forms.MenuItem mainToolMenuItem;
-        private System.Windows.Forms.MenuItem outWinMenuItem;
-        private System.Windows.Forms.MenuItem statusBarMenuItem;
-        private System.Windows.Forms.MenuItem labelListMenuItem;
-        private System.Windows.Forms.MenuItem errListMenuItem;
-        private System.Windows.Forms.MenuItem debugToolMenuItem;
-        private System.Windows.Forms.MenuItem menuItem45;
-        private System.Windows.Forms.MenuItem menuItem46;
-        private System.Windows.Forms.MenuItem menuItem48;
-        private System.Windows.Forms.MenuItem lineNumMenuItem;
-        private System.Windows.Forms.MenuItem iconBarMenuItem;
-        private System.Windows.Forms.MenuItem projViewMenuItem;
-        private System.Windows.Forms.MenuItem dirViewMenuItem;
-		private System.Windows.Forms.MenuItem refactorMenuItem;
-		private System.Windows.Forms.MenuItem renameMenuItem;
-		private System.Windows.Forms.MenuItem extractMethodMenuItem;
-        private System.Windows.Forms.MenuItem closeProjMenuItem;
-        private System.Windows.Forms.MenuItem addNewFileMenuItem;
-        private System.Windows.Forms.MenuItem runMacroMenuItem;
-        private System.Windows.Forms.MenuItem recMacroMenuItem;
-        private System.Windows.Forms.MenuItem manMacroMenuItem;
-        private System.Windows.Forms.MenuItem assembleMenuItem;
-        private System.Windows.Forms.MenuItem symTableMenuItem;
-        private System.Windows.Forms.MenuItem countCodeMenuItem;
-        private System.Windows.Forms.MenuItem projStatsMenuItem;
-        private System.Windows.Forms.MenuItem listFileMenuItem;
-        private System.Windows.Forms.MenuItem hexFileMenuItem;
-        private System.Windows.Forms.MenuItem debugMenuItem;
-        private System.Windows.Forms.MenuItem startDebugMenuItem;
-		private System.Windows.Forms.MenuItem startWithoutDebugMenuItem;
-        private System.Windows.Forms.MenuItem stopDebugMenuItem;
-        private System.Windows.Forms.MenuItem menuItem71;
-        private System.Windows.Forms.MenuItem stepMenuItem;
-        private System.Windows.Forms.MenuItem stepOverMenuItem;
-        private System.Windows.Forms.MenuItem showHelpMenuItem;
-        private System.Windows.Forms.MenuItem aboutMenuItem;
-        private System.Windows.Forms.MenuItem existingFileMenuItem;
         private System.Windows.Forms.StatusStrip statusBar;
         private System.Windows.Forms.ToolStripProgressBar progressBar;
-        private System.Windows.Forms.MenuItem menuItem1;
         private System.Windows.Forms.SaveFileDialog saveFileDialog1;
-        private System.Windows.Forms.MenuItem formattingMenuItem;
-        private System.Windows.Forms.MenuItem makeUpperMenuItem;
-        private System.Windows.Forms.MenuItem makeLowerMenuItem;
-        private System.Windows.Forms.MenuItem invertCaseMenuItem;
-        private System.Windows.Forms.MenuItem sentenceCaseMenuItem;
-        private System.Windows.Forms.MenuItem menuItem6;
-        private System.Windows.Forms.MenuItem bookmarkMenuItem;
-        private System.Windows.Forms.MenuItem toggleBookmarkMenuItem;
-        private System.Windows.Forms.MenuItem prevBookmarkMenuItem;
-        private System.Windows.Forms.MenuItem nextBookmarkMenuItem;
         private System.Windows.Forms.ToolStripStatusLabel lineStatusLabel;
         private System.Windows.Forms.ToolStripStatusLabel colStatusLabel;
-        private System.Windows.Forms.MenuItem buildOrderButton;
-        private System.Windows.Forms.MenuItem menuItem3;
-        private System.Windows.Forms.MenuItem newFileMenuItem;
-        private System.Windows.Forms.MenuItem newProjectMenuItem;
-        private System.Windows.Forms.MenuItem openFileMenuItem;
-        private System.Windows.Forms.MenuItem openProjectMenuItem;
-        private System.Windows.Forms.MenuItem saveAllMenuItem;
-        private System.Windows.Forms.MenuItem debugPanelsMenuItem;
-        private System.Windows.Forms.MenuItem debugPanelMenuItem;
-        private System.Windows.Forms.MenuItem callStackMenuItem;
-        private System.Windows.Forms.MenuItem stackViewerMenuItem;
-        private System.Windows.Forms.MenuItem varTrackMenuItem;
         private System.Windows.Forms.ImageList toolBarIcons;
-        private System.Windows.Forms.ToolStrip debugToolStrip;
-        private System.Windows.Forms.ToolStripButton runDebuggerToolButton;
-        private System.Windows.Forms.ToolStripButton stepOverToolButton;
-        private Revsoft.Docking.DockPanel dockPanel;
-        private System.Windows.Forms.MenuItem menuItem5;
-        private System.Windows.Forms.MenuItem includeDirButton;
+        private WeifenLuo.WinFormsUI.Docking.DockPanel dockPanel;
         private System.Windows.Forms.ToolStripStatusLabel lineCodeInfo;
-        private System.Windows.Forms.MenuItem runMenuItem;
-        private System.Windows.Forms.ToolStripButton stopToolButton;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
-        private System.Windows.Forms.ToolStripButton stepToolButton;
-		private System.Windows.Forms.ToolStripButton gotoCurrentToolButton;
         private System.Windows.Forms.ToolStrip mainToolBar;
         private System.Windows.Forms.ToolStripButton newToolStripButton;
         private System.Windows.Forms.ToolStripButton openToolStripButton;
@@ -1801,35 +1824,137 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripButton runToolButton;
         public System.ComponentModel.BackgroundWorker documentParser;
-        private System.Windows.Forms.ToolStripButton stepOutToolButton;
-        private System.Windows.Forms.MenuItem stepOutMenuItem;
-        private System.Windows.Forms.MenuItem menuItem7;
-        private System.Windows.Forms.MenuItem findMenuItem;
-        private System.Windows.Forms.MenuItem replaceMenuItem;
-        private System.Windows.Forms.MenuItem findInFilesMenuItem;
-		private System.Windows.Forms.MenuItem findAllRefsMenuItem;
-        private System.Windows.Forms.MenuItem replaceInFilesMenuItem;
         private System.Windows.Forms.ToolStripButton saveAllToolButton;
-        private System.Windows.Forms.MenuItem refreshMenuItem;
-        private System.Windows.Forms.MenuItem findResultsMenuItem;
-        private System.Windows.Forms.MenuItem updateMenuItem;
-        private System.Windows.Forms.ToolStripButton pauseToolButton;
-        private System.Windows.Forms.MenuItem includeDirProjMenuItem;
-        private System.Windows.Forms.MenuItem menuItem2;
-        private System.Windows.Forms.MenuItem breakManagerMenuItem;
-        private System.Windows.Forms.MenuItem menuItem4;
-        private System.Windows.Forms.MenuItem menuItem11;
-        private System.Windows.Forms.MenuItem newBreakpointMenuItem;
-        private System.Windows.Forms.MenuItem newDataBreakpointMenuItem;
-        private System.Windows.Forms.MenuItem toggleBreakpointMenuItem;
-        private System.Windows.Forms.MenuItem deleteAllBreakpointsMenuItem;
-        private System.Windows.Forms.MenuItem disableAllBreakpointsMenuItem;
         private System.ComponentModel.BackgroundWorker wabbitemu;
-        private System.Windows.Forms.MenuItem toolBarMenuItem;
-        private System.Windows.Forms.MenuItem macroManagerMenuItem;
-        private System.Windows.Forms.MenuItem formatDocMenuItem;
-        private System.Windows.Forms.MenuItem convertSpacesToTabsMenuItem;
-        private System.Windows.Forms.MenuItem editorToolBarMenuItem;
+        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel;
+        private System.Windows.Forms.MenuStrip mainMenu1;
+        private System.Windows.Forms.ToolStripMenuItem fileMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem newMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem newFileMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem newProjectMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openFileMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openProjectMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveAsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveAllMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem saveProjectMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem closeMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator14;
+        private System.Windows.Forms.ToolStripMenuItem printMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem printPrevMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pageSetMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator15;
+        private System.Windows.Forms.ToolStripMenuItem recentFilesMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator16;
+        private System.Windows.Forms.ToolStripMenuItem exitMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem undoMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem redoMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
+        private System.Windows.Forms.ToolStripMenuItem cutMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem copyMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem pasteMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem selectAllMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
+        private System.Windows.Forms.ToolStripMenuItem menuItem7;
+        private System.Windows.Forms.ToolStripMenuItem findMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem replaceMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem findInFilesMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem replaceInFilesMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem findAllRefsMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator12;
+        private System.Windows.Forms.ToolStripMenuItem insertMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem iSpriteMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem iMapMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem formattingMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem makeUpperMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem makeLowerMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem invertCaseMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem sentenceCaseMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem formatDocMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem convertSpacesToTabsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem bookmarkMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toggleBookmarkMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem prevBookmarkMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem nextBookmarkMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem gotoMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem gLineMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem gLabelMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator13;
+        private System.Windows.Forms.ToolStripMenuItem prefsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem viewMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toolBarMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mainToolMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugToolMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem editorToolBarMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private System.Windows.Forms.ToolStripMenuItem labelListMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem projViewMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem dirViewMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem macroManagerMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripMenuItem debugPanelsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugPanelMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem callStackMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stackViewerMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem varTrackMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem breakManagerMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.ToolStripMenuItem outWinMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem errListMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem findResultsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem statusBarMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.ToolStripMenuItem lineNumMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem iconBarMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem refactorMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem renameMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem extractMethodMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem projMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem addNewFileMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem existingFileMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator17;
+        private System.Windows.Forms.ToolStripMenuItem buildOrderButton;
+        private System.Windows.Forms.ToolStripMenuItem includeDirProjMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem refreshMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator18;
+        private System.Windows.Forms.ToolStripMenuItem closeProjMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem macrosMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem runMacroMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem recMacroMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem manMacroMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem asmMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem assembleMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem includeDirButton;
+        private System.Windows.Forms.ToolStripMenuItem symTableMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem countCodeMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem projStatsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem listFileMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem hexFileMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem debugMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startDebugMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startWithoutDebugMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stopDebugMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator19;
+        private System.Windows.Forms.ToolStripMenuItem runMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stepMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stepOverMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stepOutMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator20;
+        private System.Windows.Forms.ToolStripMenuItem menuItem11;
+        private System.Windows.Forms.ToolStripMenuItem newBreakpointMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem newDataBreakpointMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem toggleBreakpointMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteAllBreakpointsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem disableAllBreakpointsMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem windowMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem helpMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showHelpMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem updateMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem aboutMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator21;
+        private System.Windows.Forms.ToolStripContainer toolStripContainer;
         private System.Windows.Forms.ToolStrip editorToolStrip;
         private System.Windows.Forms.ToolStripButton toolStripButton1;
         private System.Windows.Forms.ToolStripButton toolStripButton2;
@@ -1841,7 +1966,14 @@
         private System.Windows.Forms.ToolStripButton toolStripButton6;
         private System.Windows.Forms.ToolStripButton toolStripButton7;
         private System.Windows.Forms.ToolStripButton toolStripButton8;
-        private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel;
-        private System.Windows.Forms.MenuItem recentFilesMenuItem;
+        private System.Windows.Forms.ToolStrip debugToolStrip;
+        private System.Windows.Forms.ToolStripButton runDebuggerToolButton;
+        private System.Windows.Forms.ToolStripButton pauseToolButton;
+        private System.Windows.Forms.ToolStripButton stopToolButton;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        private System.Windows.Forms.ToolStripButton gotoCurrentToolButton;
+        private System.Windows.Forms.ToolStripButton stepToolButton;
+        private System.Windows.Forms.ToolStripButton stepOverToolButton;
+        private System.Windows.Forms.ToolStripButton stepOutToolButton;
     }
 }

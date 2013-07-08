@@ -1,22 +1,70 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Revsoft.Wabbitcode.Services.Project
+﻿namespace Revsoft.Wabbitcode.Services.Project
 {
-	public interface IProject
-	{
-		string ProjectDirectory { get; }
-		string ProjectFile { get; }
-		string ProjectName { get; set; }
-		ProjectFolder MainFolder { get; }
-		List<string> IncludeDir { get; }
-        bool NeedsSave { get; set; }
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
+    public interface IProject
+    {
+        IBuildSystem BuildSystem
+        {
+            get;
+        }
+
+        List<string> IncludeDir
+        {
+            get;
+        }
+
+        ProjectFolder MainFolder
+        {
+            get;
+        }
+
+        bool NeedsSave
+        {
+            get;
+            set;
+        }
+
+        string ProjectDirectory
+        {
+            get;
+        }
+
+        string ProjectFile
+        {
+            get;
+        }
+
+        string ProjectName
+        {
+            get;
+            set;
+        }
+
+        List<string> ProjectOutputs
+        {
+            get;
+        }
+
+        List<string> LabelOutputs
+        {
+            get;
+        }
+
+        List<string> ListOutputs
+        {
+            get;
+        }
+
+        ProjectFile AddFile(ProjectFolder parentFolder, string fullPath);
 
         ProjectFolder AddFolder(string dirName, ProjectFolder parentFolder);
-        ProjectFile AddFile(ProjectFolder parentFolder, string fullPath);
-        void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir);
+
         void DeleteFile(ProjectFolder parentDir, ProjectFile file);
-	}
+
+        void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir);
+    }
 }

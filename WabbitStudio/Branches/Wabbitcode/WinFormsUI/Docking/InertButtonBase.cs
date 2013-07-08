@@ -5,7 +5,7 @@ using System.Windows.Forms;
 using System.Drawing;
 using System.Drawing.Imaging;
 
-namespace Revsoft.Docking
+namespace WeifenLuo.WinFormsUI.Docking
 {
     internal abstract class InertButtonBase : Control
     {

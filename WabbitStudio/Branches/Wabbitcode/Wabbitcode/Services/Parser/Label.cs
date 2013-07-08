@@ -1,93 +1,110 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Revsoft.Wabbitcode.Services.Parser
+﻿namespace Revsoft.Wabbitcode.Services.Parser
 {
-	class Label : ILabel
-	{
-		public Label(DocLocation loc, string labelName, string description, ParserInformation parent)
-		{
-			LabelName = labelName;
-			Location = loc;
-			Description = description;
-			Parent = parent;
-		}
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
 
-		public string Name
-		{
-			get { return LabelName; }
-		}
+    internal class Label : ILabel
+    {
+        public Label(DocLocation loc, string labelName, string description, ParserInformation parent)
+        {
+            this.LabelName = labelName;
+            this.Location = loc;
+            this.Description = description;
+            this.Parent = parent;
+        }
 
-		public string LabelName
-		{
-			get;
-			set;
-		}
+        public string Description
+        {
+            get;
+            set;
+        }
 
-		public bool IsReusable
-		{
-			get
-			{
-				return LabelName == "_";
-			}
-		}
+        public bool IsReusable
+        {
+            get
+            {
+                return this.LabelName == "_";
+            }
+        }
 
-		public DocLocation Location
-		{
-			get;
-			set;
-		}
+        public string LabelName
+        {
+            get;
+            set;
+        }
 
-		public string Description
-		{
-			get;
-			set;
-		}
+        public DocLocation Location
+        {
+            get;
+            set;
+        }
 
-		public ParserInformation Parent
-		{
-			get;
-			set;
-		}
+        public string Name
+        {
+            get
+            {
+                return this.LabelName;
+            }
+        }
 
-		public override string ToString()
-		{
-			return LabelName;
-		}
+        public ParserInformation Parent
+        {
+            get;
+            set;
+        }
+
+        public static bool operator !=(Label label1, Label label2)
+        {
+            if ((object)label1 == null || (object)label2 == null)
+            {
+                if ((object)label1 != null && (object)label2 != null)
+                {
+                    return false;
+                }
+                else
+                {
+                    return true;
+                }
+            }
+            return label1.Location.Offset != label2.Location.Offset || label1.LabelName != label2.LabelName;
+        }
+
+        public static bool operator ==(Label label1, Label label2)
+        {
+            if ((object)label1 == null || (object)label2 == null)
+            {
+                if ((object)label1 == null && (object)label2 == null)
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return label1.Location.Offset == label2.Location.Offset && label1.LabelName == label2.LabelName;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (!(obj is Label))
+            {
+                return false;
+            }
+            Label label2 = obj as Label;
+            return this.Location.Offset == label2.Location.Offset && this.LabelName == label2.LabelName;
+        }
 
         public override int GetHashCode()
         {
             return base.GetHashCode();
         }
 
-		public override bool Equals(object obj)
-		{
-			if (obj.GetType() != typeof(Label))
-				return false;
-			Label label2 = obj as Label;
-			return Location.Offset == label2.Location.Offset && LabelName == label2.LabelName;
-		}
-
-		public static bool operator ==(Label label1, Label label2)
-		{
-			if ((object)label1 == null || (object)label2 == null)
-				if ((object)label1 == null && (object)label2 == null)
-					return true;
-				else 
-					return false;
-			return label1.Location.Offset == label2.Location.Offset && label1.LabelName == label2.LabelName;
-		}
-
-		public static bool operator !=(Label label1, Label label2)
-		{
-			if ((object)label1 == null || (object)label2 == null)
-				if ((object)label1 != null && (object)label2 != null)
-					return false;
-				else 
-					return true;
-			return label1.Location.Offset != label2.Location.Offset || label1.LabelName != label2.LabelName;
-		}
+        public override string ToString()
+        {
+            return this.LabelName;
+        }
     }
 }

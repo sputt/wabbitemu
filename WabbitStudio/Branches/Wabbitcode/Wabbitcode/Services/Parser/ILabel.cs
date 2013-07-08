@@ -1,13 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Revsoft.Wabbitcode.Services.Parser
+﻿namespace Revsoft.Wabbitcode.Services.Parser
 {
-	public interface ILabel : IParserData
-	{
-		string LabelName { get; set; }
-		bool IsReusable { get; }
-	}
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+    using System.Text;
+
+    public interface ILabel : IParserData
+    {
+        bool IsReusable
+        {
+            get;
+        }
+
+        string LabelName
+        {
+            get;
+            set;
+        }
+    }
 }

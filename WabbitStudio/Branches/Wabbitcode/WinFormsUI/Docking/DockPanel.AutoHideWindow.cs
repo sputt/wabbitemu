@@ -1,15 +1,88 @@
 using System;
 using System.Windows.Forms;
 using System.Drawing;
-using System.Runtime.InteropServices;
 
-namespace Revsoft.Docking
+namespace WeifenLuo.WinFormsUI.Docking
 {
     partial class DockPanel
     {
-        private class AutoHideWindowControl : Panel, ISplitterDragSource
+        internal class DefaultAutoHideWindowControl : AutoHideWindowControl
         {
-            private class SplitterControl : SplitterBase
+            public DefaultAutoHideWindowControl(DockPanel dockPanel) : base(dockPanel)
+            {
+                m_splitter = new SplitterControl(this);
+                Controls.Add(m_splitter);
+            }
+
+            protected override void OnLayout(LayoutEventArgs levent)
+            {
+                DockPadding.All = 0;
+                if (DockState == DockState.DockLeftAutoHide)
+                {
+                    DockPadding.Right = 2;
+                    m_splitter.Dock = DockStyle.Right;
+                }
+                else if (DockState == DockState.DockRightAutoHide)
+                {
+                    DockPadding.Left = 2;
+                    m_splitter.Dock = DockStyle.Left;
+                }
+                else if (DockState == DockState.DockTopAutoHide)
+                {
+                    DockPadding.Bottom = 2;
+                    m_splitter.Dock = DockStyle.Bottom;
+                }
+                else if (DockState == DockState.DockBottomAutoHide)
+                {
+                    DockPadding.Top = 2;
+                    m_splitter.Dock = DockStyle.Top;
+                }
+
+                Rectangle rectDisplaying = DisplayingRectangle;
+                Rectangle rectHidden = new Rectangle(-rectDisplaying.Width, rectDisplaying.Y, rectDisplaying.Width, rectDisplaying.Height);
+                foreach (Control c in Controls)
+                {
+                    DockPane pane = c as DockPane;
+                    if (pane == null)
+                        continue;
+
+
+                    if (pane == ActivePane)
+                        pane.Bounds = rectDisplaying;
+                    else
+                        pane.Bounds = rectHidden;
+                }
+
+                base.OnLayout(levent);
+            }
+
+            protected override void OnPaint(PaintEventArgs e)
+            {
+                // Draw the border
+                Graphics g = e.Graphics;
+
+                if (DockState == DockState.DockBottomAutoHide)
+                    g.DrawLine(SystemPens.ControlLightLight, 0, 1, ClientRectangle.Right, 1);
+                else if (DockState == DockState.DockRightAutoHide)
+                    g.DrawLine(SystemPens.ControlLightLight, 1, 0, 1, ClientRectangle.Bottom);
+                else if (DockState == DockState.DockTopAutoHide)
+                {
+                    g.DrawLine(SystemPens.ControlDark, 0, ClientRectangle.Height - 2, ClientRectangle.Right, ClientRectangle.Height - 2);
+                    g.DrawLine(SystemPens.ControlDarkDark, 0, ClientRectangle.Height - 1, ClientRectangle.Right, ClientRectangle.Height - 1);
+                }
+                else if (DockState == DockState.DockLeftAutoHide)
+                {
+                    g.DrawLine(SystemPens.ControlDark, ClientRectangle.Width - 2, 0, ClientRectangle.Width - 2, ClientRectangle.Bottom);
+                    g.DrawLine(SystemPens.ControlDarkDark, ClientRectangle.Width - 1, 0, ClientRectangle.Width - 1, ClientRectangle.Bottom);
+                }
+
+                base.OnPaint(e);
+            }
+        }
+
+        public class AutoHideWindowControl : Panel, ISplitterDragSource
+        {
+            protected class SplitterControl : SplitterBase
             {
                 public SplitterControl(AutoHideWindowControl autoHideWindow)
                 {
@@ -38,7 +111,7 @@ namespace Revsoft.Docking
             #endregion
 
             private Timer m_timerMouseTrack;
-            private SplitterControl m_splitter;
+            protected SplitterBase m_splitter;
 
             public AutoHideWindowControl(DockPanel dockPanel)
             {
@@ -48,8 +121,6 @@ namespace Revsoft.Docking
                 m_timerMouseTrack.Tick += new EventHandler(TimerMouseTrack_Tick);
 
                 Visible = false;
-                m_splitter = new SplitterControl(this);
-                Controls.Add(m_splitter);
             }
 
             protected override void Dispose(bool disposing)
@@ -82,6 +153,20 @@ namespace Revsoft.Docking
                 m_activePane = value;
             }
 
+            private static readonly object ActiveContentChangedEvent = new object();
+            public event EventHandler ActiveContentChanged
+            {
+                add { Events.AddHandler(ActiveContentChangedEvent, value); }
+                remove { Events.RemoveHandler(ActiveContentChangedEvent, value); }
+            }
+
+            protected virtual void OnActiveContentChanged(EventArgs e)
+            {
+                EventHandler handler = (EventHandler)Events[ActiveContentChangedEvent];
+                if (handler != null)
+                    handler(this, e);
+            }
+
             private IDockContent m_activeContent = null;
             public IDockContent ActiveContent
             {
@@ -102,7 +187,13 @@ namespace Revsoft.Docking
                     if (m_activeContent != null)
                     {
                         if (m_activeContent.DockHandler.Form.ContainsFocus)
-                            DockPanel.ContentFocusManager.GiveUpFocus(m_activeContent);
+                        {
+                            if (!Win32Helper.IsRunningOnMono)
+                            {
+                                DockPanel.ContentFocusManager.GiveUpFocus(m_activeContent);
+                            }
+                        }
+
                         AnimateWindow(false);
                     }
 
@@ -118,6 +209,8 @@ namespace Revsoft.Docking
                     DockPanel.RefreshAutoHideStrip();
 
                     SetTimerMouseTrack();
+
+                    OnActiveContentChanged(EventArgs.Empty);
                 }
             }
 
@@ -323,71 +416,6 @@ namespace Revsoft.Docking
 
                     return rect;
                 }
-            }
-
-            protected override void OnLayout(LayoutEventArgs levent)
-            {
-                DockPadding.All = 0;
-                if (DockState == DockState.DockLeftAutoHide)
-                {
-                    DockPadding.Right = 2;
-                    m_splitter.Dock = DockStyle.Right;
-                }
-                else if (DockState == DockState.DockRightAutoHide)
-                {
-                    DockPadding.Left = 2;
-                    m_splitter.Dock = DockStyle.Left;
-                }
-                else if (DockState == DockState.DockTopAutoHide)
-                {
-                    DockPadding.Bottom = 2;
-                    m_splitter.Dock = DockStyle.Bottom;
-                }
-                else if (DockState == DockState.DockBottomAutoHide)
-                {
-                    DockPadding.Top = 2;
-                    m_splitter.Dock = DockStyle.Top;
-                }
-
-                Rectangle rectDisplaying = DisplayingRectangle;
-                Rectangle rectHidden = new Rectangle(-rectDisplaying.Width, rectDisplaying.Y, rectDisplaying.Width, rectDisplaying.Height);
-                foreach (Control c in Controls)
-                {
-                    DockPane pane = c as DockPane;
-                    if (pane == null)
-                        continue;
-                    
-                    
-                    if (pane == ActivePane)
-                        pane.Bounds = rectDisplaying;
-                    else
-                        pane.Bounds = rectHidden;
-                }
-
-                base.OnLayout(levent);
-            }
-
-            protected override void OnPaint(PaintEventArgs e)
-            {
-                // Draw the border
-                Graphics g = e.Graphics;
-
-                if (DockState == DockState.DockBottomAutoHide)
-                    g.DrawLine(SystemPens.ControlLightLight, 0, 1, ClientRectangle.Right, 1);
-                else if (DockState == DockState.DockRightAutoHide)
-                    g.DrawLine(SystemPens.ControlLightLight, 1, 0, 1, ClientRectangle.Bottom);
-                else if (DockState == DockState.DockTopAutoHide)
-                {
-                    g.DrawLine(SystemPens.ControlDark, 0, ClientRectangle.Height - 2, ClientRectangle.Right, ClientRectangle.Height - 2);
-                    g.DrawLine(SystemPens.ControlDarkDark, 0, ClientRectangle.Height - 1, ClientRectangle.Right, ClientRectangle.Height - 1);
-                }
-                else if (DockState == DockState.DockLeftAutoHide)
-                {
-                    g.DrawLine(SystemPens.ControlDark, ClientRectangle.Width - 2, 0, ClientRectangle.Width - 2, ClientRectangle.Bottom);
-                    g.DrawLine(SystemPens.ControlDarkDark, ClientRectangle.Width - 1, 0, ClientRectangle.Width - 1, ClientRectangle.Bottom);
-                }
-
-                base.OnPaint(e);
             }
 
             public void RefreshActiveContent()

@@ -1,17 +1,40 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
-using System.IO;
-
-namespace Revsoft.Wabbitcode.Services.Project
+﻿namespace Revsoft.Wabbitcode.Services.Project
 {
-	public interface IBuildStep : ICloneable
-	{
-		int StepNumber { get; set; }
-        string InputFile { get; set; }
-        string Description { get; }
-		bool Build(bool silent);
-	}
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.IO;
+    using System.Linq;
+    using System.Text;
+
+    public interface IBuildStep : ICloneable
+    {
+        string Description
+        {
+            get;
+        }
+
+        string InputFile
+        {
+            get;
+            set;
+        }
+
+        string OutputText
+        {
+            get;
+        }
+
+        int StepNumber
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Runs the build step
+        /// </summary>
+        /// <returns>Returns true if success, false otherwise</returns>
+        bool Build();
+    }
 }

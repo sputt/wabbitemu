@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 
-namespace Revsoft.Docking
+namespace WeifenLuo.WinFormsUI.Docking
 {
     public class DockContentCollection : ReadOnlyCollection<IDockContent>
     {
@@ -40,8 +40,8 @@ namespace Revsoft.Docking
         internal int Add(IDockContent content)
         {
 #if DEBUG
-			if (DockPane != null)
-				throw new InvalidOperationException();
+            if (DockPane != null)
+                throw new InvalidOperationException();
 #endif
 
             if (Contains(content))
@@ -54,8 +54,8 @@ namespace Revsoft.Docking
         internal void AddAt(IDockContent content, int index)
         {
 #if DEBUG
-			if (DockPane != null)
-				throw new InvalidOperationException();
+            if (DockPane != null)
+                throw new InvalidOperationException();
 #endif
 
             if (index < 0 || index > Items.Count - 1)
@@ -115,8 +115,8 @@ namespace Revsoft.Docking
             get
             {
 #if DEBUG
-				if (DockPane == null)
-					throw new InvalidOperationException();
+                if (DockPane == null)
+                    throw new InvalidOperationException();
 #endif
 
                 int count = 0;
@@ -132,8 +132,8 @@ namespace Revsoft.Docking
         private IDockContent GetVisibleContent(int index)
         {
 #if DEBUG
-			if (DockPane == null)
-				throw new InvalidOperationException();
+            if (DockPane == null)
+                throw new InvalidOperationException();
 #endif
 
             int currentIndex = -1;
@@ -151,8 +151,8 @@ namespace Revsoft.Docking
         private int GetIndexOfVisibleContents(IDockContent content)
         {
 #if DEBUG
-			if (DockPane == null)
-				throw new InvalidOperationException();
+            if (DockPane == null)
+                throw new InvalidOperationException();
 #endif
 
             if (content == null)
