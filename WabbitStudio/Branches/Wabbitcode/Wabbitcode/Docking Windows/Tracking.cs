@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Windows.Forms;
-
-using Microsoft.CSharp;
-
-using Revsoft.Wabbitcode.Classes;
+﻿using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {

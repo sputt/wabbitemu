@@ -1,11 +1,6 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Parser
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
 
-    using Revsoft.Wabbitcode.Services.Parser;
 
     internal class Define : IDefine
     {

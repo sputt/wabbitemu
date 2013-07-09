@@ -1,11 +1,10 @@
 ﻿namespace Revsoft.Wabbitcode
 {
-    using System;
-    using System.Windows.Forms;
-
     using Revsoft.Wabbitcode.Classes;
     using Revsoft.Wabbitcode.Properties;
     using Revsoft.Wabbitcode.Services;
+    using System;
+    using System.Windows.Forms;
 
     internal static class Program
     {

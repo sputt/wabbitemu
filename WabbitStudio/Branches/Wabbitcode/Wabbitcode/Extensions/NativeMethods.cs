@@ -1,10 +1,8 @@
 ﻿namespace Revsoft.Wabbitcode.Classes
 {
     using System;
-    using System.Collections.Generic;
     using System.Drawing;
     using System.Runtime.InteropServices;
-    using System.Text;
 
     internal static partial class NativeMethods
     {

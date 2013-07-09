@@ -1,12 +1,9 @@
 ﻿namespace Revsoft.Wabbitcode
 {
+    using Revsoft.Wabbitcode.Services;
     using System;
     using System.IO;
     using System.Windows.Forms;
-
-    using Revsoft.TextEditor;
-    using Revsoft.Wabbitcode.Classes;
-    using Revsoft.Wabbitcode.Services;
 
     public partial class NewBreakpointForm : Form
     {

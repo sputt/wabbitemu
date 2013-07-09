@@ -1,6 +1,4 @@
-﻿using Revsoft.Wabbitcode.Services;
-using System;
-using System.Linq;
+﻿using System;
 
 namespace Revsoft.Wabbitcode.Services.Debugger
 {

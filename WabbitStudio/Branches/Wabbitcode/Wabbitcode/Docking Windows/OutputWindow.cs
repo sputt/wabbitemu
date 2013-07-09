@@ -1,12 +1,7 @@
-﻿using System;
+﻿using Revsoft.Wabbitcode.Services;
+using System;
 using System.Drawing;
-using System.Windows.Forms;
 
-using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
-
-using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {

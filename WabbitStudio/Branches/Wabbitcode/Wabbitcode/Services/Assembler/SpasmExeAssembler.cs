@@ -1,12 +1,9 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Assembler
 {
+    using Revsoft.Wabbitcode.Classes;
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
-    using System.Linq;
-    using System.Text;
-
-    using Revsoft.Wabbitcode.Classes;
 
     public class SpasmExeAssembler : IAssembler
     {

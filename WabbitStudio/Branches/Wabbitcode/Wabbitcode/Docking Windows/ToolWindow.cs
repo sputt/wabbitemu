@@ -1,7 +1,5 @@
-﻿using System;
-
-using Revsoft.Wabbitcode.Services;
-
+﻿using Revsoft.Wabbitcode.Services;
+using System;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Docking_Windows

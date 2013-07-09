@@ -1,26 +1,21 @@
-﻿using System;
+﻿using Revsoft.TextEditor;
+using Revsoft.TextEditor.Document;
+using Revsoft.Wabbitcode.Classes;
+using Revsoft.Wabbitcode.Docking_Windows;
+using Revsoft.Wabbitcode.Exceptions;
+using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Assembler;
+using Revsoft.Wabbitcode.Services.Debugger;
+using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
-
-using Revsoft.TextEditor;
-using Revsoft.TextEditor.Document;
-using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Docking_Windows;
-using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Assembler;
-using Revsoft.Wabbitcode.Services.Debugger;
-
-using WabbitemuLib;
-using Revsoft.Wabbitcode.Exceptions;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode
 {

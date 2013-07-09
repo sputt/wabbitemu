@@ -1,16 +1,14 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Project
 {
+    using Revsoft.Wabbitcode.Classes;
+    using Revsoft.Wabbitcode.Properties;
+    using Revsoft.Wabbitcode.Services;
     using System;
-    using System.Collections;
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
     using System.Windows.Forms;
     using System.Xml;
-
-    using Revsoft.Wabbitcode.Classes;
-    using Revsoft.Wabbitcode.Properties;
-    using Revsoft.Wabbitcode.Services;
 
     public class WabbitcodeProject : IProject
     {

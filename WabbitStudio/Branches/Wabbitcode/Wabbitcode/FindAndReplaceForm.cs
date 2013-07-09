@@ -1,15 +1,14 @@
-﻿using System;
+﻿using Revsoft.TextEditor;
+using Revsoft.TextEditor.Document;
+using Revsoft.Wabbitcode.Docking_Windows;
+using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Project;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
-
-using Revsoft.TextEditor;
-using Revsoft.TextEditor.Document;
-using Revsoft.Wabbitcode.Docking_Windows;
-using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Project;
 
 namespace Revsoft.Wabbitcode
 {

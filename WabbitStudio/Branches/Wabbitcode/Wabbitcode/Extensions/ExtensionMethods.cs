@@ -1,11 +1,9 @@
-﻿using System;
+﻿using Revsoft.Wabbitcode.Services.Debugger;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Xml;
-
-using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Debugger;
 
 
 namespace Revsoft.Wabbitcode.Classes

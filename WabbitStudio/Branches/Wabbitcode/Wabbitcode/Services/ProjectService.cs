@@ -1,19 +1,15 @@
 ﻿namespace Revsoft.Wabbitcode.Services
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Threading;
-    using System.Windows.Forms;
-
     using Revsoft.Wabbitcode.Classes;
-    using Revsoft.Wabbitcode.Docking_Windows;
     using Revsoft.Wabbitcode.Properties;
     using Revsoft.Wabbitcode.Services.Parser;
     using Revsoft.Wabbitcode.Services.Project;
+    using System;
+    using System.Collections.Generic;
+    using System.IO;
+    using System.Linq;
+    using System.Threading;
+    using System.Windows.Forms;
 
     public static class ProjectService
     {

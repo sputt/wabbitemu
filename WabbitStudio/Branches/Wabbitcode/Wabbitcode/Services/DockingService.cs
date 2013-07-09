@@ -1,14 +1,12 @@
-﻿using System;
+﻿using Revsoft.Wabbitcode.Classes;
+using Revsoft.Wabbitcode.Docking_Windows;
+using Revsoft.Wabbitcode.Resource;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-
-using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Docking_Windows;
-using Revsoft.Wabbitcode.Resource;
-
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Services

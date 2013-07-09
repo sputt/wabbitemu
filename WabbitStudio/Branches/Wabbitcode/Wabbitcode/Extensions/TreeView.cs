@@ -60,13 +60,12 @@
 //
 // *****************************************************************************
 
+using Revsoft.Wabbitcode.Classes;
 using System;
 using System.Collections;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-
-using Revsoft.Wabbitcode.Classes;
 namespace Revsoft.Wabbitcode
 {
     /// <summary>

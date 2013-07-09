@@ -1,9 +1,6 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Assembler
 {
     using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Text;
 
     internal class SpasmDllAssembler : IAssembler
     {

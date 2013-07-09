@@ -1,12 +1,9 @@
 ﻿namespace Revsoft.Wabbitcode.Services
 {
+    using Revsoft.Wabbitcode.Services.Interface;
     using System;
     using System.Collections.Generic;
     using System.Linq;
-    using System.Reflection;
-    using System.Text;
-
-    using Revsoft.Wabbitcode.Services.Interface;
 
     public class ServiceFactory : IServiceFactory
     {

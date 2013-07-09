@@ -1,16 +1,10 @@
-﻿using System;
-using System.Drawing;
+﻿using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Debugger;
+using System;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
-
-using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Debugger;
-
 using WabbitemuLib;
 
-using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
