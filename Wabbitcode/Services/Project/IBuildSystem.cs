@@ -1,6 +1,5 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Project
 {
-    using System;
     using System.Collections.Generic;
     using System.Xml;
 

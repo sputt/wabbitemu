@@ -1,3 +1,14 @@
+using Revsoft.TextEditor;
+using Revsoft.TextEditor.Actions;
+using Revsoft.TextEditor.Document;
+using Revsoft.TextEditor.Gui.CompletionWindow;
+using Revsoft.Wabbitcode.Classes;
+using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Assembler;
+using Revsoft.Wabbitcode.Services.Debugger;
+using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,20 +21,9 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml;
-using Revsoft.TextEditor;
-using Revsoft.TextEditor.Actions;
-using Revsoft.TextEditor.Document;
-using Revsoft.TextEditor.Gui.CompletionWindow;
-using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Parser;
-using Revsoft.Wabbitcode.Services.Project;
-using Revsoft.Wabbitcode.Services.Assembler;
-using System.Threading.Tasks;
-using Revsoft.Wabbitcode.Services.Debugger;
 
 namespace Revsoft.Wabbitcode
 {

@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Windows.Forms;
-
-using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Services.Assembler;
+﻿using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Services
 {

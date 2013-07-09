@@ -1,16 +1,13 @@
 ﻿namespace Revsoft.Wabbitcode.Services
 {
+    using Revsoft.Wabbitcode;
+    using Revsoft.Wabbitcode.Classes;
+    using Revsoft.Wabbitcode.Properties;
+    using Revsoft.Wabbitcode.Services.Parser;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
-    using System.Text;
-
-    using Revsoft.Wabbitcode;
-    using Revsoft.Wabbitcode.Classes;
-    using Revsoft.Wabbitcode.Properties;
-    using Revsoft.Wabbitcode.Services;
-    using Revsoft.Wabbitcode.Services.Parser;
 
     public class ParserService
     {

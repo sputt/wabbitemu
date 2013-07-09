@@ -1,5 +1,8 @@
 ﻿namespace Revsoft.Wabbitcode.Services
 {
+    using Revsoft.Wabbitcode.Properties;
+    using Revsoft.Wabbitcode.Services.Debugger;
+    using Revsoft.Wabbitcode.Services.Parser;
     using System;
     using System.Collections.Generic;
     using System.Drawing;
@@ -7,13 +10,6 @@
     using System.Linq;
     using System.Text;
     using System.Windows.Forms;
-
-    using Revsoft.TextEditor;
-    using Revsoft.TextEditor.Document;
-    using Revsoft.Wabbitcode.Classes;
-    using Revsoft.Wabbitcode.Properties;
-    using Revsoft.Wabbitcode.Services.Parser;
-    using Revsoft.Wabbitcode.Services.Debugger;
 
     public static class DocumentService
     {

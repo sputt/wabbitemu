@@ -1,12 +1,8 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Assembler
 {
+    using Revsoft.Wabbitcode.Classes;
     using System;
     using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-
-    using Revsoft.Wabbitcode.Classes;
 
     public class AssemblerOutput
     {

@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Revsoft.TextEditor.Document;
+using Revsoft.Wabbitcode.Properties;
+using System;
 using System.IO;
 using System.Text;
 using System.Windows.Forms;
 using System.Xml;
-
-using Revsoft.TextEditor.Document;
-using Revsoft.Wabbitcode.Properties;
 
 namespace Revsoft.Wabbitcode.Classes
 {

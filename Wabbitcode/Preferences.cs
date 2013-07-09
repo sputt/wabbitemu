@@ -1,17 +1,15 @@
 ﻿namespace Revsoft.Wabbitcode
 {
+    using Revsoft.TextEditor.Document;
+    using Revsoft.Wabbitcode.Classes;
+    using Revsoft.Wabbitcode.Properties;
+    using Revsoft.Wabbitcode.Services;
     using System;
-    using System.Collections.Generic;
     using System.Configuration;
     using System.Drawing;
     using System.Drawing.Text;
     using System.IO;
     using System.Windows.Forms;
-
-    using Revsoft.TextEditor.Document;
-    using Revsoft.Wabbitcode.Classes;
-    using Revsoft.Wabbitcode.Properties;
-    using Revsoft.Wabbitcode.Services;
 
     /// <summary>
     /// Description of Preferences.

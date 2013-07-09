@@ -1,7 +1,6 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Debugger
 {
     using System;
-    using System.Drawing;
 
     using WabbitemuLib;
 

@@ -1,20 +1,14 @@
 ﻿namespace Revsoft.Wabbitcode
 {
-    using System;
-    using System.Collections.Generic;
-    using System.ComponentModel;
-    using System.Data;
-    using System.Drawing;
-    using System.Drawing.Text;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Windows.Forms;
-
     using Revsoft.TextEditor;
     using Revsoft.TextEditor.Document;
     using Revsoft.Wabbitcode.Properties;
     using Revsoft.Wabbitcode.Services;
+    using System;
+    using System.Drawing;
+    using System.Drawing.Text;
+    using System.IO;
+    using System.Windows.Forms;
 
     public partial class RefactorForm : Form
     {

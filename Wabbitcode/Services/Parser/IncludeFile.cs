@@ -1,10 +1,7 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Parser
 {
     using System;
-    using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
 
     internal class IncludeFile : IIncludeFile
     {

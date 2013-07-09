@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Windows.Forms;
-
-using Revsoft.TextEditor;
-using Revsoft.Wabbitcode.Classes;
+﻿using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Parser;
+using System;
+using System.Windows.Forms;
 
-using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {

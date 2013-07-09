@@ -1,14 +1,12 @@
 ﻿namespace Revsoft.Wabbitcode
 {
+    using Revsoft.Wabbitcode.Properties;
+    using Revsoft.Wabbitcode.Services;
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
     using System.Windows.Forms;
-
-    using Revsoft.Wabbitcode.Classes;
-    using Revsoft.Wabbitcode.Properties;
-    using Revsoft.Wabbitcode.Services;
 
     public partial class IncludeDir : Form
     {

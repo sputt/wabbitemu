@@ -1,14 +1,11 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Project
 {
+    using Revsoft.Wabbitcode.Classes;
+    using Revsoft.Wabbitcode.Exceptions;
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.Linq;
-    using System.Text;
     using System.Xml;
-
-    using Revsoft.Wabbitcode.Classes;
-    using Revsoft.Wabbitcode.Exceptions;
 
     public class BuildSystem : IBuildSystem
     {

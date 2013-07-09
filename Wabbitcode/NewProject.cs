@@ -1,16 +1,12 @@
 ﻿namespace Revsoft.Wabbitcode
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Text;
-    using System.Windows.Forms;
-    using System.Xml;
-
     using Revsoft.Wabbitcode.Classes;
     using Revsoft.Wabbitcode.Services;
     using Revsoft.Wabbitcode.Services.Project;
+    using System;
+    using System.IO;
+    using System.Windows.Forms;
+    using System.Xml;
 
     public partial class NewProjectDialog
     {

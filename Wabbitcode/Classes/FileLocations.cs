@@ -1,10 +1,8 @@
 ﻿namespace Revsoft.Wabbitcode.Classes
 {
+    using Revsoft.Wabbitcode.Properties;
     using System;
     using System.IO;
-    using System.Windows.Forms;
-
-    using Revsoft.Wabbitcode.Properties;
 
     public static class FileLocations
     {

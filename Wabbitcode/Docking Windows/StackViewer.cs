@@ -1,10 +1,8 @@
-﻿using System;
+﻿using Revsoft.Wabbitcode.Services;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
-
-using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Services;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {

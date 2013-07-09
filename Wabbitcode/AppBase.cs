@@ -1,10 +1,8 @@
 ﻿namespace Revsoft.Wabbitcode
 {
-    using System;
-
     using Microsoft.VisualBasic.ApplicationServices;
-
     using Revsoft.Wabbitcode.Classes;
+    using System;
 
     public class AppBase : WindowsFormsApplicationBase
     {
