@@ -1,11 +1,20 @@
-namespace Revsoft.Wabbitcode.Docking_Windows
+﻿namespace Revsoft.Wabbitcode.Docking_Windows
 {
-    partial class EmulatorWindow
+    internal partial class EmulatorWindow
     {
+        private System.Windows.Forms.MenuItem autoHideItem;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+
         /// <summary>
         /// Required designer variable.
         /// </summary>
         private System.ComponentModel.IContainer components;
+        private System.Windows.Forms.ContextMenu contextMenu;
+        private System.Windows.Forms.CheckBox doubleBox;
+        private System.Windows.Forms.MenuItem floatingItem;
+        private System.Windows.Forms.MenuItem hideItem;
+        private System.Windows.Forms.PictureBox screenBox;
+        private System.Windows.Forms.Timer updateTimer;
 
         /// <summary>
         /// Clean up any resources being used.
@@ -13,14 +22,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-            if (disposing && (components != null))
+            if (disposing && (this.components != null))
             {
-                components.Dispose();
+                this.components.Dispose();
             }
+
             base.Dispose(disposing);
         }
-
-        #region Windows Form Designer generated code
 
         /// <summary>
         /// Required method for Designer support - do not modify
@@ -37,34 +45,34 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             this.doubleBox = new System.Windows.Forms.CheckBox();
             this.updateTimer = new System.Windows.Forms.Timer(this.components);
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
-            ((System.ComponentModel.ISupportInitialize)(this.screenBox)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)this.screenBox).BeginInit();
             this.SuspendLayout();
-            // 
+
             // autoHideItem
-            // 
+
             this.autoHideItem.Index = -1;
             this.autoHideItem.Text = "Autohide";
-            // 
+
             // floatingItem
-            // 
+
             this.floatingItem.Index = -1;
             this.floatingItem.Text = "Floating";
-            // 
+
             // hideItem
-            // 
+
             this.hideItem.Index = -1;
             this.hideItem.Text = "Hide";
-            // 
+
             // screenBox
-            // 
+
             this.screenBox.Location = new System.Drawing.Point(12, 12);
             this.screenBox.Name = "screenBox";
             this.screenBox.Size = new System.Drawing.Size(192, 128);
             this.screenBox.TabIndex = 0;
             this.screenBox.TabStop = false;
-            // 
+
             // doubleBox
-            // 
+
             this.doubleBox.AutoSize = true;
             this.doubleBox.Checked = true;
             this.doubleBox.CheckState = System.Windows.Forms.CheckState.Checked;
@@ -74,18 +82,18 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             this.doubleBox.TabIndex = 1;
             this.doubleBox.Text = "Double Size";
             this.doubleBox.UseVisualStyleBackColor = true;
-            // 
+
             // updateTimer
-            // 
+
             this.updateTimer.Interval = 25;
             this.updateTimer.Tick += new System.EventHandler(this.updateTimer_Tick);
-            // 
+
             // backgroundWorker1
-            // 
+
             this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
-            // 
+
             // EmulatorWindow
-            // 
+
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(214, 186);
@@ -96,22 +104,9 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             this.ShowHint = Revsoft.Docking.DockState.Float;
             this.ShowInTaskbar = false;
             this.TabPageContextMenu = this.contextMenu;
-            ((System.ComponentModel.ISupportInitialize)(this.screenBox)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)this.screenBox).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
-
         }
-
-        #endregion
-
-        private System.Windows.Forms.ContextMenu contextMenu;
-        private System.Windows.Forms.MenuItem autoHideItem;
-        private System.Windows.Forms.MenuItem floatingItem;
-        private System.Windows.Forms.MenuItem hideItem;
-        private System.Windows.Forms.PictureBox screenBox;
-        private System.Windows.Forms.CheckBox doubleBox;
-        private System.Windows.Forms.Timer updateTimer;
-        private System.ComponentModel.BackgroundWorker backgroundWorker1;
-
     }
 }
