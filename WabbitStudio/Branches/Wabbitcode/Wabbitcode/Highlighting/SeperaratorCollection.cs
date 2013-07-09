@@ -1,134 +1,125 @@
-using System;
-using System.Collections;
-
-namespace Wabbitcode
+﻿namespace Wabbitcode
 {
-	/// <summary>
-	/// Summary description for SeperaratorCollection.
-	/// </summary>
-	public class SeperaratorCollection
-	{
-		private ArrayList mInnerList = new ArrayList();
-		internal SeperaratorCollection()
-		{
-		}
+    using System;
+    using System.Collections;
 
-		public void AddRange(ICollection c)
-		{
-			mInnerList.AddRange(c);
-		}
+    /// <summary>
+    /// Summary description for SeperaratorCollection.
+    /// </summary>
+    public class SeperaratorCollection
+    {
+        private ArrayList mInnerList = new ArrayList();
 
-		internal char[] GetAsCharArray()
-		{
-			return (char[])mInnerList.ToArray(typeof(char));
-		}
-		#region IList Members
+        internal SeperaratorCollection()
+        {
+        }
 
-		public bool IsReadOnly
-		{
-			get
-			{
-				return mInnerList.IsReadOnly;
-			}
-		}
+        public int Count
+        {
+            get
+            {
+                return this.mInnerList.Count;
+            }
+        }
 
-		public char this[int index]
-		{
-			get
-			{
-				return (char)mInnerList[index];
-			}
-			set
-			{
-				mInnerList[index] = value;
-			}
-		}
+        public bool IsFixedSize
+        {
+            get
+            {
+                return this.mInnerList.IsFixedSize;
+            }
+        }
 
-		public void RemoveAt(int index)
-		{
-			mInnerList.RemoveAt(index);
-		}
+        public bool IsReadOnly
+        {
+            get
+            {
+                return this.mInnerList.IsReadOnly;
+            }
+        }
 
-		public void Insert(int index, char value)
-		{
-			mInnerList.Insert(index, value);
-		}
+        public bool IsSynchronized
+        {
+            get
+            {
+                return this.mInnerList.IsSynchronized;
+            }
+        }
 
-		public void Remove(char value)
-		{
-			mInnerList.Remove(value);
-		}
+        public object SyncRoot
+        {
+            get
+            {
+                return this.mInnerList.SyncRoot;
+            }
+        }
 
-		public bool Contains(char value)
-		{
-			return mInnerList.Contains(value);
-		}
+        public char this[int index]
+        {
+            get
+            {
+                return (char)this.mInnerList[index];
+            }
 
-		public void Clear()
-		{
-			mInnerList.Clear();
-		}
+            set
+            {
+                this.mInnerList[index] = value;
+            }
+        }
 
-		public int IndexOf(char value)
-		{
-			return mInnerList.IndexOf(value);
-		}
+        public int Add(char value)
+        {
+            return this.mInnerList.Add(value);
+        }
 
-		public int Add(char value)
-		{
-			return mInnerList.Add(value);
-		}
+        public void AddRange(ICollection c)
+        {
+            this.mInnerList.AddRange(c);
+        }
 
-		public bool IsFixedSize
-		{
-			get
-			{
-				return mInnerList.IsFixedSize;
-			}
-		}
+        public void Clear()
+        {
+            this.mInnerList.Clear();
+        }
 
-		#endregion
+        public bool Contains(char value)
+        {
+            return this.mInnerList.Contains(value);
+        }
 
-		#region ICollection Members
+        public void CopyTo(Array array, int index)
+        {
+            this.mInnerList.CopyTo(array, index);
+        }
 
-		public bool IsSynchronized
-		{
-			get
-			{
-				return mInnerList.IsSynchronized;
-			}
-		}
+        public IEnumerator GetEnumerator()
+        {
+            return this.mInnerList.GetEnumerator();
+        }
 
-		public int Count
-		{
-			get
-			{
-				return mInnerList.Count;
-			}
-		}
+        public int IndexOf(char value)
+        {
+            return this.mInnerList.IndexOf(value);
+        }
 
-		public void CopyTo(Array array, int index)
-		{
-			mInnerList.CopyTo(array, index);
-		}
+        public void Insert(int index, char value)
+        {
+            this.mInnerList.Insert(index, value);
+        }
 
-		public object SyncRoot
-		{
-			get
-			{
-				return mInnerList.SyncRoot;
-			}
-		}
+        public void Remove(char value)
+        {
+            this.mInnerList.Remove(value);
+        }
 
-		#endregion
+        public void RemoveAt(int index)
+        {
+            this.mInnerList.RemoveAt(index);
+        }
 
-		#region IEnumerable Members
-
-		public IEnumerator GetEnumerator()
-		{
-			return mInnerList.GetEnumerator();
-		}
-
-		#endregion
-	}
+        internal char[] GetAsCharArray()
+        {
+            return (char[])this.mInnerList.ToArray(typeof(char));
+        }
+    }
 }

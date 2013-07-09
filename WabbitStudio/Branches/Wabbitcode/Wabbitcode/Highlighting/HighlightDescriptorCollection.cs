@@ -1,131 +1,120 @@
-using System;
-using System.Collections;
-
-namespace Wabbitcode
+﻿namespace Wabbitcode
 {
-	/// <summary>
-	/// Summary description for SeperaratorCollection.
-	/// </summary>
-	public class HighLightDescriptorCollection
-	{
-		private ArrayList mInnerList = new ArrayList();
-		internal HighLightDescriptorCollection()
-		{
-		}
+    using System;
+    using System.Collections;
 
-		public void AddRange(ICollection c)
-		{
-			mInnerList.AddRange(c);
-		}
+    /// <summary>
+    /// Summary description for SeperaratorCollection.
+    /// </summary>
+    public class HighLightDescriptorCollection
+    {
+        private ArrayList mInnerList = new ArrayList();
 
+        internal HighLightDescriptorCollection()
+        {
+        }
 
-		#region IList Members
+        public int Count
+        {
+            get
+            {
+                return this.mInnerList.Count;
+            }
+        }
 
-		public bool IsReadOnly
-		{
-			get
-			{
-				return mInnerList.IsReadOnly;
-			}
-		}
+        public bool IsFixedSize
+        {
+            get
+            {
+                return this.mInnerList.IsFixedSize;
+            }
+        }
 
-		public HighlightDescriptor this[int index]
-		{
-			get
-			{
-				return (HighlightDescriptor)mInnerList[index];
-			}
-			set
-			{
-				mInnerList[index] = value;
-			}
-		}
+        public bool IsReadOnly
+        {
+            get
+            {
+                return this.mInnerList.IsReadOnly;
+            }
+        }
 
-		public void RemoveAt(int index)
-		{
-			mInnerList.RemoveAt(index);
-		}
+        public bool IsSynchronized
+        {
+            get
+            {
+                return this.mInnerList.IsSynchronized;
+            }
+        }
 
-		public void Insert(int index, HighlightDescriptor value)
-		{
-			mInnerList.Insert(index, value);
-		}
+        public object SyncRoot
+        {
+            get
+            {
+                return this.mInnerList.SyncRoot;
+            }
+        }
 
-		public void Remove(HighlightDescriptor value)
-		{
-			mInnerList.Remove(value);
-		}
+        public HighlightDescriptor this[int index]
+        {
+            get
+            {
+                return (HighlightDescriptor)this.mInnerList[index];
+            }
 
-		public bool Contains(HighlightDescriptor value)
-		{
-			return mInnerList.Contains(value);
-		}
+            set
+            {
+                this.mInnerList[index] = value;
+            }
+        }
 
-		public void Clear()
-		{
-			mInnerList.Clear();
-		}
+        public int Add(HighlightDescriptor value)
+        {
+            return this.mInnerList.Add(value);
+        }
 
-		public int IndexOf(HighlightDescriptor value)
-		{
-			return mInnerList.IndexOf(value);
-		}
+        public void AddRange(ICollection c)
+        {
+            this.mInnerList.AddRange(c);
+        }
 
-		public int Add(HighlightDescriptor value)
-		{
-			return mInnerList.Add(value);
-		}
+        public void Clear()
+        {
+            this.mInnerList.Clear();
+        }
 
-		public bool IsFixedSize
-		{
-			get
-			{
-				return mInnerList.IsFixedSize;
-			}
-		}
+        public bool Contains(HighlightDescriptor value)
+        {
+            return this.mInnerList.Contains(value);
+        }
 
-		#endregion
+        public void CopyTo(Array array, int index)
+        {
+            this.mInnerList.CopyTo(array, index);
+        }
 
-		#region ICollection Members
+        public IEnumerator GetEnumerator()
+        {
+            return this.mInnerList.GetEnumerator();
+        }
 
-		public bool IsSynchronized
-		{
-			get
-			{
-				return mInnerList.IsSynchronized;
-			}
-		}
+        public int IndexOf(HighlightDescriptor value)
+        {
+            return this.mInnerList.IndexOf(value);
+        }
 
-		public int Count
-		{
-			get
-			{
-				return mInnerList.Count;
-			}
-		}
+        public void Insert(int index, HighlightDescriptor value)
+        {
+            this.mInnerList.Insert(index, value);
+        }
 
-		public void CopyTo(Array array, int index)
-		{
-			mInnerList.CopyTo(array, index);
-		}
+        public void Remove(HighlightDescriptor value)
+        {
+            this.mInnerList.Remove(value);
+        }
 
-		public object SyncRoot
-		{
-			get
-			{
-				return mInnerList.SyncRoot;
-			}
-		}
-
-		#endregion
-
-		#region IEnumerable Members
-
-		public IEnumerator GetEnumerator()
-		{
-			return mInnerList.GetEnumerator();
-		}
-
-		#endregion
-	}
+        public void RemoveAt(int index)
+        {
+            this.mInnerList.RemoveAt(index);
+        }
+    }
 }

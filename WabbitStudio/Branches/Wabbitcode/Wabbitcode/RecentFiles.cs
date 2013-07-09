@@ -1,11 +1,12 @@
-﻿using System;
-using System.Windows.Forms;
-using Revsoft.Wabbitcode.Properties;
-using System.IO;
-
-namespace Revsoft.Wabbitcode
+﻿namespace Revsoft.Wabbitcode
 {
-    partial class MainFormRedone
+    using System;
+    using System.IO;
+    using System.Windows.Forms;
+
+    using Revsoft.Wabbitcode.Properties;
+
+    internal partial class MainFormRedone
     {
         /// <summary>
         /// This loads the recent file list from Properties and adds it to the recent file menu.
@@ -18,8 +19,11 @@ namespace Revsoft.Wabbitcode
             foreach (String file in list)
             {
                 if (string.IsNullOrEmpty(file))
+                {
                     continue;
-                MenuItem button = new MenuItem(file, openRecentDoc);
+                }
+
+                MenuItem button = new MenuItem(file, this.openRecentDoc);
                 recentFilesMenuItem.MenuItems.Add(button);
             }
         }
@@ -42,7 +46,8 @@ namespace Revsoft.Wabbitcode
             doc.openFile(fileName);
             doc.editorBox.Font = Settings.Default.editorFont;
             doc.Show(dockPanel);
-            //doc.highlight();
+
+            // doc.highlight();
         }
 
         /// <summary>
@@ -52,7 +57,10 @@ namespace Revsoft.Wabbitcode
         {
             string list = null;
             foreach (String file in recentFileList)
+            {
                 list += file + '\n';
+            }
+
             Settings.Default.recentFiles = list;
         }
     }
