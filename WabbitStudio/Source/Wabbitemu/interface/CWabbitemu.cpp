@@ -36,6 +36,7 @@ HRESULT CWabbitemu::FinalConstruct()
 void CWabbitemu::FinalRelease()
 {
 	m_pBreakpointCollObj->Release();
+	calc_slot_free(m_lpCalc);
 }
 
 STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
