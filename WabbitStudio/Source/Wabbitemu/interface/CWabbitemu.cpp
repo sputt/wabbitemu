@@ -48,13 +48,15 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 	if (fVisible == VARIANT_TRUE)
 	{
 		gui_frame(m_lpCalc);
-		HMENU hMenu = GetSystemMenu(m_lpCalc->hwndFrame, FALSE);
-		EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
+		SetProp(m_lpCalc->hwndFrame, _T("COMObjectFrame"), (HANDLE) TRUE);
+		//HMENU hMenu = GetSystemMenu(m_lpCalc->hwndFrame, FALSE);
+		//EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
 		SetMenu(m_lpCalc->hwndFrame, NULL);
 		RECT wr;
 		GetWindowRect(m_lpCalc->hwndFrame, &wr);
 		SendMessage(m_lpCalc->hwndFrame, WM_SIZING, WMSZ_BOTTOMRIGHT, (LPARAM) &wr);
 		SetWindowPos(m_lpCalc->hwndFrame, NULL, wr.left, wr.top, wr.right - wr.left, wr.bottom - wr.top, SWP_NOZORDER);
+
 	}
 	else
 	{
@@ -63,6 +65,34 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 	m_fVisible = fVisible;
 	return S_OK;
 }
+
+void CWabbitemu::Fire_OnClose()
+{
+	m_fVisible = VARIANT_FALSE;
+
+	CComVariant vWabbit((IDispatch *) this);
+
+	int nConnectionIndex;
+	int nConnections = this->m_vec.GetSize();
+	for (nConnectionIndex =  0;  nConnectionIndex < nConnections; nConnectionIndex++)
+	{
+		Lock();
+		CComPtr<IUnknown> sp = this->m_vec.GetAt(nConnectionIndex);
+		Unlock();
+
+		if (sp != NULL)
+		{
+			CComDispatchDriver drv(sp);
+
+			HRESULT hr = drv.Invoke1(DISPID_CLOSE, &vWabbit);
+			if (FAILED(hr))
+			{
+				OutputDebugString(_T("Failed to invoke\n"));
+			}
+		}
+	}	
+}
+
 void CWabbitemu::Fire_OnBreakpoint(waddr *pwaddr)
 {
 	CComPtr<IBreakpoint> pBreakpoint;
