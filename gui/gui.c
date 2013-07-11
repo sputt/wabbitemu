@@ -50,6 +50,8 @@
 #include "avi_utils.h"
 #include "ftp.h"
 
+#include "CWabbitemu.h"
+
 CWabbitemuModule _Module;
 
 #ifdef _M_IX86
@@ -1538,40 +1540,51 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 		case WM_CLOSE:
-			if (calc_count() == 1) {
-				if (exit_save_state)
+			{
+				BOOL fIsCOMFrame = (BOOL) GetProp(hwnd, _T("COMObjectFrame"));
+				if (fIsCOMFrame)
 				{
-					TCHAR tempSave[MAX_PATH] = {0};
-					if (portable_mode) {
-						StringCbCopy(tempSave, sizeof(tempSave), portSettingsPath);
-						for (u_int i = strlen(portSettingsPath) - 1; i >= 0; i--) {
-							if (tempSave[i] == '\\') {
-								tempSave[i] = '\0';
-								break;
-							}
-							tempSave[i] = '\0';
-						}
-					} else {
-						GetAppDataString(tempSave, sizeof(tempSave));
-					}
-					StringCbCat(tempSave, sizeof(tempSave), _T("\\wabbitemu.sav"));
-					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), tempSave);
-					SAVESTATE_t *save = SaveSlot(lpCalc);
-					WriteSave(tempSave, save, true);
-					FreeSave(save);
+					DestroyWindow(hwnd);
+					lpCalc->pWabbitemu->Fire_OnClose();
 				}
+				else
+				{
+					if (calc_count() == 1) {
+						if (exit_save_state)
+						{
+							TCHAR tempSave[MAX_PATH] = {0};
+							if (portable_mode) {
+								StringCbCopy(tempSave, sizeof(tempSave), portSettingsPath);
+								for (u_int i = strlen(portSettingsPath) - 1; i >= 0; i--) {
+									if (tempSave[i] == '\\') {
+										tempSave[i] = '\0';
+										break;
+									}
+									tempSave[i] = '\0';
+								}
+							} else {
+								GetAppDataString(tempSave, sizeof(tempSave));
+							}
+							StringCbCat(tempSave, sizeof(tempSave), _T("\\wabbitemu.sav"));
+							StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), tempSave);
+							SAVESTATE_t *save = SaveSlot(lpCalc);
+							WriteSave(tempSave, save, true);
+							FreeSave(save);
+						}
 
-				DestroyCutoutResources();
+						DestroyCutoutResources();
 
-				SaveRegistrySettings(lpCalc);
+						SaveRegistrySettings(lpCalc);
 
+					}
+					DestroyWindow(hwnd);
+					calc_slot_free(lpCalc);
+					if (calc_count() == 0) {
+						PostQuitMessage(0);
+					}
+				}
+				return 0;
 			}
-			DestroyWindow(hwnd);
-			calc_slot_free(lpCalc);
-			if (calc_count() == 0) {
-				PostQuitMessage(0);
-			}
-			return 0;
 		case WM_DESTROY: {
 				DeleteDC(lpCalc->hdcKeymap);
 				DeleteDC(lpCalc->hdcSkin);

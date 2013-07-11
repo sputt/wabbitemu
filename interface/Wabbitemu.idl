@@ -385,6 +385,7 @@ interface IMemoryContext : IReadable
 
 
 const int DISPID_BREAKPOINT = 1;
+const int DISPID_CLOSE = 2;
 
 [
 	version(1.0),
@@ -395,6 +396,7 @@ dispinterface DWabbitemuEvents
 properties:
 methods:
 	[id(DISPID_BREAKPOINT)] HRESULT Breakpoint(IWabbitemu *Calc, IBreakpoint *Breakpoint);
+	[id(DISPID_CLOSE)] HRESULT Close(IWabbitemu *Calc);
 };
 
 [

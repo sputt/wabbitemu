@@ -60,6 +60,7 @@ public:
 	STDMETHODIMP get_Labels(ILabelServer **ppLabelServer);
 
 	void Fire_OnBreakpoint(waddr *pwaddr);
+	void Fire_OnClose();
 
 private:
 	DWORD m_dwThreadId;
