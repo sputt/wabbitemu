@@ -107,13 +107,13 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
-        public static IEnumerable<IDockContent> Documents
+        public static IEnumerable<NewEditor> Documents
         {
             get
             {
                 lock (dockPanel.Documents)
                 {
-                    return dockPanel.Documents.Where(doc => doc is NewEditor);
+                    return dockPanel.Documents.Where(doc => doc is NewEditor).Cast<NewEditor>();
                 }
             }
         }

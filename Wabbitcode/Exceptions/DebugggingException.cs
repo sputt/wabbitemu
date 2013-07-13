@@ -2,6 +2,7 @@
 
 namespace Revsoft.Wabbitcode.Exceptions
 {
+    [Serializable]
     class DebuggingException : Exception
     {
         public DebuggingException()

@@ -1,12 +1,12 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Debugger
 {
     using System;
-
+    using System.Drawing;
     using WabbitemuLib;
 
-    public delegate void BreakpointDelegate(IBreakpoint breakpoint);
+    public delegate void BreakpointDelegate(object sender, BreakpointEventArgs e);
 
-    public interface IWabbitemuDebugger
+    public interface IWabbitemuDebugger : IDisposable
     {
         event BreakpointDelegate OnBreakpoint;
 
@@ -63,5 +63,7 @@
         void Step();
         void StepOut();
         void StepOver();
+
+        Image GetScreenImage();
     }
 }

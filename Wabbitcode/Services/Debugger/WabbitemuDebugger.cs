@@ -3,11 +3,14 @@
     using Microsoft.Win32;
     using Revsoft.Wabbitcode.Exceptions;
     using System;
+    using System.Drawing;
+    using System.Runtime.InteropServices;
     using WabbitemuLib;
 
     public class WabbitemuDebugger : IWabbitemuDebugger
     {
         private Wabbitemu debugger;
+        private bool disposed = false;
 
         public WabbitemuDebugger()
         {
@@ -241,11 +244,51 @@
             //address.Write(value);
         }
 
+        IntPtr scan0 = Marshal.AllocHGlobal(128 * 64);
+        public Image GetScreenImage()
+        {
+            Marshal.Copy((byte[])this.debugger.LCD.Display, 0, scan0, 128 * 64);
+            Bitmap calcBitmap = new Bitmap(128, 64, 128, System.Drawing.Imaging.PixelFormat.Format8bppIndexed, scan0);
+            var palette = calcBitmap.Palette;
+            for (int i = 0; i < 255; i++)
+            {
+                palette.Entries[i] = Color.FromArgb(0x9e * (256 - i) / 255, (0xAB * (256 - i)) / 255, (0x88 * (256 - i)) / 255);
+            }
+
+            calcBitmap.Palette = palette;
+            return calcBitmap;
+        }
+
         private void debugger_Breakpoint(IWabbitemu debugger, IBreakpoint breakpoint)
         {
             if (this.OnBreakpoint != null)
             {
-                this.OnBreakpoint(breakpoint);
+                this.OnBreakpoint(debugger, new BreakpointEventArgs(breakpoint));
+            }
+        }
+
+        ~WabbitemuDebugger()
+        {
+            Dispose(false);
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+
+                }
+
+                Marshal.FreeHGlobal(scan0);
+                disposed = true;
             }
         }
     }

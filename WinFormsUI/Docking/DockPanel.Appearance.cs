@@ -20,7 +20,6 @@ namespace WeifenLuo.WinFormsUI.Docking
         [LocalizedCategory("Category_Docking")]
         [LocalizedDescription("DockPanel_DockPanelSkinStyle")]
         [DefaultValue(Style.VisualStudio2012Light)]
-        [Obsolete("Please use Theme instead.")]
         public Style SkinStyle
         {
             get { return m_dockPanelSkinStyle; }

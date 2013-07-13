@@ -9,9 +9,11 @@ using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    public class AssemblerService : IService
+    public class AssemblerService : IService, IDisposable
     {
         private static AssemblerService instance;
+
+        private bool disposed = false;
         private IAssembler assembler;
         private string outputFormatting = "=================={0}==================" + Environment.NewLine +
                                           "Assembling {1}" + Environment.NewLine + "{2}";
@@ -131,6 +133,51 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
+        public CodeCountInfo CountCode(string lines)
+        {
+            int size = 0;
+            int min = 0;
+            int max = 0;
+            this.assembler = new SpasmExeAssembler();
+            string[] outputLines = null;
+            if (!string.IsNullOrEmpty(lines))
+            {
+                assembler.SetFlags(AssemblyFlags.CodeCounter | AssemblyFlags.Commandline);
+                outputLines = assembler.Assemble(lines).Split('\n');
+            }
+
+            foreach (string line in outputLines)
+            {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+                else if (line.StartsWith("Size:"))
+                {
+                    if (!int.TryParse(line.Substring(6, line.Length - 7), out size))
+                    {
+                        size = 0;
+                    }
+                }
+                else if (line.StartsWith("Min. execution time:"))
+                {
+                    if (!int.TryParse(line.Substring(20, line.Length - 21), out min))
+                    {
+                        min = 0;
+                    }
+                }
+                else if (line.StartsWith("Max. execution time:"))
+                {
+                    if (!int.TryParse(line.Substring(20, line.Length - 21), out max))
+                    {
+                        max = 0;
+                    }
+                }
+            }
+            return new CodeCountInfo(size, min, max);
+        }
+
+
         public void DestroyService()
         {
             this.assembler = null;
@@ -200,6 +247,28 @@ namespace Revsoft.Wabbitcode.Services
             if (this.AssemblerProjectFinished != null)
             {
                 this.AssemblerProjectFinished(sender, e);
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    if (assembler != null)
+                    {
+                        assembler.Dispose();
+                    }
+                }
+
+                disposed = true;
             }
         }
     }

@@ -16,6 +16,10 @@
             if (disposing && (components != null))
             {
                 components.Dispose();
+                if (debugger != null)
+                {
+                    debugger.Dispose();
+                }
             }
             base.Dispose(disposing);
         }

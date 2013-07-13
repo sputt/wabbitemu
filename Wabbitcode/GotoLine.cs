@@ -32,12 +32,14 @@
         private bool ValidateInput()
         {
             int line = 0;
-            int.TryParse(inputBox.Text, out line);
-            if (line > 0 && line <= this.MaxLineNum)
+            if (int.TryParse(inputBox.Text, out line))
             {
-                okButton.Enabled = true;
-                errorProvider.SetError(inputBox, "");
-                return true;
+                if (line > 0 && line <= this.MaxLineNum)
+                {
+                    okButton.Enabled = true;
+                    errorProvider.SetError(inputBox, "");
+                    return true;
+                }
             }
 
             okButton.Enabled = false;

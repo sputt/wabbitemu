@@ -10,7 +10,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 {
     public partial class DebugPanel : ToolWindow
     {
-        private IntPtr scan0 = Marshal.AllocHGlobal(128 * 64);
         private bool updating;
         private MainFormRedone mainForm;
         private WabbitcodeDebugger debugger;

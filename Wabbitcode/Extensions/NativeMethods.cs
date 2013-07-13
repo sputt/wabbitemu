@@ -19,20 +19,6 @@
         private const int WM_SETREDRAW = 0x000B;
         private const int WM_USER = 0x400;
 
-        [DllImport("SPASM.dll", BestFitMapping = true, ThrowOnUnmappableChar = true)]
-        internal static extern int AddDefine(
-            [In, MarshalAs(UnmanagedType.LPStr)] string name,
-            [In, MarshalAs(UnmanagedType.LPStr)] string value);
-
-        [DllImport("SPASM.dll", BestFitMapping = true, ThrowOnUnmappableChar = true)]
-        internal static extern int AddInclude([In, MarshalAs(UnmanagedType.LPStr)] string directory);
-
-        [DllImport("SPASM.dll")]
-        internal static extern int ClearDefines();
-
-        [DllImport("SPASM.dll")]
-        internal static extern int ClearIncludes();
-
         [DllImport("gdi32.dll")]
         internal static extern bool DeleteObject(IntPtr hObject);
 
@@ -51,10 +37,6 @@
 
         [DllImport("kernel32.dll")]
         internal static extern IntPtr GetStdHandle(uint nStdHandle);
-
-        [DllImport("SPASM.dll")]
-        [return: MarshalAs(UnmanagedType.LPStr)]
-        internal static extern string GetStdOut();
 
         [DllImport("comctl32.dll", CharSet = CharSet.Auto)]
         internal static extern bool ImageList_BeginDrag(
@@ -82,9 +64,6 @@
         [DllImport("comctl32.dll")]
         internal static extern bool InitCommonControls();
 
-        [DllImport("SPASM.dll")]
-        internal static extern int RunAssembly();
-
         internal static void SaveScrollPos(IntPtr handle, Point scrollPos)
         {
             SendMessage(handle, EM_SETSCROLLPOS, (IntPtr)0, ref scrollPos);
@@ -93,27 +72,15 @@
         [DllImport("user32.dll")]
         internal static extern bool SetForegroundWindow(IntPtr hWnd);
 
-        [DllImport("SPASM.dll", BestFitMapping = true, ThrowOnUnmappableChar = true)]
-        internal static extern int SetInputFile([In, MarshalAs(UnmanagedType.LPStr)] string name);
-
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         internal static extern bool SetMenuInfo(HandleRef hMenu, MENUINFO lpcmi);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         internal static extern bool SetMenuItemInfo(HandleRef hMenu, int uItem, bool fByPosition, MENUITEMINFO_T_RW lpmii);
 
-        [DllImport("SPASM.dll")]
-        internal static extern int SetMode(int mode);
-
-        [DllImport("SPASM.dll", BestFitMapping = true, ThrowOnUnmappableChar = true)]
-        internal static extern int SetOutputFile([In, MarshalAs(UnmanagedType.LPStr)] string name);
-
         // SetLastError = true
         [DllImport("Kernel32.dll")]
         internal static extern bool SetStdHandle(uint device, IntPtr handle);
-
-        [DllImport("SPASM.dll")]
-        internal static extern int ShowMessage();
 
         // [DllImport("Kernel32.dll")]// SetLastError = true
         // internal static extern uint GetStdHandle(uint device);
@@ -130,9 +97,6 @@
             SendMessage(handle, EM_SETEVENTMASK, (IntPtr)0, ref temp);
             SendMessage(handle, WM_SETREDRAW, (IntPtr)1, ref temp);
         }
-
-        [DllImport("libWabbitemu.dll")]
-        private static extern byte ReadMem(int slot, ushort address);
 
         [DllImport("user32.dll", CharSet = CharSet.Auto)]
         private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, ref Point lParam);

@@ -8,6 +8,7 @@
     {
         private ParserInformation parserData;
         private int position = -1;
+        private bool disposed = false;
 
         public IParserEnumerator(ParserInformation data)
         {
@@ -30,9 +31,21 @@
             }
         }
 
-        public virtual void Dispose()
+        public void Dispose()
         {
-            return;
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                }
+            }
+            disposed = true;
         }
 
         public bool MoveNext()
