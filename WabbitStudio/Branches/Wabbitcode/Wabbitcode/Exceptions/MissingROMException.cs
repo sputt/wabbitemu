@@ -1,7 +1,8 @@
-﻿namespace Revsoft.Wabbitcode.Exceptions
-{
-    using System;
+﻿using System;
 
+namespace Revsoft.Wabbitcode.Exceptions
+{
+    [Serializable]
     public class MissingROMException : Exception
     {
         public MissingROMException()

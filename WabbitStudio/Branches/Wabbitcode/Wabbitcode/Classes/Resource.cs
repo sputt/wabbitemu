@@ -18,7 +18,6 @@ namespace Revsoft.Wabbitcode.Classes
                 return;
             }
 
-            BinaryWriter writeSPASM = null;
             FileStream fs = null;
             Stream spasm = null;
             try
@@ -26,19 +25,21 @@ namespace Revsoft.Wabbitcode.Classes
                 Assembly asm = Assembly.GetExecutingAssembly();
                 spasm = asm.GetManifestResourceStream("Revsoft.Wabbitcode.Resources." + resourceName);
                 fs = new FileStream(outputFile, FileMode.Create, FileAccess.Write);
-                writeSPASM = new BinaryWriter(fs);
-                if (spasm != null)
+                using (BinaryWriter writeSPASM = new BinaryWriter(fs))
                 {
-                    long temp = spasm.Length;
-                    int length = Convert.ToInt32(temp);
-                    var buffer = new byte[temp];
-                    spasm.Read(buffer, 0, length);
-                    writeSPASM.Write(buffer);
-                    extractedResources.Add(resourceName.ToUpper());
-                }
-                else
-                {
-                    throw new Exception("Unable to find resource to extract");
+                    if (spasm != null)
+                    {
+                        long temp = spasm.Length;
+                        int length = Convert.ToInt32(temp);
+                        var buffer = new byte[temp];
+                        spasm.Read(buffer, 0, length);
+                        writeSPASM.Write(buffer);
+                        extractedResources.Add(resourceName.ToUpper());
+                    }
+                    else
+                    {
+                        throw new Exception("Unable to find resource to extract");
+                    }
                 }
             }
             catch (Exception ex)
@@ -47,20 +48,9 @@ namespace Revsoft.Wabbitcode.Classes
             }
             finally
             {
-                if (writeSPASM != null)
-                {
-                    writeSPASM.Flush();
-                    writeSPASM.Close();
-                }
-
-                if (fs != null)
-                {
-                    fs.Close();
-                }
-
                 if (spasm != null)
                 {
-                    spasm.Close();
+                    spasm.Dispose();
                 }
             }
         }

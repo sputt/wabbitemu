@@ -4,6 +4,7 @@ using Revsoft.Wabbitcode.Services;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Globalization;
 using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
@@ -383,26 +384,26 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
             bool error = false;
             debugVariable vartoadd = variables[e.RowIndex];
-            string address = variablesDataView.Rows[e.RowIndex].Cells[1].Value.ToString().Trim();
-            if (address != null)
+            string labelOrAddress = variablesDataView.Rows[e.RowIndex].Cells[1].Value.ToString().Trim();
+            if (labelOrAddress != null)
             {
                 ushort offset = 0;
-                if (address.Contains("+"))
+                if (labelOrAddress.Contains("+"))
                 {
-                    error |= !ushort.TryParse( address.Substring(address.IndexOf('+') + 1, address.Length - address.IndexOf('+') - 1), out offset);
-                    address = address.Substring(0, address.IndexOf('+'));
+                    error |= !ushort.TryParse(labelOrAddress.Substring(labelOrAddress.IndexOf('+') + 1, labelOrAddress.Length - labelOrAddress.IndexOf('+') - 1), out offset);
+                    labelOrAddress = labelOrAddress.Substring(0, labelOrAddress.IndexOf('+'));
                 }
 
                 if (!error)
                 {
                     if (!Settings.Default.caseSensitive)
                     {
-                        address = address.ToUpper();
+                        labelOrAddress = labelOrAddress.ToUpper();
                     }
-                    if (debugger.SymbolTable.StaticLabels.Contains(address))
+                    string address = debugger.SymbolTable.GetAddressFromLabel(labelOrAddress);
+                    if (address != null)
                     {
-                        vartoadd.address = (ushort)(ushort.Parse(debugger.SymbolTable.StaticLabels[address].ToString().
-                                                   Substring(1, 4), System.Globalization.NumberStyles.HexNumber) + offset);
+                        vartoadd.address = (ushort)(ushort.Parse(address.Substring(1, 4), NumberStyles.HexNumber) + offset);
                     }
                     else if ("bc'de'hl'spixiypc".IndexOf(address.ToLower()) != -1)
                     {
@@ -434,11 +435,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                     }
                     else
                     {
-                        error = !ushort.TryParse(
-                                    variablesDataView.Rows[e.RowIndex].Cells[1].Value.ToString(),
-                                    System.Globalization.NumberStyles.HexNumber,
-                                    null,
-                                    out vartoadd.address);
+                        error = !ushort.TryParse(labelOrAddress, NumberStyles.HexNumber, null, out vartoadd.address);
                         if (variablesDataView.Rows[e.RowIndex].Cells[1].Value.ToString().Contains("gay"))
                         {
                             vartoadd.value = "Spencer is gayer";

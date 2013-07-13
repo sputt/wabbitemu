@@ -219,7 +219,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                 return;
             }
 
-            if (e.Label == String.Empty)
+            if (string.IsNullOrEmpty(e.Label))
             {
                 MessageBox.Show("You must enter a name!");
                 e.CancelEdit = true;

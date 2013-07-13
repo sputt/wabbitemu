@@ -37,7 +37,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
             if (data > 0x4000)
             {
-                List<string> possibles = debugger.SymbolTable.FindEntryByValue(data.ToString("X4"));
+                List<string> possibles = debugger.SymbolTable.GetLabelsFromAddress(data.ToString("X4"));
                 if (possibles.Count > 0)
                 {
                     foreach (string value in possibles)

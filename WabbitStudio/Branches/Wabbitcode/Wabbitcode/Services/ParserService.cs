@@ -502,7 +502,10 @@
                                 info.IncludeFilesList.Add(includeToAdd);
                             }
                         }
-
+                        if (lines[newCounter] == '\"')
+                        {
+                            newCounter++;
+                        }
                         counter = SkipToEOCL(lines, newCounter);
                     }
                 }
@@ -681,6 +684,7 @@
         {
             List<string> args = new List<string>();
             int newCounter;
+            int endCounter = FindEndParen(substring, counter);
             while (IsValidIndex(substring, counter) && substring[counter] != ')')
             {
                 counter = SkipWhitespace(substring, counter);
@@ -692,7 +696,7 @@
 
                 args.Add(substring.Substring(counter, newCounter - counter));
                 counter = FindChar(substring, newCounter, ',');
-                if (counter == -1)
+                if (counter == -1 || counter > endCounter)
                 {
                     return args;
                 }
@@ -703,6 +707,24 @@
             }
 
             return args;
+        }
+
+        private int FindEndParen(string substring, int counter)
+        {
+            int parenLevel = 0;
+            while (IsValidIndex(substring, counter) && !(substring[counter] == ')' && parenLevel == 0))
+            {
+                if (substring[counter] == '(')
+                {
+                    parenLevel++;
+                }
+                else if (substring[counter] == ')' && parenLevel != 0)
+                {
+                    parenLevel--;
+                }
+                counter++;
+            }
+            return counter--;
         }
 
         private bool IsValidIndex(string substring, int counter)
@@ -720,10 +742,18 @@
             while (IsValidIndex(substring, counter) && substring[counter] != '\n' && substring[counter] != '\r' &&
                    substring[counter] != commentChar && substring[counter] != endOfLineChar)
             {
+                if (substring[counter] == '\"')
+                {
+                    counter++;
+                    while (IsValidIndex(substring, counter) && substring[counter] != '\"')
+                    {
+                        counter++;
+                    }
+                }
                 counter++;
             }
 
-            if (IsValidIndex(substring, counter) && (substring[counter] == endOfLineChar ||
+            while (IsValidIndex(substring, counter) && (substring[counter] == endOfLineChar ||
                     substring[counter] == '\n' || substring[counter] == '\r'))
             {
                 counter++;

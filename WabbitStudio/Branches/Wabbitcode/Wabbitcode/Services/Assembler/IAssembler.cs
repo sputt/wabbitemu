@@ -9,6 +9,7 @@
         void AddIncludeDir(string path);
 
         string Assemble();
+        string Assemble(string code);
 
         void ClearDefines();
 

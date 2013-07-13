@@ -1,16 +1,16 @@
-﻿namespace Revsoft.Wabbitcode.Services
-{
-    using Revsoft.Wabbitcode.Properties;
-    using Revsoft.Wabbitcode.Services.Debugger;
-    using Revsoft.Wabbitcode.Services.Parser;
-    using System;
-    using System.Collections.Generic;
-    using System.Drawing;
-    using System.IO;
-    using System.Linq;
-    using System.Text;
-    using System.Windows.Forms;
+﻿using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services.Debugger;
+using Revsoft.Wabbitcode.Services.Parser;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
 
+namespace Revsoft.Wabbitcode.Services
+{
     public static class DocumentService
     {
         private static int debugIndex;
@@ -214,7 +214,7 @@
                 return false;
             }
             string fileName = saveFileDialog.FileName;
-            if (fileName == "")
+            if (string.IsNullOrEmpty(fileName))
             {
                 return false;
             }
@@ -302,7 +302,7 @@
                 {
                     return;
                 }
-                if (saveFileDialog.FileName == "")
+                if (string.IsNullOrEmpty(saveFileDialog.FileName))
                 {
                     return;
                 }

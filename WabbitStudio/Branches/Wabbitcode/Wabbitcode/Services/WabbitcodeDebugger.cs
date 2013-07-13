@@ -20,7 +20,7 @@ using WabbitemuLib;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    public class WabbitcodeDebugger : IWabbitcodeDebugger
+    public class WabbitcodeDebugger : IWabbitcodeDebugger, IDisposable
     {
         private byte appPage;
         private List<WabbitcodeBreakpoint> breakpoints = new List<WabbitcodeBreakpoint>();
@@ -30,10 +30,9 @@ namespace Revsoft.Wabbitcode.Services
         private bool isBreakpointed;
         private ushort oldSP = 0xFFFF;
         private bool showToolbar;
-        private BackgroundWorker staticLabelsParser = new BackgroundWorker();
-        private Thread stepThread;
-        private SymbolTableClass symTable;
+        private SymbolTable symTable;
         private Stack<int> stepStack = new Stack<int>();
+        private bool disposed = false;
 
         #region Public Properties
 
@@ -137,7 +136,7 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
-        public SymbolTableClass SymbolTable
+        public SymbolTable SymbolTable
         {
             get
             {
@@ -189,8 +188,9 @@ namespace Revsoft.Wabbitcode.Services
             this.breakpoints.Add(newBreakpoint);
         }
 
-        public void BreakpointHit(IBreakpoint breakEvent)
+        public void BreakpointHit(object sender, Debugger.BreakpointEventArgs e)
         {
+            IBreakpoint breakEvent = e.Breakpoint;
             ushort address = breakEvent.Address.Address;
             int page = breakEvent.Address.Page.Index;
             int relativePage = this.isAnApp ? this.appPage - page : page;
@@ -254,11 +254,8 @@ namespace Revsoft.Wabbitcode.Services
                         DocumentService.HighlightDebugLine(key.LineNumber);
                         this.isBreakpointed = true;
 
-                        // this reinitiates all the good stuff
-                        IntPtr calculatorHandle = DockingService.MainForm.Handle;
-
                         // switch to back to us
-                        NativeMethods.SetForegroundWindow(calculatorHandle);
+                        DockingService.MainForm.Activate();
                         DockingService.MainForm.UpdateDebugStuff();
                         this.UpdateStack();
                         DockingService.MainForm.UpdateTrackPanel();
@@ -365,19 +362,9 @@ namespace Revsoft.Wabbitcode.Services
             return this.FindBreakpoint(new WabbitcodeBreakpoint(file, lineNumber));
         }
 
-        IntPtr scan0 = Marshal.AllocHGlobal(128 * 64);
         public Image GetScreenImage()
         {
-            Marshal.Copy((byte[])this.debugger.LCD.Display, 0, scan0, 128 * 64);
-            Bitmap calcBitmap = new Bitmap(128, 64, 128, System.Drawing.Imaging.PixelFormat.Format8bppIndexed, scan0);
-            var palette = calcBitmap.Palette;
-            for (int i = 0; i < 255; i++)
-            {
-                palette.Entries[i] = Color.FromArgb(0x9e * (256 - i) / 255, (0xAB * (256 - i)) / 255, (0x88 * (256 - i)) / 255);
-            }
-
-            calcBitmap.Palette = palette;
-            return calcBitmap;
+            return debugger.GetScreenImage();
         }
 
         public void GotoAddress(ushort address)
@@ -640,12 +627,13 @@ namespace Revsoft.Wabbitcode.Services
                         possibleReference = possibleReference.ToUpper();
                     }
 
-                    if (!string.IsNullOrEmpty(possibleReference) && this.SymbolTable.StaticLabels.Contains(possibleReference))
+                    string address = this.SymbolTable.GetAddressFromLabel(possibleReference);
+                    if (!string.IsNullOrEmpty(possibleReference) && address != null)
                     {
                         TextMarker marker = new TextMarker(counter, newCounter - counter, TextMarkerType.Invisible)
                         {
                             Tag = "Static Label",
-                            ToolTip = this.SymbolTable.StaticLabels[possibleReference].ToString()
+                            ToolTip = address
                         };
 
                         markersToAdd.Add(marker);
@@ -762,7 +750,7 @@ namespace Revsoft.Wabbitcode.Services
             this.isAnApp = true;
             this.debugTable = new Dictionary<ListFileKey, ListFileValue>();
             this.ParseListFile(listFileText, fileName, Path.GetDirectoryName(fileName));
-            this.symTable = new SymbolTableClass();
+            this.symTable = new SymbolTable();
             this.symTable.ParseSymFile(symFileText);
             return createdName;
         }
@@ -874,6 +862,24 @@ namespace Revsoft.Wabbitcode.Services
                 List<TextMarker> markers = this.GetStaticLabels(text);
                 child.AddMarkers(markers);
             }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    debugger.Dispose();
+                }
+            }
+            disposed = true;
         }
     }
 }

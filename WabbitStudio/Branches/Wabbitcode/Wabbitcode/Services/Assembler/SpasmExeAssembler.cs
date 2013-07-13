@@ -4,6 +4,7 @@
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Text;
 
     public class SpasmExeAssembler : IAssembler
     {
@@ -11,11 +12,12 @@
 
         private bool caseSensitive;
         private List<KeyValuePair<string, string>> defines = new List<KeyValuePair<string, string>>();
-        private string flagsString = String.Empty;
+        private string flagsString = string.Empty;
         private List<string> includeDirs = new List<string>();
         private string inputFile;
         private string outputFile;
         private Process wabbitspasm;
+        private bool disposed = false;
 
         public SpasmExeAssembler()
         {
@@ -51,7 +53,8 @@
 
         public string Assemble()
         {
-            string includeDir = "-I ";
+            string output = string.Empty;   
+            string includeDir = this.includeDirs.Count > 0 ? "-I " : string.Empty;
             foreach (string dir in this.includeDirs)
             {
                 includeDir += quote + dir + quote + ";";
@@ -59,8 +62,35 @@
 
             string caseString = this.caseSensitive ? " -A " : " ";
             this.wabbitspasm.StartInfo.Arguments = includeDir + caseString + this.flagsString + quote + this.inputFile + quote + " " + quote + this.outputFile + quote;
+            this.wabbitspasm.OutputDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
+            this.wabbitspasm.ErrorDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
             this.wabbitspasm.Start();
-            return this.wabbitspasm.StandardOutput.ReadToEnd();
+            this.wabbitspasm.BeginOutputReadLine();
+            this.wabbitspasm.BeginErrorReadLine();
+            this.wabbitspasm.WaitForExit();
+
+            return output;
+        }
+
+        public string Assemble(string code)
+        {
+            string output = string.Empty;
+            string includeDir = this.includeDirs.Count > 0 ? "-I " : string.Empty;
+            foreach (string dir in this.includeDirs)
+            {
+                includeDir += quote + dir + quote + ";";
+            }
+
+            string caseString = this.caseSensitive ? " -A " : " ";
+            this.wabbitspasm.StartInfo.Arguments = includeDir + caseString + this.flagsString + quote + code + quote;
+            this.wabbitspasm.OutputDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
+            this.wabbitspasm.ErrorDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
+            this.wabbitspasm.Start();
+            this.wabbitspasm.BeginOutputReadLine();
+            this.wabbitspasm.BeginErrorReadLine();
+            this.wabbitspasm.WaitForExit();
+
+            return output;
         }
 
         public void ClearDefines()
@@ -75,7 +105,20 @@
 
         public void Dispose()
         {
-            this.wabbitspasm.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposed)
+            {
+                if (disposing)
+                {
+                    this.wabbitspasm.Dispose();
+                }
+            }
+            disposed = true;
         }
 
         public void SetCaseSensitive(bool caseSensitive)
@@ -85,6 +128,7 @@
 
         public void SetFlags(AssemblyFlags flags)
         {
+            this.flagsString = string.Empty;
             if ((flags & AssemblyFlags.CodeCounter) != 0)
             {
                 this.flagsString += "-C ";

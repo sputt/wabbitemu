@@ -9,11 +9,13 @@ using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Debugger;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -21,12 +23,8 @@ namespace Revsoft.Wabbitcode
 {
     public partial class MainFormRedone : Form
     {
-        private const int VK_LSHIFT = 0xA0;
-        private const int VK_RSHIFT = 0xA1;
-        private const int VK_SHIFT = 16;
-        private const int WM_KEYDOWN = 0x0100;
-
-        private readonly ArrayList errorsToAdd = new ArrayList();
+        private readonly List<ArrayList> errorsToAdd = new List<ArrayList>();
+        List<WabbitcodeBreakpoint> breakpointsToAdd = new List<WabbitcodeBreakpoint>();
 
         public delegate void DebuggingStarted(object sender, DebuggingEventArgs e);
         public event DebuggingStarted OnDebuggingStarted;
@@ -93,16 +91,6 @@ namespace Revsoft.Wabbitcode
             {
                 DockingService.ShowError("Error getting recent files", ex);
             }
-        }
-
-        public enum MODE
-        {
-            MODE_NORMAL = 1,
-            MODE_CODE_COUNTER = 2,
-            MODE_SYMTABLE = 4,
-            MODE_STATS = 8,
-            MODE_LIST = 16,
-            MODE_COMMANDLINE = 32
         }
 
         /*private bool editAndContinue()
@@ -271,9 +259,9 @@ namespace Revsoft.Wabbitcode
         /// <param name="size"></param>
         /// <param name="min"></param>
         /// <param name="max"></param>
-        public void UpdateCodeInfo(string size, string min, string max)
+        public void UpdateCodeInfo(CodeCountInfo info)
         {
-            lineCodeInfo.Text = "Min:" + min + " Max:" + max + " Size:" + size;
+            lineCodeInfo.Text = "Min:" + info.Min + " Max:" + info.Max + " Size:" + info.Size;
         }
 
         public void UpdateConfig()
@@ -464,6 +452,13 @@ namespace Revsoft.Wabbitcode
                             }
                         }
 
+                        this.Invoke(() =>
+                        {
+                            UpdateDebugStuff();
+                            UpdateBreakpoints();
+                            ShowDebugPanels();
+                        });
+
                         int counter = 0;
                         // apps key
                         debugger.SimulateKeyPress(Keys.B);
@@ -473,13 +468,6 @@ namespace Revsoft.Wabbitcode
                         }
 
                         debugger.SimulateKeyPress(Keys.Enter);
-
-                        this.Invoke(() =>
-                        {
-                            UpdateDebugStuff();
-                            UpdateBreakpoints();
-                            ShowDebugPanels();
-                        });
                     }
                 }
             });
@@ -505,40 +493,45 @@ namespace Revsoft.Wabbitcode
 
         internal void UpdateBreakpoints()
         {
-            foreach (NewEditor child in DockingService.Documents)
+            foreach (WabbitcodeBreakpoint breakpoint in breakpointsToAdd)
             {
-                Breakpoint[] marks = child.Breakpoints;
-                foreach (Breakpoint breakpoint in marks)
-                {
-                    WabbitcodeBreakpoint newBreakpoint = debugger.FindBreakpoint(child.FileName, breakpoint.LineNumber);
-                    ListFileValue value = debugger.GetListValue(child.FileName.ToLower(), breakpoint.LineNumber + 1);
-                    if (value != null && newBreakpoint != null)
-                    {
-                        newBreakpoint.Address = value.Address;
-                        newBreakpoint.IsRam = newBreakpoint.Address > 0x8000;
-                        if (debugger.IsAnApp && !newBreakpoint.IsRam)
-                        {
-                            newBreakpoint.Page = (byte)(debugger.AppPage - value.Page);
-                        }
-                        else
-                        {
-                            newBreakpoint.Page = value.Page;
-                        }
+                WabbitcodeBreakpoint newBreakpoint = breakpoint;
+                string fileName = newBreakpoint.file;
+                int lineNumber = newBreakpoint.lineNumber;
 
-                        newBreakpoint.file = child.FileName;
-                        newBreakpoint.lineNumber = breakpoint.LineNumber;
-                        debugger.SetBreakpoint(newBreakpoint);
+                ListFileValue value = debugger.GetListValue(fileName.ToLower(), lineNumber + 1);
+                if (debugger.FindBreakpoint(newBreakpoint) == null)
+                {
+                    debugger.AddBreakpoint(lineNumber, fileName);
+                }
+
+                if (value != null && newBreakpoint != null)
+                {
+                    newBreakpoint.Address = value.Address;
+                    newBreakpoint.IsRam = newBreakpoint.Address > 0x8000;
+                    if (debugger.IsAnApp && !newBreakpoint.IsRam)
+                    {
+                        newBreakpoint.Page = (byte)(debugger.AppPage - value.Page);
                     }
                     else
                     {
-                        child.RemoveBreakpoint(breakpoint.LineNumber);
+                        newBreakpoint.Page = value.Page;
+                    }
 
-                        // editorBox.Document.BreakpointManager.RemoveMark(breakpoint);
+                    newBreakpoint.file = fileName;
+                    newBreakpoint.lineNumber = lineNumber;
+                    debugger.SetBreakpoint(newBreakpoint);
+                }
+                else
+                {
+                    NewEditor openEditor = DockingService.Documents.SingleOrDefault(d => d.FileName == newBreakpoint.file);
+                    if (openEditor != null)
+                    {
+                        openEditor.RemoveBreakpoint(newBreakpoint.lineNumber);
                     }
                 }
-
-                child.CanSetNextStatement = true;
             }
+            DockingService.Documents.Any(d => ((NewEditor)d).CanSetNextStatement = true);
         }
 
         internal void UpdateDebugPanel()
@@ -640,29 +633,6 @@ namespace Revsoft.Wabbitcode
         internal void UpdateTrackPanel()
         {
             DockingService.TrackWindow.updateVars();
-        }
-
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            switch (msg.Msg)
-            {
-            case WM_KEYDOWN:
-                if ((int)msg.WParam == VK_SHIFT)
-                {
-                    if ((NativeMethods.GetKeyState(VK_LSHIFT) & 0xFF00) != 0)
-                    {
-                        msg.WParam = (IntPtr)VK_LSHIFT;
-                    }
-                    else
-                    {
-                        msg.WParam = (IntPtr)VK_RSHIFT;
-                    }
-                }
-
-                break;
-            }
-
-            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private static bool InvisibleMarkers(TextMarker marker)
@@ -915,7 +885,7 @@ namespace Revsoft.Wabbitcode
             }
 
             wabbitspasm.StartInfo.Arguments = "-V " + includedir + " " + text;
-            wabbitspasm.StartInfo.WorkingDirectory = originaldir == "" ? Application.StartupPath : originaldir;
+            wabbitspasm.StartInfo.WorkingDirectory = string.IsNullOrEmpty(originaldir) ? Application.StartupPath : originaldir;
             wabbitspasm.Start();
             string output = wabbitspasm.StandardOutput.ReadToEnd();
             errorsToAdd.Clear();
@@ -931,8 +901,8 @@ namespace Revsoft.Wabbitcode
                 int thirdColon = line.IndexOf(':', secondColon + 1);
                 int lineNum = Convert.ToInt32(line.Substring(firstColon + 1, secondColon - firstColon - 1));
                 string description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-                ArrayList listofattributes = new ArrayList { lineNum, description };
-                errorsToAdd.Add(listofattributes);
+                ArrayList listOfAttributes = new ArrayList { lineNum, description };
+                errorsToAdd.Add(listOfAttributes);
             }
         }
 
@@ -1930,9 +1900,10 @@ namespace Revsoft.Wabbitcode
             {
                 return string.Empty;
             }
-            if (debugger.SymbolTable.StaticLabels.Contains(text))
+            string address = debugger.SymbolTable.GetAddressFromLabel(text);
+            if (address != null)
             {
-                return debugger.SymbolTable.StaticLabels[text].ToString();
+                return address;
             }
             return string.Empty;
         }
@@ -1943,6 +1914,11 @@ namespace Revsoft.Wabbitcode
             {
                 debugger.RemoveBreakpoint(lineNumber, fileName);
             }
+            else
+            {
+                WabbitcodeBreakpoint newBreak = new WabbitcodeBreakpoint(fileName, lineNumber);
+                breakpointsToAdd.Remove(newBreak);
+            }
 
         }
 
@@ -1952,10 +1928,19 @@ namespace Revsoft.Wabbitcode
             {
                 debugger.AddBreakpoint(lineNumber, fileName);
             }
+            else
+            {
+                WabbitcodeBreakpoint newBreak = new WabbitcodeBreakpoint(fileName, lineNumber);
+                breakpointsToAdd.Add(newBreak);
+            }
         }
 
         internal void UpdateAssembledInfo(string fileName, int lineNumber)
         {
+            if (debugger == null)
+            {
+                return;
+            }
             ListFileValue label = debugger.GetListValue(fileName, lineNumber);
             if (label != null)
             {

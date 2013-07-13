@@ -4,6 +4,7 @@
     using Revsoft.Wabbitcode.Properties;
     using Revsoft.Wabbitcode.Services;
     using System;
+    using System.Threading.Tasks;
     using System.Windows.Forms;
 
     internal static class Program
@@ -34,16 +35,19 @@
             HighlightingClass.MakeHighlightingFile();
             try
             {
-                if (UpdateService.CheckForUpdate())
+                Task updateTask = Task.Factory.StartNew(() =>
                 {
-                    var result = MessageBox.Show("New version available. Download now?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
-                    if (result == System.Windows.Forms.DialogResult.Yes)
+                    if (UpdateService.CheckForUpdate())
                     {
-                        UpdateService.StartUpdater();
-                        Application.Exit();
-                        return;
+                        var result = MessageBox.Show("New version available. Download now?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+                        if (result == System.Windows.Forms.DialogResult.Yes)
+                        {
+                            UpdateService.StartUpdater();
+                            Application.Exit();
+                            return;
+                        }
                     }
-                }
+                });
             }
             catch (Exception ex)
             {

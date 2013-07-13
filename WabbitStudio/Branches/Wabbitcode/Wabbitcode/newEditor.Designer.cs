@@ -17,9 +17,13 @@ namespace Revsoft.Wabbitcode
 				if (components != null)
 				{
 					components.Dispose();
+                    codeCheckerCancellationSource.Dispose();
+                    codeLinesCancellationSource.Dispose();
+                    errorBitmap.Dispose();
+                    warningBitmap.Dispose();
 				}
 			}
-			base.Dispose(disposing);
+            base.Dispose(disposing);
 		}
 
 		#region Windows Form Designer generated code
@@ -262,8 +266,7 @@ namespace Revsoft.Wabbitcode
 			this.TabPageContextMenu = this.contextMenu1;
 			this.TabText = "";
 			this.Text = "frmDocument";
-			this.Closing += new System.ComponentModel.CancelEventHandler(this.FormClosing);
-			this.Closed += new System.EventHandler(this.FormClosed);
+			this.Closing += new System.ComponentModel.CancelEventHandler(this.newEditor_FormClosing);
 			this.DragDrop += new System.Windows.Forms.DragEventHandler(this.newEditor_DragDrop);
 			this.DragEnter += new System.Windows.Forms.DragEventHandler(this.newEditor_DragEnter);
 			this.ResumeLayout(false);

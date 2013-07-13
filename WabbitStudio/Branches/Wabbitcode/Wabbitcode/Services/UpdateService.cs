@@ -12,21 +12,15 @@
     {
         private const string hostname = "http://buckeyedude.zapto.org/Revsoft/Wabbitcode/";
 
-        private static bool updating;
+        private static object updatingLock = new object();
 
         public static bool CheckForUpdate()
         {
-            if (updating)
+            lock (updatingLock)
             {
-                throw new Exception("Already updating");
+                UpdateState state = CheckForNewerVersion();
+                return state.IsNewerVersion;
             }
-
-            updating = true;
-            var state = new UpdateState();
-            ThreadPool.QueueUserWorkItem(CheckForNewerVersion, state);
-            state.eventWaitHandle.WaitOne();
-            updating = false;
-            return state.IsNewerVersion;
         }
 
         public static void StartUpdater()
@@ -47,9 +41,9 @@
             Application.Exit();
         }
 
-        private static void CheckForNewerVersion(Object state)
+        private static UpdateState CheckForNewerVersion()
         {
-            UpdateState updateState = state as UpdateState;
+            UpdateState updateState = null;
             Version curVersion =  Assembly.GetExecutingAssembly().GetName().Version;
             WebClient Client = null;
             StreamReader sr = null;
@@ -57,12 +51,11 @@
             {
                 Client = new WebClient();
                 Version newVer = new Version(Client.DownloadString(String.Format("{0}WabbitcodeVersion.txt", hostname)));
-                updateState.IsNewerVersion = curVersion.CompareTo(newVer) < 0;
-                updateState.NewerVersion = newVer;
+                updateState = new UpdateState(curVersion.CompareTo(newVer) < 0, newVer);
             }
             catch (WebException)
             {
-                return;
+                return new UpdateState(false, null);
             }
             catch (Exception ex)
             {
@@ -79,16 +72,20 @@
                 {
                     sr.Close();
                 }
-
-                updateState.eventWaitHandle.Set(); // signal we're done
             }
+            return updateState;
         }
 
         public sealed class UpdateState
         {
-            public EventWaitHandle eventWaitHandle = new ManualResetEvent(false);
-            public bool IsNewerVersion;
-            public Version NewerVersion;
+            public bool IsNewerVersion { get; private set; }
+            public Version NewestVersion { get; private set; }
+
+            public UpdateState(bool isNewerVersion, Version newestVersion)
+            {
+                IsNewerVersion = isNewerVersion;
+                NewestVersion = newestVersion;
+            }
         }
     }
 }

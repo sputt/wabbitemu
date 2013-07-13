@@ -53,6 +53,11 @@
             throw new NotImplementedException();
         }
 
+        public string Assemble(string code)
+        {
+            throw new NotImplementedException();
+        }
+
         public void ClearDefines()
         {
             throw new NotImplementedException();
