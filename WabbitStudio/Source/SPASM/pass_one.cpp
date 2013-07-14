@@ -474,6 +474,12 @@ char *handle_opcode_or_macro (char *ptr) {
 					curr_input_file = (char *) old_filename;
 					line_num = old_line_num;
 
+					if ((mode & MODE_LIST) && listing_on && curr_input_file != old_filename) {
+						char include_banner[MAX_PATH + 64];
+						snprintf(include_banner, sizeof (include_banner), "Listing for file \"%s\"" NEWLINE, curr_input_file);
+						listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
+					}
+
 					if (IsSPASMErrorSessionFatal(session))
 					{
 						AddSPASMErrorSessionAnnotation(session, "Error during invocation of macro '%s'", define->name);

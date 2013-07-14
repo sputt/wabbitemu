@@ -20,6 +20,10 @@
     <Filter Include="IDL Files">
       <UniqueIdentifier>{e4a84b9a-4629-4f9b-817e-776daf4c2553}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Test Files">
+      <UniqueIdentifier>{d97024e2-4364-4c9c-89e3-b6270d2abe69}</UniqueIdentifier>
+      <SourceControlFiles>False</SourceControlFiles>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -83,9 +87,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Z80Label.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="trie.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="modp_ascii.cpp">
@@ -181,6 +182,18 @@
     </None>
     <None Include="Makefile">
       <Filter>Source Files</Filter>
+    </None>
+    <None Include="Test.vbs">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="test.z80">
+      <Filter>Test Files</Filter>
+    </None>
+    <None Include="commands.inc">
+      <Filter>Test Files</Filter>
+    </None>
+    <None Include="test.lst">
+      <Filter>Generated Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

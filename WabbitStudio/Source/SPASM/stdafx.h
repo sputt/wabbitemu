@@ -28,6 +28,8 @@
 
 using namespace ATL;
 
+
+
 #include <comutil.h>
 
 #include <windows.h>
@@ -49,7 +51,12 @@ using namespace ATL;
 #include <strsafe.h>
 #include <assert.h>
 
+#include <comutil.h>
 #include <comdef.h>
+
+#import <scrrun.dll> rename("FreeSpace", "FreeSpace2") no_namespace
+
+#include "SPASM_h.h"
 
 #include "gmp.h"
 #else
