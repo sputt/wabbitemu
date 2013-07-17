@@ -26,7 +26,8 @@ char *match_opcode_args (char *ptr, char **arg_ptrs, char **arg_end_ptrs, opcode
 void write_instruction_data (instr *curr_instr, char **arg_ptrs, char **arg_end_ptrs);
 
 int listing_width;
-
+const char *last_banner = NULL;
+const char *built_in_fcreate = "Built-in fcreate";
 
 /*
  * Writes val to the output
@@ -355,9 +356,10 @@ char *handle_opcode_or_macro (char *ptr) {
 				if (mode & MODE_LIST && listing_on && !listing_for_line_done)
 					do_listing_for_line (skip_to_next_line (line_start));
 
-				if (mode & MODE_LIST && listing_on) {
+				if (mode & MODE_LIST && listing_on && last_banner != built_in_fcreate) {
 					char include_banner[128] = "Listing for built-in fcreate" NEWLINE;
 					listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
+					last_banner = built_in_fcreate;
 				}
 
 				// Thanks for this Don
@@ -366,7 +368,7 @@ char *handle_opcode_or_macro (char *ptr) {
 				int old_in_macro = in_macro;
 				char *old_line_start = line_start;
 				int old_old_line_num = old_line_num;
-				curr_input_file = "Built-in fcreate";
+				curr_input_file = (char *) built_in_fcreate;
 
 				int session = StartSPASMErrorSession();
 
@@ -381,10 +383,11 @@ char *handle_opcode_or_macro (char *ptr) {
 				if (mode & MODE_LIST && listing_on && !listing_for_line_done)
 					listing_for_line_done = true;
 
-				if (mode & MODE_LIST && listing_on) {
+				if (mode & MODE_LIST && listing_on && last_banner != curr_input_file) {
 					char include_banner[MAX_PATH + 64];
 					snprintf(include_banner, sizeof (include_banner), "Listing for file \"%s\"" NEWLINE, curr_input_file);
 					listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
+					last_banner = curr_input_file;
 				}
 
 				free(fcreate_string);
@@ -471,14 +474,23 @@ char *handle_opcode_or_macro (char *ptr) {
 						line_num++;
 					}
 
+
+
+					if ((mode & MODE_LIST) && listing_on && last_banner != old_filename) {
+						if (mode & MODE_LIST && listing_on && !listing_for_line_done)
+							do_listing_for_line (skip_to_next_line (line_start) );
+
+						listing_for_line_done = true;
+
+						char include_banner[MAX_PATH + 64];
+						snprintf(include_banner, sizeof (include_banner), "Listing for file \"%s\"" NEWLINE, old_filename);
+						listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
+						last_banner = old_filename;
+					}
+
 					curr_input_file = (char *) old_filename;
 					line_num = old_line_num;
 
-					if ((mode & MODE_LIST) && listing_on && curr_input_file != old_filename) {
-						char include_banner[MAX_PATH + 64];
-						snprintf(include_banner, sizeof (include_banner), "Listing for file \"%s\"" NEWLINE, curr_input_file);
-						listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
-					}
 
 					if (IsSPASMErrorSessionFatal(session))
 					{
