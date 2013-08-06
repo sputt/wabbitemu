@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
-using System.IO;
-using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 
-namespace Revsoft.Wabbitcode.Services
+namespace Revsoft.Wabbitcode.Services.Interface
 {
 	public interface IProjectService : IService
 	{

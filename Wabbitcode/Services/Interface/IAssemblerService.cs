@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 using Revsoft.Wabbitcode.Services.Assembler;
-using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
 
-namespace Revsoft.Wabbitcode.Services
+namespace Revsoft.Wabbitcode.Services.Interface
 {
 	public interface IAssemblerService : IService
 	{

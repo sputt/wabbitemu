@@ -2,6 +2,7 @@
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.Collections.Generic;

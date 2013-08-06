@@ -605,6 +605,7 @@
       <DependentUpon>BuildSteps.cs</DependentUpon>
     </Compile>
     <Compile Include="Editor\CodeCompletion.cs" />
+    <Compile Include="Editor\EditorSelectionEventArgs.cs" />
     <Compile Include="Editor\EditorEventArgs.cs" />
     <Compile Include="Editor\RegionFoldingStrategy.cs" />
     <Compile Include="Resources\Resource.cs" />
@@ -620,6 +621,7 @@
     <Compile Include="Services\Interface\IAssemblerService.cs" />
     <Compile Include="Services\Interface\IBackgroundAssemblerService.cs" />
     <Compile Include="Services\Interface\IDockingService.cs" />
+    <Compile Include="Services\Interface\IDocumentService.cs" />
     <Compile Include="Services\Interface\IParserService.cs" />
     <Compile Include="Services\Interface\IProjectService.cs" />
     <Compile Include="Services\Interface\ISymbolService.cs" />
@@ -674,7 +676,7 @@
     <Compile Include="Services\SymbolService.cs" />
     <Compile Include="Services\WabbitcodeDebugger.cs" />
     <Compile Include="Utils\ErrorsClass.cs" />
-    <Compile Include="Utils\HighlightingClass.cs" />
+    <Compile Include="Utils\HighlightingUtils.cs" />
     <Compile Include="Services\Parser\Equate.cs" />
     <Compile Include="Services\Parser\Define.cs" />
     <Compile Include="Services\Parser\IDefine.cs" />

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml;
+using Revsoft.Wabbitcode.Services.Interface;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {

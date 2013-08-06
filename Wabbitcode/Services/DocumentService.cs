@@ -1,5 +1,7 @@
 ﻿using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -7,31 +9,32 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services
 {
 	[ServiceDependency(typeof(IDockingService))]
 	[ServiceDependency(typeof(IBackgroundAssemblerService))]
-	public static class DocumentService
+	[ServiceDependency(typeof(ISymbolService))]
+	public class DocumentService : IDocumentService
 	{
-		private static int _debugIndex;
-		private static readonly List<DocumentLocation> Highlights = new List<DocumentLocation>();
-		private static int _recentFileIndex;
-		private static IDockingService _dockingService;
-		private static IBackgroundAssemblerService _backgroundAssemblerService;
+		private int _debugIndex;
+		private readonly List<DocumentLocation> _highlights = new List<DocumentLocation>();
+		private int _recentFileIndex;
+		private readonly IDockingService _dockingService;
+		private readonly IBackgroundAssemblerService _backgroundAssemblerService;
+		private readonly ISymbolService _symbolService;
 
 		/// <summary>
 		/// Each string is the path to a recently opened file. Is also stored in properties as a big long string.
 		/// </summary>
-		private static readonly string[] RecentFileList = new string[10];
+		private readonly string[] _recentFileList = new string[10];
 
 		public enum FixableErrorType
 		{
 			RelativeJump,
 		}
 
-		public static NewEditor ActiveDocument
+		public NewEditor ActiveDocument
 		{
 			get
 			{
@@ -39,42 +42,32 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		public static string ActiveFileName
+		public string ActiveFileName
 		{
 			get
 			{
-				if (ActiveDocument == null)
-				{
-					return null;
-				}
-				return ActiveDocument.FileName;
+				return ActiveDocument == null ? null : ActiveDocument.FileName;
 			}
 		}
 
-		public static bool InternalSave
+		public bool InternalSave
 		{
 			get;
 			set;
 		}
 
-		public static void SetServices(IDockingService dockingService, IBackgroundAssemblerService backgroundAssemblerService)
+		public NewEditor CreateNewDocument()
 		{
-			_dockingService = dockingService;
-			_backgroundAssemblerService = backgroundAssemblerService;
-		}
-
-		public static NewEditor CreateNewDocument()
-		{
-			NewEditor doc = new NewEditor(_dockingService, _backgroundAssemblerService)
+			NewEditor doc = new NewEditor(_backgroundAssemblerService, _dockingService, this, _symbolService)
 			{
-				Text = "New Document", 
+				Text = "New Document",
 				TabText = "New Document"
 			};
 			doc.SetHighlighting("Z80 Assembly");
 			return doc;
 		}
 
-		public static NewEditor GotoFile(string file)
+		public NewEditor GotoFile(string file)
 		{
 			NewEditor editorBox = ActiveDocument;
 			if (editorBox == null)
@@ -97,7 +90,7 @@ namespace Revsoft.Wabbitcode.Services
 			return OpenDocument(file);
 		}
 
-		public static void GotoLabel(IParserData item)
+		public void GotoLabel(IParserData item)
 		{
 			ParserInformation info = item.Parent;
 			string file = info.SourceFile;
@@ -105,52 +98,52 @@ namespace Revsoft.Wabbitcode.Services
 			child.ScrollToOffset(item.Location.Offset);
 		}
 
-		public static void GotoLine(int line)
+		public void GotoLine(int line)
 		{
 			ActiveDocument.ScrollToLine(line);
 			// fix for 0 indexed
 			ActiveDocument.SetCaretPosition(0, line - 1);
 		}
 
-		public static void GotoLine(string file, int scrollToLine)
+		public void GotoLine(string file, int scrollToLine)
 		{
 			NewEditor child = GotoFile(file);
 			child.ScrollToLine(scrollToLine);
 		}
 
-		public static void HighlightDebugLine(int newLineNumber)
+		public void HighlightDebugLine(int newLineNumber)
 		{
 			HighlightLine(newLineNumber, Color.Yellow);
-			_debugIndex = Highlights.Count - 1;
+			_debugIndex = _highlights.Count - 1;
 		}
 
-		private static void HighlightLine(int newLineNumber, Color foregroundColor)
+		private void HighlightLine(int newLineNumber, Color foregroundColor)
 		{
 			DocumentLocation value = new DocumentLocation(ActiveFileName, newLineNumber);
-			Highlights.Add(value);
+			_highlights.Add(value);
 			ActiveDocument.HighlightLine(newLineNumber, foregroundColor);
 		}
 
-		public static void RemoveDebugHighlight()
+		public void RemoveDebugHighlight()
 		{
-			if (ActiveDocument == null || Highlights.Count == 0 || _debugIndex < 0)
+			if (ActiveDocument == null || _highlights.Count == 0 || _debugIndex < 0)
 			{
 				return;
 			}
-			DocumentLocation key = Highlights[_debugIndex];
+			DocumentLocation key = _highlights[_debugIndex];
 			GotoFile(key.FileName).RemoveDebugHighlight(key.LineNumber);
-			Highlights.Remove(key);
+			_highlights.Remove(key);
 		}
 
-		private static void RemoveHighlight(int index)
+		private void RemoveHighlight(int index)
 		{
-			if (ActiveDocument == null || Highlights.Count == 0)
+			if (ActiveDocument == null || _highlights.Count == 0)
 			{
 				return;
 			}
-			DocumentLocation key = Highlights[index];
+			DocumentLocation key = _highlights[index];
 			GotoFile(key.FileName).RemoveHighlight(key.LineNumber);
-			Highlights.Remove(key);
+			_highlights.Remove(key);
 			if (index <= _debugIndex)
 			{
 				_debugIndex--;
@@ -160,7 +153,7 @@ namespace Revsoft.Wabbitcode.Services
 		/// <summary>
 		/// Save active document
 		/// </summary>
-		public static void SaveDocument()
+		public void SaveDocument()
 		{
 			if (ActiveDocument == null)
 			{
@@ -173,7 +166,7 @@ namespace Revsoft.Wabbitcode.Services
 		/// Save document as dialog. Also called if doc has never been saved.
 		/// </summary>
 		/// <returns></returns>
-		public static void SaveDocumentAs()
+		public void SaveDocumentAs()
 		{
 			if (ActiveDocument == null)
 			{
@@ -207,7 +200,7 @@ namespace Revsoft.Wabbitcode.Services
 		/// <summary>
 		/// This loads the recent file list from Properties and adds it to the recent file menu.
 		/// </summary>
-		internal static void GetRecentFiles()
+		public void GetRecentFiles()
 		{
 			_dockingService.MainForm.ClearRecentItems();
 			string line = Settings.Default.recentFiles;
@@ -218,24 +211,24 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		internal static void GotoCurrentDebugLine()
+		public void GotoCurrentDebugLine()
 		{
-			GotoFile(Highlights[_debugIndex].FileName);
+			GotoFile(_highlights[_debugIndex].FileName);
 		}
 
-		internal static void HighlightCall()
+		public void HighlightCall()
 		{
-			GotoFile(Highlights[_debugIndex].FileName).HighlightCall(Highlights[_debugIndex].LineNumber);
+			GotoFile(_highlights[_debugIndex].FileName).HighlightCall(_highlights[_debugIndex].LineNumber);
 		}
 
-		internal static NewEditor OpenDocument(string filename)
+		public NewEditor OpenDocument(string filename)
 		{
-			NewEditor doc = new NewEditor(_dockingService, _backgroundAssemblerService);
+			NewEditor doc = new NewEditor(_backgroundAssemblerService, _dockingService, this, _symbolService);
 			OpenDocument(doc, filename);
 			return doc;
 		}
 
-		internal static void OpenDocument(NewEditor doc, string filename)
+		public void OpenDocument(NewEditor doc, string filename)
 		{
 			doc.Text = Path.GetFileName(filename);
 			doc.TabText = Path.GetFileName(filename);
@@ -248,7 +241,7 @@ namespace Revsoft.Wabbitcode.Services
 			_dockingService.ShowDockPanel(doc);
 		}
 
-		internal static void SaveDocument(NewEditor doc)
+		public void SaveDocument(NewEditor doc)
 		{
 			SaveFileDialog saveFileDialog = new SaveFileDialog
 			{
@@ -290,31 +283,54 @@ namespace Revsoft.Wabbitcode.Services
 		/// Adds a string to the recent file list
 		/// </summary>
 		/// <param name="filename">Full path of the file to save to the list</param>
-		private static void AddRecentFile(string filename)
+		private void AddRecentFile(string filename)
 		{
-			if (!RecentFileList.Contains(filename))
+			if (!_recentFileList.Contains(filename))
 			{
-				if (_recentFileIndex == RecentFileList.Length)
+				if (_recentFileIndex == _recentFileList.Length)
 				{
-					Array.ConstrainedCopy(RecentFileList, 1, RecentFileList, 0, RecentFileList.Length - 1);
+					Array.ConstrainedCopy(_recentFileList, 1, _recentFileList, 0, _recentFileList.Length - 1);
 					_recentFileIndex--;
 				}
 
-				RecentFileList[_recentFileIndex++] = filename;
+				_recentFileList[_recentFileIndex++] = filename;
 			}
 		}
 
 		/// <summary>
 		/// This takes the string array of recent files, joins them into a large string and saves it in Properties.
 		/// </summary>
-		private static void SaveRecentFileList()
+		private void SaveRecentFileList()
 		{
 			StringBuilder list = new StringBuilder();
-			foreach (string file in RecentFileList)
+			foreach (string file in _recentFileList)
 			{
 				list.Append(file + "\n");
 			}
 			Settings.Default.recentFiles = list.ToString();
 		}
+
+		#region IService
+
+		public void InitService(params object[] objects)
+		{
+
+		}
+
+		public void DestroyService()
+		{
+
+		}
+
+		public DocumentService(IBackgroundAssemblerService backgroundAssemblerService,
+			IDockingService dockingService,
+			ISymbolService symbolService)
+		{
+			_backgroundAssemblerService = backgroundAssemblerService;
+			_dockingService = dockingService;
+			_symbolService = symbolService;
+		}
+
+		#endregion
 	}
 }

@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services.Interface;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {

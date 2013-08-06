@@ -1,8 +1,7 @@
 ﻿using System.Collections.Generic;
-using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
 
-namespace Revsoft.Wabbitcode.Services
+namespace Revsoft.Wabbitcode.Services.Interface
 {
 	public interface IParserService : IService
 	{

@@ -1,6 +1,4 @@
-﻿using Revsoft.Wabbitcode.Services.Interface;
-
-namespace Revsoft.Wabbitcode.Services
+﻿namespace Revsoft.Wabbitcode.Services.Interface
 {
 	public interface IBackgroundAssemblerService : IService
 	{

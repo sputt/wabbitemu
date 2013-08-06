@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Revsoft.Wabbitcode.Services.Assembler;
+using Revsoft.Wabbitcode.Services.Interface;
 
 namespace Revsoft.Wabbitcode.Services
 {

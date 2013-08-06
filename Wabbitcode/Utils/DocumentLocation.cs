@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Revsoft.Wabbitcode.Utils
+﻿namespace Revsoft.Wabbitcode.Utils
 {
 	public class DocumentLocation
 	{
@@ -14,6 +9,31 @@ namespace Revsoft.Wabbitcode.Utils
 		{
 			FileName = fileName;
 			LineNumber = lineNumber;
+		}
+
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj))
+			{
+				return false;
+			}
+
+			if (ReferenceEquals(this, obj))
+			{
+				return true;
+			}
+
+			return obj.GetType() == GetType() && Equals((DocumentLocation) obj);
+		}
+
+		private bool Equals(DocumentLocation other)
+		{
+			return string.Equals(FileName, other.FileName) && LineNumber == other.LineNumber;
+		}
+
+		public override int GetHashCode()
+		{
+			return ((FileName != null ? FileName.GetHashCode() : 0) * 397) ^ LineNumber;
 		}
 	}
 }

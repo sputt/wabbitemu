@@ -1,4 +1,4 @@
-﻿using Revsoft.Wabbitcode.Services;
+﻿using Revsoft.Wabbitcode.Services.Interface;
 using System;
 using System.Drawing;
 
@@ -7,10 +7,14 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 {
 	public partial class OutputWindow : ToolWindow
 	{
-		public OutputWindow(IDockingService dockingService)
+		private readonly IDocumentService _documentService;
+		public OutputWindow(IDockingService dockingService, IDocumentService documentService)
 			: base(dockingService)
 		{
 			InitializeComponent();
+
+			_documentService = documentService;
+
 			outputWindowBox.ContextMenu = contextMenu1;
 		}
 
@@ -96,7 +100,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			int scrollToLine;
 			if (int.TryParse(realLine, out scrollToLine))
 			{
-				DocumentService.GotoLine(file, scrollToLine);
+				_documentService.GotoLine(file, scrollToLine);
 			}
 		}
 

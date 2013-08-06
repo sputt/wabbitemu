@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Revsoft.Wabbitcode.Docking_Windows;
-using Revsoft.Wabbitcode.Services.Interface;
 using WeifenLuo.WinFormsUI.Docking;
 
-namespace Revsoft.Wabbitcode.Services
+namespace Revsoft.Wabbitcode.Services.Interface
 {
 	public interface IDockingService : IService
 	{

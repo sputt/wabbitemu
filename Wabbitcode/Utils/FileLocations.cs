@@ -21,11 +21,9 @@ namespace Revsoft.Wabbitcode.Utils
 		{
 			get
 			{
-				if (Settings.Default.createFolders)
-				{
-					return Path.Combine(WabbitcodeFolder, "Includes");
-				}
-				return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Includes");
+				return Path.Combine(Settings.Default.createFolders ? 
+					WabbitcodeFolder : 
+					Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Includes");
 			}
 		}
 
@@ -33,11 +31,9 @@ namespace Revsoft.Wabbitcode.Utils
 		{
 			get
 			{
-				if (Settings.Default.createFolders)
-				{
-					return Path.Combine(WabbitcodeFolder, "Projects");
-				}
-				return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Templates");
+				return Settings.Default.createFolders ? 
+					Path.Combine(WabbitcodeFolder, "Projects") : 
+					Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Templates");
 			}
 		}
 
@@ -53,11 +49,9 @@ namespace Revsoft.Wabbitcode.Utils
 		{
 			get
 			{
-				if (Settings.Default.createFolders)
-				{
-					return Path.Combine(WabbitcodeFolder, "Templates");
-				}
-				return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Templates");
+				return Path.Combine(Settings.Default.createFolders ?
+					WabbitcodeFolder :
+					Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Templates");
 			}
 		}
 

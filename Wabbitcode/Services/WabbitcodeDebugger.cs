@@ -1,6 +1,9 @@
 ﻿using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Services.Debugger;
+using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Services.Symbols;
+using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -8,8 +11,6 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Services.Symbols;
-using Revsoft.Wabbitcode.Utils;
 using WabbitemuLib;
 
 namespace Revsoft.Wabbitcode.Services
@@ -26,6 +27,7 @@ namespace Revsoft.Wabbitcode.Services
 		private IBreakpoint _stepOverBreakpoint;
 		private int _stepOverLineNumber;
 		private readonly ISymbolService _symbolService;
+		private readonly IDocumentService _documentService;
 
 		#region Public Properties
 
@@ -103,10 +105,12 @@ namespace Revsoft.Wabbitcode.Services
 
 		#endregion
 
-		public WabbitcodeDebugger(ISymbolService symbolService)
+		public WabbitcodeDebugger(IDocumentService documentService, ISymbolService symbolService)
 		{
 			_disposed = false;
 			_isBreakpointed = false;
+
+			_documentService = documentService;
 			_symbolService = symbolService;
 		}
 
@@ -114,7 +118,7 @@ namespace Revsoft.Wabbitcode.Services
 		public void AddBreakpoint(int lineNumber, string fileName)
 		{
 			WabbitcodeBreakpoint newBreakpoint = new WabbitcodeBreakpoint();
-			
+
 			CalcLocation value = _symbolService.ListTable.GetCalcLocation(fileName, lineNumber);
 			if (value == null)
 			{
@@ -249,7 +253,7 @@ namespace Revsoft.Wabbitcode.Services
 				return;
 			}
 
-			DocumentService.GotoLine(key.FileName, key.LineNumber);
+			_documentService.GotoLine(key.FileName, key.LineNumber);
 		}
 
 		public bool IsBreakpointPossible(int lineNumber, string fileName)
@@ -302,7 +306,7 @@ namespace Revsoft.Wabbitcode.Services
 		public void Step()
 		{
 			_isBreakpointed = false;
-//			DocumentService.HighlightCall();
+			//			DocumentService.HighlightCall();
 			// need to clear the old breakpoint so lets save it
 			ushort currentPC = _debugger.CPU.PC;
 			byte oldPage = GetPageNum(currentPC);
@@ -335,7 +339,7 @@ namespace Revsoft.Wabbitcode.Services
 		public void StepOver()
 		{
 			_isBreakpointed = false;
-			DocumentService.HighlightCall();
+			_documentService.HighlightCall();
 			// need to clear the old breakpoint so lets save it
 			ushort currentPC = _debugger.CPU.PC;
 			byte oldPage = GetPageNum(currentPC);
@@ -392,7 +396,7 @@ namespace Revsoft.Wabbitcode.Services
 			}
 			CalcLocation value = _symbolService.ListTable.GetCalcLocation(key.FileName, _stepOverLineNumber);
 			bool isRam = value.Address >= 0x8000;
-			byte page = (byte) (isRam ? value.Page : AppPage - value.Page);
+			byte page = (byte)(isRam ? value.Page : AppPage - value.Page);
 			_stepOverBreakpoint = _debugger.SetBreakpoint(isRam, page, value.Address);
 			_debugger.OnBreakpoint += StepOverBreakpointEvent;
 

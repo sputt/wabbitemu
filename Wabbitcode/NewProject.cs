@@ -1,24 +1,28 @@
-﻿using System.Linq;
-using Revsoft.Wabbitcode.Extensions;
+﻿using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Utils;
 using System;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 using System.Xml;
-using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode
 {
 	public partial class NewProjectDialog
 	{
 		private bool _cancelQuit;
-		private readonly IProjectService _projectService;
 		private readonly IDockingService _dockingService;
+		private readonly IDocumentService _documentService;
+		private readonly IProjectService _projectService;
 
-		public NewProjectDialog(IDockingService dockingService, IProjectService projectService)
+		public NewProjectDialog(IDockingService dockingService, IDocumentService documentService,
+			IProjectService projectService)
 		{
 			_dockingService = dockingService;
+			_documentService = documentService;
 			_projectService = projectService;
 
 			InitializeComponent();
@@ -140,7 +144,8 @@ namespace Revsoft.Wabbitcode
 			tabControl.TabPages.Add(page);
 			ListBox box = new ListBox
 			{
-				Name = "templatesBox", Dock = DockStyle.Fill
+				Name = "templatesBox",
+				Dock = DockStyle.Fill
 			};
 			while (reader.Read())
 			{
@@ -160,8 +165,10 @@ namespace Revsoft.Wabbitcode
 					var file = reader.Value;
 					box.Items.Add(new ListBoxItem
 					{
-						Text = templateName, File = Path.Combine(
-							Path.Combine(FileLocations.TemplatesDir, modelName), file), Ext = ext
+						Text = templateName,
+						File = Path.Combine(
+							Path.Combine(FileLocations.TemplatesDir, modelName), file),
+						Ext = ext
 					});
 				}
 			}
@@ -230,7 +237,6 @@ namespace Revsoft.Wabbitcode
 					{
 						if (MessageBox.Show("'" + projectName + ".asm'  already exists. Overwrite?", "Error", MessageBoxButtons.YesNo,
 								MessageBoxIcon.None) == DialogResult.Yes)
-
 						{
 							File.Copy(item.File, mainFile, true);
 						}
@@ -238,7 +244,7 @@ namespace Revsoft.Wabbitcode
 				}
 
 				_projectService.AddFile(folder, mainFile);
-				DocumentService.OpenDocument(mainFile);
+				_documentService.OpenDocument(mainFile);
 			}
 
 			_projectService.Project.IncludeDirs.Add(FileLocations.IncludesDir);
@@ -267,9 +273,9 @@ namespace Revsoft.Wabbitcode
 			{
 				switch (reader.Name)
 				{
-				case "model":
-					HandleModelNode(ref reader);
-					break;
+					case "model":
+						HandleModelNode(ref reader);
+						break;
 				}
 			}
 		}

@@ -1,4 +1,5 @@
 ﻿using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
 using System;
 using System.Collections.Generic;

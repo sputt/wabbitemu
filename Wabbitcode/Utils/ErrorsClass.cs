@@ -1,16 +1,16 @@
 ﻿using System.Windows.Forms;
 
-namespace Revsoft.Wabbitcode.Classes
+namespace Revsoft.Wabbitcode.Utils
 {
     public class Errors
     {
         public Errors(string file, int lineNum, string description, bool isWarning)
         {
-            this.File = file;
-            this.LineNum = lineNum;
-            this.Description = description;
-            this.IsWarning = isWarning;
-            ToolTip = new ToolTip()
+            File = file;
+            LineNum = lineNum;
+            Description = description;
+            IsWarning = isWarning;
+            ToolTip = new ToolTip
             {
                 ToolTipTitle = description
             };

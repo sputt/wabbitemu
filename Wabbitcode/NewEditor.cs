@@ -4,10 +4,12 @@ using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Classes;
+using Revsoft.Wabbitcode.Editor;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
+using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
 using System;
 using System.Collections.Generic;
@@ -40,8 +42,10 @@ namespace Revsoft.Wabbitcode
 		private readonly List<CancellationTokenSource> _queuedFiles = new List<CancellationTokenSource>();
 		private CancellationTokenSource _highlightRefsCancellationTokenSource;
 		private readonly MainFormRedone _mainForm;
-		private readonly IDockingService _dockingService;
 		private readonly IBackgroundAssemblerService _backgroundAssemblerService;
+		private readonly IDockingService _dockingService;
+		private readonly IDocumentService _documentService;
+		private readonly ISymbolService _symbolService;
 		private string _fileName;
 		private readonly List<TextMarker> _codeCheckMarkers = new List<TextMarker>();
 		private readonly List<IParserData> _labelsCache = new List<IParserData>(LabelsCacheSize);
@@ -121,9 +125,13 @@ namespace Revsoft.Wabbitcode
 		public delegate void EditorClosed(object sender, EditorEventArgs e);
 		public static event EditorClosed OnEditorClosed;
 
+		public delegate void EditorSelectionChanged(object sender, EditorSelectionEventArgs e);
+		public static event EditorSelectionChanged OnEditorSelectionChanged;
+
 		#endregion
 
-		public NewEditor(IDockingService dockingService, IBackgroundAssemblerService backgroundAssemblerService)
+		public NewEditor(IBackgroundAssemblerService backgroundAssemblerService, IDockingService dockingService,
+			IDocumentService documentService, ISymbolService symbolService)
 		{
 			InitializeComponent();
 
@@ -132,6 +140,8 @@ namespace Revsoft.Wabbitcode
 
 			_backgroundAssemblerService = backgroundAssemblerService;
 			_dockingService = dockingService;
+			_documentService = documentService;
+			_symbolService = symbolService;
 
 			_textChangedTimer.Tick += textChangedTimer_Tick;
 
@@ -170,6 +180,7 @@ namespace Revsoft.Wabbitcode
 			TextLocation loc = e.LogicalPosition;
 			int offset = editorBox.Document.GetOffsetForLineNumber(loc.Line);
 			string text = editorBox.Document.GetWord(offset + loc.Column);
+
 			if (!Settings.Default.caseSensitive)
 			{
 				text = text.ToUpper();
@@ -178,7 +189,7 @@ namespace Revsoft.Wabbitcode
 			string tooltip;
 			try
 			{
-				tooltip = _mainForm.TranlateSymbolToAddress(text);
+				tooltip = _symbolService.SymbolTable.GetAddressFromLabel(text);
 			}
 			catch (Exception)
 			{
@@ -234,8 +245,10 @@ namespace Revsoft.Wabbitcode
 					start = end;
 				}
 				string codeInfoLines = editorBox.Document.GetText(start, end - start);
-				//_codeLinesCancellationSource = new CancellationTokenSource();
-				//Task.Factory.StartNew(() => GetCodeInfo(_codeInfoLines), _codeLinesCancellationSource.Token);
+				if (OnEditorSelectionChanged != null)
+				{
+					OnEditorSelectionChanged(this, new EditorSelectionEventArgs(editorBox.Document, codeInfoLines));
+				}
 			}
 		}
 
@@ -263,35 +276,30 @@ namespace Revsoft.Wabbitcode
 
 		private void GetHighlightReferences(string word, string text)
 		{
-			try
+			var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
+			if (string.IsNullOrEmpty(word) || !Settings.Default.referencesHighlighter)
 			{
-				var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-				if (string.IsNullOrEmpty(word) || !Settings.Default.referencesHighlighter)
-				{
-					_isUpdatingRefs = false;
-					return;
-				}
-				int counter = 0;
-				List<TextMarker> references = new List<TextMarker>();
-				while (counter < text.Length)
-				{
-					string possibleReference = TextUtils.GetWord(text, counter);
-					if (!string.IsNullOrEmpty(possibleReference) && string.Equals(possibleReference, word, options))
-					{
-						references.Add(new TextMarker(counter, word.Length, TextMarkerType.SolidBlock, Color.LightGray)
-						{
-							Tag = "Reference"
-						});
-					}
-					if (possibleReference != null)
-					{
-						counter += possibleReference.Length + 1;
-					}
-				}
-				_mainForm.Invoke(() => AddMarkers(references));
+				_isUpdatingRefs = false;
+				return;
 			}
-			catch (Exception)
-			{ }
+			int counter = 0;
+			List<TextMarker> references = new List<TextMarker>();
+			while (counter < text.Length)
+			{
+				string possibleReference = TextUtils.GetWord(text, counter);
+				if (!string.IsNullOrEmpty(possibleReference) && string.Equals(possibleReference, word, options))
+				{
+					references.Add(new TextMarker(counter, word.Length, TextMarkerType.SolidBlock, Color.LightGray)
+					{
+						Tag = "Reference"
+					});
+				}
+				if (possibleReference != null)
+				{
+					counter += possibleReference.Length + 1;
+				}
+			}
+			_mainForm.Invoke(() => AddMarkers(references));
 			_isUpdatingRefs = false;
 		}
 
@@ -329,7 +337,6 @@ namespace Revsoft.Wabbitcode
 
 		public bool SaveFile()
 		{
-			DocumentService.InternalSave = true;
 			bool saved = true;
 			_stackTop = editorBox.Document.UndoStack.UndoItemCount;
 			try
@@ -345,7 +352,6 @@ namespace Revsoft.Wabbitcode
 			TabText = Path.GetFileName(FileName);
 			DocumentChanged = false;
 			_mainForm.UpdateTitle();
-			DocumentService.InternalSave = false;
 			return saved;
 		}
 
@@ -385,7 +391,7 @@ namespace Revsoft.Wabbitcode
 				case DialogResult.Yes:
 					if (string.IsNullOrEmpty(FileName))
 					{
-						DocumentService.SaveDocument(this);
+						_documentService.SaveDocument(this);
 					}
 					else
 					{
@@ -937,31 +943,6 @@ namespace Revsoft.Wabbitcode
 		}
 
 		#endregion
-
-		// TODO: fix
-		//private void GetCodeInfo(string lines)
-		//{
-		//	if (string.IsNullOrEmpty(lines))
-		//	{
-		//		return;
-		//	}
-
-		//	if (_infoLinesRunning)
-		//	{
-		//		_infoLinesQueued = true;
-		//		return;
-		//	}
-
-		//	_infoLinesRunning = true;
-		//	CodeCountInfo info = AssemblerService.Instance.CountCode(lines);
-		//	_mainForm.Invoke(() => _mainForm.UpdateCodeInfo(info));
-		//	if (_infoLinesQueued)
-		//	{
-		//		_infoLinesQueued = false;
-		//		GetCodeInfo(lines);
-		//	}
-		//	_infoLinesRunning = false;
-		//}
 
 		private void setNextStateMenuItem_Click(object sender, EventArgs e)
 		{

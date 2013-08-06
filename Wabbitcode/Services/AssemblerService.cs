@@ -1,5 +1,6 @@
 ﻿using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Assembler;
+using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.Collections.Generic;
