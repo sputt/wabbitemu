@@ -1,10 +1,11 @@
-﻿namespace Revsoft.Wabbitcode.Services.Assembler
-{
+﻿using System;
 
-    public enum AssemblyFlags
+namespace Revsoft.Wabbitcode.Services.Assembler
+{
+	[Flags]
+	public enum AssemblyFlags
     {
-        None = 0,
-        Normal = 1,
+		Normal = 1,
         CodeCounter = 2,
         Symtable = 4,
         Stats = 8,

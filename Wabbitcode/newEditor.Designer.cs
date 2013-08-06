@@ -17,13 +17,12 @@ namespace Revsoft.Wabbitcode
 				if (components != null)
 				{
 					components.Dispose();
-                    codeCheckerCancellationSource.Dispose();
-                    codeLinesCancellationSource.Dispose();
-                    errorBitmap.Dispose();
-                    warningBitmap.Dispose();
+
+					_errorBitmap.Dispose();
+					_warningBitmap.Dispose();
 				}
 			}
-            base.Dispose(disposing);
+			base.Dispose(disposing);
 		}
 
 		#region Windows Form Designer generated code
@@ -152,7 +151,7 @@ namespace Revsoft.Wabbitcode
 			// 
 			this.renameContext.Index = 0;
 			this.renameContext.Text = "Rename";
-			this.renameContext.Click += new System.EventHandler(this.renameContext_Click);
+			//this.renameContext.Click += new System.EventHandler(this.renameContext_Click);
 			
 			// 
 			// extractMethodContext
@@ -165,7 +164,7 @@ namespace Revsoft.Wabbitcode
 			// 
 			this.findRefContext.Index = 5;
 			this.findRefContext.Text = "Find References";
-			this.findRefContext.Click += new System.EventHandler(this.findRefContext_Click);
+			//this.findRefContext.Click += new System.EventHandler(this.findRefContext_Click);
 			// 
 			// menuItem5
 			// 
@@ -197,7 +196,7 @@ namespace Revsoft.Wabbitcode
 			this.bgotoButton.Enabled = false;
 			this.bgotoButton.Index = 10;
 			this.bgotoButton.Text = "Goto";
-			this.bgotoButton.Click += new System.EventHandler(this.bgotoButton_Click);
+			//this.bgotoButton.Click += new System.EventHandler(this.bgotoButton_Click);
 			// 
 			// contextMenu1
 			// 

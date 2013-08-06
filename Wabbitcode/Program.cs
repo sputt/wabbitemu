@@ -1,4 +1,6 @@
-﻿namespace Revsoft.Wabbitcode
+﻿using Revsoft.Wabbitcode.Utils;
+
+namespace Revsoft.Wabbitcode
 {
     using Revsoft.Wabbitcode.Classes;
     using Revsoft.Wabbitcode.Properties;
@@ -26,7 +28,7 @@
             }
             catch (Exception ex)
             {
-                Services.DockingService.ShowError("Error upgrading settings", ex);
+                DockingService.ShowError("Error upgrading settings", ex);
             }
 
             Application.EnableVisualStyles();
@@ -51,7 +53,7 @@
             }
             catch (Exception ex)
             {
-                Services.DockingService.ShowError("Error checking for updates", ex);
+                DockingService.ShowError("Error checking for updates", ex);
             }
 
             try

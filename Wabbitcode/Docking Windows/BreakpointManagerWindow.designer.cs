@@ -1,6 +1,6 @@
 ﻿namespace Revsoft.Wabbitcode.Docking_Windows
 {
-    public partial class BreakpointManager
+    public partial class BreakpointManagerWindow
     {
         private System.Windows.Forms.DataGridViewTextBoxColumn AddressCol;
         private System.Windows.Forms.ToolStripMenuItem addressToolStripMenuItem;
@@ -58,7 +58,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BreakpointManager));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BreakpointManagerWindow));
             this.contextMenu = new System.Windows.Forms.ContextMenu();
             this.autoHideItem = new System.Windows.Forms.MenuItem();
             this.floatingItem = new System.Windows.Forms.MenuItem();
@@ -233,7 +233,7 @@
             this.enabledToolStripMenuItem.Name = "enabledToolStripMenuItem";
             this.enabledToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
             this.enabledToolStripMenuItem.Text = "Enabled";
-            this.enabledToolStripMenuItem.Click += new System.EventHandler(this.colButtonClick);
+            this.enabledToolStripMenuItem.Click += new System.EventHandler(this.ColButtonClick);
 
             // nameToolStripMenuItem
 
@@ -243,7 +243,7 @@
             this.nameToolStripMenuItem.Name = "nameToolStripMenuItem";
             this.nameToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
             this.nameToolStripMenuItem.Text = "Name";
-            this.nameToolStripMenuItem.Click += new System.EventHandler(this.colButtonClick);
+            this.nameToolStripMenuItem.Click += new System.EventHandler(this.ColButtonClick);
 
             // conditionToolStripMenuItem
 
@@ -253,7 +253,7 @@
             this.conditionToolStripMenuItem.Name = "conditionToolStripMenuItem";
             this.conditionToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
             this.conditionToolStripMenuItem.Text = "Condition";
-            this.conditionToolStripMenuItem.Click += new System.EventHandler(this.colButtonClick);
+            this.conditionToolStripMenuItem.Click += new System.EventHandler(this.ColButtonClick);
 
             // hitCountToolStripMenuItem
 
@@ -263,7 +263,7 @@
             this.hitCountToolStripMenuItem.Name = "hitCountToolStripMenuItem";
             this.hitCountToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
             this.hitCountToolStripMenuItem.Text = "Hit Count";
-            this.hitCountToolStripMenuItem.Click += new System.EventHandler(this.colButtonClick);
+            this.hitCountToolStripMenuItem.Click += new System.EventHandler(this.ColButtonClick);
 
             // addressToolStripMenuItem
 
@@ -273,7 +273,7 @@
             this.addressToolStripMenuItem.Name = "addressToolStripMenuItem";
             this.addressToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
             this.addressToolStripMenuItem.Text = "Address";
-            this.addressToolStripMenuItem.Click += new System.EventHandler(this.colButtonClick);
+            this.addressToolStripMenuItem.Click += new System.EventHandler(this.ColButtonClick);
 
             // pageToolStripMenuItem
 
@@ -283,7 +283,7 @@
             this.pageToolStripMenuItem.Name = "pageToolStripMenuItem";
             this.pageToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
             this.pageToolStripMenuItem.Text = "Page";
-            this.pageToolStripMenuItem.Click += new System.EventHandler(this.colButtonClick);
+            this.pageToolStripMenuItem.Click += new System.EventHandler(this.ColButtonClick);
 
             // isInRamToolStripMenuItem
 
@@ -293,7 +293,7 @@
             this.isInRamToolStripMenuItem.Name = "isInRamToolStripMenuItem";
             this.isInRamToolStripMenuItem.Size = new System.Drawing.Size(127, 22);
             this.isInRamToolStripMenuItem.Text = "Is In Ram";
-            this.isInRamToolStripMenuItem.Click += new System.EventHandler(this.colButtonClick);
+            this.isInRamToolStripMenuItem.Click += new System.EventHandler(this.ColButtonClick);
 
             // breakpointGridView
 
@@ -360,7 +360,7 @@
             this.IsRamCol.Name = "IsRamCol";
             this.IsRamCol.Width = 50;
 
-            // BreakpointManager
+            // BreakpointManagerWindow
 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -369,7 +369,7 @@
             this.Controls.Add(this.toolStrip1);
             this.Font = new System.Drawing.Font("Microsoft Sans Serif", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, (byte)0);
             this.HideOnClose = true;
-            this.Name = "BreakpointManager";
+            this.Name = "BreakpointManagerWindow";
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;
             this.TabPageContextMenu = this.contextMenu;
             this.TabText = "Breakpoints";

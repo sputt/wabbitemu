@@ -1,67 +1,65 @@
-﻿namespace Revsoft.Wabbitcode.Services.Project
+﻿using System.IO;
+
+namespace Revsoft.Wabbitcode.Services.Project
 {
-    using System.Collections.Generic;
+	using System.Collections.Generic;
 
-    public interface IProject
-    {
-        IBuildSystem BuildSystem
-        {
-            get;
-        }
+	public interface IProject
+	{
+		IBuildSystem BuildSystem
+		{
+			get;
+		}
 
-        List<string> IncludeDir
-        {
-            get;
-        }
+		IList<string> IncludeDirs
+		{
+			get;
+		}
 
-        ProjectFolder MainFolder
-        {
-            get;
-        }
+		ProjectFolder MainFolder
+		{
+			get;
+		}
 
-        bool NeedsSave
-        {
-            get;
-            set;
-        }
+		bool NeedsSave
+		{
+			get;
+		}
 
-        string ProjectDirectory
-        {
-            get;
-        }
+		string ProjectDirectory
+		{
+			get;
+		}
 
-        string ProjectFile
-        {
-            get;
-        }
+		string ProjectFile
+		{
+			get;
+		}
 
-        string ProjectName
-        {
-            get;
-            set;
-        }
+		string ProjectName
+		{
+			get;
+			set;
+		}
 
-        List<string> ProjectOutputs
-        {
-            get;
-        }
+		bool IsInternal
+		{
+			get;
+			set;
+		}
 
-        List<string> LabelOutputs
-        {
-            get;
-        }
+		FileSystemWatcher ProjectWatcher { get; set; }
 
-        List<string> ListOutputs
-        {
-            get;
-        }
+		ProjectFile AddFile(ProjectFolder parentFolder, string fullPath);
 
-        ProjectFile AddFile(ProjectFolder parentFolder, string fullPath);
+		ProjectFolder AddFolder(string dirName, ProjectFolder parentFolder);
 
-        ProjectFolder AddFolder(string dirName, ProjectFolder parentFolder);
+		void DeleteFile(ProjectFolder parentDir, ProjectFile file);
 
-        void DeleteFile(ProjectFolder parentDir, ProjectFile file);
+		void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir);
 
-        void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir);
-    }
+		IEnumerable<ProjectFile> GetProjectFiles();
+
+		void SaveProject();
+	}
 }

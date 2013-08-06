@@ -1,46 +1,65 @@
-﻿namespace Revsoft.Wabbitcode.Services.Project
+﻿using System.Collections.Generic;
+using System.Xml;
+
+namespace Revsoft.Wabbitcode.Services.Project
 {
-    using System.Collections.Generic;
-    using System.Xml;
+	public interface IBuildSystem
+	{
+		IAssemblerService AssemblerService
+		{
+			get;
+			set;
+		}
 
-    public interface IBuildSystem
-    {
-        List<BuildConfig> BuildConfigs
-        {
-            get;
-        }
+		IList<BuildConfig> BuildConfigs
+		{
+			get;
+		}
 
-        BuildConfig CurrentConfig
-        {
-            get;
-            set;
-        }
+		BuildConfig CurrentConfig
+		{
+			get;
+			set;
+		}
 
-        int CurrentConfigIndex
-        {
-            get;
-            set;
-        }
+		int CurrentConfigIndex
+		{
+			get;
+			set;
+		}
 
-        string MainFile
-        {
-            get;
-        }
+		string MainFile
+		{
+			get;
+		}
 
-        string MainOutput
-        {
-            get;
-        }
+		string OutputText
+		{
+			get;
+		}
 
-        string OutputText
-        {
-            get;
-        }
+		string ProjectOutput
+		{
+			get;
+			set;
+		}
 
-        bool Build();
+		string LabelOutput
+		{
+			get;
+			set;
+		}
 
-        void ReadXML(XmlTextReader reader);
+		string ListOutput
+		{
+			get;
+			set;
+		}
 
-        void WriteXML(XmlTextWriter writer);
-    }
+		bool Build();
+
+		void ReadXML(XmlTextReader reader);
+
+		void WriteXML(XmlTextWriter writer);
+	}
 }

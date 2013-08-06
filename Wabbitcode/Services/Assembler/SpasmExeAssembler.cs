@@ -1,178 +1,171 @@
-﻿namespace Revsoft.Wabbitcode.Services.Assembler
+﻿using System.Linq;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using Revsoft.Wabbitcode.Utils;
+
+namespace Revsoft.Wabbitcode.Services.Assembler
 {
-    using Revsoft.Wabbitcode.Classes;
-    using System;
-    using System.Collections.Generic;
-    using System.Diagnostics;
-    using System.Text;
+	public sealed class SpasmExeAssembler : IAssembler
+	{
+		private const string Quote = "\"";
 
-    public class SpasmExeAssembler : IAssembler
-    {
-        private const string quote = "\"";
+		private bool _caseSensitive;
+		private readonly List<KeyValuePair<string, string>> _defines = new List<KeyValuePair<string, string>>();
+		private string _flagsString = string.Empty;
+		private readonly List<string> _includeDirs = new List<string>();
+		private string _inputFile;
+		private string _outputFile;
+		private readonly Process _wabbitspasm;
+		private bool _disposed;
 
-        private bool caseSensitive;
-        private List<KeyValuePair<string, string>> defines = new List<KeyValuePair<string, string>>();
-        private string flagsString = string.Empty;
-        private List<string> includeDirs = new List<string>();
-        private string inputFile;
-        private string outputFile;
-        private Process wabbitspasm;
-        private bool disposed = false;
+		public SpasmExeAssembler()
+		{
+			// create two new processes to run
+			// setup wabbitspasm to run silently
+			_wabbitspasm = new Process
+			{
+				StartInfo =
+				{
+					FileName = FileLocations.SpasmFile,
+					RedirectStandardOutput = true,
+					RedirectStandardError = true,
+					UseShellExecute = false,
+					CreateNoWindow = true
+				}
+			};
+		}
 
-        public SpasmExeAssembler()
-        {
-            // create two new processes to run
-            // setup wabbitspasm to run silently
-            this.wabbitspasm = new Process
-            {
-                StartInfo =
-                {
-                    FileName = FileLocations.SpasmFile,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                }
-            };
-        }
+		public void AddDefine(string name, string value)
+		{
+			_defines.Add(new KeyValuePair<string, string>(name, value));
+		}
 
-        public void AddDefine(string name, string value)
-        {
-            this.defines.Add(new KeyValuePair<string, string>(name, value));
-        }
+		public void AddIncludeDir(string path)
+		{
+			if (string.IsNullOrEmpty(path))
+			{
+				return;
+			}
 
-        public void AddIncludeDir(string path)
-        {
-            if (string.IsNullOrEmpty(path))
-            {
-                return;
-            }
+			_includeDirs.Add(path);
+		}
 
-            this.includeDirs.Add(path);
-        }
+		public string Assemble()
+		{
+			string output = string.Empty;   
+			string includeDir = _includeDirs.Count > 0 ? "-I " : string.Empty;
+			includeDir = _includeDirs.Aggregate(includeDir, (current, dir) => current + (Quote + dir + Quote + ";"));
 
-        public string Assemble()
-        {
-            string output = string.Empty;   
-            string includeDir = this.includeDirs.Count > 0 ? "-I " : string.Empty;
-            foreach (string dir in this.includeDirs)
-            {
-                includeDir += quote + dir + quote + ";";
-            }
+			string caseString = _caseSensitive ? " -A " : " ";
+			_wabbitspasm.StartInfo.Arguments = includeDir + caseString + _flagsString + Quote + _inputFile + Quote + " " + Quote + _outputFile + Quote;
+			_wabbitspasm.OutputDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
+			_wabbitspasm.ErrorDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
+			_wabbitspasm.Start();
+			_wabbitspasm.BeginOutputReadLine();
+			_wabbitspasm.BeginErrorReadLine();
+			_wabbitspasm.WaitForExit();
 
-            string caseString = this.caseSensitive ? " -A " : " ";
-            this.wabbitspasm.StartInfo.Arguments = includeDir + caseString + this.flagsString + quote + this.inputFile + quote + " " + quote + this.outputFile + quote;
-            this.wabbitspasm.OutputDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
-            this.wabbitspasm.ErrorDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
-            this.wabbitspasm.Start();
-            this.wabbitspasm.BeginOutputReadLine();
-            this.wabbitspasm.BeginErrorReadLine();
-            this.wabbitspasm.WaitForExit();
+			return output;
+		}
 
-            return output;
-        }
+		public string Assemble(string code)
+		{
+			string output = string.Empty;
+			string includeDir = _includeDirs.Count > 0 ? "-I " : string.Empty;
+			includeDir = _includeDirs.Aggregate(includeDir, (current, dir) => current + (Quote + dir + Quote + ";"));
 
-        public string Assemble(string code)
-        {
-            string output = string.Empty;
-            string includeDir = this.includeDirs.Count > 0 ? "-I " : string.Empty;
-            foreach (string dir in this.includeDirs)
-            {
-                includeDir += quote + dir + quote + ";";
-            }
+			string caseString = _caseSensitive ? " -A " : " ";
+			_wabbitspasm.StartInfo.Arguments = includeDir + caseString + _flagsString + Quote + code + Quote;
+			_wabbitspasm.OutputDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
+			_wabbitspasm.ErrorDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
+			_wabbitspasm.Start();
+			_wabbitspasm.BeginOutputReadLine();
+			_wabbitspasm.BeginErrorReadLine();
+			_wabbitspasm.WaitForExit();
 
-            string caseString = this.caseSensitive ? " -A " : " ";
-            this.wabbitspasm.StartInfo.Arguments = includeDir + caseString + this.flagsString + quote + code + quote;
-            this.wabbitspasm.OutputDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
-            this.wabbitspasm.ErrorDataReceived += (sender, e) => output += e.Data + Environment.NewLine;
-            this.wabbitspasm.Start();
-            this.wabbitspasm.BeginOutputReadLine();
-            this.wabbitspasm.BeginErrorReadLine();
-            this.wabbitspasm.WaitForExit();
+			return output;
+		}
 
-            return output;
-        }
+		public void ClearDefines()
+		{
+			_defines.Clear();
+		}
 
-        public void ClearDefines()
-        {
-            this.defines.Clear();
-        }
+		public void ClearIncludeDirs()
+		{
+			_includeDirs.Clear();
+		}
 
-        public void ClearIncludeDirs()
-        {
-            this.includeDirs.Clear();
-        }
+		public void Dispose()
+		{
+			Dispose(true);
+		}
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+		private void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+					_wabbitspasm.Dispose();
+				}
+			}
+			_disposed = true;
+		}
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
-            {
-                if (disposing)
-                {
-                    this.wabbitspasm.Dispose();
-                }
-            }
-            disposed = true;
-        }
+		public void SetCaseSensitive(bool caseSensitive)
+		{
+			_caseSensitive = caseSensitive;
+		}
 
-        public void SetCaseSensitive(bool caseSensitive)
-        {
-            this.caseSensitive = caseSensitive;
-        }
+		public void SetFlags(AssemblyFlags flags)
+		{
+			_flagsString = string.Empty;
+			if ((flags & AssemblyFlags.CodeCounter) != 0)
+			{
+				_flagsString += "-C ";
+			}
 
-        public void SetFlags(AssemblyFlags flags)
-        {
-            this.flagsString = string.Empty;
-            if ((flags & AssemblyFlags.CodeCounter) != 0)
-            {
-                this.flagsString += "-C ";
-            }
+			if ((flags & AssemblyFlags.List) != 0)
+			{
+				_flagsString += "-T ";
+			}
 
-            if ((flags & AssemblyFlags.List) != 0)
-            {
-                this.flagsString += "-T ";
-            }
+			if ((flags & AssemblyFlags.Symtable) != 0)
+			{
+				_flagsString += "-L ";
+			}
 
-            if ((flags & AssemblyFlags.Symtable) != 0)
-            {
-                this.flagsString += "-L ";
-            }
+			if ((flags & AssemblyFlags.Stats) != 0)
+			{
+				_flagsString += "-S ";
+			}
 
-            if ((flags & AssemblyFlags.Stats) != 0)
-            {
-                this.flagsString += "-S ";
-            }
+			if ((flags & AssemblyFlags.Normal) == 0)
+			{
+				_flagsString += "-O ";
+			}
 
-            if ((flags & AssemblyFlags.Normal) == 0)
-            {
-                this.flagsString += "-O ";
-            }
+			if ((flags & AssemblyFlags.Commandline) != 0)
+			{
+				_flagsString += "-V ";
+			}
+		}
 
-            if ((flags & AssemblyFlags.Commandline) != 0)
-            {
-                this.flagsString += "-V ";
-            }
-        }
+		public void SetInputFile(string file)
+		{
+			_inputFile = file;
+		}
 
-        public void SetInputFile(string file)
-        {
-            this.inputFile = file;
-        }
+		public void SetOutputFile(string file)
+		{
+			_outputFile = file;
+		}
 
-        public void SetOutputFile(string file)
-        {
-            this.outputFile = file;
-        }
-
-        public void SetWorkingDirectory(string dir)
-        {
-            this.wabbitspasm.StartInfo.WorkingDirectory = dir;
-        }
-    }
+		public void SetWorkingDirectory(string dir)
+		{
+			_wabbitspasm.StartInfo.WorkingDirectory = dir;
+		}
+	}
 }

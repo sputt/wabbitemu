@@ -1,113 +1,130 @@
 ﻿using Revsoft.Wabbitcode.Classes;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Parser;
 using System;
-using System.Linq;
 using System.Windows.Forms;
+using Label = Revsoft.Wabbitcode.Services.Parser.Label;
 
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
-    public partial class LabelList : ToolWindow
-    {
-        public LabelList()
-        {
-            InitializeComponent();
-        }
+	public partial class LabelList : ToolWindow
+	{
+		#region Private Properties
 
-        public override void Copy()
-        {
-            Clipboard.SetDataObject(labelsBox.Items[labelsBox.SelectedIndex].ToString());
-        }
+		private readonly IDockingService _dockingService;
+		private readonly IParserService _parserService;
 
-        internal void AddLabels(ParserInformation list)
-        {
-            NativeMethods.TurnOffDrawing(labelsBox.Handle);
-            bool ShowEquates = includeEquatesBox.Checked;
-            labelsBox.Items.Clear();
-            foreach (IParserData data in list.LabelsList)
-            {
-                if (data is Services.Parser.Label)
-                {
-                    if (!((ILabel)data).IsReusable)
-                    {
-                        labelsBox.Items.Add(data);
-                    }
-                }
-                else if (data is Equate || data is Define)
-                {
-                    if (ShowEquates)
-                    {
-                        labelsBox.Items.Add(data);
-                    }
-                }
-                else if (data is Macro || data is IncludeFile)
-                {
-                    labelsBox.Items.Add(data);
-                }
-            }
+		#endregion
 
-            NativeMethods.TurnOnDrawing(labelsBox.Handle);
-        }
+		public LabelList(IDockingService dockingService, IParserService parserService)
+			: base(dockingService)
+		{
+			InitializeComponent();
 
-        internal void ClearLabels()
-        {
-            labelsBox.Items.Clear();
-        }
+			_dockingService = dockingService;
+			_parserService = parserService;
+		}
 
-        internal void DisableLabelBox()
-        {
-            this.ClearLabels();
-            labelsBox.Enabled = false;
-            alphaBox.Enabled = false;
-            includeEquatesBox.Enabled = false;
-        }
+		public override void Copy()
+		{
+			Clipboard.SetDataObject(labelsBox.Items[labelsBox.SelectedIndex].ToString());
+		}
 
-        internal void EnableLabelBox()
-        {
-            labelsBox.Enabled = true;
-            alphaBox.Enabled = true;
-            includeEquatesBox.Enabled = true;
-        }
+		private void AddLabels()
+		{
+			string fileName = _dockingService.ActiveDocument.FileName;
+			if (string.IsNullOrEmpty(fileName))
+			{
+				return;
+			}
 
-        private void alphaBox_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.alphabetizeLabels = alphaBox.Checked;
-            labelsBox.Sorted = alphaBox.Checked;
-            DocumentService.ActiveDocument.UpdateLabelBox();
-        }
+			ParserInformation info = _parserService.GetParserInfo(fileName);
+			NativeMethods.TurnOffDrawing(labelsBox.Handle);
+			bool showEquates = includeEquatesBox.Checked;
+			labelsBox.Items.Clear();
 
-        private void includeEquatesBox_CheckedChanged(object sender, EventArgs e)
-        {
-            Properties.Settings.Default.showEquates = includeEquatesBox.Checked;
-            DocumentService.ActiveDocument.UpdateLabelBox();
-        }
+			foreach (IParserData data in info.GeneratedList)
+			{
+				var label = data as Label;
+				if (data is Label && !label.IsReusable)
+				{
+					labelsBox.Items.Add(label);
+				}
+				else if ((data is Equate || data is Define || data is Macro) && (showEquates))
+				{
+					labelsBox.Items.Add(data);
+				}
+			}
 
-        private void LabelList_VisibleChanged(object sender, EventArgs e)
-        {
-            DockingService.MainForm.UpdateChecks();
-        }
+			NativeMethods.TurnOnDrawing(labelsBox.Handle);
+		}
 
-        private void labelsBox_DoubleClick(object sender, EventArgs e)
-        {
-            if (labelsBox.SelectedItem == null)
-            {
-                return;
-            }
+		private void ClearLabels()
+		{
+			labelsBox.Items.Clear();
+		}
 
-            DocumentService.GotoLabel((ILabel)labelsBox.SelectedItem);
-            DockingService.ActiveDocument.Focus();
-        }
+		internal void DisableLabelBox()
+		{
+			ClearLabels();
+			labelsBox.Enabled = false;
+			alphaBox.Enabled = false;
+			includeEquatesBox.Enabled = false;
+		}
 
-        private void labelsBox_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar != (char)Keys.Enter)
-            {
-                return;
-            }
+		private void EnableLabelBox()
+		{
+			labelsBox.Enabled = true;
+			alphaBox.Enabled = true;
+			includeEquatesBox.Enabled = true;
+		}
 
-            DocumentService.GotoLabel((ILabel)labelsBox.SelectedItem);
-            DockingService.ActiveDocument.Focus();
-        }
-    }
+		private void alphaBox_CheckedChanged(object sender, EventArgs e)
+		{
+			Settings.Default.alphabetizeLabels = alphaBox.Checked;
+			labelsBox.Sorted = alphaBox.Checked;
+			UpdateLabelBox();
+		}
+
+		public void UpdateLabelBox()
+		{
+			EnableLabelBox();
+			AddLabels();
+		}
+
+		private void includeEquatesBox_CheckedChanged(object sender, EventArgs e)
+		{
+			Settings.Default.showEquates = includeEquatesBox.Checked;
+			UpdateLabelBox();
+		}
+
+		private void LabelList_VisibleChanged(object sender, EventArgs e)
+		{
+			_dockingService.MainForm.UpdateChecks();
+		}
+
+		private void labelsBox_DoubleClick(object sender, EventArgs e)
+		{
+			if (labelsBox.SelectedItem == null)
+			{
+				return;
+			}
+
+			DocumentService.GotoLabel((IParserData)labelsBox.SelectedItem);
+			_dockingService.ActiveDocument.Focus();
+		}
+
+		private void labelsBox_KeyPress(object sender, KeyPressEventArgs e)
+		{
+			if (e.KeyChar != (char)Keys.Enter)
+			{
+				return;
+			}
+
+			DocumentService.GotoLabel((ILabel)labelsBox.SelectedItem);
+			_dockingService.ActiveDocument.Focus();
+		}
+	}
 }

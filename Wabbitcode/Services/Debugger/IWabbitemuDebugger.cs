@@ -1,10 +1,10 @@
-﻿namespace Revsoft.Wabbitcode.Services.Debugger
-{
-    using System;
-    using System.Drawing;
-    using WabbitemuLib;
+﻿using System;
+using System.Drawing;
+using WabbitemuLib;
 
-    public delegate void BreakpointDelegate(object sender, BreakpointEventArgs e);
+namespace Revsoft.Wabbitcode.Services.Debugger
+{
+    public delegate void BreakpointDelegate(IWabbitemu sender, BreakpointEventArgs e);
 
     public interface IWabbitemuDebugger : IDisposable
     {

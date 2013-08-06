@@ -44,7 +44,7 @@
             this.fileBox.Name = "fileBox";
             this.fileBox.Size = new System.Drawing.Size(220, 20);
             this.fileBox.TabIndex = 0;
-            this.fileBox.TextChanged += new System.EventHandler(this.textChange);
+            this.fileBox.TextChanged += new System.EventHandler(this.TextChange);
             // 
             // fileLabel
             // 
@@ -61,7 +61,7 @@
             this.lineBox.Name = "lineBox";
             this.lineBox.Size = new System.Drawing.Size(83, 20);
             this.lineBox.TabIndex = 2;
-            this.lineBox.TextChanged += new System.EventHandler(this.textChange);
+            this.lineBox.TextChanged += new System.EventHandler(this.TextChange);
             // 
             // label1
             // 

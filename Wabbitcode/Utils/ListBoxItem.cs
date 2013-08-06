@@ -1,6 +1,5 @@
-﻿namespace Revsoft.Wabbitcode
+﻿namespace Revsoft.Wabbitcode.Utils
 {
-
     public class ListBoxItem
     {
         public string Ext
@@ -23,7 +22,7 @@
 
         public override string ToString()
         {
-            return this.Text;
+            return Text;
         }
     }
 }

@@ -56,7 +56,6 @@
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottomAutoHide;
             this.TabText = "Find Results";
             this.Text = "Find Results";
-            this.VisibleChanged += new System.EventHandler(this.FindResults_VisibleChanged);
             this.ResumeLayout(false);
         }
     }

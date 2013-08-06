@@ -39,6 +39,9 @@ namespace Revsoft.Wabbitcode
 			this.preferencesTabs = new System.Windows.Forms.TabControl();
 			this.generalTab = new System.Windows.Forms.TabPage();
 			this.generalBox = new System.Windows.Forms.GroupBox();
+			this.dockConfigBrowse = new System.Windows.Forms.Button();
+			this.dockConfigLoc = new System.Windows.Forms.TextBox();
+			this.dockConfigLabel = new System.Windows.Forms.Label();
 			this.wabbitLocLabel = new System.Windows.Forms.Label();
 			this.browseWabbit = new System.Windows.Forms.Button();
 			this.wabbitFolderCheck = new System.Windows.Forms.CheckBox();
@@ -118,9 +121,6 @@ namespace Revsoft.Wabbitcode
 			this.okButton = new System.Windows.Forms.Button();
 			this.cancelButton = new System.Windows.Forms.Button();
 			this.applyButton = new System.Windows.Forms.Button();
-			this.dockConfigBrowse = new System.Windows.Forms.Button();
-			this.dockConfigLoc = new System.Windows.Forms.TextBox();
-			this.dockConfigLabel = new System.Windows.Forms.Label();
 			this.preferencesTabs.SuspendLayout();
 			this.generalTab.SuspendLayout();
 			this.generalBox.SuspendLayout();
@@ -179,6 +179,32 @@ namespace Revsoft.Wabbitcode
 			this.generalBox.TabIndex = 4;
 			this.generalBox.TabStop = false;
 			this.generalBox.Text = "General";
+			// 
+			// dockConfigBrowse
+			// 
+			this.dockConfigBrowse.Location = new System.Drawing.Point(224, 103);
+			this.dockConfigBrowse.Name = "dockConfigBrowse";
+			this.dockConfigBrowse.Size = new System.Drawing.Size(75, 23);
+			this.dockConfigBrowse.TabIndex = 7;
+			this.dockConfigBrowse.Text = "Browse...";
+			this.dockConfigBrowse.UseVisualStyleBackColor = true;
+			this.dockConfigBrowse.Click += new System.EventHandler(this.dockConfigBrowse_Click);
+			// 
+			// dockConfigLoc
+			// 
+			this.dockConfigLoc.Location = new System.Drawing.Point(8, 105);
+			this.dockConfigLoc.Name = "dockConfigLoc";
+			this.dockConfigLoc.Size = new System.Drawing.Size(206, 20);
+			this.dockConfigLoc.TabIndex = 8;
+			// 
+			// dockConfigLabel
+			// 
+			this.dockConfigLabel.AutoSize = true;
+			this.dockConfigLabel.Location = new System.Drawing.Point(8, 85);
+			this.dockConfigLabel.Name = "dockConfigLabel";
+			this.dockConfigLabel.Size = new System.Drawing.Size(113, 13);
+			this.dockConfigLabel.TabIndex = 6;
+			this.dockConfigLabel.Text = "Dock Config Location:";
 			// 
 			// wabbitLocLabel
 			// 
@@ -421,7 +447,7 @@ namespace Revsoft.Wabbitcode
 			this.commentsEnabled.TabIndex = 3;
 			this.commentsEnabled.Text = "Comments";
 			this.commentsEnabled.UseVisualStyleBackColor = true;
-			this.commentsEnabled.CheckedChanged += new System.EventHandler(this.highlightCheckChange);
+			this.commentsEnabled.CheckedChanged += new System.EventHandler(this.HighlightCheckChange);
 			// 
 			// lineEnabled
 			// 
@@ -432,7 +458,7 @@ namespace Revsoft.Wabbitcode
 			this.lineEnabled.TabIndex = 3;
 			this.lineEnabled.Text = "Line";
 			this.lineEnabled.UseVisualStyleBackColor = true;
-			this.lineEnabled.CheckedChanged += new System.EventHandler(this.highlightCheckChange);
+			this.lineEnabled.CheckedChanged += new System.EventHandler(this.HighlightCheckChange);
 			// 
 			// opcodesEnabled
 			// 
@@ -443,7 +469,7 @@ namespace Revsoft.Wabbitcode
 			this.opcodesEnabled.TabIndex = 3;
 			this.opcodesEnabled.Text = "Opcodes";
 			this.opcodesEnabled.UseVisualStyleBackColor = true;
-			this.opcodesEnabled.CheckedChanged += new System.EventHandler(this.highlightCheckChange);
+			this.opcodesEnabled.CheckedChanged += new System.EventHandler(this.HighlightCheckChange);
 			// 
 			// conditionsEnabled
 			// 
@@ -454,7 +480,7 @@ namespace Revsoft.Wabbitcode
 			this.conditionsEnabled.TabIndex = 3;
 			this.conditionsEnabled.Text = "Conditions";
 			this.conditionsEnabled.UseVisualStyleBackColor = true;
-			this.conditionsEnabled.CheckedChanged += new System.EventHandler(this.highlightCheckChange);
+			this.conditionsEnabled.CheckedChanged += new System.EventHandler(this.HighlightCheckChange);
 			// 
 			// registersEnabled
 			// 
@@ -465,7 +491,7 @@ namespace Revsoft.Wabbitcode
 			this.registersEnabled.TabIndex = 3;
 			this.registersEnabled.Text = "Registers";
 			this.registersEnabled.UseVisualStyleBackColor = true;
-			this.registersEnabled.CheckedChanged += new System.EventHandler(this.highlightCheckChange);
+			this.registersEnabled.CheckedChanged += new System.EventHandler(this.HighlightCheckChange);
 			// 
 			// preprocessorEnabled
 			// 
@@ -476,7 +502,7 @@ namespace Revsoft.Wabbitcode
 			this.preprocessorEnabled.TabIndex = 3;
 			this.preprocessorEnabled.Text = "Preprocessor";
 			this.preprocessorEnabled.UseVisualStyleBackColor = true;
-			this.preprocessorEnabled.CheckedChanged += new System.EventHandler(this.highlightCheckChange);
+			this.preprocessorEnabled.CheckedChanged += new System.EventHandler(this.HighlightCheckChange);
 			// 
 			// stringsEnabled
 			// 
@@ -487,7 +513,7 @@ namespace Revsoft.Wabbitcode
 			this.stringsEnabled.TabIndex = 3;
 			this.stringsEnabled.Text = "Strings";
 			this.stringsEnabled.UseVisualStyleBackColor = true;
-			this.stringsEnabled.CheckedChanged += new System.EventHandler(this.highlightCheckChange);
+			this.stringsEnabled.CheckedChanged += new System.EventHandler(this.HighlightCheckChange);
 			// 
 			// directivesEnabled
 			// 
@@ -498,7 +524,7 @@ namespace Revsoft.Wabbitcode
 			this.directivesEnabled.TabIndex = 3;
 			this.directivesEnabled.Text = "Directives";
 			this.directivesEnabled.UseVisualStyleBackColor = true;
-			this.directivesEnabled.CheckedChanged += new System.EventHandler(this.highlightCheckChange);
+			this.directivesEnabled.CheckedChanged += new System.EventHandler(this.HighlightCheckChange);
 			// 
 			// labelsEnabled
 			// 
@@ -509,7 +535,7 @@ namespace Revsoft.Wabbitcode
 			this.labelsEnabled.TabIndex = 3;
 			this.labelsEnabled.Text = "Labels";
 			this.labelsEnabled.UseVisualStyleBackColor = true;
-			this.labelsEnabled.CheckedChanged += new System.EventHandler(this.highlightCheckChange);
+			this.labelsEnabled.CheckedChanged += new System.EventHandler(this.HighlightCheckChange);
 			// 
 			// opcodeColor
 			// 
@@ -1011,6 +1037,7 @@ namespace Revsoft.Wabbitcode
 			this.fontSizeBox.Name = "fontSizeBox";
 			this.fontSizeBox.Size = new System.Drawing.Size(53, 21);
 			this.fontSizeBox.TabIndex = 0;
+			this.fontSizeBox.SelectedIndexChanged += new System.EventHandler(this.fontSizeBox_SelectedIndexChanged);
 			// 
 			// fontBox
 			// 
@@ -1019,6 +1046,7 @@ namespace Revsoft.Wabbitcode
 			this.fontBox.Name = "fontBox";
 			this.fontBox.Size = new System.Drawing.Size(139, 21);
 			this.fontBox.TabIndex = 0;
+			this.fontBox.SelectedIndexChanged += new System.EventHandler(this.fontBox_SelectedIndexChanged);
 			// 
 			// colorDialog
 			// 
@@ -1056,32 +1084,6 @@ namespace Revsoft.Wabbitcode
 			this.applyButton.Text = "Apply";
 			this.applyButton.UseVisualStyleBackColor = true;
 			this.applyButton.Click += new System.EventHandler(this.applyButton_Click);
-			// 
-			// dockConfigBrowse
-			// 
-			this.dockConfigBrowse.Location = new System.Drawing.Point(224, 103);
-			this.dockConfigBrowse.Name = "dockConfigBrowse";
-			this.dockConfigBrowse.Size = new System.Drawing.Size(75, 23);
-			this.dockConfigBrowse.TabIndex = 7;
-			this.dockConfigBrowse.Text = "Browse...";
-			this.dockConfigBrowse.UseVisualStyleBackColor = true;
-			this.dockConfigBrowse.Click += new System.EventHandler(this.dockConfigBrowse_Click);
-			// 
-			// dockConfigLoc
-			// 
-			this.dockConfigLoc.Location = new System.Drawing.Point(8, 105);
-			this.dockConfigLoc.Name = "dockConfigLoc";
-			this.dockConfigLoc.Size = new System.Drawing.Size(206, 20);
-			this.dockConfigLoc.TabIndex = 8;
-			// 
-			// dockConfigLabel
-			// 
-			this.dockConfigLabel.AutoSize = true;
-			this.dockConfigLabel.Location = new System.Drawing.Point(8, 85);
-			this.dockConfigLabel.Name = "dockConfigLabel";
-			this.dockConfigLabel.Size = new System.Drawing.Size(113, 13);
-			this.dockConfigLabel.TabIndex = 6;
-			this.dockConfigLabel.Text = "Dock Config Location:";
 			// 
 			// Preferences
 			// 

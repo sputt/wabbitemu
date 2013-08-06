@@ -1,23 +1,32 @@
 ﻿namespace Revsoft.Wabbitcode.Services
 {
-    using System;
+	using System;
 
-    [AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
-    public class ServiceDependencyAttribute : Attribute
-    {
-        private Type serviceType;
+	[AttributeUsage(AttributeTargets.Class, AllowMultiple = true)]
+	public class ServiceDependencyAttribute : Attribute
+	{
+		public ServiceDependencyAttribute(Type serviceType)
+		{
+			ServiceType = serviceType;
+			CreateNew = false;
+		}
 
-        public ServiceDependencyAttribute(Type serviceType)
-        {
-            this.serviceType = serviceType;
-        }
+		public ServiceDependencyAttribute(Type serviceType, bool createNew)
+		{
+			ServiceType = serviceType;
+			CreateNew = createNew;
+		}
 
-        public Type ServiceType
-        {
-            get
-            {
-                return this.serviceType;
-            }
-        }
-    }
+		public Type ServiceType
+		{
+			get;
+			private set;
+		}
+
+		public bool CreateNew
+		{
+			get;
+			private set;
+		}
+	}
 }

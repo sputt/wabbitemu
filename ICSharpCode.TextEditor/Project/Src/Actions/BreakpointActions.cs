@@ -12,10 +12,25 @@ namespace Revsoft.TextEditor.Actions
 {
 	public class ToggleBreakpoint : AbstractEditAction
 	{
+		private TextLocation? _location = null;
+
+		public ToggleBreakpoint()
+		{
+		}
+
+		public ToggleBreakpoint(TextLocation location)
+		{
+			_location = location;
+		}
+
 		public override void Execute(TextArea textArea)
         {
-            textArea.Document.BreakpointManager.ToggleMarkAt(textArea.Caret.Position);
-            textArea.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, textArea.Caret.Line));
+			if (_location == null)
+			{
+				_location = textArea.Caret.Position;
+			}
+            textArea.Document.BreakpointManager.ToggleMarkAt(_location.Value);
+            textArea.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, _location.Value.Line));
             textArea.Document.CommitUpdate();
 			
 		}

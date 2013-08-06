@@ -1,96 +1,91 @@
-﻿namespace Revsoft.Wabbitcode
+﻿using System.Collections.Specialized;
+using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services;
+using System;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services.Project;
+
+namespace Revsoft.Wabbitcode
 {
-    using Revsoft.Wabbitcode.Properties;
-    using Revsoft.Wabbitcode.Services;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Windows.Forms;
+	public partial class IncludeDir : Form
+	{
+		private readonly IProject _project;
 
-    public partial class IncludeDir : Form
-    {
-        public IncludeDir()
-        {
-            InitializeComponent();
+		public IncludeDir(IProject project)
+		{
+			InitializeComponent();
 
-            // includeDirList.Items.Clear();
-            List<string> directories = ProjectService.IsInternal ?
-                                       Settings.Default.includeDir.Split('\n').ToList<string>() :
-                                       ProjectService.IncludeDirs;
-            foreach (string dir in directories)
-            {
-                if (!string.IsNullOrEmpty(dir))
-                {
-                    if (ProjectService.IsInternal)
-                    {
-                        includeDirList.Items.Add(dir);
-                    }
-                    else
-                    {
-                        includeDirList.Items.Add(FileOperations.GetRelativePath(ProjectService.ProjectFile, dir));
-                    }
-                }
-            }
-        }
+			_project = project;
 
-        private void addDirButton_Click(object sender, EventArgs e)
-        {
-            if (!ProjectService.IsInternal)
-            {
-                includeDirBrowser.SelectedPath = ProjectService.ProjectDirectory;
-            }
+			var directories = _project.IsInternal ?
+									   Settings.Default.includeDirs.Cast<string>() :
+									   _project.IncludeDirs;
+			foreach (string dir in directories.Where(dir => !string.IsNullOrEmpty(dir)))
+			{
+				includeDirList.Items.Add(_project.IsInternal
+					? dir
+					: FileOperations.GetRelativePath(_project.ProjectFile, dir));
+			}
+		}
 
-            DialogResult include = includeDirBrowser.ShowDialog();
-            if (include == DialogResult.OK && !includeDirList.Items.Contains(includeDirBrowser.SelectedPath))
-            {
-                includeDirList.Items.Add(includeDirBrowser.SelectedPath);
-            }
-        }
+		private void addDirButton_Click(object sender, EventArgs e)
+		{
+			if (!_project.IsInternal)
+			{
+				includeDirBrowser.SelectedPath = _project.ProjectDirectory;
+			}
 
-        private void deleteDirButton_Click(object sender, EventArgs e)
-        {
-            object index = includeDirList.SelectedItem;
-            if (index != null)
-            {
-                includeDirList.Items.Remove(index);
-            }
-        }
+			DialogResult include = includeDirBrowser.ShowDialog();
+			if (include == DialogResult.OK && !includeDirList.Items.Contains(includeDirBrowser.SelectedPath))
+			{
+				includeDirList.Items.Add(includeDirBrowser.SelectedPath);
+			}
+		}
 
-        private void okButton_Click(object sender, EventArgs e)
-        {
-            if (ProjectService.IsInternal)
-            {
-                Properties.Settings.Default.includeDir = string.Empty;
-            }
-            else
-            {
-                ProjectService.IncludeDirs.Clear();
-            }
+		private void deleteDirButton_Click(object sender, EventArgs e)
+		{
+			object index = includeDirList.SelectedItem;
+			if (index != null)
+			{
+				includeDirList.Items.Remove(index);
+			}
+		}
 
-            string temp = string.Empty;
-            string baseDir = ProjectService.IsInternal ? string.Empty : ProjectService.ProjectFile;
-            foreach (string includeDir in includeDirList.Items)
-            {
-                if (ProjectService.IsInternal)
-                {
-                    temp += includeDir + '\n';
-                }
-                else
-                {
-                    temp = new Uri(Path.Combine(Path.GetDirectoryName(ProjectService.ProjectFile), includeDir)).AbsolutePath;
-                    ProjectService.IncludeDirs.Add(temp);
-                }
-            }
+		private void okButton_Click(object sender, EventArgs e)
+		{
+			if (_project.IsInternal)
+			{
+				Settings.Default.includeDirs = new StringCollection();
+			}
+			else
+			{
+				_project.IncludeDirs.Clear();
+			}
 
-            if (ProjectService.IsInternal)
-            {
-                Properties.Settings.Default.includeDir = temp;
-            }
-            else
-            {
-                ProjectService.SaveProject();
-            }
-        }
-    }
+			foreach (string includeDir in includeDirList.Items)
+			{
+				if (_project.IsInternal)
+				{
+					Settings.Default.includeDirs.Add(includeDir);
+				}
+				else
+				{
+					string path = Path.GetDirectoryName(_project.ProjectFile);
+					if (string.IsNullOrEmpty(path))
+					{
+						continue;
+					}
+					string temp = new Uri(Path.Combine(path, includeDir)).AbsolutePath;
+					_project.IncludeDirs.Add(temp);
+				}
+			}
+
+			if (!_project.IsInternal)
+			{
+				_project.SaveProject();
+			}
+		}
+	}
 }
