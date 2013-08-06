@@ -505,13 +505,12 @@ namespace Revsoft.Wabbitcode.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
-        public string includeDir {
+        public global::System.Collections.Specialized.StringCollection includeDirs {
             get {
-                return ((string)(this["includeDir"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["includeDirs"]));
             }
             set {
-                this["includeDir"] = value;
+                this["includeDirs"] = value;
             }
         }
         

@@ -66,49 +66,45 @@ namespace Revsoft.TextEditor.Document
 		{
 			Breakpoint newMark;
 			newMark = Factory != null ? Factory.CreateBreakpoint(document, location) :
-                                                new Breakpoint(document, location);
+												new Breakpoint(document, location);
 
 			Type newMarkType = newMark.GetType();
 			
 			for (int i = 0; i < breakpoint.Count; ++i) {
 				Breakpoint mark = breakpoint[i];
 
-			    if (mark.LineNumber != location.Line || !mark.CanToggle || mark.GetType() != newMarkType) 
-                    continue;
-			    RemoveMark(mark);
-                //breakpoint.RemoveAt(i);
-			    //OnRemoved(new BreakpointEventArgs(mark));
-			    return;
+				if (mark.LineNumber != location.Line || !mark.CanToggle || mark.GetType() != newMarkType) 
+					continue;
+				RemoveMark(mark);
+				return;
 			}
-		    AddMark(newMark);
-			//breakpoint.Add(newMark);
-			//OnAdded(new BreakpointEventArgs(newMark));
+			AddMark(newMark);
 		}
 		
 		public void AddMark(Breakpoint mark)
 		{
-            //Adds the marker
-            if (addMarker(mark) == false)
-                return;
-            breakpoint.Add(mark);
+			//Adds the marker
+			if (addMarker(mark) == false)
+				return;
+			breakpoint.Add(mark);
 			OnAdded(new BreakpointEventArgs(mark));
 		}
 
-        public void RemoveMark(Breakpoint mark)
+		public void RemoveMark(Breakpoint mark)
 		{
-            removeMarker(mark);
+			RemoveMarkerHighlight(mark);
 			OnRemoved(new BreakpointEventArgs(mark));
-            breakpoint.Remove(mark);
+			breakpoint.Remove(mark);
 		}
 		
 		public void RemoveMarks(Predicate<Breakpoint> predicate)
 		{
 			for (int i = 0; i < breakpoint.Count; ++i) {
 				Breakpoint bm = breakpoint[i];
-			    if (!predicate(bm)) 
-                    continue;
-			    breakpoint.RemoveAt(i--);
-			    OnRemoved(new BreakpointEventArgs(bm));
+				if (!predicate(bm)) 
+					continue;
+				breakpoint.RemoveAt(i--);
+				OnRemoved(new BreakpointEventArgs(bm));
 			}
 		}
 		
@@ -125,77 +121,69 @@ namespace Revsoft.TextEditor.Document
 			return false;
 		}
 
-        public bool addMarker(Breakpoint mark)
-        {
-            TextMarker marker = getMarker(mark.LineNumber);
-            if (marker == null)
-                return false;
-            document.MarkerStrategy.AddMarker(marker);
-            return true;
-        }
+		public bool addMarker(Breakpoint mark)
+		{
+			TextMarker marker = HighlightBreakpointMarker(mark.LineNumber);
+			if (marker == null)
+			{
+				return false;
+			}
+			document.MarkerStrategy.AddMarker(marker);
+			return true;
+		}
 
-	    public void removeMarker(Breakpoint mark)
-        {
+		public void RemoveMarkerHighlight(Breakpoint mark)
+		{
 			document.MarkerStrategy.RemoveAll(breakpoint => breakpoint.Offset == document.GetOffsetForLineNumber(mark.LineNumber) + 
 				document.FormattingStrategy.GetIndentation(document, mark.LineNumber).Length && breakpoint.Tag == "Breakpoint");
-			/*else
+
+			document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, mark.LineNumber));
+			document.CommitUpdate();
+		}
+
+		private TextMarker HighlightBreakpointMarker(int lineNumber)
+		{
+			//TODO: remove this logic from here
+			int start = document.GetOffsetForLineNumber(lineNumber);
+			int length = document.TextContent.Split('\n')[lineNumber].Length;
+			while (start == document.TextContent.Length || (start > 0 && document.TextContent[start] != '\n'))
+				start--;
+			start++;
+			length--;
+			if (char.IsLetterOrDigit(document.TextContent[start]))
+				return null;
+			while (document.TextContent[start] == ' ' || document.TextContent[start] == '\t')
 			{
-				markers = document.MarkerStrategy.GetMarkers(document.GetOffsetForLineNumber(mark.LineNumber) + mark.ColumnNumber - 1);
-				if (markers.Count > 0)
-				{
-					int i = 0;
-					while (markers[i].Offset != marker.Offset && i < markers.Count)
-						i++;
-					document.MarkerStrategy.RemoveMarker(markers[i]);
-				}
-			}*/
+				start++;
+				length--;
+			}
+			if (length < 0)
+				length = 1;
+			if (document.TextContent.IndexOf(';', start, length) != -1)
+				length = document.TextContent.IndexOf(';', start, length) - start - 1;
+			while (document.TextContent[start + length] == ' ' || document.TextContent[start + length] == '\t')
+				length--;
+			length++;
+			if (length < 0)
+				return null;
+			List<FoldMarker> foldings = document.FoldingManager.GetFoldingsContainsLineNumber(lineNumber);
+			if (foldings.Count > 0)
+				foreach (FoldMarker fold in foldings)
+					if (fold.InnerText.ToLower().EndsWith("#endcomment"))
+						return null;
+			if (document.TextContent.Substring(start, length).StartsWith("#") || document.TextContent.Substring(start, length).StartsWith(".") || document.TextContent.Substring(start, length).Trim().Length == 0)
+				return null;
+			return new TextMarker(start, length, TextMarkerType.SolidBlock, Color.Maroon, Color.White) { Tag = "Breakpoint" };
+		}
 
-            document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, mark.LineNumber));
-            document.CommitUpdate();
-        }
-
-	    private TextMarker getMarker(int lineNumber)
-        {
-            int start = document.GetOffsetForLineNumber(lineNumber);
-            int length = document.TextContent.Split('\n')[lineNumber].Length;
-            while (start == document.TextContent.Length || (start > 0 && document.TextContent[start] != '\n'))
-                start--;
-            start++;
-            length--;
-            if (char.IsLetterOrDigit(document.TextContent[start]))
-                return null;
-            while (document.TextContent[start] == ' ' || document.TextContent[start] == '\t')
-            {
-                start++;
-                length--;
-            }
-            if (length < 0)
-                length = 1;
-            if (document.TextContent.IndexOf(';', start, length) != -1)
-                length = document.TextContent.IndexOf(';', start, length) - start - 1;
-            while (document.TextContent[start + length] == ' ' || document.TextContent[start + length] == '\t')
-                length--;
-            length++;
-            if (length < 0)
-                return null;
-            List<FoldMarker> foldings = document.FoldingManager.GetFoldingsContainsLineNumber(lineNumber);
-            if (foldings.Count > 0)
-                foreach (FoldMarker fold in foldings)
-                    if (fold.InnerText.ToLower().EndsWith("#endcomment"))
-                        return null;
-            if (document.TextContent.Substring(start, length).StartsWith("#") || document.TextContent.Substring(start, length).StartsWith(".") || document.TextContent.Substring(start, length).Trim().Length == 0)
-                return null;
-            return new TextMarker(start, length, TextMarkerType.SolidBlock, Color.Maroon, Color.White) { Tag = "Breakpoint" };
-        }
-
-	    /// <remarks>
+		/// <remarks>
 		/// Clears all breakpoint
 		/// </remarks>
 		public void Clear()
 		{
 			foreach (Breakpoint mark in breakpoint) {
-                OnRemoved(new BreakpointEventArgs(mark));
-                removeMarker(mark);
+				OnRemoved(new BreakpointEventArgs(mark));
+				RemoveMarkerHighlight(mark);
 			}
 			breakpoint.Clear();
 		}

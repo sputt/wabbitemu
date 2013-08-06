@@ -93,7 +93,7 @@
             this.includeDirList.Size = new System.Drawing.Size(276, 199);
             this.includeDirList.TabIndex = 2;
             // 
-            // IncludeDir
+            // IncludeDirs
             // 
             this.AcceptButton = this.okButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);

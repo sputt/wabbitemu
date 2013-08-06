@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Services;
+﻿using System.Linq;
+using Revsoft.Wabbitcode.Services;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -6,70 +7,74 @@ using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
-    public partial class StackViewer : ToolWindow
-    {
-        private MainFormRedone mainForm;
-        private WabbitcodeDebugger debugger;
+	public partial class StackViewer : ToolWindow
+	{        
+		private WabbitcodeDebugger debugger;
+		private readonly ISymbolService _symbolService;
 
-        public StackViewer(MainFormRedone mainForm)
-        {
-            InitializeComponent();
+		public StackViewer(IDockingService dockingService, ISymbolService symbolService)
+			: base(dockingService)
+		{
+			InitializeComponent();
 
-            this.mainForm = mainForm;
-        }
+			_symbolService = symbolService;
+			dockingService.MainForm.OnDebuggingStarted += MainForm_OnDebuggingStarted;
+		}
 
-        public void AddStackData(int address, int data)
-        {
-            string dataString = data.ToString("X4");
-            if (data > 0x8000)
-            {
-                List<string> possibles = debugger.SymbolTable.GetLabelsFromAddress(data.ToString("X4"));
-                if (possibles.Count > 0)
-                {
-                    foreach (string value in possibles)
-                    {
-                        dataString += " (" + value.ToLower() + ")";
-                    }
-                }
-            }
+		void MainForm_OnDebuggingStarted(object sender, Services.Debugger.DebuggingEventArgs e)
+		{
+			debugger = e.Debugger;
+		}
 
-            DataGridViewRow row = new DataGridViewRow();
-            stackView.Rows.Insert(0, row);
-            stackView.Rows[0].Cells[0].Value = address.ToString("X4");
-            stackView.Rows[0].Cells[1].Value = dataString;
-        }
+		public void AddStackData(int address, int data)
+		{
+			string dataString = data.ToString("X4");
+			if (data > 0x8000)
+			{
+				List<string> possibles = _symbolService.SymbolTable.GetLabelsFromAddress(data.ToString("X4"));
+				if (possibles.Count > 0)
+				{
+					dataString = possibles.Aggregate(dataString, (current, value) => current + (" (" + value.ToLower() + ")"));
+				}
+			}
 
-        public override void Copy()
-        {
-            Clipboard.SetDataObject(stackView.GetClipboardContent());
-        }
+			DataGridViewRow row = new DataGridViewRow();
+			stackView.Rows.Insert(0, row);
+			stackView.Rows[0].Cells[0].Value = address.ToString("X4");
+			stackView.Rows[0].Cells[1].Value = dataString;
+		}
 
-        public void RemoveLastRow()
-        {
-            if (stackView.Rows.Count == 0)
-            {
-                throw new Exception("Stack underflow");
-            }
+		public override void Copy()
+		{
+			Clipboard.SetDataObject(stackView.GetClipboardContent());
+		}
 
-            stackView.Rows.Remove(stackView.Rows[0]);
-        }
+		public void RemoveLastRow()
+		{
+			if (stackView.Rows.Count == 0)
+			{
+				throw new Exception("Stack underflow");
+			}
 
-        internal void Clear()
-        {
-            stackView.Rows.Clear();
-        }
+			stackView.Rows.Remove(stackView.Rows[0]);
+		}
 
-        private void stackView_DoubleClick(object sender, System.EventArgs e)
-        {
-            if (stackView.SelectedRows.Count == 0)
-            {
-                return;
-            }
+		internal void Clear()
+		{
+			stackView.Rows.Clear();
+		}
 
-            ushort address = ushort.Parse(
-                                 stackView.Rows[stackView.SelectedRows[0].Index].Cells[1].Value.ToString(),
-                                 NumberStyles.HexNumber);
-            debugger.GotoAddress(address);
-        }
-    }
+		private void stackView_DoubleClick(object sender, System.EventArgs e)
+		{
+			if (stackView.SelectedRows.Count == 0)
+			{
+				return;
+			}
+
+			ushort address = ushort.Parse(
+								 stackView.Rows[stackView.SelectedRows[0].Index].Cells[1].Value.ToString(),
+								 NumberStyles.HexNumber);
+			debugger.GotoAddress(address);
+		}
+	}
 }

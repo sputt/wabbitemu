@@ -507,10 +507,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\GlobalAssemblyInfo.cs" />
+    <Compile Include="Document\BreakpointManager.cs" />
     <Compile Include="Src\Actions\BreakpointActions.cs" />
     <Compile Include="Src\Document\BreakpointManager\Breakpoint.cs" />
     <Compile Include="Src\Document\BreakpointManager\BreakpointEventHandler.cs" />
-    <Compile Include="Src\Document\BreakpointManager\BreakpointManager.cs" />
     <Compile Include="Src\Document\BreakpointManager\BreakpointManagerMemento.cs" />
     <Compile Include="Src\Document\DefaultDocument.cs" />
     <Compile Include="Src\Document\DocumentEventArgs.cs" />

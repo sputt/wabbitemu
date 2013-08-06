@@ -1,428 +1,178 @@
-﻿namespace Revsoft.Wabbitcode.Services
+﻿using System.Threading.Tasks;
+using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Services.Project;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Windows.Forms;
+
+namespace Revsoft.Wabbitcode.Services
 {
-    using Revsoft.Wabbitcode.Classes;
-    using Revsoft.Wabbitcode.Properties;
-    using Revsoft.Wabbitcode.Services.Parser;
-    using Revsoft.Wabbitcode.Services.Project;
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
-    using System.Linq;
-    using System.Threading;
-    using System.Windows.Forms;
+	[ServiceDependency(typeof(IAssemblerService))]
+	[ServiceDependency(typeof(IParserService))]
+	[ServiceDependency(typeof(ISymbolService))]
+	public class ProjectService : IProjectService
+	{
+		private bool _isInternal = true;
+		private readonly List<ParserInformation> _parseInfo = new List<ParserInformation>();
+		private readonly IParserService _parserService;
+		private readonly IAssemblerService _assemblerService;
+		private readonly ISymbolService _symbolService;
 
-    public static class ProjectService
-    {
-        private static bool isInternal = true;
-        private static List<ParserInformation> parseInfo = new List<ParserInformation>();
-        private static WabbitcodeProject project;
-        private static FileSystemWatcher projectWatcher;
+		private IList<ParserInformation> ParserInfomInformation
+		{
+			get
+			{
+				return _parseInfo;
+			}
+		}
 
-        public static IList<BuildConfig> BuildConfigs
-        {
-            get
-            {
-                return project.BuildSystem.BuildConfigs;
-            }
-        }
+		public WabbitcodeProject Project { get; private set; }
 
-        public static BuildConfig CurrentBuildConfig
-        {
-            get
-            {
-                return project.BuildSystem.CurrentConfig;
-            }
-        }
+		public ProjectService(IAssemblerService assemblerService, IParserService parserService, ISymbolService symbolService)
+		{
+			_assemblerService = assemblerService;
+			_parserService = parserService;
+			_symbolService = symbolService;
+		}
 
-        public static int CurrentConfigIndex
-        {
-            get
-            {
-                return project.BuildSystem.CurrentConfigIndex;
-            }
-            set
-            {
-                project.BuildSystem.CurrentConfigIndex = value;
-            }
-        }
+		public bool OpenProject(string fileName)
+		{
+			Project = new WabbitcodeProject(fileName, _assemblerService);
+			Project.OpenProject(fileName);
+			_symbolService.ProjectDirectory = Project.ProjectDirectory;
 
-        public static List<string> IncludeDirs
-        {
-            get
-            {
-                return project.IncludeDir;
-            }
-            set
-            {
-                project.IncludeDir = value;
-            }
-        }
+			_parseInfo.Clear();
+			Task.Factory.StartNew(() => ParseFiles(Project.MainFolder));
 
-        public static bool IsInternal
-        {
-            get
-            {
-                return isInternal;
-            }
-            set
-            {
-                isInternal = value;
-            }
-        }
+			return true;
+		}
 
-        public static ProjectFolder MainFolder
-        {
-            get
-            {
-                if (project == null)
-                {
-                    return null;
-                }
-                return project.MainFolder;
-            }
+		public ProjectFile AddFile(ProjectFolder parent, string fullPath)
+		{
+			return Project.AddFile(parent, fullPath);
+		}
 
-            set
-            {
-                project.MainFolder = value;
-            }
-        }
+		public ProjectFolder AddFolder(string dirName, ProjectFolder parentDir)
+		{
+			return Project.AddFolder(dirName, parentDir);
+		}
 
-        public static IList<ParserInformation> ParseInfo
-        {
-            get
-            {
-                return parseInfo;
-            }
-        }
+		public void CloseProject()
+		{
+			DialogResult result = DialogResult.No;
+			if (Project.NeedsSave && !Settings.Default.autoSaveProject)
+			{
+				result = MessageBox.Show("Would you like to save your changes to the project file?", "Save project?", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+			}
+			if (result == DialogResult.Yes || Settings.Default.autoSaveProject)
+			{
+				SaveProject();
+			}
+			_isInternal = true;
+		}
 
-        public static WabbitcodeProject Project
-        {
-            get
-            {
-                return project;
-            }
-            set
-            {
-                project = value;
-            }
-        }
+		public bool ContainsFile(string file)
+		{
+			return file != null && Project.ContainsFile(file);
+		}
 
-        public static string ProjectDirectory
-        {
-            get
-            {
-                return project.ProjectDirectory;
-            }
-        }
+		public void CreateInternalProject()
+		{
+			Project = new WabbitcodeProject(_assemblerService);
+			_isInternal = true;
+		}
 
-        public static string ProjectFile
-        {
-            get
-            {
-                return project.ProjectFile;
-            }
-        }
+		public void CreateNewProject(string projectFile, string projectName)
+		{
+			Project = new WabbitcodeProject(_assemblerService);
+			Project.CreateNewProject(projectFile, projectName);
+			_isInternal = false;
+		}
 
-        public static string ProjectName
-        {
-            get
-            {
-                if (project == null)
-                {
-                    return null;
-                }
-                return project.ProjectName;
-            }
+		public void DeleteFile(string fullPath)
+		{
+			ProjectFile file = Project.FindFile(fullPath);
+			DeleteFile(file.Folder, file);
+		}
 
-            set
-            {
-                project.ProjectName = value;
-            }
-        }
+		public void DeleteFile(ProjectFolder parentDir, ProjectFile file)
+		{
+			RemoveParseData(file.FileFullPath);
+			Project.DeleteFile(parentDir, file);
+		}
 
-        public static FileSystemWatcher ProjectWatcher
-        {
-            get
-            {
-                return projectWatcher;
-            }
-        }
+		public void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir)
+		{
+			Project.DeleteFolder(parentDir, dir);
+		}
 
-        public static bool OpenProject(string fileName)
-        {
-            if (!OpenProject(fileName, false))
-            {
-                return false;
-            }
+		public void RemoveParseData(string fullPath)
+		{
+			ParserInformation replaceMe = GetParseInfo(fullPath);
+			if (replaceMe != null)
+			{
+				ParserInfomInformation.Remove(replaceMe);
+			}
+		}
 
-            DockingService.MainForm.UpdateProjectMenu(true);
-            DockingService.MainForm.UpdateMenus(DockingService.Documents.Count() > 0);
-            DockingService.ProjectViewer.BuildProjTree();
-            return true;
-        }
+		public ParserInformation GetParseInfo(string file)
+		{
+			lock (_parseInfo)
+			{
+				foreach (var info in _parseInfo.Where(info => string.Equals(info.SourceFile, file)))
+				{
+					return info;
+				}
+			}
 
-        public static bool OpenProject(string fileName, bool closeFiles)
-        {
-            if (closeFiles)
-            {
-                foreach (Form mdiChild in DockingService.Documents)
-                {
-                    mdiChild.Close();
-                }
-            }
+			return null;
+		}
 
-            project = new WabbitcodeProject(fileName);
-            project.OpenProject(fileName);
+		public void SaveProject()
+		{
+			Project.SaveProject();
+		}
 
-            if (!InitWatcher(project.ProjectDirectory))
-            {
-                return false;
-            }
+		private void ParseFiles(ProjectFolder folder)
+		{
+			foreach (ProjectFolder subFolder in folder.Folders)
+			{
+				ParseFiles(subFolder);
+			}
 
-            if (closeFiles)
-            {
-                DockingService.ShowDockPanel(DockingService.ProjectViewer);
-                DockingService.ProjectViewer.BuildProjTree();
-            }
+			ProjectFile[] filesToParse = new ProjectFile[folder.Files.Count];
+			folder.Files.CopyTo(filesToParse, 0);
+			foreach (ProjectFile file in filesToParse)
+			{
+				_parserService.ParseFile(0, file.FileFullPath);
+			}
+		}
 
-            DockingService.DirectoryViewer.buildDirectoryTree(Directory.GetFiles(ProjectDirectory));
-            DockingService.MainForm.UpdateProjectMenu(true);
+		public IEnumerable<List<Reference>> FindAllReferences(string refString)
+		{
+			var refsList = new List<List<Reference>>();
+			var files = Project.GetProjectFiles();
+			refsList.AddRange(files.Select(file =>
+			{
+				string filePath = Path.Combine(Project.ProjectDirectory, file.FileFullPath);
+				return _parserService.FindAllReferencesInFile(filePath, refString);
+			}).Where(refs => refs.Count > 0));
+			return refsList;
+		}
 
-            // ThreadStart threadStart = new ThreadStart(GetIncludeDirectories);
-            ThreadPool.QueueUserWorkItem(ParseFiles);
 
-            if (Settings.Default.startupProject != fileName)
-            {
-                if (
-                    MessageBox.Show("Would you like to make this your default project?",
-                                    "Startup Project",
-                                    MessageBoxButtons.YesNo,
-                                    MessageBoxIcon.Question) == DialogResult.Yes)
-                {
-                    Settings.Default.startupProject = fileName;
-                }
-            }
+		#region IService
+		public void DestroyService()
+		{
+			
+		}
 
-            return true;
-        }
-
-        internal static ProjectFile AddFile(ProjectFolder parent, string fullPath)
-        {
-            return project.AddFile(parent, fullPath);
-        }
-
-        internal static ProjectFolder AddFolder(string dirName, ProjectFolder parentDir)
-        {
-            return project.AddFolder(dirName, parentDir);
-        }
-
-        internal static void CloseProject()
-        {
-            DialogResult result = DialogResult.No;
-            if (Project.NeedsSave && !Settings.Default.autoSaveProject)
-            {
-                result = MessageBox.Show("Would you like to save your changes to the project file?", "Save project?", MessageBoxButtons.YesNo, MessageBoxIcon.None);
-            }
-            if (result == DialogResult.Yes || Settings.Default.autoSaveProject)
-            {
-                SaveProject();
-            }
-            isInternal = true;
-        }
-
-        internal static bool ContainsFile(string file)
-        {
-            return file == null ? false :project.ContainsFile(file);
-        }
-
-        internal static void CreateInternalProject()
-        {
-            project = new WabbitcodeProject();
-            isInternal = true;
-            DockingService.MainForm.UpdateProjectMenu(false);
-            DockingService.ProjectViewer.BuildProjTree();
-        }
-
-        internal static void CreateNewProject(string projectFile, string projectName)
-        {
-#if !DEBUG
-            try
-            {
-#endif
-                project = new WabbitcodeProject();
-                project.CreateNewProject(projectFile, projectName);
-                isInternal = false;
-                DockingService.ShowDockPanel(DockingService.ProjectViewer);
-#if !DEBUG
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Failed to create new project file\n" + ex.ToString());
-            }
-#endif
-        }
-
-        internal static void DeleteFile(string fullPath)
-        {
-            ProjectFile file = project.FindFile(fullPath);
-            DeleteFile(file.Folder, file);
-            project.NeedsSave = true;
-        }
-
-        internal static void DeleteFile(ProjectFolder parentDir, ProjectFile file)
-        {
-            RemoveParseData(file.FileFullPath);
-            project.DeleteFile(parentDir, file);
-            project.NeedsSave = true;
-        }
-
-        internal static void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir)
-        {
-            project.DeleteFolder(parentDir, dir);
-            project.NeedsSave = true;
-        }
-
-        internal static ParserInformation GetParseInfo()
-        {
-            return GetParseInfo(DocumentService.ActiveFileName);
-        }
-
-        internal static void RemoveParseData(string fullPath)
-        {
-            ParserInformation replaceMe = GetParseInfo(fullPath);
-            if (replaceMe != null)
-            {
-                ParseInfo.Remove(replaceMe);
-            }
-        }
-
-        internal static ParserInformation GetParseInfo(string file)
-        {
-            lock (parseInfo)
-            {
-                for (int i = 0; i < parseInfo.Count; i++)
-                {
-                    var info = parseInfo[i];
-                    if (string.Equals(info.SourceFile, file))
-                    {
-                        return info;
-                    }
-                }
-            }
-
-            return null;
-        }
-
-        internal static void SaveProject()
-        {
-            project.BuildXMLFile();
-            DockingService.ProjectViewer.BuildProjTree();
-            project.NeedsSave = false;
-        }
-
-        internal static void UpdateFileChanged(NewEditor doc, string fileName)
-        {
-            projectWatcher.EnableRaisingEvents = false;
-            DialogResult result = MessageBox.Show(fileName + " modified outside the editor.\nLoad changes?", "File modified", MessageBoxButtons.YesNo);
-            if (result == System.Windows.Forms.DialogResult.Yes)
-            {
-                DocumentService.OpenDocument(doc, fileName);
-            }
-
-            projectWatcher.EnableRaisingEvents = true;
-        }
-
-        private static string GetProjectIncludeDirectories(IEnumerable<string> directories)
-        {
-            string includeDir = "";
-            foreach (string directory in directories)
-            {
-                GetProjectIncludeDirectories(Directory.GetDirectories(directory));
-                includeDir += directory + "\n";
-            }
-
-            return includeDir;
-        }
-
-        private static bool InitWatcher(string location)
-        {
-            projectWatcher = new FileSystemWatcher(location);
-            projectWatcher.Changed += new FileSystemEventHandler(projectWatcher_Changed);
-            projectWatcher.Deleted += new FileSystemEventHandler(projectWatcher_Deleted);
-            projectWatcher.Renamed += new RenamedEventHandler(projectWatcher_Renamed);
-            projectWatcher.Created += new FileSystemEventHandler(projectWatcher_Created);
-            projectWatcher.EnableRaisingEvents = true;
-            projectWatcher.IncludeSubdirectories = true;
-            projectWatcher.Path = location;
-            return true;
-        }
-
-        private static void ParseFiles(object data)
-        {
-            parseInfo.Clear();
-            ParseFiles(MainFolder);
-        }
-
-        private static void ParseFiles(ProjectFolder folder)
-        {
-            foreach (ProjectFolder subFolder in folder.Folders)
-            {
-                ParseFiles(subFolder);
-            }
-
-            ProjectFile[] filesToParse = new ProjectFile[folder.Files.Count];
-            folder.Files.CopyTo(filesToParse, 0);
-            ParserService parserService = new ParserService();
-            foreach (ProjectFile file in filesToParse)
-            {
-                parserService.ParseFile(0, file.FileFullPath);
-            }
-        }
-
-        private static void projectWatcher_Changed(object sender, FileSystemEventArgs e)
-        {
-            switch (e.ChangeType)
-            {
-            case WatcherChangeTypes.Changed:
-                if (!DocumentService.InternalSave && !string.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
-                {
-                    foreach (NewEditor doc in DockingService.Documents)
-                    {
-                        if (string.Equals(doc.FileName, e.FullPath, StringComparison.OrdinalIgnoreCase))
-                        {
-                            DockingService.MainForm.Invoke(() => UpdateFileChanged(doc, e.FullPath));
-                            break;
-                        }
-                    }
-                }
-
-                break;
-            }
-        }
-
-        private static void projectWatcher_Created(object sender, FileSystemEventArgs e)
-        {
-        }
-
-        private static void projectWatcher_Deleted(object sender, FileSystemEventArgs e)
-        {
-            // throw new NotImplementedException();
-        }
-
-        private static void projectWatcher_Renamed(object sender, RenamedEventArgs e)
-        {
-            if (e.OldFullPath == ProjectDirectory)
-            {
-                if (
-                    MessageBox.Show("Project Folder was renamed, would you like to rename the project?",
-                                    "Rename project",
-                                    MessageBoxButtons.YesNo,
-                                    MessageBoxIcon.Information) == DialogResult.Yes)
-                {
-                    ProjectName = Path.GetFileNameWithoutExtension(e.FullPath);
-                }
-                return;
-            }
-        }
-    }
+		public void InitService(params object[] objects)
+		{
+			
+		}
+		#endregion
+	}
 }

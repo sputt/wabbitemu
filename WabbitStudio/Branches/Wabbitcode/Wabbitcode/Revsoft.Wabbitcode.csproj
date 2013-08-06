@@ -604,8 +604,29 @@
     <Compile Include="BuildSteps.Designer.cs">
       <DependentUpon>BuildSteps.cs</DependentUpon>
     </Compile>
-    <Compile Include="Classes\FileLocations.cs" />
-    <Compile Include="Services\CodeCountInfo.cs" />
+    <Compile Include="Editor\CodeCompletion.cs" />
+    <Compile Include="Editor\EditorEventArgs.cs" />
+    <Compile Include="Editor\RegionFoldingStrategy.cs" />
+    <Compile Include="Resources\Resource.cs" />
+    <Compile Include="Resources\VS2012ColorTable.cs" />
+    <Compile Include="Services\Assembler\AssemblerOutput.cs" />
+    <Compile Include="Services\Assembler\CodeCountInfo.cs" />
+    <Compile Include="Services\Assembler\SpasmDllAssembler.cs" />
+    <Compile Include="Services\BackgroundAssemblerService.cs" />
+    <Compile Include="Services\Debugger\DebuggerBreakpointHitEventArgs.cs" />
+    <Compile Include="Services\Debugger\DebuggerRunningEventArgs.cs" />
+    <Compile Include="Services\Debugger\DebuggerEventArgs.cs" />
+    <Compile Include="Services\Debugger\DebuggerStepEventArgs.cs" />
+    <Compile Include="Services\Interface\IAssemblerService.cs" />
+    <Compile Include="Services\Interface\IBackgroundAssemblerService.cs" />
+    <Compile Include="Services\Interface\IDockingService.cs" />
+    <Compile Include="Services\Interface\IParserService.cs" />
+    <Compile Include="Services\Interface\IProjectService.cs" />
+    <Compile Include="Services\Interface\ISymbolService.cs" />
+    <Compile Include="Services\Symbols\CalcLocation.cs" />
+    <Compile Include="Utils\BreakpointManager.cs" />
+    <Compile Include="Utils\DocumentLocation.cs" />
+    <Compile Include="Utils\FileLocations.cs" />
     <Compile Include="Services\Debugger\BreakpointEventArgs.cs" />
     <Compile Include="Services\Debugger\DebuggingEventArgs.cs" />
     <Compile Include="Exceptions\DebugggingException.cs" />
@@ -616,12 +637,7 @@
       <DependentUpon>StackViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="Extensions\AsmFormattingStrategy.cs" />
-    <Compile Include="Form1.cs" />
-    <Compile Include="Form1.designer.cs">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </Compile>
-    <Compile Include="IStreamWrapper.cs" />
-    <Compile Include="ListBoxItem.cs" />
+    <Compile Include="Utils\ListBoxItem.cs" />
     <Compile Include="Properties\TempSettings.Designer.cs">
       <DependentUpon>TempSettings.settings</DependentUpon>
       <AutoGen>True</AutoGen>
@@ -633,36 +649,32 @@
     <Compile Include="Refactor.Designer.cs">
       <DependentUpon>Refactor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Resources\VS2012ColorTable.cs" />
     <Compile Include="Resources\VS2012ToolStripRenderer.cs" />
-    <Compile Include="Services\AssemblerOutput.cs" />
     <Compile Include="Services\Assembler\AssemblyEventArgs.cs" />
     <Compile Include="Services\Assembler\AssemblyFlags.cs" />
     <Compile Include="Services\Assembler\SpasmExeAssembler.cs" />
     <Compile Include="Services\Assembler\IAssembler.cs" />
     <Compile Include="Exceptions\MissingROMException.cs" />
     <Compile Include="Services\Debugger\IWabbitemuDebugger.cs" />
-    <Compile Include="Services\Debugger\ListFileKey.cs" />
     <Compile Include="Services\Debugger\WabbitemuDebugger.cs" />
     <Compile Include="Services\Interface\IService.cs" />
     <Compile Include="Services\Interface\IServiceFactory.cs" />
     <Compile Include="Services\Debugger\IWabbitcodeDebugger.cs" />
-    <Compile Include="Services\ListFileValue.cs" />
+    <Compile Include="Services\Symbols\ListTable.cs" />
     <Compile Include="Services\MacroService.cs" />
-    <Compile Include="Classes\Resource.cs" />
     <Compile Include="Extensions\ExtensionMethods.cs" />
     <Compile Include="Extensions\FileOperations.cs" />
     <Compile Include="Services\AssemblerService.cs" />
-    <Compile Include="Services\Debugger\SymbolTable.cs" />
+    <Compile Include="Services\Symbols\SymbolTable.cs" />
     <Compile Include="Services\Debugger\WabbitcodeBreakpoint.cs" />
     <Compile Include="Services\ParserService.cs" />
     <Compile Include="Services\ServiceBase.cs" />
     <Compile Include="Services\ServiceDependencyAttribute.cs" />
     <Compile Include="Services\ServiceFactory.cs" />
-    <Compile Include="Services\SpasmDllAssembler.cs" />
+    <Compile Include="Services\SymbolService.cs" />
     <Compile Include="Services\WabbitcodeDebugger.cs" />
-    <Compile Include="Classes\ErrorsClass.cs" />
-    <Compile Include="Classes\HighlightingClass.cs" />
+    <Compile Include="Utils\ErrorsClass.cs" />
+    <Compile Include="Utils\HighlightingClass.cs" />
     <Compile Include="Services\Parser\Equate.cs" />
     <Compile Include="Services\Parser\Define.cs" />
     <Compile Include="Services\Parser\IDefine.cs" />
@@ -683,11 +695,11 @@
     <Compile Include="Services\DockingService.cs" />
     <Compile Include="Services\DocumentService.cs" />
     <Compile Include="Extensions\NativeMethods.cs" />
-    <Compile Include="Docking Windows\BreakpointManager.cs">
+    <Compile Include="Docking Windows\BreakpointManagerWindow.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="Docking Windows\BreakpointManager.designer.cs">
-      <DependentUpon>BreakpointManager.cs</DependentUpon>
+    <Compile Include="Docking Windows\BreakpointManagerWindow.designer.cs">
+      <DependentUpon>BreakpointManagerWindow.cs</DependentUpon>
     </Compile>
     <Compile Include="Docking Windows\CallStack.cs">
       <SubType>Form</SubType>
@@ -718,12 +730,6 @@
     </Compile>
     <Compile Include="Docking Windows\DebugPanel.designer.cs">
       <DependentUpon>DebugPanel.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Docking Windows\DirectoryViewer.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="Docking Windows\DirectoryViewer.designer.cs">
-      <DependentUpon>DirectoryViewer.cs</DependentUpon>
     </Compile>
     <Compile Include="Docking Windows\ProjectViewer.cs">
       <SubType>Form</SubType>
@@ -788,7 +794,6 @@
     <Compile Include="Services\Project\ProjectFile.cs" />
     <Compile Include="Services\Project\ProjectFolder.cs" />
     <Compile Include="Services\Parser\Reference.cs" />
-    <Compile Include="Services\ThreadingService.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="IncludeDir.cs">
       <SubType>Form</SubType>
@@ -834,8 +839,11 @@
     <Compile Include="Extensions\TreeView.cs">
       <SubType>Component</SubType>
     </Compile>
-    <EmbeddedResource Include="Docking Windows\BreakpointManager.resx">
-      <DependentUpon>BreakpointManager.cs</DependentUpon>
+    <Compile Include="Utils\TextEditorSearcher.cs" />
+    <Compile Include="Utils\TextUtils.cs" />
+    <Compile Include="Utils\WabbitcodeBreakpointEventArgs.cs" />
+    <EmbeddedResource Include="Docking Windows\BreakpointManagerWindow.resx">
+      <DependentUpon>BreakpointManagerWindow.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Docking Windows\StackViewer.resx">
       <DependentUpon>StackViewer.cs</DependentUpon>
@@ -843,13 +851,10 @@
     <EmbeddedResource Include="Docking Windows\MacroManager.resx">
       <DependentUpon>MacroManager.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Form1.resx">
-      <DependentUpon>Form1.cs</DependentUpon>
-    </EmbeddedResource>
     <EmbeddedResource Include="Refactor.resx">
       <DependentUpon>Refactor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resources\Info.png" />
+    <EmbeddedResource Include="Resources\PNG\Info.png" />
     <EmbeddedResource Include="NewBreakpointForm.resx">
       <DependentUpon>NewBreakpointForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -880,7 +885,7 @@
     <EmbeddedResource Include="Resources\Z80Asm.xshd" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\GotoCurrent.png" />
+    <EmbeddedResource Include="Resources\PNG\GotoCurrent.png" />
     <Content Include="Resources\Hardware-Chip.ico" />
     <Compile Include="Services\UpdateService.cs" />
     <EmbeddedResource Include="AboutBox.resx">
@@ -894,9 +899,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Docking Windows\DebugPanel.resx">
       <DependentUpon>DebugPanel.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Docking Windows\DirectoryViewer.resx">
-      <DependentUpon>DirectoryViewer.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Docking Windows\ProjectViewer.resx">
       <DependentUpon>ProjectViewer.cs</DependentUpon>
@@ -930,10 +932,10 @@
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
-    <None Include="Resources\run.bmp" />
+    <EmbeddedResource Include="Resources\PNG\run.bmp" />
     <EmbeddedResource Include="Resources\spasm.exe" />
-    <EmbeddedResource Include="Resources\error.png" />
-    <EmbeddedResource Include="Resources\Warning16.png" />
+    <EmbeddedResource Include="Resources\PNG\error.png" />
+    <EmbeddedResource Include="Resources\PNG\Warning16.png" />
     <EmbeddedResource Include="Resources\TemplatesIncludes\keys82.inc" />
     <EmbeddedResource Include="Resources\TemplatesIncludes\ti73.inc" />
     <EmbeddedResource Include="Resources\TemplatesIncludes\ti82.h" />
@@ -1013,11 +1015,19 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Resources\PNG\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <WCFMetadata Include="Service References\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ICSharpCode.TextEditor\Project\Revsoft.TextEditor.csproj">
+      <Project>{2d18be89-d210-49eb-a9dd-2246fbb3df6d}</Project>
+      <Name>Revsoft.TextEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WinFormsUI\WinFormsUI.csproj">
+      <Project>{c75532c4-765b-418e-b09b-46d36b2abdb1}</Project>
+      <Name>WinFormsUI</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="WabbitemuLib">
@@ -1029,16 +1039,6 @@
       <Isolated>False</Isolated>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </COMReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\ICSharpCode.TextEditor\Project\Revsoft.TextEditor.csproj">
-      <Project>{2d18be89-d210-49eb-a9dd-2246fbb3df6d}</Project>
-      <Name>Revsoft.TextEditor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\WinFormsUI\WinFormsUI.csproj">
-      <Project>{c75532c4-765b-418e-b09b-46d36b2abdb1}</Project>
-      <Name>WinFormsUI</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

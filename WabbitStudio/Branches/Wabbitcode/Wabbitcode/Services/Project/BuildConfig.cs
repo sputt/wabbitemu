@@ -1,139 +1,100 @@
-﻿namespace Revsoft.Wabbitcode.Services.Project
+﻿using System;
+using System.Collections.Generic;
+
+namespace Revsoft.Wabbitcode.Services.Project
 {
-    using System;
-    using System.Collections.Generic;
+	public class BuildConfig : ICloneable
+	{
+		private readonly SortedSet<IBuildStep> _steps = new SortedSet<IBuildStep>();
 
-    public class BuildConfig : ICloneable
-    {
-        private string name;
-        private string outputText;
-        private List<IBuildStep> steps = new List<IBuildStep>();
+		public BuildConfig(string name)
+		{
+			Name = name;
+		}
 
-        public BuildConfig(string name)
-        {
-            this.name = name;
-        }
+		public string Name { get; private set; }
 
-        public string Name
-        {
-            get
-            {
-                return this.name;
-            }
-        }
+		public string OutputText { get; private set; }
 
-        public string OutputText
-        {
-            get
-            {
-                return this.outputText;
-            }
-        }
+		public ISet<IBuildStep> Steps
+		{
+			get
+			{
+				return _steps;
+			}
+		}
 
-        public List<IBuildStep> Steps
-        {
-            get
-            {
-                return this.steps;
-            }
-        }
+		public bool Build(IAssemblerService assemblerService, IProject project)
+		{
+			bool succeeded = true;
+			OutputText = string.Empty;
 
-        public bool Build()
-        {
-            bool succeeded = true;
-            this.outputText = String.Empty;
-            SortSteps();
-            ProjectService.Project.ProjectOutputs.Clear();
-            ProjectService.Project.ListOutputs.Clear();
-            ProjectService.Project.LabelOutputs.Clear();
-            foreach (IBuildStep step in this.steps)
-            {
-                succeeded &= step.Build();
-                this.outputText += step.OutputText;
-            }
+			foreach (IBuildStep step in _steps)
+			{
+				succeeded &= step.Build(assemblerService, project);
+				OutputText += step.OutputText;
+			}
 
-            return succeeded;
-        }
+			return succeeded;
+		}
 
-        public object Clone()
-        {
-            BuildConfig clone = new BuildConfig(this.name);
-            clone.steps = new List<IBuildStep>();
-            int counter = 0;
-            foreach (IBuildStep step in this.steps)
-            {
-                clone.steps.Add(step);
-                counter++;
-            }
+		public object Clone()
+		{
+			BuildConfig clone = new BuildConfig(Name);
 
-            return clone;
-        }
+			foreach (IBuildStep step in _steps)
+			{
+				clone._steps.Add(step);
+			}
 
-        public override bool Equals(object obj)
-        {
-            if (!(obj is BuildConfig))
-            {
-                return false;
-            }
+			return clone;
+		}
 
-            BuildConfig config = (BuildConfig)obj;
-            if (config.name == this.name && config.steps.Count == this.steps.Count)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
+		private bool Equals(BuildConfig other)
+		{
+			return string.Equals(Name, other.Name) && Equals(_steps, other._steps);
+		}
 
-        public override int GetHashCode()
-        {
-            return base.GetHashCode();
-        }
+		public override int GetHashCode()
+		{
+			unchecked
+			{
+				return ((Name != null ? Name.GetHashCode() : 0) * 397) ^ (_steps != null ? _steps.GetHashCode() : 0);
+			}
+		}
 
-        public void SortSteps()
-        {
-            this.steps.Sort(SortSteps);
-        }
+		public override bool Equals(object obj)
+		{
+			if (ReferenceEquals(null, obj))
+			{
+				return false;
+			}
 
-        public override string ToString()
-        {
-            return this.name;
-        }
+			if (ReferenceEquals(this, obj))
+			{
+				return true;
+			}
 
-        private static int SortSteps(IBuildStep step1, IBuildStep step2)
-        {
-            if (step1 == null)
-            {
-                if (step2 == null)
-                {
-                    return 0;
-                }
-                else
-                {
-                    return -1;
-                }
-            }
-            else
-            {
-                if (step2 == null)
-                {
-                    return 1;
-                }
-                if (step1.StepNumber == step2.StepNumber)
-                {
-                    return 0;
-                }
-                if (step1.StepNumber > step2.StepNumber)
-                {
-                    return 1;
-                }
-                else
-                {
-                    return -1;
-                }
-            }
-        }
-    }
+			return obj.GetType() == GetType() && Equals((BuildConfig) obj);
+		}
+
+		public void AddStep(IBuildStep step)
+		{
+			if (_steps.Contains(step))
+			{
+				throw new ArgumentException("Step is already added");
+			}
+			_steps.Add(step);
+		}
+
+		public void RemoveStep(IBuildStep step)
+		{
+			_steps.Remove(step);
+		}
+
+		public override string ToString()
+		{
+			return Name;
+		}
+	}
 }

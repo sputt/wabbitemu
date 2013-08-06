@@ -1,35 +1,35 @@
 ﻿namespace Revsoft.Wabbitcode.Services.Project
 {
-    using System;
+	using System;
 
-    public interface IBuildStep : ICloneable
-    {
-        string Description
-        {
-            get;
-        }
+	public interface IBuildStep : ICloneable
+	{
+		string Description
+		{
+			get;
+		}
 
-        string InputFile
-        {
-            get;
-            set;
-        }
+		string InputFile
+		{
+			get;
+			set;
+		}
 
-        string OutputText
-        {
-            get;
-        }
+		string OutputText
+		{
+			get;
+		}
 
-        int StepNumber
-        {
-            get;
-            set;
-        }
+		int StepNumber
+		{
+			get;
+			set;
+		}
 
-        /// <summary>
-        /// Runs the build step
-        /// </summary>
-        /// <returns>Returns true if success, false otherwise</returns>
-        bool Build();
-    }
+		/// <summary>
+		/// Runs the build step
+		/// </summary>
+		/// <returns>Returns true if success, false otherwise</returns>
+		bool Build(IAssemblerService assemblerService, IProject project);
+	}
 }

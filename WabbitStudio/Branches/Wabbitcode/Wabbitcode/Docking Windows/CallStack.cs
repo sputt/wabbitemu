@@ -1,89 +1,123 @@
-﻿using Revsoft.Wabbitcode.Services;
+﻿using System.Linq;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
-    public partial class CallStack : ToolWindow
-    {
-        private MainFormRedone mainForm;
-        private WabbitcodeDebugger debugger;
+	public partial class CallStack : ToolWindow
+	{
+		private WabbitcodeDebugger _debugger;
+		private ushort _oldSp;
+		private readonly IDockingService _dockingService;
+		private readonly ISymbolService _symbolService;
 
-        public CallStack(MainFormRedone mainForm)
-        {
-            InitializeComponent();
+		public CallStack(IDockingService dockingService, ISymbolService symbolService)
+			: base(dockingService)
+		{
+			InitializeComponent();
 
-            this.mainForm = mainForm;
-            mainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
-        }
+			_dockingService = dockingService;
+			_dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+			_symbolService = symbolService;
+		}
 
-        void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
-        {
-            debugger = e.Debugger;
-        }
+		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
+		{
+			_debugger = e.Debugger;
+			_oldSp = 0xFFFF;
+			_debugger.OnDebuggerBreakpointHit += (o, args) => _dockingService.Invoke(UpdateStack);
+		}
 
-        public void AddStackData(int address, int data)
-        {
-            DataGridViewRow row = new DataGridViewRow();
-            string dataString = data.ToString("X4");
-            ListFileKey key = debugger.GetListKey((ushort)data, debugger.GetPageNum((ushort)address));
-            if (key != null)
-            {
-                dataString += " (Possible Call)";
-            }
+		private void UpdateStack()
+		{
+			int currentSP = _debugger.CPU.SP;
 
-            if (data > 0x4000)
-            {
-                List<string> possibles = debugger.SymbolTable.GetLabelsFromAddress(data.ToString("X4"));
-                if (possibles.Count > 0)
-                {
-                    foreach (string value in possibles)
-                    {
-                        dataString += " (" + value.ToLower() + ")";
-                    }
-                }
-            }
+			// if someone has changed sp we dont want a really big callstack
+			if (currentSP < 0xFE66)
+			{
+				return;
+			}
 
-            callStackView.Rows.Insert(0, row);
-            callStackView.Rows[0].Cells[0].Value = address.ToString("X4");
-            callStackView.Rows[0].Cells[1].Value = dataString;
-        }
+			while (_oldSp != currentSP - 2)
+			{
+				if (_oldSp > currentSP - 2)
+				{
+					AddStackData(_oldSp, _debugger.ReadShort(_oldSp));
+					_oldSp -= 2;
+				}
+				else
+				{
+					RemoveLastRow();
+					_oldSp += 2;
+				}
+			}
+		}
 
-        public override void Copy()
-        {
-            Clipboard.SetDataObject(callStackView.GetClipboardContent());
-        }
+		private void AddStackData(int address, int data)
+		{
+			DataGridViewRow row = new DataGridViewRow();
+			string dataString = data.ToString("X4");
+			int page = _debugger.GetPageNum((ushort)address);
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(data, page);
+			if (key != null)
+			{
+				dataString += " (Possible Call)";
+			}
 
-        public void RemoveLastRow()
-        {
-            if (callStackView.Rows.Count == 0)
-            {
-                // uh oh
-                throw new Exception("Stack underflow");
-            }
+			if (data > 0x4000)
+			{
+				List<string> possibles = _symbolService.SymbolTable.GetLabelsFromAddress(dataString);
+				if (possibles.Count > 0)
+				{
+					dataString = possibles.Aggregate(dataString, (current, value) => current + (" (" + value.ToLower() + ")"));
+				}
+			}
 
-            callStackView.Rows.Remove(callStackView.Rows[0]);
-        }
+			callStackView.Rows.Insert(0, row);
+			callStackView.Rows[0].Cells[0].Value = address.ToString("X4");
+			callStackView.Rows[0].Cells[1].Value = dataString;
+		}
 
-        internal void Clear()
-        {
-            callStackView.Rows.Clear();
-        }
+		private void RemoveLastRow()
+		{
+			if (callStackView.Rows.Count == 0)
+			{
+				// uh oh
+				throw new Exception("Stack underflow");
+			}
 
-        private void callStackView_DoubleClick(object sender, System.EventArgs e)
-        {
-            if (callStackView.SelectedRows.Count == 0)
-            {
-                return;
-            }
+			callStackView.Rows.Remove(callStackView.Rows[0]);
+		}
 
-            string stackValue = callStackView.Rows[callStackView.SelectedRows[0].Index].Cells[1].Value.ToString();
-            stackValue = stackValue.TrimStart().Substring(0, 4);
-            ushort address = ushort.Parse(stackValue, NumberStyles.HexNumber);
-            debugger.GotoAddress(address);
-        }
-    }
+		public override void Copy()
+		{
+			if (callStackView != null)
+			{
+				Clipboard.SetDataObject(callStackView.GetClipboardContent());
+			}
+		}
+
+		internal void Clear()
+		{
+			callStackView.Rows.Clear();
+		}
+
+		private void callStackView_DoubleClick(object sender, EventArgs e)
+		{
+			if (callStackView.SelectedRows.Count == 0)
+			{
+				return;
+			}
+
+			string stackValue = callStackView.Rows[callStackView.SelectedRows[0].Index].Cells[1].Value.ToString();
+			stackValue = stackValue.TrimStart().Substring(0, 4);
+			ushort address = ushort.Parse(stackValue, NumberStyles.HexNumber);
+			_debugger.GotoAddress(address);
+		}
+	}
 }

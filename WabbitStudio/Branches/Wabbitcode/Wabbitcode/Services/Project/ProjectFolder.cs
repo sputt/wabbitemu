@@ -1,131 +1,117 @@
-﻿namespace Revsoft.Wabbitcode.Services.Project
+﻿using System.Linq;
+
+namespace Revsoft.Wabbitcode.Services.Project
 {
-    using System;
-    using System.Collections.Generic;
-    using System.IO;
+	using System;
+	using System.Collections.Generic;
+	using System.IO;
 
-    public class ProjectFolder
-    {
-        private List<ProjectFile> files;
-        private List<ProjectFolder> folders;
-        private string name;
-        private IProject parent;
-        private ProjectFolder parentFolder;
+	public class ProjectFolder
+	{
+		private List<ProjectFile> files;
+		private List<ProjectFolder> folders;
+		private string name;
+		private IProject parent;
+		private ProjectFolder parentFolder;
 
-        public ProjectFolder(IProject parent, string folderName)
-        {
-            this.parent = parent;
-            this.name = folderName;
-            this.files = new List<ProjectFile>();
-            this.folders = new List<ProjectFolder>();
-        }
+		public ProjectFolder(IProject parent, string folderName)
+		{
+			this.parent = parent;
+			name = folderName;
+			files = new List<ProjectFile>();
+			folders = new List<ProjectFolder>();
+		}
 
-        public List<ProjectFile> Files
-        {
-            get
-            {
-                return this.files;
-            }
-        }
+		public List<ProjectFile> Files
+		{
+			get
+			{
+				return files;
+			}
+		}
 
-        public List<ProjectFolder> Folders
-        {
-            get
-            {
-                return this.folders;
-            }
-        }
+		public List<ProjectFolder> Folders
+		{
+			get
+			{
+				return folders;
+			}
+		}
 
-        public string Name
-        {
-            get
-            {
-                return this.name;
-            }
-            set
-            {
-                this.name = value;
-            }
-        }
+		public string Name
+		{
+			get
+			{
+				return name;
+			}
+			set
+			{
+				name = value;
+			}
+		}
 
-        public IProject Parent
-        {
-            get
-            {
-                return this.parent;
-            }
-        }
+		public IProject Parent
+		{
+			get
+			{
+				return parent;
+			}
+		}
 
-        public ProjectFolder ParentFolder
-        {
-            get
-            {
-                return this.parentFolder;
-            }
-            set
-            {
-                this.parentFolder = value;
-            }
-        }
+		private ProjectFolder ParentFolder
+		{
+			get
+			{
+				return parentFolder;
+			}
+			set
+			{
+				parentFolder = value;
+			}
+		}
 
-        public override string ToString()
-        {
-            return this.name;
-        }
+		public override string ToString()
+		{
+			return name;
+		}
 
-        internal void AddFile(ProjectFile file)
-        {
-            this.files.Add(file);
-            file.Folder = this;
-            this.parent.NeedsSave = true;
-        }
+		internal void AddFile(ProjectFile file)
+		{
+			files.Add(file);
+			file.Folder = this;
+		}
 
-        internal void AddFolder(ProjectFolder subFolder)
-        {
-            this.folders.Add(subFolder);
-            subFolder.ParentFolder = this;
-            this.parent.NeedsSave = true;
-        }
+		internal void AddFolder(ProjectFolder subFolder)
+		{
+			folders.Add(subFolder);
+			subFolder.ParentFolder = this;
+		}
 
-        /// <summary>
-        /// Returns if the filename is contained in the list of files
-        /// </summary>
-        /// <param name="file">The file name to search for, not full path</param>
-        /// <returns>File found otherwise null</returns>
-        internal ProjectFile FindFile(string file)
-        {
-            foreach (ProjectFile subFile in this.files)
-            {
-                if (string.Equals(Path.GetFileName(subFile.FileFullPath), file, StringComparison.OrdinalIgnoreCase))
-                {
-                    return subFile;
-                }
-            }
-            return null;
-        }
+		/// <summary>
+		/// Returns if the filename is contained in the list of files
+		/// </summary>
+		/// <param name="file">The file name to search for, not full path</param>
+		/// <returns>File found otherwise null</returns>
+		internal ProjectFile FindFile(string file)
+		{
+			return files.FirstOrDefault(subFile => string.Equals(Path.GetFileName(subFile.FileFullPath), file, StringComparison.OrdinalIgnoreCase));
+		}
 
-        /// <summary>
-        /// Searches for a folder in subfolders.
-        /// </summary>
-        /// <param name="folder"></param>
-        /// <returns>Returns folder found, otherwise null</returns>
-        internal ProjectFolder FindFolder(string folder)
-        {
-            foreach (ProjectFolder subFolder in this.folders)
-            {
-                if (subFolder.name == folder)
-                {
-                    return subFolder;
-                }
-            }
-            return null;
-        }
+		/// <summary>
+		/// Searches for a folder in subfolders.
+		/// </summary>
+		/// <param name="folder"></param>
+		/// <returns>Returns folder found, otherwise null</returns>
+		internal ProjectFolder FindFolder(string folder)
+		{
+			return folders.FirstOrDefault(subFolder => subFolder.name == folder);
+		}
 
-        internal void Remove()
-        {
-            this.parentFolder.Folders.Remove(this);
-            this.parentFolder = null;
-            this.parent.NeedsSave = true;
-        }
-    }
+		// TODO: fix
+		internal void Remove()
+		{
+			parentFolder.Folders.Remove(this);
+			parentFolder = null;
+		}
+	}
 }

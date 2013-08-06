@@ -14,8 +14,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         void CancelDebug();
 
-        void DoStep(StepType steptype);
-
         void GotoAddress(ushort address);
 
         bool IsBreakpointPossible(int lineNumber, string fileName);
@@ -29,7 +27,5 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         void StepOut();
 
         void StepOver();
-
-        void UpdateStack();
     }
 }

@@ -1,10 +1,10 @@
-﻿namespace Revsoft.Wabbitcode.Services.Assembler
-{
-    using Revsoft.Wabbitcode.Classes;
-    using System;
-    using System.Collections.Generic;
+using System;
+using System.Collections.Generic;
+using Revsoft.Wabbitcode.Classes;
 
-    public class AssemblerOutput
+namespace Revsoft.Wabbitcode.Services.Assembler
+{
+	public class AssemblerOutput
     {
         public AssemblerOutput(string outputText, bool succeeded)
         {

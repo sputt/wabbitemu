@@ -1,12 +1,9 @@
-﻿using Revsoft.Wabbitcode.Services.Debugger;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Drawing;
 using System.Windows.Forms;
 using System.Xml;
 
-
-namespace Revsoft.Wabbitcode.Classes
+namespace Revsoft.Wabbitcode.Extensions
 {
     public static class ExtensionMethods
     {
@@ -17,7 +14,7 @@ namespace Revsoft.Wabbitcode.Classes
 
         public static void Invoke(this Control control, Action action)
         {
-            control.Invoke((Delegate)action);
+            control.Invoke(action);
         }
 
         public static bool MoveToNextElement(this XmlTextReader reader)
@@ -56,20 +53,6 @@ namespace Revsoft.Wabbitcode.Classes
         public static string ToHexString(this Color color)
         {
             return "#" + color.R.ToString("X2") + color.G.ToString("X2") + color.B.ToString("X2");
-        }
-
-        public static bool TryGetKey(this IDictionary<ListFileKey, ListFileValue> lookup, ListFileValue value, out ListFileKey key)
-        {
-            key = null;
-            foreach (var pair in lookup)
-            {
-                if (pair.Value.Equals(value))
-                {
-                    key = pair.Key;
-                }
-            }
-
-            return key != null;
         }
     }
 }

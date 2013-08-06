@@ -1,4 +1,6 @@
-﻿using Revsoft.Wabbitcode.Classes;
+﻿using System.Drawing;
+using System.Linq;
+using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using System;
@@ -9,173 +11,178 @@ using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
-    public partial class ErrorList : ToolWindow
-    {
-        private int errors;
-        private int warnings;
+	public partial class ErrorList : ToolWindow
+	{
+		private int _errors;
+		private int _warnings;
+		private readonly IDockingService _dockingService;
+		private readonly IProjectService _projectService;
 
-        public ErrorList()
-        {
-            InitializeComponent();
-            errorGridView.ContextMenu = contextMenu1;
-            AssemblerService.Instance.AssemblerFileFinished += this.Instance_AssemblerFileFinished;
-            AssemblerService.Instance.AssemblerProjectFinished += this.Instance_AssemblerProjectFinished;
-        }
+		public ErrorList(IDockingService dockingService, IProjectService projectService, IAssemblerService assemblerService)
+			: base(dockingService)
+		{
+			InitializeComponent();
+			_dockingService = dockingService;
+			_projectService = projectService;
 
-        public override void Copy()
-        {
-            Clipboard.SetDataObject(errorGridView.GetClipboardContent());
-        }
+			errorGridView.ContextMenu = contextMenu1;
+			assemblerService.AssemblerFileFinished += Instance_AssemblerFileFinished;
+			assemblerService.AssemblerProjectFinished += Instance_AssemblerProjectFinished;
+		}
 
-        public void ParseOutput(List<Errors> parsedErrors, string startDir)
-        {
-            this.errors = 0;
-            this.warnings = 0;
-            errorGridView.Rows.Clear();
-            foreach (Errors error in parsedErrors)
-            {
-                if (error.IsWarning)
-                {
-                    this.AddWarning(error.Description, error.File, error.LineNum.ToString(), warnToolButton.Checked);
-                }
-                else
-                {
-                    this.AddError(error.Description, error.File, error.LineNum.ToString(), errorToolButton.Checked);
-                }
-            }
+		public override void Copy()
+		{
+			var data = errorGridView.GetClipboardContent();
+			if (data != null)
+			{
+				Clipboard.SetDataObject(data);
+			}
+		}
 
-            errorToolButton.Text = this.errors + " Errors";
-            warnToolButton.Text = this.warnings + " Warnings";
-            foreach (NewEditor child in DockingService.Documents)
-            {
-                child.UpdateIcons(parsedErrors);
-            }
-        }
+		public void ParseOutput(List<Errors> parsedErrors)
+		{
+			_errors = 0;
+			_warnings = 0;
+			errorGridView.Rows.Clear();
+			foreach (Errors error in parsedErrors)
+			{
+				if (error.IsWarning)
+				{
+					AddWarning(error.Description, error.File, error.LineNum.ToString(), warnToolButton.Checked);
+				}
+				else
+				{
+					AddError(error.Description, error.File, error.LineNum.ToString(), errorToolButton.Checked);
+				}
+			}
 
-        private void AddError(string description, string file, string line, bool visible)
-        {
-            int row = errorGridView.Rows.Add();
+			errorToolButton.Text = _errors + " Errors";
+			warnToolButton.Text = _warnings + " Warnings";
+			foreach (NewEditor child in _dockingService.Documents)
+			{
+				child.UpdateIcons(parsedErrors);
+			}
+		}
 
-            // ComponentResourceManager resources = new ComponentResourceManager(typeof(ErrorList));
-            errorGridView.Rows[row].Cells[0].Value = imageListIcons.Images[0]; // resources.GetObject("CategoryColumn.Image");
-            errorGridView.Rows[row].Cells[1].Value = row + 1;
-            errorGridView.Rows[row].Cells[2].Value = description;
-            errorGridView.Rows[row].Cells[3].Value = Path.GetFileName(file);
-            errorGridView.Rows[row].Cells[3].Tag = file;
-            errorGridView.Rows[row].Cells[4].Value = Convert.ToInt32(line);
-            errorGridView.Rows[row].Tag = "Error";
-            errorGridView.Rows[row].Visible = visible;
-            this.errors++;
-        }
+		private void AddError(string description, string file, string line, bool visible)
+		{
+			int row = errorGridView.Rows.Add();
 
-        private void AddWarning(string description, string file, string line, bool visible)
-        {
-            int row = errorGridView.Rows.Add();
-            errorGridView.Rows[row].Cells[0].Value = imageListIcons.Images[1];
-            errorGridView.Rows[row].Cells[1].Value = row + 1;
-            errorGridView.Rows[row].Cells[2].Value = description;
-            errorGridView.Rows[row].Cells[3].Value = Path.GetFileName(file);
-            errorGridView.Rows[row].Cells[3].Tag = file;
-            errorGridView.Rows[row].Cells[4].Value = Convert.ToInt32(line);
-            errorGridView.Rows[row].Tag = "Warning";
-            errorGridView.Rows[row].Visible = visible;
-            this.warnings++;
-        }
+			// ComponentResourceManager resources = new ComponentResourceManager(typeof(ErrorList));
+			errorGridView.Rows[row].Cells[0].Value = imageListIcons.Images[0]; // resources.GetObject("CategoryColumn.Image");
+			errorGridView.Rows[row].Cells[1].Value = row + 1;
+			errorGridView.Rows[row].Cells[2].Value = description;
+			errorGridView.Rows[row].Cells[3].Value = Path.GetFileName(file);
+			errorGridView.Rows[row].Cells[3].Tag = file;
+			errorGridView.Rows[row].Cells[4].Value = Convert.ToInt32(line);
+			errorGridView.Rows[row].Tag = "Error";
+			errorGridView.Rows[row].Visible = visible;
+			_errors++;
+		}
 
-        private void Copy(object sender, EventArgs e)
-        {
-            this.Copy();
-        }
+		private void AddWarning(string description, string file, string line, bool visible)
+		{
+			int row = errorGridView.Rows.Add();
+			errorGridView.Rows[row].Cells[0].Value = imageListIcons.Images[1];
+			errorGridView.Rows[row].Cells[1].Value = row + 1;
+			errorGridView.Rows[row].Cells[2].Value = description;
+			errorGridView.Rows[row].Cells[3].Value = Path.GetFileName(file);
+			errorGridView.Rows[row].Cells[3].Tag = file;
+			errorGridView.Rows[row].Cells[4].Value = Convert.ToInt32(line);
+			errorGridView.Rows[row].Tag = "Warning";
+			errorGridView.Rows[row].Visible = visible;
+			_warnings++;
+		}
 
-        private void errorGridView_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
-        {
-            if (e.RowIndex < 0)
-            {
-                return;
-            }
+		private void Copy(object sender, EventArgs e)
+		{
+			Copy();
+		}
 
-            int line = (int)errorGridView.Rows[e.RowIndex].Cells[4].Value;
-            string file = errorGridView.Rows[e.RowIndex].Cells[3].Tag.ToString();
-            DocumentService.GotoLine(file, line);
-        }
+		private void errorGridView_CellMouseDoubleClick(object sender, DataGridViewCellMouseEventArgs e)
+		{
+			if (e.RowIndex < 0)
+			{
+				return;
+			}
 
-        private void errorGridView_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button != MouseButtons.Right)
-            {
-                return;
-            }
+			int line = (int)errorGridView.Rows[e.RowIndex].Cells[4].Value;
+			string file = errorGridView.Rows[e.RowIndex].Cells[3].Tag.ToString();
+			DocumentService.GotoLine(file, line);
+		}
 
-            contextMenu1.Show(errorGridView, new System.Drawing.Point(e.X, e.Y));
-        }
+		private void errorGridView_MouseClick(object sender, MouseEventArgs e)
+		{
+			if (e.Button != MouseButtons.Right)
+			{
+				return;
+			}
 
-        private void ErrorList_VisibleChanged(object sender, EventArgs e)
-        {
-            if (Disposing == false)
-            {
-                DockingService.MainForm.UpdateChecks();
-            }
-        }
+			contextMenu1.Show(errorGridView, new Point(e.X, e.Y));
+		}
 
-        private void errorToolButton_CheckedChanged(object sender, EventArgs e)
-        {
-            foreach (DataGridViewRow row in errorGridView.Rows)
-            {
-                if (row.Tag.ToString() == "Error")
-                {
-                    row.Visible = errorToolButton.Checked;
-                }
-            }
-        }
+		private void ErrorList_VisibleChanged(object sender, EventArgs e)
+		{
+			if (Disposing == false)
+			{
+				_dockingService.MainForm.UpdateChecks();
+			}
+		}
 
-        private void fixMenuItem_Click(object sender, EventArgs e)
-        {
-            int row = errorGridView.SelectedRows[0].Index;
-            int line = (int)errorGridView.Rows[row].Cells[4].Value;
-            string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
-            string error = errorGridView.Rows[row].Cells[2].Value.ToString();
-            DocumentService.GotoLine(file, line);
-            if (error.Contains("Relative jump"))
-            {
-                DocumentService.ActiveDocument.FixError(line, DocumentService.FixableErrorType.RelativeJump);
-                errorGridView.Rows.RemoveAt(row);
-            }
-        }
+		private void errorToolButton_CheckedChanged(object sender, EventArgs e)
+		{
+			foreach (DataGridViewRow row in errorGridView.Rows)
+			{
+				if (row.Tag.ToString() == "Error")
+				{
+					row.Visible = errorToolButton.Checked;
+				}
+			}
+		}
 
-        private void gotoMenuItem_Click(object sender, EventArgs e)
-        {
-            int row = errorGridView.SelectedRows[0].Index;
-            int line = (int)errorGridView.Rows[row].Cells[4].Value;
-            string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
-            DocumentService.GotoLine(file, line);
-        }
+		private void fixMenuItem_Click(object sender, EventArgs e)
+		{
+			int row = errorGridView.SelectedRows[0].Index;
+			int line = (int)errorGridView.Rows[row].Cells[4].Value;
+			string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
+			string error = errorGridView.Rows[row].Cells[2].Value.ToString();
+			DocumentService.GotoLine(file, line);
+			if (error.Contains("Relative jump"))
+			{
+				DocumentService.ActiveDocument.FixError(line, DocumentService.FixableErrorType.RelativeJump);
+				errorGridView.Rows.RemoveAt(row);
+			}
+		}
 
-        private void Instance_AssemblerFileFinished(object sender, AssemblyFinishFileEventArgs e)
-        {
-            if (!ProjectService.IsInternal)
-            {
-                return;
-            }
+		private void gotoMenuItem_Click(object sender, EventArgs e)
+		{
+			int row = errorGridView.SelectedRows[0].Index;
+			int line = (int)errorGridView.Rows[row].Cells[4].Value;
+			string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
+			DocumentService.GotoLine(file, line);
+		}
 
-            DockingService.MainForm.Invoke(() =>
-                                           this.ParseOutput(e.Output.ParsedErrors, Path.GetDirectoryName(e.InputFile)));
-        }
+		private void Instance_AssemblerFileFinished(object sender, AssemblyFinishFileEventArgs e)
+		{
+			if (!_projectService.Project.IsInternal)
+			{
+				return;
+			}
 
-        private void Instance_AssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
-        {
-            DockingService.MainForm.Invoke(() =>
-                                           this.ParseOutput(e.Output.ParsedErrors, e.Project.ProjectDirectory));
-        }
+			_dockingService.Invoke(() => ParseOutput(e.Output.ParsedErrors));
+		}
 
-        private void warnToolButton_CheckedChanged(object sender, EventArgs e)
-        {
-            foreach (DataGridViewRow row in errorGridView.Rows)
-            {
-                if (row.Tag.ToString() == "Warning")
-                {
-                    row.Visible = warnToolButton.Checked;
-                }
-            }
-        }
-    }
+		private void Instance_AssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
+		{
+			_dockingService.Invoke(() => ParseOutput(e.Output.ParsedErrors));
+		}
+
+		private void warnToolButton_CheckedChanged(object sender, EventArgs e)
+		{
+			foreach (DataGridViewRow row in errorGridView.Rows.Cast<DataGridViewRow>().Where(row => row.Tag.ToString() == "Warning"))
+			{
+				row.Visible = warnToolButton.Checked;
+			}
+		}
+	}
 }

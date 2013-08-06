@@ -1,5 +1,5 @@
-﻿using Revsoft.Wabbitcode.Services.Assembler;
-using Revsoft.Wabbitcode.Services.Interface;
+﻿using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.Collections.Generic;
@@ -9,267 +9,251 @@ using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Services
 {
-    public class AssemblerService : IService, IDisposable
-    {
-        private static AssemblerService instance;
+	[ServiceDependency(typeof(ISymbolService))]
+	public sealed class AssemblerService : IDisposable, IAssemblerService
+	{
+		#region Events
 
-        private bool disposed = false;
-        private IAssembler assembler;
-        private string outputFormatting = "=================={0}==================" + Environment.NewLine +
-                                          "Assembling {1}" + Environment.NewLine + "{2}";
-        private bool projectSuppressEvents;
+		public delegate void OnFinishAssemblyFile(object sender, AssemblyFinishFileEventArgs e);
+		public event OnFinishAssemblyFile AssemblerFileFinished;
 
-        private bool isAssembling = false;
+		public delegate void OnFinishAssemblyProject(object sender, AssemblyFinishProjectEventArgs e);
+		public event OnFinishAssemblyProject AssemblerProjectFinished;
 
-        private bool projectAssembleRequests = false;
+		#endregion 
 
-        public delegate void OnFinishAssemblyFile(object sender, AssemblyFinishFileEventArgs e);
+		private bool _disposed;
+		private IAssembler _assembler;
+		private readonly string _outputFormatting = "=================={0}==================" + Environment.NewLine +
+										  "Assembling {1}" + Environment.NewLine + "{2}";
 
-        public delegate void OnFinishAssemblyProject(object sender, AssemblyFinishProjectEventArgs e);
+		private readonly ISymbolService _symbolService;
 
-        public event OnFinishAssemblyFile AssemblerFileFinished;
-
-        public event OnFinishAssemblyProject AssemblerProjectFinished;
-
-        public static AssemblerService Instance
-        {
-            get
-            {
-                if (instance == null)
-                {
-                    instance = new AssemblerService();
-                }
-
-                return instance;
-            }
-        }
-
-        public AssemblerOutput AssembleFile(string inputFile)
-        {
-            string outputFile = Path.ChangeExtension(inputFile, this.GetExtension(Properties.Settings.Default.outputFile));
-            return this.AssembleFile(inputFile, outputFile, AssemblyFlags.Normal, false);
-        }
-
-        public AssemblerOutput AssembleFile(string inputFile, string outputFile)
-        {
-            return this.AssembleFile(inputFile, outputFile, AssemblyFlags.Normal, false);
-        }
-
-        public AssemblerOutput AssembleFile(string inputFile, string outputFile, AssemblyFlags flags)
-        {
-            return this.AssembleFile(inputFile, outputFile, AssemblyFlags.Normal, this.projectSuppressEvents);
-        }
-
-        public AssemblerOutput AssembleFile(string inputFile, string outputFile, AssemblyFlags flags, bool suppressEvents)
-        {
-            this.assembler = new SpasmExeAssembler();
-
-            string originalDir = ProjectService.IsInternal ? Path.GetDirectoryName(inputFile) : ProjectService.ProjectDirectory;
-            this.assembler.SetWorkingDirectory(originalDir);
-
-            // include dirs
-            this.assembler.AddIncludeDir(Application.StartupPath);
-            if (!string.IsNullOrEmpty(Properties.Settings.Default.includeDir) || !ProjectService.IsInternal)
-            {
-                List<string> dirs = ProjectService.IsInternal ?
-                                    Properties.Settings.Default.includeDir.Split('\n').ToList<string>() :
-                                    ProjectService.Project.IncludeDir;
-                foreach (string dir in dirs)
-                {
-                    this.assembler.AddIncludeDir(dir);
-                }
-            }
-
-            // setup files
-            this.assembler.SetInputFile(inputFile);
-            this.assembler.SetOutputFile(outputFile);
-
-            // set flags
-            this.assembler.SetFlags(flags);
-            this.assembler.SetCaseSensitive(Properties.Settings.Default.caseSensitive);
-
-            // assemble
-            string rawOutput = this.assembler.Assemble();
-
-            // lets write it to the output window so the user knows whats happening
-            string outputText = string.Format(this.outputFormatting, Path.GetFileName(inputFile),  inputFile, rawOutput);
-            bool errors = outputText.Contains("error");
-            if (!suppressEvents)
-            {
-                this.OnAssemblerFileFinished(this, new AssemblyFinishFileEventArgs(inputFile, outputFile, outputText, !errors));
-            }
-
-            // tell if the assembly was successful
-            return new AssemblerOutput(outputText, !errors);
-        }
-
-        public void AssembleProject(IProject project, bool suppressEvents = false)
-        {
-            if (projectAssembleRequests)
-            {
-                return;
-            }
-            if (this.isAssembling)
-            {
-                this.projectAssembleRequests = true;
-                return;
-            }
-            this.isAssembling = true;
-            ProjectService.ProjectWatcher.EnableRaisingEvents = false;
-
-            this.projectSuppressEvents = suppressEvents;
-            bool succeeded = project.BuildSystem.Build();
-
-            ProjectService.ProjectWatcher.EnableRaisingEvents = true;
-            if (!suppressEvents)
-            {
-                this.OnAssemblerProjectFinished(this, new AssemblyFinishProjectEventArgs(project, project.BuildSystem.OutputText, succeeded));
-            }
-            this.isAssembling = false;
-            if (this.projectAssembleRequests)
-            {
-                this.projectAssembleRequests = false;
-                AssembleProject(project, suppressEvents);
-            }
-        }
-
-        public CodeCountInfo CountCode(string lines)
-        {
-            int size = 0;
-            int min = 0;
-            int max = 0;
-            this.assembler = new SpasmExeAssembler();
-            string[] outputLines = null;
-            if (!string.IsNullOrEmpty(lines))
-            {
-                assembler.SetFlags(AssemblyFlags.CodeCounter | AssemblyFlags.Commandline);
-                outputLines = assembler.Assemble(lines).Split('\n');
-            }
-
-            foreach (string line in outputLines)
-            {
-                if (string.IsNullOrWhiteSpace(line))
-                {
-                    continue;
-                }
-                else if (line.StartsWith("Size:"))
-                {
-                    if (!int.TryParse(line.Substring(6, line.Length - 7), out size))
-                    {
-                        size = 0;
-                    }
-                }
-                else if (line.StartsWith("Min. execution time:"))
-                {
-                    if (!int.TryParse(line.Substring(20, line.Length - 21), out min))
-                    {
-                        min = 0;
-                    }
-                }
-                else if (line.StartsWith("Max. execution time:"))
-                {
-                    if (!int.TryParse(line.Substring(20, line.Length - 21), out max))
-                    {
-                        max = 0;
-                    }
-                }
-            }
-            return new CodeCountInfo(size, min, max);
-        }
+		public AssemblerService(ISymbolService symbolService)
+		{
+			_symbolService = symbolService;
+		}
 
 
-        public void DestroyService()
-        {
-            this.assembler = null;
-        }
+		public AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir,
+			IEnumerable<string> includeDirs, AssemblyFlags flags)
+		{
+			return AssembleFile(inputFile, outputFile, originalDir, includeDirs, flags, false);
+		}
 
-        public void InitService(params object[] objects)
-        {
-            if (objects.Length != 1)
-            {
-                throw new ArgumentException("Invalid number of arguments");
-            }
+		private AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir, IEnumerable<string> includeDirs,
+			AssemblyFlags flags = AssemblyFlags.Normal, bool suppressEvents = false)
+		{
+			_assembler = new SpasmExeAssembler();
 
-            this.assembler = objects[0] as IAssembler;
-            if (this.assembler == null)
-            {
-                throw new ArgumentException("First is not of type of IAssembler");
-            }
-        }
+			_assembler.SetWorkingDirectory(originalDir);
 
-        internal string GetExtension(int outputFile)
-        {
-            string outputFileExt = "bin";
-            switch (outputFile)
-            {
-            case 1:
-                outputFileExt = "73p";
-                break;
-            case 2:
-                outputFileExt = "82p";
-                break;
-            case 3:
-                outputFileExt = "83p";
-                break;
-            case 4:
-                outputFileExt = "8xp";
-                break;
-            case 5:
-                outputFileExt = "8xk";
-                break;
-            case 6:
-                outputFileExt = "85p";
-                break;
-            case 7:
-                outputFileExt = "85s";
-                break;
-            case 8:
-                outputFileExt = "86p";
-                break;
-            case 9:
-                outputFileExt = "86s";
-                break;
-            }
+			// include dirs
+			_assembler.AddIncludeDir(Application.StartupPath);
+			foreach (string dir in includeDirs)
+			{
+				_assembler.AddIncludeDir(dir);
+			}
 
-            return outputFileExt;
-        }
+			// setup files
+			_assembler.SetInputFile(inputFile);
+			_assembler.SetOutputFile(outputFile);
 
-        protected void OnAssemblerFileFinished(object sender, AssemblyFinishFileEventArgs e)
-        {
-            if (this.AssemblerFileFinished != null)
-            {
-                this.AssemblerFileFinished(sender, e);
-            }
-        }
+			// set flags
+			_assembler.SetFlags(flags);
+			_assembler.SetCaseSensitive(Settings.Default.caseSensitive);
 
-        protected void OnAssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
-        {
-            if (this.AssemblerProjectFinished != null)
-            {
-                this.AssemblerProjectFinished(sender, e);
-            }
-        }
+			// assemble
+			string rawOutput = _assembler.Assemble();
 
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+			// lets write it to the output window so the user knows whats happening
+			string outputText = string.Format(_outputFormatting, Path.GetFileName(inputFile),  inputFile, rawOutput);
 
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
-            {
-                if (disposing)
-                {
-                    if (assembler != null)
-                    {
-                        assembler.Dispose();
-                    }
-                }
+			bool errors = outputText.Contains("error");
+			if (!suppressEvents)
+			{
+				OnAssemblerFileFinished(this, new AssemblyFinishFileEventArgs(inputFile, outputFile, outputText, !errors));
+			}
 
-                disposed = true;
-            }
-        }
-    }
+			// tell if the assembly was successful
+			return new AssemblerOutput(outputText, !errors);
+		}
+
+		public void AssembleProject(IProject project, bool suppressEvents = false)
+		{
+			project.ProjectWatcher.EnableRaisingEvents = false;
+
+			bool succeeded = project.BuildSystem.Build();
+
+			if (!string.IsNullOrEmpty(project.BuildSystem.ListOutput))
+			{
+				StreamReader reader = null;
+				try
+				{
+					reader = new StreamReader(project.BuildSystem.ListOutput);
+					_symbolService.ParseListFile(reader.ReadToEnd());
+				}
+				finally
+				{
+					if (reader != null)
+					{
+						reader.Dispose();
+					}
+				}
+			}
+
+			if (!string.IsNullOrEmpty(project.BuildSystem.LabelOutput))
+			{
+				using (StreamReader reader = new StreamReader(project.BuildSystem.LabelOutput))
+				{
+					_symbolService.ParseSymbolFile(reader.ReadToEnd());
+				}
+			}
+
+			project.ProjectWatcher.EnableRaisingEvents = true;
+			if (!suppressEvents)
+			{
+				OnAssemblerProjectFinished(this, new AssemblyFinishProjectEventArgs(project, project.BuildSystem.OutputText, succeeded));
+			}
+		}
+
+		public CodeCountInfo CountCode(string lines)
+		{
+			int size = 0;
+			int min = 0;
+			int max = 0;
+			_assembler = new SpasmExeAssembler();
+			string[] outputLines = null;
+			if (!string.IsNullOrEmpty(lines))
+			{
+				_assembler.SetFlags(AssemblyFlags.CodeCounter | AssemblyFlags.Commandline);
+				outputLines = _assembler.Assemble(lines).Split('\n');
+			}
+
+			if (outputLines == null)
+			{
+				return new CodeCountInfo(size, min, max);
+			}
+
+			foreach (string line in outputLines.Where(line => !string.IsNullOrWhiteSpace(line)))
+			{
+				if (line.StartsWith("Size:"))
+				{
+					if (!int.TryParse(line.Substring(6, line.Length - 7), out size))
+					{
+						size = 0;
+					}
+				}
+				else if (line.StartsWith("Min. execution time:"))
+				{
+					if (!int.TryParse(line.Substring(20, line.Length - 21), out min))
+					{
+						min = 0;
+					}
+				}
+				else if (line.StartsWith("Max. execution time:"))
+				{
+					if (!int.TryParse(line.Substring(20, line.Length - 21), out max))
+					{
+						max = 0;
+					}
+				}
+			}
+			return new CodeCountInfo(size, min, max);
+		}
+
+
+		public void DestroyService()
+		{
+			_assembler = null;
+		}
+
+		public void InitService(params object[] objects)
+		{
+			if (objects.Length != 1)
+			{
+				throw new ArgumentException("Invalid number of arguments");
+			}
+
+			_assembler = objects[0] as IAssembler;
+			if (_assembler == null)
+			{
+				throw new ArgumentException("First is not of type of IAssembler");
+			}
+		}
+
+		public string GetExtension(int outputFile)
+		{
+			string outputFileExt = "bin";
+			switch (outputFile)
+			{
+			case 1:
+				outputFileExt = "73p";
+				break;
+			case 2:
+				outputFileExt = "82p";
+				break;
+			case 3:
+				outputFileExt = "83p";
+				break;
+			case 4:
+				outputFileExt = "8xp";
+				break;
+			case 5:
+				outputFileExt = "8xk";
+				break;
+			case 6:
+				outputFileExt = "85p";
+				break;
+			case 7:
+				outputFileExt = "85s";
+				break;
+			case 8:
+				outputFileExt = "86p";
+				break;
+			case 9:
+				outputFileExt = "86s";
+				break;
+			}
+
+			return outputFileExt;
+		}
+
+		private void OnAssemblerFileFinished(object sender, AssemblyFinishFileEventArgs e)
+		{
+			if (AssemblerFileFinished != null)
+			{
+				AssemblerFileFinished(sender, e);
+			}
+		}
+
+		private void OnAssemblerProjectFinished(object sender, AssemblyFinishProjectEventArgs e)
+		{
+			if (AssemblerProjectFinished != null)
+			{
+				AssemblerProjectFinished(sender, e);
+			}
+		}
+
+		public void Dispose()
+		{
+			Dispose(true);
+		}
+
+		private void Dispose(bool disposing)
+		{
+			if (!_disposed)
+			{
+				if (disposing)
+				{
+					if (_assembler != null)
+					{
+						_assembler.Dispose();
+					}
+				}
+
+				_disposed = true;
+			}
+		}
+	}
 }

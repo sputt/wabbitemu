@@ -1,8 +1,8 @@
-﻿namespace Revsoft.Wabbitcode.Services.Assembler
-{
-    using System;
+using System;
 
-    internal class SpasmDllAssembler : IAssembler
+namespace Revsoft.Wabbitcode.Services.Assembler
+{
+	internal class SpasmDllAssembler : IAssembler
     {
         /*AssemblerClass Assembler = new AssemblerClass();
             string originalDir = filePath.Substring(0, filePath.LastIndexOf('\\'));
