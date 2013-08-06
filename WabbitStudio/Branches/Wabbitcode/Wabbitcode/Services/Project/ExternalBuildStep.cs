@@ -1,4 +1,6 @@
-﻿namespace Revsoft.Wabbitcode.Services.Project
+﻿using Revsoft.Wabbitcode.Services.Interface;
+
+namespace Revsoft.Wabbitcode.Services.Project
 {
 	using System;
 	using System.Diagnostics;

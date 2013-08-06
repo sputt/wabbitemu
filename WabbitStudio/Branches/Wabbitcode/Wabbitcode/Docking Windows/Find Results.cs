@@ -1,4 +1,5 @@
 ﻿using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Interface;
 using System;
 
 
@@ -6,10 +7,14 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 {
 	public partial class FindResultsWindow : ToolWindow
 	{
-		public FindResultsWindow(IDockingService dockingService)
+		private readonly IDocumentService _documentService;
+
+		public FindResultsWindow(IDockingService dockingService, IDocumentService documentService)
 			: base(dockingService)
 		{
 			InitializeComponent();
+
+			_documentService = documentService;
 		}
 
 		public void AddFindResult(string file, int lineNum, string line)
@@ -57,7 +62,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				int secondParen = lineContents.IndexOf(')');
 				string file = lineContents.Substring(0, firstParen);
 				int lineNum = Convert.ToInt32(lineContents.Substring(firstParen + 1, secondParen - firstParen - 1));
-				DocumentService.GotoLine(file, lineNum);
+				_documentService.GotoLine(file, lineNum);
 			}
 			catch (Exception ex)
 			{

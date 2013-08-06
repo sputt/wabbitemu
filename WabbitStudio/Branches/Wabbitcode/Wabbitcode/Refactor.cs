@@ -1,12 +1,13 @@
-﻿using System.Linq;
-using Revsoft.TextEditor;
+﻿using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Interface;
 using System;
 using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode
@@ -40,7 +41,6 @@ namespace Revsoft.Wabbitcode
 
 		private void okButton_Click(object sender, EventArgs e)
 		{
-			DocumentService.InternalSave = true;
 			var refs = _projectService.FindAllReferences(_word);
 			TextEditorControl editor = null;
 			foreach (var file in refs)
@@ -85,11 +85,6 @@ namespace Revsoft.Wabbitcode
 					DockingService.ShowError("Error saving refactor", ex);
 				}
 			}
-
-			// sleep for a little bit just to make sure the last save is done
-			// this is already super high should be fine even for those using butterflies
-			System.Threading.Thread.Sleep(200);
-			DocumentService.InternalSave = false;
 		}
 
 		private void previewButton_Click(object sender, EventArgs e)

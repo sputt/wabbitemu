@@ -1,8 +1,9 @@
 ﻿using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
+using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Utils;
 using WabbitemuLib;
 
 
@@ -12,9 +13,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 	{
 		private bool _updating;
 		private WabbitcodeDebugger _debugger;
+		private readonly IDocumentService _documentService;
 		private readonly ISymbolService _symbolService;
 
-		public DebugPanel(IDockingService dockingService, ISymbolService symbolService)
+		public DebugPanel(IDockingService dockingService, IDocumentService documentService, ISymbolService symbolService)
 			: base(dockingService)
 		{
 			InitializeComponent();
@@ -32,6 +34,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			pcBox.ContextMenu = contextMenu1;
 			spBox.ContextMenu = contextMenu1;
 
+			_documentService = documentService;
 			_symbolService = symbolService;
 			dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
 		}
@@ -147,7 +150,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				return;
 			}
 
-			DocumentService.GotoLine(key.FileName, key.LineNumber);
+			_documentService.GotoLine(key.FileName, key.LineNumber);
 		}
 
 		private void Paste(object sender, EventArgs e)

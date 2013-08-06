@@ -10,7 +10,7 @@ using Revsoft.Wabbitcode.Services;
 
 namespace Revsoft.Wabbitcode.Utils
 {
-	public static class HighlightingClass
+	public static class HighlightingUtils
 	{
 		public static void MakeHighlightingFile()
 		{

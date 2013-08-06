@@ -1,6 +1,6 @@
 ﻿using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
 using System;
 using System.Windows.Forms;
@@ -14,16 +14,18 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		#region Private Properties
 
 		private readonly IDockingService _dockingService;
+		private readonly IDocumentService _documentService;
 		private readonly IParserService _parserService;
 
 		#endregion
 
-		public LabelList(IDockingService dockingService, IParserService parserService)
+		public LabelList(IDockingService dockingService, IDocumentService documentService, IParserService parserService)
 			: base(dockingService)
 		{
 			InitializeComponent();
 
 			_dockingService = dockingService;
+			_documentService = documentService;
 			_parserService = parserService;
 		}
 
@@ -112,7 +114,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				return;
 			}
 
-			DocumentService.GotoLabel((IParserData)labelsBox.SelectedItem);
+			_documentService.GotoLabel((IParserData)labelsBox.SelectedItem);
 			_dockingService.ActiveDocument.Focus();
 		}
 
@@ -123,7 +125,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				return;
 			}
 
-			DocumentService.GotoLabel((ILabel)labelsBox.SelectedItem);
+			_documentService.GotoLabel((ILabel)labelsBox.SelectedItem);
 			_dockingService.ActiveDocument.Focus();
 		}
 	}

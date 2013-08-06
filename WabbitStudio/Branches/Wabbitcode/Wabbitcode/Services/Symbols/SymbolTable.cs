@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 
 namespace Revsoft.Wabbitcode.Services.Symbols
@@ -11,20 +10,12 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 
 		public List<string> GetLabelsFromAddress(string address)
 		{
-			if (_labelToAddress == null)
-			{
-				throw new Exception("No label file has been parsed");
-			}
-			return _addressToLabel["$" + address].ToList();
+			return _labelToAddress == null ? new List<string>() : _addressToLabel["$" + address].ToList();
 		}
 
 		public string GetAddressFromLabel(string label)
 		{
-			if (_addressToLabel == null)
-			{
-				throw new Exception("No label file has been parsed");
-			}
-			return _labelToAddress[label].SingleOrDefault();
+			return _addressToLabel == null ? string.Empty : _labelToAddress[label].SingleOrDefault();
 		}
 
 		public void ParseSymFile(string symFileContents)
@@ -38,6 +29,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 				{
 					continue;
 				}
+
 				string[] labelAndAddress = line.Split('=');
 				if (labelAndAddress.Length != 2)
 				{

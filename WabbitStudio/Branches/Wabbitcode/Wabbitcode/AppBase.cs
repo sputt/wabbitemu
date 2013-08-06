@@ -3,6 +3,7 @@ using Microsoft.VisualBasic.ApplicationServices;
 using System;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Interface;
 
 namespace Revsoft.Wabbitcode
 {
@@ -25,7 +26,7 @@ namespace Revsoft.Wabbitcode
 			{
 				{ typeof(IDockingService), typeof(DockingService) },
 				{ typeof(IProjectService), typeof(ProjectService) },
-				//{ typeof(IDocumentService), typeof(DocumentService) },
+				{ typeof(IDocumentService), typeof(DocumentService) },
 				{ typeof(IAssemblerService), typeof(AssemblerService) },
 				{ typeof(ISymbolService), typeof(SymbolService) },
 				{ typeof(IParserService), typeof(ParserService) },

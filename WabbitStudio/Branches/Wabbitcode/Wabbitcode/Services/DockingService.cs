@@ -1,12 +1,13 @@
 ﻿using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.Resources;
+using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Utils;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Services
@@ -200,13 +201,15 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				return null;
 			}
-			NewEditor doc = DocumentService.OpenDocument(parsedStrings[1]);
+			return null;
+			// TODO: fix
+			/*NewEditor doc = DocumentService.OpenDocument(parsedStrings[1]);
 			doc.SetPosition(
 				int.Parse(parsedStrings[2]),
 				int.Parse(parsedStrings[3]),
 				int.Parse(parsedStrings[4]),
 				int.Parse(parsedStrings[5]));
-			return doc;
+			return doc;*/
 		}
 
 		public void Invoke(Action action)

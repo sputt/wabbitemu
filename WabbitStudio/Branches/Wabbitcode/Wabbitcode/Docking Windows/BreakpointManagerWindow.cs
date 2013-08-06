@@ -1,9 +1,10 @@
 ﻿using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
+using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.IO;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Services.Project;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
@@ -11,15 +12,17 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 	{
 		private WabbitcodeDebugger _debugger;
 		private readonly IDockingService _dockingService;
+		private readonly IDocumentService _documentService;
 		private readonly IProject _project;
 
-		public BreakpointManagerWindow(IDockingService dockingService, IProject project)
+		public BreakpointManagerWindow(IDockingService dockingService, IDocumentService documentService, IProject project)
 			: base(dockingService)
 		{
 			InitializeComponent();
 
 			_dockingService = dockingService;
 			_dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+			_documentService = documentService;
 
 			_project = project;
 		}
@@ -97,13 +100,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				file = Path.Combine(_project.ProjectDirectory, file);
 			}
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
-			DocumentService.GotoFile(file);
-			DocumentService.ActiveDocument.RemoveBreakpoint(lineNum);
+			_documentService.GotoFile(file);
+			_documentService.ActiveDocument.RemoveBreakpoint(lineNum);
 		}
 
 		private void breakpointToolStripMenuItem_Click(object sender, EventArgs e)
 		{
-			NewBreakpointForm form = new NewBreakpointForm(_dockingService);
+			NewBreakpointForm form = new NewBreakpointForm(_dockingService, _documentService);
 			form.ShowDialog();
 		}
 
@@ -136,8 +139,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			}
 
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
-			DocumentService.GotoFile(file);
-			DocumentService.ActiveDocument.RemoveBreakpoint(lineNum);
+			_documentService.GotoFile(file);
+			_documentService.ActiveDocument.RemoveBreakpoint(lineNum);
 		}
 
 		private void disableAllToolStripButton_Click(object sender, EventArgs e)

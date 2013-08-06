@@ -1,11 +1,12 @@
-﻿using System.Drawing;
-using System.Linq;
-using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Services;
+﻿using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
+using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 
@@ -16,13 +17,16 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		private int _errors;
 		private int _warnings;
 		private readonly IDockingService _dockingService;
+		private readonly IDocumentService _documentService;
 		private readonly IProjectService _projectService;
 
-		public ErrorList(IDockingService dockingService, IProjectService projectService, IAssemblerService assemblerService)
+		public ErrorList(IAssemblerService assemblerService, IDockingService dockingService,
+			IDocumentService documentService, IProjectService projectService)
 			: base(dockingService)
 		{
 			InitializeComponent();
 			_dockingService = dockingService;
+			_documentService = documentService;
 			_projectService = projectService;
 
 			errorGridView.ContextMenu = contextMenu1;
@@ -108,7 +112,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 			int line = (int)errorGridView.Rows[e.RowIndex].Cells[4].Value;
 			string file = errorGridView.Rows[e.RowIndex].Cells[3].Tag.ToString();
-			DocumentService.GotoLine(file, line);
+			_documentService.GotoLine(file, line);
 		}
 
 		private void errorGridView_MouseClick(object sender, MouseEventArgs e)
@@ -146,10 +150,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			int line = (int)errorGridView.Rows[row].Cells[4].Value;
 			string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
 			string error = errorGridView.Rows[row].Cells[2].Value.ToString();
-			DocumentService.GotoLine(file, line);
+			_documentService.GotoLine(file, line);
 			if (error.Contains("Relative jump"))
 			{
-				DocumentService.ActiveDocument.FixError(line, DocumentService.FixableErrorType.RelativeJump);
+				_documentService.ActiveDocument.FixError(line, DocumentService.FixableErrorType.RelativeJump);
 				errorGridView.Rows.RemoveAt(row);
 			}
 		}
@@ -159,7 +163,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			int row = errorGridView.SelectedRows[0].Index;
 			int line = (int)errorGridView.Rows[row].Cells[4].Value;
 			string file = errorGridView.Rows[row].Cells[3].Tag.ToString();
-			DocumentService.GotoLine(file, line);
+			_documentService.GotoLine(file, line);
 		}
 
 		private void Instance_AssemblerFileFinished(object sender, AssemblyFinishFileEventArgs e)

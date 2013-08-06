@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Utils;
+﻿using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode
 {
@@ -421,7 +422,7 @@ namespace Revsoft.Wabbitcode
 				}
 
 				_dockingService.OutputWindow.UpdateFont(Settings.Default.outputFont);
-				HighlightingClass.MakeHighlightingFile();
+				HighlightingUtils.MakeHighlightingFile();
 				foreach (NewEditor child in _dockingService.Documents)
 				{
 					child.UpdateOptions(TempSettings.Default);

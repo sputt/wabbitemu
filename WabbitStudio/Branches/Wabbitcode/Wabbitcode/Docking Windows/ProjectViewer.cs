@@ -1,11 +1,12 @@
-﻿using System.Linq;
-using Revsoft.Wabbitcode.Services;
+﻿using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 
@@ -16,15 +17,19 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		#region Private Members
 
 		private readonly IDockingService _dockingService;
+		private readonly IDocumentService _documentService;
 		private readonly IProjectService _projectService;
 
 		#endregion
 
-		public ProjectViewer(IDockingService dockingService, IProjectService projectService) : base(dockingService)
+		public ProjectViewer(IDockingService dockingService, IDocumentService documentService,
+			IProjectService projectService)
+			: base(dockingService)
 		{
 			InitializeComponent();
 
 			_dockingService = dockingService;
+			_documentService = documentService;
 			_projectService = projectService;
 		}
 
@@ -151,7 +156,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			writer.Close();
 			ProjectFile fileAdded = _projectService.AddFile((ProjectFolder)parent.Tag, file);
 			AddFile(fileAdded, parent);
-			DocumentService.OpenDocument(file);
+			_documentService.OpenDocument(file);
 		}
 
 		internal void CloseProject()
@@ -237,10 +242,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				DefaultExt = "*.asm",
 				Filter = "All Know File Types | *.asm; *.z80; *.inc; |Assembly Files (*.asm)|*.asm|*.z80" +
 						 " Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|All Files(*.*)|*.*",
-						 FilterIndex = 0,
-						 Multiselect = true,
-						 RestoreDirectory = true,
-						 Title = "Add Existing File",
+				FilterIndex = 0,
+				Multiselect = true,
+				RestoreDirectory = true,
+				Title = "Add Existing File",
 			};
 			DialogResult result = openFileDialog.ShowDialog();
 			if (result != DialogResult.OK)
@@ -322,7 +327,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			{
 				StartInfo =
 				{
-					FileName = Path.Combine(Path.GetDirectoryName(_projectService.Project.ProjectDirectory), 
+					FileName = Path.Combine(Path.GetDirectoryName(_projectService.Project.ProjectDirectory),
 					projViewer.SelectedNode.FullPath)
 				}
 			};
@@ -354,15 +359,17 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			string filePath = file.FileFullPath;
 			if (File.Exists(filePath))
 			{
-				DocumentService.GotoFile(filePath);
+				_documentService.GotoFile(filePath);
 			}
 			else
 			{
-				if (MessageBox.Show("File no longer exists, would you like to remove from project?", "File Not Found", MessageBoxButtons.YesNo) == DialogResult.Yes)
+				if (MessageBox.Show("File no longer exists, would you like to remove from project?",
+					"File Not Found", MessageBoxButtons.YesNo) != DialogResult.Yes)
 				{
-					dropNode.Remove();
-					projViewer.SelectedNodes.Remove(dropNode);
+					return;
 				}
+				dropNode.Remove();
+				projViewer.SelectedNodes.Remove(dropNode);
 			}
 		}
 
@@ -398,15 +405,15 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		{
 			switch (e.KeyCode)
 			{
-			case Keys.Enter:
-				foreach (TreeNode node in projViewer.SelectedNodes)
-				{
-					OpenNode(node);
-				}
-				break;
-			case Keys.Delete:
-				DeleteNodes(projViewer.SelectedNodes);
-				break;
+				case Keys.Enter:
+					foreach (TreeNode node in projViewer.SelectedNodes)
+					{
+						OpenNode(node);
+					}
+					break;
+				case Keys.Delete:
+					DeleteNodes(projViewer.SelectedNodes);
+					break;
 			}
 		}
 

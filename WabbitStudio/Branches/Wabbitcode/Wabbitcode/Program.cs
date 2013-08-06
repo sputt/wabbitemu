@@ -34,7 +34,7 @@ namespace Revsoft.Wabbitcode
             Application.EnableVisualStyles();
             FileLocations.InitDirs();
             FileLocations.InitFiles();
-            HighlightingClass.MakeHighlightingFile();
+            HighlightingUtils.MakeHighlightingFile();
             try
             {
                 Task updateTask = Task.Factory.StartNew(() =>

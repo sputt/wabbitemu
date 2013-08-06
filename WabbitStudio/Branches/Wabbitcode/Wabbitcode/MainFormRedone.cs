@@ -1,12 +1,17 @@
 ﻿using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Docking_Windows;
+using Revsoft.Wabbitcode.Editor;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Debugger;
+using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Services.Symbols;
+using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,9 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Services.Project;
-using Revsoft.Wabbitcode.Services.Symbols;
-using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode
 {
@@ -40,6 +42,7 @@ namespace Revsoft.Wabbitcode
 		private IParserService _parserService;
 		private ISymbolService _symbolService;
 		private IBackgroundAssemblerService _backgroundAssemblerService;
+		private IDocumentService _documentService;
 
 		#endregion
 
@@ -60,20 +63,21 @@ namespace Revsoft.Wabbitcode
 			RestoreWindow();
 			InitiailzeToolbars();
 			InitializeService();
+			InitializeEvents();
 
 			DockingService.OnActiveDocumentChanged += DockingServiceOnOnActiveDocumentChanged;
 
-			_dockingService.InitPanels(new ProjectViewer(_dockingService, _projectService),
-				new ErrorList(_dockingService, _projectService, _assemblerService),
+			_dockingService.InitPanels(new ProjectViewer(_dockingService, _documentService, _projectService),
+				new ErrorList(_assemblerService, _dockingService, _documentService, _projectService),
 				new TrackingWindow(_dockingService, _symbolService),
-				new DebugPanel(_dockingService, _symbolService),
+				new DebugPanel(_dockingService, _documentService, _symbolService),
 				new CallStack(_dockingService, _symbolService),
-				new LabelList(_dockingService, _parserService),
-				new OutputWindow(_dockingService),
+				new LabelList(_dockingService, _documentService, _parserService),
+				new OutputWindow(_dockingService, _documentService),
 				new FindAndReplaceForm(_dockingService, _projectService.Project),
-				new FindResultsWindow(_dockingService),
+				new FindResultsWindow(_dockingService, _documentService),
 				new MacroManager(_dockingService),
-				new BreakpointManagerWindow(_dockingService, _projectService.Project),
+				new BreakpointManagerWindow(_dockingService, _documentService, _projectService.Project),
 				new StackViewer(_dockingService, _symbolService));
 			_dockingService.LoadConfig();
 
@@ -103,12 +107,17 @@ namespace Revsoft.Wabbitcode
 
 			try
 			{
-				DocumentService.GetRecentFiles();
+				_documentService.GetRecentFiles();
 			}
 			catch (Exception ex)
 			{
 				DockingService.ShowError("Error getting recent files", ex);
 			}
+		}
+
+		private void InitializeEvents()
+		{
+			NewEditor.OnEditorSelectionChanged += GetCodeInfo;
 		}
 
 		private void InitializeService()
@@ -119,8 +128,7 @@ namespace Revsoft.Wabbitcode
 			_parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
 			_symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
 			_backgroundAssemblerService = ServiceFactory.Instance.GetServiceInstance<IBackgroundAssemblerService>();
-
-			DocumentService.SetServices(_dockingService, _backgroundAssemblerService);
+			_documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
 		}
 
 		private void InitiailzeToolbars()
@@ -149,17 +157,18 @@ namespace Revsoft.Wabbitcode
 			switch (e.ChangeType)
 			{
 				case WatcherChangeTypes.Changed:
-					if (!DocumentService.InternalSave && !string.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
+					if (!string.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
 					{
 						foreach (Action action in _dockingService.Documents
 							.Where(doc => string.Equals(doc.FileName, e.FullPath, StringComparison.OrdinalIgnoreCase))
 							.Select(tempDoc => (Action)(() =>
 							{
-								DialogResult result = MessageBox.Show(e.FullPath + " modified outside the editor.\nLoad changes?", "File modified",
-									MessageBoxButtons.YesNo);
+								const string modifiedFormat = "{0} modified outside the editor.\nLoad changes?";
+								DialogResult result = MessageBox.Show(string.Format(modifiedFormat, e.FullPath),
+									"File modified", MessageBoxButtons.YesNo);
 								if (result == DialogResult.Yes)
 								{
-									DocumentService.OpenDocument(tempDoc, e.FullPath);
+									_documentService.OpenDocument(tempDoc, e.FullPath);
 								}
 							})))
 						{
@@ -202,7 +211,7 @@ namespace Revsoft.Wabbitcode
 			string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
 			foreach (string file in files)
 			{
-				DocumentService.OpenDocument(file);
+				_documentService.OpenDocument(file);
 			}
 		}
 
@@ -248,11 +257,26 @@ namespace Revsoft.Wabbitcode
 			iconBarMenuItem.Checked = Settings.Default.iconBar;
 		}
 
+		private readonly object _codeInfoLock = new object();
+		private void GetCodeInfo(object sender, EditorSelectionEventArgs e)
+		{
+			if (string.IsNullOrEmpty(e.SelectedLines))
+			{
+				return;
+			}
+
+			lock (_codeInfoLock)
+			{
+				CodeCountInfo info = _assemblerService.CountCode(e.SelectedLines);
+				this.Invoke(() => UpdateCodeInfo(info));
+			}
+		}
+
 		/// <summary>
 		/// Updates the code info with the latest size, min, and max string in the status bar.
 		/// </summary>
 		/// <param name="info">Code count information containing min runtime, max runtime and size</param>
-		public void UpdateCodeInfo(CodeCountInfo info)
+		private void UpdateCodeInfo(CodeCountInfo info)
 		{
 			lineCodeInfo.Text = string.Format("Min: {0} Max: {1} Size: {2}", info.Min, info.Max, info.Size);
 		}
@@ -300,9 +324,9 @@ namespace Revsoft.Wabbitcode
 			{
 				debugString = " (Debugging)";
 			}
-			if (!string.IsNullOrEmpty(DocumentService.ActiveFileName))
+			if (!string.IsNullOrEmpty(_documentService.ActiveFileName))
 			{
-				Text = Path.GetFileName(DocumentService.ActiveFileName) + debugString + " - Wabbitcode";
+				Text = Path.GetFileName(_documentService.ActiveFileName) + debugString + " - Wabbitcode";
 			}
 			else
 			{
@@ -312,7 +336,7 @@ namespace Revsoft.Wabbitcode
 
 		internal void AddRecentItem(string file)
 		{
-			ToolStripMenuItem button = new ToolStripMenuItem(file, null, openRecentDoc);
+			ToolStripMenuItem button = new ToolStripMenuItem(file, null, OpenRecentDoc);
 			recentFilesMenuItem.DropDownItems.Add(button);
 		}
 
@@ -350,7 +374,7 @@ namespace Revsoft.Wabbitcode
 			}
 
 			UpdateChecks();
-			DocumentService.RemoveDebugHighlight();
+			_documentService.RemoveDebugHighlight();
 			foreach (NewEditor child in MdiChildren)
 			{
 				child.RemoveInvisibleMarkers();
@@ -374,17 +398,17 @@ namespace Revsoft.Wabbitcode
 		{
 			UpdateStepOut();
 			UpdateDebugStuff();
-			DocumentService.RemoveDebugHighlight();
-			DocumentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-			DocumentService.HighlightDebugLine(e.Location.LineNumber);
+			_documentService.RemoveDebugHighlight();
+			_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+			_documentService.HighlightDebugLine(e.Location.LineNumber);
 			_dockingService.MainForm.UpdateTrackPanel();
 			_dockingService.MainForm.UpdateDebugPanel();
 		}
 
 		private void BreakpointHit(object sender, DebuggerBreakpointHitEventArgs e)
 		{
-			DocumentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-			DocumentService.HighlightDebugLine(e.Location.LineNumber);
+			_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+			_documentService.HighlightDebugLine(e.Location.LineNumber);
 
 			// switch to back to us
 			Activate();
@@ -436,7 +460,7 @@ namespace Revsoft.Wabbitcode
 						return;
 					}
 				}
-				_debugger = new WabbitcodeDebugger(_symbolService);
+				_debugger = new WabbitcodeDebugger(_documentService, _symbolService);
 				_debugger.OnDebuggerBreakpointHit += BreakpointHit;
 				_debugger.OnDebuggerStep += DoneStep;
 				_debugger.OnDebuggerRunningChanged += _debugger_OnDebuggerRunningChanged;
@@ -503,7 +527,7 @@ namespace Revsoft.Wabbitcode
 			if (e.Running)
 			{
 				_dockingService.MainForm.UpdateDebugStuff();
-				DocumentService.RemoveDebugHighlight();
+				_documentService.RemoveDebugHighlight();
 				_dockingService.ActiveDocument.Refresh();
 			}
 			else
@@ -513,8 +537,8 @@ namespace Revsoft.Wabbitcode
 				UpdateTrackPanel();
 				UpdateDebugPanel();
 
-				DocumentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-				DocumentService.HighlightDebugLine(e.Location.LineNumber);
+				_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+				_documentService.HighlightDebugLine(e.Location.LineNumber);
 			}
 		}
 
@@ -709,12 +733,12 @@ namespace Revsoft.Wabbitcode
 
 		private void AddSquiggleLine(int newLineNumber, Color underlineColor, string description)
 		{
-			if (DocumentService.ActiveDocument == null)
+			if (_documentService.ActiveDocument == null)
 			{
 				return;
 			}
 
-			DocumentService.ActiveDocument.AddSquiggleLine(newLineNumber, underlineColor, description);
+			_documentService.ActiveDocument.AddSquiggleLine(newLineNumber, underlineColor, description);
 		}
 
 		private void DoAssembly(AssemblerService.OnFinishAssemblyFile fileEventHandler, AssemblerService.OnFinishAssemblyProject projectEventHandler)
@@ -913,10 +937,12 @@ namespace Revsoft.Wabbitcode
 			string includedir = "-I \"" + Application.StartupPath + "\"";
 
 			IEnumerable<string> includeDirs = Settings.Default.includeDirs.Cast<string>();
-			includedir = includeDirs.Where(dir => !string.IsNullOrEmpty(dir)).Aggregate(includedir, (current, dir) => current + (";\"" + dir + "\""));
+			includedir = includeDirs.Where(dir => !string.IsNullOrEmpty(dir))
+				.Aggregate(includedir, (current, dir) => current + (";\"" + dir + "\""));
 
 			wabbitspasm.StartInfo.Arguments = "-V " + includedir + " " + text;
-			wabbitspasm.StartInfo.WorkingDirectory = string.IsNullOrEmpty(originaldir) ? Application.StartupPath : originaldir;
+			wabbitspasm.StartInfo.WorkingDirectory = string.IsNullOrEmpty(originaldir) ?
+				Application.StartupPath : originaldir;
 			wabbitspasm.Start();
 			string output = wabbitspasm.StandardOutput.ReadToEnd();
 			_errorsToAdd.Clear();
@@ -944,9 +970,9 @@ namespace Revsoft.Wabbitcode
 				AddSquiggleLine((int)attributes[0], Color.Red, attributes[1].ToString());
 			}
 
-			if (DocumentService.ActiveDocument != null)
+			if (_documentService.ActiveDocument != null)
 			{
-				DocumentService.ActiveDocument.Refresh();
+				_documentService.ActiveDocument.Refresh();
 			}
 		}
 
@@ -1020,7 +1046,7 @@ namespace Revsoft.Wabbitcode
 				findBox.Items.Add(findBox.Text);
 			}
 
-			bool found = DocumentService.ActiveDocument.Find(findBox.Text);
+			bool found = _documentService.ActiveDocument.Find(findBox.Text);
 			if (!found)
 			{
 				MessageBox.Show("Text not found");
@@ -1078,12 +1104,12 @@ namespace Revsoft.Wabbitcode
 			}
 
 			int line = Convert.ToInt32(gotoBox.inputBox.Text);
-			DocumentService.GotoLine(line);
+			_documentService.GotoLine(line);
 		}
 
 		private void gotoCurrentToolButton_Click(object sender, EventArgs e)
 		{
-			DocumentService.GotoCurrentDebugLine();
+			_documentService.GotoCurrentDebugLine();
 		}
 
 		private void HandleArgs(string[] args)
@@ -1100,7 +1126,7 @@ namespace Revsoft.Wabbitcode
 					{
 						break;
 					}
-					DocumentService.OpenDocument(arg);
+					_documentService.OpenDocument(arg);
 				}
 				catch (FileNotFoundException)
 				{
@@ -1263,20 +1289,20 @@ namespace Revsoft.Wabbitcode
 
 		private void newBreakpointMenuItem_Click(object sender, EventArgs e)
 		{
-			NewBreakpointForm form = new NewBreakpointForm(_dockingService);
+			NewBreakpointForm form = new NewBreakpointForm(_dockingService, _documentService);
 			form.ShowDialog();
 			form.Dispose();
 		}
 
 		private void newFileMenuItem_Click(object sender, EventArgs e)
 		{
-			NewEditor doc = DocumentService.CreateNewDocument();
+			NewEditor doc = _documentService.CreateNewDocument();
 			_dockingService.ShowDockPanel(doc);
 		}
 
 		private void newProjectMenuItem_Click(object sender, EventArgs e)
 		{
-			NewProjectDialog template = new NewProjectDialog(_dockingService, _projectService);
+			NewProjectDialog template = new NewProjectDialog(_dockingService, _documentService, _projectService);
 			if (template.ShowDialog() != DialogResult.OK)
 			{
 				return;
@@ -1287,19 +1313,19 @@ namespace Revsoft.Wabbitcode
 
 		private void newToolButton_Click(object sender, EventArgs e)
 		{
-			NewEditor doc = DocumentService.CreateNewDocument();
+			NewEditor doc = _documentService.CreateNewDocument();
 			doc.TabText = "New Document";
 			doc.Show(dockPanel);
 		}
 
 		private void nextBookmarkMenuItem_Click(object sender, EventArgs e)
 		{
-			if (DocumentService.ActiveDocument == null)
+			if (_documentService.ActiveDocument == null)
 			{
 				return;
 			}
 
-			DocumentService.ActiveDocument.GotoNextBookmark();
+			_documentService.ActiveDocument.GotoNextBookmark();
 		}
 
 		private void OnAssemblyFinished(object sender, AssemblyFinishEventArgs e)
@@ -1356,7 +1382,7 @@ namespace Revsoft.Wabbitcode
 					}
 					else
 					{
-						DocumentService.OpenDocument(fileName);
+						_documentService.OpenDocument(fileName);
 					}
 				}
 			}
@@ -1414,10 +1440,10 @@ namespace Revsoft.Wabbitcode
 		/// </summary>
 		/// <param name="sender">This is the button object. This is casted to get which button was clicked.</param>
 		/// <param name="e">Nobody cares about this arg.</param>
-		private void openRecentDoc(object sender, EventArgs e)
+		private void OpenRecentDoc(object sender, EventArgs e)
 		{
 			MenuItem button = (MenuItem)sender;
-			DocumentService.OpenDocument(button.Text);
+			_documentService.OpenDocument(button.Text);
 		}
 
 		private void openToolButton_Click(object sender, EventArgs e)
@@ -1464,12 +1490,12 @@ namespace Revsoft.Wabbitcode
 
 		private void prevBookmarkMenuItem_Click(object sender, EventArgs e)
 		{
-			if (DocumentService.ActiveDocument == null)
+			if (_documentService.ActiveDocument == null)
 			{
 				return;
 			}
 
-			DocumentService.ActiveDocument.GotoPrevBookmark();
+			_documentService.ActiveDocument.GotoPrevBookmark();
 		}
 
 		private void projStatsMenuItem_Click(object sender, EventArgs e)
@@ -1548,7 +1574,7 @@ namespace Revsoft.Wabbitcode
 		{
 			foreach (NewEditor child in MdiChildren)
 			{
-				DocumentService.SaveDocument(child);
+				_documentService.SaveDocument(child);
 			}
 		}
 
@@ -1556,7 +1582,7 @@ namespace Revsoft.Wabbitcode
 		{
 			try
 			{
-				DocumentService.SaveDocumentAs();
+				_documentService.SaveDocumentAs();
 			}
 			catch (Exception ex)
 			{
@@ -1568,7 +1594,7 @@ namespace Revsoft.Wabbitcode
 		{
 			try
 			{
-				DocumentService.SaveDocument();
+				_documentService.SaveDocument();
 			}
 			catch (Exception ex)
 			{
@@ -1584,7 +1610,7 @@ namespace Revsoft.Wabbitcode
 
 		private void saveToolButton_Click(object sender, EventArgs e)
 		{
-			DocumentService.SaveDocument();
+			_documentService.SaveDocument();
 		}
 
 		private void SaveWindow()
@@ -1600,7 +1626,7 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			DocumentService.ActiveDocument.SelectAll();
+			_documentService.ActiveDocument.SelectAll();
 		}
 
 		private void sentenceCaseMenuItem_Click(object sender, EventArgs e)
@@ -1610,7 +1636,7 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			DocumentService.ActiveDocument.SelectedTextToSentenceCase();
+			_documentService.ActiveDocument.SelectedTextToSentenceCase();
 		}
 
 		private void ShowErrorPanels(AssemblerOutput output)
@@ -1685,21 +1711,22 @@ namespace Revsoft.Wabbitcode
 			}
 
 			_dockingService.ActiveDocument.SaveFile();
-			string inputFile = DocumentService.ActiveFileName;
-			string outputFile = Path.ChangeExtension(DocumentService.ActiveFileName, "lab");
+			string inputFile = _documentService.ActiveFileName;
+			string outputFile = Path.ChangeExtension(_documentService.ActiveFileName, "lab");
 			string originalDir = Path.GetDirectoryName(inputFile);
 			var includeDirs = Settings.Default.includeDirs.Cast<string>();
-			_assemblerService.AssembleFile(inputFile, outputFile, originalDir, includeDirs, AssemblyFlags.Normal | AssemblyFlags.Symtable);
+			_assemblerService.AssembleFile(inputFile, outputFile, originalDir,
+				includeDirs, AssemblyFlags.Normal | AssemblyFlags.Symtable);
 		}
 
 		private void toggleBookmarkMenuItem_Click(object sender, EventArgs e)
 		{
-			if (DocumentService.ActiveDocument == null)
+			if (_documentService.ActiveDocument == null)
 			{
 				return;
 			}
 
-			DocumentService.ActiveDocument.ToggleBookmark();
+			_documentService.ActiveDocument.ToggleBookmark();
 		}
 
 		private void toggleBreakpointMenuItem_Click(object sender, EventArgs e)
@@ -1727,7 +1754,8 @@ namespace Revsoft.Wabbitcode
 			{
 				if (UpdateService.CheckForUpdate())
 				{
-					var result = MessageBox.Show("New version available. Download now?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+					var result = MessageBox.Show("New version available. Download now?",
+						"Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
 					if (result == DialogResult.Yes)
 					{
 						UpdateService.StartUpdater();
@@ -1774,14 +1802,14 @@ namespace Revsoft.Wabbitcode
 				case "iconBar":
 					if (ActiveMdiChild != null)
 					{
-						DocumentService.ActiveDocument.IsIconBarVisible = item.Checked;
+						_documentService.ActiveDocument.IsIconBarVisible = item.Checked;
 					}
 
 					break;
 				case "lineNumbers":
 					if (ActiveMdiChild != null)
 					{
-						DocumentService.ActiveDocument.ShowLineNumbers = item.Checked;
+						_documentService.ActiveDocument.ShowLineNumbers = item.Checked;
 					}
 
 					break;
@@ -1950,20 +1978,6 @@ namespace Revsoft.Wabbitcode
 			debugToolStrip.Height = 25;
 		}
 
-		internal string TranlateSymbolToAddress(string text)
-		{
-			if (_symbolService.SymbolTable == null || _debugger == null)
-			{
-				return string.Empty;
-			}
-			string address = _symbolService.SymbolTable.GetAddressFromLabel(text);
-			if (address != null)
-			{
-				return address;
-			}
-			return string.Empty;
-		}
-
 		internal void UpdateAssembledInfo(string fileName, int lineNumber)
 		{
 			if (_debugger == null)
@@ -1975,7 +1989,7 @@ namespace Revsoft.Wabbitcode
 			{
 				return;
 			}
-			string assembledInfo = string.Format("Page: {0} Address: {1}", label.Page.ToString(), label.Address.ToString("X4"));
+			string assembledInfo = string.Format("Page: {0} Address: {1}", label.Page, label.Address.ToString("X4"));
 			SetToolStripText(assembledInfo);
 		}
 
@@ -1988,8 +2002,8 @@ namespace Revsoft.Wabbitcode
 		{
 			_debugger.SetPCToSelect(fileName, lineNumber);
 
-			DocumentService.RemoveDebugHighlight();
-			DocumentService.HighlightDebugLine(lineNumber + 1);
+			_documentService.RemoveDebugHighlight();
+			_documentService.HighlightDebugLine(lineNumber + 1);
 			UpdateDebugPanel();
 		}
 	}
