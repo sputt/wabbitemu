@@ -1,7 +1,7 @@
 using System;
 using Revsoft.TextEditor.Document;
 
-namespace Revsoft.Wabbitcode.Editor
+namespace Revsoft.Wabbitcode.EditorExtensions
 {
 	public class EditorEventArgs : EventArgs
 	{

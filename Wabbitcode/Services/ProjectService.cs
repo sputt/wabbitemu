@@ -1,12 +1,10 @@
 ﻿using System.Threading.Tasks;
-using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Services
 {

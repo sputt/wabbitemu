@@ -43,7 +43,7 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		public NewEditor ActiveDocument
+		public Editor ActiveDocument
 		{
 			get
 			{
@@ -52,33 +52,33 @@ namespace Revsoft.Wabbitcode.Services
 					return null;
 				}
 
-				if (!(_dockPanel.ActiveDocument is NewEditor))
+				if (!(_dockPanel.ActiveDocument is Editor))
 				{
 					return null;
 				}
 
-				return _dockPanel.ActiveDocument as NewEditor;
+				return _dockPanel.ActiveDocument as Editor;
 			}
 		}
 
-		public IEnumerable<NewEditor> Documents
+		public IEnumerable<Editor> Documents
 		{
 			get
 			{
 				lock (_dockPanel.Documents)
 				{
-					return _dockPanel.Documents.Where(doc => doc is NewEditor).Cast<NewEditor>();
+					return _dockPanel.Documents.Where(doc => doc is Editor).Cast<Editor>();
 				}
 			}
 		}
 
-		public MainFormRedone MainForm
+		public MainForm MainForm
 		{
 			get
 			{
 				if (_dockPanel != null)
 				{
-					return (MainFormRedone)_dockPanel.Parent;
+					return (MainForm)_dockPanel.Parent;
 				}
 
 				return null;
@@ -197,13 +197,13 @@ namespace Revsoft.Wabbitcode.Services
 			}
 
 			string[] parsedStrings = persistString.Split(';');
-			if (parsedStrings.Length != 6 || parsedStrings[0] != typeof(NewEditor).ToString() || !File.Exists(parsedStrings[1]))
+			if (parsedStrings.Length != 6 || parsedStrings[0] != typeof(Editor).ToString() || !File.Exists(parsedStrings[1]))
 			{
 				return null;
 			}
 			return null;
 			// TODO: fix
-			/*NewEditor doc = DocumentService.OpenDocument(parsedStrings[1]);
+			/*Editor doc = DocumentService.OpenDocument(parsedStrings[1]);
 			doc.SetPosition(
 				int.Parse(parsedStrings[2]),
 				int.Parse(parsedStrings[3]),
@@ -245,7 +245,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void DestroyService()
 		{
-			foreach (NewEditor editor in Documents.ToList())
+			foreach (Editor editor in Documents.ToList())
 			{
 				try
 				{

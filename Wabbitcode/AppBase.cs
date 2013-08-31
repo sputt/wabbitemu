@@ -45,7 +45,7 @@ namespace Revsoft.Wabbitcode
 			// but don't try to run it.
 			string[] args = new string[CommandLineArgs.Count];
 			CommandLineArgs.CopyTo(args, 0);
-			MainForm = new MainFormRedone(args);
+			MainForm = new MainForm(args);
 		}
 
 		/// <summary>
@@ -60,7 +60,7 @@ namespace Revsoft.Wabbitcode
 			string[] args = new string[eventArgs.CommandLine.Count];
 			eventArgs.CommandLine.CopyTo(args, 0);
 
-			MainFormRedone form = MainForm as MainFormRedone;
+			MainForm form = MainForm as MainForm;
 			if (form == null)
 			{
 				throw new InvalidCastException("Main window is not the correct type");

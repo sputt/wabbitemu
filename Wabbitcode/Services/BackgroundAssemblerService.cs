@@ -59,7 +59,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		//private void CodeCheckAssemblerFinished(object sender, AssemblyFinishEventArgs e)
 		//{
-		//	foreach (NewEditor doc in DockingService.Documents)
+		//	foreach (Editor doc in DockingService.Documents)
 		//	{
 		//		doc.EditorBox.Document.MarkerStrategy.RemoveAll(marker => marker != null && marker.Tag == "Code Check");
 		//	}
@@ -80,12 +80,12 @@ namespace Revsoft.Wabbitcode.Services
 		//		{
 		//			// because we are not thread safe, its possible that we close the editor as this is going
 		//			var docsList = DockingService.Documents.Select(s => s).ToList();
-		//			foreach (NewEditor doc in docsList)
+		//			foreach (Editor doc in docsList)
 		//			{
 		//				if (string.Compare(item.File, doc.FileName, true) == 0)
 		//				{
 		//					Color underlineColor = item.IsWarning ? Color.Yellow : Color.Red;
-		//					NewEditor newEditor = doc;
+		//					Editor newEditor = doc;
 		//					Errors errors = item;
 		//					_mainForm.Invoke(() =>
 		//					{

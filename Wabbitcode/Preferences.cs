@@ -420,7 +420,7 @@ namespace Revsoft.Wabbitcode
 
 				_dockingService.OutputWindow.UpdateFont(Settings.Default.outputFont);
 				HighlightingUtils.MakeHighlightingFile();
-				foreach (NewEditor child in _dockingService.Documents)
+				foreach (Editor child in _dockingService.Documents)
 				{
 					child.UpdateOptions(TempSettings.Default);
 

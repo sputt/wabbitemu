@@ -21,9 +21,9 @@ namespace Revsoft.Wabbitcode.Services.Interface
 		LabelList LabelList { get; }
 		MacroManager MacroManager { get; }
 		IDockContent ActiveContent { get; }
-		NewEditor ActiveDocument { get; }
-		IEnumerable<NewEditor> Documents { get; }
-		MainFormRedone MainForm { get; }
+		Editor ActiveDocument { get; }
+		IEnumerable<Editor> Documents { get; }
+		MainForm MainForm { get; }
 
 		void HideDockPanel(DockContent panel);
 		void ShowDockPanel(DockContent panel);

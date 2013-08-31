@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Properties;
 
-namespace Revsoft.Wabbitcode
+namespace Revsoft.Wabbitcode.EditorExtensions
 {
 	public class RegionFoldingStrategy : IFoldingStrategy
 	{

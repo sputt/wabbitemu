@@ -3,7 +3,7 @@ using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Classes;
 using Revsoft.Wabbitcode.Docking_Windows;
-using Revsoft.Wabbitcode.Editor;
+using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
@@ -32,7 +32,7 @@ namespace Revsoft.Wabbitcode
 	/// <summary>
 	/// Summary description for frmDocument.
 	/// </summary>
-	public partial class NewEditor : IClipboardOperation
+	public partial class Editor : IClipboardOperation
 	{
 		#region Private Memebers
 		private const int LabelsCacheSize = 100;
@@ -41,7 +41,7 @@ namespace Revsoft.Wabbitcode
 		private readonly Bitmap _errorBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.PNG.error.png"));
 		private readonly List<CancellationTokenSource> _queuedFiles = new List<CancellationTokenSource>();
 		private CancellationTokenSource _highlightRefsCancellationTokenSource;
-		private readonly MainFormRedone _mainForm;
+		private readonly MainForm _mainForm;
 		private readonly IBackgroundAssemblerService _backgroundAssemblerService;
 		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
@@ -131,7 +131,7 @@ namespace Revsoft.Wabbitcode
 
 		#endregion
 
-		public NewEditor(IBackgroundAssemblerService backgroundAssemblerService, IDockingService dockingService,
+		public Editor(IBackgroundAssemblerService backgroundAssemblerService, IDockingService dockingService,
 			IDocumentService documentService, IParserService parserService, ISymbolService symbolService)
 		{
 			InitializeComponent();
@@ -965,7 +965,7 @@ namespace Revsoft.Wabbitcode
 
 		private void closeAllOtherMenuItem_Click(object sender, EventArgs e)
 		{
-			foreach (NewEditor child in _dockingService.Documents.Where(child => child != this))
+			foreach (Editor child in _dockingService.Documents.Where(child => child != this))
 			{
 				child.Close();
 			}
@@ -974,7 +974,7 @@ namespace Revsoft.Wabbitcode
 		private void closeAllMenuItem_Click(object sender, EventArgs e)
 		{
 			var list = _dockingService.Documents.ToList();
-			foreach (NewEditor child in list)
+			foreach (Editor child in list)
 			{
 				child.Close();
 			}
@@ -1227,7 +1227,7 @@ namespace Revsoft.Wabbitcode
 			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
 		}
 
-		private static void AddSquiggleLine(NewEditor doc, int newLineNumber, Color underlineColor, string description)
+		private static void AddSquiggleLine(Editor doc, int newLineNumber, Color underlineColor, string description)
 		{
 			var document = doc.EditorBox.Document;
 			int start = document.GetOffsetForLineNumber(newLineNumber - 1);

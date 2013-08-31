@@ -11,7 +11,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 	{
 		private readonly IDocumentService _documentService;
 		private readonly StringBuilder _stringBuilder;
-		private int numResults;
+		private int _numResults;
 
 		public FindResultsWindow(IDockingService dockingService, IDocumentService documentService)
 			: base(dockingService)
@@ -34,7 +34,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				projectfile = " all open files";
 			}
 
-			numResults = 0;
+			_numResults = 0;
 			_stringBuilder.Clear();
 			_stringBuilder.Append(string.Format("Searching for \"{0}\" in {1}\n", serachString, projectfile));
 		}
@@ -43,7 +43,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		public void AddFindResult(string file, int lineNum, string line)
 		{
 			_stringBuilder.Append(string.Format("{0} ({1}): {2}\n", file, lineNum + 1, line));
-			numResults++;
+			_numResults++;
 		}
 
 		public  void AddFindResult(Reference reference)
@@ -53,7 +53,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		public void DoneSearching()
 		{
-			_stringBuilder.Append(string.Format("Done Searching. {0} results", numResults));
+			_stringBuilder.Append(string.Format("Done Searching. {0} results", _numResults));
 			findResultsBox.Text = _stringBuilder.ToString();
 		}
 

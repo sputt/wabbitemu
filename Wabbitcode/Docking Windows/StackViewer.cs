@@ -10,7 +10,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 {
 	public partial class StackViewer : ToolWindow
 	{        
-		private WabbitcodeDebugger debugger;
+		private WabbitcodeDebugger _debugger;
 		private readonly ISymbolService _symbolService;
 
 		public StackViewer(IDockingService dockingService, ISymbolService symbolService)
@@ -24,7 +24,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		void MainForm_OnDebuggingStarted(object sender, Services.Debugger.DebuggingEventArgs e)
 		{
-			debugger = e.Debugger;
+			_debugger = e.Debugger;
 		}
 
 		public void AddStackData(int address, int data)
@@ -47,7 +47,16 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		public override void Copy()
 		{
-			Clipboard.SetDataObject(stackView.GetClipboardContent());
+			if (stackView == null)
+			{
+				return;
+			}
+
+			DataObject dataObject = stackView.GetClipboardContent();
+			if (dataObject != null)
+			{
+				Clipboard.SetDataObject(dataObject);
+			}
 		}
 
 		public void RemoveLastRow()
@@ -75,7 +84,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			ushort address = ushort.Parse(
 								 stackView.Rows[stackView.SelectedRows[0].Index].Cells[1].Value.ToString(),
 								 NumberStyles.HexNumber);
-			debugger.GotoAddress(address);
+			_debugger.GotoAddress(address);
 		}
 	}
 }

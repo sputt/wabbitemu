@@ -572,7 +572,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			ProjectFile file = (ProjectFile)node.Tag;
 			string newFileName = Path.Combine(Path.GetDirectoryName(file.FileFullPath), newName);
 			File.Move(file.FileFullPath, newFileName);
-			foreach (NewEditor editor in _dockingService.Documents
+			foreach (Editor editor in _dockingService.Documents
 				.Where(editor => string.Equals(editor.FileName, file.FileFullPath, StringComparison.OrdinalIgnoreCase)))
 			{
 				editor.FileName = newFileName;
