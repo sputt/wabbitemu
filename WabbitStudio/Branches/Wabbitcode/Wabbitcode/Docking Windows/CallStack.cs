@@ -95,14 +95,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			callStackView.Rows.Remove(callStackView.Rows[0]);
 		}
 
-		public override void Copy()
-		{
-			if (callStackView != null)
-			{
-				Clipboard.SetDataObject(callStackView.GetClipboardContent());
-			}
-		}
-
 		internal void Clear()
 		{
 			callStackView.Rows.Clear();
@@ -120,5 +112,23 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			ushort address = ushort.Parse(stackValue, NumberStyles.HexNumber);
 			_debugger.GotoAddress(address);
 		}
+	
+		#region IClipboardOperation
+
+		public override void Copy()
+		{
+			if (callStackView == null)
+			{
+				return;
+			}
+
+			DataObject data = callStackView.GetClipboardContent();
+			if (data != null)
+			{
+				Clipboard.SetDataObject(data);
+			}
+		}
+
+		#endregion
 	}
 }

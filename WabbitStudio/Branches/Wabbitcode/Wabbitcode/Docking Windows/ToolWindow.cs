@@ -1,11 +1,10 @@
-﻿using Revsoft.Wabbitcode.Services;
-using System;
+﻿using System;
 using Revsoft.Wabbitcode.Services.Interface;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
-	public partial class ToolWindow : DockContent
+	public abstract partial class ToolWindow : DockContent, IClipboardOperation
 	{
 		private readonly IDockingService _dockingService;
 
@@ -18,14 +17,17 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		public virtual void Copy()
 		{
+			// no-op
 		}
 
 		public virtual void Cut()
 		{
+			// no-op
 		}
 
 		public virtual void Paste()
 		{
+			// no-op
 		}
 
 		private void autoHideItem_Click(object sender, EventArgs e)

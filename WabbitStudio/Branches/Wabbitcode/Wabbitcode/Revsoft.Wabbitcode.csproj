@@ -135,7 +135,7 @@
     <Optimize>true</Optimize>
     <FileAlignment>4096</FileAlignment>
     <DebugType>full</DebugType>
-    <PlatformTarget>x86</PlatformTarget>
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <CodeAnalysisLogFile>bin\Release\Revsoft.Wabbitcode.exe.CodeAnalysisLog.xml</CodeAnalysisLogFile>
     <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
     <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
@@ -565,12 +565,10 @@
     <SignManifests>false</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualBasic" />
     <Reference Include="System">
       <Name>System</Name>
     </Reference>
-    <Reference Include="System.Data" />
     <Reference Include="System.Drawing">
       <Name>System.Drawing</Name>
     </Reference>
@@ -604,6 +602,7 @@
     <Compile Include="BuildSteps.Designer.cs">
       <DependentUpon>BuildSteps.cs</DependentUpon>
     </Compile>
+    <Compile Include="Docking Windows\IClipboardOperation.cs" />
     <Compile Include="Editor\CodeCompletion.cs" />
     <Compile Include="Editor\EditorSelectionEventArgs.cs" />
     <Compile Include="Editor\EditorEventArgs.cs" />
@@ -687,7 +686,6 @@
     <Compile Include="Services\Parser\IParserData.cs" />
     <Compile Include="Services\Parser\Label.cs" />
     <Compile Include="Services\Parser\Macro.cs" />
-    <Compile Include="Services\Parser\ParsedLineSec.cs" />
     <Compile Include="Services\Parser\ParserInformation.cs" />
     <Compile Include="Services\Project\BuildConfig.cs" />
     <Compile Include="Services\Project\IBuildSystem.cs" />

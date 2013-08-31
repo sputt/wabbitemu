@@ -151,7 +151,7 @@ namespace Revsoft.Wabbitcode
 			// 
 			this.renameContext.Index = 0;
 			this.renameContext.Text = "Rename";
-			//this.renameContext.Click += new System.EventHandler(this.renameContext_Click);
+			this.renameContext.Click += new System.EventHandler(this.renameContext_Click);
 			
 			// 
 			// extractMethodContext

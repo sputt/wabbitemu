@@ -12,8 +12,9 @@ using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Services
 {
-	[ServiceDependency(typeof(IDockingService))]
 	[ServiceDependency(typeof(IBackgroundAssemblerService))]
+	[ServiceDependency(typeof(IDockingService))]
+	[ServiceDependency(typeof(IParserService))]
 	[ServiceDependency(typeof(ISymbolService))]
 	public class DocumentService : IDocumentService
 	{
@@ -22,6 +23,7 @@ namespace Revsoft.Wabbitcode.Services
 		private int _recentFileIndex;
 		private readonly IDockingService _dockingService;
 		private readonly IBackgroundAssemblerService _backgroundAssemblerService;
+		private readonly IParserService _parserService;
 		private readonly ISymbolService _symbolService;
 
 		/// <summary>
@@ -58,7 +60,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public NewEditor CreateNewDocument()
 		{
-			NewEditor doc = new NewEditor(_backgroundAssemblerService, _dockingService, this, _symbolService)
+			NewEditor doc = new NewEditor(_backgroundAssemblerService, _dockingService, this, _parserService, _symbolService)
 			{
 				Text = "New Document",
 				TabText = "New Document"
@@ -98,17 +100,17 @@ namespace Revsoft.Wabbitcode.Services
 			child.ScrollToOffset(item.Location.Offset);
 		}
 
-		public void GotoLine(int line)
+		public void GotoLine(NewEditor editor, int line)
 		{
-			ActiveDocument.ScrollToLine(line);
+			editor.ScrollToLine(line);
 			// fix for 0 indexed
-			ActiveDocument.SetCaretPosition(0, line - 1);
+			editor.SetCaretPosition(0, line - 1);
 		}
 
 		public void GotoLine(string file, int scrollToLine)
 		{
 			NewEditor child = GotoFile(file);
-			child.ScrollToLine(scrollToLine);
+			GotoLine(child, scrollToLine);
 		}
 
 		public void HighlightDebugLine(int newLineNumber)
@@ -223,7 +225,8 @@ namespace Revsoft.Wabbitcode.Services
 
 		public NewEditor OpenDocument(string filename)
 		{
-			NewEditor doc = new NewEditor(_backgroundAssemblerService, _dockingService, this, _symbolService);
+			NewEditor doc = new NewEditor(_backgroundAssemblerService, _dockingService, this,
+				_parserService, _symbolService);
 			OpenDocument(doc, filename);
 			return doc;
 		}
@@ -323,11 +326,11 @@ namespace Revsoft.Wabbitcode.Services
 		}
 
 		public DocumentService(IBackgroundAssemblerService backgroundAssemblerService,
-			IDockingService dockingService,
-			ISymbolService symbolService)
+			IDockingService dockingService, IParserService parserService, ISymbolService symbolService)
 		{
 			_backgroundAssemblerService = backgroundAssemblerService;
 			_dockingService = dockingService;
+			_parserService = parserService;
 			_symbolService = symbolService;
 		}
 

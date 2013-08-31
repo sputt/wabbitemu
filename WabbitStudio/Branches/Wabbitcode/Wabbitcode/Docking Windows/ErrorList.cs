@@ -34,6 +34,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			assemblerService.AssemblerProjectFinished += Instance_AssemblerProjectFinished;
 		}
 
+		#region IClipboardOperation
+
 		public override void Copy()
 		{
 			var data = errorGridView.GetClipboardContent();
@@ -42,6 +44,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				Clipboard.SetDataObject(data);
 			}
 		}
+
+		#endregion
 
 		public void ParseOutput(List<Errors> parsedErrors)
 		{

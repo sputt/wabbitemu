@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Services.Interface;
+﻿using System.Text.RegularExpressions;
+using Revsoft.Wabbitcode.Services.Interface;
 using System;
 using System.Drawing;
 
@@ -60,13 +61,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			outputWindowBox.Clear();
 		}
 
-		internal void SetText(string outputText)
-		{
-			outputWindowBox.Text = outputText;
-			outputWindowBox.SelectionStart = outputWindowBox.Text.Length;
-			outputWindowBox.ScrollToCaret();
-		}
-
 		internal void UpdateFont(Font font)
 		{
 			outputWindowBox.Font = font;
@@ -79,29 +73,19 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		private void outputWindowBox_DoubleClick(object sender, EventArgs e)
 		{
-			// expected input:
 			// file:line:error code:description
+			// SPASM uses the format %s:%d: %s %s%03X: %s currently
 			int errorLine = outputWindowBox.GetLineFromCharIndex(outputWindowBox.SelectionStart);
-			string errorline = outputWindowBox.Lines[errorLine];
-			int line = errorline.IndexOf(':', 2);
-			if (line == -1)
+			string lineContents = outputWindowBox.Lines[errorLine];
+			Match match = Regex.Match(lineContents, @"(?<fileName>.+):(?<lineNum>\d+): (?<errorCode>.+): (?<description>.+)");
+			if (!match.Success)
 			{
 				return;
 			}
 
-			string file = errorline.Substring(0, line);
-			int endLine = errorline.IndexOf(':', line + 1);
-			if (endLine == -1)
-			{
-				return;
-			}
-
-			string realLine = errorline.Substring(line + 1, endLine - line - 1);
-			int scrollToLine;
-			if (int.TryParse(realLine, out scrollToLine))
-			{
-				_documentService.GotoLine(file, scrollToLine);
-			}
+			string file = match.Groups["fileName"].Value;
+			int lineNumber = Convert.ToInt32(match.Groups["lineNum"].Value);
+			_documentService.GotoLine(file, lineNumber);
 		}
 
 		private void selectAllOuputButton_Click(object sender, EventArgs e)

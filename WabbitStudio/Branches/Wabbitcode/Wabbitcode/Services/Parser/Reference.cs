@@ -1,85 +1,24 @@
-﻿namespace Revsoft.Wabbitcode.Services
+﻿namespace Revsoft.Wabbitcode.Services.Parser
 {
-
     public class Reference
     {
-        private int col;
-        private string file;
-        private int line;
-        private string lineContents;
-        private string reference;
-
-        public Reference(string file, int line, int col, string reference)
+	    public Reference(string file, int line, int col, string reference, string lineContents)
         {
-            this.file = file;
-            this.line = line;
-            this.col = col;
-            this.reference = reference;
+            File = file;
+            Line = line;
+            Col = col;
+            ReferenceString = reference;
+            LineContents = lineContents;
         }
 
-        public Reference(string file, int line, int col, string reference, string lineContents)
-        {
-            this.file = file;
-            this.line = line;
-            this.col = col;
-            this.reference = reference;
-            this.lineContents = lineContents;
-        }
+	    public int Col { get; private set; }
 
-        public int Col
-        {
-            get
-            {
-                return this.col;
-            }
-            set
-            {
-                this.col = value;
-            }
-        }
+	    public string File { get; private set; }
 
-        public string File
-        {
-            get
-            {
-                return this.file;
-            }
-            set
-            {
-                this.file = value;
-            }
-        }
+	    public int Line { get; private set; }
 
-        public int Line
-        {
-            get
-            {
-                return this.line;
-            }
-            set
-            {
-                this.line = value;
-            }
-        }
+	    public string LineContents { get; private set; }
 
-        public string LineContents
-        {
-            get
-            {
-                return this.lineContents;
-            }
-            set
-            {
-                this.lineContents = value;
-            }
-        }
-
-        public string ReferenceString
-        {
-            get
-            {
-                return this.reference;
-            }
-        }
+	    public string ReferenceString { get; private set; }
     }
 }

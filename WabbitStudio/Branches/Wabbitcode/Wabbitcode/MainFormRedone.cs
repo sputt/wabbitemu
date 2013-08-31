@@ -74,10 +74,10 @@ namespace Revsoft.Wabbitcode
 				new CallStack(_dockingService, _symbolService),
 				new LabelList(_dockingService, _documentService, _parserService),
 				new OutputWindow(_dockingService, _documentService),
-				new FindAndReplaceForm(_dockingService, _projectService.Project),
+				new FindAndReplaceForm(_dockingService, _projectService),
 				new FindResultsWindow(_dockingService, _documentService),
 				new MacroManager(_dockingService),
-				new BreakpointManagerWindow(_dockingService, _documentService, _projectService.Project),
+				new BreakpointManagerWindow(_dockingService, _documentService, _projectService),
 				new StackViewer(_dockingService, _symbolService));
 			_dockingService.LoadConfig();
 
@@ -86,12 +86,16 @@ namespace Revsoft.Wabbitcode
 				LoadStartupProject();
 			}
 
-			_projectService.Project.InitWatcher(projectWatcher_Changed, projectWatcher_Renamed);
+			if (_projectService.Project == null)
+			{
+				_projectService.CreateInternalProject();
+			}
 
 			try
 			{
 				if (!_projectService.Project.IsInternal)
 				{
+					_projectService.Project.InitWatcher(projectWatcher_Changed, projectWatcher_Renamed);
 					_dockingService.ProjectViewer.BuildProjTree();
 				}
 			}
@@ -1104,7 +1108,7 @@ namespace Revsoft.Wabbitcode
 			}
 
 			int line = Convert.ToInt32(gotoBox.inputBox.Text);
-			_documentService.GotoLine(line);
+			_documentService.GotoLine(_dockingService.ActiveDocument, line);
 		}
 
 		private void gotoCurrentToolButton_Click(object sender, EventArgs e)
@@ -1532,9 +1536,7 @@ namespace Revsoft.Wabbitcode
 			{
 				return;
 			}
-
-			RefactorForm form = new RefactorForm(_dockingService, _projectService);
-			form.ShowDialog();
+			ShowRefactorForm();
 		}
 
 		private void replaceInFilesMenuItem_Click(object sender, EventArgs e)
@@ -2005,6 +2007,12 @@ namespace Revsoft.Wabbitcode
 			_documentService.RemoveDebugHighlight();
 			_documentService.HighlightDebugLine(lineNumber + 1);
 			UpdateDebugPanel();
+		}
+
+		internal void ShowRefactorForm()
+		{
+			RefactorForm form = new RefactorForm(_dockingService, _projectService);
+			form.ShowDialog();
 		}
 	}
 }
