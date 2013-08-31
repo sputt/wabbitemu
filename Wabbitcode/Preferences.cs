@@ -1,19 +1,16 @@
 ﻿using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Utils;
+using Revsoft.TextEditor.Document;
+using Revsoft.Wabbitcode.Properties;
+using System;
+using System.Configuration;
+using System.Drawing;
+using System.Drawing.Text;
+using System.IO;
+using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode
 {
-	using Revsoft.TextEditor.Document;
-	using Revsoft.Wabbitcode.Classes;
-	using Revsoft.Wabbitcode.Properties;
-	using Revsoft.Wabbitcode.Services;
-	using System;
-	using System.Configuration;
-	using System.Drawing;
-	using System.Drawing.Text;
-	using System.IO;
-	using System.Windows.Forms;
-
 	/// <summary>
 	/// Description of Preferences.
 	/// </summary>
@@ -23,7 +20,7 @@ namespace Revsoft.Wabbitcode
 		private bool _changing;
 		private readonly int[] _fontSizes = { 6, 8, 9, 10, 12, 14, 16, 18, 24 };
 		private bool _savesettings;
-		private IDockingService _dockingService;
+		private readonly IDockingService _dockingService;
 
 		public Preferences(IDockingService dockingService)
 		{

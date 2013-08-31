@@ -18,7 +18,7 @@
             pictureBox.BackColor = Color.White;
             pictureBox.Location = new Point(18 + vertRuler.Width, 18 + horzRuler.Height);
             button1.Location = new Point(Width/2 - button1.Width/2, Height - (button1.Height + button1.Height/2));
-            this.drawLines();
+            DrawGridLines();
         }
 
         private void button1_Click(object sender, System.EventArgs e)
@@ -26,7 +26,7 @@
             Close();
         }
 
-        private void drawLines()
+        private void DrawGridLines()
         {
             Bitmap image = new Bitmap(horzRuler.Width, horzRuler.Height);
             horzRuler.Image = image;

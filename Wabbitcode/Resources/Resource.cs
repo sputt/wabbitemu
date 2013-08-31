@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Resources
 {
@@ -11,6 +10,12 @@ namespace Revsoft.Wabbitcode.Resources
 		// This makes sure we only extract stuff once per session...
 		private static readonly List<string> ExtractedResources = new List<string>();
 
+		/// <summary>
+		/// Extracts a resource from the executing assembly.
+		/// </summary>
+		/// <param name="resourceName">The name of the resource to extract. The name is already prefixed with 
+		/// Revsoft.Wabbitcode.Resources. </param>
+		/// <param name="outputFile">The fully qualified path to extract the resource to</param>
 		public static void GetResource(string resourceName, string outputFile)
 		{
 			if (ExtractedResources.Contains(resourceName.ToUpper()) && File.Exists(outputFile))
@@ -40,10 +45,6 @@ namespace Revsoft.Wabbitcode.Resources
 						throw new Exception("Unable to find resource to extract");
 					}
 				}
-			}
-			catch (Exception ex)
-			{
-				MessageBox.Show("Error: " + ex);
 			}
 			finally
 			{

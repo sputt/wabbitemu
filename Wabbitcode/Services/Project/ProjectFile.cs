@@ -1,50 +1,34 @@
-﻿namespace Revsoft.Wabbitcode.Services.Project
-{
-    using Revsoft.Wabbitcode;
-    using System.IO;
+﻿using System.IO;
+using Revsoft.Wabbitcode.Extensions;
 
+namespace Revsoft.Wabbitcode.Services.Project
+{
     public class ProjectFile
     {
-        private string fileFoldings;
-        private string filePath;
-        private ProjectFolder folder;
-        private IProject parent;
+	    private string _filePath;
+	    private readonly string _projectDir;
+        private ProjectFolder _folder;
+        private readonly ProjectFolder _parentFolder;
 
-        public ProjectFile(IProject project, string fullPath)
+        public ProjectFile(ProjectFolder projectFolder, string fullPath, string projectDir)
         {
-            this.parent = project;
-            this.filePath = fullPath;
+            _parentFolder = projectFolder;
+            _filePath = fullPath;
+	        _projectDir = projectDir;
         }
 
-        public string FileFoldings
+	    public string FileFoldings { get; set; }
+
+	    public string FileFullPath
         {
             get
             {
-                return this.fileFoldings;
-            }
-            set
-            {
-                this.fileFoldings = value;
-            }
-        }
-
-        public string FileFullPath
-        {
-            get
-            {
-                if (Path.IsPathRooted(this.filePath))
-                {
-                    return this.filePath;
-                }
-                else
-                {
-                    return FileOperations.GetAbsolutePath(this.parent.ProjectDirectory, this.filePath);
-                }
+	            return Path.IsPathRooted(_filePath) ? _filePath : FileOperations.GetAbsolutePath(_projectDir, _filePath);
             }
 
-            set
+		    set
             {
-                this.filePath = value;
+                _filePath = value;
             }
         }
 
@@ -52,19 +36,11 @@
         {
             get
             {
-                if (Path.IsPathRooted(this.filePath))
-                {
-                    return FileOperations.GetRelativePath(this.parent.ProjectDirectory, this.filePath);
-                }
-                else
-                {
-                    return this.filePath;
-                }
+				return Path.IsPathRooted(_filePath) ? FileOperations.GetRelativePath(_projectDir, _filePath) : _filePath;
             }
-
-            set
+	        set
             {
-                this.filePath = value;
+                _filePath = value;
             }
         }
 
@@ -72,31 +48,31 @@
         {
             get
             {
-                return this.folder;
+                return _folder;
             }
             set
             {
-                this.folder = value;
+                _folder = value;
             }
         }
 
-        public IProject Parent
+        public ProjectFolder ParentFolder
         {
             get
             {
-                return this.parent;
+                return _parentFolder;
             }
         }
 
         public override string ToString()
         {
-            return this.filePath;
+            return _filePath;
         }
 
         internal void Remove()
         {
-            this.folder.Files.Remove(this);
-            this.folder = null;
+            _folder.Files.Remove(this);
+            _folder = null;
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Revsoft.Wabbitcode.Exceptions;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;

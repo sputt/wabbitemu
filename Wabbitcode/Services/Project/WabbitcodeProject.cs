@@ -14,16 +14,15 @@ namespace Revsoft.Wabbitcode.Services.Project
 	{
 		private const string ProjectFileVersion = "1.0";
 
-		private BuildSystem _buildSystem;
 		private ProjectFile _fileFound;
-		private readonly List<string> _includeDirs = new List<string>();
 		private ProjectFolder _mainFolder;
 		private readonly IAssemblerService _assemblerService;
 
 		public WabbitcodeProject(IAssemblerService assemblerService)
 		{
+			IncludeDirs = new List<string>();
 			_assemblerService = assemblerService;
-			_buildSystem = new BuildSystem(_assemblerService, this);
+			BuildSystem = new BuildSystem(_assemblerService, this);
 			ProjectWatcher = new FileSystemWatcher();
 			if (!string.IsNullOrEmpty(ProjectDirectory))
 			{
@@ -44,21 +43,9 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		public FileSystemWatcher ProjectWatcher { get; set; }
 
-		public IBuildSystem BuildSystem
-		{
-			get
-			{
-				return _buildSystem;
-			}
-		}
+		public IBuildSystem BuildSystem { get; private set; }
 
-		public IList<string> IncludeDirs
-		{
-			get
-			{
-				return _includeDirs;
-			}
-		}
+		public IList<string> IncludeDirs { get; private set; }
 
 		public bool NeedsSave { get; private set; }
 
@@ -78,37 +65,10 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		#endregion
 
-		public ProjectFile AddFile(ProjectFolder parentFolder, string fullPath)
-		{
-			ProjectFile file = new ProjectFile(this, fullPath);
-			parentFolder.AddFile(file);
-			NeedsSave = true;
-			return file;
-		}
-
-		public ProjectFolder AddFolder(string dirName, ProjectFolder parentFolder)
-		{
-			ProjectFolder folder = new ProjectFolder(this, dirName);
-			parentFolder.AddFolder(folder);
-			return folder;
-		}
-
 		public bool ContainsFile(string fullPath)
 		{
 			_fileFound = null;
 			return RecurseSearchFolders(MainFolder, Path.GetFileName(fullPath));
-		}
-
-		public void DeleteFile(ProjectFolder parentDir, ProjectFile file)
-		{
-			file.Remove();
-			NeedsSave = true;
-		}
-
-		public void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir)
-		{
-			parentDir.Folders.Remove(dir);
-			NeedsSave = true;
 		}
 
 		public ProjectFile FindFile(string fullPath)
@@ -121,7 +81,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			return ContainsFile(fullPath) ? _fileFound : null;
 		}
 
-		internal void BuildXMLFile()
+		private void BuildXMLFile()
 		{
 			XmlTextWriter writer = new XmlTextWriter(ProjectFile, Encoding.Unicode)
 			{
@@ -133,7 +93,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			writer.WriteAttributeString("Version", ProjectFileVersion);
 			writer.WriteAttributeString("Name", ProjectName);
 			RecurseWriteFolders(writer, _mainFolder);
-			_buildSystem.WriteXML(writer);
+			BuildSystem.WriteXML(writer);
 			writer.WriteEndElement();
 			writer.Flush();
 			writer.Close();
@@ -141,14 +101,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		internal void CreateNewProject(string projectFile, string projectName)
 		{
-			ProjectFolder folder = new ProjectFolder(this, projectName);
+			ProjectFolder folder = new ProjectFolder(null, projectName);
 			_mainFolder = folder;
 			ProjectName = projectName;
 			ProjectFile = projectFile;
 			ProjectDirectory = Path.GetDirectoryName(projectFile);
 
-			_buildSystem = new BuildSystem(_assemblerService, this);
-			_buildSystem.CreateDefaultConfigs();
+			BuildSystem = new BuildSystem(_assemblerService, this);
+			BuildSystem.CreateDefaultConfigs();
 		}
 
 		public IEnumerable<ProjectFile> GetProjectFiles()
@@ -201,9 +161,9 @@ namespace Revsoft.Wabbitcode.Services.Project
 					{
 						throw new ArgumentException("Invalid XML Format");
 					}
-					_mainFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
+					_mainFolder = new ProjectFolder(null, reader.GetAttribute("Name"));
 					RecurseReadFolders(reader, ref _mainFolder);
-					_buildSystem.ReadXML(reader);
+					BuildSystem.ReadXML(reader);
 				}
 			}
 			finally
@@ -237,20 +197,23 @@ namespace Revsoft.Wabbitcode.Services.Project
 				{
 					return;
 				}
-				if (reader.Name == "Folder")
+				switch (reader.Name)
 				{
-					ProjectFolder subFolder = new ProjectFolder(this, reader.GetAttribute("Name"));
-					folder.AddFolder(subFolder);
-					RecurseReadFolders(reader, ref subFolder);
-				}
-				else if (reader.Name == "File")
-				{
-					ProjectFile file = new ProjectFile(this, reader.GetAttribute("Path"));
-					folder.AddFile(file);
-				}
-				else
-				{
-					return;
+					case "Folder":
+					{
+						ProjectFolder subFolder = new ProjectFolder(folder, reader.GetAttribute("Name"));
+						folder.AddFolder(subFolder);
+						RecurseReadFolders(reader, ref subFolder);
+					}
+						break;
+					case "File":
+					{
+						ProjectFile file = new ProjectFile(folder, reader.GetAttribute("Path"), ProjectDirectory);
+						folder.AddFile(file);
+					}
+						break;
+					default:
+						return;
 				}
 			}
 		}

@@ -57,6 +57,8 @@ namespace Revsoft.Wabbitcode.Services.Project
 			set;
 		}
 
+		void CreateDefaultConfigs();
+
 		bool Build();
 
 		void ReadXML(XmlTextReader reader);

@@ -1,5 +1,4 @@
 ﻿using System;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interface;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
