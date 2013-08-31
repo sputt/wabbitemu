@@ -1,4 +1,6 @@
-﻿namespace Revsoft.Wabbitcode.Docking_Windows
+﻿using Revsoft.Wabbitcode.Extensions;
+
+namespace Revsoft.Wabbitcode.Docking_Windows
 {
     public partial class ProjectViewer
     {
@@ -55,7 +57,7 @@
         {
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ProjectViewer));
-            this.projViewer = new Revsoft.Wabbitcode.TreeView();
+            this.projViewer = new TreeView();
             this.projectIcons = new System.Windows.Forms.ImageList(this.components);
             this.folderContextMenu = new System.Windows.Forms.ContextMenu();
             this.addContextItem = new System.Windows.Forms.MenuItem();
@@ -93,7 +95,7 @@
             this.projViewer.Name = "projViewer";
             this.projViewer.SelectedImageIndex = 0;
             this.projViewer.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            this.projViewer.SelectionMode = Revsoft.Wabbitcode.TreeViewSelectionMode.MultiSelectSameParent;
+            this.projViewer.SelectionMode = TreeViewSelectionMode.MultiSelectSameParent;
             this.projViewer.Size = new System.Drawing.Size(234, 393);
             this.projViewer.TabIndex = 0;
             this.projViewer.AfterLabelEdit += new System.Windows.Forms.NodeLabelEditEventHandler(this.projViewer_AfterLabelEdit);

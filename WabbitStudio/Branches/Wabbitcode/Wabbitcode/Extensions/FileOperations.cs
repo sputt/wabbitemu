@@ -1,9 +1,9 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
+using Microsoft.Win32;
 
-namespace Revsoft.Wabbitcode
+namespace Revsoft.Wabbitcode.Extensions
 {
     public static class FileOperations
     {
@@ -20,14 +20,20 @@ namespace Revsoft.Wabbitcode
             try
             {
                 string mimeType = "application/unknown";
-                string ext = System.IO.Path.GetExtension(fileName).ToLower();
-                RegistryKey regKey = Registry.ClassesRoot.OpenSubKey(ext);
-                if (regKey != null && regKey.GetValue("Content Type") != null)
-                {
-                    mimeType = regKey.GetValue("Content Type").ToString();
-                }
+	            var extension = Path.GetExtension(fileName);
+	            if (extension == null)
+	            {
+		            return mimeType;
+	            }
 
-                return mimeType;
+	            string ext = extension.ToLower();
+	            RegistryKey regKey = Registry.ClassesRoot.OpenSubKey(ext);
+	            if (regKey != null && regKey.GetValue("Content Type") != null)
+	            {
+		            mimeType = regKey.GetValue("Content Type").ToString();
+	            }
+
+	            return mimeType;
             }
             catch (Exception)
             {
@@ -42,12 +48,17 @@ namespace Revsoft.Wabbitcode
             Uri relativeUri = uri1.MakeRelativeUri(uri2);
             var uriString = Uri.UnescapeDataString(Uri.UnescapeDataString(relativeUri.OriginalString));
             var dir = Path.GetFileName(absolutePath);
-            if (uriString.StartsWith(dir))
-            {
-                uriString = uriString.Remove(0, dir.Length + 1);		// +1 for /
-            }
+	        if (dir != null && !uriString.StartsWith(dir))
+	        {
+		        return uriString;
+	        }
 
-            return uriString;
+	        if (dir != null)
+			{
+		        uriString = uriString.Remove(0, dir.Length + 1);		// +1 for /
+	        }
+
+	        return uriString;
 
             /*if (absolutePath == relativeTo)
                 return "";
@@ -111,7 +122,7 @@ namespace Revsoft.Wabbitcode
                 }
             }
 
-            char outputSeparator = isWeb ? '/' : System.IO.Path.DirectorySeparatorChar;
+            char outputSeparator = isWeb ? '/' : Path.DirectorySeparatorChar;
 
             StringBuilder result = new StringBuilder();
             if ((isWeb == false && fileName.StartsWith(@"\\")) || fileName.StartsWith("//"))
@@ -171,13 +182,10 @@ namespace Revsoft.Wabbitcode
 
                             break;
                         }
-                        else
-                        {
-                            // append normal segment
-                            goto default;
-                        }
+		                // append normal segment
+		                goto default;
 
-                    default:
+	                    default:
                         if (result.Length > 0)
                         {
                             result.Append(outputSeparator);

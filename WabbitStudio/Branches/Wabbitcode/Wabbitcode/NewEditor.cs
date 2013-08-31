@@ -583,7 +583,7 @@ namespace Revsoft.Wabbitcode
 		//				StreamReader reader = null;
 		//				try
 		//				{
-		//					reader = new StreamReader(data.Parent.SourceFile);
+		//					reader = new StreamReader(data.ParentFolder.SourceFile);
 		//					line = reader.ReadToEnd().Split('\n')[data.Location.Line];
 		//				}
 		//				finally
@@ -593,7 +593,7 @@ namespace Revsoft.Wabbitcode
 		//						reader.Close();
 		//					}
 		//				}
-		//				_dockingService.FindResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, line);
+		//				_dockingService.FindResults.AddFindResult(data.ParentFolder.SourceFile, data.Location.Line, line);
 		//			}
 		//			DockingService.ShowDockPanel(DockingService.FindResults);
 		//		}

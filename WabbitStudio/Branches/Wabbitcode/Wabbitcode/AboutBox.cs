@@ -1,96 +1,80 @@
-﻿namespace Revsoft.Wabbitcode
-{
-    using System.Reflection;
-    using System.Windows.Forms;
+﻿using System.IO;
+using System.Reflection;
+using System.Windows.Forms;
 
+namespace Revsoft.Wabbitcode
+{
     public partial class AboutBox : Form
     {
         public AboutBox()
         {
             InitializeComponent();
-            this.Text = string.Format("About {0} {0}", this.AssemblyTitle);
-            this.labelProductName.Text = this.AssemblyProduct;
-            this.labelVersion.Text = string.Format("Version {0}", this.AssemblyVersion);
-            this.labelCopyright.Text = this.AssemblyCopyright;
-            this.labelCompanyName.Text = this.AssemblyCompany;
-            this.textBoxDescription.Text = this.AssemblyDescription;
+            Text = string.Format("About {0} {0}", AssemblyTitle);
+            labelProductName.Text = AssemblyProduct;
+            labelVersion.Text = string.Format("Version {0}", AssemblyVersion);
+            labelCopyright.Text = AssemblyCopyright;
+            labelCompanyName.Text = AssemblyCompany;
+            textBoxDescription.Text = AssemblyDescription;
         }
 
-        public string AssemblyCompany
+	    public override sealed string Text
+	    {
+		    get { return base.Text; }
+		    set { base.Text = value; }
+	    }
+
+	    private string AssemblyCompany
         {
             get
             {
                 object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCompanyAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return string.Empty;
-                }
-
-                return ((AssemblyCompanyAttribute)attributes[0]).Company;
+                return attributes.Length == 0 ? string.Empty : ((AssemblyCompanyAttribute)attributes[0]).Company;
             }
         }
 
-        public string AssemblyCopyright
+	    private string AssemblyCopyright
         {
             get
             {
                 object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return string.Empty;
-                }
-
-                return ((AssemblyCopyrightAttribute)attributes[0]).Copyright;
+                return attributes.Length == 0 ? string.Empty : ((AssemblyCopyrightAttribute)attributes[0]).Copyright;
             }
         }
 
-        public string AssemblyDescription
+	    private string AssemblyDescription
         {
             get
             {
                 object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return string.Empty;
-                }
-
-                return ((AssemblyDescriptionAttribute)attributes[0]).Description;
+                return attributes.Length == 0 ? string.Empty : ((AssemblyDescriptionAttribute)attributes[0]).Description;
             }
         }
 
-        public string AssemblyProduct
+	    private string AssemblyProduct
         {
             get
             {
                 object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return string.Empty;
-                }
-
-                return ((AssemblyProductAttribute)attributes[0]).Product;
+                return attributes.Length == 0 ? string.Empty : ((AssemblyProductAttribute)attributes[0]).Product;
             }
         }
 
-        public string AssemblyTitle
+	    private string AssemblyTitle
         {
             get
             {
                 object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
-                if (attributes.Length > 0)
-                {
-                    AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributes[0];
-                    if (!string.IsNullOrEmpty(titleAttribute.Title))
-                    {
-                        return titleAttribute.Title;
-                    }
-                }
+	            if (attributes.Length <= 0)
+	            {
+		            return Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+	            }
 
-                return System.IO.Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+	            AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributes[0];
+	            return !string.IsNullOrEmpty(titleAttribute.Title) ? titleAttribute.Title : Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
             }
         }
 
-        public string AssemblyVersion
+	    private static string AssemblyVersion
         {
             get
             {

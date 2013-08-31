@@ -823,7 +823,6 @@
       <DependentUpon>Preferences.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
-    <Compile Include="Services\Project\ProjectStuff.cs" />
     <Compile Include="RenameForm.cs">
       <SubType>Form</SubType>
     </Compile>

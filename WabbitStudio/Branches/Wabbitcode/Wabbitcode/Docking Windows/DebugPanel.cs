@@ -160,7 +160,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		private void RegisterBox_KeyPress(object sender, KeyPressEventArgs e)
 		{
-			if (_debugger != null)
+			if (_debugger == null)
 			{
 				return;
 			}
@@ -195,7 +195,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		private void zflagBox_CheckedChanged(object sender, EventArgs e)
 		{
-			if (_updating || _debugger != null)
+			if (_updating || _debugger == null)
 			{
 				return;
 			}

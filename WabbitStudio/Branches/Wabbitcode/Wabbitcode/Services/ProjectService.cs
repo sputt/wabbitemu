@@ -51,25 +51,26 @@ namespace Revsoft.Wabbitcode.Services
 
 		public ProjectFile AddFile(ProjectFolder parent, string fullPath)
 		{
-			return Project.AddFile(parent, fullPath);
+			ProjectFile file = new ProjectFile(parent, fullPath, Project.ProjectDirectory);
+			parent.AddFile(file);
+			return file;
 		}
 
 		public ProjectFolder AddFolder(string dirName, ProjectFolder parentDir)
 		{
-			return Project.AddFolder(dirName, parentDir);
+			ProjectFolder folder = new ProjectFolder(parentDir, dirName);
+			parentDir.AddFolder(folder);
+			return folder;
 		}
 
 		public void CloseProject()
 		{
-			DialogResult result = DialogResult.No;
-			if (Project.NeedsSave && !Settings.Default.autoSaveProject)
+			if (Project.IsInternal)
 			{
-				result = MessageBox.Show("Would you like to save your changes to the project file?", "Save project?", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+				Project = null;
+				return;
 			}
-			if (result == DialogResult.Yes || Settings.Default.autoSaveProject)
-			{
-				SaveProject();
-			}
+
 			CreateInternalProject();
 		}
 
@@ -101,12 +102,12 @@ namespace Revsoft.Wabbitcode.Services
 		public void DeleteFile(ProjectFolder parentDir, ProjectFile file)
 		{
 			RemoveParseData(file.FileFullPath);
-			Project.DeleteFile(parentDir, file);
+			parentDir.DeleteFile(file);
 		}
 
 		public void DeleteFolder(ProjectFolder parentDir, ProjectFolder dir)
 		{
-			Project.DeleteFolder(parentDir, dir);
+			parentDir.DeleteFolder(dir);
 		}
 
 		public void RemoveParseData(string fullPath)

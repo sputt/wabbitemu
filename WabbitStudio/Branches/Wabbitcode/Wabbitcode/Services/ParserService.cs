@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;

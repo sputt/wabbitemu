@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Services;
+﻿using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
@@ -75,7 +76,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			var folder = node.Tag as ProjectFolder;
 			if (folder != null)
 			{
-				folder.Remove();
+				folder.Parent.DeleteFolder(folder);
 				node.Remove();
 			}
 			else
@@ -315,7 +316,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			}
 
 			string name = newNameForm.NewText;
-			ProjectFolder folder = new ProjectFolder(_projectService.Project, name);
+			ProjectFolder folder = new ProjectFolder((ProjectFolder) parent.Tag, name);
 			AddFolder(folder, parent);
 			((ProjectFolder)parent.Tag).AddFolder(folder);
 			projViewer.Sort();
@@ -442,7 +443,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 			MessageBox.Show("You must enter a name!");
 			e.CancelEdit = true;
-			/*foreach (TreeNode node in e.Node.Parent.Nodes)
+			/*foreach (TreeNode node in e.Node.ParentFolder.Nodes)
 				if (node.Text == e.Label)
 				{
 					if (node.Tag.ToString() == "Folder")
@@ -483,7 +484,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 						continue;
 					}
 
-					folder.Remove();
+					folder.Parent.DeleteFolder(folder);
 					if (newParent != null)
 					{
 						newParent.AddFolder(folder);

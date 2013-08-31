@@ -1,89 +1,44 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
-	using System;
-	using System.Collections.Generic;
-	using System.IO;
-
 	public class ProjectFolder
 	{
-		private List<ProjectFile> files;
-		private List<ProjectFolder> folders;
-		private string name;
-		private IProject parent;
-		private ProjectFolder parentFolder;
-
-		public ProjectFolder(IProject parent, string folderName)
+		public ProjectFolder(ProjectFolder parent, string folderName)
 		{
-			this.parent = parent;
-			name = folderName;
-			files = new List<ProjectFile>();
-			folders = new List<ProjectFolder>();
+			Parent = parent;
+			Name = folderName;
+			Files = new List<ProjectFile>();
+			Folders = new List<ProjectFolder>();
 		}
 
-		public List<ProjectFile> Files
-		{
-			get
-			{
-				return files;
-			}
-		}
+		public List<ProjectFile> Files { get; private set; }
 
-		public List<ProjectFolder> Folders
-		{
-			get
-			{
-				return folders;
-			}
-		}
+		public List<ProjectFolder> Folders { get; private set; }
 
-		public string Name
-		{
-			get
-			{
-				return name;
-			}
-			set
-			{
-				name = value;
-			}
-		}
+		public string Name { get; set; }
 
-		public IProject Parent
-		{
-			get
-			{
-				return parent;
-			}
-		}
+		public ProjectFolder Parent { get; private set; }
 
-		private ProjectFolder ParentFolder
-		{
-			get
-			{
-				return parentFolder;
-			}
-			set
-			{
-				parentFolder = value;
-			}
-		}
+		private ProjectFolder ParentFolder { get; set; }
 
 		public override string ToString()
 		{
-			return name;
+			return Name;
 		}
 
 		internal void AddFile(ProjectFile file)
 		{
-			files.Add(file);
+			Files.Add(file);
 			file.Folder = this;
 		}
 
 		internal void AddFolder(ProjectFolder subFolder)
 		{
-			folders.Add(subFolder);
+			Folders.Add(subFolder);
 			subFolder.ParentFolder = this;
 		}
 
@@ -94,24 +49,27 @@ namespace Revsoft.Wabbitcode.Services.Project
 		/// <returns>File found otherwise null</returns>
 		internal ProjectFile FindFile(string file)
 		{
-			return files.FirstOrDefault(subFile => string.Equals(Path.GetFileName(subFile.FileFullPath), file, StringComparison.OrdinalIgnoreCase));
+			return Files.FirstOrDefault(subFile => string.Equals(Path.GetFileName(subFile.FileFullPath), file, StringComparison.OrdinalIgnoreCase));
 		}
 
 		/// <summary>
-		/// Searches for a folder in subfolders.
+		/// Searches for a folder in subfolders. Does not recurse.
 		/// </summary>
 		/// <param name="folder"></param>
 		/// <returns>Returns folder found, otherwise null</returns>
 		internal ProjectFolder FindFolder(string folder)
 		{
-			return folders.FirstOrDefault(subFolder => subFolder.name == folder);
+			return Folders.FirstOrDefault(subFolder => subFolder.Name == folder);
 		}
 
-		// TODO: fix
-		internal void Remove()
+		public void DeleteFolder(ProjectFolder folder)
 		{
-			parentFolder.Folders.Remove(this);
-			parentFolder = null;
+			Folders.Remove(folder);
+		}
+
+		public void DeleteFile(ProjectFile file)
+		{
+			Files.Remove(file);
 		}
 	}
 }

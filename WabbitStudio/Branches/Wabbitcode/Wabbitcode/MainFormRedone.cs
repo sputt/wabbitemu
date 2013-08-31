@@ -813,6 +813,16 @@ namespace Revsoft.Wabbitcode
 
 		private void CloseProject()
 		{
+			DialogResult result = DialogResult.No;
+			if (_projectService.Project.NeedsSave && !Settings.Default.autoSaveProject)
+			{
+				result = MessageBox.Show("Would you like to save your changes to the project file?", "Save project?", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+			}
+			if (result == DialogResult.Yes || Settings.Default.autoSaveProject)
+			{
+				_projectService.SaveProject();
+			}
+
 			_projectService.CloseProject();
 			_dockingService.ProjectViewer.CloseProject();
 			UpdateProjectMenu(false);
@@ -1267,7 +1277,7 @@ namespace Revsoft.Wabbitcode
 			}
 			catch (Exception ex)
 			{
-				DockingService.ShowError("Error saving settings", ex);
+				DockingService.ShowError("Error saving configuration file", ex);
 			}
 		}
 
