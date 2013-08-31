@@ -603,10 +603,10 @@
       <DependentUpon>BuildSteps.cs</DependentUpon>
     </Compile>
     <Compile Include="Docking Windows\IClipboardOperation.cs" />
-    <Compile Include="Editor\CodeCompletion.cs" />
-    <Compile Include="Editor\EditorSelectionEventArgs.cs" />
-    <Compile Include="Editor\EditorEventArgs.cs" />
-    <Compile Include="Editor\RegionFoldingStrategy.cs" />
+    <Compile Include="EditorExtensions\CodeCompletion.cs" />
+    <Compile Include="EditorExtensions\EditorSelectionEventArgs.cs" />
+    <Compile Include="EditorExtensions\EditorEventArgs.cs" />
+    <Compile Include="EditorExtensions\RegionFoldingStrategy.cs" />
     <Compile Include="Resources\Resource.cs" />
     <Compile Include="Resources\VS2012ColorTable.cs" />
     <Compile Include="Services\Assembler\AssemblerOutput.cs" />
@@ -674,7 +674,7 @@
     <Compile Include="Services\ServiceFactory.cs" />
     <Compile Include="Services\SymbolService.cs" />
     <Compile Include="Services\WabbitcodeDebugger.cs" />
-    <Compile Include="Utils\ErrorsClass.cs" />
+    <Compile Include="Utils\Errors.cs" />
     <Compile Include="Utils\HighlightingUtils.cs" />
     <Compile Include="Services\Parser\Equate.cs" />
     <Compile Include="Services\Parser\Define.cs" />
@@ -773,8 +773,8 @@
     <Compile Include="NewBreakpointForm.designer.cs">
       <DependentUpon>NewBreakpointForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="newEditor.Designer.cs">
-      <DependentUpon>NewEditor.cs</DependentUpon>
+    <Compile Include="Editor.Designer.cs">
+      <DependentUpon>Editor.cs</DependentUpon>
     </Compile>
     <Compile Include="Properties\Settings.Designer.cs">
       <DependentUpon>Settings.settings</DependentUpon>
@@ -801,13 +801,13 @@
     <Compile Include="IncludeDir.Designer.cs">
       <DependentUpon>IncludeDir.cs</DependentUpon>
     </Compile>
-    <Compile Include="MainFormRedone.cs">
+    <Compile Include="MainForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MainFormRedone.Designer.cs">
-      <DependentUpon>MainFormRedone.cs</DependentUpon>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="NewEditor.cs">
+    <Compile Include="Editor.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="GotoLine.cs">
@@ -919,8 +919,8 @@
     <EmbeddedResource Include="Docking Windows\Tracking.resx">
       <DependentUpon>Tracking.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MainFormRedone.resx">
-      <DependentUpon>MainFormRedone.cs</DependentUpon>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
     <None Include="Properties\TempSettings.settings">
@@ -960,8 +960,8 @@
       <DependentUpon>IncludeDir.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
-    <EmbeddedResource Include="newEditor.resx">
-      <DependentUpon>NewEditor.cs</DependentUpon>
+    <EmbeddedResource Include="Editor.resx">
+      <DependentUpon>Editor.cs</DependentUpon>
       <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="GotoLine.resx">

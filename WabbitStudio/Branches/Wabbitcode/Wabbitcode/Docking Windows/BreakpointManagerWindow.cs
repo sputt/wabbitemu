@@ -123,7 +123,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		private void delAllBreakToolStripButton_Click(object sender, EventArgs e)
 		{
-			foreach (NewEditor child in _dockingService.Documents)
+			foreach (Editor child in _dockingService.Documents)
 			{
 				child.ClearBreakpoints();
 			}

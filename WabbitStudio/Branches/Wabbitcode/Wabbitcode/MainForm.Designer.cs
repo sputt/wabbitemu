@@ -1,6 +1,6 @@
 ﻿namespace Revsoft.Wabbitcode
 {
-	partial class MainFormRedone
+	partial class MainForm
 	{
 		/// <summary>
 		/// Required designer variable.
@@ -33,7 +33,7 @@
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainFormRedone));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			WeifenLuo.WinFormsUI.Docking.DockPanelSkin dockPanelSkin1 = new WeifenLuo.WinFormsUI.Docking.DockPanelSkin();
 			WeifenLuo.WinFormsUI.Docking.AutoHideStripSkin autoHideStripSkin1 = new WeifenLuo.WinFormsUI.Docking.AutoHideStripSkin();
 			WeifenLuo.WinFormsUI.Docking.DockPanelGradient dockPanelGradient1 = new WeifenLuo.WinFormsUI.Docking.DockPanelGradient();
@@ -1771,7 +1771,7 @@
 			this.dockPanel.SkinStyle = WeifenLuo.WinFormsUI.Docking.Skins.Style.VisualStudio2005;
 			this.dockPanel.TabIndex = 0;
 			// 
-			// MainFormRedone
+			// MainForm
 			// 
 			this.AllowDrop = true;
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -1786,7 +1786,7 @@
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.IsMdiContainer = true;
 			this.MainMenuStrip = this.mainMenu1;
-			this.Name = "MainFormRedone";
+			this.Name = "MainForm";
 			this.Text = "Wabbitcode";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainFormRedone_FormClosing);
 			this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainFormRedone_DragDrop);

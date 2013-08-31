@@ -4,7 +4,7 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode
 {
-	partial class NewEditor : DockContent
+	partial class Editor : DockContent
 	{
 		private IContainer components;
 		/// <summary>
@@ -33,7 +33,7 @@ namespace Revsoft.Wabbitcode
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(NewEditor));
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Editor));
 			this.editorBox = new Revsoft.TextEditor.TextEditorControl();
 			this.imageList1 = new System.Windows.Forms.ImageList(this.components);
 			this.contextMenu = new System.Windows.Forms.ContextMenu();

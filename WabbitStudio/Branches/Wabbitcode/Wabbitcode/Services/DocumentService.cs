@@ -36,7 +36,7 @@ namespace Revsoft.Wabbitcode.Services
 			RelativeJump,
 		}
 
-		public NewEditor ActiveDocument
+		public Editor ActiveDocument
 		{
 			get
 			{
@@ -58,9 +58,9 @@ namespace Revsoft.Wabbitcode.Services
 			set;
 		}
 
-		public NewEditor CreateNewDocument()
+		public Editor CreateNewDocument()
 		{
-			NewEditor doc = new NewEditor(_backgroundAssemblerService, _dockingService, this, _parserService, _symbolService)
+			Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this, _parserService, _symbolService)
 			{
 				Text = "New Document",
 				TabText = "New Document"
@@ -69,9 +69,9 @@ namespace Revsoft.Wabbitcode.Services
 			return doc;
 		}
 
-		public NewEditor GotoFile(string file)
+		public Editor GotoFile(string file)
 		{
-			NewEditor editorBox = ActiveDocument;
+			Editor editorBox = ActiveDocument;
 			if (editorBox == null)
 			{
 				return OpenDocument(file);
@@ -82,7 +82,7 @@ namespace Revsoft.Wabbitcode.Services
 				return ActiveDocument;
 			}
 
-			foreach (NewEditor child in _dockingService.Documents.Where(child => !string.IsNullOrEmpty(child.FileName) &&
+			foreach (Editor child in _dockingService.Documents.Where(child => !string.IsNullOrEmpty(child.FileName) &&
 				string.Equals(child.FileName, file, StringComparison.OrdinalIgnoreCase)))
 			{
 				child.Show();
@@ -96,11 +96,11 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			ParserInformation info = item.Parent;
 			string file = info.SourceFile;
-			NewEditor child = GotoFile(file);
+			Editor child = GotoFile(file);
 			child.ScrollToOffset(item.Location.Offset);
 		}
 
-		public void GotoLine(NewEditor editor, int line)
+		public void GotoLine(Editor editor, int line)
 		{
 			editor.ScrollToLine(line);
 			// fix for 0 indexed
@@ -109,7 +109,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void GotoLine(string file, int scrollToLine)
 		{
-			NewEditor child = GotoFile(file);
+			Editor child = GotoFile(file);
 			GotoLine(child, scrollToLine);
 		}
 
@@ -223,15 +223,15 @@ namespace Revsoft.Wabbitcode.Services
 			GotoFile(_highlights[_debugIndex].FileName).HighlightCall(_highlights[_debugIndex].LineNumber);
 		}
 
-		public NewEditor OpenDocument(string filename)
+		public Editor OpenDocument(string filename)
 		{
-			NewEditor doc = new NewEditor(_backgroundAssemblerService, _dockingService, this,
+			Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this,
 				_parserService, _symbolService);
 			OpenDocument(doc, filename);
 			return doc;
 		}
 
-		public void OpenDocument(NewEditor doc, string filename)
+		public void OpenDocument(Editor doc, string filename)
 		{
 			doc.Text = Path.GetFileName(filename);
 			doc.TabText = Path.GetFileName(filename);
@@ -244,7 +244,7 @@ namespace Revsoft.Wabbitcode.Services
 			_dockingService.ShowDockPanel(doc);
 		}
 
-		public void SaveDocument(NewEditor doc)
+		public void SaveDocument(Editor doc)
 		{
 			SaveFileDialog saveFileDialog = new SaveFileDialog
 			{

@@ -1,7 +1,7 @@
 ﻿using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Docking_Windows;
-using Revsoft.Wabbitcode.Editor;
+using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
@@ -25,7 +25,7 @@ using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode
 {
-	public partial class MainFormRedone : Form
+	public partial class MainForm : Form
 	{
 		#region Private Members
 
@@ -57,7 +57,7 @@ namespace Revsoft.Wabbitcode
 		public event DebuggingEnded OnDebuggingEnded;
 		#endregion
 
-		public MainFormRedone(string[] args)
+		public MainForm(string[] args)
 		{
 			InitializeComponent();
 			RestoreWindow();
@@ -121,7 +121,7 @@ namespace Revsoft.Wabbitcode
 
 		private void InitializeEvents()
 		{
-			NewEditor.OnEditorSelectionChanged += GetCodeInfo;
+			Editor.OnEditorSelectionChanged += GetCodeInfo;
 		}
 
 		private void InitializeService()
@@ -379,7 +379,7 @@ namespace Revsoft.Wabbitcode
 
 			UpdateChecks();
 			_documentService.RemoveDebugHighlight();
-			foreach (NewEditor child in MdiChildren)
+			foreach (Editor child in MdiChildren)
 			{
 				child.RemoveInvisibleMarkers();
 				child.CanSetNextStatement = false;
@@ -596,7 +596,7 @@ namespace Revsoft.Wabbitcode
 				}
 				else
 				{
-					NewEditor openEditor = _dockingService.Documents.SingleOrDefault(d => d.FileName == newBreakpoint.File);
+					Editor openEditor = _dockingService.Documents.SingleOrDefault(d => d.FileName == newBreakpoint.File);
 					if (openEditor != null)
 					{
 						openEditor.RemoveBreakpoint(newBreakpoint.LineNumber);
@@ -604,7 +604,7 @@ namespace Revsoft.Wabbitcode
 				}
 			}
 
-			foreach (NewEditor d in _dockingService.Documents)
+			foreach (Editor d in _dockingService.Documents)
 			{
 				d.CanSetNextStatement = true;
 			}
@@ -1310,7 +1310,7 @@ namespace Revsoft.Wabbitcode
 
 		private void newFileMenuItem_Click(object sender, EventArgs e)
 		{
-			NewEditor doc = _documentService.CreateNewDocument();
+			Editor doc = _documentService.CreateNewDocument();
 			_dockingService.ShowDockPanel(doc);
 		}
 
@@ -1327,7 +1327,7 @@ namespace Revsoft.Wabbitcode
 
 		private void newToolButton_Click(object sender, EventArgs e)
 		{
-			NewEditor doc = _documentService.CreateNewDocument();
+			Editor doc = _documentService.CreateNewDocument();
 			doc.TabText = "New Document";
 			doc.Show(dockPanel);
 		}
@@ -1584,7 +1584,7 @@ namespace Revsoft.Wabbitcode
 
 		private void saveAllToolButton_Click(object sender, EventArgs e)
 		{
-			foreach (NewEditor child in MdiChildren)
+			foreach (Editor child in MdiChildren)
 			{
 				_documentService.SaveDocument(child);
 			}
@@ -1668,7 +1668,7 @@ namespace Revsoft.Wabbitcode
 					_dockingService.ActiveDocument.Refresh();
 				}
 
-				foreach (NewEditor child in _dockingService.Documents)
+				foreach (Editor child in _dockingService.Documents)
 				{
 					child.UpdateIcons(output.ParsedErrors);
 				}

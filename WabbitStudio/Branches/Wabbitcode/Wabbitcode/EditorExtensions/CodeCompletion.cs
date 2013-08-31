@@ -1,23 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Windows.Forms;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Parser;
 
-namespace Revsoft.Wabbitcode
+namespace Revsoft.Wabbitcode.EditorExtensions
 {
 	class CodeCompletionProvider : ICompletionDataProvider
 	{
-		readonly NewEditor _mainForm;
+		readonly Editor _mainForm;
 		readonly TextEditorControl _editorBox;
 
-		public CodeCompletionProvider(NewEditor mainForm)
+		public CodeCompletionProvider(Editor mainForm)
 		{
 			_mainForm = mainForm;
 			_editorBox = mainForm.EditorBox;
@@ -711,17 +708,17 @@ namespace Revsoft.Wabbitcode
 
 	class CodeCompletionKeyHandler
 	{
-		readonly NewEditor _mainForm;
+		readonly Editor _mainForm;
 		readonly TextEditorControl _editor;
 		CodeCompletionWindow _codeCompletionWindow;
 
-		private CodeCompletionKeyHandler(NewEditor mainForm, TextEditorControl editor)
+		private CodeCompletionKeyHandler(Editor mainForm, TextEditorControl editor)
 		{
 			_mainForm = mainForm;
 			_editor = editor;
 		}
 
-		public static void Attach(NewEditor mainForm, TextEditorControl editor)
+		public static void Attach(Editor mainForm, TextEditorControl editor)
 		{
 			CodeCompletionKeyHandler h = new CodeCompletionKeyHandler(mainForm, editor);
 

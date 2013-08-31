@@ -4,12 +4,12 @@ namespace Revsoft.Wabbitcode.Services.Interface
 {
 	public interface IDocumentService : IService
 	{
-		NewEditor ActiveDocument { get; }
+		Editor ActiveDocument { get; }
 		string ActiveFileName { get; }
-		NewEditor CreateNewDocument();
-		NewEditor GotoFile(string file);
+		Editor CreateNewDocument();
+		Editor GotoFile(string file);
 		void GotoLabel(IParserData item);
-		void GotoLine(NewEditor editor, int line);
+		void GotoLine(Editor editor, int line);
 		void GotoLine(string file, int scrollToLine);
 		void HighlightDebugLine(int newLineNumber);
 		void RemoveDebugHighlight();
@@ -32,8 +32,8 @@ namespace Revsoft.Wabbitcode.Services.Interface
 
 		void GotoCurrentDebugLine();
 		void HighlightCall();
-		NewEditor OpenDocument(string filename);
-		void OpenDocument(NewEditor doc, string filename);
-		void SaveDocument(NewEditor doc);
+		Editor OpenDocument(string filename);
+		void OpenDocument(Editor doc, string filename);
+		void SaveDocument(Editor doc);
 	}
 }

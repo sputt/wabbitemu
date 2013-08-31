@@ -47,8 +47,8 @@ namespace Revsoft.Wabbitcode
 			{
 				bool alreadyOpen = false;
 				string fileName = file[0].File;
-				NewEditor openDoc = null;
-				foreach (NewEditor doc in _dockingService.Documents.Where(doc => string.Equals(doc.FileName, fileName, StringComparison.OrdinalIgnoreCase)))
+				Editor openDoc = null;
+				foreach (Editor doc in _dockingService.Documents.Where(doc => string.Equals(doc.FileName, fileName, StringComparison.OrdinalIgnoreCase)))
 				{
 					alreadyOpen = true;
 					editor = doc.EditorBox;

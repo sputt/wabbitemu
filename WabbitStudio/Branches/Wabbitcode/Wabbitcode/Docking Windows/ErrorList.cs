@@ -66,7 +66,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 			errorToolButton.Text = _errors + " Errors";
 			warnToolButton.Text = _warnings + " Warnings";
-			foreach (NewEditor child in _dockingService.Documents)
+			foreach (Editor child in _dockingService.Documents)
 			{
 				child.UpdateIcons(parsedErrors);
 			}
