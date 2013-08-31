@@ -96,5 +96,32 @@ namespace Revsoft.Wabbitcode.Utils
 
 			return newOffset < offset ? string.Empty : text.Substring(offset, newOffset - offset);
 		}
+
+		public static int SkipToBeginningOfLine(string lines, int counter)
+		{
+			while (IsValidIndex(counter, lines.Length) && lines[counter] != '\n')
+			{
+				counter--;
+			}
+			// move past the \n
+			counter++;
+
+			return counter;
+		}
+
+		public static bool IsEndOfCodeLineChar(char ch)
+		{
+			return (ch == '\0' || ch == '\n' || ch == '\r' || ch == ';' || ch == '\\');
+		}
+
+		public static bool IsValidLabelChar(char c)
+		{
+			return char.IsLetterOrDigit(c) || c == '_';
+		}
+
+		public static bool IsValidDefineChar(char c)
+		{
+			return char.IsLetterOrDigit(c) || c == '_' || c == '.';
+		}
 	}
 }

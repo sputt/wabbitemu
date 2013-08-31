@@ -1,25 +1,29 @@
-﻿namespace Revsoft.Wabbitcode.Services.Debugger
-{
-    using Microsoft.Win32;
-    using Revsoft.Wabbitcode.Exceptions;
-    using System;
-    using System.Drawing;
-    using System.Runtime.InteropServices;
-    using WabbitemuLib;
+﻿using System.Drawing.Imaging;
+using Microsoft.Win32;
+using Revsoft.Wabbitcode.Exceptions;
+using System;
+using System.Drawing;
+using System.Runtime.InteropServices;
+using WabbitemuLib;
 
-    public class WabbitemuDebugger : IWabbitemuDebugger
+namespace Revsoft.Wabbitcode.Services.Debugger
+{
+    public sealed class WabbitemuDebugger : IWabbitemuDebugger
     {
-        private Wabbitemu debugger;
-        private bool disposed = false;
+        private readonly Wabbitemu _debugger;
+        private bool _disposed;
 
         public WabbitemuDebugger()
         {
             RegistryKey romKey = null;
-            string romFile = string.Empty;
+            string romFile = null;
             try
             {
-                romKey = Registry.CurrentUser.OpenSubKey("Software\\Wabbitemu");
-                romFile = romKey.GetValue("rom_path").ToString();
+	            romKey = Registry.CurrentUser.OpenSubKey("Software\\Wabbitemu");
+				if (romKey != null)
+				{
+					romFile = romKey.GetValue("rom_path").ToString();
+				}
             }
             catch (Exception)
             {
@@ -33,9 +37,14 @@
                 }
             }
 
-            this.debugger = new Wabbitemu();
-            this.debugger.LoadFile(romFile);
-            this.debugger.Breakpoint += this.debugger_Breakpoint;
+	        if (romFile == null)
+			{
+				throw new MissingROMException("Could not load Wabbitemu ROM");
+			}
+
+            _debugger = new Wabbitemu();
+            _debugger.LoadFile(romFile);
+            _debugger.Breakpoint += debugger_Breakpoint;
         }
 
         public event BreakpointDelegate OnBreakpoint;
@@ -44,7 +53,7 @@
         {
             get
             {
-                return this.debugger.Apps;
+                return _debugger.Apps;
             }
         }
 
@@ -52,7 +61,7 @@
         {
             get
             {
-                return this.debugger.CPU;
+                return _debugger.CPU;
             }
         }
 
@@ -60,7 +69,7 @@
         {
             get
             {
-                return this.debugger.Keypad;
+                return _debugger.Keypad;
             }
         }
 
@@ -68,7 +77,7 @@
         {
             get
             {
-                return this.debugger.LCD;
+                return _debugger.LCD;
             }
         }
 
@@ -76,7 +85,7 @@
         {
             get
             {
-                return debugger.Memory;
+                return _debugger.Memory;
             }
         }
 
@@ -88,17 +97,17 @@
         {
             get
             {
-                return this.debugger.Running;
+                return _debugger.Running;
             }
             set
             {
-                if (this.debugger.Running)
+                if (_debugger.Running)
                 {
-                    this.debugger.Break();
+                    _debugger.Break();
                 }
                 else
                 {
-                    this.debugger.Run();
+                    _debugger.Run();
                 }
             }
         }
@@ -107,70 +116,46 @@
         {
             get
             {
-                return this.debugger.Visible;
+                return _debugger.Visible;
             }
             set
             {
-                this.debugger.Visible = value;
+                _debugger.Visible = value;
             }
         }
 
         public void ClearBreakpoint(IBreakpoint breakpoint)
         {
-            this.debugger.Breakpoints.Remove(breakpoint);
+            _debugger.Breakpoints.Remove(breakpoint);
         }
 
         public void LoadFile(string fileName)
         {
-            this.debugger.LoadFile(fileName);
+            _debugger.LoadFile(fileName);
         }
 
         public byte ReadByte(bool isRam, byte page, ushort address)
         {
-            IPage calcPage = null;
-            if (isRam)
-            {
-                calcPage = this.debugger.Memory.RAM[page];
-            }
-            else
-            {
-                calcPage = this.debugger.Memory.Flash[page];
-            }
+	        IPage calcPage = GetCalcPage(isRam, page);
 
-            return calcPage.ReadByte(address);
+	        return calcPage.ReadByte(address);
         }
 
-        public ushort ReadShort(bool isRam, byte page, ushort address)
+	    public ushort ReadShort(bool isRam, byte page, ushort address)
         {
-            IPage calcPage = null;
-            if (isRam)
-            {
-                calcPage = this.debugger.Memory.RAM[page];
-            }
-            else
-            {
-                calcPage = this.debugger.Memory.Flash[page];
-            }
+			IPage calcPage = GetCalcPage(isRam, page);
 
-            return calcPage.ReadByte(address);
+	        return calcPage.ReadByte(address);
         }
 
-        public byte[] Read(bool isRam, byte page, ushort address, int count)
+	    public byte[] Read(bool isRam, byte page, ushort address, int count)
         {
-            IPage calcPage = null;
-            if (isRam)
-            {
-                calcPage = this.debugger.Memory.RAM[page];
-            }
-            else
-            {
-                calcPage = this.debugger.Memory.Flash[page];
-            }
+			IPage calcPage = GetCalcPage(isRam, page);
 
-            return (byte []) calcPage.Read(address, (ushort) count);
+	        return (byte []) calcPage.Read(address, (ushort) count);
         }
 
-        public byte ReadByte(CalcAddress address)
+	    public byte ReadByte(CalcAddress address)
         {
             return address.Page.ReadByte(address.Address);
         }
@@ -187,29 +172,21 @@
 
         public IBreakpoint SetBreakpoint(CalcAddress address)
         {
-            return this.debugger.Breakpoints.Add(address);
+            return _debugger.Breakpoints.Add(address);
         }
 
         public IBreakpoint SetBreakpoint(bool isRam, byte page, ushort address)
         {
             CalcAddress calcAddr = new CalcAddress();
-            IPage calcPage = null;
-            if (isRam)
-            {
-                calcPage = this.debugger.Memory.RAM[page];
-            }
-            else
-            {
-                calcPage = this.debugger.Memory.Flash[page];
-            }
+	        IPage calcPage = GetCalcPage(isRam, page);
 
             calcAddr.Initialize(calcPage, address);
-            return this.debugger.Breakpoints.Add(calcAddr);
+            return _debugger.Breakpoints.Add(calcAddr);
         }
 
         public void Step()
         {
-            this.debugger.Step();
+            _debugger.Step();
         }
 
         public void StepOut()
@@ -219,7 +196,7 @@
 
         public void StepOver()
         {
-            this.debugger.StepOver();
+            _debugger.StepOver();
         }
 
         public void Write(bool isRam, byte page, ushort address, object value)
@@ -228,11 +205,11 @@
             IPage calcPage = null;
             if (isRam)
             {
-                calcPage = this.debugger.Memory.RAM[page];
+                calcPage = _debugger.Memory.RAM[page];
             }
             else
             {
-                calcPage = this.debugger.Memory.Flash[page];
+                calcPage = _debugger.Memory.Flash[page];
             }
 
             calcAddr.Initialize(calcPage, address);
@@ -247,8 +224,8 @@
         IntPtr scan0 = Marshal.AllocHGlobal(128 * 64);
         public Image GetScreenImage()
         {
-            Marshal.Copy((byte[])this.debugger.LCD.Display, 0, scan0, 128 * 64);
-            Bitmap calcBitmap = new Bitmap(128, 64, 128, System.Drawing.Imaging.PixelFormat.Format8bppIndexed, scan0);
+            Marshal.Copy((byte[])_debugger.LCD.Display, 0, scan0, 128 * 64);
+            Bitmap calcBitmap = new Bitmap(128, 64, 128, PixelFormat.Format8bppIndexed, scan0);
             var palette = calcBitmap.Palette;
             for (int i = 0; i < 255; i++)
             {
@@ -261,11 +238,16 @@
 
         private void debugger_Breakpoint(IWabbitemu debugger, IBreakpoint breakpoint)
         {
-            if (this.OnBreakpoint != null)
+            if (OnBreakpoint != null)
             {
-                this.OnBreakpoint(debugger, new BreakpointEventArgs(breakpoint));
+                OnBreakpoint(debugger, new BreakpointEventArgs(breakpoint));
             }
         }
+
+		private IPage GetCalcPage(bool isRam, byte page)
+		{
+			return isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
+		}
 
         ~WabbitemuDebugger()
         {
@@ -278,9 +260,9 @@
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+	    private void Dispose(bool disposing)
         {
-            if (!disposed)
+            if (!_disposed)
             {
                 if (disposing)
                 {
@@ -288,7 +270,7 @@
                 }
 
                 Marshal.FreeHGlobal(scan0);
-                disposed = true;
+                _disposed = true;
             }
         }
     }

@@ -1,29 +1,29 @@
-using System.Globalization;
-using System.Threading.Tasks;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Classes;
+using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.Editor;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
+using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Text;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Utils;
 using BreakpointEventArgs = Revsoft.TextEditor.Document.BreakpointEventArgs;
 using Timer = System.Windows.Forms.Timer;
 
@@ -32,7 +32,7 @@ namespace Revsoft.Wabbitcode
 	/// <summary>
 	/// Summary description for frmDocument.
 	/// </summary>
-	public partial class NewEditor
+	public partial class NewEditor : IClipboardOperation
 	{
 		#region Private Memebers
 		private const int LabelsCacheSize = 100;
@@ -45,6 +45,7 @@ namespace Revsoft.Wabbitcode
 		private readonly IBackgroundAssemblerService _backgroundAssemblerService;
 		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
+		private readonly IParserService _parserService;
 		private readonly ISymbolService _symbolService;
 		private string _fileName;
 		private readonly List<TextMarker> _codeCheckMarkers = new List<TextMarker>();
@@ -131,16 +132,16 @@ namespace Revsoft.Wabbitcode
 		#endregion
 
 		public NewEditor(IBackgroundAssemblerService backgroundAssemblerService, IDockingService dockingService,
-			IDocumentService documentService, ISymbolService symbolService)
+			IDocumentService documentService, IParserService parserService, ISymbolService symbolService)
 		{
 			InitializeComponent();
 
 			_mainForm = dockingService.MainForm;
-			_mainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
 
 			_backgroundAssemblerService = backgroundAssemblerService;
 			_dockingService = dockingService;
 			_documentService = documentService;
+			_parserService = parserService;
 			_symbolService = symbolService;
 
 			_textChangedTimer.Tick += textChangedTimer_Tick;
@@ -154,11 +155,6 @@ namespace Revsoft.Wabbitcode
 			editorBox.Document.FormattingStrategy = new AsmFormattingStrategy();
 
 			CodeCompletionKeyHandler.Attach(this, editorBox);
-		}
-
-		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
-		{
-
 		}
 
 		protected override string GetPersistString()
@@ -181,6 +177,11 @@ namespace Revsoft.Wabbitcode
 			int offset = editorBox.Document.GetOffsetForLineNumber(loc.Line);
 			string text = editorBox.Document.GetWord(offset + loc.Column);
 
+			if (string.IsNullOrEmpty(text))
+			{
+				return;
+			}
+
 			if (!Settings.Default.caseSensitive)
 			{
 				text = text.ToUpper();
@@ -189,66 +190,63 @@ namespace Revsoft.Wabbitcode
 			string tooltip;
 			try
 			{
-				tooltip = _symbolService.SymbolTable.GetAddressFromLabel(text);
+				IParserData data = _parserService.GetParserData(text).FirstOrDefault();
+				tooltip = data == null ? _symbolService.SymbolTable.GetAddressFromLabel(text) : data.Description;
 			}
 			catch (Exception)
 			{
 				return;
 			}
-			e.ShowToolTip(tooltip);
 
-		}
-
-		void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
-		{
-			WabbitcodeBreakpointManager.RemoveBreakpoint(FileName, e.Breakpoint);
-		}
-
-		void BreakpointManager_Added(object sender, BreakpointEventArgs e)
-		{
-			WabbitcodeBreakpointManager.AddBreakpoint(FileName, e.Breakpoint);
+			if (!string.IsNullOrEmpty(tooltip))
+			{
+				e.ShowToolTip(tooltip);
+			}
 		}
 
 		void SelectionManager_SelectionChanged(object sender, EventArgs e)
 		{
-			if (!string.IsNullOrEmpty(editorBox.Text))
+			if (string.IsNullOrEmpty(editorBox.Text))
 			{
-				_mainForm.UpdateAssembledInfo(_fileName, editorBox.ActiveTextAreaControl.Caret.Line);
-				int start;
-				int end;
-				if (editorBox.ActiveTextAreaControl.SelectionManager.SelectionCollection.Count == 1)
-				{
-					end = editorBox.ActiveTextAreaControl.SelectionManager.SelectionCollection[0].EndOffset;
-					start = editorBox.ActiveTextAreaControl.SelectionManager.SelectionCollection[0].Offset;
-				}
-				else
-				{
-					end = editorBox.ActiveTextAreaControl.Caret.Offset;
-					start = end;
-				}
-				if (start == editorBox.Text.Length)
-				{
-					start--;
-				}
-				while (start >= 0 && editorBox.Text[start] != '\n')
-				{
-					start--;
-				}
-				start++;
-				while (end < editorBox.Text.Length && editorBox.Text[end] != '\n')
-				{
-					end++;
-				}
-				end--;
-				if (start > end)
-				{
-					start = end;
-				}
-				string codeInfoLines = editorBox.Document.GetText(start, end - start);
-				if (OnEditorSelectionChanged != null)
-				{
-					OnEditorSelectionChanged(this, new EditorSelectionEventArgs(editorBox.Document, codeInfoLines));
-				}
+				return;
+			}
+
+			_mainForm.UpdateAssembledInfo(_fileName, editorBox.ActiveTextAreaControl.Caret.Line);
+			int start;
+			int end;
+			if (editorBox.ActiveTextAreaControl.SelectionManager.SelectionCollection.Count == 1)
+			{
+				end = editorBox.ActiveTextAreaControl.SelectionManager.SelectionCollection[0].EndOffset;
+				start = editorBox.ActiveTextAreaControl.SelectionManager.SelectionCollection[0].Offset;
+			}
+			else
+			{
+				end = editorBox.ActiveTextAreaControl.Caret.Offset;
+				start = end;
+			}
+			if (start == editorBox.Text.Length)
+			{
+				start--;
+			}
+			while (start >= 0 && editorBox.Text[start] != '\n')
+			{
+				start--;
+			}
+			start++;
+			while (end < editorBox.Text.Length && editorBox.Text[end] != '\n')
+			{
+				end++;
+			}
+			end--;
+			if (start > end)
+			{
+				start = end;
+			}
+			string codeInfoLines = editorBox.Document.GetText(start, end - start);
+
+			if (OnEditorSelectionChanged != null)
+			{
+				OnEditorSelectionChanged(this, new EditorSelectionEventArgs(editorBox.Document, codeInfoLines));
 			}
 		}
 
@@ -331,7 +329,7 @@ namespace Revsoft.Wabbitcode
 
 			if (OnEditorOpened != null)
 			{
-				OnEditorOpened(this, new EditorEventArgs(editorBox.Document));	
+				OnEditorOpened(this, new EditorEventArgs(editorBox.Document));
 			}
 		}
 
@@ -433,6 +431,50 @@ namespace Revsoft.Wabbitcode
 			return base.ProcessCmdKey(ref msg, keyData);
 		}
 
+		#region Breakpoints
+
+		internal void ToggleBreakpoint()
+		{
+			TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
+			IEditAction newBreakpoint = new ToggleBreakpoint(textArea.Caret.Position);
+			newBreakpoint.Execute(textArea);
+		}
+
+		internal void ToggleBreakpoint(int lineNum)
+		{
+			IEditAction newBreakpoint = new ToggleBreakpoint(new TextLocation(0, lineNum));
+			newBreakpoint.Execute(editorBox.ActiveTextAreaControl.TextArea);
+		}
+
+		internal void RemoveBreakpoint(int lineNum)
+		{
+			Breakpoint breakpoint = editorBox.Document.BreakpointManager.GetNextMark(lineNum);
+			editorBox.Document.BreakpointManager.RemoveMark(breakpoint);
+		}
+
+		internal void ClearBreakpoints()
+		{
+			editorBox.Document.BreakpointManager.Clear();
+		}
+
+		#region Breakpoint Manager
+
+		void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
+		{
+			WabbitcodeBreakpointManager.RemoveBreakpoint(FileName, e.Breakpoint);
+		}
+
+		void BreakpointManager_Added(object sender, BreakpointEventArgs e)
+		{
+			WabbitcodeBreakpointManager.AddBreakpoint(FileName, e.Breakpoint);
+		}
+
+		#endregion
+
+		#endregion
+
+		#region Context Menu
+
 		private void cutContext_Click(object sender, EventArgs e)
 		{
 			Cut();
@@ -453,104 +495,9 @@ namespace Revsoft.Wabbitcode
 			SelectAll();
 		}
 
-		internal void SelectAll()
+		private void setNextStateMenuItem_Click(object sender, EventArgs e)
 		{
-			TextLocation selectStart = new TextLocation(0, 0);
-			TextLocation selectEnd = new TextLocation(editorBox.Text.Split('\n')[editorBox.Document.TotalNumberOfLines - 1].Length, editorBox.Document.TotalNumberOfLines - 1);
-			editorBox.ActiveTextAreaControl.SelectionManager.SetSelection(selectStart, selectEnd);
-		}
-
-		private readonly Timer _textChangedTimer = new Timer
-		{
-			Interval = 5000,
-			Enabled = false
-		};
-
-		private void editorBox_TextChanged(object sender, EventArgs e)
-		{
-			if (_textChangedTimer.Enabled)
-			{
-				_textChangedTimer.Stop();
-			}
-
-			_textChangedTimer.Start();
-			if (Settings.Default.enableFolding)
-			{
-				editorBox.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
-				editorBox.Document.FoldingManager.UpdateFoldings(null, null);
-			}
-			else
-			{
-				editorBox.Document.FoldingManager.FoldingStrategy = null;
-				editorBox.Document.FoldingManager.UpdateFoldings(new List<FoldMarker>());
-			}
-			if (editorBox.Document.UndoStack.UndoItemCount != _stackTop)
-			{
-				DocumentChanged = true;
-				UpdateTabText();
-			}
-			else
-			{
-				DocumentChanged = false;
-				UpdateTabText();
-			}
-			_mainForm.UpdateTitle();
-		}
-
-		void textChangedTimer_Tick(object sender, EventArgs e)
-		{
-			UpdateAll(EditorText);
-			_textChangedTimer.Enabled = false;
-		}
-
-		void UpdateAll(string editorText)
-		{
-			Action parseFile = () =>
-			{
-				ParserService parserService = new ParserService();
-				parserService.ParseFile(editorText.GetHashCode(), FileName, editorText);
-				if (OnEditorUpdated != null)
-				{
-					OnEditorUpdated(this, new EditorEventArgs(EditorBox.Document));
-				}
-			};
-			CancellationTokenSource cancellationSource = new CancellationTokenSource();
-			_queuedFiles.Add(cancellationSource);
-			Task.Factory.StartNew(parseFile, cancellationSource.Token);
-			_backgroundAssemblerService.RequestAssemble();
-		}
-
-		private void UpdateTabText()
-		{
-			string changedString = DocumentChanged ? "*" : string.Empty;
-			if (!string.IsNullOrEmpty(FileName))
-			{
-				TabText = Path.GetFileName(FileName) + changedString;
-			}
-			else
-			{
-				TabText = "New Document" + changedString;
-			}
-		}
-
-		private void newEditor_DragEnter(object sender, DragEventArgs e)
-		{
-			_mainForm.MainFormRedone_DragEnter(sender, e);
-		}
-
-		private void newEditor_DragDrop(object sender, DragEventArgs e)
-		{
-			_mainForm.MainFormRedone_DragDrop(sender, e);
-		}
-
-		private void editorBox_DragDrop(object sender, DragEventArgs e)
-		{
-			_mainForm.MainFormRedone_DragDrop(sender, e);
-		}
-
-		private void editorBox_DragEnter(object sender, DragEventArgs e)
-		{
-			_mainForm.MainFormRedone_DragEnter(sender, e);
+			_mainForm.SetPC(_fileName, editorBox.ActiveTextAreaControl.Caret.Line);
 		}
 
 		//private void bgotoButton_Click(object sender, EventArgs e)
@@ -656,6 +603,111 @@ namespace Revsoft.Wabbitcode
 		//		DocumentService.GotoFile(Path.IsPathRooted(text) ? text : FileOperations.NormalizePath(FindFilePathIncludes(text)));
 		//	}
 		//}
+		#endregion
+
+		#region Drag and Drop
+
+		private void newEditor_DragEnter(object sender, DragEventArgs e)
+		{
+			_mainForm.MainFormRedone_DragEnter(sender, e);
+		}
+
+		private void newEditor_DragDrop(object sender, DragEventArgs e)
+		{
+			_mainForm.MainFormRedone_DragDrop(sender, e);
+		}
+
+		private void editorBox_DragDrop(object sender, DragEventArgs e)
+		{
+			_mainForm.MainFormRedone_DragDrop(sender, e);
+		}
+
+		private void editorBox_DragEnter(object sender, DragEventArgs e)
+		{
+			_mainForm.MainFormRedone_DragEnter(sender, e);
+		}
+
+		#endregion
+
+		internal void SelectAll()
+		{
+			TextLocation selectStart = new TextLocation(0, 0);
+			TextLocation selectEnd = new TextLocation(editorBox.Text.Split('\n')[editorBox.Document.TotalNumberOfLines - 1].Length, editorBox.Document.TotalNumberOfLines - 1);
+			editorBox.ActiveTextAreaControl.SelectionManager.SetSelection(selectStart, selectEnd);
+		}
+
+		private readonly Timer _textChangedTimer = new Timer
+		{
+			Interval = 5000,
+			Enabled = false
+		};
+
+		private void editorBox_TextChanged(object sender, EventArgs e)
+		{
+			if (_textChangedTimer.Enabled)
+			{
+				_textChangedTimer.Stop();
+			}
+
+			_textChangedTimer.Start();
+			if (Settings.Default.enableFolding)
+			{
+				editorBox.Document.FoldingManager.FoldingStrategy = new RegionFoldingStrategy();
+				editorBox.Document.FoldingManager.UpdateFoldings(null, null);
+			}
+			else
+			{
+				editorBox.Document.FoldingManager.FoldingStrategy = null;
+				editorBox.Document.FoldingManager.UpdateFoldings(new List<FoldMarker>());
+			}
+			if (editorBox.Document.UndoStack.UndoItemCount != _stackTop)
+			{
+				DocumentChanged = true;
+				UpdateTabText();
+			}
+			else
+			{
+				DocumentChanged = false;
+				UpdateTabText();
+			}
+			_mainForm.UpdateTitle();
+		}
+
+		void textChangedTimer_Tick(object sender, EventArgs e)
+		{
+			UpdateAll(EditorText);
+			_textChangedTimer.Enabled = false;
+		}
+
+		void UpdateAll(string editorText)
+		{
+			Action parseFile = () =>
+			{
+				ParserService parserService = new ParserService();
+				parserService.ParseFile(editorText.GetHashCode(), FileName, editorText);
+				if (OnEditorUpdated != null)
+				{
+					OnEditorUpdated(this, new EditorEventArgs(EditorBox.Document));
+				}
+			};
+			CancellationTokenSource cancellationSource = new CancellationTokenSource();
+			_queuedFiles.Add(cancellationSource);
+			Task.Factory.StartNew(parseFile, cancellationSource.Token);
+			_backgroundAssemblerService.RequestAssemble();
+		}
+
+		private void UpdateTabText()
+		{
+			string changedString = DocumentChanged ? "*" : string.Empty;
+			if (!string.IsNullOrEmpty(FileName))
+			{
+				TabText = Path.GetFileName(FileName) + changedString;
+			}
+			else
+			{
+				TabText = "New Document" + changedString;
+			}
+		}
 
 		private void fixCaseContext_Click(object sender, EventArgs e)
 		{
@@ -692,11 +744,10 @@ namespace Revsoft.Wabbitcode
 		//	DockingService.ShowDockPanel(DockingService.FindResults);
 		//}
 
-		//private void renameContext_Click(object sender, EventArgs e)
-		//{
-		//	RefactorForm form = new RefactorForm();
-		//	form.ShowDialog();
-		//}
+		private void renameContext_Click(object sender, EventArgs e)
+		{
+			_mainForm.ShowRefactorForm();
+		}
 
 		private void extractMethodContext_Click(object sender, EventArgs e)
 		{
@@ -710,9 +761,10 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			//bool hasSelection = editorBox.ActiveTextAreaControl.SelectionManager.HasSomethingSelected;
-			//cutContext.Enabled = hasSelection;
-			//copyContext.Enabled = hasSelection;
+			bool hasSelection = editorBox.ActiveTextAreaControl.SelectionManager.HasSomethingSelected;
+			cutContext.Enabled = hasSelection;
+			copyContext.Enabled = hasSelection;
+
 			//if (!string.IsNullOrEmpty(editorBox.Text))
 			//{
 			//	var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
@@ -872,7 +924,7 @@ namespace Revsoft.Wabbitcode
 			//		bgotoButton.Enabled = false;
 			//	}
 			//}
-			//contextMenu.Show(editorBox, editorBox.PointToClient(MousePosition));
+			contextMenu.Show(editorBox, editorBox.PointToClient(MousePosition));
 		}
 
 		//private bool FindFileIncludes(string gotoLabel)
@@ -891,7 +943,7 @@ namespace Revsoft.Wabbitcode
 		//			return Path.Combine(dir, gotoLabel);
 		//		}
 		//	}
-			
+
 		//	if (File.Exists(Path.Combine(Path.GetDirectoryName(FileName), gotoLabel)))
 		//	{
 		//		return Path.Combine(Path.GetDirectoryName(FileName), gotoLabel);
@@ -944,25 +996,24 @@ namespace Revsoft.Wabbitcode
 
 		#endregion
 
-		private void setNextStateMenuItem_Click(object sender, EventArgs e)
-		{
-			_mainForm.SetPC(_fileName, editorBox.ActiveTextAreaControl.Caret.Line);
-		}
+		#region IClipboardOperation
 
-		internal void Cut()
+		public void Cut()
 		{
 			editorBox.Cut();
 		}
 
-		internal void Copy()
+		public void Copy()
 		{
 			editorBox.Copy();
 		}
 
-		internal void Paste()
+		public void Paste()
 		{
 			editorBox.Paste();
 		}
+
+		#endregion
 
 		internal void ScrollToLine(int scrollToLine)
 		{
@@ -975,30 +1026,6 @@ namespace Revsoft.Wabbitcode
 			editorBox.ActiveTextAreaControl.ScrollTo(line);
 			editorBox.ActiveTextAreaControl.Caret.Line = line;
 			editorBox.ActiveTextAreaControl.Caret.Column = 0;
-		}
-
-		internal void ToggleBreakpoint()
-		{
-			TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
-			IEditAction newBreakpoint = new ToggleBreakpoint(textArea.Caret.Position);
-			newBreakpoint.Execute(textArea);
-		}
-
-		internal void ToggleBreakpoint(int lineNum)
-		{
-			IEditAction newBreakpoint = new ToggleBreakpoint(new TextLocation(0, lineNum));
-			newBreakpoint.Execute(editorBox.ActiveTextAreaControl.TextArea);
-		}
-
-		internal void RemoveBreakpoint(int lineNum)
-		{
-			Breakpoint breakpoint = editorBox.Document.BreakpointManager.GetNextMark(lineNum);
-			editorBox.Document.BreakpointManager.RemoveMark(breakpoint);
-		}
-
-		internal void ClearBreakpoints()
-		{
-			editorBox.Document.BreakpointManager.Clear();
 		}
 
 		internal void FixError(int line, DocumentService.FixableErrorType type)
@@ -1150,6 +1177,8 @@ namespace Revsoft.Wabbitcode
 			editorBox.Document.MarkerStrategy.RemoveAll(match => match.TextMarkerType == TextMarkerType.Invisible);
 		}
 
+		#region Bookmarks
+
 		internal void GotoNextBookmark()
 		{
 			GotoNextBookmark next = new GotoNextBookmark(bookmark => true);
@@ -1167,6 +1196,8 @@ namespace Revsoft.Wabbitcode
 			ToggleBookmark toggle = new ToggleBookmark();
 			toggle.Execute(editorBox.ActiveTextAreaControl.TextArea);
 		}
+
+		#endregion
 
 		internal bool Find(string textToFind)
 		{
@@ -1314,13 +1345,13 @@ namespace Revsoft.Wabbitcode
 		internal void RemoveHighlight(int line)
 		{
 			editorBox.Document.MarkerStrategy.RemoveAll(marker => editorBox.Document.GetLineNumberForOffset(marker.Offset) == line - 1);
-			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
+			UpdateDocument(line);
 		}
 
 		internal void RemoveDebugHighlight(int line)
 		{
 			editorBox.Document.MarkerStrategy.RemoveAll(marker => editorBox.Document.GetLineNumberForOffset(marker.Offset) == line - 1 && marker.Color == Color.Yellow);
-			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
+			UpdateDocument(line);
 		}
 
 		private void AddMarkers(IEnumerable<TextMarker> markers)
@@ -1337,7 +1368,9 @@ namespace Revsoft.Wabbitcode
 		{
 			StringBuilder spacesString = new StringBuilder();
 			for (int i = 0; i < Settings.Default.tabSize; i++)
+			{
 				spacesString.Append(' ');
+			}
 			editorBox.Document.TextContent = editorBox.Document.TextContent.Replace(spacesString.ToString(), "\t");
 		}
 

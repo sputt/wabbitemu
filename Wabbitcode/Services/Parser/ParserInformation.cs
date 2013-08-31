@@ -1,158 +1,33 @@
-﻿namespace Revsoft.Wabbitcode.Services.Parser
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+
+
+namespace Revsoft.Wabbitcode.Services.Parser
 {
-    using System;
-    using System.Collections;
-    using System.Collections.Generic;
-
-    public class IParserEnumerator : IEnumerator<IParserData>, IDisposable
+    public class ParserInformation : IEnumerable<IParserData>
     {
-        private ParserInformation parserData;
-        private int position = -1;
-        private bool disposed = false;
+	    private bool _parsingIncludes;
+        private readonly string _sourceFile;
+        private readonly int _sourceFileHash;
+	    private readonly IEnumerable<IParserData> parserData; 
 
-        public IParserEnumerator(ParserInformation data)
+	    public ParserInformation(int fileHashCode, string file)
         {
-            this.parserData = data;
-        }
-
-        public IParserData Current
-        {
-            get
-            {
-                return this.parserData.GeneratedList[this.position];
-            }
-        }
-
-        object IEnumerator.Current
-        {
-            get
-            {
-                return this.position;
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposed)
-            {
-                if (disposing)
-                {
-                }
-            }
-            disposed = true;
-        }
-
-        public bool MoveNext()
-        {
-            this.position++;
-            return this.position < this.parserData.GeneratedList.Length;
-        }
-
-        public void Reset()
-        {
-            this.position = -1;
-        }
-    }
-
-    public class ParserDataSorter : IComparer
-    {
-        // Compare the length of the strings, or the strings
-        // themselves, if they are the same length.
-        public int Compare(object x, object y)
-        {
-            IParserData datax = x as IParserData;
-            IParserData datay = y as IParserData;
-
-            if (datax == null || datay == null || datax.Location.Offset == datay.Location.Offset)
-            {
-                return 0;
-            }
-            if (datax.Location.Offset > datay.Location.Offset)
-            {
-                return 1;
-            }
-            else
-            {
-                return -1;
-            }
-        }
-    }
-
-    // : IEnumerable<IParserData>
-    public class ParserInformation
-    {
-        private IParserData[] generatedList;
-        private bool isIncluded = false;
-        private bool parsingIncludes = false;
-        private string sourceFile;
-        private int sourceFileHash;
-
-        public ParserInformation(int fileHashCode)
-        : this(fileHashCode, null)
-        {
-        }
-
-        public ParserInformation(int fileHashCode, string file)
-        {
-            this.sourceFileHash = fileHashCode;
-            this.sourceFile = file;
+            _sourceFileHash = fileHashCode;
+            _sourceFile = file;
 
             // IncludeDirList = new List<string>();
-            this.GlobalDefinesList = new List<string>();
-            this.IncludeFilesList = new List<IIncludeFile>();
-            this.MacrosList = new List<IMacro>();
-            this.DefinesList = new List<IDefine>();
-            this.LabelsList = new List<ILabel>();
+            GlobalDefinesList = new List<string>();
+            IncludeFilesList = new List<IIncludeFile>();
+            MacrosList = new List<IMacro>();
+            DefinesList = new List<IDefine>();
+            LabelsList = new List<ILabel>();
         }
 
         public List<IDefine> DefinesList
         {
-            get;
-            set;
-        }
-
-        public IParserData[] GeneratedList
-        {
-            get
-            {
-                int counter = 0;
-                int size = this.LabelsList.Count + this.DefinesList.Count +
-                           this.IncludeFilesList.Count + this.MacrosList.Count;
-                this.generatedList = new IParserData[size];
-                foreach (IParserData label in this.LabelsList)
-                {
-                    this.generatedList[counter] = label;
-                    counter++;
-                }
-
-                foreach (IParserData define in this.DefinesList)
-                {
-                    this.generatedList[counter] = define;
-                    counter++;
-                }
-
-                foreach (IParserData include in this.IncludeFilesList)
-                {
-                    this.generatedList[counter] = include;
-                    counter++;
-                }
-
-                foreach (IParserData macro in this.MacrosList)
-                {
-                    this.generatedList[counter] = macro;
-                    counter++;
-                }
-
-                ParserDataSorter sorter = new ParserDataSorter();
-                Array.Sort(this.generatedList, sorter);
-                return this.generatedList;
-            }
+            get; private set;
         }
 
         /// <summary>
@@ -163,10 +38,11 @@
             get;
             set;
         }*/
+
         /// <summary>
         /// All the defines created globally (outside of any file)
         /// </summary>
-        public List<string> GlobalDefinesList
+        private List<string> GlobalDefinesList
         {
             get;
             set;
@@ -177,46 +53,33 @@
         /// </summary>
         public List<IIncludeFile> IncludeFilesList
         {
-            get;
-            set;
+            get; private set;
         }
 
-        public bool IsIncluded
-        {
-            get
-            {
-                return this.isIncluded;
-            }
-            set
-            {
-                this.isIncluded = value;
-            }
-        }
+	    public bool IsIncluded { get; set; }
 
-        /// <summary>
+	    /// <summary>
         /// List of all Labels in the file.
         /// </summary>
         public List<ILabel> LabelsList
         {
-            get;
-            set;
+            get; private set;
         }
 
         public List<IMacro> MacrosList
         {
-            get;
-            set;
+            get; private set;
         }
 
         public bool ParsingIncludes
         {
             get
             {
-                return this.parsingIncludes;
+                return _parsingIncludes;
             }
             set
             {
-                this.parsingIncludes = value;
+                _parsingIncludes = value;
             }
         }
 
@@ -224,7 +87,7 @@
         {
             get
             {
-                return this.sourceFile;
+                return _sourceFile;
             }
         }
 
@@ -232,23 +95,41 @@
         {
             get
             {
-                return this.sourceFileHash;
+                return _sourceFileHash;
             }
         }
 
         public override string ToString()
         {
-            return this.sourceFile;
+            return _sourceFile;
         }
 
-        /*public IEnumerator<IParserData> GetEnumerator()
+        public IEnumerator<IParserData> GetEnumerator()
         {
-            return (IEnumerator<IParserData>)new IParserEnumerator(this);
+	        foreach (IDefine define in DefinesList)
+	        {
+		        yield return define;
+	        }
+
+	        foreach (ILabel label in LabelsList)
+	        {
+		        yield return label;
+	        }
+
+	        foreach (IMacro macro in MacrosList)
+	        {
+		        yield return macro;
+	        }
+
+	        foreach (IIncludeFile includeFile in IncludeFilesList)
+	        {
+		        yield return includeFile;
+	        }
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return (IEnumerator)new IParserEnumerator(this);
-        }*/
+	        return GetEnumerator();
+        }
     }
 }

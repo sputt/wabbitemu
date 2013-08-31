@@ -43,11 +43,16 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			}
 
 			ParserInformation info = _parserService.GetParserInfo(fileName);
+			if (info == null)
+			{
+				return;
+			}
+
 			NativeMethods.TurnOffDrawing(labelsBox.Handle);
 			bool showEquates = includeEquatesBox.Checked;
 			labelsBox.Items.Clear();
 
-			foreach (IParserData data in info.GeneratedList)
+			foreach (IParserData data in info)
 			{
 				var label = data as Label;
 				if (data is Label && !label.IsReusable)

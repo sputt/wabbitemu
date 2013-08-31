@@ -10,12 +10,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 {
 	public partial class BreakpointManagerWindow : ToolWindow
 	{
+		// TODO: this entire class looks nasty
 		private WabbitcodeDebugger _debugger;
 		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
-		private readonly IProject _project;
+		private readonly IProjectService _projectService;
 
-		public BreakpointManagerWindow(IDockingService dockingService, IDocumentService documentService, IProject project)
+		public BreakpointManagerWindow(IDockingService dockingService, IDocumentService documentService, IProjectService projectService)
 			: base(dockingService)
 		{
 			InitializeComponent();
@@ -24,7 +25,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			_dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
 			_documentService = documentService;
 
-			_project = project;
+			_projectService = projectService;
 		}
 
 		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
@@ -42,10 +43,11 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			foreach (WabbitcodeBreakpoint breakpoint in _debugger.Breakpoints)
 			{
 				int index = breakpointGridView.Rows.Add(new DataGridViewRow());
+				IProject project = _projectService.Project;
 				breakpointGridView.Rows[index].Cells[0].Value = breakpoint.Enabled;
-				if (!_project.IsInternal)
+				if (!project.IsInternal)
 				{
-					breakpointGridView.Rows[index].Cells[1].Value = breakpoint.File.Remove(0, _project.ProjectDirectory.Length + 1) + ":" + breakpoint.LineNumber;
+					breakpointGridView.Rows[index].Cells[1].Value = breakpoint.File.Remove(0, project.ProjectDirectory.Length + 1) + ":" + breakpoint.LineNumber;
 				}
 				else
 				{
@@ -77,9 +79,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			string value = breakpointGridView.SelectedRows[0].Cells[1].Value.ToString();
 			int splitter = value.IndexOf(':', 4);
 			string file = value.Substring(0, splitter);
-			if (!_project.IsInternal)
+			IProject project = _projectService.Project;
+			if (!project.IsInternal)
 			{
-				file = Path.Combine(_project.ProjectDirectory, file);
+				file = Path.Combine(project.ProjectDirectory, file);
 			}
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
 			WabbitcodeBreakpoint breakpoint = _debugger.FindBreakpoint(file, lineNum);
@@ -95,9 +98,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			string value = e.Row.Cells[1].Value.ToString();
 			int splitter = value.IndexOf(':', 4);
 			string file = value.Substring(0, splitter);
-			if (!_project.IsInternal)
+			IProject project = _projectService.Project;
+			if (!project.IsInternal)
 			{
-				file = Path.Combine(_project.ProjectDirectory, file);
+				file = Path.Combine(project.ProjectDirectory, file);
 			}
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
 			_documentService.GotoFile(file);
@@ -133,9 +137,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			string value = breakpointGridView.SelectedRows[0].Cells[1].Value.ToString();
 			int splitter = value.IndexOf(':', 4);
 			string file = value.Substring(0, splitter);
-			if (!_project.IsInternal)
+			IProject project = _projectService.Project;
+			if (!project.IsInternal)
 			{
-				file = Path.Combine(_project.ProjectDirectory, file);
+				file = Path.Combine(project.ProjectDirectory, file);
 			}
 
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
@@ -158,5 +163,14 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		private void gotoToolStripButton_Click(object sender, EventArgs e)
 		{
 		}
+
+		#region IClipboardOperation
+
+		public override void Copy()
+		{
+			// TODO: implement
+		}
+
+		#endregion
 	}
 }

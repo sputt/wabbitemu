@@ -1,4 +1,7 @@
-﻿using Revsoft.TextEditor;
+﻿using System.Diagnostics;
+using System.Linq;
+using System.Text.RegularExpressions;
+using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.Services;
@@ -22,12 +25,12 @@ namespace Revsoft.Wabbitcode
 		private readonly Dictionary<TextEditorControl, HighlightGroup> _highlightGroups = new Dictionary<TextEditorControl, HighlightGroup>();
 		private readonly TextEditorSearcher _search;
 		private readonly IDockingService _dockingService;
-		private readonly IProject _project;
+		private readonly IProjectService _projectService;
 
-		public FindAndReplaceForm(IDockingService dockingService, IProject project)
+		public FindAndReplaceForm(IDockingService dockingService, IProjectService projectServiceService)
 		{
 			_dockingService = dockingService;
-			_project = project;
+			_projectService = projectServiceService;
 
 			InitializeComponent();
 			_search = new TextEditorSearcher();
@@ -206,55 +209,24 @@ namespace Revsoft.Wabbitcode
 			if (BigSearch)
 			{
 				FindResultsWindow results = _dockingService.FindResults;
-				if (!_project.IsInternal)
+				IProject project = _projectService.Project;
+				if (!project.IsInternal)
 				{
-					IEnumerable<ProjectFile> files = _project.GetProjectFiles();
-					try
+					IEnumerable<ProjectFile> files = project.GetProjectFiles();
+					results.NewFindResults(txtLookFor.Text, project.ProjectName);
+					foreach (ProjectFile file in files)
 					{
-						results.NewFindResults(txtLookFor.Text, _project.ProjectName);
-						foreach (ProjectFile file in files)
+						if (!File.Exists(file.FileFullPath))
 						{
-							if (!File.Exists(file.FileFullPath))
-							{
-								continue;
-							}
-
-							StreamReader reader = new StreamReader(Path.Combine(_project.ProjectDirectory, file.FileFullPath));
-							string[] lines = reader.ReadToEnd().Split('\n');
-							reader.Close();
-							for (int i = 0; i < lines.Length; i++)
-							{
-								string text = lines[i];
-								if (!text.Contains(txtLookFor.Text))
-								{
-									continue;
-								}
-
-								int loc = 0;
-								while (text.IndexOf(txtLookFor.Text, loc) != -1)
-								{
-									int indexOfString = text.IndexOf(txtLookFor.Text, loc);
-									loc = indexOfString + 1;
-									string phrase = text.Substring(indexOfString, txtLookFor.Text.Length);
-									if (chkMatchCase.Checked && string.Compare(txtLookFor.Text, phrase, false) != 0)
-									{
-										continue;
-									}
-
-									if (chkMatchWholeWord.Checked && ((loc + 1 < text.Length && !char.IsWhiteSpace(text[loc + 1]))
-																	  || (indexOfString - 1 > 0 && !char.IsWhiteSpace(text[indexOfString - 1]))))
-									{
-										continue;
-									}
-
-									results.AddFindResult(file.FileFullPath, i, lines[i]);
-								}
-							}
+							continue;
 						}
-					}
-					catch (Exception ex)
-					{
-						DockingService.ShowError("Error searching for text!", ex);
+
+						bool matchCase = chkMatchCase.Checked;
+						bool matchWholeWord = chkMatchWholeWord.Checked;
+						string textToFind = txtLookFor.Text;
+						string fileText = GetTextForFile(project, file);
+
+						FindTextInFile(file.FileFullPath, fileText, textToFind, matchWholeWord, matchCase);
 					}
 				}
 
@@ -314,15 +286,44 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
+		private void FindTextInFile(string fileName, string fileText, string textToFind, bool matchWholeWord, bool matchCase)
+		{
+			string pattern = string.Format("^(?<line>.*?{1}{0}{1}.*?)$", Regex.Escape(textToFind), matchWholeWord ? "\\b" : String.Empty);
+			RegexOptions options = matchCase ? RegexOptions.None : RegexOptions.IgnoreCase;
+			MatchCollection matches = Regex.Matches(fileText, pattern, RegexOptions.Compiled | RegexOptions.Multiline | options);
+			foreach (Match match in matches)
+			{
+				int lineNumber = fileText.Substring(0, match.Index).Count(c => c == '\n');
+				_dockingService.FindResults.AddFindResult(fileName, lineNumber, match.Groups["line"].Value);
+			}
+		}
+
+		private static string GetTextForFile(IProject project, ProjectFile file)
+		{
+			string fileText = string.Empty;
+			try
+			{
+				using (StreamReader reader = new StreamReader(Path.Combine(project.ProjectDirectory, file.FileFullPath)))
+				{
+					fileText = reader.ReadToEnd();
+				}
+			}
+			catch (IOException)
+			{
+				Debug.WriteLine("Failed to open file {0}, while searching in all files", file.FileFullPath);
+			}
+			return fileText;
+		}
+
 		private void btnReplaceAll_Click(object sender, EventArgs e)
 		{
 			int count = 0;
-			/*BUG FIX: if the replacement string contains the original search string
-			(e.g. replace "red" with "very red") we must avoid looping around and
-			replacing forever! To fix, start replacing at beginning of region (by
-			moving the caret) and stop as soon as we loop around.
-			_editor.ActiveTextAreaControl.Caret.Position =
-			   _editor.Document.OffsetToPosition(_search.BeginOffset);*/
+			// if the replacement string contains the original search string
+			// (e.g. replace "red" with "very red") we must avoid looping around and
+			// replacing forever! To fix, start replacing at beginning of region (by
+			// moving the caret) and stop as soon as we loop around.
+			// _editor.ActiveTextAreaControl.Caret.Position =
+			// _editor.Document.OffsetToPosition(_search.BeginOffset);
 
 			_editor.Document.UndoStack.StartUndoGroup();
 			try

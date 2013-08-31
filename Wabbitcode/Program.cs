@@ -1,70 +1,73 @@
-﻿using Revsoft.Wabbitcode.Utils;
+﻿using System.Collections.Generic;
+using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Utils;
+using System;
+using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode
 {
-    using Revsoft.Wabbitcode.Classes;
-    using Revsoft.Wabbitcode.Properties;
-    using Revsoft.Wabbitcode.Services;
-    using System;
-    using System.Threading.Tasks;
-    using System.Windows.Forms;
+	internal static class Program
+	{
+		/// <summary>
+		/// The main entry point for the application.
+		/// </summary>
+		[STAThread]
+		private static void Main(string[] args)
+		{
+			try
+			{
+				if (Settings.Default.firstRun)
+				{
+					Settings.Default.Upgrade();
+					Settings.Default.firstRun = false;
+					Settings.Default.Save();
+				}
+			}
+			catch (Exception ex)
+			{
+				DockingService.ShowError("Error upgrading settings", ex);
+			}
 
-    internal static class Program
-    {
-        /// <summary>
-        /// The main entry point for the application.
-        /// </summary>
-        [STAThread]
-        private static void Main(string[] args)
-        {
-            try
-            {
-                if (Settings.Default.firstRun)
-                {
-                    Settings.Default.Upgrade();
-                    Settings.Default.firstRun = false;
-                    Settings.Default.Save();
-                }
-            }
-            catch (Exception ex)
-            {
-                DockingService.ShowError("Error upgrading settings", ex);
-            }
+			Application.EnableVisualStyles();
+			FileLocations.InitDirs();
+			FileLocations.InitFiles();
+			HighlightingUtils.MakeHighlightingFile();
+			try
+			{
+				Task.Factory.StartNew(() =>
+				{
+					if (!UpdateService.CheckForUpdate())
+					{
+						return;
+					}
 
-            Application.EnableVisualStyles();
-            FileLocations.InitDirs();
-            FileLocations.InitFiles();
-            HighlightingUtils.MakeHighlightingFile();
-            try
-            {
-                Task updateTask = Task.Factory.StartNew(() =>
-                {
-                    if (UpdateService.CheckForUpdate())
-                    {
-                        var result = MessageBox.Show("New version available. Download now?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
-                        if (result == System.Windows.Forms.DialogResult.Yes)
-                        {
-                            UpdateService.StartUpdater();
-                            Application.Exit();
-                            return;
-                        }
-                    }
-                });
-            }
-            catch (Exception ex)
-            {
-                DockingService.ShowError("Error checking for updates", ex);
-            }
+					var result = MessageBox.Show("New version available. Download now?", "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+					if (result != DialogResult.Yes)
+					{
+						return;
+					}
 
-            try
-            {
-                AppBase appBase = new AppBase();
-                appBase.Run(args);
-            }
-            catch (Exception ex)
-            {
-                DockingService.ShowError("Unhandled exception occurred. Please report this to the developers", ex);
-            }
-        }
-    }
+					UpdateService.StartUpdater();
+					Application.Exit();
+				});
+			}
+			catch (Exception ex)
+			{
+				DockingService.ShowError("Error checking for updates", ex);
+			}
+
+			try
+			{
+				AppBase appBase = new AppBase();
+				appBase.Run(args);
+			}
+			catch (Exception ex)
+			{
+				DockingService.ShowError("Unhandled exception occurred. Please report this to the developers", ex);
+			}
+		}
+	}
 }

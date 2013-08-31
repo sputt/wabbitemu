@@ -15,7 +15,6 @@ namespace Revsoft.Wabbitcode.Services
 	[ServiceDependency(typeof(ISymbolService))]
 	public class ProjectService : IProjectService
 	{
-		private bool _isInternal = true;
 		private readonly List<ParserInformation> _parseInfo = new List<ParserInformation>();
 		private readonly IParserService _parserService;
 		private readonly IAssemblerService _assemblerService;
@@ -71,7 +70,7 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				SaveProject();
 			}
-			_isInternal = true;
+			CreateInternalProject();
 		}
 
 		public bool ContainsFile(string file)
@@ -81,15 +80,16 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void CreateInternalProject()
 		{
-			Project = new WabbitcodeProject(_assemblerService);
-			_isInternal = true;
+			Project = new WabbitcodeProject(_assemblerService)
+			{
+				IsInternal = true
+			};
 		}
 
 		public void CreateNewProject(string projectFile, string projectName)
 		{
 			Project = new WabbitcodeProject(_assemblerService);
 			Project.CreateNewProject(projectFile, projectName);
-			_isInternal = false;
 		}
 
 		public void DeleteFile(string fullPath)

@@ -1,6 +1,8 @@
-﻿using Revsoft.Wabbitcode.Services;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Services.Interface;
 using System;
+using Revsoft.Wabbitcode.Services.Parser;
 
 
 namespace Revsoft.Wabbitcode.Docking_Windows
@@ -8,6 +10,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 	public partial class FindResultsWindow : ToolWindow
 	{
 		private readonly IDocumentService _documentService;
+		private readonly StringBuilder _stringBuilder;
+		private int numResults;
 
 		public FindResultsWindow(IDockingService dockingService, IDocumentService documentService)
 			: base(dockingService)
@@ -15,11 +19,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			InitializeComponent();
 
 			_documentService = documentService;
-		}
-
-		public void AddFindResult(string file, int lineNum, string line)
-		{
-			findResultsBox.Text += file + "(" + (lineNum + 1) + "): " + line + "\n";
+			_stringBuilder = new StringBuilder();
 		}
 
 		public override void Copy()
@@ -34,40 +34,42 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				projectfile = " all open files";
 			}
 
-			findResultsBox.Text = "Searching for \"" + serachString + "\" in " + projectfile + "\n";
+			numResults = 0;
+			_stringBuilder.Clear();
+			_stringBuilder.Append(string.Format("Searching for \"{0}\" in {1}\n", serachString, projectfile));
 		}
 
-		internal void AddFindResult(Reference reference)
+
+		public void AddFindResult(string file, int lineNum, string line)
+		{
+			_stringBuilder.Append(string.Format("{0} ({1}): {2}\n", file, lineNum + 1, line));
+			numResults++;
+		}
+
+		public  void AddFindResult(Reference reference)
 		{
 			AddFindResult(reference.File, reference.Line, reference.LineContents);
 		}
 
-		internal void DoneSearching()
+		public void DoneSearching()
 		{
-			findResultsBox.Text += "Done Searching";
+			_stringBuilder.Append(string.Format("Done Searching. {0} results", numResults));
+			findResultsBox.Text = _stringBuilder.ToString();
 		}
 
 		private void findResultsBox_DoubleClick(object sender, EventArgs e)
 		{
-			try
+			int line = findResultsBox.GetLineFromCharIndex(findResultsBox.SelectionStart);
+			string lineContents = findResultsBox.Lines[line];
+			Match match = Regex.Match(lineContents, @"(?<fileName>.+) \((?<lineNum>\d+)\): (?<line>.+)");
+			if (!match.Success)
 			{
-				int line = findResultsBox.GetLineFromCharIndex(findResultsBox.SelectionStart);
-				string lineContents = findResultsBox.Lines[line];
-				int firstParen = lineContents.IndexOf('(');
-				if (firstParen == -1)
-				{
-					return;
-				}
+				return;
+			}
 
-				int secondParen = lineContents.IndexOf(')');
-				string file = lineContents.Substring(0, firstParen);
-				int lineNum = Convert.ToInt32(lineContents.Substring(firstParen + 1, secondParen - firstParen - 1));
-				_documentService.GotoLine(file, lineNum);
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError(ex.ToString());
-			}
+			string file = match.Groups["fileName"].Value;
+			int lineNumber = Convert.ToInt32(match.Groups["lineNum"].Value);
+			_documentService.GotoLine(file, lineNumber);
 		}
 	}
 }

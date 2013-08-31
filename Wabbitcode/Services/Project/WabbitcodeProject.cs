@@ -296,8 +296,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			ProjectWatcher.Changed += changedHandler;
 			ProjectWatcher.Renamed += renamedHandler;
-			ProjectWatcher.EnableRaisingEvents = true;
-			ProjectWatcher.IncludeSubdirectories = true;
+			if (!IsInternal)
+			{
+				ProjectWatcher.EnableRaisingEvents = true;
+				ProjectWatcher.IncludeSubdirectories = true;
+			}
 		}
 	}
 }

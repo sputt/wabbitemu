@@ -9,7 +9,7 @@ namespace Revsoft.Wabbitcode.Services.Interface
 		NewEditor CreateNewDocument();
 		NewEditor GotoFile(string file);
 		void GotoLabel(IParserData item);
-		void GotoLine(int line);
+		void GotoLine(NewEditor editor, int line);
 		void GotoLine(string file, int scrollToLine);
 		void HighlightDebugLine(int newLineNumber);
 		void RemoveDebugHighlight();
