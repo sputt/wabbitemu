@@ -23,6 +23,8 @@ namespace Revsoft.Wabbitcode.Services
 
 		#endregion 
 
+		private static readonly object AssemblyLock = new object();
+
 		private bool _disposed;
 		private IAssembler _assembler;
 		private readonly string _outputFormatting = "=================={0}==================" + Environment.NewLine +
@@ -82,39 +84,42 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void AssembleProject(IProject project, bool suppressEvents = false)
 		{
-			project.ProjectWatcher.EnableRaisingEvents = false;
-
-			bool succeeded = project.BuildSystem.Build();
-
-			if (!string.IsNullOrEmpty(project.BuildSystem.ListOutput))
+			lock (AssemblyLock)
 			{
-				StreamReader reader = null;
-				try
+				project.ProjectWatcher.EnableRaisingEvents = false;
+
+				bool succeeded = project.BuildSystem.Build();
+
+				if (!string.IsNullOrEmpty(project.BuildSystem.ListOutput))
 				{
-					reader = new StreamReader(project.BuildSystem.ListOutput);
-					_symbolService.ParseListFile(reader.ReadToEnd());
-				}
-				finally
-				{
-					if (reader != null)
+					StreamReader reader = null;
+					try
 					{
-						reader.Dispose();
+						reader = new StreamReader(project.BuildSystem.ListOutput);
+						_symbolService.ParseListFile(reader.ReadToEnd());
+					}
+					finally
+					{
+						if (reader != null)
+						{
+							reader.Dispose();
+						}
 					}
 				}
-			}
 
-			if (!string.IsNullOrEmpty(project.BuildSystem.LabelOutput))
-			{
-				using (StreamReader reader = new StreamReader(project.BuildSystem.LabelOutput))
+				if (!string.IsNullOrEmpty(project.BuildSystem.LabelOutput))
 				{
-					_symbolService.ParseSymbolFile(reader.ReadToEnd());
+					using (StreamReader reader = new StreamReader(project.BuildSystem.LabelOutput))
+					{
+						_symbolService.ParseSymbolFile(reader.ReadToEnd());
+					}
 				}
-			}
 
-			project.ProjectWatcher.EnableRaisingEvents = true;
-			if (!suppressEvents)
-			{
-				OnAssemblerProjectFinished(this, new AssemblyFinishProjectEventArgs(project, project.BuildSystem.OutputText, succeeded));
+				project.ProjectWatcher.EnableRaisingEvents = true;
+				if (!suppressEvents)
+				{
+					OnAssemblerProjectFinished(this, new AssemblyFinishProjectEventArgs(project, project.BuildSystem.OutputText, succeeded));
+				}
 			}
 		}
 

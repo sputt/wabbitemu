@@ -1,4 +1,5 @@
 ﻿using System.Drawing.Imaging;
+using System.IO;
 using Microsoft.Win32;
 using Revsoft.Wabbitcode.Exceptions;
 using System;
@@ -37,7 +38,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 }
             }
 
-	        if (romFile == null)
+	        if (romFile == null || !File.Exists(romFile))
 			{
 				throw new MissingROMException("Could not load Wabbitemu ROM");
 			}

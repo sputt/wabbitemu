@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Revsoft.Wabbitcode.Extensions;
+﻿using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
@@ -136,18 +135,23 @@ namespace Revsoft.Wabbitcode.Services
 			return refs;
 		}
 
-		public IEnumerable<IParserData> GetParserData(string referenceString)
+		public IEnumerable<IParserData> GetParserData(string referenceString, bool caseSensitive)
 		{
 			if (string.IsNullOrEmpty(referenceString))
 			{
 				yield break;
 			}
 
+			if (!caseSensitive)
+			{
+				referenceString = referenceString.ToUpper();
+			}
+
 			foreach (var info in _parserInfoDictionary.Values)
 			{
 				foreach (var data in info)
 				{
-					string name = Settings.Default.caseSensitive ? data.Name : data.Name.ToUpper();
+					string name = caseSensitive ? data.Name : data.Name.ToUpper();
 					if (name == referenceString)
 					{
 						yield return data;

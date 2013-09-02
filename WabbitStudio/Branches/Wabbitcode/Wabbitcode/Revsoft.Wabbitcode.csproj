@@ -669,7 +669,6 @@
     <Compile Include="Services\Symbols\SymbolTable.cs" />
     <Compile Include="Services\Debugger\WabbitcodeBreakpoint.cs" />
     <Compile Include="Services\ParserService.cs" />
-    <Compile Include="Services\ServiceBase.cs" />
     <Compile Include="Services\ServiceDependencyAttribute.cs" />
     <Compile Include="Services\ServiceFactory.cs" />
     <Compile Include="Services\SymbolService.cs" />

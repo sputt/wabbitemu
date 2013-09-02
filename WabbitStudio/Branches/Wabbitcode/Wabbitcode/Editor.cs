@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
@@ -46,6 +47,7 @@ namespace Revsoft.Wabbitcode
 		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
 		private readonly IParserService _parserService;
+		private readonly IProjectService _projectService;
 		private readonly ISymbolService _symbolService;
 		private string _fileName;
 		private readonly List<TextMarker> _codeCheckMarkers = new List<TextMarker>();
@@ -132,7 +134,8 @@ namespace Revsoft.Wabbitcode
 		#endregion
 
 		public Editor(IBackgroundAssemblerService backgroundAssemblerService, IDockingService dockingService,
-			IDocumentService documentService, IParserService parserService, ISymbolService symbolService)
+			IDocumentService documentService, IParserService parserService, IProjectService projectService,
+			ISymbolService symbolService)
 		{
 			InitializeComponent();
 
@@ -142,6 +145,7 @@ namespace Revsoft.Wabbitcode
 			_dockingService = dockingService;
 			_documentService = documentService;
 			_parserService = parserService;
+			_projectService = projectService;
 			_symbolService = symbolService;
 
 			_textChangedTimer.Tick += textChangedTimer_Tick;
@@ -182,15 +186,10 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			if (!Settings.Default.caseSensitive)
-			{
-				text = text.ToUpper();
-			}
-
 			string tooltip;
 			try
 			{
-				IParserData data = _parserService.GetParserData(text).FirstOrDefault();
+				IParserData data = _parserService.GetParserData(text, Settings.Default.caseSensitive).FirstOrDefault();
 				tooltip = data == null ? _symbolService.SymbolTable.GetAddressFromLabel(text) : data.Description;
 			}
 			catch (Exception)
@@ -333,8 +332,50 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
+		public bool SaveFileAs()
+		{
+			SaveFileDialog saveFileDialog = new SaveFileDialog
+			{
+				DefaultExt = "asm",
+				RestoreDirectory = true,
+				Filter = "All Know File Types | *.asm; *.z80| Assembly Files (*.asm)|*.asm|Z80" +
+						 " Assembly Files (*.z80)|*.z80|All Files(*.*)|*.*",
+				FilterIndex = 0,
+				Title = "Save File As"
+			};
+
+			if (saveFileDialog.ShowDialog() != DialogResult.OK)
+			{
+				return false;
+			}
+			if (string.IsNullOrEmpty(saveFileDialog.FileName))
+			{
+				return false;
+			}
+			FileName = saveFileDialog.FileName;
+			return true;
+		}
+
 		public bool SaveFile()
 		{
+			if (_projectService.Project.ProjectWatcher != null)
+			{
+				_projectService.Project.ProjectWatcher.EnableRaisingEvents = false;
+			}
+			if (string.IsNullOrEmpty(FileName))
+			{
+				bool success = SaveFileAs();
+				if (!success)
+				{
+					return false;
+				}
+			}
+
+			if (string.IsNullOrEmpty(FileName))
+			{
+				return false;
+			}
+
 			bool saved = true;
 			_stackTop = editorBox.Document.UndoStack.UndoItemCount;
 			try
@@ -346,6 +387,12 @@ namespace Revsoft.Wabbitcode
 				saved = false;
 				DockingService.ShowError("Error saving the file", ex);
 			}
+
+			if (_projectService.Project.ProjectWatcher != null)
+			{
+				_projectService.Project.ProjectWatcher.EnableRaisingEvents = true;
+			}
+
 			editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
 			TabText = Path.GetFileName(FileName);
 			DocumentChanged = false;
@@ -353,7 +400,7 @@ namespace Revsoft.Wabbitcode
 			return saved;
 		}
 
-		private void newEditor_FormClosing(object sender, CancelEventArgs e)
+		private void editor_FormClosing(object sender, CancelEventArgs e)
 		{
 			_textChangedTimer.Enabled = false;
 
@@ -387,14 +434,7 @@ namespace Revsoft.Wabbitcode
 					e.Cancel = true;
 					break;
 				case DialogResult.Yes:
-					if (string.IsNullOrEmpty(FileName))
-					{
-						_documentService.SaveDocument(this);
-					}
-					else
-					{
-						SaveFile();
-					}
+					SaveFile();
 					break;
 			}
 		}
@@ -500,119 +540,111 @@ namespace Revsoft.Wabbitcode
 			_mainForm.SetPC(_fileName, editorBox.ActiveTextAreaControl.Caret.Line);
 		}
 
-		//private void bgotoButton_Click(object sender, EventArgs e)
-		//{
-		//	string text = bgotoButton.Text.Substring(5, bgotoButton.Text.Length - 5);
-		//	bool isMacro = text[text.Length - 1] == '(';
-		//	if (isMacro)
-		//		text = text.Remove(text.Length - 1);
-		//	if (bgotoButton.Text.Substring(0, 4) == "Goto")
-		//	{
-		//		List<IParserData> parserData = new List<IParserData>();
-		//		if (text[0] == '+' || text[0] == '-' || text == "_")
-		//		{
-		//			bool negate = text[0] == '-';
-		//			int steps = text == "_" ? 1 : 0;
-		//			while (text != "_")
-		//			{
-		//				text = text.Remove(0, 1);
-		//				steps++;
-		//			}
-		//			if (negate)
-		//			{
-		//				steps *= -1;
-		//			}
-		//			int i;
-		//			for (i = 0; i < _parseInfo.LabelsList.Count; i++)
-		//			{
-		//				if (_parseInfo.LabelsList[i].Name == "_")
-		//				{
-		//					parserData.Add(_parseInfo.LabelsList[i]);
-		//				}
-		//			}
-		//			i = 0;
-		//			while (i < parserData.Count && parserData[i].Location.Offset < editorBox.ActiveTextAreaControl.Caret.Offset)
-		//			{
-		//				i++;
-		//			}
-		//			if (negate)
-		//			{
-		//				i += steps;
-		//			}
-		//			else
-		//			{
-		//				i += steps - 1;
-		//			}
-		//			IParserData data = parserData[i];
-		//			parserData.Clear();
-		//			parserData.Add(data);
-		//		}
-		//		else
-		//		{
-		//			var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-		//			foreach (ParserInformation info in ProjectService.ParserInfomInformation)
-		//			{
-		//				foreach (IParserData data in info.GeneratedList)
-		//				{
-		//					if (string.Equals(data.Name, text, options))
-		//					{
-		//						parserData.Add(data);
-		//						break;
-		//					}
-		//				}
-		//			}
-		//		}
-		//		if (parserData.Count == 0)
-		//		{
-		//			MessageBox.Show("Unable to locate " + text);
-		//		}
-		//		else if (parserData.Count == 1)
-		//		{
-		//			DocumentService.GotoLabel(parserData[0]);
-		//			if (!_labelsCache.Contains(parserData[0]))
-		//			{
-		//				_labelsCache.Add(parserData[0]);
-		//			}
-		//		}
-		//		else
-		//		{
-		//			DockingService.FindResults.NewFindResults(text, _projectService.ProjectName);
-		//			foreach (IParserData data in parserData)
-		//			{
-		//				string line;
-		//				StreamReader reader = null;
-		//				try
-		//				{
-		//					reader = new StreamReader(data.ParentFolder.SourceFile);
-		//					line = reader.ReadToEnd().Split('\n')[data.Location.Line];
-		//				}
-		//				finally
-		//				{
-		//					if (reader != null)
-		//					{
-		//						reader.Close();
-		//					}
-		//				}
-		//				_dockingService.FindResults.AddFindResult(data.ParentFolder.SourceFile, data.Location.Line, line);
-		//			}
-		//			DockingService.ShowDockPanel(DockingService.FindResults);
-		//		}
-		//	}
-		//	else
-		//	{
-		//		DocumentService.GotoFile(Path.IsPathRooted(text) ? text : FileOperations.NormalizePath(FindFilePathIncludes(text)));
-		//	}
-		//}
+		private void bgotoButton_Click(object sender, EventArgs e)
+		{
+			// no need to make a stricter regex, as we own the inputs here
+			Match match = Regex.Match(bgotoButton.Text, "(?<action>.*) (?<name>.*)");
+			string text = match.Groups["name"].Value;
+			bool isMacro = text.Last() == '(';
+			if (isMacro)
+			{
+				text = text.Remove(text.Length - 1);
+			}
+
+			if (bgotoButton.Text.Substring(0, 4) == "Goto")
+			{
+				IList<IParserData> parserData;
+				if (text[0] == '+' || text[0] == '-' || text == "_")
+				{
+					parserData = new List<IParserData>();
+					bool negate = text[0] == '-';
+					int steps = text == "_" ? 1 : 0;
+					while (text != "_")
+					{
+						text = text.Remove(0, 1);
+						steps++;
+					}
+					if (negate)
+					{
+						steps *= -1;
+					}
+					int i;
+					//for (i = 0; i < _parseInfo.LabelsList.Count; i++)
+					//{
+					//	if (_parseInfo.LabelsList[i].Name == "_")
+					//	{
+					//		parserData.Add(_parseInfo.LabelsList[i]);
+					//	}
+					//}
+					i = 0;
+					while (i < parserData.Count && parserData[i].Location.Offset < editorBox.ActiveTextAreaControl.Caret.Offset)
+					{
+						i++;
+					}
+					if (negate)
+					{
+						i += steps;
+					}
+					else
+					{
+						i += steps - 1;
+					}
+					IParserData data = parserData[i];
+					parserData.Clear();
+					parserData.Add(data);
+				}
+				else
+				{
+					parserData = _parserService.GetParserData(text, Settings.Default.caseSensitive).ToList(); 
+				}
+				
+				if (parserData.Count == 1)
+				{
+					_documentService.GotoLabel(parserData[0]);
+					if (!_labelsCache.Contains(parserData[0]))
+					{
+						_labelsCache.Add(parserData[0]);
+					}
+				}
+				else
+				{
+					_dockingService.FindResults.NewFindResults(text, _projectService.Project.ProjectName);
+					foreach (IParserData data in parserData)
+					{
+						string line;
+						StreamReader reader = null;
+						try
+						{
+							reader = new StreamReader(data.Parent.SourceFile);
+							line = reader.ReadToEnd().Split('\n')[data.Location.Line];
+						}
+						finally
+						{
+							if (reader != null)
+							{
+								reader.Close();
+							}
+						}
+						_dockingService.FindResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, line);
+					}
+					_dockingService.ShowDockPanel(_dockingService.FindResults);
+				}
+			}
+			else
+			{
+				//_documentService.GotoFile(Path.IsPathRooted(text) ? text : FileOperations.NormalizePath(FindFilePathIncludes(text)));
+			}
+		}
 		#endregion
 
 		#region Drag and Drop
 
-		private void newEditor_DragEnter(object sender, DragEventArgs e)
+		private void editor_DragEnter(object sender, DragEventArgs e)
 		{
 			_mainForm.MainFormRedone_DragEnter(sender, e);
 		}
 
-		private void newEditor_DragDrop(object sender, DragEventArgs e)
+		private void editor_DragDrop(object sender, DragEventArgs e)
 		{
 			_mainForm.MainFormRedone_DragDrop(sender, e);
 		}
@@ -731,18 +763,18 @@ namespace Revsoft.Wabbitcode
 			editorBox.Document.Replace(offset, item.Text.Length, item.Text);
 		}
 
-		//private void findRefContext_Click(object sender, EventArgs e)
-		//{
-		//	string word = GetWord();
-		//	DockingService.FindResults.NewFindResults(word, ProjectService.ProjectName);
-		//	var refs = ProjectService.FindAllReferences(word);
-		//	foreach (var fileRef in refs.SelectMany(reference => reference))
-		//	{
-		//		DockingService.FindResults.AddFindResult(fileRef);
-		//	}
-		//	DockingService.FindResults.DoneSearching();
-		//	DockingService.ShowDockPanel(DockingService.FindResults);
-		//}
+		private void findRefContext_Click(object sender, EventArgs e)
+		{
+			string word = GetWord();
+			_dockingService.FindResults.NewFindResults(word, _projectService.Project.ProjectName);
+			var refs = _projectService.FindAllReferences(word);
+			foreach (var fileRef in refs.SelectMany(reference => reference))
+			{
+				_dockingService.FindResults.AddFindResult(fileRef);
+			}
+			_dockingService.FindResults.DoneSearching();
+			_dockingService.ShowDockPanel(_dockingService.FindResults);
+		}
 
 		private void renameContext_Click(object sender, EventArgs e)
 		{
@@ -765,191 +797,118 @@ namespace Revsoft.Wabbitcode
 			cutContext.Enabled = hasSelection;
 			copyContext.Enabled = hasSelection;
 
-			//if (!string.IsNullOrEmpty(editorBox.Text))
-			//{
-			//	var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-			//	int offset = editorBox.ActiveTextAreaControl.Caret.Offset;
-			//	fixCaseContext.Visible = false;
-			//	string text = editorBox.Document.GetWord(offset);
-			//	if (!string.IsNullOrEmpty(text))
-			//	{
-			//		List<IParserData> parserData = new List<IParserData>();
-			//		foreach (ParserInformation info in ProjectService.ParserInfomInformation)
-			//		{
-			//			parserData.AddRange(info.GeneratedList.Where(d => string.Equals(d.Name, text, options)));
-			//		}
-			//		if (parserData.Count > 0)
-			//		{
-			//			fixCaseContext.MenuItems.Clear();
-			//			foreach (IParserData data in parserData)
-			//			{
-			//				// check if they already the same case
-			//				if (data.Name == text)
-			//				{
-			//					continue;
-			//				}
-			//				fixCaseContext.Visible = true;
-			//				MenuItem item = new MenuItem(data.Name, fixCaseContext_Click);
-			//				fixCaseContext.MenuItems.Add(item);
-			//			}
-			//			bgotoButton.Enabled = true;
-			//		}
-			//		else
-			//		{
-			//			bgotoButton.Enabled = false;
-			//		}
-			//	}
-			//	//if the user clicked after the last char we need to catch this
-			//	if (offset == editorBox.Text.Length)
-			//	{
-			//		offset--;
-			//	}
+			if (!string.IsNullOrEmpty(editorBox.Text))
+			{
+				int lineNum = editorBox.ActiveTextAreaControl.Caret.Line;
+				fixCaseContext.Visible = false;
+				fixCaseContext.MenuItems.Clear();
 
-			//	int startLine = offset;
-			//	while (startLine >= 0 && editorBox.Text[startLine] != '\n')
-			//	{
-			//		startLine--;
-			//	}
+				string[] lines = EditorText.Split('\n');
+				string line = lines[lineNum];
+				Match match = Regex.Match(line, "#include \"(?<includeFile>.*)(?<paren>\\)?)\"");
+				bool isInclude = match.Success;
 
-			//	startLine++;
-			//	bool isInclude = false;
-			//	if (string.Compare(editorBox.Text, startLine, "#include", 0, "#include".Length, options) == 0)
-			//	{
-			//		offset = startLine + "#include".Length;
-			//		isInclude = true;
-			//	}
-			//	else
-			//	{
-			//		while (offset >= 0 && (char.IsLetterOrDigit(editorBox.Text[offset]) || editorBox.Text[offset] == '_'))
-			//		{
-			//			offset--;
-			//		}
-			//		offset++;
-			//	}
+				string text = editorBox.Document.GetWord(editorBox.ActiveTextAreaControl.Caret.Offset);
+				if (!string.IsNullOrEmpty(text) && !isInclude)
+				{
+					IEnumerable<IParserData> parserData =  _parserService.GetParserData(text, Settings.Default.caseSensitive).ToList();
+					if (parserData.Any())
+					{
+						foreach (IParserData data in parserData.Where(data => data.Name != text))
+						{
+							fixCaseContext.Visible = true;
+							MenuItem item = new MenuItem(data.Name, fixCaseContext_Click);
+							fixCaseContext.MenuItems.Add(item);
+						}
+						bgotoButton.Enabled = true;
+					}
+					else
+					{
+						bgotoButton.Enabled = false;
+					}
+				}
 
-			//	int length = 1;
-			//	if (isInclude)
-			//	{
-			//		while (char.IsWhiteSpace(editorBox.Text[offset]))
-			//		{
-			//			offset++;
-			//		}
-			//		while (offset + length < editorBox.Text.Length && (editorBox.Text[offset + length] != ';' && editorBox.Text[offset + length] != '\"' && editorBox.Text[offset + length] != '\r' && editorBox.Text[offset + length] != '\n'))
-			//		{
-			//			length++;
-			//		}
-			//		if (offset + length < editorBox.Text.Length && editorBox.Text[offset + length] == '\"')
-			//		{
-			//			length++;
-			//		}
-			//	}
-			//	else
-			//	{
-			//		while (offset + length < editorBox.Text.Length && (char.IsLetterOrDigit(editorBox.Text[offset + length]) || editorBox.Text[offset + length] == '_'))
-			//		{
-			//			length++;
-			//		}
-			//	}
+				string gotoLabel = isInclude ? match.Groups["includeFile"].Value : text;
+				bool isMacro = !string.IsNullOrEmpty(match.Groups["paren"].Value);
+				if (isMacro)
+				{
+					gotoLabel += "(";
+				}
 
-			//	string gotoLabel;
-			//	try
-			//	{
-			//		gotoLabel = editorBox.Document.GetText(offset, length).Trim();
-			//		if (offset + length < editorBox.Text.Length && editorBox.Text[offset + length] == '(')
-			//		{
-			//			gotoLabel += "(";
-			//		}
-			//		if (gotoLabel == "_")
-			//		{
-			//			if (editorBox.Document.TextContent[offset] == '_')
-			//			{
-			//				offset--;
-			//			}
-			//			else
-			//			{
-			//				while (offset > 0 && editorBox.Document.TextContent[offset] != '_')
-			//				{
-			//					offset--;
-			//				}
-			//				offset--;
-			//			}
-			//			while (offset > 0 && (editorBox.Document.TextContent[offset] == '-' || editorBox.Document.TextContent[offset] == '+'))
-			//			{
-			//				offset--; length++;
-			//			}
-			//			gotoLabel = editorBox.Document.GetText(++offset, length).Trim();
-			//		}
-			//	}
-			//	catch (Exception)
-			//	{
-			//		throw new Exception("Error getting label");
-			//	}
-			//	int num;
-			//	if ("afbcdehlixiypcspnzncpm".IndexOf(gotoLabel) == -1 && !int.TryParse(gotoLabel, out num))
-			//	{
-			//		if (isInclude)
-			//		{
-			//			if (gotoLabel[0] == '\"')
-			//			{
-			//				gotoLabel = gotoLabel.Substring(1, gotoLabel.Length - 2);
-			//			}
-			//			bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : FindFileIncludes(gotoLabel);
-			//			if (exists)
-			//			{
-			//				bgotoButton.Text = "Open " + gotoLabel;
-			//				bgotoButton.Enabled = true;
-			//			}
-			//			else
-			//			{
-			//				bgotoButton.Text = "File " + gotoLabel + " doesn't exist";
-			//				bgotoButton.Enabled = false;
-			//			}
-			//		}
-			//		else
-			//		{
-			//			if (bgotoButton.Enabled)
-			//			{
-			//				bgotoButton.Text = "Goto " + gotoLabel;
-			//				bgotoButton.Enabled = !string.IsNullOrEmpty(gotoLabel);
-			//			}
-			//			else
-			//			{
-			//				bgotoButton.Text = "Unable to find " + gotoLabel;
-			//			}
-			//		}
-			//	}
-			//	else
-			//	{
-			//		bgotoButton.Text = "Goto ";
-			//		bgotoButton.Enabled = false;
-			//	}
-			//}
+				if (gotoLabel == "_")
+				{
+					match = Regex.Match(line, "(?<offset>(\\+|\\-)*)_");
+					gotoLabel = match.Groups["offset"].Value + gotoLabel;
+				}
+				int num;
+				if ("afbcdehlixiypcspnzncpm".IndexOf(gotoLabel) == -1 && !int.TryParse(gotoLabel, out num))
+				{
+					if (isInclude)
+					{
+						if (gotoLabel[0] == '\"')
+						{
+							gotoLabel = gotoLabel.Substring(1, gotoLabel.Length - 2);
+						}
+						bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : FindFileIncludes(gotoLabel);
+						if (exists)
+						{
+							bgotoButton.Text = "Open " + gotoLabel;
+							bgotoButton.Enabled = true;
+						}
+						else
+						{
+							bgotoButton.Text = "File " + gotoLabel + " doesn't exist";
+							bgotoButton.Enabled = false;
+						}
+					}
+					else
+					{
+						if (bgotoButton.Enabled)
+						{
+							bgotoButton.Text = "Goto " + gotoLabel;
+							bgotoButton.Enabled = !string.IsNullOrEmpty(gotoLabel);
+						}
+						else
+						{
+							bgotoButton.Text = "Unable to find " + gotoLabel;
+						}
+					}
+				}
+				else
+				{
+					bgotoButton.Text = "Goto ";
+					bgotoButton.Enabled = false;
+				}
+			}
 			contextMenu.Show(editorBox, editorBox.PointToClient(MousePosition));
 		}
 
-		//private bool FindFileIncludes(string gotoLabel)
-		//{
-		//	return !string.IsNullOrEmpty(FindFilePathIncludes(gotoLabel));
-		//}
+		private bool FindFileIncludes(string gotoLabel)
+		{
+			return !string.IsNullOrEmpty(FindFilePathIncludes(gotoLabel));
+		}
 
-		//private string FindFilePathIncludes(string gotoLabel)
-		//{
-		//	IEnumerable<string> includeDirs = _projectService.Project.IsInternal ?
-		//				Settings.Default.includeDirs.Split('\n').ToList() : ProjectService.IncludeDirs;
-		//	foreach (string dir in includeDirs)
-		//	{
-		//		if (File.Exists(Path.Combine(dir, gotoLabel)))
-		//		{
-		//			return Path.Combine(dir, gotoLabel);
-		//		}
-		//	}
+		private string FindFilePathIncludes(string gotoLabel)
+		{
+			IEnumerable<string> includeDirs;
+			includeDirs = _projectService.Project.IsInternal ?
+				(IEnumerable<string>) Settings.Default.includeDirs :
+				_projectService.Project.IncludeDirs;
 
-		//	if (File.Exists(Path.Combine(Path.GetDirectoryName(FileName), gotoLabel)))
-		//	{
-		//		return Path.Combine(Path.GetDirectoryName(FileName), gotoLabel);
-		//	}
-		//	return null;
-		//}
+			foreach (string dir in includeDirs)
+			{
+				if (File.Exists(Path.Combine(dir, gotoLabel)))
+				{
+					return Path.Combine(dir, gotoLabel);
+				}
+			}
+
+			if (File.Exists(Path.Combine(Path.GetDirectoryName(FileName), gotoLabel)))
+			{
+				return Path.Combine(Path.GetDirectoryName(FileName), gotoLabel);
+			}
+			return null;
+		}
 
 		#region TitleBarContext
 
@@ -1229,6 +1188,7 @@ namespace Revsoft.Wabbitcode
 
 		private static void AddSquiggleLine(Editor doc, int newLineNumber, Color underlineColor, string description)
 		{
+			// TODO: regex this
 			var document = doc.EditorBox.Document;
 			int start = document.GetOffsetForLineNumber(newLineNumber - 1);
 			int length;

@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -51,7 +52,14 @@ namespace Revsoft.Wabbitcode.Services.Project
 		FileSystemWatcher ProjectWatcher { get; set; }
 
 		IEnumerable<ProjectFile> GetProjectFiles();
+		bool ContainsFile(string file);
+		ProjectFile FindFile(string fullPath);
 
+
+		void CreateNewProject(string projectFile, string projectName);
+		void OpenProject(string fileName);
 		void SaveProject();
+
+		void InitWatcher(FileSystemEventHandler changedHandler, RenamedEventHandler renamedHandler);
 	}
 }

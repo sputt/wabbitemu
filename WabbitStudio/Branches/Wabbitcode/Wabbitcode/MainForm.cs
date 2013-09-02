@@ -1,4 +1,5 @@
-﻿using Revsoft.TextEditor;
+﻿using Microsoft.Win32;
+using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.EditorExtensions;
@@ -66,6 +67,9 @@ namespace Revsoft.Wabbitcode
 			InitializeEvents();
 
 			DockingService.OnActiveDocumentChanged += DockingServiceOnOnActiveDocumentChanged;
+		
+			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
+			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnOnBreakpointRemoved;
 
 			_dockingService.InitPanels(new ProjectViewer(_dockingService, _documentService, _projectService),
 				new ErrorList(_assemblerService, _dockingService, _documentService, _projectService),
@@ -287,8 +291,8 @@ namespace Revsoft.Wabbitcode
 
 		private void UpdateConfigToolbarBox()
 		{
-			WabbitcodeProject wabbitcodeProject = _projectService.Project;
-			if (wabbitcodeProject.IsInternal)
+			IProject project = _projectService.Project;
+			if (project.IsInternal)
 			{
 				return;
 			}
@@ -400,25 +404,31 @@ namespace Revsoft.Wabbitcode
 
 		private void DoneStep(object sender, DebuggerStepEventArgs e)
 		{
-			UpdateStepOut();
-			UpdateDebugStuff();
-			_documentService.RemoveDebugHighlight();
-			_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-			_documentService.HighlightDebugLine(e.Location.LineNumber);
-			_dockingService.MainForm.UpdateTrackPanel();
-			_dockingService.MainForm.UpdateDebugPanel();
+			this.Invoke(() =>
+			{
+				UpdateStepOut();
+				UpdateDebugStuff();
+				_documentService.RemoveDebugHighlight();
+				_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+				_documentService.HighlightDebugLine(e.Location.LineNumber);
+				_dockingService.MainForm.UpdateTrackPanel();
+				_dockingService.MainForm.UpdateDebugPanel();
+			});
 		}
 
 		private void BreakpointHit(object sender, DebuggerBreakpointHitEventArgs e)
 		{
-			_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-			_documentService.HighlightDebugLine(e.Location.LineNumber);
+			this.Invoke(() =>
+			{
+				_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+				_documentService.HighlightDebugLine(e.Location.LineNumber);
 
-			// switch to back to us
-			Activate();
-			UpdateDebugStuff();
-			UpdateTrackPanel();
-			UpdateDebugPanel();
+				// switch to back to us
+				Activate();
+				UpdateDebugStuff();
+				UpdateTrackPanel();
+				UpdateDebugPanel();
+			});
 		}
 
 		internal void HideProgressBar()
@@ -481,7 +491,37 @@ namespace Revsoft.Wabbitcode
 					return;
 				}
 
-				_debugger.InitDebugger(createdName);
+				try
+				{
+					_debugger.InitDebugger(createdName);
+				}
+				catch (MissingROMException ex)
+				{
+					this.Invoke(() =>
+					{
+						OpenFileDialog openFileDialog = new OpenFileDialog()
+						{
+							CheckFileExists = true,
+							DefaultExt = "*.rom",
+							Filter = "All Know File Types | *.rom; *.sav; |ROM Files (*.rom)|*.rom|" +
+							         "Savestate Files (*.sav)|*.sav|All Files(*.*)|*.*",
+							FilterIndex = 0,
+							Multiselect = true,
+							RestoreDirectory = true,
+							Title = "Select new ROM file",
+						};
+
+						if (openFileDialog.ShowDialog() != DialogResult.OK)
+						{
+							CancelDebug();
+							return;
+						}
+
+						SaveRomPathRegistry(openFileDialog.FileName);
+					});
+
+					_debugger.InitDebugger(createdName);
+				}
 
 				if (OnDebuggingStarted != null)
 				{
@@ -526,6 +566,26 @@ namespace Revsoft.Wabbitcode
 			});
 		}
 
+		private static void SaveRomPathRegistry(string romFileName)
+		{
+			RegistryKey romKey = null;
+			try
+			{
+				romKey = Registry.CurrentUser.OpenSubKey("Software\\Wabbitemu", true);
+				if (romKey != null)
+				{
+					romKey.SetValue("rom_path", romFileName);
+				}
+			}
+			finally
+			{
+				if (romKey != null)
+				{
+					romKey.Close();
+				}
+			}
+		}
+
 		void _debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
 		{
 			if (e.Running)
@@ -561,6 +621,20 @@ namespace Revsoft.Wabbitcode
 			_dockingService.ShowDockPanel(_dockingService.TrackWindow);
 			_dockingService.ShowDockPanel(_dockingService.CallStack);
 			UpdateTitle();
+		}
+
+
+		private void WabbitcodeBreakpointManager_OnOnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
+		{
+			_breakpointsToAdd.Remove(e.Breakpoint);
+		}
+
+		void WabbitcodeBreakpointManager_OnBreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e)
+		{
+			if (!_breakpointsToAdd.Contains(e.Breakpoint))
+			{
+				_breakpointsToAdd.Add(e.Breakpoint);
+			}
 		}
 
 		private void UpdateBreakpoints()
@@ -1586,7 +1660,7 @@ namespace Revsoft.Wabbitcode
 		{
 			foreach (Editor child in MdiChildren)
 			{
-				_documentService.SaveDocument(child);
+				child.SaveFile();
 			}
 		}
 
@@ -1594,7 +1668,7 @@ namespace Revsoft.Wabbitcode
 		{
 			try
 			{
-				_documentService.SaveDocumentAs();
+				_dockingService.ActiveDocument.SaveFileAs();
 			}
 			catch (Exception ex)
 			{
@@ -1604,14 +1678,7 @@ namespace Revsoft.Wabbitcode
 
 		private void saveMenuItem_Click(object sender, EventArgs e)
 		{
-			try
-			{
-				_documentService.SaveDocument();
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Error saving file.", ex);
-			}
+			SaveActiveDocument();
 		}
 
 		private void saveProjectMenuItem_Click(object sender, EventArgs e)
@@ -1622,7 +1689,19 @@ namespace Revsoft.Wabbitcode
 
 		private void saveToolButton_Click(object sender, EventArgs e)
 		{
-			_documentService.SaveDocument();
+			SaveActiveDocument();
+		}
+
+		private void SaveActiveDocument()
+		{
+			try
+			{
+				_dockingService.ActiveDocument.SaveFile();
+			}
+			catch (Exception ex)
+			{
+				DockingService.ShowError("Error saving file.", ex);
+			}
 		}
 
 		private void SaveWindow()

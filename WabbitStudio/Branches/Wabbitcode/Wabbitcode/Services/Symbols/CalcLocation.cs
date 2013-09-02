@@ -20,7 +20,32 @@ namespace Revsoft.Wabbitcode.Services.Symbols
             private set;
         }
 
-        public override string ToString()
+	    public override bool Equals(object obj)
+	    {
+		    if (ReferenceEquals(null, obj))
+		    {
+			    return false;
+		    }
+
+		    if (ReferenceEquals(this, obj))
+		    {
+			    return true;
+		    }
+
+		    return obj.GetType() == GetType() && Equals((CalcLocation) obj);
+	    }
+
+	    private bool Equals(CalcLocation other)
+	    {
+		    return Address == other.Address && Page == other.Page;
+	    }
+
+	    public override int GetHashCode()
+	    {
+			return (Address.GetHashCode()*397) ^ Page.GetHashCode();
+	    }
+
+	    public override string ToString()
         {
             return "Page: " + Page + " Address: " + Address.ToString("X").ToUpper();
         }
