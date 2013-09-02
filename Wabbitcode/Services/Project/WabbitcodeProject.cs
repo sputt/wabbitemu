@@ -99,7 +99,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			writer.Close();
 		}
 
-		internal void CreateNewProject(string projectFile, string projectName)
+		public void CreateNewProject(string projectFile, string projectName)
 		{
 			ProjectFolder folder = new ProjectFolder(null, projectName);
 			_mainFolder = folder;
@@ -124,7 +124,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			NeedsSave = false;
 		}
 
-		internal void OpenProject(string projectFile)
+		public void OpenProject(string projectFile)
 		{
 			FileStream stream = null;
 			try

@@ -8,14 +8,14 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Services
 {
-	[ServiceDependency(typeof(IBackgroundAssemblerService))]
-	[ServiceDependency(typeof(IDockingService))]
-	[ServiceDependency(typeof(IParserService))]
-	[ServiceDependency(typeof(ISymbolService))]
+	[ServiceDependency(typeof (IBackgroundAssemblerService))]
+	[ServiceDependency(typeof (IDockingService))]
+	[ServiceDependency(typeof (IParserService))]
+	[ServiceDependency(typeof(IProjectService))]
+	[ServiceDependency(typeof (ISymbolService))]
 	public class DocumentService : IDocumentService
 	{
 		private int _debugIndex;
@@ -24,6 +24,7 @@ namespace Revsoft.Wabbitcode.Services
 		private readonly IDockingService _dockingService;
 		private readonly IBackgroundAssemblerService _backgroundAssemblerService;
 		private readonly IParserService _parserService;
+		private readonly IProjectService _projectService;
 		private readonly ISymbolService _symbolService;
 
 		/// <summary>
@@ -38,29 +39,18 @@ namespace Revsoft.Wabbitcode.Services
 
 		public Editor ActiveDocument
 		{
-			get
-			{
-				return _dockingService.ActiveDocument;
-			}
+			get { return _dockingService.ActiveDocument; }
 		}
 
 		public string ActiveFileName
 		{
-			get
-			{
-				return ActiveDocument == null ? null : ActiveDocument.FileName;
-			}
-		}
-
-		public bool InternalSave
-		{
-			get;
-			set;
+			get { return ActiveDocument == null ? null : ActiveDocument.FileName; }
 		}
 
 		public Editor CreateNewDocument()
 		{
-			Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this, _parserService, _symbolService)
+			Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this,
+				_parserService, _projectService, _symbolService)
 			{
 				Text = "New Document",
 				TabText = "New Document"
@@ -83,7 +73,7 @@ namespace Revsoft.Wabbitcode.Services
 			}
 
 			foreach (Editor child in _dockingService.Documents.Where(child => !string.IsNullOrEmpty(child.FileName) &&
-				string.Equals(child.FileName, file, StringComparison.OrdinalIgnoreCase)))
+			                                                                  string.Equals(child.FileName, file, StringComparison.OrdinalIgnoreCase)))
 			{
 				child.Show();
 				return child;
@@ -153,53 +143,6 @@ namespace Revsoft.Wabbitcode.Services
 		}
 
 		/// <summary>
-		/// Save active document
-		/// </summary>
-		public void SaveDocument()
-		{
-			if (ActiveDocument == null)
-			{
-				return;
-			}
-			SaveDocument(ActiveDocument);
-		}
-
-		/// <summary>
-		/// Save document as dialog. Also called if doc has never been saved.
-		/// </summary>
-		/// <returns></returns>
-		public void SaveDocumentAs()
-		{
-			if (ActiveDocument == null)
-			{
-				return;
-			}
-			SaveFileDialog saveFileDialog = new SaveFileDialog
-			{
-				DefaultExt = "asm",
-				RestoreDirectory = true,
-				Filter = "All Know File Types | *.asm; *.z80| Assembly Files (*.asm)|*.asm|Z80" +
-						 " Assembly Files (*.z80)|*.z80|All Files(*.*)|*.*",
-				FilterIndex = 0,
-				Title = "Save File As"
-			};
-			DialogResult saved = saveFileDialog.ShowDialog();
-			saveFileDialog.Dispose();
-			if (saved != DialogResult.OK)
-			{
-				return;
-			}
-			string fileName = saveFileDialog.FileName;
-			if (string.IsNullOrEmpty(fileName))
-			{
-				return;
-			}
-			ActiveDocument.FileName = fileName;
-			ActiveDocument.Text = fileName;
-			ActiveDocument.SaveFile();
-		}
-
-		/// <summary>
 		/// This loads the recent file list from Properties and adds it to the recent file menu.
 		/// </summary>
 		public void GetRecentFiles()
@@ -226,7 +169,7 @@ namespace Revsoft.Wabbitcode.Services
 		public Editor OpenDocument(string filename)
 		{
 			Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this,
-				_parserService, _symbolService);
+				_parserService, _projectService, _symbolService);
 			OpenDocument(doc, filename);
 			return doc;
 		}
@@ -242,44 +185,6 @@ namespace Revsoft.Wabbitcode.Services
 			SaveRecentFileList();
 			GetRecentFiles();
 			_dockingService.ShowDockPanel(doc);
-		}
-
-		public void SaveDocument(Editor doc)
-		{
-			SaveFileDialog saveFileDialog = new SaveFileDialog
-			{
-				DefaultExt = "asm",
-				RestoreDirectory = true,
-				Filter = "All Know File Types | *.asm; *.z80| Assembly Files (*.asm)|*.asm|Z80" +
-						 " Assembly Files (*.z80)|*.z80|All Files(*.*)|*.*",
-				FilterIndex = 0,
-				Title = "Save File As"
-			};
-			//if (_projectService.ProjectWatcher != null)
-			//{
-			//	ProjectService.ProjectWatcher.EnableRaisingEvents = false;
-			//}
-			if (string.IsNullOrEmpty(doc.FileName))
-			{
-				if (saveFileDialog.ShowDialog() != DialogResult.OK)
-				{
-					return;
-				}
-				if (string.IsNullOrEmpty(saveFileDialog.FileName))
-				{
-					return;
-				}
-				doc.FileName = saveFileDialog.FileName;
-			}
-
-			if (!string.IsNullOrEmpty(doc.FileName))
-			{
-				doc.SaveFile();
-			}
-			//if (ProjectService.ProjectWatcher != null)
-			//{
-			//	ProjectService.ProjectWatcher.EnableRaisingEvents = true;
-			//}
 		}
 
 		/// <summary>
@@ -317,20 +222,19 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void InitService(params object[] objects)
 		{
-
 		}
 
 		public void DestroyService()
 		{
-
 		}
 
-		public DocumentService(IBackgroundAssemblerService backgroundAssemblerService,
-			IDockingService dockingService, IParserService parserService, ISymbolService symbolService)
+		public DocumentService(IBackgroundAssemblerService backgroundAssemblerService, IDockingService dockingService, 
+			IParserService parserService, IProjectService projectService, ISymbolService symbolService)
 		{
 			_backgroundAssemblerService = backgroundAssemblerService;
 			_dockingService = dockingService;
 			_parserService = parserService;
+			_projectService = projectService;
 			_symbolService = symbolService;
 		}
 

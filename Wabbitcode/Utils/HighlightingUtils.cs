@@ -256,7 +256,7 @@ namespace Revsoft.Wabbitcode.Utils
 				writer.WriteAttributeString("stopateol", "false");
 				writer.WriteAttributeString("bold", "false");
 				writer.WriteAttributeString("italic", "false");
-				writer.WriteAttributeString("color", commentsColor);
+				writer.WriteAttributeString("color", blockCommentsColor);
 				writer.WriteElementString("Begin", "#comment");
 				writer.WriteElementString("End", "#endcomment");
 				writer.WriteEndElement();

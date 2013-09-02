@@ -6,7 +6,8 @@ using Revsoft.TextEditor.Document;
 namespace Revsoft.Wabbitcode.Utils
 {
 	/// <summary>This class finds occurrances of a search string in a text
-	/// editor's IDocument... it's like Find box without a GUI.</summary>
+	/// editor's IDocument... it's like Find box without a GUI.
+	/// </summary>
 	public sealed class TextEditorSearcher : IDisposable
 	{
 		public bool MatchCase;
@@ -14,7 +15,7 @@ namespace Revsoft.Wabbitcode.Utils
 
 		private IDocument _document;
 		private string _lookFor;
-		private string _lookFor2; // uppercase in case-insensitive mode
+		private string _lookForUppercase; // uppercase in case-insensitive mode
 
 		// I would have used the TextAnchor class to represent the beginning and
 		// end of the region to scan while automatically adjusting to changes in
@@ -72,18 +73,12 @@ namespace Revsoft.Wabbitcode.Utils
 
 		public bool HasScanRegion
 		{
-			get
-			{
-				return _region != null;
-			}
+			get { return _region != null; }
 		}
 
 		public string LookFor
 		{
-			set
-			{
-				_lookFor = value;
-			}
+			set { _lookFor = value; }
 		}
 
 		public void ClearScanRegion()
@@ -116,7 +111,7 @@ namespace Revsoft.Wabbitcode.Utils
 			int startAt = BeginOffset, endAt = EndOffset;
 			int curOffs = beginAtOffset; // .InRange(startAt, endAt);
 
-			_lookFor2 = MatchCase ? _lookFor : _lookFor.ToUpperInvariant();
+			_lookForUppercase = MatchCase ? _lookFor : _lookFor.ToUpperInvariant();
 
 			TextRange result;
 			if (searchBackward)
@@ -176,7 +171,7 @@ namespace Revsoft.Wabbitcode.Utils
 			bool matchWord;
 
 			// Search
-			char lookForCh = _lookFor2[0];
+			char lookForCh = _lookForUppercase[0];
 			if (searchBackward)
 			{
 				for (int offset = offset2; offset >= offset1; offset--)
@@ -237,7 +232,7 @@ namespace Revsoft.Wabbitcode.Utils
 				substr = substr.ToUpperInvariant();
 			}
 
-			return substr == _lookFor2;
+			return substr == _lookForUppercase;
 		}
 
 		private bool IsWholeWordMatch(int offset)

@@ -164,7 +164,7 @@ namespace Revsoft.Wabbitcode
 			// 
 			this.findRefContext.Index = 5;
 			this.findRefContext.Text = "Find References";
-			//this.findRefContext.Click += new System.EventHandler(this.findRefContext_Click);
+			this.findRefContext.Click += new System.EventHandler(this.findRefContext_Click);
 			// 
 			// menuItem5
 			// 
@@ -196,7 +196,7 @@ namespace Revsoft.Wabbitcode
 			this.bgotoButton.Enabled = false;
 			this.bgotoButton.Index = 10;
 			this.bgotoButton.Text = "Goto";
-			//this.bgotoButton.Click += new System.EventHandler(this.bgotoButton_Click);
+			this.bgotoButton.Click += new System.EventHandler(this.bgotoButton_Click);
 			// 
 			// contextMenu1
 			// 
@@ -265,9 +265,9 @@ namespace Revsoft.Wabbitcode
 			this.TabPageContextMenu = this.contextMenu1;
 			this.TabText = "";
 			this.Text = "frmDocument";
-			this.Closing += new System.ComponentModel.CancelEventHandler(this.newEditor_FormClosing);
-			this.DragDrop += new System.Windows.Forms.DragEventHandler(this.newEditor_DragDrop);
-			this.DragEnter += new System.Windows.Forms.DragEventHandler(this.newEditor_DragEnter);
+			this.Closing += new System.ComponentModel.CancelEventHandler(this.editor_FormClosing);
+			this.DragDrop += new System.Windows.Forms.DragEventHandler(this.editor_DragDrop);
+			this.DragEnter += new System.Windows.Forms.DragEventHandler(this.editor_DragEnter);
 			this.ResumeLayout(false);
 
 		}

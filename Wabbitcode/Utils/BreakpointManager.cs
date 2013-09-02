@@ -28,7 +28,7 @@ namespace Revsoft.Wabbitcode.Utils
 
 			if (OnBreakpointAdded != null)
 			{
-				OnBreakpointAdded(null, new WabbitcodeBreakpointEventArgs());
+				OnBreakpointAdded(null, new WabbitcodeBreakpointEventArgs(newBreak));
 			}
 		}
 
@@ -39,7 +39,7 @@ namespace Revsoft.Wabbitcode.Utils
 
 			if (OnBreakpointRemoved != null)
 			{
-				OnBreakpointRemoved(null, new WabbitcodeBreakpointEventArgs());
+				OnBreakpointRemoved(null, new WabbitcodeBreakpointEventArgs(newBreak));
 			}
 		}
 	}

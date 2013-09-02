@@ -26,7 +26,7 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		public WabbitcodeProject Project { get; private set; }
+		public IProject Project { get; private set; }
 
 		public ProjectService(IAssemblerService assemblerService, IParserService parserService, ISymbolService symbolService)
 		{
@@ -77,18 +77,20 @@ namespace Revsoft.Wabbitcode.Services
 			return file != null && Project.ContainsFile(file);
 		}
 
-		public void CreateInternalProject()
+		public IProject CreateInternalProject()
 		{
 			Project = new WabbitcodeProject(_assemblerService)
 			{
 				IsInternal = true
 			};
+			return Project;
 		}
 
-		public void CreateNewProject(string projectFile, string projectName)
+		public IProject CreateNewProject(string projectFile, string projectName)
 		{
 			Project = new WabbitcodeProject(_assemblerService);
 			Project.CreateNewProject(projectFile, projectName);
+			return Project;
 		}
 
 		public void DeleteFile(string fullPath)
