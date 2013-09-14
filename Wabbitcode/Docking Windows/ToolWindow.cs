@@ -1,12 +1,21 @@
 ﻿using System;
+using System.Diagnostics.Contracts;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interface;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
-	public abstract partial class ToolWindow : DockContent, IClipboardOperation
+	public partial class ToolWindow : DockContent, IClipboardOperation
 	{
 		private readonly IDockingService _dockingService;
+
+		/// <summary>
+		/// Only for visual studio designer
+		/// </summary>
+		private ToolWindow() : this(new DockingService())
+		{
+		}
 
 		protected ToolWindow(IDockingService dockingService)
 		{
@@ -73,7 +82,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		private void ToolWindow_VisibleChanged(object sender, EventArgs e)
 		{
-			_dockingService.MainForm.UpdateChecks();
+			if (_dockingService != null && _dockingService.MainForm != null)
+			{
+				_dockingService.MainForm.UpdateChecks();
+			}
 		}
 	}
 }

@@ -373,13 +373,17 @@ namespace Revsoft.Wabbitcode.Services
 				line = line.Substring(0, commentIndex);
 			}
 
-			if (line.Contains("jp") || line.Contains("jr") || line.Contains("ret") || line.Contains("djnz"))
+			// if the line contains a special commmand (i.e. one that will go to who knows where)
+			// we just want to step over it
+			string[] specialCommands = {"jp", "jr", "ret", "djnz"};
+			if (specialCommands.Any(s => line.Contains(s)))
 			{
 				_debugger.Step();
 				_isBreakpointed = true;
 				currentPC = _debugger.CPU.PC;
 				oldPage = GetPageNum(currentPC);
 				DocumentLocation newKey = _symbolService.ListTable.GetFileLocation(oldPage, currentPC);
+				// TODO: handle a null here
 				if (OnDebuggerStep != null)
 				{
 					OnDebuggerStep(this, new DebuggerStepEventArgs(newKey));
@@ -389,6 +393,7 @@ namespace Revsoft.Wabbitcode.Services
 
 			_stepOverLineNumber = key.LineNumber;
 			line = lines[_stepOverLineNumber];
+			// otherwise, step until we get to a known location in our codebase
 			while (lines.Length > _stepOverLineNumber && (!char.IsWhiteSpace(line[0]) ||
 				_symbolService.ListTable.GetCalcLocation(key.FileName, _stepOverLineNumber) == null))
 			{

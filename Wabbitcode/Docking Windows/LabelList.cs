@@ -1,5 +1,4 @@
-﻿using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Properties;
+﻿using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
 using System;
@@ -48,24 +47,24 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				return;
 			}
 
-			NativeMethods.TurnOffDrawing(labelsBox.Handle);
 			bool showEquates = includeEquatesBox.Checked;
-			labelsBox.Items.Clear();
+			ListBox.ObjectCollection labelsToAdd = new ListBox.ObjectCollection(labelsBox);
 
 			foreach (IParserData data in info)
 			{
 				var label = data as Label;
 				if (data is Label && !label.IsReusable)
 				{
-					labelsBox.Items.Add(label);
+					labelsToAdd.Add(label);
 				}
 				else if ((data is Equate || data is Define || data is Macro) && (showEquates))
 				{
-					labelsBox.Items.Add(data);
+					labelsToAdd.Add(data);
 				}
 			}
 
-			NativeMethods.TurnOnDrawing(labelsBox.Handle);
+			labelsBox.Items.Clear();
+			labelsBox.Items.AddRange(labelsToAdd);
 		}
 
 		private void ClearLabels()
