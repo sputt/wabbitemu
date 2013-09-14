@@ -355,6 +355,9 @@
     <ClCompile Include="CPageCollection.cpp">
       <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
+    <ClCompile Include="GUI\guisize.c">
+      <Filter>Source Files\GUI</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -677,6 +680,9 @@
     </ClInclude>
     <ClInclude Include="CBank.h">
       <Filter>Source Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="GUI\guisize.h">
+      <Filter>Header Files\GUI</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

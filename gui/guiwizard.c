@@ -85,14 +85,15 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
 	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 	GetVersionEx(&osvi);
-	if (osvi.dwMajorVersion >= 6)
+	if (osvi.dwMajorVersion >= 6) {
 		flags = PSH_AEROWIZARD;
-	else
+	} else {
 		flags = PSH_WIZARD97;
+	}
 
 	psh.dwSize = sizeof(PROPSHEETHEADER);
 	psh.hInstance = g_hInst;
-	psh.dwFlags = flags | PSH_WATERMARK;// | PSH_HEADER;
+	psh.dwFlags = flags | PSH_WIZARD | PSH_WATERMARK;// | PSH_HEADER;
 	psh.hwndParent = hwndOwner;
 	psh.phpage = hPropSheet;
 	psh.pszCaption = (LPTSTR) _T("Wabbitemu Setup");
@@ -582,11 +583,11 @@ static BOOL DownloadOS(OSDownloadCallback *callback, BOOL version)
 	TCHAR *url;
 	switch (model) {
 		case TI_73:
-			url = _T("http://education.ti.com/downloads/files/73/TI73_OS.73u");
+			url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/73/TI73_OS.73u");
 			break;
 		case TI_83P:
 		case TI_83PSE:
-			url = _T("http://education.ti.com/downloads/files/83plus/TI83Plus_OS.8Xu");
+			url = _T("http://education.ti.com/en/asia/~/media/Files/Download%20Center/Software/83plus/TI83Plus_OS.8Xu");
 			break;
 		case TI_84P:
 		case TI_84PSE:
@@ -843,8 +844,9 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					PNMLINK pNMLink = (PNMLINK) lParam;
 					LITEM item = pNMLink->item;
 #ifdef _UNICODE
-					if (_tcscmp(item.szID, _T("RunHelp")))
+					if (_tcscmp(item.szID, _T("RunHelp"))) {
 						DialogBox(NULL, MAKEINTRESOURCE(DLG_RUNHELP), hwnd, (DLGPROC) HelpProc);
+					}
 #else
 					TCHAR buffer[1024];
 					memset(buffer, 0, ARRAYSIZE(buffer));
@@ -923,9 +925,8 @@ INT_PTR CALLBACK SetupMakeROMProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 					fseek(file, 74, SEEK_SET);
 					int page;
 					BYTE (*flash)[PAGE_SIZE] = (BYTE(*)[PAGE_SIZE]) lpCalc->mem_c.flash;
-					if (ch == '1') {
-						page = lpCalc->mem_c.flash_pages - 1;
-					} else {
+					page = lpCalc->mem_c.flash_pages - 1;
+					if (ch == '2' && model >= TI_83PSE) {
 						page = lpCalc->mem_c.flash_pages - 0x11;
 					}
 					for (int i = 0; i < PAGE_SIZE; i++) {

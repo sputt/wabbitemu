@@ -425,7 +425,9 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 	if (portable_mode) {
 		FILE *file;
 		_tfopen_s(&file, portSettingsPath, _T("w"));
-		fclose(file);
+		if (file) {
+			fclose(file);
+		}
 	}
 	
 	HKEY hkeyWabbit = NULL;

@@ -308,7 +308,6 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 	if (lcd->active == FALSE) {
 		BYTE lcd_data[128*64];
 		memset(lcd_data, 0, sizeof(lcd_data));
-		//for (i = 0; i < 128*64; i++) lcd_data[i]=0x00; //whitest pixel		
 
 		if (StretchDIBits(
 			hdc,
