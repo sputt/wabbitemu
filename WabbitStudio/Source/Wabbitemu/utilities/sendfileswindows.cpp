@@ -208,8 +208,7 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 	BOOL exec_vio_backup = break_on_exe_violation;
 	break_on_exe_violation = false;
 	LINK_ERR result;
-	if (var != NULL)
-	{
+	if (var != NULL) {
 		switch(var->type)
 		{
 		case GROUP_TYPE:
@@ -397,8 +396,10 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 	case WM_GETMINMAXINFO:
 		{
 			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-			if (!lpCalc)
+			if (!lpCalc) {
 				return 0;
+			}
+
 			MINMAXINFO *info = (MINMAXINFO *) lParam;
 			RECT rc;
 			GetWindowRect(lpCalc->hwndFrame, &rc);
