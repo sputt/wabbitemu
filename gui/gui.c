@@ -52,6 +52,12 @@
 
 #include "CWabbitemu.h"
 
+#define GIFGRAD_PEAK 15
+#define GIFGRAD_TROUGH 10
+#define KEY_TIMER 1
+#define MIN_KEY_DELAY 400
+#define MENU_FILE 0
+
 CWabbitemuModule _Module;
 
 #ifdef _M_IX86
@@ -59,7 +65,6 @@ CWabbitemuModule _Module;
 #else
 #pragma comment(linker,"/manifestdependency:\"type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0' processorArchitecture='amd64' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #endif
-#define MENU_FILE 0
 
 TCHAR ExeDir[512];
 
@@ -485,6 +490,7 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 	g_hInst = _AtlBaseModule.GetModuleInstance();
 	RegisterWindowClasses();
 	InitCommonControls();
+	OleInitialize(NULL);
 
 
 	//DWORD dwReg;
@@ -691,6 +697,8 @@ HRESULT CWabbitemuModule::PostMessageLoop()
 
 	// Shutdown GDI+
 	GdiplusShutdown(m_gdiplusToken);
+
+	OleUninitialize();
 	return __super::PostMessageLoop();
 }
 
@@ -721,9 +729,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		gui_frame_update(lpCalc);
 		break;
 	case WM_PAINT: {
-#define GIFGRAD_PEAK 15
-#define GIFGRAD_TROUGH 10
-
 		static int GIFGRADWIDTH = 1;
 		static int GIFADD = 1;
 
@@ -770,16 +775,34 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		}
 
 		PAINTSTRUCT ps;
-			HDC hdc;
-			hdc = BeginPaint(hwnd, &ps);
-			if (lpCalc->SkinEnabled) {
-				BitBlt(hdc, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcButtons, 0, 0, SRCCOPY);
-				BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
-			} else {
-				RECT rc;
-				GetClientRect(lpCalc->hwndFrame, &rc);
-				FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
-			}
+		RECT rc;
+		HDC hdc = BeginPaint(hwnd, &ps);
+
+		if (lpCalc->SkinEnabled) {
+			//GetWindowRect(hwnd, &rc);
+			//int screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+			//int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+			//int windowWidth = rc.right - rc.left;
+			//int windowHeight = rc.bottom - rc.top;
+
+			//// were too big to fit on the screen
+			//if (windowHeight > screenHeight || windowWidth > screenWidth) {
+			//	// need to find a ratio to reduce the window size
+			//	float scale = min((float) screenHeight / windowHeight, (float) screenWidth / windowWidth);
+			//	windowHeight *= scale;
+			//	windowWidth *= scale;
+			//}
+
+			//SetStretchBltMode(hdc, HALFTONE);
+			//StretchBlt(hdc, 0, 0, windowWidth, windowHeight,
+			//	lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, SRCCOPY);
+			//BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
+			BitBlt(hdc, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcButtons, 0, 0, SRCCOPY);
+			BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
+		} else {
+			GetClientRect(lpCalc->hwndFrame, &rc);
+			FillRect(hdc, &rc, GetStockBrush(GRAY_BRUSH));
+		}
 		ReleaseDC(hwnd, hdc);
 		EndPaint(hwnd, &ps);
 
@@ -789,7 +812,9 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		switch (LOWORD(wParam)) {
 		case IDM_FILE_NEW: {
 			LPCALC lpCalcNew = calc_slot_new();
-			if (rom_load(lpCalcNew, lpCalc->rom_path) || rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey(_T("rom_path")))) {
+			if (rom_load(lpCalcNew, lpCalc->rom_path) || 
+				rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey(_T("rom_path"))))
+			{
 				lpCalcNew->SkinEnabled = lpCalc->SkinEnabled;
 				lpCalcNew->bCutout = lpCalc->bCutout;
 				lpCalcNew->scale = lpCalc->scale;
@@ -1207,12 +1232,10 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			keypad_t *kp = lpCalc->cpu.pio.keypad;
 
 			ReleaseCapture();
-#define KEY_TIMER 1
 			KillTimer(hwnd, KEY_TIMER);
 
 			for (group = 0; group < 7; group++) {
 				for (bit = 0; bit < 8; bit++) {
-#define MIN_KEY_DELAY 400
 					if (kp->last_pressed[group][bit] - lpCalc->cpu.timer_c->tstates >= MIN_KEY_DELAY || !lpCalc->running) {
 						kp->keys[group][bit] &= (~KEY_MOUSEPRESS);
 					} else {

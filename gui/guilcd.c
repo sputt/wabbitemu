@@ -449,8 +449,8 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_CREATE:
 		{
 			HDC hdc = GetDC(hwnd);
-			calc_t *lpCalc = (calc_t *) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) ((LPCREATESTRUCT) lParam)->lpCreateParams);
+			LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 
 			SetBkMode(hdc, TRANSPARENT);
 
@@ -495,7 +495,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_PAINT:
 		{
 			HDC hdcDest;
-			calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+			LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 			LCD_t *lcd = lpCalc->cpu.pio.lcd;
 			PAINTSTRUCT ps;
 			hdcDest = BeginPaint(hwnd, &ps);
@@ -523,16 +523,31 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		case WM_CONTEXTMENU:
 			{
 				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
-				const TCHAR names[][32] = {_T("File"), _T("View"), _T("Calculator"), _T("Debug"), _T("Help")};
 				HMENU hmenuMain = GetMenu(lpCalc->hwndFrame);
-				if (hmenuMain == NULL)
+				if (hmenuMain == NULL) {
 					return 0;
-				HMENU hmenuContext = CreatePopupMenu();
-				for (int i = 0; i < ARRAYSIZE(names); i++)
-					InsertMenu(hmenuContext, -1, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), (LPCTSTR) names[i]);
+				}
 
-				if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenuContext))
+				TCHAR menuStringBuffer[256];
+				int i = 0;
+				BOOL success = TRUE;
+				HMENU hmenuContext = CreatePopupMenu();
+				while (success) {
+					MENUITEMINFO menuItemInfo = {0};
+					menuItemInfo.cbSize = sizeof(MENUITEMINFO);
+					menuItemInfo.fMask = MIIM_STRING;
+					menuItemInfo.cch = 255;
+					menuItemInfo.dwTypeData = menuStringBuffer;
+					success = GetMenuItemInfo(hmenuMain, i, TRUE, &menuItemInfo);
+					if (success) {
+						InsertMenu(hmenuContext, -1, MF_BYPOSITION | MF_POPUP, (UINT_PTR) GetSubMenu(hmenuMain, i), menuItemInfo.dwTypeData);
+						i++;
+					}
+				}
+
+				if (!OnContextMenu(hwnd, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam), hmenuContext)) {
 					DefWindowProc(hwnd, Message, wParam, lParam);
+				}
 
 				//DestroyMenu(hmenuContext);
 				return 0;
@@ -689,6 +704,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 					if (hres != S_OK && hres != DRAGDROP_S_CANCEL && hres != DRAGDROP_S_DROP) {
 						MessageBox(hwnd, _T("Error in DoDragDrop"), _T("Error"), MB_OK);
 					}
+
 					pDragSourceHelper->Release();
 					pDataObject->Release();
 					pDropSource->Release();

@@ -33,16 +33,6 @@ LRESULT HandleSizeMessage(HWND hwnd, LPCALC lpCalc) {
 	if (!lpCalc->SkinEnabled) {
 		xc = ((float) rc.right) / 256.0f;
 		yc = ((float) rc.bottom) / 128.0f;
-	} else {
-		int screenWidth = 1200;//GetSystemMetrics(SM_CXVIRTUALSCREEN);
-		int screenHeight = 600;//GetSystemMetrics(SM_CYVIRTUALSCREEN);
-
-		// were too big to fit on the screen
-		if (rc.bottom > screenHeight || rc.right > screenWidth) {
-			float scale = min((float) rc.bottom / screenHeight, (float) rc.right / screenWidth);
-			rc.bottom *= .9;//scale;
-			rc.right *= .9;//scale;
-		}
 	}
 
 	int width = lpCalc->rectLCD.right - lpCalc->rectLCD.left;
