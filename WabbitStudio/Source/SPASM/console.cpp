@@ -37,7 +37,7 @@ BOOL set_console_attributes (unsigned short attr) {
 #ifdef WIN32
 	return SetConsoleTextAttribute (GetStdHandle (STD_OUTPUT_HANDLE), (WORD)attr);
 #elif !defined(MACVER)
-	printf ("\x1b[1;%d;40m", attr);
+	printf ("\x1b[1;%dm", attr);
 	return true;
 #endif
 }

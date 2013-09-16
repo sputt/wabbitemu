@@ -1177,14 +1177,15 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 							StringCbCat(copy_line, sizeof(copy_line), _T("\t"));
 						}
 						//print the command
-						TCHAR *test_string = mysprintf(dps->lpCalc, zinf_line, REGULAR, da_opcode[zinf_line->index].format,
-														zinf_line->a1, zinf_line->a2, zinf_line->a3, zinf_line->a4);
-						StringCbCat(copy_line, sizeof(copy_line), test_string);
+						TCHAR commandString[255];
+						mysprintf(dps->lpCalc, commandString, sizeof(commandString), zinf_line, REGULAR,
+							da_opcode[zinf_line->index].format, zinf_line->a1, zinf_line->a2, zinf_line->a3, zinf_line->a4);
+						StringCbCat(copy_line, sizeof(copy_line), commandString);
 						StringCbCat(copy_line, sizeof(copy_line), _T("\t\t"));
-						if (strlen(test_string) <= 11) {
+						if (strlen(commandString) <= 11) {
 							StringCbCat(copy_line, sizeof(copy_line), _T("\t"));
 						}
-						if (strlen(test_string) <= 7) {
+						if (strlen(commandString) <= 7) {
 							StringCbCat(copy_line, sizeof(copy_line), _T("\t"));
 						}
 						StringCbCat(copy_line, sizeof(copy_line), _T(";"));

@@ -193,10 +193,14 @@ void MyDrawText(LPCALC lpCalc, HDC hdc, RECT *rc, Z80_info_t* zinf, ViewType typ
 	va_end(argp);
 }
 
-TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, ViewType type, const TCHAR *fmt, ...) {
+void mysprintf(LPCALC lpCalc, TCHAR *output, int outputLength, Z80_info_t* zinf, ViewType type, const TCHAR *fmt, ...) {
 	TCHAR *p;
-	static TCHAR end_buf[1024] = _T("\0");
 	va_list argp;
+
+	if (output == NULL) {
+		return;
+	}
+	*output = '\0';
 	
 	mspf_size = 0;
 	mspf_break = 999;
@@ -209,12 +213,12 @@ TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, ViewType type, const TCHAR *fm
 		if(*p != '%') {
 			TCHAR szChar[2] = _T("x");
 			szChar[0] = *p;
-			StringCbCat(end_buf, sizeof(end_buf), szChar);
+			StringCbCat(output, outputLength, szChar);
 		} else {
 			switch(*++p) {
 				case 'c': {//condition
 					TCHAR *s = va_arg(argp, TCHAR *);
-					StringCbCat(end_buf, sizeof(end_buf), s);
+					StringCbCat(output, outputLength, s);
 					break;
 				}
 				case 'h': {//offset
@@ -225,7 +229,7 @@ TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, ViewType type, const TCHAR *fm
 #else
 					sprintf(szOffset, "%+d",val);
 #endif
-					StringCbCat(end_buf, sizeof(end_buf), szOffset);
+					StringCbCat(output, outputLength, szOffset);
 					break;
 				}
 				case 'd': //number
@@ -237,19 +241,19 @@ TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, ViewType type, const TCHAR *fm
 #else
 					sprintf(szAddr, "%d",val);
 #endif
-					StringCbCat(end_buf, sizeof(end_buf), szAddr);		
+					StringCbCat(output, outputLength, szAddr);		
 					break;
 				}
 				case 'l':
 				{
 					TCHAR *s = va_arg(argp, TCHAR *);
-					StringCbCat(end_buf, sizeof(end_buf), s);
+					StringCbCat(output, outputLength, s);
 					break;
 				}		
 				case 's':
 				{
 					TCHAR *s = va_arg(argp, TCHAR *);
-					StringCbCat(end_buf, sizeof(end_buf), s);
+					StringCbCat(output, outputLength, s);
 					break;
 				}
 				case 'g':
@@ -260,11 +264,11 @@ TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, ViewType type, const TCHAR *fm
 					name = FindAddressLabel(lpCalc, waddr);
 					
 					if (name) {
-						StringCbCat(end_buf, sizeof(end_buf), name);
+						StringCbCat(output, outputLength, name);
 					} else {
 						TCHAR szAddr[16];
 						StringCbPrintf(szAddr, sizeof(szAddr), _T("$%04X"), waddr.addr);
-						StringCbCat(end_buf, sizeof(end_buf), szAddr);
+						StringCbCat(output, outputLength, szAddr);
 					}
 					break;
 				}
@@ -278,11 +282,11 @@ TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, ViewType type, const TCHAR *fm
 						name = FindAddressLabel(lpCalc, addr_to_waddr(lpCalc->cpu.mem_c, val));
 						
 						if (name) {
-							StringCbCat(end_buf, sizeof(end_buf), name);
+							StringCbCat(output, outputLength, name);
 						} else {
 							TCHAR szAddr[16];
 							StringCbPrintf(szAddr, sizeof(szAddr), _T("$%04X"), val);
-							StringCbCat(end_buf, sizeof(end_buf), szAddr);
+							StringCbCat(output, outputLength, szAddr);
 						}
 						break;
 					}
@@ -290,9 +294,9 @@ TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, ViewType type, const TCHAR *fm
 				{
 					TCHAR *szReg = va_arg(argp, TCHAR *);
 					if (!_tcscmp(szReg, _T("(hl)"))) {
-						StringCbCat(end_buf, sizeof(end_buf), _T("(hl)"));
+						StringCbCat(output, outputLength, _T("(hl)"));
 					} else
-					StringCbCat(end_buf, sizeof(end_buf), szReg);
+					StringCbCat(output, outputLength, szReg);
 					break;
 				}
 				case 'x':
@@ -304,12 +308,11 @@ TCHAR* mysprintf(LPCALC lpCalc, Z80_info_t* zinf, ViewType type, const TCHAR *fm
 #else
 					sprintf(szAddr, "$%02X", val);
 #endif
-					StringCbCat(end_buf, sizeof(end_buf), szAddr);
+					StringCbCat(output, outputLength, szAddr);
 					break;	
 				}
 			}
 		}
 	}
 	va_end(argp);
-	return end_buf;
 }

@@ -106,12 +106,10 @@ HWND CreateValueField(
 static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
 	static TEXTMETRIC tm;
 
-	static value_field_settings *vfs = NULL;
-
 	switch (Message) {
 	case WM_CREATE:
 	{
-		vfs = (value_field_settings *) ((CREATESTRUCT *)lParam)->lpCreateParams;
+		value_field_settings *vfs = (value_field_settings *) ((CREATESTRUCT *)lParam)->lpCreateParams;
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) vfs);
 
 		HDC hdc = GetDC(hwnd);
@@ -136,13 +134,13 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 		return 0;
 	}
 	case WM_DESTROY: {
-		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		free(vfs);
 		return 0;
 	}
 	case WM_MOUSEMOVE:
 	{
-		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		POINT p = {GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)};
 
 		if (PtInRect(&vfs->hot, p)) {
@@ -164,7 +162,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	}
 	case WM_MOUSELEAVE:
 	{
-		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		if (vfs->hot_lit) {
 			vfs->hot_lit = FALSE;
 
@@ -186,7 +184,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 		HDC hdc;
 
 		hdc = BeginPaint(hwnd, &ps);
-		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 		SelectObject(hdc, vfs->lpDebugInfo->hfontLucida);
 		SetBkMode(hdc, TRANSPARENT);
@@ -231,7 +229,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	}
 	case WM_SIZE:
 	{
-		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		DWORD dwWidth = tm.tmAveCharWidth * 10;
 		if (_tcslen(vfs->szName) == 0)
 			dwWidth = tm.tmAveCharWidth * 3;
@@ -246,7 +244,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	case WM_LBUTTONDOWN:
 	{
 		SendMessage(GetParent(hwnd), WM_USER, VF_DESELECT_CHILDREN, 0);
-		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 		vfs->selected = TRUE;
 		SetFocus(hwnd);
@@ -254,7 +252,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	}
 	case WM_LBUTTONDBLCLK:
 	{
-		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		// Create the edit window (modify the hot RECT slightly to make text line up perfectly (at 90 dpi)
 		vfs->hwndVal =
 		CreateWindow(_T("EDIT"), vfs->szValue,
@@ -295,7 +293,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	}
 	case WM_COMMAND:
 	{
-		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (HIWORD(wParam)) {
 			case EN_KILLFOCUS:
 				if (GetFocus() == hwnd) break;
@@ -326,7 +324,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 	}
 	case WM_USER:
 	{
-		vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+		value_field_settings *vfs = (value_field_settings *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 		switch (wParam) {
 		case DB_UPDATE:
 			switch (vfs->format) {
