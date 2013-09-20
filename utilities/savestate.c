@@ -756,7 +756,7 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 	mem->flash_pages= ReadInt(chunk);
 	mem->ram_size	= ReadInt(chunk);
 	mem->ram_pages	= ReadInt(chunk);
-	mem->step		= ReadInt(chunk);
+	mem->step		= (FLASH_COMMAND) ReadInt(chunk);
 	mem->cmd		= ReadChar(chunk);
 	mem->boot_mapped= ReadInt(chunk);
 	mem->flash_locked= ReadInt(chunk);

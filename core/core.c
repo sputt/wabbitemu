@@ -18,6 +18,13 @@
 #include "reverse_info_table.h"
 #endif
 
+#define FLASH_BYTE_PROGRAM 0xA0
+#define FLASH_BYTE_ERASE 0x80
+#define FLASH_BYTE_FASTMODE 0x20
+#define FLASH_BYTE_AUTOSELECT 0x90
+#define FLASH_BYTE_FASTMODE_EXIT 0x90
+#define FLASH_BYTE_FASTMODE_PROG 0xA0
+
 unsigned char mem_read(memc *mem, unsigned short addr) {
 	if ((mem->port27_remap_count > 0) && !mem->boot_mapped && (mc_bank(addr) == 3) && (addr >= (0x10000 - 64*mem->port27_remap_count)) && addr >= 0xFB64) {
 		return mem->ram[0*PAGE_SIZE + mc_base(addr)];
@@ -319,9 +326,7 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 			CPU_reset(cpu);
 		}
 	}
-	if (!bank->ram) {									//I DON'T THINK THIS IS CORRECT
-		endflash(cpu);									//However it shouldn't be a problem
-	}													//assuming you know how to write to flash
+
 	cpu->bus = mem_read(cpu->mem_c, cpu->pc);
 	if (bank->ram) {
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_OP_ram_tstates);
@@ -333,214 +338,233 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 	return cpu->bus;
 }
 
+static void endflash(memc *mem_c) {
+	if (mem_c->step != FLASH_ERROR) {
+		mem_c->step = FLASH_READ;
+	}
+}
+
+static void endflash_break(CPU_t *cpu) {
+	if (break_on_invalid_flash) {
+		cpu->mem_c->mem_write_break_callback(cpu);
+	}
+	endflash(cpu->mem_c);
+}
+
+static unsigned char flash_autoselect(CPU_t *cpu, unsigned short addr) {
+	int offset = addr & 0x3FFF;
+	if (offset == 0) {
+		//1 indicates an AMD chip
+		//manufacturer id
+		return 1;
+	} else if (offset == 2) {
+		//B9 for new 512 K chips, 23 for old 512 K chips, C4 for 2 MB chips, and DA for 1 MB chips.
+		switch (cpu->pio.model) {
+		case TI_84P:
+			return 0xDA;
+		case TI_83PSE:
+		case TI_84PSE:
+			return 0xC4;
+		default:
+			if (cpu->cpu_version == 1) {
+				return 0x23;
+			} else {
+				return 0xB9;
+			}
+		}
+	} else if (offset == 4) {
+		return 0;
+	} else {
+		endflash_break(cpu);
+		return 0;
+	}
+}
+
+static unsigned char flash_read(CPU_t *cpu, unsigned short addr) {
+	memc *mem_c = cpu->mem_c;
+	
+	if (mem_c->flash_error) {
+		unsigned char error_value = ((~cpu->mem_c->flash_last_write & 0x80) | 0x20);
+		error_value |= cpu->mem_c->flash_toggles;
+		cpu->mem_c->flash_toggles ^= 0x40;
+		return error_value;
+	} else if (mem_c->step == FLASH_READ || mem_c->step == FLASH_FASTMODE) {
+		return mem_read(cpu->mem_c, addr);
+	} else if (mem_c->step == FLASH_AUTOSELECT) {
+		return flash_autoselect(cpu, addr);
+	} else {
+		// flash read during writing to flash is bad, consider it invalid
+		// I'm pretty sure this is the correct behavior, but haven't tested it
+		endflash_break(cpu);
+		return mem_read(cpu->mem_c, addr);
+	}
+}
+
 unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 	if (check_mem_read_break(cpu->mem_c, addr_to_waddr(cpu->mem_c, addr))) {
 		cpu->mem_c->mem_read_break_callback(cpu);
 	}
-	cpu->bus = mem_read(cpu->mem_c, addr);
 
 	if (cpu->mem_c->banks[mc_bank(addr)].ram) {
+		cpu->bus = mem_read(cpu->mem_c, addr);
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_NOP_ram_tstates);
 	} else {
-		if (cpu->mem_c->cmd == 0x90 && cpu->mem_c->step == 3) {
-			if ((addr & 0x3FFF) == 0) {
-				//1 indicates an AMD chip
-				//manufacturer id
-				cpu->bus = 1;
-			} else if ((addr & 0x3FFF) == 2) {
-			//B9 for new 512 K chips, 23 for old 512 K chips, C4 for 2 MB chips, and DA for 1 MB chips.
-				switch (cpu->pio.model) {
-					case TI_84P:
-						cpu->bus = 0xDA;
-						break;
-					case TI_83PSE:
-					case TI_84PSE:
-						cpu->bus = 0xC4;
-						break;
-					default:
-						if (cpu->cpu_version == 1) {
-							cpu->bus = 0x23;
-						} else {
-							cpu->bus = 0xB9;
-						}
-						break;
-				}
-			} else if ((addr & 0x3FFF) == 4) {
-				cpu->bus = 0;
-			}
-			cpu->mem_c->cmd = 0;
-			cpu->mem_c->step = 0;
-		} /*else if (cpu->mem_c->flash_last_write + cpu->mem_c->flash_write_delay > cpu->timer_c->tstates) {
-			cpu->bus = 0;
-		}*/
-
+		cpu->bus = flash_read(cpu, addr);
 		SEtc_add(cpu->timer_c, cpu->mem_c->read_NOP_flash_tstates);
 	}
 
 	return cpu->bus;
 }
 
-static void flashwrite(CPU_t *cpu, unsigned short addr, unsigned char data) {
+static void flash_write_byte(memc *mem_c, unsigned short addr, unsigned char data) {
 	int bank = mc_bank(addr);
-	/*if (cpu->mem_c->flash_last_write + cpu->mem_c->flash_write_delay > cpu->timer_c->tstates) {
-		return;
-	}*/
+	BYTE *write_location = mem_c->banks[bank].addr + mc_base(addr);
+	BYTE value = *write_location; 
+	(*write_location) &= data;  //AND LOGIC!!
+	mem_c->flash_last_write = data;
+	if ((*write_location) != data) {
+		mem_c->flash_error = TRUE;
+	}
+	mem_c->step = FLASH_READ;
+}
 
-	switch(cpu->mem_c->step) {
-		case 0:
-			if (data == 0xF0) {
-				endflash(cpu);
-			} else if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0xAA) {
-					cpu->mem_c->step++;
-				} else {
+static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
+	memc *mem_c = cpu->mem_c;
+	int bank = mc_bank(addr);
+
+	// F0 means we were exiting flash write sequence
+	if (data == 0xF0) {
+		endflash(mem_c);
+		return;
+	}
+
+	mem_c->flash_error = FALSE;
+	switch (mem_c->step) {
+		case FLASH_READ:
+			if (((addr & 0x0FFF) == 0x0AAA) && (data == 0xAA)) {
+				mem_c->step = FLASH_AA;
+			} else {
+				endflash_break(cpu);
+			}
+			break;
+		case FLASH_AA:
+			if (((addr & 0x0FFF) == 0x0555) && (data == 0x55)) {
+				mem_c->step = FLASH_55;
+			} else {
+				endflash_break(cpu);
+			}
+			break;
+		case FLASH_55:
+			if ((addr & 0x0FFF) == 0x0AAA) {
+				switch (data) {
+				case FLASH_BYTE_PROGRAM:
+					mem_c->step = FLASH_PROGRAM;
+					break;
+				case FLASH_BYTE_ERASE:
+					mem_c->step = FLASH_ERASE;
+					break;
+				case FLASH_BYTE_FASTMODE:
+					if (mem_c->flash_version != 1) {
+						mem_c->step = FLASH_FASTMODE;
+					} else {
+						endflash_break(cpu);
+					}
+					break;
+				case FLASH_BYTE_AUTOSELECT:
+					mem_c->step = FLASH_AUTOSELECT;
+					break;
+				default:
 					endflash_break(cpu);
+					break;
 				}
 			} else {
 				endflash_break(cpu);
 			}
 			break;
-		case 1:
-			if ((addr & 0x0FFF) == 0x0555) {
-				if (data == 0x55) {
-					cpu->mem_c->step++;
-				} else {
-					endflash_break(cpu);
-				}
-			} else {
-				endflash(cpu);
-			}
-			break;
-		case 2:
-			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0xA0) {
-					cpu->mem_c->cmd = 0xA0;		//Program
-					cpu->mem_c->step++;
-				} else if (data == 0x80) {
-					cpu->mem_c->cmd = 0x80;		//Erase
-					cpu->mem_c->step++;
-				} else if (data == 0x20 && cpu->mem_c->flash_version != 1) {
-					cpu->mem_c->cmd = 0x20;		//Fast mode
-					cpu->mem_c->step = 6;
-				} else if (data == 0x90) {
-					cpu->mem_c->cmd = 0x90;		//Auto select
-					cpu->mem_c->step++;
-				} else {
-					endflash_break(cpu);
-				}
-			} else {
-				endflash_break(cpu);
-			}
-			break;
-		//PROGRAM
-		case 3: {
-			int value = 0;
-			if (cpu->mem_c->cmd == 0xA0) {
-				value = *(cpu->mem_c->banks[bank].addr + mc_base(addr));
-				(*(cpu->mem_c->banks[bank].addr + mc_base(addr))) &= data;  //AND LOGIC!!
-				cpu->mem_c->flash_last_write = cpu->timer_c->tstates;
-				if ((~((~value) | (~data))) != value) {
-					value = ((~value) & 0x80) | 0x20;
-				}
-				endflash(cpu);
-			}
-			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0xAA) {
-					cpu->mem_c->step++;
-				}
-			}
-			if (data == 0xF0) { 
-				if (value) {
-					cpu->bus = value;
-				}
-				endflash(cpu);
-			}
+		case FLASH_PROGRAM: {
+			flash_write_byte(mem_c, addr, data);
+			endflash(mem_c);
 			break;
 		}
-		case 4:
-			if ((addr & 0x0FFF) == 0x0555) {
-				if (data == 0x55) {
-					cpu->mem_c->step++;
-				}
-			}
-			if (data == 0xF0) {
-				endflash(cpu);
+		case FLASH_ERASE:
+			if (((addr & 0x0FFF) == 0x0AAA) && (data == 0xAA)) {
+				mem_c->step = FLASH_ERASE_AA;
+			} else {
+				endflash_break(cpu);
 			}
 			break;
-		//ERASE
-		case 5:
-			if ((addr & 0x0FFF) == 0x0AAA) {
-				if (data == 0x10) {			//Erase entire chip...Im not sure if 
-					int i;					//boot page is included, so I'll leave it off.
-					//DrDnar 7/8/11: boot sector is included
-					for(i = 0; i < cpu->mem_c->flash_size; i++) {
-						cpu->mem_c->flash[i] = 0xFF;
-					}
+		case FLASH_ERASE_AA:
+			if (((addr & 0x0FFF) == 0x0555) && (data == 0x55)) {
+				mem_c->step = FLASH_ERASE_55;
+			} else {
+				endflash_break(cpu);
+			}
+			break;
+		case FLASH_ERASE_55:
+			if (((addr & 0x0FFF) == 0x0AAA) && (data == 0x10)) {
+				// Erase entire chip...Im not sure if 
+				// boot page is included, so I'll leave it off.
+				// DrDnar 7/8/11: boot sector is included
+				for(int i = 0; i < cpu->mem_c->flash_size; i++) {
+					cpu->mem_c->flash[i] = 0xFF;
 				} 
-			}
-			if (data == 0xF0) {
-				endflash(cpu);
-			}
-			if (data == 0x30) {		//erase sectors
+			} else if (data == 0x30) {
+				// erase sectors
 				int i;
-				int spage = (cpu->mem_c->banks[bank].page << 1) + ((addr >> 13) & 0x01);
-				int pages = cpu->mem_c->flash_pages;
+				int spage = (mem_c->banks[bank].page << 1) + ((addr >> 13) & 0x01);
+				int pages = mem_c->flash_pages;
 				int totalPages = pages * 2;
 
 				if (spage < totalPages - 8) {
 					int startaddr = (spage & 0x00F8) * 0x2000;
 					int endaddr   = startaddr + 0x10000;
 					for (i = startaddr; i < endaddr; i++) {
-						cpu->mem_c->flash[i] = 0xFF;
+						mem_c->flash[i] = 0xFF;
 					}
 				} else if (spage < totalPages - 4) {
 					for (i = (pages - 4) * PAGE_SIZE; i < (pages - 2) * PAGE_SIZE; i++ ) {
-						cpu->mem_c->flash[i] = 0xFF;
+						mem_c->flash[i] = 0xFF;
 					}
 				} else if (spage < totalPages - 3) {
 					for (i = (pages - 2) * PAGE_SIZE; i < (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2; i++) {
-						cpu->mem_c->flash[i] = 0xFF;
+						mem_c->flash[i] = 0xFF;
 
 					}
 				} else if (spage < totalPages - 2) {
 					for (i = (pages - 2) * PAGE_SIZE + PAGE_SIZE / 2; i < (pages - 1) * PAGE_SIZE; i++) {
-						cpu->mem_c->flash[i] = 0xFF;
+						mem_c->flash[i] = 0xFF;
 					}
 				} else if (spage < totalPages) {
-// I comment this off because this is the boot page
-// it suppose to be write protected...
-//BuckeyeDude 6/27/11: new info has been discovered boot code is writeable under certain conditions
+					// I comment this off because this is the boot page
+					// it suppose to be write protected...
+					// BuckeyeDude 6/27/11: new info has been discovered boot code
+					// is writeable under certain conditions
 					for (i = (pages - 1) * PAGE_SIZE; i < pages * PAGE_SIZE; i++) {
-						cpu->mem_c->flash[i] = 0xFF;
+						mem_c->flash[i] = 0xFF;
 					}
 				}
-			}
-			endflash(cpu);
-			break;
-		//FASTMODE
-		case 6:
-			if (data == 0x90) {
-				cpu->mem_c->step = 7;	//check if exit fast mode
-			} else if (data == 0xA0) {
-				cpu->mem_c->step = 8;	//write byte in fast mode
-			} else if (data == 0xF0) {
-				endflash(cpu);
-			}
-			break;
-		case 7:
-			if (data == 0xF0) {
-				endflash(cpu);
 			} else {
-				cpu->mem_c->step = 6;
+				endflash_break(cpu);
+			}
+			endflash(mem_c);
+			break;
+		case FLASH_FASTMODE:
+			if (data == FLASH_BYTE_FASTMODE_EXIT) {
+				mem_c->step = FLASH_FASTMODE_EXIT;
+			} else if (data == FLASH_BYTE_FASTMODE_PROG) {
+				mem_c->step = FLASH_FASTMODE_PROG;
+			} else {
+				endflash_break(cpu);
 			}
 			break;
-		case 8: {
-			int value = *(cpu->mem_c->banks[bank].addr + mc_base(addr));
-			(*(cpu->mem_c->banks[bank].addr + mc_base(addr))) &= data;  //AND LOGIC!!
-			if ((~((~value) | (~data))) != value) {
-				cpu->bus = ((~value) & 0x80) | 0x20;
-			}
-			cpu->mem_c->step = 6;
+		case FLASH_FASTMODE_EXIT:
+			// we already handle the case data == 0xF0 above
+			// so just reset back to fastmode if you try do do
+			// anything but exit
+			mem_c->step = FLASH_FASTMODE;
+			break;
+		case FLASH_FASTMODE_PROG: {
+			flash_write_byte(mem_c, addr, data);
 			break;
 		}
 		default:
@@ -562,10 +586,10 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
 		int page = bank->page;
-		if (!cpu->mem_c->flash_locked && cpu->pio.model >= TI_73 && //1) {
+		if (!cpu->mem_c->flash_locked && cpu->pio.model >= TI_73 &&
 			(((page != 0x3F && page != 0x2F) || (cpu->pio.se_aux->model_bits & 0x3)) &&
 			((page != 0x7F && page != 0x6F) || (cpu->pio.se_aux->model_bits & 0x2) || !(cpu->pio.se_aux->model_bits & 0x1)))) {
-			flashwrite(cpu, addr, data);
+			flash_write(cpu, addr, data);
 		} else if (break_on_invalid_flash && cpu->mem_c->mem_write_break_callback) {
 			cpu->mem_c->mem_write_break_callback(cpu);
 		}

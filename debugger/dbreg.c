@@ -154,7 +154,7 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 	{
 		lpDebugInfo = (LPDEBUGWINDOWINFO) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 		lpCalc = lpDebugInfo->lpCalc;
-		struct {TCHAR *name; void *data; size_t size;} reg[] =
+		struct {TCHAR *name; void *data; size_t size;} reg[] = 
 		{
 				{_T("af"), &lpCalc->cpu.af, 2}, {_T("af'"), &lpCalc->cpu.afp, 2},
 				{_T("bc"), &lpCalc->cpu.bc, 2}, {_T("bc'"), &lpCalc->cpu.bcp, 2},
@@ -167,7 +167,7 @@ LRESULT CALLBACK DBRegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 		// Create all of the value fields
 		int i;
 		for (i = 0; i < NumElm(reg); i++) {
-			HWND hwndValue = CreateValueField(hwnd, lpDebugInfo, reg[i].name, lpDebugInfo->kRegAddr, &reg[i].data, reg[i].size, 4, HEX4);
+			HWND hwndValue = CreateValueField(hwnd, lpDebugInfo, reg[i].name, lpDebugInfo->kRegAddr, reg[i].data, reg[i].size, 4, HEX4);
 			SetWindowPos(hwndValue, NULL, (i % 2) * lpDebugInfo->kRegAddr*3, lpDebugInfo->kRegRow * (i / 2), 0, 0, SWP_NOZORDER | SWP_NOSIZE);
 			SendMessage(hwndValue, WM_SIZE, 0, 0);
 		}
