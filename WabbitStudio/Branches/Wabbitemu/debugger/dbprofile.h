@@ -1,6 +1,0 @@
-#ifndef DBPROFILE_H
-#define DBPROFILE_H
-
-LRESULT CALLBACK ProfileDialogProc(HWND, UINT, WPARAM, LPARAM);
-
-#endif		//DBPROFILE_H

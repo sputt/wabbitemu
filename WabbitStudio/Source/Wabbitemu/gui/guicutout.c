@@ -305,8 +305,9 @@ int EnableCutout(LPCALC lpCalc) {
 	HDC hScreen = GetDC(NULL);
 	int done = UpdateLayeredWindow(lpCalc->hwndFrame, hScreen, NULL, &size, lpCalc->hdcButtons, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
 	DWORD error;
-	if (!done)
+	if (!done) {
 		error = GetLastError();
+	}
 
 	ReleaseDC(NULL, hScreen);
 	UpdateWindow(lpCalc->hwndLCD);
