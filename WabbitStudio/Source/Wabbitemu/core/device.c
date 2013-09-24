@@ -18,7 +18,7 @@ void ClearDevices(CPU_t* cpu) {
 		interrupt_t *intVal = &cpu->pio.interrupt[i];
 		intVal->interrupt_val = -1;
 		intVal->skip_factor = 1;
-		intVal->skip_count = 0;
+		intVal->skip_count = intVal->skip_factor;
 	}
 	cpu->pio.num_interrupt = 0;
 }

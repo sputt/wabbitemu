@@ -152,7 +152,7 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 	
 	DROPDESCRIPTION *pdd = (DROPDESCRIPTION *) GlobalLock(stgmed[0].hGlobal);
 
-	calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
 	if (m_fAllowDrop == TRUE) {
 		pdd->type = DROPIMAGE_COPY;
 		wcscpy_s(pdd->szMessage, L"Transfer to %1");
@@ -231,7 +231,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 						//check if were a file that doesn't go in ram or archive
 						if (tifile && (tifile->type == ROM_TYPE || tifile->type == SAV_TYPE || tifile->type == LABEL_TYPE || tifile->type == BREAKPOINT_TYPE))
 							is_calc_file = FALSE;
-						calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+						LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
 						if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
 							valid = FALSE;
 						FreeTiFile(tifile);
@@ -270,7 +270,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 											is_archive_only = FALSE;
 										if (tifile->rom || tifile->save)
 											is_calc_file = FALSE;
-										calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+										LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
 										if (tifile && tifile->backup != NULL && (lpCalc->model != TI_82 && lpCalc->model != TI_73 && lpCalc->model != TI_85))
 											valid = FALSE;
 										FreeTiFile(tifile);
@@ -293,7 +293,7 @@ BOOL CDropTarget::CheckValidData(IDataObject *pDataObject) {
 }
 
 HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
-	calc_t *lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
+	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
 
 	if (m_pDropTargetHelper != NULL) {
 		POINT p = {pt.x, pt.y};

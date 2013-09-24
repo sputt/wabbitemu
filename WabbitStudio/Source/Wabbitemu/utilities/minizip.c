@@ -31,6 +31,7 @@ Changes:
 #ifdef WIN32
 #define USEWIN32IOAPI
 #include "iowin32.h"
+#include <tchar.h>
 #endif
 
 
@@ -119,7 +120,7 @@ int check_exist_file(const TCHAR *filename)
 {
     FILE* ftestexist;
     int ret = 1;
-    ftestexist = fopen(filename,"rb");
+	_tfopen_s(&ftestexist, filename, _T("rb"));
     if (ftestexist==NULL)
         ret = 0;
     else
@@ -129,17 +130,18 @@ int check_exist_file(const TCHAR *filename)
 
 /* calculate the CRC32 of a file,
    because to encrypt a file, we need known the CRC32 of the file before */
-int getFileCrc(const char* filenameinzip,void*buf,unsigned long size_buf,unsigned long* result_crc)
+int getFileCrc(const TCHAR* filenameinzip,void*buf,unsigned long size_buf,unsigned long* result_crc)
 {
-   unsigned long calculate_crc=0;
-   int err=ZIP_OK;
-   FILE * fin = fopen(filenameinzip,"rb");
-   unsigned long size_read = 0;
-   unsigned long total_read = 0;
-   if (fin==NULL)
-   {
-       err = ZIP_ERRNO;
-   }
+	unsigned long calculate_crc=0;
+	int err=ZIP_OK;
+	unsigned long size_read = 0;
+	unsigned long total_read = 0;
+	FILE * fin;
+	_tfopen_s(&fin, filenameinzip, _T("rb"));
+	if (fin==NULL)
+	{
+		err = ZIP_ERRNO;
+	}
 
     if (err == ZIP_OK)
         do

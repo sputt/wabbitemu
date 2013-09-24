@@ -11,6 +11,9 @@
 #define IDC_SMALLCLOSE		45
 #define IDC_SMALLMINIMIZE	46
 
+#define DWMAPI_DLL _T("dwmapi.dll")
+#define DWM_SET_WINDOW_ATTRIB "DwmSetWindowAttribute"
+
 extern HINSTANCE g_hInst;
 
 LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
@@ -128,7 +131,7 @@ LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 void PositionLittleButtons(HWND hwnd)
 {
-	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	HDWP hdwp = BeginDeferWindowPos(3);
 	RECT wr;
 	GetWindowRect(hwnd, &wr);
@@ -173,7 +176,7 @@ void DestroyCutoutResources() {
  * Also create buttons to allow minimize and close while in skin mode
  */
 int EnableCutout(LPCALC lpCalc) {
-	if (lpCalc == NULL || lpCalc->SkinEnabled == FALSE) {
+	if (!lpCalc || !lpCalc->SkinEnabled) {
 		return 1;
 	}
 
@@ -191,27 +194,29 @@ int EnableCutout(LPCALC lpCalc) {
 
 	int scale = 2;
 
-	HMODULE hasDWM = LoadLibrary(_T("dwmapi.dll"));
 	if (!lpCalc->hwndLCD || GetParent(lpCalc->hwndLCD)) {
 		DestroyWindow(lpCalc->hwndLCD);
+		// don't initially show the window so we can disable DWM transitions
 		lpCalc->hwndLCD = CreateWindowEx(
-				0,
-				g_szLCDName,
-				_T("Wabbitemu"),
-				0,
-				0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
-				lpCalc->hwndFrame, NULL, g_hInst,  (LPVOID *) lpCalc);
+			0,
+			g_szLCDName,
+			_T("Wabbitemu"),
+			0,
+			0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
+			lpCalc->hwndFrame, NULL, g_hInst,  (LPVOID) lpCalc);
 	}
-	
-	if (hasDWM) {
-		SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, "DwmSetWindowAttribute");
+
+	// still support XP so have to load this manually
+	HMODULE hDwmModule = LoadLibrary(DWMAPI_DLL);
+	if (hDwmModule) {
+		SetAttrib = (DwmSetAttrib) GetProcAddress(hDwmModule, DWM_SET_WINDOW_ATTRIB);
 		if (SetAttrib != NULL) {
 			SetAttrib(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 		}
 	}
+	// show window with no transitions
 	ShowWindow(lpCalc->hwndLCD, TRUE);
-
-	SetWindowTheme(lpCalc->hwndLCD, (LPCWSTR) _T(" "), (LPCWSTR) _T(" "));
+	SetWindowTheme(lpCalc->hwndLCD, L" ", L" ");
 	
 	if (lpCalc->model == TI_84PSE) {
 		if (!bi) {
@@ -222,11 +227,6 @@ int EnableCutout(LPCALC lpCalc) {
 			bih.biPlanes = 1;
 			bih.biBitCount = 32;
 			bih.biCompression = BI_RGB;
-			bih.biSizeImage = 0;
-			bih.biXPelsPerMeter = 0;
-			bih.biYPelsPerMeter = 0;
-			bih.biClrUsed = 0;
-			bih.biClrImportant = 0;
 			bi = (LPBITMAPINFO) malloc(sizeof(BITMAPINFOHEADER) + sizeof(DWORD) * 3);
 			bi->bmiHeader = bih;
 			bi->bmiColors[0].rgbBlue = 0;
@@ -235,12 +235,12 @@ int EnableCutout(LPCALC lpCalc) {
 			bi->bmiColors[0].rgbReserved = 0;
 		}
 		// Gets the "bits" from the bitmap and copies them into a buffer
-		// which is pointed to by lpbitmap.
+		// which is pointed to by lpBitmap.
 		
 		DWORD dwBmpSize = ((width * bi->bmiHeader.biBitCount + 31) / 32) * 4 * height;
 		LPBYTE bitmap = (LPBYTE) malloc(dwBmpSize);
 
-		//why do we do this all again? for some reason there is an issue converting the dc to LPBYTE
+		//why do we do this all again? for some reason there is an issue converting the DC to LPBYTE
 		//so i rewrote the code here and now it works. 
 		HDC tempHDC = CreateCompatibleDC(lpCalc->hdcButtons);
 		HBITMAP tempBitmap = CreateCompatibleBitmap(lpCalc->hdcButtons, width, height);
@@ -270,8 +270,8 @@ int EnableCutout(LPCALC lpCalc) {
 		BYTE* pPixel = bitmap;
 		HRGN rgn = GetFaceplateRegion();
 		unsigned int x, y;
-		for(y = 0; y < height; y++) {
-			for(x = 0; x < width; x++) {
+		for (y = 0; y < height; y++) {
+			for (x = 0; x < width; x++) {
 				if (PtInRegion(rgn, x, height - y)) {
 					pPixel[3] = 0xFF;
 				}
@@ -314,15 +314,6 @@ int EnableCutout(LPCALC lpCalc) {
 	SendMessage(lpCalc->hwndFrame, WM_MOVE, 0, 0);
 
 	BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
-
-	// If there's a menu bar, include its height in the skin offset
-	HMENU hmenu = GetMenu(lpCalc->hwndFrame);
-	int cyMenu;
-	if (hmenu == NULL) {
-		cyMenu = 0;
-	} else {
-		cyMenu = GetSystemMetrics(SM_CYMENU);
-	}
 
 	// Create the two buttons that appear when the skin is cutout
 	if (!lpCalc->hwndSmallClose) {
@@ -371,19 +362,8 @@ int EnableCutout(LPCALC lpCalc) {
 	InvalidateRect(lpCalc->hwndSmallMinimize, NULL, FALSE);
 	UpdateWindow(lpCalc->hwndSmallMinimize);
 
-	if (!lpCalc->SkinEnabled) {
-		extern BOOL silent_mode;
-		RECT wr;
-		GetWindowRect(lpCalc->hwndFrame, &wr);
-		SetWindowPos(lpCalc->hwndFrame, NULL,
-				wr.left - GetSystemMetrics(SM_CXFIXEDFRAME) - 8,
-				wr.top - (cyMenu + GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFIXEDFRAME)),
-				0, 0,
-				SWP_NOZORDER|SWP_NOSIZE | (silent_mode ? SWP_HIDEWINDOW : 0));
-	}
-
-	if (hasDWM) {
-		FreeLibrary(hasDWM);
+	if (hDwmModule) {
+		FreeLibrary(hDwmModule);
 	}
 
 	InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);
@@ -395,22 +375,20 @@ int EnableCutout(LPCALC lpCalc) {
 /* Remove the cutout region from the window and delete
  * the small minimize and close buttons
  */
-int DisableCutout(HWND hwndFrame) {
-	HMODULE hasDWM = LoadLibrary(_T("dwmapi.dll"));
-	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwndFrame, GWLP_USERDATA);
-	if (hasDWM) {
+int DisableCutout(LPCALC lpCalc) {
+	// still support XP so have to load this manually
+	HMODULE hDwmModule = LoadLibrary(DWMAPI_DLL);
+	if (hDwmModule) {
 		BOOL disableTransition = TRUE;
-		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hasDWM, "DwmSetWindowAttribute");
+		DwmSetAttrib SetAttrib = (DwmSetAttrib) GetProcAddress(hDwmModule, DWM_SET_WINDOW_ATTRIB);
 		if (SetAttrib != NULL) {
 			SetAttrib(lpCalc->hwndLCD, DWMWA_TRANSITIONS_FORCEDISABLED, &disableTransition, sizeof(BOOL));
 		}
-		FreeLibrary(hasDWM);
+		FreeLibrary(hDwmModule);
 	}
 
-	int scale = lpCalc->scale;
-	if (lpCalc->SkinEnabled)
-		scale = 2;
-	if (lpCalc->hwndLCD)
+	int scale = lpCalc->SkinEnabled ? 2 : lpCalc->scale;
+	if (!lpCalc->hwndLCD || !GetParent(lpCalc->hwndLCD )) {
 		DestroyWindow(lpCalc->hwndLCD);
 		lpCalc->hwndLCD = CreateWindowEx(
 			0,
@@ -418,21 +396,12 @@ int DisableCutout(HWND hwndFrame) {
 			_T("LCD"),
 			WS_VISIBLE |  WS_CHILD,
 			0, 0, lpCalc->cpu.pio.lcd->width * scale, 64 * scale,
-			hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID) GetWindowLongPtr(hwndFrame, GWLP_USERDATA));
-
-	SetWindowLongPtr(hwndFrame, GWL_EXSTYLE, 0);
-	SetWindowLongPtr(hwndFrame, GWL_STYLE, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));
-
-	if (!lpCalc->SkinEnabled) {
-		// If there's a menu bar, include its height in the skin offset
-		HMENU hmenu = GetMenu(hwndFrame);
-		int cyMenu;
-		if (hmenu == NULL) {
-			cyMenu = 0;
-		} else {
-			cyMenu = GetSystemMetrics(SM_CYMENU);
-		}
+			lpCalc->hwndFrame, (HMENU) IDC_LCD, g_hInst,  (LPVOID) lpCalc);
 	}
+
+
+	SetWindowLongPtr(lpCalc->hwndFrame, GWL_EXSTYLE, 0);
+	SetWindowLongPtr(lpCalc->hwndFrame, GWL_STYLE, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */));
 
 	if (lpCalc->hwndSmallClose) {
 		DestroyWindow(lpCalc->hwndSmallClose);
@@ -444,6 +413,6 @@ int DisableCutout(HWND hwndFrame) {
 		lpCalc->hwndSmallMinimize = NULL;
 	}
 
-	InvalidateRect(hwndFrame, NULL, TRUE);
+	InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);
 	return 0;
 }

@@ -56,9 +56,9 @@
 #define MEM_WORD		2
 #define MEM_DWORD		4
 
-HWND gui_debug(calc_t *lpCalc);
-int gui_frame(calc_t *lpCalc);
-void gui_draw(calc_t *lpCalc);
+void gui_debug(LPCALC lpCalc);
+int gui_frame(LPCALC lpCalc);
+void gui_draw(LPCALC lpCalc);
 void GetFileCurrentVersionString(TCHAR *buf, size_t len);
 extern HACCEL haccelmain;
 

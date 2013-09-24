@@ -81,11 +81,15 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 	hPropSheet[4] = CreatePropertySheetPage(&psp);
 
 	DWORD flags;
+	// TODO: check common controls version not the OS
 	OSVERSIONINFO osvi;
 	ZeroMemory(&osvi, sizeof(OSVERSIONINFO));
 	osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFO);
 	GetVersionEx(&osvi);
 	if (osvi.dwMajorVersion >= 6) {
+		// MSDN says we should also set PSH_WIZARD. this however causes pszCaption
+		// to require a wide string. I think it's safer to leave the flag off, than
+		// to use a wide string and cast it
 		flags = PSH_AEROWIZARD;
 	} else {
 		flags = PSH_WIZARD97;
@@ -93,10 +97,10 @@ BOOL DoWizardSheet(HWND hwndOwner) {
 
 	psh.dwSize = sizeof(PROPSHEETHEADER);
 	psh.hInstance = g_hInst;
-	psh.dwFlags = flags | PSH_WIZARD | PSH_WATERMARK;// | PSH_HEADER;
+	psh.dwFlags = flags | PSH_WATERMARK;// | PSH_HEADER;
 	psh.hwndParent = hwndOwner;
 	psh.phpage = hPropSheet;
-	psh.pszCaption = (LPTSTR) _T("Wabbitemu Setup");
+	psh.pszCaption = _T("Wabbitemu Setup");
 	psh.pszbmHeader = NULL;//MAKEINTRESOURCE("A");
 	psh.pszbmWatermark = NULL;
 	psh.nPages = ARRAYSIZE(hPropSheet);

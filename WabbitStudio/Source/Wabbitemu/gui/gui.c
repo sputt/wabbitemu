@@ -82,7 +82,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 LRESULT CALLBACK ToolProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam);
 
 
-void gui_draw(calc_t *lpCalc) {
+void gui_draw(LPCALC lpCalc) {
 	if (lpCalc->hwndLCD != NULL) {
 		InvalidateRect(lpCalc->hwndLCD, NULL, FALSE);
 	}
@@ -131,10 +131,12 @@ VOID CALLBACK TimerProc(HWND hwnd, UINT Message, UINT_PTR idEvent, DWORD dwTimer
 			}
 		}
 		// Frame skip if we're too far ahead.
-	} else difference += TPF;
+	} else {
+		difference += TPF;
+	}
 }
 
-HWND gui_debug(LPCALC lpCalc) {
+void gui_debug(LPCALC lpCalc) {
 	TCHAR buf[256];
 	if (link_connected_hub(lpCalc->slot)) {
 		StringCbPrintf(buf, sizeof(buf), _T("Debugger (%d)"), lpCalc->slot + 1);
@@ -169,7 +171,7 @@ HWND gui_debug(LPCALC lpCalc) {
 		}
 		SendMessage(lpCalc->hwndDebug, WM_COMMAND, MAKEWPARAM(DB_DISASM_GOTO_ADDR, 0),(LPARAM) &waddr);
 		SendMessage(lpCalc->hwndDebug, WM_USER, DB_RESUME, 0);
-		return lpCalc->hwndDebug;
+		return;
 	}
 
 	lpCalc->hwndDebug = CreateWindowEx(
@@ -186,7 +188,6 @@ HWND gui_debug(LPCALC lpCalc) {
 	}
 
 	SendMessage(lpCalc->hwndDebug, WM_SIZE, 0, 0);
-	return lpCalc->hwndDebug;
 }
 
 int gui_frame(LPCALC lpCalc) {
@@ -218,7 +219,7 @@ int gui_frame(LPCALC lpCalc) {
 	}
 
 	lpCalc->hwndFrame = CreateWindowEx(
-		0, //WS_EX_APPWINDOW,
+		WS_EX_APPWINDOW | (lpCalc->bCutout ? WS_EX_LAYERED : 0),
 		g_szAppName,
 		_T("Z80"),
 		(WS_TILEDWINDOW |  (silent_mode ? 0 : WS_VISIBLE) | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX /* | WS_SIZEBOX */),
@@ -242,16 +243,9 @@ int gui_frame(LPCALC lpCalc) {
 		memcpy(keygrps, keysti83, sizeof(keyprog_t) * 256);
 	}
 
-	//this is now (intuitively) created in guicutout.c (Enable/Disable cutout function)
-	/*lpCalc->hwndLCD = CreateWindowEx(
-	0,
-	g_szLCDName,
-	"LCD",
-	WS_VISIBLE |  WS_CHILD,
-	0, 0, lpCalc->cpu.pio.lcd->width*lpCalc->Scale, 64*lpCalc->Scale,
-	lpCalc->hwndFrame, (HMENU) 99, g_hInst,  NULL);*/
-
-	if (lpCalc->hwndFrame == NULL /*|| lpCalc->hwndLCD == NULL*/) return -1;
+	if (lpCalc->hwndFrame == NULL) {
+		return -1;
+	}
 
 	GetClientRect(lpCalc->hwndFrame, &r);
 	lpCalc->running = TRUE;
@@ -582,7 +576,8 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 			//save wizard show
 			SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
 			if (wizardError) {
-				return E_FAIL;
+				// this is likely caused by a user cancel
+				return E_ABORT;
 			}
 			LoadRegistrySettings(lpCalc);
 		}
@@ -625,26 +620,22 @@ void CWabbitemuModule::RunMessageLoop()
 	}
 
 	MSG Msg;
-	extern HWND hPortMon, hBreakpoints;
 	while (GetMessage(&Msg, NULL, 0, 0)) {
 		HACCEL haccel = haccelmain;
 		HWND hwndtop = GetForegroundWindow();
 		if (hwndtop) {
-			if (hwndtop == FindWindow(g_szDebugName, NULL) ) {
+			if (hwndtop == m_lpCalc->hwndDebug) {
 				haccel = hacceldebug;
-			} else if (hwndtop == FindWindow(g_szAppName, NULL) ) {
+			} else if (hwndtop == m_lpCalc->hwndFrame) {
 				haccel = haccelmain;
-				if (m_lpCalc->bCutout && m_lpCalc->SkinEnabled) {
-					hwndtop = FindWindow(g_szLCDName, NULL);
-				} else {
-					hwndtop = FindWindowEx(hwndtop, NULL, g_szLCDName, NULL);
-				}
+				hwndtop = m_lpCalc->hwndLCD;
 				SetForegroundWindow(hwndtop);
 			} else if (m_lpCalc->bCutout && m_lpCalc->SkinEnabled) {
-				if (hwndtop == FindWindow(g_szLCDName, NULL) || hwndtop == FindWindow(g_szAppName, NULL) ||
-					hwndtop == FindWindow(g_szSmallButtonsName, g_szSmallClose) ||
-					hwndtop == FindWindow(g_szSmallButtonsName, g_szSmallMinimize)) {
-						hwndtop = FindWindow(g_szLCDName, NULL);
+				if (hwndtop == m_lpCalc->hwndFrame || 
+					hwndtop == m_lpCalc->hwndSmallClose ||
+					hwndtop == m_lpCalc->hwndSmallMinimize)
+				{
+					hwndtop = m_lpCalc->hwndLCD;
 				} else {
 					haccel = NULL;	
 				}
@@ -662,19 +653,16 @@ void CWabbitemuModule::RunMessageLoop()
 			}
 		}
 
-		if (Msg.hwnd != NULL && Msg.hwnd == hwndProp)
-		{
+		if (Msg.hwnd != NULL && Msg.hwnd == hwndProp) {
 			// Get the current tab
 			HWND hwndPropTabCtrl = PropSheet_GetTabControl(hwndProp);
 			PropPageLast = TabCtrl_GetCurSel(hwndPropTabCtrl);
 
-			if (Msg.message == WM_KEYDOWN)
-			{
+			if (Msg.message == WM_KEYDOWN) {
 				OutputDebugString(_T("Hard key down man"));
 			}
 
-			if (PropSheet_IsDialogMessage(hwndProp, &Msg) == TRUE)
-			{
+			if (PropSheet_IsDialogMessage(hwndProp, &Msg) == TRUE) {
 				continue;
 			}
 		}
@@ -719,10 +707,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
 
 		//RegisterDropWindow(hwnd, (IDropTarget **) &lpCalc->pDropTarget);
-
-		// Force the current skin setting to be enacted
-		lpCalc->SkinEnabled = !lpCalc->SkinEnabled;
-		SendMessage(hwnd, WM_COMMAND, IDM_VIEW_SKIN, 0);
 		return 0;
 					}
 	case WM_USER:
@@ -886,7 +870,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				BOOL start_screenshot = get_gif_filename();
 				FILE *file;
-				fopen_s(&file, gif_file_name, _T("wb"));
+				_tfopen_s(&file, gif_file_name, _T("wb"));
 				if (!file && start_screenshot) { 
 					MessageBox(NULL, _T("Invalid file name."), _T("Error"), MB_OK);
 					start_screenshot = FALSE;
@@ -1420,7 +1404,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						TCHAR tempSave[MAX_PATH] = {0};
 						if (portable_mode) {
 							StringCbCopy(tempSave, sizeof(tempSave), portSettingsPath);
-							for (u_int i = strlen(portSettingsPath) - 1; i >= 0; i--) {
+							for (u_int i = _tcslen(portSettingsPath) - 1; i >= 0; i--) {
 								if (tempSave[i] == '\\') {
 									tempSave[i] = '\0';
 									break;

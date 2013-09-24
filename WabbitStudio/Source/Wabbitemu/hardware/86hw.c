@@ -97,7 +97,7 @@ static void port4(CPU_t *cpu, device_t *dev) {
 		cpu->bus = 1;
 		cpu->input = FALSE;
 	} else if (cpu->output) {
-		dev->aux = (void *) cpu->bus;
+		dev->aux = (void *) (size_t) cpu->bus;
 		int freq = (cpu->bus >> 1) & 0x3;
 		cpu->pio.stdint->timermax1 = cpu->pio.stdint->freq[freq];
 		cpu->pio.stdint->lastchk1 = tc_elapsed(cpu->timer_c);

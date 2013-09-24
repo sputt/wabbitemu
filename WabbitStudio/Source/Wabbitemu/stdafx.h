@@ -111,6 +111,7 @@ typedef int errno_t;
 #elif defined(_MACVER)
 #include <assert.h>
 #include <setjmp.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
@@ -121,33 +122,13 @@ typedef int errno_t;
 #include <ctype.h>
 
 typedef int errno_t;
-/*
-typedef char TCHAR;
-typedef void *LPVOID;
-typedef const char *LPCTSTR;
-typedef u_int8_t uint8_t;
-typedef u_int16_t uint16_t;
-typedef u_int32_t uint32_t;
-typedef u_int8_t BYTE, *LPBYTE;
-typedef u_int16_t WORD, *LPWORD;
-typedef u_int32_t DWORD, *LPDWORD;
- */
-/*
-#ifndef TRUE
-#define FALSE (0)
-#define TRUE (!FALSE)
-#ifdef WINVER
-typedef int BOOL;
-#else
-typedef signed char BOOL;
-#endif
-#endif
-*/
+
 #define MAX_PATH 256
 #define _T(z) z
 #define _tprintf_s printf
 #define ARRAYSIZE(z) (sizeof(z)/sizeof((z)[0]))
 #define _strnicmp strncasecmp
+#define _tcsnicmp strncasecmp
 #define _tcsicmp strcasecmp
 #define _putts puts
 #define _tcsrchr strrchr

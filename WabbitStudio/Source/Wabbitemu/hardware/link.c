@@ -340,11 +340,11 @@ static void link_RTS(CPU_t *cpu, TIVAR_t *var, int dest) {
 	if (cpu->pio.model == TI_85 || cpu->pio.model == TI_86) {
 		memset(&var_hdr, ' ', sizeof(TI_VARHDR));
 		memset(var_hdr.name86, 0, sizeof(var_hdr.name86));
-		strncpy(var_hdr.name86, (char *) var->name, 8);
+		memcpy_s(var_hdr.name86, 8, (char *) var->name, 8);
 		var_hdr.name_length = var->name_length;
 	} else {
 		memset(var_hdr.name, 0, sizeof(var_hdr.name));
-		strncpy(var_hdr.name, (char *) var->name, 8);
+		memcpy_s(var_hdr.name, 8, (char *) var->name, 8);
 		var_hdr.version = var->version;
 
 		if (dest == SEND_RAM) {

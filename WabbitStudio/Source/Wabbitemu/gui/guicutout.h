@@ -2,7 +2,7 @@
 #define GUI_CUTOUT_H_
 
 int EnableCutout(LPCALC);
-int DisableCutout(HWND);
+int DisableCutout(LPCALC);
 LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void PositionLittleButtons(HWND);
 void DestroyCutoutResources();
