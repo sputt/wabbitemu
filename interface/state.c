@@ -371,7 +371,7 @@ void SetRealAns(CPU_t *cpu, TCHAR *text) {
 
 TCHAR *GetRealAns(CPU_t *cpu) {
 	symlist_t *symlist = (symlist_t *) malloc(sizeof(symlist_t));
-	memset(symlist, 0, sizeof(symlist));
+	memset(symlist, 0, sizeof(symlist_t));
 	symlist = state_build_symlist_83P(cpu, symlist);
 	if (symlist == NULL) {
 		return NULL;
@@ -515,9 +515,12 @@ TCHAR *symbol_to_string(CPU_t *cpu, symbol83P_t *sym, TCHAR *buffer) {
 	case StrngObj: {
 		// There's a problem here with character set conversions
 		uint16_t ptr = sym->address;
-		uint16_t str_len = mem_read(cpu->mem_c, ptr++) + (mem_read(cpu->mem_c, ptr++) << 8);
+		uint16_t str_len = mem_read(cpu->mem_c, ptr++);
+		str_len += mem_read(cpu->mem_c, ptr++) << 8;
 		u_int i;
-		for (i = 0; i < str_len; i++) buffer[i] = mem_read(cpu->mem_c, ptr++);
+		for (i = 0; i < str_len; i++) {
+			buffer[i] = mem_read(cpu->mem_c, ptr++);
+		}
 		buffer[i] = '\0';
 		return buffer;
 	}

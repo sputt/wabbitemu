@@ -24,7 +24,11 @@
 #include "CWabbitemu.h"
 #endif
 
-static HWND calc_debug_callback(LPCALC lpCalc);
+#define FRAME_SUBDIVISIONS (1024)
+#define BOOTFREE_VER_MAJOR 11
+#define BOOTFREE_VER_MINOR 246
+
+static void calc_debug_callback(LPCALC lpCalc);
 
 /*
  * Determine the slot for a new calculator.  Return a pointer to the calc
@@ -232,8 +236,6 @@ void calc_erase_certificate(unsigned char *mem, int size) {
 	return;
 }
 
-#define BOOTFREE_VER_MAJOR 11
-#define BOOTFREE_VER_MINOR 246
 void check_bootfree_and_update(LPCALC lpCalc) {
 	u_char *bootFreeString = lpCalc->mem_c.flash + (lpCalc->mem_c.flash_pages - 1) * PAGE_SIZE + 0x0F;
 	if (*bootFreeString != '1') {
@@ -246,7 +248,7 @@ void check_bootfree_and_update(LPCALC lpCalc) {
 	}
 	int majorVer, minorVer;
 #ifdef WINVER
-	_stscanf_s((char *) bootFreeString, _T("%d.%d"), &majorVer, &minorVer);
+	scanf_s((char *) bootFreeString, "%d.%d", &majorVer, &minorVer);
 	if (MAKELONG(BOOTFREE_VER_MINOR, BOOTFREE_VER_MAJOR) > MAKELONG(minorVer, majorVer)) {
 		TCHAR hexFile[MAX_PATH];
 		ExtractBootFree(lpCalc->model, hexFile);
@@ -288,7 +290,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 				int size;
 				char *rom = GetRomOnly(tifile->save, &size);
 				char VerString[64];
-				FindRomVersion(	tifile->model, VerString, (unsigned char *) rom, size);
+				FindRomVersion(tifile->model, VerString, (unsigned char *) rom, size);
 				error = calc_init_83(lpCalc, VerString);
 				break;
 			}
@@ -336,8 +338,8 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 			case TI_83:
 				calc_init_83(lpCalc, tifile->rom->version);
 				memcpy(	lpCalc->cpu.mem_c->flash,
-						tifile->rom->data,
-						(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
+					tifile->rom->data,
+					(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
 				break;
 			case TI_85:
 			case TI_86:
@@ -373,10 +375,12 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 				FreeTiFile(tifile);
 				return FALSE;
 		}
+
 		if (error) {
 			FreeTiFile(tifile);
 			return FALSE;
 		}
+
 		lpCalc->active = TRUE;
 		memcpy(lpCalc->rom_version, tifile->rom->version, sizeof(lpCalc->rom_version));
 #ifdef WINVER
@@ -484,15 +488,18 @@ int calc_reset(LPCALC lpCalc) {
 	return 0;
 }
 
-static HWND calc_debug_callback(LPCALC lpCalc)
+#ifdef WINVER
+
+static void calc_debug_callback(LPCALC lpCalc)
 {
 	if (lpCalc->pWabbitemu != NULL)
 	{
 		waddr_t addr = addr_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc);
 		lpCalc->pWabbitemu->Fire_OnBreakpoint(&addr);
 	}
-	return NULL;
 }
+
+#endif
 
 
 /* Clear RAM and start calculator at $0000 
@@ -631,34 +638,43 @@ int calc_run_frame(LPCALC lpCalc) {
 	return 0;
 }
 
+void handle_profiling(LPCALC lpCalc, uint64_t oldTStates, uint16_t oldPC)
+{
+	if (!lpCalc->profiler.running) {
+		return;
+	}
+
+	uint64_t time = tc_tstates(&lpCalc->timer_c) - oldTStates;
+	lpCalc->profiler.totalTime += time;
+	bank_t bank = lpCalc->cpu.mem_c->banks[mc_bank(oldPC)];
+	int block = oldPC / lpCalc->profiler.blockSize;
+	if (bank.ram) {
+		lpCalc->profiler.ram_data[bank.page][block] += time;
+	} else {
+		lpCalc->profiler.flash_data[bank.page][block] += time;
+	}
+}
+
 int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	uint64_t time_end = tc_tstates(&lpCalc->timer_c) + tstates - lpCalc->time_error;
 
 	while (lpCalc->running) {
-		if (check_break(&lpCalc->mem_c, addr_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc)) & 1) {
-#ifdef WINVER
+		if (check_break(&lpCalc->mem_c, addr_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc))) {
 			lpCalc->running = FALSE;
-			bank_t *bank = &lpCalc->mem_c.banks[mc_bank(lpCalc->cpu.pc)];
-
-			Z80_info_t z[2];
-			disassemble(lpCalc, REGULAR, addr_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc), 1, z);
-
-#endif
-#ifndef MACVER
-				lpCalc->breakpoint_callback(lpCalc);
+#ifdef MACVER 
+			lpCalc->breakpoint_callback(lpCalc, lpCalc->breakpoint_owner);
 #else
-				printf("hit a breakpoint in run tstates\n");
-				lpCalc->running = FALSE; 
-				lpCalc->breakpoint_callback(lpCalc,lpCalc->breakpoint_owner);
+			lpCalc->breakpoint_callback(lpCalc);
 #endif
 			return 0;
 		}
-		uint64_t oldTStates;
-		uint16_t oldPC;
+		uint64_t oldTStates = 0;
+		uint16_t oldPC = 0;
 		if (lpCalc->profiler.running) {
 			oldTStates = tc_tstates(&lpCalc->timer_c);
 			oldPC = lpCalc->cpu.pc % PAGE_SIZE;
 		}
+
 		if (link_hub_count > 1) {
 			CPU_connected_step(&lpCalc->cpu);
 			if (lpCalc->cpu.is_link_instruction) {
@@ -669,16 +685,10 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 		} else {
 			CPU_step(&lpCalc->cpu);
 		}
-		if (lpCalc->profiler.running) {
-			uint64_t time = tc_tstates(&lpCalc->timer_c) - oldTStates;
-			lpCalc->profiler.totalTime += time;
-			bank_t bank = lpCalc->cpu.mem_c->banks[mc_bank(oldPC)];
-			if (bank.ram) {
-				lpCalc->profiler.ram_data[bank.page][oldPC / lpCalc->profiler.blockSize] += (long) time;
-			} else {
-				lpCalc->profiler.flash_data[bank.page][oldPC / lpCalc->profiler.blockSize] += (long) time;
-			}
-		}
+
+		handle_profiling(lpCalc, oldTStates, oldPC);
+
+
 		if (tc_tstates((&lpCalc->timer_c)) >= time_end) {
 			lpCalc->time_error = (time_t)(tc_tstates((&lpCalc->timer_c)) - time_end);
 			break;
@@ -688,10 +698,8 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	return 0;
 }
 
-BOOL calc_start_screenshot(calc_t *calc, const TCHAR *filename)
-{
-	if (gif_write_state == GIF_IDLE)
-	{
+BOOL calc_start_screenshot(LPCALC calc, const TCHAR *filename) {
+	if (gif_write_state == GIF_IDLE) {
 		gif_write_state = GIF_START;
 #ifdef _WINDOWS
 		StringCbCopy(gif_file_name, MAX_PATH, filename);
@@ -699,15 +707,12 @@ BOOL calc_start_screenshot(calc_t *calc, const TCHAR *filename)
 		strcpy(gif_file_name, filename);
 #endif
 		return TRUE;
-	}
-	else
-	{
+	} else {
 		return FALSE;
 	}
 }
 
-void calc_stop_screenshot(LPCALC calc)
-{
+void calc_stop_screenshot(LPCALC calc) {
 	gif_write_state = GIF_END;
 }
 
@@ -727,7 +732,6 @@ void calc_unpause_linked() {
 	}
 }
 
-#define FRAME_SUBDIVISIONS	(1024)
 int calc_run_all(void) {
 	int i, j, active_calc = -1;
 	BOOL calc_waiting = FALSE;
@@ -766,7 +770,9 @@ int calc_run_all(void) {
 					CPU_step(&calcs[j].cpu);
 				}
 				active_calc = j;
-				int time = (int)((int64_t) calcs[j].speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
+				// TODO: figure out how to do this
+				int speed = calcs[j].speed == MAX_SPEED ? 2400 : calcs[j].speed;
+				int time = (int)((int64_t) speed * calcs[j].timer_c.freq / FPS / 100) / FRAME_SUBDIVISIONS;
 				if (!calcs[j].cpu.is_link_instruction || !calc_waiting || calcs[j].cpu.pio.link->hasChanged == TRUE) {
 					calc_run_tstates(&calcs[j], time);
 				} /*else {
@@ -785,7 +791,7 @@ int calc_run_all(void) {
 			calc_waiting_link = 0;
 		}
 
-		//this code handles screenshoting if were actually taking screenshots right now
+		//this code handles screenshotting if were actually taking screenshots right now
 		if (active_calc >= 0 && !calc_waiting_link && calcs[active_calc].cpu.timer_c != NULL && calcs[active_calc].cpu.pio.lcd != NULL &&
 				((tc_elapsed(calcs[active_calc].cpu.timer_c) - calcs[active_calc].cpu.pio.lcd->lastgifframe) >= 0.01)) {
 			handle_screenshot();
@@ -927,24 +933,3 @@ LPCALC calc_from_memc(memc *memc) {
 	}
 	return NULL;
 }
-
-#ifdef WINVER
-LPCALC calc_from_hwnd(HWND hwnd) {
-	if (hwnd == NULL)
-		return NULL;
-
-	int slot;
-	for (slot = 0; slot < MAX_CALCS; slot++) {
-		if (calcs[slot].active) {
-			if (hwnd == calcs[slot].hwndFrame ||
-				hwnd == calcs[slot].hwndLCD ||
-				hwnd == calcs[slot].hwndStatusBar ||
-				hwnd == calcs[slot].hwndSmallClose ||
-				hwnd == calcs[slot].hwndSmallMinimize) {
-				return &calcs[slot];
-			}
-		}
-	}
-	return NULL;
-}
-#endif

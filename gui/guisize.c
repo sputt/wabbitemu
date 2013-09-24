@@ -10,16 +10,10 @@ LRESULT HandleSizeMessage(HWND hwnd, LPCALC lpCalc) {
 	GetClientRect(hwnd, &rc);
 	HMENU hmenu = GetMenu(hwnd);
 	int cyMenu = hmenu == NULL ? 0 : GetSystemMetrics(SM_CYMENU);
-	if (lpCalc->bCutout && lpCalc->SkinEnabled) {
-		rc.bottom += cyMenu;
-	}
-
 	int desired_height = lpCalc->SkinEnabled ?  lpCalc->rectSkin.bottom : 128;
 
-	int status_height;
-	if (lpCalc->hwndStatusBar == NULL) {
-		status_height = 0;
-	} else {
+	int status_height = 0;
+	if (lpCalc->hwndStatusBar != NULL) {
 		RECT src;
 		GetWindowRect(lpCalc->hwndStatusBar, &src);
 
@@ -58,8 +52,9 @@ LRESULT HandleSizeMessage(HWND hwnd, LPCALC lpCalc) {
 			GetWindowRect(hwnd, &client);
 		}
 
+		BOOL hasMenu = cyMenu && lpCalc->bCutout;
 		RECT correctSize = lpCalc->rectSkin;
-		AdjustWindowRect(&correctSize, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX), cyMenu);
+		AdjustWindowRect(&correctSize, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX), hasMenu);
 		if (correctSize.left < 0) {
 			correctSize.right -= correctSize.left;
 		}

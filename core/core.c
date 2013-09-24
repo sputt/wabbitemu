@@ -83,28 +83,25 @@ waddr_t addr_to_waddr(memc *mem_c, uint16_t addr) {
 BOOL check_break(memc *mem, waddr_t waddr) {
 	if (!(mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & NORMAL_BREAK))
 		return FALSE;
-#ifdef WINVER
-	if (mem->breakpoint_manager_callback)
+	if (mem->breakpoint_manager_callback) {
 		return mem->breakpoint_manager_callback(mem, NORMAL_BREAK, waddr);
-#endif
+	}
 	return TRUE;
 }
 BOOL check_mem_write_break(memc *mem, waddr_t waddr) {
 	if (!(mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & MEM_WRITE_BREAK))
 		return FALSE;
-#ifdef WINVER
-	if (mem->breakpoint_manager_callback)
+	if (mem->breakpoint_manager_callback) {
 		return mem->breakpoint_manager_callback(mem, MEM_WRITE_BREAK, waddr);
-#endif
+	}
 	return TRUE;
 }
 BOOL check_mem_read_break(memc *mem, waddr_t waddr) {
 	if (!(mem->breaks[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] & MEM_READ_BREAK))
 		return FALSE;
-#ifdef WINVER
-	if (mem->breakpoint_manager_callback)
+	if (mem->breakpoint_manager_callback) {
 		return mem->breakpoint_manager_callback(mem, MEM_READ_BREAK, waddr);
-#endif
+	}
 	return TRUE;
 }
 
@@ -199,15 +196,10 @@ int CPU_init(CPU_t *cpu, memc *mem_c, timerc *timer_c) {
 static void handle_pio(CPU_t *cpu) {
 	for (int i = cpu->pio.num_interrupt; i >= 0 ; i--) {
 		interrupt_t *intVal = &cpu->pio.interrupt[i];
-		if (intVal->skip_factor) {
-			if (!intVal->skip_count) {
-				device_control(cpu, intVal->interrupt_val);
-			}
-			//cpu->pio.skip_count[i] = (skip_count + 1) % skip_factor;
-			intVal->skip_count++;
-			if (intVal->skip_count == intVal->skip_factor) {
-				intVal->skip_count = 0;
-			}
+		intVal->skip_count--;
+		if (!intVal->skip_count) {
+			device_control(cpu, intVal->interrupt_val);
+			intVal->skip_count = intVal->skip_factor;
 		}
 	}
 }
@@ -419,7 +411,6 @@ unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 static void flash_write_byte(memc *mem_c, unsigned short addr, unsigned char data) {
 	int bank = mc_bank(addr);
 	BYTE *write_location = mem_c->banks[bank].addr + mc_base(addr);
-	BYTE value = *write_location; 
 	(*write_location) &= data;  //AND LOGIC!!
 	mem_c->flash_last_write = data;
 	if ((*write_location) != data) {
@@ -757,7 +748,8 @@ static void handle_interrupt(CPU_t *cpu) {
 			tc_add(cpu->timer_c, 19);
 			cpu->halt = FALSE;
 			unsigned short vector = (cpu->i << 8) + cpu->bus;
-			int reg = CPU_mem_read(cpu,vector++) + (CPU_mem_read(cpu,vector) << 8);
+			int reg = CPU_mem_read(cpu,vector++);
+			reg += CPU_mem_read(cpu,vector) << 8;
 			CPU_mem_write(cpu, --cpu->sp, (cpu->pc >> 8) & 0xFF);
 			CPU_mem_write(cpu, --cpu->sp, cpu->pc & 0xFF);
 			cpu->pc = reg;

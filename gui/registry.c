@@ -153,7 +153,7 @@ static size_t FindSettingsKey(FILE *settingsFile, LPCTSTR lpszName) {
 		u_int i;
 		TCHAR nameBuffer[256];
 		size_t size = 0;
-		_ftscanf(settingsFile, _T("%s | %d | "), nameBuffer, &size);
+		_ftscanf_s(settingsFile, _T("%s | %d | "), nameBuffer, &size);
 		if (!_tcscmp(nameBuffer, lpszName)) {
 			return size;
 		}
@@ -190,7 +190,7 @@ INT_PTR QueryWabbitKey(LPCTSTR lpszName) {
 			if (regDefaults[i].lpValueName != NULL) {
 				if (size) {
 					if (type == REG_DWORD) {
-						_ftscanf(file, _T("%d\r\n"), &result.dwResult);
+						_ftscanf_s(file, _T("%d\r\n"), &result.dwResult);
 					} else {
 						fread_s(&result.szResult, 256 * sizeof(TCHAR), sizeof(TCHAR), size, file);
 						result.szResult[size] = '\0';
@@ -523,9 +523,9 @@ LONG_PTR QueryDebugKey(TCHAR *name) {
 			if (regDefaults[i].lpValueName != NULL) {
 				if (size) {
 					if (type == REG_DWORD) {
-						_ftscanf(file, _T("%d\r\n"), &result.dwResult);
+						_ftscanf_s(file, _T("%d\r\n"), &result.dwResult);
 					} else {
-						_ftscanf(file, _T("%s\r\n"), &result.szResult);
+						_ftscanf_s(file, _T("%s\r\n"), &result.szResult);
 					}
 				} else {
 					if (type == REG_DWORD){

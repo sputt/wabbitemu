@@ -97,9 +97,9 @@ int do_extract_currentfile(unzFile uf, TCHAR *dirToExtractTo)
 
 	//make sure this exists
 	_tmkdir(dirToExtractTo);
-	_tcscpy(write_filename, dirToExtractTo);
-	_tcscat(write_filename, _T("/"));
-	_tcscat(write_filename, filename_withoutpath);
+	_tcscpy_s(write_filename, dirToExtractTo);
+	_tcscat_s(write_filename, _T("/"));
+	_tcscat_s(write_filename, filename_withoutpath);
 
 	err = unzOpenCurrentFile(uf);
 	if (err != UNZ_OK)

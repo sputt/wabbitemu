@@ -34,9 +34,9 @@ typedef enum {
 typedef struct profiler {
 	BOOL running;
 	int blockSize;
-	long long totalTime;
-	long flash_data[MAX_FLASH_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
-	long ram_data[MAX_RAM_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
+	uint64_t totalTime;
+	uint64_t flash_data[MAX_FLASH_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
+	uint64_t ram_data[MAX_RAM_PAGE_SIZE][PAGE_SIZE / MIN_BLOCK_SIZE];
 } profiler_t;
 
 #define KEY_STRING_SIZE 56
@@ -48,9 +48,7 @@ struct key_string {
 };
 
 typedef struct tagCALC {
-#ifdef WINVER
-	HWND (*breakpoint_callback)(struct tagCALC *);
-#elif MACVER
+#ifdef MACVER
 	void (*breakpoint_callback)(struct tagCALC *, void *);
 	void *breakpoint_owner;
 #else
@@ -119,6 +117,7 @@ typedef struct tagCALC {
 	apphdr_t *last_transferred_app;
 
 	gif_disp_states gif_disp_state;
+	BOOL bTIOSDebug;
 
 #ifdef _WINDOWS
 	RECT rectSkin;
@@ -127,7 +126,6 @@ typedef struct tagCALC {
 	BOOL bCustomSkin;
 	BOOL bAlwaysOnTop;
 	BOOL bAlphaBlendLCD;
-	BOOL bTIOSDebug;
 	TCHAR skin_path[256];
 	TCHAR keymap_path[256];
 	CWabbitemu *pWabbitemu;
@@ -160,8 +158,8 @@ int calc_run_frame(LPCALC);
 int calc_run_seconds(LPCALC, double);
 int calc_run_timed(LPCALC, time_t);
 int calc_run_all(void);
-BOOL calc_start_screenshot(calc_t *calc, const char *filename);
-void calc_stop_screenshot(calc_t *calc);
+BOOL calc_start_screenshot(LPCALC calc, const TCHAR *filename);
+void calc_stop_screenshot(LPCALC calc);
 
 #ifdef WITH_BACKUPS
 void do_backup(LPCALC);

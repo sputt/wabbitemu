@@ -18,6 +18,8 @@
 #define COLOR_MEMPOINT_READ		(RGB(255, 250, 145))
 #define COLOR_HALT				(RGB(200, 200, 100))
 
+#define DISASM_LINE_MAX_LEN 2048
+
 extern HWND hwndLastFocus;
 extern Z80_com_t da_opcode[256];
 
@@ -1157,7 +1159,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 					Z80_info *zinf_line;
 					LPTABWINDOWINFO lpTabInfo = (LPTABWINDOWINFO) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					dp_settings *dps = (dp_settings *) lpTabInfo->tabInfo;
-					TCHAR *disassembly = (TCHAR *) LocalAlloc(LMEM_FIXED, 2048);
+					TCHAR *disassembly = (TCHAR *) LocalAlloc(LMEM_FIXED, DISASM_LINE_MAX_LEN);
 					ZeroMemory(disassembly, 2048);
 					TCHAR copy_line[1024] = {0};
 					TCHAR buf[1024] = {0};
@@ -1182,12 +1184,16 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 							da_opcode[zinf_line->index].format, zinf_line->a1, zinf_line->a2, zinf_line->a3, zinf_line->a4);
 						StringCbCat(copy_line, sizeof(copy_line), commandString);
 						StringCbCat(copy_line, sizeof(copy_line), _T("\t\t"));
-						if (strlen(commandString) <= 11) {
+						size_t lineLength;
+						StringCbLength(copy_line, sizeof(copy_line), &lineLength);
+						if (lineLength <= 11) {
 							StringCbCat(copy_line, sizeof(copy_line), _T("\t"));
 						}
-						if (strlen(commandString) <= 7) {
+
+						if (lineLength <= 7) {
 							StringCbCat(copy_line, sizeof(copy_line), _T("\t"));
 						}
+
 						StringCbCat(copy_line, sizeof(copy_line), _T(";"));
 						//print the size
 						if (zinf_line->size > 0) {
@@ -1206,7 +1212,7 @@ LRESULT CALLBACK DisasmProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lPara
 							StringCbCat(copy_line, sizeof(copy_line), _T(" clocks"));
 						}
 						StringCbCat(copy_line, sizeof(copy_line), _T("\r\n"));
-						StringCbCat(disassembly, 2048, copy_line);
+						StringCbCat(disassembly, DISASM_LINE_MAX_LEN, copy_line);
 					}
 					OpenClipboard(hwnd);
 					EmptyClipboard();

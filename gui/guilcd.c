@@ -40,7 +40,7 @@ HDC DrawDragPanes(HWND hwnd, HDC hdcDest) {
 	SIZE TxtSize;
 	POINT TxtPt;
 
-	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 
 	CopyRect(&rl, &clientRect);
 	CopyRect(&rr, &clientRect);
@@ -284,7 +284,7 @@ HANDLE DDBToDIB(HBITMAP bitmap, DWORD dwCompression)
 
 void PaintLCD(HWND hwnd, HDC hdcDest) {
 	unsigned char * screen;
-	calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 	LCD_t *lcd = lpCalc->cpu.pio.lcd;
 	if (lcd == NULL) {
 		_tprintf_s(_T("Invalid LCD pointer"));
@@ -788,7 +788,7 @@ LRESULT CALLBACK LCDProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 
 				HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmDrag);
 
-				calc_t *lpCalc = (calc_t *) GetWindowLongPtr(hwnd, GWLP_USERDATA);
+				LPCALC lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 				u_char *screen = LCD_image( lpCalc->cpu.pio.lcd ) ;
 				FillRect(hdc, &rc, (HBRUSH) GetStockObject(BLACK_BRUSH));
 

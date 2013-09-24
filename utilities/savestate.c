@@ -8,6 +8,9 @@
 #include "83psehw.h"
 #include "fileutilities.h"
 
+#define CHUNK_SIZE_FAIL 1
+static jmp_buf errorJumpBuf;
+
 extern int def(FILE *, FILE *, int);
 extern int inf(FILE *, FILE *);
 
@@ -155,12 +158,14 @@ BOOL DelChunk(SAVESTATE_t *save, char *tag) {
 	return FALSE;
 }
 
-
-BOOL CheckPNT(CHUNK_t* chunk) {
+/************************************************************************
+ * Checks that the chunk is the expected size. If it is not, then jumps
+ * to the cleanup code
+ ************************************************************************/
+void CheckPNT(CHUNK_t* chunk) {
 	if (chunk->size < chunk->pnt) {
-		return FALSE;
+		longjmp(errorJumpBuf, CHUNK_SIZE_FAIL);
 	}
-	return TRUE;
 }
 
 BOOL WriteChar(CHUNK_t* chunk, char value) {
@@ -298,17 +303,15 @@ BOOL WriteBlock(CHUNK_t* chunk, unsigned char *pnt, int length) {
 	
 
 	
-unsigned char ReadChar(CHUNK_t* chunk, BOOL *valOK = NULL) {
+unsigned char ReadChar(CHUNK_t* chunk) {
 	unsigned char value;
 	value = chunk->data[chunk->pnt];
 	chunk->pnt += sizeof(unsigned char);
-	if (valOK) {
-		*valOK = CheckPNT(chunk);
-	}
+	CheckPNT(chunk);
 	return value;
 }
 
-unsigned short ReadShort(CHUNK_t* chunk, BOOL *valOK = NULL) {
+unsigned short ReadShort(CHUNK_t* chunk) {
 	int i;
 	uint16_t value;
 	unsigned char *pnt = (unsigned char *)(&value);
@@ -320,13 +323,11 @@ unsigned short ReadShort(CHUNK_t* chunk, BOOL *valOK = NULL) {
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
 	chunk->pnt += sizeof(value);
-	if (valOK) {
-		*valOK = CheckPNT(chunk);
-	}
+	CheckPNT(chunk);
 	return value;
 }
 
-unsigned int ReadInt(CHUNK_t* chunk, BOOL *valOK = NULL) {
+unsigned int ReadInt(CHUNK_t* chunk) {
 	int i;
 	uint32_t value;
 	unsigned char *pnt = (unsigned char *)(&value);
@@ -338,9 +339,7 @@ unsigned int ReadInt(CHUNK_t* chunk, BOOL *valOK = NULL) {
 		*pnt++ = chunk->data[i+chunk->pnt];
 	}
 	chunk->pnt += sizeof(value);
-	if (valOK) {
-		*valOK = CheckPNT(chunk);
-	}
+	CheckPNT(chunk);
 	return value;
 }
 
@@ -846,25 +845,22 @@ void LoadMEM(SAVESTATE_t* save, memc* mem) {
 		if (chunk) {
 			for (int i = 0; i < num_ram_breaks; i++)
 			{
-				BOOL valOk;
-				int addr = ReadInt(chunk, &valOk);
-				if (valOk) {
-					waddr_t waddr;
-					waddr.addr = addr % PAGE_SIZE;
-					waddr.page = addr / PAGE_SIZE;
-					waddr.is_ram = TRUE;
-					BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
-					switch (type) {
-					case MEM_READ_BREAK:
-						set_mem_read_break(mem, waddr);
-						break;
-					case MEM_WRITE_BREAK:
-						set_mem_read_break(mem, waddr);
-						break;
-					default:
-						set_break(mem, waddr);
-						break;
-					}
+				int addr = ReadInt(chunk);
+				waddr_t waddr;
+				waddr.addr = addr % PAGE_SIZE;
+				waddr.page = addr / PAGE_SIZE;
+				waddr.is_ram = TRUE;
+				BREAK_TYPE type = (BREAK_TYPE) ReadInt(chunk);
+				switch (type) {
+				case MEM_READ_BREAK:
+					set_mem_read_break(mem, waddr);
+					break;
+				case MEM_WRITE_BREAK:
+					set_mem_read_break(mem, waddr);
+					break;
+				default:
+					set_break(mem, waddr);
+					break;
 				}
 			}
 		}
@@ -1173,6 +1169,12 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 	SAVESTATE_t *save;
 	CHUNK_t *chunk;
 	FILE *tmpfile;
+
+	int error = setjmp(errorJumpBuf);
+	if (error == CHUNK_SIZE_FAIL) {
+		free(save);
+		return NULL;
+	}
 
 	fread(string, 1, 8, ifile);
 	string[8] = 0;

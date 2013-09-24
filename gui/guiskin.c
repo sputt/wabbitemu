@@ -88,7 +88,6 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 
 enum DRAWSKINERROR {
 	ERROR_FACEPLATE = 1,
-	ERROR_CUTOUT,
 	ERROR_SKIN,
 	ERROR_KEYMAP,
 };
@@ -101,15 +100,13 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 	if (!m_pBitmapKeymap) {
 		return ERROR_KEYMAP;
 	}
-
+	
 	HBITMAP hbmSkinOld, hbmKeymapOld;
 	//translate to regular gdi compatibility to simplify coding :/
 	m_pBitmapKeymap->GetHBITMAP(Color::White, &hbmKeymapOld);
 	SelectObject(lpCalc->hdcKeymap, hbmKeymapOld);
 	//get the HBITMAP for the skin DONT change the first value, it is necessary for transparency to work
 	m_pBitmapSkin->GetHBITMAP(Color::AlphaMask, &hbmSkinOld);
-	//84+SE has custom faceplates :D, draw it to the background
-	//thanks MSDN your documentation rules :))))
 	HDC hdcOverlay = CreateCompatibleDC(lpCalc->hdcSkin);
 	HBITMAP blankBitmap = CreateCompatibleBitmap(hdc, m_pBitmapSkin->GetWidth(), m_pBitmapSkin->GetHeight());
 	SelectObject(lpCalc->hdcSkin, blankBitmap);
@@ -135,15 +132,6 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 		lpCalc->rectSkin.left, lpCalc->rectSkin.top, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, bf);
 	BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
 	FinalizeButtons(lpCalc);
-	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
-		if (EnableCutout(lpCalc) != 0) {
-			return ERROR_CUTOUT;
-		}
-		//TODO: figure out why this needs to be called again
-		EnableCutout(lpCalc);
-	} else {
-		DisableCutout(lpCalc->hwndFrame);
-	}
 
 	DeleteObject(hbmKeymapOld);
 	DeleteObject(hbmSkinOld);
@@ -268,9 +256,6 @@ int gui_frame_update(LPCALC lpCalc) {
 		case ERROR_FACEPLATE:
 			MessageBox(lpCalc->hwndFrame, _T("Unable to draw faceplate"), _T("Error"), MB_OK);
 			break;
-		case ERROR_CUTOUT:
-			MessageBox(lpCalc->hwndFrame, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
-			break;
 		case ERROR_SKIN:
 			MessageBox(lpCalc->hwndFrame, _T("Unable to load skin resource"), _T("Error"), MB_OK);
 			break;
@@ -278,6 +263,15 @@ int gui_frame_update(LPCALC lpCalc) {
 			MessageBox(lpCalc->hwndFrame, _T("Unable to load keymap resource"), _T("Error"), MB_OK);
 			break;
 	}
+
+	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
+		if (EnableCutout(lpCalc) != 0) {
+			MessageBox(lpCalc->hwndFrame, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
+		}
+	} else {
+		DisableCutout(lpCalc);
+	}
+
 	if (lpCalc->bCustomSkin) {
 		if (m_pBitmapKeymap) {
 			delete m_pBitmapKeymap;
@@ -306,8 +300,7 @@ static POINT ptRgnEdge[] = {{75,675},
 							{37,273},
 							{37,568}};
 
-HRGN GetFaceplateRegion()
-{
+HRGN GetFaceplateRegion() {
 	unsigned int nPoints = (sizeof(ptRgnEdge) / sizeof(POINT)) * 2;
 	POINT ptRgn[(sizeof(ptRgnEdge) / sizeof(POINT)) * 2];
 
