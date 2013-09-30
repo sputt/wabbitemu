@@ -1,98 +1,55 @@
 #include "stdafx.h"
 
 #include "guisize.h"
+#include "guiskin.h"
 #include "guicutout.h"
 
 extern BOOL silent_mode;
 
 LRESULT HandleSizeMessage(HWND hwnd, LPCALC lpCalc) {
-	RECT rc, screen;
-	GetClientRect(hwnd, &rc);
-	HMENU hmenu = GetMenu(hwnd);
-	int cyMenu = hmenu == NULL ? 0 : GetSystemMetrics(SM_CYMENU);
-	int desired_height = lpCalc->SkinEnabled ?  lpCalc->rectSkin.bottom : 128;
+	u_int width;
+	HMENU hMenu = GetMenu(hwnd);
+	RECT rc, clientRect;
+	CopyRect(&rc, &lpCalc->rectLCD);
 
-	int status_height = 0;
+	int scale = lpCalc->bSkinEnabled ? 2 : lpCalc->scale;
+	int silentMode = silent_mode ? SWP_HIDEWINDOW : 0;
+	int lcdWidth = (rc.right - rc.left) / DEFAULT_KEYMAP_SCALE * scale;
+	int lcdHeight = (rc.bottom - rc.top) / DEFAULT_KEYMAP_SCALE * scale;
+
+	GetClientRect(hwnd, &clientRect);
+	width = clientRect.right - clientRect.left;
+
+	if (!lpCalc->bSkinEnabled) {
+		rc.top = 0;
+		rc.left = 0;
+		if (width > lcdWidth) {
+			// if the lcd is less than client, center the lcd
+			rc.left += (width - lcdWidth) / 2;
+		}
+	} else if (lpCalc->bCutout) {
+		GetWindowRect(hwnd, &rc);
+		OffsetRect(&rc, lpCalc->rectLCD.left, lpCalc->rectLCD.top);
+	}
+
+	SetWindowPos(lpCalc->hwndLCD, NULL, rc.left, rc.top, lcdWidth, lcdHeight, SWP_NOZORDER | silentMode);
+
+	// force little buttons to be correct
+	if (lpCalc->bCutout && lpCalc->bSkinEnabled) {
+		PositionLittleButtons(hwnd);
+	}
+
 	if (lpCalc->hwndStatusBar != NULL) {
-		RECT src;
-		GetWindowRect(lpCalc->hwndStatusBar, &src);
-
-		status_height = src.bottom - src.top;
-		desired_height += status_height;
+		SendMessage(lpCalc->hwndStatusBar, WM_SIZE, SIZE_RESTORED, 0);
 	}
 
-	rc.bottom -= status_height;
-
-	float xc = 1.0, yc = 1.0;
-	if (!lpCalc->SkinEnabled) {
-		xc = ((float) rc.right) / 256.0f;
-		yc = ((float) rc.bottom) / 128.0f;
-	}
-
-	int width = lpCalc->rectLCD.right - lpCalc->rectLCD.left;
-	SetRect(&screen,
-		0, 0,
-		(int) (width * xc),
-		(int) (64 * 2 * yc));
-
-	if (lpCalc->SkinEnabled) {
-		OffsetRect(&screen, lpCalc->rectLCD.left, lpCalc->rectLCD.top);
-	} else {
-		OffsetRect(&screen, (int) ((rc.right - width * xc) / 2), 0);
-	}
-
-	HWND hwndAfter = lpCalc->bAlwaysOnTop ? HWND_TOPMOST : HWND_NOTOPMOST;
-	UINT silentMode = silent_mode ? SWP_HIDEWINDOW : 0;
-
-	RECT client;
-	client.top = 0;
-	client.left = 0;
-	if (lpCalc->SkinEnabled) {
-		if (lpCalc->bCutout) {
-			GetWindowRect(hwnd, &client);
-		}
-
-		BOOL hasMenu = cyMenu && lpCalc->bCutout;
-		RECT correctSize = lpCalc->rectSkin;
-		AdjustWindowRect(&correctSize, (WS_TILEDWINDOW |  WS_VISIBLE | WS_CLIPCHILDREN) & ~(WS_MAXIMIZEBOX), hasMenu);
-		if (correctSize.left < 0) {
-			correctSize.right -= correctSize.left;
-		}
-
-		if (correctSize.top < 0) {
-			correctSize.bottom -= correctSize.top;
-		}
-
-		SetWindowPos(hwnd, hwndAfter, 0, 0, correctSize.right, correctSize.bottom, SWP_NOACTIVATE | 
-			SWP_NOMOVE | SWP_DRAWFRAME | silentMode);
-	} else {
-		SetWindowPos(lpCalc->hwndFrame, hwndAfter, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | silentMode);
-	}
-
-	RECT windowRect;
-	GetWindowRect(hwnd, &windowRect);
-
-	if (windowRect.bottom - windowRect.top != screen.bottom - screen.top ||
-		windowRect.right - windowRect.left != screen.right - screen.left)
-	{
-		MoveWindow(lpCalc->hwndLCD, screen.left + client.left, screen.top + client.top,
-			screen.right - screen.left, screen.bottom - screen.top, FALSE);
-	}
-
-	ValidateRect(hwnd, &screen);
-	if (lpCalc->hwndStatusBar != NULL) {
-		SendMessage(lpCalc->hwndStatusBar, WM_SIZE, 0, 0);
-	}
-
-	//force little buttons to be correct
-	PositionLittleButtons(hwnd);
 	UpdateWindow(lpCalc->hwndLCD);
 	return 0;
 }
 
 // TODO: better names and types
 LRESULT HandleSizingMessage(HWND hwnd, LPCALC lpCalc, WPARAM wParam, RECT *prc) {
-	if (lpCalc->SkinEnabled) {
+	if (lpCalc->bSkinEnabled) {
 		return 1;
 	}
 

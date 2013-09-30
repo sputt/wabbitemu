@@ -117,7 +117,7 @@ int labels_app_load(LPCALC lpCalc, LPCTSTR lpszFileName) {
 		i = 0;
 		if (buffer[0] != ';')
 #ifdef _WINDOWS
-			i = _stscanf(buffer, _T("%s = $%X"), name, &equate);
+			i = _stscanf_s(buffer, _T("%s = $%X"), name, &equate);
 #else
 			i = sscanf(buffer, "%s = $%X", name, &equate);
 #endif

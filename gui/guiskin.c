@@ -9,6 +9,7 @@
 
 extern BOOL silent_mode;
 extern HINSTANCE g_hInst;
+#define LCD_MARKER_COLOR 0xFFFF0000
 
 BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, u_int skinWidth, u_int skinHeight, RECT *rectLCD) {
 	u_int foundX = -1, foundY = -1;
@@ -17,7 +18,7 @@ BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, u_int skinWidth, u_int skinHeight, REC
 	for (u_int y = 0; y < skinHeight && foundX == -1; y++) {
 		for (u_int x = 0; x < skinWidth && foundY == -1; x++) {
 			m_pBitmapKeymap->GetPixel(x, y, &pixel);
-			if (pixel.GetValue() == 0xFFFF0000)	{
+			if (pixel.GetValue() == LCD_MARKER_COLOR)	{
 				//81 92
 				foundX = x;
 				foundY = y;
@@ -33,13 +34,13 @@ BOOL FindLCDRect(Bitmap *m_pBitmapKeymap, u_int skinWidth, u_int skinHeight, REC
 	do {
 		foundX++;
 		m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
-	} while (pixel.GetValue() == 0xFFFF0000);
+	} while (pixel.GetValue() == LCD_MARKER_COLOR);
 	rectLCD->right = foundX--;
 	//find left edge
 	do { 
 		foundY++;
 		m_pBitmapKeymap->GetPixel(foundX, foundY, &pixel);
-	} while (pixel.GetValue() == 0xFFFF0000);
+	} while (pixel.GetValue() == LCD_MARKER_COLOR);
 	rectLCD->bottom = foundY;
 	return TRUE;
 }
@@ -54,7 +55,7 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 		lpCalc->hwndStatusBar = NULL;
 	}
 
-	if (lpCalc->SkinEnabled) {
+	if (lpCalc->bSkinEnabled) {
 		bChecked = MF_CHECKED;
 		CopyRect(&rc, &lpCalc->rectSkin);
 		AdjustWindowRect(&rc, WS_CAPTION | WS_TILEDWINDOW , FALSE);
@@ -82,8 +83,7 @@ void UpdateWabbitemuMainWindow(LPCALC lpCalc) {
 		CheckMenuItem(hMenu, IDM_VIEW_SKIN, MF_BYCOMMAND | bChecked);
 	}
 
-	SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top,
-			SWP_NOMOVE | SWP_NOZORDER);
+	SetWindowPos(lpCalc->hwndFrame, NULL, 0, 0, rc.right - rc.left, rc.bottom - rc.top, SWP_NOMOVE | SWP_NOZORDER);
 }
 
 enum DRAWSKINERROR {
@@ -102,7 +102,7 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 	}
 	
 	HBITMAP hbmSkinOld, hbmKeymapOld;
-	//translate to regular gdi compatibility to simplify coding :/
+	//translate to regular GDI compatibility to simplify coding :/
 	m_pBitmapKeymap->GetHBITMAP(Color::White, &hbmKeymapOld);
 	SelectObject(lpCalc->hdcKeymap, hbmKeymapOld);
 	//get the HBITMAP for the skin DONT change the first value, it is necessary for transparency to work
@@ -110,7 +110,7 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 	HDC hdcOverlay = CreateCompatibleDC(lpCalc->hdcSkin);
 	HBITMAP blankBitmap = CreateCompatibleBitmap(hdc, m_pBitmapSkin->GetWidth(), m_pBitmapSkin->GetHeight());
 	SelectObject(lpCalc->hdcSkin, blankBitmap);
-	if (!lpCalc->bCutout || !lpCalc->SkinEnabled) {
+	if (!lpCalc->bCutout || !lpCalc->bSkinEnabled) {
 		FillRect(lpCalc->hdcSkin, &lpCalc->rectSkin, GetStockBrush(GRAY_BRUSH));
 	}
 
@@ -230,7 +230,7 @@ int gui_frame_update(LPCALC lpCalc) {
 
 	BOOL foundScreen = FALSE;
 	if ((skinWidth != keymapWidth) || (skinHeight != keymapHeight) || skinHeight <= 0 || skinWidth <= 0) {
-		lpCalc->SkinEnabled = false;
+		lpCalc->bSkinEnabled = false;
 		MessageBox(lpCalc->hwndFrame, _T("Skin and Keymap are not the same size"), _T("Error"),  MB_OK);
 	} else {
 		lpCalc->rectSkin.right = skinWidth;
@@ -239,7 +239,7 @@ int gui_frame_update(LPCALC lpCalc) {
 	}
 	if (!foundScreen) {
 		MessageBox(lpCalc->hwndFrame, _T("Unable to find the screen box"), _T("Error"), MB_OK);
-		lpCalc->SkinEnabled = false;
+		lpCalc->bSkinEnabled = false;
 	}
 	if (lpCalc->hwndFrame == NULL) {
 		return 0;
@@ -249,8 +249,6 @@ int gui_frame_update(LPCALC lpCalc) {
 	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	SelectObject(lpCalc->hdcButtons, hbmTemp);
 	DeleteObject(hbmTemp);
-
-	UpdateWabbitemuMainWindow(lpCalc);
 	
 	switch (DrawSkin(hdc, lpCalc, m_pBitmapSkin, m_pBitmapKeymap)) {
 		case ERROR_FACEPLATE:
@@ -264,13 +262,15 @@ int gui_frame_update(LPCALC lpCalc) {
 			break;
 	}
 
-	if (lpCalc->bCutout && lpCalc->SkinEnabled)	{
-		if (EnableCutout(lpCalc) != 0) {
+	if (lpCalc->bCutout && lpCalc->bSkinEnabled)	{
+		if (EnableCutout(lpCalc, hbmTemp) != 0) {
 			MessageBox(lpCalc->hwndFrame, _T("Couldn't cutout window"), _T("Error"),  MB_OK);
 		}
 	} else {
 		DisableCutout(lpCalc);
 	}
+
+	UpdateWabbitemuMainWindow(lpCalc);
 
 	if (lpCalc->bCustomSkin) {
 		if (m_pBitmapKeymap) {
@@ -282,11 +282,7 @@ int gui_frame_update(LPCALC lpCalc) {
 	}
 	ReleaseDC(lpCalc->hwndFrame, hdc);
 
-	if (lpCalc->hwndStatusBar != NULL) {
-		SendMessage(lpCalc->hwndStatusBar, SB_SETTEXT, 1, (LPARAM) CalcModelTxt[lpCalc->model]);
-	}
-
-	SendMessage(lpCalc->hwndFrame, WM_SIZE, 0, 0);
+	SendMessage(lpCalc->hwndFrame, WM_SIZE, SIZE_RESTORED, 0);
 
 	return 0;
 }

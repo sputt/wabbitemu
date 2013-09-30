@@ -24,7 +24,7 @@
 #include "CWabbitemu.h"
 #endif
 
-#define FRAME_SUBDIVISIONS (1024)
+#define FRAME_SUBDIVISIONS 1024
 #define BOOTFREE_VER_MAJOR 11
 #define BOOTFREE_VER_MINOR 246
 
@@ -401,14 +401,6 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 		}
 		if (tifile->save == NULL) {
 			calc_reset(lpCalc);
-			if (auto_turn_on) {
-#ifdef WINVER
-				//windows uses threading so we need to send message
-				SendMessage(lpCalc->hwndFrame, WM_COMMAND, ID_DEBUG_TURNONCALC, 0);
-#else
-				calc_turn_on(lpCalc);
-#endif
-			}
 		}
 	}
 
@@ -840,7 +832,7 @@ void do_backup(LPCALC lpCalc) {
 		free_backup(oldestBackup);
 	}
 	debugger_backup *backup = (debugger_backup *) malloc(sizeof(debugger_backup));
-	backup->save = SaveSlot(lpCalc);
+	backup->save = SaveSlot(lpCalc, _T("Backup save"), _T("Wabbitemu"));
 	backup->next = NULL;
 	backup->prev = backups[slot];
 	if (backups[slot] != NULL)

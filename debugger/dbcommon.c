@@ -119,40 +119,47 @@ const TCHAR* byte_to_binary(int x, BOOL isWord) {
 	return b;
 }
 
-int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value) {
-	TCHAR result[32];
+int ValueSubmit(HWND hwndDlg, void *loc, int size, int max_value) {
+	TCHAR result[32] = {0};
 	int got_line;
-	if (hwndDlg == NULL) return 0;
-	((WORD*)result)[0] = sizeof(result);	//string size
+	if (hwndDlg == NULL) {
+		return 0;
+	}
+
+	((WORD *)result)[0] = sizeof(result);	//string size
 	got_line = (int) Edit_GetLine(hwndDlg, 0, result, sizeof(result));
 	
 	VALUE_FORMAT format = (VALUE_FORMAT) GetWindowLongPtr(hwndDlg, GWLP_USERDATA);
 	
 	char value[8];
 	int i;
-	/* Parse input here */
 
+	/* Parse input here */
 	if (got_line > 0) {
 		switch (format) {
 		case HEX2:
 		case HEX4:
-			_stscanf_s(result, _T("%x"), (int*) value);
+			_stscanf_s(result, _T("%x"), (int *) value);
 			if (*((int *) value) > max_value)
 				*((int *) value) = max_value;
 			break;
 		case FLOAT2:
 		case FLOAT4:
-			if (size == sizeof(float))
+			if (size == sizeof(float)) {
 				_stscanf_s(result, _T("%f"), (float *) value);
-			else
+			} else {
 				_stscanf_s(result, _T("%lf"), (double *) value);
-			if (*((float *) value) > max_value)
+			}
+
+			if (*((float *) value) > max_value) {
 				*((float *) value) = (float) max_value;
+			}
 			break;
 		case DEC3:
 			_stscanf_s(result, _T("%d"), (int*) value);
-			if (*((int *) value) > max_value)
+			if (*((int *) value) > max_value) {
 				*((int *) value) = max_value;
+			}
 			break;
 		case BIN16:
 		case BIN8: {
@@ -162,20 +169,26 @@ int ValueSubmit(HWND hwndDlg, TCHAR *loc, int size, int max_value) {
 					*((int *) value) += j;
 				}
 			}
-			if (*((int *) value) > max_value)
+			if (*((int *) value) > max_value) {
 				*((int *) value) = max_value;
+			}
 			break;
 		}
 		case CHAR1:
-			_stscanf_s(result, _T("%c"), (char*) value);
-			if (*((char *) value) > max_value)
+			_stscanf_s(result, _T("%c"), (char *) value);
+			if (*((char *) value) > max_value) {
 				*((char *) value) = max_value;
+			}
 			break;
 		}
 	} else {
-		*((int*)value) = 0;
+		*((int *)value) = 0;
 	}
-	for (i = 0; i < size; i++) loc[i] = value[i];
+
+	for (i = 0; i < size; i++) {
+		((u_char *) loc)[i] = value[i];
+	}
+
 	DestroyWindow(hwndDlg);
 	return 0;
 }

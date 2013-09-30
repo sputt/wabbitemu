@@ -6,7 +6,6 @@
 extern HINSTANCE g_hInst;
 extern BITMAPINFO *bi;
 
-static SAVESTATE_t *savestate;
 static TCHAR save_filename[MAX_PATH];
 
 static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam) {
@@ -33,21 +32,27 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 			SendMessage(cmbCompress, CB_ADDSTRING, 0, (LPARAM) _T("Zlib"));
 			SendMessage(cmbCompress, CB_SETCURSEL, 1, (LPARAM) 0);
 			
+#ifdef _UNICODE
+			size_t numConv;
+			TCHAR romBuffer[16];
+			mbstowcs_s(&numConv, romBuffer, lpCalc->rom_version, 16);
+			SendMessage(edtRom_version, WM_SETTEXT, 0, (LPARAM) romBuffer);
+#else
 			SendMessage(edtRom_version, WM_SETTEXT, 0, (LPARAM) lpCalc->rom_version);
+#endif
 			SendMessage(edtModel, WM_SETTEXT, 0, (LPARAM) CalcModelTxt[lpCalc->model]);
 			
 			
 			HBITMAP hbmPreview = CreateBitmap(96, 64, 1, 32, NULL);
 			
-			LCD_t lcd;
-			LoadLCD(savestate, &lcd);
+			LCD_t *lcd = lpCalc->cpu.pio.lcd;
 			
 			HDC hdc = CreateCompatibleDC(NULL);
 			HBITMAP hbmOld = (HBITMAP) SelectObject(hdc, hbmPreview);
 			
 			StretchDIBits(hdc, 0, 0, 96, 64,
 				0, 0, 96, 64,
-				LCD_image(&lcd),
+				LCD_image(lcd),
 				bi,
 				DIB_RGB_COLORS,
 				SRCCOPY);
@@ -71,21 +76,23 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 				switch (LOWORD(wParam)) {
 					case IDC_BTNSAVEOK:
 						{
-							SendMessage(edtAuthor, WM_GETTEXT, 32, (LPARAM) savestate->author);
-							SendMessage(edtComment, WM_GETTEXT, 64, (LPARAM) savestate->comment);
-							
+							TCHAR author[MAX_SAVESTATE_AUTHOR_LENGTH];
+							TCHAR comment[MAX_SAVESTATE_COMMENT_LENGTH];
+							SendMessage(edtAuthor, WM_GETTEXT, MAX_SAVESTATE_AUTHOR_LENGTH, (LPARAM) author);
+							SendMessage(edtComment, WM_GETTEXT, MAX_SAVESTATE_COMMENT_LENGTH, (LPARAM) comment);
 							int compression = (int) SendMessage(cmbCompress, CB_GETCURSEL, 0, 0);
-							
+
+							SAVESTATE_t *savestate = SaveSlot(lpCalc, author, comment);
 							WriteSave(save_filename, savestate, compression);
 #ifdef WINVER
 							StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), save_filename);
 #else
 							strcpy(lpCalc->rom_path, save_filename);
 #endif
+							FreeSave(savestate);
 						}
 					case IDC_BTNSAVECANCEL:
 						EndDialog(hwndDlg, wParam);
-						FreeSave(savestate);
 						return TRUE;
 				}
 			}
@@ -98,9 +105,8 @@ static INT_PTR CALLBACK DlgSavestateProc(HWND hwndDlg, UINT uMsg, WPARAM wParam,
 	}
 }
 
-INT_PTR gui_savestate(HWND hwndParent, SAVESTATE_t *save, TCHAR *filename, LPCALC lpCalc) {
+INT_PTR gui_savestate(HWND hwndParent, TCHAR *filename, LPCALC lpCalc) {
 	InitCommonControls();
-	savestate = save;
 #ifdef WINVER
 	StringCbCopy(save_filename, sizeof(save_filename), filename);
 #else

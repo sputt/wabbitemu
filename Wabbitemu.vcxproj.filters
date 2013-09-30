@@ -358,6 +358,9 @@
     <ClCompile Include="GUI\guisize.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
+    <ClCompile Include="utilities\avifile.cpp">
+      <Filter>Source Files\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -683,6 +686,9 @@
     </ClInclude>
     <ClInclude Include="GUI\guisize.h">
       <Filter>Header Files\GUI</Filter>
+    </ClInclude>
+    <ClInclude Include="utilities\avifile.h">
+      <Filter>Header Files\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

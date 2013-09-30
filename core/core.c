@@ -300,6 +300,19 @@ void update_bootmap_pages(memc *mem_c) {
 	mem_c->bootmap_banks[3].ram			= mem_c->normal_banks[2].ram;
 }
 
+static void endflash(memc *mem_c) {
+	if (mem_c->step != FLASH_ERROR) {
+		mem_c->step = FLASH_READ;
+	}
+}
+
+static void endflash_break(CPU_t *cpu) {
+	if (break_on_invalid_flash) {
+		cpu->mem_c->mem_write_break_callback(cpu);
+	}
+	endflash(cpu->mem_c);
+}
+
 static int CPU_opcode_fetch(CPU_t *cpu) {
 	int bank_num = mc_bank(cpu->pc);
 	bank_state_t *bank = &cpu->mem_c->banks[bank_num];
@@ -318,6 +331,9 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 			CPU_reset(cpu);
 		}
 	}
+	if (!bank->ram && cpu->mem_c->step != FLASH_READ) {	//I DON'T THINK THIS IS CORRECT
+		endflash_break(cpu);							//However it shouldn't be a problem
+	}													//assuming you know how to write to flash
 
 	cpu->bus = mem_read(cpu->mem_c, cpu->pc);
 	if (bank->ram) {
@@ -330,18 +346,6 @@ static int CPU_opcode_fetch(CPU_t *cpu) {
 	return cpu->bus;
 }
 
-static void endflash(memc *mem_c) {
-	if (mem_c->step != FLASH_ERROR) {
-		mem_c->step = FLASH_READ;
-	}
-}
-
-static void endflash_break(CPU_t *cpu) {
-	if (break_on_invalid_flash) {
-		cpu->mem_c->mem_write_break_callback(cpu);
-	}
-	endflash(cpu->mem_c);
-}
 
 static unsigned char flash_autoselect(CPU_t *cpu, unsigned short addr) {
 	int offset = addr & 0x3FFF;
@@ -379,6 +383,7 @@ static unsigned char flash_read(CPU_t *cpu, unsigned short addr) {
 		unsigned char error_value = ((~cpu->mem_c->flash_last_write & 0x80) | 0x20);
 		error_value |= cpu->mem_c->flash_toggles;
 		cpu->mem_c->flash_toggles ^= 0x40;
+		mem_c->flash_error = FALSE;
 		return error_value;
 	} else if (mem_c->step == FLASH_READ || mem_c->step == FLASH_FASTMODE) {
 		return mem_read(cpu->mem_c, addr);
@@ -394,7 +399,9 @@ static unsigned char flash_read(CPU_t *cpu, unsigned short addr) {
 
 unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr) {
 	if (check_mem_read_break(cpu->mem_c, addr_to_waddr(cpu->mem_c, addr))) {
-		cpu->mem_c->mem_read_break_callback(cpu);
+		if (cpu->mem_c->mem_read_break_callback) {
+			cpu->mem_c->mem_read_break_callback(cpu);
+		}
 	}
 
 	if (cpu->mem_c->banks[mc_bank(addr)].ram) {
@@ -493,7 +500,7 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 			break;
 		case FLASH_ERASE_55:
 			if (((addr & 0x0FFF) == 0x0AAA) && (data == 0x10)) {
-				// Erase entire chip...Im not sure if 
+				// Erase entire chip...I'm not sure if 
 				// boot page is included, so I'll leave it off.
 				// DrDnar 7/8/11: boot sector is included
 				for(int i = 0; i < cpu->mem_c->flash_size; i++) {
@@ -529,7 +536,7 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 					// I comment this off because this is the boot page
 					// it suppose to be write protected...
 					// BuckeyeDude 6/27/11: new info has been discovered boot code
-					// is writeable under certain conditions
+					// is writable under certain conditions
 					for (i = (pages - 1) * PAGE_SIZE; i < pages * PAGE_SIZE; i++) {
 						mem_c->flash[i] = 0xFF;
 					}
@@ -564,10 +571,19 @@ static void flash_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 	}
 }
 
-unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
+BOOL check_flash_write_valid(CPU_t *cpu, int page) {
+	return !cpu->mem_c->flash_locked && cpu->pio.model >= TI_73 &&
+		(((page != 0x3F && page != 0x2F) || (cpu->pio.se_aux->model_bits & 0x3)) &&
+		((page != 0x7F && page != 0x6F) || (cpu->pio.se_aux->model_bits & 0x2) || !(cpu->pio.se_aux->model_bits & 0x1)));
+}
+
+void CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data) {
 	if (check_mem_write_break(cpu->mem_c, addr_to_waddr(cpu->mem_c, addr))) {
-		cpu->mem_c->mem_write_break_callback(cpu);
+		if (cpu->mem_c->mem_write_break_callback) {
+			cpu->mem_c->mem_write_break_callback(cpu);
+		}
 	}
+
 	bank_state_t *bank = &cpu->mem_c->banks[mc_bank(addr)];
 
 	if (bank->ram) {
@@ -576,10 +592,7 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 		}
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_ram_tstates);
 	} else {
-		int page = bank->page;
-		if (!cpu->mem_c->flash_locked && cpu->pio.model >= TI_73 &&
-			(((page != 0x3F && page != 0x2F) || (cpu->pio.se_aux->model_bits & 0x3)) &&
-			((page != 0x7F && page != 0x6F) || (cpu->pio.se_aux->model_bits & 0x2) || !(cpu->pio.se_aux->model_bits & 0x1)))) {
+		if (check_flash_write_valid(cpu, bank->page)) {
 			flash_write(cpu, addr, data);
 		} else if (break_on_invalid_flash && cpu->mem_c->mem_write_break_callback) {
 			cpu->mem_c->mem_write_break_callback(cpu);
@@ -588,7 +601,7 @@ unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data)
 		SEtc_add(cpu->timer_c, cpu->mem_c->write_flash_tstates);
 	}
 
-	return cpu->bus = data;
+	cpu->bus = data;
 }
 
 #ifdef WITH_REVERSE

@@ -118,7 +118,7 @@ typedef struct
 
 	uLong pos_local_header;     /* offset of the local header of the file
 									 currently writing */
-	char* central_header;       /* central header data for the current file */
+	TCHAR *central_header;      /* central header data for the current file */
 	uLong size_centralheader;   /* size of the central header for cur file */
 	uLong flag;                 /* flag of the file currently writing */
 
@@ -661,7 +661,7 @@ extern zipFile ZEXPORT zipOpen (const TCHAR *pathname, int append)
 	return zipOpen2(pathname,append,NULL,NULL);
 }
 
-extern int ZEXPORT zipOpenNewFileInZip4 (zipFile file, const TCHAR *filename, zip_fileinfo *zipfi,
+extern int ZEXPORT zipOpenNewFileInZip4 (zipFile file, const TCHAR *filename, const zip_fileinfo *zipfi,
 										 const void *extrafield_local, uInt size_extrafield_local,
 										 const void *extrafield_global, uInt size_extrafield_global,
 										 const char *comment, int method, int level, int raw,
@@ -695,14 +695,14 @@ extern int ZEXPORT zipOpenNewFileInZip4 (zipFile file, const TCHAR *filename, zi
 
 
 	if (filename==NULL)
-		filename="-";
+		filename = _T("-");
 
 	if (comment==NULL)
 		size_comment = 0;
 	else
 		size_comment = (uInt)strlen(comment);
 
-	size_filename = (uInt)strlen(filename);
+	size_filename = (uInt)_tcslen(filename);
 
 	if (zipfi == NULL)
 		zi->ci.dosDate = 0;
@@ -732,7 +732,7 @@ extern int ZEXPORT zipOpenNewFileInZip4 (zipFile file, const TCHAR *filename, zi
 	zi->ci.pos_local_header = ZTELL(zi->z_filefunc,zi->filestream) ;
 	zi->ci.size_centralheader = SIZECENTRALHEADER + size_filename +
 									  size_extrafield_global + size_comment;
-	zi->ci.central_header = (char*)ALLOC((uInt)zi->ci.size_centralheader);
+	zi->ci.central_header = (TCHAR*)ALLOC((uInt)zi->ci.size_centralheader);
 
 	ziplocal_putValue_inmemory(zi->ci.central_header,(uLong)CENTRALHEADERMAGIC,4);
 	/* version info */
@@ -932,7 +932,7 @@ extern int ZEXPORT zipWriteInFileInZip (zipFile file, const void *buf, unsigned 
 
 	zi->ci.stream.next_in = (Bytef*)buf;
 	zi->ci.stream.avail_in = len;
-	zi->ci.crc32 = crc32(zi->ci.crc32,buf,(uInt)len);
+	zi->ci.crc32 = crc32(zi->ci.crc32,(const Bytef *)buf,(uInt)len);
 
 	while ((err==ZIP_OK) && (zi->ci.stream.avail_in>0))
 	{

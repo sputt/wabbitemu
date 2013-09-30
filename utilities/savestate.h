@@ -11,6 +11,8 @@ typedef struct {
 } CHUNK_t;
 
 
+#define MAX_CHUNKS 512
+
 typedef struct {
 	int version_major;
 	int version_minor;
@@ -19,7 +21,7 @@ typedef struct {
 	int chunk_count;
 	char author[32];
 	char comment[64];	
-	CHUNK_t* chunks[512];
+	CHUNK_t* chunks[MAX_CHUNKS];
 } SAVESTATE_t;
 
 
@@ -55,9 +57,12 @@ typedef struct {
 #define NUM_FLASH_BREAKS_tag	"NFBK"
 #define NUM_RAM_BREAKS_tag		"NRBK"
 
+#define MAX_SAVESTATE_AUTHOR_LENGTH 32
+#define MAX_SAVESTATE_COMMENT_LENGTH 64
+
 void WriteSave(const TCHAR *, SAVESTATE_t *, int);
 void LoadSlot(SAVESTATE_t* , void *);
-SAVESTATE_t* SaveSlot(void *);
+SAVESTATE_t* SaveSlot(void *, TCHAR *author, TCHAR *comment);
 SAVESTATE_t* CreateSave(TCHAR *, TCHAR *, int);
 SAVESTATE_t* ReadSave(FILE *ifile);
 void FreeSave(SAVESTATE_t *);

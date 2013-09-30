@@ -298,7 +298,7 @@ static LRESULT CALLBACK ValueProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM
 			case EN_KILLFOCUS:
 				if (GetFocus() == hwnd) break;
 			case EN_SUBMIT:
-				ValueSubmit(vfs->hwndVal, (TCHAR *) vfs->data, (int) vfs->size, vfs->max_value);
+				ValueSubmit(vfs->hwndVal, vfs->data, (int) vfs->size, vfs->max_value);
 				vfs->editing = FALSE;
 				SendMessage(GetParent(hwnd), WM_COMMAND, MAKEWPARAM(0, EN_CHANGE), (LPARAM) hwnd);
 				Debug_UpdateWindow(hwnd);

@@ -15,7 +15,7 @@ extern HINSTANCE g_hInst;
 #define DBREG_ORGY	0
 
 struct db_reg {
-	unsigned int offset;
+	size_t offset;
 	char name[8];
 };
 
@@ -1371,18 +1371,11 @@ LRESULT CALLBACK RegProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				case EN_KILLFOCUS:
 					if (GetFocus() == hwnd) break;
 				case EN_SUBMIT:
-
 				default:
 					lpCalc = (LPCALC) GetWindowLongPtr(hwnd, GWLP_USERDATA);
 					if (vi != -1) {
-						if (vi < REG16_ROWS*REG16_COLS) {
-							ValueSubmit(hwndVal,
-								((TCHAR *) (&lpCalc->cpu)) + reg_offset[vi].offset, 2);
-						} else {
-							ValueSubmit(hwndVal,
-								((TCHAR *) (&lpCalc->cpu)) + reg_offset[vi].offset, 1);
-
-						}
+						int maxValue = vi < REG16_ROWS*REG16_COLS ? 2 : 1;
+						ValueSubmit(hwndVal, (void *) (&lpCalc->cpu + reg_offset[vi].offset), maxValue);
 						Debug_UpdateWindow(GetParent(hwnd));
 					}
 					hwndVal = NULL;

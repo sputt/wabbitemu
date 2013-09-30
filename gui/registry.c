@@ -352,7 +352,7 @@ HRESULT LoadRegistrySettings(const LPCALC lpCalc) {
 	StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), (TCHAR *) QueryWabbitKey(_T("rom_path")));
 	StringCbCopy(lpCalc->skin_path, sizeof(lpCalc->skin_path), (TCHAR *) QueryWabbitKey(_T("skin_path")));
 	StringCbCopy(lpCalc->keymap_path, sizeof(lpCalc->keymap_path), (TCHAR *) QueryWabbitKey(_T("keymap_path")));
-	lpCalc->SkinEnabled = (BOOL) QueryWabbitKey(_T("skin"));
+	lpCalc->bSkinEnabled = (BOOL) QueryWabbitKey(_T("skin"));
 	lpCalc->bCutout = (BOOL) QueryWabbitKey(_T("cutout"));
 	lpCalc->bAlphaBlendLCD = (BOOL) QueryWabbitKey(_T("alphablend_lcd"));
 	lpCalc->scale = (int) QueryWabbitKey(_T("screen_scale"));
@@ -440,7 +440,7 @@ HRESULT SaveRegistrySettings(const LPCALC lpCalc) {
 		
 		SaveWabbitKey(_T("cutout"), REG_DWORD, &lpCalc->bCutout);
 		SaveWabbitKey(_T("alphablend_lcd"), REG_DWORD, &lpCalc->bAlphaBlendLCD);
-		SaveWabbitKey(_T("skin"), REG_DWORD, &lpCalc->SkinEnabled);
+		SaveWabbitKey(_T("skin"), REG_DWORD, &lpCalc->bSkinEnabled);
 		SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
 		SaveWabbitKey(_T("gif_path"), REG_SZ, &gif_file_name);
 		SaveWabbitKey(_T("gif_autosave"), REG_DWORD, &gif_autosave);

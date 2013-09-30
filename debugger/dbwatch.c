@@ -371,7 +371,7 @@ LRESULT CALLBACK WatchProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam
 					if (pdi->item.pszText != NULL) {
 						label_struct *label = lookup_label(lpCalc, pdi->item.pszText);
 						watchpoint_t *watch = lpDebugInfo->watchpoints[pdi->item.iItem];
-						char firstChar = *pdi->item.pszText;
+						TCHAR firstChar = *pdi->item.pszText;
 						if (!isdigit(firstChar) && firstChar != '$' && firstChar != '%' && label != NULL) {
 							StringCbCopy(watch->label, sizeof(watch->label), pdi->item.pszText);
 							watch->waddr.addr = label->addr & 0xFFFF;

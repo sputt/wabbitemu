@@ -1,7 +1,7 @@
 #ifndef GUI_CUTOUT_H_
 #define GUI_CUTOUT_H_
 
-int EnableCutout(LPCALC);
+int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin);
 int DisableCutout(LPCALC);
 LRESULT CALLBACK SmallButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 void PositionLittleButtons(HWND);

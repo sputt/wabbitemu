@@ -26,7 +26,7 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs)
 		for(int i = 1; i < argc; i++) {
 			ZeroMemory(tmpstring, 512);
 #ifdef _UNICODE
-			_tcscpy(tmpstring, argv[i]);
+			StringCbCopy(tmpstring, sizeof(tmpstring), argv[i]);
 #else
 			size_t numConv;
 			wcstombs_s(&numConv, tmpstring, argv[i], 512);

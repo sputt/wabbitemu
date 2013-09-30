@@ -46,9 +46,9 @@ uLong filetime(TCHAR *f, tm_zip *tmzip, uLong *dt)
   {
       FILETIME ftLocal;
       HANDLE hFind;
-      WIN32_FIND_DATAA ff32;
+      WIN32_FIND_DATA ff32;
 
-      hFind = FindFirstFileA(f,&ff32);
+      hFind = FindFirstFile(f, &ff32);
       if (hFind != INVALID_HANDLE_VALUE)
       {
         FileTimeToLocalFileTime(&(ff32.ftLastWriteTime),&ftLocal);

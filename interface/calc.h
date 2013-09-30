@@ -77,24 +77,20 @@ typedef struct tagCALC {
 	HWND hwndDetachedLCD;
 	HWND hwndStatusBar;
 	HWND hwndDebug;
+	HWND hwndButtonOverlay;
 	HWND hwndSmallClose;
 	HWND hwndSmallMinimize;
 	HWND hwndKeyListDialog;
 
-	BOOL SkinEnabled;
-	DWORD scale;
-	BOOL bCutout;
-	HANDLE hdlThread;
+	HDC hdcSkin;
+	HDC hdcButtons;
+	HDC hdcKeymap;
 	
 	clock_t sb_refresh;
 
 	key_string *last_keypress_head;
 	int num_keypresses;
 
-	BOOL do_drag;
-	HDC hdcSkin;
-	HDC hdcButtons;
-	HDC hdcKeymap;
 	union {
 		struct {
 			breakpoint_t **flash_cond_break;
@@ -106,7 +102,16 @@ typedef struct tagCALC {
 	pthread_t hdlThread;
 #endif
 
+	DWORD scale;
+	BOOL bCutout;
+	BOOL bSkinEnabled;
+	BOOL bTIOSDebug;
 	BOOL running;
+	BOOL bDoDrag;
+	BOOL bCustomSkin;
+	BOOL bAlwaysOnTop;
+	BOOL bAlphaBlendLCD;
+
 	int speed;
 	BYTE breakpoints[0x10000];
 	label_struct labels[6000];
@@ -117,15 +122,11 @@ typedef struct tagCALC {
 	apphdr_t *last_transferred_app;
 
 	gif_disp_states gif_disp_state;
-	BOOL bTIOSDebug;
 
 #ifdef _WINDOWS
 	RECT rectSkin;
 	RECT rectLCD;
 	COLORREF FaceplateColor;
-	BOOL bCustomSkin;
-	BOOL bAlwaysOnTop;
-	BOOL bAlphaBlendLCD;
 	TCHAR skin_path[256];
 	TCHAR keymap_path[256];
 	CWabbitemu *pWabbitemu;
@@ -201,13 +202,11 @@ GLOBAL int current_backup_index;
 GLOBAL int num_backup_per_sec;
 #endif
 
-#ifdef WITH_AVI
 #include "avi_utils.h"
 #include "avifile.h"
 GLOBAL CAviFile *currentAvi;
 GLOBAL HAVI recording_avi;
 GLOBAL BOOL is_recording;
-#endif
 
 GLOBAL u_int frame_counter;
 GLOBAL int startX;
