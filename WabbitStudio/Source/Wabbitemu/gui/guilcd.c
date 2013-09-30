@@ -321,7 +321,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 			_tprintf_s(_T("error in SetDIBitsToDevice\n"));
 		}
 
-		if (lpCalc->do_drag == TRUE) {
+		if (lpCalc->bDoDrag == TRUE) {
 
 			hdcOverlay = DrawDragPanes(hwnd, hdcDest);
 			BLENDFUNCTION bf;
@@ -371,7 +371,7 @@ void PaintLCD(HWND hwnd, HDC hdcDest) {
 		bf.SourceConstantAlpha = 160;
 		bf.AlphaFormat = 0;
 
-		if (lpCalc->do_drag == TRUE) {
+		if (lpCalc->bDoDrag == TRUE) {
 			hdcOverlay = DrawDragPanes(hwnd, hdcDest);
 
 			if (AlphaBlend(	hdc, 0, 0, rc.right, rc.bottom,

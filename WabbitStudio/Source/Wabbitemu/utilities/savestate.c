@@ -55,7 +55,6 @@ SAVESTATE_t* CreateSave(TCHAR *author, TCHAR *comment , int model) {
 	memset(save->comment, 0, sizeof(save->comment));
 #ifdef WINVER
 #ifdef _UNICODE
-	char buffer[64];
 	size_t numConv;
 	wcstombs_s(&numConv, save->author, author, sizeof(save->author));
 	wcstombs_s(&numConv, save->comment, comment, sizeof(save->author));
@@ -395,7 +394,10 @@ uint64_t ReadLong(CHUNK_t* chunk)
 
 void ReadBlock(CHUNK_t* chunk, unsigned char *pnt, int length) {
 	int i;
-	for(i = 0; i < length; i++) {
+	// we do this min because if the length and the chunk are not
+	// the same size we could end up reading bad data. CheckPNT will
+	// handle the error
+	for(i = 0; i < min(length, chunk->size); i++) {
 		pnt[i] = chunk->data[i+chunk->pnt];
 	}
 	chunk->pnt += length;
@@ -663,16 +665,18 @@ void SaveLCD(SAVESTATE_t* save, LCD_t* lcd) {
 	WriteDouble(chunk, lcd->write_last);
 }
 
-SAVESTATE_t* SaveSlot(void *lpInput) {
+SAVESTATE_t* SaveSlot(void *lpInput, TCHAR *author, TCHAR *comment) {
 	LPCALC lpCalc = (LPCALC) lpInput;
 	SAVESTATE_t* save;
 	BOOL runsave;
-	if (lpCalc->active == FALSE) return NULL;
+	if (lpCalc->active == FALSE) {
+		return NULL;
+	}
 
 	runsave = lpCalc->running;
 	lpCalc->running = FALSE;
 	
-	save = CreateSave(_T("Revsoft"), _T("Test save"), lpCalc->model);
+	save = CreateSave(author, comment, lpCalc->model);
 
 	SaveCPU(save, &lpCalc->cpu);
 	SaveMEM(save, &lpCalc->mem_c);
@@ -1060,8 +1064,6 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 	int i;
 	FILE* ofile;
 	FILE* cfile;
-	TCHAR tmpfn[L_tmpnam];
-	TCHAR temp_save[MAX_PATH];
 	
 	if (!save) {
 		_putts(_T("Save was null for write"));
@@ -1071,20 +1073,10 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 #ifdef WINVER
 		_tfopen_s(&ofile, fn, _T("wb"));
 #else
-		ofile = fopen(fn,"wb");
+		ofile = fopen(fn, "wb");
 #endif
 	} else {
-#ifdef WINVER
-		_ttmpnam_s(tmpfn, sizeof(tmpfn));
-		GetAppDataString(temp_save, sizeof(temp_save));
-		StringCbCat(temp_save, sizeof(temp_save), tmpfn);
-		_tfopen_s(&ofile, temp_save, _T("wb"));
-#else
-		tmpnam(tmpfn);
-		strcpy(temp_save, getenv("appdata"));
-		strcat(temp_save, tmpfn);
-		ofile = fopen(temp_save,"wb");
-#endif
+		tmpfile_s(&ofile);
 	}
 		
 	if (!ofile) {
@@ -1109,31 +1101,27 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 		fputc(save->chunks[i]->tag[1], ofile);
 		fputc(save->chunks[i]->tag[2], ofile);
 		fputc(save->chunks[i]->tag[3], ofile);
-		fputi(save->chunks[i]->size,ofile);
+		fputi(save->chunks[i]->size, ofile);
 		fwrite(save->chunks[i]->data, 1, save->chunks[i]->size, ofile);
 	}
-	fclose(ofile);
 	
 	if (compress) {
+		// make sure we've written to the file, and rewind to
+		// the beginning. TODO: we should not require files,
+		// but def and inf use FILE * for now
+		fflush(ofile);
+		rewind(ofile);
+
 #ifdef WINVER
 		_tfopen_s(&cfile, fn, _T("wb"));
 #else
-		cfile = fopen(fn,"wb");
+		cfile = fopen(fn, "wb");
 #endif
 		if (!cfile) {
 			_putts(_T("Could not open compress file for write"));
 			return;
 		}
-#ifdef WINVER
-		_tfopen_s(&ofile, temp_save, _T("rb"));
-#else
-		ofile = fopen(temp_save,"rb");
-#endif
-		if (!ofile) {
-			_putts(_T("Could not open temp file for read"));
-			return;
-		}
-		//int error;
+
 		fputs(DETECT_CMP_STR, cfile);
 		switch(compress) {
 #ifdef ZLIB_WINAPI
@@ -1149,90 +1137,68 @@ void WriteSave(const TCHAR *fn, SAVESTATE_t* save, int compress) {
 				_putts(_T("Error bad compression format selected."));
 				break;
 		}
-		fclose(ofile);
 		fclose(cfile);
-#ifdef _WINDOWS
-		_tremove(temp_save);
-#else
-		remove(temp_save);
-#endif
 	}
+	fclose(ofile);
 }
 
 SAVESTATE_t* ReadSave(FILE *ifile) {
 	int i;
 	int compressed = FALSE;
-	int chunk_offset,chunk_count;
+	int chunk_offset, chunk_count;
 	char string[128];
-	TCHAR tmpfn[L_tmpnam];
-	TCHAR temp_save[MAX_PATH];
-	SAVESTATE_t *save;
+	static SAVESTATE_t *save = NULL;
 	CHUNK_t *chunk;
-	FILE *tmpfile;
+	FILE *tmpFile;
 
 	int error = setjmp(errorJumpBuf);
 	if (error == CHUNK_SIZE_FAIL) {
-		free(save);
-		return NULL;
+		if (save) {
+			free(save);
+		}
+ 		return NULL;
 	}
 
 	fread(string, 1, 8, ifile);
 	string[8] = 0;
 	if (strncmp(DETECT_CMP_STR, string, 8) == 0) {
 		i = fgetc(ifile);
-#ifdef WINVER
-		_ttmpnam_s(tmpfn);
-		GetAppDataString(temp_save, sizeof(temp_save));
-		StringCbCat(temp_save, sizeof(temp_save), tmpfn);
-		_tfopen_s(&tmpfile, temp_save, _T("wb"));
-#else
-		tmpnam(tmpfn);
-		strcpy(temp_save, getenv("appdata"));
-		strcat(temp_save, tmpfn);
-		tmpfile = fopen(temp_save,"wb");
-#endif
-		if (!tmpfile) {
+		tmpfile_s(&tmpFile);
+		if (!tmpFile) {
 			return NULL;
 		}
-		//int error;
+		
 		switch(i) {
 #ifdef ZLIB_WINAPI
 			case ZLIB_CMP:
 				{
-					int error = inf(ifile,tmpfile);
+					int error = inf(ifile, tmpFile);
+					if (error) {
+						return NULL;
+					}
+					// TODO: fix this so we don't need this temp file
+					// we've written it out to file, but fclosing this will
+					// delete it. Make sure we've written it out and rewind
+					fflush(tmpFile);
+					rewind(tmpFile);
+					ifile = tmpFile;
 					break;
 				}
 #endif
 			default:
-				fclose(tmpfile);
-#ifdef _WINDOWS
-				_tremove(tmpfn);
-#else
-				remove(tmpfn);
-#endif
+				fclose(tmpFile);
 				return NULL;
 		}
 		
-		fclose(tmpfile);
-#ifdef WINVER
-		_tfopen_s(&ifile, temp_save, _T("rb"));	//this is not a leak, file gets closed
-											// outside of this routine.
-#else
-		ifile = fopen(temp_save,"rb");	//this is not a leak, file gets closed
-										// outside of this routine.
-#endif
-		if (!ifile) {
-			_putts(_T("Could not open temp file for read"));
-			return NULL;
-		}
 		compressed = TRUE;
 		fread(string, 1, 8, ifile);
 	}
 		
-	if (strncmp(DETECT_STR, string, 8) != 0){
-
+	if (strncmp(DETECT_STR, string, 8) != 0) {
 		_putts(_T("Readsave detect string failed."));
-		if (compressed == TRUE) fclose(ifile);
+		if (compressed == TRUE) {
+			fclose(ifile);
+		}
 		return NULL;
 	}		
 	
@@ -1260,14 +1226,15 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 	save->model = fgeti(ifile);
 
 	chunk_count = fgeti(ifile);
-	fread(save->author,1,32,ifile);
-	fread(save->comment,1,64,ifile);
+	fread(save->author, 1, MAX_SAVESTATE_AUTHOR_LENGTH, ifile);
+	fread(save->comment, 1 , MAX_SAVESTATE_COMMENT_LENGTH, ifile);
 
 	fseek(ifile, chunk_offset + 8 + 4, SEEK_SET);
 	
-	for(i = 0; i < 512; i++) {
+	for(i = 0; i < MAX_CHUNKS; i++) {
 		save->chunks[i] = NULL;
 	}
+
 	save->chunk_count = 0;
 	for(i = 0; i < chunk_count; i++) {
 		string[0]	= fgetc(ifile);
@@ -1295,22 +1262,17 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 			FreeSave(save);
 			return NULL;
 		}
-		chunk		= NewChunk(save,string);
+		chunk		= NewChunk(save, string);
 		chunk->size	= fgeti(ifile);
 		if (feof(ifile)) {
 			FreeSave(save);
 			return NULL;
 		}
 		chunk->data	= (unsigned char *) malloc(chunk->size);
-		fread(chunk->data,1,chunk->size,ifile);
+		fread(chunk->data, 1, chunk->size, ifile);
 	}
 	if (compressed == TRUE) {
 		fclose(ifile);
-#ifdef _WINDOWS
-		_tremove(temp_save);
-#else
-		remove(temp_save);
-#endif
 	}
 /* check for read errors... */
 	return save;

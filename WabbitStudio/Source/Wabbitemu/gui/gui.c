@@ -197,7 +197,7 @@ int gui_frame(LPCALC lpCalc) {
 		lpCalc->scale = 2;
 	}
 
-	if (lpCalc->SkinEnabled) {
+	if (lpCalc->bSkinEnabled) {
 		SetRect(&r, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	} else {
 		SetRect(&r, 0, 0, 128 * lpCalc->scale, 64 * lpCalc->scale);
@@ -391,10 +391,11 @@ static BOOL hasCrashed = FALSE;
 extern int def(FILE *, FILE *, int);
 
 LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
-	SetErrorMode(SEM_NOGPFAULTERRORBOX);
+	SetErrorMode(SEM_FAILCRITICALERRORS | SEM_NOALIGNMENTFAULTEXCEPT | SEM_NOGPFAULTERRORBOX);
 	if (hasCrashed) {
 		return EXCEPTION_EXECUTE_HANDLER;
 	}
+
 	hasCrashed = TRUE;
 	TCHAR szDumpPath[MAX_PATH], szTempDumpPath[MAX_PATH];
 	GetAppDataString(szDumpPath, sizeof(szDumpPath));
@@ -404,8 +405,7 @@ LONG WINAPI ExceptionFilter(_EXCEPTION_POINTERS *pExceptionInfo) {
 	HANDLE hFile = CreateFile(szTempDumpPath, GENERIC_WRITE, FILE_SHARE_WRITE, NULL, CREATE_ALWAYS,
 		FILE_ATTRIBUTE_NORMAL, NULL );
 
-	if (hFile != INVALID_HANDLE_VALUE)
-	{
+	if (hFile != INVALID_HANDLE_VALUE) {
 		_MINIDUMP_EXCEPTION_INFORMATION ExInfo;
 
 		ExInfo.ThreadId = GetCurrentThreadId();
@@ -630,7 +630,7 @@ void CWabbitemuModule::RunMessageLoop()
 				haccel = haccelmain;
 				hwndtop = m_lpCalc->hwndLCD;
 				SetForegroundWindow(hwndtop);
-			} else if (m_lpCalc->bCutout && m_lpCalc->SkinEnabled) {
+			} else if (m_lpCalc->bCutout && m_lpCalc->bSkinEnabled) {
 				if (hwndtop == m_lpCalc->hwndFrame || 
 					hwndtop == m_lpCalc->hwndSmallClose ||
 					hwndtop == m_lpCalc->hwndSmallMinimize)
@@ -675,8 +675,7 @@ void CWabbitemuModule::RunMessageLoop()
 
 }
 
-HRESULT CWabbitemuModule::PostMessageLoop()
-{
+HRESULT CWabbitemuModule::PostMessageLoop() {
 	// Make sure the GIF has terminated
 	if (gif_write_state == GIF_FRAME) {
 		gif_write_state = GIF_END;
@@ -705,8 +704,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	case WM_CREATE: {
 		LPCALC lpCalc = (LPCALC) ((LPCREATESTRUCT) lParam)->lpCreateParams;
 		SetWindowLongPtr(hwnd, GWLP_USERDATA, (LONG_PTR) lpCalc);
-
-		//RegisterDropWindow(hwnd, (IDropTarget **) &lpCalc->pDropTarget);
 		return 0;
 					}
 	case WM_USER:
@@ -728,14 +725,17 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				break;
 			case GDS_RECORDING:
 				GIFGRADWIDTH += GIFADD;
-				if (GIFGRADWIDTH > GIFGRAD_PEAK) GIFADD = -1;
-				else if (GIFGRADWIDTH < GIFGRAD_TROUGH) GIFADD = 1;
+				if (GIFGRADWIDTH > GIFGRAD_PEAK) {
+					GIFADD = -1;
+				} else if (GIFGRADWIDTH < GIFGRAD_TROUGH) {
+					GIFADD = 1;
+				}
 				break;
 			case GDS_ENDING:
 				if (GIFGRADWIDTH) GIFGRADWIDTH--;
 				else {
 					lpCalc->gif_disp_state = GDS_IDLE;							
-					gui_frame_update(lpCalc);						
+					gui_frame_update(lpCalc);
 				}						
 				break;
 			case GDS_IDLE:
@@ -752,7 +752,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			int grayred = (int) (((double) GIFGRADWIDTH / GIFGRAD_PEAK) * 50);
 			HDC hWindow = GetDC(hwnd);
 			DrawGlow(lpCalc->hdcSkin, hWindow, &screen, RGB(127 - grayred, 127 - grayred, 127 + grayred),
-				GIFGRADWIDTH, lpCalc->SkinEnabled);				
+				GIFGRADWIDTH, lpCalc->bSkinEnabled);				
 			ReleaseDC(hwnd, hWindow);
 			InflateRect(&screen, GIFGRADWIDTH, GIFGRADWIDTH);
 			ValidateRect(hwnd, &screen);
@@ -762,7 +762,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 		RECT rc;
 		HDC hdc = BeginPaint(hwnd, &ps);
 
-		if (lpCalc->SkinEnabled) {
+		if (lpCalc->bSkinEnabled) {
 			//GetWindowRect(hwnd, &rc);
 			//int screenWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
 			//int screenHeight = GetSystemMetrics(SM_CYVIRTUALSCREEN);
@@ -799,7 +799,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			if (rom_load(lpCalcNew, lpCalc->rom_path) || 
 				rom_load(lpCalcNew, (LPCTSTR) QueryWabbitKey(_T("rom_path"))))
 			{
-				lpCalcNew->SkinEnabled = lpCalc->SkinEnabled;
+				lpCalcNew->bSkinEnabled = lpCalc->bSkinEnabled;
 				lpCalcNew->bCutout = lpCalc->bCutout;
 				lpCalcNew->scale = lpCalc->scale;
 				lpCalcNew->FaceplateColor = lpCalc->FaceplateColor;
@@ -836,25 +836,28 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 										   OSes (*.8xu)\0*.8xu\0\
 										   All Files (*.*)\0*.*\0\0");
 			ZeroMemory(FileName, MAX_PATH);
+			BOOL running = lpCalc->running;
+			lpCalc->running = FALSE;
 			if (!SaveFile(FileName, (TCHAR *) lpstrFilter, _T("Wabbitemu Save State"), _T("sav"), OFN_PATHMUSTEXIST)) {
 				TCHAR extension[5] = _T("");
 				const TCHAR *pext = _tcsrchr(FileName, _T('.'));
-				if (pext != NULL)
-				{
+				if (pext != NULL) {
 					StringCbCopy(extension, sizeof(extension), pext);
 				}
+				
 				if (!_tcsicmp(extension, _T(".rom")) || !_tcsicmp(extension, _T(".bin"))) {
 					MFILE *file = ExportRom(FileName, lpCalc);
 					StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), FileName);
 					mclose(file);
 				} else if (!_tcsicmp(extension, _T(".8xu"))) {
-					HWND hExportOS = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_EXPORT_OS), hwnd, (DLGPROC) ExportOSDialogProc, (LPARAM) FileName);
+					HWND hExportOS = CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_EXPORT_OS), hwnd, 
+						(DLGPROC) ExportOSDialogProc, (LPARAM) FileName);
 					ShowWindow(hExportOS, SW_SHOW);
 				} else {
-					SAVESTATE_t *save = SaveSlot(lpCalc);
-					gui_savestate(hwnd, save, FileName, lpCalc);
+					gui_savestate(hwnd, FileName, lpCalc);
 				}
 			}
+			lpCalc->running = running;
 			break;
 							}
 		case IDM_FILE_GIF: {
@@ -872,11 +875,12 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				FILE *file;
 				_tfopen_s(&file, gif_file_name, _T("wb"));
 				if (!file && start_screenshot) { 
-					MessageBox(NULL, _T("Invalid file name."), _T("Error"), MB_OK);
+					MessageBox(hwnd, _T("Invalid file name."), _T("Error"), MB_OK);
 					start_screenshot = FALSE;
-				} else {
+				} else if (file) {
 					fclose(file);
 				}
+
 				if (!start_screenshot) {
 					int i;
 					for (i = 0; i < MAX_CALCS; i++) {
@@ -938,7 +942,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 								}
 		case IDM_FILE_AVI: {
 			HMENU hmenu = GetMenu(hwnd);
-#ifdef WITH_AVI
 			if (is_recording) {
 				delete currentAvi;
 				currentAvi = NULL;
@@ -960,7 +963,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				lpCalc->running = TRUE;
 			}
-#endif
 			break;
 						   }
 		case IDM_FILE_CLOSE:
@@ -999,7 +1001,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			break;
 							 }
 		case IDM_VIEW_SKIN: {
-			lpCalc->SkinEnabled = !lpCalc->SkinEnabled;
+			lpCalc->bSkinEnabled = !lpCalc->bSkinEnabled;
 			gui_frame_update(lpCalc);
 			break;
 							}
@@ -1331,7 +1333,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 	case WM_SIZE:
 		return HandleSizeMessage(hwnd, lpCalc);
 	case WM_MOVE: {
-		if (lpCalc->bCutout && lpCalc->SkinEnabled) {
+		if (lpCalc->bCutout && lpCalc->bSkinEnabled) {
 			HDWP hdwp = BeginDeferWindowPos(3);
 			RECT rc;
 			GetWindowRect(hwnd, &rc);
@@ -1363,7 +1365,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			return 0;
 		}
 
-		if (!lpCalc->SkinEnabled) {
+		if (!lpCalc->bSkinEnabled) {
 			break;
 		}
 		MINMAXINFO *info = (MINMAXINFO *) lParam;
@@ -1416,7 +1418,8 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						}
 						StringCbCat(tempSave, sizeof(tempSave), _T("\\wabbitemu.sav"));
 						StringCbCopy(lpCalc->rom_path, sizeof(lpCalc->rom_path), tempSave);
-						SAVESTATE_t *save = SaveSlot(lpCalc);
+						SAVESTATE_t *save = SaveSlot(lpCalc, _T("Auto save state"),
+							_T("This save was automatically generated by Wabbitemu"));
 						WriteSave(tempSave, save, true);
 						FreeSave(save);
 					}
@@ -1470,7 +1473,7 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 			POINT pt;
 			pt.x = GET_X_LPARAM(lParam);
 			pt.y = GET_Y_LPARAM(lParam);
-			if (lpCalc->bCutout && lpCalc->SkinEnabled) {
+			if (lpCalc->bCutout && lpCalc->bSkinEnabled) {
 				pt.y += GetSystemMetrics(SM_CYCAPTION);
 				pt.x += GetSystemMetrics(SM_CXFIXEDFRAME);
 			}

@@ -1,7 +1,7 @@
 #include "stdafx.h"
 
 #include "guibuttons.h"
-#include "guicutout.h"
+#include "guiskin.h"
 #include "guioptions.h"
 #include "gui.h"
 #include "guikeylist.h"
@@ -350,14 +350,9 @@ void FinalizeButtons(LPCALC lpCalc) {
 			}
 		}
 	}
-	if (lpCalc->SkinEnabled) {
-		if (lpCalc->bCutout) {
-			//Temporarily disable till this is rewritten to be more resource friendly
-			//EnableCutout(lpCalc);
-		} else {
-			DrawButtonStatesAll(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap);
-			InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);
-			UpdateWindow(lpCalc->hwndFrame);
-		}
+	if (lpCalc->bSkinEnabled) {
+		DrawButtonStatesAll(lpCalc, lpCalc->hdcButtons, lpCalc->hdcKeymap);
+		InvalidateRect(lpCalc->hwndFrame, NULL, TRUE);
+		UpdateWindow(lpCalc->hwndFrame);
 	}
 }

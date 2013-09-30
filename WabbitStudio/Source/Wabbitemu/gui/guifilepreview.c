@@ -114,10 +114,11 @@ static LRESULT CALLBACK FilePreviewPaneProc(HWND hwnd, UINT Message, WPARAM wPar
 			LoadLCD(save, &lcd);
 			
 #ifdef _UNICODE
+			size_t len;
 			wchar_t buffer[256];
-			mbstowcs(buffer, save->author, ARRAYSIZE(buffer));
+			mbstowcs_s(&len, buffer, save->author, ARRAYSIZE(buffer));
 			Edit_SetText(edtAuthor, buffer);
-			mbstowcs(buffer, save->comment, ARRAYSIZE(buffer));
+			mbstowcs_s(&len, buffer, save->comment, ARRAYSIZE(buffer));
 			Edit_SetText(edtComment, buffer);
 #else
 			Edit_SetText(edtAuthor, save->author);

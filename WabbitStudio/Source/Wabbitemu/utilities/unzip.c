@@ -352,8 +352,8 @@ local int strcmpcasenosensitive_internal (const TCHAR *fileName1, const TCHAR *f
 {
     for (;;)
     {
-        char c1=*(fileName1++);
-        char c2=*(fileName2++);
+        TCHAR c1 = *(fileName1++);
+        TCHAR c2 = *(fileName2++);
         if ((c1>='a') && (c1<='z'))
             c1 -= 0x20;
         if ((c2>='a') && (c2<='z'))

@@ -175,8 +175,8 @@ void DestroyCutoutResources() {
 /* Using a layered window, make the frame window transparent.
  * Also create buttons to allow minimize and close while in skin mode
  */
-int EnableCutout(LPCALC lpCalc) {
-	if (!lpCalc || !lpCalc->SkinEnabled) {
+int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
+	if (!lpCalc || !lpCalc->bSkinEnabled) {
 		return 1;
 	}
 
@@ -192,9 +192,11 @@ int EnableCutout(LPCALC lpCalc) {
 	u_int width = lpCalc->rectSkin.right;
 	u_int height = lpCalc->rectSkin.bottom;
 
-	int scale = 2;
+	int scale = DEFAULT_SKIN_SCALE;
 
 	if (!lpCalc->hwndLCD || GetParent(lpCalc->hwndLCD)) {
+		RECT rc;
+		GetClientRect(lpCalc->hwndFrame, &rc);
 		DestroyWindow(lpCalc->hwndLCD);
 		// don't initially show the window so we can disable DWM transitions
 		lpCalc->hwndLCD = CreateWindowEx(
@@ -239,34 +241,16 @@ int EnableCutout(LPCALC lpCalc) {
 		
 		DWORD dwBmpSize = ((width * bi->bmiHeader.biBitCount + 31) / 32) * 4 * height;
 		LPBYTE bitmap = (LPBYTE) malloc(dwBmpSize);
-
-		//why do we do this all again? for some reason there is an issue converting the DC to LPBYTE
-		//so i rewrote the code here and now it works. 
-		HDC tempHDC = CreateCompatibleDC(lpCalc->hdcButtons);
-		HBITMAP tempBitmap = CreateCompatibleBitmap(lpCalc->hdcButtons, width, height);
-		SelectObject(tempHDC, tempBitmap);
-		DrawFaceplateRegion(tempHDC, lpCalc->FaceplateColor);
-
-		if (!hbmSkin) {
-			hbmSkin.Load(CalcModelTxt[lpCalc->model], _T("PNG"), g_hInst);
-		}
-		if (!skinBitmap) {
-			hbmSkin.m_pBitmap->GetHBITMAP(Color::AlphaMask, &skinBitmap);
-		}
-		SelectObject(lpCalc->hdcButtons, skinBitmap);
-		AlphaBlend(tempHDC, 0, 0, width, height, lpCalc->hdcButtons, 0, 0, width, height, bf);
-
-		DrawButtonStatesAll(lpCalc, tempHDC, lpCalc->hdcKeymap);
 		
-		GetDIBits(tempHDC, tempBitmap, 0,
+		GetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
 			height,
 			bitmap,
 			bi, DIB_RGB_COLORS);
 
-		//this really sucked to figure out, but basically you can't touch
-		//the alpha channel in a bitmap unless you use GetDIBits to get it
-		//in an array, change the highest byte, then reset with SetDIBits
-		//This colors the faceplate that way
+		// this really sucked to figure out, but basically you can't touch
+		// the alpha channel in a bitmap unless you use GetDIBits to get it
+		// in an array, change the highest byte, then reset with SetDIBits
+		// This colors the faceplate that way
 		BYTE* pPixel = bitmap;
 		HRGN rgn = GetFaceplateRegion();
 		unsigned int x, y;
@@ -278,13 +262,12 @@ int EnableCutout(LPCALC lpCalc) {
 				pPixel += 4;
 			}
 		}
+
 		SetDIBitsToDevice(lpCalc->hdcButtons, 0, 0, width, height, 0, 0, 0,
 				height,
 				bitmap,
 				bi, DIB_RGB_COLORS);
 		DeleteObject(rgn);
-		DeleteDC(tempHDC);
-		DeleteObject(tempBitmap);
 		free(bitmap);
 	}
 
@@ -387,7 +370,7 @@ int DisableCutout(LPCALC lpCalc) {
 		FreeLibrary(hDwmModule);
 	}
 
-	int scale = lpCalc->SkinEnabled ? 2 : lpCalc->scale;
+	int scale = lpCalc->bSkinEnabled ? DEFAULT_SKIN_SCALE : lpCalc->scale;
 	if (!lpCalc->hwndLCD || !GetParent(lpCalc->hwndLCD )) {
 		DestroyWindow(lpCalc->hwndLCD);
 		lpCalc->hwndLCD = CreateWindowEx(

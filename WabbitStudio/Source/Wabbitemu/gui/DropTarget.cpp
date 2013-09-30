@@ -157,14 +157,14 @@ HRESULT __stdcall CDropTarget::DragEnter(IDataObject *pDataObject, DWORD grfKeyS
 		pdd->type = DROPIMAGE_COPY;
 		wcscpy_s(pdd->szMessage, L"Transfer to %1");
 		wcscpy_s(pdd->szInsert, L"Wabbitemu");
-		lpCalc->do_drag = true;
+		lpCalc->bDoDrag = TRUE;
 
 		*pdwEffect = *pdwEffect & DROPEFFECT_COPY;
 	} else {
 		pdd->type = DROPIMAGE_INVALID;
 		wcscpy_s(pdd->szMessage, L"Cannot transfer to %1");
 		wcscpy_s(pdd->szInsert, L"Wabbitemu");
-		lpCalc->do_drag = false;
+		lpCalc->bDoDrag = FALSE;
 
 		*pdwEffect = DROPEFFECT_NONE;
 	}
@@ -196,7 +196,7 @@ HRESULT __stdcall CDropTarget::DragLeave() {
 
 	LPCALC lpCalc = (LPCALC) GetWindowLongPtr(m_hwndTarget, GWLP_USERDATA);
 	if (lpCalc != NULL) {
-		lpCalc->do_drag = false;
+		lpCalc->bDoDrag = false;
 	}
 
 	return S_OK;
@@ -372,7 +372,7 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 		*pdwEffect = DROPEFFECT_NONE;
 	}
 	
-	lpCalc->do_drag = false;
+	lpCalc->bDoDrag = false;
 	return S_OK;
 }
 

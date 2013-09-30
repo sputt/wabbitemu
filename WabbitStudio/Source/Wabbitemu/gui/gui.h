@@ -15,8 +15,8 @@
 #else
 #define g_szDownload	_T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Wabbitemu.exe")
 #endif
-#define g_szVersionFile _T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt")
-#define g_szWhatsNewFile _T("http://buckeyedude.zapto.org/Revsoft/Wabbitemu/WhatsNew.txt")
+#define g_szVersionFile "http://buckeyedude.zapto.org/Revsoft/Wabbitemu/Version.txt"
+#define g_szWhatsNewFile "http://buckeyedude.zapto.org/Revsoft/Wabbitemu/WhatsNew.txt"
 
 #define g_szAppName 	_T("z80")
 #define g_szDebugName 	_T("debug")
@@ -31,7 +31,7 @@
 #define g_szSubbar		_T("wabsub")
 #define g_szDetachedName 	_T("wabbitdetached")
 #define g_szDetachedLCDName _T("wabbitdetachedlcd")
-#define g_szSmallButtonsName _T("WABBITSMALLBUTTON")
+#define g_szSmallButtonsName _T("wabbitsmallbutton")
 
 #define ID_STATUSBAR	50
 

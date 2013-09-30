@@ -1,6 +1,5 @@
 #include "stdafx.h"
 
-#ifdef WITH_AVI
 #define STRICT
 #define WIN32_LEAN_AND_MEAN
 #include "avi_utils.h"
@@ -454,7 +453,7 @@ unsigned int FormatAviMessage(HRESULT code, char *buf, int buf_size, unsigned in
 		msg = "AVIERR_FILEOPEN: disk error while opening file";
 		break;
 	case REGDB_E_CLASSNOTREG:
-		msg = "REGDB_E_CLASSNOTREG: file type not recognised";
+		msg = "REGDB_E_CLASSNOTREG: file type not recognized";
 		break;
 	case AVIERR_READONLY:
 		msg = "AVIERR_READONLY: file is read-only";
@@ -514,5 +513,3 @@ unsigned int FormatAviMessage(HRESULT code, char *buf, int buf_size, unsigned in
 	buf[n] = 0;
 	return mlen;
 }
-
-#endif

@@ -683,8 +683,8 @@ LRESULT CALLBACK MemProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 				}
 				case EN_SUBMIT:
 				{
-					_TUCHAR data[8];
-					ValueSubmit(hwndVal, (TCHAR *) data, mps->mode + (2 * mps->bText));
+					u_char data[8];
+					ValueSubmit(hwndVal, data, mps->mode + (2 * mps->bText));
 					int i;
 					for (i = 0; i < mps->mode; i++) {
 						mem_write(&mps->lpCalc->mem_c, mps->sel + i, data[i]);

@@ -56,6 +56,7 @@ STDMETHODIMP CLabelServer::Find(VARIANT varCriteria, ILabel **ppLabel)
 			return hr;
 		}
 	}
+	return E_INVALIDARG;
 }
 
 STDMETHODIMP CLabelServer::Load(BSTR bstrFileName)

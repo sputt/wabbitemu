@@ -77,13 +77,17 @@ void GetFileCurrentVersionString(TCHAR *buf, size_t len) {
 }
 
 DWORD WINAPI CheckForUpdates(LPVOID lpParam) {	
-	TCHAR fileBuffer[256];
+	// to support ANSI version of wabbit, this remains ANSI
+	// the reason being, is that it expects the file it downloads to be
+	// unicode. Older versions of Wabbit would expect it to be ANSI and
+	// be unable to upgrade
+	char fileBuffer[256];
 	ZeroMemory(fileBuffer, sizeof(fileBuffer));
-	HINTERNET hInternet = InternetOpen(_T("Wabbitemu"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+	HINTERNET hInternet = InternetOpenA("Wabbitemu", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 	if (hInternet == NULL) {
 		return FALSE;
 	}
-	HINTERNET hOpenUrl = InternetOpenUrl(hInternet, g_szVersionFile, NULL, 0, INTERNET_FLAG_RELOAD, NULL);
+	HINTERNET hOpenUrl = InternetOpenUrlA(hInternet, g_szVersionFile, NULL, 0, INTERNET_FLAG_RELOAD, NULL);
 	if (hOpenUrl == NULL) {
 		return FALSE;
 	}
@@ -96,7 +100,7 @@ DWORD WINAPI CheckForUpdates(LPVOID lpParam) {
 	VS_FIXEDFILEINFO newFileInfo, *thisFileInfo;
 	ZeroMemory(&newFileInfo, sizeof(newFileInfo));
 
-	_stscanf_s(fileBuffer, _T("%u.%u.%u.%u"), &newFileInfo.dwFileVersionMS, &newFileInfo.dwFileVersionLS,
+	sscanf_s(fileBuffer, "%u.%u.%u.%u", &newFileInfo.dwFileVersionMS, &newFileInfo.dwFileVersionLS,
 					&newFileInfo.dwProductVersionMS, &newFileInfo.dwProductVersionLS);
 	newFileInfo.dwFileVersionMS = MAKELONG(newFileInfo.dwFileVersionLS, newFileInfo.dwFileVersionMS);
 	newFileInfo.dwFileVersionLS = MAKELONG(newFileInfo.dwProductVersionLS, newFileInfo.dwProductVersionMS);
@@ -145,17 +149,15 @@ BOOL IsJustUpgraded() {
 }
 
 TCHAR *GetWhatsNewText() {
+	// same as above, ANSI for backwards compatibility
 #define WHATSNEWBUFFERSIZE 32768
-	TCHAR *whatsNewText = (TCHAR *) malloc(sizeof(TCHAR) * WHATSNEWBUFFERSIZE);
-	if (!whatsNewText) {
-		return NULL;
-	}
-	ZeroMemory(whatsNewText, WHATSNEWBUFFERSIZE * sizeof(TCHAR));
-	HINTERNET hInternet = InternetOpen(_T("Wabbitemu"), INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
+
+	char whatsNewText[WHATSNEWBUFFERSIZE] = {0};
+	HINTERNET hInternet = InternetOpenA("Wabbitemu", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, 0);
 	if (hInternet == NULL) {
 		return NULL;
 	}
-	HINTERNET hOpenUrl = InternetOpenUrl(hInternet, g_szWhatsNewFile, NULL, 0, INTERNET_FLAG_RELOAD, NULL);
+	HINTERNET hOpenUrl = InternetOpenUrlA(hInternet, g_szWhatsNewFile, NULL, 0, INTERNET_FLAG_RELOAD, NULL);
 	if (hOpenUrl == NULL) {
 		return NULL;
 	}
@@ -165,7 +167,15 @@ TCHAR *GetWhatsNewText() {
 		return NULL;
 	}
 	InternetCloseHandle(hInternet);
+
+#ifdef _UNICODE
+	size_t len;
+	TCHAR wideWhatsNewText[WHATSNEWBUFFERSIZE];
+	mbstowcs_s(&len, wideWhatsNewText, whatsNewText, WHATSNEWBUFFERSIZE - 1);
+	return wideWhatsNewText;
+#else
 	return whatsNewText;
+#endif
 }
 
 void ShowWhatsNew(BOOL forceShow) {
