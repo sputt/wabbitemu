@@ -1238,25 +1238,9 @@ SAVESTATE_t* ReadSave(FILE *ifile) {
 	save->chunk_count = 0;
 	for(i = 0; i < chunk_count; i++) {
 		string[0]	= fgetc(ifile);
-		if (feof(ifile)) {
-			FreeSave(save);
-			return NULL;
-		}
 		string[1]	= fgetc(ifile);
-		if (feof(ifile)) {
-			FreeSave(save);
-			return NULL;
-		}
 		string[2]	= fgetc(ifile);
-		if (feof(ifile)) {
-			FreeSave(save);
-			return NULL;
-		}
 		string[3]	= fgetc(ifile);
-		if (feof(ifile)) {
-			FreeSave(save);
-			return NULL;
-		}
 		string[4]	= 0;
 		if (feof(ifile)) {
 			FreeSave(save);
