@@ -5,6 +5,8 @@
 #include "CKeypad.h"
 #include "CLabelServer.h"
 
+#include "savestate.h"
+
 struct tagCALC;
 
 #include "CBreakpointCollection.h"
@@ -15,6 +17,7 @@ class ATL_NO_VTABLE CWabbitemu :
 	public IProvideClassInfo2Impl<&CLSID_Wabbitemu, &DIID_DWabbitemuEvents, &LIBID_WabbitemuLib, 1, 0>,
 	public IConnectionPointContainerImpl<CWabbitemu>,
 	public IConnectionPointImpl<CWabbitemu, &DIID_DWabbitemuEvents>,
+	public IPersistStreamInit,
 	public IDispatchImpl<IWabbitemu, &IID_IWabbitemu, &LIBID_WabbitemuLib, 1, 0>
 {
 public:
@@ -25,6 +28,8 @@ public:
 		COM_INTERFACE_ENTRY(IWabbitemu)
 		COM_INTERFACE_ENTRY(IProvideClassInfo2)
 		COM_INTERFACE_ENTRY(IProvideClassInfo)
+		COM_INTERFACE_ENTRY(IPersist)
+		COM_INTERFACE_ENTRY(IPersistStreamInit)
 		COM_INTERFACE_ENTRY(IConnectionPointContainer)
 	END_COM_MAP()
 
@@ -58,6 +63,40 @@ public:
 	STDMETHODIMP get_Apps(SAFEARRAY **ppAppList);
 	STDMETHOD(get_Keypad)(IKeypad **ppKeypad);
 	STDMETHODIMP get_Labels(ILabelServer **ppLabelServer);
+
+	//IPersistStreamInit
+	STDMETHOD(GetClassID)(CLSID *pclsid)
+	{
+		*pclsid = CLSID_Wabbitemu;
+		return S_OK;
+	}
+
+	STDMETHOD(IsDirty)()
+	{
+		return S_FALSE;
+	}
+
+	STDMETHOD(Load)(LPSTREAM pStm)
+	{
+		SAVESTATE_t *sav;
+		//load_save
+		return E_NOTIMPL;
+	}
+
+	STDMETHOD(Save)(LPSTREAM, BOOL)
+	{
+		return E_NOTIMPL;
+	}
+
+	STDMETHOD(GetSizeMax)(ULARGE_INTEGER *)
+	{
+		return E_NOTIMPL;
+	}
+
+	STDMETHOD(InitNew)()
+	{
+		return E_NOTIMPL;
+	}
 
 	void Fire_OnBreakpoint(waddr *pwaddr);
 	void Fire_OnClose();
