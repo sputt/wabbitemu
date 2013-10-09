@@ -14,6 +14,7 @@
 #define TI_83PSE	7
 #define TI_84P		8
 #define TI_84PSE	9
+#define TI_84PCSE	10
 
 /*defines the start of the app page*/
 /*this page starts in HIGH mem and grows to LOW */
@@ -117,6 +118,7 @@ typedef struct bank_state {
 
 #define mc_bank(addr_z) (addr_z >> 14)
 #define mc_base(addr_z) (addr_z & MC_BASE_MASK)
+#define NUM_BANKS 5
 
 // all the information required to address a byte of memory
 typedef struct waddr {
@@ -141,10 +143,23 @@ typedef enum {
 	CLEAR_MEM_READ_BREAK = ~MEM_READ_BREAK,
 } BREAK_TYPE;
 
+typedef enum {
+	FLASH_READ,
+	FLASH_AA,
+	FLASH_55,
+	FLASH_PROGRAM,
+	FLASH_ERASE,
+	FLASH_ERASE_AA,
+	FLASH_ERASE_55,
+	FLASH_FASTMODE,
+	FLASH_FASTMODE_PROG,
+	FLASH_FASTMODE_EXIT,
+	FLASH_AUTOSELECT,
+	FLASH_ERROR,
+} FLASH_COMMAND;
+
 typedef struct memory_context {
 	/* to be defined */
-	//unsigned char (*flash)[PAGE_SIZE];	//Pointer to flash memory
-	//unsigned char (*ram)[PAGE_SIZE];		//Pointer to ram
 	u_char *flash;
 	u_char *ram;
 	union {
@@ -155,28 +170,29 @@ typedef struct memory_context {
 		u_char *breaks[2];
 	};
 
-#ifdef WINVER
 	BOOL (*breakpoint_manager_callback)(memory_context *, BREAK_TYPE, waddr_t);
-#endif
 
 	int flash_size;
 	int flash_pages;
 	int ram_size;
 	int ram_pages;
-	int step;					// These 4 are for flash programming
-	unsigned char cmd;			// step tells what cycle of the command you are on,
-	uint64_t flash_last_write;	// last time flash was written to
-	uint64_t flash_write_delay;	// number of tstates to delay before allowing flash read/write
-	BOOL flash_locked;			//Whether flash is writeable or not.
 
-	bank_state_t *banks;		//pointer to the correct bank state currently
-	bank_state_t normal_banks[5];		//Current state of each bank
-								// structure 5 is used to preserve the 4th in boot map
-	bank_state_t bootmap_banks[5];			//used to hold a backup of the banks when this is boot mapped
-	BOOL boot_mapped;			//Special mapping used in boot that changes how paging works
-	BOOL hasChangedPage0;		//Check if bootcode is still mapped to page 0 or not
-	int protected_page_set;		//Special for the 83p, used to determine which group of pages you are referring to
-	int protected_page[4];		//Special for the 83p, used to determine which page of a set to protect
+	FLASH_COMMAND step;				// the current flash command
+	unsigned char cmd;				// this is no longer used, however it is kept for save state compatibility
+	uint64_t flash_last_write;		// last time flash was written to
+	uint64_t flash_write_delay;		// number of tstates to delay before allowing flash read/write
+	BOOL flash_locked;				// Whether flash is writeable or not.
+	unsigned char flash_write_byte;	// the last value written to flash
+	BOOL flash_error;				// whether there was an error programming the byte
+	unsigned char flash_toggles;	// flash toggles
+	bank_state_t *banks;			//pointer to the correct bank state currently
+	bank_state_t normal_banks[NUM_BANKS];	//Current state of each bank
+									// structure 5 is used to preserve the 4th in boot map
+	bank_state_t bootmap_banks[NUM_BANKS];	//used to hold a backup of the banks when this is boot mapped
+	BOOL boot_mapped;				//Special mapping used in boot that changes how paging works
+	BOOL hasChangedPage0;			//Check if boot code is still mapped to page 0 or not
+	int protected_page_set;			//Special for the 83p, used to determine which group of pages you are referring to
+	int protected_page[4];			//Special for the 83p, used to determine which page of a set to protect
 	RAM_PROT_MODE prot_mode;
 
 	int flash_version;
@@ -325,7 +341,7 @@ int CPU_init(CPU_t*, memc*, timerc*);
 int CPU_step(CPU_t*);
 int CPU_connected_step(CPU_t *cpu);
 inline unsigned char CPU_mem_read(CPU_t *cpu, unsigned short addr);
-inline unsigned char CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data);
+inline void CPU_mem_write(CPU_t *cpu, unsigned short addr, unsigned char data);
 CPU_t* CPU_clone(CPU_t *cpu);
 #define HALT_SCALE	3
 
@@ -381,13 +397,6 @@ void displayreg(CPU_t *);
 
 #define tc_tstates( timer_z ) \
 	((timer_z)->tstates)
-
-#define endflash_break(cpu_v) cpu_v->mem_c->step = 0;\
-		if (break_on_invalid_flash) {\
-			cpu->mem_c->mem_write_break_callback(cpu);\
-		}
-
-#define endflash(cpu_v) cpu_v->mem_c->step = 0;
 
 #define addschar(address_m, offset_m) ( ( (unsigned short) address_m ) + ( (char) offset_m ) )
 

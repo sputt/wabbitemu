@@ -369,7 +369,7 @@ link_t* link83_init(CPU_t* cpu) {
 }
 
 
-int device_init_83(CPU_t *cpu, int bad82) {
+int device_init_83(CPU_t *cpu, BOOL bad82) {
 	ClearDevices(cpu);
 
 	link_t * link = link83_init(cpu);

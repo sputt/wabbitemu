@@ -6,8 +6,7 @@
 #include "calc.h"
 #include "sendfileswindows.h"
 
-void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs)
-{
+void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs) {
 	TCHAR tmpstring[512];
 	SEND_FLAG ram = SEND_CUR;
 	int argc;
@@ -67,8 +66,7 @@ void ParseCommandLineArgs(ParsedCmdArgs *parsedArgs)
 				} else if (secondChar == 'N') {
 					parsedArgs->force_new_instance = TRUE;
 				}
-			} else if (_tcsicmp(tmpstring + 1, _T("embedding")) == 0)
-			{
+			} else if (_tcsicmp(tmpstring + 1, _T("embedding")) == 0) {
 				parsedArgs->no_create_calc = TRUE;
 			}
 		}
@@ -100,25 +98,22 @@ void LoadToLPCALC(LPARAM lParam, LPTSTR filePath, SEND_FLAG sendLoc)
 	SendFileToCalc(lpCalc, filePath, TRUE, sendLoc);
 }
 
-void LoadCommandlineFiles(ParsedCmdArgs *parsedArgs, LPARAM lParam,  void (*load_callback)(LPARAM, LPTSTR, SEND_FLAG))
+void LoadCommandlineFiles(ParsedCmdArgs *parsedArgs, LPARAM lParam,
+						  void (*load_callback)(LPARAM, LPTSTR, SEND_FLAG))
 {
-	//load ROMs first
-	for (int i = 0; i < parsedArgs->num_rom_files; i++) {
-		load_callback(lParam, parsedArgs->rom_files[i], SEND_ARC);
-	}
-	//then we dont care files
+	// first send files we don't care about the destination
 	for (int i = 0; i < parsedArgs->num_cur_files; i++) {
 		load_callback(lParam, parsedArgs->cur_files[i], SEND_CUR);
 	}
-	//then archived files
+	// then archived files
 	for (int i = 0; i < parsedArgs->num_archive_files; i++) {
 		load_callback(lParam, parsedArgs->archive_files[i], SEND_ARC);
 	}
-	//then ram
+	// then ram
 	for (int i = 0; i < parsedArgs->num_ram_files; i++) {
 		load_callback(lParam, parsedArgs->ram_files[i], SEND_RAM);
 	}
-	//finally utility files (label, break, etc)
+	// finally utility files (label, break, etc)
 	for (int i = 0; i < parsedArgs->num_utility_files; i++) {
 		load_callback(lParam, parsedArgs->utility_files[i], SEND_ARC);
 	}

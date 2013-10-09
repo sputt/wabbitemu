@@ -3,20 +3,20 @@
 
 #include "core.h"
 
-#define	SampleRate		(48000)
-#define Channels		(2)
-#define SampleSize		(1)
-#define PreferedSamples	(4096)
-#define BufferBanks		(4)
+#define	SAMPLE_RATE			(48000)
+#define CHANNELS			(2)
+#define SAMPLE_SIZE			(1)
+#define PREFERED_SAMPLES	(4096)
+#define BUFFER_BANKS		(4)
 
 
-#define BankTime		(((float)PreferedSamples)/((float)SampleRate))
-#define SampleLength	((1.0f)/((float)SampleRate))
-#define SampleSizeBits	(SampleSize<<3)
-#define BankSize		(PreferedSamples*Channels*SampleSize)
+#define BankTime			(((float) PREFERED_SAMPLES) / ((float) SAMPLE_RATE))
+#define SampleLength		((1.0f) / ((float) SAMPLE_RATE))
+#define SampleSizeBits		(SAMPLE_SIZE << 3)
+#define BankSize			(PREFERED_SAMPLES * CHANNELS * SAMPLE_SIZE)
 
-#define BufferSamples	(SampleRate)
-#define AudioBufferSize		(BufferSamples*Channels*SampleSize)
+#define BUFFER_SMAPLES		(SAMPLE_RATE)
+#define AUDIO_BUFFER_SIZE	(BUFFER_SMAPLES * CHANNELS * SAMPLE_SIZE)
 
 
 typedef struct SAMPLE SAMPLE_t;
@@ -34,14 +34,16 @@ typedef struct {
 	int init;
 	int enabled;
 	volatile int endsnd;
+#ifdef WINVER
 	HWAVEOUT hWaveOut;
 	WAVEFORMATEX wfx;
 
-	WAVEHDR waveheader[BufferBanks];
-	SAMPLE_t playbuf[BufferBanks][PreferedSamples];
+	WAVEHDR waveheader[BUFFER_BANKS];
+#endif
+	SAMPLE_t playbuf[BUFFER_BANKS][PREFERED_SAMPLES];
 
 
-	SAMPLE_t buffer[BufferSamples];
+	SAMPLE_t buffer[BUFFER_SMAPLES];
 
 	int CurPnt;
 	int PlayPnt;

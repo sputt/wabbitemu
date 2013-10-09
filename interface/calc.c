@@ -7,6 +7,7 @@
 #include "83hw.h"
 #include "83phw.h"
 #include "83psehw.h"
+#include "84pcsehw.h"
 #include "86hw.h"
 #include "device.h"
 #include "var.h"
@@ -74,37 +75,34 @@ u_int calc_count(void) {
 	return count;
 }
 
+int audio_init(LPCALC lpCalc) {
+	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
+	lpCalc->audio->enabled	= FALSE;
+	lpCalc->audio->init		= FALSE;
+	lpCalc->audio->timer_c	= &lpCalc->timer_c;
+	return 0;
+}
+
 /* 81 */
 int calc_init_81(LPCALC lpCalc, char *version) {
 	int error = 0;
 	/* INTIALIZE 81 */
+	error |= memory_init_81(&lpCalc->mem_c);
+	error |= tc_init(&lpCalc->timer_c, MHZ_2);
+	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	ClearDevices(&lpCalc->cpu);
 	//v2 is basically an 82
-	if (version[0] == '2') {
-		error |= memory_init_81(&lpCalc->mem_c);
-		error |= tc_init(&lpCalc->timer_c, MHZ_2);
-		error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
-		ClearDevices(&lpCalc->cpu);
-		error |= device_init_83(&lpCalc->cpu, 1);
+	if (*version == '2') {
+		BOOL isBad82 = TRUE;
+		error |= device_init_83(&lpCalc->cpu, isBad82);
+		error |= audio_init(lpCalc);
 	} else {
-		error |= memory_init_81(&lpCalc->mem_c);
-		error |= tc_init(&lpCalc->timer_c, MHZ_2);
-		error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
-		ClearDevices(&lpCalc->cpu);
 		error |= device_init_81(&lpCalc->cpu);
-	
 	}
 	/* END INTIALIZE 81 */
 
-#ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
-	if (version[0] == '2') {
-		lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
-		lpCalc->audio->enabled	= FALSE;
-		lpCalc->audio->init		= FALSE;
-		lpCalc->audio->timer_c	= &lpCalc->timer_c;
-	}
-#endif
 	return error;
 }
 
@@ -115,25 +113,13 @@ static BOOL calc_init_83(LPCALC lpCalc, char *os) {
 	error |= tc_init(&lpCalc->timer_c, MHZ_6);
 	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
-	if (lpCalc->model == TI_82) {
-		if (memcmp(os, "19.006", 6)==0) {
-			error |= device_init_83(&lpCalc->cpu, 0);
-		} else {
-			error |= device_init_83(&lpCalc->cpu, 1);
-		}
-	} else {
-		error |= device_init_83(&lpCalc->cpu, 0);
-	}
+	BOOL isBad82 = lpCalc->model == TI_82 && memcmp(os, "19.006", 6) == 0;
+	error |= device_init_83(&lpCalc->cpu, isBad82);
+	error |= audio_init(lpCalc);
 	/* END INTIALIZE 83 */
 
-#ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
-	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
-	lpCalc->audio->enabled	= FALSE;
-	lpCalc->audio->init		= FALSE;
-	lpCalc->audio->timer_c	= &lpCalc->timer_c;
-#endif
 	return error;
 }
 
@@ -146,16 +132,11 @@ static int calc_init_86(LPCALC lpCalc) {
 	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
 	error |= device_init_86(&lpCalc->cpu);
+	error |= audio_init(lpCalc);
 	/* END INTIALIZE 86 */
 
-#ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
-	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
-	lpCalc->audio->enabled	= FALSE;
-	lpCalc->audio->init		= FALSE;
-	lpCalc->audio->timer_c	= &lpCalc->timer_c;
-#endif
 	return error;
 }
 
@@ -167,16 +148,11 @@ int calc_init_83p(LPCALC lpCalc) {
 	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
 	error |= device_init_83p(&lpCalc->cpu);
+	error |= audio_init(lpCalc);
 	/* END INTIALIZE 83+ */
 
-#ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
-	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
-	lpCalc->audio->enabled	= FALSE;
-	lpCalc->audio->init		= FALSE;
-	lpCalc->audio->timer_c	= &lpCalc->timer_c;
-#endif
 	return error;
 }
 
@@ -188,15 +164,11 @@ int calc_init_83pse(LPCALC lpCalc) {
 	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
 	error |= device_init_83pse(&lpCalc->cpu);
+	error |= audio_init(lpCalc);
 	/* END INTIALIZE 83+se */
-#ifdef WINVER // FIXME: dirty cheater!
+
 	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
 	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
-	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
-	lpCalc->audio->enabled	= FALSE;
-	lpCalc->audio->init		= FALSE;
-	lpCalc->audio->timer_c	= &lpCalc->timer_c;
-#endif
 	return error;
 }
 
@@ -208,31 +180,46 @@ int calc_init_84p(LPCALC lpCalc) {
 	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
 	ClearDevices(&lpCalc->cpu);
 	error |= device_init_83pse(&lpCalc->cpu);
-#ifdef WITH_BACKUPS
-	init_backups();
-#endif
+	error |= audio_init(lpCalc);
 	/* END INTIALIZE 84+ */
 
-#ifdef WINVER // FIXME: dirty cheater!
 	lpCalc->flash_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.flash_pages, PAGE_SIZE);
 	lpCalc->ram_cond_break = (breakpoint_t **) calloc(lpCalc->mem_c.ram_pages, PAGE_SIZE);
-	lpCalc->audio			= &lpCalc->cpu.pio.link->audio;
-	lpCalc->audio->enabled	= FALSE;
-	lpCalc->audio->init		= FALSE;
-	lpCalc->audio->timer_c	= &lpCalc->timer_c;
-#endif
 	return error;
 }
 
+/* 84+CSE */
+int calc_init_84pcse(LPCALC lpCalc) {
+	/* INTIALIZE 84+CSE */
+	int error = memory_init_84pcse(&lpCalc->mem_c);
+	error |= tc_init(&lpCalc->timer_c, MHZ_6);
+	error |= CPU_init(&lpCalc->cpu, &lpCalc->mem_c, &lpCalc->timer_c);
+	ClearDevices(&lpCalc->cpu);
+	error |= device_init_84pcse(&lpCalc->cpu);
+	error |= audio_init(lpCalc);
+	/* END INTIALIZE 84+CSE */
+
+	lpCalc->flash_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.flash_size, sizeof(LPBREAKPOINT *));
+	lpCalc->ram_cond_break = (LPBREAKPOINT *) calloc(lpCalc->mem_c.ram_size, sizeof(LPBREAKPOINT *));
+
+	waddr_t waddr;
+	waddr.addr = 0;
+	waddr.page = 0x7F;
+	waddr.is_ram = FALSE;
+	set_break(&lpCalc->mem_c, waddr);
+	return error;
+}
 
 void calc_erase_certificate(unsigned char *mem, int size) {
-	if (mem == NULL || size < 32768) return;
+	if (mem == NULL || size < 0x8000) {
+		return;
+	}
 
-	memset(mem + size - 32768, 0xFF, PAGE_SIZE);
+	memset(mem + size - 0x8000, 0xFF, PAGE_SIZE);
 
-	mem[size - 32768]				= 0x00;
-	mem[size - 32768 + 0x1FE0]		= 0x00;
-	mem[size - 32768 + 0x1FE1]		= 0x00;
+	mem[size - 0x8000]				= 0x00;
+	mem[size - 0x8000 + 0x1FE0]		= 0x00;
+	mem[size - 0x8000 + 0x1FE1]		= 0x00;
 	return;
 }
 
@@ -246,8 +233,8 @@ void check_bootfree_and_update(LPCALC lpCalc) {
 		//using normal bootpage
 		return;
 	}
-	int majorVer, minorVer;
 #ifdef WINVER
+	int majorVer, minorVer;
 	scanf_s((char *) bootFreeString, "%d.%d", &majorVer, &minorVer);
 	if (MAKELONG(BOOTFREE_VER_MINOR, BOOTFREE_VER_MAJOR) > MAKELONG(minorVer, majorVer)) {
 		TCHAR hexFile[MAX_PATH];
@@ -290,7 +277,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 				int size;
 				char *rom = GetRomOnly(tifile->save, &size);
 				char VerString[64];
-				FindRomVersion(tifile->model, VerString, (unsigned char *) rom, size);
+				FindRomVersion(VerString, (unsigned char *) rom, size);
 				error = calc_init_83(lpCalc, VerString);
 				break;
 			}
@@ -301,6 +288,9 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 			case TI_84PSE:
 			case TI_83PSE:
 				error = calc_init_83pse(lpCalc);
+				break;
+			case TI_84PCSE:
+				error = calc_init_84pcse(lpCalc);
 				break;
 			case TI_84P:
 				error = calc_init_84p(lpCalc);
@@ -324,7 +314,7 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 #else
 		strcpy(lpCalc->rom_path, FileName);
 #endif
-		FindRomVersion(tifile->model, lpCalc->rom_version, lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
+		FindRomVersion(lpCalc->rom_version, lpCalc->mem_c.flash, lpCalc->mem_c.flash_size);
 	} else if (tifile->type == ROM_TYPE) {
 
 		switch (tifile->model) {
@@ -369,6 +359,13 @@ BOOL rom_load(LPCALC lpCalc, LPCTSTR FileName) {
 				memcpy(	lpCalc->cpu.mem_c->flash,
 						tifile->rom->data,
 						(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
+				calc_erase_certificate(lpCalc->cpu.mem_c->flash,lpCalc->cpu.mem_c->flash_size);
+				break;
+			case TI_84PCSE:
+				calc_init_84pcse(lpCalc);
+				memcpy(	lpCalc->cpu.mem_c->flash,
+					tifile->rom->data,
+					(lpCalc->cpu.mem_c->flash_size<=tifile->rom->size)?lpCalc->cpu.mem_c->flash_size:tifile->rom->size);
 				calc_erase_certificate(lpCalc->cpu.mem_c->flash,lpCalc->cpu.mem_c->flash_size);
 				break;
 			default:
@@ -418,12 +415,12 @@ void calc_slot_free(LPCALC lpCalc) {
 #ifdef WINVER
 		KillSound(lpCalc->audio);
 		lpCalc->audio = NULL;
+#endif
 
 		free(lpCalc->flash_cond_break);
 		lpCalc->flash_cond_break = NULL;
 		free(lpCalc->ram_cond_break);
 		lpCalc->ram_cond_break = NULL;
-#endif
 
 		free(lpCalc->mem_c.flash);
 		lpCalc->mem_c.flash = NULL;
@@ -480,18 +477,18 @@ int calc_reset(LPCALC lpCalc) {
 	return 0;
 }
 
-#ifdef WINVER
-
+/*
+ *	This is only attached if the program does not attach its own callback
+ */
 static void calc_debug_callback(LPCALC lpCalc)
 {
-	if (lpCalc->pWabbitemu != NULL)
-	{
+#ifdef WINVER
+	if (lpCalc->pWabbitemu != NULL) {
 		waddr_t addr = addr_to_waddr(lpCalc->cpu.mem_c, lpCalc->cpu.pc);
 		lpCalc->pWabbitemu->Fire_OnBreakpoint(&addr);
 	}
-}
-
 #endif
+}
 
 
 /* Clear RAM and start calculator at $0000 
@@ -653,11 +650,7 @@ int calc_run_tstates(LPCALC lpCalc, time_t tstates) {
 	while (lpCalc->running) {
 		if (check_break(&lpCalc->mem_c, addr_to_waddr(&lpCalc->mem_c, lpCalc->cpu.pc))) {
 			lpCalc->running = FALSE;
-#ifdef MACVER 
-			lpCalc->breakpoint_callback(lpCalc, lpCalc->breakpoint_owner);
-#else
 			lpCalc->breakpoint_callback(lpCalc);
-#endif
 			return 0;
 		}
 		uint64_t oldTStates = 0;
@@ -802,21 +795,13 @@ void port_debug_callback(void *arg1, void *arg2) {
 	CPU_t *cpu = (CPU_t *) arg1;
 	//device_t *dev = (device_t *) arg2;
 	LPCALC lpCalc = calc_from_cpu(cpu);
-#ifdef MACVER
-	lpCalc->breakpoint_callback(lpCalc, lpCalc->breakpoint_owner);
-#else
 	lpCalc->breakpoint_callback(lpCalc);
-#endif
 }
 
 void mem_debug_callback(void *arg1) {
 	CPU_t *cpu = (CPU_t *) arg1;
 	LPCALC lpCalc = calc_from_cpu(cpu);
-#ifdef MACVER
-	lpCalc->breakpoint_callback(lpCalc, lpCalc->breakpoint_owner);
-#else
 	lpCalc->breakpoint_callback(lpCalc);
-#endif
 }
 
 #ifdef WITH_BACKUPS

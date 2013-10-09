@@ -26,19 +26,26 @@ int CmpStringCase(const char *str1, unsigned char *str2) {
 	return _strnicmp(str1, (char *) str2, strlen(str1));
 }
 
-int FindRomVersion(int calc, char *string, unsigned char *rom, u_int size) {
+int FindRomVersion(char *string, unsigned char *rom, u_int size) {
 	u_int i;
-	int b;
-	if (calc == -1) {
-		if (size == (128 * 1024)) calc = TI_82;
-		else if (size == (256 * 1024)) calc = TI_83;
-		else if ((size >= (510 * 1024)) && (size <= (590 * 1024))) calc = TI_83P;
-		else if ((size >= (1016 * 1024)) && (size<= (1030 * 1024))) calc = TI_84P;
-		else if ((size >= (2044 * 1024)) && (size<= (2260 * 1024))) calc = TI_83PSE;
-		else {
-			_putts(_T("not a known rom"));
-			return -1;
-		}
+	int b, calc;
+	if (size == (32 * 1024)) {
+		calc = TI_81;
+	} else if (size == (128 * 1024)) {
+		calc = TI_82;
+	} else if (size == (256 * 1024)) {
+		calc = TI_83;
+	} else if ((size >= (510 * 1024)) && (size <= (590 * 1024))) {
+		calc = TI_83P;
+	} else if ((size >= (1016 * 1024)) && (size<= (1030 * 1024))) {
+		calc = TI_84P;
+	} else if ((size >= (2044 * 1024)) && (size<= (2260 * 1024))) {
+		calc = TI_83PSE;
+	} else if ((size >= (4090 * 1024)) && (size <= (4100 * 1024))) {
+		calc = TI_84PCSE;
+	} else {
+		_putts(_T("not a known rom"));
+		return -1;
 	}
 	switch (calc) {
 		case TI_81:
@@ -323,17 +330,6 @@ TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 	size = ftell(infile);
 	fseek(infile, 0, SEEK_SET);
 
-	if (size == 32 * 1024) calc = TI_81;
-	else if (size == 128 * 1024) calc = TI_82;
-	else if (size == 256 * 1024) calc = TI_83;
-	else if ((size >= 510 * 1024) && (size <= (590 * 1024))) calc = TI_83P;
-	else if ((size >= 1016 * 1024) && (size <= (1030 * 1024))) calc = TI_84P;
-	else if ((size >= 2044 * 1024) && (size <= (2260 * 1024))) calc = TI_83PSE;
-	else {
-		puts("not a known rom");
-		return FreeTiFile(tifile);
-	}
-
 	tifile->rom = (ROM_t *) malloc(sizeof(ROM_t));
 	if (tifile->rom == NULL) {
 		return FreeTiFile(tifile);
@@ -350,7 +346,10 @@ TIFILE_t* ImportROMFile(FILE *infile, TIFILE_t *tifile) {
 		tifile->rom->data[i] = tmp;
 	}
 	tifile->rom->size		= (int)size;
-	calc = FindRomVersion(calc, tifile->rom->version, tifile->rom->data, (int)size);
+	calc = FindRomVersion(tifile->rom->version, tifile->rom->data, (int)size);
+	if (calc == -1) {
+		return FreeTiFile(tifile);
+	}
 	tifile->model			= calc;
 
 	return tifile;
@@ -424,12 +423,7 @@ TIFILE_t* ImportBackup(FILE *infile, TIFILE_t *tifile) {
 }
 
 void NullTiFile(TIFILE_t* tifile) {
-	tifile->var = NULL;				//make sure its null. mostly for freeing later
-	memset(tifile->vars, 0, sizeof(tifile->vars));
-	tifile->flash = NULL;
-	tifile->rom = NULL;
-	tifile->save = NULL;
-	tifile->backup = NULL;
+	ZeroMemory(tifile, sizeof(TIFILE_t));
 	tifile->type = VAR_TYPE;
 }
 

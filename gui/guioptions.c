@@ -107,7 +107,6 @@ void DoPropertySheet(HWND hwndOwner) {
 	psh.nPages = sizeof(psp) / sizeof(PROPSHEETPAGE);
 	psh.nStartPage = 0;
 	psh.ppsp = (LPCPROPSHEETPAGE) &psp;
-	psh.pfnCallback = NULL;
 	hwndProp = (HWND) PropertySheet(&psh);
 
 	if (IsRectEmpty(&PropRect) == FALSE) {
@@ -119,21 +118,6 @@ void DoPropertySheet(HWND hwndOwner) {
 	}
 
 	return;
-}
-
-LRESULT CALLBACK HotKeyHandleProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
-	switch (uMsg)
-	{
-	case WM_KEYDOWN:
-		{
-			break;
-		}
-	case WM_SYSKEYDOWN:
-		{
-			return FALSE;
-		}
-	}
-	return DefSubclassProc(hwnd, uMsg, wParam, lParam);
 }
 
 
@@ -474,13 +458,11 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 							HDC hColorPicker = GetDC(hColorSelect);
 							POINT ptCursor;
 							GetCursorPos(&ptCursor);
-							RECT rc;
-							GetWindowRect(hColorSelect, &rc);
-							ptCursor.x -= rc.left;
-							ptCursor.y -= rc.top;
+							ScreenToClient(hColorSelect, &ptCursor);
 							COLORREF selectedColor = GetPixel(hColorPicker, ptCursor.x, ptCursor.y);
 							lpCalc->FaceplateColor = selectedColor;
 							gui_frame_update(lpCalc);
+							SetFocus(hwndDlg);
 							break;
 						}
 						default:
@@ -525,8 +507,8 @@ INT_PTR CALLBACK SkinOptionsProc(HWND hwndDlg, UINT Message, WPARAM wParam, LPAR
 }
 
 INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) {
-	static HWND saveState_check, loadFiles_check, doBackups_check, alwaysTop_check, saveWindow_check,
-		exeViolation_check, backupTime_edit, invalidFlash_check, turnOn_check, tiosDebug_check, checkUpdates_check,
+	static HWND saveState_check, loadFiles_check, doBackups_check, alwaysTop_check, exeViolation_check,
+		backupTime_edit, invalidFlash_check, turnOn_check, tiosDebug_check, checkUpdates_check,
 		showWhatsNew_check, portableMode_check;
 	switch (Message) {
 		case WM_INITDIALOG: {
@@ -535,7 +517,6 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 			doBackups_check = GetDlgItem(hwnd, IDC_CHK_REWINDING);
 			alwaysTop_check = GetDlgItem(hwnd, IDC_CHK_ONTOP);
 			portableMode_check = GetDlgItem(hwnd, IDC_CHK_PORTABLE);
-			saveWindow_check = GetDlgItem(hwnd, IDC_CHK_SAVEWINDOW);
 			exeViolation_check = GetDlgItem(hwnd, IDC_CHK_BRK_EXE_VIOLATION);
 			backupTime_edit = GetDlgItem(hwnd, IDC_EDT_BACKUPTIME);
 			invalidFlash_check = GetDlgItem(hwnd, IDC_CHK_BRK_INVALID_FLASH);
@@ -552,7 +533,6 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 					return TRUE;
 				case BN_CLICKED:
 					switch(LOWORD(wParam)) {
-						case IDC_CHK_SAVEWINDOW:
 						case IDC_CHK_SAVE:
 						case IDC_CHK_LOADFILES:
 						case IDC_CHK_REWINDING:
@@ -574,7 +554,6 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 		case WM_NOTIFY:
 			switch (((NMHDR FAR *) lParam)->code) {
 				case PSN_APPLY: {
-					startX = startY = Button_GetCheck(saveWindow_check) ? 0 : CW_USEDEFAULT;
 					exit_save_state = Button_GetCheck(saveState_check);
 					new_calc_on_load_files = Button_GetCheck(loadFiles_check);
 					break_on_exe_violation = Button_GetCheck(exeViolation_check);
@@ -625,7 +604,6 @@ INT_PTR CALLBACK GeneralOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPAR
 #endif
 			Button_SetCheck(alwaysTop_check, lpCalc->bAlwaysOnTop);
 			Button_SetCheck(portableMode_check, portable_mode);
-			Button_SetCheck(saveWindow_check, startX != CW_USEDEFAULT);
 			Button_SetCheck(exeViolation_check, break_on_exe_violation);
 			Button_SetCheck(invalidFlash_check, break_on_invalid_flash);
 			Button_SetCheck(turnOn_check, auto_turn_on);
@@ -981,8 +959,6 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 			nAccelStore = 256;
 			nEmuStore = 256;
 
-			SetWindowSubclass(hHotKey, HotKeyHandleProc, 0, 0);
-
 			int count = GetMenuItemCount(hMenu);
 			for (i = 0; i < count; i++) {
 				TCHAR *string = (TCHAR *) GetFriendlyMenuText(hMenu, i, 0);
@@ -1071,12 +1047,13 @@ INT_PTR CALLBACK KeysOptionsProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 					SetWindowLongPtr(hwnd, DWLP_MSGRESULT, FALSE);
 					return TRUE;
 			}
+			break;
 		}
 		case WM_DESTROY:
 			GetWindowRect(GetParent(hwnd), &PropRect);
 			break;
 	}
-	return FALSE;
+	return DefWindowProc(hwnd, Message, wParam, lParam);
 }
 
 int GetNumKeyEntries(keyprog_t *keys) {

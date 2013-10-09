@@ -361,6 +361,9 @@
     <ClCompile Include="utilities\avifile.cpp">
       <Filter>Source Files\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="hardware\84pcsehw.c">
+      <Filter>Source Files\Hardware</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
@@ -690,6 +693,9 @@
     <ClInclude Include="utilities\avifile.h">
       <Filter>Header Files\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="hardware\84pcsehw.h">
+      <Filter>Header Files\Hardware</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="gui\small_close.bmp">
@@ -894,5 +900,11 @@
     <Midl Include="interface\Wabbitemu.idl">
       <Filter>Source Files\Interface\COM</Filter>
     </Midl>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="gui\ti-84+cse.png">
+      <Filter>Resource Files\Skins</Filter>
+    </Image>
+    <Image Include="TI-84+CSE.png" />
   </ItemGroup>
 </Project>
