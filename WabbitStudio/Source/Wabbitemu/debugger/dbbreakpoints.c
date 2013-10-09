@@ -34,7 +34,7 @@ void rem_breakpoint(memc *mem, BREAK_TYPE type, waddr_t waddr)
 	lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)] = NULL;
 }
 
-//returns true if it should break, false otherwise
+// returns true if it should break, false otherwise
 BOOL check_break_callback(memc *mem, BREAK_TYPE type, waddr_t waddr) {
 	LPCALC lpCalc = calc_from_memc(mem);
 	breakpoint_t *lpBreak = lpCalc->cond_breakpoints[waddr.is_ram][PAGE_SIZE * waddr.page + mc_base(waddr.addr)];

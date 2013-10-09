@@ -533,7 +533,7 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 	if (new_calc_on_load_files && alreadyRunningHwnd) {
 		HWND tempHwnd;
 		SendMessage(alreadyRunningHwnd, WM_COMMAND, IDM_FILE_NEW, 0);
-		for (int i = 9001; i > 0; i--) {
+		for (int i = MAX_CALCS; i > 0; i--) {
 			tempHwnd = FindWindow(g_szAppName, NULL);
 			if (tempHwnd != alreadyRunningHwnd) {
 				break;
@@ -555,31 +555,35 @@ HRESULT CWabbitemuModule::PreMessageLoop(int nShowCmd)
 	LPCALC lpCalc = calc_slot_new();
 	LoadRegistrySettings(lpCalc);
 
-	if (rom_load(lpCalc, lpCalc->rom_path) == TRUE) {
-		gui_frame(lpCalc);
-	} else {
-
-		BOOL loadedRom = FALSE;
-		if (m_parsedArgs.num_rom_files > 0) {
-			for (int i = 0; i < m_parsedArgs.num_rom_files; i++) {
-				if (rom_load(lpCalc, m_parsedArgs.rom_files[i])) {
-					gui_frame(lpCalc);
-					loadedRom = TRUE;
-					break;
-				}
+	BOOL loadedRom = FALSE;
+	// ROMs are special, we need to load them first before anything else
+	if (m_parsedArgs.num_rom_files > 0) {
+		for (int i = 0; i < m_parsedArgs.num_rom_files; i++) {
+			// if you specify more than one rom file to be loaded, only the first is loaded
+			if (rom_load(lpCalc, m_parsedArgs.rom_files[i])) {
+				gui_frame(lpCalc);
+				loadedRom = TRUE;
+				break;
 			}
 		}
-		if (!loadedRom) {
-			calc_slot_free(lpCalc);
+	}
 
-			BOOL wizardError = DoWizardSheet(NULL);
-			//save wizard show
-			SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
-			if (wizardError) {
-				// this is likely caused by a user cancel
-				return E_ABORT;
+	if (!loadedRom) {
+		if (rom_load(lpCalc, lpCalc->rom_path)) {
+			gui_frame(lpCalc);
+		} else {
+			if (!loadedRom) {
+				calc_slot_free(lpCalc);
+
+				BOOL wizardError = DoWizardSheet(NULL);
+				//save wizard show
+				SaveWabbitKey(_T("rom_path"), REG_SZ, &lpCalc->rom_path);
+				if (wizardError) {
+					// this is likely caused by a user cancel
+					return E_ABORT;
+				}
+				LoadRegistrySettings(lpCalc);
 			}
-			LoadRegistrySettings(lpCalc);
 		}
 	}
 
@@ -1423,8 +1427,6 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						WriteSave(tempSave, save, true);
 						FreeSave(save);
 					}
-
-					DestroyCutoutResources();
 
 					SaveRegistrySettings(lpCalc);
 

@@ -480,7 +480,7 @@ void SaveMEM(SAVESTATE_t* save, memc* mem) {
 	WriteInt(chunk, mem->flash_locked);
 	WriteInt(chunk, mem->flash_version);	
 
-	for(i = 0; i < 5; i++) {
+	for(i = 0; i < NUM_BANKS; i++) {
 		WriteInt(chunk, mem->normal_banks[i].page);
 		WriteInt(chunk, mem->normal_banks[i].read_only);
 		WriteInt(chunk, mem->normal_banks[i].ram);

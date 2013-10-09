@@ -155,23 +155,6 @@ static LRESULT CALLBACK TestButtonProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPAR
 	return DefWindowProc(hwnd, uMsg, wParam, lParam);
 }
 
-static CGdiPlusBitmapResource hbmSkin;
-static HBITMAP skinBitmap;
-static LPBITMAPINFO bi;
-static BITMAPINFOHEADER bih;
-
-void DestroyCutoutResources() {
-	if (hbmSkin) {
-		hbmSkin.Empty();
-	}
-	if (skinBitmap) {
-		DeleteObject(skinBitmap);
-	}
-	if (bi) {
-		free(bi);
-	}
-}
-
 /* Using a layered window, make the frame window transparent.
  * Also create buttons to allow minimize and close while in skin mode
  */
@@ -219,57 +202,6 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 	// show window with no transitions
 	ShowWindow(lpCalc->hwndLCD, TRUE);
 	SetWindowTheme(lpCalc->hwndLCD, L" ", L" ");
-	
-	if (lpCalc->model == TI_84PSE) {
-		if (!bi) {
-			ZeroMemory(&bih, sizeof(BITMAPINFOHEADER));
-			bih.biSize = sizeof(BITMAPINFOHEADER);
-			bih.biWidth = width;
-			bih.biHeight = height;
-			bih.biPlanes = 1;
-			bih.biBitCount = 32;
-			bih.biCompression = BI_RGB;
-			bi = (LPBITMAPINFO) malloc(sizeof(BITMAPINFOHEADER) + sizeof(DWORD) * 3);
-			bi->bmiHeader = bih;
-			bi->bmiColors[0].rgbBlue = 0;
-			bi->bmiColors[0].rgbGreen = 0;
-			bi->bmiColors[0].rgbRed = 0;
-			bi->bmiColors[0].rgbReserved = 0;
-		}
-		// Gets the "bits" from the bitmap and copies them into a buffer
-		// which is pointed to by lpBitmap.
-		
-		DWORD dwBmpSize = ((width * bi->bmiHeader.biBitCount + 31) / 32) * 4 * height;
-		LPBYTE bitmap = (LPBYTE) malloc(dwBmpSize);
-		
-		GetDIBits(lpCalc->hdcSkin, hbmSkin, 0,
-			height,
-			bitmap,
-			bi, DIB_RGB_COLORS);
-
-		// this really sucked to figure out, but basically you can't touch
-		// the alpha channel in a bitmap unless you use GetDIBits to get it
-		// in an array, change the highest byte, then reset with SetDIBits
-		// This colors the faceplate that way
-		BYTE* pPixel = bitmap;
-		HRGN rgn = GetFaceplateRegion();
-		unsigned int x, y;
-		for (y = 0; y < height; y++) {
-			for (x = 0; x < width; x++) {
-				if (PtInRegion(rgn, x, height - y)) {
-					pPixel[3] = 0xFF;
-				}
-				pPixel += 4;
-			}
-		}
-
-		SetDIBitsToDevice(lpCalc->hdcButtons, 0, 0, width, height, 0, 0, 0,
-				height,
-				bitmap,
-				bi, DIB_RGB_COLORS);
-		DeleteObject(rgn);
-		free(bitmap);
-	}
 
 	RECT rc;
 	GetClientRect(lpCalc->hwndFrame, &rc);
@@ -283,10 +215,10 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 	size.cy = height;
 
 	SetWindowLongPtr(lpCalc->hwndFrame, GWL_EXSTYLE, WS_EX_LAYERED);
-	SetWindowLongPtr(lpCalc->hwndFrame, GWL_STYLE, WS_VISIBLE | WS_POPUP);
+	SetWindowLongPtr(lpCalc->hwndFrame, GWL_STYLE, WS_VISIBLE);
 
 	HDC hScreen = GetDC(NULL);
-	int done = UpdateLayeredWindow(lpCalc->hwndFrame, hScreen, NULL, &size, lpCalc->hdcButtons, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
+	BOOL done = UpdateLayeredWindow(lpCalc->hwndFrame, hScreen, NULL, &size, lpCalc->hdcButtons, &ptSrc, RGB(255,255,255), &bf, ULW_ALPHA);
 	DWORD error;
 	if (!done) {
 		error = GetLastError();
@@ -294,7 +226,6 @@ int EnableCutout(LPCALC lpCalc, HBITMAP hbmSkin) {
 
 	ReleaseDC(NULL, hScreen);
 	UpdateWindow(lpCalc->hwndLCD);
-	SendMessage(lpCalc->hwndFrame, WM_MOVE, 0, 0);
 
 	BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
 

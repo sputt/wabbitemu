@@ -92,6 +92,9 @@ enum DRAWSKINERROR {
 	ERROR_KEYMAP,
 };
 
+static LPBITMAPINFO bi;
+static BITMAPINFOHEADER bih;
+
 DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_pBitmapKeymap) {
 	if (!m_pBitmapSkin) {
 		return ERROR_SKIN;
@@ -114,7 +117,10 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 		FillRect(lpCalc->hdcSkin, &lpCalc->rectSkin, GetStockBrush(GRAY_BRUSH));
 	}
 
-	if (lpCalc->model == TI_84PSE) {
+	int skinWidth = lpCalc->rectSkin.right;
+	int skinHeight = lpCalc->rectSkin.bottom;
+	BOOL drawFaceplate = lpCalc->model == TI_84PSE && !lpCalc->bCustomSkin;
+	if (drawFaceplate) {
 		if (DrawFaceplateRegion(lpCalc->hdcSkin, lpCalc->FaceplateColor)) {
 			return ERROR_FACEPLATE;
 		}
@@ -128,10 +134,61 @@ DRAWSKINERROR DrawSkin(HDC hdc, LPCALC lpCalc, Bitmap *m_pBitmapSkin, Bitmap *m_
 	bf.SourceConstantAlpha = 255;
 	bf.AlphaFormat = AC_SRC_ALPHA;
 	
-	AlphaBlend(lpCalc->hdcSkin, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, hdcOverlay,
+	AlphaBlend(lpCalc->hdcSkin, 0, 0, skinWidth, skinHeight, hdcOverlay,
 		lpCalc->rectSkin.left, lpCalc->rectSkin.top, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, bf);
-	BitBlt(lpCalc->hdcButtons, 0, 0, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom, lpCalc->hdcSkin, 0, 0, SRCCOPY);
+	BitBlt(lpCalc->hdcButtons, 0, 0, skinWidth, skinHeight, lpCalc->hdcSkin, 0, 0, SRCCOPY);
 	FinalizeButtons(lpCalc);
+
+	if (drawFaceplate) {
+		if (!bi) {
+			ZeroMemory(&bih, sizeof(BITMAPINFOHEADER));
+			bih.biSize = sizeof(BITMAPINFOHEADER);
+			bih.biWidth = skinWidth;
+			bih.biHeight = skinHeight;
+			bih.biPlanes = 1;
+			bih.biBitCount = 32;
+			bih.biCompression = BI_RGB;
+			bi = (LPBITMAPINFO) malloc(sizeof(BITMAPINFOHEADER) + sizeof(DWORD) * 3);
+			bi->bmiHeader = bih;
+			bi->bmiColors[0].rgbBlue = 0;
+			bi->bmiColors[0].rgbGreen = 0;
+			bi->bmiColors[0].rgbRed = 0;
+			bi->bmiColors[0].rgbReserved = 0;
+		}
+		// Gets the "bits" from the bitmap and copies them into a buffer
+		// which is pointed to by lpBitmap.
+
+		DWORD dwBmpSize = ((skinWidth * bi->bmiHeader.biBitCount + 31) / 32) * 4 * skinHeight;
+		LPBYTE bitmap = (LPBYTE) malloc(dwBmpSize);		
+
+		GetDIBits(lpCalc->hdcSkin, (HBITMAP) GetCurrentObject(lpCalc->hdcButtons, OBJ_BITMAP),
+			0, skinHeight,
+			bitmap,
+			bi, DIB_RGB_COLORS);
+
+		// this really sucked to figure out, but basically you can't touch
+		// the alpha channel in a bitmap unless you use GetDIBits to get it
+		// in an array, change the highest byte, then reset with SetDIBits
+		// This colors the faceplate that way
+		BYTE* pPixel = bitmap;
+		HRGN rgn = GetFaceplateRegion();
+		unsigned int x, y;
+		for (y = 0; y < skinHeight; y++) {
+			for (x = 0; x < skinWidth; x++) {
+				if (PtInRegion(rgn, x, skinHeight - y)) {
+					pPixel[3] = 0xFF;
+				}
+				pPixel += 4;
+			}
+		}
+
+		SetDIBitsToDevice(lpCalc->hdcButtons, 0, 0, skinWidth, skinHeight, 0, 0, 0,
+			skinHeight,
+			bitmap,
+			bi, DIB_RGB_COLORS);
+		DeleteObject(rgn);
+		free(bitmap);
+	}
 
 	DeleteObject(hbmKeymapOld);
 	DeleteObject(hbmSkinOld);
@@ -199,6 +256,7 @@ int gui_frame_update(LPCALC lpCalc) {
 				break;
 			case TI_84P:
 			case TI_84PSE:
+			case TI_84PCSE:
 				hbmKeymap.Load(_T("TI-84+SEKeymap"), _T("PNG"), g_hInst);
 				break;
 			case TI_85:
@@ -248,7 +306,6 @@ int gui_frame_update(LPCALC lpCalc) {
 	//set the size of the HDC
 	HBITMAP hbmTemp = CreateCompatibleBitmap(hdc, lpCalc->rectSkin.right, lpCalc->rectSkin.bottom);
 	SelectObject(lpCalc->hdcButtons, hbmTemp);
-	DeleteObject(hbmTemp);
 	
 	switch (DrawSkin(hdc, lpCalc, m_pBitmapSkin, m_pBitmapKeymap)) {
 		case ERROR_FACEPLATE:
@@ -280,6 +337,7 @@ int gui_frame_update(LPCALC lpCalc) {
 			delete m_pBitmapSkin;
 		}
 	}
+	DeleteObject(hbmTemp);
 	ReleaseDC(lpCalc->hwndFrame, hdc);
 
 	SendMessage(lpCalc->hwndFrame, WM_SIZE, SIZE_RESTORED, 0);
@@ -294,22 +352,21 @@ static POINT ptRgnEdge[] = {{75,675},
 							{316,535},
 							{316,273},
 							{37,273},
-							{37,568}};
+							{37,568},
+// the skin is symmetrical so we can use that to generate the rest of the points
+							{SKIN_WIDTH-37,568},
+							{SKIN_WIDTH-37,273},
+							{SKIN_WIDTH-316,273},
+							{SKIN_WIDTH-316,535},
+							{SKIN_WIDTH-279,675},
+							{SKIN_WIDTH-262,682},
+							{SKIN_WIDTH-95,683},
+							{SKIN_WIDTH-75,675}};
 
 HRGN GetFaceplateRegion() {
-	unsigned int nPoints = (sizeof(ptRgnEdge) / sizeof(POINT)) * 2;
-	POINT ptRgn[(sizeof(ptRgnEdge) / sizeof(POINT)) * 2];
+	unsigned int nPoints = sizeof(ptRgnEdge) / sizeof(POINT);
 
-	// Copy points and their reverses to the new array
-	memcpy(ptRgn, ptRgnEdge, (nPoints / 2) * sizeof(POINT));
-
-	u_int i;
-	for (i = nPoints/2; i < nPoints; i++) {
-		ptRgn[i].x = SKIN_WIDTH - ptRgnEdge[nPoints - i - 1].x;
-		ptRgn[i].y = ptRgnEdge[nPoints - i - 1].y;
-	}
-
-	HRGN hrgn = CreatePolygonRgn(ptRgn, nPoints, WINDING);
+	HRGN hrgn = CreatePolygonRgn(ptRgnEdge, nPoints, WINDING);
 	return hrgn;
 
 }

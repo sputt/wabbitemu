@@ -110,14 +110,14 @@ static DWORD CALLBACK SendFileToCalcThread(LPVOID lpParam) {
 
 	lpsi->Error = LERR_SUCCESS;
 	for (lpsi->iCurrentFile = 0; lpsi->iCurrentFile < lpsi->FileList->size(); lpsi->iCurrentFile++)	{
-		SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);	
+		SendMessage(lpsi->hwndDlg, WM_USER, 0, NULL);
 		lpsi->Error = SendFile(NULL, lpCalc, lpsi->FileList->at(lpsi->iCurrentFile).c_str(), lpsi->DestinationList->at(lpsi->iCurrentFile));
-		if (lpsi->Error != LERR_SUCCESS)
-			break;
+		if (lpsi->Error != LERR_SUCCESS) {
+			if (MessageBox(lpsi->hwndDlg, g_szLinkErrorDescriptions[lpsi->Error], _T("Wabbitemu"), MB_OKCANCEL | MB_ICONERROR) == IDCANCEL) {
+				break;
+			}
+		}
 	}
-
-	if (lpsi->Error	!= LERR_SUCCESS)
-		MessageBox(lpsi->hwndDlg, g_szLinkErrorDescriptions[lpsi->Error], _T("Wabbitemu"), MB_OK | MB_ICONERROR);
 	
 	if (WaitForSingleObject(lpsi->hFileListMutex, INFINITE) == WAIT_OBJECT_0) {
 		lpsi->FileList->clear();
@@ -250,7 +250,6 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 			result = link_send_backup(&lpCalc->cpu, var, (SEND_FLAG) Destination);
 			break;
 		case ZIP_TYPE: {
-#ifdef WINVER
 			WIN32_FIND_DATA FindFileData;
 			HANDLE hFind;
 			TCHAR path[MAX_PATH];
@@ -282,22 +281,24 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 			FindClose(hFind);
 			DeleteFile(path);
 			result = LERR_SUCCESS;
-#endif
 			break;
 		}
 		case ROM_TYPE:
 		case SAV_TYPE: {
-				FreeTiFile(var);
-				var = NULL;
-				if (rom_load(lpCalc, lpszFileName) == TRUE) {
-					result = LERR_SUCCESS;
-				} else {
-					result = LERR_LINK;
-				}
+			if (rom_load(lpCalc, lpszFileName) == TRUE) {
+				result = LERR_SUCCESS;
+			} else {
+				result = LERR_LINK;
+			}
+
+			if (var->type == ROM_TYPE) {
 				//calc_turn_on(lpCalc);
 				SendMessage(lpCalc->hwndFrame, WM_USER, 0, 0);
-				break;
 			}
+			FreeTiFile(var);
+			var = NULL;
+			break;
+		}
 		case LABEL_TYPE: {
 				StringCbCopy(lpCalc->labelfn, sizeof(lpCalc->labelfn), lpszFileName);
 				_tprintf_s(_T("loading label file for slot %d: %s\n"), lpCalc->slot, lpszFileName);
@@ -317,15 +318,11 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 	}
 	else
 	{
-#ifdef WINVER
 		MessageBox(NULL, _T("Invalid file format"), _T("Error"), MB_OK);
-#endif
 		break_on_exe_violation = exec_vio_backup;
 		return LERR_FILE;
 	}
 }
-
-#ifdef _WINDOWS
 
 static LRESULT CALLBACK FrameSubclass(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam, UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
@@ -509,5 +506,3 @@ static LRESULT CALLBACK SendProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM 
 		}
 	}
 }
-
-#endif

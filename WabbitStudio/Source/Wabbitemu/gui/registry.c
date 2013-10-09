@@ -122,7 +122,7 @@ LONG_PTR GetKeyData(HKEY hkeyWabbit, LPCTSTR lpszName, BOOL skip_defaults = FALS
 		DWORD dwResult;
 		TCHAR szResult[256];
 	} result;
-	len = (type == REG_SZ) ? 256 * sizeof(WCHAR) : sizeof(DWORD);
+	len = (type == REG_SZ) ? 256 * sizeof(TCHAR) : sizeof(DWORD);
 	
 	LONG rqvx_res;
 	if (regDefaults[i].lpValueName != NULL) {

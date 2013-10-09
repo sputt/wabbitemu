@@ -49,11 +49,9 @@ struct key_string {
 
 typedef struct tagCALC {
 #ifdef MACVER
-	void (*breakpoint_callback)(struct tagCALC *, void *);
 	void *breakpoint_owner;
-#else
-	void (*breakpoint_callback)(struct tagCALC *);
 #endif
+	void (*breakpoint_callback)(struct tagCALC *);
 	int slot;
 	TCHAR rom_path[MAX_PATH];
 	char rom_version[32];
@@ -65,9 +63,7 @@ typedef struct tagCALC {
 	CPU_t cpu;
 	memory_context_t mem_c;
 	timer_context_t timer_c;
-#ifdef WINVER
-	AUDIO_t *audio; // FIXME: Bad!
-#endif
+	AUDIO_t *audio;
 
 #ifdef WINVER
 	CDropTarget *pDropTarget;
@@ -240,6 +236,7 @@ GLOBAL const TCHAR *CalcModelTxt[]
 	_T("TI-83+SE"),
 	_T("TI-84+"),
 	_T("TI-84+SE"),
+	_T("TI-84+CSE"),
 	_T("???")}
 #endif
 ;

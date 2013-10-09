@@ -77,10 +77,7 @@ u_char *LCD_update_image(LCD_t *lcd);
 /* 
  * Initialize LCD for a given CPU
  */
-LCD_t* LCD_init(CPU_t* cpu, int model) {
-	
-	//log = fopen("screen_delay.txt","w");
-	
+LCD_t* LCD_init(CPU_t* cpu, int model) {	
 	LCD_t* lcd = (LCD_t *) malloc(sizeof(LCD_t));
 	if (!lcd) {
 		printf("Couldn't allocate memory for LCD\n");
@@ -88,6 +85,7 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	}
 
 	lcd->free = &LCD_free;
+	lcd->is_color = FALSE;
 	LCD_reset(lcd);
 	
 	switch (model) {
@@ -110,6 +108,10 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 		case TI_84P:
 			lcd->base_level = BASE_LEVEL_83PSE;
 			break;
+		case TI_84PCSE:
+			lcd->base_level = BASE_LEVEL_83PSE;
+			lcd->is_color = TRUE;
+			break;
 		default:
 			lcd->base_level = BASE_LEVEL_83P;
 			break;
@@ -117,6 +119,8 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 
 	if (model == TI_86 || model == TI_85) {
 		lcd->width = 128;
+	} else if (model == TI_84PCSE) {
+		lcd->width = 320;
 	} else {
 		lcd->width = 96;
 	}
@@ -133,8 +137,11 @@ LCD_t* LCD_init(CPU_t* cpu, int model) {
 	lcd->steady_frame = 1.0 / FPS;
 	lcd->lcd_delay = NORMAL_DELAY;
 #endif
-	if (lcd->shades > LCD_MAX_SHADES)
+	if (lcd->shades > LCD_MAX_SHADES) {
 		lcd->shades = LCD_MAX_SHADES;
+	} else if (lcd->shades == 0) {
+		lcd->shades = LCD_DEFAULT_SHADES;
+	}
 
 	
 	lcd->time = tc_elapsed(cpu->timer_c);

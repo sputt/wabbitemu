@@ -684,12 +684,14 @@ LINK_ERR link_send_app(CPU_t *cpu, TIFILE_t *tifile) {
 		link_send_pkt(cpu, CID_EOT, NULL);
 
 		link_recv_pkt(cpu, &rpkt, data);
-		if (rpkt.command_ID != CID_ACK)
+		if (rpkt.command_ID != CID_ACK) {
 			return LERR_LINK;
-			return LERR_SUCCESS;
+		}
+
+		return LERR_SUCCESS;
 	}
 	default:
-			return LERR_SYSTEM;
+		return LERR_SYSTEM;
 	}
 }
 
@@ -706,6 +708,11 @@ BOOL check_flashpage_empty(u_char (*dest)[PAGE_SIZE], u_int page, u_int num_page
 	return TRUE;
 }
 
+#define TI_83PSE_CERT_APP_TRIAL_OFFSET 0x1E50
+#define TI_83P_CERT_APP_TRIAL_OFFSET 0x1F18
+#define APP_BITMAP_VALID_OFFSET 0x1FE0
+#define CERT_PAGE cpu->mem_c->flash_pages - 2
+
 /* Fixes the certificate page so that the app is no longer marked as a trial
  * cpu: cpu for the core the application is on
  * page: the page the application you want to mark is on
@@ -715,14 +722,19 @@ void fix_certificate(CPU_t *cpu, u_int page) {
 	u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) cpu->mem_c->flash;
 	upages_t upages;
 	state_userpages(cpu, &upages);
-	//there is probably some logic here that I'm missing...
-	//the 83p wtf is up with that offset
-	int offset = 0x1E50;
-	if (cpu->pio.model == TI_83P)
-		offset = 0x1F18;
-	//erase the part of the certificate that marks it as a trial app
-	dest[cpu->mem_c->flash_pages-2][offset + 2 * (upages.start - page)] = 0x80;
-	dest[cpu->mem_c->flash_pages-2][offset+1 + 2 * (upages.start - page)] = 0x00;
+	int offset;
+	if (cpu->pio.model == TI_83P) {
+		offset = TI_83P_CERT_APP_TRIAL_OFFSET;
+	} else {
+		offset = TI_83PSE_CERT_APP_TRIAL_OFFSET;
+	}
+
+	// erase the part of the certificate that marks it as a trial app
+	dest[CERT_PAGE][offset + 2 * (upages.start - page)] = 0x80;
+	dest[CERT_PAGE][offset+1 + 2 * (upages.start - page)] = 0x00;
+
+	// mark all bitmaps as valid. each app has a bit, so 8 apps per byte
+	memset(dest[CERT_PAGE] + APP_BITMAP_VALID_OFFSET, 0, (upages.start - upages.end) / 8);
 }
 
 LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
@@ -731,18 +743,21 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 	if (dest == NULL)
 		return LERR_MODEL;
 
-	if (tifile->flash == NULL)
+	if (tifile->flash == NULL) {
 		return LERR_FILE;
+	}
 
 	for (i = 0; i < ARRAYSIZE(tifile->flash->data); i++) {
 		if (tifile->flash->data[i] == NULL) {
-				continue;
+			continue;
 		}
+
 		if (i > 0x10) {
 			page = i + cpu->mem_c->flash_pages - 0x20;
 		} else {
 			page = i;
 		}
+
 		int sector = (page / 4) * 4;
 		int size;
 		if (sector >= cpu->mem_c->flash_pages - 4) {
@@ -750,12 +765,15 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 		} else {
 			size = PAGE_SIZE * 4;
 		}
+
 		memset(dest[sector], 0xFF, size);
 	}
+
 	for (i = 0; i < ARRAYSIZE(tifile->flash->data); i++) {
 		if (tifile->flash->data[i] == NULL) {
-				continue;
+			continue;
 		}
+
 		if (i > 0x10) {
 			page = i + cpu->mem_c->flash_pages - 0x20;
 		} else {
@@ -765,87 +783,132 @@ LINK_ERR forceload_os(CPU_t *cpu, TIFILE_t *tifile) {
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 	}
 	
-	//valid OS
+	// valid OS
 	dest[0][0x56] = 0x5A;
 	dest[0][0x57] = 0xA5;
 
 	return LERR_SUCCESS;
 }
 
-int get_page_size(u_char (*dest)[PAGE_SIZE], int page) {
+u_char *find_field(u_char *dest, u_char id1, u_char id2) {
 	int i;
 	//apparently non user apps have a slightly different header
 	//therefore we have to actually find the identifier
-	for (i = 0; i < PAGE_SIZE; i++)
-		if (dest[page][i] == 0x80 && dest[page][i + 1] == 0x81)
-			break;
-	i += 2;
-	return dest[page][i];
+	for (i = 0; i < PAGE_SIZE; i++) {
+		if (dest[i] == id1 && dest[i + 1] == id2) {
+			return dest + i + 2;
+		}
+	}
+
+	return NULL;
+}
+
+/*
+ * Finds the page size identifier and returns the number of pages specified.
+ * If the identifiers cannot be found, 0 is returned.
+ */
+int get_page_size(u_char *dest) {
+	int i;
+	//apparently non user apps have a slightly different header
+	//therefore we have to actually find the identifier
+	dest = find_field(dest, 0x80, 0x81);
+	if (dest == NULL) {
+		return 0;
+	}
+
+	return *dest;
+}
+
+static LINK_ERR replace_app(CPU_t *cpu, TIFILE_t *tifile, upages_t upages, u_char (*dest)[PAGE_SIZE], int page) {
+	int pageDiff = tifile->flash->pages - get_page_size(dest[page]);
+	u_int currentPage = page - tifile->flash->pages;
+	u_int end_page = pageDiff > 0 ? currentPage : currentPage + pageDiff;
+	while (!check_flashpage_empty(dest, end_page, 1) && end_page >= upages.end) {
+		end_page -= get_page_size(dest[end_page]);
+	}
+
+	if (end_page != currentPage) {
+		if (pageDiff > 0) {
+			if (end_page - pageDiff < upages.end) {
+				return LERR_MEM;
+			}
+
+			memmove(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE * (currentPage - end_page));
+			if (cpu->pio.model == TI_83P) {
+				// mark pages unprotected
+				for (u_int i = end_page - 7; i <= end_page + pageDiff - 8; i++) {
+					cpu->mem_c->protected_page[i / 8] &= ~(1 << (i % 8));
+				}
+			}
+		} else {
+			// 0xFF all extra pages
+			for (u_int i = tifile->flash->pages; i < tifile->flash->pages - pageDiff; i++, currentPage--) {
+				memset(dest[currentPage], 0xFF, PAGE_SIZE);
+			}
+
+			if (cpu->pio.model == TI_83P) {
+				// mark pages as protected
+				for (u_int i = end_page - 7; i <= end_page - pageDiff - 8; i++) {
+					cpu->mem_c->protected_page[i / 8] |= 1 << (i % 8);
+				}
+			}
+		}
+	}
+	// fix page execution permissions
+	cpu->mem_c->flash_upper -= pageDiff;
+	return LERR_SUCCESS;
 }
 
 /* Force load a TI-83+ series APP
  * On error: Returns an error code */
 static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	u_char (*dest)[PAGE_SIZE] = (u_char (*)[PAGE_SIZE]) cpu->mem_c->flash;
-	if (dest == NULL)
+	if (dest == NULL) {
 		return LERR_MODEL;
+	}
 
-	if (tifile->flash == NULL)
+	if (tifile->flash == NULL) {
 		return LERR_FILE;
+	}
 
 	upages_t upages;
 	state_userpages(cpu, &upages);
-	if (upages.start == -1)
+	if (upages.start == -1) {
 		return LERR_MODEL;
+	}
 	
 	u_int page;
-	for (page = upages.start; page >= upages.end + tifile->flash->pages
-			&& dest[page][0x00] == 0x80 && dest[page][0x01] == 0x0F; ) {
+	for (page = upages.start; page >= upages.end + tifile->flash->pages; ) {
+		if (check_flashpage_empty(dest, page, 1)) {
+			break;
+		}
+
 		int page_size;
-		//different size app need to send the long way
-		if (!memcmp(&dest[page][0x12], &tifile->flash->data[0][0x12], 8)) {
-			if (get_page_size(dest, page) != tifile->flash->pages)
-			{
-				//or we can force load it still ;D
-				//there's probably some good reason Jim didn't write this code :|
-				int pageDiff = tifile->flash->pages - get_page_size(dest, page);
-				u_int currentPage = page - tifile->flash->pages;
-				u_int end_page = pageDiff > 0 ? currentPage : currentPage + pageDiff;
-				while (!check_flashpage_empty(dest, end_page, 1) && end_page >= upages.end)
-					end_page -= get_page_size(dest, end_page);
-				if (end_page != currentPage) {
-					if (pageDiff > 0) {
-						if (end_page - pageDiff < upages.end)
-							return LERR_MEM;
-						memmove(dest[currentPage-pageDiff], dest[currentPage], PAGE_SIZE * (end_page - currentPage));
-						if (cpu->pio.model == TI_83P) {
-							//mark pages unprotected
-							for (u_int i = end_page - 7; i <= end_page + pageDiff - 8; i++) {
-								cpu->mem_c->protected_page[i / 8] &= ~(1 << (i % 8));
-							}
-						}
-					} else {
-						//0xFF all extra pages
-						for (u_int i = tifile->flash->pages; i < tifile->flash->pages - pageDiff; i++, currentPage--) {
-							memset(dest[currentPage], 0xFF, PAGE_SIZE);
-						}
-						if (cpu->pio.model == TI_83P) {
-							//mark pages as protected
-							for (u_int i = end_page - 7; i <= end_page - pageDiff - 8; i++) {
-								cpu->mem_c->protected_page[i / 8] |= 1 << (i % 8);
-							}
-						}
-					}
-				}
-				//fix page execution permissions
-				cpu->mem_c->flash_upper -= pageDiff;
+		// different size app need to send the long way
+		u_char *loadedAppName = find_field(dest[page], 0x80, 0x48);
+		if (loadedAppName == NULL) {
+			// not sure what 0x45 is, but i've seen multiple apps use it
+			loadedAppName = find_field(dest[page], 0x80, 0x45);
+			if (loadedAppName == NULL) {
+				return LERR_FILE;
 			}
+		}
+
+		if (!memcmp(loadedAppName, &tifile->flash->name, 8)) {
+			if (get_page_size(dest[page]) != tifile->flash->pages) {
+				LINK_ERR err = replace_app(cpu, tifile, upages, dest, page);
+				if (err == LERR_SUCCESS) {
+					break;
+				}
+				return err;
+			}
+
 			u_int i;
 			for (i = 0; i < tifile->flash->pages; i++, page--) {
 				memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 			}
-			//note that this does not fix the old marks, only ensures that
-			//the new order of apps has the correct parts marked
+			// note that this does not fix the old marks, only ensures that
+			// the new order of apps has the correct parts marked
 			applist_t applist;
 			state_build_applist(cpu, &applist);
 			for (i = 0; i < applist.count; i++) {
@@ -855,12 +918,13 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 			printf("Found already\n");
 			return LERR_SUCCESS;
 		}
-		page_size = get_page_size(dest, page);
+		page_size = get_page_size(dest[page]);
 		page -= page_size;
 	}
 
-	if (page - tifile->flash->pages < upages.end)
+	if (page - tifile->flash->pages < upages.end) {
 		return LERR_MEM;
+	}
 
 	//mark the app as non trial
 	fix_certificate(cpu, page);
@@ -870,8 +934,10 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 	//u_char *space = &dest[page][PAGE_SIZE - 1];
 	u_int i;
 	// Make sure the subsequent pages are empty
-	if (!check_flashpage_empty(dest, page, tifile->flash->pages))
+	if (!check_flashpage_empty(dest, page, tifile->flash->pages)) {
 		return LERR_MEM;
+	}
+
 	for (i = 0; i < tifile->flash->pages; i++, page--) {
 		memcpy(dest[page], tifile->flash->data[i], PAGE_SIZE);
 	}
@@ -881,14 +947,7 @@ static LINK_ERR forceload_app(CPU_t *cpu, TIFILE_t *tifile) {
 		//-8 is for the start of user mem
 		cpu->mem_c->protected_page[i / 8] &= ~(1 << (i % 8));
 	}
-	// Discard any error link_send_app returns
-//	link_send_app(cpu, tifile);
-	// Delay for a few seconds so the calc will be responsive
-/*	cpu->pio.link->vlink_size = 100;
-	for (cpu->pio.link->vlink_send = 0; cpu->pio.link->vlink_send < 100; cpu->pio.link->vlink_send += 20) {
-		link_wait(cpu, MHZ_6 * 1);
-	}
-*/
+
 	return LERR_SUCCESS;
 }
 

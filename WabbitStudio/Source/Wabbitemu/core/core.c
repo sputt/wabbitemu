@@ -226,19 +226,20 @@ static BOOL is_allowed_exec(CPU_t *cpu) {
 		int protected_val;
 		if (bank->ram) {
 			protected_val = cpu->mem_c->protected_page[3];
-			if ((protected_val & 0x01) && bank->page == 0)
+			if ((protected_val & 0x01) && bank->page == 0) {
 				return FALSE;
-			if ((protected_val & 0x20) && bank->page == 1)
+			} else if ((protected_val & 0x20) && bank->page == 1) {
 				return FALSE;
+			}
 			return TRUE;
-		} else if (bank->page < 0x08)
+		} else if (bank->page < 0x08) {
 			return TRUE;
-		else if (bank->page >= 0x1C)
+		} else if (bank->page >= 0x1C) {
 			return TRUE;
+		}
 		protected_val = cpu->mem_c->protected_page[(bank->page - 8) / 8];
-		//yay for awesome looking code :D
-		//basically this checks whether the bit corresponding to the page
-		//is set indicating no exec is allowed
+		// basically this checks whether the bit corresponding to the page
+		// is set indicating no exec is allowed
 		return !(protected_val & (0x01 << ((bank->page - 8) % 8)));
 	} else {
 		memc *mem = cpu->mem_c;
@@ -811,7 +812,10 @@ int CPU_connected_step(CPU_t *cpu) {
 
 	handle_pio(cpu);
 
-	if (cpu->interrupt && !cpu->ei_block) handle_interrupt(cpu);
+	if (cpu->interrupt && !cpu->ei_block) {
+		handle_interrupt(cpu);
+	}
+
 	return 0;
 }
 

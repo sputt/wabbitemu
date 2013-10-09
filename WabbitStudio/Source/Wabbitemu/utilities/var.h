@@ -112,7 +112,7 @@ typedef struct TIFILE {
 #define FLASH_TYPE_OS 0x23
 #define FLASH_TYPE_APP 0x24
 
-int FindRomVersion(int, char*, unsigned char*, u_int);
+int FindRomVersion(char*, unsigned char*, u_int);
 int ReadIntelHex(FILE *ifile, INTELHEX_t *ihex);
 TIFILE_t* importvar(LPCTSTR FilePath, BOOL only_check_header);
 TIFILE_t* FreeTiFile(TIFILE_t *);
