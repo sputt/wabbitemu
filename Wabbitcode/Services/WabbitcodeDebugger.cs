@@ -313,9 +313,10 @@ namespace Revsoft.Wabbitcode.Services
 			byte oldPage = GetPageNum(currentPC);
 			DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC);
 			DocumentLocation newKey = key;
-			while (key == null || newKey.LineNumber == key.LineNumber)
+			while (newKey == null || newKey.LineNumber == key.LineNumber)
 			{
 				_debugger.Step();
+				newKey = _symbolService.ListTable.GetFileLocation(GetPageNum(_debugger.CPU.PC), _debugger.CPU.PC);
 			}
 
 			ushort address = _debugger.CPU.PC;
@@ -471,6 +472,7 @@ namespace Revsoft.Wabbitcode.Services
 		internal void Run()
 		{
 			_isBreakpointed = false;
+			_debugger.Step();
 			_debugger.Running = true;
 
 			if (OnDebuggerRunningChanged != null)
@@ -481,7 +483,18 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal void SetBreakpoint(WabbitcodeBreakpoint newBreakpoint)
 		{
-			_debugger.SetBreakpoint(newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
+			if (_debugger != null)
+			{
+				newBreakpoint.WabbitemuBreakpoint = _debugger.SetBreakpoint(newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
+			}
+		}
+
+		internal void ClearBreakpoint(WabbitcodeBreakpoint newBreakpoint)
+		{
+			if (_debugger != null)
+			{
+				_debugger.ClearBreakpoint(newBreakpoint.WabbitemuBreakpoint);
+			}
 		}
 
 		internal void SimulateKeyPress(Keys key)

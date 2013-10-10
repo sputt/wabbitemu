@@ -627,13 +627,23 @@ namespace Revsoft.Wabbitcode
 		private void WabbitcodeBreakpointManager_OnOnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
 		{
 			_breakpointsToAdd.Remove(e.Breakpoint);
+			if (_debugger != null)
+			{
+				_debugger.ClearBreakpoint(e.Breakpoint);
+			}
 		}
 
 		void WabbitcodeBreakpointManager_OnBreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e)
 		{
-			if (!_breakpointsToAdd.Contains(e.Breakpoint))
+			if (_breakpointsToAdd.Contains(e.Breakpoint))
 			{
-				_breakpointsToAdd.Add(e.Breakpoint);
+				return;
+			}
+
+			_breakpointsToAdd.Add(e.Breakpoint);
+			if (_debugger != null)
+			{
+				_debugger.SetBreakpoint(e.Breakpoint);
 			}
 		}
 
