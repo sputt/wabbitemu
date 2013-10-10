@@ -74,6 +74,9 @@
     <Filter Include="Script Files">
       <UniqueIdentifier>{002c719e-b7d6-43bd-9845-e814396d2733}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Interface\COM">
+      <UniqueIdentifier>{fad4119a-ceef-421e-9760-e0df9501d0d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="core\alu.c">
@@ -343,17 +346,8 @@
     <ClCompile Include="GUI\guiresource.c">
       <Filter>Source Files\GUI</Filter>
     </ClCompile>
-    <ClCompile Include="CBreakpointCollection.cpp">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClCompile>
     <ClCompile Include="Wabbitemu_i.c">
       <Filter>Generated Files</Filter>
-    </ClCompile>
-    <ClCompile Include="CMemoryContext.cpp">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClCompile>
-    <ClCompile Include="CPageCollection.cpp">
-      <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
     <ClCompile Include="GUI\guisize.c">
       <Filter>Source Files\GUI</Filter>
@@ -363,6 +357,15 @@
     </ClCompile>
     <ClCompile Include="hardware\84pcsehw.c">
       <Filter>Source Files\Hardware</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CBreakpointCollection.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CPageCollection.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
+    </ClCompile>
+    <ClCompile Include="interface\CMemoryContext.cpp">
+      <Filter>Source Files\Interface\COM</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -537,32 +540,11 @@
     <ClInclude Include="gui\guiwizard.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
-    <ClInclude Include="interface\CKeypad.h">
-      <Filter>Header Files\Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="interface\CLCD.h">
-      <Filter>Header Files\Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="interface\CWabbitemu.h">
-      <Filter>Header Files\Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="interface\CPage.h">
-      <Filter>Header Files\Interface</Filter>
-    </ClInclude>
-    <ClInclude Include="interface\CZ80.h">
-      <Filter>Header Files\Interface</Filter>
-    </ClInclude>
     <ClInclude Include="gui\CGdiPlusBitmap.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
     <ClInclude Include="utilities\fileutilities.h">
       <Filter>Header Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="interface\CCalcAddress.h">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClInclude>
-    <ClInclude Include="interface\CLabelServer.h">
-      <Filter>Source Files\Interface\COM</Filter>
     </ClInclude>
     <ClInclude Include="Debugger\dbprofile.h">
       <Filter>Header Files\Debugger</Filter>
@@ -608,9 +590,6 @@
     </ClInclude>
     <ClInclude Include="utilities\SendFile.h">
       <Filter>Source Files\Utilities</Filter>
-    </ClInclude>
-    <ClInclude Include="interface\CPio.h">
-      <Filter>Source Files\Interface\COM</Filter>
     </ClInclude>
     <ClInclude Include="debugger\dbbreakpoints.h">
       <Filter>Header Files\Debugger</Filter>
@@ -666,27 +645,6 @@
     <ClInclude Include="Wabbitemu_h.h">
       <Filter>Generated Files</Filter>
     </ClInclude>
-    <ClInclude Include="CBreakpointCollection.h">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClInclude>
-    <ClInclude Include="CBreakpoint.h">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClInclude>
-    <ClInclude Include="CMemoryContext.h">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClInclude>
-    <ClInclude Include="CPageCollection.h">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClInclude>
-    <ClInclude Include="VariantAdapt.h">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClInclude>
-    <ClInclude Include="Collection.h">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClInclude>
-    <ClInclude Include="CBank.h">
-      <Filter>Source Files\Interface\COM</Filter>
-    </ClInclude>
     <ClInclude Include="GUI\guisize.h">
       <Filter>Header Files\GUI</Filter>
     </ClInclude>
@@ -695,6 +653,57 @@
     </ClInclude>
     <ClInclude Include="hardware\84pcsehw.h">
       <Filter>Header Files\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CBank.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CBreakpoint.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CBreakpointCollection.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CCalcAddress.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CKeypad.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CLabelServer.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CLCD.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CMemoryContext.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\Collection.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CPage.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CPageCollection.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CPio.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CWabbitemu.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="interface\CZ80.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="VariantAdapt.h">
+      <Filter>Header Files\Interface\COM</Filter>
+    </ClInclude>
+    <ClInclude Include="core\reverse_info.h">
+      <Filter>Header Files\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="core\reverse_info_table.h">
+      <Filter>Header Files\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -905,6 +914,6 @@
     <Image Include="gui\ti-84+cse.png">
       <Filter>Resource Files\Skins</Filter>
     </Image>
-    <Image Include="TI-84+CSE.png" />
+    <Image Include="gui\bitmap4.bmp" />
   </ItemGroup>
 </Project>

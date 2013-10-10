@@ -75,5 +75,4 @@ void reti_reverse(CPU_t *);
 void retn_reverse(CPU_t *);
 void ednop_reverse(CPU_t *);
 
-
 #endif

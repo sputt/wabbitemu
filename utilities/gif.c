@@ -62,12 +62,7 @@ int gif_write_state = GIF_IDLE;
 TCHAR gif_file_name[512] = _T("wabbitemu.gif");
 BOOL gif_autosave = FALSE;
 BOOL gif_use_increasing = FALSE;
-#ifdef HIGH_SHADE_GIF
 int gif_colors = 8;
-#else
-int gif_colors=7;
-#endif
-
 int gif_base_delay_start = 4;
 u_int gif_size = 2;
 
@@ -310,7 +305,6 @@ void gif_writer(int shades) {
 			int i;
 			gif_colors = shades + 1;
 			for (i = 0; i < gif_colors; i++) {
-#ifdef HIGH_SHADE_GIF
 				double color_ratio = 1.0 - ((double) i / (double) (gif_colors - 1));
 				printf("ratio: %lf\n", color_ratio);
 				
@@ -325,11 +319,6 @@ void gif_writer(int shades) {
 					gif_header[14 + i * 3] = (BYTE) ((0xAB - (0xAB/LCD_HIGH_MUL)) * color_ratio + (0xAB/LCD_HIGH_MUL));
 					gif_header[15 + i * 3] = (BYTE) ((0x88 - (0x88/LCD_HIGH_MUL)) * color_ratio + (0x88/LCD_HIGH_MUL));
 				}
-#else
-				gif_header[13 + i * 3] = 255 - i * 255 / (gif_colors-1);
-				gif_header[14 + i * 3] = 255 - i * 255 / (gif_colors-1);
-				gif_header[15 + i * 3] = 255 - i * 255 / (gif_colors-1);
-#endif
 			}
 			
 			int palette_bits = 2;
