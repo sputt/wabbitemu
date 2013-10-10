@@ -102,13 +102,13 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             }
             set
             {
-                if (_debugger.Running)
+                if (value)
                 {
-                    _debugger.Break();
+					_debugger.Run();
                 }
                 else
                 {
-                    _debugger.Run();
+					_debugger.Break();
                 }
             }
         }

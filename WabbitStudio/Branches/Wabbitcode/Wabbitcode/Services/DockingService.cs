@@ -214,7 +214,10 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void Invoke(Action action)
 		{
-			MainForm.Invoke(action);
+			if (MainForm != null)
+			{
+				MainForm.Invoke(action);
+			}
 		}
 
 		public void InitPanels(ProjectViewer projectViewer, ErrorList errorList, TrackingWindow trackingWindow,

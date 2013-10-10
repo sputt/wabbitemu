@@ -108,4 +108,5 @@ void srl_reg_reverse(CPU_t *);
 void sra_reg_reverse(CPU_t *);
 void sla_reg_reverse(CPU_t *);
 void sll_reg_reverse(CPU_t *);
+
 #endif

@@ -2,8 +2,16 @@
 
 #ifdef WITH_REVERSE
 #include "core.h"
-//ALU.c
 
+void nop_reverse_info(CPU_t *cpu) {
+	// no-op
+}
+
+void nop_ind_reverse_info(CPU_t *cpu, char offset) {
+	// no-op
+}
+
+// alu.c
 void adc_hl_reg16_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->data1 = cpu->hl;
 }
@@ -80,7 +88,6 @@ void set_reverse_info(CPU_t *cpu) {
 			break;
 	}
 }
-
 
 void rl_reg_reverse_info(CPU_t *cpu) {
 	switch (cpu->bus & 0x07) {
@@ -318,8 +325,6 @@ void and_reg8_reverse_info(CPU_t *cpu) {
 void and_num8_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->lower_data1 = cpu->a;
 }
-
-
 
 void or_reg8_reverse_info(CPU_t *cpu) {
 	cpu->prev_instruction->lower_data1 = cpu->a;
@@ -740,7 +745,6 @@ void di_reverse_info(CPU_t *cpu) {
 //End control.c
 
 //indexcb.c
-
 void res_ind_reverse_info(CPU_t *cpu, char offset) {
 	int save = cpu->bus & 0x07;
 	

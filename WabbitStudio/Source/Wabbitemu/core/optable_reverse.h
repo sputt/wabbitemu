@@ -1,10 +1,12 @@
+#ifndef OPTABLE_REVERSE_H
+#define OPTABLE_REVERSE_H
 
 static void CPU_CB_opcode_run_reverse(CPU_t*);
 static void CPU_ED_opcode_run_reverse(CPU_t*);
 
 /* This will all compress quite well, through UPX */
 
-// Opcode table
+// Reverse opcode table
 static opcodep opcode_reverse[256] = {
 	&nop_reverse,				//0
 	&ld_bc_num16_reverse,
@@ -294,9 +296,6 @@ static opcodep opcode_reverse[256] = {
 	&cp_num8_reverse,
 	&rst_reverse
 };
-	
-
-
 
 //CB opcodes
 static opcodep CBtab_reverse[256] = {
@@ -589,9 +588,6 @@ static opcodep CBtab_reverse[256] = {
 	&set_reverse
 };
 
-
-
-
 // index register cb opcodes
 static index_opcodep ICB_opcode_reverse[256] = {
 	&rlc_ind_reverse,			//00
@@ -882,9 +878,6 @@ static index_opcodep ICB_opcode_reverse[256] = {
 	&set_ind_reverse,
 	&set_ind_reverse
 };
-
-
-
 
 //ED opcodes
 /*  According Sean McLaughlin's 28day's 
@@ -1182,3 +1175,4 @@ static opcodep EDtab_reverse[256] = {
 	&ednop_reverse
 };
 
+#endif

@@ -1,3 +1,5 @@
+#ifndef OPTABLE_H
+#define OPTABLE_H
 
 static void CPU_CB_opcode_run(CPU_t*);
 static void CPU_ED_opcode_run(CPU_t*);
@@ -294,9 +296,6 @@ static opcodep opcode[256] = {
 	&cp_num8,
 	&rst
 };
-	
-
-
 
 //CB opcodes
 static opcodep CBtab[256] = {
@@ -588,9 +587,6 @@ static opcodep CBtab[256] = {
 	&set,
 	&set
 };
-
-
-
 
 // index register cb opcodes
 static index_opcodep ICB_opcode[256] = {
@@ -1182,3 +1178,4 @@ static opcodep EDtab[256] = {
 	&ednop
 };
 
+#endif

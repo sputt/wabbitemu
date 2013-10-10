@@ -493,12 +493,10 @@ DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
 
 	pWabbitemu->m_hwnd = CreateWindowEx(0, _T("WabbitemuCOMListener"), _T(""), WS_CHILD, 0, 0, 0, 0, HWND_MESSAGE, 0, GetModuleHandle(NULL), NULL);
 
-#ifdef USE_GDIPLUS
 	// Initialize GDI+.
 	GdiplusStartupInput gdiplusStartupInput;
 	ULONG_PTR gdiplusToken;
 	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-#endif
 
 	CoInitializeEx(NULL, COINIT_MULTITHREADED);
 	SetTimer(NULL, 0, TPF, TimerProc);

@@ -77,7 +77,6 @@ BOOL get_gif_filename() {
 	return TRUE;
 }
 
-#ifdef HIGH_SHADE_GIF
 unsigned char* GIFGREYLCD(LCD_t *lpLCD) {
 	
 	uint8_t temp_gif[LCD_HEIGHT][LCD_WIDTH];
@@ -129,26 +128,6 @@ unsigned char* GIFGREYLCD(LCD_t *lpLCD) {
 	//}
 	return (uint8_t*) lpLCD->gif;
 }
-
-#else
-unsigned char* GIFGREYLCD(LCD_t *lpLCD) {
-	unsigned int tmp;
-	int x, y, i, bit, col;
-	for(y = 0; y < LCD_HEIGHT * gif_size; y++) {
-		for(x = 0; x < LCD_WIDTH * gif_size; x++) {
-			bit = 7 - ((x / gif_size) & 0x7);
-			col = (x / gif_size) >> 3;
-			tmp = 0;
-			for(i = 0; i < lpLCD->shades; i++) {
-				if (lpLCD->queue[i]) 
-					tmp += ((lpLCD->queue[i][((y / gif_size) * LCD_MEM_WIDTH) + col] >> bit) & 0x01);
-			}
-			lpLCD->gif[y][x] = tmp;
-		}
-	}
-	return (u_char*) lpLCD->gif;
-}
-#endif
 
 void handle_screenshot() {
 	LCD_t* lcd;
