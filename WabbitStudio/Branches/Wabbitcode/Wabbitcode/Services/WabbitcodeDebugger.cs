@@ -424,6 +424,7 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				OnDebuggerStep(this, new DebuggerStepEventArgs(key));
 			}
+			_debugger.OnBreakpoint -= StepOverBreakpointEvent;
 		}
 
 		internal byte GetPageNum(ushort address)
@@ -472,6 +473,11 @@ namespace Revsoft.Wabbitcode.Services
 		internal void Run()
 		{
 			_isBreakpointed = false;
+			if (_debugger == null)
+			{
+				return;
+			}
+
 			_debugger.Step();
 			_debugger.Running = true;
 

@@ -1,6 +1,6 @@
 ﻿namespace Revsoft.Wabbitcode
 {
-    partial class GotoLine
+    partial class GotoSymbol
     {
         /// <summary>
         /// Required designer variable.
@@ -39,21 +39,21 @@
 			// 
 			// inputBox
 			// 
-			this.inputBox.Location = new System.Drawing.Point(88, 12);
+			this.inputBox.Location = new System.Drawing.Point(62, 12);
 			this.inputBox.Name = "inputBox";
-			this.inputBox.Size = new System.Drawing.Size(175, 20);
+			this.inputBox.Size = new System.Drawing.Size(201, 20);
 			this.inputBox.TabIndex = 0;
 			this.inputBox.TextChanged += new System.EventHandler(this.inputBox_TextChanged);
 			this.inputBox.Validating += new System.ComponentModel.CancelEventHandler(this.inputBox_Validating);
 			// 
-			// label1
+			// symbolLabel
 			// 
 			this.symbolLabel.AutoSize = true;
 			this.symbolLabel.Location = new System.Drawing.Point(12, 15);
-			this.symbolLabel.Name = "label1";
-			this.symbolLabel.Size = new System.Drawing.Size(70, 13);
+			this.symbolLabel.Name = "symbolLabel";
+			this.symbolLabel.Size = new System.Drawing.Size(44, 13);
 			this.symbolLabel.TabIndex = 1;
-			this.symbolLabel.Text = "Line Number:";
+			this.symbolLabel.Text = "Symbol:";
 			// 
 			// okButton
 			// 
@@ -100,7 +100,7 @@
 			this.ShowInTaskbar = false;
 			this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "Goto Line";
+			this.Text = "Goto Symbol";
 			((System.ComponentModel.ISupportInitialize)(this.errorProvider)).EndInit();
 			this.ResumeLayout(false);
 			this.PerformLayout();
