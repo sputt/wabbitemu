@@ -10,6 +10,7 @@ using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
@@ -738,7 +739,6 @@ namespace Revsoft.Wabbitcode
 			nextBookmarkMenuItem.Enabled = enabled;
 			prevBookmarkMenuItem.Enabled = enabled;
 			gLineMenuItem.Enabled = enabled;
-			gLabelMenuItem.Enabled = enabled;
 
 			// View Menu
 			lineNumMenuItem.Enabled = enabled;
@@ -1185,6 +1185,20 @@ namespace Revsoft.Wabbitcode
 
 		private void gLabelMenuItem_Click(object sender, EventArgs e)
 		{
+			GotoSymbol gotoSymbolBox = new GotoSymbol(_parserService);
+			if (gotoSymbolBox.ShowDialog() != DialogResult.OK)
+			{
+				return;
+			}
+
+			string symbolString = gotoSymbolBox.inputBox.Text;
+			IParserData data = _parserService.GetParserData(symbolString, Settings.Default.caseSensitive).FirstOrDefault();
+			if (data == null)
+			{
+				return;
+			}
+
+			_documentService.GotoLabel(data);
 		}
 
 		private void gLineMenuItem_Click(object sender, EventArgs e)
