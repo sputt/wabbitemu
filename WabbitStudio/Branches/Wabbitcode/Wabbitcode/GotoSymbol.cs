@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
@@ -16,6 +17,11 @@ namespace Revsoft.Wabbitcode
         {
 	        _parserService = parserService;
 	        InitializeComponent();
+	        IEnumerable<IParserData> parserData = parserService.GetAllParserData();
+	        foreach (IParserData data in parserData)
+	        {
+		        inputBox.AutoCompleteCustomSource.Add(data.Name);
+	        }
         }
 
 	    private void inputBox_TextChanged(object sender, EventArgs e)

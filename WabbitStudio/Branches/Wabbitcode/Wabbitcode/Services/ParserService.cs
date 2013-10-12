@@ -135,6 +135,17 @@ namespace Revsoft.Wabbitcode.Services
 			return refs;
 		}
 
+		public IEnumerable<IParserData> GetAllParserData()
+		{
+			foreach (var info in _parserInfoDictionary.Values)
+			{
+				foreach (var data in info)
+				{
+					yield return data;
+				}
+			}
+		}
+
 		public IEnumerable<IParserData> GetParserData(string referenceString, bool caseSensitive)
 		{
 			if (string.IsNullOrEmpty(referenceString))

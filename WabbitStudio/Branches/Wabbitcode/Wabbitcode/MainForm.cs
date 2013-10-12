@@ -496,7 +496,7 @@ namespace Revsoft.Wabbitcode
 				{
 					_debugger.InitDebugger(createdName);
 				}
-				catch (MissingROMException ex)
+				catch (MissingROMException)
 				{
 					this.Invoke(() =>
 					{
@@ -1198,7 +1198,43 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			_documentService.GotoLabel(data);
+			IIncludeFile includeFile = data as IIncludeFile;
+			if (includeFile != null)
+			{
+				string fullPath = Path.IsPathRooted(includeFile.IncludedFile) ?
+					includeFile.IncludedFile :
+					FileOperations.NormalizePath(FindFilePathIncludes(includeFile.IncludedFile));
+				_documentService.GotoFile(fullPath);
+			}
+			else
+			{
+				_documentService.GotoLabel(data);
+			}
+		}
+
+		// TODO: remove duplicate code
+		private string FindFilePathIncludes(string relativePath)
+		{
+			IEnumerable<string> includeDirs = _projectService.Project.IsInternal ?
+				(IEnumerable<string>)Settings.Default.includeDirs :
+				_projectService.Project.IncludeDirs;
+
+			foreach (string dir in includeDirs)
+			{
+				if (File.Exists(Path.Combine(dir, relativePath)))
+				{
+					return Path.Combine(dir, relativePath);
+				}
+			}
+
+			if (_projectService.Project.IsInternal)
+			{
+				return null;
+			}
+
+			return File.Exists(Path.Combine(_projectService.Project.ProjectDirectory, relativePath)) ?
+				Path.Combine(_projectService.Project.ProjectDirectory, relativePath) :
+				null;
 		}
 
 		private void gLineMenuItem_Click(object sender, EventArgs e)
