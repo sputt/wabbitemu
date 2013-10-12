@@ -632,7 +632,8 @@ namespace Revsoft.Wabbitcode
 			}
 			else
 			{
-				//_documentService.GotoFile(Path.IsPathRooted(text) ? text : FileOperations.NormalizePath(FindFilePathIncludes(text)));
+				string fileFullPath = Path.IsPathRooted(text) ? text : FileOperations.NormalizePath(FindFilePathIncludes(text));
+				_documentService.GotoFile(fileFullPath);
 			}
 		}
 		#endregion
@@ -890,8 +891,7 @@ namespace Revsoft.Wabbitcode
 
 		private string FindFilePathIncludes(string gotoLabel)
 		{
-			IEnumerable<string> includeDirs;
-			includeDirs = _projectService.Project.IsInternal ?
+			IEnumerable<string> includeDirs = _projectService.Project.IsInternal ?
 				(IEnumerable<string>) Settings.Default.includeDirs :
 				_projectService.Project.IncludeDirs;
 

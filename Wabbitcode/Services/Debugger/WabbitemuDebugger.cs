@@ -222,7 +222,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             //address.Write(value);
         }
 
-        IntPtr scan0 = Marshal.AllocHGlobal(128 * 64);
+	    readonly IntPtr scan0 = Marshal.AllocHGlobal(128 * 64);
         public Image GetScreenImage()
         {
             Marshal.Copy((byte[])_debugger.LCD.Display, 0, scan0, 128 * 64);

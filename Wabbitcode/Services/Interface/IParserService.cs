@@ -14,6 +14,7 @@ namespace Revsoft.Wabbitcode.Services.Interface
 		/// <param name="refString">String to find references to</param>
 		List<Reference> FindAllReferencesInFile(string file, string refString);
 
+		IEnumerable<IParserData> GetAllParserData();
 		IEnumerable<IParserData> GetParserData(string referenceString, bool caseSensitive);
 
 		void ParseFile(int hashCode, string filename);
