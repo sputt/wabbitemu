@@ -144,7 +144,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			TextBox box = (TextBox)menu.SourceControl;
 			ushort address = ushort.Parse(box.Text, System.Globalization.NumberStyles.HexNumber);
 			byte page = _debugger.GetPageNum(address);
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, address);
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
 			if (key == null)
 			{
 				return;

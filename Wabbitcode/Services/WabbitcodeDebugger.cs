@@ -149,7 +149,7 @@ namespace Revsoft.Wabbitcode.Services
 			ushort address = breakEvent.Address.Address;
 			int page = breakEvent.Address.Page.Index;
 			int relativePage = _isAnApp ? _appPage - page : page;
-			WabbitcodeBreakpoint breakpoint = FindBreakpoint(address, (byte)page, address > 0x8000);
+			WabbitcodeBreakpoint breakpoint = FindBreakpoint(address, (byte)relativePage, address >= 0x8000);
 			if (breakpoint == null)
 			{
 				return;
@@ -191,7 +191,7 @@ namespace Revsoft.Wabbitcode.Services
 
 				if (conditionsTrue)
 				{
-					DocumentLocation key = _symbolService.ListTable.GetFileLocation(relativePage, address);
+					DocumentLocation key = _symbolService.ListTable.GetFileLocation(relativePage, address, !breakEvent.Address.Page.IsFlash);
 					if (key == null)
 					{
 						throw new Exception("Unable to find breakpoint");
@@ -225,17 +225,17 @@ namespace Revsoft.Wabbitcode.Services
 			_debugger = null;
 		}
 
-		private WabbitcodeBreakpoint FindBreakpoint(ushort address, byte page, bool isRam)
+		private static WabbitcodeBreakpoint FindBreakpoint(ushort address, byte page, bool isRam)
 		{
 			return FindBreakpoint(new WabbitcodeBreakpoint(address, page, isRam));
 		}
 
-		public WabbitcodeBreakpoint FindBreakpoint(WabbitcodeBreakpoint breakpoint)
+		public static WabbitcodeBreakpoint FindBreakpoint(WabbitcodeBreakpoint breakpoint)
 		{
-			return _breakpoints.FirstOrDefault(pointToCheck => breakpoint == pointToCheck);
+			return WabbitcodeBreakpointManager.Breakpoints.FirstOrDefault(pointToCheck => breakpoint == pointToCheck);
 		}
 
-		public WabbitcodeBreakpoint FindBreakpoint(string file, int lineNumber)
+		public static WabbitcodeBreakpoint FindBreakpoint(string file, int lineNumber)
 		{
 			return FindBreakpoint(new WabbitcodeBreakpoint(file, lineNumber));
 		}
@@ -248,7 +248,7 @@ namespace Revsoft.Wabbitcode.Services
 		public void GotoAddress(ushort address)
 		{
 			int page = GetPageNum(address);
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(address, page);
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(address, page, address >= 0x8000);
 			if (key == null)
 			{
 				return;
@@ -311,18 +311,18 @@ namespace Revsoft.Wabbitcode.Services
 			// need to clear the old breakpoint so lets save it
 			ushort currentPC = _debugger.CPU.PC;
 			byte oldPage = GetPageNum(currentPC);
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC);
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
 			DocumentLocation newKey = key;
 			while (newKey == null || newKey.LineNumber == key.LineNumber)
 			{
 				_debugger.Step();
-				newKey = _symbolService.ListTable.GetFileLocation(GetPageNum(_debugger.CPU.PC), _debugger.CPU.PC);
+				newKey = _symbolService.ListTable.GetFileLocation(GetPageNum(_debugger.CPU.PC), _debugger.CPU.PC, _debugger.CPU.PC >= 0x8000);
 			}
 
 			ushort address = _debugger.CPU.PC;
 			byte page = GetPageNum(address);
 
-			key = _symbolService.ListTable.GetFileLocation(page, address);
+			key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
 
 			_isBreakpointed = true;
 
@@ -345,7 +345,7 @@ namespace Revsoft.Wabbitcode.Services
 			// need to clear the old breakpoint so lets save it
 			ushort currentPC = _debugger.CPU.PC;
 			byte oldPage = GetPageNum(currentPC);
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC);
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
 
 			// TODO: move this out into a filereader service
 			string[] lines;
@@ -383,7 +383,7 @@ namespace Revsoft.Wabbitcode.Services
 				_isBreakpointed = true;
 				currentPC = _debugger.CPU.PC;
 				oldPage = GetPageNum(currentPC);
-				DocumentLocation newKey = _symbolService.ListTable.GetFileLocation(oldPage, currentPC);
+				DocumentLocation newKey = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
 				// TODO: handle a null here
 				if (OnDebuggerStep != null)
 				{
@@ -417,7 +417,9 @@ namespace Revsoft.Wabbitcode.Services
 			int page = _stepOverBreakpoint.Address.Page.IsFlash
 				? AppPage - _stepOverBreakpoint.Address.Page.Index
 				: _stepOverBreakpoint.Address.Page.Index;
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, _stepOverBreakpoint.Address.Address);
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, 
+				_stepOverBreakpoint.Address.Address,
+				!_stepOverBreakpoint.Address.Page.IsFlash);
 
 			_isBreakpointed = true;
 			if (OnDebuggerStep != null)
@@ -446,7 +448,7 @@ namespace Revsoft.Wabbitcode.Services
 			_isBreakpointed = false;
 
 			ushort currentPC = _debugger.CPU.PC;
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(currentPC, GetPageNum(currentPC));
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(currentPC, GetPageNum(currentPC), currentPC >= 0x8000);
 			if (key == null)
 			{
 				throw new Exception("Unable to pause here");
@@ -491,7 +493,12 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			if (_debugger != null)
 			{
-				newBreakpoint.WabbitemuBreakpoint = _debugger.SetBreakpoint(newBreakpoint.IsRam, newBreakpoint.Page, newBreakpoint.Address);
+				CalcLocation location = _symbolService.ListTable.GetCalcLocation(newBreakpoint.File, newBreakpoint.LineNumber);
+				newBreakpoint.Page = location.Page;
+				newBreakpoint.Address = location.Address;
+				newBreakpoint.IsRam = location.IsRam;
+				newBreakpoint.WabbitemuBreakpoint = _debugger.SetBreakpoint(newBreakpoint.IsRam,
+					(byte) (AppPage - newBreakpoint.Page), newBreakpoint.Address);
 			}
 		}
 

@@ -63,7 +63,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 						page = 1;
 					}
 					DocumentLocation key = new DocumentLocation(currentFile, lineNumber);
-					CalcLocation value = new CalcLocation(address, page);
+					CalcLocation value = new CalcLocation(address, page, address >= 0x8000);
 
 					if (!_calcToFile.ContainsKey(value))
 					{
@@ -92,9 +92,9 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 			return value;
 		}
 
-		public DocumentLocation GetFileLocation(int page, int address)
+		public DocumentLocation GetFileLocation(int page, int address, bool isRam)
 		{
-			CalcLocation value = new CalcLocation((ushort)address, (byte)page);
+			CalcLocation value = new CalcLocation((ushort)address, (byte)page, isRam);
 			DocumentLocation key;
 			_calcToFile.TryGetValue(value, out key);
 			return key;

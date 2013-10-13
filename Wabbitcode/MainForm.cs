@@ -32,7 +32,6 @@ namespace Revsoft.Wabbitcode
 		#region Private Members
 
 		private readonly List<ArrayList> _errorsToAdd = new List<ArrayList>();
-		private readonly List<WabbitcodeBreakpoint> _breakpointsToAdd = new List<WabbitcodeBreakpoint>();
 		private bool _showToolbar = true;
 		private WabbitcodeDebugger _debugger;
 
@@ -627,7 +626,6 @@ namespace Revsoft.Wabbitcode
 
 		private void WabbitcodeBreakpointManager_OnOnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
 		{
-			_breakpointsToAdd.Remove(e.Breakpoint);
 			if (_debugger != null)
 			{
 				_debugger.ClearBreakpoint(e.Breakpoint);
@@ -636,12 +634,6 @@ namespace Revsoft.Wabbitcode
 
 		void WabbitcodeBreakpointManager_OnBreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e)
 		{
-			if (_breakpointsToAdd.Contains(e.Breakpoint))
-			{
-				return;
-			}
-
-			_breakpointsToAdd.Add(e.Breakpoint);
 			if (_debugger != null)
 			{
 				_debugger.SetBreakpoint(e.Breakpoint);
@@ -650,14 +642,14 @@ namespace Revsoft.Wabbitcode
 
 		private void UpdateBreakpoints()
 		{
-			foreach (WabbitcodeBreakpoint breakpoint in _breakpointsToAdd)
+			foreach (WabbitcodeBreakpoint breakpoint in WabbitcodeBreakpointManager.Breakpoints)
 			{
 				WabbitcodeBreakpoint newBreakpoint = breakpoint;
 				string fileName = newBreakpoint.File;
 				int lineNumber = newBreakpoint.LineNumber;
 
 				CalcLocation value = _symbolService.ListTable.GetCalcLocation(fileName, lineNumber);
-				if (_debugger.FindBreakpoint(newBreakpoint) == null)
+				if (WabbitcodeDebugger.FindBreakpoint(newBreakpoint) == null)
 				{
 					_debugger.AddBreakpoint(lineNumber, fileName);
 				}

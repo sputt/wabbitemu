@@ -1,4 +1,6 @@
-﻿using Revsoft.TextEditor.Document;
+﻿using System.IO;
+using System.Linq;
+using Revsoft.TextEditor.Document;
 using System.Collections.Generic;
 using Revsoft.Wabbitcode.Services.Debugger;
 
@@ -8,7 +10,14 @@ namespace Revsoft.Wabbitcode.Utils
 	{
 		#region Private Members
 
-		private readonly static List<WabbitcodeBreakpoint> Breakpoints = new List<WabbitcodeBreakpoint>();
+		private static readonly List<WabbitcodeBreakpoint> _breakpoints = new List<WabbitcodeBreakpoint>();
+		public static List<WabbitcodeBreakpoint> Breakpoints
+		{
+			get
+			{
+				return _breakpoints;
+			}
+		} 
 
 		#endregion
 
@@ -34,8 +43,11 @@ namespace Revsoft.Wabbitcode.Utils
 
 		public static void RemoveBreakpoint(string fileName, Breakpoint breakpoint)
 		{
-			WabbitcodeBreakpoint newBreak = new WabbitcodeBreakpoint(fileName, breakpoint.LineNumber);
-			Breakpoints.Remove(newBreak);
+			WabbitcodeBreakpoint newBreak = Breakpoints.FirstOrDefault(b => b.File == fileName && b.LineNumber == breakpoint.LineNumber);
+			if (newBreak == null)
+			{
+				return;
+			}
 
 			if (OnBreakpointRemoved != null)
 			{
