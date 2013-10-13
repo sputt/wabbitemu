@@ -58,6 +58,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 		{
 			HitCountCondition = HitCountEnum.BreakAlways;
 			HitCountConditionNumber = 0;
+			Enabled = true;
 		}
 
 		public WabbitcodeBreakpoint(string file, int lineNumber) : this()

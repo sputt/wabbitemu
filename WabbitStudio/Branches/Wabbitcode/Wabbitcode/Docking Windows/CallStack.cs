@@ -64,7 +64,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			DataGridViewRow row = new DataGridViewRow();
 			string dataString = data.ToString("X4");
 			int page = _debugger.GetPageNum((ushort)address);
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(data, page);
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(data, page, address >= 0x8000);
 			if (key != null)
 			{
 				dataString += " (Possible Call)";

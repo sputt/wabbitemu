@@ -85,7 +85,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				file = Path.Combine(project.ProjectDirectory, file);
 			}
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
-			WabbitcodeBreakpoint breakpoint = _debugger.FindBreakpoint(file, lineNum);
+			WabbitcodeBreakpoint breakpoint = WabbitcodeDebugger.FindBreakpoint(file, lineNum);
 			if (breakpoint == null)
 			{
 				return;
