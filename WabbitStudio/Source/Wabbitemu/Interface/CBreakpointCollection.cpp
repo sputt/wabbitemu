@@ -56,7 +56,7 @@ STDMETHODIMP CBreakpointCollection::Remove(IBreakpoint *pBreakpoint)
 	waddr_t waddr = CCalcAddress::ToWAddr(pAddress);
 
 	BOOL fClearBreak = TRUE;
-	for (auto it = m_coll.begin(); it != m_coll.end(); it++)
+	for (auto it = m_coll.begin(); it != m_coll.end();)
 	{
 		CComPtr<IUnknown> pUnkRefBP;
 		it->m_T->QueryInterface(&pUnkRefBP);
@@ -69,11 +69,16 @@ STDMETHODIMP CBreakpointCollection::Remove(IBreakpoint *pBreakpoint)
 
 		if (pUnkRefBP.p == pUnkBP.p)
 		{
-			m_coll.erase(it);
+			it = m_coll.erase(it);
 		}
 		else if (!memcmp(&waddr, &curwaddr, sizeof(waddr_t)))
 		{
 			fClearBreak = FALSE;
+			it++;
+		}
+		else
+		{
+			it++;
 		}
 	}
 

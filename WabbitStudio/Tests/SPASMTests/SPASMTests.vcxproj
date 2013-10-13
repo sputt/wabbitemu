@@ -51,10 +51,10 @@
     <PlatformToolset>v110</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
     <CLRSupport>true</CLRSupport>
     <PlatformToolset>v110</PlatformToolset>
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -236,7 +236,7 @@
     <ResourceCompile Include="app.rc" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\Source\SPASM\SPASM.vcxproj">
+    <ProjectReference Include="..\..\Projects\SPASM\SPASM.vcxproj">
       <Project>{106ff797-6997-43f1-88e3-7d6c0d8a6f3f}</Project>
     </ProjectReference>
   </ItemGroup>
