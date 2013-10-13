@@ -11,7 +11,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 {
     public sealed class WabbitemuDebugger : IWabbitemuDebugger
     {
-        private readonly Wabbitemu _debugger;
+        private Wabbitemu _debugger;
         private bool _disposed;
 
         public WabbitemuDebugger()
@@ -237,7 +237,14 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             return calcBitmap;
         }
 
-        private void debugger_Breakpoint(IWabbitemu debugger, IBreakpoint breakpoint)
+	    public void CancelDebug()
+	    {
+			_debugger.Break();
+			_debugger.Visible = false;
+		    _debugger = null;
+	    }
+
+	    private void debugger_Breakpoint(IWabbitemu debugger, IBreakpoint breakpoint)
         {
             if (OnBreakpoint != null)
             {

@@ -220,8 +220,7 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				return;
 			}
-			_debugger.Running = false;
-			_debugger.Visible = false;
+			_debugger.CancelDebug();
 			_debugger = null;
 		}
 
@@ -248,7 +247,7 @@ namespace Revsoft.Wabbitcode.Services
 		public void GotoAddress(ushort address)
 		{
 			int page = GetPageNum(address);
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(address, page, address >= 0x8000);
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
 			if (key == null)
 			{
 				return;
@@ -379,16 +378,7 @@ namespace Revsoft.Wabbitcode.Services
 			string[] specialCommands = {"jp", "jr", "ret", "djnz"};
 			if (specialCommands.Any(s => line.Contains(s)))
 			{
-				_debugger.Step();
-				_isBreakpointed = true;
-				currentPC = _debugger.CPU.PC;
-				oldPage = GetPageNum(currentPC);
-				DocumentLocation newKey = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
-				// TODO: handle a null here
-				if (OnDebuggerStep != null)
-				{
-					OnDebuggerStep(this, new DebuggerStepEventArgs(newKey));
-				}
+				Step();
 				return;
 			}
 
@@ -431,7 +421,12 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal byte GetPageNum(ushort address)
 		{
-			int page = _appPage - _debugger.Memory.Bank[address >> 14].Index;
+			IPage bank = _debugger.Memory.Bank[address >> 14];
+			int page = bank.Index;
+			if (bank.IsFlash)
+			{
+				page = _appPage - page;
+			}
 			return (byte)page;
 		}
 
@@ -536,7 +531,7 @@ namespace Revsoft.Wabbitcode.Services
 			appReader.Dispose();
 			string appName = new string(buffer);
 			TIApplication? app = Apps.Cast<TIApplication>().SingleOrDefault(a => a.Name == appName);
-			if (app == null)
+			if (app == null || string.IsNullOrEmpty(app.Value.Name))
 			{
 				throw new DebuggingException("Application not found on calc");
 			}
