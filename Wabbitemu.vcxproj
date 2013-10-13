@@ -59,8 +59,6 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CBreakpointCollection.cpp" />
-    <ClCompile Include="CMemoryContext.cpp" />
     <ClCompile Include="core\alu.c" />
     <ClCompile Include="core\alu_reverse.c" />
     <ClCompile Include="core\control.c" />
@@ -70,7 +68,6 @@
     <ClCompile Include="core\indexcb.c" />
     <ClCompile Include="core\indexcb_reverse.c" />
     <ClCompile Include="core\reverse_info.c" />
-    <ClCompile Include="CPageCollection.cpp" />
     <ClCompile Include="DBPaneContainer.cpp" />
     <ClCompile Include="debugger\dbbreakpoints.c" />
     <ClCompile Include="debugger\dbcommon.c" />
@@ -106,6 +103,7 @@
     <ClCompile Include="gui\guioptions.c" />
     <ClCompile Include="GUI\guiresource.c" />
     <ClCompile Include="gui\guisavestate.c" />
+    <ClCompile Include="GUI\guisize.c" />
     <ClCompile Include="GUI\guiskin.c" />
     <ClCompile Include="gui\guispeed.c" />
     <ClCompile Include="GUI\guiupdate.c" />
@@ -116,16 +114,20 @@
     <ClCompile Include="hardware\83hw.c" />
     <ClCompile Include="hardware\83phw.c" />
     <ClCompile Include="hardware\83psehw.c" />
+    <ClCompile Include="hardware\84pcsehw.c" />
     <ClCompile Include="hardware\86hw.c" />
     <ClCompile Include="hardware\keys.c" />
     <ClCompile Include="hardware\lcd.c" />
     <ClCompile Include="hardware\link.c" />
     <ClCompile Include="interface\calc.c" />
+    <ClCompile Include="interface\CBreakpointCollection.cpp" />
     <ClCompile Include="interface\CCalcAddress.cpp" />
     <ClCompile Include="interface\CKeypad.cpp" />
     <ClCompile Include="interface\CLabelServer.cpp" />
     <ClCompile Include="interface\CLCD.cpp" />
+    <ClCompile Include="interface\CMemoryContext.cpp" />
     <ClCompile Include="interface\CPage.cpp" />
+    <ClCompile Include="interface\CPageCollection.cpp" />
     <ClCompile Include="interface\CPio.cpp" />
     <ClCompile Include="interface\CWabbitemu.cpp" />
     <ClCompile Include="interface\CZ80.cpp" />
@@ -147,6 +149,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='WabbitComp Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="utilities\avifile.cpp" />
     <ClCompile Include="utilities\avi_utils.c" />
     <ClCompile Include="utilities\expandpane.c" />
     <ClCompile Include="utilities\exportvar.c" />
@@ -253,11 +256,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CBank.h" />
-    <ClInclude Include="CBreakpoint.h" />
-    <ClInclude Include="CBreakpointCollection.h" />
-    <ClInclude Include="CMemoryContext.h" />
-    <ClInclude Include="Collection.h" />
     <ClInclude Include="core\alu.h" />
     <ClInclude Include="core\alu_reverse.h" />
     <ClInclude Include="core\control.h" />
@@ -269,7 +267,8 @@
     <ClInclude Include="core\indexcb_reverse.h" />
     <ClInclude Include="core\optable.h" />
     <ClInclude Include="core\optable_reverse.h" />
-    <ClInclude Include="CPageCollection.h" />
+    <ClInclude Include="core\reverse_info.h" />
+    <ClInclude Include="core\reverse_info_table.h" />
     <ClInclude Include="DBPaneContainer.h" />
     <ClInclude Include="debugger\dbbreakpoints.h" />
     <ClInclude Include="debugger\dbcommon.h" />
@@ -304,6 +303,7 @@
     <ClInclude Include="gui\guioptions.h" />
     <ClInclude Include="GUI\guiresource.h" />
     <ClInclude Include="gui\guisavestate.h" />
+    <ClInclude Include="GUI\guisize.h" />
     <ClInclude Include="GUI\guiskin.h" />
     <ClInclude Include="gui\guispeed.h" />
     <ClInclude Include="GUI\guiupdate.h" />
@@ -318,6 +318,7 @@
     <ClInclude Include="hardware\83hw.h" />
     <ClInclude Include="hardware\83phw.h" />
     <ClInclude Include="hardware\83psehw.h" />
+    <ClInclude Include="hardware\84pcsehw.h" />
     <ClInclude Include="hardware\86hw.h" />
     <ClInclude Include="hardware\keys.h" />
     <ClInclude Include="hardware\lcd.h" />
@@ -325,16 +326,23 @@
     <ClInclude Include="hardware\ti_stdint.h" />
     <ClInclude Include="interface\backups.h" />
     <ClInclude Include="interface\calc.h" />
+    <ClInclude Include="interface\CBank.h" />
+    <ClInclude Include="interface\CBreakpoint.h" />
+    <ClInclude Include="interface\CBreakpointCollection.h" />
     <ClInclude Include="interface\CCalcAddress.h" />
     <ClInclude Include="interface\CKeypad.h" />
     <ClInclude Include="interface\CLabelServer.h" />
     <ClInclude Include="interface\CLCD.h" />
+    <ClInclude Include="interface\CMemoryContext.h" />
+    <ClInclude Include="interface\Collection.h" />
     <ClInclude Include="interface\CPage.h" />
+    <ClInclude Include="interface\CPageCollection.h" />
     <ClInclude Include="interface\CPio.h" />
     <ClInclude Include="interface\CWabbitemu.h" />
     <ClInclude Include="interface\CZ80.h" />
     <ClInclude Include="interface\state.h" />
     <ClInclude Include="stdafx.h" />
+    <ClInclude Include="utilities\avifile.h" />
     <ClInclude Include="utilities\avi_utils.h" />
     <ClInclude Include="utilities\bcalls.h" />
     <ClInclude Include="utilities\expandpane.h" />
@@ -440,6 +448,10 @@
       <TypeLibraryName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)$(ProjectName).tlb</TypeLibraryName>
     </Midl>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="gui\bitmap4.bmp" />
+    <Image Include="gui\ti-84+cse.png" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{9472BBF2-0E54-43DD-B1E7-E4F9BBC1FCDB}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -463,7 +475,7 @@
     <UseDebugLibraries>true</UseDebugLibraries>
     <CharacterSet>MultiByte</CharacterSet>
     <UseOfAtl>Static</UseOfAtl>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v110_xp</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Wabbitemu Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -667,10 +679,10 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;HIGH_SHADE_GIF;USE_GDIPLUS;ZLIB_WINAPI;STRSAFE_NO_DEPRECATE;STRFILEVER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;ZLIB_WINAPI;STRSAFE_NO_DEPRECATE;STRFILEVER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CompileAs>CompileAsCpp</CompileAs>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <StringPooling>
@@ -691,6 +703,9 @@
       <LinkTimeCodeGeneration>
       </LinkTimeCodeGeneration>
       <OptimizeReferences>false</OptimizeReferences>
+      <TargetMachine>MachineX86</TargetMachine>
+      <IgnoreAllDefaultLibraries>
+      </IgnoreAllDefaultLibraries>
     </Link>
     <ResourceCompile>
       <AdditionalIncludeDirectories>$(ProjectDir)</AdditionalIncludeDirectories>
@@ -746,7 +761,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Full</Optimization>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;HIGH_SHADE_GIF;ZLIB_WINAPI;WITH_AVI;WITH_REVERSE2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;ZLIB_WINAPI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <OmitFramePointers>true</OmitFramePointers>
@@ -826,7 +841,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>Level2</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_WIN64;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;HIGH_SHADE_GIF;USE_GDIPLUS;ZLIB_WINAPI;STRSAFE_NO_DEPRECATE;STRFILEVER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN64;_DEBUG;_WINDOWS;WABBITEMU_EXPORTS;strcasecmp=_stricmp;strncasecmp=_strnicmp;WITH_BACKUPS;ZLIB_WINAPI;STRSAFE_NO_DEPRECATE;STRFILEVER=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -901,7 +916,7 @@
       <PrecompiledHeader>Use</PrecompiledHeader>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
-      <PreprocessorDefinitions>WIN32;_WIN64;_WINDOWS;NDEBUG;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;HIGH_SHADE_GIF;ZLIB_WINAPI;WITH_AVI;NO_TIMER_ELAPSED2;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN64;_WINDOWS;NDEBUG;WABBITEMU_EXPORTS;WINVER=0x502;strcasecmp=_stricmp;strncasecmp=_strnicmp;ZLIB_WINAPI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)core;$(ProjectDir)hardware;$(ProjectDir)interface;$(ProjectDir)utilities;$(ProjectDir)debugger;$(ProjectDir)gui;$(ProjectDir)</AdditionalIncludeDirectories>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <ExceptionHandling>false</ExceptionHandling>
