@@ -914,6 +914,5 @@
     <Image Include="gui\ti-84+cse.png">
       <Filter>Resource Files\Skins</Filter>
     </Image>
-    <Image Include="gui\bitmap4.bmp" />
   </ItemGroup>
 </Project>
