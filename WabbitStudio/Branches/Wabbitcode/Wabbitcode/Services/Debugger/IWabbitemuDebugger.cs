@@ -65,5 +65,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         void StepOver();
 
         Image GetScreenImage();
+	    void CancelDebug();
     }
 }

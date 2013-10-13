@@ -1,12 +1,12 @@
-﻿using System.Linq;
-using Revsoft.Wabbitcode.Services;
+﻿using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
+using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Windows.Forms;
-using Revsoft.Wabbitcode.Services.Interface;
-using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
 {
@@ -31,6 +31,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		{
 			_debugger = e.Debugger;
 			_oldSp = 0xFFFF;
+			_debugger.OnDebuggerStep += (o, args) => _dockingService.Invoke(UpdateStack);
 			_debugger.OnDebuggerBreakpointHit += (o, args) => _dockingService.Invoke(UpdateStack);
 		}
 
@@ -63,8 +64,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		{
 			DataGridViewRow row = new DataGridViewRow();
 			string dataString = data.ToString("X4");
-			int page = _debugger.GetPageNum((ushort)address);
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(data, page, address >= 0x8000);
+			int page = _debugger.GetPageNum((ushort)data);
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, data, data >= 0x8000);
 			if (key != null)
 			{
 				dataString += " (Possible Call)";

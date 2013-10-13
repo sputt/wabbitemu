@@ -449,7 +449,6 @@
     </Midl>
   </ItemGroup>
   <ItemGroup>
-    <Image Include="gui\bitmap4.bmp" />
     <Image Include="gui\ti-84+cse.png" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

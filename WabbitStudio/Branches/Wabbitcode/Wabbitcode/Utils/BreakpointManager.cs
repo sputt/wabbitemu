@@ -1,5 +1,4 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 using Revsoft.TextEditor.Document;
 using System.Collections.Generic;
 using Revsoft.Wabbitcode.Services.Debugger;
@@ -48,6 +47,7 @@ namespace Revsoft.Wabbitcode.Utils
 			{
 				return;
 			}
+			Breakpoints.Remove(newBreak);
 
 			if (OnBreakpointRemoved != null)
 			{

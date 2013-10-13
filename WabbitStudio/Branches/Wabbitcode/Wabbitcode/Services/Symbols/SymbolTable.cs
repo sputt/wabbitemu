@@ -10,7 +10,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 
 		public List<string> GetLabelsFromAddress(string address)
 		{
-			return _labelToAddress == null ? new List<string>() : _addressToLabel["$" + address].ToList();
+			return _addressToLabel == null ? new List<string>() : _addressToLabel["$" + address].ToList();
 		}
 
 		public string GetAddressFromLabel(string label)
