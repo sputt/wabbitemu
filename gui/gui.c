@@ -1383,12 +1383,15 @@ LRESULT CALLBACK WndProc(HWND hwnd, UINT Message, WPARAM wParam, LPARAM lParam) 
 						   }
 	case WM_KILLFOCUS: {
 		keypad_t *keypad = lpCalc->cpu.pio.keypad;
-		//handle keys already down (just send release)
-		//i send the message here so that things like logging are handled
-		for (int group = 0; group < 8; group++) {
-			for (int bit = 0; bit < 8; bit++) {
-				if (keypad->keys[group][bit]) {
-					keypad_vk_release(hwnd, group, bit);
+		if (lpCalc != NULL && keypad != NULL)
+		{
+			//handle keys already down (just send release)
+			//i send the message here so that things like logging are handled
+			for (int group = 0; group < 8; group++) {
+				for (int bit = 0; bit < 8; bit++) {
+					if (keypad->keys[group][bit]) {
+						keypad_vk_release(hwnd, group, bit);
+					}
 				}
 			}
 		}
