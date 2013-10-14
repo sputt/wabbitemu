@@ -556,6 +556,8 @@ namespace Revsoft.Wabbitcode
 				IList<IParserData> parserData;
 				if (text[0] == '+' || text[0] == '-' || text == "_")
 				{
+					// TODO: make this work
+					return;
 					parserData = new List<IParserData>();
 					bool negate = text[0] == '-';
 					int steps = text == "_" ? 1 : 0;
@@ -600,10 +602,10 @@ namespace Revsoft.Wabbitcode
 				
 				if (parserData.Count == 1)
 				{
-					_documentService.GotoLabel(parserData[0]);
-					if (!_labelsCache.Contains(parserData[0]))
+					_documentService.GotoLabel(parserData.Single());
+					if (!_labelsCache.Contains(parserData.Single()))
 					{
-						_labelsCache.Add(parserData[0]);
+						_labelsCache.Add(parserData.Single());
 					}
 				}
 				else
@@ -611,6 +613,7 @@ namespace Revsoft.Wabbitcode
 					_dockingService.FindResults.NewFindResults(text, _projectService.Project.ProjectName);
 					foreach (IParserData data in parserData)
 					{
+						// TODO: move to a filereader service
 						string line;
 						StreamReader reader = null;
 						try
@@ -627,6 +630,7 @@ namespace Revsoft.Wabbitcode
 						}
 						_dockingService.FindResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, line);
 					}
+					_dockingService.FindResults.DoneSearching();
 					_dockingService.ShowDockPanel(_dockingService.FindResults);
 				}
 			}
@@ -895,19 +899,23 @@ namespace Revsoft.Wabbitcode
 				(IEnumerable<string>) Settings.Default.includeDirs :
 				_projectService.Project.IncludeDirs;
 
-			foreach (string dir in includeDirs)
+			foreach (string dir in includeDirs.Where(dir => File.Exists(Path.Combine(dir, gotoLabel))))
 			{
-				if (File.Exists(Path.Combine(dir, gotoLabel)))
-				{
-					return Path.Combine(dir, gotoLabel);
-				}
+				return Path.Combine(dir, gotoLabel);
 			}
 
-			if (File.Exists(Path.Combine(Path.GetDirectoryName(FileName), gotoLabel)))
+			if (string.IsNullOrEmpty(FileName))
 			{
-				return Path.Combine(Path.GetDirectoryName(FileName), gotoLabel);
+				return null;
 			}
-			return null;
+			string dirPath = Path.GetDirectoryName(FileName);
+			if (string.IsNullOrEmpty(dirPath))
+			{
+				return null;
+			}
+
+			string filePath = Path.Combine(dirPath, gotoLabel);
+			return File.Exists(filePath) ? filePath : null;
 		}
 
 		#region TitleBarContext
