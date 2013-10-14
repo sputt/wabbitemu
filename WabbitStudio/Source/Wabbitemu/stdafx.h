@@ -47,7 +47,7 @@
 #include <gdiplus.h>
 using namespace Gdiplus;
 
-#define _ATL_DEBUG_INTERFACES
+//#define _ATL_DEBUG_INTERFACES
 #define _ATL_APARTMENT_THREADED
 #include <atlbase.h>
 #include <atlcom.h>

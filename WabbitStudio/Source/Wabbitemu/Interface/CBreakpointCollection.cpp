@@ -63,12 +63,15 @@ STDMETHODIMP CBreakpointCollection::Remove(IBreakpoint *pBreakpoint)
 
 		CComQIPtr<IBreakpoint> pBP = pUnkRefBP;
 		CComPtr<ICalcAddress> pCurAddress;
-		pBreakpoint->get_Address(&pCurAddress);
+		pBP->get_Address(&pCurAddress);
 
 		waddr_t curwaddr = CCalcAddress::ToWAddr(pCurAddress);
 
 		if (pUnkRefBP.p == pUnkBP.p)
 		{
+			TCHAR szInfo[256];
+			StringCbPrintf(szInfo, sizeof(szInfo), _T("Deleting breakpoint at: %04hX (ref %04hX)\n"), waddr.addr, curwaddr.addr);
+			OutputDebugString(szInfo);
 			it = m_coll.erase(it);
 		}
 		else if (!memcmp(&waddr, &curwaddr, sizeof(waddr_t)))
