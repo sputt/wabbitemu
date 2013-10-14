@@ -64,7 +64,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		{
 			DataGridViewRow row = new DataGridViewRow();
 			string dataString = data.ToString("X4");
-			int page = _debugger.GetPageNum((ushort)data);
+			int page = _debugger.GetRelativePageNum((ushort)data);
 			DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, data, data >= 0x8000);
 			if (key != null)
 			{
@@ -108,7 +108,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				return;
 			}
 
-			string stackValue = callStackView.Rows[callStackView.SelectedRows[0].Index].Cells[1].Value.ToString();
+			string stackValue = callStackView.SelectedRows[0].Cells[1].Value.ToString();
 			stackValue = stackValue.TrimStart().Substring(0, 4);
 			ushort address = ushort.Parse(stackValue, NumberStyles.HexNumber);
 			_debugger.GotoAddress(address);

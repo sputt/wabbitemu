@@ -246,7 +246,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void GotoAddress(ushort address)
 		{
-			int page = GetPageNum(address);
+			int page = GetRelativePageNum(address);
 			DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
 			if (key == null)
 			{
@@ -309,17 +309,17 @@ namespace Revsoft.Wabbitcode.Services
 			//			DocumentService.HighlightCall();
 			// need to clear the old breakpoint so lets save it
 			ushort currentPC = _debugger.CPU.PC;
-			byte oldPage = GetPageNum(currentPC);
+			byte oldPage = GetRelativePageNum(currentPC);
 			DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
 			DocumentLocation newKey = key;
 			while (newKey == null || newKey.LineNumber == key.LineNumber)
 			{
 				_debugger.Step();
-				newKey = _symbolService.ListTable.GetFileLocation(GetPageNum(_debugger.CPU.PC), _debugger.CPU.PC, _debugger.CPU.PC >= 0x8000);
+				newKey = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(_debugger.CPU.PC), _debugger.CPU.PC, _debugger.CPU.PC >= 0x8000);
 			}
 
 			ushort address = _debugger.CPU.PC;
-			byte page = GetPageNum(address);
+			byte page = GetRelativePageNum(address);
 
 			key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
 
@@ -343,7 +343,7 @@ namespace Revsoft.Wabbitcode.Services
 			_documentService.HighlightCall();
 			// need to clear the old breakpoint so lets save it
 			ushort currentPC = _debugger.CPU.PC;
-			byte oldPage = GetPageNum(currentPC);
+			byte oldPage = GetRelativePageNum(currentPC);
 			DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
 
 			// TODO: move this out into a filereader service
@@ -382,19 +382,14 @@ namespace Revsoft.Wabbitcode.Services
 				return;
 			}
 
-			_stepOverLineNumber = key.LineNumber;
-			line = lines[_stepOverLineNumber];
-			// otherwise, step until we get to a known location in our codebase
-			while (lines.Length > _stepOverLineNumber && (!char.IsWhiteSpace(line[0]) ||
-				_symbolService.ListTable.GetCalcLocation(key.FileName, _stepOverLineNumber) == null))
+			do
 			{
-				_stepOverLineNumber++;
-				line = lines[_stepOverLineNumber];
-			}
-			CalcLocation value = _symbolService.ListTable.GetCalcLocation(key.FileName, _stepOverLineNumber);
-			bool isRam = value.Address >= 0x8000;
-			byte page = (byte)(isRam ? value.Page : AppPage - value.Page);
-			_stepOverBreakpoint = _debugger.SetBreakpoint(isRam, page, value.Address);
+				currentPC++;
+				oldPage = GetRelativePageNum(currentPC);
+				key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
+			} while (key == null); 
+
+			_stepOverBreakpoint = _debugger.SetBreakpoint(currentPC >= 0x8000, GetAbsolutePageNum(currentPC), currentPC);
 			_debugger.OnBreakpoint += StepOverBreakpointEvent;
 
 			_debugger.Step();
@@ -419,7 +414,7 @@ namespace Revsoft.Wabbitcode.Services
 			_debugger.OnBreakpoint -= StepOverBreakpointEvent;
 		}
 
-		internal byte GetPageNum(ushort address)
+		internal byte GetRelativePageNum(ushort address)
 		{
 			IPage bank = _debugger.Memory.Bank[address >> 14];
 			int page = bank.Index;
@@ -427,6 +422,13 @@ namespace Revsoft.Wabbitcode.Services
 			{
 				page = _appPage - page;
 			}
+			return (byte)page;
+		}
+
+		internal byte GetAbsolutePageNum(ushort address)
+		{
+			IPage bank = _debugger.Memory.Bank[address >> 14];
+			int page = bank.Index;
 			return (byte)page;
 		}
 
@@ -443,7 +445,7 @@ namespace Revsoft.Wabbitcode.Services
 			_isBreakpointed = false;
 
 			ushort currentPC = _debugger.CPU.PC;
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(currentPC, GetPageNum(currentPC), currentPC >= 0x8000);
+			DocumentLocation key = _symbolService.ListTable.GetFileLocation(currentPC, GetRelativePageNum(currentPC), currentPC >= 0x8000);
 			if (key == null)
 			{
 				throw new Exception("Unable to pause here");
