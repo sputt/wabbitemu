@@ -46,9 +46,11 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _debugger = new Wabbitemu();
             _debugger.LoadFile(romFile);
             _debugger.Breakpoint += debugger_Breakpoint;
+			_debugger.Close += debugger_Close;
         }
 
         public event BreakpointDelegate OnBreakpoint;
+	    public event CloseDelegate OnClose;
 
         public Array Apps
         {
@@ -204,43 +206,46 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         {
             CalcAddress calcAddr = new CalcAddress();
             IPage calcPage = null;
-            if (isRam)
-            {
-                calcPage = _debugger.Memory.RAM[page];
-            }
-            else
-            {
-                calcPage = _debugger.Memory.Flash[page];
-            }
+            calcPage = isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
 
             calcAddr.Initialize(calcPage, address);
-            //calcAddr.Write(value);
+            //_debugger.Memory. = value;
         }
 
-        public void Write(ICalcAddress address, object value)
+        public void Write(CalcAddress address, object value)
         {
             //address.Write(value);
         }
 
-	    readonly IntPtr scan0 = Marshal.AllocHGlobal(128 * 64);
+	    private readonly IntPtr _scan0 = Marshal.AllocHGlobal(128 * 64);
         public Image GetScreenImage()
         {
-            Marshal.Copy((byte[])_debugger.LCD.Display, 0, scan0, 128 * 64);
-            Bitmap calcBitmap = new Bitmap(128, 64, 128, PixelFormat.Format8bppIndexed, scan0);
+            Marshal.Copy((byte[])_debugger.LCD.Display, 0, _scan0, 128 * 64);
+            Bitmap calcBitmap = new Bitmap(128, 64, 128, PixelFormat.Format8bppIndexed, _scan0);
             var palette = calcBitmap.Palette;
             for (int i = 0; i < 255; i++)
             {
                 palette.Entries[i] = Color.FromArgb(0x9e * (256 - i) / 255, (0xAB * (256 - i)) / 255, (0x88 * (256 - i)) / 255);
             }
 
-            calcBitmap.Palette = palette;
-            return calcBitmap;
+			Rectangle rect = new Rectangle(0, 0, _debugger.LCD.Width, _debugger.LCD.Height);
+			Bitmap cropped = calcBitmap.Clone(rect, calcBitmap.PixelFormat);
+
+            cropped.Palette = palette;
+            return cropped;
         }
 
 	    public void CancelDebug()
 	    {
-			_debugger.Break();
-			_debugger.Visible = false;
+		    if (_debugger == null)
+		    {
+			    return;
+		    }
+
+		    _debugger.Break();
+		    _debugger.Visible = false;
+			_debugger.Breakpoint -= debugger_Breakpoint;
+		    _debugger.Close -= debugger_Close;
 		    _debugger = null;
 	    }
 
@@ -251,6 +256,14 @@ namespace Revsoft.Wabbitcode.Services.Debugger
                 OnBreakpoint(debugger, new BreakpointEventArgs(breakpoint));
             }
         }
+
+		private void debugger_Close(Wabbitemu calc)
+		{
+			if (OnClose != null)
+			{
+				OnClose(calc, EventArgs.Empty);
+			}
+		}
 
 		private IPage GetCalcPage(bool isRam, byte page)
 		{
@@ -277,7 +290,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
                 }
 
-                Marshal.FreeHGlobal(scan0);
+                Marshal.FreeHGlobal(_scan0);
                 _disposed = true;
             }
         }

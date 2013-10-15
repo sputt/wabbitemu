@@ -66,7 +66,7 @@ namespace Revsoft.Wabbitcode
 			InitializeService();
 			InitializeEvents();
 
-			DockingService.OnActiveDocumentChanged += DockingServiceOnOnActiveDocumentChanged;
+			DockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
 		
 			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
 			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnOnBreakpointRemoved;
@@ -307,19 +307,22 @@ namespace Revsoft.Wabbitcode
 
 		private void UpdateDebugStuff()
 		{
-			bool isBreakpointed = _debugger != null && _debugger.IsBreakpointed;
+			bool isRunning = _debugger != null && _debugger.IsRunning;
 			bool isDebugging = _debugger != null;
-			bool enabled = isBreakpointed && isDebugging;
+			bool enabled = !isRunning && isDebugging;
 			stepMenuItem.Enabled = enabled;
 			gotoCurrentToolButton.Enabled = enabled;
 			stepToolButton.Enabled = enabled;
+			startDebugMenuItem.Enabled = enabled;
 			stepOverMenuItem.Enabled = enabled;
 			stepOverToolButton.Enabled = enabled;
 			stepOutMenuItem.Enabled = enabled;
 			stepOutToolButton.Enabled = enabled;
 			stopDebugMenuItem.Enabled = isDebugging;
 			stopToolButton.Enabled = isDebugging;
-			pauseToolButton.Enabled = !isBreakpointed && isDebugging;
+			runDebuggerToolButton.Enabled = enabled;
+			runToolButton.Enabled = enabled;
+			pauseToolButton.Enabled = isRunning && isDebugging;
 		}
 
 		/// <summary>
@@ -390,6 +393,8 @@ namespace Revsoft.Wabbitcode
 			}
 
 			_debugger = null;
+
+			UpdateTitle();
 
 			if (OnDebuggingEnded != null)
 			{
@@ -477,7 +482,8 @@ namespace Revsoft.Wabbitcode
 				_debugger = new WabbitcodeDebugger(_documentService, _symbolService);
 				_debugger.OnDebuggerBreakpointHit += BreakpointHit;
 				_debugger.OnDebuggerStep += DoneStep;
-				_debugger.OnDebuggerRunningChanged += _debugger_OnDebuggerRunningChanged;
+				_debugger.OnDebuggerRunningChanged += debugger_OnDebuggerRunningChanged;
+				_debugger.OnDebuggerClosed += (o, args) => CancelDebug();
 
 				string createdName;
 				try
@@ -553,15 +559,7 @@ namespace Revsoft.Wabbitcode
 						ShowDebugPanels();
 					});
 
-					int counter = 0;
-					// apps key
-					_debugger.SimulateKeyPress(Keys.B);
-					for (; counter >= 0; counter--)
-					{
-						_debugger.SimulateKeyPress(Keys.Down);
-					}
-
-					_debugger.SimulateKeyPress(Keys.Enter);
+					_debugger.LaunchApp(createdName);
 				}
 			});
 		}
@@ -586,11 +584,11 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
-		void _debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
+		void debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
 		{
 			if (e.Running)
 			{
-				_dockingService.MainForm.UpdateDebugStuff();
+				UpdateDebugStuff();
 				_documentService.RemoveDebugHighlight();
 				_dockingService.ActiveDocument.Refresh();
 			}
@@ -976,7 +974,7 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
-		private void DockingServiceOnOnActiveDocumentChanged(object sender, EventArgs eventArgs)
+		private void DockingService_OnActiveDocumentChanged(object sender, EventArgs eventArgs)
 		{
 			if (Disposing)
 			{

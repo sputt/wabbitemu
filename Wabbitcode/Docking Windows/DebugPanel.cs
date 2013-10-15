@@ -1,4 +1,8 @@
-﻿using Revsoft.Wabbitcode.Services;
+﻿using System.Drawing;
+using System.Drawing.Drawing2D;
+using System.IO;
+using System.Security.Permissions;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Utils;
@@ -126,7 +130,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		public void UpdateScreen()
 		{
-			screenPicBox.Image = _debugger.GetScreenImage();
+			Image image = _debugger.GetScreenImage();
+			Image scaledImage = new Bitmap(image.Width * 2, image.Height * 2);
+			Graphics graphics = Graphics.FromImage(scaledImage);
+			graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
+			screenPicBox.Image = scaledImage;
+			graphics.DrawImage(image, new Rectangle(0, 0, scaledImage.Width , scaledImage.Height),
+				new Rectangle(0, 0, image.Width, image.Height), GraphicsUnit.Pixel);
 		}
 
 		private void Copy(object sender, EventArgs e)

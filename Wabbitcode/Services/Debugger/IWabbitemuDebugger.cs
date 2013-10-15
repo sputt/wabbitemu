@@ -5,10 +5,12 @@ using WabbitemuLib;
 namespace Revsoft.Wabbitcode.Services.Debugger
 {
     public delegate void BreakpointDelegate(IWabbitemu sender, BreakpointEventArgs e);
+	public delegate void CloseDelegate(IWabbitemu sender, EventArgs e);
 
     public interface IWabbitemuDebugger : IDisposable
     {
         event BreakpointDelegate OnBreakpoint;
+		event CloseDelegate OnClose;
 
         Array Apps
         {
@@ -55,6 +57,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         byte ReadByte(bool isRam, byte page, ushort address);
         ushort ReadShort(bool isRam, byte page, ushort address);
         byte[] Read(bool isRam, byte page, ushort address, int count);
+
+	    void Write(bool isRam, byte page, ushort address, object value);
+	    void Write(CalcAddress address, object value);
 
         void ClearBreakpoint(IBreakpoint breakpoint);
         IBreakpoint SetBreakpoint(CalcAddress address);

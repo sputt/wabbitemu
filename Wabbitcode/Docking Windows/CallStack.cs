@@ -33,6 +33,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			_oldSp = 0xFFFF;
 			_debugger.OnDebuggerStep += (o, args) => _dockingService.Invoke(UpdateStack);
 			_debugger.OnDebuggerBreakpointHit += (o, args) => _dockingService.Invoke(UpdateStack);
+			_debugger.OnDebuggerRunningChanged += (o, args) => _dockingService.Invoke(UpdateStack);
 		}
 
 		private void UpdateStack()
