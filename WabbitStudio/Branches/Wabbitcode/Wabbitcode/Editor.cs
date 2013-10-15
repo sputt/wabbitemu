@@ -7,6 +7,7 @@ using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
+using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Utils;
@@ -325,11 +326,23 @@ namespace Revsoft.Wabbitcode
 			DocumentChanged = false;
 			UpdateTabText();
 			ClearIcons();
+			LoadBreakpoints();
 
 			if (OnEditorOpened != null)
 			{
 				OnEditorOpened(this, new EditorEventArgs(editorBox.Document));
 			}
+		}
+
+		private void LoadBreakpoints()
+		{
+			editorBox.Document.BreakpointManager.Added -= BreakpointManager_Added;
+			foreach (WabbitcodeBreakpoint breakpoint in WabbitcodeBreakpointManager.Breakpoints.Where(breakpoint => breakpoint.File.Equals(FileName)))
+			{
+				editorBox.Document.BreakpointManager.AddMark(new Breakpoint(editorBox.Document, 
+					new TextLocation(0, breakpoint.LineNumber)));
+			}
+			editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
 		}
 
 		public bool SaveFileAs()

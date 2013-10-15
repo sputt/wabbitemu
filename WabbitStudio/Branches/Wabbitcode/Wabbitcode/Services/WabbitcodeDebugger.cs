@@ -22,7 +22,6 @@ namespace Revsoft.Wabbitcode.Services
 		private readonly List<WabbitcodeBreakpoint> _breakpoints = new List<WabbitcodeBreakpoint>();
 		private IWabbitemuDebugger _debugger;
 		private bool _isAnApp;
-		private bool _isBreakpointed;
 		private readonly Stack<int> _stepStack = new Stack<int>();
 		private bool _disposed;
 		private IBreakpoint _stepOverBreakpoint;
@@ -76,11 +75,15 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		public bool IsBreakpointed
+		public bool IsRunning
 		{
 			get
 			{
-				return _isBreakpointed;
+				if (_debugger == null)
+				{
+					return false;
+				}
+				return _debugger.Running;
 			}
 		}
 
@@ -104,12 +107,14 @@ namespace Revsoft.Wabbitcode.Services
 		public delegate void DebuggerStep(object sender, DebuggerStepEventArgs e);
 		public event DebuggerStep OnDebuggerStep;
 
+		public delegate void DebuggerBreakpointClosed(object sender, EventArgs e);
+		public event DebuggerBreakpointClosed OnDebuggerClosed;
+
 		#endregion
 
 		public WabbitcodeDebugger(IDocumentService documentService, ISymbolService symbolService)
 		{
 			_disposed = false;
-			_isBreakpointed = false;
 
 			_documentService = documentService;
 			_symbolService = symbolService;
@@ -141,6 +146,14 @@ namespace Revsoft.Wabbitcode.Services
 			newBreakpoint.Enabled = true;
 
 			_breakpoints.Add(newBreakpoint);
+		}
+
+		private void DebuggerOnClose(IWabbitemu sender, EventArgs eventArgs)
+		{
+			if (OnDebuggerClosed != null)
+			{
+				OnDebuggerClosed(sender, eventArgs);
+			}
 		}
 
 		private void BreakpointHit(object sender, BreakpointEventArgs e)
@@ -197,7 +210,6 @@ namespace Revsoft.Wabbitcode.Services
 						throw new Exception("Unable to find breakpoint");
 					}
 
-					_isBreakpointed = true;
 
 					if (OnDebuggerBreakpointHit != null)
 					{
@@ -206,7 +218,6 @@ namespace Revsoft.Wabbitcode.Services
 				}
 				else
 				{
-					_isBreakpointed = false;
 					_debugger.Running = true;
 				}
 			}
@@ -305,7 +316,6 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void Step()
 		{
-			_isBreakpointed = false;
 			//			DocumentService.HighlightCall();
 			// need to clear the old breakpoint so lets save it
 			ushort currentPC = _debugger.CPU.PC;
@@ -323,7 +333,6 @@ namespace Revsoft.Wabbitcode.Services
 
 			key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
 
-			_isBreakpointed = true;
 
 			if (OnDebuggerStep != null)
 			{
@@ -333,13 +342,11 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void StepOut()
 		{
-			_isBreakpointed = false;
 			// TODO: work
 		}
 
 		public void StepOver()
 		{
-			_isBreakpointed = false;
 			_documentService.HighlightCall();
 			// need to clear the old breakpoint so lets save it
 			ushort currentPC = _debugger.CPU.PC;
@@ -406,7 +413,6 @@ namespace Revsoft.Wabbitcode.Services
 				_stepOverBreakpoint.Address.Address,
 				!_stepOverBreakpoint.Address.Page.IsFlash);
 
-			_isBreakpointed = true;
 			if (OnDebuggerStep != null)
 			{
 				OnDebuggerStep(this, new DebuggerStepEventArgs(key));
@@ -438,20 +444,21 @@ namespace Revsoft.Wabbitcode.Services
 			_debugger.LoadFile(outputFile);
 			_debugger.Visible = true;
 			_debugger.OnBreakpoint += BreakpointHit;
+			_debugger.OnClose += DebuggerOnClose;
 		}
 
 		internal void Pause()
 		{
-			_isBreakpointed = false;
-
+			_debugger.Running = false;
 			ushort currentPC = _debugger.CPU.PC;
 			DocumentLocation key = _symbolService.ListTable.GetFileLocation(currentPC, GetRelativePageNum(currentPC), currentPC >= 0x8000);
-			if (key == null)
+			while (key == null)
 			{
-				throw new Exception("Unable to pause here");
+				_debugger.Step();
+				currentPC = _debugger.CPU.PC;
+				key = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(currentPC), currentPC, currentPC >= 0x8000);
 			}
 
-			_debugger.Running = false;
 
 			if (OnDebuggerRunningChanged != null)
 			{
@@ -471,7 +478,6 @@ namespace Revsoft.Wabbitcode.Services
 
 		internal void Run()
 		{
-			_isBreakpointed = false;
 			if (_debugger == null)
 			{
 				return;
@@ -539,6 +545,16 @@ namespace Revsoft.Wabbitcode.Services
 			}
 
 			AppPage = (byte)app.Value.Page.Index;
+		}
+
+		internal void LaunchApp(string createdName)
+		{
+			const ushort progToEdit = 0x84BF;
+			const ushort appBackupScreen = 0x9872;
+			byte[] bcallAppExecute = { 0xEF, 0x51, 0x4C};
+			_debugger.Write(true, 1, progToEdit, createdName);
+			_debugger.Write(true, 1, appBackupScreen, bcallAppExecute);
+			_debugger.CPU.PC = appBackupScreen;
 		}
 
 		internal string GetOutputFileDetails(IProject project)

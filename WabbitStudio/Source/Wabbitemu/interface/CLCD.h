@@ -34,6 +34,18 @@ public:
 		return S_OK;
 	}
 
+	STDMETHOD (get_Width)(LPWORD lpWidth) 
+	{
+		*lpWidth = m_lcd->width;
+		return S_OK;
+	}
+
+	STDMETHOD (get_Height)(LPWORD lpHeight)
+	{
+		*lpHeight = LCD_HEIGHT;
+		return S_OK;
+	}
+
 	STDMETHOD(Draw)(BYTE Display[8192])
 	{
 		memcpy(Display, LCD_image(m_lcd), 128 * 64);
