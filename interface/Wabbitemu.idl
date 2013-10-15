@@ -64,6 +64,8 @@ struct TISymbol {
 interface ILCD : IDispatch
 {
 	[propget] HRESULT Display([out, retval] SAFEARRAY(BYTE) *Display);
+	[propget] HRESULT Width([out, retval] WORD *Width);
+	[propget] HRESULT Height([out, retval] WORD *Height);
 }
 
 [
