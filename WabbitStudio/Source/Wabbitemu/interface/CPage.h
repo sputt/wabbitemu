@@ -9,7 +9,7 @@ class CPage :
 public:
 	BEGIN_COM_MAP(CPage)
 		COM_INTERFACE_ENTRY(IDispatch)
-		COM_INTERFACE_ENTRY(IReadable)
+		COM_INTERFACE_ENTRY(IReadWrite)
 		COM_INTERFACE_ENTRY(IPage)
 	END_COM_MAP( )
 
@@ -18,12 +18,13 @@ public:
 	STDMETHOD(get_IsFlash)(VARIANT_BOOL *pbIsFlash);
 	STDMETHOD(get_Item)(LONG lIndex, BYTE *pValue);
 
-	//IReadable
+	//IReadWrite
 	STDMETHOD(ReadByte)(WORD wAddr, LPBYTE lpbResult);
 	STDMETHOD(ReadWord)(WORD wAddr, LPWORD lpwResult);
 	STDMETHOD(Read)(WORD wAddr, WORD wCount, SAFEARRAY **ppsaResult);
-
-	STDMETHOD(Write)(WORD Address, VARIANT varValue);
+	STDMETHOD(WriteByte)(WORD wAddr, BYTE bValue);
+	STDMETHOD(WriteWord)(WORD wAddr, WORD wValue);
+	STDMETHOD(Write)(WORD wAddr, SAFEARRAY *psaValue);
 
 	void Initialize(memory_context_t *mem, BOOL fIsFlash, int iPage)
 	{
