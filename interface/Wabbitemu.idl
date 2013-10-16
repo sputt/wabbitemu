@@ -150,8 +150,9 @@ interface IZ80 : IDispatch
 	[propget] HRESULT SP([out, retval] WORD *SP);
 	[propput] HRESULT SP([in] WORD SP);
 
+	[propget] HRESULT Halt([out, retval] VARIANT_BOOL *Halt);
+	[propput] HRESULT Halt([in] VARIANT_BOOL Halt);
 };
-
 
 const DISPID DISPID_READBYTE = 3;
 const DISPID DISPID_READWORD = 4;

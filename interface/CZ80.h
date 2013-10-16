@@ -40,6 +40,9 @@ public:
 	STDMETHODIMP get_SP(LPWORD lpSP) {*lpSP = m_cpu->sp; return S_OK;};
 	STDMETHODIMP put_SP(WORD SP) {m_cpu->sp = SP; return S_OK;};
 
+	STDMETHOD(get_Halt)(VARIANT_BOOL *pbHalt);
+	STDMETHOD(put_Halt)(VARIANT_BOOL bHalt);
+
 	HRESULT Initialize(CPU_t *cpu)
 	{
 		m_cpu = cpu;
