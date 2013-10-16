@@ -61,8 +61,8 @@ public:
 	STDMETHOD(get_Page)(IPage **ppPage);
 	STDMETHOD(get_Address)(LPWORD lpwAddress);
 
-	STDMETHOD(Read)(VARIANT varByteCount, LPVARIANT lpvarResult);
-	STDMETHOD(Write)(VARIANT varValue);
+	//STDMETHOD(Read)(VARIANT varByteCount, LPVARIANT lpvarResult);
+	//STDMETHOD(Write)(VARIANT varValue);
 
 	// ILabel methods
 	STDMETHOD(get_Name)(BSTR *bstrName);

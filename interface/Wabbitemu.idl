@@ -272,6 +272,24 @@ interface ICalcAddress : IDispatch
 
 	[propget, helpstring("The memory address")]
 	HRESULT Address([out, retval] WORD *Address);
+
+	[id(DISPID_READBYTE), helpstring("Read a byte")]
+	HRESULT ReadByte([out, retval] BYTE *Result);
+
+	[id(DISPID_READWORD), helpstring("Read a word")]
+	HRESULT ReadWord([out, retval] WORD *Result);
+
+	[id(DISPID_READ), helpstring("Read a block of memory")]
+	HRESULT Read([in] WORD Count, [out, retval] SAFEARRAY(BYTE) *Result);
+
+	[id(DISPID_WRITEBYTE), helpstring("Write a byte")]
+	HRESULT WriteByte( [in] BYTE Value);
+
+	[id(DISPID_WRITEWORD), helpstring("Write a word")]
+	HRESULT WriteWord([in] WORD Value);
+
+	[id(DISPID_WRITE), helpstring("Write a block of memory")]
+	HRESULT Write([in] SAFEARRAY(BYTE) Value);	
 }
 
 [
@@ -281,7 +299,7 @@ interface ICalcAddress : IDispatch
 	dual,
 	version(1.0)
 ]
-interface ILabel : ICalcAddress
+interface ILabel : IDispatch
 {
 	[propget, helpstring("Name of this label")]
 	HRESULT Name([out, retval] BSTR *Name);

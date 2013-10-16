@@ -82,15 +82,15 @@ STDMETHODIMP CLabel::get_Address(LPWORD lpwAddress)
 	return m_CalcAddress.get_Address(lpwAddress);
 }
 
-STDMETHODIMP CLabel::Read(VARIANT varByteCount, LPVARIANT lpvarResult)
-{
-	return m_CalcAddress.Read(varByteCount, lpvarResult);
-}
-
-STDMETHODIMP CLabel::Write(VARIANT varValue)
-{
-	return m_CalcAddress.Write(varValue);
-}
+//STDMETHODIMP CLabel::Read(VARIANT varByteCount, LPVARIANT lpvarResult)
+//{
+//	return m_CalcAddress.Read(varByteCount, lpvarResult);
+//}
+//
+//STDMETHODIMP CLabel::Write(VARIANT varValue)
+//{
+//	return m_CalcAddress.Write(varValue);
+//}
 
 STDMETHODIMP CLabel::get_Name(BSTR *lpbstrName)
 {

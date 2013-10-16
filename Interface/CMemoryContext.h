@@ -18,7 +18,7 @@ public:
 	STDMETHOD(get_Flash)(IPageCollection **ppPageCollection);
 	STDMETHOD(get_Bank)(IPageCollection **ppPageCollection);
 
-	//IReadable
+	//IReadWrite
 	STDMETHOD(ReadByte)(WORD wAddr, LPBYTE lpbResult);
 	STDMETHOD(ReadWord)(WORD wAddr, LPWORD lpwResult);
 	STDMETHOD(Read)(WORD wAddr, WORD wCount, LPSAFEARRAY *ppsaResult);

@@ -32,6 +32,27 @@ STDMETHODIMP CPage::ReadWord(WORD wAddr, LPWORD lpwResult)
 	return S_OK;
 }
 
+STDMETHODIMP CPage::Read(WORD wAddr, WORD wCount, LPSAFEARRAY *ppsaResult)
+{
+	if (wCount == 0)
+	{
+		return E_INVALIDARG;
+	}
+
+	CComSafeArray<BYTE> sa((LONG) wCount);
+
+	LPBYTE lpData = NULL;
+	SafeArrayAccessData(sa, (LPVOID *) &lpData);
+	for (WORD i = 0; i < wCount; i++)
+	{
+		lpData[i] = m_lpData[(wAddr + i) % PAGE_SIZE];
+	}
+	SafeArrayUnaccessData(sa);
+
+	*ppsaResult = sa.Detach();
+	return S_OK;
+}
+
 STDMETHODIMP CPage::WriteByte(WORD wAddr, BYTE bValue)
 {
 	m_lpData[wAddr % PAGE_SIZE] = bValue;
@@ -61,25 +82,3 @@ STDMETHODIMP CPage::Write(WORD wAddr, SAFEARRAY *psaValue)
 	SafeArrayUnaccessData(psaValue);
 	return S_OK;
 }
-
-STDMETHODIMP CPage::Read(WORD wAddr, WORD wCount, LPSAFEARRAY *ppsaResult)
-{
-	if (wCount == 0)
-	{
-		return E_INVALIDARG;
-	}
-
-	CComSafeArray<BYTE> sa((LONG) wCount);
-
-	LPBYTE lpData = NULL;
-	SafeArrayAccessData(sa, (LPVOID *) &lpData);
-	for (WORD i = 0; i < wCount; i++)
-	{
-		lpData[i] = m_lpData[(wAddr + i) % PAGE_SIZE];
-	}
-	SafeArrayUnaccessData(sa);
-
-	*ppsaResult = sa.Detach();
-	return S_OK;
-}
-
