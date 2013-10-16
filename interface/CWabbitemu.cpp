@@ -51,11 +51,11 @@ STDMETHODIMP CWabbitemu::put_Visible(VARIANT_BOOL fVisible)
 		SetProp(m_lpCalc->hwndFrame, _T("COMObjectFrame"), (HANDLE) TRUE);
 		//HMENU hMenu = GetSystemMenu(m_lpCalc->hwndFrame, FALSE);
 		//EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
-		SetMenu(m_lpCalc->hwndFrame, NULL);
-		RECT wr;
-		GetWindowRect(m_lpCalc->hwndFrame, &wr);
-		SendMessage(m_lpCalc->hwndFrame, WM_SIZING, WMSZ_BOTTOMRIGHT, (LPARAM) &wr);
-		SetWindowPos(m_lpCalc->hwndFrame, NULL, wr.left, wr.top, wr.right - wr.left, wr.bottom - wr.top, SWP_NOZORDER);
+		//SetMenu(m_lpCalc->hwndFrame, NULL);
+		//RECT wr;
+		//GetWindowRect(m_lpCalc->hwndFrame, &wr);
+		//SendMessage(m_lpCalc->hwndFrame, WM_SIZING, WMSZ_BOTTOMRIGHT, (LPARAM) &wr);
+		//SetWindowPos(m_lpCalc->hwndFrame, NULL, wr.left, wr.top, wr.right - wr.left, wr.bottom - wr.top, SWP_NOZORDER);
 
 	}
 	else
