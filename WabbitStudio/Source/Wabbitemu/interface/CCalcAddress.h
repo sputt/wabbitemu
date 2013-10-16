@@ -22,8 +22,13 @@ public:
 	STDMETHOD(get_Page)(IPage **ppPage);
 	STDMETHOD(get_Address)(LPWORD lpwAddress);
 
-	STDMETHOD(Read)(VARIANT varByteCount, LPVARIANT lpvarResult);
-	STDMETHOD(Write)(VARIANT varValue);
+	//IReadWrite
+	STDMETHOD(ReadByte)(LPBYTE lpbResult);
+	STDMETHOD(ReadWord)(LPWORD lpwResult);
+	STDMETHOD(Read)(WORD wCount, LPSAFEARRAY *ppsaResult);
+	STDMETHOD(WriteByte)(BYTE bValue);
+	STDMETHOD(WriteWord)(WORD wValue);
+	STDMETHOD(Write)(SAFEARRAY *psaValue);
 
 	static inline waddr_t ToWAddr(ICalcAddress *pAddress)
 	{
