@@ -10,7 +10,7 @@ class ATL_NO_VTABLE CMemoryContext :
 public:
 	BEGIN_COM_MAP(CMemoryContext)
 		COM_INTERFACE_ENTRY(IMemoryContext)
-		COM_INTERFACE_ENTRY(IReadable)
+		COM_INTERFACE_ENTRY(IReadWrite)
 		COM_INTERFACE_ENTRY(IDispatch)
 	END_COM_MAP()
 
@@ -22,8 +22,9 @@ public:
 	STDMETHOD(ReadByte)(WORD wAddr, LPBYTE lpbResult);
 	STDMETHOD(ReadWord)(WORD wAddr, LPWORD lpwResult);
 	STDMETHOD(Read)(WORD wAddr, WORD wCount, LPSAFEARRAY *ppsaResult);
-
-	STDMETHOD(Write)(WORD wAddr, VARIANT vValue);
+	STDMETHOD(WriteByte)(WORD wAddr, BYTE bValue);
+	STDMETHOD(WriteWord)(WORD wAddr, WORD wValue);
+	STDMETHOD(Write)(WORD wAddr, SAFEARRAY *psaValue);
 
 	HRESULT Initialize(memc *memory);
 

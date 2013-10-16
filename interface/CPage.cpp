@@ -32,6 +32,36 @@ STDMETHODIMP CPage::ReadWord(WORD wAddr, LPWORD lpwResult)
 	return S_OK;
 }
 
+STDMETHODIMP CPage::WriteByte(WORD wAddr, BYTE bValue)
+{
+	m_lpData[wAddr % PAGE_SIZE] = bValue;
+	return S_OK;
+}
+
+STDMETHODIMP CPage::WriteWord(WORD wAddr, WORD wValue)
+{
+	m_lpData[wAddr % PAGE_SIZE] = wValue & 0xFF;
+	m_lpData[(wAddr + 1) % PAGE_SIZE] = (wValue >> 8) & 0xFF;
+	return S_OK;
+}
+
+STDMETHODIMP CPage::Write(WORD wAddr, SAFEARRAY *psaValue)
+{
+	LONG LBound, UBound;
+	SafeArrayGetLBound(psaValue, 1, &LBound);
+	SafeArrayGetUBound(psaValue, 1, &UBound);
+
+	LPBYTE lpData = NULL;
+	SafeArrayAccessData(psaValue, (LPVOID *) &lpData);
+
+	for (int i = 0; i < UBound - LBound + 1; i++)
+	{
+		WriteByte(wAddr + i, lpData[i]);
+	}
+	SafeArrayUnaccessData(psaValue);
+	return S_OK;
+}
+
 STDMETHODIMP CPage::Read(WORD wAddr, WORD wCount, LPSAFEARRAY *ppsaResult)
 {
 	if (wCount == 0)
@@ -53,22 +83,3 @@ STDMETHODIMP CPage::Read(WORD wAddr, WORD wCount, LPSAFEARRAY *ppsaResult)
 	return S_OK;
 }
 
-STDMETHODIMP CPage::Write(WORD Address, VARIANT varValue)
-{
-	if (V_VT(&varValue) & VT_ARRAY)
-	{
-		LONG LBound, UBound;
-		SafeArrayGetLBound(V_ARRAY(&varValue), 1, &LBound);
-		SafeArrayGetUBound(V_ARRAY(&varValue), 1, &UBound);
-
-		LPBYTE lpData = NULL;
-		SafeArrayAccessData(V_ARRAY(&varValue), (LPVOID *) &lpData);
-		memcpy(&m_lpData[Address % PAGE_SIZE], lpData, UBound - LBound + 1);
-		SafeArrayUnaccessData(V_ARRAY(&varValue));
-	}
-	else
-	{
-		m_lpData[Address % PAGE_SIZE] = (BYTE) V_I4(&varValue);
-	}
-	return S_OK;
-}

@@ -109,25 +109,33 @@ STDMETHODIMP CMemoryContext::Read(WORD wAddr, WORD wCount, LPSAFEARRAY *ppsaResu
 	return S_OK;
 }
 
-STDMETHODIMP CMemoryContext::Write(WORD wAddr, VARIANT varValue)
+STDMETHODIMP CMemoryContext::WriteByte(WORD wAddr, BYTE bValue)
 {
-	if (V_VT(&varValue) & VT_ARRAY)
-	{
-		LONG LBound, UBound;
-		SafeArrayGetLBound(V_ARRAY(&varValue), 1, &LBound);
-		SafeArrayGetUBound(V_ARRAY(&varValue), 1, &UBound);
-
-		LPBYTE lpData = NULL;
-		SafeArrayAccessData(V_ARRAY(&varValue), (LPVOID *) &lpData);
-		for (int i = 0; i < UBound - LBound + 1; i++)
-		{
-			mem_write(m_memc, wAddr + i, lpData[i]);
-		}
-		SafeArrayUnaccessData(V_ARRAY(&varValue));
-	}
-	else
-	{
-		mem_write(m_memc, wAddr, (char) V_I4(&varValue));
-	}
+	mem_write(m_memc, wAddr, bValue);
 	return S_OK;
 }
+
+STDMETHODIMP CMemoryContext::WriteWord(WORD wAddr, WORD wValue)
+{
+	mem_write(m_memc, wAddr, wValue & 0xFF);
+	mem_write(m_memc, wAddr + 1, wValue >> 8);
+	return S_OK;
+}
+
+STDMETHODIMP CMemoryContext::Write(WORD wAddr, SAFEARRAY *psaValue)
+{
+	LONG LBound, UBound;
+	SafeArrayGetLBound(psaValue, 1, &LBound);
+	SafeArrayGetUBound(psaValue, 1, &UBound);
+
+	LPBYTE lpData = NULL;
+	SafeArrayAccessData(psaValue, (LPVOID *) &lpData);
+
+	for (int i = 0; i < UBound - LBound + 1; i++)
+	{
+		WriteByte(wAddr + i, lpData[i]);
+	}
+	SafeArrayUnaccessData(psaValue);
+	return S_OK;
+}
+

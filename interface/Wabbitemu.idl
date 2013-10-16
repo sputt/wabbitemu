@@ -156,11 +156,14 @@ interface IZ80 : IDispatch
 const DISPID DISPID_READBYTE = 3;
 const DISPID DISPID_READWORD = 4;
 const DISPID DISPID_READ = 5;
+const DISPID DISPID_WRITEBYTE = 6;
+const DISPID DISPID_WRITEWORD = 7;
+const DISPID DISPID_WRITE = 8;
 
 [
-	uuid(94F72970-F9DE-4A31-A5CD-0AEC4882561E)
+	uuid(CCFBAB27-825D-4F3B-8A73-3DB804A2F128)
 ]
-interface IReadable : IDispatch
+interface IReadWrite : IDispatch
 {
 	[id(DISPID_READBYTE), helpstring("Read a byte")]
 	HRESULT ReadByte([in] WORD Address, [out, retval] BYTE *Result);
@@ -170,8 +173,16 @@ interface IReadable : IDispatch
 
 	[id(DISPID_READ), helpstring("Read a block of memory")]
 	HRESULT Read([in] WORD Address, [in] WORD Count, [out, retval] SAFEARRAY(BYTE) *Result);
-};
 
+	[id(DISPID_WRITEBYTE), helpstring("Write a byte")]
+	HRESULT WriteByte([in] WORD Address, [in] BYTE Value);
+
+	[id(DISPID_WRITEWORD), helpstring("Write a word")]
+	HRESULT WriteWord([in] WORD Address, [in] WORD Value);
+
+	[id(DISPID_WRITE), helpstring("Write a block of memory")]
+	HRESULT Write([in] WORD Address, [in] SAFEARRAY(BYTE) Value);	
+}
 
 [
 	object,
@@ -179,7 +190,7 @@ interface IReadable : IDispatch
 	pointer_default(unique),
 	dual,
 ]
-interface IPage : IReadable
+interface IPage : IReadWrite
 {
 	[propget, helpstring("Index of this page")]
 	HRESULT Index([out, retval] int *pIndex);
@@ -371,7 +382,7 @@ interface IPageCollection : IDispatch
 	dual,
 	pointer_default(unique)
 ]
-interface IMemoryContext : IReadable
+interface IMemoryContext : IReadWrite
 {
 	[propget]
 	HRESULT RAM([out, retval] IPageCollection **RAM);
