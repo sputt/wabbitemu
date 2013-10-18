@@ -439,10 +439,28 @@ methods:
 ]
 interface IWabbitemu : IDispatch
 {
+	typedef enum Calc_Model
+	{
+		TI_81,
+		TI_82,
+		TI_83,
+		TI_85,
+		TI_86,
+		TI_73,
+		TI_83P,
+		TI_83PSE,
+		TI_84P,
+		TI_84PSE,
+		TI_84PCSE
+	} Calc_Model;
+
 	[propget, helpstring("Whether or not the UI is visible.")]
 	HRESULT Visible([out, retval] VARIANT_BOOL *lpVisible); 
 	[propput, helpstring("Whether or not the UI is visible.")]
 	HRESULT Visible([in] VARIANT_BOOL fVisible); 
+
+	[propget, helpstring("The current model of the calculator.")]
+	HRESULT Model([out, retval] Calc_Model *lpModel); 
 
 	[propget, helpstring("The Z80 CPU of the calculator.")] 
 	HRESULT CPU([out, retval] IZ80 **ppZ80);

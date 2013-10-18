@@ -29,7 +29,6 @@ HRESULT CWabbitemu::FinalConstruct()
 	m_pBreakpointCollObj->Initialize(m_lpCalc);
 
 	m_idTimer = SetTimer(NULL, 0, TPF, TimerProc);
-	//CreateThread(NULL, 0, WabbitemuThread, (LPVOID) this, 0, &m_dwThreadId);
 	return S_OK;
 };
 
@@ -187,89 +186,6 @@ STDMETHODIMP CWabbitemu::get_Breakpoints(IBreakpointCollection **ppBC)
 {
 	return m_pBreakpointCollObj->QueryInterface(ppBC);
 }
-	
-/*IPage *pPage, WORD wAddress)
-{
-	VARIANT_BOOL IsFlash;
-	pPage->get_IsFlash(&IsFlash);
-
-	int iPage;
-	pPage->get_Index(&iPage);
-
-	waddr_t waddr;
-	waddr.addr = wAddress;
-	waddr.page = iPage;
-	waddr.is_ram = !IsFlash;
-	set_break(&m_lpCalc->mem_c, waddr);
-
-	return S_OK;
-}
-*/
-
-/*
-STDMETHODIMP CWabbitemu::Read(WORD Address, VARIANT varByteCount, LPVARIANT lpvarResult)
-{
-	int nBytes = 1;
-	if ((V_VT(&varByteCount) != VT_EMPTY) && (V_VT(&varByteCount) != VT_ERROR))
-	{
-		nBytes = V_I4(&varByteCount);
-	}
-
-	VARIANT varResult;
-	VariantInit(&varResult);
-	
-	if (nBytes == 1)
-	{
-		V_VT(&varResult) = VT_UI1;
-		V_UI1(&varResult) = mem_read(&m_lpCalc->mem_c, Address);
-	}
-	else
-	{
-		V_VT(&varResult) = VT_ARRAY | VT_UI1;
-
-		SAFEARRAYBOUND sab = {0};
-		sab.cElements = nBytes;
-		sab.lLbound = 0;
-		LPSAFEARRAY psa = SafeArrayCreate(VT_UI1, 1, &sab);
-
-		LPBYTE lpData = NULL;
-		SafeArrayAccessData(psa, (LPVOID *) &lpData);
-		for (int i = 0; i < nBytes; i++)
-		{
-			lpData[i] = mem_read(&m_lpCalc->mem_c, Address + i);
-		}
-		SafeArrayUnaccessData(psa);
-
-		V_ARRAY(&varResult) = psa;
-	}
-	*lpvarResult = varResult;
-	return S_OK;
-}
-
-STDMETHODIMP CWabbitemu::Write(WORD Address, VARIANT varValue)
-{
-	if (V_VT(&varValue) & VT_ARRAY)
-	{
-		LONG LBound, UBound;
-		SafeArrayGetLBound(V_ARRAY(&varValue), 1, &LBound);
-		SafeArrayGetUBound(V_ARRAY(&varValue), 1, &UBound);
-
-		LPBYTE lpData = NULL;
-		SafeArrayAccessData(V_ARRAY(&varValue), (LPVOID *) &lpData);
-		for (int i = 0; i < UBound - LBound + 1; i++)
-		{
-			mem_write(&m_lpCalc->mem_c, Address + i, lpData[i]);
-		}
-		SafeArrayUnaccessData(V_ARRAY(&varValue));
-	}
-	else
-	{
-		mem_write(&m_lpCalc->mem_c, Address, (char) V_I4(&varValue));
-	}
-	return S_OK;
-}
-*/
-
 
 STDMETHODIMP CWabbitemu::LoadFile(BSTR bstrFileName)
 {
@@ -425,114 +341,6 @@ STDMETHODIMP CWabbitemu::get_Symbols(SAFEARRAY **ppAppList)
 	return S_OK;
 }
 */
-/*
-static LRESULT CALLBACK  WndProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg)
-	{
-	case WM_CREATE:
-		{
-			SetTimer(hwnd, 1, TPF, NULL);
-			return 0;
-		}
-	case WM_TIMER:
-		{
-			switch (wParam)
-			{
-			case 1:
-				{
-					static LONG difference;
-					static DWORD prevTimer;
-
-					DWORD dwTimer = GetTickCount();
-					// How different the timer is from where it should be
-					// guard from erroneous timer calls with an upper bound
-					// that's the limit of time it will take before the
-					// calc gives up and claims it lost time
-					difference += ((dwTimer - prevTimer) & 0x003F) - TPF;
-					prevTimer = dwTimer;
-
-					// Are we greater than Ticks Per Frame that would call for
-					// a frame skip?
-					if (difference > -TPF) {
-						calc_run_all();
-						while (difference >= TPF) {
-							calc_run_all();
-							difference -= TPF;
-						}
-					// Frame skip if we're too far ahead.
-					} else difference += TPF;
-					int i;
-					for (i = 0; i < MAX_CALCS; i++) {
-						if (calcs[i].active) {
-							gui_draw(&calcs[i]);
-						}
-					}
-					break;
-				}
-			}
-			return 0;
-		}
-	default:
-		{
-			return DefWindowProc(hwnd, uMsg, wParam, lParam);
-		}
-	}
-}
-
-DWORD CALLBACK CWabbitemu::WabbitemuThread(LPVOID lpParam)
-{
-	CWabbitemu *pWabbitemu = (CWabbitemu *) lpParam;
-	WNDCLASS wc = {0};
-
-	RegisterWindowClasses();
-	wc.lpszClassName = _T("WabbitemuCOMListener");
-	wc.hInstance = GetModuleHandle(NULL);
-	wc.lpfnWndProc = WndProc;
-	RegisterClass(&wc);
-
-	pWabbitemu->m_hwnd = CreateWindowEx(0, _T("WabbitemuCOMListener"), _T(""), WS_CHILD, 0, 0, 0, 0, HWND_MESSAGE, 0, GetModuleHandle(NULL), NULL);
-
-	// Initialize GDI+.
-	GdiplusStartupInput gdiplusStartupInput;
-	ULONG_PTR gdiplusToken;
-	GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
-
-	CoInitializeEx(NULL, COINIT_MULTITHREADED);
-	SetTimer(NULL, 0, TPF, TimerProc);
-
-	MSG Msg;
-	while (GetMessage(&Msg, NULL, 0, 0))
-	{
-		if (Msg.message == WM_ADDFRAME)
-		{
-			calc_t *lpCalc = (calc_t *) Msg.lParam;
-			gui_frame(lpCalc);
-			HMENU hMenu = GetSystemMenu(lpCalc->hwndFrame, FALSE);
-			EnableMenuItem(hMenu, SC_CLOSE, MF_BYCOMMAND | MF_GRAYED);
-			SetMenu(lpCalc->hwndFrame, NULL);
-			RECT wr;
-			GetWindowRect(lpCalc->hwndFrame, &wr);
-			SendMessage(lpCalc->hwndFrame, WM_SIZING, WMSZ_BOTTOMRIGHT, (LPARAM) &wr);
-			SetWindowPos(lpCalc->hwndFrame, NULL, wr.left, wr.top, wr.right - wr.left, wr.bottom - wr.top, SWP_NOZORDER);
-		}
-		else if (Msg.message == WM_REMOVEFRAME)
-		{
-			DestroyWindow(((calc_t *) Msg.lParam)->hwndFrame);
-		}
-		else
-		{
-			TranslateMessage(&Msg);
-			DispatchMessage(&Msg);
-		}
-	}
-
-	CoUninitialize();
-	GdiplusShutdown(gdiplusToken);
-
-	return 0;
-}
-*/
 
 STDMETHODIMP CWabbitemu::get_Keypad(IKeypad **ppKeypad)
 {
@@ -548,5 +356,11 @@ STDMETHODIMP CWabbitemu::get_Labels(ILabelServer **ppLabelServer)
 STDMETHODIMP CWabbitemu::get_Running(VARIANT_BOOL *lpfRunning)
 {
 	*lpfRunning = (m_lpCalc->running == TRUE) ? VARIANT_TRUE : VARIANT_FALSE;
+	return S_OK;
+}
+
+STDMETHODIMP CWabbitemu::get_Model(CALC_MODEL *lpCalcModel)
+{
+	*lpCalcModel = (CALC_MODEL) (m_lpCalc->model);
 	return S_OK;
 }
