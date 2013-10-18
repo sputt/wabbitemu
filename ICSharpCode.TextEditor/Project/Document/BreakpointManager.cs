@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Drawing;
+using System.Text.RegularExpressions;
 using Revsoft.TextEditor.Util;
 
 namespace Revsoft.TextEditor.Document
@@ -44,6 +45,12 @@ namespace Revsoft.TextEditor.Document
 				return document;
 			}
 		}
+
+		public Regex HighlightRegex
+		{
+			get;
+			set;
+		}
 		
 		/// <summary>
 		/// Creates a new instance of <see cref="BreakpointManager"/>
@@ -51,6 +58,7 @@ namespace Revsoft.TextEditor.Document
 		internal BreakpointManager(IDocument document)
 		{
 			this.document = document;
+			HighlightRegex = new Regex(".+");
 		}
 		
 		/// <summary>
@@ -84,8 +92,11 @@ namespace Revsoft.TextEditor.Document
 		public void AddMark(Breakpoint mark)
 		{
 			//Adds the marker
-			if (addMarker(mark) == false)
+			if (AddMarker(mark) == false)
+			{
 				return;
+			}
+
 			breakpoint.Add(mark);
 			OnAdded(new BreakpointEventArgs(mark));
 		}
@@ -93,8 +104,8 @@ namespace Revsoft.TextEditor.Document
 		public void RemoveMark(Breakpoint mark)
 		{
 			RemoveMarkerHighlight(mark);
-			OnRemoved(new BreakpointEventArgs(mark));
 			breakpoint.Remove(mark);
+			OnRemoved(new BreakpointEventArgs(mark));
 		}
 		
 		public void RemoveMarks(Predicate<Breakpoint> predicate)
@@ -121,21 +132,22 @@ namespace Revsoft.TextEditor.Document
 			return false;
 		}
 
-		public bool addMarker(Breakpoint mark)
+		public bool AddMarker(Breakpoint mark)
 		{
 			TextMarker marker = HighlightBreakpointMarker(mark.LineNumber);
 			if (marker == null)
 			{
 				return false;
-			}
+			} 
 			document.MarkerStrategy.AddMarker(marker);
 			return true;
 		}
 
 		public void RemoveMarkerHighlight(Breakpoint mark)
 		{
-			document.MarkerStrategy.RemoveAll(breakpoint => breakpoint.Offset == document.GetOffsetForLineNumber(mark.LineNumber) + 
-				document.FormattingStrategy.GetIndentation(document, mark.LineNumber).Length && breakpoint.Tag == "Breakpoint");
+			int thisLineOffset = document.GetOffsetForLineNumber(mark.LineNumber);
+			int nextLineOffset = document.GetOffsetForLineNumber(mark.LineNumber + 1);
+			document.MarkerStrategy.RemoveAll(b => b.Offset >= thisLineOffset && b.Offset < nextLineOffset  && b.Tag == "Breakpoint");
 
 			document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, mark.LineNumber));
 			document.CommitUpdate();
@@ -143,36 +155,22 @@ namespace Revsoft.TextEditor.Document
 
 		private TextMarker HighlightBreakpointMarker(int lineNumber)
 		{
-			//TODO: remove this logic from here
-			int start = document.GetOffsetForLineNumber(lineNumber);
-			int length = document.TextContent.Split('\n')[lineNumber].Length;
-			while (start == document.TextContent.Length || (start > 0 && document.TextContent[start] != '\n'))
-				start--;
-			start++;
-			length--;
-			if (char.IsLetterOrDigit(document.TextContent[start]))
-				return null;
-			while (document.TextContent[start] == ' ' || document.TextContent[start] == '\t')
+			string line = document.TextContent.Split('\n')[lineNumber];
+			Match match = HighlightRegex.Match(line);
+
+			if (match.Groups.Count == 0)
 			{
-				start++;
-				length--;
+				return null;
 			}
-			if (length < 0)
-				length = 1;
-			if (document.TextContent.IndexOf(';', start, length) != -1)
-				length = document.TextContent.IndexOf(';', start, length) - start - 1;
-			while (document.TextContent[start + length] == ' ' || document.TextContent[start + length] == '\t')
-				length--;
-			length++;
-			if (length < 0)
+
+			Group group = match.Groups["line"];
+			int start = group.Index + document.GetOffsetForLineNumber(lineNumber);
+			int length = group.Length;
+			if (length == 0)
+			{
 				return null;
-			List<FoldMarker> foldings = document.FoldingManager.GetFoldingsContainsLineNumber(lineNumber);
-			if (foldings.Count > 0)
-				foreach (FoldMarker fold in foldings)
-					if (fold.InnerText.ToLower().EndsWith("#endcomment"))
-						return null;
-			if (document.TextContent.Substring(start, length).StartsWith("#") || document.TextContent.Substring(start, length).StartsWith(".") || document.TextContent.Substring(start, length).Trim().Length == 0)
-				return null;
+			}
+
 			return new TextMarker(start, length, TextMarkerType.SolidBlock, Color.Maroon, Color.White) { Tag = "Breakpoint" };
 		}
 

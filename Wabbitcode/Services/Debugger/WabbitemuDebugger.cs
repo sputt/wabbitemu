@@ -1,4 +1,5 @@
-﻿using System.Drawing.Imaging;
+﻿using System.Diagnostics;
+using System.Drawing.Imaging;
 using System.IO;
 using Microsoft.Win32;
 using Revsoft.Wabbitcode.Exceptions;
@@ -16,27 +17,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         public WabbitemuDebugger()
         {
-            RegistryKey romKey = null;
-            string romFile = null;
-            try
-            {
-	            romKey = Registry.CurrentUser.OpenSubKey("Software\\Wabbitemu");
-				if (romKey != null)
-				{
-					romFile = romKey.GetValue("rom_path").ToString();
-				}
-            }
-            catch (Exception)
-            {
-                throw new MissingROMException("Could not load Wabbitemu ROM");
-            }
-            finally
-            {
-                if (romKey != null)
-                {
-                    romKey.Close();
-                }
-            }
+            var romFile = GetRomFile();
 
 	        if (romFile == null || !File.Exists(romFile))
 			{
@@ -49,7 +30,33 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 			_debugger.Close += debugger_Close;
         }
 
-        public event BreakpointDelegate OnBreakpoint;
+	    public static string GetRomFile()
+	    {
+		    RegistryKey romKey = null;
+		    string romFile = null;
+		    try
+		    {
+			    romKey = Registry.CurrentUser.OpenSubKey("Software\\Wabbitemu");
+			    if (romKey != null)
+			    {
+				    romFile = romKey.GetValue("rom_path").ToString();
+			    }
+		    }
+		    catch (Exception)
+		    {
+			    throw new MissingROMException("Could not load Wabbitemu ROM");
+		    }
+		    finally
+		    {
+			    if (romKey != null)
+			    {
+				    romKey.Close();
+			    }
+		    }
+		    return romFile;
+	    }
+
+	    public event BreakpointDelegate OnBreakpoint;
 	    public event CloseDelegate OnClose;
 
         public Array Apps
@@ -132,7 +139,12 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _debugger.Breakpoints.Remove(breakpoint);
         }
 
-        public void LoadFile(string fileName)
+	    public Calc_Model Model
+	    {
+		    get { return _debugger.Model; }
+	    }
+
+	    public void LoadFile(string fileName)
         {
             _debugger.LoadFile(fileName);
         }
@@ -202,20 +214,38 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             _debugger.StepOver();
         }
 
-        public void Write(bool isRam, byte page, ushort address, object value)
+        public void Write(bool isRam, byte page, ushort address, byte value)
         {
-            CalcAddress calcAddr = new CalcAddress();
-            IPage calcPage = null;
-            calcPage = isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
-
-            calcAddr.Initialize(calcPage, address);
-            //_debugger.Memory. = value;
+            IPage calcPage = isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
+            calcPage.WriteByte(address, value);
         }
 
-        public void Write(CalcAddress address, object value)
+        public void Write(CalcAddress address, byte value)
         {
-            //address.Write(value);
+	        address.Page.WriteByte(address.Address, value);
         }
+
+		public void Write(bool isRam, byte page, ushort address, ushort value)
+		{
+			IPage calcPage = isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
+			calcPage.WriteWord(address, value);
+		}
+
+		public void Write(CalcAddress address, ushort value)
+		{
+			address.Page.WriteWord(address.Address, value);
+		}
+
+		public void Write(bool isRam, byte page, ushort address, byte[] value)
+		{
+			IPage calcPage = isRam ? _debugger.Memory.RAM[page] : _debugger.Memory.Flash[page];
+			calcPage.Write(address, value);
+		}
+
+		public void Write(CalcAddress address, byte[] value)
+		{
+			address.Page.Write(address.Address, value);
+		}
 
 	    private readonly IntPtr _scan0 = Marshal.AllocHGlobal(128 * 64);
         public Image GetScreenImage()
@@ -241,11 +271,17 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 		    {
 			    return;
 		    }
-
-		    _debugger.Break();
-		    _debugger.Visible = false;
-			_debugger.Breakpoint -= debugger_Breakpoint;
-		    _debugger.Close -= debugger_Close;
+		    try
+		    {
+			    _debugger.Break();
+			    _debugger.Visible = false;
+			    _debugger.Breakpoint -= debugger_Breakpoint;
+			    _debugger.Close -= debugger_Close;
+		    }
+		    catch (InvalidCastException)
+		    {
+				Debug.WriteLine("COM exception canceling debug");
+		    }
 		    _debugger = null;
 	    }
 

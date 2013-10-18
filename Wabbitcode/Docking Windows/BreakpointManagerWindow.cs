@@ -2,8 +2,10 @@
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
+using Revsoft.Wabbitcode.Utils;
 using System;
 using System.IO;
+using System.Linq;
 using System.Windows.Forms;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
@@ -40,14 +42,15 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				return;
 			}
 			breakpointGridView.Rows.Clear();
-			foreach (WabbitcodeBreakpoint breakpoint in _debugger.Breakpoints)
+			var breakpoints = WabbitcodeBreakpointManager.Breakpoints.ToArray();
+			foreach (var breakpoint in breakpoints)
 			{
 				int index = breakpointGridView.Rows.Add(new DataGridViewRow());
 				IProject project = _projectService.Project;
 				breakpointGridView.Rows[index].Cells[0].Value = breakpoint.Enabled;
 				if (!project.IsInternal)
 				{
-					breakpointGridView.Rows[index].Cells[1].Value = breakpoint.File.Remove(0, project.ProjectDirectory.Length + 1) + ":" + breakpoint.LineNumber;
+					breakpointGridView.Rows[index].Cells[1].Value = Path.GetFileName(breakpoint.File) + ":" + breakpoint.LineNumber;
 				}
 				else
 				{
@@ -104,8 +107,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				file = Path.Combine(project.ProjectDirectory, file);
 			}
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
-			_documentService.GotoFile(file);
-			_documentService.ActiveDocument.RemoveBreakpoint(lineNum);
+			WabbitcodeBreakpointManager.RemoveBreakpoint(file, lineNum);
 		}
 
 		private void breakpointToolStripMenuItem_Click(object sender, EventArgs e)
@@ -123,12 +125,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		private void delAllBreakToolStripButton_Click(object sender, EventArgs e)
 		{
-			foreach (Editor child in _dockingService.Documents)
-			{
-				child.ClearBreakpoints();
-			}
-
-			_debugger.Breakpoints.Clear();
+			WabbitcodeBreakpointManager.RemoveAllBreakpoints();
 			UpdateManager();
 		}
 
@@ -144,17 +141,14 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			}
 
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
-			_documentService.GotoFile(file);
-			_documentService.ActiveDocument.RemoveBreakpoint(lineNum);
+			WabbitcodeBreakpointManager.RemoveBreakpoint(file, lineNum);
 		}
 
 		private void disableAllToolStripButton_Click(object sender, EventArgs e)
 		{
-			for (int i = 0; i < _debugger.Breakpoints.Count; i++)
+			foreach (var breakpoint in WabbitcodeBreakpointManager.Breakpoints)
 			{
-				WabbitcodeBreakpoint breakpoint = _debugger.Breakpoints[i];
 				breakpoint.Enabled = false;
-				_debugger.Breakpoints[i] = breakpoint;
 			}
 
 			UpdateManager();

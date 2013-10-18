@@ -159,6 +159,9 @@ namespace Revsoft.Wabbitcode
 			editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += TextArea_ToolTipRequest;
 			editorBox.Document.FormattingStrategy = new AsmFormattingStrategy();
 
+			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
+			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
+
 			CodeCompletionKeyHandler.Attach(this, editorBox);
 		}
 
@@ -334,10 +337,16 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
+		/// <summary>
+		/// Synchronizes the breakpoints known by the Breakpoint manager with the breakpoint manager
+		/// contained within the text editor
+		/// </summary>
 		private void LoadBreakpoints()
 		{
 			editorBox.Document.BreakpointManager.Added -= BreakpointManager_Added;
-			foreach (WabbitcodeBreakpoint breakpoint in WabbitcodeBreakpointManager.Breakpoints.Where(breakpoint => breakpoint.File.Equals(FileName)))
+			var breakpoints = WabbitcodeBreakpointManager.Breakpoints.Where(
+				b => FileOperations.CompareFilePath(b.File, FileName));
+			foreach (var breakpoint in breakpoints)
 			{
 				editorBox.Document.BreakpointManager.AddMark(new Breakpoint(editorBox.Document, 
 					new TextLocation(0, breakpoint.LineNumber)));
@@ -450,6 +459,8 @@ namespace Revsoft.Wabbitcode
 					SaveFile();
 					break;
 			}
+			WabbitcodeBreakpointManager.OnBreakpointAdded -= WabbitcodeBreakpointManager_OnBreakpointAdded;
+			WabbitcodeBreakpointManager.OnBreakpointRemoved -= WabbitcodeBreakpointManager_OnBreakpointRemoved;
 		}
 
 		public void Undo()
@@ -489,37 +500,74 @@ namespace Revsoft.Wabbitcode
 		internal void ToggleBreakpoint()
 		{
 			TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
-			IEditAction newBreakpoint = new ToggleBreakpoint(textArea.Caret.Position);
-			newBreakpoint.Execute(textArea);
+			ToggleBreakpoint(textArea.Caret.Position.Line);
 		}
 
-		internal void ToggleBreakpoint(int lineNum)
+		private void ToggleBreakpoint(int lineNum)
 		{
-			IEditAction newBreakpoint = new ToggleBreakpoint(new TextLocation(0, lineNum));
-			newBreakpoint.Execute(editorBox.ActiveTextAreaControl.TextArea);
+			WabbitcodeBreakpoint breakpoint = WabbitcodeBreakpointManager.Breakpoints
+				.SingleOrDefault(b => b.File == FileName && b.LineNumber == lineNum);
+			if (breakpoint == null)
+			{
+				AddBreakpoint(lineNum);
+			}
+			else
+			{
+				RemoveBreakpoint(lineNum);
+			}
 		}
 
-		internal void RemoveBreakpoint(int lineNum)
+		private void AddBreakpoint(int lineNum)
 		{
-			Breakpoint breakpoint = editorBox.Document.BreakpointManager.GetNextMark(lineNum);
-			editorBox.Document.BreakpointManager.RemoveMark(breakpoint);
+			IDocument document = editorBox.Document;
+			if (document.BreakpointManager.IsMarked(lineNum))
+			{
+				return;
+			}
+
+			document.BreakpointManager.AddMark(new Breakpoint(document, new TextLocation(0,lineNum)));
 		}
 
-		internal void ClearBreakpoints()
+		private void RemoveBreakpoint(int lineNum)
 		{
-			editorBox.Document.BreakpointManager.Clear();
+			IDocument document = editorBox.Document;
+			Breakpoint breakpoint = document.BreakpointManager.GetFirstMark(s => s.Anchor.LineNumber == lineNum);
+			if (breakpoint != null)
+			{
+				document.BreakpointManager.RemoveMark(breakpoint);
+			}
 		}
 
 		#region Breakpoint Manager
 
 		void BreakpointManager_Removed(object sender, BreakpointEventArgs e)
 		{
-			WabbitcodeBreakpointManager.RemoveBreakpoint(FileName, e.Breakpoint);
+			WabbitcodeBreakpointManager.RemoveBreakpoint(FileName, e.Breakpoint.LineNumber);
 		}
 
 		void BreakpointManager_Added(object sender, BreakpointEventArgs e)
 		{
-			WabbitcodeBreakpointManager.AddBreakpoint(FileName, e.Breakpoint);
+			WabbitcodeBreakpointManager.AddBreakpoint(FileName, e.Breakpoint.LineNumber);
+		}
+
+		void WabbitcodeBreakpointManager_OnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
+		{
+			if (!FileOperations.CompareFilePath(e.Breakpoint.File, FileName))
+			{
+				return;
+			}
+
+			RemoveBreakpoint(e.Breakpoint.LineNumber);
+		}
+
+		void WabbitcodeBreakpointManager_OnBreakpointAdded(object sender, WabbitcodeBreakpointEventArgs e)
+		{
+			if (!FileOperations.CompareFilePath(e.Breakpoint.File, FileName))
+			{
+				return;
+			}
+
+			AddBreakpoint(e.Breakpoint.LineNumber);
 		}
 
 		#endregion
@@ -814,6 +862,8 @@ namespace Revsoft.Wabbitcode
 			bool hasSelection = editorBox.ActiveTextAreaControl.SelectionManager.HasSomethingSelected;
 			cutContext.Enabled = hasSelection;
 			copyContext.Enabled = hasSelection;
+			renameContext.Enabled = !hasSelection;
+			extractMethodContext.Enabled = hasSelection;
 
 			if (!string.IsNullOrEmpty(editorBox.Text))
 			{
@@ -909,7 +959,7 @@ namespace Revsoft.Wabbitcode
 		private string FindFilePathIncludes(string gotoLabel)
 		{
 			IEnumerable<string> includeDirs = _projectService.Project.IsInternal ?
-				(IEnumerable<string>) Settings.Default.includeDirs :
+				Settings.Default.includeDirs.Cast<string>() :
 				_projectService.Project.IncludeDirs;
 
 			foreach (string dir in includeDirs.Where(dir => File.Exists(Path.Combine(dir, gotoLabel))))
