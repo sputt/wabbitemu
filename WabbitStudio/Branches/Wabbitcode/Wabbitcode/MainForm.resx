@@ -131,7 +131,7 @@
         AAEAAAD/////AQAAAAAAAAAMAgAAAFdTeXN0ZW0uV2luZG93cy5Gb3JtcywgVmVyc2lvbj00LjAuMC4w
         LCBDdWx0dXJlPW5ldXRyYWwsIFB1YmxpY0tleVRva2VuPWI3N2E1YzU2MTkzNGUwODkFAQAAACZTeXN0
         ZW0uV2luZG93cy5Gb3Jtcy5JbWFnZUxpc3RTdHJlYW1lcgEAAAAERGF0YQcCAgAAAAkDAAAADwMAAAD6
-        KwAAAk1TRnQBSQFMAgEBCQEAAWQBAgFkAQIBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
+        KwAAAk1TRnQBSQFMAgEBCQEAAYQBAgGEAQIBEAEAARABAAT/ASEBAAj/AUIBTQE2BwABNgMAASgDAAFA
         AwABMAMAAQEBAAEgBgABMBIAA0ABcAOBAf8DgQH/A4EB/wOBAf8DgQH/A4EB/wOBAf8DgQH/A4EB/wOB
         Af8DgQH/A4EB/wOBAf8DgQH/A0ABcMAAA4EB/wGgAoEB/wGgAoEB/wGgAoEB/wGdAaABnwH/A4EB/wOB
         Af8B+wH+Av8B5QHiAecB/wHFAbwBvwH/AZ0BoAGfAf8DgQH/A4EB/wGgAoEB/wGgAoEB/wOBAf/AAAOB
@@ -488,6 +488,18 @@
         946ZbQKnoTGnoBg8RmWriS4gCwtEeDiOOCwwb9DZM+g1paCcjEPWt4OKpnm6gGzbd8nDvJvDmDMN9ZII
         G2KQ68Jo7/GgrN5AF5BTrR9mMeGIQmMMQzlyKjb70KZyobnLipI6PV0wYLlHi8qPhm4GtZ0uVMtsxbnL
         G2dRKh3/XfAvI5F8Aakh6Zf3hkr9AAAAAElFTkSuQmCC
+</value>
+  </data>
+  <data name="restartToolStripButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+    <value>
+        iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8
+        YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAFqSURBVDhPYxhmoHfz3/8w3Lb22//GFZ//1y5+/79i3qv/
+        JbOf/y+Y/vh/6azH/6HKMUHXhl//N5389n/loS//F+z59P/yg5//e9e++9+89A3YkLzpL/7rhq7CbQDI
+        1hUHv/yft+vT/1tPfv0HgYYlb/6Xzn35P2fq8/9Jvc/+q/otwm0AyMlzdnz6//DlD7BmECiZ/fJ/1pTn
+        /xN6n/4Pa338X85tFm4DQP69+egzVCsqOHb5zX+v2of/xewm4TYA5M/mZW/+n7ryEqrt///ozif/A5se
+        gdkOpff/85t14zYAFNLlQENypj3/v/PIXbCmgIZH/92qHoDZZnl3/3MatOI2ABRN2UD/JgL9G972+P+c
+        dRf+u1bc/29TfA9sgF7Grf+sOo24DQDFcVzP0/+hLY/++9Q9/O9Ufv+/deG9/ybZd8AGqCcRYYBl0jYw
+        No7Z8F8rePl/BY+54IDjNen8z6bbhN+AoQgYGACJIyhtIxLuJwAAAABJRU5ErkJggg==
 </value>
   </data>
   <data name="gotoCurrentToolButton.Image" type="System.Drawing.Bitmap, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">

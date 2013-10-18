@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Text.RegularExpressions;
 using System.Windows.Forms;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -83,8 +84,9 @@ namespace Revsoft.Wabbitcode
 			this.editorBox.ActiveTextAreaControl.TextArea.AllowDrop = true;
 			this.editorBox.ActiveTextAreaControl.TextArea.SelectionManager.SelectionChanged += SelectionManager_SelectionChanged;
 			this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += new TextEditor.ToolTipRequestEventHandler(TextArea_ToolTipRequest);
-			editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
-			editorBox.Document.BreakpointManager.Removed += BreakpointManager_Removed;
+			this.editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
+			this.editorBox.Document.BreakpointManager.Removed += BreakpointManager_Removed;
+			this.editorBox.Document.BreakpointManager.HighlightRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|'|\\]*?)\s*(;.*)?$");
 			// 
 			// imageList1
 			// 

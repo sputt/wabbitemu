@@ -24,6 +24,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WabbitemuLib;
 
 namespace Revsoft.Wabbitcode
 {
@@ -69,7 +70,7 @@ namespace Revsoft.Wabbitcode
 			DockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
 		
 			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
-			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnOnBreakpointRemoved;
+			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
 
 			_dockingService.InitPanels(new ProjectViewer(_dockingService, _documentService, _projectService),
 				new ErrorList(_assemblerService, _dockingService, _documentService, _projectService),
@@ -313,15 +314,16 @@ namespace Revsoft.Wabbitcode
 			stepMenuItem.Enabled = enabled;
 			gotoCurrentToolButton.Enabled = enabled;
 			stepToolButton.Enabled = enabled;
-			startDebugMenuItem.Enabled = enabled;
+			startDebugMenuItem.Enabled = enabled || !isDebugging;
 			stepOverMenuItem.Enabled = enabled;
 			stepOverToolButton.Enabled = enabled;
 			stepOutMenuItem.Enabled = enabled;
 			stepOutToolButton.Enabled = enabled;
 			stopDebugMenuItem.Enabled = isDebugging;
 			stopToolButton.Enabled = isDebugging;
-			runDebuggerToolButton.Enabled = enabled;
-			runToolButton.Enabled = enabled;
+			restartToolStripButton.Enabled = isDebugging;
+			runDebuggerToolButton.Enabled = enabled || !isDebugging;
+			runToolButton.Enabled = enabled || !isDebugging;
 			pauseToolButton.Enabled = isRunning && isDebugging;
 		}
 
@@ -353,13 +355,15 @@ namespace Revsoft.Wabbitcode
 
 		private void CancelDebug()
 		{
-			_debugger.CancelDebug();
-
 			if (InvokeRequired)
 			{
 				this.Invoke(CancelDebug);
 				return;
 			}
+
+			_debugger.CancelDebug();
+			_debugger = null;
+
 			UpdateTitle();
 			UpdateDebugStuff();
 			if (_dockingService.DebugPanel != null)
@@ -391,10 +395,6 @@ namespace Revsoft.Wabbitcode
 				child.RemoveInvisibleMarkers();
 				child.CanSetNextStatement = false;
 			}
-
-			_debugger = null;
-
-			UpdateTitle();
 
 			if (OnDebuggingEnded != null)
 			{
@@ -458,6 +458,8 @@ namespace Revsoft.Wabbitcode
 			toolStripStatusLabel.Text = text;
 		}
 
+		private string _currentDebuggingFile;
+
 		private void StartDebug()
 		{
 			if (_projectService.Project.IsInternal)
@@ -479,6 +481,9 @@ namespace Revsoft.Wabbitcode
 						return;
 					}
 				}
+
+				this.Invoke(() => ShowErrorPanels(e.Output));
+
 				_debugger = new WabbitcodeDebugger(_documentService, _symbolService);
 				_debugger.OnDebuggerBreakpointHit += BreakpointHit;
 				_debugger.OnDebuggerStep += DoneStep;
@@ -489,6 +494,7 @@ namespace Revsoft.Wabbitcode
 				try
 				{
 					createdName = _debugger.GetOutputFileDetails(e.Project);
+					_currentDebuggingFile = createdName;
 				}
 				catch (DebuggingException ex)
 				{
@@ -536,9 +542,10 @@ namespace Revsoft.Wabbitcode
 
 				if (_debugger.IsAnApp)
 				{
+					TIApplication? app = null;
 					try
 					{
-						_debugger.VerifyApp(createdName);
+						app = _debugger.VerifyApp(createdName);
 					}
 					catch (DebuggingException)
 					{
@@ -559,9 +566,47 @@ namespace Revsoft.Wabbitcode
 						ShowDebugPanels();
 					});
 
-					_debugger.LaunchApp(createdName);
+					_debugger.LaunchApp(app.Value.Name);
+					_debugger.SetupExitBreakpoints();
 				}
 			});
+		}
+
+		private void RestartDebug()
+		{
+			if (_projectService.Project.IsInternal)
+			{
+				throw new DebuggingException("Debugging single files is not supported");
+			}
+
+			if (_debugger.IsAnApp)
+			{
+				TIApplication? app = null;
+				try
+				{
+					app = _debugger.VerifyApp(_currentDebuggingFile);
+				}
+				catch (DebuggingException)
+				{
+					if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
+							"Missing App",
+							MessageBoxButtons.YesNo,
+							MessageBoxIcon.Exclamation) != DialogResult.Yes)
+					{
+						CancelDebug();
+						return;
+					}
+				}
+
+				UpdateDebugStuff();
+				UpdateBreakpoints();
+				ShowDebugPanels();
+
+				_debugger.RemoveExitBreakpoints();
+				_debugger.ResetRom();
+				_debugger.SetupExitBreakpoints();
+				_debugger.LaunchApp(app.Value.Name);
+			}
 		}
 
 		private static void SaveRomPathRegistry(string romFileName)
@@ -622,7 +667,7 @@ namespace Revsoft.Wabbitcode
 		}
 
 
-		private void WabbitcodeBreakpointManager_OnOnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
+		private void WabbitcodeBreakpointManager_OnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
 		{
 			if (_debugger != null)
 			{
@@ -640,43 +685,10 @@ namespace Revsoft.Wabbitcode
 
 		private void UpdateBreakpoints()
 		{
-			foreach (WabbitcodeBreakpoint breakpoint in WabbitcodeBreakpointManager.Breakpoints)
+			var breakpoints = WabbitcodeBreakpointManager.Breakpoints.ToList();
+			foreach (WabbitcodeBreakpoint breakpoint in breakpoints)
 			{
-				WabbitcodeBreakpoint newBreakpoint = breakpoint;
-				string fileName = newBreakpoint.File;
-				int lineNumber = newBreakpoint.LineNumber;
-
-				CalcLocation value = _symbolService.ListTable.GetCalcLocation(fileName, lineNumber);
-				if (WabbitcodeDebugger.FindBreakpoint(newBreakpoint) == null)
-				{
-					_debugger.AddBreakpoint(lineNumber, fileName);
-				}
-
-				if (value != null)
-				{
-					newBreakpoint.Address = value.Address;
-					newBreakpoint.IsRam = newBreakpoint.Address > 0x8000;
-					if (_debugger.IsAnApp && !newBreakpoint.IsRam)
-					{
-						newBreakpoint.Page = (byte)(_debugger.AppPage - value.Page);
-					}
-					else
-					{
-						newBreakpoint.Page = value.Page;
-					}
-
-					newBreakpoint.File = fileName;
-					newBreakpoint.LineNumber = lineNumber;
-					_debugger.SetBreakpoint(newBreakpoint);
-				}
-				else
-				{
-					Editor openEditor = _dockingService.Documents.SingleOrDefault(d => d.FileName == newBreakpoint.File);
-					if (openEditor != null)
-					{
-						openEditor.RemoveBreakpoint(newBreakpoint.LineNumber);
-					}
-				}
+				_debugger.SetBreakpoint(breakpoint);
 			}
 
 			foreach (Editor d in _dockingService.Documents)
@@ -1617,7 +1629,14 @@ namespace Revsoft.Wabbitcode
 
 		private void pauseToolButton_Click(object sender, EventArgs e)
 		{
-			_debugger.Pause();
+			try
+			{
+				_debugger.Pause();
+			}
+			catch (DebuggingException)
+			{
+				MessageBox.Show("Unable to pause at this point.");
+			}
 		}
 
 		private void prefsMenuItem_Click(object sender, EventArgs e)
@@ -1824,6 +1843,11 @@ namespace Revsoft.Wabbitcode
 		{
 			// TODO: fix this
 			//_debugger.StartWithoutDebug();
+		}
+
+		private void restartToolStripButton_Click(object sender, EventArgs e)
+		{
+			RestartDebug();	
 		}
 
 		private void stepButton_Click(object sender, EventArgs e)

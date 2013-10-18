@@ -49,7 +49,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
             set;
         }
 
-        void LoadFile(string fileName);
+	    Calc_Model Model { get; }
+
+	    void LoadFile(string fileName);
 
         byte ReadByte(CalcAddress addresss);
         ushort ReadShort(CalcAddress addresss);
@@ -58,8 +60,12 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         ushort ReadShort(bool isRam, byte page, ushort address);
         byte[] Read(bool isRam, byte page, ushort address, int count);
 
-	    void Write(bool isRam, byte page, ushort address, object value);
-	    void Write(CalcAddress address, object value);
+	    void Write(bool isRam, byte page, ushort address, byte value);
+	    void Write(CalcAddress address, byte value);
+		void Write(bool isRam, byte page, ushort address, ushort value);
+		void Write(CalcAddress address, ushort value);
+		void Write(bool isRam, byte page, ushort address, byte[] value);
+		void Write(CalcAddress address, byte[] value);
 
         void ClearBreakpoint(IBreakpoint breakpoint);
         IBreakpoint SetBreakpoint(CalcAddress address);

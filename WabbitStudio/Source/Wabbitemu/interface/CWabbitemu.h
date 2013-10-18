@@ -8,6 +8,7 @@
 #include "savestate.h"
 
 struct tagCALC;
+typedef Calc_Model CALC_MODEL;
 
 #include "CBreakpointCollection.h"
 
@@ -50,6 +51,7 @@ public:
 	STDMETHOD(get_Memory)(IMemoryContext **ppMemC);
 
 	STDMETHOD(get_Running)(VARIANT_BOOL *lpfRunning);
+	STDMETHOD(get_Model)(CALC_MODEL *lpCalcModel);
 
 	STDMETHODIMP Step();
 	STDMETHODIMP StepOver();

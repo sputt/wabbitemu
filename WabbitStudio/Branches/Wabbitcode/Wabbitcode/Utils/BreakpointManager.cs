@@ -10,7 +10,7 @@ namespace Revsoft.Wabbitcode.Utils
 		#region Private Members
 
 		private static readonly List<WabbitcodeBreakpoint> _breakpoints = new List<WabbitcodeBreakpoint>();
-		public static List<WabbitcodeBreakpoint> Breakpoints
+		public static IEnumerable<WabbitcodeBreakpoint> Breakpoints
 		{
 			get
 			{
@@ -29,10 +29,14 @@ namespace Revsoft.Wabbitcode.Utils
 		#endregion
 
 
-		public static void AddBreakpoint(string fileName, Breakpoint breakpoint)
+		public static void AddBreakpoint(string fileName, int lineNumber)
 		{
-			WabbitcodeBreakpoint newBreak = new WabbitcodeBreakpoint(fileName, breakpoint.LineNumber);
-			Breakpoints.Add(newBreak);
+			WabbitcodeBreakpoint newBreak = new WabbitcodeBreakpoint(fileName, lineNumber);
+			if (_breakpoints.Contains(newBreak))
+			{
+				return;
+			}
+			_breakpoints.Add(newBreak);
 
 			if (OnBreakpointAdded != null)
 			{
@@ -40,18 +44,36 @@ namespace Revsoft.Wabbitcode.Utils
 			}
 		}
 
-		public static void RemoveBreakpoint(string fileName, Breakpoint breakpoint)
+		public static void RemoveBreakpoint(string fileName, int lineNumber)
 		{
-			WabbitcodeBreakpoint newBreak = Breakpoints.FirstOrDefault(b => b.File == fileName && b.LineNumber == breakpoint.LineNumber);
+			WabbitcodeBreakpoint newBreak = Breakpoints.FirstOrDefault(b => b.File == fileName && b.LineNumber == lineNumber);
 			if (newBreak == null)
 			{
 				return;
 			}
-			Breakpoints.Remove(newBreak);
+			_breakpoints.Remove(newBreak);
 
 			if (OnBreakpointRemoved != null)
 			{
 				OnBreakpointRemoved(null, new WabbitcodeBreakpointEventArgs(newBreak));
+			}
+		}
+
+		public static void RemoveAllBreakpointsInFile(string fileName)
+		{
+			var breakpointsToRemove = Breakpoints.Where(b => b.File == fileName);
+
+			foreach (var breakpoint in breakpointsToRemove)
+			{
+				RemoveBreakpoint(breakpoint.File, breakpoint.LineNumber);
+			}
+		}
+
+		public static void RemoveAllBreakpoints()
+		{
+			foreach (var breakpoint in Breakpoints)
+			{
+				RemoveBreakpoint(breakpoint.File, breakpoint.LineNumber);
 			}
 		}
 	}

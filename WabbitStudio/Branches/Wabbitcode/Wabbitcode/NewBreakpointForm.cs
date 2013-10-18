@@ -3,6 +3,7 @@ using Revsoft.Wabbitcode.Services.Interface;
 using System;
 using System.IO;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode
 {
@@ -48,9 +49,10 @@ namespace Revsoft.Wabbitcode
 			}
 
 			lineNum--;
-			if (File.Exists(fileBox.Text))
+			string fileName = fileBox.Text;
+			if (File.Exists(fileName))
 			{
-				_documentService.GotoFile(fileBox.Text);
+				_documentService.GotoFile(fileName);
 			}
 			else
 			{
@@ -58,13 +60,7 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_dockingService.ActiveDocument.ScrollToLine(lineNum);
-			_dockingService.ActiveDocument.ToggleBreakpoint(lineNum);
+			WabbitcodeBreakpointManager.AddBreakpoint(fileName, lineNum);
 		}
 
 		private void TextChange(object sender, EventArgs e)
