@@ -623,6 +623,8 @@
     <Compile Include="Services\Debugger\DebuggerRunningEventArgs.cs" />
     <Compile Include="Services\Debugger\DebuggerEventArgs.cs" />
     <Compile Include="Services\Debugger\DebuggerStepEventArgs.cs" />
+    <Compile Include="Services\FileReaderService.cs" />
+    <Compile Include="Services\IFileReaderService.cs" />
     <Compile Include="Services\Interface\IAssemblerService.cs" />
     <Compile Include="Services\Interface\IBackgroundAssemblerService.cs" />
     <Compile Include="Services\Interface\IDockingService.cs" />

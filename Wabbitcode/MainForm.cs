@@ -25,6 +25,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WabbitemuLib;
+using IFileReaderService = Revsoft.Wabbitcode.Services.IFileReaderService;
 
 namespace Revsoft.Wabbitcode
 {
@@ -45,6 +46,7 @@ namespace Revsoft.Wabbitcode
 		private ISymbolService _symbolService;
 		private IBackgroundAssemblerService _backgroundAssemblerService;
 		private IDocumentService _documentService;
+	    private IFileReaderService _fileReaderService;
 
 		#endregion
 
@@ -76,7 +78,7 @@ namespace Revsoft.Wabbitcode
 				new ErrorList(_assemblerService, _dockingService, _documentService, _projectService),
 				new TrackingWindow(_dockingService, _symbolService),
 				new DebugPanel(_dockingService, _documentService, _symbolService),
-				new CallStack(_dockingService, _symbolService),
+				new CallStack(_dockingService, _documentService, _fileReaderService, _symbolService),
 				new LabelList(_dockingService, _documentService, _parserService),
 				new OutputWindow(_dockingService, _documentService),
 				new FindAndReplaceForm(_dockingService, _projectService),
@@ -138,6 +140,7 @@ namespace Revsoft.Wabbitcode
 			_symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
 			_backgroundAssemblerService = ServiceFactory.Instance.GetServiceInstance<IBackgroundAssemblerService>();
 			_documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
+		    _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
 		}
 
 		private void InitiailzeToolbars()
@@ -425,6 +428,7 @@ namespace Revsoft.Wabbitcode
 		{
 			this.Invoke(() =>
 			{
+                _documentService.RemoveDebugHighlight();
 				_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
 				_documentService.HighlightDebugLine(e.Location.LineNumber);
 
@@ -484,7 +488,7 @@ namespace Revsoft.Wabbitcode
 
 				this.Invoke(() => ShowErrorPanels(e.Output));
 
-				_debugger = new WabbitcodeDebugger(_documentService, _symbolService);
+				_debugger = new WabbitcodeDebugger(_documentService, _fileReaderService, _symbolService);
 				_debugger.OnDebuggerBreakpointHit += BreakpointHit;
 				_debugger.OnDebuggerStep += DoneStep;
 				_debugger.OnDebuggerRunningChanged += debugger_OnDebuggerRunningChanged;
@@ -511,7 +515,7 @@ namespace Revsoft.Wabbitcode
 				{
 					this.Invoke(() =>
 					{
-						OpenFileDialog openFileDialog = new OpenFileDialog()
+						OpenFileDialog openFileDialog = new OpenFileDialog
 						{
 							CheckFileExists = true,
 							DefaultExt = "*.rom",
@@ -566,8 +570,11 @@ namespace Revsoft.Wabbitcode
 						ShowDebugPanels();
 					});
 
-					_debugger.LaunchApp(app.Value.Name);
-					_debugger.SetupExitBreakpoints();
+				    if (app != null)
+				    {
+				        _debugger.LaunchApp(app.Value.Name);
+				    }
+				    _debugger.SetupExitBreakpoints();
 				}
 			});
 		}
@@ -605,7 +612,10 @@ namespace Revsoft.Wabbitcode
 				_debugger.RemoveExitBreakpoints();
 				_debugger.ResetRom();
 				_debugger.SetupExitBreakpoints();
-				_debugger.LaunchApp(app.Value.Name);
+			    if (app != null)
+			    {
+			        _debugger.LaunchApp(app.Value.Name);
+			    }
 			}
 		}
 
@@ -794,7 +804,7 @@ namespace Revsoft.Wabbitcode
 
 		private void UpdateTrackPanel()
 		{
-			_dockingService.TrackWindow.UpdateVars();
+			//_dockingService.TrackWindow.UpdateVars();
 		}
 
 		private void aboutMenuItem_Click(object sender, EventArgs e)
@@ -1218,15 +1228,12 @@ namespace Revsoft.Wabbitcode
 		private string FindFilePathIncludes(string relativePath)
 		{
 			IEnumerable<string> includeDirs = _projectService.Project.IsInternal ?
-				(IEnumerable<string>)Settings.Default.includeDirs :
+				Settings.Default.includeDirs.Cast<string>() :
 				_projectService.Project.IncludeDirs;
 
-			foreach (string dir in includeDirs)
+			foreach (string dir in includeDirs.Where(dir => File.Exists(Path.Combine(dir, relativePath))))
 			{
-				if (File.Exists(Path.Combine(dir, relativePath)))
-				{
-					return Path.Combine(dir, relativePath);
-				}
+			    return Path.Combine(dir, relativePath);
 			}
 
 			if (_projectService.Project.IsInternal)
