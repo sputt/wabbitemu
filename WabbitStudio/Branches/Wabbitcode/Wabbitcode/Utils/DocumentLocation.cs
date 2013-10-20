@@ -35,5 +35,10 @@
 		{
 			return ((FileName != null ? FileName.GetHashCode() : 0) * 397) ^ LineNumber;
 		}
+
+	    public override string ToString()
+	    {
+	        return FileName + ":" + LineNumber;
+	    }
 	}
 }

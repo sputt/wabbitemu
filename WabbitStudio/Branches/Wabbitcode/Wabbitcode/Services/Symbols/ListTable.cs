@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode.Services.Symbols
@@ -18,64 +19,88 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 			_fileToCalc = new Dictionary<DocumentLocation, CalcLocation>(700000);
 		}
 
-		public void ParseListFile(string listFileContents, string projectPath)
+		public void ParseListFile(string listFileContents)
 		{
+		    StreamWriter writer = null;
+            Regex fileRegex = new Regex("Listing for (built\\-in|file) (\"(?<file>.+)\"|(?<file>.+))", RegexOptions.Compiled);
+            Regex listingRegex = new Regex(@"(?<lineNum>[\d| ]{5}) (?<page>[0-9A-F]{2}):(?<addr>[0-9A-F]{4}) (?<byte1>[0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) (?<line>.*)", RegexOptions.Compiled);
 			string currentFile = string.Empty;
 			string[] lines = listFileContents.Split('\n');
-			Dictionary<string, int> fcreateForFile = new Dictionary<string, int>();
+            Dictionary<string, int> fcreateForFile = new Dictionary<string, int>();
 			foreach (string line in lines.Where(line => !string.IsNullOrWhiteSpace(line)))
 			{
-				if (line.Contains("Listing for"))
+			    Match fileMatch = fileRegex.Match(line);
+			    Match listingMatch = listingRegex.Match(line);
+				if (fileMatch.Success)
 				{
-					if (line.Trim() == "Listing for built-in fcreate")
-					{
-						int fcreateNum;
-						if (!fcreateForFile.TryGetValue(currentFile, out fcreateNum))
-						{
-							fcreateForFile[currentFile] = 0;
-						}
-						else
-						{
-							fcreateForFile[currentFile] = ++fcreateNum;
-						}
-						
-						currentFile = currentFile + "fcreate" + fcreateNum;
-					}
+				    string file = fileMatch.Groups["file"].Value.Trim();
+                    if (file == "fcreate")
+                    {
+                        int fcreateNum;
+                        if (!fcreateForFile.TryGetValue(currentFile, out fcreateNum))
+                        {
+                            fcreateForFile[currentFile] = 0;
+                        }
+                        else
+                        {
+                            fcreateForFile[currentFile] = ++fcreateNum;
+                        }
+						currentFile = currentFile + fcreateNum + ".fcreate";
+                        writer = new StreamWriter(currentFile);
+                    }
 					else
-					{
-						currentFile = Path.Combine(projectPath, line.Substring(line.IndexOf('\"') + 1,
-							line.LastIndexOf('\"') - line.IndexOf('\"') - 1)).ToLower();
-					}
-				}
+                    {
+                        currentFile = file;
+                        if (writer != null)
+                        {
+                            writer.Flush();
+                            writer.Close();
+                        }
+                        writer = null;
+                    }
+				} 
+                else if (listingMatch.Success)
+                {
+			        string stringLineNumber = listingMatch.Groups["lineNum"].Value.Trim();
+                    int lineNumber = Convert.ToInt32(stringLineNumber);
+                    ushort address = ushort.Parse(listingMatch.Groups["addr"].Value, NumberStyles.HexNumber);
+                    byte page = byte.Parse(listingMatch.Groups["page"].Value, NumberStyles.HexNumber);
 
-				if (line.Substring(0, 5) != "     " && line.Substring(13, 12) != "            " &&
-				    line.Substring(13, 12) != " -  -  -  - " && !line.Contains("Listing for"))
-				{
-					string stringLineNumber = line.Substring(0, 5).Trim();
-					int lineNumber = Convert.ToInt32(stringLineNumber);
-					string temp = line.Substring(6, 7);
-					ushort address = ushort.Parse(temp.Substring(3, 4), NumberStyles.HexNumber);
-					byte page = byte.Parse(temp.Substring(0, 2), NumberStyles.HexNumber);
+                    // correction for ram pages
+                    if (page == 0 && address >= 0x8000 && address < 0xC000)
+                    {
+                        page = 1;
+                    }
 
-					// correction for ram pages
-					if (page == 0 && address >= 0x8000 && address < 0xC000)
-					{
-						page = 1;
-					}
-					DocumentLocation key = new DocumentLocation(currentFile, lineNumber);
-					CalcLocation value = new CalcLocation(address, page, address >= 0x8000);
+                    if (writer != null)
+                    {
+                        writer.WriteLine(listingMatch.Groups["line"].Value.TrimEnd());
+                    }
 
-					if (!_calcToFile.ContainsKey(value))
-					{
-						_calcToFile.Add(value, key);
-					}
-					if (!_fileToCalc.ContainsKey(key))
-					{
-						_fileToCalc.Add(key, value);
-					}
+                    if (listingMatch.Groups["byte1"].Value.Contains("-") || string.IsNullOrWhiteSpace(listingMatch.Groups["byte1"].Value))
+                    {
+                        continue;
+                    }
 
-				}
+                    DocumentLocation key = new DocumentLocation(currentFile.ToLower(), lineNumber);
+                    CalcLocation value = new CalcLocation(address, page, address >= 0x8000);
+
+                    if (!_calcToFile.ContainsKey(value))
+                    {
+                        _calcToFile.Add(value, key);
+                    }
+                    if (!_fileToCalc.ContainsKey(key))
+                    {
+                        _fileToCalc.Add(key, value);
+                    }
+                }
 			}
+
+            if (writer != null)
+            {
+                writer.Flush();
+                writer.Close();
+            }
 		}
 
 		/// <summary>
@@ -122,27 +147,26 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 				int min = largerListings.Min(s => s.Key.LineNumber);
 				return largerListings.Single(s => s.Key.LineNumber == min).Value;
 			}
-			else if (smallerListings.Any())
-			{
-				int max = smallerListings.Max(s => s.Key.LineNumber);
-				CalcLocation smallerLocation = smallerListings.Single(s => s.Key.LineNumber == max).Value;
-				ushort address = smallerLocation.Address;
-				do
-				{
-					address++;
-					if ((address % 0x4000) == 0)
-					{
-						// crossing page boundaries means we have no clue where its going
-						return null;
-					}
-				} while (GetFileLocation(smallerLocation.Page, address, smallerLocation.IsRam) == null);
-				return new CalcLocation(address, smallerLocation.Page, smallerLocation.IsRam);
-			}
-			else
-			{
-				// no listing in this file
-				return null;
-			}
+
+		    if (!smallerListings.Any())
+		    {
+                // no listing in this file
+		        return null;
+		    }
+
+		    int max = smallerListings.Max(s => s.Key.LineNumber);
+		    CalcLocation smallerLocation = smallerListings.Single(s => s.Key.LineNumber == max).Value;
+		    ushort address = smallerLocation.Address;
+		    do
+		    {
+		        address++;
+		        if ((address % 0x4000) == 0)
+		        {
+		            // crossing page boundaries means we have no clue where its going
+		            return null;
+		        }
+		    } while (GetFileLocation(smallerLocation.Page, address, smallerLocation.IsRam) == null);
+		    return new CalcLocation(address, smallerLocation.Page, smallerLocation.IsRam);
 		}
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Revsoft.Wabbitcode.Properties;
 
 namespace Revsoft.Wabbitcode.Services.Symbols
 {
@@ -10,11 +11,16 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 
 		public List<string> GetLabelsFromAddress(string address)
 		{
-			return _addressToLabel == null ? new List<string>() : _addressToLabel["$" + address].ToList();
+			return _addressToLabel == null ? new List<string>() : _addressToLabel[address].ToList();
 		}
 
 		public string GetAddressFromLabel(string label)
 		{
+		    if (!Settings.Default.caseSensitive)
+		    {
+		        label = label.ToUpper();
+		    }
+
 			return _addressToLabel == null ? string.Empty : _labelToAddress[label].SingleOrDefault();
 		}
 
@@ -36,7 +42,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 					continue;
 				}
 
-				list.Add(new KeyValuePair<string, string>(labelAndAddress[0].Trim(), labelAndAddress[1].Trim()));
+				list.Add(new KeyValuePair<string, string>(labelAndAddress[0].Trim(), labelAndAddress[1].Trim().Substring(1)));
 			}
 			_labelToAddress = list.ToLookup(kvp => kvp.Key, kvp => kvp.Value);
 			_addressToLabel = list.ToLookup(kvp => kvp.Value, kvp => kvp.Key);

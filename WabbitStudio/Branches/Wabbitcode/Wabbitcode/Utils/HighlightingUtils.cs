@@ -109,7 +109,7 @@ namespace Revsoft.Wabbitcode.Utils
 				writer.WriteComment("Z80 Asm syntax highlighting file");
 				writer.WriteStartElement("SyntaxDefinition");
 				writer.WriteAttributeString("name", "Z80 Assembly");
-				writer.WriteAttributeString("extensions", ".asm;.inc;.z80");
+				writer.WriteAttributeString("extensions", ".asm;.inc;.z80;.fcreate");
 				writer.WriteStartElement("Environment");
 				writer.WriteStartElement("Custom");
 				writer.WriteAttributeString("name", "TypeReference");

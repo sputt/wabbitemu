@@ -31,6 +31,7 @@ namespace Revsoft.Wabbitcode
 				{ typeof(ISymbolService), typeof(SymbolService) },
 				{ typeof(IParserService), typeof(ParserService) },
 				{ typeof(IBackgroundAssemblerService), typeof(BackgroundAssemblerService) },
+                { typeof(IFileReaderService), typeof(FileReaderService) },
 			};
 
 			ServiceFactory.Instance = new ServiceFactory(dictionary);

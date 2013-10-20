@@ -16,6 +16,7 @@ namespace Revsoft.Wabbitcode.Services
 	[ServiceDependency(typeof (IParserService))]
 	[ServiceDependency(typeof(IProjectService))]
 	[ServiceDependency(typeof (ISymbolService))]
+    [ServiceDependency(typeof(IFileReaderService))]
 	public class DocumentService : IDocumentService
 	{
 		private int _debugIndex;
@@ -23,6 +24,7 @@ namespace Revsoft.Wabbitcode.Services
 		private int _recentFileIndex;
 		private readonly IDockingService _dockingService;
 		private readonly IBackgroundAssemblerService _backgroundAssemblerService;
+	    private readonly IFileReaderService _fileReaderService;
 		private readonly IParserService _parserService;
 		private readonly IProjectService _projectService;
 		private readonly ISymbolService _symbolService;
@@ -50,7 +52,7 @@ namespace Revsoft.Wabbitcode.Services
 		public Editor CreateNewDocument()
 		{
 			Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this,
-				_parserService, _projectService, _symbolService)
+				_fileReaderService, _parserService, _projectService, _symbolService)
 			{
 				Text = "New Document",
 				TabText = "New Document"
@@ -169,7 +171,7 @@ namespace Revsoft.Wabbitcode.Services
 		public Editor OpenDocument(string filename)
 		{
 			Editor doc = new Editor(_backgroundAssemblerService, _dockingService, this,
-				_parserService, _projectService, _symbolService);
+				_fileReaderService, _parserService, _projectService, _symbolService);
 			OpenDocument(doc, filename);
 			return doc;
 		}
@@ -229,10 +231,12 @@ namespace Revsoft.Wabbitcode.Services
 		}
 
 		public DocumentService(IBackgroundAssemblerService backgroundAssemblerService, IDockingService dockingService, 
-			IParserService parserService, IProjectService projectService, ISymbolService symbolService)
+			IFileReaderService fileReaderService, IParserService parserService, IProjectService projectService,
+            ISymbolService symbolService)
 		{
 			_backgroundAssemblerService = backgroundAssemblerService;
 			_dockingService = dockingService;
+		    _fileReaderService = fileReaderService;
 			_parserService = parserService;
 			_projectService = projectService;
 			_symbolService = symbolService;

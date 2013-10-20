@@ -29,6 +29,7 @@ namespace Revsoft.Wabbitcode.Services
 		private IBreakpoint _insertMemBreakpoint;
 		private IBreakpoint _delMemBreakpoint;
 		private readonly ISymbolService _symbolService;
+        private readonly IFileReaderService _fileReaderService;
 		private readonly IDocumentService _documentService;
 
 		#region Public Properties
@@ -94,11 +95,13 @@ namespace Revsoft.Wabbitcode.Services
 
 		#endregion
 
-		public WabbitcodeDebugger(IDocumentService documentService, ISymbolService symbolService)
+		public WabbitcodeDebugger(IDocumentService documentService, IFileReaderService fileReaderService,
+            ISymbolService symbolService)
 		{
 			_disposed = false;
 
 			_documentService = documentService;
+		    _fileReaderService = fileReaderService;
 			_symbolService = symbolService;
 		}
 
@@ -311,27 +314,8 @@ namespace Revsoft.Wabbitcode.Services
 			byte oldPage = GetRelativePageNum(currentPC);
 			DocumentLocation key = _symbolService.ListTable.GetFileLocation(oldPage, currentPC, currentPC >= 0x8000);
 
-			// TODO: move this out into a filereader service
-			string[] lines;
-			StreamReader reader = null;
-			try
-			{
-				reader = new StreamReader(key.FileName);
-				lines = reader.ReadToEnd().Split('\n');
-			}
-			catch (Exception)
-			{
-				return;
-			}
-			finally
-			{
-				if (reader != null)
-				{
-					reader.Dispose();
-				}
-			}
+		    string line = _fileReaderService.GetLine(key.FileName, key.LineNumber);
 
-			string line = lines[key.LineNumber - 1];
 			int commentIndex = line.IndexOf(";");
 			if (commentIndex != -1)
 			{

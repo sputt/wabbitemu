@@ -27,7 +27,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void ParseListFile(string labelContents)
 		{
-			_listTable.ParseListFile(labelContents, ProjectDirectory);
+			_listTable.ParseListFile(labelContents);
 		}
 
 		public void DestroyService()

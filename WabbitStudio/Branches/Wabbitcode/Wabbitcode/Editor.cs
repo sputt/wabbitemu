@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using BreakpointEventArgs = Revsoft.TextEditor.Document.BreakpointEventArgs;
+using IFileReaderService = Revsoft.Wabbitcode.Services.IFileReaderService;
 using Timer = System.Windows.Forms.Timer;
 
 namespace Revsoft.Wabbitcode
@@ -50,6 +51,7 @@ namespace Revsoft.Wabbitcode
 		private readonly IParserService _parserService;
 		private readonly IProjectService _projectService;
 		private readonly ISymbolService _symbolService;
+        private readonly IFileReaderService _fileReaderService;
 		private string _fileName;
 		private readonly List<TextMarker> _codeCheckMarkers = new List<TextMarker>();
 		private readonly List<IParserData> _labelsCache = new List<IParserData>(LabelsCacheSize);
@@ -135,8 +137,8 @@ namespace Revsoft.Wabbitcode
 		#endregion
 
 		public Editor(IBackgroundAssemblerService backgroundAssemblerService, IDockingService dockingService,
-			IDocumentService documentService, IParserService parserService, IProjectService projectService,
-			ISymbolService symbolService)
+			IDocumentService documentService, IFileReaderService fileReaderService, IParserService parserService,
+            IProjectService projectService, ISymbolService symbolService)
 		{
 			InitializeComponent();
 
@@ -148,6 +150,7 @@ namespace Revsoft.Wabbitcode
 			_parserService = parserService;
 			_projectService = projectService;
 			_symbolService = symbolService;
+		    _fileReaderService = fileReaderService;
 
 			_textChangedTimer.Tick += textChangedTimer_Tick;
 
@@ -162,7 +165,7 @@ namespace Revsoft.Wabbitcode
 			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
 			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
 
-			CodeCompletionKeyHandler.Attach(this, editorBox);
+			CodeCompletionKeyHandler.Attach(this, editorBox, parserService);
 		}
 
 		protected override string GetPersistString()
@@ -227,24 +230,29 @@ namespace Revsoft.Wabbitcode
 				end = editorBox.ActiveTextAreaControl.Caret.Offset;
 				start = end;
 			}
+
 			if (start == editorBox.Text.Length)
 			{
 				start--;
 			}
+
 			while (start >= 0 && editorBox.Text[start] != '\n')
 			{
 				start--;
 			}
+
 			start++;
 			while (end < editorBox.Text.Length && editorBox.Text[end] != '\n')
 			{
 				end++;
 			}
+
 			end--;
 			if (start > end)
 			{
 				start = end;
 			}
+
 			string codeInfoLines = editorBox.Document.GetText(start, end - start);
 
 			if (OnEditorSelectionChanged != null)
@@ -674,21 +682,7 @@ namespace Revsoft.Wabbitcode
 					_dockingService.FindResults.NewFindResults(text, _projectService.Project.ProjectName);
 					foreach (IParserData data in parserData)
 					{
-						// TODO: move to a filereader service
-						string line;
-						StreamReader reader = null;
-						try
-						{
-							reader = new StreamReader(data.Parent.SourceFile);
-							line = reader.ReadToEnd().Split('\n')[data.Location.Line];
-						}
-						finally
-						{
-							if (reader != null)
-							{
-								reader.Close();
-							}
-						}
+					    string line = _fileReaderService.GetLine(data.Parent.SourceFile, data.Location.Line);
 						_dockingService.FindResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, line);
 					}
 					_dockingService.FindResults.DoneSearching();
@@ -1331,30 +1325,41 @@ namespace Revsoft.Wabbitcode
 			int lineNum = newLineNumber - 1;
 			TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
 
-			int start = textArea.Document.GetOffsetForLineNumber(lineNum);
-			start = TextUtils.SkipWhitespace(editorBox.Text, start);
-			int end = TextUtils.SkipToEndOfCodeLine(editorBox.Text, start, ParserService.EndOfLineChar, ParserService.CommentChar);
-			// backtrack whitespace
-			if (TextUtils.IsValidIndex(end, editorBox.Text.Length) && editorBox.Text[end] == ParserService.CommentChar)
-			{
-				end--;
-				while (TextUtils.IsValidIndex(end, editorBox.Text.Length) && char.IsWhiteSpace(editorBox.Text[end]))
-				{
-					end--;
-				}
-				if (TextUtils.IsValidIndex(end, editorBox.Text.Length) && !char.IsWhiteSpace(editorBox.Text[end]))
-				{
-					end++;
-				}
-			}
+		    LineSegment segment = textArea.Document.GetLineSegment(lineNum);
+		    string line = string.Empty;
+		    foreach (var word in segment.Words)
+		    {
+		        switch (word.Type)
+		        {
+		            case TextWordType.Tab:
+		                line += '\t';
+		                break;
+		            case TextWordType.Space:
+		                line += ' ';
+		                break;
+		            default:
+		                line += word.Word;
+		                break;
+		        }
+		    }
 
-			TextMarker highlight = new TextMarker(start, end - start, TextMarkerType.SolidBlock, foregroundColor, Color.Black)
-			{
-				Tag = FileName
-			};
-			editorBox.Document.MarkerStrategy.AddMarker(highlight);
-			editorBox.Refresh();
-			ScrollToLine(lineNum);
+		    Regex highlightRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|'|\\]*?)\s*(;.*)?$", RegexOptions.Compiled);
+		    Match match = highlightRegex.Match(line);
+            Group group = match.Groups["line"];
+		    int start = group.Index + segment.Offset;
+            int length = group.Length;
+            if (length == 0)
+            {
+                return;
+            }
+
+		    TextMarker highlight = new TextMarker(start, length, TextMarkerType.SolidBlock, foregroundColor, Color.Black)
+		    {
+		        Tag = FileName
+		    };
+		    editorBox.Document.MarkerStrategy.AddMarker(highlight);
+		    editorBox.Refresh();
+		    ScrollToLine(lineNum);
 		}
 
 		internal void HighlightCall(int lineNumber)

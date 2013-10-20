@@ -6,6 +6,9 @@ using Revsoft.TextEditor.Document;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services.Interface;
+using System.Linq;
+using Revsoft.Wabbitcode.Services.Parser;
 
 namespace Revsoft.Wabbitcode.EditorExtensions
 {
@@ -13,11 +16,13 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 	{
 		readonly Editor _mainForm;
 		readonly TextEditorControl _editorBox;
+        readonly IParserService _parserService;
 
-		public CodeCompletionProvider(Editor mainForm)
+		public CodeCompletionProvider(Editor mainForm, IParserService parserService)
 		{
 			_mainForm = mainForm;
 			_editorBox = mainForm.EditorBox;
+            _parserService = parserService;
 		}
 
 		public ImageList ImageList
@@ -128,22 +133,17 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 
 		private void AddParserData(List<ICompletionData> resultList)
 		{
-			//IEnumerable<ParserInformation> includedFiles;
-			//lock (ProjectService.ParserInfomInformation)
-			//{
-			//	includedFiles = from info in ProjectService.ParserInfomInformation
-			//		where info.IsIncluded
-			//		select info;
-			//}
-			//foreach (var info in includedFiles)
-			//{
-			//	resultList.AddRange(from data in info.DefinesList
-			//		where !string.IsNullOrEmpty(data.Name)
-			//		select new CodeCompletionData(data.Name, CodeCompletionType.Label, data.Description));
-			//	resultList.AddRange(from data in info.LabelsList
-			//		where data.Name != "_"
-			//		select new CodeCompletionData(data.Name, CodeCompletionType.Define, data.Description));
-			//}
+            var data = _parserService.GetAllParserData().Where(s => s is ILabel || s is IDefine);
+            foreach (var parserData in data)
+            {
+                var label = parserData as ILabel;
+                if (label != null && label.IsReusable)
+                {
+                    continue;
+                }
+
+                resultList.Add(new CodeCompletionData(parserData.Name, CodeCompletionType.Label, parserData.Description));
+            }
 		}
 
 		#region Predefined Data
@@ -284,12 +284,18 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 			List<FoldMarker> foldings = _editorBox.Document.FoldingManager.GetFoldingsContainsLineNumber(lineNumber);
 			bool isInComment = false;
 			var options = Settings.Default.caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase;
-			foreach (FoldMarker folder in foldings)
-				isInComment = folder.InnerText.Contains("#endcomment", options);
+            foreach (FoldMarker folder in foldings)
+            {
+                isInComment = folder.InnerText.Contains("#endcomment", options);
+            }
+
 			string line = GetLine(startOffset);
 			int start = _editorBox.Document.OffsetToPosition(startOffset).Column;
-			if (line.Length == 0 || line.Length < start || isInComment || char.IsLetterOrDigit(line[0]))
-				return resultList.ToArray();
+            if (line.Length == 0 || line.Length < start || isInComment || char.IsLetterOrDigit(line[0]))
+            {
+                return resultList.ToArray();
+            }
+
 			switch (charTyped)
 			{
 				case '#':
@@ -300,234 +306,255 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 				{
 					string command = GetOpcodeOrMacro(line);
 					string firstArg = GetFirstArg(line, command.Length, charTyped);
-					switch (command.ToLower())
-					{
-						case "ld":
-							if (string.IsNullOrEmpty(firstArg))
-							{
-								Add16BitRegs(resultList);
-								resultList.Add(new CodeCompletionData("sp", CodeCompletionType.Register));
-								Add8BitRegs(resultList);
-								return resultList.ToArray();
-							}
-							switch (firstArg.ToLower())
-							{
-								case "hl":
-								case "de":
-								case "bc":
-								case "iy":
-								case "ix":
-									AddParserData(resultList);
-									break;
-								case "sp":
-									resultList.Add(new CodeCompletionData("hl", CodeCompletionType.Register));
-									resultList.Add(new CodeCompletionData("ix", CodeCompletionType.Register));
-									resultList.Add(new CodeCompletionData("iy", CodeCompletionType.Register));
-									return resultList.ToArray();
-								case "a":
-								case "b":
-								case "c":
-								case "d":
-								case "e":
-								case "h":
-								case "l":
-								case "(hl)":
-									if (firstArg == "a")
-									{
-										resultList.Add(new CodeCompletionData("i", CodeCompletionType.Register));
-										resultList.Add(new CodeCompletionData("r", CodeCompletionType.Register));
-									}
-									Add8BitRegs(resultList);
-									break;
-								case "i":
-								case "r":
-									resultList.Add(new CodeCompletionData("a", CodeCompletionType.Register));
-									break;
-							}
-							return resultList.ToArray();
-						case "in":
-						case "out":
-							int temp;
-							if (string.IsNullOrEmpty(firstArg))
-							{
-								resultList.Add(new CodeCompletionData("a", CodeCompletionType.Register));
-								resultList.Add(new CodeCompletionData("(C)", CodeCompletionType.Register));
-							}
-							else if (int.TryParse(firstArg, out temp))
-							{
-								resultList.Add(new CodeCompletionData("(C)", CodeCompletionType.Register));
-							}
-							else
-							{
-								return _portsList;
-							}
-							return resultList.ToArray();
-						case "bit":
-						case "set":
-						case "res":
-							if (string.IsNullOrEmpty(firstArg))
-							{
-								resultList.Add(new CodeCompletionData("0", CodeCompletionType.Command));
-								resultList.Add(new CodeCompletionData("1", CodeCompletionType.Command));
-								resultList.Add(new CodeCompletionData("2", CodeCompletionType.Command));
-								resultList.Add(new CodeCompletionData("3", CodeCompletionType.Command));
-								resultList.Add(new CodeCompletionData("4", CodeCompletionType.Command));
-								resultList.Add(new CodeCompletionData("5", CodeCompletionType.Command));
-								resultList.Add(new CodeCompletionData("6", CodeCompletionType.Command));
-								resultList.Add(new CodeCompletionData("7", CodeCompletionType.Command));
-							}
-							else
-							{
-								Add8BitRegs(resultList);
-							}
-							return resultList.ToArray();
-						case "add":
-						case "adc":
-						case "sbc":
-							if (string.IsNullOrEmpty(firstArg))
-							{
-								resultList.Add(new CodeCompletionData("a", CodeCompletionType.Register));
-								resultList.Add(new CodeCompletionData("hl", CodeCompletionType.Register));
-								if (command == "add")
-								{
-									resultList.Add(new CodeCompletionData("ix", CodeCompletionType.Register));
-									resultList.Add(new CodeCompletionData("iy", CodeCompletionType.Register));
-								}
-							}
-							else
-							{
-								if (firstArg == "hl" || firstArg == "ix" || firstArg == "iy")
-								{
-									resultList.Add(new CodeCompletionData("bc", CodeCompletionType.Register));
-									resultList.Add(new CodeCompletionData("de", CodeCompletionType.Register));
-									resultList.Add(new CodeCompletionData("hl", CodeCompletionType.Register));
-									resultList.Add(new CodeCompletionData("sp", CodeCompletionType.Register));
-								}
-								else
-									Add8BitRegs(resultList);
-							}
-							return resultList.ToArray();
-						case "dec":
-						case "inc":
-						case "rlc":
-						case "rl":
-						case "rr":
-						case "rrc":
-						case "sla":
-						case "sll":
-						case "sra":
-						case "srl":
-							// commands that take a register or a number
-						case "cp":
-						case "or":
-						case "xor":
-							Add8BitRegs(resultList);
-							return resultList.ToArray();
-						case "sub":
-							if (string.IsNullOrEmpty(firstArg))
-							{
-								resultList.Add(new CodeCompletionData("a", CodeCompletionType.Register));
-							}
-							else
-							{
-								Add8BitRegs(resultList);
-							}
-							return resultList.ToArray();
-							//16 bit only
-						case "push":
-						case "pop":
-							resultList.Add(new CodeCompletionData("af", CodeCompletionType.Register));
-							Add16BitRegs(resultList);
-							return resultList.ToArray();
-							//labels/equates and conditions
-						case "call":
-						case "jp":
-						case "jr":
-						case "ret":
-						case "djnz":
-							//possible to have conditions
-							if (command != "djnz" && string.IsNullOrEmpty(firstArg))
-							{
-								resultList.Add(new CodeCompletionData("z", CodeCompletionType.Register));
-								resultList.Add(new CodeCompletionData("nz", CodeCompletionType.Register));
-								resultList.Add(new CodeCompletionData("c", CodeCompletionType.Register));
-								resultList.Add(new CodeCompletionData("nc", CodeCompletionType.Register));
-								if (command != "jr")
-								{
-									resultList.Add(new CodeCompletionData("p", CodeCompletionType.Register));
-									resultList.Add(new CodeCompletionData("m", CodeCompletionType.Register));
-									resultList.Add(new CodeCompletionData("po", CodeCompletionType.Register));
-									resultList.Add(new CodeCompletionData("pe", CodeCompletionType.Register));
-								}
-							}
-							if (command == "ret")
-							{
-								return resultList.ToArray();
-							}
+                    switch (command.ToLower())
+                    {
+                        case "ld":
+                            if (string.IsNullOrEmpty(firstArg))
+                            {
+                                Add16BitRegs(resultList);
+                                resultList.Add(new CodeCompletionData("sp", CodeCompletionType.Register));
+                                Add8BitRegs(resultList);
+                                return resultList.ToArray();
+                            }
+                            switch (firstArg.ToLower())
+                            {
+                                case "hl":
+                                case "de":
+                                case "bc":
+                                case "iy":
+                                case "ix":
+                                    AddParserData(resultList);
+                                    break;
+                                case "sp":
+                                    resultList.Add(new CodeCompletionData("hl", CodeCompletionType.Register));
+                                    resultList.Add(new CodeCompletionData("ix", CodeCompletionType.Register));
+                                    resultList.Add(new CodeCompletionData("iy", CodeCompletionType.Register));
+                                    return resultList.ToArray();
+                                case "a":
+                                case "b":
+                                case "c":
+                                case "d":
+                                case "e":
+                                case "h":
+                                case "l":
+                                case "(hl)":
+                                    if (firstArg == "a")
+                                    {
+                                        resultList.Add(new CodeCompletionData("i", CodeCompletionType.Register));
+                                        resultList.Add(new CodeCompletionData("r", CodeCompletionType.Register));
+                                    }
+                                    Add8BitRegs(resultList);
+                                    break;
+                                case "i":
+                                case "r":
+                                    resultList.Add(new CodeCompletionData("a", CodeCompletionType.Register));
+                                    break;
+                            }
+                            return resultList.ToArray();
+                        case "in":
+                        case "out":
+                            int temp;
+                            if (string.IsNullOrEmpty(firstArg))
+                            {
+                                resultList.Add(new CodeCompletionData("a", CodeCompletionType.Register));
+                                resultList.Add(new CodeCompletionData("(C)", CodeCompletionType.Register));
+                            }
+                            else if (int.TryParse(firstArg, out temp))
+                            {
+                                resultList.Add(new CodeCompletionData("(C)", CodeCompletionType.Register));
+                            }
+                            else
+                            {
+                                return _portsList;
+                            }
+                            return resultList.ToArray();
+                        case "bit":
+                        case "set":
+                        case "res":
+                            if (string.IsNullOrEmpty(firstArg))
+                            {
+                                resultList.Add(new CodeCompletionData("0", CodeCompletionType.Command));
+                                resultList.Add(new CodeCompletionData("1", CodeCompletionType.Command));
+                                resultList.Add(new CodeCompletionData("2", CodeCompletionType.Command));
+                                resultList.Add(new CodeCompletionData("3", CodeCompletionType.Command));
+                                resultList.Add(new CodeCompletionData("4", CodeCompletionType.Command));
+                                resultList.Add(new CodeCompletionData("5", CodeCompletionType.Command));
+                                resultList.Add(new CodeCompletionData("6", CodeCompletionType.Command));
+                                resultList.Add(new CodeCompletionData("7", CodeCompletionType.Command));
+                            }
+                            else
+                            {
+                                Add8BitRegs(resultList);
+                            }
+                            return resultList.ToArray();
+                        case "add":
+                        case "adc":
+                        case "sbc":
+                            if (string.IsNullOrEmpty(firstArg))
+                            {
+                                resultList.Add(new CodeCompletionData("a", CodeCompletionType.Register));
+                                resultList.Add(new CodeCompletionData("hl", CodeCompletionType.Register));
+                                if (command == "add")
+                                {
+                                    resultList.Add(new CodeCompletionData("ix", CodeCompletionType.Register));
+                                    resultList.Add(new CodeCompletionData("iy", CodeCompletionType.Register));
+                                }
+                            }
+                            else
+                            {
+                                if (firstArg == "hl" || firstArg == "ix" || firstArg == "iy")
+                                {
+                                    resultList.Add(new CodeCompletionData("bc", CodeCompletionType.Register));
+                                    resultList.Add(new CodeCompletionData("de", CodeCompletionType.Register));
+                                    resultList.Add(new CodeCompletionData("hl", CodeCompletionType.Register));
+                                    resultList.Add(new CodeCompletionData("sp", CodeCompletionType.Register));
+                                }
+                                else
+                                    Add8BitRegs(resultList);
+                            }
+                            return resultList.ToArray();
+                        case "dec":
+                        case "inc":
+                        case "rlc":
+                        case "rl":
+                        case "rr":
+                        case "rrc":
+                        case "sla":
+                        case "sll":
+                        case "sra":
+                        case "srl":
+                        // commands that take a register or a number
+                        case "cp":
+                        case "or":
+                        case "xor":
+                            Add8BitRegs(resultList);
+                            return resultList.ToArray();
+                        case "sub":
+                            if (string.IsNullOrEmpty(firstArg))
+                            {
+                                resultList.Add(new CodeCompletionData("a", CodeCompletionType.Register));
+                            }
+                            else
+                            {
+                                Add8BitRegs(resultList);
+                            }
+                            return resultList.ToArray();
+                        // 16 bit only
+                        case "push":
+                        case "pop":
+                            resultList.Add(new CodeCompletionData("af", CodeCompletionType.Register));
+                            Add16BitRegs(resultList);
+                            return resultList.ToArray();
+                        // labels/equates and conditions
+                        case "call":
+                        case "jp":
+                        case "jr":
+                        case "ret":
+                        case "djnz":
+                            // possible to have conditions
+                            if (command != "djnz" && string.IsNullOrEmpty(firstArg))
+                            {
+                                resultList.Add(new CodeCompletionData("z", CodeCompletionType.Register));
+                                resultList.Add(new CodeCompletionData("nz", CodeCompletionType.Register));
+                                resultList.Add(new CodeCompletionData("c", CodeCompletionType.Register));
+                                resultList.Add(new CodeCompletionData("nc", CodeCompletionType.Register));
+                                if (command != "jr")
+                                {
+                                    resultList.Add(new CodeCompletionData("p", CodeCompletionType.Register));
+                                    resultList.Add(new CodeCompletionData("m", CodeCompletionType.Register));
+                                    resultList.Add(new CodeCompletionData("po", CodeCompletionType.Register));
+                                    resultList.Add(new CodeCompletionData("pe", CodeCompletionType.Register));
+                                }
+                            }
+                            if (command == "ret")
+                            {
+                                return resultList.ToArray();
+                            }
 
-							AddParserData(resultList);
-							return resultList.ToArray();
-							//special cases
-						case "im":
-							resultList.Add(new CodeCompletionData("0", CodeCompletionType.Command));
-							resultList.Add(new CodeCompletionData("1", CodeCompletionType.Command));
-							resultList.Add(new CodeCompletionData("2", CodeCompletionType.Command));
-							return resultList.ToArray();
-						case "ex":
-							resultList.Add(new CodeCompletionData("de,hl", CodeCompletionType.Register));
-							resultList.Add(new CodeCompletionData("af,af'", CodeCompletionType.Register));
-							resultList.Add(new CodeCompletionData("(sp),hl", CodeCompletionType.Register));
-							resultList.Add(new CodeCompletionData("(sp),ix", CodeCompletionType.Register));
-							resultList.Add(new CodeCompletionData("(sp),iy", CodeCompletionType.Register));
-							return resultList.ToArray();
-						case "rst":
-							resultList.Add(new CodeCompletionData("08h", CodeCompletionType.Command));
-							resultList.Add(new CodeCompletionData("10h", CodeCompletionType.Command));
-							resultList.Add(new CodeCompletionData("18h", CodeCompletionType.Command));
-							resultList.Add(new CodeCompletionData("20h", CodeCompletionType.Command));
-							resultList.Add(new CodeCompletionData("28h", CodeCompletionType.Command));
-							resultList.Add(new CodeCompletionData("30h", CodeCompletionType.Command));
-							resultList.Add(new CodeCompletionData("38h", CodeCompletionType.Command));
-							return resultList.ToArray();
+                            AddParserData(resultList);
+                            return resultList.ToArray();
+                        //special cases
+                        case "im":
+                            resultList.Add(new CodeCompletionData("0", CodeCompletionType.Command));
+                            resultList.Add(new CodeCompletionData("1", CodeCompletionType.Command));
+                            resultList.Add(new CodeCompletionData("2", CodeCompletionType.Command));
+                            return resultList.ToArray();
+                        case "ex":
+                            resultList.Add(new CodeCompletionData("de,hl", CodeCompletionType.Register));
+                            resultList.Add(new CodeCompletionData("af,af'", CodeCompletionType.Register));
+                            resultList.Add(new CodeCompletionData("(sp),hl", CodeCompletionType.Register));
+                            resultList.Add(new CodeCompletionData("(sp),ix", CodeCompletionType.Register));
+                            resultList.Add(new CodeCompletionData("(sp),iy", CodeCompletionType.Register));
+                            return resultList.ToArray();
+                        case "rst":
+                            resultList.Add(new CodeCompletionData("08h", CodeCompletionType.Command));
+                            resultList.Add(new CodeCompletionData("10h", CodeCompletionType.Command));
+                            resultList.Add(new CodeCompletionData("18h", CodeCompletionType.Command));
+                            resultList.Add(new CodeCompletionData("20h", CodeCompletionType.Command));
+                            resultList.Add(new CodeCompletionData("28h", CodeCompletionType.Command));
+                            resultList.Add(new CodeCompletionData("30h", CodeCompletionType.Command));
+                            resultList.Add(new CodeCompletionData("38h", CodeCompletionType.Command));
+                            return resultList.ToArray();
 
-							//all the no argument commands
-						case "ccf":
-						case "cpdr":
-						case "cpd":
-						case "cpir":
-						case "cpi":
-						case "cpl":
-						case "daa":
-						case "di":
-						case "ei":
-						case "exx":
-						case "halt":
-						case "indr":
-						case "ind":
-						case "inir":
-						case "ini":
-						case "lddr":
-						case "ldd":
-						case "ldir":
-						case "ldi":
-						case "neg":
-						case "nop":
-						case "otdr":
-						case "otir":
-						case "outd":
-						case "outi":
-						case "reti":
-						case "retn":
-						case "rla":
-						case "rlca":
-						case "rld":
-						case "rra":
-						case "rrca":
-						case "scf":
-							return resultList.ToArray();
-					}
-					break;
+                        //all the no argument commands
+                        case "ccf":
+                        case "cpdr":
+                        case "cpd":
+                        case "cpir":
+                        case "cpi":
+                        case "cpl":
+                        case "daa":
+                        case "di":
+                        case "ei":
+                        case "exx":
+                        case "halt":
+                        case "indr":
+                        case "ind":
+                        case "inir":
+                        case "ini":
+                        case "lddr":
+                        case "ldd":
+                        case "ldir":
+                        case "ldi":
+                        case "neg":
+                        case "nop":
+                        case "otdr":
+                        case "otir":
+                        case "outd":
+                        case "outi":
+                        case "reti":
+                        case "retn":
+                        case "rla":
+                        case "rlca":
+                        case "rld":
+                        case "rra":
+                        case "rrca":
+                        case "scf":
+                            return resultList.ToArray();
+                        default:
+                            {
+                                var macros = _parserService.GetAllParserData().Where(s => s is IMacro);
+                                bool foundMacro = false;
+                                foreach (var macro in macros)
+                                {
+                                    if (command.StartsWith(macro.Name))
+                                    {
+                                        foundMacro = true;
+                                        break;
+                                    }
+                                }
+
+                                if (!foundMacro)
+                                {
+                                    break;
+                                }
+
+                                AddParserData(resultList);
+                                return resultList.ToArray();
+                            }
+                    }
 				}
+                break;
 			}
 			return null;//resultList.ToArray();
 		}
@@ -710,17 +737,19 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 	{
 		readonly Editor _mainForm;
 		readonly TextEditorControl _editor;
+        readonly IParserService _parserService;
 		CodeCompletionWindow _codeCompletionWindow;
 
-		private CodeCompletionKeyHandler(Editor mainForm, TextEditorControl editor)
+		private CodeCompletionKeyHandler(Editor mainForm, TextEditorControl editor, IParserService parserService)
 		{
 			_mainForm = mainForm;
 			_editor = editor;
+            _parserService = parserService;
 		}
 
-		public static void Attach(Editor mainForm, TextEditorControl editor)
+		public static void Attach(Editor mainForm, TextEditorControl editor, IParserService parserService)
 		{
-			CodeCompletionKeyHandler h = new CodeCompletionKeyHandler(mainForm, editor);
+			CodeCompletionKeyHandler h = new CodeCompletionKeyHandler(mainForm, editor, parserService);
 
 			editor.ActiveTextAreaControl.TextArea.KeyEventHandler += h.TextAreaKeyEventHandler;
 
@@ -742,7 +771,7 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 			}
 			if (_codeCompletionWindow == null && (Settings.Default.enableAutoTrigger && ",( .#\t".IndexOf(key) != -1) || (key == ' ' && Control.ModifierKeys == Keys.Control))
 			{
-				ICompletionDataProvider completionDataProvider = new CodeCompletionProvider(_mainForm);
+				ICompletionDataProvider completionDataProvider = new CodeCompletionProvider(_mainForm, _parserService);
 
 				if (Control.ModifierKeys == Keys.Control && _editor.ActiveTextAreaControl.Caret.Offset != 0)
 				{
