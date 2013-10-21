@@ -458,6 +458,10 @@ void show_define (define_t *define) {
 		}
 		putchar (')');
 	}
+	if (define->contents != NULL)
+	{
+		printf (": %s", define->contents);
+	}
 	putchar ('\n');
 	restore_console_attributes(console_attrib);
 
@@ -468,7 +472,7 @@ void show_define (define_t *define) {
 		OutputDebugString("\n");
 	}
 #endif
-	//printf (": %s\n", define->contents);
+
 }
 
 

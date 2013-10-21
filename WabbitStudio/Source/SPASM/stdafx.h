@@ -53,8 +53,12 @@ using namespace ATL;
 
 #include <comutil.h>
 #include <comdef.h>
+#include <io.h>
 
-#import <scrrun.dll> rename("FreeSpace", "FreeSpace2") no_namespace
+#include <vector>
+
+//#import <scrrun.dll> rename("FreeSpace", "FreeSpace2") no_namespace
+#import <scrrun.dll> rename("FreeSpace", "FreeSpace2") no_namespace, raw_interfaces_only
 
 #include "SPASM_h.h"
 

@@ -617,6 +617,7 @@
     <Compile Include="Resources\VS2012ColorTable.cs" />
     <Compile Include="Services\Assembler\AssemblerOutput.cs" />
     <Compile Include="Services\Assembler\CodeCountInfo.cs" />
+    <Compile Include="Services\Assembler\SpasmComAssembler.cs" />
     <Compile Include="Services\Assembler\SpasmDllAssembler.cs" />
     <Compile Include="Services\BackgroundAssemblerService.cs" />
     <Compile Include="Services\Debugger\DebuggerBreakpointHitEventArgs.cs" />
@@ -1039,6 +1040,24 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <COMReference Include="Scripting">
+      <Guid>{420B2830-E718-11CF-893D-00A0C9054228}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>0</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
+    <COMReference Include="SPASM">
+      <Guid>{16387CF3-1B28-46C0-ABA9-5DEC7A8FA7AA}</Guid>
+      <VersionMajor>1</VersionMajor>
+      <VersionMinor>2</VersionMinor>
+      <Lcid>0</Lcid>
+      <WrapperTool>tlbimp</WrapperTool>
+      <Isolated>False</Isolated>
+      <EmbedInteropTypes>True</EmbedInteropTypes>
+    </COMReference>
     <COMReference Include="WabbitemuLib">
       <Guid>{EDA903F6-7BB8-437F-978F-8F1A2B8B65DB}</Guid>
       <VersionMajor>1</VersionMajor>
