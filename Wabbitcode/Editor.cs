@@ -612,7 +612,8 @@ namespace Revsoft.Wabbitcode
 		private void bgotoButton_Click(object sender, EventArgs e)
 		{
 			// no need to make a stricter regex, as we own the inputs here
-			Match match = Regex.Match(bgotoButton.Text, "(?<action>.*) (?<name>.*)");
+			Match match = Regex.Match(bgotoButton.Text, "(?<action>.*?) (?<name>.*)");
+		    string action = match.Groups["action"].Value;
 			string text = match.Groups["name"].Value;
 			bool isMacro = text.Last() == '(';
 			if (isMacro)
@@ -620,49 +621,26 @@ namespace Revsoft.Wabbitcode
 				text = text.Remove(text.Length - 1);
 			}
 
-			if (bgotoButton.Text.Substring(0, 4) == "Goto")
+			if (action == "Goto")
 			{
 				IList<IParserData> parserData;
-				if (text[0] == '+' || text[0] == '-' || text == "_")
+				if (text.StartsWith("+") || text.StartsWith("-") || text == "_")
 				{
-					// TODO: make this work
-					return;
-					parserData = new List<IParserData>();
-					bool negate = text[0] == '-';
-					int steps = text == "_" ? 1 : 0;
-					while (text != "_")
-					{
-						text = text.Remove(0, 1);
-						steps++;
-					}
-					if (negate)
-					{
-						steps *= -1;
-					}
-					int i;
-					//for (i = 0; i < _parseInfo.LabelsList.Count; i++)
-					//{
-					//	if (_parseInfo.LabelsList[i].Name == "_")
-					//	{
-					//		parserData.Add(_parseInfo.LabelsList[i]);
-					//	}
-					//}
-					i = 0;
-					while (i < parserData.Count && parserData[i].Location.Offset < editorBox.ActiveTextAreaControl.Caret.Offset)
-					{
-						i++;
-					}
-					if (negate)
-					{
-						i += steps;
-					}
-					else
-					{
-						i += steps - 1;
-					}
-					IParserData data = parserData[i];
-					parserData.Clear();
-					parserData.Add(data);
+				    int steps = text.Count(c => c == '+') - text.Count(c => c == '-');
+				    if (steps > 0)
+				    {
+				        steps--;
+				    }
+				    var parserInfo = _parserService.GetParserInfo(FileName);
+				    List<ILabel> reusableLabels = parserInfo.LabelsList.Where(l => l.IsReusable).ToList();
+				    ILabel currentLabel = reusableLabels.FirstOrDefault(l => l.Location.Line >= editorBox.ActiveTextAreaControl.Caret.Line);
+				    if (currentLabel == null)
+				    {
+				        return;
+				    }
+
+				    int index = reusableLabels.IndexOf(currentLabel) + steps;
+                    parserData = new List<IParserData> {reusableLabels[index]};
 				}
 				else
 				{
@@ -682,7 +660,7 @@ namespace Revsoft.Wabbitcode
 					_dockingService.FindResults.NewFindResults(text, _projectService.Project.ProjectName);
 					foreach (IParserData data in parserData)
 					{
-					    string line = _fileReaderService.GetLine(data.Parent.SourceFile, data.Location.Line);
+					    string line = _fileReaderService.GetLine(data.Parent.SourceFile, data.Location.Line + 1);
 						_dockingService.FindResults.AddFindResult(data.Parent.SourceFile, data.Location.Line, line);
 					}
 					_dockingService.FindResults.DoneSearching();
@@ -867,7 +845,7 @@ namespace Revsoft.Wabbitcode
 
 				string[] lines = EditorText.Split('\n');
 				string line = lines[lineNum];
-				Match match = Regex.Match(line, "#include \"(?<includeFile>.*)(?<paren>\\)?)\"");
+				Match match = Regex.Match(line, "#include ((\"(?<includeFile>.*)(?<paren>\\)?)\")|((?!\")(?<includeFile>.*(?!\"))(?<paren>\\)?)))");
 				bool isInclude = match.Success;
 
 				string text = editorBox.Document.GetWord(editorBox.ActiveTextAreaControl.Caret.Offset);
@@ -890,7 +868,7 @@ namespace Revsoft.Wabbitcode
 					}
 				}
 
-				string gotoLabel = isInclude ? match.Groups["includeFile"].Value : text;
+				string gotoLabel = isInclude ? match.Groups["includeFile"].Value.Replace('"', ' ').Trim() : text;
 				bool isMacro = !string.IsNullOrEmpty(match.Groups["paren"].Value);
 				if (isMacro)
 				{
@@ -907,10 +885,6 @@ namespace Revsoft.Wabbitcode
 				{
 					if (isInclude)
 					{
-						if (gotoLabel[0] == '\"')
-						{
-							gotoLabel = gotoLabel.Substring(1, gotoLabel.Length - 2);
-						}
 						bool exists = Path.IsPathRooted(gotoLabel) ? File.Exists(gotoLabel) : FindFileIncludes(gotoLabel);
 						if (exists)
 						{
@@ -989,7 +963,8 @@ namespace Revsoft.Wabbitcode
 
 		private void closeAllOtherMenuItem_Click(object sender, EventArgs e)
 		{
-			foreach (Editor child in _dockingService.Documents.Where(child => child != this))
+		    var array = _dockingService.Documents.Where(child => child != this).ToArray();
+			foreach (Editor child in array)
 			{
 				child.Close();
 			}
@@ -997,8 +972,8 @@ namespace Revsoft.Wabbitcode
 
 		private void closeAllMenuItem_Click(object sender, EventArgs e)
 		{
-			var list = _dockingService.Documents.ToList();
-			foreach (Editor child in list)
+			var array = _dockingService.Documents.ToArray();
+			foreach (Editor child in array)
 			{
 				child.Close();
 			}
@@ -1343,7 +1318,7 @@ namespace Revsoft.Wabbitcode
 		        }
 		    }
 
-		    Regex highlightRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|'|\\]*?)\s*(;.*)?$", RegexOptions.Compiled);
+		    Regex highlightRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|\%|'|\\]*?)\s*(;.*)?$", RegexOptions.Compiled);
 		    Match match = highlightRegex.Match(line);
             Group group = match.Groups["line"];
 		    int start = group.Index + segment.Offset;

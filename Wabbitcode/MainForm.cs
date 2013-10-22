@@ -74,6 +74,8 @@ namespace Revsoft.Wabbitcode
 			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
 			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
 
+            Editor.OnEditorOpened += Editor_OnEditorOpened;
+
 			_dockingService.InitPanels(new ProjectViewer(_dockingService, _documentService, _projectService),
 				new ErrorList(_assemblerService, _dockingService, _documentService, _projectService),
 				new TrackingWindow(_dockingService, _symbolService),
@@ -172,7 +174,7 @@ namespace Revsoft.Wabbitcode
 					if (!string.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
 					{
 						foreach (Action action in _dockingService.Documents
-							.Where(doc => string.Equals(doc.FileName, e.FullPath, StringComparison.OrdinalIgnoreCase))
+							.Where(doc => FileOperations.CompareFilePath(doc.FileName, e.FullPath))
 							.Select(tempDoc => (Action)(() =>
 							{
 								const string modifiedFormat = "{0} modified outside the editor.\nLoad changes?";
@@ -369,34 +371,15 @@ namespace Revsoft.Wabbitcode
 
 			UpdateTitle();
 			UpdateDebugStuff();
-			if (_dockingService.DebugPanel != null)
-			{
-				_dockingService.HideDockPanel(_dockingService.DebugPanel);
-			}
-
-			if (_dockingService.TrackWindow != null)
-			{
-				_dockingService.HideDockPanel(_dockingService.TrackWindow);
-			}
-
-			if (_dockingService.CallStack != null)
-			{
-				_dockingService.CallStack.Clear();
-				_dockingService.HideDockPanel(_dockingService.CallStack);
-			}
-
-			Settings.Default.debugToolbar = _showToolbar;
-			if (!_showToolbar)
-			{
-				debugToolStrip.Visible = false;
-			}
-
+			HideDebugPanels();
 			UpdateChecks();
+
 			_documentService.RemoveDebugHighlight();
-			foreach (Editor child in MdiChildren)
+			foreach (Editor child in _dockingService.Documents)
 			{
 				child.RemoveInvisibleMarkers();
 				child.CanSetNextStatement = false;
+			    child.EditorBox.Document.ReadOnly = false;
 			}
 
 			if (OnDebuggingEnded != null)
@@ -405,7 +388,38 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
-		internal void ClearRecentItems()
+	    private void HideDebugPanels()
+	    {
+            Settings.Default.debugToolbar = _showToolbar;
+            if (!_showToolbar)
+            {
+                debugToolStrip.Visible = false;
+            }
+
+	        if (_dockingService.DebugPanel != null)
+	        {
+	            _dockingService.HideDockPanel(_dockingService.DebugPanel);
+	        }
+
+	        if (_dockingService.TrackWindow != null)
+	        {
+	            _dockingService.HideDockPanel(_dockingService.TrackWindow);
+	        }
+
+	        if (_dockingService.CallStack != null)
+	        {
+	            _dockingService.CallStack.Clear();
+	            _dockingService.HideDockPanel(_dockingService.CallStack);
+	        }
+
+	        if (_dockingService.StackViewer != null)
+	        {
+	            _dockingService.StackViewer.Clear();
+	            _dockingService.HideDockPanel(_dockingService.StackViewer);
+	        }
+	    }
+
+	    internal void ClearRecentItems()
 		{
 			recentFilesMenuItem.DropDownItems.Clear();
 		}
@@ -487,8 +501,9 @@ namespace Revsoft.Wabbitcode
 				}
 
 				this.Invoke(() => ShowErrorPanels(e.Output));
+			    this.Invoke(LockOpenEditors);
 
-				_debugger = new WabbitcodeDebugger(_documentService, _fileReaderService, _symbolService);
+				_debugger = new WabbitcodeDebugger(_dockingService, _documentService, _fileReaderService, _symbolService);
 				_debugger.OnDebuggerBreakpointHit += BreakpointHit;
 				_debugger.OnDebuggerStep += DoneStep;
 				_debugger.OnDebuggerRunningChanged += debugger_OnDebuggerRunningChanged;
@@ -544,42 +559,52 @@ namespace Revsoft.Wabbitcode
 					OnDebuggingStarted(this, new DebuggingEventArgs(_debugger));
 				}
 
-				if (_debugger.IsAnApp)
-				{
-					TIApplication? app = null;
-					try
-					{
-						app = _debugger.VerifyApp(createdName);
-					}
-					catch (DebuggingException)
-					{
-						if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
-								"Missing App",
-								MessageBoxButtons.YesNo,
-								MessageBoxIcon.Exclamation) != DialogResult.Yes)
-						{
-							CancelDebug();
-							return;
-						}
-					}
+			    if (!_debugger.IsAnApp)
+			    {
+			        return;
+			    }
 
-					this.Invoke(() =>
-					{
-						UpdateDebugStuff();
-						UpdateBreakpoints();
-						ShowDebugPanels();
-					});
+			    TIApplication? app = null;
+			    try
+			    {
+			        app = _debugger.VerifyApp(createdName);
+			    }
+			    catch (DebuggingException)
+			    {
+			        if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
+			            "Missing App",
+			            MessageBoxButtons.YesNo,
+			            MessageBoxIcon.Exclamation) != DialogResult.Yes)
+			        {
+			            CancelDebug();
+			            return;
+			        }
+			    }
 
-				    if (app != null)
-				    {
-				        _debugger.LaunchApp(app.Value.Name);
-				    }
-				    _debugger.SetupExitBreakpoints();
-				}
+			    this.Invoke(() =>
+			    {
+			        UpdateDebugStuff();
+			        UpdateBreakpoints();
+			        ShowDebugPanels();
+			    });
+
+			    if (app != null)
+			    {
+			        _debugger.LaunchApp(app.Value.Name);
+			    }
+			    _debugger.SetupExitBreakpoints();
 			});
 		}
 
-		private void RestartDebug()
+	    private void LockOpenEditors()
+	    {
+	        foreach (var document in _dockingService.Documents)
+	        {
+	            document.EditorBox.Document.ReadOnly = true;
+	        }
+	    }
+
+	    private void RestartDebug()
 		{
 			if (_projectService.Project.IsInternal)
 			{
@@ -608,6 +633,7 @@ namespace Revsoft.Wabbitcode
 				UpdateDebugStuff();
 				UpdateBreakpoints();
 				ShowDebugPanels();
+                _documentService.RemoveDebugHighlight();
 
 				_debugger.RemoveExitBreakpoints();
 				_debugger.ResetRom();
@@ -638,6 +664,14 @@ namespace Revsoft.Wabbitcode
 				}
 			}
 		}
+
+        void Editor_OnEditorOpened(object sender, EditorEventArgs e)
+        {
+            if (_debugger != null)
+            {
+                e.Document.ReadOnly = true;
+            }
+        }
 
 		void debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
 		{
@@ -671,7 +705,8 @@ namespace Revsoft.Wabbitcode
 			debugToolStrip.Height = mainToolBar.Height;
 			UpdateChecks();
 			_dockingService.ShowDockPanel(_dockingService.DebugPanel);
-			_dockingService.ShowDockPanel(_dockingService.TrackWindow);
+            _dockingService.ShowDockPanel(_dockingService.StackViewer);
+            _dockingService.ShowDockPanel(_dockingService.TrackWindow);
 			_dockingService.ShowDockPanel(_dockingService.CallStack);
 			UpdateTitle();
 		}
@@ -689,7 +724,7 @@ namespace Revsoft.Wabbitcode
 		{
 			if (_debugger != null)
 			{
-				_debugger.SetBreakpoint(e.Breakpoint);
+				e.Cancel = _debugger.SetBreakpoint(e.Breakpoint);
 			}
 		}
 

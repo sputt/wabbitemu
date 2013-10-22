@@ -51,6 +51,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		private void UpdateStack()
 		{
+            // TODO: update this all the time
 			int currentSP = _debugger.CPU.SP;
 
 			// if someone has changed sp we dont want a really big callstack
@@ -122,9 +123,12 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				throw new Exception("Stack underflow");
 			}
 
-            _stackList.Remove(sp);
-		    _calledAddrList.Pop();
-			callStackView.Rows.Remove(callStackView.Rows[0]);
+            int numRemoved = _stackList.RemoveAll(c => c <= sp);
+            for (int i = numRemoved; i > 0; i--)
+            {
+                _calledAddrList.Pop();
+                callStackView.Rows.Remove(callStackView.Rows[0]);
+            }
 		}
 
 		internal void Clear()

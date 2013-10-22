@@ -113,7 +113,7 @@
     <Setting Name="showAllFile" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
-    <Setting Name="recentFiles" Type="System.String" Scope="User">
+    <Setting Name="recentFiles" Type="System.Collections.Specialized.StringCollection" Scope="User">
       <Value Profile="(Default)" />
     </Setting>
     <Setting Name="maxNumFiles" Type="System.Int32" Scope="User">

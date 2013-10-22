@@ -6,7 +6,7 @@ namespace Revsoft.Wabbitcode.Services
 {
     public class FileReaderService : IFileReaderService
     {
-        private readonly Dictionary<string, string[]> _cachedFiles = new Dictionary<string, string[]>();
+        private readonly Dictionary<string, Tuple<string[], DateTime>> _cachedFiles = new Dictionary<string, Tuple<string[], DateTime>>();
 
         public string GetLine(string fileName, int lineNumber)
         {
@@ -20,7 +20,7 @@ namespace Revsoft.Wabbitcode.Services
             string[] lines;
             if (_cachedFiles.ContainsKey(fileName.ToLower()))
             {
-                lines = _cachedFiles[fileName];
+                lines = _cachedFiles[fileName.ToLower()].Item1;
                 return lines[lineNumber];
             }
             
@@ -42,7 +42,8 @@ namespace Revsoft.Wabbitcode.Services
                 }
             }
 
-            _cachedFiles.Add(fileName.ToLower(), lines);
+            var time = File.GetLastWriteTime(fileName);
+            _cachedFiles.Add(fileName.ToLower(), new Tuple<string[], DateTime>(lines, time));
             return lines[lineNumber];
         }
 

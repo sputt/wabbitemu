@@ -1223,7 +1223,7 @@ namespace WeifenLuo.WinFormsUI.Docking
                 return;
 
             var indexHit = HitTest();
-            if (indexHit > -1)
+            if (indexHit > -1 && Appearance != DockPane.AppearanceStyle.ToolWindow)
                 TabCloseButtonHit(indexHit);
         }
 

@@ -6,6 +6,10 @@ namespace WeifenLuo.WinFormsUI.Docking
 {
     internal class VS2012LightSplitterControl : DockPane.SplitterControlBase
     {
+        private static readonly SolidBrush _horizontalBrush = new SolidBrush(Color.FromArgb(0xFF, 204, 206, 219));
+        private static readonly Color[] _verticalSurroundColors = new[] { SystemColors.Control };
+
+
         public VS2012LightSplitterControl(DockPane pane)
             : base(pane)
         {
@@ -15,23 +19,38 @@ namespace WeifenLuo.WinFormsUI.Docking
         {
             base.OnPaint(e);
 
-            Graphics g = e.Graphics;
             Rectangle rect = ClientRectangle;
 
-            if (Alignment == DockAlignment.Left || Alignment == DockAlignment.Right)
-            {
-                var path = new GraphicsPath();
-                path.AddRectangle(rect);
-                var brush = new PathGradientBrush(path) { CenterColor = Color.FromArgb(0xFF, 204, 206, 219), SurroundColors = new[] { SystemColors.Control } };
+            if (rect.Width <= 0 || rect.Height <= 0)
+                return;
 
-                g.FillRectangle(brush, rect.X + Measures.SplitterSize / 2 - 1, rect.Y,
-                                Measures.SplitterSize / 3, rect.Height);}
-            else
-                if (Alignment == DockAlignment.Top || Alignment == DockAlignment.Bottom)
-                {
-                    var brush = new SolidBrush(Color.FromArgb(0xFF, 204, 206, 219));
-                    g.FillRectangle(brush, rect.X, rect.Y,
-                                    rect.Width, Measures.SplitterSize);}
+            switch (Alignment)
+            {
+                case DockAlignment.Right:
+                case DockAlignment.Left:
+                    {
+                        using (var path = new GraphicsPath())
+                        {
+                            path.AddRectangle(rect);
+                            using (var brush = new PathGradientBrush(path)
+                                {
+                                    CenterColor = Color.FromArgb(0xFF, 204, 206, 219), SurroundColors = _verticalSurroundColors
+                                })
+                            {
+                                e.Graphics.FillRectangle(brush, rect.X + Measures.SplitterSize / 2 - 1, rect.Y,
+                                                         Measures.SplitterSize / 3, rect.Height);
+                            }
+                        }
+                    }
+                    break;
+                case DockAlignment.Bottom:
+                case DockAlignment.Top:
+                    {
+                        e.Graphics.FillRectangle(_horizontalBrush, rect.X, rect.Y,
+                                        rect.Width, Measures.SplitterSize);
+                    }
+                    break;
+            }
         }
     }
 }
