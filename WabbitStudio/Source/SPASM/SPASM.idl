@@ -1,60 +1,75 @@
 import "oaidl.idl";
 import "ocidl.idl";
 
+/*
 [
 	object,
-	uuid(D9992A64-45EC-492B-8577-3F3EC929076A),
+	uuid(9E52A44E-9B78-4662-B423-9A70A9D76140),
 	dual,
 	nonextensible,
 	pointer_default(unique)
 ]
-interface IZ80Label : IDispatch
+interface IStringCollection : IDispatch
 {
 	[propget]
-	HRESULT Name([out, retval] BSTR *Name);
+	HRESULT Count([out, retval] LONG *Count);
 
-	[propget, id(DISPID_VALUE)]
-	HRESULT Value([out, retval] DWORD *Value);
-};
+	[id(DISPID_VALUE), propget]
+	HRESULT Item([in] LONG Index, [out, retval] BSTR **Item);
+
+	[id(DISPID_NEWENUM), propget, hidden]
+	HRESULT _NewEnum([out, retval] IUnknown** ppEnum);
+
+	[helpstring("Add a new string")]
+	HRESULT Add([in] BSTR Name, [out, retval] BSTR **Value);
+
+	[helpstring("Remove a string")]
+	HRESULT Remove([in] BSTR Name);
+
+	[helpstring("Clears the collection")]
+	HRESULT Clear();
+}
+*/
+
 
 [
 	object,
-	uuid(38516350-2EF5-48DE-8C13-FEEAD1CAC91A),
-	dual,
-	nonextensible,
-	pointer_default(unique)
+	uuid(CC851E27-B58F-40DC-AB58-63AFE27BC4D7),
+    odl, 
+    dual,
+    oleautomation,
+    nonextensible,
+    pointer_default(unique)
 ]
-interface IZ80Assembler : IDispatch
+interface IIncludeDirectoryCollection : IDispatch
 {
-	[propget, helpstring("Output data from the assemble operation")]
-	HRESULT Output([out, retval] IStream **Stream);
+	[propget]
+	HRESULT Count([out, retval] LONG *Count);
 
-	[propget, helpstring("Input file for the assembly")]
-	HRESULT InputFile([out, retval] BSTR *FileName);
-    [propput, helpstring("Input file for the assembly")]
-	HRESULT InputFile([in] BSTR FileName);
+	[propget, id(DISPID_VALUE)]
+	HRESULT Item([in] LONG Index, [out, retval] BSTR *Item);
 
-    [propget, helpstring("Output file for the assembly")]
-	HRESULT OutputFile([out, retval] BSTR *FileName);
-    [propput, helpstring("Output file for the assembly")]
-	HRESULT OutputFile([in] BSTR FileName);
-	
-	[helpstring("Clear the preprocessor definitions")]
-    HRESULT ClearDefines();
-	[helpstring("Adds a preprocessor definition")]
-    HRESULT AddDefine([in] BSTR Name, [in, optional] VARIANT Value);
+	[propget, restricted, hidden, id(DISPID_NEWENUM)]
+	HRESULT _NewEnum([out, retval] IUnknown** ppEnum);
 
-	[helpstring("Clear the additional include directories")]
-    HRESULT ClearIncludeDirectories();
-	[helpstring("Add the additional include directories")]
-    HRESULT AddIncludeDirectory([in] BSTR Directory);
+	[helpstring("Add a new string")]
+	HRESULT Add([in] BSTR Name);
 
-	[helpstring("Run the assembly")]
-	HRESULT Assemble([in, optional] VARIANT Input, [out, retval] int *Return);
+	[helpstring("Remove a string")]
+	HRESULT Remove([in] BSTR Name);
 
-	[helpstring("List of labels from the assembly"), propget]
-	HRESULT Labels([out, retval] SAFEARRAY(IDispatch *) *Labels);
-};
+	[helpstring("Clears the collection")]
+	HRESULT Clear();
+}
+
+enum ASSEMBLYOPTIONS {
+	NORMAL = 1,
+	CODE_COUNTER = 2,
+	SYMTABLE = 4,
+	STATS = 8,
+	LIST = 16,
+	COMMANDLINE = 32,
+} ;
 
 [
 	uuid(16387CF3-1B28-46C0-ABA9-5DEC7A8FA7AA),
@@ -64,8 +79,56 @@ interface IZ80Assembler : IDispatch
 library SPASM
 {
 	importlib("stdole2.tlb");
+	importlib("scrrun.dll");
 
-	interface IZ80Label;
+	[
+		object,
+		uuid(4B8E17F3-2326-453D-AF80-E5CC0CA52373),
+		dual,
+		nonextensible,
+		pointer_default(unique)
+	]
+	interface IZ80Assembler : IDispatch
+	{
+		[propget, helpstring("Preprocessor definitions")]
+		HRESULT Defines([out, retval] Scripting.IDictionary **Defines);
+
+		[propget, helpstring("Output text")]
+		HRESULT StdOut([out, retval] Scripting.ITextStream **OutputStream);
+
+		[propget, helpstring("Input file")]
+		HRESULT InputFile([out, retval] BSTR *InputFile);
+
+		[propput, helpstring("Input file")]
+		HRESULT InputFile([in] BSTR InputFile);
+
+		[propget, helpstring("Output file")]
+		HRESULT OutputFile([out, retval] BSTR *OutputFile);
+
+		[propput, helpstring("Output file")]
+		HRESULT OutputFile([in] BSTR OutputFile);
+
+		[propget, helpstring("Assembly options")]
+		HRESULT Options([out, retval] DWORD *Options);
+
+		[propput, helpstring("Assembly options")]
+		HRESULT Options([in] DWORD Options);
+
+		[propget, helpstring("Current directory")]
+		HRESULT CurrentDirectory([out, retval] BSTR *CurrentDirectory);
+
+		[propput, helpstring("Current directory")]
+		HRESULT CurrentDirectory([in] BSTR CurrentDirectory);
+
+		[propget, helpstring("Collection of additional include directories")]
+		HRESULT IncludeDirectories([out, retval] IIncludeDirectoryCollection **IncludeDirectories);
+
+		[helpstring("Assemble a buffer or filename and return the output stream")]
+		HRESULT Assemble([in, optional] VARIANT Input, [out, retval] IStream **Output);
+
+		[helpstring("Parse an expression using the currently assembly environment")]
+		HRESULT Parse([in] BSTR Value, [out, retval] BSTR *Result);
+	}
 
 	[
 		uuid(BDD26FAE-A388-4860-9D4E-669809BC8EC2)		
