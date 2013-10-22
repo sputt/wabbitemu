@@ -18,7 +18,6 @@ unsigned char header8xk[] = {
 	8,                                  /* Length of name. */
 	0,0,0,0,0,0,0,0};                   /* space for the name */
 
-
 const unsigned char nbuf[]= {
 	0xAD,0x24,0x31,0xDA,0x22,0x97,0xE4,0x17,
 	0x5E,0xAC,0x61,0xA3,0x15,0x4F,0xA3,0xD8,
@@ -45,11 +44,13 @@ const unsigned char qpowpbuf[] = {
 	0xAE,0xA0,0x2F,0x2C,0xE3,0x8B,0xCD,0xD9,
 	0xC9,0x11,0x75,0x4F,0x00,0xE4,0xDF,0x47,
 	0x38,0xCD,0x98,0x16,0x47,0xF5,0x2B,0x0F};
+// (p + 1) / 4
 const unsigned char p14buf[] = {
 	0x97,0x0B,0x55,0x7A,0x6D,0xB0,0xBF,0x89,
 	0xF3,0xA4,0x09,0x05,0xDE,0xF4,0xE1,0xCF,
 	0x0F,0xF1,0xC6,0x7F,0x7C,0x7D,0x3E,0xCD,
 	0x75,0x69,0x9E,0xCE,0x50,0xB0,0x30,0x07};
+// (q + 1) / 4
 const unsigned char q14buf[] = {
 	0xE6,0x3D,0xDC,0x1E,0xE5,0xC1,0xE6,0x5C,
 	0xE1,0x21,0xC8,0x6F,0x5B,0x52,0xC2,0xEA,
@@ -330,18 +331,12 @@ int findfield( unsigned char byte, const unsigned char* buffer ) {
  * Spencer wrote his own big num routines,  cutting the size to a tenth 
  * of what it was. */
 int siggen(const unsigned char* hashbuf, unsigned char* sigbuf, int* outf) {
-#ifdef USE_GMP
-	mpz_t
-#else
-	big 
-#endif
-	mhash, p, q, r, s, temp, result;
+	mpz_t mhash, p, q, r, s, temp, result;
 	
 	unsigned int lp,lq;
 	int siglength;
 	
 /* Intiate vars */
-#ifdef USE_GMP
 	mpz_init(mhash);
 	mpz_init(p);
 	mpz_init(q);
@@ -349,146 +344,64 @@ int siggen(const unsigned char* hashbuf, unsigned char* sigbuf, int* outf) {
 	mpz_init(s);
 	mpz_init(temp);
 	mpz_init(result);
-#else
-	mhash = big_create();
-	p  = big_create();
-	q = big_create();
-	r = big_create();
-	s = big_create();
-	temp = big_create();
-	result = big_create();
-#endif
 	
 /* Import vars */
-#ifdef USE_GMP
 	mpz_import(mhash, 16, -1, 1, -1, 0, hashbuf);
 	mpz_import(p, sizeof(pbuf), -1, 1, -1, 0, pbuf);
 	mpz_import(q, sizeof(qbuf), -1, 1, -1, 0, qbuf);
-#else
-	big_read(mhash,hashbuf,16);
-	big_read(p,pbuf,sizeof(pbuf));
-	big_read(q,qbuf,sizeof(qbuf));
-#endif
 /*---------Find F----------*/
 /*      M' = m*256+1      */
-#ifdef USE_GMP
 	mpz_mul_ui(mhash, mhash, 256);
 	mpz_add_ui(mhash, mhash, 1);
-#else
-	for (i = 0; i < 8; i++)
-	big_sll(mhash);
-	big_add_ui(mhash,mhash,1);
-#endif
 	
 /* calc f {2, 3,  0, 1 }  */
-#ifdef USE_GMP
 	lp = mpz_legendre(mhash, p) == 1 ? 0 : 1;
 	lq = mpz_legendre(mhash, q) == 1 ? 1 : 0;
-#else
-	lp = ((big_legendre(mhash,p)==1)?0:1);
-	lq = ((big_legendre(mhash,q)==1)?1:0);
-#endif
 	*outf = lp+lq+lq;
 
 /*apply f */
-#ifdef USE_GMP
 	if (lp == lq)
 		mpz_mul_ui(mhash, mhash, 2);
 	if (lq == 0) {
 		mpz_import(temp, sizeof(nbuf), -1, 1, -1, 0, nbuf);
 		mpz_sub(mhash, temp, mhash);
 	}
-#else
-	if (lp==lq) big_sll(mhash);
-	if (lq==0) {
-		big_read(temp,nbuf,sizeof(nbuf));
-		big_sub(mhash,temp,mhash);
-	}
-#endif
 
 /* r = ( M' ^ ( ( p + 1) / 4 ) ) mod p */
-#ifdef USE_GMP
 	mpz_import(result, sizeof(p14buf), -1, 1, -1, 0, p14buf);
 	mpz_powm(r, mhash, result, p);
-#else
-	big_read(result,p14buf,sizeof(p14buf)); //Several numbers are precalculated to save time
-	big_powm(r,mhash,result,p);
-#endif
 	
 /* s = ( M' ^ ( ( q + 1) / 4 ) ) mod q */
-#ifdef USE_GMP
 	mpz_import(result, sizeof(q14buf), -1, 1, -1, 0, q14buf);
 	mpz_powm(s, mhash, result, q);
-#else
-	big_read(result,q14buf,sizeof(q14buf));
-	big_powm(s,mhash,result,q);
-#endif
 	
 /* r-s */
-#ifdef USE_GMP
 	mpz_set_ui(temp, 0);
 	mpz_sub(temp, r, s);
-#else
-	big_set_ui(temp,0);
-	big_sub(temp, r, s);
-#endif
 	
 /* q ^ (p - 2)) */
-#ifdef USE_GMP
 	mpz_import(result, sizeof(qpowpbuf), -1, 1, -1, 0, qpowpbuf);
-#else
-	big_read(result,qpowpbuf,sizeof(qpowpbuf));
-#endif
 	
 /* (r-s) * q^(p-2) mod p */
-#ifdef USE_GMP
 	mpz_mul(temp, temp, result);
 	mpz_mod(temp, temp, p);
-#else
-	big_mul(temp, temp, result);
-	big_mod(temp, temp, p);
-#endif
 	
 /* ((r-s) * q^(p-2) mod p) * q + s */
-#ifdef USE_GMP
 	mpz_mul(result, temp, q);
 	mpz_add(result, result, s);
-#else
-	big_mul(result, temp, q);
-	big_add(result, result, s);
-#endif
 	
 /* export sig */
-#ifdef USE_GMP
 	siglength = mpz_sizeinbase(result, 16);
 	siglength = (siglength + 1) / 2;
 	mpz_export(sigbuf, NULL, -1, 1, -1, 0, result);
-#else
-	for (i = 0; i < kMaxLength; i++) {
-		if (result->number[i]) siglength = i;
-	}
-	
-	siglength++;
-//    for (siglength = 0; ( (siglength < kMaxLength) && (result->number[i]) ); siglength++); 
-	for (i = 0; i < siglength; i++) sigbuf[i] = result->number[i];
-#endif
 	
 /* Clean Up */
-#ifdef USE_GMP
 	mpz_clear(p);
 	mpz_clear(q);
 	mpz_clear(r);
 	mpz_clear(s);
 	mpz_clear(temp);
 	mpz_clear(result);
-#else
-	big_clear(p);
-	big_clear(q);
-	big_clear(r);
-	big_clear(s);
-	big_clear(temp);
-	big_clear(result);
-#endif
 	return siglength;
 }
 
@@ -517,7 +430,7 @@ void makeprgm (const unsigned char *output_contents, int size, FILE *outfile, co
 		if (i == -1)
 			lastSlash = ++p;
 		namestring = strdup (lastSlash);
-		/* The name must be Capital lettes and numbers */
+		/* The name must be capital letters and numbers */
 		if (calc < 4) {
 			alphanumeric (namestring);
 		}

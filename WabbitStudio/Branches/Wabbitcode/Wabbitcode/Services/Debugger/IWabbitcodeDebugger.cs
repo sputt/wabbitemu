@@ -10,7 +10,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
     public interface IWabbitcodeDebugger
     {
-        void SetBreakpoint(WabbitcodeBreakpoint breakpoint);
+        bool SetBreakpoint(WabbitcodeBreakpoint breakpoint);
 
         void CancelDebug();
 

@@ -26,6 +26,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
             _dockingService = dockingService;
             _dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+            _dockingService.MainForm.OnDebuggingEnded += mainForm_OnDebuggingEnded;
             _symbolService = symbolService;
         }
 
@@ -38,8 +39,18 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             _debugger.OnDebuggerRunningChanged += (o, args) => _dockingService.Invoke(UpdateStack);
         }
 
+        void mainForm_OnDebuggingEnded(object sender, DebuggingEventArgs e)
+        {
+            _debugger = null;
+        }
+
         private void UpdateStack()
         {
+            if (_debugger == null)
+            {
+                return;
+            }
+
             int currentSP = _debugger.CPU.SP;
 
             // if someone has changed sp we dont want a really big callstack
@@ -98,6 +109,11 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             }
 
             stackView.Rows.Remove(stackView.Rows[0]);
+        }
+
+        internal void Clear()
+        {
+            stackView.Rows.Clear();
         }
 
         private void stackView_DoubleClick(object sender, EventArgs e)

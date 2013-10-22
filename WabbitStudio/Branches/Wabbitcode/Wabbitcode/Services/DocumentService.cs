@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Properties;
+﻿using System.Collections.Specialized;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Utils;
@@ -149,10 +150,13 @@ namespace Revsoft.Wabbitcode.Services
 		/// </summary>
 		public void GetRecentFiles()
 		{
+		    if (Settings.Default.recentFiles == null)
+		    {
+		        Settings.Default.recentFiles = new StringCollection();
+		    }
+
 			_dockingService.MainForm.ClearRecentItems();
-			string line = Settings.Default.recentFiles;
-			string[] list = line.Split('\n');
-			foreach (string file in list.Where(file => !string.IsNullOrEmpty(file.Trim())))
+			foreach (string file in Settings.Default.recentFiles.Cast<string>().Where(s => !string.IsNullOrEmpty(s)))
 			{
 				_dockingService.MainForm.AddRecentItem(file);
 			}
@@ -160,7 +164,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void GotoCurrentDebugLine()
 		{
-			GotoFile(_highlights[_debugIndex].FileName);
+			GotoLine(_highlights[_debugIndex].FileName, _highlights[_debugIndex].LineNumber);
 		}
 
 		public void HighlightCall()
@@ -195,16 +199,18 @@ namespace Revsoft.Wabbitcode.Services
 		/// <param name="filename">Full path of the file to save to the list</param>
 		private void AddRecentFile(string filename)
 		{
-			if (!_recentFileList.Contains(filename))
-			{
-				if (_recentFileIndex == _recentFileList.Length)
-				{
-					Array.ConstrainedCopy(_recentFileList, 1, _recentFileList, 0, _recentFileList.Length - 1);
-					_recentFileIndex--;
-				}
+		    if (_recentFileList.Contains(filename))
+		    {
+		        return;
+		    }
 
-				_recentFileList[_recentFileIndex++] = filename;
-			}
+		    if (_recentFileIndex == _recentFileList.Length)
+		    {
+		        Array.ConstrainedCopy(_recentFileList, 1, _recentFileList, 0, _recentFileList.Length - 1);
+		        _recentFileIndex--;
+		    }
+
+		    _recentFileList[_recentFileIndex++] = filename;
 		}
 
 		/// <summary>
@@ -212,12 +218,8 @@ namespace Revsoft.Wabbitcode.Services
 		/// </summary>
 		private void SaveRecentFileList()
 		{
-			StringBuilder list = new StringBuilder();
-			foreach (string file in _recentFileList)
-			{
-				list.Append(file + "\n");
-			}
-			Settings.Default.recentFiles = list.ToString();
+            Settings.Default.recentFiles.Clear();
+            Settings.Default.recentFiles.AddRange(_recentFileList);
 		}
 
 		#region IService

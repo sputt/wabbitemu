@@ -1,4 +1,5 @@
-﻿using Revsoft.Wabbitcode.Services;
+﻿using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
@@ -88,11 +89,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				file = Path.Combine(project.ProjectDirectory, file);
 			}
 			int lineNum = Convert.ToInt32(value.Substring(splitter + 1, value.Length - splitter - 1));
-			WabbitcodeBreakpoint breakpoint = WabbitcodeDebugger.FindBreakpoint(file, lineNum);
+		    WabbitcodeBreakpoint breakpoint = WabbitcodeBreakpointManager.Breakpoints.FirstOrDefault(
+                b => FileOperations.CompareFilePath(b.File, file) && b.LineNumber == lineNum);
 			if (breakpoint == null)
 			{
 				return;
 			}
+
 			breakpoint.Enabled = (bool)breakpointGridView.Rows[e.RowIndex].Cells[0].Value;
 		}
 

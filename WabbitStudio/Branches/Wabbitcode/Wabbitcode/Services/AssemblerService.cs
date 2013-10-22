@@ -248,18 +248,20 @@ namespace Revsoft.Wabbitcode.Services
 
 		private void Dispose(bool disposing)
 		{
-			if (!_disposed)
-			{
-				if (disposing)
-				{
-					if (_assembler != null)
-					{
-						_assembler.Dispose();
-					}
-				}
+		    if (_disposed)
+		    {
+		        return;
+		    }
 
-				_disposed = true;
-			}
+		    if (disposing)
+		    {
+		        if (_assembler != null)
+		        {
+		            _assembler.Dispose();
+		        }
+		    }
+
+		    _disposed = true;
 		}
 	}
 }

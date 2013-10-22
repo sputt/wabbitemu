@@ -492,8 +492,8 @@ namespace Revsoft.Wabbitcode.Services
 
 			lock (_parserInfoDictionary)
 			{
-				_parserInfoDictionary.Remove(file);
-				_parserInfoDictionary.Add(file, info);
+				_parserInfoDictionary.Remove(file.ToLower());
+				_parserInfoDictionary.Add(file.ToLower(), info);
 				foreach (var item in _parserInfoDictionary)
 				{
 					item.Value.IsIncluded = false;
@@ -1163,7 +1163,7 @@ namespace Revsoft.Wabbitcode.Services
 			lock (_parserInfoDictionary)
 			{
 				ParserInformation info;
-				_parserInfoDictionary.TryGetValue(fileName, out info);
+				_parserInfoDictionary.TryGetValue(fileName.ToLower(), out info);
 				return info;
 			}
 		}

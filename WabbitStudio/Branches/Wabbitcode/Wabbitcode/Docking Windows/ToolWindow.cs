@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.Contracts;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interface;
 using WeifenLuo.WinFormsUI.Docking;

@@ -10,17 +10,19 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 {
 	public class ListTable
 	{
-		private readonly Dictionary<CalcLocation, DocumentLocation> _calcToFile;
-		private readonly Dictionary<DocumentLocation, CalcLocation> _fileToCalc;
+		private Dictionary<CalcLocation, DocumentLocation> _calcToFile;
+		private Dictionary<DocumentLocation, CalcLocation> _fileToCalc;
 
 		public ListTable()
 		{
-			_calcToFile = new Dictionary<CalcLocation, DocumentLocation>(700000);
-			_fileToCalc = new Dictionary<DocumentLocation, CalcLocation>(700000);
+			_calcToFile = new Dictionary<CalcLocation, DocumentLocation>();
+			_fileToCalc = new Dictionary<DocumentLocation, CalcLocation>();
 		}
 
 		public void ParseListFile(string listFileContents)
 		{
+            var calcToFile = new Dictionary<CalcLocation, DocumentLocation>(700000);
+            var fileToCalc = new Dictionary<DocumentLocation, CalcLocation>(700000);
 		    StreamWriter writer = null;
             Regex fileRegex = new Regex("Listing for (built\\-in|file) (\"(?<file>.+)\"|(?<file>.+))", RegexOptions.Compiled);
             Regex listingRegex = new Regex(@"(?<lineNum>[\d| ]{5}) (?<page>[0-9A-F]{2}):(?<addr>[0-9A-F]{4}) (?<byte1>[0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) ([0-9A-F]{2}|- |  ) (?<line>.*)", RegexOptions.Compiled);
@@ -85,13 +87,13 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                     DocumentLocation key = new DocumentLocation(currentFile.ToLower(), lineNumber);
                     CalcLocation value = new CalcLocation(address, page, address >= 0x8000);
 
-                    if (!_calcToFile.ContainsKey(value))
+                    if (!calcToFile.ContainsKey(value))
                     {
-                        _calcToFile.Add(value, key);
+                        calcToFile.Add(value, key);
                     }
-                    if (!_fileToCalc.ContainsKey(key))
+                    if (!fileToCalc.ContainsKey(key))
                     {
-                        _fileToCalc.Add(key, value);
+                        fileToCalc.Add(key, value);
                     }
                 }
 			}
@@ -101,6 +103,9 @@ namespace Revsoft.Wabbitcode.Services.Symbols
                 writer.Flush();
                 writer.Close();
             }
+
+		    _fileToCalc = fileToCalc;
+		    _calcToFile = calcToFile;
 		}
 
 		/// <summary>

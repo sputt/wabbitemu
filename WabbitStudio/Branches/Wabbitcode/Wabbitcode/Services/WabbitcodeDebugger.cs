@@ -31,6 +31,7 @@ namespace Revsoft.Wabbitcode.Services
 		private readonly ISymbolService _symbolService;
         private readonly IFileReaderService _fileReaderService;
 		private readonly IDocumentService _documentService;
+	    private readonly IDockingService _dockingService;
 
 		#region Public Properties
 
@@ -95,11 +96,12 @@ namespace Revsoft.Wabbitcode.Services
 
 		#endregion
 
-		public WabbitcodeDebugger(IDocumentService documentService, IFileReaderService fileReaderService,
-            ISymbolService symbolService)
+		public WabbitcodeDebugger(IDockingService dockingService, IDocumentService documentService,
+            IFileReaderService fileReaderService, ISymbolService symbolService)
 		{
 			_disposed = false;
 
+		    _dockingService = dockingService;
 			_documentService = documentService;
 		    _fileReaderService = fileReaderService;
 			_symbolService = symbolService;
@@ -142,7 +144,8 @@ namespace Revsoft.Wabbitcode.Services
 			ushort address = breakEvent.Address.Address;
 			int page = breakEvent.Address.Page.Index;
 			int relativePage = _isAnApp ? _appPage - page : page;
-			WabbitcodeBreakpoint breakpoint = FindBreakpoint(address, (byte)relativePage, address >= 0x8000);
+			WabbitcodeBreakpoint breakpoint = WabbitcodeBreakpointManager.Breakpoints.FirstOrDefault(
+                b => b.Address == address && b.Page == (byte)relativePage && b.IsRam == address >= 0x8000);
 			if (breakpoint == null)
 			{
 				return;
@@ -210,21 +213,6 @@ namespace Revsoft.Wabbitcode.Services
 			}
 			_debugger.CancelDebug();
 			_debugger = null;
-		}
-
-		private static WabbitcodeBreakpoint FindBreakpoint(ushort address, byte page, bool isRam)
-		{
-			return FindBreakpoint(new WabbitcodeBreakpoint(address, page, isRam));
-		}
-
-		private static WabbitcodeBreakpoint FindBreakpoint(WabbitcodeBreakpoint breakpoint)
-		{
-			return WabbitcodeBreakpointManager.Breakpoints.FirstOrDefault(pointToCheck => breakpoint == pointToCheck);
-		}
-
-		public static WabbitcodeBreakpoint FindBreakpoint(string file, int lineNumber)
-		{
-			return FindBreakpoint(new WabbitcodeBreakpoint(file, lineNumber));
 		}
 
 		public Image GetScreenImage()
@@ -441,11 +429,11 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-		public void SetBreakpoint(WabbitcodeBreakpoint newBreakpoint)
+		public bool SetBreakpoint(WabbitcodeBreakpoint newBreakpoint)
 		{
 			if (_debugger == null)
 			{
-				return;
+				return false;
 			}
 
 			CalcLocation location = _symbolService.ListTable.GetCalcLocation(newBreakpoint.File, newBreakpoint.LineNumber);
@@ -456,9 +444,9 @@ namespace Revsoft.Wabbitcode.Services
 				int lineNumber = newBreakpoint.LineNumber;
 				CalcLocation value = _symbolService.ListTable.GetNextNearestCalcLocation(fileName, lineNumber + 1);
 				DocumentLocation newLocation = _symbolService.ListTable.GetFileLocation(value.Page, value.Address, value.IsRam);
-				WabbitcodeBreakpointManager.RemoveBreakpoint(fileName, lineNumber);
-				WabbitcodeBreakpointManager.AddBreakpoint(newLocation.FileName, newLocation.LineNumber - 1);
-				return;
+			    WabbitcodeBreakpointManager.RemoveBreakpoint(fileName, lineNumber);
+			    WabbitcodeBreakpointManager.AddBreakpoint(newLocation.FileName, newLocation.LineNumber - 1);
+				return true;
 			}
 
 			newBreakpoint.Page = location.Page;
@@ -466,6 +454,7 @@ namespace Revsoft.Wabbitcode.Services
 			newBreakpoint.IsRam = location.IsRam;
 			newBreakpoint.WabbitemuBreakpoint = _debugger.SetBreakpoint(newBreakpoint.IsRam,
 				(byte) (_appPage - newBreakpoint.Page), newBreakpoint.Address);
+		    return false;
 		}
 
 		internal void ClearBreakpoint(WabbitcodeBreakpoint newBreakpoint)

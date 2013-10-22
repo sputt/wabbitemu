@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using Revsoft.TextEditor.Document;
 using System.Collections.Generic;
 using Revsoft.Wabbitcode.Services.Debugger;
 
@@ -38,10 +37,19 @@ namespace Revsoft.Wabbitcode.Utils
 			}
 			_breakpoints.Add(newBreak);
 
-			if (OnBreakpointAdded != null)
-			{
-				OnBreakpointAdded(null, new WabbitcodeBreakpointEventArgs(newBreak));
-			}
+		    if (OnBreakpointAdded == null)
+		    {
+		        return;
+		    }
+
+            var eventArgs = new WabbitcodeBreakpointEventArgs(newBreak);
+            foreach (BreakpointAdded handler in OnBreakpointAdded.GetInvocationList())
+            {
+                if (!eventArgs.Cancel)
+                {
+                    handler(null, eventArgs);
+                }
+            }
 		}
 
 		public static void RemoveBreakpoint(string fileName, int lineNumber)
@@ -53,10 +61,19 @@ namespace Revsoft.Wabbitcode.Utils
 			}
 			_breakpoints.Remove(newBreak);
 
-			if (OnBreakpointRemoved != null)
-			{
-				OnBreakpointRemoved(null, new WabbitcodeBreakpointEventArgs(newBreak));
-			}
+		    if (OnBreakpointRemoved == null)
+		    {
+		        return;
+		    }
+
+		    var eventArgs = new WabbitcodeBreakpointEventArgs(newBreak);
+            foreach (BreakpointRemoved handler in OnBreakpointRemoved.GetInvocationList())
+		    {
+		        if (!eventArgs.Cancel)
+		        {
+		            handler(null, eventArgs);
+		        }
+		    }
 		}
 
 		public static void RemoveAllBreakpointsInFile(string fileName)
