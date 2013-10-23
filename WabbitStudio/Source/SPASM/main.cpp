@@ -22,7 +22,7 @@ extern output_t *output_list, *output_list_tail;
 
 #ifdef _WINDOWS
 #ifndef _TEST
-#include "SPASM_i.h"
+#include "SPASM_h.h"
 
 class CSPASMModule : public ATL::CAtlExeModuleT<CSPASMModule>
 {

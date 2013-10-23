@@ -472,9 +472,9 @@
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <TargetEnvironment>Win32</TargetEnvironment>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <HeaderFileName>SPASMNew_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName>SPASMNew_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>SPASMNew_p.c</ProxyFileName>
+      <HeaderFileName>SPASM_h.h</HeaderFileName>
+      <InterfaceIdentifierFileName>SPASM_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>SPASM_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)SPASM.tlb</TypeLibraryName>
       <DllDataFileName>
@@ -565,9 +565,9 @@
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <HeaderFileName>SPASMNew_i.h</HeaderFileName>
-      <InterfaceIdentifierFileName>SPASMNew_i.c</InterfaceIdentifierFileName>
-      <ProxyFileName>SPASMNew_p.c</ProxyFileName>
+      <HeaderFileName>SPASM_h.h</HeaderFileName>
+      <InterfaceIdentifierFileName>SPASM_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>SPASM_p.c</ProxyFileName>
       <GenerateStublessProxies>true</GenerateStublessProxies>
       <TypeLibraryName>$(IntDir)SPASM.tlb</TypeLibraryName>
       <DllDataFileName>
@@ -706,16 +706,6 @@
     </ClCompile>
     <ClCompile Include="storage.cpp" />
     <ClCompile Include="utils.cpp" />
-    <ClCompile Include="Z80Assembler.cpp">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Default</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='DLL Debug|Win32'">Default</CompileAs>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static Library Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Static Library Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bitmap.h" />
@@ -742,14 +732,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="storage.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="trie.h" />
     <ClInclude Include="utils.h" />
-    <ClInclude Include="Z80Assembler.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="SPASM.rc">

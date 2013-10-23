@@ -100,6 +100,18 @@ public:
 		return S_OK;
 	}
 
+	STDMETHOD(get_CaseSensitive)(VARIANT_BOOL *lpCaseSensitive)
+	{
+		*lpCaseSensitive = get_case_sensitive() ? VARIANT_TRUE : VARIANT_FALSE;
+		return S_OK;
+	}
+
+	STDMETHOD(put_CaseSensitive)(VARIANT_BOOL caseSensitive)
+	{
+		set_case_sensitive(caseSensitive == VARIANT_TRUE ? TRUE : FALSE);
+		return S_OK;
+	}
+
 	STDMETHOD(get_IncludeDirectories)(IIncludeDirectoryCollection **ppDirectories)
 	{
 		return m_pDirectories->QueryInterface(ppDirectories);

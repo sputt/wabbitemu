@@ -58,7 +58,8 @@ list_t *add_arg_set ();
 void add_arg (char *name, char *value, list_t *arg_set);
 void remove_arg_set (list_t *arg_set);
 
-bool set_case_sensitive(bool sensitive);
+void set_case_sensitive(bool sensitive);
+bool get_case_sensitive();
 void dump_defines();
 
 #endif

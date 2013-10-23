@@ -236,8 +236,12 @@ EXPORT void free_storage() {
 	last_opcode->next = NULL;
 }
 
-bool set_case_sensitive(bool sensitive) {
-	return case_sensitive = sensitive;
+void set_case_sensitive(bool sensitive) {
+	case_sensitive = sensitive;
+}
+
+bool get_case_sensitive() {
+	return case_sensitive;
 }
 
 
