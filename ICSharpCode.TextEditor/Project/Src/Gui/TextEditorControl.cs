@@ -202,15 +202,16 @@ namespace Revsoft.TextEditor
         public void Cut()
         {
             if (Document.ReadOnly)
+            {
+                Copy();
                 return;
+            }
             Actions.Cut cut = new Actions.Cut();
             cut.Execute(ActiveTextAreaControl.TextArea);
         }
 
         public void Copy()
         {
-            if (Document.ReadOnly)
-                return;
             Actions.Copy copy = new Actions.Copy();
             copy.Execute(ActiveTextAreaControl.TextArea);
         }

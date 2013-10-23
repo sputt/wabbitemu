@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Services;
@@ -164,5 +165,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		}
 
 		#endregion
+
+        private void callStackView_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
+        {
+            callStackView.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Enabled ? Color.Black : Color.Gray;
+        }
 	}
 }

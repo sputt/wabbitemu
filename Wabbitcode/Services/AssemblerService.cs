@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Revsoft.Wabbitcode.Properties;
+﻿using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
@@ -48,7 +47,7 @@ namespace Revsoft.Wabbitcode.Services
 		private AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir, 
             IEnumerable<string> includeDirs, AssemblyFlags flags = AssemblyFlags.Normal, bool suppressEvents = false)
 		{
-			_assembler = new SpasmComAssembler();
+			_assembler = new SpasmExeAssembler();
 
 			_assembler.SetWorkingDirectory(originalDir);
 
@@ -129,7 +128,7 @@ namespace Revsoft.Wabbitcode.Services
 			int size = 0;
 			int min = 0;
 			int max = 0;
-			_assembler = new SpasmComAssembler();
+			_assembler = new SpasmExeAssembler();
 			string[] outputLines = null;
 			if (!string.IsNullOrEmpty(lines))
 			{

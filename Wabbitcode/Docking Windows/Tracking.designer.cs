@@ -101,7 +101,7 @@
             this.variablesDataView.CellContentDoubleClick += new System.Windows.Forms.DataGridViewCellEventHandler(this.variablesDataView_CellContentDoubleClick);
             this.variablesDataView.CellEndEdit += new System.Windows.Forms.DataGridViewCellEventHandler(this.variablesDataView_CellEndEdit);
             this.variablesDataView.CellEnter += new System.Windows.Forms.DataGridViewCellEventHandler(this.variablesDataView_CellEnter);
-            this.variablesDataView.DataError += new System.Windows.Forms.DataGridViewDataErrorEventHandler(this.variablesDataView_DataError);
+            this.variablesDataView.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.variablesDataView_RowPostPaint);
             // 
             // VariableNameCol
             // 
