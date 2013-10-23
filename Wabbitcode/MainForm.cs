@@ -73,8 +73,8 @@ namespace Revsoft.Wabbitcode
 		
 			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
 			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
-
             Editor.OnEditorOpened += Editor_OnEditorOpened;
+            Editor.OnEditorClosing += Editor_OnEditorClosing;
 
 			_dockingService.InitPanels(new ProjectViewer(_dockingService, _documentService, _projectService),
 				new ErrorList(_assemblerService, _dockingService, _documentService, _projectService),
@@ -136,7 +136,7 @@ namespace Revsoft.Wabbitcode
 		private void InitializeService()
 		{
 			_dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>(dockPanel);
-			_assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>(new SpasmExeAssembler());
+			_assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
 			_projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
 			_parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
 			_symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
@@ -671,7 +671,29 @@ namespace Revsoft.Wabbitcode
             {
                 e.Document.ReadOnly = true;
             }
+
+            string foldings;
+            if (_foldingDictionary.TryGetValue(e.FileName.ToLower(), out foldings))
+            {
+                e.Document.FoldingManager.DeserializeFromString(foldings);
+            }
         }
+
+        private readonly Dictionary<string, string> _foldingDictionary = new Dictionary<string, string>(); 
+        void Editor_OnEditorClosing(object sender, EditorEventArgs e)
+        {
+            string fileName = e.FileName.ToLower();
+            string foldings = e.Document.FoldingManager.SerializeToString();
+            if (_foldingDictionary.ContainsKey(fileName))
+            {
+                _foldingDictionary[fileName] = foldings;
+            }
+            else
+            {
+                _foldingDictionary.Add(fileName, foldings);
+            }
+        }
+
 
 		void debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
 		{

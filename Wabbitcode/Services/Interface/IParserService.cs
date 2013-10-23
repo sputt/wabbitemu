@@ -18,6 +18,7 @@ namespace Revsoft.Wabbitcode.Services.Interface
 		IEnumerable<IParserData> GetParserData(string referenceString, bool caseSensitive);
 
 		void ParseFile(int hashCode, string filename);
+	    ParserInformation ParseFile(int hashCode, string file, string lines);
 		ParserInformation GetParserInfo(string fileName);
 	}
 }

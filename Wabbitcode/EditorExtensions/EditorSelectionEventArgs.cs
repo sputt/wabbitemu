@@ -6,8 +6,8 @@ namespace Revsoft.Wabbitcode.EditorExtensions
 	{
 		public string SelectedLines { get; private set; }
 
-		public EditorSelectionEventArgs(IDocument document, string selectedLines)
-			: base(document)
+		public EditorSelectionEventArgs(IDocument document, string fileName, string selectedLines)
+			: base(document, fileName)
 		{
 			SelectedLines = selectedLines;
 		}

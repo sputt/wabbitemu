@@ -1,86 +1,81 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace Revsoft.Wabbitcode.Services.Assembler
+﻿namespace Revsoft.Wabbitcode.Services.Assembler
 {
     class SpasmComAssembler : IAssembler
     {
-        private static SPASM.Z80Assembler spasm = null;
+        private static SPASM.Z80Assembler _spasm;
+        private static readonly object SPASMLock = new object();
 
         public SpasmComAssembler()
         {
-            lock (this)
+            lock (SPASMLock)
             {
-                if (spasm == null)
+                if (_spasm == null)
                 {
-                    spasm = new SPASM.Z80Assembler();
+                    _spasm = new SPASM.Z80Assembler();
                 }
             }
         }
 
         public void AddDefine(string name, string value)
         {
-            spasm.Defines.Add(name, value);
+            _spasm.Defines.Add(name, value);
         }
 
         public void AddIncludeDir(string path)
         {
-            spasm.IncludeDirectories.Add(path);
+            _spasm.IncludeDirectories.Add(path);
         }
 
         public string Assemble()
         {
-            spasm.Assemble();
-            return spasm.StdOut.ReadAll();
+            _spasm.Assemble();
+            return _spasm.StdOut.ReadAll();
         }
 
         public string Assemble(string code)
         {
-            spasm.Assemble(code);
-            return "DONE";
-           // return spasm.StdOut.ReadAll();
+            _spasm.Assemble(code);
+           return _spasm.StdOut.ReadAll();
         }
 
         public void ClearDefines()
         {
-            spasm.Defines.RemoveAll();
+            _spasm.Defines.RemoveAll();
         }
 
         public void ClearIncludeDirs()
         {
-            spasm.IncludeDirectories.Clear();
+            _spasm.IncludeDirectories.Clear();
         }
 
         public void SetCaseSensitive(bool caseSensitive)
         {
-           // throw new NotImplementedException();
+            _spasm.CaseSensitive = caseSensitive;
         }
 
         public void SetFlags(AssemblyFlags flags)
         {
-            spasm.Options = (uint) flags;
+            _spasm.Options = (uint) flags;
         }
 
         public void SetInputFile(string file)
         {
-            spasm.InputFile = file;
+            _spasm.InputFile = file;
         }
 
         public void SetOutputFile(string file)
         {
-            spasm.OutputFile = file;
+            _spasm.OutputFile = file;
         }
 
         public void SetWorkingDirectory(string file)
         {
-            spasm.CurrentDirectory = file;
+            _spasm.CurrentDirectory = file;
         }
 
         public void Dispose()
         {
-            spasm = null;
+            _spasm = null;
         }
     }
 }
