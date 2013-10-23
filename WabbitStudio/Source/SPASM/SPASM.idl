@@ -115,10 +115,10 @@ library SPASM
 		HRESULT Options([in] DWORD Options);
 
 		[propget, helpstring("Case sensitivity")]
-		HRESULT CaseSensitive([out, retval] VARIANT_BOOL *Options);
+		HRESULT CaseSensitive([out, retval] VARIANT_BOOL *IsCaseSensitive);
 
 		[propput, helpstring("Case sensitivity")]
-		HRESULT CaseSensitive([in] VARIANT_BOOL Options);
+		HRESULT CaseSensitive([in] VARIANT_BOOL IsCaseSensitive);
 
 		[propget, helpstring("Current directory")]
 		HRESULT CurrentDirectory([out, retval] BSTR *CurrentDirectory);

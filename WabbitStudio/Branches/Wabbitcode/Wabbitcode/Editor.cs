@@ -129,7 +129,7 @@ namespace Revsoft.Wabbitcode
 		public static event EditorOpened OnEditorOpened;
 
 		public delegate void EditorClosed(object sender, EditorEventArgs e);
-		public static event EditorClosed OnEditorClosed;
+		public static event EditorClosed OnEditorClosing;
 
 		public delegate void EditorSelectionChanged(object sender, EditorSelectionEventArgs e);
 		public static event EditorSelectionChanged OnEditorSelectionChanged;
@@ -257,7 +257,7 @@ namespace Revsoft.Wabbitcode
 
 			if (OnEditorSelectionChanged != null)
 			{
-				OnEditorSelectionChanged(this, new EditorSelectionEventArgs(editorBox.Document, codeInfoLines));
+				OnEditorSelectionChanged(this, new EditorSelectionEventArgs(editorBox.Document, FileName, codeInfoLines));
 			}
 		}
 
@@ -279,7 +279,7 @@ namespace Revsoft.Wabbitcode
 				string text = editorBox.Document.TextContent;
 				Task.Factory.StartNew(() => GetHighlightReferences(word, text), _highlightRefsCancellationTokenSource.Token);
 			}
-			//update code info
+			// update code info
 			SelectionManager_SelectionChanged(sender, e);
 		}
 
@@ -341,7 +341,7 @@ namespace Revsoft.Wabbitcode
 
 			if (OnEditorOpened != null)
 			{
-				OnEditorOpened(this, new EditorEventArgs(editorBox.Document));
+				OnEditorOpened(this, new EditorEventArgs(editorBox.Document, filename));
 			}
 		}
 
@@ -442,10 +442,13 @@ namespace Revsoft.Wabbitcode
 				item.Cancel();
 			}
 
-			if (OnEditorClosed != null)
+			if (OnEditorClosing != null)
 			{
-				OnEditorClosed(this, new EditorEventArgs(null));
+				OnEditorClosing(this, new EditorEventArgs(editorBox.Document, FileName));
 			}
+
+            WabbitcodeBreakpointManager.OnBreakpointAdded -= WabbitcodeBreakpointManager_OnBreakpointAdded;
+            WabbitcodeBreakpointManager.OnBreakpointRemoved -= WabbitcodeBreakpointManager_OnBreakpointRemoved;
 
 			if (!DocumentChanged)
 			{
@@ -467,8 +470,6 @@ namespace Revsoft.Wabbitcode
 					SaveFile();
 					break;
 			}
-			WabbitcodeBreakpointManager.OnBreakpointAdded -= WabbitcodeBreakpointManager_OnBreakpointAdded;
-			WabbitcodeBreakpointManager.OnBreakpointRemoved -= WabbitcodeBreakpointManager_OnBreakpointRemoved;
 		}
 
 		public void Undo()
@@ -753,11 +754,10 @@ namespace Revsoft.Wabbitcode
 		{
 			Action parseFile = () =>
 			{
-				ParserService parserService = new ParserService();
-				parserService.ParseFile(editorText.GetHashCode(), FileName, editorText);
+                _parserService.ParseFile(editorText.GetHashCode(), FileName, editorText);
 				if (OnEditorUpdated != null)
 				{
-					OnEditorUpdated(this, new EditorEventArgs(EditorBox.Document));
+					OnEditorUpdated(this, new EditorEventArgs(EditorBox.Document, FileName));
 				}
 			};
 			CancellationTokenSource cancellationSource = new CancellationTokenSource();
