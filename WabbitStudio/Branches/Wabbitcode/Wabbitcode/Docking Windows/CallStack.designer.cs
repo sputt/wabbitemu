@@ -84,6 +84,7 @@
             this.callStackView.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.callStackView.Size = new System.Drawing.Size(503, 172);
             this.callStackView.TabIndex = 0;
+            this.callStackView.RowPostPaint += new System.Windows.Forms.DataGridViewRowPostPaintEventHandler(this.callStackView_RowPostPaint);
             this.callStackView.DoubleClick += new System.EventHandler(this.callStackView_DoubleClick);
             // 
             // callTypeColumn

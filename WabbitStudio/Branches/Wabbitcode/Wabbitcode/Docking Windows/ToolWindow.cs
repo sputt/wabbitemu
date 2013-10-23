@@ -38,6 +38,11 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			// no-op
 		}
 
+	    public void EnablePanel(bool enabled)
+	    {
+	        Enabled = enabled;
+	    }
+
 		private void autoHideItem_Click(object sender, EventArgs e)
 		{
 			switch (DockState)

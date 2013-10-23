@@ -451,6 +451,7 @@ namespace Revsoft.Wabbitcode
 				UpdateDebugStuff();
 				UpdateTrackPanel();
 				UpdateDebugPanel();
+                EnableDebugPanels(true);
 			});
 		}
 
@@ -586,6 +587,7 @@ namespace Revsoft.Wabbitcode
 			        UpdateDebugStuff();
 			        UpdateBreakpoints();
 			        ShowDebugPanels();
+                    EnableDebugPanels(false);
 			    });
 
 			    if (app != null)
@@ -702,6 +704,7 @@ namespace Revsoft.Wabbitcode
 				UpdateDebugStuff();
 				_documentService.RemoveDebugHighlight();
 				_dockingService.ActiveDocument.Refresh();
+			    EnableDebugPanels(false);
 			}
 			else
 			{
@@ -709,13 +712,22 @@ namespace Revsoft.Wabbitcode
 				UpdateDebugStuff();
 				UpdateTrackPanel();
 				UpdateDebugPanel();
+                EnableDebugPanels(true);
 
 				_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
 				_documentService.HighlightDebugLine(e.Location.LineNumber);
 			}
 		}
 
-		private void ShowDebugPanels()
+	    private void EnableDebugPanels(bool enabled)
+	    {
+	        _dockingService.DebugPanel.EnablePanel(enabled);
+            _dockingService.StackViewer.EnablePanel(enabled);
+            _dockingService.TrackWindow.EnablePanel(enabled);
+            _dockingService.CallStack.EnablePanel(enabled);
+	    }
+
+	    private void ShowDebugPanels()
 		{
 			_showToolbar = Settings.Default.debugToolbar;
 			Settings.Default.debugToolbar = true;

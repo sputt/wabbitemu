@@ -986,9 +986,20 @@ namespace Revsoft.Wabbitcode
 
 		private void openFolderMenuItem_Click(object sender, EventArgs e)
 		{
+            if (string.IsNullOrEmpty(FileName))
+		    {
+		        return;
+		    }
+
+		    string dir = Path.GetDirectoryName(FileName);
+		    if (string.IsNullOrEmpty(dir))
+		    {
+		        return;
+		    }
+
 			Process explorer = new Process
 			{
-				StartInfo = { FileName = Path.GetDirectoryName(FileName) }
+				StartInfo = { FileName = dir }
 			};
 			explorer.Start();
 		}

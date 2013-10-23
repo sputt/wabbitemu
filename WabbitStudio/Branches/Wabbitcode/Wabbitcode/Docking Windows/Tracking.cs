@@ -14,9 +14,36 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 {
 	public partial class TrackingWindow : ToolWindow
 	{
+	    private const int AddressIndex = 1;
+	    private const int NumBytesIndex = 2;
+	    private const int VarTypeIndex = 3;
+	    private const int VarDisplayMethodIndex = 4;
+	    private const int VarValueIndex = 5;
+
+        private enum VariableDisplayMethod
+        {
+            BlackWhiteImage,
+            GrayscaleImage,
+            Binary,
+            Octal,
+            Decimal,
+            Hexadecimal,
+            String,
+        }
+
+        private enum VariableType
+        {
+            Byte,
+            Word,
+            Image,
+            String,
+        }
+
 		private readonly List<BitmapViewer> _openBitmaps = new List<BitmapViewer>();
+        private readonly Dictionary<int, Image> _imageList = new Dictionary<int, Image>();
 		private WabbitcodeDebugger _debugger;
 		private readonly ISymbolService _symbolService;
+	    private VariableType _lastVariableType;
 
 		public TrackingWindow(IDockingService dockingService, ISymbolService symbolService)
 			: base(dockingService)
@@ -190,6 +217,17 @@ namespace Revsoft.Wabbitcode.Docking_Windows
                     return _debugger.CPU.PC;
                 case "$SP":
                     return _debugger.CPU.SP;
+                default:
+                    if (element.StartsWith("$") || element.EndsWith("h"))
+                    {
+                        element = element.Replace('$', ' ').Replace('h', ' ').Trim();
+                        if (!int.TryParse(element, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out value))
+                        {
+                            break;
+                        }
+                        return value;
+                    }
+	                break;
 	        }
 	        throw new FormatException(string.Format("Can't recognize symbol {0}", element));
 	    }
@@ -246,60 +284,67 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private static string GetRowAddress(DataGridViewRow row)
         {
-            return row.Cells[1].Value != null ? row.Cells[1].Value.ToString() : null;
+            return row.Cells[AddressIndex].Value != null ? row.Cells[AddressIndex].Value.ToString() : null;
         }
 
         private static string GetRowNumBytes(DataGridViewRow row)
         {
-            if (row.Cells[2].Value == null)
+            if (row.Cells[NumBytesIndex].Value == null)
             {
-                row.Cells[2].Value = "1";
+                row.Cells[NumBytesIndex].Value = "1";
             }
 
-            return row.Cells[2].Value.ToString();
+            return row.Cells[NumBytesIndex].Value.ToString();
         }
 
         private static VariableType GetRowVarType(DataGridViewRow row)
         {
-            DataGridViewComboBoxCell cell = (DataGridViewComboBoxCell)row.Cells[3];
+            DataGridViewComboBoxCell cell = (DataGridViewComboBoxCell)row.Cells[VarTypeIndex];
             if (cell.Value == null)
             {
                 cell.Items.Clear();
-                cell.Items.Add(VariableType.Byte);
-                cell.Items.Add(VariableType.Word);
-                cell.Items.Add(VariableType.Image);
-                cell.Items.Add(VariableType.String);
-                cell.Value = VariableType.Byte;
+                cell.Items.Add(VariableType.Byte.ToString());
+                cell.Items.Add(VariableType.Word.ToString());
+                cell.Items.Add(VariableType.Image.ToString());
+                cell.Items.Add(VariableType.String.ToString());
+                cell.Value = VariableType.Byte.ToString();
             }
 
             return (VariableType) Enum.Parse(typeof(VariableType), cell.Value.ToString());
         }
 
-        private static VariableDisplayMethod GetRowVarDisplayMethod(DataGridViewRow row)
+        private VariableDisplayMethod GetRowVarDisplayMethod(DataGridViewRow row)
         {
-            DataGridViewComboBoxCell cell = (DataGridViewComboBoxCell)row.Cells[4];
-            cell.Items.Clear();
-            switch (GetRowVarType(row))
+            DataGridViewComboBoxCell cell = (DataGridViewComboBoxCell)row.Cells[VarDisplayMethodIndex];
+            VariableType type = GetRowVarType(row);
+            if (cell.Value == null || type != _lastVariableType && 
+                !((type == VariableType.Byte && _lastVariableType == VariableType.Word) ||
+                (type == VariableType.Word && _lastVariableType == VariableType.Byte)))
             {
-                case VariableType.Byte:
-                case VariableType.Word:
-                    cell.Items.Add(VariableDisplayMethod.Hexadecimal);
-                    cell.Items.Add(VariableDisplayMethod.Decimal);
-                    cell.Items.Add(VariableDisplayMethod.Binary);
-                    cell.Items.Add(VariableDisplayMethod.Octal);
-                    cell.Value = VariableDisplayMethod.Hexadecimal;
-                    break;
-                case VariableType.Image:
-                    cell.Items.Add(VariableDisplayMethod.BlackWhiteImage);
-                    cell.Items.Add(VariableDisplayMethod.GrayscaleImage);
-                    cell.Value = VariableDisplayMethod.BlackWhiteImage;
-                    break;
-                case VariableType.String:
-                    cell.Items.Add(VariableDisplayMethod.String);
-                    cell.Value = VariableDisplayMethod.String;
-                    break;
-                default:
-                    throw new Exception("Invalid var type");
+                cell.Items.Clear();
+                switch (type)
+                {
+                    case VariableType.Byte:
+                    case VariableType.Word:
+                        cell.Items.Add(VariableDisplayMethod.Hexadecimal.ToString());
+                        cell.Items.Add(VariableDisplayMethod.Decimal.ToString());
+                        cell.Items.Add(VariableDisplayMethod.Binary.ToString());
+                        cell.Items.Add(VariableDisplayMethod.Octal.ToString());
+                        cell.Value = VariableDisplayMethod.Hexadecimal.ToString();
+                        break;
+                    case VariableType.Image:
+                        cell.Items.Add(VariableDisplayMethod.BlackWhiteImage.ToString());
+                        cell.Items.Add(VariableDisplayMethod.GrayscaleImage.ToString());
+                        cell.Value = VariableDisplayMethod.BlackWhiteImage.ToString();
+                        break;
+                    case VariableType.String:
+                        cell.Items.Add(VariableDisplayMethod.String.ToString());
+                        cell.Value = VariableDisplayMethod.String.ToString();
+                        break;
+                    default:
+                        throw new Exception("Invalid var type");
+                }
+                _lastVariableType = type;
             }
 
             return (VariableDisplayMethod)Enum.Parse(typeof(VariableDisplayMethod), cell.Value.ToString());
@@ -307,7 +352,12 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void SetRowValue(DataGridViewRow row, object cellData)
         {
-            row.Cells[5].Value = cellData;
+            if (cellData is Image)
+            {
+                _imageList[row.Index] = (Image) cellData;
+                cellData = "Double click for image";
+            }
+            row.Cells[VarValueIndex].Value = cellData;
         }
 
         #endregion
@@ -329,7 +379,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 	    private void UpdateRowValue(DataGridViewRow row)
 	    {
 	        int address;
-	        int numBytes;
 	        try
 	        {
 	            address = GetAddressValue(GetRowAddress(row));
@@ -340,241 +389,257 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 	            return;
 	        }
 
-	        if (!int.TryParse(GetRowNumBytes(row), out numBytes))
-	        {
-	            SetRowValue(row, "Error: missing number of bytes");
-	            return;
-	        }
+	        string numBytesString = GetRowNumBytes(row);
+            VariableType valueTypeEntry = GetRowVarType(row);
+            VariableDisplayMethod valueMethod = GetRowVarDisplayMethod(row);
 
-            object value = GetValue(row, address, numBytes);
+            object value = GetValue(address, numBytesString, valueTypeEntry, valueMethod);
             SetRowValue(row, value);
 	    }
 
-	    private object GetValue(DataGridViewRow dataRow, int address, int numBytes)
+	    private object GetValue(int address, string numBytesString,
+            VariableType valueTypeEntry, VariableDisplayMethod varMethod)
 	    {
 	        string outputValue;
-	        string value = string.Empty;
-	        VariableType valueTypeEntry = GetRowVarType(dataRow);
-            VariableDisplayMethod method = GetRowVarDisplayMethod(dataRow);
+	        int numBytes;
+	        bool numBytesError = int.TryParse(numBytesString, out numBytes);
 			switch (valueTypeEntry)
 			{
 				case VariableType.Image:
-			        bool isGrayscale = GetRowVarDisplayMethod(dataRow) == VariableDisplayMethod.GrayscaleImage;
-			        string size = GetRowNumBytes(dataRow);
-					if (!size.Contains("x"))
-					{
-						return "Error: Size incorrect input use Width x Height";
-					}
+			        return GetVarImage(address, numBytesString, varMethod);
+			    case VariableType.String:
+			        outputValue = GetVarString(address, numBytes);
+			        break;
+			    case VariableType.Word:
+			        if (!numBytesError)
+			        {
+			            return "Error: missing number of bytes";
+			        }
+			        outputValue = GetVarWord(address, varMethod, numBytes);
 
-					int xIndex = size.IndexOf('x');
-					int width = Convert.ToInt16(size.Substring(0, xIndex));
-					int height = Convert.ToInt16(size.Substring(xIndex + 1));
-					Bitmap screen = new Bitmap(width, height);
-					int row = 0, col = 0, grayscale = (width / 8) * height;
-					if (width % 8 != 0)
-					{
-						return "Width is not a multiple of 8!";
-					}
-
-					for (int i = 0; i < width / 8 * height; i++)
-					{
-						int anotherbyte = 0;
-						int abyte = _debugger.ReadByte((ushort)(address + i));
-						if (isGrayscale)
-						{
-							anotherbyte = _debugger.ReadByte((ushort)(address + grayscale + i));
-						}
-						for (int bit = 128; bit > 0; bit /= 2)
-						{
-							if (isGrayscale)
-							{
-								if ((abyte & bit) != 0 && (anotherbyte & bit) != 0)
-								{
-									screen.SetPixel(col, row, Color.Black);
-								}
-								else if ((abyte & bit) != 0 && (anotherbyte & bit) == 0)
-								{
-									screen.SetPixel(col, row, Color.DarkGray);
-								}
-								else if ((abyte & bit) == 0 && (anotherbyte & bit) != 0)
-								{
-									screen.SetPixel(col, row, Color.LightGray);
-								}
-							}
-							else if ((abyte & bit) != 0)
-							{
-								screen.SetPixel(col, row, Color.Black);
-							}
-							col++;
-						}
-
-						if (col < width)
-						{
-							continue;
-						}
-						col = 0;
-						row++;
-					}
-
-                    return screen.ResizeImage(width * 2, height * 2);
-				case VariableType.String:
-					outputValue = string.Empty;
-					if (numBytes == -1)
-					{
-						int i = 0;
-						char charToAdd;
-						do
-						{
-							charToAdd = (char)_debugger.ReadByte((ushort)(address + i));
-							outputValue += charToAdd.ToString();
-							i++;
-						}
-						while (charToAdd != '\0');
-					}
-					else
-					{
-						for (int i = 0; i < numBytes; i++)
-						{
-							outputValue += ((char)_debugger.ReadByte((ushort)(address + i))).ToString();
-						}
-					}
-
-					break;
-				case VariableType.Word:
-					int convertMethod;
-					outputValue = string.Empty;
-					switch (method)
-					{
-						case VariableDisplayMethod.Decimal:
-							convertMethod = 10;
-							break;
-						case VariableDisplayMethod.Binary:
-							convertMethod = 2;
-							break;
-						case VariableDisplayMethod.Octal:
-							convertMethod = 8;
-							break;
-                        case VariableDisplayMethod.Hexadecimal:
-					        convertMethod = 16;
-					        break;
-                        default:
-                            throw new Exception("Invalid display method");
-					}
-
-					for (int i = 0; i < numBytes * 2; i += 2)
-					{
-						byte baseValue = _debugger.ReadByte((ushort)(address + i + 1));
-						byte baseValue2 = _debugger.ReadByte((ushort)(address + i));
-					    string value2;
-						switch (method)
-						{
-							case VariableDisplayMethod.Decimal:
-								value += Convert.ToString(baseValue, convertMethod) + Convert.ToString(baseValue2, convertMethod) + " ";
-								break;
-                            case VariableDisplayMethod.Binary:
-								value = Convert.ToString(baseValue, convertMethod);
-								while (value.Length < 8)
-								{
-									value = "0" + value;
-								}
-								value2 = Convert.ToString(baseValue2, convertMethod);
-								while (value2.Length < 8)
-								{
-									value2 = "0" + value2;
-								}
-								outputValue += value + value2 + " ";
-								break;
-                            case VariableDisplayMethod.Octal:
-								value = Convert.ToString(baseValue, convertMethod);
-								while (value.Length < 4)
-								{
-									value = "0" + value;
-								}
-								value2 = Convert.ToString(baseValue2, convertMethod);
-								while (value2.Length < 4)
-								{
-									value2 = "0" + value2;
-								}
-								outputValue += value + value2 + " ";
-								break;
-							default:
-								value = Convert.ToString(baseValue, convertMethod);
-								while (value.Length < 2)
-								{
-									value = "0" + value;
-								}
-								value2 = Convert.ToString(baseValue2, convertMethod);
-								while (value2.Length < 2)
-								{
-									value2 = "0" + value2;
-								}
-						        outputValue += value + value2 + " ";
-								break;
-						}
-					}
-
-					break;
+			        break;
 				default:
-					outputValue = string.Empty;
-					switch (method)
-					{
-						case VariableDisplayMethod.Decimal:
-							convertMethod = 10;
-							break;
-						case VariableDisplayMethod.Binary:
-							convertMethod = 2;
-							break;
-						case VariableDisplayMethod.Octal:
-							convertMethod = 8;
-							break;
-                        case VariableDisplayMethod.Hexadecimal:
-					        convertMethod = 16;
-					        break;
-                        default:
-                            throw new Exception("Invalid display method");
-					}
-
-					for (int i = 0; i < numBytes; i++)
-					{
-						byte baseValue = _debugger.ReadByte((ushort)(address + i));
-						switch (method)
-						{
-                            case VariableDisplayMethod.Decimal:
-								outputValue += Convert.ToString(baseValue, convertMethod) + " ";
-								break;
-                            case VariableDisplayMethod.Binary:
-								value = Convert.ToString(baseValue, convertMethod);
-								while (value.Length < 8)
-								{
-									value = "0" + value;
-								}
-								outputValue += value + " ";
-								break;
-                            case VariableDisplayMethod.Octal:
-								value = Convert.ToString(baseValue, convertMethod);
-								while (value.Length < 4)
-								{
-									value = "0" + value;
-								}
-								outputValue += value + " ";
-								break;
-							default:
-								value = Convert.ToString(baseValue, convertMethod);
-								while (value.Length < 2)
-								{
-									value = "0" + value;
-								}
-								outputValue += value + " ";
-								break;
-						}
-					}
-					break;
+                    if (!numBytesError)
+                    {
+                        return "Error: missing number of bytes";
+                    }
+					outputValue = GetVarByte(address, varMethod, numBytes);
+			        break;
 			}
 
 			return outputValue;
 		}
 
-		private void temp_FormClosed(object sender, FormClosedEventArgs e)
+	    private string GetVarByte(int address, VariableDisplayMethod varMethod, int numBytes)
+	    {
+	        string outputValue = string.Empty;
+            int convertMethod = GetConvertBase(varMethod);
+
+	        for (int i = 0; i < numBytes; i++)
+	        {
+	            byte baseValue = _debugger.ReadByte((ushort) (address + i));
+	            string value;
+	            switch (varMethod)
+	            {
+	                case VariableDisplayMethod.Decimal:
+	                    outputValue += Convert.ToString(baseValue, convertMethod) + " ";
+	                    break;
+	                case VariableDisplayMethod.Binary:
+	                    value = Convert.ToString(baseValue, convertMethod);
+	                    while (value.Length < 8)
+	                    {
+	                        value = "0" + value;
+	                    }
+	                    outputValue += value + " ";
+	                    break;
+	                case VariableDisplayMethod.Octal:
+	                    value = Convert.ToString(baseValue, convertMethod);
+	                    while (value.Length < 4)
+	                    {
+	                        value = "0" + value;
+	                    }
+	                    outputValue += value + " ";
+	                    break;
+	                default:
+	                    value = Convert.ToString(baseValue, convertMethod);
+	                    while (value.Length < 2)
+	                    {
+	                        value = "0" + value;
+	                    }
+	                    outputValue += value + " ";
+	                    break;
+	            }
+	        }
+	        return outputValue;
+	    }
+
+	    private string GetVarWord(int address, VariableDisplayMethod varMethod, int numBytes)
+	    {
+	        string outputValue = string.Empty;
+	        int convertMethod = GetConvertBase(varMethod);
+
+	        for (int i = 0; i < numBytes * 2; i += 2)
+	        {
+	            byte baseValue = _debugger.ReadByte((ushort) (address + i + 1));
+	            byte baseValue2 = _debugger.ReadByte((ushort) (address + i));
+	            string value2;
+	            string value;
+	            switch (varMethod)
+	            {
+	                case VariableDisplayMethod.Decimal:
+	                    outputValue += Convert.ToString((baseValue << 8) + baseValue2, convertMethod);
+                        outputValue += " ";
+	                    break;
+	                case VariableDisplayMethod.Binary:
+	                    value = Convert.ToString(baseValue, convertMethod);
+	                    while (value.Length < 8)
+	                    {
+	                        value = "0" + value;
+	                    }
+	                    value2 = Convert.ToString(baseValue2, convertMethod);
+	                    while (value2.Length < 8)
+	                    {
+	                        value2 = "0" + value2;
+	                    }
+	                    outputValue += value + value2 + " ";
+	                    break;
+	                case VariableDisplayMethod.Octal:
+	                    value = Convert.ToString(baseValue, convertMethod);
+	                    while (value.Length < 4)
+	                    {
+	                        value = "0" + value;
+	                    }
+	                    value2 = Convert.ToString(baseValue2, convertMethod);
+	                    while (value2.Length < 4)
+	                    {
+	                        value2 = "0" + value2;
+	                    }
+	                    outputValue += value + value2 + " ";
+	                    break;
+	                default:
+	                    value = Convert.ToString(baseValue, convertMethod);
+	                    while (value.Length < 2)
+	                    {
+	                        value = "0" + value;
+	                    }
+	                    value2 = Convert.ToString(baseValue2, convertMethod);
+	                    while (value2.Length < 2)
+	                    {
+	                        value2 = "0" + value2;
+	                    }
+	                    outputValue += value + value2 + " ";
+	                    break;
+	            }
+	        }
+	        return outputValue;
+	    }
+
+	    private static int GetConvertBase(VariableDisplayMethod varMethod)
+	    {
+	        int convertMethod;
+	        switch (varMethod)
+	        {
+	            case VariableDisplayMethod.Decimal:
+	                convertMethod = 10;
+	                break;
+	            case VariableDisplayMethod.Binary:
+	                convertMethod = 2;
+	                break;
+	            case VariableDisplayMethod.Octal:
+	                convertMethod = 8;
+	                break;
+	            case VariableDisplayMethod.Hexadecimal:
+	                convertMethod = 16;
+	                break;
+	            default:
+	                throw new Exception("Invalid display method");
+	        }
+	        return convertMethod;
+	    }
+
+	    private string GetVarString(int address, int numBytes)
+	    {
+	        string outputValue = string.Empty;
+	        if (numBytes == -1)
+	        {
+	            int i = 0;
+	            char charToAdd;
+	            do
+	            {
+	                charToAdd = (char) _debugger.ReadByte((ushort) (address + i));
+	                outputValue += charToAdd.ToString();
+	                i++;
+	            } while (charToAdd != '\0');
+	        }
+	        else
+	        {
+	            for (int i = 0; i < numBytes; i++)
+	            {
+	                outputValue += ((char) _debugger.ReadByte((ushort) (address + i))).ToString();
+	            }
+	        }
+
+	        return outputValue;
+	    }
+
+	    private object GetVarImage(int address, string numBytesString, VariableDisplayMethod varMethod)
+	    {
+	        bool isGrayscale = varMethod == VariableDisplayMethod.GrayscaleImage;
+	        Match match = Regex.Match(numBytesString, @"(?<width>\d+)\s*x\s*(?<height>\d+)");
+	        int width = int.Parse(match.Groups["width"].Value);
+	        int height = int.Parse(match.Groups["height"].Value);
+
+	        Bitmap screen = new Bitmap(width, height);
+	        int row = 0, col = 0, grayscale = (width/8)*height;
+	        if (width%8 != 0)
+	        {
+	            return "Width is not a multiple of 8!";
+	        }
+
+	        for (int i = 0; i < width/8*height; i++)
+	        {
+	            int anotherbyte = 0;
+	            int abyte = _debugger.ReadByte((ushort) (address + i));
+	            if (isGrayscale)
+	            {
+	                anotherbyte = _debugger.ReadByte((ushort) (address + grayscale + i));
+	            }
+	            for (int bit = 128; bit > 0; bit /= 2)
+	            {
+	                if (isGrayscale)
+	                {
+	                    if ((abyte & bit) != 0 && (anotherbyte & bit) != 0)
+	                    {
+	                        screen.SetPixel(col, row, Color.Black);
+	                    }
+	                    else if ((abyte & bit) != 0 && (anotherbyte & bit) == 0)
+	                    {
+	                        screen.SetPixel(col, row, Color.DarkGray);
+	                    }
+	                    else if ((abyte & bit) == 0 && (anotherbyte & bit) != 0)
+	                    {
+	                        screen.SetPixel(col, row, Color.LightGray);
+	                    }
+	                }
+	                else if ((abyte & bit) != 0)
+	                {
+	                    screen.SetPixel(col, row, Color.Black);
+	                }
+	                col++;
+	            }
+
+	            if (col < width)
+	            {
+	                continue;
+	            }
+	            col = 0;
+	            row++;
+	        }
+
+	        return screen.ResizeImage(width*2, height*2);
+	    }
+
+	    private void temp_FormClosed(object sender, FormClosedEventArgs e)
 		{
 		    foreach (BitmapViewer test in _openBitmaps.Where(test => test.Tag == ((Form)sender).Tag))
 		    {
@@ -595,13 +660,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 				return;
 			}
 
-            //BitmapViewer temp = new BitmapViewer((Image)_variables[e.RowIndex].Value)
-            //{
-            //    Tag = e.RowIndex
-            //};
-            //temp.Show();
-            //_openBitmaps.Add(temp);
-            //temp.FormClosed += temp_FormClosed;
+            BitmapViewer temp = new BitmapViewer(_imageList[e.RowIndex])
+            {
+                Tag = e.RowIndex
+            };
+            temp.Show();
+            _openBitmaps.Add(temp);
+            temp.FormClosed += temp_FormClosed;
 		}
 
 		private void variablesDataView_CellEndEdit(object sender, DataGridViewCellEventArgs e)
@@ -617,28 +682,9 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			}
 		}
 
-	    private enum VariableDisplayMethod
+        private void variablesDataView_RowPostPaint(object sender, DataGridViewRowPostPaintEventArgs e)
         {
-            BlackWhiteImage,
-            GrayscaleImage,
-            Binary,
-            Octal,
-            Decimal,
-            Hexadecimal,
-            String,
-        }
-
-	    private enum VariableType
-        {
-            Byte,
-            Word,
-            Image,
-            String,
-        }
-
-        private void variablesDataView_DataError(object sender, DataGridViewDataErrorEventArgs e)
-        {
-            var test = e.ThrowException;
+            variablesDataView.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Enabled ? Color.Black : Color.Gray;
         }
 	}
 }
