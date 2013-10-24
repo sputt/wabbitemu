@@ -2,18 +2,11 @@
 {
     class SpasmComAssembler : IAssembler
     {
-        private static SPASM.Z80Assembler _spasm;
-        private static readonly object SPASMLock = new object();
+        private SPASM.Z80Assembler _spasm;
 
         public SpasmComAssembler()
         {
-            lock (SPASMLock)
-            {
-                if (_spasm == null)
-                {
-                    _spasm = new SPASM.Z80Assembler();
-                }
-            }
+            _spasm = new SPASM.Z80Assembler();
         }
 
         public void AddDefine(string name, string value)

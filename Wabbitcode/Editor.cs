@@ -217,7 +217,7 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			_mainForm.UpdateAssembledInfo(_fileName, editorBox.ActiveTextAreaControl.Caret.Line);
+			_mainForm.UpdateAssembledInfo(_fileName, editorBox.ActiveTextAreaControl.Caret.Line + 1);
 			int start;
 			int end;
 			if (editorBox.ActiveTextAreaControl.SelectionManager.SelectionCollection.Count == 1)
@@ -257,7 +257,7 @@ namespace Revsoft.Wabbitcode
 
 			if (OnEditorSelectionChanged != null)
 			{
-				OnEditorSelectionChanged(this, new EditorSelectionEventArgs(editorBox.Document, FileName, codeInfoLines));
+				OnEditorSelectionChanged(this, new EditorSelectionEventArgs(this, codeInfoLines));
 			}
 		}
 
@@ -341,7 +341,7 @@ namespace Revsoft.Wabbitcode
 
 			if (OnEditorOpened != null)
 			{
-				OnEditorOpened(this, new EditorEventArgs(editorBox.Document, filename));
+				OnEditorOpened(this, new EditorEventArgs(this));
 			}
 		}
 
@@ -444,7 +444,7 @@ namespace Revsoft.Wabbitcode
 
 			if (OnEditorClosing != null)
 			{
-				OnEditorClosing(this, new EditorEventArgs(editorBox.Document, FileName));
+				OnEditorClosing(this, new EditorEventArgs(this));
 			}
 
             WabbitcodeBreakpointManager.OnBreakpointAdded -= WabbitcodeBreakpointManager_OnBreakpointAdded;
@@ -607,7 +607,7 @@ namespace Revsoft.Wabbitcode
 
 		private void setNextStateMenuItem_Click(object sender, EventArgs e)
 		{
-			_mainForm.SetPC(_fileName, editorBox.ActiveTextAreaControl.Caret.Line);
+			_mainForm.SetPC(_fileName, editorBox.ActiveTextAreaControl.Caret.Line + 1);
 		}
 
 		private void bgotoButton_Click(object sender, EventArgs e)
@@ -757,7 +757,7 @@ namespace Revsoft.Wabbitcode
                 _parserService.ParseFile(editorText.GetHashCode(), FileName, editorText);
 				if (OnEditorUpdated != null)
 				{
-					OnEditorUpdated(this, new EditorEventArgs(EditorBox.Document, FileName));
+					OnEditorUpdated(this, new EditorEventArgs(this));
 				}
 			};
 			CancellationTokenSource cancellationSource = new CancellationTokenSource();
@@ -1346,22 +1346,6 @@ namespace Revsoft.Wabbitcode
 		    editorBox.Document.MarkerStrategy.AddMarker(highlight);
 		    editorBox.Refresh();
 		    ScrollToLine(lineNum);
-		}
-
-		internal void HighlightCall(int lineNumber)
-		{
-			string line = editorBox.Document.TextContent.Split('\n')[lineNumber - 1];
-			if (line.Contains(';'))
-			{
-				line = line.Remove(line.IndexOf(';'));
-			}
-			if (line.Contains("call") || line.Contains("bcall") || line.Contains("b_call") || line.Contains("rst"))
-			{
-				_mainForm.AddStackEntry(lineNumber);
-				//DocumentService.HighlightLine(lineNumber, Color.Green);
-			}
-			//if (line.Contains("ret"))
-			//	Debugger.Instance.StepStack.Pop();
 		}
 
 		internal void RemoveHighlight(int line)

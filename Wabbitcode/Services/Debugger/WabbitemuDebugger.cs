@@ -30,7 +30,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 			_debugger.Close += debugger_Close;
         }
 
-	    public static string GetRomFile()
+        private static string GetRomFile()
 	    {
 		    RegistryKey romKey = null;
 		    string romFile = null;
@@ -202,16 +202,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         public void Step()
         {
             _debugger.Step();
-        }
-
-        public void StepOut()
-        {
-            throw new NotImplementedException();
-        }
-
-        public void StepOver()
-        {
-            _debugger.StepOver();
         }
 
         public void Write(bool isRam, byte page, ushort address, byte value)

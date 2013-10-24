@@ -118,7 +118,7 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 		public CalcLocation GetCalcLocation(string filename, int lineNumber)
 		{
 			CalcLocation value;
-			DocumentLocation key = new DocumentLocation(filename.ToLower(), lineNumber + 1);
+			DocumentLocation key = new DocumentLocation(filename.ToLower(), lineNumber);
 			_fileToCalc.TryGetValue(key, out value);
 			return value;
 		}

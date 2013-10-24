@@ -1045,7 +1045,7 @@
             this.callStackMenuItem.Name = "callStackMenuItem";
             this.callStackMenuItem.Size = new System.Drawing.Size(181, 22);
             this.callStackMenuItem.Tag = "callStack";
-            this.callStackMenuItem.Text = "Call Stack";
+            this.callStackMenuItem.Text = "Call MachineStack";
             this.callStackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
             // 
             // stackViewerMenuItem
@@ -1053,7 +1053,7 @@
             this.stackViewerMenuItem.Name = "stackViewerMenuItem";
             this.stackViewerMenuItem.Size = new System.Drawing.Size(181, 22);
             this.stackViewerMenuItem.Tag = "stackViewer";
-            this.stackViewerMenuItem.Text = "Stack Viewer";
+            this.stackViewerMenuItem.Text = "MachineStack Viewer";
             this.stackViewerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
             // 
             // varTrackMenuItem
