@@ -72,8 +72,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         IBreakpoint SetBreakpoint(bool isRam, byte page, ushort address);
 
         void Step();
-        void StepOut();
-        void StepOver();
 
         Image GetScreenImage();
 	    void CancelDebug();

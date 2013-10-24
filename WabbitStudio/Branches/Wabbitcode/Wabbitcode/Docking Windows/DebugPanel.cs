@@ -1,11 +1,7 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.IO;
-using System.Security.Permissions;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
-using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Windows.Forms;
 using WabbitemuLib;
@@ -16,11 +12,9 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 	public partial class DebugPanel : ToolWindow
 	{
 		private bool _updating;
-		private WabbitcodeDebugger _debugger;
-		private readonly IDocumentService _documentService;
-		private readonly ISymbolService _symbolService;
+		private IWabbitcodeDebugger _debugger;
 
-		public DebugPanel(IDockingService dockingService, IDocumentService documentService, ISymbolService symbolService)
+		public DebugPanel(IDockingService dockingService)
 			: base(dockingService)
 		{
 			InitializeComponent();
@@ -37,9 +31,6 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			iyBox.ContextMenu = contextMenu1;
 			pcBox.ContextMenu = contextMenu1;
 			spBox.ContextMenu = contextMenu1;
-
-			_documentService = documentService;
-			_symbolService = symbolService;
 			dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
 		}
 
@@ -130,7 +121,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		public void UpdateScreen()
 		{
-			Image image = _debugger.GetScreenImage();
+			Image image = _debugger.ScreenImage;
 			Image scaledImage = new Bitmap(image.Width * 2, image.Height * 2);
 			Graphics graphics = Graphics.FromImage(scaledImage);
 			graphics.InterpolationMode = InterpolationMode.NearestNeighbor;
@@ -153,14 +144,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			}
 			TextBox box = (TextBox)menu.SourceControl;
 			ushort address = ushort.Parse(box.Text, System.Globalization.NumberStyles.HexNumber);
-			byte page = _debugger.GetRelativePageNum(address);
-			DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
-			if (key == null)
-			{
-				return;
-			}
-
-			_documentService.GotoLine(key.FileName, key.LineNumber);
+			_debugger.GotoAddress(address);
 		}
 
 		private void Paste(object sender, EventArgs e)

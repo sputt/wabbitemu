@@ -2,12 +2,12 @@
 using System.Text.RegularExpressions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 
 namespace Revsoft.Wabbitcode.Docking_Windows
@@ -41,7 +41,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 		private readonly List<BitmapViewer> _openBitmaps = new List<BitmapViewer>();
         private readonly Dictionary<int, Image> _imageList = new Dictionary<int, Image>();
-		private WabbitcodeDebugger _debugger;
+		private IWabbitcodeDebugger _debugger;
 		private readonly ISymbolService _symbolService;
 	    private VariableType _lastVariableType;
 
@@ -438,37 +438,22 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 	        for (int i = 0; i < numBytes; i++)
 	        {
 	            byte baseValue = _debugger.ReadByte((ushort) (address + i));
-	            string value;
 	            switch (varMethod)
 	            {
 	                case VariableDisplayMethod.Decimal:
-	                    outputValue += Convert.ToString(baseValue, convertMethod) + " ";
+	                    outputValue += Convert.ToString(baseValue, convertMethod);
 	                    break;
 	                case VariableDisplayMethod.Binary:
-	                    value = Convert.ToString(baseValue, convertMethod);
-	                    while (value.Length < 8)
-	                    {
-	                        value = "0" + value;
-	                    }
-	                    outputValue += value + " ";
+                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(16, '0');
 	                    break;
 	                case VariableDisplayMethod.Octal:
-	                    value = Convert.ToString(baseValue, convertMethod);
-	                    while (value.Length < 4)
-	                    {
-	                        value = "0" + value;
-	                    }
-	                    outputValue += value + " ";
+                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(8, '0');
 	                    break;
 	                default:
-	                    value = Convert.ToString(baseValue, convertMethod);
-	                    while (value.Length < 2)
-	                    {
-	                        value = "0" + value;
-	                    }
-	                    outputValue += value + " ";
+                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(4, '0');
 	                    break;
 	            }
+	            outputValue += " ";
 	        }
 	        return outputValue;
 	    }
@@ -480,56 +465,23 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
 	        for (int i = 0; i < numBytes * 2; i += 2)
 	        {
-	            byte baseValue = _debugger.ReadByte((ushort) (address + i + 1));
-	            byte baseValue2 = _debugger.ReadByte((ushort) (address + i));
-	            string value2;
-	            string value;
+	            ushort baseValue = _debugger.ReadShort((ushort) (address + i));
 	            switch (varMethod)
 	            {
 	                case VariableDisplayMethod.Decimal:
-	                    outputValue += Convert.ToString((baseValue << 8) + baseValue2, convertMethod);
-                        outputValue += " ";
+	                    outputValue += Convert.ToString(baseValue, convertMethod);
 	                    break;
 	                case VariableDisplayMethod.Binary:
-	                    value = Convert.ToString(baseValue, convertMethod);
-	                    while (value.Length < 8)
-	                    {
-	                        value = "0" + value;
-	                    }
-	                    value2 = Convert.ToString(baseValue2, convertMethod);
-	                    while (value2.Length < 8)
-	                    {
-	                        value2 = "0" + value2;
-	                    }
-	                    outputValue += value + value2 + " ";
+                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(16, '0');
 	                    break;
 	                case VariableDisplayMethod.Octal:
-	                    value = Convert.ToString(baseValue, convertMethod);
-	                    while (value.Length < 4)
-	                    {
-	                        value = "0" + value;
-	                    }
-	                    value2 = Convert.ToString(baseValue2, convertMethod);
-	                    while (value2.Length < 4)
-	                    {
-	                        value2 = "0" + value2;
-	                    }
-	                    outputValue += value + value2 + " ";
+                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(8, '0');
 	                    break;
 	                default:
-	                    value = Convert.ToString(baseValue, convertMethod);
-	                    while (value.Length < 2)
-	                    {
-	                        value = "0" + value;
-	                    }
-	                    value2 = Convert.ToString(baseValue2, convertMethod);
-	                    while (value2.Length < 2)
-	                    {
-	                        value2 = "0" + value2;
-	                    }
-	                    outputValue += value + value2 + " ";
+                        outputValue += Convert.ToString(baseValue, convertMethod).PadLeft(4, '0');
 	                    break;
 	            }
+                outputValue += " ";
 	        }
 	        return outputValue;
 	    }

@@ -4,9 +4,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 {
     public class DebuggingEventArgs : EventArgs
     {
-        public WabbitcodeDebugger Debugger { get; private set; }
+        public IWabbitcodeDebugger Debugger { get; private set; }
 
-        public DebuggingEventArgs(WabbitcodeDebugger debugger)
+        public DebuggingEventArgs(IWabbitcodeDebugger debugger)
         {
             Debugger = debugger;
         }

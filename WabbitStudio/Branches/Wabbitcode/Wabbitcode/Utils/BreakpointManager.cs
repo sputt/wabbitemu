@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
+using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Services.Debugger;
 
 namespace Revsoft.Wabbitcode.Utils
@@ -54,7 +55,7 @@ namespace Revsoft.Wabbitcode.Utils
 
 		public static void RemoveBreakpoint(string fileName, int lineNumber)
 		{
-			WabbitcodeBreakpoint newBreak = Breakpoints.FirstOrDefault(b => b.File == fileName && b.LineNumber == lineNumber);
+			WabbitcodeBreakpoint newBreak = Breakpoints.FirstOrDefault(b => FileOperations.CompareFilePath(fileName, b.File) && b.LineNumber == lineNumber);
 			if (newBreak == null)
 			{
 				return;

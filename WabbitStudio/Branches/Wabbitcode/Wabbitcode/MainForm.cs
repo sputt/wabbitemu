@@ -35,7 +35,7 @@ namespace Revsoft.Wabbitcode
 
 		private readonly List<ArrayList> _errorsToAdd = new List<ArrayList>();
 		private bool _showToolbar = true;
-		private WabbitcodeDebugger _debugger;
+		private IWabbitcodeDebugger _debugger;
 
 		#region Services
 
@@ -79,8 +79,8 @@ namespace Revsoft.Wabbitcode
 			_dockingService.InitPanels(new ProjectViewer(_dockingService, _documentService, _projectService),
 				new ErrorList(_assemblerService, _dockingService, _documentService, _projectService),
 				new TrackingWindow(_dockingService, _symbolService),
-				new DebugPanel(_dockingService, _documentService, _symbolService),
-				new CallStack(_dockingService, _documentService, _fileReaderService, _symbolService),
+				new DebugPanel(_dockingService),
+				new CallStack(_dockingService, _documentService),
 				new LabelList(_dockingService, _documentService, _parserService),
 				new OutputWindow(_dockingService, _documentService),
 				new FindAndReplaceForm(_dockingService, _projectService),
@@ -322,8 +322,8 @@ namespace Revsoft.Wabbitcode
 			startDebugMenuItem.Enabled = enabled || !isDebugging;
 			stepOverMenuItem.Enabled = enabled;
 			stepOverToolButton.Enabled = enabled;
-			stepOutMenuItem.Enabled = enabled;
-			stepOutToolButton.Enabled = enabled;
+			stepOutMenuItem.Enabled = enabled && _debugger.CallStack.Count > 0;
+            stepOutToolButton.Enabled = enabled && _debugger.CallStack.Count > 0;
 			stopDebugMenuItem.Enabled = isDebugging;
 			stopToolButton.Enabled = isDebugging;
 			restartToolStripButton.Enabled = isDebugging;
@@ -408,13 +408,11 @@ namespace Revsoft.Wabbitcode
 
 	        if (_dockingService.CallStack != null)
 	        {
-	            _dockingService.CallStack.Clear();
 	            _dockingService.HideDockPanel(_dockingService.CallStack);
 	        }
 
 	        if (_dockingService.StackViewer != null)
 	        {
-	            _dockingService.StackViewer.Clear();
 	            _dockingService.HideDockPanel(_dockingService.StackViewer);
 	        }
 	    }
@@ -422,37 +420,6 @@ namespace Revsoft.Wabbitcode
 	    internal void ClearRecentItems()
 		{
 			recentFilesMenuItem.DropDownItems.Clear();
-		}
-
-		private void DoneStep(object sender, DebuggerStepEventArgs e)
-		{
-			this.Invoke(() =>
-			{
-				UpdateStepOut();
-				UpdateDebugStuff();
-				_documentService.RemoveDebugHighlight();
-				_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-				_documentService.HighlightDebugLine(e.Location.LineNumber);
-				_dockingService.MainForm.UpdateTrackPanel();
-				_dockingService.MainForm.UpdateDebugPanel();
-			});
-		}
-
-		private void BreakpointHit(object sender, DebuggerBreakpointHitEventArgs e)
-		{
-			this.Invoke(() =>
-			{
-                _documentService.RemoveDebugHighlight();
-				_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-				_documentService.HighlightDebugLine(e.Location.LineNumber);
-
-				// switch to back to us
-				Activate();
-				UpdateDebugStuff();
-				UpdateTrackPanel();
-				UpdateDebugPanel();
-                EnableDebugPanels(true);
-			});
 		}
 
 		internal void HideProgressBar()
@@ -501,19 +468,21 @@ namespace Revsoft.Wabbitcode
 					}
 				}
 
-				this.Invoke(() => ShowErrorPanels(e.Output));
-			    this.Invoke(LockOpenEditors);
+				this.Invoke(() =>
+				{
+				    ShowErrorPanels(e.Output);
+				    LockOpenEditors();
+				});
 
-				_debugger = new WabbitcodeDebugger(_dockingService, _documentService, _fileReaderService, _symbolService);
-				_debugger.OnDebuggerBreakpointHit += BreakpointHit;
-				_debugger.OnDebuggerStep += DoneStep;
+				_debugger = new WabbitcodeDebugger(_documentService, _fileReaderService, _symbolService);
+                _debugger.OnDebuggerStep += debugger_OnDebuggerStep;
 				_debugger.OnDebuggerRunningChanged += debugger_OnDebuggerRunningChanged;
 				_debugger.OnDebuggerClosed += (o, args) => CancelDebug();
 
 				string createdName;
 				try
 				{
-					createdName = _debugger.GetOutputFileDetails(e.Project);
+					createdName = GetOutputFileDetails(e.Project);
 					_currentDebuggingFile = createdName;
 				}
 				catch (DebuggingException ex)
@@ -560,11 +529,6 @@ namespace Revsoft.Wabbitcode
 					OnDebuggingStarted(this, new DebuggingEventArgs(_debugger));
 				}
 
-			    if (!_debugger.IsAnApp)
-			    {
-			        return;
-			    }
-
 			    TIApplication? app = null;
 			    try
 			    {
@@ -594,9 +558,74 @@ namespace Revsoft.Wabbitcode
 			    {
 			        _debugger.LaunchApp(app.Value.Name);
 			    }
-			    _debugger.SetupExitBreakpoints();
 			});
 		}
+
+	    private string GetOutputFileDetails(IProject project)
+        {
+            if (string.IsNullOrEmpty(project.BuildSystem.ProjectOutput))
+            {
+                throw new DebuggingException("No project outputs detected");
+            }
+
+            string createdName = project.BuildSystem.ProjectOutput;
+            if (!Path.IsPathRooted(createdName))
+            {
+                createdName = FileOperations.NormalizePath(Path.Combine(project.ProjectDirectory, createdName));
+            }
+
+            if (string.IsNullOrEmpty(project.BuildSystem.ListOutput))
+            {
+                throw new DebuggingException("Missing list file");
+            }
+
+            string listName = project.BuildSystem.ListOutput;
+            if (string.IsNullOrEmpty(project.BuildSystem.LabelOutput))
+            {
+                throw new DebuggingException("Missing label file");
+            }
+
+            string symName = project.BuildSystem.LabelOutput;
+
+            StreamReader listReader = null;
+            try
+            {
+                listReader = new StreamReader(listName);
+                listReader.ReadToEnd();
+            }
+            catch (Exception)
+            {
+                throw new DebuggingException("Error reading list file");
+            }
+            finally
+            {
+                if (listReader != null)
+                {
+                    listReader.Dispose();
+                }
+            }
+
+            StreamReader symReader = null;
+            try
+            {
+                symReader = new StreamReader(symName);
+                symReader.ReadToEnd();
+
+            }
+            catch (Exception)
+            {
+                throw new DebuggingException("Error reading label file");
+            }
+            finally
+            {
+                if (symReader != null)
+                {
+                    symReader.Dispose();
+                }
+            }
+
+            return createdName;
+        }
 
 	    private void LockOpenEditors()
 	    {
@@ -633,13 +662,10 @@ namespace Revsoft.Wabbitcode
 				}
 
 				UpdateDebugStuff();
-				UpdateBreakpoints();
 				ShowDebugPanels();
                 _documentService.RemoveDebugHighlight();
 
-				_debugger.RemoveExitBreakpoints();
 				_debugger.ResetRom();
-				_debugger.SetupExitBreakpoints();
 			    if (app != null)
 			    {
 			        _debugger.LaunchApp(app.Value.Name);
@@ -671,21 +697,22 @@ namespace Revsoft.Wabbitcode
         {
             if (_debugger != null)
             {
-                e.Document.ReadOnly = true;
+                e.Editor.EditorBox.Document.ReadOnly = true;
+                e.Editor.CanSetNextStatement = true;
             }
 
             string foldings;
-            if (_foldingDictionary.TryGetValue(e.FileName.ToLower(), out foldings))
+            if (_foldingDictionary.TryGetValue(e.Editor.FileName.ToLower(), out foldings))
             {
-                e.Document.FoldingManager.DeserializeFromString(foldings);
+                e.Editor.EditorBox.Document.FoldingManager.DeserializeFromString(foldings);
             }
         }
 
         private readonly Dictionary<string, string> _foldingDictionary = new Dictionary<string, string>(); 
         void Editor_OnEditorClosing(object sender, EditorEventArgs e)
         {
-            string fileName = e.FileName.ToLower();
-            string foldings = e.Document.FoldingManager.SerializeToString();
+            string fileName = e.Editor.FileName.ToLower();
+            string foldings = e.Editor.EditorBox.Document.FoldingManager.SerializeToString();
             if (_foldingDictionary.ContainsKey(fileName))
             {
                 _foldingDictionary[fileName] = foldings;
@@ -696,27 +723,43 @@ namespace Revsoft.Wabbitcode
             }
         }
 
+        private void debugger_OnDebuggerStep(object sender,  DebuggerStepEventArgs e)
+        {
+            this.Invoke(() =>
+            {
+                _documentService.RemoveDebugHighlight();
+                _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+                _documentService.HighlightDebugLine(e.Location.LineNumber);
 
-		void debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
-		{
-			if (e.Running)
-			{
-				UpdateDebugStuff();
-				_documentService.RemoveDebugHighlight();
-				_dockingService.ActiveDocument.Refresh();
-			    EnableDebugPanels(false);
-			}
-			else
-			{
-				Activate();
-				UpdateDebugStuff();
-				UpdateTrackPanel();
-				UpdateDebugPanel();
+                UpdateDebugStuff();
+                UpdateTrackPanel();
+                UpdateDebugPanel();
                 EnableDebugPanels(true);
+            });
+        }
 
-				_documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-				_documentService.HighlightDebugLine(e.Location.LineNumber);
-			}
+		private void debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
+		{
+		    this.Invoke(() =>
+		    {
+		        _documentService.RemoveDebugHighlight();
+		        UpdateDebugStuff();
+		        if (e.Running)
+		        {
+		            _dockingService.ActiveDocument.Refresh();
+		            EnableDebugPanels(false);
+		        }
+		        else
+		        {
+		            Activate();
+		            _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+		            _documentService.HighlightDebugLine(e.Location.LineNumber);
+
+		            UpdateTrackPanel();
+		            UpdateDebugPanel();
+		            EnableDebugPanels(true);
+		        }
+		    });
 		}
 
 	    private void EnableDebugPanels(bool enabled)
@@ -1125,13 +1168,8 @@ namespace Revsoft.Wabbitcode
 			wabbitspasm.Start();
 			string output = wabbitspasm.StandardOutput.ReadToEnd();
 			_errorsToAdd.Clear();
-			foreach (string line in output.Split('\n'))
+			foreach (string line in output.Split('\n').Where(l => l.Contains("error")))
 			{
-				if (!line.Contains("error"))
-				{
-					continue;
-				}
-
 				int firstColon = line.IndexOf(':');
 				int secondColon = line.IndexOf(':', firstColon + 1);
 				int thirdColon = line.IndexOf(':', secondColon + 1);
@@ -2013,20 +2051,6 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
-		private void UpdateStepOut()
-		{
-			if (_debugger.StepStack.Count > 0)
-			{
-				stepOutMenuItem.Enabled = true;
-				stepOutToolButton.Enabled = true;
-			}
-			else
-			{
-				stepOutMenuItem.Enabled = false;
-				stepOutToolButton.Enabled = false;
-			}
-		}
-
 		/// <summary>
 		/// This handles all things relating to the view menu. Just does a switch based
 		/// on the tag, and does the appropriate action based on the check mark state
@@ -2225,18 +2249,15 @@ namespace Revsoft.Wabbitcode
 			{
 				return;
 			}
+
 			CalcLocation label = _symbolService.ListTable.GetCalcLocation(fileName, lineNumber);
 			if (label == null)
 			{
 				return;
 			}
+
 			string assembledInfo = string.Format("Page: {0} Address: {1}", label.Page, label.Address.ToString("X4"));
 			SetToolStripText(assembledInfo);
-		}
-
-		internal void AddStackEntry(int lineNumber)
-		{
-			_debugger.StepStack.Push(lineNumber);
 		}
 
 		internal void SetPC(string fileName, int lineNumber)
@@ -2244,7 +2265,7 @@ namespace Revsoft.Wabbitcode
 			_debugger.SetPCToSelect(fileName, lineNumber);
 
 			_documentService.RemoveDebugHighlight();
-			_documentService.HighlightDebugLine(lineNumber + 1);
+			_documentService.HighlightDebugLine(lineNumber);
 			UpdateDebugPanel();
 		}
 

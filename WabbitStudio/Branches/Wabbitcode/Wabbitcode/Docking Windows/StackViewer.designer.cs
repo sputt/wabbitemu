@@ -100,7 +100,7 @@
             // stackData
             // 
             this.stackData.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.stackData.HeaderText = "Stack Data";
+            this.stackData.HeaderText = "MachineStack Data";
             this.stackData.Name = "stackData";
             this.stackData.ReadOnly = true;
             // 
@@ -114,8 +114,8 @@
             this.Name = "StackViewer";
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;
             this.TabPageContextMenu = this.contextMenu;
-            this.TabText = "Stack Viewer";
-            this.Text = "Stack Viewer";
+            this.TabText = "MachineStack Viewer";
+            this.Text = "MachineStack Viewer";
             ((System.ComponentModel.ISupportInitialize)(this.stackView)).EndInit();
             this.ResumeLayout(false);
 

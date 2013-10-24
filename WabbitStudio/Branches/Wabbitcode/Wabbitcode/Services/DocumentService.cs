@@ -8,7 +8,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 
 namespace Revsoft.Wabbitcode.Services
 {
@@ -169,7 +168,8 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void HighlightCall()
 		{
-			GotoFile(_highlights[_debugIndex].FileName).HighlightCall(_highlights[_debugIndex].LineNumber);
+			GotoFile(_highlights[_debugIndex].FileName)
+                .HighlightLine(_highlights[_debugIndex].LineNumber, Color.LightGreen);
 		}
 
 		public Editor OpenDocument(string filename)

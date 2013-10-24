@@ -1,5 +1,4 @@
 ﻿using Revsoft.Wabbitcode.Extensions;
-using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
@@ -14,7 +13,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 	public partial class BreakpointManagerWindow : ToolWindow
 	{
 		// TODO: this entire class looks nasty
-		private WabbitcodeDebugger _debugger;
+		private IWabbitcodeDebugger _debugger;
 		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
 		private readonly IProjectService _projectService;
