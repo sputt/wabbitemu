@@ -602,6 +602,7 @@
     <Compile Include="BuildSteps.Designer.cs">
       <DependentUpon>BuildSteps.cs</DependentUpon>
     </Compile>
+    <Compile Include="EditorExtensions\EditorToolTipRequestEventArgs.cs" />
     <Compile Include="GotoSymbol.cs">
       <SubType>Form</SubType>
     </Compile>

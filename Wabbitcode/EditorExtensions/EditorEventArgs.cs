@@ -1,5 +1,4 @@
 using System;
-using Revsoft.TextEditor.Document;
 
 namespace Revsoft.Wabbitcode.EditorExtensions
 {

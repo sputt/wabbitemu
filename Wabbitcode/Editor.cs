@@ -131,6 +131,9 @@ namespace Revsoft.Wabbitcode
 		public delegate void EditorClosed(object sender, EditorEventArgs e);
 		public static event EditorClosed OnEditorClosing;
 
+        public delegate void EditorToolTipRequested(object sender, EditorToolTipRequestEventArgs e);
+        public static event EditorToolTipRequested OnEditorToolTipRequested;
+
 		public delegate void EditorSelectionChanged(object sender, EditorSelectionEventArgs e);
 		public static event EditorSelectionChanged OnEditorSelectionChanged;
 
@@ -184,6 +187,7 @@ namespace Revsoft.Wabbitcode
 			{
 				return;
 			}
+
 			TextLocation loc = e.LogicalPosition;
 			int offset = editorBox.Document.GetOffsetForLineNumber(loc.Line);
 			string text = editorBox.Document.GetWord(offset + loc.Column);
@@ -204,10 +208,22 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			if (!string.IsNullOrEmpty(tooltip))
-			{
-				e.ShowToolTip(tooltip);
-			}
+		    if (string.IsNullOrEmpty(tooltip))
+		    {
+		        var editorEventArgs = new EditorToolTipRequestEventArgs(this, text);
+		        if (OnEditorToolTipRequested != null)
+		        {
+		            OnEditorToolTipRequested(this, editorEventArgs);
+		        }
+
+		        tooltip = editorEventArgs.Tooltip;
+		        if (string.IsNullOrEmpty(tooltip))
+		        {
+		            return;
+		        }
+		    }
+
+            e.ShowToolTip(tooltip);
 		}
 
 		void SelectionManager_SelectionChanged(object sender, EventArgs e)
