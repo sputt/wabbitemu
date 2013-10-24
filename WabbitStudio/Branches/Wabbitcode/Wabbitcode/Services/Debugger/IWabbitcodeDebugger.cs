@@ -53,5 +53,6 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         byte ReadByte(ushort address);
         ushort ReadShort(ushort address);
+        ushort? GetRegisterValue(string wordHovered);
     }
 }

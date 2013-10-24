@@ -105,6 +105,55 @@ namespace Revsoft.Wabbitcode.Services
             return _debugger.Memory.ReadWord(address);
         }
 
+	    public ushort? GetRegisterValue(string wordHovered)
+	    {
+	        switch (wordHovered.Trim().ToLower())
+	        {
+                case "a":
+	                return _debugger.CPU.A;
+                case "f":
+	                return _debugger.CPU.F;
+                case "b":
+	                return _debugger.CPU.B;
+                case "c":
+	                return _debugger.CPU.C;
+                case "d":
+	                return _debugger.CPU.D;
+                case "e":
+	                return _debugger.CPU.E;
+                case "h":
+                    return _debugger.CPU.H;
+                case "l":
+                    return _debugger.CPU.L;
+                case "ixh":
+                    return _debugger.CPU.IXH;
+                case "ixl":
+                    return _debugger.CPU.IXL;
+                case "iyh":
+                    return _debugger.CPU.IYH;
+                case "iyl":
+                    return _debugger.CPU.IYL;
+                case "af":
+                    return _debugger.CPU.AF;
+                case "bc":
+                    return _debugger.CPU.BC;
+                case "de":
+                    return _debugger.CPU.DE;
+                case "hl":
+                    return _debugger.CPU.HL;
+                case "ix":
+                    return _debugger.CPU.IX;
+                case "iy":
+                    return _debugger.CPU.IY;
+                case "sp":
+                    return _debugger.CPU.SP;
+                case "pc":
+                    return _debugger.CPU.PC;
+                default:
+	                return null;
+	        }
+	    }
+
 	    private byte GetRelativePageNum(ushort address)
 		{
 			IPage bank = _debugger.Memory.Bank[address >> 14];

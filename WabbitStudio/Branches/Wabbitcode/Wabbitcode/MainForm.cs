@@ -75,6 +75,7 @@ namespace Revsoft.Wabbitcode
 			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
             Editor.OnEditorOpened += Editor_OnEditorOpened;
             Editor.OnEditorClosing += Editor_OnEditorClosing;
+            Editor.OnEditorToolTipRequested += Editor_OnEditorToolTipRequested;
 
 			_dockingService.InitPanels(new ProjectViewer(_dockingService, _documentService, _projectService),
 				new ErrorList(_assemblerService, _dockingService, _documentService, _projectService),
@@ -127,6 +128,20 @@ namespace Revsoft.Wabbitcode
 				DockingService.ShowError("Error getting recent files", ex);
 			}
 		}
+
+        void Editor_OnEditorToolTipRequested(object sender, EditorToolTipRequestEventArgs e)
+        {
+            if (_debugger != null)
+            {
+                ushort? regValue =_debugger.GetRegisterValue(e.WordHovered);
+                if (!regValue.HasValue)
+                {
+                    return;
+                }
+
+                e.Tooltip = "$" + regValue.Value.ToString("X");
+            }
+        }
 
 		private void InitializeEvents()
 		{
