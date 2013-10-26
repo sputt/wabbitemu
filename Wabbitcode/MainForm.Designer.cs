@@ -1053,7 +1053,7 @@
             this.stackViewerMenuItem.Name = "stackViewerMenuItem";
             this.stackViewerMenuItem.Size = new System.Drawing.Size(181, 22);
             this.stackViewerMenuItem.Tag = "stackViewer";
-            this.stackViewerMenuItem.Text = "MachineStack Viewer";
+            this.stackViewerMenuItem.Text = "Stack Viewer";
             this.stackViewerMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
             // 
             // varTrackMenuItem

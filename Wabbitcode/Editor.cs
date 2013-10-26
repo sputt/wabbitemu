@@ -39,8 +39,9 @@ namespace Revsoft.Wabbitcode
 	{
 		#region Private Memebers
 		private const int LabelsCacheSize = 100;
+	    private static readonly Regex LineRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|\%|'|\\|\<|\>]*?)\s*(;.*)?$", RegexOptions.Compiled);
 
-		private readonly Bitmap _warningBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.PNG.Warning16.png"));
+	    private readonly Bitmap _warningBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.PNG.Warning16.png"));
 		private readonly Bitmap _errorBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.PNG.error.png"));
 		private readonly List<CancellationTokenSource> _queuedFiles = new List<CancellationTokenSource>();
 		private CancellationTokenSource _highlightRefsCancellationTokenSource;
@@ -1345,8 +1346,7 @@ namespace Revsoft.Wabbitcode
 		        }
 		    }
 
-		    Regex highlightRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|\%|'|\\]*?)\s*(;.*)?$", RegexOptions.Compiled);
-		    Match match = highlightRegex.Match(line);
+		    Match match = LineRegex.Match(line);
             Group group = match.Groups["line"];
 		    int start = group.Index + segment.Offset;
             int length = group.Length;

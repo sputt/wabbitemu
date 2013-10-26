@@ -2,7 +2,6 @@
 {
     public partial class StackViewer
     {
-        private System.Windows.Forms.DataGridViewTextBoxColumn addressCol;
         private System.Windows.Forms.MenuItem autoHideItem;
 
         /// <summary>
@@ -12,7 +11,6 @@
         private System.Windows.Forms.ContextMenu contextMenu;
         private System.Windows.Forms.MenuItem floatingItem;
         private System.Windows.Forms.MenuItem hideItem;
-        private System.Windows.Forms.DataGridViewTextBoxColumn stackData;
         private System.Windows.Forms.DataGridView stackView;
 
         /// <summary>
@@ -96,13 +94,15 @@
             this.addressCol.HeaderText = "Address";
             this.addressCol.Name = "addressCol";
             this.addressCol.ReadOnly = true;
+            this.addressCol.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // stackData
             // 
             this.stackData.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.stackData.HeaderText = "MachineStack Data";
+            this.stackData.HeaderText = "Stack Data";
             this.stackData.Name = "stackData";
             this.stackData.ReadOnly = true;
+            this.stackData.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // StackViewer
             // 
@@ -114,11 +114,14 @@
             this.Name = "StackViewer";
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;
             this.TabPageContextMenu = this.contextMenu;
-            this.TabText = "MachineStack Viewer";
-            this.Text = "MachineStack Viewer";
+            this.TabText = "Stack Viewer";
+            this.Text = "Stack Viewer";
             ((System.ComponentModel.ISupportInitialize)(this.stackView)).EndInit();
             this.ResumeLayout(false);
 
         }
+
+        private System.Windows.Forms.DataGridViewTextBoxColumn addressCol;
+        private System.Windows.Forms.DataGridViewTextBoxColumn stackData;
     }
 }

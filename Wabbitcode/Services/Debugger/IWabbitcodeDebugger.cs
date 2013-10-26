@@ -6,11 +6,32 @@ using WabbitemuLib;
 
 namespace Revsoft.Wabbitcode.Services.Debugger
 {
-    public enum StepType
+    public class StackEntry
     {
-        Step,
-        StepOver,
-        StepOut
+        public ushort Address { get; private set; }
+        public ushort Data { get; private set; }
+        public CallStackEntry CallStackEntry { get; set; }
+
+        public StackEntry(ushort address, ushort data, CallStackEntry entry)
+        {
+            Address = address;
+            Data = data;
+            CallStackEntry = entry;
+        }
+    }
+
+    public class CallStackEntry
+    {
+        public string CallType { get; private set; }
+        public string CallName { get; private set; }
+        public DocumentLocation CallLocation { get; private set; }
+
+        public CallStackEntry(string callType, string callName, DocumentLocation location)
+        {
+            CallType = callType;
+            CallName = callName;
+            CallLocation = location;
+        }
     }
 
     public delegate void DebuggerRunning(object sender, DebuggerRunningEventArgs e);
@@ -25,8 +46,8 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         bool IsAnApp { get; }
         bool IsRunning { get; }
-        Stack<Tuple<ushort, ushort>> MachineStack { get; }
-        Stack<Tuple<ushort, string, string, DocumentLocation>> CallStack { get; }
+        Stack<StackEntry> MachineStack { get; }
+        Stack<CallStackEntry> CallStack { get; }
         IZ80 CPU { get; }
         Image ScreenImage { get; }
         

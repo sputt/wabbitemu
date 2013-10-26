@@ -88,7 +88,7 @@ namespace Revsoft.Wabbitcode
 				new FindResultsWindow(_dockingService, _documentService),
 				new MacroManager(_dockingService),
 				new BreakpointManagerWindow(_dockingService, _documentService, _projectService),
-				new StackViewer(_dockingService, _symbolService));
+				new StackViewer(_dockingService));
 			_dockingService.LoadConfig();
 
 			if (args.Length == 0)
@@ -131,16 +131,18 @@ namespace Revsoft.Wabbitcode
 
         void Editor_OnEditorToolTipRequested(object sender, EditorToolTipRequestEventArgs e)
         {
-            if (_debugger != null)
+            if (_debugger == null)
             {
-                ushort? regValue =_debugger.GetRegisterValue(e.WordHovered);
-                if (!regValue.HasValue)
-                {
-                    return;
-                }
-
-                e.Tooltip = "$" + regValue.Value.ToString("X");
+                return;
             }
+
+            ushort? regValue =_debugger.GetRegisterValue(e.WordHovered);
+            if (!regValue.HasValue)
+            {
+                return;
+            }
+
+            e.Tooltip = "$" + regValue.Value.ToString("X");
         }
 
 		private void InitializeEvents()

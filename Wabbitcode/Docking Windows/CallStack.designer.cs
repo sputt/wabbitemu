@@ -94,6 +94,7 @@
             this.callTypeColumn.HeaderText = "Call Type";
             this.callTypeColumn.Name = "callTypeColumn";
             this.callTypeColumn.ReadOnly = true;
+            this.callTypeColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // nameColumn
             // 
@@ -101,6 +102,7 @@
             this.nameColumn.HeaderText = "Name";
             this.nameColumn.Name = "nameColumn";
             this.nameColumn.ReadOnly = true;
+            this.nameColumn.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.NotSortable;
             // 
             // CallStack
             // 
@@ -112,7 +114,7 @@
             this.Name = "CallStack";
             this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;
             this.TabPageContextMenu = this.contextMenu;
-            this.TabText = "Call MachineStack";
+            this.TabText = "Call Stack";
             this.Text = "Call Stack";
             ((System.ComponentModel.ISupportInitialize)(this.callStackView)).EndInit();
             this.ResumeLayout(false);

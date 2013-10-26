@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Utils;
@@ -15,7 +16,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
         private readonly IDockingService _dockingService;
         private readonly IDocumentService _documentService;
 
-        private List<DocumentLocation> _callLocations = new List<DocumentLocation>();
+        private readonly List<DocumentLocation> _callLocations = new List<DocumentLocation>();
 
 		public CallStack(IDockingService dockingService, IDocumentService documentService)
 			: base(dockingService)
@@ -39,12 +40,12 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             _callLocations.Clear();
             callStackView.Rows.Clear();
 		    var dataGridViewRows = new List<DataGridViewRow>();
-		    foreach (var call in _debugger.CallStack)
+		    foreach (var call in _debugger.CallStack.Reverse())
 		    {
 		        var row = new DataGridViewRow();
-                row.CreateCells(callStackView, call.Item2, call.Item3);
+                row.CreateCells(callStackView, call.CallType, call.CallName);
                 dataGridViewRows.Add(row);
-                _callLocations.Add(call.Item4);
+                _callLocations.Add(call.CallLocation);
 		    }
             
 		    callStackView.Rows.AddRange(dataGridViewRows.ToArray());
