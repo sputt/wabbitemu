@@ -149,67 +149,19 @@ namespace Revsoft.Wabbitcode.Services
 			panel.Show(_dockPanel);
 		}
 
-		public void LoadConfig()
+		public void LoadConfig(DeserializeDockContent dockContent)
 		{
 			try
 			{
-				DeserializeDockContent dockContent = GetContentFromPersistString;
 				if (File.Exists(FileLocations.ConfigFile))
 				{
 					_dockPanel.LoadFromXml(FileLocations.ConfigFile, dockContent);
 				}
 			}
-			catch (Exception ex)
-			{
-				ShowError("Error Loading the DockPanel Config File", ex);
-			}
-		}
-
-		public IDockContent GetContentFromPersistString(string persistString)
-		{
-			if (persistString == typeof(OutputWindow).ToString())
-			{
-				return OutputWindow;
-			}
-			if (persistString == typeof(LabelList).ToString())
-			{
-				return LabelList;
-			}
-			if (persistString == typeof(ErrorList).ToString())
-			{
-				return ErrorList;
-			}
-			if (persistString == typeof(DebugPanel).ToString())
-			{
-				return DebugPanel;
-			}
-			if (persistString == typeof(CallStack).ToString())
-			{
-				return CallStack;
-			}
-			if (persistString == typeof(TrackingWindow).ToString())
-			{
-				return TrackWindow;
-			}
-			if (persistString == typeof(ProjectViewer).ToString())
-			{
-				return ProjectViewer;
-			}
-
-			string[] parsedStrings = persistString.Split(';');
-			if (parsedStrings.Length != 6 || parsedStrings[0] != typeof(Editor).ToString() || !File.Exists(parsedStrings[1]))
-			{
-				return null;
-			}
-			return null;
-			// TODO: fix
-			/*Editor doc = DocumentService.OpenDocument(parsedStrings[1]);
-			doc.SetPosition(
-				int.Parse(parsedStrings[2]),
-				int.Parse(parsedStrings[3]),
-				int.Parse(parsedStrings[4]),
-				int.Parse(parsedStrings[5]));
-			return doc;*/
+            catch (Exception ex)
+            {
+                ShowError("Error Loading the DockPanel Config File", ex);
+            }
 		}
 
 		public void Invoke(Action action)
@@ -248,18 +200,6 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void DestroyService()
 		{
-			foreach (Editor editor in Documents.ToList())
-			{
-				try
-				{
-					editor.Dispose();
-				}
-				catch (Exception ex)
-				{
-					throw new Exception("Error destroying documents", ex);
-				}
-			}
-
 			try
 			{
 				string dir = Path.GetDirectoryName(FileLocations.ConfigFile);

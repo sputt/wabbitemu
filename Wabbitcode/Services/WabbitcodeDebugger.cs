@@ -47,6 +47,8 @@ namespace Revsoft.Wabbitcode.Services
 
         #region Public Properties
 
+        public string CurrentDebuggingFile { get; private set; }
+
         public IZ80 CPU
 		{
 			get
@@ -173,6 +175,18 @@ namespace Revsoft.Wabbitcode.Services
 			return (byte)page;
 		}
 
+        public void GotoAddress(ushort address)
+        {
+            int page = GetRelativePageNum(address);
+            DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
+            if (key == null)
+            {
+                return;
+            }
+
+            _documentService.GotoLine(key.FileName, key.LineNumber);
+        }
+
         #endregion
 
         #region Startup
@@ -185,6 +199,7 @@ namespace Revsoft.Wabbitcode.Services
 			_debugger.OnBreakpoint += BreakpointHit;
 			_debugger.OnClose += DebuggerOnClose;
 
+            CurrentDebuggingFile = outputFile;
             IsAnApp = outputFile.EndsWith(".8xk");
 			_memoryAllocations = new List<KeyValuePair<ushort, ushort>>();
             CallStack = new Stack<CallStackEntry>();
@@ -204,6 +219,15 @@ namespace Revsoft.Wabbitcode.Services
             _debugger.CancelDebug();
             _debugger = null;
         }
+
+        private void DebuggerOnClose(IWabbitemu sender, EventArgs eventArgs)
+        {
+            if (OnDebuggerClosed != null)
+            {
+                OnDebuggerClosed(sender, eventArgs);
+            }
+        }
+
 
         #endregion
 
@@ -774,26 +798,6 @@ namespace Revsoft.Wabbitcode.Services
 
         #endregion
 
-        private void DebuggerOnClose(IWabbitemu sender, EventArgs eventArgs)
-        {
-            if (OnDebuggerClosed != null)
-            {
-                OnDebuggerClosed(sender, eventArgs);
-            }
-        }
-
-
-        public void GotoAddress(ushort address)
-        {
-            int page = GetRelativePageNum(address);
-            DocumentLocation key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
-            if (key == null)
-            {
-                return;
-            }
-
-            _documentService.GotoLine(key.FileName, key.LineNumber);
-        }
 
 		//private void StartWithoutDebuggingAssemblerFinished(object sender, AssemblyFinishEventArgs e)
 		//{

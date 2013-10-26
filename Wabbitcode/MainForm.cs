@@ -25,6 +25,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WabbitemuLib;
+using WeifenLuo.WinFormsUI.Docking;
 using IFileReaderService = Revsoft.Wabbitcode.Services.IFileReaderService;
 
 namespace Revsoft.Wabbitcode
@@ -36,6 +37,7 @@ namespace Revsoft.Wabbitcode
 		private readonly List<ArrayList> _errorsToAdd = new List<ArrayList>();
 		private bool _showToolbar = true;
 		private IWabbitcodeDebugger _debugger;
+        private readonly Dictionary<string, string> _foldingDictionary = new Dictionary<string, string>();
 
 		#region Services
 
@@ -49,7 +51,6 @@ namespace Revsoft.Wabbitcode
 	    private IFileReaderService _fileReaderService;
 
 		#endregion
-
 
 		#endregion
 
@@ -89,7 +90,7 @@ namespace Revsoft.Wabbitcode
 				new MacroManager(_dockingService),
 				new BreakpointManagerWindow(_dockingService, _documentService, _projectService),
 				new StackViewer(_dockingService));
-			_dockingService.LoadConfig();
+			_dockingService.LoadConfig(GetContentFromPersistString);
 
 			if (args.Length == 0)
 			{
@@ -103,6 +104,7 @@ namespace Revsoft.Wabbitcode
 
 			try
 			{
+                // TOOD: why is this here
 				if (!_projectService.Project.IsInternal)
 				{
 					_projectService.Project.InitWatcher(projectWatcher_Changed, projectWatcher_Renamed);
@@ -129,6 +131,52 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
+	    private IDockContent GetContentFromPersistString(string persistString)
+        {
+            if (persistString == typeof(OutputWindow).ToString())
+            {
+                return _dockingService.OutputWindow;
+            }
+            if (persistString == typeof(LabelList).ToString())
+            {
+                return _dockingService.LabelList;
+            }
+            if (persistString == typeof(ErrorList).ToString())
+            {
+                return _dockingService.ErrorList;
+            }
+            if (persistString == typeof(DebugPanel).ToString())
+            {
+                return _dockingService.DebugPanel;
+            }
+            if (persistString == typeof(CallStack).ToString())
+            {
+                return _dockingService.CallStack;
+            }
+            if (persistString == typeof(TrackingWindow).ToString())
+            {
+                return _dockingService.TrackWindow;
+            }
+            if (persistString == typeof(ProjectViewer).ToString())
+            {
+                return _dockingService.ProjectViewer;
+            }
+
+            string[] parsedStrings = persistString.Split(';');
+            if (parsedStrings.Length != 6 || parsedStrings[0] != typeof(Editor).ToString() || !File.Exists(parsedStrings[1]))
+            {
+                return null;
+            }
+
+            Editor doc = _documentService.OpenDocument(parsedStrings[1]);
+            doc.SetPosition(
+                int.Parse(parsedStrings[2]),
+                int.Parse(parsedStrings[3]),
+                int.Parse(parsedStrings[4]),
+                int.Parse(parsedStrings[5]));
+            return doc;
+        }
+
         void Editor_OnEditorToolTipRequested(object sender, EditorToolTipRequestEventArgs e)
         {
             if (_debugger == null)
@@ -145,7 +193,9 @@ namespace Revsoft.Wabbitcode
             e.Tooltip = "$" + regValue.Value.ToString("X");
         }
 
-		private void InitializeEvents()
+        #region Initalization
+
+        private void InitializeEvents()
 		{
 			Editor.OnEditorSelectionChanged += GetCodeInfo;
 		}
@@ -183,7 +233,9 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
-		private void projectWatcher_Changed(object sender, FileSystemEventArgs e)
+        #endregion
+
+        private void projectWatcher_Changed(object sender, FileSystemEventArgs e)
 		{
 			switch (e.ChangeType)
 			{
@@ -214,20 +266,22 @@ namespace Revsoft.Wabbitcode
 
 		private void projectWatcher_Renamed(object sender, RenamedEventArgs e)
 		{
-			if (e.OldFullPath == _projectService.Project.ProjectDirectory)
-			{
-				if (
-					MessageBox.Show("Project Folder was renamed, would you like to rename the project?",
-									"Rename project",
-									MessageBoxButtons.YesNo,
-									MessageBoxIcon.Information) == DialogResult.Yes)
-				{
-					_projectService.Project.ProjectName = Path.GetFileNameWithoutExtension(e.FullPath);
-				}
-			}
+		    if (e.OldFullPath != _projectService.Project.ProjectDirectory)
+		    {
+		        return;
+		    }
+
+		    if (
+		        MessageBox.Show("Project Folder was renamed, would you like to rename the project?",
+		            "Rename project",
+		            MessageBoxButtons.YesNo,
+		            MessageBoxIcon.Information) == DialogResult.Yes)
+		    {
+		        _projectService.Project.ProjectName = Path.GetFileNameWithoutExtension(e.FullPath);
+		    }
 		}
 
-		private void cancelDebug_Click(object sender, EventArgs e)
+	    private void cancelDebug_Click(object sender, EventArgs e)
 		{
 			CancelDebug();
 		}
@@ -265,8 +319,8 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			mainToolMenuItem.Checked = true; // toolBarManager.ContainsControl(mainToolBar);
-			debugToolMenuItem.Checked = false; // toolBarManager.ContainsControl(debugToolStrip);
+		    mainToolMenuItem.Checked = mainToolBar.Visible;
+		    debugToolMenuItem.Checked = mainToolBar.Visible;
 			labelListMenuItem.Checked = _dockingService.LabelList.Visible;
 			projViewMenuItem.Checked = _dockingService.ProjectViewer.Visible;
 			findResultsMenuItem.Checked = _dockingService.FindResults.Visible;
@@ -375,7 +429,163 @@ namespace Revsoft.Wabbitcode
 			recentFilesMenuItem.DropDownItems.Add(button);
 		}
 
-		private void CancelDebug()
+        #region Debugging
+
+        private void StartDebug()
+        {
+            if (_projectService.Project.IsInternal)
+            {
+                throw new DebuggingException("Debugging single files is not supported");
+            }
+
+            DoAssembly(null, (sender, e) =>
+            {
+                if (!e.AssemblySucceeded)
+                {
+                    if (DockingService.ShowMessageBox(_dockingService.MainForm,
+                                    "There were errors assembling. Would you like to continue and try to debug?",
+                                    "Continue",
+                                    MessageBoxButtons.YesNo,
+                                    MessageBoxIcon.Error) == DialogResult.No)
+                    {
+                        CancelDebug();
+                        return;
+                    }
+                }
+
+                this.Invoke(() =>
+                {
+                    ShowErrorPanels(e.Output);
+                    LockOpenEditors();
+                });
+
+                _debugger = new WabbitcodeDebugger(_documentService, _fileReaderService, _symbolService);
+                _debugger.OnDebuggerStep += debugger_OnDebuggerStep;
+                _debugger.OnDebuggerRunningChanged += debugger_OnDebuggerRunningChanged;
+                _debugger.OnDebuggerClosed += (o, args) => CancelDebug();
+
+                string createdName;
+                try
+                {
+                    createdName = GetOutputFileDetails(e.Project);
+                }
+                catch (DebuggingException ex)
+                {
+                    DockingService.ShowError("Unable to start debugging", ex);
+                    CancelDebug();
+                    return;
+                }
+
+                try
+                {
+                    _debugger.InitDebugger(createdName);
+                }
+                catch (MissingROMException)
+                {
+                    this.Invoke(() =>
+                    {
+                        OpenFileDialog openFileDialog = new OpenFileDialog
+                        {
+                            CheckFileExists = true,
+                            DefaultExt = "*.rom",
+                            Filter = "All Know File Types | *.rom; *.sav; |ROM Files (*.rom)|*.rom|" +
+                                     "Savestate Files (*.sav)|*.sav|All Files(*.*)|*.*",
+                            FilterIndex = 0,
+                            Multiselect = true,
+                            RestoreDirectory = true,
+                            Title = "Select new ROM file",
+                        };
+
+                        if (openFileDialog.ShowDialog() != DialogResult.OK)
+                        {
+                            CancelDebug();
+                            return;
+                        }
+
+                        SaveRomPathRegistry(openFileDialog.FileName);
+                    });
+
+                    _debugger.InitDebugger(createdName);
+                }
+
+                if (OnDebuggingStarted != null)
+                {
+                    OnDebuggingStarted(this, new DebuggingEventArgs(_debugger));
+                }
+
+                TIApplication? app = null;
+                try
+                {
+                    app = _debugger.VerifyApp(createdName);
+                }
+                catch (DebuggingException)
+                {
+                    if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
+                        "Missing App",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Exclamation) != DialogResult.Yes)
+                    {
+                        CancelDebug();
+                        return;
+                    }
+                }
+
+                this.Invoke(() =>
+                {
+                    UpdateDebugStuff();
+                    UpdateBreakpoints();
+                    ShowDebugPanels();
+                    EnableDebugPanels(false);
+                });
+
+                if (app != null)
+                {
+                    _debugger.LaunchApp(app.Value.Name);
+                }
+            });
+        }
+
+        private void RestartDebug()
+        {
+            if (_projectService.Project.IsInternal)
+            {
+                throw new DebuggingException("Debugging single files is not supported");
+            }
+
+            if (!_debugger.IsAnApp)
+            {
+                return;
+            }
+
+            TIApplication? app = null;
+            try
+            {
+                app = _debugger.VerifyApp(_debugger.CurrentDebuggingFile);
+            }
+            catch (DebuggingException)
+            {
+                if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
+                    "Missing App",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Exclamation) != DialogResult.Yes)
+                {
+                    CancelDebug();
+                    return;
+                }
+            }
+
+            UpdateDebugStuff();
+            ShowDebugPanels();
+            _documentService.RemoveDebugHighlight();
+
+            _debugger.ResetRom();
+            if (app != null)
+            {
+                _debugger.LaunchApp(app.Value.Name);
+            }
+        }
+
+        private void CancelDebug()
 		{
 			if (InvokeRequired)
 			{
@@ -404,6 +614,69 @@ namespace Revsoft.Wabbitcode
 				OnDebuggingEnded(this, new DebuggingEventArgs(null));
 			}
 		}
+
+        private void debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
+        {
+            this.Invoke(() =>
+            {
+                _documentService.RemoveDebugHighlight();
+                _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+                _documentService.HighlightDebugLine(e.Location.LineNumber);
+
+                UpdateDebugStuff();
+                UpdateDebugPanel();
+                EnableDebugPanels(true);
+            });
+        }
+
+        private void debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
+        {
+            this.Invoke(() =>
+            {
+                _documentService.RemoveDebugHighlight();
+                UpdateDebugStuff();
+                if (e.Running)
+                {
+                    _dockingService.ActiveDocument.Refresh();
+                    EnableDebugPanels(false);
+                }
+                else
+                {
+                    Activate();
+                    _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+                    _documentService.HighlightDebugLine(e.Location.LineNumber);
+
+                    UpdateDebugPanel();
+                    EnableDebugPanels(true);
+                }
+            });
+        }
+
+        private void EnableDebugPanels(bool enabled)
+        {
+            _dockingService.DebugPanel.EnablePanel(enabled);
+            _dockingService.StackViewer.EnablePanel(enabled);
+            _dockingService.TrackWindow.EnablePanel(enabled);
+            _dockingService.CallStack.EnablePanel(enabled);
+        }
+
+        private void ShowDebugPanels()
+        {
+            _showToolbar = Settings.Default.debugToolbar;
+            Settings.Default.debugToolbar = true;
+            if (!_showToolbar)
+            {
+                debugToolStrip.Visible = true;
+            }
+
+            debugToolStrip.Height = mainToolBar.Height;
+            UpdateChecks();
+            _dockingService.ShowDockPanel(_dockingService.DebugPanel);
+            _dockingService.ShowDockPanel(_dockingService.StackViewer);
+            _dockingService.ShowDockPanel(_dockingService.TrackWindow);
+            _dockingService.ShowDockPanel(_dockingService.CallStack);
+            UpdateTitle();
+        }
 
 	    private void HideDebugPanels()
 	    {
@@ -434,7 +707,25 @@ namespace Revsoft.Wabbitcode
 	        }
 	    }
 
-	    internal void ClearRecentItems()
+        private void UpdateDebugPanel()
+        {
+            _dockingService.DebugPanel.UpdateFlags();
+            _dockingService.DebugPanel.UpdateRegisters();
+            _dockingService.DebugPanel.UpdateScreen();
+        }
+
+        internal void SetPC(string fileName, int lineNumber)
+        {
+            _debugger.SetPCToSelect(fileName, lineNumber);
+
+            _documentService.RemoveDebugHighlight();
+            _documentService.HighlightDebugLine(lineNumber);
+            UpdateDebugPanel();
+        }
+
+        #endregion
+
+        internal void ClearRecentItems()
 		{
 			recentFilesMenuItem.DropDownItems.Clear();
 		}
@@ -459,123 +750,6 @@ namespace Revsoft.Wabbitcode
 		private void SetToolStripText(string text)
 		{
 			toolStripStatusLabel.Text = text;
-		}
-
-		private string _currentDebuggingFile;
-
-		private void StartDebug()
-		{
-			if (_projectService.Project.IsInternal)
-			{
-				throw new DebuggingException("Debugging single files is not supported");
-			}
-
-			DoAssembly(null, (sender, e) =>
-			{
-				if (!e.AssemblySucceeded)
-				{
-					if (DockingService.ShowMessageBox(_dockingService.MainForm,
-									"There were errors assembling. Would you like to continue and try to debug?",
-									"Continue",
-									MessageBoxButtons.YesNo,
-									MessageBoxIcon.Error) == DialogResult.No)
-					{
-						CancelDebug();
-						return;
-					}
-				}
-
-				this.Invoke(() =>
-				{
-				    ShowErrorPanels(e.Output);
-				    LockOpenEditors();
-				});
-
-				_debugger = new WabbitcodeDebugger(_documentService, _fileReaderService, _symbolService);
-                _debugger.OnDebuggerStep += debugger_OnDebuggerStep;
-				_debugger.OnDebuggerRunningChanged += debugger_OnDebuggerRunningChanged;
-				_debugger.OnDebuggerClosed += (o, args) => CancelDebug();
-
-				string createdName;
-				try
-				{
-					createdName = GetOutputFileDetails(e.Project);
-					_currentDebuggingFile = createdName;
-				}
-				catch (DebuggingException ex)
-				{
-					DockingService.ShowError("Unable to start debugging", ex);
-					CancelDebug();
-					return;
-				}
-
-				try
-				{
-					_debugger.InitDebugger(createdName);
-				}
-				catch (MissingROMException)
-				{
-					this.Invoke(() =>
-					{
-						OpenFileDialog openFileDialog = new OpenFileDialog
-						{
-							CheckFileExists = true,
-							DefaultExt = "*.rom",
-							Filter = "All Know File Types | *.rom; *.sav; |ROM Files (*.rom)|*.rom|" +
-							         "Savestate Files (*.sav)|*.sav|All Files(*.*)|*.*",
-							FilterIndex = 0,
-							Multiselect = true,
-							RestoreDirectory = true,
-							Title = "Select new ROM file",
-						};
-
-						if (openFileDialog.ShowDialog() != DialogResult.OK)
-						{
-							CancelDebug();
-							return;
-						}
-
-						SaveRomPathRegistry(openFileDialog.FileName);
-					});
-
-					_debugger.InitDebugger(createdName);
-				}
-
-				if (OnDebuggingStarted != null)
-				{
-					OnDebuggingStarted(this, new DebuggingEventArgs(_debugger));
-				}
-
-			    TIApplication? app = null;
-			    try
-			    {
-			        app = _debugger.VerifyApp(createdName);
-			    }
-			    catch (DebuggingException)
-			    {
-			        if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
-			            "Missing App",
-			            MessageBoxButtons.YesNo,
-			            MessageBoxIcon.Exclamation) != DialogResult.Yes)
-			        {
-			            CancelDebug();
-			            return;
-			        }
-			    }
-
-			    this.Invoke(() =>
-			    {
-			        UpdateDebugStuff();
-			        UpdateBreakpoints();
-			        ShowDebugPanels();
-                    EnableDebugPanels(false);
-			    });
-
-			    if (app != null)
-			    {
-			        _debugger.LaunchApp(app.Value.Name);
-			    }
-			});
 		}
 
 	    private string GetOutputFileDetails(IProject project)
@@ -652,44 +826,6 @@ namespace Revsoft.Wabbitcode
 	        }
 	    }
 
-	    private void RestartDebug()
-		{
-			if (_projectService.Project.IsInternal)
-			{
-				throw new DebuggingException("Debugging single files is not supported");
-			}
-
-			if (_debugger.IsAnApp)
-			{
-				TIApplication? app = null;
-				try
-				{
-					app = _debugger.VerifyApp(_currentDebuggingFile);
-				}
-				catch (DebuggingException)
-				{
-					if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
-							"Missing App",
-							MessageBoxButtons.YesNo,
-							MessageBoxIcon.Exclamation) != DialogResult.Yes)
-					{
-						CancelDebug();
-						return;
-					}
-				}
-
-				UpdateDebugStuff();
-				ShowDebugPanels();
-                _documentService.RemoveDebugHighlight();
-
-				_debugger.ResetRom();
-			    if (app != null)
-			    {
-			        _debugger.LaunchApp(app.Value.Name);
-			    }
-			}
-		}
-
 		private static void SaveRomPathRegistry(string romFileName)
 		{
 			RegistryKey romKey = null;
@@ -725,7 +861,6 @@ namespace Revsoft.Wabbitcode
             }
         }
 
-        private readonly Dictionary<string, string> _foldingDictionary = new Dictionary<string, string>(); 
         void Editor_OnEditorClosing(object sender, EditorEventArgs e)
         {
             string fileName = e.Editor.FileName.ToLower();
@@ -739,72 +874,6 @@ namespace Revsoft.Wabbitcode
                 _foldingDictionary.Add(fileName, foldings);
             }
         }
-
-        private void debugger_OnDebuggerStep(object sender,  DebuggerStepEventArgs e)
-        {
-            this.Invoke(() =>
-            {
-                _documentService.RemoveDebugHighlight();
-                _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-                _documentService.HighlightDebugLine(e.Location.LineNumber);
-
-                UpdateDebugStuff();
-                UpdateTrackPanel();
-                UpdateDebugPanel();
-                EnableDebugPanels(true);
-            });
-        }
-
-		private void debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
-		{
-		    this.Invoke(() =>
-		    {
-		        _documentService.RemoveDebugHighlight();
-		        UpdateDebugStuff();
-		        if (e.Running)
-		        {
-		            _dockingService.ActiveDocument.Refresh();
-		            EnableDebugPanels(false);
-		        }
-		        else
-		        {
-		            Activate();
-		            _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-		            _documentService.HighlightDebugLine(e.Location.LineNumber);
-
-		            UpdateTrackPanel();
-		            UpdateDebugPanel();
-		            EnableDebugPanels(true);
-		        }
-		    });
-		}
-
-	    private void EnableDebugPanels(bool enabled)
-	    {
-	        _dockingService.DebugPanel.EnablePanel(enabled);
-            _dockingService.StackViewer.EnablePanel(enabled);
-            _dockingService.TrackWindow.EnablePanel(enabled);
-            _dockingService.CallStack.EnablePanel(enabled);
-	    }
-
-	    private void ShowDebugPanels()
-		{
-			_showToolbar = Settings.Default.debugToolbar;
-			Settings.Default.debugToolbar = true;
-			if (!_showToolbar)
-			{
-				debugToolStrip.Visible = true;
-			}
-
-			debugToolStrip.Height = mainToolBar.Height;
-			UpdateChecks();
-			_dockingService.ShowDockPanel(_dockingService.DebugPanel);
-            _dockingService.ShowDockPanel(_dockingService.StackViewer);
-            _dockingService.ShowDockPanel(_dockingService.TrackWindow);
-			_dockingService.ShowDockPanel(_dockingService.CallStack);
-			UpdateTitle();
-		}
-
 
 		private void WabbitcodeBreakpointManager_OnBreakpointRemoved(object sender, WabbitcodeBreakpointEventArgs e)
 		{
@@ -834,13 +903,6 @@ namespace Revsoft.Wabbitcode
 			{
 				d.CanSetNextStatement = true;
 			}
-		}
-
-		private void UpdateDebugPanel()
-		{
-			_dockingService.DebugPanel.UpdateFlags();
-			_dockingService.DebugPanel.UpdateRegisters();
-			_dockingService.DebugPanel.UpdateScreen();
 		}
 
 		/// <summary>
@@ -901,7 +963,7 @@ namespace Revsoft.Wabbitcode
 			}
 
 			toggleBreakpointMenuItem.Enabled = enabled;
-			if (_projectService.Project.IsInternal)
+			if (_projectService.Project == null || _projectService.Project.IsInternal)
 			{
 				startDebugMenuItem.Enabled = enabled;
 				startWithoutDebugMenuItem.Enabled = enabled;
@@ -929,11 +991,6 @@ namespace Revsoft.Wabbitcode
 			projMenuItem.Visible = projectOpen;
 			includeDirButton.Visible = !projectOpen;
 			saveProjectMenuItem.Visible = projectOpen;
-		}
-
-		private void UpdateTrackPanel()
-		{
-			//_dockingService.TrackWindow.UpdateVars();
 		}
 
 		private void aboutMenuItem_Click(object sender, EventArgs e)
@@ -1649,17 +1706,18 @@ namespace Revsoft.Wabbitcode
 					if (string.Equals(extCheck, ".wcodeproj", StringComparison.OrdinalIgnoreCase))
 					{
 						OpenProject(fileName);
-						if (Settings.Default.startupProject != fileName)
-						{
-							if (
-								MessageBox.Show("Would you like to make this your default project?",
-												"Startup Project",
-												MessageBoxButtons.YesNo,
-												MessageBoxIcon.Question) == DialogResult.Yes)
-							{
-								Settings.Default.startupProject = fileName;
-							}
-						}
+					    if (Settings.Default.startupProject == fileName)
+					    {
+					        continue;
+					    }
+
+					    if (MessageBox.Show("Would you like to make this your default project?",
+					            "Startup Project",
+					            MessageBoxButtons.YesNo,
+					            MessageBoxIcon.Question) == DialogResult.Yes)
+					    {
+					        Settings.Default.startupProject = fileName;
+					    }
 					}
 					else
 					{
@@ -2275,15 +2333,6 @@ namespace Revsoft.Wabbitcode
 
 			string assembledInfo = string.Format("Page: {0} Address: {1}", label.Page, label.Address.ToString("X4"));
 			SetToolStripText(assembledInfo);
-		}
-
-		internal void SetPC(string fileName, int lineNumber)
-		{
-			_debugger.SetPCToSelect(fileName, lineNumber);
-
-			_documentService.RemoveDebugHighlight();
-			_documentService.HighlightDebugLine(lineNumber);
-			UpdateDebugPanel();
 		}
 
 		internal void ShowRefactorForm()
