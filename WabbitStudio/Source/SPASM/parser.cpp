@@ -310,6 +310,8 @@ static const char *parse_single_num (const char *expr, int *value) {
 				//Find the end of the name, then try it as a label first
 				expr = skip_to_name_end (expr_start);
 				name = strndup (expr_start, expr - expr_start);
+				label = search_labels(name);
+				define = search_defines(name);
 
 #ifdef USE_REUSABLES
 				//see if it's a local label
@@ -324,11 +326,15 @@ static const char *parse_single_num (const char *expr, int *value) {
 						SetLastSPASMError(SPASM_ERR_LOCAL_LABEL_FORWARD_REF);
 						return NULL;
 					}
-				} else 
+				}
+ else 
 #endif
-					if ((label = search_labels (name))) {
+					if (label) {
 						*value = label->value;
 						free (name);
+						if (define) {
+							SetLastSPASMWarning(SPASM_WARN_LABEL_OVER_DEFINE, label->name, define->name);
+						}
 
 						//or the "eval" macro
 					} else if (!strcasecmp (name, "eval") && *expr == '(') {
@@ -372,7 +378,7 @@ static const char *parse_single_num (const char *expr, int *value) {
 						if (*expr == ')') expr++;
 						//If that didn't work, see if it's a macro
 					}
-					else if ((define = search_defines (name)))
+					else if (define)
 					{
 						list_t *args = NULL;
 						char *contents;
