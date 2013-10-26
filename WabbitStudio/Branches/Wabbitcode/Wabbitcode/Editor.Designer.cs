@@ -86,7 +86,7 @@ namespace Revsoft.Wabbitcode
 			this.editorBox.ActiveTextAreaControl.TextArea.ToolTipRequest += new TextEditor.ToolTipRequestEventHandler(TextArea_ToolTipRequest);
 			this.editorBox.Document.BreakpointManager.Added += BreakpointManager_Added;
 			this.editorBox.Document.BreakpointManager.Removed += BreakpointManager_Removed;
-			this.editorBox.Document.BreakpointManager.HighlightRegex = new Regex(@"^\s*(?<line>[\w|\s|,|\(|\)|:|\*|/|\+|\-|\$|\%|'|\\]*?)\s*(;.*)?$");
+		    this.editorBox.Document.BreakpointManager.HighlightRegex = LineRegex;
 			// 
 			// imageList1
 			// 

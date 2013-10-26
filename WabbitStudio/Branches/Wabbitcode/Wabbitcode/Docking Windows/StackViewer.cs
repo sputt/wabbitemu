@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
+using System.Linq;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using System;
@@ -11,13 +12,10 @@ namespace Revsoft.Wabbitcode.Docking_Windows
     public partial class StackViewer : ToolWindow
     {
         private IWabbitcodeDebugger _debugger;
-        private ushort _oldSp;
         private readonly IDockingService _dockingService;
-        private readonly ISymbolService _symbolService;
-        private const int AddressColIndex = 0;
         private const int StackDataColIndex = 1;
 
-        public StackViewer(IDockingService dockingService, ISymbolService symbolService)
+        public StackViewer(IDockingService dockingService)
             : base(dockingService)
         {
             InitializeComponent();
@@ -25,13 +23,11 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             _dockingService = dockingService;
             _dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
             _dockingService.MainForm.OnDebuggingEnded += mainForm_OnDebuggingEnded;
-            _symbolService = symbolService;
         }
 
         void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
         {
             _debugger = e.Debugger;
-            _oldSp = 0xFFFF;
             _debugger.OnDebuggerStep += (o, args) => _dockingService.Invoke(UpdateStack);
             _debugger.OnDebuggerRunningChanged += (o, args) => _dockingService.Invoke(UpdateStack);
         }
@@ -43,11 +39,13 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 
         private void UpdateStack()
         {
+            stackView.Rows.Clear();
             var rowData = new List<DataGridViewRow>();
-            foreach (var data in _debugger.MachineStack)
+            foreach (var data in _debugger.MachineStack.Reverse())
             {
                 var row = new DataGridViewRow();
-                row.CreateCells(stackView, data.Item1, data.Item2);
+                row.CreateCells(stackView, data.Address.ToString("X").PadLeft(4, '0'), 
+                    data.Data.ToString("X").PadLeft(4, '0'));
                 rowData.Add(row);
             }
 

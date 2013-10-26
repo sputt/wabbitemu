@@ -34,6 +34,8 @@ namespace Revsoft.Wabbitcode.Services
                 {
                     return lines[lineNumber];
                 }
+
+                _cachedFiles.Remove(fileName);
             }
             
             StreamReader reader = null;

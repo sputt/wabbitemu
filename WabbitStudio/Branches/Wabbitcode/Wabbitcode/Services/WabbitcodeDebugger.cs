@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Text.RegularExpressions;
+﻿using System.Text.RegularExpressions;
 using System.Threading;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Services.Debugger;
@@ -20,7 +19,7 @@ namespace Revsoft.Wabbitcode.Services
         #region Private Fields
 
         private byte _appPage;
-	    private ushort _lastSP;
+	    private ushort _oldSP;
 		private IWabbitemuDebugger _debugger;
 	    private bool _disposed;
 		private List<KeyValuePair<ushort, ushort>> _memoryAllocations;
@@ -41,8 +40,10 @@ namespace Revsoft.Wabbitcode.Services
         #region Constants
 
         private const ushort RamCode = 0x8100;
+	    private const ushort TopStackApp = 0xFFDF;
+	    private const ushort MachineStackBottom = 0xFE66;
 
-        #endregion
+	    #endregion
 
         #region Public Properties
 
@@ -69,9 +70,9 @@ namespace Revsoft.Wabbitcode.Services
 			}
 		}
 
-	    public Stack<Tuple<ushort, ushort>> MachineStack { get; private set; }
+	    public Stack<StackEntry> MachineStack { get; private set; }
 
-        public Stack<Tuple<ushort, string, string, DocumentLocation>> CallStack { get; private set; }
+        public Stack<CallStackEntry> CallStack { get; private set; }
 
 	    #endregion
 
@@ -186,8 +187,9 @@ namespace Revsoft.Wabbitcode.Services
 
             IsAnApp = outputFile.EndsWith(".8xk");
 			_memoryAllocations = new List<KeyValuePair<ushort, ushort>>();
-            CallStack = new Stack<Tuple<ushort, string, string, DocumentLocation>>();
-            MachineStack = new Stack<Tuple<ushort, ushort>>();
+            CallStack = new Stack<CallStackEntry>();
+            MachineStack = new Stack<StackEntry>();
+            _oldSP = IsAnApp ? TopStackApp : (ushort) 0xFFFF;
             SetupInternalBreakpoints();
 		}
 
@@ -296,8 +298,8 @@ namespace Revsoft.Wabbitcode.Services
 
         public void StepOut()
         {
-            var lastCall = CallStack.Peek();
-            CalcLocation calcLocation = _symbolService.ListTable.GetCalcLocation(lastCall.Item4.FileName, lastCall.Item4.LineNumber);
+            DocumentLocation lastCallLocation = CallStack.Last().CallLocation;
+            CalcLocation calcLocation = _symbolService.ListTable.GetCalcLocation(lastCallLocation.FileName, lastCallLocation.LineNumber);
             DocumentLocation docLocation = null;
             ushort address = calcLocation.Address;
             while (docLocation == null)
@@ -305,7 +307,7 @@ namespace Revsoft.Wabbitcode.Services
                 address++;
                 docLocation = _symbolService.ListTable.GetFileLocation(calcLocation.Page, address, calcLocation.IsRam);
             }
-            _stepOutBreakpoint = _debugger.SetBreakpoint(calcLocation.IsRam, GetAbsolutePageNum(address), address);
+            _stepOutBreakpoint = _debugger.SetBreakpoint(calcLocation.IsRam, (byte) (_appPage - calcLocation.Page), address);
             _debugger.OnBreakpoint += StepOutBreakpointEvent;
             _debugger.Step();
             _debugger.Running = true;
@@ -391,63 +393,98 @@ namespace Revsoft.Wabbitcode.Services
 
         private void UpdateCallstack()
         {
-            CallStack.Clear();
-            int currentSP = _debugger.CPU.SP;
-            ushort topStack = (ushort) (IsAnApp ? 0xFFDF : 0xFFFF);
-            while (currentSP <= topStack)
+            CallStack = new Stack<CallStackEntry>(
+                MachineStack.Where(s => s.CallStackEntry != null)
+                .Select(s => s.CallStackEntry).Reverse());
+        }
+
+	    private CallStackEntry CheckValidCall(int currentSP)
+	    {
+	        DocumentLocation location;
+	        Match match = CheckValidCall(ReadShort((ushort) currentSP), out location);
+	        if (match == null)
+	        {
+	            return null;
+	        }
+
+	        string callTypeString = match.Groups["command"].Value + " " + match.Groups["condition"].Value;
+	        string nameString = match.Groups["call"].Value;
+	        return new CallStackEntry(callTypeString, nameString, location);
+	    }
+
+        private Match CheckValidCall(ushort stackData, out DocumentLocation location)
+        {
+            location = null;
+            int page = GetRelativePageNum(stackData);
+            if (IsAnApp && (stackData < 0x4000 || stackData >= 0x8000))
             {
-                DocumentLocation location;
-                Match match = CheckValidCall(ReadShort((ushort) currentSP), out location);
-                if (match != null)
-                {
-                    string callTypeString = match.Groups["command"].Value + " " + match.Groups["condition"].Value;
-                    string nameString = match.Groups["call"].Value;
-                    CallStack.Push(new Tuple<ushort, string, string, DocumentLocation>(
-                        (ushort) currentSP, callTypeString, nameString, location));
-                }
-                currentSP += 2;
+                return null;
             }
+
+            DocumentLocation key;
+            do
+            {
+                key = _symbolService.ListTable.GetFileLocation(page, --stackData, stackData >= 0x8000);
+            } while (key == null);
+            string line = _fileReaderService.GetLine(key.FileName, key.LineNumber);
+            Regex callRegex = new Regex(@"\s*(?<command>\w*call)[\(?|\s]\s*((?<condition>z|nz|c|nc),\s*)?(?<call>\w*?)\)?\s*(;.*)?$",
+                RegexOptions.Compiled | RegexOptions.IgnoreCase);
+            Match match = callRegex.Match(line);
+            if (!match.Success)
+            {
+                return null;
+            }
+
+            location = key;
+            return match;
         }
 
 	    private void UpdateStack()
 	    {
-	        Stack<Tuple<ushort, ushort>> oldStack = MachineStack;
-	        MachineStack.Clear();
+	        var oldStackList = MachineStack.Reverse().ToList();
+            MachineStack.Clear();
             int currentSP = _debugger.CPU.SP;
-            ushort topStack = (ushort) (IsAnApp ? 0xFFDF : 0xFFFF);
-	        while (currentSP <= topStack)
+            ushort topStack = IsAnApp ? TopStackApp : (ushort) 0xFFFF;
+            // avoid generating a massive callstack
+            if (currentSP < MachineStackBottom)
+            {
+                int maxStackSize = topStack - MachineStackBottom;
+                topStack = (ushort) (currentSP + maxStackSize);
+            }
+
+	        if ((currentSP < _oldSP) || (currentSP < topStack && oldStackList.Count == 0))
 	        {
-	            MachineStack.Push(new Tuple<ushort, ushort>((ushort) currentSP, ReadShort((ushort) currentSP)));
-	            currentSP += 2;
+                // new stack entries to add
+	            while (currentSP != _oldSP && currentSP <= topStack)
+	            {
+                    CallStackEntry callStackEntry = CheckValidCall(currentSP);
+                    MachineStack.Push(new StackEntry((ushort) currentSP, ReadShort((ushort) currentSP), callStackEntry));
+	                currentSP += 2;
+	            }
 	        }
+	        else if (currentSP > _oldSP)
+	        {
+	            // stack entries to remove
+	            oldStackList.RemoveAll(s => s.Address < currentSP);
+	        }
+
+	        foreach (StackEntry stackEntry in oldStackList)
+	        {
+	            int data = ReadShort((ushort) currentSP);
+	            if (stackEntry.Data != data)
+	            {
+	                CallStackEntry callStackEntry = CheckValidCall(currentSP);
+                    MachineStack.Push(new StackEntry((ushort) currentSP, (ushort) data, callStackEntry));
+	            }
+	            else
+	            {
+	                MachineStack.Push(stackEntry);
+	            }
+                currentSP += 2;
+	        }
+            _oldSP = _debugger.CPU.SP;
 
             UpdateCallstack();
-	    }
-
-	    private Match CheckValidCall(ushort stackData, out DocumentLocation location)
-	    {
-	        location = null;
-	        int page = GetRelativePageNum(stackData);
-	        if (IsAnApp && (stackData < 0x4000 || stackData >= 0x8000))
-	        {
-	            return null;
-	        }
-
-	        DocumentLocation key;
-	        do
-	        {
-	            key = _symbolService.ListTable.GetFileLocation(page, --stackData, stackData >= 0x8000);
-	        } while (key == null);
-	        string line = _fileReaderService.GetLine(key.FileName, key.LineNumber);
-	        Regex callRegex = new Regex(@"\s*(?<command>\w*call)[\(?|\s]\s*((?<condition>z|nz|c|nc),\s*)?(?<call>\w*?)\)?\s*(;.*)?$",
-	            RegexOptions.Compiled | RegexOptions.IgnoreCase);
-	        Match match = callRegex.Match(line);
-	        if (!match.Success)
-	        {
-	            return null;
-	        }
-	        location = key;
-	        return match;
 	    }
 
 	    #endregion
