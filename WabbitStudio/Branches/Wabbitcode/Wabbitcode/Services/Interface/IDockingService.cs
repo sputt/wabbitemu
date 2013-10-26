@@ -27,8 +27,7 @@ namespace Revsoft.Wabbitcode.Services.Interface
 
 		void HideDockPanel(DockContent panel);
 		void ShowDockPanel(DockContent panel);
-		void LoadConfig();
-		IDockContent GetContentFromPersistString(string persistString);
+		void LoadConfig(DeserializeDockContent handleDeserializeDockContent);
 		void Invoke(Action action);
 
 		void InitPanels(ProjectViewer projectViewer, ErrorList errorList, TrackingWindow trackingWindow,

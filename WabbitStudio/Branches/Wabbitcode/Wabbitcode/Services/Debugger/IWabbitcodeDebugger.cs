@@ -10,7 +10,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
     {
         public ushort Address { get; private set; }
         public ushort Data { get; private set; }
-        public CallStackEntry CallStackEntry { get; set; }
+        public CallStackEntry CallStackEntry { get; private set; }
 
         public StackEntry(ushort address, ushort data, CallStackEntry entry)
         {
@@ -44,6 +44,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         event DebuggerStep OnDebuggerStep;
         event DebuggerClosed OnDebuggerClosed;
 
+        string CurrentDebuggingFile { get; }
         bool IsAnApp { get; }
         bool IsRunning { get; }
         Stack<StackEntry> MachineStack { get; }

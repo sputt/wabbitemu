@@ -218,6 +218,11 @@ namespace Revsoft.Wabbitcode.Services
 		/// </summary>
 		private void SaveRecentFileList()
 		{
+            if (Settings.Default.recentFiles == null)
+            {
+                Settings.Default.recentFiles = new StringCollection();
+            }
+
             Settings.Default.recentFiles.Clear();
             Settings.Default.recentFiles.AddRange(_recentFileList);
 		}

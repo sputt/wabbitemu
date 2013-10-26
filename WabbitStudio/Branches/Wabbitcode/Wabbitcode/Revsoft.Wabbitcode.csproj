@@ -635,7 +635,7 @@
     <Compile Include="Services\Interface\IProjectService.cs" />
     <Compile Include="Services\Interface\ISymbolService.cs" />
     <Compile Include="Services\Symbols\CalcLocation.cs" />
-    <Compile Include="Utils\BreakpointManager.cs" />
+    <Compile Include="Utils\WabbitcodeBreakpointManager.cs" />
     <Compile Include="Utils\DocumentLocation.cs" />
     <Compile Include="Utils\FileLocations.cs" />
     <Compile Include="Services\Debugger\BreakpointEventArgs.cs" />
