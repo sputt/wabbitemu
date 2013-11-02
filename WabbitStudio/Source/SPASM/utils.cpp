@@ -30,15 +30,15 @@ char *mystrpbrk (const char * string, const char * control) {
 
 	while (*ctrl)
 	{
-		map[*ctrl] = true;
-		ctrl++;
+		map[*ctrl++] = TRUE;
 	}
 
 	/* 1st char in control map stops search */
 	while (*str)
 	{
-		if (map[*str++])
-			return((char *)--str);
+		if (map[*str])
+			return((char *)str);
+		str++;
 	}
 	return NULL;
 }
@@ -407,8 +407,7 @@ bool read_expr_impl(const char ** const ptr, char word[256], const char *delims)
 		return false;
 	}
 
-	if (strlen(delims) == 1) {
-		while (**ptr != '\0' && !((strchr (*ptr, delims[0]) == *ptr || is_end_of_code_line (*ptr))
+	while (**ptr != '\0' && !((mystrpbrk (*ptr, delims) == *ptr || is_end_of_code_line (*ptr))
 				&& !in_escape && !in_string && in_quote == 0 && level == 0)) {
 
 		if (!in_escape) {
@@ -452,53 +451,6 @@ bool read_expr_impl(const char ** const ptr, char word[256], const char *delims)
 		if (word)
 			*word_ptr++ = **ptr;
 		(*ptr)++;
-	}
-	} else {
-		while (**ptr != '\0' && !((mystrpbrk (*ptr, delims) == *ptr || is_end_of_code_line (*ptr))
-					&& !in_escape && !in_string && in_quote == 0 && level == 0)) {
-
-			if (!in_escape) {
-				switch( **ptr ) {
-					case '"': 	
-						if (in_quote == 0) in_string = !in_string; 
-						break;
-					case '\'':
-						if (!in_string && in_quote == 0) in_quote = 3; 
-						break;		
-					case '\\': 	
-						in_escape = true;
-						break;
-					case '(':
-						if (!in_string && in_quote == 0) level++;
-						break;
-					case ')':
-						if (!in_string && in_quote == 0) level--;
-						if (level < 0) {
-							//(*ptr)--; //12/29/2010 stp not sure
-							goto finish_read_expr;
-						}
-						break;
-					default:
-						/* 	If this char wasn't ', redo the inside */
-						if (in_quote == 1) {
-							*ptr -= 2;
-							word_ptr -= 2;
-						}
-				}	
-				if (in_quote) in_quote--;
-			} else {
-				in_escape = false;
-			}
-			if (word_ptr - word >= 254) {
-				show_fatal_error ("Expression is too long - must be 255 chars or less");
-				if (word)
-					strcpy (word, "0");
-				return true;
-			}
-			if (word)
-				*word_ptr++ = **ptr;
-			(*ptr)++;
-		}
 	}
 finish_read_expr:
 	// Remove whitespace at the end
