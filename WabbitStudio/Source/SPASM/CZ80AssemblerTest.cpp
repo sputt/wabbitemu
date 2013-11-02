@@ -37,6 +37,7 @@ public:
 		pDirObj->Release();
 
 		m_fFirstAssembly = TRUE;
+		m_dwOptions = 0;
 		return hr;
 	}
 
@@ -127,6 +128,7 @@ public:
 		m_fFirstAssembly = FALSE;
 
 		init_storage();
+
 	
 		HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, output_buf_size); 
 		output_contents = (unsigned char *) GlobalLock(hGlobal);
@@ -169,6 +171,8 @@ public:
 			include_dirs = list_prepend(include_dirs, (char *) strdup(_bstr_t(V_BSTR(&varItem))));
 		}
 
+		AddDefines();
+
 		int result = run_assembly();
 
 		list_free(include_dirs, true, NULL);
@@ -193,6 +197,30 @@ public:
 	}
 
 private:
+	void AddDefines()
+	{
+		
+		CComPtr<IUnknown> pEnumUnk;
+		HRESULT hr = m_dict->_NewEnum(&pEnumUnk);
+
+		CComQIPtr<IEnumVARIANT> pEnum = pEnumUnk;
+
+		CComVariant varItem;
+		ULONG ulFetched;
+
+		while (pEnum->Next(1, &varItem, &ulFetched) == S_OK)
+		{
+			_bstr_t key = V_BSTR(&varItem);
+
+			_variant_t varValue;
+			m_dict->get_Item(&varItem, &varValue);
+
+			_bstr_t val = varValue;
+
+			add_define(strdup(key), NULL)->contents = strdup(val);
+		}
+	}
+
 	BOOL m_fFirstAssembly;
 	DWORD m_dwOptions;
 	IDictionaryPtr m_dict;

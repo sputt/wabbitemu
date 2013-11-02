@@ -1,9 +1,6 @@
-'Set asm = CreateObject("Wabbit.SPASM")
+Set asm = CreateObject("Wabbit.SPASM")
 
-'WScript.Echo "Attach"
-'WScript.Echo asm.StdOut.ReadLine
+asm.Defines.Add "test", 34
 
-
-Set stm = CreateObject("Scripting.TextStream")
-
-strm.WriteLine "Hello"
+asm.Assemble " .echo ""hello "",test"
+WScript.Echo asm.StdOut.ReadAll
