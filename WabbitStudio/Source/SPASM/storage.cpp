@@ -334,7 +334,7 @@ define_t *search_defines (const char *name) {
 	define_t *result = NULL;
 	char *search_name;
 	list_t *curr_arg_set = arg_list;
-	unsigned int curr_hash;
+	size_t curr_hash;
 
 	//make name uppercase if needed for case-insensitivity
 	if (!case_sensitive)

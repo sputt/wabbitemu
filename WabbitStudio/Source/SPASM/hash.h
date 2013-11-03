@@ -5,18 +5,54 @@ typedef struct {
 	char *name;
 } store_t;
 
+#ifdef _WIN64
+size_t
+#else
+unsigned int 
+#endif
+	murmur_hash (const void *data, int len, unsigned int seed = 0xdeadbeef);
+
+#if 0
 #pragma warning(disable : 4200)
+
 typedef struct _mh_hash_table {
 	size_t size, used;
 	void (*remove_callback)(void *);
 	store_t *table[0];
 } hash_t;
 #pragma warning(default : 4200)
+#else
+
+	struct mystringhash
+		: public std::unary_function<const char *, size_t>
+	{	// hash functor for basic_string
+	size_t operator()(const char* _Keyval) const
+		{	// hash _Keyval to size_t value by pseudorandomizing transform
+		return (murmur_hash(_Keyval,
+			strlen(_Keyval)));
+		}
+	};
+
+	struct myequalto
+		: public std::binary_function<const char *, const char *, bool>
+	{	// functor for operator==
+	bool operator()(const char * _Left, const char *_Right) const
+		{	// apply operator== to operands
+		return (strcmp(_Left, _Right) == 0) ? true: false;
+		}
+	};
+typedef struct
+{
+	std::unordered_map<const char *, void*, mystringhash, myequalto> table;
+	void (*remove_callback)(void *);
+}
+hash_t;
+
+#endif
+
 
 typedef void (*HASH_ENUM_CALLBACK)(void *, void *);
 typedef void (*HASH_REMOVE_CALLBACK)(void *);
-
-unsigned int murmur_hash (const void *data, int len, unsigned int seed = 0xdeadbeef);
 
 hash_t *hash_init (size_t size, void remove_callback(void *));
 void *hash_insert (hash_t *ht, void *store);
