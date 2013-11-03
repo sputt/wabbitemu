@@ -1,5 +1,7 @@
 #pragma once
 
+using namespace std;
+
 class CDropTarget : public IDropTarget
 {
 public:
@@ -29,6 +31,7 @@ private:
 	
 	FORMATETC *m_pRequired;
 	UINT m_nRequired;
+	list<string> tempFiles;
 
 	FORMATETC *m_pAccepted;
 	UINT m_nAccepted;
