@@ -318,7 +318,6 @@ static LINK_ERR SendFile(HWND hwndParent, const LPCALC lpCalc, LPCTSTR lpszFileN
 	}
 	else
 	{
-		MessageBox(NULL, _T("Invalid file format"), _T("Error"), MB_OK);
 		break_on_exe_violation = exec_vio_backup;
 		return LERR_FILE;
 	}

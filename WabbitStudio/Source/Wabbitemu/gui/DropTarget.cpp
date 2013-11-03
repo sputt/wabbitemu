@@ -1,5 +1,4 @@
 #include "stdafx.h"
-using namespace std;
 
 #include "calc.h"
 #include "DropTarget.h"
@@ -25,6 +24,9 @@ CDropTarget::CDropTarget(HWND hwnd) {
 CDropTarget::~CDropTarget() {
 	free(m_pRequired);
 	free(m_pAccepted);
+	list<string>::iterator it;
+	for (it = tempFiles.begin(); it != tempFiles.end(); it++)
+		_tremove((*it).c_str());
 }
 
 void RegisterDropWindow(HWND hwnd, IDropTarget **ppDropTarget) {
@@ -322,7 +324,6 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 							if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW)) {
 								LPFILEGROUPDESCRIPTORW lpfgd = (LPFILEGROUPDESCRIPTORW) GlobalLock(stgmed.hGlobal);
 								LPTSTR lpszFileGroup = NULL;
-								list<TCHAR *> files(lpfgd->cItems, NULL);
 
 								for (u_int i = 0; i < lpfgd->cItems; i++) {
 									TCHAR szFileName[MAX_PATH];
@@ -348,16 +349,13 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 												fwrite(lpBuffer, lpfgd->fgd[i].nFileSizeLow, 1, file);
 												fclose(file);
 												SendFileToCalc(lpCalc, szFileName, TRUE, DropMemoryTarget(m_hwndTarget));
-												files.push_back(szFileName);
+												tempFiles.push_back(szFileName);
 											}
 										}
 										free(lpBuffer);
 										ReleaseStgMedium(&stgmedData);
 									}
 								}
-								list<TCHAR *>::iterator it;
-								for (it = files.begin(); it != files.end(); it++)
-									_tremove(*it);
 								GlobalUnlock(stgmed.hGlobal);
 							}
 
