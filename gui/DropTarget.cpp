@@ -315,7 +315,8 @@ HRESULT __stdcall CDropTarget::Drop(IDataObject *pDataObject, DWORD grfKeyState,
 							SendMessage(m_hwndTarget, WM_DROPFILES, (WPARAM) pData, NULL);
 
 							GlobalUnlock(stgmed.hGlobal);
-							break;
+							lpCalc->bDoDrag = false;
+							return S_OK;
 						}
 					default: {
 							if (m_pAccepted[i].cfFormat == RegisterClipboardFormat(CFSTR_FILEDESCRIPTORW)) {
