@@ -1,4 +1,5 @@
 ﻿using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Parser;
 using System;
@@ -26,16 +27,46 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			_dockingService = dockingService;
 			_documentService = documentService;
 			_parserService = parserService;
+
+		    _parserService.OnParserFinished += (sender, args) =>
+		    {
+		        if (_dockingService.ActiveDocument == null || 
+                    string.IsNullOrEmpty(_dockingService.ActiveDocument.FileName) ||
+                    args.FileName != _dockingService.ActiveDocument.FileName)
+		        {
+		            return;
+		        }
+
+		        _dockingService.Invoke(UpdateLabelBox);
+		    };
+            DockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
 		}
+
+        void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument != null)
+            {
+                UpdateLabelBox();
+            }
+            else
+            {
+                ClearLabels();
+            }
+        }
 
 		public override void Copy()
 		{
-			Clipboard.SetDataObject(labelsBox.Items[labelsBox.SelectedIndex].ToString());
+			Clipboard.SetDataObject(labelsBox.SelectedItem.ToString());
 		}
 
 		private void AddLabels()
 		{
-			string fileName = _dockingService.ActiveDocument.FileName;
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            string fileName = _dockingService.ActiveDocument.FileName;
 			if (string.IsNullOrEmpty(fileName))
 			{
 				return;
@@ -72,15 +103,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			labelsBox.Items.Clear();
 		}
 
-		internal void DisableLabelBox()
-		{
-			ClearLabels();
-			labelsBox.Enabled = false;
-			alphaBox.Enabled = false;
-			includeEquatesBox.Enabled = false;
-		}
-
-		private void EnableLabelBox()
+	    private void EnableLabelBox()
 		{
 			labelsBox.Enabled = true;
 			alphaBox.Enabled = true;
@@ -94,7 +117,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			UpdateLabelBox();
 		}
 
-		public void UpdateLabelBox()
+	    private void UpdateLabelBox()
 		{
 			EnableLabelBox();
 			AddLabels();

@@ -9,7 +9,15 @@ namespace Revsoft.Wabbitcode.Services.Symbols
 		private ILookup<string, string> _labelToAddress;
 		private ILookup<string, string> _addressToLabel;
 
-		public List<string> GetLabelsFromAddress(string address)
+	    public IEnumerable<IGrouping<string, string>> Labels
+	    {
+	        get
+	        {
+	            return _labelToAddress;
+	        }
+	    }
+
+	    public List<string> GetLabelsFromAddress(string address)
 		{
 			return _addressToLabel == null ? new List<string>() : _addressToLabel[address].ToList();
 		}

@@ -28,7 +28,6 @@ namespace Revsoft.Wabbitcode.Utils
 		public static event BreakpointRemoved OnBreakpointRemoved;
 		#endregion
 
-
 		public static void AddBreakpoint(string fileName, int lineNumber)
 		{
 			WabbitcodeBreakpoint newBreak = new WabbitcodeBreakpoint(fileName, lineNumber);

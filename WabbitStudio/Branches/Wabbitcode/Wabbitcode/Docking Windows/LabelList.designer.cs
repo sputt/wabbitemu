@@ -85,7 +85,7 @@
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.Name = "LabelList";
 			this.Padding = new System.Windows.Forms.Padding(0, 2, 0, 2);
-			this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockRight;
+			this.ShowHint = WeifenLuo.WinFormsUI.Docking.DockState.DockLeft;
 			this.TabText = "Label List";
 			this.Text = "Label List";
 			this.VisibleChanged += new System.EventHandler(this.LabelList_VisibleChanged);

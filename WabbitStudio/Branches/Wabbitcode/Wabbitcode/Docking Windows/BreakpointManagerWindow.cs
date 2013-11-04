@@ -1,4 +1,5 @@
 ﻿using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using Revsoft.Wabbitcode.Services.Project;
@@ -24,7 +25,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			InitializeComponent();
 
 			_dockingService = dockingService;
-			_dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+            WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
 			_documentService = documentService;
 
 			_projectService = projectService;
