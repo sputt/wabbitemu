@@ -18,7 +18,7 @@ namespace Revsoft.Wabbitcode.Services
     {
         #region Private Fields
 
-        private byte _appPage;
+	    private byte _appPage;
 	    private ushort _oldSP;
 		private IWabbitemuDebugger _debugger;
 	    private bool _disposed;
@@ -47,7 +47,9 @@ namespace Revsoft.Wabbitcode.Services
 
         #region Public Properties
 
-        public string CurrentDebuggingFile { get; private set; }
+	    public static IWabbitcodeDebugger Instance { get; private set; }
+
+	    private string CurrentDebuggingFile { get; set; }
 
         public IZ80 CPU
 		{
@@ -62,7 +64,7 @@ namespace Revsoft.Wabbitcode.Services
             get { return _debugger.GetScreenImage(); }
         }
 
-	    public bool IsAnApp { get; private set; }
+	    private bool IsAnApp { get; set; }
 
 	    public bool IsRunning
 		{
@@ -82,7 +84,8 @@ namespace Revsoft.Wabbitcode.Services
 
 	    public event DebuggerRunning OnDebuggerRunningChanged;
 	    public event DebuggerStep OnDebuggerStep;
-		public event DebuggerClosed OnDebuggerClosed;
+        public static event DebuggerEventHandler OnDebuggingStarted;
+        public static event DebuggerEventHandler OnDebuggingEnded;
 
 		#endregion
 
@@ -110,6 +113,11 @@ namespace Revsoft.Wabbitcode.Services
 
 	    public ushort? GetRegisterValue(string wordHovered)
 	    {
+	        if (_debugger == null)
+	        {
+	            return null;
+	        }
+
 	        switch (wordHovered.Trim().ToLower())
 	        {
                 case "a":
@@ -206,6 +214,7 @@ namespace Revsoft.Wabbitcode.Services
             MachineStack = new Stack<StackEntry>();
             _oldSP = IsAnApp ? TopStackApp : (ushort) 0xFFFF;
             SetupInternalBreakpoints();
+            Instance = this;
 		}
 
         public void CancelDebug()
@@ -218,14 +227,17 @@ namespace Revsoft.Wabbitcode.Services
             }
             _debugger.CancelDebug();
             _debugger = null;
+            Instance = null;
+
+            if (OnDebuggingEnded != null)
+            {
+                OnDebuggingEnded(this, new DebuggingEventArgs(this));
+            }
         }
 
         private void DebuggerOnClose(IWabbitemu sender, EventArgs eventArgs)
         {
-            if (OnDebuggerClosed != null)
-            {
-                OnDebuggerClosed(sender, eventArgs);
-            }
+            CancelDebug();
         }
 
 
@@ -293,9 +305,39 @@ namespace Revsoft.Wabbitcode.Services
             {
                 _debugger.Memory.Bank[2] = _debugger.Memory.RAM[1];
             }
+
+            if (OnDebuggerStep != null)
+            {
+                OnDebuggerStep(this, new DebuggerStepEventArgs(new DocumentLocation(fileName, lineNumber)));
+            }
         }
 
-        public void Step()
+	    public void StartDebug()
+	    {
+	        if (OnDebuggingStarted != null)
+	        {
+	            OnDebuggingStarted(this, new DebuggingEventArgs(this));
+	        }
+
+	        var app = VerifyApp(CurrentDebuggingFile);
+
+	        if (app != null)
+	        {
+	            LaunchApp(app.Value.Name);
+	        }
+	    }
+
+	    public void RestartDebug()
+        {
+            ResetRom();
+	        var app = VerifyApp(CurrentDebuggingFile);
+            if (app != null)
+            {
+                LaunchApp(app.Value.Name);
+            }
+	    }
+
+	    public void Step()
         {
             // need to clear the old breakpoint so lets save it
             ushort currentPC = _debugger.CPU.PC;
@@ -306,13 +348,16 @@ namespace Revsoft.Wabbitcode.Services
             {
                 _debugger.Step();
                 newKey = _symbolService.ListTable.GetFileLocation(GetRelativePageNum(_debugger.CPU.PC), _debugger.CPU.PC, _debugger.CPU.PC >= 0x8000);
+                // we are safe to check this here, because we are stepping one at a time meaning if the stack did change, it can't have changed much
+                if (_oldSP != _debugger.CPU.SP)
+                {
+                    UpdateStack();
+                }
             }
 
             ushort address = _debugger.CPU.PC;
             byte page = GetRelativePageNum(address);
-
             key = _symbolService.ListTable.GetFileLocation(page, address, address >= 0x8000);
-            UpdateStack();
 
             if (OnDebuggerStep != null)
             {
@@ -740,7 +785,7 @@ namespace Revsoft.Wabbitcode.Services
 			return new CalcLocation(realAddress, realPage, false);
 		}
 
-		public TIApplication? VerifyApp(string createdName)
+	    private TIApplication? VerifyApp(string createdName)
 		{
 			if (_debugger == null || _debugger.Apps.Length == 0)
 			{
@@ -768,7 +813,7 @@ namespace Revsoft.Wabbitcode.Services
 			return app;
 		}
 
-	    public void LaunchApp(string createdName)
+	    private void LaunchApp(string createdName)
 		{
 			const ushort progToEdit = 0x84BF;
 			// this is code to do
@@ -785,7 +830,7 @@ namespace Revsoft.Wabbitcode.Services
 			_debugger.Running = true;
 		}
 
-        public void ResetRom()
+	    private void ResetRom()
         {
             RemoveInternalBreakpoints();
             _debugger.CPU.PC = 0x0000;
@@ -797,39 +842,6 @@ namespace Revsoft.Wabbitcode.Services
         }
 
         #endregion
-
-
-		//private void StartWithoutDebuggingAssemblerFinished(object sender, AssemblyFinishEventArgs e)
-		//{
-		//	if (!e.AssemblySucceeded)
-		//	{
-		//		DockingService.ShowError("Assembly failed");
-		//	}
-
-		//	if (ProjectService.Project.ProjectOutputs.Count < 1)
-		//	{
-		//		DockingService.ShowError("No project outputs detected");
-		//		return;
-		//	}
-
-		//	string createdName = ProjectService.Project.ProjectOutputs[0];
-		//	Resources.GetResource("Wabbitemu.exe", FileLocations.WabbitemuFile);
-		//	Process wabbit = Process.GetProcesses().FirstOrDefault(potential => potential.ProcessName.Contains("wabbitemu", StringComparison.OrdinalIgnoreCase));
-
-		//	if (wabbit == null)
-		//	{
-		//		wabbit = new Process
-		//		{
-		//			StartInfo =
-		//			{
-		//				Arguments = "\"" + createdName + "\"",
-		//				FileName = FileLocations.WabbitemuFile,
-		//			},
-		//			EnableRaisingEvents = true
-		//		};
-		//		wabbit.Start();
-		//	}
-        //}
 
         #region IDisposable
 

@@ -127,6 +127,7 @@ namespace Revsoft.Wabbitcode.Services
 			DocumentLocation key = _highlights[_debugIndex];
 			GotoFile(key.FileName).RemoveDebugHighlight(key.LineNumber);
 			_highlights.Remove(key);
+		    _debugIndex = -1;
 		}
 
 		private void RemoveHighlight(int index)

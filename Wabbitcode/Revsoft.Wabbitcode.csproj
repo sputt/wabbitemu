@@ -602,6 +602,12 @@
     <Compile Include="BuildSteps.Designer.cs">
       <DependentUpon>BuildSteps.cs</DependentUpon>
     </Compile>
+    <Compile Include="Docking Windows\ExpressionWindow.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Docking Windows\ExpressionWindow.designer.cs">
+      <DependentUpon>ExpressionWindow.cs</DependentUpon>
+    </Compile>
     <Compile Include="EditorExtensions\EditorToolTipRequestEventArgs.cs" />
     <Compile Include="GotoSymbol.cs">
       <SubType>Form</SubType>
@@ -850,6 +856,9 @@
     <Compile Include="Utils\TextEditorSearcher.cs" />
     <Compile Include="Utils\TextUtils.cs" />
     <Compile Include="Utils\WabbitcodeBreakpointEventArgs.cs" />
+    <EmbeddedResource Include="Docking Windows\ExpressionWindow.resx">
+      <DependentUpon>ExpressionWindow.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GotoSymbol.resx">
       <DependentUpon>GotoSymbol.cs</DependentUpon>
       <SubType>Designer</SubType>

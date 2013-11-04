@@ -34,18 +34,15 @@ namespace Revsoft.Wabbitcode.Services.Debugger
         }
     }
 
+    public delegate void DebuggerEventHandler(object sender, DebuggingEventArgs e);
     public delegate void DebuggerRunning(object sender, DebuggerRunningEventArgs e);
     public delegate void DebuggerStep(object sender, DebuggerStepEventArgs e);
-    public delegate void DebuggerClosed(object sender, EventArgs e);
 
     public interface IWabbitcodeDebugger : IDisposable
     {
         event DebuggerRunning OnDebuggerRunningChanged;
         event DebuggerStep OnDebuggerStep;
-        event DebuggerClosed OnDebuggerClosed;
 
-        string CurrentDebuggingFile { get; }
-        bool IsAnApp { get; }
         bool IsRunning { get; }
         Stack<StackEntry> MachineStack { get; }
         Stack<CallStackEntry> CallStack { get; }
@@ -63,9 +60,8 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         void SetPCToSelect(string fileName, int lineNumber);
 
-        void LaunchApp(string name);
-        TIApplication? VerifyApp(string createdName);
-        void ResetRom();
+        void StartDebug();
+        void RestartDebug();
 
         void Step();
         void StepOut();

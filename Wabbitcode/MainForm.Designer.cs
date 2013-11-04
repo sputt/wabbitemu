@@ -72,7 +72,6 @@
             this.copyToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.pasteToolStripButton = new System.Windows.Forms.ToolStripButton();
             this.runToolButton = new System.Windows.Forms.ToolStripButton();
-            this.documentParser = new System.ComponentModel.BackgroundWorker();
             this.wabbitemu = new System.ComponentModel.BackgroundWorker();
             this.mainMenu1 = new System.Windows.Forms.MenuStrip();
             this.fileMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -447,11 +446,6 @@
             this.runToolButton.Text = "Start Debug";
             this.runToolButton.Click += new System.EventHandler(this.startDebugMenuItem_Click);
             // 
-            // documentParser
-            // 
-            this.documentParser.DoWork += new System.ComponentModel.DoWorkEventHandler(this.documentParser_DoWork);
-            this.documentParser.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.documentParser_RunWorkerCompleted);
-            // 
             // mainMenu1
             // 
             this.mainMenu1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -569,7 +563,7 @@
             | System.Windows.Forms.Keys.S)));
             this.saveAllMenuItem.Size = new System.Drawing.Size(187, 22);
             this.saveAllMenuItem.Text = "Save All";
-            this.saveAllMenuItem.Click += new System.EventHandler(this.saveProjectMenuItem_Click);
+            this.saveAllMenuItem.Click += new System.EventHandler(this.saveAllMenuItem_Click);
             // 
             // saveProjectMenuItem
             // 
@@ -1045,7 +1039,7 @@
             this.callStackMenuItem.Name = "callStackMenuItem";
             this.callStackMenuItem.Size = new System.Drawing.Size(181, 22);
             this.callStackMenuItem.Tag = "callStack";
-            this.callStackMenuItem.Text = "Call MachineStack";
+            this.callStackMenuItem.Text = "Call Stack";
             this.callStackMenuItem.Click += new System.EventHandler(this.viewMenuItem_Click);
             // 
             // stackViewerMenuItem
@@ -1356,7 +1350,7 @@
             this.stopDebugMenuItem.Name = "stopDebugMenuItem";
             this.stopDebugMenuItem.Size = new System.Drawing.Size(228, 22);
             this.stopDebugMenuItem.Text = "Stop Debug";
-            this.stopDebugMenuItem.Click += new System.EventHandler(this.cancelDebug_Click);
+            this.stopDebugMenuItem.Click += new System.EventHandler(this.stopDebugMenuItem_Click);
             // 
             // toolStripSeparator19
             // 
@@ -1369,7 +1363,7 @@
             this.runMenuItem.Name = "runMenuItem";
             this.runMenuItem.Size = new System.Drawing.Size(228, 22);
             this.runMenuItem.Text = "Run";
-            this.runMenuItem.Click += new System.EventHandler(this.startDebugMenuItem_Click);
+            this.runMenuItem.Click += new System.EventHandler(this.runMenuItem_Click);
             // 
             // stepMenuItem
             // 
@@ -1378,7 +1372,7 @@
             this.stepMenuItem.ShortcutKeys = System.Windows.Forms.Keys.F7;
             this.stepMenuItem.Size = new System.Drawing.Size(228, 22);
             this.stepMenuItem.Text = "Step";
-            this.stepMenuItem.Click += new System.EventHandler(this.stepButton_Click);
+            this.stepMenuItem.Click += new System.EventHandler(this.stepMenuItem_Click);
             // 
             // stepOverMenuItem
             // 
@@ -1553,7 +1547,7 @@
             this.stopToolButton.Name = "stopToolButton";
             this.stopToolButton.Size = new System.Drawing.Size(23, 22);
             this.stopToolButton.Text = "Stop";
-            this.stopToolButton.Click += new System.EventHandler(this.cancelDebug_Click);
+            this.stopToolButton.Click += new System.EventHandler(this.stopDebugToolButton_Click);
             // 
             // restartToolStripButton
             // 
@@ -1592,7 +1586,7 @@
             this.stepToolButton.Name = "stepToolButton";
             this.stepToolButton.Size = new System.Drawing.Size(23, 22);
             this.stepToolButton.Text = "Step";
-            this.stepToolButton.Click += new System.EventHandler(this.stepButton_Click);
+            this.stepToolButton.Click += new System.EventHandler(this.stepToolButton_Click);
             // 
             // stepOverToolButton
             // 
@@ -1604,7 +1598,7 @@
             this.stepOverToolButton.Overflow = System.Windows.Forms.ToolStripItemOverflow.Never;
             this.stepOverToolButton.Size = new System.Drawing.Size(23, 22);
             this.stepOverToolButton.Text = "Step Over";
-            this.stepOverToolButton.Click += new System.EventHandler(this.stepOverMenuItem_Click);
+            this.stepOverToolButton.Click += new System.EventHandler(this.stepOverToolButton_Click);
             // 
             // stepOutToolButton
             // 
@@ -1615,7 +1609,7 @@
             this.stepOutToolButton.Name = "stepOutToolButton";
             this.stepOutToolButton.Size = new System.Drawing.Size(23, 22);
             this.stepOutToolButton.Text = "Step Out";
-            this.stepOutToolButton.Click += new System.EventHandler(this.stepOutMenuItem_Click);
+            this.stepOutToolButton.Click += new System.EventHandler(this.stepOutToolButton_Click);
             // 
             // editorToolStrip
             // 
@@ -1839,7 +1833,6 @@
 		private System.Windows.Forms.ToolStripComboBox configBox;
 		private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
 		private System.Windows.Forms.ToolStripButton runToolButton;
-		public System.ComponentModel.BackgroundWorker documentParser;
 		private System.Windows.Forms.ToolStripButton saveAllToolButton;
 		private System.ComponentModel.BackgroundWorker wabbitemu;
 		private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel;

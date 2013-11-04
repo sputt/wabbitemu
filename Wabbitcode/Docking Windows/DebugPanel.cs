@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.Drawing.Drawing2D;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using System;
@@ -31,7 +32,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 			iyBox.ContextMenu = contextMenu1;
 			pcBox.ContextMenu = contextMenu1;
 			spBox.ContextMenu = contextMenu1;
-			dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+            WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
 		}
 
 		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)

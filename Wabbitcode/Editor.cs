@@ -45,7 +45,6 @@ namespace Revsoft.Wabbitcode
 		private readonly Bitmap _errorBitmap = new Bitmap(Assembly.GetExecutingAssembly().GetManifestResourceStream("Revsoft.Wabbitcode.Resources.PNG.error.png"));
 		private readonly List<CancellationTokenSource> _queuedFiles = new List<CancellationTokenSource>();
 		private CancellationTokenSource _highlightRefsCancellationTokenSource;
-		private readonly MainForm _mainForm;
 		private readonly IBackgroundAssemblerService _backgroundAssemblerService;
 		private readonly IDockingService _dockingService;
 		private readonly IDocumentService _documentService;
@@ -53,9 +52,9 @@ namespace Revsoft.Wabbitcode
 		private readonly IProjectService _projectService;
 		private readonly ISymbolService _symbolService;
         private readonly IFileReaderService _fileReaderService;
+	    private IWabbitcodeDebugger _debugger;
 		private string _fileName;
-		private readonly List<TextMarker> _codeCheckMarkers = new List<TextMarker>();
-		private readonly List<IParserData> _labelsCache = new List<IParserData>(LabelsCacheSize);
+	    private readonly List<IParserData> _labelsCache = new List<IParserData>(LabelsCacheSize);
 		private int _stackTop;
 		private bool _isUpdatingRefs;
 		#endregion
@@ -114,29 +113,21 @@ namespace Revsoft.Wabbitcode
 			set { editorBox.ShowLineNumbers = value; }
 		}
 
-		public bool CanSetNextStatement
-		{
-			set { setNextStateMenuItem.Visible = value; }
-		}
-
 		#endregion
 
 		#region Static Events
 
-		public delegate void EditorUpdated(object sender, EditorEventArgs e);
-		public static event EditorUpdated OnEditorUpdated;
+		public delegate void EditorEventHandler(object sender, EditorEventArgs e);
+        public delegate void EditorToolTipHandler(object sender, EditorToolTipRequestEventArgs e);
+		public delegate void EditorSelectionHandler(object sender, EditorSelectionEventArgs e);
 
-		public delegate void EditorOpened(object sender, EditorEventArgs e);
-		public static event EditorOpened OnEditorOpened;
-
-		public delegate void EditorClosed(object sender, EditorEventArgs e);
-		public static event EditorClosed OnEditorClosing;
-
-        public delegate void EditorToolTipRequested(object sender, EditorToolTipRequestEventArgs e);
-        public static event EditorToolTipRequested OnEditorToolTipRequested;
-
-		public delegate void EditorSelectionChanged(object sender, EditorSelectionEventArgs e);
-		public static event EditorSelectionChanged OnEditorSelectionChanged;
+        public static event EditorEventHandler OnEditorUpdated;
+        public static event EditorEventHandler OnEditorOpened;
+        public static event EditorEventHandler OnEditorClosing;
+        public static event EditorToolTipHandler OnEditorToolTipRequested;
+        public static event EditorSelectionHandler OnEditorSelectionChanged;
+        public static event DragEventHandler OnEditorDragEnter;
+        public static event DragEventHandler OnEditorDragDrop;
 
 		#endregion
 
@@ -145,8 +136,6 @@ namespace Revsoft.Wabbitcode
             IProjectService projectService, ISymbolService symbolService)
 		{
 			InitializeComponent();
-
-			_mainForm = dockingService.MainForm;
 
 			_backgroundAssemblerService = backgroundAssemblerService;
 			_dockingService = dockingService;
@@ -168,6 +157,25 @@ namespace Revsoft.Wabbitcode
 
 			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
 			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
+            WabbitcodeDebugger.OnDebuggingStarted += (sender, e) =>
+		    {
+		        _debugger = e.Debugger;
+		        setNextStateMenuItem.Visible = true;
+		        editorBox.Document.ReadOnly = true;
+		    };
+            WabbitcodeDebugger.OnDebuggingEnded += (sender, e) =>
+		    {
+		        _debugger = null;
+                setNextStateMenuItem.Visible = false;
+                editorBox.Document.ReadOnly = false;
+		    };
+
+		    _debugger = WabbitcodeDebugger.Instance;
+		    if (_debugger != null)
+		    {
+                setNextStateMenuItem.Visible = true;
+                editorBox.Document.ReadOnly = true;
+		    }
 
 			CodeCompletionKeyHandler.Attach(this, editorBox, parserService);
 		}
@@ -234,7 +242,6 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			_mainForm.UpdateAssembledInfo(_fileName, editorBox.ActiveTextAreaControl.Caret.Line + 1);
 			int start;
 			int end;
 			if (editorBox.ActiveTextAreaControl.SelectionManager.SelectionCollection.Count == 1)
@@ -280,12 +287,11 @@ namespace Revsoft.Wabbitcode
 
 		void Caret_PositionChanged(object sender, EventArgs e)
 		{
-			_mainForm.SetLineAndColStatus(editorBox.ActiveTextAreaControl.Caret.Line.ToString(CultureInfo.InvariantCulture),
-					editorBox.ActiveTextAreaControl.Caret.Column.ToString(CultureInfo.InvariantCulture));
 			if (editorBox.Document.TextLength == 0)
 			{
 				return;
 			}
+
 			editorBox.Document.MarkerStrategy.RemoveAll(marker => marker != null && marker.Tag == "Reference");
 			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.WholeTextArea));
 			if (!_isUpdatingRefs)
@@ -325,7 +331,7 @@ namespace Revsoft.Wabbitcode
 					counter += possibleReference.Length + 1;
 				}
 			}
-			_mainForm.Invoke(() => AddMarkers(references));
+			_dockingService.Invoke(() => AddMarkers(references));
 			_isUpdatingRefs = false;
 		}
 
@@ -443,7 +449,6 @@ namespace Revsoft.Wabbitcode
 			editorBox.Document.HighlightingStrategy = HighlightingStrategyFactory.CreateHighlightingStrategyForFile(FileName);
 			TabText = Path.GetFileName(FileName);
 			DocumentChanged = false;
-			_mainForm.UpdateTitle();
 			return saved;
 		}
 
@@ -622,11 +627,10 @@ namespace Revsoft.Wabbitcode
 			SelectAll();
 		}
 
-		private void setNextStateMenuItem_Click(object sender, EventArgs e)
-		{
-			_mainForm.SetPC(_fileName, editorBox.ActiveTextAreaControl.Caret.Line + 1);
-		}
-
+        private void setNextStateMenuItem_Click(object sender, EventArgs e)
+        {
+            _debugger.SetPCToSelect(_fileName, editorBox.ActiveTextAreaControl.Caret.Line + 1);
+        }
 		private void bgotoButton_Click(object sender, EventArgs e)
 		{
 			// no need to make a stricter regex, as we own the inputs here
@@ -697,22 +701,34 @@ namespace Revsoft.Wabbitcode
 
 		private void editor_DragEnter(object sender, DragEventArgs e)
 		{
-			_mainForm.MainFormRedone_DragEnter(sender, e);
+		    if (OnEditorDragEnter != null)
+		    {
+		        OnEditorDragEnter(sender, e);
+		    }
 		}
 
 		private void editor_DragDrop(object sender, DragEventArgs e)
 		{
-			_mainForm.MainFormRedone_DragDrop(sender, e);
+            if (OnEditorDragDrop != null)
+            {
+                OnEditorDragDrop(sender, e);
+            }
 		}
 
 		private void editorBox_DragDrop(object sender, DragEventArgs e)
 		{
-			_mainForm.MainFormRedone_DragDrop(sender, e);
+            if (OnEditorDragDrop != null)
+            {
+                OnEditorDragDrop(sender, e);
+            }
 		}
 
 		private void editorBox_DragEnter(object sender, DragEventArgs e)
 		{
-			_mainForm.MainFormRedone_DragEnter(sender, e);
+            if (OnEditorDragEnter != null)
+            {
+                OnEditorDragEnter(sender, e);
+            }
 		}
 
 		#endregion
@@ -758,7 +774,6 @@ namespace Revsoft.Wabbitcode
 				DocumentChanged = false;
 				UpdateTabText();
 			}
-			_mainForm.UpdateTitle();
 		}
 
 		void textChangedTimer_Tick(object sender, EventArgs e)
@@ -831,17 +846,17 @@ namespace Revsoft.Wabbitcode
 			_dockingService.ShowDockPanel(_dockingService.FindResults);
 		}
 
-		private void renameContext_Click(object sender, EventArgs e)
+        private void renameContext_Click(object sender, EventArgs e)
 		{
-			_mainForm.ShowRefactorForm();
+			RefactorForm refactorForm = new RefactorForm(_dockingService, _projectService);
+            refactorForm.ShowDialog();
 		}
 
-		private void extractMethodContext_Click(object sender, EventArgs e)
-		{
+	    private void extractMethodContext_Click(object sender, EventArgs e)
+	    {
+	    }
 
-		}
-
-		private void editorBox_MouseClick(object sender, MouseEventArgs e)
+	    private void editorBox_MouseClick(object sender, MouseEventArgs e)
 		{
 			if (e.Button != MouseButtons.Right)
 			{
@@ -851,8 +866,8 @@ namespace Revsoft.Wabbitcode
 			bool hasSelection = editorBox.ActiveTextAreaControl.SelectionManager.HasSomethingSelected;
 			cutContext.Enabled = hasSelection;
 			copyContext.Enabled = hasSelection;
-			renameContext.Enabled = !hasSelection;
-			extractMethodContext.Enabled = hasSelection;
+            renameContext.Enabled = !hasSelection;
+            extractMethodContext.Enabled = hasSelection;
 
 			if (!string.IsNullOrEmpty(editorBox.Text))
 			{
@@ -1254,76 +1269,7 @@ namespace Revsoft.Wabbitcode
 			editorBox.Document.RequestUpdate(new TextAreaUpdate(TextAreaUpdateType.SingleLine, line));
 		}
 
-		private static void AddSquiggleLine(Editor doc, int newLineNumber, Color underlineColor, string description)
-		{
-			// TODO: regex this
-			var document = doc.EditorBox.Document;
-			int start = document.GetOffsetForLineNumber(newLineNumber - 1);
-			int length;
-			string text;
-			if (description.Contains("Can't") || description.Contains("isn't") || description.Contains("Could not"))
-			{
-				int quote1 = description.IndexOf('\'');
-				if (description.Contains("Can't"))
-				{
-					quote1 = description.IndexOf('\'', 7);
-				}
-				int quote2 = description.IndexOf('\'', quote1 + 1);
-				length = quote2 - quote1 - 1;
-				text = description.Substring(quote1 + 1, length);
-				start = document.TextContent.IndexOf(text, start);
-			}
-			else if (description.Contains("No such file or directory"))
-			{
-				text = description.Substring(0, description.IndexOf(':', 4));
-				length = text.Length;
-				start = document.TextContent.IndexOf(text, start);
-			}
-			else
-			{
-				length = doc.EditorBox.Text.Split('\n')[newLineNumber - 1].Length - 1;
-				while (document.TextContent[start] == ' ' || document.TextContent[start] == '\t')
-				{
-					start++;
-					length--;
-				}
-			}
-			TextMarker highlight = new TextMarker(start, length, TextMarkerType.WaveLine, underlineColor)
-			{
-				ToolTip = description,
-				Tag = "Code Check"
-			};
-			doc.EditorBox.Document.MarkerStrategy.AddMarker(highlight);
-		}
-
-		internal void AddSquiggleLine(int newLineNumber, Color underlineColor, string description)
-		{
-			TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;
-			editorBox.ActiveTextAreaControl.ScrollTo(newLineNumber - 1);
-			editorBox.ActiveTextAreaControl.Caret.Line = newLineNumber - 1;
-			int start = textArea.Caret.Offset;
-			int length = editorBox.Document.TextContent.Split('\n')[textArea.Caret.Line].Length;
-			while (start > 0 && textArea.Document.TextContent[start] != '\n')
-			{
-				start--;
-			}
-
-			start++;
-			length--;
-			while (char.IsWhiteSpace(textArea.Document.GetCharAt(start)))
-			{
-				start++;
-				length--;
-			}
-			TextMarker highlight = new TextMarker(start, length, TextMarkerType.WaveLine, underlineColor)
-			{
-				ToolTip = description,
-				Tag = "Code Check"
-			};
-			editorBox.Document.MarkerStrategy.AddMarker(highlight);
-		}
-
-		internal void HighlightLine(int newLineNumber, Color foregroundColor)
+	    internal void HighlightLine(int newLineNumber, Color foregroundColor)
 		{
 			int lineNum = newLineNumber - 1;
 			TextArea textArea = editorBox.ActiveTextAreaControl.TextArea;

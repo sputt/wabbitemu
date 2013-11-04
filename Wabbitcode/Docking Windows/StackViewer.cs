@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 using System;
@@ -21,8 +22,8 @@ namespace Revsoft.Wabbitcode.Docking_Windows
             InitializeComponent();
 
             _dockingService = dockingService;
-            _dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
-            _dockingService.MainForm.OnDebuggingEnded += mainForm_OnDebuggingEnded;
+            WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+            WabbitcodeDebugger.OnDebuggingEnded += mainForm_OnDebuggingEnded;
         }
 
         void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)

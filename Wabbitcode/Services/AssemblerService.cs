@@ -47,7 +47,7 @@ namespace Revsoft.Wabbitcode.Services
 		private AssemblerOutput AssembleFile(string inputFile, string outputFile, string originalDir, 
             IEnumerable<string> includeDirs, AssemblyFlags flags = AssemblyFlags.Normal, bool suppressEvents = false)
 		{
-			_assembler = new SpasmExeAssembler();
+			_assembler = new SpasmComAssembler();
 
 			_assembler.SetWorkingDirectory(originalDir);
 

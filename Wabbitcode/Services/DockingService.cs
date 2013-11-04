@@ -34,6 +34,7 @@ namespace Revsoft.Wabbitcode.Services
 		public bool HasBeenInited { get; private set; }
 		public LabelList LabelList { get; private set; }
 		public MacroManager MacroManager { get; private set; }
+        public ExpressionWindow ExpressionWindow { get; private set; }
 
 		public IDockContent ActiveContent
 		{
@@ -149,6 +150,26 @@ namespace Revsoft.Wabbitcode.Services
 			panel.Show(_dockPanel);
 		}
 
+        public void ShowDockPanel(DockContent panel, IDockContent beforeContent)
+        {
+            if (panel == null)
+            {
+                return;
+            }
+
+            panel.Show(beforeContent.DockHandler.Pane, beforeContent);
+        }
+
+	    public void ShowDockPanel(DockContent panel, IDockContent beforeContent, DockAlignment alignment)
+	    {
+            if (panel == null)
+            {
+                return;
+            }
+
+	        panel.Show(beforeContent.DockHandler.Pane, alignment, .5);
+	    }
+
 		public void LoadConfig(DeserializeDockContent dockContent)
 		{
 			try
@@ -175,12 +196,13 @@ namespace Revsoft.Wabbitcode.Services
 		public void InitPanels(ProjectViewer projectViewer, ErrorList errorList, TrackingWindow trackingWindow,
 			DebugPanel debugPanel, CallStack callStack, LabelList labelList, OutputWindow outputWindow,
 			FindAndReplaceForm findAndReplaceForm, FindResultsWindow findResults, MacroManager macroManager,
-			BreakpointManagerWindow breakpointManagerWindow, StackViewer stackViewer)
+			BreakpointManagerWindow breakpointManagerWindow, StackViewer stackViewer, ExpressionWindow expressionWindow)
 		{
 			if (HasBeenInited)
 			{
 				throw new Exception("Cannot init panels twice");
 			}
+
 			ProjectViewer = projectViewer;
 			ErrorList = errorList;
 			TrackWindow = trackingWindow;
@@ -193,6 +215,7 @@ namespace Revsoft.Wabbitcode.Services
 			MacroManager = macroManager;
 			BreakManagerWindow = breakpointManagerWindow;
 			StackViewer = stackViewer;
+		    ExpressionWindow = expressionWindow;
 			HasBeenInited = true;
 		}
 

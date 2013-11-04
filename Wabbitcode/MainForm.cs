@@ -1,6 +1,5 @@
-﻿using Microsoft.Win32;
-using Revsoft.TextEditor;
-using Revsoft.TextEditor.Document;
+﻿using System.ComponentModel;
+using Microsoft.Win32;
 using Revsoft.Wabbitcode.Docking_Windows;
 using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Exceptions;
@@ -15,16 +14,12 @@ using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using WabbitemuLib;
 using WeifenLuo.WinFormsUI.Docking;
 using IFileReaderService = Revsoft.Wabbitcode.Services.IFileReaderService;
 
@@ -34,8 +29,7 @@ namespace Revsoft.Wabbitcode
 	{
 		#region Private Members
 
-		private readonly List<ArrayList> _errorsToAdd = new List<ArrayList>();
-		private bool _showToolbar = true;
+	    private bool _showToolbar = true;
 		private IWabbitcodeDebugger _debugger;
         private readonly Dictionary<string, string> _foldingDictionary = new Dictionary<string, string>();
 
@@ -55,11 +49,7 @@ namespace Revsoft.Wabbitcode
 		#endregion
 
 		#region Events
-		public delegate void DebuggingStarted(object sender, DebuggingEventArgs e);
-		public event DebuggingStarted OnDebuggingStarted;
 
-		public delegate void DebuggingEnded(object sender, DebuggingEventArgs e);
-		public event DebuggingEnded OnDebuggingEnded;
 		#endregion
 
 		public MainForm(string[] args)
@@ -74,6 +64,7 @@ namespace Revsoft.Wabbitcode
 		
 			WabbitcodeBreakpointManager.OnBreakpointAdded += WabbitcodeBreakpointManager_OnBreakpointAdded;
 			WabbitcodeBreakpointManager.OnBreakpointRemoved += WabbitcodeBreakpointManager_OnBreakpointRemoved;
+
             Editor.OnEditorOpened += Editor_OnEditorOpened;
             Editor.OnEditorClosing += Editor_OnEditorClosing;
             Editor.OnEditorToolTipRequested += Editor_OnEditorToolTipRequested;
@@ -89,7 +80,8 @@ namespace Revsoft.Wabbitcode
 				new FindResultsWindow(_dockingService, _documentService),
 				new MacroManager(_dockingService),
 				new BreakpointManagerWindow(_dockingService, _documentService, _projectService),
-				new StackViewer(_dockingService));
+				new StackViewer(_dockingService),
+                new ExpressionWindow(_dockingService, _symbolService));
 			_dockingService.LoadConfig(GetContentFromPersistString);
 
 			if (args.Length == 0)
@@ -163,17 +155,25 @@ namespace Revsoft.Wabbitcode
             }
 
             string[] parsedStrings = persistString.Split(';');
-            if (parsedStrings.Length != 6 || parsedStrings[0] != typeof(Editor).ToString() || !File.Exists(parsedStrings[1]))
+	        string type = parsedStrings[0];
+            if (parsedStrings.Length != 6 || type != typeof(Editor).ToString())
             {
                 return null;
             }
 
-            Editor doc = _documentService.OpenDocument(parsedStrings[1]);
-            doc.SetPosition(
-                int.Parse(parsedStrings[2]),
-                int.Parse(parsedStrings[3]),
-                int.Parse(parsedStrings[4]),
-                int.Parse(parsedStrings[5]));
+            string fileName = parsedStrings[1];
+            if (!File.Exists(fileName))
+            {
+                return null;
+            }
+
+            int horzVal = int.Parse(parsedStrings[2]);
+	        int vertValue = int.Parse(parsedStrings[3]);
+	        int line = int.Parse(parsedStrings[4]);
+	        int column = int.Parse(parsedStrings[5]);
+
+            Editor doc = _documentService.OpenDocument(fileName);
+            doc.SetPosition(horzVal, vertValue, line, column);
             return doc;
         }
 
@@ -193,48 +193,6 @@ namespace Revsoft.Wabbitcode
             e.Tooltip = "$" + regValue.Value.ToString("X");
         }
 
-        #region Initalization
-
-        private void InitializeEvents()
-		{
-			Editor.OnEditorSelectionChanged += GetCodeInfo;
-		}
-
-		private void InitializeService()
-		{
-			_dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>(dockPanel);
-			_assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
-			_projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
-			_parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
-			_symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
-			_backgroundAssemblerService = ServiceFactory.Instance.GetServiceInstance<IBackgroundAssemblerService>();
-			_documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
-		    _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
-		}
-
-		private void InitiailzeToolbars()
-		{
-			if (Settings.Default.mainToolBar)
-			{
-				mainToolBar.Show();
-			}
-			else
-			{
-				mainToolBar.Hide();
-			}
-
-			if (Settings.Default.debugToolbar)
-			{
-				debugToolStrip.Show();
-			}
-			else
-			{
-				debugToolStrip.Hide();
-			}
-		}
-
-        #endregion
-
         private void projectWatcher_Changed(object sender, FileSystemEventArgs e)
 		{
 			switch (e.ChangeType)
@@ -242,20 +200,21 @@ namespace Revsoft.Wabbitcode
 				case WatcherChangeTypes.Changed:
 					if (!string.IsNullOrEmpty(Path.GetExtension(e.FullPath)))
 					{
-						foreach (Action action in _dockingService.Documents
-							.Where(doc => FileOperations.CompareFilePath(doc.FileName, e.FullPath))
-							.Select(tempDoc => (Action)(() =>
-							{
-								const string modifiedFormat = "{0} modified outside the editor.\nLoad changes?";
-								DialogResult result = MessageBox.Show(string.Format(modifiedFormat, e.FullPath),
-									"File modified", MessageBoxButtons.YesNo);
-								if (result == DialogResult.Yes)
-								{
-									_documentService.OpenDocument(tempDoc, e.FullPath);
-								}
-							})))
+					    string path = e.FullPath;
+						foreach (var tempDoc in _dockingService.Documents
+							.Where(doc => FileOperations.CompareFilePath(doc.FileName, path)))
 						{
-							Invoke(action);
+						    Editor doc = tempDoc;
+						    this.Invoke(() =>
+                            {
+                                const string modifiedFormat = "{0} modified outside the editor.\nLoad changes?";
+                                DialogResult result = MessageBox.Show(string.Format(modifiedFormat, e.FullPath),
+                                    "File modified", MessageBoxButtons.YesNo);
+                                if (result == DialogResult.Yes)
+                                {
+                                    _documentService.OpenDocument(doc, e.FullPath);
+                                }
+                            });
 							break;
 						}
 					}
@@ -271,45 +230,13 @@ namespace Revsoft.Wabbitcode
 		        return;
 		    }
 
-		    if (
-		        MessageBox.Show("Project Folder was renamed, would you like to rename the project?",
+		    if (MessageBox.Show("Project Folder was renamed, would you like to rename the project?",
 		            "Rename project",
 		            MessageBoxButtons.YesNo,
 		            MessageBoxIcon.Information) == DialogResult.Yes)
 		    {
 		        _projectService.Project.ProjectName = Path.GetFileNameWithoutExtension(e.FullPath);
 		    }
-		}
-
-	    private void cancelDebug_Click(object sender, EventArgs e)
-		{
-			CancelDebug();
-		}
-
-		public void MainFormRedone_DragDrop(object sender, DragEventArgs e)
-		{
-			if (e.Data.GetDataPresent(DataFormats.FileDrop) == false)
-			{
-				return;
-			}
-
-			string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-			foreach (string file in files)
-			{
-				_documentService.OpenDocument(file);
-			}
-		}
-
-		public void MainFormRedone_DragEnter(object sender, DragEventArgs e)
-		{
-			e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
-		}
-
-		public void ProcessParameters(string[] args)
-		{
-			// The form has loaded, and initialization will have been be done.
-			HandleArgs(args);
-			Activate();
 		}
 
 		public void UpdateChecks()
@@ -382,31 +309,10 @@ namespace Revsoft.Wabbitcode
 			configBox.SelectedIndex = _projectService.Project.BuildSystem.CurrentConfigIndex;
 		}
 
-		private void UpdateDebugStuff()
-		{
-			bool isRunning = _debugger != null && _debugger.IsRunning;
-			bool isDebugging = _debugger != null;
-			bool enabled = !isRunning && isDebugging;
-			stepMenuItem.Enabled = enabled;
-			gotoCurrentToolButton.Enabled = enabled;
-			stepToolButton.Enabled = enabled;
-			startDebugMenuItem.Enabled = enabled || !isDebugging;
-			stepOverMenuItem.Enabled = enabled;
-			stepOverToolButton.Enabled = enabled;
-			stepOutMenuItem.Enabled = enabled && _debugger.CallStack.Count > 0;
-            stepOutToolButton.Enabled = enabled && _debugger.CallStack.Count > 0;
-			stopDebugMenuItem.Enabled = isDebugging;
-			stopToolButton.Enabled = isDebugging;
-			restartToolStripButton.Enabled = isDebugging;
-			runDebuggerToolButton.Enabled = enabled || !isDebugging;
-			runToolButton.Enabled = enabled || !isDebugging;
-			pauseToolButton.Enabled = isRunning && isDebugging;
-		}
-
 		/// <summary>
 		/// Updates the title of the app with the filename.
 		/// </summary>
-		public void UpdateTitle()
+		private void UpdateTitle()
 		{
 			string debugString = string.Empty;
 			if (_debugger != null)
@@ -429,325 +335,20 @@ namespace Revsoft.Wabbitcode
 			recentFilesMenuItem.DropDownItems.Add(button);
 		}
 
-        #region Debugging
-
-        private void StartDebug()
-        {
-            if (_projectService.Project.IsInternal)
-            {
-                throw new DebuggingException("Debugging single files is not supported");
-            }
-
-            DoAssembly(null, (sender, e) =>
-            {
-                if (!e.AssemblySucceeded)
-                {
-                    if (DockingService.ShowMessageBox(_dockingService.MainForm,
-                                    "There were errors assembling. Would you like to continue and try to debug?",
-                                    "Continue",
-                                    MessageBoxButtons.YesNo,
-                                    MessageBoxIcon.Error) == DialogResult.No)
-                    {
-                        CancelDebug();
-                        return;
-                    }
-                }
-
-                this.Invoke(() =>
-                {
-                    ShowErrorPanels(e.Output);
-                    LockOpenEditors();
-                });
-
-                _debugger = new WabbitcodeDebugger(_documentService, _fileReaderService, _symbolService);
-                _debugger.OnDebuggerStep += debugger_OnDebuggerStep;
-                _debugger.OnDebuggerRunningChanged += debugger_OnDebuggerRunningChanged;
-                _debugger.OnDebuggerClosed += (o, args) => CancelDebug();
-
-                string createdName;
-                try
-                {
-                    createdName = GetOutputFileDetails(e.Project);
-                }
-                catch (DebuggingException ex)
-                {
-                    DockingService.ShowError("Unable to start debugging", ex);
-                    CancelDebug();
-                    return;
-                }
-
-                try
-                {
-                    _debugger.InitDebugger(createdName);
-                }
-                catch (MissingROMException)
-                {
-                    this.Invoke(() =>
-                    {
-                        OpenFileDialog openFileDialog = new OpenFileDialog
-                        {
-                            CheckFileExists = true,
-                            DefaultExt = "*.rom",
-                            Filter = "All Know File Types | *.rom; *.sav; |ROM Files (*.rom)|*.rom|" +
-                                     "Savestate Files (*.sav)|*.sav|All Files(*.*)|*.*",
-                            FilterIndex = 0,
-                            Multiselect = true,
-                            RestoreDirectory = true,
-                            Title = "Select new ROM file",
-                        };
-
-                        if (openFileDialog.ShowDialog() != DialogResult.OK)
-                        {
-                            CancelDebug();
-                            return;
-                        }
-
-                        SaveRomPathRegistry(openFileDialog.FileName);
-                    });
-
-                    _debugger.InitDebugger(createdName);
-                }
-
-                if (OnDebuggingStarted != null)
-                {
-                    OnDebuggingStarted(this, new DebuggingEventArgs(_debugger));
-                }
-
-                TIApplication? app = null;
-                try
-                {
-                    app = _debugger.VerifyApp(createdName);
-                }
-                catch (DebuggingException)
-                {
-                    if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
-                        "Missing App",
-                        MessageBoxButtons.YesNo,
-                        MessageBoxIcon.Exclamation) != DialogResult.Yes)
-                    {
-                        CancelDebug();
-                        return;
-                    }
-                }
-
-                this.Invoke(() =>
-                {
-                    UpdateDebugStuff();
-                    UpdateBreakpoints();
-                    ShowDebugPanels();
-                    EnableDebugPanels(false);
-                });
-
-                if (app != null)
-                {
-                    _debugger.LaunchApp(app.Value.Name);
-                }
-            });
-        }
-
-        private void RestartDebug()
-        {
-            if (_projectService.Project.IsInternal)
-            {
-                throw new DebuggingException("Debugging single files is not supported");
-            }
-
-            if (!_debugger.IsAnApp)
-            {
-                return;
-            }
-
-            TIApplication? app = null;
-            try
-            {
-                app = _debugger.VerifyApp(_debugger.CurrentDebuggingFile);
-            }
-            catch (DebuggingException)
-            {
-                if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
-                    "Missing App",
-                    MessageBoxButtons.YesNo,
-                    MessageBoxIcon.Exclamation) != DialogResult.Yes)
-                {
-                    CancelDebug();
-                    return;
-                }
-            }
-
-            UpdateDebugStuff();
-            ShowDebugPanels();
-            _documentService.RemoveDebugHighlight();
-
-            _debugger.ResetRom();
-            if (app != null)
-            {
-                _debugger.LaunchApp(app.Value.Name);
-            }
-        }
-
-        private void CancelDebug()
-		{
-			if (InvokeRequired)
-			{
-				this.Invoke(CancelDebug);
-				return;
-			}
-
-			_debugger.CancelDebug();
-			_debugger = null;
-
-			UpdateTitle();
-			UpdateDebugStuff();
-			HideDebugPanels();
-			UpdateChecks();
-
-			_documentService.RemoveDebugHighlight();
-			foreach (Editor child in _dockingService.Documents)
-			{
-				child.RemoveInvisibleMarkers();
-				child.CanSetNextStatement = false;
-			    child.EditorBox.Document.ReadOnly = false;
-			}
-
-			if (OnDebuggingEnded != null)
-			{
-				OnDebuggingEnded(this, new DebuggingEventArgs(null));
-			}
-		}
-
-        private void debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
-        {
-            this.Invoke(() =>
-            {
-                _documentService.RemoveDebugHighlight();
-                _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-                _documentService.HighlightDebugLine(e.Location.LineNumber);
-
-                UpdateDebugStuff();
-                UpdateDebugPanel();
-                EnableDebugPanels(true);
-            });
-        }
-
-        private void debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
-        {
-            this.Invoke(() =>
-            {
-                _documentService.RemoveDebugHighlight();
-                UpdateDebugStuff();
-                if (e.Running)
-                {
-                    _dockingService.ActiveDocument.Refresh();
-                    EnableDebugPanels(false);
-                }
-                else
-                {
-                    Activate();
-                    _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
-                    _documentService.HighlightDebugLine(e.Location.LineNumber);
-
-                    UpdateDebugPanel();
-                    EnableDebugPanels(true);
-                }
-            });
-        }
-
-        private void EnableDebugPanels(bool enabled)
-        {
-            _dockingService.DebugPanel.EnablePanel(enabled);
-            _dockingService.StackViewer.EnablePanel(enabled);
-            _dockingService.TrackWindow.EnablePanel(enabled);
-            _dockingService.CallStack.EnablePanel(enabled);
-        }
-
-        private void ShowDebugPanels()
-        {
-            _showToolbar = Settings.Default.debugToolbar;
-            Settings.Default.debugToolbar = true;
-            if (!_showToolbar)
-            {
-                debugToolStrip.Visible = true;
-            }
-
-            debugToolStrip.Height = mainToolBar.Height;
-            UpdateChecks();
-            _dockingService.ShowDockPanel(_dockingService.DebugPanel);
-            _dockingService.ShowDockPanel(_dockingService.StackViewer);
-            _dockingService.ShowDockPanel(_dockingService.TrackWindow);
-            _dockingService.ShowDockPanel(_dockingService.CallStack);
-            UpdateTitle();
-        }
-
-	    private void HideDebugPanels()
-	    {
-            Settings.Default.debugToolbar = _showToolbar;
-            if (!_showToolbar)
-            {
-                debugToolStrip.Visible = false;
-            }
-
-	        if (_dockingService.DebugPanel != null)
-	        {
-	            _dockingService.HideDockPanel(_dockingService.DebugPanel);
-	        }
-
-	        if (_dockingService.TrackWindow != null)
-	        {
-	            _dockingService.HideDockPanel(_dockingService.TrackWindow);
-	        }
-
-	        if (_dockingService.CallStack != null)
-	        {
-	            _dockingService.HideDockPanel(_dockingService.CallStack);
-	        }
-
-	        if (_dockingService.StackViewer != null)
-	        {
-	            _dockingService.HideDockPanel(_dockingService.StackViewer);
-	        }
-	    }
-
-        private void UpdateDebugPanel()
-        {
-            _dockingService.DebugPanel.UpdateFlags();
-            _dockingService.DebugPanel.UpdateRegisters();
-            _dockingService.DebugPanel.UpdateScreen();
-        }
-
-        internal void SetPC(string fileName, int lineNumber)
-        {
-            _debugger.SetPCToSelect(fileName, lineNumber);
-
-            _documentService.RemoveDebugHighlight();
-            _documentService.HighlightDebugLine(lineNumber);
-            UpdateDebugPanel();
-        }
-
-        #endregion
-
         internal void ClearRecentItems()
 		{
 			recentFilesMenuItem.DropDownItems.Clear();
 		}
 
-		internal void HideProgressBar()
+	    private void SetLineAndColStatus(object sender, EditorSelectionEventArgs e)
 		{
-			progressBar.Visible = false;
-		}
-
-		internal void SetLineAndColStatus(string line, string col)
-		{
+		    int line = e.Editor.EditorBox.ActiveTextAreaControl.Caret.Line;
+            int column = e.Editor.EditorBox.ActiveTextAreaControl.Caret.Column;
 			lineStatusLabel.Text = "Ln: " + line;
-			colStatusLabel.Text = "Col: " + col;
+			colStatusLabel.Text = "Col: " + column;
 		}
 
-		internal void SetProgress(int percent)
-		{
-			progressBar.Visible = true;
-			progressBar.Value = percent;
-		}
-
-		private void SetToolStripText(string text)
+	    private void SetToolStripText(string text)
 		{
 			toolStripStatusLabel.Text = text;
 		}
@@ -851,7 +452,6 @@ namespace Revsoft.Wabbitcode
             if (_debugger != null)
             {
                 e.Editor.EditorBox.Document.ReadOnly = true;
-                e.Editor.CanSetNextStatement = true;
             }
 
             string foldings;
@@ -897,11 +497,6 @@ namespace Revsoft.Wabbitcode
 			foreach (WabbitcodeBreakpoint breakpoint in breakpoints)
 			{
 				_debugger.SetBreakpoint(breakpoint);
-			}
-
-			foreach (Editor d in _dockingService.Documents)
-			{
-				d.CanSetNextStatement = true;
 			}
 		}
 
@@ -963,24 +558,6 @@ namespace Revsoft.Wabbitcode
 			}
 
 			toggleBreakpointMenuItem.Enabled = enabled;
-			if (_projectService.Project == null || _projectService.Project.IsInternal)
-			{
-				startDebugMenuItem.Enabled = enabled;
-				startWithoutDebugMenuItem.Enabled = enabled;
-				runToolButton.Enabled = enabled;
-				runMenuItem.Enabled = enabled;
-				runDebuggerToolButton.Enabled = enabled;
-				assembleMenuItem.Enabled = enabled;
-			}
-			else
-			{
-				startDebugMenuItem.Enabled = true;
-				startWithoutDebugMenuItem.Enabled = true;
-				runToolButton.Enabled = true;
-				runMenuItem.Enabled = true;
-				runDebuggerToolButton.Enabled = true;
-				assembleMenuItem.Enabled = true;
-			}
 
 			// Window Menu
 			windowMenuItem.Enabled = enabled;
@@ -993,41 +570,7 @@ namespace Revsoft.Wabbitcode
 			saveProjectMenuItem.Visible = projectOpen;
 		}
 
-		private void aboutMenuItem_Click(object sender, EventArgs e)
-		{
-			AboutBox box = new AboutBox();
-			box.ShowDialog();
-			box.Dispose();
-		}
-
-		private void addNewFileMenuItem_Click(object sender, EventArgs e)
-		{
-			RenameForm newNameForm = new RenameForm
-			{
-				Text = "New File"
-			};
-			var result = newNameForm.ShowDialog() != DialogResult.OK;
-			newNameForm.Dispose();
-			if (result)
-			{
-				return;
-			}
-
-			string name = newNameForm.NewText;
-			_dockingService.ProjectViewer.AddNewFile(name);
-		}
-
-		private void AddSquiggleLine(int newLineNumber, Color underlineColor, string description)
-		{
-			if (_documentService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_documentService.ActiveDocument.AddSquiggleLine(newLineNumber, underlineColor, description);
-		}
-
-		private void DoAssembly(AssemblerService.OnFinishAssemblyFile fileEventHandler, AssemblerService.OnFinishAssemblyProject projectEventHandler)
+	    private void DoAssembly(AssemblerService.OnFinishAssemblyFile fileEventHandler, AssemblerService.OnFinishAssemblyProject projectEventHandler)
 		{
 			_dockingService.OutputWindow.ClearOutput();
 			if (!_projectService.Project.IsInternal)
@@ -1072,114 +615,9 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
-		private void assembleMenuItem_Click(object sender, EventArgs e)
-		{
-			DoAssembly(OnAssemblyFinished, OnAssemblyFinished);
-		}
-
-		private void buildOrderButton_Click(object sender, EventArgs e)
-		{
-			using (BuildSteps build = new BuildSteps(_projectService.Project))
-			{
-				build.ShowDialog();
-			}
-		}
-
-		private void closeMenuItem_Click(object sender, EventArgs e)
-		{
-			if (ActiveMdiChild != null)
-			{
-				ActiveMdiChild.Close();
-			}
-		}
-
-		private void CloseProject()
-		{
-			DialogResult result = DialogResult.No;
-			if (_projectService.Project.NeedsSave && !Settings.Default.autoSaveProject)
-			{
-				result = MessageBox.Show("Would you like to save your changes to the project file?", "Save project?", MessageBoxButtons.YesNo, MessageBoxIcon.None);
-			}
-			if (result == DialogResult.Yes || Settings.Default.autoSaveProject)
-			{
-				_projectService.SaveProject();
-			}
-
-			_projectService.CloseProject();
-			_dockingService.ProjectViewer.CloseProject();
-			UpdateProjectMenu(false);
-		}
-
-		private void closeProjMenuItem_Click(object sender, EventArgs e)
-		{
-			CloseProject();
-		}
-
 		private void configBox_SelectedIndexChanged(object sender, EventArgs e)
 		{
 			_projectService.Project.BuildSystem.CurrentConfigIndex = configBox.SelectedIndex;
-		}
-
-		private void convertSpacesToTabsMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_dockingService.ActiveDocument.ConvertSpacesToTabs();
-		}
-
-		private void Copy()
-		{
-			var activeContent = _dockingService.ActiveContent as ToolWindow;
-			if (activeContent != null)
-			{
-				activeContent.Copy();
-			}
-			else if (_dockingService.ActiveDocument != null)
-			{
-				_dockingService.ActiveDocument.Copy();
-			}
-		}
-
-		private void copyMenuItem_Click(object sender, EventArgs e)
-		{
-			Copy();
-		}
-
-		private void copyToolButton_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument != null)
-			{
-				_dockingService.ActiveDocument.Copy();
-			}
-		}
-
-		private void Cut()
-		{
-			var toolWindow = _dockingService.ActiveContent as ToolWindow;
-			if (toolWindow != null)
-			{
-				toolWindow.Cut();
-			}
-			else if (_dockingService.ActiveDocument != null)
-			{
-				_dockingService.ActiveDocument.Cut();
-			}
-		}
-
-		private void cutMenuItem_Click(object sender, EventArgs e)
-		{
-			Cut();
-		}
-
-		private void cutToolButton_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument != null)
-			{
-				_dockingService.ActiveDocument.Cut();
-			}
 		}
 
 		private void DockingService_OnActiveDocumentChanged(object sender, EventArgs eventArgs)
@@ -1189,220 +627,8 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-			if (ActiveMdiChild != null)
-			{
-				UpdateMenus(true);
-				_dockingService.LabelList.UpdateLabelBox();
-			}
-			else
-			{
-				UpdateMenus(false);
-				_dockingService.LabelList.DisableLabelBox();
-			}
-
+            UpdateMenus(ActiveMdiChild != null);
 			UpdateTitle();
-		}
-
-		private void documentParser_DoWork(object sender, DoWorkEventArgs e)
-		{
-			ArrayList arguments = (ArrayList)e.Argument;
-			TextEditorControl editorBox = (TextEditorControl)arguments[0];
-			string text = arguments[1].ToString();
-			foreach (TextMarker marker in editorBox.Document.MarkerStrategy.TextMarker.Where(marker => marker.Tag == "Code Check"))
-			{
-				editorBox.Document.MarkerStrategy.RemoveMarker(marker);
-			}
-
-			string filePath = editorBox.FileName;
-
-			// setup wabbitspasm to run silently
-			Process wabbitspasm = new Process
-			{
-				StartInfo =
-				{
-					FileName = FileLocations.SpasmFile,
-					RedirectStandardOutput = true,
-					RedirectStandardError = true,
-					UseShellExecute = false,
-					CreateNoWindow = true
-				}
-			};
-
-			// some strings we'll need to build
-			string originaldir = Path.GetDirectoryName(filePath);
-			string includedir = "-I \"" + Application.StartupPath + "\"";
-
-			IEnumerable<string> includeDirs = Settings.Default.includeDirs.Cast<string>();
-			includedir = includeDirs.Where(dir => !string.IsNullOrEmpty(dir))
-				.Aggregate(includedir, (current, dir) => current + (";\"" + dir + "\""));
-
-			wabbitspasm.StartInfo.Arguments = "-V " + includedir + " " + text;
-			wabbitspasm.StartInfo.WorkingDirectory = string.IsNullOrEmpty(originaldir) ?
-				Application.StartupPath : originaldir;
-			wabbitspasm.Start();
-			string output = wabbitspasm.StandardOutput.ReadToEnd();
-			_errorsToAdd.Clear();
-			foreach (string line in output.Split('\n').Where(l => l.Contains("error")))
-			{
-				int firstColon = line.IndexOf(':');
-				int secondColon = line.IndexOf(':', firstColon + 1);
-				int thirdColon = line.IndexOf(':', secondColon + 1);
-				int lineNum = Convert.ToInt32(line.Substring(firstColon + 1, secondColon - firstColon - 1));
-				string description = line.Substring(thirdColon + 2, line.Length - thirdColon - 2);
-				ArrayList listOfAttributes = new ArrayList { lineNum, description };
-				_errorsToAdd.Add(listOfAttributes);
-			}
-		}
-
-		private void documentParser_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
-		{
-			foreach (ArrayList attributes in _errorsToAdd)
-			{
-				AddSquiggleLine((int)attributes[0], Color.Red, attributes[1].ToString());
-			}
-
-			if (_documentService.ActiveDocument != null)
-			{
-				_documentService.ActiveDocument.Refresh();
-			}
-		}
-
-		private void existingFileMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenFileDialog openFileDialog = new OpenFileDialog
-			{
-				CheckFileExists = true,
-				DefaultExt = "*.asm",
-				Filter = "All Know File Types | *.asm; *.z80; *.inc; |Assembly Files (*.asm)|*.asm|*.z80" +
-						 " Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|All Files(*.*)|*.*",
-				FilterIndex = 0,
-				Multiselect = true,
-				RestoreDirectory = true,
-				Title = "Add Existing File",
-			};
-			DialogResult result = openFileDialog.ShowDialog();
-			if (result != DialogResult.OK)
-			{
-				return;
-			}
-
-			foreach (string file in openFileDialog.FileNames)
-			{
-				_dockingService.ProjectViewer.AddExistingFile(file);
-			}
-		}
-
-		private void exitMenuItem_Click(object sender, EventArgs e)
-		{
-			Close();
-		}
-
-		private void extractMethodMenuItem_Click(object sender, EventArgs e)
-		{
-		}
-
-		private void findAllRefsMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			string word = _dockingService.ActiveDocument.GetWord();
-			_dockingService.FindResults.NewFindResults(word, _projectService.Project.ProjectName);
-			var refs = _projectService.FindAllReferences(word);
-			foreach (var fileRef in refs.SelectMany(reference => reference))
-			{
-				_dockingService.FindResults.AddFindResult(fileRef);
-			}
-
-			_dockingService.FindResults.DoneSearching();
-			_dockingService.ShowDockPanel(_dockingService.FindResults);
-		}
-
-		private void findBox_KeyPress(object sender, KeyPressEventArgs e)
-		{
-			if (e.KeyChar != (char)Keys.Enter)
-			{
-				return;
-			}
-
-			if (ActiveMdiChild == null)
-			{
-				return;
-			}
-
-			if (!findBox.Items.Contains(findBox.Text))
-			{
-				findBox.Items.Add(findBox.Text);
-			}
-
-			bool found = _documentService.ActiveDocument.Find(findBox.Text);
-			if (!found)
-			{
-				MessageBox.Show("Text not found");
-			}
-		}
-
-		private void findInFilesMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				_dockingService.FindForm.ShowFor(this, false, true);
-			}
-			else
-			{
-				_dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, false, true);
-			}
-		}
-
-		private void findMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, false, false);
-		}
-
-		private void formatDocMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_dockingService.ActiveDocument.FormatLines();
-		}
-
-		private void gLabelMenuItem_Click(object sender, EventArgs e)
-		{
-			GotoSymbol gotoSymbolBox = new GotoSymbol(_parserService);
-			if (gotoSymbolBox.ShowDialog() != DialogResult.OK)
-			{
-				return;
-			}
-
-			string symbolString = gotoSymbolBox.inputBox.Text;
-			IParserData data = _parserService.GetParserData(symbolString, Settings.Default.caseSensitive).FirstOrDefault();
-			if (data == null)
-			{
-				return;
-			}
-
-			IIncludeFile includeFile = data as IIncludeFile;
-			if (includeFile != null)
-			{
-				string fullPath = Path.IsPathRooted(includeFile.IncludedFile) ?
-					includeFile.IncludedFile :
-					FileOperations.NormalizePath(FindFilePathIncludes(includeFile.IncludedFile));
-				_documentService.GotoFile(fullPath);
-			}
-			else
-			{
-				_documentService.GotoLabel(data);
-			}
 		}
 
 		// TODO: remove duplicate code
@@ -1427,129 +653,142 @@ namespace Revsoft.Wabbitcode
 				null;
 		}
 
-		private void gLineMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
+        #region Initalization
 
-			GotoLine gotoBox = new GotoLine(_dockingService.ActiveDocument.TotalNumberOfLines);
-			DialogResult gotoResult = gotoBox.ShowDialog();
-			if (gotoResult != DialogResult.OK)
-			{
-				return;
-			}
+        private void InitializeEvents()
+        {
+            Editor.OnEditorSelectionChanged += GetCodeInfo;
+            Editor.OnEditorSelectionChanged += UpdateAssembledInfo;
+            Editor.OnEditorSelectionChanged += SetLineAndColStatus;
+            Editor.OnEditorDragDrop += MainFormRedone_DragDrop;
+            Editor.OnEditorDragEnter += MainFormRedone_DragEnter;
+        }
 
-			int line = Convert.ToInt32(gotoBox.inputBox.Text);
-			_documentService.GotoLine(_dockingService.ActiveDocument, line);
-		}
+        private void InitializeService()
+        {
+            _dockingService = ServiceFactory.Instance.GetServiceInstance<IDockingService>(dockPanel);
+            _assemblerService = ServiceFactory.Instance.GetServiceInstance<IAssemblerService>();
+            _projectService = ServiceFactory.Instance.GetServiceInstance<IProjectService>();
+            _parserService = ServiceFactory.Instance.GetServiceInstance<IParserService>();
+            _symbolService = ServiceFactory.Instance.GetServiceInstance<ISymbolService>();
+            _backgroundAssemblerService = ServiceFactory.Instance.GetServiceInstance<IBackgroundAssemblerService>();
+            _documentService = ServiceFactory.Instance.GetServiceInstance<IDocumentService>();
+            _fileReaderService = ServiceFactory.Instance.GetServiceInstance<IFileReaderService>();
+        }
 
-		private void gotoCurrentToolButton_Click(object sender, EventArgs e)
-		{
-			_documentService.GotoCurrentDebugLine();
-		}
+        private void InitiailzeToolbars()
+        {
+            if (Settings.Default.mainToolBar)
+            {
+                mainToolBar.Show();
+            }
+            else
+            {
+                mainToolBar.Hide();
+            }
 
-		private void HandleArgs(string[] args)
-		{
-			if (args.Length == 0)
-			{
-				return;
-			}
-			foreach (string arg in args)
-			{
-				try
-				{
-					if (string.IsNullOrEmpty(arg))
-					{
-						break;
-					}
-					_documentService.OpenDocument(arg);
-				}
-				catch (FileNotFoundException)
-				{
-					DockingService.ShowError("Error: File not found");
-				}
-				catch (Exception ex)
-				{
-					DockingService.ShowError("Error in loading startup args", ex);
-				}
-			}
-		}
+            if (Settings.Default.debugToolbar)
+            {
+                debugToolStrip.Show();
+            }
+            else
+            {
+                debugToolStrip.Hide();
+            }
+        }
 
-		private void includeDirButton_Click(object sender, EventArgs e)
-		{
-			IncludeDir includes = new IncludeDir(_projectService.Project);
-			includes.ShowDialog();
-			includes.Dispose();
-		}
+        private void HandleArgs(string[] args)
+        {
+            if (args.Length == 0)
+            {
+                return;
+            }
+            foreach (string arg in args)
+            {
+                try
+                {
+                    if (string.IsNullOrEmpty(arg))
+                    {
+                        break;
+                    }
+                    _documentService.OpenDocument(arg);
+                }
+                catch (FileNotFoundException)
+                {
+                    DockingService.ShowError("Error: File not found");
+                }
+                catch (Exception ex)
+                {
+                    DockingService.ShowError("Error in loading startup args", ex);
+                }
+            }
+        }
 
-		private void invertCaseMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
+        public void ProcessParameters(string[] args)
+        {
+            // The form has loaded, and initialization will have been be done.
+            HandleArgs(args);
+            Activate();
+        }
 
-			_dockingService.ActiveDocument.SelectedTextInvertCase();
-		}
+        private void RestoreWindow()
+        {
+            try
+            {
+                WindowState = Settings.Default.WindowState;
+                Size = Settings.Default.WindowSize;
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error restoring the window size", ex);
+            }
+        }
 
-		private void listFileMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
+        #endregion
 
-			_dockingService.ActiveDocument.SaveFile();
-			string inputFile = _dockingService.ActiveDocument.FileName;
-			string outputFile = Path.ChangeExtension(inputFile, "lst");
-			string originalDir = Path.GetDirectoryName(inputFile);
-			var includeDirs = Settings.Default.includeDirs.Cast<string>();
-			_assemblerService.AssembleFile(inputFile, outputFile, originalDir, includeDirs, AssemblyFlags.List | AssemblyFlags.Normal);
-		}
+        #region Project Handling
 
-		private void LoadStartupProject()
-		{
-			if (string.IsNullOrEmpty(Settings.Default.startupProject))
-			{
-				return;
-			}
+        private void LoadStartupProject()
+        {
+            if (string.IsNullOrEmpty(Settings.Default.startupProject))
+            {
+                return;
+            }
 
-			try
-			{
-				bool valid = false;
-				if (File.Exists(Settings.Default.startupProject))
-				{
-					valid = OpenProject(Settings.Default.startupProject);
-				}
-				else
-				{
-					Settings.Default.startupProject = string.Empty;
-					DockingService.ShowError("Error: Project file not found");
-				}
+            try
+            {
+                bool valid = false;
+                if (File.Exists(Settings.Default.startupProject))
+                {
+                    valid = OpenProject(Settings.Default.startupProject);
+                }
+                else
+                {
+                    Settings.Default.startupProject = string.Empty;
+                    DockingService.ShowError("Error: Project file not found");
+                }
 
-				if (_projectService.Project.IsInternal || !valid)
-				{
-					CreateInternalProject();
-				}
-			}
-			catch (Exception ex)
-			{
-				CreateInternalProject();
-				var result = MessageBox.Show(
-								 "There was an error loading the startup project, would you like to remove it?\n" + ex,
-								 "Error",
-								 MessageBoxButtons.YesNo,
-								 MessageBoxIcon.Error);
-				if (result == DialogResult.Yes)
-				{
-					Settings.Default.startupProject = string.Empty;
-				}
-			}
-		}
+                if (_projectService.Project.IsInternal || !valid)
+                {
+                    CreateInternalProject();
+                }
+            }
+            catch (Exception ex)
+            {
+                CreateInternalProject();
+                var result = MessageBox.Show(
+                                 "There was an error loading the startup project, would you like to remove it?\n" + ex,
+                                 "Error",
+                                 MessageBoxButtons.YesNo,
+                                 MessageBoxIcon.Error);
+                if (result == DialogResult.Yes)
+                {
+                    Settings.Default.startupProject = string.Empty;
+                }
+            }
+        }
 
-		private void CreateInternalProject()
+        private void CreateInternalProject()
 		{
 			_projectService.CreateInternalProject();
 			UpdateProjectMenu(false);
@@ -1565,7 +804,493 @@ namespace Revsoft.Wabbitcode
 			return valid;
 		}
 
-		private void MainFormRedone_FormClosing(object sender, FormClosingEventArgs e)
+        private void CloseProject()
+        {
+            DialogResult result = DialogResult.No;
+            if (_projectService.Project.NeedsSave && !Settings.Default.autoSaveProject)
+            {
+                result = MessageBox.Show("Would you like to save your changes to the project file?", "Save project?", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+            }
+            if (result == DialogResult.Yes || Settings.Default.autoSaveProject)
+            {
+                _projectService.SaveProject();
+            }
+
+            _projectService.CloseProject();
+            _dockingService.ProjectViewer.CloseProject();
+            UpdateProjectMenu(false);
+        }
+
+        #endregion
+
+        #region Document Handling
+
+        private void OpenDocument()
+        {
+            var openFileDialog = new OpenFileDialog
+            {
+                CheckFileExists = true,
+                DefaultExt = "*.asm",
+                Filter = "All Know File Types | *.asm; *.z80; *.wcodeproj| Assembly Files (*.asm)|*.asm|Z80" +
+                         " Assembly Files (*.z80)|*.z80 | Include Files (*.inc)|*.inc | Project Files (*.wcodeproj)" +
+                         "|*.wcodeproj|All Files(*.*)|*.*",
+                FilterIndex = 0,
+                RestoreDirectory = true,
+                Multiselect = true,
+                Title = "Open File",
+            };
+
+            if (openFileDialog.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            try
+            {
+                foreach (var fileName in openFileDialog.FileNames)
+                {
+                    string extCheck = Path.GetExtension(fileName);
+                    if (string.Equals(extCheck, ".wcodeproj", StringComparison.OrdinalIgnoreCase))
+                    {
+                        OpenProject(fileName);
+                        if (Settings.Default.startupProject == fileName)
+                        {
+                            continue;
+                        }
+
+                        if (MessageBox.Show("Would you like to make this your default project?",
+                                "Startup Project",
+                                MessageBoxButtons.YesNo,
+                                MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            Settings.Default.startupProject = fileName;
+                        }
+                    }
+                    else
+                    {
+                        _documentService.OpenDocument(fileName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error opening file", ex);
+            }
+        }
+
+        /// <summary>
+        /// This opens the recend document clicked in the file menu.
+        /// </summary>
+        /// <param name="sender">This is the button object. This is casted to get which button was clicked.</param>
+        /// <param name="e">Nobody cares about this arg.</param>
+        private void OpenRecentDoc(object sender, EventArgs e)
+        {
+            MenuItem button = (MenuItem)sender;
+            _documentService.OpenDocument(button.Text);
+        }
+
+        private void SaveAllDocuments()
+        {
+            foreach (Editor child in MdiChildren)
+            {
+                child.SaveFile();
+            }
+
+            UpdateTitle();
+        }
+
+        #endregion
+
+        #region Document Actions
+
+        private void Cut()
+        {
+            var toolWindow = _dockingService.ActiveContent as ToolWindow;
+            if (toolWindow != null)
+            {
+                toolWindow.Cut();
+            }
+            else if (_dockingService.ActiveDocument != null)
+            {
+                _dockingService.ActiveDocument.Cut();
+            }
+        }
+
+        private void Copy()
+        {
+            var activeContent = _dockingService.ActiveContent as ToolWindow;
+            if (activeContent != null)
+            {
+                activeContent.Copy();
+            }
+            else if (_dockingService.ActiveDocument != null)
+            {
+                _dockingService.ActiveDocument.Copy();
+            }
+        }
+
+        private void Paste()
+        {
+            var activeContent = _dockingService.ActiveContent as ToolWindow;
+            if (activeContent != null)
+            {
+                activeContent.Paste();
+            }
+            else if (_dockingService.ActiveDocument != null)
+            {
+                _dockingService.ActiveDocument.Paste();
+            }
+        }
+
+        #endregion
+
+        #region Debugging
+
+	    private BackgroundWorker _debuggingWorker;
+
+        private void StartDebug()
+        {
+            if (_projectService.Project.IsInternal)
+            {
+                throw new DebuggingException("Debugging single files is not supported");
+            }
+
+            DoAssembly(null, (sender, e) =>
+            {
+                if (!e.AssemblySucceeded)
+                {
+                    if (DockingService.ShowMessageBox(_dockingService.MainForm,
+                                    "There were errors assembling. Would you like to continue and try to debug?",
+                                    "Continue",
+                                    MessageBoxButtons.YesNo,
+                                    MessageBoxIcon.Error) == DialogResult.No)
+                    {
+                        CancelDebug();
+                        return;
+                    }
+                }
+
+                this.Invoke(() =>
+                {
+                    ShowErrorPanels(e.Output);
+                    LockOpenEditors();
+                });
+
+                _debugger = new WabbitcodeDebugger(_documentService, _fileReaderService, _symbolService);
+                _debugger.OnDebuggerStep += debugger_OnDebuggerStep;
+                _debugger.OnDebuggerRunningChanged += debugger_OnDebuggerRunningChanged;
+                WabbitcodeDebugger.OnDebuggingEnded += (o, args) => CancelDebug();
+
+                string createdName;
+                try
+                {
+                    createdName = GetOutputFileDetails(e.Project);
+                }
+                catch (DebuggingException ex)
+                {
+                    DockingService.ShowError("Unable to start debugging", ex);
+                    CancelDebug();
+                    return;
+                }
+
+                try
+                {
+                    _debugger.InitDebugger(createdName);
+                }
+                catch (MissingROMException)
+                {
+                    this.Invoke(() =>
+                    {
+                        OpenFileDialog openFileDialog = new OpenFileDialog
+                        {
+                            CheckFileExists = true,
+                            DefaultExt = "*.rom",
+                            Filter = "All Know File Types | *.rom; *.sav; |ROM Files (*.rom)|*.rom|" +
+                                     "Savestate Files (*.sav)|*.sav|All Files(*.*)|*.*",
+                            FilterIndex = 0,
+                            Multiselect = true,
+                            RestoreDirectory = true,
+                            Title = "Select new ROM file",
+                        };
+
+                        if (openFileDialog.ShowDialog() != DialogResult.OK)
+                        {
+                            CancelDebug();
+                            return;
+                        }
+
+                        SaveRomPathRegistry(openFileDialog.FileName);
+                    });
+                    // TODO: fix to catch missing exception
+                    _debugger.InitDebugger(createdName);
+                }
+
+                try
+                {
+                    _debugger.StartDebug();
+                }
+                catch (DebuggingException)
+                {
+                    if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
+                        "Missing App",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Exclamation) != DialogResult.Yes)
+                    {
+                        CancelDebug();
+                        return;
+                    }
+                }
+
+                this.Invoke(() =>
+                {
+                    UpdateDebugStuff();
+                    UpdateBreakpoints();
+                    ShowDebugPanels();
+                    EnableDebugPanels(false);
+                });
+            });
+        }
+
+        private void RestartDebug()
+        {
+            Cursor = Cursors.WaitCursor;
+            _debuggingWorker = new BackgroundWorker();
+            _debuggingWorker.DoWork += (sender, args) =>
+            {
+                if (_projectService.Project.IsInternal)
+                {
+                    throw new DebuggingException("Debugging single files is not supported");
+                }
+
+                try
+                {
+                    _debugger.RestartDebug();
+                }
+                catch (DebuggingException)
+                {
+                    if (DockingService.ShowMessageBox(this, "Unable to find the app, would you like to try and continue and debug?",
+                        "Missing App",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Exclamation) != DialogResult.Yes)
+                    {
+                        CancelDebug();
+                        return;
+                    }
+                }
+            };
+
+            _debuggingWorker.RunWorkerCompleted += (sender, args) =>
+            {
+                UpdateDebugStuff();
+                ShowDebugPanels();
+                _documentService.RemoveDebugHighlight();
+                Cursor = Cursors.Default;
+            };
+            _debuggingWorker.RunWorkerAsync();
+        }
+
+        private void CancelDebug()
+        {
+            if (InvokeRequired)
+            {
+                this.Invoke(CancelDebug);
+                return;
+            }
+
+            _debugger = null;
+
+            UpdateTitle();
+            UpdateDebugStuff();
+            HideDebugPanels();
+            UpdateChecks();
+
+            _documentService.RemoveDebugHighlight();
+        }
+
+        private void Step()
+        {
+            _debuggingWorker = new BackgroundWorker();
+            _debuggingWorker.DoWork += (sender, args) => _debugger.Step();
+            _debuggingWorker.RunWorkerCompleted += (sender, args) => UpdateDebugStuff();
+            _debuggingWorker.RunWorkerAsync();
+        }
+
+        private void StepOver()
+        {
+            _debuggingWorker = new BackgroundWorker();
+            _debuggingWorker.DoWork += (sender, args) => _debugger.StepOver();
+            _debuggingWorker.RunWorkerCompleted += (sender, args) => UpdateDebugStuff();
+            _debuggingWorker.RunWorkerAsync();
+        }
+
+        private void StepOut()
+        {
+            _debuggingWorker = new BackgroundWorker();
+            _debuggingWorker.DoWork += (sender, args) => _debugger.StepOut();
+            _debuggingWorker.RunWorkerCompleted += (sender, args) => UpdateDebugStuff();
+            _debuggingWorker.RunWorkerAsync();
+        }
+
+        private void debugger_OnDebuggerStep(object sender, DebuggerStepEventArgs e)
+        {
+            this.Invoke(() =>
+            {
+                _documentService.RemoveDebugHighlight();
+                _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+                _documentService.HighlightDebugLine(e.Location.LineNumber);
+
+                UpdateDebugStuff();
+                UpdateDebugPanel();
+                EnableDebugPanels(true);
+            });
+        }
+
+        private void debugger_OnDebuggerRunningChanged(object sender, DebuggerRunningEventArgs e)
+        {
+            this.Invoke(() =>
+            {
+                _documentService.RemoveDebugHighlight();
+                UpdateDebugStuff();
+                if (e.Running)
+                {
+                    _dockingService.ActiveDocument.Refresh();
+                    EnableDebugPanels(false);
+                }
+                else
+                {
+                    Activate();
+                    _documentService.GotoLine(e.Location.FileName, e.Location.LineNumber);
+                    _documentService.HighlightDebugLine(e.Location.LineNumber);
+
+                    UpdateDebugPanel();
+                    EnableDebugPanels(true);
+                }
+            });
+        }
+
+        private void EnableDebugPanels(bool enabled)
+        {
+            _dockingService.DebugPanel.EnablePanel(enabled);
+            _dockingService.StackViewer.EnablePanel(enabled);
+            _dockingService.TrackWindow.EnablePanel(enabled);
+            _dockingService.CallStack.EnablePanel(enabled);
+        }
+
+        private void ShowDebugPanels()
+        {
+            _showToolbar = Settings.Default.debugToolbar;
+            Settings.Default.debugToolbar = true;
+            if (!_showToolbar)
+            {
+                debugToolStrip.Visible = true;
+            }
+
+            debugToolStrip.Height = mainToolBar.Height;
+            UpdateChecks();
+            _dockingService.ShowDockPanel(_dockingService.DebugPanel);
+            _dockingService.ShowDockPanel(_dockingService.StackViewer);
+            _dockingService.ShowDockPanel(_dockingService.ExpressionWindow, _dockingService.StackViewer, DockAlignment.Left);
+            _dockingService.ShowDockPanel(_dockingService.CallStack, _dockingService.StackViewer);
+            _dockingService.ShowDockPanel(_dockingService.TrackWindow, _dockingService.ExpressionWindow);
+            UpdateTitle();
+        }
+
+        private void HideDebugPanels()
+        {
+            Settings.Default.debugToolbar = _showToolbar;
+            if (!_showToolbar)
+            {
+                debugToolStrip.Visible = false;
+            }
+
+            if (_dockingService.DebugPanel != null)
+            {
+                _dockingService.HideDockPanel(_dockingService.DebugPanel);
+            }
+
+            if (_dockingService.TrackWindow != null)
+            {
+                _dockingService.HideDockPanel(_dockingService.TrackWindow);
+            }
+
+            if (_dockingService.CallStack != null)
+            {
+                _dockingService.HideDockPanel(_dockingService.CallStack);
+            }
+
+            if (_dockingService.StackViewer != null)
+            {
+                _dockingService.HideDockPanel(_dockingService.StackViewer);
+            }
+
+            if (_dockingService.ExpressionWindow != null)
+            {
+                _dockingService.HideDockPanel(_dockingService.ExpressionWindow);
+            }
+        }
+
+        private void UpdateDebugStuff()
+        {
+            bool isRunning = _debugger != null && _debugger.IsRunning;
+            bool isDebugging = _debugger != null;
+            bool enabled = !isRunning && isDebugging;
+            stepMenuItem.Enabled = enabled;
+            gotoCurrentToolButton.Enabled = enabled;
+            stepToolButton.Enabled = enabled;
+            startDebugMenuItem.Enabled = enabled || !isDebugging;
+            stepOverMenuItem.Enabled = enabled;
+            stepOverToolButton.Enabled = enabled;
+            stepOutMenuItem.Enabled = enabled && _debugger.CallStack.Count > 0;
+            stepOutToolButton.Enabled = enabled && _debugger.CallStack.Count > 0;
+            stopDebugMenuItem.Enabled = isDebugging;
+            stopToolButton.Enabled = isDebugging;
+            restartToolStripButton.Enabled = isDebugging;
+            runMenuItem.Enabled = enabled;
+            runDebuggerToolButton.Enabled = enabled || !isDebugging;
+            runToolButton.Enabled = enabled || !isDebugging;
+            pauseToolButton.Enabled = isRunning && isDebugging;
+        }
+
+        private void UpdateDebugPanel()
+        {
+            _dockingService.DebugPanel.UpdateFlags();
+            _dockingService.DebugPanel.UpdateRegisters();
+            _dockingService.DebugPanel.UpdateScreen();
+        }
+
+        internal void SetPC(string fileName, int lineNumber)
+        {
+            _debugger.SetPCToSelect(fileName, lineNumber);
+
+            _documentService.RemoveDebugHighlight();
+            _documentService.HighlightDebugLine(lineNumber);
+            UpdateDebugPanel();
+        }
+
+        #endregion
+
+        #region Form Events
+
+        private void MainFormRedone_DragDrop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop) == false)
+            {
+                return;
+            }
+
+            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+            foreach (string file in files)
+            {
+                _documentService.OpenDocument(file);
+            }
+        }
+
+        private void MainFormRedone_DragEnter(object sender, DragEventArgs e)
+        {
+            e.Effect = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Copy : DragDropEffects.None;
+        }
+
+        private void MainFormRedone_FormClosing(object sender, FormClosingEventArgs e)
 		{
 			if (_debugger != null)
 			{
@@ -1605,34 +1330,11 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
-		private void makeLowerMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
+        #endregion
 
-			_dockingService.ActiveDocument.SelectedTextToLower();
-		}
+        #region File Menu
 
-		private void makeUpperMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_dockingService.ActiveDocument.SelectedTextToUpper();
-		}
-
-		private void newBreakpointMenuItem_Click(object sender, EventArgs e)
-		{
-			NewBreakpointForm form = new NewBreakpointForm(_dockingService, _documentService);
-			form.ShowDialog();
-			form.Dispose();
-		}
-
-		private void newFileMenuItem_Click(object sender, EventArgs e)
+        private void newFileMenuItem_Click(object sender, EventArgs e)
 		{
 			Editor doc = _documentService.CreateNewDocument();
 			_dockingService.ShowDockPanel(doc);
@@ -1649,305 +1351,974 @@ namespace Revsoft.Wabbitcode
 			UpdateProjectMenu(true);
 		}
 
-		private void newToolButton_Click(object sender, EventArgs e)
+        private void openFileMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenDocument();
+        }
+
+        private void openProjectMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                CheckFileExists = true,
+                DefaultExt = "*.wcodeproj",
+                Filter = "Project Files (*.wcodeproj)|*.wcodeproj|All Files(*.*)|*.*",
+                FilterIndex = 0,
+                RestoreDirectory = true,
+                Title = "Open Project File",
+            };
+            try
+            {
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    string fileName = openFileDialog.FileName;
+
+                    if (!OpenProject(fileName))
+                    {
+                        _projectService.CreateInternalProject();
+                    }
+
+                    if (Settings.Default.startupProject != fileName)
+                    {
+                        if (
+                            MessageBox.Show("Would you like to make this your default project?",
+                                            "Startup Project",
+                                            MessageBoxButtons.YesNo,
+                                            MessageBoxIcon.Question) == DialogResult.Yes)
+                        {
+                            Settings.Default.startupProject = fileName;
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error opening file.", ex);
+            }
+
+            UpdateMenus(_dockingService.Documents.Any());
+        }
+
+        private void saveMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveActiveDocument();
+        }
+
+        private void saveAsMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _dockingService.ActiveDocument.SaveFileAs();
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error saving file.", ex);
+            }
+
+            UpdateTitle();
+        }
+
+        private void saveAllMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveAllDocuments();
+        }
+
+        private void saveProjectMenuItem_Click(object sender, EventArgs e)
+        {
+            _projectService.SaveProject();
+            saveProjectMenuItem.Enabled = _projectService.Project.NeedsSave;
+        }
+
+        private void closeMenuItem_Click(object sender, EventArgs e)
+        {
+            if (ActiveMdiChild != null)
+            {
+                ActiveMdiChild.Close();
+            }
+        }
+
+        private void exitMenuItem_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        #endregion
+
+        #region Edit Menu
+
+        private void undoMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument != null)
+            {
+                _dockingService.ActiveDocument.Undo();
+            }
+        }
+
+        private void redoMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument != null)
+            {
+                _dockingService.ActiveDocument.Redo();
+            }
+        }
+
+        private void cutMenuItem_Click(object sender, EventArgs e)
+        {
+            Cut();
+        }
+
+        private void copyMenuItem_Click(object sender, EventArgs e)
+        {
+            Copy();
+        }
+
+        private void pasteMenuItem_Click(object sender, EventArgs e)
+        {
+            Paste();
+        }
+
+        private void selectAllMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _documentService.ActiveDocument.SelectAll();
+        }
+
+        private void findMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, false, false);
+        }
+
+        private void findInFilesMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                _dockingService.FindForm.ShowFor(this, false, true);
+            }
+            else
+            {
+                _dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, false, true);
+            }
+        }
+
+        private void replaceMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, true, false);
+        }
+
+        private void replaceInFilesMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, true, true);
+        }
+
+        private void findAllRefsMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            string word = _dockingService.ActiveDocument.GetWord();
+            _dockingService.FindResults.NewFindResults(word, _projectService.Project.ProjectName);
+            var refs = _projectService.FindAllReferences(word);
+            foreach (var fileRef in refs.SelectMany(reference => reference))
+            {
+                _dockingService.FindResults.AddFindResult(fileRef);
+            }
+
+            _dockingService.FindResults.DoneSearching();
+            _dockingService.ShowDockPanel(_dockingService.FindResults);
+        }
+
+        private void makeUpperMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.ActiveDocument.SelectedTextToUpper();
+        }
+
+        private void makeLowerMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.ActiveDocument.SelectedTextToLower();
+        }
+
+        private void invertCaseMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.ActiveDocument.SelectedTextInvertCase();
+        }
+
+        private void sentenceCaseMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _documentService.ActiveDocument.SelectedTextToSentenceCase();
+        }
+
+        private void formatDocMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.ActiveDocument.FormatLines();
+        }
+
+        private void convertSpacesToTabsMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.ActiveDocument.ConvertSpacesToTabs();
+        }
+
+        private void prevBookmarkMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_documentService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _documentService.ActiveDocument.GotoPrevBookmark();
+        }
+
+        private void nextBookmarkMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_documentService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _documentService.ActiveDocument.GotoNextBookmark();
+        }
+
+        private void toggleBookmarkMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_documentService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _documentService.ActiveDocument.ToggleBookmark();
+        }
+
+        private void gLineMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            GotoLine gotoBox = new GotoLine(_dockingService.ActiveDocument.TotalNumberOfLines);
+            DialogResult gotoResult = gotoBox.ShowDialog();
+            if (gotoResult != DialogResult.OK)
+            {
+                return;
+            }
+
+            int line = Convert.ToInt32(gotoBox.inputBox.Text);
+            _documentService.GotoLine(_dockingService.ActiveDocument, line);
+        }
+
+        private void gLabelMenuItem_Click(object sender, EventArgs e)
+        {
+            GotoSymbol gotoSymbolBox = new GotoSymbol(_parserService);
+            if (gotoSymbolBox.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+
+            string symbolString = gotoSymbolBox.inputBox.Text;
+            IParserData data = _parserService.GetParserData(symbolString, Settings.Default.caseSensitive).FirstOrDefault();
+            if (data == null)
+            {
+                return;
+            }
+
+            IIncludeFile includeFile = data as IIncludeFile;
+            if (includeFile != null)
+            {
+                string fullPath = Path.IsPathRooted(includeFile.IncludedFile) ?
+                    includeFile.IncludedFile :
+                    FileOperations.NormalizePath(FindFilePathIncludes(includeFile.IncludedFile));
+                _documentService.GotoFile(fullPath);
+            }
+            else
+            {
+                _documentService.GotoLabel(data);
+            }
+        }
+
+        private void prefsMenuItem_Click(object sender, EventArgs e)
+        {
+            Preferences prefs = new Preferences(_dockingService);
+            prefs.ShowDialog();
+        }
+
+        #endregion
+
+        #region View Menu
+
+        /// <summary>
+        /// This handles all things relating to the view menu. Just does a switch based
+        /// on the tag, and does the appropriate action based on the check mark state
+        /// this probably isnt a great way to handle it, but it works
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void viewMenuItem_Click(object sender, EventArgs e)
+        {
+            ToolStripMenuItem item = (ToolStripMenuItem)sender;
+            item.Checked = !item.Checked;
+            switch (item.Tag.ToString())
+            {
+                case "iconBar":
+                    if (ActiveMdiChild != null)
+                    {
+                        _documentService.ActiveDocument.IsIconBarVisible = item.Checked;
+                    }
+
+                    break;
+                case "lineNumbers":
+                    if (ActiveMdiChild != null)
+                    {
+                        _documentService.ActiveDocument.ShowLineNumbers = item.Checked;
+                    }
+
+                    break;
+                case "labelsList":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.LabelList);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.LabelList);
+                    }
+
+                    break;
+                case "mainToolBar":
+                    if (item.Checked)
+                    {
+                        mainToolBar.Show();
+                    }
+                    else
+                    {
+                        mainToolBar.Hide();
+                    }
+
+                    Settings.Default.mainToolBar = item.Checked;
+                    break;
+                case "editorToolBar":
+                    if (item.Checked)
+                    {
+                        editorToolStrip.Show();
+                    }
+                    else
+                    {
+                        editorToolStrip.Hide();
+                    }
+
+                    Settings.Default.editorToolbar = item.Checked;
+                    break;
+                case "outputWindow":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.OutputWindow);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.OutputWindow);
+                    }
+
+                    break;
+                case "FindResults":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.FindResults);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.FindResults);
+                    }
+
+                    break;
+                case "statusBar":
+                    statusBar.Visible = item.Checked;
+                    break;
+                case "debugPanel":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.DebugPanel);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.DebugPanel);
+                    }
+
+                    break;
+                case "callStack":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.CallStack);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.CallStack);
+                    }
+
+                    break;
+                case "stackViewer":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.StackViewer);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.StackViewer);
+                    }
+
+                    break;
+                case "varTrack":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.TrackWindow);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.TrackWindow);
+                    }
+
+                    break;
+                case "breakManager":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.BreakManagerWindow);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.BreakManagerWindow);
+                    }
+
+                    break;
+                case "projectViewer":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.ProjectViewer);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.ProjectViewer);
+                    }
+
+                    break;
+                case "debugToolBar":
+                    if (item.Checked)
+                    {
+                        debugToolStrip.Show();
+                    }
+                    else
+                    {
+                        debugToolStrip.Hide();
+                    }
+
+                    Settings.Default.debugToolbar = item.Checked;
+                    break;
+                case "errorList":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.ErrorList);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.ErrorList);
+                    }
+
+                    break;
+                case "macroManager":
+                    if (item.Checked)
+                    {
+                        _dockingService.ShowDockPanel(_dockingService.MacroManager);
+                    }
+                    else
+                    {
+                        _dockingService.HideDockPanel(_dockingService.MacroManager);
+                    }
+
+                    break;
+            }
+
+            debugToolStrip.Height = 25;
+        }
+
+        #endregion
+
+        #region Refactor Menu
+
+        private void renameMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+            ShowRefactorForm();
+        }
+
+        private void extractMethodMenuItem_Click(object sender, EventArgs e)
+        {
+        }
+
+        #endregion
+
+        #region Project Menu
+
+        private void addNewFileMenuItem_Click(object sender, EventArgs e)
+        {
+            RenameForm newNameForm = new RenameForm
+            {
+                Text = "New File"
+            };
+            var result = newNameForm.ShowDialog() != DialogResult.OK;
+            newNameForm.Dispose();
+            if (result)
+            {
+                return;
+            }
+
+            string name = newNameForm.NewText;
+            _dockingService.ProjectViewer.AddNewFile(name);
+        }
+
+        private void existingFileMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog
+            {
+                CheckFileExists = true,
+                DefaultExt = "*.asm",
+                Filter = "All Know File Types | *.asm; *.z80; *.inc; |Assembly Files (*.asm)|*.asm|*.z80" +
+                         " Assembly Files (*.z80)|*.z80|Include Files (*.inc)|*.inc|All Files(*.*)|*.*",
+                FilterIndex = 0,
+                Multiselect = true,
+                RestoreDirectory = true,
+                Title = "Add Existing File",
+            };
+            DialogResult result = openFileDialog.ShowDialog();
+            if (result != DialogResult.OK)
+            {
+                return;
+            }
+
+            foreach (string file in openFileDialog.FileNames)
+            {
+                _dockingService.ProjectViewer.AddExistingFile(file);
+            }
+        }
+
+        private void buildOrderButton_Click(object sender, EventArgs e)
+        {
+            using (BuildSteps build = new BuildSteps(_projectService.Project))
+            {
+                build.ShowDialog();
+            }
+        }
+
+        private void includeDirButton_Click(object sender, EventArgs e)
+        {
+            IncludeDir includes = new IncludeDir(_projectService.Project);
+            includes.ShowDialog();
+            includes.Dispose();
+        }
+
+        private void refreshViewMenuItem_Click(object sender, EventArgs e)
+        {
+            _dockingService.ProjectViewer.BuildProjTree();
+        }
+
+        private void closeProjMenuItem_Click(object sender, EventArgs e)
+        {
+            CloseProject();
+        }
+
+        #endregion
+
+        #region Assemble Menu
+
+        private void assembleMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_debugger != null)
+            {
+                if (MessageBox.Show("Do you want to stop debugging?", "Debugging", MessageBoxButtons.YesNo) == DialogResult.No)
+                {
+                    return;
+                }
+
+                CancelDebug();
+            }
+
+            DoAssembly(OnAssemblyFinished, OnAssemblyFinished);
+        }
+
+        private void symTableMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.ActiveDocument.SaveFile();
+            string inputFile = _documentService.ActiveFileName;
+            string outputFile = Path.ChangeExtension(_documentService.ActiveFileName, "lab");
+            string originalDir = Path.GetDirectoryName(inputFile);
+            var includeDirs = Settings.Default.includeDirs.Cast<string>();
+            _assemblerService.AssembleFile(inputFile, outputFile, originalDir,
+                includeDirs, AssemblyFlags.Normal | AssemblyFlags.Symtable);
+        }
+
+        private void listFileMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.ActiveDocument.SaveFile();
+            string inputFile = _dockingService.ActiveDocument.FileName;
+            string outputFile = Path.ChangeExtension(inputFile, "lst");
+            string originalDir = Path.GetDirectoryName(inputFile);
+            var includeDirs = Settings.Default.includeDirs.Cast<string>();
+            _assemblerService.AssembleFile(inputFile, outputFile, originalDir, includeDirs, AssemblyFlags.List | AssemblyFlags.Normal);
+        }
+
+        private void projStatsMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.ActiveDocument.SaveFile();
+            string inputFile = _dockingService.ActiveDocument.FileName;
+            string outputFile = string.Empty;
+            string originalDir = Path.GetDirectoryName(inputFile);
+            var includeDirs = Settings.Default.includeDirs.Cast<string>();
+            _assemblerService.AssembleFile(inputFile, outputFile, originalDir, includeDirs, AssemblyFlags.Stats);
+        }
+
+        #endregion
+
+        #region Debug Menu
+
+        private void startDebugMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_debugger == null)
+            {
+                StartDebug();
+            }
+            else
+            {
+                _debugger.Run();
+            }
+        }
+
+        private void startWithoutDebugMenuItem_Click(object sender, EventArgs e)
+        {
+            // TODO: fix this
+            //_debugger.StartWithoutDebug();
+        }
+
+        private void stopDebugMenuItem_Click(object sender, EventArgs e)
+        {
+            _debugger.CancelDebug();
+        }
+
+        private void runMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_debugger != null)
+            {
+                _debugger.Run();
+            }
+        }
+
+        private void stepMenuItem_Click(object sender, EventArgs e)
+        {
+            Step();
+        }
+
+	    private void stepOverMenuItem_Click(object sender, EventArgs e)
+	    {
+	        StepOver();
+	    }
+
+        private void stepOutMenuItem_Click(object sender, EventArgs e)
+        {
+            StepOut();
+        }
+
+        private void newBreakpointMenuItem_Click(object sender, EventArgs e)
+        {
+            NewBreakpointForm form = new NewBreakpointForm(_dockingService, _documentService);
+            form.ShowDialog();
+            form.Dispose();
+        }
+
+        private void toggleBreakpointMenuItem_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null)
+            {
+                return;
+            }
+
+            _dockingService.ActiveDocument.ToggleBreakpoint();
+            _dockingService.ActiveDocument.Refresh();
+        }
+
+        #endregion
+
+        #region Help Menu
+
+        private void updateMenuItem_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                if (UpdateService.CheckForUpdate())
+                {
+                    var result = MessageBox.Show("New version available. Download now?",
+                        "Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
+                    if (result == DialogResult.Yes)
+                    {
+                        UpdateService.StartUpdater();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("No new updates");
+                }
+            }
+            catch (Exception ex)
+            {
+                DockingService.ShowError("Error updating", ex);
+            }
+        }
+
+        private void aboutMenuItem_Click(object sender, EventArgs e)
+        {
+            AboutBox box = new AboutBox();
+            box.ShowDialog();
+            box.Dispose();
+        }
+
+        #endregion
+
+        #region Editor Context Menu
+
+        private MenuItem refactorContext;
+        private MenuItem renameContext;
+        private MenuItem extractMethodContext;
+        private MenuItem setNextStateMenuItem;
+
+	    private void AddEditorContextMenuItems()
+	    {
+            setNextStateMenuItem = new MenuItem();
+            renameContext = new MenuItem();
+            extractMethodContext = new MenuItem();
+            refactorContext = new MenuItem {Index = 4, Text = "Refactor"};
+
+	        refactorContext.MenuItems.AddRange(new[] {
+				renameContext,
+				extractMethodContext,
+			});
+            
+            renameContext.Index = 0;
+            renameContext.Text = "Rename";
+            renameContext.Click += renameContext_Click;
+            extractMethodContext.Index = 1;
+            extractMethodContext.Text = "Extract Method";
+            extractMethodContext.Click += extractMethodContext_Click;
+            setNextStateMenuItem.Index = 8;
+            setNextStateMenuItem.Text = "Set Next Statement";
+            setNextStateMenuItem.Visible = false;
+            setNextStateMenuItem.Click += setNextStateMenuItem_Click;
+	    }
+
+        private void setNextStateMenuItem_Click(object sender, EventArgs e)
+        {
+            Editor editor = _dockingService.ActiveDocument;
+            SetPC(editor.FileName, editor.EditorBox.ActiveTextAreaControl.Caret.Line + 1);
+        }
+
+        private void renameContext_Click(object sender, EventArgs e)
+        {
+            ShowRefactorForm();
+        }
+
+        private void extractMethodContext_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        #endregion
+
+        #region Main Toolbar
+
+        private void newToolButton_Click(object sender, EventArgs e)
 		{
 			Editor doc = _documentService.CreateNewDocument();
 			doc.TabText = "New Document";
 			doc.Show(dockPanel);
 		}
 
-		private void nextBookmarkMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_documentService.ActiveDocument == null)
-			{
-				return;
-			}
+        private void openToolButton_Click(object sender, EventArgs e)
+        {
+            OpenDocument();
+        }
 
-			_documentService.ActiveDocument.GotoNextBookmark();
-		}
+        private void saveToolButton_Click(object sender, EventArgs e)
+        {
+            SaveActiveDocument();
+        }
 
-		private void OnAssemblyFinished(object sender, AssemblyFinishEventArgs e)
+        private void saveAllToolButton_Click(object sender, EventArgs e)
+        {
+            SaveAllDocuments();
+        }
+
+        private void cutToolButton_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument != null)
+            {
+                _dockingService.ActiveDocument.Cut();
+            }
+        }
+
+        private void copyToolButton_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument != null)
+            {
+                _dockingService.ActiveDocument.Copy();
+            }
+        }
+
+        private void pasteToolButton_Click(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument != null)
+            {
+                _dockingService.ActiveDocument.Paste();
+            }
+        }
+
+        private void findBox_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar != (char)Keys.Enter)
+            {
+                return;
+            }
+
+            if (ActiveMdiChild == null)
+            {
+                return;
+            }
+
+            if (!findBox.Items.Contains(findBox.Text))
+            {
+                findBox.Items.Add(findBox.Text);
+            }
+
+            bool found = _documentService.ActiveDocument.Find(findBox.Text);
+            if (!found)
+            {
+                MessageBox.Show("Text not found");
+            }
+        }
+
+        #endregion
+
+        #region Debug Toolbar
+
+        private void pauseToolButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                _debugger.Pause();
+            }
+            catch (DebuggingException)
+            {
+                MessageBox.Show("Unable to pause at this point.");
+            }
+        }
+
+        private void stopDebugToolButton_Click(object sender, EventArgs e)
+        {
+            _debugger.CancelDebug();
+        }
+
+        private void restartToolStripButton_Click(object sender, EventArgs e)
+        {
+            RestartDebug();
+        }
+
+        private void stepToolButton_Click(object sender, EventArgs e)
+        {
+            Step();
+        }
+
+        private void stepOverToolButton_Click(object sender, EventArgs e)
+        {
+            StepOver();
+        }
+
+        private void stepOutToolButton_Click(object sender, EventArgs e)
+        {
+            StepOut();
+        }
+
+        private void gotoCurrentToolButton_Click(object sender, EventArgs e)
+        {
+            _documentService.GotoCurrentDebugLine();
+        }
+
+        #endregion
+
+        private void OnAssemblyFinished(object sender, AssemblyFinishEventArgs e)
 		{
 			_assemblerService.AssemblerProjectFinished -= OnAssemblyFinished;
 
 			_dockingService.MainForm.Invoke(() => ShowErrorPanels(e.Output));
-		}
-
-		private void openFileMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenDocument();
-		}
-
-		private void OpenDocument()
-		{
-			var openFileDialog = new OpenFileDialog
-			{
-				CheckFileExists = true,
-				DefaultExt = "*.asm",
-				Filter = "All Know File Types | *.asm; *.z80; *.wcodeproj| Assembly Files (*.asm)|*.asm|Z80" +
-						 " Assembly Files (*.z80)|*.z80 | Include Files (*.inc)|*.inc | Project Files (*.wcodeproj)" +
-						 "|*.wcodeproj|All Files(*.*)|*.*",
-				FilterIndex = 0,
-				RestoreDirectory = true,
-				Multiselect = true,
-				Title = "Open File",
-			};
-
-			if (openFileDialog.ShowDialog() != DialogResult.OK)
-			{
-				return;
-			}
-
-			try
-			{
-				foreach (var fileName in openFileDialog.FileNames)
-				{
-					string extCheck = Path.GetExtension(fileName);
-					if (string.Equals(extCheck, ".wcodeproj", StringComparison.OrdinalIgnoreCase))
-					{
-						OpenProject(fileName);
-					    if (Settings.Default.startupProject == fileName)
-					    {
-					        continue;
-					    }
-
-					    if (MessageBox.Show("Would you like to make this your default project?",
-					            "Startup Project",
-					            MessageBoxButtons.YesNo,
-					            MessageBoxIcon.Question) == DialogResult.Yes)
-					    {
-					        Settings.Default.startupProject = fileName;
-					    }
-					}
-					else
-					{
-						_documentService.OpenDocument(fileName);
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Error opening file", ex);
-			}
-		}
-
-		private void openProjectMenuItem_Click(object sender, EventArgs e)
-		{
-			OpenFileDialog openFileDialog = new OpenFileDialog
-			{
-				CheckFileExists = true,
-				DefaultExt = "*.wcodeproj",
-				Filter = "Project Files (*.wcodeproj)|*.wcodeproj|All Files(*.*)|*.*",
-				FilterIndex = 0,
-				RestoreDirectory = true,
-				Title = "Open Project File",
-			};
-			try
-			{
-				if (openFileDialog.ShowDialog() == DialogResult.OK)
-				{
-					string fileName = openFileDialog.FileName;
-
-					if (!OpenProject(fileName))
-					{
-						_projectService.CreateInternalProject();
-					}
-
-					if (Settings.Default.startupProject != fileName)
-					{
-						if (
-							MessageBox.Show("Would you like to make this your default project?",
-											"Startup Project",
-											MessageBoxButtons.YesNo,
-											MessageBoxIcon.Question) == DialogResult.Yes)
-						{
-							Settings.Default.startupProject = fileName;
-						}
-					}
-				}
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Error opening file.", ex);
-			}
-
-			UpdateMenus(_dockingService.Documents.Any());
-		}
-
-		/// <summary>
-		/// This opens the recend document clicked in the file menu.
-		/// </summary>
-		/// <param name="sender">This is the button object. This is casted to get which button was clicked.</param>
-		/// <param name="e">Nobody cares about this arg.</param>
-		private void OpenRecentDoc(object sender, EventArgs e)
-		{
-			MenuItem button = (MenuItem)sender;
-			_documentService.OpenDocument(button.Text);
-		}
-
-		private void openToolButton_Click(object sender, EventArgs e)
-		{
-			OpenDocument();
-		}
-
-		private void Paste()
-		{
-			var activeContent = _dockingService.ActiveContent as ToolWindow;
-			if (activeContent != null)
-			{
-				activeContent.Paste();
-			}
-			else if (_dockingService.ActiveDocument != null)
-			{
-				_dockingService.ActiveDocument.Paste();
-			}
-		}
-
-		private void pasteMenuItem_Click(object sender, EventArgs e)
-		{
-			Paste();
-		}
-
-		private void pasteToolButton_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument != null)
-			{
-				_dockingService.ActiveDocument.Paste();
-			}
-		}
-
-		private void pauseToolButton_Click(object sender, EventArgs e)
-		{
-			try
-			{
-				_debugger.Pause();
-			}
-			catch (DebuggingException)
-			{
-				MessageBox.Show("Unable to pause at this point.");
-			}
-		}
-
-		private void prefsMenuItem_Click(object sender, EventArgs e)
-		{
-			Preferences prefs = new Preferences(_dockingService);
-			prefs.ShowDialog();
-		}
-
-		private void prevBookmarkMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_documentService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_documentService.ActiveDocument.GotoPrevBookmark();
-		}
-
-		private void projStatsMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_dockingService.ActiveDocument.SaveFile();
-			string inputFile = _dockingService.ActiveDocument.FileName;
-			string outputFile = string.Empty;
-			string originalDir = Path.GetDirectoryName(inputFile);
-			var includeDirs = Settings.Default.includeDirs.Cast<string>();
-			_assemblerService.AssembleFile(inputFile, outputFile, originalDir, includeDirs, AssemblyFlags.Stats);
-		}
-
-		private void redoMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument != null)
-			{
-				_dockingService.ActiveDocument.Redo();
-			}
-		}
-
-		private void refreshViewMenuItem_Click(object sender, EventArgs e)
-		{
-			_dockingService.ProjectViewer.BuildProjTree();
-		}
-
-		private void renameMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-			ShowRefactorForm();
-		}
-
-		private void replaceInFilesMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, true, true);
-		}
-
-		private void replaceMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, true, false);
-		}
-
-		private void RestoreWindow()
-		{
-			try
-			{
-				WindowState = Settings.Default.WindowState;
-				Size = Settings.Default.WindowSize;
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Error restoring the window size", ex);
-			}
-		}
-
-		private void saveAllToolButton_Click(object sender, EventArgs e)
-		{
-			foreach (Editor child in MdiChildren)
-			{
-				child.SaveFile();
-			}
-		}
-
-		private void saveAsMenuItem_Click(object sender, EventArgs e)
-		{
-			try
-			{
-				_dockingService.ActiveDocument.SaveFileAs();
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Error saving file.", ex);
-			}
-		}
-
-		private void saveMenuItem_Click(object sender, EventArgs e)
-		{
-			SaveActiveDocument();
-		}
-
-		private void saveProjectMenuItem_Click(object sender, EventArgs e)
-		{
-			_projectService.SaveProject();
-			saveProjectMenuItem.Enabled = _projectService.Project.NeedsSave;
-		}
-
-		private void saveToolButton_Click(object sender, EventArgs e)
-		{
-			SaveActiveDocument();
 		}
 
 		private void SaveActiveDocument()
@@ -1960,32 +2331,14 @@ namespace Revsoft.Wabbitcode
 			{
 				DockingService.ShowError("Error saving file.", ex);
 			}
+
+            UpdateTitle();
 		}
 
 		private void SaveWindow()
 		{
 			Settings.Default.WindowSize = WindowState != FormWindowState.Normal ? new Size(RestoreBounds.Width, RestoreBounds.Height) : Size;
 			Settings.Default.WindowState = WindowState;
-		}
-
-		private void selectAllMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_documentService.ActiveDocument.SelectAll();
-		}
-
-		private void sentenceCaseMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_documentService.ActiveDocument.SelectedTextToSentenceCase();
 		}
 
 		private void ShowErrorPanels(AssemblerOutput output)
@@ -2016,316 +2369,16 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
-		private void startDebugMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_debugger == null)
-			{
-				StartDebug();
-			}
-			else
-			{
-				_debugger.Run();
-			}
-		}
-
-		private void startWithoutDebugMenuItem_Click(object sender, EventArgs e)
-		{
-			// TODO: fix this
-			//_debugger.StartWithoutDebug();
-		}
-
-		private void restartToolStripButton_Click(object sender, EventArgs e)
-		{
-			RestartDebug();	
-		}
-
-		private void stepButton_Click(object sender, EventArgs e)
-		{
-			_debugger.Step();
-			UpdateDebugStuff();
-		}
-
-		private void stepOutMenuItem_Click(object sender, EventArgs e)
-		{
-			_debugger.StepOut();
-			UpdateDebugStuff();
-		}
-
-		private void stepOverMenuItem_Click(object sender, EventArgs e)
-		{
-			_debugger.StepOver();
-			UpdateDebugStuff();
-		}
-
-		private void symTableMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_dockingService.ActiveDocument.SaveFile();
-			string inputFile = _documentService.ActiveFileName;
-			string outputFile = Path.ChangeExtension(_documentService.ActiveFileName, "lab");
-			string originalDir = Path.GetDirectoryName(inputFile);
-			var includeDirs = Settings.Default.includeDirs.Cast<string>();
-			_assemblerService.AssembleFile(inputFile, outputFile, originalDir,
-				includeDirs, AssemblyFlags.Normal | AssemblyFlags.Symtable);
-		}
-
-		private void toggleBookmarkMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_documentService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_documentService.ActiveDocument.ToggleBookmark();
-		}
-
-		private void toggleBreakpointMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument == null)
-			{
-				return;
-			}
-
-			_dockingService.ActiveDocument.ToggleBreakpoint();
-			_dockingService.ActiveDocument.Refresh();
-		}
-
-		private void undoMenuItem_Click(object sender, EventArgs e)
-		{
-			if (_dockingService.ActiveDocument != null)
-			{
-				_dockingService.ActiveDocument.Undo();
-			}
-		}
-
-		private void updateMenuItem_Click(object sender, EventArgs e)
-		{
-			try
-			{
-				if (UpdateService.CheckForUpdate())
-				{
-					var result = MessageBox.Show("New version available. Download now?",
-						"Update Available", MessageBoxButtons.YesNo, MessageBoxIcon.None);
-					if (result == DialogResult.Yes)
-					{
-						UpdateService.StartUpdater();
-					}
-				}
-				else
-				{
-					MessageBox.Show("No new updates");
-				}
-			}
-			catch (Exception ex)
-			{
-				DockingService.ShowError("Error updating", ex);
-			}
-		}
-
-		/// <summary>
-		/// This handles all things relating to the view menu. Just does a switch based
-		/// on the tag, and does the appropriate action based on the check mark state
-		/// this probably isnt a great way to handle it, but it works
-		/// </summary>
-		/// <param name="sender"></param>
-		/// <param name="e"></param>
-		private void viewMenuItem_Click(object sender, EventArgs e)
-		{
-			ToolStripMenuItem item = (ToolStripMenuItem)sender;
-			item.Checked = !item.Checked;
-			switch (item.Tag.ToString())
-			{
-				case "iconBar":
-					if (ActiveMdiChild != null)
-					{
-						_documentService.ActiveDocument.IsIconBarVisible = item.Checked;
-					}
-
-					break;
-				case "lineNumbers":
-					if (ActiveMdiChild != null)
-					{
-						_documentService.ActiveDocument.ShowLineNumbers = item.Checked;
-					}
-
-					break;
-				case "labelsList":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.LabelList);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.LabelList);
-					}
-
-					break;
-				case "mainToolBar":
-					if (item.Checked)
-					{
-						mainToolBar.Show();
-					}
-					else
-					{
-						mainToolBar.Hide();
-					}
-
-					Settings.Default.mainToolBar = item.Checked;
-					break;
-				case "editorToolBar":
-					if (item.Checked)
-					{
-						editorToolStrip.Show();
-					}
-					else
-					{
-						editorToolStrip.Hide();
-					}
-
-					Settings.Default.editorToolbar = item.Checked;
-					break;
-				case "outputWindow":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.OutputWindow);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.OutputWindow);
-					}
-
-					break;
-				case "FindResults":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.FindResults);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.FindResults);
-					}
-
-					break;
-				case "statusBar":
-					statusBar.Visible = item.Checked;
-					break;
-				case "debugPanel":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.DebugPanel);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.DebugPanel);
-					}
-
-					break;
-				case "callStack":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.CallStack);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.CallStack);
-					}
-
-					break;
-				case "stackViewer":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.StackViewer);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.StackViewer);
-					}
-
-					break;
-				case "varTrack":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.TrackWindow);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.TrackWindow);
-					}
-
-					break;
-				case "breakManager":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.BreakManagerWindow);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.BreakManagerWindow);
-					}
-
-					break;
-				case "projectViewer":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.ProjectViewer);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.ProjectViewer);
-					}
-
-					break;
-				case "debugToolBar":
-					if (item.Checked)
-					{
-						debugToolStrip.Show();
-					}
-					else
-					{
-						debugToolStrip.Hide();
-					}
-
-					Settings.Default.debugToolbar = item.Checked;
-					break;
-				case "errorList":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.ErrorList);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.ErrorList);
-					}
-
-					break;
-				case "macroManager":
-					if (item.Checked)
-					{
-						_dockingService.ShowDockPanel(_dockingService.MacroManager);
-					}
-					else
-					{
-						_dockingService.HideDockPanel(_dockingService.MacroManager);
-					}
-
-					break;
-			}
-
-			debugToolStrip.Height = 25;
-		}
-
-		internal void UpdateAssembledInfo(string fileName, int lineNumber)
+        private void UpdateAssembledInfo(object sender, EditorSelectionEventArgs e)
 		{
 			if (_debugger == null)
 			{
 				return;
 			}
 
-			CalcLocation label = _symbolService.ListTable.GetCalcLocation(fileName, lineNumber);
+            string file = e.Editor.FileName;
+            int line = e.Editor.EditorBox.ActiveTextAreaControl.Caret.Line;
+			CalcLocation label = _symbolService.ListTable.GetCalcLocation(file, line);
 			if (label == null)
 			{
 				return;

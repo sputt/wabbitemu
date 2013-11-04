@@ -14,13 +14,13 @@ namespace Revsoft.Wabbitcode.Services
 	{
 		#region Constants
 
-		public const char CommentChar = ';';
+	    private const char CommentChar = ';';
 		private const string CommentString = "#comment";
 		private const string DefineString = "#define";
 		private const string Delimeters = "&<>~!%^*()-+=|\\/{}[]:;\"' \n\t\r?,";
 		private const string EndCommentString = "#endcomment";
 		private const string EndMacroString = "#endmacro";
-		public const char EndOfLineChar = '\\';
+	    private const char EndOfLineChar = '\\';
 		private const string IncludeString = "#include";
 		private const string MacroString = "#macro";
 
@@ -28,8 +28,8 @@ namespace Revsoft.Wabbitcode.Services
 
 		#region Events
 
-		public delegate void ParserProgress(object sender, ProgressEventArgs e);
-		public event ParserProgress OnParserProgress;
+		public event ParserProgressHandler OnParserProgress;
+        public event ParserFinishedHandler OnParserFinished;
 
 		#endregion
 
@@ -137,16 +137,10 @@ namespace Revsoft.Wabbitcode.Services
 
 		public IEnumerable<IParserData> GetAllParserData()
 		{
-			foreach (var info in _parserInfoDictionary.Values)
-			{
-				foreach (var data in info)
-				{
-					yield return data;
-				}
-			}
+		    return _parserInfoDictionary.Values.SelectMany(info => info);
 		}
 
-		public IEnumerable<IParserData> GetParserData(string referenceString, bool caseSensitive)
+	    public IEnumerable<IParserData> GetParserData(string referenceString, bool caseSensitive)
 		{
 			if (string.IsNullOrEmpty(referenceString))
 			{
@@ -237,7 +231,7 @@ namespace Revsoft.Wabbitcode.Services
 
 					if (OnParserProgress != null)
 					{
-						OnParserProgress(this, new ProgressEventArgs(percent));
+						OnParserProgress(this, new ParserProgressEventArgs(file, percent));
 					}
 				}
 
@@ -433,14 +427,15 @@ namespace Revsoft.Wabbitcode.Services
 
 					counter = TextUtils.SkipToEndOfLine(lines, counter);
 					newCounter = FindString(lines, counter, EndMacroString);
-					if (newCounter != -1)
-					{
-						string contents = lines.Substring(counter, newCounter - counter);
-						Macro macroToAdd = new Macro(new DocLocation(GetLine(counter), counter), macroName, args, contents, description, info);
-						info.MacrosList.Add(macroToAdd);
-						counter = newCounter + EndMacroString.Length;
-					}
+				    if (newCounter == -1)
+				    {
+				        continue;
+				    }
 
+				    string contents = lines.Substring(counter, newCounter - counter);
+				    Macro macroToAdd = new Macro(new DocLocation(GetLine(counter), counter), macroName, args, contents, description, info);
+				    info.MacrosList.Add(macroToAdd);
+				    counter = newCounter + EndMacroString.Length;
 				}
 				else if (string.Compare(lines, counter, IncludeString, 0, IncludeString.Length, true) == 0)
 				{
@@ -500,31 +495,11 @@ namespace Revsoft.Wabbitcode.Services
 				}
 			}
 
-			//if (ProjectService.IsInternal)
-			//{
-			//	if (!string.IsNullOrEmpty(file))
-			//	{
-			//		_baseDir = Path.GetDirectoryName(file);
-			//		FindIncludedFiles(file);
-			//	}
-			//}
-			//else
-			//{
-			//	_baseDir = ProjectService.ProjectDirectory;
-			//	var mainStep = ProjectService.CurrentBuildConfig.Steps.Find(item => !string.IsNullOrEmpty(item.InputFile));
-			//	FindIncludedFiles(mainStep.InputFile);
-			//}
+            if (OnParserFinished != null)
+            {
+                OnParserFinished(this, new ParserEventArgs(file));
+            }
 
-			//try
-			//{
-			//	DockingService.MainForm.Invoke(() => DockingService.MainForm.HideProgressBar());
-			//}
-
-			//// we've quit for some reason lets get out
-			//catch (ObjectDisposedException)
-			//{
-			//	return null;
-			//}
 			return info;
 		}
 
@@ -562,7 +537,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		//			if (OnParserProgress != null)
 		//			{
-		//				OnParserProgress(this, new ProgressEventArgs(percent));
+		//				OnParserProgress(this, new ParserProgressEventArgs(percent));
 		//			}
 		//		}
 
@@ -1179,13 +1154,23 @@ namespace Revsoft.Wabbitcode.Services
 		}
 	}
 
-	public class ProgressEventArgs
+	public class ParserProgressEventArgs : ParserEventArgs
 	{
 		public int PercentComplete { get; private set; }
 
-		public ProgressEventArgs(int percentComplete)
+		public ParserProgressEventArgs(string fileName, int percentComplete) : base(fileName)
 		{
 			PercentComplete = percentComplete;
 		}
 	}
+
+    public class ParserEventArgs : EventArgs
+    {
+        public string FileName { get; private set; }
+
+        public ParserEventArgs(string filename)
+        {
+            FileName = filename;
+        }
+    }
 }

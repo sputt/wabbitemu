@@ -38,7 +38,7 @@ namespace Revsoft.Wabbitcode.Services
 			_isAssembling = true;
 			Task.Factory.StartNew(() =>
 			{
-				if (_projectService.Project.IsInternal)
+				if (_projectService.Project == null || _projectService.Project.IsInternal)
 				{
 					return;
 				}

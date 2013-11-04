@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Globalization;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
 using Revsoft.Wabbitcode.Services.Interface;
 
@@ -50,7 +51,7 @@ namespace Revsoft.Wabbitcode.Docking_Windows
 		{
 			InitializeComponent();
 
-			dockingService.MainForm.OnDebuggingStarted += mainForm_OnDebuggingStarted;
+            WabbitcodeDebugger.OnDebuggingStarted += mainForm_OnDebuggingStarted;
 			_symbolService = symbolService;
 		}
 
