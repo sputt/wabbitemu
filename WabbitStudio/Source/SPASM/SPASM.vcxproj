@@ -728,6 +728,7 @@
     <ClInclude Include="hash.h" />
     <ClInclude Include="list.h" />
     <ClInclude Include="modp_ascii.h" />
+    <ClInclude Include="Module.h" />
     <ClInclude Include="opcodes.h" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="pass_one.h" />

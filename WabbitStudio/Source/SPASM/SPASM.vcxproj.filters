@@ -169,6 +169,9 @@
     <ClInclude Include="CIncludeDirectoryCollection.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Module.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Z80Assembler.rgs">

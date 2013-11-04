@@ -7,6 +7,8 @@
 #include "CTextStream.h"
 #include "CIncludeDirectoryCollection.h"
 
+#include "Module.h"
+
 class ATL_NO_VTABLE CZ80Assembler :
 	public CComObjectRootEx<CComSingleThreadModel>,
 	public CComCoClass<CZ80Assembler, &__uuidof(Z80Assembler)>,
@@ -14,6 +16,7 @@ class ATL_NO_VTABLE CZ80Assembler :
 {
 public:
 	DECLARE_REGISTRY_RESOURCEID(IDR_Z80ASSEMBLER)
+	//DECLARE_CLASSFACTORY_SINGLETON(CZ80Assembler)
 
 	BEGIN_COM_MAP(CZ80Assembler)
 		COM_INTERFACE_ENTRY(IZ80Assembler)
@@ -38,6 +41,8 @@ public:
 
 		m_fFirstAssembly = TRUE;
 		m_dwOptions = 0;
+
+		AtlComModuleRevokeClassObjects(&_AtlComModule);
 		return hr;
 	}
 
