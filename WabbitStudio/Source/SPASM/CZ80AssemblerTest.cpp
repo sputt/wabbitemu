@@ -120,16 +120,6 @@ public:
 
 	STDMETHOD(Assemble)(VARIANT varInput, IStream **ppOutput)
 	{
-		if (!m_fFirstAssembly)
-		{
-			free_storage();
-		}
-
-		m_fFirstAssembly = FALSE;
-
-		init_storage();
-
-	
 		HGLOBAL hGlobal = GlobalAlloc(GMEM_MOVEABLE, output_buf_size); 
 		output_contents = (unsigned char *) GlobalLock(hGlobal);
 
@@ -138,6 +128,11 @@ public:
 		if (V_VT(&varInput) == VT_BSTR)
 		{
 			mode |= MODE_NORMAL | MODE_COMMANDLINE;
+
+			if (m_fFirstAssembly)
+			{
+				init_storage();
+			}
 
 			CW2CT szInput(V_BSTR(&varInput));
 			input_contents = strdup(szInput);
@@ -155,6 +150,13 @@ public:
 				free(output_filename);
 			}
 			output_filename = strdup(m_bstrOutputFile);
+
+			if (!m_fFirstAssembly)
+			{
+				free_storage();
+			}
+
+			init_storage();
 		}
 
 		// Set up the include directories
@@ -188,6 +190,7 @@ public:
 		ul.QuadPart = out_ptr - output_contents;
 		pStream->SetSize(ul);
 
+		m_fFirstAssembly = FALSE;
 		return pStream->QueryInterface(ppOutput);
 	}
 

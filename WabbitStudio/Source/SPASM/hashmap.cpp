@@ -172,5 +172,9 @@ int hash_count (hash_t *ht) {
  * Free a hash table, removing elements
  */
 void hash_free (hash_t *ht) {
+	for (auto it = ht->table.cbegin(); it != ht->table.cend(); it++)
+	{
+		ht->remove_callback(it->second);
+	}
 	delete ht;
 }
