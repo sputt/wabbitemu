@@ -3,27 +3,37 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Revsoft.TextEditor;
 using Revsoft.TextEditor.Document;
-using Revsoft.Wabbitcode.Docking_Windows;
+using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using Revsoft.Wabbitcode.Utils;
 
 namespace Revsoft.Wabbitcode
 {
+    public enum SearchMode
+    {
+        Find,
+        Replace,
+        FindInFiles,
+    }
+
+
 	public partial class FindAndReplaceForm : Form
 	{
+        private const int FindTabIndex = 0;
+        private const int ReplaceTabIndex = 1;
+        private const int FindFilesTabIndex = 2;
+
 		private bool _lastSearchLoopedAround;
 		private bool _lastSearchWasBackward;
 
 		private TextEditorControl _editor;
-		private readonly Dictionary<TextEditorControl, HighlightGroup> _highlightGroups = new Dictionary<TextEditorControl, HighlightGroup>();
-		private readonly TextEditorSearcher _search;
+		private TextEditorSearcher _search;
 		private readonly IDockingService _dockingService;
 		private readonly IProjectService _projectService;
 
@@ -31,92 +41,56 @@ namespace Revsoft.Wabbitcode
 		{
 			_dockingService = dockingService;
 			_projectService = projectServiceService;
+            DockingService.OnActiveDocumentChanged += DockingService_OnActiveDocumentChanged;
 
 			InitializeComponent();
-			_search = new TextEditorSearcher();
 		}
 
-		private bool BigSearch
+        void DockingService_OnActiveDocumentChanged(object sender, EventArgs e)
+        {
+            if (_dockingService.ActiveDocument == null || Visible == false)
+            {
+                return;
+            }
+
+            switch (findTabs.SelectedIndex)
+            {
+                case FindTabIndex:
+                    _dockingService.ActiveDocument.ShowFindForm(Owner, SearchMode.Find);
+                    break;
+                case ReplaceTabIndex:
+                    _dockingService.ActiveDocument.ShowFindForm(Owner, SearchMode.Replace);
+                    break;
+                case FindFilesTabIndex:
+                    _dockingService.ActiveDocument.ShowFindForm(Owner, SearchMode.FindInFiles);
+                    break;
+            }
+        }
+
+	    private TextRange FindNext(bool viaF3, bool matchCase, bool matchWholeWord, bool searchBackward, string messageIfNotFound)
 		{
-			get
-			{
-				return btnHighlightAll.Text == "Find all" || btnHighlightAll.Text == "Replace All";
-			}
-
-			set
-			{
-				if (value)
-				{
-					btnHighlightAll.Text = ReplaceMode ? "Replace all" : "Find all";
-					btnReplace.Visible = btnReplaceAll.Visible = false;
-					btnHighlightAll.Visible = true;
-					btnFindNext.Visible = btnFindPrevious.Visible = false;
-					AcceptButton = btnHighlightAll;
-				}
-				else
-				{
-					btnHighlightAll.Text = "Find && Highlight All";
-				}
-
-				lblReplaceWith.Visible = txtReplaceWith.Visible = ReplaceMode;
-			}
-		}
-
-		private string LookFor
-		{
-			get
-			{
-				return txtLookFor.Text;
-			}
-		}
-
-		private bool ReplaceMode
-		{
-			get
-			{
-				return txtReplaceWith.Visible;
-			}
-
-			set
-			{
-				btnReplace.Visible = value;
-				btnReplaceAll.Visible = value;
-				lblReplaceWith.Visible = value;
-				txtReplaceWith.Visible = value;
-				btnHighlightAll.Visible = !value;
-				AcceptButton = value ? btnReplace : btnFindNext;
-			}
-		}
-
-		TextEditorControl Editor
-		{
-			set
-			{
-				_editor = value;
-				_search.Document = _editor.Document;
-				UpdateTitleBar();
-			}
-		}
-
-		private TextRange FindNext(bool viaF3, bool searchBackward, string messageIfNotFound)
-		{
-			if (string.IsNullOrEmpty(txtLookFor.Text))
+			if (string.IsNullOrEmpty(findFindBox.Text))
 			{
 				MessageBox.Show("No string specified to look for!");
 				return null;
 			}
 
+	        if (_editor == null)
+	        {
+	            MessageBox.Show("No open document");
+                return null;
+	        }
+
 			_lastSearchWasBackward = searchBackward;
-			_search.LookFor = txtLookFor.Text;
-			_search.MatchCase = chkMatchCase.Checked;
-			_search.MatchWholeWordOnly = chkMatchWholeWord.Checked;
+			_search.LookFor = findFindBox.Text;
+			_search.MatchCase = matchCase;
+	        _search.MatchWholeWordOnly = matchWholeWord;
 
 			var caret = _editor.ActiveTextAreaControl.Caret;
 			if (viaF3 && _search.HasScanRegion && caret.Offset <= _search.BeginOffset && caret.Offset >= _search.EndOffset)
 			{
 				// user moved outside of the originally selected region
 				_search.ClearScanRegion();
-				UpdateTitleBar();
 			}
 
 			int startFrom = caret.Offset - (searchBackward ? 1 : 0);
@@ -133,158 +107,69 @@ namespace Revsoft.Wabbitcode
 			return range;
 		}
 
-		public void ShowFor(Form owner, bool replaceMode, bool bigSearch)
+		public void ShowFor(Form owner, TextEditorControl editor, SearchMode mode)
 		{
-			_editor = null;
-			_search.ClearScanRegion();
+		    _editor = editor;
+            _search = new TextEditorSearcher(editor != null ? editor.Document : null);
 
-			Owner = owner;
+		    Owner = owner;
 			Show();
 
-			ReplaceMode = replaceMode;
-			BigSearch = bigSearch;
+			findNextFindButton.Focus();
+			findFindBox.SelectAll();
+			findFindBox.Focus();
 
-			btnFindNext.Focus();
-
-			txtLookFor.SelectAll();
-			txtLookFor.Focus();
+		    switch (mode)
+		    {
+                case SearchMode.Find:
+                    findTabs.SelectTab(findPage);
+		            break;
+                case SearchMode.Replace:
+                    findTabs.SelectTab(replacePage);
+                    break;
+                case SearchMode.FindInFiles:
+                    findTabs.SelectTab(findInFilesPage);
+                    break;
+		    }
 		}
 
-		public void ShowFor(TextEditorControl editor, bool replaceMode, bool bigSearch)
+		private void findNextFindButton_Click(object sender, EventArgs e)
 		{
-			Editor = editor;
-
-			_search.ClearScanRegion();
-			var sm = editor.ActiveTextAreaControl.SelectionManager;
-			if (sm.HasSomethingSelected && sm.SelectionCollection.Count == 1)
-			{
-				var sel = sm.SelectionCollection[0];
-				if (sel.StartPosition.Line == sel.EndPosition.Line)
-				{
-					txtLookFor.Text = sm.SelectedText;
-				}
-				else
-				{
-					_search.SetScanRegion(sel);
-				}
-			}
-			else
-			{
-				// Get the current word that the caret is on
-				Caret caret = editor.ActiveTextAreaControl.Caret;
-				int start = TextUtilities.FindWordStart(editor.Document, caret.Offset);
-				int endAt = TextUtilities.FindWordEnd(editor.Document, caret.Offset);
-				txtLookFor.Text = editor.Document.GetText(start, endAt - start);
-			}
-
-			Owner = (Form)editor.TopLevelControl;
-			Show();
-
-			ReplaceMode = replaceMode;
-			BigSearch = bigSearch;
-
-			btnFindNext.Focus();
-
-			txtLookFor.SelectAll();
-			txtLookFor.Focus();
+            bool matchCase = matchCaseFindCheckbox.Checked;
+            bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
+            FindNext(false, matchCase, matchWholeWord, false, "Text not found");
 		}
 
-		private void btnCancel_Click(object sender, EventArgs e)
+		private void findPrevFindButton_Click(object sender, EventArgs e)
 		{
-			Close();
+            bool matchCase = matchCaseFindCheckbox.Checked;
+            bool matchWholeWord = matchWholeWordFindCheckbox.Checked;
+			FindNext(false, matchCase, matchWholeWord, true, "Text not found");
 		}
 
-		private void btnFindNext_Click(object sender, EventArgs e)
-		{
-			FindNext(false, false, "Text not found");
-		}
+	    private void FindInFiles(string textToFind, bool matchCase, bool matchWholeWord)
+	    {
+            FindResultsWindow results = _dockingService.FindResults;
+            IProject project = _projectService.Project;
+            if (!project.IsInternal)
+            {
+                IEnumerable<ProjectFile> files = project.GetProjectFiles();
+                results.NewFindResults(findFindBox.Text, project.ProjectName);
+                foreach (ProjectFile file in files)
+                {
+                    if (!File.Exists(file.FileFullPath))
+                    {
+                        continue;
+                    }
 
-		private void btnFindPrevious_Click(object sender, EventArgs e)
-		{
-			FindNext(false, true, "Text not found");
-		}
+                    string fileText = GetTextForFile(project, file);
+                    FindTextInFile(file.FileFullPath, fileText, textToFind, matchWholeWord, matchCase);
+                }
+            }
 
-		private void btnHighlightAll_Click(object sender, EventArgs e)
-		{
-			if (BigSearch)
-			{
-				FindResultsWindow results = _dockingService.FindResults;
-				IProject project = _projectService.Project;
-				if (!project.IsInternal)
-				{
-					IEnumerable<ProjectFile> files = project.GetProjectFiles();
-					results.NewFindResults(txtLookFor.Text, project.ProjectName);
-					foreach (ProjectFile file in files)
-					{
-						if (!File.Exists(file.FileFullPath))
-						{
-							continue;
-						}
-
-						bool matchCase = chkMatchCase.Checked;
-						bool matchWholeWord = chkMatchWholeWord.Checked;
-						string textToFind = txtLookFor.Text;
-						string fileText = GetTextForFile(project, file);
-
-						FindTextInFile(file.FileFullPath, fileText, textToFind, matchWholeWord, matchCase);
-					}
-				}
-
-				results.DoneSearching();
-				_dockingService.ShowDockPanel(results);
-			}
-			else
-			{
-				if (!_highlightGroups.ContainsKey(_editor))
-				{
-					_highlightGroups[_editor] = new HighlightGroup(_editor);
-				}
-
-				HighlightGroup group = _highlightGroups[_editor];
-
-				if (string.IsNullOrEmpty(LookFor))
-				{
-					// Clear highlights
-					group.ClearMarkers();
-				}
-				else
-				{
-					_search.LookFor = txtLookFor.Text;
-					_search.MatchCase = chkMatchCase.Checked;
-					_search.MatchWholeWordOnly = chkMatchWholeWord.Checked;
-
-					int offset = 0, count = 0;
-					for (; ; )
-					{
-						bool looped;
-						TextRange range = _search.FindNext(offset, false, out looped);
-						if (range == null || looped)
-						{
-							break;
-						}
-
-						offset = range.Offset + range.Length;
-						count++;
-						var m = new TextMarker(
-							range.Offset,
-							range.Length,
-							TextMarkerType.SolidBlock,
-							Color.Yellow,
-							Color.Black);
-						group.AddMarker(m);
-					}
-
-					if (count == 0)
-					{
-						MessageBox.Show("Search text not found.");
-					}
-					else
-					{
-						Close();
-					}
-				}
-			}
-		}
+            results.DoneSearching();
+            _dockingService.ShowDockPanel(results);
+	    }
 
 		private void FindTextInFile(string fileName, string fileText, string textToFind, bool matchWholeWord, bool matchCase)
 		{
@@ -313,80 +198,6 @@ namespace Revsoft.Wabbitcode
 				Debug.WriteLine("Failed to open file {0}, while searching in all files", file.FileFullPath);
 			}
 			return fileText;
-		}
-
-		private void btnReplaceAll_Click(object sender, EventArgs e)
-		{
-			int count = 0;
-			// if the replacement string contains the original search string
-			// (e.g. replace "red" with "very red") we must avoid looping around and
-			// replacing forever! To fix, start replacing at beginning of region (by
-			// moving the caret) and stop as soon as we loop around.
-			// _editor.ActiveTextAreaControl.Caret.Position =
-			// _editor.Document.OffsetToPosition(_search.BeginOffset);
-
-			_editor.Document.UndoStack.StartUndoGroup();
-			try
-			{
-				while (FindNext(false, false, null) != null)
-				{
-					if (_lastSearchLoopedAround)
-					{
-						break;
-					}
-
-					// Replace
-					count++;
-					InsertText(txtReplaceWith.Text);
-				}
-			}
-			finally
-			{
-				_editor.Document.UndoStack.EndUndoGroup();
-			}
-
-			if (count == 0)
-			{
-				MessageBox.Show("No occurrances found.");
-			}
-			else
-			{
-				MessageBox.Show(string.Format("Replaced {0} occurrances.", count));
-				Close();
-			}
-		}
-
-		private void btnReplace_Click(object sender, EventArgs e)
-		{
-			var sm = _editor.ActiveTextAreaControl.SelectionManager;
-			if (string.Equals(sm.SelectedText, txtLookFor.Text, StringComparison.OrdinalIgnoreCase))
-			{
-				InsertText(txtReplaceWith.Text);
-			}
-
-			FindNext(false, _lastSearchWasBackward, "Text not found.");
-		}
-
-		private void FindAndReplaceForm_FormClosing(object sender, FormClosingEventArgs e)
-		{
-			// Prevent dispose, as this form can be re-used
-			if (e.CloseReason != CloseReason.FormOwnerClosing)
-			{
-				if (Owner != null)
-				{
-					Owner.Select();    // prevent another app from being activated instead
-				}
-
-				e.Cancel = true;
-				Hide();
-
-				// Discard search region
-				_search.ClearScanRegion();
-				if (_editor != null)
-				{
-					_editor.Refresh(); // must repaint manually
-				}
-			}
 		}
 
 		private void InsertText(string text)
@@ -426,64 +237,108 @@ namespace Revsoft.Wabbitcode
 		{
 		}
 
-		private void UpdateTitleBar()
-		{
-			string text = ReplaceMode ? "Find & replace" : "Find";
-			if (_editor != null && _editor.FileName != null)
-			{
-				text += " - " + Path.GetFileName(_editor.FileName);
-			}
+        private void findInFilesButton_Click(object sender, EventArgs e)
+        {
+            bool matchCase = matchCaseFilesCheckbox.Checked;
+            bool matchWholeWord = matchWholeWordFilesCheckbox.Checked;
+            string textToFind = findFilesBox.Text;
+            FindInFiles(textToFind, matchCase, matchWholeWord);
+        }
 
-			if (_search.HasScanRegion)
-			{
-				text += " (selection only)";
-			}
+        private void replaceButton_Click(object sender, EventArgs e)
+        {
+            bool matchCase = matchCaseReplaceCheckbox.Checked;
+            bool matchWholeWord = matchWholeWordReplaceCheckbox.Checked;
+            var sm = _editor.ActiveTextAreaControl.SelectionManager;
+            if (string.Equals(sm.SelectedText, findFindBox.Text, StringComparison.OrdinalIgnoreCase))
+            {
+                InsertText(replaceReplaceBox.Text);
+            }
 
-			Text = text;
-		}
-	}
+            FindNext(false, matchCase, matchWholeWord, _lastSearchWasBackward, "Text not found.");
+        }
 
-	/// <summary>Bundles a group of markers together so that they can be cleared
-	/// together.</summary>
-	public sealed class HighlightGroup : IDisposable
-	{
-		private readonly IDocument _document;
-		private readonly TextEditorControl _editor;
-		private readonly List<TextMarker> _markers = new List<TextMarker>();
+        private void replaceAllButton_Click(object sender, EventArgs e)
+        {
+            bool matchCase = matchCaseReplaceCheckbox.Checked;
+            bool matchWholeWord = matchWholeWordReplaceCheckbox.Checked;
+            int count = 0;
+            // if the replacement string contains the original search string
+            // (e.g. replace "red" with "very red") we must avoid looping around and
+            // replacing forever! To fix, start replacing at beginning of region (by
+            // moving the caret) and stop as soon as we loop around.
+            // _editor.ActiveTextAreaControl.Caret.Position =
+            // _editor.Document.OffsetToPosition(_search.BeginOffset);
 
-		public HighlightGroup(TextEditorControl editor)
-		{
-			_editor = editor;
-			_document = editor.Document;
-		}
+            _editor.Document.UndoStack.StartUndoGroup();
+            try
+            {
+                while (FindNext(false, matchCase, matchWholeWord, false, null) != null)
+                {
+                    if (_lastSearchLoopedAround)
+                    {
+                        break;
+                    }
 
-		~HighlightGroup()
-		{
-			Dispose();
-		}
+                    // Replace
+                    count++;
+                    InsertText(replaceReplaceBox.Text);
+                }
+            }
+            finally
+            {
+                _editor.Document.UndoStack.EndUndoGroup();
+            }
 
-		public void AddMarker(TextMarker marker)
-		{
-			_markers.Add(marker);
-			_document.MarkerStrategy.AddMarker(marker);
-		}
+            if (count == 0)
+            {
+                MessageBox.Show("No occurrances found.");
+            }
+            else
+            {
+                MessageBox.Show(string.Format("Replaced {0} occurrances.", count));
+                Close();
+            }
+        }
 
-		public void ClearMarkers()
-		{
-			foreach (TextMarker m in _markers)
-			{
-				_document.MarkerStrategy.RemoveMarker(m);
-			}
+        private void findTabs_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            Text = findTabs.SelectedTab.Text;
+            switch (findTabs.SelectedIndex)
+            {
+                case FindTabIndex:
+                    AcceptButton = findNextFindButton;
+                    break;
+                case ReplaceTabIndex:
+                    AcceptButton = findNextReplaceButton;
+                    break;
+                case FindFilesTabIndex:
+                    AcceptButton = findInFilesButton;
+                    break;
+            }
+        }
 
-			_markers.Clear();
-			_editor.Refresh();
-		}
+        private void FindAndReplaceForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // Prevent dispose, as this form can be re-used
+            if (e.CloseReason != CloseReason.FormOwnerClosing)
+            {
+                if (Owner != null)
+                {
+                    Owner.Select();    // prevent another app from being activated instead
+                }
 
-		public void Dispose()
-		{
-			ClearMarkers();
-			GC.SuppressFinalize(this);
-		}
+                e.Cancel = true;
+                Hide();
+
+                // Discard search region
+                _search.ClearScanRegion();
+                if (_editor != null)
+                {
+                    _editor.Refresh(); // must repaint manually
+                }
+            }
+        }
 	}
 
 	public class TextRange : AbstractSegment

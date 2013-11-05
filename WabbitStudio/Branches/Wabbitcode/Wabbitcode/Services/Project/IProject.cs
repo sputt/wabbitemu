@@ -54,10 +54,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 		IEnumerable<ProjectFile> GetProjectFiles();
 		bool ContainsFile(string file);
 		ProjectFile FindFile(string fullPath);
+	    string GetFilePathFromRelativePath(string relativePath);
 
 
 		void CreateNewProject(string projectFile, string projectName);
-		void OpenProject(string fileName);
+		void OpenProject(string projectFile);
 		void SaveProject();
 
 		void InitWatcher(FileSystemEventHandler changedHandler, RenamedEventHandler renamedHandler);

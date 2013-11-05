@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 using Microsoft.Win32;
-using Revsoft.Wabbitcode.Docking_Windows;
+using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Extensions;
@@ -8,7 +8,7 @@ using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Assembler;
 using Revsoft.Wabbitcode.Services.Debugger;
-using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 using Revsoft.Wabbitcode.Services.Symbols;
@@ -30,8 +30,10 @@ namespace Revsoft.Wabbitcode
 		#region Private Members
 
 	    private bool _showToolbar = true;
+        private readonly object _codeInfoLock = new object();
 		private IWabbitcodeDebugger _debugger;
         private readonly Dictionary<string, string> _foldingDictionary = new Dictionary<string, string>();
+        private BackgroundWorker _debuggingWorker;
 
 		#region Services
 
@@ -115,7 +117,12 @@ namespace Revsoft.Wabbitcode
 
 			try
 			{
-				_documentService.GetRecentFiles();
+                ClearRecentItems();
+			    var files = _documentService.GetRecentFiles();
+			    foreach (string file in files)
+			    {
+			        AddRecentItem(file);
+			    }
 			}
 			catch (Exception ex)
 			{
@@ -239,7 +246,7 @@ namespace Revsoft.Wabbitcode
 		    }
 		}
 
-		public void UpdateChecks()
+	    private void UpdateChecks()
 		{
 			if (IsDisposed || Disposing)
 			{
@@ -269,7 +276,6 @@ namespace Revsoft.Wabbitcode
 			iconBarMenuItem.Checked = Settings.Default.iconBar;
 		}
 
-		private readonly object _codeInfoLock = new object();
 		private void GetCodeInfo(object sender, EditorSelectionEventArgs e)
 		{
 			if (string.IsNullOrEmpty(e.SelectedLines))
@@ -329,23 +335,21 @@ namespace Revsoft.Wabbitcode
 			}
 		}
 
-		internal void AddRecentItem(string file)
+		private void AddRecentItem(string file)
 		{
 			ToolStripMenuItem button = new ToolStripMenuItem(file, null, OpenRecentDoc);
 			recentFilesMenuItem.DropDownItems.Add(button);
 		}
 
-        internal void ClearRecentItems()
+	    private void ClearRecentItems()
 		{
 			recentFilesMenuItem.DropDownItems.Clear();
 		}
 
 	    private void SetLineAndColStatus(object sender, EditorSelectionEventArgs e)
 		{
-		    int line = e.Editor.EditorBox.ActiveTextAreaControl.Caret.Line;
-            int column = e.Editor.EditorBox.ActiveTextAreaControl.Caret.Column;
-			lineStatusLabel.Text = "Ln: " + line;
-			colStatusLabel.Text = "Col: " + column;
+			lineStatusLabel.Text = "Ln: " + e.Caret.Line;
+			colStatusLabel.Text = "Col: " + e.Caret.Column;
 		}
 
 	    private void SetToolStripText(string text)
@@ -353,7 +357,7 @@ namespace Revsoft.Wabbitcode
 			toolStripStatusLabel.Text = text;
 		}
 
-	    private string GetOutputFileDetails(IProject project)
+	    private static string GetOutputFileDetails(IProject project)
         {
             if (string.IsNullOrEmpty(project.BuildSystem.ProjectOutput))
             {
@@ -423,7 +427,7 @@ namespace Revsoft.Wabbitcode
 	    {
 	        foreach (var document in _dockingService.Documents)
 	        {
-	            document.EditorBox.Document.ReadOnly = true;
+	            document.ReadOnly = true;
 	        }
 	    }
 
@@ -451,20 +455,25 @@ namespace Revsoft.Wabbitcode
         {
             if (_debugger != null)
             {
-                e.Editor.EditorBox.Document.ReadOnly = true;
+                e.Editor.ReadOnly = true;
             }
 
             string foldings;
             if (_foldingDictionary.TryGetValue(e.Editor.FileName.ToLower(), out foldings))
             {
-                e.Editor.EditorBox.Document.FoldingManager.DeserializeFromString(foldings);
+                e.Editor.DocumentFoldings = foldings;
             }
         }
 
         void Editor_OnEditorClosing(object sender, EditorEventArgs e)
         {
+            if (string.IsNullOrEmpty(e.Editor.FileName))
+            {
+                return;
+            }
+
             string fileName = e.Editor.FileName.ToLower();
-            string foldings = e.Editor.EditorBox.Document.FoldingManager.SerializeToString();
+            string foldings = e.Editor.DocumentFoldings;
             if (_foldingDictionary.ContainsKey(fileName))
             {
                 _foldingDictionary[fileName] = foldings;
@@ -629,28 +638,6 @@ namespace Revsoft.Wabbitcode
 
             UpdateMenus(ActiveMdiChild != null);
 			UpdateTitle();
-		}
-
-		// TODO: remove duplicate code
-		private string FindFilePathIncludes(string relativePath)
-		{
-			IEnumerable<string> includeDirs = _projectService.Project.IsInternal ?
-				Settings.Default.includeDirs.Cast<string>() :
-				_projectService.Project.IncludeDirs;
-
-			foreach (string dir in includeDirs.Where(dir => File.Exists(Path.Combine(dir, relativePath))))
-			{
-			    return Path.Combine(dir, relativePath);
-			}
-
-			if (_projectService.Project.IsInternal)
-			{
-				return null;
-			}
-
-			return File.Exists(Path.Combine(_projectService.Project.ProjectDirectory, relativePath)) ?
-				Path.Combine(_projectService.Project.ProjectDirectory, relativePath) :
-				null;
 		}
 
         #region Initalization
@@ -946,8 +933,6 @@ namespace Revsoft.Wabbitcode
 
         #region Debugging
 
-	    private BackgroundWorker _debuggingWorker;
-
         private void StartDebug()
         {
             if (_projectService.Project.IsInternal)
@@ -959,15 +944,17 @@ namespace Revsoft.Wabbitcode
             {
                 if (!e.AssemblySucceeded)
                 {
-                    if (DockingService.ShowMessageBox(_dockingService.MainForm,
-                                    "There were errors assembling. Would you like to continue and try to debug?",
-                                    "Continue",
-                                    MessageBoxButtons.YesNo,
-                                    MessageBoxIcon.Error) == DialogResult.No)
+                    if (DockingService.ShowMessageBox(this,
+                        "There were errors assembling. Would you like to continue and try to debug?",
+                        "Continue",
+                        MessageBoxButtons.YesNo,
+                        MessageBoxIcon.Error) != DialogResult.No)
                     {
-                        CancelDebug();
                         return;
                     }
+
+                    CancelDebug();
+                    return;
                 }
 
                 this.Invoke(() =>
@@ -1074,7 +1061,6 @@ namespace Revsoft.Wabbitcode
                         MessageBoxIcon.Exclamation) != DialogResult.Yes)
                     {
                         CancelDebug();
-                        return;
                     }
                 }
             };
@@ -1231,24 +1217,25 @@ namespace Revsoft.Wabbitcode
 
         private void UpdateDebugStuff()
         {
-            bool isRunning = _debugger != null && _debugger.IsRunning;
             bool isDebugging = _debugger != null;
-            bool enabled = !isRunning && isDebugging;
+            bool isRunning = isDebugging && _debugger.IsRunning;
+            bool enabled = isDebugging && !isRunning;
+            bool hasCallStack = isDebugging && _debugger.CallStack.Count > 0;
             stepMenuItem.Enabled = enabled;
             gotoCurrentToolButton.Enabled = enabled;
             stepToolButton.Enabled = enabled;
             startDebugMenuItem.Enabled = enabled || !isDebugging;
             stepOverMenuItem.Enabled = enabled;
             stepOverToolButton.Enabled = enabled;
-            stepOutMenuItem.Enabled = enabled && _debugger.CallStack.Count > 0;
-            stepOutToolButton.Enabled = enabled && _debugger.CallStack.Count > 0;
+            stepOutMenuItem.Enabled = enabled && hasCallStack;
+            stepOutToolButton.Enabled = enabled && hasCallStack;
             stopDebugMenuItem.Enabled = isDebugging;
             stopToolButton.Enabled = isDebugging;
             restartToolStripButton.Enabled = isDebugging;
             runMenuItem.Enabled = enabled;
             runDebuggerToolButton.Enabled = enabled || !isDebugging;
             runToolButton.Enabled = enabled || !isDebugging;
-            pauseToolButton.Enabled = isRunning && isDebugging;
+            pauseToolButton.Enabled = isRunning;
         }
 
         private void UpdateDebugPanel()
@@ -1258,16 +1245,7 @@ namespace Revsoft.Wabbitcode
             _dockingService.DebugPanel.UpdateScreen();
         }
 
-        internal void SetPC(string fileName, int lineNumber)
-        {
-            _debugger.SetPCToSelect(fileName, lineNumber);
-
-            _documentService.RemoveDebugHighlight();
-            _documentService.HighlightDebugLine(lineNumber);
-            UpdateDebugPanel();
-        }
-
-        #endregion
+	    #endregion
 
         #region Form Events
 
@@ -1494,19 +1472,12 @@ namespace Revsoft.Wabbitcode
                 return;
             }
 
-            _dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, false, false);
+            _dockingService.ActiveDocument.ShowFindForm(this, SearchMode.Find);
         }
 
         private void findInFilesMenuItem_Click(object sender, EventArgs e)
         {
-            if (_dockingService.ActiveDocument == null)
-            {
-                _dockingService.FindForm.ShowFor(this, false, true);
-            }
-            else
-            {
-                _dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, false, true);
-            }
+            _dockingService.FindForm.ShowFor(this, null, SearchMode.FindInFiles);
         }
 
         private void replaceMenuItem_Click(object sender, EventArgs e)
@@ -1516,17 +1487,12 @@ namespace Revsoft.Wabbitcode
                 return;
             }
 
-            _dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, true, false);
+            _dockingService.ActiveDocument.ShowFindForm(this, SearchMode.Replace);
         }
 
         private void replaceInFilesMenuItem_Click(object sender, EventArgs e)
         {
-            if (_dockingService.ActiveDocument == null)
-            {
-                return;
-            }
-
-            _dockingService.FindForm.ShowFor(_dockingService.ActiveDocument.EditorBox, true, true);
+            _dockingService.FindForm.ShowFor(this, null, SearchMode.FindInFiles);
         }
 
         private void findAllRefsMenuItem_Click(object sender, EventArgs e)
@@ -1676,7 +1642,9 @@ namespace Revsoft.Wabbitcode
             {
                 string fullPath = Path.IsPathRooted(includeFile.IncludedFile) ?
                     includeFile.IncludedFile :
-                    FileOperations.NormalizePath(FindFilePathIncludes(includeFile.IncludedFile));
+                    FileOperations.NormalizePath(
+                        _projectService.Project.GetFilePathFromRelativePath(includeFile.IncludedFile)
+                    );
                 _documentService.GotoFile(fullPath);
             }
             else
@@ -2145,55 +2113,6 @@ namespace Revsoft.Wabbitcode
 
         #endregion
 
-        #region Editor Context Menu
-
-        private MenuItem refactorContext;
-        private MenuItem renameContext;
-        private MenuItem extractMethodContext;
-        private MenuItem setNextStateMenuItem;
-
-	    private void AddEditorContextMenuItems()
-	    {
-            setNextStateMenuItem = new MenuItem();
-            renameContext = new MenuItem();
-            extractMethodContext = new MenuItem();
-            refactorContext = new MenuItem {Index = 4, Text = "Refactor"};
-
-	        refactorContext.MenuItems.AddRange(new[] {
-				renameContext,
-				extractMethodContext,
-			});
-            
-            renameContext.Index = 0;
-            renameContext.Text = "Rename";
-            renameContext.Click += renameContext_Click;
-            extractMethodContext.Index = 1;
-            extractMethodContext.Text = "Extract Method";
-            extractMethodContext.Click += extractMethodContext_Click;
-            setNextStateMenuItem.Index = 8;
-            setNextStateMenuItem.Text = "Set Next Statement";
-            setNextStateMenuItem.Visible = false;
-            setNextStateMenuItem.Click += setNextStateMenuItem_Click;
-	    }
-
-        private void setNextStateMenuItem_Click(object sender, EventArgs e)
-        {
-            Editor editor = _dockingService.ActiveDocument;
-            SetPC(editor.FileName, editor.EditorBox.ActiveTextAreaControl.Caret.Line + 1);
-        }
-
-        private void renameContext_Click(object sender, EventArgs e)
-        {
-            ShowRefactorForm();
-        }
-
-        private void extractMethodContext_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        #endregion
-
         #region Main Toolbar
 
         private void newToolButton_Click(object sender, EventArgs e)
@@ -2318,7 +2237,7 @@ namespace Revsoft.Wabbitcode
 		{
 			_assemblerService.AssemblerProjectFinished -= OnAssemblyFinished;
 
-			_dockingService.MainForm.Invoke(() => ShowErrorPanels(e.Output));
+			this.Invoke(() => ShowErrorPanels(e.Output));
 		}
 
 		private void SaveActiveDocument()
@@ -2376,9 +2295,7 @@ namespace Revsoft.Wabbitcode
 				return;
 			}
 
-            string file = e.Editor.FileName;
-            int line = e.Editor.EditorBox.ActiveTextAreaControl.Caret.Line;
-			CalcLocation label = _symbolService.ListTable.GetCalcLocation(file, line);
+            CalcLocation label = _symbolService.ListTable.GetCalcLocation(e.Editor.FileName, e.Caret.Line);
 			if (label == null)
 			{
 				return;
@@ -2388,7 +2305,7 @@ namespace Revsoft.Wabbitcode
 			SetToolStripText(assembledInfo);
 		}
 
-		internal void ShowRefactorForm()
+	    private void ShowRefactorForm()
 		{
 			RefactorForm form = new RefactorForm(_dockingService, _projectService);
 			form.ShowDialog();

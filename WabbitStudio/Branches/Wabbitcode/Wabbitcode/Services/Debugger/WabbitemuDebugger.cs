@@ -14,6 +14,7 @@ namespace Revsoft.Wabbitcode.Services.Debugger
     {
         private Wabbitemu _debugger;
         private bool _disposed;
+        private readonly IntPtr _scan0 = Marshal.AllocHGlobal(128 * 64);
 
         public WabbitemuDebugger()
         {
@@ -56,8 +57,8 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 		    return romFile;
 	    }
 
-	    public event BreakpointDelegate OnBreakpoint;
-	    public event CloseDelegate OnClose;
+	    public event BreakpointEventHandler OnBreakpoint;
+	    public event CloseEventHandler OnClose;
 
         public Array Apps
         {
@@ -172,16 +173,21 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
 	    public byte ReadByte(CalcAddress address)
         {
-            return address.Page.ReadByte(address.Address);
+            return address == null ? (byte) 0 : address.Page.ReadByte(address.Address);
         }
 
         public ushort ReadShort(CalcAddress address)
         {
-            return address.Page.ReadByte(address.Address);
+            return address == null ? (ushort) 0 : address.Page.ReadByte(address.Address);
         }
 
         public byte[] Read(CalcAddress address, int count)
         {
+            if (address == null)
+            {
+                return null;
+            }
+
             return (byte []) address.Page.Read(address.Address, (ushort) count);
         }
 
@@ -212,6 +218,11 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
         public void Write(CalcAddress address, byte value)
         {
+            if (address == null)
+            {
+                return;
+            }
+
 	        address.Page.WriteByte(address.Address, value);
         }
 
@@ -223,6 +234,11 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
 		public void Write(CalcAddress address, ushort value)
 		{
+            if (address == null)
+            {
+                return;
+            }
+
 			address.Page.WriteWord(address.Address, value);
 		}
 
@@ -234,25 +250,30 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
 		public void Write(CalcAddress address, byte[] value)
 		{
+		    if (address == null)
+		    {
+		        return;
+		    }
+
 			address.Page.Write(address.Address, value);
 		}
 
-	    private readonly IntPtr _scan0 = Marshal.AllocHGlobal(128 * 64);
         public Image GetScreenImage()
         {
             Marshal.Copy((byte[])_debugger.LCD.Display, 0, _scan0, 128 * 64);
-            Bitmap calcBitmap = new Bitmap(128, 64, 128, PixelFormat.Format8bppIndexed, _scan0);
-            var palette = calcBitmap.Palette;
-            for (int i = 0; i < 255; i++)
+            using (Bitmap calcBitmap = new Bitmap(128, 64, 128, PixelFormat.Format8bppIndexed, _scan0))
             {
-                palette.Entries[i] = Color.FromArgb(0x9e * (256 - i) / 255, (0xAB * (256 - i)) / 255, (0x88 * (256 - i)) / 255);
+                var palette = calcBitmap.Palette;
+                for (int i = 0; i < 255; i++)
+                {
+                    palette.Entries[i] = Color.FromArgb(0x9e*(256 - i)/255, (0xAB*(256 - i))/255, (0x88*(256 - i))/255);
+                }
+
+                Rectangle rect = new Rectangle(0, 0, _debugger.LCD.Width, _debugger.LCD.Height);
+                Bitmap cropped = calcBitmap.Clone(rect, calcBitmap.PixelFormat);
+                cropped.Palette = palette;
+                return cropped;
             }
-
-			Rectangle rect = new Rectangle(0, 0, _debugger.LCD.Width, _debugger.LCD.Height);
-			Bitmap cropped = calcBitmap.Clone(rect, calcBitmap.PixelFormat);
-
-            cropped.Palette = palette;
-            return cropped;
         }
 
 	    public void CancelDebug()

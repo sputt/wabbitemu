@@ -1,6 +1,6 @@
 ﻿using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Utils;
 using System;

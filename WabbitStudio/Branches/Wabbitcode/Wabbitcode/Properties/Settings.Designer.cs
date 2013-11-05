@@ -469,12 +469,12 @@ namespace Revsoft.Wabbitcode.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection recentFiles {
+        public global::System.Collections.Specialized.StringCollection RecentFiles {
             get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["recentFiles"]));
+                return ((global::System.Collections.Specialized.StringCollection)(this["RecentFiles"]));
             }
             set {
-                this["recentFiles"] = value;
+                this["RecentFiles"] = value;
             }
         }
         

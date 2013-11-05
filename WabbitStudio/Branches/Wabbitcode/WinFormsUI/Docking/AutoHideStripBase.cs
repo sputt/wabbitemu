@@ -462,6 +462,86 @@ namespace WeifenLuo.WinFormsUI.Docking
             Region = new Region(DisplayingArea);
         }
 
+        protected Rectangle GetLogicalTabStripRectangle(DockState dockState)
+        {
+            return GetLogicalTabStripRectangle(dockState, false);
+        }
+
+        protected Rectangle GetLogicalTabStripRectangle(DockState dockState, bool transformed)
+        {
+            if (!DockHelper.IsDockStateAutoHide(dockState))
+                return Rectangle.Empty;
+
+            int leftPanes = GetPanes(DockState.DockLeftAutoHide).Count;
+            int rightPanes = GetPanes(DockState.DockRightAutoHide).Count;
+            int topPanes = GetPanes(DockState.DockTopAutoHide).Count;
+            int bottomPanes = GetPanes(DockState.DockBottomAutoHide).Count;
+
+            int x, y, width, height;
+
+            height = MeasureHeight();
+            if (dockState == DockState.DockLeftAutoHide && leftPanes > 0)
+            {
+                x = 0;
+                y = (topPanes == 0) ? 0 : height;
+                width = Height - (topPanes == 0 ? 0 : height) - (bottomPanes == 0 ? 0 : height);
+            }
+            else if (dockState == DockState.DockRightAutoHide && rightPanes > 0)
+            {
+                x = Width - height;
+                if (leftPanes != 0 && x < height)
+                    x = height;
+                y = (topPanes == 0) ? 0 : height;
+                width = Height - (topPanes == 0 ? 0 : height) - (bottomPanes == 0 ? 0 : height);
+            }
+            else if (dockState == DockState.DockTopAutoHide && topPanes > 0)
+            {
+                x = leftPanes == 0 ? 0 : height;
+                y = 0;
+                width = Width - (leftPanes == 0 ? 0 : height) - (rightPanes == 0 ? 0 : height);
+            }
+            else if (dockState == DockState.DockBottomAutoHide && bottomPanes > 0)
+            {
+                x = leftPanes == 0 ? 0 : height;
+                y = Height - height;
+                if (topPanes != 0 && y < height)
+                    y = height;
+                width = Width - (leftPanes == 0 ? 0 : height) - (rightPanes == 0 ? 0 : height);
+            }
+            else
+                return Rectangle.Empty;
+
+            if (width == 0 || height == 0)
+            {
+                return Rectangle.Empty;
+            }
+
+            var rect = new Rectangle(x, y, width, height);
+            return transformed ? GetTransformedRectangle(dockState, rect) : rect;
+        }
+
+        protected Rectangle GetTransformedRectangle(DockState dockState, Rectangle rect)
+        {
+            if (dockState != DockState.DockLeftAutoHide && dockState != DockState.DockRightAutoHide)
+                return rect;
+
+            PointF[] pts = new PointF[1];
+            // the center of the rectangle
+            pts[0].X = (float)rect.X + (float)rect.Width / 2;
+            pts[0].Y = (float)rect.Y + (float)rect.Height / 2;
+            Rectangle rectTabStrip = GetLogicalTabStripRectangle(dockState);
+            using (var matrix = new Matrix())
+            {
+                matrix.RotateAt(90, new PointF((float)rectTabStrip.X + (float)rectTabStrip.Height / 2,
+                                               (float)rectTabStrip.Y + (float)rectTabStrip.Height / 2));
+                matrix.TransformPoints(pts);
+            }
+
+            return new Rectangle((int)(pts[0].X - (float)rect.Height / 2 + .5F),
+                (int)(pts[0].Y - (float)rect.Width / 2 + .5F),
+                rect.Height, rect.Width);
+        }
+
         protected override void OnMouseDown(MouseEventArgs e)
         {
             base.OnMouseDown(e);

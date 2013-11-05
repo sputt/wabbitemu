@@ -6,28 +6,28 @@ using Revsoft.TextEditor.Document;
 using Revsoft.TextEditor.Gui.CompletionWindow;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services.Interface;
 using System.Linq;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 
 namespace Revsoft.Wabbitcode.EditorExtensions
 {
 	class CodeCompletionProvider : ICompletionDataProvider
 	{
-		readonly Editor _mainForm;
+		readonly Editor _editor;
 		readonly TextEditorControl _editorBox;
         readonly IParserService _parserService;
 
-		public CodeCompletionProvider(Editor mainForm, IParserService parserService)
+		public CodeCompletionProvider(Editor editor, IParserService parserService)
 		{
-			_mainForm = mainForm;
-			_editorBox = mainForm.EditorBox;
+			_editor = editor;
+			_editorBox = editor.EditorBox;
             _parserService = parserService;
 		}
 
 		public ImageList ImageList
 		{
-			get { return _mainForm.imageList1; }
+			get { return _editor.imageList1; }
 		}
 
 		public string PreSelection

@@ -1,12 +1,13 @@
 ﻿using System.Linq;
+using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using System.Windows.Forms;
 using System.Xml;
-using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Properties;
+using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode.Services.Project
 {
@@ -65,10 +66,10 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		#endregion
 
-		public bool ContainsFile(string fullPath)
+		public bool ContainsFile(string file)
 		{
 			_fileFound = null;
-			return RecurseSearchFolders(MainFolder, Path.GetFileName(fullPath));
+			return RecurseSearchFolders(MainFolder, Path.GetFileName(file));
 		}
 
 		public ProjectFile FindFile(string fullPath)
@@ -83,20 +84,21 @@ namespace Revsoft.Wabbitcode.Services.Project
 
 		private void BuildXMLFile()
 		{
-			XmlTextWriter writer = new XmlTextWriter(ProjectFile, Encoding.Unicode)
-			{
-				Formatting = Formatting.Indented
-			};
-			writer.WriteStartDocument();
-			writer.WriteComment("Wabbitcode Config File");
-			writer.WriteStartElement("WabbitcodeProject");
-			writer.WriteAttributeString("Version", ProjectFileVersion);
-			writer.WriteAttributeString("Name", ProjectName);
-			RecurseWriteFolders(writer, _mainFolder);
-			BuildSystem.WriteXML(writer);
-			writer.WriteEndElement();
-			writer.Flush();
-			writer.Close();
+		    using (XmlTextWriter writer = new XmlTextWriter(ProjectFile, Encoding.Unicode)
+		    {
+		        Formatting = Formatting.Indented
+		    })
+		    {
+		        writer.WriteStartDocument();
+		        writer.WriteComment("Wabbitcode Config File");
+		        writer.WriteStartElement("WabbitcodeProject");
+		        writer.WriteAttributeString("Version", ProjectFileVersion);
+		        writer.WriteAttributeString("Name", ProjectName);
+		        RecurseWriteFolders(writer, _mainFolder);
+		        BuildSystem.WriteXML(writer);
+		        writer.WriteEndElement();
+		        writer.Flush();
+		    }
 		}
 
 		public void CreateNewProject(string projectFile, string projectName)
@@ -146,15 +148,11 @@ namespace Revsoft.Wabbitcode.Services.Project
 					}
 
 					string formatVersion = reader.GetAttribute("Version");
-					DialogResult result = DialogResult.Yes;
 					if (formatVersion != ProjectFileVersion)
 					{
-						result = MessageBox.Show("Project Version is not up to date.\nTry to load anyway?", "Invalid Version", MessageBoxButtons.YesNo);
+					    throw new InvalidProjectVersionException();
 					}
-					if (result != DialogResult.Yes)
-					{
-						return;
-					}
+
 					ProjectName = reader.GetAttribute("Name");
 					reader.MoveToNextElement();
 					if (reader.Name != "Folder")
@@ -176,7 +174,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			ProjectWatcher.Path = ProjectDirectory;
 		}
 
-		private void RecurseAddFiles(ref List<ProjectFile> files, ProjectFolder folder)
+		private static void RecurseAddFiles(ref List<ProjectFile> files, ProjectFolder folder)
 		{
 			foreach (ProjectFolder subFolder in folder.Folders)
 			{
@@ -236,7 +234,7 @@ namespace Revsoft.Wabbitcode.Services.Project
 			return returnVal;
 		}
 
-		private void RecurseWriteFolders(XmlTextWriter writer, ProjectFolder folder)
+		private static void RecurseWriteFolders(XmlTextWriter writer, ProjectFolder folder)
 		{
 			writer.WriteStartElement("Folder");
 			writer.WriteAttributeString("Name", folder.Name);
@@ -259,11 +257,40 @@ namespace Revsoft.Wabbitcode.Services.Project
 		{
 			ProjectWatcher.Changed += changedHandler;
 			ProjectWatcher.Renamed += renamedHandler;
-			if (!IsInternal)
-			{
-				ProjectWatcher.EnableRaisingEvents = true;
-				ProjectWatcher.IncludeSubdirectories = true;
-			}
+		    if (IsInternal)
+		    {
+		        return;
+		    }
+
+		    ProjectWatcher.EnableRaisingEvents = true;
+		    ProjectWatcher.IncludeSubdirectories = true;
 		}
+
+        /// <summary>
+        /// Attempts to find an existing file in the set of include dirs,
+        /// given the relative path.
+        /// </summary>
+        /// <param name="relativePath">The relative file path to search for</param>
+        /// <returns>The absolute path string. Null if an existing file cannot be found.</returns>
+	    public string GetFilePathFromRelativePath(string relativePath)
+	    {
+            IEnumerable<string> includeDirs = IsInternal ?
+                Settings.Default.includeDirs.Cast<string>() :
+                IncludeDirs;
+
+            foreach (string dir in includeDirs.Where(dir => File.Exists(Path.Combine(dir, relativePath))))
+            {
+                return Path.Combine(dir, relativePath);
+            }
+
+            if (IsInternal)
+            {
+                return null;
+            }
+
+            return File.Exists(Path.Combine(ProjectDirectory, relativePath)) ?
+                Path.Combine(ProjectDirectory, relativePath) :
+                null;
+	    }
 	}
 }

@@ -1,4 +1,4 @@
-﻿using Revsoft.Wabbitcode.Services.Interface;
+﻿using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Symbols;
 
 namespace Revsoft.Wabbitcode.Services
