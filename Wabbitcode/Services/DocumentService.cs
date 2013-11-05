@@ -1,6 +1,6 @@
 ﻿using System.Collections.Specialized;
 using Revsoft.Wabbitcode.Properties;
-using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Utils;
 using System;
@@ -146,20 +146,17 @@ namespace Revsoft.Wabbitcode.Services
 		}
 
 		/// <summary>
-		/// This loads the recent file list from Properties and adds it to the recent file menu.
+		/// Sanity checks on the list of recent files
 		/// </summary>
-		public void GetRecentFiles()
+		/// <returns>A list of string representing the last open files</returns>
+		public IEnumerable<string> GetRecentFiles()
 		{
-		    if (Settings.Default.recentFiles == null)
+		    if (Settings.Default.RecentFiles == null)
 		    {
-		        Settings.Default.recentFiles = new StringCollection();
+		        Settings.Default.RecentFiles = new StringCollection();
 		    }
 
-			_dockingService.MainForm.ClearRecentItems();
-			foreach (string file in Settings.Default.recentFiles.Cast<string>().Where(s => !string.IsNullOrEmpty(s)))
-			{
-				_dockingService.MainForm.AddRecentItem(file);
-			}
+		    return Settings.Default.RecentFiles.Cast<string>().Where(s => !string.IsNullOrEmpty(s));
 		}
 
 		public void GotoCurrentDebugLine()
@@ -186,7 +183,6 @@ namespace Revsoft.Wabbitcode.Services
 			doc.Text = Path.GetFileName(filename);
 			doc.TabText = Path.GetFileName(filename);
 			doc.ToolTipText = filename;
-			doc.MdiParent = _dockingService.MainForm;
 			doc.OpenFile(filename);
 			AddRecentFile(filename);
 			SaveRecentFileList();
@@ -219,13 +215,13 @@ namespace Revsoft.Wabbitcode.Services
 		/// </summary>
 		private void SaveRecentFileList()
 		{
-            if (Settings.Default.recentFiles == null)
+            if (Settings.Default.RecentFiles == null)
             {
-                Settings.Default.recentFiles = new StringCollection();
+                Settings.Default.RecentFiles = new StringCollection();
             }
 
-            Settings.Default.recentFiles.Clear();
-            Settings.Default.recentFiles.AddRange(_recentFileList);
+            Settings.Default.RecentFiles.Clear();
+            Settings.Default.RecentFiles.AddRange(_recentFileList);
 		}
 
 		#region IService

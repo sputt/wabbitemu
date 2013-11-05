@@ -2,13 +2,13 @@ using Revsoft.TextEditor;
 using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Classes;
-using Revsoft.Wabbitcode.Docking_Windows;
+using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.EditorExtensions;
 using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Debugger;
-using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Utils;
 using System;
@@ -113,7 +113,31 @@ namespace Revsoft.Wabbitcode
 			set { editorBox.ShowLineNumbers = value; }
 		}
 
-		#endregion
+	    public bool ReadOnly
+	    {
+	        get
+	        {
+	            return editorBox.Document.ReadOnly;
+	        }
+	        set
+	        {
+	            editorBox.Document.ReadOnly = value;
+	        }
+	    }
+
+	    public string DocumentFoldings
+	    {
+	        get
+	        {
+	            return editorBox.Document.FoldingManager.SerializeToString();
+	        }
+	        set
+	        {
+                editorBox.Document.FoldingManager.DeserializeFromString(value);
+	        }
+	    }
+
+	    #endregion
 
 		#region Static Events
 
@@ -281,7 +305,7 @@ namespace Revsoft.Wabbitcode
 
 			if (OnEditorSelectionChanged != null)
 			{
-				OnEditorSelectionChanged(this, new EditorSelectionEventArgs(this, codeInfoLines));
+				OnEditorSelectionChanged(this, new EditorSelectionEventArgs(this, editorBox.ActiveTextAreaControl.Caret, codeInfoLines));
 			}
 		}
 
@@ -513,11 +537,10 @@ namespace Revsoft.Wabbitcode
 
 		protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
 		{
-			// TODO: fix this
-			//if (keyData == Keys.F3)
-			//{
-			//	DockingService.FindForm.FindNext(true, false, "Text not found");
-			//}
+			if (keyData == Keys.F3)
+			{
+				//_dockingService.FindForm.FindNext(true, false, "Text not found");
+			}
 
 			if (MacroService.IsRecording)
 			{
@@ -691,7 +714,8 @@ namespace Revsoft.Wabbitcode
 			}
 			else
 			{
-				string fileFullPath = Path.IsPathRooted(text) ? text : FileOperations.NormalizePath(FindFilePathIncludes(text));
+				string fileFullPath = Path.IsPathRooted(text) ? text : FileOperations.NormalizePath(
+                    _projectService.Project.GetFilePathFromRelativePath(text));
 				_documentService.GotoFile(fileFullPath);
 			}
 		}
@@ -913,7 +937,7 @@ namespace Revsoft.Wabbitcode
 					gotoLabel = match.Groups["offset"].Value + gotoLabel;
 				}
 				int num;
-				if ("afbcdehlixiypcspnzncpm".IndexOf(gotoLabel) == -1 && !int.TryParse(gotoLabel, out num))
+				if (!int.TryParse(gotoLabel, out num))
 				{
 					if (isInclude)
 					{
@@ -953,32 +977,7 @@ namespace Revsoft.Wabbitcode
 
 		private bool FindFileIncludes(string gotoLabel)
 		{
-			return !string.IsNullOrEmpty(FindFilePathIncludes(gotoLabel));
-		}
-
-		private string FindFilePathIncludes(string gotoLabel)
-		{
-			IEnumerable<string> includeDirs = _projectService.Project.IsInternal ?
-				Settings.Default.includeDirs.Cast<string>() :
-				_projectService.Project.IncludeDirs;
-
-			foreach (string dir in includeDirs.Where(dir => File.Exists(Path.Combine(dir, gotoLabel))))
-			{
-				return Path.Combine(dir, gotoLabel);
-			}
-
-			if (string.IsNullOrEmpty(FileName))
-			{
-				return null;
-			}
-			string dirPath = Path.GetDirectoryName(FileName);
-			if (string.IsNullOrEmpty(dirPath))
-			{
-				return null;
-			}
-
-			string filePath = Path.Combine(dirPath, gotoLabel);
-			return File.Exists(filePath) ? filePath : null;
+			return !string.IsNullOrEmpty(_projectService.Project.GetFilePathFromRelativePath(gotoLabel));
 		}
 
 		#region TitleBarContext
@@ -1214,12 +1213,7 @@ namespace Revsoft.Wabbitcode
 			editorBox.ConvertTabsToSpaces = Settings.Default.convertTabs;
 		}
 
-		internal void RemoveInvisibleMarkers()
-		{
-			editorBox.Document.MarkerStrategy.RemoveAll(match => match.TextMarkerType == TextMarkerType.Invisible);
-		}
-
-		#region Bookmarks
+	    #region Bookmarks
 
 		internal void GotoNextBookmark()
 		{
@@ -1347,6 +1341,11 @@ namespace Revsoft.Wabbitcode
 			int offset = editorBox.ActiveTextAreaControl.Caret.Offset;
 			return editorBox.Document.GetWord(offset);
 		}
+
+	    public void ShowFindForm(Form owner, SearchMode mode)
+	    {
+	        _dockingService.FindForm.ShowFor(owner, editorBox, mode);
+	    }
 	}
 
 	public class FoldingItem

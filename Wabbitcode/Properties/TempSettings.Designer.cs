@@ -472,10 +472,10 @@ namespace Revsoft.Wabbitcode.Properties {
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string recentFiles {
             get {
-                return ((string)(this["recentFiles"]));
+                return ((string)(this["RecentFiles"]));
             }
             set {
-                this["recentFiles"] = value;
+                this["RecentFiles"] = value;
             }
         }
         

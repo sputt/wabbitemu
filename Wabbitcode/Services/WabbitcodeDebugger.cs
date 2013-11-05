@@ -2,7 +2,7 @@
 using System.Threading;
 using Revsoft.Wabbitcode.Exceptions;
 using Revsoft.Wabbitcode.Services.Debugger;
-using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Symbols;
 using Revsoft.Wabbitcode.Utils;
 using System;
@@ -235,7 +235,7 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
-        private void DebuggerOnClose(IWabbitemu sender, EventArgs eventArgs)
+        private void DebuggerOnClose(object sender, EventArgs eventArgs)
         {
             CancelDebug();
         }
@@ -382,7 +382,7 @@ namespace Revsoft.Wabbitcode.Services
             _debugger.Running = true;
         }
 
-	    private void StepOutBreakpointEvent(IWabbitemu sender, BreakpointEventArgs breakpointEventArgs)
+	    private void StepOutBreakpointEvent(object sender, BreakpointEventArgs breakpointEventArgs)
 	    {
             _debugger.ClearBreakpoint(_stepOutBreakpoint);
 	        int page = GetRelativePageNum(_stepOutBreakpoint.Address.Address);
@@ -437,7 +437,7 @@ namespace Revsoft.Wabbitcode.Services
             _debugger.Running = true;
         }
 
-        private void StepOverBreakpointEvent(IWabbitemu sender, EventArgs e)
+        private void StepOverBreakpointEvent(object sender, EventArgs e)
         {
             _debugger.ClearBreakpoint(_stepOverBreakpoint);
             int page = _stepOverBreakpoint.Address.Page.IsFlash
@@ -562,7 +562,7 @@ namespace Revsoft.Wabbitcode.Services
 
         public bool SetBreakpoint(WabbitcodeBreakpoint newBreakpoint)
 		{
-			if (_debugger == null)
+			if (_debugger == null || newBreakpoint == null)
 			{
 				return false;
 			}
@@ -590,7 +590,7 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void ClearBreakpoint(WabbitcodeBreakpoint newBreakpoint)
 		{
-			if (_debugger != null && newBreakpoint.WabbitemuBreakpoint != null)
+            if (_debugger != null && newBreakpoint != null && newBreakpoint.WabbitemuBreakpoint != null)
 			{
 				_debugger.ClearBreakpoint(newBreakpoint.WabbitemuBreakpoint);
 			}
@@ -631,7 +631,6 @@ namespace Revsoft.Wabbitcode.Services
                 return;
             }
 
-            // throw new Exception("Breakpoint not found!");
             breakpoint.NumberOfTimesHit++;
             bool conditionsTrue = breakpoint.Enabled;
             switch (breakpoint.HitCountCondition)
@@ -669,7 +668,7 @@ namespace Revsoft.Wabbitcode.Services
                 DocumentLocation key = _symbolService.ListTable.GetFileLocation(relativePage, address, !breakEvent.Address.Page.IsFlash);
                 if (key == null)
                 {
-                    throw new Exception("Unable to find breakpoint");
+                    throw new InvalidOperationException("Unable to find breakpoint");
                 }
 
                 UpdateStack();
@@ -751,7 +750,7 @@ namespace Revsoft.Wabbitcode.Services
 						page = 0x3F;
 						break;
 					default:
-						throw new Exception("Invalid model");
+						throw new InvalidOperationException("Invalid model");
 				}
 			}
 			else if ((bcallAddress & (1 << 14)) != 0)
@@ -771,12 +770,12 @@ namespace Revsoft.Wabbitcode.Services
 						page = 0x3B;
 						break;
 					default:
-						throw new Exception("Invalid model");
+						throw new InvalidOperationException("Invalid model");
 				}
 			}
 			else
 			{
-				throw new Exception("Tried looking up a local bcall");
+				throw new InvalidOperationException("Tried looking up a local bcall");
 			}
 
 			bcallAddress += 0x4000;
@@ -789,24 +788,25 @@ namespace Revsoft.Wabbitcode.Services
 		{
 			if (_debugger == null || _debugger.Apps.Length == 0)
 			{
-				throw new DebuggingException("Application not found on calc");
+				throw new DebuggingException("Application not found on calculator");
 			}
 
 			char[] buffer = new char[8];
-			StreamReader appReader = new StreamReader(createdName);
-			for (int i = 0; i < 17; i++)
-			{
-				appReader.Read();
-			}
+	        using (StreamReader appReader = new StreamReader(createdName))
+	        {
+	            for (int i = 0; i < 17; i++)
+	            {
+	                appReader.Read();
+	            }
 
-			appReader.ReadBlock(buffer, 0, 8);
+	            appReader.ReadBlock(buffer, 0, 8);
+	        }
 
-			appReader.Dispose();
-			string appName = new string(buffer);
+	        string appName = new string(buffer);
 			TIApplication? app = _debugger.Apps.Cast<TIApplication>().SingleOrDefault(a => a.Name == appName);
 			if (app == null || string.IsNullOrEmpty(app.Value.Name))
 			{
-				throw new DebuggingException("Application not found on calc");
+				throw new DebuggingException("Application not found on calculator");
 			}
 
 			_appPage = (byte)app.Value.Page.Index;

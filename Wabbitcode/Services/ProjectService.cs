@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
 using Revsoft.Wabbitcode.Services.Project;
 using System.Collections.Generic;

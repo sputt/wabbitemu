@@ -1,6 +1,6 @@
-﻿using Revsoft.Wabbitcode.Docking_Windows;
+﻿using Revsoft.Wabbitcode.DockingWindows;
 using Revsoft.Wabbitcode.Resources;
-using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 using System;
 using System.Collections.Generic;
@@ -70,19 +70,6 @@ namespace Revsoft.Wabbitcode.Services
 				{
 					return _dockPanel.Documents.Where(doc => doc is Editor).Cast<Editor>();
 				}
-			}
-		}
-
-		public MainForm MainForm
-		{
-			get
-			{
-				if (_dockPanel != null)
-				{
-					return (MainForm)_dockPanel.Parent;
-				}
-
-				return null;
 			}
 		}
 
@@ -187,9 +174,9 @@ namespace Revsoft.Wabbitcode.Services
 
 		public void Invoke(Action action)
 		{
-			if (MainForm != null)
+            if (_dockPanel != null && _dockPanel.Parent != null)
 			{
-				MainForm.Invoke(action);
+				_dockPanel.Parent.Invoke(action);
 			}
 		}
 

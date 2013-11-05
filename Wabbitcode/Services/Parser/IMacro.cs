@@ -7,7 +7,6 @@
         IList<string> Arguments
         {
             get;
-            set;
         }
     }
 }

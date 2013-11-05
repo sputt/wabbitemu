@@ -1,4 +1,4 @@
-﻿using Revsoft.Wabbitcode.Services.Interface;
+﻿using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Utils;
 using Revsoft.TextEditor.Document;
 using Revsoft.Wabbitcode.Properties;

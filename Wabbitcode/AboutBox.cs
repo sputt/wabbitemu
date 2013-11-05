@@ -23,7 +23,7 @@ namespace Revsoft.Wabbitcode
 		    set { base.Text = value; }
 	    }
 
-	    private string AssemblyCompany
+	    private static string AssemblyCompany
         {
             get
             {
@@ -32,7 +32,7 @@ namespace Revsoft.Wabbitcode
             }
         }
 
-	    private string AssemblyCopyright
+	    private static string AssemblyCopyright
         {
             get
             {
@@ -41,7 +41,7 @@ namespace Revsoft.Wabbitcode
             }
         }
 
-	    private string AssemblyDescription
+	    private static string AssemblyDescription
         {
             get
             {
@@ -50,7 +50,7 @@ namespace Revsoft.Wabbitcode
             }
         }
 
-	    private string AssemblyProduct
+	    private static string AssemblyProduct
         {
             get
             {
@@ -59,7 +59,7 @@ namespace Revsoft.Wabbitcode
             }
         }
 
-	    private string AssemblyTitle
+	    private static string AssemblyTitle
         {
             get
             {

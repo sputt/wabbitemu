@@ -4,13 +4,13 @@ using WabbitemuLib;
 
 namespace Revsoft.Wabbitcode.Services.Debugger
 {
-    public delegate void BreakpointDelegate(IWabbitemu sender, BreakpointEventArgs e);
-	public delegate void CloseDelegate(IWabbitemu sender, EventArgs e);
+    public delegate void BreakpointEventHandler(object sender, BreakpointEventArgs e);
+	public delegate void CloseEventHandler(object sender, EventArgs e);
 
     public interface IWabbitemuDebugger : IDisposable
     {
-        event BreakpointDelegate OnBreakpoint;
-		event CloseDelegate OnClose;
+        event BreakpointEventHandler OnBreakpoint;
+		event CloseEventHandler OnClose;
 
         Array Apps
         {
@@ -53,9 +53,9 @@ namespace Revsoft.Wabbitcode.Services.Debugger
 
 	    void LoadFile(string fileName);
 
-        byte ReadByte(CalcAddress addresss);
-        ushort ReadShort(CalcAddress addresss);
-        byte[] Read(CalcAddress addresss, int count);
+        byte ReadByte(CalcAddress address);
+        ushort ReadShort(CalcAddress address);
+        byte[] Read(CalcAddress address, int count);
         byte ReadByte(bool isRam, byte page, ushort address);
         ushort ReadShort(bool isRam, byte page, ushort address);
         byte[] Read(bool isRam, byte page, ushort address, int count);

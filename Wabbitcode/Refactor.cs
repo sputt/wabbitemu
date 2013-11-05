@@ -1,16 +1,14 @@
 ﻿using Revsoft.TextEditor;
-using Revsoft.TextEditor.Actions;
 using Revsoft.TextEditor.Document;
-using Revsoft.Wabbitcode.Extensions;
 using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
-using Revsoft.Wabbitcode.Services.Interface;
 using System;
 using System.Drawing;
 using System.Drawing.Text;
 using System.IO;
 using System.Linq;
 using System.Windows.Forms;
+using Revsoft.Wabbitcode.Services.Interfaces;
 
 namespace Revsoft.Wabbitcode
 {
@@ -18,16 +16,14 @@ namespace Revsoft.Wabbitcode
 	{
 		private const int PreviewHeight = 400;
 		private readonly string _word;
-		private readonly IDockingService _dockingService;
-		private readonly IProjectService _projectService;
+	    private readonly IProjectService _projectService;
 		private TextEditorControl[] _editors;
 		private bool _isPreviewed;
 
 		public RefactorForm(IDockingService dockingService, IProjectService projectService)
 		{
 			_projectService = projectService;
-			_dockingService = dockingService;
-			InitializeComponent();
+		    InitializeComponent();
 			_word = dockingService.ActiveDocument.GetWord();
 			Text = string.Format("Refactor '{0}'", _word);
 			nameBox.Text = _word;
@@ -47,26 +43,12 @@ namespace Revsoft.Wabbitcode
 		private void okButton_Click(object sender, EventArgs e)
 		{
 			var refs = _projectService.FindAllReferences(_word);
-			TextEditorControl editor = null;
-			foreach (var file in refs)
+		    foreach (var file in refs)
 			{
-				bool alreadyOpen = false;
-				string fileName = file[0].File;
-				Editor openDoc = null;
-				foreach (Editor doc in _dockingService.Documents.Where(
-					doc => FileOperations.CompareFilePath(doc.FileName, fileName)))
-				{
-					alreadyOpen = true;
-					editor = doc.EditorBox;
-					openDoc = doc;
-					break;
-				}
+			    string fileName = file[0].File;
 
-				if (!alreadyOpen)
-				{
-					editor = new TextEditorControl();
-					editor.LoadFile(fileName);
-				}
+				TextEditorControl editor = new TextEditorControl();
+				editor.LoadFile(fileName);
 
 				foreach (var reference in file)
 				{
@@ -77,14 +59,7 @@ namespace Revsoft.Wabbitcode
 
 				try
 				{
-					if (alreadyOpen)
-					{
-						openDoc.SaveFile();
-					}
-					else
-					{
-						editor.SaveFile(fileName);
-					}
+                    editor.SaveFile(fileName);
 				}
 				catch (Exception ex)
 				{

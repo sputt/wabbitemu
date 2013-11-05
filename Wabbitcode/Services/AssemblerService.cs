@@ -1,6 +1,6 @@
 ﻿using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services.Assembler;
-using Revsoft.Wabbitcode.Services.Interface;
+using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Project;
 using System;
 using System.Collections.Generic;
@@ -128,7 +128,7 @@ namespace Revsoft.Wabbitcode.Services
 			int size = 0;
 			int min = 0;
 			int max = 0;
-			_assembler = new SpasmExeAssembler();
+			_assembler = new SpasmComAssembler();
 			string[] outputLines = null;
 			if (!string.IsNullOrEmpty(lines))
 			{

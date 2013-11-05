@@ -28,7 +28,12 @@ namespace Revsoft.Wabbitcode.Utils
 		// must remember to remove it when it is no longer needed.
 		private TextMarker _region;
 
-		~TextEditorSearcher()
+	    public TextEditorSearcher(IDocument document)
+	    {
+	        _document = document;
+	    }
+
+	    ~TextEditorSearcher()
 		{
 			Dispose();
 		}
@@ -43,18 +48,6 @@ namespace Revsoft.Wabbitcode.Utils
 					return _region.Offset;
 				}
 				return 0;
-			}
-		}
-
-		public IDocument Document
-		{
-			set
-			{
-				if (_document != value)
-				{
-					ClearScanRegion();
-					_document = value;
-				}
 			}
 		}
 
