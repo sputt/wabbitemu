@@ -55,9 +55,10 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			_symbolService = symbolService;
 		}
 
-		void mainForm_OnDebuggingStarted(object sender, Services.Debugger.DebuggingEventArgs e)
+		void mainForm_OnDebuggingStarted(object sender, DebuggingEventArgs e)
 		{
 			_debugger = e.Debugger;
+		    _debugger.OnDebuggerStep += (o, args) => UpdateAllRows();
 		}
 
         #region Clipboard Operation
@@ -362,6 +363,14 @@ namespace Revsoft.Wabbitcode.DockingWindows
         }
 
         #endregion
+
+	    private void UpdateAllRows()
+	    {
+	        foreach (DataGridViewRow row in variablesDataView.Rows)
+	        {
+	            UpdateRowValue(row);
+	        }
+	    }
 
         private int GetAddressValue(string address)
         {

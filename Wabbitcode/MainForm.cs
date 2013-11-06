@@ -684,9 +684,9 @@ namespace Revsoft.Wabbitcode
             }
         }
 
-        private void HandleArgs(string[] args)
+        private void HandleArgs(ICollection<string> args)
         {
-            if (args.Length == 0)
+            if (args.Count == 0)
             {
                 return;
             }
