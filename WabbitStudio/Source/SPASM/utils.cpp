@@ -278,16 +278,22 @@ char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 					break;
 				}
 
+				//int nSession = StartSPASMErrorSession();
+
 				if (*define->args[num_args] == '@')
 				{
 					add_arg(strdup(define->args[num_args++]), strdup(word), *curr_arg_set);
 				}
 				else
 				{
-					//char *evald_word = eval(word);
+					label_t *label = search_labels(define->name);
 					add_arg(strdup(define->args[num_args++]), eval(word), *curr_arg_set);
 					//free(evald_word);
 				}
+
+				//AddSPASMErrorSessionAnnotation(nSession, "Error during evaluation of macro '%s' argument '%s'", define->name, define->args[num_args - 1]);
+				//ReplaySPASMErrorSession(nSession);
+				//EndSPASMErrorSession(nSession);
 			}
 		}
 	}
@@ -295,14 +301,6 @@ char *parse_args (const char *ptr, define_t *define, list_t **curr_arg_set) {
 	//fill in the undefined arguments
 	while (num_args < define->num_args)
 		add_arg (strdup (define->args[num_args++]), NULL, *curr_arg_set);
-
-	//make sure that the number of args came out right
-/*	if (num_args < define->num_args) {
-		show_error ("Macro has too few arguments");
-		remove_arg_set (*curr_arg_set);
-		*curr_arg_set = NULL;
-		return NULL;
-	}*/
 
 	if (*ptr == ')') ptr++;
 	return (char *) ptr;

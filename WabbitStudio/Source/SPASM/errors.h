@@ -41,6 +41,7 @@ SPASMERROR, *LPSPASMERROR;
 #define SPASM_ERR_INVALID_RST_OPERANDS		0x127
 #define SPASM_ERR_DEFINE_HAS_NO_VALUE		0x128
 #define SPASM_ERR_RECURSION_DEPTH			0x129
+#define SPASM_ERR_LABEL_CONFLICT			0x130
 
 #define SPASM_ERR_INVALID_DECIMAL_DIGIT		0x200
 #define SPASM_ERR_INVALID_HEX_DIGIT			0x201
@@ -107,6 +108,7 @@ SPASMERROR g_ErrorCodes[]
 	{SPASM_ERR_INVALID_RST_OPERANDS,	_T("Invalid operands for the RST command")},
 	{SPASM_ERR_DEFINE_HAS_NO_VALUE,		_T("The define '%s' has been used, but doesn't have a value")},
 	{SPASM_ERR_RECURSION_DEPTH,			_T("Expression is too deep (only %d levels allowed)")},
+	{SPASM_ERR_LABEL_CONFLICT,			_T("Conflicting definition of '%s' at %s:%d")},
 
 	{SPASM_ERR_INVALID_DECIMAL_DIGIT,	_T("Invalid digit '%c' in the decimal number '%s'")},
 	{SPASM_ERR_INVALID_HEX_DIGIT,		_T("Invalid digit '%c' in the hexadecimal number '%s'")},
@@ -143,7 +145,8 @@ void SetLastSPASMWarning(DWORD dwErrorCode, ...);
 int StartSPASMErrorSession(void);
 int GetSPASMErrorSessionErrorCount(int nSession);
 bool IsSPASMErrorSessionFatal(int nSession);
-void ReplaySPASMErrorSession(int nSession);
+void ReplaySPASMErrorSession(int nSession, bool fFatalOnly = false);
+void ReplayFatalSPASMErrorSession(int nSession);
 void EndSPASMErrorSession(int nSession);
 void ClearSPASMErrorSessions();
 void AddSPASMErrorSessionAnnotation(int nSession, LPCTSTR lpszFormat, ...);

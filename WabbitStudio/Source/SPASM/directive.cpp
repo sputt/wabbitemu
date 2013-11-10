@@ -587,6 +587,8 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 		                break;
 					}
 				}
+
+				ReplayFatalSPASMErrorSession(session);
 			}
 			else
 			{

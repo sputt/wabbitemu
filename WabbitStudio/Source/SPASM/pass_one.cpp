@@ -411,101 +411,86 @@ char *handle_opcode_or_macro (char *ptr) {
 			char *args_end;
 
 			//if there are arguments, parse them
-			int args_session = StartSPASMErrorSession();
+			int session = StartSPASMErrorSession();
 			args_end = parse_args(ptr, define, &args);
 			
-			if (GetSPASMErrorSessionErrorCount(args_session) > 0)
-			{
-				ReplaySPASMErrorSession(args_session);
-				EndSPASMErrorSession(args_session);
-				return args_end;
-			}
-			else
-			{
-				EndSPASMErrorSession(args_session);
-			}
-
 			ptr = args_end;
 
-			in_macro++;
+			if (!IsSPASMErrorSessionFatal(session))
+			{
+				in_macro++;
 
-			//printf("args: %s\n", ((define_t *) args->data)->name);
+				//printf("args: %s\n", ((define_t *) args->data)->name);
 			
-			//see if any code is left on the line
-			if (!is_end_of_code_line (skip_whitespace (ptr))) {
-				char *line_end = skip_to_line_end (ptr);
-				char *full_line = (char *) malloc (strlen (define->contents) + line_end - ptr + 1);
+				//see if any code is left on the line
+				if (!is_end_of_code_line (skip_whitespace (ptr))) {
+					char *line_end = skip_to_line_end (ptr);
+					char *full_line = (char *) malloc (strlen (define->contents) + line_end - ptr + 1);
 				
-				strcpy (full_line, define->contents);
-				strncat (full_line, ptr, line_end - ptr);
+					strcpy (full_line, define->contents);
+					strncat (full_line, ptr, line_end - ptr);
 
-				run_first_pass_line (full_line);
-				free(full_line);
+					run_first_pass_line (full_line);
+					free(full_line);
 
-			} else {
-				if (define->contents == NULL)
-				{
-					SetLastSPASMError(SPASM_ERR_ARG_USED_WITHOUT_VALUE, define->name);
-				}
-				else
-				{
-					//parse each line in the macro (prefix with space)
-					//Buckeye: this malloc size is extra so that we can simply replace
-					//@params and not worry about reallocating
-					char *full_macro = (char *) malloc(strlen(define->contents) + 2);
-					char *curr_line = full_macro;
+				} else {
+					if (define->contents == NULL)
+					{
+						SetLastSPASMError(SPASM_ERR_ARG_USED_WITHOUT_VALUE, define->name);
+					}
+					else
+					{
+						//parse each line in the macro (prefix with space)
+						//Buckeye: this malloc size is extra so that we can simply replace
+						//@params and not worry about reallocating
+						char *full_macro = (char *) malloc(strlen(define->contents) + 2);
+						char *curr_line = full_macro;
 
-					full_macro[0] = ' ';
-					strcpy(&full_macro[1], define->contents);
+						full_macro[0] = ' ';
+						strcpy(&full_macro[1], define->contents);
 
-					//char *replace_args_ptr = full_macro;
-					//replace_args_ptr = replace_literal_args(replace_args_ptr, define, &args);
+						//char *replace_args_ptr = full_macro;
+						//replace_args_ptr = replace_literal_args(replace_args_ptr, define, &args);
 
-					const char *old_filename = curr_input_file;
-					int old_line_num = line_num;
-					curr_input_file = define->input_file;
-					line_num = define->line_num;
+						const char *old_filename = curr_input_file;
+						int old_line_num = line_num;
+						curr_input_file = define->input_file;
+						line_num = define->line_num;
 	
-					int session = StartSPASMErrorSession();
-					while (curr_line != NULL && *curr_line && !error_occurred)
-					{
-						char *next_line = run_first_pass_line(curr_line);
-						curr_line = skip_to_next_line(next_line);
-						line_num++;
+						while (curr_line != NULL && *curr_line && !error_occurred)
+						{
+							char *next_line = run_first_pass_line(curr_line);
+							curr_line = skip_to_next_line(next_line);
+							line_num++;
+						}
+
+						if ((mode & MODE_LIST) && listing_on && last_banner != old_filename) {
+							if (mode & MODE_LIST && listing_on && !listing_for_line_done)
+								do_listing_for_line (skip_to_next_line (line_start) );
+
+							listing_for_line_done = true;
+
+							char include_banner[MAX_PATH + 64];
+							snprintf(include_banner, sizeof (include_banner), "Listing for file \"%s\"" NEWLINE, old_filename);
+							listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
+							last_banner = old_filename;
+						}
+
+						curr_input_file = (char *) old_filename;
+						line_num = old_line_num;
+
+						free(full_macro);
 					}
-
-
-
-					if ((mode & MODE_LIST) && listing_on && last_banner != old_filename) {
-						if (mode & MODE_LIST && listing_on && !listing_for_line_done)
-							do_listing_for_line (skip_to_next_line (line_start) );
-
-						listing_for_line_done = true;
-
-						char include_banner[MAX_PATH + 64];
-						snprintf(include_banner, sizeof (include_banner), "Listing for file \"%s\"" NEWLINE, old_filename);
-						listing_offset = eb_insert (listing_buf, listing_offset, include_banner, strlen (include_banner));
-						last_banner = old_filename;
-					}
-
-					curr_input_file = (char *) old_filename;
-					line_num = old_line_num;
-
-
-					if (IsSPASMErrorSessionFatal(session))
-					{
-						AddSPASMErrorSessionAnnotation(session, "Error during invocation of macro '%s'", define->name);
-						ReplaySPASMErrorSession(session);
-					}
-					EndSPASMErrorSession(session);
-
-					free(full_macro);
 				}
+				in_macro--;
 			}
-			in_macro--;
 
 			//clear the argument values
 			remove_arg_set(args);
+
+			AddSPASMErrorSessionAnnotation(session, "Error during invocation of macro '%s'", define->name);
+			ReplayFatalSPASMErrorSession(session);
+			EndSPASMErrorSession(session);
 
 		} else {
 			char *name = strndup(name_start, name_end - name_start);

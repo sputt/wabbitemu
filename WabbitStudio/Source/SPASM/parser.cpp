@@ -302,18 +302,23 @@ static const char *parse_single_num (const char *expr, int *value) {
 		default:
 			if (isalpha ((unsigned char) *expr) || *expr == '_') {
 				//If it starts with a letter or underscore, it's a label or a macro that returns a value
-				label_t *label;
-				define_t *define;
+				label_t *label = NULL;
+				define_t *define = NULL;
 				char *name;
 
 				const char *expr_start = expr;
 				//Find the end of the name, then try it as a label first
 				expr = skip_to_name_end (expr_start);
 				name = strndup (expr_start, expr - expr_start);
-				label = search_labels(name);
-				define = search_defines(name);
-
-#ifdef USE_REUSABLES
+				
+				define = search_local_defines(name);
+				if (define == NULL) {
+					label = search_labels(name);
+					if (label == NULL) {
+						define = search_defines(name);
+					}
+				}
+				
 				//see if it's a local label
 				if (!strcmp (name, "_")) {
 					free (name);
@@ -327,15 +332,9 @@ static const char *parse_single_num (const char *expr, int *value) {
 						return NULL;
 					}
 				}
- else 
-#endif
-					if (label) {
+				else if (label != NULL) {
 						*value = label->value;
 						free (name);
-						if (define) {
-							SetLastSPASMWarning(SPASM_WARN_LABEL_OVER_DEFINE, label->name, define->name);
-						}
-
 						//or the "eval" macro
 					} else if (!strcasecmp (name, "eval") && *expr == '(') {
 						free(name);

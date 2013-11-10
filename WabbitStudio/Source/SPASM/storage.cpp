@@ -323,6 +323,38 @@ define_t *add_define (char *name, bool *redefined) {
 }
 
 
+define_t *search_local_defines (const char *name) {	
+	define_t *result = NULL;
+	char *search_name;
+
+	//make name uppercase if needed for case-insensitivity
+	if (!case_sensitive)
+		search_name = strup (name);
+	else
+		search_name = (char *)name;
+
+	//first search all the sets of arguments in order
+	list_t *curr_arg_set = arg_list;
+	while (curr_arg_set) {
+		result = (define_t *)hash_lookup ((hash_t *)(curr_arg_set->data), search_name);
+		if (result)
+			break;
+		curr_arg_set = curr_arg_set->next;
+	}
+
+	//first search all the sets of arguments in order
+	while (curr_arg_set) {
+		result = (define_t *)hash_lookup ((hash_t *)(curr_arg_set->data), search_name);
+		if (result)
+			break;
+		curr_arg_set = curr_arg_set->next;
+	}
+
+	if (!case_sensitive)
+		free (search_name);
+
+	return result;
+}
 /*
  * Finds define by name,
  * returns pointer to
@@ -561,6 +593,11 @@ list_t *add_arg_set(void) {
 
 void add_arg(char *name, char *value, list_t *arg_set) {
 	define_t *new_arg;
+
+	//label_t *label = search_labels(name);
+	//if (label != NULL) {
+	//	SetLastSPASMError(SPASM_ERR_LABEL_CONFLICT, name, label->input_file, label->line_num);
+	//}
 
 	if (!case_sensitive) {
 		char *new_name = strup(name);

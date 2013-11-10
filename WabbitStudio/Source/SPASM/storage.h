@@ -40,6 +40,7 @@ void init_storage ();
 EXPORT void free_storage();
 define_t *add_define (char *name, bool *redefined);
 define_t *search_defines (const char *name);
+define_t *search_local_defines (const char *name);
 void remove_define (char *name);
 void set_define (define_t *define, const char *str, int len, bool redefined);
 int get_num_defines ();

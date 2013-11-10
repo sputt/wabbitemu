@@ -102,18 +102,24 @@ int GetSPASMErrorSessionErrorCount(int nSession)
 	return nCount;
 }
 
+bool IsSPASMErrorFatal(DWORD dwError)
+{
+	return !(dwError == SPASM_ERR_LOCAL_LABEL_FORWARD_REF ||
+			  dwError == SPASM_ERR_LABEL_NOT_FOUND ||
+			  dwError == SPASM_ERR_INDEX_OFFSET_EXCEEDED ||
+			  dwError == SPASM_ERR_SUCCESS ||
+			  dwError == SPASM_ERR_RECURSION_DEPTH);
+}
+
 bool IsSPASMErrorSessionFatal(int nSession)
 {
 	bool fIsFatal = false;
 	list_t *pList = (list_t *) g_ErrorList;
 	while ((pList != NULL) && ((LPERRORINSTANCE) pList->data)->nSession == nSession)
 	{
-		DWORD dwError = ((LPERRORINSTANCE) pList->data)->dwErrorCode;
-		if (!(dwError == SPASM_ERR_LOCAL_LABEL_FORWARD_REF ||
-			  dwError == SPASM_ERR_LABEL_NOT_FOUND ||
-			  dwError == SPASM_ERR_INDEX_OFFSET_EXCEEDED ||
-			  dwError == SPASM_ERR_SUCCESS ||
-			  dwError == SPASM_ERR_RECURSION_DEPTH))
+		LPERRORINSTANCE lpError = (LPERRORINSTANCE) pList->data;
+		DWORD dwError = lpError->dwErrorCode;
+		if (IsSPASMErrorFatal(dwError))
 		{
 			fIsFatal = true;
 			break;
@@ -123,23 +129,31 @@ bool IsSPASMErrorSessionFatal(int nSession)
 	return fIsFatal;
 }
 
-static void ReplayErrorRecursive(const list_t *pList)
+static void ReplayErrorRecursive(const list_t *pList, bool fFatalOnly)
 {
 	if (pList == NULL)
 		return;
 
-	ReplayErrorRecursive(pList->next);
+	ReplayErrorRecursive(pList->next, fFatalOnly);
 	if (((LPERRORINSTANCE) pList->data)->nSession == 1)
 	{
-		PrintSPASMError((LPERRORINSTANCE) pList->data);
+		LPERRORINSTANCE lpError = (LPERRORINSTANCE) pList->data;
+		if (fFatalOnly) 
+		{
+			if (!IsSPASMErrorFatal(lpError->dwErrorCode))
+			{
+				return;
+			}
+		}
+		PrintSPASMError(lpError);
 	}
 }
 
-void ReplaySPASMErrorSession(int nSession)
+void ReplaySPASMErrorSession(int nSession, bool fFatalOnly)
 {
 	if (nSession == 1)
 	{
-		ReplayErrorRecursive((list_t *) g_ErrorList);
+		ReplayErrorRecursive((list_t *) g_ErrorList, fFatalOnly);
 	}
 	else
 	{
@@ -150,14 +164,12 @@ void ReplaySPASMErrorSession(int nSession)
 			((LPERRORINSTANCE) pList->data)->nSession--;
 			pList = pList->next;
 		}
-	}
+	}	
+}
 
-	//if (((LPERRORINSTANCE) pList->data)->fSuppressErrors == true)
-	//{
-	//	return;
-	//}
-
-	
+void ReplayFatalSPASMErrorSession(int nSession)
+{
+	ReplaySPASMErrorSession(nSession, true);
 }
 
 bool IsErrorInSPASMErrorSession(int nSession, DWORD dwErrorCode)
