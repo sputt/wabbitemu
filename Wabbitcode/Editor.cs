@@ -1056,9 +1056,11 @@ namespace Revsoft.Wabbitcode
 
 		#endregion
 
-		internal void ScrollToLine(int scrollToLine)
+		internal void ScrollToLine(int line)
 		{
-			editorBox.ActiveTextAreaControl.ScrollTo(scrollToLine);
+			editorBox.ActiveTextAreaControl.ScrollTo(line);
+            editorBox.ActiveTextAreaControl.Caret.Line = line;
+            editorBox.ActiveTextAreaControl.Caret.Column = 0;
 		}
 
 		internal void ScrollToOffset(int offset)

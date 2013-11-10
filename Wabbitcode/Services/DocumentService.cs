@@ -89,7 +89,7 @@ namespace Revsoft.Wabbitcode.Services
 			ParserInformation info = item.Parent;
 			string file = info.SourceFile;
 			Editor child = GotoFile(file);
-			child.ScrollToOffset(item.Location.Offset);
+			child.ScrollToLine(item.Location.Line);
 		}
 
 		public void GotoLine(Editor editor, int line)

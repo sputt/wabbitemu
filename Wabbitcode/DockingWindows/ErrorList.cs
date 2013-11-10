@@ -82,7 +82,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 	        DataGridViewRow row = new DataGridViewRow();
 	        row.CreateCells(errorGridView);
 
-	        row.Cells[0].Value = imageListIcons.Images[0];
+	        row.Cells[0].Value = imageListIcons.Images[isWarning ? 1 : 0];
 	        row.Cells[1].Value = isWarning ? ++_warnings : ++_errors;
 	        row.Cells[2].Value = description;
 	        row.Cells[3].Value = Path.GetFileName(file);

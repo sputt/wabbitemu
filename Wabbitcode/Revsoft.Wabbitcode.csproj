@@ -641,6 +641,9 @@
     <Compile Include="Services\Interfaces\IParserService.cs" />
     <Compile Include="Services\Interfaces\IProjectService.cs" />
     <Compile Include="Services\Interfaces\ISymbolService.cs" />
+    <Compile Include="Services\ParserEventArgs.cs" />
+    <Compile Include="Services\ParserProgressEventArgs.cs" />
+    <Compile Include="Services\ParserService.cs" />
     <Compile Include="Services\Symbols\CalcLocation.cs" />
     <Compile Include="Utils\WabbitcodeBreakpointManager.cs" />
     <Compile Include="Utils\DocumentLocation.cs" />
@@ -685,7 +688,6 @@
     <Compile Include="Services\AssemblerService.cs" />
     <Compile Include="Services\Symbols\SymbolTable.cs" />
     <Compile Include="Services\Debugger\WabbitcodeBreakpoint.cs" />
-    <Compile Include="Services\ParserService.cs" />
     <Compile Include="Services\ServiceDependencyAttribute.cs" />
     <Compile Include="Services\ServiceFactory.cs" />
     <Compile Include="Services\SymbolService.cs" />
