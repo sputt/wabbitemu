@@ -202,6 +202,12 @@ int run_assembly()
 	return exit_code;
 }
 
+#if 1
+int CALLBACK WinMain(HINSTANCE hInst, HINSTANCE  hPrev, LPSTR lpCommandLine, int nCmdShow)
+{
+	return _AtlModule.WinMain(SW_HIDE);
+}
+#else
 int main (int argc, char **argv)
 {
 	int curr_arg = 1;
@@ -433,3 +439,4 @@ int main (int argc, char **argv)
 
 	return error;
 }
+#endif

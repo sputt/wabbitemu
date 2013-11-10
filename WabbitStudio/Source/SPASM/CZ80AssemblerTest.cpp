@@ -141,6 +141,8 @@ public:
 
 			CW2CT szInput(V_BSTR(&varInput));
 			input_contents = strdup(szInput);
+
+			curr_input_file = strdup("COM Interface");
 		}
 		else
 		{

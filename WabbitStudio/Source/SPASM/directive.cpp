@@ -563,6 +563,8 @@ char *parse_emit_string (const char *ptr, ES_TYPE type, void *echo_target) {
 		                break;
 					}
 				}
+
+				ReplaySPASMErrorSession(session);
 			}
 			else if (IsSPASMErrorSessionFatal(session) == false && type != ES_FCREATE)
 			{
