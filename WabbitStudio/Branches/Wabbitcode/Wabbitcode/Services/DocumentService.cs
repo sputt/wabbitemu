@@ -90,6 +90,7 @@ namespace Revsoft.Wabbitcode.Services
 			string file = info.SourceFile;
 			Editor child = GotoFile(file);
 			child.ScrollToLine(item.Location.Line);
+		    child.Focus();
 		}
 
 		public void GotoLine(Editor editor, int line)

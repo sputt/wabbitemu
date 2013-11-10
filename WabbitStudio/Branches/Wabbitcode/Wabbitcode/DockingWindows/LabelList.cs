@@ -1,4 +1,7 @@
-﻿using Revsoft.Wabbitcode.Properties;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Revsoft.Wabbitcode.Extensions;
+using Revsoft.Wabbitcode.Properties;
 using Revsoft.Wabbitcode.Services;
 using Revsoft.Wabbitcode.Services.Interfaces;
 using Revsoft.Wabbitcode.Services.Parser;
@@ -32,7 +35,7 @@ namespace Revsoft.Wabbitcode.DockingWindows
 		    {
 		        if (_dockingService.ActiveDocument == null || 
                     string.IsNullOrEmpty(_dockingService.ActiveDocument.FileName) ||
-                    args.FileName != _dockingService.ActiveDocument.FileName)
+                    !FileOperations.CompareFilePath(args.FileName, _dockingService.ActiveDocument.FileName))
 		        {
 		            return;
 		        }
@@ -81,18 +84,9 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			bool showEquates = includeEquatesBox.Checked;
 			ListBox.ObjectCollection labelsToAdd = new ListBox.ObjectCollection(labelsBox);
 
-			foreach (IParserData data in info)
-			{
-				var label = data as Label;
-				if (data is Label && !label.IsReusable)
-				{
-					labelsToAdd.Add(label);
-				}
-				else if ((data is Equate || data is Define || data is Macro) && (showEquates))
-				{
-					labelsToAdd.Add(data);
-				}
-			}
+		    IParserData[] labels = info.Where(d => (d is Label && !((Label) d).IsReusable) || 
+                ((d is Equate || d is Define || d is Macro) && showEquates)).ToArray();
+            labelsToAdd.AddRange(labels);
 
 			labelsBox.Items.Clear();
 			labelsBox.Items.AddRange(labelsToAdd);
@@ -137,7 +131,6 @@ namespace Revsoft.Wabbitcode.DockingWindows
 			}
 
 			_documentService.GotoLabel((IParserData)labelsBox.SelectedItem);
-			_dockingService.ActiveDocument.Focus();
 		}
 
 		private void labelsBox_KeyPress(object sender, KeyPressEventArgs e)
