@@ -183,13 +183,12 @@ namespace Revsoft.Wabbitcode.Services
 
             ParserInformation info = new ParserInformation(hashCode, file);
             int lineIndex;
+            var tokens = TokenizeLine(fileText);
+            var tokensEnumerator = tokens.GetEnumerator();
             string[] lines = fileText.Split('\n');
             int percent = 0;
             for (lineIndex = 0; lineIndex < lines.Length; lineIndex++)
             {
-                string line = lines[lineIndex];
-                var tokens = TokenizeLine(line);
-                var tokensEnumerator = tokens.GetEnumerator();
                 int newPercent = lineIndex * 100 / lines.Length;
 
                 if (percent + 5 <= newPercent)
@@ -214,43 +213,49 @@ namespace Revsoft.Wabbitcode.Services
                     char firstChar = tokensEnumerator.Current.First();
                     if (firstChar == CommentChar)
                     {
+                        SkipToEndOfLine(tokensEnumerator);
                         break;
                     }
                     // handle label other xx = 22 type define
                     if (TextUtils.IsValidLabelChar(firstChar))
                     {
                         HandleLabelOrDefine(lines, lineIndex, tokensEnumerator, info);
-                        hasNext = SkipToEndOfCodeLine(tokensEnumerator);
-                        continue;
                     }
-
-                    if (char.IsWhiteSpace(firstChar))
+                    else
                     {
-                        hasNext = SkipWhitespace(tokensEnumerator);
-                        if (!hasNext)
+                        if (char.IsWhiteSpace(firstChar))
                         {
-                            break;
+                            hasNext = SkipWhitespace(tokensEnumerator);
+                            if (!hasNext)
+                            {
+                                break;
+                            }
+                        }
+
+                        switch (tokensEnumerator.Current.ToLower())
+                        {
+                            case IncludeString:
+                                HandleInclude(lines, lineIndex, tokensEnumerator, info);
+                                break;
+                            case DefineString:
+                                HandleDefine(lines, lineIndex, tokensEnumerator, info);
+                                break;
+                            case CommentString:
+                                lineIndex = HandleBlockComment(lines, lineIndex, tokensEnumerator);
+                                break;
+                            case MacroString:
+                                lineIndex = HandleMacro(lines, lineIndex, tokensEnumerator, info);
+                                break;
                         }
                     }
 
-                    switch (tokensEnumerator.Current)
-                    {
-                        case IncludeString:
-                            HandleInclude(lines, lineIndex, tokensEnumerator, info);
-                            break;
-                        case DefineString:
-                            HandleDefine(lines, lineIndex, tokensEnumerator, info);
-                            break;
-                        case CommentString:
-                            lineIndex = HandleBlockComment(lines, lineIndex);
-                            break;
-                        case MacroString:
-                            lineIndex = HandleMacro(lines, lineIndex, tokensEnumerator, info);
-                            break;
-                    }
-
                     hasNext = SkipToEndOfCodeLine(tokensEnumerator);
-                } while (hasNext && IsEndOfCodeLine(tokensEnumerator));
+                    if (tokensEnumerator.Current == CommentChar.ToString())
+                    {
+                        SkipToEndOfLine(tokensEnumerator);
+                        break;
+                    }
+                } while (hasNext && IsEndOfCodeLine(tokensEnumerator) && !IsEndOfLine(tokensEnumerator));
             }
 
             lock (_parserInfoDictionary)
@@ -271,50 +276,10 @@ namespace Revsoft.Wabbitcode.Services
             return info;
         }
 
-        private static bool SkipToEndOfCodeLine(IEnumerator<string> tokensEnumerator, out string contents)
-        {
-            contents = string.Empty;
-            bool hasNext = SkipWhitespace(tokensEnumerator);
-            if (!hasNext)
-            {
-                return false;
-            }
-
-            while (!IsEndOfCodeLine(tokensEnumerator) && hasNext)
-            {
-                contents += tokensEnumerator.Current;
-                hasNext = tokensEnumerator.MoveNext();
-            }
-
-            return hasNext;
-        }
-
-        private bool SkipToEndOfCodeLine(IEnumerator<string> tokensEnumerator)
+        private static int HandleBlockComment(ICollection<string> lines, int lineIndex, IEnumerator<string> tokensEnumerator)
         {
             string contents;
-            return SkipToEndOfCodeLine(tokensEnumerator, out contents);
-        }
-
-        private static bool IsEndOfCodeLine(IEnumerator<string> tokensEnumerator)
-        {
-            return tokensEnumerator.Current == EndOfLineChar.ToString() || tokensEnumerator.Current == CommentChar.ToString() ||
-                tokensEnumerator.Current == "\r";
-        }
-
-        private static bool SkipWhitespace(IEnumerator<string> tokensEnumerator)
-        {
-            bool hasNext = true;
-            while (string.IsNullOrWhiteSpace(tokensEnumerator.Current) && hasNext)
-            {
-                hasNext = tokensEnumerator.MoveNext();
-            }
-
-            return hasNext;
-        }
-
-        private static int HandleBlockComment(IList<string> lines, int lineIndex)
-        {
-            int newLineIndex = FindToken(lines, lineIndex, EndCommentString);
+            int newLineIndex = FindToken(lineIndex, tokensEnumerator, EndCommentString, out contents);
             return newLineIndex == -1 ? lines.Count : newLineIndex;
         }
 
@@ -337,7 +302,6 @@ namespace Revsoft.Wabbitcode.Services
             }
 
             string macroName = tokensEnumerator.Current;
-            string contents = string.Empty;
             List<string> args;
             if (tokensEnumerator.MoveNext())
             {
@@ -361,15 +325,11 @@ namespace Revsoft.Wabbitcode.Services
                 args = new List<string>();
             }
 
-            int newLineIndex = FindToken(lines, lineIndex, EndMacroString);
+            string contents;
+            int newLineIndex = FindToken(lineIndex, tokensEnumerator, EndMacroString, out contents);
             if (newLineIndex == -1)
             {
                 return lines.Length;
-            }
-
-            for (int i = lineIndex; i < newLineIndex; i++)
-            {
-                contents += lines[i];
             }
 
             string description = GetDescription(lines, lineIndex);
@@ -428,7 +388,7 @@ namespace Revsoft.Wabbitcode.Services
             }
 
             description = GetDescription(lines, lineIndex);
-            Define defineToAdd = new Define(new DocLocation(lineIndex, 0), defineName, contents, description, info, 0);
+            Define defineToAdd = new Define(new DocLocation(lineIndex, 0), defineName, contents.Trim(), description, info, 0);
             info.DefinesList.Add(defineToAdd);
 
         }
@@ -460,6 +420,8 @@ namespace Revsoft.Wabbitcode.Services
                     includeFile += tokensEnumerator.Current;
                     hasNext = tokensEnumerator.MoveNext();
                 }
+
+                tokensEnumerator.MoveNext();
             }
             else
             {
@@ -484,7 +446,7 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
-        private void HandleLabelOrDefine(string[] lines, int lineIndex, IEnumerator<string> tokensEnumerator, ParserInformation info)
+        private static void HandleLabelOrDefine(string[] lines, int lineIndex, IEnumerator<string> tokensEnumerator, ParserInformation info)
         {
             string description = GetDescription(lines, lineIndex);
             string labelName = tokensEnumerator.Current;
@@ -502,7 +464,7 @@ namespace Revsoft.Wabbitcode.Services
                 }
 
                 if (tokensEnumerator.MoveNext() && tokensEnumerator.Current == "=" ||
-                    tokensEnumerator.Current == ".equ" || tokensEnumerator.Current == "equ")
+                    tokensEnumerator.Current.ToLower() == ".equ" || tokensEnumerator.Current.ToLower() == "equ")
                 {
                     string contents;
                     if (!tokensEnumerator.MoveNext())
@@ -521,7 +483,7 @@ namespace Revsoft.Wabbitcode.Services
                         }
                     }
 
-                    Define defineToAdd = new Define(new DocLocation(lineIndex, 0), labelName, contents, description, info, 0);
+                    Define defineToAdd = new Define(new DocLocation(lineIndex, 0), labelName, contents.Trim(), description, info, 0);
                     info.DefinesList.Add(defineToAdd);
                 }
                 else
@@ -533,27 +495,23 @@ namespace Revsoft.Wabbitcode.Services
             }
         }
 
-        private static int FindToken(IList<string> lines, int lineIndex, string tokenToFind)
+        private static int FindToken(int lineIndex, IEnumerator<string> tokensEnumerator, string tokenToFind, out string contents)
         {
-            for (; lineIndex < lines.Count; lineIndex++)
+            contents = string.Empty;
+            while (true)
             {
-                string line = lines[lineIndex];
-                var tokens = TokenizeLine(line);
-                var tokensEnumerator = tokens.GetEnumerator();
-                char firstChar = line.FirstOrDefault();
-
                 bool hasNext = tokensEnumerator.MoveNext();
                 if (!hasNext)
                 {
-                    continue;
+                    break;
                 }
 
-                if (char.IsWhiteSpace(firstChar))
+                if (tokensEnumerator.Current == CommentChar.ToString())
                 {
-                    hasNext = SkipWhitespace(tokensEnumerator);
+                    hasNext = SkipToEndOfLine(tokensEnumerator);
                     if (!hasNext)
                     {
-                        continue;
+                        break;
                     }
                 }
 
@@ -561,9 +519,86 @@ namespace Revsoft.Wabbitcode.Services
                 {
                     return lineIndex;
                 }
+                
+                if (tokensEnumerator.Current == "\n")
+                {
+                    lineIndex++;
+                }
             }
 
             return -1;
+        }
+
+        private static bool SkipToEndOfLine(IEnumerator<string> tokensEnumerator)
+        {
+            string contents;
+            return SkipToEndOfLine(tokensEnumerator, out contents);
+        }
+
+        private static bool SkipToEndOfLine(IEnumerator<string> tokensEnumerator, out string contents)
+        {
+            contents = string.Empty;
+            bool hasNext = true;
+            while (hasNext && !IsEndOfLine(tokensEnumerator))
+            {
+                contents += tokensEnumerator.Current;
+                hasNext = tokensEnumerator.MoveNext();
+            }
+
+            return hasNext;
+        }
+
+        private static bool SkipToEndOfCodeLine(IEnumerator<string> tokensEnumerator)
+        {
+            string contents;
+            return SkipToEndOfCodeLine(tokensEnumerator, out contents);
+        }
+
+        private static bool SkipToEndOfCodeLine(IEnumerator<string> tokensEnumerator, out string contents)
+        {
+            contents = string.Empty;
+            bool hasNext = SkipWhitespace(tokensEnumerator);
+            if (!hasNext)
+            {
+                return false;
+            }
+
+            bool isInQuote = false;
+            while (hasNext && (!IsEndOfCodeLine(tokensEnumerator) || (isInQuote && !IsEndOfLine(tokensEnumerator))))
+            {
+                contents += tokensEnumerator.Current;
+                if (tokensEnumerator.Current == "\"")
+                {
+                    isInQuote = !isInQuote;
+                }
+
+                hasNext = tokensEnumerator.MoveNext();
+            }
+
+            return hasNext;
+        }
+
+        private static bool SkipWhitespace(IEnumerator<string> tokensEnumerator)
+        {
+            bool hasNext = true;
+            while (hasNext && (tokensEnumerator.Current == " " || tokensEnumerator.Current == "\t" || 
+                tokensEnumerator.Current == "\r"))
+            {
+                hasNext = tokensEnumerator.MoveNext();
+            }
+
+            return hasNext;
+        }
+
+        private static bool IsEndOfCodeLine(IEnumerator<string> tokensEnumerator)
+        {
+            return tokensEnumerator.Current == EndOfLineChar.ToString() || tokensEnumerator.Current == CommentChar.ToString() ||
+                tokensEnumerator.Current == "\n";
+        }
+
+        private static bool IsEndOfLine(IEnumerator<string> tokensEnumerator)
+        {
+            return tokensEnumerator.Current == "\n";
         }
 
         private static string GetDescription(string[] lines, int lineIndex)

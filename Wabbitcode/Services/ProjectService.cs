@@ -144,9 +144,7 @@ namespace Revsoft.Wabbitcode.Services
 				ParseFiles(subFolder);
 			}
 
-			ProjectFile[] filesToParse = new ProjectFile[folder.Files.Count];
-			folder.Files.CopyTo(filesToParse, 0);
-			foreach (ProjectFile file in filesToParse)
+            foreach (ProjectFile file in folder.Files.ToArray())
 			{
 				_parserService.ParseFile(0, file.FileFullPath);
 			}
