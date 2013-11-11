@@ -130,21 +130,12 @@ namespace Revsoft.Wabbitcode.Services
                 yield break;
             }
 
-            if (!caseSensitive)
+            StringComparison comparison = caseSensitive ? StringComparison.CurrentCulture : StringComparison.CurrentCultureIgnoreCase;
+            foreach (var data in _parserInfoDictionary.Values.SelectMany(
+                info => info.Where(data => data.Name.Equals(referenceString, comparison)))
+                )
             {
-                referenceString = referenceString.ToUpper();
-            }
-
-            foreach (var info in _parserInfoDictionary.Values)
-            {
-                foreach (var data in info)
-                {
-                    string name = caseSensitive ? data.Name : data.Name.ToUpper();
-                    if (name == referenceString)
-                    {
-                        yield return data;
-                    }
-                }
+                yield return data;
             }
         }
 
@@ -156,8 +147,8 @@ namespace Revsoft.Wabbitcode.Services
                 return;
             }
 
-            string lines = _fileReaderService.GetFileText(filename);
-            ParseFile(hashCode, filename, lines);
+            string fileText = _fileReaderService.GetFileText(filename);
+            ParseFile(hashCode, filename, fileText);
         }
 
         private static IEnumerable<string> TokenizeLine(string line)
@@ -179,6 +170,11 @@ namespace Revsoft.Wabbitcode.Services
             {
                 System.Diagnostics.Debug.WriteLine("Lines were null or empty");
                 return null;
+            }
+
+            if (hashCode == 0)
+            {
+                hashCode = fileText.GetHashCode();
             }
 
             ParserInformation info = new ParserInformation(hashCode, file);
