@@ -93,6 +93,9 @@ library SPASM
 		[propget, helpstring("Preprocessor definitions")]
 		HRESULT Defines([out, retval] Scripting.IDictionary **Defines);
 
+		[propget, helpstring("Current labels for the assembly environment")]
+		HRESULT Labels([out, retval] Scripting.IDictionary **Labels);
+
 		[propget, helpstring("Output text")]
 		HRESULT StdOut([out, retval] Scripting.ITextStream **OutputStream);
 
@@ -131,9 +134,6 @@ library SPASM
 
 		[helpstring("Assemble a buffer or filename and return the output stream")]
 		HRESULT Assemble([in, optional] VARIANT Input, [out, retval] IStream **Output);
-
-		[helpstring("Parse an expression using the currently assembly environment")]
-		HRESULT Parse([in] BSTR Value, [out, retval] BSTR *Result);
 	}
 
 	[

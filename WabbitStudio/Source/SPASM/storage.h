@@ -2,6 +2,7 @@
 #define __STORAGE_H
 
 #include "list.h"
+#include "hash.h"
 
 #if !defined(MAX_PATH) && !defined(_MSC_VER)
 	#include <limits.h>
@@ -62,5 +63,7 @@ void remove_arg_set (list_t *arg_set);
 void set_case_sensitive(bool sensitive);
 bool get_case_sensitive();
 void dump_defines();
+
+extern hash_t *label_table;
 
 #endif

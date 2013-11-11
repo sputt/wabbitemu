@@ -60,7 +60,6 @@ using namespace ATL;
 #include <vector>
 #include <map>
 
-//#import <scrrun.dll> rename("FreeSpace", "FreeSpace2") no_namespace
 #import <scrrun.dll> rename("FreeSpace", "FreeSpace2") no_namespace, raw_interfaces_only
 
 #include "SPASM_h.h"

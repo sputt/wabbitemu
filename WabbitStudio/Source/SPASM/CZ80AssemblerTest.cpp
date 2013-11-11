@@ -6,6 +6,7 @@
 #include "parser.h"
 #include "CTextStream.h"
 #include "CIncludeDirectoryCollection.h"
+#include "hash.h"
 
 #include "Module.h"
 
@@ -49,6 +50,27 @@ public:
 	STDMETHOD(get_Defines)(IDictionary **ppDictionary)
 	{
 		return m_dict->QueryInterface(ppDictionary);
+	}
+
+	static void label_enum_callback(void *rawlabel, void *arg)
+	{
+		IDictionary *pDict = (IDictionary *) arg;
+		label_t *label = (label_t *) rawlabel;
+
+		CComVariant name(label->name);
+		CComVariant value((unsigned int) label->value, VT_UI4);
+
+		pDict->Add(&name, &value);
+	}
+
+	STDMETHOD(get_Labels)(IDictionary **ppLabels)
+	{
+		IDictionaryPtr labels(__uuidof(Dictionary));
+		if (label_table != NULL)
+		{
+			hash_enum(label_table, label_enum_callback, labels.GetInterfacePtr());
+		}
+		return labels->QueryInterface(ppLabels);
 	}
 
 	STDMETHOD(get_StdOut)(ITextStream **ppStream)

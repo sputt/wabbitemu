@@ -68,7 +68,7 @@ Namespace ValueConverters
 
             Dim ImgSource As ImageSource = Nothing
             Dim ZImg = Images(Index)
-            If ZImg Is Nothing Then
+            If ZImg IsNot Nothing Then
                 ImgSource = ZImg.Image
             End If
 
@@ -140,11 +140,13 @@ Namespace ValueConverters
     Public Class BitValueConverter
         Implements IValueConverter
 
-        Private target As Byte
+        Private target As Byte = 0
 
         Public Function Convert(value As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.Convert
             Dim mask As Byte = parameter
-            target = SPASMHelper.Assemble(".db " & value)(0)
+            If value IsNot Nothing And value <> "" Then
+                target = SPASMHelper.Assemble(".db " & value)(0)
+            End If
             Return ((mask And target) <> 0)
         End Function
 
@@ -175,6 +177,8 @@ Namespace ValueConverters
         Implements IValueConverter
 
         Public Function Convert(value As Object, targetType As System.Type, parameter As Object, culture As System.Globalization.CultureInfo) As Object Implements System.Windows.Data.IValueConverter.Convert
+            If value Is Nothing OrElse value = "" Then Return Nothing
+
             Dim dir As String = CStr(value)
             Debug.WriteLine("dir: " & dir)
             Return SPASMHelper.Eval(dir)

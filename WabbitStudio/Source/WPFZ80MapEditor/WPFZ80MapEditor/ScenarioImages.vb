@@ -21,8 +21,8 @@ Partial Public Class Scenario
         For Each Match As Match In Matches
             Dim Groups = Match.Groups
             Dim LabelName As String = Groups("Name").Value
-            SPASMHelper.Assembler.AddDefine(LabelName, Index)
-            SPASMHelper.Assembler.AddDefine(Replace(LabelName, "_gfx", "_anim"), Index)
+            SPASMHelper.Assembler.Defines.Add(LabelName, Index)
+            SPASMHelper.Assembler.Defines.Add(Replace(LabelName, "_gfx", "_anim"), Index)
 
             Dim Image As ImageSource = Nothing
             Uri = New Uri(Directory.GetCurrentDirectory() & "\Scenario\" & Groups("FileName").Value, UriKind.Absolute)
@@ -35,8 +35,8 @@ Partial Public Class Scenario
                     Dim TotalY = CInt(Groups("Y").Value)
                     Dim EachWidth As Integer = (CInt(Image.Width) - (2 * TotalX)) / TotalX
                     Dim EachHeight As Integer = (CInt(Image.Height) - (2 * TotalY)) / TotalY
-                    SPASMHelper.Assembler.AddDefine(LabelName & "_width", EachWidth)
-                    SPASMHelper.Assembler.AddDefine(LabelName & "_height", EachHeight)
+                    SPASMHelper.Assembler.Defines.Add(LabelName & "_width", EachWidth)
+                    SPASMHelper.Assembler.Defines.Add(LabelName & "_height", EachHeight)
 
                     Dim ImagePreview As ImageSource = Nothing
                     For X = 0 To TotalX - 1
@@ -44,14 +44,14 @@ Partial Public Class Scenario
                             Dim CroppedImage As New CroppedBitmap(Image, New Int32Rect((EachWidth + 2) * X + 1, (EachHeight + 2) * Y + 1, EachWidth, EachHeight))
                             Dim ItemLabel = LabelName & (X * TotalY) + Y + 1
                             Images.Add(New ZeldaImage(ItemLabel, CroppedImage))
-                            SPASMHelper.Assembler.AddDefine(ItemLabel, Index)
+                            SPASMHelper.Assembler.Defines.Add(ItemLabel, Index)
                             Index += 1
                         Next
                     Next
 
                 Else
-                    SPASMHelper.Assembler.AddDefine(LabelName & "_width", CInt(Image.Width))
-                    SPASMHelper.Assembler.AddDefine(LabelName & "_height", CInt(Image.Height))
+                    SPASMHelper.Assembler.Defines.Add(LabelName & "_width", CInt(Image.Width))
+                    SPASMHelper.Assembler.Defines.Add(LabelName & "_height", CInt(Image.Height))
 
                     Images.Add(New ZeldaImage(LabelName, Image))
                     Index += 1

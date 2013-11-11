@@ -183,28 +183,46 @@ Public Class Scenario
     Public Sub SaveScenario()
         Dim Stream = New StreamWriter(_FileName)
 
-        'For Each MapIndex In Maps.Keys
-        '    Dim MapData = Maps(MapIndex)
+        For Each MapIndex In Maps.Keys
+            Dim MapData = Maps(MapIndex)
 
-        '    If Not MapData Is Nothing Then
-        '        Dim PossibleViews = From v In MapViewContainer.Children Where TypeOf v Is MapView AndAlso CType(v, MapView).MapData Is MapData
-        '        If PossibleViews.Count > 0 Then
-        '            Dim MapView = PossibleViews.First()
+            Dim MapId = String.Format("{0:D2}", MapIndex)
+            Dim MapPrefix = ScenarioName & "_MAP_" & MapId
 
+            If Not MapData Is Nothing Then
+                Dim PossibleViews = From v In MainWindow.Instance.LayerContainer.Children Where TypeOf v Is MapContainer AndAlso CType(v, MapContainer).MapData Is MapData
+                If PossibleViews.Count > 0 Then
+                    Dim MapView = PossibleViews.First()
 
-        '            Dim MapPrefix = ScenarioName & "_MAP_" & MapIndex
-        '            Stream.WriteLine(MapPrefix & ":")
-        '            Stream.WriteLine(MapPrefix & "_X = " & Grid.GetColumn(MapView))
-        '            Stream.WriteLine(MapPrefix & "_Y = " & Grid.GetRow(MapView))
-        '            Stream.WriteLine(MapPrefix & "_TILESET = 0")
+                    Stream.WriteLine(MapPrefix & ":")
+                    Stream.WriteLine(MapPrefix & "_X = " & Grid.GetColumn(MapView))
+                    Stream.WriteLine(MapPrefix & "_Y = " & Grid.GetRow(MapView))
+                    Stream.WriteLine(MapPrefix & "_TILESET = 0")
 
-        '            Dim CompressedMap = MapCompressor.Compress(Maps(MapIndex).TileData)
-        '            WriteAssemblyData(Stream, CompressedMap)
+                    Dim CompressedMap = MapCompressor.Compress(Maps(MapIndex).TileData)
+                    WriteAssemblyData(Stream, CompressedMap)
 
-        '            Stream.WriteLine("")
-        '        End If
-        '    End If
-        'Next
+                    Stream.WriteLine("")
+                End If
+
+                Stream.WriteLine("")
+
+                Stream.WriteLine(MapPrefix & "_DEFAULTS:")
+                ' Write out animates
+                Stream.WriteLine("animate_section()")
+                Stream.WriteLine("object_section()")
+
+                For Each Obj In MapData.ZObjects
+                    Stream.WriteLine(vbTab & Obj.ToMacro())
+                Next
+
+                Stream.WriteLine("enemy_section()")
+                Stream.WriteLine("misc_section()")
+                Stream.WriteLine("end_section()")
+
+                Stream.WriteLine("")
+            End If
+        Next
 
         Stream.Close()
     End Sub

@@ -199,6 +199,7 @@ Public Class ZDefArgObjectFlags
     Public Sub New(Name As String, Description As String)
         SetValue(ZDefArg.NameProperty, Name)
         SetValue(ZDefArg.DescriptionProperty, Description)
+        SetValue(ZDefArg.ValueProperty, "0")
     End Sub
 
     Public Overloads Function Clone() As Object
@@ -247,7 +248,7 @@ Public Class ZDefArg
             Return GetValue(ValueProperty)
         End Get
         Set(value As String)
-            SetValue(ValueProperty, value)
+            SetValue(ValueProperty, value.Trim())
         End Set
     End Property
 
@@ -409,7 +410,16 @@ Public Class ZObject
         Dim NewArgs = (From a In Args Select a.GetValue(ZDefArg.ValueProperty)).ToList()
         For i = 0 To NewArgs.Count - 1
             Result &= NewArgs(i)
+
             If i <> NewArgs.Count - 1 Then
+                Dim RestAreEmpty As Boolean = False
+                Dim j As Integer = i + 1
+                Do Until j = NewArgs.Count OrElse Not (NewArgs(j) = "" Or NewArgs(j) Is Nothing)
+                    j = j + 1
+                Loop
+                If j = NewArgs.Count Then
+                    Exit For
+                End If
                 Result &= ","
             End If
         Next

@@ -17,7 +17,7 @@ Public Class MainWindow
         Scenario.Instance.Tilesets.Add("dungeon", New Tileset("Scenario\dungeon.bmp"))
         TileSelectorPanel.Initialize(0)
 
-        Scenario.Instance.LoadScenario("Scenario\pete.asm")
+        Scenario.Instance.LoadScenario("Scenario\hill.asm")
 
 
         'Dim MapData As New MapData(New Tileset("dungeon.bmp"))
